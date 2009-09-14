@@ -76,6 +76,9 @@ class ExtensionHost : public RenderViewHostDelegate,
   // Sets |url_| and navigates |render_view_host_|.
   void NavigateToURL(const GURL& url);
 
+  // Insert the CSS for a toolstrip.
+  void InsertCssIfToolstrip();
+
   // RenderViewHostDelegate implementation.
   virtual RenderViewHostDelegate::View* GetViewDelegate();
   virtual const GURL& GetURL() const { return url_; }

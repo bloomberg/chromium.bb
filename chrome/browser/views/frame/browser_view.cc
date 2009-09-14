@@ -127,254 +127,59 @@ static const char kBrowserViewClassName[] = "browser/views/BrowserView";
 // and paint the bookmark bar.
 class BookmarkExtensionBackground : public views::Background {
  public:
-  explicit BookmarkExtensionBackground(BrowserView* browser_view);
+  explicit BookmarkExtensionBackground(BrowserView* browser_view,
+                                       DetachableToolbarView* host_view);
 
   // View methods overridden from views:Background.
   virtual void Paint(gfx::Canvas* canvas, views::View* view) const;
 
  private:
-  // Paint the theme background with the proper alignment.
-  void PaintThemeBackgroundTopAligned(gfx::Canvas* canvas,
-      SkBitmap* ntp_background, int tiling, int alignment) const;
-  void PaintThemeBackgroundBottomAligned(gfx::Canvas* canvas,
-      SkBitmap* ntp_background, int tiling, int alignment) const;
-
   BrowserView* browser_view_;
+
+  // The view hosting this background.
+  DetachableToolbarView* host_view_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkExtensionBackground);
 };
 
 BookmarkExtensionBackground::BookmarkExtensionBackground(
-    BrowserView* browser_view)
-    : browser_view_(browser_view) {
+    BrowserView* browser_view,
+    DetachableToolbarView* host_view)
+    : browser_view_(browser_view),
+      host_view_(host_view) {
 }
 
 void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
-                                       views::View* view) const {
-  // Paint the bookmark bar.
-  BookmarkBarView* bookmark_bar_view = browser_view_->GetBookmarkBarView();
-  if (bookmark_bar_view->IsDetachedStyle()) {
+                                        views::View* view) const {
+  ThemeProvider* tp = host_view_->GetThemeProvider();
+  if (host_view_->IsDetached()) {
     // Draw the background to match the new tab page.
-    ThemeProvider* tp = bookmark_bar_view->GetThemeProvider();
-    canvas->FillRectInt(
-        tp->GetColor(BrowserThemeProvider::COLOR_NTP_BACKGROUND),
-        0, 0, bookmark_bar_view->width(), bookmark_bar_view->height());
-
-    if (tp->HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
-      int tiling = BrowserThemeProvider::NO_REPEAT;
-      tp->GetDisplayProperty(BrowserThemeProvider::NTP_BACKGROUND_TILING,
-                             &tiling);
-      int alignment;
-      if (tp->GetDisplayProperty(BrowserThemeProvider::NTP_BACKGROUND_ALIGNMENT,
-                                 &alignment)) {
-        SkBitmap* ntp_background = tp->GetBitmapNamed(
-            IDR_THEME_NTP_BACKGROUND);
-
-        if (alignment & BrowserThemeProvider::ALIGN_TOP) {
-          PaintThemeBackgroundTopAligned(canvas, ntp_background, tiling,
-              alignment);
-        } else {
-          PaintThemeBackgroundBottomAligned(canvas, ntp_background, tiling,
-              alignment);
-        }
-      }
-    }
-
-    // Draw the 'bottom' of the toolbar above our bubble.
-    canvas->FillRectInt(ResourceBundle::toolbar_separator_color, 0, 0,
-        bookmark_bar_view->width(), 1);
+    DetachableToolbarView::PaintBackgroundDetachedMode(canvas, host_view_);
 
     SkRect rect;
 
     // As 'hidden' according to the animation is the full in-tab state,
     // we invert the value - when current_state is at '0', we expect the
     // bar to be docked.
-    double current_state = 1 - bookmark_bar_view->GetSizeAnimationValue();
+    double current_state = 1 - host_view_->GetAnimationValue();
 
     // The 0.5 is to correct for Skia's "draw on pixel boundaries"ness.
     double h_padding = static_cast<double>
-      (BookmarkBarView::kNewtabHorizontalPadding) * current_state;
+        (BookmarkBarView::kNewtabHorizontalPadding) * current_state;
     double v_padding = static_cast<double>
-      (BookmarkBarView::kNewtabVerticalPadding) * current_state;
-    rect.set(SkDoubleToScalar(h_padding - 0.5),
-             SkDoubleToScalar(v_padding - 0.5),
-             SkDoubleToScalar(bookmark_bar_view->width() - h_padding - 0.5),
-             SkDoubleToScalar(bookmark_bar_view->height() - v_padding - 0.5));
+        (BookmarkBarView::kNewtabVerticalPadding) * current_state;
+    double roundness = 0;
 
-    double roundness = static_cast<double>
-        (kNewtabBarRoundness) * current_state;
-
-    // Draw our background.
-    SkPaint paint;
-    paint.setAntiAlias(true);
-    paint.setColor(bookmark_bar_view->GetThemeProvider()->GetColor(
-        BrowserThemeProvider::COLOR_TOOLBAR));
-
-    canvas->drawRoundRect(rect,
-                          SkDoubleToScalar(roundness),
-                          SkDoubleToScalar(roundness), paint);
-
-    // Draw border
-    SkPaint border_paint;
-    border_paint.setColor(bookmark_bar_view->GetThemeProvider()->GetColor(
-        BrowserThemeProvider::COLOR_NTP_HEADER));
-    border_paint.setStyle(SkPaint::kStroke_Style);
-    border_paint.setAlpha(96);
-    border_paint.setAntiAlias(true);
-
-    canvas->drawRoundRect(rect,
-                          SkDoubleToScalar(roundness),
-                          SkDoubleToScalar(roundness), border_paint);
+    DetachableToolbarView::CalculateContentArea(current_state,
+                                                h_padding, v_padding,
+                                                &rect, &roundness, host_view_);
+    DetachableToolbarView::PaintContentAreaBackground(
+        canvas, tp, rect, roundness);
+    DetachableToolbarView::PaintContentAreaBorder(canvas, tp, rect, roundness);
+    DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
   } else {
-    gfx::Rect bounds = bookmark_bar_view->GetBounds(views::View::
-        APPLY_MIRRORING_TRANSFORMATION);
-
-    SkColor theme_toolbar_color =
-        bookmark_bar_view->GetThemeProvider()->GetColor(BrowserThemeProvider::
-            COLOR_TOOLBAR);
-    canvas->FillRectInt(theme_toolbar_color, 0, 0,
-                        bookmark_bar_view->width(),
-                        bookmark_bar_view->height());
-
-    canvas->TileImageInt(
-        *browser_view_->GetBookmarkBarView()->GetThemeProvider()->
-            GetBitmapNamed(IDR_THEME_TOOLBAR),
-        bookmark_bar_view->GetParent()->GetBounds(views::
-            View::APPLY_MIRRORING_TRANSFORMATION).x() + bounds.x(), bounds.y(),
-            0, 0,
-            bookmark_bar_view->width(),
-            bookmark_bar_view->height());
-    canvas->FillRectInt(ResourceBundle::toolbar_separator_color,
-                        0,
-                        bookmark_bar_view->height() - 1,
-                        bookmark_bar_view->width(), 1);
-  }
-}
-
-void BookmarkExtensionBackground::PaintThemeBackgroundTopAligned(
-    gfx::Canvas* canvas, SkBitmap* ntp_background, int tiling,
-    int alignment) const {
-  BookmarkBarView* bookmark_bar_view = browser_view_->GetBookmarkBarView();
-  if (alignment & BrowserThemeProvider::ALIGN_LEFT) {
-    if (tiling == BrowserThemeProvider::REPEAT)
-      canvas->TileImageInt(*ntp_background, 0, 0,
-      bookmark_bar_view->width(), bookmark_bar_view->height());
-    else if (tiling == BrowserThemeProvider::REPEAT_X)
-      canvas->TileImageInt(*ntp_background, 0, 0,
-                           bookmark_bar_view->width(),
-                           ntp_background->height());
-    else
-      canvas->TileImageInt(*ntp_background, 0, 0,
-          ntp_background->width(), ntp_background->height());
-
-  } else if (alignment & BrowserThemeProvider::ALIGN_RIGHT) {
-    int x_pos = bookmark_bar_view->width() % ntp_background->width() -
-        ntp_background->width();
-    if (tiling == BrowserThemeProvider::REPEAT)
-      canvas->TileImageInt(*ntp_background, x_pos, 0,
-          bookmark_bar_view->width() + ntp_background->width(),
-          bookmark_bar_view->height());
-    else if (tiling == BrowserThemeProvider::REPEAT_X)
-      canvas->TileImageInt(*ntp_background, x_pos,
-          0, bookmark_bar_view->width() + ntp_background->width(),
-          ntp_background->height());
-    else
-      canvas->TileImageInt(*ntp_background,
-          bookmark_bar_view->width() - ntp_background->width(), 0,
-          ntp_background->width(), ntp_background->height());
-
-  } else {  // ALIGN == CENTER
-    int x_pos = bookmark_bar_view->width() > ntp_background->width() ?
-        ((bookmark_bar_view->width() / 2 - ntp_background->width() / 2) %
-        ntp_background->width()) - ntp_background->width() :
-        bookmark_bar_view->width() / 2 - ntp_background->width() / 2;
-    if (tiling == BrowserThemeProvider::REPEAT)
-      canvas->TileImageInt(*ntp_background, x_pos, 0,
-          bookmark_bar_view->width() + ntp_background->width(),
-          bookmark_bar_view->height());
-    else if (tiling == BrowserThemeProvider::REPEAT_X)
-      canvas->TileImageInt(*ntp_background, x_pos, 0,
-          bookmark_bar_view->width() + ntp_background->width(),
-          ntp_background->height());
-    else
-      canvas->TileImageInt(*ntp_background,
-          bookmark_bar_view->width() / 2 - ntp_background->width() / 2,
-          0, ntp_background->width(), ntp_background->height());
-  }
-}
-
-void BookmarkExtensionBackground::PaintThemeBackgroundBottomAligned(
-    gfx::Canvas* canvas, SkBitmap* ntp_background, int tiling,
-    int alignment)  const {
-  BookmarkBarView* bookmark_bar_view = browser_view_->GetBookmarkBarView();
-  int browser_height = bookmark_bar_view->GetParent()->GetBounds(
-      views::View::APPLY_MIRRORING_TRANSFORMATION).height();
-  int border_width = 5;
-  int y_pos = ((tiling == BrowserThemeProvider::REPEAT_X) ||
-               (tiling == BrowserThemeProvider::NO_REPEAT)) ?
-      browser_height - ntp_background->height() - bookmark_bar_view->height() -
-          border_width :
-      browser_height % ntp_background->height() - bookmark_bar_view->height() -
-          border_width - ntp_background->height();
-
-  if (alignment & BrowserThemeProvider::ALIGN_LEFT) {
-    if (tiling == BrowserThemeProvider::REPEAT)
-      canvas->TileImageInt(*ntp_background, 0, y_pos,
-          bookmark_bar_view->width(),
-          2 * bookmark_bar_view->height() + ntp_background->height() + 5);
-    else if (tiling == BrowserThemeProvider::REPEAT_X)
-      canvas->TileImageInt(*ntp_background, 0, y_pos,
-          bookmark_bar_view->width(), ntp_background->height());
-    else if (tiling == BrowserThemeProvider::REPEAT_Y)
-      canvas->TileImageInt(*ntp_background, 0, y_pos,
-          ntp_background->width(),
-          2 * bookmark_bar_view->height() + ntp_background->height() + 5);
-    else
-      canvas->TileImageInt(*ntp_background, 0, y_pos, ntp_background->width(),
-          ntp_background->height());
-
-  } else if (alignment & BrowserThemeProvider::ALIGN_RIGHT) {
-    int x_pos = bookmark_bar_view->width() % ntp_background->width() -
-        ntp_background->width();
-    if (tiling == BrowserThemeProvider::REPEAT)
-      canvas->TileImageInt(*ntp_background, x_pos, y_pos,
-          bookmark_bar_view->width() + ntp_background->width(),
-          2 * bookmark_bar_view->height() + ntp_background->height() + 5);
-    else if (tiling == BrowserThemeProvider::REPEAT_X)
-      canvas->TileImageInt(*ntp_background, x_pos, y_pos,
-          bookmark_bar_view->width() + ntp_background->width(),
-          ntp_background->height());
-    else if (tiling == BrowserThemeProvider::REPEAT_Y)
-      canvas->TileImageInt(*ntp_background, bookmark_bar_view->width() -
-          ntp_background->width(), y_pos, ntp_background->width(),
-          2 * bookmark_bar_view->height() + ntp_background->height() + 5);
-    else
-      canvas->TileImageInt(*ntp_background,
-          bookmark_bar_view->width() - ntp_background->width(),
-          y_pos, ntp_background->width(), ntp_background->height());
-
-  } else {  // ALIGN == CENTER
-    int x_pos = bookmark_bar_view->width() > ntp_background->width() ?
-        ((bookmark_bar_view->width() / 2 - ntp_background->width() / 2) %
-        ntp_background->width()) - ntp_background->width() :
-        bookmark_bar_view->width() / 2 - ntp_background->width() / 2;
-    if (tiling == BrowserThemeProvider::REPEAT)
-      canvas->TileImageInt(*ntp_background, x_pos, y_pos,
-          bookmark_bar_view->width() + ntp_background->width(),
-          2 * bookmark_bar_view->height() + ntp_background->height() + 5);
-    else if (tiling == BrowserThemeProvider::REPEAT_X)
-      canvas->TileImageInt(*ntp_background, x_pos, y_pos,
-          bookmark_bar_view->width() + ntp_background->width(),
-          ntp_background->height());
-    else if (tiling == BrowserThemeProvider::REPEAT_Y)
-      canvas->TileImageInt(*ntp_background,
-          bookmark_bar_view->width() / 2 - ntp_background->width() / 2,
-          y_pos, ntp_background->width(),
-          2 * bookmark_bar_view->height() + ntp_background->height() + 5);
-    else
-      canvas->TileImageInt(*ntp_background,
-          bookmark_bar_view->width() / 2 - ntp_background->width() / 2,
-          y_pos, ntp_background->width(), ntp_background->height());
+    DetachableToolbarView::PaintBackgroundAttachedMode(canvas, host_view_);
+    DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
   }
 }
 
@@ -1829,6 +1634,8 @@ void BrowserView::Init() {
 
   if (browser_->SupportsWindowFeature(Browser::FEATURE_EXTENSIONSHELF)) {
     extension_shelf_ = new ExtensionShelf(browser_.get());
+    extension_shelf_->set_background(
+        new BookmarkExtensionBackground(this, extension_shelf_));
     extension_shelf_->
         SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_EXTENSIONS));
     AddChildView(extension_shelf_);
@@ -1900,7 +1707,7 @@ int BrowserView::LayoutBookmarkAndInfoBars(int top) {
     // If we're showing the Bookmark bar in detached style, then we need to show
     // any Info bar _above_ the Bookmark bar, since the Bookmark bar is styled
     // to look like it's part of the page.
-    if (bookmark_bar_view_->IsDetachedStyle())
+    if (bookmark_bar_view_->IsDetached())
       return LayoutTopBar(LayoutInfoBar(top));
     // Otherwise, Bookmark bar first, Info bar second.
     top = LayoutTopBar(top);
@@ -1922,17 +1729,17 @@ int BrowserView::LayoutTopBar(int top) {
   if (!IsBookmarkBarVisible()) {
     bookmark_bar_view_->SetVisible(false);
     bookmark_bar_view_->SetBounds(0, y, width(), 0);
-    if (ShowExtensionsOnTop())
+    if (extension_shelf_->IsOnTop())
       extension_shelf_->SetVisible(false);
     return y;
   }
 
   int bookmark_bar_height = bookmark_bar_view_->GetPreferredSize().height();
-  y -= kSeparationLineHeight + (bookmark_bar_view_->IsDetachedStyle() ?
+  y -= kSeparationLineHeight + (bookmark_bar_view_->IsDetached() ?
       0 : bookmark_bar_view_->GetToolbarOverlap(false));
 
-  if (ShowExtensionsOnTop()) {
-    if (!bookmark_bar_view_->IsDetachedStyle()) {
+  if (extension_shelf_->IsOnTop()) {
+    if (!bookmark_bar_view_->IsDetached()) {
       int extension_shelf_width =
           extension_shelf_->GetPreferredSize().width();
       int bookmark_bar_given_width = width() - extension_shelf_width;
@@ -1949,7 +1756,7 @@ int BrowserView::LayoutTopBar(int top) {
                                   bookmark_bar_height);
       x += extension_shelf_width;
     } else {
-      // TODO (sidchat): For detached style bookmark bar, set the extensions
+      // TODO(sidchat): For detached style bookmark bar, set the extensions
       // shelf in a better position. Issue = 20741.
       extension_shelf_->SetVisible(false);
     }
@@ -1978,7 +1785,7 @@ int BrowserView::LayoutExtensionAndDownloadShelves() {
   // to look like it's part of the page.
   int bottom = height();
   if (extension_shelf_) {
-    if (extension_shelf_->IsDetachedStyle()) {
+    if (extension_shelf_->IsDetached()) {
       bottom = LayoutDownloadShelf(bottom);
       return LayoutExtensionShelf(bottom);
     }
@@ -2017,7 +1824,7 @@ void BrowserView::LayoutStatusBubble(int top) {
 }
 
 int BrowserView::LayoutExtensionShelf(int bottom) {
-  if (ShowExtensionsOnTop())
+  if (!extension_shelf_ || extension_shelf_->IsOnTop())
     return bottom;
 
   if (extension_shelf_) {
@@ -2041,7 +1848,8 @@ bool BrowserView::MaybeShowBookmarkBar(TabContents* contents) {
       bookmark_bar_view_.reset(new BookmarkBarView(contents->profile(),
                                                    browser_.get()));
       bookmark_bar_view_->SetParentOwned(false);
-      bookmark_bar_view_->set_background(new BookmarkExtensionBackground(this));
+      bookmark_bar_view_->set_background(
+          new BookmarkExtensionBackground(this, bookmark_bar_view_.get()));
     } else {
       bookmark_bar_view_->SetProfile(contents->profile());
     }
@@ -2325,11 +2133,6 @@ void BrowserView::InitHangMonitor() {
                              hung_plugin_detect_freq);
   }
 #endif
-}
-
-bool BrowserView::ShowExtensionsOnTop() {
-  return extension_shelf_ && CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kShowExtensionsOnTop);
 }
 
 // static

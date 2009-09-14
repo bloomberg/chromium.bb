@@ -701,7 +701,8 @@ v8::Local<v8::Context> WebFrameImpl::mainWorldScriptContext() const {
 }
 #endif
 
-bool WebFrameImpl::insertStyleText(const WebString& css) {
+bool WebFrameImpl::insertStyleText(
+    const WebString& css, const WebString& id) {
   Document* document = frame()->document();
   if (!document)
     return false;
@@ -709,9 +710,24 @@ bool WebFrameImpl::insertStyleText(const WebString& css) {
   if (!document_element)
     return false;
 
+  ExceptionCode err = 0;
+
+  if (!id.isEmpty()) {
+    WebCore::Element* old_element =
+        document->getElementById(webkit_glue::WebStringToString(id));
+    if (old_element) {
+      Node* parent = old_element->parent();
+      if (!parent)
+        return false;
+      parent->removeChild(old_element, err);
+    }
+  }
+
   RefPtr<WebCore::Element> stylesheet = document->createElement(
       WebCore::HTMLNames::styleTag, false);
-  ExceptionCode err = 0;
+  if (!id.isEmpty())
+    stylesheet->setAttribute(WebCore::HTMLNames::idAttr,
+                             webkit_glue::WebStringToString(id));
   stylesheet->setTextContent(webkit_glue::WebStringToString(css), err);
   DCHECK(!err) << "Failed to set style element content";
   WebCore::Node* first = document_element->firstChild();

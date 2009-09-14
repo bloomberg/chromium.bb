@@ -510,8 +510,10 @@ void RenderViewHost::ExecuteJavascriptInWebFrame(
 }
 
 void RenderViewHost::InsertCSSInWebFrame(
-    const std::wstring& frame_xpath, const std::string& css) {
-  Send(new ViewMsg_CSSInsertRequest(routing_id(), frame_xpath, css));
+    const std::wstring& frame_xpath,
+    const std::string& css,
+    const std::string& id) {
+  Send(new ViewMsg_CSSInsertRequest(routing_id(), frame_xpath, css, id));
 }
 
 void RenderViewHost::AddMessageToConsole(
@@ -611,7 +613,7 @@ void RenderViewHost::JavaScriptMessageBoxClosed(IPC::Message* reply_msg,
 }
 
 void RenderViewHost::JavaScriptMessageBoxWindowDestroyed() {
- ResetModalDialogEvent();
+  ResetModalDialogEvent();
 }
 
 void RenderViewHost::ModalHTMLDialogClosed(IPC::Message* reply_msg,
@@ -1111,7 +1113,7 @@ void RenderViewHost::OnMsgFindReply(int request_id,
 
 void RenderViewHost::OnDeterminePageTextReply(
     const std::wstring& page_text) {
-#if defined(OS_WIN) // Only for windows.
+#if defined(OS_WIN)  // Only for windows.
     int num_languages = 0;
     bool is_reliable = false;
     const char* language_iso_code = LanguageCodeISO639_1(
@@ -1671,8 +1673,8 @@ void RenderViewHost::SignalModalDialogEvent() {
 }
 
 void RenderViewHost::ResetModalDialogEvent() {
- if (--modal_dialog_count_ == 0)
-   modal_dialog_event_->Reset();
+  if (--modal_dialog_count_ == 0)
+    modal_dialog_event_->Reset();
 }
 
 void RenderViewHost::UpdateBrowserWindowId(int window_id) {

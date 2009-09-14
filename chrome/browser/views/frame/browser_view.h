@@ -405,9 +405,6 @@ class BrowserView : public BrowserWindow,
   // Initialize the hung plugin detector.
   void InitHangMonitor();
 
-  // Returns true if extensions and bookmarks are positioned next to each other.
-  bool ShowExtensionsOnTop();
-
   // Initialize class statics.
   static void InitClass();
 
