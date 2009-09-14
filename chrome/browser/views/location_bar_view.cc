@@ -1072,11 +1072,8 @@ LocationBarView::LocationBarImageView::~LocationBarImageView() {
   if (show_info_bubble_task_)
     show_info_bubble_task_->Cancel();
 
-  if (info_bubble_) {
-    // We are going to be invalid, make sure the InfoBubble does not keep a
-    // pointer to us.
-    info_bubble_->SetDelegate(NULL);
-  }
+  if (info_bubble_)
+    info_bubble_->Close();
 }
 
 void LocationBarView::LocationBarImageView::OnMouseMoved(

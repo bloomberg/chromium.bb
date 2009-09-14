@@ -8,11 +8,8 @@
 #include "app/gfx/color_utils.h"
 #include "app/gfx/path.h"
 #include "app/resource_bundle.h"
-#include "chrome/browser/browser_window.h"
-#include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/notification_type.h"
 #include "grit/theme_resources.h"
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
@@ -69,12 +66,6 @@ static const int kInfoBubbleViewBottomMargin = 9;
 static const int kInfoBubbleViewLeftMargin = 6;
 static const int kInfoBubbleViewRightMargin = 6;
 
-// The minimum alpha the bubble can be - because we're using a simple layered
-// window (in order to get window-level alpha at the same time as using native
-// controls), the window's drop shadow doesn't fade; this means if we went
-// to zero alpha, you'd see a drop shadow outline against nothing.
-static const int kMinimumAlpha = 72;
-
 // InfoBubble -----------------------------------------------------------------
 
 // static
@@ -95,6 +86,10 @@ InfoBubble* InfoBubble::Show(views::Window* parent,
   return window;
 }
 
+void InfoBubble::Close() {
+  Close(false);
+}
+
 InfoBubble::InfoBubble()
     :
 #if defined(OS_LINUX)
@@ -104,9 +99,6 @@ InfoBubble::InfoBubble()
       parent_(NULL),
       content_view_(NULL),
       closed_(false) {
-}
-
-InfoBubble::~InfoBubble() {
 }
 
 void InfoBubble::Init(views::Window* parent,
@@ -128,9 +120,6 @@ void InfoBubble::Init(views::Window* parent,
 #if defined(OS_WIN)
   set_window_style(WS_POPUP | WS_CLIPCHILDREN);
   set_window_ex_style(WS_EX_LAYERED | WS_EX_TOOLWINDOW);
-  // Because we're going to change the alpha value of the layered window we
-  // don't want to use the offscreen buffer provided by WidgetWin.
-  SetUseLayeredBuffer(false);
   set_initial_class_style(
       (win_util::GetWinVersion() < win_util::WINVERSION_XP) ?
       0 : CS_DROPSHADOW);
@@ -168,7 +157,7 @@ void InfoBubble::Init(views::Window* parent,
   // Set initial alpha value of the layered window.
   SetLayeredWindowAttributes(GetNativeView(),
                              RGB(0xFF, 0xFF, 0xFF),
-                             kMinimumAlpha,
+                             255,
                              LWA_ALPHA);
 #endif
 
@@ -176,36 +165,10 @@ void InfoBubble::Init(views::Window* parent,
       NotificationType::INFO_BUBBLE_CREATED,
       Source<InfoBubble>(this),
       NotificationService::NoDetails());
-
-  fade_animation_.reset(new SlideAnimation(this));
-  fade_animation_->Show();
 }
 
-void InfoBubble::Close() {
-  Close(false);
-}
-
-void InfoBubble::AnimationProgressed(const Animation* animation) {
-#if defined(OS_WIN)
-  int alpha = static_cast<int>(static_cast<double>
-      (fade_animation_->GetCurrentValue() * (255.0 - kMinimumAlpha) +
-      kMinimumAlpha));
-
-  SetLayeredWindowAttributes(GetNativeView(),
-                             RGB(0xFF, 0xFF, 0xFF),
-                             alpha,
-                             LWA_ALPHA);
-  // Don't need to invoke paint as SetLayeredWindowAttributes handles that for
-  // us.
-#endif
-}
-
-bool InfoBubble::AcceleratorPressed(const views::Accelerator& accelerator) {
-  if (!delegate_ || delegate_->CloseOnEscape()) {
-    Close(true);
-    return true;
-  }
-  return false;
+InfoBubble::ContentView* InfoBubble::CreateContentView(View* content) {
+  return new ContentView(content, this);
 }
 
 #if defined(OS_WIN)
@@ -226,17 +189,20 @@ void InfoBubble::OnSize(UINT param, const CSize& size) {
   SetWindowRgn(path.CreateHRGN(), TRUE);
   WidgetWin::OnSize(param, size);
 }
-#endif
-
-InfoBubble::ContentView* InfoBubble::CreateContentView(View* content) {
-  return new ContentView(content, this);
+#elif defined(OS_LINUX)
+void InfoBubble::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
+  gfx::Path path;
+  content_view_->GetMask(gfx::Size(allocation->width, allocation->height),
+                         &path);
+  SetShape(path);
+  WidgetGtk::OnSizeAllocate(widget, allocation);
 }
+#endif
 
 void InfoBubble::Close(bool closed_by_escape) {
   if (closed_)
     return;
 
-  // We don't fade out because it looks terrible.
   if (delegate_)
     delegate_->InfoBubbleClosing(this, closed_by_escape);
   closed_ = true;
@@ -247,15 +213,13 @@ void InfoBubble::Close(bool closed_by_escape) {
 #endif
 }
 
-#if defined(OS_LINUX)
-void InfoBubble::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
-  gfx::Path path;
-  content_view_->GetMask(gfx::Size(allocation->width, allocation->height),
-                         &path);
-  SetShape(path);
-  WidgetGtk::OnSizeAllocate(widget, allocation);
+bool InfoBubble::AcceleratorPressed(const views::Accelerator& accelerator) {
+  if (!delegate_ || delegate_->CloseOnEscape()) {
+    Close(true);
+    return true;
+  }
+  return false;
 }
-#endif
 
 // ContentView ----------------------------------------------------------------
 

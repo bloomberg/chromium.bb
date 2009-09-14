@@ -5,8 +5,7 @@
 #ifndef CHROME_BROWSER_VIEWS_INFO_BUBBLE_H_
 #define CHROME_BROWSER_VIEWS_INFO_BUBBLE_H_
 
-#include "app/slide_animation.h"
-#include "views/view.h"
+#include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include "views/widget/widget_win.h"
@@ -19,9 +18,9 @@
 // in the tooltip. Additionally the InfoBubble renders an arrow pointing at
 // the region the info bubble is providing the information about.
 //
-// To use an InfoBubble invoke Show and it'll take care of the rest. InfoBubble
-// (or rather ContentView) insets the content view for you, so that the
-// content typically shouldn't have any additional margins around the view.
+// To use an InfoBubble, invoke Show() and it'll take care of the rest.  The
+// InfoBubble insets the contents for you, so the contents typically shouldn't
+// have any additional margins.
 
 class InfoBubble;
 
@@ -49,52 +48,28 @@ class InfoBubbleDelegate {
 // WidgetFoo subclass into a separate class that calls into InfoBubble.
 // That way InfoBubble has no (or very few) ifdefs.
 #if defined(OS_WIN)
-class InfoBubble : public views::WidgetWin, public AnimationDelegate {
+class InfoBubble : public views::WidgetWin {
 #else
-class InfoBubble : public views::WidgetGtk, public AnimationDelegate {
+class InfoBubble : public views::WidgetGtk {
 #endif
  public:
-  // Shows the InfoBubble. The InfoBubble is parented to parent, contains
-  // the View content and positioned relative to the screen position
-  // position_relative_to. Show takes ownership of content and deletes the
-  // created InfoBubble when another window is activated. You can explicitly
-  // close the bubble by invoking Close.  A delegate may optionally be provided
-  // to be notified when the InfoBubble is closed and to prevent the InfoBubble
-  // from being closed when the Escape key is pressed (which is the default
-   // behavior if there is no delegate).
+  // Shows the InfoBubble.  |parent| is set as the parent window, |contents| are
+  // the contents shown in the bubble, and |position_relative_to| is a rect in
+  // screen coordinates at which the InfoBubble will point.  Show() takes
+  // ownership of |contents| and deletes the created InfoBubble when another
+  // window is activated.  You can explicitly close the bubble by invoking
+  // Close().  You may provide an optional |delegate| to be notified when the
+  // InfoBubble is closed and/or to prevent the InfoBubble from being closed
+  // when the Escape key is pressed (the default behavior).
   static InfoBubble* Show(views::Window* parent,
                           const gfx::Rect& position_relative_to,
                           views::View* content,
                           InfoBubbleDelegate* delegate);
 
-  InfoBubble();
-  virtual ~InfoBubble();
-
-  // Creates the InfoBubble.
-  void Init(views::Window* parent,
-            const gfx::Rect& position_relative_to,
-            views::View* content);
-
-  // Sets the delegate for that InfoBubble.
-  void SetDelegate(InfoBubbleDelegate* delegate) { delegate_ = delegate; }
-
-#if defined(OS_WIN)
-  // The InfoBubble is automatically closed when it loses activation status.
-  virtual void OnActivate(UINT action, BOOL minimized, HWND window);
-
-  // Return our rounded window shape.
-  virtual void OnSize(UINT param, const CSize& size);
-#endif
-
-  // Overridden to notify the owning ChromeFrame the bubble is closing.
+  // Overridden from WidgetWin:
   virtual void Close();
 
-  // AcceleratorTarget method:
-  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
-
-  // AnimationDelegate Implementation
-  virtual void AnimationProgressed(const Animation* animation);
-
+ protected:
  protected:
   // InfoBubble::CreateContentView() creates one of these. ContentView houses
   // the supplied content as its only child view, renders the arrow/border of
@@ -165,20 +140,37 @@ class InfoBubble : public views::WidgetGtk, public AnimationDelegate {
     DISALLOW_COPY_AND_ASSIGN(ContentView);
   };
 
+  InfoBubble();
+  virtual ~InfoBubble() {}
+
+  // Creates the InfoBubble.
+  void Init(views::Window* parent,
+            const gfx::Rect& position_relative_to,
+            views::View* contents);
+
+  // Sets the delegate for that InfoBubble.
+  void SetDelegate(InfoBubbleDelegate* delegate) { delegate_ = delegate; }
+
   // Creates and return a new ContentView containing content.
   virtual ContentView* CreateContentView(views::View* content);
 
- private:
   // Closes the window notifying the delegate. |closed_by_escape| is true if
   // the close is the result of pressing escape.
   void Close(bool closed_by_escape);
 
-#if defined(OS_LINUX)
-  // Overridden from WidgetGtk.
+#if defined(OS_WIN)
+  // Overridden from WidgetWin:
+  virtual void OnActivate(UINT action, BOOL minimized, HWND window);
+  virtual void OnSize(UINT param, const CSize& size);
+#elif defined(OS_LINUX)
+  // Overridden from WidgetGtk:
   virtual void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
 #endif
 
-  // The delegate notified when the InfoBubble is closed.
+  // Overridden from WidgetWin/WidgetGtk:
+  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
+
+  // The delegate, if any.
   InfoBubbleDelegate* delegate_;
 
   // The window that this InfoBubble is parented to.
@@ -186,9 +178,6 @@ class InfoBubble : public views::WidgetGtk, public AnimationDelegate {
 
   // The content view contained by the infobubble.
   ContentView* content_view_;
-
-  // The fade-in animation.
-  scoped_ptr<SlideAnimation> fade_animation_;
 
   // Have we been closed?
   bool closed_;
