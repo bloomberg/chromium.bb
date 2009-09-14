@@ -2468,6 +2468,8 @@
                 ['include', '^browser/views/browser_bubble_gtk.cc'],
                 ['include', '^browser/views/browser_bubble.cc'],
                 ['include', '^browser/views/browser_bubble.h'],
+                ['include', '^browser/views/bubble_border.cc'],
+                ['include', '^browser/views/bubble_border.h'],
                 ['include', '^browser/views/chrome_views_delegate.cc'],
                 ['include', '^browser/views/clear_browsing_data.cc'],
                 ['include', '^browser/views/clear_browsing_data.h'],
