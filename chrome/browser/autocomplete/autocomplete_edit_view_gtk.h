@@ -63,6 +63,10 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // Grab keyboard input focus, putting focus on the location widget.
   void SetFocus();
 
+  // Returns the width, in pixels, needed to display the current text. The
+  // returned value includes margins and borders.
+  int TextWidth();
+
   // Implement the AutocompleteEditView interface.
   virtual AutocompleteEditModel* model() { return model_.get(); }
   virtual const AutocompleteEditModel* model() const { return model_.get(); }

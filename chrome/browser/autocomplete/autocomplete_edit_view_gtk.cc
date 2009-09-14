@@ -236,6 +236,23 @@ void AutocompleteEditViewGtk::SetFocus() {
   gtk_widget_grab_focus(text_view_);
 }
 
+int AutocompleteEditViewGtk::TextWidth() {
+  int horizontal_border_size =
+      gtk_text_view_get_border_window_size(GTK_TEXT_VIEW(text_view_),
+                                           GTK_TEXT_WINDOW_LEFT) +
+      gtk_text_view_get_border_window_size(GTK_TEXT_VIEW(text_view_),
+                                           GTK_TEXT_WINDOW_RIGHT) +
+      gtk_text_view_get_left_margin(GTK_TEXT_VIEW(text_view_)) +
+      gtk_text_view_get_right_margin(GTK_TEXT_VIEW(text_view_));
+  GtkTextIter end;
+  GdkRectangle last_char_bounds;
+  gtk_text_buffer_get_end_iter(
+      gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view_)), &end);
+  gtk_text_view_get_iter_location(GTK_TEXT_VIEW(text_view_),
+                                  &end, &last_char_bounds);
+  return last_char_bounds.x + last_char_bounds.width + horizontal_border_size;
+}
+
 void AutocompleteEditViewGtk::SaveStateToTab(TabContents* tab) {
   DCHECK(tab);
   GetStateAccessor()->SetProperty(

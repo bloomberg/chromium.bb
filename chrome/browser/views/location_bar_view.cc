@@ -549,8 +549,7 @@ int LocationBarView::AvailableWidth(int location_bar_width) {
   return std::max(
       location_bar_width - font_.GetStringWidth(location_entry_->GetText()), 0);
 #else
-  NOTIMPLEMENTED();
-  return location_bar_width;
+  return location_bar_width - location_entry_->TextWidth();
 #endif
 }
 
