@@ -25,6 +25,7 @@ class NativeButtonWin : public NativeControlWin,
   virtual View* GetView();
   virtual void SetFocus();
   virtual bool UsesNativeLabel() const;
+  virtual bool UsesNativeRadioButtonGroup() const;
   virtual gfx::NativeView GetTestingHandle() const;
 
   // Overridden from View:

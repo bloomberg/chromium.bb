@@ -9,6 +9,8 @@
 
 namespace views {
 
+class NativeRadioButtonGtk;
+
 // A Checkbox subclass representing a radio button.
 class RadioButton : public Checkbox {
  public:
@@ -31,6 +33,12 @@ class RadioButton : public Checkbox {
 
   // Overridden from NativeButton:
   virtual NativeButtonWrapper* CreateWrapper();
+
+ private:
+  friend class NativeRadioButtonGtk;
+
+  // Accessor for |native_wrapper_|.
+  NativeButtonWrapper* native_wrapper() { return native_wrapper_; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RadioButton);

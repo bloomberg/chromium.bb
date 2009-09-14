@@ -50,6 +50,10 @@ class NativeButtonWrapper {
   // the caller needs to provide one.
   virtual bool UsesNativeLabel() const = 0;
 
+  // Returns true if the wrapped NativeRadioButton supplies its own grouping
+  // mechanism, or false if the radio button needs to provide one.
+  virtual bool UsesNativeRadioButtonGroup() const = 0;
+
   // Returns a handle to the underlying native view for testing.
   virtual gfx::NativeView GetTestingHandle() const = 0;
 

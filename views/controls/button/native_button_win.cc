@@ -67,6 +67,10 @@ bool NativeButtonWin::UsesNativeLabel() const {
   return true;
 }
 
+bool NativeButtonWin::UsesNativeRadioButtonGroup() const {
+  return false;
+}
+
 gfx::NativeView NativeButtonWin::GetTestingHandle() const {
   return native_view();
 }
