@@ -13,6 +13,8 @@
 			<array>
 				<string>gif</string>
 			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>document.icns</string>
 			<key>CFBundleTypeMIMETypes</key>
 			<array>
 				<string>image/gif</string>
@@ -32,6 +34,8 @@
 				<string>html</string>
 				<string>htm</string>
 			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>document.icns</string>
 			<key>CFBundleTypeMIMETypes</key>
 			<array>
 				<string>text/html</string>
@@ -50,6 +54,8 @@
 			<array>
 				<string>js</string>
 			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>document.icns</string>
 			<key>CFBundleTypeMIMETypes</key>
 			<array>
 				<string>application/x-javascript</string>
@@ -65,6 +71,8 @@
 				<string>jpg</string>
 				<string>jpeg</string>
 			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>document.icns</string>
 			<key>CFBundleTypeMIMETypes</key>
 			<array>
 				<string>image/jpeg</string>
@@ -84,6 +92,8 @@
 				<string>txt</string>
 				<string>text</string>
 			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>document.icns</string>
 			<key>CFBundleTypeMIMETypes</key>
 			<array>
 				<string>text/plain</string>
@@ -102,6 +112,8 @@
 			<array>
 				<string>png</string>
 			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>document.icns</string>
 			<key>CFBundleTypeMIMETypes</key>
 			<array>
 				<string>image/png</string>

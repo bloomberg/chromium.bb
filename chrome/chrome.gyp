@@ -3201,7 +3201,10 @@
           # (e.g. "Chromium", "Chrome")
           'conditions': [
             ['branding=="Chrome"', {
-              'mac_bundle_resources': ['app/theme/google_chrome/app.icns'],
+              'mac_bundle_resources': [
+                'app/theme/google_chrome/app.icns',
+                'app/theme/google_chrome/document.icns',
+              ],
               'copies': [
                 {
                   'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/MacOS',
@@ -3213,7 +3216,10 @@
                 },
               ],
             }, {  # else: 'branding!="Chrome"
-              'mac_bundle_resources': ['app/theme/chromium/app.icns'],
+              'mac_bundle_resources': [
+                'app/theme/chromium/app.icns',
+                'app/theme/chromium/document.icns',
+              ],
               'copies': [
                 {
                   'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/MacOS',
