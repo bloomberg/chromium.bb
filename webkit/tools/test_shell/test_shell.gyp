@@ -21,9 +21,6 @@
       'resource.h',
     ],
   },
-  'includes': [
-    '../../../build/common.gypi',
-  ],
   'targets': [
     {
       'target_name': 'test_shell_common',

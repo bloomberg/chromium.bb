@@ -8,9 +8,6 @@
     # TODO(sgk): eliminate this; see comment in build/common.gypi
     'msvs_debug_link_incremental': '1',
   },
-  'includes': [
-    '../../../build/common.gypi',
-  ],
   'target_defaults': {
     'type': 'loadable_module',
     'dependencies': [

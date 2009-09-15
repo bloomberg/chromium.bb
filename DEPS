@@ -24,10 +24,10 @@ deps = {
     "/trunk/deps/third_party/WebKit@20601",
 
   "src/third_party/icu":
-    "/trunk/deps/third_party/icu42@25717",
+    "/trunk/deps/third_party/icu42@26240",
 
   "src/third_party/hunspell":
-   "/trunk/deps/third_party/hunspell128@25906",
+   "/trunk/deps/third_party/hunspell128@26238",
 
   "src/third_party/protobuf2/src":
     "http://protobuf.googlecode.com/svn/trunk@219",
@@ -36,7 +36,7 @@ deps = {
     "http://gyp.googlecode.com/svn/trunk@651",
 
   "src/v8":
-    "http://v8.googlecode.com/svn/trunk@2891",
+    "http://v8.googlecode.com/svn/trunk@2896",
 
   "src/native_client":
     "http://nativeclient.googlecode.com/svn/trunk/src/native_client@385",
@@ -156,8 +156,8 @@ skip_child_includes = [
 hooks = [
   {
     # A change to a .gyp, .gypi, or to GYP itself shound run the generator.
-    "pattern": "\\.gypi?$|[/\\\\]src[/\\\\]tools[/\\\\]gyp[/\\\\]",
-    "action": ["python", "src/tools/gyp/gyp_chromium"],
+    "pattern": "\\.gypi?$|[/\\\\]src[/\\\\]tools[/\\\\]gyp[/\\\\]|[/\\\\]src[/\\\\]build[/\\\\]gyp_chromium$",
+    "action": ["python", "src/build/gyp_chromium"],
   },
   {
     # Workaround IncrediBuild problem. http://crbug.com/17706.

@@ -7,9 +7,6 @@
     'msvs_use_common_release': 0,
     'msvs_use_common_linker_extras': 0,
   },
-  'includes': [
-    '../../build/common.gypi',
-  ],
   'conditions': [
     ['OS=="win"', {
       'targets': [

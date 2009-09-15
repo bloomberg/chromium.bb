@@ -144,9 +144,6 @@
       }],
     ],  # conditions
   },  # variables
-  'includes': [
-    '../build/common.gypi',
-  ],
   'target_defaults': {
     'sources/': [
       ['exclude', '/(cocoa|gtk|win)/'],

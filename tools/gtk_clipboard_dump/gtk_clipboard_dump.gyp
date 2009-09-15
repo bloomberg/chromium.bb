@@ -1,7 +1,4 @@
 {
-  'includes': [
-    '../../build/common.gypi',
-  ],
   'targets': [
     {
       'target_name': 'gtk_clipboard_dump',

@@ -3,9 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'includes': [
-    '../build/common.gypi',
-  ],
   'conditions': [
     [ 'OS=="linux" and selinux==0', {
       'targets': [

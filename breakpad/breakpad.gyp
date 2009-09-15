@@ -3,9 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'includes': [
-    '../build/common.gypi',
-  ],
   'conditions': [
     [ 'OS=="mac"', {
       'target_defaults': {

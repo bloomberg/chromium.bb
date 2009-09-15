@@ -11,9 +11,6 @@
     ],
     'use_system_libxslt%': 0,
   },
-  'includes': [
-    '../../build/common.gypi',
-  ],
   'targets': [
     {
       'target_name': 'libxslt',

@@ -5,9 +5,6 @@
     'lastchange_path': '<(SHARED_INTERMEDIATE_DIR)/build/LASTCHANGE',
     # 'branding_dir' is set in the 'conditions' section at the bottom.
   },
-  'includes': [
-    '../../build/common.gypi',
-  ],
   'conditions': [
     ['OS=="win"', {
       'targets': [

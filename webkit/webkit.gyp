@@ -164,7 +164,6 @@
     ],
   },
   'includes': [
-    '../build/common.gypi',
     '../third_party/WebKit/JavaScriptCore/JavaScriptCore.gypi',
     '../third_party/WebKit/WebCore/WebCore.gypi',
   ],

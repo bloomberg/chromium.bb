@@ -1,0 +1,24 @@
+#!/usr/bin/python
+
+# This script is wrapper for O3D when compiling independently of chromium. 
+# Like in chromium, the gyp_chromium.gypi include is forced in. 
+
+import glob
+import os
+import shlex
+import sys
+
+try:
+  import gyp
+except ImportError, e:
+  sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), '../../tools/gyp/pylib'))
+  import gyp
+
+if __name__ == '__main__':
+  args = sys.argv[1:]
+
+  # Always include gyp_chromium.gypi
+  args += ['-I', os.path.join(os.path.dirname(sys.argv[0]),'../../build/gyp_chromium.gypi')]
+
+  # Off we go...
+  sys.exit(gyp.main(args))
