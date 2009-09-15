@@ -1052,7 +1052,7 @@ def Change(change_info, override_description):
     Warn("WARNING: " + MISSING_TEST_MSG)
 
 # We don't lint files in these path prefixes.
-IGNORE_PATHS = ("webkit",)
+IGNORE_PATHS = (os.path.join("webkit","api"),)
 
 # Valid extensions for files we want to lint.
 CPP_EXTENSIONS = ("cpp", "cc", "h")
