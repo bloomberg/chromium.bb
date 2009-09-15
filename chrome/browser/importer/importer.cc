@@ -547,6 +547,15 @@ void ImporterHost::StartImportSettings(const ProfileInfo& profile_info,
     if (!firefox_lock_->HasAcquired()) {
       // If fail to acquire the lock, we set the source unreadable and
       // show a warning dialog.
+      // However, if we're running without a UI (silently) and trying to
+      // import just the home page, then import anyway. The home page setting
+      // is stored in an unlocked text file, so it is the only preference safe
+      // to import even if Firefox is running.
+      if (items == HOME_PAGE && first_run && this->headless_) {
+        AddRef();
+        InvokeTaskIfDone();
+        return;
+      }
       is_source_readable_ = false;
       ShowWarningDialog();
     }
