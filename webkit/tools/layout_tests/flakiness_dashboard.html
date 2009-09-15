@@ -15,6 +15,10 @@
       font-size: 16px;
       margin-bottom: .25em;
     }
+    h3 {
+      font-size: 13px;
+      margin: 0;
+    }
     #max-results-form {
       display: inline;
     }
@@ -124,6 +128,12 @@
     .O {
       background-color: #69f;
     }
+    .merge {
+      background-color: green;
+    }
+    :not(#legend) > .merge {
+      width: 1px;
+    }
     .separator {
       border: 1px solid lightgray;
       height: 0px;
@@ -136,10 +146,10 @@
       font-weight: bold;
     }
     #passing-tests {
-      -webkit-column-count: 2;
+      -webkit-column-count: 3;
       -webkit-column-gap: 25px;
       -webkit-column-rule: 1px dashed black;
-      -moz-column-count: 2;
+      -moz-column-count: 3;
       -moz-column-gap: 25px;
       -moz-column-rule: 1px dashed black;
     }
@@ -156,6 +166,26 @@
       padding: 5px;
       text-align: center;
       font-weight: bold;
+    }
+    #popup {
+      background-color: white;
+      overflow: hidden;
+      width: 250px;
+      z-index: 1;
+      position: absolute;
+      border: 3px solid grey;
+      padding: 3px;
+      -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
+      -moz-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
+      -webkit-border-radius: 5px;
+      -moz-border-radius: 5px;
+    }
+    #popup > * {
+      width: 100%;
+    }
+    #popup > ul {
+      margin: 0;
+      padding-left: 20px;
     }
   </style>
 
@@ -177,38 +207,43 @@
    *   -add the builder name to the list of builders below.
    */
 
-   // CONSTANTS
-   var FORWARD = 'forward';
-   var BACKWARD = 'backward';
-   var TEST_URL_BASE_PATH =
-       'http://trac.webkit.org/projects/webkit/browser/trunk/';
-   var BUILDERS_BASE_PATH =
-       'http://build.chromium.org/buildbot/waterfall/builders/';
-   var EXPECTATIONS_MAP = {
-     'T': 'TIMEOUT',
-     'C': 'CRASH',
-     'P': 'PASS',
-     'F': 'TEXT FAIL',
-     'S': 'SIMPLIFIED',
-     'I': 'IMAGE',
-     'O': 'OTHER',
-     'N': 'NO DATA'
-   };
-   var PLATFORMS = {'MAC': 'MAC', 'LINUX': 'LINUX', 'WIN': 'WIN'};
-   var BUILD_TYPES = {'DEBUG': 'DBG', 'RELEASE': 'RELEASE'};
+  // CONSTANTS
+  var FORWARD = 'forward';
+  var BACKWARD = 'backward';
+  var TEST_URL_BASE_PATH =
+      'http://trac.webkit.org/projects/webkit/browser/trunk/';
+  var BUILDERS_BASE_PATH =
+      'http://build.chromium.org/buildbot/waterfall/builders/';
+  var TEST_RESULTS_BASE_PATH =
+     'http://build.chromium.org/buildbot/layout_test_results/';
+  var EXPECTATIONS_MAP = {
+    'T': 'TIMEOUT',
+    'C': 'CRASH',
+    'P': 'PASS',
+    'F': 'TEXT FAIL',
+    'S': 'SIMPLIFIED',
+    'I': 'IMAGE',
+    'O': 'OTHER',
+    'N': 'NO DATA'
+  };
+  var PLATFORMS = {'MAC': 'MAC', 'LINUX': 'LINUX', 'WIN': 'WIN'};
+  var BUILD_TYPES = {'DEBUG': 'DBG', 'RELEASE': 'RELEASE'};
 
-   // GLOBALS
-   // The DUMMYVALUE gets shifted off the array in the first call to
-   // generatePage.
-   var tableHeaders = ['DUMMYVALUE', 'bugs', 'modifiers', 'expectations',
-       'missing', 'extra', 'slowest run',
-       'flakiness (numbers are runtimes in seconds)'];
-   var perBuilderPlatformAndBuildType = {};
-   var perBuilderFailures = {};
-   // Map of builder to arrays of tests that are listed in the expectations file
-   // but have for that builder.
-   var perBuilderWithExpectationsButNoFailures = {};
-
+  // GLOBALS
+  // The DUMMYVALUE gets shifted off the array in the first call to
+  // generatePage.
+  var tableHeaders = ['DUMMYVALUE', 'bugs', 'modifiers', 'expectations',
+      'missing', 'extra', 'slowest run',
+      'flakiness (numbers are runtimes in seconds)'];
+  var perBuilderPlatformAndBuildType = {};
+  var perBuilderFailures = {};
+  // Map of builder to arrays of tests that are listed in the expectations file
+  // but have for that builder.
+  var perBuilderWithExpectationsButNoFailures = {};
+  // Map of builder to arrays of paths that are skipped. This shows the raw
+  // path used in test_expectations.txt rather than the test path since we
+  // don't actually have any data here for skipped tests.
+  var perBuilderSkippedPaths = {};
 
   // Generic utility functions.
   function $(id) {
@@ -306,23 +341,22 @@
     showWontFix: false,
     showCorrectExpectations: false,
     showFlaky: true,
+    showSkipped: false,
     maxResults: 200,
     testType: 'layout_test_results'
   };
 
-  for (var builder in builders) {
-    defaultStateValues.builder = builder;
-    break;
-  }
-
   function fillDefaultStateValues() {
-    // tests has no states with default values.
-    if (currentState.tests)
-      return;
-
     for (var state in defaultStateValues) {
       if (!(state in currentState))
         currentState[state] = defaultStateValues[state];
+    }
+
+    if (!currentState.tests && !('builder' in currentState)) {
+      for (var builder in builders) {
+        currentState.builder = builder;
+        break;
+      }
     }
   }
 
@@ -602,15 +636,21 @@
    * whether the modifiers match the builders platform and buildType.
    */
   function addTestAndExpectations(test, prefixPath, builder, expectationsMap,
-      expectations, testPrefixes) {
+      expectations, testPrefixes, skippedPaths) {
     var modifiersForBuilder =
         getModifierThatHasPlatformAndBuildType(builder, expectations);
-    if (modifiersForBuilder) {
-      if (getAllTestsWithSamePlatformAndBuildType(builder)[test]) {
-        expectationsMap[test] = expectations;
-        testPrefixes[test] = prefixPath;
-      } else if (!stringContains(modifiersForBuilder.modifiers, 'SKIP') &&
-          !modifiersForBuilder.expectations.match(/^\s*PASS\s*$/)) {
+
+    if (!modifiersForBuilder)
+      return false;
+
+    if (getAllTestsWithSamePlatformAndBuildType(builder)[test]) {
+      expectationsMap[test] = expectations;
+      testPrefixes[test] = prefixPath;
+    } else if (!stringContains(modifiersForBuilder.modifiers, 'WONTFIX')) {
+
+      if (stringContains(modifiersForBuilder.modifiers, 'SKIP')) {
+        skippedPaths[prefixPath] = true;
+      } else if (!modifiersForBuilder.expectations.match(/^\s*PASS\s*$/)) {
         // Don't include skip tests here as they'll look the same as a test
         // that passes on all builders.
         // Also don't include tests that are only expected to pass, e.g.
@@ -618,9 +658,9 @@
         // TODO(ojan): Should we also exclude WONTFIX tests here?
         perBuilderWithExpectationsButNoFailures[builder].push(test);
       }
-      return true;
     }
-    return false;
+
+    return true;
   }
 
   /**
@@ -665,11 +705,12 @@
 
     var testPrefixes = {};
     perBuilderWithExpectationsButNoFailures[builderName] = [];
+    var skippedPaths = {};
     for (var path in expectationsByTest) {
       var expectations = expectationsByTest[path];
       if (!isDirectory(path) &&
           addTestAndExpectations(path, path, builderName, expectationsMap,
-              expectations, testPrefixes)) {
+              expectations, testPrefixes, skippedPaths)) {
         continue;
       }
       // Test path doesn't match a specific test, see if it prefix matches
@@ -679,10 +720,16 @@
             (!testPrefixes[test] ||
              !stringContains(testPrefixes[test], path))) {
           addTestAndExpectations(test, path, builderName, expectationsMap,
-              expectations, testPrefixes);
+              expectations, testPrefixes, skippedPaths);
         }
       }
     }
+
+    perBuilderSkippedPaths[builderName] = [];
+    for (var path in skippedPaths) {
+      perBuilderSkippedPaths[builderName].push(path);
+    }
+    perBuilderSkippedPaths[builderName].sort();
     perBuilderWithExpectationsButNoFailures[builderName].sort();
 
     var allTestsForThisBuilder = resultsByBuilder[builderName].tests;
@@ -776,7 +823,7 @@
             times[i][1]);
       }
 
-      if (resultsForTest.slowestTime &&
+      if (resultsForTest.slowestTime && !resultsMap['TIMEOUT'] &&
           (!resultsForTest.expectations ||
            !stringContains(resultsForTest.expectations, 'TIMEOUT')) &&
           (!resultsForTest.modifiers ||
@@ -829,8 +876,54 @@
     return bugs;
   }
 
-  function loadBuilderPageForBuildNumber(builderName, buildNumber) {
-    window.open(BUILDERS_BASE_PATH + builderName + '/builds/' + buildNumber);
+  function getLinkHTMLToOpenWindow(url, text) {
+    return '<li class=link onclick="window.open(\'' + url + '\')">' + text +
+        '</li>';
+  }
+
+  function showPopupForBuild(e, builder, index) {
+    var html = '';
+
+    var time = resultsByBuilder[builder].secondsSinceEpoch[index];
+    if (time) {
+      var date = new Date(time * 1000);
+      html += date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    }
+
+    html += '<ul>';
+
+    var webkitRevision = resultsByBuilder[builder].webkitRevision;
+    var thisWebkitRevision = webkitRevision[index];
+    if (thisWebkitRevision) {
+      var previousWebkitRevision = webkitRevision[index + 1] ||
+          thisWebkitRevision;
+      html += getLinkHTMLToOpenWindow('http://trac.webkit.org/log/?rev=' +
+              thisWebkitRevision + '&stop_rev=' + previousWebkitRevision,
+          'WebKit blamelist r' + previousWebkitRevision + ':r' +
+              thisWebkitRevision);
+    }
+
+    var chromeRevision = resultsByBuilder[builder].chromeRevision;
+    var thisChromeRevision = chromeRevision[index];
+    if (thisChromeRevision) {
+      var previousChromeRevision = chromeRevision[index + 1] ||
+          thisChromeRevision;
+      html += getLinkHTMLToOpenWindow(
+          'http://build.chromium.org/buildbot/perf/dashboard/ui/' +
+              'changelog.html?url=/trunk/src&mode=html&range=' +
+              previousChromeRevision + ':' + thisChromeRevision,
+          'Chrome blamelist r' + previousChromeRevision + ':r' +
+              thisChromeRevision) +
+          getLinkHTMLToOpenWindow(TEST_RESULTS_BASE_PATH + builders[builder] +
+                  '/' + thisChromeRevision + '/layout-test-results.zip',
+              'layout-test-results.zip');
+    }
+
+    var buildNumbers = resultsByBuilder[builder].buildNumbers;
+    html += getLinkHTMLToOpenWindow(BUILDERS_BASE_PATH + builder + '/builds/' +
+        buildNumbers[index], 'Build log and blamelist') + '</ul>';
+
+    showPopup(e, html);
   }
 
   function getHtmlForTestResults(test, builder) {
@@ -842,9 +935,8 @@
     var indexToReplaceCurrentResult = -1;
     var indexToReplaceCurrentTime = -1;
     var currentResultArray, currentTimeArray, currentResult, innerHTML;
-    for (var i = 0;
-         i < buildNumbers.length && i < currentState.maxResults;
-         i++) {
+    var maxIndex = Math.min(buildNumbers.length, currentState.maxResults);
+    for (var i = 0; i < maxIndex; i++) {
       if (i > indexToReplaceCurrentResult) {
         currentResultArray = results.shift();
         if (currentResultArray) {
@@ -868,25 +960,49 @@
         innerHTML = currentTime || '&nbsp;';
       }
 
-      var buildNumber = buildNumbers[i];
-      html += '<td title="Build:' + buildNumber + '" class="results ' +
-          currentResult + '" onclick=\'loadBuilderPageForBuildNumber("' +
-          builder + '","' + buildNumber + '")\'>' + innerHTML + '</td>';
+      html += '<td title="Click results for handy links." class="results ' +
+          currentResult + '" onclick=\'showPopupForBuild(event, "' + builder +
+          '",' + i + ')\'>' + innerHTML + '</td>';
+
+      var webkitRevision = resultsByBuilder[builder].webkitRevision;
+      var isWebkitMerge = webkitRevision[i + 1] &&
+          webkitRevision[i] != webkitRevision[i + 1];
+      if (isWebkitMerge)
+        html += '<td class=merge></td>';
     }
     return html;
   }
 
   function getHTMLForTestsWithExpectationsButNoFailures(builder) {
     var tests = perBuilderWithExpectationsButNoFailures[builder];
-    if (!tests.length)
-      return '';
+    var skippedPaths = perBuilderSkippedPaths[builder];
 
-    var buildInfo = getPlatFormAndBuildType(builder);
-    return '<h2>Have expectations for ' + buildInfo.platform + '-' +
-          buildInfo.buildType + ' but have not failed in last ' +
+    var html = '';
+    if (tests.length || skippedPaths.length) {
+      var buildInfo = getPlatFormAndBuildType(builder);
+      html += '<h2>Expectations for ' + buildInfo.platform + '-' +
+          buildInfo.buildType + ':</h2>';
+    }
+
+    if (tests.length) {
+      html +=  '<h3>Have not failed in last ' +
           resultsByBuilder[builderName].buildNumbers.length +
-          ' runs.</h2><div id="passing-tests"><div>' +
+          ' runs.</h3><div id="passing-tests"><div>' +
           tests.join('</div><div>') + '</div></div>';
+    }
+
+    if (skippedPaths.length) {
+      html += '<h3>' +
+          getLinkHTMLToToggleState('showSkipped',
+              'Skipped tests in text_expectations.txt') +
+          '</h3>';
+
+      if (currentState.showSkipped) {
+        html += '<div id="passing-tests"><div>' +
+          skippedPaths.join('</div><div>') + '</div></div>';
+      }
+    }
+    return html;
   }
 
   /**
@@ -1145,13 +1261,13 @@
           EXPECTATIONS_MAP[expectation] + '</div>';
     }
     return html + '<div class=wrong-expectations>WRONG EXPECTATIONS</div>' +
-        '</div>';
+        '<div class=merge>WEBKIT MERGE</div></div>';
   }
 
   function getLinkHTMLToToggleState(key, linkText) {
     var isTrue = currentState[key];
     return '<span class=link onclick="setState(\'' + key + '\', ' + !isTrue +
-        ')">' + (isTrue ? 'Hide' : 'Show') + ' ' + linkText + '</span> | ';
+        ')">' + (isTrue ? 'Hide' : 'Show') + ' ' + linkText + '</span>';
   }
 
   function generatePageForBuilder(builderName) {
@@ -1170,13 +1286,13 @@
     var html = getHTMLForNavBar(builderName) +
         getHTMLForTestsWithExpectationsButNoFailures(builderName) +
         '<h2>Failing tests</h2><div>' +
-        getLinkHTMLToToggleState('showWontFix', 'WONTFIX tests')  +
+        getLinkHTMLToToggleState('showWontFix', 'WONTFIX tests') + ' | ' +
         getLinkHTMLToToggleState('showCorrectExpectations',
-            'tests with correct expectations') +
-        getLinkHTMLToToggleState('showFlaky', 'flaky tests') +
+            'tests with correct expectations') + ' | ' +
+        getLinkHTMLToToggleState('showFlaky', 'flaky tests') + ' | ' +
         '<form id=max-results-form ' +
         'onsubmit="setState(\'maxResults\', maxResults.value);return false;"' +
-        '><span>Max results to show: </span>' +
+        '><span>Number of results to show: </span>' +
         '<input name=maxResults id=max-results-input></form> | ' +
         '<b>All columns are sortable. | Skipped tests are not listed. | ' +
         'Flakiness reader order is newer --> older runs.</b></div>' +
@@ -1193,9 +1309,6 @@
     $('max-results-input').value = currentState.maxResults;
   }
 
-  var singleBuilderViewParameters = ['sortOrder', 'sortColumn', 'showWontFix',
-      'showCorrectExpectations', 'showFlaky: true', 'maxResults'];
-
   /**
    * Sets the page state and regenerates the page. Takes varargs of key, value
    * pairs.
@@ -1203,11 +1316,7 @@
   function setState(key, value) {
     for (var i = 0; i < arguments.length; i = i + 2) {
       var key = arguments[i];
-      if (key == 'tests') {
-        for (var state in singleBuilderViewParameters) {
-          delete currentState[state];
-        }
-      } else {
+      if (key != 'tests') {
         delete currentState.tests;
       }
 
@@ -1240,6 +1349,44 @@
   function logTime(msg, startTime) {
     console.log(msg + ': ' + (Date.now() - startTime));
   }
+
+  function hidePopup() {
+    var popup = $('popup');
+    popup.parentNode.removeChild(popup);
+  }
+
+  function showPopup(e, html) {
+    var popup = $('popup');
+    if (!popup) {
+      popup = document.createElement('div');
+      popup.id = 'popup';
+      document.body.appendChild(popup);
+    }
+
+    // Set html first so that we can get accurate size metrics on the popup.
+    popup.innerHTML = html;
+
+    var targetRect = e.target.getBoundingClientRect();
+
+    var x = Math.min(targetRect.left - 10,
+        document.documentElement.clientWidth - popup.offsetWidth);
+    popup.style.left = x + document.body.scrollLeft + 'px';
+
+    var y = targetRect.top + targetRect.height;
+    if (y + popup.offsetHeight > document.documentElement.clientHeight) {
+      y = targetRect.top - popup.offsetHeight;
+    }
+    popup.style.top = y + document.body.scrollTop + 'px';
+  }
+
+  document.onmousedown = function(e) {
+    // Clear the open popup, unless the click was inside the popup.
+    var popup = $('popup');
+    if (popup && e.target != popup &&
+        !(popup.compareDocumentPosition(e.target) & 16)) {
+      hidePopup();
+    }
+  };
 
   window.onload = function() {
     // This doesn't seem totally accurate as there is a race between
