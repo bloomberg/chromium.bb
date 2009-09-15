@@ -29,7 +29,7 @@ using WebKit::WebURLRequest;
 namespace {
 const int32 kRouteId = 5;
 const int32 kOpenerId = 7;
-}
+}  // namespace
 
 void RenderViewTest::ProcessPendingMessages() {
   msg_loop_.PostTask(FROM_HERE, new MessageLoop::QuitTask());
