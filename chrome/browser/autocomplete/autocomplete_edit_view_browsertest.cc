@@ -392,7 +392,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DISABLED_AltEnter) {
   ASSERT_NO_FATAL_FAILURE(WaitForTabOpenOrClose(tab_count + 1));
 }
 
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, EnterToSearch) {
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DISABLED_EnterToSearch) {
   ASSERT_NO_FATAL_FAILURE(SetupHostResolver());
   ASSERT_NO_FATAL_FAILURE(SetupSearchEngine());
   browser()->FocusLocationBar();
