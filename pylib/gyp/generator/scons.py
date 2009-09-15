@@ -369,8 +369,8 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
     if_fmt = 'if ARGUMENTS.get(%s) not in (None, \'0\'):\n'
     fp.write('\n')
     fp.write(if_fmt % repr(setting.upper()))
-    fp.write('  env.Append(\n')
-    GenerateConfig(fp, config, indent, src_subdir)
+    fp.write('  env.AppendUnique(\n')
+    GenerateConfig(fp, variants[setting], indent, src_subdir)
     fp.write('  )\n')
 
   #
