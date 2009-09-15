@@ -4,10 +4,10 @@
 
 #include "chrome/browser/automation/automation_provider_list.h"
 
-#import "chrome/browser/app_controller_mac.h"
+#import <AppKit/AppKit.h>
 
 void AutomationProviderList::OnLastProviderRemoved() {
   // We need to explicitly quit the application here because on Mac
   // the controller holds an additional reference to g_browser_process.
-  [[NSApp delegate] quit:nil];
+  [NSApp terminate:nil];
 }

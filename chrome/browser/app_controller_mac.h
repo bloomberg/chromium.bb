@@ -14,6 +14,7 @@
 @class AboutWindowController;
 class BookmarkMenuBridge;
 class CommandUpdater;
+@class CrApplication;
 class GURL;
 class HistoryMenuBridge;
 @class PreferencesWindowController;
@@ -45,7 +46,7 @@ class Profile;
   BOOL fileMenuUpdatePending_;  // ensure we only do this once per notificaion.
 }
 
-- (IBAction)quit:(id)sender;
+- (void)didEndMainMessageLoop;
 - (Profile*)defaultProfile;
 
 // Show the preferences window, or bring it to the front if it's already

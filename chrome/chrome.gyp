@@ -845,6 +845,8 @@
         'browser/character_encoding.h',
         'browser/child_process_security_policy.cc',
         'browser/child_process_security_policy.h',
+        'browser/chrome_application_mac.h',
+        'browser/chrome_application_mac.mm',
         'browser/chrome_plugin_browsing_context.cc',
         'browser/chrome_plugin_browsing_context.h',
         'browser/chrome_plugin_host.cc',

@@ -11,25 +11,33 @@
 #include "base/debug_util.h"
 #include "chrome/app/breakpad_mac.h"
 #import "chrome/app/keystone_glue.h"
+#import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/browser_main_win.h"
+#import "chrome/browser/chrome_application_mac.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/result_codes.h"
 
 namespace Platform {
 
-// Perform any platform-specific work that needs to be done before the main
-// message loop is created and initialized.
-//
-// For Mac, this involves telling Cooca to finish its initalization, which we
-// want to do manually instead of calling NSApplicationMain(). The primary
-// reason is that NSAM() never returns, which would leave all the objects
-// currently on the stack in scoped_ptrs hanging and never cleaned up. We then
-// load the main nib directly. The main event loop is run from common code using
-// the MessageLoop API, which works out ok for us because it's a wrapper around
+// Tell Cooca to finish its initalization, which we want to do manually
+// instead of calling NSApplicationMain(). The primary reason is that NSAM()
+// never returns, which would leave all the objects currently on the stack
+// in scoped_ptrs hanging and never cleaned up. We then load the main nib
+// directly. The main event loop is run from common code using the
+// MessageLoop API, which works out ok for us because it's a wrapper around
 // CFRunLoop.
 void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
-  [NSApplication sharedApplication];
+  // Initialize NSApplication using the custom subclass.  Check whether NSApp
+  // was already initialized using another class, because that would break
+  // some things.
+  [CrApplication sharedApplication];
+  if (![NSApp isKindOfClass:[CrApplication class]]) {
+    LOG(ERROR) << "NSApp should be of type CrApplication, not "
+               << [[NSApp className] UTF8String];
+    DCHECK(false) << "NSApp is of wrong type";
+  }
+
   // Before we load the nib, we need to start up the resource bundle so we have
   // the strings avaiable for localization.
   if (!parameters.ui_task) {
@@ -46,13 +54,9 @@ void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
   [[KeystoneGlue defaultKeystoneGlue] registerWithKeystone];
 }
 
-// Perform platform-specific work that needs to be done after the main event
-// loop has ended. We need to send the notifications that Cooca normally would
-// telling everyone the app is about to end.
-void WillTerminate() {
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:NSApplicationWillTerminateNotification
-                    object:NSApp];
+void DidEndMainMessageLoop() {
+  AppController* appController = [NSApp delegate];
+  [appController didEndMainMessageLoop];
 }
 
 void RecordBreakpadStatusUMA(MetricsService* metrics) {

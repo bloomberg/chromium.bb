@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browser_window.h"
+#import "chrome/browser/chrome_application_mac.h"
 #import "chrome/browser/cocoa/about_window_controller.h"
 #import "chrome/browser/cocoa/bookmark_menu_bridge.h"
 #import "chrome/browser/cocoa/browser_window_cocoa.h"
@@ -144,9 +145,6 @@
   return YES;
 }
 
-// We do not use the normal application teardown process -- this function is
-// not called by the system but by us in |quit:|. |NSTerminateLater| is not a
-// return value that is supported by |quit:|.
 - (NSApplicationTerminateReply)applicationShouldTerminate:
     (NSApplication *)sender {
   // Do not quit if any per-tab sheets are open, as required by
@@ -164,17 +162,38 @@
 
 // Called when the app is shutting down. Clean-up as appropriate.
 - (void)applicationWillTerminate:(NSNotification *)aNotification {
-  DCHECK(!BrowserList::HasBrowserWithProfile([self defaultProfile]));
-  if (!BrowserList::HasBrowserWithProfile([self defaultProfile])) {
-    // As we're shutting down, we need to nuke the TabRestoreService, which will
-    // start the shutdown of the NavigationControllers and allow for proper
-    // shutdown. If we don't do this chrome won't shutdown cleanly, and may end
-    // up crashing when some thread tries to use the IO thread (or another
-    // thread) that is no longer valid.
-    [self defaultProfile]->ResetTabRestoreService();
-  }
+  NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
+  [em removeEventHandlerForEventClass:kInternetEventClass
+                           andEventID:kAEGetURL];
+  [em removeEventHandlerForEventClass:'WWW!'
+                           andEventID:'OURL'];
+  [em removeEventHandlerForEventClass:kCoreEventClass
+                           andEventID:kAEOpenDocuments];
+
+  // Close all the windows.
+  BrowserList::CloseAllBrowsers(true);
+
+  // On Windows, this is done in Browser::OnWindowClosing, but that's not
+  // appropriate on Mac since we don't shut down when we reach zero windows.
+  browser_shutdown::OnShutdownStarting(browser_shutdown::BROWSER_EXIT);
+
+  // Release the reference to the browser process. Once all the browsers get
+  // dealloc'd, it will stop the RunLoop and fall back into main().
+  g_browser_process->ReleaseModule();
 
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void)didEndMainMessageLoop {
+  DCHECK(!BrowserList::HasBrowserWithProfile([self defaultProfile]));
+  if (!BrowserList::HasBrowserWithProfile([self defaultProfile])) {
+    // As we're shutting down, we need to nuke the TabRestoreService, which
+    // will start the shutdown of the NavigationControllers and allow for
+    // proper shutdown. If we don't do this, Chrome won't shut down cleanly,
+    // and may end up crashing when some thread tries to use the IO thread (or
+    // another thread) that is no longer valid.
+    [self defaultProfile]->ResetTabRestoreService();
+  }
 }
 
 // Helper routine to get the window controller if the key window is a tabbed
@@ -380,43 +399,6 @@
   return YES;
 }
 
-// We can't use the standard terminate: method because it will abruptly exit
-// the app and leave things on the stack in an unfinalized state. We need to
-// post a quit message to our run loop so the stack can gracefully unwind.
-- (IBAction)quit:(id)sender {
-  if ([self applicationShouldTerminate:NSApp] == NSTerminateCancel)
-    return;
-
-  // TODO(pinkerton):
-  // since we have to roll it ourselves, ask the delegate (ourselves, really)
-  // if we should terminate. For example, we might not want to if the user
-  // has ongoing downloads or multiple windows/tabs open. However, this would
-  // require posting UI and may require spinning up another run loop to
-  // handle it. If it says to continue, post the quit message, otherwise
-  // go back to normal.
-
-  NSAppleEventManager* em = [NSAppleEventManager sharedAppleEventManager];
-  [em removeEventHandlerForEventClass:kInternetEventClass
-                           andEventID:kAEGetURL];
-  [em removeEventHandlerForEventClass:'WWW!'
-                           andEventID:'OURL'];
-  [em removeEventHandlerForEventClass:kCoreEventClass
-                           andEventID:kAEOpenDocuments];
-
-  // TODO(pinkerton): Not sure where this should live, including it here
-  // causes all sorts of asserts from the open renderers. On Windows, it
-  // lives in Browser::OnWindowClosing, but that's not appropriate on Mac
-  // since we don't shut down when we reach zero windows.
-  // browser_shutdown::OnShutdownStarting(browser_shutdown::WINDOW_CLOSE);
-
-  // Close all the windows.
-  BrowserList::CloseAllBrowsers(true);
-
-  // Release the reference to the browser process. Once all the browsers get
-  // dealloc'd, it will stop the RunLoop and fall back into main().
-  g_browser_process->ReleaseModule();
-}
-
 // Called to determine if we should enable the "restore tab" menu item.
 // Checks with the TabRestoreService to see if there's anything there to
 // restore and returns YES if so.
@@ -445,7 +427,7 @@
           enable = menuState_->IsCommandEnabled(tag) ? YES : NO;
       }
     }
-  } else if (action == @selector(quit:)) {
+  } else if (action == @selector(terminate:)) {
     enable = YES;
   } else if (action == @selector(showPreferences:)) {
     enable = YES;

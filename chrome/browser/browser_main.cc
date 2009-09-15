@@ -836,7 +836,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   process_singleton.Cleanup();
 
-  Platform::WillTerminate();
+  Platform::DidEndMainMessageLoop();
 
   if (metrics)
     metrics->Stop();

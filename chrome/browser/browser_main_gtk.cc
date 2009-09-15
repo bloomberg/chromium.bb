@@ -13,7 +13,7 @@ namespace Platform {
 void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
 }
 
-void WillTerminate() {
+void DidEndMainMessageLoop() {
 }
 
 void RecordBreakpadStatusUMA(MetricsService* metrics) {

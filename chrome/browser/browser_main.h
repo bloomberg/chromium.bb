@@ -18,7 +18,7 @@ void WillInitializeMainMessageLoop(const MainFunctionParams& parameters);
 
 // Perform platform-specific work that needs to be done after the main event
 // loop has ended.
-void WillTerminate();
+void DidEndMainMessageLoop();
 
 // Records the conditions that can prevent Breakpad from generating and
 // sending crash reports.  The presence of a Breakpad handler (after
