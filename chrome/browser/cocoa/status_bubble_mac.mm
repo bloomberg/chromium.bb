@@ -127,6 +127,13 @@ void StatusBubbleMac::MouseMoved() {
   NSRect window_frame = [window_ frame];
   window_frame.origin = [parent_ frame].origin;
 
+  // Adjust the position to sit on top of download shelf.
+  // |delegate_| can be nil during unit tests.
+  if (is_download_shelf_visible_) {
+    if ([delegate_ respondsToSelector:@selector(verticalOffsetForStatusBubble)])
+      window_frame.origin.y += [delegate_ verticalOffsetForStatusBubble];
+  }
+
   // Get the cursor position relative to the popup.
   cursor_location.x -= NSMaxX(window_frame);
   cursor_location.y -= NSMaxY(window_frame);
@@ -166,12 +173,6 @@ void StatusBubbleMac::MouseMoved() {
   } else {
     offset_ = 0;
     [[window_ contentView] setCornerFlags:kRoundedTopRightCorner];
-  }
-
-  // |delegate_| can be nil during unit tests.
-  if (is_download_shelf_visible_) {
-    if ([delegate_ respondsToSelector:@selector(verticalOffsetForStatusBubble)])
-      window_frame.origin.y += [delegate_ verticalOffsetForStatusBubble];
   }
 
   [window_ setFrame:window_frame display:YES];
