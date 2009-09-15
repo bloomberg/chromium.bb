@@ -405,7 +405,7 @@ MetricsService::MetricsService()
       server_permits_upload_(true),
       state_(INITIALIZED),
       pending_log_(NULL),
-      pending_log_text_(""),
+      pending_log_text_(),
       current_fetch_(NULL),
       current_log_(NULL),
       idle_since_last_transmission_(false),
@@ -1205,9 +1205,11 @@ void MetricsService::PreparePendingLogText() {
   DCHECK(pending_log());
   if (!pending_log_text_.empty())
     return;
-  int original_size = pending_log_->GetEncodedLogSize();
-  pending_log_->GetEncodedLog(WriteInto(&pending_log_text_, original_size),
-                              original_size);
+  int text_size = pending_log_->GetEncodedLogSize();
+
+  // Leave room for the NUL terminator.
+  pending_log_->GetEncodedLog(WriteInto(&pending_log_text_, text_size + 1),
+                              text_size);
 }
 
 void MetricsService::PrepareFetchWithPendingLog() {
