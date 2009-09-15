@@ -88,51 +88,6 @@ extern int __NaClSrpcDebugPrintCheckEnv();
 #endif
 
 /*
- * Build a "complete" method table, including intrinsic methods such as service
- * discovery and shutdown.
- */
-struct NaClSrpcHandlerDesc* __NaClSrpcCompleteMethodTable(
-    const struct NaClSrpcHandlerDesc methods[],
-    uint32_t* method_count);
-
-/*
- * Build service discovery string from a method table.
- */
-char* __NaClSrpcBuildSDString(const struct NaClSrpcHandlerDesc methods[],
-                              uint32_t method_count,
-                              size_t *length);
-
-/*
- * Parse service discovery strings to build descriptor tables.
- */
-NaClSrpcDesc* __NaClSrpcBuildSrpcDesc(const char* str, uint32_t* rpc_count);
-
-/*
- * Argument vector type checking functions.
- */
-int NaClSrpcTypeCheckOne(char const   **pp,
-                         NaClSrpcArg  **alist);
-
-int NaClSrpcTypeCheckArgs(char const  *fmt,
-                          NaClSrpcArg **in_args,
-                          NaClSrpcArg **out_args);
-
-/*
- * We only need these structure definitions and macros for NativeClient
- * rpc definitions.
- */
-#ifdef __native_client__
-extern int __NaClSrpcMain(unsigned int         rpc_num,
-                          NaClSrpcHandlerDesc* rpc_desc,
-                          unsigned int         num_rpcs,
-                          NaClSrpcChannel*     channel,
-                          struct NaClSrpcArg   **in_args,
-                          struct NaClSrpcArg   **out_args);
-
-extern NaClSrpcError __CommandLoop();
-#endif  /* __native_client__ */
-
-/*
  * Wrappers for accesses to read and write via the IMC layer.
  */
 extern void __NaClSrpcImcBufferCtor(NaClSrpcImcBuffer* buffer,
@@ -162,8 +117,6 @@ extern int __NaClSrpcImcWriteDesc(NaClSrpcImcDescType desc,
 /*
  * Utility functions.
  */
-extern NaClSrpcMethod NaClSrpcGetMethod(const NaClSrpcChannel* channel,
-                                        uint32_t rpc_number);
 extern double __NaClSrpcGetUsec();
 
 EXTERN_C_END

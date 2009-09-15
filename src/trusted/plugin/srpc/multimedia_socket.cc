@@ -203,6 +203,7 @@ void MultimediaSocket::set_upcall_thread_id(uint32_t tid) {
 
 static void WINAPI UpcallThread(void *arg) {
   nacl::VideoCallbackData *cbdata;
+  struct NaClDescImcDesc* desc;
   NaClSrpcHandlerDesc handlers[] = {
     { "upcall::", handleUpcall },
     { NULL, NULL }
@@ -212,9 +213,22 @@ static void WINAPI UpcallThread(void *arg) {
   dprintf(("MultimediaSocket::UpcallThread(%p)\n", arg));
   dprintf(("MultimediaSocket::cbdata->portable_plugin %p\n",
            static_cast<void *>(cbdata->portable_plugin)));
+  // Set up the NaClDesc the server will be placed on.
+  desc = reinterpret_cast<struct NaClDescImcDesc*>(malloc(sizeof(*desc)));
+  if (NULL == desc) {
+    dprintf(("MultimediaSocket::UpcallThread(%p) FAILED\n", arg));
+    return;
+  }
+  if (!NaClDescImcDescCtor(desc, cbdata->handle)) {
+    dprintf(("MultimediaSocket::UpcallThread(%p) FAILED\n", arg));
+    free(desc);
+    return;
+  }
   cbdata->msp->set_upcall_thread_id(NaClThreadId());
   // Run the SRPC server.
-  NaClSrpcServerLoop(cbdata->handle, handlers, cbdata);
+  NaClSrpcServerLoop(reinterpret_cast<struct NaClDesc*>(desc),
+                     handlers,
+                     cbdata);
   // release the cbdata
   cbdata->msp->UpcallThreadExiting();
   nacl::VideoGlobalLock();

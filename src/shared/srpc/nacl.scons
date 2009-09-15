@@ -39,10 +39,9 @@ trusted_untrusted_shared = [
     'imc_buffer.c',
     'invoke.c',
     'nacl_srpc.c',
-    'rpc_interface_desc.c',
     'rpc_serialize.c',
+    'rpc_service.c',
     'rpc_server_loop.c',
-    'rpc_type_check.c',
     'utility.c',
 ]
 
@@ -50,8 +49,6 @@ trusted_untrusted_shared = [
 untrusted_only = [
     'accept_loop.c',
     'main.c',
-    'rpc_default_server_loop.c',
-    'rpc_main.c',
     'rpc_universal.c']
 
 env.ComponentLibrary('libsrpc',

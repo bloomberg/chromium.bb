@@ -46,67 +46,69 @@
 #include "native_client/src/shared/srpc/nacl_srpc_internal.h"
 
 /*
- * A utility function for copying strings needed for ServerCtor
- */
-static char* CopyStringLength(const char* string, size_t length) {
-  /* TODO(sehr): use strndup. */
-  char* copy = (char*) malloc(length + 1);
-  if (NULL == copy) {
-    return NULL;
-  }
-  strncpy(copy, string, length);
-  copy[length] = '\0';
-  return copy;
-}
-
-/*
  * Service discovery is used to build an interface description that
  * is searched for rpc dispatches.
  */
-static int NaClSrpcBuildInterfaceDesc(NaClSrpcChannel  *channel) {
-  int errcode;
-  NaClSrpcArg*  ins[] = { NULL };
-  NaClSrpcArg   out_carray;
-  NaClSrpcArg*  outs[2];
+static int BuildInterfaceDesc(NaClSrpcChannel* channel) {
+  NaClSrpcArg*         ins[] = { NULL };
+  NaClSrpcArg          out_carray;
+  NaClSrpcArg*         outs[2];
+  NaClSrpcService*     tmp_service = NULL;
+  NaClSrpcService*     service = NULL;
+  NaClSrpcHandlerDesc  basic_services[] = { { NULL, NULL } };
 
-  /*
-   * We initialize the service descriptors to have service discovery
-   * and other default services (as they are added).
-   */
-  NaClSrpcDesc  basic_services[] = {
-    { "service_discovery", "", "C", NULL },
-  };
-
+  /* Set up the output parameters for service discovery. */
   outs[0] = &out_carray;
   outs[1] = NULL;
-
-  channel->client.rpc_descr = basic_services;
-  channel->client.rpc_count =
-      sizeof(basic_services) / sizeof(basic_services[0]);
-
-  /* Build the argument value for invoking service discovery */
+  out_carray.tag = NACL_SRPC_ARG_TYPE_CHAR_ARRAY;
+  out_carray.u.caval.carr = NULL;
+  /* Set up the basic service descriptor to make the service discovery call. */
+  tmp_service = (NaClSrpcService*) malloc(sizeof(*tmp_service));
+  if (NULL == tmp_service) {
+    goto cleanup;
+  }
+  if (!NaClSrpcServiceHandlerCtor(tmp_service, basic_services)) {
+    goto cleanup;
+  }
+  channel->client = tmp_service;
+  /* Build the argument values for invoking service discovery */
+  outs[0] = &out_carray;
+  outs[1] = NULL;
   out_carray.tag = NACL_SRPC_ARG_TYPE_CHAR_ARRAY;
   out_carray.u.caval.count = NACL_SRPC_MAX_SERVICE_DISCOVERY_CHARS;
   out_carray.u.caval.carr = calloc(NACL_SRPC_MAX_SERVICE_DISCOVERY_CHARS, 1);
   if (NULL == out_carray.u.caval.carr) {
-    fprintf(stderr, "service_discovery could not allocate memory\n");
-    return 0;
+    goto cleanup;
   }
   /* Invoke service discovery, getting description string */
-  errcode = NaClSrpcInvokeV(channel, 0, ins, outs);
-  if (NACL_SRPC_RESULT_OK != errcode) {
-    fprintf(stderr, "service_discovery call failed(%d): %s\n", errcode,
-            NaClSrpcErrorString(errcode));
-    return 0;
+  if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeV(channel, 0, ins, outs)) {
+    goto cleanup;
   }
-  /* Build the real rpc description from the resulting string. */
-  channel->client.rpc_descr =
-      __NaClSrpcBuildSrpcDesc(outs[0]->u.caval.carr,
-                              &channel->client.rpc_count);
+  /* Clean up the temporary service. */
+  NaClSrpcServiceDtor(tmp_service);
+  free(tmp_service);
+  tmp_service = NULL;
+  /* Allocate the real service. */
+  service = (NaClSrpcService*) malloc(sizeof(*service));
+  if (NULL == service) {
+    goto cleanup;
+  }
+  /* Build the real service from the resulting string. */
+  if (!NaClSrpcServiceStringCtor(service, out_carray.u.caval.carr)) {
+    goto cleanup;
+  }
+  channel->client = service;
   /* Free the service string */
   free(out_carray.u.caval.carr);
   /* Return success */
   return 1;
+
+ cleanup:
+  free(service);
+  free(out_carray.u.caval.carr);
+  NaClSrpcServiceDtor(tmp_service);
+  free(tmp_service);
+  return 0;
 }
 
 /*
@@ -128,8 +130,7 @@ int NaClSrpcClientCtor(NaClSrpcChannel* channel, NaClSrpcImcDescType handle) {
   }
 #endif
   /* Initialize the server information. */
-  channel->server.rpc_count = 0;
-  channel->server.rpc_descr = NULL;
+  channel->server = NULL;
   /* Construct the buffers. */
   __NaClSrpcImcBufferCtor(&channel->send_buf, 1);
   __NaClSrpcImcBufferCtor(&channel->receive_buf, 0);
@@ -141,7 +142,7 @@ int NaClSrpcClientCtor(NaClSrpcChannel* channel, NaClSrpcImcDescType handle) {
   channel->imc_write_usec = 0.0;
   channel->next_outgoing_request_id = 0;
   /* Do service discovery to speed method invocation. */
-  if (0 == NaClSrpcBuildInterfaceDesc(channel)) {
+  if (!BuildInterfaceDesc(channel)) {
     return 0;
   }
   /* Return success. */
@@ -150,11 +151,8 @@ int NaClSrpcClientCtor(NaClSrpcChannel* channel, NaClSrpcImcDescType handle) {
 
 int NaClSrpcServerCtor(NaClSrpcChannel* channel,
                        NaClSrpcImcDescType handle,
-                       const NaClSrpcHandlerDesc* handlers,
+                       NaClSrpcService* service,
                        void* server_instance_data) {
-  uint32_t handler_count;
-  uint32_t i;
-
   channel->imc_handle = handle;
 #ifndef __native_client__
   if (NULL == channel->imc_handle) {
@@ -165,54 +163,12 @@ int NaClSrpcServerCtor(NaClSrpcChannel* channel,
   }
 #endif
   /* Initialize the client information. */
-  channel->client.rpc_count = 0;
-  channel->client.rpc_descr = NULL;
+  channel->client = NULL;
   /* Construct the buffers. */
   __NaClSrpcImcBufferCtor(&channel->send_buf, 1);
   __NaClSrpcImcBufferCtor(&channel->receive_buf, 0);
-  /* Count the number of methods. */
-  handler_count = 0;
-  while (NULL != handlers[handler_count].entry_fmt)
-    ++handler_count;
-  /*
-   * This is a server connection, build the descriptors by parsing the
-   * handler descriptors passed in.
-   */
-  channel->server.rpc_descr = (NaClSrpcDesc*)
-      malloc(handler_count * sizeof(*channel->server.rpc_descr));
-  if (NULL == channel->server.rpc_descr) {
-    return 0;
-  }
-  channel->server.rpc_count = handler_count;
-  for (i = 0; i < handler_count; ++i) {
-    const char* p;
-    const char* nextp;
-
-    /* entry_fmt should look like "name:inargs:outargs" */
-    p = handlers[i].entry_fmt;
-    /* Get name. */
-    nextp = strchr(p, ':');
-    if (NULL == p) {
-      return 0;
-    }
-    channel->server.rpc_descr[i].rpc_name = CopyStringLength(p, nextp - p);
-    p = nextp + 1;
-    /* Get inargs. */
-    nextp = strchr(p, ':');
-    if (NULL == p) {
-      return 0;
-    }
-    channel->server.rpc_descr[i].in_args = CopyStringLength(p, nextp - p);
-    p = nextp + 1;
-    /* Get outargs. */
-    nextp = strchr(p, '\0');
-    if (NULL == p) {
-      return 0;
-    }
-    channel->server.rpc_descr[i].out_args = CopyStringLength(p, nextp - p);
-    /* Add the handler pointer to the descriptor.  */
-    channel->server.rpc_descr[i].handler = handlers[i].handler;
-  }
+  /* Set the service to that passed in. */
+  channel->server = service;
   /* Disable timing and initialize the timing counters. */
   channel->timing_enabled = 0;
   channel->send_usec = 0.0;
@@ -226,38 +182,25 @@ int NaClSrpcServerCtor(NaClSrpcChannel* channel,
 }
 
 void NaClSrpcDtor(NaClSrpcChannel *channel) {
+  if (NULL == channel) {
+    return;
+  }
 #ifndef __native_client__
-  struct NaClDescEffector* effp = (struct NaClDescEffector*) &channel->eff;
-  effp->vtbl->Dtor(effp);
-  NaClDescUnref(channel->imc_handle);
+  /* SCOPE */ {
+    struct NaClDescEffector* effp = (struct NaClDescEffector*) &channel->eff;
+    effp->vtbl->Dtor(effp);
+    NaClDescUnref(channel->imc_handle);
+  }
 #endif
-  free(channel->client.rpc_descr);
-  channel->client.rpc_descr = NULL;
-  free(channel->server.rpc_descr);
-  channel->server.rpc_descr = NULL;
+  NaClSrpcServiceDtor(channel->client);
+  free(channel->client);
+  NaClSrpcServiceDtor(channel->server);
+  free(channel->server);
 }
 
 /*
- * Support for timing the SRPC infrastructure.
+ * Channel timing support.
  */
-static NaClSrpcError GetTimes(NaClSrpcChannel* channel,
-                              NaClSrpcArg** in_args,
-                              NaClSrpcArg** out_args) {
-  NaClSrpcGetTimes(channel,
-                   &out_args[0]->u.dval,
-                   &out_args[1]->u.dval,
-                   &out_args[2]->u.dval,
-                   &out_args[3]->u.dval);
-  return NACL_SRPC_RESULT_OK;
-}
-
-static NaClSrpcError SetTimingEnabled(NaClSrpcChannel* channel,
-                                      NaClSrpcArg** in_args,
-                                      NaClSrpcArg** out_args) {
-  NaClSrpcToggleChannelTiming(channel, in_args[0]->u.ival);
-  return NACL_SRPC_RESULT_OK;
-}
-
 void NaClSrpcToggleChannelTiming(NaClSrpcChannel* channel, int enable_timing) {
   channel->timing_enabled = enable_timing;
 }
@@ -271,45 +214,4 @@ void NaClSrpcGetTimes(NaClSrpcChannel* channel,
   *receive_time = channel->receive_usec;
   *imc_read_time = channel->imc_read_usec;
   *imc_write_time = channel->imc_write_usec;
-}
-
-/*
- * Service information lookup functions.
- */
-int NaClSrpcGetArgTypes(const NaClSrpcService* service,
-                        uint32_t rpc_number,
-                        const char** rpc_name,
-                        const char** in_types,
-                        const char** out_types) {
-  if (NACL_SRPC_GET_TIMES_METHOD == rpc_number) {
-    *rpc_name = "NACL_SRPC_GET_TIMES_METHOD";
-    *in_types = "";
-    *out_types = "dddd";
-  } else if (NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD == rpc_number) {
-    *rpc_name = "NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD";
-    *in_types = "";
-    *out_types = "i";
-  } else if (rpc_number >= service->rpc_count) {
-    dprintf(("SERVER:     RPC bad rpc number: %u not in [0, %u)\n",
-             (unsigned) rpc_number, (unsigned) service->rpc_count));
-    return 0;
-  } else {
-    *rpc_name = service->rpc_descr[rpc_number].rpc_name;
-    *in_types = service->rpc_descr[rpc_number].in_args;
-    *out_types = service->rpc_descr[rpc_number].out_args;
-  }
-  return 1;
-}
-
-NaClSrpcMethod NaClSrpcGetMethod(const NaClSrpcChannel* channel,
-                                 uint32_t rpc_number) {
-  if (NACL_SRPC_GET_TIMES_METHOD == rpc_number) {
-    return GetTimes;
-  } else if (NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD == rpc_number) {
-    return SetTimingEnabled;
-  } else if (rpc_number >= channel->server.rpc_count) {
-    return NULL;
-  } else {
-    return channel->server.rpc_descr[rpc_number].handler;
-  }
 }

@@ -71,6 +71,7 @@
  * Contains a file descriptor for use as an IMC channel.
  */
 typedef int NaClSrpcImcDescType;
+#define kNaClSrpcInvalidImcDesc -1
 #else
 #  include "native_client/src/include/portability.h"
 #  include "native_client/src/include/nacl_base.h"
@@ -86,6 +87,7 @@ typedef int NaClSrpcImcDescType;
  * creating a type name.
  */
 typedef struct NaClDesc* NaClSrpcImcDescType;
+#define kNaClSrpcInvalidImcDesc NULL
 #endif
 
 EXTERN_C_BEGIN
@@ -313,8 +315,7 @@ typedef NaClSrpcError (*NaClSrpcMethod)(NaClSrpcChannelPtr channel,
 
 /**
  * Binaries that implement SRPC methods (servers) describe their services
- * using these structures.  These are converted into NaClSrpcDescs by the
- * server constructor.  They are also used when service discovery is done.
+ * using these structures.
  */
 struct NaClSrpcHandlerDesc {
   /**
@@ -331,25 +332,6 @@ struct NaClSrpcHandlerDesc {
  * A typedef for struct NaClSrpcHandlerDesc for use in C.
  */
 typedef struct NaClSrpcHandlerDesc NaClSrpcHandlerDesc;
-#endif
-
-/**
- * Used by clients to retain method name and type information.
- */
-struct NaClSrpcDesc {
-  char const  *rpc_name;  /**< string containing the method name*/
-  char const  *in_args;  /**< string containing the method input types */
-  char const  *out_args;  /**< string containing the method output types */
-  /**
-   * function pointer used to process calls to the named method
-   */
-  NaClSrpcMethod handler;
-};
-#ifndef __cplusplus
-/**
- * A typedef for struct NaClSrpcDesc for use in C.
- */
-typedef struct NaClSrpcDesc NaClSrpcDesc;
 #endif
 
 /**
@@ -398,6 +380,11 @@ typedef struct NaClSrpcImcBuffer NaClSrpcImcBuffer;
 #endif
 
 /**
+ * A private structure type used to describe methods within NaClSrpcService.
+ */
+struct NaClSrpcMethodDesc;
+
+/**
  * A description of the services available on a channel.
  */
 struct NaClSrpcService {
@@ -405,7 +392,7 @@ struct NaClSrpcService {
    * A pointer to an array of RPC service descriptors used to type check and
    * dispatch RPC requests.
    */
-  NaClSrpcDesc*               rpc_descr;
+  struct NaClSrpcMethodDesc*  rpc_descr;
   /** The number of elements in the <code>rpc_descr</code> array. */
   uint32_t                    rpc_count;
   /**
@@ -422,6 +409,82 @@ struct NaClSrpcService {
  */
 typedef struct NaClSrpcService NaClSrpcService;
 #endif
+
+/**
+ *  Constructs an SRPC service object from an array of handlers.
+ *  @param service The service to be constructed.
+ *  @param imc_desc handler_desc The handlers for each of the methods.
+ *  @return On success, 1; on failure, 0.
+ */
+int NaClSrpcServiceHandlerCtor(NaClSrpcService* service,
+                               const NaClSrpcHandlerDesc* handler_desc);
+
+/**
+ *  Constructs an SRPC service object from a service discovery string.
+ *  @param service The service to be constructed.
+ *  @param imc_desc handler_desc The string returned from a service discovery
+ *  call.
+ *  @return On success, 1; on failure, 0.
+ */
+int NaClSrpcServiceStringCtor(NaClSrpcService* service,
+                              const char* service_discovery_string);
+
+/**
+ *  Destroys an SRPC service object.
+ *  @param service The service to be destroyed.
+ */
+void NaClSrpcServiceDtor(NaClSrpcService* service);
+
+/**
+ *  Prints the methods available from the specified service to stdout.
+ *  @param service A service.
+ */
+void NaClSrpcServicePrint(const NaClSrpcService *service);
+
+/**
+ *  Obtains the count of methods exported by the service.
+ *  @param service The service to be examined.
+ *  @return The number of methods exported by the service.
+ */
+uint32_t NaClSrpcServiceMethodCount(const NaClSrpcService *service);
+
+
+#define kNaClSrpcInvalidMethodIndex ((uint32_t) ~0)
+/**
+ *  Obtains the index of the specified RPC name.
+ *  @param service The service to be searched.
+ *  @param name The exported name of the method.
+ *  @return A non-negative index if the name was found in the channel's set of
+ *  methods.  If the name was not found, it returns kNaClSrpcInvalidMethodIndex.
+ */
+uint32_t NaClSrpcServiceMethodIndex(const NaClSrpcService *service,
+                                    char const *name);
+
+/**
+ *  Obtains the name, input types, and output types of the specified RPC
+ *  number.
+ *  @param service The service to be searched.
+ *  @param rpc_number The number of the rpc to be looked up.
+ *  @param name The exported name of the method.
+ *  @param input_types The types of the inputs of the method.
+ *  @param output_types The types of the outputs of the method.
+ *  @return On success, 1; on failure, 0.
+ */
+extern int NaClSrpcServiceMethodNameAndTypes(const NaClSrpcService* service,
+                                             uint32_t rpc_number,
+                                             const char** name,
+                                             const char** input_types,
+                                             const char** output_types);
+
+/**
+ *  Obtains the function pointer used to handle invocations of a given
+ *  method number.
+ *  @param service The service to be searched.
+ *  @param rpc_number The number of the rpc to be looked up.
+ *  @return On success, a pointer to the handler; on failure, NULL.
+ */
+extern NaClSrpcMethod NaClSrpcServiceMethod(const NaClSrpcService* service,
+                                            uint32_t rpc_number);
 
 /**
  * The encapsulation of all the data necessary for an RPC connection,
@@ -446,11 +509,11 @@ struct NaClSrpcChannel {
   /**
    * The services implemented by this server.
    */
-  NaClSrpcService             server;
+  NaClSrpcService             *server;
   /**
    * The services available to this client.
    */
-  NaClSrpcService             client;
+  NaClSrpcService             *client;
   /**
    * A pointer to channel-specific data.  This allows RPC method
    * implementations to be used across multiple services while still
@@ -507,15 +570,15 @@ int NaClSrpcClientCtor(NaClSrpcChannel *channel, NaClSrpcImcDescType imc_desc);
  *  @param channel The channel descriptor to be constructed.
  *  @param imc_desc The NaClSrpcImcDescType describing the IMC channel to
  *  communicate over.
- *  @param handlers An array of NaClSrpcHandlerDesc structures describing the
- *  set of services handled by this server.
+ *  @param service A NaClSrpcService structure describing the service
+ *  handled by this server.
  *  @param instance_data A value to be stored on the channel descriptor
  *  for conveying data specific to this particular server instance.
  *  @return On success, 1; on failure, 0.
  */
 int NaClSrpcServerCtor(NaClSrpcChannel           *channel,
                        NaClSrpcImcDescType       imc_desc,
-                       const NaClSrpcHandlerDesc *handlers,
+                       NaClSrpcService           *service,
                        void*                     instance_data);
 
 /**
@@ -523,20 +586,6 @@ int NaClSrpcServerCtor(NaClSrpcChannel           *channel,
  *  @param channel The channel to be destroyed.
  */
 void NaClSrpcDtor(NaClSrpcChannel *channel);
-
-/**
- *  Runs an SRPC receive-dispatch-respond loop on the specified socket
- *  descriptor.
- *  @param socket_desc A NaClHandle that RPCs will communicate over.
- *  @param methods An array of NaClSrpcHandlerDesc structures describing the
- *  set of services handled by this server.
- *  @param instance_data A value to be stored on the channel descriptor
- *  for conveying data specific to this particular server instance.
- *  @return On success, 1; on failure, 0.
- */
-int NaClSrpcServerLoop(NaClHandle                       socket_desc,
-                       const struct NaClSrpcHandlerDesc methods[],
-                       void                             *instance_data);
 
 /**
  *  Runs an SRPC receive-dispatch-respond loop on the specified
@@ -550,42 +599,9 @@ int NaClSrpcServerLoop(NaClHandle                       socket_desc,
  *  instance.
  *  @return On success, 1; on failure, 0.
  */
-int NaClSrpcServerLoopImcDesc(NaClSrpcImcDescType              imc_socket_desc,
-                              const struct NaClSrpcHandlerDesc methods[],
-                              void                             *instance_data);
-
-/* NOTE: we may consider moving this and other untrusted only APIs
-         into a separate header file */
-#ifdef __native_client__
-/**
- *  Runs an SRPC receive-dispatch-respond loop on the "default" descriptor.
- *  NaCl modules are started with a default descriptor (obtained by an accept
- *  call on the bound socket created by the service runtime).  The methods
- *  exported are those using the NACL_SRPC_METHOD macro in the source of the
- *  module, plus the implicitly defined methods.
- *  @param instance_data A value to be stored on the channel descriptor
- *  for conveying data specific to this particular server instance.
- *  @return On success, 1; on failure, 0.
- */
-int NaClSrpcDefaultServerLoop(void *instance_data);
-#endif  /* __native_client__ */
-
-/**
- *  Prints the methods available from the specified channel to stdout.  For
- *  services, the method list is the table specified when
- *  NaClSrpcServerCtor() was invoked.  For clients, it is set by the initial
- *  call to the implicit service_discovery method.
- *  @param channel A channel descriptor.
- */
-void NaClSrpcDumpInterfaceDesc(const NaClSrpcChannel *channel);
-/**
- *  Obtains the index of the specified RPC name.
- *  @param channel The channel descriptor to be searched.
- *  @param name The exported name of the method.
- *  @return A non-negative index if the name was found in the channel's set of
- *  methods.  If the name was not found, it returns -1.
- */
-int NaClSrpcGetRpcNum(const NaClSrpcChannel *channel, char const *name);
+int NaClSrpcServerLoop(NaClSrpcImcDescType              imc_socket_desc,
+                       const struct NaClSrpcHandlerDesc methods[],
+                       void                             *instance_data);
 
 #ifdef __native_client__
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -733,12 +749,6 @@ static const uint32_t kNaClSrpcProtocolVersion = 0xc0da0002;
  */
 #define NACL_SRPC_TOGGLE_CHANNEL_TIMING_METHOD  0xfffffffd
 
-extern int NaClSrpcGetArgTypes(const NaClSrpcService* service,
-                               uint32_t rpc_number,
-                               const char** rpc_name,
-                               const char** in_types,
-                               const char** out_types);
-
 /**
  * Deserialize a message header from a buffer.
  */
@@ -784,6 +794,28 @@ extern int NaClSrpcResponseWrite(NaClSrpcChannel* channel,
  */
 extern void NaClSrpcRpcWait(NaClSrpcChannel* channel,
                             NaClSrpcRpc* rpc);
+
+/**
+ * A utility type used by NaClSrpcCommandLoop.
+ */
+typedef NaClSrpcError (*NaClSrpcInterpreter)(NaClSrpcService* service,
+                                             NaClSrpcChannel* channel,
+                                             uint32_t rpc_number,
+                                             NaClSrpcArg** ins,
+                                             NaClSrpcArg** outs);
+
+/**
+ * The interpreter loop used by sel_universal and non-embedded applications.
+ * It runs a loop that reads from stdin, and invokes the specified command
+ * interpreter.  As the interpreter may need to know either the service or
+ * channel on which it needs to run, these are also specified.  To provide
+ * access to at least one valid transferrable descriptor, we pass the
+ * default socket address descriptor for the NaCl module.
+ */
+extern void NaClSrpcCommandLoop(NaClSrpcService* service,
+                                NaClSrpcChannel* channel,
+                                NaClSrpcInterpreter interpreter,
+                                NaClSrpcImcDescType default_socket_address);
 
 EXTERN_C_END
 

@@ -50,6 +50,49 @@
 
 
 /*
+ * Utility method for type checking argument lists.
+ */
+static int TypeCheckArgs(char const* arg_types, NaClSrpcArg** alist) {
+  char const* p;
+
+  for (p = arg_types; *p != '\0' && *p != ':'; ++p, ++alist) {
+    if (NULL == *alist) {
+      /* Too few arguments */
+      return 0;
+    }
+    /* This code could be more compact by using a 256 entry table. */
+    switch (*p) {
+      case NACL_SRPC_ARG_TYPE_BOOL:
+      case NACL_SRPC_ARG_TYPE_INT:
+      case NACL_SRPC_ARG_TYPE_DOUBLE:
+      case NACL_SRPC_ARG_TYPE_STRING:
+      case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
+      case NACL_SRPC_ARG_TYPE_INT_ARRAY:
+      case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
+      case NACL_SRPC_ARG_TYPE_HANDLE:
+        if ((*alist)->tag != *p) {
+          return 0;
+        }
+        break;
+      /*
+       * The two cases below are added to avoid warnings, they are only used
+       * in the plugin code
+       */
+      case NACL_SRPC_ARG_TYPE_OBJECT:
+      case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
+      default:
+        /* We shouldn't see these types in invocations. */
+        return 0;
+    }
+  }
+  if (NULL != *alist) {
+    /* Too many arguments */
+    return 0;
+  }
+  return 1;
+}
+
+/*
  * Methods for invoking RPCs.
  */
 NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
@@ -74,17 +117,17 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
     this_start_usec = __NaClSrpcGetUsec();
   }
 
-  if (NaClSrpcGetArgTypes(&channel->client,
-                          rpc_number,
-                          &rpc_name,
-                          &arg_types,
-                          &ret_types)) {
+  if (NaClSrpcServiceMethodNameAndTypes(channel->client,
+                                        rpc_number,
+                                        &rpc_name,
+                                        &arg_types,
+                                        &ret_types)) {
     /* Check input parameters for type conformance */
-    if (0 == NaClSrpcTypeCheckOne(&arg_types, args)) {
+    if (!TypeCheckArgs(arg_types, args)) {
       return NACL_SRPC_RESULT_IN_ARG_TYPE_MISMATCH;
     }
     /* Check return values for type conformance */
-    if (0 == NaClSrpcTypeCheckOne(&ret_types, rets)) {
+    if (!TypeCheckArgs(ret_types, rets)) {
       return NACL_SRPC_RESULT_OUT_ARG_TYPE_MISMATCH;
     }
   } else {
@@ -241,11 +284,15 @@ NaClSrpcError NaClSrpcInvokeVaList(NaClSrpcChannel  *channel,
   char const        *p;
   NaClSrpcError     rv;
 
-  if (!NaClSrpcGetArgTypes(&channel->client,
-                           rpc_num,
-                           &rpc_name,
-                           &arg_types,
-                           &ret_types)) {
+  if (!NaClSrpcServiceMethodNameAndTypes(channel->client,
+                                         rpc_num,
+                                         &rpc_name,
+                                         &arg_types,
+                                         &ret_types)) {
+    /*
+     * If rpc_number is out of range, this will return an error before
+     * communicating with the server.
+     */
     return NACL_SRPC_RESULT_BAD_RPC_NUMBER;
   }
 
@@ -331,6 +378,10 @@ NaClSrpcError NaClSrpcInvoke(NaClSrpcChannel  *channel,
   va_start(out_va, rpc_num);
 
   rv = NaClSrpcInvokeVaList(channel, rpc_num, in_va, out_va);
+  /*
+   * Before the messages are sent to the server, rpc_num will be checked
+   * for validity.
+   */
 
   va_end(out_va);
   va_end(in_va);
@@ -341,18 +392,24 @@ NaClSrpcError NaClSrpcInvoke(NaClSrpcChannel  *channel,
 NaClSrpcError NaClSrpcInvokeByName(NaClSrpcChannel  *channel,
                                    const char       *rpc_name,
                                    ...) {
-  int                 rpc_num;
+  uint32_t            rpc_num;
   va_list             in_va;
   va_list             out_va;
   NaClSrpcError       rv;
 
-  rpc_num = NaClSrpcGetRpcNum(channel, rpc_name);
-  /* -1 handled by unsigned compare */
+  rpc_num = NaClSrpcServiceMethodIndex(channel->client, rpc_name);
+  if (kNaClSrpcInvalidMethodIndex == rpc_num) {
+    /*
+     * kNaClSrpcInvalidMethodIndex is returned when rpc_name does not match
+     * any method in the client service.  Explicitly check and return an error.
+     */
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
 
   va_start(in_va, rpc_name);
   va_start(out_va, rpc_name);
 
-  rv = NaClSrpcInvokeVaList(channel, (uint32_t) rpc_num, in_va, out_va);
+  rv = NaClSrpcInvokeVaList(channel, rpc_num, in_va, out_va);
 
   va_end(out_va);
   va_end(in_va);

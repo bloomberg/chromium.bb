@@ -183,11 +183,11 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
     return DISPATCH_CONTINUE;
   }
   /* Get types for receiving args and rets */
-  retval = NaClSrpcGetArgTypes(&channel->server,
-                               rpc.rpc_number,
-                               &rpc_name,
-                               &arg_types,
-                               &ret_types);
+  retval = NaClSrpcServiceMethodNameAndTypes(channel->server,
+                                             rpc.rpc_number,
+                                             &rpc_name,
+                                             &arg_types,
+                                             &ret_types);
   if (!retval) {
     dprintf(("RequestGet: bad rpc number in request\n"));
     /* Drop the request with a bad rpc number and continue */
@@ -200,7 +200,7 @@ static DispatchReturn NaClSrpcReceiveAndDispatch(NaClSrpcChannel* channel,
   }
   desc = GetArgsInterface(rpc.protocol_version);
   /* Then we invoke the method, which computes a return code. */
-  method = NaClSrpcGetMethod(channel, rpc.rpc_number);
+  method = NaClSrpcServiceMethod(channel->server, rpc.rpc_number);
   if (NULL == method) {
     dprintf((SIDE "ReceiveAndDispatch: bad rpc number %"PRIu32"\n",
              rpc.rpc_number));
@@ -356,10 +356,11 @@ static int name##ArrGet(NaClSrpcImcBuffer* buffer,                             \
   }                                                                            \
   dim = (size_t) dimdim;                                                       \
   if (allocate_memory) {                                                       \
-    if (dim > SIZE_T_MAX / sizeof(impl_type)) {                                \
+    if (dim >= SIZE_T_MAX / sizeof(*arg->u.field.array)) {                     \
       return 0;                                                                \
     }                                                                          \
-    arg->u.field.array = (impl_type*) malloc(dim * sizeof(impl_type));         \
+    arg->u.field.array =                                                       \
+        (impl_type*) malloc(dim * sizeof(*arg->u.field.array));                \
     if (NULL == arg->u.field.array) {                                          \
       return 0;                                                                \
     }                                                                          \
@@ -495,7 +496,7 @@ static int StringGet(NaClSrpcImcBuffer* buffer,
      * integer overflow
      */
     dim = (size_t) dimdim;
-    if (dim > SIZE_T_MAX - 1) {
+    if (dim >= SIZE_T_MAX) {
       return 0;
     }
     arg->u.sval = (char*) malloc(dim + 1);
@@ -605,18 +606,18 @@ static int ArgsGet(const ArgsIoInterface* argsdesc,
   if (allocate_args && lenu32 > 0) {
     size_t ix;
     size_t length = (size_t) lenu32;
-    if (length > SIZE_T_MAX / sizeof(NaClSrpcArg)) {
+    if (length >= SIZE_T_MAX / sizeof(*args)) {
       goto error;
     }
     /*
      * post condition: no integer overflow, so
-     * length * sizeof(NaClSrpcArg) <= SIZE_T_MAX
+     * length * sizeof(*args) <= SIZE_T_MAX
      */
-    args = (NaClSrpcArg*) malloc(length * sizeof(NaClSrpcArg));
+    args = (NaClSrpcArg*) malloc(length * sizeof(*args));
     if (args == NULL) {
       goto error;
     }
-    memset((void*) args, 0, length * sizeof(NaClSrpcArg));
+    memset((void*) args, 0, length * sizeof(*args));
 
     /*
      * Initialize the arg type tags with those specified in the declaration.

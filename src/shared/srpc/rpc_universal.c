@@ -29,34 +29,107 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 /*
- * NaCl testing shell (ported to RPC library)
+ * NaCl testing shell
  */
 
-#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <sys/types.h>
-#include <sys/time.h>
-
 #if !NACL_WINDOWS
-#include <unistd.h>
-#endif
+# include <unistd.h>
+# include <sys/types.h>
+# include <sys/time.h>
+#endif  /* !NACL_WINDOWS */
+#ifdef __native_client__
+# include <fcntl.h>
+# include <nacl/nacl_inttypes.h>
+#else
+# include "native_client/src/shared/platform/nacl_host_desc.h"
+# include "native_client/src/trusted/desc/nacl_desc_base.h"
+# include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+#endif  /* __native_client__ */
+#include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/shared/srpc/nacl_srpc_internal.h"
 
-#include "nacl_srpc.h"
-#include "nacl_srpc_internal.h"
+/* Table for keeping track of descriptors passed to/from sel_universal */
+typedef struct DescList DescList;
+struct DescList {
+  DescList* next;
+  int number;
+  const char* print_name;
+  NaClSrpcImcDescType desc;
+};
+static DescList* descriptors = NULL;
 
-int __GetRpcNum(const NaClSrpcDesc* rpc_desc, int num_rpc, char const* name) {
-  int i;
-  for (i = 0; i < num_rpc;  ++i) {
-    if (!strcmp(name, rpc_desc[i].rpc_name)) {
-      return i;
+static int AddDescToList(NaClSrpcImcDescType new_desc, const char* print_name) {
+  static int next_desc = 0;
+  DescList* new_list_element;
+  DescList** list_pointer;
+
+  /* Return an error if passed a null descriptor */
+  if (kNaClSrpcInvalidImcDesc == new_desc) {
+    return -1;
+  }
+  /* Create a descriptor list node. */
+  new_list_element = (DescList*) malloc(sizeof(DescList));
+  if (NULL == new_list_element) {
+    return -1;
+  }
+  new_list_element->number = next_desc++;
+  new_list_element->desc = new_desc;
+  new_list_element->print_name = print_name;
+  new_list_element->next = NULL;
+  /* Find the end of the list of descriptors*/
+  for (list_pointer = &descriptors;
+       NULL != *list_pointer;
+       list_pointer = &(*list_pointer)->next) {
+  }
+  *list_pointer = new_list_element;
+  return new_list_element->number;
+}
+
+static NaClSrpcImcDescType DescFromPlatformDesc(int fd, int mode) {
+#ifdef __native_client__
+  return fd;
+#else
+  return
+      (NaClSrpcImcDescType) NaClDescIoDescMake(NaClHostDescPosixMake(fd, mode));
+#endif  /* __native_client__ */
+}
+
+static void BuildDefaultDescList() {
+#ifdef __native_client__
+  const int kRdOnly = O_RDONLY;
+  const int kWrOnly = O_WRONLY;
+#else
+  const int kRdOnly = NACL_ABI_O_RDONLY;
+  const int kWrOnly = NACL_ABI_O_WRONLY;
+#endif  /* __native_client__ */
+  AddDescToList(DescFromPlatformDesc(0, kRdOnly), "stdin");
+  AddDescToList(DescFromPlatformDesc(1, kWrOnly), "stdout");
+  AddDescToList(DescFromPlatformDesc(2, kWrOnly), "stderr");
+}
+
+static void PrintDescList() {
+  DescList* list;
+
+  printf("Descriptors:\n");
+  for (list = descriptors; NULL != list; list = list->next) {
+    printf("  %d: %s\n", list->number, list->print_name);
+  }
+}
+
+static NaClSrpcImcDescType LookupDesc(int num) {
+  DescList* list;
+
+  for (list = descriptors; NULL != list; list = list->next) {
+    if (num == list->number) {
+      return list->desc;
     }
   }
-  return -1;
+  return kNaClSrpcInvalidImcDesc;
 }
 
 /*  simple destructive tokenizer */
@@ -65,10 +138,8 @@ typedef struct {
   int length;
 } TOKEN;
 
-
 /* expects *from to point to leading \" and returns pointer to trailing \" */
-const char* __ScanEscapeString(char* to, const char* from) {
-  assert (*from == '\"');
+static const char* ScanEscapeString(char* to, const char* from) {
   from++;
   while (*from) {
     if (*from == '\"') {
@@ -97,7 +168,7 @@ const char* __ScanEscapeString(char* to, const char* from) {
   return 0;
 }
 
-int __Tokenize(char* line, TOKEN *array, int n) {
+static int Tokenize(char* line, TOKEN *array, int n) {
   int pos_start = 0;
   int count = 0;
 
@@ -125,7 +196,7 @@ int __Tokenize(char* line, TOKEN *array, int n) {
       if (isspace(c)) {
         break;
       } else if (c == '\"') {
-        const char* end = __ScanEscapeString(0, &line[pos_end]);
+        const char* end = ScanEscapeString(0, &line[pos_end]);
         if (!end) return -1;
         pos_end = end - &line[0];
       }
@@ -147,16 +218,20 @@ int __Tokenize(char* line, TOKEN *array, int n) {
   return count;
 }
 
-/* NOTE: This is leaking memory left and right */
-int __ParseArg(NaClSrpcArg* arg, const char* token) {
+/*
+ * Create an argument from a token string.  Returns 1 if successful or
+ * 0 if not (out of memory or bad type).
+ */
+static int ParseArg(NaClSrpcArg* arg, const char* token) {
   long val;
   int dim;
+  int i;
   const char* comma;
-  int         i;
+
+  /* Initialize the argument slot.  This enables freeing on failures. */
+  memset(arg, 0, sizeof(*arg));
 
   dprintf(("TOKEN %s\n", token));
-  assert(token[1] == '(');
-
   switch (token[0]) {
    case NACL_SRPC_ARG_TYPE_INVALID:
     arg->tag = NACL_SRPC_ARG_TYPE_INVALID;
@@ -170,6 +245,9 @@ int __ParseArg(NaClSrpcArg* arg, const char* token) {
     dim = strtol(&token[2], 0, 0);
     arg->tag = NACL_SRPC_ARG_TYPE_CHAR_ARRAY;
     arg->u.caval.carr = (char*) calloc(dim, sizeof(char));
+    if (NULL == arg->u.caval.carr) {
+      return 0;
+    }
     arg->u.caval.count = dim;
     comma = strstr(token, ",");
     if (comma) {
@@ -185,9 +263,10 @@ int __ParseArg(NaClSrpcArg* arg, const char* token) {
    case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
     dim = strtol(&token[2], 0, 0);
     arg->tag = NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY;
-    /* LEAK */
     arg->u.daval.darr = (double*) calloc(dim, sizeof(double));
-    assert(arg->u.daval.darr);
+    if (NULL == arg->u.daval.darr) {
+      return 0;
+    }
     arg->u.daval.count = dim;
     comma = token;
     for (i = 0; i < dim; ++i) {
@@ -198,10 +277,9 @@ int __ParseArg(NaClSrpcArg* arg, const char* token) {
     }
     break;
    case NACL_SRPC_ARG_TYPE_HANDLE:
-    /* TODO(sehr): get handle passing to work. */
     val = strtol(&token[2], 0, 0);
     arg->tag = NACL_SRPC_ARG_TYPE_HANDLE;
-    arg->u.hval = val;
+    arg->u.hval = LookupDesc(val);
     break;
    case NACL_SRPC_ARG_TYPE_INT:
     val = strtol(&token[2], 0, 0);
@@ -211,9 +289,10 @@ int __ParseArg(NaClSrpcArg* arg, const char* token) {
    case NACL_SRPC_ARG_TYPE_INT_ARRAY:
     dim = strtol(&token[2], 0, 0);
     arg->tag = NACL_SRPC_ARG_TYPE_INT_ARRAY;
-    /* LEAK */
     arg->u.iaval.iarr = (int*) calloc(dim, sizeof(int));
-    assert(arg->u.iaval.iarr);
+    if (NULL == arg->u.iaval.iarr) {
+      return 0;
+    }
     arg->u.iaval.count = dim;
     comma = token;
     for (i = 0; i < dim; ++i) {
@@ -225,12 +304,15 @@ int __ParseArg(NaClSrpcArg* arg, const char* token) {
     break;
    case NACL_SRPC_ARG_TYPE_STRING:
     arg->tag = NACL_SRPC_ARG_TYPE_STRING;
-    /* this is a conservative estimate */
+    /*
+     * This is a conservative estimate of the length, as it includes the
+     * quotes and possibly some escape characters.
+     */
     arg->u.sval = malloc(strlen(token));
     if (NULL == arg->u.sval) {
-      return -1;
+      return 0;
     }
-    __ScanEscapeString(arg->u.sval, token + 2);
+    ScanEscapeString(arg->u.sval, token + 2);
     break;
     /*
      * The two cases below are added to avoid warnings, they are only used
@@ -239,35 +321,31 @@ int __ParseArg(NaClSrpcArg* arg, const char* token) {
    case NACL_SRPC_ARG_TYPE_OBJECT:
    case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
    default:
-    return -1;
+    return 0;
   }
 
   return 1;
 }
 
-int __ParseArgs(NaClSrpcArg* arg, const TOKEN* token, int n) {
+/*
+ * Read n arguments from the tokens array.  Returns n if successful or
+ * -1 if not.
+ */
+static int ParseArgs(NaClSrpcArg* arg, const TOKEN* token, int n) {
   int i;
+
   for (i = 0; i < n; ++i) {
-    if (__ParseArg(&arg[i], token[i].start) < 0)
+    if (!ParseArg(&arg[i], token[i].start)) {
+      /* TODO(sehr): reclaim memory here on failure. */
       return -1;
+    }
   }
   return n;
 }
 
-void __DumpInterfaceDescription(const NaClSrpcDesc* rpc_desc, int num_rpc) {
-  int i;
-  printf("RPC %-20s %-10s %-10s\n", "Name", "Input args", "Output args");
-  for (i = 0; i < num_rpc; ++i) {
-    printf("%3d %-20s %-10s %-10s\n",
-           i, rpc_desc[i].rpc_name,
-           rpc_desc[i].in_args, rpc_desc[i].out_args);
-  }
-}
-
-
-void __DumpArg(const NaClSrpcArg* arg) {
-  int count;
-  int i;
+static void DumpArg(const NaClSrpcArg* arg) {
+  uint32_t count;
+  uint32_t i;
 
   switch(arg->tag) {
    case NACL_SRPC_ARG_TYPE_INVALID:
@@ -277,7 +355,7 @@ void __DumpArg(const NaClSrpcArg* arg) {
     printf("b(%d)", arg->u.bval);
     break;
    case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-    for (i = 0; i < arg->u.caval.count; i++)
+    for (i = 0; i < arg->u.caval.count; ++i)
       putchar(arg->u.caval.carr[i]);
     break;
    case NACL_SRPC_ARG_TYPE_DOUBLE:
@@ -285,26 +363,26 @@ void __DumpArg(const NaClSrpcArg* arg) {
     break;
    case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
     count = arg->u.daval.count;
-    printf("D(%d", count);
-    for (i=0; i < count; ++i)
+    printf("D(%"PRIu32"", count);
+    for (i = 0; i < count; ++i)
       printf(",%f", arg->u.daval.darr[i]);
     printf(")");
     break;
    case NACL_SRPC_ARG_TYPE_HANDLE:
-    printf("h(%d)", arg->u.hval);
+    printf("h(%d)", AddDescToList(arg->u.hval, "imported"));
     break;
    case NACL_SRPC_ARG_TYPE_INT:
     printf("i(%d)", arg->u.ival);
     break;
    case NACL_SRPC_ARG_TYPE_INT_ARRAY:
     count = arg->u.iaval.count;
-    printf("I(%d", count);
-    for (i=0; i < count; ++i)
+    printf("I(%"PRIu32"", count);
+    for (i = 0; i < count; ++i)
       printf(",%d", arg->u.iaval.iarr[i]);
     printf(")");
     break;
    case NACL_SRPC_ARG_TYPE_STRING:
-    /* TODO: do proper escaping */
+    /* TODO(robertm): do proper escaping */
     printf("s(\"%s\")", arg->u.sval);
     break;
     /*
@@ -312,41 +390,104 @@ void __DumpArg(const NaClSrpcArg* arg) {
      * in the plugin code
      */
    case NACL_SRPC_ARG_TYPE_OBJECT:
+    /* this is a pointer that NaCl module can do nothing with */
+    printf("o(%p)", arg->u.oval);
+    break;
    case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
+    count = arg->u.vaval.count;
+    printf("A(%"PRIu32"", count);
+    for (i = 0; i < count; ++i) {
+      printf(",");
+      DumpArg(&arg->u.vaval.varr[i]);
+    }
+    printf(")");
+    break;
    default:
     break;
   }
 }
 
-void __DumpArgs(const NaClSrpcArg* arg, int n) {
+static void DumpArgs(const NaClSrpcArg* arg, int n) {
   int i;
   for (i=0; i<n; ++i) {
     printf("  ");
-    __DumpArg(&arg[i]);
+    DumpArg(&arg[i]);
   }
   printf("\n");
 }
 
-NaClSrpcError __CommandLoop() {
-  int errcode;
-  const NaClSrpcDesc* rpc_desc;
-  struct NaClSrpcHandlerDesc* handlers;
-  char* service_str;
-  uint32_t num_rpc;
-  int command_count = 0;
-  size_t length;
+void BuildArgVec(NaClSrpcArg* argv[], NaClSrpcArg arg[], int count) {
+  int i;
+  for (i = 0; i < count; ++i) {
+    argv[i] = &arg[i];
+  }
+  argv[count] = NULL;
+}
 
-  /* Build the complete method table */
-  handlers = __NaClSrpcCompleteMethodTable(__kNaClSrpcHandlers, &num_rpc);
-  /* Build the service discovery string */
-  service_str = __NaClSrpcBuildSDString(handlers, num_rpc, &length);
-  /* Build the descriptor table from the string */
-  rpc_desc = __NaClSrpcBuildSrpcDesc(service_str, &num_rpc);
+void FreeArrayArgs(NaClSrpcArg arg[], int count) {
+  int i;
+  for (i = 0; i < count; ++i) {
+    switch(arg[i].tag) {
+     case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
+      free(arg[i].u.caval.carr);
+      break;
+     case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
+      free(arg[i].u.daval.darr);
+      break;
+     case NACL_SRPC_ARG_TYPE_INT_ARRAY:
+      free(arg[i].u.iaval.iarr);
+      break;
+     case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
+      FreeArrayArgs(arg[i].u.vaval.varr, arg[i].u.vaval.count);
+      break;
+     case NACL_SRPC_ARG_TYPE_INVALID:
+     case NACL_SRPC_ARG_TYPE_BOOL:
+     case NACL_SRPC_ARG_TYPE_DOUBLE:
+     case NACL_SRPC_ARG_TYPE_HANDLE:
+     case NACL_SRPC_ARG_TYPE_INT:
+     case NACL_SRPC_ARG_TYPE_STRING:
+     case NACL_SRPC_ARG_TYPE_OBJECT:
+     default:
+      break;
+    }
+  }
+}
 
-  /* process commands from stdin and dispatch */
+static void PrintHelp() {
+  printf("Commands:\n");
+  printf("  # <anything>\n");
+  printf("    comment\n");
+  printf("  descs\n");
+  printf("    print the table of known descriptors (handles)\n");
+  printf("  rpc method_name <in_args> * <out_args>\n");
+  printf("    -- invoke method_name\n");
+  printf("  service\n");
+  printf("    print the methods found by service_discovery\n");
+  printf("  quit\n");
+  printf("    quit the program\n");
+  printf("  help\n");
+  printf("    print this menu\n");
+  printf("  ?\n");
+  printf("    print this menu\n");
+  /* TODO(sehr,robertm): we should have a syntax description option */
+}
+
+void NaClSrpcCommandLoop(NaClSrpcService* service,
+                         NaClSrpcChannel* channel,
+                         NaClSrpcInterpreter interpreter,
+                         NaClSrpcImcDescType default_socket_address) {
+  NaClSrpcError errcode;
+  int           command_count = 0;
+
+  /* Add the default descriptors to the table */
+  BuildDefaultDescList();
+  if (kNaClSrpcInvalidImcDesc != default_socket_address) {
+    AddDescToList(default_socket_address, "module socket address");
+  }
+  /* Read RPC requests from stdin and send them. */
   for (;;) {
     char        buffer[4096];
-    TOKEN       tokens[64];
+    TOKEN       tokens[NACL_SRPC_MAX_ARGS];
     int         n;
     const char  *command;
 
@@ -356,7 +497,7 @@ NaClSrpcError __CommandLoop() {
     if (!fgets(buffer, sizeof(buffer), stdin))
       break;
 
-    n = __Tokenize(buffer, tokens, 64);
+    n = Tokenize(buffer, tokens, NACL_SRPC_MAX_ARGS);
 
     if (n < 1) {
       if (n < 0)
@@ -365,22 +506,26 @@ NaClSrpcError __CommandLoop() {
     }
 
     command =  tokens[0].start;
-    if (0 == strcmp("#", command)) {
+    if ('#' == command[0]) {
       continue;
+    } else if (0 == strcmp("help", command) ||
+               0 == strcmp("?", command)) {
+      PrintHelp();
     } else if (0 == strcmp("service", command)) {
-      __DumpInterfaceDescription(rpc_desc, num_rpc);
+      NaClSrpcServicePrint(service);
+    } else if (0 == strcmp("descs", command)) {
+      PrintDescList();
     } else if (0 == strcmp("quit", command)) {
       break;
     } else if (0 == strcmp("rpc", command)) {
       int          int_out_sep;
       int          n_in;
       NaClSrpcArg  in[NACL_SRPC_MAX_ARGS];
-      NaClSrpcArg  *inv[NACL_SRPC_MAX_ARGS+1];
-      int          i;
+      NaClSrpcArg* inv[NACL_SRPC_MAX_ARGS + 1];
       int          n_out;
       NaClSrpcArg  out[NACL_SRPC_MAX_ARGS];
-      NaClSrpcArg  *outv[NACL_SRPC_MAX_ARGS+1];
-      int          rpc_num;
+      NaClSrpcArg* outv[NACL_SRPC_MAX_ARGS + 1];
+      uint32_t     rpc_num;
 
       if (n < 2) {
         fprintf(stderr, "bad rpc command\n");
@@ -397,48 +542,49 @@ NaClSrpcError __CommandLoop() {
         continue;
       }
 
+      /* Build the input parameter values. */
       n_in = int_out_sep - 2;
       dprintf(("parsing in args %d\n", n_in));
-      assert(n_in < NACL_SRPC_MAX_ARGS);
-      for (i = 0; i < n_in; ++i)  inv[i] = &in[i];
-      inv[n_in] = 0;
+      BuildArgVec(inv, in, n_in);
 
-      if (__ParseArgs(in, &tokens[2], n_in) < 0) {
+      if (ParseArgs(in, &tokens[2], n_in) < 0) {
         fprintf(stderr, "bad input args for rpc\n");
         continue;
       }
 
+      /* Build the output (rpc return) values. */
       n_out =  n - int_out_sep - 1;
       dprintf(("parsing out args %d\n", n_out));
-      assert(n_out < NACL_SRPC_MAX_ARGS);
-      for (i = 0; i < n_out; ++i)  outv[i] = &out[i];
-      outv[n_out] = 0;
+      BuildArgVec(outv, out, n_out);
 
-      if (__ParseArgs(out, &tokens[int_out_sep + 1], n_out) < 0) {
+      if (ParseArgs(out, &tokens[int_out_sep + 1], n_out) < 0) {
         fprintf(stderr, "bad output args for rpc\n");
         continue;
       }
 
-      rpc_num = __GetRpcNum(rpc_desc, num_rpc, tokens[1].start);
-      if (rpc_num < 0) {
+      rpc_num = NaClSrpcServiceMethodIndex(service, tokens[1].start);
+      if (kNaClSrpcInvalidMethodIndex == rpc_num) {
         fprintf(stderr, "unknown rpc\n");
         continue;
       }
 
-      fprintf(stderr, "using rpc %s no %d\n", tokens[1].start, rpc_num);
-      errcode =  __NaClSrpcMain(rpc_num, handlers, num_rpc, NULL, inv, outv);
+      fprintf(stderr, "using rpc %s no %"PRIu32"\n", tokens[1].start, rpc_num);
+      errcode = (*interpreter)(service, channel, rpc_num, inv, outv);
       if (NACL_SRPC_RESULT_OK != errcode) {
-        fprintf(stderr, "rpc call failed %d\n", errcode);
+        fprintf(stderr, "rpc call failed %s\n", NaClSrpcErrorString(errcode));
         continue;
       }
 
       /* dump result vector */
       printf("%s RESULTS: ", tokens[1].start);
-      __DumpArgs(outv[0], n_out);
+      DumpArgs(outv[0], n_out);
+
+      /* Free the storage allocated for array valued parameters and returns. */
+      FreeArrayArgs(in, n_in);
+      FreeArrayArgs(out, n_out);
     } else {
         fprintf(stderr, "unknown command\n");
         continue;
     }
   }
-  return NACL_SRPC_RESULT_OK;
 }

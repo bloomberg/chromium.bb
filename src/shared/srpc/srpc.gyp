@@ -41,11 +41,10 @@
         'nacl_srpc.c',
         'nacl_srpc.h',
         'nacl_srpc_internal.h',
-        'rpc_interface_desc.c',
-        'rpc_interface_desc.h',
         'rpc_serialize.c',
+        'rpc_service.c',
         'rpc_server_loop.c',
-        'rpc_type_check.c',
+        'rpc_universal.c',
         'utility.c',
       ],
     }

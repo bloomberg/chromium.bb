@@ -423,31 +423,23 @@ static const NaClSrpcHandlerDesc handlers[] = {
 int NaClSrpcListenerLoop(struct NaClDesc *chrome_desc,
                          NativeWorkerPostMessageFunc func,
                          WWClientPointer client) {
-  NaClSrpcChannel upcall_channel;
-  struct NativeWorkerListenerData *data;
+  struct NativeWorkerListenerData *data = NULL;
+  int retval = 0;
 
   data = (struct NativeWorkerListenerData *) malloc(sizeof(*data));
   if (NULL == data) {
-    return 0;
+    goto cleanup;
   }
   data->func = func;
   data->client = client;
-
-  if (!NaClSrpcServerCtor(&upcall_channel,
-                          chrome_desc,
-                          handlers,
-                          (void *)data)) {
-    return 0;
+  /* Loop processing RPCs. */
+  if (!NaClSrpcServerLoop(chrome_desc, handlers, (void *)data)) {
+    goto cleanup;
   }
-
-  /*
-   * Loop processing RPCs.
-   */
-  if (!NaClSrpcServerLoopImcDesc(chrome_desc, handlers, (void *)data)) {
-    return 0;
-  }
-
-  return 1;
+  retval = 1;
+ cleanup:
+  free(data);
+  return retval;
 }
 
 /*

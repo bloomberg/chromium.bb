@@ -89,17 +89,27 @@ SrpcClient::~SrpcClient() {
 
 void SrpcClient::GetMethods() {
   dprintf(("SrpcClient::GetMethods(%p)\n", static_cast<void *>(this)));
-  // Get the exported methods.
-  const struct NaClSrpcDesc *descrs = srpc_channel_.client.rpc_descr;
-  uint32_t count = srpc_channel_.client.rpc_count;
+  if (NULL == srpc_channel_.client) {
+    return;
+  }
+  uint32_t method_count = NaClSrpcServiceMethodCount(srpc_channel_.client);
   // Intern the methods into a mapping from NPIdentifiers to MethodInfo.
-  for (uint32_t i = 0; i < count; ++i) {
-    const char* name = descrs[i].rpc_name;
+  for (uint32_t i = 0; i < method_count; ++i) {
+    int retval;
+    const char* name;
+    const char* input_types;
+    const char* output_types;
+
+    retval = NaClSrpcServiceMethodNameAndTypes(srpc_channel_.client,
+                                               i,
+                                               &name,
+                                               &input_types,
+                                               &output_types);
     int ident = PortablePluginInterface::GetStrIdentifierCallback(name);
     MethodInfo* method_info = new(std::nothrow) MethodInfo(NULL,
                                                            name,
-                                                           descrs[i].in_args,
-                                                           descrs[i].out_args,
+                                                           input_types,
+                                                           output_types,
                                                            i);
     if (NULL == method_info) {
       return;
@@ -111,18 +121,28 @@ void SrpcClient::GetMethods() {
 
 NaClSrpcArg* SrpcClient::GetSignatureObject() {
   dprintf(("SrpcClient::GetSignatureObject(%p)\n", static_cast<void *>(this)));
-  // Get the exported methods.
-  const struct NaClSrpcDesc *descrs = srpc_channel_.client.rpc_descr;
-  uint32_t count = srpc_channel_.client.rpc_count;
+  if (NULL == srpc_channel_.client) {
+    return NULL;
+  }
+  uint32_t method_count = NaClSrpcServiceMethodCount(srpc_channel_.client);
   NaClSrpcArg* ret_array = new(std::nothrow) NaClSrpcArg;
-  if ((NULL == ret_array) || !InitSrpcArgArray(ret_array, count)) {
-    if (0 != count) {
+  if ((NULL == ret_array) || !InitSrpcArgArray(ret_array, method_count)) {
+    if (0 != method_count) {
       return NULL;
     }
   }
 
-  for (uint32_t i = 0; i < count; ++i) {
-    const char* name = descrs[i].rpc_name;
+  for (uint32_t i = 0; i < method_count; ++i) {
+    int retval;
+    const char* name;
+    const char* input_types;
+    const char* output_types;
+
+    retval = NaClSrpcServiceMethodNameAndTypes(srpc_channel_.client,
+                                               i,
+                                               &name,
+                                               &input_types,
+                                               &output_types);
     int ident = PortablePluginInterface::GetStrIdentifierCallback(name);
     methods_[ident]->Signature(&ret_array->u.vaval.varr[i]);
   }

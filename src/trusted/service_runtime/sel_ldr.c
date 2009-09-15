@@ -906,9 +906,7 @@ void WINAPI NaClSecureChannelThread(void *state) {
 
   NaClLog(4, "NaClSecureChannelThread started\n");
 
-  (void) NaClSrpcServerLoopImcDesc(nap->secure_channel,
-                                   secure_handlers,
-                                   nap);
+  (void) NaClSrpcServerLoop(nap->secure_channel, secure_handlers, nap);
   NaClLog(4, "NaClSecureChannelThread: channel closed, exiting.\n");
   _exit(0);
 }
