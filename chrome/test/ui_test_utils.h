@@ -49,6 +49,12 @@ void WaitForNavigation(NavigationController* controller);
 void WaitForNavigations(NavigationController* controller,
                         int number_of_navigations);
 
+// Waits for a new tab to be added to |browser|.
+void WaitForNewTab(Browser* browser);
+
+// Waits for a load stop for the specified |controller|.
+void WaitForLoadStop(NavigationController* controller);
+
 // Navigates the selected tab of |browser| to |url|, blocking until the
 // navigation finishes.
 void NavigateToURL(Browser* browser, const GURL& url);

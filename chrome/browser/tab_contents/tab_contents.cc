@@ -832,6 +832,10 @@ void TabContents::AddNewContents(TabContents* new_contents,
     new_contents->DisassociateFromPopupCount();
     delegate_->AddNewContents(this, new_contents, disposition, initial_pos,
                               user_gesture);
+    NotificationService::current()->Notify(
+        NotificationType::TAB_ADDED,
+        Source<TabContentsDelegate>(delegate_),
+        Details<TabContents>(this));
   }
   PopupNotificationVisibilityChanged(ShowingBlockedPopupNotification());
 }

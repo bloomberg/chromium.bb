@@ -230,28 +230,25 @@ class AppModalDialogObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(AppModalDialogObserver);
 };
 
-class CrashedRenderProcessObserver : public NotificationObserver {
+template <class T>
+class SimpleNotificationObserver : public NotificationObserver {
  public:
-  explicit CrashedRenderProcessObserver(RenderProcessHost* rph) {
-    registrar_.Add(this, NotificationType::RENDERER_PROCESS_CLOSED,
-                   Source<RenderProcessHost>(rph));
+  SimpleNotificationObserver(NotificationType notification_type,
+                             T* source) {
+    registrar_.Add(this, notification_type, Source<T>(source));
     ui_test_utils::RunMessageLoop();
   }
 
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    if (type == NotificationType::RENDERER_PROCESS_CLOSED) {
-      MessageLoopForUI::current()->Quit();
-    } else {
-      NOTREACHED();
-    }
+    MessageLoopForUI::current()->Quit();
   }
 
  private:
   NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(CrashedRenderProcessObserver);
+  DISALLOW_COPY_AND_ASSIGN(SimpleNotificationObserver);
 };
 
 }  // namespace
@@ -306,6 +303,16 @@ void WaitForNavigation(NavigationController* controller) {
 void WaitForNavigations(NavigationController* controller,
                         int number_of_navigations) {
   NavigationNotificationObserver observer(controller, number_of_navigations);
+}
+
+void WaitForNewTab(Browser* browser) {
+  SimpleNotificationObserver<Browser>
+      new_tab_observer(NotificationType::TAB_ADDED, browser);
+}
+
+void WaitForLoadStop(NavigationController* controller) {
+  SimpleNotificationObserver<NavigationController>
+      new_tab_observer(NotificationType::LOAD_STOP, controller);
 }
 
 void NavigateToURL(Browser* browser, const GURL& url) {
@@ -408,7 +415,8 @@ AppModalDialog* WaitForAppModalDialog() {
 void CrashTab(TabContents* tab) {
   RenderProcessHost* rph = tab->render_view_host()->process();
   base::KillProcess(rph->process().handle(), 0, false);
-  CrashedRenderProcessObserver crash_observer(rph);
+  SimpleNotificationObserver<RenderProcessHost>
+      crash_observer(NotificationType::RENDERER_PROCESS_CLOSED, rph);
 }
 
 }  // namespace ui_test_utils

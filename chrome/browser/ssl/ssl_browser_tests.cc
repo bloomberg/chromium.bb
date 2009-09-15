@@ -176,6 +176,43 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndDontProceed) {
   CheckUnauthenticatedState(tab);
 }
 
+// Open a page with a HTTPS error in a tab with no prior navigation (through a
+// link with a blank target).  This is to test that the lack of navigation entry
+// does not cause any problems (it was causing a crasher, see
+// http://crbug.com/19941).
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorWithNoNavEntry) {
+  scoped_refptr<HTTPTestServer> http_server = PlainServer();
+  scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
+
+  // Load a page with a link that opens a new window (therefore with no history
+  // and no navigation entries).
+  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPageW(
+      L"files/ssl/page_with_blank_target.html"));
+
+  bool success = false;
+  // Simulate clicking the link (and therefore navigating to that new page).
+  // This will causes a new tab to be created.
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      browser()->GetSelectedTabContents()->render_view_host(), L"",
+      L"window.domAutomationController.send(navigateInNewTab());",
+      &success));
+  EXPECT_TRUE(success);
+
+  // By the time we got a response, the new tab should have been created and be
+  // the selected tab.
+  EXPECT_EQ(2, browser()->tab_count());
+  EXPECT_EQ(1, browser()->selected_index());
+
+  // Since the navigation was initiated by the renderer (when we clicked on the
+  // link) and since the main page network request failed, we won't get a
+  // navigation entry committed.  So we'll just wait for the load to stop.
+  ui_test_utils::WaitForLoadStop(
+      &(browser()->GetSelectedTabContents()->controller()));
+
+  // We should have an interstitial page showing.
+  ASSERT_TRUE(browser()->GetSelectedTabContents()->interstitial_page());
+}
+
 //
 // Mixed contents
 //

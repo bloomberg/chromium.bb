@@ -231,6 +231,10 @@ class NotificationType {
 
     // Tabs --------------------------------------------------------------------
 
+    // Sent when a tab is added to a TabContentsDelegate. The source is the
+    // TabContentsDelegate and the details is the TabContents.
+    TAB_ADDED,
+
     // This notification is sent after a tab has been appended to the
     // tab_strip.  The source is a Source<NavigationController> with a pointer
     // to controller for the added tab. There are no details.
