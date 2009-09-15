@@ -4,6 +4,7 @@
 
 #include "base/logging.h"
 #include "base/port.h"
+#include "build/build_config.h"
 #include "chrome/browser/sync/syncable/path_name_cmp.h"
 #include "chrome/browser/sync/util/path_helpers.h"
 #include "chrome/browser/sync/util/sync_types.h"
@@ -64,7 +65,7 @@ TEST(PathHelpersTest, PathStrutil) {
 }
 
 TEST(PathHelpersTest, SanitizePathComponent) {
-#ifdef OS_WINDOWS
+#ifdef OS_WIN
   EXPECT_EQ(MakePathComponentOSLegal(L"bar"), L"");
   EXPECT_EQ(MakePathComponentOSLegal(L"bar <"), L"bar");
   EXPECT_EQ(MakePathComponentOSLegal(L"bar.<"), L"bar");
@@ -116,7 +117,7 @@ TEST(PathHelpersTest, SanitizePathComponent) {
   EXPECT_EQ(MakePathComponentOSLegal(L"<.<"), L"~1");
   EXPECT_EQ(MakePathComponentOSLegal(L"<.<txt"), L".txt");
   EXPECT_EQ(MakePathComponentOSLegal(L"txt<.<"), L"txt");
-#else  // OS_WINDOWS
+#else  // OS_WIN
 
   EXPECT_EQ(MakePathComponentOSLegal("bar"), "");
   EXPECT_EQ(MakePathComponentOSLegal("b"), "");
@@ -125,7 +126,7 @@ TEST(PathHelpersTest, SanitizePathComponent) {
   EXPECT_EQ(MakePathComponentOSLegal("/"), ":");
   EXPECT_EQ(MakePathComponentOSLegal(":"), "");
 
-#endif  // OS_WINDOWS
+#endif  // OS_WIN
 }
 
 }  // namespace syncable

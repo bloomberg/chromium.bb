@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/util/query_helpers.h"
 
-#if defined(OS_WINDOWS)
+#if defined(OS_WIN)
 #include <windows.h>
 #endif
 
@@ -65,7 +65,7 @@ int SqliteOpen(PathString filename, sqlite3** db) {
   (filename.c_str(), db);
   LOG_IF(ERROR, SQLITE_OK != result) << "Error opening " << filename << ": "
                                      << result;
-#ifdef OS_WINDOWS
+#ifdef OS_WIN
   if (SQLITE_OK == result) {
     // Make sure we mark the db file as not indexed so since if any other app
     // opens it, it can break our db locking.
@@ -76,7 +76,7 @@ int SqliteOpen(PathString filename, sqlite3** db) {
       attrs = attrs | FILE_ATTRIBUTE_NOT_CONTENT_INDEXED;
     SetFileAttributes(filename.c_str(), attrs);
   }
-#endif  // OS_WINDOWS
+#endif  // OS_WIN
   // Be patient as we set pragmas.
   sqlite3_busy_timeout(*db, numeric_limits<int>::max());
 #ifndef DISABLE_SQLITE_FULL_FSYNC

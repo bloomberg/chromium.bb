@@ -9,7 +9,7 @@
 #include <iterator>
 #include <string>
 
-#include "chrome/browser/sync/util/compat-file.h"
+#include "chrome/browser/sync/util/compat_file.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
 template <typename StringType>

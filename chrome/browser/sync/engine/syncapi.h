@@ -39,8 +39,9 @@
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCAPI_H_
 
 #include "base/basictypes.h"
+#include "build/build_config.h"
 
-#if (defined(OS_WIN) || defined(OS_WINDOWS))
+#if defined(OS_WIN)
 typedef wchar_t sync_char16;
 #else
 typedef uint16 sync_char16;
@@ -48,7 +49,7 @@ typedef uint16 sync_char16;
 
 // The MSVC compiler for Windows requires that any classes exported by, or
 // imported from, a dynamic library be decorated with the following fanciness.
-#if (defined(OS_WIN) || defined(OS_WINDOWS))
+#if defined(OS_WIN)
 #if COMPILING_SYNCAPI_LIBRARY
 #define SYNC_EXPORT __declspec(dllexport)
 #elif COMPILING_SYNCAPI_STUB
@@ -58,7 +59,7 @@ typedef uint16 sync_char16;
 #endif
 #else
 #define SYNC_EXPORT
-#endif  // OS_WIN || OS_WINDOWS
+#endif  // OS_WIN
 
 // Forward declarations of internal class types so that sync API objects
 // may have opaque pointers to these types.

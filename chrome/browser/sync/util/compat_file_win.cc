@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef OS_WINDOWS
+#include "chrome/browser/sync/util/compat_file.h"
+
+#include "build/build_config.h"
+
+#ifndef OS_WIN
 #error Compile this file on Windows only.
 #endif
-
-#include "chrome/browser/sync/util/compat-file.h"
-
-#include <windows.h>
 
 const wchar_t* const kPathSeparator = L"\\";
 

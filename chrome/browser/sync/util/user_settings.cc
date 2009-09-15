@@ -7,7 +7,9 @@
 
 #include "chrome/browser/sync/util/user_settings.h"
 
-#if defined(OS_WINDOWS)
+#include "build/build_config.h"
+
+#if defined(OS_WIN)
 #include <windows.h>
 #endif
 
@@ -178,7 +180,7 @@ bool UserSettings::Init(const PathString& settings_path) {
     }
     ExecOrDie(dbhandle.get(), "COMMIT TRANSACTION");
   }
-#ifdef OS_WINDOWS
+#ifdef OS_WIN
   // Do not index this file. Scanning can occur every time we close the file,
   // which causes long delays in SQLite's file locking.
   const DWORD attrs = GetFileAttributes(settings_path.c_str());

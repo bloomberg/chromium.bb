@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using browser_sync::ToPathString;
@@ -34,7 +35,7 @@ TEST_F(CharacterSetConverterTest, ASCIIConversionTest) {
   ToPathString to_16(ascii);
   ASSERT_TRUE(to_16.good());
   ASSERT_TRUE(PathString(wide) == to_16.get_string16());
-#ifdef OS_WINDOWS
+#ifdef OS_WIN
   // On Linux, PathString is already UTF8
   ASSERT_EQ(string(ascii), static_cast<string>(ToUTF8(wide)));
 #endif
@@ -43,7 +44,7 @@ TEST_F(CharacterSetConverterTest, ASCIIConversionTest) {
   // ASSERT_TRUE(wide == ToPathString(utf8).get_string16());
 }
 
-#ifdef OS_WINDOWS
+#ifdef OS_WIN
   // On Linux, PathString is already UTF8
 TEST_F(CharacterSetConverterTest, UnicodeConversionText) {
   // Source data obtained by running od -b on files saved in utf-8 and unicode
@@ -107,7 +108,7 @@ TEST_F(CharacterSetConverterTest, AppendPathStringTests) {
   ASSERT_TRUE(out == PathString(PSTR("onetwothree")));
 }
 
-#ifdef OS_WINDOWS
+#ifdef OS_WIN
 namespace {
 // See http://en.wikipedia.org/wiki/UTF-16 for an explanation of UTF16.
 // For a test case we use the UTF-8 and UTF-16 encoding of char 119070

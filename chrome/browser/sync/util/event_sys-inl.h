@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/port.h"
-#include "chrome/browser/sync/util/compat-pthread.h"
+#include "chrome/browser/sync/util/compat_pthread.h"
 #include "chrome/browser/sync/util/event_sys.h"
 #include "chrome/browser/sync/util/pthread_helpers.h"
 #include "chrome/browser/sync/util/sync_types.h"

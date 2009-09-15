@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "build/build_config.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -164,7 +165,7 @@ class SyncerUtil {
   DISALLOW_COPY_AND_ASSIGN(SyncerUtil);
 };
 
-#ifndef OS_WINDOWS
+#ifndef OS_WIN
 
 // time.h on Linux and Mac both return seconds since the epoch, this should
 // be converted to milliseconds.

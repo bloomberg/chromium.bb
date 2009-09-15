@@ -6,7 +6,7 @@
 #error Compile this file on Mac OS X or Linux only.
 #endif
 
-#include "chrome/browser/sync/util/compat-file.h"
+#include "chrome/browser/sync/util/compat_file.h"
 
 const char* const kPathSeparator = "/";
 

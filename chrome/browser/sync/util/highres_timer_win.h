@@ -4,8 +4,8 @@
 //
 // High resolution timer functions for use in Windows.
 
-#ifndef CHROME_BROWSER_SYNC_UTIL_HIGHRES_TIMER_WIN32_H_
-#define CHROME_BROWSER_SYNC_UTIL_HIGHRES_TIMER_WIN32_H_
+#ifndef CHROME_BROWSER_SYNC_UTIL_HIGHRES_TIMER_WIN_H_
+#define CHROME_BROWSER_SYNC_UTIL_HIGHRES_TIMER_WIN_H_
 
 #include <windows.h>
 
@@ -75,4 +75,4 @@ inline ULONGLONG HighresTimer::GetElapsedTicks() const {
   return start_ticks_ - GetCurrentTicks();
 }
 
-#endif  // CHROME_BROWSER_SYNC_UTIL_HIGHRES_TIMER_WIN32_H_
+#endif  // CHROME_BROWSER_SYNC_UTIL_HIGHRES_TIMER_WIN_H_

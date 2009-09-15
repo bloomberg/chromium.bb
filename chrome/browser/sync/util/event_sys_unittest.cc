@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/port.h"
+#include "build/build_config.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -222,7 +223,7 @@ class ThreadTester : public EventListener<TestEvent> {
     remove_event_mutex_.Unlock();
 
     // Windows and posix use different functions to sleep.
-#ifdef OS_WINDOWS
+#ifdef OS_WIN
     Sleep(1);
 #else
     sleep(1);

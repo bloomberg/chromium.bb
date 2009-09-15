@@ -9,19 +9,20 @@
 
 #include "base/logging.h"
 #include "base/port.h"
+#include "build/build_config.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 
-#ifndef OS_WINDOWS
+#ifndef OS_WIN
 #error Compile this file on Windows only.
 #endif
 
 using std::string;
 
-#if OS_WINDOWS
+#if OS_WIN
 const char PATH_SEPARATOR = '\\';
 #else
 const char PATH_SEPARATOR = '/';
-#endif  // OS_WINDOWS
+#endif  // OS_WIN
 
 
 static PathString RemoveTrailingSlashes16(PathString str) {

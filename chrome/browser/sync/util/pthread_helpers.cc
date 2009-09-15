@@ -14,7 +14,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 
-#ifdef OS_WINDOWS
+#ifdef OS_WIN
 
 namespace {
 
@@ -60,10 +60,10 @@ void* ThreadMainProc(void* parameter) {
 
 }  // namespace
 
-#endif  // OS_WINDOWS
+#endif  // OS_WIN
 
 thread_handle CreatePThread(void *(*start) (void *), void* parameter) {
-#ifdef OS_WINDOWS
+#ifdef OS_WIN
   scoped_ptr<ThreadStartParams> param(new ThreadStartParams);
   if (NULL == param.get())
     return NULL;
@@ -98,11 +98,11 @@ thread_handle CreatePThread(void *(*start) (void *), void* parameter) {
   } else {
     return 0;
   }
-#endif  // OS_WINDOWS
+#endif  // OS_WIN
 }
 
 struct timespec GetPThreadAbsoluteTime(uint32 ms) {
-#ifdef OS_WINDOWS
+#ifdef OS_WIN
   FILETIME filenow;
   GetSystemTimeAsFileTime(&filenow);
   ULARGE_INTEGER n;
@@ -130,11 +130,11 @@ struct timespec GetPThreadAbsoluteTime(uint32 ms) {
   deadline.tv_sec += ms / 1000;
   deadline.tv_nsec = (ms % 1000) * 1000000;
   return deadline;
-#endif  // OS_WINDOWS
+#endif  // OS_WIN
 }
 
 void NameCurrentThreadForDebugging(char* name) {
-#if defined(OS_WINDOWS)
+#if defined(OS_WIN)
   // This implementation is taken from Chromium's platform_thread framework.
   // The information on how to set the thread name comes from a MSDN article:
   // http://msdn2.microsoft.com/en-us/library/xcb2z8hs.aspx
@@ -158,5 +158,5 @@ void NameCurrentThreadForDebugging(char* name) {
                    reinterpret_cast<DWORD_PTR*>(&info));
   } __except(EXCEPTION_CONTINUE_EXECUTION) {
   }
-#endif  // defined(OS_WINDOWS)
+#endif  // defined(OS_WIN)
 }

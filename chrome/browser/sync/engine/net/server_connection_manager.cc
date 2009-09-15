@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "build/build_config.h"
 #include "chrome/browser/sync/engine/net/http_return.h"
 #include "chrome/browser/sync/engine/net/url_translator.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -301,7 +302,7 @@ void ServerConnectionManager::ResetConnection() {
 }
 
 bool ServerConnectionManager::IncrementErrorCount() {
-#ifdef OS_WINDOWS
+#ifdef OS_WIN
   error_count_mutex_.Lock();
   error_count_++;
 

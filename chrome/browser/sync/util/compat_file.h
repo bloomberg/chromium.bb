@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// File compatability routines. Useful to delete database files with.
+// File compatibility routines. Useful to delete database files with.
 
 #ifndef CHROME_BROWSER_SYNC_UTIL_COMPAT_FILE_H_
 #define CHROME_BROWSER_SYNC_UTIL_COMPAT_FILE_H_
@@ -10,6 +10,8 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#include "build/build_config.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
 extern const PathChar* const kPathSeparator;
@@ -18,7 +20,7 @@ extern const PathChar* const kPathSeparator;
 // Returns 0 on success, non-zero on failure.
 int PathRemove(const PathString& path);
 
-#ifdef OS_WINDOWS
+#ifdef OS_WIN
 inline int PathRemove(const PathString& path) {
   return _wremove(path.c_str());
 }

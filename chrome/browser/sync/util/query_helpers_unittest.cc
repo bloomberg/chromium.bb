@@ -7,7 +7,7 @@
 #include <limits>
 #include <string>
 
-#include "chrome/browser/sync/util/compat-file.h"
+#include "chrome/browser/sync/util/compat_file.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::numeric_limits;

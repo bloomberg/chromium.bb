@@ -96,6 +96,9 @@ deps_os = {
 
     "src/third_party/ffmpeg/binaries/chromium":
       "/trunk/deps/third_party/ffmpeg/binaries/win@25436",
+
+    "src/third_party/pthreads-win32":
+      "/trunk/deps/third_party/pthreads-win32@26080",
   },
   "mac": {
     "src/third_party/GTM":

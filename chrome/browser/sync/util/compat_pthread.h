@@ -3,22 +3,23 @@
 // found in the LICENSE file.
 //
 // Pthread compatability routines.
+// TODO(timsteele): This file is deprecated. Use PlatformThread.
 
 #ifndef CHROME_BROWSER_SYNC_UTIL_COMPAT_PTHREAD_H_
 #define CHROME_BROWSER_SYNC_UTIL_COMPAT_PTHREAD_H_
 
-// TODO(timsteele): This file is deprecated. Use PlatformThread.
 #include "base/platform_thread.h"
+#include "build/build_config.h"
 
 #define ThreadId PlatformThreadId
 
-#ifndef OS_WINDOWS
+#ifndef OS_WIN
 inline ThreadId GetCurrentThreadId() {
   return PlatformThread::CurrentId();
 }
-#endif  // OS_WINDOWS
+#endif  // OS_WIN
 
-#if (!defined(OS_WINDOWS) && !defined(OS_MACOSX))
+#if (!defined(OS_WIN) && !defined(OS_MACOSX))
 // TODO(timsteele): What the heck is this?
 inline int sem_post_multiple(sem_t* sem, int number) {
   int i;
@@ -33,6 +34,6 @@ inline int sem_post_multiple(sem_t* sem, int number) {
   }
   return 0;
 }
-#endif  // (!defined(OS_WINDOWS) && !defined(OS_MACOSX))
+#endif  // (!defined(OS_WIN) && !defined(OS_MACOSX))
 
 #endif  // CHROME_BROWSER_SYNC_UTIL_COMPAT_PTHREAD_H_

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
 
+#include "build/build_config.h"
+
 #ifdef OS_MACOSX
 #include <CoreFoundation/CoreFoundation.h>
 #elif defined(OS_LINUX)
@@ -67,7 +69,7 @@ static void PathNameMatch16WithEscape(sqlite3_context* context,
 }
 
 static void RegisterPathNameCollate(sqlite3* dbhandle) {
-#ifdef OS_WINDOWS
+#ifdef OS_WIN
   const int collate = SQLITE_UTF16;
 #else
   const int collate = SQLITE_UTF8;
@@ -85,12 +87,12 @@ static void RegisterPathNameMatch(sqlite3* dbhandle) {
   // comparison on mac, so that would have to be fixed if
   // we really wanted to use PathNameMatch on mac/linux w/ the
   // same pattern strings as we do on windows.
-#ifdef OS_WINDOWS
+#ifdef OS_WIN
   CHECK(SQLITE_OK == sqlite3_create_function(dbhandle, "like",
       2, SQLITE_ANY, NULL, &PathNameMatch16, NULL, NULL));
   CHECK(SQLITE_OK == sqlite3_create_function(dbhandle, "like",
       3, SQLITE_ANY, NULL, &PathNameMatch16WithEscape, NULL, NULL));
-#endif  // OS_WINDOWS
+#endif  // OS_WIN
 }
 
 static inline bool IsSqliteErrorOurFault(int result) {

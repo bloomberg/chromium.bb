@@ -13,6 +13,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "chrome/browser/sync/util/sync_types.h"
 #include "third_party/sqlite/preprocessed/sqlite3.h"
 

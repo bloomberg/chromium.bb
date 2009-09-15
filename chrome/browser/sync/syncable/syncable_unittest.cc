@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/syncable/syncable.h"
 
+#include "build/build_config.h"
+
 #include <sys/types.h>
 
 #include <iostream>
@@ -12,13 +14,13 @@
 
 // TODO(ncarter): Winnow down the OS-specific includes from the test
 // file.
-#if defined(OS_WINDOWS)
+#if defined(OS_WIN)
 #include <tchar.h>
 #include <atlbase.h>
 #include <process.h>
-#endif  // defined(OS_WINDOWS)
+#endif  // defined(OS_WIN)
 
-#if !defined(OS_WINDOWS)
+#if !defined(OS_WIN)
 #define MAX_PATH PATH_MAX
 #include <strstream>
 #include <ostream>
@@ -26,7 +28,7 @@
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #include <sys/times.h>
-#endif  // !defined(OS_WINDOWS)
+#endif  // !defined(OS_WIN)
 
 #include "base/at_exit.h"
 #include "base/logging.h"
@@ -35,7 +37,7 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/util/character_set_converters.h"
 #include "chrome/browser/sync/util/closure.h"
-#include "chrome/browser/sync/util/compat-file.h"
+#include "chrome/browser/sync/util/compat_file.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
 #include "chrome/browser/sync/util/path_helpers.h"
 #include "chrome/browser/sync/util/pthread_helpers.h"
@@ -981,7 +983,7 @@ timespec operator + (const timespec& a, const timespec& b) {
 }
 
 void SleepMs(int milliseconds) {
-#ifdef OS_WINDOWS
+#ifdef OS_WIN
   Sleep(milliseconds);
 #else
   usleep(milliseconds * 1000);
@@ -1134,7 +1136,7 @@ TEST(Syncable, ComparePathNames) {
     }
   }
 
-#ifndef OS_WINDOWS
+#ifndef OS_WIN
   // This table lists (to the best of my knowledge) every pair of characters
   // in unicode such that:
   // for all i: tolower(kUpperToLowerMap[i].upper) = kUpperToLowerMap[i].lower
@@ -1474,10 +1476,10 @@ TEST(Syncable, ComparePathNames) {
       ADD_FAILURE() << msg.str();
     }
   }
-#endif  // not defined OS_WINDOWS
+#endif  // not defined OS_WIN
 }
 
-#ifdef OS_WINDOWS
+#ifdef OS_WIN
 TEST(Syncable, PathNameMatch) {
   // basic stuff, not too many otherwise we're testing the os.
   EXPECT_TRUE(PathNameMatch(PSTR("bob"), PSTR("bob")));
@@ -1500,7 +1502,7 @@ TEST(Syncable, PathNameMatch) {
   // other whitespace should give no matches.
   EXPECT_FALSE(PathNameMatch(PSTR("bob"), PSTR("\tbob")));
 }
-#endif  // OS_WINDOWS
+#endif  // OS_WIN
 
 }  // namespace
 
@@ -1532,7 +1534,7 @@ TEST_F(SyncableDirectoryTest, Bug1509232) {
 
 }  // namespace syncable
 
-#ifdef OS_WINDOWS
+#ifdef OS_WIN
 class LocalModule : public CAtlExeModuleT<LocalModule> { };
 LocalModule module_;
 
