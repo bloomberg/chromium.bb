@@ -61,6 +61,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [[self view] removeFromSuperview];
   [super dealloc];
 }
 
