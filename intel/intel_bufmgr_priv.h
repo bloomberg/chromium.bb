@@ -162,6 +162,11 @@ struct _drm_intel_bufmgr {
 	int (*bo_emit_reloc) (drm_intel_bo *bo, uint32_t offset,
 			      drm_intel_bo *target_bo, uint32_t target_offset,
 			      uint32_t read_domains, uint32_t write_domain);
+	int (*bo_emit_reloc_fence)(drm_intel_bo *bo, uint32_t offset,
+				   drm_intel_bo *target_bo,
+				   uint32_t target_offset,
+				   uint32_t read_domains,
+				   uint32_t write_domain);
 
 	/** Executes the command buffer pointed to by bo. */
 	int (*bo_exec) (drm_intel_bo *bo, int used,

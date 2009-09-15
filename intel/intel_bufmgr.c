@@ -173,6 +173,18 @@ drm_intel_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 					 read_domains, write_domain);
 }
 
+/* For fence registers, not GL fences */
+int
+drm_intel_bo_emit_reloc_fence(drm_intel_bo *bo, uint32_t offset,
+			      drm_intel_bo *target_bo, uint32_t target_offset,
+			      uint32_t read_domains, uint32_t write_domain)
+{
+	return bo->bufmgr->bo_emit_reloc_fence(bo, offset,
+					       target_bo, target_offset,
+					       read_domains, write_domain);
+}
+
+
 int drm_intel_bo_pin(drm_intel_bo *bo, uint32_t alignment)
 {
 	if (bo->bufmgr->bo_pin)

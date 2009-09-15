@@ -87,6 +87,7 @@ typedef struct _drm_intel_bufmgr_gem {
 	pthread_mutex_t lock;
 
 	struct drm_i915_gem_exec_object *exec_objects;
+	struct drm_i915_gem_exec_object2 *exec2_objects;
 	drm_intel_bo **exec_bos;
 	int exec_size;
 	int exec_count;
@@ -98,7 +99,15 @@ typedef struct _drm_intel_bufmgr_gem {
 	int available_fences;
 	int pci_device;
 	char bo_reuse;
+	char fenced_relocs;
 } drm_intel_bufmgr_gem;
+
+#define DRM_INTEL_RELOC_FENCE (1<<0)
+
+typedef struct _drm_intel_reloc_target_info {
+	drm_intel_bo *bo;
+	int flags;
+} drm_intel_reloc_target;
 
 struct _drm_intel_bo_gem {
 	drm_intel_bo bo;
@@ -128,8 +137,10 @@ struct _drm_intel_bo_gem {
 
 	/** Array passed to the DRM containing relocation information. */
 	struct drm_i915_gem_relocation_entry *relocs;
-	/** Array of bos corresponding to relocs[i].target_handle */
-	drm_intel_bo **reloc_target_bo;
+	/**
+	 * Array of info structs corresponding to relocs[i].target_handle etc
+	 */
+	drm_intel_reloc_target *reloc_target_info;
 	/** Number of entries in relocs */
 	int reloc_count;
 	/** Mapped address for the buffer, saved across map/unmap cycles */
@@ -292,7 +303,7 @@ drm_intel_gem_dump_validation_list(drm_intel_bufmgr_gem *bufmgr_gem)
 		}
 
 		for (j = 0; j < bo_gem->reloc_count; j++) {
-			drm_intel_bo *target_bo = bo_gem->reloc_target_bo[j];
+			drm_intel_bo *target_bo = bo_gem->reloc_target_info[j].bo;
 			drm_intel_bo_gem *target_gem =
 			    (drm_intel_bo_gem *) target_bo;
 
@@ -364,6 +375,51 @@ drm_intel_add_validate_buffer(drm_intel_bo *bo)
 	bufmgr_gem->exec_count++;
 }
 
+static void
+drm_intel_add_validate_buffer2(drm_intel_bo *bo, int need_fence)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
+	int index;
+
+	if (bo_gem->validate_index != -1)
+		return;
+
+	/* Extend the array of validation entries as necessary. */
+	if (bufmgr_gem->exec_count == bufmgr_gem->exec_size) {
+		int new_size = bufmgr_gem->exec_size * 2;
+
+		if (new_size == 0)
+			new_size = 5;
+
+		bufmgr_gem->exec2_objects =
+			realloc(bufmgr_gem->exec2_objects,
+				sizeof(*bufmgr_gem->exec2_objects) * new_size);
+		bufmgr_gem->exec_bos =
+			realloc(bufmgr_gem->exec_bos,
+				sizeof(*bufmgr_gem->exec_bos) * new_size);
+		bufmgr_gem->exec_size = new_size;
+	}
+
+	index = bufmgr_gem->exec_count;
+	bo_gem->validate_index = index;
+	/* Fill in array entry */
+	bufmgr_gem->exec2_objects[index].handle = bo_gem->gem_handle;
+	bufmgr_gem->exec2_objects[index].relocation_count = bo_gem->reloc_count;
+	bufmgr_gem->exec2_objects[index].relocs_ptr = (uintptr_t)bo_gem->relocs;
+	bufmgr_gem->exec2_objects[index].alignment = 0;
+	bufmgr_gem->exec2_objects[index].offset = 0;
+	bufmgr_gem->exec_bos[index] = bo;
+	bufmgr_gem->exec2_objects[index].flags = 0;
+	bufmgr_gem->exec2_objects[index].rsvd1 = 0;
+	bufmgr_gem->exec2_objects[index].rsvd2 = 0;
+	if (need_fence) {
+		bufmgr_gem->exec2_objects[index].flags |=
+			EXEC_OBJECT_NEEDS_FENCE;
+	}
+	bufmgr_gem->exec_count++;
+}
+
 #define RELOC_BUF_SIZE(x) ((I915_RELOC_HEADER + x * I915_RELOC0_STRIDE) * \
 	sizeof(uint32_t))
 
@@ -401,15 +457,16 @@ drm_intel_setup_reloc_list(drm_intel_bo *bo)
 
 	bo_gem->relocs = malloc(max_relocs *
 				sizeof(struct drm_i915_gem_relocation_entry));
-	bo_gem->reloc_target_bo = malloc(max_relocs * sizeof(drm_intel_bo *));
-	if (bo_gem->relocs == NULL || bo_gem->reloc_target_bo == NULL) {
+	bo_gem->reloc_target_info = malloc(max_relocs *
+					   sizeof(drm_intel_reloc_target *));
+	if (bo_gem->relocs == NULL || bo_gem->reloc_target_info == NULL) {
 		bo_gem->has_error = 1;
 
 		free (bo_gem->relocs);
 		bo_gem->relocs = NULL;
 
-		free (bo_gem->reloc_target_bo);
-		bo_gem->reloc_target_bo = NULL;
+		free (bo_gem->reloc_target_info);
+		bo_gem->reloc_target_info = NULL;
 
 		return 1;
 	}
@@ -704,10 +761,6 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 	}
 	bo_gem->tiling_mode = get_tiling.tiling_mode;
 	bo_gem->swizzle_mode = get_tiling.swizzle_mode;
-	if (bo_gem->tiling_mode == I915_TILING_NONE)
-		bo_gem->reloc_tree_fences = 0;
-	else
-		bo_gem->reloc_tree_fences = 1;
 	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem);
 
 	DBG("bo_create_from_handle: %d (%s)\n", handle, bo_gem->name);
@@ -777,7 +830,7 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 	/* Unreference all the target buffers */
 	for (i = 0; i < bo_gem->reloc_count; i++) {
 		drm_intel_gem_bo_unreference_locked_timed(bo_gem->
-							  reloc_target_bo[i],
+							  reloc_target_info[i].bo,
 							  time);
 	}
 	bo_gem->reloc_count = 0;
@@ -787,9 +840,9 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 	    bo_gem->gem_handle, bo_gem->name);
 
 	/* release memory associated with this object */
-	if (bo_gem->reloc_target_bo) {
-		free(bo_gem->reloc_target_bo);
-		bo_gem->reloc_target_bo = NULL;
+	if (bo_gem->reloc_target_info) {
+		free(bo_gem->reloc_target_info);
+		bo_gem->reloc_target_info = NULL;
 	}
 	if (bo_gem->relocs) {
 		free(bo_gem->relocs);
@@ -1162,6 +1215,7 @@ drm_intel_bufmgr_gem_destroy(drm_intel_bufmgr *bufmgr)
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bufmgr;
 	int i;
 
+	free(bufmgr_gem->exec2_objects);
 	free(bufmgr_gem->exec_objects);
 	free(bufmgr_gem->exec_bos);
 
@@ -1195,9 +1249,10 @@ drm_intel_bufmgr_gem_destroy(drm_intel_bufmgr *bufmgr)
  * last known offset in target_bo.
  */
 static int
-drm_intel_gem_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
-			    drm_intel_bo *target_bo, uint32_t target_offset,
-			    uint32_t read_domains, uint32_t write_domain)
+do_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
+		 drm_intel_bo *target_bo, uint32_t target_offset,
+		 uint32_t read_domains, uint32_t write_domain,
+		 int need_fence)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
@@ -1210,6 +1265,13 @@ drm_intel_gem_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 		bo_gem->has_error = 1;
 		return -ENOMEM;
 	}
+
+	if (target_bo_gem->tiling_mode == I915_TILING_NONE)
+		need_fence = 0;
+
+	/* We never use HW fences for rendering on 965+ */
+	if (IS_GEN4(bufmgr_gem))
+		need_fence = 0;
 
 	/* Create a new relocation list if needed */
 	if (bo_gem->relocs == NULL && drm_intel_setup_reloc_list(bo))
@@ -1227,6 +1289,11 @@ drm_intel_gem_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 	 */
 	assert(!bo_gem->used_as_reloc_target);
 	bo_gem->reloc_tree_size += target_bo_gem->reloc_tree_size;
+	/* An object needing a fence is a tiled buffer, and so it won't have
+	 * relocs to other buffers.
+	 */
+	if (need_fence)
+		target_bo_gem->reloc_tree_fences = 1;
 	bo_gem->reloc_tree_fences += target_bo_gem->reloc_tree_fences;
 
 	/* Flag the target to disallow further relocations in it. */
@@ -1240,12 +1307,39 @@ drm_intel_gem_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 	bo_gem->relocs[bo_gem->reloc_count].write_domain = write_domain;
 	bo_gem->relocs[bo_gem->reloc_count].presumed_offset = target_bo->offset;
 
-	bo_gem->reloc_target_bo[bo_gem->reloc_count] = target_bo;
+	bo_gem->reloc_target_info[bo_gem->reloc_count].bo = target_bo;
 	drm_intel_gem_bo_reference(target_bo);
+	if (need_fence)
+		bo_gem->reloc_target_info[bo_gem->reloc_count].flags =
+			DRM_INTEL_RELOC_FENCE;
+	else
+		bo_gem->reloc_target_info[bo_gem->reloc_count].flags = 0;
 
 	bo_gem->reloc_count++;
 
 	return 0;
+}
+
+static int
+drm_intel_gem_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
+			    drm_intel_bo *target_bo, uint32_t target_offset,
+			    uint32_t read_domains, uint32_t write_domain)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
+
+	return do_bo_emit_reloc(bo, offset, target_bo, target_offset,
+				read_domains, write_domain,
+				!bufmgr_gem->fenced_relocs);
+}
+
+static int
+drm_intel_gem_bo_emit_reloc_fence(drm_intel_bo *bo, uint32_t offset,
+				  drm_intel_bo *target_bo,
+				  uint32_t target_offset,
+				  uint32_t read_domains, uint32_t write_domain)
+{
+	return do_bo_emit_reloc(bo, offset, target_bo, target_offset,
+				read_domains, write_domain, 1);
 }
 
 /**
@@ -1263,7 +1357,7 @@ drm_intel_gem_bo_process_reloc(drm_intel_bo *bo)
 		return;
 
 	for (i = 0; i < bo_gem->reloc_count; i++) {
-		drm_intel_bo *target_bo = bo_gem->reloc_target_bo[i];
+		drm_intel_bo *target_bo = bo_gem->reloc_target_info[i].bo;
 
 		/* Continue walking the tree depth-first. */
 		drm_intel_gem_bo_process_reloc(target_bo);
@@ -1272,6 +1366,31 @@ drm_intel_gem_bo_process_reloc(drm_intel_bo *bo)
 		drm_intel_add_validate_buffer(target_bo);
 	}
 }
+
+static void
+drm_intel_gem_bo_process_reloc2(drm_intel_bo *bo)
+{
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
+	int i;
+
+	if (bo_gem->relocs == NULL)
+		return;
+
+	for (i = 0; i < bo_gem->reloc_count; i++) {
+		drm_intel_bo *target_bo = bo_gem->reloc_target_info[i].bo;
+		int need_fence;
+
+		/* Continue walking the tree depth-first. */
+		drm_intel_gem_bo_process_reloc2(target_bo);
+
+		need_fence = (bo_gem->reloc_target_info[i].flags &
+			      DRM_INTEL_RELOC_FENCE);
+
+		/* Add the target to the validate list */
+		drm_intel_add_validate_buffer2(target_bo, need_fence);
+	}
+}
+
 
 static void
 drm_intel_update_buffer_offsets(drm_intel_bufmgr_gem *bufmgr_gem)
@@ -1289,6 +1408,25 @@ drm_intel_update_buffer_offsets(drm_intel_bufmgr_gem *bufmgr_gem)
 			    (unsigned long long)bufmgr_gem->exec_objects[i].
 			    offset);
 			bo->offset = bufmgr_gem->exec_objects[i].offset;
+		}
+	}
+}
+
+static void
+drm_intel_update_buffer_offsets2 (drm_intel_bufmgr_gem *bufmgr_gem)
+{
+	int i;
+
+	for (i = 0; i < bufmgr_gem->exec_count; i++) {
+		drm_intel_bo *bo = bufmgr_gem->exec_bos[i];
+		drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
+
+		/* Update the buffer offset */
+		if (bufmgr_gem->exec2_objects[i].offset != bo->offset) {
+			DBG("BO %d (%s) migrated: 0x%08lx -> 0x%08llx\n",
+			    bo_gem->gem_handle, bo_gem->name, bo->offset,
+			    (unsigned long long)bufmgr_gem->exec2_objects[i].offset);
+			bo->offset = bufmgr_gem->exec2_objects[i].offset;
 		}
 	}
 }
@@ -1364,6 +1502,70 @@ drm_intel_gem_bo_exec(drm_intel_bo *bo, int used,
 }
 
 static int
+drm_intel_gem_bo_exec2(drm_intel_bo *bo, int used,
+		       drm_clip_rect_t *cliprects, int num_cliprects,
+		       int DR4)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
+	struct drm_i915_gem_execbuffer2 execbuf;
+	int ret, i;
+
+	pthread_mutex_lock(&bufmgr_gem->lock);
+	/* Update indices and set up the validate list. */
+	drm_intel_gem_bo_process_reloc2(bo);
+
+	/* Add the batch buffer to the validation list.  There are no relocations
+	 * pointing to it.
+	 */
+	drm_intel_add_validate_buffer2(bo, 0);
+
+	execbuf.buffers_ptr = (uintptr_t)bufmgr_gem->exec2_objects;
+	execbuf.buffer_count = bufmgr_gem->exec_count;
+	execbuf.batch_start_offset = 0;
+	execbuf.batch_len = used;
+	execbuf.cliprects_ptr = (uintptr_t)cliprects;
+	execbuf.num_cliprects = num_cliprects;
+	execbuf.DR1 = 0;
+	execbuf.DR4 = DR4;
+	execbuf.flags = 0;
+	execbuf.rsvd1 = 0;
+	execbuf.rsvd2 = 0;
+
+	do {
+		ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_EXECBUFFER2,
+			    &execbuf);
+	} while (ret != 0 && errno == EAGAIN);
+
+	if (ret != 0 && errno == ENOMEM) {
+		fprintf(stderr,
+			"Execbuffer fails to pin. "
+			"Estimate: %u. Actual: %u. Available: %u\n",
+			drm_intel_gem_estimate_batch_space(bufmgr_gem->exec_bos,
+							   bufmgr_gem->exec_count),
+			drm_intel_gem_compute_batch_space(bufmgr_gem->exec_bos,
+							  bufmgr_gem->exec_count),
+			(unsigned int) bufmgr_gem->gtt_size);
+	}
+	drm_intel_update_buffer_offsets2(bufmgr_gem);
+
+	if (bufmgr_gem->bufmgr.debug)
+		drm_intel_gem_dump_validation_list(bufmgr_gem);
+
+	for (i = 0; i < bufmgr_gem->exec_count; i++) {
+		drm_intel_bo *bo = bufmgr_gem->exec_bos[i];
+		drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
+
+		/* Disconnect the buffer from the validate list */
+		bo_gem->validate_index = -1;
+		bufmgr_gem->exec_bos[i] = NULL;
+	}
+	bufmgr_gem->exec_count = 0;
+	pthread_mutex_unlock(&bufmgr_gem->lock);
+
+	return 0;
+}
+
+static int
 drm_intel_gem_bo_pin(drm_intel_bo *bo, uint32_t alignment)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
@@ -1418,10 +1620,6 @@ drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 	if (bo_gem->global_name == 0 && *tiling_mode == bo_gem->tiling_mode)
 		return 0;
 
-	/* If we're going from non-tiling to tiling, bump fence count */
-	if (bo_gem->tiling_mode == I915_TILING_NONE)
-		bo_gem->reloc_tree_fences++;
-
 	memset(&set_tiling, 0, sizeof(set_tiling));
 	set_tiling.handle = bo_gem->gem_handle;
 
@@ -1435,10 +1633,6 @@ drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 	} while (ret == -1 && errno == EINTR);
 	bo_gem->tiling_mode = set_tiling.tiling_mode;
 	bo_gem->swizzle_mode = set_tiling.swizzle_mode;
-
-	/* If we're going from tiling to non-tiling, drop fence count */
-	if (bo_gem->tiling_mode == I915_TILING_NONE)
-		bo_gem->reloc_tree_fences--;
 
 	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem);
 
@@ -1496,6 +1690,21 @@ drm_intel_bufmgr_gem_enable_reuse(drm_intel_bufmgr *bufmgr)
 }
 
 /**
+ * Enable use of fenced reloc type.
+ *
+ * New code should enable this to avoid unnecessary fence register
+ * allocation.  If this option is not enabled, all relocs will have fence
+ * register allocated.
+ */
+void
+drm_intel_bufmgr_gem_enable_fenced_relocs(drm_intel_bufmgr *bufmgr)
+{
+    drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bufmgr;
+
+    bufmgr_gem->fenced_relocs = 1;
+}
+
+/**
  * Return the additional aperture space required by the tree of buffer objects
  * rooted at bo.
  */
@@ -1515,7 +1724,7 @@ drm_intel_gem_bo_get_aperture_space(drm_intel_bo *bo)
 	for (i = 0; i < bo_gem->reloc_count; i++)
 		total +=
 		    drm_intel_gem_bo_get_aperture_space(bo_gem->
-							reloc_target_bo[i]);
+							reloc_target_info[i].bo);
 
 	return total;
 }
@@ -1562,7 +1771,7 @@ drm_intel_gem_bo_clear_aperture_space_flag(drm_intel_bo *bo)
 
 	for (i = 0; i < bo_gem->reloc_count; i++)
 		drm_intel_gem_bo_clear_aperture_space_flag(bo_gem->
-							   reloc_target_bo[i]);
+							   reloc_target_info[i].bo);
 }
 
 /**
@@ -1686,9 +1895,9 @@ _drm_intel_gem_bo_references(drm_intel_bo *bo, drm_intel_bo *target_bo)
 	int i;
 
 	for (i = 0; i < bo_gem->reloc_count; i++) {
-		if (bo_gem->reloc_target_bo[i] == target_bo)
+		if (bo_gem->reloc_target_info[i].bo == target_bo)
 			return 1;
-		if (_drm_intel_gem_bo_references(bo_gem->reloc_target_bo[i],
+		if (_drm_intel_gem_bo_references(bo_gem->reloc_target_info[i].bo,
 						target_bo))
 			return 1;
 	}
@@ -1723,6 +1932,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	drm_i915_getparam_t gp;
 	int ret, i;
 	unsigned long size;
+	int exec2 = 0;
 
 	bufmgr_gem = calloc(1, sizeof(*bufmgr_gem));
 	if (bufmgr_gem == NULL)
@@ -1756,6 +1966,11 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 		fprintf(stderr, "get chip id failed: %d [%d]\n", ret, errno);
 		fprintf(stderr, "param: %d, val: %d\n", gp.param, *gp.value);
 	}
+
+	gp.param = I915_PARAM_HAS_EXECBUF2;
+	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
+	if (!ret)
+		exec2 = 1;
 
 	if (IS_GEN2(bufmgr_gem) || IS_GEN3(bufmgr_gem)) {
 		gp.param = I915_PARAM_NUM_FENCES_AVAIL;
@@ -1803,12 +2018,17 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	bufmgr_gem->bufmgr.bo_get_subdata = drm_intel_gem_bo_get_subdata;
 	bufmgr_gem->bufmgr.bo_wait_rendering = drm_intel_gem_bo_wait_rendering;
 	bufmgr_gem->bufmgr.bo_emit_reloc = drm_intel_gem_bo_emit_reloc;
+	bufmgr_gem->bufmgr.bo_emit_reloc_fence = drm_intel_gem_bo_emit_reloc_fence;
 	bufmgr_gem->bufmgr.bo_pin = drm_intel_gem_bo_pin;
 	bufmgr_gem->bufmgr.bo_unpin = drm_intel_gem_bo_unpin;
 	bufmgr_gem->bufmgr.bo_get_tiling = drm_intel_gem_bo_get_tiling;
 	bufmgr_gem->bufmgr.bo_set_tiling = drm_intel_gem_bo_set_tiling;
 	bufmgr_gem->bufmgr.bo_flink = drm_intel_gem_bo_flink;
-	bufmgr_gem->bufmgr.bo_exec = drm_intel_gem_bo_exec;
+	/* Use the new one if available */
+	if (exec2)
+		bufmgr_gem->bufmgr.bo_exec = drm_intel_gem_bo_exec2;
+	else
+		bufmgr_gem->bufmgr.bo_exec = drm_intel_gem_bo_exec;
 	bufmgr_gem->bufmgr.bo_busy = drm_intel_gem_bo_busy;
 	bufmgr_gem->bufmgr.bo_madvise = drm_intel_gem_bo_madvise;
 	bufmgr_gem->bufmgr.destroy = drm_intel_bufmgr_gem_destroy;

@@ -81,7 +81,7 @@
 		      (dev)->pci_device == 0x2E42 ||	\
 		      (dev)->pci_device == 0x0042 ||	\
 		      (dev)->pci_device == 0x0046 ||	\
-		      IS_965GM(dev) || \
+		      IS_I965GM(dev) || \
 		      IS_G4X(dev))
 
 #define IS_GM45(dev) ((dev)->pci_device == 0x2A42)
