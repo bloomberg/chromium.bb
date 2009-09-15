@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/automated_ui_tests/automated_ui_test_base.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -31,6 +32,29 @@
 #define MAYBE_CloseTab CloseTab
 #define MAYBE_CloseBrowserWindow CloseBrowserWindow
 #endif
+
+TEST_F(AutomatedUITestBase, FindInPage) {
+  ASSERT_TRUE(FindInPage());
+  bool is_visible;
+  ASSERT_TRUE(active_browser()->IsFindWindowFullyVisible(&is_visible));
+  EXPECT_TRUE(is_visible);
+}
+
+TEST_F(AutomatedUITestBase, Home) {
+  FilePath path_prefix(test_data_directory_.AppendASCII("session_history"));
+  GURL bot1(net::FilePathToFileURL(path_prefix.AppendASCII("bot1.html")));
+  NavigateToURL(bot1);  // To help verify that Home does something.
+
+  ASSERT_TRUE(Home());
+
+  GURL url;
+  ASSERT_TRUE(active_browser()->GetActiveTab()->GetCurrentURL(&url));
+  EXPECT_EQ(GURL(chrome::kAboutBlankURL), url);
+
+  std::wstring title;
+  ASSERT_TRUE(active_browser()->GetActiveTab()->GetTabTitle(&title));
+  EXPECT_EQ(L"", title);
+}
 
 TEST_F(AutomatedUITestBase, NewTab) {
   int tab_count;
@@ -293,4 +317,73 @@ TEST_F(AutomatedUITestBase, Navigate) {
   ASSERT_TRUE(ReloadPage());
   ASSERT_TRUE(GetActiveTab()->GetCurrentURL(&url));
   ASSERT_EQ(url2, url);
+}
+
+TEST_F(AutomatedUITestBase, SelectTab) {
+  FilePath filename(test_data_directory_);
+  filename = filename.AppendASCII("title2.html");
+  GURL url = net::FilePathToFileURL(filename);
+
+  ASSERT_TRUE(active_browser()->AppendTab(url));
+  ASSERT_TRUE(active_browser()->AppendTab(url));
+
+  int active_tab_index;
+  ASSERT_TRUE(active_browser()->GetActiveTabIndex(&active_tab_index));
+  ASSERT_EQ(2, active_tab_index);
+
+  ASSERT_TRUE(SelectNextTab());
+  ASSERT_TRUE(active_browser()->GetActiveTabIndex(&active_tab_index));
+  ASSERT_EQ(0, active_tab_index);
+
+  ASSERT_TRUE(SelectNextTab());
+  ASSERT_TRUE(active_browser()->GetActiveTabIndex(&active_tab_index));
+  ASSERT_EQ(1, active_tab_index);
+
+  ASSERT_TRUE(SelectPreviousTab());
+  ASSERT_TRUE(active_browser()->GetActiveTabIndex(&active_tab_index));
+  ASSERT_EQ(0, active_tab_index);
+
+  ASSERT_TRUE(SelectPreviousTab());
+  ASSERT_TRUE(active_browser()->GetActiveTabIndex(&active_tab_index));
+  ASSERT_EQ(2, active_tab_index);
+
+  ASSERT_TRUE(SelectPreviousTab());
+  ASSERT_TRUE(active_browser()->GetActiveTabIndex(&active_tab_index));
+  ASSERT_EQ(1, active_tab_index);
+
+  ASSERT_TRUE(SelectNextTab());
+  ASSERT_TRUE(active_browser()->GetActiveTabIndex(&active_tab_index));
+  ASSERT_EQ(2, active_tab_index);
+}
+
+TEST_F(AutomatedUITestBase, ShowBookmarkBar) {
+  ASSERT_TRUE(ShowBookmarkBar());
+  bool is_visible;
+  bool is_animating;
+  ASSERT_TRUE(active_browser()->GetBookmarkBarVisibility(&is_visible,
+                                                         &is_animating));
+  ASSERT_TRUE(is_visible);
+  ASSERT_FALSE(is_animating);
+
+  // Try second time to make sure it won't make the bookmark bar
+  // disappear.
+  ASSERT_TRUE(ShowBookmarkBar());
+  ASSERT_TRUE(active_browser()->GetBookmarkBarVisibility(&is_visible,
+                                                         &is_animating));
+  ASSERT_TRUE(is_visible);
+  ASSERT_FALSE(is_animating);
+}
+
+TEST_F(AutomatedUITestBase, ShowDownloads) {
+  ASSERT_TRUE(ShowDownloads());
+  GURL url;
+  ASSERT_TRUE(GetActiveTab()->GetCurrentURL(&url));
+  ASSERT_EQ(GURL(chrome::kChromeUIDownloadsURL), url);
+}
+
+TEST_F(AutomatedUITestBase, ShowHistory) {
+  ASSERT_TRUE(ShowHistory());
+  GURL url;
+  ASSERT_TRUE(GetActiveTab()->GetCurrentURL(&url));
+  ASSERT_EQ(GURL(chrome::kChromeUIHistoryURL), url);
 }

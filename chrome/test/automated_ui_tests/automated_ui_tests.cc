@@ -425,6 +425,8 @@ bool AutomatedUITest::DoAction(const std::string& action) {
                  << action.c_str();
   }
 
+  EXPECT_TRUE(did_complete_action) << action;
+
   if (!did_complete_action)
     xml_writer_.AddAttribute("failed_to_complete", "yes");
   xml_writer_.EndElement();
@@ -453,14 +455,6 @@ bool AutomatedUITest::ChangeEncoding() {
   }
 
   return RunCommandAsync((*encodings)[index].encoding_id);
-}
-
-bool AutomatedUITest::FindInPage() {
-  return RunCommandAsync(IDC_FIND);
-}
-
-bool AutomatedUITest::Home() {
-  return RunCommandAsync(IDC_HOME);
 }
 
 bool AutomatedUITest::JavaScriptConsole() {
@@ -525,26 +519,6 @@ bool AutomatedUITest::PressTabKey() {
 
 bool AutomatedUITest::PressUpArrow() {
   return SimulateKeyPressInActiveWindow(base::VKEY_UP, 0);
-}
-
-bool AutomatedUITest::SelectNextTab() {
-  return RunCommandAsync(IDC_SELECT_NEXT_TAB);
-}
-
-bool AutomatedUITest::SelectPreviousTab() {
-  return RunCommandAsync(IDC_SELECT_PREVIOUS_TAB);
-}
-
-bool AutomatedUITest::ShowBookmarkBar() {
-  return RunCommandAsync(IDC_SHOW_BOOKMARK_BAR);
-}
-
-bool AutomatedUITest::ShowDownloads() {
-  return RunCommandAsync(IDC_SHOW_DOWNLOADS);
-}
-
-bool AutomatedUITest::ShowHistory() {
-  return RunCommandAsync(IDC_SHOW_HISTORY);
 }
 
 bool AutomatedUITest::StarPage() {

@@ -57,12 +57,19 @@ class AutomatedUITestBase : public UITest {
   // drag the active tab over.
   bool DragActiveTab(bool drag_right);
 
+  // Activates "find in page" on the current page. Returns true on success.
+  bool FindInPage();
+
   // Go forward in active tab.
   // Returns true if successful, false otherwise.
   bool ForwardButton();
 
   // Opens an OffTheRecord browser window.
   bool GoOffTheRecord();
+
+  // Navigates to the Home page.
+  // Returns true if call to activate the accelerator is successful.
+  bool Home();
 
   // Navigates the activate tab to given url.
   bool Navigate(const GURL& url);
@@ -87,6 +94,26 @@ class AutomatedUITestBase : public UITest {
   // Restores a previously closed tab.
   // Returns true if the tab is successfully restored.
   bool RestoreTab();
+
+  // Activates the next tab on the active browser window.
+  // Returns true on success.
+  bool SelectNextTab();
+
+  // Activates the previous tab on the active browser window.
+  // Returns true on success.
+  bool SelectPreviousTab();
+
+  // Displays the bookmark bar.
+  // Returns true on success.
+  bool ShowBookmarkBar();
+
+  // Opens the Downloads page in the current active browser window.
+  // Returns true on success.
+  bool ShowDownloads();
+
+  // Opens the History page in the current active browser window.
+  // Returns true on success.
+  bool ShowHistory();
 
   // Runs the specified browser command in the current active browser.
   // See browser_commands.cc for the list of commands.
