@@ -2312,10 +2312,9 @@ BUG21767 : LayoutTests/fast/js/Object-keys.html = FAIL
 BUG21767 : LayoutTests/http/tests/security/cross-frame-access-enumeration.html = TIMEOUT
 
 // WK roll to 48371
-BUG_21840 : LayoutTests/http/tests/loading/basic-auth-resend-wrong-credentials.html = FAIL
-BUG_21840 : LayoutTests/http/tests/loading/basic-credentials-sent-automatically.html = FAIL
-BUG_21841 : LayoutTests/plugins/destroy-during-npp-new.html = FAIL
+BUG21840 : LayoutTests/http/tests/loading/basic-auth-resend-wrong-credentials.html = FAIL
+BUG21840 : LayoutTests/http/tests/loading/basic-credentials-sent-automatically.html = FAIL
+BUG21841 : LayoutTests/plugins/destroy-during-npp-new.html = FAIL
 
 // missing upstream baseline from 48368
-BUG_21842 SKIP WIN LINUX : LayoutTests/platform/win/accessibility/scroll-to-anchor.html = FAIL
-
+BUG21842 SKIP WIN LINUX : LayoutTests/platform/win/accessibility/scroll-to-anchor.html = FAIL
