@@ -213,6 +213,14 @@
    fun:get_glyphs_for_glyph_names
 }
 {
+   bug_20508c
+   Memcheck:Cond
+   fun:_eATSFontGetGlyphIDsForGlyphNames
+   fun:ATSFontGetGlyphIDsForGlyphNames
+   fun:ats_font_get_glyphs_for_glyph_names
+   fun:get_glyphs_for_glyph_names
+}
+{
    bug_20807
    Memcheck:Addr4
    fun:_ZNK12DynamicArray14getFirstNumberEv
@@ -670,6 +678,16 @@
    fun:sqlite3VdbeExec
    fun:sqlite3_step
    fun:sqlite3_exec
+   fun:_ZN7history16ArchivedDatabase16BeginTransactionEv
+}
+{
+   # Invalid write!
+   bug_20580_g
+   Memcheck:Addr4
+   fun:writeJournalHdr
+   fun:sqlite3PagerBegin
+   fun:sqlite3BtreeBeginTrans
+   ...
    fun:_ZN7history16ArchivedDatabase16BeginTransactionEv
 }
 {
