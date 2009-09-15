@@ -40,6 +40,7 @@
 
 #include <windows.h>
 #include <queue>
+#include "base/scoped_ptr.h"
 #include "core/cross/types.h"
 #include "command_buffer/common/cross/rpc.h"
 

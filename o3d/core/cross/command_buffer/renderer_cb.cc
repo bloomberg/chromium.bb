@@ -72,8 +72,8 @@ RendererCB::RendererCB(ServiceLocator* service_locator,
       cb_server_(NULL),
       frame_token_(0),
       state_manager_(new StateManager) {
-  DCHECK_GT(command_buffer_size, 0);
-  DCHECK_GT(transfer_memory_size, 0);
+  DCHECK_GT(command_buffer_size, 0U);
+  DCHECK_GT(transfer_memory_size, 0U);
   transfer_shm_ = command_buffer::CreateShm(transfer_memory_size);
   transfer_shm_address_ = command_buffer::MapShm(transfer_shm_,
                                                  transfer_memory_size);

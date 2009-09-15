@@ -75,8 +75,8 @@ struct TransferInfo {
 // Round a value up, so that it is divisible by the block size.
 static inline unsigned int RoundToBlockSize(unsigned int base,
                                             unsigned int block) {
-  DCHECK_GT(base, 0);
-  DCHECK_GT(block, 0);
+  DCHECK_GT(base, 0U);
+  DCHECK_GT(block, 0U);
   return block + base - 1 - (base - 1) % block;
 }
 

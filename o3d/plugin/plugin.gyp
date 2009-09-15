@@ -214,11 +214,11 @@
             },
           },
         ],
-        ['OS == "win" and renderer == "d3d9"',
+        ['OS == "win" and (renderer == "d3d9" or renderer == "cb")',
           {
             'link_settings': {
               'libraries': [
-                '"$(DXSDK_DIR)/Lib/x86/DxErr9.lib"',
+                '"$(DXSDK_DIR)/Lib/x86/DxErr.lib"',
                 '"$(DXSDK_DIR)/Lib/x86/d3dx9.lib"',
                 '-ld3d9.lib',
               ],

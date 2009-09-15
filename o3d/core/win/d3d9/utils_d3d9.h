@@ -37,7 +37,7 @@
 #define O3D_CORE_WIN_D3D9_UTILS_D3D9_H_
 
 #include <d3d9.h>
-#include <dxerr9.h>
+#include <dxerr.h>
 #include "base/logging.h"
 #include "core/cross/stream.h"
 
@@ -52,7 +52,7 @@ inline bool VerifyHResult(HRESULT hr, const char* file, int line,
   if (FAILED(hr)) {
     DLOG(ERROR) << "DX Error in file " << file
                 << " line " << line << L": "
-                << DXGetErrorString9(hr) << L": " << call;
+                << DXGetErrorString(hr) << L": " << call;
     return false;
   }
   return true;

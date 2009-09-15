@@ -472,8 +472,10 @@ BufferSyncInterface::ParseError GAPIDecoder::DoCommand(
         Uint32 enables = args[0].value_uint32;
         if (cmd::Unused::Get(enables) != 0)
           return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
-        bool line_smooth = cmd::LineSmoothEnable::Get(enables);
-        bool point_sprite = cmd::PointSpriteEnable::Get(enables);
+        // !! to convert int to bool in a way that does not generate a
+        // warning in visual studio.
+        bool line_smooth = !!cmd::LineSmoothEnable::Get(enables);
+        bool point_sprite = !!cmd::PointSpriteEnable::Get(enables);
         float point_size = args[1].value_float;
         gapi_->SetPointLineRaster(line_smooth, point_sprite, point_size);
         return BufferSyncInterface::PARSE_NO_ERROR;
@@ -673,7 +675,7 @@ BufferSyncInterface::ParseError GAPIDecoder::DecodeCreateTexture2D(
         (unused != 0) || (format >= texture::NUM_FORMATS))
       return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
     if (levels == 0) levels = max_levels;
-    bool enable_render_surfaces = flags;
+    bool enable_render_surfaces = !!flags;
     return gapi_->CreateTexture2D(id, width, height, levels,
                                   static_cast<texture::Format>(format), flags,
                                   enable_render_surfaces);
@@ -707,7 +709,7 @@ BufferSyncInterface::ParseError GAPIDecoder::DecodeCreateTexture3D(
         (format >= texture::NUM_FORMATS))
       return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
     if (levels == 0) levels = max_levels;
-    bool enable_render_surfaces = flags;
+    bool enable_render_surfaces = !!flags;
     return gapi_->CreateTexture3D(id, width, height, depth, levels,
                                   static_cast<texture::Format>(format), flags,
                                   enable_render_surfaces);
@@ -736,7 +738,7 @@ BufferSyncInterface::ParseError GAPIDecoder::DecodeCreateTextureCube(
         (unused2 != 0) || (format >= texture::NUM_FORMATS))
       return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
     if (levels == 0) levels = max_levels;
-    bool enable_render_surfaces = flags;
+    bool enable_render_surfaces = !!flags;
     return gapi_->CreateTextureCube(id, side, levels,
                                     static_cast<texture::Format>(format),
                                     flags, enable_render_surfaces);

@@ -197,7 +197,7 @@ unsigned int GetBlockSizeY(Format format);
 // down.
 static unsigned int GetMipMapDimension(unsigned int base,
                                        unsigned int level) {
-  DCHECK_GT(base, 0);
+  DCHECK_GT(base, 0U);
   return std::max(1U, base >> level);
 }
 }  // namespace texture

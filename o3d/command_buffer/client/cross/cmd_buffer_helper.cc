@@ -162,7 +162,7 @@ void CommandBufferHelper::WaitForAvailableEntries(unsigned int count) {
     // buffer, so we need to wrap. We will add noops all the way to the end,
     // but we need to make sure get wraps first, actually that get is 1 or
     // more (since put will wrap to 0 after we add the noops).
-    DCHECK_LE(1, put_);
+    DCHECK_LE(1U, put_);
     Flush();
     while (get_ > put_ || get_ == 0) WaitForGetChange();
     // Add the noops. By convention, a noop is a command 0 with no args.

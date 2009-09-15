@@ -92,9 +92,9 @@ Texture2DD3D9 *Texture2DD3D9::Create(GAPID3D9 *gapi,
                                      texture::Format format,
                                      unsigned int flags,
                                      bool enable_render_surfaces) {
-  DCHECK_GT(width, 0);
-  DCHECK_GT(height, 0);
-  DCHECK_GT(levels, 0);
+  DCHECK_GT(width, 0U);
+  DCHECK_GT(height, 0U);
+  DCHECK_GT(levels, 0U);
   D3DFORMAT d3d_format = D3DFormat(format);
   IDirect3DDevice9 *device = gapi->d3d_device();
   if (enable_render_surfaces) {
@@ -269,10 +269,10 @@ Texture3DD3D9 *Texture3DD3D9::Create(GAPID3D9 *gapi,
                                      texture::Format format,
                                      unsigned int flags,
                                      bool enable_render_surfaces) {
-  DCHECK_GT(width, 0);
-  DCHECK_GT(height, 0);
-  DCHECK_GT(depth, 0);
-  DCHECK_GT(levels, 0);
+  DCHECK_GT(width, 0U);
+  DCHECK_GT(height, 0U);
+  DCHECK_GT(depth, 0U);
+  DCHECK_GT(levels, 0U);
   D3DFORMAT d3d_format = D3DFormat(format);
   IDirect3DDevice9 *device = gapi->d3d_device();
   if (enable_render_surfaces) {
@@ -444,8 +444,8 @@ TextureCubeD3D9 *TextureCubeD3D9::Create(GAPID3D9 *gapi,
                                          texture::Format format,
                                          unsigned int flags,
                                          bool enable_render_surfaces) {
-  DCHECK_GT(side, 0);
-  DCHECK_GT(levels, 0);
+  DCHECK_GT(side, 0U);
+  DCHECK_GT(levels, 0U);
   D3DFORMAT d3d_format = D3DFormat(format);
   IDirect3DDevice9 *device = gapi->d3d_device();
   if (enable_render_surfaces) {

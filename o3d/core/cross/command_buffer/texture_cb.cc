@@ -106,13 +106,20 @@ void SetTextureDataBuffer(Texture::Format format,
                           unsigned int dst_pitch) {
   const uint8* src = static_cast<const uint8*>(src_data);
   uint8* dst = static_cast<uint8*>(dst_buffer);
-  size_t bytes_per_line = image::ComputePitch(format, src_width);
-  for (unsigned yy = 0; yy < src_height; ++yy) {
-    memcpy(dst, src, bytes_per_line);
+
+  size_t bytes_per_row = image::ComputePitch(format, src_width);
+  unsigned num_rows = src_height;
+  if (Texture::IsCompressedFormat(format)) {
+    num_rows = (num_rows + 3) / 4;
+  }
+
+  for (unsigned yy = 0; yy < num_rows; ++yy) {
+    memcpy(dst, src, bytes_per_row);
     src += src_pitch;
     dst += dst_pitch;
   }
 }
+
 // Sends the SET_TEXTURE_DATA command after formatting the args properly.
 void SetTextureData(RendererCB *renderer,
                     ResourceID texture_id,
@@ -402,7 +409,7 @@ bool Texture2DCB::PlatformSpecificLock(
     DCHECK_EQ(backing_bitmap_->width(), width());
     DCHECK_EQ(backing_bitmap_->height(), height());
     DCHECK_EQ(backing_bitmap_->format(), format());
-    DCHECK_GT(backing_bitmap_->num_mipmaps(), level);
+    DCHECK_GT(backing_bitmap_->num_mipmaps(), static_cast<unsigned int>(level));
     CopyBackResourceToBitmap(renderer_, resource_id_, level,
                              TextureCUBE::FACE_POSITIVE_X,
                              *backing_bitmap_.Get());
@@ -421,7 +428,7 @@ bool Texture2DCB::PlatformSpecificUnlock(int level) {
   DCHECK_EQ(backing_bitmap_->width(), width());
   DCHECK_EQ(backing_bitmap_->height(), height());
   DCHECK_EQ(backing_bitmap_->format(), format());
-  DCHECK_GT(backing_bitmap_->num_mipmaps(), level);
+  DCHECK_GT(backing_bitmap_->num_mipmaps(), static_cast<unsigned int>(level));
   if (LockedMode(level) != kReadOnly) {
     UpdateResourceFromBitmap(renderer_, resource_id_, level,
                              TextureCUBE::FACE_POSITIVE_X,
@@ -634,7 +641,7 @@ bool TextureCUBECB::PlatformSpecificLock(
     DCHECK_EQ(backing_bitmap->width(), edge_length());
     DCHECK_EQ(backing_bitmap->height(), edge_length());
     DCHECK_EQ(backing_bitmap->format(), format());
-    DCHECK_GT(backing_bitmap->num_mipmaps(), level);
+    DCHECK_GT(backing_bitmap->num_mipmaps(), static_cast<unsigned int>(level));
     CopyBackResourceToBitmap(renderer_, resource_id_, level,
                              TextureCUBE::FACE_POSITIVE_X, *backing_bitmap);
     has_levels_[face] |= 1 << level;
@@ -652,7 +659,7 @@ bool TextureCUBECB::PlatformSpecificUnlock(CubeFace face, int level) {
   DCHECK_EQ(backing_bitmap->width(), edge_length());
   DCHECK_EQ(backing_bitmap->height(), edge_length());
   DCHECK_EQ(backing_bitmap->format(), format());
-  DCHECK_GT(backing_bitmap->num_mipmaps(), level);
+  DCHECK_GT(backing_bitmap->num_mipmaps(), static_cast<unsigned int>(level));
 
   if (LockedMode(face, level) != kReadOnly) {
     UpdateResourceFromBitmap(renderer_, resource_id_, level, face,

@@ -112,7 +112,7 @@ class Texture2DCB : public Texture2D {
 
   // Returns true if the backing bitmap has the data for the level.
   bool HasLevel(unsigned int level) {
-    DCHECK_LT(level, levels());
+    DCHECK_LT(level, static_cast<unsigned int>(levels()));
     return (has_levels_ & (1 << level)) != 0;
   }
 
@@ -192,7 +192,7 @@ class TextureCUBECB : public TextureCUBE {
 
   // Returns true if the backing bitmap has the data for the level.
   bool HasLevel(CubeFace face, unsigned int level) {
-    DCHECK_LT(level, levels());
+    DCHECK_LT(level, static_cast<unsigned int>(levels()));
     return (has_levels_[face] & (1 << level)) != 0;
   }
 

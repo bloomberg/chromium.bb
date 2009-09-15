@@ -206,7 +206,15 @@ unsigned int VertexStructD3D9::SetStreams(GAPID3D9 *gapi) {
     }
     HR(d3d_device->SetStreamSource(i, vertex_buffer->d3d_vertex_buffer(), 0,
                                    pair.second));
-    max_vertices = std::min(max_vertices, vertex_buffer->size()/pair.second);
+
+    // TODO(apatrick): A zero size stride is valid. It means the first element
+    //    in the vertex buffer will be used for every vertex. There doesn't seem
+    //    to be enough information here to determine whether a zero stride
+    //    vertex buffer is big enough to contain a single element.
+    if (pair.second != 0) {
+      max_vertices = std::min(max_vertices,
+                              vertex_buffer->size() / pair.second);
+    }
   }
   return max_vertices;
 }

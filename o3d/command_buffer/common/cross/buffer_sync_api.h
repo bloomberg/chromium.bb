@@ -41,7 +41,7 @@ namespace o3d {
 namespace command_buffer {
 
 // Command buffer type.
-typedef ptrdiff_t CommandBufferOffset;
+typedef size_t CommandBufferOffset;
 
 // Interface class for the Command Buffer Synchronous API.
 // This is the part of the command buffer API that is accessible through the

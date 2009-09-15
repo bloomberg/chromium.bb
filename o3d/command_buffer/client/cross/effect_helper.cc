@@ -175,7 +175,7 @@ bool EffectHelper::GetParamStrings(EffectParamDesc *desc) {
   const char *raw_desc_string = reinterpret_cast<char *>(raw_desc);
   if (raw_desc->name_offset) {
     DCHECK_LE(raw_desc->name_offset + raw_desc->name_size, raw_desc->size);
-    DCHECK_GT(raw_desc->name_size, 0);
+    DCHECK_GT(raw_desc->name_size, 0U);
     DCHECK_EQ(raw_desc_string[raw_desc->name_offset + raw_desc->name_size - 1],
               0);
     desc->name = String(raw_desc_string + raw_desc->name_offset,
@@ -186,7 +186,7 @@ bool EffectHelper::GetParamStrings(EffectParamDesc *desc) {
   if (raw_desc->semantic_offset) {
     DCHECK_LE(raw_desc->semantic_offset + raw_desc->semantic_size,
               raw_desc->size);
-    DCHECK_GT(raw_desc->semantic_size, 0);
+    DCHECK_GT(raw_desc->semantic_size, 0U);
     DCHECK_EQ(raw_desc_string[raw_desc->semantic_offset +
                               raw_desc->semantic_size - 1],
               0);

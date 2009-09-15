@@ -116,7 +116,7 @@ void SamplerD3D9::SetStates(sampler::AddressingMode addressing_u,
   // These are validated in GAPIDecoder.cc
   DCHECK_NE(mag_filter, sampler::NONE);
   DCHECK_NE(min_filter, sampler::NONE);
-  DCHECK_GT(max_anisotropy, 0);
+  DCHECK_GT(max_anisotropy, 0U);
   d3d_address_u_ = AddressModeToD3D(addressing_u);
   d3d_address_v_ = AddressModeToD3D(addressing_v);
   d3d_address_w_ = AddressModeToD3D(addressing_w);

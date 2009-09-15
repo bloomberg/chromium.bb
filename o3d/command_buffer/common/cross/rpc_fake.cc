@@ -141,7 +141,7 @@ bool RPCServer::Processor::ProcessMessage() {
   RPCMessage input;
   in_queue_->GetMessage(&input);
   RPCImplInterface::ReturnValue result = 0;
-  int continue_processing = true;
+  bool continue_processing = true;
   if (input.message_id == POISONED_MESSAGE_ID) {
     continue_processing = false;
   } else {
