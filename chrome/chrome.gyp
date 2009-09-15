@@ -5228,6 +5228,7 @@
           # TODO(phajdan.jr): Only temporary, to make transition easier.
           'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
           'sources': [
+            'browser/autocomplete/autocomplete_edit_view_browsertest.cc',
             'browser/browser_focus_uitest.cc',
             'browser/debugger/devtools_sanity_unittest.cc',
             'browser/views/bookmark_bar_view_test.cc',
@@ -5267,6 +5268,7 @@
             ['OS=="mac"', {
               'sources!': [
                 # TODO(port)
+                'browser/autocomplete/autocomplete_edit_view_browsertest.cc',
                 'browser/browser_focus_uitest.cc',
                 'browser/debugger/devtools_sanity_unittest.cc',
                 'browser/views/bookmark_bar_view_test.cc',
@@ -5649,6 +5651,7 @@
           ],
           'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
           'sources': [
+            'browser/autocomplete/autocomplete_edit_view_browsertest.cc',
             'browser/browser_focus_uitest.cc',
             'browser/debugger/devtools_sanity_unittest.cc',
             'browser/views/bookmark_bar_view_test.cc',
@@ -5694,6 +5697,7 @@
             ['OS=="mac"', {
               'sources!': [
                 # TODO(port)
+                'browser/autocomplete/autocomplete_edit_view_browsertest.cc',
                 'browser/browser_focus_uitest.cc',
                 'browser/debugger/devtools_sanity_unittest.cc',
                 'browser/views/bookmark_bar_view_test.cc',

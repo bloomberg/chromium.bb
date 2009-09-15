@@ -102,6 +102,11 @@ class AutocompleteEditModel : public NotificationObserver {
 
   void SetPopupModel(AutocompletePopupModel* popup_model);
 
+#ifdef UNIT_TEST
+  // It should only be used by testing code.
+  AutocompletePopupModel* popup_model() const { return popup_; }
+#endif
+
   // Invoked when the profile has changed.
   void SetProfile(Profile* profile);
 
