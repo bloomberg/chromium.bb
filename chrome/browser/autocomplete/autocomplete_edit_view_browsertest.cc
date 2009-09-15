@@ -115,7 +115,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
   }
 
   void SendKey(wchar_t key, bool control, bool shift, bool alt) {
-    gfx::NativeWindow window;
+    gfx::NativeWindow window = NULL;
     ASSERT_NO_FATAL_FAILURE(GetNativeWindow(&window));
     ui_controls::SendKeyPressNotifyWhenDone(window, key, control, shift, alt,
                                             new MessageLoop::QuitTask());
@@ -146,7 +146,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
   }
 
   void WaitForAutocompleteControllerDone() {
-    AutocompleteEditView* edit_view;
+    AutocompleteEditView* edit_view = NULL;
     ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
 
     AutocompleteController* controller =
@@ -252,7 +252,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
 // See http://crbug.com/19193: omnibox blocks ctrl-* commands
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BrowserAccelerators) {
   browser()->FocusLocationBar();
-  AutocompleteEditView* edit_view;
+  AutocompleteEditView* edit_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
 
   int tab_count = browser()->tab_count();
@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BackspaceInKeywordMode) {
   ASSERT_NO_FATAL_FAILURE(SetupSearchEngine());
   browser()->FocusLocationBar();
 
-  AutocompleteEditView* edit_view;
+  AutocompleteEditView* edit_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
 
   // Trigger keyword hint mode.
@@ -341,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, Escape) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://history/"));
   browser()->FocusLocationBar();
 
-  AutocompleteEditView* edit_view;
+  AutocompleteEditView* edit_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
 
   std::wstring old_text = edit_view->GetText();
@@ -363,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DesiredTLD) {
   ASSERT_NO_FATAL_FAILURE(SetupSearchEngine());
   browser()->FocusLocationBar();
 
-  AutocompleteEditView* edit_view;
+  AutocompleteEditView* edit_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
   AutocompletePopupModel* popup_model = edit_view->model()->popup_model();
   ASSERT_TRUE(popup_model);
@@ -382,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DesiredTLD) {
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, AltEnter) {
   browser()->FocusLocationBar();
 
-  AutocompleteEditView* edit_view;
+  AutocompleteEditView* edit_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
 
   edit_view->SetUserText(L"chrome://history/");
@@ -397,7 +397,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, EnterToSearch) {
   ASSERT_NO_FATAL_FAILURE(SetupSearchEngine());
   browser()->FocusLocationBar();
 
-  AutocompleteEditView* edit_view;
+  AutocompleteEditView* edit_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
   AutocompletePopupModel* popup_model = edit_view->model()->popup_model();
   ASSERT_TRUE(popup_model);
@@ -426,7 +426,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, EnterToOpenHistoryPage) {
 
   browser()->FocusLocationBar();
 
-  AutocompleteEditView* edit_view;
+  AutocompleteEditView* edit_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
   AutocompletePopupModel* popup_model = edit_view->model()->popup_model();
   ASSERT_TRUE(popup_model);
@@ -465,7 +465,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, EscapeToDefaultMatch) {
   ASSERT_NO_FATAL_FAILURE(SetupHistory());
   browser()->FocusLocationBar();
 
-  AutocompleteEditView* edit_view;
+  AutocompleteEditView* edit_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
   AutocompletePopupModel* popup_model = edit_view->model()->popup_model();
   ASSERT_TRUE(popup_model);
