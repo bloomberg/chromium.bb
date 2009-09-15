@@ -4,9 +4,6 @@
 Verifies dependencies do the copy step.
 """
 
-import os
-import sys
-
 import TestGyp
 
 test = TestGyp.TestGyp()
