@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_PAGE_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_PAGE_VIEW_H_
 
+#include <gtk/gtk.h>
+
 #include "chrome/browser/views/options/options_page_view.h"
 
-#include <gtk/gtk.h>
+class SettingsContentsView;
 
 // Settings page for Chrome OS.
 class SettingsPageView : public OptionsPageView {
@@ -23,6 +25,9 @@ class SettingsPageView : public OptionsPageView {
   virtual void InitControlLayout();
 
  private:
+  // Controls for the Settings page
+  SettingsContentsView* settings_contents_view_;
+
   DISALLOW_COPY_AND_ASSIGN(SettingsPageView);
 };
 

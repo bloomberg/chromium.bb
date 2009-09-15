@@ -30,6 +30,10 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
     prefs::kSSL3Enabled,
     prefs::kTLS1Enabled,
 #endif
+#if defined(OS_CHROMEOS)
+    prefs::kTapToClickEnabled,
+    prefs::kVertEdgeScrollEnabled,
+#endif
     prefs::kDownloadDefaultDirectory,
     prefs::kDownloadExtensionsToOpen,
     prefs::kEnableSpellCheck,

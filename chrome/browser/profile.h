@@ -18,6 +18,10 @@
 #include "chrome/browser/web_resource/web_resource_service.h"
 #include "chrome/common/notification_registrar.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/touchpad.h"
+#endif
+
 namespace net {
 class StrictTransportSecurityState;
 class SSLConfigService;
@@ -520,6 +524,10 @@ class ProfileImpl : public Profile,
   // Set to true when ShutdownSessionService is invoked. If true
   // GetSessionService won't recreate the SessionService.
   bool shutdown_session_service_;
+
+#if defined(OS_CHROMEOS)
+  Touchpad touchpad_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
 };

@@ -57,6 +57,10 @@
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/touchpad.h"
+#endif
+
 using base::Time;
 using base::TimeDelta;
 
@@ -597,6 +601,10 @@ ProfileImpl::ProfileImpl(const FilePath& path)
 
   ssl_config_service_manager_.reset(
       SSLConfigServiceManager::CreateDefaultManager(this));
+
+#if defined(OS_CHROMEOS)
+  touchpad_.Init(prefs);
+#endif
 }
 
 void ProfileImpl::InitExtensions() {
@@ -849,6 +857,12 @@ PrefService* ProfileImpl::GetPrefs() {
     // register known prefs as soon as possible.
     Profile::RegisterUserPrefs(prefs_.get());
     ProfileManager::RegisterUserPrefs(prefs_.get());
+#if defined(OS_CHROMEOS)
+    // Register Touchpad prefs here instead of in browser_prefs because these
+    // prefs are used in the constructor of ProfileImpl which happens before
+    // browser_prefs' RegisterAllPrefs is called.
+    Touchpad::RegisterUserPrefs(prefs_.get());
+#endif
 
     // The last session exited cleanly if there is no pref for
     // kSessionExitedCleanly or the value for kSessionExitedCleanly is true.

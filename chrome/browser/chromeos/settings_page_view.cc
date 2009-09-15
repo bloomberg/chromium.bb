@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/settings_page_view.h"
 
+#include "chrome/browser/chromeos/settings_contents_view.h"
 #include "views/controls/label.h"
 #include "views/fill_layout.h"
 #include "views/widget/widget_gtk.h"
@@ -29,7 +30,7 @@ GtkWidget* SettingsPageView::WrapInGtkWidget() {
 }
 
 void SettingsPageView::InitControlLayout() {
-  // Remove this and add the real views we want. We'll likely need to make this
-  // scrollable as well.
-  AddChildView(new views::Label(L"Implement me"));
+  // We'll likely need to make this scrollable
+  settings_contents_view_ = new SettingsContentsView(profile());
+  AddChildView(settings_contents_view_);
 }

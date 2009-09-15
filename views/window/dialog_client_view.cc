@@ -4,26 +4,30 @@
 
 #include "views/window/dialog_client_view.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#include <uxtheme.h>
+#include <vsstyle.h>
+#else
+#include <gtk/gtk.h>
+#endif
+
+#include <algorithm>
+
 #include "app/gfx/canvas.h"
 #include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/keyboard_codes.h"
 #include "grit/app_strings.h"
+#include "skia/ext/skia_utils_gtk.h"
 #include "views/controls/button/native_button.h"
 #include "views/standard_layout.h"
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
-
 #if defined(OS_WIN)
-#include <windows.h>
-#include <uxtheme.h>
-#include <vsstyle.h>
-
 #include "base/gfx/native_theme.h"
 #else
-#include <gtk/gtk.h>
-
 #include "views/window/hit_test.h"
 #include "views/widget/widget.h"
 #endif
@@ -274,9 +278,8 @@ void DialogClientView::Paint(gfx::Canvas* canvas) {
   GtkWidget* widget = GetWidget()->GetNativeView();
   if (GTK_IS_WINDOW(widget)) {
     GtkStyle* window_style = gtk_widget_get_style(widget);
-    canvas->FillRectInt(SkColorSetRGB(window_style->bg[GTK_STATE_NORMAL].red,
-                                      window_style->bg[GTK_STATE_NORMAL].green,
-                                      window_style->bg[GTK_STATE_NORMAL].blue),
+    canvas->FillRectInt(skia::GdkColorToSkColor(
+                            window_style->bg[GTK_STATE_NORMAL]),
                         0, 0, width(), height());
   }
 #endif

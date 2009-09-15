@@ -20,7 +20,7 @@ void FocusManager::FocusNativeView(gfx::NativeView native_view) {
     gtk_widget_grab_focus(native_view);
 }
 
- // static
+// static
 FocusManager* FocusManager::GetFocusManagerForNativeView(
     gfx::NativeView native_view) {
   GtkWidget* root = gtk_widget_get_toplevel(native_view);
@@ -29,7 +29,9 @@ FocusManager* FocusManager::GetFocusManagerForNativeView(
 
   WidgetGtk* widget = WidgetGtk::GetViewForNative(root);
   if (!widget) {
-    NOTREACHED();
+    // TODO(jcampan): http://crbug.com/21378 Reenable this NOTREACHED() when the
+    // options page is only based on views.
+    // NOTREACHED();
     return NULL;
   }
   FocusManager* focus_manager = widget->GetFocusManager();

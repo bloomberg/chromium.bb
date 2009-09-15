@@ -71,6 +71,10 @@ extern const wchar_t kSSL2Enabled[];
 extern const wchar_t kSSL3Enabled[];
 extern const wchar_t kTLS1Enabled[];
 #endif
+#if defined(OS_CHROMEOS)
+extern const wchar_t kTapToClickEnabled[];
+extern const wchar_t kVertEdgeScrollEnabled[];
+#endif
 extern const wchar_t kIpcDisabledMessages[];
 extern const wchar_t kShowHomeButton[];
 extern const wchar_t kShowPageOptionsButtons[];

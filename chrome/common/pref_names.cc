@@ -203,6 +203,16 @@ extern const wchar_t kSSL3Enabled[] = L"ssl.ssl3.enabled";
 extern const wchar_t kTLS1Enabled[] = L"ssl.tls1.enabled";
 #endif
 
+#if defined(OS_CHROMEOS)
+// A boolean pref set to true if TapToClick is being done in browser.
+extern const wchar_t kTapToClickEnabled[] =
+    L"settings.touchpad.enable_tap_to_click";
+
+// A boolean pref set to true if VertEdgeScroll is being done in browser.
+extern const wchar_t kVertEdgeScrollEnabled[] =
+    L"settings.touchpad.enable_vert_edge_scroll";
+#endif
+
 // The disabled messages in IPC logging.
 const wchar_t kIpcDisabledMessages[] = L"ipc_log_disabled_messages";
 

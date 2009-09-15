@@ -76,7 +76,9 @@ void NativeControlGtk::CallFocusIn(GtkWidget* widget,
   FocusManager* focus_manager =
       FocusManager::GetFocusManagerForNativeView(widget);
   if (!focus_manager) {
-    NOTREACHED();
+    // TODO(jcampan): http://crbug.com/21378 Reenable this NOTREACHED() when the
+    // options page is only based on views.
+    // NOTREACHED();
     return;
   }
   focus_manager->SetFocusedView(control->focus_view());
