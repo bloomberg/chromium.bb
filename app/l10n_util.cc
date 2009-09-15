@@ -87,6 +87,8 @@ static const char* const kAcceptLanguageList[] = {
   "gl",     // Galician
   "gn",     // Guarani
   "gu",     // Gujarati
+  "ha",     // Hausa
+  "haw",    // Hawaiian
   "he",     // Hebrew
   "hi",     // Hindi
   "hr",     // Croatian
@@ -125,6 +127,7 @@ static const char* const kAcceptLanguageList[] = {
   "nn",     // Norwegian (Nynorsk)
   "no",     // Norwegian
   "oc",     // Occitan
+  "om",     // Oromo
   "or",     // Oriya
   "pa",     // Punjabi
   "pl",     // Polish
@@ -254,6 +257,31 @@ bool IsDuplicateName(const std::string& locale_name) {
       return true;
   }
   return false;
+}
+
+bool IsLocaleNameTranslated(const char* locale,
+                            const std::string& display_locale) {
+  string16 display_name =
+      l10n_util::GetDisplayNameForLocale(locale, display_locale, false);
+  // Because ICU sets the error code to U_USING_DEFAULT_WARNING whether or not
+  // uloc_getDisplayName returns the actual translation or the default
+  // value (locale code), we have to rely on this hack to tell whether
+  // the translation is available or not.  If ICU doesn't have a translated
+  // name for this locale, GetDisplayNameForLocale will just return the
+  // locale code.
+  return !IsStringASCII(display_name) || UTF16ToASCII(display_name) != locale;
+}
+
+// We added 30+ minimally populated locales with only a few entries
+// (exemplar character set, script, writing direction and its own
+// lanaguage name). These locales have to be distinguished from the
+// fully populated locales to which Chrome is localized.
+bool IsLocalePartiallyPopulated(const std::string& locale_name) {
+  // For partially populated locales, even the translation for "English"
+  // is not available. A more robust/elegant way to check is to add a special
+  // field (say, 'isPartial' to our version of ICU locale files) and
+  // check its value, but this hack seems to work well.
+  return !IsLocaleNameTranslated("en", locale_name);
 }
 
 bool IsLocaleAvailable(const std::string& locale,
@@ -865,6 +893,10 @@ const std::vector<std::string>& GetAvailableLocales() {
       // Filter out the names that have aliases.
       if (IsDuplicateName(locale_name))
         continue;
+      // Filter out locales for which we have only partially populated data
+      // and to which Chrome is not localized.
+      if (IsLocalePartiallyPopulated(locale_name))
+        continue;
       if (!IsLocaleSupportedByOS(locale_name))
         continue;
       // Normalize underscores to hyphens because that's what our locale files
@@ -889,17 +921,10 @@ const std::vector<std::string>& GetAvailableLocales() {
 void GetAcceptLanguagesForLocale(const std::string& display_locale,
                                  std::vector<std::string>* locale_codes) {
   for (size_t i = 0; i < arraysize(kAcceptLanguageList); ++i) {
-    string16 display_name =
-        l10n_util::GetDisplayNameForLocale(kAcceptLanguageList[i],
-                                           display_locale, false);
-    // This is a hack. If ICU doesn't have a translated name for
-    // this language, GetDisplayNameForLocale will just return the
-    // language code. In that case, we skip it.
-    // TODO(jungshik) : Put them at the of the list with language codes
-    // enclosed by brackets.
-    if (IsStringASCII(display_name) &&
-        UTF16ToASCII(display_name) == kAcceptLanguageList[i])
-      continue;
+    if (!IsLocaleNameTranslated(kAcceptLanguageList[i], display_locale))
+      // TODO(jungshik) : Put them at the of the list with language codes
+      // enclosed by brackets instead of skipping.
+        continue;
     locale_codes->push_back(kAcceptLanguageList[i]);
   }
 }
