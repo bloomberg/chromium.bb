@@ -14,6 +14,11 @@ struct SkRect;
 // from the Chrome frame, such as the BookmarkBarView and the Extension shelf.
 class DetachableToolbarView : public views::View {
  public:
+  // The color gradient start value close to the edge of the divider.
+  static const SkColor kEdgeDividerColor;
+  // The color gradient value for the middle of the divider.
+  static const SkColor kMiddleDividerColor;
+
   DetachableToolbarView() {}
   virtual ~DetachableToolbarView() {}
 

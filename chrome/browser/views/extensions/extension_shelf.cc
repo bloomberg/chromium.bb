@@ -62,9 +62,6 @@ static const int kNewtabExtraVerMargin = 2;
 // Height of the toolstrip within the shelf.
 static const int kToolstripHeight = kShelfHeight - (kTopMargin + kBottomMargin);
 
-// Colors for the ExtensionShelf.
-static const SkColor kDividerHighlightColor = SkColorSetRGB(247, 250, 253);
-
 // Handle padding.
 static const int kHandlePadding = 4;
 
@@ -659,8 +656,8 @@ void ExtensionShelf::PaintChildren(gfx::Canvas* canvas) {
 
     DetachableToolbarView::PaintVerticalDivider(
         canvas, right, height(), vertical_padding,
-        SK_ColorWHITE,
-        kDividerHighlightColor,
+        DetachableToolbarView::kEdgeDividerColor,
+        DetachableToolbarView::kMiddleDividerColor,
         GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_TOOLBAR));
   }
 }

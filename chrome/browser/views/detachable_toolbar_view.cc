@@ -12,6 +12,11 @@
 // How round the 'new tab' style bookmarks bar is.
 static const int kNewtabBarRoundness = 5;
 
+const SkColor DetachableToolbarView::kEdgeDividerColor =
+    SkColorSetRGB(222, 234, 248);
+const SkColor DetachableToolbarView::kMiddleDividerColor =
+    SkColorSetRGB(194, 205, 212);
+
 // static
 void DetachableToolbarView::PaintBackgroundDetachedMode(gfx::Canvas* canvas,
                                                         views::View* view) {

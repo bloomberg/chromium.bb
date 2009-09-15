@@ -77,9 +77,6 @@ static SkBitmap* kDefaultFavIcon = NULL;
 // Icon used for folders.
 static SkBitmap* kFolderIcon = NULL;
 
-// Border colors for the BookmarBarView.
-static const SkColor kTopBorderColor = SkColorSetRGB(222, 234, 248);
-
 // Offset for where the menu is shown relative to the bottom of the
 // BookmarkBarView.
 static const int kMenuOffset = 3;
@@ -103,10 +100,6 @@ static const int kSeparatorWidth = 4;
 
 // Starting x-coordinate of the separator line within a separator.
 static const int kSeparatorStartX = 2;
-
-// Border color along the left edge of the view representing the most recently
-// view pages.
-static const SkColor kSeparatorColor = SkColorSetRGB(194, 205, 212);
 
 // Left-padding for the instructional text.
 static const int kInstructionsPadding = 6;
@@ -295,8 +288,9 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
 
   virtual void Paint(gfx::Canvas* canvas) {
     DetachableToolbarView::PaintVerticalDivider(
-        canvas, kSeparatorStartX, height(), 1, kTopBorderColor,
-        kSeparatorColor,
+        canvas, kSeparatorStartX, height(), 1,
+        DetachableToolbarView::kEdgeDividerColor,
+        DetachableToolbarView::kMiddleDividerColor,
         GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_TOOLBAR));
   }
 
