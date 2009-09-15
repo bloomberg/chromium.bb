@@ -656,13 +656,16 @@ gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
   }
   CairoCachedSurface* surface = theme_provider->GetSurfaceNamed(
       image_name, widget);
-  surface->SetSource(cr,
-      0,
-      window->UseCustomFrame() ? 0 : -kCustomFrameBackgroundVerticalOffset);
-  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
-  cairo_rectangle(cr, event->area.x, event->area.y,
-                      event->area.width, event->area.height);
-  cairo_fill(cr);
+  if (event->area.y < surface->Height()) {
+    surface->SetSource(cr,
+        0,
+        window->UseCustomFrame() ? 0 : -kCustomFrameBackgroundVerticalOffset);
+    // The frame background isn't tiled vertically.
+    cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+    cairo_rectangle(cr, event->area.x, event->area.y,
+                        event->area.width, surface->Height() - event->area.y);
+    cairo_fill(cr);
+  }
 
   if (theme_provider->HasCustomImage(IDR_THEME_FRAME_OVERLAY)) {
     CairoCachedSurface* theme_overlay = theme_provider->GetSurfaceNamed(
