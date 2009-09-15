@@ -616,6 +616,11 @@ class TCMallocImplementation : public MallocExtension {
     Static::pageheap()->ReleaseFreePages();
   }
 
+  virtual void Scavenge() {
+    SpinLockHolder h(Static::pageheap_lock());
+    Static::pageheap()->Scavenge();
+  }
+
   virtual void SetMemoryReleaseRate(double rate) {
     FLAGS_tcmalloc_release_rate = rate;
   }

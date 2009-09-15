@@ -48,6 +48,7 @@
 #include "webkit/extensions/v8/gears_extension.h"
 #include "webkit/extensions/v8/interval_extension.h"
 #include "webkit/extensions/v8/playback_extension.h"
+#include "third_party/tcmalloc/google/malloc_extension.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -459,26 +460,29 @@ void RenderThread::IdleHandler() {
   if (!widget_count_ || hidden_widget_count_ < widget_count_)
     return;
 
-  if (v8::V8::IsDead())
-    return;
+#if defined(OS_WIN)
+  MallocExtension::instance()->Scavenge();
+#endif
 
-  LOG(INFO) << "RenderThread calling v8 IdleNotification for " << this;
-
-  // When V8::IdleNotification returns true, it means that it has cleaned up
-  // as much as it can.  There is no point in continuing to call it.
-  if (!v8::V8::IdleNotification(false)) {
-    // Dampen the delay using the algorithm:
-    //    delay = delay + 1 / (delay + 2)
-    // Using floor(delay) has a dampening effect such as:
-    //    1s, 1, 1, 2, 2, 2, 2, 3, 3, ...
-    idle_notification_delay_in_s_ +=
-        1.0 / (idle_notification_delay_in_s_ + 2.0);
-
-    // Schedule the next timer.
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        task_factory_->NewRunnableMethod(&RenderThread::IdleHandler),
-        static_cast<int64>(floor(idle_notification_delay_in_s_)) * 1000);
+  if (!v8::V8::IsDead()) {
+    LOG(INFO) << "RenderThread calling v8 IdleNotification for " << this;
+    v8::V8::IdleNotification(false);
   }
+
+  // Schedule next invocation.
+  // Dampen the delay using the algorithm:
+  //    delay = delay + 1 / (delay + 2)
+  // Using floor(delay) has a dampening effect such as:
+  //    1s, 1, 1, 2, 2, 2, 2, 3, 3, ...
+  // Note that idle_notification_delay_in_s_ would be reset to
+  // kInitialIdleHandlerDelayS in RenderThread::WidgetHidden.
+  idle_notification_delay_in_s_ +=
+      1.0 / (idle_notification_delay_in_s_ + 2.0);
+
+  // Schedule the next timer.
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      task_factory_->NewRunnableMethod(&RenderThread::IdleHandler),
+      static_cast<int64>(floor(idle_notification_delay_in_s_)) * 1000);
 }
 
 void RenderThread::OnExtensionMessageInvoke(const std::string& function_name,

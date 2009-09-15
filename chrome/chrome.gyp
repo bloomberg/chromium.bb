@@ -2956,6 +2956,12 @@
           'include_dirs': [
             'third_party/wtl/include',
           ],
+          'dependencies': [
+            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+          ],
+          'export_dependent_settings': [
+            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+          ],
         },],
       ],
     },
@@ -3621,6 +3627,9 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
       ],
+      'export_dependent_settings': [
+        'renderer',
+      ],
       'include_dirs': [
         '..',
       ],
@@ -3700,6 +3709,9 @@
         'theme_resources',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
+      ],
+      'export_dependent_settings': [
+        'test_support_common',
       ],
       'include_dirs': [
         '..',
@@ -4707,7 +4719,6 @@
                 '../net/net.gyp:net_resources',
                 '../build/util/support/support.gyp:*',
                 '../third_party/cld/cld.gyp:cld',
-                '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
                 '../views/views.gyp:views',
                 '../webkit/webkit.gyp:webkit_resources',
                 '../gears/gears.gyp:gears',
