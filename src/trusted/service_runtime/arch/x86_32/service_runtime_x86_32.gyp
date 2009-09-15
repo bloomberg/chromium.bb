@@ -37,9 +37,34 @@
       'type': 'static_library',
       'sources': [
         'nacl_switch.S',
-        'nacl_syscall.S',
         'sel_rt_32.c',
       ],
+      'conditions': [
+        ['OS=="mac" and nacl_standalone==0', {
+          'sources': [
+            'nacl_syscall_weak.S',
+          ],
+        },
+        {
+          'sources': [
+            'nacl_syscall.S'
+          ],
+        },
+        ],
+      ],
     },
+  ],
+  'conditions': [
+    ['OS=="mac" and nacl_standalone==0', {
+      'targets': [
+        {
+          'target_name': 'service_runtime_x86_32_chrome',
+          'type': 'static_library',
+          'sources': [
+            'nacl_syscall.S'
+          ],
+        },
+      ],
+    },],
   ],
 }

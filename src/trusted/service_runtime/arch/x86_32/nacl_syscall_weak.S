@@ -29,14 +29,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*
+ * NaCl service runtime context switch code.  NaClSyscallSeg is the
+ * lcall target from the syscall trampoline code, and this code is
+ * responsible for figuring out the identity of the thread, saving
+ * the user registers, finish restoring the segment registers (and
+ * getting out of the sandbox), and actually invoking the C system
+ * call handler code.
+ * This file defines a weak symbol to prevent link-time errors.
+ * The actual definition is linked into chrome executable to avoid
+ * PIC problems.
+ */
 
-#ifndef SERVICE_RUNTIME_NACL_SYSCALL_H__
-#define SERVICE_RUNTIME_NACL_SYSCALL_H__
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
 
-#if !NACL_MACOSX || defined(NACL_STANDALONE)
-int NaClSyscallSeg();
-#else
-// This declaration is used only on Mac OSX for Chrome build
-extern int NaClSyscallSeg() __attribute__((weak_import));
-#endif
-#endif
+        .globl  IDENTIFIER(NaClSyscallSeg)
+IDENTIFIER(NaClSyscallSeg):
+         hlt
