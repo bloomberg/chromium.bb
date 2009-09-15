@@ -79,10 +79,10 @@ int main(int argc, char* argv[]) {
   bool layout_test_mode =
       parsed_command_line.HasSwitch(test_shell::kLayoutTests);
   bool ux_theme = parsed_command_line.HasSwitch(test_shell::kUxTheme);
-  bool generic_theme =
-      parsed_command_line.HasSwitch(test_shell::kGenericTheme);
-  bool classic_theme = (layout_test_mode && !ux_theme && !generic_theme) ||
+  bool classic_theme =
       parsed_command_line.HasSwitch(test_shell::kClassicTheme);
+  bool generic_theme = (layout_test_mode && !ux_theme && !classic_theme) ||
+      parsed_command_line.HasSwitch(test_shell::kGenericTheme);
 
   bool enable_gp_fault_error_box = false;
   enable_gp_fault_error_box =

@@ -20,7 +20,9 @@ def PlatformVersion():
   '-snowleopard'. If the platform does not distinguish between
   minor versions, it returns ''."""
   winver = sys.getwindowsversion()
-  if winver[0] == 5 and (winver[1] == 1 or winver[1] == 2):
+  if winver[0] == 6 and (winver[1] == 0):
+    return '-vista'
+  elif winver[0] == 5 and (winver[1] == 1 or winver[1] == 2):
     return '-xp'
   return ''
 
@@ -28,6 +30,8 @@ def BaselineSearchPath():
   """Returns the list of directories to search for baselines/results, in
   order of preference. Paths are relative to the top of the source tree."""
   dirs = []
+  if PlatformVersion() in ("-vista", "-xp"):
+    dirs.append(path_utils.ChromiumBaselinePath('chromium-win-vista'))
   if PlatformVersion() == "-xp":
     dirs.append(path_utils.ChromiumBaselinePath('chromium-win-xp'))
   dirs.append(path_utils.ChromiumBaselinePath('chromium-win'))
