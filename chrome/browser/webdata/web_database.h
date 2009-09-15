@@ -1,13 +1,15 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEBDATA_WEB_DATABASE_H__
-#define CHROME_BROWSER_WEBDATA_WEB_DATABASE_H__
+#ifndef CHROME_BROWSER_WEBDATA_WEB_DATABASE_H_
+#define CHROME_BROWSER_WEBDATA_WEB_DATABASE_H_
 
 #include <string>
 #include <vector>
 
+#include "app/sql/connection.h"
+#include "app/sql/meta_table.h"
 #include "base/basictypes.h"
 #include "chrome/browser/meta_table_helper.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -15,6 +17,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/glue/autofill_form.h"
+
+class FilePath;
 
 namespace base {
 class Time;
@@ -40,7 +44,7 @@ class WebDatabase {
 
   // Initialize the database given a name. The name defines where the sqlite
   // file is. If false is returned, no other method should be called.
-  bool Init(const std::wstring& db_name);
+  bool Init(const FilePath& db_name);
 
   // Transactions management
   void BeginTransaction();
@@ -63,7 +67,7 @@ class WebDatabase {
   // Loads the keywords into the specified vector. It's up to the caller to
   // delete the returned objects.
   // Returns true on success.
-  bool GetKeywords(std::vector<TemplateURL*>* urls) const;
+  bool GetKeywords(std::vector<TemplateURL*>* urls);
 
   // Updates the database values for the specified url.
   // Returns true on success.
@@ -106,21 +110,21 @@ class WebDatabase {
   // Removes all logins created from |delete_begin| onwards (inclusive) and
   // before |delete_end|. You may use a null Time value to do an unbounded
   // delete in either direction.
-  bool RemoveLoginsCreatedBetween(const base::Time delete_begin,
-                                  const base::Time delete_end);
+  bool RemoveLoginsCreatedBetween(base::Time delete_begin,
+                                  base::Time delete_end);
 
   // Loads a list of matching password forms into the specified vector |forms|.
   // The list will contain all possibly relevant entries to the observed |form|,
   // including blacklisted matches.
   bool GetLogins(const webkit_glue::PasswordForm& form,
-                 std::vector<webkit_glue::PasswordForm*>* forms) const;
+                 std::vector<webkit_glue::PasswordForm*>* forms);
 
   // Loads the complete list of password forms into the specified vector |forms|
   // if include_blacklisted is true, otherwise only loads those which are
   // actually autofillable; i.e haven't been blacklisted by the user selecting
   // the 'Never for this site' button.
   bool GetAllLogins(std::vector<webkit_glue::PasswordForm*>* forms,
-                    bool include_blacklisted) const;
+                    bool include_blacklisted);
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -143,20 +147,20 @@ class WebDatabase {
   bool GetFormValuesForElementName(const std::wstring& name,
                                    const std::wstring& prefix,
                                    std::vector<std::wstring>* values,
-                                   int limit) const;
+                                   int limit);
 
   // Removes rows from autofill_dates if they were created on or after
   // |delete_begin| and strictly before |delete_end|.  Decrements the count of
   // the corresponding rows in the autofill table, and removes those rows if the
   // count goes to 0.
-  bool RemoveFormElementsAddedBetween(const base::Time delete_begin,
-                                      const base::Time delete_end);
+  bool RemoveFormElementsAddedBetween(base::Time delete_begin,
+                                      base::Time delete_end);
 
   // Removes from autofill_dates rows with given pair_id where date_created lies
   // between delte_begin and delte_end.
   bool RemoveFormElementForTimeRange(int64 pair_id,
-                                     const base::Time delete_begin,
-                                     const base::Time delete_end,
+                                     base::Time delete_begin,
+                                     base::Time delete_end,
                                      int* how_many);
 
   // Increments the count in the row corresponding to |pair_id| by |delta|.
@@ -168,11 +172,10 @@ class WebDatabase {
   bool GetIDAndCountOfFormElement(
       const webkit_glue::AutofillForm::Element& element,
       int64* pair_id,
-      int* count) const;
+      int* count);
 
   // Gets the count only given the pair_id.
-  bool GetCountOfFormElement(int64 pair_id,
-                             int* count) const;
+  bool GetCountOfFormElement(int64 pair_id, int* count);
 
   // Updates the count entry in the row corresponding to |pair_id| to |count|.
   bool SetCountOfFormElement(int64 pair_id, int count);
@@ -184,7 +187,7 @@ class WebDatabase {
       int64* pair_id);
 
   // Adds a new row to the autofill_dates table.
-  bool InsertPairIDAndDate(int64 pair_id, const base::Time date_created);
+  bool InsertPairIDAndDate(int64 pair_id, base::Time date_created);
 
   // Removes row from the autofill tables given |pair_id|.
   bool RemoveFormElementForID(int64 pair_id);
@@ -199,10 +202,10 @@ class WebDatabase {
   //////////////////////////////////////////////////////////////////////////////
 
   bool SetWebAppImage(const GURL& url, const SkBitmap& image);
-  bool GetWebAppImages(const GURL& url, std::vector<SkBitmap>* images) const;
+  bool GetWebAppImages(const GURL& url, std::vector<SkBitmap>* images);
 
   bool SetWebAppHasAllImages(const GURL& url, bool has_all_images);
-  bool GetWebAppHasAllImages(const GURL& url) const;
+  bool GetWebAppHasAllImages(const GURL& url);
 
   bool RemoveWebApp(const GURL& url);
 
@@ -224,11 +227,10 @@ class WebDatabase {
 
   void MigrateOldVersionsAsNeeded();
 
-  sqlite3* db_;
-  int transaction_nesting_;
-  MetaTableHelper meta_table_;
+  sql::Connection db_;
+  sql::MetaTable meta_table_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDatabase);
 };
 
-#endif  // CHROME_BROWSER_WEBDATA_WEB_DATABASE_H__
+#endif  // CHROME_BROWSER_WEBDATA_WEB_DATABASE_H_

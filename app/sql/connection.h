@@ -197,14 +197,19 @@ class Connection {
   // Info querying -------------------------------------------------------------
 
   // Returns true if the given table exists.
-  bool DoesTableExist( const char* table_name);
+  bool DoesTableExist( const char* table_name) const;
 
   // Returns true if a column with the given name exists in the given table.
-  bool DoesColumnExist(const char* table_name, const char* column_name);
+  bool DoesColumnExist(const char* table_name, const char* column_name) const;
 
   // Returns sqlite's internal ID for the last inserted row. Valid only
   // immediately after an insert.
   int64 GetLastInsertRowId() const;
+
+  // Returns sqlite's count of the number of rows modified by the last
+  // statement executed. Will be 0 if no statement has executed or the database
+  // is closed.
+  int GetLastChangeCount() const;
 
   // Errors --------------------------------------------------------------------
 

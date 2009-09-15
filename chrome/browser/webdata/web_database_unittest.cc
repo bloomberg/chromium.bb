@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,7 +87,7 @@ class WebDatabaseTest : public testing::Test {
 TEST_F(WebDatabaseTest, Keywords) {
   WebDatabase db;
 
-  EXPECT_TRUE(db.Init(file_.ToWStringHack()));
+  EXPECT_TRUE(db.Init(file_));
 
   TemplateURL template_url;
   template_url.set_short_name(L"short_name");
@@ -148,7 +148,7 @@ TEST_F(WebDatabaseTest, Keywords) {
 TEST_F(WebDatabaseTest, KeywordMisc) {
   WebDatabase db;
 
-  EXPECT_TRUE(db.Init(file_.ToWStringHack()));
+  EXPECT_TRUE(db.Init(file_));
 
   ASSERT_EQ(0, db.GetDefaulSearchProviderID());
   ASSERT_EQ(0, db.GetBuitinKeywordVersion());
@@ -163,7 +163,7 @@ TEST_F(WebDatabaseTest, KeywordMisc) {
 TEST_F(WebDatabaseTest, UpdateKeyword) {
   WebDatabase db;
 
-  EXPECT_TRUE(db.Init(file_.ToWStringHack()));
+  EXPECT_TRUE(db.Init(file_));
 
   TemplateURL template_url;
   template_url.set_short_name(L"short_name");
@@ -225,7 +225,7 @@ TEST_F(WebDatabaseTest, UpdateKeyword) {
 TEST_F(WebDatabaseTest, KeywordWithNoFavicon) {
   WebDatabase db;
 
-  EXPECT_TRUE(db.Init(file_.ToWStringHack()));
+  EXPECT_TRUE(db.Init(file_));
 
   TemplateURL template_url;
   template_url.set_short_name(L"short_name");
@@ -252,7 +252,7 @@ TEST_F(WebDatabaseTest, KeywordWithNoFavicon) {
 TEST_F(WebDatabaseTest, Logins) {
   WebDatabase db;
 
-  EXPECT_TRUE(db.Init(file_.ToWStringHack()));
+  EXPECT_TRUE(db.Init(file_));
 
   std::vector<PasswordForm*> result;
 
@@ -385,7 +385,7 @@ TEST_F(WebDatabaseTest, Logins) {
 TEST_F(WebDatabaseTest, Autofill) {
   WebDatabase db;
 
-  EXPECT_TRUE(db.Init(file_.ToWStringHack()));
+  EXPECT_TRUE(db.Init(file_));
 
   Time t1 = Time::Now();
 
@@ -517,7 +517,7 @@ static void ClearResults(std::vector<PasswordForm*>* results) {
 TEST_F(WebDatabaseTest, ClearPrivateData_SavedPasswords) {
   WebDatabase db;
 
-  EXPECT_TRUE(db.Init(file_.ToWStringHack()));
+  EXPECT_TRUE(db.Init(file_));
 
   std::vector<PasswordForm*> result;
 
@@ -559,7 +559,7 @@ TEST_F(WebDatabaseTest, ClearPrivateData_SavedPasswords) {
 TEST_F(WebDatabaseTest, BlacklistedLogins) {
   WebDatabase db;
 
-  EXPECT_TRUE(db.Init(file_.ToWStringHack()));
+  EXPECT_TRUE(db.Init(file_));
   std::vector<PasswordForm*> result;
 
   // Verify the database is empty.
@@ -598,7 +598,7 @@ TEST_F(WebDatabaseTest, BlacklistedLogins) {
 TEST_F(WebDatabaseTest, WebAppHasAllImages) {
   WebDatabase db;
 
-  EXPECT_TRUE(db.Init(file_.ToWStringHack()));
+  EXPECT_TRUE(db.Init(file_));
   GURL url("http://google.com/");
 
   // Initial value for unknown web app should be false.
@@ -616,7 +616,7 @@ TEST_F(WebDatabaseTest, WebAppHasAllImages) {
 TEST_F(WebDatabaseTest, WebAppImages) {
   WebDatabase db;
 
-  ASSERT_TRUE(db.Init(file_.ToWStringHack()));
+  ASSERT_TRUE(db.Init(file_));
   GURL url("http://google.com/");
 
   // Web app should initially have no images.

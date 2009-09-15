@@ -170,7 +170,7 @@ std::string Statement::ColumnString(int col) const {
   return result;
 }
 
-int Statement::ColumnByteLength(int col) {
+int Statement::ColumnByteLength(int col) const {
   if (!is_valid()) {
     NOTREACHED();
     return 0;
@@ -178,7 +178,7 @@ int Statement::ColumnByteLength(int col) {
   return sqlite3_column_bytes(ref_->stmt(), col);
 }
 
-const void* Statement::ColumnBlob(int col) {
+const void* Statement::ColumnBlob(int col) const {
   if (!is_valid()) {
     NOTREACHED();
     return NULL;
@@ -187,7 +187,7 @@ const void* Statement::ColumnBlob(int col) {
   return sqlite3_column_blob(ref_->stmt(), col);
 }
 
-void Statement::ColumnBlobAsVector(int col, std::vector<char>* val) {
+void Statement::ColumnBlobAsVector(int col, std::vector<char>* val) const {
   val->clear();
   if (!is_valid()) {
     NOTREACHED();
@@ -200,6 +200,12 @@ void Statement::ColumnBlobAsVector(int col, std::vector<char>* val) {
     val->resize(len);
     memcpy(&(*val)[0], data, len);
   }
+}
+
+void Statement::ColumnBlobAsVector(
+    int col,
+    std::vector<unsigned char>* val) const {
+  ColumnBlobAsVector(col, reinterpret_cast< std::vector<char>* >(val));
 }
 
 int Statement::CheckError(int err) {

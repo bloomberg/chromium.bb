@@ -105,9 +105,10 @@ class Statement {
   // When reading a blob, you can get a raw pointer to the underlying data,
   // along with the length, or you can just ask us to copy the blob into a
   // vector. Danger! ColumnBlob may return NULL if there is no data!
-  int ColumnByteLength(int col);
-  const void* ColumnBlob(int col);
-  void ColumnBlobAsVector(int col, std::vector<char>* val);
+  int ColumnByteLength(int col) const;
+  const void* ColumnBlob(int col) const;
+  void ColumnBlobAsVector(int col, std::vector<char>* val) const;
+  void ColumnBlobAsVector(int col, std::vector<unsigned char>* val) const;
 
  private:
   // This is intended to check for serious errors and report them to the

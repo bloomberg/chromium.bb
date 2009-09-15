@@ -408,14 +408,13 @@ void WebDataService::InitializeDatabase(const FilePath& path) {
   // we only set db_ to the created database if creation is successful. That
   // way other methods won't do anything as db_ is still NULL.
   WebDatabase* db = new WebDatabase();
-  if (!db->Init(path.ToWStringHack())) {
+  if (!db->Init(path)) {
     NOTREACHED() << "Cannot initialize the web database";
     delete db;
     return;
   }
 
   db_ = db;
-
   db_->BeginTransaction();
 }
 

@@ -224,8 +224,10 @@ scoped_refptr<Connection::StatementRef> Connection::GetUniqueStatement(
   return new StatementRef(this, stmt);
 }
 
-bool Connection::DoesTableExist(const char* table_name) {
-  Statement statement(GetUniqueStatement(
+bool Connection::DoesTableExist(const char* table_name) const {
+  // GetUniqueStatement can't be const since statements may modify the
+  // database, but we know ours doesn't modify it, so the cast is safe.
+  Statement statement(const_cast<Connection*>(this)->GetUniqueStatement(
       "SELECT name FROM sqlite_master "
       "WHERE type='table' AND name=?"));
   if (!statement)
@@ -235,12 +237,14 @@ bool Connection::DoesTableExist(const char* table_name) {
 }
 
 bool Connection::DoesColumnExist(const char* table_name,
-                                 const char* column_name) {
+                                 const char* column_name) const {
   std::string sql("PRAGMA TABLE_INFO(");
   sql.append(table_name);
   sql.append(")");
 
-  Statement statement(GetUniqueStatement(sql.c_str()));
+  // Our SQL is non-mutating, so this cast is OK.
+  Statement statement(const_cast<Connection*>(this)->GetUniqueStatement(
+      sql.c_str()));
   if (!statement)
     return false;
 
@@ -257,6 +261,14 @@ int64 Connection::GetLastInsertRowId() const {
     return 0;
   }
   return sqlite3_last_insert_rowid(db_);
+}
+
+int Connection::GetLastChangeCount() const {
+  if (!db_) {
+    NOTREACHED();
+    return 0;
+  }
+  return sqlite3_changes(db_);
 }
 
 int Connection::GetErrorCode() const {

@@ -1,27 +1,28 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // A sqlite implementation of a cookie monster persistent store.
 
-#ifndef CHROME_COMMON_NET_COOKIE_MONSTER_SQLITE_H__
-#define CHROME_COMMON_NET_COOKIE_MONSTER_SQLITE_H__
+#ifndef CHROME_BROWSER_NET_SQLITE_PERSISTENT_COOKIE_STORE_H_
+#define CHROME_BROWSER_NET_SQLITE_PERSISTENT_COOKIE_STORE_H_
 
 #include <string>
 #include <vector>
 
+#include "app/sql/connection.h"
+#include "app/sql/meta_table.h"
+#include "base/file_path.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/meta_table_helper.h"
 #include "net/base/cookie_monster.h"
 
-struct sqlite3;
-
+class FilePath;
 class MessageLoop;
 
 class SQLitePersistentCookieStore
     : public net::CookieMonster::PersistentCookieStore {
  public:
-  SQLitePersistentCookieStore(const std::wstring& path,
+  SQLitePersistentCookieStore(const FilePath& path,
                               MessageLoop* background_loop);
   ~SQLitePersistentCookieStore();
 
@@ -37,17 +38,17 @@ class SQLitePersistentCookieStore
   class Backend;
 
   // Database upgrade statements.
-  bool EnsureDatabaseVersion(sqlite3* db);
+  bool EnsureDatabaseVersion(sql::Connection* db);
 
-  std::wstring path_;
+  FilePath path_;
   scoped_refptr<Backend> backend_;
 
   // Background MessageLoop on which to access the backend_;
   MessageLoop* background_loop_;
 
-  MetaTableHelper meta_table_;
+  sql::MetaTable meta_table_;
 
   DISALLOW_COPY_AND_ASSIGN(SQLitePersistentCookieStore);
 };
 
-#endif  // CHROME_COMMON_NET_COOKIE_MONSTER_SQLITE_H__
+#endif  // CHROME_BROWSER_NET_SQLITE_PERSISTENT_COOKIE_STORE_H_

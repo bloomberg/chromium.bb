@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
+#include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -158,7 +159,7 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOriginal(
 
     scoped_refptr<SQLitePersistentCookieStore> cookie_db =
         new SQLitePersistentCookieStore(
-            cookie_store_path.ToWStringHack(),
+            cookie_store_path,
             g_browser_process->db_thread()->message_loop());
     context->cookie_store_ = new net::CookieMonster(cookie_db.get());
   }
@@ -185,7 +186,7 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOriginalForExtensions(
 
   scoped_refptr<SQLitePersistentCookieStore> cookie_db =
       new SQLitePersistentCookieStore(
-          cookie_store_path.ToWStringHack(),
+          cookie_store_path,
           g_browser_process->db_thread()->message_loop());
   net::CookieMonster* cookie_monster = new net::CookieMonster(cookie_db.get());
 
