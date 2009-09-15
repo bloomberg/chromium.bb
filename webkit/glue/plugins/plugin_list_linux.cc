@@ -117,6 +117,22 @@ void PluginList::LoadPluginsFromDir(const FilePath& path,
     if (DebugPluginLoading())
       LOG(ERROR) << "Resolved " << orig_path.value() << " -> " << path.value();
 
+    // Flash stops working if the containing directory involves 'netscape'.
+    // No joke.  So use the other path if it's better.
+    static const char kFlashPlayerFilename[] = "libflashplayer.so";
+    static const char kNetscapeInPath[] = "/netscape/";
+    if (path.BaseName().value() == kFlashPlayerFilename &&
+        path.value().find(kNetscapeInPath) != std::string::npos) {
+      if (orig_path.value().find(kNetscapeInPath) == std::string::npos) {
+        // Go back to the old path.
+        path = orig_path;
+      } else {
+        LOG(ERROR) << "Flash misbehaves when used from a directory containing "
+                   << kNetscapeInPath << ", so skipping " << orig_path.value();
+        continue;
+      }
+    }
+
     // Get mtime.
     file_util::FileInfo info;
     if (!file_util::GetFileInfo(path, &info))
