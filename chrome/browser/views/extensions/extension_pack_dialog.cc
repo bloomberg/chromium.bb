@@ -95,12 +95,12 @@ class PackDialogContent
     if (!pem_file.empty()) {
       message = l10n_util::GetStringF(
           IDS_EXTENSION_PACK_DIALOG_SUCCESS_BODY_NEW,
-          crx_file.ToWStringHack().c_str(),
-          pem_file.ToWStringHack().c_str());
+          crx_file.ToWStringHack(),
+          pem_file.ToWStringHack());
     } else {
       message = l10n_util::GetStringF(
           IDS_EXTENSION_PACK_DIALOG_SUCCESS_BODY_UPDATE,
-          crx_file.ToWStringHack().c_str());
+          crx_file.ToWStringHack());
     }
     win_util::MessageBox(GetWindow()->GetNativeWindow(), message,
         l10n_util::GetString(IDS_EXTENSION_PACK_DIALOG_SUCCESS_TITLE),
