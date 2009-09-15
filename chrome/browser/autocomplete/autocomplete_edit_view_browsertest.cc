@@ -379,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DesiredTLD) {
   EXPECT_STREQ(kDesiredTLDHostname, url.host().c_str());
 }
 
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, AltEnter) {
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DISABLED_AltEnter) {
   browser()->FocusLocationBar();
 
   AutocompleteEditView* edit_view = NULL;
