@@ -6,11 +6,13 @@
 
 #import "chrome/browser/cocoa/find_bar_cocoa_controller.h"
 
+#include "base/scoped_nsobject.h"
 #include "base/string16.h"
 
 class BrowserWindowCocoa;
 class FindBarBridge;
 class FindNotificationDetails;
+@class FocusTracker;
 
 // A controller for the find bar in the browser window.  Manages
 // updating the state of the find bar and provides a target for the
@@ -27,6 +29,8 @@ class FindNotificationDetails;
 
   // Needed to call methods on FindBarController.
   FindBarBridge* findBarBridge_;  // weak
+
+  scoped_nsobject<FocusTracker> focusTracker_;
 };
 
 // Initializes a new FindBarCocoaController.
@@ -48,6 +52,7 @@ class FindNotificationDetails;
 - (void)showFindBar;
 - (void)hideFindBar;
 - (void)setFocusAndSelection;
+- (void)restoreSavedFocus;
 - (void)setFindText:(const string16&)findText;
 
 - (void)clearResults:(const FindNotificationDetails&)results;
