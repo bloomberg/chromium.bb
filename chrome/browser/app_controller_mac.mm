@@ -49,7 +49,6 @@
 - (void)windowLayeringDidChange:(NSNotification*)inNotification;
 - (BOOL)userWillWaitForInProgressDownloads:(int)downloadCount;
 - (BOOL)shouldQuitWithInProgressDownloads;
-- (NSMenu*)applicationDockMenu:(NSApplication*)sender;
 @end
 
 @implementation AppController

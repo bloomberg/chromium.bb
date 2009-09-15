@@ -57,6 +57,9 @@ class Profile;
 // Owner" (NSAppliation) for a Branded About Box
 - (IBAction)orderFrontStandardAboutPanel:(id)sender;
 
+// Delegate method to return the dock menu.
+- (NSMenu*)applicationDockMenu:(NSApplication*)sender;
+
 @end
 
 #endif
