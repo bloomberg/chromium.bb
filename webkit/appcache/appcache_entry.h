@@ -5,8 +5,6 @@
 #ifndef WEBKIT_APPCACHE_APPCACHE_ENTRY_H_
 #define WEBKIT_APPCACHE_APPCACHE_ENTRY_H_
 
-#include "googleurl/src/gurl.h"
-
 namespace appcache {
 
 // A cached entry is identified by a URL and is classified into one
@@ -28,11 +26,11 @@ class AppCacheEntry {
 
   int types() const { return types_; }
   void add_types(int added_types) { types_ |= added_types; }
-  bool IsMaster() const { return types_ & MASTER; }
-  bool IsManifest() const { return types_ & MANIFEST; }
-  bool IsExplicit() const { return types_ & EXPLICIT; }
-  bool IsForeign() const { return types_ & FOREIGN; }
-  bool IsFallback() const { return types_ & FALLBACK; }
+  bool IsMaster() const { return (types_ & MASTER) != 0; }
+  bool IsManifest() const { return (types_ & MANIFEST) != 0; }
+  bool IsExplicit() const { return (types_ & EXPLICIT) != 0; }
+  bool IsForeign() const { return (types_ & FOREIGN) != 0; }
+  bool IsFallback() const { return (types_ & FALLBACK) != 0; }
 
  private:
   int types_;

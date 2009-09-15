@@ -104,12 +104,15 @@ bool WebApplicationCacheHostImpl::selectCacheWithManifest(
     return true;
   }
 
+  DCHECK(should_capture_main_response_ == NO);
+
   // Check for 'foreign' entries.
   GURL main_response_manifest_gurl(main_response_.appCacheManifestURL());
   if (main_response_manifest_gurl != manifest_gurl) {
     backend_->MarkAsForeignEntry(host_id_, main_response_url_,
                                  main_response_.appCacheID());
-    selectCacheWithoutManifest();
+    has_cached_status_ = true;
+    cached_status_ = UNCACHED;
     return false;  // the navigation will be restarted
   }
 

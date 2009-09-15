@@ -5,8 +5,10 @@
 #include "webkit/appcache/appcache_service.h"
 
 #include "base/logging.h"
+#include "base/ref_counted.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_backend_impl.h"
+#include "webkit/appcache/appcache_entry.h"
 #include "webkit/appcache/appcache_group.h"
 
 namespace appcache {
@@ -58,6 +60,41 @@ void AppCacheService::AddGroup(AppCacheGroup* group) {
 
 void AppCacheService::RemoveGroup(AppCacheGroup* group) {
   groups_.erase(group->manifest_url());
+}
+
+void AppCacheService::LoadCache(int64 id, LoadClient* client) {
+  // TODO(michaeln): actually retrieve from storage if needed
+  client->CacheLoadedCallback(GetCache(id), id);
+}
+
+void AppCacheService::LoadOrCreateGroup(const GURL& manifest_url,
+                                        LoadClient* client) {
+  // TODO(michaeln): actually retrieve from storage
+  scoped_refptr<AppCacheGroup> group = GetGroup(manifest_url);
+  if (!group.get()) {
+    group = new AppCacheGroup(this, manifest_url);
+    DCHECK(GetGroup(manifest_url));
+  }
+  client->GroupLoadedCallback(group.get(), manifest_url);
+}
+
+void AppCacheService::CancelLoads(LoadClient* client) {
+  // TODO(michaeln): remove client from loading lists
+}
+
+void AppCacheService::MarkAsForeignEntry(const GURL& entry_url,
+                                         int64 cache_id) {
+  // Update the in-memory cache.
+  AppCache* cache = GetCache(cache_id);
+  if (cache) {
+    AppCacheEntry* entry = cache->GetEntry(entry_url);
+    DCHECK(entry);
+    if (entry)
+      entry->add_types(AppCacheEntry::FOREIGN);
+  }
+
+  // TODO(michaeln): actually update in storage, and if this cache is
+  // being loaded be sure to update the memory cache upon load completion.
 }
 
 }  // namespace appcache

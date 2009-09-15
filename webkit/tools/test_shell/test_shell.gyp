@@ -347,6 +347,7 @@
         '../../appcache/manifest_parser_unittest.cc',
         '../../appcache/appcache_unittest.cc',
         '../../appcache/appcache_group_unittest.cc',
+        '../../appcache/appcache_host_unittest.cc',
         '../../appcache/appcache_service_unittest.cc',
         '../../glue/bookmarklet_unittest.cc',
         '../../glue/context_menu_unittest.cc',

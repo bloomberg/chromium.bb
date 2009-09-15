@@ -4,26 +4,50 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache.h"
-#include "webkit/appcache/appcache_host.h"
 #include "webkit/appcache/appcache_group.h"
+#include "webkit/appcache/appcache_host.h"
 #include "webkit/appcache/appcache_service.h"
 
-using appcache::AppCache;
-using appcache::AppCacheHost;
-using appcache::AppCacheGroup;
-using appcache::AppCacheService;
-
 namespace {
+
+class TestAppCacheFrontend : public appcache::AppCacheFrontend {
+ public:
+  TestAppCacheFrontend()
+      : last_host_id_(-1), last_cache_id_(-1),
+        last_status_(appcache::OBSOLETE) {
+  }
+
+  virtual void OnCacheSelected(int host_id, int64 cache_id ,
+                               appcache::Status status) {
+    last_host_id_ = host_id;
+    last_cache_id_ = cache_id;
+    last_status_ = status;
+  }
+
+  virtual void OnStatusChanged(const std::vector<int>& host_ids,
+                               appcache::Status status) {
+  }
+
+  virtual void OnEventRaised(const std::vector<int>& host_ids,
+                             appcache::EventID event_id) {
+  }
+
+  int last_host_id_;
+  int64 last_cache_id_;
+  appcache::Status last_status_;
+};
+
+}  // namespace anon
+
+namespace appcache {
 
 class AppCacheGroupTest : public testing::Test {
 };
 
-}  // namespace
-
 TEST(AppCacheGroupTest, AddRemoveCache) {
   AppCacheService service;
   scoped_refptr<AppCacheGroup> group =
-    new AppCacheGroup(&service, GURL::EmptyGURL());
+      new AppCacheGroup(&service, GURL::EmptyGURL());
 
   base::TimeTicks ticks = base::TimeTicks::Now();
 
@@ -66,10 +90,11 @@ TEST(AppCacheGroupTest, AddRemoveCache) {
 
 TEST(AppCacheGroupTest, CleanupUnusedGroup) {
   AppCacheService service;
+  TestAppCacheFrontend frontend;
   AppCacheGroup* group = new AppCacheGroup(&service, GURL::EmptyGURL());
 
-  AppCacheHost host1(1, NULL);
-  AppCacheHost host2(2, NULL);
+  AppCacheHost host1(1, &frontend, &service);
+  AppCacheHost host2(2, &frontend, &service);
 
   base::TimeTicks ticks = base::TimeTicks::Now();
 
@@ -80,8 +105,15 @@ TEST(AppCacheGroupTest, CleanupUnusedGroup) {
   group->AddCache(cache1);
   EXPECT_EQ(cache1, group->newest_complete_cache());
 
-  host1.set_selected_cache(cache1);
-  host2.set_selected_cache(cache1);
+  host1.AssociateCache(cache1);
+  EXPECT_EQ(frontend.last_host_id_, host1.host_id());
+  EXPECT_EQ(frontend.last_cache_id_, cache1->cache_id());
+  EXPECT_EQ(frontend.last_status_, appcache::IDLE);
+
+  host2.AssociateCache(cache1);
+  EXPECT_EQ(frontend.last_host_id_, host2.host_id());
+  EXPECT_EQ(frontend.last_cache_id_, cache1->cache_id());
+  EXPECT_EQ(frontend.last_status_, appcache::IDLE);
 
   AppCache* cache2 = new AppCache(&service, 222);
   cache2->set_complete(true);
@@ -91,6 +123,11 @@ TEST(AppCacheGroupTest, CleanupUnusedGroup) {
   EXPECT_EQ(cache2, group->newest_complete_cache());
 
   // Unassociate all hosts from older cache.
-  host1.set_selected_cache(NULL);
-  host2.set_selected_cache(NULL);
+  host1.AssociateCache(NULL);
+  host2.AssociateCache(NULL);
+  EXPECT_EQ(frontend.last_host_id_, host2.host_id());
+  EXPECT_EQ(frontend.last_cache_id_, appcache::kNoCacheId);
+  EXPECT_EQ(frontend.last_status_, appcache::UNCACHED);
 }
+
+}  // namespace appcache

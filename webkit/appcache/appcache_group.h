@@ -13,6 +13,7 @@
 namespace appcache {
 
 class AppCache;
+class AppCacheHost;
 class AppCacheService;
 
 // Collection of application caches identified by the same manifest URL.
@@ -44,6 +45,22 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   // Returns false if cache cannot be removed. The newest complete cache
   // cannot be removed as long as the group is still in use.
   bool RemoveCache(AppCache* cache);
+
+  // Starts an update via update() javascript API.
+  void StartUpdate() {
+    StartUpdateWithHost(NULL);
+  }
+
+  // Starts an update for a doc loaded from an application cache.
+  void StartUpdateWithHost(AppCacheHost* host)  {
+    StartUpdateWithNewMasterEntry(host, GURL::EmptyGURL());
+  }
+
+  // Starts an update for a doc loaded using HTTP GET or equivalent with
+  // an <html> tag manifest attribute value that matches this group's
+  // manifest url.
+  void StartUpdateWithNewMasterEntry(AppCacheHost* host,
+                                     const GURL& new_master_resource);
 
  private:
   GURL manifest_url_;

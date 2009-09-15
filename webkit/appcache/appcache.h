@@ -30,13 +30,15 @@ class AppCache : public base::RefCounted<AppCache> {
   AppCache(AppCacheService *service, int64 cache_id);
   ~AppCache();
 
-  int64 cache_id() { return cache_id_; }
+  int64 cache_id() const { return cache_id_; }
 
-  AppCacheGroup* owning_group() { return owning_group_; }
+  AppCacheGroup* owning_group() const { return owning_group_; }
   void set_owning_group(AppCacheGroup* group) { owning_group_ = group; }
 
-  bool is_complete() { return is_complete_; }
+  bool is_complete() const { return is_complete_; }
   void set_complete(bool value) { is_complete_ = value; }
+
+  AppCacheService* service() const { return service_; }
 
   // Adds a new entry. Entry must not already be in cache.
   void AddEntry(const GURL& url, const AppCacheEntry& entry);
@@ -49,9 +51,9 @@ class AppCache : public base::RefCounted<AppCache> {
   AppCacheEntry* GetEntry(const GURL& url);
 
   typedef std::map<GURL, AppCacheEntry> EntryMap;
-  const EntryMap& entries() { return entries_; }
+  const EntryMap& entries() const { return entries_; }
 
-  bool IsNewerThan(AppCache* cache) {
+  bool IsNewerThan(AppCache* cache) const {
     return update_time_ > cache->update_time_;
   }
 
@@ -62,13 +64,13 @@ class AppCache : public base::RefCounted<AppCache> {
  private:
   friend class AppCacheHost;
 
-  // Use AppCacheHost::set_selected_cache() to manipulate host association.
+  // Use AppCacheHost::AssociateCache() to manipulate host association.
   void AssociateHost(AppCacheHost* host) {
     associated_hosts_.insert(host);
   }
   void UnassociateHost(AppCacheHost* host);
 
-  int64 cache_id_;
+  const int64 cache_id_;
   AppCacheEntry* manifest_;  // also in entry map
   AppCacheGroup* owning_group_;
   std::set<AppCacheHost*> associated_hosts_;

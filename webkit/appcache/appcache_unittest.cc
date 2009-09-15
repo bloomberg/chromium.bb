@@ -4,33 +4,29 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache.h"
+#include "webkit/appcache/appcache_frontend_impl.h"
 #include "webkit/appcache/appcache_host.h"
 #include "webkit/appcache/appcache_service.h"
 
-using appcache::AppCache;
-using appcache::AppCacheEntry;
-using appcache::AppCacheHost;
-using appcache::AppCacheService;
-
-namespace {
+namespace appcache {
 
 class AppCacheTest : public testing::Test {
 };
 
-}  // namespace
-
 TEST(AppCacheTest, CleanupUnusedCache) {
   AppCacheService service;
+  AppCacheFrontendImpl frontend;
   AppCache* cache = new AppCache(&service, 111);
+  cache->set_complete(true);
 
-  AppCacheHost host1(1, NULL);
-  AppCacheHost host2(2, NULL);
+  AppCacheHost host1(1, &frontend, &service);
+  AppCacheHost host2(2, &frontend, &service);
 
-  host1.set_selected_cache(cache);
-  host2.set_selected_cache(cache);
+  host1.AssociateCache(cache);
+  host2.AssociateCache(cache);
 
-  host1.set_selected_cache(NULL);
-  host2.set_selected_cache(NULL);
+  host1.AssociateCache(NULL);
+  host2.AssociateCache(NULL);
 }
 
 TEST(AppCacheTest, AddModifyEntry) {
@@ -53,3 +49,6 @@ TEST(AppCacheTest, AddModifyEntry) {
     cache->GetEntry(kUrl1)->types());
   EXPECT_EQ(entry2.types(), cache->GetEntry(kUrl2)->types());  // unchanged
 }
+
+}  // namespace appacache
+

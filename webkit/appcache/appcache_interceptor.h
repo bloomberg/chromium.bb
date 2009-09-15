@@ -12,6 +12,7 @@
 
 namespace appcache {
 
+class AppCacheRequestHandler;
 class AppCacheService;
 
 // An interceptor to hijack requests and potentially service them out of
@@ -46,12 +47,17 @@ class AppCacheInterceptor : public URLRequest::Interceptor {
 
  private:
   friend struct DefaultSingletonTraits<AppCacheInterceptor>;
+
   static AppCacheInterceptor* instance()  {
     return Singleton<AppCacheInterceptor>::get();
   }
-  struct ExtraInfo;
+
   AppCacheInterceptor();
   virtual ~AppCacheInterceptor();
+
+  static void SetHandler(URLRequest* request, AppCacheRequestHandler* handler);
+  static AppCacheRequestHandler* GetHandler(URLRequest* request);
+
   DISALLOW_COPY_AND_ASSIGN(AppCacheInterceptor);
 };
 

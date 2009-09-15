@@ -12,6 +12,7 @@
 #include "base/hash_tables.h"
 #include "base/file_path.h"
 #include "base/ref_counted.h"
+#include "base/task.h"
 #include "net/url_request/url_request_context.h"
 #include "googleurl/src/gurl.h"
 
@@ -26,6 +27,17 @@ class AppCacheGroup;
 // exclusive access to it's cache_directory on disk.
 class AppCacheService {
  public:
+
+  class LoadClient {
+   public:
+    virtual ~LoadClient() {}
+
+    // If a load fails the object pointer will be NULL.
+    virtual void CacheLoadedCallback(AppCache* cache, int64 cache_id) = 0;
+    virtual void GroupLoadedCallback(AppCacheGroup* cache,
+                                     const GURL& manifest_url) = 0;
+  };
+
   AppCacheService();
   virtual ~AppCacheService();
 
@@ -42,29 +54,40 @@ class AppCacheService {
 
   // TODO(jennb): API to set service settings, like file paths for storage
 
-  // track which processes are using this appcache service
+  // Track which processes are using this appcache service.
   void RegisterBackend(AppCacheBackendImpl* backend_impl);
   void UnregisterBackend(AppCacheBackendImpl* backend_impl);
-
-  void AddCache(AppCache* cache);
-  void RemoveCache(AppCache* cache);
-  void AddGroup(AppCacheGroup* group);
-  void RemoveGroup(AppCacheGroup* group);
-
   AppCacheBackendImpl* GetBackend(int id) {
     BackendMap::iterator it = backends_.find(id);
     return (it != backends_.end()) ? it->second : NULL;
   }
 
+  // Track what we have in or in-memory cache.
+  void AddCache(AppCache* cache);
+  void RemoveCache(AppCache* cache);
+  void AddGroup(AppCacheGroup* group);
+  void RemoveGroup(AppCacheGroup* group);
   AppCache* GetCache(int64 id) {
     CacheMap::iterator it = caches_.find(id);
     return (it != caches_.end()) ? it->second : NULL;
   }
-
   AppCacheGroup* GetGroup(const GURL& manifest_url) {
     GroupMap::iterator it = groups_.find(manifest_url);
     return (it != groups_.end()) ? it->second : NULL;
   }
+
+  // Load caches and groups from storage. If the request object
+  // is already in memory, the client is called immediately
+  // without returning to the message loop.
+  void LoadCache(int64 id, LoadClient* client);
+  void LoadOrCreateGroup(const GURL& manifest_url,
+                         LoadClient* client);
+
+  // Cancels pending callbacks for this client.
+  void CancelLoads(LoadClient* client);
+
+  // Updates in memory and persistent storage.
+  void MarkAsForeignEntry(const GURL& entry_url, int64 cache_id);
 
   // The service generates unique storage ids for different object types.
   int64 NewCacheId() { return ++last_cache_id_; }
@@ -90,15 +113,14 @@ class AppCacheService {
   typedef std::map<int, AppCacheBackendImpl*> BackendMap;
   BackendMap backends_;
 
+  // Where we save our data.
   FilePath cache_directory_;
 
   // Context for use during cache updates.
   scoped_refptr<URLRequestContext> request_context_;
 
-  // TODO(jennb): info about appcache storage
-  // AppCacheDatabase db_;
-  // DiskCache response_storage_;
-
+  // TODO(michaeln): cache and group loading book keeping.
+  // TODO(michaeln): database and response storage
   // TODO(jennb): service state: e.g. reached quota?
 };
 

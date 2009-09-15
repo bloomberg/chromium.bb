@@ -8,16 +8,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/manifest_parser.h"
 
-using appcache::FallbackNamespace;
-using appcache::Manifest;
-using appcache::ParseManifest;
-
-namespace {
+namespace appcache {
 
 class ManifestParserTest : public testing::Test {
 };
-
-}  // namespace
 
 TEST(ManifestParserTest, NoData) {
   GURL url;
@@ -306,3 +300,6 @@ TEST(ManifestParserTest, UnusualUtf8) {
   EXPECT_TRUE(urls.find("http://bad.com/%EF%BF%BDinvalidutf8") != urls.end());
   EXPECT_TRUE(urls.find("http://bad.com/nonbmp%F1%84%AB%BC") != urls.end());
 }
+
+}  // namespace appcache
+

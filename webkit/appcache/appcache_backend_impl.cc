@@ -4,7 +4,7 @@
 
 #include "webkit/appcache/appcache_backend_impl.h"
 
-#include "webkit/appcache/appcache_host.h"
+#include "base/stl_util-inl.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_service.h"
@@ -13,6 +13,7 @@
 namespace appcache {
 
 AppCacheBackendImpl::~AppCacheBackendImpl() {
+  STLDeleteValues(&hosts_);
   if (service_)
     service_->UnregisterBackend(this);
 }
@@ -27,47 +28,79 @@ void AppCacheBackendImpl::Initialize(AppCacheService* service,
   service_->RegisterBackend(this);
 }
 
-void AppCacheBackendImpl::RegisterHost(int id) {
-  DCHECK(hosts_.find(id) == hosts_.end());
-  hosts_.insert(HostMap::value_type(id, AppCacheHost(id, frontend_)));
+bool AppCacheBackendImpl::RegisterHost(int id) {
+  if (GetHost(id))
+    return false;
+
+  hosts_.insert(
+      HostMap::value_type(id, new AppCacheHost(id, frontend_, service_)));
+  return true;
 }
 
-void AppCacheBackendImpl::UnregisterHost(int id) {
-  hosts_.erase(id);
+bool AppCacheBackendImpl::UnregisterHost(int id) {
+  HostMap::iterator found = hosts_.find(id);
+  if (found == hosts_.end())
+    return false;
+
+  delete found->second;
+  hosts_.erase(found);
+  return true;
 }
 
-void AppCacheBackendImpl::SelectCache(
+bool AppCacheBackendImpl::SelectCache(
     int host_id,
     const GURL& document_url,
     const int64 cache_document_was_loaded_from,
     const GURL& manifest_url) {
-  // TODO(michaeln): write me
-  frontend_->OnCacheSelected(host_id, kNoCacheId, UNCACHED);
+  AppCacheHost* host = GetHost(host_id);
+  if (!host)
+    return false;
+
+  host->SelectCache(document_url, cache_document_was_loaded_from,
+                    manifest_url);
+  return true;
 }
 
-void AppCacheBackendImpl::MarkAsForeignEntry(
+bool AppCacheBackendImpl::MarkAsForeignEntry(
     int host_id,
     const GURL& document_url,
     int64 cache_document_was_loaded_from) {
-  // TODO(michaeln): write me
+  AppCacheHost* host = GetHost(host_id);
+  if (!host)
+    return false;
+
+  host->MarkAsForeignEntry(document_url, cache_document_was_loaded_from);
+  return true;
 }
 
-void AppCacheBackendImpl::GetStatusWithCallback(
+bool AppCacheBackendImpl::GetStatusWithCallback(
     int host_id, GetStatusCallback* callback, void* callback_param) {
-  // TODO(michaeln): write me
-  callback->Run(UNCACHED, callback_param);
+  AppCacheHost* host = GetHost(host_id);
+  if (!host)
+    return false;
+
+  host->GetStatusWithCallback(callback, callback_param);
+  return true;
 }
 
-void AppCacheBackendImpl::StartUpdateWithCallback(
+bool AppCacheBackendImpl::StartUpdateWithCallback(
     int host_id, StartUpdateCallback* callback, void* callback_param) {
-  // TODO(michaeln): write me
-  callback->Run(false, callback_param);
+  AppCacheHost* host = GetHost(host_id);
+  if (!host)
+    return false;
+
+  host->StartUpdateWithCallback(callback, callback_param);
+  return true;
 }
 
-void AppCacheBackendImpl::SwapCacheWithCallback(
+bool AppCacheBackendImpl::SwapCacheWithCallback(
     int host_id, SwapCacheCallback* callback, void* callback_param) {
-  // TODO(michaeln): write me
-  callback->Run(false, callback_param);
+  AppCacheHost* host = GetHost(host_id);
+  if (!host)
+    return false;
+
+  host->SwapCacheWithCallback(callback, callback_param);
+  return true;
 }
 
 }  // namespace appcache

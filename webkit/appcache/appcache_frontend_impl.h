@@ -12,7 +12,7 @@ namespace appcache {
 
 class AppCacheFrontendImpl : public AppCacheFrontend {
  public:
-  virtual void OnCacheSelected(int host_id, int64 cache_id ,
+  virtual void OnCacheSelected(int host_id, int64 cache_id,
                                Status status);
   virtual void OnStatusChanged(const std::vector<int>& host_ids,
                                Status status);

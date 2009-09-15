@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "webkit/appcache/appcache.h"
+#include "webkit/appcache/appcache_host.h"
 #include "webkit/appcache/appcache_service.h"
 
 namespace appcache {
@@ -61,7 +62,7 @@ bool AppCacheGroup::RemoveCache(AppCache* cache) {
   } else {
     // Unused old cache can always be removed.
     Caches::iterator it =
-      std::find(old_caches_.begin(), old_caches_.end(), cache);
+        std::find(old_caches_.begin(), old_caches_.end(), cache);
     if (it != old_caches_.end()) {
       (*it)->set_owning_group(NULL);
       old_caches_.erase(it);
@@ -69,6 +70,11 @@ bool AppCacheGroup::RemoveCache(AppCache* cache) {
   }
 
   return true;
+}
+
+void AppCacheGroup::StartUpdateWithNewMasterEntry(
+    AppCacheHost* host, const GURL& master_entry_url) {
+  // TODO(michaeln): use the real AppCacheUpdateJob
 }
 
 }  // namespace appcache

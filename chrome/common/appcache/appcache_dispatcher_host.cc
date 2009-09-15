@@ -46,6 +46,9 @@ bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& msg,
   return handled;
 }
 
+// TODO(michaeln): Handle the invalid host id error condition, probably
+// terminate the child process.
+
 void AppCacheDispatcherHost::OnRegisterHost(int host_id) {
   if (appcache_service_.get())
     backend_impl_.RegisterHost(host_id);

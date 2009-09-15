@@ -1239,6 +1239,8 @@
         'appcache/appcache_interceptor.h',
         'appcache/appcache_interfaces.cc',
         'appcache/appcache_interfaces.h',
+        'appcache/appcache_request_handler.cc',
+        'appcache/appcache_request_handler.h',
         'appcache/appcache_service.cc',
         'appcache/appcache_service.h',
         'appcache/manifest_parser.cc',

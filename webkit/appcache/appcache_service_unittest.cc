@@ -7,16 +7,10 @@
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_service.h"
 
-using appcache::AppCache;
-using appcache::AppCacheGroup;
-using appcache::AppCacheService;
-
-namespace {
+namespace appcache {
 
 class AppCacheServiceTest : public testing::Test {
 };
-
-}  // namespace
 
 TEST(AppCacheServiceTest, AddRemoveCache) {
   AppCacheService service;
@@ -31,10 +25,12 @@ TEST(AppCacheServiceTest, AddRemoveCache) {
 TEST(AppCacheServiceTest, AddRemoveGroup) {
   AppCacheService service;
   scoped_refptr<AppCacheGroup> group =
-    new AppCacheGroup(&service, GURL::EmptyGURL());
+      new AppCacheGroup(&service, GURL::EmptyGURL());
   service.RemoveGroup(group);
 
   // Removing non-existing group from service should not fail.
   AppCacheService dummy;
   dummy.RemoveGroup(group);
 }
+
+}  // namespace appcache
