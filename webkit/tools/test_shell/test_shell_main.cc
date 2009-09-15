@@ -81,8 +81,10 @@ int main(int argc, char* argv[]) {
   bool ux_theme = parsed_command_line.HasSwitch(test_shell::kUxTheme);
   bool classic_theme =
       parsed_command_line.HasSwitch(test_shell::kClassicTheme);
+#if defined(OS_WIN)
   bool generic_theme = (layout_test_mode && !ux_theme && !classic_theme) ||
       parsed_command_line.HasSwitch(test_shell::kGenericTheme);
+#endif
 
   bool enable_gp_fault_error_box = false;
   enable_gp_fault_error_box =
