@@ -84,6 +84,9 @@ int main(int argc, char* argv[]) {
 #if defined(OS_WIN)
   bool generic_theme = (layout_test_mode && !ux_theme && !classic_theme) ||
       parsed_command_line.HasSwitch(test_shell::kGenericTheme);
+#else
+  // Stop compiler warnings about unused variables.
+  ux_theme = ux_theme;
 #endif
 
   bool enable_gp_fault_error_box = false;
