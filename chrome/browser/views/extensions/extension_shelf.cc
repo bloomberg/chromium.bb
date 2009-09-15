@@ -612,8 +612,8 @@ void ExtensionShelf::Toolstrip::HideShelfHandle(int delay_ms) {
 ////////////////////////////////////////////////////////////////////////////////
 
 ExtensionShelf::ExtensionShelf(Browser* browser)
-    : background_for_detached_(false),
-      background_needs_repaint_(true),
+  :   background_needs_repaint_(true),
+      background_for_detached_(false),
       browser_(browser),
       model_(browser->extension_shelf_model()) {
   model_->AddObserver(this);
