@@ -62,17 +62,17 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeNoKeyPath) {
   // Create tree to be deleted
   FilePath dir_name_delete(test_dir_);
   dir_name_delete = dir_name_delete.AppendASCII("to_be_delete");
-  CreateDirectory(dir_name_delete.value().c_str(), NULL);
+  file_util::CreateDirectory(dir_name_delete);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete));
 
   FilePath dir_name_delete_1(dir_name_delete);
   dir_name_delete_1 = dir_name_delete_1.AppendASCII("1");
-  CreateDirectory(dir_name_delete_1.value().c_str(), NULL);
+  file_util::CreateDirectory(dir_name_delete_1);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete_1));
 
   FilePath dir_name_delete_2(dir_name_delete);
   dir_name_delete_2 = dir_name_delete_2.AppendASCII("2");
-  CreateDirectory(dir_name_delete_2.value().c_str(), NULL);
+  file_util::CreateDirectory(dir_name_delete_2);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete_2));
 
   FilePath file_name_delete_1(dir_name_delete_1);
@@ -110,17 +110,17 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTree) {
   // Create tree to be deleted
   FilePath dir_name_delete(test_dir_);
   dir_name_delete = dir_name_delete.AppendASCII("to_be_delete");
-  CreateDirectory(dir_name_delete.value().c_str(), NULL);
+  file_util::CreateDirectory(dir_name_delete);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete));
 
   FilePath dir_name_delete_1(dir_name_delete);
   dir_name_delete_1 = dir_name_delete_1.AppendASCII("1");
-  CreateDirectory(dir_name_delete_1.value().c_str(), NULL);
+  file_util::CreateDirectory(dir_name_delete_1);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete_1));
 
   FilePath dir_name_delete_2(dir_name_delete);
   dir_name_delete_2 = dir_name_delete_2.AppendASCII("2");
-  CreateDirectory(dir_name_delete_2.value().c_str(), NULL);
+  file_util::CreateDirectory(dir_name_delete_2);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete_2));
 
   FilePath file_name_delete_1(dir_name_delete_1);
@@ -156,17 +156,17 @@ TEST_F(DeleteTreeWorkItemTest, DeleteTreeInUse) {
   // Create tree to be deleted
   FilePath dir_name_delete(test_dir_);
   dir_name_delete = dir_name_delete.AppendASCII("to_be_delete");
-  CreateDirectory(dir_name_delete.value().c_str(), NULL);
+  file_util::CreateDirectory(dir_name_delete);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete));
 
   FilePath dir_name_delete_1(dir_name_delete);
   dir_name_delete_1 = dir_name_delete_1.AppendASCII("1");
-  CreateDirectory(dir_name_delete_1.value().c_str(), NULL);
+  file_util::CreateDirectory(dir_name_delete_1);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete_1));
 
   FilePath dir_name_delete_2(dir_name_delete);
   dir_name_delete_2 = dir_name_delete_2.AppendASCII("2");
-  CreateDirectory(dir_name_delete_2.value().c_str(), NULL);
+  file_util::CreateDirectory(dir_name_delete_2);
   ASSERT_TRUE(file_util::PathExists(dir_name_delete_2));
 
   FilePath file_name_delete_1(dir_name_delete_1);

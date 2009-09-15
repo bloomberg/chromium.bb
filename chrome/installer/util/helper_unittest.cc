@@ -61,27 +61,27 @@ TEST_F(SetupHelperTest, Delete) {
   // Create a Chrome dir
   FilePath chrome_dir(test_dir_);
   chrome_dir = chrome_dir.AppendASCII("chrome");
-  CreateDirectory(chrome_dir.value().c_str(), NULL);
+  file_util::CreateDirectory(chrome_dir);
   ASSERT_TRUE(file_util::PathExists(chrome_dir));
 
   FilePath chrome_dir_1(chrome_dir);
   chrome_dir_1 = chrome_dir_1.AppendASCII("1.0.1.0");
-  CreateDirectory(chrome_dir_1.value().c_str(), NULL);
+  file_util::CreateDirectory(chrome_dir_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_1));
 
   FilePath chrome_dir_2(chrome_dir);
   chrome_dir_2 = chrome_dir_2.AppendASCII("1.0.2.0");
-  CreateDirectory(chrome_dir_2.value().c_str(), NULL);
+  file_util::CreateDirectory(chrome_dir_2);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_2));
 
   FilePath chrome_dir_3(chrome_dir);
   chrome_dir_3 = chrome_dir_3.AppendASCII("1.0.3.0");
-  CreateDirectory(chrome_dir_3.value().c_str(), NULL);
+  file_util::CreateDirectory(chrome_dir_3);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_3));
 
   FilePath chrome_dir_4(chrome_dir);
   chrome_dir_4 = chrome_dir_4.AppendASCII("1.0.4.0");
-  CreateDirectory(chrome_dir_4.value().c_str(), NULL);
+  file_util::CreateDirectory(chrome_dir_4);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_4));
 
   FilePath chrome_dll_1(chrome_dir_1);
@@ -120,27 +120,27 @@ TEST_F(SetupHelperTest, DeleteInUsed) {
   // Create a Chrome dir
   FilePath chrome_dir(test_dir_);
   chrome_dir = chrome_dir.AppendASCII("chrome");
-  CreateDirectory(chrome_dir.value().c_str(), NULL);
+  file_util::CreateDirectory(chrome_dir);
   ASSERT_TRUE(file_util::PathExists(chrome_dir));
 
   FilePath chrome_dir_1(chrome_dir);
   chrome_dir_1 = chrome_dir_1.AppendASCII("1.0.1.0");
-  CreateDirectory(chrome_dir_1.value().c_str(), NULL);
+  file_util::CreateDirectory(chrome_dir_1);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_1));
 
   FilePath chrome_dir_2(chrome_dir);
   chrome_dir_2 = chrome_dir_2.AppendASCII("1.0.2.0");
-  CreateDirectory(chrome_dir_2.value().c_str(), NULL);
+  file_util::CreateDirectory(chrome_dir_2);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_2));
 
   FilePath chrome_dir_3(chrome_dir);
   chrome_dir_3 = chrome_dir_3.AppendASCII("1.0.3.0");
-  CreateDirectory(chrome_dir_3.value().c_str(), NULL);
+  file_util::CreateDirectory(chrome_dir_3);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_3));
 
   FilePath chrome_dir_4(chrome_dir);
   chrome_dir_4 = chrome_dir_4.AppendASCII("1.0.4.0");
-  CreateDirectory(chrome_dir_4.value().c_str(), NULL);
+  file_util::CreateDirectory(chrome_dir_4);
   ASSERT_TRUE(file_util::PathExists(chrome_dir_4));
 
   FilePath chrome_dll_1(chrome_dir_1);

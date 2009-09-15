@@ -79,12 +79,12 @@ TEST_F(MoveTreeWorkItemTest, MoveDirectory) {
   // Create two level deep source dir
   FilePath from_dir1(test_dir_);
   from_dir1 = from_dir1.AppendASCII("From_Dir1");
-  CreateDirectory(from_dir1.value().c_str(), NULL);
+  file_util::CreateDirectory(from_dir1);
   ASSERT_TRUE(file_util::PathExists(from_dir1));
 
   FilePath from_dir2(from_dir1);
   from_dir2 = from_dir2.AppendASCII("From_Dir2");
-  CreateDirectory(from_dir2.value().c_str(), NULL);
+  file_util::CreateDirectory(from_dir2);
   ASSERT_TRUE(file_util::PathExists(from_dir2));
 
   FilePath from_file(from_dir2);
@@ -126,12 +126,12 @@ TEST_F(MoveTreeWorkItemTest, MoveDirectoryDestExists) {
   // Create two level deep source dir
   FilePath from_dir1(test_dir_);
   from_dir1 = from_dir1.AppendASCII("From_Dir1");
-  CreateDirectory(from_dir1.value().c_str(), NULL);
+  file_util::CreateDirectory(from_dir1);
   ASSERT_TRUE(file_util::PathExists(from_dir1));
 
   FilePath from_dir2(from_dir1);
   from_dir2 = from_dir2.AppendASCII("From_Dir2");
-  CreateDirectory(from_dir2.value().c_str(), NULL);
+  file_util::CreateDirectory(from_dir2);
   ASSERT_TRUE(file_util::PathExists(from_dir2));
 
   FilePath from_file(from_dir2);
@@ -142,7 +142,7 @@ TEST_F(MoveTreeWorkItemTest, MoveDirectoryDestExists) {
   // Create destination path
   FilePath to_dir(test_dir_);
   to_dir = to_dir.AppendASCII("To_Dir");
-  CreateDirectory(to_dir.value().c_str(), NULL);
+  file_util::CreateDirectory(to_dir);
   ASSERT_TRUE(file_util::PathExists(to_dir));
 
   FilePath orig_to_file(to_dir);
@@ -184,7 +184,7 @@ TEST_F(MoveTreeWorkItemTest, MoveAFile) {
   // Create a file inside source dir
   FilePath from_dir(test_dir_);
   from_dir = from_dir.AppendASCII("From_Dir");
-  CreateDirectory(from_dir.value().c_str(), NULL);
+  file_util::CreateDirectory(from_dir);
   ASSERT_TRUE(file_util::PathExists(from_dir));
 
   FilePath from_file(from_dir);
@@ -223,7 +223,7 @@ TEST_F(MoveTreeWorkItemTest, MoveFileDestExists) {
   // Create a file inside source dir
   FilePath from_dir(test_dir_);
   from_dir = from_dir.AppendASCII("From_Dir");
-  CreateDirectory(from_dir.value().c_str(), NULL);
+  file_util::CreateDirectory(from_dir);
   ASSERT_TRUE(file_util::PathExists(from_dir));
 
   FilePath from_file(from_dir);
@@ -234,7 +234,7 @@ TEST_F(MoveTreeWorkItemTest, MoveFileDestExists) {
   // Create destination path
   FilePath to_dir(test_dir_);
   to_dir = to_dir.AppendASCII("To_Dir");
-  CreateDirectory(to_dir.value().c_str(), NULL);
+  file_util::CreateDirectory(to_dir);
   ASSERT_TRUE(file_util::PathExists(to_dir));
 
   FilePath to_file(to_dir);
@@ -269,7 +269,7 @@ TEST_F(MoveTreeWorkItemTest, MoveFileDestInUse) {
   // Create a file inside source dir
   FilePath from_dir(test_dir_);
   from_dir = from_dir.AppendASCII("From_Dir");
-  CreateDirectory(from_dir.value().c_str(), NULL);
+  file_util::CreateDirectory(from_dir);
   ASSERT_TRUE(file_util::PathExists(from_dir));
 
   FilePath from_file(from_dir);
@@ -280,7 +280,7 @@ TEST_F(MoveTreeWorkItemTest, MoveFileDestInUse) {
   // Create an executable in destination path by copying ourself to it.
   FilePath to_dir(test_dir_);
   to_dir = to_dir.AppendASCII("To_Dir");
-  CreateDirectory(to_dir.value().c_str(), NULL);
+  file_util::CreateDirectory(to_dir);
   ASSERT_TRUE(file_util::PathExists(to_dir));
 
   wchar_t exe_full_path_str[MAX_PATH];
@@ -330,7 +330,7 @@ TEST_F(MoveTreeWorkItemTest, MoveFileInUse) {
   // Create an executable for source by copying ourself to a new source dir.
   FilePath from_dir(test_dir_);
   from_dir = from_dir.AppendASCII("From_Dir");
-  CreateDirectory(from_dir.value().c_str(), NULL);
+  file_util::CreateDirectory(from_dir);
   ASSERT_TRUE(file_util::PathExists(from_dir));
 
   wchar_t exe_full_path_str[MAX_PATH];
@@ -344,7 +344,7 @@ TEST_F(MoveTreeWorkItemTest, MoveFileInUse) {
   // Create a destination source dir and generate destination file name.
   FilePath to_dir(test_dir_);
   to_dir = to_dir.AppendASCII("To_Dir");
-  CreateDirectory(to_dir.value().c_str(), NULL);
+  file_util::CreateDirectory(to_dir);
   ASSERT_TRUE(file_util::PathExists(to_dir));
 
   FilePath to_file(to_dir);
