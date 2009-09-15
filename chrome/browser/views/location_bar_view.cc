@@ -86,7 +86,7 @@ LocationBarView::LocationBarView(Profile* profile,
                                  ToolbarModel* model,
                                  Delegate* delegate,
                                  bool popup_window_mode,
-                                 AutocompletePopupPositioner* popup_positioner)
+                                 const BubblePositioner* bubble_positioner)
     : profile_(profile),
       command_updater_(command_updater),
       model_(model),
@@ -99,7 +99,7 @@ LocationBarView::LocationBarView(Profile* profile,
       security_image_view_(profile, model),
       popup_window_mode_(popup_window_mode),
       first_run_bubble_(this),
-      popup_positioner_(popup_positioner) {
+      bubble_positioner_(bubble_positioner) {
   DCHECK(profile_);
   SetID(VIEW_ID_LOCATION_BAR);
   SetFocusable(true);
@@ -138,12 +138,12 @@ void LocationBarView::Init() {
                                                     widget->GetNativeView(),
                                                     profile_, command_updater_,
                                                     popup_window_mode_,
-                                                    popup_positioner_));
+                                                    bubble_positioner_));
 #else
   location_entry_.reset(new AutocompleteEditViewGtk(this, model_, profile_,
                                                     command_updater_,
                                                     popup_window_mode_,
-                                                    popup_positioner_));
+                                                    bubble_positioner_));
   location_entry_->Init();
   // Make all the children of the widget visible. NOTE: this won't display
   // anything, it just toggles the visible flag.

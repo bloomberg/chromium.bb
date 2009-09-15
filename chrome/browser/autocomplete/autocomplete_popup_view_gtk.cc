@@ -20,6 +20,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
+#include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -242,10 +243,10 @@ AutocompletePopupViewGtk::AutocompletePopupViewGtk(
     AutocompleteEditView* edit_view,
     AutocompleteEditModel* edit_model,
     Profile* profile,
-    AutocompletePopupPositioner* popup_positioner)
+    const BubblePositioner* bubble_positioner)
     : model_(new AutocompletePopupModel(this, edit_model, profile)),
       edit_view_(edit_view),
-      popup_positioner_(popup_positioner),
+      bubble_positioner_(bubble_positioner),
       window_(gtk_window_new(GTK_WINDOW_POPUP)),
       layout_(NULL),
       opened_(false) {
@@ -335,7 +336,8 @@ AutocompletePopupModel* AutocompletePopupViewGtk::GetModel() {
 }
 
 void AutocompletePopupViewGtk::Show(size_t num_results) {
-  gfx::Rect rect = popup_positioner_->GetPopupBounds();
+  gfx::Rect rect = bubble_positioner_->GetLocationStackBounds();
+  rect.set_y(rect.bottom());
   rect.set_height((num_results * kHeightPerResult) + (kBorderThickness * 2));
 
   gtk_window_move(GTK_WINDOW(window_), rect.x(), rect.y());
@@ -509,7 +511,7 @@ AutocompletePopupView* AutocompletePopupView::CreatePopupView(
     AutocompleteEditView* edit_view,
     AutocompleteEditModel* edit_model,
     Profile* profile,
-    AutocompletePopupPositioner* popup_positioner) {
+    const BubblePositioner* bubble_positioner) {
   return new AutocompletePopupViewGtk(edit_view, edit_model, profile,
-                                      popup_positioner);
+                                      bubble_positioner);
 }

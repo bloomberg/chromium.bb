@@ -10,6 +10,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
+#include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/cocoa/event_utils.h"
 #include "chrome/browser/cocoa/nsimage_cache.h"
 
@@ -259,12 +260,12 @@ NSAttributedString* AutocompletePopupViewMac::MatchText(
 AutocompletePopupViewMac::AutocompletePopupViewMac(
     AutocompleteEditViewMac* edit_view,
     AutocompleteEditModel* edit_model,
-    AutocompletePopupPositioner* positioner,
+    const BubblePositioner* bubble_positioner,
     Profile* profile,
     NSTextField* field)
     : model_(new AutocompletePopupModel(this, edit_model, profile)),
       edit_view_(edit_view),
-      positioner_(positioner),
+      bubble_positioner_(bubble_positioner),
       field_(field),
       matrix_target_([[AutocompleteMatrixTarget alloc] initWithPopupView:this]),
       popup_(nil) {
@@ -345,7 +346,8 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   CreatePopupIfNeeded();
 
   // Layout the popup and size it to land underneath the field.
-  NSRect r = NSRectFromCGRect(positioner_->GetPopupBounds().ToCGRect());
+  NSRect r =
+      NSRectFromCGRect(bubble_positioner_->GetLocationStackBounds().ToCGRect());
   r.origin = [[field_ window] convertBaseToScreen:r.origin];
   DCHECK_GT(r.size.width, 0.0);
 

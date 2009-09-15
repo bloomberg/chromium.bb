@@ -837,6 +837,7 @@
         'browser/browsing_data_remover.h',
         'browser/browsing_instance.cc',
         'browser/browsing_instance.h',
+        'browser/bubble_positioner.h',
         'browser/cancelable_request.cc',
         'browser/cancelable_request.h',
         'browser/cert_store.cc',

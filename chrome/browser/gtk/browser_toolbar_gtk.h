@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_view.h"
+#include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/gtk/menu_bar_helper.h"
 #include "chrome/browser/gtk/menu_gtk.h"
@@ -35,7 +35,7 @@ class ToolbarStarToggleGtk;
 class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                           public MenuGtk::Delegate,
                           public NotificationObserver,
-                          public AutocompletePopupPositioner,
+                          public BubblePositioner,
                           public MenuBarHelper::Delegate {
  public:
   explicit BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window);
@@ -87,9 +87,8 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   ToolbarStarToggleGtk* star() { return star_.get(); }
 
-  // Implement AutocompletePopupPositioner, return the position of where the
-  // Omnibox results popup should go (from the star to the go buttons).
-  virtual gfx::Rect GetPopupBounds() const;
+  // BubblePositioner:
+  virtual gfx::Rect GetLocationStackBounds() const;
 
   // MenuBarHelper::Delegate implementation ------------------------------------
   virtual void PopupForButton(GtkWidget* button);

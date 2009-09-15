@@ -13,8 +13,8 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 #include "chrome/browser/location_bar.h"
 
-class AutocompletePopupPositioner;
 @class AutocompleteTextField;
+class BubblePositioner;
 class CommandUpdater;
 class Profile;
 class ToolbarModel;
@@ -28,7 +28,7 @@ class LocationBarViewMac : public AutocompleteEditController,
                            public LocationBarTesting {
  public:
   LocationBarViewMac(AutocompleteTextField* field,
-                     AutocompletePopupPositioner* positioner,
+                     const BubblePositioner* bubble_positioner,
                      CommandUpdater* command_updater,
                      ToolbarModel* toolbar_model,
                      Profile* profile);

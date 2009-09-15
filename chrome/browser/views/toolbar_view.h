@@ -9,9 +9,9 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/user_data_manager.h"
-#include "chrome/browser/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "chrome/browser/views/go_button.h"
 #include "chrome/browser/views/location_bar_view.h"
 #include "chrome/common/pref_member.h"
@@ -72,7 +72,7 @@ class ToolbarView : public views::View,
                     public GetProfilesHelper::Delegate,
                     public CommandUpdater::CommandObserver,
                     public views::ButtonListener,
-                    public AutocompletePopupPositioner {
+                    public BubblePositioner {
  public:
   explicit ToolbarView(Browser* browser);
   virtual ~ToolbarView();
@@ -128,8 +128,8 @@ class ToolbarView : public views::View,
   // Overridden from views::BaseButton::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // Overridden from AutocompletePopupPositioner:
-  virtual gfx::Rect GetPopupBounds() const;
+  // BubblePositioner:
+  virtual gfx::Rect GetLocationStackBounds() const;
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
+#include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/views/bubble_border.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -582,7 +583,7 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
     AutocompleteEditView* edit_view,
     AutocompleteEditModel* edit_model,
     Profile* profile,
-    AutocompletePopupPositioner* popup_positioner)
+    const BubblePositioner* bubble_positioner)
 #if defined(OS_WIN)
     : popup_(new AutocompletePopupWin(this)),
 #else
@@ -590,10 +591,14 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
 #endif
       model_(new AutocompletePopupModel(this, edit_model, profile)),
       edit_view_(edit_view),
-      popup_positioner_(popup_positioner),
+      bubble_positioner_(bubble_positioner),
       result_font_(font.DeriveFont(kEditFontAdjust)),
       ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)) {
-  set_border(new BubbleBorder);
+  // The following little dance is required because set_border() requires a
+  // pointer to a non-const object.
+  BubbleBorder* bubble_border = new BubbleBorder;
+  bubble_border_ = bubble_border;
+  set_border(bubble_border);
 }
 
 gfx::Rect AutocompletePopupContentsView::GetPopupBounds() const {
@@ -650,12 +655,10 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
   }
 
   // Calculate desired bounds.
-  gfx::Rect new_target_bounds = popup_positioner_->GetPopupBounds();
-  new_target_bounds.set_height(total_child_height);
-  gfx::Insets insets;
-  border()->GetInsets(&insets);
-  new_target_bounds.Inset(-insets.left(), -insets.top(), -insets.right(),
-                          -insets.bottom());
+  gfx::Rect location_stack_bounds =
+      bubble_positioner_->GetLocationStackBounds();
+  gfx::Rect new_target_bounds(bubble_border_->GetBounds(location_stack_bounds,
+      gfx::Size(location_stack_bounds.width(), total_child_height)));
 
   // If we're animating and our target height changes, reset the animation.
   // NOTE: If we just reset blindly on _every_ update, then when the user types
@@ -870,7 +873,7 @@ AutocompletePopupView* AutocompletePopupView::CreatePopupView(
     AutocompleteEditView* edit_view,
     AutocompleteEditModel* edit_model,
     Profile* profile,
-    AutocompletePopupPositioner* popup_positioner) {
+    const BubblePositioner* bubble_positioner) {
   return new AutocompletePopupContentsView(font, edit_view, edit_model,
-                                           profile, popup_positioner);
+                                           profile, bubble_positioner);
 }

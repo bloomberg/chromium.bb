@@ -67,14 +67,6 @@ static const int kPopupTopSpacingNonGlass = 3;
 static const int kPopupBottomSpacingNonGlass = 2;
 static const int kPopupBottomSpacingGlass = 1;
 
-// The vertical distance between the bottom of the omnibox and the top of the
-// popup.
-static const int kOmniboxPopupVerticalSpacing = 2;
-// The number of pixels of margin on the buttons on either side of the omnibox.
-// We use this value to inset the bounds returned for the omnibox popup, since
-// we want the popup to be only as wide as the visible frame of the omnibox.
-static const int kOmniboxButtonsHorizontalMargin = 2;
-
 static SkBitmap* kPopupBackgroundEdge = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -364,27 +356,27 @@ void ToolbarView::ButtonPressed(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, AutocompletePopupPositioner implementation:
+// ToolbarView, BubblePositioner implementation:
 
-gfx::Rect ToolbarView::GetPopupBounds() const {
+gfx::Rect ToolbarView::GetLocationStackBounds() const {
+  // The number of pixels from the left or right edges of the location stack to
+  // "just inside the visible borders".  When the omnibox bubble contents are
+  // aligned with this, the visible borders tacked on to the outsides will line
+  // up with the visible borders on the location stack.
+  const int kLocationStackEdgeWidth = 2;
+
   gfx::Point origin;
   views::View::ConvertPointToScreen(star_, &origin);
-  origin.set_y(origin.y() + star_->height() + kOmniboxPopupVerticalSpacing);
-  gfx::Rect popup_bounds(origin.x(), origin.y(),
+  gfx::Rect stack_bounds(origin.x(), origin.y(),
                          star_->width() + location_bar_->width() + go_->width(),
-                         0);
+                         location_bar_->height());
   if (UILayoutIsRightToLeft()) {
-    popup_bounds.set_x(
-        popup_bounds.x() - location_bar_->width() - go_->width());
-  } else {
-    popup_bounds.set_x(popup_bounds.x());
+    stack_bounds.set_x(
+        stack_bounds.x() - location_bar_->width() - go_->width());
   }
-  popup_bounds.set_y(popup_bounds.y());
-  popup_bounds.set_width(popup_bounds.width());
-  // Inset the bounds a little, since the buttons on either edge of the omnibox
-  // have invisible padding that makes the popup appear too wide.
-  popup_bounds.Inset(kOmniboxButtonsHorizontalMargin, 0);
-  return popup_bounds;
+  // Inset the bounds to just inside the visible edges (see comment above).
+  stack_bounds.Inset(kLocationStackEdgeWidth, 0);
+  return stack_bounds;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

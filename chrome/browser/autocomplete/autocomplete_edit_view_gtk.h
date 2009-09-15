@@ -22,8 +22,8 @@
 
 class AutocompleteEditController;
 class AutocompleteEditModel;
-class AutocompletePopupPositioner;
 class AutocompletePopupView;
+class BubblePositioner;
 class CommandUpdater;
 class Profile;
 class TabContents;
@@ -52,7 +52,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
                           Profile* profile,
                           CommandUpdater* command_updater,
                           bool popup_window_mode,
-                          AutocompletePopupPositioner* popup_positioner);
+                          const BubblePositioner* bubble_positioner);
   ~AutocompleteEditViewGtk();
 
   // Initialize, create the underlying widgets, etc.

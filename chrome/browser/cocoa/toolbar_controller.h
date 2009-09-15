@@ -15,16 +15,16 @@
 #import "chrome/browser/cocoa/view_resizer.h"
 #include "chrome/common/pref_member.h"
 
-class AutocompletePopupPositioner;
 @class AutocompleteTextField;
 @class AutocompleteTextFieldEditor;
 @class BackForwardMenuController;
-@class DelayedMenuButton;
-@class MenuButton;
 class Browser;
+class BubblePositioner;
 class CommandUpdater;
+@class DelayedMenuButton;
 class LocationBar;
 class LocationBarViewMac;
+@class MenuButton;
 namespace ToolbarControllerInternal {
 class PrefObserverBridge;
 }
@@ -35,7 +35,7 @@ class ToolbarView;
 
 // A controller for the toolbar in the browser window. Manages
 // updating the state for location bar and back/fwd/reload/go buttons.
-// Manages the bookmark bar and it's position in the window relative to
+// Manages the bookmark bar and its position in the window relative to
 // the web content view.
 
 @interface ToolbarController :
@@ -56,8 +56,8 @@ class ToolbarView;
 
   // Used for monitoring the optional toolbar button prefs.
   scoped_ptr<ToolbarControllerInternal::PrefObserverBridge> prefObserver_;
-  // Used to positioner the omnibox popup view.
-  scoped_ptr<AutocompletePopupPositioner> popupPositioner_;
+  // Used to position the omnibox bubble.
+  scoped_ptr<BubblePositioner> bubblePositioner_;
   BooleanPrefMember showHomeButton_;
   BooleanPrefMember showPageOptionButtons_;
   BOOL hasToolbar_;  // if NO, we only have the location bar.
@@ -146,7 +146,7 @@ class ToolbarView;
 - (NSArray*)toolbarViews;
 - (void)showOptionalHomeButton;
 - (void)showOptionalPageWrenchButtons;
-- (gfx::Rect)autocompletePopupPosition;
+- (gfx::Rect)locationStackBounds;
 // Return a hover button for the current event.
 - (NSButton*)hoverButtonForEvent:(NSEvent*)theEvent;
 @end

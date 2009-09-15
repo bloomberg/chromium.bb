@@ -199,10 +199,10 @@ std::wstring CompactNavigationBar::GetTitle() const {
   return std::wstring();
 }
 
-gfx::Rect CompactNavigationBar::GetPopupBounds() const {
-  gfx::Point upper_left(0, height());
-  ConvertPointToScreen(this, &upper_left);
-  return gfx::Rect(upper_left.x(), upper_left.y(), 700, 100);
+gfx::Rect CompactNavigationBar::GetLocationStackBounds() const {
+  gfx::Point origin;
+  ConvertPointToScreen(this, &origin);
+  return gfx::Rect(origin, size());
 }
 
 void CompactNavigationBar::AddTabWithURL(const GURL& url,

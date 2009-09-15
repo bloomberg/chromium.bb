@@ -102,8 +102,10 @@ const GdkColor LocationBarViewGtk::kBackgroundColorByLevel[3] = {
   GDK_COLOR_RGB(255, 255, 255),  // SecurityLevel INSECURE: White.
 };
 
-LocationBarViewGtk::LocationBarViewGtk(CommandUpdater* command_updater,
-    ToolbarModel* toolbar_model, AutocompletePopupPositioner* popup_positioner,
+LocationBarViewGtk::LocationBarViewGtk(
+    CommandUpdater* command_updater,
+    ToolbarModel* toolbar_model,
+    const BubblePositioner* bubble_positioner,
     Browser* browser)
     : security_icon_event_box_(NULL),
       security_lock_icon_image_(NULL),
@@ -119,7 +121,7 @@ LocationBarViewGtk::LocationBarViewGtk(CommandUpdater* command_updater,
       command_updater_(command_updater),
       toolbar_model_(toolbar_model),
       browser_(browser),
-      popup_positioner_(popup_positioner),
+      bubble_positioner_(bubble_positioner),
       disposition_(CURRENT_TAB),
       transition_(PageTransition::TYPED),
       first_run_bubble_(this),
@@ -139,7 +141,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
                                                     profile_,
                                                     command_updater_,
                                                     popup_window_mode_,
-                                                    popup_positioner_));
+                                                    bubble_positioner_));
   location_entry_->Init();
 
   hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding));

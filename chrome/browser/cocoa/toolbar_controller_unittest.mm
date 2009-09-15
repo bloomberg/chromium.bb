@@ -273,7 +273,7 @@ TEST_F(ToolbarControllerTest, StarButtonInWindowCoordinates) {
   EXPECT_TRUE(NSContainsRect(all, star));
 }
 
-TEST_F(ToolbarControllerTest, AutocompletePopupPosition) {
+TEST_F(ToolbarControllerTest, BubblePosition) {
   NSView* locationBar = [[bar_ toolbarViews] objectAtIndex:kLocationIndex];
 
   // The window frame (in window base coordinates).
@@ -281,17 +281,14 @@ TEST_F(ToolbarControllerTest, AutocompletePopupPosition) {
   // The frame of the location bar in window base coordinates.
   NSRect locationFrame =
       [locationBar convertRect:[locationBar bounds] toView:nil];
-  // The frame of the popup in window base coordinates.
-  gfx::Rect popupFrame = [bar_ autocompletePopupPosition];
+  // The frame of the location stack in window base coordinates.  The horizontal
+  // coordinates here are used for the omnibox dropdown.
+  gfx::Rect locationStackFrame = [bar_ locationStackBounds];
 
-  // Make sure the popup starts to the left of and ends to the right of the
-  // location bar.
-  EXPECT_LT(popupFrame.x(), NSMinX(locationFrame));
-  EXPECT_GT(popupFrame.right(), NSMaxX(locationFrame));
-
-  // Make sure the popup frame is positioned above the bottom of the
-  // location bar.
-  EXPECT_GE(popupFrame.bottom(), NSMinY(locationFrame));
+  // Make sure the location stack starts to the left of and ends to the right of
+  // the location bar.
+  EXPECT_LT(locationStackFrame.x(), NSMinX(locationFrame));
+  EXPECT_GT(locationStackFrame.right(), NSMaxX(locationFrame));
 }
 
 TEST_F(ToolbarControllerTest, HoverButtonForEvent) {

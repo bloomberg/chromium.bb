@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_view.h"
+#include "chrome/browser/bubble_positioner.h"
 #include "views/controls/button/button.h"
 #include "views/view.h"
 
@@ -26,7 +26,7 @@ class NativeViewHost;
 class CompactNavigationBar : public views::View,
                              public views::ButtonListener,
                              public AutocompleteEditController,
-                             public AutocompletePopupPositioner {
+                             public BubblePositioner {
  public:
   explicit CompactNavigationBar(Browser* browser);
   virtual ~CompactNavigationBar();
@@ -55,8 +55,8 @@ class CompactNavigationBar : public views::View,
   virtual SkBitmap GetFavIcon() const;
   virtual std::wstring GetTitle() const;
 
-  // AutocompletePopupPositioner implementation.
-  virtual gfx::Rect GetPopupBounds() const;
+  // BubblePositioner:
+  virtual gfx::Rect GetLocationStackBounds() const;
 
   void AddTabWithURL(const GURL& url, PageTransition::Type transition);
 

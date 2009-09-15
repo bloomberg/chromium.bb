@@ -61,15 +61,6 @@ const int kToolbarHeightLocationBarOnly = kToolbarHeight - 2;
 // Interior spacing between toolbar widgets.
 const int kToolbarWidgetSpacing = 4;
 
-// The amount of space between the bottom of the star and the top of the
-// Omnibox results popup window.  We want a two pixel space between the bottom
-// and the results, but have some extra space below the buttons already.
-const int kPopupTopMargin = 0;
-
-// Space between the edge of the star/go button and the popup frame.  We want
-// to leave 1 pixel on both side here so that the borders line up.
-const int kPopupLeftRightMargin = 1;
-
 // The color used as the base[] color of the location entry during a secure
 // connection.
 const GdkColor kSecureColor = GDK_COLOR_RGB(255, 245, 195);
@@ -425,7 +416,13 @@ void BrowserToolbarGtk::UpdateTabContents(TabContents* contents,
   location_bar_->Update(should_restore_state ? contents : NULL);
 }
 
-gfx::Rect BrowserToolbarGtk::GetPopupBounds() const {
+gfx::Rect BrowserToolbarGtk::GetLocationStackBounds() const {
+  // The number of pixels from the left or right edges of the location stack to
+  // "just inside the visible borders".  When the omnibox bubble contents are
+  // aligned with this, the visible borders tacked on to the outsides will line
+  // up with the visible borders on the location stack.
+  const int kLocationStackEdgeWidth = 1;
+
   GtkWidget* left;
   GtkWidget* right;
   if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
@@ -441,16 +438,14 @@ gfx::Rect BrowserToolbarGtk::GetPopupBounds() const {
   gdk_window_get_origin(left->window, &origin_x, &origin_y);
 
   gint right_x = origin_x + right->allocation.x + right->allocation.width;
-
   gint left_x = origin_x + left->allocation.x;
-
-  // Bottom edge.
-  gint left_y = origin_y + left->allocation.y + left->allocation.height;
-
   DCHECK_LE(left_x, right_x);
 
-  return gfx::Rect(left_x + kPopupLeftRightMargin, left_y + kPopupTopMargin,
-                   right_x - left_x - (2 * kPopupLeftRightMargin), 0);
+  gfx::Rect stack_bounds(left_x, origin_y + left->allocation.y,
+                         right_x - left_x, left->allocation.height);
+  // Inset the bounds to just inside the visible edges (see comment above).
+  stack_bounds.Inset(kLocationStackEdgeWidth, 0);
+  return stack_bounds;
 }
 
 // BrowserToolbarGtk, private --------------------------------------------------

@@ -139,14 +139,14 @@ NSRange ComponentToNSRange(const url_parse::Component& component) {
 // the window |field_| is in.
 AutocompleteEditViewMac::AutocompleteEditViewMac(
     AutocompleteEditController* controller,
-    AutocompletePopupPositioner* positioner,
+    const BubblePositioner* bubble_positioner,
     ToolbarModel* toolbar_model,
     Profile* profile,
     CommandUpdater* command_updater,
     AutocompleteTextField* field)
     : model_(new AutocompleteEditModel(this, controller, profile)),
-      popup_view_(new AutocompletePopupViewMac(this, model_.get(), positioner,
-                                               profile, field)),
+      popup_view_(new AutocompletePopupViewMac(
+          this, model_.get(), bubble_positioner, profile, field)),
       controller_(controller),
       toolbar_model_(toolbar_model),
       command_updater_(command_updater),

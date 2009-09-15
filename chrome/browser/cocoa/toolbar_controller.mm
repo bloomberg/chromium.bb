@@ -10,7 +10,7 @@
 #include "base/gfx/rect.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
-#include "chrome/browser/autocomplete/autocomplete_popup_view.h"
+#include "chrome/browser/bubble_positioner.h"
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
 #import "chrome/browser/cocoa/back_forward_menu_controller.h"
@@ -44,16 +44,16 @@ static const float kBookmarkBarOverlap = 7.0;
 
 namespace {
 
-// A C++ class used to correctly position the autocomplete popup.
-class AutocompletePopupPositionerMac : public AutocompletePopupPositioner {
+// A C++ class used to correctly position the omnibox.
+class BubblePositionerMac : public BubblePositioner {
  public:
-  AutocompletePopupPositionerMac(ToolbarController* controller)
+  BubblePositionerMac(ToolbarController* controller)
       : controller_(controller) { }
-  virtual ~AutocompletePopupPositionerMac() { }
+  virtual ~BubblePositionerMac() { }
 
-  // Overridden from AutocompletePopupPositioner.
-  virtual gfx::Rect GetPopupBounds() const {
-    return [controller_ autocompletePopupPosition];
+  // BubblePositioner:
+  virtual gfx::Rect GetLocationStackBounds() const {
+    return [controller_ locationStackBounds];
   }
 
  private:
@@ -128,9 +128,9 @@ class PrefObserverBridge : public NotificationObserver {
 // bar and button state.
 - (void)awakeFromNib {
   [self initCommandStatus:commands_];
-  popupPositioner_.reset(new AutocompletePopupPositionerMac(self));
+  bubblePositioner_.reset(new BubblePositionerMac(self));
   locationBarView_.reset(new LocationBarViewMac(locationBar_,
-                                                popupPositioner_.get(),
+                                                bubblePositioner_.get(),
                                                 commands_, toolbarModel_,
                                                 profile_));
   [locationBar_ setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
@@ -514,19 +514,25 @@ class PrefObserverBridge : public NotificationObserver {
 
 }
 
-- (gfx::Rect)autocompletePopupPosition {
-  // The popup should span from the left edge of the star button to the right
-  // edge of the go button.  The returned height is ignored.
+- (gfx::Rect)locationStackBounds {
+  // The number of pixels from the left or right edges of the location stack to
+  // "just inside the visible borders".  When the omnibox bubble contents are
+  // aligned with this, the visible borders tacked on to the outsides will line
+  // up with the visible borders on the location stack.
+  const int kLocationStackEdgeWidth = 2;
+
   NSRect locationFrame = [locationBar_ frame];
-  // TODO(shess): The buttons have an extra 2 pixels between the edge
-  // of the visual button and the edge of the logical button.  This
-  // seems wrong.
-  int minX = NSMinX([starButton_ frame]) + 2.0;
-  int maxX = NSMaxX([goButton_ frame]) - 2.0;
+  int minX = NSMinX([starButton_ frame]);
+  int maxX = NSMaxX([goButton_ frame]);
   DCHECK(minX < NSMinX(locationFrame));
   DCHECK(maxX > NSMaxX(locationFrame));
 
-  NSRect r = NSMakeRect(minX, NSMinY(locationFrame), maxX - minX, 0);
-  return gfx::Rect(NSRectToCGRect([[self view] convertRect:r toView:nil]));
+  NSRect r = NSMakeRect(minX, NSMinY(locationFrame), maxX - minX,
+                        NSHeight(locationFrame));
+  gfx::Rect stack_bounds(
+      NSRectToCGRect([[self view] convertRect:r toView:nil]));
+  // Inset the bounds to just inside the visible edges (see comment above).
+  stack_bounds.Inset(kLocationStackEdgeWidth, 0);
+  return stack_bounds;
 }
 @end

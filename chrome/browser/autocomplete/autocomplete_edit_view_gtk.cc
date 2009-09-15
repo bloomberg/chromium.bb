@@ -82,7 +82,7 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
     Profile* profile,
     CommandUpdater* command_updater,
     bool popup_window_mode,
-    AutocompletePopupPositioner* popup_positioner)
+    const BubblePositioner* bubble_positioner)
     : text_view_(NULL),
       tag_table_(NULL),
       text_buffer_(NULL),
@@ -93,7 +93,7 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
       popup_view_(AutocompletePopupView::CreatePopupView(gfx::Font(), this,
                                                          model_.get(),
                                                          profile,
-                                                         popup_positioner)),
+                                                         bubble_positioner)),
       controller_(controller),
       toolbar_model_(toolbar_model),
       command_updater_(command_updater),

@@ -391,12 +391,10 @@ AutocompleteEditViewWin::AutocompleteEditViewWin(
     Profile* profile,
     CommandUpdater* command_updater,
     bool popup_window_mode,
-    AutocompletePopupPositioner* popup_positioner)
+    const BubblePositioner* bubble_positioner)
     : model_(new AutocompleteEditModel(this, controller, profile)),
-      popup_view_(AutocompletePopupView::CreatePopupView(font, this,
-                                                         model_.get(),
-                                                         profile,
-                                                         popup_positioner)),
+      popup_view_(AutocompletePopupView::CreatePopupView(
+          font, this, model_.get(), profile, bubble_positioner)),
       controller_(controller),
       parent_view_(parent_view),
       toolbar_model_(toolbar_model),

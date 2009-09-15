@@ -27,7 +27,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
 #endif
 
-class AutocompletePopupPositioner;
+class BubblePositioner;
 class CommandUpdater;
 class GURL;
 class PageAction;
@@ -73,7 +73,7 @@ class LocationBarView : public LocationBar,
                   ToolbarModel* model,
                   Delegate* delegate,
                   bool popup_window_mode,
-                  AutocompletePopupPositioner* popup_positioner);
+                  const BubblePositioner* bubble_positioner);
   virtual ~LocationBarView();
 
   void Init();
@@ -339,9 +339,9 @@ class LocationBarView : public LocationBar,
   class PageActionImageView : public LocationBarImageView,
                               public ImageLoadingTracker::Observer {
    public:
-    PageActionImageView(
-        LocationBarView* owner, Profile* profile,
-        const PageAction* page_action);
+    PageActionImageView(LocationBarView* owner,
+                        Profile* profile,
+                        const PageAction* page_action);
     virtual ~PageActionImageView();
 
     // Overridden from view for the mouse hovering.
@@ -518,8 +518,8 @@ class LocationBarView : public LocationBar,
   // Used schedule a task for the first run info bubble.
   ScopedRunnableMethodFactory<LocationBarView> first_run_bubble_;
 
-  // The positioner that places the autocomplete popup.
-  AutocompletePopupPositioner* popup_positioner_;
+  // The positioner that places the omnibox and info bubbles.
+  const BubblePositioner* bubble_positioner_;
 
   // Storage of string needed for accessibility.
   std::wstring accessible_name_;

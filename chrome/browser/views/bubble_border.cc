@@ -21,10 +21,27 @@ SkBitmap* BubbleBorder::bottom_right_ = NULL;
 SkBitmap* BubbleBorder::bottom_ = NULL;
 SkBitmap* BubbleBorder::bottom_left_ = NULL;
 
+gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& position_relative_to,
+                                  const gfx::Size& contents_size) const {
+  // The spacing (in pixels) between |position_relative_to| and the bubble
+  // content.
+  const int kBubbleSpacing = 2;
+
+  // Desired size is size of contents enlarged by the size of the border images.
+  gfx::Size border_size(contents_size);
+  gfx::Insets insets;
+  GetInsets(&insets);
+  border_size.Enlarge(insets.left() + insets.right(),
+                      insets.top() + insets.bottom());
+
+  int x = position_relative_to.x() + (position_relative_to.width() / 2) -
+      (contents_size.width() / 2) - insets.left();
+  int y = position_relative_to.bottom() - (top_->height() - kBubbleSpacing);
+
+  return gfx::Rect(x, y, border_size.width(), border_size.height());
+}
+
 void BubbleBorder::GetInsets(gfx::Insets* insets) const {
-  // The left, right and bottom edge image sizes define our insets. The corner
-  // images don't determine this because they can extend inside the border (onto
-  // the contained contents).
   insets->Set(top_->height(), left_->width(), bottom_->height(),
               right_->width());
 }
@@ -109,6 +126,7 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
   // Bottom edge
   canvas->TileImageInt(*bottom_, bl_width, bottom, width - bl_width - br_width,
                        b_height);
+
   // Bottom left corner
   canvas->DrawBitmapInt(*bottom_left_, 0, bl_y);
 

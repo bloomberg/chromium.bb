@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,27 +15,15 @@
 
 class AutocompleteEditView;
 class AutocompletePopupModel;
+class BubblePositioner;
 namespace gfx {
 class Font;
-class Rect;
 }
 #if defined(OS_WIN) || defined(OS_LINUX)
 class AutocompleteEditViewWin;
 class AutocompleteEditModel;
 class Profile;
 #endif
-
-// An object in the browser UI can implement this interface to provide display
-// bounds for the autocomplete popup view.
-class AutocompletePopupPositioner {
- public:
-  virtual ~AutocompletePopupPositioner() { }
-
-  // Returns the bounds at which the popup should be shown, in screen
-  // coordinates. The height is ignored, since the popup is sized to its
-  // contents automatically.
-  virtual gfx::Rect GetPopupBounds() const = 0;
-};
 
 class AutocompletePopupView {
  public:
@@ -65,7 +53,7 @@ class AutocompletePopupView {
       AutocompleteEditView* edit_view,
       AutocompleteEditModel* edit_model,
       Profile* profile,
-      AutocompletePopupPositioner* popup_positioner);
+      const BubblePositioner* bubble_positioner);
 #endif
 };
 

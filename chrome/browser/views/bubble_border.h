@@ -27,6 +27,12 @@ class BubbleBorder : public views::Border {
     return 4;
   }
 
+  // Gives the desired bounds (in screen coordinates) given the rect to position
+  // relative to and the size of the contained contents.  The contents are
+  // centered underneath the supplied rect.
+  gfx::Rect GetBounds(const gfx::Rect& position_relative_to,
+                      const gfx::Size& contents_size) const;
+
   // Overridden from views::Border:
   virtual void GetInsets(gfx::Insets* insets) const;
 
