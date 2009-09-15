@@ -548,7 +548,8 @@ void TabContentsViewGtk::UpdateDragCursor(WebDragOperation operation) {
 }
 
 void TabContentsViewGtk::GotFocus() {
-  NOTIMPLEMENTED();
+  // This is only used in the views FocusManager stuff but it bleeds through
+  // all subclasses.
 }
 
 // This is called when we the renderer asks us to take focus back (i.e., it has
