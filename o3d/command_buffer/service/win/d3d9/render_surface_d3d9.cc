@@ -33,6 +33,7 @@
 // This file implements the D3D9 versions of the render surface resources,
 // as well as the related GAPID3D9 function implementations.
 
+#include "command_buffer/service/win/d3d9/render_surface_d3d9.h"
 #include "command_buffer/service/win/d3d9/gapi_d3d9.h"
 #include "command_buffer/service/win/d3d9/texture_d3d9.h"
 
@@ -45,44 +46,63 @@ RenderSurfaceD3D9::RenderSurfaceD3D9(int width,
                                      int mip_level,
                                      int side,
                                      TextureD3D9 *texture,
-                                     IDirect3DSurface9* direct3d_surface)
-  : width_(width), height_(height), mip_level_(mip_level), texture_(texture),
-    direct3d_surface_(direct3d_surface) {
+                                     IDirect3DSurface9 *direct3d_surface)
+    : width_(width),
+      height_(height),
+      mip_level_(mip_level),
+      texture_(texture),
+      direct3d_surface_(direct3d_surface) {
+  DCHECK_GT(width, 0);
+  DCHECK_GT(height, 0);
+  DCHECK_GT(mip_level, -1);
+  DCHECK(texture);
 }
 
 RenderSurfaceD3D9* RenderSurfaceD3D9::Create(GAPID3D9 *gapi,
-                          int width,
-                          int height,
-                          int mip_level,
-                          int side,
-                          TextureD3D9 *texture) {
+                                             int width,
+                                             int height,
+                                             int mip_level,
+                                             int side,
+                                             TextureD3D9 *texture) {
+  DCHECK(gapi);
   DCHECK_GT(width, 0);
   DCHECK_GT(height, 0);
+  DCHECK_GT(mip_level, -1);
+  DCHECK(texture);
   CComPtr<IDirect3DSurface9> direct3d_surface_handle;
   bool success =
-      texture->CreateRenderSurface(width, height, mip_level, side,
-                                   &direct3d_surface_handle);
+    texture->CreateRenderSurface(width, height, mip_level, side,
+                                 &direct3d_surface_handle);
   if (!success || direct3d_surface_handle == NULL) {
     // If the surface was not created properly, delete and return nothing.
     return NULL;
   }
-  RenderSurfaceD3D9* render_surface =
-      new RenderSurfaceD3D9(width, height, mip_level, side, texture,
-                            direct3d_surface_handle);
+  RenderSurfaceD3D9 *render_surface =
+    new RenderSurfaceD3D9(width,
+                          height,
+                          mip_level,
+                          side,
+                          texture,
+                          direct3d_surface_handle);
   return render_surface;
 }
 
 RenderDepthStencilSurfaceD3D9::RenderDepthStencilSurfaceD3D9(
     int width,
     int height,
-    IDirect3DSurface9* direct3d_surface)
-  : width_(width), height_(height), direct3d_surface_(direct3d_surface) {
+    IDirect3DSurface9 *direct3d_surface)
+    : width_(width),
+      height_(height),
+      direct3d_surface_(direct3d_surface) {
+  DCHECK_GT(width, 0);
+  DCHECK_GT(height, 0);
 }
 
 RenderDepthStencilSurfaceD3D9* RenderDepthStencilSurfaceD3D9::Create(
     GAPID3D9 *gapi,
     int width,
     int height) {
+  DCHECK(gapi);
   DCHECK_GT(width, 0);
   DCHECK_GT(height, 0);
 
@@ -90,19 +110,21 @@ RenderDepthStencilSurfaceD3D9* RenderDepthStencilSurfaceD3D9::Create(
   gapi->d3d_device()->CreateDepthStencilSurface(
       width,
       height,
-      D3DFMT_D24S8,
-      D3DMULTISAMPLE_NONE,
-      0,
-      FALSE,
+      D3DFMT_D24S8,  // d3d format
+      D3DMULTISAMPLE_NONE,  // multisampling type
+      0,  // multisample quality level
+      FALSE,  // z-buffer discarding disabled
       &direct3d_surface,
-      NULL);
+      NULL);  // This parameter is required to be NULL.
   if (direct3d_surface == NULL) {
     return NULL;
   }
-  RenderDepthStencilSurfaceD3D9* depth_stencil =
+  RenderDepthStencilSurfaceD3D9 *depth_stencil =
     new RenderDepthStencilSurfaceD3D9(width, height, direct3d_surface);
   return depth_stencil;
 }
+
+// GAPI Interface functions ---------------------------------------------------
 
 // Copies the data from a texture resource.
 BufferSyncInterface::ParseError GAPID3D9::CreateRenderSurface(
@@ -120,7 +142,7 @@ BufferSyncInterface::ParseError GAPID3D9::CreateRenderSurface(
   if (!texture->render_surfaces_enabled()) {
     return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
   } else {
-    RenderSurfaceD3D9* render_surface = RenderSurfaceD3D9::Create(this,
+    RenderSurfaceD3D9 *render_surface = RenderSurfaceD3D9::Create(this,
                                                                   width,
                                                                   height,
                                                                   mip_level,
@@ -139,8 +161,8 @@ BufferSyncInterface::ParseError GAPID3D9::DestroyRenderSurface(ResourceID id) {
     return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
   }
   return render_surfaces_.Destroy(id) ?
-      BufferSyncInterface::PARSE_NO_ERROR :
-      BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    BufferSyncInterface::PARSE_NO_ERROR :
+    BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
 }
 
 BufferSyncInterface::ParseError GAPID3D9::CreateDepthSurface(
@@ -151,7 +173,7 @@ BufferSyncInterface::ParseError GAPID3D9::CreateDepthSurface(
     // This will delete the current surface which would be bad.
     return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
   }
-  RenderDepthStencilSurfaceD3D9* depth_surface =
+  RenderDepthStencilSurfaceD3D9 *depth_surface =
     RenderDepthStencilSurfaceD3D9::Create(this, width, height);
   if (depth_surface == NULL) {
     return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
@@ -165,26 +187,26 @@ BufferSyncInterface::ParseError GAPID3D9::DestroyDepthSurface(ResourceID id) {
     return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
   }
   return depth_surfaces_.Destroy(id) ?
-      BufferSyncInterface::PARSE_NO_ERROR :
-      BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    BufferSyncInterface::PARSE_NO_ERROR :
+    BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
 }
 
 BufferSyncInterface::ParseError GAPID3D9::SetRenderSurface(
     ResourceID render_surface_id,
     ResourceID depth_stencil_id) {
   RenderSurfaceD3D9 *d3d_render_surface =
-      render_surfaces_.Get(render_surface_id);
+    render_surfaces_.Get(render_surface_id);
   RenderDepthStencilSurfaceD3D9 *d3d_render_depth_surface =
-      depth_surfaces_.Get(depth_stencil_id);
+    depth_surfaces_.Get(depth_stencil_id);
 
   if (d3d_render_surface == NULL && d3d_render_depth_surface == NULL) {
     return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
   }
 
   IDirect3DSurface9 *d3d_surface =
-      d3d_render_surface ? d3d_render_surface->GetSurfaceHandle() : NULL;
+    d3d_render_surface ? d3d_render_surface->direct3d_surface() : NULL;
   IDirect3DSurface9 *d3d_depth_surface = d3d_render_depth_surface ?
-      d3d_render_depth_surface->GetSurfaceHandle() : NULL;
+    d3d_render_depth_surface->direct3d_surface() : NULL;
 
   // Get the device and set the render target and the depth stencil surface.
   IDirect3DDevice9 *device = this->d3d_device();

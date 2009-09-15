@@ -50,7 +50,11 @@ RenderSurfaceCB::RenderSurfaceCB(ServiceLocator *service_locator,
     : RenderSurface(service_locator, width, height, texture),
       resource_id_(command_buffer::kInvalidResource),
       renderer_(renderer) {
+  DCHECK_GT(width, 0);
+  DCHECK_GT(height, 0);
+  DCHECK_GT(mip_level, -1);
   DCHECK(texture);
+  DCHECK(renderer);
 
   ResourceID id = renderer_->render_surface_ids().AllocateID();
   resource_id_ = id;
@@ -58,13 +62,13 @@ RenderSurfaceCB::RenderSurfaceCB(ServiceLocator *service_locator,
   CommandBufferEntry args[4];
   args[0].value_uint32 = id;
   args[1].value_uint32 =
-      create_render_surface_cmd::Width::MakeValue(width) |
-      create_render_surface_cmd::Height::MakeValue(height);
+    create_render_surface_cmd::Width::MakeValue(width) |
+    create_render_surface_cmd::Height::MakeValue(height);
   args[2].value_uint32 =
     create_render_surface_cmd::Levels::MakeValue(mip_level) |
     create_render_surface_cmd::Side::MakeValue(side);
   args[3].value_uint32 =
-      reinterpret_cast<ResourceID>(texture->GetTextureHandle());
+    reinterpret_cast<ResourceID>(texture->GetTextureHandle());
   helper->AddCommand(command_buffer::CREATE_RENDER_SURFACE, 4, args);
 }
 
@@ -73,7 +77,7 @@ RenderSurfaceCB::~RenderSurfaceCB() {
 }
 
 void RenderSurfaceCB::Destroy() {
-  // This should never get called during rendering.
+  // This should never be called during rendering.
   if (resource_id_ != command_buffer::kInvalidResource) {
     CommandBufferHelper *helper = renderer_->helper();
     CommandBufferEntry args[1];
@@ -92,14 +96,17 @@ RenderDepthStencilSurfaceCB::RenderDepthStencilSurfaceCB(
     : RenderDepthStencilSurface(service_locator, width, height),
       resource_id_(command_buffer::kInvalidResource),
       renderer_(renderer) {
+  DCHECK_GT(width, 0);
+  DCHECK_GT(height, 0);
+  DCHECK(renderer);
   ResourceID id = renderer_->depth_surface_ids().AllocateID();
   resource_id_ = id;
   CommandBufferHelper *helper = renderer_->helper();
   CommandBufferEntry args[2];
   args[0].value_uint32 = id;
   args[1].value_uint32 =
-      create_render_surface_cmd::Width::MakeValue(width) |
-      create_render_surface_cmd::Height::MakeValue(height);
+    create_render_surface_cmd::Width::MakeValue(width) |
+    create_render_surface_cmd::Height::MakeValue(height);
   helper->AddCommand(command_buffer::CREATE_DEPTH_SURFACE, 2, args);
 }
 
