@@ -33,12 +33,15 @@
 #define MAYBE_CloseBrowserWindow CloseBrowserWindow
 #endif
 
+// TODO(phajdan.jr): Enable FindInPageTest on Mac.
+#if !defined(OS_MACOSX)
 TEST_F(AutomatedUITestBase, FindInPage) {
   ASSERT_TRUE(FindInPage());
   bool is_visible;
   ASSERT_TRUE(active_browser()->IsFindWindowFullyVisible(&is_visible));
   EXPECT_TRUE(is_visible);
 }
+#endif  // !defined(OS_MACOSX)
 
 TEST_F(AutomatedUITestBase, Home) {
   FilePath path_prefix(test_data_directory_.AppendASCII("session_history"));
@@ -356,6 +359,8 @@ TEST_F(AutomatedUITestBase, SelectTab) {
   ASSERT_EQ(2, active_tab_index);
 }
 
+// TODO(phajdan.jr): Enable ShowBookmarkBar on Mac.
+#if !defined(OS_MACOSX)
 TEST_F(AutomatedUITestBase, ShowBookmarkBar) {
   ASSERT_TRUE(ShowBookmarkBar());
   bool is_visible;
@@ -373,6 +378,7 @@ TEST_F(AutomatedUITestBase, ShowBookmarkBar) {
   ASSERT_TRUE(is_visible);
   ASSERT_FALSE(is_animating);
 }
+#endif  // !defined(OS_MACOSX)
 
 TEST_F(AutomatedUITestBase, ShowDownloads) {
   ASSERT_TRUE(ShowDownloads());
