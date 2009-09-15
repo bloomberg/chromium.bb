@@ -36,7 +36,7 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   //
   // The seccomp sandbox is started in the renderer.
   // http://code.google.com/p/seccompsandbox/
-#if defined(ARCH_CPU_X86_FAMILY)
+#if defined(ARCH_CPU_X86_FAMILY) && !defined(CHROMIUM_SELINUX)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableSeccompSandbox)) {
     StartSeccompSandbox();

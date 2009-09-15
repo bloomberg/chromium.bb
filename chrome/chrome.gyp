@@ -648,6 +648,11 @@
             'third_party/xdg_user_dirs/xdg_user_dir_lookup.cc',
           ],
         }],
+        ['OS=="linux" and selinux==1', {
+          'dependencies': [
+            '../build/linux/system.gyp:selinux',
+          ],
+        }],
         ['OS=="win"', {
           'include_dirs': [
             'third_party/wtl/include',
@@ -3393,9 +3398,11 @@
                 'installer/installer.gyp:installer_util',
               ],
             }],
-          ],
-          'dependencies': [
-            '../sandbox/sandbox.gyp:sandbox',
+            ['selinux==0', {
+              'dependencies': [
+                '../sandbox/sandbox.gyp:sandbox',
+              ],
+            }],
           ],
         }],
         ['OS=="mac" or OS=="win"', {
@@ -4247,11 +4254,15 @@
             ['exclude', '^browser/chromeos'],
           ],
         }],
+        ['OS=="linux" and selinux==0', {
+          'dependencies': [
+            '../sandbox/sandbox.gyp:*',
+          ],
+        }],
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:nss',
-            '../sandbox/sandbox.gyp:*',
           ],
           'sources': [
             'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',

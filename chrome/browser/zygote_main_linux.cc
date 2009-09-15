@@ -32,6 +32,11 @@
 
 #include "skia/ext/SkFontHost_fontconfig_control.h"
 
+#if defined(CHROMIUM_SELINUX)
+#include <selinux/selinux.h>
+#include <selinux/context.h>
+#endif
+
 // http://code.google.com/p/chromium/wiki/LinuxZygote
 
 static const int kMagicSandboxIPCDescriptor = 5;
@@ -207,6 +212,10 @@ class Zygote {
   }
 };
 
+// With SELinux we can carve out a precise sandbox, so we don't have to play
+// with intercepting libc calls.
+#if !defined(CHROMIUM_SELINUX)
+
 static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
                                         char* timezone_out,
                                         size_t timezone_out_len) {
@@ -351,22 +360,11 @@ static void WarnOnceAboutBrokenDlsym() {
     have_shown_warning = true;
   }
 }
+#endif  // !CHROMIUM_SELINUX
 
-static bool MaybeEnterChroot() {
-  const char* const sandbox_fd_string = getenv("SBX_D");
-  if (sandbox_fd_string) {
-    // The SUID sandbox sets this environment variable to a file descriptor
-    // over which we can signal that we have completed our startup and can be
-    // chrooted.
-
-    char* endptr;
-    const long fd_long = strtol(sandbox_fd_string, &endptr, 10);
-    if (!*sandbox_fd_string || *endptr || fd_long < 0 || fd_long > INT_MAX)
-      return false;
-    const int fd = fd_long;
-
-    // Before entering the sandbox, "prime" any systems that need to open
-    // files and cache the results or the descriptors.
+// This function triggers the static and lazy construction of objects that need
+// to be created before imposing the sandbox.
+static void PreSandboxInit() {
     base::RandUint64();
 
     base::SysInfo::MaxSharedMemorySize();
@@ -382,6 +380,23 @@ static bool MaybeEnterChroot() {
     FilePath module_path;
     if (PathService::Get(base::DIR_MODULE, &module_path))
       media::InitializeMediaLibrary(module_path);
+}
+
+#if !defined(CHROMIUM_SELINUX)
+static bool EnterSandbox() {
+  const char* const sandbox_fd_string = getenv("SBX_D");
+  if (sandbox_fd_string) {
+    // The SUID sandbox sets this environment variable to a file descriptor
+    // over which we can signal that we have completed our startup and can be
+    // chrooted.
+
+    char* endptr;
+    const long fd_long = strtol(sandbox_fd_string, &endptr, 10);
+    if (!*sandbox_fd_string || *endptr || fd_long < 0 || fd_long > INT_MAX)
+      return false;
+    const int fd = fd_long;
+
+    PreSandboxInit();
 
     static const char kChrootMe = 'C';
     static const char kChrootMeSuccess = 'O';
@@ -438,11 +453,42 @@ static bool MaybeEnterChroot() {
 
   return true;
 }
+#else  // CHROMIUM_SELINUX
+
+static bool EnterSandbox() {
+  PreSandboxInit();
+  SkiaFontConfigUseIPCImplementation(kMagicSandboxIPCDescriptor);
+
+  security_context_t security_context;
+  if (getcon(&security_context)) {
+    LOG(ERROR) << "Cannot get SELinux context";
+    return false;
+  }
+
+  context_t context = context_new(security_context);
+  context_type_set(context, "chromium_renderer_t");
+  const int r = setcon(context_str(context));
+  context_free(context);
+  freecon(security_context);
+
+  if (r) {
+    LOG(ERROR) << "dynamic transition to type 'chromium_renderer_t' failed. "
+                  "(this binary has been built with SELinux support, but maybe "
+                  "the policies haven't been loaded into the kernel?";
+    return false;
+  }
+
+  return true;
+}
+
+#endif  // CHROMIUM_SELINUX
 
 bool ZygoteMain(const MainFunctionParams& params) {
+#if !defined(CHROMIUM_SELINUX)
   g_am_zygote_or_renderer = true;
+#endif
 
-  if (!MaybeEnterChroot()) {
+  if (!EnterSandbox()) {
     LOG(FATAL) << "Failed to enter sandbox. Fail safe abort. (errno: "
                << errno << ")";
     return false;

@@ -7,7 +7,7 @@
     '../build/common.gypi',
   ],
   'conditions': [
-    [ 'OS=="linux"', {
+    [ 'OS=="linux" and selinux==0', {
       'targets': [
         {
           'target_name': 'chrome_sandbox',
@@ -67,6 +67,15 @@
             },
           ],
         ]},
+      ],
+    }],
+    [ 'OS=="linux" and selinux==1', {
+      # GYP requires that each file have at least one target defined.
+      'targets': [
+        {
+          'target_name': 'sandbox',
+          'type': 'settings',
+        },
       ],
     }],
     [ 'OS=="win"', {
