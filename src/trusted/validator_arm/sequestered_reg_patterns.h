@@ -29,28 +29,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "native_client/src/trusted/validator_arm/arm_validate.h"
-#include "native_client/src/trusted/validator_arm/ncdecode.h"
-#include "native_client/src/trusted/validator_arm/ncvalidate.h"
-#include "native_client/src/trusted/validator_arm/branch_patterns.h"
-#include "native_client/src/trusted/validator_arm/sequestered_reg_patterns.h"
-#include "native_client/src/trusted/validator_arm/stack_adjust_patterns.h"
-#include "native_client/src/trusted/validator_arm/store_patterns.h"
+/*
+ * Validator patterns for sequestered register use.
+ */
 
-void NCValidateInit() {
-  InstallBranchPatterns();
-  InstallStackAdjustPatterns();
-  InstallStorePatterns();
-  InstallSequesteredRegisterPatterns();
-}
+#ifndef NATIVE_CLIENT_PRIVATE_TOOLS_NCV_ARM_SEQUESTERED_REG_PATTERNS_H__
+#define NATIVE_CLIENT_PRIVATE_TOOLS_NCV_ARM_SEQUESTERED_REG_PATTERNS_H__
 
-void NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t size) {
-  CodeSegment code_segment;
-  CodeSegmentInitialize(&code_segment, mbase, vbase, size);
-  ValidateCodeSegment(&code_segment);
-}
+void InstallSequesteredRegisterPatterns();
 
-int NCValidateFinish() {
-  return  ValidateExitCode();
-}
-
+#endif  // NATIVE_CLIENT_PRIVATE_TOOLS_NCV_ARM_SEQUESTERED_REG_PATTERNS_H__

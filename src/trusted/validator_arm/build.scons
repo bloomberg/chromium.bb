@@ -41,6 +41,11 @@ if env.Bit('linux'):
   gen_dec=('${DESTINATION_ROOT}/gen/native_client/src/trusted/validator_arm/'
            'ncdecode_instruction.c')
 
+  # TODO(cbiffle): get these warnings to pass on platform=arm build.
+  #env.Append(
+  #  CXXFLAGS="-Weffc++ -Woverloaded-virtual -fno-rtti -fomit-frame-pointer"
+  #)
+
   env.ComponentLibrary('arm_inst',
                        ['arm_insts.c',
                         'arm_insts_rt.c'])
@@ -54,6 +59,7 @@ if env.Bit('linux'):
                         'ncvalidate.cc',
                         'nop_patterns.cc',
                         'register_set_use.c',
+                        'sequestered_reg_patterns.cc',
                         'stack_adjust_patterns.cc',
                         'store_patterns.cc',
                         'validator_patterns.cc'])

@@ -29,28 +29,38 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "native_client/src/trusted/validator_arm/arm_validate.h"
-#include "native_client/src/trusted/validator_arm/ncdecode.h"
-#include "native_client/src/trusted/validator_arm/ncvalidate.h"
-#include "native_client/src/trusted/validator_arm/branch_patterns.h"
+/*
+ * Patterns for analyzing use of sequestered registers.
+ */
+
 #include "native_client/src/trusted/validator_arm/sequestered_reg_patterns.h"
-#include "native_client/src/trusted/validator_arm/stack_adjust_patterns.h"
-#include "native_client/src/trusted/validator_arm/store_patterns.h"
+#include "native_client/src/trusted/validator_arm/arm_insts_rt.h"
+#include "native_client/src/trusted/validator_arm/arm_validate.h"
+#include "native_client/src/trusted/validator_arm/register_set_use.h"
+#include "native_client/src/trusted/validator_arm/validator_patterns.h"
+#include "native_client/src/trusted/validator_arm/masks.h"
 
-void NCValidateInit() {
-  InstallBranchPatterns();
-  InstallStackAdjustPatterns();
-  InstallStorePatterns();
-  InstallSequesteredRegisterPatterns();
+/*
+ * Validator pattern that recognizes and rejects any untrusted instruction that
+ * attempts to alter r9, the thread state register.
+ *
+ * TODO(cbiffle): single-instruction validator patterns that only say "NO" are
+ * a real stretch of the model.
+ */
+class UpdateR9Pattern : public ValidatorPattern {
+ public:
+  UpdateR9Pattern() : ValidatorPattern("update to r9", 1, 0) {}
+  virtual ~UpdateR9Pattern() {}
+
+  virtual bool MayBeUnsafe(const NcDecodeState &state) {
+    return GetBit(RegisterSets(&state.CurrentInstruction()), 9);
+  }
+
+  virtual bool IsSafe(const NcDecodeState &state) {
+    return false;
+  }
+};
+
+void InstallSequesteredRegisterPatterns() {
+  RegisterValidatorPattern(new UpdateR9Pattern());
 }
-
-void NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t size) {
-  CodeSegment code_segment;
-  CodeSegmentInitialize(&code_segment, mbase, vbase, size);
-  ValidateCodeSegment(&code_segment);
-}
-
-int NCValidateFinish() {
-  return  ValidateExitCode();
-}
-

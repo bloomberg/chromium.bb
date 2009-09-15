@@ -40,7 +40,8 @@
 #include "native_client/src/trusted/validator_arm/segment_parser.h"
 #include "native_client/src/trusted/validator_arm/string_split.h"
 
-SegmentParser::SegmentParser(std::istream* stream) {
+SegmentParser::SegmentParser(std::istream* stream)
+    : code_segment_() {
   static std::string whitespace(" \t");
   // Start by processing the input file and collecting data.
   std::string input_line;
@@ -65,7 +66,7 @@ SegmentParser::SegmentParser(std::istream* stream) {
          ++iter) {
       std::string data = *iter;
       char* end_ptr;
-      unsigned long value = strtoul(data.c_str(), &end_ptr, 16);
+      uint32_t value = strtoul(data.c_str(), &end_ptr, 16);
       if (is_first) {
         is_first = false;
         if (':' == *end_ptr) {
