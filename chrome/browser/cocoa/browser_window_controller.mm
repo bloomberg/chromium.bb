@@ -1281,12 +1281,25 @@ willPositionSheet:(NSWindow*)sheet
 
   theme = [[GTMTheme alloc] init];  // "Leak" it in the cache.
   cache[key] = theme;
+
+  // TODO(pinkerton): Need to be able to theme the entire incognito window
+  // http://crbug.com/18568 The hardcoding of the colors here will need to be
+  // removed when that bug is addressed, but are here in order for things to be
+  // usable in the meantime.
   if (isOffTheRecord) {
     NSColor* incognitoColor = [NSColor colorWithCalibratedRed:83/255.0
                                                         green:108.0/255.0
                                                          blue:140/255.0
                                                         alpha:1.0];
     [theme setBackgroundColor:incognitoColor];
+    [theme setValue:[NSColor blackColor]
+      forAttribute:@"textColor"
+             style:GTMThemeStyleToolBar
+             state:GTMThemeStateActiveWindow];
+    [theme setValue:[NSColor blackColor]
+      forAttribute:@"textColor"
+             style:GTMThemeStyleTabBarDeselected
+             state:GTMThemeStateActiveWindow];
     return theme;
   }
 
