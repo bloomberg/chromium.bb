@@ -75,7 +75,7 @@ class IOThread : public base::Thread {
   }
 
   virtual void Init() {
-    SimpleAppCacheSystem::InitializeOnIOThread();
+    SimpleAppCacheSystem::InitializeOnIOThread(request_context);
   }
 
   virtual void CleanUp() {

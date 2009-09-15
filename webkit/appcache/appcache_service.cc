@@ -11,6 +11,11 @@
 
 namespace appcache {
 
+AppCacheService::AppCacheService()
+    : last_cache_id_(0), last_group_id_(0),
+      last_entry_id_(0), last_response_id_(0) {
+}
+
 AppCacheService::~AppCacheService() {
   DCHECK(backends_.empty());
   DCHECK(caches_.empty());
@@ -20,6 +25,7 @@ AppCacheService::~AppCacheService() {
 void AppCacheService::Initialize(const FilePath& cache_directory) {
   // An empty cache directory indicates chrome incognito.
   cache_directory_ = cache_directory;
+  // TODO(michaeln): load last_<foo>_ids from storage
 }
 
 void AppCacheService::RegisterBackend(

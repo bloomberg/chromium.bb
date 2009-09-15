@@ -258,7 +258,7 @@ void SimpleAppCacheSystem::InitOnUIThread(
   cache_directory_ = cache_directory;
 }
 
-void SimpleAppCacheSystem::InitOnIOThread() {
+void SimpleAppCacheSystem::InitOnIOThread(URLRequestContext* request_context) {
   if (!is_initailized_on_ui_thread())
     return;
 
@@ -270,6 +270,7 @@ void SimpleAppCacheSystem::InitOnIOThread() {
   service_ = new appcache::AppCacheService();
   backend_impl_ = new appcache::AppCacheBackendImpl();
   service_->Initialize(cache_directory_);
+  service_->set_request_context(request_context);
   backend_impl_->Initialize(service_, frontend_proxy_.get(), kSingleProcessId);
 
   AppCacheInterceptor::EnsureRegistered();

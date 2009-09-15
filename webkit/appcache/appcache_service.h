@@ -11,6 +11,8 @@
 
 #include "base/hash_tables.h"
 #include "base/file_path.h"
+#include "base/ref_counted.h"
+#include "net/url_request/url_request_context.h"
 #include "googleurl/src/gurl.h"
 
 namespace appcache {
@@ -20,12 +22,23 @@ class AppCacheBackendImpl;
 class AppCacheGroup;
 
 // Class that manages the application cache service. Sends notifications
-// to many frontends.  One instance per user-profile.
+// to many frontends.  One instance per user-profile. Each instance has
+// exclusive access to it's cache_directory on disk.
 class AppCacheService {
  public:
+  AppCacheService();
   virtual ~AppCacheService();
 
   void Initialize(const FilePath& cache_directory);
+
+  // Context for use during cache updates, should only be accessed
+  // on the IO thread.
+  URLRequestContext* request_context() { return request_context_.get(); }
+  void set_request_context(URLRequestContext* context) {
+    // TODO(michaeln): need to look into test failures that occur
+    // when we take this reference? Stubbing out for now.
+    // request_context_ = context;
+  }
 
   // TODO(jennb): API to set service settings, like file paths for storage
 
@@ -53,6 +66,12 @@ class AppCacheService {
     return (it != groups_.end()) ? it->second : NULL;
   }
 
+  // The service generates unique storage ids for different object types.
+  int64 NewCacheId() { return ++last_cache_id_; }
+  int64 NewGroupId() { return ++last_group_id_; }
+  int64 NewEntryId() { return ++last_entry_id_; }
+  int64 NewResponseId() { return ++last_response_id_; }
+
  private:
   // In-memory representation of stored appcache data. Represents a subset
   // of the appcache database currently in use.
@@ -61,16 +80,25 @@ class AppCacheService {
   CacheMap caches_;
   GroupMap groups_;
 
+  // The last storage id used for different object types.
+  int64 last_cache_id_;
+  int64 last_group_id_;
+  int64 last_entry_id_;
+  int64 last_response_id_;
+
   // Track current processes.  One 'backend' per child process.
   typedef std::map<int, AppCacheBackendImpl*> BackendMap;
   BackendMap backends_;
 
   FilePath cache_directory_;
+
+  // Context for use during cache updates.
+  scoped_refptr<URLRequestContext> request_context_;
+
   // TODO(jennb): info about appcache storage
   // AppCacheDatabase db_;
   // DiskCache response_storage_;
 
-  // TODO(jennb): service settings: e.g. max size of app cache?
   // TODO(jennb): service state: e.g. reached quota?
 };
 

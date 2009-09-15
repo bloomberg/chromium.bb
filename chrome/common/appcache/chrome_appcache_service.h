@@ -33,8 +33,10 @@ class ChromeAppCacheService
   }
 
   void InitializeOnUIThread(const FilePath& data_directory,
+                            URLRequestContext* request_context,
                             bool is_incognito) {
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    set_request_context(request_context);
 
     // Some test cases run without an IO thread.
     MessageLoop* io_thread = ChromeThread::GetMessageLoop(ChromeThread::IO);

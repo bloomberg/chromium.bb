@@ -19,6 +19,7 @@ class WebApplicationCacheHostClient;
 class SimpleBackendProxy;
 class SimpleFrontendProxy;
 class URLRequest;
+class URLRequestContext;
 
 // A class that composes the constituent parts of an appcache system
 // together for use in a single process with two relavant threads,
@@ -43,9 +44,9 @@ class SimpleAppCacheSystem : public MessageLoop::DestructionObserver {
   // at a time, but after IO thread termination a new one can be
   // started on which this method should be called. The instance
   // is assumed to outlive the IO thread.
-  static void InitializeOnIOThread() {
+  static void InitializeOnIOThread(URLRequestContext* request_context) {
     if (instance_)
-      instance_->InitOnIOThread();
+      instance_->InitOnIOThread(request_context);
   }
 
   // Called by TestShellWebKitInit to manufacture a 'host' for webcore.
@@ -79,7 +80,7 @@ class SimpleAppCacheSystem : public MessageLoop::DestructionObserver {
 
   // Instance methods called by our static public methods
   void InitOnUIThread(const FilePath& cache_directory);
-  void InitOnIOThread();
+  void InitOnIOThread(URLRequestContext* request_context);
   WebKit::WebApplicationCacheHost* CreateCacheHostForWebKit(
       WebKit::WebApplicationCacheHostClient* client);
   void SetExtraRequestBits(URLRequest* request,

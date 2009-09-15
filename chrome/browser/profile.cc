@@ -224,7 +224,8 @@ class OffTheRecordProfileImpl : public Profile,
   virtual ChromeAppCacheService* GetAppCacheService() {
     if (!appcache_service_.get()) {
       appcache_service_ = new ChromeAppCacheService();
-      appcache_service_->InitializeOnUIThread(GetPath(), true);
+      appcache_service_->InitializeOnUIThread(
+          GetPath(), GetRequestContext(), true);
     }
     return appcache_service_.get();
   }
@@ -780,7 +781,8 @@ Profile* ProfileImpl::GetOriginalProfile() {
 ChromeAppCacheService* ProfileImpl::GetAppCacheService() {
   if (!appcache_service_.get()) {
     appcache_service_ = new ChromeAppCacheService();
-    appcache_service_->InitializeOnUIThread(GetPath(), false);
+    appcache_service_->InitializeOnUIThread(
+        GetPath(), GetRequestContext(), false);
   }
   return appcache_service_.get();
 }
