@@ -67,5 +67,5 @@ void FindBarBridge::SetDialogPosition(const gfx::Rect& new_pos,
 }
 
 void FindBarBridge::RestoreSavedFocus() {
-  [cocoa_controller_ restoreSavedFocus];
+  // http://crbug.com/12657
 }
