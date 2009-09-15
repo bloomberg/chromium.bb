@@ -123,3 +123,6 @@ PREFIX: renderviewhost::setnavigationssuspended___renderviewhostmanager::shouldc
 # bug 21520 from [25874:25879]
 PREFIX: renderviewhost::executejavascriptinwebframe___domui::calljavascriptfunction___downloadsdomhandler::sendcurrentdownloads
 PREFIX: deletetask<urlfetcher>::run
+
+# 21862
+urlrequesthttpjob::factory___urlrequestjobmanager::createjob___urlrequest::start
