@@ -761,31 +761,10 @@ void AutomationProvider::ExecuteBrowserCommandAsync(int handle, int command,
 
 void AutomationProvider::ExecuteBrowserCommand(
     int handle, int command, IPC::Message* reply_message) {
-  // List of commands which just finish synchronously and don't require
-  // setting up an observer.
-  static const int kSynchronousCommands[] = {
-    IDC_HOME,
-    IDC_SELECT_NEXT_TAB,
-    IDC_SELECT_PREVIOUS_TAB,
-    IDC_SHOW_DOWNLOADS,
-    IDC_SHOW_HISTORY,
-  };
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
     if (browser->command_updater()->SupportsCommand(command) &&
         browser->command_updater()->IsCommandEnabled(command)) {
-      // First check if we can handle the command without using an observer.
-      for (size_t i = 0; i < arraysize(kSynchronousCommands); i++) {
-        if (command == kSynchronousCommands[i]) {
-          browser->ExecuteCommand(command);
-          AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message,
-                                                               true);
-          Send(reply_message);
-          return;
-        }
-      }
-
-      // Use an observer if we have one, otherwise fail.
       if (ExecuteBrowserCommandObserver::CreateAndRegisterObserver(
           this, browser, command, reply_message)) {
         browser->ExecuteCommand(command);

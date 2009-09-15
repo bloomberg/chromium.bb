@@ -1,4 +1,3 @@
-# Please keep the list sorted.
 Back
 ChangeEncoding
 CloseTab
@@ -17,8 +16,7 @@ DragTabRight
 DragTabOut
 OpenWindow
 Reload
-# Disabled, it doesn't work reliably (http://crbug.com/21636).
-# RestoreTab
+RestoreTab
 SelectNextTab
 SelectPrevTab
 ShowBookmarks

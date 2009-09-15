@@ -245,10 +245,7 @@ class AutomatedTestInputGenerator:
   def __init__(self):
     (options,args) = ParseCommandLine()
     input_file = open(options.input_file_name)
-    actions_list = []
-    for line in input_file.readlines():
-      if not line.startswith('#'):
-        actions_list.append(line)
+    actions_list = input_file.readlines()
     input_file.close()
 
     self.__commands_per_file = options.commands_per_file

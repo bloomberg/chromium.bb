@@ -500,6 +500,10 @@ bool UITest::WaitForDownloadShelfVisibilityChange(BrowserProxy* browser,
   return false;
 }
 
+// TODO(port): this #if effectively cuts out half of this file on
+// non-Windows platforms, and is a temporary hack to get things
+// building.
+#if defined(OS_WIN)
 bool UITest::WaitForFindWindowVisibilityChange(BrowserProxy* browser,
                                                bool wait_for_open) {
   const int kCycles = 10;
@@ -532,6 +536,7 @@ bool UITest::WaitForBookmarkBarVisibilityChange(BrowserProxy* browser,
   }
   return false;
 }
+#endif  // defined(OS_WIN)
 
 GURL UITest::GetActiveTabURL(int window_index) {
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab(window_index));

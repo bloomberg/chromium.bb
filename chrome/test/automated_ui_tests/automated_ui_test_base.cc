@@ -241,23 +241,12 @@ bool AutomatedUITestBase::DragActiveTab(bool drag_right) {
 }
 #endif
 
-bool AutomatedUITestBase::FindInPage() {
-  if (!RunCommandAsync(IDC_FIND))
-    return false;
-
-  return WaitForFindWindowVisibilityChange(active_browser(), true);
-}
-
 bool AutomatedUITestBase::ForwardButton() {
   return RunCommand(IDC_FORWARD);
 }
 
 bool AutomatedUITestBase::GoOffTheRecord() {
   return RunCommand(IDC_NEW_INCOGNITO_WINDOW);
-}
-
-bool AutomatedUITestBase::Home() {
-  return RunCommand(IDC_HOME);
 }
 
 bool AutomatedUITestBase::OpenAndActivateNewBrowserWindow(
@@ -326,41 +315,6 @@ bool AutomatedUITestBase::ReloadPage() {
 
 bool AutomatedUITestBase::RestoreTab() {
   return RunCommand(IDC_RESTORE_TAB);
-}
-
-bool AutomatedUITestBase::SelectNextTab() {
-  return RunCommand(IDC_SELECT_NEXT_TAB);
-}
-
-bool AutomatedUITestBase::SelectPreviousTab() {
-  return RunCommand(IDC_SELECT_PREVIOUS_TAB);
-}
-
-bool AutomatedUITestBase::ShowBookmarkBar() {
-  bool is_visible;
-  bool is_animating;
-  if (!active_browser()->GetBookmarkBarVisibility(&is_visible,
-                                                  &is_animating)) {
-    return false;
-  }
-
-  if (is_visible) {
-    // If the bar is visible, then issuing the command again will toggle it.
-    return true;
-  }
-
-  if (!RunCommandAsync(IDC_SHOW_BOOKMARK_BAR))
-    return false;
-
-  return WaitForBookmarkBarVisibilityChange(active_browser(), true);
-}
-
-bool AutomatedUITestBase::ShowDownloads() {
-  return RunCommand(IDC_SHOW_DOWNLOADS);
-}
-
-bool AutomatedUITestBase::ShowHistory() {
-  return RunCommand(IDC_SHOW_HISTORY);
 }
 
 bool AutomatedUITestBase::RunCommandAsync(int browser_command) {
