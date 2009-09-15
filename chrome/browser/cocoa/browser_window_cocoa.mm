@@ -11,6 +11,7 @@
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
 #include "chrome/browser/cocoa/page_info_window_mac.h"
+#include "chrome/browser/cocoa/task_manager_mac.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/common/notification_service.h"
@@ -201,7 +202,7 @@ void BrowserWindowCocoa::ShowAboutChromeDialog() {
 }
 
 void BrowserWindowCocoa::ShowTaskManager() {
-  NOTIMPLEMENTED();
+  TaskManagerMac::Show();
 }
 
 void BrowserWindowCocoa::ShowBookmarkManager() {
