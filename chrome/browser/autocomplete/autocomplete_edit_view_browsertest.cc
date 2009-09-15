@@ -358,7 +358,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, Escape) {
   EXPECT_TRUE(edit_view->IsSelectAll());
 }
 
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DesiredTLD) {
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DISABLED_DesiredTLD) {
   ASSERT_NO_FATAL_FAILURE(SetupHostResolver());
   ASSERT_NO_FATAL_FAILURE(SetupSearchEngine());
   browser()->FocusLocationBar();
