@@ -19,7 +19,6 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/extensions/extension_view.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -46,7 +45,7 @@ static const int kToolstripDividerWidth = 2;
 static const int kShelfHeight = 29;
 
 // Preferred height of the Extension shelf when only shown on the new tab page.
-const int kNewtabShelfHeight = 58;
+const int kNewtabShelfHeight = 57;
 
 // How inset the extension shelf is when displayed on the new tab page. This is
 // in addition to the margins above.
@@ -59,18 +58,32 @@ static const int kNewtabVerticalPadding = 12;
 static const int kNewtabExtraHorMargin = 2;
 static const int kNewtabExtraVerMargin = 2;
 
+// How round the 'new tab' style extension shelf is.
+static const int kNewtabBarRoundness = 5;
+
 // Height of the toolstrip within the shelf.
 static const int kToolstripHeight = kShelfHeight - (kTopMargin + kBottomMargin);
 
 // Colors for the ExtensionShelf.
+static const SkColor kBackgroundColor = SkColorSetRGB(230, 237, 244);
+static const SkColor kBorderColor = SkColorSetRGB(201, 212, 225);
 static const SkColor kDividerHighlightColor = SkColorSetRGB(247, 250, 253);
+
+// Text colors for the handle.
+static const SkColor kHandleTextColor = SkColorSetRGB(6, 45, 117);
+static const SkColor kHandleTextHighlightColor =
+    SkColorSetARGB(200, 255, 255, 255);
 
 // Handle padding.
 static const int kHandlePadding = 4;
 
+// TODO(erikkay) convert back to a gradient when Glen figures out the
+// specs.
+// static const SkColor kBackgroundColor = SkColorSetRGB(237, 244, 252);
+// static const SkColor kTopGradientColor = SkColorSetRGB(222, 234, 248);
+
 // Delays for showing and hiding the shelf handle.
-static const int kShowDelayMs = 500;
-static const int kHideDelayMs = 300;
+static const int kHideDelayMs = 500;
 
 }  // namespace
 
@@ -109,7 +122,7 @@ class ExtensionShelf::Toolstrip : public views::View,
   // Convenience to calculate just the size of the handle.
   gfx::Size GetHandlePreferredSize();
 
-  // View methods:
+  // View
   virtual void Paint(gfx::Canvas* canvas);
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
@@ -242,6 +255,9 @@ ExtensionShelf::Toolstrip::Toolstrip(ExtensionShelf* shelf,
   // the various mouse events necessary for hovering and dragging.
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   title_.reset(new views::Label(name, rb.GetFont(ResourceBundle::BaseFont)));
+  title_->SetColor(kHandleTextColor);
+  title_->SetDrawHighlighted(true);
+  title_->SetHighlightColor(kHandleTextHighlightColor);
   title_->SetBounds(kHandlePadding, kHandlePadding, 100, 100);
   title_->SizeToPreferredSize();
 
@@ -254,19 +270,14 @@ ExtensionShelf::Toolstrip::~Toolstrip() {
 }
 
 void ExtensionShelf::Toolstrip::Paint(gfx::Canvas* canvas) {
-  // Paints the handle for the toolstrip (only called on mouse-hover).
-  SkColor theme_toolbar_color =
-      shelf_->GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
-  canvas->FillRectInt(theme_toolbar_color, 0, 0, width(), height());
-
-  SkColor border_color = ResourceBundle::toolbar_separator_color;
-  canvas->FillRectInt(border_color, 0, 0, width(), 1);
-  canvas->FillRectInt(border_color, 0, 0, 1, height() - 1);
-  canvas->FillRectInt(border_color, width() - 1, 0, 1, height() - 1);
+  canvas->FillRectInt(kBackgroundColor, 0, 0, width(), height());
+  canvas->FillRectInt(kBorderColor, 0, 0, width(), 1);
+  canvas->FillRectInt(kBorderColor, 0, 0, 1, height() - 1);
+  canvas->FillRectInt(kBorderColor, width() - 1, 0, 1, height() - 1);
   int ext_width = view()->width() + kToolstripPadding +
       kToolstripDividerWidth;
   if (ext_width < width()) {
-    canvas->FillRectInt(border_color, ext_width, height() - 1,
+    canvas->FillRectInt(kBorderColor, ext_width, height() - 1,
                         width() - ext_width, 1);
   }
 
@@ -275,8 +286,8 @@ void ExtensionShelf::Toolstrip::Paint(gfx::Canvas* canvas) {
   title_->ProcessPaint(canvas);
 
   if (dragging_) {
-    // When we're dragging, draw the bottom border.
-    canvas->FillRectInt(border_color, 0, height() - 1, width(), 1);
+    // when we're dragging, draw the bottom border.
+    canvas->FillRectInt(kBorderColor, 0, height() - 1, width(), 1);
   }
 }
 
@@ -508,11 +519,6 @@ void ExtensionShelf::Toolstrip::AttachToShelf(bool browserAttach) {
 void ExtensionShelf::Toolstrip::DoShowShelfHandle() {
   GetHandle();
   if (!handle_->visible()) {
-    // Make sure the text color for the title matches the theme colors.
-    title_->SetColor(
-        shelf_->GetThemeProvider()->GetColor(
-            BrowserThemeProvider::COLOR_BOOKMARK_TEXT));
-
     LayoutHandle();
     handle_->Show();
   }
@@ -590,7 +596,7 @@ void ExtensionShelf::Toolstrip::ShowShelfHandle() {
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       timer_factory_.NewRunnableMethod(
           &ExtensionShelf::Toolstrip::DoShowShelfHandle),
-      kShowDelayMs);
+      1000);
 }
 
 void ExtensionShelf::Toolstrip::HideShelfHandle(int delay_ms) {
@@ -612,9 +618,7 @@ void ExtensionShelf::Toolstrip::HideShelfHandle(int delay_ms) {
 ////////////////////////////////////////////////////////////////////////////////
 
 ExtensionShelf::ExtensionShelf(Browser* browser)
-  :   background_needs_repaint_(true),
-      background_for_detached_(false),
-      browser_(browser),
+    : browser_(browser),
       model_(browser->extension_shelf_model()) {
   model_->AddObserver(this);
   LoadFromModel();
@@ -641,27 +645,95 @@ ExtensionShelf::~ExtensionShelf() {
   }
 }
 
-void ExtensionShelf::PaintChildren(gfx::Canvas* canvas) {
-  // Capture a background bitmap to give to the toolstrips.
-  SkRect background_rect = {
-      SkIntToScalar(0),
-      SkIntToScalar(0),
-      SkIntToScalar(width()),
-      SkIntToScalar(height())
-  };
-  InitBackground(canvas, background_rect);
+void ExtensionShelf::Paint(gfx::Canvas* canvas) {
+  if (IsDetachedStyle()) {
+    // Draw the background to match the new tab page.
+    ThemeProvider* tp = GetThemeProvider();
+    canvas->FillRectInt(
+        tp->GetColor(BrowserThemeProvider::COLOR_NTP_BACKGROUND),
+        0, 0, width(), height());
+
+    // As 'hidden' according to the animation is the full in-tab state,
+    // we invert the value - when current_state is at '0', we expect the
+    // shelf to be docked.
+    double current_state = 1 - size_animation_->GetCurrentValue();
+
+    // The 0.5 is to correct for Skia's "draw on pixel boundaries"ness.
+    double h_padding = static_cast<double>
+        (kNewtabHorizontalPadding) * current_state;
+    double v_padding = static_cast<double>
+        (kNewtabVerticalPadding) * current_state;
+    SkRect rect;
+    rect.set(SkDoubleToScalar(h_padding - 0.5),
+             SkDoubleToScalar(v_padding - 0.5),
+             SkDoubleToScalar(width() - h_padding - 0.5),
+             SkDoubleToScalar(height() - v_padding - 0.5));
+
+    double roundness = static_cast<double>
+        (kNewtabBarRoundness) * current_state;
+
+    // Draw the background behind the toolstrips.
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    paint.setColor(kBackgroundColor);
+
+    canvas->drawRoundRect(rect,
+                          SkDoubleToScalar(roundness),
+                          SkDoubleToScalar(roundness), paint);
+
+    SkRect background_rect = {
+        SkIntToScalar(h_padding),
+        SkIntToScalar(v_padding + 2),
+        SkIntToScalar(h_padding + 1),
+        SkIntToScalar(v_padding + kToolstripHeight - 3)};
+    InitBackground(canvas, background_rect);
+
+    // Draw the border around the toolstrips in the extension shelf.
+    SkPaint border_paint;
+    border_paint.setColor(
+        GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_NTP_HEADER));
+    border_paint.setStyle(SkPaint::kStroke_Style);
+    border_paint.setAlpha(96);
+    border_paint.setAntiAlias(true);
+    canvas->drawRoundRect(rect,
+        SkDoubleToScalar(roundness),
+        SkDoubleToScalar(roundness), border_paint);
+  } else {
+#if 0
+    // TODO(erikkay) Re-enable when Glen has the gradient values worked out.
+    SkPaint paint;
+    paint.setShader(skia::CreateGradientShader(0,
+                                               height(),
+                                               kTopGradientColor,
+                                               kBackgroundColor))->safeUnref();
+    canvas->FillRectInt(0, 0, width(), height(), paint);
+#else
+    canvas->FillRectInt(kBackgroundColor, 0, 0, width(), height());
+#endif
+
+    SkRect background_rect = {
+        SkIntToScalar(0),
+        SkIntToScalar(0),
+        SkIntToScalar(1),
+        SkIntToScalar(height())
+    };
+    InitBackground(canvas, background_rect);
+
+    // Draw border around shelf in attached mode. If we are in detached mode
+    // we've already drawn the borders.
+    canvas->FillRectInt(kBorderColor, 0, 0, width(), 1);
+    canvas->FillRectInt(kBorderColor, 0, height() - 1, width(), 1);
+  }
 
   // Draw vertical dividers between Toolstrip items in the Extension shelf.
   int count = GetChildViewCount();
   for (int i = 0; i < count; ++i) {
     int right = GetChildViewAt(i)->bounds().right() + kToolstripPadding;
-    int vertical_padding = IsDetached() ? (height() - kShelfHeight) / 2 : 1;
-
-    DetachableToolbarView::PaintVerticalDivider(
-        canvas, right, height(), vertical_padding,
-        SK_ColorWHITE,
-        kDividerHighlightColor,
-        GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_TOOLBAR));
+    int y = IsDetachedStyle() ? kNewtabVerticalPadding : 1;
+    int h = IsDetachedStyle() ? height() - (2 * kNewtabVerticalPadding) - 1:
+                                height() - 2;
+    canvas->FillRectInt(kBorderColor, right, y, 1, h);
+    canvas->FillRectInt(kDividerHighlightColor, right + 1, y, 1, h);
   }
 }
 
@@ -699,6 +771,7 @@ void ExtensionShelf::Layout() {
   LayoutItems(false);
 }
 
+
 void ExtensionShelf::OnMouseEntered(const views::MouseEvent& event) {
 }
 
@@ -726,17 +799,6 @@ void ExtensionShelf::SetAccessibleName(const std::wstring& name) {
   accessible_name_.assign(name);
 }
 
-void ExtensionShelf::ThemeChanged() {
-  background_needs_repaint_ = true;
-
-  // Refresh the CSS to update toolstrip text colors from theme.
-  int count = model_->count();
-  for (int i = 0; i < count; ++i)
-    ToolstripAtIndex(i)->view()->host()->InsertCssIfToolstrip();
-
-  Layout();
-}
-
 void ExtensionShelf::ToolstripInsertedAt(ExtensionHost* host,
                                          int index) {
   model_->SetToolstripDataAt(index,
@@ -744,7 +806,8 @@ void ExtensionShelf::ToolstripInsertedAt(ExtensionHost* host,
 
   bool had_views = GetChildViewCount() > 0;
   ExtensionView* view = host->view();
-  background_needs_repaint_ = true;
+  if (!background_.empty())
+    view->SetBackground(background_);
   AddChildView(view);
   view->SetContainer(this);
   if (!had_views)
@@ -813,8 +876,7 @@ void ExtensionShelf::AnimationEnded(const Animation* animation) {
   if (browser_)
     browser_->ExtensionShelfSizeChanged();
 
-  background_needs_repaint_ = true;
-  Layout();
+  SchedulePaint();
 }
 
 void ExtensionShelf::Observe(NotificationType type,
@@ -874,49 +936,38 @@ void ExtensionShelf::CollapseToolstrip(ExtensionHost* host, const GURL& url) {
   model_->CollapseToolstrip(toolstrip, url);
 }
 
-void ExtensionShelf::InitBackground(
-    gfx::Canvas* canvas, const SkRect& subset) {
-  bool detached = IsDetached();
-  if (!background_needs_repaint_ && background_for_detached_ == detached)
+void ExtensionShelf::InitBackground(gfx::Canvas* canvas, const SkRect& subset) {
+  if (!background_.empty())
     return;
 
-  background_for_detached_ = detached;
+  const SkBitmap& background = canvas->getDevice()->accessBitmap(false);
+
+  // Extract the correct subset of the toolstrip background into a bitmap. We
+  // must use a temporary here because extractSubset() returns a bitmap that
+  // references pixels in the original one and we want to actually make a copy
+  // that will have a long lifetime.
+  SkBitmap temp;
+  temp.setConfig(background.config(),
+                 static_cast<int>(subset.width()),
+                 static_cast<int>(subset.height()));
+
+  SkRect mapped_subset = subset;
+  bool result = canvas->getTotalMatrix().mapRect(&mapped_subset);
+  DCHECK(result);
+
+  SkIRect isubset;
+  mapped_subset.round(&isubset);
+  result = background.extractSubset(&temp, isubset);
+  if (!result)
+    return;
+
+  temp.copyTo(&background_, temp.config());
+  DCHECK(background_.readyToDraw());
 
   // Tell all extension views about the new background
   int count = model_->count();
-  for (int i = 0; i < count; ++i) {
-    ExtensionView* view = ToolstripAtIndex(i)->view();
-
-    const SkBitmap& background = canvas->getDevice()->accessBitmap(false);
-
-    // Extract the correct subset of the toolstrip background into a bitmap. We
-    // must use a temporary here because extractSubset() returns a bitmap that
-    // references pixels in the original one and we want to actually make a copy
-    // that will have a long lifetime.
-    SkBitmap temp;
-    temp.setConfig(background.config(),
-                   static_cast<int>(subset.width()),
-                   static_cast<int>(subset.height()));
-
-    SkRect mapped_subset = subset;
-    gfx::Rect view_bounds = view->bounds();
-    mapped_subset.offset(SkIntToScalar(view_bounds.x()),
-                         SkIntToScalar(view_bounds.y()));
-    bool result = canvas->getTotalMatrix().mapRect(&mapped_subset);
-    DCHECK(result);
-
-    SkIRect isubset;
-    mapped_subset.round(&isubset);
-    result = background.extractSubset(&temp, isubset);
-    if (!result)
-      return;
-
-    DCHECK(temp.readyToDraw());
-
-    view->SetBackground(temp);
-  }
-
-  background_needs_repaint_ = false;
+  for (int i = 0; i < count; ++i)
+    ToolstripAtIndex(i)->view()->SetBackground(background_);
 }
 
 ExtensionShelf::Toolstrip* ExtensionShelf::ToolstripAtX(int x) {
@@ -981,13 +1032,13 @@ gfx::Size ExtensionShelf::LayoutItems(bool compute_bounds_only) {
 
   int count = model_->count();
   for (int i = 0; i < count; ++i) {
-    x += kToolstripPadding;  // Left padding.
+    x += kToolstripPadding;  // left padding
     Toolstrip* toolstrip = ToolstripAtIndex(i);
-    if (!toolstrip)  // Can be NULL while in the process of removing.
+    if (!toolstrip)  // can be NULL while in the process of removing
       continue;
     View* view = toolstrip->GetShelfView();
     gfx::Size pref = view->GetPreferredSize();
-    int next_x = x + pref.width() + kToolstripPadding;  // Right padding.
+    int next_x = x + pref.width() + kToolstripPadding;  // right padding
     if (!compute_bounds_only) {
       if (view == toolstrip->view())
         toolstrip->view()->set_is_clipped(next_x >= max_x);
@@ -1019,22 +1070,16 @@ gfx::Size ExtensionShelf::LayoutItems(bool compute_bounds_only) {
   return prefsize;
 }
 
-bool ExtensionShelf::IsOnTop() const {
-  static bool is_on_top = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kShowExtensionsOnTop);
-  return is_on_top;
-}
-
-bool ExtensionShelf::IsDetached() const {
+bool ExtensionShelf::IsDetachedStyle() {
   return OnNewTabPage() && (size_animation_->GetCurrentValue() != 1);
 }
 
-bool ExtensionShelf::IsAlwaysShown() const {
+bool ExtensionShelf::IsAlwaysShown() {
   Profile* profile = browser_->profile();
   return profile->GetPrefs()->GetBoolean(prefs::kShowExtensionShelf);
 }
 
-bool ExtensionShelf::OnNewTabPage() const {
+bool ExtensionShelf::OnNewTabPage() {
   return (browser_ && browser_->GetSelectedTabContents() &&
       browser_->GetSelectedTabContents()->IsExtensionShelfAlwaysVisible());
 }

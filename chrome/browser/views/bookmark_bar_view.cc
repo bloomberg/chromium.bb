@@ -80,6 +80,9 @@ static SkBitmap* kFolderIcon = NULL;
 // Border colors for the BookmarBarView.
 static const SkColor kTopBorderColor = SkColorSetRGB(222, 234, 248);
 
+// How round the 'new tab' style bookmarks bar is.
+static const int kNewtabBarRoundness = 5;
+
 // Offset for where the menu is shown relative to the bottom of the
 // BookmarkBarView.
 static const int kMenuOffset = 3;
@@ -294,10 +297,25 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
   virtual ~ButtonSeparatorView() {}
 
   virtual void Paint(gfx::Canvas* canvas) {
-    DetachableToolbarView::PaintVerticalDivider(
-        canvas, kSeparatorStartX, height(), 1, kTopBorderColor,
+    SkPaint paint;
+    paint.setShader(skia::CreateGradientShader(0,
+                                               height() / 2,
+                                               kTopBorderColor,
+                                               kSeparatorColor))->safeUnref();
+    SkRect rc = {SkIntToScalar(kSeparatorStartX),  SkIntToScalar(0),
+                 SkIntToScalar(1), SkIntToScalar(height() / 2) };
+    canvas->drawRect(rc, paint);
+
+    SkPaint paint_down;
+    paint_down.setShader(skia::CreateGradientShader(height() / 2,
+        height(),
         kSeparatorColor,
-        GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_TOOLBAR));
+        GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_TOOLBAR)
+        ))->safeUnref();
+    SkRect rc_down = {
+        SkIntToScalar(kSeparatorStartX),  SkIntToScalar(height() / 2),
+        SkIntToScalar(1), SkIntToScalar(height() - 1) };
+    canvas->drawRect(rc_down, paint_down);
   }
 
   virtual gfx::Size GetPreferredSize() {
@@ -718,8 +736,8 @@ void BookmarkBarView::OnStateChanged() {
   // re-enter her password. If extension shelf appears along with the bookmark
   // shelf, it too needs to be layed out. Since both have the same parent, it is
   // enough to let the parent layout both of these children.
-  // TODO(sky): This should not require Layout() and SchedulePaint(). Needs
-  //            some cleanup.
+  // TODO (sky): This should not require Layout() and SchedulePaint(). Needs
+  //             some cleanup.
   PreferredSizeChanged();
   Layout();
   SchedulePaint();
@@ -733,19 +751,15 @@ void BookmarkBarView::OnFullscreenToggled(bool fullscreen) {
     size_animation_->Reset(0);
 }
 
-bool BookmarkBarView::IsDetached() const {
+bool BookmarkBarView::IsDetachedStyle() {
   return OnNewTabPage() && (size_animation_->GetCurrentValue() != 1);
 }
 
-bool BookmarkBarView::IsOnTop() const {
-  return true;
-}
-
-bool BookmarkBarView::IsAlwaysShown() const {
+bool BookmarkBarView::IsAlwaysShown() {
   return profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
 }
 
-bool BookmarkBarView::OnNewTabPage() const {
+bool BookmarkBarView::OnNewTabPage() {
   return (browser_ && browser_->GetSelectedTabContents() &&
           browser_->GetSelectedTabContents()->IsBookmarkBarAlwaysVisible());
 }
@@ -1076,7 +1090,7 @@ void BookmarkBarView::RunMenu(views::View* view,
   int x = view->GetX(APPLY_MIRRORING_TRANSFORMATION);
   int bar_height = height() - kMenuOffset;
 
-  if (IsDetached())
+  if (IsDetachedStyle())
     bar_height -= kNewtabVerticalPadding;
 
   int start_index = 0;
@@ -1671,8 +1685,7 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   if (should_show_sync_error_button) {
     x += kButtonPadding;
     if (!compute_bounds_only) {
-      sync_error_button_->SetBounds(
-          x, y, sync_error_button_pref.width(), height);
+      sync_error_button_->SetBounds(x, y, sync_error_button_pref.width(), height);
       sync_error_button_->SetVisible(true);
     }
     x += sync_error_button_pref.width();

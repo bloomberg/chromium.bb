@@ -2734,13 +2734,12 @@ void RenderView::EvaluateScript(const std::wstring& frame_xpath,
 }
 
 void RenderView::InsertCSS(const std::wstring& frame_xpath,
-                           const std::string& css,
-                           const std::string& id) {
+                           const std::string& css) {
   WebFrame* web_frame = GetChildFrame(frame_xpath);
   if (!web_frame)
     return;
 
-  web_frame->insertStyleText(WebString::fromUTF8(css), WebString::fromUTF8(id));
+  web_frame->insertStyleText(WebString::fromUTF8(css));
 }
 
 void RenderView::OnScriptEvalRequest(const std::wstring& frame_xpath,
@@ -2749,9 +2748,8 @@ void RenderView::OnScriptEvalRequest(const std::wstring& frame_xpath,
 }
 
 void RenderView::OnCSSInsertRequest(const std::wstring& frame_xpath,
-                                    const std::string& css,
-                                    const std::string& id) {
-  InsertCSS(frame_xpath, css, id);
+                                    const std::string& css) {
+  InsertCSS(frame_xpath, css);
 
   // Notify RenderViewHost that css has been inserted into the frame.
   Send(new ViewHostMsg_OnCSSInserted(routing_id_));

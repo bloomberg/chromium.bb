@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/views/bookmark_menu_controller_views.h"
-#include "chrome/browser/views/detachable_toolbar_view.h"
 #include "chrome/common/notification_registrar.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/label.h"
@@ -34,7 +33,7 @@ class MenuItemView;
 // BookmarkBarView shows the bookmarks from a specific Profile. BookmarkBarView
 // waits until the HistoryService for the profile has been loaded before
 // creating the BookmarkModel.
-class BookmarkBarView : public DetachableToolbarView,
+class BookmarkBarView : public views::View,
 #ifdef CHROME_PERSONALIZATION
                         public ProfileSyncServiceObserver,
 #endif
@@ -89,13 +88,6 @@ class BookmarkBarView : public DetachableToolbarView,
   // the bookmark bar.
   void SetPageNavigator(PageNavigator* navigator);
 
-  // DetachableToolbarView methods:
-  virtual bool IsDetached() const;
-  virtual bool IsOnTop() const;
-  virtual double GetAnimationValue() const {
-    return size_animation_->GetCurrentValue();
-  }
-
   // View methods:
   virtual gfx::Size GetPreferredSize();
   virtual gfx::Size GetMinimumSize();
@@ -116,6 +108,9 @@ class BookmarkBarView : public DetachableToolbarView,
   virtual bool GetAccessibleName(std::wstring* name);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
   virtual void SetAccessibleName(const std::wstring& name);
+  double GetSizeAnimationValue() const {
+      return size_animation_->GetCurrentValue();
+  }
 
 #ifdef CHROME_PERSONALIZATION
   // ProfileSyncServiceObserver method.
@@ -148,11 +143,15 @@ class BookmarkBarView : public DetachableToolbarView,
   // Returns the model.
   BookmarkModel* GetModel() { return model_; }
 
+  // Returns true if the bookmark bar is drawn detached from the toolbar.  This
+  // can only be true when OnNewTabPage() is true (see below).
+  bool IsDetachedStyle();
+
   // Returns true if the bookmarks bar preference is set to 'always show'.
-  bool IsAlwaysShown() const;
+  bool IsAlwaysShown();
 
   // True if we're on a page where the bookmarks bar is always visible.
-  bool OnNewTabPage() const;
+  bool OnNewTabPage();
 
   // How much we want the bookmark bar to overlap the toolbar.  If |return_max|
   // is true, we return the maximum overlap rather than the current overlap.

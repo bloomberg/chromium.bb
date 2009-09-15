@@ -130,7 +130,7 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
       for (size_t j = 0; j < script->css_scripts().size(); ++j) {
         UserScript::File& file = script->css_scripts()[j];
         frame->insertStyleText(
-            WebString::fromUTF8(file.GetContent().as_string()), WebString());
+            WebString::fromUTF8(file.GetContent().as_string()));
       }
     }
     if (script->run_location() == location) {

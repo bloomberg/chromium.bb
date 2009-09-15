@@ -8,7 +8,6 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
@@ -36,8 +35,6 @@ using WebKit::WebDragOperationsMask;
 
 // static
 bool ExtensionHost::enable_dom_automation_ = false;
-
-static const char* kToolstripTextColorSubstitution = "$TEXT_COLOR$";
 
 ExtensionHost::ExtensionHost(Extension* extension, SiteInstance* site_instance,
                              const GURL& url, ViewType::Type host_type)
@@ -153,57 +150,33 @@ void ExtensionHost::DidNavigate(RenderViewHost* render_view_host,
       new ExtensionFunctionDispatcher(render_view_host_, this, url_));
 }
 
-void ExtensionHost::InsertCssIfToolstrip() {
+void ExtensionHost::DidStopLoading(RenderViewHost* render_view_host) {
+  static const base::StringPiece toolstrip_css(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_EXTENSIONS_TOOLSTRIP_CSS));
 #if defined(TOOLKIT_VIEWS)
   ExtensionView* view = view_.get();
-  if (!view)
-    return;
-  if (!view->is_toolstrip()) {
-    // No CSS injecting currently, but call SetDidInsertCSS to tell the view
-    // that it's OK to display.
-    view->SetDidInsertCSS(true);
-    return;
+  if (view) {
+    // TODO(erikkay) this injection should really happen in the renderer.
+    // When the Jerry's view type change lands, investigate moving this there.
+
+    // As a toolstrip, inject our toolstrip CSS to make it easier for toolstrips
+    // to blend in with the chrome UI.
+    if (view->is_toolstrip()) {
+      render_view_host->InsertCSSInWebFrame(L"", toolstrip_css.as_string());
+    } else {
+      // No CSS injecting currently, but call SetDidInsertCSS to tell the view
+      // that it's OK to display.
+      view->SetDidInsertCSS(true);
+    }
   }
 #elif defined(OS_LINUX)
   ExtensionViewGtk* view = view_.get();
-  if (!view || !view->is_toolstrip())
-    return;
-#endif
-
-  static const base::StringPiece toolstrip_css(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_EXTENSIONS_TOOLSTRIP_CSS));
-
-  std::string css = toolstrip_css.as_string();
-  ThemeProvider* theme_provider =
-      render_view_host()->process()->profile()->GetThemeProvider();
-
-  SkColor text_color = theme_provider ?
-      theme_provider->GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT) :
-      SK_ColorBLACK;
-
-  std::string hex_color_string = StringPrintf(
-      "#%02x%02x%02x", SkColorGetR(text_color),
-                       SkColorGetG(text_color),
-                       SkColorGetB(text_color));
-  size_t pos = css.find(kToolstripTextColorSubstitution);
-  while (pos != std::string::npos) {
-    css.replace(pos, 12, hex_color_string);
-    pos = css.find(kToolstripTextColorSubstitution);
+  if (view && view->is_toolstrip()) {
+    render_view_host->InsertCSSInWebFrame(L"", toolstrip_css.as_string());
   }
-
-#if defined(TOOLKIT_VIEWS) || defined(OS_LINUX)
-  // TODO(erikkay) this injection should really happen in the renderer.
-  // When the Jerry's view type change lands, investigate moving this there.
-
-  // As a toolstrip, inject our toolstrip CSS to make it easier for toolstrips
-  // to blend in with the chrome UI.
-  render_view_host()->InsertCSSInWebFrame(L"", css, "ToolstripDefaultCss");
 #endif
-}
 
-void ExtensionHost::DidStopLoading(RenderViewHost* render_view_host) {
-  InsertCssIfToolstrip();
   if (!did_stop_loading_) {
     NotificationService::current()->Notify(
         NotificationType::EXTENSION_HOST_DID_STOP_LOADING,

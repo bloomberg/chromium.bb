@@ -258,11 +258,9 @@ class RenderViewHost : public RenderWidgetHost,
   void ExecuteJavascriptInWebFrame(const std::wstring& frame_xpath,
                                    const std::wstring& jscript);
 
-  // Insert some css into a frame in the page. |id| is optional, and specifies
-  // the element id given when inserting/replacing the style element.
+  // Insert some css into a frame in the page.
   void InsertCSSInWebFrame(const std::wstring& frame_xpath,
-                           const std::string& css,
-                           const std::string& id);
+                           const std::string& css);
 
   // Logs a message to the console of a frame in the page.
   void AddMessageToConsole(const string16& frame_xpath,

@@ -405,12 +405,9 @@ class RenderView : public RenderWidget,
   void EvaluateScript(const std::wstring& frame_xpath,
                       const std::wstring& jscript);
 
-  // Inserts a string of CSS in a particular frame. |id| can be specified to
-  // give the CSS style element an id, and (if specified) will replace the
-  // element with the same id.
+  // Inserts a string of CSS in a particular frame.
   void InsertCSS(const std::wstring& frame_xpath,
-                 const std::string& css,
-                 const std::string& id);
+                 const std::string& css);
 
   int delay_seconds_for_form_state_sync() const {
     return delay_seconds_for_form_state_sync_;
@@ -593,8 +590,7 @@ class RenderView : public RenderWidget,
   void OnScriptEvalRequest(const std::wstring& frame_xpath,
                            const std::wstring& jscript);
   void OnCSSInsertRequest(const std::wstring& frame_xpath,
-                          const std::string& css,
-                          const std::string& id);
+                          const std::string& css);
   void OnAddMessageToConsole(const string16& frame_xpath,
                              const string16& message,
                              const WebKit::WebConsoleMessage::Level&);

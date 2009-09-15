@@ -107,8 +107,7 @@ class WebFrameImpl : public WebKit::WebFrame,
 #if WEBKIT_USING_V8
   virtual v8::Local<v8::Context> mainWorldScriptContext() const;
 #endif
-  virtual bool insertStyleText(
-      const WebKit::WebString& css, const WebKit::WebString& id);
+  virtual bool insertStyleText(const WebKit::WebString& style_text);
   virtual void reload();
   virtual void loadRequest(const WebKit::WebURLRequest& request);
   virtual void loadHistoryItem(const WebKit::WebHistoryItem& history_item);

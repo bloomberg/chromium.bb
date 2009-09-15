@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/extension_shelf_model.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/views/browser_bubble.h"
-#include "chrome/browser/views/detachable_toolbar_view.h"
 #include "views/view.h"
 
 class Browser;
@@ -21,7 +20,7 @@ namespace views {
 }
 
 // A shelf that contains Extension toolstrips.
-class ExtensionShelf : public DetachableToolbarView,
+class ExtensionShelf : public views::View,
                        public ExtensionContainer,
                        public ExtensionShelfModelObserver,
                        public AnimationDelegate,
@@ -33,18 +32,14 @@ class ExtensionShelf : public DetachableToolbarView,
   // Get the current model.
   ExtensionShelfModel* model() { return model_; }
 
+  // Returns whether the extension shelf is detached from the Chrome frame.
+  bool IsDetachedStyle();
+
   // Toggles a preference for whether to always show the extension shelf.
   static void ToggleWhenExtensionShelfVisible(Profile* profile);
 
-  // DetachableToolbarView methods:
-  virtual bool IsOnTop() const;
-  virtual bool IsDetached() const;
-  virtual double GetAnimationValue() const {
-    return size_animation_->GetCurrentValue();
-  }
-
-  // View methods:
-  virtual void PaintChildren(gfx::Canvas* canvas);
+  // View
+  virtual void Paint(gfx::Canvas* canvas);
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
   virtual void OnMouseExited(const views::MouseEvent& event);
@@ -52,13 +47,12 @@ class ExtensionShelf : public DetachableToolbarView,
   virtual bool GetAccessibleName(std::wstring* name);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
   virtual void SetAccessibleName(const std::wstring& name);
-  virtual void ThemeChanged();
 
-  // ExtensionContainer methods:
+  // ExtensionContainer
   virtual void OnExtensionMouseEvent(ExtensionView* view);
   virtual void OnExtensionMouseLeave(ExtensionView* view);
 
-  // ExtensionShelfModelObserver methods:
+  // ExtensionShelfModelObserver
   virtual void ToolstripInsertedAt(ExtensionHost* toolstrip, int index);
   virtual void ToolstripRemovingAt(ExtensionHost* toolstrip, int index);
   virtual void ToolstripDraggingFrom(ExtensionHost* toolstrip, int index);
@@ -70,17 +64,17 @@ class ExtensionShelf : public DetachableToolbarView,
   virtual void ShelfModelReloaded();
   virtual void ShelfModelDeleting();
 
-  // AnimationDelegate methods:
+  // AnimationDelegate
   virtual void AnimationProgressed(const Animation* animation);
   virtual void AnimationEnded(const Animation* animation);
 
-  // NotificationObserver methods:
+  // NotificationObserver
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
  protected:
-  // View methods:
+  // View
   virtual void ChildPreferredSizeChanged(View* child);
 
  private:
@@ -98,7 +92,7 @@ class ExtensionShelf : public DetachableToolbarView,
   // Collapse the specified toolstrip, navigating to |url| if non-empty.
   void CollapseToolstrip(ExtensionHost* host, const GURL& url);
 
-  // Initializes the background bitmaps for all views.
+  // Inits the background bitmap.
   void InitBackground(gfx::Canvas* canvas, const SkRect& subset);
 
   // Returns the Toolstrip at |x| coordinate.  If |x| is out of bounds, returns
@@ -121,21 +115,16 @@ class ExtensionShelf : public DetachableToolbarView,
   gfx::Size LayoutItems(bool compute_bounds_only);
 
   // Returns whether the extension shelf always shown (checks pref value).
-  bool IsAlwaysShown() const;
+  bool IsAlwaysShown();
 
   // Returns whether the extension shelf is being displayed over the new tab
   // page.
-  bool OnNewTabPage() const;
+  bool OnNewTabPage();
 
   NotificationRegistrar registrar_;
 
   // Background bitmap to draw under extension views.
-  bool background_needs_repaint_;
-
-  // Whether the background we are remembering is for detached mode or not.
-  // This allows us to switch backgrounds and remember if we've done so, so that
-  // we don't have to do it over and over again.
-  bool background_for_detached_;
+  SkBitmap background_;
 
   // The browser this extension shelf belongs to.
   Browser* browser_;
