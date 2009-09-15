@@ -1,15 +1,15 @@
 vars = {
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "nixysa_rev": "54",
-  "chromium_rev": "22547",
+  "chromium_rev": "26261",
   "o3d_code_rev": "145",
-  "skia_rev": "279",
-  "gyp_rev": "626",
+  "skia_rev": "341",
+  "gyp_rev": "651",
   "gtest_rev": "267",
   "gflags_rev": "30",
-  "breakpad_rev": "346",
-  "v8_rev": "2624",
-  "icu38_rev": "20192",
+  "breakpad_rev": "391",
+  "v8_rev": "2866",
+  "icu_rev": "25717",
   "nacl_rev": "569",
 }
 
@@ -52,14 +52,11 @@ deps = {
 
 # Stuff from the Chromium tree.
 
-  "third_party/boost":
-    Var("chromium_trunk") + "/src/third_party/boost@" + Var("chromium_rev"),
-
   "third_party/harfbuzz":
     Var("chromium_trunk") + "/src/third_party/harfbuzz@" + Var("chromium_rev"),
 
-  "third_party/icu38":
-    Var("chromium_trunk") + "/deps/third_party/icu38@" + Var("icu38_rev"),
+  "third_party/icu":
+    Var("chromium_trunk") + "/deps/third_party/icu42@" + Var("icu_rev"),
 
   "third_party/libevent":
     Var("chromium_trunk") + "/src/third_party/libevent@" + Var("chromium_rev"),
@@ -69,6 +66,9 @@ deps = {
 
   "third_party/libpng":
     Var("chromium_trunk") + "/src/third_party/libpng@" + Var("chromium_rev"),
+
+  "chrome/third_party/wtl":
+    Var("chromium_trunk") + "/src/chrome/third_party/wtl@" + Var("chromium_rev"),
 
   "third_party/zlib":
     Var("chromium_trunk") + "/src/third_party/zlib@" + Var("chromium_rev"),

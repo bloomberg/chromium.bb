@@ -50,7 +50,7 @@ TEST_F(TemporaryFileTest, BasicConstruction) {
 
 TEST_F(TemporaryFileTest, BasicFunction) {
   FilePath path;
-  file_util::CreateTemporaryFileName(&path);
+  file_util::CreateTemporaryFile(&path);
   EXPECT_TRUE(file_util::PathExists(path));
   {
     TemporaryFile temporary_file(path);
@@ -64,8 +64,8 @@ TEST_F(TemporaryFileTest, BasicFunction) {
 TEST_F(TemporaryFileTest, Reset) {
   FilePath path;
   FilePath path1;
-  file_util::CreateTemporaryFileName(&path);
-  file_util::CreateTemporaryFileName(&path1);
+  file_util::CreateTemporaryFile(&path);
+  file_util::CreateTemporaryFile(&path1);
   EXPECT_TRUE(file_util::PathExists(path));
   EXPECT_TRUE(file_util::PathExists(path1));
   {
@@ -86,7 +86,7 @@ TEST_F(TemporaryFileTest, Reset) {
 
 TEST_F(TemporaryFileTest, Release) {
   FilePath path;
-  file_util::CreateTemporaryFileName(&path);
+  file_util::CreateTemporaryFile(&path);
   EXPECT_TRUE(file_util::PathExists(path));
   {
     TemporaryFile temporary_file(path);

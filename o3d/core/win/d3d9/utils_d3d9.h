@@ -37,7 +37,7 @@
 #define O3D_CORE_WIN_D3D9_UTILS_D3D9_H_
 
 #include <d3d9.h>
-#include <dxerr.h>
+#include <DxErr.h>
 #include "base/logging.h"
 #include "core/cross/stream.h"
 
