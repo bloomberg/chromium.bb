@@ -117,8 +117,31 @@ WONTFIX SKIP BUG10635 : LayoutTests/fast/events/pageshow-pagehide-on-back-cached
 // No support for WebGL yet
 BUG21852 SKIP : LayoutTests/fast/canvas/webgl = FAIL
 
+// Tests that rely on cross-process MessagePorts.  No point in running them in
+// test_shell, since we'd have to use a completely different implementation from
+// what is used in the browser.
+WONTFIX SKIP : LayoutTests/fast/events/message-channel-gc-2.html = FAIL
+WONTFIX SKIP : LayoutTests/fast/events/message-channel-gc-3.html = FAIL
+WONTFIX SKIP : LayoutTests/fast/events/message-channel-gc-4.html = FAIL
+WONTFIX SKIP : LayoutTests/fast/events/message-channel-gc.html = FAIL
+WONTFIX SKIP : LayoutTests/fast/events/message-channel-listener-circular-ownership.html = FAIL
+WONTFIX SKIP : LayoutTests/fast/events/message-port-clone.html = FAIL
+WONTFIX SKIP : LayoutTests/fast/events/message-port-deleted-document.html = FAIL
+WONTFIX SKIP : LayoutTests/fast/events/message-port-deleted-frame.html = FAIL
+WONTFIX SKIP : LayoutTests/fast/events/message-port-inactive-document.html = FAIL
+WONTFIX SKIP : LayoutTests/fast/events/message-port-no-wrapper.html = FAIL
+WONTFIX SKIP : LayoutTests/fast/events/message-port.html = FAIL
+WONTFIX SKIP : LayoutTests/http/tests/security/MessagePort/event-listener-context.html = FAIL
+WONTFIX SKIP : chrome/fast/dom/messageport-gc.html = FAIL
+
+// Chrome does not support WebArchives (just like Safari for Windows),
+// although we might eventually want to on Mac.
+WONTFIX SKIP : LayoutTests/webarchive/adopt-attribute-styled-body-webarchive.html = FAIL
+WONTFIX SKIP : LayoutTests/webarchive/adopt-attribute-styled-node-webarchive.html = FAIL
+WONTFIX SKIP : LayoutTests/webarchive/adopt-inline-styled-node-webarchive.html = FAIL
+
 // -----------------------------------------------------------------
-// FAILING TESTS
+// WONTFIX TESTS
 // -----------------------------------------------------------------
 
 // We don't intend to pass all of these cases, so this is an expected fail.
@@ -316,6 +339,10 @@ WONTFIX : LayoutTests/fast/js/global-constructors.html = FAIL
 // stack limit is reached.  We're happy with our behavior on this test
 // as long as we don't crash.
 WONTFIX : LayoutTests/fast/js/global-recursion-on-full-stack.html = FAIL PASS
+
+// Our DOM Storage implementation doesn't use WebKit's private browsing feature (even for incognito mode).
+WONTFIX : LayoutTests/storage/domstorage/localstorage/private-browsing-affects-storage.html = FAIL
+WONTFIX : LayoutTests/storage/domstorage/sessionstorage/private-browsing-affects-storage.html = FAIL
 
 // -----------------------------------------------------------------
 // CHROME REWRITTEN TESTS
@@ -559,10 +586,6 @@ BUG4360 : LayoutTests/storage/domstorage/localstorage/onstorage-attribute-setwin
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/onstorage-attribute-setwindow.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/localstorage/string-conversion.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/string-conversion.html = FAIL
-
-// Our DOM Storage implementation doesn't use WebKit's private browsing feature (even for incognito mode).
-WONTFIX : LayoutTests/storage/domstorage/localstorage/private-browsing-affects-storage.html = FAIL
-WONTFIX : LayoutTests/storage/domstorage/sessionstorage/private-browsing-affects-storage.html = FAIL
 
 // Depends on SessionStorage.  I'm not sure if this is working yet, but I don't think we need to SKIP it.
 BUG4360 : LayoutTests/http/tests/loading/deleted-host-in-resource-load-delegate-callback.html = TIMEOUT
@@ -1856,12 +1879,6 @@ BUG11123 LINUX : LayoutTests/fast/css/nested-layers-with-hover.html = FAIL
 BUG11123 LINUX : LayoutTests/fast/forms/textarea-scrollbar.html = FAIL
 BUG11123 LINUX : LayoutTests/fast/forms/textarea-scrolled-type.html = FAIL
 
-// Chrome does not support WebArchives (just like Safari for Windows),
-// although we might eventually want to on Mac.
-WONTFIX SKIP : LayoutTests/webarchive/adopt-attribute-styled-body-webarchive.html = FAIL
-WONTFIX SKIP : LayoutTests/webarchive/adopt-attribute-styled-node-webarchive.html = FAIL
-WONTFIX SKIP : LayoutTests/webarchive/adopt-inline-styled-node-webarchive.html = FAIL
-
 // Regressions from WebKit Merge 42932:42994
 BUG11239 MAC DEBUG : LayoutTests/svg/custom/js-late-marker-and-object-creation.svg = FAIL PASS
 
@@ -2021,23 +2038,6 @@ BUG11613 MAC : LayoutTests/http/tests/security/cross-frame-access-call.html = FA
 
 // WebKit merge 45601:45610
 BUG16162 : LayoutTests/fast/loader/subframe-navigate-during-main-frame-load.html = FAIL
-
-// Tests that rely on cross-process MessagePorts.  No point in running them in
-// test_shell, since we'd have to use a completely different implementation from
-// what is used in the browser.
-WONTFIX SKIP : LayoutTests/fast/events/message-channel-gc-2.html = FAIL
-WONTFIX SKIP : LayoutTests/fast/events/message-channel-gc-3.html = FAIL
-WONTFIX SKIP : LayoutTests/fast/events/message-channel-gc-4.html = FAIL
-WONTFIX SKIP : LayoutTests/fast/events/message-channel-gc.html = FAIL
-WONTFIX SKIP : LayoutTests/fast/events/message-channel-listener-circular-ownership.html = FAIL
-WONTFIX SKIP : LayoutTests/fast/events/message-port-clone.html = FAIL
-WONTFIX SKIP : LayoutTests/fast/events/message-port-deleted-document.html = FAIL
-WONTFIX SKIP : LayoutTests/fast/events/message-port-deleted-frame.html = FAIL
-WONTFIX SKIP : LayoutTests/fast/events/message-port-inactive-document.html = FAIL
-WONTFIX SKIP : LayoutTests/fast/events/message-port-no-wrapper.html = FAIL
-WONTFIX SKIP : LayoutTests/fast/events/message-port.html = FAIL
-WONTFIX SKIP : LayoutTests/http/tests/security/MessagePort/event-listener-context.html = FAIL
-WONTFIX SKIP : chrome/fast/dom/messageport-gc.html = FAIL
 
 // WebKit tests regressions 20529:20532
 BUG16675 MAC : LayoutTests/fast/dynamic/flash-replacement-test.html = FAIL
