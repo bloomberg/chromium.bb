@@ -12,6 +12,7 @@
 #include "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/find_bar_cocoa_controller.h"
 #import "chrome/browser/cocoa/find_bar_bridge.h"
+#import "chrome/browser/cocoa/focus_tracker.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 
@@ -120,6 +121,14 @@
 // Methods from FindBar
 - (void)showFindBar {
   [[self view] setHidden:NO];
+
+  // Save the currently-focused view.  |[self view]| is in the view
+  // hierarchy by now.  showFindBar can be called even when the
+  // findbar is already open, so do not overwrite an already saved
+  // view.
+  if (!focusTracker_.get())
+    focusTracker_.reset(
+        [[FocusTracker alloc] initWithWindow:[[self view] window]]);
 }
 
 - (void)hideFindBar {
@@ -134,6 +143,15 @@
   [previousButton_ setEnabled:buttonsEnabled];
   [nextButton_ setEnabled:buttonsEnabled];
 
+}
+
+- (void)restoreSavedFocus {
+  if (!(focusTracker_.get() &&
+        [focusTracker_ restoreFocusInWindow:[[self view] window]])) {
+    // Fall back to giving focus to the tab contents.
+    findBarBridge_->GetFindBarController()->tab_contents()->Focus();
+  }
+  focusTracker_.reset(nil);
 }
 
 - (void)setFindText:(const string16&)findText {
@@ -176,6 +194,11 @@
     // area.
     [resultsLabel_ setStringValue:@""];
   }
+
+  // If we found any results, reset the focus tracker, so we always
+  // restore focus to the tab contents.
+  if (result.number_of_matches() > 0)
+    focusTracker_.reset(nil);
 
   // Resize |resultsLabel_| to completely contain its string and right-justify
   // it within |findText_|.  sizeToFit may shrink the frame vertically, which we
