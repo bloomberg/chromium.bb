@@ -82,14 +82,13 @@ bool ToolstripExpandFunction::RunImpl() {
     return false;
   }
 
-
   GURL url;
   if (args->HasKey(keys::kUrlKey)) {
     std::string url_string;
     EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kUrlKey,
                                                 &url_string));
-    url = GURL(url_string);
-    if (!url.is_valid() && !url.is_empty()) {
+    url = dispatcher()->url().Resolve(url_string);
+    if (!url.is_valid()) {
       error_ = kInvalidURLError;
       return false;
     }
@@ -117,8 +116,8 @@ bool ToolstripCollapseFunction::RunImpl() {
       std::string url_string;
       EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kUrlKey,
                                                   &url_string));
-      url = GURL(url_string);
-      if (!url.is_valid() && !url.is_empty()) {
+      url = dispatcher()->url().Resolve(url_string);
+      if (!url.is_valid()) {
         error_ = kInvalidURLError;
         return false;
       }

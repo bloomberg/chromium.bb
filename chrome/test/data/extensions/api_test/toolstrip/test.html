@@ -9,6 +9,34 @@ chrome.test.runTests([
   function collapse() {
     chrome.test.listenOnce(chrome.toolstrip.onCollapsed, function(){});
     chrome.toolstrip.collapse({}, chrome.test.callbackPass(function(){}));
-  }
+  },
+  
+  /* TODO(mpcomplete): this is failing in part due to bug 21905
+  function expandOther() {
+    var orig = window.location;
+    var relative = "folder/relative.html";
+
+    // Get the other toolstrip.
+    var toolstrips = chrome.extension.getToolstrips();
+    var other = (toolstrips[0].location == location) ?
+        toolstrips[1] : toolstrips[0];
+
+    other.chrome.toolstrip.expand({height:200, url:relative},
+                                  chrome.test.callbackPass(function() {
+      // TODO(mpcomplete) this never gets called
+      chrome.test.log(other.location.toString());
+      chrome.test.listenOnce(other.onLoad, function() {
+        chrome.test.log(other.location.toString());
+        chrome.test.assertEq(other.location.toString(),
+                             chrome.extension.getURL(relative));
+        other.chrome.toolstrip.collapse({url:"../test2.html"},
+                                        chrome.test.callbackPass(function() {
+          chrome.test.assertEq(other.location.toString(), orig);
+        }));
+      });
+    }));
+  },
+  */
 ]);
 </script>
+test

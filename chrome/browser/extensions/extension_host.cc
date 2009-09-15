@@ -101,6 +101,15 @@ void ExtensionHost::CreateRenderView(RenderWidgetHostView* host_view) {
 }
 
 void ExtensionHost::NavigateToURL(const GURL& url) {
+  // Prevent explicit navigation to another extension id's pages.
+  // This method is only called by some APIs, so we still need to protect
+  // DidNavigate below (location = "").
+  if (url.SchemeIs(chrome::kExtensionScheme) &&
+      url.host() != extension_->id()) {
+    // TODO(erikkay) communicate this back to the caller?
+    return;
+  }
+
   url_ = url;
 
   if (!is_background_page() && !extension_->GetBackgroundPageReady()) {
@@ -144,11 +153,28 @@ void ExtensionHost::DidNavigate(RenderViewHost* render_view_host,
       return;
   }
 
-  url_ = params.url;
-  if (!url_.SchemeIs(chrome::kExtensionScheme)) {
+  if (!params.url.SchemeIs(chrome::kExtensionScheme)) {
+    extension_function_dispatcher_.reset(NULL);
+    url_ = params.url;
+    return;
+  }
+
+  // This catches two bogus use cases:
+  // (1) URLs that look like chrome-extension://somethingbogus or
+  //     chrome-extension://nosuchid/, in other words, no Extension would
+  //     be found.
+  // (2) URLs that refer to a different extension than this one.
+  // In both cases, we preserve the old URL and reset the EFD to NULL.  This
+  // will leave the host in kind of a bad state with poor UI and errors, but
+  // it's better than the alternative.
+  // TODO(erikkay) Perhaps we should display log errors or display a big 404
+  // in the toolstrip or something like that.
+  if (params.url.host() != extension_->id()) {
     extension_function_dispatcher_.reset(NULL);
     return;
   }
+
+  url_ = params.url;
   extension_function_dispatcher_.reset(
       new ExtensionFunctionDispatcher(render_view_host_, this, url_));
 }

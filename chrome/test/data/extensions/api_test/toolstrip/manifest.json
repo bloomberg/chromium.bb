@@ -2,5 +2,5 @@
   "name": "chrome.toolstrip",
   "version": "0.1",
   "description": "end-to-end browser test for chrome.toolstrip API",
-  "toolstrips": ["test.html"]
+  "toolstrips": ["test.html", "test2.html"]
 }

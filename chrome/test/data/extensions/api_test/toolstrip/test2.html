@@ -1,0 +1,9 @@
+<script>
+chrome.toolstrip.onExpanded.addListener(function() {
+  chrome.test.log("test2 expanded");
+});
+chrome.toolstrip.onCollapsed.addListener(function() {
+  chrome.test.log("test2 collapsed");
+});
+</script>
+test2
