@@ -120,9 +120,8 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
   // single byte bool, use an int instead.
   int xembed;
   NPError err = instance_->NPP_GetValue(NPPVpluginNeedsXEmbed, &xembed);
-  DCHECK(err == NPERR_NO_ERROR);
-  if (!xembed) {
-    NOTIMPLEMENTED() << "Windowed plugin but without xembed.";
+  if (err != NPERR_NO_ERROR || !xembed) {
+    NOTIMPLEMENTED() << " windowed plugin but without xembed.";
     return false;
   }
 
