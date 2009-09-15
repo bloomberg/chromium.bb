@@ -270,8 +270,14 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
             install_msg_base = 0;
           }
         }
+
+        bool write_chrome_launch_string =
+            !installer_util::GetDistroBooleanPreference(prefs,
+            installer_util::master_preferences::kDoNotRegisterForUpdateLaunch);
+
         InstallUtil::WriteInstallerResult(system_level, install_status,
-                                          install_msg_base, &chrome_exe);
+            install_msg_base, write_chrome_launch_string ? &chrome_exe : NULL);
+
         if (install_status == installer_util::FIRST_INSTALL_SUCCESS) {
           LOG(INFO) << "First install successful.";
           // We never want to launch Chrome in system level install mode.

@@ -140,6 +140,8 @@ TEST(MasterPreferencesTest, ParseMissingDistroParams) {
   EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kDoNotLaunchChrome));
   EXPECT_FALSE(installer_util::GetDistroBooleanPreference(prefs.get(),
+      installer_util::master_preferences::kDoNotRegisterForUpdateLaunch));
+  EXPECT_FALSE(installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kMakeChromeDefault));
   EXPECT_FALSE(installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kMakeChromeDefaultForUser));

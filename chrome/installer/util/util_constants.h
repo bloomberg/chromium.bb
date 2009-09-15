@@ -48,6 +48,7 @@ extern const wchar_t kDeleteProfile[];
 extern const wchar_t kDisableLogging[];
 extern const wchar_t kDoNotCreateShortcuts[];
 extern const wchar_t kDoNotLaunchChrome[];
+extern const wchar_t kDoNotRegisterForUpdateLaunch[];
 extern const wchar_t kDoNotRemoveSharedItems[];
 extern const wchar_t kEnableLogging[];
 extern const wchar_t kForceUninstall[];

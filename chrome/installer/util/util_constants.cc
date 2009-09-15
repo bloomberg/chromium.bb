@@ -24,6 +24,11 @@ const wchar_t kDoNotCreateShortcuts[] = L"do-not-create-shortcuts";
 // Prevent installer from launching Chrome after a successful first install.
 const wchar_t kDoNotLaunchChrome[] = L"do-not-launch-chrome";
 
+// Prevents installer from writing the Google Update key that causes Google
+// Update to launch Chrome after a first install.
+const wchar_t kDoNotRegisterForUpdateLaunch[] =
+    L"do-not-register-for-update-launch";
+
 // By default we remove all shared (between users) files, registry entries etc
 // during uninstall. If this option is specified together with kUninstall option
 // we do not clean up shared entries otherwise this option is ignored.

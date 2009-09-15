@@ -54,6 +54,13 @@ DictionaryValue* setup_util::GetInstallPreferences(
     installer_util::SetDistroBooleanPreference(
         prefs, installer_util::master_preferences::kDoNotCreateShortcuts, true);
 
+  if (cmd_line.HasSwitch(
+        installer_util::switches::kDoNotRegisterForUpdateLaunch))
+    installer_util::SetDistroBooleanPreference(
+        prefs,
+        installer_util::master_preferences::kDoNotRegisterForUpdateLaunch,
+        true);
+
   if (cmd_line.HasSwitch(installer_util::switches::kDoNotLaunchChrome))
     installer_util::SetDistroBooleanPreference(
         prefs, installer_util::master_preferences::kDoNotLaunchChrome, true);

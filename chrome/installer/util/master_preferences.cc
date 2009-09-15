@@ -30,6 +30,8 @@ const wchar_t kDistroShowWelcomePage[] = L"show_welcome_page";
 const wchar_t kDistroSkipFirstRunPref[] = L"skip_first_run_ui";
 const wchar_t kDoNotCreateShortcuts[] = L"do_not_create_shortcuts";
 const wchar_t kDoNotLaunchChrome[] = L"do_not_launch_chrome";
+const wchar_t kDoNotRegisterForUpdateLaunch[] =
+    L"do_not_register_for_update_launch";
 const wchar_t kMakeChromeDefault[] = L"make_chrome_default";
 const wchar_t kMakeChromeDefaultForUser[] = L"make_chrome_default_for_user";
 const wchar_t kRequireEula[] = L"require_eula";
