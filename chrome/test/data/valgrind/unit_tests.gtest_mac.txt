@@ -1,3 +1,7 @@
 # Times out too often
 # crbug.com/15817
 IPCSyncChannelTest.*
+# Hangs
+# http://crbug.com/21890
+WebDropTargetTest.URL
+WebDropTargetTest.Data
