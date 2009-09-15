@@ -8,22 +8,8 @@
 Under the assumption third_party/WebKit is a clone of git.webkit.org,
 we can use git commands to make it match the version requested by DEPS.
 
-To use this:
-1) rm -rf third_party/WebKit
-2) git clone git://git.webkit.org/WebKit.git third_party/WebKit
-3) edit your .gclient "custom_deps" section to exclude components underneath
-   third_party/WebKit:
-     "src/third_party/WebKit/LayoutTests": None,
-     "src/third_party/WebKit/JavaScriptCore": None,
-     "src/third_party/WebKit/WebCore": None,
-4) run ./tools/sync-webkit-git.py now, and again whenever you run gclient
-   sync.
-
-FAQ:
-Q. Why not add this functionality to gclient itself?
-A. DEPS actually specifies to only pull some subdirectories of
-   third_party/WebKit.  So even if gclient supported git, we'd still need
-   to special-case this.
+See http://code.google.com/p/chromium/wiki/UsingWebKitGit for details on
+how to use this.
 """
 
 import os
@@ -48,7 +34,8 @@ def GetWebKitRev():
 def FindSVNRev(rev):
   """Map an SVN revision to a git hash.
   Like 'git svn find-rev' but without the git-svn bits."""
-  return RunGit(['rev-list', '-n', '1', '--grep=^git-svn-id: .*@%s' % rev,
+  # We find r123 by grepping for a line with "git-svn-id: blahblahblah@123".
+  return RunGit(['rev-list', '-n', '1', '--grep=^git-svn-id: .*@%s$' % rev,
                  'origin'])
 
 def UpdateGClientBranch(webkit_rev):
@@ -76,7 +63,8 @@ def UpdateCurrentCheckoutIfAppropriate():
   """Reset the current gclient branch if that's what we have checked out."""
   branch = RunGit(['symbolic-ref', '-q', 'HEAD'])
   if branch != MAGIC_GCLIENT_BRANCH:
-    print "Directory has some other branch ('%s') checked out." % branch
+    print ("third_party/WebKit has some other branch ('%s') checked out." %
+           branch)
     print "Run 'git checkout gclient' to put this under control of gclient."
     return
 
@@ -86,12 +74,20 @@ def UpdateCurrentCheckoutIfAppropriate():
     subprocess.check_call(['git', 'reset', '--hard'])
 
 def main():
+  if not os.path.exists('third_party/WebKit/.git'):
+    print "ERROR: third_party/WebKit appears to not be under git control."
+    print "See http://code.google.com/p/chromium/wiki/UsingWebKitGit for"
+    print "setup instructions."
+    return
+
   webkit_rev = GetWebKitRev()
   print 'Desired revision: r%s.' % webkit_rev
   os.chdir('third_party/WebKit')
   changed = UpdateGClientBranch(webkit_rev)
   if changed:
     UpdateCurrentCheckoutIfAppropriate()
+  else:
+    print "Already on correct revision."
 
 if __name__ == '__main__':
   main()
