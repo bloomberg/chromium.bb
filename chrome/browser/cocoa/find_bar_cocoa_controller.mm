@@ -113,6 +113,28 @@
     }
 
     return YES;
+  } else if (command == @selector(pageUp:) ||
+             command == @selector(pageUpAndModifySelection:) ||
+             command == @selector(scrollPageUp:) ||
+             command == @selector(pageDown:) ||
+             command == @selector(pageDownAndModifySelection:) ||
+             command == @selector(scrollPageDown:)) {
+    TabContents* contents =
+        findBarBridge_->GetFindBarController()->tab_contents();
+    if (!contents)
+      return NO;
+
+    // Sanity-check to make sure we got a keyboard event.
+    NSEvent* event = [NSApp currentEvent];
+    if ([event type] != NSKeyDown && [event type] != NSKeyUp)
+      return NO;
+
+    // Forward the event to the renderer.
+    // TODO(rohitrao): Should this call -[BaseView keyEvent:]?  Is there code in
+    // that function that we want to keep or avoid?
+    RenderViewHost* render_view_host = contents->render_view_host();
+    render_view_host->ForwardKeyboardEvent(NativeWebKeyboardEvent(event));
+    return YES;
   }
 
   return NO;
