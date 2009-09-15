@@ -4797,16 +4797,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
           New Incognito Window
         </message>
         <message name="IDS_REOPEN_CLOSED_TABS_MAC" desc="The Mac menu item reopen recently closed tabs in the file menu.">
-          Reopen Closed Tabs
+          Reopen Closed Tab
         </message>
         <message name="IDS_OPEN_FILE_MAC" desc="The Mac menu item to open a file in the file menu.">
           Open File...
         </message>
         <message name="IDS_OPEN_LOCATION_MAC" desc="The Mac menu item to open a location in the file menu (puts cursor in the url bar).">
           Open Location...
-        </message>
-        <message name="IDS_OPEN_RECENT_MAC" desc="The Mac menu item for the recent files menu in the file menu.">
-          Open Recent
         </message>
         <message name="IDS_CREATE_APPLICATION_MAC" desc="The Mac menu item to create an application shortcut in the file menu.">
           Create Application Shortcut...
@@ -4894,19 +4891,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Stop
         </message>
         <message name="IDS_RELOAD_MENU_MAC" desc="The Mac menu item reload in the view menu.">
-          Reload
+          Reload This Page
         </message>
         <message name="IDS_FULLSCREEN_MAC" desc="The Mac menu item to go into fullscreen mode in the view menu.">
           Full Screen
         </message>
-        <message name="IDS_TEXT_BIGGER_MAC" desc="The Mac menu item to make text bigger in the view menu.">
-          Make Text Bigger
+        <message name="IDS_TEXT_BIGGER_MAC" desc="The Mac menu item to zoom in on the page in the view menu.">
+          Zoom In
         </message>
-        <message name="IDS_TEXT_DEFAULT_MAC" desc="The Mac menu item to make text default in the view menu.">
-          Make Text Default
+        <message name="IDS_TEXT_DEFAULT_MAC" desc="The Mac menu item to make the page actual size in the view menu.">
+          Actual Size
         </message>
-        <message name="IDS_TEXT_SMALLER_MAC" desc="The Mac menu item to make text smaller in the view menu.">
-          Make Text Smaller
+        <message name="IDS_TEXT_SMALLER_MAC" desc="The Mac menu item to zoom out on the in the view menu.">
+          Zoom Out
         </message>
         <message name="IDS_TEXT_ENCODING_MAC" desc="The Mac menu item for the text encoding submenu in the view menu.">
           Text Encoding
@@ -4945,7 +4942,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <!-- Bookmarks menu -->
         <message name="IDS_BOOKMARK_CURRENT_PAGE_MAC" desc="The Mac menu item for booking the current page in the bookmark menu.">
-          Bookmark Current Page...
+          Bookmark This Page...
         </message>
         <!-- Window menu -->
         <message name="IDS_MINIMIZE_WINDOW_MAC" desc="The Mac menu item for minimize the window menu.">
@@ -4955,10 +4952,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Zoom
         </message>
         <message name="IDS_NEXT_TAB_MAC" desc="The Mac menu item for next tab in the window menu.">
-          Next Tab
+          Select Next Tab
         </message>
         <message name="IDS_PREV_TAB_MAC" desc="The Mac menu item for previous tab in the window menu.">
-          Previous Tab
+          Select Previous Tab
         </message>
         <message name="IDS_SHOW_DOWNLOADS_MAC" desc="The Mac menu item to show downloads in the window menu.">
           Downloads
