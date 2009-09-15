@@ -35,9 +35,11 @@ extern const char kAboutBrowserCrash[];
 extern const char kAboutCacheURL[];
 extern const char kAboutNetInternalsURL[];
 extern const char kAboutCrashURL[];
+extern const char kAboutCreditsURL[];
 extern const char kAboutHangURL[];
 extern const char kAboutMemoryURL[];
 extern const char kAboutShorthangURL[];
+extern const char kAboutTermsURL[];
 
 // chrome: URLs (including schemes). Should be kept in sync with the
 // components below.

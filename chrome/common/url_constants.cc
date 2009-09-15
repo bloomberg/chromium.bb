@@ -28,9 +28,11 @@ const char kAboutBlankURL[] = "about:blank";
 const char kAboutCacheURL[] = "about:cache";
 const char kAboutNetInternalsURL[] = "about:net-internals";
 const char kAboutCrashURL[] = "about:crash";
+const char kAboutCreditsURL[] = "about:credits";
 const char kAboutHangURL[] = "about:hang";
 const char kAboutMemoryURL[] = "about:memory";
 const char kAboutShorthangURL[] = "about:shorthang";
+const char kAboutTermsURL[] = "about:terms";
 
 // Use an obfuscated URL to make this nondiscoverable, we only want this
 // to be used for testing.

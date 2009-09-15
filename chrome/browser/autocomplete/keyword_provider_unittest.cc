@@ -116,8 +116,8 @@ TEST_F(KeywordProviderTest, Edit) {
 TEST_F(KeywordProviderTest, URL) {
   test_data<GURL> url_cases[] = {
     // No query input -> empty destination URL.
-    {L"z",               1, {GURL("")}},
-    {L"z    \t",         1, {GURL("")}},
+    {L"z",               1, {GURL()}},
+    {L"z    \t",         1, {GURL()}},
 
     // Check that tokenization only collapses whitespace between first tokens
     // and query input, but not rest of URL, is escaped.

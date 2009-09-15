@@ -3,6 +3,7 @@
 // LICENSE file.
 
 #include "chrome/browser/browser.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "net/base/mock_host_resolver.h"
 
@@ -36,7 +37,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoTabsInPopups) {
   EXPECT_EQ(1, popup_browser->tab_count());
 
   // Now try opening another tab in the popup browser.
-  popup_browser->AddTabWithURL(GURL("about:blank"), GURL(),
+  popup_browser->AddTabWithURL(GURL(chrome::kAboutBlankURL), GURL(),
                                PageTransition::TYPED, true, -1, NULL);
 
   // The popup should still only have one tab.
@@ -52,7 +53,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoTabsInPopups) {
   EXPECT_EQ(1, app_browser->tab_count());
 
   // Now try opening another tab in the app browser.
-  app_browser->AddTabWithURL(GURL("about:blank"), GURL(),
+  app_browser->AddTabWithURL(GURL(chrome::kAboutBlankURL), GURL(),
                              PageTransition::TYPED, true, -1, NULL);
 
   // The popup should still only have one tab.
@@ -68,7 +69,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NoTabsInPopups) {
   EXPECT_EQ(1, app_popup_browser->tab_count());
 
   // Now try opening another tab in the app popup browser.
-  app_popup_browser->AddTabWithURL(GURL("about:blank"), GURL(),
+  app_popup_browser->AddTabWithURL(GURL(chrome::kAboutBlankURL), GURL(),
                                    PageTransition::TYPED, true, -1, NULL);
 
   // The popup should still only have one tab.

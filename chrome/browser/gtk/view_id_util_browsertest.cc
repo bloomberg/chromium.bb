@@ -5,6 +5,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/gtk/view_id_util.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
 
 class ViewIDTest : public InProcessBrowserTest {
@@ -35,7 +36,7 @@ IN_PROC_BROWSER_TEST_F(ViewIDTest, Delegate) {
   CheckViewID(VIEW_ID_TAB_0, true);
   CheckViewID(VIEW_ID_TAB_1, false);
 
-  browser()->OpenURL(GURL("about:blank"), GURL(""),
+  browser()->OpenURL(GURL(chrome::kAboutBlankURL), GURL(),
                      NEW_BACKGROUND_TAB, PageTransition::TYPED);
 
   CheckViewID(VIEW_ID_TAB_0, true);

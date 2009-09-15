@@ -28,6 +28,7 @@
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/testing_browser_process.h"
 #include "chrome/test/ui_test_utils.h"
 #include "sandbox/src/dep.h"
@@ -172,9 +173,8 @@ HTTPTestServer* InProcessBrowserTest::StartHTTPServer() {
 Browser* InProcessBrowserTest::CreateBrowser(Profile* profile) {
   Browser* browser = Browser::Create(profile);
 
-  browser->AddTabWithURL(
-      GURL("about:blank"), GURL(), PageTransition::START_PAGE, true, -1, false,
-           NULL);
+  browser->AddTabWithURL(GURL(chrome::kAboutBlankURL), GURL(),
+                         PageTransition::START_PAGE, true, -1, false, NULL);
 
   // Wait for the page to finish loading.
   ui_test_utils::WaitForNavigation(

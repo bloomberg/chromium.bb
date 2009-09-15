@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/libxml_utils.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/automated_ui_tests/automated_ui_tests.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -346,7 +347,7 @@ bool AutomatedUITest::DoAction(const std::string& action) {
   } else if (LowerCaseEqualsASCII(action, "javascriptconsole")) {
     did_complete_action = JavaScriptConsole();
   } else if (LowerCaseEqualsASCII(action, "navigate")) {
-    std::string url = "about:blank";
+    std::string url = chrome::kAboutBlankURL;
     if (init_reader_.NodeAttribute("url", &url)) {
       xml_writer_.AddAttribute("url", url);
     }
@@ -624,7 +625,7 @@ bool AutomatedUITest::FuzzyTestDialog(int num_actions) {
 
 bool AutomatedUITest::ForceCrash() {
   scoped_refptr<TabProxy> tab(GetActiveTab());
-  GURL test_url("about:crash");
+  GURL test_url(chrome::kAboutCrashURL);
   bool did_timeout;
   tab->NavigateToURLWithTimeout(test_url, 1, kDebuggingTimeoutMsec,
                                 &did_timeout);

@@ -18,6 +18,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/views/restart_message_box.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/installer/util/install_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -36,10 +37,6 @@ namespace {
 // part of the background, so we have to hard code the width to make sure
 // the version field doesn't overlap it.
 const int kVersionFieldWidth = 195;
-
-// The URLs that you navigate to when clicking the links in the About dialog.
-const wchar_t* const kAcknowledgements = L"about:credits";
-const wchar_t* const kTOS = L"about:terms";
 
 // These are used as placeholder text around the links in the text in the about
 // dialog.
@@ -65,7 +62,7 @@ std::wstring StringSubRange(const std::wstring& text, size_t start,
 
 namespace browser {
 
-// Declared in browser_dialogs.h so that others don't need to depend on our .h. 
+// Declared in browser_dialogs.h so that others don't need to depend on our .h.
 void ShowAboutChromeView(views::Widget* parent,
                          Profile* profile) {
   views::Window::CreateChromeWindow(parent->GetNativeView(), gfx::Rect(),
@@ -699,11 +696,11 @@ void AboutChromeView::LinkActivated(views::Link* source,
                                     int event_flags) {
   GURL url;
   if (source == terms_of_service_url_)
-    url = GURL(kTOS);
+    url = GURL(chrome::kAboutTermsURL);
   else if (source == chromium_url_)
     url = GURL(l10n_util::GetString(IDS_CHROMIUM_PROJECT_URL));
   else if (source == open_source_url_)
-    url = GURL(kAcknowledgements);
+    url = GURL(chrome::kAboutCreditsURL);
   else
     NOTREACHED() << "Unknown link source";
 

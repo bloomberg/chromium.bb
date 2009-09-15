@@ -1728,7 +1728,7 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
   // JavaScript.
   bool is_fork =
       // Must start from a tab showing about:blank, which is later redirected.
-      GURL(frame->url()) == GURL("about:blank") &&
+      GURL(frame->url()) == GURL(chrome::kAboutBlankURL) &&
       // Must be the first real navigation of the tab.
       GetHistoryBackListCount() < 1 &&
       GetHistoryForwardListCount() < 1 &&
@@ -2007,7 +2007,7 @@ void RenderView::didCreateDocumentElement(WebFrame* frame) {
 
   // Notify the browser about non-blank documents loading in the top frame.
   GURL url = frame->url();
-  if (url.is_valid() && url.spec() != "about:blank") {
+  if (url.is_valid() && url.spec() != chrome::kAboutBlankURL) {
     if (frame == webview()->GetMainFrame())
       Send(new ViewHostMsg_DocumentAvailableInMainFrame(routing_id_));
   }

@@ -24,6 +24,7 @@
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
+#include "chrome/common/url_constants.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 
@@ -494,7 +495,7 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
   TreeViewColumnSetVisible(treeview_, kTaskManagerPrivateMem, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerProcessID, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerGoatsTeleported, false);
-  
+
   g_object_unref(process_list_);
   g_object_unref(process_list_sort_);
 }
@@ -617,7 +618,7 @@ void TaskManagerGtk::ActivateFocusedTab() {
 void TaskManagerGtk::OnLinkActivated() {
   Browser* browser = BrowserList::GetLastActive();
   DCHECK(browser);
-  browser->OpenURL(GURL("about:memory"), GURL(), NEW_FOREGROUND_TAB,
+  browser->OpenURL(GURL(chrome::kAboutMemoryURL), GURL(), NEW_FOREGROUND_TAB,
                    PageTransition::LINK);
   // In case the browser window is minimzed, show it. If this is an application
   // or popup, we can only have one tab, hence we need to process this in a

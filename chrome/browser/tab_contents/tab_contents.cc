@@ -878,7 +878,7 @@ bool TabContents::FocusLocationBarByDefault() {
   if (dom_ui)
     return dom_ui->focus_location_bar_by_default();
   NavigationEntry* entry = controller_.GetActiveEntry();
-  if (entry && entry->url() == GURL("about:blank"))
+  if (entry && entry->url() == GURL(chrome::kAboutBlankURL))
     return true;
   return false;
 }

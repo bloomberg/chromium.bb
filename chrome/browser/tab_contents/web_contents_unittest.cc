@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"
 #include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -206,7 +207,7 @@ class TabContentsTest : public RenderViewHostTestHarness {
 // Test to make sure that title updates get stripped of whitespace.
 TEST_F(TabContentsTest, UpdateTitle) {
   ViewHostMsg_FrameNavigate_Params params;
-  InitNavigateParams(&params, 0, GURL("about:blank"));
+  InitNavigateParams(&params, 0, GURL(chrome::kAboutBlankURL));
 
   NavigationController::LoadCommittedDetails details;
   controller().RendererDidNavigate(params, &details);
@@ -555,7 +556,7 @@ TEST_F(TabContentsTest, NavigationEntryContentStateNewWindow) {
 
   // When opening a new window, it is navigated to about:blank internally.
   // Currently, this results in two DidNavigate events.
-  const GURL url("about:blank");
+  const GURL url(chrome::kAboutBlankURL);
   ViewHostMsg_FrameNavigate_Params params1;
   InitNavigateParams(&params1, 1, url);
   contents()->TestDidNavigate(orig_rvh, params1);

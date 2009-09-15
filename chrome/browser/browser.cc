@@ -2592,8 +2592,9 @@ TabContents* Browser::BuildRestoredTab(
     return new_tab;
   } else {
     // No navigations. Create a tab with about:blank.
-    return CreateTabContentsForURL(GURL("about:blank"), GURL(), profile_,
-                                   PageTransition::START_PAGE, false, NULL);
+    return CreateTabContentsForURL(GURL(chrome::kAboutBlankURL), GURL(),
+                                   profile_, PageTransition::START_PAGE,
+                                   false, NULL);
   }
 }
 

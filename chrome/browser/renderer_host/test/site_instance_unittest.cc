@@ -10,6 +10,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -246,9 +247,9 @@ TEST_F(SiteInstanceTest, IsSameWebSite) {
   GURL url_foo_https = GURL("https://foo/a.html");
   GURL url_foo_port = GURL("http://foo:8080/a.html");
   GURL url_javascript = GURL("javascript:alert(1);");
-  GURL url_crash = GURL("about:crash");
-  GURL url_hang = GURL("about:hang");
-  GURL url_shorthang = GURL("about:shorthang");
+  GURL url_crash = GURL(chrome::kAboutCrashURL);
+  GURL url_hang = GURL(chrome::kAboutHangURL);
+  GURL url_shorthang = GURL(chrome::kAboutShorthangURL);
 
   // Same scheme and port -> same site.
   EXPECT_TRUE(SiteInstance::IsSameWebSite(url_foo, url_foo2));

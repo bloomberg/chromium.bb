@@ -6,6 +6,7 @@
 
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/ui/ui_test.h"
@@ -113,7 +114,7 @@ TEST_F(LoginPromptTest, TestTwoAuths) {
   scoped_refptr<TabProxy> basic_tab(GetActiveTabProxy());
   NavigateTab(basic_tab.get(), server->TestServerPageW(L"auth-basic"));
 
-  AppendTab(GURL("about:blank"));
+  AppendTab(GURL(chrome::kAboutBlankURL));
   scoped_refptr<TabProxy> digest_tab(GetActiveTabProxy());
   NavigateTab(digest_tab.get(), server->TestServerPageW(L"auth-digest"));
 

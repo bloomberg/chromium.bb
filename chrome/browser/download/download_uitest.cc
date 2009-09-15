@@ -266,7 +266,7 @@ TEST_F(DownloadTest, PerWindowShelf) {
   EXPECT_TRUE(WaitForDownloadShelfVisible(browser.get()));
 
   // Open a second tab
-  browser->AppendTab(GURL(""));
+  browser->AppendTab(GURL());
   WaitUntilTabCount(2);
 
   // Hide shelf

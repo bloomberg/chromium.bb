@@ -15,6 +15,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/gtk_util.h"
+#include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -22,10 +23,6 @@
 #include "webkit/glue/webkit_glue.h"
 
 namespace {
-
-// The URLs that you navigate to when clicking the links in the About dialog.
-const char* const kAcknowledgements = "about:credits";
-const char* const kTOS = "about:terms";
 
 // Left or right margin.
 const int kPanelHorizMargin = 13;
@@ -205,7 +202,7 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
                    const_cast<char*>(GetChromiumUrl()));
   g_signal_connect(chromium_url_appears_first ? second_link : first_link,
                    "clicked", G_CALLBACK(OnLinkButtonClick),
-                   const_cast<char*>(kAcknowledgements));
+                   const_cast<char*>(chrome::kAboutCreditsURL));
 
   GtkWidget* license_hbox = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(license_hbox), license_chunk1,
@@ -251,7 +248,7 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   gtk_box_pack_start(GTK_BOX(tos_hbox), tos_chunk2, FALSE, FALSE, 0);
 
   g_signal_connect(tos_link, "clicked", G_CALLBACK(OnLinkButtonClick),
-                   const_cast<char*>(kTOS));
+    const_cast<char*>(chrome::kAboutTermsURL));
   gtk_box_pack_start(GTK_BOX(vbox), tos_hbox, TRUE, TRUE, 0);
 #endif
 
