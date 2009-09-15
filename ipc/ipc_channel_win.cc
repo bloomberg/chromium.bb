@@ -71,7 +71,13 @@ void Channel::ChannelImpl::Close() {
   }
   if (waited) {
     // We want to see if we block the message loop for too long.
-    UMA_HISTOGRAM_TIMES("AsyncIO.IPCChannelClose", base::Time::Now() - start);
+    // There is a potential race condition here as this function can run from
+    // multiple threads, which causes a DCHECK to fire at times from the
+    // StatisticsRecorder object indicating that the histogram is being
+    // registered multiple times.
+    // Commenting out this UMA call for now.
+    // Bug http://code.google.com/p/chromium/issues/detail?id=21827
+    // UMA_HISTOGRAM_TIMES("AsyncIO.IPCChannelClose", base::Time::Now() - start);
   }
 
   while (!output_queue_.empty()) {
