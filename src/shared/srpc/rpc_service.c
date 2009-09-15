@@ -291,6 +291,7 @@ int NaClSrpcServiceStringCtor(NaClSrpcService* service, const char* str) {
   const char* p;
   uint32_t i;
   uint32_t rpc_count;
+  size_t rpc_count_size_t;
 
   /* Count the number of rpc methods */
   rpc_count = 0;
@@ -302,16 +303,27 @@ int NaClSrpcServiceStringCtor(NaClSrpcService* service, const char* str) {
     }
     p = next_p + 1;
     ++rpc_count;
+    if (0 == rpc_count) {
+      /* uint32_t overflow detected. */
+      goto cleanup;
+    }
   }
+  /*
+   * The front end knows the next comparison is useless due to the range of
+   * uint32_t.  And furthermore at least one version of gcc knows that a
+   * cast doesn't really change that fact.  Hence, assign to a new variable
+   * of size_t type.
+   */
+  rpc_count_size_t = (size_t) rpc_count;
   /* Allocate and clear the descriptor array */
-  if (rpc_count >= SIZE_T_MAX / sizeof(*methods)) {
+  if (rpc_count_size_t >= SIZE_T_MAX / sizeof(*methods)) {
     goto cleanup;
   }
-  methods = (NaClSrpcMethodDesc*) malloc(rpc_count * sizeof(*methods));
+  methods = (NaClSrpcMethodDesc*) malloc(rpc_count_size_t * sizeof(*methods));
   if (NULL == methods) {
     goto cleanup;
   }
-  memset(methods, 0, rpc_count * sizeof(*methods));
+  memset(methods, 0, rpc_count_size_t * sizeof(*methods));
   /* Parse the list of method descriptions */
   p = str;
   for (i = 0; i < rpc_count; ++i) {
