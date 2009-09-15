@@ -114,6 +114,9 @@ WONTFIX SKIP BUG19635 : LayoutTests/fast/dom/Window/timer-resume-on-navigation-b
 // Depends on page cache, as far as I can tell.
 WONTFIX SKIP BUG10635 : LayoutTests/fast/events/pageshow-pagehide-on-back-cached.html = TIMEOUT FAIL
 
+// No support for WebGL yet
+BUG21852 SKIP : LayoutTests/fast/canvas/webgl = FAIL
+
 // -----------------------------------------------------------------
 // FAILING TESTS
 // -----------------------------------------------------------------
