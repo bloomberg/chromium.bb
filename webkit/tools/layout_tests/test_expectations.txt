@@ -500,6 +500,74 @@ BUG20566 : LayoutTests/fast/html/keygen.html = FAIL
 BUG20566 : LayoutTests/fast/invalid/residual-style.html = FAIL
 
 // -----------------------------------------------------------------
+// Tests requiring features not currently in test_shell.
+// -----------------------------------------------------------------
+
+// requires support for layoutTestController.encodeHostName()
+BUG21814 : LayoutTests/fast/encoding/idn-security.html = FAIL
+
+// These layout tests to see if link colors change after visiting a page. They
+// does this by using layoutTestController.keepWebHistory() to turn on a
+// temporary web history. layoutTestController.keepWebHistory() is not
+// implemented in test shell.
+// This is a test tool problem, not a Chrome problem.
+BUG21888 : LayoutTests/fast/history/clicked-link-is-visited.html = FAIL
+BUG21888 : LayoutTests/fast/history/subframe-is-visited.html = FAIL
+
+// Need to implement LayoutTestController.setCacheModel
+BUG13920 : LayoutTests/fast/dom/HTMLScriptElement/nested-execution.html = FAIL
+
+// Implement layoutTestController.testRepaint()
+BUG21510 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-horizontal.html = FAIL
+BUG21510 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-strict-horizontal.html = FAIL
+BUG21510 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-strict-vertical.html = FAIL
+BUG21510 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-vertical.html = FAIL
+BUG21510 WIN LINUX : LayoutTests/fast/repaint/text-shadow-horizontal.html = FAIL
+BUG21510 WIN LINUX : LayoutTests/fast/repaint/text-shadow.html = FAIL
+
+// Implement layoutTestController.display()
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/body-background-image.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/clip-with-layout-delta.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-flow-with-floats-1.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-flow-with-floats-2.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-flow-with-floats-6.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-flow-with-floats-8.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-flow-with-floats-9.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-overflow.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/make-children-non-inline.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/overflow-outline-repaint.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/repaint/selected-replaced.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint-2.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/backgrounds/solid-color-context-restore.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/dynamic/containing-block-change.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/forms/hidden-listbox.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/forms/listbox-clip.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/overflow/hidden-scrollbar-resize.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/reflections/inline-crash.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/text/font-initial.html = FAIL
+BUG8630 WIN LINUX : pending/fast/repaint/bugzilla-6473.html = FAIL
+BUG8630 LINUX : LayoutTests/svg/custom/use-detach.svg = FAIL PASS
+BUG18772 LINUX : LayoutTests/fast/backgrounds/001.html = CRASH FAIL PASS
+
+// Need to implement layoutTestController.addUserScript.
+BUG21113 : LayoutTests/userscripts/script-run-at-end.html = FAIL
+
+// Need a setAuthorAndUserStylesEnabled method in
+// layoutTestController. Now we have preference to enable/disable user
+// styles(not work now), we still need to add a preference to enable/disable
+// styles of both author and user.
+// Deferring, we don't support user-controlled UA stylesheets (in beta)
+// Actually, gonna SKIP because it causes an additional error message in:
+// LayoutTests/fast/css/display-none-inline-style-change-crash.html   somehow
+// the message is dumped after the #EOF, which causes an additional
+// error in the header of the following test.
+BUG973468 SKIP : LayoutTests/fast/css/disabled-author-styles.html = FAIL
+
+// Need to implement clearAllDatabases in layoutTestController.
+BUG20995 SKIP : LayoutTests/storage/statement-error-callback.html = FAIL
+
+// -----------------------------------------------------------------
 // Other
 // -----------------------------------------------------------------
 
@@ -522,17 +590,6 @@ BUG21807 LINUX WIN : LayoutTests/editing/pasteboard/paste-xml.xhtml = FAIL
 // match that in the <select> option lists.
 // Low priority, unclear if test expectations are correct (see bug)
 BUG6139 : LayoutTests/fast/forms/select-writing-direction-natural.html = FAIL
-
-// requires support for layoutTestController.encodeHostName()
-BUG21814 : LayoutTests/fast/encoding/idn-security.html = FAIL
-
-// These layout tests to see if link colors change after visiting a page. They
-// does this by using layoutTestController.keepWebHistory() to turn on a
-// temporary web history. layoutTestController.keepWebHistory() is not
-// implemented in test shell.
-// This is a test tool problem, not a Chrome problem.
-BUG21888 : LayoutTests/fast/history/clicked-link-is-visited.html = FAIL
-BUG21888 : LayoutTests/fast/history/subframe-is-visited.html = FAIL
 
 // We don't support NPN_Enumerate, but don't know of any plugin
 // which depends on that functionality.  So we ignore this for beta.
@@ -738,17 +795,6 @@ BUG_JIANLI MAC LINUX : LayoutTests/fast/events/drag-to-navigate.html = TIMEOUT C
 // Function arguments object is copied for each access.
 BUG941049 : LayoutTests/fast/js/kde/function_arguments.html = FAIL
 
-// Need a setAuthorAndUserStylesEnabled method in
-// layoutTestController. Now we have preference to enable/disable user
-// styles(not work now), we still need to add a preference to enable/disable
-// styles of both author and user.
-// Deferring, we don't support user-controlled UA stylesheets (in beta)
-// Actually, gonna SKIP because it causes an additional error message in:
-// LayoutTests/fast/css/display-none-inline-style-change-crash.html   somehow
-// the message is dumped after the #EOF, which causes an additional
-// error in the header of the following test.
-BUG973468 SKIP : LayoutTests/fast/css/disabled-author-styles.html = FAIL
-
 // It looks like the upstream test is incorrectly using font-family: Times
 // instead of font-family: times new roman.  This broke when we recently moved
 // more of our font default settings to 'times new roman' from 'Times'.  This
@@ -800,9 +846,6 @@ BUG1126050 : LayoutTests/http/tests/navigation/changing-frame-hierarchy-in-onloa
 // moves the mouse around, resulting in a layout that dances around.
 // Depending upon when the snapshot is taken we get different results.
 BUG10280 WIN LINUX : LayoutTests/fast/inline/dirtyLinesForInline.html = FAIL PASS
-
-// Need to implement LayoutTestController.setCacheModel
-BUG13920 : LayoutTests/fast/dom/HTMLScriptElement/nested-execution.html = FAIL
 
 // Radial gradients don't have offset focal point
 BUG8696 WIN LINUX : LayoutTests/fast/gradients/generated-gradients.html = FAIL
@@ -1457,42 +1500,6 @@ BUG10399 MAC : LayoutTests/fast/encoding/char-encoding-mac.html = FAIL
 // because we enforce non-transparent color in Font::drawGlyphs.
 BUG700464 LINUX : LayoutTests/fast/css/hsla-color.html = FAIL
 
-// Implement layoutTestController.testRepaint()
-BUG21510 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-horizontal.html = FAIL
-BUG21510 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-strict-horizontal.html = FAIL
-BUG21510 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-strict-vertical.html = FAIL
-BUG21510 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-vertical.html = FAIL
-BUG21510 WIN LINUX : LayoutTests/fast/repaint/text-shadow-horizontal.html = FAIL
-BUG21510 WIN LINUX : LayoutTests/fast/repaint/text-shadow.html = FAIL
-
-// Implement layoutTestController.display()
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/body-background-image.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/clip-with-layout-delta.html = FAIL
-
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-flow-with-floats-1.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-flow-with-floats-2.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-flow-with-floats-6.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-flow-with-floats-8.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-flow-with-floats-9.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-overflow.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/make-children-non-inline.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/overflow-outline-repaint.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/selected-replaced.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint-2.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/backgrounds/solid-color-context-restore.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/dynamic/containing-block-change.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/forms/hidden-listbox.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/forms/listbox-clip.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/overflow/hidden-scrollbar-resize.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/reflections/inline-crash.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/text/font-initial.html = FAIL
-BUG8630 WIN LINUX : pending/fast/repaint/bugzilla-6473.html = FAIL
-
-BUG8630 LINUX : LayoutTests/svg/custom/use-detach.svg = FAIL PASS
-
-BUG18772 LINUX : LayoutTests/fast/backgrounds/001.html = CRASH FAIL PASS
-
 // Linux checksum computation produces results, different from Windows or upstream.
 BUG21386 LINUX : LayoutTests/fast/repaint/erase-overflow.html = FAIL
 BUG21386 LINUX : LayoutTests/fast/repaint/inline-block-resize.html = FAIL
@@ -2008,9 +2015,6 @@ BUG15217 MAC : LayoutTests/fast/js/switch-behaviour.html = FAIL
 // WebKit 45086:45111
 BUG15270 : LayoutTests/fast/js/excessive-comma-usage.html = FAIL
 
-// WebKit 45134:45176
-
-
 // WebKit 45247:45270
 BUG15478 SKIP : LayoutTests/fast/frames/viewsource-on-image-file.html = FAIL
 BUG15478 SKIP : LayoutTests/platform/qt/fast/events/event-sender-keydown-frame.html = FAIL
@@ -2030,7 +2034,6 @@ BUG11613 LINUX : LayoutTests/fast/overflow/scrollRevealButton.html = FAIL
 BUG15873 WIN LINUX : LayoutTests/fast/box-shadow/transform-fringing.html = FAIL
 BUG15873 WIN LINUX : LayoutTests/fast/transforms/shadows.html = FAIL
 
-
 // Webkit 45555:45558
 // This was removed from test_expectations when it was passing after the Webkit merge 45495:45535.
 // Not sure if this is a regression or some manner of flakiness.
@@ -2043,7 +2046,6 @@ BUG16162 : LayoutTests/fast/loader/subframe-navigate-during-main-frame-load.html
 BUG16675 MAC : LayoutTests/fast/dynamic/flash-replacement-test.html = FAIL
 BUG16675 MAC : LayoutTests/fast/loader/loadInProgress.html = FAIL
 BUG16675 MAC DEBUG : LayoutTests/plugins/return-error-from-new-stream-callback-in-full-frame-plugin.html = FAIL
-
 
 // WebKit merge 42738:45840
 // New test, needs baseline.
@@ -2059,7 +2061,6 @@ BUG17585 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-basic.html =
 BUG17585 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-dom.html = FAIL
 BUG17585 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-dom-attributes.html = FAIL
 BUG17585 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridDataSource-basic.html = FAIL
-
 
 // Failure since WebKit merge 45873:45916
 BUG16823 MAC : LayoutTests/editing/execCommand/4128080-2.html = FAIL
@@ -2210,8 +2211,6 @@ BUG_MBELSHE : LayoutTests/fast/js/Array-isArray.html = FAIL
 
 BUG19519 WIN DEBUG : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL PASS
 
-// Fallout from webkit 47305:47383
-
 // WebKit roll r47417:47528
 BUG19766 WIN : LayoutTests/svg/batik/text/textPosition.svg = FAIL
 BUG19766 WIN LINUX : LayoutTests/svg/batik/text/xmlSpace.svg = FAIL
@@ -2262,18 +2261,12 @@ BUG20886 WIN DEBUG : LayoutTests/fast/js/regexp-non-capturing-groups.html = CRAS
 
 BUG20898 MAC DEBUG : LayoutTests/svg/W3C-SVG-1.1/painting-marker-02-f.svg = FAIL PASS
 
-// WebKit 48001:48020
-// Need to implement clearAllDatabases in layoutTestController.
-BUG20995 SKIP : LayoutTests/storage/statement-error-callback.html = FAIL
-
 // WebKit 48020:48030
 BUG21033 : LayoutTests/fast/events/message-port-multi.html = TIMEOUT
 BUG21033 : LayoutTests/fast/dom/Window/window-postmessage-args.html = FAIL
 BUG21033 WIN LINUX : LayoutTests/fast/events/init-events.html = FAIL
 
 // WebKit 48034:48061
-// Need to implement layoutTestController.addUserScript.
-BUG21113 : LayoutTests/userscripts/script-run-at-end.html = FAIL
 // undefined pageshowEvent.persisted cause the test hangs.
 BUG21136 : LayoutTests/fast/events/pageshow-pagehide-on-back-cached-with-frames.html = TIMEOUT
 // Accessing attributes of an object created with
