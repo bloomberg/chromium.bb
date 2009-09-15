@@ -11,6 +11,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_table_model.h"
 #include "grit/generated_resources.h"
+#include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 @interface KeywordEditorCocoaController (Private)
 - (void)adjustEditingButtons;
@@ -68,6 +69,13 @@ void KeywordEditorModelObserver::OnEditedKeyword(
 }
 
 - (void)awakeFromNib {
+  // Make sure the button fits its label, but keep it the same height as the
+  // other two buttons.
+  [GTMUILocalizerAndLayoutTweaker sizeToFitView:makeDefaultButton_];
+  NSSize size = [makeDefaultButton_ frame].size;
+  size.height = NSHeight([addButton_ frame]);
+  [makeDefaultButton_ setFrameSize:size];
+
   [self adjustEditingButtons];
   [tableView_ setDoubleAction:@selector(editKeyword:)];
   [tableView_ setTarget:self];
