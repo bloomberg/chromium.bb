@@ -2279,12 +2279,12 @@
             'browser/views/autocomplete/autocomplete_popup_gtk.h'
           ],
         }],
-	['OS=="freebsd"', {
-	  'dependencies': [
+        ['OS=="freebsd"', {
+          'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:nss',
-	  ],
-	}],
+          ],
+        }],
         ['OS=="mac"', {
           'sources!': [
             'browser/automation/automation_provider_list_generic.cc',
@@ -2947,6 +2947,7 @@
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
+            '../sandbox/sandbox.gyp:sandbox',
           ],
         }],
         # Windows-specific rules.
@@ -4018,7 +4019,7 @@
         'browser/chromeos/chromeos_version_loader_unittest.cc',
         'browser/chromeos/pipe_reader_unittest.cc',
         'browser/chromeos/external_cookie_handler_unittest.cc',
-	'browser/chromeos/gview_request_interceptor_unittest.cc',
+        'browser/chromeos/gview_request_interceptor_unittest.cc',
         # It is safe to list */cocoa/* files in the "common" file list
         # without an explicit exclusion since gyp is smart enough to
         # exclude them from non-Mac builds.
@@ -4286,7 +4287,7 @@
             # on linux, though.
             'browser/download/download_manager_unittest.cc',
             'browser/views/bookmark_context_menu_test.cc',
-	    'browser/gtk/options/cookies_view_unittest.cc',
+            'browser/gtk/options/cookies_view_unittest.cc',
             # Compact Language Detection (cld) is not supported in linux yet.
             '../third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
           ],
@@ -4305,9 +4306,9 @@
              ['exclude', 'browser/gtk/bookmark_editor_gtk_unittest\\.cc$'],
              ['exclude', 'browser/gtk/go_button_gtk_unittest\\.cc$'],
              ['exclude', 'browser/gtk/tabs/tab_renderer_gtk_unittest\\.cc$'],
-	     ['exclude', 'browser/gtk/options/cookies_view_unittest\\.cc$'],
-	     ['exclude', 'browser/gtk/options/languages_page_gtk_unittest\\.cc$'],
-	     ['exclude', 'browser/gtk/gtk_theme_provider_unittest\\.cc$'],
+             ['exclude', 'browser/gtk/options/cookies_view_unittest\\.cc$'],
+             ['exclude', 'browser/gtk/options/languages_page_gtk_unittest\\.cc$'],
+             ['exclude', 'browser/gtk/gtk_theme_provider_unittest\\.cc$'],
           ],
         }],
         ['OS=="mac"', {
@@ -5415,9 +5416,9 @@
                 'app/keystone_glue.h',
                 'app/keystone_glue.m',
               ],
-	      'sources!': [
-	        '<@(browser_tests_sources_exclude_on_mac)',
-       	      ],
+              'sources!': [
+                '<@(browser_tests_sources_exclude_on_mac)',
+                     ],
               # TODO(mark): We really want this for all non-static library targets,
               # but when we tried to pull it up to the common.gypi level, it broke
               # other things like the ui, startup, and page_cycler tests. *shrug*
@@ -5659,7 +5660,7 @@
         },
         {
           'target_name': 'interactive_ui_tests_dll',
-	  # 'product_name': 'interactive_ui_tests',
+          # 'product_name': 'interactive_ui_tests',
           'type': 'shared_library',
           'msvs_guid': '04116FAF-DA17-46EE-B108-971FCF0F0AFC',
           'dependencies': [

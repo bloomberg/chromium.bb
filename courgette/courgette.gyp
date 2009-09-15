@@ -94,6 +94,17 @@
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
       ],
+      'conditions': [
+        [ 'OS == "linux" or OS == "freebsd"', {
+          'dependencies': [
+            # Workaround for gyp bug 69.
+            # Needed to handle the #include chain:
+            #   base/test_suite.h
+            #   gtk/gtk.h
+            '../build/linux/system.gyp:gtk',
+          ],
+        }],
+      ],
     },
    {
       'target_name': 'courgette_fuzz',
@@ -106,6 +117,17 @@
         'courgette_lib',
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
+      ],
+      'conditions': [
+        [ 'OS == "linux" or OS == "freebsd"', {
+          'dependencies': [
+            # Workaround for gyp bug 69.
+            # Needed to handle the #include chain:
+            #   base/test_suite.h
+            #   gtk/gtk.h
+            '../build/linux/system.gyp:gtk',
+          ],
+        }],
       ],
     },
   ],

@@ -148,6 +148,12 @@
                 '../..',  # The chromium 'src' directory.
               ],
             },
+            'link_settings': {
+              'libraries': [
+                # We need dl for dlopen() and friends.
+                '-ldl',
+              ],
+            },
             'actions': [
               {
                 'action_name': 'generate_stubs',

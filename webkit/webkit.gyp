@@ -1094,8 +1094,9 @@
       'conditions': [
         ['OS=="linux" or OS=="freebsd"', {
           'dependencies': [
-            '../build/linux/system.gyp:x11',
+            '../build/linux/system.gyp:fontconfig',
             '../build/linux/system.gyp:gtk',
+            '../build/linux/system.gyp:x11',
           ],
           'include_dirs': [
             'api/public/x11',

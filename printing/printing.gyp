@@ -68,6 +68,12 @@
           }, {  # else: OS=="win"
             'sources/': [['exclude', '_posix\\.cc$']]
         }],
+        ['OS=="linux"', {
+          'dependencies': [
+            # For FT_Init_FreeType and friends.
+            '../build/linux/system.gyp:freetype2',
+          ],
+        }],
       ],
     },
     {
@@ -101,7 +107,6 @@
         ],
         ['OS=="linux"', {
             'dependencies': [
-              '../build/linux/system.gyp:fontconfig',
               '../build/linux/system.gyp:gtk',
            ],
         }],
