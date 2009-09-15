@@ -44,13 +44,6 @@
             },
           },
         },
-        'conditions': [
-          ['OS=="win"', {
-            'defines': [
-              ['PERFTOOLS_DLL_DECL', '']
-            ],
-          }],
-        ],
       },
       'sources': [
         'config.h',
@@ -77,6 +70,7 @@
         'tcmalloc/src/internal_logging.cc',
         'tcmalloc/src/internal_logging.h',
         'tcmalloc/src/linked_list.h',
+        'tcmalloc/src/malloc_extension.cc',
         'tcmalloc/src/malloc_hook.cc',
         'tcmalloc/src/malloc_hook-inl.h',
         'tcmalloc/src/page_heap.cc',
@@ -126,8 +120,6 @@
         # tcmalloc forked files
         'allocator_shim.cc',
         'generic_allocators.cc',
-        'malloc_extension.cc',
-        'google/malloc_extension.h',
         'page_heap.cc',
         'page_heap.h',
         'port.cc',
@@ -149,8 +141,6 @@
         'generic_allocators.cc',
         'tcmalloc.cc',
         'win_allocator.cc',
-        'tcmalloc/src/malloc_extension.cc',
-        'tcmalloc/src/google/malloc_extension.h',
       ],
       'msvs_settings': {
         # TODO(sgk):  merge this with build/common.gypi settings
@@ -174,9 +164,6 @@
       },
       'conditions': [
         ['OS=="win"', {
-          'defines': [
-            ['PERFTOOLS_DLL_DECL', '']
-          ],
           'dependencies': [
             'libcmt',
           ],
