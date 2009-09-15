@@ -215,8 +215,11 @@ namespace WebKit {
         // Styling -------------------------------------------------------------
 
         // Insert the given text as a STYLE element at the beginning of the
-        // document.
-        virtual bool insertStyleText(const WebString&) = 0;
+        // document. |elementId| can be empty, but if specified then it is used
+        // as the id for the newly inserted element (replacing an existing one
+        // with the same id, if any).
+        virtual bool insertStyleText(const WebString& styleText,
+                                     const WebString& elementId) = 0;
 
 
         // Navigation ----------------------------------------------------------
