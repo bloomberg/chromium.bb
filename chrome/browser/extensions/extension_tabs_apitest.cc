@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-// TODO(asargent): http://crbug.com/20828
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Tabs) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs) {
   ASSERT_TRUE(RunExtensionTest("tabs")) << message_;
 }

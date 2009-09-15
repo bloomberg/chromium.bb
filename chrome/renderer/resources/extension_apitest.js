@@ -48,17 +48,17 @@ var chrome = chrome || {};
     chrome.test.notifyPass();
     complete();
   }
-
+  
   var pendingCallbacks = 0;
 
-  function callbackAdded() {
+  chrome.test.callbackAdded = function () {
     pendingCallbacks++;
-  };
 
-  function callbackCompleted() {
-    pendingCallbacks--;
-    if (pendingCallbacks == 0) {
-      chrome.test.succeed();
+    return function() {
+      pendingCallbacks--;
+      if (pendingCallbacks == 0) {
+        chrome.test.succeed();
+      }
     }
   };
 
@@ -148,7 +148,7 @@ var chrome = chrome || {};
     if (func) {
       chrome.test.assertEq(typeof(func), 'function');
     }
-    callbackAdded();
+    var callbackCompleted = chrome.test.callbackAdded();
 
     return function() {
       if (expectedError == null) {
@@ -167,7 +167,7 @@ var chrome = chrome || {};
   };
 
   chrome.test.listenOnce = function(event, func) {
-    callbackAdded();
+    var callbackCompleted = chrome.test.callbackAdded();
     var listener = function() {
       event.removeListener(listener);
       safeFunctionApply(func, arguments);
@@ -177,14 +177,13 @@ var chrome = chrome || {};
   };
   
   chrome.test.listenForever = function(event, func) {
-    callbackAdded();
-    
+    var callbackCompleted = chrome.test.callbackAdded();
+ 
     var listener = function() {
       safeFunctionApply(func, arguments);
     };
 
-    var done = {};
-    done.doneListening = function() {
+    var done = function() {
       event.removeListener(listener);
       callbackCompleted();
     };

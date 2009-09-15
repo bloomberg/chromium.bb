@@ -16,9 +16,8 @@ var pass = chrome.test.callbackPass;
 var assertEq = chrome.test.assertEq;
 var assertTrue = chrome.test.assertTrue;
 
-// Called by relative.html during onload.
-function relativePageLoaded() {
-  chrome.test.succeed();
+function pageUrl(letter) {
+  return chrome.extension.getURL(letter + ".html");
 }
 
 chrome.test.runTests([
@@ -56,10 +55,10 @@ chrome.test.runTests([
       assertTrue(win.id > 0);
       secondWindowId = win.id;
       // Create first window.
-      chrome.tabs.create({"windowId" : firstWindowId, "url" : "chrome://a"},
+      chrome.tabs.create({"windowId" : firstWindowId, "url" : pageUrl("a")},
                          pass(function() {
         // Create second window.
-        chrome.tabs.create({"windowId" : secondWindowId, "url" : "chrome://b"},
+        chrome.tabs.create({"windowId" : secondWindowId, "url" :pageUrl("b")},
                            pass());
       }));
     }));
@@ -80,7 +79,7 @@ chrome.test.runTests([
       }
       assertEq("about:blank", tabs[0].url);
       assertEq("chrome://newtab/", tabs[1].url);
-      assertEq("chrome://a/", tabs[2].url);
+      assertEq(pageUrl("a"), tabs[2].url);
       testTabId = tabs[2].id;
     }));
   },
@@ -94,20 +93,20 @@ chrome.test.runTests([
         assertEq(i, tabs[i].index);
       }
       assertEq("chrome://newtab/", tabs[0].url);
-      assertEq("chrome://b/", tabs[1].url);
+      assertEq(pageUrl("b"), tabs[1].url);
     }));
   },
 
   function updateUrl() {
     chrome.tabs.get(testTabId, pass(function(tab) {
-      assertEq("chrome://a/", tab.url);
+      assertEq(pageUrl("a"), tab.url);
       // Update url.
-      chrome.tabs.update(testTabId, {"url": "chrome://c/"},
+      chrome.tabs.update(testTabId, {"url": pageUrl("c")},
                          pass(function(tab){
-        chrome.test.assertEq("chrome://c/", tab.url);
+        chrome.test.assertEq(pageUrl("c"), tab.url);
         // Check url.
         chrome.tabs.get(testTabId, pass(function(tab) {
-          assertEq("chrome://c/", tab.url);
+          assertEq(pageUrl("c"), tab.url);
         }));
       }));
     }));
@@ -158,9 +157,9 @@ chrome.test.runTests([
     var letters = ['a', 'b', 'c', 'd', 'e'];
     for (var i in letters) {
       chrome.tabs.create({"windowId": moveWindow1,
-                          "url": "chrome://" + letters[i]},
+                          "url": pageUrl(letters[i])},
                          pass(function(tab) {
-        var letter = tab.url[tab.url.length-2];
+        var letter = tab.url[tab.url.length-6];
         moveTabIds[letter] = tab.id;
         
         // Assert on last callback that tabs were added in the order we created
@@ -169,11 +168,11 @@ chrome.test.runTests([
           chrome.tabs.getAllInWindow(moveWindow1, pass(function(tabs) {
             assertEq(6, tabs.length);
             assertEq("chrome://newtab/", tabs[0].url);
-            assertEq("chrome://a/", tabs[1].url);
-            assertEq("chrome://b/", tabs[2].url);
-            assertEq("chrome://c/", tabs[3].url);
-            assertEq("chrome://d/", tabs[4].url);
-            assertEq("chrome://e/", tabs[5].url);
+            assertEq(pageUrl("a"), tabs[1].url);
+            assertEq(pageUrl("b"), tabs[2].url);
+            assertEq(pageUrl("c"), tabs[3].url);
+            assertEq(pageUrl("d"), tabs[4].url);
+            assertEq(pageUrl("e"), tabs[5].url);
           }));
         }
       }));
@@ -209,15 +208,15 @@ chrome.test.runTests([
     chrome.tabs.getAllInWindow(moveWindow1, pass(function(tabs) {
       assertEq(4, tabs.length);
       assertEq("chrome://newtab/", tabs[0].url);
-      assertEq("chrome://a/", tabs[1].url);
-      assertEq("chrome://e/", tabs[2].url);
-      assertEq("chrome://c/", tabs[3].url);
+      assertEq(pageUrl("a"), tabs[1].url);
+      assertEq(pageUrl("e"), tabs[2].url);
+      assertEq(pageUrl("c"), tabs[3].url);
  
       chrome.tabs.getAllInWindow(moveWindow2, pass(function(tabs) {
         assertEq(3, tabs.length);
-        assertEq("chrome://b/", tabs[0].url);
+        assertEq(pageUrl("b"), tabs[0].url);
         assertEq("chrome://newtab/", tabs[1].url);
-        assertEq("chrome://d/", tabs[2].url);
+        assertEq(pageUrl("d"), tabs[2].url);
       }));      
     }));
   },
@@ -227,7 +226,7 @@ chrome.test.runTests([
       chrome.tabs.getAllInWindow(moveWindow2,
                                  pass(function(tabs) {
         assertEq(2, tabs.length);
-        assertEq("chrome://b/", tabs[0].url);
+        assertEq(pageUrl("b"), tabs[0].url);
         assertEq("chrome://newtab/", tabs[1].url);
       }));
     }));
@@ -276,23 +275,23 @@ chrome.test.runTests([
 
   function onCreated() {
     chrome.test.listenOnce(chrome.tabs.onCreated, function(tab) {
-      assertEq("chrome://f/", tab.url);
+      assertEq(pageUrl("f"), tab.url);
     });
     
-    chrome.tabs.create({"windowId": moveWindow1, "url": "chrome://f",
+    chrome.tabs.create({"windowId": moveWindow1, "url": pageUrl("f"),
                         "selected": true}, pass(function(tab) {}));
   },
 
   function onUpdated() {
-    var listener = chrome.test.listenForever(chrome.tabs.onUpdated,
+    var onUpdatedCompleted = chrome.test.listenForever(chrome.tabs.onUpdated,
       function(tabid, info) {
         if (tabid == moveTabIds['a'] && info.status == "complete") {
-          listener.doneListening();
+          onUpdatedCompleted();
         }
       }
     );
     
-    chrome.tabs.update(moveTabIds['a'], {"url": "chrome://aa"},
+    chrome.tabs.update(moveTabIds['a'], {"url": pageUrl("f")},
                        pass());
   },
 
@@ -338,25 +337,34 @@ chrome.test.runTests([
     }));
   },
   
-  // The subsequent three tests all load relative.html, which calls
-  // this page's relativePageLoad(), which ends the test.
   function relativeUrlTabsCreate() {
+    // Will be called from relative.html
+    window.relativePageLoaded = chrome.test.callbackAdded();
+    var createCompleted = chrome.test.callbackAdded();
+
     chrome.tabs.create({windowId: firstWindowId, url: 'relative.html'}, 
       function(tab){
         testTabId = tab.id;
+        createCompleted();
       }
     );
   },
 
   function relativeUrlTabsUpdate() {
-    chrome.tabs.update(testTabId, {url: "chrome://a/"}, function(tab) {
-      chrome.test.assertEq("chrome://a/", tab.url);
+    // Will be called from relative.html
+    window.relativePageLoaded = chrome.test.callbackAdded();
+
+    chrome.tabs.update(testTabId, {url: pageUrl("a")}, function(tab) {
+      chrome.test.assertEq(pageUrl("a"), tab.url);
       chrome.tabs.update(tab.id, {url: "relative.html"}, function(tab) {  
       });
     });
   },
   
   function relativeUrlWindowsCreate() {
+    // Will be called from relative.html
+    window.relativePageLoaded = chrome.test.callbackAdded();
+ 
     chrome.windows.create({url: "relative.html"});
   }
 
