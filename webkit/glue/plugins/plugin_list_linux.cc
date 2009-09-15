@@ -115,7 +115,7 @@ void PluginList::LoadPluginsFromDir(const FilePath& path,
     FilePath orig_path = path;
     file_util::AbsolutePath(&path);
     if (DebugPluginLoading())
-      LOG(INFO) << "Resolved " << orig_path.value() << " -> " << path.value();
+      LOG(ERROR) << "Resolved " << orig_path.value() << " -> " << path.value();
 
     // Get mtime.
     file_util::FileInfo info;
@@ -132,7 +132,7 @@ void PluginList::LoadPluginsFromDir(const FilePath& path,
     }
     if (skip) {
       if (DebugPluginLoading())
-        LOG(INFO) << "Skipping duplicate instance of " << path.value();
+        LOG(ERROR) << "Skipping duplicate instance of " << path.value();
       continue;
     }
 
@@ -152,12 +152,12 @@ void PluginList::LoadPluginsFromDir(const FilePath& path,
 bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
                                   std::vector<WebPluginInfo>* plugins) {
   if (DebugPluginLoading()) {
-    LOG(INFO) << "Considering " << info.path.value()
+    LOG(ERROR) << "Considering " << info.path.value()
               << " (" << info.name << ")";
   }
   if (IsUndesirablePlugin(info)) {
     if (DebugPluginLoading())
-      LOG(INFO) << info.path.value() << " is undesirable.";
+      LOG(ERROR) << info.path.value() << " is undesirable.";
 
     // See if we have a better version of this plugin.
     for (size_t i = 0; i < plugins->size(); ++i) {
@@ -166,7 +166,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
         // Skip the current undesirable one so we can use the better one
         // we just found.
         if (DebugPluginLoading()) {
-          LOG(INFO) << "Skipping " << info.path.value() << ", preferring "
+          LOG(ERROR) << "Skipping " << info.path.value() << ", preferring "
                     << plugins->at(i).path.value();
         }
         return false;
@@ -177,7 +177,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
   // TODO(evanm): prefer the newest version of flash, etc. here?
 
   if (DebugPluginLoading())
-    LOG(INFO) << "Using " << info.path.value();
+    LOG(ERROR) << "Using " << info.path.value();
 
   return true;
 }
