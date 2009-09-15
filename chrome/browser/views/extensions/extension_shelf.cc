@@ -981,7 +981,8 @@ ExtensionShelf::Toolstrip* ExtensionShelf::ToolstripAtX(int x) {
   for (int i = 0; i < count; ++i) {
     Toolstrip* toolstrip = ToolstripAtIndex(i);
     View* view = toolstrip->GetShelfView();
-    if (x > (view->x() + view->width() + kToolstripPadding))
+    int x_mirrored = view->GetRootView()->MirroredXCoordinateInsideView(x);
+    if (x_mirrored > view->x() + view->width() + kToolstripPadding)
       continue;
     return toolstrip;
   }
