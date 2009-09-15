@@ -596,7 +596,6 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
     InitWidgets();
   }
 
-  ConnectHandlersToSignals();
   ConnectAccelerators();
 
   // Set the initial background color of widgets.
@@ -1528,6 +1527,7 @@ void BrowserWindowGtk::ConnectHandlersToSignals() {
 }
 
 void BrowserWindowGtk::InitWidgets() {
+  ConnectHandlersToSignals();
   bounds_ = GetInitialWindowBounds(window_);
 
   // This vbox encompasses all of the widgets within the browser, including the
