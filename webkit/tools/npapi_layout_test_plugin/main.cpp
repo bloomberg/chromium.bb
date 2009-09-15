@@ -143,6 +143,8 @@ void NPAPI NP_Shutdown(void)
 {
 }
 
+static void executeScript(const PluginObject* obj, const char* script);
+
 NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc, char *argn[], char *argv[], NPSavedData *saved)
 {
     if (browser->version >= 14) {
@@ -164,7 +166,8 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc, ch
                         fflush(stdout);
                     }
                 }
-            }
+            } else if (strcasecmp(argn[i], "cleardocumentduringnew") == 0)
+                executeScript(obj, "document.body.innerHTML = ''");
         }
 
         instance->pdata = obj;

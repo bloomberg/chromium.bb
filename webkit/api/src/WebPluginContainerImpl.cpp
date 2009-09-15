@@ -211,7 +211,8 @@ void WebPluginContainerImpl::invalidateRect(const WebRect& rect)
 
 void WebPluginContainerImpl::reportGeometry()
 {
-    if (!parent())
+    // We cannot compute geometry without an associated RenderObject.
+    if (!parent() || !m_element->renderer())
         return;
 
     IntRect windowRect, clipRect;
