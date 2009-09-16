@@ -1722,7 +1722,7 @@ BUG10465 LINUX : LayoutTests/fast/clip/overflow-border-radius-clip.html = FAIL
 
 // Needs rebaseline. See WebKit 41948
 BUG10468 MAC : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
-BUG10468 WIN DEBUG : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
+BUG10468 WIN : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
 
 // Mac flaky failures.
 BUG10472 MAC : LayoutTests/svg/css/glyph-orientation-rounding-test.xhtml = FAIL PASS
@@ -2328,3 +2328,6 @@ BUG21919 WIN : LayoutTests/http/tests/security/mixedContent/insecure-css-in-main
 
 // Flaky. The width of containing RenderBlocks sometimes becomes larger
 BUG21958 WIN MAC LINUX DEBUG : LayoutTests/svg/hixie/error/012.xml = FAIL PASS
+
+// WK roll 48399:48423 (brettw)
+BUG22014 : LayoutTests/http/tests/loading/redirect-with-no-location-crash.html = FAIL
