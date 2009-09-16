@@ -4,15 +4,24 @@
 
 #include "printing/pdf_ps_metafile_linux.h"
 
+#include <fcntl.h>
 #include <string>
 #include <vector>
 
+#include "base/file_descriptor_posix.h"
 #include "base/file_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 typedef struct _cairo cairo_t;
 
-TEST(PdfTest, ThreePages) {
+class PdfPsTest : public testing::Test {
+ protected:
+  base::FileDescriptor DevNullFD() {
+    return base::FileDescriptor(open("/dev/null", O_WRONLY), true);
+  }
+};
+
+TEST_F(PdfPsTest, Pdf) {
   // Tests in-renderer constructor.
   printing::PdfPsMetafile pdf(printing::PdfPsMetafile::PDF);
   EXPECT_TRUE(pdf.Init());
@@ -53,10 +62,10 @@ TEST(PdfTest, ThreePages) {
   EXPECT_EQ(header.find("%PDF", 0), 0u);
 
   // Tests if we can save data.
-  EXPECT_TRUE(pdf.SaveTo(FilePath("/dev/null")));
+  EXPECT_TRUE(pdf.SaveTo(DevNullFD()));
 }
 
-TEST(PsTest, TwoPages) {
+TEST_F(PdfPsTest, Ps) {
   // Tests in-renderer constructor.
   printing::PdfPsMetafile ps(printing::PdfPsMetafile::PS);
   EXPECT_TRUE(ps.Init());
@@ -97,5 +106,5 @@ TEST(PsTest, TwoPages) {
   EXPECT_EQ(header.find("%!PS", 0), 0u);
 
   // Tests if we can save data.
-  EXPECT_TRUE(ps.SaveTo(FilePath("/dev/null")));
+  EXPECT_TRUE(ps.SaveTo(DevNullFD()));
 }

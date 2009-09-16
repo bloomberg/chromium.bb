@@ -12,6 +12,10 @@
 typedef struct _cairo_surface cairo_surface_t;
 typedef struct _cairo cairo_t;
 
+namespace base {
+class FileDescriptor;
+}
+
 class FilePath;
 
 namespace printing {
@@ -77,10 +81,10 @@ class PdfPsMetafile {
   // Returns true only when success.
   bool GetData(void* dst_buffer, size_t dst_buffer_size) const;
 
-  // Saves PDF/PS contents stored in buffer |all_pages_| into |filename| on
-  // the disk.
+  // Saves PDF/PS contents stored in buffer |all_pages_| into the file
+  // associated with |fd|.
   // This function should ONLY be called after PDF/PS file is closed.
-  bool SaveTo(const FilePath& filename) const;
+  bool SaveTo(const base::FileDescriptor& fd) const;
 
  private:
   // Cleans up all resources.

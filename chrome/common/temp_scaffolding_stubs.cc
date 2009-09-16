@@ -13,12 +13,8 @@
 #include "chrome/browser/rlz/rlz.h"
 
 #if defined(OS_LINUX)
-#include "base/path_service.h"
 #include "chrome/browser/dock_info.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/render_messages.h"
-#include "printing/native_metafile.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -326,47 +322,3 @@ void BookmarkManager::Show(Profile* profile) {
 
 #endif
 
-//------------------------------------------------------------------------------
-
-#if defined(OS_LINUX)
-// TODO(myhuang): This is a quick hack for testing purpose. We should implement
-// PrintViewManager and other related classes later on Linux.
-namespace printing {
-
-void PrintViewManager::DidPrintPage(
-    const ViewHostMsg_DidPrintPage_Params& params) {
-  base::SharedMemory shared_buf(params.metafile_data_handle, true);
-  if (!shared_buf.Map(params.data_size)) {
-    NOTREACHED() << "couldn't map";
-    owner_.Stop();
-    return;
-  }
-
-  // The only format we can use now is PDF since Cairo needs to create a
-  // temporary file for a PostScript surface. We do not allow disk I/O in the
-  // renderer.
-  scoped_ptr<NativeMetafile> metafile(
-      new NativeMetafile(printing::NativeMetafile::PDF));
-
-  if (!metafile->Init(shared_buf.memory(), params.data_size)) {
-    NOTREACHED() << "Invalid metafile header";
-    shared_buf.Unmap();
-    owner_.Stop();
-    return;
-  }
-
-  // Save the PDF file to default download location.
-  // NOTE: Existing file will be overwritten.
-  FilePath default_save_path;
-  if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &default_save_path)) {
-    NOTREACHED();
-  }
-  FilePath save_filename =
-      default_save_path.Append(FilePath("chromium_printing_test.pdf"));
-  metafile->SaveTo(save_filename);
-  shared_buf.Unmap();
-}
-
-}  // namespace printing
-
-#endif

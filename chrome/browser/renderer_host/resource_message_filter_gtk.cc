@@ -4,17 +4,36 @@
 
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 
+#include <fcntl.h>
+#include <map>
+
+#include "app/l10n_util.h"
 #include "base/clipboard.h"
+#include "base/file_util.h"
 #include "base/gfx/gtk_native_view_id_manager.h"
+#include "base/path_service.h"
+#include "base/singleton.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/x11_util.h"
+#include "grit/generated_resources.h"
 
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/x11/WebScreenInfoFactory.h"
 
 using WebKit::WebScreenInfo;
 using WebKit::WebScreenInfoFactory;
+
+namespace {
+
+typedef std::map<int, FilePath> FdMap;
+
+struct PrintingFileDescriptorMap {
+  FdMap map;
+};
+
+}  // namespace
 
 // We get null window_ids passed into the two functions below; please see
 // http://crbug.com/9060 for more details.
@@ -209,4 +228,48 @@ void ResourceMessageFilter::OnClipboardReadHTML(Clipboard::Buffer buffer,
   ui_loop()->PostTask(FROM_HERE, NewRunnableMethod(
         this, &ResourceMessageFilter::DoOnClipboardReadHTML, buffer,
         reply_msg));
+}
+
+// Called on the IO thread.
+void ResourceMessageFilter::OnAllocateTempFileForPrinting(
+    base::FileDescriptor* temp_file_fd, int* fd_in_browser) {
+  temp_file_fd->fd = *fd_in_browser = -1;
+
+  FilePath path;
+  if (!file_util::CreateTemporaryFile(&path))
+    return;
+
+  int fd = open(path.value().c_str(), O_WRONLY);
+  if (fd < 0)
+    return;
+
+  // We need to remember the FilePath of the temporary file because we need
+  // it when we want to rename/move it, and more importantly, to print it
+  // when we print by using gtk_print_job_set_source_file().
+  FdMap* map = &Singleton<PrintingFileDescriptorMap>::get()->map;
+  FdMap::iterator it = map->find(fd);
+  if (it != map->end()) {
+    NOTREACHED() << "The file descriptor is in use. fd=" << fd;
+    return;
+  }
+
+  (*map)[fd] = path;
+  temp_file_fd->fd = *fd_in_browser = fd;
+  temp_file_fd->auto_close = true;
+}
+
+// Called on the IO thread.
+void ResourceMessageFilter::OnTempFileForPrintingWritten(int fd_in_browser) {
+  FdMap* map = &Singleton<PrintingFileDescriptorMap>::get()->map;
+  FdMap::iterator it = map->find(fd_in_browser);
+  if (it == map->end()) {
+    NOTREACHED() << "Got a file descriptor that we didn't pass to the "
+                    "renderer: " << fd_in_browser;
+    return;
+  }
+
+  // TODO(estade): print it.
+
+  // Erase the entry in the map.
+  map->erase(it);
 }

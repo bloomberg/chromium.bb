@@ -16,6 +16,8 @@
 
 #include <map>
 
+#include "base/eintr_wrapper.h"
+#include "base/file_descriptor_posix.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/singleton.h"
@@ -471,7 +473,7 @@ bool PdfPsMetafile::GetData(void* dst_buffer, size_t dst_buffer_size) const {
   return true;
 }
 
-bool PdfPsMetafile::SaveTo(const FilePath& filename) const {
+bool PdfPsMetafile::SaveTo(const base::FileDescriptor& fd) const {
   // We need to check at least these two members to ensure that either Init()
   // has been called to initialize |all_pages_|, or metafile has been closed.
   // Passing these two checks also implies that surface_, page_surface_, and
@@ -479,15 +481,21 @@ bool PdfPsMetafile::SaveTo(const FilePath& filename) const {
   DCHECK(!context_);
   DCHECK(!all_pages_.empty());
 
-  const unsigned int data_size = GetDataSize();
-  const unsigned int bytes_written =
-      file_util::WriteFile(filename, all_pages_.data(), data_size);
-  if (bytes_written != data_size) {
-    DLOG(ERROR) << "Failed to save file: " << filename.value();
+  if (fd.fd < 0) {
+    DLOG(ERROR) << "Invalid file descriptor!";
     return false;
   }
 
-  return true;
+  bool success = true;
+  if (file_util::WriteFileDescriptor(fd.fd, all_pages_.data(),
+                                     GetDataSize()) < 0) {
+    DLOG(ERROR) << "Failed to save file with fd " << fd.fd;
+    success = false;
+  }
+
+  if (fd.auto_close)
+    HANDLE_EINTR(close(fd.fd));
+  return success;
 }
 
 void PdfPsMetafile::CleanUpAll() {

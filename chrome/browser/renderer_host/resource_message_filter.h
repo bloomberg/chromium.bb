@@ -52,6 +52,9 @@ struct WebScreenInfo;
 }
 
 struct ViewHostMsg_ScriptedPrint_Params;
+#if defined(OS_LINUX)
+struct ViewHostMsg_DidPrintPage_Params;
+#endif
 
 // This class filters out incoming IPC messages for network requests and
 // processes them on the IPC thread.  As a result, network requests are not
@@ -204,10 +207,11 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 #endif
 
 #if defined(OS_LINUX)
-  // Used to ask the browser allocate a block of shared memory for the renderer
+  // Used to ask the browser allocate a temporary file for the renderer
   // to fill in resulting PDF in renderer.
-  void OnAllocateShareMemory(size_t buffer_size,
-                             base::SharedMemoryHandle* browser_handle);
+  void OnAllocateTempFileForPrinting(base::FileDescriptor* temp_file_fd,
+                                     int* fd_in_browser);
+  void OnTempFileForPrintingWritten(int fd_in_browser);
 #endif
 
   void OnResourceTypeStats(const WebKit::WebCache::ResourceTypeStats& stats);

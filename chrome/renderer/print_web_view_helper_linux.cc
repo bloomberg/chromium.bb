@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/print_web_view_helper.h"
 
+#include "base/file_descriptor_posix.h"
 #include "base/logging.h"
 #include "chrome/common/render_messages.h"
 #include "printing/native_metafile.h"
@@ -53,64 +54,49 @@ void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
 
   // TODO(myhuang): Send ViewHostMsg_DidGetPrintedPagesCount.
 
-  if (page_count) {
-    // We only can use PDF in the renderer because Cairo needs to create a
-    // temporary file for a PostScript surface.
-    printing::NativeMetafile metafile(printing::NativeMetafile::PDF);
-    metafile.Init();
+  if (page_count == 0)
+    return;
 
-    ViewMsg_PrintPage_Params print_page_params;
-    print_page_params.params = params.params;
-    const gfx::Size& canvas_size = prep_frame_view.GetPrintCanvasSize();
-    if (params.pages.empty()) {
-      for (int i = 0; i < page_count; ++i) {
-        print_page_params.page_number = i;
-        PrintPage(print_page_params, canvas_size, frame, &metafile);
-      }
-    } else {
-      for (size_t i = 0; i < params.pages.size(); ++i) {
-        print_page_params.page_number = params.pages[i];
-        PrintPage(print_page_params, canvas_size, frame, &metafile);
-      }
+  // We only can use PDF in the renderer because Cairo needs to create a
+  // temporary file for a PostScript surface.
+  printing::NativeMetafile metafile(printing::NativeMetafile::PDF);
+  metafile.Init();
+
+  ViewMsg_PrintPage_Params print_page_params;
+  print_page_params.params = params.params;
+  const gfx::Size& canvas_size = prep_frame_view.GetPrintCanvasSize();
+  if (params.pages.empty()) {
+    for (int i = 0; i < page_count; ++i) {
+      print_page_params.page_number = i;
+      PrintPage(print_page_params, canvas_size, frame, &metafile);
     }
-
-    metafile.Close();
-
-    // Get the size of the resulting metafile.
-    unsigned int buf_size = metafile.GetDataSize();
-    DCHECK_GT(buf_size, 0u);
-
-    ViewHostMsg_DidPrintPage_Params did_page_params;
-
-    // Ask the browser create the shared memory for us.
-    if (Send(new ViewHostMsg_AllocateShareMemory(
-            routing_id(),
-            buf_size,
-            &did_page_params.metafile_data_handle))) {
-      if (did_page_params.metafile_data_handle.fd > -1) {
-        base::SharedMemory shared_buf(did_page_params.metafile_data_handle,
-                                      false);
-        if (shared_buf.Map(buf_size)) {
-          if (metafile.GetData(shared_buf.memory(), buf_size)) {
-            // FIXME(myhuang): This is for testing purpose at this moment.
-            // We use this message to pass the resulting PDF to the browser,
-            // and the browser will save this PDF on the disk.
-            did_page_params.data_size = buf_size;
-            Send(new ViewHostMsg_DidPrintPage(routing_id(), did_page_params));
-          } else {
-            NOTREACHED() << "GetData() failed";
-          }
-          shared_buf.Unmap();
-        } else {
-          NOTREACHED() << "Buffer mapping failed";
-        }
-      } else {
-        NOTREACHED() << "Buffer allocation failed";
-      }
-    } else {
-      NOTREACHED() << "Buffer allocation failed";
+  } else {
+    for (size_t i = 0; i < params.pages.size(); ++i) {
+      print_page_params.page_number = params.pages[i];
+      PrintPage(print_page_params, canvas_size, frame, &metafile);
     }
   }
+
+  metafile.Close();
+
+  // Get the size of the resulting metafile.
+  unsigned int buf_size = metafile.GetDataSize();
+  DCHECK_GT(buf_size, 0u);
+
+  base::FileDescriptor fd;
+  int fd_in_browser = -1;
+
+  // Ask the browser to open a file for us.
+  if (!Send(new ViewHostMsg_AllocateTempFileForPrinting(&fd,
+                                                        &fd_in_browser))) {
+    return;
+  }
+
+  if (!metafile.SaveTo(fd))
+    return;
+
+  // Tell the browser we've finished writing the file.
+  Send(new ViewHostMsg_TempFileForPrintingWritten(fd_in_browser));
 }
 
 void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,

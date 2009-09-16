@@ -67,13 +67,9 @@ class PrintViewManager : public RenderViewHostDelegate::Printing {
     NOTIMPLEMENTED();
   }
 
-#if defined(OS_LINUX)
-  virtual void DidPrintPage(const ViewHostMsg_DidPrintPage_Params& params);
-#else
   virtual void DidPrintPage(const ViewHostMsg_DidPrintPage_Params& params) {
     NOTIMPLEMENTED();
   }
-#endif
 
  private:
   TabContents& owner_;

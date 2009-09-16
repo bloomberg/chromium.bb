@@ -339,8 +339,10 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_DuplicateSection, OnDuplicateSection)
 #endif
 #if defined(OS_LINUX)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateShareMemory,
-                          OnAllocateShareMemory)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateTempFileForPrinting,
+                          OnAllocateTempFileForPrinting)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_TempFileForPrintingWritten,
+                          OnTempFileForPrintingWritten)
 #endif
       IPC_MESSAGE_HANDLER(ViewHostMsg_ResourceTypeStats, OnResourceTypeStats)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ResolveProxy, OnResolveProxy)
@@ -703,29 +705,6 @@ void ResourceMessageFilter::OnDuplicateSection(
   // (even if it is not mapped)
   base::SharedMemory shared_buf(renderer_handle, true, handle());
   shared_buf.GiveToProcess(base::GetCurrentProcessHandle(), browser_handle);
-}
-#endif
-
-#if defined(OS_LINUX)
-void ResourceMessageFilter::OnAllocateShareMemory(
-    size_t buffer_size,
-    base::SharedMemoryHandle* browser_handle) {
-  // We don't want to allocate a super big chunk of memory.
-  // 32MB should be large enough for printing on Linux.
-  if (buffer_size > 32 * 1024 * 1024) {
-    *browser_handle = base::SharedMemory::NULLHandle();
-    NOTREACHED() << "Buffer too large: " << buffer_size;
-    return;
-  }
-  base::SharedMemory shared_buf;
-  shared_buf.Create(L"", false, false, buffer_size);
-  if (shared_buf.Map(buffer_size)) {
-    shared_buf.GiveToProcess(base::GetCurrentProcessHandle(), browser_handle);
-  } else {
-    *browser_handle = base::SharedMemory::NULLHandle();
-    NOTREACHED() << "Cannot map buffer";
-    return;
-  }
 }
 #endif
 

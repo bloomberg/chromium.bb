@@ -1396,11 +1396,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
 #endif
 
 #if defined(OS_LINUX)
-  // Asks the browser create a block of shared memory for the renderer to fill
+  // Asks the browser create a temporary file for the renderer to fill
   // in resulting NativeMetafile in printing.
-  IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_AllocateShareMemory,
-                             size_t /* buffer size */,
-                             base::SharedMemoryHandle /* browser handle */)
+  IPC_SYNC_MESSAGE_CONTROL0_2(ViewHostMsg_AllocateTempFileForPrinting,
+                              base::FileDescriptor /* temp file fd */,
+                              int /* fd in browser*/)
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_TempFileForPrintingWritten,
+                       int /* fd in browser */)
 #endif
 
   // Provide the browser process with information about the WebCore resource
