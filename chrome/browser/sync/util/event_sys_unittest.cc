@@ -152,7 +152,7 @@ class ThreadTester : public EventListener<TestEvent> {
   }
   ~ThreadTester() {
     pair_->event_channel()->RemoveListener(this);
-    for (int i = 0; i < threads_.size(); i++) {
+    for (size_t i = 0; i < threads_.size(); i++) {
       CHECK(pthread_join(threads_[i].thread, NULL) == 0);
       delete threads_[i].completed;
     }
@@ -229,7 +229,7 @@ class ThreadTester : public EventListener<TestEvent> {
     sleep(1);
 #endif
 
-    for (int i = 0; i < threads_.size(); i++) {
+    for (size_t i = 0; i < threads_.size(); i++) {
       if (*(threads_[i].completed))
         LOG(FATAL) << "A test thread exited too early.";
     }

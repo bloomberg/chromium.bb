@@ -1533,24 +1533,3 @@ TEST_F(SyncableDirectoryTest, Bug1509232) {
 }
 
 }  // namespace syncable
-
-#ifdef OS_WIN
-class LocalModule : public CAtlExeModuleT<LocalModule> { };
-LocalModule module_;
-
-int main(int argc, char* argv[]) {
-  testing::InitGoogleTest(&argc, argv);
-
-  // TODO(chron) Add method to change random seed.
-  const int32 test_random_seed = time(NULL);
-  cout << "Random seed: " << test_random_seed << endl;
-  LOG(INFO) << "Random seed: " << test_random_seed << endl;
-  srand(test_random_seed);
-
-  // Necessary for NewCallback, scoped to main
-  base::AtExitManager at_exit_manager;
-
-  int result = RUN_ALL_TESTS();
-  return result;
-}
-#endif

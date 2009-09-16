@@ -41,10 +41,11 @@
 
         # 'files/talk/p2p/client/socketmonitor.cc',  # unneeded
         # 'files/talk/p2p/client/socketmonitor.h',   # unneeded
-        #'files/talk/base/Equifax_Secure_Global_eBusiness_CA-1.h', # openssl
-        #'files/talk/base/basictypes.h',  # overridden
-        #'files/talk/base/openssladapter.cc',  # openssl
-        #'files/talk/base/openssladapter.h',   # openssl
+        # 'files/talk/base/Equifax_Secure_Global_eBusiness_CA-1.h', # openssl
+        # 'files/talk/base/basictypes.h',  # overridden
+        # 'files/talk/base/natserver_main.cc',  # has a main()
+        # 'files/talk/base/openssladapter.cc',  # openssl
+        # 'files/talk/base/openssladapter.h',   # openssl
         'files/talk/base/asynchttprequest.cc',
         'files/talk/base/asynchttprequest.h',
         'files/talk/base/asyncpacketsocket.cc',
@@ -95,7 +96,6 @@
         'files/talk/base/messagequeue.h',
         'files/talk/base/natserver.cc',
         'files/talk/base/natserver.h',
-        'files/talk/base/natserver_main.cc',
         'files/talk/base/natsocketfactory.cc',
         'files/talk/base/natsocketfactory.h',
         'files/talk/base/nattypes.cc',

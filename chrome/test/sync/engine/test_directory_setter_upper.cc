@@ -6,7 +6,7 @@
 
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/util/compat-file.h"
+#include "chrome/browser/sync/util/compat_file.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
