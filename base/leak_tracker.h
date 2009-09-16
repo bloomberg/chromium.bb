@@ -5,13 +5,18 @@
 #ifndef BASE_LEAK_TRACKER_H_
 #define BASE_LEAK_TRACKER_H_
 
+// Only enable leak tracking in debug builds.
 #ifndef NDEBUG
+#define ENABLE_LEAK_TRACKER
+#endif
+
+#ifdef ENABLE_LEAK_TRACKER
 #include "base/debug_util.h"
 #include "base/linked_list.h"
 #include "base/logging.h"
-#endif
+#endif  // ENABLE_LEAK_TRACKER
 
-// LeakTracker is a debug helper to verify that all instances of a class
+// LeakTracker is a helper to verify that all instances of a class
 // have been destroyed.
 //
 // It is particularly useful for classes that are bound to a single thread --
@@ -36,13 +41,13 @@
 // then the allocation callstack for each leaked instances is dumped to
 // the error log.
 //
-// In RELEASE mode the check has no effect.
+// If ENABLE_LEAK_TRACKER is not defined, then the check has no effect.
 
 namespace base {
 
-#ifdef NDEBUG
+#ifndef ENABLE_LEAK_TRACKER
 
-// In release mode we do nothing.
+// If leak tracking is disabled, do nothing.
 template<typename T>
 class LeakTracker {
  public:
@@ -52,7 +57,7 @@ class LeakTracker {
 
 #else
 
-// In debug mode we track where the object was allocated from.
+// If leak tracking is enabled we track where the object was allocated from.
 
 template<typename T>
 class LeakTracker : public LinkNode<LeakTracker<T> > {
@@ -75,7 +80,7 @@ class LeakTracker : public LinkNode<LeakTracker<T> > {
       LOG(ERROR) << "Leaked " << node << " which was allocated by:";
       node->value()->allocation_stack_.PrintBacktrace();
     }
-    DCHECK_EQ(0, count);
+    CHECK(0 == count);
   }
 
   static int NumLiveInstances() {
@@ -99,7 +104,7 @@ class LeakTracker : public LinkNode<LeakTracker<T> > {
   StackTrace allocation_stack_;
 };
 
-#endif  // NDEBUG
+#endif  // ENABLE_LEAK_TRACKER
 
 }  // namespace base
 

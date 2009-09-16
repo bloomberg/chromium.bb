@@ -18,10 +18,10 @@ class ClassB {
   base::LeakTracker<ClassB> leak_tracker_;
 };
 
-#ifdef NDEBUG
+#ifndef ENABLE_LEAK_TRACKER
 
-// In RELEASE mode, leak tracking is disabled.
-TEST(LeakTrackerTest, ReleaseMode) {
+// If leak tracking is disabled, we should do nothing.
+TEST(LeakTrackerTest, NotEnabled) {
   EXPECT_EQ(-1, base::LeakTracker<ClassA>::NumLiveInstances());
   EXPECT_EQ(-1, base::LeakTracker<ClassB>::NumLiveInstances());
 
@@ -36,8 +36,7 @@ TEST(LeakTrackerTest, ReleaseMode) {
 
 #else
 
-// In DEBUG mode, leak tracking should work.
-TEST(LeakTrackerTest, DebugMode) {
+TEST(LeakTrackerTest, Basic) {
   {
     ClassA a1;
 
@@ -67,7 +66,7 @@ TEST(LeakTrackerTest, DebugMode) {
 
 // Try some orderings of create/remove to hit different cases in the linked-list
 // assembly.
-TEST(LeakTrackerTest, DebugMode_LinkedList) {
+TEST(LeakTrackerTest, LinkedList) {
   EXPECT_EQ(0, base::LeakTracker<ClassB>::NumLiveInstances());
 
   scoped_ptr<ClassA> a1(new ClassA);
@@ -98,11 +97,11 @@ TEST(LeakTrackerTest, DebugMode_LinkedList) {
   EXPECT_EQ(0, base::LeakTracker<ClassA>::NumLiveInstances());
 }
 
-TEST(LeakTrackerTest, DebugMode_NoOpCheckForLeaks) {
+TEST(LeakTrackerTest, NoOpCheckForLeaks) {
   // There are no live instances of ClassA, so this should do nothing.
   base::LeakTracker<ClassA>::CheckForLeaks();
 }
 
-#endif  // NDEBUG
+#endif  // ENABLE_LEAK_TRACKER
 
 }  // namespace
