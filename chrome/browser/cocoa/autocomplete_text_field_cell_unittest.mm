@@ -135,6 +135,31 @@ TEST_F(AutocompleteTextFieldCellTest, KeywordString) {
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
 }
 
+TEST_F(AutocompleteTextFieldCellTest, SecurityIcon) {
+  AutocompleteTextFieldCell* cell =
+      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
+
+  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+
+  NSImage* image1 = [NSImage imageNamed:@"NSApplicationIcon"];
+  // Setting a security icon will need a reset.
+  [cell setHintIcon:image1];
+  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+  [cell setFieldEditorNeedsReset:NO];
+  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+
+  // Changing the security icon needs a reset.
+  NSImage* image2 = [NSImage imageNamed:@"NSComputer"];
+  [cell setHintIcon:image2];
+  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+  [cell setFieldEditorNeedsReset:NO];
+  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+
+  // Changing to an identical security icon doesn't need a reset.
+  [cell setHintIcon:image2];
+  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+}
+
 // Test that transitions between various modes set the reset flag.
 TEST_F(AutocompleteTextFieldCellTest, Transitions) {
   AutocompleteTextFieldCell* cell =
@@ -261,6 +286,22 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   EXPECT_EQ(NSMinX(bounds), NSMinX(textFrame));
   EXPECT_EQ(NSMaxX(bounds), NSMaxX(textFrame));
   EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
+
+  // Hint icon takes up space on the right
+  [cell setHintIcon:[NSImage imageNamed:@"NSComputer"]];
+  textFrame = [cell textFrameForFrame:bounds];
+  EXPECT_FALSE(NSIsEmptyRect(textFrame));
+  EXPECT_TRUE(NSContainsRect(bounds, textFrame));
+  EXPECT_LT(NSMaxX(textFrame), NSMaxX(bounds));
+  EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
+
+  // Search hint text takes precedence over the hint icon; the text frame
+  // should be smaller in order to accomodate the text that is wider than
+  // the icon.
+  [cell setSearchHintString:@"Search hint"];
+  NSRect textFrameWithHintText = [cell textFrameForFrame:bounds];
+  EXPECT_TRUE(NSContainsRect(textFrame, textFrameWithHintText));
+  EXPECT_LT(NSWidth(textFrameWithHintText), NSWidth(textFrame));
 }
 
 }  // namespace

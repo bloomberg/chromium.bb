@@ -39,6 +39,9 @@ const NSInteger kKeywordHintImageBaseline = -6;
 // use that.
 const NSInteger kBaselineOffset = 4;
 
+// The amount of padding on either side reserved for drawing the hint icon
+const NSInteger kHintIconHorizontalPad = 5;
+
 }  // namespace
 
 @implementation AutocompleteTextFieldCell
@@ -156,6 +159,15 @@ const NSInteger kBaselineOffset = 4;
   }
 }
 
+- (void)setHintIcon:(NSImage*)icon {
+  if (icon != hintIcon_) {
+    hintIcon_.reset([icon retain]);
+    if (!keywordString_ && !hintString_) {
+      fieldEditorNeedsReset_ = YES;
+    }
+  }
+}
+
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   DCHECK([controlView isFlipped]);
   [[NSColor colorWithCalibratedWhite:1.0 alpha:0.25] set];
@@ -219,6 +231,12 @@ const NSInteger kBaselineOffset = 4;
       textFrame.origin.x += keywordWidth;
       textFrame.size.width = NSMaxX(cellFrame) - NSMinX(textFrame);
     }
+  } else if (hintIcon_) {
+    CGFloat width = [hintIcon_ size].width;
+    width += kHintIconHorizontalPad * 2;
+    if (width < NSWidth(cellFrame)) {
+      textFrame.size.width -= width;
+    }
   }
 
   return textFrame;
@@ -265,11 +283,38 @@ const NSInteger kBaselineOffset = 4;
   [keywordString_.get() drawInRect:infoFrame];
 }
 
+- (void)drawHintIconWithFrame:(NSRect)cellFrame
+                           inView:(NSView*)controlView {
+  // We'll draw the entire image
+  NSRect imageRect = NSZeroRect;
+  imageRect.size = [hintIcon_ size];
+
+  // Move the rect that we're drawing into to the far right
+  cellFrame.origin.x += cellFrame.size.width - imageRect.size.width;
+  // Add back the padding
+  cellFrame.origin.x -= kHintIconHorizontalPad;
+
+  // Center the image vertically in the frame
+  cellFrame.origin.y +=
+      floor((cellFrame.size.height - imageRect.size.height) / 2);
+
+  // Set the drawing size to the image size
+  cellFrame.size = imageRect.size;
+
+  [hintIcon_ setFlipped:[controlView isFlipped]];
+  [hintIcon_ drawInRect:cellFrame
+               fromRect:imageRect
+              operation:NSCompositeSourceOver
+               fraction:1.0];
+}
+
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   if (hintString_) {
     [self drawHintWithFrame:cellFrame inView:controlView];
   } else if (keywordString_) {
     [self drawKeywordWithFrame:cellFrame inView:controlView];
+  } else if (hintIcon_) {
+    [self drawHintIconWithFrame:cellFrame inView:controlView];
   }
 
   [super drawInteriorWithFrame:[self textFrameForFrame:cellFrame]

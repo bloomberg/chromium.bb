@@ -37,6 +37,9 @@
   // YES if the info cell has been changed in a way which would result
   // in the cell needing to be laid out again.
   BOOL fieldEditorNeedsReset_;
+
+  // Icon that represents the state of the SSL connection
+  scoped_nsobject<NSImage> hintIcon_;
 }
 
 @property BOOL fieldEditorNeedsReset;
@@ -56,6 +59,8 @@
 - (void)setSearchHintString:(NSString*)aString;
 - (void)clearKeywordAndHint;
 
+- (void)setHintIcon:(NSImage*)icon;
+
 // Return the portion of the cell to show the text cursor over.
 - (NSRect)textCursorFrameForFrame:(NSRect)cellFrame;
 
@@ -69,5 +74,6 @@
 
 @property(readonly) NSAttributedString* keywordString;
 @property(readonly) NSAttributedString* hintString;
+@property(readonly) NSImage* hintIcon;
 
 @end

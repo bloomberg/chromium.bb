@@ -57,6 +57,7 @@ LocationBarViewMac::LocationBarViewMac(
       field_(field),
       disposition_(CURRENT_TAB),
       profile_(profile),
+      toolbar_model_(toolbar_model),
       transition_(PageTransition::TYPED) {
 }
 
@@ -108,6 +109,7 @@ void LocationBarViewMac::SaveStateToContents(TabContents* contents) {
 
 void LocationBarViewMac::Update(const TabContents* contents,
                                 bool should_restore_state) {
+  SetSecurityIcon(toolbar_model_->GetIcon());
   // AutocompleteEditView restores state if the tab is non-NULL.
   edit_view_->Update(should_restore_state ? contents : NULL);
 }
@@ -222,7 +224,8 @@ void LocationBarViewMac::OnChanged() {
 }
 
 void LocationBarViewMac::OnInputInProgress(bool in_progress) {
-  NOTIMPLEMENTED();
+  toolbar_model_->set_input_in_progress(in_progress);
+  Update(NULL, false);
 }
 
 void LocationBarViewMac::OnSetFocus() {
@@ -261,4 +264,24 @@ NSImage* LocationBarViewMac::GetTabButtonImage() {
     }
   }
   return tab_button_image_;
+}
+
+void LocationBarViewMac::SetSecurityIcon(ToolbarModel::Icon security_icon) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+  switch (security_icon) {
+    case ToolbarModel::LOCK_ICON:
+      [cell setHintIcon:rb.GetNSImageNamed(IDR_LOCK)];
+      break;
+    case ToolbarModel::WARNING_ICON:
+      [cell setHintIcon:rb.GetNSImageNamed(IDR_WARNING)];
+      break;
+    case ToolbarModel::NO_ICON:
+      [cell setHintIcon:nil];
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  [field_ resetFieldEditorFrameIfNeeded];
 }

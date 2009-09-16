@@ -12,6 +12,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 #include "chrome/browser/location_bar.h"
+#include "chrome/browser/toolbar_model.h"
 
 @class AutocompleteTextField;
 class BubblePositioner;
@@ -84,6 +85,9 @@ class LocationBarViewMac : public AutocompleteEditController,
                             NSImage* image);
 
  private:
+  // Set the SSL icon we should be showing.
+  void SetSecurityIcon(ToolbarModel::Icon icon);
+
   scoped_ptr<AutocompleteEditViewMac> edit_view_;
 
   CommandUpdater* command_updater_;  // Weak, owned by Browser.
@@ -99,6 +103,8 @@ class LocationBarViewMac : public AutocompleteEditController,
   WindowOpenDisposition disposition_;
 
   Profile* profile_;
+
+  ToolbarModel* toolbar_model_;  // Weak, owned by Browser.
 
   // Image used in drawing keyword hint.
   scoped_nsobject<NSImage> tab_button_image_;
