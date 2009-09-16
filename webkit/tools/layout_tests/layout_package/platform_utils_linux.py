@@ -23,7 +23,7 @@ def PlatformVersion():
   minor versions, it returns ''."""
   return ''
 
-def BaselineSearchPath():
+def BaselineSearchPath(all_versions=False):
   """Returns the list of directories to search for baselines/results, in
   order of preference. Paths are relative to the top of the source tree."""
   return [path_utils.ChromiumBaselinePath(PlatformName()),

@@ -58,15 +58,15 @@ def BaselineSearchPath(platform=None):
   source tree. If parameter platform is None, returns the list for the current
   platform that the script is running on."""
   if platform is None:
-    return platform_utils.BaselineSearchPath()
+    return platform_utils.BaselineSearchPath(False)
   elif platform.startswith('mac'):
-    return platform_utils_mac.BaselineSearchPath()
+    return platform_utils_mac.BaselineSearchPath(True)
   elif platform.startswith('win'):
-    return platform_utils_win.BaselineSearchPath()
+    return platform_utils_win.BaselineSearchPath(True)
   elif platform.startswith('linux'):
-    return platform_utils_linux.BaselineSearchPath()
+    return platform_utils_linux.BaselineSearchPath(True)
   else:
-    return platform_utils.BaselineSearchPath()
+    return platform_utils.BaselineSearchPath(False)
 
 def ExpectedBaseline(filename, suffix, platform=None, all_baselines=False):
   """Given a test name, finds where the baseline result is located. The

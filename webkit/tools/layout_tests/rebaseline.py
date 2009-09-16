@@ -36,7 +36,17 @@ from test_types import image_diff
 from test_types import text_diff
 
 BASELINE_SUFFIXES = ['.txt', '.png', '.checksum']
-REBASELINE_PLATFORM_ORDER = ['mac', 'win', 'linux']
+REBASELINE_PLATFORM_ORDER = ['mac', 'win', 'win-xp', 'linux']
+ARCHIVE_DIR_NAME_DICT = {'win': 'webkit-dbg-vista',
+                         'win-vista': 'webkit-dbg-vista',
+                         'win-xp': 'webkit-rel',
+                         'mac': 'webkit-rel-mac5',
+                         'linux': 'webkit-rel-linux',
+                         'win-canary': 'webkit-dbg-vista',
+                         'win-vista-canary': 'webkit-dbg-vista',
+                         'win-xp-canary': 'webkit-rel-webkit-org',
+                         'mac-canary': 'webkit-rel-mac-webkit-org',
+                         'linux-canary': 'webkit-rel-linux-webkit-org'}
 
 def RunShell(command, print_output=False):
   """Executes a command and returns the output.
@@ -249,6 +259,24 @@ class Rebaseliner(object):
     logging.info('Latest revision: "%s"', revisions[len(revisions) - 1])
     return revisions[len(revisions) - 1]
 
+  def _GetArchiveDirName(self, platform, webkit_canary):
+    """Get name of the layout test archive directory.
+
+    Returns:
+      Directory name or
+      None on failure
+    """
+
+    if webkit_canary:
+      platform += '-canary'
+
+    if platform in ARCHIVE_DIR_NAME_DICT:
+      return ARCHIVE_DIR_NAME_DICT[platform]
+    else:
+      logging.error('Cannot find platform key %s in archive directory name '
+                    'dictionary', platform)
+      return None
+
   def _GetArchiveUrl(self):
     """Generate the url to download latest layout test archive.
 
@@ -257,23 +285,14 @@ class Rebaseliner(object):
       None on failure
     """
 
-    platform_name = self._options.buildbot_platform_dir_basename
-    if self._options.webkit_canary:
-      if self._platform == 'mac':
-        platform_name += '-mac-webkit-org'
-      elif self._platform == 'linux':
-        platform_name += '-linux-webkit-org'
-      else:
-        platform_name += '-webkit-org'
-    else:
-      if self._platform == 'mac':
-        platform_name += '-mac5'
-      elif self._platform == 'linux':
-        platform_name += '-linux'
+    dir_name = self._GetArchiveDirName(self._platform,
+                                       self._options.webkit_canary)
+    if not dir_name:
+      return None
 
-    logging.debug('Buildbot platform dir name: "%s"', platform_name)
+    logging.debug('Buildbot platform dir name: "%s"', dir_name)
 
-    url_base = '%s/%s/' % (self._options.archive_url, platform_name)
+    url_base = '%s/%s/' % (self._options.archive_url, dir_name)
     latest_revision = self._GetLatestRevision(url_base)
     if latest_revision is None or latest_revision <= 0:
       return None
@@ -845,7 +864,7 @@ def main():
                            help='include debug-level logging.')
 
   option_parser.add_option('-p', '--platforms',
-                           default='mac,win,linux',
+                           default='mac,win,win-xp,linux',
                            help=('Comma delimited list of platforms that need '
                                  'rebaselining.'))
 
@@ -858,11 +877,6 @@ def main():
   option_parser.add_option('-t', '--archive_name',
                            default='layout-test-results',
                            help='Layout test result archive name.')
-
-  option_parser.add_option('-n', '--buildbot_platform_dir_basename',
-                           default='webkit-rel',
-                           help=('Base name of buildbot platform directory '
-                                 'that stores the layout test results.'))
 
   option_parser.add_option('-w', '--webkit_canary',
                            action='store_true',

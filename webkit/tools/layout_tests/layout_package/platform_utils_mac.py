@@ -38,7 +38,7 @@ def PlatformVersion():
 
 # TODO: We should add leopard and snowleopard to the list of paths to check
 # once we start running the tests from snowleopard.
-def BaselineSearchPath():
+def BaselineSearchPath(all_versions=False):
   """Returns the list of directories to search for baselines/results, in
   order of preference. Paths are relative to the top of the source tree."""
   return [path_utils.ChromiumBaselinePath(PlatformName()),

@@ -26,13 +26,24 @@ def PlatformVersion():
     return '-xp'
   return ''
 
-def BaselineSearchPath():
+def BaselineSearchPath(all_versions=False):
   """Returns the list of directories to search for baselines/results, in
-  order of preference. Paths are relative to the top of the source tree."""
+  order of preference. Paths are relative to the top of the source tree.
+
+  If all_versions is True, returns the full list of search directories
+  for all versions instead of the current version that the script
+  is running on. This is for case that the platform or version of
+  the search paths is different from the platform or version that the
+  script is running on. For example, the rebaseline tool may run on Mac,
+  Linux or Windows Vista to rebaseline for Windows XP, in which case,
+  it gets a full list, finds the rebaselining dir (XP) and compares
+  the XP baseline with fallback baselines.
+  """
+
   dirs = []
-  if PlatformVersion() in ("-vista", "-xp"):
+  if all_versions or PlatformVersion() in ("-vista", "-xp"):
     dirs.append(path_utils.ChromiumBaselinePath('chromium-win-vista'))
-  if PlatformVersion() == "-xp":
+  if all_versions or PlatformVersion() == "-xp":
     dirs.append(path_utils.ChromiumBaselinePath('chromium-win-xp'))
   dirs.append(path_utils.ChromiumBaselinePath('chromium-win'))
   dirs.append(path_utils.WebKitBaselinePath('win'))
