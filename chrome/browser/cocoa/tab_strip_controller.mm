@@ -288,11 +288,21 @@ static const float kIndentLeavingSpaceForControls = 64.0;
     if (contents)
       UserMetrics::RecordAction(L"CloseTab_Mouse", contents->profile());
     if ([self numberOfTabViews] > 1) {
-      // Limit the width available for laying out tabs so that tabs are not
-      // resized until a later time (when the mouse leaves the tab strip).
-      // TODO(pinkerton): re-visit when handling tab overflow.
-      NSView* penultimateTab = [self viewAtIndex:[tabArray_ count] - 2];
-      availableResizeWidth_ = NSMaxX([penultimateTab frame]);
+      bool isClosingLastTab =
+          static_cast<size_t>(index) == [tabArray_ count] - 1;
+      if (!isClosingLastTab) {
+        // Limit the width available for laying out tabs so that tabs are not
+        // resized until a later time (when the mouse leaves the tab strip).
+        // TODO(pinkerton): re-visit when handling tab overflow.
+        NSView* penultimateTab = [self viewAtIndex:[tabArray_ count] - 2];
+        availableResizeWidth_ = NSMaxX([penultimateTab frame]);
+      } else {
+        // If the rightmost tab is closed, change the available width so that
+        // another tab's close button lands below the cursor (assuming the tabs
+        // are currently below their maximum width and can grow).
+        NSView* lastTab = [self viewAtIndex:[tabArray_ count] - 1];
+        availableResizeWidth_ = NSMaxX([lastTab frame]);
+      }
       tabModel_->CloseTabContentsAt(index);
     } else {
       // Use the standard window close if this is the last tab
