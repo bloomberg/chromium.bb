@@ -108,7 +108,8 @@ AutocompleteEditViewGtk::AutocompleteEditViewGtk(
 #endif
       enter_was_pressed_(false),
       tab_was_pressed_(false),
-      paste_clipboard_requested_(false) {
+      paste_clipboard_requested_(false),
+      enter_was_inserted_(false) {
   model_->SetPopupModel(popup_view_->GetModel());
 }
 
@@ -462,8 +463,7 @@ bool AutocompleteEditViewGtk::OnAfterPossibleChange() {
   // handled by IME, then it's an unexpected change and shall be reverted here.
   // {Start|Finish}UpdatingHighlightedText() are called here to prevent the
   // PRIMARY selection from being changed.
-  if (enter_was_pressed_ &&
-      (char_inserted_ == '\n' || char_inserted_ == '\r')) {
+  if (enter_was_pressed_ && enter_was_inserted_) {
     StartUpdatingHighlightedText();
     SetTextAndSelectedRange(text_before_change_, sel_before_change_);
     FinishUpdatingHighlightedText();
@@ -597,14 +597,14 @@ gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
   // event and performing built-in operation. So in order to achieve our goal,
   // "insert-text" signal of |text_buffer_| object is intercepted, and
   // following actions are done in the signal handler:
-  // - If there is only one character in inserted text, save it in
-  //   char_inserted_.
+  // - If there is only one character in inserted text, and it's '\n' or '\r',
+  //   then set |enter_was_inserted_| to true.
   // - Filter out all new line and tab characters.
   //
-  // So if |char_inserted_| equals '\n' after calling |text_view_|'s
-  // default signal handler against an Enter key press event, then we know that
-  // the Enter key press event was handled by GtkTextView rather than IME, and
-  // can perform the special behavior for Enter key safely.
+  // So if |enter_was_inserted_| is true after calling |text_view_|'s default
+  // signal handler against an Enter key press event, then we know that the
+  // Enter key press event was handled by GtkTextView rather than IME, and can
+  // perform the special behavior for Enter key safely.
   //
   // Now the last thing is to prevent the content of omnibox from being changed
   // by GtkTextView when Enter key is pressed. As OnBeforePossibleChange() and
@@ -628,9 +628,9 @@ gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
                        event->keyval == GDK_KP_Tab) &&
                       !(event->state & GDK_CONTROL_MASK));
 
-  // Reset |char_inserted_|, which may be set in the "insert-text" signal
+  // Reset |enter_was_inserted_|, which may be set in the "insert-text" signal
   // handler, so that we'll know if an Enter key event was handled by IME.
-  char_inserted_ = 0;
+  enter_was_inserted_ = false;
 
   // Reset |paste_clipboard_requested_| to make sure we won't misinterpret this
   // key input action as a paste action.
@@ -645,8 +645,7 @@ gboolean AutocompleteEditViewGtk::HandleKeyPress(GtkWidget* widget,
   // only be triggered by pressing Tab key.
   tab_was_pressed_ = false;
 
-  if (enter_was_pressed_ &&
-      (char_inserted_ == '\n' || char_inserted_ == '\r')) {
+  if (enter_was_pressed_ && enter_was_inserted_) {
     bool alt_held = (event->state & GDK_MOD1_MASK);
     model_->AcceptInput(alt_held ? NEW_FOREGROUND_TAB : CURRENT_TAB, false);
     result = TRUE;
@@ -940,8 +939,8 @@ void AutocompleteEditViewGtk::HandleInsertText(
   // event. In this case, we save the single character to help our
   // "key-press-event" signal handler distinguish if an Enter key event is
   // handled by IME or not.
-  if (len == 1)
-    char_inserted_ = text[0];
+  if (len == 1 && (text[0] == '\n' || text[0] == '\r'))
+    enter_was_inserted_ = true;
 
   for (gint i = 0; i < len; ++i) {
     gchar c = text[i];

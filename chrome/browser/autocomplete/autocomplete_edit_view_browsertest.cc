@@ -50,6 +50,10 @@ const wchar_t kSearchTextKeys[] = {
   base::VKEY_A, base::VKEY_B, base::VKEY_C, 0
 };
 const char kSearchTextURL[] = "http://www.foo.com/search?q=abc";
+const wchar_t kSearchSingleChar[] = L"z";
+const wchar_t kSearchSingleCharKeys[] = { base::VKEY_Z, 0 };
+const char kSearchSingleCharURL[] = "http://www.foo.com/search?q=z";
+
 const char kHistoryPageURL[] = "chrome://history/#q=abc";
 
 const char kDesiredTLDHostname[] = "www.bar.com";
@@ -64,7 +68,9 @@ const char *kBlockedHostnames[] = {
   "bar",
   "*.bar.com",
   "abc",
-  "*.abc.com"
+  "*.abc.com",
+  "history",
+  "z"
 };
 
 const struct TestHistoryEntry {
@@ -380,6 +386,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DISABLED_DesiredTLD) {
 }
 
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DISABLED_AltEnter) {
+  ASSERT_NO_FATAL_FAILURE(SetupHostResolver());
   browser()->FocusLocationBar();
 
   AutocompleteEditView* edit_view = NULL;
@@ -415,6 +422,23 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DISABLED_EnterToSearch) {
   ASSERT_NO_FATAL_FAILURE(SendKey(base::VKEY_RETURN, false, false, false));
   GURL url = browser()->GetSelectedTabContents()->GetURL();
   EXPECT_STREQ(kSearchTextURL, url.spec().c_str());
+
+  // Test that entering a single character then Enter performs a search.
+  browser()->FocusLocationBar();
+  EXPECT_TRUE(edit_view->IsSelectAll());
+  ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchSingleCharKeys));
+  ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
+  ASSERT_TRUE(popup_model->IsOpen());
+  EXPECT_EQ(std::wstring(kSearchSingleChar), edit_view->GetText());
+
+  // Check if the default match result is Search Primary Provider.
+  ASSERT_EQ(AutocompleteMatch::SEARCH_WHAT_YOU_TYPED,
+            popup_model->result().default_match()->type);
+
+  // Open the default match.
+  ASSERT_NO_FATAL_FAILURE(SendKey(base::VKEY_RETURN, false, false, false));
+  url = browser()->GetSelectedTabContents()->GetURL();
+  EXPECT_STREQ(kSearchSingleCharURL, url.spec().c_str());
 }
 
 // See http://crbug.com/20934: Omnibox keyboard behavior wrong for

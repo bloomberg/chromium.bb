@@ -408,10 +408,10 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // clipboard is not empty.
   bool paste_clipboard_requested_;
 
-  // If a character is inserted, store it in this variable so that it can
-  // be used later in "key-press-event" signal handler to determine if a Tab or
-  // Enter key event is handled by IME or not.
-  char char_inserted_;
+  // Indicates if an Enter key press is inserted as text.
+  // It's used in the key press handler to determine if an Enter key event is
+  // handled by IME or not.
+  bool enter_was_inserted_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditViewGtk);
 };
