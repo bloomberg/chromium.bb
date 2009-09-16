@@ -146,6 +146,6 @@ hooks = [
     # A change to a .gyp, .gypi, or to GYP itself shound run the generator.
     "pattern": "\\.gypi?$|[/\\\\]src[/\\\\]tools[/\\\\]gyp[/\\\\]|MANIFEST$",
     "action": ["python", "build/gyp_o3d", "build/all.gyp", "--depth", ".",
-        "-D", "support_macosx_10_4=1"],
+        "-D", "mac_deployment_target=10.4"],
   },
 ]
