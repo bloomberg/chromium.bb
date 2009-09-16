@@ -57,7 +57,7 @@ TemporaryFile::TemporaryFile(const FilePath& file_to_manage)
 
 bool TemporaryFile::Create(TemporaryFile* temporary_file) {
   FilePath temporary_path;
-  if (file_util::CreateTemporaryFile(&temporary_path)) {
+  if (file_util::CreateTemporaryFileName(&temporary_path)) {
     temporary_file->Reset(temporary_path);
   } else {
     return false;
