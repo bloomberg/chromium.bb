@@ -9,7 +9,7 @@
 #include "app/gfx/path.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/notification_service.h"
-#include "third_party/Skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkPaint.h"
 #include "views/fill_layout.h"
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
