@@ -492,6 +492,50 @@
               # Chrome code are fixed.
               'WARNING_CFLAGS': ['-pedantic'],
             },
+            'target_conditions': [
+              ['_type!="static_library"', {
+                'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-search_paths_first']},
+              }],
+              ['_mac_bundle', {
+                'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
+              }],
+              ['_type=="executable"', {
+                'target_conditions': [
+                  ['mac_real_dsym == 1', {
+                    # To get a real .dSYM bundle produced by dsymutil, set the
+                    # debug information format to dwarf-with-dsym.  Since
+                    # strip_from_xcode will not be used, set Xcode to do the
+                    # stripping as well.
+                    'configurations': {
+                      'Release': {
+                        'xcode_settings': {
+                          'DEBUG_INFORMATION_FORMAT': 'dwarf-with-dsym',
+                          'DEPLOYMENT_POSTPROCESSING': 'YES',
+                          'STRIP_INSTALLED_PRODUCT': 'YES',
+                        },
+                      },
+                    },
+                  }, {  # mac_real_dsym != 1
+                    # To get a fast fake .dSYM bundle, use a post-build step to
+                    # produce the .dSYM and strip the executable.  strip_from_xcode
+                    # only operates in the Release configuration.
+                    'postbuilds': [
+                      {
+                        'variables': {
+                          # Define strip_from_xcode in a variable ending in _path
+                          # so that gyp understands it's a path and performs proper
+                          # relativization during dict merging.
+                          'strip_from_xcode_path':
+                              '../../build/mac/strip_from_xcode',
+                        },
+                        'postbuild_name': 'Strip If Needed',
+                        'action': ['<(strip_from_xcode_path)'],
+                      },
+                    ],
+                  }],
+                ],
+              }],
+            ],
           }],
         ],
         'defines': [
@@ -500,50 +544,6 @@
           'NACL_LINUX=0',
           'NACL_OSX=1',
           'NACL_WINDOWS=0',
-        ],
-        'target_conditions': [
-          ['_type!="static_library"', {
-            'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-search_paths_first']},
-          }],
-          ['_mac_bundle', {
-            'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
-          }],
-          ['_type=="executable"', {
-            'target_conditions': [
-              ['mac_real_dsym == 1', {
-                # To get a real .dSYM bundle produced by dsymutil, set the
-                # debug information format to dwarf-with-dsym.  Since
-                # strip_from_xcode will not be used, set Xcode to do the
-                # stripping as well.
-                'configurations': {
-                  'Release': {
-                    'xcode_settings': {
-                      'DEBUG_INFORMATION_FORMAT': 'dwarf-with-dsym',
-                      'DEPLOYMENT_POSTPROCESSING': 'YES',
-                      'STRIP_INSTALLED_PRODUCT': 'YES',
-                    },
-                  },
-                },
-              }, {  # mac_real_dsym != 1
-                # To get a fast fake .dSYM bundle, use a post-build step to
-                # produce the .dSYM and strip the executable.  strip_from_xcode
-                # only operates in the Release configuration.
-                'postbuilds': [
-                  {
-                    'variables': {
-                      # Define strip_from_xcode in a variable ending in _path
-                      # so that gyp understands it's a path and performs proper
-                      # relativization during dict merging.
-                      'strip_from_xcode_path':
-                          '../../build/mac/strip_from_xcode',
-                    },
-                    'postbuild_name': 'Strip If Needed',
-                    'action': ['<(strip_from_xcode_path)'],
-                  },
-                ],
-              }],
-            ],
-          }],
         ],
       },
     }],
