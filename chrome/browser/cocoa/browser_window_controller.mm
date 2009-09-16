@@ -1091,8 +1091,9 @@ willPositionSheet:(NSWindow*)sheet
   [incognitoView setWantsLayer:YES];
   [incognitoView setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
   scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
-  [shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0 alpha:0.5]];
-  [shadow setShadowOffset:NSMakeSize(0, -1)];
+  [shadow.get() setShadowColor:[NSColor colorWithCalibratedWhite:0.0
+                                                           alpha:0.5]];
+  [shadow.get() setShadowOffset:NSMakeSize(0, -1)];
   [shadow setShadowBlurRadius:2.0];
   [incognitoView setShadow:shadow];
 

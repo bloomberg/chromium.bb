@@ -319,8 +319,8 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
       scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
       NSColor *shadowColor = [color gtm_legibleTextColor];
       shadowColor = [shadowColor colorWithAlphaComponent:0.25];
-      [shadow setShadowColor:shadowColor];
-      [shadow setShadowOffset:NSMakeSize(0, -1.0)];
+      [shadow.get() setShadowColor:shadowColor];
+      [shadow.get() setShadowOffset:NSMakeSize(0, -1.0)];
       [shadow setShadowBlurRadius:1.0];
       [shadow set];
     }

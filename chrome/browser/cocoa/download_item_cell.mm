@@ -482,8 +482,8 @@ const int kCompleteAnimationDuration = 2.5;
   [context saveGraphicsState];
 
   scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
-  [shadow setShadowColor:[NSColor whiteColor]];
-  [shadow setShadowOffset:NSMakeSize(0, -1)];
+  [shadow.get() setShadowColor:[NSColor whiteColor]];
+  [shadow.get() setShadowOffset:NSMakeSize(0, -1)];
   [shadow setShadowBlurRadius:0.0];
   [shadow set];
 

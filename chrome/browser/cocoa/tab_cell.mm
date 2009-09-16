@@ -46,8 +46,8 @@
 
   scoped_nsobject<NSShadow> textShadow([[NSShadow alloc] init]);
   [textShadow setShadowBlurRadius:0.0f];
-  [textShadow setShadowColor:[textColor gtm_legibleTextColor]];
-  [textShadow setShadowOffset:NSMakeSize(0.0f, -1.0f)];
+  [textShadow.get() setShadowColor:[textColor gtm_legibleTextColor]];
+  [textShadow.get() setShadowOffset:NSMakeSize(0.0f, -1.0f)];
 
   NSDictionary* attributes =
       [NSDictionary dictionaryWithObjectsAndKeys:
