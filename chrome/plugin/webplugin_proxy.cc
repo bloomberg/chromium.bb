@@ -266,10 +266,10 @@ WebPluginResourceClient* WebPluginProxy::GetResourceClient(int id) {
   return iterator->second;
 }
 
-int WebPluginProxy::GetRendererProcessId() {
+int WebPluginProxy::GetRendererId() {
   if (channel_.get())
-    return channel_->peer_pid();
-  return 0;
+    return channel_->renderer_id();
+  return -1;
 }
 
 void WebPluginProxy::DidPaint() {

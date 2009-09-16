@@ -97,7 +97,7 @@ class PluginProcessHost : public ChildProcessHost,
   void OnGetPluginFinderUrl(std::string* plugin_finder_url);
   void OnGetCookies(uint32 request_context, const GURL& url,
                     std::string* cookies);
-  void OnAccessFiles(int process_id, const std::vector<std::string>& files,
+  void OnAccessFiles(int renderer_id, const std::vector<std::string>& files,
                      bool* allowed);
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
   void OnPluginMessage(const std::vector<uint8>& data);

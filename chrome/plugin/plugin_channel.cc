@@ -33,16 +33,23 @@ PluginChannel* PluginChannel::GetPluginChannel(int renderer_id,
   std::string channel_name = StringPrintf(
       "%d.r%d", base::GetCurrentProcId(), renderer_id);
 
-  return static_cast<PluginChannel*>(PluginChannelBase::GetChannel(
-      channel_name,
-      IPC::Channel::MODE_SERVER,
-      ClassFactory,
-      ipc_message_loop,
-      false));
+  PluginChannel* channel =
+      static_cast<PluginChannel*>(PluginChannelBase::GetChannel(
+          channel_name,
+          IPC::Channel::MODE_SERVER,
+          ClassFactory,
+          ipc_message_loop,
+          false));
+
+  if (channel)
+    channel->renderer_id_ = renderer_id;
+
+  return channel;
 }
 
 PluginChannel::PluginChannel()
     : renderer_handle_(0),
+      renderer_id_(-1),
 #if defined(OS_POSIX)
       renderer_fd_(-1),
 #endif

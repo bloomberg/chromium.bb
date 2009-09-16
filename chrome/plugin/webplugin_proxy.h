@@ -87,8 +87,8 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
   // object with that id exists.
   webkit_glue::WebPluginResourceClient* GetResourceClient(int id);
 
-  // Returns the process id of the renderer that contains this plugin.
-  int GetRendererProcessId();
+  // Returns the id of the renderer that contains this plugin.
+  int GetRendererId();
 
   // For windowless plugins, paints the given rectangle into the local buffer.
   void Paint(const gfx::Rect& rect);

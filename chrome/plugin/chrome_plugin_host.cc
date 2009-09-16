@@ -362,8 +362,8 @@ CPError STDCALL CPB_AllowFileDrop(
   if (!webplugin || !file_drag_data)
     return CPERR_INVALID_PARAMETER;
 
-  const int pid = webplugin->GetRendererProcessId();
-  if (!pid)
+  const int renderer = webplugin->GetRendererId();
+  if (renderer == -1)
     return CPERR_FAILURE;
 
   static const char kDelimiter('\b');
@@ -372,7 +372,7 @@ CPError STDCALL CPB_AllowFileDrop(
 
   bool allowed = false;
   if (!PluginThread::current()->Send(
-          new PluginProcessHostMsg_AccessFiles(pid, files, &allowed))) {
+          new PluginProcessHostMsg_AccessFiles(renderer, files, &allowed))) {
     return CPERR_FAILURE;
   }
 

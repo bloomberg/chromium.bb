@@ -74,10 +74,10 @@ IPC_BEGIN_MESSAGES(PluginProcessHost)
                               GURL /* url */,
                               std::string /* cookies */)
 
-  // Used by the plugin process to verify that its renderer |process_id| has
+  // Used by the plugin process to verify that its renderer |renderer_id| has
   // permission to access the given |files|.
   IPC_SYNC_MESSAGE_CONTROL2_1(PluginProcessHostMsg_AccessFiles,
-                              int /* process_id */,
+                              int /* renderer_id */,
                               std::vector<std::string> /* files */,
                               bool /* allowed */)
 

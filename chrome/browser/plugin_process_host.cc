@@ -537,7 +537,7 @@ void PluginProcessHost::OnGetCookies(uint32 request_context,
   }
 }
 
-void PluginProcessHost::OnAccessFiles(int process_id,
+void PluginProcessHost::OnAccessFiles(int renderer_id,
                                       const std::vector<std::string>& files,
                                       bool* allowed) {
   ChildProcessSecurityPolicy* policy =
@@ -545,7 +545,7 @@ void PluginProcessHost::OnAccessFiles(int process_id,
 
   for (size_t i = 0; i < files.size(); ++i) {
     const FilePath path = FilePath::FromWStringHack(UTF8ToWide(files[i]));
-    if (!policy->CanUploadFile(process_id, path)) {
+    if (!policy->CanUploadFile(renderer_id, path)) {
       LOG(INFO) << "Denied unauthorized request for file " << files[i];
       *allowed = false;
       return;

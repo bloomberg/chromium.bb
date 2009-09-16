@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,9 +31,7 @@ class PluginThread : public ChildThread {
   virtual void OnControlMessageReceived(const IPC::Message& msg);
 
   // Callback for when a channel has been created.
-  void OnCreateChannel(
-      int process_id,
-      bool off_the_record);
+  void OnCreateChannel(int renderer_id, bool off_the_record);
   void OnPluginMessage(const std::vector<uint8> &data);
 
   // The plugin module which is preloaded in Init
