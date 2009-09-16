@@ -17,16 +17,16 @@
   <title>chrome.extension</title></head><body>  <div id="container">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
-           jstemplate to make a copy of the template in this section which 
-           are not operated on by way of the jsskip="true" -->           
+           jstemplate to make a copy of the template in this section which
+           are not operated on by way of the jsskip="true" -->
       <div style="display:none">
-                      
+
         <!-- VALUE -->
         <div id="valueTemplate">
           <dt>
             <var>paramName</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -53,7 +53,7 @@
           <dd>
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -64,9 +64,9 @@
             </dl>
           </dd>
         </div> <!-- /VALUE -->
-        
+
       </div> <!-- /SUBTEMPLATES -->
-                    
+
   <a name="top"> </a>
     <!-- API HEADER -->
     <div id="pageHeader">
@@ -89,8 +89,8 @@
         <h1>chrome.extension</h1>
       </div>
     </div> <!-- /pageHeader -->
-          
-    <div id="pageContent"> 
+
+    <div id="pageContent">
       <!-- SIDENAV -->
       <div id="leftNav">
         <ul>
@@ -112,7 +112,6 @@
               <li><a href="xhr.html">Cross-Origin XHR</a></li>
               <li><a href="packaging.html">Packaging</a></li>
               <li><a href="autoupdate.html">Autoupdate</a></li>
-              <li><a href="i18n.html">i18n</a></li>
             </ul>
           </li>
           <li><a href="tutorials.html"><div>Tutorials</div></a>
@@ -120,13 +119,13 @@
               <li><a href="tut_debugging.html">Debugging</a></li>
             </ul>
           </li>
-          <li>Reference 
+          <li>Reference
             <ul>
               <li> Formats
                 <ul>
                   <li><a href="manifest.html">Manifest Files</a></li>
                   <li><a href="match_patterns.html">Match Patterns</a></li>
-                  <li>Packages (.crx)</li>
+                  <!-- <li>Packages (.crx)</li> -->
                 </ul>
               </li>
               <li> <a href="api_index.html">chrome.* APIs</a> </li>
@@ -136,7 +135,7 @@
          <li><a href="http://dev.chromium.org/developers/design-documents/extensions/samples">Samples</a></li>
         </ul>
       </div>
-    
+
       <div id="mainColumn">
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
@@ -155,7 +154,7 @@
                 <a href="#apiReference">API reference: chrome.extension</a>
                 <ol>
                   <li>
-                    <a href="#properties">Properties</a>    
+                    <a href="#properties">Properties</a>
                     <ol>
                       <li jsinstance="*0">
                         <a href="#property-lastError">lastError</a>
@@ -163,7 +162,7 @@
                     </ol>
                   </li>
                   <li>
-                    <a href="#methods">Methods</a>    
+                    <a href="#methods">Methods</a>
                     <ol>
                       <li jsinstance="0">
                         <a href="#method-connect">connect</a>
@@ -200,7 +199,7 @@
               </li>
             </div>
           </ol>
-        </div>  
+        </div>
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
@@ -210,7 +209,7 @@
         <div class="apiPage">
         <a name="apiReference"></a>
         <h2>API reference: chrome.extension</h2>
-          
+
           <!-- PROPERTIES -->
           <div class="apiGroup">
             <a name="properties"></a>
@@ -227,7 +226,7 @@
           <dt>
             <var>lastError</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -252,7 +251,7 @@
             Undocumented.
           </dd>
           <dd>Set for the lifetime of a callback if an ansychronous extension api has resulted in an error. If no error has occured lastError will be <var>undefined</var>.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -261,7 +260,7 @@
           <dt>
             <var>message</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -286,7 +285,7 @@
             Undocumented.
           </dd>
           <dd>Description of the error that has taken place.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -302,9 +301,9 @@
           </dd>
         </div>
             </div>
-            
+
           </div> <!-- /apiGroup -->
-          
+
           <!-- METHODS -->
           <div class="apiGroup" id="methods">
             <a name="methods"></a>
@@ -332,7 +331,7 @@
           <dt>
             <var>connectInfo</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -359,7 +358,7 @@
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -368,7 +367,7 @@
           <dt>
             <var>name</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -393,7 +392,7 @@
             Undocumented.
           </dd>
           <dd>Will be passed into onConnect for extension processes that are listening for the connection event.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -410,7 +409,7 @@
         </div>
                   </div>
                 </dl>
-                
+
                 <!-- RETURNS -->
                 <h4>Returns</h4>
                 <dl>
@@ -419,7 +418,7 @@
           <dt>
             <var style="display: none; ">paramName</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -444,7 +443,7 @@
             Undocumented.
           </dd>
           <dd>Port through which messages can be sent and received with the extension.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -458,7 +457,7 @@
                   </div>
                 </dl>
 
-                <!-- CALLBACK -->	
+                <!-- CALLBACK -->
                 <div style="display: none; ">
                   <div>
                   <h4>Callback function</h4>
@@ -466,7 +465,7 @@
                     If you specify the <em>callback</em> parameter,
                     it should specify a function that looks like this:
                   </p>
-                  
+
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
@@ -501,7 +500,7 @@
                     </div>
                   </div>
                 </dl>
-                
+
                 <!-- RETURNS -->
                 <h4>Returns</h4>
                 <dl>
@@ -510,7 +509,7 @@
           <dt>
             <var style="display: none; ">paramName</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -537,7 +536,7 @@
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -551,7 +550,7 @@
                   </div>
                 </dl>
 
-                <!-- CALLBACK -->	
+                <!-- CALLBACK -->
                 <div style="display: none; ">
                   <div>
                   <h4>Callback function</h4>
@@ -559,7 +558,7 @@
                     If you specify the <em>callback</em> parameter,
                     it should specify a function that looks like this:
                   </p>
-                  
+
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
@@ -594,7 +593,7 @@
           <dt>
             <var>windowId</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -621,7 +620,7 @@
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -634,7 +633,7 @@
         </div>
                   </div>
                 </dl>
-                
+
                 <!-- RETURNS -->
                 <h4>Returns</h4>
                 <dl>
@@ -643,7 +642,7 @@
           <dt>
             <var style="display: none; ">paramName</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -678,7 +677,7 @@
             Undocumented.
           </dd>
           <dd>Array of global objects</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -692,7 +691,7 @@
                   </div>
                 </dl>
 
-                <!-- CALLBACK -->	
+                <!-- CALLBACK -->
                 <div style="display: none; ">
                   <div>
                   <h4>Callback function</h4>
@@ -700,7 +699,7 @@
                     If you specify the <em>callback</em> parameter,
                     it should specify a function that looks like this:
                   </p>
-                  
+
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
@@ -735,7 +734,7 @@
           <dt>
             <var>windowId</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -762,7 +761,7 @@
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -775,7 +774,7 @@
         </div>
                   </div>
                 </dl>
-                
+
                 <!-- RETURNS -->
                 <h4>Returns</h4>
                 <dl>
@@ -784,7 +783,7 @@
           <dt>
             <var style="display: none; ">paramName</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -819,7 +818,7 @@
             Undocumented.
           </dd>
           <dd>Array of global objects</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -833,7 +832,7 @@
                   </div>
                 </dl>
 
-                <!-- CALLBACK -->	
+                <!-- CALLBACK -->
                 <div style="display: none; ">
                   <div>
                   <h4>Callback function</h4>
@@ -841,7 +840,7 @@
                     If you specify the <em>callback</em> parameter,
                     it should specify a function that looks like this:
                   </p>
-                  
+
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
@@ -876,7 +875,7 @@
           <dt>
             <var>path</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -901,7 +900,7 @@
             Undocumented.
           </dd>
           <dd>A path to a resource within an extension expressed relative to it's install directory.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -914,7 +913,7 @@
         </div>
                   </div>
                 </dl>
-                
+
                 <!-- RETURNS -->
                 <h4>Returns</h4>
                 <dl>
@@ -923,7 +922,7 @@
           <dt>
             <var style="display: none; ">paramName</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -948,7 +947,7 @@
             Undocumented.
           </dd>
           <dd>The fully-qualified URL to the resource.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -962,7 +961,7 @@
                   </div>
                 </dl>
 
-                <!-- CALLBACK -->	
+                <!-- CALLBACK -->
                 <div style="display: none; ">
                   <div>
                   <h4>Callback function</h4>
@@ -970,7 +969,7 @@
                     If you specify the <em>callback</em> parameter,
                     it should specify a function that looks like this:
                   </p>
-                  
+
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
@@ -1005,7 +1004,7 @@
                     </div>
                   </div>
                 </dl>
-                
+
                 <!-- RETURNS -->
                 <h4>Returns</h4>
                 <dl>
@@ -1014,7 +1013,7 @@
           <dt>
             <var style="display: none; ">paramName</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1049,7 +1048,7 @@
             Undocumented.
           </dd>
           <dd>Array of global objects</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1063,7 +1062,7 @@
                   </div>
                 </dl>
 
-                <!-- CALLBACK -->	
+                <!-- CALLBACK -->
                 <div style="display: none; ">
                   <div>
                   <h4>Callback function</h4>
@@ -1071,7 +1070,7 @@
                     If you specify the <em>callback</em> parameter,
                     it should specify a function that looks like this:
                   </p>
-                  
+
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
@@ -1116,7 +1115,7 @@
           <dt>
             <var>port</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1143,7 +1142,7 @@
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1162,7 +1161,7 @@
             </div> <!-- /apiItem -->
 
           </div> <!-- /apiGroup -->
-          
+
           <!-- TYPES -->
           <div class="apiGroup">
             <a name="types.sort(sortByName)"></a>
@@ -1172,12 +1171,12 @@
             <div class="apiItem" jsinstance="*0">
               <a name="type-Port"></a>
               <h4>Port</h4>
-                
+
               <div>
           <dt>
             <var style="display: none; ">paramName</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1202,7 +1201,7 @@
             Undocumented.
           </dd>
           <dd>An object which allows two way communication with other pages.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -1211,7 +1210,7 @@
           <dt>
             <var>name</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1238,7 +1237,7 @@
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1254,7 +1253,7 @@
           <dt>
             <var>onDisconnect</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1281,7 +1280,7 @@
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1297,7 +1296,7 @@
           <dt>
             <var>onMessage</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1324,7 +1323,7 @@
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1340,7 +1339,7 @@
           <dt>
             <var>postMessage</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1367,7 +1366,7 @@
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1386,7 +1385,7 @@
             </div> <!-- /apiItem -->
 
           </div> <!-- /apiGroup -->
-          
+
         </div> <!-- /apiPage -->
       </div> <!-- /mainColumn -->
     </div> <!-- /pageContent -->

@@ -17,16 +17,16 @@
   <title>Page Actions</title></head><body>  <div id="container">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
-           jstemplate to make a copy of the template in this section which 
-           are not operated on by way of the jsskip="true" -->           
+           jstemplate to make a copy of the template in this section which
+           are not operated on by way of the jsskip="true" -->
       <div style="display:none">
-                      
+
         <!-- VALUE -->
         <div id="valueTemplate">
           <dt>
             <var>paramName</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -53,7 +53,7 @@
           <dd>
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -64,9 +64,9 @@
             </dl>
           </dd>
         </div> <!-- /VALUE -->
-        
+
       </div> <!-- /SUBTEMPLATES -->
-                    
+
   <a name="top"> </a>
     <!-- API HEADER -->
     <div id="pageHeader">
@@ -89,8 +89,8 @@
         <h1>Page Actions</h1>
       </div>
     </div> <!-- /pageHeader -->
-          
-    <div id="pageContent"> 
+
+    <div id="pageContent">
       <!-- SIDENAV -->
       <div id="leftNav">
         <ul>
@@ -112,7 +112,6 @@
               <li><a href="xhr.html">Cross-Origin XHR</a></li>
               <li><a href="packaging.html">Packaging</a></li>
               <li><a href="autoupdate.html">Autoupdate</a></li>
-              <li><a href="i18n.html">i18n</a></li>
             </ul>
           </li>
           <li><a href="tutorials.html"><div>Tutorials</div></a>
@@ -120,13 +119,13 @@
               <li><a href="tut_debugging.html">Debugging</a></li>
             </ul>
           </li>
-          <li>Reference 
+          <li>Reference
             <ul>
               <li> Formats
                 <ul>
                   <li><a href="manifest.html">Manifest Files</a></li>
                   <li><a href="match_patterns.html">Match Patterns</a></li>
-                  <li>Packages (.crx)</li>
+                  <!-- <li>Packages (.crx)</li> -->
                 </ul>
               </li>
               <li> <a href="api_index.html">chrome.* APIs</a> </li>
@@ -136,7 +135,7 @@
          <li><a href="http://dev.chromium.org/developers/design-documents/extensions/samples">Samples</a></li>
         </ul>
       </div>
-    
+
       <div id="mainColumn">
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
@@ -162,7 +161,7 @@
                 <a href="#apiReference">API reference: chrome.pageActions</a>
                 <ol>
                   <li style="display: none; ">
-                    <a href="#properties">Properties</a>    
+                    <a href="#properties">Properties</a>
                     <ol>
                       <li>
                         <a href="#property-anchor">propertyName</a>
@@ -170,7 +169,7 @@
                     </ol>
                   </li>
                   <li>
-                    <a href="#methods">Methods</a>    
+                    <a href="#methods">Methods</a>
                     <ol>
                       <li jsinstance="0">
                         <a href="#method-disableForTab">disableForTab</a>
@@ -199,7 +198,7 @@
               </li>
             </div>
           </ol>
-        </div>  
+        </div>
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
@@ -240,23 +239,22 @@ the RSS feed for the current page.
 
 <pre>chrome.pageActions["foo"].addListener(function(object reply) {
   console.log(reply.pageActionId);  // Display the id of the page action.
-  console.log(reply.tabId);    // Display the id of the tab for which the page action event applies.
-  console.log(reply.tabUrl);   // Display the URL of the page for which the page action event applies.
-  console.log(reply.button);   // Display the number of the button which the user clicked with.
+  console.log(reply.data.tabId);    // Display the id of the tab for which the page action event applies.
+  console.log(reply.data.tabUrl);   // Display the URL of the page for which the page action event applies.
 });</pre>
 
 <p style="margin-left:25px;"><strong>Parameters</strong></p>
 
+<p style="margin-left:25px;"><i>reply ( object )</i><br>
+&nbsp;&nbsp;&nbsp;An object containing the information about the event. Contains the following properties:</p>
 <p style="margin-left:50px;"><i>pageActionId ( string )</i><br>
 &nbsp;&nbsp;&nbsp;The id of the page action that triggered the event.</p>
-<p style="margin-left:25px;"><i>reply ( object )</i><br>
-&nbsp;&nbsp;&nbsp;An object containing the information about the event and what tab and page the event applies to. Contains the following properties:</p>
+<p style="margin-left:50px;"><i>data ( object )</i><br>
+&nbsp;&nbsp;&nbsp;An object specifying what tab and which page the event applies to. Contains the following properties:</p>
 <p style="margin-left:75px;"><i>tabId ( string )</i><br>
 &nbsp;&nbsp;&nbsp;The id of the tab that was active when the event was triggered.</p>
 <p style="margin-left:75px;"><i>tabUrl ( string )</i><br>
 &nbsp;&nbsp;&nbsp;The url of the page for which the page action applies to.</p>
-<p style="margin-left:75px;"><i>button ( integer )</i><br>
-&nbsp;&nbsp;&nbsp;The mouse button which was pressed.  The left button is 1, middle button is 2, and right button is 3.</p>
 <!-- END AUTHORED CONTENT -->
 </div>
 
@@ -264,7 +262,7 @@ the RSS feed for the current page.
         <div class="apiPage">
         <a name="apiReference"></a>
         <h2>API reference: chrome.pageActions</h2>
-          
+
           <!-- PROPERTIES -->
           <div class="apiGroup" style="display: none; ">
             <a name="properties"></a>
@@ -280,9 +278,9 @@ the RSS feed for the current page.
               <div>
               </div>
             </div>
-            
+
           </div> <!-- /apiGroup -->
-          
+
           <!-- METHODS -->
           <div class="apiGroup" id="methods">
             <a name="methods"></a>
@@ -311,7 +309,7 @@ the RSS feed for the current page.
           <dt>
             <var>pageActionId</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -336,7 +334,7 @@ the RSS feed for the current page.
             Undocumented.
           </dd>
           <dd>An extension can have multiple page actions specified in the manifest, each with a unique identifier. This string identifies which page action you want to disable (and must match a page action id declared in the manifest).</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -352,7 +350,7 @@ the RSS feed for the current page.
           <dt>
             <var>action</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -377,7 +375,7 @@ the RSS feed for the current page.
             Undocumented.
           </dd>
           <dd>An object specifying what action should be applied to the page action. Contains the following properties:</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -386,7 +384,7 @@ the RSS feed for the current page.
           <dt>
             <var>tabId</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -411,7 +409,7 @@ the RSS feed for the current page.
             Undocumented.
           </dd>
           <dd>The id of the tab for which you want to disable the page action.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -427,7 +425,7 @@ the RSS feed for the current page.
           <dt>
             <var>url</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -452,7 +450,7 @@ the RSS feed for the current page.
             Undocumented.
           </dd>
           <dd>The URL of the page you want the page action to not apply to. If the URL specified does not match the currently navigated URL (user has navigated to another page) then no action is taken.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -469,7 +467,7 @@ the RSS feed for the current page.
         </div>
                   </div>
                 </dl>
-                
+
                 <!-- RETURNS -->
                 <h4 style="display: none; ">Returns</h4>
                 <dl>
@@ -479,7 +477,7 @@ the RSS feed for the current page.
                   </div>
                 </dl>
 
-                <!-- CALLBACK -->	
+                <!-- CALLBACK -->
                 <div style="display: none; ">
                   <div>
                   <h4>Callback function</h4>
@@ -487,7 +485,7 @@ the RSS feed for the current page.
                     If you specify the <em>callback</em> parameter,
                     it should specify a function that looks like this:
                   </p>
-                  
+
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
@@ -523,7 +521,7 @@ the RSS feed for the current page.
           <dt>
             <var>pageActionId</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -548,7 +546,7 @@ the RSS feed for the current page.
             Undocumented.
           </dd>
           <dd>An extension can have multiple page actions specified in the manifest, each with a unique identifier. This string identifies which page action you want to enable (and must match a page action id declared in the manifest).</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -564,7 +562,7 @@ the RSS feed for the current page.
           <dt>
             <var>action</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -589,7 +587,7 @@ the RSS feed for the current page.
             Undocumented.
           </dd>
           <dd>An object specifing what action should be applied to the page action. Contains the following properties:</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -598,7 +596,7 @@ the RSS feed for the current page.
           <dt>
             <var>tabId</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -623,7 +621,7 @@ the RSS feed for the current page.
             Undocumented.
           </dd>
           <dd>The id of the tab for which you want to enable the page action.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -639,7 +637,7 @@ the RSS feed for the current page.
           <dt>
             <var>url</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -664,7 +662,7 @@ the RSS feed for the current page.
             Undocumented.
           </dd>
           <dd>The URL of the page you want the page action to apply to. If the URL specified does not match the currently navigated URL (user has navigated to another page) then no action is taken.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -680,7 +678,7 @@ the RSS feed for the current page.
           <dt>
             <var>title</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -705,7 +703,7 @@ the RSS feed for the current page.
             Undocumented.
           </dd>
           <dd>Specifying |title| allows you to change the tooltip that appears when you hover over the page action icon in the OmniBox. This parameter is optional and if omitted then the page action |name| property declared in the manifest is used.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -721,7 +719,7 @@ the RSS feed for the current page.
           <dt>
             <var>iconId</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -746,7 +744,7 @@ the RSS feed for the current page.
             Undocumented.
           </dd>
           <dd>A zero-based index into the |icons| vector specified in the manifest. This parameter is optional and if omitted then the first icon in the |icons| vector of the page action is used. This id is useful to represent different page action states. Example: An RSS feed icon could have a 'subscribe now' icon and an 'already subscribed' icon.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -763,7 +761,7 @@ the RSS feed for the current page.
         </div>
                   </div>
                 </dl>
-                
+
                 <!-- RETURNS -->
                 <h4 style="display: none; ">Returns</h4>
                 <dl>
@@ -773,7 +771,7 @@ the RSS feed for the current page.
                   </div>
                 </dl>
 
-                <!-- CALLBACK -->	
+                <!-- CALLBACK -->
                 <div style="display: none; ">
                   <div>
                   <h4>Callback function</h4>
@@ -781,7 +779,7 @@ the RSS feed for the current page.
                     If you specify the <em>callback</em> parameter,
                     it should specify a function that looks like this:
                   </p>
-                  
+
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
@@ -834,7 +832,7 @@ the RSS feed for the current page.
             </div> <!-- /apiItem -->
 
           </div> <!-- /apiGroup -->
-          
+
           <!-- TYPES -->
           <div class="apiGroup" style="display: none; ">
             <a name="types.sort(sortByName)"></a>
@@ -844,14 +842,14 @@ the RSS feed for the current page.
             <div class="apiItem">
               <a></a>
               <h4>type name</h4>
-                
+
               <div>
               </div>
 
             </div> <!-- /apiItem -->
 
           </div> <!-- /apiGroup -->
-          
+
         </div> <!-- /apiPage -->
       </div> <!-- /mainColumn -->
     </div> <!-- /pageContent -->

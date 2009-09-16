@@ -17,16 +17,16 @@
   <title>Windows</title></head><body>  <div id="container">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
-           jstemplate to make a copy of the template in this section which 
-           are not operated on by way of the jsskip="true" -->           
+           jstemplate to make a copy of the template in this section which
+           are not operated on by way of the jsskip="true" -->
       <div style="display:none">
-                      
+
         <!-- VALUE -->
         <div id="valueTemplate">
           <dt>
             <var>paramName</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -53,7 +53,7 @@
           <dd>
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -64,9 +64,9 @@
             </dl>
           </dd>
         </div> <!-- /VALUE -->
-        
+
       </div> <!-- /SUBTEMPLATES -->
-                    
+
   <a name="top"> </a>
     <!-- API HEADER -->
     <div id="pageHeader">
@@ -89,8 +89,8 @@
         <h1>Windows</h1>
       </div>
     </div> <!-- /pageHeader -->
-          
-    <div id="pageContent"> 
+
+    <div id="pageContent">
       <!-- SIDENAV -->
       <div id="leftNav">
         <ul>
@@ -112,7 +112,6 @@
               <li><a href="xhr.html">Cross-Origin XHR</a></li>
               <li><a href="packaging.html">Packaging</a></li>
               <li><a href="autoupdate.html">Autoupdate</a></li>
-              <li><a href="i18n.html">i18n</a></li>
             </ul>
           </li>
           <li><a href="tutorials.html"><div>Tutorials</div></a>
@@ -120,13 +119,13 @@
               <li><a href="tut_debugging.html">Debugging</a></li>
             </ul>
           </li>
-          <li>Reference 
+          <li>Reference
             <ul>
               <li> Formats
                 <ul>
                   <li><a href="manifest.html">Manifest Files</a></li>
                   <li><a href="match_patterns.html">Match Patterns</a></li>
-                  <li>Packages (.crx)</li>
+                  <!-- <li>Packages (.crx)</li> -->
                 </ul>
               </li>
               <li> <a href="api_index.html">chrome.* APIs</a> </li>
@@ -136,7 +135,7 @@
          <li><a href="http://dev.chromium.org/developers/design-documents/extensions/samples">Samples</a></li>
         </ul>
       </div>
-    
+
       <div id="mainColumn">
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
@@ -162,7 +161,7 @@
                 <a href="#apiReference">API reference: chrome.windows</a>
                 <ol>
                   <li style="display: none; ">
-                    <a href="#properties">Properties</a>    
+                    <a href="#properties">Properties</a>
                     <ol>
                       <li>
                         <a href="#property-anchor">propertyName</a>
@@ -170,7 +169,7 @@
                     </ol>
                   </li>
                   <li>
-                    <a href="#methods">Methods</a>    
+                    <a href="#methods">Methods</a>
                     <ol>
                       <li jsinstance="0">
                         <a href="#method-create">create</a>
@@ -213,7 +212,7 @@
               </li>
             </div>
           </ol>
-        </div>  
+        </div>
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
@@ -271,7 +270,7 @@ the value of the current window falls back to the topmost window.
         <div class="apiPage">
         <a name="apiReference"></a>
         <h2>API reference: chrome.windows</h2>
-          
+
           <!-- PROPERTIES -->
           <div class="apiGroup" style="display: none; ">
             <a name="properties"></a>
@@ -287,9 +286,9 @@ the value of the current window falls back to the topmost window.
               <div>
               </div>
             </div>
-            
+
           </div> <!-- /apiGroup -->
-          
+
           <!-- METHODS -->
           <div class="apiGroup" id="methods">
             <a name="methods"></a>
@@ -318,7 +317,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>createData</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -345,7 +344,7 @@ the value of the current window falls back to the topmost window.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -354,7 +353,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>url</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -379,7 +378,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>The URL to navigate the first tab to. Fully-qualified URLs must include a scheme (i.e. 'http://www.google.com', not 'www.google.com'). Relative URLs will be relative to the current page within the extension. Defaults to the New Tab Page.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -395,7 +394,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>left</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -420,7 +419,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>The number of pixels to position the new window from the left edge of the screen. If not specified, the new window is offset naturally from the last focusd window.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -436,7 +435,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>top</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -461,7 +460,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>The number of pixels to position the new window from the top edge of the screen. If not specified, the new window is offset naturally from the last focusd window.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -477,7 +476,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>width</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -502,7 +501,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>The width in pixels of the new window. If not specified defaults to a natural width.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -518,7 +517,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>height</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -543,7 +542,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>The height in pixels of the new window. If not specified defaults to a natural height.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -563,7 +562,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>callback</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -590,7 +589,7 @@ the value of the current window falls back to the topmost window.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -603,7 +602,7 @@ the value of the current window falls back to the topmost window.
         </div>
                   </div>
                 </dl>
-                
+
                 <!-- RETURNS -->
                 <h4 style="display: none; ">Returns</h4>
                 <dl>
@@ -613,7 +612,7 @@ the value of the current window falls back to the topmost window.
                   </div>
                 </dl>
 
-                <!-- CALLBACK -->	
+                <!-- CALLBACK -->
                 <div>
                   <div>
                   <h4>Callback function</h4>
@@ -621,7 +620,7 @@ the value of the current window falls back to the topmost window.
                     If you specify the <em>callback</em> parameter,
                     it should specify a function that looks like this:
                   </p>
-                  
+
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>Window window</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
@@ -630,7 +629,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>window</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -655,7 +654,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>Contains details about the created window.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -695,7 +694,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>windowId</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -722,7 +721,7 @@ the value of the current window falls back to the topmost window.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -738,7 +737,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>callback</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -765,7 +764,7 @@ the value of the current window falls back to the topmost window.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -778,7 +777,7 @@ the value of the current window falls back to the topmost window.
         </div>
                   </div>
                 </dl>
-                
+
                 <!-- RETURNS -->
                 <h4 style="display: none; ">Returns</h4>
                 <dl>
@@ -788,7 +787,7 @@ the value of the current window falls back to the topmost window.
                   </div>
                 </dl>
 
-                <!-- CALLBACK -->	
+                <!-- CALLBACK -->
                 <div>
                   <div>
                   <h4>Callback function</h4>
@@ -796,7 +795,7 @@ the value of the current window falls back to the topmost window.
                     If you specify the <em>callback</em> parameter,
                     it should specify a function that looks like this:
                   </p>
-                  
+
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>Window window</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
@@ -805,7 +804,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>window</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -832,7 +831,7 @@ the value of the current window falls back to the topmost window.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -872,7 +871,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>getInfo</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -899,7 +898,7 @@ the value of the current window falls back to the topmost window.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -908,7 +907,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>populate</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -933,7 +932,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>If true, each window object will have a <var>tabs</var> property that contains a list of the <a href="tabs.html#type-Tab">Tab</a> objects for that window.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -953,7 +952,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>callback</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -980,7 +979,7 @@ the value of the current window falls back to the topmost window.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -993,7 +992,7 @@ the value of the current window falls back to the topmost window.
         </div>
                   </div>
                 </dl>
-                
+
                 <!-- RETURNS -->
                 <h4 style="display: none; ">Returns</h4>
                 <dl>
@@ -1003,7 +1002,7 @@ the value of the current window falls back to the topmost window.
                   </div>
                 </dl>
 
-                <!-- CALLBACK -->	
+                <!-- CALLBACK -->
                 <div>
                   <div>
                   <h4>Callback function</h4>
@@ -1011,7 +1010,7 @@ the value of the current window falls back to the topmost window.
                     If you specify the <em>callback</em> parameter,
                     it should specify a function that looks like this:
                   </p>
-                  
+
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>array of Window windows</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
@@ -1020,7 +1019,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>windows</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1057,7 +1056,7 @@ the value of the current window falls back to the topmost window.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1096,7 +1095,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>callback</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1123,7 +1122,7 @@ the value of the current window falls back to the topmost window.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1136,7 +1135,7 @@ the value of the current window falls back to the topmost window.
         </div>
                   </div>
                 </dl>
-                
+
                 <!-- RETURNS -->
                 <h4 style="display: none; ">Returns</h4>
                 <dl>
@@ -1146,7 +1145,7 @@ the value of the current window falls back to the topmost window.
                   </div>
                 </dl>
 
-                <!-- CALLBACK -->	
+                <!-- CALLBACK -->
                 <div>
                   <div>
                   <h4>Callback function</h4>
@@ -1154,7 +1153,7 @@ the value of the current window falls back to the topmost window.
                     If you specify the <em>callback</em> parameter,
                     it should specify a function that looks like this:
                   </p>
-                  
+
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>Window window</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
@@ -1163,7 +1162,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>window</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1190,7 +1189,7 @@ the value of the current window falls back to the topmost window.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1229,7 +1228,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>callback</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1256,7 +1255,7 @@ the value of the current window falls back to the topmost window.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1269,7 +1268,7 @@ the value of the current window falls back to the topmost window.
         </div>
                   </div>
                 </dl>
-                
+
                 <!-- RETURNS -->
                 <h4 style="display: none; ">Returns</h4>
                 <dl>
@@ -1279,7 +1278,7 @@ the value of the current window falls back to the topmost window.
                   </div>
                 </dl>
 
-                <!-- CALLBACK -->	
+                <!-- CALLBACK -->
                 <div>
                   <div>
                   <h4>Callback function</h4>
@@ -1287,7 +1286,7 @@ the value of the current window falls back to the topmost window.
                     If you specify the <em>callback</em> parameter,
                     it should specify a function that looks like this:
                   </p>
-                  
+
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>Window window</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
@@ -1296,7 +1295,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>window</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1323,7 +1322,7 @@ the value of the current window falls back to the topmost window.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1363,7 +1362,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>windowId</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1390,7 +1389,7 @@ the value of the current window falls back to the topmost window.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1406,7 +1405,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>callback</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1433,7 +1432,7 @@ the value of the current window falls back to the topmost window.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1446,7 +1445,7 @@ the value of the current window falls back to the topmost window.
         </div>
                   </div>
                 </dl>
-                
+
                 <!-- RETURNS -->
                 <h4 style="display: none; ">Returns</h4>
                 <dl>
@@ -1456,7 +1455,7 @@ the value of the current window falls back to the topmost window.
                   </div>
                 </dl>
 
-                <!-- CALLBACK -->	
+                <!-- CALLBACK -->
                 <div>
                   <div>
                   <h4>Callback function</h4>
@@ -1464,7 +1463,7 @@ the value of the current window falls back to the topmost window.
                     If you specify the <em>callback</em> parameter,
                     it should specify a function that looks like this:
                   </p>
-                  
+
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span></span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
@@ -1501,7 +1500,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>windowId</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1528,7 +1527,7 @@ the value of the current window falls back to the topmost window.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1544,7 +1543,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>updateInfo</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1571,7 +1570,7 @@ the value of the current window falls back to the topmost window.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -1580,7 +1579,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>left</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1605,7 +1604,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>The offset from the left edge of the screen to move the window to in pixels.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1621,7 +1620,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>top</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1646,7 +1645,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>The offset from the top edge of the screen to move the window to in pixels.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1662,7 +1661,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>width</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1687,7 +1686,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>The width to resize the window to in pixels.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1703,7 +1702,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>height</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1728,7 +1727,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>The height to resize the window to in pixels.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1748,7 +1747,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>callback</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1775,7 +1774,7 @@ the value of the current window falls back to the topmost window.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1788,7 +1787,7 @@ the value of the current window falls back to the topmost window.
         </div>
                   </div>
                 </dl>
-                
+
                 <!-- RETURNS -->
                 <h4 style="display: none; ">Returns</h4>
                 <dl>
@@ -1798,7 +1797,7 @@ the value of the current window falls back to the topmost window.
                   </div>
                 </dl>
 
-                <!-- CALLBACK -->	
+                <!-- CALLBACK -->
                 <div>
                   <div>
                   <h4>Callback function</h4>
@@ -1806,7 +1805,7 @@ the value of the current window falls back to the topmost window.
                     If you specify the <em>callback</em> parameter,
                     it should specify a function that looks like this:
                   </p>
-                  
+
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span>Window window</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
@@ -1815,7 +1814,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>window</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1842,7 +1841,7 @@ the value of the current window falls back to the topmost window.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1891,7 +1890,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>createInfo</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1918,7 +1917,7 @@ the value of the current window falls back to the topmost window.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -1927,7 +1926,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>id</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -1952,7 +1951,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>ID of the new window.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -1993,7 +1992,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>windowId</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -2018,7 +2017,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>ID of the newly focused window.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -2055,7 +2054,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>windowId</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -2080,7 +2079,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>ID of the removed window.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -2099,7 +2098,7 @@ the value of the current window falls back to the topmost window.
             </div> <!-- /apiItem -->
 
           </div> <!-- /apiGroup -->
-          
+
           <!-- TYPES -->
           <div class="apiGroup">
             <a name="types.sort(sortByName)"></a>
@@ -2109,12 +2108,12 @@ the value of the current window falls back to the topmost window.
             <div class="apiItem" jsinstance="*0">
               <a name="type-Window"></a>
               <h4>Window</h4>
-                
+
               <div>
           <dt>
             <var style="display: none; ">paramName</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -2141,7 +2140,7 @@ the value of the current window falls back to the topmost window.
           <dd style="display: none; ">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -2150,7 +2149,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>id</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -2175,7 +2174,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>The ID of the window. Window IDs are unique within a browser session.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -2191,7 +2190,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>focused</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -2216,7 +2215,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>Whether the window is currently the focused window.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -2232,7 +2231,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>top</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -2257,7 +2256,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>The offset of the window from the top edge of the screen in pixels.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -2273,7 +2272,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>left</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -2298,7 +2297,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>The offset of the window from the left edge of the screen in pixels.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -2314,7 +2313,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>width</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -2339,7 +2338,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>The width of the window in pixels.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -2355,7 +2354,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>height</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -2380,7 +2379,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>The height of the window in pixels.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -2396,7 +2395,7 @@ the value of the current window falls back to the topmost window.
           <dt>
             <var>tabs</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -2431,7 +2430,7 @@ the value of the current window falls back to the topmost window.
             Undocumented.
           </dd>
           <dd>Array of <a href="tabs.html#type-Tab">Tab</a> objects representing the current tabs in the window.</dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
             <dl>
@@ -2450,7 +2449,7 @@ the value of the current window falls back to the topmost window.
             </div> <!-- /apiItem -->
 
           </div> <!-- /apiGroup -->
-          
+
         </div> <!-- /apiPage -->
       </div> <!-- /mainColumn -->
     </div> <!-- /pageContent -->

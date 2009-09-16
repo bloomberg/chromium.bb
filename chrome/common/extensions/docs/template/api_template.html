@@ -1,16 +1,16 @@
   <div id="container">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
-           jstemplate to make a copy of the template in this section which 
-           are not operated on by way of the jsskip="true" -->           
+           jstemplate to make a copy of the template in this section which
+           are not operated on by way of the jsskip="true" -->
       <div jsskip="true" style="display:none">
-                      
+
         <!-- VALUE -->
         <div id="valueTemplate">
           <dt>
             <var jsdisplay="$this.name" jscontent="$this.name">paramName</var>
               <em>
-                
+
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
@@ -38,7 +38,7 @@
               jsvalues=".innerHTML:$this.description">
             Description of this parameter from the json schema.
           </dd>
-          
+
           <!-- OBJECT PROPERTIES -->
           <dd jsdisplay="shouldExpandObject($this)">
             <dl>
@@ -49,9 +49,9 @@
             </dl>
           </dd>
         </div> <!-- /VALUE -->
-        
+
       </div> <!-- /SUBTEMPLATES -->
-                    
+
   <a name="top"> </a>
     <!-- API HEADER -->
     <div id="pageHeader">
@@ -74,8 +74,8 @@
         <h1 jscontent="getPageTitle()">chrome.apiname</h1>
       </div>
     </div> <!-- /pageHeader -->
-          
-    <div id="pageContent"> 
+
+    <div id="pageContent">
       <!-- SIDENAV -->
       <div id="leftNav">
         <ul>
@@ -97,7 +97,6 @@
               <li><a href="xhr.html">Cross-Origin XHR</a></li>
               <li><a href="packaging.html">Packaging</a></li>
               <li><A href="autoupdate.html">Autoupdate</a></li>
-              <li><A href="i18n.html">i18n</a></li>
             </ul>
           </li>
           <li><a href="tutorials.html"><div>Tutorials</div></a>
@@ -105,13 +104,13 @@
               <li><a href="tut_debugging.html">Debugging</a></li>
             </ul>
           </li>
-          <li>Reference 
+          <li>Reference
             <ul>
               <li> Formats</a>
                 <ul>
                   <li><a href="manifest.html">Manifest Files</a></li>
                   <li><a href="match_patterns.html">Match Patterns</a></li>
-                  <li>Packages (.crx)</li>
+                  <!-- <li>Packages (.crx)</li> -->
                 </ul>
               </li>
               <li> <a href="api_index.html">chrome.* APIs</a> </li>
@@ -121,7 +120,7 @@
          <li><a href="http://dev.chromium.org/developers/design-documents/extensions/samples">Samples</a></li>
         </ul>
       </div>
-    
+
       <div id="mainColumn">
         <!-- TABLE OF CONTENTS -->
         <div id="toc" jsdisplay="showPageTOC()">
@@ -142,7 +141,7 @@
                 <a href="#apiReference" jscontent="'API reference: ' + getModuleName()">API reference</a>
                 <ol>
                   <li jsdisplay="$this.properties">
-                    <a href="#properties">Properties</a>    
+                    <a href="#properties">Properties</a>
                     <ol>
                       <li jsselect="getPropertyListFromObject($this)">
                         <a jscontent="name"
@@ -152,7 +151,7 @@
                     </ol>
                   </li>
                   <li jsdisplay="functions && functions.length > 0">
-                    <a href="#methods">Methods</a>    
+                    <a href="#methods">Methods</a>
                     <ol>
                       <li jsselect="functions.sort(sortByName)">
                         <a jscontent="name"
@@ -185,7 +184,7 @@
               </li>
             </div>
           </ol>
-        </div>  
+        </div>
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
@@ -195,7 +194,7 @@
         <div class="apiPage" jsselect="apiDefinition">
         <a name="apiReference"></a>
         <h2 jscontent="'API reference: ' + getModuleName()">API reference: chrome.apiname </h2>
-          
+
           <!-- PROPERTIES -->
           <div jsdisplay="$this.properties" class="apiGroup">
             <a name="properties"></a>
@@ -211,9 +210,9 @@
               <div transclude="valueTemplate">
               </div>
             </div>
-            
+
           </div> <!-- /apiGroup -->
-          
+
           <!-- METHODS -->
           <div jsdisplay="functions && functions.length > 0" class="apiGroup" id="methods">
             <a name="methods"></a>
@@ -243,7 +242,7 @@
                     </div>
                   </div>
                 </dl>
-                
+
                 <!-- RETURNS -->
                 <h4 jsdisplay="returns">Returns</h4>
                 <dl>
@@ -253,7 +252,7 @@
                   </div>
                 </dl>
 
-                <!-- CALLBACK -->	
+                <!-- CALLBACK -->
                 <div jsdisplay="hasCallback(parameters)">
                   <div jsselect="getCallbackParameters(parameters)">
                   <h4>Callback function</h4>
@@ -261,7 +260,7 @@
                     If you specify the <em>callback</em> parameter,
                     it should specify a function that looks like this:
                   </p>
-                  
+
                   <!-- Note: intentionally longer 80 columns -->
                   <pre>function(<span jscontent="getSignatureString(parameters)">Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
@@ -314,7 +313,7 @@
             </div> <!-- /apiItem -->
 
           </div> <!-- /apiGroup -->
-          
+
           <!-- TYPES -->
           <div jsdisplay="types && types.length > 0" class="apiGroup">
             <a name="types.sort(sortByName)"></a>
@@ -324,20 +323,20 @@
             <div jsselect="types" class="apiItem">
               <a jsvalues=".name:'type-' + id"></a>
               <h4 jscontent="id">type name</h4>
-                
+
               <div transclude="valueTemplate">
               </div>
 
             </div> <!-- /apiItem -->
 
           </div> <!-- /apiGroup -->
-          
+
         </div> <!-- /apiPage -->
       </div> <!-- /mainColumn -->
     </div> <!-- /pageContent -->
     <div id="pageFooter" -->
   <p>
-  Except as otherwise <a 
+  Except as otherwise <a
   href="http://code.google.com/policies.html#restrictions">noted</a>,
   the content of this page is licensed under the <a rel="license"
   href="http://creativecommons.org/licenses/by/3.0/">Creative Commons
