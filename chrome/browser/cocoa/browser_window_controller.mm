@@ -190,6 +190,9 @@ willPositionSheet:(NSWindow*)sheet
     }
     [[[self window] contentView] addSubview:[toolbarController_ view]];
 
+    // TODO(thakis): Turn this back on when the extension bar doesn't show up
+    // if you don't have toolstrips installed.
+#if 0
     if (browser_->SupportsWindowFeature(Browser::FEATURE_EXTENSIONSHELF)) {
       // Create the extension shelf.
       extensionShelfController_.reset([[ExtensionShelfController alloc]
@@ -199,6 +202,7 @@ willPositionSheet:(NSWindow*)sheet
       [extensionShelfController_ wasInsertedIntoWindow];
       [extensionShelfController_ show:nil];
     }
+#endif
 
     [self fixWindowGradient];
 
