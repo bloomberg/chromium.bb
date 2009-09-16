@@ -248,11 +248,17 @@ void WrapStringWithLTRFormatting(std::wstring* text);
 // strings are rendered properly in an LTR context.
 void WrapStringWithRTLFormatting(std::wstring* text);
 
-// Wraps individual file path components to get them to display correctly in an
-// RTL UI. All filepaths should be passed through this function before display
-// in UI for RTL locales.
+// Wraps file path to get it to display correctly in RTL UI. All filepaths
+// should be passed through this function before display in UI for RTL locales.
 void WrapPathWithLTRFormatting(const FilePath& path,
                                string16* rtl_safe_path);
+
+// Given the string in |text|, this function returns the adjusted string having
+// LTR directionality for display purpose. Which means that in RTL locale the
+// string is wrapped with LRE (Left-To-Right Embedding) and PDF (Pop
+// Directional Formatting) marks and returned. In LTR locale, the string itself
+// is returned.
+std::wstring GetDisplayStringInLTRDirectionality(std::wstring* text);
 
 // Returns the default text alignment to be used when drawing text on a
 // gfx::Canvas based on the directionality of the system locale language. This

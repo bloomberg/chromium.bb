@@ -303,9 +303,11 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
       ElideString(extension, kFileNameMaxLength / 2, &extension);
 
     ElideString(rootname, kFileNameMaxLength - extension.length(), &rootname);
+    std::wstring filename = rootname + L"." + extension;
+    if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+      l10n_util::WrapStringWithLTRFormatting(&filename);
     dangerous_download_label_ = new views::Label(
-        l10n_util::GetStringF(IDS_PROMPT_DANGEROUS_DOWNLOAD,
-                              rootname + L"." + extension));
+        l10n_util::GetStringF(IDS_PROMPT_DANGEROUS_DOWNLOAD, filename));
     dangerous_download_label_->SetMultiLine(true);
     dangerous_download_label_->SetHorizontalAlignment(
         views::Label::ALIGN_LEFT);
@@ -594,15 +596,18 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
       filename = gfx::ElideFilename(download_->GetFileName(),
                                     font_, kTextWidth);
     } else {
-      std::wstring tmp_name =
-          l10n_util::GetStringF(IDS_DOWNLOAD_STATUS_OPENING,
-                                download_->GetFileName().ToWStringHack());
-#if defined(OS_WIN)
-      FilePath filepath(tmp_name);
-#else
-      FilePath filepath(base::SysWideToNativeMB(tmp_name));
-#endif
-      filename = gfx::ElideFilename(filepath, font_, kTextWidth);
+      // First, Calculate the download status opening string width.
+      std::wstring empty_string;
+      std::wstring status_string =
+          l10n_util::GetStringF(IDS_DOWNLOAD_STATUS_OPENING, empty_string);
+      int status_string_width = font_.GetStringWidth(status_string);
+      // Then, elide the file name.
+      std::wstring filename_string =
+          gfx::ElideFilename(download_->GetFileName(), font_,
+                             kTextWidth - status_string_width);
+      // Last, concat the whole string.
+      filename = l10n_util::GetStringF(IDS_DOWNLOAD_STATUS_OPENING,
+                                       filename_string);
     }
 
     int mirrored_x = MirroredXWithWidthInsideView(

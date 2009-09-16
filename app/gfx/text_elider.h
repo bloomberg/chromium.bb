@@ -42,7 +42,10 @@ std::wstring ElideText(const std::wstring& text,
 
 // Elide a filename to fit a given pixel width, with an emphasis on not hiding
 // the extension unless we have to. If filename contains a path, the path will
-// be removed if filename doesn't fit into available_pixel_width.
+// be removed if filename doesn't fit into available_pixel_width. The elided
+// filename is forced to have LTR directionality, which means that in RTL UI
+// the elided filename is wrapped with LRE (Left-To-Right Embedding) mark and
+// PDF (Pop Directional Formatting) mark.
 std::wstring ElideFilename(const FilePath& filename,
                            const gfx::Font& font,
                            int available_pixel_width);

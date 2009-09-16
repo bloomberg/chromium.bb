@@ -830,6 +830,12 @@ void WrapPathWithLTRFormatting(const FilePath& path,
   rtl_safe_path->push_back(kPopDirectionalFormatting);
 }
 
+std::wstring GetDisplayStringInLTRDirectionality(std::wstring* text) {
+  if (GetTextDirection() == RIGHT_TO_LEFT)
+    WrapStringWithLTRFormatting(text);
+  return *text;
+}
+
 int DefaultCanvasTextAlignment() {
   if (GetTextDirection() == LEFT_TO_RIGHT) {
     return gfx::Canvas::TEXT_ALIGN_LEFT;

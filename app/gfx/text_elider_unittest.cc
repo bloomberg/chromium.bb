@@ -4,6 +4,7 @@
 
 #include "app/gfx/font.h"
 #include "app/gfx/text_elider.h"
+#include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/string_util.h"
 #include "googleurl/src/gurl.h"
@@ -176,7 +177,10 @@ TEST(TextEliderTest, TestFilenameEliding) {
   static const gfx::Font font;
   for (size_t i = 0; i < arraysize(testcases); ++i) {
     FilePath filepath(testcases[i].input);
-    EXPECT_EQ(testcases[i].output, ElideFilename(filepath,
+    std::wstring expected = testcases[i].output;
+    if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+      l10n_util::WrapStringWithLTRFormatting(&expected);
+    EXPECT_EQ(expected, ElideFilename(filepath,
         font,
         font.GetStringWidth(testcases[i].output)));
   }

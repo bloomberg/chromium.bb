@@ -412,6 +412,33 @@ TEST_F(L10nUtilTest, WrapPathWithLTRFormatting) {
   }
 }
 
+typedef struct  {
+    std::wstring raw_filename;
+    std::wstring display_string;
+} StringAndLTRString;
+
+TEST_F(L10nUtilTest, GetDisplayStringInLTRDirectionality) {
+  const StringAndLTRString test_data[] = {
+    { L"test", L"\x202atest\x202c" },
+    { L"test.html", L"\x202atest.html\x202c" },
+    { L"\x05d0\x05d1\x05d2", L"\x202a\x05d0\x05d1\x05d2\x202c" },
+    { L"\x05d0\x05d1\x05d2.txt", L"\x202a\x05d0\x05d1\x05d2.txt\x202c" },
+    { L"\x05d0"L"abc", L"\x202a\x05d0"L"abc\x202c" },
+    { L"\x05d0"L"abc.txt", L"\x202a\x05d0"L"abc.txt\x202c" },
+    { L"abc\x05d0\x05d1", L"\x202a"L"abc\x05d0\x05d1\x202c" },
+    { L"abc\x05d0\x05d1.jpg", L"\x202a"L"abc\x05d0\x05d1.jpg\x202c" },
+  };
+  for (unsigned int i = 0; i < arraysize(test_data); ++i) {
+    std::wstring input = test_data[i].raw_filename;
+    std::wstring expected =
+        l10n_util::GetDisplayStringInLTRDirectionality(&input);
+    if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+      EXPECT_EQ(test_data[i].display_string, expected);
+    else
+      EXPECT_EQ(input, expected);
+  }
+}
+
 TEST_F(L10nUtilTest, GetTextDirection) {
   EXPECT_EQ(l10n_util::RIGHT_TO_LEFT, GetTextDirection("ar"));
   EXPECT_EQ(l10n_util::RIGHT_TO_LEFT, GetTextDirection("ar_EG"));

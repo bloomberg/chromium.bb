@@ -4,6 +4,7 @@
 
 #include "app/gfx/font.h"
 #include "app/gfx/text_elider.h"
+#include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -257,8 +258,10 @@ std::wstring ElideFilename(const FilePath& filename,
                            const gfx::Font& font,
                            int available_pixel_width) {
   int full_width = font.GetStringWidth(filename.ToWStringHack());
-  if (full_width <= available_pixel_width)
-    return filename.ToWStringHack();
+  if (full_width <= available_pixel_width) {
+    std::wstring elided_name = filename.ToWStringHack();
+    return l10n_util::GetDisplayStringInLTRDirectionality(&elided_name);
+  }
 
 #if defined(OS_WIN)
   std::wstring extension = filename.Extension();
@@ -268,18 +271,25 @@ std::wstring ElideFilename(const FilePath& filename,
   std::wstring rootname =
       filename.BaseName().RemoveExtension().ToWStringHack();
 
-  if (rootname.empty() || extension.empty())
-    return ElideText(filename.ToWStringHack(), font, available_pixel_width);
+  if (rootname.empty() || extension.empty()) {
+    std::wstring elided_name = ElideText(filename.ToWStringHack(), font,
+                                         available_pixel_width);
+    return l10n_util::GetDisplayStringInLTRDirectionality(&elided_name);
+  }
 
   int ext_width = font.GetStringWidth(extension);
   int root_width = font.GetStringWidth(rootname);
 
   // We may have trimmed the path.
-  if (root_width + ext_width <= available_pixel_width)
-    return rootname + extension;
+  if (root_width + ext_width <= available_pixel_width) {
+    std::wstring elided_name = rootname + extension;
+    return l10n_util::GetDisplayStringInLTRDirectionality(&elided_name);
+  }
 
   int available_root_width = available_pixel_width - ext_width;
-  return ElideText(rootname, font, available_root_width) + extension;
+  std::wstring elided_name = ElideText(rootname, font, available_root_width);
+  elided_name += extension;
+  return l10n_util::GetDisplayStringInLTRDirectionality(&elided_name);
 }
 
 // This function adds an ellipsis at the end of the text if the text
