@@ -31,6 +31,25 @@
 #include "net/base/net_util.h"
 #include "webkit/glue/media_player_action.h"
 
+namespace {
+
+string16 EscapeAmpersands(const string16& text) {
+  string16 ret;
+  ret.reserve(text.length() * 2);
+  for (string16::const_iterator i = text.begin();
+       i != text.end(); ++i) {
+    // The escape for an ampersand is two ampersands.
+    if ('&' == *i)
+      ret.push_back(*i);
+
+    ret.push_back(*i);
+  }
+
+  return ret;
+}
+
+}  // namespace
+
 RenderViewContextMenu::RenderViewContextMenu(
     TabContents* tab_contents,
     const ContextMenuParams& params)
@@ -189,13 +208,13 @@ void RenderViewContextMenu::AppendSearchProvider() {
   const TemplateURL* const default_provider =
       profile_->GetTemplateURLModel()->GetDefaultSearchProvider();
   if (default_provider != NULL) {
-    std::wstring selection_text =
-        l10n_util::TruncateString(params_.selection_text, 50);
+    string16 selection_text = EscapeAmpersands(WideToUTF16(
+        l10n_util::TruncateString(params_.selection_text, 50)));
     if (!selection_text.empty()) {
-      string16 label(WideToUTF16(
-          l10n_util::GetStringF(IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
-                                default_provider->short_name(),
-                                selection_text)));
+      string16 label(l10n_util::GetStringFUTF16(
+          IDS_CONTENT_CONTEXT_SEARCHWEBFOR,
+          WideToUTF16(default_provider->short_name()),
+          selection_text));
       AppendMenuItem(IDS_CONTENT_CONTEXT_SEARCHWEBFOR, label);
     }
   }

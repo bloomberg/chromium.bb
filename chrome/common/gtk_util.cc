@@ -267,9 +267,12 @@ void CenterWidgetInHBox(GtkWidget* hbox, GtkWidget* widget, bool pack_at_end,
 
 std::string ConvertAcceleratorsFromWindowsStyle(const std::string& label) {
   std::string ret;
-  ret.reserve(label.length());
+  ret.reserve(label.length() * 2);
   for (size_t i = 0; i < label.length(); ++i) {
-    if ('&' == label[i]) {
+    if ('_' == label[i]) {
+      ret.push_back('_');
+      ret.push_back('_');
+    } else if ('&' == label[i]) {
       if (i + 1 < label.length() && '&' == label[i + 1]) {
         ret.push_back(label[i]);
         ++i;
