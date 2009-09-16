@@ -2328,4 +2328,4 @@ BUG21919 WIN : LayoutTests/http/tests/security/mixedContent/insecure-css-in-main
 BUG21919 WIN LINUX : LayoutTests/transforms/2d/hindi-rotated.html = FAIL
 
 // Flaky. The width of containing RenderBlocks sometimes becomes larger
-BUG21958 MAC LINUX DEBUG : LayoutTests/svg/hixie/error/012.xml = FAIL
+BUG21958 MAC LINUX DEBUG : LayoutTests/svg/hixie/error/012.xml = FAIL PASS
