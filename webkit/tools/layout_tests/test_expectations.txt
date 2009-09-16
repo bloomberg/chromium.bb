@@ -2325,7 +2325,6 @@ BUG21859 WIN : LayoutTests/tables/mozilla/bugs/bug96343.html = FAIL
 
 // WK roll 48388:48399 (brettw)
 BUG21919 WIN : LayoutTests/http/tests/security/mixedContent/insecure-css-in-main-frame.html = FAIL
-BUG21919 WIN LINUX : LayoutTests/transforms/2d/hindi-rotated.html = FAIL
 
 // Flaky. The width of containing RenderBlocks sometimes becomes larger
 BUG21958 MAC LINUX DEBUG : LayoutTests/svg/hixie/error/012.xml = FAIL PASS
