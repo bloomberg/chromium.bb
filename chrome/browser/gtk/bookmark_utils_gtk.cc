@@ -159,7 +159,7 @@ std::string BuildTooltipFor(const BookmarkNode* node) {
   g_free(escaped_url_cstr);
 
   std::string tooltip;
-  if (url == title) {
+  if (url == title || title.empty()) {
     return escaped_url;
   } else {
     std::string truncated_title = WideToUTF8(l10n_util::TruncateString(
