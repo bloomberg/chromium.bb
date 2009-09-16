@@ -369,7 +369,7 @@ windows_d3d_env.Append(
     CPPDEFINES = ['RENDERER_D3D9'],
     RENDERER_INCLUDE_PATH = [],
     RENDERER_LIB_PATH = [],
-    RENDERER_LIBS = ['d3d9', 'dxerr9'],
+    RENDERER_LIBS = ['d3d9', 'dxerr'],
 )
 
 windows_gl_env = windows_env.Clone()
