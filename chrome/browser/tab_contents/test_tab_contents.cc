@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/test_web_contents.h"
+#include "chrome/browser/tab_contents/test_tab_contents.h"
 
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 

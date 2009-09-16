@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_TEST_tab_contents_H_
-#define CHROME_BROWSER_TAB_CONTENTS_TEST_tab_contents_H_
+#ifndef CHROME_BROWSER_TAB_CONTENTS_TEST_TAB_CONTENTS_H_
+#define CHROME_BROWSER_TAB_CONTENTS_TEST_TAB_CONTENTS_H_
 
 #include "chrome/browser/tab_contents/tab_contents.h"
 
@@ -51,4 +51,4 @@ class TestTabContents : public TabContents {
   bool transition_cross_site;
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_TEST_tab_contents_H_
+#endif  // CHROME_BROWSER_TAB_CONTENTS_TEST_TAB_CONTENTS_H_

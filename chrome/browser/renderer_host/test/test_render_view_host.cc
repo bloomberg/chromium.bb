@@ -6,7 +6,7 @@
 
 #include "base/gfx/rect.h"
 #include "chrome/browser/renderer_host/backing_store.h"
-#include "chrome/browser/tab_contents/test_web_contents.h"
+#include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/common/render_messages.h"
 
 using webkit_glue::PasswordForm;
