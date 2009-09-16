@@ -185,6 +185,7 @@ devtools.profiler.Processor = function() {
           processor: this.processHeapSampleEnd_ },
       // Not used in DevTools Profiler.
       'shared-library': null,
+      'heap-js-ret-item': null,
       // Obsolete row types.
       'code-allocate': null,
       'begin-code-region': null,
