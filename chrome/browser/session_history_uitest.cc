@@ -6,6 +6,7 @@
 #include "base/file_path.h"
 #include "base/platform_thread.h"
 #include "base/string_util.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/ui/ui_test.h"
@@ -499,6 +500,22 @@ TEST_F(SessionHistoryTest, DISABLED_LocationReplace) {
   ASSERT_TRUE(tab_->NavigateToURL(server->TestServerPage(
       "files/session_history/replace.html?no-title.html")));
   EXPECT_EQ(L"", GetTabTitle());
+}
+
+TEST_F(SessionHistoryTest, HistorySearchXSS) {
+  // about:blank should be loaded first.
+  ASSERT_FALSE(tab_->GoBack());
+  EXPECT_EQ(L"", GetTabTitle());
+
+  GURL url(std::string(chrome::kChromeUIHistoryURL) +
+      "#q=%3Cimg%20src%3Dx%3Ax%20onerror%3D%22document.title%3D'XSS'%22%3E");
+  ASSERT_TRUE(tab_->NavigateToURL(url));
+  // Mainly, this is to ensure we send a synchronous message to the renderer
+  // so that we're not susceptible (less susceptible?) to a race condition.
+  // Should a race condition ever trigger, it won't result in flakiness.
+  int num = tab_->FindInPage(L"<img", FWD, CASE_SENSITIVE, false, NULL);
+  EXPECT_GT(num, 0);
+  EXPECT_EQ(L"History", GetTabTitle());
 }
 
 }  // namespace
