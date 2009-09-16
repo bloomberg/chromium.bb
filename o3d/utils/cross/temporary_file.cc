@@ -39,6 +39,12 @@
 
 namespace o3d {
 
+// TODO(gspencer): Remove this.  This is a hack to prevent needing to
+// merge all of chrome's base code into the google code O3D tree.
+#ifndef GYP_BUILD
+#define CreateTemporaryFile CreateTemporaryFileName
+#endif
+
 namespace {
 void DeletePath(const FilePath& path) {
   if (!path.empty()) {
@@ -57,7 +63,7 @@ TemporaryFile::TemporaryFile(const FilePath& file_to_manage)
 
 bool TemporaryFile::Create(TemporaryFile* temporary_file) {
   FilePath temporary_path;
-  if (file_util::CreateTemporaryFileName(&temporary_path)) {
+  if (file_util::CreateTemporaryFile(&temporary_path)) {
     temporary_file->Reset(temporary_path);
   } else {
     return false;
