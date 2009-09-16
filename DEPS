@@ -98,7 +98,7 @@ deps_os = {
       "/trunk/deps/third_party/ffmpeg/binaries/win@25436",
 
     "src/third_party/pthreads-win32":
-      "/trunk/deps/third_party/pthreads-win32@26080",
+      "/trunk/deps/third_party/pthreads-win32@26317",
   },
   "mac": {
     "src/third_party/GTM":
