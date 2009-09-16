@@ -362,12 +362,10 @@ LoginHandler* LoginHandler::Create(URLRequest* request, MessageLoop* ui_loop) {
        sizeToFitFixedWidthTextField:explanationField_];
 
   // Resize the window (no shifting needed due to window layout).
-  NSWindow* window = [self window];
-  [[window contentView] setAutoresizesSubviews:NO];
-  NSRect rect = [window frame];
-  rect.size.height = rect.size.height + explanationShift;
-  [window setFrame:rect display:NO];
-  [[window contentView] setAutoresizesSubviews:YES];
+  NSSize windowDelta = NSMakeSize(0, explanationShift);
+  [GTMUILocalizerAndLayoutTweaker
+      resizeWindowWithoutAutoResizingSubViews:[self window]
+                                        delta:windowDelta];
 }
 
 @end

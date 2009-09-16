@@ -240,12 +240,10 @@ NSAttributedString* BuildLegalTextBlock() {
   rect.origin.y = rect.origin.y - updateShift + legalShift;
   [backgroundView_ setFrame:rect];
 
-  NSWindow* window = [self window];
-  [[window contentView] setAutoresizesSubviews:NO];
-  rect = [window frame];
-  rect.size.height = rect.size.height - updateShift + legalShift;
-  [window setFrame:rect display:NO];
-  [[window contentView] setAutoresizesSubviews:YES];
+  NSSize windowDelta = NSMakeSize(0, (legalShift - updateShift));
+  [GTMUILocalizerAndLayoutTweaker
+      resizeWindowWithoutAutoResizingSubViews:[self window]
+                                        delta:windowDelta];
 }
 
 - (KeystoneGlue*)defaultKeystoneGlue {

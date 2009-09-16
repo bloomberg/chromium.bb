@@ -71,18 +71,17 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 
   // Resize the window.
   NSWindow* window = [self window];
-  [[window contentView] setAutoresizesSubviews:NO];
-  rect = [window frame];
-  rect.size.height += descriptionShift;
-  [window setFrame:rect display:NO];
-  [[window contentView] setAutoresizesSubviews:YES];
+  NSSize windowDelta = NSMakeSize(0, descriptionShift);
+  [GTMUILocalizerAndLayoutTweaker
+      resizeWindowWithoutAutoResizingSubViews:window
+                                        delta:windowDelta];
 
   ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
   goodImage_.reset([bundle.GetNSImageNamed(IDR_INPUT_GOOD) retain]);
   badImage_.reset([bundle.GetNSImageNamed(IDR_INPUT_ALERT) retain]);
   if (templateURL_) {
     // Defaults to |..._NEW_WINDOW_TITLE|.
-    [[self window] setTitle:l10n_util::GetNSString(
+    [window setTitle:l10n_util::GetNSString(
       IDS_SEARCH_ENGINES_EDITOR_EDIT_WINDOW_TITLE)];
     [nameField_ setStringValue:
         base::SysWideToNSString(templateURL_->short_name())];

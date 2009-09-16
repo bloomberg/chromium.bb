@@ -59,12 +59,10 @@ HungRendererController* g_instance = NULL;
   [imageView_ setFrame:graphicFrame];
 
   // Make the window taller to fit everything.
-  NSWindow* window = [self window];
-  [[window contentView] setAutoresizesSubviews:NO];
-  NSRect windowFrame = [window frame];
-  windowFrame.size.height += messageShift;
-  [window setFrame:windowFrame display:NO];
-  [[window contentView] setAutoresizesSubviews:YES];
+  NSSize windowDelta = NSMakeSize(0, messageShift);
+  [GTMUILocalizerAndLayoutTweaker
+      resizeWindowWithoutAutoResizingSubViews:[self window]
+                                        delta:windowDelta];
 }
 
 - (IBAction)kill:(id)sender {
