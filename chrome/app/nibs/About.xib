@@ -35,10 +35,10 @@
 				<string key="NSClassName">NSApplication</string>
 			</object>
 			<object class="NSWindowTemplate" id="820943852">
-				<int key="NSWindowStyleMask">23</int>
+				<int key="NSWindowStyleMask">3</int>
 				<int key="NSWindowBacking">2</int>
 				<string key="NSWindowRect">{{196, 257}, {450, 246}}</string>
-				<int key="NSWTFlags">-469761024</int>
+				<int key="NSWTFlags">1677722624</int>
 				<string key="NSWindowTitle">^IDS_ABOUT_CHROME_TITLE</string>
 				<string key="NSWindowClass">NSPanel</string>
 				<nil key="NSViewClass"/>
@@ -96,7 +96,7 @@
 									<reference key="NSSuperview" ref="4268204"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSTextFieldCell" key="NSCell" id="881628032">
-										<int key="NSCellFlags">70385217</int>
+										<int key="NSCellFlags">68288064</int>
 										<int key="NSCellFlags2">4326400</int>
 										<string key="NSContents">version</string>
 										<reference key="NSSupport" ref="26"/>
@@ -126,7 +126,7 @@
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSTextFieldCell" key="NSCell" id="625581420">
 										<int key="NSCellFlags">68288064</int>
-										<int key="NSCellFlags2">1077937152</int>
+										<int key="NSCellFlags2">4195328</int>
 										<string key="NSContents">^IDS_PRODUCT_NAME</string>
 										<object class="NSFont" key="NSSupport">
 											<string key="NSName">LucidaGrande</string>
@@ -643,9 +643,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{652, 526}, {450, 246}}</string>
+					<string>{{524, 526}, {450, 246}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{652, 526}, {450, 246}}</string>
+					<string>{{524, 526}, {450, 246}}</string>
 					<boolean value="NO"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<object class="NSMutableArray">
