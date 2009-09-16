@@ -17,11 +17,10 @@
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/dns_global.h"
-#include "chrome/browser/outdated_plugins.h"
 #include "chrome/browser/plugin_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/privacy_blacklist/blacklist_observer.h"
-#include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
@@ -541,8 +540,6 @@ void ResourceMessageFilter::OnGetPluginsOnFileThread(
     IPC::Message* reply_msg) {
   std::vector<WebPluginInfo> plugins;
   NPAPI::PluginList::Singleton()->GetPlugins(refresh, &plugins);
-
-  OutdatedPlugins::Check(plugins, filter->ui_loop());
 
   ViewHostMsg_GetPlugins::WriteReplyParams(reply_msg, plugins);
   // Note, we want to get to the IO thread now, but the file thread outlives it

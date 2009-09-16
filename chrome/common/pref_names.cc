@@ -596,8 +596,4 @@ const wchar_t kSyncLastSyncedTime[] = L"sync.last_synced_time";
 // Boolean specifying whether the user finished setting up sync.
 const wchar_t kSyncHasSetupCompleted[] = L"sync.has_setup_completed";
 
-// A double value giving the epoch time when we last nagged the user about
-// outdated plugins.
-const wchar_t kLastTimeNaggedAboutPlugins[] = L"plugins_last_nagged";
-
 }  // namespace prefs
