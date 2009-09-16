@@ -14,6 +14,9 @@
 #include "base/path_service.h"
 #include "base/singleton.h"
 #include "chrome/browser/chrome_thread.h"
+#if defined(TOOLKIT_GTK)
+#include "chrome/browser/printing/print_dialog_gtk.h"
+#endif
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/x11_util.h"
@@ -268,7 +271,11 @@ void ResourceMessageFilter::OnTempFileForPrintingWritten(int fd_in_browser) {
     return;
   }
 
-  // TODO(estade): print it.
+#if defined(TOOLKIT_GTK)
+  PrintDialogGtk::CreatePrintDialogForPdf(it->second, ui_loop());
+#else
+  NOTIMPLEMENTED();
+#endif
 
   // Erase the entry in the map.
   map->erase(it);

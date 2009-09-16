@@ -1660,6 +1660,8 @@
         'browser/plugin_service.h',
         'browser/possible_url_model.cc',
         'browser/possible_url_model.h',
+        'browser/printing/print_dialog_gtk.cc',
+        'browser/printing/print_dialog_gtk.h',
         'browser/printing/print_job.cc',
         'browser/printing/print_job.h',
         'browser/printing/print_job_manager.cc',
@@ -2231,6 +2233,7 @@
             # '../build/linux/system.gyp:dbus-glib',
             # '../build/linux/system.gyp:gnome-keyring',
             '../build/linux/system.gyp:gtk',
+            '../build/linux/system.gyp:gtkprint',
             '../build/linux/system.gyp:nss',
             '../base/base.gyp:linux_versioninfo',
           ],
@@ -2626,6 +2629,12 @@
                 ['exclude', '^browser/extensions/extension_creator.cc'],
                 # This compiles but it needs extension_creator.
                 ['exclude', '^browser/extensions/pack_extension_job.cc'],
+              ],
+            }],
+            ['OS=="linux" and toolkit_views==0', {
+              'sources/': [
+                ['include', '^browser/printing/print_dialog_gtk.cc'],
+                ['include', '^browser/printing/print_dialog_gtk.h'],
               ],
             }],
             ['chromeos==1',{
