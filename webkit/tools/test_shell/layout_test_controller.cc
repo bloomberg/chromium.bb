@@ -963,7 +963,8 @@ void LayoutTestController::whiteListAccessFromOrigin(
 }
 
 void LayoutTestController::LogErrorToConsole(const std::string& text) {
-  shell_->webView()->GetMainFrame()->addMessageToConsole(
+  shell_->delegate()->didAddMessageToConsole(
       WebConsoleMessage(WebConsoleMessage::LevelError,
-                        WebString::fromUTF8(text)));
+                        WebString::fromUTF8(text)),
+      WebString(), 0);
 }
