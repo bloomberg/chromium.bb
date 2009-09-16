@@ -32,6 +32,7 @@ FocusManager* FocusManager::GetFocusManagerForNativeView(
     // TODO(jcampan): http://crbug.com/21378 Reenable this NOTREACHED() when the
     // options page is only based on views.
     // NOTREACHED();
+    NOTIMPLEMENTED();
     return NULL;
   }
   FocusManager* focus_manager = widget->GetFocusManager();

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/settings_page_view.h"
 
 #include "chrome/browser/chromeos/settings_contents_view.h"
+#include "skia/ext/skia_utils_gtk.h"
 #include "views/controls/label.h"
 #include "views/fill_layout.h"
 #include "views/widget/widget_gtk.h"
@@ -19,6 +20,10 @@ GtkWidget* SettingsPageView::WrapInGtkWidget() {
       new views::WidgetGtk(views::WidgetGtk::TYPE_CHILD);
   widget->Init(NULL, gfx::Rect());
   widget->SetContentsView(this);
+  // Set to a solid background with the same color as the widget's bg color.
+  GtkStyle* window_style = gtk_widget_get_style(widget->GetNativeView());
+  set_background(views::Background::CreateSolidBackground(
+      skia::GdkColorToSkColor(window_style->bg[GTK_STATE_NORMAL])));
   widget->Show();
   // Removing the widget from the container results in unref'ing the widget. We
   // need to ref here otherwise the removal deletes the widget. The caller ends

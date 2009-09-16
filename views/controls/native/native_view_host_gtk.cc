@@ -5,6 +5,7 @@
 #include "views/controls/native/native_view_host_gtk.h"
 
 #include <gtk/gtk.h>
+#include <algorithm>
 
 #include "base/logging.h"
 #include "views/controls/native/native_view_host.h"
@@ -48,8 +49,8 @@ void NativeViewHostGtk::NativeViewAttached() {
 
   if (!focus_signal_id_) {
     focus_signal_id_ = g_signal_connect(G_OBJECT(host_->native_view()),
-					"focus-in-event",
-					G_CALLBACK(CallFocusIn), this);
+                                        "focus-in-event",
+                                        G_CALLBACK(CallFocusIn), this);
   }
 
   // Always layout though.
@@ -215,12 +216,15 @@ void NativeViewHostGtk::CallDestroy(GtkObject* object,
 
 // static
 void NativeViewHostGtk::CallFocusIn(GtkWidget* widget,
-				    GdkEventFocus* event,
+                                    GdkEventFocus* event,
                                     NativeViewHostGtk* host) {
   FocusManager* focus_manager =
       FocusManager::GetFocusManagerForNativeView(widget);
   if (!focus_manager) {
-    NOTREACHED();
+    // TODO(jcampan): http://crbug.com/21378 Reenable this NOTREACHED() when the
+    // options page is only based on views.
+    // NOTREACHED();
+    NOTIMPLEMENTED();
     return;
   }
   focus_manager->SetFocusedView(host->host_->focus_view());
