@@ -55,9 +55,6 @@ class StatusBubbleMac : public StatusBubble {
 
   // How vertically offset the bubble is from its root position.
   int offset_;
-
-  // Is the download shelf visible.
-  bool is_download_shelf_visible_;
 };
 
 // Delegate interface that allows the StatusBubble to query its delegate about

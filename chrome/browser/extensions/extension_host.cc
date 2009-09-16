@@ -71,6 +71,9 @@ void ExtensionHost::CreateView(Browser* browser) {
 #elif defined(OS_LINUX)
   view_.reset(new ExtensionViewGtk(this, browser));
   view_->Init();
+#elif defined(OS_MACOSX)
+  view_.reset(new ExtensionViewMac(this, browser));
+  view_->Init();
 #else
   // TODO(port)
   NOTREACHED();
@@ -130,10 +133,8 @@ void ExtensionHost::Observe(NotificationType type,
 }
 
 void ExtensionHost::UpdatePreferredWidth(int pref_width) {
-#if defined(TOOLKIT_VIEWS) || defined(OS_LINUX)
   if (view_.get())
     view_->UpdatePreferredWidth(pref_width);
-#endif
 }
 
 void ExtensionHost::RenderViewGone(RenderViewHost* render_view_host) {
@@ -180,6 +181,8 @@ void ExtensionHost::DidNavigate(RenderViewHost* render_view_host,
 }
 
 void ExtensionHost::InsertCssIfToolstrip() {
+
+  // TODO(erikkay): Make these ifdefs go away -- http://crbug.com/21939
 #if defined(TOOLKIT_VIEWS)
   ExtensionView* view = view_.get();
   if (!view)
@@ -190,8 +193,12 @@ void ExtensionHost::InsertCssIfToolstrip() {
     view->SetDidInsertCSS(true);
     return;
   }
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX)
   ExtensionViewGtk* view = view_.get();
+#else
+  ExtensionViewMac* view = view_.get();
+#endif
   if (!view || !view->is_toolstrip())
     return;
 #endif
@@ -218,14 +225,12 @@ void ExtensionHost::InsertCssIfToolstrip() {
     pos = css.find(kToolstripTextColorSubstitution);
   }
 
-#if defined(TOOLKIT_VIEWS) || defined(OS_LINUX)
   // TODO(erikkay) this injection should really happen in the renderer.
   // When the Jerry's view type change lands, investigate moving this there.
 
   // As a toolstrip, inject our toolstrip CSS to make it easier for toolstrips
   // to blend in with the chrome UI.
   render_view_host()->InsertCSSInWebFrame(L"", css, "ToolstripDefaultCss");
-#endif
 }
 
 void ExtensionHost::DidStopLoading(RenderViewHost* render_view_host) {
@@ -362,10 +367,9 @@ void ExtensionHost::HandleMouseLeave() {
 }
 
 Browser* ExtensionHost::GetBrowser() {
-#if defined(OS_WIN) || defined(OS_LINUX)
   if (view_.get())
     return view_->browser();
-#endif
+
   Profile* profile = render_view_host()->process()->profile();
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
 

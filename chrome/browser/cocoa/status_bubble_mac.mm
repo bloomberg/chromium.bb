@@ -39,8 +39,7 @@ StatusBubbleMac::StatusBubbleMac(NSWindow* parent, id delegate)
       delegate_(delegate),
       window_(nil),
       status_text_(nil),
-      url_text_(nil),
-      is_download_shelf_visible_(false) {
+      url_text_(nil) {
 }
 
 StatusBubbleMac::~StatusBubbleMac() {
@@ -127,12 +126,10 @@ void StatusBubbleMac::MouseMoved() {
   NSRect window_frame = [window_ frame];
   window_frame.origin = [parent_ frame].origin;
 
-  // Adjust the position to sit on top of download shelf.
+  // Adjust the position to sit on top of download and extension shelves.
   // |delegate_| can be nil during unit tests.
-  if (is_download_shelf_visible_) {
-    if ([delegate_ respondsToSelector:@selector(verticalOffsetForStatusBubble)])
-      window_frame.origin.y += [delegate_ verticalOffsetForStatusBubble];
-  }
+  if ([delegate_ respondsToSelector:@selector(verticalOffsetForStatusBubble)])
+    window_frame.origin.y += [delegate_ verticalOffsetForStatusBubble];
 
   // Get the cursor position relative to the popup.
   cursor_location.x -= NSMaxX(window_frame);
@@ -179,7 +176,6 @@ void StatusBubbleMac::MouseMoved() {
 }
 
 void StatusBubbleMac::UpdateDownloadShelfVisibility(bool visible) {
-  is_download_shelf_visible_ = visible;
 }
 
 void StatusBubbleMac::Create() {

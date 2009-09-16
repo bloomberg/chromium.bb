@@ -14,6 +14,7 @@
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/common/native_web_keyboard_event.h"
+#include "chrome/common/render_messages.h"
 #include "skia/ext/platform_canvas.h"
 #include "webkit/api/public/mac/WebInputEventFactory.h"
 #include "webkit/api/public/WebInputEvent.h"
@@ -56,6 +57,9 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       is_hidden_(false),
       shutdown_factory_(this),
       parent_view_(NULL) {
+  // |cocoa_view_| owns us and we will be deleted when |cocoa_view_| goes away.
+  // Since we autorelease it, our caller must put |native_view()| into the view
+  // hierarchy right after calling us.
   cocoa_view_ = [[[RenderWidgetHostViewCocoa alloc]
                   initWithRenderWidgetHostViewMac:this] autorelease];
   render_widget_host_->set_view(this);
@@ -419,6 +423,12 @@ void RenderWidgetHostViewMac::SetActive(bool active) {
     render_widget_host_->SetActive(active);
 }
 
+void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
+  RenderWidgetHostView::SetBackground(background);
+  if (render_widget_host_)
+    render_widget_host_->Send(new ViewMsg_SetBackground(
+        render_widget_host_->routing_id(), background));
+}
 
 // RenderWidgetHostViewCocoa ---------------------------------------------------
 

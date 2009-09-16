@@ -25,6 +25,7 @@
 #import "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
+#import "chrome/browser/cocoa/extension_shelf_controller.h"
 #import "chrome/browser/cocoa/find_bar_cocoa_controller.h"
 #include "chrome/browser/cocoa/find_bar_bridge.h"
 #import "chrome/browser/cocoa/fullscreen_window.h"
@@ -188,6 +189,16 @@ willPositionSheet:(NSWindow*)sheet
       [toolbarController_ setHasToolbar:NO];
     }
     [[[self window] contentView] addSubview:[toolbarController_ view]];
+
+    if (browser_->SupportsWindowFeature(Browser::FEATURE_EXTENSIONSHELF)) {
+      // Create the extension shelf.
+      extensionShelfController_.reset([[ExtensionShelfController alloc]
+                                        initWithBrowser:browser_.get()
+                                         resizeDelegate:self]);
+      [[[self window] contentView] addSubview:[extensionShelfController_ view]];
+      [extensionShelfController_ wasInsertedIntoWindow];
+      [extensionShelfController_ show:nil];
+    }
 
     [self fixWindowGradient];
 
@@ -466,12 +477,13 @@ willPositionSheet:(NSWindow*)sheet
 // directly.  If the view is already the correct height, does not force a
 // relayout.
 - (void)resizeView:(NSView*)view newHeight:(float)height {
-  // We should only ever be called for one of the following three views.
+  // We should only ever be called for one of the following four views.
   // |downloadShelfController_| may be nil.
   DCHECK(view);
   DCHECK(view == [toolbarController_ view] ||
          view == [infoBarContainerController_ view] ||
-         view == [downloadShelfController_ view]);
+         view == [downloadShelfController_ view] ||
+         view == [extensionShelfController_ view]);
 
   // Change the height of the view and call layoutViews.  We set the height here
   // without regard to where the view is on the screen or whether it needs to
@@ -615,13 +627,7 @@ willPositionSheet:(NSWindow*)sheet
 // StatusBubble delegate method: tell the status bubble how far above the bottom
 // of the window it should position itself.
 - (float)verticalOffsetForStatusBubble {
-  float offset = 0.0;
-
-  // Don't create a download shelf if there isn't one.
-  if (downloadShelfController_.get() && [[self downloadShelf] isVisible])
-    offset += [[self downloadShelf] height];
-
-  return offset;
+  return verticalOffsetForStatusBubble_;
 }
 
 - (GTMWindowSheetController*)sheetController {
@@ -827,7 +833,6 @@ willPositionSheet:(NSWindow*)sheet
 
 - (BOOL)isBookmarkBarVisible {
   return [[toolbarController_ bookmarkBarController] isBookmarkBarVisible];
-
 }
 
 - (void)toggleBookmarkBar {
@@ -1242,7 +1247,17 @@ willPositionSheet:(NSWindow*)sheet
   [infoBarView setFrame:infoBarFrame];
   maxY -= NSHeight(infoBarFrame);
 
-  // Place the download shelf at the bottom of the view, if it exists.
+  // Place the extension shelf at the bottom of the view, if it exists.
+  if (extensionShelfController_.get()) {
+    NSView* extensionView = [extensionShelfController_ view];
+    NSRect extensionFrame = [extensionView frame];
+    extensionFrame.origin.y = minY;
+    extensionFrame.size.width = NSWidth(contentFrame);
+    [extensionView setFrame:extensionFrame];
+    minY += NSHeight(extensionFrame);
+  }
+
+  // Place the download shelf above the extension shelf, if it exists.
   if (downloadShelfController_.get()) {
     NSView* downloadView = [downloadShelfController_ view];
     NSRect downloadFrame = [downloadView frame];
@@ -1263,6 +1278,8 @@ willPositionSheet:(NSWindow*)sheet
   // Position the find bar relative to the infobar container.
   [findBarCocoaController_
     positionFindBarView:[infoBarContainerController_ view]];
+
+  verticalOffsetForStatusBubble_ = minY;
 }
 
 @end

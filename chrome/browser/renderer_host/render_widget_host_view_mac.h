@@ -32,7 +32,7 @@ class RWHVMEditCommandHelper;
 @interface RenderWidgetHostViewCocoa
     : BaseView <RenderWidgetHostViewMacOwner, NSTextInput, NSChangeSpelling> {
  @private
-  RenderWidgetHostViewMac* renderWidgetHostView_;
+  RenderWidgetHostViewMac* renderWidgetHostView_;  // Owned by us.
   BOOL canBeKeyView_;
   BOOL closeOnDeactivate_;
   scoped_ptr<RWHVMEditCommandHelper> editCommand_helper_;
@@ -107,6 +107,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual gfx::Rect GetWindowRect();
   virtual gfx::Rect GetRootWindowRect();
   virtual void SetActive(bool active);
+  virtual void SetBackground(const SkBitmap& background);
 
   void KillSelf();
 

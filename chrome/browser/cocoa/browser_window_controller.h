@@ -25,6 +25,7 @@ class BrowserWindow;
 class BrowserWindowCocoa;
 class ConstrainedWindowMac;
 @class DownloadShelfController;
+@class ExtensionShelfController;
 @class FindBarCocoaController;
 @class GTMWindowSheetController;
 @class InfoBarContainerController;
@@ -65,10 +66,12 @@ class TabStripModelObserverBridge;
   scoped_nsobject<InfoBarContainerController> infoBarContainerController_;
   scoped_ptr<StatusBubble> statusBubble_;
   scoped_nsobject<DownloadShelfController> downloadShelfController_;
+  scoped_nsobject<ExtensionShelfController> extensionShelfController_;
   scoped_nsobject<BookmarkBubbleController> bookmarkBubbleController_;
   scoped_nsobject<GTMTheme> theme_;
   BOOL ownsBrowser_;  // Only ever NO when testing
   BOOL fullscreen_;
+  CGFloat verticalOffsetForStatusBubble_;
 }
 
 // Load the browser window nib and do any Cocoa-specific initialization.

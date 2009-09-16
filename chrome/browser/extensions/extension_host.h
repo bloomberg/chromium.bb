@@ -15,6 +15,8 @@
 #include "chrome/browser/views/extensions/extension_view.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/gtk/extension_view_gtk.h"
+#elif defined(OS_MACOSX)
+#include "chrome/browser/cocoa/extension_view_mac.h"
 #endif
 #include "chrome/common/notification_registrar.h"
 
@@ -48,6 +50,8 @@ class ExtensionHost : public RenderViewHostDelegate,
   ExtensionView* view() const { return view_.get(); }
 #elif defined(OS_LINUX)
   ExtensionViewGtk* view() const { return view_.get(); }
+#elif defined(OS_MACOSX)
+  ExtensionViewMac* view() const { return view_.get(); }
 #else
   // TODO(port): implement
   void* view() const { return NULL; }
@@ -158,6 +162,8 @@ class ExtensionHost : public RenderViewHostDelegate,
   scoped_ptr<ExtensionView> view_;
 #elif defined(OS_LINUX)
   scoped_ptr<ExtensionViewGtk> view_;
+#elif defined(OS_MACOSX)
+  scoped_ptr<ExtensionViewMac> view_;
 #endif
 
   // The host for our HTML content.
