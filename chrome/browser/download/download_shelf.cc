@@ -28,12 +28,16 @@ DownloadShelfContextMenu::~DownloadShelfContextMenu() {
 
 bool DownloadShelfContextMenu::ItemIsChecked(int id) const {
   switch (id) {
-    case OPEN_WHEN_COMPLETE:
+    case OPEN_WHEN_COMPLETE: {
       return download_->open_when_complete();
+    }
     case ALWAYS_OPEN_TYPE: {
       const FilePath::StringType extension =
           file_util::GetFileExtensionFromPath(download_->full_path());
       return download_->manager()->ShouldOpenFileExtension(extension);
+    }
+    case TOGGLE_PAUSE: {
+      return download_->is_paused();
     }
   }
   return false;
