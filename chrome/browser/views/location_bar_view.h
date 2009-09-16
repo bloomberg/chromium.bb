@@ -258,7 +258,7 @@ class LocationBarView : public LocationBar,
   class LocationBarImageView : public views::ImageView,
                                public InfoBubbleDelegate {
    public:
-    LocationBarImageView();
+    explicit LocationBarImageView(const BubblePositioner* bubble_positioner);
     virtual ~LocationBarImageView();
 
     // Overridden from view for the mouse hovering.
@@ -285,6 +285,10 @@ class LocationBarView : public LocationBar,
     // image.
     ShowInfoBubbleTask* show_info_bubble_task_;
 
+    // A positioner used to give the info bubble the correct target bounds.  The
+    // caller maintains ownership of this and must ensure it's kept alive.
+    const BubblePositioner* bubble_positioner_;
+
     DISALLOW_COPY_AND_ASSIGN(LocationBarImageView);
   };
 
@@ -300,7 +304,9 @@ class LocationBarView : public LocationBar,
       WARNING
     };
 
-    SecurityImageView(Profile* profile, ToolbarModel* model_);
+    SecurityImageView(Profile* profile,
+                      ToolbarModel* model_,
+                      const BubblePositioner* bubble_positioner);
     virtual ~SecurityImageView();
 
     // Sets the image that should be displayed.
@@ -341,7 +347,8 @@ class LocationBarView : public LocationBar,
    public:
     PageActionImageView(LocationBarView* owner,
                         Profile* profile,
-                        const PageAction* page_action);
+                        const PageAction* page_action,
+                        const BubblePositioner* bubble_positioner);
     virtual ~PageActionImageView();
 
     // Overridden from view for the mouse hovering.

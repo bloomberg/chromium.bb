@@ -10,11 +10,20 @@
 
 class SkBitmap;
 
-// Renders a round-rect border and a custom dropshadow.  This can be used to
-// produce floating "bubble" objects.
+// Renders a round-rect border, with optional arrow (off by default), and a
+// custom dropshadow.  This can be used to produce floating "bubble" objects.
 class BubbleBorder : public views::Border {
  public:
-  BubbleBorder() {
+  // Possible locations for the (optional) arrow.
+  enum ArrowLocation {
+    NONE,
+    TOP_LEFT,
+    TOP_RIGHT,
+    BOTTOM_LEFT,
+    BOTTOM_RIGHT
+  };
+
+  BubbleBorder() : arrow_location_(NONE), background_color_(SK_ColorWHITE) {
     InitClass();
   }
 
@@ -27,9 +36,24 @@ class BubbleBorder : public views::Border {
     return 4;
   }
 
-  // Gives the desired bounds (in screen coordinates) given the rect to position
-  // relative to and the size of the contained contents.  The contents are
-  // centered underneath the supplied rect.
+  // Sets the location for the arrow.
+  void set_arrow_location(ArrowLocation arrow_location) {
+    arrow_location_ = arrow_location;
+  }
+
+  // Sets the background color for the arrow body.  This is irrelevant if you do
+  // not also set the arrow location to something other than NONE.
+  void set_background_color(SkColor background_color) {
+    background_color_ = background_color;
+  }
+
+  // For borders with an arrow, gives the desired bounds (in screen coordinates)
+  // given the rect to point to and the size of the contained contents.  This
+  // depends on the arrow location, so if you change that, you should call this
+  // again to find out the new coordinates.
+  //
+  // For borders without an arrow, gives the bounds with the content centered
+  // underneath the supplied rect.
   gfx::Rect GetBounds(const gfx::Rect& position_relative_to,
                       const gfx::Size& contents_size) const;
 
@@ -41,6 +65,16 @@ class BubbleBorder : public views::Border {
   static void InitClass();
 
   virtual ~BubbleBorder() { }
+
+  // Returns true if there is an arrow and it is positioned on the top edge.
+  bool arrow_is_top() const {
+    return (arrow_location_ == TOP_LEFT) || (arrow_location_ == TOP_RIGHT);
+  }
+
+  // Returns true if there is an arrow and it is positioned on the left side.
+  bool arrow_is_left() const {
+    return (arrow_location_ == TOP_LEFT) || (arrow_location_ == BOTTOM_LEFT);
+  }
 
   // Overridden from views::Border:
   virtual void Paint(const views::View& view, gfx::Canvas* canvas) const;
@@ -54,6 +88,13 @@ class BubbleBorder : public views::Border {
   static SkBitmap* bottom_right_;
   static SkBitmap* bottom_;
   static SkBitmap* bottom_left_;
+  static SkBitmap* top_arrow_;
+  static SkBitmap* bottom_arrow_;
+
+  static int arrow_x_offset_;
+
+  ArrowLocation arrow_location_;
+  SkColor background_color_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleBorder);
 };

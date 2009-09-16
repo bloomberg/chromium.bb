@@ -22,6 +22,7 @@
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
@@ -96,7 +97,7 @@ LocationBarView::LocationBarView(Profile* profile,
       selected_keyword_view_(profile),
       keyword_hint_view_(profile),
       type_to_search_view_(l10n_util::GetString(IDS_OMNIBOX_EMPTY_TEXT)),
-      security_image_view_(profile, model),
+      security_image_view_(profile, model, bubble_positioner),
       popup_window_mode_(popup_window_mode),
       first_run_bubble_(this),
       bubble_positioner_(bubble_positioner) {
@@ -666,8 +667,8 @@ void LocationBarView::RefreshPageActionViews() {
     page_action_image_views_.resize(page_actions.size());
 
     for (size_t i = 0; i < page_actions.size(); ++i) {
-      page_action_image_views_[i] =
-          new PageActionImageView(this, profile_, page_actions[i]);
+      page_action_image_views_[i] = new PageActionImageView(this, profile_,
+          page_actions[i], bubble_positioner_);
       page_action_image_views_[i]->SetVisible(false);
       page_action_image_views_[i]->SetParentOwned(false);
       AddChildView(page_action_image_views_[i]);
@@ -1060,9 +1061,11 @@ void LocationBarView::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
 
 // LocationBarImageView---------------------------------------------------------
 
-LocationBarView::LocationBarImageView::LocationBarImageView()
-  : info_bubble_(NULL),
-    show_info_bubble_task_(NULL) {
+LocationBarView::LocationBarImageView::LocationBarImageView(
+    const BubblePositioner* bubble_positioner)
+    : info_bubble_(NULL),
+      show_info_bubble_task_(NULL),
+      bubble_positioner_(bubble_positioner) {
 }
 
 LocationBarView::LocationBarImageView::~LocationBarImageView() {
@@ -1108,9 +1111,11 @@ void LocationBarView::LocationBarImageView::InfoBubbleClosing(
 
 void LocationBarView::LocationBarImageView::ShowInfoBubbleImpl(
     const std::wstring& text, SkColor text_color) {
+  gfx::Rect bounds(bubble_positioner_->GetLocationStackBounds());
   gfx::Point location;
   views::View::ConvertPointToScreen(this, &location);
-  gfx::Rect bounds(location.x(), location.y(), width(), height());
+  bounds.set_x(location.x());
+  bounds.set_width(width());
 
   views::Label* label = new views::Label(text);
   label->SetMultiLine(true);
@@ -1130,11 +1135,13 @@ void LocationBarView::LocationBarImageView::ShowInfoBubbleImpl(
 SkBitmap* LocationBarView::SecurityImageView::lock_icon_ = NULL;
 SkBitmap* LocationBarView::SecurityImageView::warning_icon_ = NULL;
 
-LocationBarView::SecurityImageView::SecurityImageView(Profile* profile,
-                                                      ToolbarModel* model)
-  : LocationBarImageView(),
-    profile_(profile),
-    model_(model) {
+LocationBarView::SecurityImageView::SecurityImageView(
+    Profile* profile,
+    ToolbarModel* model,
+    const BubblePositioner* bubble_positioner)
+    : LocationBarImageView(bubble_positioner),
+      profile_(profile),
+      model_(model) {
   if (!lock_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     lock_icon_ = rb.GetBitmapNamed(IDR_LOCK);
@@ -1185,8 +1192,9 @@ void LocationBarView::SecurityImageView::ShowInfoBubble() {
 LocationBarView::PageActionImageView::PageActionImageView(
     LocationBarView* owner,
     Profile* profile,
-    const PageAction* page_action)
-    : LocationBarImageView(),
+    const PageAction* page_action,
+    const BubblePositioner* bubble_positioner)
+    : LocationBarImageView(bubble_positioner),
       owner_(owner),
       profile_(profile),
       page_action_(page_action),

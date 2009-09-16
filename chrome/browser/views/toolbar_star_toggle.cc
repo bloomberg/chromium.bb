@@ -35,14 +35,25 @@ ToolbarStarToggle::ToolbarStarToggle(views::ButtonListener* listener,
 }
 
 void ToolbarStarToggle::ShowStarBubble(const GURL& url, bool newly_bookmarked) {
+  gfx::Rect bounds(host_->GetLocationStackBounds());
   gfx::Point star_location;
   views::View::ConvertPointToScreen(this, &star_location);
-  // Shift the x location by 1 as visually the center of the star appears 1
-  // pixel to the right. By doing this bubble arrow points to the center
-  // of the star.
-  gfx::Rect star_bounds(star_location.x() + 1, star_location.y(), width(),
-                        height());
-  browser::ShowBookmarkBubbleView(host_->GetWindow(), star_bounds, this,
+  // The visual center of the star is not centered within the bounds.  The star
+  // has a single central pixel; there are 13 pixels on the "inside" side of it
+  // (toward the location bar) and 16 on the "outside".  This means we need to
+  // shift the bounds one pixel toward the location bar in order to place the
+  // star's outside edge at the horizontal center.  However, even this isn't
+  // good enough in RTL mode, because the InfoBubble's arrow's central pixel is
+  // drawn with its left edge on the target rect center-line in both LTR and RTL
+  // modes.  So in RTL mode, we need to shift the bounds one more pixel left, in
+  // order to place the star's central pixel on the right side of the bounds'
+  // center-line, so that the arrow's center will line up.
+  //
+  // TODO: If the InfoBubble used mirroring transformations maybe this could
+  // become symmetric (-1 : 1).
+  bounds.set_x(star_location.x() + (UILayoutIsRightToLeft() ? -2 : 1));
+  bounds.set_width(width());
+  browser::ShowBookmarkBubbleView(host_->GetWindow(), bounds, this,
                                   host_->profile(), url, newly_bookmarked);
 }
 

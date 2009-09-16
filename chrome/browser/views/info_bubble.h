@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_VIEWS_INFO_BUBBLE_H_
 #define CHROME_BROWSER_VIEWS_INFO_BUBBLE_H_
 
-#include "views/view.h"
+#include "chrome/browser/views/bubble_border.h"
 
 #if defined(OS_WIN)
 #include "views/widget/widget_win.h"
@@ -22,6 +22,7 @@
 // InfoBubble insets the contents for you, so the contents typically shouldn't
 // have any additional margins.
 
+class BorderWidget;
 class InfoBubble;
 
 namespace views {
@@ -31,6 +32,37 @@ class Window;
 namespace gfx {
 class Path;
 }
+
+#if defined(OS_WIN)
+// This is a window that surrounds the info bubble and paints the margin and
+// border.  It is a separate window so that it can be a layered window, so that
+// we can use >1-bit alpha shadow images on the borders, which look nicer than
+// the Windows CS_DROPSHADOW shadows.  The info bubble window itself cannot be a
+// layered window because that prevents it from hosting native child controls.
+class BorderWidget : public views::WidgetWin {
+ public:
+  BorderWidget();
+  virtual ~BorderWidget() { }
+
+  // Given the owning (parent) window, the size of the contained contents
+  // (without margins), and the rect (in screen coordinates) to point to,
+  // initializes the window and returns the bounds (in screen coordinates) the
+  // contents should use.  |is_rtl| is supplied to
+  // BorderContents::InitAndGetBounds(), see its declaration for details.
+  gfx::Rect InitAndGetBounds(HWND owner,
+                             const gfx::Rect& position_relative_to,
+                             const gfx::Size& contents_size,
+                             bool is_rtl);
+
+ private:
+  // Overridden from WidgetWin:
+  virtual LRESULT OnMouseActivate(HWND window,
+                                  UINT hit_test,
+                                  UINT mouse_message);
+
+  DISALLOW_COPY_AND_ASSIGN(BorderWidget);
+};
+#endif
 
 class InfoBubbleDelegate {
  public:
@@ -70,75 +102,6 @@ class InfoBubble : public views::WidgetGtk {
   virtual void Close();
 
  protected:
-  // InfoBubble::CreateContentView() creates one of these. ContentView houses
-  // the supplied content as its only child view, renders the arrow/border of
-  // the bubble and sizes the content.
-  class ContentView : public views::View {
-   public:
-    // Possible edges the arrow is aligned along.
-    enum ArrowEdge {
-      TOP_LEFT     = 0,
-      TOP_RIGHT    = 1,
-      BOTTOM_LEFT  = 2,
-      BOTTOM_RIGHT = 3
-    };
-
-    // Creates the ContentView. The supplied view is added as the only child of
-    // the ContentView.
-    ContentView(views::View* content, InfoBubble* host);
-
-    virtual ~ContentView() {}
-
-    // Returns the bounds for the window to contain this view.
-    //
-    // This invokes CalculateWindowBounds, if the returned bounds don't fit on
-    // the monitor containing position_relative_to, the arrow edge is adjusted.
-    virtual gfx::Rect CalculateWindowBoundsAndAjust(
-        const gfx::Rect& position_relative_to);
-
-    // Sets the edge the arrow is rendered at.
-    void SetArrowEdge(ArrowEdge arrow_edge) { arrow_edge_ = arrow_edge; }
-
-    // Returns the preferred size, which is the sum of the preferred size of
-    // the content and the border/arrow.
-    virtual gfx::Size GetPreferredSize();
-
-    // Positions the content relative to the border.
-    virtual void Layout();
-
-    // Return the mask for the content view.
-    void GetMask(const gfx::Size& size, gfx::Path* mask);
-
-    // Paints the background and arrow appropriately.
-    virtual void Paint(gfx::Canvas* canvas);
-
-    // Returns true if the arrow is positioned along the top edge of the
-    // view. If this returns false the arrow is positioned along the bottom
-    // edge.
-    bool IsTop() { return (arrow_edge_ & 2) == 0; }
-
-    // Returns true if the arrow is positioned along the left edge of the
-    // view. If this returns false the arrow is positioned along the right edge.
-    bool IsLeft() { return (arrow_edge_ & 1) == 0; }
-
-    virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
-
-   private:
-    // Returns the bounds for the window containing us based on the current
-    // arrow edge.
-    gfx::Rect CalculateWindowBounds(const gfx::Rect& position_relative_to);
-
-    views::View* content_;
-
-    // Edge to draw the arrow at.
-    ArrowEdge arrow_edge_;
-
-    // The bubble we're in.
-    InfoBubble* host_;
-
-    DISALLOW_COPY_AND_ASSIGN(ContentView);
-  };
-
   InfoBubble();
   virtual ~InfoBubble() {}
 
@@ -148,16 +111,9 @@ class InfoBubble : public views::WidgetGtk {
             views::View* contents,
             InfoBubbleDelegate* delegate);
 
-  // Creates and return a new ContentView containing content.
-  virtual ContentView* CreateContentView(views::View* content);
-
 #if defined(OS_WIN)
   // Overridden from WidgetWin:
   virtual void OnActivate(UINT action, BOOL minimized, HWND window);
-  virtual void OnSize(UINT param, const CSize& size);
-#elif defined(OS_LINUX)
-  // Overridden from WidgetGtk:
-  virtual void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
 #endif
 
  private:
@@ -174,8 +130,10 @@ class InfoBubble : public views::WidgetGtk {
   // The window that this InfoBubble is parented to.
   views::Window* parent_;
 
-  // The content view contained by the infobubble.
-  ContentView* content_view_;
+#if defined(OS_WIN)
+  // The window used to render the padding, border and arrow.
+  scoped_ptr<BorderWidget> border_;
+#endif
 
   // Have we been closed?
   bool closed_;

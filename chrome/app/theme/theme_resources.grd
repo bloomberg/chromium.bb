@@ -228,10 +228,6 @@
       <include name="IDR_INFOBAR_PLUGIN_INSTALL" file="infobar_plugin.png" type="BINDATA" />
       <include name="IDR_INFOBAR_QUESTION_MARK" file="infobar_questionmark.png" type="BINDATA" />
       <include name="IDR_INFOBAR_THEME" file="infobar_theme.png" type="BINDATA" />
-      <include name="IDR_INFO_BUBBLE_CORNER_TOP_LEFT" file="bubble_corner_tl.png" type="BINDATA" />
-      <include name="IDR_INFO_BUBBLE_CORNER_TOP_RIGHT" file="bubble_corner_tr.png" type="BINDATA" />
-      <include name="IDR_INFO_BUBBLE_CORNER_BOTTOM_LEFT" file="bubble_corner_bl.png" type="BINDATA" />
-      <include name="IDR_INFO_BUBBLE_CORNER_BOTTOM_RIGHT" file="bubble_corner_br.png" type="BINDATA" />
       <include name="IDR_MENU_MARKER" file="menu_marker.png" type="BINDATA" />
       <include name="IDR_FROZEN_TAB_ICON" file="frozen_tab.png" type="BINDATA" />
       <include name="IDR_UPDATE_AVAILABLE" file="update_available.png" type="BINDATA" />
@@ -279,6 +275,8 @@
       <include name="IDR_BUBBLE_BR" file="bubble_br.png" type="BINDATA" />
       <include name="IDR_BUBBLE_B" file="bubble_b.png" type="BINDATA" />
       <include name="IDR_BUBBLE_BL" file="bubble_bl.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_T_ARROW" file="bubble_t_arrow.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_B_ARROW" file="bubble_b_arrow.png" type="BINDATA" />
       <include name="IDR_O2_GLOBE" file="o2_globe.png" type="BINDATA" />
       <include name="IDR_O2_HISTORY" file="o2_history.png" type="BINDATA" />
       <include name="IDR_O2_MORE" file="o2_more.png" type="BINDATA" />
