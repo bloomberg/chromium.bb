@@ -155,7 +155,7 @@ skip_child_includes = [
 
 hooks = [
   {
-    # A change to a .gyp, .gypi, or to GYP itself shound run the generator.
+    # A change to a .gyp, .gypi, or to GYP itself should run the generator.
     "pattern": "\\.gypi?$|[/\\\\]src[/\\\\]tools[/\\\\]gyp[/\\\\]|[/\\\\]src[/\\\\]build[/\\\\]gyp_chromium$",
     "action": ["python", "src/build/gyp_chromium"],
   },

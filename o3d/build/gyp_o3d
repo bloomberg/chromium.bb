@@ -1,24 +1,30 @@
 #!/usr/bin/python
 
-# This script is wrapper for O3D when compiling independently of chromium. 
-# Like in chromium, the gyp_chromium.gypi include is forced in. 
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
-import glob
+# This script is wrapper for O3D when compiling independently of Chromium.
+# Like in Chromium, the common.gypi include is forced in.
+
 import os
-import shlex
 import sys
+
+chrome_src = os.path.join(os.path.dirname(sys.argv[0]), os.pardir, os.pardir)
 
 try:
   import gyp
 except ImportError, e:
-  sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), '../../tools/gyp/pylib'))
+  sys.path.append(os.path.join(chrome_src, 'tools', 'gyp', 'pylib'))
   import gyp
 
 if __name__ == '__main__':
   args = sys.argv[1:]
 
-  # Always include gyp_chromium.gypi
-  args += ['-I', os.path.join(os.path.dirname(sys.argv[0]),'../../build/gyp_chromium.gypi')]
+  # Always include common.gypi
+  args += ['--depth', '.',
+           '-I', os.path.join(chrome_src, 'build', 'common.gypi'),
+           '-D', 'mac_deployment_target=10.4']
 
   # Off we go...
   sys.exit(gyp.main(args))
