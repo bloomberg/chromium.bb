@@ -42,10 +42,13 @@ gfx::NativeWindow GetTopLevel(gfx::NativeView view) {
 
 string16 GetWindowTitle(gfx::NativeWindow window) {
   NSString* title = nil;
-  if ([[window delegate] isKindOfClass:[TabWindowController class]])
-    title = [[window delegate] selectedTabTitle];
-  else
+  if ([[window delegate] isKindOfClass:[TabWindowController class]]) {
+    TabWindowController* delegate =
+        reinterpret_cast<TabWindowController*>([window delegate]);
+    title = [delegate selectedTabTitle];
+  } else {
     title = [window title];
+  }
   // If we don't yet have a title, use "Untitled".
   if (![title length])
     return WideToUTF16(l10n_util::GetString(
