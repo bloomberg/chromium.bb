@@ -60,7 +60,7 @@ binary_to_desktop_file()
     IFS=:
     for dir in $search; do
         unset IFS
-	[ "$dir" ] || continue
+        [ "$dir" ] || continue
         [ -d "$dir/applications" -o -d "$dir/applnk" ] || continue
         for file in "$dir"/applications/*.desktop "$dir"/applnk/*.desktop; do
             [ -r "$file" ] || continue
@@ -68,7 +68,7 @@ binary_to_desktop_file()
             grep -q "^Exec.*$base" "$file" || continue
             # Make sure it's a visible desktop file (e.g. not "preferred-web-browser.desktop").
             grep -Eq "^(NoDisplay|Hidden)=true" "$file" && continue
-	    command="`grep -E "^Exec(\[[^]=]*])?=" "$file" | cut -d= -f 2- | first_word`"
+            command="`grep -E "^Exec(\[[^]=]*])?=" "$file" | cut -d= -f 2- | first_word`"
             command="`which "$command"`"
             if [ x"`readlink -f "$command"`" = x"$binary" ]; then
                 # Fix any double slashes that got added path composition
@@ -326,13 +326,13 @@ set_browser_gnome()
     gconftool-2 --type bool --set /desktop/gnome/applications/browser/nremote true
     # Set the handler for HTTP and HTTPS.
     for protocol in http https; do
-        gconftool-2 --type string --set /desktop/gnome/url-handlers/$protocol/command "$command"
+        gconftool-2 --type string --set /desktop/gnome/url-handlers/$protocol/command "$binary"
         gconftool-2 --type bool --set /desktop/gnome/url-handlers/$protocol/needs_terminal false
         gconftool-2 --type bool --set /desktop/gnome/url-handlers/$protocol/enabled true
     done
     # Set the handler for about: and unknown URL types.
     for protocol in about unknown; do
-        gconftool-2 --type string --set /desktop/gnome/url-handlers/$protocol/command "$command"
+        gconftool-2 --type string --set /desktop/gnome/url-handlers/$protocol/command "$binary"
     done
 }
 
