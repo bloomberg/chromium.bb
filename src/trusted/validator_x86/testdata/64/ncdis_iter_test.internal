@@ -1099,7 +1099,7 @@ ExprNodeVector[4] = {
   { OperandReference[1] , 2, 0 },
   { ExprRegister[0] , %st0, ExprUsed },
 };
-0000000000000000: 48 63 c6                                     movsxd %rax, %rsi; *NACL Disallows!*
+0000000000000000: 48 63 c6                                     movsxd %rax, %esi; *NACL Disallows!*
   { 1, { 0x63, 0x00, 0x00 },
     NACLi_SYSTEM,
     InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
@@ -1112,7 +1112,7 @@ ExprNodeVector[4] = {
   { OperandReference[1] , 0, 0 },
   { ExprRegister[0] , %rax, ExprSet | ExprSize64 },
   { OperandReference[1] , 1, 0 },
-  { ExprRegister[0] , %rsi, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %esi, ExprUsed | ExprSize32 },
 };
 0000000000000000: 63 c6                                        movsxd %eax, %esi; *NACL Disallows!*
   { 1, { 0x63, 0x00, 0x00 },

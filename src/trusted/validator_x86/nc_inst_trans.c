@@ -342,7 +342,6 @@ static RegisterTableGroup* const RegisterTable[] = {
   &RegisterTableXmm
 };
 
-
 /* Define possible register categories. */
 typedef enum {
   RegSize8,
@@ -364,6 +363,10 @@ static const char* const g_RegKindName[] = {
   "RegUndefined"
 };
 
+const char* RegKindName(RegKind kind) {
+  return g_RegKindName[kind];
+}
+
 /* Define ModRm register categories. */
 typedef enum {
   ModRmGeneral,
@@ -380,8 +383,47 @@ static const char* const g_ModRmRegisterKindName[] = {
   "ModRmNoTopLevelRegisters"
 };
 
-const char* RegKindName(RegKind kind) {
-  return g_RegKindName[kind];
+/* Given an operand kind, return the size specification associated with
+ * the operand kind.
+ */
+static RegKind GetOperandKindRegKind(OperandKind kind) {
+  switch (kind) {
+    case Eb_Operand:
+    case Gb_Operand:
+    case Ib_Operand:
+    case Jb_Operand:
+    case Mb_Operand:
+    case Ob_Operand:
+      return RegSize8;
+    case Aw_Operand:
+    case Ew_Operand:
+    case Gw_Operand:
+    case Iw_Operand:
+    case Jw_Operand:
+    case Mw_Operand:
+    case Mpw_Operand:
+    case Ow_Operand:
+      return RegSize16;
+    case Av_Operand:
+    case Ev_Operand:
+    case Gv_Operand:
+    case Iv_Operand:
+    case Jv_Operand:
+    case Mv_Operand:
+    case Mpv_Operand:
+    case Ov_Operand:
+      return RegSize32;
+    case Ao_Operand:
+    case Eo_Operand:
+    case Go_Operand:
+    case Io_Operand:
+    case Mo_Operand:
+    case Mpo_Operand:
+    case Oo_Operand:
+      return RegSize64;
+    default:
+      return RegUndefined;
+  }
 }
 
 static OperandKind LookupRegister(RegKind kind, int reg_index) {
@@ -513,20 +555,28 @@ static ExprNode* AppendRegisterKind(NcInstState* state,
  */
 static RegKind ExtractOperandRegKind(NcInstState* state,
                                      Operand* operand) {
-  if (operand->kind >= Gb_Operand && operand->kind <= Go_Operand) {
-    return (RegKind) operand->kind - Gb_Operand;
-  } else if (state->opcode->flags & InstFlag(OperandSize_b)) {
-    return RegSize8;
-  } else if (state->operand_size == 1) {
-    return RegSize8;
-  } else if (state->operand_size == 4) {
-    return RegSize32;
-  } else if (state->operand_size == 2) {
-    return RegSize16;
-  } else if (state->operand_size == 8) {
-    return RegSize64;
-  } else {
-    return RegSize32;
+  RegKind reg_kind = GetOperandKindRegKind(operand->kind);
+  switch (reg_kind) {
+    case RegSize8:
+    case RegSize16:
+    case RegSize32:
+    case RegSize64:
+      return reg_kind;
+    default:
+      /* Size not explicitly defined, pick up from operand size. */
+      if (state->opcode->flags & InstFlag(OperandSize_b)) {
+        return RegSize8;
+      } else if (state->operand_size == 1) {
+        return RegSize8;
+      } else if (state->operand_size == 4) {
+        return RegSize32;
+      } else if (state->operand_size == 2) {
+        return RegSize16;
+      } else if (state->operand_size == 8) {
+        return RegSize64;
+      } else {
+        return RegSize32;
+      }
   }
 }
 
@@ -597,7 +647,7 @@ static int GetRexXRegister(NcInstState* state, int reg) {
   return reg;
 }
 
-/* For the given instruvtion state, and the corresponding 3-bit specification
+/* For the given instruction state, and the corresponding 3-bit specification
  * of a register, update it to a 4-bit specification, based on the REX.B bit.
  */
 static int GetRexBRegister(NcInstState* state, int reg) {
