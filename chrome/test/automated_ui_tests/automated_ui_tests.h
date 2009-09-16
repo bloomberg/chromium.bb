@@ -141,15 +141,6 @@ class AutomatedUITest : public AutomatedUITestBase {
   // XML element: <Dialog/>
   bool ExerciseDialog();
 
-  // Activates "find in page" on the current page.
-  // XML element: <FindInPage/>
-  bool FindInPage();
-
-  // Navigates to the Home page.
-  // Returns true if call to activate the accelerator is successful.
-  // XML element: <Home/>
-  bool Home();
-
   // Opens the JavaScriptConsole window. While it isn't modal, it takes focus
   // from the current browser window, so most of the test can't continue until
   // it is dismissed.
@@ -225,27 +216,6 @@ class AutomatedUITest : public AutomatedUITestBase {
   // Simulates a page up key press on the active window.
   // XML element: <UpArrow/>
   bool PressUpArrow();
-
-  // Activates the next tab on the active browser window.
-  // XML element: <SelectNextTab/>
-  bool SelectNextTab();
-
-  // Activates the previous tab on the active browser window.
-  // XML element: <SelectPrevTab/>
-  bool SelectPreviousTab();
-
-  // Displays the bookmark bar.
-  // Returns true if call to activate the accelerator is successful.
-  // XML element: <ShowBookmarks/>
-  bool ShowBookmarkBar();
-
-  // Opens the Downloads page in the current active browser window.
-  // XML element: <Downloads/>
-  bool ShowDownloads();
-
-  // Opens the History page in the current active browser window.
-  // XML element: <History/>
-  bool ShowHistory();
 
   // Stars the current page. This opens a dialog that may or may not be
   // dismissed.
