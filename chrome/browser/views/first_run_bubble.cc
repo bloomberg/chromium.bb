@@ -357,10 +357,8 @@ FirstRunBubble* FirstRunBubble::Show(Profile* profile,
     view = new FirstRunOEMBubbleView(window, profile);
   else
     view = new FirstRunBubbleView(window, profile);
-  window->SetDelegate(window);
   window->set_view(view);
-  window->Init(parent, position_relative_to, view);
-  window->ShowWindow(SW_SHOW);
+  window->Init(parent, position_relative_to, view, window);
   window->GetFocusManager()->AddFocusChangeListener(view);
   view->BubbleShown();
   return window;

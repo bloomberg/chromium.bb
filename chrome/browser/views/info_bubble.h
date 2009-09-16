@@ -63,13 +63,12 @@ class InfoBubble : public views::WidgetGtk {
   // when the Escape key is pressed (the default behavior).
   static InfoBubble* Show(views::Window* parent,
                           const gfx::Rect& position_relative_to,
-                          views::View* content,
+                          views::View* contents,
                           InfoBubbleDelegate* delegate);
 
   // Overridden from WidgetWin:
   virtual void Close();
 
- protected:
  protected:
   // InfoBubble::CreateContentView() creates one of these. ContentView houses
   // the supplied content as its only child view, renders the arrow/border of
@@ -146,17 +145,11 @@ class InfoBubble : public views::WidgetGtk {
   // Creates the InfoBubble.
   void Init(views::Window* parent,
             const gfx::Rect& position_relative_to,
-            views::View* contents);
-
-  // Sets the delegate for that InfoBubble.
-  void SetDelegate(InfoBubbleDelegate* delegate) { delegate_ = delegate; }
+            views::View* contents,
+            InfoBubbleDelegate* delegate);
 
   // Creates and return a new ContentView containing content.
   virtual ContentView* CreateContentView(views::View* content);
-
-  // Closes the window notifying the delegate. |closed_by_escape| is true if
-  // the close is the result of pressing escape.
-  void Close(bool closed_by_escape);
 
 #if defined(OS_WIN)
   // Overridden from WidgetWin:
@@ -166,6 +159,11 @@ class InfoBubble : public views::WidgetGtk {
   // Overridden from WidgetGtk:
   virtual void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
 #endif
+
+ private:
+  // Closes the window notifying the delegate. |closed_by_escape| is true if
+  // the close is the result of pressing escape.
+  void Close(bool closed_by_escape);
 
   // Overridden from WidgetWin/WidgetGtk:
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);

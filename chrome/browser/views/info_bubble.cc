@@ -20,69 +20,64 @@
 
 using views::View;
 
+namespace {
+
 // All sizes are in pixels.
 
 // Size of the border, along each edge.
-static const int kBorderSize = 1;
+const int kBorderSize = 1;
 
 // Size of the arrow.
-static const int kArrowSize = 5;
+const int kArrowSize = 5;
 
 // Number of pixels to the start of the arrow from the edge of the window.
-static const int kArrowXOffset = 13;
+const int kArrowXOffset = 13;
 
 // Number of pixels between the tip of the arrow and the region we're
 // pointing to.
-static const int kArrowToContentPadding = -4;
+const int kArrowToContentPadding = -4;
 
 // Background color of the bubble.
 #if defined(OS_WIN)
-static const SkColor kBackgroundColor =
-    color_utils::GetSysSkColor(COLOR_WINDOW);
+const SkColor kBackgroundColor = color_utils::GetSysSkColor(COLOR_WINDOW);
 #else
 // TODO(beng): source from theme provider.
-static const SkColor kBackgroundColor = SK_ColorWHITE;
+const SkColor kBackgroundColor = SK_ColorWHITE;
 #endif
 
 // Color of the border and arrow.
-static const SkColor kBorderColor1 = SkColorSetRGB(99, 99, 99);
+const SkColor kBorderColor1 = SkColorSetRGB(99, 99, 99);
 // Border shadow color.
-static const SkColor kBorderColor2 = SkColorSetRGB(160, 160, 160);
+const SkColor kBorderColor2 = SkColorSetRGB(160, 160, 160);
 
 // Intended dimensions of the bubble's corner images. If you update these,
 // make sure that the OnSize code works.
-static const int kInfoBubbleCornerWidth = 3;
-static const int kInfoBubbleCornerHeight = 3;
+const int kInfoBubbleCornerWidth = 3;
+const int kInfoBubbleCornerHeight = 3;
 
 // Bubble corner images.
-static const SkBitmap* kInfoBubbleCornerTopLeft = NULL;
-static const SkBitmap* kInfoBubbleCornerTopRight = NULL;
-static const SkBitmap* kInfoBubbleCornerBottomLeft = NULL;
-static const SkBitmap* kInfoBubbleCornerBottomRight = NULL;
+const SkBitmap* kInfoBubbleCornerTopLeft = NULL;
+const SkBitmap* kInfoBubbleCornerTopRight = NULL;
+const SkBitmap* kInfoBubbleCornerBottomLeft = NULL;
+const SkBitmap* kInfoBubbleCornerBottomRight = NULL;
 
 // Margins around the content.
-static const int kInfoBubbleViewTopMargin = 6;
-static const int kInfoBubbleViewBottomMargin = 9;
-static const int kInfoBubbleViewLeftMargin = 6;
-static const int kInfoBubbleViewRightMargin = 6;
+const int kInfoBubbleViewTopMargin = 6;
+const int kInfoBubbleViewBottomMargin = 9;
+const int kInfoBubbleViewLeftMargin = 6;
+const int kInfoBubbleViewRightMargin = 6;
+
+}  // namespace
 
 // InfoBubble -----------------------------------------------------------------
 
 // static
 InfoBubble* InfoBubble::Show(views::Window* parent,
                              const gfx::Rect& position_relative_to,
-                             views::View* content,
+                             views::View* contents,
                              InfoBubbleDelegate* delegate) {
   InfoBubble* window = new InfoBubble();
-  window->Init(parent, position_relative_to, content);
-  // Set the delegate before we show, on the off chance the delegate is needed
-  // during showing.
-  window->delegate_ = delegate;
-#if defined(OS_WIN)
-  window->ShowWindow(SW_SHOW);
-#else
-  static_cast<WidgetGtk*>(window)->Show();
-#endif
+  window->Init(parent, position_relative_to, contents, delegate);
   return window;
 }
 
@@ -103,9 +98,12 @@ InfoBubble::InfoBubble()
 
 void InfoBubble::Init(views::Window* parent,
                       const gfx::Rect& position_relative_to,
-                      views::View* content) {
+                      views::View* contents,
+                      InfoBubbleDelegate* delegate) {
   parent_ = parent;
   parent_->DisableInactiveRendering();
+
+  delegate_ = delegate;
 
   if (kInfoBubbleCornerTopLeft == NULL) {
     kInfoBubbleCornerTopLeft = ResourceBundle::GetSharedInstance()
@@ -119,12 +117,12 @@ void InfoBubble::Init(views::Window* parent,
   }
 #if defined(OS_WIN)
   set_window_style(WS_POPUP | WS_CLIPCHILDREN);
-  set_window_ex_style(WS_EX_LAYERED | WS_EX_TOOLWINDOW);
+  set_window_ex_style(WS_EX_TOOLWINDOW);
   set_initial_class_style(
       (win_util::GetWinVersion() < win_util::WINVERSION_XP) ?
       0 : CS_DROPSHADOW);
 #endif
-  content_view_ = CreateContentView(content);
+  content_view_ = CreateContentView(contents);
 
 #if defined(OS_WIN)
   WidgetWin::Init(parent->GetNativeWindow(), gfx::Rect());
@@ -137,34 +135,24 @@ void InfoBubble::Init(views::Window* parent,
   // and if they differ reset the bounds.
   gfx::Rect parented_bounds =
       content_view_->CalculateWindowBoundsAndAjust(position_relative_to);
-
-  // TODO(beng): This should be done in a cleaner and cross-platform way.
-#if defined(OS_WIN)
-  SetWindowPos(NULL, parented_bounds.x(), parented_bounds.y(),
-               parented_bounds.width(), parented_bounds.height(),
-               SWP_NOACTIVATE | SWP_NOREDRAW | SWP_NOZORDER);
-  // Invoke ChangeSize, otherwise layered window isn't updated correctly.
-  ChangeSize(0, CSize(parented_bounds.width(), parented_bounds.height()));
-#else
   SetBounds(parented_bounds);
-#endif
 
 #if defined(OS_WIN)
   // Register the Escape accelerator for closing.
-  GetFocusManager()->RegisterAccelerator(views::Accelerator(VK_ESCAPE, false,
-                                                            false, false),
-                                         this);
-  // Set initial alpha value of the layered window.
-  SetLayeredWindowAttributes(GetNativeView(),
-                             RGB(0xFF, 0xFF, 0xFF),
-                             255,
-                             LWA_ALPHA);
+  GetFocusManager()->RegisterAccelerator(
+      views::Accelerator(VK_ESCAPE, false, false, false), this);
 #endif
 
-  NotificationService::current()->Notify(
-      NotificationType::INFO_BUBBLE_CREATED,
-      Source<InfoBubble>(this),
-      NotificationService::NoDetails());
+  NotificationService::current()->Notify(NotificationType::INFO_BUBBLE_CREATED,
+                                         Source<InfoBubble>(this),
+                                         NotificationService::NoDetails());
+
+  // Show the window.
+#if defined(OS_WIN)
+  ShowWindow(SW_SHOW);
+#else
+  static_cast<WidgetGtk*>(window)->Show();
+#endif
 }
 
 InfoBubble::ContentView* InfoBubble::CreateContentView(View* content) {
