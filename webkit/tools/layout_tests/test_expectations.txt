@@ -2172,7 +2172,7 @@ BUG18116 : LayoutTests/fast/dom/prototype-inheritance-2.html = FAIL
 
 // Flaky.  Timing?
 BUG18584 : LayoutTests/animations/change-one-anim.html = FAIL PASS
-BUG18584 DEBUG LINUX WIN : LayoutTests/animations/play-state.html = FAIL PASS
+BUG18584 LINUX WIN : LayoutTests/animations/play-state.html = FAIL PASS
 BUG18584 : LayoutTests/transitions/shorthand-transitions.html = FAIL PASS
 
 // Flaky crashes
