@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
@@ -102,6 +103,19 @@ void GetCacheParameters(ContextType type, FilePath* cache_path,
   } else if (max_size < 0) {
     *max_size = 0;
   }
+}
+
+FilePath GetCachePath(const FilePath& base) {
+  return base.Append(chrome::kCacheDirname);
+}
+
+FilePath GetMediaCachePath(const FilePath& base) {
+  return base.Append(chrome::kMediaCacheDirname);
+}
+
+bool HasACacheSubdir(const FilePath &dir) {
+  return file_util::PathExists(GetCachePath(dir)) ||
+         file_util::PathExists(GetMediaCachePath(dir));
 }
 
 }  // namespace
@@ -585,8 +599,28 @@ ProfileImpl::ProfileImpl(const FilePath& path)
     blacklist_ = new Blacklist(path);
   }
 
+#if defined(OS_MACOSX)
+  // If the profile directory doesn't already have a cache directory and it
+  // is under ~/Library/Application Support, use a suitable cache directory
+  // under ~/Library/Caches.  For example, a profile directory of
+  // ~/Library/Application Support/Google/Chrome/MyProfileName that doesn't
+  // have a "Cache" or "MediaCache" subdirectory would use the cache directory
+  // ~/Library/Caches/Google/Chrome/MyProfileName.
+  //
+  // TODO(akalin): Come up with unit tests for this.
+  // TODO(akalin): Use for Linux, too?
+  if (!HasACacheSubdir(path_)) {
+    FilePath app_data_path, user_cache_path;
+    if (PathService::Get(base::DIR_APP_DATA, &app_data_path) &&
+        PathService::Get(base::DIR_CACHE, &user_cache_path) &&
+        app_data_path.AppendRelativePath(path_, &user_cache_path)) {
+      base_cache_path_ = user_cache_path;
+    }
+  }
+#else
   if (!PathService::IsOverridden(chrome::DIR_USER_DATA))
     PathService::Get(chrome::DIR_USER_CACHE, &base_cache_path_);
+#endif
   if (base_cache_path_.empty())
     base_cache_path_ = path_;
 
@@ -890,7 +924,7 @@ URLRequestContext* ProfileImpl::GetRequestContext() {
     int max_size;
     GetCacheParameters(kNormalContext, &cache_path, &max_size);
 
-    cache_path = cache_path.Append(chrome::kCacheDirname);
+    cache_path = GetCachePath(cache_path);
     request_context_ = ChromeURLRequestContext::CreateOriginal(
         this, cookie_path, cache_path, max_size);
     request_context_->AddRef();
@@ -921,7 +955,7 @@ URLRequestContext* ProfileImpl::GetRequestContextForMedia() {
     int max_size;
     GetCacheParameters(kMediaContext, &cache_path, &max_size);
 
-    cache_path = cache_path.Append(chrome::kMediaCacheDirname);
+    cache_path = GetMediaCachePath(cache_path);
     media_request_context_ = ChromeURLRequestContext::CreateOriginalForMedia(
         this, cache_path, max_size);
     media_request_context_->AddRef();

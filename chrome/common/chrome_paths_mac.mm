@@ -14,19 +14,12 @@ namespace chrome {
 
 bool GetDefaultUserDataDirectory(FilePath* result) {
   bool success = false;
-  NSArray* dirs =
-      NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory,
-                                          NSUserDomainMask, YES);
-  if ([dirs count] && result) {
-    NSString* base = [dirs objectAtIndex:0];
+  if (result && PathService::Get(base::DIR_APP_DATA, result)) {
 #if defined(GOOGLE_CHROME_BUILD)
-    base = [base stringByAppendingPathComponent:@"Google"];
-    NSString* tail = @"Chrome";
+    *result = result->Append("Google").Append("Chrome");
 #else
-    NSString* tail = @"Chromium";
+    *result = result->Append("Chromium");
 #endif
-    NSString* path = [base stringByAppendingPathComponent:tail];
-    *result = FilePath([path fileSystemRepresentation]);
     success = true;
   }
   return success;
