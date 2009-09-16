@@ -68,37 +68,6 @@ class TestWebViewDelegate : public WebViewDelegate,
   typedef std::vector<CapturedContextMenuEvent> CapturedContextMenuEvents;
 
   // WebViewDelegate
-  virtual WebView* CreateWebView(WebView* webview,
-                                 bool user_gesture,
-                                 const GURL& creator_url);
-  virtual WebKit::WebWidget* CreatePopupWidget(
-      WebView* webview,
-      bool activatable);
-#if defined(OS_MACOSX)
-  virtual WebKit::WebWidget* CreatePopupWidgetWithInfo(
-      WebView* webview,
-      const WebKit::WebPopupMenuInfo& info);
-#endif
-  virtual void RunJavaScriptAlert(WebKit::WebFrame* webframe,
-                                  const std::wstring& message);
-  virtual bool RunJavaScriptConfirm(WebKit::WebFrame* webframe,
-                                    const std::wstring& message);
-  virtual bool RunJavaScriptPrompt(WebKit::WebFrame* webframe,
-                                   const std::wstring& message,
-                                   const std::wstring& default_value,
-                                   std::wstring* result);
-
-  virtual void SetStatusbarText(WebView* webview,
-                                const std::wstring& message);
-
-  virtual void AddMessageToConsole(WebView* webview,
-                                   const std::wstring& message,
-                                   unsigned int line_no,
-                                   const std::wstring& source_id);
-  virtual void StartDragging(WebView* webview,
-                             const WebKit::WebPoint &mouseCoords,
-                             const WebKit::WebDragData& drag_data,
-                             WebKit::WebDragOperationsMask operations_mask);
   virtual void ShowContextMenu(WebView* webview,
                                ContextNodeType node_type,
                                int x,
@@ -113,9 +82,40 @@ class TestWebViewDelegate : public WebViewDelegate,
                                int edit_flags,
                                const std::string& security_info,
                                const std::string& frame_charset);
-  virtual void NavigateBackForwardSoon(int offset);
-  virtual int GetHistoryBackListCount();
-  virtual int GetHistoryForwardListCount();
+
+  // WebKit::WebViewClient
+  virtual WebView* createView(WebKit::WebFrame* creator);
+  virtual WebKit::WebWidget* createPopupMenu(bool activatable);
+  virtual WebKit::WebWidget* createPopupMenu(
+      const WebKit::WebPopupMenuInfo& info);
+  virtual void didAddMessageToConsole(
+      const WebKit::WebConsoleMessage& message,
+      const WebKit::WebString& source_name, unsigned source_line);
+  virtual void printPage(WebKit::WebFrame* frame);
+  virtual void didStartLoading();
+  virtual void didStopLoading();
+  virtual void runModalAlertDialog(
+      WebKit::WebFrame* frame, const WebKit::WebString& message);
+  virtual bool runModalConfirmDialog(
+      WebKit::WebFrame* frame, const WebKit::WebString& message);
+  virtual bool runModalPromptDialog(
+      WebKit::WebFrame* frame, const WebKit::WebString& message,
+      const WebKit::WebString& default_value, WebKit::WebString* actual_value);
+  virtual bool runModalBeforeUnloadDialog(
+      WebKit::WebFrame* frame, const WebKit::WebString& message);
+  virtual void setStatusText(const WebKit::WebString& text);
+  virtual void setMouseOverURL(const WebKit::WebURL& url);
+  virtual void setToolTipText(
+      const WebKit::WebString& text, WebKit::WebTextDirection hint);
+  virtual void startDragging(
+      const WebKit::WebPoint& from, const WebKit::WebDragData& data,
+      WebKit::WebDragOperationsMask mask);
+  virtual void focusNext();
+  virtual void focusPrevious();
+  virtual void navigateBackForwardSoon(int offset);
+  virtual int historyBackListCount();
+  virtual int historyForwardListCount();
+  virtual void didAddHistoryItem();
 
   // WebKit::WebWidgetClient
   virtual void didInvalidateRect(const WebKit::WebRect& rect);
@@ -286,7 +286,8 @@ class TestWebViewDelegate : public WebViewDelegate,
     return block_redirects_;
   }
 
- protected:
+ private:
+
   // Called the title of the page changes.
   // Can be used to update the title of the window.
   void SetPageTitle(const std::wstring& title);
@@ -319,7 +320,6 @@ class TestWebViewDelegate : public WebViewDelegate,
   // Get a string suitable for dumping a frame to the console.
   std::wstring GetFrameDescription(WebKit::WebFrame* webframe);
 
- private:
   // Causes navigation actions just printout the intended navigation instead
   // of taking you to the page. This is used for cases like mailto, where you
   // don't actually want to open the mail program.

@@ -181,8 +181,8 @@ public:
 
     // Implements CreateWebView for TestWebViewDelegate, which in turn
     // is called as a WebViewDelegate.
-    WebView* CreateWebView(WebView* webview);
-    WebKit::WebWidget* CreatePopupWidget(WebView* webview);
+    WebView* CreateWebView();
+    WebKit::WebWidget* CreatePopupWidget();
     void ClosePopup();
 
 #if defined(OS_WIN)

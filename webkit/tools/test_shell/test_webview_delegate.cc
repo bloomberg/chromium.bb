@@ -20,6 +20,7 @@
 #include "base/string_util.h"
 #include "base/trace_event.h"
 #include "net/base/net_errors.h"
+#include "webkit/api/public/WebConsoleMessage.h"
 #include "webkit/api/public/WebCString.h"
 #include "webkit/api/public/WebData.h"
 #include "webkit/api/public/WebDataSource.h"
@@ -29,6 +30,7 @@
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebNode.h"
 #include "webkit/api/public/WebPoint.h"
+#include "webkit/api/public/WebPopupMenu.h"
 #include "webkit/api/public/WebRange.h"
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/WebString.h"
@@ -60,6 +62,7 @@
 #include "webkit/tools/test_shell/drop_delegate.h"
 #endif
 
+using WebKit::WebConsoleMessage;
 using WebKit::WebData;
 using WebKit::WebDataSource;
 using WebKit::WebDragData;
@@ -76,12 +79,14 @@ using WebKit::WebNode;
 using WebKit::WebPlugin;
 using WebKit::WebPluginParams;
 using WebKit::WebPoint;
+using WebKit::WebPopupMenu;
 using WebKit::WebRange;
 using WebKit::WebRect;
 using WebKit::WebScreenInfo;
 using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebTextAffinity;
+using WebKit::WebTextDirection;
 using WebKit::WebURL;
 using WebKit::WebURLError;
 using WebKit::WebURLRequest;
@@ -105,13 +110,14 @@ int next_page_id_ = 1;
 
 // Used to write a platform neutral file:/// URL by only taking the filename
 // (e.g., converts "file:///tmp/foo.txt" to just "foo.txt").
-std::wstring UrlSuitableForTestResult(const std::wstring& url) {
-  if (url.empty() || std::wstring::npos == url.find(L"file://"))
+std::string UrlSuitableForTestResult(const std::string& url) {
+  if (url.empty() || std::string::npos == url.find("file://"))
     return url;
 
-  std::wstring filename = file_util::GetFilenameFromPath(url);
+  std::string filename =
+      WideToUTF8(file_util::GetFilenameFromPath(UTF8ToWide(url)));
   if (filename.empty())
-    return L"file:";  // A WebKit test has this in its expected output.
+    return "file:";  // A WebKit test has this in its expected output.
   return filename;
 }
 
@@ -244,123 +250,9 @@ std::string GetTextAffinityDescription(WebTextAffinity affinity) {
 
 // WebViewDelegate -----------------------------------------------------------
 
-WebView* TestWebViewDelegate::CreateWebView(WebView* webview,
-                                            bool user_gesture,
-                                            const GURL& creator_url) {
-  return shell_->CreateWebView(webview);
-}
-
-WebWidget* TestWebViewDelegate::CreatePopupWidget(WebView* webview,
-                                                  bool activatable) {
-  return shell_->CreatePopupWidget(webview);
-}
-
 std::string TestWebViewDelegate::GetResourceDescription(uint32 identifier) {
   ResourceMap::iterator it = resource_identifier_map_.find(identifier);
   return it != resource_identifier_map_.end() ? it->second : "<unknown>";
-}
-
-void TestWebViewDelegate::AddMessageToConsole(WebView* webview,
-                                              const std::wstring& message,
-                                              unsigned int line_no,
-                                              const std::wstring& source_id) {
-  if (!shell_->layout_test_mode()) {
-    logging::LogMessage("CONSOLE", 0).stream() << "\""
-                                               << message.c_str()
-                                               << ",\" source: "
-                                               << source_id.c_str()
-                                               << "("
-                                               << line_no
-                                               << ")";
-  } else {
-    // This matches win DumpRenderTree's UIDelegate.cpp.
-    std::wstring new_message = message;
-    if (!message.empty()) {
-      new_message = message;
-      size_t file_protocol = new_message.find(L"file://");
-      if (file_protocol != std::wstring::npos) {
-        new_message = new_message.substr(0, file_protocol) +
-            UrlSuitableForTestResult(new_message.substr(file_protocol));
-      }
-    }
-
-    std::string utf8 = WideToUTF8(new_message);
-    printf("CONSOLE MESSAGE: line %d: %s\n", line_no, utf8.c_str());
-  }
-}
-
-void TestWebViewDelegate::RunJavaScriptAlert(WebFrame* webframe,
-                                             const std::wstring& message) {
-  if (!shell_->layout_test_mode()) {
-    ShowJavaScriptAlert(message);
-  } else {
-    std::string utf8 = WideToUTF8(message);
-    printf("ALERT: %s\n", utf8.c_str());
-  }
-}
-
-bool TestWebViewDelegate::RunJavaScriptConfirm(WebFrame* webframe,
-                                               const std::wstring& message) {
-  if (shell_->layout_test_mode()) {
-    // When running tests, write to stdout.
-    std::string utf8 = WideToUTF8(message);
-    printf("CONFIRM: %s\n", utf8.c_str());
-    return true;
-  }
-  return false;
-}
-
-bool TestWebViewDelegate::RunJavaScriptPrompt(WebFrame* webframe,
-                                              const std::wstring& message,
-                                              const std::wstring& default_value,
-                                              std::wstring* result) {
-  if (shell_->layout_test_mode()) {
-    // When running tests, write to stdout.
-    std::string utf8_message = WideToUTF8(message);
-    std::string utf8_default_value = WideToUTF8(default_value);
-    printf("PROMPT: %s, default text: %s\n", utf8_message.c_str(),
-           utf8_default_value.c_str());
-    return true;
-  }
-  return false;
-}
-
-void TestWebViewDelegate::SetStatusbarText(WebView* webview,
-                                           const std::wstring& message) {
-  if (WebKit::layoutTestMode() &&
-      shell_->layout_test_controller()->ShouldDumpStatusCallbacks()) {
-    // When running tests, write to stdout.
-    printf("UI DELEGATE STATUS CALLBACK: setStatusText:%S\n", message.c_str());
-  }
-}
-
-void TestWebViewDelegate::StartDragging(WebView* webview,
-                                        const WebPoint &mouse_coords,
-                                        const WebDragData& drag_data,
-                                        WebDragOperationsMask mask) {
-  if (WebKit::layoutTestMode()) {
-    WebDragData mutable_drag_data = drag_data;
-    if (shell_->layout_test_controller()->ShouldAddFileToPasteboard()) {
-      // Add a file called DRTFakeFile to the drag&drop clipboard.
-      AddDRTFakeFileToDataObject(&mutable_drag_data);
-    }
-
-    // When running a test, we need to fake a drag drop operation otherwise
-    // Windows waits for real mouse events to know when the drag is over.
-    EventSendingController::DoDragDrop(mouse_coords, mutable_drag_data, mask);
-  } else {
-    // TODO(tc): Drag and drop is disabled in the test shell because we need
-    // to be able to convert from WebDragData to an IDataObject.
-    //if (!drag_delegate_)
-    //  drag_delegate_ = new TestDragDelegate(shell_->webViewWnd(),
-    //                                        shell_->webView());
-    //const DWORD ok_effect = DROPEFFECT_COPY | DROPEFFECT_LINK | DROPEFFECT_MOVE;
-    //DWORD effect;
-    //HRESULT res = DoDragDrop(drop_data.data_object, drag_delegate_.get(),
-    //                         ok_effect, &effect);
-    //DCHECK(DRAGDROP_S_DROP == res || DRAGDROP_S_CANCEL == res);
-  }
-  webview->DragSourceSystemDragEnded();
 }
 
 void TestWebViewDelegate::ShowContextMenu(
@@ -382,22 +274,6 @@ void TestWebViewDelegate::ShowContextMenu(
   captured_context_menu_events_.push_back(context);
 }
 
-void TestWebViewDelegate::NavigateBackForwardSoon(int offset) {
-  shell_->navigation_controller()->GoToOffset(offset);
-}
-
-int TestWebViewDelegate::GetHistoryBackListCount() {
-  int current_index =
-      shell_->navigation_controller()->GetLastCommittedEntryIndex();
-  return current_index;
-}
-
-int TestWebViewDelegate::GetHistoryForwardListCount() {
-  int current_index =
-      shell_->navigation_controller()->GetLastCommittedEntryIndex();
-  return shell_->navigation_controller()->GetEntryCount() - current_index - 1;
-}
-
 void TestWebViewDelegate::SetUserStyleSheetEnabled(bool is_enabled) {
   WebPreferences* prefs = shell_->GetWebPreferences();
   prefs->user_style_sheet_enabled = is_enabled;
@@ -409,6 +285,159 @@ void TestWebViewDelegate::SetUserStyleSheetLocation(const GURL& location) {
   prefs->user_style_sheet_enabled = true;
   prefs->user_style_sheet_location = location;
   prefs->Apply(shell_->webView());
+}
+
+// WebViewClient -------------------------------------------------------------
+
+WebView* TestWebViewDelegate::createView(WebFrame* creator) {
+  return shell_->CreateWebView();
+}
+
+WebWidget* TestWebViewDelegate::createPopupMenu(
+    bool activatable) {
+  // TODO(darin): Should we honor activatable?
+  return shell_->CreatePopupWidget();
+}
+
+void TestWebViewDelegate::didAddMessageToConsole(
+    const WebConsoleMessage& message, const WebString& source_name,
+    unsigned source_line) {
+  if (!shell_->layout_test_mode()) {
+    logging::LogMessage("CONSOLE", 0).stream() << "\""
+                                               << message.text.utf8().data()
+                                               << ",\" source: "
+                                               << source_name.utf8().data()
+                                               << "("
+                                               << source_line
+                                               << ")";
+  } else {
+    // This matches win DumpRenderTree's UIDelegate.cpp.
+    std::string new_message;
+    if (!message.text.isEmpty()) {
+      new_message = message.text.utf8();
+      size_t file_protocol = new_message.find("file://");
+      if (file_protocol != std::string::npos) {
+        new_message = new_message.substr(0, file_protocol) +
+            UrlSuitableForTestResult(new_message.substr(file_protocol));
+      }
+    }
+
+    printf("CONSOLE MESSAGE: line %d: %s\n", source_line, new_message.data());
+  }
+}
+
+void TestWebViewDelegate::printPage(WebFrame* frame) {
+}
+
+void TestWebViewDelegate::didStartLoading() {
+}
+
+void TestWebViewDelegate::didStopLoading() {
+}
+
+void TestWebViewDelegate::runModalAlertDialog(
+    WebFrame* frame, const WebString& message) {
+  if (!shell_->layout_test_mode()) {
+    ShowJavaScriptAlert(UTF16ToWideHack(message));
+  } else {
+    printf("ALERT: %s\n", message.utf8().data());
+  }
+}
+
+bool TestWebViewDelegate::runModalConfirmDialog(
+    WebFrame* frame, const WebString& message) {
+  if (shell_->layout_test_mode()) {
+    // When running tests, write to stdout.
+    printf("CONFIRM: %s\n", message.utf8().data());
+    return true;
+  }
+  return false;
+}
+
+bool TestWebViewDelegate::runModalPromptDialog(
+    WebFrame* frame, const WebString& message, const WebString& default_value,
+    WebString* actual_value) {
+  if (shell_->layout_test_mode()) {
+    // When running tests, write to stdout.
+    printf("PROMPT: %s, default text: %s\n",
+           message.utf8().data(),
+           default_value.utf8().data());
+    return true;
+  }
+  return false;
+}
+
+bool TestWebViewDelegate::runModalBeforeUnloadDialog(
+    WebFrame* frame, const WebString& message) {
+  return true;  // Allow window closure.
+}
+
+void TestWebViewDelegate::setStatusText(const WebString& text) {
+  if (WebKit::layoutTestMode() &&
+      shell_->layout_test_controller()->ShouldDumpStatusCallbacks()) {
+    // When running tests, write to stdout.
+    printf("UI DELEGATE STATUS CALLBACK: setStatusText:%s\n", text.utf8().data());
+  }
+}
+
+void TestWebViewDelegate::setMouseOverURL(const WebURL& url) {
+}
+
+void TestWebViewDelegate::setToolTipText(
+    const WebString& text, WebTextDirection hint) {
+}
+
+void TestWebViewDelegate::startDragging(
+    const WebPoint& mouse_coords, const WebDragData& data,
+    WebDragOperationsMask mask) {
+  if (WebKit::layoutTestMode()) {
+    WebDragData mutable_drag_data = data;
+    if (shell_->layout_test_controller()->ShouldAddFileToPasteboard()) {
+      // Add a file called DRTFakeFile to the drag&drop clipboard.
+      AddDRTFakeFileToDataObject(&mutable_drag_data);
+    }
+
+    // When running a test, we need to fake a drag drop operation otherwise
+    // Windows waits for real mouse events to know when the drag is over.
+    EventSendingController::DoDragDrop(mouse_coords, mutable_drag_data, mask);
+  } else {
+    // TODO(tc): Drag and drop is disabled in the test shell because we need
+    // to be able to convert from WebDragData to an IDataObject.
+    //if (!drag_delegate_)
+    //  drag_delegate_ = new TestDragDelegate(shell_->webViewWnd(),
+    //                                        shell_->webView());
+    //const DWORD ok_effect = DROPEFFECT_COPY | DROPEFFECT_LINK | DROPEFFECT_MOVE;
+    //DWORD effect;
+    //HRESULT res = DoDragDrop(drop_data.data_object, drag_delegate_.get(),
+    //                         ok_effect, &effect);
+    //DCHECK(DRAGDROP_S_DROP == res || DRAGDROP_S_CANCEL == res);
+  }
+  shell_->webView()->DragSourceSystemDragEnded();
+}
+
+void TestWebViewDelegate::focusNext() {
+}
+
+void TestWebViewDelegate::focusPrevious() {
+}
+
+void TestWebViewDelegate::navigateBackForwardSoon(int offset) {
+  shell_->navigation_controller()->GoToOffset(offset);
+}
+
+int TestWebViewDelegate::historyBackListCount() {
+  int current_index =
+      shell_->navigation_controller()->GetLastCommittedEntryIndex();
+  return current_index;
+}
+
+int TestWebViewDelegate::historyForwardListCount() {
+  int current_index =
+      shell_->navigation_controller()->GetLastCommittedEntryIndex();
+  return shell_->navigation_controller()->GetEntryCount() - current_index - 1;
+}
+
+void TestWebViewDelegate::didAddHistoryItem() {
 }
 
 // WebWidgetClient -----------------------------------------------------------

@@ -91,7 +91,7 @@ struct WebFindOptions;
 //
 // Therefore, each new top level RenderView creates a new counter and shares it
 // with all its children and grandchildren popup RenderViews created with
-// CreateWebView() to have a sort of global limit for the page so no more than
+// createView() to have a sort of global limit for the page so no more than
 // kMaximumNumberOfPopups popups are created.
 //
 // This is a RefCounted holder of an int because I can't say
@@ -165,33 +165,15 @@ class RenderView : public RenderWidget,
 
   // WebViewDelegate
   virtual bool CanAcceptLoadDrops() const;
-  virtual void RunJavaScriptAlert(WebKit::WebFrame* webframe,
-                                  const std::wstring& message);
-  virtual bool RunJavaScriptConfirm(WebKit::WebFrame* webframe,
-                                    const std::wstring& message);
-  virtual bool RunJavaScriptPrompt(WebKit::WebFrame* webframe,
-                                   const std::wstring& message,
-                                   const std::wstring& default_value,
-                                   std::wstring* result);
-  virtual bool RunBeforeUnloadConfirm(WebKit::WebFrame* webframe,
-                                      const std::wstring& message);
   virtual void QueryFormFieldAutofill(const std::wstring& field_name,
                                       const std::wstring& text,
                                       int64 node_id);
   virtual void RemoveStoredAutofillEntry(const std::wstring& field_name,
                                          const std::wstring& text);
-  virtual void UpdateTargetURL(WebView* webview,
-                               const GURL& url);
   virtual void RunFileChooser(bool multi_select,
                               const string16& title,
                               const FilePath& initial_filename,
                               WebFileChooserCallback* file_chooser);
-  virtual void AddMessageToConsole(WebView* webview,
-                                   const std::wstring& message,
-                                   unsigned int line_no,
-                                   const std::wstring& source_id);
-  virtual void DidStartLoading(WebView* webview);
-  virtual void DidStopLoading(WebView* webview);
   virtual void LoadNavigationErrorPage(
       WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& failed_request,
@@ -201,15 +183,6 @@ class RenderView : public RenderWidget,
   virtual void DidCreateScriptContextForFrame(WebKit::WebFrame* webframe);
   virtual void DidDestroyScriptContextForFrame(WebKit::WebFrame* webframe);
   virtual void DidCreateIsolatedScriptContext(WebKit::WebFrame* webframe);
-  virtual WebView* CreateWebView(WebView* webview,
-                                 bool user_gesture,
-                                 const GURL& creator_url);
-  virtual WebKit::WebWidget* CreatePopupWidget(
-      WebView* webview,
-      bool activatable);
-  virtual WebKit::WebWidget* CreatePopupWidgetWithInfo(
-      WebView* webview,
-      const WebKit::WebPopupMenuInfo& info);
   virtual void OnMissingPluginStatus(
       WebPluginDelegateProxy* delegate,
       int status);
@@ -231,17 +204,6 @@ class RenderView : public RenderWidget,
                                int edit_flags,
                                const std::string& security_info,
                                const std::string& frame_charset);
-  virtual void StartDragging(WebView* webview,
-                             const WebKit::WebPoint &mouseCoords,
-                             const WebKit::WebDragData& drag_data,
-                             WebKit::WebDragOperationsMask operations_mask);
-  virtual void TakeFocus(WebView* webview, bool reverse);
-  virtual void NavigateBackForwardSoon(int offset);
-  virtual int GetHistoryBackListCount();
-  virtual int GetHistoryForwardListCount();
-  virtual void SetTooltipText(WebView* webview,
-                              const std::wstring& tooltip_text,
-                              WebKit::WebTextDirection text_direction_hint);
   virtual void UpdateInspectorSettings(const std::wstring& raw_settings);
   virtual WebDevToolsAgentDelegate* GetWebDevToolsAgentDelegate();
   virtual void ReportFindInPageMatchCount(int count, int request_id,
@@ -257,10 +219,43 @@ class RenderView : public RenderWidget,
   virtual std::wstring GetAutoCorrectWord(const std::wstring& word);
   virtual void UpdateSpellingUIWithMisspelledWord(const std::wstring& word);
   virtual void ShowSpellingUI(bool show);
-  virtual void ScriptedPrint(WebKit::WebFrame* frame);
   virtual void UserMetricsRecordAction(const std::wstring& action);
   virtual void DnsPrefetch(const std::vector<std::string>& host_names);
   virtual bool HandleCurrentKeyboardEvent();
+
+  // WebKit::WebViewClient
+  virtual WebView* createView(WebKit::WebFrame* creator);
+  virtual WebKit::WebWidget* createPopupMenu(bool activatable);
+  virtual WebKit::WebWidget* createPopupMenu(
+      const WebKit::WebPopupMenuInfo& info);
+  virtual void didAddMessageToConsole(
+      const WebKit::WebConsoleMessage& message,
+      const WebKit::WebString& source_name, unsigned source_line);
+  virtual void printPage(WebKit::WebFrame* frame);
+  virtual void didStartLoading();
+  virtual void didStopLoading();
+  virtual void runModalAlertDialog(
+      WebKit::WebFrame* frame, const WebKit::WebString& message);
+  virtual bool runModalConfirmDialog(
+      WebKit::WebFrame* frame, const WebKit::WebString& message);
+  virtual bool runModalPromptDialog(
+      WebKit::WebFrame* frame, const WebKit::WebString& message,
+      const WebKit::WebString& default_value, WebKit::WebString* actual_value);
+  virtual bool runModalBeforeUnloadDialog(
+      WebKit::WebFrame* frame, const WebKit::WebString& message);
+  virtual void setStatusText(const WebKit::WebString& text);
+  virtual void setMouseOverURL(const WebKit::WebURL& url);
+  virtual void setToolTipText(
+      const WebKit::WebString& text, WebKit::WebTextDirection hint);
+  virtual void startDragging(
+      const WebKit::WebPoint& from, const WebKit::WebDragData& data,
+      WebKit::WebDragOperationsMask mask);
+  virtual void focusNext();
+  virtual void focusPrevious();
+  virtual void navigateBackForwardSoon(int offset);
+  virtual int historyBackListCount();
+  virtual int historyForwardListCount();
+  virtual void didAddHistoryItem();
 
   // WebKit::WebWidgetClient
   // Most methods are handled by RenderWidget.
@@ -704,8 +699,6 @@ class RenderView : public RenderWidget,
       WebKit::WebFrame* frame, const WebKit::WebURLError& original_error,
       const std::string& html);
 
-  virtual void DidAddHistoryItem();
-
   // Decodes a data: URL image or returns an empty image in case of failure.
   SkBitmap ImageFromDataUrl(const GURL&) const;
 
@@ -840,7 +833,7 @@ class RenderView : public RenderWidget,
 
   // The total number of unrequested popups that exist and can be followed back
   // to a common opener. This count is shared among all RenderViews created
-  // with CreateWebView(). All popups are treated as unrequested until
+  // with createView(). All popups are treated as unrequested until
   // specifically instructed otherwise by the Browser process.
   scoped_refptr<SharedRenderViewCounter> shared_popup_counter_;
 

@@ -454,7 +454,7 @@ void TestShell::InteractiveSetFocus(WebWidgetHost* host, bool enable) {
     ::SetFocus(NULL);
 }
 
-WebWidget* TestShell::CreatePopupWidget(WebView* webview) {
+WebWidget* TestShell::CreatePopupWidget() {
   DCHECK(!m_popupHost);
   m_popupHost = WebWidgetHost::Create(NULL, popup_delegate_.get());
   ShowWindow(popupWnd(), SW_SHOW);

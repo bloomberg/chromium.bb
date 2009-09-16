@@ -74,8 +74,10 @@ void PrintWebViewHelper::DidFinishPrinting(bool success) {
       web_view = render_view_->webview();
 
     // TODO: Create an async alert (http://crbug.com/14918).
-    render_view_->RunJavaScriptAlert(web_view->GetMainFrame(),
-        l10n_util::GetString(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT));
+    render_view_->runModalAlertDialog(
+        web_view->GetMainFrame(),
+        WideToUTF16Hack(
+            l10n_util::GetString(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT)));
   }
 
   if (print_web_view_.get()) {
@@ -156,6 +158,11 @@ int32 PrintWebViewHelper::routing_id() {
   return render_view_->routing_id();
 }
 
+void PrintWebViewHelper::didStopLoading() {
+  DCHECK(print_pages_params_.get() != NULL);
+  PrintPages(*print_pages_params_.get(), print_web_view_->GetMainFrame());
+}
+
 WebRect PrintWebViewHelper::windowRect() {
   NOTREACHED();
   return WebRect();
@@ -174,10 +181,4 @@ WebRect PrintWebViewHelper::rootWindowRect() {
 WebScreenInfo PrintWebViewHelper::screenInfo() {
   NOTREACHED();
   return WebScreenInfo();
-}
-
-void PrintWebViewHelper::DidStopLoading(WebView* webview) {
-  DCHECK(print_pages_params_.get() != NULL);
-  DCHECK_EQ(webview, print_web_view_.get());
-  PrintPages(*print_pages_params_.get(), print_web_view_->GetMainFrame());
 }

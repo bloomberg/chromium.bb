@@ -63,7 +63,7 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
     // terminate.
     if (default_settings.IsEmpty()) {
       // TODO: Create an async alert (http://crbug.com/14918).
-      render_view_->RunJavaScriptAlert(frame,
+      render_view_->runModalAlertDialog(frame,
           l10n_util::GetString(IDS_DEFAULT_PRINTER_NOT_FOUND_WARNING));
       return;
     }

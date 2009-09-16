@@ -31,31 +31,36 @@
 #ifndef WebViewClient_h
 #define WebViewClient_h
 
-#error "This header file is still a work in progress; do not include!"
-
+#include "WebDragOperation.h"
 #include "WebWidgetClient.h"
 
+class WebView;  // FIXME: Move into the WebKit namespace.
+
 namespace WebKit {
+    class WebDragData;
     class WebFileChooserCompletion;
     class WebFrame;
-    class WebPopupMenu;
     class WebString;
-    class WebView;
+    class WebWidget;
     struct WebConsoleMessage;
     struct WebContextMenuInfo;
+    struct WebPoint;
     struct WebPopupMenuInfo;
 
-    class WebViewClient : public WebWidgetClient {
+    // Since a WebView is a WebWidget, a WebViewClient is a WebWidgetClient.
+    // Virtual inheritance allows an implementation of WebWidgetClient to be
+    // easily reused as part of an implementation of WebViewClient.
+    class WebViewClient : virtual public WebWidgetClient {
     public:
         // Factory methods -----------------------------------------------------
 
         // Create a new related WebView.
-        virtual WebView* createView(bool hasUserGesture) = 0;
+        virtual WebView* createView(WebFrame* creator) = 0;
 
         // Create a new WebPopupMenu.  In the second form, the client is
         // responsible for rendering the contents of the popup menu.
-        virtual WebPopupMenu* createPopupMenu(bool activatable) = 0;
-        virtual WebPopupMenu* createPopupMenu(bool activatable, const WebPopupMenuInfo&) = 0;
+        virtual WebWidget* createPopupMenu(bool activatable) = 0;
+        virtual WebWidget* createPopupMenu(const WebPopupMenuInfo&) = 0;
 
 
         // Misc ----------------------------------------------------------------
@@ -64,15 +69,11 @@ namespace WebKit {
         virtual void didAddMessageToConsole(
             const WebConsoleMessage&, const WebString& sourceName, unsigned sourceLine) = 0;
 
-        // If enabled, sudden termination implies that there are no registered
-        // unload event handlers that would need to run in order to close the
-        // WebView.  This information allows the embedder to determine if the
-        // process can be closed without closing the respective WebViews.
-        virtual void enableSuddenTermination() = 0;
-        virtual void disableSuddenTermination() = 0;
-
-        // Called when script in the page calls window.print().
-        virtual void printPage() = 0;
+        // Called when script in the page calls window.print().  If frame is
+        // non-null, then it selects a particular frame, including its
+        // children, to print.  Otherwise, the main frame and its children
+        // should be printed.
+        virtual void printPage(WebFrame*) = 0;
 
 
         // Navigational --------------------------------------------------------
@@ -81,39 +82,52 @@ namespace WebKit {
         virtual void didStartLoading() = 0;
         virtual void didStopLoading() = 0;
 
-        // A frame (or subframe) was created.  The client may return a
-        // WebFrameClient to be associated with the newly created frame.
-        virtual WebFrameClient* didCreateFrame(WebFrame* frame) = 0;
 
-
-        // Editing -------------------------------------------------------------
-
-        // May return null.  The WebEditingClient is passed additional events
-        // related to text editing in the page.
-        virtual WebEditingClient* editingClient() = 0;
+        // Spellchecker --------------------------------------------------------
 
         // The client should perform spell-checking on the given word
         // synchronously.  Return a length of 0 if the word is not misspelled.
-        virtual void spellCheck(
-            const WebString& word, int& misspelledOffset, int& misspelledLength) = 0;
+        // FIXME hook this up
+        //virtual void spellCheck(
+        //    const WebString& word, int& misspelledOffset, int& misspelledLength) = 0;
 
 
         // Dialogs -------------------------------------------------------------
 
-        // These methods should not return until the dialog has been closed.
-        virtual void runModalAlertDialog(const WebString& message) = 0;
-        virtual bool runModalConfirmDialog(const WebString& message) = 0;
+        // Displays a modal alert dialog containing the given message.  Returns
+        // once the user dismisses the dialog.
+        virtual void runModalAlertDialog(
+            WebFrame*, const WebString& message) = 0;
+
+        // Displays a modal confirmation dialog with the given message as
+        // description and OK/Cancel choices.  Returns true if the user selects
+        // 'OK' or false otherwise.
+        virtual bool runModalConfirmDialog(
+            WebFrame*, const WebString& message) = 0;
+
+        // Displays a modal input dialog with the given message as description
+        // and OK/Cancel choices.  The input field is pre-filled with
+        // defaultValue.  Returns true if the user selects 'OK' or false
+        // otherwise.  Upon returning true, actualValue contains the value of
+        // the input field.
         virtual bool runModalPromptDialog(
-            const WebString& message, const WebString& defaultValue,
+            WebFrame*, const WebString& message, const WebString& defaultValue,
             WebString* actualValue) = 0;
-        virtual bool runModalBeforeUnloadDialog(const WebString& message) = 0;
+
+        // Displays a modal confirmation dialog containing the given message as
+        // description and OK/Cancel choices, where 'OK' means that it is okay
+        // to proceed with closing the view.  Returns true if the user selects
+        // 'OK' or false otherwise.
+        virtual bool runModalBeforeUnloadDialog(
+            WebFrame*, const WebString& message) = 0;
 
         // This method returns immediately after showing the dialog.  When the
         // dialog is closed, it should call the WebFileChooserCompletion to
         // pass the results of the dialog.
-        virtual void runFileChooser(
-            bool multiSelect, const WebString& title,
-            const WebString& initialValue, WebFileChooserCompletion*) = 0;
+        // FIXME hook this up
+        //virtual void runFileChooser(
+        //    bool multiSelect, const WebString& title,
+        //    const WebString& initialValue, WebFileChooserCompletion*) = 0;
 
 
         // UI ------------------------------------------------------------------
@@ -125,13 +139,15 @@ namespace WebKit {
         virtual void setMouseOverURL(const WebURL&) = 0;
 
         // Called when a tooltip should be shown at the current cursor position.
-        virtual void setToolTipText(const WebString&) = 0;
+        virtual void setToolTipText(const WebString&, WebTextDirection hint) = 0;
 
         // Called when a context menu should be shown at the current cursor position.
-        virtual void showContextMenu(const WebContextMenuInfo&) = 0;
+        // FIXME hook this up
+        //virtual void showContextMenu(const WebContextMenuInfo&) = 0;
 
         // Called when a drag-n-drop operation should begin.
-        virtual void startDragging(WebFrame*, const WebDragData&) = 0;
+        virtual void startDragging(
+            const WebPoint& from, const WebDragData&, WebDragOperationsMask) = 0;
 
         // Take focus away from the WebView by focusing an adjacent UI element
         // in the containing window.
@@ -141,8 +157,10 @@ namespace WebKit {
 
         // Session History -----------------------------------------------------
 
-        // Returns the history item at the given index.
-        virtual WebHistoryItem historyItemAtIndex(int index) = 0;
+        // Tells the embedder to navigate back or forward in session history by
+        // the given offset (relative to the current position in session
+        // history).
+        virtual void navigateBackForwardSoon(int offset) = 0;
 
         // Returns the number of history items before/after the current
         // history item.
@@ -151,11 +169,6 @@ namespace WebKit {
 
         // Called to notify the embedder when a new history item is added.
         virtual void didAddHistoryItem() = 0;
-
-
-        // Developer Tools -----------------------------------------------------
-
-        virtual void didOpenInspector(int numResources) = 0;
 
 
         // FIXME need to something for:

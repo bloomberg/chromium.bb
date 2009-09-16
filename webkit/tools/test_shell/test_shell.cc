@@ -485,7 +485,7 @@ void TestShell::CallJSGC() {
   webView()->GetMainFrame()->collectGarbage();
 }
 
-WebView* TestShell::CreateWebView(WebView* webview) {
+WebView* TestShell::CreateWebView() {
   // If we're running layout tests, only open a new window if the test has
   // called layoutTestController.setCanOpenWindows()
   if (layout_test_mode_ && !layout_test_controller_->CanOpenWindows())

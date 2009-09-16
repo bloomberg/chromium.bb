@@ -123,6 +123,7 @@ using WebKit::WebNavigationType;
 using WebKit::WebNode;
 using WebKit::WebPlugin;
 using WebKit::WebPluginParams;
+using WebKit::WebPoint;
 using WebKit::WebPopupMenuInfo;
 using WebKit::WebRange;
 using WebKit::WebRect;
@@ -1101,55 +1102,6 @@ bool RenderView::CanAcceptLoadDrops() const {
   return renderer_preferences_.can_accept_load_drops;
 }
 
-void RenderView::DidStartLoading(WebView* webview) {
-  if (is_loading_) {
-    DLOG(WARNING) << "DidStartLoading called while loading";
-    return;
-  }
-
-  is_loading_ = true;
-  // Clear the pointer so that we can assign it only when there is an unknown
-  // plugin on a page.
-  first_default_plugin_.reset();
-
-  Send(new ViewHostMsg_DidStartLoading(routing_id_));
-}
-
-void RenderView::DidStopLoading(WebView* webview) {
-  if (!is_loading_) {
-    DLOG(WARNING) << "DidStopLoading called while not loading";
-    return;
-  }
-
-  is_loading_ = false;
-
-  // NOTE: For now we're doing the safest thing, and sending out notification
-  // when done loading. This currently isn't an issue as the favicon is only
-  // displayed when done loading. Ideally we would send notification when
-  // finished parsing the head, but webkit doesn't support that yet.
-  // The feed discovery code would also benefit from access to the head.
-  GURL favicon_url(webview->GetMainFrame()->favIconURL());
-  if (!favicon_url.is_empty())
-    Send(new ViewHostMsg_UpdateFavIconURL(routing_id_, page_id_, favicon_url));
-
-  AddGURLSearchProvider(webview->GetMainFrame()->openSearchDescriptionURL(),
-                        true);  // autodetected
-
-  Send(new ViewHostMsg_DidStopLoading(routing_id_));
-
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(&RenderView::CapturePageInfo, page_id_,
-                                        false),
-      kDelayForCaptureMs);
-
-  // The page is loaded. Try to process the file we need to upload if any.
-  ProcessPendingUpload();
-
-  // Since the page is done loading, we are sure we don't need to try
-  // again.
-  ResetPendingUpload();
-}
-
 void RenderView::DidPaint() {
   WebFrame* main_frame = webview()->GetMainFrame();
 
@@ -1227,35 +1179,6 @@ void RenderView::DidCreateIsolatedScriptContext(WebFrame* webframe) {
   EventBindings::HandleContextCreated(webframe, true);
 }
 
-void RenderView::RunJavaScriptAlert(WebFrame* webframe,
-                                    const std::wstring& message) {
-  RunJavaScriptMessage(MessageBoxFlags::kIsJavascriptAlert,
-                       message,
-                       std::wstring(),
-                       webframe->url(),
-                       NULL);
-}
-
-bool RenderView::RunJavaScriptConfirm(WebFrame* webframe,
-                                      const std::wstring& message) {
-  return RunJavaScriptMessage(MessageBoxFlags::kIsJavascriptConfirm,
-                              message,
-                              std::wstring(),
-                              webframe->url(),
-                              NULL);
-}
-
-bool RenderView::RunJavaScriptPrompt(WebFrame* webframe,
-                                     const std::wstring& message,
-                                     const std::wstring& default_value,
-                                     std::wstring* result) {
-  return RunJavaScriptMessage(MessageBoxFlags::kIsJavascriptPrompt,
-                              message,
-                              default_value,
-                              webframe->url(),
-                              result);
-}
-
 bool RenderView::RunJavaScriptMessage(int type,
                                       const std::wstring& message,
                                       const std::wstring& default_value,
@@ -1278,21 +1201,6 @@ void RenderView::AddGURLSearchProvider(const GURL& osd_url, bool autodetected) {
   if (!osd_url.is_empty())
     Send(new ViewHostMsg_PageHasOSDD(routing_id_, page_id_, osd_url,
                                      autodetected));
-}
-
-bool RenderView::RunBeforeUnloadConfirm(WebFrame* webframe,
-                                        const std::wstring& message) {
-  bool success = false;
-  // This is an ignored return value, but is included so we can accept the same
-  // response as RunJavaScriptMessage.
-  std::wstring ignored_result;
-  IPC::SyncMessage* msg = new ViewHostMsg_RunBeforeUnloadConfirm(
-      routing_id_, webframe->url(), message, &success,  &ignored_result);
-
-  msg->set_pump_messages_event(modal_dialog_event_.get());
-  Send(msg);
-
-  return success;
 }
 
 void RenderView::QueryFormFieldAutofill(const std::wstring& field_name,
@@ -1333,24 +1241,6 @@ uint32 RenderView::GetCPBrowsingContext() {
   return context;
 }
 
-// Tell the browser to display a destination link.
-void RenderView::UpdateTargetURL(WebView* webview, const GURL& url) {
-  if (url != target_url_) {
-    if (target_url_status_ == TARGET_INFLIGHT ||
-        target_url_status_ == TARGET_PENDING) {
-      // If we have a request in-flight, save the URL to be sent when we
-      // receive an ACK to the in-flight request. We can happily overwrite
-      // any existing pending sends.
-      pending_target_url_ = url;
-      target_url_status_ = TARGET_PENDING;
-    } else {
-      Send(new ViewHostMsg_UpdateTargetURL(routing_id_, page_id_, url));
-      target_url_ = url;
-      target_url_status_ = TARGET_INFLIGHT;
-    }
-  }
-}
-
 void RenderView::RunFileChooser(bool multi_select,
                                 const string16& title,
                                 const FilePath& default_filename,
@@ -1370,78 +1260,9 @@ void RenderView::RunFileChooser(bool multi_select,
                                       default_filename));
 }
 
-void RenderView::AddMessageToConsole(WebView* webview,
-                                     const std::wstring& message,
-                                     unsigned int line_no,
-                                     const std::wstring& source_id) {
-  Send(new ViewHostMsg_AddMessageToConsole(routing_id_, message,
-                                           static_cast<int32>(line_no),
-                                           source_id));
-}
-
 void RenderView::AddSearchProvider(const std::string& url) {
   AddGURLSearchProvider(GURL(url),
                         false);  // not autodetected
-}
-
-WebView* RenderView::CreateWebView(WebView* webview,
-                                   bool user_gesture,
-                                   const GURL& creator_url) {
-  // Check to make sure we aren't overloading on popups.
-  if (shared_popup_counter_->data > kMaximumNumberOfUnacknowledgedPopups)
-    return NULL;
-
-  // This window can't be closed from a window.close() call until we receive a
-  // message from the Browser process explicitly allowing it.
-  popup_notification_visible_ = true;
-
-  int32 routing_id = MSG_ROUTING_NONE;
-
-  ModalDialogEvent modal_dialog_event;
-  render_thread_->Send(
-      new ViewHostMsg_CreateWindow(routing_id_, user_gesture, &routing_id,
-                                   &modal_dialog_event));
-  if (routing_id == MSG_ROUTING_NONE) {
-    return NULL;
-  }
-
-  // The WebView holds a reference to this new RenderView
-  base::WaitableEvent* waitable_event = new base::WaitableEvent
-#if defined(OS_WIN)
-      (modal_dialog_event.event);
-#else
-      (true, false);
-#endif
-  RenderView* view = RenderView::Create(render_thread_,
-                                        NULL, waitable_event, routing_id_,
-                                        renderer_preferences_,
-                                        webkit_preferences_,
-                                        shared_popup_counter_, routing_id);
-  view->opened_by_user_gesture_ = user_gesture;
-  view->creator_url_ = creator_url;
-
-  // Copy over the alternate error page URL so we can have alt error pages in
-  // the new render view (we don't need the browser to send the URL back down).
-  view->alternate_error_page_url_ = alternate_error_page_url_;
-
-  return view->webview();
-}
-
-WebWidget* RenderView::CreatePopupWidget(WebView* webview,
-                                         bool activatable) {
-  RenderWidget* widget = RenderWidget::Create(routing_id_,
-                                              render_thread_,
-                                              activatable);
-  return widget->webwidget();
-}
-
-WebWidget* RenderView::CreatePopupWidgetWithInfo(WebView* webview,
-                                                 const WebPopupMenuInfo& info) {
-  RenderWidget* widget = RenderWidget::Create(routing_id_,
-                                              render_thread_,
-                                              true);
-  widget->ConfigureAsExternalPopupMenu(info);
-  return widget->webwidget();
 }
 
 void RenderView::OnMissingPluginStatus(
@@ -1465,6 +1286,259 @@ void RenderView::OnMissingPluginStatus(
   // TODO(port): plugins current not supported
   NOTIMPLEMENTED();
 #endif
+}
+
+// WebKit::WebViewClient ------------------------------------------------------
+
+WebView* RenderView::createView(WebFrame* creator) {
+  // Check to make sure we aren't overloading on popups.
+  if (shared_popup_counter_->data > kMaximumNumberOfUnacknowledgedPopups)
+    return NULL;
+
+  // This window can't be closed from a window.close() call until we receive a
+  // message from the Browser process explicitly allowing it.
+  popup_notification_visible_ = true;
+
+  int32 routing_id = MSG_ROUTING_NONE;
+  bool user_gesture = creator->isProcessingUserGesture();
+
+  ModalDialogEvent modal_dialog_event;
+  render_thread_->Send(
+      new ViewHostMsg_CreateWindow(routing_id_, user_gesture, &routing_id,
+                                   &modal_dialog_event));
+  if (routing_id == MSG_ROUTING_NONE) {
+    return NULL;
+  }
+
+  // The WebView holds a reference to this new RenderView
+  base::WaitableEvent* waitable_event = new base::WaitableEvent(
+#if defined(OS_WIN)
+      modal_dialog_event.event);
+#else
+      true, false);
+#endif
+  RenderView* view = RenderView::Create(render_thread_,
+                                        NULL, waitable_event, routing_id_,
+                                        renderer_preferences_,
+                                        webkit_preferences_,
+                                        shared_popup_counter_, routing_id);
+  view->opened_by_user_gesture_ = user_gesture;
+
+  // Record the security origin of the creator.
+  GURL creator_url(creator->securityOrigin().utf8());
+  if (!creator_url.is_valid() || !creator_url.IsStandard())
+    creator_url = GURL();
+  view->creator_url_ = creator_url;
+
+  // Copy over the alternate error page URL so we can have alt error pages in
+  // the new render view (we don't need the browser to send the URL back down).
+  view->alternate_error_page_url_ = alternate_error_page_url_;
+
+  return view->webview();
+}
+
+WebWidget* RenderView::createPopupMenu(bool activatable) {
+  RenderWidget* widget = RenderWidget::Create(routing_id_,
+                                              render_thread_,
+                                              activatable);
+  return widget->webwidget();
+}
+
+WebWidget* RenderView::createPopupMenu(const WebPopupMenuInfo& info) {
+  RenderWidget* widget = RenderWidget::Create(routing_id_,
+                                              render_thread_,
+                                              true);
+  widget->ConfigureAsExternalPopupMenu(info);
+  return widget->webwidget();
+}
+
+void RenderView::didAddMessageToConsole(
+    const WebConsoleMessage& message, const WebString& source_name,
+    unsigned source_line) {
+  Send(new ViewHostMsg_AddMessageToConsole(routing_id_,
+                                           UTF16ToWideHack(message.text),
+                                           static_cast<int32>(source_line),
+                                           UTF16ToWideHack(source_name)));
+}
+
+void RenderView::printPage(WebFrame* frame) {
+  DCHECK(webview());
+  if (webview()) {
+    // Print the full page - not just the frame the javascript is running from.
+    Print(webview()->GetMainFrame(), true);
+  }
+}
+
+void RenderView::didStartLoading() {
+  if (is_loading_) {
+    DLOG(WARNING) << "didStartLoading called while loading";
+    return;
+  }
+
+  is_loading_ = true;
+  // Clear the pointer so that we can assign it only when there is an unknown
+  // plugin on a page.
+  first_default_plugin_.reset();
+
+  Send(new ViewHostMsg_DidStartLoading(routing_id_));
+}
+
+void RenderView::didStopLoading() {
+  if (!is_loading_) {
+    DLOG(WARNING) << "DidStopLoading called while not loading";
+    return;
+  }
+
+  is_loading_ = false;
+
+  // NOTE: For now we're doing the safest thing, and sending out notification
+  // when done loading. This currently isn't an issue as the favicon is only
+  // displayed when done loading. Ideally we would send notification when
+  // finished parsing the head, but webkit doesn't support that yet.
+  // The feed discovery code would also benefit from access to the head.
+  GURL favicon_url(webview()->GetMainFrame()->favIconURL());
+  if (!favicon_url.is_empty())
+    Send(new ViewHostMsg_UpdateFavIconURL(routing_id_, page_id_, favicon_url));
+
+  AddGURLSearchProvider(webview()->GetMainFrame()->openSearchDescriptionURL(),
+                        true);  // autodetected
+
+  Send(new ViewHostMsg_DidStopLoading(routing_id_));
+
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      method_factory_.NewRunnableMethod(&RenderView::CapturePageInfo, page_id_,
+                                        false),
+      kDelayForCaptureMs);
+
+  // The page is loaded. Try to process the file we need to upload if any.
+  ProcessPendingUpload();
+
+  // Since the page is done loading, we are sure we don't need to try
+  // again.
+  ResetPendingUpload();
+}
+
+void RenderView::runModalAlertDialog(
+    WebFrame* frame, const WebString& message) {
+  RunJavaScriptMessage(MessageBoxFlags::kIsJavascriptAlert,
+                       UTF16ToWideHack(message),
+                       std::wstring(),
+                       frame->url(),
+                       NULL);
+}
+
+bool RenderView::runModalConfirmDialog(
+    WebFrame* frame, const WebString& message) {
+  return RunJavaScriptMessage(MessageBoxFlags::kIsJavascriptConfirm,
+                              UTF16ToWideHack(message),
+                              std::wstring(),
+                              frame->url(),
+                              NULL);
+}
+
+bool RenderView::runModalPromptDialog(
+    WebFrame* frame, const WebString& message, const WebString& default_value,
+    WebString* actual_value) {
+  std::wstring result;
+  bool ok = RunJavaScriptMessage(MessageBoxFlags::kIsJavascriptPrompt,
+                                 UTF16ToWideHack(message),
+                                 UTF16ToWideHack(default_value),
+                                 frame->url(),
+                                 &result);
+  if (ok)
+    actual_value->assign(WideToUTF16Hack(result));
+  return ok;
+}
+
+bool RenderView::runModalBeforeUnloadDialog(
+    WebFrame* frame, const WebString& message) {
+  bool success = false;
+  // This is an ignored return value, but is included so we can accept the same
+  // response as RunJavaScriptMessage.
+  std::wstring ignored_result;
+  IPC::SyncMessage* msg = new ViewHostMsg_RunBeforeUnloadConfirm(
+      routing_id_, frame->url(), UTF16ToWideHack(message), &success,
+      &ignored_result);
+
+  msg->set_pump_messages_event(modal_dialog_event_.get());
+  Send(msg);
+
+  return success;
+}
+
+void RenderView::setStatusText(const WebString& text) {
+}
+
+void RenderView::setMouseOverURL(const WebURL& url) {
+  GURL latest_url;
+  if (latest_url == target_url_)
+    return;
+  // Tell the browser to display a destination link.
+  if (target_url_status_ == TARGET_INFLIGHT ||
+      target_url_status_ == TARGET_PENDING) {
+    // If we have a request in-flight, save the URL to be sent when we
+    // receive an ACK to the in-flight request. We can happily overwrite
+    // any existing pending sends.
+    pending_target_url_ = latest_url;
+    target_url_status_ = TARGET_PENDING;
+  } else {
+    Send(new ViewHostMsg_UpdateTargetURL(routing_id_, page_id_, latest_url));
+    target_url_ = latest_url;
+    target_url_status_ = TARGET_INFLIGHT;
+  }
+}
+
+void RenderView::setToolTipText(const WebString& text, WebTextDirection hint) {
+  Send(new ViewHostMsg_SetTooltipText(routing_id_, UTF16ToWideHack(text),
+                                      hint));
+}
+
+void RenderView::startDragging(const WebPoint& from, const WebDragData& data,
+                               WebDragOperationsMask allowed_ops) {
+  Send(new ViewHostMsg_StartDragging(routing_id_,
+                                     WebDropData(data),
+                                     allowed_ops));
+}
+
+void RenderView::focusNext() {
+  Send(new ViewHostMsg_TakeFocus(routing_id_, false));
+}
+
+void RenderView::focusPrevious() {
+  Send(new ViewHostMsg_TakeFocus(routing_id_, true));
+}
+
+void RenderView::navigateBackForwardSoon(int offset) {
+  history_back_list_count_ += offset;
+  history_forward_list_count_ -= offset;
+
+  Send(new ViewHostMsg_GoToEntryAtOffset(routing_id_, offset));
+}
+
+int RenderView::historyBackListCount() {
+  return history_back_list_count_;
+}
+
+int RenderView::historyForwardListCount() {
+  return history_forward_list_count_;
+}
+
+void RenderView::didAddHistoryItem() {
+  // We don't want to update the history length for the start page
+  // navigation.
+  WebFrame* main_frame = webview()->GetMainFrame();
+  DCHECK(main_frame != NULL);
+
+  WebDataSource* ds = main_frame->dataSource();
+  DCHECK(ds != NULL);
+
+  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
+  DCHECK(navigation_state);
+  if (navigation_state->transition_type() == PageTransition::START_PAGE)
+    return;
+
+  history_back_list_count_++;
+  history_forward_list_count_ = 0;
 }
 
 // WebKit::WebWidgetClient ----------------------------------------------------
@@ -1730,8 +1804,8 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
       // Must start from a tab showing about:blank, which is later redirected.
       GURL(frame->url()) == GURL(chrome::kAboutBlankURL) &&
       // Must be the first real navigation of the tab.
-      GetHistoryBackListCount() < 1 &&
-      GetHistoryForwardListCount() < 1 &&
+      historyBackListCount() < 1 &&
+      historyForwardListCount() < 1 &&
       // The parent page must have set the child's window.opener to null before
       // redirecting to the desired URL.
       frame->opener() == NULL &&
@@ -2241,12 +2315,12 @@ void RenderView::DidMovePlugin(const webkit_glue::WebPluginGeometry& move) {
 
 void RenderView::DidStartLoadingForPlugin() {
   // TODO(darin): Make is_loading_ be a counter!
-  DidStartLoading(webview());
+  didStartLoading();
 }
 
 void RenderView::DidStopLoadingForPlugin() {
   // TODO(darin): Make is_loading_ be a counter!
-  DidStopLoading(webview());
+  didStopLoading();
 }
 
 void RenderView::ShowModalHTMLDialogForPlugin(
@@ -2306,19 +2380,6 @@ void RenderView::ShowContextMenu(WebView* webview,
   params.security_info = security_info;
   params.frame_charset = frame_charset;
   Send(new ViewHostMsg_ContextMenu(routing_id_, params));
-}
-
-void RenderView::StartDragging(WebView* webview,
-                               const WebKit::WebPoint &mouseCoords,
-                               const WebDragData& drag_data,
-                               WebDragOperationsMask allowed_ops) {
-  Send(new ViewHostMsg_StartDragging(routing_id_,
-                                     WebDropData(drag_data),
-                                     allowed_ops));
-}
-
-void RenderView::TakeFocus(WebView* webview, bool reverse) {
-  Send(new ViewHostMsg_TakeFocus(routing_id_, reverse));
 }
 
 void RenderView::DidDownloadImage(int id,
@@ -2624,14 +2685,6 @@ void RenderView::UpdateSpellingUIWithMisspelledWord(const std::wstring& word) {
       routing_id_, word));
 }
 
-void RenderView::ScriptedPrint(WebFrame* frame) {
-  DCHECK(webview());
-  if (webview()) {
-    // Print the full page - not just the frame the javascript is running from.
-    Print(webview()->GetMainFrame(), true);
-  }
-}
-
 void RenderView::UserMetricsRecordAction(const std::wstring& action) {
   Send(new ViewHostMsg_UserMetricsRecordAction(routing_id_, action));
 }
@@ -2664,28 +2717,6 @@ void RenderView::OnSetPageEncoding(const std::string& encoding_name) {
 void RenderView::OnResetPageEncodingToDefault() {
   std::string no_encoding;
   webview()->SetPageEncoding(no_encoding);
-}
-
-void RenderView::NavigateBackForwardSoon(int offset) {
-  history_back_list_count_ += offset;
-  history_forward_list_count_ -= offset;
-
-  Send(new ViewHostMsg_GoToEntryAtOffset(routing_id_, offset));
-}
-
-int RenderView::GetHistoryBackListCount() {
-  return history_back_list_count_;
-}
-
-int RenderView::GetHistoryForwardListCount() {
-  return history_forward_list_count_;
-}
-
-void RenderView::SetTooltipText(WebView* webview,
-                                const std::wstring& tooltip_text,
-                                WebTextDirection text_direction_hint) {
-  Send(new ViewHostMsg_SetTooltipText(routing_id_, tooltip_text,
-                                      text_direction_hint));
 }
 
 void RenderView::UpdateInspectorSettings(const std::wstring& raw_settings) {
@@ -3065,24 +3096,6 @@ void RenderView::OnThemeChanged() {
   // TODO(port): we don't support theming on non-Windows platforms yet
   NOTIMPLEMENTED();
 #endif
-}
-
-void RenderView::DidAddHistoryItem() {
-  // We don't want to update the history length for the start page
-  // navigation.
-  WebFrame* main_frame = webview()->GetMainFrame();
-  DCHECK(main_frame != NULL);
-
-  WebDataSource* ds = main_frame->dataSource();
-  DCHECK(ds != NULL);
-
-  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
-  DCHECK(navigation_state);
-  if (navigation_state->transition_type() == PageTransition::START_PAGE)
-    return;
-
-  history_back_list_count_++;
-  history_forward_list_count_ = 0;
 }
 
 void RenderView::OnMessageFromExternalHost(const std::string& message,

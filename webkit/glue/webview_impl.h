@@ -167,6 +167,11 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
 
   static WebViewImpl* FromPage(WebCore::Page* page);
 
+  WebKit::WebViewClient* client() {
+    return delegate_;
+  }
+
+  // TODO(darin): Remove this method in favor of client().
   WebViewDelegate* delegate() {
     return delegate_;
   }
@@ -228,7 +233,8 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   }
 
   // Start a system drag and drop operation.
-  void StartDragging(WebKit::WebPoint event_pos,
+  void StartDragging(
+      const WebKit::WebPoint& event_pos,
       const WebKit::WebDragData& drag_data,
       WebKit::WebDragOperationsMask drag_source_operation_mask);
 

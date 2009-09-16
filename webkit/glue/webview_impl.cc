@@ -116,6 +116,7 @@ using WebKit::WebTextDirection;
 using WebKit::WebTextDirectionDefault;
 using WebKit::WebTextDirectionLeftToRight;
 using WebKit::WebTextDirectionRightToLeft;
+using WebKit::WebURL;
 
 using webkit_glue::ImageResourceFetcher;
 
@@ -457,7 +458,7 @@ void WebViewImpl::MouseLeave(const WebMouseEvent& event) {
   if (!main_frame() || !main_frame()->frameview())
     return;
 
-  delegate_->UpdateTargetURL(this, GURL());
+  client()->setMouseOverURL(WebURL());
 
   main_frame()->frame()->eventHandler()->handleMouseMoveEvent(
       PlatformMouseEventBuilder(main_frame()->frameview(), event));
@@ -1814,14 +1815,14 @@ void WebViewImpl::DidCommitLoad(bool* is_new_navigation) {
   observed_new_navigation_ = false;
 }
 
-void WebViewImpl::StartDragging(WebPoint event_pos,
+void WebViewImpl::StartDragging(const WebPoint& event_pos,
                                 const WebDragData& drag_data,
                                 WebDragOperationsMask mask) {
-  if (delegate_) {
-    DCHECK(!doing_drag_and_drop_);
-    doing_drag_and_drop_ = true;
-    delegate_->StartDragging(this, event_pos, drag_data, mask);
-  }
+  if (!client())
+    return;
+  DCHECK(!doing_drag_and_drop_);
+  doing_drag_and_drop_ = true;
+  client()->startDragging(event_pos, drag_data, mask);
 }
 
 void WebViewImpl::OnImageFetchComplete(ImageResourceFetcher* fetcher,

@@ -14,6 +14,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "webkit/api/public/WebConsoleMessage.h"
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebScriptSource.h"
@@ -28,6 +29,7 @@
 using std::string;
 using std::wstring;
 
+using WebKit::WebConsoleMessage;
 using WebKit::WebScriptSource;
 using WebKit::WebString;
 
@@ -839,8 +841,7 @@ bool LayoutTestController::CppVariantToBool(const CppVariant& value) {
     if (valueString == "false")
       return false;
   }
-  shell_->delegate()->AddMessageToConsole(shell_->webView(),
-      L"Invalid value. Expected boolean value.", 0, L"");
+  LogErrorToConsole("Invalid value. Expected boolean value.");
   return false;
 }
 
@@ -852,8 +853,7 @@ int32 LayoutTestController::CppVariantToInt32(const CppVariant& value) {
     if (StringToInt(value.ToString(), &number))
       return number;
   }
-  shell_->delegate()->AddMessageToConsole(shell_->webView(),
-      L"Invalid value for preference. Expected integer value.", 0, L"");
+  LogErrorToConsole("Invalid value for preference. Expected integer value.");
   return 0;
 }
 
@@ -861,8 +861,7 @@ std::wstring LayoutTestController::CppVariantToWstring(
     const CppVariant& value) {
   if (value.isString())
     return UTF8ToWide(value.ToString());
-  shell_->delegate()->AddMessageToConsole(shell_->webView(),
-      L"Invalid value for preference. Expected string value.", 0, L"");
+  LogErrorToConsole("Invalid value for preference. Expected string value.");
   return std::wstring();
 }
 
@@ -924,10 +923,9 @@ void LayoutTestController::overridePreference(
     else if (key == "WebKitOfflineWebApplicationCacheEnabled")
       preferences->application_cache_enabled = CppVariantToBool(value);
     else {
-      std::wstring message(L"Invalid name for preference: ");
-      message.append(ASCIIToWide(key));
-      shell_->delegate()->AddMessageToConsole(shell_->webView(),
-                                              message, 0, L"");
+      std::string message("Invalid name for preference: ");
+      message.append(key);
+      LogErrorToConsole(message);
     }
     preferences->Apply(shell_->webView());
   }
@@ -962,4 +960,10 @@ void LayoutTestController::whiteListAccessFromOrigin(
                                     WebString::fromUTF8(args[1].ToString()),
                                     WebString::fromUTF8(args[2].ToString()),
                                     args[3].ToBoolean());
+}
+
+void LayoutTestController::LogErrorToConsole(const std::string& text) {
+  shell_->webView()->GetMainFrame()->addMessageToConsole(
+      WebConsoleMessage(WebConsoleMessage::LevelError,
+                        WebString::fromUTF8(text)));
 }

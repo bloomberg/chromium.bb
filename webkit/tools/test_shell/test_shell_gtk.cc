@@ -466,7 +466,7 @@ void TestShell::DestroyWindow(gfx::NativeWindow windowHandle) {
   gtk_widget_destroy(GTK_WIDGET(windowHandle));
 }
 
-WebWidget* TestShell::CreatePopupWidget(WebView* webview) {
+WebWidget* TestShell::CreatePopupWidget() {
   GtkWidget* popupwindow = gtk_window_new(GTK_WINDOW_POPUP);
   GtkWidget* vbox = gtk_vbox_new(FALSE, 0);
   WebWidgetHost* host = WebWidgetHost::Create(vbox, popup_delegate_.get());

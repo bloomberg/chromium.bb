@@ -504,9 +504,8 @@ void WebFrameLoaderClient::dispatchDidChangeLocationWithinPage() {
   // Anchor fragment navigations are not normal loads, so we need to synthesize
   // some events for our delegate.
   WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
-  if (d)
-    d->DidStartLoading(webview);
+  if (webview->client())
+    webview->client()->didStartLoading();
 
   WebDataSourceImpl* ds = webframe_->GetDataSourceImpl();
   DCHECK(ds) << "DataSource NULL when navigating to reference fragment";
@@ -550,8 +549,8 @@ void WebFrameLoaderClient::dispatchDidChangeLocationWithinPage() {
         webframe_, is_new_navigation);
   }
 
-  if (d)
-    d->DidStopLoading(webview);
+  if (webview->client())
+    webview->client()->didStopLoading();
 }
 
 void WebFrameLoaderClient::dispatchWillClose() {
@@ -885,12 +884,9 @@ void WebFrameLoaderClient::setMainDocumentError(DocumentLoader*,
 }
 
 void WebFrameLoaderClient::postProgressStartedNotification() {
-  if (hasWebView()) {
-    WebViewImpl* web_view = webframe_->GetWebViewImpl();
-    WebViewDelegate* d = web_view->delegate();
-    if (d)
-      d->DidStartLoading(web_view);
-  }
+  WebViewImpl* webview = webframe_->GetWebViewImpl();
+  if (webview && webview->client())
+    webview->client()->didStartLoading();
 }
 
 void WebFrameLoaderClient::postProgressEstimateChangedNotification() {
@@ -898,14 +894,11 @@ void WebFrameLoaderClient::postProgressEstimateChangedNotification() {
 }
 
 void WebFrameLoaderClient::postProgressFinishedNotification() {
-  // TODO(ericroman): why might webframe_->webview_impl be null?
+  // TODO(ericroman): why might the webview be null?
   // http://b/1234461
-  if (hasWebView()) {
-    WebViewImpl* web_view = webframe_->GetWebViewImpl();
-    WebViewDelegate* d = web_view->delegate();
-    if (d)
-      d->DidStopLoading(web_view);
-  }
+  WebViewImpl* webview = webframe_->GetWebViewImpl();
+  if (webview && webview->client())
+    webview->client()->didStopLoading();
 }
 
 void WebFrameLoaderClient::setMainFrameDocumentReady(bool ready) {
@@ -1335,9 +1328,9 @@ void WebFrameLoaderClient::HandleBackForwardNavigation(const GURL& url) {
   if (!StringToInt(offset_str, &offset))
     return;
 
-  WebViewDelegate* d = webframe_->GetWebViewImpl()->delegate();
-  if (d)
-    d->NavigateBackForwardSoon(offset);
+  WebViewImpl* webview = webframe_->GetWebViewImpl();
+  if (webview->client())
+    webview->client()->navigateBackForwardSoon(offset);
 }
 
 PassOwnPtr<WebPluginLoadObserver> WebFrameLoaderClient::GetPluginLoadObserver() {

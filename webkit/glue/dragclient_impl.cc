@@ -61,11 +61,11 @@ void DragClientImpl::startDrag(WebCore::DragImageRef drag_image,
       static_cast<WebCore::ClipboardChromium*>(clipboard)->dataObject());
 
   WebCore::DragOperation drag_operation_mask;
-  if (!clipboard->sourceOperation(drag_operation_mask)) {
+  if (!clipboard->sourceOperation(drag_operation_mask))
     drag_operation_mask = WebCore::DragOperationEvery;
-  }
 
-  webview_->StartDragging(webkit_glue::IntPointToWebPoint(event_pos),
+  webview_->StartDragging(
+      webkit_glue::IntPointToWebPoint(event_pos),
       drag_data,
       static_cast<WebKit::WebDragOperationsMask>(drag_operation_mask));
 }

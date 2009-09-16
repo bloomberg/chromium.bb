@@ -37,12 +37,16 @@
 
 using WebKit::WebCursorInfo;
 using WebKit::WebNavigationPolicy;
+using WebKit::WebPopupMenuInfo;
 using WebKit::WebRect;
+using WebKit::WebWidget;
 
-// WebViewDelegate ------------------------------------------------------------
+// WebViewClient --------------------------------------------------------------
 
-void TestWebViewDelegate::ShowJavaScriptAlert(const std::wstring& message) {
-  MessageBox(NULL, message.c_str(), L"JavaScript Alert", MB_OK);
+WebWidget* TestWebViewDelegate::createPopupMenu(
+    const WebPopupMenuInfo& info) {
+  NOTREACHED();
+  return NULL;
 }
 
 // WebWidgetClient ------------------------------------------------------------
@@ -196,6 +200,10 @@ void TestWebViewDelegate::UpdateSelectionClipboard(bool is_empty_selection) {
 }
 
 // Private methods ------------------------------------------------------------
+
+void TestWebViewDelegate::ShowJavaScriptAlert(const std::wstring& message) {
+  MessageBox(NULL, message.c_str(), L"JavaScript Alert", MB_OK);
+}
 
 void TestWebViewDelegate::SetPageTitle(const std::wstring& title) {
   // The Windows test shell, pre-refactoring, ignored this.  *shrug*

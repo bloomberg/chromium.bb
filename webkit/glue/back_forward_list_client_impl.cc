@@ -40,8 +40,8 @@ void BackForwardListClientImpl::addItem(PassRefPtr<WebCore::HistoryItem> item) {
   // not a reload or back/forward).
   webview_->ObserveNewNavigation();
 
-  if (webview_->delegate())
-    webview_->delegate()->DidAddHistoryItem();
+  if (webview_->client())
+    webview_->client()->didAddHistoryItem();
 }
 
 void BackForwardListClientImpl::goToItem(WebCore::HistoryItem* item) {
@@ -78,17 +78,17 @@ WebCore::HistoryItem* BackForwardListClientImpl::itemAtIndex(int index) {
 }
 
 int BackForwardListClientImpl::backListCount() {
-  if (!webview_->delegate())
+  if (!webview_->client())
     return 0;
 
-  return webview_->delegate()->GetHistoryBackListCount();
+  return webview_->client()->historyBackListCount();
 }
 
 int BackForwardListClientImpl::forwardListCount() {
-  if (!webview_->delegate())
+  if (!webview_->client())
     return 0;
 
-  return webview_->delegate()->GetHistoryForwardListCount();
+  return webview_->client()->historyForwardListCount();
 }
 
 void BackForwardListClientImpl::close() {

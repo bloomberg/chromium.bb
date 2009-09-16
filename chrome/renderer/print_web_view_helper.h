@@ -116,7 +116,46 @@ class PrintWebViewHelper : public WebViewDelegate {
 
   int32 routing_id();
 
-  // WebViewDeletegate
+  // WebKit::WebViewClient
+  virtual WebView* createView(WebKit::WebFrame* creator) { return NULL; }
+  virtual WebKit::WebWidget* createPopupMenu(bool activatable) { return NULL; }
+  virtual WebKit::WebWidget* createPopupMenu(
+      const WebKit::WebPopupMenuInfo& info) { return NULL; }
+  virtual void didAddMessageToConsole(
+      const WebKit::WebConsoleMessage& message,
+      const WebKit::WebString& source_name, unsigned source_line) {}
+  virtual void printPage(WebKit::WebFrame* frame) {}
+  virtual void didStartLoading() {}
+  virtual void didStopLoading();
+  virtual void runModalAlertDialog(
+      WebKit::WebFrame* frame, const WebKit::WebString& message) {}
+  virtual bool runModalConfirmDialog(
+      WebKit::WebFrame* frame, const WebKit::WebString& message) {
+    return false;
+  }
+  virtual bool runModalPromptDialog(
+      WebKit::WebFrame* frame, const WebKit::WebString& message,
+      const WebKit::WebString& default_value,
+      WebKit::WebString* actual_value) { return false; }
+  virtual bool runModalBeforeUnloadDialog(
+      WebKit::WebFrame* frame, const WebKit::WebString& message) {
+    return true;
+  }
+  virtual void setStatusText(const WebKit::WebString& text) {}
+  virtual void setMouseOverURL(const WebKit::WebURL& url) {}
+  virtual void setToolTipText(
+      const WebKit::WebString& text, WebKit::WebTextDirection hint) {}
+  virtual void startDragging(
+      const WebKit::WebPoint& from, const WebKit::WebDragData& data,
+      WebKit::WebDragOperationsMask mask) {}
+  virtual void focusNext() {}
+  virtual void focusPrevious() {}
+  virtual void navigateBackForwardSoon(int offset) {}
+  virtual int historyBackListCount() { return 0; }
+  virtual int historyForwardListCount() { return 0; }
+  virtual void didAddHistoryItem() {}
+
+  // WebKit::WebWidgetClient
   virtual void didInvalidateRect(const WebKit::WebRect&) {}
   virtual void didScrollRect(int dx, int dy, const WebKit::WebRect& clipRect) {}
   virtual void didFocus() {}
@@ -130,7 +169,6 @@ class PrintWebViewHelper : public WebViewDelegate {
   virtual WebKit::WebRect windowResizerRect();
   virtual WebKit::WebRect rootWindowRect();
   virtual WebKit::WebScreenInfo screenInfo();
-  virtual void DidStopLoading(WebView* webview);
 
  private:
   RenderView* render_view_;

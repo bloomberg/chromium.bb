@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "webkit/api/public/WebCursorInfo.h"
+#include "webkit/api/public/WebPopupMenu.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webview.h"
 #include "webkit/glue/plugins/plugin_list.h"
@@ -17,29 +18,18 @@
 
 using WebKit::WebCursorInfo;
 using WebKit::WebNavigationPolicy;
+using WebKit::WebPopupMenu;
 using WebKit::WebPopupMenuInfo;
 using WebKit::WebRect;
 using WebKit::WebWidget;
 
-// WebViewDelegate ------------------------------------------------------------
+// WebViewClient --------------------------------------------------------------
 
-WebWidget* TestWebViewDelegate::CreatePopupWidgetWithInfo(
-    WebView* webview,
+WebWidget* TestWebViewDelegate::createPopupMenu(
     const WebPopupMenuInfo& info) {
-  WebWidget* webwidget = shell_->CreatePopupWidget(webview);
+  WebWidget* webwidget = shell_->CreatePopupWidget();
   popup_menu_info_.reset(new WebPopupMenuInfo(info));
   return webwidget;
-}
-
-void TestWebViewDelegate::ShowJavaScriptAlert(const std::wstring& message) {
-  NSString *text =
-      [NSString stringWithUTF8String:WideToUTF8(message).c_str()];
-  NSAlert *alert = [NSAlert alertWithMessageText:@"JavaScript Alert"
-                                   defaultButton:@"OK"
-                                 alternateButton:nil
-                                     otherButton:nil
-                       informativeTextWithFormat:text];
-  [alert runModal];
 }
 
 // WebWidgetClient ------------------------------------------------------------
@@ -214,6 +204,17 @@ void TestWebViewDelegate::UpdateSelectionClipboard(bool is_empty_selection) {
 }
 
 // Private methods ------------------------------------------------------------
+
+void TestWebViewDelegate::ShowJavaScriptAlert(const std::wstring& message) {
+  NSString *text =
+      [NSString stringWithUTF8String:WideToUTF8(message).c_str()];
+  NSAlert *alert = [NSAlert alertWithMessageText:@"JavaScript Alert"
+                                   defaultButton:@"OK"
+                                 alternateButton:nil
+                                     otherButton:nil
+                       informativeTextWithFormat:text];
+  [alert runModal];
+}
 
 void TestWebViewDelegate::SetPageTitle(const std::wstring& title) {
   [[shell_->webViewHost()->view_handle() window]

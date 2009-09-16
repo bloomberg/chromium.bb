@@ -281,6 +281,8 @@ class LayoutTestController : public CppBoundClass {
   int32 CppVariantToInt32(const CppVariant&);
   std::wstring CppVariantToWstring(const CppVariant&);
 
+  void LogErrorToConsole(const std::string& text);
+
   // Non-owning pointer.  The LayoutTestController is owned by the host.
   static TestShell* shell_;
 

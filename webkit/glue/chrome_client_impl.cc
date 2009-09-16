@@ -29,6 +29,7 @@
 #undef LOG
 
 #include "googleurl/src/gurl.h"
+#include "webkit/api/public/WebConsoleMessage.h"
 #include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/api/public/WebFrameClient.h"
 #include "webkit/api/public/WebInputEvent.h"
@@ -50,13 +51,16 @@
 using WebCore::PopupContainer;
 using WebCore::PopupItem;
 
+using WebKit::WebConsoleMessage;
 using WebKit::WebCursorInfo;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebPopupMenuInfo;
 using WebKit::WebRect;
+using WebKit::WebString;
 using WebKit::WebTextDirection;
+using WebKit::WebURL;
 using WebKit::WebURLRequest;
 using WebKit::WebVector;
 using WebKit::WebWidget;
@@ -192,29 +196,23 @@ bool ChromeClientImpl::canTakeFocus(WebCore::FocusDirection) {
 }
 
 void ChromeClientImpl::takeFocus(WebCore::FocusDirection direction) {
-  WebViewDelegate* delegate = webview_->delegate();
-  if (delegate) {
-    delegate->TakeFocus(webview_,
-                        direction == WebCore::FocusDirectionBackward);
+  if (!webview_->client())
+    return;
+  if (direction == WebCore::FocusDirectionBackward) {
+    webview_->client()->focusPrevious();
+  } else {
+    webview_->client()->focusNext();
   }
 }
 
 WebCore::Page* ChromeClientImpl::createWindow(
     WebCore::Frame* frame, const WebCore::FrameLoadRequest& r,
     const WebCore::WindowFeatures& features) {
-  WebViewDelegate* delegate = webview_->delegate();
-  if (!delegate)
+  if (!webview_->client())
     return NULL;
 
-  bool user_gesture = frame->script()->processingUserGesture();
-
-  const std::string security_origin(webkit_glue::StringToStdString(
-      frame->document()->securityOrigin()->toString()));
-  GURL creator_url(security_origin);
   WebViewImpl* new_view = static_cast<WebViewImpl*>(
-      delegate->CreateWebView(webview_, user_gesture,
-      (creator_url.is_valid() && creator_url.IsStandard()) ?
-      creator_url : GURL()));
+      webview_->client()->createView(WebFrameImpl::FromFrame(frame)));
   if (!new_view)
     return NULL;
 
@@ -225,8 +223,7 @@ WebCore::Page* ChromeClientImpl::createWindow(
     new_view->main_frame()->loadRequest(request);
   }
 
-  WebViewImpl* new_view_impl = static_cast<WebViewImpl*>(new_view);
-  return new_view_impl->page();
+  return new_view->page();
 }
 
 static inline bool CurrentEventShouldCauseBackgroundTab(
@@ -323,12 +320,12 @@ void ChromeClientImpl::addMessageToConsole(WebCore::MessageSource source,
                                            const WebCore::String& message,
                                            unsigned int line_no,
                                            const WebCore::String& source_id) {
-  WebViewDelegate* delegate = webview_->delegate();
-  if (delegate) {
-    std::wstring wstr_message = webkit_glue::StringToStdWString(message);
-    std::wstring wstr_source_id = webkit_glue::StringToStdWString(source_id);
-    delegate->AddMessageToConsole(webview_, wstr_message,
-                                  line_no, wstr_source_id);
+  if (webview_->client()) {
+    webview_->client()->didAddMessageToConsole(
+        WebConsoleMessage(static_cast<WebConsoleMessage::Level>(level),
+                          webkit_glue::StringToWebString(message)),
+        webkit_glue::StringToWebString(source_id),
+        line_no);
   }
 }
 
@@ -339,11 +336,10 @@ bool ChromeClientImpl::canRunBeforeUnloadConfirmPanel() {
 bool ChromeClientImpl::runBeforeUnloadConfirmPanel(
     const WebCore::String& message,
     WebCore::Frame* frame) {
-  WebViewDelegate* delegate = webview_->delegate();
-  if (delegate) {
-    std::wstring wstr = webkit_glue::StringToStdWString(message);
-    return delegate->RunBeforeUnloadConfirm(WebFrameImpl::FromFrame(frame),
-                                            wstr);
+  if (webview_->client()) {
+    return webview_->client()->runModalBeforeUnloadDialog(
+        WebFrameImpl::FromFrame(frame),
+        webkit_glue::StringToWebString(message));
   }
   return false;
 }
@@ -355,36 +351,33 @@ void ChromeClientImpl::closeWindowSoon() {
   // Make sure that all loading is stopped.  Ensures that JS stops executing!
   webview_->StopLoading();
 
-  WebViewDelegate* delegate = webview_->delegate();
-  if (delegate)
-    delegate->closeWidgetSoon();
+  if (webview_->client())
+    webview_->client()->closeWidgetSoon();
 }
 
 // Although a WebCore::Frame is passed in, we don't actually use it, since we
 // already know our own webview_.
 void ChromeClientImpl::runJavaScriptAlert(WebCore::Frame* frame,
                                           const WebCore::String& message) {
-  // Pass the request on to the WebView delegate, for more control.
-  WebViewDelegate* delegate = webview_->delegate();
-  if (delegate) {
+  if (webview_->client()) {
 #if USE(V8)
     // Before showing the JavaScript dialog, we give the proxy implementation
     // a chance to process any pending console messages.
     WebCore::V8Proxy::processConsoleMessages();
 #endif
-
-    std::wstring wstr = webkit_glue::StringToStdWString(message);
-    delegate->RunJavaScriptAlert(WebFrameImpl::FromFrame(frame), wstr);
+    webview_->client()->runModalAlertDialog(
+        WebFrameImpl::FromFrame(frame),
+        webkit_glue::StringToWebString(message));
   }
 }
 
 // See comments for runJavaScriptAlert().
 bool ChromeClientImpl::runJavaScriptConfirm(WebCore::Frame* frame,
                                             const WebCore::String& message) {
-  WebViewDelegate* delegate = webview_->delegate();
-  if (delegate) {
-    std::wstring wstr = webkit_glue::StringToStdWString(message);
-    return delegate->RunJavaScriptConfirm(WebFrameImpl::FromFrame(frame), wstr);
+  if (webview_->client()) {
+    return webview_->client()->runModalConfirmDialog(
+        WebFrameImpl::FromFrame(frame),
+        webkit_glue::StringToWebString(message));
   }
   return false;
 }
@@ -392,29 +385,26 @@ bool ChromeClientImpl::runJavaScriptConfirm(WebCore::Frame* frame,
 // See comments for runJavaScriptAlert().
 bool ChromeClientImpl::runJavaScriptPrompt(WebCore::Frame* frame,
                                            const WebCore::String& message,
-                                           const WebCore::String& defaultValue,
+                                           const WebCore::String& default_value,
                                            WebCore::String& result) {
-  WebViewDelegate* delegate = webview_->delegate();
-  if (delegate) {
-    std::wstring wstr_message = webkit_glue::StringToStdWString(message);
-    std::wstring wstr_default = webkit_glue::StringToStdWString(defaultValue);
-    std::wstring wstr_result;
-    bool ok = delegate->RunJavaScriptPrompt(WebFrameImpl::FromFrame(frame),
-                                            wstr_message,
-                                            wstr_default,
-                                            &wstr_result);
+  if (webview_->client()) {
+    WebString actual_value;
+    bool ok = webview_->client()->runModalPromptDialog(
+        WebFrameImpl::FromFrame(frame),
+        webkit_glue::StringToWebString(message),
+        webkit_glue::StringToWebString(default_value),
+        &actual_value);
     if (ok)
-      result = webkit_glue::StdWStringToString(wstr_result);
+      result = webkit_glue::WebStringToString(actual_value);
     return ok;
   }
   return false;
 }
 
 void ChromeClientImpl::setStatusbarText(const WebCore::String& message) {
-  WebViewDelegate* delegate = webview_->delegate();
-  if (delegate) {
-    std::wstring wstr = webkit_glue::StringToStdWString(message);
-    delegate->SetStatusbarText(webview_, wstr);
+  if (webview_->client()) {
+    webview_->client()->setStatusText(
+        webkit_glue::StringToWebString(message));
   }
 }
 
@@ -499,37 +489,32 @@ void ChromeClientImpl::scrollbarsModeDidChange() const {
 }
 
 void ChromeClientImpl::mouseDidMoveOverElement(
-    const WebCore::HitTestResult& result, unsigned modifierFlags) {
-  // Find out if the mouse is over a link, and if so, let our UI know... somehow
-  WebViewDelegate* delegate = webview_->delegate();
-  if (delegate) {
-    if (result.isLiveLink() && !result.absoluteLinkURL().string().isEmpty()) {
-      delegate->UpdateTargetURL(
-          webview_, webkit_glue::KURLToGURL(result.absoluteLinkURL()));
-    } else {
-      delegate->UpdateTargetURL(webview_, GURL());
-    }
+    const WebCore::HitTestResult& result, unsigned modifier_flags) {
+  if (!webview_->client())
+    return;
+  // Find out if the mouse is over a link, and if so, let our UI know...
+  if (result.isLiveLink() && !result.absoluteLinkURL().string().isEmpty()) {
+    webview_->client()->setMouseOverURL(
+        webkit_glue::KURLToWebURL(result.absoluteLinkURL()));
+  } else {
+    webview_->client()->setMouseOverURL(WebURL());
   }
 }
 
 void ChromeClientImpl::setToolTip(const WebCore::String& tooltip_text,
                                   WebCore::TextDirection dir) {
-  if (webview_->delegate()) {
-    std::wstring tooltip_text_as_wstring =
-      webkit_glue::StringToStdWString(tooltip_text);
-    WebTextDirection text_direction = (dir == WebCore::RTL) ?
-        WebKit::WebTextDirectionRightToLeft :
-        WebKit::WebTextDirectionLeftToRight;
-    webview_->delegate()->SetTooltipText(webview_, tooltip_text_as_wstring,
-                                         text_direction);
-  }
+  if (!webview_->client())
+    return;
+  WebTextDirection text_direction = (dir == WebCore::RTL) ?
+      WebKit::WebTextDirectionRightToLeft :
+      WebKit::WebTextDirectionLeftToRight;
+  webview_->client()->setToolTipText(
+      webkit_glue::StringToWebString(tooltip_text), text_direction);
 }
 
 void ChromeClientImpl::print(WebCore::Frame* frame) {
-  WebViewDelegate* delegate = webview_->delegate();
-  if (delegate) {
-    delegate->ScriptedPrint(WebFrameImpl::FromFrame(frame));
-  }
+  if (webview_->client())
+    webview_->client()->printPage(WebFrameImpl::FromFrame(frame));
 }
 
 void ChromeClientImpl::exceededDatabaseQuota(WebCore::Frame* frame,
@@ -562,17 +547,16 @@ void ChromeClientImpl::popupOpened(PopupContainer* popup_container,
                                    const WebCore::IntRect& bounds,
                                    bool activatable,
                                    bool handle_externally) {
-  WebViewDelegate* delegate = webview_->delegate();
-  if (!delegate)
+  if (!webview_->client())
     return;
 
   WebWidget* webwidget;
   if (handle_externally) {
     WebPopupMenuInfo popup_info;
     GetPopupMenuInfo(popup_container, &popup_info);
-    webwidget = delegate->CreatePopupWidgetWithInfo(webview_, popup_info);
+    webwidget = webview_->client()->createPopupMenu(popup_info);
   } else {
-    webwidget = delegate->CreatePopupWidget(webview_, activatable);
+    webwidget = webview_->client()->createPopupMenu(activatable);
   }
 
   static_cast<WebPopupMenuImpl*>(webwidget)->Init(
