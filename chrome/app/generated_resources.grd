@@ -5034,6 +5034,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
     </if>
 
+    <message name="IDS_OUTDATED_PLUGIN" desc="This message is shown to the user when we detect that one of their plugins is out of date and should be upgraded (i.e. because of known security issues etc)">
+        Your <ph name="PLUGIN_NAME">$1<ex>Shockwave Flash</ex></ph> plugin is out of date. You should update it immediately!
+    </message>
+
     <!-- Chrome OS Strings -->
     <if expr="pp_ifdef('chromeos')">
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_NETWORK">
