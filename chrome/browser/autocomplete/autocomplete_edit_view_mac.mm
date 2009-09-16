@@ -157,7 +157,7 @@ AutocompleteEditViewMac::AutocompleteEditViewMac(
   DCHECK(profile);
   DCHECK(command_updater);
   DCHECK(field);
-  [field_ setDelegate:edit_helper_];
+  [field_ setDelegate:edit_helper_.get()];
 
   // Needed so that editing doesn't lose the styling.
   [field_ setAllowsEditingTextAttributes:YES];

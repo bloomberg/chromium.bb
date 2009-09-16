@@ -46,7 +46,7 @@ class AutocompleteTextFieldTest : public PlatformTest {
 
     window_delegate_.reset(
         [[AutocompleteTextFieldWindowTestDelegate alloc] init]);
-    [cocoa_helper_.window() setDelegate:window_delegate_];
+    [cocoa_helper_.window() setDelegate:window_delegate_.get()];
   }
 
   // The removeFromSuperview call is needed to prevent crashes in later tests.
