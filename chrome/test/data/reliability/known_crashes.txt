@@ -126,3 +126,6 @@ PREFIX : deletetask<urlfetcher>::run
 
 # 21862
 PREFIX : urlrequesthttpjob::factory___urlrequestjobmanager::createjob___urlrequest::start
+
+# 21978
+PREFIX : deletetask<webplugindelegateimpl>::run
