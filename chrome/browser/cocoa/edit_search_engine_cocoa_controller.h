@@ -24,6 +24,9 @@ class TemplateURL;
   IBOutlet NSImageView* keywordImage_;
   IBOutlet NSImageView* urlImage_;
   IBOutlet NSButton* doneButton_;
+  IBOutlet NSTextField* urlDescriptionField_;
+  IBOutlet NSView* labelContainer_;
+  IBOutlet NSBox* fieldAndImageContainer_;
 
   // Refs to the good and bad images used in the interface validation.
   scoped_nsobject<NSImage> goodImage_;

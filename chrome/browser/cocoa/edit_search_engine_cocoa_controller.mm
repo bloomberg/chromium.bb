@@ -11,6 +11,17 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
+#include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+
+namespace {
+
+void ShiftOriginY(NSView* view, CGFloat amount) {
+  NSPoint origin = [view frame].origin;
+  origin.y += amount;
+  [view setFrameOrigin:origin];
+}
+
+}  // namespace
 
 @implementation EditSearchEngineCocoaController
 
@@ -33,6 +44,39 @@
 - (void)awakeFromNib {
   DCHECK([self window]);
   DCHECK_EQ(self, [[self window] delegate]);
+
+  // Make sure the url description field fits the text in it.
+  CGFloat descriptionShift = [GTMUILocalizerAndLayoutTweaker
+      sizeToFitFixedWidthTextField:urlDescriptionField_];
+
+  // Move the label container above the url description.
+  ShiftOriginY(labelContainer_, descriptionShift);
+  // There was no way via view containment to use a helper view to move all
+  // the textfields and images at once, most move them all on their own so
+  // they stay above the url description.
+  ShiftOriginY(nameField_, descriptionShift);
+  ShiftOriginY(keywordField_, descriptionShift);
+  ShiftOriginY(urlField_, descriptionShift);
+  ShiftOriginY(nameImage_, descriptionShift);
+  ShiftOriginY(keywordImage_, descriptionShift);
+  ShiftOriginY(urlImage_, descriptionShift);
+
+  // Resize the containing box for the name/keyword/url fields/images since it
+  // also contains the url description (which just grew).
+  [[fieldAndImageContainer_ contentView] setAutoresizesSubviews:NO];
+  NSRect rect = [fieldAndImageContainer_ frame];
+  rect.size.height += descriptionShift;
+  [fieldAndImageContainer_ setFrame:rect];
+  [[fieldAndImageContainer_ contentView] setAutoresizesSubviews:YES];
+
+  // Resize the window.
+  NSWindow* window = [self window];
+  [[window contentView] setAutoresizesSubviews:NO];
+  rect = [window frame];
+  rect.size.height += descriptionShift;
+  [window setFrame:rect display:NO];
+  [[window contentView] setAutoresizesSubviews:YES];
+
   ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
   goodImage_.reset([bundle.GetNSImageNamed(IDR_INPUT_GOOD) retain]);
   badImage_.reset([bundle.GetNSImageNamed(IDR_INPUT_ALERT) retain]);
