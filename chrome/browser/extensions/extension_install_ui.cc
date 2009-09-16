@@ -191,7 +191,7 @@ void ExtensionInstallUI::OnInstallFailure(const std::string& error) {
       base::SysUTF8ToCFStringRef(error));
   CFOptionFlags response;
   CFUserNotificationDisplayAlert(
-      0, kCFUserNotificationCautionAlertLevel, NULL, NULL, NULL,
+      0, kCFUserNotificationNoteAlertLevel, NULL, NULL, NULL,
       CFSTR("Extension Install Error"), message_cf,
       NULL, NULL, NULL, &response);
 #else
