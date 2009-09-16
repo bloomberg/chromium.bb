@@ -151,7 +151,7 @@ void InfoBubble::Init(views::Window* parent,
 #if defined(OS_WIN)
   ShowWindow(SW_SHOW);
 #else
-  Show();
+  views::WidgetGtk::Show();
 #endif
 }
 
