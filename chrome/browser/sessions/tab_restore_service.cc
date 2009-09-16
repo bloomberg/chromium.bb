@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <map>
 
 #include "base/scoped_vector.h"
 #include "base/stl_util-inl.h"
@@ -63,7 +64,8 @@ namespace {
 typedef int32 RestoredEntryPayload;
 
 // Payload used for the start of a window close. This is the old struct that is
-// used for backwards compat when it comes to reading the session files.
+// used for backwards compat when it comes to reading the session files. This
+// struct must be POD, because we memset the contents.
 struct WindowPayload {
   SessionID::id_type window_id;
   int32 selected_tab_index;
@@ -77,7 +79,8 @@ struct SelectedNavigationInTabPayload {
   int32 index;
 };
 
-// Payload used for the start of a window close.
+// Payload used for the start of a window close.  This struct must be POD,
+// because we memset the contents.
 struct WindowPayload2 : WindowPayload {
   int64 timestamp;
 };
@@ -502,6 +505,9 @@ SessionCommand* TabRestoreService::CreateWindowCommand(SessionID::id_type id,
                                                        int num_tabs,
                                                        Time timestamp) {
   WindowPayload2 payload;
+  // |timestamp| is aligned on a 16 byte boundary, leaving 4 bytes of
+  // uninitialized memory in the struct.
+  memset(&payload, 0, sizeof(payload));
   payload.window_id = id;
   payload.selected_tab_index = selected_tab_index;
   payload.num_tabs = num_tabs;
