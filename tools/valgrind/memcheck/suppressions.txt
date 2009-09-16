@@ -1171,6 +1171,6 @@
    bug_22021
    Memcheck:Leak
    fun:malloc
-   fun:_ZN3WTF10fastMallocEj
+   fun:_ZN3WTF10fastMallocE*
    fun:_ZN7WebCore19V8EventListenerList3addEPNS_15V8EventListenerE
 }
