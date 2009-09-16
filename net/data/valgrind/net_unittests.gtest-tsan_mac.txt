@@ -1,0 +1,22 @@
+# Former aspacem warnings on Valgrind.
+# Tsan still tends to hang on these tests unexpectedly on Mac OS.
+# (see https://bugs.kde.org/show_bug.cgi?id=192634 and
+# http://code.google.com/p/data-race-test/issues/detail?id=11)
+FileStreamTest.*Async*
+HostResolverImplTest.*
+TestCompletionCallbackTest.Simple
+FtpNetworkTransactionTest.*
+HttpNetworkLayerTest.GET
+HttpNetworkLayerTest.SimpleGET
+HttpNetworkTransactionTest.*
+ProxyScriptFetcherTest.*
+SOCKS5ClientSocketTest.*
+SOCKSClientSocketTest.*
+TCPClientSocketPoolTest.*
+URLRequestTest.*
+URLRequestTestHTTP.*
+URLRequestTestFTP.*
+SSLClientSocketTest.*
+DiskCacheTest.*
+DiskCacheEntryTest.*Async*
+DiskCacheEntryTest.DoomSparseEntry
