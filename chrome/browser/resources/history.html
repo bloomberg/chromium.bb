@@ -527,7 +527,7 @@ HistoryView.prototype.displayResults_ = function() {
 HistoryView.prototype.displaySummaryBar_ = function() {
   var searchText = this.model_.getSearchText();
   if (searchText != '') {
-    this.summaryDiv_.innerHTML = localStrings.formatString('searchresultsfor',
+    this.summaryDiv_.textContent = localStrings.formatString('searchresultsfor',
         searchText);
   } else {
     this.summaryDiv_.innerHTML = localStrings.getString('history');

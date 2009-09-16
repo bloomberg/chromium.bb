@@ -260,7 +260,7 @@ Downloads.prototype.setSearchText = function(searchText) {
  */
 Downloads.prototype.updateSummary = function() {
   if (this.searchText_) {
-    this.summary_.innerHTML = localStrings.formatString(
+    this.summary_.textContent = localStrings.formatString(
         'searchresultsfor', this.searchText_);
   } else {
     this.summary_.innerHTML = localStrings.getString('downloads');
