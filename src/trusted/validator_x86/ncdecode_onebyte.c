@@ -575,12 +575,20 @@ void DefineOneByteOpcodes() {
   DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(G_Operand, OpFlag(OpUse));
 
+
   DefineOpcode(0x63, NACLi_SYSTEM,
-               InstFlag(Opcode64Only) | InstFlag(OperandSize_v) |
+               InstFlag(Opcode64Only) | InstFlag(OperandSize_o) |
                InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm),
                InstMovsxd);
-  DefineOperand(Go_Operand, OpFlag(OpSet) | OpFlag(OperandZeroExtends_v));
-  DefineOperand(E_Operand, OpFlag(OpSet));
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Ev_Operand, OpFlag(OpUse));
+
+  /* NOTE: this form of movsxd should be discourages. */
+  DefineOpcode(0x63, /* NACLi_SYSTEM, */ NACLi_ILLEGAL,
+               InstFlag(OperandSize_v) | InstFlag(OpcodeUsesModRm),
+               InstMovsxd);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpUse));
 
   DefineOpcode(0x68, NACLi_386,
                InstFlag(OperandSize_w) | InstFlag(OpcodeHasImmed),

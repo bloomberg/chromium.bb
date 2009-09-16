@@ -84,3 +84,6 @@
 -i=DCF3                                  #0000000000000000: dc f3                                        fdivr %st3, %st0
 -i=DCEA                                  #0000000000000000: dc ea                                        fsub %st2, %st0
 -i=DCCE                                  #0000000000000000: dc ce                                        fmul %st6, %st0
+-i=4863c6                                #0000000000000000: 48 63 c6                                     movsxd %rax, %rsi; *NACL Disallows!*
+-i=63c6                                  #0000000000000000: 63 c6                                        movsxd %eax, %esi; *NACL Disallows!*
+
