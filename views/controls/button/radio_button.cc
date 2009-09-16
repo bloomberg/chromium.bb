@@ -29,7 +29,7 @@ RadioButton::~RadioButton() {
 void RadioButton::SetChecked(bool checked) {
   if (checked == RadioButton::checked())
     return;
-  if (native_wrapper_->UsesNativeRadioButtonGroup() && checked) {
+  if (!native_wrapper_->UsesNativeRadioButtonGroup() && checked) {
     // We can't just get the root view here because sometimes the radio
     // button isn't attached to a root view (e.g., if it's part of a tab page
     // that is currently not active).
