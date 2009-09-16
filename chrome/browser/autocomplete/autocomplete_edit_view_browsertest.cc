@@ -197,9 +197,27 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
   }
 
   void SetupHistory() {
+    Profile* profile = browser()->profile();
     HistoryService* history_service =
-        browser()->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+        profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
     ASSERT_TRUE(history_service);
+
+    if (!history_service->backend_loaded()) {
+      NotificationRegistrar registrar;
+      registrar.Add(this, NotificationType::HISTORY_LOADED,
+                    Source<Profile>(profile));
+      ui_test_utils::RunMessageLoop();
+    }
+
+    BookmarkModel* bookmark_model = profile->GetBookmarkModel();
+    ASSERT_TRUE(bookmark_model);
+
+    if (!bookmark_model->IsLoaded()) {
+      NotificationRegistrar registrar;
+      registrar.Add(this, NotificationType::BOOKMARK_MODEL_LOADED,
+                    Source<Profile>(profile));
+      ui_test_utils::RunMessageLoop();
+    }
 
     // Add enough history pages containing |kSearchText| to trigger open history
     // page url in autocomplete result.
@@ -213,8 +231,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
                                           cur.typed_count, t, false);
       history_service->SetPageContents(url, cur.body);
       if (cur.starred) {
-        browser()->profile()->GetBookmarkModel()->SetURLStarred(
-            url, std::wstring(), true);
+        bookmark_model->SetURLStarred(url, std::wstring(), true);
       }
     }
   }
@@ -233,6 +250,8 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
       case NotificationType::TAB_CLOSED:
       case NotificationType::TEMPLATE_URL_MODEL_LOADED:
       case NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED:
+      case NotificationType::HISTORY_LOADED:
+      case NotificationType::BOOKMARK_MODEL_LOADED:
         break;
       default:
         FAIL() << "Unexpected notification type";
