@@ -174,6 +174,10 @@ class ExtensionShelf::Toolstrip : public views::View,
   virtual void AnimationEnded(const Animation* animation);
 
  private:
+  // The threshold for not tearing the ToolStrip from the Extension Shelf during
+  // click-and-drag the handle.
+  int GetVerticalTearFromShelfThreshold();
+
   // The actual renderer that this toolstrip contains.
   ExtensionHost* host_;
 
@@ -207,6 +211,11 @@ class ExtensionShelf::Toolstrip : public views::View,
 
   // If dragging, where did the drag start from.
   gfx::Point initial_drag_location_;
+
+  // We have to remember the initial drag point in screen coordinates, because
+  // later, when the toolstrip is being dragged around, there is no good way of
+  // computing the screen coordinates given the initial drag view coordinates.
+  gfx::Point initial_drag_screen_point_;
 
   // Timers for tracking mouse hovering.
   ScopedRunnableMethodFactory<ExtensionShelf::Toolstrip> timer_factory_;
@@ -315,6 +324,7 @@ void ExtensionShelf::Toolstrip::OnMouseExited(const views::MouseEvent& event) {
 
 bool ExtensionShelf::Toolstrip::OnMousePressed(const views::MouseEvent& event) {
   initial_drag_location_ = event.location();
+  initial_drag_screen_point_ = views::Screen::GetCursorScreenPoint();
   return true;
 }
 
@@ -340,7 +350,14 @@ bool ExtensionShelf::Toolstrip::OnMouseDragged(const views::MouseEvent& event) {
     gfx::Point origin(0, 0);
     views::View::ConvertPointToScreen(shelf_->GetRootView(), &origin);
     screen.set_x(screen.x() - origin.x() - initial_drag_location_.x());
-    screen.set_y(screen.y() - origin.y() - initial_drag_location_.y());
+
+    // Restrict the movement to horizontal unless vertical mouse drag exceeds a
+    // threshold.
+    int screen_y = initial_drag_screen_point_.y();
+    if (abs(screen_y - screen.y()) > GetVerticalTearFromShelfThreshold()) {
+      screen_y = screen.y();
+    }
+    screen.set_y(screen_y - origin.y() - initial_drag_location_.y());
 
     // TODO(erikkay) as this gets dragged around, update the placeholder view
     // on the shelf to show where it will get dropped to.
@@ -460,6 +477,11 @@ void ExtensionShelf::Toolstrip::AnimationEnded(const Animation* animation) {
     HideShelfHandle(kHideDelayMs * 2);
     AttachToShelf(false);
   }
+}
+
+int ExtensionShelf::Toolstrip::GetVerticalTearFromShelfThreshold() {
+  // TODO (sidchat): Compute this value from the toolstrip height.
+  return 29;
 }
 
 void ExtensionShelf::Toolstrip::DetachFromShelf(bool browserDetach) {
