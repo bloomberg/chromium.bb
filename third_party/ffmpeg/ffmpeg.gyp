@@ -145,12 +145,6 @@
                 '../..',  # The chromium 'src' directory.
               ],
             },
-            'link_settings': {
-              'libraries': [
-                # We need dl for dlopen() and friends.
-                '-ldl',
-              ],
-            },
             'actions': [
               {
                 'action_name': 'generate_stubs',
@@ -177,9 +171,17 @@
                 'process_outputs_as_sources': 1,
               },
             ],
-          }
+          },
         ],
-      ],
+        ['OS=="linux" or OS=="freebsd"', {
+          'link_settings': {
+            'libraries': [
+              # We need dl for dlopen() and friends.
+              '-ldl',
+            ],
+          },
+        }],
+      ],  # conditions
     },
     {
       'target_name': 'ffmpeg_binaries',
