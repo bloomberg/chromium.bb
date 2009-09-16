@@ -46,3 +46,4 @@ syncapi.dll: %(VersionDir)s\
 
 [GOOGLE_CHROME]
 rlz.dll: %(VersionDir)s\
+pthreads.dll: %(VersionDir)s\
