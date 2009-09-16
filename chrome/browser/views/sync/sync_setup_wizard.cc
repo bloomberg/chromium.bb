@@ -90,6 +90,8 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
     localized_strings.SetString(L"abortlabel", "Abort");
     localized_strings.SetString(L"alldone", "All Done!");
     localized_strings.SetString(L"closelabel", "Close");
+    localized_strings.SetString(L"setuperror",
+                                l10n_util::GetString(IDS_SYNC_SETUP_ERROR));
 
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_MERGE_AND_SYNC_HTML));

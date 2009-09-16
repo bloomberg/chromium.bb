@@ -100,6 +100,9 @@ SyncStatusUIHelper::MessageType SyncStatusUIHelper::GetLabels(
         status_label->assign(
             l10n_util::GetString(IDS_SYNC_ACCOUNT_DETAILS_NOT_ENTERED));
       }
+    } else if (service->unrecoverable_error_detected()) {
+      result_type = SYNC_ERROR;
+      status_label->assign(l10n_util::GetString(IDS_SYNC_SETUP_ERROR));
     } else {
       status_label->assign(l10n_util::GetString(IDS_SYNC_NOT_SET_UP_INFO));
     }

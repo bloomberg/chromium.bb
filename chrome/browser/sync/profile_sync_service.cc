@@ -218,6 +218,9 @@ void ProfileSyncService::UpdateLastSyncedTime() {
 void ProfileSyncService::OnUnrecoverableError() {
   unrecoverable_error_detected_ = true;
   change_processor_->Stop();
+  if (SetupInProgress())
+    wizard_.Step(SyncSetupWizard::FATAL_ERROR);
+  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
   LOG(ERROR) << "Unrecoverable error detected -- ProfileSyncService unusable.";
 }
 

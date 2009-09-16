@@ -115,6 +115,10 @@ void FlowHandler::ShowMergeAndSyncDone() {
   ExecuteJavascriptInIFrame(kMergeIFrameXPath, L"showMergeAndSyncDone();");
 }
 
+void FlowHandler::ShowMergeAndSyncError() {
+  ExecuteJavascriptInIFrame(kMergeIFrameXPath, L"showMergeAndSyncError();");
+}
+
 void FlowHandler::ExecuteJavascriptInIFrame(const std::wstring& iframe_xpath,
                                             const std::wstring& js) {
   if (dom_ui_) {
@@ -196,6 +200,8 @@ bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
       return current_state_ == SyncSetupWizard::GAIA_LOGIN;
     case SyncSetupWizard::MERGE_AND_SYNC:
       return current_state_ == SyncSetupWizard::GAIA_SUCCESS;
+    case SyncSetupWizard::FATAL_ERROR:
+      return true;  // You can always hit the panic button.
     case SyncSetupWizard::DONE:
       return current_state_ == SyncSetupWizard::MERGE_AND_SYNC ||
              current_state_ == SyncSetupWizard::GAIA_SUCCESS;
@@ -223,6 +229,10 @@ void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
       break;
     case SyncSetupWizard::MERGE_AND_SYNC:
       flow_handler_->ShowMergeAndSync();
+      break;
+    case SyncSetupWizard::FATAL_ERROR:
+      if (current_state_ == SyncSetupWizard::MERGE_AND_SYNC)
+        flow_handler_->ShowMergeAndSyncError();
       break;
     case SyncSetupWizard::DONE:
       if (current_state_ == SyncSetupWizard::MERGE_AND_SYNC)

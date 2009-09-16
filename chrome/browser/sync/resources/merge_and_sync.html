@@ -33,6 +33,14 @@
      closebutton.value = document.getElementById("close_txt").innerHTML;
      setTimeout(Close, 1600);
     }
+    
+    function showMergeAndSyncError() {
+     var throbber = document.getElementById('throbber_container');
+     throbber.style.display = "none";
+     document.getElementById("header").innerHTML =
+         "<font size='-1'><b>" + templateData['setuperror'] + "</b></font>";
+    }
+    
 </script>
 </HEAD>
 <BODY onload="setInterval(advanceThrobber, 30);">

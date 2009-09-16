@@ -169,6 +169,7 @@ class FlowHandler : public DOMMessageHandler {
   void ShowGaiaSuccessAndSettingUp();
   void ShowMergeAndSync();
   void ShowMergeAndSyncDone();
+  void ShowMergeAndSyncError();
 
   void set_flow(SyncSetupFlow* flow) {
     flow_ = flow;

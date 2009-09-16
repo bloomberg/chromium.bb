@@ -309,6 +309,9 @@ TEST_F(SyncSetupWizardTest, InvalidTransitions) {
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   EXPECT_EQ(SyncSetupWizard::MERGE_AND_SYNC,
             test_window_->flow()->current_state_);
+
+  wizard_->Step(SyncSetupWizard::FATAL_ERROR);
+  EXPECT_EQ(SyncSetupWizard::FATAL_ERROR, test_window_->flow()->current_state_);
 }
 
 TEST_F(SyncSetupWizardTest, FullSuccessfulRunSetsPref) {

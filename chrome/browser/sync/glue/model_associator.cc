@@ -188,13 +188,13 @@ bool ModelAssociator::SyncModelHasUserCreatedNodes() {
   int64 bookmark_bar_sync_id;
   if (!GetSyncIdForTaggedNode(WideToUTF16(kBookmarkBarTag),
                               &bookmark_bar_sync_id)) {
-    NOTREACHED();
+    sync_service_->OnUnrecoverableError();
     return false;
   }
   int64 other_bookmarks_sync_id;
   if (!GetSyncIdForTaggedNode(WideToUTF16(kOtherBookmarksTag),
                               &other_bookmarks_sync_id)) {
-    NOTREACHED();
+    sync_service_->OnUnrecoverableError();
     return false;
   }
 
@@ -203,13 +203,13 @@ bool ModelAssociator::SyncModelHasUserCreatedNodes() {
 
   sync_api::ReadNode bookmark_bar_node(&trans);
   if (!bookmark_bar_node.InitByIdLookup(bookmark_bar_sync_id)) {
-    NOTREACHED();
+    sync_service_->OnUnrecoverableError();
     return false;
   }
 
   sync_api::ReadNode other_bookmarks_node(&trans);
   if (!other_bookmarks_node.InitByIdLookup(other_bookmarks_sync_id)) {
-    NOTREACHED();
+    sync_service_->OnUnrecoverableError();
     return false;
   }
 
@@ -298,14 +298,16 @@ bool ModelAssociator::BuildAssocations() {
   // and Other Bookmarks.
   if (!AssociateTaggedPermanentNode(model->other_node(),
                                     WideToUTF16(kOtherBookmarksTag))) {
-    NOTREACHED() << "Server did not create top-level nodes.  Possibly we "
-                 << "are running against an out-of-date server?";
+    sync_service_->OnUnrecoverableError();
+    LOG(ERROR) << "Server did not create top-level nodes.  Possibly we "
+               << "are running against an out-of-date server?";
     return false;
   }
   if (!AssociateTaggedPermanentNode(model->GetBookmarkBarNode(),
                                     WideToUTF16(kBookmarkBarTag))) {
-    NOTREACHED() << "Server did not create top-level nodes.  Possibly we "
-                 << "are running against an out-of-date server?";
+    sync_service_->OnUnrecoverableError();
+    LOG(ERROR) << "Server did not create top-level nodes.  Possibly we "
+               << "are running against an out-of-date server?";
     return false;
   }
   int64 bookmark_bar_sync_id = GetSyncIdFromBookmarkId(
@@ -328,7 +330,7 @@ bool ModelAssociator::BuildAssocations() {
 
     sync_api::ReadNode sync_parent(&trans);
     if (!sync_parent.InitByIdLookup(sync_parent_id)) {
-      NOTREACHED();
+      sync_service_->OnUnrecoverableError();
       return false;
     }
     // Only folder nodes are pushed on to the stack.
@@ -344,7 +346,7 @@ bool ModelAssociator::BuildAssocations() {
     while (sync_child_id != sync_api::kInvalidId) {
       sync_api::WriteNode sync_child_node(&trans);
       if (!sync_child_node.InitByIdLookup(sync_child_id)) {
-        NOTREACHED();
+        sync_service_->OnUnrecoverableError();
         return false;
       }
 
@@ -444,12 +446,14 @@ bool ModelAssociator::LoadAssociations() {
   int64 other_bookmarks_id;
   if (!GetSyncIdForTaggedNode(WideToUTF16(kOtherBookmarksTag),
                               &other_bookmarks_id)) {
-    NOTREACHED();  // We should always be able to find the permanent nodes.
+    // We should always be able to find the permanent nodes.
+    sync_service_->OnUnrecoverableError();
     return false;
   }
   int64 bookmark_bar_id;
   if (!GetSyncIdForTaggedNode(WideToUTF16(kBookmarkBarTag), &bookmark_bar_id)) {
-    NOTREACHED();  // We should always be able to find the permanent nodes.
+    // We should always be able to find the permanent nodes.
+    sync_service_->OnUnrecoverableError();
     return false;
   }
 
@@ -465,7 +469,7 @@ bool ModelAssociator::LoadAssociations() {
     dfs_stack.pop();
     sync_api::ReadNode sync_parent(&trans);
     if (!sync_parent.InitByIdLookup(parent_id)) {
-      NOTREACHED();
+      sync_service_->OnUnrecoverableError();
       return false;
     }
 
@@ -492,7 +496,7 @@ bool ModelAssociator::LoadAssociations() {
       dfs_stack.push(child_id);
       sync_api::ReadNode child_node(&trans);
       if (!child_node.InitByIdLookup(child_id)) {
-        NOTREACHED();
+        sync_service_->OnUnrecoverableError();
         return false;
       }
       child_id = child_node.GetSuccessorId();

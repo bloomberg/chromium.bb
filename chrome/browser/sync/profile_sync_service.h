@@ -155,6 +155,9 @@ class ProfileSyncService : public NotificationObserver,
   // TODO(timsteele): What happens if the bookmark model is loaded, a change
   // takes place, and the backend isn't initialized yet?
   bool sync_initialized() const { return backend_initialized_; }
+  bool unrecoverable_error_detected() const {
+    return unrecoverable_error_detected_;
+  }
 
   bool UIShouldDepictAuthInProgress() const {
     return is_auth_in_progress_;

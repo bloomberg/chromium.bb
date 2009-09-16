@@ -17,6 +17,7 @@ class SyncSetupWizard {
     GAIA_LOGIN = 0,
     GAIA_SUCCESS,
     MERGE_AND_SYNC,
+    FATAL_ERROR,
     DONE
   };
 
