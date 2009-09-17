@@ -15,6 +15,17 @@ const KeyboardShortcutData* GetKeyboardShortCutTable(size_t* num_entries) {
     {true,  true,  false, 33  /* [ */,       IDC_SELECT_PREVIOUS_TAB},
     {false, false, true,  116 /* pg_up */,   IDC_SELECT_PREVIOUS_TAB},
     {false, true,  true,  48 /* tab */,      IDC_SELECT_PREVIOUS_TAB},
+    // Cmd-0..8 select the Nth tab, with cmd-9 being "last tab". Note that the
+    // vkeys are *not* in natural order.
+    {true, false,  false,  18 /* 1 */,       IDC_SELECT_TAB_0},
+    {true, false,  false,  19 /* 2 */,       IDC_SELECT_TAB_1},
+    {true, false,  false,  20 /* 3 */,       IDC_SELECT_TAB_2},
+    {true, false,  false,  21 /* 4 */,       IDC_SELECT_TAB_3},
+    {true, false,  false,  23 /* 5 */,       IDC_SELECT_TAB_4},
+    {true, false,  false,  22 /* 6 */,       IDC_SELECT_TAB_5},
+    {true, false,  false,  26 /* 7 */,       IDC_SELECT_TAB_6},
+    {true, false,  false,  28 /* 8 */,       IDC_SELECT_TAB_7},
+    {true, false,  false,  25 /* 9 */,       IDC_SELECT_LAST_TAB},
   };
 
   *num_entries = arraysize(keyboard_shortcuts);
