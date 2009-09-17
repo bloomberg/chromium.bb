@@ -112,7 +112,8 @@ WONTFIX SKIP : LayoutTests/http/tests/eventsource/workers = PASS TIMEOUT FAIL
 WONTFIX SKIP BUG19635 : LayoutTests/fast/harness/use-page-cache.html = TIMEOUT FAIL
 WONTFIX SKIP BUG19635 : LayoutTests/fast/dom/Window/timer-resume-on-navigation-back.html = TIMEOUT FAIL
 // Depends on page cache, as far as I can tell.
-WONTFIX SKIP BUG10635 : LayoutTests/fast/events/pageshow-pagehide-on-back-cached.html = TIMEOUT FAIL
+WONTFIX SKIP BUG19635 : LayoutTests/fast/events/pageshow-pagehide-on-back-cached.html = TIMEOUT FAIL
+WONTFIX SKIP BUG19635 : LayoutTests/fast/events/pageshow-pagehide-on-back-cached-with-frames.html = TIMEOUT
 
 // No support for WebGL yet
 BUG21852 SKIP : LayoutTests/fast/canvas/webgl = FAIL
@@ -1258,8 +1259,6 @@ BUG10332 LINUX : LayoutTests/css2.1/t1605-c545-txttrans-00-b-ag.html = FAIL
 // Linux: color off by one.  Rounding error?
 BUG10333 LINUX : LayoutTests/editing/deleting/deletionUI-single-instance.html = FAIL
 
-BUG10334 MAC : LayoutTests/editing/selection/select-from-textfield-outwards.html = FAIL
-
 // Asks for "system" fonts, which we don't support at all.
 BUG10335 LINUX : LayoutTests/fast/css/css2-system-fonts.html = FAIL
 
@@ -1561,11 +1560,7 @@ BUG10403 LINUX : LayoutTests/transitions/change-values-during-transition.html = 
 // might need to be rebaselined in win, 'DRAFT' rendering incorrect before
 BUG10405 WIN : LayoutTests/svg/custom/struct-use-09-b.svg = FAIL
 
-// Popup-menu doesn't draw in layout tests
-BUG10408 MAC : LayoutTests/fast/forms/menulist-no-overflow.html = FAIL
-
 // Pass locally but fail on the bots.
-BUG10409 MAC : LayoutTests/fast/forms/002.html = FAIL
 BUG10409 MAC LINUX : LayoutTests/svg/custom/clip-path-units-changes.svg = FAIL
 
 // intermittent failures on the buildbot
@@ -1664,7 +1659,6 @@ BUG10446 LINUX : LayoutTests/editing/execCommand/selectAll.html = FAIL
 
 // Regressions from merge 41559:41588, probably just needs rebaselining.
 BUG10675 MAC : chrome/fast/forms/basic-textareas-quirks.html = FAIL
-BUG10675 MAC : chrome/fast/forms/basic-textareas.html = FAIL
 
 // Started failing 3/12/09. Unclear which CL caused it though.
 BUG10448 MAC : LayoutTests/fast/overflow/image-selection-highlight.html = FAIL
@@ -2192,7 +2186,6 @@ BUG18896 LINUX DEBUG : LayoutTests/svg/dynamic-updates/SVGClipPathElement-svgdom
 // Test failures from WebKit merge 46894 to 46977
 BUG18939 : LayoutTests/fast/js/function-declaration.html = FAIL
 BUG18939 : LayoutTests/fast/js/prototypes.html = FAIL
-BUG18939 MAC : LayoutTests/editing/execCommand/toggle-compound-styles.html = FAIL
 
 // Fallout from webkit 47041:47189
 BUG19248 : LayoutTests/fast/js/const.html = FAIL
@@ -2233,10 +2226,6 @@ BUG20376 WIN : LayoutTests/media/audio-play-event.html = TIMEOUT
 // Was marked as flakey above (I commented it out).
 BUG20376 WIN : LayoutTests/media/video-src-remove.html = TIMEOUT FAIL
 
-// WebKit 47821:47827
-BUG20987 : LayoutTests/fast/events/pageshow-pagehide-on-back-uncached.html = FAIL
-BUG20987 : LayoutTests/fast/events/pageshow-pagehide.html = FAIL
-
 // This newly added test times out on Mac:
 BUG20438 MAC : chrome/plugins/get-url-with-iframe-target.html = TIMEOUT
 BUG20438 MAC : chrome/plugins/get-url-with-iframe-target-no-crash.html = TIMEOUT
@@ -2266,9 +2255,6 @@ BUG21033 : LayoutTests/fast/events/message-port-multi.html = TIMEOUT
 BUG21033 : LayoutTests/fast/dom/Window/window-postmessage-args.html = FAIL
 BUG21033 WIN LINUX : LayoutTests/fast/events/init-events.html = FAIL
 
-// WebKit 48034:48061
-// undefined pageshowEvent.persisted cause the test hangs.
-BUG21136 : LayoutTests/fast/events/pageshow-pagehide-on-back-cached-with-frames.html = TIMEOUT
 // The linux layout result in build bot shows the changed method does not
 // executed.
 BUG21141 LINUX : LayoutTests/fast/forms/select-double-onchange.html = FAIL
@@ -2286,9 +2272,6 @@ BUG21411 SLOW WIN LINUX DEBUG: LayoutTests/svg/dom/SVGScriptElement/script-load-
 BUG21439 : LayoutTests/userscripts/simple-stylesheet.html = FAIL
 // New database test that fails.
 BUG21442 : LayoutTests/storage/test-authorizer.html = TIMEOUT
-
-// Need investigation after we enable file URL universal access in test shell.
-BUG_JIANLI : LayoutTests/editing/selection/drag-in-iframe.html = FAIL
 
 // New test added in r48318 (GoogleURL bug)
 BUG21764 : LayoutTests/fast/forms/ValidityState-typeMismatch-url.html = FAIL
@@ -2321,7 +2304,7 @@ BUG22014 : LayoutTests/http/tests/loading/redirect-with-no-location-crash.html =
 BUG22014 LINUX : LayoutTests/transitions/hang-with-bad-transition-list.html = PASS FAIL
 
 // WK roll 48423:48468 (dglazkov for ukai)
-BUG_DGLAZKOV : LayoutTests/fast/css/font-smoothing.html = FAIL
+BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/css/font-smoothing.html = FAIL
 
 // 48468:48483 (avi for dglazkov for ukai)
 BUG22170 : LayoutTests/http/tests/security/isolatedWorld/window-setTimeout-function.html = FAIL
