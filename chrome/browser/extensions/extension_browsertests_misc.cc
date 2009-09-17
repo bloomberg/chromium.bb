@@ -50,7 +50,8 @@ static ExtensionHost* FindHostWithPath(ExtensionProcessManager* manager,
 }
 
 // Tests that toolstrips initializes properly and can run basic extension js.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Toolstrip) {
+// Disabled, see bug 22135
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_Toolstrip) {
   FilePath extension_test_data_dir = test_data_dir_.AppendASCII("good").
       AppendASCII("Extensions").AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj").
       AppendASCII("1.0.0.0");
@@ -87,7 +88,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Toolstrip) {
 }
 
 #if defined(OS_WIN)  // TODO(port) -- enable
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ExtensionViews) {
+// Disabled, see bug 22135
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DIABLED_ExtensionViews) {
   FilePath extension_test_data_dir = test_data_dir_.AppendASCII("good").
       AppendASCII("Extensions").AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj").
       AppendASCII("1.0.0.0");
