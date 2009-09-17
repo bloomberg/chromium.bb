@@ -40,6 +40,7 @@ class ProcessSingleton : public NonThreadSafe {
   explicit ProcessSingleton(const FilePath& user_data_dir);
   ~ProcessSingleton();
 
+  // Notify another process, if available.
   // Returns true if another process was found and notified, false if we
   // should continue with this process.
   // Windows code roughly based on Mozilla.
@@ -48,6 +49,12 @@ class ProcessSingleton : public NonThreadSafe {
   // close to each other, the Create() might not yet have happened for the
   // first one, so this function won't find it.
   NotifyResult NotifyOtherProcess();
+
+#if defined(OS_LINUX)
+  // Exposed for testing.  We use a timeout on Linux, and in tests we want
+  // this timeout to be short.
+  NotifyResult NotifyOtherProcessWithTimeout(int timeout_seconds);
+#endif
 
   // Sets ourself up as the singleton instance.
   void Create();

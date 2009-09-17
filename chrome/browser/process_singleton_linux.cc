@@ -627,6 +627,11 @@ ProcessSingleton::~ProcessSingleton() {
 }
 
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
+  return NotifyOtherProcessWithTimeout(kTimeoutInSeconds);
+}
+
+ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
+    int timeout_seconds) {
   int socket;
   sockaddr_un addr;
   SetupSocket(socket_path_.value(), &socket, &addr);
@@ -648,7 +653,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
     return PROCESS_NONE;  // Tell the caller there's nobody to notify.
   }
 
-  timeval timeout = {20, 0};
+  timeval timeout = {timeout_seconds, 0};
   setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
 
   // Found another process, prepare our command line
@@ -684,7 +689,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
   // timeout, to make sure the other process has enough time to return ACK.
   char buf[kMaxACKMessageLength + 1];
   ssize_t len =
-      ReadFromSocket(socket, buf, kMaxACKMessageLength, kTimeoutInSeconds);
+      ReadFromSocket(socket, buf, kMaxACKMessageLength, timeout_seconds);
 
   // Failed to read ACK, the other process might have been frozen.
   if (len <= 0) {

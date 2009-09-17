@@ -58,7 +58,9 @@ class ProcessSingletonLinuxTest : public UITest {
 
     ProcessSingleton process_singleton(user_data_dir);
 
-    return process_singleton.NotifyOtherProcess();
+    // Use a short timeout to keep tests fast.
+    const int kTimeoutSeconds = 3;
+    return process_singleton.NotifyOtherProcessWithTimeout(kTimeoutSeconds);
   }
 
   std::vector<std::string> old_argv_;
