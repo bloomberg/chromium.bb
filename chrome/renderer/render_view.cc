@@ -1470,7 +1470,7 @@ void RenderView::setStatusText(const WebString& text) {
 }
 
 void RenderView::setMouseOverURL(const WebURL& url) {
-  GURL latest_url;
+  GURL latest_url(url);
   if (latest_url == target_url_)
     return;
   // Tell the browser to display a destination link.
