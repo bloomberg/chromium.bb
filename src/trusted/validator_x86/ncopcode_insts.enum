@@ -55,6 +55,7 @@ Jz
 Lea
 Leave
 Mov
+Movsx
 Movsxd
 Nop
 Or

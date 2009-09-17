@@ -272,7 +272,8 @@ static void ApplySanityChecksToOperand(int index) {
       CheckIfEOperandRepeated(index);
       break;
     case Ew_Operand:
-      if (current_opcode->flags & InstFlag(OperandSize_w)) {
+      if ((current_opcode->flags & InstFlag(OperandSize_w)) &&
+          !(current_opcode->flags & InstFlag(OperandSize_v))) {
         FatalOperand(index,
                      "Size implied by OperandSize_w, use E_Operand instead");
       }

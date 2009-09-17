@@ -85,4 +85,32 @@ void Define0FOpcodes() {
   DefineJmp0FPair(0x8d, InstJge);
   DefineJmp0FPair(0x8e, InstJle);
   DefineJmp0FPair(0x8f, InstJg);
+
+  DefineOpcode(0xbe, NACLi_386,
+               InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |
+               InstFlag(OpcodeUsesModRm),
+               InstMovsx);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Eb_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xbe, NACLi_386,
+               InstFlag(Opcode64Only) | InstFlag(OperandSize_o) |
+               InstFlag(OpcodeRex) | InstFlag(OpcodeUsesModRm),
+               InstMovsx);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Eb_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xbf, NACLi_386,
+               InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |
+               InstFlag(OpcodeUsesModRm),
+               InstMovsx);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Ew_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xbf, NACLi_386,
+               InstFlag(Opcode64Only) | InstFlag(OperandSize_o) |
+               InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm),
+               InstMovsx);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Ew_Operand, OpFlag(OpUse));
 }
