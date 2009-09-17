@@ -58,6 +58,7 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
+#include "net/url_request/url_request.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)
@@ -577,6 +578,12 @@ Browser* BrowserInit::LaunchWithProfile::OpenURLsInBrowser(
     browser = Browser::Create(profile_);
 
   for (size_t i = 0; i < urls.size(); ++i) {
+    // We skip URLs that we'd have to launch an external protocol handler for.
+    // This avoids us getting into an infinite loop asking ourselves to open
+    // a URL, should the handler be (incorrectly) configured to be us. Anyone
+    // asking us to open such a URL should really ask the handler directly.
+    if (!process_startup && !URLRequest::IsHandledURL(urls[i]))
+      continue;
     TabContents* tab = browser->AddTabWithURL(
         urls[i], GURL(), PageTransition::START_PAGE, (i == 0), -1, false, NULL);
     if (i < static_cast<size_t>(pin_count))
