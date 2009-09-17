@@ -317,8 +317,9 @@ void URLRequestAutomationJob::OnDataAvailable(
 
 void URLRequestAutomationJob::OnRequestEnd(
     int tab, int id, const URLRequestStatus& status) {
-  DLOG(INFO) << "URLRequestAutomationJob: " <<
-      request_->url().spec() << " - request end. Status: " << status.status();
+  DLOG(INFO) << "URLRequestAutomationJob: "
+      << request_ ? request_->url().spec().c_str() : "(null)"
+      << " - request end. Status: " << status.status();
 
   // TODO(tommi): When we hit certificate errors, notify the delegate via
   // OnSSLCertificateError().  Right now we don't have the certificate
