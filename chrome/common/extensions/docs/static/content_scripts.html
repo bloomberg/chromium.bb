@@ -1,15 +1,58 @@
 <div id="pageData-title" class="pageData">Content Scripts</div>
 <div id="pageData-showTOC" class="pageData">true</div>
 
-<p>Content Scripts are JavaScript files that run in the context of web pages. By using the standard <a href="http://www.w3.org/TR/DOM-Level-2-HTML/">Document Object Model</a> (DOM), they can read details of the web pages the browser visits, or make changes to them. 
+<p>
+Content Scripts are JavaScript files that run in the context of web pages.
+By using the standard
+<a href="http://www.w3.org/TR/DOM-Level-2-HTML/">Document
+Object Model</a> (DOM),
+they can read details of the web pages the browser visits,
+or make changes to them.
+</p>
 
-<p>Some examples of things that content scripts can do include:
+<p>
+Here are some examples of what content scripts can do:
+</p>
 
 <ul>
   <li>Find unlinked URLs in web pages and convert them into hyperlinks
   <li>Increase the font size to make text more legible
   <li>Find and process <a href="http://microformats.org/">microformat</a> data in the DOM
 </ul>
+
+<p>
+However, content scripts have some limitations.
+They <b>cannot use</b>:
+</p>
+
+<ul>
+  <li>
+    chrome.* APIs
+    (except for parts of
+    <a href="extension.html"><code>chrome.extension</code></a>)
+  </li>
+  <li>
+    variables or functions defined by their extension's pages
+  </li>
+  <li>
+    variables or functions defined by web pages or by other content scripts
+  </li>
+</ul>
+
+<p>
+These limitations aren't as bad as they sound.
+Content scripts can <em>indirectly</em> use the chrome.* APIs,
+get access to extension data,
+and request extension actions
+by exchanging <a href="#messaging">messages</a>
+with their parent extension.
+Content scripts can also
+<a href="#host-page-communication">communicate with web pages</a>
+using the shared DOM.
+For more insight into what content scripts can and can't do,
+learn about the
+<a href="#execution-environment">execution environment</a>.
+</p>
 
 <h2 id="registration">Manifest</h2>
 
@@ -63,7 +106,7 @@
 </table>
 
 
-<h2 id="extecution-environment">Execution environment</h2>
+<h2 id="execution-environment">Execution environment</h2>
 
 <p>Content scripts execute in a special environment called an <em>isolated world</em>. They have access to the DOM of the page they are injected into, but not to any JavaScript variables or functions created by the page. It looks to each content script as if there is no other JavaScript executing on the page it is running on. The same is true in reverse: JavaScript running on the page cannot call any functions or access any variables defined by content scripts.
 
