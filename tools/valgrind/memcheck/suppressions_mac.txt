@@ -70,7 +70,7 @@
    fun:_ZN16HALDefaultDevice22InstallServerListenersEv
    fun:_ZN16HALDefaultDevice10InitializeEv
    fun:_ZN9HALSystem16CheckOutInstanceEv
-   fun:AudioHardwareGetProperty
+   fun:AudioObjectGetPropertyData
    fun:_ZN15AudioManagerMac15HasAudioDevicesEv
 }
 {
