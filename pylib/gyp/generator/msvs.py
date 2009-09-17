@@ -87,7 +87,7 @@ def _FixPath(path):
   Returns:
     The path with all slashes made into backslashes.
   """
-  if fixpath_prefix and not os.path.isabs(path) and not path[0] == '$':
+  if fixpath_prefix and path and not os.path.isabs(path) and not path[0] == '$':
     path = os.path.join(fixpath_prefix, path)
   return path.replace('/', '\\')
 

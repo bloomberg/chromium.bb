@@ -130,7 +130,7 @@ _outputs = []
 _processed_input_files = []
 for infile in input_files:
   if str(infile).endswith('.%(extension)s'):
-    _generated = env.%(name)s(infile)
+    _generated = env.%(name)s(%(src_dir)r + infile)
     env.Precious(_generated)
     _outputs.append(_generated)
     %(process_outputs_as_sources_line)s
@@ -415,14 +415,17 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
       poas_line = '_processed_input_files.extend(_generated)'
     else:
       poas_line = '_processed_input_files.append(infile)'
+    inputs = [FixPath(f, src_subdir_) for f in rule.get('inputs', [])]
+    outputs = [FixPath(f, src_subdir_) for f in rule.get('outputs', [])]
     fp.write(_rule_template % {
-                 'inputs' : pprint.pformat(rule.get('inputs', [])),
-                 'outputs' : pprint.pformat(rule.get('outputs', [])),
+                 'inputs' : pprint.pformat(inputs),
+                 'outputs' : pprint.pformat(outputs),
                  'action' : pprint.pformat(a),
                  'extension' : rule['extension'],
                  'name' : name,
                  'message' : message,
                  'process_outputs_as_sources_line' : poas_line,
+                 'src_dir' : src_subdir_,
              })
 
   scons_target.write_target(fp, src_subdir)
