@@ -5,10 +5,8 @@
 #include "app/gfx/font.h"
 
 #include "app/gfx/canvas.h"
-
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
-
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/core/SkPaint.h"
 
@@ -41,9 +39,18 @@ void Font::calculateMetrics() {
   PaintSetup(&paint);
   paint.getFontMetrics(&metrics);
 
-  ascent_ = SkScalarRound(-metrics.fAscent);
-  height_ = SkScalarRound(-metrics.fAscent + metrics.fDescent +
-                          metrics.fLeading);
+  // NOTE: we don't use the ascent/descent as it doesn't match with how pango
+  // ends up drawing the text, in particular if we clip to the ascent/descent
+  // the text is clipped. This algorithm doesn't give us an exact match with
+  // the numbers returned from pango (we are off by 1 in some cases), but it
+  // is close enough that you won't notice clipping.
+  //
+  // NOTE2: I tried converting this to use Pango exclusively for measuring the
+  // text but it causes a startup regression. The best I could get it was
+  // ~10% slow down. Slow down appeared to be entirely in libfontconfig.
+  ascent_ = SkScalarCeil(-metrics.fTop);
+  height_ = SkScalarCeil(-metrics.fTop) + SkScalarCeil(metrics.fBottom) +
+            SkScalarCeil(metrics.fLeading);
 
   if (metrics.fAvgCharWidth) {
     avg_width_ = SkScalarRound(metrics.fAvgCharWidth);
