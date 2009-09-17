@@ -2338,3 +2338,4 @@ BUG_DGLAZKOV : LayoutTests/fast/css/font-smoothing.html = FAIL
 BUG_DGLAZKOV LINUX WIN : LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL
 BUG_DGLAZKOV LINUX WIN : LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
 BUG_DGLAZKOV LINUX WIN : LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
+BUG_DGLAZKOV : LayoutTests/fast/dom/doctype-event-listener-crash.html = CRASH
