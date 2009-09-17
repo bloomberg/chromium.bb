@@ -1117,7 +1117,7 @@ ExprNodeVector[4] = {
 0000000000000000: 63 c6                                        movsxd %eax, %esi; *NACL Disallows!*
   { 1, { 0x63, 0x00, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_v),
+    InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) | InstFlag(OperandSize_v),
     InstMovsxd,
     2, {
       { G_Operand, OpFlag(OpSet) },
@@ -1128,4 +1128,106 @@ ExprNodeVector[4] = {
   { ExprRegister[0] , %eax, ExprSet | ExprSize32 },
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %esi, ExprUsed | ExprSize32 },
+};
+0000000000000000: 6c                                           insb; *NACL Disallows!*
+  { 1, { 0x6c, 0x00, 0x00 },
+    NACLi_ILLEGAL,
+    InstFlag(OperandSize_b),
+    InstInsb,
+    2, {
+      { RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit) },
+      { RegDX, OpFlag(OpUse) | OpFlag(OpImplicit) },
+  } };
+ExprNodeVector[6] = {
+  { OperandReference[1] , 0, ExprImplicit },
+  { ExprSegmentAddress[2] , 0, ExprSet },
+  { ExprRegister[0] , %es, ExprSize16 },
+  { ExprRegister[0] , %rdi, ExprSize64 },
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprRegister[0] , %dx, ExprUsed | ExprSize16 },
+};
+0000000000000000: 6d                                           insd; *NACL Disallows!*
+  { 1, { 0x6d, 0x00, 0x00 },
+    NACLi_ILLEGAL,
+    InstFlag(OperandSize_v),
+    InstInsd,
+    2, {
+      { RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit) },
+      { RegDX, OpFlag(OpUse) | OpFlag(OpImplicit) },
+  } };
+ExprNodeVector[6] = {
+  { OperandReference[1] , 0, ExprImplicit },
+  { ExprSegmentAddress[2] , 0, ExprSet },
+  { ExprRegister[0] , %es, ExprSize16 },
+  { ExprRegister[0] , %rdi, ExprSize64 },
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprRegister[0] , %dx, ExprUsed | ExprSize16 },
+};
+0000000000000000: 66 6d                                        insw; *NACL Disallows!*
+  { 1, { 0x6d, 0x00, 0x00 },
+    NACLi_ILLEGAL,
+    InstFlag(OperandSize_w),
+    InstInsw,
+    2, {
+      { RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit) },
+      { RegDX, OpFlag(OpUse) | OpFlag(OpImplicit) },
+  } };
+ExprNodeVector[6] = {
+  { OperandReference[1] , 0, ExprImplicit },
+  { ExprSegmentAddress[2] , 0, ExprSet },
+  { ExprRegister[0] , %es, ExprSize16 },
+  { ExprRegister[0] , %rdi, ExprSize64 },
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprRegister[0] , %dx, ExprUsed | ExprSize16 },
+};
+0000000000000000: 6e                                           outsb; *NACL Disallows!*
+  { 1, { 0x6e, 0x00, 0x00 },
+    NACLi_ILLEGAL,
+    InstFlag(OperandSize_b),
+    InstOutsb,
+    2, {
+      { RegDX, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegES_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+  } };
+ExprNodeVector[6] = {
+  { OperandReference[1] , 0, ExprImplicit },
+  { ExprRegister[0] , %dx, ExprUsed | ExprSize16 },
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprSegmentAddress[2] , 0, ExprUsed },
+  { ExprRegister[0] , %es, ExprSize16 },
+  { ExprRegister[0] , %rdi, ExprSize64 },
+};
+0000000000000000: 6f                                           outsd; *NACL Disallows!*
+  { 1, { 0x6f, 0x00, 0x00 },
+    NACLi_ILLEGAL,
+    InstFlag(OperandSize_v),
+    InstOutsd,
+    2, {
+      { RegDX, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegES_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+  } };
+ExprNodeVector[6] = {
+  { OperandReference[1] , 0, ExprImplicit },
+  { ExprRegister[0] , %dx, ExprUsed | ExprSize16 },
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprSegmentAddress[2] , 0, ExprUsed },
+  { ExprRegister[0] , %es, ExprSize16 },
+  { ExprRegister[0] , %rdi, ExprSize64 },
+};
+0000000000000000: 66 6f                                        outsw; *NACL Disallows!*
+  { 1, { 0x6f, 0x00, 0x00 },
+    NACLi_ILLEGAL,
+    InstFlag(OperandSize_w),
+    InstOutsw,
+    2, {
+      { RegDX, OpFlag(OpUse) | OpFlag(OpImplicit) },
+      { RegES_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+  } };
+ExprNodeVector[6] = {
+  { OperandReference[1] , 0, ExprImplicit },
+  { ExprRegister[0] , %dx, ExprUsed | ExprSize16 },
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprSegmentAddress[2] , 0, ExprUsed },
+  { ExprRegister[0] , %es, ExprSize16 },
+  { ExprRegister[0] , %rdi, ExprSize64 },
 };

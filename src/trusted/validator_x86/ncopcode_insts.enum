@@ -3,6 +3,7 @@
 # Note: No need to sort, the generator will do this.
 Undefined  # Special marker for problems parsing instructions.
 Aaa
+Aad
 Aas
 Adc
 Add
@@ -35,6 +36,9 @@ Fsubr
 Hlt
 Imul
 Inc
+Insb
+Insd
+Insw
 Jb
 Jbe
 Jcxz
@@ -60,6 +64,9 @@ Movsx
 Movsxd
 Nop
 Or
+Outsb
+Outsd
+Outsw
 Pabsb
 Pabsd
 Pabsw

@@ -86,4 +86,9 @@
 -i=DCCE                                  #0000000000000000: dc ce                                        fmul %st6, %st0
 -i=4863c6                                #0000000000000000: 48 63 c6                                     movsxd %rax, %esi; *NACL Disallows!*
 -i=63c6                                  #0000000000000000: 63 c6                                        movsxd %eax, %esi; *NACL Disallows!*
-
+-i=6c                                    #0000000000000000: 6c                                           insb; *NACL Disallows!*
+-i=6d                                    #0000000000000000: 6d                                           insd; *NACL Disallows!*
+-i=666d                                  #0000000000000000: 66 6d                                        insw; *NACL Disallows!*
+-i=6e                                    #0000000000000000: 6e                                           outsb; *NACL Disallows!*
+-i=6f                                    #0000000000000000: 6f                                           outsd; *NACL Disallows!*
+-i=666f                                  #0000000000000000: 66 6f                                        outsw; *NACL Disallows!*

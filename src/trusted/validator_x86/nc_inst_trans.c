@@ -981,6 +981,26 @@ static ExprNode* AppendSib(NcInstState* state) {
   return AppendMemoryOffset(state, base_reg, index_reg, scale, &displacement);
 }
 
+static ExprNode* AppendES_EDI(NcInstState* state) {
+  ExprNode* results = AppendExprNode(ExprSegmentAddress, 0, 0, &state->nodes);
+  AppendRegister(RegES, &state->nodes);
+  switch (state->address_size) {
+    case 16:
+      AppendRegister(RegDI, &state->nodes);
+      break;
+    case 64:
+      AppendRegister(RegRDI, &state->nodes);
+      break;
+    default:
+      FatalError("Address size not correctly defined", state);
+      break;
+    case 32:
+      AppendRegister(RegEDI, &state->nodes);
+      break;
+  }
+  return results;
+}
+
 /* Get the Effective address in the mod/rm byte, if the modrm.mod field
  * is 00, and append it to the vector of expression nodes. Operand is
  * the corresponding operand of the opcode associated with the instruction
@@ -1282,6 +1302,9 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
     case RegREBP:
       return AppendRegister(state->address_size == 64 ? RegRBP : RegEBP,
                             &state->nodes);
+
+    case RegES_EDI:
+      return AppendES_EDI(state);
 
     case Const_1:
       return AppendConstant(1,

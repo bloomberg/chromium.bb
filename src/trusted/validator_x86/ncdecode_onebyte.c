@@ -390,6 +390,12 @@ static void DefineGroup2OpcodesInModRm() {
     DefineOperand(Opcode0 + i, OpFlag(OperandExtendsOpcode));
     DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
     DefineOperand(RegCL, OpFlag(OpUse));
+
+    DefineOpcode(0xd5, NACLi_ILLEGAL,
+                 InstFlag(Opcode32Only) | InstFlag(OpcodeHasImmed_b),
+                 InstAad);
+    DefineOperand(RegAL, OpFlag(OpSet) | OpFlag(OpImplicit));
+    DefineOperand(RegAH, OpFlag(OpSet) | OpFlag(OpImplicit));
   }
 }
 
@@ -477,7 +483,7 @@ void DefineOneByteOpcodes() {
   BuildBinaryOps_00_05(0x08, NACLi_386L, InstOr, InstFlag(OpcodeLockable));
 
   DefineOpcode(0x0e, NACLi_ILLEGAL, InstFlag(Opcode32Only), InstPush);
-  DefineOperand(RegRESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
   DefineOperand(RegCS, OpFlag(OpUse));
 
   /* 0x0F is a two-byte opcode prefix. */
@@ -495,7 +501,7 @@ void DefineOneByteOpcodes() {
   BuildBinaryOps_00_05(0x18, NACLi_386L, InstSbb, InstFlag(OpcodeLockable));
 
   DefineOpcode(0x1e, NACLi_ILLEGAL, InstFlag(Opcode32Only), InstPush);
-  DefineOperand(RegRESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
   DefineOperand(RegDS, OpFlag(OpUse));
 
   DefineOpcode(0x1f, NACLi_ILLEGAL, InstFlag(Opcode32Only), InstPop);
@@ -512,6 +518,7 @@ void DefineOneByteOpcodes() {
 
   BuildBinaryOps_00_05(0x30, NACLi_386L, InstXor, InstFlag(OpcodeLockable));
 
+ /*deprecated */
   DefineOpcode(0x37, NACLi_ILLEGAL, InstFlag(Opcode32Only), InstAaa);
 
   BuildBinaryOps_00_05(0x38, NACLi_386, InstCmp, 0);
@@ -585,7 +592,8 @@ void DefineOneByteOpcodes() {
 
   /* NOTE: this form of movsxd should be discourages. */
   DefineOpcode(0x63, /* NACLi_SYSTEM, */ NACLi_ILLEGAL,
-               InstFlag(OperandSize_v) | InstFlag(OpcodeUsesModRm),
+               InstFlag(Opcode64Only) | InstFlag(OperandSize_v) |
+               InstFlag(OpcodeUsesModRm),
                InstMovsxd);
   DefineOperand(G_Operand, OpFlag(OpSet));
   DefineOperand(E_Operand, OpFlag(OpUse));
@@ -665,7 +673,29 @@ void DefineOneByteOpcodes() {
   DefineOperand(E_Operand, OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
-  /* 0x6c 0x6d 0x6e 0x6f ? */
+  DefineOpcode(0x6c, NACLi_ILLEGAL, InstFlag(OperandSize_b), InstInsb);
+  DefineOperand(RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegDX, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0x6D, NACLi_ILLEGAL, InstFlag(OperandSize_w), InstInsw);
+  DefineOperand(RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegDX, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0x6D, NACLi_ILLEGAL, InstFlag(OperandSize_v), InstInsd);
+  DefineOperand(RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegDX, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0x6E, NACLi_ILLEGAL, InstFlag(OperandSize_b), InstOutsb);
+  DefineOperand(RegDX, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(RegES_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0x6F, NACLi_ILLEGAL, InstFlag(OperandSize_w), InstOutsw);
+  DefineOperand(RegDX, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(RegES_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0x6F, NACLi_ILLEGAL, InstFlag(OperandSize_v), InstOutsd);
+  DefineOperand(RegDX, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(RegES_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
 
   DefineJump8Opcode(0x70, InstJo);
   DefineJump8Opcode(0x71, InstJno);

@@ -302,6 +302,8 @@ RegREAX
 RegREIP
 # Use EBP or RBP, based on 32/64 bit model.
 RegREBP
+# Use ES:(E)DI, like that specified in the insb, insw, and insd instructions.
+RegES_EDI
 
 # Floating point stack registers.
 RegST0
