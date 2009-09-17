@@ -5294,12 +5294,12 @@ static int leavesReadersInit(fulltext_vtab *v, int iLevel,
     if( sqlite3_column_type(s, 0)!=SQLITE_INTEGER ||
         sqlite3_column_type(s, 1)!=SQLITE_INTEGER ||
         sqlite3_column_type(s, 2)!=SQLITE_BLOB ||
-        i != iIndex){
+        i!=iIndex ||
+        i>=MERGE_COUNT ){
       rc = SQLITE_CORRUPT_BKPT;
       break;
     }
 
-    assert( i<MERGE_COUNT );
     rc = leavesReaderInit(v, i, iStart, iEnd, pRootData, nRootData,
                           &pReaders[i]);
     if( rc!=SQLITE_OK ) break;
@@ -5394,9 +5394,13 @@ static int segmentMerge(fulltext_vtab *v, int iLevel){
   memset(&lrs, '\0', sizeof(lrs));
   rc = leavesReadersInit(v, iLevel, lrs, &i);
   if( rc!=SQLITE_OK ) return rc;
-  assert( i==MERGE_COUNT );
 
   leafWriterInit(iLevel+1, idx, &writer);
+
+  if( i!=MERGE_COUNT ){
+    rc = SQLITE_CORRUPT_BKPT;
+    goto err;
+  }
 
   /* Since leavesReaderReorder() pushes readers at eof to the end,
   ** when the first reader is empty, all will be empty.
