@@ -922,6 +922,8 @@ void LayoutTestController::overridePreference(
       preferences->local_storage_enabled = CppVariantToBool(value);
     else if (key == "WebKitOfflineWebApplicationCacheEnabled")
       preferences->application_cache_enabled = CppVariantToBool(value);
+    else if (key == "WebKitTabToLinksPreferenceKey")
+      preferences->tabs_to_links = CppVariantToBool(value);
     else {
       std::string message("Invalid name for preference: ");
       message.append(key);

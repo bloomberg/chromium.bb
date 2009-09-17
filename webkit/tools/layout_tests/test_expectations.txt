@@ -2276,10 +2276,6 @@ BUG21141 LINUX : LayoutTests/fast/forms/select-script-onchange.html = FAIL
 // The test is flaky.
 BUG_VICTORW : LayoutTests/http/tests/security/javascriptURL/xss-ALLOWED-from-javascript-url-sub-frame-2-level.html = PASS CRASH
 
-// WebKit 48098:48155
-BUG21267 : LayoutTests/fast/events/click-focus-anchor.html = FAIL
-BUG21267 : LayoutTests/fast/events/tab-focus-anchor.html = FAIL
-
 BUG_JAPHET MAC : LayoutTests/animations/change-keyframes-name.html = FAIL PASS
 
 // Flaky, not clear as of when.

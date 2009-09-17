@@ -414,11 +414,7 @@ bool ChromeClientImpl::shouldInterruptJavaScript() {
 }
 
 bool ChromeClientImpl::tabsToLinks() const {
-  // TODO(pamg): Consider controlling this with a user preference, when we have
-  // a preference system in place.
-  // For now Chrome will allow link to take focus if we're not running layout
-  // tests.
-  return !WebKit::layoutTestMode();
+  return webview_->GetTabsToLinks();
 }
 
 WebCore::IntRect ChromeClientImpl::windowResizerRect() const {

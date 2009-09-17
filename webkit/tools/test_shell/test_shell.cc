@@ -423,6 +423,9 @@ void TestShell::ResetWebPreferences() {
         web_prefs_->local_storage_enabled = true;
         web_prefs_->session_storage_enabled = true;
         web_prefs_->application_cache_enabled = false;
+        // LayoutTests were written with Safari Mac in mind which does not allow
+        // tabbing to links by default.
+        web_prefs_->tabs_to_links = false;
 
         // Allow those layout tests running as local files, i.e. under
         // LayoutTests/http/tests/local, to access http server.

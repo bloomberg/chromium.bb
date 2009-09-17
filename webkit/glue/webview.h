@@ -248,6 +248,9 @@ class WebView : public WebKit::WebWidget {
   virtual void SetSpellingPanelVisibility(bool is_visible) = 0;
   virtual bool GetSpellingPanelVisibility() = 0;
 
+  virtual void SetTabsToLinks(bool enable) = 0;
+  virtual bool GetTabsToLinks() const = 0;
+
   // Performs an action from a context menu for the node at the given
   // location.
   virtual void MediaPlayerActionAt(int x,

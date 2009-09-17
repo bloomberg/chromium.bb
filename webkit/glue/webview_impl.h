@@ -248,6 +248,9 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual void SetSpellingPanelVisibility(bool is_visible);
   virtual bool GetSpellingPanelVisibility();
 
+  virtual void SetTabsToLinks(bool enable);
+  virtual bool GetTabsToLinks() const;
+
 #if ENABLE(NOTIFICATIONS)
   // Returns the provider of desktop notifications.
   WebKit::NotificationPresenterImpl* GetNotificationPresenter();
@@ -402,6 +405,9 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
 
   // Whether the spelling panel is currently being displayed or not.
   bool spelling_panel_is_visible_;
+
+  // Whether the user can press tab to focus links.
+  bool tabs_to_links_;
 
   // Inspector settings.
   std::wstring inspector_settings_;

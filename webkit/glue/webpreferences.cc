@@ -77,4 +77,8 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   // Web inspector settings need to be passed in differently.
   web_view->SetInspectorSettings(inspector_settings);
+
+  // Tabs to link is not part of the settings. WebCore calls
+  // ChromeClient::tabsToLinks which is part of the glue code.
+  web_view->SetTabsToLinks(tabs_to_links);
 }

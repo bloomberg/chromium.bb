@@ -1935,3 +1935,11 @@ void WebViewImpl::SetSpellingPanelVisibility(bool is_visible) {
 bool WebViewImpl::GetSpellingPanelVisibility() {
   return spelling_panel_is_visible_;
 }
+
+void WebViewImpl::SetTabsToLinks(bool enable) {
+  tabs_to_links_ = enable;
+}
+
+bool WebViewImpl::GetTabsToLinks() const {
+  return tabs_to_links_;
+}
