@@ -82,6 +82,7 @@ extern int RendererMain(const MainFunctionParams&);
 extern int PluginMain(const MainFunctionParams&);
 extern int WorkerMain(const MainFunctionParams&);
 extern int UtilityMain(const MainFunctionParams&);
+extern int ProfileImportMain(const MainFunctionParams&);
 extern int ZygoteMain(const MainFunctionParams&);
 
 #if defined(OS_WIN)
@@ -568,6 +569,14 @@ int ChromeMain(int argc, char** argv) {
     rv = PluginMain(main_params);
   } else if (process_type == switches::kUtilityProcess) {
     rv = UtilityMain(main_params);
+  } else if (process_type == switches::kProfileImportProcess) {
+#if defined (OS_MACOSX)
+    rv = ProfileImportMain(main_params);
+#else
+    // TODO(port): Use OOP profile import - http://crbug.com/22142 .
+    NOTIMPLEMENTED();
+    rv = -1;
+#endif
   } else if (process_type == switches::kWorkerProcess) {
     rv = WorkerMain(main_params);
   } else if (process_type == switches::kZygoteProcess) {

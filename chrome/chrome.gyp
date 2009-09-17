@@ -17,6 +17,7 @@
       'renderer',
       'syncapi',
       'utility',
+      'profile_import',
       'worker',
       '../printing/printing.gyp:printing',
       '../webkit/webkit.gyp:inspector_resources',
@@ -2985,6 +2986,18 @@
             '../build/linux/system.gyp:gtk',
           ],
         }],
+      ],
+    },
+    {
+      'target_name': 'profile_import',
+      'type': '<(library)',
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'profile_import/profile_import_main.cc',
+        'profile_import/profile_import_thread.cc',
+        'profile_import/profile_import_thread.h',
       ],
     },
     {

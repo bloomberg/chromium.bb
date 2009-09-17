@@ -15,7 +15,7 @@ class GURL;
 class UtilityThread : public ChildThread {
  public:
   UtilityThread();
-  ~UtilityThread();
+  virtual ~UtilityThread();
 
   // Returns the one utility thread.
   static UtilityThread* current() {

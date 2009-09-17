@@ -74,6 +74,9 @@ const wchar_t kWorkerProcess[]                 = L"worker";
 // Causes the process to run as a utility subprocess.
 const wchar_t kUtilityProcess[]                = L"utility";
 
+// Causes the process to run as a profile import subprocess.
+const wchar_t kProfileImportProcess[]          = L"profile-import";
+
 // Runs the renderer and plugins in the same process as the browser
 const wchar_t kSingleProcess[]                 = L"single-process";
 
