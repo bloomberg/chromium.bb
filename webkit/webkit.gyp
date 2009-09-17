@@ -4,6 +4,8 @@
 
 {
   'variables': {
+    # TODO: remove this helper when we have loops in GYP
+    'apply_locales_cmd': ['python', '../chrome/tools/build/apply_locales.py',],
     'feature_defines': [
       'ENABLE_CHANNEL_MESSAGING=1',
       'ENABLE_DATABASE=1',
@@ -518,7 +520,7 @@
               '--include', '../third_party/WebKit/WebCore/css',
               '--include', '../third_party/WebKit/WebCore/dom',
               '--include', '../third_party/WebKit/WebCore/html',
-              '--include', '../third_party/WebKit/WebCore/notifications',              
+              '--include', '../third_party/WebKit/WebCore/notifications',
               '--include', '../third_party/WebKit/WebCore/page',
               '--include', '../third_party/WebKit/WebCore/plugins',
               '--include', '../third_party/WebKit/WebCore/svg',
@@ -641,10 +643,10 @@
         '../third_party/WebKit/WebCore/css/CSSUnknownRule.idl',
 
         # A few things can't be excluded by patterns.  List them individually.
-        
+
         # Don't build StorageNamespace.  We have our own implementation.
         '../third_party/WebKit/WebCore/storage/StorageNamespace.cpp',
-        
+
         # Use history/BackForwardListChromium.cpp instead.
         '../third_party/WebKit/WebCore/history/BackForwardList.cpp',
 
@@ -1198,17 +1200,8 @@
           ],
           'outputs': [
             '<(grit_out_dir)/grit/webkit_strings.h',
-            # TODO(benl) Generate this list from a helper script, like
-            # repack_locales_cmd in chrome.gyp (see TODO(mmoss))
-            '<(grit_out_dir)/webkit_strings_ar.pak',
-            '<(grit_out_dir)/webkit_strings_da.pak',
-            '<(grit_out_dir)/webkit_strings_da.rc',
-            '<(grit_out_dir)/webkit_strings_en-US.pak',
-            '<(grit_out_dir)/webkit_strings_en-US.rc',
-            '<(grit_out_dir)/webkit_strings_he.pak',
-            '<(grit_out_dir)/webkit_strings_he.rc',
-            '<(grit_out_dir)/webkit_strings_zh-TW.pak',
-            '<(grit_out_dir)/webkit_strings_zh-TW.rc',
+            # TODO: remove this helper when we have loops in GYP
+            '>!@(<(apply_locales_cmd) \'<(grit_out_dir)/webkit_strings_ZZLOCALE.pak\' <(locales))',
           ],
           'action': ['python', '<(grit_path)', '-i', '<(input_path)', 'build', '-o', '<(grit_out_dir)'],
           'message': 'Generating resources from <(input_path)',

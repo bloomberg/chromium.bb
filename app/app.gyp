@@ -4,6 +4,8 @@
 
 {
   'variables': {
+    # TODO: remove this helper when we have loops in GYP
+    'apply_locales_cmd': ['python', '../chrome/tools/build/apply_locales.py',],
     'chromium_code': 1,
   },
   'target_defaults': {
@@ -246,10 +248,8 @@
           },
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/app/grit/<(RULE_INPUT_ROOT).h',
-            # TODO(benl) Generate this list from a helper script, like
-            # repack_locales_cmd in chrome.gyp (see TODO(mmoss))
-            '<(SHARED_INTERMEDIATE_DIR)/app/<(RULE_INPUT_ROOT)_ar.pak',
-            '<(SHARED_INTERMEDIATE_DIR)/app/<(RULE_INPUT_ROOT)_en-US.pak',
+            # TODO: remove this helper when we have loops in GYP
+            '>!@(<(apply_locales_cmd) \'<(SHARED_INTERMEDIATE_DIR)/app/<(RULE_INPUT_ROOT)_ZZLOCALE.pak\' <(locales))',
           ],
           'action': ['python', '<@(_inputs)', '-i', '<(RULE_INPUT_PATH)',
             'build', '-o', '<(grit_out_dir)'],

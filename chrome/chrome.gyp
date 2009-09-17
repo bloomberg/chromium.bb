@@ -23,18 +23,6 @@
     ],
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
     'protoc_out_dir': '<(SHARED_INTERMEDIATE_DIR)/protoc_out',
-    # TODO(mmoss) This might need to go somewhere more general, then we can use
-    # it to also rewrite app/locales/locales.gyp with a helper script.
-    # NOTE: When these end up in the Mac bundle, we need to replace '-' for '_'
-    # so Cocoa is happy (http://crbug.com/20441).
-    'locales': [
-      'ar', 'bg', 'bn', 'ca', 'cs', 'da', 'de', 'el', 'en-GB',
-      'en-US', 'es-419', 'es', 'et', 'fi', 'fil', 'fr', 'gu', 'he',
-      'hi', 'hr', 'hu', 'id', 'it', 'ja', 'kn', 'ko', 'lt', 'lv',
-      'ml', 'mr', 'nb', 'nl', 'or', 'pl', 'pt-BR', 'pt-PT', 'ro',
-      'ru', 'sk', 'sl', 'sr', 'sv', 'ta', 'te', 'th', 'tr',
-      'uk', 'vi', 'zh-CN', 'zh-TW',
-    ],
     'chrome_strings_grds': [
       # Localizable resources.
       'app/resources/locale_settings.grd',
