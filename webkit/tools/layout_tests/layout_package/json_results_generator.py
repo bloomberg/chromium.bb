@@ -38,7 +38,7 @@ class JSONResultsGenerator:
   TESTS = "tests"
 
   def __init__(self, failures, individual_test_timings, builder_name,
-      build_number, results_file_path, all_tests, file_dir):
+               build_number, results_file_path, all_tests):
     """
     failures: Map of test name to list of failures.
     individual_test_times: Map of test name to a tuple containing the
@@ -47,7 +47,6 @@ class JSONResultsGenerator:
     build_number: The build number for this run.
     results_file_path: Absolute path to the results json file.
     all_tests: List of all the tests that were run.
-    file_dir: directory when run_webkit_tests.py exists.
     """
     # Make sure all test paths are relative to the layout test root directory.
     self._failures = {}
@@ -66,8 +65,6 @@ class JSONResultsGenerator:
     self._builder_name = builder_name
     self._build_number = build_number
     self._results_file_path = results_file_path
-
-    self._path_to_webkit = path_utils.PathFromBase('third_party', 'WebKit', 'WebCore')
 
   def _GetSVNRevision(self, in_directory=None):
     """Returns the svn revision for the given directory.
@@ -162,12 +159,17 @@ class JSONResultsGenerator:
 
     self._InsertItemIntoRawList(results_for_builder, self._build_number,
         self.BUILD_NUMBERS)
+
+    path_to_webkit = path_utils.PathFromBase('third_party', 'WebKit', 'WebCore')
     self._InsertItemIntoRawList(results_for_builder,
-        self._GetSVNRevision(self._path_to_webkit),
+        self._GetSVNRevision(path_to_webkit),
         self.WEBKIT_SVN)
+
+    path_to_chrome_base = path_utils.PathFromBase()
     self._InsertItemIntoRawList(results_for_builder,
-        self._GetSVNRevision(),
+        self._GetSVNRevision(path_to_chrome_base),
         self.CHROME_SVN)
+
     self._InsertItemIntoRawList(results_for_builder,
         int(time.time()),
         self.TIME)

@@ -605,7 +605,7 @@ class TestRunner:
     build_number = self._options.build_number # "12346"
     json_generator = json_results_generator.JSONResultsGenerator(failures,
         individual_test_timings, builder_name, build_number,
-        results_file_path, self._test_files_list, self._file_dir)
+        results_file_path, self._test_files_list)
     results_json = json_generator.GetJSON()
 
     results_file = open(results_file_path, "w")
