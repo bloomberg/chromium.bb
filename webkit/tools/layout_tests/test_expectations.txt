@@ -2332,3 +2332,9 @@ BUG21958 WIN MAC LINUX DEBUG : LayoutTests/svg/hixie/error/012.xml = FAIL PASS
 // WK roll 48399:48423 (brettw)
 BUG22014 : LayoutTests/http/tests/loading/redirect-with-no-location-crash.html = FAIL
 BUG22014 LINUX : LayoutTests/transitions/hang-with-bad-transition-list.html = PASS FAIL
+
+// WK roll 48423:48468 (dglazkov for ukai)
+BUG_DGLAZKOV : LayoutTests/fast/css/font-smoothing.html = FAIL
+BUG_DGLAZKOV LINUX WIN : LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL
+BUG_DGLAZKOV LINUX WIN : LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
+BUG_DGLAZKOV LINUX WIN : LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
