@@ -51,8 +51,8 @@ class SCMWrapper(object):
 
   def RunCommand(self, command, options, args, file_list=None):
     # file_list will have all files that are modified appended to it.
-
-    file_list = file_list or []
+    if file_list is None:
+      file_list = []
 
     commands = {
       'cleanup':  self.cleanup,
