@@ -62,10 +62,10 @@ def GetRietveldPatchsetNumber():
                     'branch.%s.rietveldpatchset' % GetBranchName()])
 
 
-def GetMungedDiff(branch):
+def GetMungedDiff(branch, prefix='src/'):
   """Get the diff we'll send to the try server.  We munge paths to match svn."""
   # Make the following changes:
-  # - Prepend "src/" to paths as svn is expecting
+  # - Prepend "src/" (or some other prefix) to paths as svn is expecting
   # - In the case of added files, replace /dev/null with the path to the file
   #   being added.
   output = []
@@ -78,9 +78,9 @@ def GetMungedDiff(branch):
   for i in range(len(diff)):
     line = diff[i]
     if line.startswith('--- /dev/null'):
-      line = '--- %s' % diff[i+1][4:]
+      line = '--- %s' % prefix + diff[i+1][4:]
     elif line.startswith('--- ') or line.startswith('+++ '):
-      line = line[0:4] + 'src/' + line[4:]
+      line = line[0:4] + prefix + line[4:]
     output.append(line)
 
   munged_diff = ''.join(output)
