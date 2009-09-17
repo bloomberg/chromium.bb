@@ -143,12 +143,11 @@ TEST_F(PluginTest, Quicktime) {
   TestPlugin(L"quicktime.html", kShortWaitTimeout, false);
 }
 
-TEST_F(PluginTest, DISABLED_MediaPlayerNew) {
+TEST_F(PluginTest, MediaPlayerNew) {
   TestPlugin(L"wmp_new.html", kShortWaitTimeout, false);
 }
 
-// http://crbug.com/4809
-TEST_F(PluginTest, DISABLED_MediaPlayerOld) {
+TEST_F(PluginTest, MediaPlayerOld) {
   TestPlugin(L"wmp_old.html", kLongWaitTimeout, false);
 }
 
