@@ -1207,8 +1207,4 @@
    fun:_ZNSs6appendEPKcj
    fun:_Z14StringAppendVTISsEvPT_PKNS0_10value_typeEPc
    fun:_Z12StringPrintfPKcz
-   fun:_ZN104_GLOBAL__N__b_slave_chromium_rel_linux_valgrind_ui_build_src_base_worker_pool_linux.cc_00000000_2F91B77912WorkerThread10ThreadMainEv
-   fun:_Z10ThreadFuncPv
-   fun:start_thread
-   fun:clone
 }
