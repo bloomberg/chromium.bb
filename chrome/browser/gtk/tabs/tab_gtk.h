@@ -111,9 +111,14 @@ class TabGtk : public TabRendererGtk,
   static gboolean OnButtonReleaseEvent(GtkWidget* widget, GdkEventButton* event,
                                        TabGtk* tab);
 
-  // drag-failed handler that is emitted when the drag is finished.  The signal
-  // is drag-failed, but that is only in the gtk sense in that we never used
-  // the drag-n-drop API to transfer drop data.
+  // drag-begin is emitted when the drag is started. We connect so that we can
+  // set the drag icon to a transparent pixbuf.
+  static void OnDragBegin(GtkWidget* widget, GdkDragContext* context,
+                          TabGtk* tab);
+
+  // drag-failed is emitted when the drag is finished.  In our case the signal
+  // does not imply failure as we don't use the drag-n-drop API to transfer drop
+  // data.
   static gboolean OnDragFailed(GtkWidget* widget, GdkDragContext* context,
                                GtkDragResult result, TabGtk* tab);
 

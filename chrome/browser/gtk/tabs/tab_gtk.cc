@@ -17,12 +17,6 @@
 
 namespace {
 
-void SetEmptyDragIcon(GtkWidget* widget) {
-  GdkPixbuf* pixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, 1, 1);
-  gtk_drag_source_set_icon_pixbuf(widget, pixbuf);
-  g_object_unref(pixbuf);
-}
-
 // Returns the width of the title for the current font, in pixels.
 int GetTitleWidth(gfx::Font* font, std::wstring title) {
   DCHECK(font);
@@ -208,6 +202,14 @@ gboolean TabGtk::OnDragFailed(GtkWidget* widget, GdkDragContext* context,
   return TRUE;
 }
 
+// static
+void TabGtk::OnDragBegin(GtkWidget* widget, GdkDragContext* context,
+                         TabGtk* tab) {
+  GdkPixbuf* pixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, 1, 1);
+  gtk_drag_set_icon_pixbuf(context, pixbuf, 0, 0);
+  g_object_unref(pixbuf);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // TabGtk, MessageLoop::Observer implementation:
 
@@ -301,6 +303,8 @@ void TabGtk::CreateDragWidget() {
   drag_widget_ = gtk_invisible_new();
   g_signal_connect(drag_widget_, "drag-failed",
                    G_CALLBACK(OnDragFailed), this);
+  g_signal_connect_after(drag_widget_, "drag-begin",
+                         G_CALLBACK(OnDragBegin), this);
 }
 
 void TabGtk::DestroyDragWidget() {
