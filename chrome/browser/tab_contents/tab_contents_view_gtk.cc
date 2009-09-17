@@ -351,6 +351,7 @@ TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
       floating_(gtk_floating_container_new()),
       fixed_(gtk_fixed_new()),
       popup_view_(NULL) {
+  gtk_widget_set_name(fixed_, "chrome-tab-contents-view");
   g_signal_connect(fixed_, "size-allocate",
                    G_CALLBACK(OnSizeAllocate), this);
   g_signal_connect(floating_.get(), "set-floating-position",

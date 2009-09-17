@@ -53,6 +53,7 @@ void TabContentsContainerGtk::Init() {
   // +------------------------------------------------------------------+
 
   floating_.Own(gtk_floating_container_new());
+  gtk_widget_set_name(floating_.get(), "chrome-tab-contents-container");
 
   fixed_ = gtk_fixed_new();
   g_signal_connect(fixed_, "size-allocate",

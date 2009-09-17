@@ -1642,6 +1642,7 @@ void BrowserWindowGtk::InitWidgets() {
   // download shelf, find bar) are all clipped to that area. This is why
   // |render_area_vbox_| is packed in |render_area_event_box_|.
   render_area_vbox_ = gtk_vbox_new(FALSE, 0);
+  gtk_widget_set_name(render_area_vbox_, "chrome-render-area-vbox");
   infobar_container_.reset(new InfoBarContainerGtk(this));
   gtk_box_pack_start(GTK_BOX(render_area_vbox_),
                      infobar_container_->widget(),

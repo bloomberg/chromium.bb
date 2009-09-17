@@ -45,6 +45,7 @@ class RenderWidgetHostViewGtkWidget {
  public:
   static GtkWidget* CreateNewWidget(RenderWidgetHostViewGtk* host_view) {
     GtkWidget* widget = gtk_fixed_new();
+    gtk_widget_set_name(widget, "chrome-render-widget-host-view");
     gtk_fixed_set_has_window(GTK_FIXED(widget), TRUE);
     gtk_widget_set_double_buffered(widget, FALSE);
     gtk_widget_set_redraw_on_allocate(widget, FALSE);
