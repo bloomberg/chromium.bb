@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import stat
 import subprocess
 import sys
 import xml.dom.minidom

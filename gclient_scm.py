@@ -183,7 +183,7 @@ class SCMWrapper(object):
                                     "try again." % (url, checkout_path))
         # Ok delete it.
         print("\n_____ switching %s to a new checkout" % self.relpath)
-        RemoveDirectory(checkout_path)
+        gclient_utils.RemoveDirectory(checkout_path)
         # We need to checkout.
         command = ['checkout', url, checkout_path]
         if revision:
@@ -232,7 +232,7 @@ class SCMWrapper(object):
         try:
           os.remove(file_path)
         except EnvironmentError:
-          RemoveDirectory(file_path)
+          gclient_utils.RemoveDirectory(file_path)
 
       if file[0][0] != '?':
         # For any other status, svn revert will work.
