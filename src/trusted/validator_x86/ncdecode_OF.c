@@ -52,6 +52,19 @@ static void DefineJmp0FPair(uint8_t opcode, InstMnemonic name) {
                 OpFlag(OpUse) | OpFlag(OperandNear) | OpFlag(OperandRelative));
 }
 
+static void DefineSetCC(uint8_t opcode, InstMnemonic name) {
+  DefineOpcode(opcode, NACLi_386,
+               InstFlag(OperandSize_b) | InstFlag(OpcodeUsesModRm),
+               name);
+  DefineOperand(E_Operand, OpFlag(OpSet));
+
+  DefineOpcode(opcode, NACLi_386,
+               InstFlag(OperandSize_b) | InstFlag(OpcodeUsesModRm) |
+               InstFlag(Opcode64Only) | InstFlag(OpcodeRex),
+               name);
+  DefineOperand(E_Operand, OpFlag(OpSet));
+}
+
 void Define0FOpcodes() {
   DefineOpcodePrefix(Prefix0F);
 
@@ -85,6 +98,29 @@ void Define0FOpcodes() {
   DefineJmp0FPair(0x8d, InstJge);
   DefineJmp0FPair(0x8e, InstJle);
   DefineJmp0FPair(0x8f, InstJg);
+
+  DefineSetCC(0x90, InstSeto);
+  DefineSetCC(0x91, InstSetno);
+  DefineSetCC(0x92, InstSetb);
+  DefineSetCC(0x93, InstSetnb);
+  DefineSetCC(0x94, InstSetz);
+  DefineSetCC(0x95, InstSetnz);
+  DefineSetCC(0x96, InstSetbe);
+  DefineSetCC(0x97, InstSetnbe);
+  DefineSetCC(0x98, InstSets);
+  DefineSetCC(0x99, InstSetns);
+  DefineSetCC(0x9a, InstSetp);
+  DefineSetCC(0x9b, InstSetnp);
+  DefineSetCC(0x9c, InstSetl);
+  DefineSetCC(0x9d, InstSetge);
+  DefineSetCC(0x9e, InstSetle);
+  DefineSetCC(0x9f, InstSetg);
+
+  DefineOpcode(0xa2, NACLi_386, 0, InstCpuid);
+  DefineOperand(RegEAX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegEBX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegECX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegEDX, OpFlag(OpSet) | OpFlag(OpImplicit));
 
   DefineOpcode(0xbe, NACLi_386,
                InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |
