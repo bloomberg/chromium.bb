@@ -172,12 +172,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleEval) {
 }
 
 // Tests console log.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleLog) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestConsoleLog) {
   RunTest("testConsoleLog", kConsoleTestPage);
 }
 
 // Tests eval global values.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalGlobal) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestEvalGlobal) {
   RunTest("testEvalGlobal", kEvalTestPage);
 }
 
