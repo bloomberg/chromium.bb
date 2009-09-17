@@ -129,3 +129,6 @@ PREFIX : urlrequesthttpjob::factory___urlrequestjobmanager::createjob___urlreque
 
 # 21978
 PREFIX : deletetask<webplugindelegateimpl>::run
+
+# 22106
+PREFIX : deletetask<webkit_glue::webpluginimpl>::run___messageloop::runtask
