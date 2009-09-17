@@ -799,7 +799,8 @@ willPositionSheet:(NSWindow*)sheet
 
   // Get the new controller by asking the new window for its delegate.
   BrowserWindowController* controller =
-      [newBrowser->window()->GetNativeHandle() delegate];
+      reinterpret_cast<BrowserWindowController*>(
+          [newBrowser->window()->GetNativeHandle() delegate]);
   DCHECK(controller && [controller isKindOfClass:[TabWindowController class]]);
 
   // Force the added tab to the right size (remove stretching.)

@@ -7,13 +7,14 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/cocoa_protocols_mac.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 
 // A controller for the bookmark editor, opened with Edit... from the
 // context menu of a bookmark button.
-@interface BookmarkEditorController : NSWindowController {
+@interface BookmarkEditorController : NSWindowController<NSTextFieldDelegate> {
  @private
   IBOutlet NSTextField* nameField_;
   IBOutlet NSTextField* urlField_;

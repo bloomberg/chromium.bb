@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_COCOA_DOWNLOAD_ITEM_CELL_H_
 #define CHROME_BROWSER_COCOA_DOWNLOAD_ITEM_CELL_H_
 
+#import "base/cocoa_protocols_mac.h"
 #import "chrome/browser/cocoa/gradient_button_cell.h"
 
 #include "base/file_path.h"
@@ -23,7 +24,7 @@ enum DownloadItemMousePosition {
   kDownloadItemMouseOverDropdownPart
 };
 
-@interface DownloadItemCell : GradientButtonCell {
+@interface DownloadItemCell : GradientButtonCell<NSAnimationDelegate> {
  @private
   // Track which part of the button the mouse is over
   DownloadItemMousePosition mousePosition_;

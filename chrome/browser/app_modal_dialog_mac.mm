@@ -8,13 +8,14 @@
 
 #include "app/l10n_util_mac.h"
 #include "app/message_box_flags.h"
+#import "base/cocoa_protocols_mac.h"
 #include "base/sys_string_conversions.h"
 #include "grit/app_strings.h"
 #include "grit/generated_resources.h"
 
 // Helper object that receives the notification that the dialog/sheet is
 // going away. Is responsible for cleaning itself up.
-@interface AppModalDialogHelper : NSObject {
+@interface AppModalDialogHelper : NSObject<NSAlertDelegate> {
  @private
   NSAlert* alert_;
   NSTextField* textField_;  // WEAK; owned by alert_

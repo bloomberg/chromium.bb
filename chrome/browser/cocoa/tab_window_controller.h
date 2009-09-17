@@ -20,12 +20,13 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
 
 @class TabStripView;
 @class TabView;
 
-@interface TabWindowController : NSWindowController {
+@interface TabWindowController : NSWindowController<NSWindowDelegate> {
  @private
   IBOutlet NSView* tabContentArea_;
   IBOutlet TabStripView* tabStripView_;

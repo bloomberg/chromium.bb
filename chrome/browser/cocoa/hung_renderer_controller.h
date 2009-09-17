@@ -21,7 +21,9 @@
 
 #include <vector>
 
-@interface HungRendererController : NSWindowController {
+#import "base/cocoa_protocols_mac.h"
+
+@interface HungRendererController : NSWindowController<NSTableViewDataSource> {
  @private
   IBOutlet NSButton* waitButton_;
   IBOutlet NSButton* killButton_;

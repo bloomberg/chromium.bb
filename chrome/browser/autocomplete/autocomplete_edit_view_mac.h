@@ -17,8 +17,8 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class AutocompleteEditController;
-@class AutocompleteEditHelper;
 class AutocompleteEditModel;
+@class AutocompleteFieldDelegate;
 class AutocompletePopupViewMac;
 @class AutocompleteTextField;
 class BubblePositioner;
@@ -88,7 +88,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView {
   virtual bool OnAfterPossibleChange();
   virtual gfx::NativeView GetNativeView() const;
 
-  // Helper functions for use from AutocompleteEditHelper Objective-C
+  // Helper functions for use from AutocompleteFieldDelegate Objective-C
   // class.
 
   // Returns true if |popup_view_| is open.
@@ -176,7 +176,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView {
   AutocompleteTextField* field_;  // owned by tab controller
 
   // Objective-C object to bridge field_ delegate calls to C++.
-  scoped_nsobject<AutocompleteEditHelper> edit_helper_;
+  scoped_nsobject<AutocompleteFieldDelegate> edit_helper_;
 
   // Selection at the point where the user started using the
   // arrows to move around in the popup.

@@ -8,6 +8,7 @@
 #include "app/gfx/font.h"
 #include "app/resource_bundle.h"
 #include "base/clipboard.h"
+#import "base/cocoa_protocols_mac.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
@@ -125,7 +126,7 @@ NSRange ComponentToNSRange(const url_parse::Component& component) {
 // It intercepts various control delegate methods and vectors them to
 // the edit view.
 
-@interface AutocompleteFieldDelegate : NSObject {
+@interface AutocompleteFieldDelegate : NSObject<NSTextFieldDelegate> {
  @private
   AutocompleteEditViewMac* edit_view_;  // weak, owns us.
 }

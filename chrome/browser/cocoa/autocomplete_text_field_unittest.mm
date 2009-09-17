@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
@@ -26,7 +27,8 @@
 - (BOOL)receivedControlTextShouldEndEditing;
 @end
 
-@interface AutocompleteTextFieldWindowTestDelegate : NSObject {
+@interface AutocompleteTextFieldWindowTestDelegate :
+    NSObject<NSWindowDelegate> {
   scoped_nsobject<AutocompleteTextFieldEditor> editor_;
 }
 - (id)windowWillReturnFieldEditor:(NSWindow *)sender toObject:(id)anObject;

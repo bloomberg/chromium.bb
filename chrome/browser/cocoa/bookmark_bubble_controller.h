@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
+#import "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
 
 class BookmarkModel;
@@ -32,7 +33,7 @@ class BookmarkNode;
 // programatically, but encode the view in a nib.  Thus,
 // BookmarkBubbleController is an NSViewController, not an
 // NSWindowController.
-@interface BookmarkBubbleController : NSViewController {
+@interface BookmarkBubbleController : NSViewController<NSWindowDelegate> {
  @private
   // Unexpected for this controller, perhaps, but our window does NOT
   // come from a nib.

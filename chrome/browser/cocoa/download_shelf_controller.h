@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #import "chrome/browser/cocoa/view_resizer.h"
@@ -32,7 +33,7 @@ class DownloadShelf;
 // UI of an item itself is represented by a button that is drawn by
 // download_item_cell.
 
-@interface DownloadShelfController : NSViewController {
+@interface DownloadShelfController : NSViewController<NSTextViewDelegate> {
  @private
   IBOutlet NSScrollView* linkContainer_;
   IBOutlet NSTextView* showAllDownloadsLink_;

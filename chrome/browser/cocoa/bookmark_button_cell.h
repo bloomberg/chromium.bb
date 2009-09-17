@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_COCOA_BOOKMARK_BUTTON_CELL_H_
 #define CHROME_BROWSER_COCOA_BOOKMARK_BUTTON_CELL_H_
 
+#import "base/cocoa_protocols_mac.h"
 #import "chrome/browser/cocoa/gradient_button_cell.h"
 
 // A button cell that handles drawing/highlighting of buttons in the
 // bookmark bar.
 
-@interface BookmarkButtonCell : GradientButtonCell {
+@interface BookmarkButtonCell : GradientButtonCell<NSMenuDelegate> {
 }
 @end
 

@@ -184,7 +184,7 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 
 // Return nil if menuItem has no delegate.
 - (BookmarkNode*)nodeFromMenuItem:(id)menuItem {
-  NSCell* cell = [[menuItem menu] delegate];
+  NSCell* cell = reinterpret_cast<NSCell*>([[menuItem menu] delegate]);
   if (!cell)
     return nil;
   BookmarkNode* node = static_cast<BookmarkNode*>(
