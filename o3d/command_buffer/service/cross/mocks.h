@@ -58,11 +58,13 @@ class AsyncAPIMock : public AsyncAPIInterface {
   // Predicate that matches args passed to DoCommand, by looking at the values.
   class IsArgs {
    public:
-    IsArgs(unsigned int arg_count, CommandBufferEntry *args)
+    IsArgs(unsigned int arg_count, const void* args)
         : arg_count_(arg_count),
-          args_(args) { }
+          args_(static_cast<CommandBufferEntry*>(const_cast<void*>(args))) { }
 
-    bool operator() (CommandBufferEntry *args) const {
+    bool operator() (const void* _args) const {
+      const CommandBufferEntry* args =
+          static_cast<const CommandBufferEntry*>(_args);
       for (unsigned int i = 0; i < arg_count_; ++i) {
         if (args[i].value_uint32 != args_[i].value_uint32) return false;
       }
@@ -77,7 +79,7 @@ class AsyncAPIMock : public AsyncAPIInterface {
   MOCK_METHOD3(DoCommand, BufferSyncInterface::ParseError(
       unsigned int command,
       unsigned int arg_count,
-      CommandBufferEntry *args));
+      const void* args));
 
   // Sets the engine, to forward SET_TOKEN commands to it.
   void set_engine(CommandBufferEngine *engine) { engine_ = engine; }
@@ -85,10 +87,12 @@ class AsyncAPIMock : public AsyncAPIInterface {
   // Forwards the SetToken commands to the engine.
   void SetToken(unsigned int command,
                 unsigned int arg_count,
-                CommandBufferEntry *args) {
+                const void* _args) {
     DCHECK(engine_);
     DCHECK_EQ(1, command);
     DCHECK_EQ(1, arg_count);
+    const CommandBufferEntry* args =
+        static_cast<const CommandBufferEntry*>(_args);
     engine_->set_token(args[0].value_uint32);
   }
  private:

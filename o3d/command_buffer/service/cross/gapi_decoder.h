@@ -62,7 +62,7 @@ class GAPIDecoder : public AsyncAPIInterface {
   //   BufferSyncInterface::ParseError otherwise.
   virtual ParseError DoCommand(unsigned int command,
                                unsigned int arg_count,
-                               CommandBufferEntry *args);
+                               const void* args);
 
   // Sets the engine, to get shared memory buffers from, and to set the token
   // to.
@@ -121,6 +121,18 @@ class GAPIDecoder : public AsyncAPIInterface {
   void *GetAddressAndCheckSize(unsigned int shm_id,
                                unsigned int offset,
                                unsigned int size);
+
+  // Generate a member function prototype for each command in an automated and
+  // typesafe way.
+  #define O3D_COMMAND_BUFFER_CMD_OP(name) \
+     ParseError Handle_ ## name(          \
+       unsigned int arg_count,            \
+       const cmd::name& args);            \
+
+  O3D_COMMAND_BUFFER_CMDS
+
+  #undef O3D_COMMAND_BUFFER_CMD_OP
+
   GAPIInterface *gapi_;
   CommandBufferEngine *engine_;
 };

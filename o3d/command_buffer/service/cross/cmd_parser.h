@@ -104,7 +104,7 @@ class AsyncAPIInterface {
   virtual BufferSyncInterface::ParseError DoCommand(
       unsigned int command,
       unsigned int arg_count,
-      CommandBufferEntry *args) = 0;
+      const void* args) = 0;
 };
 
 }  // namespace command_buffer

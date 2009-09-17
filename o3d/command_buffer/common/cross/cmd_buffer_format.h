@@ -38,6 +38,7 @@
 #include "base/basictypes.h"
 #include "command_buffer/common/cross/types.h"
 #include "command_buffer/common/cross/bitfield_helpers.h"
+#include "core/cross/packing.h"
 
 namespace o3d {
 namespace command_buffer {
@@ -268,73 +269,571 @@ typedef BitField<30, 1> SeparateAlpha;
 typedef BitField<31, 1> Enable;
 }  // namespace set_blending
 
+
+// This macro is used to safely and convienently expand the list of commnad
+// buffer commands in to various lists and never have them get out of sync. To
+// add a new command, add it this list, create the corresponding structure below
+// and then add a function in gapi_decoder.cc called Handle_COMMAND_NAME where
+// COMMAND_NAME is the name of your command structure.
+//
+// NOTE: THE ORDER OF THESE MUST NOT CHANGE (their id is derived by order)
+#define O3D_COMMAND_BUFFER_CMDS \
+  O3D_COMMAND_BUFFER_CMD_OP(NOOP)                              /*  0 */ \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_TOKEN)                                  \
+  O3D_COMMAND_BUFFER_CMD_OP(BEGIN_FRAME)                                \
+  O3D_COMMAND_BUFFER_CMD_OP(END_FRAME)                                  \
+  O3D_COMMAND_BUFFER_CMD_OP(CLEAR)                                      \
+  O3D_COMMAND_BUFFER_CMD_OP(CREATE_VERTEX_BUFFER)                       \
+  O3D_COMMAND_BUFFER_CMD_OP(DESTROY_VERTEX_BUFFER)                      \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_VERTEX_BUFFER_DATA)                     \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_VERTEX_BUFFER_DATA_IMMEDIATE)           \
+  O3D_COMMAND_BUFFER_CMD_OP(GET_VERTEX_BUFFER_DATA)                     \
+  O3D_COMMAND_BUFFER_CMD_OP(CREATE_INDEX_BUFFER)               /* 10 */ \
+  O3D_COMMAND_BUFFER_CMD_OP(DESTROY_INDEX_BUFFER)                       \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_INDEX_BUFFER_DATA)                      \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_INDEX_BUFFER_DATA_IMMEDIATE)            \
+  O3D_COMMAND_BUFFER_CMD_OP(GET_INDEX_BUFFER_DATA)                      \
+  O3D_COMMAND_BUFFER_CMD_OP(CREATE_VERTEX_STRUCT)                       \
+  O3D_COMMAND_BUFFER_CMD_OP(DESTROY_VERTEX_STRUCT)                      \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_VERTEX_INPUT)                           \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_VERTEX_STRUCT)                          \
+  O3D_COMMAND_BUFFER_CMD_OP(DRAW)                                       \
+  O3D_COMMAND_BUFFER_CMD_OP(DRAW_INDEXED)                      /* 20 */ \
+  O3D_COMMAND_BUFFER_CMD_OP(CREATE_EFFECT)                              \
+  O3D_COMMAND_BUFFER_CMD_OP(CREATE_EFFECT_IMMEDIATE)                    \
+  O3D_COMMAND_BUFFER_CMD_OP(DESTROY_EFFECT)                             \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_EFFECT)                                 \
+  O3D_COMMAND_BUFFER_CMD_OP(GET_PARAM_COUNT)                            \
+  O3D_COMMAND_BUFFER_CMD_OP(CREATE_PARAM)                               \
+  O3D_COMMAND_BUFFER_CMD_OP(CREATE_PARAM_BY_NAME)                       \
+  O3D_COMMAND_BUFFER_CMD_OP(CREATE_PARAM_BY_NAME_IMMEDIATE)             \
+  O3D_COMMAND_BUFFER_CMD_OP(DESTROY_PARAM)                              \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_PARAM_DATA)                    /* 30 */ \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_PARAM_DATA_IMMEDIATE)                   \
+  O3D_COMMAND_BUFFER_CMD_OP(GET_PARAM_DESC)                             \
+  O3D_COMMAND_BUFFER_CMD_OP(GET_STREAM_COUNT)                           \
+  O3D_COMMAND_BUFFER_CMD_OP(GET_STREAM_DESC)                            \
+  O3D_COMMAND_BUFFER_CMD_OP(DESTROY_TEXTURE)                            \
+  O3D_COMMAND_BUFFER_CMD_OP(CREATE_TEXTURE_2D)                          \
+  O3D_COMMAND_BUFFER_CMD_OP(CREATE_TEXTURE_3D)                          \
+  O3D_COMMAND_BUFFER_CMD_OP(CREATE_TEXTURE_CUBE)                        \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_TEXTURE_DATA)                           \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_TEXTURE_DATA_IMMEDIATE)        /* 40 */ \
+  O3D_COMMAND_BUFFER_CMD_OP(GET_TEXTURE_DATA)                           \
+  O3D_COMMAND_BUFFER_CMD_OP(CREATE_SAMPLER)                             \
+  O3D_COMMAND_BUFFER_CMD_OP(DESTROY_SAMPLER)                            \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_SAMPLER_STATES)                         \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_SAMPLER_BORDER_COLOR)                   \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_SAMPLER_TEXTURE)                        \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_VIEWPORT)                               \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_SCISSOR)                                \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_POINT_LINE_RASTER)                      \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_POLYGON_RASTER)                /* 50 */ \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_POLYGON_OFFSET)                         \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_ALPHA_TEST)                             \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_DEPTH_TEST)                             \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_STENCIL_TEST)                           \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_BLENDING)                               \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_BLENDING_COLOR)                         \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_COLOR_WRITE)                            \
+  O3D_COMMAND_BUFFER_CMD_OP(CREATE_RENDER_SURFACE)                      \
+  O3D_COMMAND_BUFFER_CMD_OP(DESTROY_RENDER_SURFACE)                     \
+  O3D_COMMAND_BUFFER_CMD_OP(CREATE_DEPTH_SURFACE)              /* 60 */ \
+  O3D_COMMAND_BUFFER_CMD_OP(DESTROY_DEPTH_SURFACE)                      \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_RENDER_SURFACE)                         \
+  O3D_COMMAND_BUFFER_CMD_OP(SET_BACK_SURFACES)                          \
+
+
 // GAPI commands.
 enum CommandId {
-  NOOP,                              // No operation. Arbitrary argument size.
-  SET_TOKEN,                         // Sets token. 1 argument.          val 0
-  BEGIN_FRAME,                       // BeginFrame. 0 argument.
-  END_FRAME,                         // EndFrame. 0 argument.
-  CLEAR,                             // Clear. 7 arguments.
-  CREATE_VERTEX_BUFFER,              // CreateVertexBuffer, 3 arguments.
-  DESTROY_VERTEX_BUFFER,             // DestroyVertexBuffer. 1 argument.
-  SET_VERTEX_BUFFER_DATA,            // SetVertexBufferData, 5 args
-  SET_VERTEX_BUFFER_DATA_IMMEDIATE,  // SetVertexBufferData, 2 args + data
-  GET_VERTEX_BUFFER_DATA,            // GetVertexBufferData, 5 args,
-  CREATE_INDEX_BUFFER,               // CreateIndexBuffer, 3 arguments.  val 10
-  DESTROY_INDEX_BUFFER,              // DestroyIndexBuffer. 1 argument.
-  SET_INDEX_BUFFER_DATA,             // SetIndexBufferData, 5 args
-  SET_INDEX_BUFFER_DATA_IMMEDIATE,   // SetIndexBufferData, 2 args + data
-  GET_INDEX_BUFFER_DATA,             // GetIndexBufferData, 5 args
-  CREATE_VERTEX_STRUCT,              // CreateVertexStruct, 2 args.
-  DESTROY_VERTEX_STRUCT,             // DestroyVertexStruct. 1 argument.
-  SET_VERTEX_INPUT,                  // SetVertexInput, 5 args.
-  SET_VERTEX_STRUCT,                 // SetVertexStruct, 1 arg.
-  DRAW,                              // Draw, 3 args. value
-  DRAW_INDEXED,                      // DrawIndexed, 6 args.             val 20
-  CREATE_EFFECT,                     // CreateEffect, 4 args.
-  CREATE_EFFECT_IMMEDIATE,           // CreateEffect, 2 args + data
-  DESTROY_EFFECT,                    // DestroyEffect, 1 arg.
-  SET_EFFECT,                        // SetEffect, 1 arg.
-  GET_PARAM_COUNT,                   // GetParamCount, 4 args.
-  CREATE_PARAM,                      // CreateParam, 3 args.
-  CREATE_PARAM_BY_NAME,              // CreateParamByName, 5 args.
-  CREATE_PARAM_BY_NAME_IMMEDIATE,    // CreateParamByName, 3 args + data
-  DESTROY_PARAM,                     // DestroyParam, 1 arg
-  SET_PARAM_DATA,                    // SetParamData, 4 args             val 30
-  SET_PARAM_DATA_IMMEDIATE,          // SetParamData, 2 args + data
-  GET_PARAM_DESC,                    // GetParamDesc, 4 args
-  GET_STREAM_COUNT,                  // GetStreamCount, 4 args.
-  GET_STREAM_DESC,                   // GetStreamDesc, 5 args
-  DESTROY_TEXTURE,                   // DestroyTexture, 1 arg
-  CREATE_TEXTURE_2D,                 // CreateTexture2D, 4 args
-  CREATE_TEXTURE_3D,                 // CreateTexture3D, 4 args
-  CREATE_TEXTURE_CUBE,               // CreateTextureCube, 3 args
-  SET_TEXTURE_DATA,                  // SetTextureData, 10 args
-  SET_TEXTURE_DATA_IMMEDIATE,        // SetTextureData, 8 args + data    val 40
-  GET_TEXTURE_DATA,                  // GetTextureData, 10 args
-  CREATE_SAMPLER,                    // CreateSampler, 1 arg
-  DESTROY_SAMPLER,                   // DestroySampler, 1 arg
-  SET_SAMPLER_STATES,                // SetSamplerStates, 2 arg
-  SET_SAMPLER_BORDER_COLOR,          // SetSamplerBorderColor, 5 arg
-  SET_SAMPLER_TEXTURE,               // SetSamplerTexture, 2 arg
-  SET_VIEWPORT,                      // SetViewport. 6 arguments.
-  SET_SCISSOR,                       // SetScissor, 2 args
-  SET_POINT_LINE_RASTER,             // SetPointLineRaster, 2 args
-  SET_POLYGON_RASTER,                // SetPolygonRaster, 1 args         val 50
-  SET_POLYGON_OFFSET,                // SetPolygonOffest, 2 args
-  SET_ALPHA_TEST,                    // SetAlphaTest, 2 args
-  SET_DEPTH_TEST,                    // SetDepthTest, 1 args
-  SET_STENCIL_TEST,                  // SetStencilTest, 2 args
-  SET_BLENDING,                      // SetBlending, 1 args
-  SET_BLENDING_COLOR,                // SetBlendingColor, 4 args
-  SET_COLOR_WRITE,                   // SetColorWrite, 1 args
-  CREATE_RENDER_SURFACE,             // CreateRenderSurface, 4 args.
-  DESTROY_RENDER_SURFACE,            // DestoryRenderSurface, 1 arg.
-  CREATE_DEPTH_SURFACE,              // CreateRenderSurface, 2 args.     val 60
-  DESTROY_DEPTH_SURFACE,             // DestoryRenderSurface, 1 arg.
-  SET_RENDER_SURFACE,                // SetRenderSurface, 2 args.
-  SET_BACK_SURFACES                  // SetBackSurfaces
+  #define O3D_COMMAND_BUFFER_CMD_OP(name) name,
+
+  O3D_COMMAND_BUFFER_CMDS
+
+  #undef O3D_COMMAND_BUFFER_CMD_OP
 };
+
+namespace cmd {
+
+// Make sure the compiler does not add extra padding to any of the command
+// structures.
+O3D_PUSH_STRUCTURE_PACKING_1;
+
+enum ArgFlags {
+  kFixed = 0x0,
+  kAtLeastN = 0x1,
+};
+
+struct SharedMemory {
+  uint32 id;
+  uint32 offset;
+};
+
+struct NOOP {
+  static const CommandId kCmdId = command_buffer::NOOP;
+  static const ArgFlags kArgFlags = kAtLeastN;
+};
+
+struct SET_TOKEN {
+  static const CommandId kCmdId = command_buffer::SET_TOKEN;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 token;
+};
+
+struct BEGIN_FRAME {
+  static const CommandId kCmdId = command_buffer::BEGIN_FRAME;
+  static const ArgFlags kArgFlags = kFixed;
+};
+
+struct END_FRAME {
+  static const CommandId kCmdId = command_buffer::END_FRAME;
+  static const ArgFlags kArgFlags = kFixed;
+};
+
+struct CLEAR {
+  static const CommandId kCmdId = command_buffer::CLEAR;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 buffers;
+  float red;
+  float green;
+  float blue;
+  float alpha;
+  float depth;
+  uint32 stencil;
+};
+
+struct SET_VIEWPORT {
+  static const CommandId kCmdId = command_buffer::SET_VIEWPORT;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 left;
+  uint32 top;
+  uint32 width;
+  uint32 height;
+  float z_min;
+  float z_max;
+};
+
+struct CREATE_VERTEX_BUFFER {
+  static const CommandId kCmdId = command_buffer::CREATE_VERTEX_BUFFER;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+  uint32 size;
+  uint32 flags;
+};
+
+struct DESTROY_VERTEX_BUFFER {
+  static const CommandId kCmdId = command_buffer::DESTROY_VERTEX_BUFFER;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+};
+
+struct SET_VERTEX_BUFFER_DATA_IMMEDIATE {
+  static const CommandId kCmdId = command_buffer::SET_VERTEX_BUFFER_DATA_IMMEDIATE;
+  static const ArgFlags kArgFlags = kAtLeastN;
+  uint32 id;
+  uint32 offset;
+};
+
+struct SET_VERTEX_BUFFER_DATA {
+  static const CommandId kCmdId = command_buffer::SET_VERTEX_BUFFER_DATA;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+  uint32 offset;
+  uint32 size;
+  SharedMemory shared_memory;
+};
+
+struct GET_VERTEX_BUFFER_DATA {
+  static const CommandId kCmdId = command_buffer::GET_VERTEX_BUFFER_DATA;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+  uint32 offset;
+  uint32 size;
+  SharedMemory shared_memory;
+};
+
+struct CREATE_INDEX_BUFFER {
+  static const CommandId kCmdId = command_buffer::CREATE_INDEX_BUFFER;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+  uint32 size;
+  uint32 flags;
+};
+
+struct DESTROY_INDEX_BUFFER {
+  static const CommandId kCmdId = command_buffer::DESTROY_INDEX_BUFFER;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+};
+
+struct SET_INDEX_BUFFER_DATA_IMMEDIATE {
+  static const CommandId kCmdId = command_buffer::SET_INDEX_BUFFER_DATA_IMMEDIATE;
+  static const ArgFlags kArgFlags = kAtLeastN;
+  uint32 id;
+  uint32 offset;
+};
+
+struct SET_INDEX_BUFFER_DATA {
+  static const CommandId kCmdId = command_buffer::SET_INDEX_BUFFER_DATA;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+  uint32 offset;
+  uint32 size;
+  SharedMemory shared_memory;
+};
+
+struct GET_INDEX_BUFFER_DATA {
+  static const CommandId kCmdId = command_buffer::GET_INDEX_BUFFER_DATA;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+  uint32 offset;
+  uint32 size;
+  SharedMemory shared_memory;
+};
+
+struct CREATE_VERTEX_STRUCT {
+  static const CommandId kCmdId = command_buffer::CREATE_VERTEX_STRUCT;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+  uint32 input_count;
+};
+
+struct DESTROY_VERTEX_STRUCT {
+  static const CommandId kCmdId = command_buffer::DESTROY_VERTEX_STRUCT;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+};
+
+struct SET_VERTEX_INPUT {
+  static const CommandId kCmdId = command_buffer::SET_VERTEX_INPUT;
+  static const ArgFlags kArgFlags = kAtLeastN;
+};
+
+struct SET_VERTEX_STRUCT {
+  static const CommandId kCmdId = command_buffer::SET_VERTEX_STRUCT;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+};
+
+struct DRAW {
+  static const CommandId kCmdId = command_buffer::DRAW;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 primitive_type;
+  uint32 first;
+  uint32 count;
+};
+
+struct DRAW_INDEXED {
+  static const CommandId kCmdId = command_buffer::DRAW_INDEXED;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 primitive_type;
+  uint32 index_buffer_id;
+  uint32 first;
+  uint32 count;
+  uint32 min_index;
+  uint32 max_index;
+};
+
+struct CREATE_EFFECT {
+  static const CommandId kCmdId = command_buffer::CREATE_EFFECT;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+  uint32 size;
+  SharedMemory shared_memory;
+};
+
+struct CREATE_EFFECT_IMMEDIATE {
+  static const CommandId kCmdId = command_buffer::CREATE_EFFECT_IMMEDIATE;
+  static const ArgFlags kArgFlags = kAtLeastN;
+  uint32 id;
+  uint32 size;
+};
+
+struct DESTROY_EFFECT {
+  static const CommandId kCmdId = command_buffer::DESTROY_EFFECT;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+};
+
+struct SET_EFFECT {
+  static const CommandId kCmdId = command_buffer::SET_EFFECT;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+};
+
+struct GET_PARAM_COUNT {
+  static const CommandId kCmdId = command_buffer::GET_PARAM_COUNT;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+  uint32 size;
+  SharedMemory shared_memory;
+};
+
+struct CREATE_PARAM {
+  static const CommandId kCmdId = command_buffer::CREATE_PARAM;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 param_id;
+  uint32 effect_id;
+  uint32 index;
+};
+
+struct CREATE_PARAM_BY_NAME {
+  static const CommandId kCmdId = command_buffer::CREATE_PARAM_BY_NAME;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 param_id;
+  uint32 effect_id;
+  uint32 size;
+  SharedMemory shared_memory;
+};
+
+struct CREATE_PARAM_BY_NAME_IMMEDIATE {
+  static const CommandId kCmdId = command_buffer::CREATE_PARAM_BY_NAME_IMMEDIATE;
+  static const ArgFlags kArgFlags = kAtLeastN;
+  uint32 param_id;
+  uint32 effect_id;
+  uint32 size;
+};
+
+struct DESTROY_PARAM {
+  static const CommandId kCmdId = command_buffer::DESTROY_PARAM;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+};
+
+struct SET_PARAM_DATA {
+  static const CommandId kCmdId = command_buffer::SET_PARAM_DATA;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+  uint32 size;
+  SharedMemory shared_memory;
+};
+
+struct SET_PARAM_DATA_IMMEDIATE {
+  static const CommandId kCmdId = command_buffer::SET_PARAM_DATA_IMMEDIATE;
+  static const ArgFlags kArgFlags = kAtLeastN;
+  uint32 id;
+  uint32 size;
+};
+
+struct GET_PARAM_DESC {
+  static const CommandId kCmdId = command_buffer::GET_PARAM_DESC;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+  uint32 size;
+  SharedMemory shared_memory;
+};
+
+struct GET_STREAM_COUNT {
+  static const CommandId kCmdId = command_buffer::GET_STREAM_COUNT;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+  uint32 size;
+  SharedMemory shared_memory;
+};
+
+struct GET_STREAM_DESC {
+  static const CommandId kCmdId = command_buffer::GET_STREAM_DESC;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+  uint32 index;
+  uint32 size;
+  SharedMemory shared_memory;
+};
+
+struct DESTROY_TEXTURE {
+  static const CommandId kCmdId = command_buffer::DESTROY_TEXTURE;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+};
+
+struct CREATE_TEXTURE_2D {
+  static const CommandId kCmdId = command_buffer::CREATE_TEXTURE_2D;
+  static const ArgFlags kArgFlags = kAtLeastN;
+  // TODO(gman): fix this to not use obfusticated fields.
+};
+
+struct CREATE_TEXTURE_3D {
+  static const CommandId kCmdId = command_buffer::CREATE_TEXTURE_3D;
+  static const ArgFlags kArgFlags = kAtLeastN;
+  // TODO(gman): fix this to not use obfusticated fields.
+};
+
+struct CREATE_TEXTURE_CUBE {
+  static const CommandId kCmdId = command_buffer::CREATE_TEXTURE_CUBE;
+  static const ArgFlags kArgFlags = kAtLeastN;
+  // TODO(gman): fix this to not use obfusticated fields.
+};
+
+struct SET_TEXTURE_DATA {
+  static const CommandId kCmdId = command_buffer::SET_TEXTURE_DATA;
+  static const ArgFlags kArgFlags = kAtLeastN;
+  // TODO(gman): fix this to not use obfusticated fields.
+};
+
+struct SET_TEXTURE_DATA_IMMEDIATE {
+  static const CommandId kCmdId = command_buffer::SET_TEXTURE_DATA_IMMEDIATE;
+  static const ArgFlags kArgFlags = kAtLeastN;
+  // TODO(gman): fix this to not use obfusticated fields.
+};
+
+struct GET_TEXTURE_DATA {
+  static const CommandId kCmdId = command_buffer::GET_TEXTURE_DATA;
+  static const ArgFlags kArgFlags = kAtLeastN;
+  // TODO(gman): fix this to not use obfusticated fields.
+};
+
+struct CREATE_SAMPLER {
+  static const CommandId kCmdId = command_buffer::CREATE_SAMPLER;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+};
+
+struct DESTROY_SAMPLER {
+  static const CommandId kCmdId = command_buffer::DESTROY_SAMPLER;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+};
+
+struct SET_SAMPLER_STATES {
+  static const CommandId kCmdId = command_buffer::SET_SAMPLER_STATES;
+  static const ArgFlags kArgFlags = kAtLeastN;
+  // TODO(gman): fix this to not use obfusticated fields.
+};
+
+struct SET_SAMPLER_BORDER_COLOR {
+  static const CommandId kCmdId = command_buffer::SET_SAMPLER_BORDER_COLOR;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+  float red;
+  float blue;
+  float green;
+  float alpha;
+};
+
+struct SET_SAMPLER_TEXTURE {
+  static const CommandId kCmdId = command_buffer::SET_SAMPLER_TEXTURE;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+  uint32 texture_id;
+};
+
+struct SET_SCISSOR {
+  static const CommandId kCmdId = command_buffer::SET_SCISSOR;
+  static const ArgFlags kArgFlags = kFixed;
+  // TODO(gman): fix this to not use obfusticated fields.
+  uint32 fixme0;
+  uint32 fixme1;
+};
+
+struct SET_POLYGON_OFFSET {
+  static const CommandId kCmdId = command_buffer::SET_POLYGON_OFFSET;
+  static const ArgFlags kArgFlags = kFixed;
+  float slope_factor;
+  float units;
+};
+
+struct SET_POINT_LINE_RASTER {
+  static const CommandId kCmdId = command_buffer::SET_POINT_LINE_RASTER;
+  static const ArgFlags kArgFlags = kFixed;
+  // TODO(gman): fix this to not use obfusticated fields.
+  uint32 fixme0;
+  float point_size;
+};
+
+struct SET_POLYGON_RASTER {
+  static const CommandId kCmdId = command_buffer::SET_POLYGON_RASTER;
+  static const ArgFlags kArgFlags = kFixed;
+  // TODO(gman): fix this to not use obfusticated fields.
+  uint32 fixme0;
+};
+
+struct SET_ALPHA_TEST {
+  static const CommandId kCmdId = command_buffer::SET_ALPHA_TEST;
+  static const ArgFlags kArgFlags = kFixed;
+  // TODO(gman): fix this to not use obfusticated fields.
+  uint32 fixme0;
+  float value;
+};
+
+struct SET_DEPTH_TEST {
+  static const CommandId kCmdId = command_buffer::SET_DEPTH_TEST;
+  static const ArgFlags kArgFlags = kFixed;
+  // TODO(gman): fix this to not use obfusticated fields.
+  uint32 fixme0;
+};
+
+struct SET_STENCIL_TEST {
+  static const CommandId kCmdId = command_buffer::SET_STENCIL_TEST;
+  static const ArgFlags kArgFlags = kAtLeastN;
+  // TODO(gman): fix this to not use obfusticated fields.
+};
+
+struct SET_COLOR_WRITE {
+  static const CommandId kCmdId = command_buffer::SET_COLOR_WRITE;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 flags;
+};
+
+struct SET_BLENDING {
+  static const CommandId kCmdId = command_buffer::SET_BLENDING;
+  static const ArgFlags kArgFlags = kAtLeastN;
+  // TODO(gman): fix this to not use obfusticated fields.
+};
+
+struct SET_BLENDING_COLOR {
+  static const CommandId kCmdId = command_buffer::SET_BLENDING_COLOR;
+  static const ArgFlags kArgFlags = kFixed;
+  float red;
+  float blue;
+  float green;
+  float alpha;
+};
+
+struct CREATE_RENDER_SURFACE {
+  static const CommandId kCmdId = command_buffer::CREATE_RENDER_SURFACE;
+  static const ArgFlags kArgFlags = kFixed;
+  // TODO(gman): fix this to not use obfusticated fields.
+  uint32 id;
+  uint32 fixme1;
+  uint32 fixme2;
+  uint32 texture_id;
+};
+
+struct DESTROY_RENDER_SURFACE {
+  static const CommandId kCmdId = command_buffer::DESTROY_RENDER_SURFACE;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+};
+
+struct CREATE_DEPTH_SURFACE {
+  static const CommandId kCmdId = command_buffer::CREATE_DEPTH_SURFACE;
+  static const ArgFlags kArgFlags = kFixed;
+  // TODO(gman): fix this to not use obfusticated fields.
+  uint32 id;
+  uint32 fixme1;
+};
+
+struct DESTROY_DEPTH_SURFACE {
+  static const CommandId kCmdId = command_buffer::DESTROY_DEPTH_SURFACE;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 id;
+};
+
+struct SET_RENDER_SURFACE {
+  static const CommandId kCmdId = command_buffer::SET_RENDER_SURFACE;
+  static const ArgFlags kArgFlags = kFixed;
+  uint32 render_surface_id;
+  uint32 depth_surface_id;
+};
+
+struct SET_BACK_SURFACES {
+  static const CommandId kCmdId = command_buffer::SET_BACK_SURFACES;
+  static const ArgFlags kArgFlags = kFixed;
+};
+
+O3D_POP_STRUCTURE_PACKING;
+
+}  // namespace cmd
 
 }  // namespace command_buffer
 }  // namespace o3d
