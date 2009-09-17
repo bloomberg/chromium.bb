@@ -13,6 +13,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#if defined(OS_MACOSX)
+#include <AvailabilityMacros.h>
+#endif
+
 #include "base/basictypes.h"
 #include "base/compat_execinfo.h"
 #include "base/eintr_wrapper.h"
@@ -116,39 +120,45 @@ void DebugUtil::BreakDebugger() {
 }
 
 StackTrace::StackTrace() {
-  if (backtrace == NULL) {
+#if defined(OS_MACOSX) && MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
+  if (!backtrace) {
     count_ = 0;
-  } else {
-    // Though the backtrace API man page does not list any possible negative
-    // return values, we take no chance.
-    count_ = std::max(backtrace(trace_, arraysize(trace_)), 0);
+    return;
   }
+#endif
+  // Though the backtrace API man page does not list any possible negative
+  // return values, we take no chance.
+  count_ = std::max(backtrace(trace_, arraysize(trace_)), 0);
 }
 
 void StackTrace::PrintBacktrace() {
-  if (backtrace_symbols_fd != NULL) {
-    fflush(stderr);
-    backtrace_symbols_fd(trace_, count_, STDERR_FILENO);
-  }
+#if defined(OS_MACOSX) && MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
+  if (!backtrace_symbols_fd)
+    return;
+#endif
+  fflush(stderr);
+  backtrace_symbols_fd(trace_, count_, STDERR_FILENO);
 }
 
 void StackTrace::OutputToStream(std::ostream* os) {
-  if (backtrace_symbols != NULL) {
-    scoped_ptr_malloc<char*> trace_symbols(backtrace_symbols(trace_, count_));
+#if defined(OS_MACOSX) && MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
+  if (!backtrace_symbols)
+    return;
+#endif
+  scoped_ptr_malloc<char*> trace_symbols(backtrace_symbols(trace_, count_));
 
-    // If we can't retrieve the symbols, print an error and just dump the raw
-    // addresses.
-    if (trace_symbols.get() == NULL) {
-      (*os) << "Unable get symbols for backtrace (" << strerror(errno)
-            << "). Dumping raw addresses in trace:\n";
-      for (int i = 0; i < count_; ++i) {
-        (*os) << "\t" << trace_[i] << "\n";
-      }
-    } else {
-      (*os) << "Backtrace:\n";
-      for (int i = 0; i < count_; ++i) {
-        (*os) << "\t" << trace_symbols.get()[i] << "\n";
-      }
+  // If we can't retrieve the symbols, print an error and just dump the raw
+  // addresses.
+  if (trace_symbols.get() == NULL) {
+    (*os) << "Unable get symbols for backtrace (" << strerror(errno)
+          << "). Dumping raw addresses in trace:\n";
+    for (int i = 0; i < count_; ++i) {
+      (*os) << "\t" << trace_[i] << "\n";
+    }
+  } else {
+    (*os) << "Backtrace:\n";
+    for (int i = 0; i < count_; ++i) {
+      (*os) << "\t" << trace_symbols.get()[i] << "\n";
     }
   }
 }
