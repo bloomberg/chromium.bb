@@ -43,24 +43,24 @@
 
 IDENTIFIER(NaClReadTP_start):
 
-#if defined(USE_R9_AS_TLS_REG)
-  /* r9 keeps the TLS_IDX which is concatenation of a TLS pointer and index in
-   * nacl_thread/nacl_user/nacl_sys arrays. The higher 20 bits are for TLS
+  /* r9 keeps the TLS_IDX which is concatenation of a tdb pointer and index in
+   * nacl_thread/nacl_user/nacl_sys arrays. The higher 20 bits are for tdb
    * address and the lower 12 keep the index.
+   * The first word of the tdb points to the tls are for the thread.
+   *
+   * This code is copied into nacl module address space by
+   * sel_ldr_arm::NaClLoadTlsHook()
+   * The target location is just below  NACL_TRAMPOLINE_END
+   *
+   * NOTE: A copy of this code also exists in the arm startup under
+   *       the arm eabi name  __aeabi_read_tp()
    */
   mov r0, r9, lsr #NACL_PAGESHIFT
   lsl r0, #NACL_PAGESHIFT
+#if !defined(DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX)
   bic lr, lr, #0xF000000F
-  bx lr
-#else
-  /* By masking the untrusted return address, we can tail-call NaClGetUserTls,
-   * which will then return directly to untrusted code.
-   * TODO(cbiffle): extract a constant #define for the mask.
-   */
-  bic lr, lr, #NACL_CF_MASK
-  b NaClGetUserTls  /* returns Tls pointer in r0 */
-  NACL_HALT  /* Never reached */
 #endif
+  bx lr
 
 IDENTIFIER(NaClReadTP_end):
 
