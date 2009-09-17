@@ -22,7 +22,7 @@ class StringPiece;
 
 // Manages a segment of shared memory that contains the user scripts the user
 // has installed.  Lives on the UI thread.
-class UserScriptMaster : public base::RefCounted<UserScriptMaster>,
+class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
                          public DirectoryWatcher::Delegate,
                          public NotificationObserver {
  public:

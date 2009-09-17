@@ -19,7 +19,8 @@ namespace history {
 // Navigation -----------------------------------------------------------------
 
 // Marshalling structure for AddPage.
-class HistoryAddPageArgs : public base::RefCounted<HistoryAddPageArgs> {
+class HistoryAddPageArgs
+    : public base::RefCountedThreadSafe<HistoryAddPageArgs> {
  public:
   HistoryAddPageArgs(const GURL& arg_url,
                      base::Time arg_time,
