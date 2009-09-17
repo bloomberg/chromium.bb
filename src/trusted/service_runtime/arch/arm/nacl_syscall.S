@@ -66,16 +66,9 @@ IDENTIFIER(NaClSyscallSeg):
    * therefore, we use the lowest 12 bits to store the thread index
    */
 
-#if defined(USE_R9_AS_TLS_REG)
-  /* r9 keeps TLS_IDX */
-  mov r0, r9, lsl #20
-  lsr r0, #20
-#else
-  /*
-   * TLS_IDX is stored in service runtime TLS region, in nacl_tls_idx variable
-   */
-  bl NaClGetThreadIdx /* returns thread index in r0 */
-#endif
+  /* r9 keep lower 12 bits =  TLS_IDX */
+  mov r0, r9, lsl #(32 - NACL_PAGESHIFT)
+  lsr r0, #(32 - NACL_PAGESHIFT)
 
   ldr  r1, =nacl_user
   ldr  r1, [r1, r0, lsl #2]

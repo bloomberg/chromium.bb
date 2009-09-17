@@ -43,18 +43,13 @@
 #define NACL_HALT_OPCODE        0xe3a0f000  /* mov pc, #0 */
 #define NACL_HALT_LEN           4           /* length of halt instruction */
 
-#if !defined(USE_R9_AS_TLS_REG)
-uint32_t NaClGetThreadIndex();
-
-uint32_t NaClGetUserTls();
-#endif
-
 struct NaClApp;
 struct NaClThreadContext;
 
-uint32_t NaClGetTlsThreadIdx(struct NaClThreadContext *user);
+uint32_t NaClGetThreadCombinedDescriptor(struct NaClThreadContext *user);
 
-void NaClSetTlsThreadIdx(struct NaClThreadContext *user, uint32_t tls_idx);
+void NaClSetThreadCombinedDescriptor(struct NaClThreadContext *user,
+                                     uint32_t tls_idx);
 
 extern char NaClReadTP_start;
 extern char NaClReadTP_end;

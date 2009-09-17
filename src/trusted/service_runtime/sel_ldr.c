@@ -48,7 +48,6 @@
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
 int NaClAppCtor(struct NaClApp  *nap) {
-  NaClThreadStartupCheck();
 
   nap->addr_bits = NACL_MAX_ADDR_BITS;
 

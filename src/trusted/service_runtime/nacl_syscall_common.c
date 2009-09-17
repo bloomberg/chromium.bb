@@ -1917,20 +1917,22 @@ cleanup:
 
 int32_t NaClCommonSysTls_Init(struct NaClAppThread  *natp,
                               void                  *tdb,
-                              size_t                size) {
+                              size_t                tdb_size) {
   int32_t   retval = -NACL_ABI_EINVAL;
-  uintptr_t sysaddr;
+  uintptr_t sys_tdb;
 
   NaClSysCommonThreadSyscallEnter(natp);
 
-  /* Verify that the address in the app's range */
-  sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) tdb, size);
-  if (kNaClBadAddress == sysaddr) {
+  /* Verify that the address in the app's range and translated from
+   * nacl module address to service runtime address - a nop on ARM
+   */
+  sys_tdb = NaClUserToSysAddrRange(natp->nap, (uintptr_t) tdb, tdb_size);
+  if (kNaClBadAddress == sys_tdb) {
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
 
-  if (0 == NaClTlsChange(natp, (void *)sysaddr, size)) {
+  if (0 == NaClTlsChange(natp, (void *)sys_tdb, tdb_size)) {
     retval = -NACL_ABI_EINVAL;
     goto cleanup;
   }
@@ -1971,6 +1973,7 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
+
   retval = NaClCreateAdditionalThread(natp->nap,
                                       (uintptr_t) prog_ctr,
                                       (uintptr_t) stack_ptr,

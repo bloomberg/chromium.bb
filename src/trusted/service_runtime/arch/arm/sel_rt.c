@@ -37,6 +37,7 @@
 #include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr_arm.h"
 
 void NaClInitGlobals() {
+   NaClLog(2, "NaClInitGlobals\n");
   /* intentionally left empty */
 }
 
@@ -51,7 +52,7 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   memset((void *)ntcp, 0, sizeof(*ntcp));
   ntcp->stack_ptr = stack_ptr;
   ntcp->prog_ctr = prog_ctr;
-  NaClSetTlsThreadIdx(ntcp, tls_idx);
+  NaClSetThreadCombinedDescriptor(ntcp, tls_idx);
 
   NaClLog(4, "user.tls_idx: 0x%08x\n", tls_idx);
   NaClLog(4, "user.stack_ptr: 0x%08x\n", ntcp->stack_ptr);
@@ -69,4 +70,3 @@ uintptr_t NaClGetThreadCtxSp(struct NaClThreadContext  *th_ctx) {
 void NaClSetThreadCtxSp(struct NaClThreadContext  *th_ctx, uintptr_t sp) {
   th_ctx->stack_ptr = (uint32_t) sp;
 }
-

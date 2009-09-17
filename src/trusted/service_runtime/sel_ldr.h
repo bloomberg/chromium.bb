@@ -473,8 +473,6 @@ void NaClDumpServiceAddressTo(struct NaClApp  *nap,
 
 void NaClWaitForModuleStartStatusCall(struct NaClApp *nap);
 
-void NaClThreadStartupCheck();
-
 void NaClFillTrampolineRegion(struct NaClApp *nap);
 
 void NaClFillEndOfTextRegion(struct NaClApp *nap);

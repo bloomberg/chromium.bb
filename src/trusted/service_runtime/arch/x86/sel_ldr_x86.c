@@ -38,14 +38,6 @@
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
 #include "gen/native_client/src/trusted/service_runtime/arch/x86/tramp_data.h"
 #include "gen/native_client/src/trusted/service_runtime/arch/x86/springboard_data.h"
-/*
- * A sanity check -- should be invoked in some early function, e.g.,
- * main, or something that main invokes early.
- */
-void NaClThreadStartupCheck() {
-  CHECK(sizeof(struct NaClThreadContext) == 64);
-}
-
 
 /*
  * Install a syscall trampoline at target_addr.  NB: Thread-safe.
@@ -144,4 +136,3 @@ void NaClLoadTlsHook(struct NaClApp  *nap) {
    */
   UNREFERENCED_PARAMETER(nap);
 }
-

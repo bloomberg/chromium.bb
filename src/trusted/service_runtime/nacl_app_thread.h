@@ -85,8 +85,6 @@ struct NaClAppThread {
 
   int                       thread_num;  /* index into nap->threads */
 
-  uint32_t                  user_tls_size; /* it is used only for ARM */
-
   struct NaClThread         thread;  /* low level thread representation */
 
   /*

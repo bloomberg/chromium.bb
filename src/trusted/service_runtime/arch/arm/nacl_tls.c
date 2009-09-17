@@ -37,59 +37,74 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 
-#define TLS_IDX_GET_ADDR(x)  (x & ~((1 << NACL_PAGESHIFT) - 1))
-#define TLS_IDX_GET_IDX(x)   (x &  ((1 << NACL_PAGESHIFT) - 1))
-
 /*
  * TlsThreadIdx represents concatenation of a thread's TLS address and a
- * thread's index (in nacl_user,nacl_sys,nacl_thread arreays). The top 20 bits
+ * thread's index (in nacl_user,nacl_sys,nacl_thread arrays). The top 20 bits
  * are dedicated to TLS address (which is page-aligned), and the lower 12 bits
  * represents thread index. Because of such encoding we have a limit to a number
  * of threads a nacl module can create. It is (1<<12).
  */
 
-#if !defined(USE_R9_AS_TLS_REG)
-__thread uint32_t nacl_tls_idx;
-
-
-/*
- * This function is used by a nacl module to obtain its TLS pointer. It is
- * called from code patched into trampoline region (nacl_tls_tramp.S)
- */
-uint32_t NaClGetUserTls() {
-  return TLS_IDX_GET_ADDR(nacl_tls_idx);
+static uint32_t CombinedDescriptorExtractIdx(uint32_t combined) {
+  return  combined &  ((1 << NACL_PAGESHIFT) - 1);
 }
-#endif
 
 
-uint32_t NaClGetTlsThreadIdx(struct NaClThreadContext *user) {
-#if defined(USE_R9_AS_TLS_REG)
+static uint32_t CombinedDescriptorExtractTdb(uint32_t combined) {
+  return  combined &  ~((1 << NACL_PAGESHIFT) - 1);
+}
+
+static uint32_t MakeCombinedDescriptor(uint32_t tdb,
+                                       uint32_t idx) {
+  /* NOTE: we need to work around and issue here where, for the main thread,
+     we temporarily have to accomodate an invalid tdb */
+  /* TODO(robertm): clean this up */
+  if (CombinedDescriptorExtractTdb(tdb) != tdb) {
+    NaClLog(LOG_ERROR, "bad tdb alignment tdb %x idx %d\n", tdb, idx);
+    NaClLog(LOG_ERROR, "this is expected at startup\n");
+    tdb = CombinedDescriptorExtractTdb(~0);
+  }
+
+  if (CombinedDescriptorExtractIdx(idx) != idx) {
+    NaClLog(LOG_FATAL, "bad thread idx tdb %x idx %d\n", tdb, idx);
+  }
+  return tdb | idx;
+}
+
+
+uint32_t NaClGetThreadCombinedDescriptor(struct NaClThreadContext *user) {
   return user->r9;
-#else
-  UNREFERENCED_PARAMETER(user);
-  return nacl_tls_idx;
-#endif
 }
 
 
-void NaClSetTlsThreadIdx(struct NaClThreadContext *user, uint32_t tls_idx) {
-#if defined(USE_R9_AS_TLS_REG)
-  user->r9 = tls_idx;
-#else
-  UNREFERENCED_PARAMETER(user);
-  nacl_tls_idx = tls_idx;
-#endif
+void NaClSetThreadCombinedDescriptor(struct NaClThreadContext *user,
+                                     uint32_t descriptor) {
+  user->r9 = descriptor;
 }
 
 
 uint32_t NaClGetThreadIdx(struct NaClAppThread *natp) {
-  uint32_t tls_idx = NaClGetTlsThreadIdx(&natp->user);
-  return TLS_IDX_GET_IDX(tls_idx);
+  uint32_t combined = NaClGetThreadCombinedDescriptor(&natp->user);
+  return CombinedDescriptorExtractIdx(combined);
+}
+
+#if 0
+/* NOTE: currently not used */
+static uint32_t NaClGetThreadTdb(struct NaClAppThread *natp) {
+  uint32_t combined = NaClGetThreadCombinedDescriptor(&natp->user);
+  return CombinedDescriptorExtractTdb(combined);
+}
+#endif
+
+static void NaClThreadStartupCheck() {
+  CHECK(sizeof(struct NaClThreadContext) == 0x34);
 }
 
 
 int NaClTlsInit() {
   int i;
+  NaClLog(2, "NaClTlsInit\n");
+  NaClThreadStartupCheck();
 
   for (i = 0; i < NACL_THREAD_MAX; i++)
     nacl_thread[i] = NULL;
@@ -99,100 +114,54 @@ int NaClTlsInit() {
 
 
 void NaClTlsFini() {
+  NaClLog(2, "NaClTlsFini\n");
 }
 
-
+/* NOTE: the actual management of this pool is done elsewhere */
 static int NaClThreadIdxAllocate() {
   int i;
 
   for (i = 0; i < NACL_THREAD_MAX; i++)
     if (nacl_thread[i] == NULL) return i;
 
-  NaClLog(LOG_ERROR, "NaClAllocateThreadIdx: "
-          "There is no more slots for a thread\n");
-
+  NaClLog(LOG_ERROR, "NaClAllocateThreadIdx: no more slots for a thread\n");
   return -1;
 }
 
 
-static void *NaClTlsAllocate_intern(struct NaClAppThread *natp,
-                                    void *base_addr,
-                                    uint32_t size) {
-  int rv;
-
-  base_addr = (void *)NaClRoundPage((size_t)base_addr);
-  size = NaClRoundPage(size);
-
-  NaClLog(2, "NaClTlsAllocate: "
-          "new TLS is at 0x%08"PRIx32", size 0x%"PRIx32"\n",
-          (uint32_t)base_addr, size);
-
-  rv = NaCl_page_alloc_at_addr(base_addr, size);
-  if (rv) {
-    NaClLog(LOG_ERROR, "NaClTlsAllocate: "
-            "NaCl_page_alloc_at_addr 0x%08"PRIxPTR" failed\n",
-            (uint32_t)base_addr);
-    return NULL;
-  }
-
-  rv = NaCl_mprotect(base_addr, size, PROT_READ | PROT_WRITE);
-  if (rv) {
-    NaClLog(LOG_ERROR, "NaClTlsAllocate: "
-            "NaCl_mprotect(0x%08"PRIxPTR", 0x%08"PRIx32", 0x%x) failed,"
-            "error %d (data)\n",
-            (uint32_t)base_addr, size, PROT_READ | PROT_WRITE, rv);
-    return NULL;
-  }
-
-  natp->user_tls_size = size;
-  return base_addr;
-}
-
-
 uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
-                         void *base_addr,
+                         void *tdb,
                          uint32_t size) {
-  int idx;
+  uint32_t idx = NaClThreadIdxAllocate();
+  NaClLog(2,
+          "NaClTlsAllocate: tdb %x size %d idx %d\n",
+          (uint32_t) tdb, size, idx);
+  if (idx < 0) {
+    NaClLog(LOG_FATAL, "cannot allocate new thread idx tdb %x\n", tdb);
+    return ~0;
+  }
 
-  base_addr = NaClTlsAllocate_intern(natp, base_addr, size);
-  if (base_addr == NULL) return 0;
-  idx = NaClThreadIdxAllocate();
-  if (idx < 0) return 0;
-
-  /*
-   * tls region is page aligned, and we use 12 least significant bits to keep
-   * the thread index of nacl_thread/nacl_user/nacl_sys arrays
-   */
-  return (uint32_t)base_addr | (uint32_t)idx;
+  return MakeCombinedDescriptor((uint32_t) tdb, idx);
 }
 
 
 void NaClTlsFree(struct NaClAppThread *natp) {
-  void *addr;
-  uint32_t idx, tls_idx;
-
-  tls_idx = NaClGetTlsThreadIdx(&natp->user);
-  NaClSetTlsThreadIdx(&natp->user, 0);
-
-  addr = (void *)TLS_IDX_GET_ADDR(tls_idx);
-  idx = TLS_IDX_GET_IDX(tls_idx);
-
-  NaClLog(2, "NaClTlsFree: "
-          "free TLS at 0x%08"PRIx32", size 0x%"PRIx32"\n",
-          (uint32_t)addr, natp->user_tls_size);
-  NaCl_page_free(addr, natp->user_tls_size);
+  NaClLog(2,
+          "NaClTlsFree: old %x\n",
+          NaClGetThreadCombinedDescriptor(&natp->user));
+  NaClSetThreadCombinedDescriptor(&natp->user, 0);
 }
 
 
 uint32_t NaClTlsChange(struct NaClAppThread *natp,
-                       void *base_addr,
+                       void *tdb,
                        uint32_t size) {
-  uint32_t tls_idx = NaClGetTlsThreadIdx(&natp->user);
+  uint32_t idx = NaClGetThreadIdx(natp);
+  uint32_t combined = MakeCombinedDescriptor((uint32_t) tdb, idx);
+  NaClLog(2,
+          "NaClTlsChange: tdb %x size %d idx %d\n",
+          (uint32_t) tdb, size, idx);
 
-  NaClTlsFree(natp);
-  base_addr = NaClTlsAllocate_intern(natp, base_addr, size);
-  tls_idx = (uint32_t)base_addr & TLS_IDX_GET_IDX(tls_idx);
-  NaClSetTlsThreadIdx(&natp->user, tls_idx);
-
-  return tls_idx;
+  NaClSetThreadCombinedDescriptor(&natp->user, combined);
+  return combined;
 }

@@ -37,15 +37,6 @@
 #include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr_arm.h"
 
 /*
- * A sanity check -- should be invoked in some early function, e.g.,
- * main, or something that main invokes early.
- */
-void NaClThreadStartupCheck() {
-  CHECK(sizeof(struct NaClThreadContext) == 0x34);
-}
-
-
-/*
  * Install a syscall trampoline at target_addr.  NB: Thread-safe.
  */
 void  NaClPatchOneTrampoline(struct NaClApp *nap,
