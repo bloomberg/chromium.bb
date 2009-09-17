@@ -249,8 +249,8 @@ class SCMWrapper(object):
         if accumulated_length and accumulated_length + len(p) > 3072:
           RunSVN(command + accumulated_paths,
                  os.path.join(self._root_dir, self.relpath))
-          accumulated_paths = []
-          accumulated_length = 0
+          accumulated_paths = [p]
+          accumulated_length = len(p)
         else:
           accumulated_paths.append(p)
           accumulated_length += len(p)
