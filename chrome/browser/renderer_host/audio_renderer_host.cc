@@ -151,7 +151,7 @@ void AudioRendererHost::IPCAudioSource::Play() {
   stream_->Start(this);
 
   // Update the state and notify renderer.
-  state_ = kPaused;
+  state_ = kPlaying;
 
   ViewMsg_AudioStreamState state;
   state.state = ViewMsg_AudioStreamState::kPlaying;
