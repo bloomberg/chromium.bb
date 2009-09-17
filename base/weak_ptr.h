@@ -72,16 +72,34 @@ class WeakReference {
   }
 
   void Invalidate() {
-    if (flag_)
+    if (flag_) {
+      DCHECK(flag_->CalledOnValidThread());
       flag_->data = false;
+    }
   }
 
-  bool is_valid() const { return flag_ && flag_->data; }
+  bool is_valid() const {
+    if (flag_) {
+      DCHECK(flag_->CalledOnValidThread());
+      return flag_->data;
+    }
+    return false;
+  }
 
  private:
   // A reference counted boolean that is true when the weak reference is valid
   // and false otherwise.
   class Flag : public RefCountedData<bool>, public NonThreadSafe {
+   public:
+    void AddRef() {
+      DCHECK(CalledOnValidThread());
+      RefCountedData<bool>::AddRef();
+    }
+
+    void Release() {
+      DCHECK(CalledOnValidThread());
+      RefCountedData<bool>::Release();
+    }
   };
 
   scoped_refptr<Flag> flag_;
