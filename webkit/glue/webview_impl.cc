@@ -235,6 +235,7 @@ class AutocompletePopupMenuClient : public WebCore::PopupMenuClient {
     return selected_index_;
   }
   virtual void popupDidHide() {
+    hidePopup();
   }
   virtual void hidePopup() {
     webview_->HideAutoCompletePopup();
