@@ -20,12 +20,6 @@
 #include "base/scoped_ptr.h"
 #include "base/string_piece.h"
 
-#if defined(COMPILER_GCC)
-// Squash warnings about backtrace et. al. not
-// being NULL on Linux.
-#pragma GCC diagnostic ignored "-Waddress"
-#endif
-
 // static
 bool DebugUtil::SpawnDebuggerOnProcess(unsigned /* process_id */) {
   NOTIMPLEMENTED();
