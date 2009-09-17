@@ -71,6 +71,7 @@ extern const wchar_t kTLS1Enabled[];
 #if defined(OS_CHROMEOS)
 extern const wchar_t kTapToClickEnabled[];
 extern const wchar_t kVertEdgeScrollEnabled[];
+extern const wchar_t kTouchpadSpeedFactor[];
 #endif
 extern const wchar_t kIpcDisabledMessages[];
 extern const wchar_t kShowHomeButton[];

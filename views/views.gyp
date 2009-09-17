@@ -167,6 +167,11 @@
         'controls/separator.h',
         'controls/single_split_view.cc',
         'controls/single_split_view.h',
+        'controls/slider/slider.cc',
+        'controls/slider/slider.h',
+        'controls/slider/native_slider_gtk.cc',
+        'controls/slider/native_slider_gtk.h',
+        'controls/slider/native_slider_wrapper.h',
         'controls/tabbed_pane/tabbed_pane.cc',
         'controls/tabbed_pane/tabbed_pane.h',
         'controls/tabbed_pane/native_tabbed_pane_gtk.cc',
@@ -317,6 +322,11 @@
             '__STD_C',
             '_CRT_SECURE_NO_DEPRECATE',
             '_SCL_SECURE_NO_DEPRECATE',
+          ],
+          'sources!': [
+            'controls/slider/slider.cc',
+            'controls/slider/slider.h',
+            'controls/slider/native_slider_wrapper.h',
           ],
           'include_dirs': [
             # TODO(beng): move wtl to src/third_party

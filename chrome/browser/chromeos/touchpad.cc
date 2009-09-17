@@ -30,17 +30,20 @@ void RunnableMethodTraits<Touchpad>::ReleaseCallee(
 
 // static
 void Touchpad::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kTapToClickEnabled, true);
+  prefs->RegisterBooleanPref(prefs::kTapToClickEnabled, false);
   prefs->RegisterBooleanPref(prefs::kVertEdgeScrollEnabled, true);
+  prefs->RegisterRealPref(prefs::kTouchpadSpeedFactor, 0.5);
 }
 
 void Touchpad::Init(PrefService* prefs) {
   tap_to_click_enabled_.Init(prefs::kTapToClickEnabled, prefs, this);
   vert_edge_scroll_enabled_.Init(prefs::kVertEdgeScrollEnabled, prefs, this);
+  speed_factor_.Init(prefs::kTouchpadSpeedFactor, prefs, this);
 
   // Initialize touchpad settings to what's saved in user preferences.
   SetTapToClick();
   SetVertEdgeScroll();
+  SetSpeedFactor();
 }
 
 void Touchpad::Observe(NotificationType type,
@@ -55,6 +58,8 @@ void Touchpad::NotifyPrefChanged(const std::wstring* pref_name) {
     SetTapToClick();
   if (!pref_name || *pref_name == prefs::kVertEdgeScrollEnabled)
     SetVertEdgeScroll();
+  if (!pref_name || *pref_name == prefs::kTouchpadSpeedFactor)
+    SetSpeedFactor();
 }
 
 void Touchpad::SetSynclientParam(const std::string& param,
@@ -95,4 +100,17 @@ void Touchpad::SetVertEdgeScroll() {
     SetSynclientParam("VertEdgeScroll", "1");
   else
     SetSynclientParam("VertEdgeScroll", "0");
+}
+
+void Touchpad::SetSpeedFactor() {
+  // To set speed factor, we use MinSpeed. Both MaxSpeed and AccelFactor are 0.
+  // So MinSpeed will control the speed of the cursor with respect to the
+  // touchpad movement and there will not be any acceleration.
+  // We enforce that MinSpeed is between 0.01 and 1.00.
+  double value = speed_factor_.GetValue();
+  if (value < 0.01)
+    value = 0.01;
+  if (value > 1.0)
+    value = 1.0;
+  SetSynclientParam("MinSpeed", StringPrintf("%f", value));
 }

@@ -189,6 +189,9 @@ extern const wchar_t kTapToClickEnabled[] =
 // A boolean pref set to true if VertEdgeScroll is being done in browser.
 extern const wchar_t kVertEdgeScrollEnabled[] =
     L"settings.touchpad.enable_vert_edge_scroll";
+
+// A double pref for the touchpad speed factor.
+extern const wchar_t kTouchpadSpeedFactor[] = L"settings.touchpad.speed_factor";
 #endif
 
 // The disabled messages in IPC logging.

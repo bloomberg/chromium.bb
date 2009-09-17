@@ -18,9 +18,9 @@ class PrefService;
 // setting to reflect the new value.
 //
 // For Synaptics touchpads, we use synclient to change settings on-the-fly.
-// See "man synaptics" for a list of settings that can be changed
+// See "man synaptics" for a list of settings that can be changed.
 // Since we are doing a system call to run the synclient binary, we make sure
-// that we are running on the IO thread so that we don't block the UI thread.
+// that we are running on the File thread so that we don't block the UI thread.
 class Touchpad : public NotificationObserver {
  public:
   explicit Touchpad() {}
@@ -45,11 +45,18 @@ class Touchpad : public NotificationObserver {
   // The system call will be invoked on the file thread.
   void SetSynclientParam(const std::string& param, const std::string& value);
 
+  // Set tap-to-click to value stored in preference.
   void SetTapToClick();
+
+  // Set vertical edge scrolling to value stored in preference.
   void SetVertEdgeScroll();
+
+  // Set touchpad speed factor to value stored in preference.
+  void SetSpeedFactor();
 
   BooleanPrefMember tap_to_click_enabled_;
   BooleanPrefMember vert_edge_scroll_enabled_;
+  RealPrefMember speed_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(Touchpad);
 };

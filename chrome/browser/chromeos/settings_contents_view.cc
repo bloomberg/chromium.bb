@@ -20,6 +20,7 @@
 #include "views/background.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/combobox/combobox.h"
+#include "views/controls/slider/slider.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"
@@ -354,13 +355,17 @@ void NetworkSection::InitContents() {
 // TouchpadSection
 
 class TouchpadSection : public OptionsPageView,
-                        public views::ButtonListener {
+                        public views::ButtonListener,
+                        public views::SliderListener {
  public:
   explicit TouchpadSection(Profile* profile);
   virtual ~TouchpadSection() {}
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
+  // Overridden from views::SliderListener:
+  virtual void SliderValueChanged(views::Slider* sender);
 
  protected:
   // OptionsPageView overrides:
@@ -375,10 +380,12 @@ class TouchpadSection : public OptionsPageView,
   // Controls for this section:
   views::Checkbox* enable_tap_to_click_checkbox_;
   views::Checkbox* enable_vert_edge_scroll_checkbox_;
+  views::Slider* speed_factor_slider_;
 
   // Preferences for this section:
   BooleanPrefMember tap_to_click_enabled_;
   BooleanPrefMember vert_edge_scroll_enabled_;
+  RealPrefMember speed_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchpadSection);
 };
@@ -387,7 +394,8 @@ TouchpadSection::TouchpadSection(Profile* profile)
     : OptionsPageView(profile),
       contents_(NULL),
       enable_tap_to_click_checkbox_(NULL),
-      enable_vert_edge_scroll_checkbox_(NULL) {
+      enable_vert_edge_scroll_checkbox_(NULL),
+      speed_factor_slider_(NULL) {
 }
 
 void TouchpadSection::ButtonPressed(
@@ -406,6 +414,15 @@ void TouchpadSection::ButtonPressed(
                                 L"Options_VertEdgeScrollCheckbox_Disable",
                             profile()->GetPrefs());
     vert_edge_scroll_enabled_.SetValue(enabled);
+  }
+}
+
+void TouchpadSection::SliderValueChanged(views::Slider* sender) {
+  if (sender == speed_factor_slider_) {
+    double value = speed_factor_slider_->value();
+    UserMetricsRecordAction(L"Options_SpeedFactorSlider_Changed",
+                            profile()->GetPrefs());
+    speed_factor_.SetValue(value);
   }
 }
 
@@ -450,12 +467,32 @@ void TouchpadSection::InitContents() {
       IDS_OPTIONS_SETTINGS_VERT_EDGE_SCROLL_ENABLED_DESCRIPTION));
   enable_vert_edge_scroll_checkbox_->set_listener(this);
   enable_vert_edge_scroll_checkbox_->SetMultiLine(true);
+  // Create speed factor slider with values between 0.1 and 1.0 step 0.1
+  speed_factor_slider_ = new views::Slider(0.1, 1.0, 0.1,
+      static_cast<views::Slider::StyleFlags>(
+          views::Slider::STYLE_DRAW_VALUE |
+          views::Slider::STYLE_ONE_DIGIT |
+          views::Slider::STYLE_UPDATE_ON_RELEASE),
+      this);
 
   int single_column_view_set_id = 0;
   ColumnSet* column_set = layout->AddColumnSet(single_column_view_set_id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
 
+  int double_column_view_set_id = 1;
+  column_set = layout->AddColumnSet(double_column_view_set_id);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
+                        GridLayout::USE_PREF, 0, 0);
+
+  layout->StartRow(0, double_column_view_set_id);
+  layout->AddView(new views::Label(
+      l10n_util::GetString(IDS_OPTIONS_SETTINGS_SPEED_FACTOR_DESCRIPTION)));
+  layout->AddView(speed_factor_slider_);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(enable_tap_to_click_checkbox_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
@@ -468,6 +505,8 @@ void TouchpadSection::InitContents() {
                              profile()->GetPrefs(), this);
   vert_edge_scroll_enabled_.Init(prefs::kVertEdgeScrollEnabled,
                                  profile()->GetPrefs(), this);
+  speed_factor_.Init(prefs::kTouchpadSpeedFactor,
+                     profile()->GetPrefs(), this);
 }
 
 void TouchpadSection::NotifyPrefChanged(const std::wstring* pref_name) {
@@ -478,6 +517,10 @@ void TouchpadSection::NotifyPrefChanged(const std::wstring* pref_name) {
   if (!pref_name || *pref_name == prefs::kVertEdgeScrollEnabled) {
     bool enabled =  vert_edge_scroll_enabled_.GetValue();
     enable_vert_edge_scroll_checkbox_->SetChecked(enabled);
+  }
+  if (!pref_name || *pref_name == prefs::kTouchpadSpeedFactor) {
+    double value =  speed_factor_.GetValue();
+    speed_factor_slider_->SetValue(value);
   }
 }
 
