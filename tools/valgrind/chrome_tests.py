@@ -241,7 +241,7 @@ class ChromeTests:
     return self.SimpleTest("chrome", "printing_unittests")
 
   def TestIpc(self):
-    return self.SimpleTest("chrome", "ipc_tests",
+    return self.SimpleTest("ipc", "ipc_tests",
                            valgrind_test_args=["--trace_children"])
 
   def TestNet(self):
