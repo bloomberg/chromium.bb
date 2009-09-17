@@ -248,6 +248,9 @@ FilePath HistoryBackend::GetArchivedFileName() const {
 }
 
 SegmentID HistoryBackend::GetLastSegmentID(VisitID from_visit) {
+  // Set is used to detect referrer loops.  Should not happen, but can
+  // if the database is corrupt.
+  std::set<VisitID> visit_set;
   VisitID visit_id = from_visit;
   while (visit_id) {
     VisitRow row;
@@ -258,6 +261,12 @@ SegmentID HistoryBackend::GetLastSegmentID(VisitID from_visit) {
 
     // Check the referrer of this visit, if any.
     visit_id = row.referring_visit;
+
+    if (visit_set.find(visit_id) != visit_set.end()) {
+      NOTREACHED() << "Loop in referer chain, giving up";
+      break;
+    }
+    visit_set.insert(visit_id);
   }
   return 0;
 }

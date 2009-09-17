@@ -159,10 +159,21 @@ bool VisitDatabase::GetRowForVisit(VisitID visit_id, VisitRow* out_visit) {
     return false;
 
   FillVisitRow(*statement, out_visit);
+
+  // We got a different visit than we asked for, something is wrong.
+  DCHECK_EQ(visit_id, out_visit->visit_id);
+  if (visit_id != out_visit->visit_id)
+    return false;
+
   return true;
 }
 
 bool VisitDatabase::UpdateVisitRow(const VisitRow& visit) {
+  // Don't store inconsistent data to the database.
+  DCHECK_NE(visit.visit_id, visit.referring_visit);
+  if (visit.visit_id == visit.referring_visit)
+    return false;
+
   SQLITE_UNIQUE_STATEMENT(statement, GetStatementCache(),
       "UPDATE visits SET "
       "url=?,visit_time=?,from_visit=?,transition=?,segment_id=?,is_indexed=? "
