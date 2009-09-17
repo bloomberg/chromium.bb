@@ -553,6 +553,25 @@ STDMETHODIMP CHostControl::Load(IPropertyBag* property_bag,
   return IPersistPropertyBagImpl<CHostControl>::Load(property_bag, error_log);
 }
 
+STDMETHODIMP CHostControl::SetObjectRects(LPCRECT lprcPosRect,
+                                          LPCRECT lprcClipRect) {
+  if (plugin_proxy_.get()) {
+    NPWindow window = {0};
+    window.window = m_hWnd;
+    window.type = NPWindowTypeWindow;
+    window.x = lprcPosRect->left;
+    window.y = lprcPosRect->top;
+    window.width = lprcPosRect->right - lprcPosRect->left;
+    window.height = lprcPosRect->bottom - lprcPosRect->top;
+    if (!plugin_proxy_->SetWindow(window)) {
+      return E_FAIL;
+    }
+  }
+
+  return IOleInPlaceObjectWindowlessImpl::SetObjectRects(lprcPosRect,
+                                                         lprcClipRect);
+}
+
 HRESULT CHostControl::GetStringProperty(NPPVariable np_property_variable,
                                         BSTR* string) {
   HRESULT hr;

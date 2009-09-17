@@ -651,8 +651,6 @@ RendererGL::RendererGL(ServiceLocator* service_locator)
                   new BlendEquationHandler(&blend_equation_[ALPHA]));
 }
 
-RendererGL *RendererGL::current_renderer_ = NULL;
-
 RendererGL::~RendererGL() {
   Destroy();
 }
@@ -1101,7 +1099,6 @@ void RendererGL::Destroy() {
   DestroyCommonGL();
   if (display_) {
     ::glXMakeCurrent(display_, 0, 0);
-    current_renderer_ = NULL;
     if (context_) {
       ::glXDestroyContext(display_, context_);
       context_ = 0;
@@ -1117,17 +1114,14 @@ bool RendererGL::MakeCurrent() {
 #ifdef OS_WIN
   if (!device_context_ || !gl_context_) return false;
   bool result = ::wglMakeCurrent(device_context_, gl_context_) != 0;
-  if (result) current_renderer_ = this;
   return result;
 #endif
 #ifdef OS_MACOSX
   if (mac_cgl_context_ != NULL) {
     ::CGLSetCurrentContext(mac_cgl_context_);
-    current_renderer_ = this;
     return true;
   } else if (mac_agl_context_ != NULL) {
     ::aglSetCurrentContext(mac_agl_context_);
-    current_renderer_ = this;
     return true;
   } else {
     return false;
@@ -1136,7 +1130,6 @@ bool RendererGL::MakeCurrent() {
 #ifdef OS_LINUX
   if (context_ != NULL) {
     bool result = ::glXMakeCurrent(display_, window_, context_) == True;
-    if (result) current_renderer_ = this;
     return result;
   } else {
     return false;
@@ -1219,12 +1212,15 @@ void RendererGL::Resize(int width, int height) {
   CHECK_GL_ERROR();
 }
 
-bool RendererGL::SetFullscreen(bool fullscreen,
-                               const DisplayWindow& display,
-                               int mode_id) {
-  if (fullscreen != fullscreen_) {
-    fullscreen_ = fullscreen;
-  }
+bool RendererGL::GoFullscreen(const DisplayWindow& display,
+                              int mode_id) {
+  fullscreen_ = true;
+  return true;
+}
+
+bool RendererGL::CancelFullscreen(const DisplayWindow& display,
+                                  int width, int height) {
+  fullscreen_ = false;
   return true;
 }
 

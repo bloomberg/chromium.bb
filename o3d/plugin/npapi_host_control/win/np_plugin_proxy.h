@@ -69,6 +69,11 @@ class NPPluginProxy {
             const std::vector<CStringA>& argument_names,
             const std::vector<CStringA>& argument_values);
 
+  // Sets the target window of the npapi plugin. This may be called
+  // repeatedly during its lifetime, in particular to set the plugin's
+  // size.
+  bool SetWindow(const NPWindow& window);
+
   // Frees all resources allocated in Init, and blocks on all pending stream
   // operations.
   void TearDown();

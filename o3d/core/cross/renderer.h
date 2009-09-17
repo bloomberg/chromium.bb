@@ -213,16 +213,27 @@ class Renderer {
   // Handles the plugin resize event.
   virtual void Resize(int width, int height) = 0;
 
-  // Turns fullscreen display on or off.
+  // Turns fullscreen display on.
   // Parameters:
-  //  fullscreen: true for fullscreen, false for in-plugin display
   //  display: a platform-specific display identifier
-  //  mode_id: a mode returned by GetDisplayModes, for fullscreen use.  Ignored
-  //      in non-fullscreen mode.
+  //  mode_id: a mode returned by GetDisplayModes
   // Returns true on success, false on failure.
-  // TODO: Make this pure virtual once it's implemented everywhere.
-  virtual bool SetFullscreen(bool fullscreen, const DisplayWindow& display,
-      int mode_id) {
+  // TODO(o3d): Make this pure virtual once it's implemented everywhere.
+  virtual bool GoFullscreen(const DisplayWindow& display,
+                            int mode_id) {
+    return false;
+  }
+
+  // Cancels fullscreen display. Restores rendering to windowed mode
+  // with the given width and height.
+  // Parameters:
+  //  display: a platform-specific display identifier
+  //  width: the width to which to restore windowed rendering
+  //  height: the height to which to restore windowed rendering
+  // Returns true on success, false on failure.
+  // TODO(o3d): Make this pure virtual once it's implemented everywhere.
+  virtual bool CancelFullscreen(const DisplayWindow& display,
+                                int width, int height) {
     return false;
   }
 
@@ -532,6 +543,11 @@ class Renderer {
     write_mask_ = mask & 0xF;
   }
 
+  // Indicates whether this Renderer has yet presented to the screen.
+  bool presented_once() {
+    return presented_once_;
+  }
+
  protected:
   typedef vector_map<String, StateHandler*> StateHandlerMap;
   typedef std::vector<ParamVector> ParamVectorArray;
@@ -747,6 +763,9 @@ class Renderer {
 
   // Whether the backbuffer has been cleared this frame.
   bool back_buffer_cleared_;
+
+  // Whether we have ever completed a call to Present().
+  bool presented_once_;
 
   DISALLOW_COPY_AND_ASSIGN(Renderer);
 };

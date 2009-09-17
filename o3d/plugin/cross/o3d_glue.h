@@ -158,35 +158,23 @@ class PluginObject: public NPObject {
 
  public:
 #ifdef OS_WIN
-  void SetDefaultPluginWindowProc(WNDPROC proc) {
-    default_plugin_window_proc_ = proc;
-  }
-  WNDPROC GetDefaultPluginWindowProc() {
-    return default_plugin_window_proc_;
-  }
   void SetHWnd(HWND hWnd) {
     hWnd_ = hWnd;
   }
   HWND GetHWnd() {
     return hWnd_;
   }
-  void SetFullscreenHWnd(HWND hWnd) {
-    fullscreen_hWnd_ = hWnd;
-  }
-  HWND GetFullscreenHWnd() {
-    return fullscreen_hWnd_;
-  }
-  void SetParentHWnd(HWND hWnd) {
-    parent_hWnd_ = hWnd;
-  }
-  HWND GetParentHWnd() {
-    return parent_hWnd_;
-  }
   void SetPluginHWnd(HWND hWnd) {
     plugin_hWnd_ = hWnd;
   }
   HWND GetPluginHWnd() {
     return plugin_hWnd_;
+  }
+  void SetContentHWnd(HWND hWnd) {
+    content_hWnd_ = hWnd;
+  }
+  HWND GetContentHWnd() {
+    return content_hWnd_;
   }
   bool RecordPaint() {
     bool painted = painted_once_;
@@ -431,13 +419,11 @@ class PluginObject: public NPObject {
   int fullscreen_region_height_;
   int fullscreen_region_mode_id_;
 #ifdef OS_WIN
-  HWND hWnd_;  // The window we are currenlty drawing to (use this)
-  HWND fullscreen_hWnd_;  // The fullscreen window if we are fullscreen
-  HWND parent_hWnd_;
-  HWND plugin_hWnd_;  // The window we were given inside the browser.
+  HWND hWnd_;          // The window we are currently drawing to (use this).
+  HWND plugin_hWnd_;   // The window we were given inside the browser.
+  HWND content_hWnd_;  // The window containing the D3D or OpenGL content.
   HCURSOR cursors_[o3d::Cursor::NUM_CURSORS];  // loaded windows cursors.
   HCURSOR hCursor_;
-  WNDPROC default_plugin_window_proc_;
   bool painted_once_;
 #endif  // OS_WIN
 };

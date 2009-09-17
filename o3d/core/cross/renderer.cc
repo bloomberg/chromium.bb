@@ -127,7 +127,8 @@ Renderer::Renderer(ServiceLocator* service_locator)
       dest_x_offset_(0),
       dest_y_offset_(0),
       supports_npot_(false),
-      back_buffer_cleared_(false) {
+      back_buffer_cleared_(false),
+      presented_once_(false) {
 }
 
 Renderer::~Renderer() {
@@ -321,6 +322,7 @@ void Renderer::Present() {
   DCHECK(!rendering_);
   DCHECK(!drawing_);
   PlatformSpecificPresent();
+  presented_once_ = true;
 }
 
 void Renderer::Clear(const Float4 &color,

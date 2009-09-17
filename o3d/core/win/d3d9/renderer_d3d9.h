@@ -77,15 +77,13 @@ class RendererD3D9 : public Renderer {
   // Attempts to reset the back buffer to its new dimensions.
   virtual void Resize(int width, int height);
 
-  // Turns fullscreen display on or off.
-  // Parameters:
-  //  fullscreen: true for fullscreen, false for in-plugin display
-  //  display: a platform-specific display identifier
-  //  mode_id: a mode returned by GetDisplayModes, for fullscreen use.  Ignored
-  //      in non-fullscreen mode.
-  // Returns true on success, false on failure.
-  virtual bool SetFullscreen(bool fullscreen, const DisplayWindow& display,
-                             int mode_id);
+  // Overridden from Renderer.
+  virtual bool GoFullscreen(const DisplayWindow& display,
+                            int mode_id);
+
+  // Overridden from Renderer.
+  virtual bool CancelFullscreen(const DisplayWindow& display,
+                                int width, int height);
 
   // Tells whether we're currently displayed fullscreen or not.
   virtual bool fullscreen() const {

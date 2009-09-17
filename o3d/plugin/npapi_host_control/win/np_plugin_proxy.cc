@@ -286,6 +286,19 @@ bool NPPluginProxy::Init(NPBrowserProxy* browser_proxy,
   return true;
 }
 
+bool NPPluginProxy::SetWindow(const NPWindow& window) {
+  if (plugin_funcs_.setwindow != NULL &&
+      NPERR_NO_ERROR != plugin_funcs_.setwindow(
+          GetNPP(),
+          const_cast<NPWindow*>(&window))) {
+    plugin_funcs_.destroy(GetNPP(), NULL);
+    NP_Shutdown_();
+    ATLASSERT(false  && "Unknown failure re-setting plugin window.");
+    return false;
+  }
+  return true;
+}
+
 void NPPluginProxy::TearDown() {
   // Block until all stream operations requested by this plug-in have
   // completed.

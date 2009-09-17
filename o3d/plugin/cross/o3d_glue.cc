@@ -110,10 +110,8 @@ PluginObject::PluginObject(NPP npp)
       pending_ticks_(0),
 #ifdef OS_WIN
       hWnd_(NULL),
-      fullscreen_hWnd_(NULL),
-      parent_hWnd_(NULL),
       plugin_hWnd_(NULL),
-      default_plugin_window_proc_(NULL),
+      content_hWnd_(NULL),
       got_dblclick_(false),
       painted_once_(false),
 #endif
@@ -743,11 +741,11 @@ void PluginObject::StorePluginProperty(HWND hWnd, PluginObject *obj) {
   if (obj->GetHWnd()) {  // Clear out the record from the old window first.
     ClearPluginProperty(obj->GetHWnd());
   }
+  obj->SetHWnd(hWnd);
   StorePluginPropertyUnsafe(hWnd, obj);
 }
 
 void PluginObject::StorePluginPropertyUnsafe(HWND hWnd, PluginObject *obj) {
-  obj->SetHWnd(hWnd);
   if (hWnd) {
     SetProp(hWnd, kWindowPropertyName, static_cast<HANDLE>(obj));
     ::DragAcceptFiles(hWnd, true);

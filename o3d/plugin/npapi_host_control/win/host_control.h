@@ -170,6 +170,9 @@ END_PROP_MAP()
   // Method overridden from IPersistPropertyBagImpl.
   STDMETHOD(Load(IPropertyBag *pPropBag, IErrorLog *pErrorLog));
 
+  STDMETHOD(SetObjectRects(LPCRECT lprcPosRect,
+                           LPCRECT lprcClipRect));
+
   // Returns the properties associated with the NPPVpluginNameString, and
   // NPPVpluginDescriptionString identifiers of the loaded plug-in.  These
   // properties can be used for plug-in introspection and version-dependent
