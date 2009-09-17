@@ -2269,9 +2269,6 @@ BUG21033 WIN LINUX : LayoutTests/fast/events/init-events.html = FAIL
 // WebKit 48034:48061
 // undefined pageshowEvent.persisted cause the test hangs.
 BUG21136 : LayoutTests/fast/events/pageshow-pagehide-on-back-cached-with-frames.html = TIMEOUT
-// Accessing attributes of an object created with
-// "document.implementation.createDocumentType" causes NULL pointers
-BUG14091 : LayoutTests/fast/dom/DOMImplementation/detached-doctype.html = CRASH
 // The linux layout result in build bot shows the changed method does not
 // executed.
 BUG21141 LINUX : LayoutTests/fast/forms/select-double-onchange.html = FAIL
@@ -2320,9 +2317,6 @@ BUG21859 WIN-XP : LayoutTests/fast/text/line-breaks.html = FAIL
 BUG21859 WIN : LayoutTests/fast/overflow/overflow-float-stacking.html = FAIL
 BUG21859 WIN : LayoutTests/tables/mozilla/bugs/bug96343.html = FAIL
 
-// WK roll 48388:48399 (brettw)
-BUG21919 WIN : LayoutTests/http/tests/security/mixedContent/insecure-css-in-main-frame.html = FAIL
-
 // Flaky. The width of containing RenderBlocks sometimes becomes larger
 BUG21958 WIN MAC LINUX DEBUG : LayoutTests/svg/hixie/error/012.xml = FAIL PASS
 
@@ -2332,10 +2326,6 @@ BUG22014 LINUX : LayoutTests/transitions/hang-with-bad-transition-list.html = PA
 
 // WK roll 48423:48468 (dglazkov for ukai)
 BUG_DGLAZKOV : LayoutTests/fast/css/font-smoothing.html = FAIL
-BUG_DGLAZKOV LINUX WIN : LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL
-BUG_DGLAZKOV LINUX WIN : LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
-BUG_DGLAZKOV LINUX WIN : LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
-BUG_DGLAZKOV : LayoutTests/fast/dom/doctype-event-listener-crash.html = CRASH
 
 // 48468:48483 (avi for dglazkov for ukai)
 BUG22170 : LayoutTests/http/tests/security/isolatedWorld/window-setTimeout-function.html = FAIL
