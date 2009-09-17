@@ -136,9 +136,6 @@ void URLRequestNewFtpJob::SetAuth(const std::wstring& username,
   server_auth_->username = username;
   server_auth_->password = password;
 
-  request_->context()->ftp_auth_cache()->Add(request_->url().GetOrigin(),
-                                             username, password);
-
   RestartTransactionWithAuth();
 }
 
@@ -365,26 +362,9 @@ void URLRequestNewFtpJob::OnStartCompleted(int result) {
   if (result == net::OK) {
     NotifyHeadersComplete();
   } else if (transaction_->GetResponseInfo()->needs_auth) {
-    GURL origin = request_->url().GetOrigin();
-    if (server_auth_ && server_auth_->state == net::AUTH_STATE_HAVE_AUTH) {
-      request_->context()->ftp_auth_cache()->Remove(origin,
-                                                    server_auth_->username,
-                                                    server_auth_->password);
-    } else if (!server_auth_) {
-      server_auth_ = new net::AuthData();
-    }
+    server_auth_ = new net::AuthData();
     server_auth_->state = net::AUTH_STATE_NEED_AUTH;
-
-    net::FtpAuthCache::Entry* cached_auth =
-        request_->context()->ftp_auth_cache()->Lookup(origin);
-
-    if (cached_auth) {
-      // Retry using cached auth data.
-      SetAuth(cached_auth->username, cached_auth->password);
-    } else {
-      // Prompt for a username/password.
-      NotifyHeadersComplete();
-    }
+    NotifyHeadersComplete();
   } else {
     NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, result));
   }
