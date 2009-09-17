@@ -126,6 +126,9 @@
           'ScrollbarPrefsObserver=ChromiumWebCoreObjCScrollbarPrefsObserver',
           'WebCoreRenderThemeNotificationObserver=ChromiumWebCoreObjCWebCoreRenderThemeNotificationObserver',
           'WebFontCache=ChromiumWebCoreObjCWebFontCache',
+          
+          # Use USE_NEW_THEME on Mac.
+          'WTF_USE_NEW_THEME=1',
         ],
         'webcore_include_dirs+': [
           # platform/graphics/cg and mac needs to come before
@@ -654,7 +657,8 @@
         # Use platform/MIMETypeRegistryChromium.cpp instead.
         '../third_party/WebKit/WebCore/platform/MIMETypeRegistry.cpp',
 
-        # USE_NEW_THEME only.
+        # Theme.cpp is used only if we're using USE_NEW_THEME. We are not for
+        # Windows and Linux. We manually include Theme.cpp for the Mac below.
         '../third_party/WebKit/WebCore/platform/Theme.cpp',
 
         # Exclude some, but not all, of plugins.
@@ -821,8 +825,12 @@
             # the specific exclusions in the "sources!" list below.
             ['include', '/third_party/WebKit/WebCore/loader/archive/cf/LegacyWebArchive\\.cpp$'],
             ['include', '/third_party/WebKit/WebCore/platform/graphics/mac/ColorMac\\.mm$'],
+            ['include', '/third_party/WebKit/WebCore/platform/graphics/mac/FloatPointMac\\.mm$'],
+            ['include', '/third_party/WebKit/WebCore/platform/graphics/mac/FloatRectMac\\.mm$'],
+            ['include', '/third_party/WebKit/WebCore/platform/graphics/mac/FloatSizeMac\\.mm$'],
             ['include', '/third_party/WebKit/WebCore/platform/graphics/mac/GlyphPageTreeNodeMac\\.cpp$'],
             ['include', '/third_party/WebKit/WebCore/platform/graphics/mac/GraphicsContextMac\\.mm$'],
+            ['include', '/third_party/WebKit/WebCore/platform/graphics/mac/IntRectMac\\.mm$'],
             ['include', '/third_party/WebKit/WebCore/platform/mac/BlockExceptions\\.mm$'],
             ['include', '/third_party/WebKit/WebCore/platform/mac/LocalCurrentGraphicsContext\\.mm$'],
             ['include', '/third_party/WebKit/WebCore/platform/mac/PurgeableBufferMac\\.cpp$'],
@@ -831,6 +839,8 @@
             ['include', '/third_party/WebKit/WebCore/platform/mac/WebCoreTextRenderer\\.mm$'],
             ['include', '/third_party/WebKit/WebCore/platform/text/mac/ShapeArabic\\.c$'],
             ['include', '/third_party/WebKit/WebCore/platform/text/mac/String(Impl)?Mac\\.mm$'],
+            # Use USE_NEW_THEME on Mac.
+            ['include', '/third_party/WebKit/WebCore/platform/Theme\\.cpp$'],
 
             ['include', '/third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface\\.m$'],
           ],
