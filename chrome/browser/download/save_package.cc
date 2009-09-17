@@ -8,7 +8,6 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/path_service.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/task.h"
@@ -1023,18 +1022,11 @@ FilePath SavePackage::GetSaveDirPreference(PrefService* prefs) {
 
   if (!prefs->IsPrefRegistered(prefs::kSaveFileDefaultDirectory)) {
     FilePath default_save_path;
-    if (!prefs->IsPrefRegistered(prefs::kDownloadDefaultDirectory)) {
-      if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
-                            &default_save_path)) {
-        NOTREACHED();
-      }
-    } else {
-      StringPrefMember default_download_path;
-      default_download_path.Init(prefs::kDownloadDefaultDirectory,
-                                 prefs, NULL);
-      default_save_path =
-          FilePath::FromWStringHack(default_download_path.GetValue());
-    }
+    StringPrefMember default_download_path;
+    DCHECK(prefs->IsPrefRegistered(prefs::kDownloadDefaultDirectory));
+    default_download_path.Init(prefs::kDownloadDefaultDirectory, prefs, NULL);
+    default_save_path =
+        FilePath::FromWStringHack(default_download_path.GetValue());
     prefs->RegisterFilePathPref(prefs::kSaveFileDefaultDirectory,
                                 default_save_path);
   }
