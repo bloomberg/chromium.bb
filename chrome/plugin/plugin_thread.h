@@ -27,6 +27,8 @@ class PluginThread : public ChildThread {
   // Returns the one plugin thread.
   static PluginThread* current();
 
+  FilePath plugin_path() { return plugin_path_; }
+
  private:
   virtual void OnControlMessageReceived(const IPC::Message& msg);
 

@@ -68,7 +68,7 @@ class NPObjectStub : public IPC::Channel::Listener,
                      bool* result);
   void OnSetProperty(const NPIdentifier_Param& name,
                      const NPVariant_Param& property,
-                     bool* result);
+                     IPC::Message* reply_msg);
   void OnRemoveProperty(const NPIdentifier_Param& name,
                         bool* result);
   void OnInvalidate();

@@ -250,17 +250,16 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
   memset(&window_, 0, sizeof(window_));
 
   const WebPluginInfo& plugin_info = instance_->plugin_lib()->plugin_info();
-  std::string filename =
-      WideToUTF8(StringToLowerASCII(plugin_info.path.BaseName().value()));
+  std::wstring filename = StringToLowerASCII(plugin_info.path.BaseName().value());
 
   if (instance_->mime_type() == "application/x-shockwave-flash" ||
-      filename == "npswf32.dll") {
+      filename == kFlashPlugin) {
     // Flash only requests windowless plugins if we return a Mozilla user
     // agent.
     instance_->set_use_mozilla_user_agent();
     quirks_ |= PLUGIN_QUIRK_THROTTLE_WM_USER_PLUS_ONE;
     quirks_ |= PLUGIN_QUIRK_PATCH_SETCURSOR;
-  } else if (filename == "nppdf32.dll") {
+  } else if (filename == kAcrobatReaderPlugin) {
     // Check for the version number above or equal 9.
     std::vector<std::wstring> version;
     SplitString(plugin_info.version, L'.', &version);
@@ -279,10 +278,12 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
     // Windowless mode doesn't work in the WMP NPAPI plugin.
     quirks_ |= PLUGIN_QUIRK_NO_WINDOWLESS;
 
-    // Non-admin users on XP couldn't modify the key to force the new UI.
-    quirks_ |= PLUGIN_QUIRK_PATCH_REGENUMKEYEXW;
+    if (filename == kOldWMPPlugin) {
+      // Non-admin users on XP couldn't modify the key to force the new UI.
+      quirks_ |= PLUGIN_QUIRK_PATCH_REGENUMKEYEXW;
+    }
   } else if (instance_->mime_type() == "audio/x-pn-realaudio-plugin" ||
-             filename == "nppl3260.dll") {
+             filename == kRealPlayerPlugin) {
     quirks_ |= PLUGIN_QUIRK_DONT_CALL_WND_PROC_RECURSIVELY;
   } else if (plugin_info.name.find(L"VLC Multimedia Plugin") !=
              std::wstring::npos ||
@@ -293,7 +294,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
     quirks_ |= PLUGIN_QUIRK_DONT_SET_NULL_WINDOW_HANDLE_ON_DESTROY;
     // VLC 0.8.6d and 0.8.6e crash if multiple instances are created.
     quirks_ |= PLUGIN_QUIRK_DONT_ALLOW_MULTIPLE_INSTANCES;
-  } else if (filename == "npctrl.dll") {  // Silverlight
+  } else if (filename == kSilverlightPlugin) {
     // Explanation for this quirk can be found in
     // WebPluginDelegateImpl::Initialize.
     quirks_ |= PLUGIN_QUIRK_PATCH_SETCURSOR;

@@ -27,11 +27,6 @@ const TCHAR kRegistryQuickTime[] = _T("QuickTimePlayer.exe");
 const TCHAR kRegistryPath[] = _T("Path");
 const TCHAR kRegistryFirefoxInstalled[] =
     _T("SOFTWARE\\Mozilla\\Mozilla Firefox");
-const TCHAR kMozillaActiveXPlugin[] = _T("npmozax.dll");
-const TCHAR kNewWMPPlugin[] = _T("np-mswmp.dll");
-const TCHAR kOldWMPPlugin[] = _T("npdsplay.dll");
-const TCHAR kYahooApplicationStatePlugin[] = _T("npystate.dll");
-const TCHAR kWanWangProtocolHandlerPlugin[] = _T("npww.dll");
 const TCHAR kRegistryJava[] =
     _T("Software\\JavaSoft\\Java Runtime Environment");
 const TCHAR kRegistryBrowserJavaVersion[] = _T("BrowserJavaVersion");

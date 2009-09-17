@@ -24,4 +24,14 @@
 // The name of the registry key which NPAPI plugins update on installation.
 #define kRegistryMozillaPlugins L"SOFTWARE\\MozillaPlugins"
 
+#define kMozillaActiveXPlugin L"npmozax.dll"
+#define kNewWMPPlugin L"np-mswmp.dll"
+#define kOldWMPPlugin L"npdsplay.dll"
+#define kYahooApplicationStatePlugin L"npystate.dll"
+#define kWanWangProtocolHandlerPlugin L"npww.dll"
+#define kFlashPlugin L"npswf32.dll"
+#define kAcrobatReaderPlugin L"nppdf32.dll"
+#define kRealPlayerPlugin L"nppl3260.dll"
+#define kSilverlightPlugin L"npctrl.dll"
+
 #endif  // WEBKIT_GLUE_PLUGIN_PLUGIN_LIST_H_

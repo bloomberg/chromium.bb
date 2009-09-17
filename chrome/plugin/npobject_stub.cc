@@ -8,10 +8,12 @@
 #include "chrome/common/plugin_messages.h"
 #include "chrome/plugin/npobject_util.h"
 #include "chrome/plugin/plugin_channel_base.h"
+#include "chrome/plugin/plugin_thread.h"
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "webkit/api/public/WebBindings.h"
+#include "webkit/glue/plugins/plugin_constants_win.h"
 
 using WebKit::WebBindings;
 
@@ -68,7 +70,7 @@ void NPObjectStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER_DELAY_REPLY(NPObjectMsg_Invoke, OnInvoke);
     IPC_MESSAGE_HANDLER(NPObjectMsg_HasProperty, OnHasProperty);
     IPC_MESSAGE_HANDLER(NPObjectMsg_GetProperty, OnGetProperty);
-    IPC_MESSAGE_HANDLER(NPObjectMsg_SetProperty, OnSetProperty);
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(NPObjectMsg_SetProperty, OnSetProperty);
     IPC_MESSAGE_HANDLER(NPObjectMsg_RemoveProperty, OnRemoveProperty);
     IPC_MESSAGE_HANDLER(NPObjectMsg_Invalidate, OnInvalidate);
     IPC_MESSAGE_HANDLER(NPObjectMsg_Enumeration, OnEnumeration);
@@ -205,7 +207,8 @@ void NPObjectStub::OnGetProperty(const NPIdentifier_Param& name,
 
 void NPObjectStub::OnSetProperty(const NPIdentifier_Param& name,
                                  const NPVariant_Param& property,
-                                 bool* result) {
+                                 IPC::Message* reply_msg) {
+  bool result;
   NPVariant result_var;
   VOID_TO_NPVARIANT(result_var);
   NPIdentifier id = CreateNPIdentifier(name);
@@ -215,15 +218,33 @@ void NPObjectStub::OnSetProperty(const NPIdentifier_Param& name,
 
   if (IsPluginProcess()) {
     if (npobject_->_class->setProperty) {
-      *result = npobject_->_class->setProperty(npobject_, id, &property_var);
+#if defined(OS_WIN)
+      static std::wstring filename = StringToLowerASCII(
+          PluginThread::current()->plugin_path().BaseName().value());
+      static NPIdentifier fullscreen =
+          WebBindings::getStringIdentifier("fullScreen");
+      if (filename == kNewWMPPlugin && id == fullscreen) {
+        // Workaround for bug 15985, which is if Flash causes WMP to go
+        // full screen a deadlock can occur when WMP calls SetFocus.
+        NPObjectMsg_SetProperty::WriteReplyParams(reply_msg, true);
+        Send(reply_msg);
+        reply_msg = NULL;
+      }
+#endif
+      result = npobject_->_class->setProperty(npobject_, id, &property_var);
     } else {
-      *result = false;
+      result = false;
     }
   } else {
-    *result = WebBindings::setProperty(0, npobject_, id, &property_var);
+    result = WebBindings::setProperty(0, npobject_, id, &property_var);
   }
 
   WebBindings::releaseVariantValue(&property_var);
+
+  if (reply_msg) {
+    NPObjectMsg_SetProperty::WriteReplyParams(reply_msg, result);
+    Send(reply_msg);
+  }
 }
 
 void NPObjectStub::OnRemoveProperty(const NPIdentifier_Param& name,
