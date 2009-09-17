@@ -81,7 +81,7 @@ class InfoBubbleDelegate {
 // That way InfoBubble has no (or very few) ifdefs.
 #if defined(OS_WIN)
 class InfoBubble : public views::WidgetWin {
-#else
+#elif defined(OS_LINUX)
 class InfoBubble : public views::WidgetGtk {
 #endif
  public:
