@@ -92,3 +92,6 @@
 -i=6e                                    #0000000000000000: 6e                                           outsb; *NACL Disallows!*
 -i=6f                                    #0000000000000000: 6f                                           outsd; *NACL Disallows!*
 -i=666f                                  #0000000000000000: 66 6f                                        outsw; *NACL Disallows!*
+-i=86C2                                  #0000000000000000: 86 c2                                        xchg %dl, %al
+-i=864020                                #0000000000000000: 86 40 20                                     xchg [%rax+0x20], %al
+-i=874020                                #0000000000000000: 87 40 20                                     xchg [%rax+0x20], %eax

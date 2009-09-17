@@ -136,6 +136,30 @@ static void BuildBinaryOps_00_05(const uint8_t base,
   DefineOperand(I_Operand, OpFlag(OpUse));
 }
 
+/* Define the Xchg operator where the register is embedded in the opcode */
+static void DefineXchgRegister() {
+  /* Note: xchg is commutative, so order of operands is unimportant. */
+  int i;
+  /* Note: skip 0, implies a nop */
+  for (i = 1; i < 8; ++i) {
+    DefineOpcode(0x90 + i, NACLi_386L,
+                 InstFlag(OpcodePlusR) | InstFlag(OperandSize_w) |
+                 InstFlag(OperandSize_v),
+                 InstXchg);
+    DefineOperand(OpcodeBaseMinus0 + i, OpFlag(OperandExtendsOpcode));
+    DefineOperand(G_OpcodeBase, OpFlag(OpSet) | OpFlag(OpUse));
+    DefineOperand(RegREAX, OpFlag(OpSet) | OpFlag(OpUse));
+
+    DefineOpcode(0x90 + i, NACLi_386L,
+                 InstFlag(OpcodePlusR) | InstFlag(OperandSize_o) |
+                 InstFlag(OpcodeUsesRexW),
+                 InstXchg);
+    DefineOperand(OpcodeBaseMinus0 + i, OpFlag(OperandExtendsOpcode));
+    DefineOperand(G_OpcodeBase, OpFlag(OpSet) | OpFlag(OpUse));
+    DefineOperand(RegRAX, OpFlag(OpSet) | OpFlag(OpUse));
+  }
+}
+
 /* Define the increment and descrement operators XX+00 to XX+07. Base is
  * the value XX. Name is the name of the increment/decrement operator.
  */
@@ -717,7 +741,10 @@ void DefineOneByteOpcodes() {
   /* For the moment, show some examples of Opcodes in Mod/Rm. */
   DefineGroup1OpcodesInModRm();
 
-  /* 0x82 */
+  /* The AMD manual shows 0x82 as a synonym for 0x80,
+   * however these are all illegal in 64-bit mode so we omit them here
+   * too. (note: by omission, the opcode is automatically undefined).
+   */
 
   DefineOpcode(0x84, NACLi_386,
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_b) |
@@ -740,7 +767,36 @@ void DefineOneByteOpcodes() {
   DefineOperand(E_Operand, OpFlag(OpUse));
   DefineOperand(G_Operand, OpFlag(OpUse));
 
-  /* 0x86 0x87 */
+  /* Note: for xchg, order of operands are commutative, in terms of
+   * opcode used.
+   */
+  DefineOpcode(0x86, NACLi_386L,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_b) |
+               InstFlag(Opcode32Only),
+               InstXchg);
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+  DefineOperand(G_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+
+  DefineOpcode(0x86, NACLi_386L,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_b) |
+               InstFlag(OpcodeRex) | InstFlag(Opcode64Only),
+               InstXchg);
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+  DefineOperand(G_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+
+  DefineOpcode(0x87, NACLi_386L,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v),
+               InstXchg);
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+  DefineOperand(G_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+
+  DefineOpcode(0x87, NACLi_386L,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_o) |
+               InstFlag(Opcode64Only) | InstFlag(OpcodeUsesRexW),
+               InstXchg);
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+  DefineOperand(G_Operand, OpFlag(OpSet) | OpFlag(OpUse));
 
   DefineOpcode(0x88, NACLi_386,
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_b) |
@@ -824,11 +880,34 @@ void DefineOneByteOpcodes() {
                InstMov);
   DefineOperand(E_Operand, OpFlag(OpSet));
 
-  /* 0x8f */
+  DefineOpcode(0x8f, NACLi_386,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w),
+               InstPop);
+  DefineOperand(Opcode0, OpFlag(OperandExtendsOpcode));
+  DefineOperand(RegRESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(E_Operand, OpFlag(OpSet));
+
+  DefineOpcode(0x8f, NACLi_386,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_v) |
+               InstFlag(Opcode32Only),
+               InstPop);
+  DefineOperand(Opcode0, OpFlag(OperandExtendsOpcode));
+  DefineOperand(RegESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(E_Operand, OpFlag(OpSet));
+
+  DefineOpcode(0x8f, NACLi_386,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_o) |
+               InstFlag(Opcode64Only),
+               InstPop);
+  DefineOperand(Opcode0, OpFlag(OperandExtendsOpcode));
+  DefineOperand(RegRSP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(E_Operand, OpFlag(OpSet));
 
   DefineOpcode(0x90, NACLi_386R, 0, InstNop);
 
-  /* 0x91 0x82 0x93 0x94 0x95 0x96 0x97 0x98 0x99
+  DefineXchgRegister();
+
+  /* 0x98 0x99
      0x9a 0x9b 0x9c 0x9d 0x9e 0x9f */
 
   DefineOpcode(0xa0, NACLi_386,

@@ -1231,3 +1231,56 @@ ExprNodeVector[6] = {
   { ExprRegister[0] , %es, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
+0000000000000000: 86 c2                                        xchg %dl, %al
+  { 1, { 0x86, 0x00, 0x00 },
+    NACLi_386L,
+    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(Opcode64Only) | InstFlag(OperandSize_b),
+    InstXchg,
+    2, {
+      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+  } };
+ExprNodeVector[4] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %dl, ExprSet | ExprUsed | ExprSize8 },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprSize8 },
+};
+0000000000000000: 86 40 20                                     xchg [%rax+0x20], %al
+  { 1, { 0x86, 0x00, 0x00 },
+    NACLi_386L,
+    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeRex) | InstFlag(Opcode64Only) | InstFlag(OperandSize_b),
+    InstXchg,
+    2, {
+      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+  } };
+ExprNodeVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0x20, ExprSize8 | ExprSignedHex },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %al, ExprSet | ExprUsed | ExprSize8 },
+};
+0000000000000000: 87 40 20                                     xchg [%rax+0x20], %eax
+  { 1, { 0x87, 0x00, 0x00 },
+    NACLi_386L,
+    InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    InstXchg,
+    2, {
+      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+  } };
+ExprNodeVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed },
+  { ExprRegister[0] , %rax, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0x20, ExprSize8 | ExprSignedHex },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
+};
