@@ -652,27 +652,25 @@
 }
 
 - (NSMenu*)applicationDockMenu:(id)sender {
-  NSMenu* result = [[[NSMenu alloc] initWithTitle: @""] autorelease];
-  NSString* titleStr;
-  id item;
-
-  titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_WINDOW_MAC);
-  item = [[[NSMenuItem alloc] initWithTitle:titleStr
-                                     action:@selector(commandDispatch:)
-                              keyEquivalent:@""] autorelease];
+  NSMenu* dockMenu = [[[NSMenu alloc] initWithTitle: @""] autorelease];
+  NSString* titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_WINDOW_MAC);
+  scoped_nsobject<NSMenuItem> item([[NSMenuItem alloc]
+                                       initWithTitle:titleStr
+                                              action:@selector(commandDispatch:)
+                                       keyEquivalent:@""]);
   [item setTarget:self];
   [item setTag:IDC_NEW_WINDOW];
-  [result addItem:item];
+  [dockMenu addItem:item];
 
   titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_INCOGNITO_WINDOW_MAC);
-  item = [[[NSMenuItem alloc] initWithTitle:titleStr
-                                     action:@selector(commandDispatch:)
-                              keyEquivalent:@""] autorelease];
+  item.reset([[NSMenuItem alloc] initWithTitle:titleStr
+                                        action:@selector(commandDispatch:)
+                                 keyEquivalent:@""]);
   [item setTarget:self];
   [item setTag:IDC_NEW_INCOGNITO_WINDOW];
-  [result addItem:item];
+  [dockMenu addItem:item];
 
-  return result;
+  return dockMenu;
 }
 
 @end

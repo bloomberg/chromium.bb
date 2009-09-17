@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/scoped_nsobject.h"
 #include "chrome/app/chrome_dll_resource.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "testing/platform_test.h"
@@ -12,7 +13,7 @@ class AppControllerTest : public PlatformTest {
 };
 
 TEST_F(AppControllerTest, DockMenu) {
-  AppController* ac = [[[AppController alloc] init] autorelease];
+  scoped_nsobject<AppController> ac([[AppController alloc] init]);
   NSMenu* menu = [ac applicationDockMenu:NSApp];
   NSMenuItem* item;
 
@@ -20,7 +21,7 @@ TEST_F(AppControllerTest, DockMenu) {
   EXPECT_NE(-1, [menu indexOfItemWithTag:IDC_NEW_WINDOW]);
   EXPECT_NE(-1, [menu indexOfItemWithTag:IDC_NEW_INCOGNITO_WINDOW]);
   for (item in [menu itemArray]) {
-    EXPECT_EQ(ac, [item target]);
+    EXPECT_EQ(ac.get(), [item target]);
     EXPECT_EQ(@selector(commandDispatch:), [item action]);
   }
 }
