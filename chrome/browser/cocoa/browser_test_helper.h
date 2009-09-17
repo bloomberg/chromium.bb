@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_COCOA_BROWSER_TEST_HELPER_H_
+#define CHROME_BROWSER_COCOA_BROWSER_TEST_HELPER_H_
+
 #include "chrome/browser/browser.h"
 #include "chrome/browser/profile.h"
 #include "chrome/test/testing_profile.h"
@@ -16,23 +19,19 @@
 class BrowserTestHelper {
  public:
   BrowserTestHelper() {
-    TestingProfile *testing_profile = new TestingProfile();
-    testing_profile->CreateBookmarkModel(true);
-    testing_profile->BlockUntilBookmarkModelLoaded();
-    profile_ = testing_profile;
-    browser_ = new Browser(Browser::TYPE_NORMAL, profile_);
+    profile_.reset(new TestingProfile());
+    profile_->CreateBookmarkModel(true);
+    profile_->BlockUntilBookmarkModelLoaded();
+    browser_.reset(new Browser(Browser::TYPE_NORMAL, profile_.get()));
   }
 
-  ~BrowserTestHelper() {
-    delete browser_;
-    delete profile_;
-  }
-
-  Browser* browser() { return browser_; }
-  Profile* profile() { return profile_; }
+  TestingProfile* profile() const { return profile_.get(); }
+  Browser* browser() const { return browser_.get(); }
 
  private:
-  Browser* browser_;
-  Profile* profile_;
+  scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<Browser> browser_;
   MessageLoopForUI message_loop_;
 };
+
+#endif  // CHROME_BROWSER_COCOA_BROWSER_TEST_HELPER_H_

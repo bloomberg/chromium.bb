@@ -20,6 +20,7 @@
 @end
 
 namespace {
+
 int NumTypesOnPasteboard(NSPasteboard* pb) {
   return [[pb types] count];
 }
@@ -41,22 +42,16 @@ bool ClipboardContainsText(NSPasteboard* pb, NSString* cmp) {
 
 class AutocompleteTextFieldEditorTest : public PlatformTest {
  public:
-  AutocompleteTextFieldEditorTest() {
+  AutocompleteTextFieldEditorTest()
+      : pb_([NSPasteboard pasteboardWithUniqueName]) {
     NSRect frame = NSMakeRect(0, 0, 50, 30);
     editor_.reset([[AutocompleteTextFieldEditor alloc] initWithFrame:frame]);
     [editor_ setString:@"Testing"];
     [cocoa_helper_.contentView() addSubview:editor_.get()];
   }
 
-  virtual void SetUp() {
-    PlatformTest::SetUp();
-    pb_ = [NSPasteboard pasteboardWithUniqueName];
-  }
-
-  virtual void TearDown() {
+  virtual ~AutocompleteTextFieldEditorTest() {
     [pb_ releaseGlobally];
-    pb_ = nil;
-    PlatformTest::TearDown();
   }
 
   NSPasteboard *clipboard() {
@@ -87,8 +82,7 @@ TEST_F(AutocompleteTextFieldEditorTest, CutCopyTest) {
   ASSERT_TRUE(NoRichTextOnClipboard(clipboard()));
 
   // Check that copying it works and we only get plain text.
-  NSPasteboard* pb = clipboard();
-  [editor_.get() performCopy:pb];
+  [editor_.get() performCopy:clipboard()];
   ASSERT_TRUE(NoRichTextOnClipboard(clipboard()));
   ASSERT_TRUE(ClipboardContainsText(clipboard(), test_string_1));
 
@@ -96,7 +90,7 @@ TEST_F(AutocompleteTextFieldEditorTest, CutCopyTest) {
   [editor_.get() setString:test_string_2];
   [editor_.get() selectAll:nil];
   [editor_.get() alignLeft:nil];  // Add a rich text attribute.
-  [editor_.get() performCut:pb];
+  [editor_.get() performCut:clipboard()];
   ASSERT_TRUE(NoRichTextOnClipboard(clipboard()));
   ASSERT_TRUE(ClipboardContainsText(clipboard(), test_string_2));
   ASSERT_EQ([[editor_.get() textStorage] length], 0U);
@@ -137,7 +131,7 @@ TEST_F(AutocompleteTextFieldEditorTest, TextShouldPaste) {
   EXPECT_TRUE([shouldNotPaste receivedTextShouldPaste]);
 }
 
-} // namespace
+}  // namespace
 
 @implementation AutocompleteTextFieldEditorTestDelegate
 

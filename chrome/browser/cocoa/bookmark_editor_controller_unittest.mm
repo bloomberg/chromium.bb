@@ -15,7 +15,6 @@ class BookmarkEditorControllerTest : public PlatformTest {
  public:
   CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   BrowserTestHelper helper_;
-  scoped_nsobject<BookmarkEditorController> bar_;
 };
 
 TEST_F(BookmarkEditorControllerTest, NoNodeNoTree) {

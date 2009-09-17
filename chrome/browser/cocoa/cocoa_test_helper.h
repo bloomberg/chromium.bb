@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COCOA_COCOA_TEST_HELPER
-#define CHROME_BROWSER_COCOA_COCOA_TEST_HELPER
+#ifndef CHROME_BROWSER_COCOA_COCOA_TEST_HELPER_H_
+#define CHROME_BROWSER_COCOA_COCOA_TEST_HELPER_H_
 
 #import <Cocoa/Cocoa.h>
 
@@ -23,7 +23,7 @@
   BOOL pretendIsKeyWindow_;
 }
 
-// Init a borderless non-defered window with backing store.
+// Init a borderless non-deferred window with a backing store.
 - (id)initWithContentRect:(NSRect)contentRect;
 
 // Init with a default frame.
@@ -44,7 +44,7 @@
 //     as the bundle. If you do not specify a bundle, your test will likely
 //     fail.
 // It currently does not create an autorelease pool, though that can easily be
-// added. If your test wants one, it can derrive from PlatformTest instead of
+// added. If your test wants one, it can derive from PlatformTest instead of
 // testing::Test.
 
 class CocoaTestHelper {
@@ -93,4 +93,4 @@ class CocoaTestHelper {
   scoped_nsobject<CocoaTestHelperWindow> window_;
 };
 
-#endif  // CHROME_BROWSER_COCOA_COCOA_TEST_HELPER
+#endif  // CHROME_BROWSER_COCOA_COCOA_TEST_HELPER_H_
