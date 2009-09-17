@@ -390,8 +390,6 @@ typedef struct {
   int joinable; /**< 1 if the thread is joinable, 0 otherwise */
 } pthread_attr_t;
 
-/** Default thread stack size. */
-#define NC_DEFAULT_STACK_SIZE (512 * 1024) /* 512K */
 
 /** Joinable thread type; for use with pthread_attr_setdetachstate(). */
 #define PTHREAD_CREATE_JOINABLE 1

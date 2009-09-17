@@ -38,11 +38,15 @@
 #define NATIVE_CLIENT_SRC_UNTRUSTED_NACL_TLS_H
 
 
-/* TODO(robertm): try to reduce visibility of this constant */
-#define TLS_ALIGNMENT 32
+/* size of the thread stack plus optional alignment fluff */
+size_t __nacl_thread_stack_size(int add_fluff);
 
-/* size of tls data + bss + alignment fluff + tdb_size */
-size_t __nacl_tls_combined_size(size_t tdb_size);
+/* start of tdb given a combined tls area, c.f. comment in .c file */
+char *__nacl_thread_stack_align(void* p);
+
+
+/* size of tls data + bss + optional alignment fluff + tdb_size */
+size_t __nacl_tls_combined_size(size_t tdb_size, int add_fluff);
 
 /* start of tdb given a combined tls area, c.f. comment in .c file */
 void *__nacl_tls_tdb_start(void* p);

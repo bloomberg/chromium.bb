@@ -92,10 +92,6 @@ STAILQ_HEAD(tailhead, entry) __nc_thread_memory_blocks[2];
 int __nc_memory_block_counter[2];
 
 
-#define ALIGN_ADDRESS(Address, AlignmentRequirement) \
-  (void*)(((int32_t)(Address) + ((AlignmentRequirement) - 1)) \
-  & ~((AlignmentRequirement) - 1))
-
 #define NODE_TO_PAYLOAD(TlsNode) \
   ((char*)(TlsNode) + sizeof(nc_thread_memory_block_t))
 
@@ -206,15 +202,16 @@ static nc_thread_memory_block_t* nc_allocate_memory_block_mu(
 
   /* We need to know the size even if we find a free node - to memset it to 0 */
   switch (type) {
-    case THREAD_STACK_MEMORY:
-      required_size = NC_DEFAULT_STACK_SIZE + (TLS_ALIGNMENT - 1);
-      break;
-    case TLS_AND_TDB_MEMORY:
-      required_size = __nacl_tls_combined_size(sizeof(nc_thread_descriptor_t));
-      break;
-    case MAX_MEMORY_TYPE:
-    default:
-      return NULL;
+     case THREAD_STACK_MEMORY:
+       required_size = __nacl_thread_stack_size(1);
+       break;
+     case TLS_AND_TDB_MEMORY:
+       required_size =
+         __nacl_tls_combined_size(sizeof(nc_thread_descriptor_t), 1);
+       break;
+     case MAX_MEMORY_TYPE:
+     default:
+     return NULL;
   }
 
   if (!STAILQ_EMPTY(head)) {
@@ -373,7 +370,7 @@ uint32_t __nacl_tdb_id_function(nc_hash_entry_t *entry) {
 /* Initialize a newly allocated TDB to some default values */
 static int nc_tdb_init(nc_thread_descriptor_t *tdb,
                        nc_basic_thread_data_t * basic_data) {
-  tdb->self = tdb;
+  tdb->tls_base = tdb;
   tdb->basic_data = basic_data;
   basic_data->tdb = tdb;
   /* Put an illegal value, should be set when the ID is allocated */
@@ -515,7 +512,7 @@ int pthread_create(pthread_t *thread_id,
       break;
     }
     thread_stack = NODE_TO_PAYLOAD(stack_node);
-    thread_stack = ALIGN_ADDRESS(thread_stack, 16);
+    thread_stack = __nacl_thread_stack_align(thread_stack);
     new_tdb->stack_node = stack_node;
 
   } while (0);
@@ -531,7 +528,7 @@ int pthread_create(pthread_t *thread_id,
    * We subtract 4 since thread_stack is 0 mod 16 aligned and
    * the stack size is a multiple of 16.
    */
-  esp = (void*)(thread_stack + NC_DEFAULT_STACK_SIZE - 4);
+  esp = (void*)(thread_stack + __nacl_thread_stack_size(0) - 4);
 
   /*
    * Put 0 on the stack as a return address - it is needed to satisfy

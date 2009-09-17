@@ -73,7 +73,7 @@ struct nc_basic_thread_data;
 
 /* This struct defines the layout of the TDB */
 typedef struct {
-  void *self;
+  void *tls_base;  /* tls accesses are made relative to this base */
   struct tsd *thread_specific_data;  /* used for set/get_specific */
   int joinable;
   int join_waiting;
