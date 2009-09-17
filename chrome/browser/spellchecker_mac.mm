@@ -120,9 +120,6 @@ void UpdateSpellingPanelWithMisspelledWord(const std::wstring& word) {
 }
 
 void Init() {
-  // This call must be made before the call to
-  // [NSSpellchecker sharedSpellChecker] or it will return nil.
-  [NSApplication sharedApplication];
 }
 
 bool PlatformSupportsLanguage(const std::string& current_language) {

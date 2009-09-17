@@ -62,8 +62,7 @@ void BrowserWindowCocoa::Activate() {
 }
 
 void BrowserWindowCocoa::FlashFrame() {
-  [[NSApplication sharedApplication]
-      requestUserAttention:NSInformationalRequest];
+  [NSApp requestUserAttention:NSInformationalRequest];
 }
 
 bool BrowserWindowCocoa::IsActive() const {

@@ -38,7 +38,7 @@
 }
 - (void)mouseTimer:(NSTimer*)timer {
   // Fire the mouseUp to break the TabView drag loop.
-  NSEvent* current = [[NSApplication sharedApplication] currentEvent];
+  NSEvent* current = [NSApp currentEvent];
   NSWindow* window = [timer userInfo];
   NSEvent* up = [NSEvent mouseEventWithType:NSLeftMouseUp
                                    location:[current locationInWindow]
@@ -180,7 +180,7 @@ TEST_F(TabControllerTest, UserSelection) {
                                  selector:@selector(mouseTimer:)
                                  userInfo:window
                                   repeats:NO];
-  NSEvent* current = [[NSApplication sharedApplication] currentEvent];
+  NSEvent* current = [NSApp currentEvent];
   NSPoint click_point = NSMakePoint(frame.size.width / 2,
                                     frame.size.height / 2);
   NSEvent* down = [NSEvent mouseEventWithType:NSLeftMouseDown

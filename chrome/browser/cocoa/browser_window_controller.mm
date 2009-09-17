@@ -392,8 +392,7 @@ willPositionSheet:(NSWindow*)sheet
 
   // If the shift key is down, maximize. Hopefully this should make the
   // "switchers" happy.
-  if ([[[NSApplication sharedApplication] currentEvent] modifierFlags] &
-          NSShiftKeyMask) {
+  if ([[NSApp currentEvent] modifierFlags] & NSShiftKeyMask) {
     return frame;
   }
 

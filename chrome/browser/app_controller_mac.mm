@@ -200,7 +200,7 @@
 // "preferences".
 - (TabWindowController*)keyWindowTabController {
   NSWindowController* keyWindowController =
-      [[[NSApplication sharedApplication] keyWindow] windowController];
+      [[NSApp keyWindow] windowController];
   if ([keyWindowController isKindOfClass:[TabWindowController class]])
     return (TabWindowController*)keyWindowController;
 

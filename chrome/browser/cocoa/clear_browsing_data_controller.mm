@@ -65,7 +65,7 @@ class ClearBrowsingObserver : public BrowsingDataRemover::Observer {
 
 // Run application modal.
 - (void)runModalDialog {
-  [[NSApplication sharedApplication] runModalForWindow:[self window]];
+  [NSApp runModalForWindow:[self window]];
 }
 
 - (int)removeMask {
@@ -106,7 +106,7 @@ class ClearBrowsingObserver : public BrowsingDataRemover::Observer {
 // Called when the user clicks the cancel button. All we need to do is stop
 // the modal session.
 - (IBAction)cancel:(id)sender {
-  [[NSApplication sharedApplication] stopModal];
+  [NSApp stopModal];
   [[self window] orderOut:self];
 }
 
@@ -141,7 +141,7 @@ class ClearBrowsingObserver : public BrowsingDataRemover::Observer {
 // Called when the data remover object is done with its work. Close the window.
 // The remover will delete itself. End the modal session at this point.
 - (void)dataRemoverDidFinish {
-  [[NSApplication sharedApplication] stopModal];
+  [NSApp stopModal];
   [[self window] orderOut:self];
   [self setIsClearing:NO];
   remover_ = NULL;
