@@ -25,6 +25,8 @@ import StringIO
 import unittest
 
 import gclient
+import gclient_scm
+import gclient_utils
 import super_mox
 from super_mox import mox
 
@@ -35,12 +37,12 @@ class BaseTestCase(super_mox.SuperMoxTestBase):
     self.mox.StubOutWithMock(gclient.os.path, 'exists')
     self.mox.StubOutWithMock(gclient.os.path, 'isdir')
     self.mox.StubOutWithMock(gclient.sys, 'stdout')
-    self.mox.StubOutWithMock(gclient, 'subprocess')
+    self.mox.StubOutWithMock(gclient_utils, 'subprocess')
     # These are not tested.
     self.mox.StubOutWithMock(gclient, 'FileRead')
     self.mox.StubOutWithMock(gclient, 'FileWrite')
-    self.mox.StubOutWithMock(gclient, 'SubprocessCall')
-    self.mox.StubOutWithMock(gclient, 'RemoveDirectory')
+    self.mox.StubOutWithMock(gclient_utils, 'SubprocessCall')
+    self.mox.StubOutWithMock(gclient_utils, 'RemoveDirectory')
 
   # Like unittest's assertRaises, but checks for Gclient.Error.
   def assertRaisesError(self, msg, fn, *args, **kwargs):
@@ -59,20 +61,20 @@ class GClientBaseTestCase(BaseTestCase):
   def setUp(self):
     BaseTestCase.setUp(self)
     # Mock them to be sure nothing bad happens.
-    self.mox.StubOutWithMock(gclient, 'CaptureSVN')
-    self._CaptureSVNInfo = gclient.CaptureSVNInfo
-    self.mox.StubOutWithMock(gclient, 'CaptureSVNInfo')
-    self.mox.StubOutWithMock(gclient, 'CaptureSVNStatus')
-    self.mox.StubOutWithMock(gclient, 'RunSVN')
-    self.mox.StubOutWithMock(gclient, 'RunSVNAndGetFileList')
+    self.mox.StubOutWithMock(gclient_scm, 'CaptureSVN')
+    self._CaptureSVNInfo = gclient_scm.CaptureSVNInfo
+    self.mox.StubOutWithMock(gclient_scm, 'CaptureSVNInfo')
+    self.mox.StubOutWithMock(gclient_scm, 'CaptureSVNStatus')
+    self.mox.StubOutWithMock(gclient_scm, 'RunSVN')
+    self.mox.StubOutWithMock(gclient_scm, 'RunSVNAndGetFileList')
     self._gclient_gclient = gclient.GClient
     gclient.GClient = self.mox.CreateMockAnything()
-    self._scm_wrapper = gclient.SCMWrapper
-    gclient.SCMWrapper = self.mox.CreateMockAnything()
+    self._scm_wrapper = gclient_scm.SCMWrapper
+    gclient_scm.SCMWrapper = self.mox.CreateMockAnything()
 
   def tearDown(self):
     gclient.GClient = self._gclient_gclient
-    gclient.SCMWrapper = self._scm_wrapper
+    gclient_scm.SCMWrapper = self._scm_wrapper
     BaseTestCase.tearDown(self)
 
 
@@ -352,9 +354,11 @@ class GClientClassTestCase(GclientTestCase):
     solution_name = 'solution name'
     solution_url = 'solution url'
     safesync_url = 'safesync url'
-    default_text = gclient.DEFAULT_CLIENT_FILE_TEXT % (solution_name,
-                                                       solution_url,
-                                                       safesync_url)
+    default_text = gclient.DEFAULT_CLIENT_FILE_TEXT % {
+      'solution_name' : solution_name,
+      'solution_url'  : solution_url,
+      'safesync_url' : safesync_url
+    }
     client.SetDefaultConfig(solution_name, solution_url, safesync_url)
     self.assertEqual(client.ConfigContent(), default_text)
     solutions = [{
@@ -403,7 +407,7 @@ class GClientClassTestCase(GclientTestCase):
 
     # An scm will be requested for the solution.
     scm_wrapper_sol = self.mox.CreateMockAnything()
-    gclient.SCMWrapper(self.url, self.root_dir, solution_name
+    gclient_scm.SCMWrapper(self.url, self.root_dir, solution_name
         ).AndReturn(scm_wrapper_sol)
     # Then an update will be performed.
     scm_wrapper_sol.RunCommand('update', options, self.args, [])
@@ -460,7 +464,7 @@ class GClientClassTestCase(GclientTestCase):
         ).AndReturn(False)
 
     # An scm will be requested for the solution.
-    gclient.SCMWrapper(self.url, self.root_dir, solution_name
+    gclient_scm.SCMWrapper(self.url, self.root_dir, solution_name
         ).AndReturn(scm_wrapper_sol)
     # Then an update will be performed.
     scm_wrapper_sol.RunCommand('update', options, self.args, [])
@@ -472,7 +476,7 @@ class GClientClassTestCase(GclientTestCase):
     # Next we expect an scm to be request for dep src/t but it should
     # use the url specified in deps and the relative path should now
     # be relative to the DEPS file.
-    gclient.SCMWrapper(
+    gclient_scm.SCMWrapper(
         'svn://scm.t/trunk',
         self.root_dir,
         os.path.join(solution_name, "src", "t")).AndReturn(scm_wrapper_t)
@@ -534,7 +538,7 @@ class GClientClassTestCase(GclientTestCase):
         ).AndReturn(False)
 
     # An scm will be requested for the solution.
-    gclient.SCMWrapper(self.url, self.root_dir, solution_name
+    gclient_scm.SCMWrapper(self.url, self.root_dir, solution_name
         ).AndReturn(scm_wrapper_sol)
     # Then an update will be performed.
     scm_wrapper_sol.RunCommand('update', options, self.args, [])
@@ -544,13 +548,13 @@ class GClientClassTestCase(GclientTestCase):
 
     # Next we expect an scm to be request for dep src/n even though it does not
     # exist in the DEPS file.
-    gclient.SCMWrapper('svn://custom.n/trunk',
+    gclient_scm.SCMWrapper('svn://custom.n/trunk',
                        self.root_dir,
                        "src/n").AndReturn(scm_wrapper_n)
 
     # Next we expect an scm to be request for dep src/t but it should
     # use the url specified in custom_deps.
-    gclient.SCMWrapper('svn://custom.t/trunk',
+    gclient_scm.SCMWrapper('svn://custom.t/trunk',
                        self.root_dir,
                        "src/t").AndReturn(scm_wrapper_t)
 
@@ -620,7 +624,7 @@ class GClientClassTestCase(GclientTestCase):
         ).AndReturn(False)
 
     # An scm will be requested for the first solution.
-    gclient.SCMWrapper(url_a, self.root_dir, name_a).AndReturn(
+    gclient_scm.SCMWrapper(url_a, self.root_dir, name_a).AndReturn(
         scm_wrapper_a)
     # Then an attempt will be made to read it's DEPS file.
     gclient.FileRead(os.path.join(self.root_dir, name_a, options.deps_file)
@@ -629,7 +633,7 @@ class GClientClassTestCase(GclientTestCase):
     scm_wrapper_a.RunCommand('update', options, self.args, [])
 
     # An scm will be requested for the second solution.
-    gclient.SCMWrapper(url_b, self.root_dir, name_b).AndReturn(
+    gclient_scm.SCMWrapper(url_b, self.root_dir, name_b).AndReturn(
         scm_wrapper_b)
     # Then an attempt will be made to read its DEPS file.
     gclient.FileRead(os.path.join(self.root_dir, name_b, options.deps_file)
@@ -638,7 +642,7 @@ class GClientClassTestCase(GclientTestCase):
     scm_wrapper_b.RunCommand('update', options, self.args, [])
 
     # Finally, an scm is requested for the shared dep.
-    gclient.SCMWrapper('http://svn.t/trunk', self.root_dir, 'src/t'
+    gclient_scm.SCMWrapper('http://svn.t/trunk', self.root_dir, 'src/t'
         ).AndReturn(scm_wrapper_dep)
     # And an update is run on it.
     scm_wrapper_dep.RunCommand('update', options, self.args, [])
@@ -666,9 +670,9 @@ class GClientClassTestCase(GclientTestCase):
         ).AndReturn(False)
     gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
-    gclient.SCMWrapper(self.url, self.root_dir, name).AndReturn(
-        gclient.SCMWrapper)
-    gclient.SCMWrapper.RunCommand('update', options, self.args, [])
+    gclient_scm.SCMWrapper(self.url, self.root_dir, name).AndReturn(
+        gclient_scm.SCMWrapper)
+    gclient_scm.SCMWrapper.RunCommand('update', options, self.args, [])
     gclient.FileRead(os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn("Boo = 'a'")
     gclient.FileWrite(os.path.join(self.root_dir, options.entries_filename),
@@ -760,36 +764,36 @@ deps_os = {
     gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
 
-    gclient.SCMWrapper(self.url, self.root_dir, 'src').AndReturn(
+    gclient_scm.SCMWrapper(self.url, self.root_dir, 'src').AndReturn(
         scm_wrapper_src)
     scm_wrapper_src.RunCommand('update', mox.Func(OptIsRev123), self.args, [])
 
-    gclient.SCMWrapper(self.url, self.root_dir,
+    gclient_scm.SCMWrapper(self.url, self.root_dir,
                        None).AndReturn(scm_wrapper_src2)
     scm_wrapper_src2.FullUrlForRelativeUrl('/trunk/deps/third_party/cygwin@3248'
         ).AndReturn(cygwin_path)
 
-    gclient.SCMWrapper(self.url, self.root_dir,
+    gclient_scm.SCMWrapper(self.url, self.root_dir,
                        None).AndReturn(scm_wrapper_src2)
     scm_wrapper_src2.FullUrlForRelativeUrl('/trunk/deps/third_party/WebKit'
         ).AndReturn(webkit_path)
 
-    gclient.SCMWrapper(webkit_path, self.root_dir,
+    gclient_scm.SCMWrapper(webkit_path, self.root_dir,
                        'foo/third_party/WebKit').AndReturn(scm_wrapper_webkit)
     scm_wrapper_webkit.RunCommand('update', mox.Func(OptIsRev42), self.args, [])
 
-    gclient.SCMWrapper(
+    gclient_scm.SCMWrapper(
         'http://google-breakpad.googlecode.com/svn/trunk/src@285',
         self.root_dir, 'src/breakpad/bar').AndReturn(scm_wrapper_breakpad)
     scm_wrapper_breakpad.RunCommand('update', mox.Func(OptIsRevNone),
                                     self.args, [])
 
-    gclient.SCMWrapper(cygwin_path, self.root_dir,
+    gclient_scm.SCMWrapper(cygwin_path, self.root_dir,
                        'src/third_party/cygwin').AndReturn(scm_wrapper_cygwin)
     scm_wrapper_cygwin.RunCommand('update', mox.Func(OptIsRev333), self.args,
                                   [])
 
-    gclient.SCMWrapper('svn://random_server:123/trunk/python_24@5580',
+    gclient_scm.SCMWrapper('svn://random_server:123/trunk/python_24@5580',
                        self.root_dir,
                        'src/third_party/python_24').AndReturn(
                             scm_wrapper_python)
@@ -865,18 +869,18 @@ deps = {
         ).AndReturn(False)
     gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
-    gclient.SCMWrapper(self.url, self.root_dir, name).AndReturn(
-        gclient.SCMWrapper)
-    gclient.SCMWrapper.RunCommand('update', options, self.args, [])
+    gclient_scm.SCMWrapper(self.url, self.root_dir, name).AndReturn(
+        gclient_scm.SCMWrapper)
+    gclient_scm.SCMWrapper.RunCommand('update', options, self.args, [])
 
-    gclient.SCMWrapper(self.url, self.root_dir,
+    gclient_scm.SCMWrapper(self.url, self.root_dir,
                        None).AndReturn(scm_wrapper_src)
     scm_wrapper_src.FullUrlForRelativeUrl('/trunk/bar/WebKit'
         ).AndReturn(webkit_path)
 
-    gclient.SCMWrapper(webkit_path, self.root_dir,
-                       'foo/third_party/WebKit').AndReturn(gclient.SCMWrapper)
-    gclient.SCMWrapper.RunCommand('update', options, self.args, [])
+    gclient_scm.SCMWrapper(webkit_path, self.root_dir,
+        'foo/third_party/WebKit').AndReturn(gclient_scm.SCMWrapper)
+    gclient_scm.SCMWrapper.RunCommand('update', options, self.args, [])
 
     self.mox.ReplayAll()
     client = self._gclient_gclient(self.root_dir, options)
@@ -921,18 +925,18 @@ deps = {
         ).AndReturn(False)
     gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
-    gclient.SCMWrapper(self.url, self.root_dir, name).AndReturn(
-        gclient.SCMWrapper)
-    gclient.SCMWrapper.RunCommand('update', options, self.args, [])
+    gclient_scm.SCMWrapper(self.url, self.root_dir, name).AndReturn(
+        gclient_scm.SCMWrapper)
+    gclient_scm.SCMWrapper.RunCommand('update', options, self.args, [])
 
-    gclient.SCMWrapper(self.url, self.root_dir,
+    gclient_scm.SCMWrapper(self.url, self.root_dir,
                        None).AndReturn(scm_wrapper_src)
     scm_wrapper_src.FullUrlForRelativeUrl('/trunk/bar_custom/WebKit'
         ).AndReturn(webkit_path)
 
-    gclient.SCMWrapper(webkit_path, self.root_dir,
-                       'foo/third_party/WebKit').AndReturn(gclient.SCMWrapper)
-    gclient.SCMWrapper.RunCommand('update', options, self.args, [])
+    gclient_scm.SCMWrapper(webkit_path, self.root_dir,
+        'foo/third_party/WebKit').AndReturn(gclient_scm.SCMWrapper)
+    gclient_scm.SCMWrapper.RunCommand('update', options, self.args, [])
 
     self.mox.ReplayAll()
     client = self._gclient_gclient(self.root_dir, options)
@@ -956,9 +960,9 @@ deps = {
     options = self.Options()
     gclient.FileRead(os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn(deps_content)
-    gclient.SCMWrapper(self.url, self.root_dir, name).AndReturn(
-        gclient.SCMWrapper)
-    gclient.SCMWrapper.RunCommand('update', options, self.args, [])
+    gclient_scm.SCMWrapper(self.url, self.root_dir, name).AndReturn(
+        gclient_scm.SCMWrapper)
+    gclient_scm.SCMWrapper.RunCommand('update', options, self.args, [])
 
     self.mox.ReplayAll()
     client = self._gclient_gclient(self.root_dir, options)
@@ -1073,7 +1077,7 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     # Checkout.
     gclient.os.path.exists(base_path).AndReturn(False)
     files_list = self.mox.CreateMockAnything()
-    gclient.RunSVNAndGetFileList(['checkout', self.url, base_path],
+    gclient_scm.RunSVNAndGetFileList(['checkout', self.url, base_path],
                                  self.root_dir, files_list)
 
     self.mox.ReplayAll()
@@ -1085,7 +1089,7 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     options = self.Options(verbose=True)
     base_path = os.path.join(self.root_dir, self.relpath)
     gclient.os.path.isdir(base_path).AndReturn(True)
-    gclient.CaptureSVNStatus(base_path).AndReturn([])
+    gclient_scm.CaptureSVNStatus(base_path).AndReturn([])
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -1101,11 +1105,11 @@ class SCMWrapperTestCase(GClientBaseTestCase):
       ('M      ', 'a'),
       ('A      ', 'b'),
     ]
-    gclient.CaptureSVNStatus(base_path).AndReturn(items)
+    gclient_scm.CaptureSVNStatus(base_path).AndReturn(items)
 
     print(os.path.join(base_path, 'a'))
     print(os.path.join(base_path, 'b'))
-    gclient.RunSVN(['revert', 'a', 'b'], base_path)
+    gclient_scm.RunSVN(['revert', 'a', 'b'], base_path)
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -1117,7 +1121,7 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     options = self.Options(verbose=True)
     base_path = os.path.join(self.root_dir, self.relpath)
     gclient.os.path.isdir(base_path).AndReturn(True)
-    gclient.RunSVNAndGetFileList(['status'] + self.args, base_path,
+    gclient_scm.RunSVNAndGetFileList(['status'] + self.args, base_path,
                                  []).AndReturn(None)
 
     self.mox.ReplayAll()
@@ -1132,7 +1136,7 @@ class SCMWrapperTestCase(GClientBaseTestCase):
   def testUpdateCheckout(self):
     options = self.Options(verbose=True)
     base_path = os.path.join(self.root_dir, self.relpath)
-    file_info = gclient.PrintableObject()
+    file_info = gclient_utils.PrintableObject()
     file_info.root = 'blah'
     file_info.url = self.url
     file_info.uuid = 'ABC'
@@ -1141,7 +1145,7 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     # Checkout.
     gclient.os.path.exists(base_path).AndReturn(False)
     files_list = self.mox.CreateMockAnything()
-    gclient.RunSVNAndGetFileList(['checkout', self.url, base_path],
+    gclient_scm.RunSVNAndGetFileList(['checkout', self.url, base_path],
                                  self.root_dir, files_list)
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -1162,15 +1166,15 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     gclient.os.path.exists(os.path.join(base_path, '.git')).AndReturn(False)
     # Checkout or update.
     gclient.os.path.exists(base_path).AndReturn(True)
-    gclient.CaptureSVNInfo(os.path.join(base_path, "."), '.'
+    gclient_scm.CaptureSVNInfo(os.path.join(base_path, "."), '.'
         ).AndReturn(file_info)
     # Cheat a bit here.
-    gclient.CaptureSVNInfo(file_info['URL'], '.').AndReturn(file_info)
+    gclient_scm.CaptureSVNInfo(file_info['URL'], '.').AndReturn(file_info)
     additional_args = []
     if options.manually_grab_svn_rev:
       additional_args = ['--revision', str(file_info['Revision'])]
     files_list = []
-    gclient.RunSVNAndGetFileList(['update', base_path] + additional_args,
+    gclient_scm.RunSVNAndGetFileList(['update', base_path] + additional_args,
                                  self.root_dir, files_list)
 
     self.mox.ReplayAll()
@@ -1206,7 +1210,7 @@ class SCMWrapperTestCase(GClientBaseTestCase):
 </entry>
 </info>
 """ % self.url
-    gclient.CaptureSVN(['info', '--xml', self.url],
+    gclient_scm.CaptureSVN(['info', '--xml', self.url],
                        '.', True).AndReturn(xml_text)
     expected = {
       'URL': 'http://src.chromium.org/svn/trunk/src/chrome/app/d',
@@ -1247,7 +1251,7 @@ class SCMWrapperTestCase(GClientBaseTestCase):
 </entry>
 </info>
 """ % (self.url, self.root_dir)
-    gclient.CaptureSVN(['info', '--xml', self.url],
+    gclient_scm.CaptureSVN(['info', '--xml', self.url],
                        '.', True).AndReturn(xml_text)
     self.mox.ReplayAll()
     file_info = self._CaptureSVNInfo(self.url, '.', True)
@@ -1268,15 +1272,15 @@ class SCMWrapperTestCase(GClientBaseTestCase):
 class RunSVNTestCase(BaseTestCase):
   def testRunSVN(self):
     param2 = 'bleh'
-    gclient.SubprocessCall(['svn', 'foo', 'bar'], param2).AndReturn(None)
+    gclient_utils.SubprocessCall(['svn', 'foo', 'bar'], param2).AndReturn(None)
     self.mox.ReplayAll()
-    gclient.RunSVN(['foo', 'bar'], param2)
+    gclient_scm.RunSVN(['foo', 'bar'], param2)
 
 
 class SubprocessCallAndFilterTestCase(BaseTestCase):
   def setUp(self):
     BaseTestCase.setUp(self)
-    self.mox.StubOutWithMock(gclient, 'CaptureSVN')
+    self.mox.StubOutWithMock(gclient_scm, 'CaptureSVN')
 
   def testSubprocessCallAndFilter(self):
     command = ['boo', 'foo', 'bar']
@@ -1292,9 +1296,9 @@ class SubprocessCallAndFilterTestCase(BaseTestCase):
     print("\n________ running 'boo foo bar' in 'bleh'")
     for i in test_string:
       gclient.sys.stdout.write(i)
-    gclient.subprocess.Popen(command, bufsize=0, cwd=in_directory,
-                             shell=(gclient.sys.platform == 'win32'),
-                             stdout=gclient.subprocess.PIPE).AndReturn(kid)
+    gclient_utils.subprocess.Popen(command, bufsize=0, cwd=in_directory,
+      shell=(gclient.sys.platform == 'win32'),
+      stdout=gclient_utils.subprocess.PIPE).AndReturn(kid)
     self.mox.ReplayAll()
     compiled_pattern = re.compile(pattern)
     line_list = []
@@ -1304,9 +1308,9 @@ class SubprocessCallAndFilterTestCase(BaseTestCase):
       match = compiled_pattern.search(line)
       if match:
         capture_list.append(match.group(1))
-    gclient.SubprocessCallAndFilter(command, in_directory,
-                                    True, True,
-                                    fail_status, FilterLines)
+    gclient_utils.SubprocessCallAndFilter(command, in_directory,
+                                          True, True,
+                                          fail_status, FilterLines)
     self.assertEquals(line_list, ['ahah', 'accb', 'allo', 'addb'])
     self.assertEquals(capture_list, ['cc', 'dd'])
 
@@ -1353,8 +1357,8 @@ class SubprocessCallAndFilterTestCase(BaseTestCase):
 </target>
 </status>
 """
-    gclient.CaptureSVN = CaptureSVNMock
-    info = gclient.CaptureSVNStatus('.')
+    gclient_scm.CaptureSVN = CaptureSVNMock
+    info = gclient_scm.CaptureSVNStatus('.')
     expected = [
       ('?      ', 'unversionned_file.txt'),
       ('M      ', 'build\\internal\\essential.vsprops'),
@@ -1376,8 +1380,8 @@ class SubprocessCallAndFilterTestCase(BaseTestCase):
 </target>
 </status>
 """
-    gclient.CaptureSVN = CaptureSVNMock
-    info = gclient.CaptureSVNStatus(None)
+    gclient_scm.CaptureSVN = CaptureSVNMock
+    info = gclient_scm.CaptureSVNStatus(None)
     self.assertEquals(info, [])
 
 

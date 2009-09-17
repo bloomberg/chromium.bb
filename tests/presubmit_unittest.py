@@ -59,7 +59,7 @@ def CheckChangeOnUpload(input_api, output_api):
     presubmit.os.path.abspath = MockAbsPath
     presubmit.os.path.commonprefix = os_path_commonprefix
     self.fake_root_dir = self.RootDir()
-    self.mox.StubOutWithMock(presubmit.gclient, 'CaptureSVNInfo')
+    self.mox.StubOutWithMock(presubmit.gclient_scm, 'CaptureSVNInfo')
     self.mox.StubOutWithMock(presubmit.gcl, 'GetSVNFileProperty')
     self.mox.StubOutWithMock(presubmit.gcl, 'ReadFile')
 
@@ -75,7 +75,7 @@ class PresubmitUnittest(PresubmitTestsBase):
       'OutputApi', 'ParseFiles', 'PresubmitExecuter', 'ScanSubDirs',
       'SvnAffectedFile', 'SvnChange',
       'cPickle', 'cStringIO', 'exceptions',
-      'fnmatch', 'gcl', 'gclient', 'glob', 'logging', 'marshal', 'normpath',
+      'fnmatch', 'gcl', 'gclient_scm', 'glob', 'logging', 'marshal', 'normpath',
       'optparse', 'os', 'pickle',
       'presubmit_canned_checks', 'random', 're', 'subprocess', 'sys', 'time',
       'tempfile', 'traceback', 'types', 'unittest', 'urllib2', 'warnings',
@@ -151,19 +151,19 @@ class PresubmitUnittest(PresubmitTestsBase):
     presubmit.os.path.exists(notfound).AndReturn(True)
     presubmit.os.path.isdir(notfound).AndReturn(False)
     presubmit.os.path.exists(flap).AndReturn(False)
-    presubmit.gclient.CaptureSVNInfo(flap
+    presubmit.gclient_scm.CaptureSVNInfo(flap
         ).AndReturn({'Node Kind': 'file'})
     presubmit.gcl.GetSVNFileProperty(blat, 'svn:mime-type').AndReturn(None)
     presubmit.gcl.GetSVNFileProperty(
         binary, 'svn:mime-type').AndReturn('application/octet-stream')
     presubmit.gcl.GetSVNFileProperty(
         notfound, 'svn:mime-type').AndReturn('')
-    presubmit.gclient.CaptureSVNInfo(blat).AndReturn(
+    presubmit.gclient_scm.CaptureSVNInfo(blat).AndReturn(
             {'URL': 'svn:/foo/foo/blat.cc'})
-    presubmit.gclient.CaptureSVNInfo(binary).AndReturn(
+    presubmit.gclient_scm.CaptureSVNInfo(binary).AndReturn(
         {'URL': 'svn:/foo/binary.dll'})
-    presubmit.gclient.CaptureSVNInfo(notfound).AndReturn({})
-    presubmit.gclient.CaptureSVNInfo(flap).AndReturn(
+    presubmit.gclient_scm.CaptureSVNInfo(notfound).AndReturn({})
+    presubmit.gclient_scm.CaptureSVNInfo(flap).AndReturn(
             {'URL': 'svn:/foo/boo/flap.h'})
     presubmit.gcl.ReadFile(blat).AndReturn('boo!\nahh?')
     presubmit.gcl.ReadFile(notfound).AndReturn('look!\nthere?')
@@ -520,9 +520,9 @@ class InputApiUnittest(PresubmitTestsBase):
     self.compareMembers(presubmit.InputApi(None, './.', False), members)
 
   def testDepotToLocalPath(self):
-    presubmit.gclient.CaptureSVNInfo('svn://foo/smurf').AndReturn(
+    presubmit.gclient_scm.CaptureSVNInfo('svn://foo/smurf').AndReturn(
         {'Path': 'prout'})
-    presubmit.gclient.CaptureSVNInfo('svn:/foo/notfound/burp').AndReturn({})
+    presubmit.gclient_scm.CaptureSVNInfo('svn:/foo/notfound/burp').AndReturn({})
     self.mox.ReplayAll()
 
     path = presubmit.InputApi(None, './p', False).DepotToLocalPath(
@@ -533,8 +533,9 @@ class InputApiUnittest(PresubmitTestsBase):
     self.failUnless(path == None)
 
   def testLocalToDepotPath(self):
-    presubmit.gclient.CaptureSVNInfo('smurf').AndReturn({'URL': 'svn://foo'})
-    presubmit.gclient.CaptureSVNInfo('notfound-food').AndReturn({})
+    presubmit.gclient_scm.CaptureSVNInfo('smurf').AndReturn({'URL':
+                                                               'svn://foo'})
+    presubmit.gclient_scm.CaptureSVNInfo('notfound-food').AndReturn({})
     self.mox.ReplayAll()
 
     path = presubmit.InputApi(None, './p', False).LocalToDepotPath('smurf')
@@ -585,8 +586,8 @@ class InputApiUnittest(PresubmitTestsBase):
     presubmit.os.path.exists(notfound).AndReturn(False)
     presubmit.os.path.exists(flap).AndReturn(True)
     presubmit.os.path.isdir(flap).AndReturn(False)
-    presubmit.gclient.CaptureSVNInfo(beingdeleted).AndReturn({})
-    presubmit.gclient.CaptureSVNInfo(notfound).AndReturn({})
+    presubmit.gclient_scm.CaptureSVNInfo(beingdeleted).AndReturn({})
+    presubmit.gclient_scm.CaptureSVNInfo(notfound).AndReturn({})
     presubmit.gcl.GetSVNFileProperty(blat, 'svn:mime-type').AndReturn(None)
     presubmit.gcl.GetSVNFileProperty(readme, 'svn:mime-type').AndReturn(None)
     presubmit.gcl.GetSVNFileProperty(binary, 'svn:mime-type').AndReturn(
@@ -910,7 +911,7 @@ class AffectedFileUnittest(PresubmitTestsBase):
     presubmit.os.path.exists(path).AndReturn(True)
     presubmit.os.path.isdir(path).AndReturn(False)
     presubmit.gcl.ReadFile(path).AndReturn('whatever\ncookie')
-    presubmit.gclient.CaptureSVNInfo(path).AndReturn(
+    presubmit.gclient_scm.CaptureSVNInfo(path).AndReturn(
         {'URL': 'svn:/foo/foo/blat.cc'})
     self.mox.ReplayAll()
     af = presubmit.SvnAffectedFile('foo/blat.cc', 'M')
@@ -934,7 +935,7 @@ class AffectedFileUnittest(PresubmitTestsBase):
 
   def testIsDirectoryNotExists(self):
     presubmit.os.path.exists('foo.cc').AndReturn(False)
-    presubmit.gclient.CaptureSVNInfo('foo.cc').AndReturn({})
+    presubmit.gclient_scm.CaptureSVNInfo('foo.cc').AndReturn({})
     self.mox.ReplayAll()
     affected_file = presubmit.SvnAffectedFile('foo.cc', 'A')
     # Verify cache coherency.

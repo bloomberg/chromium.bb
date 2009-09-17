@@ -38,7 +38,7 @@ import warnings
 # TODO(joi) Would be cleaner to factor out utils in gcl to separate module, but
 # for now it would only be a couple of functions so hardly worth it.
 import gcl
-import gclient
+import gclient_scm
 import presubmit_canned_checks
 
 
@@ -238,7 +238,7 @@ class InputApi(object):
 
       Remember to check for the None case and show an appropriate error!
     """
-    local_path = gclient.CaptureSVNInfo(depot_path).get('Path')
+    local_path = gclient_scm.CaptureSVNInfo(depot_path).get('Path')
     if local_path:
       return local_path
 
@@ -251,7 +251,7 @@ class InputApi(object):
     Returns:
       The depot path (SVN URL) of the file if mapped, otherwise None.
     """
-    depot_path = gclient.CaptureSVNInfo(local_path).get('URL')
+    depot_path = gclient_scm.CaptureSVNInfo(local_path).get('URL')
     if depot_path:
       return depot_path
 
@@ -461,7 +461,7 @@ class SvnAffectedFile(AffectedFile):
 
   def ServerPath(self):
     if self._server_path is None:
-      self._server_path = gclient.CaptureSVNInfo(
+      self._server_path = gclient_scm.CaptureSVNInfo(
           self.AbsoluteLocalPath()).get('URL', '')
     return self._server_path
 
@@ -473,7 +473,7 @@ class SvnAffectedFile(AffectedFile):
         # querying subversion, especially on Windows.
         self._is_directory = os.path.isdir(path)
       else:
-        self._is_directory = gclient.CaptureSVNInfo(
+        self._is_directory = gclient_scm.CaptureSVNInfo(
             path).get('Node Kind') in ('dir', 'directory')
     return self._is_directory
 
@@ -947,7 +947,7 @@ def Main(argv):
         options.files = ParseFiles(args, options.recursive)
       else:
         # Grab modified files.
-        files = gclient.CaptureSVNStatus([options.root])
+        files = gclient_scm.CaptureSVNStatus([options.root])
   else:
     # Doesn't seem under source control.
     change_class = Change

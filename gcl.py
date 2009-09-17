@@ -20,7 +20,8 @@ import urllib2
 import xml.dom.minidom
 
 # gcl now depends on gclient.
-import gclient
+import gclient_scm
+import gclient_utils
 
 __version__ = '1.1.1'
 
@@ -50,7 +51,7 @@ FILES_CACHE = {}
 
 def IsSVNMoved(filename):
   """Determine if a file has been added through svn mv"""
-  info = gclient.CaptureSVNInfo(filename)
+  info = gclient_scm.CaptureSVNInfo(filename)
   return (info.get('Copied From URL') and
           info.get('Copied From Rev') and
           info.get('Schedule') == 'add')
@@ -82,7 +83,7 @@ def UnknownFiles(extra_args):
   Any args in |extra_args| are passed to the tool to support giving alternate
   code locations.
   """
-  return [item[1] for item in gclient.CaptureSVNStatus(extra_args)
+  return [item[1] for item in gclient_scm.CaptureSVNStatus(extra_args)
           if item[0][0] == '?']
 
 
@@ -93,15 +94,15 @@ def GetRepositoryRoot():
   """
   global REPOSITORY_ROOT
   if not REPOSITORY_ROOT:
-    infos = gclient.CaptureSVNInfo(os.getcwd(), print_error=False)
+    infos = gclient_scm.CaptureSVNInfo(os.getcwd(), print_error=False)
     cur_dir_repo_root = infos.get("Repository Root")
     if not cur_dir_repo_root:
-      raise gclient.Error("gcl run outside of repository")
+      raise gclient_utils.Error("gcl run outside of repository")
 
     REPOSITORY_ROOT = os.getcwd()
     while True:
       parent = os.path.dirname(REPOSITORY_ROOT)
-      if (gclient.CaptureSVNInfo(parent, print_error=False).get(
+      if (gclient_scm.CaptureSVNInfo(parent, print_error=False).get(
               "Repository Root") != cur_dir_repo_root):
         break
       REPOSITORY_ROOT = parent
@@ -140,11 +141,11 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
     # First we check if we have a cached version.
     try:
       cached_file = os.path.join(GetCacheDir(), filename)
-    except gclient.Error:
+    except gclient_utils.Error:
       return None
     if (not os.path.exists(cached_file) or
         os.stat(cached_file).st_mtime > max_age):
-      dir_info = gclient.CaptureSVNInfo(".")
+      dir_info = gclient_scm.CaptureSVNInfo(".")
       repo_root = dir_info["Repository Root"]
       if use_root:
         url_path = repo_root
@@ -461,7 +462,7 @@ class ChangeInfo(object):
     if update_status:
       for file in files:
         filename = os.path.join(local_root, file[1])
-        status_result = gclient.CaptureSVNStatus(filename)
+        status_result = gclient_scm.CaptureSVNStatus(filename)
         if not status_result or not status_result[0][0]:
           # File has been reverted.
           save = True
@@ -545,7 +546,7 @@ def GetModifiedFiles():
       files_in_cl[filename] = change_info.name
 
   # Get all the modified files.
-  status_result = gclient.CaptureSVNStatus(None)
+  status_result = gclient_scm.CaptureSVNStatus(None)
   for line in status_result:
     status = line[0]
     filename = line[1]
@@ -724,7 +725,8 @@ def GenerateDiff(files, root=None):
   for file in files:
     # Use svn info output instead of os.path.isdir because the latter fails
     # when the file is deleted.
-    if gclient.CaptureSVNInfo(file).get("Node Kind") in ("dir", "directory"):
+    if gclient_scm.CaptureSVNInfo(file).get("Node Kind") in ("dir",
+                                                             "directory"):
       continue
     # If the user specified a custom diff command in their svn config file,
     # then it'll be used when we do svn diff, which we don't want to happen
@@ -1149,7 +1151,7 @@ def main(argv=None):
           shutil.move(file_path, GetChangesDir())
     if not os.path.exists(GetCacheDir()):
       os.mkdir(GetCacheDir())
-  except gclient.Error:
+  except gclient_utils.Error:
     # Will throw an exception if not run in a svn checkout.
     pass
 

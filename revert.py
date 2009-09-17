@@ -13,6 +13,8 @@ import xml
 
 import gcl
 import gclient
+import gclient_scm
+import gclient_utils
 
 class ModifiedFile(exceptions.Exception):
   pass
@@ -32,7 +34,7 @@ def UniqueFast(list):
 
 def GetRepoBase():
   """Returns the repository base of the root local checkout."""
-  info = gclient.CaptureSVNInfo('.')
+  info = gclient_scm.CaptureSVNInfo('.')
   root = info['Repository Root']
   url = info['URL']
   if not root or not url:
@@ -46,8 +48,8 @@ def CaptureSVNLog(args):
   command = ['log', '--xml']
   if args:
     command += args
-  output = gclient.CaptureSVN(command)
-  dom = gclient.ParseXML(output)
+  output = gclient_scm.CaptureSVN(command)
+  dom = gclient_utils.ParseXML(output)
   entries = []
   if dom:
     # /log/logentry/
@@ -66,8 +68,8 @@ def CaptureSVNLog(args):
         paths.append(item)
       entry = {
         'revision': int(node.getAttribute('revision')),
-        'author': gclient.GetNamedNodeText(node, 'author'),
-        'date': gclient.GetNamedNodeText(node, 'date'),
+        'author': gclient_utils.GetNamedNodeText(node, 'author'),
+        'date': gclient_utils.GetNamedNodeText(node, 'date'),
         'paths': paths,
       }
       entries.append(entry)
@@ -144,7 +146,7 @@ def Revert(revisions, force=False, commit=True, send_email=True, message=None,
   print ""
 
   # Make sure these files are unmodified with svn status.
-  status = gclient.CaptureSVNStatus(files)
+  status = gclient_scm.CaptureSVNStatus(files)
   if status:
     if force:
       # TODO(maruel): Use the tool to correctly revert '?' files.

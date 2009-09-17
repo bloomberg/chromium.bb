@@ -20,6 +20,7 @@ class RevertTestsBase(super_mox.SuperMoxTestBase):
     super_mox.SuperMoxTestBase.setUp(self)
     self.mox.StubOutWithMock(revert, 'gcl')
     self.mox.StubOutWithMock(revert, 'gclient')
+    self.mox.StubOutWithMock(revert, 'gclient_scm')
     self.mox.StubOutWithMock(revert, 'os')
     self.mox.StubOutWithMock(revert.os, 'path')
     self.mox.StubOutWithMock(revert.sys, 'stdout')
@@ -35,7 +36,8 @@ class RevertUnittest(RevertTestsBase):
     members = [
       'CaptureSVNLog', 'GetRepoBase', 'Main', 'ModifiedFile', 'NoBlameList',
       'NoModifiedFile', 'OutsideOfCheckout', 'Revert', 'UniqueFast',
-      'exceptions', 'gcl', 'gclient', 'optparse', 'os', 'sys', 'xml'
+      'exceptions', 'gcl', 'gclient', 'gclient_scm', 'gclient_utils',
+      'optparse', 'os', 'sys', 'xml'
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(revert, members)
@@ -45,7 +47,6 @@ class RevertMainUnittest(RevertTestsBase):
   def setUp(self):
     RevertTestsBase.setUp(self)
     self.mox.StubOutWithMock(revert, 'gcl')
-    self.mox.StubOutWithMock(revert, 'gclient')
     self.mox.StubOutWithMock(revert, 'os')
     self.mox.StubOutWithMock(revert.os, 'path')
     self.mox.StubOutWithMock(revert, 'sys')
@@ -78,7 +79,7 @@ class RevertRevertUnittest(RevertTestsBase):
     }]
     revert.CaptureSVNLog(['-r', '42', '-v']).AndReturn(entries)
     revert.GetRepoBase().AndReturn('proto://fqdn/repo/')
-    revert.gclient.CaptureSVNStatus(['random_file']).AndReturn([])
+    revert.gclient_scm.CaptureSVNStatus(['random_file']).AndReturn([])
     revert.gcl.RunShell(['svn', 'up', 'random_file'])
     revert.os.path.isdir('random_file').AndReturn(False)
     status = """--- Reverse-merging r42 into '.':

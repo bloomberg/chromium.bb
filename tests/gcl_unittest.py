@@ -19,7 +19,7 @@ class GclTestsBase(super_mox.SuperMoxTestBase):
     super_mox.SuperMoxTestBase.setUp(self)
     self.fake_root_dir = self.RootDir()
     self.mox.StubOutWithMock(gcl, 'RunShell')
-    self.mox.StubOutWithMock(gcl.gclient, 'CaptureSVNInfo')
+    self.mox.StubOutWithMock(gcl.gclient_scm, 'CaptureSVNInfo')
     self.mox.StubOutWithMock(gcl.os, 'getcwd')
     self.mox.StubOutWithMock(gcl.os, 'chdir')
     self.mox.StubOutWithMock(gcl.os, 'close')
@@ -55,7 +55,7 @@ class GclUnittest(GclTestsBase):
       'PresubmitCL', 'ReadFile', 'REPOSITORY_ROOT', 'RunShell',
       'RunShellWithReturnCode', 'SendToRietveld', 'TryChange',
       'UnknownFiles', 'UploadCL', 'Warn', 'WriteFile',
-      'gclient', 'getpass', 'main', 'os', 'random', 're',
+      'gclient_scm', 'gclient_utils', 'getpass', 'main', 'os', 'random', 're',
       'shutil', 'string', 'subprocess', 'sys', 'tempfile',
       'upload', 'urllib2', 'xml',
     ]
@@ -80,7 +80,7 @@ class GclUnittest(GclTestsBase):
     result = {
       "Repository Root": ""
     }
-    gcl.gclient.CaptureSVNInfo("/bleh/prout", print_error=False).AndReturn(
+    gcl.gclient_scm.CaptureSVNInfo("/bleh/prout", print_error=False).AndReturn(
         result)
     self.mox.ReplayAll()
     self.assertRaises(Exception, gcl.GetRepositoryRoot)
@@ -90,10 +90,11 @@ class GclUnittest(GclTestsBase):
     root_path = gcl.os.path.join('bleh', 'prout', 'pouet')
     gcl.os.getcwd().AndReturn(root_path)
     result1 = { "Repository Root": "Some root" }
-    gcl.gclient.CaptureSVNInfo(root_path, print_error=False).AndReturn(result1)
+    gcl.gclient_scm.CaptureSVNInfo(root_path,
+                                   print_error=False).AndReturn(result1)
     gcl.os.getcwd().AndReturn(root_path)
     results2 = { "Repository Root": "A different root" }
-    gcl.gclient.CaptureSVNInfo(
+    gcl.gclient_scm.CaptureSVNInfo(
         gcl.os.path.dirname(root_path),
         print_error=False).AndReturn(results2)
     self.mox.ReplayAll()
