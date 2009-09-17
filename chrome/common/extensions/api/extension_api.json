@@ -10,7 +10,8 @@
           "name": {"type": "string"},
           "onDisconnect": {"type": "object"},
           "onMessage": {"type": "object"},
-          "postMessage": {"type": "function"}
+          "postMessage": {"type": "function"},
+          "tab": {"$ref": "Tab", "optional": true, "description":"This property will <b>only</b> be present on ports passed to onConnect listeners when the connection was opened from a tab or content script."}
         }
       }
     ],

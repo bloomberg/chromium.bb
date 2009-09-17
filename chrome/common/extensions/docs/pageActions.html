@@ -237,24 +237,25 @@ the RSS feed for the current page.
 
 <p>Page action events are created dynamically using the id of the page action declared in the manifest. For example, a page action with id 'foo' will setup an event called chrome.pageActions["foo"]. An extension would then register listeners like so:</p>
 
-<pre>chrome.pageActions["foo"].addListener(function(object reply) {
-  console.log(reply.pageActionId);  // Display the id of the page action.
-  console.log(reply.data.tabId);    // Display the id of the tab for which the page action event applies.
-  console.log(reply.data.tabUrl);   // Display the URL of the page for which the page action event applies.
+<pre>chrome.pageActions["foo"].addListener(function(pageActionId, info) {
+  console.log(pageActionId);  // Display the id of the page action.
+  console.log(info.tabId);    // Display the id of the tab for which the page action event applies.
+  console.log(info.tabUrl);   // Display the URL of the page for which the page action event applies.
+  console.log(info.button);   // Display the number of the button which the user clicked with.
 });</pre>
 
 <p style="margin-left:25px;"><strong>Parameters</strong></p>
 
-<p style="margin-left:25px;"><i>reply ( object )</i><br>
-&nbsp;&nbsp;&nbsp;An object containing the information about the event. Contains the following properties:</p>
-<p style="margin-left:50px;"><i>pageActionId ( string )</i><br>
+<p style="margin-left:25px;"><i>pageActionId ( string )</i><br>
 &nbsp;&nbsp;&nbsp;The id of the page action that triggered the event.</p>
-<p style="margin-left:50px;"><i>data ( object )</i><br>
-&nbsp;&nbsp;&nbsp;An object specifying what tab and which page the event applies to. Contains the following properties:</p>
+<p style="margin-left:25px;"><i>info ( object )</i><br>
+&nbsp;&nbsp;&nbsp;An object containing information about the event and what tab and page the event applies to. Contains the following properties:</p>
 <p style="margin-left:75px;"><i>tabId ( string )</i><br>
 &nbsp;&nbsp;&nbsp;The id of the tab that was active when the event was triggered.</p>
 <p style="margin-left:75px;"><i>tabUrl ( string )</i><br>
 &nbsp;&nbsp;&nbsp;The url of the page for which the page action applies to.</p>
+<p style="margin-left:75px;"><i>button ( integer )</i><br>
+&nbsp;&nbsp;&nbsp;The mouse button which was pressed.  The left button is 1, middle button is 2, and right button is 3.</p>
 <!-- END AUTHORED CONTENT -->
 </div>
 
