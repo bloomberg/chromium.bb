@@ -74,7 +74,6 @@ import os
 import re
 import stat
 import sys
-import time
 import urlparse
 import urllib
 
@@ -749,7 +748,7 @@ class GClient(object):
         # Use entry and not entry_fixed there.
         if entry not in entries and os.path.exists(e_dir):
           if not self._options.delete_unversioned_trees or \
-             CaptureSVNStatus(e_dir):
+             gclient_scm.CaptureSVNStatus(e_dir):
             # There are modified files in this entry. Keep warning until
             # removed.
             entries[entry] = None
@@ -808,7 +807,8 @@ class GClient(object):
           return (original_url, int(revision_overrides[name]))
         else:
           # TODO(aharper): SVN/SCMWrapper cleanup (non-local commandset)
-          return (original_url, CaptureSVNHeadRevision(original_url))
+          return (original_url,
+                  gclient_scm.CaptureSVNHeadRevision(original_url))
       else:
         url_components = original_url.split("@")
         if revision_overrides.has_key(name):
@@ -824,7 +824,7 @@ class GClient(object):
       (url, rev) = GetURLAndRev(name, solution["url"])
       entries[name] = "%s@%d" % (url, rev)
       # TODO(aharper): SVN/SCMWrapper cleanup (non-local commandset)
-      entries_deps_content[name] = CaptureSVN(
+      entries_deps_content[name] = gclient_scm.CaptureSVN(
                                      ["cat",
                                       "%s/%s@%d" % (url,
                                                     self._options.deps_file,
@@ -851,7 +851,7 @@ class GClient(object):
           raise Error("From %s missing revisioned url" % deps[d].module_name)
         deps_parent_url_components = deps_parent_url.split("@")
         # TODO(aharper): SVN/SCMWrapper cleanup (non-local commandset)
-        deps_parent_content = CaptureSVN(
+        deps_parent_content = gclient_scm.CaptureSVN(
                                 ["cat",
                                  "%s/%s@%s" % (deps_parent_url_components[0],
                                                self._options.deps_file,
