@@ -881,6 +881,16 @@
    fun:_ZN10RenderView17OnDownloadFavIconEiRK4GURLi
 }
 {
+   bug_17451b
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN11webkit_glue15ResourceFetcher5StartEPN6WebKit8WebFrameE
+   ...
+   fun:_ZN11WebViewImpl13DownloadImageEiRK4GURLi
+   fun:_ZN10RenderView17OnDownloadFavIconEiRK4GURLi
+}
+{
    bug_17540
    Memcheck:Leak
    fun:_Znw*
