@@ -140,7 +140,8 @@ class SVN(SCM):
     for file in files:
       # Use svn info output instead of os.path.isdir because the latter fails
       # when the file is deleted.
-      if gclient.CaptureSVNInfo(file).get("Node Kind") in ("dir", "directory"):
+      if gclient_scm.CaptureSVNInfo(file).get("Node Kind") in ("dir",
+                                                               "directory"):
         continue
       # If the user specified a custom diff command in their svn config file,
       # then it'll be used when we do svn diff, which we don't want to happen
