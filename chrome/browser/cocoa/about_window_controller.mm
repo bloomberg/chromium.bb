@@ -10,7 +10,6 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/app/keystone_glue.h"
-#include "chrome/browser/browser_list.h"
 #import "chrome/browser/cocoa/about_window_controller.h"
 #import "chrome/browser/cocoa/background_tile_view.h"
 #include "chrome/browser/cocoa/restart_browser.h"
@@ -163,7 +162,7 @@ NSAttributedString* BuildLegalTextBlock() {
   NSString* about_terms = base::SysWideToNSString(w_about_terms);
   NSString* terms_link_text = l10n_util::GetNSString(IDS_TERMS_OF_SERVICE);
 
-  AttributedStringAppendString(legal_block, @"\n\n");
+  AttributedStringAppendString(legal_block, @"\n");
   sub_str = [about_terms substringToIndex:url_offsets[0]];
   AttributedStringAppendString(legal_block, sub_str);
   AttributedStringAppendHyperlink(legal_block, terms_link_text, kTOS);
@@ -210,16 +209,9 @@ NSAttributedString* BuildLegalTextBlock() {
   DCHECK(logoImage);
   [logoView_ setImage:logoImage];
 
-  [legalText_ insertText:BuildLegalTextBlock()];
+  // Put the legal text into
+  [legalBlock_ setAttributedStringValue:BuildLegalTextBlock()];
 
-  // Resize our text view now so that the |updateShift| below is set correctly.
-  NSRect oldLegalRect = [legalBlock_ frame];
-  [legalText_ sizeToFit];
-  NSRect newRect = oldLegalRect;
-  newRect.size.height = [legalText_ frame].size.height;
-  [legalBlock_ setFrame:newRect];
-  CGFloat legalShift = newRect.size.height - oldLegalRect.size.height;
-  
   KeystoneGlue* keystone = [self defaultKeystoneGlue];
   CGFloat updateShift = 0.0;
   if (keystone) {
@@ -234,8 +226,12 @@ NSAttributedString* BuildLegalTextBlock() {
     // (and it's spacing).
     updateShift = NSMinY([legalBlock_ frame]) - NSMinY([updateBlock_ frame]);
   }
-  
+
   // Adjust the sizes/locations.
+
+  CGFloat legalShift =
+      [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:legalBlock_];
+
   NSRect rect = [legalBlock_ frame];
   rect.origin.y -= updateShift;
   [legalBlock_ setFrame:rect];
@@ -382,15 +378,6 @@ NSAttributedString* BuildLegalTextBlock() {
                                 IntToString16(kUpdateInstallFailedToStart));
     [self stopProgressMessage:message imageID:IDR_UPDATE_FAIL];
   }
-}
-
-- (BOOL)textView:(NSTextView *)aTextView
-   clickedOnLink:(id)link
-         atIndex:(NSUInteger)charIndex {
-  BrowserList::GetLastActive()->
-    OpenURL(GURL([link UTF8String]), GURL(), NEW_WINDOW,
-            PageTransition::LINK);
-  return YES;
 }
 
 - (NSButton*)updateButton {

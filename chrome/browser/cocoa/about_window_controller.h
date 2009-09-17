@@ -21,8 +21,7 @@
   IBOutlet NSTextField* version_;
   IBOutlet BackgroundTileView* backgroundView_;
   IBOutlet NSImageView* logoView_;
-  IBOutlet NSView* legalBlock_;
-  IBOutlet NSTextView* legalText_;
+  IBOutlet NSTextField* legalBlock_;
   IBOutlet NSView* updateBlock_;  // Holds everything related to updates
   IBOutlet NSProgressIndicator* spinner_;
   IBOutlet NSImageView* updateStatusIndicator_;
