@@ -3806,6 +3806,11 @@
         'test/automated_ui_tests/automated_ui_tests.h',
       ],
       'conditions': [
+        ['OS=="linux"', {
+          'dependencies': [
+            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+          ],
+        }],
         ['OS=="win"', {
           'include_dirs': [
             'third_party/wtl/include',
@@ -3888,6 +3893,7 @@
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
+            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
           'sources!': [
             # TODO(port)
@@ -4301,6 +4307,7 @@
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:nss',
+            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
           'sources': [
             'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
@@ -4481,6 +4488,7 @@
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
+            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
         ['OS=="linux" and toolkit_views==1', {
@@ -4603,6 +4611,7 @@
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
+            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
         ['OS=="win" or (OS=="linux" and toolkit_views==1)', {
@@ -4635,6 +4644,7 @@
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
+            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
         ['OS=="win"', {
@@ -4667,6 +4677,7 @@
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
+            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
       ],
@@ -5233,6 +5244,7 @@
             ['OS=="linux"', {
               'dependencies': [
                 '../build/linux/system.gyp:gtk',
+                '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
               ],
               'sources!': [
                 # TODO(port):
@@ -5307,6 +5319,7 @@
             ['OS=="linux"', {
               'dependencies': [
                 '../build/linux/system.gyp:gtk',
+                '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
               ],
               'sources!': [
                 # TODO(port)
@@ -5430,6 +5443,7 @@
             ['OS=="linux"', {
               'dependencies': [
                 '../build/linux/system.gyp:gtk',
+                '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
               ],
             }],
             ['OS=="linux" and (toolkit_views==1 or chromeos==1)', {
@@ -6325,7 +6339,7 @@
             }],
           ],
         },
-        
+
         {
           'target_name': 'sync_unit_tests',
           'type': 'executable',
