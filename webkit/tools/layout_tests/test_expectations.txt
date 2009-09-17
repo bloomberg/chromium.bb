@@ -1659,6 +1659,7 @@ BUG10446 LINUX : LayoutTests/editing/execCommand/selectAll.html = FAIL
 
 // Regressions from merge 41559:41588, probably just needs rebaselining.
 BUG10675 MAC : chrome/fast/forms/basic-textareas-quirks.html = FAIL
+BUG10675 MAC : chrome/fast/forms/basic-textareas.html = FAIL
 
 // Started failing 3/12/09. Unclear which CL caused it though.
 BUG10448 MAC : LayoutTests/fast/overflow/image-selection-highlight.html = FAIL
@@ -2273,6 +2274,9 @@ BUG21439 : LayoutTests/userscripts/simple-stylesheet.html = FAIL
 // New database test that fails.
 BUG21442 : LayoutTests/storage/test-authorizer.html = TIMEOUT
 
+// Need investigation after we enable file URL universal access in test shell.
+BUG_JIANLI : LayoutTests/editing/selection/drag-in-iframe.html = FAIL
+
 // New test added in r48318 (GoogleURL bug)
 BUG21764 : LayoutTests/fast/forms/ValidityState-typeMismatch-url.html = FAIL
 
@@ -2295,6 +2299,9 @@ BUG21859 WIN-VISTA : LayoutTests/fast/text/basic/006.html = FAIL
 BUG21859 WIN-XP : LayoutTests/fast/text/line-breaks.html = FAIL
 BUG21859 WIN : LayoutTests/fast/overflow/overflow-float-stacking.html = FAIL
 BUG21859 WIN : LayoutTests/tables/mozilla/bugs/bug96343.html = FAIL
+
+// WK roll 48388:48399 (brettw)
+BUG21919 WIN : LayoutTests/http/tests/security/mixedContent/insecure-css-in-main-frame.html = FAIL
 
 // Flaky. The width of containing RenderBlocks sometimes becomes larger
 BUG21958 WIN MAC LINUX DEBUG : LayoutTests/svg/hixie/error/012.xml = FAIL PASS
