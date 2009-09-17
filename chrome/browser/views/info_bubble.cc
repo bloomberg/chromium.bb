@@ -266,9 +266,10 @@ void InfoBubble::Init(views::Window* parent,
   BorderContents* border_contents = new BorderContents;
   gfx::Rect contents_bounds;
   border_contents->InitAndGetBounds(position_relative_to,
-      contents->GetPreferredSize(), is_rtl, &contents_bounds, &window_bounds);
+      contents->GetPreferredSize(), contents->UILayoutIsRightToLeft(),
+      &contents_bounds, &window_bounds);
   // This new view must be added before |contents| so it will paint under it.
-  contents_view->AddChildView(border_contents, 0);
+  contents_view->AddChildView(0, border_contents);
 
   // |contents_view| has no layout manager, so we have to explicitly position
   // its children.
