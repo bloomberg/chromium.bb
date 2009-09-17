@@ -1,2 +1,4 @@
 # Hangs sometimes; see http://crbugs.com/22146
 VisitedLinkEventsTest.Coalescense
+# Hangs sometimes; see http://crbugs.com/22160
+VisitedLinkRelayTest.Basics
