@@ -20,7 +20,7 @@ import subprocess
 import sys
 import os
 
-script_dir = os.path.join(os.path.dirname(sys.argv[0]))
+script_dir = os.path.join(os.path.dirname(__file__))
 third_party = os.path.normpath(
   os.path.join(script_dir, '..', '..', '..', 'third_party'))
 pythonpath = os.pathsep.join([os.path.join(third_party, 'gflags', 'python'),

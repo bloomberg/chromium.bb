@@ -1,16 +1,16 @@
 vars = {
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "nixysa_rev": "54",
-  "chromium_rev": "26261",
+  "chromium_rev": "26475",
   "o3d_code_rev": "145",
   "skia_rev": "341",
   "gyp_rev": "651",
   "gtest_rev": "267",
   "gflags_rev": "30",
   "breakpad_rev": "391",
-  "v8_rev": "2866",
+  "v8_rev": "2901",
   "icu_rev": "25717",
-  "nacl_rev": "569",
+  "nacl_rev": "730",
 }
 
 deps = {

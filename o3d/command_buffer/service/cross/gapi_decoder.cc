@@ -86,8 +86,9 @@ BufferSyncInterface::ParseError GAPIDecoder::DoCommand(
     const void* args) {
   if (command < arraysize(g_command_info)) {
     const CommandInfo& info = g_command_info[command];
-    if ((info.arg_flags == cmd::kFixed && arg_count == info.arg_count) ||
-        (info.arg_flags == cmd::kAtLeastN && arg_count > info.arg_count)) {
+	unsigned int info_arg_count = static_cast<unsigned int>(info.arg_count);
+    if ((info.arg_flags == cmd::kFixed && arg_count == info_arg_count) ||
+        (info.arg_flags == cmd::kAtLeastN && arg_count > info_arg_count)) {
       switch (command) {
         #define O3D_COMMAND_BUFFER_CMD_OP(name)                    \
           case cmd::name::kCmdId:                                  \
