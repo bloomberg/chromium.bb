@@ -36,6 +36,7 @@ class BaseTestCase(super_mox.SuperMoxTestBase):
     super_mox.SuperMoxTestBase.setUp(self)
     self.mox.StubOutWithMock(gclient.os.path, 'exists')
     self.mox.StubOutWithMock(gclient.os.path, 'isdir')
+    self.mox.StubOutWithMock(gclient.os, 'remove')
     self.mox.StubOutWithMock(gclient.sys, 'stdout')
     self.mox.StubOutWithMock(gclient_utils, 'subprocess')
     # These are not tested.
@@ -1110,6 +1111,26 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     print(os.path.join(base_path, 'a'))
     print(os.path.join(base_path, 'b'))
     gclient_scm.RunSVN(['revert', 'a', 'b'], base_path)
+
+    self.mox.ReplayAll()
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
+    file_list = []
+    scm.revert(options, self.args, file_list)
+
+  def testRevertUnversionedUnexpectedFile(self):
+    options = self.Options(verbose=True)
+    base_path = os.path.join(self.root_dir, self.relpath)
+    gclient.os.path.isdir(base_path).AndReturn(True)
+    items = [
+      ('~      ', 'a'),
+    ]
+    gclient_scm.CaptureSVNStatus(base_path).AndReturn(items)
+    file_path = os.path.join(base_path, 'a')
+    print(file_path)
+    gclient_scm.os.remove(file_path).AndRaise(EnvironmentError())
+    gclient_utils.RemoveDirectory(file_path)
+    gclient_scm.RunSVN(['revert', 'a'], base_path)
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
