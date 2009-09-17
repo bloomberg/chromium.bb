@@ -25,24 +25,6 @@ const wchar_t kProfileNickname[] = L"profile.nickname";
 // Its value should be unique within the current user data directory.
 const wchar_t kProfileID[] = L"profile.id";
 
-// A boolean value that when true stipulates that the history of the active
-// tab should be shown in its entirety at the start of the list, rather than
-// being mingled based on view time.
-const wchar_t kRecentlyViewedModelBiasActiveTabHistory[] =
-  L"recently_viewed_model.bias_active_tab_history";
-
-// This is a value that defines the selection mode used by the recently
-// viewed pages model to determine how to load the selected item. values are:
-// 0 - the tab that contains or contained the item should be activated, and
-//     the item navigated to within that tab.
-// 1 - if the tab that contains or contained the item is active, the item
-//     should be navigated to, otherwise a new tab is opened with the
-//     selected item only.
-//
-// ... future
-const wchar_t kRecentlyViewedModelSelectionMode[] =
-  L"recently_viewed_model.selection_mode";
-
 // Used to determine if the last session exited cleanly. Set to false when
 // first opened, and to true when closing. On startup if the value is false,
 // it means the profile didn't exit cleanly.
@@ -126,10 +108,6 @@ const wchar_t kWebKitJavaEnabled[] =
 
 // Boolean which specifies whether the bookmark bar is visible on all tabs.
 const wchar_t kShowBookmarkBar[] = L"bookmark_bar.show_on_all_tabs";
-
-// Boolean which specifies whether the destinations tab should always be on.
-const wchar_t kAlwaysCreateDestinationsTab[] =
-    L"profile.always_create_destinations_tab";
 
 // Boolean that is true if the password manager is on (will record new
 // passwords and fill in known passwords).
@@ -296,15 +274,9 @@ const wchar_t kShowOmniboxSearchHint[] = L"browser.show_omnibox_search_hint";
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 
-// List of profiles that the app knows about from last run.
-const wchar_t kAvailableProfiles[] = L"profiles.available";
-
 // The metrics client GUID and session ID.
 const wchar_t kMetricsClientID[] = L"user_experience_metrics.client_id";
 const wchar_t kMetricsSessionID[] = L"user_experience_metrics.session_id";
-
-// Boolean set to true when we're recording user metrics.
-const wchar_t kMetricsIsRecording[] = L"user_experience_metrics.record";
 
 // Date/time when the current metrics profile ID was created
 // (which hopefully corresponds to first run).

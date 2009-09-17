@@ -17,8 +17,6 @@ extern const wchar_t kHomePage[];
 extern const wchar_t kProfileName[];
 extern const wchar_t kProfileNickname[];
 extern const wchar_t kProfileID[];
-extern const wchar_t kRecentlyViewedModelBiasActiveTabHistory[];
-extern const wchar_t kRecentlyViewedModelSelectionMode[];
 extern const wchar_t kSessionExitedCleanly[];
 extern const wchar_t kRestoreOnStartup[];
 extern const wchar_t kURLsToRestoreOnStartup[];
@@ -49,7 +47,6 @@ extern const wchar_t kWebKitInspectorSettings[];
 extern const wchar_t kWebKitUsesUniversalDetector[];
 extern const wchar_t kWebKitTextAreasAreResizable[];
 extern const wchar_t kWebKitJavaEnabled[];
-extern const wchar_t kAlwaysCreateDestinationsTab[];
 extern const wchar_t kPasswordManagerEnabled[];
 extern const wchar_t kFormAutofillEnabled[];
 extern const wchar_t kSafeBrowsingEnabled[];
@@ -115,11 +112,8 @@ extern const wchar_t kUseCustomChromeFrame[];
 extern const wchar_t kShowOmniboxSearchHint[];
 
 // Local state
-extern const wchar_t kAvailableProfiles[];
-
 extern const wchar_t kMetricsClientID[];
 extern const wchar_t kMetricsSessionID[];
-extern const wchar_t kMetricsIsRecording[];
 extern const wchar_t kMetricsClientIDTimestamp[];
 extern const wchar_t kMetricsReportingEnabled[];
 extern const wchar_t kMetricsInitialLogs[];
