@@ -734,9 +734,9 @@ void DefineOneByteOpcodes() {
   DefineJump8Opcode(0x7a, InstJp);
   DefineJump8Opcode(0x7b, InstJnp);
   DefineJump8Opcode(0x7c, InstJl);
-  DefineJump8Opcode(0x7d, InstJge);
+  DefineJump8Opcode(0x7d, InstJnl);
   DefineJump8Opcode(0x7e, InstJle);
-  DefineJump8Opcode(0x7f, InstJg);
+  DefineJump8Opcode(0x7f, InstJnle);
 
   /* For the moment, show some examples of Opcodes in Mod/Rm. */
   DefineGroup1OpcodesInModRm();
@@ -907,8 +907,22 @@ void DefineOneByteOpcodes() {
 
   DefineXchgRegister();
 
-  /* 0x98 0x99
-     0x9a 0x9b 0x9c 0x9d 0x9e 0x9f */
+  /* 0x99 0x9a 0x9b 0x9c 0x9d 0x9e 0x9f */
+
+  DefineOpcode(0x98, NACLi_386,
+               InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+               InstCbw);
+  DefineOperand(RegAX, OpFlag(OpSet) | OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOpcode(0x98, NACLi_386,
+               InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+               InstCwde);
+  DefineOperand(RegEAX, OpFlag(OpSet) | OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0x98, NACLi_386,
+               InstFlag(OperandSize_o) | InstFlag(OpcodeUsesRexW) |
+               InstFlag(Opcode64Only),
+               InstCdqe);
+  DefineOperand(RegRAX, OpFlag(OpSet) | OpFlag(OpUse) | OpFlag(OpImplicit));
 
   DefineOpcode(0xa0, NACLi_386,
                InstFlag(OperandSize_b) | InstFlag(OpcodeHasImmed_Addr),

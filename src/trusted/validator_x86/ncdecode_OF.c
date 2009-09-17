@@ -65,6 +65,21 @@ static void DefineSetCC(uint8_t opcode, InstMnemonic name) {
   DefineOperand(E_Operand, OpFlag(OpSet));
 }
 
+static void DefineCmovCC(uint8_t opcode, InstMnemonic name) {
+  DefineOpcode(opcode, NACLi_CMOV,
+               InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |
+               InstFlag(OpcodeUsesModRm), name);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+
+  DefineOpcode(opcode, NACLi_CMOV,
+               InstFlag(OperandSize_o) | InstFlag(OpcodeUsesModRm) |
+               InstFlag(Opcode64Only) | InstFlag(OpcodeUsesRexW),
+               name);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+}
+
 void Define0FOpcodes() {
   DefineOpcodePrefix(Prefix0F);
 
@@ -82,6 +97,25 @@ void Define0FOpcodes() {
                InstNop);
   DefineOperand(Opcode0, OpFlag(OperandExtendsOpcode));
 
+  /* CMOVcc */
+  DefineCmovCC(0x40, InstCmovo);
+  DefineCmovCC(0x41, InstCmovno);
+  DefineCmovCC(0x42, InstCmovb);
+  DefineCmovCC(0x43, InstCmovnb);
+  DefineCmovCC(0x44, InstCmovz);
+  DefineCmovCC(0x45, InstCmovnz);
+  DefineCmovCC(0x46, InstCmovbe);
+  DefineCmovCC(0x47, InstCmovnbe);
+  DefineCmovCC(0x48, InstCmovs);
+  DefineCmovCC(0x49, InstCmovns);
+  DefineCmovCC(0x4a, InstCmovp);
+  DefineCmovCC(0x4b, InstCmovnp);
+  DefineCmovCC(0x4c, InstCmovl);
+  DefineCmovCC(0x4d, InstCmovnl);
+  DefineCmovCC(0x4e, InstCmovle);
+  DefineCmovCC(0x4f, InstCmovnle);
+
+  /* JMPcc */
   DefineJmp0FPair(0x80, InstJo);
   DefineJmp0FPair(0x81, InstJno);
   DefineJmp0FPair(0x82, InstJb);
@@ -95,10 +129,11 @@ void Define0FOpcodes() {
   DefineJmp0FPair(0x8a, InstJp);
   DefineJmp0FPair(0x8b, InstJnp);
   DefineJmp0FPair(0x8c, InstJl);
-  DefineJmp0FPair(0x8d, InstJge);
+  DefineJmp0FPair(0x8d, InstJnl);
   DefineJmp0FPair(0x8e, InstJle);
-  DefineJmp0FPair(0x8f, InstJg);
+  DefineJmp0FPair(0x8f, InstJnle);
 
+  /* SETcc */
   DefineSetCC(0x90, InstSeto);
   DefineSetCC(0x91, InstSetno);
   DefineSetCC(0x92, InstSetb);
@@ -112,16 +147,46 @@ void Define0FOpcodes() {
   DefineSetCC(0x9a, InstSetp);
   DefineSetCC(0x9b, InstSetnp);
   DefineSetCC(0x9c, InstSetl);
-  DefineSetCC(0x9d, InstSetge);
+  DefineSetCC(0x9d, InstSetnl);
   DefineSetCC(0x9e, InstSetle);
-  DefineSetCC(0x9f, InstSetg);
+  DefineSetCC(0x9f, InstSetnle);
 
+  /* CPUID */
   DefineOpcode(0xa2, NACLi_386, 0, InstCpuid);
   DefineOperand(RegEAX, OpFlag(OpSet) | OpFlag(OpImplicit));
   DefineOperand(RegEBX, OpFlag(OpSet) | OpFlag(OpImplicit));
   DefineOperand(RegECX, OpFlag(OpSet) | OpFlag(OpImplicit));
   DefineOperand(RegEDX, OpFlag(OpSet) | OpFlag(OpImplicit));
 
+  /* MOVZX */
+  DefineOpcode(0xb6, NACLi_386,
+               InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |
+               InstFlag(OpcodeUsesModRm),
+               InstMovzx);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Eb_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xb6, NACLi_386,
+               InstFlag(Opcode64Only) | InstFlag(OperandSize_o) |
+               InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm),
+               InstMovzx);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Eb_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xb7, NACLi_386,
+               InstFlag(OperandSize_v) | InstFlag(OpcodeUsesModRm),
+               InstMovzx);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Ew_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xb7, NACLi_386,
+               InstFlag(Opcode64Only) | InstFlag(OperandSize_o) |
+               InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm),
+               InstMovzx);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Ew_Operand, OpFlag(OpUse));
+
+  /* MOVSX */
   DefineOpcode(0xbe, NACLi_386,
                InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |
                InstFlag(OpcodeUsesModRm),

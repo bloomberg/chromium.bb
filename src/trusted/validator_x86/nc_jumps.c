@@ -546,8 +546,8 @@ void NcJumpValidator(NcValidatorState* state,
     case InstJb:
     case InstJbe:
     case InstJcxz:
-    case InstJg:
-    case InstJge:
+    case InstJnl:
+    case InstJnle:
     case InstJl:
     case InstJle:
     case InstJmp:
