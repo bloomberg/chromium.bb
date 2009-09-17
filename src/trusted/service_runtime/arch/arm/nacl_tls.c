@@ -136,8 +136,10 @@ uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
   NaClLog(2,
           "NaClTlsAllocate: tdb %x size %d idx %d\n",
           (uint32_t) tdb, size, idx);
-  if (idx < 0) {
-    NaClLog(LOG_FATAL, "cannot allocate new thread idx tdb %x\n", tdb);
+  if (CombinedDescriptorExtractIdx(idx) != idx) {
+    NaClLog(LOG_FATAL,
+            "cannot allocate new thread idx tdb %x\n",
+            (uint32_t)tdb);
     return ~0;
   }
 
