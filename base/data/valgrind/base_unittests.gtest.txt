@@ -12,4 +12,4 @@ ObserverListThreadSafeTest.CrossThreadObserver
 ObserverListThreadSafeTest.CrossThreadNotifications
 
 # Hangs sometimes on linux, see http://crbug.com/22138
-ClipboardTest.ClearTest
+ClipboardTest.*
