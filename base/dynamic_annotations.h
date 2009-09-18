@@ -17,19 +17,18 @@
 // dynamic analysis tool being used.
 //
 // This file supports the following dynamic analysis tools:
-// - None (NDEBUG is defined).
+// - None (NVALGRIND is defined).
 //    Macros are defined empty.
-// - ThreadSanitizer (NDEBUG is not defined).
+// - ThreadSanitizer (NVALGRIND is not defined).
 //    Macros are defined as calls to non-inlinable empty functions
 //    that are intercepted by ThreadSanitizer.
 //
 #ifndef BASE_DYNAMIC_ANNOTATIONS_H_
 #define BASE_DYNAMIC_ANNOTATIONS_H_
 
-// All the annotation macros are in effect only in debug mode.
-#ifndef NDEBUG
-// Debug build.
+#include "base/third_party/valgrind/valgrind.h"
 
+#ifndef NVALGRIND
 // -------------------------------------------------------------
 // Annotations useful when implementing condition variables such as CondVar,
 // using conditional critical sections (Await/LockWhen) and when constructing
@@ -309,8 +308,8 @@ inline T ANNOTATE_UNPROTECTED_READ(const volatile T &x) {
     static static_var ## _annotator the ## static_var ## _annotator;\
   }
 
-#else  // NDEBUG is defined
-// Release build, empty macros.
+#else
+// NVALGRIND is defined, empty macros.
 
 #define ANNOTATE_RWLOCK_CREATE(lock) // empty
 #define ANNOTATE_RWLOCK_DESTROY(lock) // empty
@@ -344,7 +343,7 @@ inline T ANNOTATE_UNPROTECTED_READ(const volatile T &x) {
 #define ANNOTATE_UNPROTECTED_READ(x) (x)
 #define ANNOTATE_BENIGN_RACE_STATIC(static_var, description)  // empty
 
-#endif  // NDEBUG
+#endif  // NVALGRIND
 
 // Return non-zero value if running under valgrind.
 extern "C" int RunningOnValgrind();

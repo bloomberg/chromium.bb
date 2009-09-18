@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/dynamic_annotations.h"
-#include "base/third_party/valgrind/valgrind.h"
 
-#ifndef NDEBUG
+#ifndef NVALGRIND
 // Each function is empty and called (via a macro) only in debug mode.
 // The arguments are captured by dynamic tools at runtime.
 
@@ -56,7 +55,7 @@ extern "C" void AnnotateIgnoreWritesBegin(const char *file, int line) {}
 extern "C" void AnnotateIgnoreWritesEnd(const char *file, int line) {}
 extern "C" void AnnotateNoOp(const char *file, int line,
                              const volatile void *arg) {}
-#endif // NDEBUG
+#endif // NVALGRIND
 
 // When running under valgrind, a non-zero value will be returned.
 extern "C" int RunningOnValgrind() {
