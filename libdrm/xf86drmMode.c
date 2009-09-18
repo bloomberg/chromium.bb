@@ -116,6 +116,9 @@ void drmModeFreeConnector(drmModeConnectorPtr ptr)
 	if (!ptr)
 		return;
 
+	drmFree(ptr->encoders);
+	drmFree(ptr->prop_values);
+	drmFree(ptr->props);
 	drmFree(ptr->modes);
 	drmFree(ptr);
 
