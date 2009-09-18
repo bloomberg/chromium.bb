@@ -9,14 +9,6 @@
 }
 
 {
-  bug_18488
-  ThreadSanitizer:Race
-  ...
-  fun:*RefCountedBase*
-  fun:*HostResolver*
-}
-
-{
   bug_21259
   ThreadSanitizer:Race
   ...
