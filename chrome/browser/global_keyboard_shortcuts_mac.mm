@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <Carbon/Carbon.h>
+
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 
 #include "base/basictypes.h"
@@ -9,23 +11,27 @@
 
 const KeyboardShortcutData* GetKeyboardShortCutTable(size_t* num_entries) {
   static const KeyboardShortcutData keyboard_shortcuts[] = {
-    {true,  true,  false, 30  /* ] */,       IDC_SELECT_NEXT_TAB},
-    {false, false, true,  121 /* pg down */, IDC_SELECT_NEXT_TAB},
-    {false, false, true,  48 /* tab */,      IDC_SELECT_NEXT_TAB},
-    {true,  true,  false, 33  /* [ */,       IDC_SELECT_PREVIOUS_TAB},
-    {false, false, true,  116 /* pg_up */,   IDC_SELECT_PREVIOUS_TAB},
-    {false, true,  true,  48 /* tab */,      IDC_SELECT_PREVIOUS_TAB},
-    // Cmd-0..8 select the Nth tab, with cmd-9 being "last tab". Note that the
-    // vkeys are *not* in natural order.
-    {true, false,  false,  18 /* 1 */,       IDC_SELECT_TAB_0},
-    {true, false,  false,  19 /* 2 */,       IDC_SELECT_TAB_1},
-    {true, false,  false,  20 /* 3 */,       IDC_SELECT_TAB_2},
-    {true, false,  false,  21 /* 4 */,       IDC_SELECT_TAB_3},
-    {true, false,  false,  23 /* 5 */,       IDC_SELECT_TAB_4},
-    {true, false,  false,  22 /* 6 */,       IDC_SELECT_TAB_5},
-    {true, false,  false,  26 /* 7 */,       IDC_SELECT_TAB_6},
-    {true, false,  false,  28 /* 8 */,       IDC_SELECT_TAB_7},
-    {true, false,  false,  25 /* 9 */,       IDC_SELECT_LAST_TAB},
+    {true,  true,  false, kVK_ANSI_RightBracket, IDC_SELECT_NEXT_TAB},
+    {false, false, true,  kVK_PageDown,      IDC_SELECT_NEXT_TAB},
+    {false, false, true,  kVK_Tab,           IDC_SELECT_NEXT_TAB},
+    {true,  true,  false, kVK_ANSI_LeftBracket, IDC_SELECT_PREVIOUS_TAB},
+    {false, false, true,  kVK_PageUp,        IDC_SELECT_PREVIOUS_TAB},
+    {false, true,  true,  kVK_Tab,           IDC_SELECT_PREVIOUS_TAB},
+    // Cmd-0..8 select the Nth tab, with cmd-9 being "last tab".
+    {true, false,  false, kVK_ANSI_1,        IDC_SELECT_TAB_0},
+    {true, false,  false, kVK_ANSI_2,        IDC_SELECT_TAB_1},
+    {true, false,  false, kVK_ANSI_3,        IDC_SELECT_TAB_2},
+    {true, false,  false, kVK_ANSI_4,        IDC_SELECT_TAB_3},
+    {true, false,  false, kVK_ANSI_5,        IDC_SELECT_TAB_4},
+    {true, false,  false, kVK_ANSI_6,        IDC_SELECT_TAB_5},
+    {true, false,  false, kVK_ANSI_7,        IDC_SELECT_TAB_6},
+    {true, false,  false, kVK_ANSI_8,        IDC_SELECT_TAB_7},
+    {true, false,  false, kVK_ANSI_9,        IDC_SELECT_LAST_TAB},
+    // TODO(pinkerton): These can't live here yet, they need to be plumbed
+    // through the renderer first so it can override if in a text field.
+    // http://crbug.com/12557
+    // {true, false, false, kVK_LeftArrow,      IDC_BACK},
+    // {true, false, false, kVK_RightArrow,     IDC_FORWARD},
   };
 
   *num_entries = arraysize(keyboard_shortcuts);
