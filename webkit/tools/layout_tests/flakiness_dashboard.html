@@ -88,7 +88,7 @@
       border: 2px solid grey;
       background-color: white;
     }
-    #legend * {
+    #legend-contents * {
       margin: 3px;
       padding: 0 2px;
     }
@@ -131,7 +131,7 @@
     .merge {
       background-color: green;
     }
-    :not(#legend) > .merge {
+    :not(#legend-contents) > .merge {
       width: 1px;
     }
     .separator {
@@ -169,8 +169,6 @@
     }
     #popup {
       background-color: white;
-      overflow: hidden;
-      width: 250px;
       z-index: 1;
       position: absolute;
       border: 3px solid grey;
@@ -179,9 +177,6 @@
       -moz-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
       -webkit-border-radius: 5px;
       -moz-border-radius: 5px;
-    }
-    #popup > * {
-      width: 100%;
     }
     #popup > ul {
       margin: 0;
@@ -244,6 +239,8 @@
   // path used in test_expectations.txt rather than the test path since we
   // don't actually have any data here for skipped tests.
   var perBuilderSkippedPaths = {};
+  // Maps test path to an array of {builder, testResults} objects.
+  var testToResultsMap = {};
 
   // Generic utility functions.
   function $(id) {
@@ -340,6 +337,7 @@
     sortColumn: 'flakiness',
     showWontFix: false,
     showCorrectExpectations: false,
+    showLegend: true,
     showFlaky: true,
     showSkipped: false,
     maxResults: 200,
@@ -418,6 +416,7 @@
       case 'showWontFix':
       case 'showCorrectExpectations':
       case 'showFlaky':
+      case 'showLegend':
         currentState[key] = value == 'true';
 
         return true;
@@ -442,8 +441,6 @@
 
   // Append JSON script elements.
   var resultsByBuilder = {};
-  // Maps test path to an array of {builder, testResults} objects.
-  var testToResultsMap = {};
   var expectationsByTest = {};
   function ADD_RESULTS(builds) {
     for (var builderName in builds) {
@@ -793,7 +790,11 @@
 
       var unexpectedExpectations = [];
       var resultsMap = {}
-      for (var i = 0; i < rawResults.length; i++) {
+      var numResultsSeen = 0;
+      for (var i = 0;
+           i < rawResults.length && numResultsSeen < currentState.maxResults;
+           i++) {
+        numResultsSeen += rawResults[i][0];
         var expectation = getExpectationsFileStringForResult(rawResults[i][1]);
         resultsMap[expectation] = true;
       }
@@ -818,7 +819,11 @@
       }
 
       var times = resultsByBuilder[builderName].tests[test].times;
-      for (var i = 0; i < times.length; i++) {
+      var numResultsSeen = 0;
+      for (var i = 0;
+           i < times.length && numResultsSeen < currentState.maxResults;
+           i++) {
+        numResultsSeen += times[i][0];
         resultsForTest.slowestTime = Math.max(resultsForTest.slowestTime,
             times[i][1]);
       }
@@ -877,8 +882,24 @@
   }
 
   function getLinkHTMLToOpenWindow(url, text) {
-    return '<li class=link onclick="window.open(\'' + url + '\')">' + text +
-        '</li>';
+    return '<div class=link onclick="window.open(\'' + url + '\')">' + text +
+        '</div>';
+  }
+
+  function createBlameListHTML(revisions, index, urlBase, separator, repo) {
+    var thisRevision = revisions[index];
+    if (!thisRevision)
+      return '';
+
+    var previousRevision = revisions[index + 1];
+    if (previousRevision && previousRevision != thisRevision) {
+      previousRevision++;
+      return getLinkHTMLToOpenWindow(
+          urlBase + thisRevision + separator + previousRevision,
+          repo + ' blamelist r' + previousRevision + ':r' + thisRevision);
+    } else {
+      return 'At ' + repo + ' revision: ' + thisRevision;
+    }
   }
 
   function showPopupForBuild(e, builder, index) {
@@ -890,40 +911,32 @@
       html += date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
     }
 
-    html += '<ul>';
-
-    var webkitRevision = resultsByBuilder[builder].webkitRevision;
-    var thisWebkitRevision = webkitRevision[index];
-    if (thisWebkitRevision) {
-      var previousWebkitRevision = webkitRevision[index + 1] ||
-          thisWebkitRevision;
-      html += getLinkHTMLToOpenWindow('http://trac.webkit.org/log/?rev=' +
-              thisWebkitRevision + '&stop_rev=' + previousWebkitRevision,
-          'WebKit blamelist r' + previousWebkitRevision + ':r' +
-              thisWebkitRevision);
-    }
-
-    var chromeRevision = resultsByBuilder[builder].chromeRevision;
-    var thisChromeRevision = chromeRevision[index];
-    if (thisChromeRevision) {
-      var previousChromeRevision = chromeRevision[index + 1] ||
-          thisChromeRevision;
-      html += getLinkHTMLToOpenWindow(
+    html += '<ul><li>' +
+      createBlameListHTML(resultsByBuilder[builder].webkitRevision, index,
+          'http://trac.webkit.org/log/?rev=', '&stop_rev=', 'WebKit') +
+      '</li><li>' +
+      createBlameListHTML(resultsByBuilder[builder].chromeRevision, index,
           'http://build.chromium.org/buildbot/perf/dashboard/ui/' +
-              'changelog.html?url=/trunk/src&mode=html&range=' +
-              previousChromeRevision + ':' + thisChromeRevision,
-          'Chrome blamelist r' + previousChromeRevision + ':r' +
-              thisChromeRevision) +
-          getLinkHTMLToOpenWindow(TEST_RESULTS_BASE_PATH + builders[builder] +
-                  '/' + thisChromeRevision + '/layout-test-results.zip',
-              'layout-test-results.zip');
+          'changelog.html?url=/trunk/src&mode=html&range=', ':', 'Chrome') +
+      '</li>';
+
+    var chromeRevision = resultsByBuilder[builder].chromeRevision[index];
+    if (chromeRevision) {
+      html += '<li><a href="' + TEST_RESULTS_BASE_PATH + builders[builder] +
+          '/' + chromeRevision + '/layout-test-results.zip' +
+          '">layout-test-results.zip</a></li>';
     }
 
     var buildNumbers = resultsByBuilder[builder].buildNumbers;
-    html += getLinkHTMLToOpenWindow(BUILDERS_BASE_PATH + builder + '/builds/' +
-        buildNumbers[index], 'Build log and blamelist') + '</ul>';
+    html += '<li>' +
+        getLinkHTMLToOpenWindow(BUILDERS_BASE_PATH + builder + '/builds/' +
+        buildNumbers[index], 'Build log and blamelist') + '</li></ul>';
 
     showPopup(e, html);
+  }
+
+  function showPopupForTest(e, test) {
+    showPopup(e, getHTMLForIndividulTestOnAllBuilders(test));
   }
 
   function getHtmlForTestResults(test, builder) {
@@ -1024,12 +1037,15 @@
     if (testResult.isFixedTest === undefined) {
       var results = testResult.rawResults;
       var isFixedTest = results[0][1] == 'P';
-      if (isFixedTest && results.length > 1) {
-        var secondResult = results[1][1];
-        isFixedTest = secondResult == 'S' || secondResult == 'F' ||
-            secondResult == 'I';
+      var numResults = results[0][0];
+      if (numResults < currentState.maxResults &&
+          isFixedTest && results.length > 1) {
+        // We don't care what the value of the second set of results is, just
+        // how many results there are.
+        numResults += results[1][0];
       }
-      if (isFixedTest && results.length > 2) {
+      if (numResults < currentState.maxResults &&
+          isFixedTest && results.length > 2) {
         isFixedTest = results.length == 3 && results[2][1] == 'N';
       }
       testResult.isFixedTest = isFixedTest;
@@ -1071,7 +1087,7 @@
     // with results for many builders, so the first column is builder names
     // instead of test paths.
     var testCellHTML = opt_isCrossBuilderView ? builder :
-      '<span class="link" onclick="setState(\'tests\', \'' + test.test +
+      '<span class="link" onclick="showPopupForTest(event, \'' + test.test +
       '\');return false;">' + test.test + '</span>';
 
     return '<tr class="' +
@@ -1207,33 +1223,38 @@
       tableHeaders.unshift('test');
       generatePageForBuilder(currentState.builder);
     }
+
+    $('max-results-input').value = currentState.maxResults;
+    updateLegendDisplay();
   }
 
-  function generatePageForIndividualTests(tests) {
-    // TODO: Add link to trac from individual test page
-    // TODO: Make links on builder pages to tests be to the individual test page
+  function getHTMLForIndividulTestOnAllBuilders(test) {
     for (var builder in builders)
       processTestRunsForBuilder(builder);
 
-    var html = getHTMLForNavBar() +
-      '<b>IF A BUILDER IS NOT LISTED THAT MEANS THE ' +
-      'BUILDER DOES NOT RUN THAT TEST OR ALL RUNS OF THE TEST PASSED.</b>';
+    var testResults = testToResultsMap[test];
+    if (testResults && testResults.length) {
+      var tracURL = TEST_URL_BASE_PATH + test
+      var html = getLinkHTMLToOpenWindow(tracURL, tracURL) +
+          '<div><b>If a builder is not listed, that means the builder does ' +
+          'run that test or all runs of the test passed.</b></div>';
 
-    for (var i = 0; i < tests.length; i++) {
-      html += '<h2>' + tests[i] + '</h2>';
-
-      var testResults = testToResultsMap[tests[i]];
-      if (testResults && testResults.length) {
-        var tableRowsHTML = '';
-        for (var j = 0; j < testResults.length; j++) {
-          tableRowsHTML += getHTMLForSingleTestRow(testResults[j].results,
-              testResults[j].builder, true);
-        }
-        html += getHTMLForTestTable(tableRowsHTML);
-      } else {
-        html +='<div class="not-found">Test not found. Either it does not ' +
-            'exist or it passes on all platforms.</div>';
+      for (var j = 0; j < testResults.length; j++) {
+        html += getHTMLForSingleTestRow(testResults[j].results,
+            testResults[j].builder, true);
       }
+      return getHTMLForTestTable(html);
+    } else {
+      return '<div class="not-found">Test not found. Either it does not ' +
+          'exist or it passes on all platforms.</div>';
+    }
+  }
+
+  function generatePageForIndividualTests(tests) {
+    var html = getHTMLForNavBar();
+    for (var i = 0; i < tests.length; i++) {
+      html += '<h2>' + tests[i] + '</h2>' +
+          getHTMLForIndividulTestOnAllBuilders(tests[i]);
     }
     setFullPageHTML(html);
 
@@ -1253,15 +1274,21 @@
         'onsubmit="setState(\'tests\', tests.value);return false;">' +
         '<div>Show tests on all platforms (slow): </div><input name=tests ' +
         'placeholder="LayoutTests/foo/bar.html,LayoutTests/foo/baz.html" ' +
-        'id=tests-input></form><div id="loading-ui">LOADING...</div>' +
-        '<div id=legend>';
+        'id=tests-input></form>' +
+        '<form id=max-results-form ' +
+        'onsubmit="setState(\'maxResults\', maxResults.value);return false;"' +
+        '><span>Number of results to show (max=500): </span>' +
+        '<input name=maxResults id=max-results-input></form>' +
+        '<div id="loading-ui">LOADING...</div><div id=legend>' +
+        '<div id=legend-toggle>' + getLinkHTMLToToggleLegendDisplay() +
+        '</div><div id=legend-contents>';
 
     for (var expectation in EXPECTATIONS_MAP) {
       html += '<div class=' + expectation + '>' +
           EXPECTATIONS_MAP[expectation] + '</div>';
     }
     return html + '<div class=wrong-expectations>WRONG EXPECTATIONS</div>' +
-        '<div class=merge>WEBKIT MERGE</div></div>';
+        '<div class=merge>WEBKIT MERGE</div></div></div>';
   }
 
   function getLinkHTMLToToggleState(key, linkText) {
@@ -1290,11 +1317,7 @@
         getLinkHTMLToToggleState('showCorrectExpectations',
             'tests with correct expectations') + ' | ' +
         getLinkHTMLToToggleState('showFlaky', 'flaky tests') + ' | ' +
-        '<form id=max-results-form ' +
-        'onsubmit="setState(\'maxResults\', maxResults.value);return false;"' +
-        '><span>Number of results to show: </span>' +
-        '<input name=maxResults id=max-results-input></form> | ' +
-        '<b>All columns are sortable. | Skipped tests are not listed. | ' +
+        '<b>All columns are sortable. | ' +
         'Flakiness reader order is newer --> older runs.</b></div>' +
         testsHTML;
 
@@ -1305,8 +1328,34 @@
       ths[i].addEventListener('click', changeSort, false);
       ths[i].className = "sortable";
     }
+  }
 
-    $('max-results-input').value = currentState.maxResults;
+  function getLinkHTMLToToggleLegendDisplay() {
+    return getLinkHTMLToToggleState('showLegend', 'Legend');
+  }
+
+  function updateLegendDisplay() {
+    $('legend-contents').style.display = currentState.showLegend ? '' : 'none';
+  }
+
+  /**
+   * Clears the processed test state for perBuilderFailures.
+   * TODO(ojan): This really should probably clear all the state we've
+   * generated, but that's kind of a pain given the many global objects state is
+   * stored in. There should probably be one global generatedState
+   * object that all the generated state lives off of.
+   */
+  function clearProcessedTestState() {
+    for (var builder in builders) {
+      delete perBuilderFailures[builder];
+      delete perBuilderPlatformAndBuildType[builder];
+      delete perBuilderWithExpectationsButNoFailures[builder];
+      delete perBuilderSkippedPaths[builder];
+    }
+
+    for (var key in testToResultsMap) {
+      delete testToResultsMap[key]
+    }
   }
 
   /**
@@ -1316,20 +1365,37 @@
   function setState(key, value) {
     for (var i = 0; i < arguments.length; i = i + 2) {
       var key = arguments[i];
-      if (key != 'tests') {
+      if (key != 'tests' && key != 'maxResults') {
         delete currentState.tests;
+      }
+
+      if (key == 'maxResults') {
+        // Processing the test results JSON makes assumptions about the number
+        // of results to show. This makes changing the number of maxResults slow
+        // but is considerably easier than refactoring all the other code.
+        clearProcessedTestState();
       }
 
       currentState[key] = arguments[i + 1];
     }
     window.location.replace(getPermaLinkURL());
-    handleLocationChange();
+    if (key == 'showLegend') {
+      saveStoredWindowLocation();
+      updateLegendDisplay();
+      $('legend-toggle').innerHTML = getLinkHTMLToToggleLegendDisplay();
+    } else {
+      handleLocationChange();
+    }
+  }
+
+  function saveStoredWindowLocation() {
+    oldLocation = window.location.href;
   }
 
   function handleLocationChange() {
     $('loading-ui').style.display = 'block';
     setTimeout(function() {
-      oldLocation = window.location.href;
+      saveStoredWindowLocation();
       generatePage();
     }, 0);
   }
@@ -1370,12 +1436,14 @@
 
     var x = Math.min(targetRect.left - 10,
         document.documentElement.clientWidth - popup.offsetWidth);
+    x = Math.max(0, x);
     popup.style.left = x + document.body.scrollLeft + 'px';
 
     var y = targetRect.top + targetRect.height;
     if (y + popup.offsetHeight > document.documentElement.clientHeight) {
       y = targetRect.top - popup.offsetHeight;
     }
+    y = Math.max(0, y);
     popup.style.top = y + document.body.scrollTop + 'px';
   }
 
