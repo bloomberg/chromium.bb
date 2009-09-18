@@ -2,6 +2,7 @@ vars = {
   "webkit_trunk":
     "http://svn.webkit.org/repository/webkit/trunk",
   "webkit_revision": "48500",
+  "ffmpeg_revision": "26428",
 }
 
 deps = {
@@ -94,8 +95,8 @@ deps_os = {
     "src/third_party/python_24":
       "/trunk/deps/third_party/python_24@22967",
 
-    "src/third_party/ffmpeg/binaries/chromium":
-      "/trunk/deps/third_party/ffmpeg/binaries/win@25436",
+    "src/third_party/ffmpeg/binaries/chromium/win/ia32":
+      "/trunk/deps/third_party/ffmpeg/binaries/win@" + Var("ffmpeg_revision"),
 
     "src/third_party/pthreads-win32":
       "/trunk/deps/third_party/pthreads-win32@26337",
@@ -109,15 +110,31 @@ deps_os = {
       Var("webkit_trunk") + "/WebKit/mac@" + Var("webkit_revision"),
     "src/third_party/WebKit/WebKitLibraries":
       Var("webkit_trunk") + "/WebKitLibraries@" + Var("webkit_revision"),
-    "src/third_party/ffmpeg/binaries/chromium":
-      "/trunk/deps/third_party/ffmpeg/binaries/mac@25436",
+
+    "src/third_party/ffmpeg/binaries/chromium/mac/ia32":
+      "/trunk/deps/third_party/ffmpeg/binaries/mac@" + Var("ffmpeg_revision"),
+    "src/third_party/ffmpeg/binaries/chromium/mac/ia32_dbg":
+      "/trunk/deps/third_party/ffmpeg/binaries/mac_dbg@" +
+      Var("ffmpeg_revision"),
   },
   "unix": {
     # Linux, really.
     "src/third_party/xdg-utils":
       "/trunk/deps/third_party/xdg-utils@26314",
-    "src/third_party/ffmpeg/binaries/chromium":
-      "/trunk/deps/third_party/ffmpeg/binaries/linux@25436",
+
+    "src/third_party/ffmpeg/binaries/chromium/linux/ia32":
+      "/trunk/deps/third_party/ffmpeg/binaries/linux@" +
+      Var("ffmpeg_revision"),
+    "src/third_party/ffmpeg/binaries/chromium/linux/ia32_dbg":
+      "/trunk/deps/third_party/ffmpeg/binaries/linux_dbg@" +
+      Var("ffmpeg_revision"),
+
+    "src/third_party/ffmpeg/binaries/chromium/linux/x64":
+      "/trunk/deps/third_party/ffmpeg/binaries/linux_64@" +
+      Var("ffmpeg_revision"),
+    "src/third_party/ffmpeg/binaries/chromium/linux/x64_dbg":
+      "/trunk/deps/third_party/ffmpeg/binaries/linux_64_dbg@" +
+      Var("ffmpeg_revision"),
   },
 }
 

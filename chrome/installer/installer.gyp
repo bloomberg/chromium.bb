@@ -506,14 +506,6 @@
               ['target_arch=="x64"', {
                 'deb_arch': 'amd64',
                 'rpm_arch': 'x86_64',
-                # TODO(mmoss) The ffmpeg libs are currently 32-bit only. Once
-                # we have 64-bit, this will need to copy the correct versions
-                # to the build output.
-                'input_files!': [
-                  '<(PRODUCT_DIR)/libavcodec.so.52',
-                  '<(PRODUCT_DIR)/libavformat.so.52',
-                  '<(PRODUCT_DIR)/libavutil.so.50',
-                ],
               }],
             ],
           },

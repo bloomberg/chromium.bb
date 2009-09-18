@@ -3241,10 +3241,13 @@
               'copies': [
                 {
                   'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/MacOS',
+                  # TODO(ajwong): This, and the parallel chromium stanza below
+                  # really should find a way to share file paths with
+                  # ffmpeg.gyp so they don't diverge.
                   'files': [
-                    '../third_party/ffmpeg/binaries/chrome/libavcodec.52.dylib',
-                    '../third_party/ffmpeg/binaries/chrome/libavformat.52.dylib',
-                    '../third_party/ffmpeg/binaries/chrome/libavutil.50.dylib',
+                    '../third_party/ffmpeg/binaries/chrome/mac/ia32/libavcodec.52.dylib',
+                    '../third_party/ffmpeg/binaries/chrome/mac/ia32/libavformat.52.dylib',
+                    '../third_party/ffmpeg/binaries/chrome/mac/ia32/libavutil.50.dylib',
                   ],
                 },
               ],
@@ -3257,9 +3260,9 @@
                 {
                   'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/MacOS',
                   'files': [
-                    '../third_party/ffmpeg/binaries/chromium/libavcodec.52.dylib',
-                    '../third_party/ffmpeg/binaries/chromium/libavformat.52.dylib',
-                    '../third_party/ffmpeg/binaries/chromium/libavutil.50.dylib',
+                    '../third_party/ffmpeg/binaries/chromium/mac/ia32/libavcodec.52.dylib',
+                    '../third_party/ffmpeg/binaries/chromium/mac/ia32/libavformat.52.dylib',
+                    '../third_party/ffmpeg/binaries/chromium/mac/ia32/libavutil.50.dylib',
                   ],
                 },
               ],

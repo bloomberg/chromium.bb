@@ -14,6 +14,7 @@
     # Allow overridding the selection of which ffmpeg binaries to copy via an
     # environment variable.  Affects the ffmpeg_binaries target.
     'ffmpeg_branding%': '<(branding)',
+    'ffmpeg_variant%': '<(target_arch)',
 
     'use_system_ffmpeg%': 0,
   },
@@ -190,9 +191,9 @@
       'variables': {
         'conditions': [
           [ 'ffmpeg_branding=="Chrome"', {
-               'branding_dir': 'chrome',
-          }, { # else ffmpeg_branding!="Chrome"
-               'branding_dir': 'chromium',
+            'ffmpeg_bin_dir': 'chrome/<(OS)/<(ffmpeg_variant)',
+          }, {  # else ffmpeg_branding!="Chrome", assume chromium.
+            'ffmpeg_bin_dir': 'chromium/<(OS)/<(ffmpeg_variant)',
           }],
         ],
       },
@@ -200,9 +201,9 @@
         ['OS=="win"', {
           'variables': {
             'source_files': [
-              'binaries/<(branding_dir)/avcodec-52.dll',
-              'binaries/<(branding_dir)/avformat-52.dll',
-              'binaries/<(branding_dir)/avutil-50.dll',
+              'binaries/<(ffmpeg_bin_dir)/avcodec-52.dll',
+              'binaries/<(ffmpeg_bin_dir)/avformat-52.dll',
+              'binaries/<(ffmpeg_bin_dir)/avutil-50.dll',
             ],
           },
           'dependencies': ['../../build/win/system.gyp:cygwin'],
@@ -211,9 +212,9 @@
             ['use_system_ffmpeg==0', {
               'variables': {
                 'source_files': [
-                  'binaries/<(branding_dir)/libavcodec.so.52',
-                  'binaries/<(branding_dir)/libavformat.so.52',
-                  'binaries/<(branding_dir)/libavutil.so.50',
+                  'binaries/<(ffmpeg_bin_dir)/libavcodec.so.52',
+                  'binaries/<(ffmpeg_bin_dir)/libavformat.so.52',
+                  'binaries/<(ffmpeg_bin_dir)/libavutil.so.50',
                 ],
               },
             }, {
@@ -225,9 +226,9 @@
         ], ['OS=="mac"', {
               'variables': {
                 'source_files': [
-                  'binaries/<(branding_dir)/libavcodec.52.dylib',
-                  'binaries/<(branding_dir)/libavformat.52.dylib',
-                  'binaries/<(branding_dir)/libavutil.50.dylib',
+                  'binaries/<(ffmpeg_bin_dir)/libavcodec.52.dylib',
+                  'binaries/<(ffmpeg_bin_dir)/libavformat.52.dylib',
+                  'binaries/<(ffmpeg_bin_dir)/libavutil.50.dylib',
                 ],
               },
         }],
