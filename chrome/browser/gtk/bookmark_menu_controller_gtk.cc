@@ -243,8 +243,8 @@ gboolean BookmarkMenuController::OnButtonPressed(
       nodes.push_back(node);
     controller->context_menu_.reset(
         new BookmarkContextMenu(
-            sender, controller->profile_, controller->browser_,
-            controller->page_navigator_, parent, nodes,
+            GTK_WIDGET(controller->parent_window_), controller->profile_,
+            controller->browser_, controller->page_navigator_, parent, nodes,
             BookmarkContextMenu::BOOKMARK_BAR));
 
     // Our bookmark folder menu loses the grab to the context menu. When the
