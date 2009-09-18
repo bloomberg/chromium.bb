@@ -101,6 +101,11 @@
           'NACL_TARGET_SUBARCH=32',
           'NACL_BUILD_SUBARCH=32',
         ],
+      },{
+        'defines': [
+          'NACL_TARGET_SUBARCH=32',
+          'NACL_BUILD_SUBARCH=32',
+        ],
       }],
       ['branding=="Chrome"', {
         'defines': ['GOOGLE_CHROME_BUILD'],
