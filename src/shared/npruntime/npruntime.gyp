@@ -87,6 +87,17 @@
         'nprpc.cc',
         'nprpc.h',
       ],
+      # TODO(gregoryd): eliminate the need for the warning flag removals below
+      'cflags!': [
+        '-Wextra',
+        '-Wswitch-enum'
+      ],
+      'xcode_settings': {
+        'WARNING_CFLAGS!': [
+          '-Wextra',
+          '-Wswitch-enum'
+        ]
+      },
       'conditions': [
         ['OS=="linux"', { 'sources': [
             'linux/util_linux.cc',

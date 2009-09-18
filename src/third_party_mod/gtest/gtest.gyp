@@ -41,6 +41,16 @@
         '<(DEPTH)/testing/gtest/include',
       ],
       'cflags_cc!': ['-fno-rtti'],
+      'cflags!': [
+        '-pedantic',
+        '-Wswitch-enum'
+      ],
+      'xcode_settings': {
+        'WARNING_CFLAGS!': [
+          '-pedantic',
+          '-Wswitch-enum'
+        ]
+      },
       'sources': [
         '<(DEPTH)/testing/gtest/src/gtest-all.cc',
       ],

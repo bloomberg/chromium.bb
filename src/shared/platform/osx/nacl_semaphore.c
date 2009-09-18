@@ -36,6 +36,8 @@
 #include <errno.h>
 #include <unistd.h>
 
+#include "native_client/src/include/portability.h"
+
 #include "native_client/src/shared/platform/nacl_global_secure_random.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
@@ -93,6 +95,7 @@ NaClSyncStatus NaClSemPost(struct NaClSemaphore *sem) {
 }
 
 int32_t NaClSemGetValue(struct NaClSemaphore *sem) {
+  UNREFERENCED_PARAMETER(sem);
   return -1;
   /*
   * TODO(gregoryd) - sem_getvalue is declared but not implemented on OSX

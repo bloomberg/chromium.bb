@@ -513,6 +513,8 @@ void NaClBotSysVideo_Poll_Event(struct NaClAppThread *natp,
 
 void __NaCl_InternalAudioCallback(void *unused, Uint8 *stream, int size) {
   int32_t r;
+
+  UNREFERENCED_PARAMETER(unused);
   r = NaClMutexLock(&nacl_multimedia.audio.mutex);
   if (NACL_SYNC_OK != r)
     NaClLog(LOG_FATAL, "__NaCl_InternalAudioCallback: mutex lock failed\n");

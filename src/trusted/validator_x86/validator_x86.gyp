@@ -27,6 +27,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# TODO(bradchen): eliminate need for the warning flag removals below
 {
   'includes': [
     '../../../build/common.gypi',
@@ -40,16 +41,52 @@
       'target_name': 'ncdecode_table',
       'type': 'executable',
       'sources': ['ncdecode_table.c'],
+      'cflags!': [
+        '-Wextra',
+        '-Wswitch-enum',
+        '-Wsign-compare'
+      ],
+      'xcode_settings': {
+        'WARNING_CFLAGS!': [
+          '-Wextra',
+          '-Wswitch-enum',
+          '-Wsign-compare'
+        ]
+      },
     },
     {
       'target_name': 'nchelper',
       'type': 'static_library',
-      'sources': [ 'ncfileutil.c' ]
+      'sources': [ 'ncfileutil.c' ],
+      'cflags!': [
+        '-Wextra',
+        '-Wswitch-enum',
+        '-Wsign-compare'
+      ],
+      'xcode_settings': {
+        'WARNING_CFLAGS!': [
+          '-Wextra',
+          '-Wswitch-enum',
+          '-Wsign-compare'
+        ]
+      },
     },
     {
       'target_name': 'ncopcode_utils',
       'type': 'static_library',
       'sources': [ 'ncopcode_desc.c' ],
+      'cflags!': [
+        '-Wextra',
+        '-Wswitch-enum',
+        '-Wsign-compare'
+      ],
+      'xcode_settings': {
+        'WARNING_CFLAGS!': [
+          '-Wextra',
+          '-Wswitch-enum',
+          '-Wsign-compare'
+        ]
+      },
       'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
       'actions': [
        {
@@ -111,7 +148,7 @@
           'process_outputs_as_sources': 1,
           'message': 'Creating ncopcode_opcode_flags.h',
         },
-       {
+        {
           'action_name': 'ncopcode_operand_kind',
           'msvs_cygwin_shell': 0,
           'inputs': [ 'enum_gen.py', 'ncopcode_operand_kind.enum' ],
@@ -130,7 +167,7 @@
           'process_outputs_as_sources': 1,
           'message': 'Creating ncopcode_operand_kind.h',
         },
-       {
+        {
           'action_name': 'ncopcode_operand_flag',
           'msvs_cygwin_shell': 0,
           'inputs': [ 'enum_gen.py', 'ncopcode_operand_flag.enum' ],
@@ -160,6 +197,18 @@
                   'ncdecode_DC.c',
                   'ncdecode_sse.c'
       ],
+      'cflags!': [
+        '-Wextra',
+        '-Wswitch-enum',
+        '-Wsign-compare'
+      ],
+      'xcode_settings': {
+        'WARNING_CFLAGS!': [
+          '-Wextra',
+          '-Wswitch-enum',
+          '-Wsign-compare'
+        ]
+      },
       'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
       'dependencies': ['ncopcode_utils' ],
       'conditions': [
@@ -195,6 +244,18 @@
         'nc_read_segment.c',
         'ncvalidate.c',
       ],
+      'cflags!': [
+        '-Wextra',
+        '-Wswitch-enum',
+        '-Wsign-compare'
+      ],
+      'xcode_settings': {
+        'WARNING_CFLAGS!': [
+          '-Wextra',
+          '-Wswitch-enum',
+          '-Wsign-compare'
+        ]
+      },
       'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
       'actions': [
         {
@@ -228,7 +289,7 @@
           'message': 'Running ncdecode_tablegen',
           'process_outputs_as_sources': 1,
         },
-       {
+        {
           'action_name': 'ncop_expr_node_flag',
           'msvs_cygwin_shell': 0,
           'inputs': [ 'enum_gen.py', 'ncop_expr_node_flag.enum' ],
@@ -247,7 +308,7 @@
           'process_outputs_as_sources': 1,
           'message': 'Creating ncop_expr_node_flag.h',
         },
-       {
+        {
           'action_name': 'ncop_expr_node_kind',
           'msvs_cygwin_shell': 0,
           'inputs': [ 'enum_gen.py', 'ncop_expr_node_kind.enum' ],
@@ -285,6 +346,18 @@
                    'nc_jumps.c',
                    'ncval_driver.c'
        ],
+      'cflags!': [
+        '-Wextra',
+        '-Wswitch-enum',
+        '-Wsign-compare'
+      ],
+      'xcode_settings': {
+        'WARNING_CFLAGS!': [
+          '-Wextra',
+          '-Wswitch-enum',
+          '-Wsign-compare'
+        ]
+      },
       'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
     },
     {
@@ -295,7 +368,19 @@
       ],
       # we depend on ncvalidate build to generate the headers
       'dependencies': ['ncvalidate' ],
-      'sources': [ 'ncdis_util.c' ]
+      'sources': [ 'ncdis_util.c' ],
+      'cflags!': [
+        '-Wextra',
+        '-Wswitch-enum',
+        '-Wsign-compare'
+      ],
+      'xcode_settings': {
+        'WARNING_CFLAGS!': [
+          '-Wextra',
+          '-Wswitch-enum',
+          '-Wsign-compare'
+        ]
+      },
     },
   ]
 }

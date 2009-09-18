@@ -34,6 +34,7 @@
 #endif
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/include/nacl_macros.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
@@ -363,7 +364,7 @@ int main(int argc,
     TestAbsWait, TestRelWait,
   };
 
-  int                     ix;
+  size_t                  ix;
 
   while (EOF != (opt = getopt(argc, argv,"aAc:C:e:f:F:i:s:v"))) {
     switch (opt) {
@@ -457,7 +458,7 @@ int main(int argc,
       max_sleep = gSchedulerMaxMin;
     }
 
-    for (ix = 0; ix < sizeof test_tbl / sizeof test_tbl[0]; ++ix) {
+    for (ix = 0; ix < NACL_ARRAY_SIZE(test_tbl); ++ix) {
       FunctorDelays(test_tbl[ix], &arg, sleep_usec, min_sleep, max_sleep,
                     alarmer);
     }

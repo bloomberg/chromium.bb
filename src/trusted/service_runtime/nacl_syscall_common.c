@@ -908,6 +908,7 @@ int NaClSysCommonAddrRangeContainsExecutablePages_mu(struct NaClApp *nap,
    * writing) does this, but we truncate it down to an allocation
    * boundary to be sure.
    */
+  UNREFERENCED_PARAMETER(length);
   usraddr = NaClTruncAllocPage(usraddr);
   return usraddr < NACL_TRAMPOLINE_END + nap->text_region_bytes;
 }
@@ -1985,8 +1986,9 @@ cleanup:
 }
 
 int NaClCommonSysThread_Nice(struct NaClAppThread *natp,
-                             const int nice) {
+                             const int            nice) {
   /* Note: implementation of nacl_thread_nice is OS dependent. */
+  UNREFERENCED_PARAMETER(natp);
   return nacl_thread_nice(nice);
 }
 

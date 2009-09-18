@@ -141,6 +141,8 @@ ssize_t NaClDescDirDescGetdents(struct NaClDesc         *vself,
   struct nacl_abi_dirent *direntp = (struct nacl_abi_dirent *) dirp;
   ssize_t retval;
 
+  UNREFERENCED_PARAMETER(effp);
+
   NaClLog(3, "NaClDescDirDescGetdents(0x%08"PRIxPTR", %"PRIuS"):\n",
           (uintptr_t) dirp, count);
   retval = NaClHostDirGetdents(self->hd, dirp, count);
@@ -158,6 +160,9 @@ ssize_t NaClDescDirDescGetdents(struct NaClDesc         *vself,
 int NaClDescDirDescFstat(struct NaClDesc          *vself,
                          struct NaClDescEffector  *effp,
                          struct nacl_abi_stat     *statbuf) {
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(effp);
+
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFDIR;
   return 0;
@@ -165,6 +170,8 @@ int NaClDescDirDescFstat(struct NaClDesc          *vself,
 
 int NaClDescDirDescClose(struct NaClDesc          *vself,
                          struct NaClDescEffector  *effp) {
+  UNREFERENCED_PARAMETER(effp);
+
   NaClDescUnref(vself);
   return 0;
 }
@@ -172,6 +179,7 @@ int NaClDescDirDescClose(struct NaClDesc          *vself,
 int NaClDescDirDescExternalizeSize(struct NaClDesc *vself,
                                    size_t          *nbytes,
                                    size_t          *nhandles) {
+  UNREFERENCED_PARAMETER(vself);
   *nbytes = 0;
   *nhandles = 1;
   return 0;
@@ -210,6 +218,9 @@ struct NaClDescVtbl const kNaClDescDirDescVtbl = {
 
 int NaClDescDirInternalize(struct NaClDesc           **baseptr,
                            struct NaClDescXferState  *xfer) {
+  UNREFERENCED_PARAMETER(baseptr);
+  UNREFERENCED_PARAMETER(xfer);
+
   NaClLog(LOG_ERROR, "NaClDescDirDescInternalize: not implemented for dir\n");
   return -NACL_ABI_EINVAL;
 }

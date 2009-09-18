@@ -32,8 +32,10 @@
 
 // NaCl inter-module communication primitives.
 
+#ifndef NOMINMAX
 #define NOMINMAX  // Disables the generation of the min and max macro in
                   // <windows.h>.
+#endif
 
 #include <ctype.h>
 #include <limits.h>

@@ -146,6 +146,9 @@ void NaClDescXferableDataDescDtor(struct NaClDesc *vself) {
 int NaClDescImcDescFstat(struct NaClDesc          *vself,
                          struct NaClDescEffector  *effp,
                          struct nacl_abi_stat     *statbuf) {
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(effp);
+
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFSOCK;
   return 0;
@@ -154,6 +157,9 @@ int NaClDescImcDescFstat(struct NaClDesc          *vself,
 int NaClDescXferableDataDescFstat(struct NaClDesc          *vself,
                                   struct NaClDescEffector  *effp,
                                   struct nacl_abi_stat     *statbuf) {
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(effp);
+
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFDSOCK;
   return 0;
@@ -161,6 +167,8 @@ int NaClDescXferableDataDescFstat(struct NaClDesc          *vself,
 
 int NaClDescImcConnectedDescClose(struct NaClDesc          *vself,
                                   struct NaClDescEffector  *effp) {
+  UNREFERENCED_PARAMETER(effp);
+
   NaClDescUnref(vself);
   return 0;
 }
@@ -168,6 +176,7 @@ int NaClDescImcConnectedDescClose(struct NaClDesc          *vself,
 int NaClDescXferableDataDescExternalizeSize(struct NaClDesc  *vself,
                                             size_t           *nbytes,
                                             size_t           *nhandles) {
+  UNREFERENCED_PARAMETER(vself);
   NaClLog(4, "Entered NaClDescXferableDataDescExternalizeSize\n");
   *nbytes = 0;
   *nhandles = 1;
@@ -214,6 +223,8 @@ int NaClDescImcDescSendMsg(struct NaClDesc          *vself,
                                   vself);
   int result;
 
+  UNREFERENCED_PARAMETER(effp);
+
   NaClXMutexLock(&self->sendmsg_mu);
   result = NaClSendDatagram(self->base.h, dgram, flags);
   NaClXMutexUnlock(&self->sendmsg_mu);
@@ -258,6 +269,8 @@ int NaClDescXferableDataDescSendMsg(struct NaClDesc          *vself,
                                            vself);
   int result;
 
+  UNREFERENCED_PARAMETER(effp);
+
   if (0 != dgram->handle_count) {
     /*
      * A transferable descriptor cannot be used to transfer other
@@ -297,6 +310,8 @@ int NaClDescImcDescRecvMsg(struct NaClDesc          *vself,
                                   vself);
   int result;
 
+  UNREFERENCED_PARAMETER(effp);
+
   NaClLog(4, "Entered NaClDescImcDescRecvMsg, h=%d\n", self->base.h);
   NaClXMutexLock(&self->recvmsg_mu);
   result = NaClReceiveDatagram(self->base.h, dgram, flags);
@@ -327,6 +342,8 @@ int NaClDescXferableDataDescRecvMsg(struct NaClDesc          *vself,
   struct NaClDescXferableDataDesc *self = ((struct NaClDescXferableDataDesc *)
                                            vself);
   int                             result;
+
+  UNREFERENCED_PARAMETER(effp);
 
   NaClLog(4, "Entered NaClDescXferableDataDescRecvMsg, h = %d\n", self->base.h);
   if (0 != dgram->handle_count) {

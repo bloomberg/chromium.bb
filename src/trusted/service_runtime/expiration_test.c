@@ -59,6 +59,7 @@ time_t TestTimeFn(time_t *out_time) {
 time_t gTestMktimeOutValue;
 
 time_t TestMktimeFn(struct tm *in_broken_out) {
+  UNREFERENCED_PARAMETER(in_broken_out);
   /* ignore the broken out time input */
   return gTestMktimeOutValue;
 }
@@ -67,6 +68,10 @@ int main(int argc, char **argv) {
   int errors = 0;
 
   static struct tm exp_tm;
+
+  /* main type signature is constrained by SDL */
+  UNREFERENCED_PARAMETER(argc);
+  UNREFERENCED_PARAMETER(argv);
 
   printf("One second after expiration is expired\n");
   gTestTimeOutValue = 1001;  /* now */

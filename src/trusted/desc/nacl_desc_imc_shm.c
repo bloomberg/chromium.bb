@@ -115,6 +115,12 @@ uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
   off_t     tmp_off;
 
   /*
+   * shm must have NACL_ABI_MAP_SHARED in flags, and all calls through
+   * this API must supply a start_addr, so NACL_ABI_MAP_FIXED is
+   * assumed.
+   */
+  UNREFERENCED_PARAMETER(flags);
+  /*
    * prot must be not be PROT_NONE nor contain other than PROT_{READ|WRITE}
    */
   if (NACL_ABI_PROT_NONE == prot) {
@@ -208,6 +214,8 @@ int NaClDescImcShmUnmapCommon(struct NaClDesc         *vself,
   uintptr_t addr;
   uintptr_t end_addr;
 
+  UNREFERENCED_PARAMETER(vself);
+
   for (addr = (uintptr_t) start_addr, end_addr = addr + len;
        addr < end_addr;
        addr += NACL_MAP_PAGESIZE) {
@@ -254,6 +262,8 @@ int NaClDescImcShmFstat(struct NaClDesc         *vself,
                         struct nacl_abi_stat    *stbp) {
   struct NaClDescImcShm  *self = (struct NaClDescImcShm *) vself;
 
+  UNREFERENCED_PARAMETER(effp);
+
   stbp->nacl_abi_st_dev = 0;
   stbp->nacl_abi_st_ino = 0x6c43614e;
   stbp->nacl_abi_st_mode = NACL_ABI_S_IFREG | NACL_ABI_S_IRWXU;
@@ -273,6 +283,8 @@ int NaClDescImcShmFstat(struct NaClDesc         *vself,
 
 int NaClDescImcShmClose(struct NaClDesc         *vself,
                         struct NaClDescEffector *effp) {
+  UNREFERENCED_PARAMETER(effp);
+
   NaClDescUnref(vself);
   return 0;
 }

@@ -31,6 +31,9 @@
 
 Import('env')
 
+# TODO(sehr): remove the need for the next line
+env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum'])
+
 # Currently, this is only defined for x86, so only compile if x86.
 if env['TARGET_ARCHITECTURE'] != 'x86':
   Return()

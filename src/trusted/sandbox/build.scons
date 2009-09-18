@@ -31,6 +31,9 @@
 
 Import('env')
 
+# TODO(neha): eliminate the need for the next line
+env.FilterOut(CCFLAGS=['-Wextra'])
+
 if env['BUILD_SUBARCH'] == '64':
     Return()
 

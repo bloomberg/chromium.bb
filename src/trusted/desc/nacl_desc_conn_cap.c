@@ -73,6 +73,9 @@ void NaClDescConnCapDtor(struct NaClDesc *vself) {
 int NaClDescConnCapFstat(struct NaClDesc          *vself,
                          struct NaClDescEffector  *effp,
                          struct nacl_abi_stat     *statbuf) {
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(effp);
+
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFSOCKADDR;
   return 0;
@@ -80,6 +83,8 @@ int NaClDescConnCapFstat(struct NaClDesc          *vself,
 
 int NaClDescConnCapClose(struct NaClDesc          *vself,
                          struct NaClDescEffector  *effp) {
+  UNREFERENCED_PARAMETER(effp);
+
   NaClDescUnref(vself);
   return 0;
 }
@@ -87,6 +92,8 @@ int NaClDescConnCapClose(struct NaClDesc          *vself,
 int NaClDescConnCapExternalizeSize(struct NaClDesc  *vself,
                                    size_t           *nbytes,
                                    size_t           *nhandles) {
+  UNREFERENCED_PARAMETER(vself);
+
   *nbytes = NACL_PATH_MAX;
   *nhandles = 0;
 
@@ -178,6 +185,9 @@ cleanup:
 
 int NaClDescConnCapAcceptConn(struct NaClDesc         *vself,
                               struct NaClDescEffector *effp) {
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(effp);
+
   NaClLog(LOG_ERROR, "NaClDescConnCapAcceptConn: not IMC\n");
   return -NACL_ABI_EINVAL;
 }

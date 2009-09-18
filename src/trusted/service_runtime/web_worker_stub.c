@@ -303,6 +303,12 @@ int NaClPostMessageToNativeWebWorker(char *buffer,
                                      struct NaClApp **nap,
                                      struct NaClSrpcChannel **untrusted_ch) {
   /*
+   * TODO(sehr): track down why there is a buf_len arg when buffer
+   * ought to be an UTF-8 NUL-terminated string.
+   */
+  UNREFERENCED_PARAMETER(buf_len);
+
+  /*
    * Make sure things started correctly.
    */
   if (NULL == *nap || NULL == *untrusted_ch) {
@@ -404,6 +410,7 @@ static NaClSrpcError postMessageFromNativeWorker(NaClSrpcChannel *channel,
   NativeWorkerPostMessageFunc func;
   struct WebWorkerClient* client;
 
+  UNREFERENCED_PARAMETER(outs);
   data = (struct NativeWorkerListenerData *) channel->server_instance_data;
   func = data->func;
   client = data->client;

@@ -52,6 +52,8 @@ static void NaClDescEffCleanDtor(struct NaClDescEffector *vself) {
 
 static int NaClDescEffCleanReturnCreatedDesc(struct NaClDescEffector *vself,
                                              struct NaClDesc         *ndp) {
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(ndp);
   NaClLog(LOG_FATAL, "Cleanup effector's ReturnCreatedDesc called\n");
   return 0;
 }
@@ -64,12 +66,23 @@ static void NaClDescEffCleanUpdateAddrMap(struct NaClDescEffector *vself,
                                           size_t                  backing_bytes,
                                           off_t                   offset_bytes,
                                           int                     delete_mem) {
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(sysaddr);
+  UNREFERENCED_PARAMETER(nbytes);
+  UNREFERENCED_PARAMETER(sysprot);
+  UNREFERENCED_PARAMETER(backing_desc);
+  UNREFERENCED_PARAMETER(backing_bytes);
+  UNREFERENCED_PARAMETER(offset_bytes);
+  UNREFERENCED_PARAMETER(delete_mem);
   return;
 }
 
 static int NaClDescEffCleanUnmapMemory(struct NaClDescEffector  *vself,
                                        uintptr_t                sysaddr,
                                        size_t                   nbytes) {
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(sysaddr);
+  UNREFERENCED_PARAMETER(nbytes);
   NaClLog(LOG_FATAL, "Cleanup effector's UnmapMemory called\n");
   return 0;
 }
@@ -78,12 +91,17 @@ static int NaClDescEffCleanMapAnonMem(struct NaClDescEffector *vself,
                                       uintptr_t               sysaddr,
                                       size_t                  nbytes,
                                       int                     prot) {
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(sysaddr);
+  UNREFERENCED_PARAMETER(nbytes);
+  UNREFERENCED_PARAMETER(prot);
   NaClLog(LOG_FATAL, "Cleanup effector's MapAnonMem called\n");
   return 0;
 }
 
 static struct NaClDescImcBoundDesc *NaClDescEffCleanSourceSock(
     struct NaClDescEffector *vself) {
+  UNREFERENCED_PARAMETER(vself);
   NaClLog(LOG_FATAL, "Cleanup effector's SourceSock called\n");
   return 0;
 }

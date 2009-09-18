@@ -36,6 +36,8 @@
 #  include <SDL.h>
 #endif
 
+#include "native_client/src/include/portability.h"
+
 #include "native_client/src/trusted/service_runtime/env_cleanser.h"
 #include "native_client/src/trusted/service_runtime/env_cleanser_test.h"
 
@@ -139,6 +141,10 @@ int main(int ac, char **av) {
   int errors = 0;
   int i;
   struct NaClEnvCleanser nec;
+
+  /* main's type signature is constrained by SDL */
+  UNREFERENCED_PARAMETER(ac);
+  UNREFERENCED_PARAMETER(av);
 
   printf("Environment Cleanser Test\n\n");
   printf("\nWhitelist self-check\n\n");

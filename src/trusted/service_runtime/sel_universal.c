@@ -238,6 +238,8 @@ static NaClSrpcError Interpreter(NaClSrpcService* service,
                                  uint32_t rpc_number,
                                  NaClSrpcArg** ins,
                                  NaClSrpcArg** outs) {
+  UNREFERENCED_PARAMETER(service);
+
   return NaClSrpcInvokeV(channel, rpc_number, ins, outs);
 }
 

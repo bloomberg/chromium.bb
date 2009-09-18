@@ -36,6 +36,9 @@ Import('env')
 # TODO(robertm): consider adding this to the top level scons files
 env.Append(CPPPATH=['${TARGET_ROOT}'])
 
+# TODO(bradchen): eliminate need for the following line
+env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
+
 # Start by building libary utilities that may be used by other architectures.
 env.ComponentLibrary('nchelper', ['ncfileutil.c'])
 

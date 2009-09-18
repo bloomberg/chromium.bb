@@ -277,7 +277,7 @@ int __NaClSrpcImcFlush(NaClSrpcImcBuffer* buffer, NaClSrpcChannel* channel) {
     channel->imc_write_usec += this_usec;
   }
   buffer->next_byte = 0;
-  if (retval != buffer->iovec[0].length) {
+  if ((size_t) retval != buffer->iovec[0].length) {
     dprintf((SIDE "FLUSH: send error.\n"));
     return 0;
   }

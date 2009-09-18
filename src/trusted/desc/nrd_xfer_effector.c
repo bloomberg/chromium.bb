@@ -105,6 +105,14 @@ static void NaClNrdXferEffectorUpdateAddrMap(struct NaClDescEffector  *vself,
                                              size_t                   bksize,
                                              off_t                    offbytes,
                                              int                      del_mem) {
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(sysaddr);
+  UNREFERENCED_PARAMETER(nbytes);
+  UNREFERENCED_PARAMETER(sysprot);
+  UNREFERENCED_PARAMETER(bkobj);
+  UNREFERENCED_PARAMETER(bksize);
+  UNREFERENCED_PARAMETER(offbytes);
+  UNREFERENCED_PARAMETER(del_mem);
   /* No records are kept */
   return;
 }
@@ -112,6 +120,9 @@ static void NaClNrdXferEffectorUpdateAddrMap(struct NaClDescEffector  *vself,
 static int NaClNrdXferEffectorUnmapMemory(struct NaClDescEffector *vself,
                                           uintptr_t               sysaddr,
                                           size_t                  nbytes) {
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(sysaddr);
+  UNREFERENCED_PARAMETER(nbytes);
   return 0;
 }
 
@@ -120,6 +131,10 @@ static int NaClNrdXferEffectorMapAnonymousMemory(
     uintptr_t               sysaddr,
     size_t                  nbytes,
     int                     prot) {
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(sysaddr);
+  UNREFERENCED_PARAMETER(nbytes);
+  UNREFERENCED_PARAMETER(prot);
   return 0;
 }
 

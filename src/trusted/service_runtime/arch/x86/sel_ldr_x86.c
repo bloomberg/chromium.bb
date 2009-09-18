@@ -43,11 +43,13 @@
  * Install a syscall trampoline at target_addr.  NB: Thread-safe.
  */
 void  NaClPatchOneTrampoline(struct NaClApp *nap,
-                             uintptr_t  target_addr) {
+                             uintptr_t      target_addr) {
   struct NaClPatchInfo  patch_info;
 
   struct NaClPatch      patch16[1];
   struct NaClPatch      patch32[2];
+
+  UNREFERENCED_PARAMETER(nap);
 
   patch16[0].target = ((uintptr_t) kTrampolineCode) + NACL_TRAMP_CSEG_PATCH - 2;
   patch16[0].value = NaClGetGlobalCs();

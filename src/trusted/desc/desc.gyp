@@ -96,6 +96,14 @@
         'nrd_xfer_effector.c',
         'nrd_xfer_effector.h',
       ],
+      'cflags': [
+        '-Wno-missing-field-initializers'
+      ],
+      'xcode_settings': {
+        'WARNING_CFLAGS': [
+          '-Wno-missing-field-initializers'
+        ]
+      },
       'conditions': [
         ['OS=="linux"', { 'sources': [
             'linux/nacl_desc.c',

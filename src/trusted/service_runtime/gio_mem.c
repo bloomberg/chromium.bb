@@ -73,12 +73,6 @@ int GioMemoryFileRead(struct Gio  *vself,
   size_t                  remain;
   size_t                  newpos;
 
-  /* is size_t signed? */
-  if (count < 0) {
-    errno = EINVAL;
-    return -1;
-  }
-
   /* 0 <= self->curpos && self->curpos <= self->len */
   remain = self->len - self->curpos;
   /* 0 <= remain <= self->len */
@@ -104,12 +98,6 @@ int GioMemoryFileWrite(struct Gio *vself,
   struct GioMemoryFile  *self = (struct GioMemoryFile *) vself;
   size_t                remain;
   size_t                newpos;
-
-  /* is size_t signed? */
-  if (count < 0) {
-    errno = EINVAL;
-    return -1;
-  }
 
   /* 0 <= self->curpos && self->curpos <= self->len */
   remain = self->len - self->curpos;
@@ -151,7 +139,7 @@ off_t GioMemoryFileSeek(struct Gio  *vself,
       errno = EINVAL;
       return -1;
   }
-  if (new_pos < 0 || new_pos > self->len) {
+  if (new_pos > self->len) {
     errno = EINVAL;
     return -1;
   }
@@ -161,15 +149,18 @@ off_t GioMemoryFileSeek(struct Gio  *vself,
 
 
 int GioMemoryFileClose(struct Gio *vself) {
+  UNREFERENCED_PARAMETER(vself);
   return 0;
 }
 
 
 int GioMemoryFileFlush(struct Gio   *vself) {
+  UNREFERENCED_PARAMETER(vself);
   return 0;
 }
 
 
 void  GioMemoryFileDtor(struct Gio    *vself) {
+  UNREFERENCED_PARAMETER(vself);
   return;
 }

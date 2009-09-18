@@ -177,6 +177,9 @@ int NaClDescIoDescUnmapCommon(struct NaClDesc         *vself,
                               int                     safe_mode) {
   int status;
 
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(effp);
+
   if (safe_mode) {
     status = NaClHostDescUnmap(start_addr, len);
   } else {
@@ -209,6 +212,8 @@ ssize_t NaClDescIoDescRead(struct NaClDesc          *vself,
                            size_t                   len) {
   struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
 
+  UNREFERENCED_PARAMETER(effp);
+
   return NaClHostDescRead(self->hd, buf, len);
 }
 
@@ -217,6 +222,8 @@ ssize_t NaClDescIoDescWrite(struct NaClDesc         *vself,
                             void const              *buf,
                             size_t                  len) {
   struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
+
+  UNREFERENCED_PARAMETER(effp);
 
   return NaClHostDescWrite(self->hd, buf, len);
 }
@@ -227,6 +234,8 @@ int NaClDescIoDescSeek(struct NaClDesc          *vself,
                        int                      whence) {
   struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
 
+  UNREFERENCED_PARAMETER(effp);
+
   return NaClHostDescSeek(self->hd, offset, whence);
 }
 
@@ -236,6 +245,8 @@ int NaClDescIoDescIoctl(struct NaClDesc         *vself,
                         void                    *arg) {
   struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
 
+  UNREFERENCED_PARAMETER(effp);
+
   return NaClHostDescIoctl(self->hd, request, arg);
 }
 
@@ -244,11 +255,15 @@ int NaClDescIoDescFstat(struct NaClDesc         *vself,
                         struct nacl_abi_stat    *statbuf) {
   struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
 
+  UNREFERENCED_PARAMETER(effp);
+
   return NaClHostDescFstat(self->hd, statbuf);
 }
 
 int NaClDescIoDescClose(struct NaClDesc         *vself,
                         struct NaClDescEffector *effp) {
+  UNREFERENCED_PARAMETER(effp);
+
   NaClDescUnref(vself);
   return 0;
 }
@@ -256,6 +271,8 @@ int NaClDescIoDescClose(struct NaClDesc         *vself,
 int NaClDescIoDescExternalizeSize(struct NaClDesc *vself,
                                   size_t          *nbytes,
                                   size_t          *nhandles) {
+  UNREFERENCED_PARAMETER(vself);
+
   *nbytes = 0;
   *nhandles = 1;
   return 0;

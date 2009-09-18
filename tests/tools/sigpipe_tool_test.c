@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <signal.h>
 
-int main(int ac, char **av) {
+int main(void) {
   int p[2];
 
   if (-1 == pipe(p)) {

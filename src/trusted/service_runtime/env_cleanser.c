@@ -109,7 +109,7 @@ int NaClEnvCleanserInit(struct NaClEnvCleanser *self, char const *const *envp) {
   const size_t kMaxSize = ~(size_t) 0;
   const size_t ptr_size_mult_overflow_mask = ~(kMaxSize / sizeof *envp);
   char const **ptr_tbl;
-  int env;
+  size_t env;
 
   /*
    * let n be a size_t.  if n & ptr_size_mult_overflow_mask is set,

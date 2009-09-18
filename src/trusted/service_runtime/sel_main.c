@@ -63,8 +63,9 @@
 
 int verbosity = 0;
 
-static void VmentryPrinter(void                  *state,
+static void VmentryPrinter(void           *state,
                     struct NaClVmmapEntry *vmep) {
+  UNREFERENCED_PARAMETER(state);
   printf("page num 0x%06x\n", (uint32_t)vmep->page_num);
   printf("num pages %d\n", (uint32_t)vmep->npages);
   printf("prot bits %x\n", vmep->prot);

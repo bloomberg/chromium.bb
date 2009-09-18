@@ -44,6 +44,7 @@
  * actually pulled in by limits.h.
  */
 
+#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
@@ -121,6 +122,7 @@ void NaClThreadDtor(struct NaClThread *ntp) {
    * and the underlying thread library are responsible for ensuring
    * that resources such as the thread stack are properly released.
    */
+  UNREFERENCED_PARAMETER(ntp);
 }
 
 void NaClThreadExit(void) {

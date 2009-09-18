@@ -31,11 +31,21 @@
 
 Import('env')
 
-env_no_strict_aliasing = env.Clone()
-if env.Bit('linux'):
-   env_no_strict_aliasing.Append(CFLAGS = ['-fno-strict-aliasing'])
+# nrd_xfer.c needs no-strict-aliasing because NaClImcMsgIoVec and
+# NaClIOVec are intentionally different types (exported by different
+# layers) but have the same layout in order to avoid copies.  It also
+# needs no-missing-field-initializers because NaClInternalHeader's pad
+# size is computed (see nacl_desc_base.h) and the kNoHandles object
+# cannot be initialized with the right number of zeros w/o manually
+# computing the pad size, making the whole point of having the size be
+# computed by the compiler moot.  This assumes non-windows build uses
+# gcc.
+nrd_xfer_env = env.Clone()
+if not env.Bit('windows'):
+   nrd_xfer_env.Append(CFLAGS = ['-fno-strict-aliasing'])
+   nrd_xfer_env.Append(CCFLAGS = ['-Wno-missing-field-initializers'])
 
-nrd_xfer_obj = env_no_strict_aliasing.ComponentObject('nrd_xfer.c')
+nrd_xfer_obj = nrd_xfer_env.ComponentObject('nrd_xfer.c')
 
 nrd_lib_inputs = [
     'nacl_desc_base.c',
@@ -55,6 +65,7 @@ nrd_lib_inputs = [
     'nacl_desc_semaphore.c',
 ]
 
+# TODO(bsy): this file is dead code.  remove it.
 if env.Bit('windows'):
   nrd_lib_inputs += [
       'win/nacl_desc.c',
@@ -104,4 +115,4 @@ if env.Bit('linux') and env.get('BUILD_ARCHITECTURE') == 'x86':
    env.AddNodeToTestSuite(node, ['medium_tests'], 'run_nrd_xfer_test')
 
 env.EnsureRequiredBuildWarnings()
-env_no_strict_aliasing.EnsureRequiredBuildWarnings()
+nrd_xfer_env.EnsureRequiredBuildWarnings()

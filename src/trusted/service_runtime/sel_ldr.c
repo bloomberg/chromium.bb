@@ -761,6 +761,10 @@ static NaClSrpcError NaClSecureChannelShutdownRpc(
     struct NaClSrpcChannel  *chan,
     struct NaClSrpcArg      **in_args,
     struct NaClSrpcArg      **out_args) {
+  UNREFERENCED_PARAMETER(chan);
+  UNREFERENCED_PARAMETER(in_args);
+  UNREFERENCED_PARAMETER(out_args);
+
   NaClLog(4, "NaClSecureChannelShutdownRpc (hard_shutdown), exiting\n");
   _exit(0);
 }
@@ -788,6 +792,7 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
   if (0 != rval) {
     return NACL_SRPC_RESULT_NO_MEMORY;
   }
+  UNREFERENCED_PARAMETER(out_args);
 
   if (!GioMemoryFileCtor(&gf, map_addr, rounded_size)) {
     return NACL_SRPC_RESULT_NO_MEMORY;
@@ -838,6 +843,9 @@ static NaClSrpcError NaClSecureChannelSetOriginRpc(
     struct NaClSrpcArg       **out_args) {
   struct NaClApp  *nap = (struct NaClApp *) chan->server_instance_data;
 
+  UNREFERENCED_PARAMETER(chan);
+  UNREFERENCED_PARAMETER(out_args);
+
   free(nap->origin);
   nap->origin = strdup(in_args[0]->u.sval);
   NaClLog(4, "NaClSecureChannelSetOriginRpc: origin %s\n", nap->origin);
@@ -854,6 +862,8 @@ static NaClSrpcError NaClSecureChannelStartModuleRpc(
    */
   struct NaClApp  *nap = (struct NaClApp *) chan->server_instance_data;
   NaClErrorCode   status;
+
+  UNREFERENCED_PARAMETER(in_args);
 
   NaClLog(4, "NaClSecureChannelStartModuleRpc started\n");
   NaClXMutexLock(&nap->mu);
@@ -873,6 +883,9 @@ static NaClSrpcError NaClSecureChannelLog(struct NaClSrpcChannel  *chan,
                                           struct NaClSrpcArg      **out_args) {
   int severity = in_args[0]->u.ival;
   char *msg = in_args[1]->u.sval;
+
+  UNREFERENCED_PARAMETER(chan);
+  UNREFERENCED_PARAMETER(out_args);
 
   NaClLog(5, "NaClSecureChannelLog started\n");
   NaClLog(severity, "%s\n", msg);

@@ -382,6 +382,9 @@ int NaClHostDescIoctl(struct NaClHostDesc *d,
   return ((-1 == (retval = ioctl(d->d, request, arg)))
           ? -NaClXlateErrno(errno) : retval);
 #else
+  UNREFERENCED_PARAMETER(request);
+  UNREFERENCED_PARAMETER(arg);
+
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDescIoctl: 'this' is NULL\n");
   }

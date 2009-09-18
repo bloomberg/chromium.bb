@@ -33,6 +33,9 @@ import sys
 
 Import('env')
 
+# TODO(gregoryd): eliminate need for the next line
+env.FilterOut(CCFLAGS=['-Wextra'])
+
 # NOTE: this is just stubbing things out to create a 'compatible' library.
 #       Needs to be revisited once we understand arm better
 if env['BUILD_ARCHITECTURE'] == 'arm' or env['TARGET_ARCHITECTURE'] == 'arm':

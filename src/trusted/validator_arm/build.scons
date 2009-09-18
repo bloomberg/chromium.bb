@@ -35,6 +35,9 @@ Import('env')
 if env['TARGET_ARCHITECTURE'] != 'arm':
   Return()
 
+# TODO(cbiffle): eliminate need for the following line
+env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum', '-Wsign-compare'])
+
 if env.Bit('linux'):
   # NOTE: we cannot use TARGET_ROOT here because we want to share this file
   #       between different scons invocations

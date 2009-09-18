@@ -116,8 +116,8 @@
       'type': 'static_library',
       'conditions': [
         ['OS=="linux" or OS=="mac"', {
-          'cflags!': [
-            '-pedantic',
+          'cflags': [
+            '-Wno-long-long',
           ],
         }],
         ['OS=="linux" and nacl_standalone==1', {
@@ -143,6 +143,9 @@
         '<@(common_sources)',
         '<@(platform_sources)',
       ],
+      # TODO(sehr,gregoryd): win/nacl_host_dir.c has wide-char warnings
+      # and some unicode related compilation option is missing here?
+      'msvs_disabled_warnings': [4133],
     },
   ],
 }

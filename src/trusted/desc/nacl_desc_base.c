@@ -160,6 +160,8 @@ char const *NaClDescTypeString(enum NaClDescTypeTag type_tag) {
   return "BAD TYPE TAG";
 }
 void NaClDescDtorNotImplemented(struct NaClDesc  *vself) {
+  UNREFERENCED_PARAMETER(vself);
+
   NaClLog(LOG_FATAL, "Must implement a destructor!\n");
 }
 
@@ -170,6 +172,13 @@ uintptr_t NaClDescMapNotImplemented(struct NaClDesc         *vself,
                                     int                     prot,
                                     int                     flags,
                                     off_t                   offset) {
+  UNREFERENCED_PARAMETER(effp);
+  UNREFERENCED_PARAMETER(start_addr);
+  UNREFERENCED_PARAMETER(len);
+  UNREFERENCED_PARAMETER(prot);
+  UNREFERENCED_PARAMETER(flags);
+  UNREFERENCED_PARAMETER(offset);
+
   NaClLog(LOG_ERROR,
           "Map method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -180,6 +189,10 @@ int NaClDescUnmapUnsafeNotImplemented(struct NaClDesc         *vself,
                                       struct NaClDescEffector *effp,
                                       void                    *start_addr,
                                       size_t                  len) {
+  UNREFERENCED_PARAMETER(effp);
+  UNREFERENCED_PARAMETER(start_addr);
+  UNREFERENCED_PARAMETER(len);
+
   NaClLog(LOG_ERROR,
     "Map method is not implemented for object of type %s\n",
     NaClDescTypeString(vself->vtbl->typeTag));
@@ -190,6 +203,10 @@ int NaClDescUnmapNotImplemented(struct NaClDesc         *vself,
                                 struct NaClDescEffector *effp,
                                 void                    *start_addr,
                                 size_t                  len) {
+  UNREFERENCED_PARAMETER(effp);
+  UNREFERENCED_PARAMETER(start_addr);
+  UNREFERENCED_PARAMETER(len);
+
   NaClLog(LOG_ERROR,
           "Unmap method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -200,6 +217,10 @@ ssize_t NaClDescReadNotImplemented(struct NaClDesc          *vself,
                                    struct NaClDescEffector  *effp,
                                    void                     *buf,
                                    size_t                   len) {
+  UNREFERENCED_PARAMETER(effp);
+  UNREFERENCED_PARAMETER(buf);
+  UNREFERENCED_PARAMETER(len);
+
   NaClLog(LOG_ERROR,
           "Read method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -210,6 +231,10 @@ ssize_t NaClDescWriteNotImplemented(struct NaClDesc         *vself,
                                     struct NaClDescEffector *effp,
                                     void const              *buf,
                                     size_t                  len) {
+  UNREFERENCED_PARAMETER(effp);
+  UNREFERENCED_PARAMETER(buf);
+  UNREFERENCED_PARAMETER(len);
+
   NaClLog(LOG_ERROR,
           "Write method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -220,6 +245,10 @@ int NaClDescSeekNotImplemented(struct NaClDesc          *vself,
                                struct NaClDescEffector  *effp,
                                off_t                    offset,
                                int                      whence) {
+  UNREFERENCED_PARAMETER(effp);
+  UNREFERENCED_PARAMETER(offset);
+  UNREFERENCED_PARAMETER(whence);
+
   NaClLog(LOG_ERROR,
           "Seek method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -230,6 +259,10 @@ int NaClDescIoctlNotImplemented(struct NaClDesc         *vself,
                                 struct NaClDescEffector *effp,
                                 int                     request,
                                 void                    *arg) {
+  UNREFERENCED_PARAMETER(effp);
+  UNREFERENCED_PARAMETER(request);
+  UNREFERENCED_PARAMETER(arg);
+
   NaClLog(LOG_ERROR,
           "Ioctl method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -239,6 +272,9 @@ int NaClDescIoctlNotImplemented(struct NaClDesc         *vself,
 int NaClDescFstatNotImplemented(struct NaClDesc         *vself,
                                 struct NaClDescEffector *effp,
                                 struct nacl_abi_stat    *statbuf) {
+  UNREFERENCED_PARAMETER(effp);
+  UNREFERENCED_PARAMETER(statbuf);
+
   NaClLog(LOG_ERROR,
           "Fstat method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -247,6 +283,8 @@ int NaClDescFstatNotImplemented(struct NaClDesc         *vself,
 
 int NaClDescCloseNotImplemented(struct NaClDesc         *vself,
                                 struct NaClDescEffector *effp) {
+  UNREFERENCED_PARAMETER(effp);
+
   NaClLog(LOG_ERROR,
           "Close method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -257,6 +295,10 @@ ssize_t NaClDescGetdentsNotImplemented(struct NaClDesc          *vself,
                                        struct NaClDescEffector  *effp,
                                        void                     *dirp,
                                        size_t                   count) {
+  UNREFERENCED_PARAMETER(effp);
+  UNREFERENCED_PARAMETER(dirp);
+  UNREFERENCED_PARAMETER(count);
+
   NaClLog(LOG_ERROR,
           "Getdents method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -266,6 +308,9 @@ ssize_t NaClDescGetdentsNotImplemented(struct NaClDesc          *vself,
 int NaClDescExternalizeSizeNotImplemented(struct NaClDesc      *vself,
                                           size_t               *nbytes,
                                           size_t               *nhandles) {
+  UNREFERENCED_PARAMETER(nbytes);
+  UNREFERENCED_PARAMETER(nhandles);
+
   NaClLog(LOG_ERROR,
           "ExternalizeSize method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -274,6 +319,8 @@ int NaClDescExternalizeSizeNotImplemented(struct NaClDesc      *vself,
 
 int NaClDescExternalizeNotImplemented(struct NaClDesc          *vself,
                                       struct NaClDescXferState *xfer) {
+  UNREFERENCED_PARAMETER(xfer);
+
   NaClLog(LOG_ERROR,
           "Externalize method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -282,6 +329,8 @@ int NaClDescExternalizeNotImplemented(struct NaClDesc          *vself,
 
 int NaClDescLockNotImplemented(struct NaClDesc          *vself,
                                struct NaClDescEffector  *effp) {
+  UNREFERENCED_PARAMETER(effp);
+
   NaClLog(LOG_ERROR,
           "Lock method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -290,6 +339,8 @@ int NaClDescLockNotImplemented(struct NaClDesc          *vself,
 
 int NaClDescTryLockNotImplemented(struct NaClDesc         *vself,
                                   struct NaClDescEffector *effp) {
+  UNREFERENCED_PARAMETER(effp);
+
   NaClLog(LOG_ERROR,
           "TryLock method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -298,6 +349,8 @@ int NaClDescTryLockNotImplemented(struct NaClDesc         *vself,
 
 int NaClDescUnlockNotImplemented(struct NaClDesc          *vself,
                                  struct NaClDescEffector  *effp) {
+  UNREFERENCED_PARAMETER(effp);
+
   NaClLog(LOG_ERROR,
           "Unlock method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -307,6 +360,9 @@ int NaClDescUnlockNotImplemented(struct NaClDesc          *vself,
 int NaClDescWaitNotImplemented(struct NaClDesc          *vself,
                                struct NaClDescEffector  *effp,
                                struct NaClDesc          *mutex) {
+  UNREFERENCED_PARAMETER(effp);
+  UNREFERENCED_PARAMETER(mutex);
+
   NaClLog(LOG_ERROR,
           "Wait method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -317,6 +373,10 @@ int NaClDescTimedWaitAbsNotImplemented(struct NaClDesc          *vself,
                                        struct NaClDescEffector  *effp,
                                        struct NaClDesc          *mutex,
                                        struct nacl_abi_timespec *ts) {
+  UNREFERENCED_PARAMETER(effp);
+  UNREFERENCED_PARAMETER(mutex);
+  UNREFERENCED_PARAMETER(ts);
+
   NaClLog(LOG_ERROR,
           "TimedWaitAbs method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -325,6 +385,8 @@ int NaClDescTimedWaitAbsNotImplemented(struct NaClDesc          *vself,
 
 int NaClDescSignalNotImplemented(struct NaClDesc          *vself,
                                  struct NaClDescEffector  *effp) {
+  UNREFERENCED_PARAMETER(effp);
+
   NaClLog(LOG_ERROR,
           "Signal method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -333,6 +395,8 @@ int NaClDescSignalNotImplemented(struct NaClDesc          *vself,
 
 int NaClDescBroadcastNotImplemented(struct NaClDesc         *vself,
                                     struct NaClDescEffector *effp) {
+  UNREFERENCED_PARAMETER(effp);
+
   NaClLog(LOG_ERROR,
           "Broadcast method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -343,6 +407,10 @@ int NaClDescSendMsgNotImplemented(struct NaClDesc           *vself,
                                   struct NaClDescEffector   *effp,
                                   struct NaClMessageHeader  *dgram,
                                   int                       flags) {
+  UNREFERENCED_PARAMETER(effp);
+  UNREFERENCED_PARAMETER(dgram);
+  UNREFERENCED_PARAMETER(flags);
+
   NaClLog(LOG_ERROR,
           "SendMsg method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -353,6 +421,10 @@ int NaClDescRecvMsgNotImplemented(struct NaClDesc           *vself,
                                   struct NaClDescEffector   *effp,
                                   struct NaClMessageHeader  *dgram,
                                   int                       flags) {
+  UNREFERENCED_PARAMETER(effp);
+  UNREFERENCED_PARAMETER(dgram);
+  UNREFERENCED_PARAMETER(flags);
+
   NaClLog(LOG_ERROR,
           "RecvMsg method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -361,6 +433,8 @@ int NaClDescRecvMsgNotImplemented(struct NaClDesc           *vself,
 
 int NaClDescConnectAddrNotImplemented(struct NaClDesc         *vself,
                                       struct NaClDescEffector *effp) {
+  UNREFERENCED_PARAMETER(effp);
+
   NaClLog(LOG_ERROR,
           "ConnectAddr method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -369,6 +443,8 @@ int NaClDescConnectAddrNotImplemented(struct NaClDesc         *vself,
 
 int NaClDescAcceptConnNotImplemented(struct NaClDesc          *vself,
                                      struct NaClDescEffector  *effp) {
+  UNREFERENCED_PARAMETER(effp);
+
   NaClLog(LOG_ERROR,
           "AcceptConn method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -377,6 +453,8 @@ int NaClDescAcceptConnNotImplemented(struct NaClDesc          *vself,
 
 int NaClDescPostNotImplemented(struct NaClDesc          *vself,
                                struct NaClDescEffector  *effp) {
+  UNREFERENCED_PARAMETER(effp);
+
   NaClLog(LOG_ERROR,
           "Post method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -385,6 +463,8 @@ int NaClDescPostNotImplemented(struct NaClDesc          *vself,
 
 int NaClDescSemWaitNotImplemented(struct NaClDesc         *vself,
                                   struct NaClDescEffector *effp) {
+  UNREFERENCED_PARAMETER(effp);
+
   NaClLog(LOG_ERROR,
           "SemWait method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -393,14 +473,19 @@ int NaClDescSemWaitNotImplemented(struct NaClDesc         *vself,
 
 int NaClDescGetValueNotImplemented(struct NaClDesc          *vself,
                                    struct NaClDescEffector  *effp) {
+  UNREFERENCED_PARAMETER(effp);
+
   NaClLog(LOG_ERROR,
           "GetValue method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescInternalizeNotImplemented(struct NaClDesc **baseptr,
-                                      struct NaClDescXferState *xfer) {
+int NaClDescInternalizeNotImplemented(struct NaClDesc           **baseptr,
+                                      struct NaClDescXferState  *xfer) {
+  UNREFERENCED_PARAMETER(baseptr);
+  UNREFERENCED_PARAMETER(xfer);
+
   NaClLog(LOG_ERROR,
           "Attempted transfer of non-transferable descriptor\n");
   return -NACL_ABI_EIO;

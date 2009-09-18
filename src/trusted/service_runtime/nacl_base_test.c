@@ -46,8 +46,11 @@ int main(int  argc,
   char *bufptr = buffer;
   size_t ix;
 
-  NACL_ASSERT_IS_POINTER(bufptr);
+  /* type signature of main is constrained by SDL */
+  UNREFERENCED_PARAMETER(argc);
+  UNREFERENCED_PARAMETER(argv);
 
+  NACL_ASSERT_IS_POINTER(bufptr);
   NACL_ASSERT_IS_ARRAY(buffer);
 
   /*

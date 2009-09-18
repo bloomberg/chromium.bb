@@ -40,9 +40,10 @@
  * Install a syscall trampoline at target_addr.  NB: Thread-safe.
  */
 void  NaClPatchOneTrampoline(struct NaClApp *nap,
-                             uintptr_t  target_addr) {
+                             uintptr_t      target_addr) {
   struct NaClPatchInfo  patch_info;
 
+  UNREFERENCED_PARAMETER(nap);
   /*
    * in ARM we do not need to patch ds, cs segments.
    * by default we initialize the target for trampoline code as NaClSyscallSeg,

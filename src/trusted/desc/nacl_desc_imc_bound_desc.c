@@ -78,6 +78,9 @@ void NaClDescImcBoundDescDtor(struct NaClDesc *vself) {
 int NaClDescImcBoundDescFstat(struct NaClDesc          *vself,
                               struct NaClDescEffector  *effp,
                               struct nacl_abi_stat     *statbuf) {
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(effp);
+
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFBOUNDSOCK;
   return 0;
@@ -85,6 +88,8 @@ int NaClDescImcBoundDescFstat(struct NaClDesc          *vself,
 
 int NaClDescImcBoundDescClose(struct NaClDesc         *vself,
                               struct NaClDescEffector *effp) {
+  UNREFERENCED_PARAMETER(effp);
+
   NaClDescUnref(vself);
   return 0;
 }

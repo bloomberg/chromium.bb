@@ -94,7 +94,7 @@
 #if NACL_WINDOWS
 # define UNREFERENCED_PARAMETER(P) (P)
 #else
-# define UNREFERENCED_PARAMETER(P) do { ; } while (0)
+# define UNREFERENCED_PARAMETER(P) do { (void) P; } while (0)
 #endif
 
 #if NACL_WINDOWS
@@ -175,7 +175,11 @@ struct timezone {
 #   endif
 #  endif
 # else
-#  define  __PRIS_PREFIX "z"
+#  if NACL_OSX
+#   define  __PRIS_PREFIX "l" /* -pedantic C++ programs w/ xcode */
+#  else
+#   define  __PRIS_PREFIX "z"
+#  endif
 # endif
 #endif
 

@@ -118,6 +118,7 @@ void NaClIntrCondVarIntr(struct NaClIntrCondVar *cp) {
 }
 
 void NaClIntrCondVarReset(struct NaClIntrCondVar *cp) {
+  UNREFERENCED_PARAMETER(cp);
   /* nothing to do here - we don't keep status */
   return;
 }

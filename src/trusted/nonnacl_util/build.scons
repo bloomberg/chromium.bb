@@ -42,6 +42,7 @@ if env.Bit('linux'):
 
 if env.Bit('mac'):
     # there are some issue with compiling ".mm" files
+    # TODO(sehr): this should Clone an env specifically for the mm file.
     env.FilterOut(CCFLAGS=['-pedantic'])
     env.Append(
         CPPDEFINES = [
@@ -52,6 +53,9 @@ if env.Bit('mac'):
             'USE_SYSTEM_CONSOLE',
         ],
     )
+
+# TODO(sehr): remove need for the next line
+env.FilterOut(CCFLAGS=['-Wextra'])
 
 
 if env.Bit('windows'):

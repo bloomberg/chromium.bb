@@ -27,6 +27,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# TODO(sehr): remove need for the warning flag removals below
 {
   'includes': [
     # NOTE: this file also defines common dependencies.
@@ -40,6 +41,15 @@
         'sel_ldr_launcher.cc',
         'sel_ldr_launcher.h',
       ],
+      'cflags!': [
+        '-Wextra',
+      ],
+      'xcode_settings': {
+        'WARNING_CFLAGS!': [
+          '-pedantic',  # import is a gcc extension
+          '-Wextra',
+        ]
+      },
     },
     {
       'target_name': 'nonnacl_util',
@@ -47,6 +57,11 @@
       'dependencies': [
         'sel_ldr_launcher',
       ],
+      'xcode_settings': {
+        'WARNING_CFLAGS!': [
+          '-pedantic',  # import is a gcc extension
+        ]
+      },
     },
     {
       'target_name': 'nonnacl_util_c',
@@ -55,6 +70,15 @@
         'sel_ldr_launcher_c.cc',
         'sel_ldr_launcher_c.h',
       ],
+      'cflags!': [
+        '-Wextra',
+      ],
+      'xcode_settings': {
+        'WARNING_CFLAGS!': [
+          '-pedantic',  # import is a gcc extension
+          '-Wextra',
+        ]
+      },
       'dependencies': [
         'sel_ldr_launcher',
       ],

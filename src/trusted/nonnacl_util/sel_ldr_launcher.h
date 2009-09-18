@@ -40,7 +40,9 @@
 #include <string.h>
 #include <string>
 
+#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
+
 struct NaClSrpcChannel;
 struct NaClDesc;
 
@@ -62,7 +64,10 @@ struct SelLdrLauncher {
              const char* application_argv[]);
 #ifdef NACL_STANDALONE
   // Should never be called when not running in Chrome.
-  bool Start(int imc_fd) { return false; }
+  bool Start(int imc_fd) {
+    UNREFERENCED_PARAMETER(imc_fd);
+    return false;
+  }
 #else
   // Launch sel_ldr process in Chrome by sending a message
   // to the browser process.

@@ -92,6 +92,9 @@ void NaClDescMutexDtor(struct NaClDesc *vself) {
 int NaClDescMutexFstat(struct NaClDesc          *vself,
                        struct NaClDescEffector  *effp,
                        struct nacl_abi_stat     *statbuf) {
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(effp);
+
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFMUTEX;
   return 0;
@@ -99,6 +102,8 @@ int NaClDescMutexFstat(struct NaClDesc          *vself,
 
 int NaClDescMutexClose(struct NaClDesc          *vself,
                        struct NaClDescEffector  *effp) {
+  UNREFERENCED_PARAMETER(effp);
+
   NaClDescUnref(vself);
   return 0;
 }
@@ -108,6 +113,8 @@ int NaClDescMutexLock(struct NaClDesc         *vself,
   struct NaClDescMutex *self = (struct NaClDescMutex *) vself;
 
   NaClSyncStatus status = NaClIntrMutexLock(&self->mu);
+
+  UNREFERENCED_PARAMETER(effp);
   return -NaClXlateNaClSyncStatus(status);
 }
 
@@ -116,6 +123,9 @@ int NaClDescMutexTryLock(struct NaClDesc          *vself,
   struct NaClDescMutex *self = (struct NaClDescMutex *) vself;
 
   NaClSyncStatus status = NaClIntrMutexTryLock(&self->mu);
+
+  UNREFERENCED_PARAMETER(effp);
+
   return -NaClXlateNaClSyncStatus(status);
 }
 
@@ -124,6 +134,9 @@ int NaClDescMutexUnlock(struct NaClDesc         *vself,
   struct NaClDescMutex *self = (struct NaClDescMutex *) vself;
 
   NaClSyncStatus status = NaClIntrMutexUnlock(&self->mu);
+
+  UNREFERENCED_PARAMETER(effp);
+
   return -NaClXlateNaClSyncStatus(status);
 }
 
@@ -160,6 +173,9 @@ struct NaClDescVtbl const kNaClDescMutexVtbl = {
 
 int NaClDescMutexInternalize(struct NaClDesc           **baseptr,
                              struct NaClDescXferState  *xfer) {
+  UNREFERENCED_PARAMETER(baseptr);
+  UNREFERENCED_PARAMETER(xfer);
+
   NaClLog(LOG_ERROR, "NaClDescMutexInternalize: not shared yet\n");
   return -NACL_ABI_EINVAL;
 }

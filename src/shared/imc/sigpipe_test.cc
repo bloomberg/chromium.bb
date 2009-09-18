@@ -575,6 +575,7 @@ struct TestFn {
     ReceiveDescriptor,
     0,
     false,
+    false,
   }, {
     "Send some data via bound socket, shared socket",
     SendData,
@@ -583,6 +584,8 @@ struct TestFn {
     false,
 #if NACL_WINDOWS
     true,  // known not to be flakey
+#else
+    false,
 #endif
   }, {
     "Send one descriptor via socket pair, shared socket",
@@ -590,11 +593,13 @@ struct TestFn {
     ReceiveDescriptor,
     1,
     false,
+    false,
   }, {
     "Send some data via socket pair, shared socket",
     SendData,
     ReceiveData,
     1,
+    false,
     false,
   }, {
     "Send one descriptor via bound socket, per test socket",
@@ -602,6 +607,7 @@ struct TestFn {
     ReceiveDescriptor,
     0,
     true,
+    false,
   }, {
     "Send some data via bound socket, per test socket",
     SendData,
@@ -610,6 +616,8 @@ struct TestFn {
     true,
 #if NACL_WINDOWS
     true,  // known not to work: first msg must be a desc xfer
+#else
+    false,
 #endif
   }, {
     "Send one descriptor via socket pair, per test socket",
@@ -617,12 +625,14 @@ struct TestFn {
     ReceiveDescriptor,
     1,
     true,
+    false,
   }, {
     "Send some data via socket pair, per test socket",
     SendData,
     ReceiveData,
     1,
     true,
+    false,
   },
   // add more tests here
 };

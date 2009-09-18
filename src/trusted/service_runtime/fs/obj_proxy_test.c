@@ -406,7 +406,7 @@ int main(int ac, char **av) {
 
   int           seed_provided = 0;
   uint8_t       seed_material[SEED_BYTES];
-  int           ix;
+  size_t        ix;
   unsigned int  seed_byte;
 
   struct NaClSecureRng    rng;

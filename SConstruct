@@ -664,6 +664,7 @@ windows_env.Append(
     ],
     LIBS = ['wsock32', 'advapi32'],
     CCFLAGS = ['/EHsc', '/WX'],
+    # TODO(new_hire): '/Wp64' should be in here.
 )
 
 # This linker option allows us to ensure our builds are compatible with
@@ -730,10 +731,10 @@ unix_like_env.Prepend(
     '-Werror',
     '-Wall',
     '-pedantic',
-    #'-Wextra',
-    #'-Wno-long-long',
-    #'-Wswitch-enum',
-    #'-Wsign-compare',
+    '-Wextra',
+    '-Wno-long-long',
+    '-Wswitch-enum',
+    '-Wsign-compare',
     '-fvisibility=hidden',
   ],
   CXXFLAGS=['-std=c++98'],

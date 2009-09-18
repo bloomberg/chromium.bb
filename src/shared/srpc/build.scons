@@ -1,3 +1,4 @@
+# -*- python -*-
 # Copyright 2008, Google Inc.
 # All rights reserved.
 #
@@ -41,5 +42,8 @@ trusted_untrusted_shared = [
     'rpc_universal.c',
     'utility.c',
 ]
+
+# TODO(sehr): remove necessity of the next line
+env.FilterOut(CCFLAGS=['-Wextra', '-Wsign-compare'])
 
 env.ComponentLibrary('nonnacl_srpc', trusted_untrusted_shared)

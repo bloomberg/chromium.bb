@@ -47,6 +47,17 @@
         'rpc_universal.c',
         'utility.c',
       ],
+      # TODO(sehr): remove necessity of the warning flag removals below
+      'cflags!': [
+        '-Wextra',
+        '-Wsign-compare'
+      ],
+      'xcode_settings': {
+        'WARNING_CFLAGS!': [
+          '-Wextra',
+          '-Wsign-compare'
+        ]
+      },
     }
   ]
 }

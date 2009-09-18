@@ -321,6 +321,8 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
   unsigned char buf[CMSG_SPACE(kHandleCountMax * sizeof(int))];
   Header header = { 0, 0 };
 
+  (void) flags;  /* BUG(shiki): unused parameter */
+
   assert(sizeof(struct iovec) == sizeof(IOVec));
   if (kHandleCountMax < message->handle_count ||
       kIovLengthMax < message->iov_length) {

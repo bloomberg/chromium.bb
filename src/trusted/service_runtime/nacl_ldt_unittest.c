@@ -41,6 +41,10 @@
 
 int main(int argc, char* argv[]) {
   uint16_t a, b, c, d, e;
+
+  UNREFERENCED_PARAMETER(argc);
+  UNREFERENCED_PARAMETER(argv);
+
   /* Initialize LDT services. */
   NaClLdtInit();
 

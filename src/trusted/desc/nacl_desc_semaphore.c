@@ -91,6 +91,9 @@ void NaClDescSemaphoreDtor(struct NaClDesc *vself) {
 int NaClDescSemaphoreFstat(struct NaClDesc          *vself,
                            struct NaClDescEffector  *effp,
                            struct nacl_abi_stat     *statbuf) {
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(effp);
+
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFSEMA;
   return 0;
@@ -98,6 +101,8 @@ int NaClDescSemaphoreFstat(struct NaClDesc          *vself,
 
 int NaClDescSemaphoreClose(struct NaClDesc          *vself,
                            struct NaClDescEffector  *effp) {
+  UNREFERENCED_PARAMETER(effp);
+
   NaClDescUnref(vself);
   return 0;
 }
@@ -105,21 +110,25 @@ int NaClDescSemaphoreClose(struct NaClDesc          *vself,
 int NaClDescSemaphorePost(struct NaClDesc         *vself,
                           struct NaClDescEffector *effp) {
   struct NaClDescSemaphore *self = (struct NaClDescSemaphore *)vself;
-
   NaClSyncStatus status = NaClSemPost(&self->sem);
+
+  UNREFERENCED_PARAMETER(effp);
   return -NaClXlateNaClSyncStatus(status);
 }
 
 int NaClDescSemaphoreSemWait(struct NaClDesc          *vself,
                              struct NaClDescEffector  *effp) {
   struct NaClDescSemaphore *self = (struct NaClDescSemaphore *)vself;
-
   NaClSyncStatus status = NaClSemWait(&self->sem);
+
+  UNREFERENCED_PARAMETER(effp);
   return -NaClXlateNaClSyncStatus(status);
 }
 
 int NaClDescSemaphoreGetValue(struct NaClDesc         *vself,
                               struct NaClDescEffector *effp) {
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(effp);
   NaClLog(LOG_ERROR, "SemGetValue is not implemented yet\n");
   return -NACL_ABI_EINVAL;
   /*
@@ -167,6 +176,8 @@ struct NaClDescVtbl const kNaClDescSemaphoreVtbl = {
 
 int NaClDescSemaphoreInternalize(struct NaClDesc           **baseptr,
                                  struct NaClDescXferState  *xfer) {
+  UNREFERENCED_PARAMETER(baseptr);
+  UNREFERENCED_PARAMETER(xfer);
   NaClLog(LOG_ERROR, "NaClDescSemaphoreInternalize: not shared yet\n");
   return -NACL_ABI_EINVAL;
 }

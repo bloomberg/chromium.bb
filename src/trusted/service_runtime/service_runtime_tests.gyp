@@ -69,6 +69,16 @@
         'sel_mem_test.cc',
         'sel_ldr_test.cc',
       ],
+      # because of: gtest-typed-test.h:236:46: error:
+      # anonymous variadic macros were introduced in C99
+      'cflags!': [
+        '-pedantic',
+      ],
+      'xcode_settings': {
+        'WARNING_CFLAGS!': [
+          '-pedantic',
+        ],
+      },
     },
     # TODO(gregoryd): The tests below should be moved into platform directory.
     # Keeping them here for now for consistency with scons.

@@ -102,6 +102,8 @@ void  NaClVmmapEntryFree(struct NaClVmmapEntry *entry) {
  */
 void NaClVmentryPrint(void                  *state,
                       struct NaClVmmapEntry *vmep) {
+  UNREFERENCED_PARAMETER(state);
+
   printf("page num 0x%06x\n", (uint32_t)vmep->page_num);
   printf("num pages %d\n", (uint32_t)vmep->npages);
   printf("prot bits %x\n", vmep->prot);
@@ -170,7 +172,11 @@ static void NaClVmmapRemoveMarked(struct NaClVmmap *self) {
    * marked-to-be-removed entries.
    */
 
-  /* forall j in [0, self->nvalid): NULL != self->vmentry[j] */
+  /*
+   * Invariant:
+   *
+   * forall j in [0, self->nvalid): NULL != self->vmentry[j]
+   */
   for (last = self->nvalid; last > 0 && self->vmentry[--last]->removed; ) {
     NaClVmmapEntryFree(self->vmentry[last]);
     self->vmentry[last] = NULL;
@@ -179,26 +185,45 @@ static void NaClVmmapRemoveMarked(struct NaClVmmap *self) {
     NaClLog(LOG_FATAL, "No valid entries in VM map\n");
   }
 
-  /* forall j in [0, last]: NULL != self->vmentry[j] */
-
-  /* 0 <= last < self->nvalid && !self->vmentry[last]->removed */
-  CHECK(0 <= last && last < self->nvalid);
+  /*
+   * Post condition of above loop:
+   *
+   * forall j in [0, last]: NULL != self->vmentry[j]
+   *
+   * 0 <= last < self->nvalid && !self->vmentry[last]->removed
+   */
+  CHECK(last < self->nvalid);
   CHECK(!self->vmentry[last]->removed);
-  /* forall j in (last, self->nvalid): NULL == self->vmentry[j] */
+  /*
+   * and,
+   *
+   * forall j in (last, self->nvalid): NULL == self->vmentry[j]
+   */
 
-  /* loop invar: forall j in [0, i):  !self->vmentry[j]->removed */
+  /*
+   * Loop invariant: forall j in [0, i):  !self->vmentry[j]->removed
+   */
   for (i = 0; i < last; ++i) {
     if (!self->vmentry[i]->removed) {
       continue;
     }
-    /* self->vmentry[i]->removed */
+    /*
+     * post condition: self->vmentry[i]->removed
+     *
+     * swap with entry at self->vmentry[last].
+     */
 
     NaClVmmapEntryFree(self->vmentry[i]);
     self->vmentry[i] = self->vmentry[last];
     self->vmentry[last] = NULL;
 
-    /* forall j in [last, self->nvalid): NULL == self->vmentry[j] */
-    /* forall j in [0, i]: !self->vmentry[j]->removed */
+    /*
+     * Invariants here:
+     *
+     * forall j in [last, self->nvalid): NULL == self->vmentry[j]
+     *
+     * forall j in [0, i]: !self->vmentry[j]->removed
+     */
 
     while (--last > i && self->vmentry[last]->removed) {
       NaClVmmapEntryFree(self->vmentry[last]);

@@ -252,7 +252,13 @@
           ['nacl_standalone==1', {
             # TODO(gregoryd): remove the condition when the issues in
             # Chrome code are fixed.
-            'cflags': ['-pedantic'],
+            'cflags': [
+              '-pedantic',
+              '-Wextra',
+              '-Wno-long-long',
+              '-Wswitch-enum',
+              '-Wsign-compare'
+            ],
           }],
         ],
         'cflags_cc': [
@@ -495,7 +501,13 @@
             'xcode_settings': {
               # TODO(gregoryd): remove the condition when the issues in
               # Chrome code are fixed.
-              'WARNING_CFLAGS': ['-pedantic'],
+              'WARNING_CFLAGS': [
+                '-pedantic',
+                '-Wextra',
+                '-Wno-long-long',
+                '-Wswitch-enum',
+                '-Wsign-compare'
+              ],
             },
             'target_conditions': [
               ['_type!="static_library"', {
@@ -662,7 +674,7 @@
         },
       },
     }],
-    ['chromium_code==0', {
+    ['chromium_code==0 and nacl_standalone==0', {
       # This section must follow the other conditon sections above because
       # external_code.gypi expects to be merged into those settings.
       'includes': [
@@ -675,6 +687,12 @@
         'defines': [
           '__STDC_FORMAT_MACROS',
         ],
+        'msvs_settings': {
+          'VCCLCompilerTool': {
+            'Detect64BitPortabilityProblems': 'false',
+            # TODO(new_hire): above line should go away
+          },
+        },
       },
     }],
   ],

@@ -89,6 +89,9 @@ void NaClDescCondVarDtor(struct NaClDesc *vself) {
 int NaClDescCondVarFstat(struct NaClDesc          *vself,
                          struct NaClDescEffector  *effp,
                          struct nacl_abi_stat     *statbuf) {
+  UNREFERENCED_PARAMETER(vself);
+  UNREFERENCED_PARAMETER(effp);
+
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFCOND;
   return 0;
@@ -96,6 +99,8 @@ int NaClDescCondVarFstat(struct NaClDesc          *vself,
 
 int NaClDescCondVarClose(struct NaClDesc          *vself,
                          struct NaClDescEffector  *effp) {
+  UNREFERENCED_PARAMETER(effp);
+
   NaClDescUnref(vself);
   return 0;
 }
@@ -108,6 +113,8 @@ int NaClDescCondVarWait(struct NaClDesc         *vself,
   struct NaClDescCondVar  *self = (struct NaClDescCondVar *) vself;
   struct NaClDescMutex    *mutex_desc;
   NaClSyncStatus          status;
+
+  UNREFERENCED_PARAMETER(effp);
 
   if (mutex->vtbl->typeTag != NACL_DESC_MUTEX) {
     return -NACL_ABI_EINVAL;
@@ -127,6 +134,8 @@ int NaClDescCondVarTimedWaitAbs(struct NaClDesc           *vself,
   struct NaClDescMutex    *mutex_desc;
   NaClSyncStatus          status;
 
+  UNREFERENCED_PARAMETER(effp);
+
   if (mutex->vtbl->typeTag != NACL_DESC_MUTEX) {
     return -NACL_ABI_EINVAL;
   }
@@ -141,16 +150,18 @@ int NaClDescCondVarTimedWaitAbs(struct NaClDesc           *vself,
 int NaClDescCondVarSignal(struct NaClDesc         *vself,
                           struct NaClDescEffector *effp) {
   struct NaClDescCondVar *self = (struct NaClDescCondVar *) vself;
-
   NaClSyncStatus status = NaClIntrCondVarSignal(&self->cv);
+
+  UNREFERENCED_PARAMETER(effp);
   return -NaClXlateNaClSyncStatus(status);
 }
 
 int NaClDescCondVarBroadcast(struct NaClDesc          *vself,
                              struct NaClDescEffector  *effp) {
   struct NaClDescCondVar *self = (struct NaClDescCondVar *) vself;
-
   NaClSyncStatus status = NaClIntrCondVarBroadcast(&self->cv);
+
+  UNREFERENCED_PARAMETER(effp);
   return -NaClXlateNaClSyncStatus(status);
 }
 
@@ -187,6 +198,9 @@ struct NaClDescVtbl const kNaClDescCondVarVtbl = {
 
 int NaClDescCondVarInternalize(struct NaClDesc           **baseptr,
                                struct NaClDescXferState  *xfer) {
+  UNREFERENCED_PARAMETER(baseptr);
+  UNREFERENCED_PARAMETER(xfer);
+
   NaClLog(LOG_ERROR, "NaClDescCondVarInternalize: not shared yet\n");
   return -NACL_ABI_EINVAL;
 }

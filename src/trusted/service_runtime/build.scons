@@ -99,13 +99,13 @@ env.Command(target=env.File(GENERATED + '/nacl_syscall_handlers.c'),
 
 if env['BUILD_ARCHITECTURE'] == 'x86':
   modules_env = env.Clone()
-  modules_env.FilterOut(ASFLAGS=['-m64'])
-  modules_env.FilterOut(CCFLAGS=['-m64'])
-  modules_env.FilterOut(LINKFLAGS = ['-m64', '-L/usr/lib64'])
-  modules_env.Prepend(ASFLAGS = ['-m32', ],
-                      CCFLAGS = ['-m32', ],
-                      LINKFLAGS = ['-m32', '-L/usr/lib32'],
-                      )
+  if not env.Bit('windows'):
+    modules_env.FilterOut(ASFLAGS=['-m64'])
+    modules_env.FilterOut(CCFLAGS=['-m64'])
+    modules_env.FilterOut(LINKFLAGS = ['-m64', '-L/usr/lib64'])
+    modules_env.Prepend(ASFLAGS = ['-m32', ],
+                        CCFLAGS = ['-m32', ],
+                        LINKFLAGS = ['-m32', '-L/usr/lib32'])
 
   # TODO(tuduce): If two .c files will both need to look at the
   # tramp/springboard code array, generate .c data files instead of .h
@@ -282,7 +282,12 @@ env.ComponentLibrary('gio', ['gio.c',
 
 env.ComponentLibrary('container', ['generic_container/container.c'])
 
-env.ComponentLibrary('expiration', ['expiration.c'])
+# struct tm has extra fields in glibc/linux
+expiration_env = env.Clone()
+if not env.Bit('windows'):
+  expiration_env.Append(CCFLAGS=['-Wno-missing-field-initializers' ])
+
+expiration_env.ComponentLibrary('expiration', ['expiration.c'])
 
 env.ComponentLibrary('nacl_xdr', ['fs/xdr.c', 'fs/obj_proxy.c'])
 

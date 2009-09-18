@@ -88,6 +88,7 @@ struct NaClSyscallTableEntry nacl_syscall[NACL_MAX_SYSCALLS] = {{0}};
 
 
 static int32_t NotImplementedDecoder(struct NaClAppThread *natp) {
+  UNREFERENCED_PARAMETER(natp);
   return -NACL_ABI_ENOSYS;
 }
 
@@ -101,6 +102,7 @@ static void NaClAddSyscall(int num, int32_t (*fn)(struct NaClAppThread *)) {
 /* ====================================================================== */
 
 int32_t NaClSysNull(struct NaClAppThread *natp) {
+  UNREFERENCED_PARAMETER(natp);
   return 0;
 }
 
@@ -307,6 +309,7 @@ int32_t NaClSysGetTimeOfDay(struct NaClAppThread      *natp,
   int                     retval;
   struct nacl_abi_timeval now;
 
+  UNREFERENCED_PARAMETER(tz);
   NaClSysCommonThreadSyscallEnter(natp);
 
   sysaddr = NaClUserToSysAddrRange(natp->nap, (uintptr_t) tv, sizeof tv);
@@ -415,6 +418,7 @@ int32_t NaClSysAudio_Shutdown(struct NaClAppThread *natp) {
 int32_t NaClSysSrpc_Get_Fd(struct NaClAppThread *natp) {
   extern int NaClSrpcFileDescriptor;
 
+  UNREFERENCED_PARAMETER(natp);
   return NaClSrpcFileDescriptor;
 }
 
@@ -549,6 +553,7 @@ int32_t NaClSysSem_Get_Value(struct NaClAppThread *natp,
 }
 
 int32_t NaClSysSched_Yield(struct NaClAppThread *natp) {
+  UNREFERENCED_PARAMETER(natp);
   sched_yield();
   return 0;
 }

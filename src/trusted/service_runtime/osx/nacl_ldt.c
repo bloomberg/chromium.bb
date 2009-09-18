@@ -37,6 +37,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
 /* for LDT_ENTRIES */
@@ -291,6 +292,8 @@ void NaClLdtPrintSelector(uint16_t selector) {
   printf("  available %s\n", (entry.available ? "yes" : "no"));
   printf("  64-bit code %s\n", (entry.code_64_bit ? "yes" : "no"));
   printf("  op size %s\n", (entry.op_size_32 ? "32" : "16"));
+#else
+  UNREFERENCED_PARAMETER(selector);
 #endif
 }
 

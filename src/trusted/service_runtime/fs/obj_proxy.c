@@ -58,23 +58,27 @@ struct NaClObjProxyEntry {
  */
 
 static void NaClObjProxyFunctorDtor(struct NaClCmpFunctor *vself) {
+  UNREFERENCED_PARAMETER(vself);
   return;
 }
 
 
 static int NaClObjProxyObjCmp(struct NaClCmpFunctor *vself,
-                              void *vlhs, void *vrhs) {
+                              void                  *vlhs,
+                              void                  *vrhs) {
   struct NaClObjProxyEntry *lhs = (struct NaClObjProxyEntry *) vlhs;
   struct NaClObjProxyEntry *rhs = (struct NaClObjProxyEntry *) vrhs;
 
+  UNREFERENCED_PARAMETER(vself);
   return lhs->obj != rhs->obj;
 }
 
 
 static uintptr_t NaClObjProxyObjHash(struct NaClHashFunctor *vself,
-                                     void *ventry) {
+                                     void                   *ventry) {
   struct NaClObjProxyEntry *entry = (struct NaClObjProxyEntry *) ventry;
 
+  UNREFERENCED_PARAMETER(vself);
   return (uintptr_t) entry->obj;
 }
 

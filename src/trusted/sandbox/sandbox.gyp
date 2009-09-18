@@ -47,6 +47,15 @@
           'linux/nacl_registers.cc',
           'linux/nacl_sandbox.cc',
         ],
+        # TODO(neha): eliminate the need for the warning flag removals below
+        'cflags!': [
+          '-Wextra',
+        ],
+        'xcode_settings': {
+          'WARNING_CFLAGS!': [
+            '-Wextra',
+          ]
+        },
       },
       {
         'target_name': 'sel_ldr_trace',
@@ -55,7 +64,7 @@
           'linux/nacl_sandbox_main.cc',
         ],
         # libraries?
-        # EXTRA_LIBS=['sandbox', '${OPTIONAL_COVERAGE_LIBS}'])
+        # EXTRA_LIBS=['sandbox', '${OPTIONAL_COVERAGE_LIBS}']
       },
     ]}],
     ['OS=="mac"', { 'targets': [ ] } ],

@@ -191,10 +191,11 @@ int main(int ac, char **av) {
         ndp = msg_hdr.ndescv[i];
         printf(" type %d\n", ndp->vtbl->typeTag);
 
-        if (msglen != (write_result = (*ndp->vtbl->Write)(ndp,
-                                                          effp,
-                                                          (void *) message,
-                                                          msglen))) {
+        write_result = (*ndp->vtbl->Write)(ndp,
+                                           effp,
+                                           (void *) message,
+                                           msglen);
+        if (-1 == write_result || msglen != (size_t) write_result) {
           printf("Write failed: got %"PRIdS", expected %"PRIuS"\n",
                  write_result, msglen);
         }

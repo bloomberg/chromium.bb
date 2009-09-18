@@ -37,9 +37,12 @@
 #include <stdint.h>
 #include <sys/types.h>
 
+#include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 void NaClDeallocAddrRange(uintptr_t addr,
                           size_t    len) {
+  UNREFERENCED_PARAMETER(addr);
+  UNREFERENCED_PARAMETER(len);
   return;
 }
