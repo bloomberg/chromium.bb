@@ -4,6 +4,10 @@
 
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 
+#if defined(OS_LINUX)
+#include <locale.h>
+#endif
+
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -2785,7 +2789,30 @@ int GetCurrentCountryID() {
 #elif defined(OS_LINUX)
 
 int GetCurrentCountryID() {
-  NOTIMPLEMENTED();
+  const char* locale = setlocale(LC_MESSAGES, NULL);
+
+  if (!locale)
+    return kCountryIDUnknown;
+
+  // The format of a locale name is:
+  // language[_territory][.codeset][@modifier], where territory is an ISO 3166
+  // country code, which is what we want.
+  std::string locale_str(locale);
+  size_t begin = locale_str.find('_');
+  if (begin == std::string::npos || locale_str.size() - begin < 3)
+    return kCountryIDUnknown;
+
+  ++begin;
+  size_t end = locale_str.find_first_of(".@", begin);
+  if (end == std::string::npos)
+    end = locale_str.size();
+
+  // The territory part must contain exactly two characters.
+  if (end - begin == 2) {
+    return CountryCharsToCountryIDWithUpdate(
+        ToUpperASCII(locale_str[begin]), ToUpperASCII(locale_str[begin + 1]));
+  }
+
   return kCountryIDUnknown;
 }
 
