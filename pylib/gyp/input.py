@@ -1721,6 +1721,36 @@ def ValidateRunAsInTarget(target, target_dict, build_file):
                     "in file %s should be a dictionary." %
                     (target_name, build_file))
 
+def TurnIntIntoStrInDict(the_dict):
+  """Given dict the_dict, recursively converts all integers into strings.
+  """
+  # Use items instead of iteritems because there's no need to try to look at
+  # reinserted keys and their associated values.
+  for k, v in the_dict.items():
+    if isinstance(v, int):
+      v = str(v)
+      the_dict[k] = v
+    elif isinstance(v, dict):
+      TurnIntIntoStrInDict(v)
+    elif isinstance(v, list):
+      TurnIntIntoStrInList(v)
+
+    if isinstance(k, int):
+      the_dict[str(k)] = v
+      del the_dict[k]
+
+def TurnIntIntoStrInList(the_list):
+  """Given list the_list, recursively converts all integers into strings.
+  """
+  for index in xrange(0, len(the_list)):
+    item = the_list[index]
+    if isinstance(item, int):
+      the_list[index] = str(item)
+    elif isinstance(item, dict):
+      TurnIntIntoStrInDict(item)
+    elif isinstance(item, list):
+      TurnIntIntoStrInList(item)
+
 def Load(build_files, variables, includes, depth, generator_input_info):
   # Set up path_sections and non_configuration_keys with the default data plus
   # the generator-specifc data.
@@ -1816,6 +1846,9 @@ def Load(build_files, variables, includes, depth, generator_input_info):
   for target in flat_list:
     build_file = gyp.common.BuildFileAndTarget('', target)[0]
     ValidateRunAsInTarget(target, targets[target], build_file)
+
+  # Generators might not expect ints.  Turn them into strs.
+  TurnIntIntoStrInDict(data)
 
   # TODO(mark): Return |data| for now because the generator needs a list of
   # build files that came in.  In the future, maybe it should just accept

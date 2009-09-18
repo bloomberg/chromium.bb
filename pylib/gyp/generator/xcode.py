@@ -188,7 +188,8 @@ class XcodeProject(object):
       # If this target has a 'run_as' attribute, or is a test, add its
       # target to the targets, and (if it's a test) add it the to the
       # test targets.
-      if target.get('run_as') or target.get('test'):
+      is_test = int(target.get('test', 0))
+      if target.get('run_as') or is_test:
         # Make a target to run something.  It should have one
         # dependency, the parent xcode target.
         run_target = gyp.xcodeproj_file.PBXAggregateTarget({
@@ -235,7 +236,7 @@ class XcodeProject(object):
 
         # Add the run target to the project file.
         targets.append(run_target)
-        if target.get('test'):
+        if is_test:
           test_targets.append(xcode_target)
 
 
@@ -325,7 +326,7 @@ class XcodeProject(object):
     # and generate a second target that will run the tests found under the
     # marked target.
     for bf_tgt in self.build_file_dict['targets']:
-      if bf_tgt.get('xcode_create_dependents_test_runner'):
+      if int(bf_tgt.get('xcode_create_dependents_test_runner', 0)):
         tgt_name = bf_tgt['target_name']
         qualified_target = gyp.common.QualifiedTarget(self.gyp_path,
                                                       tgt_name)
@@ -338,7 +339,7 @@ class XcodeProject(object):
             pbxcip = pbxtd.GetProperty('targetProxy')
             dependency_xct = pbxcip.GetProperty('remoteGlobalIDString')
             target_dict = xcode_target_to_target_dict[dependency_xct]
-            if target_dict and target_dict.get('test'):
+            if target_dict and int(target_dict.get('test', 0)):
               all_tests.append(dependency_xct)
 
           # We have to directly depend on all tests and then directly run
@@ -605,9 +606,10 @@ def GenerateOutput(target_list, target_dicts, data, params):
     }
 
     type = spec['type']
+    is_bundle = int(spec.get('mac_bundle', 0))
     if type != 'none':
       type_bundle_key = type
-      if spec.get('mac_bundle'):
+      if is_bundle:
         type_bundle_key += '+bundle'
       xctarget_type = gyp.xcodeproj_file.PBXNativeTarget
       target_properties['productType'] = _types[type_bundle_key]
@@ -628,7 +630,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     # but the mach-o type is explictly set in the settings.  So before we do
     # anything else, for this one case, we stuff in that one setting.  This
     # would allow the other data in the spec to change it if need be.
-    if type == 'loadable_module' and not spec.get('mac_bundle'):
+    if type == 'loadable_module' and not is_bundle:
       xccl.SetBuildSetting('MACH_O_TYPE', 'mh_bundle')
 
     prebuild_index = 0
@@ -687,7 +689,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
     # tgt_mac_bundle_resources holds the list of bundle resources so
     # the rule processing can check against it.
-    if spec.get('mac_bundle'):
+    if is_bundle:
       tgt_mac_bundle_resources = spec.get('mac_bundle_resources', [])
     else:
       tgt_mac_bundle_resources = []
@@ -803,7 +805,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
         concrete_outputs_all.extend(concrete_outputs_for_this_rule_source)
 
         # TODO(mark): Should verify that at most one of these is specified.
-        if rule.get('process_outputs_as_sources', False):
+        if int(rule.get('process_outputs_as_sources', False)):
           for output in concrete_outputs_for_this_rule_source:
             AddSourceToTarget(output, pbxp, xct)
 
@@ -811,7 +813,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
         # is marked to process outputs as bundle resource, do so.
         was_mac_bundle_resource = rule_source in tgt_mac_bundle_resources
         if was_mac_bundle_resource or \
-            rule.get('process_outputs_as_mac_bundle_resources', False):
+            int(rule.get('process_outputs_as_mac_bundle_resources', False)):
           for output in concrete_outputs_for_this_rule_source:
             AddResourceToTarget(output, pbxp, xct)
 
@@ -968,7 +970,7 @@ exit 1
         pbxp.AddOrGetFileInRootGroup(source)
 
     # Add "mac_bundle_resources" if it's a bundle of any type.
-    if spec.get('mac_bundle'):
+    if is_bundle:
       for resource in tgt_mac_bundle_resources:
         (resource_root, resource_extension) = posixpath.splitext(resource)
         if resource_extension[1:] not in rules_by_ext:

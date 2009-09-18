@@ -400,7 +400,7 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
                  'message' : message,
                  'target_name': target_name,
              })
-    if action.get('process_outputs_as_sources'):
+    if int(action.get('process_outputs_as_sources', 0)):
       fp.write('input_files.extend(_outputs)\n')
     fp.write('prerequisites.extend(_outputs)\n')
 
@@ -411,7 +411,7 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
     message = rule.get('message')
     if message:
         message = repr(message)
-    if rule.get('process_outputs_as_sources'):
+    if int(rule.get('process_outputs_as_sources', 0)):
       poas_line = '_processed_input_files.extend(_generated)'
     else:
       poas_line = '_processed_input_files.append(infile)'
@@ -468,7 +468,7 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
       fp.write(fmt % (repr(dest), repr(f)))
       fp.write('target_files.extend(_outputs)\n')
 
-  if spec.get('run_as') or spec.get('test'):
+  if spec.get('run_as') or int(spec.get('test', 0)):
     run_as = spec.get('run_as', {
         'action' : ['$TARGET_NAME', '--gtest_print_time'],
         })
@@ -497,7 +497,7 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
                                 postamble='\n])\n')
   fp.write('env.Requires(gyp_target, prerequisites)\n')
 
-  if spec.get('run_as', 0) or spec.get('test', 0):
+  if spec.get('run_as', 0) or int(spec.get('test', 0)):
     fp.write(_run_as_template_suffix % {
       'target_name': target_name,
     })

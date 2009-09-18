@@ -382,7 +382,7 @@ class MakefileWriter:
           dirs.add(dir)
         if out.endswith('.bogus'):
           outputs[i] = out[:-len('.bogus')] + '.h'
-      if action.get('process_outputs_as_sources', False):
+      if int(action.get('process_outputs_as_sources', False)):
         extra_sources += outputs
 
       # Write the actual command.
@@ -443,7 +443,7 @@ class MakefileWriter:
           dir = os.path.dirname(out)
           if dir:
             dirs.add(dir)
-          if rule.get('process_outputs_as_sources', False):
+          if int(rule.get('process_outputs_as_sources', False)):
             extra_sources.append(out)
         all_outputs += outputs
         inputs = map(self.Absolutify, [rule_source] + rule.get('inputs', []))
