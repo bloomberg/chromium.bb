@@ -63,13 +63,6 @@
 #include "chrome/test/reliability/page_load_test.h"
 #include "net/base/net_util.h"
 
-#if defined(OS_WIN)
-#define MAYBE_Reliability Reliability
-#else  // defined(OS_WIN)
-// TODO(estade): port till we can enable this.
-#define MAYBE_Reliability DISABLED_Reliability
-#endif  // !defined(OS_WIN)
-
 namespace {
 
 // See comments at the beginning of the file for the definition of switches.
@@ -600,7 +593,7 @@ class PageLoadTest : public UITest {
 
 }  // namespace
 
-TEST_F(PageLoadTest, MAYBE_Reliability) {
+TEST_F(PageLoadTest, Reliability) {
   std::ofstream log_file;
 
   if (!g_log_file_path.empty()) {

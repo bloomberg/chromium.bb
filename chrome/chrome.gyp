@@ -3897,6 +3897,8 @@
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
           'sources!': [
+            # We run this test in the linux_page_load_uitest target.
+            'test/reliability/page_load_test.cc',
             # TODO(port)
             'browser/login_prompt_uitest.cc',
             'test/ui/layout_plugin_uitest.cc',
@@ -5405,8 +5407,72 @@
             }],
           ],
         },
+        # TODO(port): enable on mac.
+        {
+          'target_name': 'reliability_tests',
+          'type': 'executable',
+          'msvs_guid': '8A3E1774-1DE9-445C-982D-3EE37C8A752A',
+          'dependencies': [
+            'test_support_common',
+            'test_support_ui',
+            'theme_resources',
+            '../skia/skia.gyp:skia',
+            '../testing/gtest.gyp:gtest',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'test/reliability/page_load_test.cc',
+            'test/reliability/page_load_test.h',
+            'test/reliability/reliability_test_suite.h',
+            'test/reliability/run_all_unittests.cc',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'dependencies': [
+                '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+              ],
+            },],
+            ['OS=="linux"', {
+              'dependencies': [
+                '../build/linux/system.gyp:gtk',
+              ],
+            },],
+          ],
+        },
       ],
-    }],  # OS!="mac"
+    },],  # OS!="mac"
+    ['OS=="linux"',
+      { 'targets': [
+        {
+          # The page load tests are separated from the ui tests on Linux
+          # because we need to
+          #
+          #   a) Build with breakpad (GYP_DEFINES="linux_chromium_breakpad=1")
+          #   b) Build in release mode only (debug mode generates too large
+          #      of a binary since it includes symbols twice)
+          #   c) Run with CHROME_HEADLESS=1 to generate crash dumps.
+          'target_name': 'linux_page_load_uitest',
+          'type': 'executable',
+          'dependencies': [
+            'test_support_common',
+            'test_support_ui',
+            'theme_resources',
+            '../build/linux/system.gyp:gtk',
+            '../skia/skia.gyp:skia',
+            '../testing/gtest.gyp:gtest',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'test/reliability/page_load_test.cc',
+            'test/reliability/page_load_test.h',
+          ],
+        },
+      ],
+    },],  # OS=="linux"
     ['OS!="win"',
       { 'targets': [
         {
@@ -6018,34 +6084,6 @@
           ],
         },
         {
-          'target_name': 'reliability_tests',
-          'type': 'executable',
-          'msvs_guid': '8A3E1774-1DE9-445C-982D-3EE37C8A752A',
-          'dependencies': [
-            'test_support_common',
-            'test_support_ui',
-            'theme_resources',
-            '../skia/skia.gyp:skia',
-            '../testing/gtest.gyp:gtest',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'test/reliability/page_load_test.cc',
-            'test/reliability/page_load_test.h',
-            'test/reliability/reliability_test_suite.h',
-            'test/reliability/run_all_unittests.cc',
-          ],
-          'conditions': [
-            ['OS=="win"', {
-              'dependencies': [
-                '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
-              ],
-            },],
-          ],
-        },
-        {
           'target_name': 'security_tests',
           'type': 'shared_library',
           'msvs_guid': 'E750512D-FC7C-4C98-BF04-0A0DAF882055',
@@ -6340,7 +6378,6 @@
             }],
           ],
         },
-
         {
           'target_name': 'sync_unit_tests',
           'type': 'executable',

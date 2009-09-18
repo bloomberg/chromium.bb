@@ -46,9 +46,16 @@ static const int kMaxTestExecutionTime = 30000;
 static const int kWaitForTerminateMsec = 30000;
 
 const wchar_t UITest::kFailedNoCrashService[] =
+#if defined(OS_WIN)
     L"NOTE: This test is expected to fail if crash_service.exe is not "
     L"running. Start it manually before running this test (see the build "
     L"output directory).";
+#elif defined(OS_LINUX)
+    L"NOTE: This test is expected to fail if breakpad is not built in "
+    L"or if chromium is not running headless (try CHROME_HEADLESS=1).";
+#else
+    L"NOTE: Crash service not ported to this platform!";
+#endif
 bool UITest::in_process_renderer_ = false;
 bool UITest::no_sandbox_ = false;
 bool UITest::full_memory_dump_ = false;
@@ -62,7 +69,6 @@ bool UITest::disable_breakpad_ = false;
 int UITest::timeout_ms_ = 20 * 60 * 1000;
 std::wstring UITest::js_flags_ = L"";
 std::wstring UITest::log_level_ = L"";
-
 
 // Specify the time (in milliseconds) that the ui_tests should wait before
 // timing out. This is used to specify longer timeouts when running under Purify
