@@ -28,7 +28,6 @@ using bindings_utils::GetPendingRequestMap;
 using bindings_utils::PendingRequest;
 using bindings_utils::PendingRequestMap;
 using bindings_utils::ExtensionBase;
-using WebKit::WebFrame;
 
 namespace {
 
@@ -120,25 +119,6 @@ class ExtensionImpl : public ExtensionBase {
     return v8::String::New(GetStringResource<IDR_EXTENSION_API_JSON>());
   }
 
-  // Returns true is |type| "isa" |match|.
-  static bool ViewTypeMatches(ViewType::Type type, ViewType::Type match) {
-    if (type == match)
-      return true;
-
-    // INVALID means match all.
-    if (match == ViewType::INVALID)
-      return true;
-
-    // TODO(erikkay) for now, special case mole as a type of toolstrip.
-    // Perhaps this isn't the right long-term thing to do.
-    if (match == ViewType::EXTENSION_TOOLSTRIP && 
-        type == ViewType::EXTENSION_MOLE) {
-      return true;
-    }
-
-    return false;
-  }
-
   static v8::Handle<v8::Value> GetExtensionViews(const v8::Arguments& args) {
     if (args.Length() != 2)
       return v8::Undefined();
@@ -155,8 +135,6 @@ class ExtensionImpl : public ExtensionBase {
     ViewType::Type view_type = ViewType::INVALID;
     if (view_type_string == "TOOLSTRIP") {
       view_type = ViewType::EXTENSION_TOOLSTRIP;
-    } else if (view_type_string == "MOLE") {
-      view_type = ViewType::EXTENSION_MOLE;
     } else if (view_type_string == "BACKGROUND") {
       view_type = ViewType::EXTENSION_BACKGROUND_PAGE;
     } else if (view_type_string == "TAB") {
@@ -176,7 +154,7 @@ class ExtensionImpl : public ExtensionBase {
     std::set<RenderView* >::iterator it =
         render_view_set_pointer->render_view_set_.begin();
     for (; it != render_view_set_pointer->render_view_set_.end(); ++it) {
-      if (!ViewTypeMatches((*it)->view_type(), view_type))
+      if (view_type != ViewType::INVALID && (*it)->view_type() != view_type)
         continue;
 
       GURL url = (*it)->webview()->GetMainFrame()->url();
@@ -417,26 +395,4 @@ v8::Handle<v8::Value>
 
   return v8::ThrowException(v8::Exception::Error(
       v8::String::New(error_msg.c_str())));
-}
-
-// static
-void ExtensionProcessBindings::SetViewType(WebView* view,
-                                           ViewType::Type type) {
-  DCHECK(type == ViewType::EXTENSION_MOLE ||
-         type == ViewType::EXTENSION_TOOLSTRIP);
-  const char* type_str;
-  if (type == ViewType::EXTENSION_MOLE)
-    type_str = "mole";
-  else if (type == ViewType::EXTENSION_TOOLSTRIP)
-    type_str = "toolstrip";
-  else
-    return;
-
-  v8::HandleScope handle_scope;
-  WebFrame* frame = view->GetMainFrame();
-  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
-  v8::Handle<v8::Value> argv[1];
-  argv[0] = v8::String::New(type_str);
-  bindings_utils::CallFunctionInContext(context, "setViewType",
-                                        arraysize(argv), argv);
 }

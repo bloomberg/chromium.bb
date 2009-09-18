@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This comment is only here because changes to resources are not picked up
-without changes to the corresponding grd file. ek1 -->
+without changes to the corresponding grd file. rw2 -->
 <grit latest_public_release="0" current_release="1">
   <outputs>
     <output filename="grit/renderer_resources.h" type="rc_header">
@@ -21,7 +21,6 @@ without changes to the corresponding grd file. ek1 -->
       <include name="IDR_RENDERER_EXTENSION_BINDINGS_JS" file="resources\renderer_extension_bindings.js" type="BINDATA" />
       <include name="IDR_SAD_PLUGIN" file="resources\sadplugin.png" type="BINDATA" />
       <include name="IDR_EXTENSION_APITEST_JS" file="resources\extension_apitest.js" type="BINDATA" />
-      <include name="IDR_EXTENSIONS_TOOLSTRIP_CSS" file="resources\extensions_toolstrip.css" flattenhtml="true" type="BINDATA" />
     </includes>
   </release>
 </grit>

@@ -740,7 +740,7 @@ void ExtensionShelf::ThemeChanged() {
   // Refresh the CSS to update toolstrip text colors from theme.
   int count = model_->count();
   for (int i = 0; i < count; ++i)
-    ToolstripAtIndex(i)->view()->host()->InsertThemeCSS();
+    ToolstripAtIndex(i)->view()->host()->InsertCssIfToolstrip();
 
   Layout();
 }

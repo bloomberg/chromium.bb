@@ -180,12 +180,32 @@ void ExtensionHost::DidNavigate(RenderViewHost* render_view_host,
       new ExtensionFunctionDispatcher(render_view_host_, this, url_));
 }
 
-void ExtensionHost::InsertThemeCSS() {
-  DCHECK(!is_background_page());
+void ExtensionHost::InsertCssIfToolstrip() {
+
+  // TODO(erikkay): Make these ifdefs go away -- http://crbug.com/21939
+#if defined(TOOLKIT_VIEWS)
+  ExtensionView* view = view_.get();
+  if (!view)
+    return;
+  if (!view->is_toolstrip()) {
+    // No CSS injecting currently, but call SetDidInsertCSS to tell the view
+    // that it's OK to display.
+    view->SetDidInsertCSS(true);
+    return;
+  }
+#elif defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX)
+  ExtensionViewGtk* view = view_.get();
+#else
+  ExtensionViewMac* view = view_.get();
+#endif
+  if (!view || !view->is_toolstrip())
+    return;
+#endif
 
   static const base::StringPiece toolstrip_css(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_EXTENSIONS_TOOLSTRIP_THEME_CSS));
+      IDR_EXTENSIONS_TOOLSTRIP_CSS));
 
   std::string css = toolstrip_css.as_string();
   ThemeProvider* theme_provider =
@@ -205,12 +225,16 @@ void ExtensionHost::InsertThemeCSS() {
     pos = css.find(kToolstripTextColorSubstitution);
   }
 
+  // TODO(erikkay) this injection should really happen in the renderer.
+  // When the Jerry's view type change lands, investigate moving this there.
+
   // As a toolstrip, inject our toolstrip CSS to make it easier for toolstrips
   // to blend in with the chrome UI.
-  render_view_host()->InsertCSSInWebFrame(L"", css, "ToolstripThemeCSS");
+  render_view_host()->InsertCSSInWebFrame(L"", css, "ToolstripDefaultCss");
 }
 
 void ExtensionHost::DidStopLoading(RenderViewHost* render_view_host) {
+  InsertCssIfToolstrip();
   if (!did_stop_loading_) {
     NotificationService::current()->Notify(
         NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
@@ -218,21 +242,12 @@ void ExtensionHost::DidStopLoading(RenderViewHost* render_view_host) {
         Details<ExtensionHost>(this));
     did_stop_loading_ = true;
   }
-  if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP ||
-      extension_host_type_ == ViewType::EXTENSION_MOLE) {
-#if defined(TOOLKIT_VIEWS)
-    if (view_.get())
-      view_->DidStopLoading();
-#endif
-  }
 }
 
 void ExtensionHost::DocumentAvailableInMainFrame(RenderViewHost* rvh) {
   document_element_available_ = true;
   if (is_background_page())
     extension_->SetBackgroundPageReady();
-  else
-    InsertThemeCSS();
 }
 
 void ExtensionHost::RunJavaScriptMessage(const std::wstring& message,
@@ -261,6 +276,13 @@ void ExtensionHost::ProcessDOMUIMessage(const std::string& message,
     extension_function_dispatcher_->HandleRequest(message, content, request_id,
                                                   has_callback);
   }
+}
+
+void ExtensionHost::DidInsertCSS() {
+#if defined(TOOLKIT_VIEWS)
+  if (view_.get())
+    view_->SetDidInsertCSS(true);
+#endif
 }
 
 RenderViewHostDelegate::View* ExtensionHost::GetViewDelegate() {
@@ -367,13 +389,6 @@ Browser* ExtensionHost::GetBrowser() {
   // TODO(rafaelw): Delay creation of background_page until the browser
   // is available. http://code.google.com/p/chromium/issues/detail?id=13284
   return browser;
-}
-
-void ExtensionHost::SetRenderViewType(ViewType::Type type) {
-  DCHECK(type == ViewType::EXTENSION_MOLE ||
-         type == ViewType::EXTENSION_TOOLSTRIP);
-  extension_host_type_ = type;
-  render_view_host()->ViewTypeChanged(extension_host_type_);
 }
 
 ViewType::Type ExtensionHost::GetRenderViewType() const {

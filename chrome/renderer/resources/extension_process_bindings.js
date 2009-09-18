@@ -115,24 +115,6 @@ var chrome = chrome || {};
     }
   };
 
-  chromeHidden.setViewType = function(type) {
-    var modeClass = "chrome-" + type;
-    var className = document.documentElement.className;
-    if (className && className.length) {
-      var classes = className.split(" ");
-      var new_classes = [];
-      classes.forEach(function(cls) {
-        if (cls.indexOf("chrome-") != 0) {
-          new_classes.push(cls);
-        }
-      });
-      new_classes.push(modeClass);
-      document.documentElement.className = new_classes.join(" ");
-    } else {
-      document.documentElement.className = modeClass;
-    }
-  };
-
   function prepareRequest(args, argSchemas) {
     var request = {};
     var argCount = args.length;
@@ -172,6 +154,14 @@ var chrome = chrome || {};
     requests[requestId] = request;
     return StartRequest(functionName, sargs, requestId,
                         request.callback ? true : false);
+  }
+
+  // Using forEach for convenience, and to bind |module|s & |apiDefs|s via
+  // closures.
+  function forEach(a, f) {
+    for (var i = 0; i < a.length; i++) {
+      f(a[i], i);
+    }
   }
 
   function bind(obj, func) {
@@ -221,20 +211,20 @@ var chrome = chrome || {};
     //   for api functions that wish to insert themselves into the call.
     var apiDefinitions = JSON.parse(GetExtensionAPIDefinition());
 
-    apiDefinitions.forEach(function(apiDef) {
+    forEach(apiDefinitions, function(apiDef) {
       chrome[apiDef.namespace] = chrome[apiDef.namespace] || {};
       var module = chrome[apiDef.namespace];
 
       // Add types to global validationTypes
       if (apiDef.types) {
-        apiDef.types.forEach(function(t) {
+        forEach(apiDef.types, function(t) {
           chromeHidden.validationTypes.push(t);
         });
       }
 
       // Setup Functions.
       if (apiDef.functions) {
-        apiDef.functions.forEach(function(functionDef) {
+        forEach(apiDef.functions, function(functionDef) {
           // Module functions may have been defined earlier by hand. Don't
           // clobber them.
           if (module[functionDef.name])
@@ -259,7 +249,7 @@ var chrome = chrome || {};
 
       // Setup Events
       if (apiDef.events) {
-        apiDef.events.forEach(function(eventDef) {
+        forEach(apiDef.events, function(eventDef) {
           // Module events may have been defined earlier by hand. Don't clobber
           // them.
           if (module[eventDef.name])
@@ -306,8 +296,8 @@ var chrome = chrome || {};
 
     apiFunctions["devtools.getTabEvents"].handleRequest = function(tabId) {
       var tabIdProxy = {};
-      var functions = ["onPageEvent", "onTabUrlChange", "onTabClose"];
-      functions.forEach(function(name) {
+      forEach(["onPageEvent", "onTabUrlChange", "onTabClose"],
+              function(name) {
         // Event disambiguation is handled by name munging.  See
         // chrome/browser/extensions/extension_devtools_events.h for the C++
         // equivalent of this logic.

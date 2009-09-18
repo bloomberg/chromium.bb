@@ -138,7 +138,6 @@ void ExtensionShelfModel::ExpandToolstrip(iterator toolstrip,
   ToolstripEventRouter::OnToolstripExpanded(browser_->profile(),
                                             routing_id,
                                             url, height);
-  toolstrip->host->SetRenderViewType(ViewType::EXTENSION_MOLE);
 }
 
 void ExtensionShelfModel::CollapseToolstrip(iterator toolstrip,
@@ -153,7 +152,6 @@ void ExtensionShelfModel::CollapseToolstrip(iterator toolstrip,
   ToolstripEventRouter::OnToolstripCollapsed(browser_->profile(),
                                              routing_id,
                                              url);
-  toolstrip->host->SetRenderViewType(ViewType::EXTENSION_TOOLSTRIP);
 }
 
 void ExtensionShelfModel::Observe(NotificationType type,

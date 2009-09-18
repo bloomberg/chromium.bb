@@ -15,7 +15,7 @@
 ExtensionView::ExtensionView(ExtensionHost* host, Browser* browser)
     : host_(host), browser_(browser),
       initialized_(false), pending_preferred_width_(0), container_(NULL),
-      did_stop_loading_(false), is_clipped_(false), is_toolstrip_(true) {
+      did_insert_css_(false), is_clipped_(false), is_toolstrip_(true) {
   host_->set_view(this);
 }
 
@@ -34,8 +34,8 @@ RenderViewHost* ExtensionView::render_view_host() const {
   return host_->render_view_host();
 }
 
-void ExtensionView::DidStopLoading() {
-  did_stop_loading_ = true;
+void ExtensionView::SetDidInsertCSS(bool did_insert) {
+  did_insert_css_ = did_insert;
   ShowIfCompletelyLoaded();
 }
 
@@ -100,7 +100,7 @@ void ExtensionView::ShowIfCompletelyLoaded() {
   // given us a background and css has been inserted into page. These can happen
   // in different orders.
   if (!IsVisible() && host_->did_stop_loading() && render_view_host()->view() &&
-      !is_clipped_ && did_stop_loading_ &&
+      !is_clipped_ && did_insert_css_ &&
       !render_view_host()->view()->background().empty()) {
     SetVisible(true);
     UpdatePreferredWidth(pending_preferred_width_);

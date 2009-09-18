@@ -436,9 +436,6 @@ class RenderViewHost : public RenderWidgetHost,
   // permission.
   void BlockExtensionRequest(int request_id);
 
-  // Notify the renderer that its view type has changed.
-  void ViewTypeChanged(ViewType::Type type);
-
   void SignalModalDialogEvent();
   void ResetModalDialogEvent();
 

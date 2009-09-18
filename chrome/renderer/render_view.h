@@ -421,8 +421,6 @@ class RenderView : public RenderWidget,
                            const std::string& response,
                            const std::string& error);
 
-  void OnSetExtensionViewMode(const std::string& mode);
-
   const WebPreferences& webkit_preferences() const {
     return webkit_preferences_;
   }
@@ -717,9 +715,6 @@ class RenderView : public RenderWidget,
 #else
   void UpdateFontRenderingFromRendererPrefs() { }
 #endif
-
-  // Inject toolstrip CSS for extension moles and toolstrips.
-  void InjectToolstripCSS();
 
   // Initializes the document_tag_ member if necessary.
   void EnsureDocumentTag();
