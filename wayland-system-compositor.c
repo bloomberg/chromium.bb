@@ -1300,7 +1300,7 @@ static void on_enter_vt(int signal_number, void *data)
 	output = container_of(ec->output_list.next, struct wlsc_output, link);
 	while (&output->link != &ec->output_list) {
 		ret = drmModeSetCrtc(fd, output->crtc_id,
-				     output->fb_id[output->current], 0, 0,
+				     output->fb_id[output->current ^ 1], 0, 0,
 				     &output->connector_id, 1, output->mode);
 		if (ret)
 			fprintf(stderr, "failed to set mode for connector %d: %m\n",
