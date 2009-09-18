@@ -27,23 +27,31 @@ SVN_COMMAND = "svn"
 ### SCM abstraction layer
 
 
+# Factory Method for SCM wrapper creation
+
+def create_scm(url, root_dir, relpath, scm_name='svn'):
+  # TODO(maruel): Deduce the SCM from the url.
+  scm_map = {
+    'svn' : SVNWrapper,
+  }
+  if not scm_name in scm_map:
+    raise gclient_utils.Error('Unsupported scm %s' % scm_name)
+  return scm_map[scm_name](url, root_dir, relpath, scm_name)
+
+
+# SCMWrapper base class
+
 class SCMWrapper(object):
   """Add necessary glue between all the supported SCM.
 
   This is the abstraction layer to bind to different SCM. Since currently only
   subversion is supported, a lot of subersionism remains. This can be sorted out
   once another SCM is supported."""
-  def __init__(self, url=None, root_dir=None, relpath=None,
-               scm_name='svn'):
-    # TODO(maruel): Deduce the SCM from the url.
+  def __init__(self, url, root_dir, relpath, scm_name='svn'):
     self.scm_name = scm_name
     self.url = url
-    self._root_dir = root_dir
-    if self._root_dir:
-      self._root_dir = self._root_dir.replace('/', os.sep)
-    self.relpath = relpath
-    if self.relpath:
-      self.relpath = self.relpath.replace('/', os.sep)
+    self._root_dir = root_dir.replace('/', os.sep)
+    self.relpath = relpath.replace('/', os.sep)
 
   def FullUrlForRelativeUrl(self, url):
     # Find the forth '/' and strip from there. A bit hackish.
@@ -54,21 +62,21 @@ class SCMWrapper(object):
     if file_list is None:
       file_list = []
 
-    commands = {
-      'cleanup':  self.cleanup,
-      'export':   self.export,
-      'update':   self.update,
-      'revert':   self.revert,
-      'status':   self.status,
-      'diff':     self.diff,
-      'pack':     self.pack,
-      'runhooks': self.status,
-    }
+    commands = ['cleanup', 'export', 'update', 'revert',
+                'status', 'diff', 'pack', 'runhooks']
 
     if not command in commands:
       raise gclient_utils.Error('Unknown command %s' % command)
 
-    return commands[command](options, args, file_list)
+    if not command in dir(self):
+      raise gclient_utils.Error('Command %s not implemnted in %s wrapper' % (
+          command, self.scm_name))
+
+    return getattr(self, command)(options, args, file_list)
+
+
+class SVNWrapper(SCMWrapper):
+  """ Wrapper for SVN """
 
   def cleanup(self, options, args, file_list):
     """Cleanup working copy."""
@@ -257,6 +265,9 @@ class SCMWrapper(object):
       if accumulated_paths:
         RunSVN(command + accumulated_paths,
                os.path.join(self._root_dir, self.relpath))
+
+  def runhooks(self, options, args, file_list):
+    self.status(options, args, file_list)
 
   def status(self, options, args, file_list):
     """Display status information."""
