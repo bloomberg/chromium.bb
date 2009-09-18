@@ -11,6 +11,7 @@
 #include "app/gfx/insets.h"
 #if defined(OS_WIN)
 #include "app/win_util.h"
+#include "base/win_util.h"
 #endif
 
 #include "base/string_util.h"
@@ -289,11 +290,11 @@ base::KeyboardCode Textfield::Keystroke::GetKeyboardCode() const {
 
 #if defined(OS_WIN)
 bool Textfield::Keystroke::IsControlHeld() const {
-  return GetKeyState(VK_CONTROL) >= 0;
+  return win_util::IsCtrlPressed();
 }
 
 bool Textfield::Keystroke::IsShiftHeld() const {
-  return GetKeyState(VK_SHIFT) >= 0;
+  return win_util::IsShiftPressed();
 }
 #else
 bool Textfield::Keystroke::IsControlHeld() const {
