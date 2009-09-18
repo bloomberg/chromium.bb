@@ -133,14 +133,7 @@ class DownloadTest : public UITest {
 #if defined(OS_WIN)
   // Checks if the ZoneIdentifier is correctly set to "Internet" (3)
   void CheckZoneIdentifier(const std::wstring full_path) {
-    const DWORD kShare = FILE_SHARE_READ |
-                         FILE_SHARE_WRITE |
-                         FILE_SHARE_DELETE;
-
     std::wstring path = full_path + L":Zone.Identifier";
-    HANDLE file = CreateFile(path.c_str(), GENERIC_READ, kShare, NULL,
-                             OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-    ASSERT_TRUE(INVALID_HANDLE_VALUE != file);
 
     // This polling and sleeping here is a very bad pattern. But due to how
     // Windows file semantics work it's really hard to do it other way. We are
@@ -149,6 +142,14 @@ class DownloadTest : public UITest {
     // the other process closes the handle, flushes the buffers, etc.
     for (int i = 0; i < 20; i++) {
       PlatformThread::Sleep(sleep_timeout_ms());
+
+      const DWORD kShare = FILE_SHARE_READ |
+                           FILE_SHARE_WRITE |
+                           FILE_SHARE_DELETE;
+      HANDLE file = CreateFile(path.c_str(), GENERIC_READ, kShare, NULL,
+                               OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+      if (file == INVALID_HANDLE_VALUE)
+        continue;
 
       char buffer[100] = {0};
       DWORD read = 0;
