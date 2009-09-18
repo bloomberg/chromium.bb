@@ -15,6 +15,8 @@
 #include "webkit/glue/webkit_glue.h"
 #include "googleurl/src/gurl.h"
 
+#define kNpGoogleNaClPlugin (FILE_PATH_LITERAL("npgooglenaclplugin"))
+
 namespace NPAPI {
 
 base::LazyInstance<PluginList> g_singleton(base::LINKER_INITIALIZED);
@@ -113,7 +115,8 @@ bool PluginList::CreateWebPluginInfo(const PluginVersionInfo& pvi,
   return true;
 }
 
-PluginList::PluginList() : plugins_loaded_(false) {
+PluginList::PluginList() : plugins_loaded_(false),
+                           use_internal_nacl_(false) {
   PlatformInit();
 
 #if defined(OS_WIN)
@@ -168,6 +171,10 @@ void PluginList::LoadPlugins(bool refresh) {
     LoadPluginsFromDir(directories_to_scan[i], &new_plugins);
   }
 
+  if (use_internal_nacl_) {
+    LoadPlugin(FilePath(kNaClPluginLibraryName), &new_plugins);
+  }
+
   if (webkit_glue::IsDefaultPluginEnabled())
     LoadPlugin(FilePath(kDefaultPluginLibraryName), &new_plugins);
 
@@ -207,6 +214,20 @@ void PluginList::LoadPlugin(const FilePath &path,
   }
 
   plugins->push_back(plugin_info);
+}
+
+bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
+                                  std::vector<WebPluginInfo>* plugins) {
+  FilePath::StringType filename =
+      StringToLowerASCII(info.path.BaseName().value());
+
+  // Don't load the external version of NaCl when we need to use
+  // the internal one.
+  if (use_internal_nacl_) {
+    if (std::wstring::npos != filename.find(kNpGoogleNaClPlugin))
+      return false;
+  }
+  return PlatformShouldLoadPlugin(info, plugins);
 }
 
 bool PluginList::FindPlugin(const std::string& mime_type,
@@ -325,6 +346,26 @@ bool PluginList::GetPluginInfoByPath(const FilePath& plugin_path,
 
 void PluginList::Shutdown() {
   // TODO
+}
+
+// static
+void PluginList::UseInternalNaCl(PluginEntryPoints* entry_points) {
+  // We access the singleton directly, and not through Singleton(), since
+  // we don't want LoadPlugins() to be called.
+  g_singleton.Pointer()->use_internal_nacl_ = true;
+
+  const NPAPI::PluginVersionInfo nacl_plugin_info = {
+    FilePath(kNaClPluginLibraryName),
+    L"Native Client",
+    L"Statically linked NaCl",
+    L"1, 0, 0, 1",
+    L"application/x-nacl-srpc",
+    L"",
+    L"",
+    *entry_points
+  };
+
+  Singleton()->RegisterInternalPlugin(nacl_plugin_info);
 }
 
 } // namespace NPAPI

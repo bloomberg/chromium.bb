@@ -23,6 +23,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
+#include "native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
@@ -43,6 +44,15 @@ PluginService::PluginService()
   if (!path.empty()) {
     NPAPI::PluginList::Singleton()->AddExtraPluginPath(
         FilePath::FromWStringHack(path));
+  }
+  if (command_line->HasSwitch(switches::kInternalNaCl)) {
+    NPAPI::PluginEntryPoints entry_points = {
+#if !defined(OS_LINUX)
+        NaCl_NP_GetEntryPoints,
+#endif
+        NaCl_NP_Initialize,
+        NaCl_NP_Shutdown};
+    NPAPI::PluginList::UseInternalNaCl(&entry_points);
   }
 
 #if defined(OS_WIN)

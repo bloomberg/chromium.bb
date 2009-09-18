@@ -262,8 +262,8 @@ bool IsNewerVersion(const std::wstring& a, const std::wstring& b) {
   return false;
 }
 
-bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
-                                  std::vector<WebPluginInfo>* plugins) {
+bool PluginList::PlatformShouldLoadPlugin(const WebPluginInfo& info,
+                                          std::vector<WebPluginInfo>* plugins) {
   // Version check
 
   for (size_t i = 0; i < plugins->size(); ++i) {

@@ -342,6 +342,7 @@ bool BrowserRenderProcessHost::Init() {
     switches::kDisableAudio,
     switches::kSimpleDataSource,
     switches::kEnableBenchmarking,
+    switches::kInternalNaCl,
     switches::kEnableDatabases,
   };
 
