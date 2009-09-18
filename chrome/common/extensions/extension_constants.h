@@ -87,7 +87,6 @@ namespace extension_manifest_errors {
   extern const char* kInvalidPageActionId;
   extern const char* kInvalidPageActionTypeValue;
   extern const char* kInvalidPermissions;
-  extern const char* kInvalidPermissionCountWarning;
   extern const char* kInvalidPermission;
   extern const char* kInvalidPermissionScheme;
   extern const char* kInvalidZipHash;

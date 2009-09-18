@@ -100,8 +100,6 @@ const char* kInvalidPageActionTypeValue =
     "Invalid value for 'page_actions[*].type', expected 'tab' or 'permanent'.";
 const char* kInvalidPermissions =
     "Required value 'permissions' is missing or invalid.";
-const char* kInvalidPermissionCountWarning =
-    "Warning, 'permissions' key found, but array is empty.";
 const char* kInvalidPermission =
     "Invalid value for 'permissions[*]'.";
 const char* kInvalidPermissionScheme =

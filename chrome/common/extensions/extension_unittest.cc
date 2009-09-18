@@ -182,11 +182,7 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   permissions = new ListValue;
   input_value->Set(keys::kPermissions, permissions);
   EXPECT_TRUE(extension.InitFromValue(*input_value, true, &error));
-  const std::vector<std::string>* error_vector =
-      ExtensionErrorReporter::GetInstance()->GetErrors();
-  const std::string log_error = error_vector->at(error_vector->size() - 1);
-  EXPECT_TRUE(MatchPattern(log_error,
-      errors::kInvalidPermissionCountWarning));
+  EXPECT_EQ(0u, ExtensionErrorReporter::GetInstance()->GetErrors()->size());
 
   input_value->Set(keys::kPermissions, Value::CreateIntegerValue(9));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
