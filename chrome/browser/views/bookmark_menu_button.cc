@@ -10,8 +10,9 @@
 #include <gtk/gtk.h>
 #endif
 
-#include "app/resource_bundle.h"
 #include "app/os_exchange_data.h"
+#include "app/resource_bundle.h"
+#include "app/theme_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser.h"
@@ -29,10 +30,10 @@ BookmarkMenuButton::BookmarkMenuButton(Browser* browser)
   set_menu_delegate(this);
   SetID(VIEW_ID_BOOKMARK_MENU);
 
-  ResourceBundle &rb = ResourceBundle::GetSharedInstance();
-  // TODO (sky): if we keep this code, we need real icons, a11y support, and a
+  ThemeProvider* tp = browser_->profile()->GetThemeProvider();
+  // TODO(sky): if we keep this code, we need real icons, a11y support, and a
   // tooltip.
-  SetIcon(*rb.GetBitmapNamed(IDR_MENU_BOOKMARK));
+  SetIcon(*tp->GetBitmapNamed(IDR_MENU_BOOKMARK));
 }
 
 BookmarkMenuButton::~BookmarkMenuButton() {

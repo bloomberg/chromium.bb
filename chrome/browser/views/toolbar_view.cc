@@ -867,17 +867,17 @@ void ToolbarView::CreateRightSideControls(Profile* profile) {
       l10n_util::GetString(IDS_PRODUCT_NAME)));
   app_menu_->SetID(VIEW_ID_APP_MENU);
 
-  LoadRightSideControlsImages();
-
-  AddChildView(page_menu_);
-  AddChildView(app_menu_);
-
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kBookmarkMenu)) {
     bookmark_menu_ = new BookmarkMenuButton(browser_);
     AddChildView(bookmark_menu_);
   } else {
     bookmark_menu_ = NULL;
   }
+
+  LoadRightSideControlsImages();
+
+  AddChildView(page_menu_);
+  AddChildView(app_menu_);
 }
 
 void ToolbarView::LoadLeftSideControlsImages() {
@@ -969,6 +969,9 @@ void ToolbarView::LoadRightSideControlsImages() {
     app_menu_->SetIcon(*tp->GetBitmapNamed(IDR_MENU_CHROME_RTL));
   else
     app_menu_->SetIcon(*tp->GetBitmapNamed(IDR_MENU_CHROME));
+
+  if (bookmark_menu_ != NULL)
+    bookmark_menu_->SetIcon(*tp->GetBitmapNamed(IDR_MENU_BOOKMARK));
 }
 
 void ToolbarView::RunPageMenu(const gfx::Point& pt, gfx::NativeView parent) {
