@@ -5,6 +5,7 @@
 #ifndef WEBKIT_APPCACHE_APPCACHE_HOST_H_
 #define WEBKIT_APPCACHE_APPCACHE_HOST_H_
 
+#include "base/observer_list.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "base/weak_ptr.h"
@@ -31,9 +32,26 @@ typedef Callback2<bool, void*>::Type SwapCacheCallback;
 class AppCacheHost : public base::SupportsWeakPtr<AppCacheHost>,
                      public AppCacheService::LoadClient {
  public:
+
+  class Observer {
+   public:
+    // Called just after the cache selection algorithm completes.
+    virtual void OnCacheSelectionComplete(AppCacheHost* host) = 0;
+
+    // Called just prior to the instance being deleted.
+    virtual void OnDestructionImminent(AppCacheHost* host) = 0;
+
+    virtual ~Observer() {}
+  };
+
   AppCacheHost(int host_id, AppCacheFrontend* frontend,
                AppCacheService* service);
   ~AppCacheHost();
+
+  // Adds/removes an observer, the AppCacheHost does not take
+  // ownership of the observer.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Support for cache selection and scriptable method calls.
   void SelectCache(const GURL& document_url,
@@ -117,6 +135,9 @@ class AppCacheHost : public base::SupportsWeakPtr<AppCacheHost>,
   StartUpdateCallback* pending_start_update_callback_;
   SwapCacheCallback* pending_swap_cache_callback_;
   void* pending_callback_param_;
+
+  // List of objects observing us.
+  ObserverList<Observer> observers_;
 
   FRIEND_TEST(AppCacheTest, CleanupUnusedCache);
   FRIEND_TEST(AppCacheGroupTest, CleanupUnusedGroup);

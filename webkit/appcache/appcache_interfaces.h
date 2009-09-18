@@ -5,10 +5,12 @@
 #ifndef WEBKIT_APPCACHE_APPCACHE_INTERFACES_H_
 #define WEBKIT_APPCACHE_APPCACHE_INTERFACES_H_
 
+#include <string>
 #include <vector>
 #include "base/basictypes.h"
 
 class GURL;
+class URLRequest;
 
 namespace appcache {
 
@@ -69,6 +71,19 @@ class AppCacheBackend {
 
   virtual ~AppCacheBackend() {}
 };
+
+// Useful string constants.
+// Note: These are also defined elsewhere in the chrome code base in
+// url_contants.h .cc, however the appcache library doesn't not have
+// any dependencies on the chrome library, so we can't use them in here.
+extern const char kHttpScheme[];
+extern const char kHttpsScheme[];
+extern const char kHttpGETMethod[];
+extern const char kHttpHEADMethod[];
+
+bool IsSchemeSupported(const GURL& url);
+bool IsMethodSupported(const std::string& method);
+bool IsSchemeAndMethodSupported(const URLRequest* request);
 
 }  // namespace
 

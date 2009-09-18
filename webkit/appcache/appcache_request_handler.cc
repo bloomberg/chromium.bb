@@ -12,18 +12,16 @@ namespace appcache {
 
 // AppCacheRequestHandler -----------------------------------------------------
 
-static bool IsHttpOrHttpsGetOrEquivalent(URLRequest* request) {
-  return false;  // TODO(michaeln): write me
+AppCacheRequestHandler::AppCacheRequestHandler(AppCacheHost* host,
+                                               bool is_main_resource)
+    : is_main_request_(is_main_resource), host_(host) {
+  DCHECK(host_);
+  host_->AddObserver(this);
 }
 
-AppCacheRequestHandler::AppCacheRequestHandler(AppCacheHost* host)
-    : is_main_request_(true), cache_id_(kNoCacheId),
-      host_(host->AsWeakPtr()), service_(host->service()) {
-}
-
-AppCacheRequestHandler::AppCacheRequestHandler(AppCache* cache)
-    : is_main_request_(false), cache_id_(kNoCacheId),
-      cache_(cache), service_(cache->service()) {
+AppCacheRequestHandler::~AppCacheRequestHandler() {
+  if (host_)
+    host_->RemoveObserver(this);
 }
 
 void AppCacheRequestHandler::GetExtraResponseInfo(
@@ -37,7 +35,10 @@ void AppCacheRequestHandler::GetExtraResponseInfo(
 }
 
 URLRequestJob* AppCacheRequestHandler::MaybeLoadResource(URLRequest* request) {
-  if (!IsHttpOrHttpsGetOrEquivalent(request))
+  // 6.9.7 Changes to the networking model
+  // If the resource is not to be fetched using the HTTP GET mechanism or
+  // equivalent ... then fetch the resource normally
+  if (!host_ || !IsSchemeAndMethodSupported(request))
     return NULL;
   // TODO(michaeln): write me
   return NULL;
@@ -45,7 +46,7 @@ URLRequestJob* AppCacheRequestHandler::MaybeLoadResource(URLRequest* request) {
 
 URLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForRedirect(
     URLRequest* request, const GURL& location) {
-  if (!IsHttpOrHttpsGetOrEquivalent(request))
+  if (!host_ || !IsSchemeAndMethodSupported(request))
     return NULL;
   // TODO(michaeln): write me
   return NULL;
@@ -53,10 +54,20 @@ URLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForRedirect(
 
 URLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForResponse(
     URLRequest* request) {
-  if (!IsHttpOrHttpsGetOrEquivalent(request))
+  if (!host_ || !IsSchemeAndMethodSupported(request))
     return NULL;
   // TODO(michaeln): write me
   return NULL;
+}
+
+void AppCacheRequestHandler::OnCacheSelectionComplete(AppCacheHost* host) {
+  DCHECK(host == host_);
+  // TODO(michaeln): write me
+}
+
+void AppCacheRequestHandler::OnDestructionImminent(AppCacheHost* host) {
+  host_ = NULL;
+  // TODO(michaeln): write me
 }
 
 }  // namespace appcache

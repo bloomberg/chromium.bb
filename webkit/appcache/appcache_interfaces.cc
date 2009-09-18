@@ -3,15 +3,39 @@
 // found in the LICENSE file.
 
 #include "webkit/appcache/appcache_interfaces.h"
+
+#include "googleurl/src/gurl.h"
+#include "net/url_request/url_request.h"
 #include "webkit/api/public/WebApplicationCacheHost.h"
 
 using WebKit::WebApplicationCacheHost;
 
 namespace appcache {
 
+const char kHttpScheme[] = "http";
+const char kHttpsScheme[] = "https";
+const char kHttpGETMethod[] = "GET";
+const char kHttpHEADMethod[] = "HEAD";
+
+bool IsSchemeSupported(const GURL& url) {
+  bool supported = url.SchemeIs(kHttpScheme) || url.SchemeIs(kHttpsScheme);
+#ifndef NDEBUG
+  supported |= url.SchemeIsFile();
+#endif
+  return supported;
+}
+
+bool IsMethodSupported(const std::string& method) {
+  return (method == kHttpGETMethod) || (method == kHttpHEADMethod);
+}
+
+bool IsSchemeAndMethodSupported(const URLRequest* request) {
+  return IsSchemeSupported(request->url()) &&
+         IsMethodSupported(request->method());
+}
+
 // Ensure that enum values never get out of sync with the
 // ones declared for use within the WebKit api
-
 COMPILE_ASSERT((int)WebApplicationCacheHost::Uncached ==
                (int)UNCACHED, Uncached);
 COMPILE_ASSERT((int)WebApplicationCacheHost::Idle ==

@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
+#include "base/string_util.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLRequest.h"
 #include "webkit/api/public/WebURLResponse.h"
@@ -34,8 +35,9 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
       status_(UNCACHED),
       has_cached_status_(false),
       cached_status_(UNCACHED),
-      is_in_http_family_(false),
-      should_capture_main_response_(MAYBE) {
+      is_scheme_supported_(false),
+      is_get_method_(false),
+      is_new_master_entry_(MAYBE) {
   DCHECK(client && backend && (host_id_ != kNoHostId));
 
   backend_->RegisterHost(host_id_);
@@ -64,6 +66,9 @@ void WebApplicationCacheHostImpl::OnEventRaised(appcache::EventID event_id) {
 void WebApplicationCacheHostImpl::willStartMainResourceRequest(
     WebURLRequest& request) {
   request.setAppCacheHostID(host_id_);
+  std::string method = request.httpMethod().utf8();
+  is_get_method_ = (method == kHttpGETMethod);
+  DCHECK(method == StringToUpperASCII(method));
 }
 
 void WebApplicationCacheHostImpl::willStartSubResourceRequest(
@@ -76,9 +81,9 @@ void WebApplicationCacheHostImpl::selectCacheWithoutManifest() {
   // since we're now selecting a new cache.
   has_status_ = false;
   has_cached_status_ = false;
-  should_capture_main_response_ = NO;
-  backend_->SelectCache(host_id_, main_response_url_,
-                        main_response_.appCacheID(),
+  is_new_master_entry_ = NO;
+  backend_->SelectCache(host_id_, document_url_,
+                        document_response_.appCacheID(),
                         GURL());
 }
 
@@ -96,52 +101,60 @@ bool WebApplicationCacheHostImpl::selectCacheWithManifest(
     manifest_gurl = manifest_gurl.ReplaceComponents(replacements);
   }
 
+  // 6.9.6 The application cache selection algorithm
   // Check for new 'master' entries.
-  if (main_response_.appCacheID() == kNoCacheId) {
-    should_capture_main_response_ = is_in_http_family_ ? YES : NO;
-    backend_->SelectCache(host_id_, main_response_url_,
+  if (document_response_.appCacheID() == kNoCacheId) {
+    if (is_scheme_supported_ && is_get_method_ &&
+        (manifest_gurl.GetOrigin() == document_url_.GetOrigin())) {
+      is_new_master_entry_ = YES;
+    } else {
+      is_new_master_entry_ = NO;
+      manifest_gurl = GURL::EmptyGURL();
+    }
+    backend_->SelectCache(host_id_, document_url_,
                           kNoCacheId, manifest_gurl);
     return true;
   }
 
-  DCHECK(should_capture_main_response_ == NO);
+  DCHECK(is_new_master_entry_ = NO);
 
+  // 6.9.6 The application cache selection algorithm
   // Check for 'foreign' entries.
-  GURL main_response_manifest_gurl(main_response_.appCacheManifestURL());
-  if (main_response_manifest_gurl != manifest_gurl) {
-    backend_->MarkAsForeignEntry(host_id_, main_response_url_,
-                                 main_response_.appCacheID());
+  GURL document_manifest_gurl(document_response_.appCacheManifestURL());
+  if (document_manifest_gurl != manifest_gurl) {
+    backend_->MarkAsForeignEntry(host_id_, document_url_,
+                                 document_response_.appCacheID());
     has_cached_status_ = true;
     cached_status_ = UNCACHED;
     return false;  // the navigation will be restarted
   }
 
   // Its a 'master' entry thats already in the cache.
-  backend_->SelectCache(host_id_, main_response_url_,
-                        main_response_.appCacheID(),
+  backend_->SelectCache(host_id_, document_url_,
+                        document_response_.appCacheID(),
                         manifest_gurl);
   return true;
 }
 
 void WebApplicationCacheHostImpl::didReceiveResponseForMainResource(
     const WebURLResponse& response) {
-  main_response_ = response;
-  main_response_url_ = main_response_.url();
-  is_in_http_family_ =  main_response_url_.SchemeIs("http") ||
-                        main_response_url_.SchemeIs("https");
-  if ((main_response_.appCacheID() != kNoCacheId) || !is_in_http_family_)
-    should_capture_main_response_ = NO;
+  document_response_ = response;
+  document_url_ = document_response_.url();
+  is_scheme_supported_ =  IsSchemeSupported(document_url_);
+  if ((document_response_.appCacheID() != kNoCacheId) ||
+      !is_scheme_supported_ || !is_get_method_)
+    is_new_master_entry_ = NO;
 }
 
 void WebApplicationCacheHostImpl::didReceiveDataForMainResource(
     const char* data, int len) {
-  if (should_capture_main_response_ == NO)
+  if (is_new_master_entry_ == NO)
     return;
   // TODO(michaeln): write me
 }
 
 void WebApplicationCacheHostImpl::didFinishLoadingMainResource(bool success) {
-  if (should_capture_main_response_ == NO)
+  if (is_new_master_entry_ == NO)
     return;
   // TODO(michaeln): write me
 }

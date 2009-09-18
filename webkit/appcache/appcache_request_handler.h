@@ -18,8 +18,11 @@ namespace appcache {
 // given the opportunity to hijack the request along the way. Callers
 // should use AppCacheHost::CreateRequestHandler to manufacture instances
 // that can retrieve resources for a particular host.
-class AppCacheRequestHandler : public URLRequest::UserData {
+class AppCacheRequestHandler : public URLRequest::UserData,
+                               public AppCacheHost::Observer {
  public:
+  virtual ~AppCacheRequestHandler();
+
   // Should be called on each request intercept opportunity.
   URLRequestJob* MaybeLoadResource(URLRequest* request);
   URLRequestJob* MaybeLoadFallbackForRedirect(URLRequest* request,
@@ -31,20 +34,19 @@ class AppCacheRequestHandler : public URLRequest::UserData {
  private:
   friend class AppCacheHost;
 
-  // Ctor for main resource loads.
-  explicit AppCacheRequestHandler(AppCacheHost* host);
+  // Callers should use AppCacheHost::CreateRequestHandler.
+  AppCacheRequestHandler(AppCacheHost* host, bool is_main_resource);
 
-  // Ctor for subresource loads when the cache is loaded.
-  explicit AppCacheRequestHandler(AppCache* cache);
+  // AppCacheHost::Observer methods
+  virtual void OnCacheSelectionComplete(AppCacheHost* host);
+  virtual void OnDestructionImminent(AppCacheHost* host);
 
   // Main vs subresource loads are very different.
   // TODO(michaeln): maybe have two derived classes?
   bool is_main_request_;
-  int64 cache_id_;
+  AppCacheHost* host_;
   scoped_refptr<AppCache> cache_;
-  base::WeakPtr<AppCacheHost> host_;
   scoped_refptr<URLRequestJob> job_;
-  AppCacheService* service_;
 };
 
 }  // namespace appcache

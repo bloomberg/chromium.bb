@@ -22,9 +22,18 @@ AppCacheHost::AppCacheHost(int host_id, AppCacheFrontend* frontend,
 }
 
 AppCacheHost::~AppCacheHost() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnDestructionImminent(this));
   if (associated_cache_.get())
     associated_cache_->UnassociateHost(this);
   service_->CancelLoads(this);
+}
+
+void AppCacheHost::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AppCacheHost::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void AppCacheHost::SelectCache(const GURL& document_url,
@@ -56,9 +65,9 @@ void AppCacheHost::SelectCache(const GURL& document_url,
   // 6.9.6 The application cache selection algorithm.
   // The algorithm is started here and continues in FinishCacheSelection,
   // after cache or group loading is complete.
-  // Note: foriegn entries are detected on the client side and
+  // Note: Foreign entries are detected on the client side and
   // MarkAsForeignEntry is called in that case, so that detection
-  // step is skipped here.
+  // step is skipped here. See WebApplicationCacheHostImpl.cc
 
   if (cache_document_was_loaded_from != kNoCacheId) {
     LoadCache(cache_document_was_loaded_from);
@@ -67,6 +76,9 @@ void AppCacheHost::SelectCache(const GURL& document_url,
 
   if (!manifest_url.is_empty() &&
       (manifest_url.GetOrigin() == document_url.GetOrigin())) {
+    // Note: The client detects if the document was not loaded using HTTP GET
+    // and invokes SelectCache without a manifest url, so that detection step
+    // is also skipped here. See WebApplicationCacheHostImpl.cc
     new_master_entry_url_ = document_url;
     LoadOrCreateGroup(manifest_url);
     return;
@@ -161,10 +173,11 @@ AppCacheRequestHandler* AppCacheHost::CreateRequestHandler(
                                           URLRequest* request,
                                           bool is_main_request) {
   if (is_main_request)
-    return new AppCacheRequestHandler(this);
+    return new AppCacheRequestHandler(this, true);
 
-  if (associated_cache() && associated_cache()->is_complete())
-    return new AppCacheRequestHandler(associated_cache());
+  if ((associated_cache() && associated_cache()->is_complete()) ||
+      is_selection_pending())
+    return new AppCacheRequestHandler(this, false);
 
   return NULL;
 }
@@ -240,6 +253,8 @@ void AppCacheHost::FinishCacheSelection(
     DoPendingStartUpdate();
   else if (pending_swap_cache_callback_)
     DoPendingSwapCache();
+
+  FOR_EACH_OBSERVER(Observer, observers_, OnCacheSelectionComplete(this));
 }
 
 void AppCacheHost::AssociateCache(AppCache* cache) {

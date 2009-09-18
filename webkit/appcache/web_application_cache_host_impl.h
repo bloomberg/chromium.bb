@@ -40,7 +40,7 @@ class WebApplicationCacheHostImpl : public WebKit::WebApplicationCacheHost {
   virtual bool swapCache();
 
  private:
-  enum ShouldCaptureMainResponse {
+  enum IsNewMasterEntry {
     MAYBE,
     YES,
     NO
@@ -53,10 +53,11 @@ class WebApplicationCacheHostImpl : public WebKit::WebApplicationCacheHost {
   appcache::Status status_;
   bool has_cached_status_;
   appcache::Status cached_status_;
-  WebKit::WebURLResponse main_response_;
-  GURL main_response_url_;
-  bool is_in_http_family_;
-  ShouldCaptureMainResponse should_capture_main_response_;
+  WebKit::WebURLResponse document_response_;
+  GURL document_url_;
+  bool is_scheme_supported_;
+  bool is_get_method_;
+  IsNewMasterEntry is_new_master_entry_;
 };
 
 }  // namespace
