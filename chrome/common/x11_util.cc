@@ -15,6 +15,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 
+#include <list>
 #include <set>
 
 #include "base/logging.h"
@@ -23,6 +24,34 @@
 #include "chrome/common/x11_util_internal.h"
 
 namespace x11_util {
+
+namespace {
+
+// Used to cache the XRenderPictFormat for a visual/display pair.
+struct CachedPictFormat {
+  bool equals(Display* display, Visual* visual) const {
+    return display == this->display && visual == this->visual;
+  }
+
+  Display* display;
+  Visual* visual;
+  XRenderPictFormat* format;
+};
+
+typedef std::list<CachedPictFormat> CachedPictFormats;
+
+// Returns the cache of pict formats.
+CachedPictFormats* get_cached_pict_formats() {
+  static CachedPictFormats* formats = NULL;
+  if (!formats)
+    formats = new CachedPictFormats();
+  return formats;
+}
+
+// Maximum number of CachedPictFormats we keep around.
+const size_t kMaxCacheSize = 5;
+
+}  // namespace
 
 bool XDisplayExists() {
   return (gdk_display_get_default() != NULL);
@@ -330,14 +359,29 @@ bool GetXWindowStack(std::vector<XID>* windows) {
 }
 
 XRenderPictFormat* GetRenderVisualFormat(Display* dpy, Visual* visual) {
-  static XRenderPictFormat* pictformat = NULL;
-  if (pictformat)
-    return pictformat;
-
   DCHECK(QueryRenderSupport(dpy));
 
-  pictformat = XRenderFindVisualFormat(dpy, visual);
+  CachedPictFormats* formats = get_cached_pict_formats();
+
+  for (CachedPictFormats::const_iterator i = formats->begin();
+       i != formats->end(); ++i) {
+    if (i->equals(dpy, visual))
+      return i->format;
+  }
+
+  // Not cached, look up the value.
+  XRenderPictFormat* pictformat = XRenderFindVisualFormat(dpy, visual);
   CHECK(pictformat) << "XRENDER does not support default visual";
+
+  // And store it in the cache.
+  CachedPictFormat cached_value;
+  cached_value.visual = visual;
+  cached_value.display = dpy;
+  cached_value.format = pictformat;
+  formats->push_front(cached_value);
+
+  if (formats->size() == kMaxCacheSize)
+    formats->pop_back();
 
   return pictformat;
 }

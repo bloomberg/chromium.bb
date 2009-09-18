@@ -19,11 +19,14 @@ extern "C" {
 }
 
 namespace x11_util {
-  // These functions cache their results and must be called from the UI thread.
-  // Currently they don't support multiple screens/displays.
+  // NOTE: these function caches the results and must be called from the UI
+  // thread.
 
   // Get the XRENDER format id for ARGB32 (Skia's format).
+  //
+  // NOTE:Currently this don't support multiple screens/displays.
   XRenderPictFormat* GetRenderARGB32Format(Display* dpy);
+
   // Get the XRENDER format id for the default visual on the first screen. This
   // is the format which our GTK window will have.
   XRenderPictFormat* GetRenderVisualFormat(Display* dpy, Visual* visual);
