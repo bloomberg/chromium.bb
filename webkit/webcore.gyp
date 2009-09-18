@@ -102,7 +102,6 @@
       'type': '<(library)',
       'msvs_guid': '1C16337B-ACF3-4D03-AA90-851C5B5EADA6',
       'dependencies': [
-        'config.gyp:config',
         'javascriptcore.gyp:pcre',
         'javascriptcore.gyp:wtf',
         '../build/temp_gyp/googleurl.gyp:googleurl',
@@ -115,9 +114,57 @@
         '../third_party/sqlite/sqlite.gyp:sqlite',
       ],
       'defines': [
-        '<@(feature_defines)',
-        '<@(non_feature_defines)',
+        'WEBCORE_NAVIGATOR_VENDOR="Google Inc."', 
       ],
+      'conditions': [
+        ['OS=="linux"', {
+          'defines': [
+            # Mozilla on Linux effectively uses uname -sm, but when running
+            # 32-bit x86 code on an x86_64 processor, it uses
+            # "Linux i686 (x86_64)".  Matching that would require making a
+            # run-time determination.
+            'WEBCORE_NAVIGATOR_PLATFORM="Linux i686"',
+          ],
+        }],
+        ['OS=="mac"', {
+          'defines': [
+            # Match Safari and Mozilla on Mac x86.
+            'WEBCORE_NAVIGATOR_PLATFORM="MacIntel"',
+
+            # Chromium's version of WebCore includes the following Objective-C
+            # classes. The system-provided WebCore framework may also provide
+            # these classes. Because of the nature of Objective-C binding
+            # (dynamically at runtime), it's possible for the Chromium-provided
+            # versions to interfere with the system-provided versions.  This may
+            # happen when a system framework attempts to use WebCore.framework,
+            # such as when converting an HTML-flavored string to an
+            # NSAttributedString.  The solution is to force Objective-C class
+            # names that would conflict to use alternate names.
+
+            # TODO(mark) This list will hopefully shrink but may also grow.
+            # Periodically run:
+            # nm libwebcore.a | grep -E '[atsATS] ([+-]\[|\.objc_class_name)'
+            # and make sure that everything listed there has the alternate
+            # ChromiumWebCoreObjC name, and that nothing extraneous is listed
+            # here. If all Objective-C can be eliminated from Chromium's WebCore
+            # library, these defines should be removed entirely.
+            # TODO(yaar) move these out of command line defines.
+            'ScrollbarPrefsObserver=ChromiumWebCoreObjCScrollbarPrefsObserver',
+            'WebCoreRenderThemeNotificationObserver=ChromiumWebCoreObjCWebCoreRenderThemeNotificationObserver',
+            'WebFontCache=ChromiumWebCoreObjCWebFontCache',
+          ],
+        }],
+        ['OS=="win"', {
+          'defines': [
+            # Match Safari and Mozilla on Windows.
+            'WEBCORE_NAVIGATOR_PLATFORM="Win32"',
+          ],
+          'dependencies': [
+            # Needed on windows for some actions and rules
+            '../build/win/system.gyp:cygwin'
+          ],
+        }],
+      ], 
       'actions': [
         # Actions to build derived sources.
         {
@@ -466,11 +513,6 @@
 
       ],
       'direct_dependent_settings': {
-        # webkit.gyp:webkit & glue need the same feature defines too
-        #'defines': [ 
-        #  '<@(feature_defines)',
-        #  '<@(non_feature_defines)',
-        #],
         'include_dirs': [
           '<(SHARED_INTERMEDIATE_DIR)/webkit',
           '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',

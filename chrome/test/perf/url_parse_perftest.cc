@@ -17,7 +17,6 @@
 // can grab the wrong one.
 #include "webkit/third_party/WebCore/platform/CString.h"
 
-#undef USE_GOOGLE_URL_LIBRARY
 #define KURL WebKitKURL
 #include "KURL.h"
 #include "KURL.cpp"

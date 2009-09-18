@@ -4,15 +4,64 @@
 
 {
   'includes': [
+    'features.gypi',
     '../third_party/WebKit/JavaScriptCore/JavaScriptCore.gypi',
   ],
   'targets': [
+    {
+      # This target sets up defines and includes that are required by WTF and
+      # its dependents. 
+      'target_name': 'wtf_config',
+      'type': 'none',
+      'msvs_guid': '2E2D3301-2EC4-4C0F-B889-87073B30F673',
+      'direct_dependent_settings': {
+        'defines': [
+          # Import features_defines from features.gypi
+          '<@(feature_defines)',
+          
+          # Turns on #if PLATFORM(CHROMIUM)
+          'BUILDING_CHROMIUM__=1',
+          # Controls wtf/FastMalloc
+          # TODO(yaar) consider moving into config.h
+          'USE_SYSTEM_MALLOC=1',
+        ],
+        'conditions': [
+          ['OS=="win"', {
+            'defines': [
+              '__STD_C',
+              '_CRT_SECURE_NO_DEPRECATE',
+              '_SCL_SECURE_NO_DEPRECATE',
+              'CRASH=__debugbreak',
+            ],
+            'include_dirs': [
+              '../third_party/WebKit/JavaScriptCore/os-win32',
+              'build/JavaScriptCore',
+            ],
+          }],
+          ['OS=="mac"', {
+            'defines': [
+              # Ensure that only Leopard features are used when doing the
+              # Mac build.
+              'BUILDING_ON_LEOPARD',
+
+              # Use USE_NEW_THEME on Mac.
+              'WTF_USE_NEW_THEME=1',
+            ],
+          }],
+          ['OS=="linux" or OS=="freebsd"', {
+            'defines': [
+              'WTF_USE_PTHREADS=1',
+            ],
+          }],
+        ],
+      }
+    },
     {
       'target_name': 'wtf',
       'type': '<(library)',
       'msvs_guid': 'AA8A5A85-592B-4357-BC60-E0E91E026AF6',
       'dependencies': [
-        'config.gyp:config',
+        'wtf_config',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
       ],
@@ -40,7 +89,7 @@
         ],
       },
       'export_dependent_settings': [
-        'config.gyp:config',
+        'wtf_config',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
       ],
@@ -66,19 +115,12 @@
             '<(SHARED_INTERMEDIATE_DIR)/webkit',
           ],
         }],
-        ['OS=="linux" or OS=="freebsd"', {
-          'defines': ['WTF_USE_PTHREADS=1'],
-          'direct_dependent_settings': {
-            'defines': ['WTF_USE_PTHREADS=1'],
-          },
-        }],
       ],
     },
     {
       'target_name': 'pcre',
       'type': '<(library)',
       'dependencies': [
-        'config.gyp:config',
         'wtf',
       ],
       'msvs_guid': '49909552-0B0C-4C14-8CF6-DB8A2ADE0934',
