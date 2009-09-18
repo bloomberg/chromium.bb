@@ -38,6 +38,7 @@ class NativeButton;
 class BaseDownloadItemModel;
 class DownloadShelfView;
 class SkBitmap;
+class DownloadShelfContextMenuWin;
 
 class DownloadItemView : public views::ButtonListener,
                          public views::View,
@@ -243,6 +244,9 @@ class DownloadItemView : public views::ButtonListener,
   // Method factory used to delay reenabling of the item when opening the
   // downloaded file.
   ScopedRunnableMethodFactory<DownloadItemView> reenable_method_factory_;
+
+  // The currently running download context menu.
+  DownloadShelfContextMenuWin* active_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemView);
 };

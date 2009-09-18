@@ -72,12 +72,12 @@ static const int kDisabledOnOpenDuration = 3000;
 class DownloadShelfContextMenuWin : public DownloadShelfContextMenu,
                                     public views::Menu::Delegate {
  public:
-  DownloadShelfContextMenuWin(BaseDownloadItemModel* model,
-                              gfx::NativeView window,
-                              const gfx::Point& point)
+  DownloadShelfContextMenuWin(BaseDownloadItemModel* model)
       : DownloadShelfContextMenu(model) {
     DCHECK(model);
+  }
 
+  void Run(gfx::NativeView window, const gfx::Point& point) {
     // The menu's anchor point is determined based on the UI layout.
     views::Menu::AnchorPoint anchor_point;
     if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
@@ -105,30 +105,48 @@ class DownloadShelfContextMenuWin : public DownloadShelfContextMenu,
     context_menu->RunMenuAt(point.x(), point.y());
   }
 
+  // This method runs when the caller has been deleted and we should not attempt
+  // to access |download_|.
+  void Stop() {
+    download_ = NULL;
+    model_ = NULL;
+  }
+
   // Menu::Delegate implementation ---------------------------------------------
 
   virtual bool IsItemChecked(int id) const {
+    if (!download_)
+      return false;
     return ItemIsChecked(id);
   }
 
   virtual bool IsItemDefault(int id) const {
+    if (!download_)
+      return false;
     return ItemIsDefault(id);
   }
 
   virtual std::wstring GetLabel(int id) const {
+    if (!download_)
+      return std::wstring();
     return GetItemLabel(id);
   }
 
   virtual bool SupportsCommand(int id) const {
+    if (!download_)
+      return false;
     return id > 0 && id < MENU_LAST;
   }
 
   virtual bool IsCommandEnabled(int id) const {
+    if (!download_)
+      return false;
     return IsItemCommandEnabled(id);
   }
 
   virtual void ExecuteCommand(int id) {
-    return ExecuteItemCommand(id);
+    if (download_)
+      ExecuteItemCommand(id);
   }
 };
 
@@ -155,7 +173,8 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     dangerous_download_label_sized_(false),
     disabled_while_opening_(false),
     creation_time_(base::Time::Now()),
-    ALLOW_THIS_IN_INITIALIZER_LIST(reenable_method_factory_(this)) {
+    ALLOW_THIS_IN_INITIALIZER_LIST(reenable_method_factory_(this)),
+    active_menu_(NULL) {
   DCHECK(download_);
   download_->AddObserver(this);
 
@@ -320,6 +339,10 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
 }
 
 DownloadItemView::~DownloadItemView() {
+  if (active_menu_) {
+    active_menu_->Stop();
+    active_menu_ = NULL;
+  }
   icon_consumer_.CancelAllRequests();
   StopDownloadProgress();
   download_->RemoveObserver(this);
@@ -817,12 +840,18 @@ bool DownloadItemView::OnMousePressed(const views::MouseEvent& event) {
       point.set_x(drop_down_x_left_);
 
     views::View::ConvertPointToScreen(this, &point);
-    DownloadShelfContextMenuWin menu(model_.get(),
-                                     GetWidget()->GetNativeView(),
-                                     point);
+    DownloadShelfContextMenuWin menu(model_.get());
+
+    // Protect against deletion while the menu is running. This can happen if
+    // the menu is showing when an auto-opened download completes and the user
+    // chooses a menu entry.
+    active_menu_ = &menu;
+    menu.Run(GetWidget()->GetNativeView(), point);
+
     // If the menu action was to remove the download, this view will also be
     // invalid so we must not access 'this' in this case.
     if (menu.download()) {
+      active_menu_ = NULL;
       drop_down_pressed_ = false;
       // Showing the menu blocks. Here we revert the state.
       SetState(NORMAL, NORMAL);
