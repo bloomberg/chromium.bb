@@ -641,80 +641,9 @@ const int kDisabledIndex = 1;
   [controller runModalDialog];
 }
 
-- (NSArray*)availableThemes {
-  const ExtensionList* extensions =
-      profile_->GetExtensionsService()->extensions();
-
-  NSMutableArray* themes = [NSMutableArray array];
-
-  for (size_t i = 0; i < extensions->size(); ++i) {
-    Extension* extension = extensions->at(i);
-    if (!extension->IsTheme())
-      continue;
-
-    NSDictionary* theme =
-        [NSDictionary dictionaryWithObjectsAndKeys:
-         [NSString stringWithUTF8String:extension->name().c_str()], @"name",
-         [NSString stringWithUTF8String:extension->id().c_str()], @"id",
-         nil];
-    [themes addObject:theme];
-  }
-
-  NSSortDescriptor* sortDescriptor =
-      [[[NSSortDescriptor alloc] initWithKey:@"name"
-                                   ascending:YES
-                                    selector:@selector(localizedCompare:)]
-       autorelease];
-
-  [themes sortUsingDescriptors:[NSArray arrayWithObject:sortDescriptor]];
-
-  NSMutableArray* themeNames = [NSMutableArray array];
-  NSMutableArray* themeIds = [NSMutableArray array];
-
-  for (NSDictionary* themeDict in themes) {
-    [themeNames addObject:[themeDict objectForKey:@"name"]];
-    [themeIds addObject:[themeDict objectForKey:@"id"]];
-  }
-
-  themeMenuOffset_ = 0;
-  if ([themeNames count] > 0) {
-    [themeNames insertObject:@"-" atIndex:0];
-    ++themeMenuOffset_;
-  }
-  NSString* defaultLabel =
-      [NSString stringWithUTF8String:
-       l10n_util::GetStringUTF8(IDS_THEMES_DEFAULT_THEME_LABEL).c_str()];
-  [themeNames insertObject:defaultLabel atIndex:0];
-  ++themeMenuOffset_;
-
-  themeIds_.reset([themeIds retain]);
-  return themeNames;
-}
-
-- (int)currentTheme {
-  const Extension* theme = profile_->GetTheme();
-
-  if (theme) {
-    NSString* themeId = [NSString stringWithUTF8String:theme->id().c_str()];
-    return [themeIds_.get() indexOfObject:themeId] + themeMenuOffset_;
-  }
-
-  return 0;
-}
-
-- (void)setCurrentTheme:(int)newTheme {
-  newTheme -= themeMenuOffset_;
-
-  if (newTheme < 0) {
-    [self recordUserAction:L"Options_ThemesReset"];
-    profile_->ClearTheme();
-  } else {
-    NSString* themeId = [themeIds_.get() objectAtIndex:newTheme];
-    Extension* extension =
-        profile_->GetExtensionsService()->
-         GetExtensionById([themeId UTF8String]);
-    profile_->SetTheme(extension);
-  }
+- (IBAction)resetThemeToDefault:(id)sender {
+  [self recordUserAction:L"Options_ThemesReset"];
+  profile_->ClearTheme();
 }
 
 - (IBAction)themesGallery:(id)sender {

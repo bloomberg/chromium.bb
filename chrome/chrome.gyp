@@ -862,8 +862,6 @@
         'browser/cocoa/autocomplete_text_field_cell.mm',
         'browser/cocoa/autocomplete_text_field_editor.h',
         'browser/cocoa/autocomplete_text_field_editor.mm',
-        'browser/cocoa/autoseparating_menu.h',
-        'browser/cocoa/autoseparating_menu.m',
         'browser/cocoa/back_forward_menu_controller.h',
         'browser/cocoa/back_forward_menu_controller.mm',
         'browser/cocoa/background_gradient_view.h',
