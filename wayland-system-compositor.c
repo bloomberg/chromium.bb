@@ -161,10 +161,13 @@ struct wlsc_surface {
 };
 
 static const char *option_background = "background.jpg";
+static int option_connector = 0;
 
 static const GOptionEntry option_entries[] = {
 	{ "background", 'b', 0, G_OPTION_ARG_STRING,
 	  &option_background, "Background image" },
+	{ "connector", 'c', 0, G_OPTION_ARG_INT,
+	  &option_connector, "KMS connector" },
 	{ NULL }
 };
 
@@ -1178,7 +1181,9 @@ create_output(struct wlsc_compositor *ec, struct udev_device *device)
 			continue;
 
 		if (connector->connection == DRM_MODE_CONNECTED &&
-		    connector->count_modes > 0)
+		    connector->count_modes > 0 &&
+		    (option_connector == 0 ||
+		     connector->connector_id == option_connector))
 			break;
 
 		drmModeFreeConnector(connector);
