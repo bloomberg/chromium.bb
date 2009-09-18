@@ -774,6 +774,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnMsgFindReply)
     IPC_MESSAGE_HANDLER(ViewMsg_DeterminePageText_Reply,
                         OnDeterminePageTextReply)
+    IPC_MESSAGE_HANDLER(ViewMsg_ExecuteCodeFinished,
+                        OnExecuteCodeFinished)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFavIconURL, OnMsgUpdateFavIconURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidDownloadFavIcon, OnMsgDidDownloadFavIcon)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ContextMenu, OnMsgContextMenu)
@@ -1125,6 +1127,14 @@ void RenderViewHost::OnDeterminePageTextReply(
         Source<RenderViewHost>(this),
         Details<std::string>(&language));
 #endif
+}
+
+void RenderViewHost::OnExecuteCodeFinished(int request_id, bool success) {
+  std::pair<int, bool> result_details(request_id, success);
+  NotificationService::current()->Notify(
+      NotificationType::TAB_CODE_EXECUTED,
+      NotificationService::AllSources(),
+      Details<std::pair<int, bool> >(&result_details));
 }
 
 void RenderViewHost::OnMsgUpdateFavIconURL(int32 page_id,

@@ -64,4 +64,11 @@ const char kRemoveTabFunction[] = "tabs.remove";
 const char kDetectTabLanguageFunction[] = "tabs.detectLanguage";
 const char kCaptureVisibleTabFunction[] = "tabs.captureVisibleTab";
 
+const char kExecuteScriptFunction[] = "tabs.executeScript";
+const char kInsertCSSFunction[] = "tabs.insertCSS";
+const char kNoCodeOrFileToExecuteError[] = "No source code or file specified.";
+const char kMoreThanOneValuesError[] = "There should be only one value (either"
+                                       "code or file) in the second argument.";
+const char kLoadFileError[] = "Failed to load file: \"*\". ";
+
 }  // namespace extension_tabs_module_constants

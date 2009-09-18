@@ -7,6 +7,7 @@
 #include "base/process_util.h"
 #include "base/singleton.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/execute_code_in_tab_function.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
 #include "chrome/browser/extensions/extension_function.h"
@@ -111,6 +112,10 @@ void FactoryRegistry::ResetFunctions() {
       &NewExtensionFunction<DetectTabLanguageFunction>;
   factories_[tabs::kCaptureVisibleTabFunction] =
       &NewExtensionFunction<CaptureVisibleTabFunction>;
+  factories_[tabs::kExecuteScriptFunction] =
+      &NewExtensionFunction<ExecuteCodeInTabFunction>;
+  factories_[tabs::kInsertCSSFunction] =
+      &NewExtensionFunction<ExecuteCodeInTabFunction>;
 
   // Page Actions.
   factories_[page_actions::kEnablePageActionFunction] =

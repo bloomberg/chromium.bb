@@ -579,6 +579,64 @@
             ]
           }
         ]
+      },
+      {
+        "name": "executeScript",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "tabId", "optional": true, "description": "The id of tab which run the script, default to selected tab of current window."},
+          {
+            "type": "object",
+            "name": "scriptDef",
+            "description": "Note:scripts are injected in the following definition order.",
+            "properties": {
+              "code": {"type": "string", "optional": true, "description": "JavaScript code to execute."},
+              "file": {"type": "string", "optional": true, "description": "JavaScript file to execute."}
+            },
+            "optional": true
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "When all scripts are executed, this callback is called.",
+            "parameters": []
+          }
+        ],
+        "returns": {
+          "type": "boolean",
+          "description": "Whether this call is successful"
+        }
+      },
+      {
+        "name": "insertCSS",
+        "type": "function",
+        "description": "",
+        "parameters": [
+          {"type": "integer", "name": "tabId", "optional": true, "description": "The id of tab which run the script, default to selected tab of current window."},
+          {
+            "type": "object",
+            "name": "scriptDef",
+            "description": "Note:css are injected in the following definition order.",
+            "properties": {
+              "code": {"type": "string", "optional": true, "description": "CSS code to be injected."},
+              "file": {"type": "string", "optional": true, "description": "CSS file to be injected."},
+            },
+            "optional": true
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "When all css are inserted, this callback is called.",
+            "parameters": []
+          }
+        ],
+        "returns": {
+          "type": "boolean",
+          "description": "Whether this call is successful"
+        }
       }
     ],
     "events": [

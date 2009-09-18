@@ -69,6 +69,11 @@ extern const char kMoveTabFunction[];
 extern const char kRemoveTabFunction[];
 extern const char kDetectTabLanguageFunction[];
 extern const char kCaptureVisibleTabFunction[];
+extern const char kExecuteScriptFunction[];
+extern const char kInsertCSSFunction[];
+extern const char kNoCodeOrFileToExecuteError[];
+extern const char kMoreThanOneValuesError[];
+extern const char kLoadFileError[];
 
 };  // namespace extension_tabs_module_constants
 

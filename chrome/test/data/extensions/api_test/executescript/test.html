@@ -1,0 +1,86 @@
+<script>
+
+var pass = chrome.test.callbackPass;
+var fail = chrome.test.callbackFail;
+var assertEq = chrome.test.assertEq;
+var assertTrue = chrome.test.assertTrue;
+var relativePath =
+    '/files/extensions/api_test/executescript/test_executescript.html';
+var testUrl = 'http://a.com:1337' + relativePath;
+var testFailureUrl = 'http://b.com:1337' + relativePath;
+var testingFailure = false;
+
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
+  if (changeInfo.status == 'complete')
+    return;
+  if (testingFailure) {
+    return;
+  }
+
+  chrome.test.runTests([
+
+    function executeJavaScriptCodeShouldSucceed() {
+      var script_file = {};
+      script_file.code = "document.title = 'executeScript';";
+      chrome.tabs.executeScript(tabId, script_file, function() {
+        chrome.tabs.get(tabId, pass(function(tab) {
+          assertEq(tab.title, 'executeScript');
+        }));
+      });
+    },
+
+    function executeJavaScriptFileShouldSucceed() {
+      var script_file = {};
+      script_file.file = 'script1.js';
+      chrome.tabs.executeScript(tabId, script_file, function() {
+        chrome.tabs.get(tabId, pass(function(tab) {
+          assertEq(tab.title, 'executeScript1');
+        }));
+      });
+    },
+
+    function insertCSSTextShouldSucceed() {
+      var css_file = {};
+      css_file.code = "p {display:none;}";
+      chrome.tabs.insertCSS(tabId, css_file, function() {
+        var script_file = {};
+        script_file.file = 'script3.js';
+        chrome.tabs.executeScript(tabId, script_file, function() {
+          chrome.tabs.get(tabId, pass(function(tab) {
+            assertEq(tab.title, 'none');
+          }));
+        });
+      });
+    },
+
+    function insertCSSFileShouldSucceed() {
+      var css_file = {};
+      css_file.file = '1.css';
+      chrome.tabs.insertCSS(tabId, css_file, function() {
+        var script_file = {};
+        script_file.file = 'script2.js';
+        chrome.tabs.executeScript(tabId, script_file, function() {
+          chrome.tabs.get(tabId, pass(function(tab) {
+            assertEq(tab.title, 'block');
+          }));
+        });
+      });
+    },
+
+    function executeJavaScriptCodeShouldFail() {
+      testingFailure = true;
+      chrome.tabs.update(tabId, { url: testFailureUrl }, function() {
+        var script_file = {};
+        script_file.code = "document.title = 'executeScript';";
+        chrome.tabs.executeScript(tabId, script_file, fail(
+            'Cannot access contents of url "' + testFailureUrl +
+            '". Extension manifest must request permission to access this ' +
+            'host.'));
+      });
+    }
+  ]);
+});
+
+chrome.tabs.create({ url: testUrl });
+
+</script>

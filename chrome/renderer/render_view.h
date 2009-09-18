@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "chrome/common/edit_command.h"
 #include "chrome/common/navigation_gesture.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/view_types.h"
 #include "chrome/renderer/automation/dom_automation_controller.h"
@@ -610,6 +611,10 @@ class RenderView : public RenderWidget,
                              const MediaPlayerAction& action);
   void OnNotifyRendererViewType(ViewType::Type view_type);
   void OnUpdateBrowserWindowId(int window_id);
+  void OnExecuteCode(int request_id,
+                     const std::string& extension_id,
+                     bool is_js_code,
+                     const std::string& code_string);
   void OnUpdateBackForwardListCount(int back_list_count,
                                     int forward_list_count);
   void OnGetAccessibilityInfo(
@@ -908,6 +913,31 @@ class RenderView : public RenderWidget,
 
   // Id number of browser window which RenderView is attached to.
   int browser_window_id_;
+
+  // If page is loading, we can't run code, just create CodeExecutionInfo
+  // objects store pending execution information and delay the execution until
+  // page is loaded.
+  struct CodeExecutionInfo : public base::RefCounted<CodeExecutionInfo> {
+    CodeExecutionInfo(int id_of_request, const std::string& id_of_extension,
+                      bool is_js, const std::string& code)
+        : request_id(id_of_request),
+          extension_id(id_of_extension),
+          code_string(code),
+          is_js_code(is_js) {}
+    int request_id;
+
+    // The id of extension who issues the pending executeScript API call.
+    std::string extension_id;
+
+    // The code which would be executed.
+    std::string code_string;
+
+    // It's true if |code_string| is JavaScript; otherwise |code_string| is
+    // CSS text.
+    bool is_js_code;
+  };
+
+  std::queue<scoped_refptr<CodeExecutionInfo> > pending_code_execution_queue_;
 
   // page id for the last navigation sent to the browser.
   int32 last_top_level_navigation_page_id_;

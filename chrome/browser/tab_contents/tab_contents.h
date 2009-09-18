@@ -363,6 +363,10 @@ class TabContents : public PageNavigator,
   // of unwanted popups.
   void CloseAllSuppressedPopups();
 
+  // Execute code in this tab.
+  void ExecuteCode(int request_id, const std::string& extension_id,
+                   bool is_js_code, const std::string& code_string);
+
   // Called when the blocked popup notification is shown or hidden.
   virtual void PopupNotificationVisibilityChanged(bool visible);
 

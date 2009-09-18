@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "chrome/common/css_colors.h"
 #include "chrome/common/extensions/update_manifest.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/transport_dib.h"
 #include "chrome/common/view_types.h"
 #include "ipc/ipc_channel_handle.h"
@@ -246,6 +247,11 @@ IPC_BEGIN_MESSAGES(View)
   // page.
   IPC_MESSAGE_ROUTED1(ViewMsg_DeterminePageText_Reply,
                       std::wstring /* the language */)
+
+  // Send from the renderer to the browser to return the script running result.
+  IPC_MESSAGE_ROUTED2(ViewMsg_ExecuteCodeFinished,
+                      int, /* request id */
+                      bool /* whether the script ran successfully */)
 
   // Sent when the headers are available for a resource request.
   IPC_MESSAGE_ROUTED2(ViewMsg_Resource_ReceivedResponse,
@@ -684,6 +690,14 @@ IPC_BEGIN_MESSAGES(View)
   // Tell the renderer which type this view is.
   IPC_MESSAGE_ROUTED1(ViewMsg_NotifyRenderViewType,
                       ViewType::Type /* view_type */)
+
+  // Notification that renderer should run some JavaScript code.
+  IPC_MESSAGE_ROUTED4(ViewMsg_ExecuteCode,
+                      int, /* request id */
+                      std::string, /* id of extension which runs the scripts */
+                      bool, /* It's true if the code is JavaScript; Otherwise
+                               the code is CSS text. */
+                      std::string /* code would be executed */)
 
   // Returns a file handle
   IPC_MESSAGE_CONTROL2(ViewMsg_DatabaseOpenFileResponse,

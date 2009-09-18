@@ -14,6 +14,7 @@
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/common/modal_dialog_event.h"
 #include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/page_zoom.h"
 #include "webkit/api/public/WebConsoleMessage.h"
 #include "webkit/api/public/WebDragOperation.h"
@@ -495,6 +496,7 @@ class RenderViewHost : public RenderWidgetHost,
                       int active_match_ordinal,
                       bool final_update);
   void OnDeterminePageTextReply(const std::wstring& tab_text);
+  void OnExecuteCodeFinished(int request_id, bool success);
   void OnMsgUpdateFavIconURL(int32 page_id, const GURL& icon_url);
   void OnMsgDidDownloadFavIcon(int id,
                                const GURL& image_url,

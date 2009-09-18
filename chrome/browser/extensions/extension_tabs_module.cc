@@ -27,7 +27,6 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-
 namespace keys = extension_tabs_module_constants;
 
 // Forward declare static helper functions defined below.
@@ -155,6 +154,22 @@ DictionaryValue* ExtensionTabUtil::CreateWindowValue(const Browser* browser,
   }
 
   return result;
+}
+
+bool ExtensionTabUtil::GetDefaultTab(Browser* browser, TabContents** contents,
+                                     int* tab_id) {
+  DCHECK(browser);
+  DCHECK(contents);
+  DCHECK(tab_id);
+
+  *contents = browser->tabstrip_model()->GetSelectedTabContents();
+  if (*contents) {
+    if (tab_id)
+      *tab_id = ExtensionTabUtil::GetTabId(*contents);
+    return true;
+  }
+
+  return false;
 }
 
 bool ExtensionTabUtil::GetTabById(int tab_id, Profile* profile,

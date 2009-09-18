@@ -39,6 +39,8 @@ class ExtensionTabUtil {
   static DictionaryValue* CreateWindowValue(const Browser* browser,
                                             bool populate_tabs);
 
+  static bool GetDefaultTab(Browser* browser, TabContents** contents,
+                            int* tab_id);
   // Any out parameter (|browser|, |tab_strip|, |contents|, & |tab_index|) may
   // be NULL and will not be set within the function.
   static bool GetTabById(int tab_id, Profile* profile, Browser** browser,
@@ -94,9 +96,9 @@ class RemoveTabFunction : public SyncExtensionFunction {
 };
 class DetectTabLanguageFunction : public AsyncExtensionFunction,
                                   public NotificationObserver {
+ private:
   virtual bool RunImpl();
 
- private:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);

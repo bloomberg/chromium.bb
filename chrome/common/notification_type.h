@@ -212,6 +212,9 @@ class NotificationType {
     // are Details<std::string> and the source is Source<RenderViewHost>.
     TAB_LANGUAGE_DETERMINED,
 
+    // Send after the code is run in specified tab.
+    TAB_CODE_EXECUTED,
+
     // The user has changed the browser theme.
     BROWSER_THEME_CHANGED,
 

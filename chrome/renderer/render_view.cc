@@ -37,6 +37,7 @@
 #include "chrome/renderer/audio_message_filter.h"
 #include "chrome/renderer/devtools_agent.h"
 #include "chrome/renderer/devtools_client.h"
+#include "chrome/renderer/extension_groups.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
@@ -443,6 +444,8 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
     IPC_MESSAGE_HANDLER(ViewMsg_SetEditCommandsForNextKeyEvent,
                         OnSetEditCommandsForNextKeyEvent);
+    IPC_MESSAGE_HANDLER(ViewMsg_ExecuteCode,
+                        OnExecuteCode)
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(RenderWidget::OnMessageReceived(message))
@@ -2080,6 +2083,14 @@ void RenderView::didCreateDocumentElement(WebFrame* frame) {
         frame, UserScript::DOCUMENT_START);
   }
 
+  while (!pending_code_execution_queue_.empty()) {
+    scoped_refptr<CodeExecutionInfo> info =
+        pending_code_execution_queue_.front();
+    OnExecuteCode(info->request_id, info->extension_id, info->is_js_code,
+                  info->code_string);
+    pending_code_execution_queue_.pop();
+  }
+
   // Notify the browser about non-blank documents loading in the top frame.
   GURL url = frame->url();
   if (url.is_valid() && url.spec() != chrome::kAboutBlankURL) {
@@ -3479,6 +3490,35 @@ void RenderView::Print(WebFrame* frame, bool script_initiated) {
 void RenderView::OnSetEditCommandsForNextKeyEvent(
     const EditCommands& edit_commands) {
   edit_commands_ = edit_commands;
+}
+
+void RenderView::OnExecuteCode(int request_id, const std::string& extension_id,
+                               bool is_js_code,
+                               const std::string& code_string) {
+  if (is_loading_) {
+    scoped_refptr<CodeExecutionInfo> info = new CodeExecutionInfo(
+        request_id, extension_id, is_js_code, code_string);
+    pending_code_execution_queue_.push(info);
+    return;
+  }
+  WebFrame* main_frame = webview() ? webview()->GetMainFrame() : NULL;
+  if (!main_frame) {
+    Send(new ViewMsg_ExecuteCodeFinished(routing_id_, request_id, false));
+    return;
+  }
+
+  if (is_js_code) {
+    std::vector<WebScriptSource> sources;
+    sources.push_back(
+        WebScriptSource(WebString::fromUTF8(code_string)));
+    UserScriptSlave::InsertInitExtensionCode(&sources, extension_id);
+    main_frame->executeScriptInNewWorld(&sources.front(), sources.size(),
+                                        EXTENSION_GROUP_CONTENT_SCRIPTS);
+  } else {
+    main_frame->insertStyleText(WebString::fromUTF8(code_string), WebString());
+  }
+
+  Send(new ViewMsg_ExecuteCodeFinished(routing_id_, request_id, true));
 }
 
 void RenderView::DidHandleKeyEvent() {

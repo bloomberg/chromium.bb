@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_USER_SCRIPT_SLAVE_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/scoped_ptr.h"
@@ -13,10 +14,13 @@
 #include "base/stl_util-inl.h"
 #include "base/string_piece.h"
 #include "chrome/common/extensions/user_script.h"
+#include "webkit/api/public/WebScriptSource.h"
 
 namespace WebKit {
 class WebFrame;
 }
+
+using WebKit::WebScriptSource;
 
 // Manages installed UserScripts for a render process.
 class UserScriptSlave {
@@ -31,6 +35,8 @@ class UserScriptSlave {
   // testability.
   bool InjectScripts(WebKit::WebFrame* frame, UserScript::RunLocation location);
 
+  static void InsertInitExtensionCode(std::vector<WebScriptSource>* sources,
+                                      const std::string& extension_id);
  private:
   // Shared memory containing raw script data.
   scoped_ptr<base::SharedMemory> shared_memory_;

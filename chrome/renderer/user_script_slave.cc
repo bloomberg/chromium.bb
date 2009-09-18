@@ -14,12 +14,10 @@
 #include "chrome/renderer/extension_groups.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/api/public/WebFrame.h"
-#include "webkit/api/public/WebScriptSource.h"
 
 #include "grit/renderer_resources.h"
 
 using WebKit::WebFrame;
-using WebKit::WebScriptSource;
 using WebKit::WebString;
 
 // These two strings are injected before and after the Greasemonkey API and
@@ -109,6 +107,15 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
   return true;
 }
 
+// static
+void UserScriptSlave::InsertInitExtensionCode(
+    std::vector<WebScriptSource>* sources, const std::string& extension_id) {
+  DCHECK(sources);
+  sources->insert(sources->begin(),
+                  WebScriptSource(WebString::fromUTF8(
+                  StringPrintf(kInitExtension, extension_id.c_str()))));
+}
+
 bool UserScriptSlave::InjectScripts(WebFrame* frame,
                                     UserScript::RunLocation location) {
   // Don't bother if this is not a URL we inject script into.
@@ -157,9 +164,7 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
       } else {
         // Setup chrome.self to contain an Extension object with the correct
         // ID.
-        sources.insert(sources.begin(),
-            WebScriptSource(WebString::fromUTF8(
-                StringPrintf(kInitExtension, script->extension_id().c_str()))));
+        InsertInitExtensionCode(&sources, script->extension_id());
       }
 
       frame->executeScriptInNewWorld(&sources.front(), sources.size(),
