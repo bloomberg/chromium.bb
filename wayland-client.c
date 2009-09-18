@@ -64,6 +64,7 @@ struct wl_proxy {
 	struct wl_object base;
 	struct wl_display *display;
 	struct wl_list listener_list;
+	void *user_data;
 };
 
 struct wl_compositor {
@@ -617,4 +618,16 @@ wl_surface_damage(struct wl_surface *surface,
 {
 	wl_proxy_marshal(&surface->proxy,
 			 WL_SURFACE_DAMAGE, x, y, width, height);
+}
+
+WL_EXPORT void
+wl_surface_set_user_data(struct wl_surface *surface, void *user_data)
+{
+	surface->proxy.user_data = user_data;
+}
+
+WL_EXPORT void *
+wl_surface_get_user_data(struct wl_surface *surface)
+{
+	return surface->proxy.user_data;
 }

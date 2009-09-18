@@ -95,6 +95,9 @@ void wl_surface_copy(struct wl_surface *surface, int32_t dst_x, int32_t dst_y,
 void wl_surface_damage(struct wl_surface *surface,
 		       int32_t x, int32_t y, int32_t width, int32_t height);
 
+void wl_surface_set_user_data(struct wl_surface *surface, void *user_data);
+void *wl_surface_get_user_data(struct wl_surface *surface);
+
 struct wl_output;
 struct wl_output_listener {
 	void (*geometry)(void *data,
