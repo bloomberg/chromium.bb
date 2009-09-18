@@ -476,7 +476,7 @@ void TabContentsViewGtk::GetContainerBounds(gfx::Rect* out) const {
   if (fixed_->window)
     gdk_window_get_origin(fixed_->window, &x, &y);
   out->SetRect(x + fixed_->allocation.x, y + fixed_->allocation.y,
-               fixed_->allocation.width, fixed_->allocation.height);
+               requested_size_.width(), requested_size_.height());
 }
 
 void TabContentsViewGtk::OnContentsDestroy() {
@@ -501,19 +501,12 @@ void TabContentsViewGtk::OnTabCrashed() {
 }
 
 void TabContentsViewGtk::SizeContents(const gfx::Size& size) {
-  // We don't normally need to manually set the size of of widgets in GTK+,
-  // but this is used when creating background tabs.  When a tab is created in
-  // the background, we need to set the size so WebKit can properly compute
-  // the scrolling offset if a #ref is provided.
-  if (tab_contents()->render_widget_host_view()) {
-    GtkWidget* widget =
-        tab_contents()->render_widget_host_view()->GetNativeView();
-    // During unit tests, |widget| can be NULL.
-    if (widget) {
-      widget->allocation.width = size.width();
-      widget->allocation.height = size.height();
-    }
-  }
+  // We don't need to manually set the size of of widgets in GTK+, but we do
+  // need to pass the sizing information on to the RWHV which will pass the
+  // sizing information on to the renderer.
+  requested_size_ = size;
+  if (tab_contents()->render_widget_host_view())
+    tab_contents()->render_widget_host_view()->SetSize(size);
 }
 
 void TabContentsViewGtk::Focus() {
@@ -635,6 +628,8 @@ gboolean TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
                                             TabContentsViewGtk* view) {
   int width = allocation->width;
   int height = allocation->height;
+  view->requested_size_.set_width(width);
+  view->requested_size_.set_height(height);
   // |delegate()| can be NULL here during browser teardown.
   if (view->tab_contents()->delegate())
     height += view->tab_contents()->delegate()->GetExtraRenderViewHeight();

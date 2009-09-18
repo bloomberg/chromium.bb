@@ -136,6 +136,10 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
 
   // Helper class that lets us allocate plugin containers and move them.
   GtkPluginContainerManager plugin_container_manager_;
+
+  // The size that we want the renderer to be.  We keep this in a separate
+  // variable because resizing in GTK+ is async.
+  gfx::Size requested_size_;
 };
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_GTK_H_

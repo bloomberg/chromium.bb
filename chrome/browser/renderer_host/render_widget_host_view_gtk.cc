@@ -94,6 +94,8 @@ class RenderWidgetHostViewGtkWidget {
  private:
   static gboolean SizeAllocate(GtkWidget* widget, GtkAllocation* allocation,
                                RenderWidgetHostViewGtk* host_view) {
+    host_view->requested_size_ = gfx::Size(allocation->width,
+                                           allocation->height);
     host_view->GetRenderWidgetHost()->WasResized();
     return FALSE;
   }
@@ -386,23 +388,21 @@ void RenderWidgetHostViewGtk::WasHidden() {
 
 void RenderWidgetHostViewGtk::SetSize(const gfx::Size& size) {
   // This is called when webkit has sent us a Move message.
-  // If we are a popup, we want to handle this.
-  // TODO(estade): are there other situations where we want to respect the
-  // request?
-#if !defined(TOOLKIT_VIEWS)
+  int width = std::min(size.width(), kMaxWindowWidth);
+  int height = std::min(size.height(), kMaxWindowHeight);
   if (parent_) {
-#else
-  // TOOLKIT_VIEWS' resize logic flow matches windows. When the container widget
-  // is resized, it calls RWH::WasSized, which sizes this widget using SetSize.
-  // TODO(estade): figure out if the logic flow here can be normalized across
-  //               platforms
+    // We're a popup, honor the size request.
+    gtk_widget_set_size_request(view_.get(), width, height);
+  } else {
+#if defined(TOOLKIT_VIEWS)
+    // TOOLKIT_VIEWS' resize logic flow matches windows. so we go ahead and
+    // size the widget.  In GTK+, the size of the widget is determined by it's
+    // children.
+    gtk_widget_set_size_request(view_.get(), width, height);
 #endif
-    gtk_widget_set_size_request(view_.get(),
-                                std::min(size.width(), kMaxWindowWidth),
-                                std::min(size.height(), kMaxWindowHeight));
-#if !defined(TOOLKIT_VIEWS)
+    requested_size_ = gfx::Size(width, height);
+    host_->WasResized();
   }
-#endif
 }
 
 gfx::NativeView RenderWidgetHostViewGtk::GetNativeView() {
@@ -444,7 +444,9 @@ void RenderWidgetHostViewGtk::Hide() {
 
 gfx::Rect RenderWidgetHostViewGtk::GetViewBounds() const {
   GtkAllocation* alloc = &view_.get()->allocation;
-  return gfx::Rect(alloc->x, alloc->y, alloc->width, alloc->height);
+  return gfx::Rect(alloc->x, alloc->y,
+                   requested_size_.width(),
+                   requested_size_.height());
 }
 
 void RenderWidgetHostViewGtk::UpdateCursor(const WebCursor& cursor) {

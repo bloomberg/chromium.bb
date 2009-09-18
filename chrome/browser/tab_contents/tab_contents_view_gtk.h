@@ -139,6 +139,10 @@ class TabContentsViewGtk : public TabContentsView,
   // Object responsible for handling drags from the page for us.
   scoped_ptr<TabContentsDragSource> drag_source_;
 
+  // The size we want the tab contents view to be.  We keep this in a separate
+  // variable because resizing in GTK+ is async.
+  gfx::Size requested_size_;
+
   DISALLOW_COPY_AND_ASSIGN(TabContentsViewGtk);
 };
 
