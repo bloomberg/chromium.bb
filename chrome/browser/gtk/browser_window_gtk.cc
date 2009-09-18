@@ -125,6 +125,10 @@ const int kContentShadowThickness = 2;
 // is off.
 const int kCustomFrameBackgroundVerticalOffset = 15;
 
+// The timeout in milliseconds before we'll get the true window position with
+// gtk_window_get_position() after the last GTK configure-event signal.
+const int kDebounceTimeoutMilliseconds = 100;
+
 base::LazyInstance<ActiveWindowWatcher>
     g_active_window_watcher(base::LINKER_INITIALIZED);
 
@@ -1361,6 +1365,31 @@ void BrowserWindowGtk::OnBoundsChanged(const gfx::Rect& bounds) {
   bounds_ = bounds;
   if (!IsFullscreen() && !IsMaximized())
     restored_bounds_ = bounds;
+
+  // When a window is moved or resized, GTK will call MainWindowConfigured()
+  // above.  The GdkEventConfigure* that it gets doesn't have quite the right
+  // coordinates though (they're relative to the drawable window area, rather
+  // than any window manager decorations, if enabled), so we need to call
+  // gtk_window_get_position() to get the right values.  (Otherwise session
+  // restore, if enabled, will restore windows to incorrect positions.)  That's
+  // a round trip to the X server though, so we set a debounce timer and only
+  // call it (in OnDebouncedBoundsChanged() below) after we haven't seen a
+  // reconfigure event in a short while.
+  // We don't use Reset() because the timer may not yet be running.
+  // (In that case Stop() is a no-op.)
+  window_configure_debounce_timer_.Stop();
+  window_configure_debounce_timer_.Start(base::TimeDelta::FromMilliseconds(
+      kDebounceTimeoutMilliseconds), this,
+      &BrowserWindowGtk::OnDebouncedBoundsChanged);
+}
+
+void BrowserWindowGtk::OnDebouncedBoundsChanged() {
+  gint x, y;
+  gtk_window_get_position(window_, &x, &y);
+  gfx::Point origin(x, y);
+  bounds_.set_origin(origin);
+  if (!IsFullscreen() && !IsMaximized())
+    restored_bounds_.set_origin(origin);
   SaveWindowPosition();
 }
 
@@ -1484,13 +1513,16 @@ void BrowserWindowGtk::SetGeometryHints() {
   maximize_after_show_ = browser_->GetSavedMaximizedState();
 
   gfx::Rect bounds = browser_->GetSavedWindowBounds();
-  // We don't blindly call SetBounds here, that sets a forced position
+  // We don't blindly call SetBounds here: that sets a forced position
   // on the window and we intentionally *don't* do that for normal
-  // windows.  We tested many programs and none of them restored their
-  // position on Linux.
+  // windows.  Most programs do not restore their window position on
+  // Linux, instead letting the window manager choose a position.
   //
   // However, in cases like dropping a tab where the bounds are
-  // specifically set, we do want to position explicitly.
+  // specifically set, we do want to position explicitly.  We also
+  // force the position as part of session restore, as applications
+  // that restore other, similar state (for instance GIMP, audacity,
+  // pidgin, dia, and gkrellm) do tend to restore their positions.
   if (browser_->bounds_overridden()) {
     // For popups, bounds are set in terms of the client area rather than the
     // entire window.

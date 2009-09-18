@@ -140,6 +140,7 @@ class BrowserWindowGtk : public BrowserWindow,
   void UpdateUIForContents(TabContents* contents);
 
   void OnBoundsChanged(const gfx::Rect& bounds);
+  void OnDebouncedBoundsChanged();
   void OnStateChanged(GdkWindowState state, GdkWindowState changed_mask);
 
   // Returns false if we're not ready to close yet.  E.g., a tab may have an
@@ -360,6 +361,9 @@ class BrowserWindowGtk : public BrowserWindow,
 
   // The timer used to update frames for the Loading Animation.
   base::RepeatingTimer<BrowserWindowGtk> loading_animation_timer_;
+
+  // The timer used to save the window position for session restore.
+  base::OneShotTimer<BrowserWindowGtk> window_configure_debounce_timer_;
 
   // Whether the custom chrome frame pref is set.  Normally you want to use
   // UseCustomFrame() above to determine whether to use the custom frame or
