@@ -54,8 +54,8 @@ void TipsHandler::HandleGetTips(const Value* content) {
     if (tips_cache_->GetInteger(
         WebResourceService::kCurrentTipPrefName, &current_tip_index) &&
         tips_cache_->GetList(
-        WebResourceService::kTipCachePrefName, &wr_list)) {
-      if (wr_list && wr_list->GetSize() > 0)
+        WebResourceService::kTipCachePrefName, &wr_list) &&
+        wr_list && wr_list->GetSize() > 0) {
       if (wr_list->GetSize() <= static_cast<size_t>(current_tip_index))
         current_tip_index = 0;
       if (wr_list->GetString(current_tip_index, &current_tip)) {
@@ -84,4 +84,3 @@ bool TipsHandler::IsValidURL(const std::wstring& url_string) {
   return !url.is_empty() && (url.SchemeIs(chrome::kHttpScheme) ||
                              url.SchemeIs(chrome::kHttpsScheme));
 }
-
