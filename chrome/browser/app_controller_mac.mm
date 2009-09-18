@@ -29,8 +29,9 @@
 #import "chrome/browser/cocoa/tab_window_controller.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/download/download_manager.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/options_window.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -674,3 +675,12 @@
 }
 
 @end
+
+//---------------------------------------------------------------------------
+
+// Stub for cross-platform method that isn't called on Mac OS X.
+void ShowOptionsWindow(OptionsPage page,
+                       OptionsGroup highlight_group,
+                       Profile* profile) {
+  NOTIMPLEMENTED();
+}

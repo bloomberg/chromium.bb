@@ -21,7 +21,6 @@
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/memory_details.h"
-#include "chrome/browser/options_window.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -266,22 +265,16 @@ void BrowserList::AllBrowsersClosed() {
 //--------------------------------------------------------------------------
 
 #if defined(OS_MACOSX)
-void ShowOptionsWindow(OptionsPage page,
-                       OptionsGroup highlight_group,
-                       Profile* profile) {
-  NOTIMPLEMENTED();
-}
-#endif
-
-#if defined(OS_MACOSX)
 bool DockInfo::GetNewWindowBounds(gfx::Rect* new_window_bounds,
                                   bool* maximize_new_window) const {
-  NOTIMPLEMENTED();
+  // TODO(pinkerton): Implement on Mac.
+  // http://crbug.com/9274
   return true;
 }
 
 void DockInfo::AdjustOtherWindowBounds() const {
-  NOTIMPLEMENTED();
+  // TODO(pinkerton): Implement on Mac.
+  // http://crbug.com/9274
 }
 #endif
 
