@@ -222,6 +222,10 @@ class NotificationType {
     // Linux.
     ACTIVE_WINDOW_CHANGED,
 
+    // Sent when the renderer returns focus to the browser, as part of focus
+    // traversal. The source is the browser, there are no details.
+    FOCUS_RETURNED_TO_BROWSER,
+
     // Application-modal dialogs -----------------------------------------------
 
     // Sent after an application-modal dialog has been shown. The source
@@ -324,7 +328,6 @@ class NotificationType {
     // pointer.
     RENDER_VIEW_HOST_CREATED_FOR_TAB,
 
-
     // Stuff inside the tabs ---------------------------------------------------
 
     // This message is sent after a constrained window has been closed.  The
@@ -404,6 +407,10 @@ class NotificationType {
     // UsageStats object sent by the renderer, and should be copied - ptr not
     // guaranteed to be valid after the notification.
     WEB_CACHE_STATS_OBSERVED,
+
+    // The focused element inside a page has changed.  The source is the render
+    // view host for the page, there are no details.
+    FOCUS_CHANGED_IN_PAGE,
 
     // Child Processes ---------------------------------------------------------
 

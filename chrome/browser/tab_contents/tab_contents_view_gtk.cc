@@ -549,8 +549,10 @@ void TabContentsViewGtk::GotFocus() {
 // This is called when we the renderer asks us to take focus back (i.e., it has
 // iterated past the last focusable element on the page).
 void TabContentsViewGtk::TakeFocus(bool reverse) {
-  gtk_widget_child_focus(GTK_WIDGET(GetTopLevelNativeWindow()),
-      reverse ? GTK_DIR_TAB_BACKWARD : GTK_DIR_TAB_FORWARD);
+  if (!tab_contents()->delegate()->TakeFocus(reverse)) {
+    gtk_widget_child_focus(GTK_WIDGET(GetTopLevelNativeWindow()),
+        reverse ? GTK_DIR_TAB_BACKWARD : GTK_DIR_TAB_FORWARD);
+  }
 }
 
 void TabContentsViewGtk::HandleKeyboardEvent(

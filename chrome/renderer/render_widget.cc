@@ -650,6 +650,12 @@ void RenderWidget::show(WebNavigationPolicy) {
 }
 
 void RenderWidget::didFocus() {
+  // Note that didFocus() is invoked everytime a new node is focused in the
+  // page.  It could be expected that it would be called only when the widget
+  // gets the focus.  If the current behavior was to change in WebKit for the
+  // expected one, the following notification would not work anymore.
+  Send(new ViewHostMsg_FocusedNodeChanged(routing_id_));
+
   // Prevent the widget from stealing the focus if it does not have focus
   // already.  We do this by explicitely setting the focus to false again.
   // We only let the browser focus the renderer.

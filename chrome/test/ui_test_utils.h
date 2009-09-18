@@ -104,6 +104,13 @@ AppModalDialog* WaitForAppModalDialog();
 
 // Causes the specified tab to crash. Blocks until it is crashed.
 void CrashTab(TabContents* tab);
+
+// Waits for the focus to change in the specified RenderViewHost.
+void WaitForFocusChange(RenderViewHost* rvh);
+
+// Waits for the renderer to return focus to the browser (happens through tab
+// traversal).
+void WaitForFocusInBrowser(Browser* browser);
 }
 
 #endif  // CHROME_TEST_UI_TEST_UTILS_H_

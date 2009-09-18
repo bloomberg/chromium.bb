@@ -897,6 +897,7 @@ class TabContents : public PageNavigator,
   virtual void LoadStateChanged(const GURL& url, net::LoadState load_state);
   virtual bool IsExternalTabContainer() const;
   virtual void DidInsertCSS();
+  virtual void FocusedNodeChanged();
 
   // SelectFileDialog::Listener ------------------------------------------------
 

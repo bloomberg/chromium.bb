@@ -147,7 +147,8 @@ class TestInterstitialPage : public InterstitialPage {
  public:
   TestInterstitialPage(TabContents* tab, bool new_navigation, const GURL& url)
       : InterstitialPage(tab, new_navigation, url),
-        waiting_for_dom_response_(false) {
+        waiting_for_dom_response_(false),
+        waiting_for_focus_change_(false) {
     FilePath file_path;
     bool r = PathService::Get(chrome::DIR_TEST_DATA, &file_path);
     EXPECT_TRUE(r);
@@ -192,10 +193,25 @@ class TestInterstitialPage : public InterstitialPage {
     return render_view_host()->view()->HasFocus();
   }
 
+  void WaitForFocusChange() {
+    waiting_for_focus_change_ = true;
+    ui_test_utils::RunMessageLoop();
+  }
+
+ protected:
+  virtual void FocusedNodeChanged() {
+    if (!waiting_for_focus_change_)
+      return;
+
+    waiting_for_focus_change_= false;
+    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  }
+
  private:
   std::string html_contents_;
 
   bool waiting_for_dom_response_;
+  bool waiting_for_focus_change_;
   std::string dom_response_;
 
 };
@@ -396,6 +412,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, LocationBarLockFocus) {
 }
 
 // Focus traversal on a regular page.
+// Note that this test relies on a notification from the renderer that the
+// focus has changed in the page.  The notification in the renderer may change
+// at which point this test would fail (see comment in
+// RenderWidget::didFocus()).
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
   HTTPTestServer* server = StartHTTPServer();
 
@@ -420,7 +440,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
     CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
 
     // Now let's press tab to move the focus.
-    for (int j = 0; j < 7; ++j) {
+    for (size_t j = 0; j < arraysize(kExpElementIDs); ++j) {
       // Let's make sure the focus is on the expected element in the page.
       std::string actual;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
@@ -430,21 +450,22 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
           &actual));
       ASSERT_STREQ(kExpElementIDs[j], actual.c_str());
 
-      ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_TAB, false,
-                                              false, false,
-                                              new MessageLoop::QuitTask());
-      ui_test_utils::RunMessageLoop();
-      // Ideally, we wouldn't sleep here and instead would use the event
-      // processed ack notification from the renderer.  I am reluctant to create
-      // a new notification/callback for that purpose just for this test.
-      PlatformThread::Sleep(kActionDelayMs);
+      ASSERT_TRUE(ui_controls::SendKeyPress(window, base::VKEY_TAB,
+                                            false, false, false));
+
+      if (j < arraysize(kExpElementIDs) - 1) {
+        ui_test_utils::WaitForFocusChange(browser()->GetSelectedTabContents()->
+            render_view_host());
+      } else {
+        // On the last tab key press, the focus returns to the browser.
+        ui_test_utils::WaitForFocusInBrowser(browser());
+      }
     }
 
     // At this point the renderer has sent us a message asking to advance the
     // focus (as the end of the focus loop was reached in the renderer).
     // We need to run the message loop to process it.
-    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-    ui_test_utils::RunMessageLoop();
+    MessageLoop::current()->RunAllPending();
   }
 
   // Now let's try reverse focus traversal.
@@ -453,12 +474,17 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
     CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
 
     // Now let's press shift-tab to move the focus in reverse.
-    for (int j = 0; j < 7; ++j) {
-      ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_TAB, false,
-                                              true, false,
-                                              new MessageLoop::QuitTask());
-      ui_test_utils::RunMessageLoop();
-      PlatformThread::Sleep(kActionDelayMs);
+    for (size_t j = 0; j < 7; ++j) {
+      ASSERT_TRUE(ui_controls::SendKeyPress(window, base::VKEY_TAB,
+                                            false, true, false));
+
+      if (j < arraysize(kExpElementIDs) - 1) {
+        ui_test_utils::WaitForFocusChange(browser()->GetSelectedTabContents()->
+            render_view_host());
+      } else {
+        // On the last tab key press, the focus returns to the browser.
+        ui_test_utils::WaitForFocusInBrowser(browser());
+      }
 
       // Let's make sure the focus is on the expected element in the page.
       std::string actual;
@@ -473,8 +499,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusTraversal) {
     // At this point the renderer has sent us a message asking to advance the
     // focus (as the end of the focus loop was reached in the renderer).
     // We need to run the message loop to process it.
-    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-    ui_test_utils::RunMessageLoop();
+    MessageLoop::current()->RunAllPending();
   }
 }
 
@@ -517,26 +542,26 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
     CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
 
     // Now let's press tab to move the focus.
-    for (int j = 0; j < 7; ++j) {
+    for (size_t j = 0; j < 7; ++j) {
       // Let's make sure the focus is on the expected element in the page.
       std::string actual = interstitial_page->GetFocusedElement();
       ASSERT_STREQ(kExpElementIDs[j], actual.c_str());
 
-      ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_TAB, false,
-                                              false, false,
-                                              new MessageLoop::QuitTask());
-      ui_test_utils::RunMessageLoop();
-      // Ideally, we wouldn't sleep here and instead would use the event
-      // processed ack notification from the renderer.  I am reluctant to create
-      // a new notification/callback for that purpose just for this test.
-      PlatformThread::Sleep(kActionDelayMs);
+      ASSERT_TRUE(ui_controls::SendKeyPress(window, base::VKEY_TAB,
+                                            false, false, false));
+
+      if (j < arraysize(kExpElementIDs) - 1) {
+        interstitial_page->WaitForFocusChange();
+      } else {
+        // On the last tab key press, the focus returns to the browser.
+        ui_test_utils::WaitForFocusInBrowser(browser());
+      }
     }
 
     // At this point the renderer has sent us a message asking to advance the
     // focus (as the end of the focus loop was reached in the renderer).
     // We need to run the message loop to process it.
-    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-    ui_test_utils::RunMessageLoop();
+    MessageLoop::current()->RunAllPending();
   }
 
   // Now let's try reverse focus traversal.
@@ -545,12 +570,16 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
     CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
 
     // Now let's press shift-tab to move the focus in reverse.
-    for (int j = 0; j < 7; ++j) {
-      ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_TAB, false,
-                                              true, false,
-                                              new MessageLoop::QuitTask());
-      ui_test_utils::RunMessageLoop();
-      PlatformThread::Sleep(kActionDelayMs);
+    for (size_t j = 0; j < 7; ++j) {
+      ASSERT_TRUE(ui_controls::SendKeyPress(window, base::VKEY_TAB,
+                                            false, true, false));
+
+      if (j < arraysize(kExpElementIDs) - 1) {
+        interstitial_page->WaitForFocusChange();
+      } else {
+        // On the last tab key press, the focus returns to the browser.
+        ui_test_utils::WaitForFocusInBrowser(browser());
+      }
 
       // Let's make sure the focus is on the expected element in the page.
       std::string actual = interstitial_page->GetFocusedElement();
@@ -560,8 +589,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
     // At this point the renderer has sent us a message asking to advance the
     // focus (as the end of the focus loop was reached in the renderer).
     // We need to run the message loop to process it.
-    MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-    ui_test_utils::RunMessageLoop();
+    MessageLoop::current()->RunAllPending();
   }
 }
 

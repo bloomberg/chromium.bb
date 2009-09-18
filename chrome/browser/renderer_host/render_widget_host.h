@@ -406,6 +406,8 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   void OnMsgInputEventAck(const IPC::Message& message);
   void OnMsgFocus();
   void OnMsgBlur();
+  virtual void OnMsgFocusedNodeChanged();
+
   void OnMsgSetCursor(const WebCursor& cursor);
   // Using int instead of ViewHostMsg_ImeControl for control's type to avoid
   // having to bring in render_messages.h in a header file.

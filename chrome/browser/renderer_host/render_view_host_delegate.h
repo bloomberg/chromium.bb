@@ -544,6 +544,9 @@ class RenderViewHostDelegate {
 
   // The RenderView has inserted one css file into page.
   virtual void DidInsertCSS() {}
+
+  // A different node in the page got focused.
+  virtual void FocusedNodeChanged() {}
 };
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_DELEGATE_H_

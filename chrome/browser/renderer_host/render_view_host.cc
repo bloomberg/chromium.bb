@@ -1572,6 +1572,10 @@ void RenderViewHost::NotifyRendererResponsive() {
   delegate_->RendererResponsive(this);
 }
 
+void RenderViewHost::OnMsgFocusedNodeChanged() {
+  delegate_->FocusedNodeChanged();
+}
+
 gfx::Rect RenderViewHost::GetRootWindowResizerRect() const {
   return delegate_->GetRootWindowResizerRect();
 }

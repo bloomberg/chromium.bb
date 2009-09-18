@@ -515,6 +515,7 @@ class Browser : public TabStripModelDelegate,
   virtual void ContentsMouseEvent(TabContents* source, bool motion);
   virtual void ContentsZoomChange(bool zoom_in);
   virtual void TabContentsFocused(TabContents* tab_content);
+  virtual bool TakeFocus(bool reverse);
   virtual bool IsApplication() const;
   virtual void ConvertContentsToApplication(TabContents* source);
   virtual bool ShouldDisplayURLField();

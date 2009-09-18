@@ -132,6 +132,7 @@ void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnMsgInputEventAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnMsgFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnMsgBlur)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnMsgFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnMsgSetCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeUpdateStatus, OnMsgImeUpdateStatus)
 #if defined(OS_LINUX)
@@ -776,6 +777,9 @@ void RenderWidgetHost::OnMsgBlur() {
   if (view_) {
     view_->Blur();
   }
+}
+
+void RenderWidgetHost::OnMsgFocusedNodeChanged() {
 }
 
 void RenderWidgetHost::OnMsgSetCursor(const WebCursor& cursor) {

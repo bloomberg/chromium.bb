@@ -898,6 +898,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   IPC_MESSAGE_ROUTED0(ViewHostMsg_Focus)
   IPC_MESSAGE_ROUTED0(ViewHostMsg_Blur)
+  IPC_MESSAGE_ROUTED0(ViewHostMsg_FocusedNodeChanged)
 
   // Returns the window location of the given window.
   // TODO(shess): Provide a mapping from reply_msg->routing_id() to

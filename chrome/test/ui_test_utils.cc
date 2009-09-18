@@ -419,4 +419,15 @@ void CrashTab(TabContents* tab) {
       crash_observer(NotificationType::RENDERER_PROCESS_CLOSED, rph);
 }
 
+void WaitForFocusChange(RenderViewHost* rvh) {
+  SimpleNotificationObserver<RenderViewHost>
+      focus_observer(NotificationType::FOCUS_CHANGED_IN_PAGE, rvh);
+}
+
+void WaitForFocusInBrowser(Browser* browser) {
+  SimpleNotificationObserver<Browser>
+      focus_observer(NotificationType::FOCUS_RETURNED_TO_BROWSER,
+      browser);
+}
+
 }  // namespace ui_test_utils

@@ -2410,6 +2410,13 @@ void TabContents::DidInsertCSS() {
   // This RVHDelegate function is used for extensions and not us.
 }
 
+void TabContents::FocusedNodeChanged() {
+  NotificationService::current()->Notify(
+      NotificationType::FOCUS_CHANGED_IN_PAGE,
+      Source<RenderViewHost>(render_view_host()),
+      NotificationService::NoDetails());
+}
+
 void TabContents::FileSelected(const FilePath& path,
                                int index, void* params) {
   render_view_host()->FileSelected(path);
