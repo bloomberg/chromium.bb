@@ -87,3 +87,17 @@
   ...
   fun:*ThreadTest_SleepInsideInit*TestBody*
 }
+
+############################
+# Benign races in ICU
+{
+  Two writes, same value (ICU gGlobalMutex, gMutexesInUse)
+  ThreadSanitizer:Race
+  fun:umtx_init_4_2
+}
+
+{
+  Two writes, same value (ICU gHeapInUse)
+  ThreadSanitizer:Race
+  fun:uprv_malloc_4_2
+}
