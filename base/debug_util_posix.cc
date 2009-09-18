@@ -121,7 +121,7 @@ void DebugUtil::BreakDebugger() {
 
 StackTrace::StackTrace() {
 #if defined(OS_MACOSX) && MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-  if (!backtrace) {
+  if (backtrace == NULL) {
     count_ = 0;
     return;
   }
@@ -133,7 +133,7 @@ StackTrace::StackTrace() {
 
 void StackTrace::PrintBacktrace() {
 #if defined(OS_MACOSX) && MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-  if (!backtrace_symbols_fd)
+  if (backtrace_symbols_fd == NULL)
     return;
 #endif
   fflush(stderr);
@@ -142,7 +142,7 @@ void StackTrace::PrintBacktrace() {
 
 void StackTrace::OutputToStream(std::ostream* os) {
 #if defined(OS_MACOSX) && MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-  if (!backtrace_symbols)
+  if (backtrace_symbols == NULL)
     return;
 #endif
   scoped_ptr_malloc<char*> trace_symbols(backtrace_symbols(trace_, count_));
