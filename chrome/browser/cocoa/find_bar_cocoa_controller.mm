@@ -16,6 +16,21 @@
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 
+namespace {
+static float kFindBarOpenDuration = 0.2;
+static float kFindBarCloseDuration = 0.15;
+}
+
+@interface FindBarCocoaController (PrivateMethods)
+// Returns the appropriate frame for a hidden find bar.
+- (NSRect)hiddenFindBarFrame;
+
+// Sets the frame of |findBarView_|.  |duration| is ignored if |animate| is NO.
+- (void)setFindBarFrame:(NSRect)endFrame
+                animate:(BOOL)animate
+               duration:(float)duration;
+@end
+
 @implementation FindBarCocoaController
 
 - (id)init {
@@ -25,13 +40,20 @@
   return self;
 }
 
+- (void)dealloc {
+  // All animations should be explicitly stopped by the TabContents before a tab
+  // is closed.
+  DCHECK(!currentAnimation_.get());
+  [super dealloc];
+}
+
 - (void)setFindBarBridge:(FindBarBridge*)findBarBridge {
   DCHECK(!findBarBridge_);  // should only be called once.
   findBarBridge_ = findBarBridge;
 }
 
 - (void)awakeFromNib {
-  [[self view] setHidden:YES];
+  [findBarView_ setFrame:[self hiddenFindBarFrame]];
 }
 
 - (IBAction)close:(id)sender {
@@ -53,17 +75,17 @@
         true, false);
 }
 
-// Positions the find bar view in the correct location based on the current
-// state of the window.  The findbar is always positioned one pixel above the
-// infobar container.  Note that we are using the infobar container location as
-// a proxy for the toolbar location, but we cannot position based on the toolbar
-// because the toolbar is not always present (for example in fullscreen
-// windows).
+// Positions the find bar container view in the correct location based on the
+// current state of the window.  The find bar container is always positioned one
+// pixel above the infobar container.  Note that we are using the infobar
+// container location as a proxy for the toolbar location, but we cannot
+// position based on the toolbar because the toolbar is not always present (for
+// example in fullscreen windows).
 - (void)positionFindBarView:(NSView*)infoBarContainerView {
   static const int kRightEdgeOffset = 25;
-  NSView* findBarView = [self view];
-  int findBarHeight = NSHeight([findBarView frame]);
-  int findBarWidth = NSWidth([findBarView frame]);
+  NSView* containerView = [self view];
+  int containerHeight = NSHeight([containerView frame]);
+  int containerWidth = NSWidth([containerView frame]);
 
   // Start by computing the upper right corner of the infobar container, then
   // move left by a constant offset and up one pixel.  This gives us the upper
@@ -73,9 +95,9 @@
   int max_x = NSMaxX(windowRect) - kRightEdgeOffset;
   int max_y = NSMaxY(windowRect) + 1;
 
-  NSRect findRect = NSMakeRect(max_x - findBarWidth, max_y - findBarHeight,
-                               findBarWidth, findBarHeight);
-  [findBarView setFrame:findRect];
+  NSRect newFrame = NSMakeRect(max_x - containerWidth, max_y - containerHeight,
+                               containerWidth, containerHeight);
+  [containerView setFrame:newFrame];
 }
 
 // NSControl delegate method.
@@ -143,20 +165,31 @@
 }
 
 // Methods from FindBar
-- (void)showFindBar {
-  [[self view] setHidden:NO];
-
-  // Save the currently-focused view.  |[self view]| is in the view
+- (void)showFindBar:(BOOL)animate {
+  // Save the currently-focused view.  |findBarView_| is in the view
   // hierarchy by now.  showFindBar can be called even when the
   // findbar is already open, so do not overwrite an already saved
   // view.
   if (!focusTracker_.get())
     focusTracker_.reset(
-        [[FocusTracker alloc] initWithWindow:[[self view] window]]);
+        [[FocusTracker alloc] initWithWindow:[findBarView_ window]]);
+
+  // Animate the view into place.
+  NSRect frame = [findBarView_ frame];
+  frame.origin = NSMakePoint(0, 0);
+  [self setFindBarFrame:frame animate:animate duration:kFindBarOpenDuration];
 }
 
-- (void)hideFindBar {
-  [[self view] setHidden:YES];
+- (void)hideFindBar:(BOOL)animate {
+  NSRect frame = [self hiddenFindBarFrame];
+  [self setFindBarFrame:frame animate:animate duration:kFindBarCloseDuration];
+}
+
+- (void)stopAnimation {
+  if (currentAnimation_.get()) {
+    [currentAnimation_ stopAnimation];
+    currentAnimation_.reset(nil);
+  }
 }
 
 - (void)setFocusAndSelection {
@@ -166,12 +199,11 @@
   BOOL buttonsEnabled = ([[findText_ stringValue] length] > 0) ? YES : NO;
   [previousButton_ setEnabled:buttonsEnabled];
   [nextButton_ setEnabled:buttonsEnabled];
-
 }
 
 - (void)restoreSavedFocus {
   if (!(focusTracker_.get() &&
-        [focusTracker_ restoreFocusInWindow:[[self view] window]])) {
+        [focusTracker_ restoreFocusInWindow:[findBarView_ window]])) {
     // Fall back to giving focus to the tab contents.
     findBarBridge_->GetFindBarController()->tab_contents()->Focus();
   }
@@ -238,7 +270,56 @@
 }
 
 - (BOOL)isFindBarVisible {
-  return [[self view] isHidden] ? NO : YES;
+  // Find bar is visible if any part of it is on the screen.
+  return NSIntersectsRect([[self view] bounds], [findBarView_ frame]);
+}
+
+// NSAnimation delegate methods.
+- (void)animationDidEnd:(NSAnimation*)animation {
+  // Autorelease the animation (cannot use release because the animation object
+  // is still on the stack.
+  DCHECK(animation == currentAnimation_.get());
+  [currentAnimation_.release() autorelease];
+}
+
+@end
+
+@implementation FindBarCocoaController (PrivateMethods)
+
+- (NSRect)hiddenFindBarFrame {
+  NSRect frame = [findBarView_ frame];
+  NSRect containerBounds = [[self view] bounds];
+  frame.origin = NSMakePoint(NSMinX(containerBounds), NSMaxY(containerBounds));
+  return frame;
+}
+
+- (void)setFindBarFrame:(NSRect)endFrame
+                animate:(BOOL)animate
+               duration:(float)duration {
+  // Save the current frame.
+  NSRect startFrame = [findBarView_ frame];
+
+  // Stop any existing animations.
+  [currentAnimation_ stopAnimation];
+
+  if (!animate) {
+    [findBarView_ setFrame:endFrame];
+    currentAnimation_.reset(nil);
+    return;
+  }
+
+  // Reset the frame to what was saved above.
+  [findBarView_ setFrame:startFrame];
+  NSDictionary* dict = [NSDictionary dictionaryWithObjectsAndKeys:
+      findBarView_, NSViewAnimationTargetKey,
+      [NSValue valueWithRect:endFrame], NSViewAnimationEndFrameKey, nil];
+
+  currentAnimation_.reset(
+      [[NSViewAnimation alloc]
+        initWithViewAnimations:[NSArray arrayWithObjects:dict, nil]]);
+  [currentAnimation_ setDuration:duration];
+  [currentAnimation_ setDelegate:self];
+  [currentAnimation_ startAnimation];
 }
 
 @end

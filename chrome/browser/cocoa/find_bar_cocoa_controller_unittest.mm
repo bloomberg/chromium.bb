@@ -17,11 +17,16 @@
 
 // Expose private variables to make testing easier.
 @interface FindBarCocoaController(Testing)
+- (NSView*)findBarView;
 - (NSTextField*)findText;
 - (NSTextField*)resultsLabel;
 @end
 
 @implementation FindBarCocoaController(Testing)
+- (NSView*)findBarView {
+  return findBarView_;
+}
+
 - (NSTextField*)findText {
   return findText_;
 }
@@ -50,27 +55,26 @@ class FindBarCocoaControllerTest : public PlatformTest {
 };
 
 TEST_F(FindBarCocoaControllerTest, ShowAndHide) {
-  NSView* findBarView = [controller_ view];
+  NSView* findBarView = [controller_ findBarView];
 
-  ASSERT_TRUE([findBarView isHidden]);
+  ASSERT_GT([findBarView frame].origin.y, 0);
   ASSERT_FALSE([controller_ isFindBarVisible]);
 
-  [controller_ showFindBar];
-  EXPECT_FALSE([findBarView isHidden]);
+  [controller_ showFindBar:NO];
+  EXPECT_EQ([findBarView frame].origin.y, 0);
   EXPECT_TRUE([controller_ isFindBarVisible]);
 
-  [controller_ hideFindBar];
-  EXPECT_TRUE([findBarView isHidden]);
+  [controller_ hideFindBar:NO];
+  EXPECT_GT([findBarView frame].origin.y, 0);
   EXPECT_FALSE([controller_ isFindBarVisible]);
 }
 
 TEST_F(FindBarCocoaControllerTest, SetFindText) {
-  NSView* findBarView = [controller_ view];
   NSTextField* findText = [controller_ findText];
 
   // Start by making the find bar visible.
-  [controller_ showFindBar];
-  EXPECT_FALSE([findBarView isHidden]);
+  [controller_ showFindBar:NO];
+  EXPECT_TRUE([controller_ isFindBarVisible]);
 
   // Set the find text.
   const std::string kFindText = "Google";

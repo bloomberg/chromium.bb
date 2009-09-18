@@ -22,6 +22,7 @@ class FindNotificationDetails;
 
 @interface FindBarCocoaController : NSViewController {
  @private
+  IBOutlet NSView* findBarView_;
   IBOutlet NSTextField* findText_;
   IBOutlet NSTextField* resultsLabel_;
   IBOutlet NSButton* nextButton_;
@@ -31,6 +32,13 @@ class FindNotificationDetails;
   FindBarBridge* findBarBridge_;  // weak
 
   scoped_nsobject<FocusTracker> focusTracker_;
+
+  // The currently-running animation.  This is defined to be non-nil if an
+  // animation is running, and is always nil otherwise.  The
+  // FindBarCocoaController should not be deallocated while an animation is
+  // running (stopAnimation is currently called before the last tab in a
+  // window is removed).
+  scoped_nsobject<NSViewAnimation> currentAnimation_;
 };
 
 // Initializes a new FindBarCocoaController.
@@ -49,8 +57,9 @@ class FindNotificationDetails;
 - (void)positionFindBarView:(NSView*)infoBarContainerView;
 
 // Methods called from FindBarBridge.
-- (void)showFindBar;
-- (void)hideFindBar;
+- (void)showFindBar:(BOOL)animate;
+- (void)hideFindBar:(BOOL)animate;
+- (void)stopAnimation;
 - (void)setFocusAndSelection;
 - (void)restoreSavedFocus;
 - (void)setFindText:(const string16&)findText;
