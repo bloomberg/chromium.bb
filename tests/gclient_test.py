@@ -1117,6 +1117,8 @@ class SCMWrapperTestCase(GClientBaseTestCase):
                             relpath=self.relpath)
     file_list = []
     scm.revert(options, self.args, file_list)
+    self.assertEquals(sorted(file_list), sorted([os.path.join(base_path, 'a'),
+                                                 os.path.join(base_path, 'b')]))
 
   def testRevertUnversionedUnexpectedFile(self):
     options = self.Options(verbose=True)
@@ -1137,6 +1139,8 @@ class SCMWrapperTestCase(GClientBaseTestCase):
                             relpath=self.relpath)
     file_list = []
     scm.revert(options, self.args, file_list)
+    # TODO(msb): fix bug (file_list contains dupes) and enable assertion
+    #self.assertEquals(file_list, [os.path.join(base_path, 'a')])
 
   def testStatus(self):
     options = self.Options(verbose=True)
