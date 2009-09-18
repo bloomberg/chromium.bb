@@ -56,14 +56,6 @@ const int kReadTrials = 3;
 // of FFmpeg.
 const int kInitialReadBufferSize = 32768;
 
-// A helper method that accepts only HTTP, HTTPS and FILE protocol.
-// TODO(hclam): Support also FTP protocol.
-bool IsSchemeSupported(const GURL& url) {
-  return url.SchemeIs(kHttpScheme) ||
-         url.SchemeIs(kHttpsScheme) ||
-         url.SchemeIsFile();
-}
-
 }  // namespace
 
 namespace webkit_glue {
@@ -213,13 +205,6 @@ bool BufferedResourceLoader::OnReceivedRedirect(
   // In this case we shouldn't do anything.
   if (!start_callback_.get())
     return true;
-
-  // If we got redirected to an unsupported protocol then stop.
-  if (!IsSchemeSupported(new_url)) {
-    DoneStart(net::ERR_ADDRESS_INVALID);
-    Stop();
-  }
-
   return true;
 }
 
@@ -511,12 +496,6 @@ void BufferedDataSource::Initialize(const std::string& url,
 
   // Saves the url.
   url_ = GURL(url);
-
-  if (!IsSchemeSupported(url_)) {
-    host()->SetError(media::PIPELINE_ERROR_NETWORK);
-    DoneInitialization();
-    return;
-  }
 
   media_format_.SetAsString(media::MediaFormat::kMimeType,
                             media::mime_type::kApplicationOctetStream);
