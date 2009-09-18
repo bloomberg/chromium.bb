@@ -42,7 +42,7 @@ struct wl_client {
 	struct wl_connection *connection;
 	struct wl_event_source *source;
 	struct wl_display *display;
-	struct wl_list object_list;
+	struct wl_list surface_list;
 	struct wl_list link;
 	uint32_t id_count;
 };
@@ -57,11 +57,6 @@ struct wl_display {
 	uint32_t id;
 
 	struct wl_list global_list;
-};
-
-struct wl_object_ref {
-	struct wl_object *object;
-	struct wl_list link;
 };
 
 struct wl_global {
@@ -186,7 +181,7 @@ wl_client_create(struct wl_display *display, int fd)
 	client->connection =
 		wl_connection_create(fd, wl_client_connection_update, client);
 
-	wl_list_init(&client->object_list);
+	wl_list_init(&client->surface_list);
 	wl_list_init(&client->link);
 
 	wl_display_post_range(display, client);
@@ -228,18 +223,17 @@ wl_object_destroy(struct wl_object *object)
 void
 wl_client_destroy(struct wl_client *client)
 {
-	struct wl_object_ref *ref;
+	struct wl_surface *surface;
 
 	printf("disconnect from client %p\n", client);
 
 	wl_list_remove(&client->link);
 
-	while (client->object_list.next != &client->object_list) {
-		ref = container_of(client->object_list.next,
-				   struct wl_object_ref, link);
-		wl_list_remove(&ref->link);
-		wl_object_destroy(ref->object);
-		free(ref);
+	while (client->surface_list.next != &client->surface_list) {
+		surface = container_of(client->surface_list.next,
+				       struct wl_surface, link);
+		wl_list_remove(&surface->link);
+		wl_object_destroy(&surface->base);
 	}
 
 	wl_event_source_remove(client->source);
@@ -254,7 +248,6 @@ wl_client_add_surface(struct wl_client *client,
 		      uint32_t id)
 {
 	struct wl_display *display = client->display;
-	struct wl_object_ref *ref;
 
 	if (client->id_count-- < 64)
 		wl_display_post_range(display, client);
@@ -264,18 +257,20 @@ wl_client_add_surface(struct wl_client *client,
 	surface->base.implementation = (void (**)(void)) implementation;
 	surface->client = client;
 
-	ref = malloc(sizeof *ref);
-	if (ref == NULL) {
-		wl_client_post_event(client, &display->base,
-				     WL_DISPLAY_NO_MEMORY);
-		return -1;
-	}
-
-	ref->object = &surface->base;
 	wl_hash_insert(display->objects, &surface->base);
-	wl_list_insert(client->object_list.prev, &ref->link);
+	wl_list_insert(client->surface_list.prev, &surface->link);
 
 	return 0;
+}
+
+WL_EXPORT void
+wl_client_remove_surface(struct wl_client *client,
+			 struct wl_surface *surface)
+{
+	struct wl_display *display = client->display;
+
+	wl_hash_remove(display->objects, &surface->base);
+	wl_list_remove(&surface->link);
 }
 
 WL_EXPORT void

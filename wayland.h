@@ -91,6 +91,7 @@ struct wl_compositor {
 struct wl_surface {
 	struct wl_object base;
 	struct wl_client *client;
+	struct wl_list link;
 };
 
 struct wl_compositor_interface {
@@ -137,6 +138,10 @@ wl_client_add_surface(struct wl_client *client,
 		      struct wl_surface *surface,
 		      const struct wl_surface_interface *implementation, 
 		      uint32_t id);
+
+void
+wl_client_remove_surface(struct wl_client *client,
+			 struct wl_surface *surface);
 
 void
 wl_client_send_acknowledge(struct wl_client *client,
