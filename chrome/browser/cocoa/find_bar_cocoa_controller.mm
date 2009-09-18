@@ -118,7 +118,9 @@
              command == @selector(scrollPageUp:) ||
              command == @selector(pageDown:) ||
              command == @selector(pageDownAndModifySelection:) ||
-             command == @selector(scrollPageDown:)) {
+             command == @selector(scrollPageDown:) ||
+             command == @selector(moveUp:) ||
+             command == @selector(moveDown:)) {
     TabContents* contents =
         findBarBridge_->GetFindBarController()->tab_contents();
     if (!contents)
