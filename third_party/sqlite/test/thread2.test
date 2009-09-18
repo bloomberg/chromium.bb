@@ -11,16 +11,13 @@
 # This file implements regression tests for SQLite library.  The
 # focus of this script is multithreading behavior
 #
-# $Id: thread2.test,v 1.2 2006/01/18 18:33:42 danielk1977 Exp $
+# $Id: thread2.test,v 1.3 2008/10/07 15:25:49 drh Exp $
 
 
 set testdir [file dirname $argv0]
 source $testdir/tester.tcl
 
-# This file swaps database connections between threads. This
-# is illegal if memory-management is enabled, so skip this file
-# in that case.
-ifcapable memorymanage {
+ifcapable !mutex {
   finish_test
   return
 }
@@ -195,9 +192,6 @@ do_test thread2-3.20 {
   thread_step A
   set STMT [thread_stmt_get A]
   set DB [thread_db_get A]
-  thread_halt A
-} {}
-do_test thread2-3.21 {
   sqlite3_step $STMT
 } SQLITE_ROW
 do_test thread2-3.22 {
@@ -207,11 +201,13 @@ do_test thread2-3.23 {
   # The unlock fails here.  But because we never check the return
   # code from sqlite3OsUnlock (because we cannot do anything about it
   # if it fails) we do not realize that an error has occurred.
+  breakpoint
   sqlite3_finalize $STMT
 } SQLITE_OK
 do_test thread2-3.25 {
-  sqlite3_close $DB
-} SQLITE_OK
+  thread_db_put A $DB
+  thread_halt A
+} {}
 
 do_test thread2-3.30 {
   thread_create A test.db
@@ -222,9 +218,6 @@ do_test thread2-3.30 {
   thread_step A
   thread_finalize A
   set DB [thread_db_get A]
-  thread_halt A
-} {}
-do_test thread2-3.31 {
   set STMT [sqlite3_prepare $DB {INSERT INTO t1 VALUES(99,'error')} -1 TAIL]
   sqlite3_step $STMT
 } SQLITE_ERROR
@@ -232,8 +225,9 @@ do_test thread2-3.32 {
   sqlite3_finalize $STMT
 } SQLITE_MISUSE
 do_test thread2-3.33 {
-  sqlite3_close $DB
-} SQLITE_OK
+  thread_db_put A $DB
+  thread_halt A
+} {}
 
 # VERY important to set the override flag back to its true value.
 #

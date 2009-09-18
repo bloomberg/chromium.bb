@@ -11,12 +11,11 @@
 # This file implements regression tests for SQLite library.  The
 # focus of this script is database locks.
 #
-# $Id: trans.test,v 1.38 2008/04/19 20:34:19 drh Exp $
+# $Id: trans.test,v 1.41 2009/04/28 16:37:59 danielk1977 Exp $
 
 
 set testdir [file dirname $argv0]
 source $testdir/tester.tcl
-
 
 # Create several tables to work with.
 #
@@ -784,6 +783,7 @@ integrity_check trans-7.15
 #
 set fd [open test.tcl w]
 puts $fd {
+  sqlite3_test_control_pending_byte 0x0010000
   sqlite3 db test.db
   db eval {
     PRAGMA default_cache_size=20;
@@ -804,6 +804,7 @@ do_test trans-8.2 {
 integrity_check trans-8.3
 set fd [open test.tcl w]
 puts $fd {
+  sqlite3_test_control_pending_byte 0x0010000
   sqlite3 db test.db
   db eval {
     PRAGMA journal_mode=persist;
@@ -823,6 +824,7 @@ do_test trans-8.5 {
   execsql {SELECT md5sum(type,name,tbl_name,rootpage,sql) FROM sqlite_master}
 } $checksum2
 integrity_check trans-8.6
+
 
 # In the following sequence of tests, compute the MD5 sum of the content
 # of a table, make lots of modifications to that table, then do a rollback.
@@ -869,7 +871,14 @@ proc signature {} {
 # t3 a little larger, and thus takes a little longer, so doing 40 tests
 # is more than 2.0 times slower than doing 20 tests.  Considerably more.
 #
-if {[info exists ISQUICK]} {
+# Also, if temporary tables are stored in memory and the test pcache
+# is in use, only 20 iterations. Otherwise the test pcache runs out
+# of page slots and SQLite reports "out of memory".
+#
+if {[info exists ISQUICK] || (
+  $TEMP_STORE==3 && [catch {set ::permutations_test_prefix} val]==0 && 
+  [regexp {^pcache[[:digit:]]*$} $val]
+) } {
   set limit 20
 } elseif {[info exists SOAKTEST]} {
   set limit 100

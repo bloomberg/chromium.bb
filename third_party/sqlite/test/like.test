@@ -13,7 +13,7 @@
 # in particular the optimizations that occur to help those operators
 # run faster.
 #
-# $Id: like.test,v 1.9 2008/02/23 21:55:40 drh Exp $
+# $Id: like.test,v 1.13 2009/06/07 23:45:11 drh Exp $
 
 set testdir [file dirname $argv0]
 source $testdir/tester.tcl
@@ -69,9 +69,15 @@ do_test like-1.4 {
     SELECT x FROM t1 WHERE x LIKE 'aBc' ORDER BY 1;
   }
 } {ABC abc}
-do_test like-1.5 {
+do_test like-1.5.1 {
   execsql {
     PRAGMA case_sensitive_like=on;
+    SELECT x FROM t1 WHERE x LIKE 'abc' ORDER BY 1;
+  }
+} {abc}
+do_test like-1.5.2 {
+  execsql {
+    PRAGMA case_sensitive_like; -- no argument; does not change setting
     SELECT x FROM t1 WHERE x LIKE 'abc' ORDER BY 1;
   }
 } {abc}
@@ -93,6 +99,12 @@ do_test like-1.8 {
 do_test like-1.9 {
   execsql {
     PRAGMA case_sensitive_like=off;
+    SELECT x FROM t1 WHERE x LIKE 'abc' ORDER BY 1;
+  }
+} {ABC abc}
+do_test like-1.10 {
+  execsql {
+    PRAGMA case_sensitive_like;  -- No argument, does not change setting.
     SELECT x FROM t1 WHERE x LIKE 'abc' ORDER BY 1;
   }
 } {ABC abc}
@@ -120,7 +132,7 @@ do_test like-2.3 {
   proc test_match {a b} {
     return [string match $a $b]
   }
-  db function match test_match
+  db function match -argcount 2 test_match
   execsql {
     SELECT x FROM t1 WHERE x MATCH '*abc*' ORDER BY 1;
   }
@@ -345,7 +357,7 @@ do_test like-5.2 {
 } 12
 do_test like-5.3 {
   execsql {
-    CREATE TABLE t2(x COLLATE NOCASE);
+    CREATE TABLE t2(x TEXT COLLATE NOCASE);
     INSERT INTO t2 SELECT * FROM t1;
     CREATE INDEX i2 ON t2(x COLLATE NOCASE);
   }
@@ -464,7 +476,7 @@ do_test like-5.24 {
 do_test like-5.25 {
   queryplan {
     PRAGMA case_sensitive_like=on;
-    CREATE TABLE t3(x);
+    CREATE TABLE t3(x TEXT);
     CREATE INDEX i3 ON t3(x);
     INSERT INTO t3 VALUES('ZZ-upper-upper');
     INSERT INTO t3 VALUES('zZ-lower-upper');
@@ -507,8 +519,219 @@ do_test like-6.1 {
 
 do_test like-7.1 {
   execsql {
-    SELECT * FROM t1 WHERE rowid GLOB '1*';
+    SELECT rowid, * FROM t1 WHERE rowid GLOB '1*' ORDER BY rowid;
   }
-} {a}
+} {1 a 10 ABC 11 CDE 12 {ABC abc xyz}}
+
+# ticket #3345.
+#
+# Overloading the LIKE function with -1 for the number of arguments
+# will overload both the 2-argument and the 3-argument LIKE.
+#
+do_test like-8.1 {
+  db eval {
+    CREATE TABLE t8(x);
+    INSERT INTO t8 VALUES('abcdef');
+    INSERT INTO t8 VALUES('ghijkl');
+    INSERT INTO t8 VALUES('mnopqr');
+    SELECT 1, x FROM t8 WHERE x LIKE '%h%';
+    SELECT 2, x FROM t8 WHERE x LIKE '%h%' ESCAPE 'x';
+  }
+} {1 ghijkl 2 ghijkl}
+do_test like-8.2 {
+  proc newlike {args} {return 1} ;# Alternative LIKE is always return TRUE
+  db function like newlike       ;# Uses -1 for nArg in sqlite3_create_function
+  db cache flush
+  db eval {
+    SELECT 1, x FROM t8 WHERE x LIKE '%h%';
+    SELECT 2, x FROM t8 WHERE x LIKE '%h%' ESCAPE 'x';
+  }
+} {1 ghijkl 2 ghijkl}
+do_test like-8.3 {
+  db function like -argcount 2 newlike
+  db eval {
+    SELECT 1, x FROM t8 WHERE x LIKE '%h%';
+    SELECT 2, x FROM t8 WHERE x LIKE '%h%' ESCAPE 'x';
+  }
+} {1 abcdef 1 ghijkl 1 mnopqr 2 ghijkl}
+do_test like-8.4 {
+  db function like -argcount 3 newlike
+  db eval {
+    SELECT 1, x FROM t8 WHERE x LIKE '%h%';
+    SELECT 2, x FROM t8 WHERE x LIKE '%h%' ESCAPE 'x';
+  }
+} {1 abcdef 1 ghijkl 1 mnopqr 2 abcdef 2 ghijkl 2 mnopqr}
+
+
+ifcapable like_opt {
+  # Evaluate SQL.  Return the result set followed by the
+  # and the number of full-scan steps.
+  #
+  db close
+  sqlite3 db test.db
+  proc count_steps {sql} {
+    set r [db eval $sql]
+    lappend r scan [db status step] sort [db status sort]
+  }
+  do_test like-9.1 {
+    count_steps {
+       SELECT x FROM t2 WHERE x LIKE 'x%'
+    }
+  } {xyz scan 0 sort 0}
+  do_test like-9.2 {
+    count_steps {
+       SELECT x FROM t2 WHERE x LIKE '_y%'
+    }
+  } {xyz scan 19 sort 0}
+  do_test like-9.3.1 {
+    set res [sqlite3_exec_hex db {
+       SELECT x FROM t2 WHERE x LIKE '%78%25'
+    }]
+  } {0 {x xyz}}
+  ifcapable explain {
+    do_test like-9.3.2 {
+      set res [sqlite3_exec_hex db {
+         EXPLAIN QUERY PLAN SELECT x FROM t2 WHERE x LIKE '%78%25'
+      }]
+      regexp {INDEX i2} $res
+    } {1}
+  }
+  do_test like-9.4.1 {
+    sqlite3_exec_hex db {INSERT INTO t2 VALUES('%ffhello')}
+    set res [sqlite3_exec_hex db {
+       SELECT substr(x,2) AS x FROM t2 WHERE +x LIKE '%ff%25'
+    }]
+  } {0 {x hello}}
+  do_test like-9.4.2 {
+    set res [sqlite3_exec_hex db {
+       SELECT substr(x,2) AS x FROM t2 WHERE x LIKE '%ff%25'
+    }]
+  } {0 {x hello}}
+  ifcapable explain {
+    do_test like-9.4.3 {
+      set res [sqlite3_exec_hex db {
+         EXPLAIN QUERY PLAN SELECT x FROM t2 WHERE x LIKE '%ff%25'
+      }]
+      regexp {INDEX i2} $res
+    } {0}
+  }
+  do_test like-9.5.1 {
+    set res [sqlite3_exec_hex db {
+       SELECT x FROM t2 WHERE x LIKE '%fe%25'
+    }]
+  } {0 {}}
+  ifcapable explain {
+    do_test like-9.5.2 {
+      set res [sqlite3_exec_hex db {
+         EXPLAIN QUERY PLAN SELECT x FROM t2 WHERE x LIKE '%fe%25'
+      }]
+      regexp {INDEX i2} $res
+    } {1}
+  }
+}
+
+# Do an SQL statement.  Append the search count to the end of the result.
+#
+proc count sql {
+  set ::sqlite_search_count 0
+  set ::sqlite_like_count 0
+  return [concat [execsql $sql] scan $::sqlite_search_count \
+           like $::sqlite_like_count]
+}
+
+# The LIKE and GLOB optimizations do not work on columns with
+# affinity other than TEXT.
+# Ticket #3901
+#
+do_test like-10.1 {
+  db close
+  sqlite3 db test.db
+  execsql {
+    CREATE TABLE t10(
+      a INTEGER PRIMARY KEY,
+      b INTEGER COLLATE nocase UNIQUE,
+      c NUMBER COLLATE nocase UNIQUE,
+      d BLOB COLLATE nocase UNIQUE,
+      e COLLATE nocase UNIQUE,
+      f TEXT COLLATE nocase UNIQUE
+    );
+    INSERT INTO t10 VALUES(1,1,1,1,1,1);
+    INSERT INTO t10 VALUES(12,12,12,12,12,12);
+    INSERT INTO t10 VALUES(123,123,123,123,123,123);
+    INSERT INTO t10 VALUES(234,234,234,234,234,234);
+    INSERT INTO t10 VALUES(345,345,345,345,345,345);
+    INSERT INTO t10 VALUES(45,45,45,45,45,45);
+  }
+  count {
+    SELECT a FROM t10 WHERE b LIKE '12%' ORDER BY a;
+  }
+} {12 123 scan 5 like 6}
+do_test like-10.2 {
+  count {
+    SELECT a FROM t10 WHERE c LIKE '12%' ORDER BY a;
+  }
+} {12 123 scan 5 like 6}
+do_test like-10.3 {
+  count {
+    SELECT a FROM t10 WHERE d LIKE '12%' ORDER BY a;
+  }
+} {12 123 scan 5 like 6}
+do_test like-10.4 {
+  count {
+    SELECT a FROM t10 WHERE e LIKE '12%' ORDER BY a;
+  }
+} {12 123 scan 5 like 6}
+do_test like-10.5 {
+  count {
+    SELECT a FROM t10 WHERE f LIKE '12%' ORDER BY a;
+  }
+} {12 123 scan 3 like 0}
+do_test like-10.6 {
+  count {
+    SELECT a FROM t10 WHERE a LIKE '12%' ORDER BY a;
+  }
+} {12 123 scan 5 like 6}
+do_test like-10.10 {
+  execsql {
+    CREATE TABLE t10b(
+      a INTEGER PRIMARY KEY,
+      b INTEGER UNIQUE,
+      c NUMBER UNIQUE,
+      d BLOB UNIQUE,
+      e UNIQUE,
+      f TEXT UNIQUE
+    );
+    INSERT INTO t10b SELECT * FROM t10;
+  }
+  count {
+    SELECT a FROM t10b WHERE b GLOB '12*' ORDER BY a;
+  }
+} {12 123 scan 5 like 6}
+do_test like-10.11 {
+  count {
+    SELECT a FROM t10b WHERE c GLOB '12*' ORDER BY a;
+  }
+} {12 123 scan 5 like 6}
+do_test like-10.12 {
+  count {
+    SELECT a FROM t10b WHERE d GLOB '12*' ORDER BY a;
+  }
+} {12 123 scan 5 like 6}
+do_test like-10.13 {
+  count {
+    SELECT a FROM t10b WHERE e GLOB '12*' ORDER BY a;
+  }
+} {12 123 scan 5 like 6}
+do_test like-10.14 {
+  count {
+    SELECT a FROM t10b WHERE f GLOB '12*' ORDER BY a;
+  }
+} {12 123 scan 3 like 0}
+do_test like-10.15 {
+  count {
+    SELECT a FROM t10b WHERE a GLOB '12*' ORDER BY a;
+  }
+} {12 123 scan 5 like 6}
+
 
 finish_test

@@ -12,7 +12,7 @@
 ** Code for testing all sorts of SQLite interfaces.  This code
 ** implements new SQL functions used by the test scripts.
 **
-** $Id: test_func.c,v 1.10 2008/08/02 03:50:39 drh Exp $
+** $Id: test_func.c,v 1.16 2009/07/22 07:27:57 danielk1977 Exp $
 */
 #include "sqlite3.h"
 #include "tcl.h"
@@ -147,6 +147,27 @@ static void test_destructor_count(
 }
 
 /*
+** The following aggregate function, test_agg_errmsg16(), takes zero 
+** arguments. It returns the text value returned by the sqlite3_errmsg16()
+** API function.
+*/
+void sqlite3BeginBenignMalloc(void);
+void sqlite3EndBenignMalloc(void);
+static void test_agg_errmsg16_step(sqlite3_context *a, int b,sqlite3_value **c){
+}
+static void test_agg_errmsg16_final(sqlite3_context *ctx){
+#ifndef SQLITE_OMIT_UTF16
+  const void *z;
+  sqlite3 * db = sqlite3_context_db_handle(ctx);
+  sqlite3_aggregate_context(ctx, 2048);
+  sqlite3BeginBenignMalloc();
+  z = sqlite3_errmsg16(db);
+  sqlite3EndBenignMalloc();
+  sqlite3_result_text16(ctx, z, -1, SQLITE_TRANSIENT);
+#endif
+}
+
+/*
 ** Routines for testing the sqlite3_get_auxdata() and sqlite3_set_auxdata()
 ** interface.
 **
@@ -205,6 +226,33 @@ static void test_error(
     sqlite3_result_error_code(pCtx, sqlite3_value_int(argv[1]));
   }
 }
+
+/*
+** Implementation of the counter(X) function.  If X is an integer
+** constant, then the first invocation will return X.  The second X+1.
+** and so forth.  Can be used (for example) to provide a sequence number
+** in a result set.
+*/
+static void counterFunc(
+  sqlite3_context *pCtx,   /* Function context */
+  int nArg,                /* Number of function arguments */
+  sqlite3_value **argv     /* Values for all function arguments */
+){
+  int *pCounter = (int*)sqlite3_get_auxdata(pCtx, 0);
+  if( pCounter==0 ){
+    pCounter = sqlite3_malloc( sizeof(*pCounter) );
+    if( pCounter==0 ){
+      sqlite3_result_error_nomem(pCtx);
+      return;
+    }
+    *pCounter = sqlite3_value_int(argv[0]);
+    sqlite3_set_auxdata(pCtx, 0, pCounter, sqlite3_free);
+  }else{
+    ++*pCounter;
+  }
+  sqlite3_result_int(pCtx, *pCounter);
+}
+
 
 /*
 ** This function takes two arguments.  It performance UTF-8/16 type
@@ -283,15 +331,18 @@ static int registerTestFunctions(sqlite3 *db){
     { "test_error",            2, SQLITE_UTF8, test_error},
     { "test_eval",             1, SQLITE_UTF8, test_eval},
     { "test_isolation",        2, SQLITE_UTF8, test_isolation},
+    { "test_counter",          1, SQLITE_UTF8, counterFunc},
   };
   int i;
-  extern int Md5_Register(sqlite3*);
 
   for(i=0; i<sizeof(aFuncs)/sizeof(aFuncs[0]); i++){
     sqlite3_create_function(db, aFuncs[i].zName, aFuncs[i].nArg,
         aFuncs[i].eTextRep, 0, aFuncs[i].xFunc, 0, 0);
   }
-  Md5_Register(db);
+
+  sqlite3_create_function(db, "test_agg_errmsg16", 0, SQLITE_ANY, 0, 0, 
+      test_agg_errmsg16_step, test_agg_errmsg16_final);
+      
   return SQLITE_OK;
 }
 
@@ -308,7 +359,11 @@ static int autoinstall_test_funcs(
   int objc,
   Tcl_Obj *CONST objv[]
 ){
+  extern int Md5_Register(sqlite3*);
   int rc = sqlite3_auto_extension((void*)registerTestFunctions);
+  if( rc==SQLITE_OK ){
+    rc = sqlite3_auto_extension((void*)Md5_Register);
+  }
   Tcl_SetObjResult(interp, Tcl_NewIntObj(rc));
   return TCL_OK;
 }
@@ -340,39 +395,25 @@ static int abuse_create_function(
   if( getDbPointer(interp, Tcl_GetString(objv[1]), &db) ) return TCL_ERROR;
 
   rc = sqlite3_create_function(db, "tx", 1, SQLITE_UTF8, 0, tStep,tStep,tFinal);
-  if( rc!=SQLITE_ERROR ) goto abuse_err;
-  if( sqlite3_errcode(db)!=SQLITE_ERROR ) goto abuse_err;
-  if( strcmp(sqlite3_errmsg(db), "bad parameters")!=0 ) goto abuse_err;
+  if( rc!=SQLITE_MISUSE ) goto abuse_err;
 
   rc = sqlite3_create_function(db, "tx", 1, SQLITE_UTF8, 0, tStep, tStep, 0);
-  if( rc!=SQLITE_ERROR ) goto abuse_err;
-  if( sqlite3_errcode(db)!=SQLITE_ERROR ) goto abuse_err;
-  if( strcmp(sqlite3_errmsg(db), "bad parameters")!=0 ) goto abuse_err;
+  if( rc!=SQLITE_MISUSE ) goto abuse_err;
 
   rc = sqlite3_create_function(db, "tx", 1, SQLITE_UTF8, 0, tStep, 0, tFinal);
-  if( rc!=SQLITE_ERROR ) goto abuse_err;
-  if( sqlite3_errcode(db)!=SQLITE_ERROR ) goto abuse_err;
-  if( strcmp(sqlite3_errmsg(db), "bad parameters")!=0 ) goto abuse_err;
+  if( rc!=SQLITE_MISUSE) goto abuse_err;
 
   rc = sqlite3_create_function(db, "tx", 1, SQLITE_UTF8, 0, 0, 0, tFinal);
-  if( rc!=SQLITE_ERROR ) goto abuse_err;
-  if( sqlite3_errcode(db)!=SQLITE_ERROR ) goto abuse_err;
-  if( strcmp(sqlite3_errmsg(db), "bad parameters")!=0 ) goto abuse_err;
+  if( rc!=SQLITE_MISUSE ) goto abuse_err;
 
   rc = sqlite3_create_function(db, "tx", 1, SQLITE_UTF8, 0, 0, tStep, 0);
-  if( rc!=SQLITE_ERROR ) goto abuse_err;
-  if( sqlite3_errcode(db)!=SQLITE_ERROR ) goto abuse_err;
-  if( strcmp(sqlite3_errmsg(db), "bad parameters")!=0 ) goto abuse_err;
+  if( rc!=SQLITE_MISUSE ) goto abuse_err;
 
   rc = sqlite3_create_function(db, "tx", -2, SQLITE_UTF8, 0, tStep, 0, 0);
-  if( rc!=SQLITE_ERROR ) goto abuse_err;
-  if( sqlite3_errcode(db)!=SQLITE_ERROR ) goto abuse_err;
-  if( strcmp(sqlite3_errmsg(db), "bad parameters")!=0 ) goto abuse_err;
+  if( rc!=SQLITE_MISUSE ) goto abuse_err;
 
   rc = sqlite3_create_function(db, "tx", 128, SQLITE_UTF8, 0, tStep, 0, 0);
-  if( rc!=SQLITE_ERROR ) goto abuse_err;
-  if( sqlite3_errcode(db)!=SQLITE_ERROR ) goto abuse_err;
-  if( strcmp(sqlite3_errmsg(db), "bad parameters")!=0 ) goto abuse_err;
+  if( rc!=SQLITE_MISUSE ) goto abuse_err;
 
   rc = sqlite3_create_function(db, "funcxx"
        "_123456789_123456789_123456789_123456789_123456789"
@@ -381,9 +422,7 @@ static int abuse_create_function(
        "_123456789_123456789_123456789_123456789_123456789"
        "_123456789_123456789_123456789_123456789_123456789",
        1, SQLITE_UTF8, 0, tStep, 0, 0);
-  if( rc!=SQLITE_ERROR ) goto abuse_err;
-  if( sqlite3_errcode(db)!=SQLITE_ERROR ) goto abuse_err;
-  if( strcmp(sqlite3_errmsg(db), "bad parameters")!=0 ) goto abuse_err;
+  if( rc!=SQLITE_MISUSE ) goto abuse_err;
 
   /* This last function registration should actually work.  Generate
   ** a no-op function (that always returns NULL) and which has the
@@ -422,10 +461,13 @@ int Sqlitetest_func_Init(Tcl_Interp *interp){
      { "abuse_create_function",         abuse_create_function  },
   };
   int i;
+  extern int Md5_Register(sqlite3*);
+
   for(i=0; i<sizeof(aObjCmd)/sizeof(aObjCmd[0]); i++){
     Tcl_CreateObjCommand(interp, aObjCmd[i].zName, aObjCmd[i].xProc, 0, 0);
   }
   sqlite3_initialize();
   sqlite3_auto_extension((void*)registerTestFunctions);
+  sqlite3_auto_extension((void*)Md5_Register);
   return TCL_OK;
 }

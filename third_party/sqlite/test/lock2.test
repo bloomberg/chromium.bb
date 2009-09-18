@@ -11,7 +11,7 @@
 # This file implements regression tests for SQLite library.  The
 # focus of this script is database locks between competing processes.
 #
-# $Id: lock2.test,v 1.9 2007/12/13 21:54:11 drh Exp $
+# $Id: lock2.test,v 1.11 2009/05/01 10:55:34 danielk1977 Exp $
 
 
 set testdir [file dirname $argv0]
@@ -41,6 +41,9 @@ proc testfixture {chan cmd} {
     set line [gets $chan]
     if { $line == "OVER" } { 
       return $r
+    }
+    if {[eof $chan]} {
+      return "ERROR: Child process hung up"
     }
     append r $line
   }
@@ -92,7 +95,7 @@ close $f
 #
 do_test lock2-1.1 {
   set ::tf1 [launch_testfixture]
-  testfixture $::tf1 "set sqlite_pending_byte $::sqlite_pending_byte"
+  testfixture $::tf1 "sqlite3_test_control_pending_byte $::sqlite_pending_byte"
   testfixture $::tf1 {
     sqlite3 db test.db -key xyzzy
     db eval {select * from sqlite_master}

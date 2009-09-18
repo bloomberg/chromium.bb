@@ -12,7 +12,7 @@
 # focus of this script is testing the sqlite3_set_authorizer() API
 # and related functionality.
 #
-# $Id: auth.test,v 1.43 2008/07/02 13:13:52 danielk1977 Exp $
+# $Id: auth.test,v 1.46 2009/07/02 18:40:35 danielk1977 Exp $
 #
 
 set testdir [file dirname $argv0]
@@ -418,7 +418,10 @@ do_test auth-1.49 {
 } {0 {}}
 do_test auth-1.50 {
   execsql {SELECT * FROM t2}
-} {11 2 33}
+} {}
+do_test auth-1.50.2 {
+  execsql {INSERT INTO t2 VALUES(11, 2, 33)}
+} {}
 
 do_test auth-1.51 {
   proc auth {code arg1 arg2 arg3 arg4} {
@@ -2138,7 +2141,7 @@ do_test auth-2.9.1 {
     return SQLITE_OK
   }
   catchsql {SELECT ROWID,b,c FROM t2}
-} {1 {illegal return value (999) from the authorization function - should be SQLITE_OK, SQLITE_IGNORE, or SQLITE_DENY}}
+} {1 {authorizer malfunction}}
 do_test auth-2.9.2 {
   db errorcode
 } {1}
@@ -2150,7 +2153,7 @@ do_test auth-2.10 {
     return SQLITE_OK
   }
   catchsql {SELECT ROWID,b,c FROM t2}
-} {1 {illegal return value (1) from the authorization function - should be SQLITE_OK, SQLITE_IGNORE, or SQLITE_DENY}}
+} {1 {authorizer malfunction}}
 do_test auth-2.11.1 {
   proc auth {code arg1 arg2 arg3 arg4} {
     if {$code=="SQLITE_READ" && $arg2=="a"} {
@@ -2270,13 +2273,13 @@ do_test auth-4.5 {
   set authargs
 } [list \
   SQLITE_DELETE v1     {} main {} \
-  SQLITE_INSERT v1chng {} main r3 \
-  SQLITE_READ   v1     x  main r3 \
   SQLITE_SELECT {}     {} {}   v1 \
   SQLITE_READ   t2     a  main v1 \
   SQLITE_READ   t2     b  main v1 \
   SQLITE_SELECT {}     {} {}   {} \
   SQLITE_READ   v1     x  main v1 \
+  SQLITE_INSERT v1chng {} main r3 \
+  SQLITE_READ   v1     x  main r3 \
 ]
 
 } ;# ifcapable view && trigger
@@ -2306,6 +2309,11 @@ ifcapable compound&&subquery {
       }
     }
   }
+  ifcapable stat2 {
+    set stat2 "sqlite_stat2 "
+  } else {
+    set stat2 ""
+  }
   do_test auth-5.2 {
     execsql {
       SELECT name FROM (
@@ -2313,7 +2321,35 @@ ifcapable compound&&subquery {
       WHERE type='table'
       ORDER BY name
     }
-  } {sqlite_stat1 t1 t2 t3 t4}
+  } "sqlite_stat1 ${stat2}t1 t2 t3 t4"
+}
+
+# Ticket #3944
+#
+ifcapable trigger {
+  do_test auth-5.3.1 {
+    execsql {
+      CREATE TABLE t5 ( x );
+      CREATE TRIGGER t5_tr1 AFTER INSERT ON t5 BEGIN 
+        UPDATE t5 SET x = 1 WHERE NEW.x = 0;
+      END;
+    }
+  } {}
+  set ::authargs [list]
+  proc auth {args} {
+    eval lappend ::authargs $args
+    return SQLITE_OK
+  }
+  do_test auth-5.3.2 {
+    execsql { INSERT INTO t5 (x) values(0) }
+    set ::authargs
+  } [list SQLITE_INSERT t5 {} main {}    \
+          SQLITE_UPDATE t5 x main t5_tr1 \
+          SQLITE_READ t5 x main t5_tr1   \
+    ]
+  do_test auth-5.3.2 {
+    execsql { SELECT * FROM t5 }
+  } {1}
 }
 
 

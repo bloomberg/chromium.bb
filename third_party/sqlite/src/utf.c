@@ -12,7 +12,7 @@
 ** This file contains routines used to translate between UTF-8, 
 ** UTF-16, UTF-16BE, and UTF-16LE.
 **
-** $Id: utf.c,v 1.63 2008/07/29 11:25:14 danielk1977 Exp $
+** $Id: utf.c,v 1.73 2009/04/01 18:40:32 drh Exp $
 **
 ** Notes on UTF-8:
 **
@@ -39,17 +39,19 @@
 #include <assert.h>
 #include "vdbeInt.h"
 
+#ifndef SQLITE_AMALGAMATION
 /*
 ** The following constant value is used by the SQLITE_BIGENDIAN and
 ** SQLITE_LITTLEENDIAN macros.
 */
 const int sqlite3one = 1;
+#endif /* SQLITE_AMALGAMATION */
 
 /*
 ** This lookup table is used to help decode the first byte of
 ** a multi-byte UTF8 character.
 */
-static const unsigned char sqlite3UtfTrans1[] = {
+static const unsigned char sqlite3Utf8Trans1[] = {
   0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
   0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
   0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
@@ -63,67 +65,65 @@ static const unsigned char sqlite3UtfTrans1[] = {
 
 #define WRITE_UTF8(zOut, c) {                          \
   if( c<0x00080 ){                                     \
-    *zOut++ = (c&0xFF);                                \
+    *zOut++ = (u8)(c&0xFF);                            \
   }                                                    \
   else if( c<0x00800 ){                                \
-    *zOut++ = 0xC0 + ((c>>6)&0x1F);                    \
-    *zOut++ = 0x80 + (c & 0x3F);                       \
+    *zOut++ = 0xC0 + (u8)((c>>6)&0x1F);                \
+    *zOut++ = 0x80 + (u8)(c & 0x3F);                   \
   }                                                    \
   else if( c<0x10000 ){                                \
-    *zOut++ = 0xE0 + ((c>>12)&0x0F);                   \
-    *zOut++ = 0x80 + ((c>>6) & 0x3F);                  \
-    *zOut++ = 0x80 + (c & 0x3F);                       \
+    *zOut++ = 0xE0 + (u8)((c>>12)&0x0F);               \
+    *zOut++ = 0x80 + (u8)((c>>6) & 0x3F);              \
+    *zOut++ = 0x80 + (u8)(c & 0x3F);                   \
   }else{                                               \
-    *zOut++ = 0xF0 + ((c>>18) & 0x07);                 \
-    *zOut++ = 0x80 + ((c>>12) & 0x3F);                 \
-    *zOut++ = 0x80 + ((c>>6) & 0x3F);                  \
-    *zOut++ = 0x80 + (c & 0x3F);                       \
+    *zOut++ = 0xF0 + (u8)((c>>18) & 0x07);             \
+    *zOut++ = 0x80 + (u8)((c>>12) & 0x3F);             \
+    *zOut++ = 0x80 + (u8)((c>>6) & 0x3F);              \
+    *zOut++ = 0x80 + (u8)(c & 0x3F);                   \
   }                                                    \
 }
 
-#define WRITE_UTF16LE(zOut, c) {                                \
-  if( c<=0xFFFF ){                                              \
-    *zOut++ = (c&0x00FF);                                       \
-    *zOut++ = ((c>>8)&0x00FF);                                  \
-  }else{                                                        \
-    *zOut++ = (((c>>10)&0x003F) + (((c-0x10000)>>10)&0x00C0));  \
-    *zOut++ = (0x00D8 + (((c-0x10000)>>18)&0x03));              \
-    *zOut++ = (c&0x00FF);                                       \
-    *zOut++ = (0x00DC + ((c>>8)&0x03));                         \
-  }                                                             \
+#define WRITE_UTF16LE(zOut, c) {                                    \
+  if( c<=0xFFFF ){                                                  \
+    *zOut++ = (u8)(c&0x00FF);                                       \
+    *zOut++ = (u8)((c>>8)&0x00FF);                                  \
+  }else{                                                            \
+    *zOut++ = (u8)(((c>>10)&0x003F) + (((c-0x10000)>>10)&0x00C0));  \
+    *zOut++ = (u8)(0x00D8 + (((c-0x10000)>>18)&0x03));              \
+    *zOut++ = (u8)(c&0x00FF);                                       \
+    *zOut++ = (u8)(0x00DC + ((c>>8)&0x03));                         \
+  }                                                                 \
 }
 
-#define WRITE_UTF16BE(zOut, c) {                                \
-  if( c<=0xFFFF ){                                              \
-    *zOut++ = ((c>>8)&0x00FF);                                  \
-    *zOut++ = (c&0x00FF);                                       \
-  }else{                                                        \
-    *zOut++ = (0x00D8 + (((c-0x10000)>>18)&0x03));              \
-    *zOut++ = (((c>>10)&0x003F) + (((c-0x10000)>>10)&0x00C0));  \
-    *zOut++ = (0x00DC + ((c>>8)&0x03));                         \
-    *zOut++ = (c&0x00FF);                                       \
-  }                                                             \
+#define WRITE_UTF16BE(zOut, c) {                                    \
+  if( c<=0xFFFF ){                                                  \
+    *zOut++ = (u8)((c>>8)&0x00FF);                                  \
+    *zOut++ = (u8)(c&0x00FF);                                       \
+  }else{                                                            \
+    *zOut++ = (u8)(0x00D8 + (((c-0x10000)>>18)&0x03));              \
+    *zOut++ = (u8)(((c>>10)&0x003F) + (((c-0x10000)>>10)&0x00C0));  \
+    *zOut++ = (u8)(0x00DC + ((c>>8)&0x03));                         \
+    *zOut++ = (u8)(c&0x00FF);                                       \
+  }                                                                 \
 }
 
 #define READ_UTF16LE(zIn, c){                                         \
   c = (*zIn++);                                                       \
   c += ((*zIn++)<<8);                                                 \
-  if( c>=0xD800 && c<0xE000 ){                                       \
+  if( c>=0xD800 && c<0xE000 ){                                        \
     int c2 = (*zIn++);                                                \
     c2 += ((*zIn++)<<8);                                              \
     c = (c2&0x03FF) + ((c&0x003F)<<10) + (((c&0x03C0)+0x0040)<<10);   \
-    if( (c & 0xFFFF0000)==0 ) c = 0xFFFD;                             \
   }                                                                   \
 }
 
 #define READ_UTF16BE(zIn, c){                                         \
   c = ((*zIn++)<<8);                                                  \
   c += (*zIn++);                                                      \
-  if( c>=0xD800 && c<0xE000 ){                                       \
+  if( c>=0xD800 && c<0xE000 ){                                        \
     int c2 = ((*zIn++)<<8);                                           \
     c2 += (*zIn++);                                                   \
     c = (c2&0x03FF) + ((c&0x003F)<<10) + (((c&0x03C0)+0x0040)<<10);   \
-    if( (c & 0xFFFF0000)==0 ) c = 0xFFFD;                             \
   }                                                                   \
 }
 
@@ -157,7 +157,7 @@ static const unsigned char sqlite3UtfTrans1[] = {
 #define READ_UTF8(zIn, zTerm, c)                           \
   c = *(zIn++);                                            \
   if( c>=0xc0 ){                                           \
-    c = sqlite3UtfTrans1[c-0xc0];                          \
+    c = sqlite3Utf8Trans1[c-0xc0];                         \
     while( zIn!=zTerm && (*zIn & 0xc0)==0x80 ){            \
       c = (c<<6) + (0x3f & *(zIn++));                      \
     }                                                      \
@@ -166,13 +166,25 @@ static const unsigned char sqlite3UtfTrans1[] = {
         || (c&0xFFFFFFFE)==0xFFFE ){  c = 0xFFFD; }        \
   }
 int sqlite3Utf8Read(
-  const unsigned char *z,         /* First byte of UTF-8 character */
-  const unsigned char *zTerm,     /* Pretend this byte is 0x00 */
+  const unsigned char *zIn,       /* First byte of UTF-8 character */
   const unsigned char **pzNext    /* Write first byte past UTF-8 char here */
 ){
   int c;
-  READ_UTF8(z, zTerm, c);
-  *pzNext = z;
+
+  /* Same as READ_UTF8() above but without the zTerm parameter.
+  ** For this routine, we assume the UTF8 string is always zero-terminated.
+  */
+  c = *(zIn++);
+  if( c>=0xc0 ){
+    c = sqlite3Utf8Trans1[c-0xc0];
+    while( (*zIn & 0xc0)==0x80 ){
+      c = (c<<6) + (0x3f & *(zIn++));
+    }
+    if( c<0x80
+        || (c&0xFFFFF800)==0xD800
+        || (c&0xFFFFFFFE)==0xFFFE ){  c = 0xFFFD; }
+  }
+  *pzNext = zIn;
   return c;
 }
 
@@ -226,7 +238,7 @@ int sqlite3VdbeMemTranslate(Mem *pMem, u8 desiredEnc){
       return SQLITE_NOMEM;
     }
     zIn = (u8*)pMem->z;
-    zTerm = &zIn[pMem->n];
+    zTerm = &zIn[pMem->n&~1];
     while( zIn<zTerm ){
       temp = *zIn;
       *zIn = *(zIn+1);
@@ -244,6 +256,7 @@ int sqlite3VdbeMemTranslate(Mem *pMem, u8 desiredEnc){
     ** A single byte is required for the output string
     ** nul-terminator.
     */
+    pMem->n &= ~1;
     len = pMem->n * 2 + 1;
   }else{
     /* When converting from UTF-8 to UTF-16 the maximum growth is caused
@@ -285,7 +298,7 @@ int sqlite3VdbeMemTranslate(Mem *pMem, u8 desiredEnc){
         WRITE_UTF16BE(z, c);
       }
     }
-    pMem->n = z - zOut;
+    pMem->n = (int)(z - zOut);
     *z++ = 0;
   }else{
     assert( desiredEnc==SQLITE_UTF8 );
@@ -302,7 +315,7 @@ int sqlite3VdbeMemTranslate(Mem *pMem, u8 desiredEnc){
         WRITE_UTF8(z, c);
       }
     }
-    pMem->n = z - zOut;
+    pMem->n = (int)(z - zOut);
   }
   *z = 0;
   assert( (pMem->n+(desiredEnc==SQLITE_UTF8?1:2))<=len );
@@ -338,7 +351,8 @@ int sqlite3VdbeMemHandleBom(Mem *pMem){
   int rc = SQLITE_OK;
   u8 bom = 0;
 
-  if( pMem->n<0 || pMem->n>1 ){
+  assert( pMem->n>=0 );
+  if( pMem->n>1 ){
     u8 b1 = *(u8 *)pMem->z;
     u8 b2 = *(((u8 *)pMem->z) + 1);
     if( b1==0xFE && b2==0xFF ){
@@ -404,17 +418,16 @@ int sqlite3Utf8CharLen(const char *zIn, int nByte){
 int sqlite3Utf8To8(unsigned char *zIn){
   unsigned char *zOut = zIn;
   unsigned char *zStart = zIn;
-  unsigned char *zTerm;
   u32 c;
 
   while( zIn[0] ){
-    c = sqlite3Utf8Read(zIn, zTerm, (const u8**)&zIn);
+    c = sqlite3Utf8Read(zIn, (const u8**)&zIn);
     if( c!=0xfffd ){
       WRITE_UTF8(zOut, c);
     }
   }
   *zOut = 0;
-  return zOut - zStart;
+  return (int)(zOut - zStart);
 }
 #endif
 
@@ -442,15 +455,39 @@ char *sqlite3Utf16to8(sqlite3 *db, const void *z, int nByte){
 }
 
 /*
-** pZ is a UTF-16 encoded unicode string. If nChar is less than zero,
-** return the number of bytes up to (but not including), the first pair
-** of consecutive 0x00 bytes in pZ. If nChar is not less than zero,
-** then return the number of bytes in the first nChar unicode characters
-** in pZ (or up until the first pair of 0x00 bytes, whichever comes first).
+** Convert a UTF-8 string to the UTF-16 encoding specified by parameter
+** enc. A pointer to the new string is returned, and the value of *pnOut
+** is set to the length of the returned string in bytes. The call should
+** arrange to call sqlite3DbFree() on the returned pointer when it is
+** no longer required.
+** 
+** If a malloc failure occurs, NULL is returned and the db.mallocFailed
+** flag set.
+*/
+#ifdef SQLITE_ENABLE_STAT2
+char *sqlite3Utf8to16(sqlite3 *db, u8 enc, char *z, int n, int *pnOut){
+  Mem m;
+  memset(&m, 0, sizeof(m));
+  m.db = db;
+  sqlite3VdbeMemSetStr(&m, z, n, SQLITE_UTF8, SQLITE_STATIC);
+  if( sqlite3VdbeMemTranslate(&m, enc) ){
+    assert( db->mallocFailed );
+    return 0;
+  }
+  assert( m.z==m.zMalloc );
+  *pnOut = m.n;
+  return m.z;
+}
+#endif
+
+/*
+** pZ is a UTF-16 encoded unicode string at least nChar characters long.
+** Return the number of bytes in the first nChar unicode characters
+** in pZ.  nChar must be non-negative.
 */
 int sqlite3Utf16ByteLen(const void *zIn, int nChar){
-  unsigned int c = 1;
-  char const *z = zIn;
+  int c;
+  unsigned char const *z = zIn;
   int n = 0;
   if( SQLITE_UTF16NATIVE==SQLITE_UTF16BE ){
     /* Using an "if (SQLITE_UTF16NATIVE==SQLITE_UTF16BE)" construct here
@@ -462,17 +499,17 @@ int sqlite3Utf16ByteLen(const void *zIn, int nChar){
     ** which branch will be followed. It is therefore assumed that no runtime
     ** penalty is paid for this "if" statement.
     */
-    while( c && ((nChar<0) || n<nChar) ){
+    while( n<nChar ){
       READ_UTF16BE(z, c);
       n++;
     }
   }else{
-    while( c && ((nChar<0) || n<nChar) ){
+    while( n<nChar ){
       READ_UTF16LE(z, c);
       n++;
     }
   }
-  return (z-(char const *)zIn)-((c==0)?2:0);
+  return (int)(z-(unsigned char const *)zIn);
 }
 
 #if defined(SQLITE_TEST)
@@ -481,22 +518,21 @@ int sqlite3Utf16ByteLen(const void *zIn, int nChar){
 ** It checks that the primitives for serializing and deserializing
 ** characters in each encoding are inverses of each other.
 */
-void sqlite3UtfSelfTest(){
+void sqlite3UtfSelfTest(void){
   unsigned int i, t;
   unsigned char zBuf[20];
   unsigned char *z;
-  unsigned char *zTerm;
   int n;
   unsigned int c;
 
   for(i=0; i<0x00110000; i++){
     z = zBuf;
     WRITE_UTF8(z, i);
-    n = z-zBuf;
+    n = (int)(z-zBuf);
+    assert( n>0 && n<=4 );
     z[0] = 0;
-    zTerm = z;
     z = zBuf;
-    c = sqlite3Utf8Read(z, zTerm, (const u8**)&z);
+    c = sqlite3Utf8Read(z, (const u8**)&z);
     t = i;
     if( i>=0xD800 && i<=0xDFFF ) t = 0xFFFD;
     if( (i&0xFFFFFFFE)==0xFFFE ) t = 0xFFFD;
@@ -507,7 +543,8 @@ void sqlite3UtfSelfTest(){
     if( i>=0xD800 && i<0xE000 ) continue;
     z = zBuf;
     WRITE_UTF16LE(z, i);
-    n = z-zBuf;
+    n = (int)(z-zBuf);
+    assert( n>0 && n<=4 );
     z[0] = 0;
     z = zBuf;
     READ_UTF16LE(z, c);
@@ -518,7 +555,8 @@ void sqlite3UtfSelfTest(){
     if( i>=0xD800 && i<0xE000 ) continue;
     z = zBuf;
     WRITE_UTF16BE(z, i);
-    n = z-zBuf;
+    n = (int)(z-zBuf);
+    assert( n>0 && n<=4 );
     z[0] = 0;
     z = zBuf;
     READ_UTF16BE(z, c);

@@ -76,6 +76,8 @@ OPTS += -DSQLITE_MEMDEBUG=1
 #  -DSQLITE_OMIT_VACUUM=1 \
 #  -DSQLITE_TRANSACTION_DEFAULT_IMMEDIATE=1 \
 
+SHELL_ICU = $(TOP)/src/shell_icu_linux.c -licuuc
+
 # TODO(shess) I can't see why I need this setting.
 OPTS += -DOS_UNIX=1
 

@@ -14,7 +14,7 @@
 ** systems that do not need this facility may omit it by recompiling
 ** the library with -DSQLITE_OMIT_AUTHORIZATION=1
 **
-** $Id: auth.c,v 1.29 2007/09/18 15:55:07 drh Exp $
+** $Id: auth.c,v 1.32 2009/07/02 18:40:35 danielk1977 Exp $
 */
 #include "sqliteInt.h"
 
@@ -86,10 +86,8 @@ int sqlite3_set_authorizer(
 ** Write an error message into pParse->zErrMsg that explains that the
 ** user-supplied authorization function returned an illegal value.
 */
-static void sqliteAuthBadReturnCode(Parse *pParse, int rc){
-  sqlite3ErrorMsg(pParse, "illegal return value (%d) from the "
-    "authorization function - should be SQLITE_OK, SQLITE_IGNORE, "
-    "or SQLITE_DENY", rc);
+static void sqliteAuthBadReturnCode(Parse *pParse){
+  sqlite3ErrorMsg(pParse, "authorizer malfunction");
   pParse->rc = SQLITE_ERROR;
 }
 
@@ -114,33 +112,35 @@ void sqlite3AuthRead(
   const char *zCol;     /* Name of the column of the table */
   int iSrc;             /* Index in pTabList->a[] of table being read */
   const char *zDBase;   /* Name of database being accessed */
-  TriggerStack *pStack; /* The stack of current triggers */
   int iDb;              /* The index of the database the expression refers to */
+  int iCol;             /* Index of column in table */
 
   if( db->xAuth==0 ) return;
-  if( pExpr->op!=TK_COLUMN ) return;
   iDb = sqlite3SchemaToIndex(pParse->db, pSchema);
   if( iDb<0 ){
     /* An attempt to read a column out of a subquery or other
     ** temporary table. */
     return;
   }
-  for(iSrc=0; pTabList && iSrc<pTabList->nSrc; iSrc++){
-    if( pExpr->iTable==pTabList->a[iSrc].iCursor ) break;
+
+  assert( pExpr->op==TK_COLUMN || pExpr->op==TK_TRIGGER );
+  if( pExpr->op==TK_TRIGGER ){
+    pTab = pParse->pTriggerTab;
+  }else{
+    assert( pTabList );
+    for(iSrc=0; ALWAYS(iSrc<pTabList->nSrc); iSrc++){
+      if( pExpr->iTable==pTabList->a[iSrc].iCursor ){
+        pTab = pTabList->a[iSrc].pTab;
+        break;
+      }
+    }
   }
-  if( iSrc>=0 && pTabList && iSrc<pTabList->nSrc ){
-    pTab = pTabList->a[iSrc].pTab;
-  }else if( (pStack = pParse->trigStack)!=0 ){
-    /* This must be an attempt to read the NEW or OLD pseudo-tables
-    ** of a trigger.
-    */
-    assert( pExpr->iTable==pStack->newIdx || pExpr->iTable==pStack->oldIdx );
-    pTab = pStack->pTab;
-  }
-  if( pTab==0 ) return;
-  if( pExpr->iColumn>=0 ){
-    assert( pExpr->iColumn<pTab->nCol );
-    zCol = pTab->aCol[pExpr->iColumn].zName;
+  iCol = pExpr->iColumn;
+  if( NEVER(pTab==0) ) return;
+
+  if( iCol>=0 ){
+    assert( iCol<pTab->nCol );
+    zCol = pTab->aCol[iCol].zName;
   }else if( pTab->iPKey>=0 ){
     assert( pTab->iPKey<pTab->nCol );
     zCol = pTab->aCol[pTab->iPKey].zName;
@@ -162,7 +162,7 @@ void sqlite3AuthRead(
     }
     pParse->rc = SQLITE_AUTH;
   }else if( rc!=SQLITE_OK ){
-    sqliteAuthBadReturnCode(pParse, rc);
+    sqliteAuthBadReturnCode(pParse);
   }
 }
 
@@ -198,7 +198,7 @@ int sqlite3AuthCheck(
     pParse->rc = SQLITE_AUTH;
   }else if( rc!=SQLITE_OK && rc!=SQLITE_IGNORE ){
     rc = SQLITE_DENY;
-    sqliteAuthBadReturnCode(pParse, rc);
+    sqliteAuthBadReturnCode(pParse);
   }
   return rc;
 }
@@ -213,11 +213,10 @@ void sqlite3AuthContextPush(
   AuthContext *pContext, 
   const char *zContext
 ){
+  assert( pParse );
   pContext->pParse = pParse;
-  if( pParse ){
-    pContext->zAuthContext = pParse->zAuthContext;
-    pParse->zAuthContext = zContext;
-  }
+  pContext->zAuthContext = pParse->zAuthContext;
+  pParse->zAuthContext = zContext;
 }
 
 /*

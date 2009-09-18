@@ -14,7 +14,7 @@
 ** Most of the code in this file may be omitted by defining the
 ** SQLITE_OMIT_VACUUM macro.
 **
-** $Id: vacuum.c,v 1.81 2008/07/08 19:34:07 drh Exp $
+** $Id: vacuum.c,v 1.91 2009/07/02 07:47:33 danielk1977 Exp $
 */
 #include "sqliteInt.h"
 #include "vdbeInt.h"
@@ -25,13 +25,15 @@
 */
 static int execSql(sqlite3 *db, const char *zSql){
   sqlite3_stmt *pStmt;
+  VVA_ONLY( int rc; )
   if( !zSql ){
     return SQLITE_NOMEM;
   }
   if( SQLITE_OK!=sqlite3_prepare(db, zSql, -1, &pStmt, 0) ){
     return sqlite3_errcode(db);
   }
-  while( SQLITE_ROW==sqlite3_step(pStmt) ){}
+  VVA_ONLY( rc = ) sqlite3_step(pStmt);
+  assert( rc!=SQLITE_ROW );
   return sqlite3_finalize(pStmt);
 }
 
@@ -87,7 +89,13 @@ int sqlite3RunVacuum(char **pzErrMsg, sqlite3 *db){
   int saved_nChange;      /* Saved value of db->nChange */
   int saved_nTotalChange; /* Saved value of db->nTotalChange */
   Db *pDb = 0;            /* Database to detach at end of vacuum */
+  int isMemDb;            /* True if vacuuming a :memory: database */
   int nRes;
+
+  if( !db->autoCommit ){
+    sqlite3SetString(pzErrMsg, db, "cannot VACUUM from within a transaction");
+    return SQLITE_ERROR;
+  }
 
   /* Save the current value of the write-schema flag before setting it. */
   saved_flags = db->flags;
@@ -95,12 +103,8 @@ int sqlite3RunVacuum(char **pzErrMsg, sqlite3 *db){
   saved_nTotalChange = db->nTotalChange;
   db->flags |= SQLITE_WriteSchema | SQLITE_IgnoreChecks;
 
-  if( !db->autoCommit ){
-    sqlite3SetString(pzErrMsg, db, "cannot VACUUM from within a transaction");
-    rc = SQLITE_ERROR;
-    goto end_of_vacuum;
-  }
   pMain = db->aDb[0].pBt;
+  isMemDb = sqlite3PagerIsMemdb(sqlite3BtreePager(pMain));
 
   /* Attach the temporary database as 'vacuum_db'. The synchronous pragma
   ** can be set to 'off' for this file, as it is not recovered if a crash
@@ -136,9 +140,9 @@ int sqlite3RunVacuum(char **pzErrMsg, sqlite3 *db){
   }
 #endif
 
-  if( sqlite3BtreeSetPageSize(pTemp, sqlite3BtreeGetPageSize(pMain), nRes)
-   || sqlite3BtreeSetPageSize(pTemp, db->nextPagesize, nRes)
-   || db->mallocFailed 
+  if( sqlite3BtreeSetPageSize(pTemp, sqlite3BtreeGetPageSize(pMain), nRes, 0)
+   || (!isMemDb && sqlite3BtreeSetPageSize(pTemp, db->nextPagesize, nRes, 0))
+   || NEVER(db->mallocFailed)
   ){
     rc = SQLITE_NOMEM;
     goto end_of_vacuum;
@@ -226,7 +230,7 @@ int sqlite3RunVacuum(char **pzErrMsg, sqlite3 *db){
   ** opened for writing. This way, the SQL transaction used to create the
   ** temporary database never needs to be committed.
   */
-  if( rc==SQLITE_OK ){
+  {
     u32 meta;
     int i;
 
@@ -237,33 +241,35 @@ int sqlite3RunVacuum(char **pzErrMsg, sqlite3 *db){
     ** connections to the same database will know to reread the schema.
     */
     static const unsigned char aCopy[] = {
-       1, 1,    /* Add one to the old schema cookie */
-       3, 0,    /* Preserve the default page cache size */
-       5, 0,    /* Preserve the default text encoding */
-       6, 0,    /* Preserve the user version */
+       BTREE_SCHEMA_VERSION,     1,  /* Add one to the old schema cookie */
+       BTREE_DEFAULT_CACHE_SIZE, 0,  /* Preserve the default page cache size */
+       BTREE_TEXT_ENCODING,      0,  /* Preserve the text encoding */
+       BTREE_USER_VERSION,       0,  /* Preserve the user version */
     };
 
     assert( 1==sqlite3BtreeIsInTrans(pTemp) );
     assert( 1==sqlite3BtreeIsInTrans(pMain) );
 
     /* Copy Btree meta values */
-    for(i=0; i<sizeof(aCopy)/sizeof(aCopy[0]); i+=2){
-      rc = sqlite3BtreeGetMeta(pMain, aCopy[i], &meta);
-      if( rc!=SQLITE_OK ) goto end_of_vacuum;
+    for(i=0; i<ArraySize(aCopy); i+=2){
+      /* GetMeta() and UpdateMeta() cannot fail in this context because
+      ** we already have page 1 loaded into cache and marked dirty. */
+      sqlite3BtreeGetMeta(pMain, aCopy[i], &meta);
       rc = sqlite3BtreeUpdateMeta(pTemp, aCopy[i], meta+aCopy[i+1]);
-      if( rc!=SQLITE_OK ) goto end_of_vacuum;
+      if( NEVER(rc!=SQLITE_OK) ) goto end_of_vacuum;
     }
 
     rc = sqlite3BtreeCopyFile(pMain, pTemp);
     if( rc!=SQLITE_OK ) goto end_of_vacuum;
     rc = sqlite3BtreeCommit(pTemp);
     if( rc!=SQLITE_OK ) goto end_of_vacuum;
-    rc = sqlite3BtreeCommit(pMain);
+#ifndef SQLITE_OMIT_AUTOVACUUM
+    sqlite3BtreeSetAutoVacuum(pMain, sqlite3BtreeGetAutoVacuum(pTemp));
+#endif
   }
 
-  if( rc==SQLITE_OK ){
-    rc = sqlite3BtreeSetPageSize(pMain, sqlite3BtreeGetPageSize(pTemp), nRes);
-  }
+  assert( rc==SQLITE_OK );
+  rc = sqlite3BtreeSetPageSize(pMain, sqlite3BtreeGetPageSize(pTemp), nRes,1);
 
 end_of_vacuum:
   /* Restore the original value of db->flags */

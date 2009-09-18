@@ -12,7 +12,7 @@
 ** This file contains code used to dynamically load extensions into
 ** the SQLite library.
 **
-** $Id: loadext.c,v 1.53 2008/08/02 03:50:39 drh Exp $
+** $Id: loadext.c,v 1.60 2009/06/03 01:24:54 drh Exp $
 */
 
 #ifndef SQLITE_CORE
@@ -21,7 +21,6 @@
 #include "sqlite3ext.h"
 #include "sqliteInt.h"
 #include <string.h>
-#include <ctype.h>
 
 #ifndef SQLITE_OMIT_LOAD_EXTENSION
 
@@ -124,7 +123,11 @@
 */
 static const sqlite3_api_routines sqlite3Apis = {
   sqlite3_aggregate_context,
+#ifndef SQLITE_OMIT_DEPRECATED
   sqlite3_aggregate_count,
+#else
+  0,
+#endif
   sqlite3_bind_blob,
   sqlite3_bind_double,
   sqlite3_bind_int,
@@ -179,7 +182,11 @@ static const sqlite3_api_routines sqlite3Apis = {
   sqlite3_errmsg,
   sqlite3_errmsg16,
   sqlite3_exec,
+#ifndef SQLITE_OMIT_DEPRECATED
   sqlite3_expired,
+#else
+  0,
+#endif
   sqlite3_finalize,
   sqlite3_free,
   sqlite3_free_table,
@@ -219,10 +226,18 @@ static const sqlite3_api_routines sqlite3Apis = {
   sqlite3_snprintf,
   sqlite3_step,
   sqlite3_table_column_metadata,
+#ifndef SQLITE_OMIT_DEPRECATED
   sqlite3_thread_cleanup,
+#else
+  0,
+#endif
   sqlite3_total_changes,
   sqlite3_trace,
+#ifndef SQLITE_OMIT_DEPRECATED
   sqlite3_transfer_bindings,
+#else
+  0,
+#endif
   sqlite3_update_hook,
   sqlite3_user_data,
   sqlite3_value_blob,
@@ -273,7 +288,7 @@ static const sqlite3_api_routines sqlite3Apis = {
   sqlite3_file_control,
   sqlite3_memory_highwater,
   sqlite3_memory_used,
-#ifdef SQLITE_MUTEX_NOOP
+#ifdef SQLITE_MUTEX_OMIT
   0, 
   0, 
   0,
@@ -339,6 +354,9 @@ static int sqlite3LoadExtension(
   int (*xInit)(sqlite3*,char**,const sqlite3_api_routines*);
   char *zErrmsg = 0;
   void **aHandle;
+  const int nMsg = 300;
+
+  if( pzErrMsg ) *pzErrMsg = 0;
 
   /* Ticket #1863.  To avoid a creating security problems for older
   ** applications that relink against newer versions of SQLite, the
@@ -360,12 +378,14 @@ static int sqlite3LoadExtension(
   handle = sqlite3OsDlOpen(pVfs, zFile);
   if( handle==0 ){
     if( pzErrMsg ){
-      char zErr[256];
-      zErr[sizeof(zErr)-1] = '\0';
-      sqlite3_snprintf(sizeof(zErr)-1, zErr, 
-          "unable to open shared library [%s]", zFile);
-      sqlite3OsDlError(pVfs, sizeof(zErr)-1, zErr);
-      *pzErrMsg = sqlite3DbStrDup(0, zErr);
+      zErrmsg = sqlite3StackAllocZero(db, nMsg);
+      if( zErrmsg ){
+        sqlite3_snprintf(nMsg, zErrmsg, 
+            "unable to open shared library [%s]", zFile);
+        sqlite3OsDlError(pVfs, nMsg-1, zErrmsg);
+        *pzErrMsg = sqlite3DbStrDup(0, zErrmsg);
+        sqlite3StackFree(db, zErrmsg);
+      }
     }
     return SQLITE_ERROR;
   }
@@ -373,12 +393,14 @@ static int sqlite3LoadExtension(
                    sqlite3OsDlSym(pVfs, handle, zProc);
   if( xInit==0 ){
     if( pzErrMsg ){
-      char zErr[256];
-      zErr[sizeof(zErr)-1] = '\0';
-      sqlite3_snprintf(sizeof(zErr)-1, zErr,
-          "no entry point [%s] in shared library [%s]", zProc,zFile);
-      sqlite3OsDlError(pVfs, sizeof(zErr)-1, zErr);
-      *pzErrMsg = sqlite3DbStrDup(0, zErr);
+      zErrmsg = sqlite3StackAllocZero(db, nMsg);
+      if( zErrmsg ){
+        sqlite3_snprintf(nMsg, zErrmsg,
+            "no entry point [%s] in shared library [%s]", zProc,zFile);
+        sqlite3OsDlError(pVfs, nMsg-1, zErrmsg);
+        *pzErrMsg = sqlite3DbStrDup(0, zErrmsg);
+        sqlite3StackFree(db, zErrmsg);
+      }
       sqlite3OsDlClose(pVfs, handle);
     }
     return SQLITE_ERROR;
@@ -414,6 +436,7 @@ int sqlite3_load_extension(
   int rc;
   sqlite3_mutex_enter(db->mutex);
   rc = sqlite3LoadExtension(db, zFile, zProc, pzErrMsg);
+  rc = sqlite3ApiExit(db, rc);
   sqlite3_mutex_leave(db->mutex);
   return rc;
 }
@@ -466,17 +489,33 @@ static const sqlite3_api_routines sqlite3Apis = { 0 };
 ** This list is shared across threads.  The SQLITE_MUTEX_STATIC_MASTER
 ** mutex must be held while accessing this list.
 */
-static struct {
-  int nExt;        /* Number of entries in aExt[] */          
-  void **aExt;     /* Pointers to the extension init functions */
-} autoext = { 0, 0 };
+typedef struct sqlite3AutoExtList sqlite3AutoExtList;
+static SQLITE_WSD struct sqlite3AutoExtList {
+  int nExt;              /* Number of entries in aExt[] */          
+  void (**aExt)(void);   /* Pointers to the extension init functions */
+} sqlite3Autoext = { 0, 0 };
+
+/* The "wsdAutoext" macro will resolve to the autoextension
+** state vector.  If writable static data is unsupported on the target,
+** we have to locate the state vector at run-time.  In the more common
+** case where writable static data is supported, wsdStat can refer directly
+** to the "sqlite3Autoext" state vector declared above.
+*/
+#ifdef SQLITE_OMIT_WSD
+# define wsdAutoextInit \
+  sqlite3AutoExtList *x = &GLOBAL(sqlite3AutoExtList,sqlite3Autoext)
+# define wsdAutoext x[0]
+#else
+# define wsdAutoextInit
+# define wsdAutoext sqlite3Autoext
+#endif
 
 
 /*
 ** Register a statically linked extension that is automatically
 ** loaded by every new database connection.
 */
-int sqlite3_auto_extension(void *xInit){
+int sqlite3_auto_extension(void (*xInit)(void)){
   int rc = SQLITE_OK;
 #ifndef SQLITE_OMIT_AUTOINIT
   rc = sqlite3_initialize();
@@ -486,23 +525,24 @@ int sqlite3_auto_extension(void *xInit){
 #endif
   {
     int i;
-#ifndef SQLITE_MUTEX_NOOP
+#if SQLITE_THREADSAFE
     sqlite3_mutex *mutex = sqlite3MutexAlloc(SQLITE_MUTEX_STATIC_MASTER);
 #endif
+    wsdAutoextInit;
     sqlite3_mutex_enter(mutex);
-    for(i=0; i<autoext.nExt; i++){
-      if( autoext.aExt[i]==xInit ) break;
+    for(i=0; i<wsdAutoext.nExt; i++){
+      if( wsdAutoext.aExt[i]==xInit ) break;
     }
-    if( i==autoext.nExt ){
-      int nByte = (autoext.nExt+1)*sizeof(autoext.aExt[0]);
-      void **aNew;
-      aNew = sqlite3_realloc(autoext.aExt, nByte);
+    if( i==wsdAutoext.nExt ){
+      int nByte = (wsdAutoext.nExt+1)*sizeof(wsdAutoext.aExt[0]);
+      void (**aNew)(void);
+      aNew = sqlite3_realloc(wsdAutoext.aExt, nByte);
       if( aNew==0 ){
         rc = SQLITE_NOMEM;
       }else{
-        autoext.aExt = aNew;
-        autoext.aExt[autoext.nExt] = xInit;
-        autoext.nExt++;
+        wsdAutoext.aExt = aNew;
+        wsdAutoext.aExt[wsdAutoext.nExt] = xInit;
+        wsdAutoext.nExt++;
       }
     }
     sqlite3_mutex_leave(mutex);
@@ -519,51 +559,53 @@ void sqlite3_reset_auto_extension(void){
   if( sqlite3_initialize()==SQLITE_OK )
 #endif
   {
-#ifndef SQLITE_MUTEX_NOOP
+#if SQLITE_THREADSAFE
     sqlite3_mutex *mutex = sqlite3MutexAlloc(SQLITE_MUTEX_STATIC_MASTER);
 #endif
+    wsdAutoextInit;
     sqlite3_mutex_enter(mutex);
-    sqlite3_free(autoext.aExt);
-    autoext.aExt = 0;
-    autoext.nExt = 0;
+    sqlite3_free(wsdAutoext.aExt);
+    wsdAutoext.aExt = 0;
+    wsdAutoext.nExt = 0;
     sqlite3_mutex_leave(mutex);
   }
 }
 
 /*
 ** Load all automatic extensions.
+**
+** If anything goes wrong, set an error in the database connection.
 */
-int sqlite3AutoLoadExtensions(sqlite3 *db){
+void sqlite3AutoLoadExtensions(sqlite3 *db){
   int i;
   int go = 1;
-  int rc = SQLITE_OK;
   int (*xInit)(sqlite3*,char**,const sqlite3_api_routines*);
 
-  if( autoext.nExt==0 ){
+  wsdAutoextInit;
+  if( wsdAutoext.nExt==0 ){
     /* Common case: early out without every having to acquire a mutex */
-    return SQLITE_OK;
+    return;
   }
   for(i=0; go; i++){
-    char *zErrmsg = 0;
-#ifndef SQLITE_MUTEX_NOOP
+    char *zErrmsg;
+#if SQLITE_THREADSAFE
     sqlite3_mutex *mutex = sqlite3MutexAlloc(SQLITE_MUTEX_STATIC_MASTER);
 #endif
     sqlite3_mutex_enter(mutex);
-    if( i>=autoext.nExt ){
+    if( i>=wsdAutoext.nExt ){
       xInit = 0;
       go = 0;
     }else{
       xInit = (int(*)(sqlite3*,char**,const sqlite3_api_routines*))
-              autoext.aExt[i];
+              wsdAutoext.aExt[i];
     }
     sqlite3_mutex_leave(mutex);
+    zErrmsg = 0;
     if( xInit && xInit(db, &zErrmsg, &sqlite3Apis) ){
       sqlite3Error(db, SQLITE_ERROR,
             "automatic extension loading failed: %s", zErrmsg);
       go = 0;
-      rc = SQLITE_ERROR;
-      sqlite3_free(zErrmsg);
     }
+    sqlite3_free(zErrmsg);
   }
-  return rc;
 }

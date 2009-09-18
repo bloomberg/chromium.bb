@@ -12,7 +12,7 @@
 # Test that it is possible to have two open blob handles on a single
 # blob object.
 #
-# $Id: incrblob2.test,v 1.8 2008/06/28 15:33:26 danielk1977 Exp $
+# $Id: incrblob2.test,v 1.11 2009/06/29 06:00:37 danielk1977 Exp $
 #
 
 set testdir [file dirname $argv0]
@@ -265,7 +265,7 @@ ifcapable shared_cache {
   do_test incrblob2-5.3 {
     set blob [db incrblob t1 data 1]
     catchsql { INSERT INTO t1 VALUES(3, 'klmno') } db2
-  } {1 {database is locked}}
+  } {1 {database table is locked}}
 
   do_test incrblob2-5.4 {
     close $blob
@@ -274,14 +274,23 @@ ifcapable shared_cache {
   } {0 {}}
 
   do_test incrblob2-5.5 {
-    set blob [db incrblob -readonly t1 data 1]
-    catchsql { INSERT INTO t1 VALUES(5, 'uvwxy') } db2
-  } {1 {database table is locked}}
+    set rc [catch { db incrblob -readonly t1 data 1 } msg]
+    list $rc $msg
+  } {1 {database table is locked: t1}}
 
   do_test incrblob2-5.6 {
-    close $blob
+    execsql { PRAGMA read_uncommitted=1 }
+    set blob [db incrblob -readonly t1 data 4]
+    read $blob
+  } {pqrst}
+
+  do_test incrblob2-5.7 {
     catchsql { INSERT INTO t1 VALUES(3, 'klmno') } db2
   } {0 {}}
+
+  do_test incrblob2-5.8 {
+    close $blob
+  } {}
 
   db2 close
   db close
@@ -363,7 +372,7 @@ do_test incrblob2-8.1 {
   execsql BEGIN
   set h [db incrblob t2 B 1]
   set rc [catch {
-    db eval {SELECT * FROM t2} { execsql "DROP TABLE t2" }
+    db eval {SELECT rowid FROM t2} { execsql "DROP TABLE t2" }
   } msg] 
   list $rc $msg
 } {1 {database table is locked}}

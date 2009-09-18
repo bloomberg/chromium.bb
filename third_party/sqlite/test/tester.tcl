@@ -11,7 +11,7 @@
 # This file implements some common TCL routines used for regression
 # testing the SQLite library
 #
-# $Id: tester.tcl,v 1.134 2008/08/05 17:53:24 drh Exp $
+# $Id: tester.tcl,v 1.143 2009/04/09 01:23:49 drh Exp $
 
 #
 # What for user input before continuing.  This gives an opportunity
@@ -27,7 +27,7 @@ for {set i 0} {$i<[llength $argv]} {incr i} {
 }
 
 set tcl_precision 15
-set sqlite_pending_byte 0x0010000
+sqlite3_test_control_pending_byte 0x0010000
 
 # 
 # Check the command-line arguments for a default soft-heap-limit.
@@ -132,19 +132,24 @@ if {![info exists nTest]} {
   sqlite3_shutdown 
   install_malloc_faultsim 1 
   sqlite3_initialize
+  autoinstall_test_functions
   if {[info exists tester_do_binarylog]} {
     sqlite3_instvfs binarylog -default binarylog ostrace.bin
     sqlite3_instvfs marker binarylog "$argv0 $argv"
   }
 }
-catch {db close}
-file delete -force test.db
-file delete -force test.db-journal
-sqlite3 db ./test.db
-set ::DB [sqlite3_connection_pointer db]
-if {[info exists ::SETUP_SQL]} {
-  db eval $::SETUP_SQL
+
+proc reset_db {} {
+  catch {db close}
+  file delete -force test.db
+  file delete -force test.db-journal
+  sqlite3 db ./test.db
+  set ::DB [sqlite3_connection_pointer db]
+  if {[info exists ::SETUP_SQL]} {
+    db eval $::SETUP_SQL
+  }
 }
+reset_db
 
 # Abort early if this script has been run before.
 #
@@ -286,6 +291,7 @@ proc finalize_testing {} {
   if {$nErr>0} {
     puts "Failures on these tests: $::failList"
   }
+  run_thread_tests 1
   if {[llength $omitList]>0} {
     puts "Omitted test cases:"
     set prec {}
@@ -481,11 +487,9 @@ proc forcedelete {filename} {
 
 # Do an integrity check of the entire database
 #
-proc integrity_check {name} {
+proc integrity_check {name {db db}} {
   ifcapable integrityck {
-    do_test $name {
-      execsql {PRAGMA integrity_check}
-    } {ok}
+    do_test $name [list execsql {PRAGMA integrity_check} $db] {ok}
   }
 }
 
@@ -574,7 +578,7 @@ proc crashsql {args} {
   set f [open crash.tcl w]
   puts $f "sqlite3_crash_enable 1"
   puts $f "sqlite3_crashparams $blocksize $dc $crashdelay $cfile"
-  puts $f "set sqlite_pending_byte $::sqlite_pending_byte"
+  puts $f "sqlite3_test_control_pending_byte $::sqlite_pending_byte"
   puts $f "sqlite3 db test.db -vfs crash"
 
   # This block sets the cache size of the main database to 10
@@ -641,7 +645,7 @@ proc do_ioerr_test {testname args} {
   set ::go 1
   #reset_prng_state
   save_prng_state
-  for {set n $::ioerropts(-start)} {$::go && $n<200} {incr n} {
+  for {set n $::ioerropts(-start)} {$::go} {incr n} {
     set ::TN $n
     incr ::ioerropts(-count) -1
     if {$::ioerropts(-count)<0} break
@@ -659,6 +663,7 @@ proc do_ioerr_test {testname args} {
     do_test $testname.$n.1 {
       set ::sqlite_io_error_pending 0
       catch {db close}
+      catch {db2 close}
       catch {file delete -force test.db}
       catch {file delete -force test.db-journal}
       catch {file delete -force test2.db}
@@ -866,6 +871,24 @@ proc allcksum {{db db}} {
   return [md5 $txt]
 }
 
+# Generate a checksum based on the contents of a single database with
+# a database connection.  The name of the database is $dbname.  
+# Examples of $dbname are "temp" or "main".
+#
+proc dbcksum {db dbname} {
+  if {$dbname=="temp"} {
+    set master sqlite_temp_master
+  } else {
+    set master $dbname.sqlite_master
+  }
+  set alltab [$db eval "SELECT name FROM $master WHERE type='table'"]
+  set txt [$db eval "SELECT * FROM $master"]\n
+  foreach tab $alltab {
+    append txt [$db eval "SELECT * FROM $dbname.$tab"]\n
+  }
+  return [md5 $txt]
+}
+
 proc memdebug_log_sql {{filename mallocs.sql}} {
 
   set data [sqlite3_memdebug_log dump]
@@ -874,16 +897,16 @@ proc memdebug_log_sql {{filename mallocs.sql}} {
 
   set database temp
 
-  set tbl "CREATE TABLE ${database}.malloc(nCall, nByte"
-  for {set ii 1} {$ii <= $nFrame} {incr ii} {
-    append tbl ", f${ii}"
-  }
-  append tbl ");\n"
+  set tbl "CREATE TABLE ${database}.malloc(zTest, nCall, nByte, lStack);"
 
   set sql ""
   foreach e $data {
-    append sql "INSERT INTO ${database}.malloc VALUES([join $e ,]);\n"
-    foreach f [lrange $e 2 end] {
+    set nCall [lindex $e 0]
+    set nByte [lindex $e 1]
+    set lStack [lrange $e 2 end]
+    append sql "INSERT INTO ${database}.malloc VALUES"
+    append sql "('test', $nCall, $nByte, '$lStack');\n"
+    foreach f $lStack {
       set frames($f) 1
     }
   }
@@ -938,3 +961,5 @@ proc copy_file {from to} {
 # If the library is compiled with the SQLITE_DEFAULT_AUTOVACUUM macro set
 # to non-zero, then set the global variable $AUTOVACUUM to 1.
 set AUTOVACUUM $sqlite_options(default_autovacuum)
+
+source $testdir/thread_common.tcl

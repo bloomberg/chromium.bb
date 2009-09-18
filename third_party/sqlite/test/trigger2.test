@@ -54,6 +54,11 @@ ifcapable {!trigger} {
   return
 }
 
+# The tests in this file were written before SQLite supported recursive
+# trigger invocation, and some tests depend on that to pass. So disable
+# recursive triggers for this file.
+catchsql { pragma recursive_triggers = off } 
+
 # 1.
 ifcapable subquery {
   set ii 0
@@ -734,6 +739,18 @@ do_test trigger2-8.6 {
     SELECT * FROM v1log;
   }
 } {3 103 5 205 4 304 9 109 11 211 10 310}
+
+# At one point the following was causing a segfault.
+do_test trigger2-9.1 {
+  execsql {
+    CREATE TABLE t3(a TEXT, b TEXT);
+    CREATE VIEW v3 AS SELECT t3.a FROM t3;
+    CREATE TRIGGER trig1 INSTEAD OF DELETE ON v3 BEGIN
+      SELECT 1;
+    END;
+    DELETE FROM v3 WHERE a = 1;
+  }
+} {}
 
 } ;# ifcapable view
 

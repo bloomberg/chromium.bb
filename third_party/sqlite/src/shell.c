@@ -12,8 +12,13 @@
 ** This file contains code to implement the "sqlite" command line
 ** utility for accessing SQLite databases.
 **
-** $Id: shell.c,v 1.184 2008/07/11 17:23:25 drh Exp $
+** $Id: shell.c,v 1.210 2009/05/31 17:16:10 drh Exp $
 */
+#if defined(_WIN32) || defined(WIN32)
+/* This needs to come before any includes for MSVC compiler */
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -24,7 +29,9 @@
 
 #if !defined(_WIN32) && !defined(WIN32) && !defined(__OS2__)
 # include <signal.h>
-# include <pwd.h>
+# if !defined(__RTP__) && !defined(_WRS_KERNEL)
+#  include <pwd.h>
+# endif
 # include <unistd.h>
 # include <sys/types.h>
 #endif
@@ -46,6 +53,8 @@
 
 #if defined(_WIN32) || defined(WIN32)
 # include <io.h>
+#define isatty(h) _isatty(h)
+#define access(f,m) _access((f),(m))
 #else
 /* Make sure isatty() has a prototype.
 */
@@ -60,7 +69,7 @@ extern int isatty();
 #define isatty(x) 1
 #endif
 
-#if !defined(_WIN32) && !defined(WIN32) && !defined(__OS2__)
+#if !defined(_WIN32) && !defined(WIN32) && !defined(__OS2__) && !defined(__RTP__) && !defined(_WRS_KERNEL)
 #include <sys/time.h>
 #include <sys/resource.h>
 
@@ -106,6 +115,872 @@ static void endTimer(void){
 #define HAS_TIMER 0
 #endif
 
+/*
+** Used to prevent warnings about unused parameters
+*/
+#define UNUSED_PARAMETER(x) (void)(x)
+
+
+/**************************************************************************
+***************************************************************************
+** Begin genfkey logic.
+*/
+#if !defined(SQLITE_OMIT_VIRTUALTABLE) && !defined SQLITE_OMIT_SUBQUERY
+
+#define GENFKEY_ERROR         1
+#define GENFKEY_DROPTRIGGER   2
+#define GENFKEY_CREATETRIGGER 3
+static int genfkey_create_triggers(sqlite3 *, const char *, void *,
+  int (*)(void *, int, const char *)
+);
+
+struct GenfkeyCb {
+  void *pCtx;
+  int eType;
+  int (*xData)(void *, int, const char *);
+};
+typedef struct GenfkeyCb GenfkeyCb;
+
+/* The code in this file defines a sqlite3 virtual-table module that
+** provides a read-only view of the current database schema. There is one
+** row in the schema table for each column in the database schema.
+*/
+#define SCHEMA \
+"CREATE TABLE x("                                                            \
+  "database,"          /* Name of database (i.e. main, temp etc.) */         \
+  "tablename,"         /* Name of table */                                   \
+  "cid,"               /* Column number (from left-to-right, 0 upward) */    \
+  "name,"              /* Column name */                                     \
+  "type,"              /* Specified type (i.e. VARCHAR(32)) */               \
+  "not_null,"          /* Boolean. True if NOT NULL was specified */         \
+  "dflt_value,"        /* Default value for this column */                   \
+  "pk"                 /* True if this column is part of the primary key */  \
+")"
+
+#define SCHEMA2 \
+"CREATE TABLE x("                                                            \
+  "database,"          /* Name of database (i.e. main, temp etc.) */         \
+  "from_tbl,"          /* Name of table */                                   \
+  "fkid,"                                                                    \
+  "seq,"                                                                     \
+  "to_tbl,"                                                                  \
+  "from_col,"                                                                \
+  "to_col,"                                                                  \
+  "on_update,"                                                               \
+  "on_delete,"                                                               \
+  "match"                                                                    \
+")"
+
+#define SCHEMA3 \
+"CREATE TABLE x("                                                            \
+  "database,"          /* Name of database (i.e. main, temp etc.) */         \
+  "tablename,"         /* Name of table */                                   \
+  "seq,"                                                                     \
+  "name,"                                                                    \
+  "isunique"                                                                 \
+")"
+
+#define SCHEMA4 \
+"CREATE TABLE x("                                                            \
+  "database,"          /* Name of database (i.e. main, temp etc.) */         \
+  "indexname,"         /* Name of table */                                   \
+  "seqno,"                                                                   \
+  "cid,"                                                                     \
+  "name"                                                                     \
+")"
+
+#define SCHEMA5 \
+"CREATE TABLE x("                                                            \
+  "database,"          /* Name of database (i.e. main, temp etc.) */         \
+  "triggername,"       /* Name of trigger */                                 \
+  "dummy"              /* Unused */                                          \
+")"
+
+typedef struct SchemaTable SchemaTable;
+struct SchemaTable {
+  const char *zName;
+  const char *zObject;
+  const char *zPragma;
+  const char *zSchema;
+} aSchemaTable[] = {
+  { "table_info",       "table", "PRAGMA %Q.table_info(%Q)",       SCHEMA },
+  { "foreign_key_list", "table", "PRAGMA %Q.foreign_key_list(%Q)", SCHEMA2 },
+  { "index_list",       "table", "PRAGMA %Q.index_list(%Q)",       SCHEMA3 },
+  { "index_info",       "index", "PRAGMA %Q.index_info(%Q)",       SCHEMA4 },
+  { "trigger_list",     "trigger", "SELECT 1",                     SCHEMA5 },
+  { 0, 0, 0, 0 }
+};
+
+typedef struct schema_vtab schema_vtab;
+typedef struct schema_cursor schema_cursor;
+
+/* A schema table object */
+struct schema_vtab {
+  sqlite3_vtab base;
+  sqlite3 *db;
+  SchemaTable *pType;
+};
+
+/* A schema table cursor object */
+struct schema_cursor {
+  sqlite3_vtab_cursor base;
+  sqlite3_stmt *pDbList;
+  sqlite3_stmt *pTableList;
+  sqlite3_stmt *pColumnList;
+  int rowid;
+};
+
+/*
+** Table destructor for the schema module.
+*/
+static int schemaDestroy(sqlite3_vtab *pVtab){
+  sqlite3_free(pVtab);
+  return 0;
+}
+
+/*
+** Table constructor for the schema module.
+*/
+static int schemaCreate(
+  sqlite3 *db,
+  void *pAux,
+  int argc, const char *const*argv,
+  sqlite3_vtab **ppVtab,
+  char **pzErr
+){
+  int rc = SQLITE_NOMEM;
+  schema_vtab *pVtab;
+  SchemaTable *pType = &aSchemaTable[0];
+
+  UNUSED_PARAMETER(pzErr);
+  if( argc>3 ){
+    int i;
+    pType = 0;
+    for(i=0; aSchemaTable[i].zName; i++){ 
+      if( 0==strcmp(argv[3], aSchemaTable[i].zName) ){
+        pType = &aSchemaTable[i];
+      }
+    }
+    if( !pType ){
+      return SQLITE_ERROR;
+    }
+  }
+
+  pVtab = sqlite3_malloc(sizeof(schema_vtab));
+  if( pVtab ){
+    memset(pVtab, 0, sizeof(schema_vtab));
+    pVtab->db = (sqlite3 *)pAux;
+    pVtab->pType = pType;
+    rc = sqlite3_declare_vtab(db, pType->zSchema);
+  }
+  *ppVtab = (sqlite3_vtab *)pVtab;
+  return rc;
+}
+
+/*
+** Open a new cursor on the schema table.
+*/
+static int schemaOpen(sqlite3_vtab *pVTab, sqlite3_vtab_cursor **ppCursor){
+  int rc = SQLITE_NOMEM;
+  schema_cursor *pCur;
+  UNUSED_PARAMETER(pVTab);
+  pCur = sqlite3_malloc(sizeof(schema_cursor));
+  if( pCur ){
+    memset(pCur, 0, sizeof(schema_cursor));
+    *ppCursor = (sqlite3_vtab_cursor *)pCur;
+    rc = SQLITE_OK;
+  }
+  return rc;
+}
+
+/*
+** Close a schema table cursor.
+*/
+static int schemaClose(sqlite3_vtab_cursor *cur){
+  schema_cursor *pCur = (schema_cursor *)cur;
+  sqlite3_finalize(pCur->pDbList);
+  sqlite3_finalize(pCur->pTableList);
+  sqlite3_finalize(pCur->pColumnList);
+  sqlite3_free(pCur);
+  return SQLITE_OK;
+}
+
+static void columnToResult(sqlite3_context *ctx, sqlite3_stmt *pStmt, int iCol){
+  switch( sqlite3_column_type(pStmt, iCol) ){
+    case SQLITE_NULL:
+      sqlite3_result_null(ctx);
+      break;
+    case SQLITE_INTEGER:
+      sqlite3_result_int64(ctx, sqlite3_column_int64(pStmt, iCol));
+      break;
+    case SQLITE_FLOAT:
+      sqlite3_result_double(ctx, sqlite3_column_double(pStmt, iCol));
+      break;
+    case SQLITE_TEXT: {
+      const char *z = (const char *)sqlite3_column_text(pStmt, iCol);
+      sqlite3_result_text(ctx, z, -1, SQLITE_TRANSIENT);
+      break;
+    }
+  }
+}
+
+/*
+** Retrieve a column of data.
+*/
+static int schemaColumn(sqlite3_vtab_cursor *cur, sqlite3_context *ctx, int i){
+  schema_cursor *pCur = (schema_cursor *)cur;
+  switch( i ){
+    case 0:
+      columnToResult(ctx, pCur->pDbList, 1);
+      break;
+    case 1:
+      columnToResult(ctx, pCur->pTableList, 0);
+      break;
+    default:
+      columnToResult(ctx, pCur->pColumnList, i-2);
+      break;
+  }
+  return SQLITE_OK;
+}
+
+/*
+** Retrieve the current rowid.
+*/
+static int schemaRowid(sqlite3_vtab_cursor *cur, sqlite_int64 *pRowid){
+  schema_cursor *pCur = (schema_cursor *)cur;
+  *pRowid = pCur->rowid;
+  return SQLITE_OK;
+}
+
+static int finalize(sqlite3_stmt **ppStmt){
+  int rc = sqlite3_finalize(*ppStmt);
+  *ppStmt = 0;
+  return rc;
+}
+
+static int schemaEof(sqlite3_vtab_cursor *cur){
+  schema_cursor *pCur = (schema_cursor *)cur;
+  return (pCur->pDbList ? 0 : 1);
+}
+
+/*
+** Advance the cursor to the next row.
+*/
+static int schemaNext(sqlite3_vtab_cursor *cur){
+  int rc = SQLITE_OK;
+  schema_cursor *pCur = (schema_cursor *)cur;
+  schema_vtab *pVtab = (schema_vtab *)(cur->pVtab);
+  char *zSql = 0;
+
+  while( !pCur->pColumnList || SQLITE_ROW!=sqlite3_step(pCur->pColumnList) ){
+    if( SQLITE_OK!=(rc = finalize(&pCur->pColumnList)) ) goto next_exit;
+
+    while( !pCur->pTableList || SQLITE_ROW!=sqlite3_step(pCur->pTableList) ){
+      if( SQLITE_OK!=(rc = finalize(&pCur->pTableList)) ) goto next_exit;
+
+      assert(pCur->pDbList);
+      while( SQLITE_ROW!=sqlite3_step(pCur->pDbList) ){
+        rc = finalize(&pCur->pDbList);
+        goto next_exit;
+      }
+
+      /* Set zSql to the SQL to pull the list of tables from the 
+      ** sqlite_master (or sqlite_temp_master) table of the database
+      ** identfied by the row pointed to by the SQL statement pCur->pDbList
+      ** (iterating through a "PRAGMA database_list;" statement).
+      */
+      if( sqlite3_column_int(pCur->pDbList, 0)==1 ){
+        zSql = sqlite3_mprintf(
+            "SELECT name FROM sqlite_temp_master WHERE type=%Q",
+            pVtab->pType->zObject
+        );
+      }else{
+        sqlite3_stmt *pDbList = pCur->pDbList;
+        zSql = sqlite3_mprintf(
+            "SELECT name FROM %Q.sqlite_master WHERE type=%Q",
+             sqlite3_column_text(pDbList, 1), pVtab->pType->zObject
+        );
+      }
+      if( !zSql ){
+        rc = SQLITE_NOMEM;
+        goto next_exit;
+      }
+
+      rc = sqlite3_prepare(pVtab->db, zSql, -1, &pCur->pTableList, 0);
+      sqlite3_free(zSql);
+      if( rc!=SQLITE_OK ) goto next_exit;
+    }
+
+    /* Set zSql to the SQL to the table_info pragma for the table currently
+    ** identified by the rows pointed to by statements pCur->pDbList and
+    ** pCur->pTableList.
+    */
+    zSql = sqlite3_mprintf(pVtab->pType->zPragma,
+        sqlite3_column_text(pCur->pDbList, 1),
+        sqlite3_column_text(pCur->pTableList, 0)
+    );
+
+    if( !zSql ){
+      rc = SQLITE_NOMEM;
+      goto next_exit;
+    }
+    rc = sqlite3_prepare(pVtab->db, zSql, -1, &pCur->pColumnList, 0);
+    sqlite3_free(zSql);
+    if( rc!=SQLITE_OK ) goto next_exit;
+  }
+  pCur->rowid++;
+
+next_exit:
+  /* TODO: Handle rc */
+  return rc;
+}
+
+/*
+** Reset a schema table cursor.
+*/
+static int schemaFilter(
+  sqlite3_vtab_cursor *pVtabCursor, 
+  int idxNum, const char *idxStr,
+  int argc, sqlite3_value **argv
+){
+  int rc;
+  schema_vtab *pVtab = (schema_vtab *)(pVtabCursor->pVtab);
+  schema_cursor *pCur = (schema_cursor *)pVtabCursor;
+  UNUSED_PARAMETER(idxNum);
+  UNUSED_PARAMETER(idxStr);
+  UNUSED_PARAMETER(argc);
+  UNUSED_PARAMETER(argv);
+  pCur->rowid = 0;
+  finalize(&pCur->pTableList);
+  finalize(&pCur->pColumnList);
+  finalize(&pCur->pDbList);
+  rc = sqlite3_prepare(pVtab->db,"SELECT 0, 'main'", -1, &pCur->pDbList, 0);
+  return (rc==SQLITE_OK ? schemaNext(pVtabCursor) : rc);
+}
+
+/*
+** Analyse the WHERE condition.
+*/
+static int schemaBestIndex(sqlite3_vtab *tab, sqlite3_index_info *pIdxInfo){
+  UNUSED_PARAMETER(tab);
+  UNUSED_PARAMETER(pIdxInfo);
+  return SQLITE_OK;
+}
+
+/*
+** A virtual table module that merely echos method calls into TCL
+** variables.
+*/
+static sqlite3_module schemaModule = {
+  0,                           /* iVersion */
+  schemaCreate,
+  schemaCreate,
+  schemaBestIndex,
+  schemaDestroy,
+  schemaDestroy,
+  schemaOpen,                  /* xOpen - open a cursor */
+  schemaClose,                 /* xClose - close a cursor */
+  schemaFilter,                /* xFilter - configure scan constraints */
+  schemaNext,                  /* xNext - advance a cursor */
+  schemaEof,                   /* xEof */
+  schemaColumn,                /* xColumn - read data */
+  schemaRowid,                 /* xRowid - read data */
+  0,                           /* xUpdate */
+  0,                           /* xBegin */
+  0,                           /* xSync */
+  0,                           /* xCommit */
+  0,                           /* xRollback */
+  0,                           /* xFindMethod */
+  0,                           /* xRename */
+};
+
+/*
+** Extension load function.
+*/
+static int installSchemaModule(sqlite3 *db, sqlite3 *sdb){
+  sqlite3_create_module(db, "schema", &schemaModule, (void *)sdb);
+  return 0;
+}
+
+/*
+**   sj(zValue, zJoin)
+**
+** The following block contains the implementation of an aggregate 
+** function that returns a string. Each time the function is stepped, 
+** it appends data to an internal buffer. When the aggregate is finalized,
+** the contents of the buffer are returned.
+**
+** The first time the aggregate is stepped the buffer is set to a copy
+** of the first argument. The second time and subsequent times it is
+** stepped a copy of the second argument is appended to the buffer, then
+** a copy of the first.
+**
+** Example:
+**
+**   INSERT INTO t1(a) VALUES('1');
+**   INSERT INTO t1(a) VALUES('2');
+**   INSERT INTO t1(a) VALUES('3');
+**   SELECT sj(a, ', ') FROM t1;
+**
+**     =>  "1, 2, 3"
+**
+*/
+struct StrBuffer {
+  char *zBuf;
+};
+typedef struct StrBuffer StrBuffer;
+static void joinFinalize(sqlite3_context *context){
+  StrBuffer *p;
+  p = (StrBuffer *)sqlite3_aggregate_context(context, sizeof(StrBuffer));
+  sqlite3_result_text(context, p->zBuf, -1, SQLITE_TRANSIENT);
+  sqlite3_free(p->zBuf);
+}
+static void joinStep(
+  sqlite3_context *context,
+  int argc,
+  sqlite3_value **argv
+){
+  StrBuffer *p;
+  UNUSED_PARAMETER(argc);
+  p = (StrBuffer *)sqlite3_aggregate_context(context, sizeof(StrBuffer));
+  if( p->zBuf==0 ){
+    p->zBuf = sqlite3_mprintf("%s", sqlite3_value_text(argv[0]));
+  }else{
+    char *zTmp = p->zBuf;
+    p->zBuf = sqlite3_mprintf("%s%s%s", 
+        zTmp, sqlite3_value_text(argv[1]), sqlite3_value_text(argv[0])
+    );
+    sqlite3_free(zTmp);
+  }
+}
+
+/*
+**   dq(zString)
+**
+** This scalar function accepts a single argument and interprets it as
+** a text value. The return value is the argument enclosed in double
+** quotes. If any double quote characters are present in the argument, 
+** these are escaped.
+**
+**   dq('the raven "Nevermore."') == '"the raven ""Nevermore."""'
+*/
+static void doublequote(
+  sqlite3_context *context, 
+  int argc, 
+  sqlite3_value **argv
+){
+  int ii;
+  char *zOut;
+  char *zCsr;
+  const char *zIn = (const char *)sqlite3_value_text(argv[0]);
+  int nIn = sqlite3_value_bytes(argv[0]);
+
+  UNUSED_PARAMETER(argc);
+  zOut = sqlite3_malloc(nIn*2+3);
+  zCsr = zOut;
+  *zCsr++ = '"';
+  for(ii=0; ii<nIn; ii++){
+    *zCsr++ = zIn[ii];
+    if( zIn[ii]=='"' ){
+      *zCsr++ = '"';
+    }
+  }
+  *zCsr++ = '"';
+  *zCsr++ = '\0';
+
+  sqlite3_result_text(context, zOut, -1, SQLITE_TRANSIENT);
+  sqlite3_free(zOut);
+}
+
+/*
+**   multireplace(zString, zSearch1, zReplace1, ...)
+*/
+static void multireplace(
+  sqlite3_context *context, 
+  int argc, 
+  sqlite3_value **argv
+){
+  int i = 0;
+  char *zOut = 0;
+  int nOut = 0;
+  int nMalloc = 0;
+  const char *zIn = (const char *)sqlite3_value_text(argv[0]);
+  int nIn = sqlite3_value_bytes(argv[0]);
+
+  while( i<nIn ){
+    const char *zCopy = &zIn[i];
+    int nCopy = 1;
+    int nReplace = 1;
+    int j;
+    for(j=1; j<(argc-1); j+=2){
+      const char *z = (const char *)sqlite3_value_text(argv[j]);
+      int n = sqlite3_value_bytes(argv[j]);
+      if( n<=(nIn-i) && 0==strncmp(z, zCopy, n) ){
+        zCopy = (const char *)sqlite3_value_text(argv[j+1]);
+        nCopy = sqlite3_value_bytes(argv[j+1]);
+        nReplace = n;
+        break;
+      }
+    }
+    if( (nOut+nCopy)>nMalloc ){
+      char *zNew;
+      nMalloc = 16 + (nOut+nCopy)*2;
+      zNew = (char*)sqlite3_realloc(zOut, nMalloc);
+      if( zNew==0 ){
+        sqlite3_result_error_nomem(context);
+        return;
+      }else{
+        zOut = zNew;
+      }
+    }
+    assert( nMalloc>=(nOut+nCopy) );
+    memcpy(&zOut[nOut], zCopy, nCopy);
+    i += nReplace;
+    nOut += nCopy;
+  }
+
+  sqlite3_result_text(context, zOut, nOut, SQLITE_TRANSIENT);
+  sqlite3_free(zOut);
+}
+
+/*
+** A callback for sqlite3_exec() invokes the callback specified by the
+** GenfkeyCb structure pointed to by the void* passed as the first argument.
+*/
+static int invokeCallback(void *p, int nArg, char **azArg, char **azCol){
+  GenfkeyCb *pCb = (GenfkeyCb *)p;
+  UNUSED_PARAMETER(nArg);
+  UNUSED_PARAMETER(azCol);
+  return pCb->xData(pCb->pCtx, pCb->eType, azArg[0]);
+}
+
+int detectSchemaProblem(
+  sqlite3 *db,                   /* Database connection */
+  const char *zMessage,          /* English language error message */
+  const char *zSql,              /* SQL statement to run */
+  GenfkeyCb *pCb
+){
+  sqlite3_stmt *pStmt;
+  int rc;
+  rc = sqlite3_prepare(db, zSql, -1, &pStmt, 0);
+  if( rc!=SQLITE_OK ){
+    return rc;
+  }
+  while( SQLITE_ROW==sqlite3_step(pStmt) ){
+    char *zDel;
+    int iFk = sqlite3_column_int(pStmt, 0);
+    const char *zTab = (const char *)sqlite3_column_text(pStmt, 1);
+    zDel = sqlite3_mprintf("Error in table %s: %s", zTab, zMessage);
+    rc = pCb->xData(pCb->pCtx, pCb->eType, zDel);
+    sqlite3_free(zDel);
+    if( rc!=SQLITE_OK ) return rc;
+    zDel = sqlite3_mprintf(
+        "DELETE FROM temp.fkey WHERE from_tbl = %Q AND fkid = %d"
+        , zTab, iFk
+    );
+    sqlite3_exec(db, zDel, 0, 0, 0);
+    sqlite3_free(zDel);
+  }
+  sqlite3_finalize(pStmt);
+  return SQLITE_OK;
+}
+
+/*
+** Create and populate temporary table "fkey".
+*/
+static int populateTempTable(sqlite3 *db, GenfkeyCb *pCallback){
+  int rc;
+  
+  rc = sqlite3_exec(db, 
+      "CREATE VIRTUAL TABLE temp.v_fkey USING schema(foreign_key_list);"
+      "CREATE VIRTUAL TABLE temp.v_col USING schema(table_info);"
+      "CREATE VIRTUAL TABLE temp.v_idxlist USING schema(index_list);"
+      "CREATE VIRTUAL TABLE temp.v_idxinfo USING schema(index_info);"
+      "CREATE VIRTUAL TABLE temp.v_triggers USING schema(trigger_list);"
+      "CREATE TABLE temp.fkey AS "
+        "SELECT from_tbl, to_tbl, fkid, from_col, to_col, on_update, on_delete "
+        "FROM temp.v_fkey WHERE database = 'main';"
+      , 0, 0, 0
+  );
+  if( rc!=SQLITE_OK ) return rc;
+
+  rc = detectSchemaProblem(db, "foreign key columns do not exist",
+    "SELECT fkid, from_tbl "
+    "FROM temp.fkey "
+    "WHERE to_col IS NOT NULL AND NOT EXISTS (SELECT 1 "
+        "FROM temp.v_col WHERE tablename=to_tbl AND name==to_col"
+    ")", pCallback
+  );
+  if( rc!=SQLITE_OK ) return rc;
+
+  /* At this point the temp.fkey table is mostly populated. If any foreign
+  ** keys were specified so that they implicitly refer to they primary
+  ** key of the parent table, the "to_col" values of the temp.fkey rows
+  ** are still set to NULL.
+  **
+  ** This is easily fixed for single column primary keys, but not for
+  ** composites. With a composite primary key, there is no way to reliably
+  ** query sqlite for the order in which the columns that make up the
+  ** composite key were declared i.e. there is no way to tell if the
+  ** schema actually contains "PRIMARY KEY(a, b)" or "PRIMARY KEY(b, a)".
+  ** Therefore, this case is not handled. The following function call
+  ** detects instances of this case.
+  */
+  rc = detectSchemaProblem(db, "implicit mapping to composite primary key",
+    "SELECT fkid, from_tbl "
+    "FROM temp.fkey "
+    "WHERE to_col IS NULL "
+    "GROUP BY fkid, from_tbl HAVING count(*) > 1", pCallback
+  );
+  if( rc!=SQLITE_OK ) return rc;
+
+  /* Detect attempts to implicitly map to the primary key of a table 
+  ** that has no primary key column.
+  */
+  rc = detectSchemaProblem(db, "implicit mapping to non-existant primary key",
+    "SELECT fkid, from_tbl "
+    "FROM temp.fkey "
+    "WHERE to_col IS NULL AND NOT EXISTS "
+      "(SELECT 1 FROM temp.v_col WHERE pk AND tablename = temp.fkey.to_tbl)"
+    , pCallback
+  );
+  if( rc!=SQLITE_OK ) return rc;
+
+  /* Fix all the implicit primary key mappings in the temp.fkey table. */
+  rc = sqlite3_exec(db, 
+    "UPDATE temp.fkey SET to_col = "
+      "(SELECT name FROM temp.v_col WHERE pk AND tablename=temp.fkey.to_tbl)"
+    " WHERE to_col IS NULL;"
+    , 0, 0, 0
+  );
+  if( rc!=SQLITE_OK ) return rc;
+
+  /* Now check that all all parent keys are either primary keys or 
+  ** subject to a unique constraint.
+  */
+  rc = sqlite3_exec(db, 
+    "CREATE TABLE temp.idx2 AS SELECT "
+      "il.tablename AS tablename,"
+      "ii.indexname AS indexname,"
+      "ii.name AS col "
+      "FROM temp.v_idxlist AS il, temp.v_idxinfo AS ii "
+      "WHERE il.isunique AND il.database='main' AND ii.indexname = il.name;"
+    "INSERT INTO temp.idx2 "
+      "SELECT tablename, 'pk', name FROM temp.v_col WHERE pk;"
+
+    "CREATE TABLE temp.idx AS SELECT "
+      "tablename, indexname, sj(dq(col),',') AS cols "
+      "FROM (SELECT * FROM temp.idx2 ORDER BY col) " 
+      "GROUP BY tablename, indexname;"
+
+    "CREATE TABLE temp.fkey2 AS SELECT "
+        "fkid, from_tbl, to_tbl, sj(dq(to_col),',') AS cols "
+        "FROM (SELECT * FROM temp.fkey ORDER BY to_col) " 
+        "GROUP BY fkid, from_tbl;"
+
+    "CREATE TABLE temp.triggers AS SELECT "
+        "triggername FROM temp.v_triggers WHERE database='main' AND "
+        "triggername LIKE 'genfkey%';"
+    , 0, 0, 0
+  );
+  if( rc!=SQLITE_OK ) return rc;
+  rc = detectSchemaProblem(db, "foreign key is not unique",
+    "SELECT fkid, from_tbl "
+    "FROM temp.fkey2 "
+    "WHERE NOT EXISTS (SELECT 1 "
+        "FROM temp.idx WHERE tablename=to_tbl AND fkey2.cols==idx.cols"
+    ")", pCallback
+  );
+  if( rc!=SQLITE_OK ) return rc;
+
+  return rc;
+}
+
+#define GENFKEY_ERROR         1
+#define GENFKEY_DROPTRIGGER   2
+#define GENFKEY_CREATETRIGGER 3
+static int genfkey_create_triggers(
+  sqlite3 *sdb,                        /* Connection to read schema from */
+  const char *zDb,                     /* Name of db to read ("main", "temp") */
+  void *pCtx,                          /* Context pointer to pass to xData */
+  int (*xData)(void *, int, const char *)
+){
+  const char *zSql =
+    "SELECT multireplace('"
+
+      "-- Triggers for foreign key mapping:\n"
+      "--\n"
+      "--     /from_readable/ REFERENCES /to_readable/\n"
+      "--     on delete /on_delete/\n"
+      "--     on update /on_update/\n"
+      "--\n"
+
+      /* The "BEFORE INSERT ON <referencing>" trigger. This trigger's job is to
+      ** throw an exception if the user tries to insert a row into the
+      ** referencing table for which there is no corresponding row in
+      ** the referenced table.
+      */
+      "CREATE TRIGGER /name/_insert_referencing BEFORE INSERT ON /tbl/ WHEN \n"
+      "    /key_notnull/ AND NOT EXISTS (SELECT 1 FROM /ref/ WHERE /cond1/)\n" 
+      "BEGIN\n"
+        "  SELECT RAISE(ABORT, ''constraint failed'');\n"
+      "END;\n"
+
+      /* The "BEFORE UPDATE ON <referencing>" trigger. This trigger's job 
+      ** is to throw an exception if the user tries to update a row in the
+      ** referencing table causing it to correspond to no row in the
+      ** referenced table.
+      */
+      "CREATE TRIGGER /name/_update_referencing BEFORE\n"
+      "    UPDATE OF /rkey_list/ ON /tbl/ WHEN \n"
+      "    /key_notnull/ AND \n"
+      "    NOT EXISTS (SELECT 1 FROM /ref/ WHERE /cond1/)\n" 
+      "BEGIN\n"
+        "  SELECT RAISE(ABORT, ''constraint failed'');\n"
+      "END;\n"
+
+
+      /* The "BEFORE DELETE ON <referenced>" trigger. This trigger's job 
+      ** is to detect when a row is deleted from the referenced table to 
+      ** which rows in the referencing table correspond. The action taken
+      ** depends on the value of the 'ON DELETE' clause.
+      */
+      "CREATE TRIGGER /name/_delete_referenced BEFORE DELETE ON /ref/ WHEN\n"
+      "    EXISTS (SELECT 1 FROM /tbl/ WHERE /cond2/)\n"
+      "BEGIN\n"
+      "  /delete_action/\n"
+      "END;\n"
+
+      /* The "BEFORE DELETE ON <referenced>" trigger. This trigger's job 
+      ** is to detect when the key columns of a row in the referenced table 
+      ** to which one or more rows in the referencing table correspond are
+      ** updated. The action taken depends on the value of the 'ON UPDATE' 
+      ** clause.
+      */
+      "CREATE TRIGGER /name/_update_referenced AFTER\n"
+      "    UPDATE OF /fkey_list/ ON /ref/ WHEN \n"
+      "    EXISTS (SELECT 1 FROM /tbl/ WHERE /cond2/)\n"
+      "BEGIN\n"
+      "  /update_action/\n"
+      "END;\n"
+    "'"
+
+    /* These are used in the SQL comment written above each set of triggers */
+    ", '/from_readable/',  from_tbl || '(' || sj(from_col, ', ') || ')'"
+    ", '/to_readable/',    to_tbl || '(' || sj(to_col, ', ') || ')'"
+    ", '/on_delete/', on_delete"
+    ", '/on_update/', on_update"
+
+    ", '/name/',   'genfkey' || min(rowid)"
+    ", '/tbl/',    dq(from_tbl)"
+    ", '/ref/',    dq(to_tbl)"
+    ", '/key_notnull/', sj('new.' || dq(from_col) || ' IS NOT NULL', ' AND ')"
+
+    ", '/fkey_list/', sj(to_col, ', ')"
+    ", '/rkey_list/', sj(from_col, ', ')"
+
+    ", '/cond1/',  sj(multireplace('new./from/ == /to/'"
+                   ", '/from/', dq(from_col)"
+                   ", '/to/',   dq(to_col)"
+                   "), ' AND ')"
+    ", '/cond2/',  sj(multireplace('old./to/ == /from/'"
+                   ", '/from/', dq(from_col)"
+                   ", '/to/',   dq(to_col)"
+                   "), ' AND ')"
+
+    ", '/update_action/', CASE on_update "
+      "WHEN 'SET NULL' THEN "
+        "multireplace('UPDATE /tbl/ SET /setlist/ WHERE /where/;' "
+        ", '/setlist/', sj(from_col||' = NULL',', ')"
+        ", '/tbl/',     dq(from_tbl)"
+        ", '/where/',   sj(from_col||' = old.'||dq(to_col),' AND ')"
+        ")"
+      "WHEN 'CASCADE' THEN "
+        "multireplace('UPDATE /tbl/ SET /setlist/ WHERE /where/;' "
+        ", '/setlist/', sj(dq(from_col)||' = new.'||dq(to_col),', ')"
+        ", '/tbl/',     dq(from_tbl)"
+        ", '/where/',   sj(dq(from_col)||' = old.'||dq(to_col),' AND ')"
+        ")"
+      "ELSE "
+      "  'SELECT RAISE(ABORT, ''constraint failed'');'"
+      "END "
+
+    ", '/delete_action/', CASE on_delete "
+      "WHEN 'SET NULL' THEN "
+        "multireplace('UPDATE /tbl/ SET /setlist/ WHERE /where/;' "
+        ", '/setlist/', sj(from_col||' = NULL',', ')"
+        ", '/tbl/',     dq(from_tbl)"
+        ", '/where/',   sj(from_col||' = old.'||dq(to_col),' AND ')"
+        ")"
+      "WHEN 'CASCADE' THEN "
+        "multireplace('DELETE FROM /tbl/ WHERE /where/;' "
+        ", '/tbl/',     dq(from_tbl)"
+        ", '/where/',   sj(dq(from_col)||' = old.'||dq(to_col),' AND ')"
+        ")"
+      "ELSE "
+      "  'SELECT RAISE(ABORT, ''constraint failed'');'"
+      "END "
+
+    ") FROM temp.fkey "
+    "GROUP BY from_tbl, fkid"
+  ;
+
+  int rc;
+  const int enc = SQLITE_UTF8;
+  sqlite3 *db = 0;
+
+  GenfkeyCb cb;
+  cb.xData = xData;
+  cb.pCtx = pCtx;
+
+  UNUSED_PARAMETER(zDb);
+
+  /* Open the working database handle. */
+  rc = sqlite3_open(":memory:", &db);
+  if( rc!=SQLITE_OK ) goto genfkey_exit;
+
+  /* Create the special scalar and aggregate functions used by this program. */
+  sqlite3_create_function(db, "dq", 1, enc, 0, doublequote, 0, 0);
+  sqlite3_create_function(db, "multireplace", -1, enc, db, multireplace, 0, 0);
+  sqlite3_create_function(db, "sj", 2, enc, 0, 0, joinStep, joinFinalize);
+
+  /* Install the "schema" virtual table module */
+  installSchemaModule(db, sdb);
+
+  /* Create and populate a temp table with the information required to
+  ** build the foreign key triggers. See function populateTempTable()
+  ** for details.
+  */
+  cb.eType = GENFKEY_ERROR;
+  rc = populateTempTable(db, &cb);
+  if( rc!=SQLITE_OK ) goto genfkey_exit;
+
+  /* Unless the --no-drop option was specified, generate DROP TRIGGER
+  ** statements to drop any triggers in the database generated by a
+  ** previous run of this program.
+  */
+  cb.eType = GENFKEY_DROPTRIGGER;
+  rc = sqlite3_exec(db, 
+    "SELECT 'DROP TRIGGER main.' || dq(triggername) || ';' FROM triggers"
+    ,invokeCallback, (void *)&cb, 0
+  );
+  if( rc!=SQLITE_OK ) goto genfkey_exit;
+
+  /* Run the main query to create the trigger definitions. */
+  cb.eType = GENFKEY_CREATETRIGGER;
+  rc = sqlite3_exec(db, zSql, invokeCallback, (void *)&cb, 0);
+  if( rc!=SQLITE_OK ) goto genfkey_exit;
+
+genfkey_exit:
+  sqlite3_close(db);
+  return rc;
+}
+
+
+#endif
+/* End genfkey logic. */
+/*************************************************************************/
+/*************************************************************************/
 
 /*
 ** If the following flag is set, then command execution stops
@@ -214,6 +1089,8 @@ static void shellstaticFunc(
 ){
   assert( 0==argc );
   assert( zShellStatic );
+  UNUSED_PARAMETER(argc);
+  UNUSED_PARAMETER(argv);
   sqlite3_result_text(context, zShellStatic, -1, SQLITE_STATIC);
 }
 
@@ -353,7 +1230,17 @@ static const char *modeDescr[] = {
 /*
 ** Number of elements in an array
 */
-#define ArraySize(X)  (sizeof(X)/sizeof(X[0]))
+#define ArraySize(X)  (int)(sizeof(X)/sizeof(X[0]))
+
+/*
+** Compute a string length that is limited to what can be stored in
+** lower 30 bits of a 32-bit signed integer.
+*/
+static int strlen30(const char *z){
+  const char *z2 = z;
+  while( *z2 ){ z2++; }
+  return 0x3fffffff & (int)(z2 - z);
+}
 
 /*
 ** Output the given string as a quoted string using SQL quoting conventions.
@@ -470,7 +1357,7 @@ static void output_csv(struct callback_data *p, const char *z, int bSep){
     fprintf(out,"%s",p->nullvalue);
   }else{
     int i;
-    int nSep = strlen(p->separator);
+    int nSep = strlen30(p->separator);
     for(i=0; z[i]; i++){
       if( needCsvQuote[((unsigned char*)z)[i]] 
          || (z[i]==p->separator[0] && 
@@ -500,6 +1387,7 @@ static void output_csv(struct callback_data *p, const char *z, int bSep){
 ** This routine runs when the user presses Ctrl-C
 */
 static void interrupt_handler(int NotUsed){
+  UNUSED_PARAMETER(NotUsed);
   seenInterrupt = 1;
   if( db ) sqlite3_interrupt(db);
 }
@@ -517,7 +1405,7 @@ static int callback(void *pArg, int nArg, char **azArg, char **azCol){
       int w = 5;
       if( azArg==0 ) break;
       for(i=0; i<nArg; i++){
-        int len = strlen(azCol[i] ? azCol[i] : "");
+        int len = strlen30(azCol[i] ? azCol[i] : "");
         if( len>w ) w = len;
       }
       if( p->cnt++>0 ) fprintf(p->out,"\n");
@@ -538,9 +1426,9 @@ static int callback(void *pArg, int nArg, char **azArg, char **azCol){
             w = 0;
           }
           if( w<=0 ){
-            w = strlen(azCol[i] ? azCol[i] : "");
+            w = strlen30(azCol[i] ? azCol[i] : "");
             if( w<10 ) w = 10;
-            n = strlen(azArg && azArg[i] ? azArg[i] : p->nullvalue);
+            n = strlen30(azArg && azArg[i] ? azArg[i] : p->nullvalue);
             if( w<n ) w = n;
           }
           if( i<ArraySize(p->actualWidth) ){
@@ -572,8 +1460,9 @@ static int callback(void *pArg, int nArg, char **azArg, char **azCol){
         }else{
            w = 10;
         }
-        if( p->mode==MODE_Explain && azArg[i] && strlen(azArg[i])>w ){
-          w = strlen(azArg[i]);
+        if( p->mode==MODE_Explain && azArg[i] && 
+           strlen30(azArg[i])>w ){
+          w = strlen30(azArg[i]);
         }
         fprintf(p->out,"%-*.*s%s",w,w,
             azArg[i] ? azArg[i] : p->nullvalue, i==nArg-1 ? "\n": "  ");
@@ -720,8 +1609,8 @@ static void set_table_name(struct callback_data *p, const char *zName){
 static char *appendText(char *zIn, char const *zAppend, char quote){
   int len;
   int i;
-  int nAppend = strlen(zAppend);
-  int nIn = (zIn?strlen(zIn):0);
+  int nAppend = strlen30(zAppend);
+  int nIn = (zIn?strlen30(zIn):0);
 
   len = nAppend+nIn+1;
   if( quote ){
@@ -762,7 +1651,12 @@ static char *appendText(char *zIn, char const *zAppend, char quote){
 ** This is used, for example, to show the schema of the database by
 ** querying the SQLITE_MASTER table.
 */
-static int run_table_dump_query(FILE *out, sqlite3 *db, const char *zSelect){
+static int run_table_dump_query(
+  FILE *out,              /* Send output here */
+  sqlite3 *db,            /* Database to query */
+  const char *zSelect,    /* SELECT statement to extract content */
+  const char *zFirstRow   /* Print before first row, if not NULL */
+){
   sqlite3_stmt *pSelect;
   int rc;
   rc = sqlite3_prepare(db, zSelect, -1, &pSelect, 0);
@@ -771,6 +1665,10 @@ static int run_table_dump_query(FILE *out, sqlite3 *db, const char *zSelect){
   }
   rc = sqlite3_step(pSelect);
   while( rc==SQLITE_ROW ){
+    if( zFirstRow ){
+      fprintf(out, "%s", zFirstRow);
+      zFirstRow = 0;
+    }
     fprintf(out, "%s;\n", sqlite3_column_text(pSelect, 0));
     rc = sqlite3_step(pSelect);
   }
@@ -789,15 +1687,17 @@ static int dump_callback(void *pArg, int nArg, char **azArg, char **azCol){
   const char *zTable;
   const char *zType;
   const char *zSql;
+  const char *zPrepStmt = 0;
   struct callback_data *p = (struct callback_data *)pArg;
 
+  UNUSED_PARAMETER(azCol);
   if( nArg!=3 ) return 1;
   zTable = azArg[0];
   zType = azArg[1];
   zSql = azArg[2];
   
   if( strcmp(zTable, "sqlite_sequence")==0 ){
-    fprintf(p->out, "DELETE FROM sqlite_sequence;\n");
+    zPrepStmt = "DELETE FROM sqlite_sequence;\n";
   }else if( strcmp(zTable, "sqlite_stat1")==0 ){
     fprintf(p->out, "ANALYZE sqlite_master;\n");
   }else if( strncmp(zTable, "sqlite_", 7)==0 ){
@@ -824,13 +1724,14 @@ static int dump_callback(void *pArg, int nArg, char **azArg, char **azCol){
     char *zSelect = 0;
     char *zTableInfo = 0;
     char *zTmp = 0;
+    int nRow = 0;
    
     zTableInfo = appendText(zTableInfo, "PRAGMA table_info(", 0);
     zTableInfo = appendText(zTableInfo, zTable, '"');
     zTableInfo = appendText(zTableInfo, ");", 0);
 
     rc = sqlite3_prepare(p->db, zTableInfo, -1, &pTableInfo, 0);
-    if( zTableInfo ) free(zTableInfo);
+    free(zTableInfo);
     if( rc!=SQLITE_OK || !pTableInfo ){
       return 1;
     }
@@ -852,19 +1753,20 @@ static int dump_callback(void *pArg, int nArg, char **azArg, char **azCol){
       }else{
         zSelect = appendText(zSelect, ") ", 0);
       }
+      nRow++;
     }
     rc = sqlite3_finalize(pTableInfo);
-    if( rc!=SQLITE_OK ){
-      if( zSelect ) free(zSelect);
+    if( rc!=SQLITE_OK || nRow==0 ){
+      free(zSelect);
       return 1;
     }
     zSelect = appendText(zSelect, "|| ')' FROM  ", 0);
     zSelect = appendText(zSelect, zTable, '"');
 
-    rc = run_table_dump_query(p->out, p->db, zSelect);
+    rc = run_table_dump_query(p->out, p->db, zSelect, zPrepStmt);
     if( rc==SQLITE_CORRUPT ){
       zSelect = appendText(zSelect, " ORDER BY rowid DESC", 0);
-      rc = run_table_dump_query(p->out, p->db, zSelect);
+      rc = run_table_dump_query(p->out, p->db, zSelect, 0);
     }
     if( zSelect ) free(zSelect);
   }
@@ -887,7 +1789,7 @@ static int run_schema_dump_query(
   rc = sqlite3_exec(p->db, zQuery, dump_callback, p, pzErrMsg);
   if( rc==SQLITE_CORRUPT ){
     char *zQ2;
-    int len = strlen(zQuery);
+    int len = strlen30(zQuery);
     if( pzErrMsg ) sqlite3_free(*pzErrMsg);
     zQ2 = malloc( len+100 );
     if( zQ2==0 ) return rc;
@@ -898,16 +1800,81 @@ static int run_schema_dump_query(
   return rc;
 }
 
+#if !defined(SQLITE_OMIT_VIRTUALTABLE) && !defined(SQLITE_OMIT_SUBQUERY)
+struct GenfkeyCmd {
+  sqlite3 *db;                   /* Database handle */
+  struct callback_data *pCb;     /* Callback data */
+  int isIgnoreErrors;            /* True for --ignore-errors */
+  int isExec;                    /* True for --exec */
+  int isNoDrop;                  /* True for --no-drop */
+  int nErr;                      /* Number of errors seen so far */
+};
+typedef struct GenfkeyCmd GenfkeyCmd;
+
+static int genfkeyParseArgs(GenfkeyCmd *p, char **azArg, int nArg){
+  int ii;
+  memset(p, 0, sizeof(GenfkeyCmd));
+
+  for(ii=0; ii<nArg; ii++){
+    int n = strlen30(azArg[ii]);
+
+    if( n>2 && n<10 && 0==strncmp(azArg[ii], "--no-drop", n) ){
+      p->isNoDrop = 1;
+    }else if( n>2 && n<16 && 0==strncmp(azArg[ii], "--ignore-errors", n) ){
+      p->isIgnoreErrors = 1;
+    }else if( n>2 && n<7 && 0==strncmp(azArg[ii], "--exec", n) ){
+      p->isExec = 1;
+    }else{
+      fprintf(stderr, "unknown option: %s\n", azArg[ii]);
+      return -1;
+    }
+  }
+
+  return SQLITE_OK;
+}
+
+static int genfkeyCmdCb(void *pCtx, int eType, const char *z){
+  GenfkeyCmd *p = (GenfkeyCmd *)pCtx;
+  if( eType==GENFKEY_ERROR && !p->isIgnoreErrors ){
+    p->nErr++;
+    fprintf(stderr, "%s\n", z);
+  } 
+
+  if( p->nErr==0 && (
+        (eType==GENFKEY_CREATETRIGGER)
+     || (eType==GENFKEY_DROPTRIGGER && !p->isNoDrop)
+  )){
+    if( p->isExec ){
+      sqlite3_exec(p->db, z, 0, 0, 0);
+    }else{
+      char *zCol = "sql";
+      callback((void *)p->pCb, 1, (char **)&z, (char **)&zCol);
+    }
+  }
+
+  return SQLITE_OK;
+}
+#endif
+
 /*
 ** Text of a help message
 */
 static char zHelp[] =
+  ".backup ?DB? FILE      Backup DB (default \"main\") to FILE\n"
   ".bail ON|OFF           Stop after hitting an error.  Default OFF\n"
   ".databases             List names and files of attached databases\n"
   ".dump ?TABLE? ...      Dump the database in an SQL text format\n"
   ".echo ON|OFF           Turn command echo on or off\n"
   ".exit                  Exit this program\n"
   ".explain ON|OFF        Turn output mode suitable for EXPLAIN on or off.\n"
+#if !defined(SQLITE_OMIT_VIRTUALTABLE) && !defined(SQLITE_OMIT_SUBQUERY)
+  ".genfkey ?OPTIONS?     Options are:\n"
+  "                         --no-drop: Do not drop old fkey triggers.\n"
+  "                         --ignore-errors: Ignore tables with fkey errors\n"
+  "                         --exec: Execute generated SQL immediately\n"
+  "                       See file tool/genfkey.README in the source \n"
+  "                       distribution for further information.\n"
+#endif
   ".header(s) ON|OFF      Turn display of headers on or off\n"
   ".help                  Show this message\n"
   ".import FILE TABLE     Import data from FILE into TABLE\n"
@@ -933,6 +1900,7 @@ static char zHelp[] =
   ".prompt MAIN CONTINUE  Replace the standard prompts\n"
   ".quit                  Exit this program\n"
   ".read FILENAME         Execute SQL in FILENAME\n"
+  ".restore ?DB? FILE     Restore content of DB (default \"main\") from FILE\n"
   ".schema ?TABLE?        Show the CREATE statements\n"
   ".separator STRING      Change separator used by output mode and .import\n"
   ".show                  Show the current values for various settings\n"
@@ -980,7 +1948,8 @@ static void open_db(struct callback_data *p){
 **    \\    -> backslash
 */
 static void resolve_backslashes(char *z){
-  int i, j, c;
+  int i, j;
+  char c;
   for(i=j=0; (c = z[i])!=0; i++, j++){
     if( c=='\\' ){
       c = z[++i];
@@ -1014,7 +1983,7 @@ static int booleanValue(char *zArg){
   int val = atoi(zArg);
   int j;
   for(j=0; zArg[j]; j++){
-    zArg[j] = tolower(zArg[j]);
+    zArg[j] = (char)tolower(zArg[j]);
   }
   if( strcmp(zArg,"on")==0 ){
     val = 1;
@@ -1061,9 +2030,45 @@ static int do_meta_command(char *zLine, struct callback_data *p){
   /* Process the input line.
   */
   if( nArg==0 ) return rc;
-  n = strlen(azArg[0]);
+  n = strlen30(azArg[0]);
   c = azArg[0][0];
-  if( c=='b' && n>1 && strncmp(azArg[0], "bail", n)==0 && nArg>1 ){
+  if( c=='b' && n>=3 && strncmp(azArg[0], "backup", n)==0 && nArg>1 ){
+    const char *zDestFile;
+    const char *zDb;
+    sqlite3 *pDest;
+    sqlite3_backup *pBackup;
+    int rc;
+    if( nArg==2 ){
+      zDestFile = azArg[1];
+      zDb = "main";
+    }else{
+      zDestFile = azArg[2];
+      zDb = azArg[1];
+    }
+    rc = sqlite3_open(zDestFile, &pDest);
+    if( rc!=SQLITE_OK ){
+      fprintf(stderr, "Error: cannot open %s\n", zDestFile);
+      sqlite3_close(pDest);
+      return 1;
+    }
+    open_db(p);
+    pBackup = sqlite3_backup_init(pDest, "main", p->db, zDb);
+    if( pBackup==0 ){
+      fprintf(stderr, "Error: %s\n", sqlite3_errmsg(pDest));
+      sqlite3_close(pDest);
+      return 1;
+    }
+    while(  (rc = sqlite3_backup_step(pBackup,100))==SQLITE_OK ){}
+    sqlite3_backup_finish(pBackup);
+    if( rc==SQLITE_DONE ){
+      rc = SQLITE_OK;
+    }else{
+      fprintf(stderr, "Error: %s\n", sqlite3_errmsg(pDest));
+    }
+    sqlite3_close(pDest);
+  }else
+
+  if( c=='b' && n>=3 && strncmp(azArg[0], "bail", n)==0 && nArg>1 ){
     bail_on_error = booleanValue(azArg[1]);
   }else
 
@@ -1090,14 +2095,19 @@ static int do_meta_command(char *zLine, struct callback_data *p){
     open_db(p);
     fprintf(p->out, "BEGIN TRANSACTION;\n");
     p->writableSchema = 0;
+    sqlite3_exec(p->db, "PRAGMA writable_schema=ON", 0, 0, 0);
     if( nArg==1 ){
       run_schema_dump_query(p, 
         "SELECT name, type, sql FROM sqlite_master "
-        "WHERE sql NOT NULL AND type=='table'", 0
+        "WHERE sql NOT NULL AND type=='table' AND name!='sqlite_sequence'", 0
+      );
+      run_schema_dump_query(p, 
+        "SELECT name, type, sql FROM sqlite_master "
+        "WHERE name=='sqlite_sequence'", 0
       );
       run_table_dump_query(p->out, p->db,
         "SELECT sql FROM sqlite_master "
-        "WHERE sql NOT NULL AND type IN ('index','trigger','view')"
+        "WHERE sql NOT NULL AND type IN ('index','trigger','view')", 0
       );
     }else{
       int i;
@@ -1111,7 +2121,7 @@ static int do_meta_command(char *zLine, struct callback_data *p){
           "SELECT sql FROM sqlite_master "
           "WHERE sql NOT NULL"
           "  AND type IN ('index','trigger','view')"
-          "  AND tbl_name LIKE shellstatic()"
+          "  AND tbl_name LIKE shellstatic()", 0
         );
         zShellStatic = 0;
       }
@@ -1120,6 +2130,7 @@ static int do_meta_command(char *zLine, struct callback_data *p){
       fprintf(p->out, "PRAGMA writable_schema=OFF;\n");
       p->writableSchema = 0;
     }
+    sqlite3_exec(p->db, "PRAGMA writable_schema=OFF", 0, 0, 0);
     if( zErrMsg ){
       fprintf(stderr,"Error: %s\n", zErrMsg);
       sqlite3_free(zErrMsg);
@@ -1171,13 +2182,24 @@ static int do_meta_command(char *zLine, struct callback_data *p){
     }
   }else
 
+#if !defined(SQLITE_OMIT_VIRTUALTABLE) && !defined(SQLITE_OMIT_SUBQUERY)
+  if( c=='g' && strncmp(azArg[0], "genfkey", n)==0 ){
+    GenfkeyCmd cmd;
+    if( 0==genfkeyParseArgs(&cmd, &azArg[1], nArg-1) ){
+      cmd.db = p->db;
+      cmd.pCb = p;
+      genfkey_create_triggers(p->db, "main", (void *)&cmd, genfkeyCmdCb);
+    }
+  }else
+#endif
+
   if( c=='h' && (strncmp(azArg[0], "header", n)==0 ||
                  strncmp(azArg[0], "headers", n)==0 )&& nArg>1 ){
     p->showHeader = booleanValue(azArg[1]);
   }else
 
   if( c=='h' && strncmp(azArg[0], "help", n)==0 ){
-    fprintf(stderr,zHelp);
+    fprintf(stderr,"%s",zHelp);
   }else
 
   if( c=='i' && strncmp(azArg[0], "import", n)==0 && nArg>=3 ){
@@ -1197,14 +2219,14 @@ static int do_meta_command(char *zLine, struct callback_data *p){
     int lineno = 0;             /* Line number of input file */
 
     open_db(p);
-    nSep = strlen(p->separator);
+    nSep = strlen30(p->separator);
     if( nSep==0 ){
       fprintf(stderr, "non-null separator required for import\n");
       return 0;
     }
     zSql = sqlite3_mprintf("SELECT * FROM '%q'", zTable);
     if( zSql==0 ) return 0;
-    nByte = strlen(zSql);
+    nByte = strlen30(zSql);
     rc = sqlite3_prepare(p->db, zSql, -1, &pStmt, 0);
     sqlite3_free(zSql);
     if( rc ){
@@ -1219,7 +2241,7 @@ static int do_meta_command(char *zLine, struct callback_data *p){
     zSql = malloc( nByte + 20 + nCol*2 );
     if( zSql==0 ) return 0;
     sqlite3_snprintf(nByte+20, zSql, "INSERT INTO '%q' VALUES(?", zTable);
-    j = strlen(zSql);
+    j = strlen30(zSql);
     for(i=1; i<nCol; i++){
       zSql[j++] = ',';
       zSql[j++] = '?';
@@ -1266,6 +2288,7 @@ static int do_meta_command(char *zLine, struct callback_data *p){
         fprintf(stderr,"%s line %d: expected %d columns of data but found %d\n",
            zFile, lineno, nCol, i+1);
         zCommit = "ROLLBACK";
+        free(zLine);
         break;
       }
       for(i=0; i<nCol; i++){
@@ -1351,7 +2374,7 @@ static int do_meta_command(char *zLine, struct callback_data *p){
 #endif
 
   if( c=='m' && strncmp(azArg[0], "mode", n)==0 && nArg>=2 ){
-    int n2 = strlen(azArg[1]);
+    int n2 = strlen30(azArg[1]);
     if( strncmp(azArg[1],"line",n2)==0
         ||
         strncmp(azArg[1],"lines",n2)==0 ){
@@ -1421,7 +2444,7 @@ static int do_meta_command(char *zLine, struct callback_data *p){
     rc = 2;
   }else
 
-  if( c=='r' && strncmp(azArg[0], "read", n)==0 && nArg==2 ){
+  if( c=='r' && n>=3 && strncmp(azArg[0], "read", n)==0 && nArg==2 ){
     FILE *alt = fopen(azArg[1], "rb");
     if( alt==0 ){
       fprintf(stderr,"can't open \"%s\"\n", azArg[1]);
@@ -1429,6 +2452,52 @@ static int do_meta_command(char *zLine, struct callback_data *p){
       process_input(p, alt);
       fclose(alt);
     }
+  }else
+
+  if( c=='r' && n>=3 && strncmp(azArg[0], "restore", n)==0 && nArg>1 ){
+    const char *zSrcFile;
+    const char *zDb;
+    sqlite3 *pSrc;
+    sqlite3_backup *pBackup;
+    int rc;
+    int nTimeout = 0;
+
+    if( nArg==2 ){
+      zSrcFile = azArg[1];
+      zDb = "main";
+    }else{
+      zSrcFile = azArg[2];
+      zDb = azArg[1];
+    }
+    rc = sqlite3_open(zSrcFile, &pSrc);
+    if( rc!=SQLITE_OK ){
+      fprintf(stderr, "Error: cannot open %s\n", zSrcFile);
+      sqlite3_close(pSrc);
+      return 1;
+    }
+    open_db(p);
+    pBackup = sqlite3_backup_init(p->db, zDb, pSrc, "main");
+    if( pBackup==0 ){
+      fprintf(stderr, "Error: %s\n", sqlite3_errmsg(p->db));
+      sqlite3_close(pSrc);
+      return 1;
+    }
+    while( (rc = sqlite3_backup_step(pBackup,100))==SQLITE_OK
+          || rc==SQLITE_BUSY  ){
+      if( rc==SQLITE_BUSY ){
+        if( nTimeout++ >= 3 ) break;
+        sqlite3_sleep(100);
+      }
+    }
+    sqlite3_backup_finish(pBackup);
+    if( rc==SQLITE_DONE ){
+      rc = SQLITE_OK;
+    }else if( rc==SQLITE_BUSY || rc==SQLITE_LOCKED ){
+      fprintf(stderr, "source database is busy\n");
+    }else{
+      fprintf(stderr, "Error: %s\n", sqlite3_errmsg(p->db));
+    }
+    sqlite3_close(pSrc);
   }else
 
   if( c=='s' && strncmp(azArg[0], "schema", n)==0 ){
@@ -1440,7 +2509,7 @@ static int do_meta_command(char *zLine, struct callback_data *p){
     data.mode = MODE_Semi;
     if( nArg>1 ){
       int i;
-      for(i=0; azArg[1][i]; i++) azArg[1][i] = tolower(azArg[1][i]);
+      for(i=0; azArg[1][i]; i++) azArg[1][i] = (char)tolower(azArg[1][i]);
       if( strcmp(azArg[1],"sqlite_master")==0 ){
         char *new_argv[2], *new_colv[2];
         new_argv[0] = "CREATE TABLE sqlite_master (\n"
@@ -1471,8 +2540,9 @@ static int do_meta_command(char *zLine, struct callback_data *p){
         zShellStatic = azArg[1];
         sqlite3_exec(p->db,
           "SELECT sql FROM "
-          "  (SELECT * FROM sqlite_master UNION ALL"
-          "   SELECT * FROM sqlite_temp_master) "
+          "  (SELECT sql sql, type type, tbl_name tbl_name, name name"
+          "     FROM sqlite_master UNION ALL"
+          "   SELECT sql, type, tbl_name, name FROM sqlite_temp_master) "
           "WHERE tbl_name LIKE shellstatic() AND type!='meta' AND sql NOTNULL "
           "ORDER BY substr(type,2,1), name",
           callback, &data, &zErrMsg);
@@ -1481,8 +2551,9 @@ static int do_meta_command(char *zLine, struct callback_data *p){
     }else{
       sqlite3_exec(p->db,
          "SELECT sql FROM "
-         "  (SELECT * FROM sqlite_master UNION ALL"
-         "   SELECT * FROM sqlite_temp_master) "
+         "  (SELECT sql sql, type type, tbl_name tbl_name, name name"
+         "     FROM sqlite_master UNION ALL"
+         "   SELECT sql, type, tbl_name, name FROM sqlite_temp_master) "
          "WHERE type!='meta' AND sql NOTNULL AND name NOT LIKE 'sqlite_%'"
          "ORDER BY substr(type,2,1), name",
          callback, &data, &zErrMsg
@@ -1509,7 +2580,7 @@ static int do_meta_command(char *zLine, struct callback_data *p){
       output_c_string(p->out, p->nullvalue);
       fprintf(p->out, "\n");
     fprintf(p->out,"%9.9s: %s\n","output",
-                                 strlen(p->outfile) ? p->outfile : "stdout");
+            strlen30(p->outfile) ? p->outfile : "stdout");
     fprintf(p->out,"%9.9s: ", "separator");
       output_c_string(p->out, p->separator);
       fprintf(p->out, "\n");
@@ -1558,7 +2629,7 @@ static int do_meta_command(char *zLine, struct callback_data *p){
       int nPrintCol, nPrintRow;
       for(i=1; i<=nRow; i++){
         if( azResult[i]==0 ) continue;
-        len = strlen(azResult[i]);
+        len = strlen30(azResult[i]);
         if( len>maxlen ) maxlen = len;
       }
       nPrintCol = 80/(maxlen+2);
@@ -1646,12 +2717,28 @@ static int _all_whitespace(const char *z){
 */
 static int _is_command_terminator(const char *zLine){
   while( isspace(*(unsigned char*)zLine) ){ zLine++; };
-  if( zLine[0]=='/' && _all_whitespace(&zLine[1]) ) return 1;  /* Oracle */
+  if( zLine[0]=='/' && _all_whitespace(&zLine[1]) ){
+    return 1;  /* Oracle */
+  }
   if( tolower(zLine[0])=='g' && tolower(zLine[1])=='o'
          && _all_whitespace(&zLine[2]) ){
     return 1;  /* SQL Server */
   }
   return 0;
+}
+
+/*
+** Return true if zSql is a complete SQL statement.  Return false if it
+** ends in the middle of a string literal or C-style comment.
+*/
+static int _is_complete(char *zSql, int nSql){
+  int rc;
+  if( zSql==0 ) return 1;
+  zSql[nSql] = ';';
+  zSql[nSql+1] = 0;
+  rc = sqlite3_complete(zSql);
+  zSql[nSql] = 0;
+  return rc;
 }
 
 /*
@@ -1697,7 +2784,7 @@ static int process_input(struct callback_data *p, FILE *in){
       }
       continue;
     }
-    if( _is_command_terminator(zLine) ){
+    if( _is_command_terminator(zLine) && _is_complete(zSql, nSql) ){
       memcpy(zLine,";",2);
     }
     nSqlPrior = nSql;
@@ -1705,8 +2792,8 @@ static int process_input(struct callback_data *p, FILE *in){
       int i;
       for(i=0; zLine[i] && isspace((unsigned char)zLine[i]); i++){}
       if( zLine[i]!=0 ){
-        nSql = strlen(zLine);
-        zSql = malloc( nSql+1 );
+        nSql = strlen30(zLine);
+        zSql = malloc( nSql+3 );
         if( zSql==0 ){
           fprintf(stderr, "out of memory\n");
           exit(1);
@@ -1715,8 +2802,8 @@ static int process_input(struct callback_data *p, FILE *in){
         startline = lineno;
       }
     }else{
-      int len = strlen(zLine);
-      zSql = realloc( zSql, nSql + len + 2 );
+      int len = strlen30(zLine);
+      zSql = realloc( zSql, nSql + len + 4 );
       if( zSql==0 ){
         fprintf(stderr,"%s: out of memory!\n", Argv0);
         exit(1);
@@ -1755,7 +2842,7 @@ static int process_input(struct callback_data *p, FILE *in){
     }
   }
   if( zSql ){
-    if( !_all_whitespace(zSql) ) printf("Incomplete SQL: %s\n", zSql);
+    if( !_all_whitespace(zSql) ) fprintf(stderr, "Incomplete SQL: %s\n", zSql);
     free(zSql);
   }
   free(zLine);
@@ -1771,7 +2858,7 @@ static int process_input(struct callback_data *p, FILE *in){
 static char *find_home_dir(void){
   char *home_dir = NULL;
 
-#if !defined(_WIN32) && !defined(WIN32) && !defined(__OS2__) && !defined(_WIN32_WCE)
+#if !defined(_WIN32) && !defined(WIN32) && !defined(__OS2__) && !defined(_WIN32_WCE) && !defined(__RTP__) && !defined(_WRS_KERNEL)
   struct passwd *pwent;
   uid_t uid = getuid();
   if( (pwent=getpwuid(uid)) != NULL) {
@@ -1802,7 +2889,7 @@ static char *find_home_dir(void){
     zDrive = getenv("HOMEDRIVE");
     zPath = getenv("HOMEPATH");
     if( zDrive && zPath ){
-      n = strlen(zDrive) + strlen(zPath) + 1;
+      n = strlen30(zDrive) + strlen30(zPath) + 1;
       home_dir = malloc( n );
       if( home_dir==0 ) return 0;
       sqlite3_snprintf(n, home_dir, "%s%s", zDrive, zPath);
@@ -1815,7 +2902,7 @@ static char *find_home_dir(void){
 #endif /* !_WIN32_WCE */
 
   if( home_dir ){
-    int n = strlen(home_dir) + 1;
+    int n = strlen30(home_dir) + 1;
     char *z = malloc( n );
     if( z ) memcpy(z, home_dir, n);
     home_dir = z;
@@ -1841,10 +2928,12 @@ static void process_sqliterc(
   if (sqliterc == NULL) {
     home_dir = find_home_dir();
     if( home_dir==0 ){
+#if !defined(__RTP__) && !defined(_WRS_KERNEL)
       fprintf(stderr,"%s: cannot locate your home directory!\n", Argv0);
+#endif
       return;
     }
-    nBuf = strlen(home_dir) + 16;
+    nBuf = strlen30(home_dir) + 16;
     zBuf = malloc( nBuf );
     if( zBuf==0 ){
       fprintf(stderr,"%s: out of memory!\n", Argv0);
@@ -2079,8 +3168,11 @@ int main(int argc, char **argv){
         sqlite3_libversion()
       );
       zHome = find_home_dir();
-      if( zHome && (zHistory = malloc(nHistory = strlen(zHome)+20))!=0 ){
-        sqlite3_snprintf(nHistory, zHistory,"%s/.sqlite_history", zHome);
+      if( zHome ){
+        nHistory = strlen30(zHome) + 20;
+        if( (zHistory = malloc(nHistory))!=0 ){
+          sqlite3_snprintf(nHistory, zHistory,"%s/.sqlite_history", zHome);
+        }
       }
 #if defined(HAVE_READLINE) && HAVE_READLINE==1
       if( zHistory ) read_history(zHistory);

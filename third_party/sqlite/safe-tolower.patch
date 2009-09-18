@@ -6,9 +6,9 @@ http://www.sqlite.org/src/tktview/991789d9f3136a0460dc83a33e815c1aa9757c26
 
 Index: ext/fts3/fts3.c
 ===================================================================
---- ext/fts3/fts3.c	(revision 24387)
-+++ ext/fts3/fts3.c	(working copy)
-@@ -330,7 +330,7 @@
+--- ext/fts3/fts3.c	2009-09-04 13:37:41.000000000 -0700
++++ ext/fts3/fts3.c	2009-09-14 18:17:45.000000000 -0700
+@@ -326,7 +326,7 @@
    return (c&0x80)==0 ? isspace(c) : 0;
  }
  static int safe_tolower(char c){
@@ -19,8 +19,8 @@ Index: ext/fts3/fts3.c
    return (c&0x80)==0 ? isalnum(c) : 0;
 Index: ext/fts3/fts3_tokenizer1.c
 ===================================================================
---- ext/fts3/fts3_tokenizer1.c	(revision 24387)
-+++ ext/fts3/fts3_tokenizer1.c	(working copy)
+--- ext/fts3/fts3_tokenizer1.c	2009-09-03 13:32:06.000000000 -0700
++++ ext/fts3/fts3_tokenizer1.c	2009-09-02 11:40:21.000000000 -0700
 @@ -191,7 +191,7 @@
          ** case-insensitivity.
          */
@@ -32,8 +32,8 @@ Index: ext/fts3/fts3_tokenizer1.c
        *pnBytes = n;
 Index: ext/fts1/simple_tokenizer.c
 ===================================================================
---- ext/fts1/simple_tokenizer.c	(revision 24387)
-+++ ext/fts1/simple_tokenizer.c	(working copy)
+--- ext/fts1/simple_tokenizer.c	2009-09-03 13:32:06.000000000 -0700
++++ ext/fts1/simple_tokenizer.c	2009-09-02 11:40:21.000000000 -0700
 @@ -138,7 +138,7 @@
          ** case-insensitivity.
          */
@@ -45,8 +45,8 @@ Index: ext/fts1/simple_tokenizer.c
        *ppToken = c->zToken;
 Index: ext/fts1/fts1_tokenizer1.c
 ===================================================================
---- ext/fts1/fts1_tokenizer1.c	(revision 24387)
-+++ ext/fts1/fts1_tokenizer1.c	(working copy)
+--- ext/fts1/fts1_tokenizer1.c	2009-09-03 13:32:06.000000000 -0700
++++ ext/fts1/fts1_tokenizer1.c	2009-09-02 11:40:21.000000000 -0700
 @@ -182,7 +182,7 @@
          ** case-insensitivity.
          */
@@ -58,8 +58,8 @@ Index: ext/fts1/fts1_tokenizer1.c
        *pnBytes = n;
 Index: ext/fts1/fts1.c
 ===================================================================
---- ext/fts1/fts1.c	(revision 24387)
-+++ ext/fts1/fts1.c	(working copy)
+--- ext/fts1/fts1.c	2009-09-04 13:37:41.000000000 -0700
++++ ext/fts1/fts1.c	2009-09-14 18:16:55.000000000 -0700
 @@ -208,7 +208,7 @@
    return (c&0x80)==0 ? isspace(c) : 0;
  }
@@ -71,9 +71,9 @@ Index: ext/fts1/fts1.c
    return (c&0x80)==0 ? isalnum(c) : 0;
 Index: ext/fts2/fts2.c
 ===================================================================
---- ext/fts2/fts2.c	(revision 24387)
-+++ ext/fts2/fts2.c	(working copy)
-@@ -372,7 +372,7 @@
+--- ext/fts2/fts2.c	2009-09-04 13:37:41.000000000 -0700
++++ ext/fts2/fts2.c	2009-09-14 18:17:02.000000000 -0700
+@@ -348,7 +372,7 @@
    return (c&0x80)==0 ? isspace(c) : 0;
  }
  static int safe_tolower(char c){
@@ -84,8 +84,8 @@ Index: ext/fts2/fts2.c
    return (c&0x80)==0 ? isalnum(c) : 0;
 Index: ext/fts2/fts2_tokenizer1.c
 ===================================================================
---- ext/fts2/fts2_tokenizer1.c	(revision 24387)
-+++ ext/fts2/fts2_tokenizer1.c	(working copy)
+--- ext/fts2/fts2_tokenizer1.c	2009-09-03 13:32:06.000000000 -0700
++++ ext/fts2/fts2_tokenizer1.c	2009-09-02 11:40:21.000000000 -0700
 @@ -191,7 +191,7 @@
          ** case-insensitivity.
          */

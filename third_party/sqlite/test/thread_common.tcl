@@ -9,18 +9,10 @@
 #
 #***********************************************************************
 #
-# $Id: thread_common.tcl,v 1.2 2007/09/10 10:53:02 danielk1977 Exp $
+# $Id: thread_common.tcl,v 1.5 2009/03/26 14:48:07 danielk1977 Exp $
 
-set testdir [file dirname $argv0]
-source $testdir/tester.tcl
-
-if {[info commands sqlthread] eq ""} {
-  puts -nonewline "Skipping thread-safety tests - "
-  puts            " not running a threadsafe sqlite/tcl build"
-  puts -nonewline "Both SQLITE_THREADSAFE and TCL_THREADS must be defined when"
-  puts            " building testfixture"
-  finish_test
-  return
+if {[info exists ::thread_procs]} {
+  return 0
 }
 
 # The following script is sourced by every thread spawned using 
@@ -37,6 +29,7 @@ set thread_procs {
         || $rc eq "SQLITE_SCHEMA"} {
       set res [list]
 
+      enter_db_mutex $::DB
       set err [catch {
         set ::STMT [sqlite3_prepare_v2 $::DB $sql -1 dummy_tail]
       } msg]
@@ -49,7 +42,7 @@ set thread_procs {
         }
         set rc [sqlite3_finalize $::STMT]
       } else {
-        if {[string first (6) $msg]} {
+        if {[lindex $msg 0]=="(6)"} {
           set rc SQLITE_LOCKED
         } else {
           set rc SQLITE_ERROR
@@ -59,16 +52,21 @@ set thread_procs {
       if {[string first locked [sqlite3_errmsg $::DB]]>=0} {
         set rc SQLITE_LOCKED
       }
+      if {$rc ne "SQLITE_OK"} {
+        set errtxt "$rc - [sqlite3_errmsg $::DB] (debug1)"
+      }
+      leave_db_mutex $::DB
 
       if {$rc eq "SQLITE_LOCKED" || $rc eq "SQLITE_BUSY"} {
- #puts -nonewline "([sqlthread id] $rc)"
- #flush stdout
-        after 20
+        #sqlthread parent "puts \"thread [sqlthread id] is busy.  rc=$rc\""
+        after 200
+      } else {
+        #sqlthread parent "puts \"thread [sqlthread id] ran $sql\""
       }
     }
 
     if {$rc ne "SQLITE_OK"} {
-      error "$rc - [sqlite3_errmsg $::DB]"
+      error $errtxt
     }
     set res
   }
@@ -85,4 +83,31 @@ proc thread_spawn {varname args} {
   sqlthread spawn $varname [join $args ;]
 }
 
+# Return true if this build can run the multi-threaded tests.
+#
+proc run_thread_tests {{print_warning 0}} {
+  ifcapable !mutex { 
+    set zProblem "SQLite build is not threadsafe"
+  }
+  if {[info commands sqlthread] eq ""} {
+    set zProblem "SQLite build is not threadsafe"
+  }
+  if {![info exists ::tcl_platform(threaded)]} {
+    set zProblem "Linked against a non-threadsafe Tcl build"
+  }
+  if {[info exists zProblem]} {
+    if {$print_warning} {
+      if {[info exists ::run_thread_tests_failed]} {
+        puts "WARNING: Multi-threaded tests skipped: $zProblem"
+      }
+    } else {
+      puts "Skipping thread tests: $zProblem"
+      set ::run_thread_tests_failed 1
+    }
+    return 0
+  }
+  return 1;
+}
+
 return 0
+

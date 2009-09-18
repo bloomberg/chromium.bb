@@ -11,7 +11,7 @@
 *************************************************************************
 ** Code for testing the the SQLite library in a multithreaded environment.
 **
-** $Id: test4.c,v 1.23 2008/07/28 19:34:54 drh Exp $
+** $Id: test4.c,v 1.24 2008/10/12 00:27:54 shane Exp $
 */
 #include "sqliteInt.h"
 #include "tcl.h"
@@ -96,7 +96,9 @@ static void *thread_main(void *pArg){
     p->zErr = 0;
   }
   p->completed++;
+#ifndef SQLITE_OMIT_DEPRECATED
   sqlite3_thread_cleanup();
+#endif
   return 0;
 }
 
@@ -649,6 +651,36 @@ static int tcl_thread_db_get(
 }
 
 /*
+** Usage: thread_db_put ID DB
+**
+*/
+static int tcl_thread_db_put(
+  void *NotUsed,
+  Tcl_Interp *interp,    /* The TCL interpreter that invoked this command */
+  int argc,              /* Number of arguments */
+  const char **argv      /* Text of each argument */
+){
+  int i;
+  extern int sqlite3TestMakePointerStr(Tcl_Interp*, char*, void*);
+  extern void *sqlite3TestTextToPtr(const char *);
+  if( argc!=3 ){
+    Tcl_AppendResult(interp, "wrong # args: should be \"", argv[0],
+       " ID DB", 0);
+    return TCL_ERROR;
+  }
+  i = parse_thread_id(interp, argv[1]);
+  if( i<0 ) return TCL_ERROR;
+  if( !threadset[i].busy ){
+    Tcl_AppendResult(interp, "no such thread", 0);
+    return TCL_ERROR;
+  }
+  thread_wait(&threadset[i]);
+  assert( !threadset[i].db );
+  threadset[i].db = (sqlite3*)sqlite3TestTextToPtr(argv[2]);
+  return TCL_OK;
+}
+
+/*
 ** Usage: thread_stmt_get ID
 **
 ** Return the database stmt pointer for the given thread.  Then
@@ -702,6 +734,7 @@ int Sqlitetest4_Init(Tcl_Interp *interp){
      { "thread_finalize",   (Tcl_CmdProc*)tcl_thread_finalize   },
      { "thread_swap",       (Tcl_CmdProc*)tcl_thread_swap       },
      { "thread_db_get",     (Tcl_CmdProc*)tcl_thread_db_get     },
+     { "thread_db_put",     (Tcl_CmdProc*)tcl_thread_db_put     },
      { "thread_stmt_get",   (Tcl_CmdProc*)tcl_thread_stmt_get   },
   };
   int i;

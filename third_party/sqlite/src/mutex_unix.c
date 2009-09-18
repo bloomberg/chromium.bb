@@ -11,7 +11,7 @@
 *************************************************************************
 ** This file contains the C functions that implement mutexes for pthreads
 **
-** $Id: mutex_unix.c,v 1.13 2008/07/16 12:33:24 drh Exp $
+** $Id: mutex_unix.c,v 1.16 2008/12/08 18:19:18 drh Exp $
 */
 #include "sqliteInt.h"
 
@@ -61,7 +61,7 @@ struct sqlite3_mutex {
 ** make sure no assert() statements are evaluated and hence these
 ** routines are never called.
 */
-#ifndef NDEBUG
+#if !defined(NDEBUG) || defined(SQLITE_DEBUG)
 static int pthreadMutexHeld(sqlite3_mutex *p){
   return (p->nRef!=0 && pthread_equal(p->owner, pthread_self()));
 }
@@ -91,6 +91,7 @@ static int pthreadMutexEnd(void){ return SQLITE_OK; }
 ** <li>  SQLITE_MUTEX_STATIC_MEM2
 ** <li>  SQLITE_MUTEX_STATIC_PRNG
 ** <li>  SQLITE_MUTEX_STATIC_LRU
+** <li>  SQLITE_MUTEX_STATIC_LRU2
 ** </ul>
 **
 ** The first two constants cause sqlite3_mutex_alloc() to create
@@ -104,7 +105,7 @@ static int pthreadMutexEnd(void){ return SQLITE_OK; }
 ** might return such a mutex in response to SQLITE_MUTEX_FAST.
 **
 ** The other allowed parameters to sqlite3_mutex_alloc() each return
-** a pointer to a static preexisting mutex.  Three static mutexes are
+** a pointer to a static preexisting mutex.  Six static mutexes are
 ** used by the current version of SQLite.  Future versions of SQLite
 ** may add additional static mutexes.  Static mutexes are for internal
 ** use by SQLite only.  Applications that use SQLite mutexes should
@@ -157,7 +158,7 @@ static sqlite3_mutex *pthreadMutexAlloc(int iType){
     }
     default: {
       assert( iType-2 >= 0 );
-      assert( iType-2 < sizeof(staticMutexes)/sizeof(staticMutexes[0]) );
+      assert( iType-2 < ArraySize(staticMutexes) );
       p = &staticMutexes[iType-2];
       p->id = iType;
       break;
@@ -316,6 +317,9 @@ sqlite3_mutex_methods *sqlite3DefaultMutex(void){
 #ifdef SQLITE_DEBUG
     pthreadMutexHeld,
     pthreadMutexNotheld
+#else
+    0,
+    0
 #endif
   };
 

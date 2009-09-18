@@ -12,7 +12,7 @@
 ** This file contains C code routines that are called by the parser
 ** in order to generate code for DELETE FROM statements.
 **
-** $Id: delete.c,v 1.171 2008/07/28 19:34:53 drh Exp $
+** $Id: delete.c,v 1.207 2009/08/08 18:01:08 drh Exp $
 */
 #include "sqliteInt.h"
 
@@ -22,16 +22,17 @@
 ** are found, return a pointer to the last table.
 */
 Table *sqlite3SrcListLookup(Parse *pParse, SrcList *pSrc){
-  Table *pTab = 0;
-  int i;
-  struct SrcList_item *pItem;
-  for(i=0, pItem=pSrc->a; i<pSrc->nSrc; i++, pItem++){
-    pTab = sqlite3LocateTable(pParse, 0, pItem->zName, pItem->zDatabase);
-    sqlite3DeleteTable(pItem->pTab);
-    pItem->pTab = pTab;
-    if( pTab ){
-      pTab->nRef++;
-    }
+  struct SrcList_item *pItem = pSrc->a;
+  Table *pTab;
+  assert( pItem && pSrc->nSrc==1 );
+  pTab = sqlite3LocateTable(pParse, 0, pItem->zName, pItem->zDatabase);
+  sqlite3DeleteTable(pItem->pTab);
+  pItem->pTab = pTab;
+  if( pTab ){
+    pTab->nRef++;
+  }
+  if( sqlite3IndexedByLookup(pParse, pItem) ){
+    pTab = 0;
   }
   return pTab;
 }
@@ -42,15 +43,26 @@ Table *sqlite3SrcListLookup(Parse *pParse, SrcList *pSrc){
 ** writable return 0;
 */
 int sqlite3IsReadOnly(Parse *pParse, Table *pTab, int viewOk){
-  if( (pTab->readOnly && (pParse->db->flags & SQLITE_WriteSchema)==0
-        && pParse->nested==0) 
-#ifndef SQLITE_OMIT_VIRTUALTABLE
-      || (pTab->pMod && pTab->pMod->pModule->xUpdate==0)
-#endif
+  /* A table is not writable under the following circumstances:
+  **
+  **   1) It is a virtual table and no implementation of the xUpdate method
+  **      has been provided, or
+  **   2) It is a system table (i.e. sqlite_master), this call is not
+  **      part of a nested parse and writable_schema pragma has not 
+  **      been specified.
+  **
+  ** In either case leave an error message in pParse and return non-zero.
+  */
+  if( ( IsVirtual(pTab) 
+     && sqlite3GetVTable(pParse->db, pTab)->pMod->pModule->xUpdate==0 )
+   || ( (pTab->tabFlags & TF_Readonly)!=0
+     && (pParse->db->flags & SQLITE_WriteSchema)==0
+     && pParse->nested==0 )
   ){
     sqlite3ErrorMsg(pParse, "table %s may not be modified", pTab->zName);
     return 1;
   }
+
 #ifndef SQLITE_OMIT_VIEW
   if( !viewOk && pTab->pSelect ){
     sqlite3ErrorMsg(pParse,"cannot modify %s because it is a view",pTab->zName);
@@ -58,26 +70,6 @@ int sqlite3IsReadOnly(Parse *pParse, Table *pTab, int viewOk){
   }
 #endif
   return 0;
-}
-
-/*
-** Generate code that will open a table for reading.
-*/
-void sqlite3OpenTable(
-  Parse *p,       /* Generate code into this VDBE */
-  int iCur,       /* The cursor number of the table */
-  int iDb,        /* The database index in sqlite3.aDb[] */
-  Table *pTab,    /* The table to be opened */
-  int opcode      /* OP_OpenRead or OP_OpenWrite */
-){
-  Vdbe *v;
-  if( IsVirtual(pTab) ) return;
-  v = sqlite3GetVdbe(p);
-  assert( opcode==OP_OpenWrite || opcode==OP_OpenRead );
-  sqlite3TableLock(p, iDb, pTab->tnum, (opcode==OP_OpenWrite), pTab->zName);
-  sqlite3VdbeAddOp2(v, OP_SetNumColumns, 0, pTab->nCol);
-  sqlite3VdbeAddOp3(v, opcode, iCur, pTab->tnum, iDb);
-  VdbeComment((v, "%s", pTab->zName));
 }
 
 
@@ -89,7 +81,7 @@ void sqlite3OpenTable(
 */
 void sqlite3MaterializeView(
   Parse *pParse,       /* Parsing context */
-  Select *pView,       /* View definition */
+  Table *pView,        /* View definition */
   Expr *pWhere,        /* Optional WHERE clause to be added */
   int iCur             /* Cursor number for ephemerial table */
 ){
@@ -97,20 +89,122 @@ void sqlite3MaterializeView(
   Select *pDup;
   sqlite3 *db = pParse->db;
 
-  pDup = sqlite3SelectDup(db, pView);
+  pDup = sqlite3SelectDup(db, pView->pSelect, 0);
   if( pWhere ){
     SrcList *pFrom;
     
-    pWhere = sqlite3ExprDup(db, pWhere);
-    pFrom = sqlite3SrcListAppendFromTerm(pParse, 0, 0, 0, 0, pDup, 0, 0);
+    pWhere = sqlite3ExprDup(db, pWhere, 0);
+    pFrom = sqlite3SrcListAppend(db, 0, 0, 0);
+    if( pFrom ){
+      assert( pFrom->nSrc==1 );
+      pFrom->a[0].zAlias = sqlite3DbStrDup(db, pView->zName);
+      pFrom->a[0].pSelect = pDup;
+      assert( pFrom->a[0].pOn==0 );
+      assert( pFrom->a[0].pUsing==0 );
+    }else{
+      sqlite3SelectDelete(db, pDup);
+    }
     pDup = sqlite3SelectNew(pParse, 0, pFrom, pWhere, 0, 0, 0, 0, 0, 0);
   }
   sqlite3SelectDestInit(&dest, SRT_EphemTab, iCur);
-  sqlite3Select(pParse, pDup, &dest, 0, 0, 0);
+  sqlite3Select(pParse, pDup, &dest);
   sqlite3SelectDelete(db, pDup);
 }
 #endif /* !defined(SQLITE_OMIT_VIEW) && !defined(SQLITE_OMIT_TRIGGER) */
 
+#if defined(SQLITE_ENABLE_UPDATE_DELETE_LIMIT) && !defined(SQLITE_OMIT_SUBQUERY)
+/*
+** Generate an expression tree to implement the WHERE, ORDER BY,
+** and LIMIT/OFFSET portion of DELETE and UPDATE statements.
+**
+**     DELETE FROM table_wxyz WHERE a<5 ORDER BY a LIMIT 1;
+**                            \__________________________/
+**                               pLimitWhere (pInClause)
+*/
+Expr *sqlite3LimitWhere(
+  Parse *pParse,               /* The parser context */
+  SrcList *pSrc,               /* the FROM clause -- which tables to scan */
+  Expr *pWhere,                /* The WHERE clause.  May be null */
+  ExprList *pOrderBy,          /* The ORDER BY clause.  May be null */
+  Expr *pLimit,                /* The LIMIT clause.  May be null */
+  Expr *pOffset,               /* The OFFSET clause.  May be null */
+  char *zStmtType              /* Either DELETE or UPDATE.  For error messages. */
+){
+  Expr *pWhereRowid = NULL;    /* WHERE rowid .. */
+  Expr *pInClause = NULL;      /* WHERE rowid IN ( select ) */
+  Expr *pSelectRowid = NULL;   /* SELECT rowid ... */
+  ExprList *pEList = NULL;     /* Expression list contaning only pSelectRowid */
+  SrcList *pSelectSrc = NULL;  /* SELECT rowid FROM x ... (dup of pSrc) */
+  Select *pSelect = NULL;      /* Complete SELECT tree */
+
+  /* Check that there isn't an ORDER BY without a LIMIT clause.
+  */
+  if( pOrderBy && (pLimit == 0) ) {
+    sqlite3ErrorMsg(pParse, "ORDER BY without LIMIT on %s", zStmtType);
+    pParse->parseError = 1;
+    goto limit_where_cleanup_2;
+  }
+
+  /* We only need to generate a select expression if there
+  ** is a limit/offset term to enforce.
+  */
+  if( pLimit == 0 ) {
+    /* if pLimit is null, pOffset will always be null as well. */
+    assert( pOffset == 0 );
+    return pWhere;
+  }
+
+  /* Generate a select expression tree to enforce the limit/offset 
+  ** term for the DELETE or UPDATE statement.  For example:
+  **   DELETE FROM table_a WHERE col1=1 ORDER BY col2 LIMIT 1 OFFSET 1
+  ** becomes:
+  **   DELETE FROM table_a WHERE rowid IN ( 
+  **     SELECT rowid FROM table_a WHERE col1=1 ORDER BY col2 LIMIT 1 OFFSET 1
+  **   );
+  */
+
+  pSelectRowid = sqlite3PExpr(pParse, TK_ROW, 0, 0, 0);
+  if( pSelectRowid == 0 ) goto limit_where_cleanup_2;
+  pEList = sqlite3ExprListAppend(pParse, 0, pSelectRowid);
+  if( pEList == 0 ) goto limit_where_cleanup_2;
+
+  /* duplicate the FROM clause as it is needed by both the DELETE/UPDATE tree
+  ** and the SELECT subtree. */
+  pSelectSrc = sqlite3SrcListDup(pParse->db, pSrc, 0);
+  if( pSelectSrc == 0 ) {
+    sqlite3ExprListDelete(pParse->db, pEList);
+    goto limit_where_cleanup_2;
+  }
+
+  /* generate the SELECT expression tree. */
+  pSelect = sqlite3SelectNew(pParse,pEList,pSelectSrc,pWhere,0,0,
+                             pOrderBy,0,pLimit,pOffset);
+  if( pSelect == 0 ) return 0;
+
+  /* now generate the new WHERE rowid IN clause for the DELETE/UDPATE */
+  pWhereRowid = sqlite3PExpr(pParse, TK_ROW, 0, 0, 0);
+  if( pWhereRowid == 0 ) goto limit_where_cleanup_1;
+  pInClause = sqlite3PExpr(pParse, TK_IN, pWhereRowid, 0, 0);
+  if( pInClause == 0 ) goto limit_where_cleanup_1;
+
+  pInClause->x.pSelect = pSelect;
+  pInClause->flags |= EP_xIsSelect;
+  sqlite3ExprSetHeight(pParse, pInClause);
+  return pInClause;
+
+  /* something went wrong. clean up anything allocated. */
+limit_where_cleanup_1:
+  sqlite3SelectDelete(pParse->db, pSelect);
+  return 0;
+
+limit_where_cleanup_2:
+  sqlite3ExprDelete(pParse->db, pWhere);
+  sqlite3ExprListDelete(pParse->db, pOrderBy);
+  sqlite3ExprDelete(pParse->db, pLimit);
+  sqlite3ExprDelete(pParse->db, pOffset);
+  return 0;
+}
+#endif /* defined(SQLITE_ENABLE_UPDATE_DELETE_LIMIT) && !defined(SQLITE_OMIT_SUBQUERY) */
 
 /*
 ** Generate code for a DELETE FROM statement.
@@ -134,22 +228,17 @@ void sqlite3DeleteFrom(
   int iCur;              /* VDBE Cursor number for pTab */
   sqlite3 *db;           /* Main database structure */
   AuthContext sContext;  /* Authorization context */
-  int oldIdx = -1;       /* Cursor for the OLD table of AFTER triggers */
   NameContext sNC;       /* Name context to resolve expressions in */
   int iDb;               /* Database number */
-  int memCnt = 0;        /* Memory cell used for change counting */
+  int memCnt = -1;       /* Memory cell used for change counting */
+  int rcauth;            /* Value returned by authorization callback */
 
 #ifndef SQLITE_OMIT_TRIGGER
   int isView;                  /* True if attempting to delete from a view */
-  int triggers_exist = 0;      /* True if any triggers exist */
+  Trigger *pTrigger;           /* List of table triggers, if required */
 #endif
-  int iBeginAfterTrigger;      /* Address of after trigger program */
-  int iEndAfterTrigger;        /* Exit of after trigger program */
-  int iBeginBeforeTrigger;     /* Address of before trigger program */
-  int iEndBeforeTrigger;       /* Exit of before trigger program */
-  u32 old_col_mask = 0;        /* Mask of OLD.* columns in use */
 
-  sContext.pParse = 0;
+  memset(&sContext, 0, sizeof(sContext));
   db = pParse->db;
   if( pParse->nErr || db->mallocFailed ){
     goto delete_from_cleanup;
@@ -168,10 +257,10 @@ void sqlite3DeleteFrom(
   ** deleted from is a view
   */
 #ifndef SQLITE_OMIT_TRIGGER
-  triggers_exist = sqlite3TriggersExist(pParse, pTab, TK_DELETE, 0);
+  pTrigger = sqlite3TriggersExist(pParse, pTab, TK_DELETE, 0, 0);
   isView = pTab->pSelect!=0;
 #else
-# define triggers_exist 0
+# define pTrigger 0
 # define isView 0
 #endif
 #ifdef SQLITE_OMIT_VIEW
@@ -179,27 +268,24 @@ void sqlite3DeleteFrom(
 # define isView 0
 #endif
 
-  if( sqlite3IsReadOnly(pParse, pTab, triggers_exist) ){
-    goto delete_from_cleanup;
-  }
-  iDb = sqlite3SchemaToIndex(db, pTab->pSchema);
-  assert( iDb<db->nDb );
-  zDb = db->aDb[iDb].zName;
-  if( sqlite3AuthCheck(pParse, SQLITE_DELETE, pTab->zName, 0, zDb) ){
-    goto delete_from_cleanup;
-  }
-
   /* If pTab is really a view, make sure it has been initialized.
   */
   if( sqlite3ViewGetColumnNames(pParse, pTab) ){
     goto delete_from_cleanup;
   }
 
-  /* Allocate a cursor used to store the old.* data for a trigger.
-  */
-  if( triggers_exist ){ 
-    oldIdx = pParse->nTab++;
+  if( sqlite3IsReadOnly(pParse, pTab, (pTrigger?1:0)) ){
+    goto delete_from_cleanup;
   }
+  iDb = sqlite3SchemaToIndex(db, pTab->pSchema);
+  assert( iDb<db->nDb );
+  zDb = db->aDb[iDb].zName;
+  rcauth = sqlite3AuthCheck(pParse, SQLITE_DELETE, pTab->zName, 0, zDb);
+  assert( rcauth==SQLITE_OK || rcauth==SQLITE_DENY || rcauth==SQLITE_IGNORE );
+  if( rcauth==SQLITE_DENY ){
+    goto delete_from_cleanup;
+  }
+  assert(!isView || pTrigger);
 
   /* Assign  cursor number to the table and all its indices.
   */
@@ -222,39 +308,23 @@ void sqlite3DeleteFrom(
     goto delete_from_cleanup;
   }
   if( pParse->nested==0 ) sqlite3VdbeCountChanges(v);
-  sqlite3BeginWriteOperation(pParse, triggers_exist, iDb);
-
-  if( triggers_exist ){
-    int orconf = ((pParse->trigStack)?pParse->trigStack->orconf:OE_Default);
-    int iGoto = sqlite3VdbeAddOp0(v, OP_Goto);
-    addr = sqlite3VdbeMakeLabel(v);
-
-    iBeginBeforeTrigger = sqlite3VdbeCurrentAddr(v);
-    (void)sqlite3CodeRowTrigger(pParse, TK_DELETE, 0, TRIGGER_BEFORE, pTab,
-        -1, oldIdx, orconf, addr, &old_col_mask, 0);
-    iEndBeforeTrigger = sqlite3VdbeAddOp0(v, OP_Goto);
-
-    iBeginAfterTrigger = sqlite3VdbeCurrentAddr(v);
-    (void)sqlite3CodeRowTrigger(pParse, TK_DELETE, 0, TRIGGER_AFTER, pTab, -1,
-        oldIdx, orconf, addr, &old_col_mask, 0);
-    iEndAfterTrigger = sqlite3VdbeAddOp0(v, OP_Goto);
-
-    sqlite3VdbeJumpHere(v, iGoto);
-  }
+  sqlite3BeginWriteOperation(pParse, (pTrigger?1:0), iDb);
 
   /* If we are trying to delete from a view, realize that view into
   ** a ephemeral table.
   */
+#if !defined(SQLITE_OMIT_VIEW) && !defined(SQLITE_OMIT_TRIGGER)
   if( isView ){
-    sqlite3MaterializeView(pParse, pTab->pSelect, pWhere, iCur);
+    sqlite3MaterializeView(pParse, pTab, pWhere, iCur);
   }
+#endif
 
   /* Resolve the column names in the WHERE clause.
   */
   memset(&sNC, 0, sizeof(sNC));
   sNC.pParse = pParse;
   sNC.pSrcList = pTabList;
-  if( sqlite3ExprResolveNames(&sNC, pWhere) ){
+  if( sqlite3ResolveExprNames(&sNC, pWhere) ){
     goto delete_from_cleanup;
   }
 
@@ -266,135 +336,76 @@ void sqlite3DeleteFrom(
     sqlite3VdbeAddOp2(v, OP_Integer, 0, memCnt);
   }
 
+#ifndef SQLITE_OMIT_TRUNCATE_OPTIMIZATION
   /* Special case: A DELETE without a WHERE clause deletes everything.
-  ** It is easier just to erase the whole table.  Note, however, that
-  ** this means that the row change count will be incorrect.
-  */
-  if( pWhere==0 && !triggers_exist && !IsVirtual(pTab) ){
-    if( db->flags & SQLITE_CountRows ){
-      /* If counting rows deleted, just count the total number of
-      ** entries in the table. */
-      int addr2;
-      if( !isView ){
-        sqlite3OpenTable(pParse, iCur, iDb, pTab, OP_OpenRead);
-      }
-      sqlite3VdbeAddOp2(v, OP_Rewind, iCur, sqlite3VdbeCurrentAddr(v)+2);
-      addr2 = sqlite3VdbeAddOp2(v, OP_AddImm, memCnt, 1);
-      sqlite3VdbeAddOp2(v, OP_Next, iCur, addr2);
-      sqlite3VdbeAddOp1(v, OP_Close, iCur);
+  ** It is easier just to erase the whole table. Prior to version 3.6.5,
+  ** this optimization caused the row change count (the value returned by 
+  ** API function sqlite3_count_changes) to be set incorrectly.  */
+  if( rcauth==SQLITE_OK && pWhere==0 && !pTrigger && !IsVirtual(pTab) ){
+    assert( !isView );
+    sqlite3VdbeAddOp4(v, OP_Clear, pTab->tnum, iDb, memCnt,
+                      pTab->zName, P4_STATIC);
+    for(pIdx=pTab->pIndex; pIdx; pIdx=pIdx->pNext){
+      assert( pIdx->pSchema==pTab->pSchema );
+      sqlite3VdbeAddOp2(v, OP_Clear, pIdx->tnum, iDb);
     }
-    if( !isView ){
-      sqlite3VdbeAddOp2(v, OP_Clear, pTab->tnum, iDb);
-      if( !pParse->nested ){
-        sqlite3VdbeChangeP4(v, -1, pTab->zName, P4_STATIC);
-      }
-      for(pIdx=pTab->pIndex; pIdx; pIdx=pIdx->pNext){
-        assert( pIdx->pSchema==pTab->pSchema );
-        sqlite3VdbeAddOp2(v, OP_Clear, pIdx->tnum, iDb);
-      }
-    }
-  } 
+  }else
+#endif /* SQLITE_OMIT_TRUNCATE_OPTIMIZATION */
   /* The usual case: There is a WHERE clause so we have to scan through
   ** the table and pick which records to delete.
   */
-  else{
+  {
+    int iRowSet = ++pParse->nMem;   /* Register for rowset of rows to delete */
     int iRowid = ++pParse->nMem;    /* Used for storing rowid values. */
+    int regRowid;                   /* Actual register containing rowids */
 
-    /* Begin the database scan
+    /* Collect rowids of every row to be deleted.
     */
-    pWInfo = sqlite3WhereBegin(pParse, pTabList, pWhere, 0, 0);
+    sqlite3VdbeAddOp2(v, OP_Null, 0, iRowSet);
+    pWInfo = sqlite3WhereBegin(pParse, pTabList, pWhere,0,WHERE_DUPLICATES_OK);
     if( pWInfo==0 ) goto delete_from_cleanup;
-
-    /* Remember the rowid of every item to be deleted.
-    */
-    sqlite3VdbeAddOp2(v, IsVirtual(pTab) ? OP_VRowid : OP_Rowid, iCur, iRowid);
-    sqlite3VdbeAddOp1(v, OP_FifoWrite, iRowid);
+    regRowid = sqlite3ExprCodeGetColumn(pParse, pTab, -1, iCur, iRowid, 0);
+    sqlite3VdbeAddOp2(v, OP_RowSetAdd, iRowSet, regRowid);
     if( db->flags & SQLITE_CountRows ){
       sqlite3VdbeAddOp2(v, OP_AddImm, memCnt, 1);
     }
-
-    /* End the database scan loop.
-    */
     sqlite3WhereEnd(pWInfo);
-
-    /* Open the pseudo-table used to store OLD if there are triggers.
-    */
-    if( triggers_exist ){
-      sqlite3VdbeAddOp2(v, OP_SetNumColumns, 0, pTab->nCol);
-      sqlite3VdbeAddOp1(v, OP_OpenPseudo, oldIdx);
-    }
 
     /* Delete every item whose key was written to the list during the
     ** database scan.  We have to delete items after the scan is complete
-    ** because deleting an item can change the scan order.
-    */
+    ** because deleting an item can change the scan order.  */
     end = sqlite3VdbeMakeLabel(v);
 
+    /* Unless this is a view, open cursors for the table we are 
+    ** deleting from and all its indices. If this is a view, then the
+    ** only effect this statement has is to fire the INSTEAD OF 
+    ** triggers.  */
     if( !isView ){
-      /* Open cursors for the table we are deleting from and 
-      ** all its indices.
-      */
       sqlite3OpenTableAndIndices(pParse, pTab, iCur, OP_OpenWrite);
     }
 
-    /* This is the beginning of the delete loop. If a trigger encounters
-    ** an IGNORE constraint, it jumps back to here.
-    */
-    if( triggers_exist ){
-      sqlite3VdbeResolveLabel(v, addr);
-    }
-    addr = sqlite3VdbeAddOp2(v, OP_FifoRead, iRowid, end);
+    addr = sqlite3VdbeAddOp3(v, OP_RowSetRead, iRowSet, end, iRowid);
 
-    if( triggers_exist ){
-      int iData = ++pParse->nMem;   /* For storing row data of OLD table */
-
-      /* If the record is no longer present in the table, jump to the
-      ** next iteration of the loop through the contents of the fifo.
-      */
-      sqlite3VdbeAddOp3(v, OP_NotExists, iCur, addr, iRowid);
-
-      /* Populate the OLD.* pseudo-table */
-      if( old_col_mask ){
-        sqlite3VdbeAddOp2(v, OP_RowData, iCur, iData);
-      }else{
-        sqlite3VdbeAddOp2(v, OP_Null, 0, iData);
-      }
-      sqlite3VdbeAddOp3(v, OP_Insert, oldIdx, iData, iRowid);
-
-      /* Jump back and run the BEFORE triggers */
-      sqlite3VdbeAddOp2(v, OP_Goto, 0, iBeginBeforeTrigger);
-      sqlite3VdbeJumpHere(v, iEndBeforeTrigger);
-    }
-
-    if( !isView ){
-      /* Delete the row */
+    /* Delete the row */
 #ifndef SQLITE_OMIT_VIRTUALTABLE
-      if( IsVirtual(pTab) ){
-        const char *pVtab = (const char *)pTab->pVtab;
-        sqlite3VtabMakeWritable(pParse, pTab);
-        sqlite3VdbeAddOp4(v, OP_VUpdate, 0, 1, iRowid, pVtab, P4_VTAB);
-      }else
+    if( IsVirtual(pTab) ){
+      const char *pVTab = (const char *)sqlite3GetVTable(db, pTab);
+      sqlite3VtabMakeWritable(pParse, pTab);
+      sqlite3VdbeAddOp4(v, OP_VUpdate, 0, 1, iRowid, pVTab, P4_VTAB);
+      sqlite3MayAbort(pParse);
+    }else
 #endif
-      {
-        sqlite3GenerateRowDelete(pParse, pTab, iCur, iRowid, pParse->nested==0);
-      }
-    }
-
-    /* If there are row triggers, close all cursors then invoke
-    ** the AFTER triggers
-    */
-    if( triggers_exist ){
-      /* Jump back and run the AFTER triggers */
-      sqlite3VdbeAddOp2(v, OP_Goto, 0, iBeginAfterTrigger);
-      sqlite3VdbeJumpHere(v, iEndAfterTrigger);
+    {
+      int count = (pParse->nested==0);    /* True to count changes */
+      sqlite3GenerateRowDelete(pParse, pTab, iCur, iRowid, count, pTrigger, OE_Default);
     }
 
     /* End of the delete loop */
     sqlite3VdbeAddOp2(v, OP_Goto, 0, addr);
     sqlite3VdbeResolveLabel(v, end);
 
-    /* Close the cursors after the loop if there are no row triggers */
-    if( !isView  && !IsVirtual(pTab) ){
+    /* Close the cursors open on the table and its indexes. */
+    if( !isView && !IsVirtual(pTab) ){
       for(i=1, pIdx=pTab->pIndex; pIdx; i++, pIdx=pIdx->pNext){
         sqlite3VdbeAddOp2(v, OP_Close, iCur + i, pIdx->tnum);
       }
@@ -402,15 +413,22 @@ void sqlite3DeleteFrom(
     }
   }
 
-  /*
-  ** Return the number of rows that were deleted. If this routine is 
+  /* Update the sqlite_sequence table by storing the content of the
+  ** maximum rowid counter values recorded while inserting into
+  ** autoincrement tables.
+  */
+  if( pParse->nested==0 && pParse->pTriggerTab==0 ){
+    sqlite3AutoincrementEnd(pParse);
+  }
+
+  /* Return the number of rows that were deleted. If this routine is 
   ** generating code because of a call to sqlite3NestedParse(), do not
   ** invoke the callback function.
   */
-  if( db->flags & SQLITE_CountRows && pParse->nested==0 && !pParse->trigStack ){
+  if( (db->flags&SQLITE_CountRows) && !pParse->nested && !pParse->pTriggerTab ){
     sqlite3VdbeAddOp2(v, OP_ResultRow, memCnt, 1);
     sqlite3VdbeSetNumCols(v, 1);
-    sqlite3VdbeSetColName(v, 0, COLNAME_NAME, "rows deleted", P4_STATIC);
+    sqlite3VdbeSetColName(v, 0, COLNAME_NAME, "rows deleted", SQLITE_STATIC);
   }
 
 delete_from_cleanup:
@@ -436,28 +454,88 @@ delete_from_cleanup:
 **   3.  The record number of the row to be deleted must be stored in
 **       memory cell iRowid.
 **
-** This routine pops the top of the stack to remove the record number
-** and then generates code to remove both the table record and all index
-** entries that point to that record.
+** This routine generates code to remove both the table record and all 
+** index entries that point to that record.
 */
 void sqlite3GenerateRowDelete(
   Parse *pParse,     /* Parsing context */
   Table *pTab,       /* Table containing the row to be deleted */
   int iCur,          /* Cursor number for the table */
   int iRowid,        /* Memory cell that contains the rowid to delete */
-  int count          /* Increment the row change counter */
+  int count,         /* If non-zero, increment the row change counter */
+  Trigger *pTrigger, /* List of triggers to (potentially) fire */
+  int onconf         /* Default ON CONFLICT policy for triggers */
 ){
-  int addr;
-  Vdbe *v;
+  Vdbe *v = pParse->pVdbe;        /* Vdbe */
+  int iOld = 0;                   /* First register in OLD.* array */
+  int iLabel;                     /* Label resolved to end of generated code */
 
-  v = pParse->pVdbe;
-  addr = sqlite3VdbeAddOp3(v, OP_NotExists, iCur, 0, iRowid);
-  sqlite3GenerateRowIndexDelete(pParse, pTab, iCur, 0);
-  sqlite3VdbeAddOp2(v, OP_Delete, iCur, (count?OPFLAG_NCHANGE:0));
-  if( count ){
-    sqlite3VdbeChangeP4(v, -1, pTab->zName, P4_STATIC);
+  /* Vdbe is guaranteed to have been allocated by this stage. */
+  assert( v );
+
+  /* Seek cursor iCur to the row to delete. If this row no longer exists 
+  ** (this can happen if a trigger program has already deleted it), do
+  ** not attempt to delete it or fire any DELETE triggers.  */
+  iLabel = sqlite3VdbeMakeLabel(v);
+  sqlite3VdbeAddOp3(v, OP_NotExists, iCur, iLabel, iRowid);
+ 
+  /* If there are any triggers to fire, allocate a range of registers to
+  ** use for the old.* references in the triggers.  */
+  if( pTrigger ){
+    u32 mask;                     /* Mask of OLD.* columns in use */
+    int iCol;                     /* Iterator used while populating OLD.* */
+
+    /* TODO: Could use temporary registers here. Also could attempt to
+    ** avoid copying the contents of the rowid register.  */
+    mask = sqlite3TriggerOldmask(pParse, pTrigger, TK_DELETE, 0, pTab, onconf);
+    iOld = pParse->nMem+1;
+    pParse->nMem += (1 + pTab->nCol);
+
+    /* Populate the OLD.* pseudo-table register array. These values will be 
+    ** used by any BEFORE and AFTER triggers that exist.  */
+    sqlite3VdbeAddOp2(v, OP_Copy, iRowid, iOld);
+    for(iCol=0; iCol<pTab->nCol; iCol++){
+      if( mask==0xffffffff || mask&(1<<iCol) ){
+        int iTarget = iOld + iCol + 1;
+        sqlite3VdbeAddOp3(v, OP_Column, iCur, iCol, iTarget);
+        sqlite3ColumnDefault(v, pTab, iCol, iTarget);
+      }
+    }
+
+    /* Invoke any BEFORE trigger programs */
+    sqlite3CodeRowTrigger(pParse, pTrigger, 
+        TK_DELETE, 0, TRIGGER_BEFORE, pTab, -1, iOld, onconf, iLabel
+    );
+
+    /* Seek the cursor to the row to be deleted again. It may be that
+    ** the BEFORE triggers coded above have already removed the row
+    ** being deleted. Do not attempt to delete the row a second time, and 
+    ** do not fire AFTER triggers.  */
+    sqlite3VdbeAddOp3(v, OP_NotExists, iCur, iLabel, iRowid);
   }
-  sqlite3VdbeJumpHere(v, addr);
+
+  /* Delete the index and table entries. Skip this step if pTab is really
+  ** a view (in which case the only effect of the DELETE statement is to
+  ** fire the INSTEAD OF triggers).  */ 
+  if( pTab->pSelect==0 ){
+    sqlite3GenerateRowIndexDelete(pParse, pTab, iCur, 0);
+    sqlite3VdbeAddOp2(v, OP_Delete, iCur, (count?OPFLAG_NCHANGE:0));
+    if( count ){
+      sqlite3VdbeChangeP4(v, -1, pTab->zName, P4_STATIC);
+    }
+  }
+
+  /* Invoke AFTER triggers. */
+  if( pTrigger ){
+    sqlite3CodeRowTrigger(pParse, pTrigger, 
+        TK_DELETE, 0, TRIGGER_AFTER, pTab, -1, iOld, onconf, iLabel
+    );
+  }
+
+  /* Jump here if the row had already been deleted before any BEFORE
+  ** trigger programs were invoked. Or if a trigger program throws a 
+  ** RAISE(IGNORE) exception.  */
+  sqlite3VdbeResolveLabel(v, iLabel);
 }
 
 /*
@@ -526,12 +604,12 @@ int sqlite3GenerateIndexKey(
       sqlite3VdbeAddOp2(v, OP_SCopy, regBase+nCol, regBase+j);
     }else{
       sqlite3VdbeAddOp3(v, OP_Column, iCur, idx, regBase+j);
-      sqlite3ColumnDefault(v, pTab, idx);
+      sqlite3ColumnDefault(v, pTab, idx, -1);
     }
   }
   if( doMakeRec ){
     sqlite3VdbeAddOp3(v, OP_MakeRecord, regBase, nCol+1, regOut);
-    sqlite3IndexAffinityStr(v, pIdx);
+    sqlite3VdbeChangeP4(v, -1, sqlite3IndexAffinityStr(v, pIdx), 0);
     sqlite3ExprCacheAffinityChange(pParse, regBase, nCol+1);
   }
   sqlite3ReleaseTempRange(pParse, regBase, nCol+1);
