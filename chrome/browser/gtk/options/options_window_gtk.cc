@@ -81,9 +81,6 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
       general_page_(profile_),
       content_page_(profile_),
       advanced_page_(profile_) {
-  // The download manager needs to be initialized before the contents of the
-  // Options Window are created.
-  profile_->GetDownloadManager();
   // We don't need to observe changes in this value.
   last_selected_page_.Init(prefs::kOptionsWindowLastTabIndex,
                            g_browser_process->local_state(), NULL);
