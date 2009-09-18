@@ -26,6 +26,7 @@ class JSONResultsGenerator:
   WEBKIT_PATH = "WebKit"
   LAYOUT_TESTS_PATH = "layout_tests"
   PASS_RESULT = "P"
+  SKIP_RESULT = "X"
   NO_DATA_RESULT = "N"
   VERSION = 1
   VERSION_KEY = "version"
@@ -36,9 +37,14 @@ class JSONResultsGenerator:
   CHROME_SVN = "chromeRevision"
   TIME = "secondsSinceEpoch"
   TESTS = "tests"
+  NON_WONTFIX = "nonWontfixCounts"
+  DEFERRED = "deferredCounts"
+  ALL = "allCounts"
+  FIXABLE_COUNT = "fixableCount"
+  FAILURE_CHARS = ("C", "T", "I", "S", "F", "O")
 
   def __init__(self, failures, individual_test_timings, builder_name,
-               build_number, results_file_path, all_tests):
+      build_number, results_file_path, all_tests, result_summary):
     """
     failures: Map of test name to list of failures.
     individual_test_times: Map of test name to a tuple containing the
@@ -47,6 +53,8 @@ class JSONResultsGenerator:
     build_number: The build number for this run.
     results_file_path: Absolute path to the results json file.
     all_tests: List of all the tests that were run.
+    result_summary: ResultsSummary object containing failure counts for
+        different groups of tests.
     """
     # Make sure all test paths are relative to the layout test root directory.
     self._failures = {}
@@ -56,6 +64,8 @@ class JSONResultsGenerator:
 
     self._all_tests = [self._GetPathRelativeToLayoutTestRoot(test)
         for test in all_tests]
+
+    self._result_summary = result_summary
 
     self._test_timings = {}
     for test_tuple in individual_test_timings:
@@ -113,7 +123,7 @@ class JSONResultsGenerator:
     failures_for_json = {}
     for test in self._failures:
       failures_for_json[test] = ResultAndTime(test, self._all_tests)
-      failures_for_json[test].result = self._GetResultsCharForFailure(test)
+      failures_for_json[test].result = self._GetResultsCharForTest(test)
 
     for test in self._test_timings:
       if not test in failures_for_json:
@@ -174,6 +184,8 @@ class JSONResultsGenerator:
         int(time.time()),
         self.TIME)
 
+    self._InsertFailureSummaries(results_for_builder)
+
     for test in all_failing_tests:
       if test in failures_for_json:
         result_and_time = failures_for_json[test]
@@ -193,6 +205,48 @@ class JSONResultsGenerator:
     # Specify separators in order to get compact encoding.
     results_str = simplejson.dumps(results_json, separators=(',', ':'))
     return self.JSON_PREFIX + results_str + self.JSON_SUFFIX
+
+  def _InsertFailureSummaries(self, results_for_builder):
+    """Inserts aggregate pass/failure statistics into the JSON.
+
+    Args:
+      results_for_builder: Dictionary containing the test results for a single
+          builder.
+    """
+    self._InsertItemIntoRawList(results_for_builder,
+        self._result_summary.fixable_count,
+        self.FIXABLE_COUNT)
+
+    self._InsertItemIntoRawList(results_for_builder,
+        self._GetFailureSummaryEntry(self._result_summary.deferred),
+        self.DEFERRED)
+    self._InsertItemIntoRawList(results_for_builder,
+        self._GetFailureSummaryEntry(self._result_summary.non_wontfix),
+        self.NON_WONTFIX)
+    self._InsertItemIntoRawList(results_for_builder,
+        self._GetFailureSummaryEntry(self._result_summary.all),
+        self.ALL)
+
+  def _GetFailureSummaryEntry(self, result_summary_entry):
+    """Creates a summary object to insert into the JSON.
+
+    Args:
+      result_summary_entry: ResultSummaryEntry for a group of tests
+          (e.g. deferred tests).
+    """
+    entry = {}
+    entry[self.SKIP_RESULT] = result_summary_entry.skip_count
+    entry[self.PASS_RESULT] = result_summary_entry.pass_count
+    for char in self.FAILURE_CHARS:
+      # There can be multiple failures that map to "O", so keep existing entry
+      # values if they already exist.
+      count = entry.get(char, 0)
+
+      for failure in result_summary_entry.failure_counts:
+        if char == self._GetResultsCharForFailure([failure]):
+          count = result_summary_entry.failure_counts[failure]
+      entry[char] = count
+    return entry
 
   def _InsertItemIntoRawList(self, results_for_builder, item, key):
     """Inserts the item into the list with the given key in the results for
@@ -264,12 +318,17 @@ class JSONResultsGenerator:
     results_for_builder[self.TESTS] = {}
     return results_for_builder
 
-  def _GetResultsCharForFailure(self, test):
+  def _GetResultsCharForTest(self, test):
     """Returns the worst failure from the list of failures for this test
     since we can only show one failure per run for each test on the dashboard.
     """
     failures = [failure.__class__ for failure in self._failures[test]]
+    return self._GetResultsCharForFailure(failures)
 
+  def _GetResultsCharForFailure(self, failures):
+    """Returns the worst failure from the list of failures
+    since we can only show one failure per run for each test on the dashboard.
+    """
     if test_failures.FailureCrash in failures:
       return "C"
     elif test_failures.FailureTimeout in failures:

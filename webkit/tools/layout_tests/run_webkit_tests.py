@@ -68,6 +68,39 @@ class TestInfo:
       self.image_hash = None
 
 
+class ResultSummaryEntry:
+  def __init__(self, all, failed, failure_counts, skipped):
+    """Resolves result counts.
+
+    Args:
+      all: list of all tests in this category
+      failed: list of failing tests in this category
+      skipped: list of skipped tests
+      failure_counts: dictionary of (TestFailure -> frequency)
+    """
+    self.skip_count = len(skipped)
+    self.total_count = len(all | skipped)
+    self.pass_count = self.total_count - self.skip_count - len(failed)
+    self.failure_counts = failure_counts;
+
+
+class ResultSummary:
+  """Container for all result summaries for this test run.
+
+  Args:
+    deferred: ResultSummary object for deferred tests.
+    non_wontfix: ResultSummary object for non_wontfix tests.
+    all: ResultSummary object for all tests, including skipped tests.
+    fixable_count: Count of all fixable and skipped tests. This is essentially
+        a deduped sum of all the non_wontfix failure counts.
+  """
+  def __init__(self, deferred, non_wontfix, all, fixable_count):
+    self.deferred = deferred
+    self.non_wontfix = non_wontfix
+    self.all = all
+    self.fixable_count = fixable_count
+
+
 class TestRunner:
   """A class for managing running a series of tests on a series of test
   files."""
@@ -568,15 +601,16 @@ class TestRunner:
     print "-" * 78
 
     # Write summaries to stdout.
-    self._PrintResults(failures, sys.stdout)
+    result_summary = self._GetResultSummary(failures)
+    self._PrintResultSummary(result_summary, sys.stdout)
 
     if self._options.verbose:
-      self._WriteJSONFiles(failures, individual_test_timings);
+      self._WriteJSONFiles(failures, individual_test_timings, result_summary);
 
     # Write the same data to a log file.
     out_filename = os.path.join(self._options.results_directory, "score.txt")
     output_file = open(out_filename, "w")
-    self._PrintResults(failures, output_file)
+    self._PrintResultSummary(result_summary, output_file)
     output_file.close()
 
     # Write the summary to disk (results.html) and maybe open the test_shell
@@ -589,7 +623,7 @@ class TestRunner:
     sys.stderr.flush()
     return len(regressions)
 
-  def _WriteJSONFiles(self, failures, individual_test_timings):
+  def _WriteJSONFiles(self, failures, individual_test_timings, result_summary):
     logging.debug("Writing JSON files in %s." % self._options.results_directory)
     # Write a json file of the test_expectations.txt file for the layout tests
     # dashboard.
@@ -605,7 +639,7 @@ class TestRunner:
     build_number = self._options.build_number # "12346"
     json_generator = json_results_generator.JSONResultsGenerator(failures,
         individual_test_timings, builder_name, build_number,
-        results_file_path, self._test_files_list)
+        results_file_path, self._test_files_list, result_summary)
     results_json = json_generator.GetJSON()
 
     results_file = open(results_file_path, "w")
@@ -747,27 +781,23 @@ class TestRunner:
         "99th percentile: %s, Standard deviation: %s\n" % (
         median, mean, percentile90, percentile99, std_deviation)))
 
-  def _PrintResults(self, failures, output):
-    """Print a short summary to stdout about how many tests passed.
+  def _GetResultSummary(self, failures):
+    """Returns a ResultSummary object with failure counts.
 
     Args:
-      failures is a dictionary mapping the test filename to a list of
-      TestFailure objects if the test failed
-
-      output is the file descriptor to write the results to. For example,
-      sys.stdout.
+      failures: dictionary mapping the test filename to a list of
+          TestFailure objects if the test failed
     """
-
     failure_counts = {}
     deferred_counts = {}
     fixable_counts = {}
-    non_ignored_counts = {}
+    non_wontfix_counts = {}
     fixable_failures = set()
     deferred_failures = set()
-    non_ignored_failures = set()
+    non_wontfix_failures = set()
 
     # Aggregate failures in a dictionary (TestFailure -> frequency),
-    # with known (fixable and ignored) failures separated out.
+    # with known (fixable and wontfix) failures separated out.
     def AddFailure(dictionary, key):
       if key in dictionary:
         dictionary[key] += 1
@@ -785,69 +815,83 @@ class TestRunner:
             AddFailure(fixable_counts, failure.__class__)
             fixable_failures.add(test)
           if not self._expectations.IsIgnored(test):
-            AddFailure(non_ignored_counts, failure.__class__)
-            non_ignored_failures.add(test)
+            AddFailure(non_wontfix_counts, failure.__class__)
+            non_wontfix_failures.add(test)
 
     # Print breakdown of tests we need to fix and want to pass.
     # Include skipped fixable tests in the statistics.
     skipped = (self._expectations.GetSkipped() -
         self._expectations.GetDeferredSkipped())
 
-    self._PrintResultSummary("=> Tests to be fixed for the current release",
-                             self._expectations.GetFixable(),
-                             fixable_failures,
-                             fixable_counts,
-                             skipped,
-                             output)
+    deferred_tests = self._expectations.GetDeferred()
+    non_wontfix_result_summary = ResultSummaryEntry(
+        (self._test_files - self._expectations.GetWontFix() - deferred_tests),
+        non_wontfix_failures,
+        non_wontfix_counts,
+        skipped)
 
-    self._PrintResultSummary("=> Tests we want to pass for the current release",
-                             (self._test_files -
-                              self._expectations.GetWontFix() -
-                              self._expectations.GetDeferred()),
-                             non_ignored_failures,
-                             non_ignored_counts,
-                             skipped,
-                             output)
+    deferred_result_summary = ResultSummaryEntry(
+        deferred_tests,
+        deferred_failures,
+        deferred_counts,
+        self._expectations.GetDeferredSkipped())
 
-    self._PrintResultSummary("=> Tests to be fixed for a future release",
-                             self._expectations.GetDeferred(),
-                             deferred_failures,
-                             deferred_counts,
-                             self._expectations.GetDeferredSkipped(),
-                             output)
+    skipped |= self._expectations.GetWontFixSkipped()
+    all_result_summary = ResultSummaryEntry(
+        self._test_files,
+        failures,
+        failure_counts,
+        skipped)
+
+    total_fixable_count = len(self._expectations.GetFixable() | skipped)
+
+    return ResultSummary(deferred_result_summary, non_wontfix_result_summary,
+        all_result_summary, total_fixable_count)
+
+  def _PrintResultSummary(self, result_summary, output):
+    """Print a short summary to stdout about how many tests passed.
+
+    Args:
+      result_summary: ResultSummary object with failure counts.
+      output: file descriptor to write the results to. For example, sys.stdout.
+    """
+    output.write(
+        "\nTotal expected failures: %s\n" % result_summary.fixable_count)
+
+    self._PrintResultSummaryEntry(
+        "Tests we want to pass for the current release",
+        result_summary.non_wontfix,
+        output)
+
+    self._PrintResultSummaryEntry("Tests to be fixed for a future release",
+                                  result_summary.deferred,
+                                  output)
 
     # Print breakdown of all tests including all skipped tests.
-    skipped |= self._expectations.GetWontFixSkipped()
-    self._PrintResultSummary("=> All tests",
-                             self._test_files,
-                             failures,
-                             failure_counts,
-                             skipped,
-                             output)
+    self._PrintResultSummaryEntry("All tests",
+                                  result_summary.all,
+                                  output)
     print
 
-  def _PrintResultSummary(self, heading, all, failed, failure_counts, skipped,
-                          output):
+  def _PrintResultSummaryEntry(self, heading, result_summary, output):
     """Print a summary block of results for a particular category of test.
 
     Args:
       heading: text to print before the block, followed by the total count
-      all: list of all tests in this category
-      failed: list of failing tests in this category
-      failure_counts: dictionary of (TestFailure -> frequency)
+      result_summary: ResultSummaryEntry object with the result counts
       output: file descriptor to write the results to
     """
-    total = len(all | skipped)
-    output.write("\n%s (%d):\n" % (heading, total))
-    skip_count = len(skipped)
-    pass_count = total - skip_count - len(failed)
-    self._PrintResultLine(pass_count, total, "Passed", output)
-    self._PrintResultLine(skip_count, total, "Skipped", output)
-    # Sort the failure counts and print them one by one.
-    sorted_keys = sorted(failure_counts.keys(),
+    output.write("\n=> %s (%d):\n" % (heading, result_summary.total_count))
+    self._PrintResultLine(result_summary.pass_count, result_summary.total_count,
+        "Passed", output)
+    self._PrintResultLine(result_summary.skip_count, result_summary.total_count,
+        "Skipped", output)
+    sorted_keys = sorted(result_summary.failure_counts.keys(),
                          key=test_failures.FailureSort.SortOrder)
     for failure in sorted_keys:
-      self._PrintResultLine(failure_counts[failure], total, failure.Message(),
+      self._PrintResultLine(result_summary.failure_counts[failure],
+                            result_summary.total_count,
+                            failure.Message(),
                             output)
 
   def _PrintResultLine(self, count, total, message, output):
