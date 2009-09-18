@@ -339,8 +339,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_DuplicateSection, OnDuplicateSection)
 #endif
 #if defined(OS_LINUX)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateTempFileForPrinting,
-                          OnAllocateTempFileForPrinting)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_AllocateTempFileForPrinting,
+                                      OnAllocateTempFileForPrinting)
       IPC_MESSAGE_HANDLER(ViewHostMsg_TempFileForPrintingWritten,
                           OnTempFileForPrintingWritten)
 #endif

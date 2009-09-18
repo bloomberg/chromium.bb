@@ -8,6 +8,7 @@
 #include <gtk/gtkprintunixdialog.h>
 #include <gtk/gtkpagesetupunixdialog.h>
 
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser_list.h"
@@ -133,6 +134,8 @@ void PrintDialogGtk::OnJobCompleted(GtkPrintJob* job, GError* error) {
 
   if (job)
     g_object_unref(job);
+
+  file_util::Delete(path_to_pdf_, false);
 
   delete this;
 }

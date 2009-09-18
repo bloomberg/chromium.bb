@@ -209,8 +209,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 #if defined(OS_LINUX)
   // Used to ask the browser allocate a temporary file for the renderer
   // to fill in resulting PDF in renderer.
-  void OnAllocateTempFileForPrinting(base::FileDescriptor* temp_file_fd,
-                                     int* fd_in_browser);
+  void OnAllocateTempFileForPrinting(IPC::Message* reply_msg);
   void OnTempFileForPrintingWritten(int fd_in_browser);
 #endif
 
@@ -270,6 +269,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void DoOnClipboardReadAsciiText(Clipboard::Buffer buffer,
                                   IPC::Message* reply_msg);
   void DoOnClipboardReadHTML(Clipboard::Buffer buffer, IPC::Message* reply_msg);
+  void DoOnAllocateTempFileForPrinting(IPC::Message* reply_msg);
 #endif
 
   bool CheckBenchmarkingEnabled();
