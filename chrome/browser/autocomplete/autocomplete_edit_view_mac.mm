@@ -588,24 +588,32 @@ void AutocompleteEditViewMac::OnPaste() {
   if (text.empty()) {
     return;
   }
-
-  // If this paste will be replacing all the text, record that, so we
-  // can do different behaviors in such a case.
-  const NSRange allRange = NSMakeRange(0, [[field_ stringValue] length]);
-  const NSRange selectedRange = GetSelectedRange();
-  if (NSEqualRanges(allRange, selectedRange)) {
-    model_->on_paste_replacing_all();
-  }
-
-  // Force a Paste operation to trigger the text_changed code in
-  // OnAfterPossibleChange(), even if identical contents are pasted into the
-  // text box.
-  text_before_change_.clear();
-
   NSString* s = base::SysWideToNSString(text);
-  [[field_ currentEditor] replaceCharactersInRange:selectedRange withString:s];
 
-  OnAfterPossibleChange();
+  // -shouldChangeTextInRange:* and -didChangeText are documented in
+  // NSTextView as things you need to do if you write additional
+  // user-initiated editing functions.  They cause the appropriate
+  // delegate methods to be called.
+  // TODO(shess): It would be nice to separate the Cocoa-specific code
+  // from the Chrome-specific code.
+  NSTextView* editor = static_cast<NSTextView*>([field_ currentEditor]);
+  const NSRange selectedRange = GetSelectedRange();
+  if ([editor shouldChangeTextInRange:selectedRange replacementString:s]) {
+    // If this paste will be replacing all the text, record that, so
+    // we can do different behaviors in such a case.
+    const NSRange allRange = NSMakeRange(0, [[field_ stringValue] length]);
+    if (NSEqualRanges(allRange, selectedRange)) {
+      model_->on_paste_replacing_all();
+    }
+
+    // Force a Paste operation to trigger the text_changed code in
+    // OnAfterPossibleChange(), even if identical contents are pasted
+    // into the text box.
+    text_before_change_.clear();
+
+    [editor replaceCharactersInRange:selectedRange withString:s];
+    [editor didChangeText];
+  }
 }
 
 bool AutocompleteEditViewMac::CanPasteAndGo() {
