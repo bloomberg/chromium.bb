@@ -165,6 +165,12 @@ void Checkbox::InitBorder() {
   // No border, so we do nothing.
 }
 
+void Checkbox::SetLabel(const std::wstring& label) {
+  NativeButton::SetLabel(label);
+  if (!native_wrapper_->UsesNativeLabel())
+    label_->SetText(label);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Checkbox, protected:
 

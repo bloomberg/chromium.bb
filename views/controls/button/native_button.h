@@ -25,7 +25,7 @@ class NativeButton : public Button {
   virtual ~NativeButton();
 
   // Sets/Gets the text to be used as the button's label.
-  void SetLabel(const std::wstring& label);
+  virtual void SetLabel(const std::wstring& label);
   std::wstring label() const { return label_; }
 
   // Sets the font to be used when displaying the button's label.

@@ -54,6 +54,9 @@ class Checkbox : public NativeButton {
   virtual void WillGainFocus();
   virtual void WillLoseFocus();
 
+  // Overridden from NativeButton:
+  virtual void SetLabel(const std::wstring& label);
+
  protected:
   virtual std::string GetClassName() const;
 
