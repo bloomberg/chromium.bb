@@ -11,6 +11,8 @@
 #include "base/file_path.h"
 #include "chrome/common/extensions/extension.h"
 
+class ExtensionMessageBundle;
+
 // Utilties for manipulating the on-disk storage of extensions.
 namespace extension_file_util {
 
@@ -28,7 +30,8 @@ extern const char kCurrentVersionFileName[];
 bool MoveDirSafely(const FilePath& source_dir, const FilePath& dest_dir);
 
 // Updates the Current Version file inside the installed extension.
-bool SetCurrentVersion(const FilePath& dest_dir, const std::string& version,
+bool SetCurrentVersion(const FilePath& dest_dir,
+                       const std::string& version,
                        std::string* error);
 
 // Reads the Current Version file.
@@ -66,7 +69,8 @@ bool InstallExtension(const FilePath& src_dir,
 
 // Loads and validates an extension from the specified directory. Returns NULL
 // on failure, with a description of the error in |error|.
-Extension* LoadExtension(const FilePath& extension_root, bool require_key,
+Extension* LoadExtension(const FilePath& extension_root,
+                         bool require_key,
                          std::string* error);
 
 // Returns true if the given extension object is valid and consistent.
@@ -81,6 +85,14 @@ void UninstallExtension(const std::string& id, const FilePath& extensions_dir);
 // removing others?
 void GarbageCollectExtensions(const FilePath& extensions_dir,
                               const std::set<std::string>& installed_ids);
+
+// Loads locale information if _locales folder is present.
+// Returns message bundle if there were no errors. If _locales folder is not
+// present it returns NULL with empty error string.
+// Loading failed only if function returns NULL and error is not empty.
+ExtensionMessageBundle* LoadLocaleInfo(const FilePath& extension_path,
+                                       const DictionaryValue& manifest,
+                                       std::string* error);
 
 // We need to reserve the namespace of entries that start with "_" for future
 // use by Chrome.

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_file_util.h"
 
+#include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/scoped_temp_dir.h"
@@ -94,7 +95,8 @@ bool InstallExtension(const FilePath& src_dir,
   return true;
 }
 
-Extension* LoadExtension(const FilePath& extension_path, bool require_key,
+Extension* LoadExtension(const FilePath& extension_path,
+                         bool require_key,
                          std::string* error) {
   FilePath manifest_path =
       extension_path.AppendASCII(Extension::kManifestFilename);
@@ -113,9 +115,16 @@ Extension* LoadExtension(const FilePath& extension_path, bool require_key,
     return NULL;
   }
 
+  DictionaryValue* manifest = static_cast<DictionaryValue*>(root.get());
+  ExtensionMessageBundle* message_bundle =
+    LoadLocaleInfo(extension_path, *manifest, error);
+  if (!message_bundle && !error->empty())
+    return NULL;
+
   scoped_ptr<Extension> extension(new Extension(extension_path));
-  if (!extension->InitFromValue(*static_cast<DictionaryValue*>(root.get()),
-                                require_key, error))
+  // Assign message bundle to extension.
+  extension->set_message_bundle(message_bundle);
+  if (!extension->InitFromValue(*manifest, require_key, error))
     return NULL;
 
   if (!ValidateExtension(extension.get(), error))
@@ -218,22 +227,6 @@ bool ValidateExtension(Extension* extension, std::string* error) {
     }
   }
 
-  // Load locale information if available.
-  FilePath locale_path =
-      extension->path().AppendASCII(Extension::kLocaleFolder);
-  if (file_util::PathExists(locale_path)) {
-    if (!extension_l10n_util::AddValidLocales(locale_path,
-                                              extension,
-                                              error)) {
-      return false;
-    }
-
-    if (!extension_l10n_util::ValidateDefaultLocale(extension)) {
-      *error = extension_manifest_errors::kLocalesNoDefaultLocaleSpecified;
-      return false;
-    }
-  }
-
   // Check children of extension root to see if any of them start with _ and is
   // not on the reserved list.
   if (!CheckForIllegalFilenames(extension->path(), error)) {
@@ -309,6 +302,40 @@ void GarbageCollectExtensions(const FilePath& install_directory,
       continue;
     }
   }
+}
+
+ExtensionMessageBundle* LoadLocaleInfo(const FilePath& extension_path,
+                                       const DictionaryValue& manifest,
+                                       std::string* error) {
+  error->clear();
+  // Load locale information if available.
+  FilePath locale_path = extension_path.AppendASCII(Extension::kLocaleFolder);
+  if (!file_util::PathExists(locale_path))
+    return NULL;
+
+  std::set<std::string> locales;
+  if (!extension_l10n_util::GetValidLocales(locale_path, &locales, error))
+    return NULL;
+
+  std::string default_locale =
+    extension_l10n_util::GetDefaultLocaleFromManifest(manifest, error);
+  if (default_locale.empty() ||
+      locales.find(default_locale) == locales.end()) {
+    *error = extension_manifest_errors::kLocalesNoDefaultLocaleSpecified;
+    return NULL;
+  }
+
+  // We can't call g_browser_process->GetApplicationLocale() since we are not
+  // on the main thread.
+  static std::string app_locale = l10n_util::GetApplicationLocale(L"");
+  if (locales.find(app_locale) == locales.end())
+    app_locale = "";
+  ExtensionMessageBundle* message_bundle =
+    extension_l10n_util::LoadMessageCatalogs(locale_path,
+                                             default_locale,
+                                             app_locale,
+                                             error);
+  return message_bundle;
 }
 
 bool CheckForIllegalFilenames(const FilePath& extension_path,

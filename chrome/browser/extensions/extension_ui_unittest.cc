@@ -58,9 +58,6 @@ namespace {
   }
 }  // namespace
 
-class ExtensionUITest : public testing::Test {
-};
-
 TEST(ExtensionUITest, GenerateExtensionsJSONData) {
   FilePath data_test_dir_path, extension_path, expected_output_path;
   EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_test_dir_path));

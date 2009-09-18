@@ -14,8 +14,9 @@
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/common/extensions/user_script.h"
+#include "chrome/browser/extensions/extension_message_bundle.h"
 #include "chrome/browser/extensions/user_script_master.h"
+#include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/page_action.h"
 #include "googleurl/src/gurl.h"
@@ -251,19 +252,12 @@ class Extension {
     return manifest_value_.get();
   }
 
-  // Returns a list of all locales supported by the extension.
-  const std::set<std::string>& supported_locales() const {
-    return supported_locales_;
+  // Getter/setter for l10n message bundle.
+  const ExtensionMessageBundle* message_bundle() const {
+    return message_bundle_.get();
   }
-  // Add locale to the list of supported locales.
-  void AddSupportedLocale(const std::string& supported_locale) {
-    supported_locales_.insert(supported_locale);
-  }
-
-  // Getter/setter for a default_locale_.
-  const std::string& default_locale() const { return default_locale_; }
-  void set_default_locale(const std::string& default_locale) {
-    default_locale_ = default_locale;
+  void set_message_bundle(ExtensionMessageBundle* message_bundle) {
+    message_bundle_.reset(message_bundle);
   }
 
   // Chrome URL overrides (see ExtensionOverrideUI).
@@ -385,11 +379,8 @@ class Extension {
   // A copy of the manifest that this extension was created from.
   scoped_ptr<DictionaryValue> manifest_value_;
 
-    // List of all locales extension supports.
-  std::set<std::string> supported_locales_;
-
-  // Default locale, used for fallback.
-  std::string default_locale_;
+  // Handles the l10n messages replacement and parsing.
+  scoped_ptr<ExtensionMessageBundle> message_bundle_;
 
   // A map of chrome:// hostnames (newtab, downloads, etc.) to Extension URLs
   // which override the handling of those URLs.

@@ -1,5 +1,8 @@
 {
-  "name": {
-    "message": "Нека порука."
+  "chrome_extension_name": {
+    "message": "Моја порука 1"
+  },
+  "chrome_extension_description": {
+    "message": "Прва екстензија коју сам написао."
   }
 }

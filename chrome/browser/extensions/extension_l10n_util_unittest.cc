@@ -15,146 +15,132 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace keys = extension_manifest_keys;
-
 namespace {
 
-TEST(ExtensionL10nUtil, LoadGoodExtensionFromSVNTree) {
+TEST(Extensio8nL10nUtil, GetValidLocalesEmptyLocaleFolder) {
+  ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+
+  FilePath src_path = temp.path().AppendASCII(Extension::kLocaleFolder);
+  ASSERT_TRUE(file_util::CreateDirectory(src_path));
+
+  std::string error;
+  std::set<std::string> locales;
+  EXPECT_FALSE(extension_l10n_util::GetValidLocales(src_path,
+                                                    &locales,
+                                                    &error));
+
+  EXPECT_TRUE(locales.empty());
+}
+
+TEST(ExtensionL10nUtil, GetValidLocalesWithValidLocaleNoMessagesFile) {
+  ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+
+  FilePath src_path = temp.path().AppendASCII(Extension::kLocaleFolder);
+  ASSERT_TRUE(file_util::CreateDirectory(src_path));
+  ASSERT_TRUE(file_util::CreateDirectory(src_path.AppendASCII("sr")));
+
+  std::string error;
+  std::set<std::string> locales;
+  EXPECT_FALSE(extension_l10n_util::GetValidLocales(src_path,
+                                                    &locales,
+                                                    &error));
+
+  EXPECT_TRUE(locales.empty());
+}
+
+TEST(ExtensionL10nUtil, GetValidLocalesWithValidLocalesAndMessagesFile) {
   FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
   install_dir = install_dir.AppendASCII("extensions")
       .AppendASCII("good")
       .AppendASCII("Extensions")
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
-      .AppendASCII("1.0.0.0");
+      .AppendASCII("1.0.0.0")
+      .AppendASCII(Extension::kLocaleFolder);
 
-  FilePath locale_path = install_dir.AppendASCII(Extension::kLocaleFolder);
-  ASSERT_TRUE(file_util::PathExists(locale_path));
-
-  scoped_ptr<Extension> extension(new Extension(install_dir));
   std::string error;
-  EXPECT_TRUE(extension_l10n_util::AddValidLocales(
-      locale_path, extension.get(), &error));
-  const std::set<std::string>& supported_locales =
-    extension->supported_locales();
-  EXPECT_EQ(2U, supported_locales.size());
-  EXPECT_TRUE(supported_locales.find("en-US") != supported_locales.end());
-  EXPECT_TRUE(supported_locales.find("sr") != supported_locales.end());
+  std::set<std::string> locales;
+  EXPECT_TRUE(extension_l10n_util::GetValidLocales(install_dir,
+                                                   &locales,
+                                                   &error));
+  EXPECT_EQ(2U, locales.size());
+  EXPECT_TRUE(locales.find("sr") != locales.end());
 }
 
-Extension* CreateMinimalExtension(const std::string& default_locale) {
-#if defined(OS_WIN)
-  FilePath path(FILE_PATH_LITERAL("C:\\foo"));
-#elif defined(OS_POSIX)
-  FilePath path(FILE_PATH_LITERAL("/foo"));
-#endif
-  Extension* extension = new Extension(path);
-  std::string error;
-  DictionaryValue input_value;
-
-  // Test minimal extension
-  input_value.SetString(keys::kVersion, "1.0.0.0");
-  input_value.SetString(keys::kName, "my extension");
-  if (!default_locale.empty()) {
-    input_value.SetString(keys::kDefaultLocale, default_locale);
-  }
-  EXPECT_TRUE(extension->InitFromValue(input_value, false, &error));
-
-  return extension;
-}
-
-TEST(ExtensionL10nUtil, AddValidLocalesEmptyLocaleFolder) {
+TEST(ExtensionL10nUtil, LoadMessageCatalogsMissingFiles) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   FilePath src_path = temp.path().AppendASCII(Extension::kLocaleFolder);
   ASSERT_TRUE(file_util::CreateDirectory(src_path));
 
-  scoped_ptr<Extension> extension(CreateMinimalExtension(""));
-
   std::string error;
-  EXPECT_FALSE(extension_l10n_util::AddValidLocales(src_path,
-                                                    extension.get(),
-                                                    &error));
-
-  EXPECT_TRUE(extension->supported_locales().empty());
+  EXPECT_TRUE(NULL == extension_l10n_util::LoadMessageCatalogs(src_path,
+                                                               "en-US",
+                                                               "sr",
+                                                               &error));
+  EXPECT_FALSE(error.empty());
 }
 
-TEST(ExtensionL10nUtil, AddValidLocalesWithValidLocaleNoMessagesFile) {
+TEST(ExtensionL10nUtil, LoadMessageCatalogsBadJSONFormat) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   FilePath src_path = temp.path().AppendASCII(Extension::kLocaleFolder);
   ASSERT_TRUE(file_util::CreateDirectory(src_path));
 
-  ASSERT_TRUE(file_util::CreateDirectory(src_path.AppendASCII("sr")));
+  FilePath locale = src_path.AppendASCII("en_US");
+  ASSERT_TRUE(file_util::CreateDirectory(locale));
 
-  scoped_ptr<Extension> extension(CreateMinimalExtension(""));
+  std::string data = "{ \"name\":";
+  ASSERT_TRUE(
+      file_util::WriteFile(locale.AppendASCII(Extension::kMessagesFilename),
+                           data.c_str(), data.length()));
 
   std::string error;
-  EXPECT_FALSE(extension_l10n_util::AddValidLocales(src_path,
-                                                    extension.get(),
-                                                    &error));
-
-  EXPECT_TRUE(extension->supported_locales().empty());
+  EXPECT_TRUE(NULL == extension_l10n_util::LoadMessageCatalogs(src_path,
+                                                              "en-US",
+                                                              "sr",
+                                                              &error));
+  EXPECT_EQ("Line: 1, column: 10, Syntax error.", error);
 }
 
-TEST(ExtensionL10nUtil, AddValidLocalesWithValidLocalesAndMessagesFile) {
+TEST(ExtensionL10nUtil, LoadMessageCatalogsDuplicateKeys) {
   ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   FilePath src_path = temp.path().AppendASCII(Extension::kLocaleFolder);
   ASSERT_TRUE(file_util::CreateDirectory(src_path));
 
-  FilePath locale_1 = src_path.AppendASCII("sr");
+  FilePath locale_1 = src_path.AppendASCII("en_US");
   ASSERT_TRUE(file_util::CreateDirectory(locale_1));
 
-  std::string data = "foobar";
+  std::string data =
+    "{ \"name\": { \"message\": \"something\" }, "
+    "\"name\": { \"message\": \"something else\" } }";
   ASSERT_TRUE(
       file_util::WriteFile(locale_1.AppendASCII(Extension::kMessagesFilename),
                            data.c_str(), data.length()));
 
-  FilePath locale_2 = src_path.AppendASCII("en_US");
+  FilePath locale_2 = src_path.AppendASCII("sr");
   ASSERT_TRUE(file_util::CreateDirectory(locale_2));
 
   ASSERT_TRUE(
       file_util::WriteFile(locale_2.AppendASCII(Extension::kMessagesFilename),
                            data.c_str(), data.length()));
 
-  scoped_ptr<Extension> extension(CreateMinimalExtension(""));
-
   std::string error;
-  EXPECT_TRUE(extension_l10n_util::AddValidLocales(src_path,
-                                                   extension.get(),
-                                                   &error));
-
-  EXPECT_EQ(static_cast<unsigned int>(2),
-            extension->supported_locales().size());
-}
-
-TEST(ExtensionL10nUtil, SetDefaultLocaleGoodDefaultLocaleInManifest) {
-  scoped_ptr<Extension> extension(CreateMinimalExtension("sr"));
-  extension->AddSupportedLocale("sr");
-  extension->AddSupportedLocale("en-US");
-
-  EXPECT_TRUE(extension_l10n_util::ValidateDefaultLocale(extension.get()));
-  EXPECT_EQ("sr", extension->default_locale());
-}
-
-TEST(ExtensionL10nUtil, SetDefaultLocaleNoDefaultLocaleInManifest) {
-  scoped_ptr<Extension> extension(CreateMinimalExtension(""));
-  extension->AddSupportedLocale("sr");
-  extension->AddSupportedLocale("en-US");
-
-  EXPECT_FALSE(extension_l10n_util::ValidateDefaultLocale(extension.get()));
-}
-
-TEST(ExtensionL10nUtil, SetDefaultLocaleWrongDefaultLocaleInManifest) {
-  scoped_ptr<Extension> extension(CreateMinimalExtension("ko"));
-  extension->AddSupportedLocale("sr");
-  extension->AddSupportedLocale("en-US");
-
-  EXPECT_FALSE(extension_l10n_util::ValidateDefaultLocale(extension.get()));
+  // JSON parser hides duplicates. We are going to get only one key/value
+  // pair at the end.
+  scoped_ptr<ExtensionMessageBundle> message_bundle(
+      extension_l10n_util::LoadMessageCatalogs(src_path,
+                                               "en-US",
+                                               "sr",
+                                               &error));
+  EXPECT_TRUE(NULL != message_bundle.get());
+  EXPECT_TRUE(error.empty());
 }
 
 }  // namespace

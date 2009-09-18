@@ -12,27 +12,31 @@
 #include "base/file_util.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/json_value_serializer.h"
 
+namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
 
 namespace extension_l10n_util {
 
-bool ValidateDefaultLocale(const Extension* extension) {
-  std::string default_locale = extension->default_locale();
-
-  if (extension->supported_locales().find(default_locale) !=
-        extension->supported_locales().end()) {
-    return true;
-  } else {
-    return false;
+std::string GetDefaultLocaleFromManifest(const DictionaryValue& manifest,
+                                         std::string* error) {
+  std::string default_locale;
+  if (!manifest.GetString(keys::kDefaultLocale, &default_locale)) {
+    *error = errors::kInvalidDefaultLocale;
+    return "";
   }
+  // Normalize underscores to hyphens.
+  std::replace(default_locale.begin(), default_locale.end(), '_', '-');
+  return default_locale;
 }
 
 bool AddLocale(const std::set<std::string>& chrome_locales,
                const FilePath& locale_folder,
-               Extension* extension,
+               std::set<std::string>* valid_locales,
                std::string* locale_name,
                std::string* error) {
   // Normalize underscores to hyphens because that's what our locale files use.
@@ -50,7 +54,7 @@ bool AddLocale(const std::set<std::string>& chrome_locales,
   // Check if messages file is actually present (but don't check content).
   if (file_util::PathExists(
          locale_folder.AppendASCII(Extension::kMessagesFilename))) {
-    extension->AddSupportedLocale(*locale_name);
+    valid_locales->insert(*locale_name);
   } else {
     *error = StringPrintf("Catalog file is missing for locale %s.",
                           locale_name->c_str());
@@ -60,8 +64,8 @@ bool AddLocale(const std::set<std::string>& chrome_locales,
   return true;
 }
 
-bool AddValidLocales(const FilePath& locale_path,
-                     Extension* extension,
+bool GetValidLocales(const FilePath& locale_path,
+                     std::set<std::string>* valid_locales,
                      std::string* error) {
   // Get available chrome locales as a set.
   const std::vector<std::string>& available_locales =
@@ -76,18 +80,68 @@ bool AddValidLocales(const FilePath& locale_path,
   while (!(locale_folder = locales.Next()).empty()) {
     std::string locale_name =
         WideToASCII(locale_folder.BaseName().ToWStringHack());
-    if (!AddLocale(chrome_locales, locale_folder,
-                   extension, &locale_name, error)) {
+    if (!AddLocale(chrome_locales,
+                   locale_folder,
+                   valid_locales,
+                   &locale_name,
+                   error)) {
       return false;
     }
   }
 
-  if (extension->supported_locales().empty()) {
+  if (valid_locales->empty()) {
     *error = extension_manifest_errors::kLocalesNoValidLocaleNamesListed;
     return false;
   }
 
   return true;
+}
+
+// Loads contents of the messages file for given locale. If file is not found,
+// or there was parsing error we return NULL and set |error|.
+// Caller owns the returned object.
+static DictionaryValue* LoadMessageFile(const FilePath& locale_path,
+                                        const std::string& locale,
+                                        std::string* error) {
+  std::string extension_locale = locale;
+  // Normalize hyphens to underscores because that's what our locale files use.
+  std::replace(extension_locale.begin(), extension_locale.end(), '-', '_');
+  FilePath file = locale_path.AppendASCII(extension_locale)
+      .AppendASCII(Extension::kMessagesFilename);
+  JSONFileValueSerializer messages_serializer(file);
+  Value *dictionary = messages_serializer.Deserialize(error);
+  if (!dictionary && error->empty()) {
+    // JSONFileValueSerializer just returns NULL if file cannot be found. It
+    // doesn't set the error, so we have to do it.
+    *error = StringPrintf("Catalog file is missing for locale %s.",
+                          extension_locale.c_str());
+  }
+
+  return static_cast<DictionaryValue*>(dictionary);
+}
+
+ExtensionMessageBundle* LoadMessageCatalogs(
+    const FilePath& locale_path,
+    const std::string& default_locale,
+    const std::string& application_locale,
+    std::string* error) {
+  scoped_ptr<DictionaryValue> default_catalog(
+      LoadMessageFile(locale_path, default_locale, error));
+  if (!default_catalog.get()) {
+    return false;
+  }
+
+  scoped_ptr<DictionaryValue> app_catalog(
+      LoadMessageFile(locale_path, application_locale, error));
+  if (!app_catalog.get()) {
+    // Only default catalog has to be present. This is not an error.
+    app_catalog.reset(new DictionaryValue);
+    error->clear();
+  }
+
+  return ExtensionMessageBundle::Create(*default_catalog,
+                                        *app_catalog,
+                                        error);
 }
 
 }  // namespace extension_l10n_util

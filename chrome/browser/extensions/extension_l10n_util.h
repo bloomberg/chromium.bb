@@ -12,13 +12,15 @@
 
 class DictionaryValue;
 class Extension;
+class ExtensionMessageBundle;
 class FilePath;
 
 namespace extension_l10n_util {
 
-// Returns true if default_locale was set to valid locale
-// (supported by the extension).
-bool ValidateDefaultLocale(const Extension* extension);
+// Returns default locale in form "en-US" or "sr" or empty string if
+// "default_locale" section was not defined in the manifest.json file.
+std::string GetDefaultLocaleFromManifest(const DictionaryValue& manifest,
+                                         std::string* error);
 
 // Adds locale_name to the extension if it's in chrome_locales, and
 // if messages file is present (we don't check content of messages file here).
@@ -27,7 +29,7 @@ bool ValidateDefaultLocale(const Extension* extension);
 // If file name starts with . return true (helps testing extensions under svn).
 bool AddLocale(const std::set<std::string>& chrome_locales,
                const FilePath& locale_folder,
-               Extension* extension,
+               std::set<std::string>* valid_locales,
                std::string* locale_name,
                std::string* error);
 
@@ -38,9 +40,20 @@ bool AddLocale(const std::set<std::string>& chrome_locales,
 // 4. Intersect both lists, and add intersection to the extension.
 // Returns false if any of supplied locales don't match chrome list of locales.
 // Fills out error with offending locale name.
-bool AddValidLocales(const FilePath& locale_path,
-                     Extension* extension,
+bool GetValidLocales(const FilePath& locale_path,
+                     std::set<std::string>* locales,
                      std::string* error);
+
+// Loads messages file for default locale, and application locale (application
+// locale doesn't have to exist).
+// It creates simplified in-memory representation of name-value pairs, where
+// value part is actual message with placeholders resolved.
+// Returns message bundle if it can load default locale messages file, and all
+// messages are valid, else returns NULL and sets error.
+ExtensionMessageBundle* LoadMessageCatalogs(const FilePath& locale_path,
+                                            const std::string& default_locale,
+                                            const std::string& app_locale,
+                                            std::string* error);
 
 }  // namespace extension_l10n_util
 

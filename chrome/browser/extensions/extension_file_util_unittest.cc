@@ -10,7 +10,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/json_value_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace keys = extension_manifest_keys;
@@ -111,66 +110,37 @@ TEST(ExtensionFileUtil, CompareToInstalledVersion) {
                 temp.path(), kBadId, kMissingVersion, "1.0.0", &version_dir));
 }
 
-// Creates minimal manifest, with or without default_locale section.
-bool CreateMinimalManifest(const std::string& locale,
-                           const FilePath& manifest_path) {
-  DictionaryValue manifest;
-
-  manifest.SetString(keys::kVersion, "1.0.0.0");
-  manifest.SetString(keys::kName, "my extension");
-  if (!locale.empty()) {
-    manifest.SetString(keys::kDefaultLocale, locale);
-  }
-
-  JSONFileValueSerializer serializer(manifest_path);
-  return serializer.Serialize(manifest);
-}
-
 TEST(ExtensionFileUtil, LoadExtensionWithValidLocales) {
-  ScopedTempDir temp;
-  ASSERT_TRUE(temp.CreateUniqueTempDir());
-  ASSERT_TRUE(CreateMinimalManifest(
-      "en_US", temp.path().AppendASCII(Extension::kManifestFilename)));
-
-  FilePath src_path = temp.path().AppendASCII(Extension::kLocaleFolder);
-  ASSERT_TRUE(file_util::CreateDirectory(src_path));
-
-  FilePath locale_1 = src_path.AppendASCII("sr");
-  ASSERT_TRUE(file_util::CreateDirectory(locale_1));
-
-  std::string data = "foobar";
-  ASSERT_TRUE(
-      file_util::WriteFile(locale_1.AppendASCII(Extension::kMessagesFilename),
-                           data.c_str(), data.length()));
-
-  FilePath locale_2 = src_path.AppendASCII("en_US");
-  ASSERT_TRUE(file_util::CreateDirectory(locale_2));
-
-  ASSERT_TRUE(
-      file_util::WriteFile(locale_2.AppendASCII(Extension::kMessagesFilename),
-                           data.c_str(), data.length()));
+  FilePath install_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
+  install_dir = install_dir.AppendASCII("extensions")
+      .AppendASCII("good")
+      .AppendASCII("Extensions")
+      .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
+      .AppendASCII("1.0.0.0");
 
   std::string error;
   scoped_ptr<Extension> extension(
-      extension_file_util::LoadExtension(temp.path(), false, &error));
-  ASSERT_FALSE(extension == NULL);
-  EXPECT_EQ(static_cast<unsigned int>(2),
-            extension->supported_locales().size());
-  EXPECT_EQ("en-US", extension->default_locale());
+      extension_file_util::LoadExtension(install_dir, false, &error));
+  ASSERT_TRUE(extension != NULL);
+  EXPECT_EQ("The first extension that I made.", extension->description());
 }
 
 TEST(ExtensionFileUtil, LoadExtensionWithoutLocalesFolder) {
-  ScopedTempDir temp;
-  ASSERT_TRUE(temp.CreateUniqueTempDir());
-  ASSERT_TRUE(CreateMinimalManifest(
-      "", temp.path().AppendASCII(Extension::kManifestFilename)));
+  FilePath install_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
+  install_dir = install_dir.AppendASCII("extensions")
+      .AppendASCII("good")
+      .AppendASCII("Extensions")
+      .AppendASCII("bjafgdebaacbbbecmhlhpofkepfkgcpa")
+      .AppendASCII("1.0");
 
   std::string error;
   scoped_ptr<Extension> extension(
-      extension_file_util::LoadExtension(temp.path(), false, &error));
+      extension_file_util::LoadExtension(install_dir, false, &error));
   ASSERT_FALSE(extension == NULL);
-  EXPECT_TRUE(extension->supported_locales().empty());
-  EXPECT_TRUE(extension->default_locale().empty());
+  EXPECT_TRUE(NULL == extension->message_bundle());
+  EXPECT_TRUE(error.empty());
 }
 
 TEST(ExtensionFileUtil, CheckIllegalFilenamesNoUnderscores) {
@@ -180,7 +150,7 @@ TEST(ExtensionFileUtil, CheckIllegalFilenamesNoUnderscores) {
   FilePath src_path = temp.path().AppendASCII("some_dir");
   ASSERT_TRUE(file_util::CreateDirectory(src_path));
 
-  std::string data = "foobar";
+  std::string data = "{ \"name\": { \"message\": \"foobar\" } }";
   ASSERT_TRUE(file_util::WriteFile(src_path.AppendASCII("some_file.txt"),
                                    data.c_str(), data.length()));
   std::string error;
