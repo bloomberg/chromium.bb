@@ -81,6 +81,13 @@ then
   fi
 
   sh autogen.sh
+  if test -L install-sh
+  then
+    # replace symlink with actual contents!
+    cp install-sh install-sh.new
+    mv install-sh.new install-sh
+    chmod +x install-sh
+  fi
 
   # MacOSX before Snow Leopoard needs newer gdb to be able to handle -O1 chrome
   # Kludgily download and unpack the sources in a subdirectory.
