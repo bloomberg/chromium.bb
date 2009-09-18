@@ -50,6 +50,7 @@ namespace WebKit {
     class WebForm;
     class WebHistoryItem;
     class WebRange;
+    class WebSecurityOrigin;
     class WebString;
     class WebURL;
     class WebURLRequest;
@@ -161,7 +162,7 @@ namespace WebKit {
         // Scripting ----------------------------------------------------------
 
         // Returns the security origin of the current document.
-        virtual WebString securityOrigin() const = 0;
+        virtual WebSecurityOrigin securityOrigin() const = 0;
 
         // This grants the currently loaded document access to all security
         // origins (including file URLs).  Use with care.  The access is

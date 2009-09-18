@@ -90,7 +90,7 @@ class WebFrameImpl : public WebKit::WebFrame,
   virtual WebKit::WebFrame* findChildByExpression(
       const WebKit::WebString& xpath) const;
   virtual void forms(WebKit::WebVector<WebKit::WebForm>&) const;
-  virtual WebKit::WebString securityOrigin() const;
+  virtual WebKit::WebSecurityOrigin securityOrigin() const;
   virtual void grantUniversalAccess();
   virtual NPObject* windowObject() const;
   virtual void bindToWindowObject(

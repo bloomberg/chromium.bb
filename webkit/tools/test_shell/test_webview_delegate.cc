@@ -83,6 +83,7 @@ using WebKit::WebPopupMenu;
 using WebKit::WebRange;
 using WebKit::WebRect;
 using WebKit::WebScreenInfo;
+using WebKit::WebSecurityOrigin;
 using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebTextAffinity;
@@ -930,7 +931,7 @@ void TestWebViewDelegate::didDisplayInsecureContent(WebFrame* frame) {
 }
 
 void TestWebViewDelegate::didRunInsecureContent(
-    WebFrame* frame, const WebString& security_origin) {
+    WebFrame* frame, const WebSecurityOrigin& origin) {
   if (shell_->ShouldDumpFrameLoadCallbacks())
     printf("didRunInsecureContent\n");
 }

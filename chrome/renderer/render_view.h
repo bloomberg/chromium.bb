@@ -354,7 +354,7 @@ class RenderView : public RenderWidget,
       const WebKit::WebURLResponse&);
   virtual void didDisplayInsecureContent(WebKit::WebFrame* frame) {}
   virtual void didRunInsecureContent(
-      WebKit::WebFrame* frame, const WebKit::WebString& security_origin) {}
+      WebKit::WebFrame* frame, const WebKit::WebSecurityOrigin& origin) {}
   virtual void didExhaustMemoryAvailableForScript(WebKit::WebFrame* frame);
   virtual void didChangeContentsSize(
       WebKit::WebFrame* frame, const WebKit::WebSize& size);

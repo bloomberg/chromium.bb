@@ -42,6 +42,7 @@ namespace WebKit {
     class WebMediaPlayer;
     class WebMediaPlayerClient;
     class WebPlugin;
+    class WebSecurityOrigin;
     class WebString;
     class WebURL;
     class WebURLRequest;
@@ -205,8 +206,7 @@ namespace WebKit {
         // The indicated security origin has run active content (such as a
         // script) from an insecure source.  Note that the insecure content can
         // spread to other frames in the same origin.
-        virtual void didRunInsecureContent(
-            WebFrame*, const WebString& securityOrigin) = 0;
+        virtual void didRunInsecureContent(WebFrame*, const WebSecurityOrigin&) = 0;
 
 
         // Script notifications ------------------------------------------------

@@ -26,6 +26,7 @@
 #include "PlatformString.h"
 #include "Range.h"
 #include "ResourceError.h"
+#include "SecurityOrigin.h"
 
 #undef LOG
 #include "base/compiler_specific.h"
@@ -42,6 +43,7 @@
 #include "webkit/api/public/WebPoint.h"
 #include "webkit/api/public/WebRange.h"
 #include "webkit/api/public/WebRect.h"
+#include "webkit/api/public/WebSecurityOrigin.h"
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
@@ -295,6 +297,13 @@ WebKit::WebRange RangeToWebRange(const WTF::PassRefPtr<WebCore::Range>& range) {
 
 WTF::PassRefPtr<WebCore::Range> WebRangeToRange(const WebKit::WebRange& range) {
   return range;
+}
+
+// WebSecurityOrigin conversions -----------------------------------------------
+
+WebKit::WebSecurityOrigin SecurityOriginToWebSecurityOrigin(
+    const WTF::PassRefPtr<WebCore::SecurityOrigin>& origin) {
+  return origin;
 }
 
 // WebURLError conversions -----------------------------------------------------

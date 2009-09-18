@@ -65,6 +65,7 @@
 #include "webkit/api/public/WebPoint.h"
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebScriptSource.h"
+#include "webkit/api/public/WebSecurityOrigin.h"
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLError.h"
@@ -1325,7 +1326,7 @@ WebView* RenderView::createView(WebFrame* creator) {
   view->opened_by_user_gesture_ = user_gesture;
 
   // Record the security origin of the creator.
-  GURL creator_url(creator->securityOrigin().utf8());
+  GURL creator_url(creator->securityOrigin().toString().utf8());
   if (!creator_url.is_valid() || !creator_url.IsStandard())
     creator_url = GURL();
   view->creator_url_ = creator_url;
@@ -2230,8 +2231,8 @@ void RenderView::didLoadResourceFromMemoryCache(
   Send(new ViewHostMsg_DidLoadResourceFromMemoryCache(
       routing_id_,
       request.url(),
-      frame->securityOrigin().utf8(),
-      frame->top()->securityOrigin().utf8(),
+      frame->securityOrigin().toString().utf8(),
+      frame->top()->securityOrigin().toString().utf8(),
       response.securityInfo()));
 }
 

@@ -152,6 +152,7 @@ MSVC_POP_WARNING();
 #include "webkit/api/public/WebRange.h"
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebScriptSource.h"
+#include "webkit/api/public/WebSecurityOrigin.h"
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/public/WebURLError.h"
 #include "webkit/api/public/WebVector.h"
@@ -224,6 +225,7 @@ using WebKit::WebForm;
 using WebKit::WebRange;
 using WebKit::WebRect;
 using WebKit::WebScriptSource;
+using WebKit::WebSecurityOrigin;
 using WebKit::WebSize;
 using WebKit::WebString;
 using WebKit::WebURL;
@@ -564,13 +566,12 @@ void WebFrameImpl::forms(WebVector<WebForm>& results) const {
   results.swap(temp);
 }
 
-WebString WebFrameImpl::securityOrigin() const {
-  if (frame_) {
-    if (frame_->document())
-      return webkit_glue::StringToWebString(
-          frame_->document()->securityOrigin()->toString());
-  }
-  return WebString::fromUTF8("null");
+WebSecurityOrigin WebFrameImpl::securityOrigin() const {
+  if (!frame_ || !frame_->document())
+    return WebSecurityOrigin();
+
+  return webkit_glue::SecurityOriginToWebSecurityOrigin(
+      frame_->document()->securityOrigin());
 }
 
 void WebFrameImpl::grantUniversalAccess() {

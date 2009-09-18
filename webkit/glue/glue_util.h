@@ -24,6 +24,7 @@ class Node;
 class Range;
 class ResourceError;
 class ResourceResponse;
+class SecurityOrigin;
 class SharedBuffer;
 class String;
 struct ResourceRequest;
@@ -37,6 +38,7 @@ class WebForm;
 class WebHistoryItem;
 class WebNode;
 class WebRange;
+class WebSecurityOrigin;
 class WebString;
 class WebURL;
 class WebURLRequest;
@@ -151,6 +153,10 @@ WebKit::WebRange RangeToWebRange(
     const WTF::PassRefPtr<WebCore::Range>&);
 WTF::PassRefPtr<WebCore::Range> WebRangeToRange(
     const WebKit::WebRange&);
+
+// WebSecurityOrigin <-> SecurityOrigin
+WebKit::WebSecurityOrigin SecurityOriginToWebSecurityOrigin(
+    const WTF::PassRefPtr<WebCore::SecurityOrigin>&);
 
 // WebURLError <-> ResourceError
 WebKit::WebURLError ResourceErrorToWebURLError(
