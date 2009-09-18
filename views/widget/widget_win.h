@@ -373,7 +373,7 @@ class WidgetWin : public base::WindowImpl,
   virtual LRESULT OnMouseLeave(UINT message, WPARAM w_param, LPARAM l_param);
   virtual LRESULT OnMouseWheel(UINT message, WPARAM w_param, LPARAM l_param);
   virtual void OnMove(const CPoint& point) { SetMsgHandled(FALSE); }
-  virtual void OnMoving(UINT param, const LPRECT new_bounds) { }
+  virtual void OnMoving(UINT param, LPRECT new_bounds) { }
   virtual LRESULT OnMouseRange(UINT msg, WPARAM w_param, LPARAM l_param);
   virtual LRESULT OnNCActivate(BOOL active) { SetMsgHandled(FALSE); return 0; }
   virtual LRESULT OnNCCalcSize(BOOL w_param, LPARAM l_param) {

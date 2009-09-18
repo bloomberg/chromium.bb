@@ -171,7 +171,7 @@ void BrowserFrameWin::OnMove(const CPoint& point) {
   browser_view_->WindowMoved();
 }
 
-void BrowserFrameWin::OnMoving(UINT param, const RECT* new_bounds) {
+void BrowserFrameWin::OnMoving(UINT param, LPRECT new_bounds) {
   browser_view_->WindowMoved();
 }
 

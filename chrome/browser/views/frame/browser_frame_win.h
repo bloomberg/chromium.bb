@@ -61,7 +61,7 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
                                   UINT hittest_code,
                                   UINT message);
   virtual void OnMove(const CPoint& point);
-  virtual void OnMoving(UINT param, const RECT* new_bounds);
+  virtual void OnMoving(UINT param, LPRECT new_bounds);
   virtual LRESULT OnNCActivate(BOOL active);
   virtual LRESULT OnNCCalcSize(BOOL mode, LPARAM l_param);
   virtual LRESULT OnNCHitTest(const CPoint& pt);
