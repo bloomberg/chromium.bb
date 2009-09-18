@@ -171,7 +171,6 @@ TEST_F(StartupTest, PerfExtensionEmpty) {
   RunStartupTest("warm", "t", false /* cold */, false /* not important */,
                  UITest::DEFAULT_THEME);
 }
-x
 
 TEST_F(StartupTest, PerfExtensionToolstrips1) {
   SetUpWithFileURL();
