@@ -77,25 +77,27 @@ bool LaunchXdgUtility(const std::vector<std::string>& argv) {
 }
 
 bool GetDesktopShortcutTemplate(std::string* output) {
-  std::vector<std::string> search_paths;
+  std::vector<FilePath> search_paths;
 
   const char* xdg_data_home = getenv("XDG_DATA_HOME");
   if (xdg_data_home)
-    search_paths.push_back(xdg_data_home);
+    search_paths.push_back(FilePath(xdg_data_home));
 
   const char* xdg_data_dirs = getenv("XDG_DATA_DIRS");
   if (xdg_data_dirs) {
     CStringTokenizer tokenizer(xdg_data_dirs,
                                xdg_data_dirs + strlen(xdg_data_dirs), ":");
     while (tokenizer.GetNext()) {
-      search_paths.push_back(tokenizer.token());
+      FilePath data_dir(tokenizer.token());
+      search_paths.push_back(data_dir);
+      search_paths.push_back(data_dir.Append("applications"));
     }
   }
 
   std::string template_filename(GetDesktopName());
-  for (std::vector<std::string>::const_iterator i = search_paths.begin();
+  for (std::vector<FilePath>::const_iterator i = search_paths.begin();
        i != search_paths.end(); ++i) {
-    FilePath path = FilePath(*i).Append(template_filename);
+    FilePath path = (*i).Append(template_filename);
     if (file_util::PathExists(path))
       return file_util::ReadFileToString(path, output);
   }
