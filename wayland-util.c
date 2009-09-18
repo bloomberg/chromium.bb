@@ -94,13 +94,14 @@ wl_hash_delete(struct wl_hash *hash, struct wl_object *object)
 }
 
 
-void wl_list_init(struct wl_list *list)
+WL_EXPORT void
+wl_list_init(struct wl_list *list)
 {
 	list->prev = list;
 	list->next = list;
 }
 
-void
+WL_EXPORT void
 wl_list_insert(struct wl_list *list, struct wl_list *elm)
 {
 	elm->prev = list;
@@ -109,14 +110,14 @@ wl_list_insert(struct wl_list *list, struct wl_list *elm)
 	elm->next->prev = elm;
 }
 
-void
+WL_EXPORT void
 wl_list_remove(struct wl_list *elm)
 {
 	elm->prev->next = elm->next;
 	elm->next->prev = elm->prev;
 }
 
-int
+WL_EXPORT int
 wl_list_length(struct wl_list *list)
 {
 	struct wl_list *e;
@@ -132,25 +133,25 @@ wl_list_length(struct wl_list *list)
 	return count;
 }
 
-int
+WL_EXPORT int
 wl_list_empty(struct wl_list *list)
 {
 	return list->next == list;
 }
 
-void
+WL_EXPORT void
 wl_array_init(struct wl_array *array)
 {
 	memset(array, 0, sizeof *array);
 }
 
-void
+WL_EXPORT void
 wl_array_release(struct wl_array *array)
 {
 	free(array->data);
 }
 
-void *
+WL_EXPORT void *
 wl_array_add(struct wl_array *array, int size)
 {
 	int alloc;

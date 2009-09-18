@@ -57,7 +57,7 @@ install : $(libs) $(compositors)
 	install -d @libdir@ @libdir@/pkgconfig ${udev_rules_dir}
 	install $(libs) @libdir@
 	install wayland-server.pc wayland.pc @libdir@/pkgconfig
-	install wayland-client.h @includedir@
+	install wayland-util.h wayland-client.h @includedir@
 	install 70-wayland.rules ${udev_rules_dir}
 
 clean :
