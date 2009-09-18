@@ -973,9 +973,8 @@ notify_button(struct wlsc_input_device *device,
 
 	surface = pick_surface(device, &sx, &sy);
 	if (surface) {
-		wlsc_surface_raise(surface);
-
 		if (state) {
+			wlsc_surface_raise(surface);
 			device->grab++;
 			device->grab_surface = surface;
 			wlsc_input_device_set_keyboard_focus(device,
