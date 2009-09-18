@@ -355,35 +355,6 @@
    fun:_ZNK7WebCore14SimpleFontData21platformWidthForGlyphEt
 }
 {
-   # http://crbug.com/9246
-   webcore_renderText_leak_todo
-   Memcheck:Leak
-   fun:_Znwj
-   fun:_ZN10SkFontHost15ResolveTypefaceEj
-   fun:_ZN24SkScalerContext_FreeType9setupSizeEv
-   fun:_ZN24SkScalerContext_FreeType15generateMetricsEP7SkGlyph
-   fun:_ZN24SkScalerContext_FreeType15generateAdvanceEP7SkGlyph
-   fun:_ZN15SkScalerContext10getAdvanceEP7SkGlyph
-   fun:_ZN12SkGlyphCache13lookupMetricsEjNS_11MetricsTypeE
-   fun:_ZN12SkGlyphCache17getGlyphIDAdvanceEt
-   fun:_Z24sk_getAdvance_glyph_nextP12SkGlyphCachePPKc
-   fun:_ZNK7SkPaint12measure_textEP12SkGlyphCachePKcjPiP6SkRect
-   fun:_ZNK7SkPaint11measureTextEPKvjP6SkRectf
-   fun:_ZNK7SkPaint11measureTextEPKvj
-   fun:_ZNK7WebCore14SimpleFontData21platformWidthForGlyphEt
-   fun:_ZNK7WebCore14SimpleFontData13widthForGlyphEt
-   fun:_ZN7WebCore13WidthIterator7advanceEiPNS_11GlyphBufferE
-   fun:_ZNK7WebCore4Font23floatWidthForSimpleTextERKNS_7TextRunEPNS_11GlyphBufferE
-   fun:_ZNK7WebCore4Font10floatWidthERKNS_7TextRunE
-   fun:_ZNK7WebCore4Font5widthERKNS_7TextRunE
-   fun:_ZNK7WebCore10RenderText14widthFromCacheERKNS_4FontEiii
-   fun:_ZN7WebCore10RenderText14calcPrefWidthsEi
-   fun:_ZNK7WebCore10RenderText12maxPrefWidthEv
-   fun:_ZNK7WebCore10RenderText5widthEjjRKNS_4FontEi
-   fun:_ZN7WebCore9textWidthEPNS_10RenderTextEjjRKNS_4FontEibb
-   fun:_ZN7WebCore11RenderBlock17findNextLineBreakERNS_12BidiResolverINS_14InlineIteratorENS_7BidiRunEEEbPNS_6EClearE
-}
-{
    webcore_parse_leak_todo
    Memcheck:Leak
    fun:_Znaj
