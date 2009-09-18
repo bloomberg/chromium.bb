@@ -676,7 +676,7 @@ bool MoveTabFunction::RunImpl() {
 
   if (new_index != tab_index)
     source_tab_strip->MoveTabContentsAt(tab_index, new_index, false);
-  
+
   if (has_callback())
     result_.reset(ExtensionTabUtil::CreateTabValue(contents, source_tab_strip,
         new_index));
@@ -796,6 +796,11 @@ bool CaptureVisibleTabFunction::RunImpl() {
 }
 
 bool DetectTabLanguageFunction::RunImpl() {
+  #if !defined(OS_WIN)
+    error_ = keys::kSupportedInWindowsOnlyError;
+    return false;
+  #endif
+
   int tab_id = 0;
   Browser* browser = NULL;
   TabContents* contents = NULL;

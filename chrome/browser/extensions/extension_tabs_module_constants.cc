@@ -44,6 +44,7 @@ const char kInternalVisibleTabCaptureError[] =
 const char kNotImplementedError[] = "This call is not yet implemented";
 const char kCannotAccessPageError[] = "Cannot access contents of url \"*\". "
     "Extension manifest must request permission to access this host.";
+const char kSupportedInWindowsOnlyError[] = "Supported in Windows only";
 
 const char kGetWindowFunction[] = "windows.get";
 const char kGetCurrentWindowFunction[] = "windows.getCurrent";
