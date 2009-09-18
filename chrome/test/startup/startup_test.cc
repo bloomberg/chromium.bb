@@ -27,6 +27,28 @@ class StartupTest : public UITest {
   void SetUp() {}
   void TearDown() {}
 
+  // Load a file on startup rather than about:blank.  This tests a longer
+  // startup path, including resource loading and the loading of gears.dll.
+  void SetUpWithFileURL() {
+    FilePath file_url;
+    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &file_url));
+    file_url = file_url.AppendASCII("empty.html");
+    ASSERT_TRUE(file_util::PathExists(file_url));
+    launch_arguments_.AppendLooseValue(file_url.ToWStringHack());
+
+    pages_ = WideToUTF8(file_url.ToWStringHack());
+  }
+
+  // Use the given profile in the test data extensions/profiles dir.  This tests
+  // startup with extensions installed.
+  void SetUpWithExtensionsProfile(const char* profile) {
+    FilePath data_dir;
+    PathService::Get(chrome::DIR_TEST_DATA, &data_dir);
+    data_dir = data_dir.AppendASCII("extensions").AppendASCII("profiles").
+        AppendASCII(profile);
+    set_template_user_data(data_dir.ToWStringHack());
+  }
+
   void RunStartupTest(const char* graph, const char* trace,
       bool test_cold, bool important, int profile_type) {
     profile_type_ = profile_type;
@@ -85,10 +107,9 @@ class StartupTest : public UITest {
         // Re-use the profile data after first run so that the noise from
         // creating databases doesn't impact all the runs.
         clear_profile_ = false;
-        // Destroy template_user_data_ for complex/gtk themes so we don't try
-        // to rewrite each time through.
-        if (profile_type != UITest::DEFAULT_THEME)
-          set_template_user_data(L"");
+        // Clear template_user_data_ so we don't try to copy it over each time
+        // through.
+        set_template_user_data(L"");
       }
     }
 
@@ -121,21 +142,6 @@ class StartupReferenceTest : public StartupTest {
   }
 };
 
-class StartupFileTest : public StartupTest {
- public:
-  // Load a file on startup rather than about:blank.  This tests a longer
-  // startup path, including resource loading and the loading of gears.dll.
-  void SetUp() {
-    FilePath file_url;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &file_url));
-    file_url = file_url.AppendASCII("empty.html");
-    ASSERT_TRUE(file_util::PathExists(file_url));
-    launch_arguments_.AppendLooseValue(file_url.ToWStringHack());
-
-    pages_ = WideToUTF8(file_url.ToWStringHack());
-  }
-};
-
 TEST_F(StartupTest, Perf) {
   RunStartupTest("warm", "t", false /* not cold */, true /* important */,
                  UITest::DEFAULT_THEME);
@@ -154,14 +160,56 @@ TEST_F(StartupTest, PerfCold) {
                  UITest::DEFAULT_THEME);
 }
 
+TEST_F(StartupTest, PerfExtensionEmpty) {
+  SetUpWithFileURL();
+  SetUpWithExtensionsProfile("empty");
+  RunStartupTest("warm", "t", false /* cold */, false /* not important */,
+                 UITest::DEFAULT_THEME);
+}
+
+TEST_F(StartupTest, PerfExtensionToolstrips1) {
+  SetUpWithFileURL();
+  SetUpWithExtensionsProfile("toolstrips1");
+  RunStartupTest("warm", "extension_toolstrip1",
+                 false /* cold */, false /* not important */,
+                 UITest::DEFAULT_THEME);
+}
+
+TEST_F(StartupTest, PerfExtensionToolstrips50) {
+  SetUpWithFileURL();
+  SetUpWithExtensionsProfile("toolstrips50");
+  RunStartupTest("warm", "extension_toolstrip50",
+                 false /* cold */, false /* not important */,
+                 UITest::DEFAULT_THEME);
+}
+
+TEST_F(StartupTest, PerfExtensionContentScript1) {
+  SetUpWithFileURL();
+  SetUpWithExtensionsProfile("content_scripts1");
+  RunStartupTest("warm", "extension_content_scripts1",
+                 false /* cold */, false /* not important */,
+                 UITest::DEFAULT_THEME);
+}
+
+TEST_F(StartupTest, PerfExtensionContentScript50) {
+  SetUpWithFileURL();
+  SetUpWithExtensionsProfile("content_scripts50");
+  RunStartupTest("warm", "extension_content_scripts50",
+                 false /* cold */, false /* not important */,
+                 UITest::DEFAULT_THEME);
+}
+
+
 #if defined(OS_WIN)
 // TODO(port): Enable gears tests on linux/mac once gears is working.
-TEST_F(StartupFileTest, PerfGears) {
+TEST_F(StartupTest, PerfGears) {
+  SetUpWithFileURL();
   RunStartupTest("warm", "gears", false /* not cold */,
                  false /* not important */, UITest::DEFAULT_THEME);
 }
 
-TEST_F(StartupFileTest, PerfColdGears) {
+TEST_F(StartupTest, PerfColdGears) {
+  SetUpWithFileURL();
   RunStartupTest("cold", "gears", true /* cold */,
                  false /* not important */, UITest::DEFAULT_THEME);
 }
