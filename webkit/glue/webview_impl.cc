@@ -235,9 +235,6 @@ class AutocompletePopupMenuClient : public WebCore::PopupMenuClient {
     return selected_index_;
   }
   virtual void popupDidHide() {
-    hidePopup();
-  }
-  virtual void hidePopup() {
     webview_->HideAutoCompletePopup();
   }
   virtual bool itemIsSeparator(unsigned listIndex) const {
@@ -256,12 +253,12 @@ class AutocompletePopupMenuClient : public WebCore::PopupMenuClient {
     return false;
   }
 
-  virtual FontSelector* fontSelector() const {
-    return text_field_->document()->styleSelector()->fontSelector();
-  }
-
   virtual void setTextFromItem(unsigned listIndex) {
     text_field_->setValue(suggestions_[listIndex]);
+  }
+
+  virtual FontSelector* fontSelector() const {
+    return text_field_->document()->styleSelector()->fontSelector();
   }
 
   virtual HostWindow* hostWindow() const {
