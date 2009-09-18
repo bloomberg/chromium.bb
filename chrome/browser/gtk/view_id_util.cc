@@ -5,8 +5,11 @@
 #include "chrome/browser/gtk/view_id_util.h"
 
 #include <stdint.h>
+#include <string>
 
 #include <gtk/gtk.h>
+
+#include "base/logging.h"
 
 namespace {
 
@@ -54,9 +57,66 @@ void SearchForWidgetWithViewID(GtkWidget* widget, gpointer data) {
   }
 }
 
+const char* GetNameFromID(ViewID id) {
+  switch (id) {
+    case VIEW_ID_TOOLBAR:
+      return "chrome-toolbar";
+
+    case VIEW_ID_BACK_BUTTON:
+      return "chrome-toolbar-back-button";
+
+    case VIEW_ID_FORWARD_BUTTON:
+      return "chrome-toolbar-forward-button";
+
+    case VIEW_ID_RELOAD_BUTTON:
+      return "chrome-toolbar-reload-button";
+
+    case VIEW_ID_HOME_BUTTON:
+      return "chrome-toolbar-home-button";
+
+    case VIEW_ID_STAR_BUTTON:
+      return "chrome-toolbar-star-button";
+
+    case VIEW_ID_LOCATION_BAR:
+      return "chrome-location-bar";
+
+    case VIEW_ID_GO_BUTTON:
+      return "chrome-toolbar-go-button";
+
+    case VIEW_ID_PAGE_MENU:
+      return "chrome-page-menu";
+
+    case VIEW_ID_APP_MENU:
+      return "chrome-app-menu";
+
+    case VIEW_ID_AUTOCOMPLETE:
+      return "chrome-autocomplete-edit";
+
+    case VIEW_ID_BOOKMARK_MENU:
+      return "chrome-bookmark-menu";
+
+    case VIEW_ID_BOOKMARK_BAR:
+      return "chrome-bookmark-bar";
+
+    case VIEW_ID_FIND_IN_PAGE_TEXT_FIELD:
+      return "chrome-find-in-page-entry";
+
+    // These are never hit because the tab container uses the delegate to
+    // set its ID.
+    case VIEW_ID_TAB_CONTAINER:
+    case VIEW_ID_TAB_CONTAINER_FOCUS_VIEW:
+    default:
+      NOTREACHED();
+      return NULL;
+  }
+}
+
 }  // namespace
 
 void ViewIDUtil::SetID(GtkWidget* widget, ViewID id) {
+  const char* name = GetNameFromID(id);
+  if (name)
+    gtk_widget_set_name(widget, name);
   g_object_set_data(G_OBJECT(widget), kViewIDString,
                     reinterpret_cast<void*>(id));
 }

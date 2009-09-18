@@ -17,6 +17,8 @@ class ViewIDUtil {
     virtual GtkWidget* GetWidgetForViewID(ViewID id) = 0;
   };
 
+  // If you set the ID via this function, it will also set the name of your
+  // widget to a human-readable value for debugging.
   static void SetID(GtkWidget* widget, ViewID id);
 
   static GtkWidget* GetWidget(GtkWidget* root, ViewID id);

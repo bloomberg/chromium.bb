@@ -593,8 +593,6 @@ void BookmarkBarGtk::ConnectFolderButtonEvents(GtkWidget* widget) {
                    G_CALLBACK(OnButtonPressed), this);
   g_signal_connect(G_OBJECT(widget), "clicked",
                    G_CALLBACK(OnFolderClicked), this);
-
-  ViewIDUtil::SetID(widget, VIEW_ID_BOOKMARK_MENU);
 }
 
 const BookmarkNode* BookmarkBarGtk::GetNodeForToolButton(GtkWidget* widget) {

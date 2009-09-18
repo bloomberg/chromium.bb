@@ -30,7 +30,7 @@ void SetLinkButtonStyle() {
       "  xthickness = 0"
       "  ythickness = 0"
       "}"
-      "widget \"*chrome-link-button\" style \"chrome-link-button\"");
+      "widget_class \"*.<GtkChromeLinkButton>\" style \"chrome-link-button\"");
 }
 
 }  // namespace
@@ -187,7 +187,6 @@ static void gtk_chrome_link_button_init(GtkChromeLinkButton* button) {
   button->text = NULL;
 
   gtk_container_add(GTK_CONTAINER(button), button->label);
-  gtk_widget_set_name(GTK_WIDGET(button), "chrome-link-button");
   gtk_widget_set_app_paintable(GTK_WIDGET(button), TRUE);
 }
 

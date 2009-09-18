@@ -44,7 +44,7 @@ static void gtk_chrome_button_class_init(GtkChromeButtonClass* button_class) {
       "  GtkButton::child-displacement-x = 0"
       "  GtkButton::child-displacement-y = 0"
       "}"
-      "widget \"*chrome-button\" style \"chrome-button\"");
+      "widget_class \"*.<GtkChromeButton>\" style \"chrome-button\"");
 
   GObjectClass* gobject_class = G_OBJECT_CLASS(button_class);
   GtkWidgetClass* widget_class = reinterpret_cast<GtkWidgetClass*>(
@@ -81,7 +81,6 @@ static void gtk_chrome_button_init(GtkChromeButton* button) {
   priv->paint_state = -1;
   priv->use_gtk_rendering = FALSE;
 
-  gtk_widget_set_name(GTK_WIDGET(button), "chrome-button");
   gtk_widget_set_app_paintable(GTK_WIDGET(button), TRUE);
 
   GTK_WIDGET_UNSET_FLAGS(button, GTK_CAN_FOCUS);
