@@ -298,9 +298,6 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
     // Explanation for this quirk can be found in
     // WebPluginDelegateImpl::Initialize.
     quirks_ |= PLUGIN_QUIRK_PATCH_SETCURSOR;
-  } else if (instance_->mime_type() == "application/x-nacl-srpc") {
-    // NaCl plugin runs in the sandbox - it cannot use the hwnd
-    quirks_ |= PLUGIN_QUIRK_DONT_CREATE_DUMMY_WINDOW;
   }
 }
 
@@ -329,40 +326,35 @@ void WebPluginDelegateImpl::PluginDestroyed() {
 
 void WebPluginDelegateImpl::PlatformInitialize() {
   plugin_->SetWindow(windowed_handle_);
-
-  if (windowless_ && !(quirks_ & PLUGIN_QUIRK_DONT_CREATE_DUMMY_WINDOW)) {
+  if (windowless_) {
     CreateDummyWindowForActivation();
     handle_event_pump_messages_event_ = CreateEvent(NULL, TRUE, FALSE, NULL);
     plugin_->SetWindowlessPumpEvent(handle_event_pump_messages_event_);
   }
 
-  // We cannot patch internal plugins as they are not shared libraries.
-  if (!instance_->plugin_lib()->internal()) {
-    // Windowless plugins call the WindowFromPoint API and passes the result of
-    // that to the TrackPopupMenu API call as the owner window. This causes the
-    // API to fail as the API expects the window handle to live on the same
-    // thread as the caller. It works in the other browsers as the plugin lives
-    // on the browser thread. Our workaround is to intercept the TrackPopupMenu
-    // API and replace the window handle with the dummy activation window.
-    if (windowless_ && !g_iat_patch_track_popup_menu.Pointer()->is_patched()) {
-      g_iat_patch_track_popup_menu.Pointer()->Patch(
-          GetPluginPath().value().c_str(), "user32.dll", "TrackPopupMenu",
-          WebPluginDelegateImpl::TrackPopupMenuPatch);
-    }
+  // Windowless plugins call the WindowFromPoint API and passes the result of
+  // that to the TrackPopupMenu API call as the owner window. This causes the
+  // API to fail as the API expects the window handle to live on the same thread
+  // as the caller. It works in the other browsers as the plugin lives on the
+  // browser thread. Our workaround is to intercept the TrackPopupMenu API and
+  // replace the window handle with the dummy activation window.
+  if (windowless_ && !g_iat_patch_track_popup_menu.Pointer()->is_patched()) {
+    g_iat_patch_track_popup_menu.Pointer()->Patch(
+        GetPluginPath().value().c_str(), "user32.dll", "TrackPopupMenu",
+        WebPluginDelegateImpl::TrackPopupMenuPatch);
+  }
 
-    // Windowless plugins can set cursors by calling the SetCursor API. This
-    // works because the thread inputs of the browser UI thread and the plugin
-    // thread are attached. We intercept the SetCursor API for windowless
-    // plugins and remember the cursor being set. This is shipped over to the
-    // browser in the HandleEvent call, which ensures that the cursor does not
-    // change when a windowless plugin instance changes the cursor
-    // in a background tab.
-    if (windowless_ && !g_iat_patch_set_cursor.Pointer()->is_patched() &&
-        (quirks_ & PLUGIN_QUIRK_PATCH_SETCURSOR)) {
-      g_iat_patch_set_cursor.Pointer()->Patch(
-          GetPluginPath().value().c_str(), "user32.dll", "SetCursor",
-          WebPluginDelegateImpl::SetCursorPatch);
-    }
+  // Windowless plugins can set cursors by calling the SetCursor API. This
+  // works because the thread inputs of the browser UI thread and the plugin
+  // thread are attached. We intercept the SetCursor API for windowless plugins
+  // and remember the cursor being set. This is shipped over to the browser
+  // in the HandleEvent call, which ensures that the cursor does not change
+  // when a windowless plugin instance changes the cursor in a background tab.
+  if (windowless_ && !g_iat_patch_set_cursor.Pointer()->is_patched() &&
+      (quirks_ & PLUGIN_QUIRK_PATCH_SETCURSOR)) {
+    g_iat_patch_set_cursor.Pointer()->Patch(
+        GetPluginPath().value().c_str(), "user32.dll", "SetCursor",
+        WebPluginDelegateImpl::SetCursorPatch);
   }
 
   // On XP, WMP will use its old UI unless a registry key under HKLM has the

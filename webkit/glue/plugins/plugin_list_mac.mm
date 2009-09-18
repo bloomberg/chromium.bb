@@ -67,8 +67,8 @@ void PluginList::LoadPluginsFromDir(const FilePath &path,
   }
 }
 
-bool PluginList::PlatformShouldLoadPlugin(const WebPluginInfo& info,
-                                          std::vector<WebPluginInfo>* plugins) {
+bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
+                                  std::vector<WebPluginInfo>* plugins) {
   // The Gears plugin is Safari-specific, and causes crashes, so don't load it.
   for (std::vector<WebPluginMimeType>::const_iterator i =
            info.mime_types.begin(); i != info.mime_types.end(); ++i) {

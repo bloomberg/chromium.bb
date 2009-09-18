@@ -165,8 +165,8 @@ void PluginList::LoadPluginsFromDir(const FilePath& path,
 }
 
 
-bool PluginList::PlatformShouldLoadPlugin(const WebPluginInfo& info,
-                                          std::vector<WebPluginInfo>* plugins) {
+bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
+                                  std::vector<WebPluginInfo>* plugins) {
   if (DebugPluginLoading()) {
     LOG(ERROR) << "Considering " << info.path.value()
               << " (" << info.name << ")";

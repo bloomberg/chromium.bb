@@ -30,9 +30,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message_utils.h"
 #include "media/base/media.h"
-#include "native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/plugins/plugin_list.h"
 
 //-----------------------------------------------------------------------------
 
@@ -80,16 +78,6 @@ RenderProcess::RenderProcess()
 
   if (command_line.HasSwitch(switches::kDumpHistogramsOnExit)) {
     StatisticsRecorder::set_dump_on_exit(true);
-  }
-
-  if (command_line.HasSwitch(switches::kInternalNaCl)) {
-    NPAPI::PluginEntryPoints entry_points = {
-#if !defined(OS_LINUX)
-        NaCl_NP_GetEntryPoints,
-#endif
-        NaCl_NP_Initialize,
-        NaCl_NP_Shutdown};
-    NPAPI::PluginList::UseInternalNaCl(&entry_points);
   }
 
   FilePath module_path;

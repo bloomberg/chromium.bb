@@ -29,7 +29,6 @@ namespace NPAPI
 
 #define kDefaultPluginLibraryName FILE_PATH_LITERAL("default_plugin")
 #define kGearsPluginLibraryName FILE_PATH_LITERAL("gears")
-#define kNaClPluginLibraryName FILE_PATH_LITERAL("internal_nacl")
 
 class PluginInstance;
 
@@ -106,13 +105,6 @@ class PluginList {
   static bool CreateWebPluginInfo(const PluginVersionInfo& pvi,
                                   WebPluginInfo* info);
 
-  // Set NativeClient plugin mode (avoid loading both the built-in and
-  // the external version of the plugin). The arguments provide pointers
-  // to NaCl plugin entry points - the functions are not referenced directly
-  // from this class to avoid introducing dependency between Webkit glue
-  // library and NaCl code.
-  static void UseInternalNaCl(PluginEntryPoints* entry_points);
-
   // Shutdown all plugins.  Should be called at process teardown.
   void Shutdown();
 
@@ -155,11 +147,6 @@ class PluginList {
   // loading run.
   bool ShouldLoadPlugin(const WebPluginInfo& info,
                         std::vector<WebPluginInfo>* plugins);
-
-  // Returns true if we should load the given plugin, or false otherwise.
-  // This function is platform-specific and is called from ShouldLoadPlugin.
-  bool PlatformShouldLoadPlugin(const WebPluginInfo& info,
-                                std::vector<WebPluginInfo>* plugins);
 
   // Find a plugin by mime type.
   // The allow_wildcard parameter controls whether this function returns
@@ -224,9 +211,6 @@ class PluginList {
 
   // Holds information about internal plugins.
   std::vector<PluginVersionInfo> internal_plugins_;
-
-  // true if we should use our internal Native Client plugin
-  bool use_internal_nacl_;
 
   // Need synchronization for the above members since this object can be
   // accessed on multiple threads.

@@ -35,8 +35,4 @@ include_rules = [
 
   # On Linux, the zygote needs to access sandbox headers
   "+sandbox/linux"
-
-  # NativeClient uses the sandbox.
-  # TODO(gregoryd): confirm this is really needed.
-  "+sandbox/linux"
 ]

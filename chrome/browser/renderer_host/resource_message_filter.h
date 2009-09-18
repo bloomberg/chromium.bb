@@ -25,7 +25,6 @@
 #include "chrome/browser/renderer_host/render_widget_helper.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/modal_dialog_event.h"
-#include "chrome/common/nacl_types.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/transport_dib.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -155,8 +154,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                              const std::string& mime_type,
                              const std::wstring& locale,
                              IPC::Message* reply_msg);
-  void OnLaunchNaCl(const int channel_descriptor,
-                    nacl::FileDescriptor* handle);
   void OnCreateDedicatedWorker(const GURL& url,
                                int render_view_route_id,
                                int* route_id);

@@ -61,8 +61,6 @@ class PluginLib : public base::RefCounted<PluginLib> {
   // supports.
   const WebPluginInfo& plugin_info() { return web_plugin_info_; }
 
-  bool internal() { return internal_; }
-
   //
   // NPAPI functions
   //

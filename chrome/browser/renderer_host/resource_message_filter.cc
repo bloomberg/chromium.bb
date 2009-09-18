@@ -26,7 +26,6 @@
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
 #include "chrome/browser/renderer_host/file_system_accessor.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
-#include "chrome/browser/nacl_process_host.h"
 #include "chrome/browser/spellchecker.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/browser/worker_host/message_port_dispatcher.h"
@@ -291,7 +290,6 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
                                   OnReceiveContextMenuMsg(msg))
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPlugin,
                                       OnOpenChannelToPlugin)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_LaunchNaCl, OnLaunchNaCl)
       IPC_MESSAGE_HANDLER(ViewHostMsg_CreateDedicatedWorker,
                           OnCreateDedicatedWorker)
       IPC_MESSAGE_HANDLER(ViewHostMsg_CancelCreateDedicatedWorker,
@@ -580,12 +578,6 @@ void ResourceMessageFilter::OnOpenChannelToPlugin(const GURL& url,
                                                   IPC::Message* reply_msg) {
   plugin_service_->OpenChannelToPlugin(
       this, url, mime_type, locale, reply_msg);
-}
-
-void ResourceMessageFilter::OnLaunchNaCl(const int channel_descriptor,
-                                         nacl::FileDescriptor* handle) {
-  NaClProcessHost* nacl_host = new NaClProcessHost(resource_dispatcher_host_);
-  nacl_host->Launch(this, channel_descriptor, handle);
 }
 
 void ResourceMessageFilter::OnCreateDedicatedWorker(const GURL& url,
