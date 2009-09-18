@@ -104,7 +104,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
 
 WebPluginDelegateImpl::~WebPluginDelegateImpl() {
   FakePluginWindowTracker::SharedInstance()->RemoveFakeWindowForDelegate(
-      this, cg_context_.window);
+      this, reinterpret_cast<WindowRef>(cg_context_.window));
   DestroyInstance();
 }
 
@@ -149,7 +149,8 @@ bool WebPluginDelegateImpl::Initialize(const GURL& url,
   cg_context_.window = window_tracker->GenerateFakeWindowForDelegate(this);
   cg_context_.context = NULL;
   Rect window_bounds = { 0, 0, window_rect_.height(), window_rect_.width() };
-  SetWindowBounds(cg_context_.window, kWindowContentRgn, &window_bounds);
+  SetWindowBounds(reinterpret_cast<WindowRef>(cg_context_.window),
+                  kWindowContentRgn, &window_bounds);
   window_.window = &cg_context_;
   window_.type = NPWindowTypeWindow;
 
@@ -358,9 +359,9 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
   window_.x = 0;
   window_.y = 0;
 
-  UpdateDummyWindowBoundsWithOffset(cg_context_.window, window_rect_.x(),
-                                    window_rect_.y(), window_rect_.width(),
-                                    window_rect_.height());
+  UpdateDummyWindowBoundsWithOffset(
+      reinterpret_cast<WindowRef>(cg_context_.window), window_rect_.x(),
+      window_rect_.y(), window_rect_.width(), window_rect_.height());
 
   NPError err = instance()->NPP_SetWindow(&window_);
   DCHECK(err == NPERR_NO_ERROR);
@@ -529,7 +530,8 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
   if (WebInputEventIsWebMouseEvent(event)) {
     const WebMouseEvent* mouse_event =
         static_cast<const WebMouseEvent*>(&event);
-    UpdateWindowLocation(cg_context_.window, *mouse_event);
+    UpdateWindowLocation(reinterpret_cast<WindowRef>(cg_context_.window),
+                         *mouse_event);
   }
   CGContextSaveGState(cg_context_.context);
   bool ret = instance()->NPP_HandleEvent(&np_event) != 0;
