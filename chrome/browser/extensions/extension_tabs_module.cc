@@ -115,10 +115,9 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
   result->SetString(keys::kStatusKey, GetTabStatusText(status));
   result->SetBoolean(keys::kSelectedKey,
                      tab_strip && tab_index == tab_strip->selected_index());
+  result->SetString(keys::kTitleKey, UTF16ToWide(contents->GetTitle()));
 
   if (status != TAB_LOADING) {
-    result->SetString(keys::kTitleKey, UTF16ToWide(contents->GetTitle()));
-
     NavigationEntry* entry = contents->controller().GetActiveEntry();
     if (entry) {
       if (entry->favicon().is_valid())
