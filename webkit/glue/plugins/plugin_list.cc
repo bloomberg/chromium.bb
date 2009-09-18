@@ -141,6 +141,7 @@ void PluginList::LoadPlugins(bool refresh) {
   // other methods if they're called on other threads.
   std::vector<FilePath> extra_plugin_paths;
   std::vector<FilePath> extra_plugin_dirs;
+  std::vector<PluginVersionInfo> internal_plugins;
   {
     AutoLock lock(lock_);
     if (plugins_loaded_ && !refresh)
@@ -148,6 +149,7 @@ void PluginList::LoadPlugins(bool refresh) {
 
     extra_plugin_paths = extra_plugin_paths_;
     extra_plugin_dirs = extra_plugin_dirs_;
+    internal_plugins = internal_plugins_;
   }
 
   base::TimeTicks start_time = base::TimeTicks::Now();
@@ -156,6 +158,15 @@ void PluginList::LoadPlugins(bool refresh) {
 
   std::vector<FilePath> directories_to_scan;
   GetPluginDirectories(&directories_to_scan);
+
+  // Load internal plugins first so that, if both an internal plugin and a
+  // "discovered" plugin want to handle the same type, the internal plugin
+  // will have precedence.
+  for (size_t i = 0; i < internal_plugins.size(); ++i) {
+    if (internal_plugins[i].path.value() == kDefaultPluginLibraryName)
+      continue;
+    LoadPlugin(internal_plugins[i].path, &new_plugins);
+  }
 
   for (size_t i = 0; i < extra_plugin_paths.size(); ++i)
     LoadPlugin(extra_plugin_paths[i], &new_plugins);
@@ -168,6 +179,7 @@ void PluginList::LoadPlugins(bool refresh) {
     LoadPluginsFromDir(directories_to_scan[i], &new_plugins);
   }
 
+  // Load the default plugin last.
   if (webkit_glue::IsDefaultPluginEnabled())
     LoadPlugin(FilePath(kDefaultPluginLibraryName), &new_plugins);
 
