@@ -910,6 +910,9 @@ willPositionSheet:(NSWindow*)sheet
   if (fullscreen) {
     // Move content to a new fullscreen window
     NSView* content = [[self window] contentView];
+    // Disable autoresizing of subviews while we move views around.  This
+    // prevents spurious renderer resizes.
+    [content setAutoresizesSubviews:NO];
     fullscreen_window_.reset([[self fullscreenWindow] retain]);
     [content removeFromSuperview];
     [fullscreen_window_ setContentView:content];
@@ -919,16 +922,21 @@ willPositionSheet:(NSWindow*)sheet
     [self adjustUIForFullscreen:fullscreen];
     // Show one window, hide the other.
     [fullscreen_window_ makeKeyAndOrderFront:self];
+    [content setAutoresizesSubviews:YES];
     [content setNeedsDisplay:YES];
     [window_ orderOut:self];
   } else {
     NSView* content = [fullscreen_window_ contentView];
+    // Disable autoresizing of subviews while we move views around.  This
+    // prevents spurious renderer resizes.
+    [content setAutoresizesSubviews:NO];
     [content removeFromSuperview];
     [window_ setContentView:content];
     [self setWindow:window_.get()];
     // This call triggers a relayout, so it needs to come after we move the
     // contentview to the new window.
     [self adjustUIForFullscreen:fullscreen];
+    [content setAutoresizesSubviews:YES];
     [content setNeedsDisplay:YES];
 
     // With this call, valgrind yells at me about "Conditional jump or
