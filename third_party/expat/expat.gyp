@@ -9,7 +9,6 @@
   'target_defaults': {
     'defines': [
       '_LIB',
-      'COMPILED_FROM_DSP',
       'XML_STATIC',  # Compile for static linkage.
     ],
     'include_dirs': [
@@ -40,7 +39,19 @@
         'defines': [
           'XML_STATIC',  # Tell dependants to expect static linkage.
         ],
-      }
+      },
+      'conditions': [
+        ['OS=="win"', {
+          'defines': [
+            'COMPILED_FROM_DSP',
+          ],
+        }],
+        ['OS=="linux"', {
+          'defines': [
+            'HAVE_EXPAT_CONFIG_H',
+          ],
+        }],
+      ],
     },
   ],
 }
