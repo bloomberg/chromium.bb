@@ -245,9 +245,17 @@ class TestShellThread(threading.Thread):
       except:
         logging.info("Ignoring invalid batch size '%s'" %
                      self._options.batch_size)
+
+    # Append tests we're running to the existing tests_run.txt file.
+    # This is created in run_webkit_tests.py:_PrepareListsAndPrintOutput.
+    tests_run_filename = os.path.join(self._options.results_directory,
+                                      "tests_run.txt")
+    tests_run_file = open(tests_run_filename, "a")
+
     while True:
       if self._canceled:
         logging.info('Testing canceled')
+        tests_run_file.close()
         return
 
       if len(self._filename_list) is 0:
@@ -262,6 +270,7 @@ class TestShellThread(threading.Thread):
         except Queue.Empty:
           self._KillTestShell()
           logging.debug("queue empty, quitting test shell thread")
+          tests_run_file.close()
           return
 
         self._num_tests_in_current_dir = len(self._filename_list)
@@ -277,6 +286,7 @@ class TestShellThread(threading.Thread):
         failures = self._RunTest(test_info)
 
       filename = test_info.filename
+      tests_run_file.write(filename + "\n")
       if failures:
         # Check and kill test shell if we need too.
         if len([1 for f in failures if f.ShouldKillTestShell()]):

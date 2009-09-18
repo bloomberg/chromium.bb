@@ -280,7 +280,7 @@ class TestRunner:
       tests_run_filename = os.path.join(self._options.results_directory,
                                         "tests_run.txt")
       tests_run_file = open(tests_run_filename, "w")
-      tests_run_file.write(tests_run_msg)
+      tests_run_file.write(tests_run_msg + "\n")
       tests_run_file.close()
 
       # update expectations so that the stats are calculated correctly
