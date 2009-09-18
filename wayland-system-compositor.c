@@ -132,11 +132,12 @@ struct wlsc_compositor {
 	uint32_t current_frame;
 	struct wl_event_source *drm_source;
 
-	uint32_t meta_state;
+	uint32_t modifier_state;
 	struct wl_list animate_list;
 };
 
-#define META_DOWN 256
+#define MODIFIER_CTRL	(1 << 8)
+#define MODIFIER_ALT	(1 << 9)
 
 struct wlsc_vector {
 	GLdouble x, y, z;
@@ -1001,15 +1002,37 @@ notify_key(struct wlsc_input_device *device,
 {
 	struct wlsc_compositor *compositor = device->ec;
 	uint32_t *k, *end;
+	uint32_t modifier;
 
 	if (!compositor->vt_active)
 		return;
 
-	switch (key | compositor->meta_state) {
-	case KEY_BACKSPACE | META_DOWN:
+	switch (key | compositor->modifier_state) {
+	case KEY_BACKSPACE | MODIFIER_CTRL | MODIFIER_ALT:
 		on_term_signal(SIGTERM, compositor);
 		return;
 	}
+
+	switch (key) {
+	case KEY_LEFTCTRL:
+	case KEY_RIGHTCTRL:
+		modifier = MODIFIER_CTRL;
+		break;
+
+	case KEY_LEFTALT:
+	case KEY_RIGHTALT:
+		modifier = MODIFIER_ALT;
+		break;
+
+	default:
+		modifier = 0;
+		break;
+	}
+
+	if (state)
+		compositor->modifier_state |= modifier;
+	else
+		compositor->modifier_state &= ~modifier;
 
 	end = device->keys.data + device->keys.size;
 	for (k = device->keys.data; k < end; k++) {
