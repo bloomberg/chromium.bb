@@ -37,6 +37,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "native_client/src/include/nacl_macros.h"
+
 #include "native_client/src/trusted/service_runtime/dyn_array.h"
 
 
@@ -56,14 +58,14 @@ int ReadWriteTest(void) {
   printf("\nReadWriteTest\n");
   DynArrayCtor(&da, 2);
 
-  for (i = 0; i < sizeof test_data/sizeof test_data[0]; ++i) {
+  for (i = 0; i < NACL_ARRAY_SIZE(test_data); ++i) {
     if (!DynArraySet(&da, i, (void *) test_data[i])) {
       printf("insert for position %d failed\n", i);
       ++nerrors;
     }
   }
 
-  for (i = 0; i < sizeof test_data/sizeof test_data[0]; ++i) {
+  for (i = 0; i < NACL_ARRAY_SIZE(test_data); ++i) {
     if ((int) DynArrayGet(&da, i) != test_data[i]) {
       printf("check for value at position %d failed\n", i);
       ++nerrors;
@@ -74,14 +76,14 @@ int ReadWriteTest(void) {
 
   DynArrayCtor(&da, 10);
 
-  for (i = sizeof test_data/sizeof test_data[0]; --i >= 0; ) {
+  for (i = NACL_ARRAY_SIZE(test_data); --i >= 0; ) {
     if (!DynArraySet(&da, i, (void *) test_data[i])) {
       printf("insert for position %d failed\n", i);
       ++nerrors;
     }
   }
 
-  for (i = sizeof test_data/sizeof test_data[0]; --i >= 0; ) {
+  for (i = NACL_ARRAY_SIZE(test_data); --i >= 0; ) {
     if ((int) DynArrayGet(&da, i) != test_data[i]) {
       printf("check for value at position %d failed\n", i);
       ++nerrors;
@@ -188,7 +190,7 @@ int FfsTest(void) {
   printf("\nFFS test\n");
   DynArrayCtor(&da, 32);
 
-  for (ix = 0; ix < sizeof test_data/sizeof test_data[0]; ++ix) {
+  for (ix = 0; ix < NACL_ARRAY_SIZE(test_data); ++ix) {
     if (!DynArraySet(&da, test_data[ix].pos, test_data[ix].val)) {
       printf("setting at position %d to 0x%x, test_data entry %d faild\n",
              test_data[ix].pos, (uintptr_t) test_data[ix].val, ix);

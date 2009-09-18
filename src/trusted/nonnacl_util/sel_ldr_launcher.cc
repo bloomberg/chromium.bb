@@ -30,6 +30,7 @@
  */
 
 #include "native_client/src/include/portability_io.h"
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
 #include <stdio.h>
@@ -77,9 +78,9 @@ static NaClDesc* GetSockAddr(struct NaClDescEffector *effp,
   iovec[0].base = bytes;
   iovec[0].length = NACL_ABI_IMC_USER_BYTES_MAX;
   header.iov = iovec;
-  header.iov_length = sizeof(iovec) / sizeof(iovec[0]);
+  header.iov_length = NACL_ARRAY_SIZE(iovec);
   header.ndescv = descs;
-  header.ndesc_length = sizeof(descs) / sizeof(descs[0]);
+  header.ndesc_length = NACL_ARRAY_SIZE(descs);
   header.flags = 0;
   // Receive the message.
   NaClImcRecvTypedMessage(desc, effp, &header, 0);
@@ -239,7 +240,7 @@ void SelLdrLauncher::BuildArgv(const char* sel_ldr_pathname,
     "-i",
     channel_buf_
   };
-  const int kFixedArgc = sizeof(kFixedArgs) / sizeof(kFixedArgs[0]);
+  const int kFixedArgc = NACL_ARRAY_SIZE(kFixedArgs);
 
   argv_ = new char const*[kFixedArgc + sel_ldr_argc
                           + (application_argc + 1) + 1];

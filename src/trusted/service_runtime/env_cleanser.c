@@ -34,6 +34,7 @@
 #include <string.h>
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/include/nacl_macros.h"
 
 #include "native_client/src/trusted/service_runtime/env_cleanser.h"
 #include "native_client/src/trusted/service_runtime/env_cleanser_test.h"
@@ -89,8 +90,7 @@ static int EnvCmp(void const *vleft, void const *vright) {
 int NaClEnvInWhitelist(char const *env_entry) {
   return NULL != bsearch((void const *) &env_entry,
                          (void const *) kNaClEnvWhitelist,
-                         (sizeof kNaClEnvWhitelist
-                          / sizeof kNaClEnvWhitelist[0]) - 1,  /* NULL */
+                         NACL_ARRAY_SIZE(kNaClEnvWhitelist) - 1,  /* NULL */
                          sizeof kNaClEnvWhitelist[0],
                          EnvCmp);
 }

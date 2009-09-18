@@ -41,6 +41,7 @@
 #include <string.h>
 
 #include "native_client/src/include/nacl_elf.h"
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_time.h"
 
@@ -87,8 +88,8 @@ NaClErrorCode NaClProcessPhdrs(struct NaClApp *nap) {
      * of the address space.  Ensure that PT_GNU_STACK is present, and
      * that x is off.
      */
-  int         seen_seg[(sizeof nacl_phdr_check_data
-                        / sizeof nacl_phdr_check_data[0])];
+  int         seen_seg[NACL_ARRAY_SIZE(nacl_phdr_check_data)];
+
   int         segnum;
   Elf32_Phdr  *php;
   size_t      j;
@@ -106,7 +107,7 @@ NaClErrorCode NaClProcessPhdrs(struct NaClApp *nap) {
             segnum, php->p_type, php->p_flags);
     php->p_flags &= ~PF_MASKOS;
     for (j = 0;
-         j < sizeof nacl_phdr_check_data/sizeof nacl_phdr_check_data[0];
+         j < NACL_ARRAY_SIZE(nacl_phdr_check_data);
          ++j) {
       if (php->p_type == nacl_phdr_check_data[j].p_type
           && php->p_flags == nacl_phdr_check_data[j].p_flags) {
@@ -212,7 +213,7 @@ NaClErrorCode NaClProcessPhdrs(struct NaClApp *nap) {
     ;
   }
   for (j = 0;
-       j < sizeof nacl_phdr_check_data/sizeof nacl_phdr_check_data[0];
+       j < NACL_ARRAY_SIZE(nacl_phdr_check_data);
        ++j) {
     if (nacl_phdr_check_data[j].required && !seen_seg[j]) {
       return LOAD_REQUIRED_SEG_MISSING;

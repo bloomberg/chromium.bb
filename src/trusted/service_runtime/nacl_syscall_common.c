@@ -34,6 +34,7 @@
  */
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/include/nacl_platform.h"
+#include "native_client/src/include/nacl_macros.h"
 
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_host_dir.h"
@@ -1685,7 +1686,7 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread *natp,
   recv_hdr.iov_length = kern_nimh.iov_length;
 
   recv_hdr.ndescv = new_desc;
-  recv_hdr.ndesc_length = sizeof new_desc / sizeof new_desc[0];
+  recv_hdr.ndesc_length = NACL_ARRAY_SIZE(new_desc);
   memset(new_desc, 0, sizeof new_desc);
 
   recv_hdr.flags = 0;  /* just to make it obvious; IMC will clear it for us */
@@ -1733,7 +1734,7 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread *natp,
   /* copy out updated desc count, flags */
  cleanup:
   if (retval < 0) {
-    for (i = 0; i < sizeof new_desc/sizeof new_desc[0]; ++i) {
+    for (i = 0; i < NACL_ARRAY_SIZE(new_desc); ++i) {
       if (NULL != new_desc[i]) {
         NaClDescUnref(new_desc[i]);
         new_desc[i] = NULL;

@@ -90,7 +90,7 @@ void __NaClSrpcImcBufferCtor(NaClSrpcImcBuffer* buffer, int is_write_buf) {
     NACL_SRPC_IMC_HEADER_DESC_LENGTH(*buffer) = 0;
   } else {
     NACL_SRPC_IMC_HEADER_DESC_LENGTH(*buffer) =
-        sizeof(buffer->descs) / sizeof(buffer->descs[0]);
+        NACL_ARRAY_SIZE(buffer->descs);
   }
   buffer->header.flags = 0;
   /* Buffers start out empty */

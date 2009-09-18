@@ -43,6 +43,7 @@
 #include <string>
 #include <vector>
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_process.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
@@ -289,7 +290,7 @@ int ReceiveDescriptor(TestState *tsp, int mode) {
   hdr.iov = &vec;
   hdr.iov_length = 1;
   hdr.handles = handle;
-  hdr.handle_count = sizeof handle/sizeof handle[0];
+  hdr.handle_count = NACL_ARRAY_SIZE(handle);
   hdr.flags = 0;
   switch (mode) {
     case 0: {
@@ -322,7 +323,7 @@ int ReceiveDescriptor(TestState *tsp, int mode) {
       ++errors;
     }
 
-    if (sizeof handle/sizeof handle[0] < hdr.handle_count) {
+    if (NACL_ARRAY_SIZE(handle) < hdr.handle_count) {
       printf("ERROR: Too many handles: %"PRIdS, hdr.handle_count);
       return ++errors;
     }
@@ -427,7 +428,7 @@ int ReceiveData(TestState *tsp, int mode) {
   hdr.iov = &vec;
   hdr.iov_length = 1;
   hdr.handles = handle;
-  hdr.handle_count = sizeof handle/sizeof handle[0];
+  hdr.handle_count = NACL_ARRAY_SIZE(handle);
   hdr.flags = 0;
   switch (mode) {
     case 0: {
@@ -464,7 +465,7 @@ int ReceiveData(TestState *tsp, int mode) {
       printf("ERROR: Did not receive zero handles.\n");
       ++errors;
     }
-    if (sizeof handle/sizeof handle[0] < hdr.handle_count) {
+    if (NACL_ARRAY_SIZE(handle) < hdr.handle_count) {
       printf("Too many handles: %"PRIdS, hdr.handle_count);
       return ++errors;
     }
@@ -824,7 +825,7 @@ int TestNaClSocket(int rep_count) {
 }
 
 void ListTests() {
-  for (size_t ix = 0; ix < sizeof test_fn/sizeof test_fn[0]; ++ix) {
+  for (size_t ix = 0; ix < NACL_ARRAY_SIZE(test_fn); ++ix) {
     printf("%3"PRIdS": %s\n", ix, test_fn[ix].name);
     if (test_fn[ix].flakey) {
       printf(" NB: known to be flakey on this platform\n");
@@ -878,7 +879,7 @@ int main(int ac,
     }
   }
   if (gTestSequence.empty()) {
-    for (size_t i = 0; i < sizeof test_fn/sizeof test_fn[0]; ++i) {
+    for (size_t i = 0; i < NACL_ARRAY_SIZE(test_fn); ++i) {
       if (!test_fn[i].flakey) {
         gTestSequence.push_back(i);
       }
@@ -888,7 +889,7 @@ int main(int ac,
   for (std::vector<int>::const_iterator it = gTestSequence.begin();
        gTestSequence.end() != it;
        ++it) {
-    if ((unsigned) *it >= sizeof test_fn/sizeof test_fn[0]) {
+    if ((unsigned) *it >= NACL_ARRAY_SIZE(test_fn)) {
       fprintf(stderr, "No test %d\n", *it);
       ++errors;
     } else {

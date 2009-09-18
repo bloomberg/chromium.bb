@@ -39,6 +39,7 @@
 #include <string.h>
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/include/nacl_macros.h"
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
@@ -393,7 +394,7 @@ int32_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
   recv_hdr.iov = &recv_iov;
   recv_hdr.iov_length = 1;
 
-  for (i = 0; i < sizeof kern_handle/sizeof kern_handle[0]; ++i) {
+  for (i = 0; i < NACL_ARRAY_SIZE(kern_handle); ++i) {
     kern_handle[i] = NACL_INVALID_HANDLE;
   }
 
@@ -403,7 +404,7 @@ int32_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
      */
 
     recv_hdr.handles = kern_handle;
-    recv_hdr.handle_count = sizeof kern_handle / sizeof kern_handle[0];
+    recv_hdr.handle_count = NACL_ARRAY_SIZE(kern_handle);
     NaClLog(4, "Connected socket, may transfer descriptors\n");
   } else {
     /*
@@ -602,13 +603,13 @@ cleanup:
    * object. Otherwise, between new_desc and kern_handle cleanup code,
    * a NaClHandle might be closed twice.
    */
-  for (i = 0; i < sizeof new_desc/sizeof new_desc[0]; ++i) {
+  for (i = 0; i < NACL_ARRAY_SIZE(new_desc); ++i) {
     if (NULL != new_desc[i]) {
       NaClDescUnref(new_desc[i]);
       new_desc[i] = NULL;
     }
   }
-  for (i = 0; i < sizeof kern_handle/sizeof kern_handle[0]; ++i) {
+  for (i = 0; i < NACL_ARRAY_SIZE(kern_handle); ++i) {
     if (NACL_INVALID_HANDLE != kern_handle[i]) {
       NaClClose(kern_handle[i]);
     }

@@ -30,6 +30,7 @@
  */
 
 #include "native_client/src/include/portability_string.h"
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/service_runtime/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_asm_symbols.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
@@ -55,7 +56,7 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
   patch16[0].value = NaClGetGlobalCs();
 
   patch_info.abs16 = patch16;
-  patch_info.num_abs16 = sizeof patch16 / sizeof patch16[0];
+  patch_info.num_abs16 = NACL_ARRAY_SIZE(patch16);
 
   patch_info.rel32 = NULL;
   patch_info.num_rel32 = 0;
@@ -68,7 +69,7 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
   patch32[1].value = NaClGetGlobalDs();  /* opens the data sandbox */
 
   patch_info.abs32 = patch32;
-  patch_info.num_abs32 = sizeof patch32/sizeof patch32[0];
+  patch_info.num_abs32 = NACL_ARRAY_SIZE(patch32);
 
   patch_info.dst = target_addr;
   patch_info.src = (uintptr_t) kTrampolineCode;

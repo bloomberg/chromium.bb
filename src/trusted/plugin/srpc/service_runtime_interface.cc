@@ -32,6 +32,8 @@
 
 #include <map>
 
+#include "native_client/src/include/nacl_macros.h"
+
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 
@@ -266,7 +268,7 @@ bool ServiceRuntimeInterface::Start(const char* nacl_file) {
   // const char* kSelLdrArgs[] = { "-P", "5", "-X", "5" };
   const char* kSelLdrArgs[] = { "-P", "5", "-X", "5" };
   // TODO(sehr): remove -P support and default channels.
-  const int kSelLdrArgLength = sizeof(kSelLdrArgs) / sizeof(kSelLdrArgs[0]);
+  const int kSelLdrArgLength = NACL_ARRAY_SIZE(kSelLdrArgs);
 
   // NB: number_alive is intentionally modified only when
   // SRPC_PLUGIN_DEBUG is enabled.
@@ -413,9 +415,9 @@ ScriptableHandle<SocketAddress>* ServiceRuntimeInterface::GetSocketAddress(
   iovec[0].base = bytes;
   iovec[0].length = NACL_ABI_IMC_USER_BYTES_MAX;
   header.iov = iovec;
-  header.iov_length = sizeof(iovec) / sizeof(iovec[0]);
+  header.iov_length = NACL_ARRAY_SIZE(iovec);
   header.ndescv = descs;
-  header.ndesc_length = sizeof(descs) / sizeof(descs[0]);
+  header.ndesc_length = NACL_ARRAY_SIZE(descs);
   header.flags = 0;
   // Receive the message.
   NaClImcRecvTypedMessage(desc,

@@ -34,6 +34,7 @@
  */
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
+#include "native_client/src/include/nacl_macros.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -165,9 +166,9 @@ int main(int ac, char **av) {
     iov[0].length = sizeof data_buffer;
 
     msg_hdr.iov = iov;
-    msg_hdr.iov_length = sizeof iov / sizeof iov[0];
+    msg_hdr.iov_length = NACL_ARRAY_SIZE(iov);
     msg_hdr.ndescv = desc_buffer;
-    msg_hdr.ndesc_length = sizeof desc_buffer / sizeof desc_buffer[0];
+    msg_hdr.ndesc_length = NACL_ARRAY_SIZE(desc_buffer);
 
     rv = NaClImcRecvTypedMessage(channel, effp, &msg_hdr, 0);
 
@@ -244,7 +245,7 @@ int main(int ac, char **av) {
     iov[0].length = strlen(data_buffer);
 
     msg_hdr.iov = iov;
-    msg_hdr.iov_length = sizeof iov / sizeof iov[0];
+    msg_hdr.iov_length = NACL_ARRAY_SIZE(iov);
     msg_hdr.ndesc_length = 0;
     msg_hdr.ndescv = desc_buffer;
 
