@@ -4,17 +4,17 @@
       'target_name': 'program',
       'type': 'executable',
       'dependencies': [
-        'library',
+        'lib1',
       ],
       'sources': [
         'program.c',
       ],
     },
     {
-      'target_name': 'library',
+      'target_name': 'lib1',
       'type': '<(library)',
       'sources': [
-        'library.c',
+        'lib1.c',
       ],
     },
   ],

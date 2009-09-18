@@ -255,7 +255,7 @@ class TestGypMake(TestGypBase):
     Runs an executable built by Make.
     """
     configuration = self.configuration or 'Default'
-    os.environ['LD_LIBRARY_PATH'] = self.workpath(configuration, 'lib')
+    os.environ['LD_LIBRARY_PATH'] = os.path.join(configuration, 'lib')
     # Enclosing the name in a list avoids prepending the original dir.
     program = [os.path.join('out', configuration, name)]
     return self.run(program=program, *args, **kw)
@@ -396,7 +396,7 @@ class TestGypSCons(TestGypBase):
     Runs an executable built by scons.
     """
     configuration = self.configuration or 'Default'
-    os.environ['LD_LIBRARY_PATH'] = self.workpath(configuration, 'lib')
+    os.environ['LD_LIBRARY_PATH'] = os.path.join(configuration, 'lib')
     # Enclosing the name in a list avoids prepending the original dir.
     program = [os.path.join(configuration, name)]
     return self.run(program=program, *args, **kw)
@@ -451,7 +451,7 @@ class TestGypXcode(TestGypBase):
     Runs an executable built by xcodebuild.
     """
     configuration = self.configuration or 'Default'
-    os.environ['DYLD_LIBRARY_PATH'] = self.workpath('build', configuration)
+    os.environ['DYLD_LIBRARY_PATH'] = os.path.join('build', configuration)
     # Enclosing the name in a list avoids prepending the original dir.
     program = [os.path.join('build', configuration, name)]
     return self.run(program=program, *args, **kw)

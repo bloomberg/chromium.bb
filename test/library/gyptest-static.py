@@ -8,14 +8,16 @@ import TestGyp
 
 test = TestGyp.TestGyp()
 
-test.run_gyp('library.gyp', '-Dlibrary=static_library')
+test.run_gyp('library.gyp', '-Dlibrary=static_library', chdir='src')
 
-test.build_all('library.gyp')
+test.relocate('src', 'relocate/src')
+
+test.build_all('library.gyp', chdir='relocate/src')
 
 expect = """\
 Hello from program.c
-Hello from library.c
+Hello from lib1.c
 """
-test.run_built_executable('program', stdout=expect)
+test.run_built_executable('program', chdir='relocate/src', stdout=expect)
 
 test.pass_test()

@@ -5,5 +5,5 @@ __declspec(dllexport)
 #endif
 void library_function(void)
 {
-  printf("Hello from library.c\n");
+  printf("Hello from lib1.c\n");
 }
