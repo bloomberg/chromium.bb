@@ -1660,6 +1660,10 @@ void RenderViewHost::BlockExtensionRequest(int request_id) {
                         "Access to extension API denied.");
 }
 
+void RenderViewHost::ViewTypeChanged(ViewType::Type type) {
+  Send(new ViewMsg_NotifyRenderViewType(routing_id(), type));
+}
+
 void RenderViewHost::OnExtensionPostMessage(
     int port_id, const std::string& message) {
   if (process()->profile()->GetExtensionMessageService()) {

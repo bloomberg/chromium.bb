@@ -12,7 +12,6 @@ body {
   margin: 0;
   padding:0;
   font: menu;
-  color: $TEXT_COLOR$;
   -webkit-user-select:none;
   cursor:default;
 }
@@ -52,7 +51,6 @@ div.toolstrip-button {
   border:6px solid transparent;
   font:menu;
   background:transparent;
-  color: $TEXT_COLOR$;
   line-height:100%;
   padding:0;
 }

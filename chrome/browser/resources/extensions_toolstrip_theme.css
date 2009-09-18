@@ -1,0 +1,8 @@
+/**
+ * The following style rules affect toolstrips and moles and are affected by
+ * theme changes.
+ */
+
+body {
+  color: $TEXT_COLOR$;
+}

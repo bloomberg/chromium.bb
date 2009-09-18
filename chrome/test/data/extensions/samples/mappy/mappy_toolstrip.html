@@ -1,6 +1,21 @@
 <style>
-#map {
+.chrome-toolstrip #map {
   display: none;
+}
+
+.chrome-toolstrip #button {
+  display: block;
+}
+
+.chrome-mole #map {
+  display: block;
+}
+
+.chrome-mole #button {
+  display: none;
+}
+
+#map {
   width: 512px;
   height: 512px;
 }
@@ -10,20 +25,9 @@
 <script>
 var maps_key = "ABQIAAAATfHumDbW3OmRByfquHd3SRTRERdeAiwZ9EeJWta3L_JZVS0bOBRQeZgr4K0xyVKzUdnnuFl8X9PX0w";
 
-chrome.toolstrip.onCollapsed.addListener(function() {
-  var map = document.getElementById("map");
-  map.src = "";
-  map.style.display = "none";
-  var button = document.getElementById("button");
-  button.style.display = "block";
-});
-
 function expand(url) {
-  var button = document.getElementById("button");
-  button.style.display = "none";
   var map = document.getElementById("map");
   map.src = url;
-  map.style.display = "block";
   chrome.toolstrip.expand({height:512}, function() {});
 }
 

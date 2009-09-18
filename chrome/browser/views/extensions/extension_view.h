@@ -36,7 +36,7 @@ class ExtensionView : public views::NativeViewHost {
   Browser* browser() const { return browser_; }
   Extension* extension() const;
   RenderViewHost* render_view_host() const;
-  void SetDidInsertCSS(bool did_insert);
+  void DidStopLoading();
   void set_is_clipped(bool is_clipped) { is_clipped_ = is_clipped; }
   bool is_toolstrip() const { return is_toolstrip_; }
   void set_is_toolstrip(bool is) { is_toolstrip_ = is; }
@@ -94,8 +94,8 @@ class ExtensionView : public views::NativeViewHost {
   // Note: the view does not own its container.
   ExtensionContainer* container_;
 
-  // Whether the RenderView has inserted extension css into toolstrip page.
-  bool did_insert_css_;
+  // Whether the RenderView has finished loading.
+  bool did_stop_loading_;
 
   // Whether this extension view is clipped.
   bool is_clipped_;
