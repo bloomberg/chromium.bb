@@ -35,3 +35,5 @@ SpellCheckTest.*
 # issue 21401
 ResourceDispatcherHostTest.TooManyOutstandingRequests
 
+# issue 22252
+HistoryQueryTest.Basic
