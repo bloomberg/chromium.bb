@@ -155,6 +155,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
 
+// Tests that scripts are not duplicated after Scripts Panel switch.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
+                       TestNoScriptDuplicatesOnPanelSwitch) {
+  RunTest("testNoScriptDuplicatesOnPanelSwitch", kDebuggerTestPage);
+}
+
 // Tests set breakpoint.
 // http://crbug.com/16767
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSetBreakpoint) {

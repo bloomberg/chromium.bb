@@ -154,14 +154,6 @@ devtools.DebuggerAgent.prototype.reset = function() {
  * is shown. It will send request for context id if it's not set yet.
  */
 devtools.DebuggerAgent.prototype.initUI = function() {
-  // There can be a number of scripts from after-compile events that are
-  // pending addition into the UI.
-  for (var scriptId in this.parsedScripts_) {
-    var script = this.parsedScripts_[scriptId];
-    WebInspector.parsedScriptSource(scriptId, script.getUrl(),
-        undefined /* script source */, script.getLineOffset());
-  }
-
   // Initialize scripts cache when Scripts panel is shown first time.
   if (this.scriptsCacheInitialized_) {
     return;

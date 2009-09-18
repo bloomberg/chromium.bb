@@ -394,6 +394,60 @@ TestSuite.prototype.testShowScriptsTab = function() {
 
 
 /**
+ * Tests that scripts are not duplicaed on Scripts tab switch.
+ */
+TestSuite.prototype.testNoScriptDuplicatesOnPanelSwitch = function() {
+  var test = this;
+
+  // There should be two scripts: one for the main page and another
+  // one which is source of console API(see
+  // InjectedScript._ensureCommandLineAPIInstalled).
+  var expectedScriptsCount = 2;
+  var parsedScripts = [];
+
+
+  function switchToElementsTab() {
+    test.showPanel('elements');
+    setTimeout(switchToScriptsTab, 0);
+  }
+
+  function switchToScriptsTab() {
+    test.showPanel('scripts');
+    setTimeout(checkScriptsPanel, 0);
+  }
+
+  function checkScriptsPanel() {
+    test.assertTrue(!!WebInspector.panels.scripts.visibleView,
+                    'No visible script view.');
+    var select = WebInspector.panels.scripts.filesSelectElement;
+    test.assertEquals(expectedScriptsCount, select.options.length,
+                      'Unexpected options count');
+    test.releaseControl();
+  }
+
+  this.addSniffer(WebInspector, 'parsedScriptSource',
+      function(sourceID, sourceURL, source, startingLine) {
+        test.assertTrue(
+            parsedScripts.indexOf(sourceURL) == -1,
+            'Duplicated script: ' + sourceURL);
+        test.assertTrue(
+           parsedScripts.length < expectedScriptsCount,
+           'Too many scripts: ' + sourceURL);
+        parsedScripts.push(sourceURL);
+
+        if (parsedScripts.length == expectedScriptsCount) {
+          setTimeout(switchToElementsTab, 0);
+        }
+      }, true /* sticky */);
+
+  this.showPanel('scripts');
+
+  // Wait until all scripts are added to the debugger.
+  this.takeControl();
+};
+
+
+/**
  * Tests that a breakpoint can be set.
  */
 TestSuite.prototype.testSetBreakpoint = function() {
