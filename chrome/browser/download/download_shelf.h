@@ -47,6 +47,8 @@ class DownloadShelfContextMenu {
  public:
   virtual ~DownloadShelfContextMenu();
 
+  virtual DownloadItem* download() const { return download_; }
+
  protected:
   explicit DownloadShelfContextMenu(BaseDownloadItemModel* download_model);
 

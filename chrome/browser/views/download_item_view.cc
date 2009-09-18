@@ -820,9 +820,13 @@ bool DownloadItemView::OnMousePressed(const views::MouseEvent& event) {
     DownloadShelfContextMenuWin menu(model_.get(),
                                      GetWidget()->GetNativeView(),
                                      point);
-    drop_down_pressed_ = false;
-    // Showing the menu blocks. Here we revert the state.
-    SetState(NORMAL, NORMAL);
+    // If the menu action was to remove the download, this view will also be
+    // invalid so we must not access 'this' in this case.
+    if (menu.download()) {
+      drop_down_pressed_ = false;
+      // Showing the menu blocks. Here we revert the state.
+      SetState(NORMAL, NORMAL);
+    }
   }
   return true;
 }

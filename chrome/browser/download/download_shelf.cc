@@ -112,6 +112,9 @@ void DownloadShelfContextMenu::ExecuteItemCommand(int id) {
       break;
     case REMOVE_ITEM:
       download_->Remove(false);
+      // |download_| has been deleted now, prevent further access to it.
+      download_ = NULL;
+      model_ = NULL;
       break;
     case TOGGLE_PAUSE:
       // It is possible for the download to complete before the user clicks the
