@@ -15,3 +15,12 @@ Description: Google O3D Plugin
  the browser.
  .
  This package provides the NPAPI browser plugin for running O3D-based web apps.
+
+Package: google-o3d-dbgsym
+Architecture: i386
+Depends: google-o3d (= ${Source-Version})
+Description: Google O3D Plugin Debug Symbols
+ O3D is an open-source web API for creating rich, interactive 3D applications in
+ the browser.
+ .
+ This package contains symbol files for debugging.

@@ -29,6 +29,8 @@
 
 import os
 import subprocess
+import SCons
+
 Import('env')
 
 # Check if Debian packaging tools are installed. If so, make a .deb package.
@@ -43,11 +45,15 @@ if subprocess.Popen(["which", "dpkg-buildpackage"],
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
     return process.communicate()[0].strip()
 
-  def BuildDebianPackage(debian_files, package_files, output_dir=None,
-      force_version=None):
+  def _InternalBuildDebianPackage(env, src_dir, obj_dir, debian_files,
+      package_files, output_dir=None, force_version=None):
     """Creates build rules to build a Debian package from the specified sources.
 
     Args:
+      env: SCons Environment.
+      src_dir: Current source path, to which the debian_files are
+          relative.
+      obj_dir: Directory to place object files in.
       debian_files: Array of the Debian control file sources that should be
           copied into the package source tree, e.g., changelog, control, rules,
           etc. Must be relative to current source dir.
@@ -66,7 +72,7 @@ if subprocess.Popen(["which", "dpkg-buildpackage"],
           final version will compare as greater).
 
     Return:
-      A list of the (two) targets.
+      A list of the targets (at least two).
     """
     # Read the control file and changelog file to determine the package name,
     # version, and arch that the Debian build tools will use to name the
@@ -75,19 +81,21 @@ if subprocess.Popen(["which", "dpkg-buildpackage"],
     changelog_file = None
     for file in debian_files:
       if os.path.basename(file) == "control":
-        control_file = os.path.join(current_source_dir, file)
+        control_file = os.path.join(src_dir, file)
       elif os.path.basename(file) == "changelog":
-        changelog_file = os.path.join(current_source_dir, file)
+        changelog_file = os.path.join(src_dir, file)
     if control_file == None:
       raise Exception("Need to have a control file")
     if changelog_file == None:
       raise Exception("Need to have a changelog file")
-    package = OutputFromShellCommand("awk '/^Package:/ { print $2; }' "
-        + control_file)
-    version = OutputFromShellCommand("sed -nr '1 { s/.*\\((.*)\\).*/\\1/; p }' "
-        + changelog_file)
-    arch = OutputFromShellCommand("awk '/^Architecture:/ { print $2; }' "
-        + control_file)
+    source = OutputFromShellCommand(
+        "awk '/^Source:/ { print $2; }' " + control_file)
+    packages = OutputFromShellCommand(
+        "awk '/^Package:/ { print $2; }' " + control_file).split("\n")
+    version = OutputFromShellCommand(
+        "sed -nr '1 { s/.*\\((.*)\\).*/\\1/; p }' " + changelog_file)
+    arch = OutputFromShellCommand(
+        "awk '/^Architecture:/ { print $2; }' %s | head -n 1" % control_file)
     add_dummy_changelog_entry = False
     if force_version != None and not version.startswith(force_version):
       print('Warning: no entry in ' + changelog_file + ' for version ' +
@@ -96,20 +104,22 @@ if subprocess.Popen(["which", "dpkg-buildpackage"],
           'releasing.');
       version = force_version + '~prerelease'
       add_dummy_changelog_entry = True
-    package_file_name = package + "_" + version + "_" + arch
-    # Path to the outputs, minus extension.
-    if output_dir != None:
-      dest_files = os.path.join(output_dir, package_file_name)
-    else:
-      dest_files = package_file_name
-    # Path to where we will construct the debian build tree.
-    deb_build_tree = os.path.join(package_file_name, "deb_build_tree")
+    source_dir_name = source + "_" + version + "_" + arch
+    target_file_names = [ source_dir_name + ".changes" ]
+    for package in packages:
+      package_file_name = package + "_" + version + "_" + arch + ".deb"
+      target_file_names.append(package_file_name)
     # The targets
-    targets = [dest_files + ".deb", dest_files + ".changes"]
+    if output_dir != None:
+      targets = [os.path.join(output_dir, s) for s in target_file_names]
+    else:
+      targets = target_file_names
+    # Path to where we will construct the debian build tree.
+    deb_build_tree = os.path.join(obj_dir, source_dir_name, "deb_build_tree")
     # First copy the files.
     for file in package_files:
       env.Command(os.path.join(deb_build_tree, file[0]), file[1],
-          Copy('$TARGET', '$SOURCE'))
+          SCons.Defaults.Copy('$TARGET', '$SOURCE'))
       env.Depends(targets, os.path.join(deb_build_tree, file[0]))
     # Now copy the Debian metadata sources. We have to do this all at once so
     # that we can remove the target directory before copying, because there
@@ -121,15 +131,17 @@ if subprocess.Popen(["which", "dpkg-buildpackage"],
           os.path.basename(file)))
     copy_commands = [
         """dir=$$(dirname $TARGET) && \
-           rm -Rf $$dir && \
-           mkdir -p $$dir && \
-           cp $SOURCES $$dir"""
+            rm -Rf $$dir && \
+            mkdir -p $$dir && \
+            cp $SOURCES $$dir && \
+            chmod -R u+w $$dir"""
     ]
     if add_dummy_changelog_entry:
       copy_commands += [
-          """debchange -c $$(dirname $TARGET)/changelog --newversion """ +
-             version + """ --distribution UNRELEASED """ +
-             """'Developer preview build.'"""
+          """debchange -c $$(dirname $TARGET)/changelog --newversion %s \
+              --distribution UNRELEASED \
+              'Developer preview build. (This entry was auto-generated.)'""" %
+          version
       ]
     env.Command(copied_debian_files_paths, debian_files, copy_commands)
     env.Depends(targets, copied_debian_files_paths)
@@ -139,15 +151,22 @@ if subprocess.Popen(["which", "dpkg-buildpackage"],
     # Must explicitly specify -D because -a disables it.
     # Must explicitly specify fakeroot because old dpkg tools don't assume that.
     env.Command(targets, None,
-        """dir=$OBJ_ROOT/installer/linux/""" + deb_build_tree + """ && \
-           cd $$dir && \
-           dpkg-buildpackage -b -uc -a""" + arch + """ -D -rfakeroot && \
-           cd $$OLDPWD && \
-           mv $$dir/../""" + package_file_name + """.deb \
-               $$(dirname $TARGET) && \
-           mv $$dir/../""" + package_file_name + """.changes \
-               $$(dirname $TARGET)""")
+        """dir=%(dir)s && \
+            cd $$dir && \
+            dpkg-buildpackage -b -uc -a%(arch)s -D -rfakeroot && \
+            cd $$OLDPWD && \
+            for file in %(targets)s; do \
+              mv $$dir/../$$file $$(dirname $TARGET); \
+            done""" %
+        {'dir':env.Dir(deb_build_tree).path,
+         'arch':arch,
+         'targets':" ".join(target_file_names)})
     return targets
+
+  def BuildDebianPackage(debian_files, package_files, output_dir=None,
+      force_version=None):
+    return _InternalBuildDebianPackage(env, current_source_dir, ".",
+        debian_files, package_files, output_dir, force_version)
 
   # Build amd64 package.
   BuildDebianPackage(["debian_common/changelog",
