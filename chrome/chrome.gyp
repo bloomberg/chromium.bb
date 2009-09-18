@@ -118,19 +118,12 @@
       ['OS=="win"', {
         # Whether or not browser sync code is built in.
         'chrome_personalization%': 1,
-
         # Used to build a stub (no-op) syncapi engine.
-        'conditions': [
-          ['branding=="Chrome"', {
-            'use_syncapi_stub%': 0,
-          }, {
-            'use_syncapi_stub%': 1,
-          }],
-        ],
+        'use_syncapi_stub%': 0,
       }, {
         'chrome_personalization%': 0,
         'use_syncapi_stub%': 1,
-      }],
+      }],  # OS=="win"
     ],  # conditions
   },  # variables
   'target_defaults': {
