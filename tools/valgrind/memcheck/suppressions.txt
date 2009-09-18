@@ -171,6 +171,16 @@
 }
 
 {
+   # Strange...
+   bug_20653a
+   Memcheck:Param
+   write(buf)
+   ...
+   fun:sqlite3OsWrite
+   fun:pager_write_pagelist
+   fun:sqlite3PagerCommitPhaseOne
+}
+{
    # There is a fix in mainline, http://www.sqlite.org/cvstrac/chngview?cn=5968
    # See also http://article.gmane.org/gmane.comp.db.sqlite.general/43177
    SQLite write

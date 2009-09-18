@@ -543,16 +543,6 @@
 }
 {
    # Strange...
-   bug_20653a
-   Memcheck:Param
-   write(buf)
-   ...
-   fun:sqlite3OsWrite
-   fun:pager_write_pagelist
-   fun:sqlite3PagerCommitPhaseOne
-}
-{
-   # Strange...
    bug_20653b
    Memcheck:Addr4
    fun:sqlite3MemSize
