@@ -96,11 +96,16 @@
         'nrd_xfer_effector.c',
         'nrd_xfer_effector.h',
       ],
+      # TODO(bsy,bradnelson): when gyp can do per-file flags, make
+      # -fno-strict-aliasing and -Wno-missing-field-initializers
+      # apply only to nrd_xfer.c
       'cflags': [
+        '-fno-strict-aliasing',
         '-Wno-missing-field-initializers'
       ],
       'xcode_settings': {
         'WARNING_CFLAGS': [
+          '-fno-strict-aliasing',
           '-Wno-missing-field-initializers'
         ]
       },
