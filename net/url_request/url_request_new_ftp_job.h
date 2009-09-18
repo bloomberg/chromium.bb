@@ -56,7 +56,7 @@ class URLRequestNewFtpJob : public URLRequestJob {
 
   int ProcessFtpDir(net::IOBuffer *buf, int buf_size, int bytes_read);
 
-  void LogFtpServerType(const struct net::list_state& list_state);
+  void LogFtpServerType(char server_type);
 
   net::FtpRequestInfo request_info_;
   scoped_ptr<net::FtpTransaction> transaction_;

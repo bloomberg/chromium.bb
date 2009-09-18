@@ -300,7 +300,12 @@ int URLRequestNewFtpJob::ProcessFtpDir(net::IOBuffer *buf,
         break;
     }
   }
-  LogFtpServerType(state);
+
+  // We can't recognize server type based on empty directory listings. Only log
+  // server type when we have enough data to recognize one.
+  if (state.parsed_one)
+    LogFtpServerType(state.lstyle);
+
   directory_html_.append(file_entry);
   size_t bytes_to_copy = std::min(static_cast<size_t>(buf_size),
                                   directory_html_.length());
@@ -311,14 +316,8 @@ int URLRequestNewFtpJob::ProcessFtpDir(net::IOBuffer *buf,
   return bytes_to_copy;
 }
 
-void URLRequestNewFtpJob::LogFtpServerType(
-    const struct net::list_state& list_state) {
-  // We can't recognize server type based on empty directory listings. Don't log
-  // that as unknown, it's misleading.
-  if (!list_state.parsed_one)
-    return;
-
-  switch (list_state.lstyle) {
+void URLRequestNewFtpJob::LogFtpServerType(char server_type) {
+  switch (server_type) {
     case 'E':
       net::UpdateFtpServerTypeHistograms(net::SERVER_EPLF);
       break;
