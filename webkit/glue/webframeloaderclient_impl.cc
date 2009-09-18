@@ -35,6 +35,7 @@
 #include "webkit/api/public/WebFrameClient.h"
 #include "webkit/api/public/WebPlugin.h"
 #include "webkit/api/public/WebPluginParams.h"
+#include "webkit/api/public/WebSecurityOrigin.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLError.h"
 #include "webkit/api/public/WebVector.h"
@@ -987,7 +988,7 @@ void WebFrameLoaderClient::didDisplayInsecureContent() {
 void WebFrameLoaderClient::didRunInsecureContent(SecurityOrigin* origin) {
   if (webframe_->client()) {
     webframe_->client()->didRunInsecureContent(webframe_,
-        webkit_glue::StringToWebString(origin->toString()));
+        webkit_glue::SecurityOriginToWebSecurityOrigin(origin));
   }
 }
 
@@ -1225,6 +1226,10 @@ PassRefPtr<Widget> WebFrameLoaderClient::createPlugin(
       WebPluginContainerImpl::create(element, webplugin);
 
   if (!webplugin->initialize(container.get()))
+    return NULL;
+
+  // The element might have been removed during plugin initialization!
+  if (!element->renderer())
     return NULL;
 
   return container;

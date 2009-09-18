@@ -2287,7 +2287,6 @@ BUG21767 : LayoutTests/http/tests/security/cross-frame-access-enumeration.html =
 // WK roll to 48371
 BUG21840 : LayoutTests/http/tests/loading/basic-auth-resend-wrong-credentials.html = FAIL
 BUG21840 : LayoutTests/http/tests/loading/basic-credentials-sent-automatically.html = FAIL
-BUG21841 : LayoutTests/plugins/destroy-during-npp-new.html = FAIL
 
 // missing upstream baseline from 48368
 BUG21842 SKIP WIN LINUX : LayoutTests/platform/win/accessibility/scroll-to-anchor.html = FAIL
