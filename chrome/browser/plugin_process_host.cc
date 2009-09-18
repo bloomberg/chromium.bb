@@ -344,6 +344,13 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
   }
 
   CommandLine cmd_line(exe_path);
+  // Put the process type and plugin path first so they're easier to see
+  // in process listings using native process management tools.
+  cmd_line.AppendSwitchWithValue(switches::kProcessType,
+                                 switches::kPluginProcess);
+  cmd_line.AppendSwitchWithValue(switches::kPluginPath,
+                                 info.path.ToWStringHack());
+
   if (logging::DialogsAreSuppressed())
     cmd_line.AppendSwitch(switches::kNoErrorDialogs);
 
@@ -397,14 +404,8 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
   DCHECK(!data_dir.empty());
   cmd_line.AppendSwitchWithValue(switches::kPluginDataDir, data_dir);
 
-  cmd_line.AppendSwitchWithValue(switches::kProcessType,
-                                 switches::kPluginProcess);
-
   cmd_line.AppendSwitchWithValue(switches::kProcessChannelID,
                                  ASCIIToWide(channel_id()));
-
-  cmd_line.AppendSwitchWithValue(switches::kPluginPath,
-                                 info.path.ToWStringHack());
 
   SetCrashReporterCommandLine(&cmd_line);
 
