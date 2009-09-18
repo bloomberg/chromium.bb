@@ -12,11 +12,10 @@ void BrowserBubble::InitPopup() {
   gfx::NativeView native_view = frame_->GetNativeView();
   gfx::NativeWindow native_window = frame_->GetWindow()->GetNativeWindow();
   views::WidgetGtk* pop = new views::WidgetGtk(views::WidgetGtk::TYPE_POPUP);
-  pop->set_delete_on_destroy(false);
   pop->SetOpacity(0xFF);
   pop->Init(native_view, bounds_);
   pop->SetContentsView(view_);
-  popup_.reset(pop);
+  popup_ = pop;
   Reposition();
 
   BrowserView* browser_view =
@@ -27,14 +26,14 @@ void BrowserBubble::InitPopup() {
 }
 
 void BrowserBubble::MovePopup(int x, int y, int w, int h) {
-  views::WidgetGtk* pop = static_cast<views::WidgetGtk*>(popup_.get());
+  views::WidgetGtk* pop = static_cast<views::WidgetGtk*>(popup_);
   pop->SetBounds(gfx::Rect(x, y, w, h));
 }
 
 void BrowserBubble::Show() {
   if (visible_)
     return;
-  views::WidgetGtk* pop = static_cast<views::WidgetGtk*>(popup_.get());
+  views::WidgetGtk* pop = static_cast<views::WidgetGtk*>(popup_);
   pop->Show();
   visible_ = true;
 }
@@ -42,7 +41,7 @@ void BrowserBubble::Show() {
 void BrowserBubble::Hide() {
   if (!visible_)
     return;
-  views::WidgetGtk* pop = static_cast<views::WidgetGtk*>(popup_.get());
+  views::WidgetGtk* pop = static_cast<views::WidgetGtk*>(popup_);
   pop->Hide();
   visible_ = false;
 }

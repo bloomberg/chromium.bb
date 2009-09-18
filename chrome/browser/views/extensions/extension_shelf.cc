@@ -473,9 +473,8 @@ void ExtensionShelf::Toolstrip::AnimationProgressed(
 void ExtensionShelf::Toolstrip::AnimationEnded(const Animation* animation) {
   LayoutHandle();
   if (!expanded_) {
-    // Must use the delay due to bug 18248.
-    HideShelfHandle(kHideDelayMs * 2);
     AttachToShelf(false);
+    HideShelfHandle(0);
   }
 }
 

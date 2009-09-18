@@ -90,7 +90,7 @@ class BrowserBubble {
   views::View* view_;
 
   // The widget that this bubble is in.
-  scoped_ptr<views::Widget> popup_;
+  views::Widget* popup_;
 
   // The bounds relative to the frame.
   gfx::Rect bounds_;
