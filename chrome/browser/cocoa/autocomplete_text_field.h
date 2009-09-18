@@ -33,6 +33,11 @@
 // edited.  See AutocompleteTextFieldEditor implementation.
 - (BOOL)control:(NSControl*)control textShouldPaste:(NSText*)fieldEditor;
 
+// Returns nil if paste actions are not supported.
+- (NSString*)control:(NSControl*)control
+             textPasteActionString:(NSText*)fieldEditor;
+- (void)control:(NSControl*)control textDidPasteAndGo:(NSText*)fieldEditor;
+
 // Let the delegate track -flagsChanged: events.
 - (void)control:(NSControl*)control flagsChanged:(NSEvent*)theEvent;
 

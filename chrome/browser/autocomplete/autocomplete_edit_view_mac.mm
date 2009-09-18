@@ -6,6 +6,7 @@
 
 #include <Carbon/Carbon.h>  // kVK_Return
 #include "app/gfx/font.h"
+#include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
 #include "base/clipboard.h"
 #import "base/cocoa_protocols_mac.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/cocoa/autocomplete_text_field.h"
 #include "chrome/browser/cocoa/event_utils.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "grit/generated_resources.h"
 
 // Focus-handling between |field_| and |model_| is a bit subtle.
 // Other platforms detect change of focus, which is inconvenient
@@ -606,6 +608,27 @@ void AutocompleteEditViewMac::OnPaste() {
   OnAfterPossibleChange();
 }
 
+bool AutocompleteEditViewMac::CanPasteAndGo() {
+  return
+    model_->CanPasteAndGo(GetClipboardText(g_browser_process->clipboard()));
+}
+
+int AutocompleteEditViewMac::GetPasteActionStringId() {
+  DCHECK(CanPasteAndGo());
+
+  // Use PASTE_AND_SEARCH as the default fallback (although the DCHECK above
+  // should never trigger).
+  if (!model_->is_paste_and_search())
+    return IDS_PASTE_AND_GO;
+  else
+    return IDS_PASTE_AND_SEARCH;
+}
+
+void AutocompleteEditViewMac::OnPasteAndGo() {
+  if (CanPasteAndGo())
+    model_->PasteAndGo();
+}
+
 bool AutocompleteEditViewMac::OnTabPressed() {
   if (model_->is_keyword_hint() && !model_->keyword().empty()) {
     model_->AcceptKeyword();
@@ -834,6 +857,18 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
 
   // Caller shouldn't also paste.
   return NO;
+}
+
+- (NSString*)control:(NSControl*)control
+             textPasteActionString:(NSText*)fieldEditor {
+  if (!edit_view_->CanPasteAndGo())
+    return nil;
+
+  return l10n_util::GetNSStringWithFixup(edit_view_->GetPasteActionStringId());
+}
+
+- (void)control:(NSControl*)control textDidPasteAndGo:(NSText*)fieldEditor {
+  edit_view_->OnPasteAndGo();
 }
 
 // Signal that we've lost focus when the window resigns key.

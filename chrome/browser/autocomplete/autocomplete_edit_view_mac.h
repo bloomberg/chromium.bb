@@ -14,6 +14,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/toolbar_model.h"
 #include "chrome/common/page_transition_types.h"
+#include "grit/generated_resources.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class AutocompleteEditController;
@@ -112,6 +113,19 @@ class AutocompleteEditViewMac : public AutocompleteEditView {
 
   // Called when the user attempts to paste into |field_|.
   void OnPaste();
+
+  // Returns true if the current clipboard text supports paste and go (or paste
+  // and search).
+  bool CanPasteAndGo();
+
+  // Returns the appropriate "Paste and Go" or "Paste and Search" context menu
+  // string, depending on what is currently in the clipboard.  Must not be
+  // called unless CanPasteAndGo() returns true.
+  int GetPasteActionStringId();
+
+  // Called when the user initiates a "paste and go" or "paste and search" into
+  // |field_|.
+  void OnPasteAndGo();
 
   // Checks if a keyword search is possible and forwards to |model_|
   // if so.  Returns true if the tab should be eaten.

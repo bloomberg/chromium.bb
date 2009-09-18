@@ -4,8 +4,9 @@
 
 #import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
 
+#include "app/l10n_util_mac.h"
 #include "base/string_util.h"
-#include "base/sys_string_conversions.h"
+#include "grit/generated_resources.h"
 
 @implementation AutocompleteTextFieldEditor
 
@@ -45,6 +46,12 @@
   }
 }
 
+- (void)pasteAndGo:sender {
+  id delegate = [self delegate];
+  if ([delegate respondsToSelector:@selector(textDidPasteAndGo:)])
+    [delegate textDidPasteAndGo:self];
+}
+
 // We have rich text, but it shouldn't be modified by the user, so
 // don't update the font panel.  In theory, -setUsesFontPanel: should
 // accomplish this, but that gets called frequently with YES when
@@ -56,6 +63,34 @@
 
 // No ruler bar, so don't update any of that state, either.
 - (void)updateRuler {
+}
+
+- (NSMenu*)menuForEvent:(NSEvent*)event {
+  NSMenu* menu = [[[NSMenu alloc] initWithTitle:@"TITLE"] autorelease];
+  [menu insertItemWithTitle:l10n_util::GetNSStringWithFixup(IDS_CUT)
+        action:@selector(cut:)
+        keyEquivalent:@"" atIndex:0];
+  [menu insertItemWithTitle:l10n_util::GetNSStringWithFixup(IDS_COPY)
+        action:@selector(copy:)
+        keyEquivalent:@"" atIndex:1];
+  [menu insertItemWithTitle:l10n_util::GetNSStringWithFixup(IDS_PASTE)
+        action:@selector(paste:)
+        keyEquivalent:@"" atIndex:2];
+
+  // Paste and go/search.
+  id delegate = [self delegate];
+
+  if ([delegate respondsToSelector:@selector(textPasteActionString:)]) {
+    NSString* label = [delegate textPasteActionString:self];
+    // TODO(rohitrao): If the clipboard is empty, should we show a greyed-out
+    // "Paste and Go" or nothing at all?
+    if (label) {
+      [menu insertItemWithTitle:label action:@selector(pasteAndGo:)
+            keyEquivalent:@"" atIndex:3];
+    }
+  }
+
+  return menu;
 }
 
 @end

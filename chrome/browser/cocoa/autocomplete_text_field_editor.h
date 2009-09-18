@@ -23,6 +23,9 @@
 // (or handle it internally) by returning NO.
 - (BOOL)textShouldPaste:(NSText*)fieldEditor;
 
+// Returns nil if paste actions are not supported.
+- (NSString*)textPasteActionString:(NSText*)fieldEditor;
+- (void)textDidPasteAndGo:(NSText*)fieldEditor;
 @end
 
 // Field editor used for the autocomplete field.
