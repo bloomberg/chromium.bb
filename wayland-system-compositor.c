@@ -369,6 +369,10 @@ wlsc_surface_destroy(struct wlsc_surface *surface,
 {
 	struct wlsc_listener *l, *next;
 
+	wl_list_remove(&surface->link);
+	glDeleteTextures(1, &surface->texture);
+	wl_client_remove_surface(surface->base.client, &surface->base);
+
 	l = container_of(compositor->surface_destroy_listener_list.next,
 			 struct wlsc_listener, link);
 	while (&l->link != &compositor->surface_destroy_listener_list) {
@@ -377,9 +381,6 @@ wlsc_surface_destroy(struct wlsc_surface *surface,
 		l = next;
 	}
 
-	wl_list_remove(&surface->link);
-
-	glDeleteTextures(1, &surface->texture);
 	free(surface);
 }
 
@@ -1037,15 +1038,20 @@ handle_surface_destroy(struct wlsc_listener *listener,
 {
 	struct wlsc_input_device *device =
 		container_of(listener, struct wlsc_input_device, listener);
+	struct wlsc_surface *focus;
+	int32_t sx, sy;
 
 	if (device->grab_surface == surface) {
 		device->grab_surface = NULL;
 		device->grab = 0;
 	}
 	if (device->keyboard_focus == surface)
-		device->keyboard_focus = NULL;		
-	if (device->pointer_focus == surface)
-		device->pointer_focus = NULL;	
+		wlsc_input_device_set_keyboard_focus(device, NULL);
+	if (device->pointer_focus == surface) {
+		focus = pick_surface(device, &sx, &sy);
+		wlsc_input_device_set_pointer_focus(device, focus);
+		fprintf(stderr, "lost pointer focus surface, reverting to %p\n", focus);
+	}
 }
 
 static struct wlsc_input_device *
