@@ -447,10 +447,6 @@ BUG8941 WIN LINUX : LayoutTests/http/tests/xmlhttprequest/web-apps/012.html = FA
 // This class of test fails because of size differences in text runs.
 // Mostly this is because of international text rendering differences.
 
-// The complex charater composition is not working correctly in these tests.
-BUG20509 LINUX WIN : LayoutTests/fast/forms/input-text-maxlength.html = FAIL
-BUG20509 LINUX WIN : LayoutTests/fast/forms/input-text-paste-maxlength.html = FAIL
-
 // Incrorect results, in incorrect international font metrics.
 BUG20521 LINUX WIN : LayoutTests/fast/text/atsui-multiple-renderers.html = FAIL
 BUG20521 LINUX WIN : LayoutTests/fast/text/atsui-pointtooffset-calls-cg.html = FAIL
