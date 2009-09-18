@@ -127,6 +127,36 @@ class PrintWebViewHelper : public WebViewDelegate {
   virtual void printPage(WebKit::WebFrame* frame) {}
   virtual void didStartLoading() {}
   virtual void didStopLoading();
+  virtual bool shouldBeginEditing(const WebKit::WebRange& range) {
+    return false;
+  }
+  virtual bool shouldEndEditing(const WebKit::WebRange& range) {
+    return false;
+  }
+  virtual bool shouldInsertNode(
+      const WebKit::WebNode& node, const WebKit::WebRange& range,
+      WebKit::WebEditingAction action) { return false; }
+  virtual bool shouldInsertText(
+      const WebKit::WebString& text, const WebKit::WebRange& range,
+      WebKit::WebEditingAction action) { return false; }
+  virtual bool shouldChangeSelectedRange(
+      const WebKit::WebRange& from, const WebKit::WebRange& to,
+      WebKit::WebTextAffinity affinity, bool still_selecting) { return false; }
+  virtual bool shouldDeleteRange(const WebKit::WebRange& range) {
+    return false;
+  }
+  virtual bool shouldApplyStyle(
+      const WebKit::WebString& style, const WebKit::WebRange& range) {
+    return false;
+  }
+  virtual bool isSmartInsertDeleteEnabled() { return false; }
+  virtual bool isSelectTrailingWhitespaceEnabled() { return false; }
+  virtual void setInputMethodEnabled(bool enabled) {}
+  virtual void didBeginEditing() {}
+  virtual void didChangeSelection(bool is_selection_empty) {}
+  virtual void didChangeContents() {}
+  virtual void didExecuteCommand(const WebKit::WebString& command_name) {}
+  virtual void didEndEditing() {}
   virtual void runModalAlertDialog(
       WebKit::WebFrame* frame, const WebKit::WebString& message) {}
   virtual bool runModalConfirmDialog(

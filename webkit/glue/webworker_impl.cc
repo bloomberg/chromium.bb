@@ -137,7 +137,7 @@ void WebWorkerImpl::startWorkerContext(const WebURL& script_url,
   // loading requests from the worker context to the rest of WebKit and Chromium
   // infrastructure.
   DCHECK(!web_view_);
-  web_view_ = WebView::Create(NULL, NULL);
+  web_view_ = WebView::Create(NULL);
   WebPreferences().Apply(web_view_);
   web_view_->InitializeMainFrame(WorkerWebFrameClient::GetSharedInstance());
 

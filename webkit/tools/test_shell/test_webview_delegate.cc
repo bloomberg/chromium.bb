@@ -327,151 +327,6 @@ void TestWebViewDelegate::didAddMessageToConsole(
   }
 }
 
-void TestWebViewDelegate::printPage(WebFrame* frame) {
-}
-
-void TestWebViewDelegate::didStartLoading() {
-}
-
-void TestWebViewDelegate::didStopLoading() {
-}
-
-void TestWebViewDelegate::runModalAlertDialog(
-    WebFrame* frame, const WebString& message) {
-  if (!shell_->layout_test_mode()) {
-    ShowJavaScriptAlert(UTF16ToWideHack(message));
-  } else {
-    printf("ALERT: %s\n", message.utf8().data());
-  }
-}
-
-bool TestWebViewDelegate::runModalConfirmDialog(
-    WebFrame* frame, const WebString& message) {
-  if (shell_->layout_test_mode()) {
-    // When running tests, write to stdout.
-    printf("CONFIRM: %s\n", message.utf8().data());
-    return true;
-  }
-  return false;
-}
-
-bool TestWebViewDelegate::runModalPromptDialog(
-    WebFrame* frame, const WebString& message, const WebString& default_value,
-    WebString* actual_value) {
-  if (shell_->layout_test_mode()) {
-    // When running tests, write to stdout.
-    printf("PROMPT: %s, default text: %s\n",
-           message.utf8().data(),
-           default_value.utf8().data());
-    return true;
-  }
-  return false;
-}
-
-bool TestWebViewDelegate::runModalBeforeUnloadDialog(
-    WebFrame* frame, const WebString& message) {
-  return true;  // Allow window closure.
-}
-
-void TestWebViewDelegate::setStatusText(const WebString& text) {
-  if (WebKit::layoutTestMode() &&
-      shell_->layout_test_controller()->ShouldDumpStatusCallbacks()) {
-    // When running tests, write to stdout.
-    printf("UI DELEGATE STATUS CALLBACK: setStatusText:%s\n", text.utf8().data());
-  }
-}
-
-void TestWebViewDelegate::setMouseOverURL(const WebURL& url) {
-}
-
-void TestWebViewDelegate::setToolTipText(
-    const WebString& text, WebTextDirection hint) {
-}
-
-void TestWebViewDelegate::startDragging(
-    const WebPoint& mouse_coords, const WebDragData& data,
-    WebDragOperationsMask mask) {
-  if (WebKit::layoutTestMode()) {
-    WebDragData mutable_drag_data = data;
-    if (shell_->layout_test_controller()->ShouldAddFileToPasteboard()) {
-      // Add a file called DRTFakeFile to the drag&drop clipboard.
-      AddDRTFakeFileToDataObject(&mutable_drag_data);
-    }
-
-    // When running a test, we need to fake a drag drop operation otherwise
-    // Windows waits for real mouse events to know when the drag is over.
-    EventSendingController::DoDragDrop(mouse_coords, mutable_drag_data, mask);
-  } else {
-    // TODO(tc): Drag and drop is disabled in the test shell because we need
-    // to be able to convert from WebDragData to an IDataObject.
-    //if (!drag_delegate_)
-    //  drag_delegate_ = new TestDragDelegate(shell_->webViewWnd(),
-    //                                        shell_->webView());
-    //const DWORD ok_effect = DROPEFFECT_COPY | DROPEFFECT_LINK | DROPEFFECT_MOVE;
-    //DWORD effect;
-    //HRESULT res = DoDragDrop(drop_data.data_object, drag_delegate_.get(),
-    //                         ok_effect, &effect);
-    //DCHECK(DRAGDROP_S_DROP == res || DRAGDROP_S_CANCEL == res);
-  }
-  shell_->webView()->DragSourceSystemDragEnded();
-}
-
-void TestWebViewDelegate::focusNext() {
-}
-
-void TestWebViewDelegate::focusPrevious() {
-}
-
-void TestWebViewDelegate::navigateBackForwardSoon(int offset) {
-  shell_->navigation_controller()->GoToOffset(offset);
-}
-
-int TestWebViewDelegate::historyBackListCount() {
-  int current_index =
-      shell_->navigation_controller()->GetLastCommittedEntryIndex();
-  return current_index;
-}
-
-int TestWebViewDelegate::historyForwardListCount() {
-  int current_index =
-      shell_->navigation_controller()->GetLastCommittedEntryIndex();
-  return shell_->navigation_controller()->GetEntryCount() - current_index - 1;
-}
-
-void TestWebViewDelegate::didAddHistoryItem() {
-}
-
-// WebWidgetClient -----------------------------------------------------------
-
-void TestWebViewDelegate::didInvalidateRect(const WebRect& rect) {
-  if (WebWidgetHost* host = GetWidgetHost())
-    host->DidInvalidateRect(rect);
-}
-
-void TestWebViewDelegate::didScrollRect(int dx, int dy,
-                                        const WebRect& clip_rect) {
-  if (WebWidgetHost* host = GetWidgetHost())
-    host->DidScrollRect(dx, dy, clip_rect);
-}
-
-void TestWebViewDelegate::didFocus() {
-  if (WebWidgetHost* host = GetWidgetHost())
-    shell_->SetFocus(host, true);
-}
-
-void TestWebViewDelegate::didBlur() {
-  if (WebWidgetHost* host = GetWidgetHost())
-    shell_->SetFocus(host, false);
-}
-
-WebScreenInfo TestWebViewDelegate::screenInfo() {
-  if (WebWidgetHost* host = GetWidgetHost())
-    return host->GetScreenInfo();
-
-  return WebScreenInfo();
-}
-
-// WebEditingClient ----------------------------------------------------------
 // The output from these methods in layout test mode should match that
 // expected by the layout tests.  See EditingDelegate.m in DumpRenderTree.
 
@@ -587,6 +442,125 @@ void TestWebViewDelegate::didEndEditing() {
   }
 }
 
+void TestWebViewDelegate::runModalAlertDialog(
+    WebFrame* frame, const WebString& message) {
+  if (!shell_->layout_test_mode()) {
+    ShowJavaScriptAlert(UTF16ToWideHack(message));
+  } else {
+    printf("ALERT: %s\n", message.utf8().data());
+  }
+}
+
+bool TestWebViewDelegate::runModalConfirmDialog(
+    WebFrame* frame, const WebString& message) {
+  if (shell_->layout_test_mode()) {
+    // When running tests, write to stdout.
+    printf("CONFIRM: %s\n", message.utf8().data());
+    return true;
+  }
+  return false;
+}
+
+bool TestWebViewDelegate::runModalPromptDialog(
+    WebFrame* frame, const WebString& message, const WebString& default_value,
+    WebString* actual_value) {
+  if (shell_->layout_test_mode()) {
+    // When running tests, write to stdout.
+    printf("PROMPT: %s, default text: %s\n",
+           message.utf8().data(),
+           default_value.utf8().data());
+    return true;
+  }
+  return false;
+}
+
+bool TestWebViewDelegate::runModalBeforeUnloadDialog(
+    WebFrame* frame, const WebString& message) {
+  return true;  // Allow window closure.
+}
+
+void TestWebViewDelegate::setStatusText(const WebString& text) {
+  if (WebKit::layoutTestMode() &&
+      shell_->layout_test_controller()->ShouldDumpStatusCallbacks()) {
+    // When running tests, write to stdout.
+    printf("UI DELEGATE STATUS CALLBACK: setStatusText:%s\n", text.utf8().data());
+  }
+}
+
+void TestWebViewDelegate::startDragging(
+    const WebPoint& mouse_coords, const WebDragData& data,
+    WebDragOperationsMask mask) {
+  if (WebKit::layoutTestMode()) {
+    WebDragData mutable_drag_data = data;
+    if (shell_->layout_test_controller()->ShouldAddFileToPasteboard()) {
+      // Add a file called DRTFakeFile to the drag&drop clipboard.
+      AddDRTFakeFileToDataObject(&mutable_drag_data);
+    }
+
+    // When running a test, we need to fake a drag drop operation otherwise
+    // Windows waits for real mouse events to know when the drag is over.
+    EventSendingController::DoDragDrop(mouse_coords, mutable_drag_data, mask);
+  } else {
+    // TODO(tc): Drag and drop is disabled in the test shell because we need
+    // to be able to convert from WebDragData to an IDataObject.
+    //if (!drag_delegate_)
+    //  drag_delegate_ = new TestDragDelegate(shell_->webViewWnd(),
+    //                                        shell_->webView());
+    //const DWORD ok_effect = DROPEFFECT_COPY | DROPEFFECT_LINK | DROPEFFECT_MOVE;
+    //DWORD effect;
+    //HRESULT res = DoDragDrop(drop_data.data_object, drag_delegate_.get(),
+    //                         ok_effect, &effect);
+    //DCHECK(DRAGDROP_S_DROP == res || DRAGDROP_S_CANCEL == res);
+  }
+  shell_->webView()->DragSourceSystemDragEnded();
+}
+
+void TestWebViewDelegate::navigateBackForwardSoon(int offset) {
+  shell_->navigation_controller()->GoToOffset(offset);
+}
+
+int TestWebViewDelegate::historyBackListCount() {
+  int current_index =
+      shell_->navigation_controller()->GetLastCommittedEntryIndex();
+  return current_index;
+}
+
+int TestWebViewDelegate::historyForwardListCount() {
+  int current_index =
+      shell_->navigation_controller()->GetLastCommittedEntryIndex();
+  return shell_->navigation_controller()->GetEntryCount() - current_index - 1;
+}
+
+// WebWidgetClient -----------------------------------------------------------
+
+void TestWebViewDelegate::didInvalidateRect(const WebRect& rect) {
+  if (WebWidgetHost* host = GetWidgetHost())
+    host->DidInvalidateRect(rect);
+}
+
+void TestWebViewDelegate::didScrollRect(int dx, int dy,
+                                        const WebRect& clip_rect) {
+  if (WebWidgetHost* host = GetWidgetHost())
+    host->DidScrollRect(dx, dy, clip_rect);
+}
+
+void TestWebViewDelegate::didFocus() {
+  if (WebWidgetHost* host = GetWidgetHost())
+    shell_->SetFocus(host, true);
+}
+
+void TestWebViewDelegate::didBlur() {
+  if (WebWidgetHost* host = GetWidgetHost())
+    shell_->SetFocus(host, false);
+}
+
+WebScreenInfo TestWebViewDelegate::screenInfo() {
+  if (WebWidgetHost* host = GetWidgetHost())
+    return host->GetScreenInfo();
+
+  return WebScreenInfo();
+}
+
 // WebFrameClient ------------------------------------------------------------
 
 WebPlugin* TestWebViewDelegate::createPlugin(
@@ -624,9 +598,6 @@ WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
   return new webkit_glue::WebMediaPlayerImpl(client, factory);
 }
 
-void TestWebViewDelegate::willClose(WebFrame* frame) {
-}
-
 void TestWebViewDelegate::loadURLExternally(
     WebFrame* frame, const WebURLRequest& request,
     WebNavigationPolicy policy) {
@@ -658,10 +629,6 @@ WebNavigationPolicy TestWebViewDelegate::decidePolicyForNavigation(
   return result;
 }
 
-void TestWebViewDelegate::willSubmitForm(WebFrame* frame, const WebForm&) {
-  // Ignore
-}
-
 void TestWebViewDelegate::willPerformClientRedirect(
     WebFrame* frame, const WebURL& from, const WebURL& to,
     double interval, double fire_time) {
@@ -677,10 +644,6 @@ void TestWebViewDelegate::didCancelClientRedirect(WebFrame* frame) {
     printf("%S - didCancelClientRedirectForFrame\n",
            GetFrameDescription(frame).c_str());
   }
-}
-
-void TestWebViewDelegate::didCompleteClientRedirect(
-    WebFrame* frame, const WebURL& from) {
 }
 
 void TestWebViewDelegate::didCreateDataSource(
@@ -751,12 +714,6 @@ void TestWebViewDelegate::didFailProvisionalLoad(
       error_text, GURL("testshell-error:"), error.unreachableURL, replace);
 }
 
-void TestWebViewDelegate::didReceiveDocumentData(
-    WebFrame* frame, const char* data, size_t length,
-    bool& preventDefault) {
-  // Ignore
-}
-
 void TestWebViewDelegate::didCommitProvisionalLoad(
     WebFrame* frame, bool is_new_navigation) {
   if (shell_->ShouldDumpFrameLoadCallbacks()) {
@@ -768,10 +725,6 @@ void TestWebViewDelegate::didCommitProvisionalLoad(
 
 void TestWebViewDelegate::didClearWindowObject(WebFrame* frame) {
   shell_->BindJSObjectsToWindow(frame);
-}
-
-void TestWebViewDelegate::didCreateDocumentElement(WebFrame* frame) {
-  // Ignore
 }
 
 void TestWebViewDelegate::didReceiveTitle(
@@ -920,11 +873,6 @@ void TestWebViewDelegate::didFailResourceLoad(
   resource_identifier_map_.erase(identifier);
 }
 
-void TestWebViewDelegate::didLoadResourceFromMemoryCache(
-    WebFrame* frame, const WebURLRequest&,
-    const WebURLResponse&) {
-}
-
 void TestWebViewDelegate::didDisplayInsecureContent(WebFrame* frame) {
   if (shell_->ShouldDumpFrameLoadCallbacks())
     printf("didDisplayInsecureContent\n");
@@ -935,14 +883,6 @@ void TestWebViewDelegate::didRunInsecureContent(
   if (shell_->ShouldDumpFrameLoadCallbacks())
     printf("didRunInsecureContent\n");
 }
-
-void TestWebViewDelegate::didExhaustMemoryAvailableForScript(WebFrame* frame) {
-}
-
-void TestWebViewDelegate::didChangeContentsSize(
-    WebFrame* frame, const WebSize&) {
-}
-
 
 // Public methods ------------------------------------------------------------
 

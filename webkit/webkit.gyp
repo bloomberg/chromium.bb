@@ -62,7 +62,6 @@
         'api/public/WebDataSource.h',
         'api/public/WebDragData.h',
         'api/public/WebEditingAction.h',
-        'api/public/WebEditingClient.h',
         'api/public/WebFindOptions.h',
         'api/public/WebFrame.h',
         'api/public/WebFrameClient.h',

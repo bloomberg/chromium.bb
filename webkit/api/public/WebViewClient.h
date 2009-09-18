@@ -32,6 +32,8 @@
 #define WebViewClient_h
 
 #include "WebDragOperation.h"
+#include "WebEditingAction.h"
+#include "WebTextAffinity.h"
 #include "WebWidgetClient.h"
 
 class WebView;  // FIXME: Move into the WebKit namespace.
@@ -40,6 +42,8 @@ namespace WebKit {
     class WebDragData;
     class WebFileChooserCompletion;
     class WebFrame;
+    class WebNode;
+    class WebRange;
     class WebString;
     class WebWidget;
     struct WebConsoleMessage;
@@ -81,6 +85,33 @@ namespace WebKit {
         // These notifications bracket any loading that occurs in the WebView.
         virtual void didStartLoading() = 0;
         virtual void didStopLoading() = 0;
+
+
+        // Editing -------------------------------------------------------------
+
+        // These methods allow the client to intercept and overrule editing
+        // operations.
+        virtual bool shouldBeginEditing(const WebRange&) = 0;
+        virtual bool shouldEndEditing(const WebRange&) = 0;
+        virtual bool shouldInsertNode(
+            const WebNode&, const WebRange&, WebEditingAction) = 0;
+        virtual bool shouldInsertText(
+            const WebString&, const WebRange&, WebEditingAction) = 0;
+        virtual bool shouldChangeSelectedRange(
+            const WebRange& from, const WebRange& to, WebTextAffinity,
+            bool stillSelecting) = 0;
+        virtual bool shouldDeleteRange(const WebRange&) = 0;
+        virtual bool shouldApplyStyle(const WebString& style, const WebRange&) = 0;
+
+        virtual bool isSmartInsertDeleteEnabled() = 0;
+        virtual bool isSelectTrailingWhitespaceEnabled() = 0;
+        virtual void setInputMethodEnabled(bool enabled) = 0;
+
+        virtual void didBeginEditing() = 0;
+        virtual void didChangeSelection(bool isSelectionEmpty) = 0;
+        virtual void didChangeContents() = 0;
+        virtual void didExecuteCommand(const WebString& commandName) = 0;
+        virtual void didEndEditing() = 0;
 
 
         // Spellchecker --------------------------------------------------------

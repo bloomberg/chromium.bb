@@ -24,7 +24,6 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
-#include "webkit/api/public/WebEditingClient.h"
 #include "webkit/api/public/WebFrameClient.h"
 #if defined(OS_MACOSX)
 #include "webkit/api/public/WebRect.h"
@@ -46,7 +45,6 @@ class TestShell;
 class WebWidgetHost;
 
 class TestWebViewDelegate : public WebViewDelegate,
-                            public WebKit::WebEditingClient,
                             public WebKit::WebFrameClient,
                             public webkit_glue::WebPluginPageDelegate,
                             public base::SupportsWeakPtr<TestWebViewDelegate> {
@@ -91,49 +89,9 @@ class TestWebViewDelegate : public WebViewDelegate,
   virtual void didAddMessageToConsole(
       const WebKit::WebConsoleMessage& message,
       const WebKit::WebString& source_name, unsigned source_line);
-  virtual void printPage(WebKit::WebFrame* frame);
-  virtual void didStartLoading();
-  virtual void didStopLoading();
-  virtual void runModalAlertDialog(
-      WebKit::WebFrame* frame, const WebKit::WebString& message);
-  virtual bool runModalConfirmDialog(
-      WebKit::WebFrame* frame, const WebKit::WebString& message);
-  virtual bool runModalPromptDialog(
-      WebKit::WebFrame* frame, const WebKit::WebString& message,
-      const WebKit::WebString& default_value, WebKit::WebString* actual_value);
-  virtual bool runModalBeforeUnloadDialog(
-      WebKit::WebFrame* frame, const WebKit::WebString& message);
-  virtual void setStatusText(const WebKit::WebString& text);
-  virtual void setMouseOverURL(const WebKit::WebURL& url);
-  virtual void setToolTipText(
-      const WebKit::WebString& text, WebKit::WebTextDirection hint);
-  virtual void startDragging(
-      const WebKit::WebPoint& from, const WebKit::WebDragData& data,
-      WebKit::WebDragOperationsMask mask);
-  virtual void focusNext();
-  virtual void focusPrevious();
-  virtual void navigateBackForwardSoon(int offset);
-  virtual int historyBackListCount();
-  virtual int historyForwardListCount();
-  virtual void didAddHistoryItem();
-
-  // WebKit::WebWidgetClient
-  virtual void didInvalidateRect(const WebKit::WebRect& rect);
-  virtual void didScrollRect(int dx, int dy,
-                             const WebKit::WebRect& clip_rect);
-  virtual void didFocus();
-  virtual void didBlur();
-  virtual void didChangeCursor(const WebKit::WebCursorInfo& cursor);
-  virtual void closeWidgetSoon();
-  virtual void show(WebKit::WebNavigationPolicy policy);
-  virtual void runModal();
-  virtual WebKit::WebRect windowRect();
-  virtual void setWindowRect(const WebKit::WebRect& rect);
-  virtual WebKit::WebRect rootWindowRect();
-  virtual WebKit::WebRect windowResizerRect();
-  virtual WebKit::WebScreenInfo screenInfo();
-
-  // WebKit::WebEditingClient
+  virtual void printPage(WebKit::WebFrame* frame) {}
+  virtual void didStartLoading() {}
+  virtual void didStopLoading() {}
   virtual bool shouldBeginEditing(const WebKit::WebRange& range);
   virtual bool shouldEndEditing(const WebKit::WebRange& range);
   virtual bool shouldInsertNode(
@@ -156,6 +114,44 @@ class TestWebViewDelegate : public WebViewDelegate,
   virtual void didChangeContents();
   virtual void didExecuteCommand(const WebKit::WebString& command_name) {}
   virtual void didEndEditing();
+  virtual void runModalAlertDialog(
+      WebKit::WebFrame* frame, const WebKit::WebString& message);
+  virtual bool runModalConfirmDialog(
+      WebKit::WebFrame* frame, const WebKit::WebString& message);
+  virtual bool runModalPromptDialog(
+      WebKit::WebFrame* frame, const WebKit::WebString& message,
+      const WebKit::WebString& default_value, WebKit::WebString* actual_value);
+  virtual bool runModalBeforeUnloadDialog(
+      WebKit::WebFrame* frame, const WebKit::WebString& message);
+  virtual void setStatusText(const WebKit::WebString& text);
+  virtual void setMouseOverURL(const WebKit::WebURL& url) {}
+  virtual void setToolTipText(
+      const WebKit::WebString& text, WebKit::WebTextDirection hint) {}
+  virtual void startDragging(
+      const WebKit::WebPoint& from, const WebKit::WebDragData& data,
+      WebKit::WebDragOperationsMask mask);
+  virtual void focusNext() {}
+  virtual void focusPrevious() {}
+  virtual void navigateBackForwardSoon(int offset);
+  virtual int historyBackListCount();
+  virtual int historyForwardListCount();
+  virtual void didAddHistoryItem() {}
+
+  // WebKit::WebWidgetClient
+  virtual void didInvalidateRect(const WebKit::WebRect& rect);
+  virtual void didScrollRect(int dx, int dy,
+                             const WebKit::WebRect& clip_rect);
+  virtual void didFocus();
+  virtual void didBlur();
+  virtual void didChangeCursor(const WebKit::WebCursorInfo& cursor);
+  virtual void closeWidgetSoon();
+  virtual void show(WebKit::WebNavigationPolicy policy);
+  virtual void runModal();
+  virtual WebKit::WebRect windowRect();
+  virtual void setWindowRect(const WebKit::WebRect& rect);
+  virtual WebKit::WebRect rootWindowRect();
+  virtual WebKit::WebRect windowResizerRect();
+  virtual WebKit::WebScreenInfo screenInfo();
 
   // WebKit::WebFrameClient
   virtual WebKit::WebPlugin* createPlugin(
@@ -164,7 +160,7 @@ class TestWebViewDelegate : public WebViewDelegate,
       WebKit::WebFrame*, WebKit::WebWorkerClient*);
   virtual WebKit::WebMediaPlayer* createMediaPlayer(
       WebKit::WebFrame*, WebKit::WebMediaPlayerClient*);
-  virtual void willClose(WebKit::WebFrame*);
+  virtual void willClose(WebKit::WebFrame*) {}
   virtual void loadURLExternally(
       WebKit::WebFrame*, const WebKit::WebURLRequest&,
       WebKit::WebNavigationPolicy);
@@ -172,13 +168,13 @@ class TestWebViewDelegate : public WebViewDelegate,
       WebKit::WebFrame*, const WebKit::WebURLRequest&,
       WebKit::WebNavigationType, WebKit::WebNavigationPolicy default_policy,
       bool isRedirect);
-  virtual void willSubmitForm(WebKit::WebFrame*, const WebKit::WebForm&);
+  virtual void willSubmitForm(WebKit::WebFrame*, const WebKit::WebForm&) {}
   virtual void willPerformClientRedirect(
       WebKit::WebFrame*, const WebKit::WebURL& from, const WebKit::WebURL& to,
       double interval, double fire_time);
   virtual void didCancelClientRedirect(WebKit::WebFrame*);
   virtual void didCompleteClientRedirect(
-      WebKit::WebFrame*, const WebKit::WebURL& from);
+      WebKit::WebFrame*, const WebKit::WebURL& from) {}
   virtual void didCreateDataSource(
       WebKit::WebFrame*, WebKit::WebDataSource*);
   virtual void didStartProvisionalLoad(WebKit::WebFrame*);
@@ -187,11 +183,11 @@ class TestWebViewDelegate : public WebViewDelegate,
       WebKit::WebFrame*, const WebKit::WebURLError&);
   virtual void didReceiveDocumentData(
       WebKit::WebFrame*, const char* data, size_t length,
-      bool& preventDefault);
+      bool& preventDefault) {}
   virtual void didCommitProvisionalLoad(
       WebKit::WebFrame*, bool is_new_navigation);
   virtual void didClearWindowObject(WebKit::WebFrame*);
-  virtual void didCreateDocumentElement(WebKit::WebFrame*);
+  virtual void didCreateDocumentElement(WebKit::WebFrame*) {}
   virtual void didReceiveTitle(
       WebKit::WebFrame*, const WebKit::WebString& title);
   virtual void didFinishDocumentLoad(WebKit::WebFrame*);
@@ -215,13 +211,13 @@ class TestWebViewDelegate : public WebViewDelegate,
       WebKit::WebFrame*, unsigned identifier, const WebKit::WebURLError&);
   virtual void didLoadResourceFromMemoryCache(
       WebKit::WebFrame*, const WebKit::WebURLRequest&,
-      const WebKit::WebURLResponse&);
+      const WebKit::WebURLResponse&) {}
   virtual void didDisplayInsecureContent(WebKit::WebFrame* frame);
   virtual void didRunInsecureContent(
       WebKit::WebFrame* frame, const WebKit::WebSecurityOrigin& origin);
-  virtual void didExhaustMemoryAvailableForScript(WebKit::WebFrame*);
+  virtual void didExhaustMemoryAvailableForScript(WebKit::WebFrame*) {}
   virtual void didChangeContentsSize(
-      WebKit::WebFrame*, const WebKit::WebSize&);
+      WebKit::WebFrame*, const WebKit::WebSize&) {}
 
   // webkit_glue::WebPluginPageDelegate
   virtual webkit_glue::WebPluginDelegate* CreatePluginDelegate(

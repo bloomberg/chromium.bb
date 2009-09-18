@@ -16,16 +16,12 @@ class HTMLInputElement;
 class Node;
 class PlatformKeyboardEvent;
 }
-namespace WebKit {
-class WebEditingClient;
-}
 
 class WebViewImpl;
 
 class EditorClientImpl : public WebCore::EditorClient {
  public:
-  EditorClientImpl(WebViewImpl* web_view,
-                   WebKit::WebEditingClient* editing_client);
+  EditorClientImpl(WebViewImpl* webview);
 
   virtual ~EditorClientImpl();
   virtual void pageDestroyed();
@@ -156,8 +152,7 @@ class EditorClientImpl : public WebCore::EditorClient {
   // for text fields and create a flag to over-write the default behavior.
   bool ShouldSpellcheckByDefault();
 
-  WebViewImpl* web_view_;
-  WebKit::WebEditingClient* editing_client_;
+  WebViewImpl* webview_;
   bool in_redo_;
 
   typedef Deque< RefPtr<WebCore::EditCommand> > EditCommandStack;

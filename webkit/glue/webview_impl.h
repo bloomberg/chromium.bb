@@ -42,7 +42,6 @@ class Widget;
 }
 
 namespace WebKit {
-class WebEditingClient;
 class WebKeyboardEvent;
 class WebMouseEvent;
 class WebMouseWheelEvent;
@@ -264,8 +263,7 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   void OnImageFetchComplete(webkit_glue::ImageResourceFetcher* fetcher,
                             const SkBitmap& bitmap);
 
-  WebViewImpl(
-      WebViewDelegate* delegate, WebKit::WebEditingClient* editing_client);
+  WebViewImpl(WebViewDelegate* delegate);
   ~WebViewImpl();
 
   void ModifySelection(uint32 message,

@@ -301,7 +301,7 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
 
   devtools_agent_.reset(new DevToolsAgent(routing_id, this));
 
-  webwidget_ = WebView::Create(this, this);
+  webwidget_ = WebView::Create(this);
   webkit_preferences_.Apply(webview());
   webview()->InitializeMainFrame(this);
 
@@ -1422,6 +1422,95 @@ void RenderView::didStopLoading() {
   ResetPendingUpload();
 }
 
+bool RenderView::shouldBeginEditing(const WebRange& range) {
+  return true;
+}
+
+bool RenderView::shouldEndEditing(const WebRange& range) {
+  return true;
+}
+
+bool RenderView::shouldInsertNode(const WebNode& node, const WebRange& range,
+                                  WebEditingAction action) {
+  return true;
+}
+
+bool RenderView::shouldInsertText(const WebString& text, const WebRange& range,
+                                  WebEditingAction action) {
+  return true;
+}
+
+bool RenderView::shouldChangeSelectedRange(const WebRange& from_range,
+                                           const WebRange& to_range,
+                                           WebTextAffinity affinity,
+                                           bool still_selecting) {
+  return true;
+}
+
+bool RenderView::shouldDeleteRange(const WebRange& range) {
+  return true;
+}
+
+bool RenderView::shouldApplyStyle(const WebString& style,
+                                  const WebRange& range) {
+  return true;
+}
+
+bool RenderView::isSmartInsertDeleteEnabled() {
+  return true;
+}
+
+bool RenderView::isSelectTrailingWhitespaceEnabled() {
+#if defined(OS_WIN)
+  return true;
+#else
+  return false;
+#endif
+}
+
+void RenderView::setInputMethodEnabled(bool enabled) {
+  // Save the updated IME status and mark the input focus has been updated.
+  // The IME status is to be sent to a browser process next time when
+  // the input caret is rendered.
+  if (!ime_control_busy_) {
+    ime_control_updated_ = true;
+    ime_control_new_state_ = enabled;
+  }
+}
+
+void RenderView::didChangeSelection(bool is_empty_selection) {
+#if defined(OS_LINUX)
+  if (!handling_input_event_)
+      return;
+  // TODO(estade): investigate incremental updates to the selection so that we
+  // don't send the entire selection over IPC every time.
+  if (!is_empty_selection) {
+    // Sometimes we get repeated didChangeSelection calls from webkit when
+    // the selection hasn't actually changed. We don't want to report these
+    // because it will cause us to continually claim the X clipboard.
+    const std::string& this_selection =
+        webview()->GetFocusedFrame()->selectionAsText().utf8();
+    if (this_selection == last_selection_)
+      return;
+
+    Send(new ViewHostMsg_SelectionChanged(routing_id_,
+         this_selection));
+    last_selection_ = this_selection;
+  } else {
+    last_selection_.clear();
+  }
+#endif
+}
+
+void RenderView::didExecuteCommand(const WebString& command_name) {
+  const std::wstring& name = UTF16ToWideHack(command_name);
+  if (StartsWith(name, L"Move", true) ||
+      StartsWith(name, L"Insert", true) ||
+      StartsWith(name, L"Delete", true))
+    return;
+  UserMetricsRecordAction(name);
+}
+
 void RenderView::runModalAlertDialog(
     WebFrame* frame, const WebString& message) {
   RunJavaScriptMessage(MessageBoxFlags::kIsJavascriptAlert,
@@ -1583,97 +1672,6 @@ void RenderView::runModal() {
 
   msg->set_pump_messages_event(modal_dialog_event_.get());
   Send(msg);
-}
-
-// WebKit::WebEditingClient ---------------------------------------------------
-
-bool RenderView::shouldBeginEditing(const WebRange& range) {
-  return true;
-}
-
-bool RenderView::shouldEndEditing(const WebRange& range) {
-  return true;
-}
-
-bool RenderView::shouldInsertNode(const WebNode& node, const WebRange& range,
-                                  WebEditingAction action) {
-  return true;
-}
-
-bool RenderView::shouldInsertText(const WebString& text, const WebRange& range,
-                                  WebEditingAction action) {
-  return true;
-}
-
-bool RenderView::shouldChangeSelectedRange(const WebRange& from_range,
-                                           const WebRange& to_range,
-                                           WebTextAffinity affinity,
-                                           bool still_selecting) {
-  return true;
-}
-
-bool RenderView::shouldDeleteRange(const WebRange& range) {
-  return true;
-}
-
-bool RenderView::shouldApplyStyle(const WebString& style,
-                                  const WebRange& range) {
-  return true;
-}
-
-bool RenderView::isSmartInsertDeleteEnabled() {
-  return true;
-}
-
-bool RenderView::isSelectTrailingWhitespaceEnabled() {
-#if defined(OS_WIN)
-  return true;
-#else
-  return false;
-#endif
-}
-
-void RenderView::setInputMethodEnabled(bool enabled) {
-  // Save the updated IME status and mark the input focus has been updated.
-  // The IME status is to be sent to a browser process next time when
-  // the input caret is rendered.
-  if (!ime_control_busy_) {
-    ime_control_updated_ = true;
-    ime_control_new_state_ = enabled;
-  }
-}
-
-void RenderView::didChangeSelection(bool is_empty_selection) {
-#if defined(OS_LINUX)
-  if (!handling_input_event_)
-      return;
-  // TODO(estade): investigate incremental updates to the selection so that we
-  // don't send the entire selection over IPC every time.
-  if (!is_empty_selection) {
-    // Sometimes we get repeated didChangeSelection calls from webkit when
-    // the selection hasn't actually changed. We don't want to report these
-    // because it will cause us to continually claim the X clipboard.
-    const std::string& this_selection =
-        webview()->GetFocusedFrame()->selectionAsText().utf8();
-    if (this_selection == last_selection_)
-      return;
-
-    Send(new ViewHostMsg_SelectionChanged(routing_id_,
-         this_selection));
-    last_selection_ = this_selection;
-  } else {
-    last_selection_.clear();
-  }
-#endif
-}
-
-void RenderView::didExecuteCommand(const WebString& command_name) {
-  const std::wstring& name = UTF16ToWideHack(command_name);
-  if (StartsWith(name, L"Move", true) ||
-      StartsWith(name, L"Insert", true) ||
-      StartsWith(name, L"Delete", true))
-    return;
-  UserMetricsRecordAction(name);
 }
 
 // WebKit::WebFrameClient -----------------------------------------------------

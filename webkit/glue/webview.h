@@ -14,7 +14,6 @@
 
 namespace WebKit {
 class WebDragData;
-class WebEditingClient;
 class WebFrameClient;
 class WebFrame;
 class WebSettings;
@@ -55,8 +54,7 @@ class WebView : public WebKit::WebWidget {
   // to call InitializeMainFrame to finish the initialization.  You may pass
   // NULL for the editing_client parameter if you are not interested in those
   // notifications.
-  static WebView* Create(
-      WebViewDelegate* delegate, WebKit::WebEditingClient* editing_client);
+  static WebView* Create(WebViewDelegate* delegate);
 
   // After creating a WebView, you should immediately call this function.  You
   // can optionally modify the settings (via GetSettings()) in between.  The

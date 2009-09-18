@@ -99,7 +99,6 @@ using WebKit::WebDragOperation;
 using WebKit::WebDragOperationCopy;
 using WebKit::WebDragOperationNone;
 using WebKit::WebDragOperationsMask;
-using WebKit::WebEditingClient;
 using WebKit::WebFrame;
 using WebKit::WebFrameClient;
 using WebKit::WebInputEvent;
@@ -333,9 +332,8 @@ static const WebCore::PopupContainerSettings kAutocompletePopupSettings = {
 // WebView ----------------------------------------------------------------
 
 /*static*/
-WebView* WebView::Create(WebViewDelegate* delegate,
-                         WebEditingClient* editing_client) {
-  WebViewImpl* instance = new WebViewImpl(delegate, editing_client);
+WebView* WebView::Create(WebViewDelegate* delegate) {
+  WebViewImpl* instance = new WebViewImpl(delegate);
   instance->AddRef();
   return instance;
 }
@@ -373,14 +371,13 @@ void WebView::ResetVisitedLinkState() {
 }
 
 
-WebViewImpl::WebViewImpl(WebViewDelegate* delegate,
-                         WebEditingClient* editing_client)
+WebViewImpl::WebViewImpl(WebViewDelegate* delegate)
     : delegate_(delegate),
       ALLOW_THIS_IN_INITIALIZER_LIST(back_forward_list_client_impl_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(chrome_client_impl_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(context_menu_client_impl_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(drag_client_impl_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(editor_client_impl_(this, editing_client)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(editor_client_impl_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(inspector_client_impl_(this)),
       observed_new_navigation_(false),
 #ifndef NDEBUG
