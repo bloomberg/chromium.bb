@@ -46,9 +46,10 @@
 
 /* TODO(robertm): find a header to put this in */
     .set ARM_BUNDLE_SIZE, 4
-
+/* TODO(robertm): this should really by sizeof(nc_thread_descriptor_t) */
+    .set TBD_SIZE, 128
 /* ====================================================================== */
-/* .init section */
+/* BEGIN .init section */
 /* ====================================================================== */
 
 
@@ -71,7 +72,7 @@ _init:
      */
 
 /* ====================================================================== */
-/* .fini section */
+/* BEGIN .fini section */
 /* ====================================================================== */
     .section .fini
     .align ARM_BUNDLE_SIZE
@@ -81,12 +82,24 @@ _fini:
     push    {r4, lr}
     .align ARM_BUNDLE_SIZE
 
+
 /* ====================================================================== */
+/* BEGIN .tdata section */
+/* ====================================================================== */
+    /* ensure we have space for a tdb at the very beginning of the tls area */
+    /* NOTE: this is different from x86 where we put the tdb at the end */
+    .section .tdata
+    .global __tdb
+__tdb:
+    .fill TBD_SIZE, 1, -1
+
+/* ====================================================================== */
+/* BEGIN .nacl_rpc_methods section */
 /* This section contains the simple rpc method descriptors. */
 /* ====================================================================== */
-
     /* TODO: check proper .section syntax for arm */
     .section .nacl_rpc_methods  /* , "aw", @progbits */
     .align ARM_BUNDLE_SIZE
     .global __kNaClSrpcHandlers
 __kNaClSrpcHandlers:
+

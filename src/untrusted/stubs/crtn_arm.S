@@ -32,42 +32,43 @@
 /* NOTE: for comments see: crti_arm.S */
 
 /* TODO(robertm): find a header to put this in */
-        .set ARM_BUNDLE_SIZE, 4
+    .set ARM_BUNDLE_SIZE, 4
 
 /* ====================================================================== */
-/* .init section */
+/* END .init section */
 /* ====================================================================== */
-        .section .init
-        .align ARM_BUNDLE_SIZE
-        pop {r4, lr}
-        nop
-        bic lr, lr, #0xf000000f
-        bx lr
+    .section .init
+    .align ARM_BUNDLE_SIZE
+    pop {r4, lr}
+    nop
+    bic lr, lr, #0xf000000f
+    bx lr
 
 /* ====================================================================== */
-/* .fini section */
+/* END .fini section */
 /* ====================================================================== */
-        .section .fini
-        .align ARM_BUNDLE_SIZE
-        pop {r4, lr}
-        nop
-        bic lr, lr, #0xf000000f
-        bx lr
+    .section .fini
+    .align ARM_BUNDLE_SIZE
+    pop {r4, lr}
+    nop
+    bic lr, lr, #0xf000000f
+    bx lr
 
 /* ====================================================================== */
-/* .text section */
+/* END .text section */
 /* ====================================================================== */
-        .text
-        .weak __NaClSrpcListServices
+    .text
+    .weak __NaClSrpcListServices
 __NaClSrpcListServices:
 
 /* ====================================================================== */
-/* ..nacl_rpc_methods section */
+/* END .nacl_rpc_methods section */
 /* ====================================================================== */
 
-        .section .nacl_rpc_methods, ""
-        /* TODO: add comment regarding padding */
-        .4byte 0
-        .4byte 0
-        .global __kNaClSrpcHandlerEnd
+    .section .nacl_rpc_methods, ""
+    /* TODO(robertm): add comment regarding padding, probably terminator */
+    .4byte 0
+    .4byte 0
+    .global __kNaClSrpcHandlerEnd
 __kNaClSrpcHandlerEnd:
+
