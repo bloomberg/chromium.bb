@@ -237,11 +237,10 @@ void WebWorkerClientImpl::postExceptionToWorkerObject(
   }
 
   bool handled = false;
-  if (worker_->onerror())
-    handled = worker_->dispatchScriptErrorEvent(
-        webkit_glue::WebStringToString(error_message),
-        webkit_glue::WebStringToString(source_url),
-        line_number);
+  handled = worker_->dispatchScriptErrorEvent(
+      webkit_glue::WebStringToString(error_message),
+      webkit_glue::WebStringToString(source_url),
+      line_number);
   if (!handled)
     script_execution_context_->reportException(
         webkit_glue::WebStringToString(error_message),
@@ -359,7 +358,7 @@ void WebWorkerClientImpl::PostExceptionToWorkerObjectTask(
     int line_number,
     const WebCore::String& source_url) {
   bool handled = false;
-  if (this_ptr->worker_ && this_ptr->worker_->onerror())
+  if (this_ptr->worker_)
     handled = this_ptr->worker_->dispatchScriptErrorEvent(
         error_message, source_url, line_number);
   if (!handled)
