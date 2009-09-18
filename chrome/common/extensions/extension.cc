@@ -947,6 +947,11 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
       return false;
     }
 
+    if (permissions->GetSize() == 0) {
+      ExtensionErrorReporter::GetInstance()->ReportError(
+          errors::kInvalidPermissionCountWarning, false);
+    }
+
     for (size_t i = 0; i < permissions->GetSize(); ++i) {
       std::string permission_str;
       if (!permissions->GetString(i, &permission_str)) {
