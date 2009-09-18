@@ -69,7 +69,7 @@ struct wl_hash *wl_hash_create(void);
 void wl_hash_destroy(struct wl_hash *hash);
 int wl_hash_insert(struct wl_hash *hash, struct wl_object *object);
 struct wl_object *wl_hash_lookup(struct wl_hash *hash, uint32_t id);
-void wl_hash_delete(struct wl_hash *hash, struct wl_object *object);
+void wl_hash_remove(struct wl_hash *hash, struct wl_object *object);
 
 struct wl_list {
 	struct wl_list *prev;

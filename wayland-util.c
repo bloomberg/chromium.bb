@@ -88,11 +88,18 @@ wl_hash_lookup(struct wl_hash *hash, uint32_t id)
 }
 
 void
-wl_hash_delete(struct wl_hash *hash, struct wl_object *object)
+wl_hash_remove(struct wl_hash *hash, struct wl_object *object)
 {
-	/* writeme */
-}
+	int i;
 
+	for (i = 0; i < hash->count; i++) {
+		if (hash->objects[i]->id == object->id) {
+			hash->objects[i] = hash->objects[hash->count - 1];
+			hash->count--;
+			break;
+		}
+	}
+}
 
 WL_EXPORT void
 wl_list_init(struct wl_list *list)
