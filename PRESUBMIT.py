@@ -86,6 +86,9 @@ def CheckTryJobExecution(input_api, output_api):
     # platform|status|url
     values = [item.split('|', 2) for item in connection.read().splitlines()]
     connection.close()
+    if not values:
+      # It returned an empty list. Probably a private review.
+      return outputs
     # Reformat as an dict of platform: [status, url]
     values = dict([[v[0], [v[1], v[2]]] for v in values])
     for platform in PLATFORMS:
