@@ -321,6 +321,20 @@ def FindEnclosingBracketGroup(input):
     count = count + 1
   return (-1, -1)
 
+
+canonical_int_re = re.compile('^(0|-?[1-9][0-9]*)$')
+
+def IsStrCanonicalInt(string):
+  """Returns True if |string| is in its canonical integer form.
+
+  The canonical form is such that str(int(string)) == string.
+  """
+  if not isinstance(string, str) or not canonical_int_re.match(string):
+    return False
+
+  return True
+
+
 early_variable_re = re.compile('(?P<replace>(?P<type><!?@?)'
                                '\((?P<is_array>\s*\[?)'
                                '(?P<content>.*?)(\]?)\))')
@@ -335,12 +349,14 @@ def ExpandVariables(input, is_late, variables, build_file):
   else:
     variable_re = late_variable_re
 
+  input_str = str(input)
+
   # Get the entire list of matches as a list of MatchObject instances.
   # (using findall here would return strings, and we want
   # MatchObjects).
-  matches = [match for match in variable_re.finditer(input)]
+  matches = [match for match in variable_re.finditer(input_str)]
 
-  output = input
+  output = input_str
   if matches:
     # Reverse the list of matches so that replacements are done right-to-left.
     # That ensures that earlier replacements won't mess up the string in a
@@ -350,7 +366,7 @@ def ExpandVariables(input, is_late, variables, build_file):
     for match_group in matches:
       match = match_group.groupdict()
       gyp.DebugOutput(gyp.DEBUG_VARIABLES,
-                      "Matches: %s" % str(match))
+                      "Matches: %s" % repr(match))
       # match['replace'] is the substring to look for, match['type']
       # is the character code for the replacement type (< > <! >! <@
       # >@ <!@ >!@), match['is_array'] contains a '[' for command
@@ -365,7 +381,7 @@ def ExpandVariables(input, is_late, variables, build_file):
       replace_end = match_group.end('replace')
 
       # Find the ending paren, and re-evaluate the contained string.
-      (c_start, c_end) = FindEnclosingBracketGroup(input[replace_start:])
+      (c_start, c_end) = FindEnclosingBracketGroup(input_str[replace_start:])
 
       # Adjust the replacement range to match the entire command
       # found by FindEnclosingBracketGroup (since the variable_re
@@ -375,12 +391,12 @@ def ExpandVariables(input, is_late, variables, build_file):
 
       # Find the "real" replacement, matching the appropriate closing
       # paren, and adjust the replacement start and end.
-      replacement = input[replace_start:replace_end]
+      replacement = input_str[replace_start:replace_end]
 
       # Figure out what the contents of the variable parens are.
       contents_start = replace_start + c_start + 1
       contents_end = replace_end - 1
-      contents = input[contents_start:contents_end]
+      contents = input_str[contents_start:contents_end]
 
       # Recurse to expand variables in the contents
       contents = ExpandVariables(contents, is_late, variables, build_file)
@@ -394,8 +410,8 @@ def ExpandVariables(input, is_late, variables, build_file):
       # is to be expecting a list in return, and not all callers do
       # because not all are working in list context.  Also, for list
       # expansions, there can be no other text besides the variable
-      # expansion in the input.
-      expand_to_list = '@' in match['type'] and input == replacement
+      # expansion in the input string.
+      expand_to_list = '@' in match['type'] and input_str == replacement
 
       if run_command:
         # Run the command in the build file's directory.
@@ -458,7 +474,7 @@ def ExpandVariables(input, is_late, variables, build_file):
 
       if expand_to_list:
         # Expanding in list context.  It's guaranteed that there's only one
-        # replacement to do in |input| and that it's this replacement.  See
+        # replacement to do in |input_str| and that it's this replacement.  See
         # above.
         if isinstance(replacement, list):
           # If it's already a list, make a copy.
@@ -485,13 +501,13 @@ def ExpandVariables(input, is_late, variables, build_file):
         output = output[:replace_start] + str(encoded_replacement) + \
                  output[replace_end:]
       # Prepare for the next match iteration.
-      input = output
+      input_str = output
 
     # Look for more matches now that we've replaced some, to deal with
     # expanding local variables (variables defined in the same
     # variables block as this one).
     gyp.DebugOutput(gyp.DEBUG_VARIABLES,
-                    "Found output '%s', recursing." % output)
+                    "Found output %s, recursing." % repr(output))
     if isinstance(output, list):
       new_output = []
       for item in output:
@@ -500,8 +516,16 @@ def ExpandVariables(input, is_late, variables, build_file):
     else:
       output = ExpandVariables(output, is_late, variables, build_file)
 
+  # Convert all strings that are canonically-represented integers into integers.
+  if isinstance(output, list):
+    for index in xrange(0, len(output)):
+      if IsStrCanonicalInt(output[index]):
+        output[index] = int(output[index])
+  elif IsStrCanonicalInt(output):
+    output = int(output)
+
   gyp.DebugOutput(gyp.DEBUG_VARIABLES,
-                  "Expanding '%s' to '%s'" % (input, output))
+                  "Expanding %s to %s" % (repr(input), repr(output)))
   return output
 
 
@@ -551,10 +575,11 @@ def ProcessConditionsInDict(the_dict, is_late, variables, build_file):
     # use a command expansion directly inside a condition.
     cond_expr_expanded = ExpandVariables(cond_expr, is_late, variables,
                                          build_file)
-    if not isinstance(cond_expr_expanded, str):
+    if not isinstance(cond_expr_expanded, str) and \
+       not isinstance(cond_expr_expanded, int):
       raise ValueError, \
-            'Variable expansion in this context permits strings only, ' + \
-            'found ' + expanded.__class__.__name__
+            'Variable expansion in this context permits str and int ' + \
+            'only, found ' + expanded.__class__.__name__
 
     try:
       ast_code = compile(cond_expr_expanded, '<string>', 'eval')
@@ -655,10 +680,10 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables,
     # Skip "variables", which was already processed if present.
     if key != 'variables' and isinstance(value, str):
       expanded = ExpandVariables(value, is_late, variables, build_file)
-      if not isinstance(expanded, str):
+      if not isinstance(expanded, str) and not isinstance(expanded, int):
         raise ValueError, \
-              'Variable expansion in this context permits strings only, ' + \
-              'found ' + expanded.__class__.__name__ + ' for ' + key
+              'Variable expansion in this context permits str and int ' + \
+              'only, found ' + expanded.__class__.__name__ + ' for ' + key
       the_dict[key] = expanded
 
   # Variable expansion may have resulted in changes to automatics.  Reload.
@@ -751,7 +776,7 @@ def ProcessVariablesAndConditionsInList(the_list, is_late, variables,
       ProcessVariablesAndConditionsInList(item, is_late, variables, build_file)
     elif isinstance(item, str):
       expanded = ExpandVariables(item, is_late, variables, build_file)
-      if isinstance(expanded, str):
+      if isinstance(expanded, str) or isinstance(expanded, int):
         the_list[index] = expanded
       elif isinstance(expanded, list):
         del the_list[index]
@@ -1291,11 +1316,19 @@ def MergeDicts(to, fro, to_file, fro_file):
     # later, and having the same dict ref pointed to twice in the tree isn't
     # what anyone wants considering that the dicts may subsequently be
     # modified.
-    if k in to and v.__class__ != to[k].__class__:
-      raise TypeError, \
-          'Attempt to merge dict value of type ' + v.__class__.__name__ + \
-          ' into incompatible type ' + to[k].__class__.__name__ + \
-          ' for key ' + k
+    if k in to:
+      bad_merge = False
+      if isinstance(v, str) or isinstance(v, int):
+        if not (isinstance(to[k], str) or isinstance(to[k], int)):
+          bad_merge = True
+      elif v.__class__ != to[k].__class__:
+        bad_merge = True
+
+      if bad_merge:
+        raise TypeError, \
+            'Attempt to merge dict value of type ' + v.__class__.__name__ + \
+            ' into incompatible type ' + to[k].__class__.__name__ + \
+            ' for key ' + k
     if isinstance(v, str) or isinstance(v, int):
       # Overwrite the existing value, if any.  Cheap and easy.
       is_path = IsPathSection(k)

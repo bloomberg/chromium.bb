@@ -171,6 +171,9 @@ def EncodePOSIXShellArgument(argument):
   references to variables to be expanded by the shell.
   """
 
+  if not isinstance(argument, str):
+    argument = str(argument)
+
   if _quote.search(argument):
     quote = '"'
   else:
