@@ -36,7 +36,7 @@
 			</object>
 			<object class="NSCustomView" id="1005">
 				<reference key="NSNextResponder"/>
-				<int key="NSvFlags">268</int>
+				<int key="NSvFlags">290</int>
 				<string key="NSFrameSize">{400, 30}</string>
 				<reference key="NSSuperview"/>
 				<string key="NSClassName">DownloadShelfView</string>
