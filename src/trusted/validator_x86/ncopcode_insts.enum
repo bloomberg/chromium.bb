@@ -12,7 +12,7 @@ Arpl
 Bound
 Call
 Cbw
-Cwde
+Cdq
 Cdqe
 Cmovo
 Cmovno
@@ -32,6 +32,9 @@ Cmovle
 Cmovnle
 Cmp
 Cpuid
+Cqo
+Cwd
+Cwde
 Daa
 Das
 Dec
@@ -76,6 +79,7 @@ Jo
 Jp
 Js
 Jz
+Lahf
 Lea
 Leave
 Mov
@@ -177,6 +181,9 @@ Pmuludq
 Pop
 Popa
 Popad
+Popf
+Popfd
+Popfq
 Por
 Psadbw
 Pshufb
@@ -216,12 +223,16 @@ Punpcklwd
 Push
 Pusha
 Pushad
+Pushf
+Pushfd
+Pushfq
 Pxor
 Rcl
 Rcr
 Ret
 Rol
 Ror
+Sahf
 Sar
 Sbb
 Seto
@@ -244,5 +255,6 @@ Shl
 Shr
 Sub
 Test
+Wait
 Xchg
 Xor

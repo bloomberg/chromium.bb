@@ -907,22 +907,98 @@ void DefineOneByteOpcodes() {
 
   DefineXchgRegister();
 
-  /* 0x99 0x9a 0x9b 0x9c 0x9d 0x9e 0x9f */
+  DefineOpcode(0x98, NACLi_386,
+               InstFlag(OperandSize_w),
+               InstCbw);
+  DefineOperand(RegAX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegAL, OpFlag(OpUse) | OpFlag(OpImplicit));
 
   DefineOpcode(0x98, NACLi_386,
-               InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
-               InstCbw);
-  DefineOperand(RegAX, OpFlag(OpSet) | OpFlag(OpUse) | OpFlag(OpImplicit));
-  DefineOpcode(0x98, NACLi_386,
-               InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+               InstFlag(OperandSize_v),
                InstCwde);
-  DefineOperand(RegEAX, OpFlag(OpSet) | OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(RegEAX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegAX, OpFlag(OpUse) | OpFlag(OpImplicit));
 
   DefineOpcode(0x98, NACLi_386,
                InstFlag(OperandSize_o) | InstFlag(OpcodeUsesRexW) |
                InstFlag(Opcode64Only),
                InstCdqe);
-  DefineOperand(RegRAX, OpFlag(OpSet) | OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(RegRAX,
+                OpFlag(OpSet) | OpFlag(OpImplicit) |
+                OpFlag(OperandSignExtends_v));
+  DefineOperand(RegEAX, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0x99, NACLi_386,
+               InstFlag(OperandSize_w),
+               InstCwd);
+  DefineOperand(SegmentDX_AX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegAX, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0x99, NACLi_386,
+               InstFlag(OperandSize_v),
+               InstCdq);
+  DefineOperand(SegmentDX_AX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegEAX, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0x99, NACLi_386,
+               InstFlag(OperandSize_o) | InstFlag(OpcodeUsesRexW) |
+               InstFlag(Opcode64Only),
+               InstCqo);
+  DefineOperand(SegmentDX_AX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegRAX, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0x9a, NACLi_ILLEGAL,
+               InstFlag(OperandSize_w) | InstFlag(OpcodeHasImmed_v) |
+               InstFlag(Opcode32Only),
+               InstCall);
+  DefineOperand(RegEIP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(J_Operand, OpFlag(OpUse) | OpFlag(OperandFar) |
+                OpFlag(OperandRelative));
+
+  DefineOpcode(0x9a, NACLi_ILLEGAL,
+               InstFlag(OperandSize_v) | InstFlag(OpcodeHasImmed_p) |
+               InstFlag(Opcode32Only),
+               InstCall);
+  DefineOperand(RegEIP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(J_Operand, OpFlag(OpUse) | OpFlag(OperandFar) |
+                OpFlag(OperandRelative));
+
+  DefineOpcode(0x9b, NACLi_X87, 0, InstWait);
+
+  DefineOpcode(0x9c, NACLi_ILLEGAL, InstFlag(OperandSize_w), InstPushf);
+  DefineOperand(RegRESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+
+  DefineOpcode(0x9c, NACLi_ILLEGAL,
+               InstFlag(Opcode32Only) | InstFlag(OperandSize_v),
+               InstPushfd);
+  DefineOperand(RegESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+
+  DefineOpcode(0x9c, NACLi_ILLEGAL,
+               InstFlag(Opcode64Only) | InstFlag(OperandSize_o) |
+               InstFlag(OperandSizeDefaultIs64),
+               InstPushfq);
+  DefineOperand(RegRSP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+
+  DefineOpcode(0x9d, NACLi_ILLEGAL, InstFlag(OperandSize_w), InstPopf);
+  DefineOperand(RegRESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+
+  DefineOpcode(0x9d, NACLi_ILLEGAL,
+               InstFlag(Opcode32Only) | InstFlag(OperandSize_v),
+               InstPopfd);
+  DefineOperand(RegESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+
+  DefineOpcode(0x9d, NACLi_ILLEGAL,
+               InstFlag(Opcode64Only) | InstFlag(OperandSize_v),
+               InstPopfq);
+  DefineOperand(RegRSP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+
+  DefineOpcode(0x9e, NACLi_386, InstFlag(Opcode32Only), InstSahf);
+  DefineOperand(RegAH, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0x9f, NACLi_386, InstFlag(Opcode32Only), InstLahf);
+  DefineOperand(RegAH, OpFlag(OpSet) | OpFlag(OpImplicit));
 
   DefineOpcode(0xa0, NACLi_386,
                InstFlag(OperandSize_b) | InstFlag(OpcodeHasImmed_Addr),

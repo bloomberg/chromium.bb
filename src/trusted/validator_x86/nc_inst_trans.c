@@ -986,14 +986,14 @@ static void AppendEDI(NcInstState* state) {
     case 16:
       AppendRegister(RegDI, &state->nodes);
       break;
+    case 32:
+      AppendRegister(RegEDI, &state->nodes);
+      break;
     case 64:
       AppendRegister(RegRDI, &state->nodes);
       break;
     default:
-      FatalError("Address size not correctly defined", state);
-      break;
-    case 32:
-      AppendRegister(RegEDI, &state->nodes);
+      FatalError("Address size for ES:EDI not correctly defined", state);
       break;
   }
 }
@@ -1009,6 +1009,28 @@ static ExprNode* AppendES_EDI(NcInstState* state) {
   ExprNode* results = AppendExprNode(ExprSegmentAddress, 0, 0, &state->nodes);
   AppendRegister(RegES, &state->nodes);
   AppendEDI(state);
+  return results;
+}
+
+static ExprNode* AppendSegmentDX_AX(NcInstState* state) {
+  ExprNode* results = AppendExprNode(ExprSegmentAddress, 0, 0, &state->nodes);
+  switch (state->operand_size) {
+    case 2:
+      AppendRegister(RegDX, &state->nodes);
+      AppendRegister(RegAX, &state->nodes);
+      break;
+    case 4:
+      AppendRegister(RegEDX, &state->nodes);
+      AppendRegister(RegEAX, &state->nodes);
+      break;
+    case 8:
+      AppendRegister(RegRDX, &state->nodes);
+      AppendRegister(RegRAX, &state->nodes);
+      break;
+    default:
+      FatalError("Address size for segment DX:AX not correctly defined", state);
+      break;
+  }
   return results;
 }
 
@@ -1319,6 +1341,9 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
 
     case RegES_EDI:
       return AppendES_EDI(state);
+
+    case SegmentDX_AX:
+      return AppendSegmentDX_AX(state);
 
     case Const_1:
       return AppendConstant(1,

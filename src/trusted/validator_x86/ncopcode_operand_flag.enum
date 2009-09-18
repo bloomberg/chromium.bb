@@ -16,7 +16,11 @@ OpImplicit
 OperandExtendsOpcode
 # When jump address, the jump is near (rather than far).
 OperandNear
+# When jump address, the jump is far (rather than near).
+OperandFar
 # When jump address, the jump is relative (rather than absolute.
 OperandRelative
 # Operand zero-extends 32-bit register results to 64-bits.
 OperandZeroExtends_v
+# Operand sign-extends 32-bit register results to 64-bits.
+OperandSignExtends_v

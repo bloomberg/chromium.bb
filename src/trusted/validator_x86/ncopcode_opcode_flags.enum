@@ -37,6 +37,7 @@ OpcodeHasImmed
 OpcodeHasImmed_b
 OpcodeHasImmed_w
 OpcodeHasImmed_v
+OpcodeHasImmed_p  # 6 bytes.
 OpcodeHasImmed_o
 
 # In 32-bit mode, same as OpcodeHasImmed_v, In 64-bit mode, same as
