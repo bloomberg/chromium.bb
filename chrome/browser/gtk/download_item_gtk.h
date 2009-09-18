@@ -111,6 +111,11 @@ class DownloadItemGtk : public DownloadItem::Observer,
                              GtkAllocation *allocation,
                              DownloadItemGtk* item);
 
+  static void OnDragDataGet(GtkWidget* widget, GdkDragContext* context,
+                            GtkSelectionData* selection_data,
+                            guint target_type, guint time,
+                            DownloadItemGtk* item);
+
   // Dangerous download related. -----------------------------------------------
   static gboolean OnDangerousPromptExpose(GtkWidget* widget,
                                          GdkEventExpose* event,

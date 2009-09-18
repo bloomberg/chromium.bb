@@ -8,6 +8,7 @@
 #include "app/gfx/canvas_paint.h"
 #include "app/gfx/font.h"
 #include "app/gfx/text_elider.h"
+#include "app/gtk_dnd_util.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
 #include "base/basictypes.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/gtk/standard_menus.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
+#include "net/base/net_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -389,6 +391,16 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
       break;
     case DownloadItem::COMPLETE:
       StopDownloadProgress();
+
+      // Set up the widget as a drag source.
+      gtk_drag_source_set(body_.get(), GDK_BUTTON1_MASK, NULL, 0,
+                          GDK_ACTION_COPY);
+      GtkDndUtil::SetSourceTargetListFromCodeMask(body_.get(),
+                                                  GtkDndUtil::TEXT_URI_LIST |
+                                                  GtkDndUtil::CHROME_NAMED_URL);
+      g_signal_connect(body_.get(), "drag-data-get",
+                       G_CALLBACK(OnDragDataGet), this);
+
       complete_animation_.reset(new SlideAnimation(this));
       complete_animation_->SetSlideDuration(kCompleteAnimationDurationMs);
       complete_animation_->SetTweenType(SlideAnimation::NONE);
@@ -849,6 +861,17 @@ void DownloadItemGtk::OnShelfResized(GtkWidget *widget,
     gtk_widget_hide(item->hbox_.get());
   else
     gtk_widget_show(item->hbox_.get());
+}
+
+// static
+void DownloadItemGtk::OnDragDataGet(GtkWidget* widget, GdkDragContext* context,
+                                    GtkSelectionData* selection_data,
+                                    guint target_type, guint time,
+                                    DownloadItemGtk* item) {
+  GURL url = net::FilePathToFileURL(item->get_download()->full_path());
+
+  GtkDndUtil::WriteURLWithName(selection_data, url,
+      UTF8ToUTF16(item->get_download()->GetFileName().value()), target_type);
 }
 
 // static
