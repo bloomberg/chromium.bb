@@ -99,7 +99,7 @@ class ExtensionShelf : public DetachableToolbarView,
   void CollapseToolstrip(ExtensionHost* host, const GURL& url);
 
   // Initializes the background bitmaps for all views.
-  void InitBackground(gfx::Canvas* canvas, const SkRect& subset);
+  void InitBackground(gfx::Canvas* canvas);
 
   // Returns the Toolstrip at |x| coordinate.  If |x| is out of bounds, returns
   // NULL.
@@ -131,11 +131,6 @@ class ExtensionShelf : public DetachableToolbarView,
 
   // Background bitmap to draw under extension views.
   bool background_needs_repaint_;
-
-  // Whether the background we are remembering is for detached mode or not.
-  // This allows us to switch backgrounds and remember if we've done so, so that
-  // we don't have to do it over and over again.
-  bool background_for_detached_;
 
   // The browser this extension shelf belongs to.
   Browser* browser_;

@@ -163,7 +163,6 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
     // bar to be docked.
     double current_state = 1 - host_view_->GetAnimationValue();
 
-    // The 0.5 is to correct for Skia's "draw on pixel boundaries"ness.
     double h_padding = static_cast<double>
         (BookmarkBarView::kNewtabHorizontalPadding) * current_state;
     double v_padding = static_cast<double>

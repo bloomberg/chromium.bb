@@ -480,7 +480,7 @@ void ExtensionShelf::Toolstrip::AnimationEnded(const Animation* animation) {
 }
 
 int ExtensionShelf::Toolstrip::GetVerticalTearFromShelfThreshold() {
-  // TODO (sidchat): Compute this value from the toolstrip height.
+  // TODO(sidchat): Compute this value from the toolstrip height.
   return 29;
 }
 
@@ -632,7 +632,6 @@ void ExtensionShelf::Toolstrip::HideShelfHandle(int delay_ms) {
 
 ExtensionShelf::ExtensionShelf(Browser* browser)
   :   background_needs_repaint_(true),
-      background_for_detached_(false),
       browser_(browser),
       model_(browser->extension_shelf_model()) {
   model_->AddObserver(this);
@@ -661,14 +660,7 @@ ExtensionShelf::~ExtensionShelf() {
 }
 
 void ExtensionShelf::PaintChildren(gfx::Canvas* canvas) {
-  // Capture a background bitmap to give to the toolstrips.
-  SkRect background_rect = {
-      SkIntToScalar(0),
-      SkIntToScalar(0),
-      SkIntToScalar(width()),
-      SkIntToScalar(height())
-  };
-  InitBackground(canvas, background_rect);
+  InitBackground(canvas);
 
   // Draw vertical dividers between Toolstrip items in the Extension shelf.
   int count = GetChildViewCount();
@@ -746,8 +738,6 @@ void ExtensionShelf::SetAccessibleName(const std::wstring& name) {
 }
 
 void ExtensionShelf::ThemeChanged() {
-  background_needs_repaint_ = true;
-
   // Refresh the CSS to update toolstrip text colors from theme.
   int count = model_->count();
   for (int i = 0; i < count; ++i)
@@ -763,7 +753,6 @@ void ExtensionShelf::ToolstripInsertedAt(ExtensionHost* host,
 
   bool had_views = GetChildViewCount() > 0;
   ExtensionView* view = host->view();
-  background_needs_repaint_ = true;
   AddChildView(view);
   view->SetContainer(this);
   if (!had_views)
@@ -832,7 +821,6 @@ void ExtensionShelf::AnimationEnded(const Animation* animation) {
   if (browser_)
     browser_->ExtensionShelfSizeChanged();
 
-  background_needs_repaint_ = true;
   Layout();
 }
 
@@ -893,31 +881,26 @@ void ExtensionShelf::CollapseToolstrip(ExtensionHost* host, const GURL& url) {
   model_->CollapseToolstrip(toolstrip, url);
 }
 
-void ExtensionShelf::InitBackground(
-    gfx::Canvas* canvas, const SkRect& subset) {
-  bool detached = IsDetached();
-  if (!background_needs_repaint_ && background_for_detached_ == detached)
+void ExtensionShelf::InitBackground(gfx::Canvas* canvas) {
+  if (!background_needs_repaint_)
     return;
 
-  background_for_detached_ = detached;
+  // Capture a background bitmap to give to the toolstrips.
+  SkRect background_rect = {
+      SkIntToScalar(0),
+      SkIntToScalar(0),
+      SkIntToScalar(width()),
+      SkIntToScalar(height())
+  };
 
-  // Tell all extension views about the new background
+  // Tell all extension views about the new background.
   int count = model_->count();
   for (int i = 0; i < count; ++i) {
     ExtensionView* view = ToolstripAtIndex(i)->view();
 
     const SkBitmap& background = canvas->getDevice()->accessBitmap(false);
 
-    // Extract the correct subset of the toolstrip background into a bitmap. We
-    // must use a temporary here because extractSubset() returns a bitmap that
-    // references pixels in the original one and we want to actually make a copy
-    // that will have a long lifetime.
-    SkBitmap temp;
-    temp.setConfig(background.config(),
-                   static_cast<int>(subset.width()),
-                   static_cast<int>(subset.height()));
-
-    SkRect mapped_subset = subset;
+    SkRect mapped_subset = background_rect;
     gfx::Rect view_bounds = view->bounds();
     mapped_subset.offset(SkIntToScalar(view_bounds.x()),
                          SkIntToScalar(view_bounds.y()));
@@ -926,13 +909,22 @@ void ExtensionShelf::InitBackground(
 
     SkIRect isubset;
     mapped_subset.round(&isubset);
-    result = background.extractSubset(&temp, isubset);
+    SkBitmap subset_bitmap;
+    // This will create another bitmap that just references pixels in the
+    // actual bitmap.
+    result = background.extractSubset(&subset_bitmap, isubset);
     if (!result)
       return;
 
-    DCHECK(temp.readyToDraw());
+    // We do a deep copy because extractSubset() returns a bitmap that
+    // references pixels in the original one and we want to actually make a
+    // smaller copy that will have a long lifetime.
+    SkBitmap smaller_copy;
+    if (!subset_bitmap.copyTo(&smaller_copy, SkBitmap::kARGB_8888_Config))
+      return;
+    DCHECK(smaller_copy.readyToDraw());
 
-    view->SetBackground(temp);
+    view->SetBackground(smaller_copy);
   }
 
   background_needs_repaint_ = false;
@@ -1019,10 +1011,10 @@ gfx::Size ExtensionShelf::LayoutItems(bool compute_bounds_only) {
     x = next_x + kToolstripDividerWidth;
   }
 
-  if (!compute_bounds_only)
+  if (!compute_bounds_only) {
+    background_needs_repaint_ = true;
     SchedulePaint();
-
-  if (compute_bounds_only) {
+  } else {
     if (OnNewTabPage()) {
       prefsize.set_height(kShelfHeight + static_cast<int>(static_cast<double>
                               (kNewtabShelfHeight - kShelfHeight) *
