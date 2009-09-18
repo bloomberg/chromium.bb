@@ -187,13 +187,6 @@ bool StrictTransportSecurityState::ParseHeader(const std::string& value,
   }
 }
 
-void StrictTransportSecurityState::Clear() {
-  AutoLock lock(lock_);
-
-  enabled_hosts_.clear();
-  DirtyNotify();
-}
-
 void StrictTransportSecurityState::SetDelegate(
     StrictTransportSecurityState::Delegate* delegate) {
   AutoLock lock(lock_);

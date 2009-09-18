@@ -99,15 +99,6 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
   g_signal_connect(del_form_data_checkbox_, "toggled",
                    G_CALLBACK(HandleOnClickedWidget), this);
 
-  // Strict transport security state checkbox.
-  del_sts_checkbox_ = gtk_check_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_DEL_STS_STATE).c_str());
-  gtk_box_pack_start(GTK_BOX(vbox), del_sts_checkbox_, FALSE, FALSE, 0);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(del_sts_checkbox_),
-      profile_->GetPrefs()->GetBoolean(prefs::kDeleteSTSState));
-  g_signal_connect(del_sts_checkbox_, "toggled",
-                   G_CALLBACK(HandleOnClickedWidget), this);
-
   // Create a horizontal layout for the combo box and label.
   GtkWidget* combo_hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
   GtkWidget* time_period_label_ = gtk_label_new(
@@ -166,9 +157,6 @@ void ClearBrowsingDataDialogGtk::OnDialogResponse(GtkWidget* widget,
     if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(del_cache_checkbox_)))
       items |= BrowsingDataRemover::REMOVE_CACHE;
 
-    if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(del_sts_checkbox_)))
-      items |= BrowsingDataRemover::REMOVE_STS_STATE;
-
     // BrowsingDataRemover deletes itself when done.
     remover_ = new BrowsingDataRemover(profile_,
         static_cast<BrowsingDataRemover::TimePeriod>(period_selected),
@@ -203,10 +191,6 @@ void ClearBrowsingDataDialogGtk::OnDialogWidgetClicked(GtkWidget* widget) {
         true : false);
   } else if (widget == del_form_data_checkbox_) {
     profile_->GetPrefs()->SetBoolean(prefs::kDeleteFormData,
-        gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) ?
-        true : false);
-  } else if (widget == del_sts_checkbox_) {
-    profile_->GetPrefs()->SetBoolean(prefs::kDeleteSTSState,
         gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) ?
         true : false);
   } else if (widget == time_period_combobox_) {

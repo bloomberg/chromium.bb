@@ -47,7 +47,6 @@ ClearBrowsingDataView::ClearBrowsingDataView(Profile* profile)
       del_cookies_checkbox_(NULL),
       del_passwords_checkbox_(NULL),
       del_form_data_checkbox_(NULL),
-      del_sts_checkbox_(NULL),
       time_period_label_(NULL),
       time_period_combobox_(NULL),
       delete_in_progress_(false),
@@ -106,10 +105,6 @@ void ClearBrowsingDataView::Init() {
   del_form_data_checkbox_ =
       AddCheckbox(l10n_util::GetString(IDS_DEL_FORM_DATA_CHKBOX),
       profile_->GetPrefs()->GetBoolean(prefs::kDeleteFormData));
-
-  del_sts_checkbox_ =
-      AddCheckbox(l10n_util::GetString(IDS_DEL_STS_STATE),
-      profile_->GetPrefs()->GetBoolean(prefs::kDeleteSTSState));
 
   // Add a label which appears before the combo box for the time period.
   time_period_label_ = new views::Label(
@@ -184,18 +179,11 @@ void ClearBrowsingDataView::Layout() {
                                          kRelatedControlVerticalSpacing,
                                      sz.width(), sz.height());
 
-  sz = del_sts_checkbox_->GetPreferredSize();
-  del_sts_checkbox_->SetBounds(2 * kPanelHorizMargin,
-                               del_form_data_checkbox_->y() +
-                                   del_form_data_checkbox_->height() +
-                                   kRelatedControlVerticalSpacing,
-                               sz.width(), sz.height());
-
   // Time period label is next below the combo boxes.
   sz = time_period_label_->GetPreferredSize();
   time_period_label_->SetBounds(kPanelHorizMargin,
-                                del_sts_checkbox_->y() +
-                                    del_sts_checkbox_->height() +
+                                del_form_data_checkbox_->y() +
+                                    del_form_data_checkbox_->height() +
                                     kRelatedControlVerticalSpacing +
                                     kExtraMarginForTimePeriodLabel,
                                 sz.width(), sz.height());
@@ -282,8 +270,7 @@ bool ClearBrowsingDataView::IsDialogButtonEnabled(
            del_cache_checkbox_->checked() ||
            del_cookies_checkbox_->checked() ||
            del_passwords_checkbox_->checked() ||
-           del_form_data_checkbox_->checked() ||
-           del_sts_checkbox_->checked();
+           del_form_data_checkbox_->checked();
   }
 
   return true;
@@ -376,9 +363,6 @@ void ClearBrowsingDataView::ButtonPressed(
   else if (sender == del_form_data_checkbox_)
     profile_->GetPrefs()->SetBoolean(prefs::kDeleteFormData,
         del_form_data_checkbox_->checked() ? true : false);
-  else if (sender == del_sts_checkbox_)
-    profile_->GetPrefs()->SetBoolean(prefs::kDeleteSTSState,
-        del_sts_checkbox_->checked() ? true : false);
 
   // When no checkbox is checked we should not have the action button enabled.
   // This forces the button to evaluate what state they should be in.
@@ -406,7 +390,6 @@ void ClearBrowsingDataView::UpdateControlEnabledState() {
   del_cookies_checkbox_->SetEnabled(!delete_in_progress_);
   del_passwords_checkbox_->SetEnabled(!delete_in_progress_);
   del_form_data_checkbox_->SetEnabled(!delete_in_progress_);
-  del_sts_checkbox_->SetEnabled(!delete_in_progress_);
   time_period_combobox_->SetEnabled(!delete_in_progress_);
 
   status_label_.SetVisible(delete_in_progress_);
@@ -442,8 +425,6 @@ void ClearBrowsingDataView::OnDelete() {
     remove_mask |= BrowsingDataRemover::REMOVE_FORM_DATA;
   if (IsCheckBoxEnabledAndSelected(del_cache_checkbox_))
     remove_mask |= BrowsingDataRemover::REMOVE_CACHE;
-  if (IsCheckBoxEnabledAndSelected(del_sts_checkbox_))
-    remove_mask |= BrowsingDataRemover::REMOVE_STS_STATE;
 
   delete_in_progress_ = true;
   UpdateControlEnabledState();

@@ -102,7 +102,6 @@ class ClearBrowsingDataView : public views::View,
   views::Checkbox* del_cookies_checkbox_;
   views::Checkbox* del_passwords_checkbox_;
   views::Checkbox* del_form_data_checkbox_;
-  views::Checkbox* del_sts_checkbox_;
   views::Label* time_period_label_;
   views::Combobox* time_period_combobox_;
 

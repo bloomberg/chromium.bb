@@ -44,7 +44,6 @@ class ClearBrowsingDataDialogGtk {
   GtkWidget* del_cookies_checkbox_;
   GtkWidget* del_passwords_checkbox_;
   GtkWidget* del_form_data_checkbox_;
-  GtkWidget* del_sts_checkbox_;
   GtkWidget* time_period_combobox_;
 
   // Our current profile.

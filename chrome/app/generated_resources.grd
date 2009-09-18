@@ -2737,9 +2737,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_DEL_FORM_DATA_CHKBOX" desc="Checkbox for deleting form data saved for autofill">
         Clear saved form data
       </message>
-      <message name="IDS_DEL_STS_STATE" desc="Checkbox for deleting Strict Transport Security state. Strict Transport Security is a protocol name (like File Transfer Protocol) so one may choose to leave it untranslated.">
-        Clear Strict-Transport-Security state
-      </message>
       <message name="IDS_CLEAR_BROWSING_DATA_COMMIT" desc="Text for OK button on dialog">
         Clear Browsing Data
       </message>

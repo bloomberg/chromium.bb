@@ -204,17 +204,3 @@ TEST_F(StrictTransportSecurityStateTest, Serialise2) {
   EXPECT_TRUE(state->IsEnabledForHost("foo.bar.baz.google.com"));
   EXPECT_FALSE(state->IsEnabledForHost("com"));
 }
-
-TEST_F(StrictTransportSecurityStateTest, Clear) {
-  scoped_refptr<net::StrictTransportSecurityState> state(
-      new net::StrictTransportSecurityState);
-
-  const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
-
-  EXPECT_FALSE(state->IsEnabledForHost("google.com"));
-  state->EnableHost("google.com", expiry, true);
-  EXPECT_TRUE(state->IsEnabledForHost("google.com"));
-  state->Clear();
-  EXPECT_FALSE(state->IsEnabledForHost("google.com"));
-}

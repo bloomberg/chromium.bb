@@ -17,7 +17,6 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/notification_service.h"
 #include "net/base/cookie_monster.h"
-#include "net/base/strict_transport_security_state.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_context.h"
@@ -146,14 +145,6 @@ void BrowsingDataRemover::Remove(int remove_mask) {
           delete_end_,
           MessageLoop::current()));
     }
-  }
-
-  if (remove_mask & REMOVE_STS_STATE) {
-    UserMetrics::RecordAction(L"ClearBrowsingData_STSState", profile_);
-
-    net::StrictTransportSecurityState* sts_state =
-        profile_->GetStrictTransportSecurityState();
-    sts_state->Clear();
   }
 
   NotifyAndDeleteIfDone();
