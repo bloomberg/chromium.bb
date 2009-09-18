@@ -217,8 +217,10 @@ def _PrepareAction(config, rule, has_input_path):
   # per project. For now the behavior chrome needs is the default.
   mcs = rule.get('msvs_cygwin_shell')
   if mcs is None:
-    mcs = config.get('msvs_cygwin_shell', 1)
-  quote_cmd = rule.get('msvs_quote_cmd', 1)
+    mcs = int(config.get('msvs_cygwin_shell', 1))
+  elif isinstance(mcs, str):
+    mcs = int(mcs)
+  quote_cmd = int(rule.get('msvs_quote_cmd', 1))
   return _PrepareActionRaw(config, rule['action'], mcs,
                            has_input_path, quote_cmd)
 
@@ -606,7 +608,7 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
         'dummy_executable': ('VCLinkerTool', '$(IntDir)\\', '.junk'),
     }
     output_file_props = output_file_map.get(spec['type'])
-    if output_file_props and spec.get('msvs_auto_output_file', 1):
+    if output_file_props and int(spec.get('msvs_auto_output_file', 1)):
       vc_tool, out_dir, suffix = output_file_props
       out_dir = spec.get('msvs_product_directory', out_dir)
       out_file = os.path.join(out_dir,
