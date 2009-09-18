@@ -345,6 +345,11 @@ WONTFIX : LayoutTests/fast/js/global-recursion-on-full-stack.html = FAIL PASS
 WONTFIX : LayoutTests/storage/domstorage/localstorage/private-browsing-affects-storage.html = FAIL
 WONTFIX : LayoutTests/storage/domstorage/sessionstorage/private-browsing-affects-storage.html = FAIL
 
+// These tests propagate auth credentials back to the renderer, which we
+// don't want to do.
+WONTFIX BUG21840 : LayoutTests/http/tests/loading/basic-auth-resend-wrong-credentials.html = FAIL
+WONTFIX BUG21840 : LayoutTests/http/tests/loading/basic-credentials-sent-automatically.html = FAIL
+
 // -----------------------------------------------------------------
 // CHROME REWRITTEN TESTS
 // -----------------------------------------------------------------
@@ -2281,8 +2286,6 @@ BUG21767 : LayoutTests/fast/js/Object-keys.html = FAIL
 BUG21767 : LayoutTests/http/tests/security/cross-frame-access-enumeration.html = TIMEOUT
 
 // WK roll to 48371
-BUG21840 : LayoutTests/http/tests/loading/basic-auth-resend-wrong-credentials.html = FAIL
-BUG21840 : LayoutTests/http/tests/loading/basic-credentials-sent-automatically.html = FAIL
 BUG21841 MAC : LayoutTests/plugins/destroy-during-npp-new.html = FAIL
 
 // missing upstream baseline from 48368
