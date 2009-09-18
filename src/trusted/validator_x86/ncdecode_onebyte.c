@@ -964,6 +964,31 @@ void DefineOneByteOpcodes() {
   DefineOperand(O_Operand, OpFlag(OpSet));
   DefineOperand(RegRAX, OpFlag(OpUse));
 
+  DefineOpcode(0xa4, NACLi_386R,
+               InstFlag(OperandSize_b),
+               InstMovsb);
+  DefineOperand(RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0xa5, NACLi_386R,
+               InstFlag(OperandSize_w),
+               InstMovsw);
+  DefineOperand(RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0xa5, NACLi_386R,
+               InstFlag(OperandSize_v),
+               InstMovsd);
+  DefineOperand(RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0xa5, NACLi_386R,
+               InstFlag(Opcode64Only) | InstFlag(OperandSize_o) |
+               InstFlag(OpcodeUsesRexW),
+               InstMovsq);
+  DefineOperand(RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+
   DefineOpcode(0xA8, NACLi_386,
                InstFlag(OperandSize_b) | InstFlag(OpcodeHasImmed),
                InstTest);

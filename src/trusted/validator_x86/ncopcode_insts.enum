@@ -79,6 +79,10 @@ Jz
 Lea
 Leave
 Mov
+Movsb
+Movsd
+Movsq
+Movsw
 Movsx
 Movsxd
 Movzx

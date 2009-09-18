@@ -981,9 +981,7 @@ static ExprNode* AppendSib(NcInstState* state) {
   return AppendMemoryOffset(state, base_reg, index_reg, scale, &displacement);
 }
 
-static ExprNode* AppendES_EDI(NcInstState* state) {
-  ExprNode* results = AppendExprNode(ExprSegmentAddress, 0, 0, &state->nodes);
-  AppendRegister(RegES, &state->nodes);
+static void AppendEDI(NcInstState* state) {
   switch (state->address_size) {
     case 16:
       AppendRegister(RegDI, &state->nodes);
@@ -998,6 +996,19 @@ static ExprNode* AppendES_EDI(NcInstState* state) {
       AppendRegister(RegEDI, &state->nodes);
       break;
   }
+}
+
+static ExprNode* AppendDS_EDI(NcInstState* state) {
+  ExprNode* results = AppendExprNode(ExprSegmentAddress, 0, 0, &state->nodes);
+  AppendRegister(RegDS, &state->nodes);
+  AppendEDI(state);
+  return results;
+}
+
+static ExprNode* AppendES_EDI(NcInstState* state) {
+  ExprNode* results = AppendExprNode(ExprSegmentAddress, 0, 0, &state->nodes);
+  AppendRegister(RegES, &state->nodes);
+  AppendEDI(state);
   return results;
 }
 
@@ -1302,6 +1313,9 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
     case RegREBP:
       return AppendRegister(state->address_size == 64 ? RegRBP : RegEBP,
                             &state->nodes);
+
+    case RegDS_EDI:
+      return AppendDS_EDI(state);
 
     case RegES_EDI:
       return AppendES_EDI(state);

@@ -1284,3 +1284,79 @@ ExprNodeVector[8] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %eax, ExprSet | ExprUsed | ExprSize32 },
 };
+0000000000000000: a4                                           movsb
+  { 1, { 0xa4, 0x00, 0x00 },
+    NACLi_386R,
+    InstFlag(OperandSize_b),
+    InstMovsb,
+    2, {
+      { RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit) },
+      { RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+  } };
+ExprNodeVector[8] = {
+  { OperandReference[1] , 0, ExprImplicit },
+  { ExprSegmentAddress[2] , 0, ExprSet },
+  { ExprRegister[0] , %es, ExprSize16 },
+  { ExprRegister[0] , %rdi, ExprSize64 },
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprSegmentAddress[2] , 0, ExprUsed },
+  { ExprRegister[0] , %ds, ExprSize16 },
+  { ExprRegister[0] , %rdi, ExprSize64 },
+};
+0000000000000000: 66 a5                                        movsw
+  { 1, { 0xa5, 0x00, 0x00 },
+    NACLi_386R,
+    InstFlag(OperandSize_w),
+    InstMovsw,
+    2, {
+      { RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit) },
+      { RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+  } };
+ExprNodeVector[8] = {
+  { OperandReference[1] , 0, ExprImplicit },
+  { ExprSegmentAddress[2] , 0, ExprSet },
+  { ExprRegister[0] , %es, ExprSize16 },
+  { ExprRegister[0] , %rdi, ExprSize64 },
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprSegmentAddress[2] , 0, ExprUsed },
+  { ExprRegister[0] , %ds, ExprSize16 },
+  { ExprRegister[0] , %rdi, ExprSize64 },
+};
+0000000000000000: a5                                           movsd
+  { 1, { 0xa5, 0x00, 0x00 },
+    NACLi_386R,
+    InstFlag(OperandSize_v),
+    InstMovsd,
+    2, {
+      { RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit) },
+      { RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+  } };
+ExprNodeVector[8] = {
+  { OperandReference[1] , 0, ExprImplicit },
+  { ExprSegmentAddress[2] , 0, ExprSet },
+  { ExprRegister[0] , %es, ExprSize16 },
+  { ExprRegister[0] , %rdi, ExprSize64 },
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprSegmentAddress[2] , 0, ExprUsed },
+  { ExprRegister[0] , %ds, ExprSize16 },
+  { ExprRegister[0] , %rdi, ExprSize64 },
+};
+0000000000000000: 48 a5                                        movsq
+  { 1, { 0xa5, 0x00, 0x00 },
+    NACLi_386R,
+    InstFlag(OpcodeUsesRexW) | InstFlag(Opcode64Only) | InstFlag(OperandSize_o),
+    InstMovsq,
+    2, {
+      { RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit) },
+      { RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit) },
+  } };
+ExprNodeVector[8] = {
+  { OperandReference[1] , 0, ExprImplicit },
+  { ExprSegmentAddress[2] , 0, ExprSet },
+  { ExprRegister[0] , %es, ExprSize16 },
+  { ExprRegister[0] , %rdi, ExprSize64 },
+  { OperandReference[1] , 1, ExprImplicit },
+  { ExprSegmentAddress[2] , 0, ExprUsed },
+  { ExprRegister[0] , %ds, ExprSize16 },
+  { ExprRegister[0] , %rdi, ExprSize64 },
+};
