@@ -264,10 +264,6 @@ WebCore::IntRect WebPopupMenuImpl::windowToScreen(
   return WebCore::IntRect();
 }
 
-PlatformWidget WebPopupMenuImpl::platformWindow() const {
-  return NULL;
-}
-
 void WebPopupMenuImpl::scrollRectIntoView(
     const WebCore::IntRect&, const WebCore::ScrollView*) const {
   // Nothing to be done here since we do not have the concept of a container

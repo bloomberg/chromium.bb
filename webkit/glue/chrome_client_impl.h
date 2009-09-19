@@ -14,6 +14,9 @@ MSVC_POP_WARNING();
 
 class WebViewImpl;
 
+// TODO(darin): remove this typedef once we roll webkit past r48511
+typedef PlatformWidget PlatformPageClient;
+
 namespace WebCore {
 class HTMLParserQuirks;
 class PopupContainer;
@@ -110,7 +113,9 @@ class ChromeClientImpl : public WebCore::ChromeClientChromium {
                       const WebCore::IntRect& clipRect);
   virtual WebCore::IntPoint screenToWindow(const WebCore::IntPoint&) const;
   virtual WebCore::IntRect windowToScreen(const WebCore::IntRect&) const;
-  virtual PlatformWidget platformWindow() const;
+  // TODO(darin): remove platformWindow method once we roll webkit past r48511
+  virtual PlatformWidget platformWindow() const { return NULL; }
+  virtual PlatformPageClient platformPageClient() const { return NULL; }
   virtual void contentsSizeChanged(WebCore::Frame*,
                                    const WebCore::IntSize&) const;
   virtual void scrollRectIntoView(const WebCore::IntRect&, const WebCore::ScrollView*) const { }

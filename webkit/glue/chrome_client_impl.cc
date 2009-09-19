@@ -468,10 +468,6 @@ WebCore::IntRect ChromeClientImpl::windowToScreen(
   return screen_rect;
 }
 
-PlatformWidget ChromeClientImpl::platformWindow() const {
-  return NULL;
-}
-
 void ChromeClientImpl::contentsSizeChanged(WebCore::Frame* frame, const
     WebCore::IntSize& size) const {
   WebFrameImpl* webframe = WebFrameImpl::FromFrame(frame);
