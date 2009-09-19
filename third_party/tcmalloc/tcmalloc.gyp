@@ -246,6 +246,25 @@
         }],
       ],
     },
+    {
+      'target_name': 'tcmalloc_unittests',
+      'type': 'executable',
+      'dependencies': [
+        'tcmalloc',
+        '../../testing/gtest.gyp:gtest',
+      ],
+      'include_dirs': [
+        '.',
+        'tcmalloc/src/base',
+        'tcmalloc/src',
+        '../..',
+      ],
+      'msvs_guid': 'E99DA267-BE90-4F45-1294-6919DB2C9999',
+      'sources': [
+        'unittest_utils.cc',
+        'tcmalloc_unittests.cc',
+      ],
+    },
   ],
   'conditions': [
     ['OS=="win"', {

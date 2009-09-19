@@ -72,7 +72,7 @@ inline bool call_new_handler(bool nothrow) {
   // Since exceptions are disabled, we don't really know if new_handler
   // failed.  Assume it will abort if it fails.
   (*nh)();
-  return true;
+  return false;  // break out of the retry loop.
 #else
   // If no new_handler is established, the allocation failed.
   if (!nh) {

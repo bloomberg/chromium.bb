@@ -82,12 +82,19 @@ void cfree(void* p) __THROW {
 #ifdef WIN32
 
 void* _recalloc(void* p, size_t n, size_t elem_size) {
+  if (!p)
+    return calloc(n, elem_size);
+
+  // This API is a bit odd.
+  // Note: recalloc only guarantees zeroed memory when p is NULL.
+  //   Generally, calls to malloc() have padding.  So a request
+  //   to malloc N bytes actually malloc's N+x bytes.  Later, if
+  //   that buffer is passed to recalloc, we don't know what N
+  //   was anymore.  We only know what N+x is.  As such, there is
+  //   no way to know what to zero out.
   const size_t size = n * elem_size;
   if (elem_size != 0 && size / elem_size != n) return NULL;
-
-  void* result = realloc(p, size);
-  memset(result, 0, size);
-  return result;
+  return realloc(p, size);
 }
 
 void* _calloc_impl(size_t n, size_t size) {
