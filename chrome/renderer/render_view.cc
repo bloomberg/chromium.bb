@@ -2080,6 +2080,11 @@ void RenderView::didCreateDocumentElement(WebFrame* frame) {
     RenderThread::current()->user_script_slave()->InjectScripts(
         frame, UserScript::DOCUMENT_START);
   }
+  if (view_type_ == ViewType::EXTENSION_TOOLSTRIP ||
+      view_type_ == ViewType::EXTENSION_MOLE) {
+    InjectToolstripCSS();
+    ExtensionProcessBindings::SetViewType(webview(), view_type_);
+  }
 
   while (!pending_code_execution_queue_.empty()) {
     scoped_refptr<CodeExecutionInfo> info =
@@ -2974,6 +2979,15 @@ void RenderView::OnMediaPlayerActionAt(int x,
 }
 
 void RenderView::OnNotifyRendererViewType(ViewType::Type type) {
+  // When this is first set, the bindings aren't fully loaded.  We only need
+  // to call through this API after the page has already been loaded.  It's
+  // also called in didCreateDocumentElement to bootstrap.
+  if (view_type_ != ViewType::INVALID) {
+    if (type == ViewType::EXTENSION_MOLE ||
+        type == ViewType::EXTENSION_TOOLSTRIP) {
+      ExtensionProcessBindings::SetViewType(webview(), type);
+    }
+  }
   view_type_ = type;
 }
 
@@ -3247,6 +3261,17 @@ void RenderView::OnExtensionResponse(int request_id,
                                      const std::string& error) {
   ExtensionProcessBindings::HandleResponse(
       request_id, success, response, error);
+}
+
+void RenderView::InjectToolstripCSS() {
+  if (view_type_ != ViewType::EXTENSION_TOOLSTRIP)
+    return;
+
+  static const base::StringPiece toolstrip_css(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+      IDR_EXTENSION_TOOLSTRIP_CSS));
+  std::string css = toolstrip_css.as_string();
+  InsertCSS(L"", css, "ToolstripDefaultCSS");
 }
 
 void RenderView::OnExtensionMessageInvoke(const std::string& function_name,

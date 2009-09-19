@@ -1,0 +1,93 @@
+/**
+ * Body styles. This makes the toolstrip layout fit in with the Windows
+ * bookmarkbar. Note that the background is provided separately, by
+ * RenderWidget.
+ */
+body {
+  display:-webkit-box;
+  -webkit-box-orient:horizontal;
+  -webkit-box-align:center;
+  white-space:nowrap;
+  overflow: hidden;
+  margin: 0;
+  padding:0;
+  font: menu;
+  -webkit-user-select:none;
+  cursor:default;
+}
+
+/**
+ * This, combined with -webkit-box-align:center on body, makes content inside
+ * the body tag center itself vertically by default.
+ */
+body>* {
+  display:-webkit-box;
+}
+
+/**
+ * Set display property of <script> and <style> as none explicitly to avoid
+ * inheriting from <body>.
+ */
+body>script,
+body>style {
+ display:none;
+}
+
+/**
+ * Toolstrip Buttons. The following styles make
+ * <div class="toolstrip-button"><img><span>Woot</span></div> look like the
+ * bookmarkbar buttons on Windows.
+ *
+ * TODO(aa): We may have to come up with a way to modify these slightly on
+ * different platforms.
+ *
+ * TODO(aa): It would be nice if we could use actual <button> tags work here,
+ * which should work once https://bugs.webkit.org/show_bug.cgi?id=25406 is
+ * fixed.
+ */
+div.toolstrip-button {
+  -webkit-box-orient:horizontal;
+  -webkit-box-align:center;
+  border:6px solid transparent;
+  font:menu;
+  background:transparent;
+  line-height:100%;
+  padding:0;
+}
+
+div.toolstrip-button>img {
+  display:-webkit-box;
+  width:16px;
+  height:16px;
+  /**
+   * We inset the image slightly vertically, so that the button can be shorter
+   * than would otherwise be possibe with our fat borders.
+   */
+  margin:-1px 5px -1px 0;
+}
+
+div.toolstrip-button>span {
+  display:-webkit-box;
+  margin-right:1px;
+  /**
+   * Hack: WebKit appears to measure text height slightly differently than we do
+   * in native code, making us not line up when centering, so we shift ourselves
+   * up one pixel to match.
+   */
+  margin-top:-1px;
+}
+
+/**
+ * TODO(aa): It would be nice if these border images could be stored in Chrome
+ * as, normal images even if those images are just translated into data URLs at
+ * runtime.
+ */
+div.toolstrip-button:hover {
+  border-width:6px;
+  -webkit-border-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAaCAYAAACHD21cAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAVRJREFUeNpi/P//PwMjIyMfAwODEhsbmworKxvD79+/GED0jx/fGf7+/csABT+A+B4Q3wLq+cME0sTMzOzW1dOncuX6bYZnL98wvH73CUy/+/iV4eOXH2B86+5DjoLCYi2gxgCwHiBDs7O7Vyg9I4uBh4eHARcAyTk6OTMICQkx7N61U5kJKCZqY2PLQCyAqv3ICCSCgE5jAvqPKI2/fv1iEBXiYwDZSLQmEACpBYYJWCNZgCyNoChi4uTkpJ+N9NdIdqhycHCSpxGUCcj3IygJkQpAWY6k5AbPmMB8yvT9+3f6BQ7YRrKTHMijZCVyUJyQGrLglAPSffvWTaI13bhxHWIj0LbLq1auIFoj1JKnoFLu44kTxzVAhY+goCCDmJg4TpuWL1vKkJOV8RTIvcsILZA5QAUy0O1aoDgC+RuWQkDg69cvIOoTEL8AFcpAPV8AAgwAn6qHYvNUlBEAAAAASUVORK5CYII=) 6 round round;
+}
+
+div.toolstrip-button:active {
+  border-width:6px;
+  -webkit-border-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAaCAYAAACHD21cAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAbhJREFUeNqcVDtPwmAU/R6tCUZsIw5AKODoYNREBNREiAb9t+qoRmDxBYOYOGGiVAexaGzDUJK2X70fFURjUtuztfeennMfvdh1XTTCer5AKKUEY8zgkULMvrw4/06YAObE3Hoep1KppWx2YVqSZQTkcbLjOJgxhnX9Az0+PLx3uy/tZqOBBB5MJpNLO7sVobK3/yZJEotEIj9UTNPEmvZK67Va9PTkeHllZfWW8EBKUaa2S6V+PB53fpM4+LtMJmuXyuW+klbEVusGDYmxuZggSTJDPuA5PDdfKHpE6AiSZX8iz+G5hBBMUEB8NQ4LEw//BoyIkY3NLRqExMdT3Nj0xhEUoIgIColQzQGrOJQi7DINa5WFrxH+DhaGR8I0aGgVZuKEVQwMKM8JvHJjST4TSgU3qCiBe+IMBibRdd3XNj8hlmXxSRBi27bb62msp2m+lg3DIIau2yDGSLNxzZ5UVa/Xq7P37bbIv/qXkqp2hOrZafT5+Qk1rq+887iWy6FEIrmYzmRmYrF5QRRF5i20VzuUQuE82mqnYx4dHtyN7+oI/L4KAGiYM1pmHgdn1tXlxQ8XnwIMABNlyWs2CMVlAAAAAElFTkSuQmCC) 6 round round;
+}

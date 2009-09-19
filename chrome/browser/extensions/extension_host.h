@@ -69,6 +69,9 @@ class ExtensionHost : public RenderViewHostDelegate,
     return document_element_available_;
   }
 
+  // Sets the the ViewType of this host (e.g. mole, toolstrip).
+  void SetRenderViewType(ViewType::Type type);
+
   // Returns true if the render view is initialized and didn't crash.
   bool IsRenderViewLive() const;
 
@@ -80,8 +83,8 @@ class ExtensionHost : public RenderViewHostDelegate,
   // Sets |url_| and navigates |render_view_host_|.
   void NavigateToURL(const GURL& url);
 
-  // Insert the CSS for a toolstrip.
-  void InsertCssIfToolstrip();
+  // Insert the theme CSS for a toolstrip/mole.
+  void InsertThemeCSS();
 
   // RenderViewHostDelegate implementation.
   virtual RenderViewHostDelegate::View* GetViewDelegate();
@@ -106,7 +109,6 @@ class ExtensionHost : public RenderViewHostDelegate,
                                     const int flags,
                                     IPC::Message* reply_msg,
                                     bool* did_suppress_message);
-  virtual void DidInsertCSS();
 
   // RenderViewHostDelegate::View
   virtual void CreateNewWindow(int route_id,
