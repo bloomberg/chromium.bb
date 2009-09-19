@@ -300,3 +300,22 @@ def WriteOnDiff(filename):
         raise
 
   return Writer()
+
+
+# From Alex Martelli,
+# http://aspn.activestate.com/ASPN/Cookbook/Python/Recipe/52560
+# ASPN: Python Cookbook: Remove duplicates from a sequence
+# First comment, dated 2001/10/13.
+# (Also in the printed Python Cookbook.)
+
+def uniquer(seq, idfun=None):
+    if idfun is None:
+        def idfun(x): return x
+    seen = {}
+    result = []
+    for item in seq:
+        marker = idfun(item)
+        if marker in seen: continue
+        seen[marker] = 1
+        result.append(item)
+    return result

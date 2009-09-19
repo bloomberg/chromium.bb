@@ -613,19 +613,19 @@ class MakefileWriter:
     filenames that will need to be put in front of make for either
     building (deps) or linking (link_deps).
     """
-    deps = set()
-    link_deps = set()
+    deps = []
+    link_deps = []
     if 'dependencies' in spec:
-      deps.update([target_outputs[dep] for dep in spec['dependencies']
+      deps.extend([target_outputs[dep] for dep in spec['dependencies']
                    if target_outputs[dep]])
       for dep in spec['dependencies']:
         if dep in target_link_deps:
-          link_deps.update(target_link_deps[dep])
-      deps.update(link_deps)
+          link_deps.extend(target_link_deps[dep])
+      deps.extend(link_deps)
       # TODO: It seems we need to transitively link in libraries (e.g. -lfoo)?
       # This hack makes it work:
       # link_deps.extend(spec.get('libraries', []))
-    return (list(deps), list(link_deps))
+    return (gyp.common.uniquer(deps), gyp.common.uniquer(link_deps))
 
 
   def WriteTarget(self, spec, configs, deps, link_deps, extra_outputs):

@@ -3,8 +3,8 @@
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-void lib1_function(void)
+void moveable_function(void)
 {
-  fprintf(stdout, "Hello from lib1.c\n");
+  fprintf(stdout, "Hello from lib2_moveable.c\n");
   fflush(stdout);
 }
