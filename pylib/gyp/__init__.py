@@ -30,7 +30,7 @@ def FindBuildFiles():
 
 
 def Load(build_files, format, default_variables={},
-         includes=[], depth='.', params={}):
+         includes=[], depth='.', params={}, check=False):
   """
   Loads one or more specified build files.
   default_variables and includes will be copied before use.
@@ -73,7 +73,7 @@ def Load(build_files, format, default_variables={},
 
   # Process the input specific to this generator.
   result = gyp.input.Load(build_files, default_variables, includes[:],
-                          depth, generator_input_info)
+                          depth, generator_input_info, check)
   return [generator] + result
 
 def NameValueListToDict(name_value_list):
@@ -246,6 +246,8 @@ def main(args):
   parser.add_option('--ignore-environment', dest='use_environment',
                     action='store_false', default=True, regenerate=False,
                     help='do not read options from environment variables')
+  parser.add_option('--check', dest='check', action='store_true',
+                    help='check format of gyp files')
 
   # We read a few things from ~/.gyp, so set up a var for that.
   home_vars = ['HOME']
@@ -401,7 +403,7 @@ def main(args):
     [generator, flat_list, targets, data] = Load(build_files, format,
                                                  cmdline_default_variables,
                                                  includes, options.depth,
-                                                 params)
+                                                 params, options.check)
 
     # TODO(mark): Pass |data| for now because the generator needs a list of
     # build files that came in.  In the future, maybe it should just accept

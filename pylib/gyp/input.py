@@ -1,5 +1,13 @@
 #!/usr/bin/python
 
+from compiler.ast import Const
+from compiler.ast import Dict
+from compiler.ast import Discard
+from compiler.ast import List
+from compiler.ast import Module
+from compiler.ast import Node
+from compiler.ast import Stmt
+import compiler
 import copy
 import gyp.common
 import optparse
@@ -108,9 +116,51 @@ def GetIncludedBuildFiles(build_file_path, aux_data, included=None):
 
   return included
 
+def CheckedEval(file_contents):
+  """Return the eval of a gyp file.
+
+  The gyp file is restricted to dictionaries and lists only, and
+  repeated keys are not allowed.
+
+  Note that this is slower than eval() is.
+  """
+  
+  ast = compiler.parse(file_contents)
+  assert isinstance(ast, Module)
+  c1 = ast.getChildren()
+  assert c1[0] is None
+  assert isinstance(c1[1], Stmt)
+  c2 = c1[1].getChildren()
+  assert isinstance(c2[0], Discard)
+  c3 = c2[0].getChildren()
+  assert len(c3) == 1
+  return CheckNode(c3[0],0)
+
+def CheckNode(node, level):
+  if isinstance(node, Dict):
+    c = node.getChildren()
+    dict = {}
+    for n in range(0, len(c), 2):
+      assert isinstance(c[n], Const)
+      key = c[n].getChildren()[0]
+      if key in dict:
+        raise KeyError, "Key '" + key + "' repeated at level " + \
+              repr(level)
+      dict[key] = CheckNode(c[n + 1], level + 1)
+    return dict
+  elif isinstance(node, List):
+    c = node.getChildren()
+    list = []
+    for child in c:
+      list.append(CheckNode(child, level + 1))
+    return list
+  elif isinstance(node, Const):
+    return node.getChildren()[0]
+  else:
+    raise TypeError, "Unknown AST node " + repr(node)
 
 def LoadOneBuildFile(build_file_path, data, aux_data, variables, includes,
-                     is_target):
+                     is_target, check):
   if build_file_path in data:
     return data[build_file_path]
 
@@ -121,7 +171,11 @@ def LoadOneBuildFile(build_file_path, data, aux_data, variables, includes,
 
   build_file_data = None
   try:
-    build_file_data = eval(build_file_contents, {'__builtins__': None}, None)
+    if check:
+      build_file_data = CheckedEval(build_file_contents)
+    else:
+      build_file_data = eval(build_file_contents, {'__builtins__': None},
+                             None)
   except SyntaxError, e:
     e.filename = build_file_path
     raise
@@ -136,10 +190,10 @@ def LoadOneBuildFile(build_file_path, data, aux_data, variables, includes,
   try:
     if is_target:
       LoadBuildFileIncludesIntoDict(build_file_data, build_file_path, data,
-                                    aux_data, variables, includes)
+                                    aux_data, variables, includes, check)
     else:
       LoadBuildFileIncludesIntoDict(build_file_data, build_file_path, data,
-                                    aux_data, variables, None)
+                                    aux_data, variables, None, check)
   except Exception, e:
     gyp.common.ExceptionAppend(e,
                                'while reading includes of ' + build_file_path)
@@ -149,7 +203,7 @@ def LoadOneBuildFile(build_file_path, data, aux_data, variables, includes,
 
 
 def LoadBuildFileIncludesIntoDict(subdict, subdict_path, data, aux_data,
-                                  variables, includes):
+                                  variables, includes, check):
   includes_list = []
   if includes != None:
     includes_list.extend(includes)
@@ -171,35 +225,36 @@ def LoadBuildFileIncludesIntoDict(subdict, subdict_path, data, aux_data,
     aux_data[subdict_path]['included'].append(include)
     MergeDicts(subdict,
                LoadOneBuildFile(include, data, aux_data, variables, None,
-                                False),
+                                False, check),
                subdict_path, include)
 
   # Recurse into subdictionaries.
   for k, v in subdict.iteritems():
     if v.__class__ == dict:
       LoadBuildFileIncludesIntoDict(v, subdict_path, data, aux_data, variables,
-                                    None)
+                                    None, check)
     elif v.__class__ == list:
-      LoadBuildFileIncludesIntoList(v, subdict_path, data, aux_data, variables)
+      LoadBuildFileIncludesIntoList(v, subdict_path, data, aux_data, variables,
+                                    check)
 
 
 # This recurses into lists so that it can look for dicts.
 def LoadBuildFileIncludesIntoList(sublist, sublist_path, data, aux_data,
-                                  variables):
+                                  variables, check):
   for item in sublist:
     if item.__class__ == dict:
       LoadBuildFileIncludesIntoDict(item, sublist_path, data, aux_data,
-                                    variables, None)
+                                    variables, None, check)
     elif item.__class__ == list:
       LoadBuildFileIncludesIntoList(item, sublist_path, data, aux_data,
-                                    variables)
+                                    variables, check)
 
 
 # TODO(mark): I don't love this name.  It just means that it's going to load
 # a build file that contains targets and is expected to provide a targets dict
 # that contains the targets...
 def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
-                        depth):
+                        depth, check):
   global absolute_build_file_paths
 
   # If depth is set, predefine the DEPTH variable to be a relative path from
@@ -220,7 +275,7 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
     return
 
   build_file_data = LoadOneBuildFile(build_file_path, data, aux_data, variables,
-                                     includes, True)
+                                     includes, True, check)
 
   # Store DEPTH for later use in generators.
   build_file_data['_DEPTH'] = depth
@@ -284,7 +339,7 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
             gyp.common.BuildFileAndTarget(build_file_path, dependency)[0]
         try:
           LoadTargetBuildFile(other_build_file, data, aux_data, variables,
-                              includes, depth)
+                              includes, depth, check)
         except Exception, e:
           gyp.common.ExceptionAppend(
             e, 'while loading dependencies of %s' % build_file_path)
@@ -1751,7 +1806,7 @@ def TurnIntIntoStrInList(the_list):
     elif isinstance(item, list):
       TurnIntIntoStrInList(item)
 
-def Load(build_files, variables, includes, depth, generator_input_info):
+def Load(build_files, variables, includes, depth, generator_input_info, check):
   # Set up path_sections and non_configuration_keys with the default data plus
   # the generator-specifc data.
   global path_sections
@@ -1785,7 +1840,8 @@ def Load(build_files, variables, includes, depth, generator_input_info):
     # used as keys to the data dict and for references between input files.
     build_file = os.path.normpath(build_file)
     try:
-      LoadTargetBuildFile(build_file, data, aux_data, variables, includes, depth)
+      LoadTargetBuildFile(build_file, data, aux_data, variables, includes,
+                          depth, check)
     except Exception, e:
       gyp.common.ExceptionAppend(e, 'while trying to load %s' % build_file)
       raise
