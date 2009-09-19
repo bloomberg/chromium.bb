@@ -21,6 +21,7 @@ extern "C" {
 MSVC_PUSH_DISABLE_WARNING(4244);
 #include "third_party/ffmpeg/include/libavcodec/avcodec.h"
 #include "third_party/ffmpeg/include/libavformat/avformat.h"
+#include "third_party/ffmpeg/include/libavutil/log.h"
 MSVC_POP_WARNING();
 }  // extern "C"
 

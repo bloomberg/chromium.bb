@@ -49,6 +49,8 @@ class MockFFmpeg {
   MOCK_METHOD1(AVFree, void(void* ptr));
   MOCK_METHOD1(AVDupPacket, int(AVPacket* packet));
 
+  MOCK_METHOD1(AVLogSetLevel, void(int level));
+
   // Used for verifying check points during tests.
   MOCK_METHOD1(CheckPoint, void(int id));
 

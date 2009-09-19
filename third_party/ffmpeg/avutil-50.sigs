@@ -7,3 +7,4 @@
 int64_t av_rescale_q(int64_t a, AVRational bq, AVRational cq);
 void *av_malloc(unsigned int size);
 void av_free(void *ptr);
+void av_log_set_level(int level);

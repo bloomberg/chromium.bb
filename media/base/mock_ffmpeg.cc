@@ -27,6 +27,9 @@ MockFFmpeg::MockFFmpeg()
   // TODO(scherkus): this feels gross and I need to think of a way to better
   // inject/mock singletons.
   if (!protocol_) {
+    EXPECT_CALL(*this, AVLogSetLevel(AV_LOG_QUIET))
+        .Times(AtMost(1))
+        .WillOnce(Return());
     EXPECT_CALL(*this, AVCodecInit())
         .Times(AtMost(1))
         .WillOnce(Return());
@@ -175,6 +178,10 @@ void av_free(void* ptr) {
 
 int av_dup_packet(AVPacket* packet) {
   return media::MockFFmpeg::get()->AVDupPacket(packet);
+}
+
+void av_log_set_level(int level) {
+  media::MockFFmpeg::get()->AVLogSetLevel(level);
 }
 }  // extern "C"
 
