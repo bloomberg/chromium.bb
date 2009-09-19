@@ -112,14 +112,16 @@ def TryRevision(rev):
   os.system("unzip -q %s" % BUILD_ZIP_NAME)
 
   # Tell the system to open the app.
-  print 'Running %s/%s/%s' % (os.getcwd(), BUILD_DIR_NAME, BUILD_EXE_NAME)
+  flags = '--user-data-dir=profile'
+  print 'Running %s/%s/%s %s' % (os.getcwd(), BUILD_DIR_NAME, BUILD_EXE_NAME,
+                                 flags)
   if BUILD_ARCHIVE_TYPE in ('linux', 'linux-64'):
-    os.system("%s/%s" % (BUILD_DIR_NAME, BUILD_EXE_NAME))
+    os.system("%s/%s %s" % (BUILD_DIR_NAME, BUILD_EXE_NAME, flags))
   elif BUILD_ARCHIVE_TYPE in ('mac'):
-    os.system("open %s/%s" % (BUILD_DIR_NAME, BUILD_EXE_NAME))
+    os.system("open %s/%s %s" % (BUILD_DIR_NAME, BUILD_EXE_NAME, flags))
   elif BUILD_ARCHIVE_TYPE in ('xp'):
     # TODO(mmoss) Does Windows need 'start' or something?
-    os.system("%s/%s" % (BUILD_DIR_NAME, BUILD_EXE_NAME))
+    os.system("%s/%s %s" % (BUILD_DIR_NAME, BUILD_EXE_NAME, flags))
 
   os.chdir(cwd)
   print 'Cleaning temp dir ...'
@@ -141,9 +143,12 @@ def main():
   usage = ('%prog [options]\n'
            'Perform binary search on the snapshot builds.')
   parser = optparse.OptionParser(usage=usage)
+  # Strangely, the default help output doesn't include the choice list.
+  choices = ['mac', 'xp', 'linux', 'linux-64']
   parser.add_option('-a', '--archive',
-                    choices = ['mac', 'xp', 'linux', 'linux-64'],
-                    help = 'The buildbot archive to bisect.')
+                    choices = choices,
+                    help = 'The buildbot archive to bisect [%s].' %
+                           '|'.join(choices))
   parser.add_option('-b', '--bad', type = 'int',
                     help = 'The bad revision to bisect to.')
   parser.add_option('-g', '--good', type = 'int',
