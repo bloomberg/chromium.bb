@@ -26,6 +26,10 @@ class ViewIDTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ViewIDTest, Basic) {
   for (int i = VIEW_ID_TOOLBAR; i < VIEW_ID_PREDEFINED_COUNT; ++i) {
+    // http://crbug.com/21152
+    if (i == VIEW_ID_BOOKMARK_MENU)
+      continue;
+
     CheckViewID(static_cast<ViewID>(i), true);
   }
 
