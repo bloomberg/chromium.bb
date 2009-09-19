@@ -59,11 +59,3 @@ class PrefService;
 - (void)setShowHistoryBox:(BOOL)show;
 
 @end
-
-@interface PageInfoWindowController (ExposedForTesting)
-
-// Saves the window's origin into the given PrefService. Caller is responsible
-// for making sure |prefs| is not NULL.
-- (void)saveWindowPositionToPrefs:(PrefService*)prefs;
-
-@end

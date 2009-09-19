@@ -6,10 +6,14 @@
 
 #import "base/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #import "chrome/browser/cocoa/edit_search_engine_cocoa_controller.h"
+#import "chrome/browser/cocoa/nswindow_local_state.h"
 #import "chrome/browser/cocoa/keyword_editor_cocoa_controller.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_table_model.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/pref_service.h"
 #include "grit/generated_resources.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
@@ -76,6 +80,14 @@ void KeywordEditorModelObserver::OnEditedKeyword(
   size.height = NSHeight([addButton_ frame]);
   [makeDefaultButton_ setFrameSize:size];
 
+  // Restore the window position.
+  if (g_browser_process && g_browser_process->local_state()) {
+    PrefService* prefs = g_browser_process->local_state();
+    NSWindow* window = [self window];
+    [window restoreWindowPositionFromPrefs:prefs
+                                withPath:prefs::kKeywordEditorWindowPlacement];
+  }
+
   [self adjustEditingButtons];
   [tableView_ setDoubleAction:@selector(editKeyword:)];
   [tableView_ setTarget:self];
@@ -86,6 +98,16 @@ void KeywordEditorModelObserver::OnEditedKeyword(
   [self autorelease];
 }
 
+// The last page info window that was moved will determine the location of the
+// next new one.
+- (void)windowDidMove:(NSNotification*)notif {
+  if (g_browser_process && g_browser_process->local_state()) {
+    NSWindow* window = [self window];
+    [window saveWindowPositionToPrefs:g_browser_process->local_state()
+                             withPath:prefs::kKeywordEditorWindowPlacement];
+  }
+}
+
 - (void)modelChanged {
   [tableView_ reloadData];
 }
@@ -94,13 +116,23 @@ void KeywordEditorModelObserver::OnEditedKeyword(
   return controller_.get();
 }
 
+- (void)sheetDidEnd:(NSWindow*)sheet
+         returnCode:(NSInteger)code
+            context:(void*)context {
+  [sheet orderOut:self];
+}
+
 - (IBAction)addKeyword:(id)sender {
   // The controller will release itself when the window closes.
   EditSearchEngineCocoaController* editor =
       [[EditSearchEngineCocoaController alloc] initWithProfile:profile_
                                                       delegate:observer_.get()
                                                    templateURL:NULL];
-  [[editor window] makeKeyAndOrderFront:self];
+  [NSApp beginSheet:[editor window]
+     modalForWindow:[self window]
+      modalDelegate:self
+     didEndSelector:@selector(sheetDidEnd:returnCode:context:)
+        contextInfo:NULL];
 }
 
 - (void)editKeyword:(id)sender {
@@ -113,7 +145,11 @@ void KeywordEditorModelObserver::OnEditedKeyword(
       [[EditSearchEngineCocoaController alloc] initWithProfile:profile_
                                                       delegate:observer_.get()
                                                    templateURL:url];
-  [[editor window] makeKeyAndOrderFront:self];
+  [NSApp beginSheet:[editor window]
+     modalForWindow:[self window]
+      modalDelegate:self
+     didEndSelector:@selector(sheetDidEnd:returnCode:context:)
+        contextInfo:NULL];
 }
 
 - (IBAction)deleteKeyword:(id)sender {

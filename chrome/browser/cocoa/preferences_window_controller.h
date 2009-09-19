@@ -9,6 +9,7 @@
 #include "chrome/common/pref_member.h"
 
 @class CustomHomePagesModel;
+@class KeywordEditorCocoaController;
 class PrefObserverBridge;
 class PrefService;
 class Profile;
@@ -42,6 +43,7 @@ class Profile;
   BooleanPrefMember showHomeButton_;
   BooleanPrefMember showPageOptionButtons_;
   scoped_nsobject<SearchEngineListModel> searchEngineModel_;
+  KeywordEditorCocoaController* keywordEditorController_;  // weak
   // Used when creating a new home page url to make the new cell editable.
   BOOL pendingSelectForEdit_;
 

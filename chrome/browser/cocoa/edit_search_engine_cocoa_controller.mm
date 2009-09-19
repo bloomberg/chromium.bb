@@ -102,8 +102,18 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
   [self autorelease];
 }
 
+// Performs the logic of closing the window. If we are a sheet, then it ends the
+// modal session; otherwise, it closes the window.
+- (void)doClose {
+  if ([[self window] isSheet]) {
+    [NSApp endSheet:[self window]];
+  } else {
+    [[self window] close];
+  }
+}
+
 - (IBAction)cancel:(id)sender {
-  [[self window] close];
+  [self doClose];
 }
 
 - (IBAction)save:(id)sender {
@@ -112,7 +122,7 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
   std::wstring keyword = base::SysNSStringToWide([keywordField_ stringValue]);
   std::wstring url = base::SysNSStringToWide([urlField_ stringValue]);
   controller_->AcceptAddOrEdit(title, keyword, url);
-  [[self window] close];
+  [self doClose];
 }
 
 // Delegate method for the text fields.

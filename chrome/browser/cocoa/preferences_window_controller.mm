@@ -540,11 +540,24 @@ enum { kHomepageNewTabPage, kHomepageURL };
   [self setSearchEngineSelectedIndex:[self searchEngineSelectedIndex]];
 }
 
+// Notification receiver for when the keyword editor window closes. The
+// controller will clean up the window, but we need to clean up.
+- (void)keywordEditorClosed:(NSNotification*)notif {
+  keywordEditorController_ = nil;
+}
+
 // Brings up the edit search engines window.
 - (IBAction)manageSearchEngines:(id)sender {
-  KeywordEditorCocoaController* controller =
-      [[KeywordEditorCocoaController alloc] initWithProfile:profile_];
-  [[controller window] makeKeyAndOrderFront:sender];
+  if (!keywordEditorController_) {
+    keywordEditorController_ =
+        [[KeywordEditorCocoaController alloc] initWithProfile:profile_];
+    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self
+               selector:@selector(keywordEditorClosed:)
+                   name:NSWindowWillCloseNotification
+                 object:[keywordEditorController_ window]];
+  }
+  [[keywordEditorController_ window] makeKeyAndOrderFront:sender];
 }
 
 // Called when the user clicks the button to make Chromium the default

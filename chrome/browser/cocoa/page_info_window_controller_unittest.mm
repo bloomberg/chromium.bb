@@ -50,20 +50,3 @@ TEST_F(PageInfoWindowControllerTest, TestShrink) {
   EXPECT_LE(newFrame.size.height, frame.size.height);
   EXPECT_GE(newFrame.origin.y, frame.origin.y);
 }
-
-
-TEST_F(PageInfoWindowControllerTest, TestSaveWindowPlacement) {
-  PrefService* prefs = helper_.profile()->GetPrefs();
-  ASSERT_TRUE(prefs != NULL);
-
-  // Check to make sure there is no existing pref for window placement.
-  ASSERT_TRUE(prefs->GetDictionary(prefs::kPageInfoWindowPlacement) == NULL);
-
-  // Ask the window to save its position, then check that a preference
-  // exists.  We're technically passing in a pointer to the user prefs
-  // and not the local state prefs, but a PrefService* is a
-  // PrefService*, and this is a unittest.
-  [controller_ saveWindowPositionToPrefs:prefs];
-  EXPECT_TRUE(prefs->GetDictionary(prefs::kPageInfoWindowPlacement) != NULL);
-}
-

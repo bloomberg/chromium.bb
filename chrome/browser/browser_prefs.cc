@@ -22,6 +22,7 @@
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/session_startup_pref.h"
 #include "chrome/browser/ssl/ssl_manager.h"
@@ -51,6 +52,7 @@ void RegisterAllPrefs(PrefService* user_prefs, PrefService* local_state) {
   WebCacheManager::RegisterPrefs(local_state);
   ExternalProtocolHandler::RegisterPrefs(local_state);
   GoogleURLTracker::RegisterPrefs(local_state);
+  KeywordEditorController::RegisterPrefs(local_state);
   MetricsLog::RegisterPrefs(local_state);
   MetricsService::RegisterPrefs(local_state);
   SafeBrowsingService::RegisterPrefs(local_state);

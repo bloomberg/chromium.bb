@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 
+class PrefService;
 class Profile;
 class TemplateURL;
 class TemplateURLModel;
@@ -19,6 +20,8 @@ class KeywordEditorController {
  public:
   explicit KeywordEditorController(Profile* profile);
   ~KeywordEditorController();
+
+  static void RegisterPrefs(PrefService* prefs);
 
   // Invoked when the user succesfully fills out the add keyword dialog.
   // Propagates the change to the TemplateURLModel and updates the table model.

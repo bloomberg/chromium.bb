@@ -427,6 +427,11 @@ const wchar_t kTaskManagerWindowPlacement[] = L"task_manager.window_placement";
 // window to restore on startup.
 const wchar_t kPageInfoWindowPlacement[] = L"page_info.window_placement";
 
+// A collection of position, size, and other data relating to the keyword
+// editor window to restore on startup.
+const wchar_t kKeywordEditorWindowPlacement[] =
+    L"keyword_editor.window_placement";
+
 // An integer specifying the total number of bytes to be used by the
 // renderer's in-memory cache of objects.
 const wchar_t kMemoryCacheSize[] = L"renderer.memory_cache.size";
