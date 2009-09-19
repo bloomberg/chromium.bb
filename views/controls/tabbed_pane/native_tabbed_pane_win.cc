@@ -52,7 +52,8 @@ class TabBackground : public Background {
 NativeTabbedPaneWin::NativeTabbedPaneWin(TabbedPane* tabbed_pane)
     : NativeControlWin(),
       tabbed_pane_(tabbed_pane),
-      content_window_(NULL) {
+      content_window_(NULL),
+      selected_index_(-1) {
   // Associates the actual HWND with the tabbed-pane so the tabbed-pane is
   // the one considered as having the focus (not the wrapper) when the HWND is
   // focused directly (with a click for example).
@@ -77,7 +78,30 @@ void NativeTabbedPaneWin::AddTabAtIndex(int index, const std::wstring& title,
   DCHECK(index <= static_cast<int>(tab_views_.size()));
   contents->SetParentOwned(false);
   tab_views_.insert(tab_views_.begin() + index, contents);
+  tab_titles_.insert(tab_titles_.begin() + index, title);
 
+  if (!contents->background())
+    contents->set_background(new TabBackground);
+
+  if (tab_views_.size() == 1 && select_if_first_tab) {
+    // If this is the only tab displayed, make sure the contents is set.
+    selected_index_ = 0;
+    if (content_window_)
+      content_window_->GetRootView()->AddChildView(contents);
+  }
+
+  // Add native tab only if the native control is alreay created.
+  if (content_window_) {
+    AddNativeTab(index, title, contents);
+
+    // The newly added tab may have made the contents window smaller.
+    ResizeContents();
+  }
+}
+
+void NativeTabbedPaneWin::AddNativeTab(int index,
+                                       const std::wstring &title,
+                                       views::View* contents) {
   TCITEM tcitem;
   tcitem.mask = TCIF_TEXT;
 
@@ -90,17 +114,6 @@ void NativeTabbedPaneWin::AddTabAtIndex(int index, const std::wstring& title,
   tcitem.pszText = const_cast<wchar_t*>(title.c_str());
   int result = TabCtrl_InsertItem(native_view(), index, &tcitem);
   DCHECK(result != -1);
-
-  if (!contents->background())
-    contents->set_background(new TabBackground);
-
-  if (tab_views_.size() == 1 && select_if_first_tab) {
-    // If this is the only tab displayed, make sure the contents is set.
-    content_window_->GetRootView()->AddChildView(contents);
-  }
-
-  // The newly added tab may have made the contents window smaller.
-  ResizeContents();
 }
 
 View* NativeTabbedPaneWin::RemoveTabAtIndex(int index) {
@@ -114,7 +127,7 @@ View* NativeTabbedPaneWin::RemoveTabAtIndex(int index) {
     // We are the last tab, select the previous one.
     if (index > 0) {
       SelectTabAt(index - 1);
-    } else {
+    } else if (content_window_) {
       // That was the last tab. Remove the contents.
       content_window_->GetRootView()->RemoveAllChildViews(false);
     }
@@ -127,14 +140,16 @@ View* NativeTabbedPaneWin::RemoveTabAtIndex(int index) {
   std::vector<View*>::iterator iter = tab_views_.begin() + index;
   View* removed_tab = *iter;
   tab_views_.erase(iter);
+  tab_titles_.erase(tab_titles_.begin() + index);
 
   return removed_tab;
 }
 
 void NativeTabbedPaneWin::SelectTabAt(int index) {
   DCHECK((index >= 0) && (index < static_cast<int>(tab_views_.size())));
-  TabCtrl_SetCurSel(native_view(), index);
-  DoSelectTabAt(index);
+  if (native_view())
+    TabCtrl_SetCurSel(native_view(), index);
+  DoSelectTabAt(index, true);
 }
 
 int NativeTabbedPaneWin::GetTabCount() {
@@ -146,7 +161,9 @@ int NativeTabbedPaneWin::GetSelectedTabIndex() {
 }
 
 View* NativeTabbedPaneWin::GetSelectedTab() {
-  return content_window_->GetRootView()->GetChildViewAt(0);
+  if (selected_index_ < 0)
+    return NULL;
+  return tab_views_[selected_index_];
 }
 
 View* NativeTabbedPaneWin::GetView() {
@@ -214,9 +231,17 @@ void NativeTabbedPaneWin::CreateNativeControl() {
   root_view->set_background(Background::CreateSolidBackground(color));
 
   content_window_->SetFocusTraversableParentView(this);
-  ResizeContents();
 
   NativeControlCreated(tab_control);
+
+  // Add tabs that are already added if any.
+  if (tab_views_.size() > 0) {
+    InitializeTabs();
+    if (selected_index_ >= 0)
+      DoSelectTabAt(selected_index_, false);
+  }
+
+  ResizeContents();
 }
 
 bool NativeTabbedPaneWin::ProcessMessage(UINT message,
@@ -227,7 +252,7 @@ bool NativeTabbedPaneWin::ProcessMessage(UINT message,
       reinterpret_cast<LPNMHDR>(l_param)->code == TCN_SELCHANGE) {
     int selected_tab = TabCtrl_GetCurSel(native_view());
     DCHECK(selected_tab != -1);
-    DoSelectTabAt(selected_tab);
+    DoSelectTabAt(selected_tab, true);
     return TRUE;
   }
   return NativeControlWin::ProcessMessage(message, w_param, l_param, result);
@@ -260,21 +285,29 @@ void NativeTabbedPaneWin::ViewHierarchyChanged(bool is_add,
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabbedPaneWin, private:
 
-void NativeTabbedPaneWin::DoSelectTabAt(int index) {
-  RootView* content_root = content_window_->GetRootView();
+void NativeTabbedPaneWin::InitializeTabs() {
+  for (size_t i = 0; i < tab_views_.size(); ++i) {
+    AddNativeTab(i, tab_titles_[i], tab_views_[i]);
+  }
+}
 
-  // Clear the focus if the focused view was on the tab.
-  FocusManager* focus_manager = GetFocusManager();
-  DCHECK(focus_manager);
-  View* focused_view = focus_manager->GetFocusedView();
-  if (focused_view && content_root->IsParentOf(focused_view))
-    focus_manager->ClearFocus();
+void NativeTabbedPaneWin::DoSelectTabAt(int index, boolean invoke_listener) {
+  selected_index_ = index;
+  if (content_window_) {
+    RootView* content_root = content_window_->GetRootView();
 
-  content_root->RemoveAllChildViews(false);
-  content_root->AddChildView(tab_views_[index]);
-  content_root->Layout();
+    // Clear the focus if the focused view was on the tab.
+    FocusManager* focus_manager = GetFocusManager();
+    DCHECK(focus_manager);
+    View* focused_view = focus_manager->GetFocusedView();
+    if (focused_view && content_root->IsParentOf(focused_view))
+      focus_manager->ClearFocus();
 
-  if (tabbed_pane_->listener())
+    content_root->RemoveAllChildViews(false);
+    content_root->AddChildView(tab_views_[index]);
+    content_root->Layout();
+  }
+  if (invoke_listener && tabbed_pane_->listener())
     tabbed_pane_->listener()->TabSelectedAt(index);
 }
 

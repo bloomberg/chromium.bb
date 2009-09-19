@@ -5,6 +5,8 @@
 #ifndef VIEWS_CONTROLS_TABBED_PANE_NATIVE_TABBED_PANE_WIN_H_
 #define VIEWS_CONTROLS_TABBED_PANE_NATIVE_TABBED_PANE_WIN_H_
 
+#include <vector>
+
 #include "views/controls/native_control_win.h"
 #include "views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
 
@@ -46,8 +48,17 @@ class NativeTabbedPaneWin : public NativeControlWin,
   virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child);
 
  private:
+  // Called upon creation of native control to initialize tabs that are added
+  // before the native control is created.
+  void InitializeTabs();
+
+  // Adds a tab with the given content to native control at the given index.
+  void AddNativeTab(int index, const std::wstring& title, View* contents);
+
   // Changes the contents view to the view associated with the tab at |index|.
-  void DoSelectTabAt(int index);
+  // |invoke_listener| controls if this methold should invoke the
+  // Listener::TabSelectedAt callback.
+  void DoSelectTabAt(int index, boolean invoke_listener);
 
   // Resizes the HWND control to macth the size of the containing view.
   void ResizeContents();
@@ -57,6 +68,12 @@ class NativeTabbedPaneWin : public NativeControlWin,
 
   // The views associated with the different tabs.
   std::vector<View*> tab_views_;
+
+  // The tab's title strings.
+  std::vector<const std::wstring> tab_titles_;
+
+  // The index of the selected tab.
+  int selected_index_;
 
   // The window displayed in the tab.
   WidgetWin* content_window_;

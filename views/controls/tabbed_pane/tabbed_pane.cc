@@ -49,7 +49,7 @@ View* TabbedPane::RemoveTabAtIndex(int index) {
 }
 
 void TabbedPane::SelectTabAt(int index) {
-   native_tabbed_pane_->SelectTabAt(index);
+  native_tabbed_pane_->SelectTabAt(index);
 }
 
 int TabbedPane::GetTabCount() {
@@ -66,7 +66,7 @@ std::string TabbedPane::GetClassName() const {
 }
 
 void TabbedPane::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
-  if (is_add && !native_tabbed_pane_ && GetWidget()) {
+  if (is_add && !native_tabbed_pane_) {
     CreateWrapper();
     AddChildView(native_tabbed_pane_->GetView());
     LoadAccelerators();
