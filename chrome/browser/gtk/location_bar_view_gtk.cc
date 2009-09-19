@@ -157,15 +157,20 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   security_lock_icon_image_ = gtk_image_new_from_pixbuf(
       rb.GetPixbufNamed(IDR_LOCK));
+  gtk_widget_set_name(security_lock_icon_image_, "chrome-security-lock-icon");
   gtk_widget_hide(GTK_WIDGET(security_lock_icon_image_));
   security_warning_icon_image_ = gtk_image_new_from_pixbuf(
       rb.GetPixbufNamed(IDR_WARNING));
+  gtk_widget_set_name(security_warning_icon_image_,
+                      "chrome-security-warning-icon");
   gtk_widget_hide(GTK_WIDGET(security_warning_icon_image_));
 
   info_label_ = gtk_label_new(NULL);
   gtk_widget_modify_base(info_label_, GTK_STATE_NORMAL,
       &LocationBarViewGtk::kBackgroundColorByLevel[0]);
   gtk_widget_hide(GTK_WIDGET(info_label_));
+  gtk_widget_set_name(info_label_,
+                      "chrome-location-bar-info-label");
 
   g_signal_connect(hbox_.get(), "expose-event",
                    G_CALLBACK(&HandleExposeThunk), this);
@@ -177,6 +182,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   // and padding around the text.
   tab_to_search_box_ = gtk_util::CreateGtkBorderBin(
       tab_to_search_label_, NULL, 1, 1, 2, 2);
+  gtk_widget_set_name(tab_to_search_box_, "chrome-tab-to-search-box");
   gtk_util::ActAsRoundedWindow(tab_to_search_box_, kBorderColor, kCornerSize,
                                gtk_util::ROUNDED_ALL, gtk_util::BORDER_ALL);
   gtk_box_pack_start(GTK_BOX(hbox_.get()), tab_to_search_box_, FALSE, FALSE, 0);
@@ -203,6 +209,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
 
   // Tab to search notification (the hint on the right hand side).
   tab_to_search_hint_ = gtk_hbox_new(FALSE, 0);
+  gtk_widget_set_name(tab_to_search_hint_, "chrome-tab-to-search-hint");
   tab_to_search_hint_leading_label_ = gtk_label_new(NULL);
   tab_to_search_hint_icon_ = gtk_image_new_from_pixbuf(
       rb.GetPixbufNamed(IDR_LOCATION_BAR_KEYWORD_HINT_TAB));
@@ -240,10 +247,14 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
                    G_CALLBACK(&OnSecurityIconPressed), this);
 
   gtk_container_add(GTK_CONTAINER(security_icon_event_box_), security_icon_box);
+  gtk_widget_set_name(security_icon_event_box_,
+                      "chrome-security-icon-eventbox");
   gtk_box_pack_end(GTK_BOX(hbox_.get()), security_icon_event_box_,
                    FALSE, FALSE, 0);
 
   page_action_hbox_ = gtk_hbox_new(FALSE, kInnerPadding);
+  gtk_widget_set_name(page_action_hbox_,
+                      "chrome-page-action-hbox");
   gtk_box_pack_end(GTK_BOX(hbox_.get()), page_action_hbox_, FALSE, FALSE, 0);
 
   registrar_.Add(this,

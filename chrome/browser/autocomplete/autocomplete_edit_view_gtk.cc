@@ -138,6 +138,8 @@ void AutocompleteEditViewGtk::Init() {
   // The height of the text view is going to change based on the font used.  We
   // don't want to stretch the height, and we want it vertically centered.
   alignment_.Own(gtk_alignment_new(0., 0.5, 1.0, 0.0));
+  gtk_widget_set_name(alignment_.get(),
+                      "chrome-autocomplete-edit-view");
 
   // The GtkTagTable and GtkTextBuffer are not initially unowned, so we have
   // our own reference when we create them, and we own them.  Adding them to
