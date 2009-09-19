@@ -551,9 +551,6 @@ class TestRunner:
 
     logging.info("Starting tests")
 
-    # Create the output directory if it doesn't already exist.
-    path_utils.MaybeMakeDirectory(self._options.results_directory)
-
     threads = self._InstantiateTestShellThreads(test_shell_binary)
 
     # Wait for the threads to finish and collect test failures.
@@ -1068,6 +1065,9 @@ def main(options, args):
     paths = []
   if options.test_list:
     paths += ReadTestFiles(options.test_list)
+
+  # Create the output directory if it doesn't already exist.
+  path_utils.MaybeMakeDirectory(options.results_directory)
 
   test_runner = TestRunner(options, paths)
 
