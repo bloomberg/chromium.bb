@@ -91,13 +91,16 @@ class ResultSummary:
     deferred: ResultSummary object for deferred tests.
     non_wontfix: ResultSummary object for non_wontfix tests.
     all: ResultSummary object for all tests, including skipped tests.
+    fixable: ResultSummary object for tests marked in test_expectations.txt as
+        needing fixing.
     fixable_count: Count of all fixable and skipped tests. This is essentially
         a deduped sum of all the non_wontfix failure counts.
   """
-  def __init__(self, deferred, non_wontfix, all, fixable_count):
+  def __init__(self, deferred, non_wontfix, all, fixable, fixable_count):
     self.deferred = deferred
     self.non_wontfix = non_wontfix
     self.all = all
+    self.fixable = fixable
     self.fixable_count = fixable_count
 
 
@@ -820,6 +823,12 @@ class TestRunner:
     skipped = (self._expectations.GetSkipped() -
         self._expectations.GetDeferredSkipped())
 
+    fixable_result_summary = ResultSummaryEntry(
+        self._expectations.GetFixable(),
+        fixable_failures,
+        fixable_counts,
+        skipped)
+
     deferred_tests = self._expectations.GetDeferred()
     non_wontfix_result_summary = ResultSummaryEntry(
         (self._test_files - self._expectations.GetWontFix() - deferred_tests),
@@ -843,7 +852,7 @@ class TestRunner:
     total_fixable_count = len(self._expectations.GetFixable() | skipped)
 
     return ResultSummary(deferred_result_summary, non_wontfix_result_summary,
-        all_result_summary, total_fixable_count)
+        all_result_summary, fixable_result_summary, total_fixable_count)
 
   def _PrintResultSummary(self, result_summary, output):
     """Print a short summary to stdout about how many tests passed.
@@ -854,6 +863,11 @@ class TestRunner:
     """
     output.write(
         "\nTotal expected failures: %s\n" % result_summary.fixable_count)
+
+    self._PrintResultSummaryEntry(
+        "Tests to be fixed for the current release",
+        result_summary.fixable,
+        output)
 
     self._PrintResultSummaryEntry(
         "Tests we want to pass for the current release",
