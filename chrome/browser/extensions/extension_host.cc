@@ -310,8 +310,7 @@ void ExtensionHost::ShowCreatedWidget(int route_id,
 }
 
 void ExtensionHost::ShowContextMenu(const ContextMenuParams& params) {
-  // TODO(erikkay) - This is a temporary hack.  Show a menu here instead.
-  DevToolsManager::GetInstance()->OpenDevToolsWindow(render_view_host());
+  // TODO(erikkay) Show a default context menu.
 }
 
 void ExtensionHost::StartDragging(const WebDropData& drop_data,
