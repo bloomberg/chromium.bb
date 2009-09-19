@@ -190,9 +190,6 @@ willPositionSheet:(NSWindow*)sheet
     }
     [[[self window] contentView] addSubview:[toolbarController_ view]];
 
-    // TODO(thakis): Turn this on once it doesn't regress startup performance
-    // like crazy (but other than that, the shelf should work now).
-#if 0
     if (browser_->SupportsWindowFeature(Browser::FEATURE_EXTENSIONSHELF)) {
       // Create the extension shelf.
       extensionShelfController_.reset([[ExtensionShelfController alloc]
@@ -201,7 +198,6 @@ willPositionSheet:(NSWindow*)sheet
       [[[self window] contentView] addSubview:[extensionShelfController_ view]];
       [extensionShelfController_ wasInsertedIntoWindow];
     }
-#endif
 
     [self fixWindowGradient];
 
