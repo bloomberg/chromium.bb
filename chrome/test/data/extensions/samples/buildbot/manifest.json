@@ -8,6 +8,7 @@
   ],
   "permissions": [
     "http://build.chromium.org/",
-    "http://chromium-status.appspot.com/"
+    "http://chromium-status.appspot.com/",
+    "http://chrome-buildbot.corp.google.com/"
   ]
 }

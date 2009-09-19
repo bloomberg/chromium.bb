@@ -1,9 +1,12 @@
 <script>
 var botRoot = "http://build.chromium.org/buildbot/waterfall";
+//var botRoot = "http://chrome-buildbot.corp.google.com:8010";
 var statusURL = "http://chromium-status.appspot.com/current";
 var waterfallURL = botRoot + "/bot_status.json?json=1";
 var botList;
 var checkinResults;
+var bots;
+var lastChecked;
 
 function updateStatus(text) {
   // Page outputs a line like this:
@@ -26,7 +29,7 @@ function updateStatus(text) {
   }
 }
 
-function updateBots(text) {
+function updateBotList(text) {
   var results = (new RegExp('(.*)<\/body>', 'g')).exec(text);
   if (!results || results.index < 0) {
     console.log("Error: couldn't find bot JSON");
@@ -46,52 +49,57 @@ function updateBots(text) {
   }
   botList = data[0];
   checkinResults = data[1];
-  console.dir(botList);
-  displayBots();
+  displayBotList();
 }
 
-function showBot(botIndex) {
+function botClicked(botIndex) {
   var bot = botList[botIndex];
   var url = botRoot + "/waterfall?builder=" + bot.name;
   window.open(url);
   window.event.stopPropagation();
 }
 
-function displayBots() {
+function displayBotList() {
   if (!botList) {
     console.log("botList is null");
     return;
   }
-  var bots = document.getElementById("bots");
   var html = "";
   if (bots.className == "visible") {
     botList.forEach(function(bot, i) {
       html += "<div class='bot " + bot.color +
-          "' onclick='showBot(" + i + ")' " +
+          "' onclick='botClicked(" + i + ")' " +
           "title='" + bot.title + "'></div>";
     });
   }
   bots.innerHTML = html;
+
+  var numBots = botList.length;
+  var botWidth = numBots * 8 + 2;
+  var style = document.getElementById("bots-visible");
+  style.innerText = "#bots.visible { width:" + botWidth + "px;}";
 }
 
 function requestStatus() {
   requestURL(statusURL, updateStatus);
-  requestURL(waterfallURL, updateBots);
   setTimeout(requestStatus, 120000);
 }
 
 function requestURL(url, callback) {
+  console.log("requestURL: " + url);
   var xhr = new XMLHttpRequest();
   try {
     xhr.onreadystatechange = function(state) {
       if (xhr.readyState == 4) {
         var text = xhr.responseText;
+        //console.log(text);
         callback(text);
       }
     }
 
     xhr.onerror = function(error) {
-      console.log("xhr error: " + error);
+      console.log("xhr error: " + JSON.stringify(error));
+      console.dir(error);
     }
 
     xhr.open("GET", url, true);
@@ -101,35 +109,42 @@ function requestURL(url, callback) {
   }
 }
 
+function showBots() {
+  var now = new Date();
+  // Don't ever refetch the bot list more frequently than every 60 seconds.
+  if (!lastChecked || (now - lastChecked) > 60000) {
+    lastChecked = now;
+    requestURL(waterfallURL, updateBotList);
+  }
+  hoverTimerId = null;
+  bots.className = "visible";
+}
+
+function hideBots() {
+  bots.className = "";
+}
+
 var hoverTimerId = null;
-var hideTimerId = null;
 
 window.addEventListener("mouseover", function(e) {
-  if (hideTimerId) {
-    hideTimerId = window.clearTimeout(hideTimerId);
-  }
-
-  if (bots.className != "visible" && !hoverTimerId) {
+  if (hoverTimerId) {
+    hoverTimerId = window.clearTimeout(hoverTimerId);
+  } else if (bots.className != "visible") {
     hoverTimerId = window.setTimeout(function() {
       hoverTimerId = null;
-      var bots = document.getElementById("bots");
-      bots.className = "visible";
-      displayBots();
-    }, 1000);
+      showBots();
+    }, 500);
   }
 }, false);
 
 window.addEventListener("mouseout", function(e) {
   if (hoverTimerId) {
     hoverTimerId = window.clearTimeout(hoverTimerId);
-  }
-
-  if (bots.className != "" && !hideTimerId) {
-    hideTimerId = window.setTimeout(function() {
-      hideTimerId = null;
-      var bots = document.getElementById("bots");
-      bots.className = "";
-    }, 1000);
+  } else if (bots.className != "") {
+    hoverTimerId = window.setTimeout(function() {
+      hoverTimerId = null;
+      hideBots();
+    }, 100);
   }
 }, false);
 
@@ -141,8 +156,15 @@ window.onload = function() {
   // This is weird, but somehow doing an XHR -- even though it is
   // asynchronous!! -- in onload delays the initial render from happening.
   window.setTimeout(requestStatus, 10);
+  bots = document.getElementById("bots");
 }
 </script>
+
+<style id="bots-visible">
+#bots.visible {
+  width:1px;
+}
+</style>
 
 <style>
 #status {
@@ -171,10 +193,6 @@ window.onload = function() {
   display:-webkit-box;
   -webkit-box-align:center; /* center content vertically */
   overflow: hidden;
-}
-
-#bots.visible {
-  width:470px;
 }
 
 .bot {
