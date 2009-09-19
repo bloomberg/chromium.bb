@@ -6,9 +6,19 @@
 
 #include "app/gfx/canvas.h"
 #include "base/logging.h"
+#include "base/string_piece.h"
 #include "base/sys_string_conversions.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/core/SkPaint.h"
+
+namespace {
+
+// The font family name which is used when a user's application font for
+// GNOME/KDE is a non-scalable one. The name should be listed in the
+// IsFallbackFontAllowed function in skia/ext/SkFontHost_fontconfig_direct.cpp.
+const char* kFallbackFontFamilyName = "sans";
+
+}  // namespace
 
 namespace gfx {
 
@@ -89,15 +99,24 @@ int Font::ave_char_width() const {
 
 Font Font::CreateFont(const std::wstring& font_family, int font_size) {
   DCHECK_GT(font_size, 0);
+  std::wstring fallback;
 
   SkTypeface* tf = SkTypeface::CreateFromName(
       base::SysWideToUTF8(font_family).c_str(), SkTypeface::kNormal);
-  // Temporary CHECK for tracking down
-  // http://code.google.com/p/chromium/issues/detail?id=12530
-  CHECK(tf) << "Could not find font: " << base::SysWideToUTF8(font_family);
+  if (!tf) {
+    // A non-scalable font such as .pcf is specified. Falls back to a default
+    // scalable font.
+    tf = SkTypeface::CreateFromName(
+        kFallbackFontFamilyName, SkTypeface::kNormal);
+    CHECK(tf) << "Could not find any font: "
+              << base::SysWideToUTF8(font_family)
+              << ", " << kFallbackFontFamilyName;
+    fallback = base::SysUTF8ToWide(kFallbackFontFamilyName);
+  }
   SkAutoUnref tf_helper(tf);
 
-  return Font(tf, font_family, font_size, NORMAL);
+  return Font(
+      tf, fallback.empty() ? font_family : fallback, font_size, NORMAL);
 }
 
 Font Font::DeriveFont(int size_delta, int style) const {
