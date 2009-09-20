@@ -90,10 +90,10 @@ class RenderViewHost : public RenderWidgetHost,
   // the event that's set when showing a modal dialog so that the renderer and
   // plugin processes know to pump messages.  An existing event can be passed
   // in, otherwise if it's NULL a new event will be created.
-  explicit RenderViewHost(SiteInstance* instance,
-                          RenderViewHostDelegate* delegate,
-                          int routing_id,
-                          base::WaitableEvent* modal_dialog_event);
+  RenderViewHost(SiteInstance* instance,
+                 RenderViewHostDelegate* delegate,
+                 int routing_id,
+                 base::WaitableEvent* modal_dialog_event);
   virtual ~RenderViewHost();
 
   SiteInstance* site_instance() const { return instance_; }

@@ -79,11 +79,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/compact_navigation_bar.h"
+#include "chrome/browser/chromeos/main_menu.h"
 #include "chrome/browser/chromeos/status_area_view.h"
-#include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/views/panel_controller.h"
 #include "chrome/browser/views/tabs/tab_overview_types.h"
-#include "views/controls/button/image_button.h"
 #include "views/widget/widget_gtk.h"
 
 // This command-line switch enables the main menu button in the upper left
@@ -312,33 +311,7 @@ const struct AcceleratorMapping {
 
 #if defined(OS_CHROMEOS)
 
-// Popup shown when main menu button is clicked.
-static views::WidgetGtk* menu_popup = NULL;
-
 namespace {
-
-// Installed as a listener on the button in the main menu popup. When clicked
-// the popup closes.
-class MenuPopupCloser : public views::ButtonListener {
- public:
-  MenuPopupCloser() {}
-
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
-    if (menu_popup) {
-      menu_popup->Close();
-      // Close takes care of deleting the popup.
-      menu_popup = NULL;
-    }
-
-    // The only reference to is was from the Popup, which has been closed (and
-    // will be deleted) and won't delete us. We need to delete ourselves so
-    // that we don't leak.
-    delete this;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MenuPopupCloser);
-};
 
 // This draws the spacer below the tab strip when we're using the compact
 // location bar (i.e. no location bar). This basically duplicates the painting
@@ -378,19 +351,7 @@ gboolean OnCompactNavSpacerExpose(GtkWidget* widget,
 // Callback from GTK when the user clicks the main menu button.
 static void OnMainMenuButtonClicked(GtkWidget* widget,
                                     BrowserWindowGtk* browser) {
-  if (menu_popup)
-    return;
-
-  SkBitmap* drop_down_image = ResourceBundle::GetSharedInstance().
-      GetBitmapNamed(IDR_MAIN_MENU_BUTTON_DROP_DOWN);
-  views::ImageButton* button = new views::ImageButton(new MenuPopupCloser());
-  button->SetImage(views::ImageButton::BS_NORMAL, drop_down_image);
-  menu_popup = new views::WidgetGtk(views::WidgetGtk::TYPE_POPUP);
-  menu_popup->MakeTransparent();
-  menu_popup->Init(NULL, gfx::Rect(0, 0, drop_down_image->width(),
-                                   drop_down_image->height()));
-  menu_popup->SetContentsView(button);
-  menu_popup->Show();
+  MainMenu::Show(browser->browser());
 }
 
 #endif  // OS_CHROMEOS

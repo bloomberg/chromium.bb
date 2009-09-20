@@ -840,6 +840,8 @@
         'browser/chromeos/chromeos_version_loader.h',
         'browser/chromeos/compact_navigation_bar.cc',
         'browser/chromeos/compact_navigation_bar.h',
+        'browser/chromeos/main_menu.cc',
+        'browser/chromeos/main_menu.h',
         'browser/chromeos/pipe_reader.cc',
         'browser/chromeos/pipe_reader.h',
         'browser/chromeos/external_cookie_handler.cc',
