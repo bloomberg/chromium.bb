@@ -197,6 +197,7 @@ willPositionSheet:(NSWindow*)sheet
                                          resizeDelegate:self]);
       [[[self window] contentView] addSubview:[extensionShelfController_ view]];
       [extensionShelfController_ wasInsertedIntoWindow];
+      [extensionShelfController_ show:nil];
     }
 
     [self fixWindowGradient];
