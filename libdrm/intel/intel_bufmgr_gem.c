@@ -1496,7 +1496,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
     gp.value = &bufmgr_gem->pci_device;
     ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
     if (ret) {
-	fprintf(stderr, "get chip id failed: %d\n", ret);
+	fprintf(stderr, "get chip id failed: %d [%d]\n", ret, errno);
 	fprintf(stderr, "param: %d, val: %d\n", gp.param, *gp.value);
     }
 
@@ -1505,7 +1505,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	gp.value = &bufmgr_gem->available_fences;
 	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
 	if (ret) {
-	    fprintf(stderr, "get fences failed: %d\n", ret);
+	    fprintf(stderr, "get fences failed: %d [%d]\n", ret, errno);
 	    fprintf(stderr, "param: %d, val: %d\n", gp.param, *gp.value);
 	    bufmgr_gem->available_fences = 0;
 	}
