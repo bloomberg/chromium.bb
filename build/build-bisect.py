@@ -42,6 +42,7 @@ BUILD_VIEWVC_URL = "http://src.chromium.org/viewvc/chrome?view=rev&revision=%d"
 import math
 import optparse
 import os
+import pipes
 import re
 import shutil
 import sys
@@ -67,7 +68,7 @@ def SetArchiveVars(archive):
   elif BUILD_ARCHIVE_TYPE in ('mac'):
     BUILD_ZIP_NAME = 'chrome-mac.zip'
     BUILD_DIR_NAME = 'chrome-mac'
-    BUILD_EXE_NAME = "Chromium.app"
+    BUILD_EXE_NAME = "Chromium.app/Contents/MacOS/Chromium"
   elif BUILD_ARCHIVE_TYPE in ('xp'):
     BUILD_ZIP_NAME = 'chrome-win32.zip'
     BUILD_DIR_NAME = 'chrome-win32'
@@ -91,8 +92,9 @@ def GetRevList(good, bad):
   revlist.sort()
   return revlist
 
-def TryRevision(rev):
-  """Downloads revision |rev|, unzips it, and opens it for the user to test."""
+def TryRevision(rev, profile):
+  """Downloads revision |rev|, unzips it, and opens it for the user to test.
+  |profile| is the profile to use."""
   # Do this in a temp dir so we don't collide with user files.
   cwd = os.getcwd()
   tempdir = tempfile.mkdtemp(prefix='bisect_tmp')
@@ -112,13 +114,11 @@ def TryRevision(rev):
   os.system("unzip -q %s" % BUILD_ZIP_NAME)
 
   # Tell the system to open the app.
-  flags = '--user-data-dir=profile'
+  flags = '--user-data-dir=' + profile
   print 'Running %s/%s/%s %s' % (os.getcwd(), BUILD_DIR_NAME, BUILD_EXE_NAME,
                                  flags)
-  if BUILD_ARCHIVE_TYPE in ('linux', 'linux-64'):
-    os.system("%s/%s %s" % (BUILD_DIR_NAME, BUILD_EXE_NAME, flags))
-  elif BUILD_ARCHIVE_TYPE in ('mac'):
-    os.system("open %s/%s %s" % (BUILD_DIR_NAME, BUILD_EXE_NAME, flags))
+  if BUILD_ARCHIVE_TYPE in ('linux', 'linux-64', 'mac'):
+    os.system("%s/%s %s" % (BUILD_DIR_NAME, BUILD_EXE_NAME, pipes.quote(flags)))
   elif BUILD_ARCHIVE_TYPE in ('xp'):
     # TODO(mmoss) Does Windows need 'start' or something?
     os.system("%s/%s %s" % (BUILD_DIR_NAME, BUILD_EXE_NAME, flags))
@@ -153,6 +153,9 @@ def main():
                     help = 'The bad revision to bisect to.')
   parser.add_option('-g', '--good', type = 'int',
                     help = 'The last known good revision to bisect from.')
+  parser.add_option('-p', '--profile', '--user-data-dir', type = 'str',
+                    help = 'Profile to use; this will not reset every run. ' +
+                    'Defaults to a clean profile.')
   (opts, args) = parser.parse_args()
 
   if opts.archive is None:
@@ -221,8 +224,11 @@ def main():
     test = int((bad - good) / 2) + good
     test_rev = revlist[test]
 
-    # Let the user give this revision a spin.
-    TryRevision(test_rev)
+    # Let the user give this rev a spin (in her own profile, if she wants).
+    profile = opts.profile
+    if not profile:
+      profile = 'profile'  # In a temp dir.
+    TryRevision(test_rev, profile)
     if AskIsGoodBuild(test_rev):
       good = test + 1
     else:
