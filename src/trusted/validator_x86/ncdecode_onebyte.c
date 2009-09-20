@@ -418,10 +418,8 @@ static void DefineGroup2OpcodesInModRm() {
     DefineOpcode(0xd5, NACLi_ILLEGAL,
                  InstFlag(Opcode32Only) | InstFlag(OpcodeHasImmed_b),
                  InstAad);
-    DefineOperand(RegAX, OpFlag(OpSet) | OpFlag(OpImplicit));
     DefineOperand(RegAL, OpFlag(OpSet) | OpFlag(OpImplicit));
     DefineOperand(RegAH, OpFlag(OpSet) | OpFlag(OpImplicit));
-    DefineOperand(I_Operand, OpFlag(OpUse));
   }
 }
 
@@ -546,7 +544,6 @@ void DefineOneByteOpcodes() {
 
  /*deprecated */
   DefineOpcode(0x37, NACLi_ILLEGAL, InstFlag(Opcode32Only), InstAaa);
-  DefineOperand(RegAL, OpFlag(OpSet) | OpFlag(OpUse) | OpFlag(OpImplicit));
 
   BuildBinaryOps_00_05(0x38, NACLi_386, InstCmp, 0);
 
@@ -1092,25 +1089,6 @@ void DefineOneByteOpcodes() {
                InstTest);
   DefineOperand(RegRAX, OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
-
-  for (i = 0; i < 8; ++i) {
-    DefineOpcode(0xB0 + i, NACLi_386,
-                 InstFlag(Opcode64Only) | InstFlag(OpcodePlusR) |
-                 InstFlag(OperandSize_b) | InstFlag(OpcodeHasImmed) |
-                 InstFlag(OpcodeRex),
-                 InstMov);
-    DefineOperand(OpcodeBaseMinus0 + i, OpFlag(OperandExtendsOpcode));
-    DefineOperand(G_OpcodeBase, OpFlag(OpSet));
-    DefineOperand(I_Operand, OpFlag(OpUse));
-
-    DefineOpcode(0xB0 + i, NACLi_386,
-                 InstFlag(OpcodePlusR) | InstFlag(OperandSize_b) |
-                 InstFlag(OpcodeHasImmed),
-                 InstMov);
-    DefineOperand(OpcodeBaseMinus0 + i, OpFlag(OperandExtendsOpcode));
-    DefineOperand(G_OpcodeBase, OpFlag(OpSet));
-    DefineOperand(I_Operand, OpFlag(OpUse));
-  }
 
   for (i = 0; i < 8; ++i) {
     DefineOpcode(0xB8 + i, NACLi_386,
