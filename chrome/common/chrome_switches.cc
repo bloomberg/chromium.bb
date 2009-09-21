@@ -603,4 +603,8 @@ const wchar_t kExplicitlyAllowedPorts[] = L"explicitly-allowed-ports";
 // is launched on the command line (e.g. by Selenium).  Only needed on Mac.
 const wchar_t kActivateOnLaunch[] = L"activate-on-launch";
 
+#if defined(OS_LINUX)
+const wchar_t kEnablePrinting[] = L"enable-printing";
+#endif
+
 }  // namespace switches

@@ -45,6 +45,10 @@ without changes to the corresponding grd file. ek -->
       <include name="IDR_PRINT_TAB_HTML" file="resources\print_tab.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_PRINT_TAB_CSS" file="resources\print_tab.css" type="BINDATA" />
       <include name="IDR_PRINT_TAB_JS" file="resources\print_tab.js" type="BINDATA" />
+      <if expr="os == 'linux2'">
+        <include name="IDR_LINUX_SPLASH_HTML_CHROMIUM" file="resources\linux-splash.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_LINUX_SPLASH_HTML_CHROME" file="resources\linux-splash-chrome.html" flattenhtml="true" type="BINDATA" />
+      </if>
       <include name="IDR_ABOUT_SYNC_HTML" file="sync\resources\about_sync.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GAIA_LOGIN_HTML" file="sync\resources\gaia_login.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SYNC_SETUP_FLOW_HTML" file="sync\resources\setup_flow.html" flattenhtml="true" type="BINDATA" />

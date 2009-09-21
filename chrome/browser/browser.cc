@@ -2264,7 +2264,17 @@ void Browser::InitCommandState() {
 
   // Page-related commands
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_POPUPS, true);
+  // TODO(estade): remove these ifdefs when printing is fully supported.
+#if defined(OS_LINUX)
+#if defined(TOOLKIT_GTK)
+  command_updater_.UpdateCommandEnabled(IDC_PRINT,
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePrinting));
+#elif defined(TOOLKIT_VIEWS)
+  command_updater_.UpdateCommandEnabled(IDC_PRINT, false);
+#endif
+#else  // !defined(OS_LINUX)
   command_updater_.UpdateCommandEnabled(IDC_PRINT, true);
+#endif
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_AUTO_DETECT, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_UTF8, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_UTF16LE, true);

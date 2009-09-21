@@ -75,6 +75,7 @@ const char kStatsPath[] = "stats";
 const char kVersionPath[] = "version";
 const char kCreditsPath[] = "credits";
 const char kTermsPath[] = "terms";
+const char kLinuxSplash[] = "linux-splash";
 const char kSyncPath[] = "sync";
 
 // Points to the singleton AboutSource object, if any.
@@ -192,6 +193,23 @@ std::string AboutHistograms(const std::string& query) {
   std::string data;
   StatisticsRecorder::WriteHTMLGraph(query, &data);
   return data;
+}
+
+std::string AboutLinuxSplash() {
+  int resource_id = IDR_LINUX_SPLASH_HTML_CHROMIUM;
+  scoped_ptr<FileVersionInfo> version_info(
+      FileVersionInfo::CreateFileVersionInfoForCurrentModule());
+  if (version_info == NULL) {
+    DLOG(ERROR) << "Unable to create FileVersionInfo object";
+  } else {
+    if (version_info->is_official_build()) {
+      resource_id = IDR_LINUX_SPLASH_HTML_CHROME;
+    }
+  }
+  static const std::string linux_splash_html =
+      ResourceBundle::GetSharedInstance().GetDataResource(resource_id);
+
+  return linux_splash_html;
 }
 
 void AboutMemory(AboutSource* source, int request_id) {
@@ -567,6 +585,11 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
     response = AboutSync();
 #endif
   }
+#if defined(OS_LINUX)
+  else if (path == kLinuxSplash) {
+    response = AboutLinuxSplash();
+  }
+#endif
 
   FinishDataRequest(response, request_id);
 }

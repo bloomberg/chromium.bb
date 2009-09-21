@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 #include "base/gfx/point.h"
 #include "base/gfx/rect.h"
+#include "chrome/test/automation/automation_messages.h"
 
 void AutomationProvider::SetWindowBounds(int handle, const gfx::Rect& bounds,
                                          bool* success) {
@@ -70,4 +71,14 @@ void AutomationProvider::GetBookmarkBarVisibility(int handle, bool* visible,
   *visible = false;
   *animating = false;
   NOTIMPLEMENTED();
+}
+
+void AutomationProvider::WindowSimulateDrag(int handle,
+                                            std::vector<gfx::Point> drag_path,
+                                            int flags,
+                                            bool press_escape_en_route,
+                                            IPC::Message* reply_message) {
+  NOTIMPLEMENTED();
+  AutomationMsg_WindowDrag::WriteReplyParams(reply_message, false);
+  Send(reply_message);
 }
