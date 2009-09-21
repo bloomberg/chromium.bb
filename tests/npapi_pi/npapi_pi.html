@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2008 Google Inc.  All rights reserved. -->
+  <head>
+    <title>Monte Carlo Estimate for Pi</title>
+  </head>
+    <body id="bodyId" onload="doOnLoad()" onunload="doOnUnload()">
+    <h1>Monte Carlo Estimate for Pi</h1>
+    <p>
+      The Native Client module executed in this page creates a thread
+      that estimates pi (&pi;) using the Monte Carlo method.
+      The thread randomly puts 1,000,000,000 points
+      inside a square that shares two sides with a quarter circle (a quadrant).
+      Because the area of
+      the quadrant is r&#178;&pi;/4
+      and the area of
+      the square is r&#178;,
+      dividing the number of points inside the quadrant
+      by the number of points inside the square gives us
+      an estimate of &pi;/4.
+      The textbox under the square
+      shows the current estimate of &pi;.
+    </p>
+    <embed id="nacl" src="npapi_pi.nexe" type="application/x-nacl-npapi"
+            width="480" height="480" />
+    <br />
+    <form name="form">
+      <input type="text" size="15" name="pi" />
+    </form>
+    <script type="text/javascript">
+      <!--
+var nacl = null;
+var paintInterval = null;
+var loadTimer = null;
+
+var PostInit = function() {
+  if (nacl == undefined) {
+    alert('Unable to load, try reloading page (or missing plugins?)');
+    return;
+  }
+  if (nacl.paint == undefined) {
+    loadTimer = setTimeout(PostInit, 100);
+  } else {
+    paintInterval = setInterval("document.form.pi.value = nacl.paint()", 5);
+  }
+}
+
+function doOnLoad() {
+  nacl = document.getElementById('nacl');
+  PostInit();
+}
+
+function doOnUnload() {
+  clearInterval(paintInterval);
+  clearTimeout(loadTimer);
+}
+      -->
+    </script>
+  </body>
+</HTML>

@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2008 Google Inc.  All rights reserved. -->
+  <head>
+    <title>NPAPI Plug-in Test</title>
+    <script type='application/x-javascript'>
+      <!--
+var embed1 = null;
+var embed2 = null;
+var loadTimer = null;
+
+var PostInit = function() {
+  if ((embed1 == undefined) || (embed2 == undefined)) {
+    alert('Unable to load, try reloading page (or missing plugins?)');
+    return;
+  }
+  if ((embed1.bar == undefined) || (embed2.bar == undefined)) {
+    loadTimer = setTimeout(PostInit, 100);
+  } else {
+    // when embed1 & embed2 become available, enable control buttons
+    document.getElementById('button_embed1_alert').disabled = null;
+    document.getElementById('button_embed1_fillRect').disabled = null;
+    document.getElementById('button_embed1_setProxy').disabled = null;
+    document.getElementById('button_embed1_useProxy').disabled = null;
+    document.getElementById('button_embed1_setHandle').disabled = null;
+    document.getElementById('button_embed1_useHandle').disabled = null;
+    document.getElementById('button_embed1_freeze').disabled = null;
+    document.getElementById('button_embed2_alert').disabled = null;
+    document.getElementById('button_embed2_fillRect').disabled = null;
+    document.getElementById('button_embed2_setProxy').disabled = null;
+    document.getElementById('button_embed2_useProxy').disabled = null;
+    document.getElementById('button_embed2_setHandle').disabled = null;
+    document.getElementById('button_embed2_useHandle').disabled = null;
+    document.getElementById('button_embed2_freeze').disabled = null;
+
+    var canvas = document.getElementById("tutorial");
+    var context = canvas.getContext("2d");
+
+    context.fillStyle = "rgb(255, 255, 127)";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    canvas = document.getElementById("tutorial2");
+    context = canvas.getContext("2d");
+
+    context.fillStyle = "rgb(127, 255, 255)";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+  }
+}
+
+function doOnLoad()
+{
+  embed1 = document.getElementById("embed1");
+  embed2 = document.getElementById("embed2");
+  PostInit();
+}
+
+function doOnUnload()
+{
+  clearTimeout(loadTimer);
+}
+      -->
+    </script>
+  </head>
+  <body id="bodyId" onload="doOnLoad();" onunload="doOnUnload();">
+
+  <h1>Native Client NPAPI Plug-in Test</h1>
+
+  <!-- `object` element test -->
+  <object id="embed1" data="npapi_test.nexe" type="application/x-nacl-npapi"
+          width="0" height="0">
+    <param name="canvas" value="tutorial">
+    <param name="param1" value="with space">
+    <param name="param2" value="">
+    <param name="param3" value="with'quote">
+    <param name="param4" value='with"doublequote'>
+  </object>
+  <!-- `embed` element test -->
+  <embed id="embed2" src="npapi_test.nexe" type="application/x-nacl-npapi"
+         width=0 height=0
+         canvas='tutorial2'
+         param1="with space" param2="" param3="with'quote"
+         param4='with"doublequote' />
+
+  <br />
+
+  <hr />
+    <form name="formname">
+      <input type=button value="proxy.fillRect()"
+            onclick='proxy.fillRect()' />
+      <hr />
+      <input type=button value="alert(embed1.bar)" disabled="true"
+            id='button_embed1_alert' onclick='alert(embed1.bar)' />
+      <input type=button value="embed1.fillRect()" disabled="true"
+            id='button_embed1_fillRect' onclick='embed1.fillRect()' />
+      <input type=button value="embed1.setProxy()" disabled="true"
+            id='button_embed1_setProxy' onclick='embed1.setProxy()' />
+      <input type=button value="embed1.useProxy()" disabled="true"
+            id='button_embed1_useProxy' onclick='embed1.useProxy()' />
+      <input type=button value="embed1.setHandle()" disabled="true"
+            id='button_embed1_setHandle' onclick='embed1.setHandle()' />
+      <input type=button value="embed1.useHandle()" disabled="true"
+            id='button_embed1_useHandle' onclick='embed1.useHandle()' />
+      <input type=button value="embed1.freeze()" disabled="true"
+            id='button_embed1_freeze' onclick='embed1.freeze()' />
+      <hr />
+      <input type=button value="alert(embed2.bar)" disabled="true"
+            id='button_embed2_alert' onclick='alert(embed2.bar)' />
+      <input type=button value="embed2.fillRect()" disabled="true"
+            id='button_embed2_fillRect' onclick='embed2.fillRect()' />
+      <input type=button value="embed2.setProxy()" disabled="true"
+            id='button_embed2_setProxy' onclick='embed2.setProxy()' />
+      <input type=button value="embed2.useProxy()" disabled="true"
+            id='button_embed2_useProxy' onclick='embed2.useProxy()' />
+      <input type=button value="embed2.setHandle()" disabled="true"
+            id='button_embed2_setHandle' onclick='embed2.setHandle()' />
+      <input type=button value="embed2.useHandle()" disabled="true"
+            id='button_embed2_useHandle' onclick='embed2.useHandle()' />
+      <input type=button value="embed2.freeze()" disabled="true"
+            id='button_embed2_freeze' onclick='embed2.freeze()' />
+    </form>
+  <hr />
+
+  <canvas id="tutorial" width="150" height="150"></canvas>
+  <canvas id="tutorial2" width="150" height="150"></canvas>
+
+  </body>
+</html>
