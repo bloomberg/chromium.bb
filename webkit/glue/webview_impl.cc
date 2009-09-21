@@ -848,7 +848,7 @@ bool WebViewImpl::KeyEventDefault(const WebKeyboardEvent& event) {
             return false;
         }
       }
-      if (!event.isSystemKey) {
+      if (!event.isSystemKey && !(event.modifiers & WebInputEvent::ShiftKey)) {
         return ScrollViewWithKeyboard(event.windowsKeyCode, event.modifiers);
       }
       break;
