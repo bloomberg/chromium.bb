@@ -219,50 +219,41 @@ class SCMWrapper(object):
       # Don't reuse the args.
       return self.update(options, [], file_list)
 
-    # Batch the command.
-    files_to_revert = []
     for file in CaptureSVNStatus(path):
       file_path = os.path.join(path, file[1])
-      if file_path[0][0] == 'X':
+      if file[0][0] == 'X':
         # Ignore externals.
+        logging.info('Ignoring external %s' % file_path)
         continue
 
-      print(file_path)
-      # Unversioned file, unexpected unversioned files, switched directories
-      # or conflicted trees.
-      if file[0][0] in ('?', '~') or file[0][4] == 'S' or file[0][6] == 'C':
-        # Remove then since svn revert won't touch them.
-        try:
-          # TODO(maruel): Look if it is a file or a directory.
+      if logging.getLogger().isEnabledFor(logging.INFO):
+        logging.info('%s%s' % (file[0], file[1]))
+      else:
+        print(file_path)
+      if file[0].isspace():
+        logging.error('No idea what is the status of %s.\n'
+                      'You just found a bug in gclient, please ping '
+                      'maruel@chromium.org ASAP!' % file_path)
+      # svn revert is really stupid. It fails on inconsistent line-endings,
+      # on switched directories, etc. So take no chance and delete everything!
+      try:
+        if not os.path.exists(file_path):
+          pass
+        elif os.path.isfile(file_path):
           logging.info('os.remove(%s)' % file_path)
           os.remove(file_path)
-        except EnvironmentError:
+        elif os.path.isdir(file_path):
           logging.info('gclient_utils.RemoveDirectory(%s)' % file_path)
           gclient_utils.RemoveDirectory(file_path)
-
-      if file[0][0] != '?':
-        # For any other status, svn revert will work.
-        file_list.append(file_path)
-        files_to_revert.append(file[1])
-
-    # Revert them all at once.
-    if files_to_revert:
-      accumulated_paths = []
-      accumulated_length = 0
-      command = ['revert']
-      for p in files_to_revert:
-        # Some shell have issues with command lines too long.
-        if accumulated_length and accumulated_length + len(p) > 3072:
-          RunSVN(command + accumulated_paths,
-                 os.path.join(self._root_dir, self.relpath))
-          accumulated_paths = [p]
-          accumulated_length = len(p)
         else:
-          accumulated_paths.append(p)
-          accumulated_length += len(p)
-      if accumulated_paths:
-        RunSVN(command + accumulated_paths,
-               os.path.join(self._root_dir, self.relpath))
+          logging.error('no idea what is %s.\nYou just found a bug in gclient'
+                        ', please ping maruel@chromium.org ASAP!' % file_path)
+      except EnvironmentError:
+        logging.error('Failed to remove %s.' % file_path)
+
+    # svn revert is so broken we don't even use it. Using
+    # "svn up --revision BASE" achieve the same effect.
+    RunSVNAndGetFileList(['update', '--revision', 'BASE'], path, file_list)
 
   def status(self, options, args, file_list):
     """Display status information."""
@@ -578,6 +569,10 @@ def CaptureSVNStatus(files):
         # Col 3
         if wc_status[0].getAttribute('copied') == 'true':
           statuses[3] = '+'
+        # Col 4
+        if wc_status[0].getAttribute('switched') == 'true':
+          statuses[4] = 'S'
+        # TODO(maruel): Col 5 and 6
         item = (''.join(statuses), file)
         results.append(item)
   return results
