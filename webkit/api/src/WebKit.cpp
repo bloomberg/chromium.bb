@@ -135,9 +135,9 @@ void enableMediaPlayer()
 #endif
 }
 
-void resetPluginCache()
+void resetPluginCache(bool reloadPages)
 {
-    WebCore::Page::refreshPlugins(true);
+    WebCore::Page::refreshPlugins(reloadPages);
 }
 
 void enableDatabases()

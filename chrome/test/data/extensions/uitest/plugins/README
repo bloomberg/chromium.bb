@@ -1,0 +1,2 @@
+Note: plugin.dll is a Release build of npapi_layout_test_plugin with the mime
+type changed, so it doesn't conflict with the original DLL.

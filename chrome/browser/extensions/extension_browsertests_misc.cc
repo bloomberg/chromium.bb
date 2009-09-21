@@ -627,3 +627,54 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
       newtab->render_view_host(), L"", L"testExtensionApi()", &result);
   EXPECT_FALSE(result);
 }
+
+// Tests that a renderer's plugin list is properly updated when we load and
+// unload an extension that contains a plugin.
+// TODO(mpcomplete): need cross platform plugin support.
+#if defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PluginLoadUnload) {
+  FilePath extension_dir =
+      test_data_dir_.AppendASCII("uitest").AppendASCII("plugins");
+
+  ui_test_utils::NavigateToURL(browser(),
+      net::FilePathToFileURL(extension_dir.AppendASCII("test.html")));
+  TabContents* tab = browser()->GetSelectedTabContents();
+
+  // With no extensions, the plugin should not be loaded.
+  bool result = false;
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      tab->render_view_host(), L"", L"testPluginWorks()", &result);
+  EXPECT_FALSE(result);
+
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  ASSERT_TRUE(LoadExtension(extension_dir));
+  EXPECT_EQ(1u, service->extensions()->size());
+  // Now the plugin should be in the cache, but we have to reload the page for
+  // it to work.
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      tab->render_view_host(), L"", L"testPluginWorks()", &result);
+  EXPECT_FALSE(result);
+  browser()->Reload();
+  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      tab->render_view_host(), L"", L"testPluginWorks()", &result);
+  EXPECT_TRUE(result);
+
+  EXPECT_EQ(1u, service->extensions()->size());
+  UnloadExtension(service->extensions()->at(0)->id());
+  EXPECT_EQ(0u, service->extensions()->size());
+
+  // Now the plugin should be out of the cache again, but existing pages will
+  // still work until we reload them.
+
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      tab->render_view_host(), L"", L"testPluginWorks()", &result);
+  EXPECT_TRUE(result);
+  browser()->Reload();
+  ui_test_utils::WaitForNavigationInCurrentTab(browser());
+
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      tab->render_view_host(), L"", L"testPluginWorks()", &result);
+  EXPECT_FALSE(result);
+}
+#endif

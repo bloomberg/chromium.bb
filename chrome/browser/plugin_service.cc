@@ -178,6 +178,13 @@ FilePath PluginService::GetPluginPath(const GURL& url,
   return FilePath();
 }
 
+static void PurgePluginListCache(bool reload_pages) {
+  for (RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
+       !it.IsAtEnd(); it.Advance()) {
+    it.GetCurrentValue()->Send(new ViewMsg_PurgePluginListCache(reload_pages));
+  }
+}
+
 void PluginService::OnWaitableEventSignaled(
     base::WaitableEvent* waitable_event) {
 #if defined(OS_WIN)
@@ -188,11 +195,7 @@ void PluginService::OnWaitableEventSignaled(
   }
 
   NPAPI::PluginList::Singleton()->ResetPluginsLoaded();
-
-  for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
-       !it.IsAtEnd(); it.Advance()) {
-    it.GetCurrentValue()->Send(new ViewMsg_PurgePluginListCache());
-  }
+  PurgePluginListCache(true);
 #endif  // defined(OS_WIN)
 }
 
@@ -206,20 +209,33 @@ void PluginService::Observe(NotificationType type,
       // have a stale version by the time extensions are loaded.
       // See: http://code.google.com/p/chromium/issues/detail?id=12306
       Extension* extension = Details<Extension>(details).ptr();
+      bool plugins_changed = false;
       for (size_t i = 0; i < extension->plugins().size(); ++i ) {
         const Extension::PluginInfo& plugin = extension->plugins()[i];
         NPAPI::PluginList::Singleton()->ResetPluginsLoaded();
         NPAPI::PluginList::Singleton()->AddExtraPluginPath(plugin.path);
+        plugins_changed = true;
         if (!plugin.is_public)
           private_plugins_[plugin.path] = extension->url();
       }
+      if (plugins_changed)
+        PurgePluginListCache(false);
       break;
     }
 
     case NotificationType::EXTENSION_UNLOADED: {
-      // TODO(aa): Implement this. Also, will it be possible to delete the
-      // extension folder if this isn't unloaded?
-      // See: http://code.google.com/p/chromium/issues/detail?id=12306
+      Extension* extension = Details<Extension>(details).ptr();
+      bool plugins_changed = false;
+      for (size_t i = 0; i < extension->plugins().size(); ++i ) {
+        const Extension::PluginInfo& plugin = extension->plugins()[i];
+        NPAPI::PluginList::Singleton()->ResetPluginsLoaded();
+        NPAPI::PluginList::Singleton()->RemoveExtraPluginPath(plugin.path);
+        plugins_changed = true;
+        if (!plugin.is_public)
+          private_plugins_.erase(plugin.path);
+      }
+      if (plugins_changed)
+        PurgePluginListCache(false);
       break;
     }
 

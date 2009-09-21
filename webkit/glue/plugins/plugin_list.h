@@ -80,9 +80,10 @@ class PluginList {
   // plugins.
   void ResetPluginsLoaded();
 
-  // Add an extra plugin to load when we actually do the loading.  Must be
-  // called before the plugins have been loaded.
+  // Add/Remove an extra plugin to load when we actually do the loading.  Must
+  // be called before the plugins have been loaded.
   void AddExtraPluginPath(const FilePath& plugin_path);
+  void RemoveExtraPluginPath(const FilePath& plugin_path);
 
   // Same as above, but specifies a directory in which to search for plugins.
   void AddExtraPluginDir(const FilePath& plugin_dir);

@@ -39,6 +39,15 @@ void PluginList::AddExtraPluginPath(const FilePath& plugin_path) {
   extra_plugin_paths_.push_back(plugin_path);
 }
 
+void PluginList::RemoveExtraPluginPath(const FilePath& plugin_path) {
+  AutoLock lock(lock_);
+  std::vector<FilePath>::iterator it =
+      std::find(extra_plugin_paths_.begin(), extra_plugin_paths_.end(),
+                plugin_path);
+  if (it != extra_plugin_paths_.end())
+    extra_plugin_paths_.erase(it);
+}
+
 void PluginList::AddExtraPluginDir(const FilePath& plugin_dir) {
   AutoLock lock(lock_);
   extra_plugin_dirs_.push_back(plugin_dir);

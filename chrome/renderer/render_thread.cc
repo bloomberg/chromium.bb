@@ -490,12 +490,12 @@ void RenderThread::OnExtensionMessageInvoke(const std::string& function_name,
   RendererExtensionBindings::Invoke(function_name, args, NULL);
 }
 
-void RenderThread::OnPurgePluginListCache() {
+void RenderThread::OnPurgePluginListCache(bool reload_pages) {
   // The call below will cause a GetPlugins call with refresh=true, but at this
   // point we already know that the browser has refreshed its list, so disable
   // refresh temporarily to prevent each renderer process causing the list to be
   // regenerated.
   plugin_refresh_allowed_ = false;
-  WebKit::resetPluginCache();
+  WebKit::resetPluginCache(reload_pages);
   plugin_refresh_allowed_ = true;
 }
