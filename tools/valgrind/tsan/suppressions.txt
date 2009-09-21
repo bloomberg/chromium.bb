@@ -93,3 +93,14 @@
   ThreadSanitizer:Race
   fun:uprv_malloc_4_2
 }
+
+############################
+# Benign race in SQLLite
+{
+  Two writes, same value (SQLLite pthreadMutexAlloc)
+  ThreadSanitizer:Race
+  ...
+  fun:pthreadMutexAlloc
+  fun:sqlite3MutexAlloc
+}
+
