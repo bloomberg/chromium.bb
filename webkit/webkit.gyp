@@ -12,7 +12,7 @@
 
     # We can't turn on warnings on Windows until we upstream the WebKit API.
     'conditions': [
-      ['OS!="win"', {
+      ['OS=="linux"', {
         'chromium_code': 1,
       }],
     ],
