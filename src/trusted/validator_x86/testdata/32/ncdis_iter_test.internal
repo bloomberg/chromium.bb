@@ -111,13 +111,19 @@ ExprNodeVector[10] = {
     NACLi_ILLEGAL,
     InstFlag(OpcodeHasImmed_b) | InstFlag(Opcode32Only),
     InstAad,
-    2, {
+    4, {
+      { RegAX, OpFlag(OpSet) | OpFlag(OpImplicit) },
       { RegAL, OpFlag(OpSet) | OpFlag(OpImplicit) },
       { RegAH, OpFlag(OpSet) | OpFlag(OpImplicit) },
+      { I_Operand, OpFlag(OpUse) | OpFlag(OpImplicit) },
   } };
-ExprNodeVector[4] = {
+ExprNodeVector[8] = {
   { OperandReference[1] , 0, ExprImplicit },
-  { ExprRegister[0] , %al, ExprSet | ExprSize8 },
+  { ExprRegister[0] , %ax, ExprSet | ExprSize16 },
   { OperandReference[1] , 1, ExprImplicit },
+  { ExprRegister[0] , %al, ExprSet | ExprSize8 },
+  { OperandReference[1] , 2, ExprImplicit },
   { ExprRegister[0] , %ah, ExprSet | ExprSize8 },
+  { OperandReference[1] , 3, ExprImplicit },
+  { ExprConstant[0] , 0xa, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
