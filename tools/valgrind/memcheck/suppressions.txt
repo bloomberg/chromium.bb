@@ -1199,3 +1199,53 @@
    fun:_Z14StringAppendVTISsEvPT_PKNS0_10value_typeEPc
    fun:_Z12StringPrintfPKcz
 }
+{
+   bug_22559_1
+   Memcheck:Value4
+   fun:_itoa_word
+   fun:vfprintf
+   fun:vsnprintf
+   fun:_ZN4base9vsnprintfEPcjPKcS0_
+   fun:_Z10vsnprintfTPcjPKcS_
+   fun:_Z14StringAppendVTISsEvPT_PKNS0_10value_typeEPc
+   fun:_Z13StringAppendVPSsPKcPc
+   fun:_Z13StringAppendFPSsPKcz
+   fun:_ZN10JSONWriter15BuildJSONStringEPK5Valueib
+   fun:_ZN10JSONWriter15BuildJSONStringEPK5Valueib
+   fun:_ZN10JSONWriter15BuildJSONStringEPK5Valueib
+   fun:_ZN10JSONWriter15BuildJSONStringEPK5Valueib
+   fun:_ZN10JSONWriter23WriteWithOptionalEscapeEPK5ValuebbPSs
+   fun:_ZN10JSONWriter5WriteEPK5ValuebPSs
+   fun:_ZN25JSONStringValueSerializer9SerializeERK5Value
+   fun:_ZN11PrefService13SerializeDataEPSs
+   fun:_ZN11PrefService19SavePersistentPrefsEv
+   fun:_ZN16browser_shutdown8ShutdownEv
+   fun:_Z11BrowserMainRK18MainFunctionParams
+   fun:ChromeMain
+   fun:main
+}
+{
+   bug_22559_2
+   Memcheck:Cond
+   fun:_itoa_word
+   fun:vfprintf
+   fun:vsnprintf
+   fun:_ZN4base9vsnprintfEPcjPKcS0_
+   fun:_Z10vsnprintfTPcjPKcS_
+   fun:_Z14StringAppendVTISsEvPT_PKNS0_10value_typeEPc
+   fun:_Z13StringAppendVPSsPKcPc
+   fun:_Z13StringAppendFPSsPKcz
+   fun:_ZN10JSONWriter15BuildJSONStringEPK5Valueib
+   fun:_ZN10JSONWriter15BuildJSONStringEPK5Valueib
+   fun:_ZN10JSONWriter15BuildJSONStringEPK5Valueib
+   fun:_ZN10JSONWriter15BuildJSONStringEPK5Valueib
+   fun:_ZN10JSONWriter23WriteWithOptionalEscapeEPK5ValuebbPSs
+   fun:_ZN10JSONWriter5WriteEPK5ValuebPSs
+   fun:_ZN25JSONStringValueSerializer9SerializeERK5Value
+   fun:_ZN11PrefService13SerializeDataEPSs
+   fun:_ZN11PrefService19SavePersistentPrefsEv
+   fun:_ZN16browser_shutdown8ShutdownEv
+   fun:_Z11BrowserMainRK18MainFunctionParams
+   fun:ChromeMain
+   fun:main
+}
