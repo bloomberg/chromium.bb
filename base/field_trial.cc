@@ -8,7 +8,7 @@
 #include "base/rand_util.h"
 #include "base/string_util.h"
 
-using base::Time;
+using base::TimeTicks;
 
 // static
 const int FieldTrial::kNotParticipating = -1;
@@ -70,7 +70,7 @@ FieldTrialList* FieldTrialList::global_ = NULL;
 // static
 bool FieldTrialList::register_without_global_ = false;
 
-FieldTrialList::FieldTrialList() : application_start_time_(Time::Now()) {
+FieldTrialList::FieldTrialList() : application_start_time_(TimeTicks::Now()) {
   DCHECK(!global_);
   DCHECK(!register_without_global_);
   global_ = this;

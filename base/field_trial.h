@@ -193,12 +193,11 @@ class FieldTrialList {
   // of the application.  In some experiments it may be useful to discount
   // data that is gathered before the application has reached sufficient
   // stability (example: most DLL have loaded, etc.)
-  static base::Time application_start_time() {
+  static base::TimeTicks application_start_time() {
     if (global_)
       return global_->application_start_time_;
     // For testing purposes only, or when we don't yet have a start time.
-    // TODO(jar): Switch to TimeTicks
-    return base::Time::Now();
+    return base::TimeTicks::Now();
   }
 
  private:
@@ -218,7 +217,7 @@ class FieldTrialList {
   // A helper value made availabel to users, that shows when the FieldTrialList
   // was initialized.  Note that this is a singleton instance, and hence is a
   // good approximation to the start of the process.
-  base::Time application_start_time_;
+  base::TimeTicks application_start_time_;
 
   // Lock for access to registered_.
   Lock lock_;
