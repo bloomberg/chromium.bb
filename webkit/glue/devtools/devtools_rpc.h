@@ -56,6 +56,7 @@
 #include <wtf/OwnPtr.h>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/string_util.h"
 #include "webkit/glue/glue_util.h"
 
