@@ -380,8 +380,17 @@ XRenderPictFormat* GetRenderVisualFormat(Display* dpy, Visual* visual) {
   cached_value.format = pictformat;
   formats->push_front(cached_value);
 
-  if (formats->size() == kMaxCacheSize)
+  if (formats->size() == kMaxCacheSize) {
     formats->pop_back();
+    // We should really only have at most 2 display/visual combinations:
+    // one for normal browser windows, and possibly another for an argb window
+    // created to display a menu.
+    //
+    // If we get here it's not fatal, we just need to make sure we aren't
+    // always blowing away the cache. If we are, then we should figure out why
+    // and make it bigger.
+    NOTREACHED();
+  }
 
   return pictformat;
 }
