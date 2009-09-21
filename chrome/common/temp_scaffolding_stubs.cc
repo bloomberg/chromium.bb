@@ -36,16 +36,6 @@ class TabContents;
 //--------------------------------------------------------------------------
 
 #if defined(OS_MACOSX)
-void AutomationProvider::GetActiveWindow(int* handle) { NOTIMPLEMENTED(); }
-
-void AutomationProvider::SetWindowVisible(int handle, bool visible,
-                                          bool* result) { NOTIMPLEMENTED(); }
-
-void AutomationProvider::SetWindowBounds(int handle, const gfx::Rect& bounds,
-                                         bool* success) {
-  NOTIMPLEMENTED();
-}
-
 void AutomationProvider::GetAutocompleteEditForBrowser(
     int browser_handle,
     bool* success,
@@ -87,36 +77,6 @@ void AutomationProvider::AutocompleteEditIsQueryInProgress(
 void AutomationProvider::OnMessageFromExternalHost(
     int handle, const std::string& message, const std::string& origin,
     const std::string& target) {
-  NOTIMPLEMENTED();
-}
-
-void AutomationProvider::WindowGetViewBounds(int handle, int view_id,
-                                             bool screen_coordinates,
-                                             bool* success,
-                                             gfx::Rect* bounds) {
-  *success = false;
-  NOTIMPLEMENTED();
-}
-
-void AutomationProvider::ActivateWindow(int handle) { NOTIMPLEMENTED(); }
-
-void AutomationProvider::GetFocusedViewID(int handle, int* view_id) {
-  NOTIMPLEMENTED();
-}
-
-void AutomationProvider::PrintAsync(int tab_handle) {
-  NOTIMPLEMENTED();
-}
-
-void AutomationProvider::SetInitialFocus(const IPC::Message& message,
-                                         int handle, bool reverse) {
-  NOTIMPLEMENTED();
-}
-
-void AutomationProvider::GetBookmarkBarVisibility(int handle, bool* visible,
-                                                  bool* animating) {
-  *visible = false;
-  *animating = false;
   NOTIMPLEMENTED();
 }
 

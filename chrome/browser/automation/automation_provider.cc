@@ -737,7 +737,7 @@ void AutomationProvider::GetLastActiveBrowserWindow(int* handle) {
     *handle = browser_tracker_->Add(browser);
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 // TODO(estade): use this implementation for all platforms?
 void AutomationProvider::GetActiveWindow(int* handle) {
   gfx::NativeWindow window =
