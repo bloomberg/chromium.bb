@@ -69,7 +69,7 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
   // on the file thread. It must be created on, and its public API must only be
   // called from, the master's thread.
   class ScriptReloader
-      : public base::RefCounted<UserScriptMaster::ScriptReloader> {
+      : public base::RefCountedThreadSafe<UserScriptMaster::ScriptReloader> {
    public:
     // Parses the includes out of |script| and returns them in |includes|.
     static bool ParseMetadataHeader(const base::StringPiece& script_text,
