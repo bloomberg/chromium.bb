@@ -11,7 +11,6 @@ static const char* chrome_thread_names[ChromeThread::ID_COUNT] = {
   "Chrome_FileThread",  // FILE
   "Chrome_DBThread",  // DB
   "Chrome_WebKitThread",  // WEBKIT
-  "Chrome_HistoryThread",  // HISTORY
 #if defined(OS_LINUX)
   "Chrome_Background_X11Thread",  // BACKGROUND_X11
 #endif
@@ -25,7 +24,6 @@ ChromeThread* ChromeThread::chrome_threads_[ID_COUNT] = {
   NULL,  // FILE
   NULL,  // DB
   NULL,  // WEBKIT
-  NULL,  // HISTORY
 #if defined(OS_LINUX)
   NULL,  // BACKGROUND_X11
 #endif

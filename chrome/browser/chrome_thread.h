@@ -45,9 +45,6 @@ class ChromeThread : public base::Thread {
     // NOT in --single-process mode.
     WEBKIT,
 
-    // This is the thread that interacts with the history database.
-    HISTORY,
-
 #if defined(OS_LINUX)
     // This thread has a second connection to the X server and is used to
     // process UI requests when routing the request to the UI thread would risk

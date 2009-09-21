@@ -56,9 +56,14 @@ using history::HistoryBackend;
 
 namespace {
 
-class ChromeHistoryThread : public ChromeThread {
+// The history thread is intentionally not a ChromeThread because the
+// sync integration unit tests depend on being able to create more than one
+// history thread.
+static const char* kHistoryThreadName = "Chrome_HistoryThread";
+
+class ChromeHistoryThread : public base::Thread {
  public:
-  ChromeHistoryThread() : ChromeThread(ChromeThread::HISTORY) {}
+  ChromeHistoryThread() : base::Thread(kHistoryThreadName) {}
   virtual ~ChromeHistoryThread() {
     // We cannot rely on our base class to call Stop() since we want our
     // CleanUp function to run.
