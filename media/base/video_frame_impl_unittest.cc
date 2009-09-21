@@ -84,7 +84,7 @@ void ExpectFrameColor(media::VideoFrame* yv12_frame, uint32 expect_rgb_color) {
         rgb_surface.data[VideoSurface::kRGBPlane] +
         (rgb_surface.strides[VideoSurface::kRGBPlane] * row));
     for (size_t col = 0; col < rgb_surface.width; ++col) {
-      SCOPED_TRACE(StringPrintf("Checking (%zd, %u)", row, col));
+      SCOPED_TRACE(StringPrintf("Checking (%u, %u)", row, col));
       EXPECT_EQ(expect_rgb_color, rgb_row_data[col]);
     }
   }
