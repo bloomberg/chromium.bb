@@ -13,6 +13,7 @@
 # limitations under the License.
 
 
+import logging
 import os
 import re
 import subprocess
@@ -218,20 +219,25 @@ class SCMWrapper(object):
       # Don't reuse the args.
       return self.update(options, [], file_list)
 
-    files = CaptureSVNStatus(path)
     # Batch the command.
     files_to_revert = []
-    for file in files:
+    for file in CaptureSVNStatus(path):
       file_path = os.path.join(path, file[1])
+      if file_path[0][0] == 'X':
+        # Ignore externals.
+        continue
+
       print(file_path)
-      # Unversioned file or unexpected unversioned file.
-      if file[0][0] in ('?', '~'):
-        # Remove extraneous file. Also remove unexpected unversioned
-        # directories. svn won't touch them but we want to delete these.
-        file_list.append(file_path)
+      # Unversioned file, unexpected unversioned files, switched directories
+      # or conflicted trees.
+      if file[0][0] in ('?', '~') or file[0][4] == 'S' or file[0][6] == 'C':
+        # Remove then since svn revert won't touch them.
         try:
+          # TODO(maruel): Look if it is a file or a directory.
+          logging.info('os.remove(%s)' % file_path)
           os.remove(file_path)
         except EnvironmentError:
+          logging.info('gclient_utils.RemoveDirectory(%s)' % file_path)
           gclient_utils.RemoveDirectory(file_path)
 
       if file[0][0] != '?':

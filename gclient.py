@@ -69,6 +69,7 @@ __author__ = "darinf@gmail.com (Darin Fisher)"
 __version__ = "0.3.3"
 
 import errno
+import logging
 import optparse
 import os
 import re
@@ -1167,6 +1168,9 @@ def Main(argv):
   if len(argv) < 3 and command == "help":
     option_parser.print_help()
     return 0
+
+  if options.verbose:
+    logging.basicConfig(level=logging.DEBUG)
 
   # Files used for configuration and state saving.
   options.config_filename = os.environ.get("GCLIENT_FILE", ".gclient")
