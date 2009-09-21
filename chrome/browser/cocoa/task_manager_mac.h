@@ -12,10 +12,16 @@
 // This class is responsible for loading the task manager window and for
 // managing it.
 @interface TaskManagerWindowController : NSWindowController {
+ @private
+  IBOutlet NSTableView* tableView_;
+  TaskManagerModel* model_;  // weak
 }
 
 // Creates and shows the task manager's window.
-- (id)init;
+- (id)initWithModel:(TaskManagerModel*)model;
+
+// Refreshes all data in the task manager table.
+- (void)reloadData;
 @end
 
 // This class listens to task changed events sent by chrome.

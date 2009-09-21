@@ -348,7 +348,7 @@ void TaskManagerGtk::Init() {
   gtk_window_set_type_hint(GTK_WINDOW(dialog_), GDK_WINDOW_TYPE_HINT_NORMAL);
 
   // The response button should not be sensitive when the dialog is first opened
-  // because the selecetion is initially empty.
+  // because the selection is initially empty.
   gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_),
                                     kTaskManagerResponseKill, FALSE);
 
