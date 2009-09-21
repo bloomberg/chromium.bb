@@ -33,6 +33,10 @@ class SharedMemory : public DefaultNPObject<CHRSharedMemory> {
 
   virtual bool Map();
 
+  // This is a temporary function to allow me to drive the command buffer from
+  // JavaScript for the purposes of testing.
+  bool SetInt32(int32 offset, int32 value);
+
   base::SharedMemory* shared_memory() const {
     return shared_memory_;
   }
@@ -41,6 +45,7 @@ class SharedMemory : public DefaultNPObject<CHRSharedMemory> {
     NP_UTILS_DISPATCHER(Initialize, bool(int32));
     NP_UTILS_DISPATCHER(GetSize, int32())
     NP_UTILS_DISPATCHER(Map, bool())
+    NP_UTILS_DISPATCHER(SetInt32, bool(int32, int32));
   NP_UTILS_END_DISPATCHER_CHAIN
 
  private:

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "o3d/gpu_plugin/np_utils/np_utils.h"
 #include "o3d/gpu_plugin/gpu_plugin_object.h"
+#include "o3d/gpu_plugin/gpu_processor.h"
 
 namespace o3d {
 namespace gpu_plugin {
@@ -48,6 +49,8 @@ NPError GPUPluginObject::SetWindow(NPWindow* new_window) {
     memset(&window_, 0, sizeof(window_));
   }
 
+  UpdateProcessorWindow();
+
   return error;
 }
 
@@ -59,7 +62,11 @@ NPError GPUPluginObject::Destroy(NPSavedData** saved) {
   if (status_ != INITIALIZED)
     return NPERR_GENERIC_ERROR;
 
-  command_buffer_object_ = NPObjectPointer<CommandBuffer>();
+  processor_ = NULL;
+  if (command_buffer_.Get()) {
+    command_buffer_->SetPutOffsetChangeCallback(NULL);
+    command_buffer_ = NPObjectPointer<CommandBuffer>();
+  }
 
   status_ = DESTROYED;
 
@@ -77,15 +84,21 @@ NPObject*GPUPluginObject::GetScriptableNPObject() {
 }
 
 NPObjectPointer<NPObject> GPUPluginObject::OpenCommandBuffer() {
-  if (command_buffer_object_.Get())
-    return command_buffer_object_;
+  if (command_buffer_.Get())
+    return command_buffer_;
 
-  command_buffer_object_ = NPCreateObject<CommandBuffer>(npp_);
-  if (!command_buffer_object_->Initialize(kCommandBufferSize)) {
-    command_buffer_object_ = NPObjectPointer<CommandBuffer>();
+  command_buffer_ = NPCreateObject<CommandBuffer>(npp_);
+  if (command_buffer_->Initialize(kCommandBufferSize)) {
+    processor_ = new GPUProcessor(command_buffer_);
+    command_buffer_->SetPutOffsetChangeCallback(
+        NewCallback(processor_.get(),
+                    &GPUProcessor::ProcessCommands));
+    UpdateProcessorWindow();
+    return command_buffer_;
   }
 
-  return command_buffer_object_;
+  command_buffer_ = NPObjectPointer<CommandBuffer>();
+  return command_buffer_;
 }
 
 }  // namespace gpu_plugin

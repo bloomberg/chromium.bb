@@ -19,9 +19,16 @@ class MockCommandBuffer : public CommandBuffer {
   }
 
   MOCK_METHOD1(Initialize, bool(int32));
-  MOCK_METHOD0(GetBuffer, NPObjectPointer<NPObject>());
-  MOCK_METHOD1(SetPutOffset, void(int32));
+  MOCK_METHOD0(GetRingBuffer, NPObjectPointer<CHRSharedMemory>());
+  MOCK_METHOD0(GetSize, int32());
+  MOCK_METHOD1(SyncOffsets, int32(int32));
   MOCK_METHOD0(GetGetOffset, int32());
+  MOCK_METHOD1(SetGetOffset, void(int32));
+  MOCK_METHOD0(GetPutOffset, int32());
+  MOCK_METHOD1(SetPutOffsetChangeCallback, void(Callback0::Type*));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockCommandBuffer);
 };
 
 }  // namespace gpu_plugin

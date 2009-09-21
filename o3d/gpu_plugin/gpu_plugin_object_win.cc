@@ -5,6 +5,7 @@
 #include <windows.h>
 
 #include "o3d/gpu_plugin/gpu_plugin_object.h"
+#include "o3d/gpu_plugin/gpu_processor.h"
 
 namespace o3d {
 namespace gpu_plugin {
@@ -49,7 +50,17 @@ NPError GPUPluginObject::PlatformSpecificSetWindow(NPWindow* new_window) {
                     reinterpret_cast<LONG>(WindowProc));
   }
 
+  UpdateProcessorWindow();
+
   return NPERR_NO_ERROR;
+}
+
+void GPUPluginObject::UpdateProcessorWindow() {
+  if (processor_) {
+    processor_->SetWindow(reinterpret_cast<HWND>(window_.window),
+                          static_cast<int>(window_.width),
+                          static_cast<int>(window_.height));
+  }
 }
 
 }  // namespace gpu_plugin

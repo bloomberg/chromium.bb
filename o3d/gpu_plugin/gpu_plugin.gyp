@@ -120,6 +120,7 @@
       'sources': [
         'command_buffer.cc',
         'command_buffer.h',
+        'command_buffer_mock.h',
         'gpu_plugin.cc',
         'gpu_plugin.h',
         'gpu_plugin_object.cc',
@@ -127,6 +128,9 @@
         'gpu_plugin_object_win.cc',
         'gpu_plugin_object_factory.cc',
         'gpu_plugin_object_factory.h',
+        'gpu_processor.h',
+        'gpu_processor.cc',
+        'gpu_processor_win.cc',
       ],
     },
 
@@ -148,11 +152,11 @@
         '../../third_party/npapi',
       ],
       'sources': [
-        'command_buffer_mock.h',
         'command_buffer_unittest.cc',
         'gpu_plugin_unittest.cc',
         'gpu_plugin_object_unittest.cc',
         'gpu_plugin_object_factory_unittest.cc',
+        'gpu_processor_unittest.cc',
       ],
     },
   ]

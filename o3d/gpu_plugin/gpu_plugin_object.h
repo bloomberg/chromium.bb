@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/ref_counted.h"
+#include "base/thread.h"
 #include "o3d/gpu_plugin/command_buffer.h"
 #include "o3d/gpu_plugin/np_utils/default_np_object.h"
 #include "o3d/gpu_plugin/np_utils/np_dispatcher.h"
@@ -17,6 +19,8 @@
 
 namespace o3d {
 namespace gpu_plugin {
+
+class GPUProcessor;
 
 // The scriptable object for the GPU plugin.
 class GPUPluginObject : public DefaultNPObject<NPObject>,
@@ -52,6 +56,7 @@ class GPUPluginObject : public DefaultNPObject<NPObject>,
 
  private:
   NPError PlatformSpecificSetWindow(NPWindow* new_window);
+  void UpdateProcessorWindow();
 
   enum Status {
     CREATED,
@@ -62,7 +67,8 @@ class GPUPluginObject : public DefaultNPObject<NPObject>,
   NPP npp_;
   Status status_;
   NPWindow window_;
-  NPObjectPointer<CommandBuffer> command_buffer_object_;
+  NPObjectPointer<CommandBuffer> command_buffer_;
+  scoped_refptr<GPUProcessor> processor_;
 };
 
 }  // namespace gpu_plugin

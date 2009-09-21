@@ -38,7 +38,7 @@ class MockSystemNPObject : public DefaultNPObject<NPObject> {
 class CommandBufferTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    command_buffer_object_ = NPCreateObject<CommandBuffer>(NULL);
+    command_buffer_ = NPCreateObject<CommandBuffer>(NULL);
 
     window_object_ = NPCreateObject<DynamicNPObject>(NULL);
 
@@ -50,16 +50,15 @@ class CommandBufferTest : public testing::Test {
   }
 
   MockNPBrowser mock_browser_;
-  NPObjectPointer<CommandBuffer> command_buffer_object_;
+  NPObjectPointer<CommandBuffer> command_buffer_;
   NPObjectPointer<DynamicNPObject> window_object_;
   NPObjectPointer<DynamicNPObject> chromium_object_;
   NPObjectPointer<MockSystemNPObject> system_object_;
 };
 
-TEST_F(CommandBufferTest, TestBehaviorWhileUninitialized) {
+TEST_F(CommandBufferTest, NullRingBufferByDefault) {
   EXPECT_EQ(NPObjectPointer<NPObject>(),
-            command_buffer_object_->GetSharedMemory());
-  EXPECT_EQ(0, command_buffer_object_->GetGetOffset());
+            command_buffer_->GetRingBuffer());
 }
 
 TEST_F(CommandBufferTest, InitializesCommandBuffer) {
@@ -75,12 +74,12 @@ TEST_F(CommandBufferTest, InitializesCommandBuffer) {
   EXPECT_CALL(*expected_shared_memory.Get(), Map())
     .WillOnce(Return(true));
 
-  EXPECT_TRUE(command_buffer_object_->Initialize(1024));
-  EXPECT_EQ(expected_shared_memory, command_buffer_object_->GetSharedMemory());
+  EXPECT_TRUE(command_buffer_->Initialize(1024));
+  EXPECT_EQ(expected_shared_memory, command_buffer_->GetRingBuffer());
 
   // Cannot reinitialize.
-  EXPECT_FALSE(command_buffer_object_->Initialize(1024));
-  EXPECT_EQ(expected_shared_memory, command_buffer_object_->GetSharedMemory());
+  EXPECT_FALSE(command_buffer_->Initialize(1024));
+  EXPECT_EQ(expected_shared_memory, command_buffer_->GetRingBuffer());
 }
 
 TEST_F(CommandBufferTest, InitializeFailsIfCannotCreateSharedMemory) {
@@ -90,9 +89,9 @@ TEST_F(CommandBufferTest, InitializeFailsIfCannotCreateSharedMemory) {
   EXPECT_CALL(*system_object_.Get(), CreateSharedMemory(1024))
     .WillOnce(Return(NPObjectPointer<NPObject>()));
 
-  EXPECT_FALSE(command_buffer_object_->Initialize(1024));
+  EXPECT_FALSE(command_buffer_->Initialize(1024));
   EXPECT_EQ(NPObjectPointer<NPObject>(),
-            command_buffer_object_->GetSharedMemory());
+            command_buffer_->GetRingBuffer());
 }
 
 TEST_F(CommandBufferTest, InitializeFailsIfCannotMapSharedMemory) {
@@ -108,9 +107,56 @@ TEST_F(CommandBufferTest, InitializeFailsIfCannotMapSharedMemory) {
   EXPECT_CALL(*expected_shared_memory.Get(), Map())
     .WillOnce(Return(false));
 
-  EXPECT_FALSE(command_buffer_object_->Initialize(1024));
+  EXPECT_FALSE(command_buffer_->Initialize(1024));
   EXPECT_EQ(NPObjectPointer<NPObject>(),
-            command_buffer_object_->GetSharedMemory());
+            command_buffer_->GetRingBuffer());
 }
+
+TEST_F(CommandBufferTest, GetAndPutOffsetsDefaultToZero) {
+  EXPECT_EQ(0, command_buffer_->GetGetOffset());
+  EXPECT_EQ(0, command_buffer_->GetPutOffset());
+}
+
+class MockCallback : public CallbackRunner<Tuple0> {
+ public:
+  MOCK_METHOD1(RunWithParams, void(const Tuple0&));
+};
+
+TEST_F(CommandBufferTest, CanSyncGetAndPutOffset) {
+  EXPECT_CALL(mock_browser_, GetWindowNPObject(NULL))
+    .WillOnce(Return(window_object_.ToReturned()));
+
+  NPObjectPointer<MockSharedMemory> expected_shared_memory =
+      NPCreateObject<StrictMock<MockSharedMemory> >(NULL);
+
+  EXPECT_CALL(*system_object_.Get(), CreateSharedMemory(1024))
+    .WillOnce(Return(expected_shared_memory));
+
+  EXPECT_CALL(*expected_shared_memory.Get(), Map())
+    .WillOnce(Return(true));
+
+  EXPECT_TRUE(command_buffer_->Initialize(1024));
+
+  StrictMock<MockCallback>* put_offset_change_callback =
+      new StrictMock<MockCallback>;
+  command_buffer_->SetPutOffsetChangeCallback(put_offset_change_callback);
+
+  EXPECT_CALL(*put_offset_change_callback, RunWithParams(_));
+  EXPECT_EQ(0, command_buffer_->SyncOffsets(2));
+  EXPECT_EQ(2, command_buffer_->GetPutOffset());
+
+  EXPECT_CALL(*put_offset_change_callback, RunWithParams(_));
+  EXPECT_EQ(0, command_buffer_->SyncOffsets(4));
+  EXPECT_EQ(4, command_buffer_->GetPutOffset());
+
+  command_buffer_->SetGetOffset(2);
+  EXPECT_EQ(2, command_buffer_->GetGetOffset());
+  EXPECT_CALL(*put_offset_change_callback, RunWithParams(_));
+  EXPECT_EQ(2, command_buffer_->SyncOffsets(6));
+
+  EXPECT_EQ(-1, command_buffer_->SyncOffsets(-1));
+  EXPECT_EQ(-1, command_buffer_->SyncOffsets(1024));
+}
+
 }  // namespace gpu_plugin
 }  // namespace o3d

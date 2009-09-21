@@ -13,6 +13,7 @@
 
 using testing::_;
 using testing::DoAll;
+using testing::NotNull;
 using testing::Return;
 using testing::SetArgumentPointee;
 using testing::StrictMock;
@@ -104,14 +105,16 @@ TEST_F(GPUPluginObjectTest, CanGetScriptableNPObject) {
 
 TEST_F(GPUPluginObjectTest, OpenCommandBufferReturnsInitializedCommandBuffer) {
   // Intercept creation of command buffer object and return mock.
-  NPObjectPointer<MockCommandBuffer> command_buffer_object =
+  NPObjectPointer<MockCommandBuffer> command_buffer =
       NPCreateObject<StrictMock<MockCommandBuffer> >(NULL);
   EXPECT_CALL(mock_browser_, CreateObject(NULL,
       NPGetClass<CommandBuffer>()))
-    .WillOnce(Return(command_buffer_object.ToReturned()));
+    .WillOnce(Return(command_buffer.ToReturned()));
 
-  EXPECT_CALL(*command_buffer_object.Get(), Initialize(1024))
+  EXPECT_CALL(*command_buffer.Get(), Initialize(1024))
     .WillOnce(Return(true));
+
+  EXPECT_CALL(*command_buffer.Get(), SetPutOffsetChangeCallback(NotNull()));
 
   EXPECT_EQ(NPERR_NO_ERROR, plugin_object_->New("application/foo",
                                                 0,
@@ -119,23 +122,25 @@ TEST_F(GPUPluginObjectTest, OpenCommandBufferReturnsInitializedCommandBuffer) {
                                                 NULL,
                                                 NULL));
 
-  EXPECT_EQ(command_buffer_object, plugin_object_->OpenCommandBuffer());
+  EXPECT_EQ(command_buffer, plugin_object_->OpenCommandBuffer());
 
   // Calling OpenCommandBuffer again just returns the existing command buffer.
-  EXPECT_EQ(command_buffer_object, plugin_object_->OpenCommandBuffer());
+  EXPECT_EQ(command_buffer, plugin_object_->OpenCommandBuffer());
+
+  EXPECT_CALL(*command_buffer.Get(), SetPutOffsetChangeCallback(NULL));
 
   EXPECT_EQ(NPERR_NO_ERROR, plugin_object_->Destroy(NULL));
 }
 
 TEST_F(GPUPluginObjectTest, OpenCommandBufferReturnsNullIfCannotInitialize) {
   // Intercept creation of command buffer object and return mock.
-  NPObjectPointer<MockCommandBuffer> command_buffer_object =
+  NPObjectPointer<MockCommandBuffer> command_buffer =
       NPCreateObject<StrictMock<MockCommandBuffer> >(NULL);
   EXPECT_CALL(mock_browser_, CreateObject(NULL,
       NPGetClass<CommandBuffer>()))
-    .WillOnce(Return(command_buffer_object.ToReturned()));
+    .WillOnce(Return(command_buffer.ToReturned()));
 
-  EXPECT_CALL(*command_buffer_object.Get(), Initialize(1024))
+  EXPECT_CALL(*command_buffer.Get(), Initialize(1024))
     .WillOnce(Return(false));
 
   EXPECT_EQ(NPERR_NO_ERROR, plugin_object_->New("application/foo",

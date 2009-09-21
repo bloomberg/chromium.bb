@@ -7,7 +7,11 @@
 namespace o3d {
 namespace gpu_plugin {
 
-CommandBuffer::CommandBuffer(NPP npp) : npp_(npp) {
+CommandBuffer::CommandBuffer(NPP npp)
+    : npp_(npp),
+      size_(0),
+      get_offset_(0),
+      put_offset_(0) {
 }
 
 CommandBuffer::~CommandBuffer() {
@@ -51,18 +55,46 @@ bool CommandBuffer::Initialize(int32 size) {
     return false;
   }
 
+  size_ = size;
   return true;
 }
 
-NPObjectPointer<NPObject> CommandBuffer::GetSharedMemory() {
+NPObjectPointer<CHRSharedMemory> CommandBuffer::GetRingBuffer() {
   return shared_memory_;
 }
 
-void CommandBuffer::SetPutOffset(int32 offset) {
+int32 CommandBuffer::GetSize() {
+  return size_;
+}
+
+int32 CommandBuffer::SyncOffsets(int32 put_offset) {
+  if (put_offset < 0 || put_offset >= size_)
+    return -1;
+
+  put_offset_ = put_offset;
+
+  if (put_offset_change_callback_.get()) {
+    put_offset_change_callback_->Run();
+  }
+
+  return get_offset_;
 }
 
 int32 CommandBuffer::GetGetOffset() {
-  return 0;
+  return get_offset_;
+}
+
+void CommandBuffer::SetGetOffset(int32 get_offset) {
+  DCHECK(get_offset >= 0 && get_offset < size_);
+  get_offset_ = get_offset;
+}
+
+int32 CommandBuffer::GetPutOffset() {
+  return put_offset_;
+}
+
+void CommandBuffer::SetPutOffsetChangeCallback(Callback0::Type* callback) {
+  put_offset_change_callback_.reset(callback);
 }
 
 }  // namespace gpu_plugin
