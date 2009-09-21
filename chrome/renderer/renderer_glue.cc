@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -210,6 +210,16 @@ void GetPlugins(bool refresh, std::vector<WebPluginInfo>* plugins) {
   if (!RenderThread::current()->plugin_refresh_allowed())
     refresh = false;
   RenderThread::current()->Send(new ViewHostMsg_GetPlugins(refresh, plugins));
+}
+
+bool IsProtocolSupportedForMedia(const GURL& url) {
+  // If new protocol is to be added here, we need to make sure the response is
+  // validated accordingly in the media engine.
+  if (url.SchemeIsFile() || url.SchemeIs(chrome::kHttpScheme) ||
+      url.SchemeIs(chrome::kHttpsScheme) ||
+      url.SchemeIs(chrome::kExtensionScheme))
+    return true;
+  return false;
 }
 
 // static factory function

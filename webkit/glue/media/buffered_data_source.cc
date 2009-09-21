@@ -13,6 +13,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "webkit/glue/media/buffered_data_source.h"
+#include "webkit/glue/webkit_glue.h"
 
 namespace {
 
@@ -149,7 +150,7 @@ void BufferedResourceLoader::Read(int64 position,
   DCHECK(read_callback);
   DCHECK(buffer);
 
-  // Saves the parameter of reading.
+  // Save the parameter of reading.
   read_callback_.reset(read_callback);
   read_position_ = position;
   read_size_ = read_size;
@@ -198,13 +199,19 @@ bool BufferedResourceLoader::OnReceivedRedirect(
     const webkit_glue::ResourceLoaderBridge::ResponseInfo& info) {
   DCHECK(bridge_.get());
 
-  // Saves the new URL.
+  // Save the new URL.
   url_ = new_url;
 
   // The load may have been stopped and |start_callback| is destroyed.
   // In this case we shouldn't do anything.
   if (!start_callback_.get())
     return true;
+
+  if (!IsProtocolSupportedForMedia(new_url)) {
+    DoneStart(net::ERR_ADDRESS_INVALID);
+    Stop();
+    return false;
+  }
   return true;
 }
 
@@ -218,11 +225,11 @@ void BufferedResourceLoader::OnReceivedResponse(
   if (!start_callback_.get())
     return;
 
-  int64 first_byte_position = -1;
-
-  // The file:// protocol should be able to serve any request we want, so we
-  // take an exception for file protocol.
-  if (!url_.SchemeIsFile()) {
+  // We make a strong assumption that when we reach here we have either
+  // received a response from HTTP/HTTPS protocol or the request was
+  // successful (in particular range request). So we only verify the partial
+  // response for HTTP and HTTPS protocol.
+  if (url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme)) {
     int error = net::OK;
     if (!info.headers) {
       // We expect to receive headers because this is a HTTP or HTTPS protocol,
@@ -253,12 +260,6 @@ void BufferedResourceLoader::OnReceivedResponse(
   // to the content length.
   if (!range_requested_)
     instance_size_ = content_length_;
-
-  // We only care about the first byte position if it's given by the server.
-  // TODO(hclam): If server replies with a different offset, consider failing
-  // here.
-  if (first_byte_position != kPositionNotSpecified)
-    offset_ = first_byte_position;
 
   // Calls with a successful response.
   DoneStart(net::OK);
@@ -489,11 +490,20 @@ base::TimeDelta BufferedDataSource::GetTimeoutMilliseconds() {
 // BufferedDataSource, media::MediaFilter implementation
 void BufferedDataSource::Initialize(const std::string& url,
                                     media::FilterCallback* callback) {
-  DCHECK(callback);
-  initialize_callback_.reset(callback);
-
   // Saves the url.
   url_ = GURL(url);
+
+  if (!IsProtocolSupportedForMedia(url_)) {
+    // This method is called on the thread where host() lives so it is safe
+    // to make this call.
+    host()->SetError(media::PIPELINE_ERROR_NETWORK);
+    callback->Run();
+    delete callback;
+    return;
+  }
+
+  DCHECK(callback);
+  initialize_callback_.reset(callback);
 
   media_format_.SetAsString(media::MediaFormat::kMimeType,
                             media::mime_type::kApplicationOctetStream);

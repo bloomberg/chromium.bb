@@ -202,6 +202,10 @@ bool IsPluginRunningInRendererProcess();
 // Returns a bool indicating if the Null plugin should be enabled or not.
 bool IsDefaultPluginEnabled();
 
+// Returns true if the protocol implemented to serve |url| supports features
+// required by the media engine.
+bool IsProtocolSupportedForMedia(const GURL& url);
+
 #if defined(OS_WIN)
 // Downloads the file specified by the URL. On sucess a WM_COPYDATA message
 // will be sent to the caller_window.
