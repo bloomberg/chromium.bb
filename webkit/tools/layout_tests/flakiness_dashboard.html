@@ -915,6 +915,15 @@
   }
 
   /**
+   * Returns whether the test has passed continuously for at
+   * least as many runs as we are showing results for.
+   */
+   function hasPassedInMaxRuns(testResult) {
+     var results = testResult.rawResults;
+     return results[0][1] == 'P' && results[0][0] >= currentState.maxResults;
+   }
+
+  /**
    * Returns whether we should exclude test results from the test table.
    * Note that we never want to exclude tests when we're in the individual
    * tests view of the dashboard since the user is explicitly listing tests
@@ -926,6 +935,11 @@
 
     if (testResult.isWontFix && !currentState.showWontFix)
       return true;
+
+     if (hasPassedInMaxRuns(testResult)) {
+      // Hide tests that are passing.
+      return true;
+    }
 
     if ((testResult.meetsExpectations || isFixedTest(testResult)) &&
         !currentState.showCorrectExpectations) {
