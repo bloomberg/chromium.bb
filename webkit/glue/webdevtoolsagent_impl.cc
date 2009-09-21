@@ -162,15 +162,27 @@ void WebDevToolsAgentImpl::ForceRepaint() {
   delegate_->ForceRepaint();
 }
 
-void WebDevToolsAgentImpl::ExecuteUtilityFunction(
+void WebDevToolsAgentImpl::DispatchOnInspectorController(
       int call_id,
       const String& function_name,
       const String& json_args) {
   String result;
   String exception;
   result = debugger_agent_impl_->ExecuteUtilityFunction(utility_context_,
-      function_name, json_args, &exception);
-  tools_agent_delegate_stub_->DidExecuteUtilityFunction(call_id,
+      "InspectorControllerDispatcher", function_name, json_args, &exception);
+  tools_agent_delegate_stub_->DidDispatchOn(call_id,
+      result, exception);
+}
+
+void WebDevToolsAgentImpl::DispatchOnInjectedScript(
+      int call_id,
+      const String& function_name,
+      const String& json_args) {
+  String result;
+  String exception;
+  result = debugger_agent_impl_->ExecuteUtilityFunction(utility_context_,
+      "InjectedScript", function_name, json_args, &exception);
+  tools_agent_delegate_stub_->DidDispatchOn(call_id,
       result, exception);
 }
 

@@ -6,47 +6,21 @@
  * @fileoverview Injects 'injected' object into the inspectable page.
  */
 
-/**
- * Dispatches host calls into the injected function calls.
- */
-goog.require('devtools.Injected');
+
+var InspectorControllerDispatcher = {};
 
 
 /**
- * Injected singleton.
- */
-var devtools$$obj = new devtools.Injected();
-
-
-/**
- * Main dispatch method, all calls from the host go through this one.
+ * Main dispatch method, all calls from the host to InspectorController go
+ * through this one.
  * @param {string} functionName Function to call
  * @param {string} json_args JSON-serialized call parameters.
  * @return {string} JSON-serialized result of the dispatched call.
  */
-function devtools$$dispatch(functionName, json_args) {
+InspectorControllerDispatcher.dispatch = function(functionName, json_args) {
   var params = JSON.parse(json_args);
-  var result = devtools$$obj[functionName].apply(devtools$$obj, params);
-  return JSON.stringify(result);
-}
-
-
-/**
- * Removes malicious functions from the objects so that the pure JSON.stringify
- * was used.
- */
-function sanitizeJson(obj) {
-  for (var name in obj) {
-    var property = obj[name];
-    var type = typeof property;
-    if (type === "function") {
-      obj[name] = null;
-    } else if (obj !== null && type === "object") {
-      sanitizeJson(property);
-    }
-  }
-  return obj;
-}
+  InspectorController[functionName].apply(InspectorController, params);
+};
 
 
 /**
@@ -54,7 +28,7 @@ function sanitizeJson(obj) {
  * We serialize the call and send it to the client over the IPC
  * using dispatchOut bound method.
  */
-var dispatch = function(method, var_args) {
+function dispatch(method, var_args) {
   // Handle all messages with non-primitieve arguments here.
   var args = Array.prototype.slice.call(arguments);
 
@@ -67,8 +41,20 @@ var dispatch = function(method, var_args) {
     return;
   }
 
-  var call = JSON.stringify(sanitizeJson(args));
+  var call = JSON.stringify(args);
   DevToolsAgentHost.dispatch(call);
+};
+
+
+// Plugging into upstreamed support.
+InjectedScript._window = function() {
+  return contentWindow;
+};
+
+
+// Plugging into upstreamed support.
+Object.className = function(obj) {
+  return (obj == null) ? "null" : obj.constructor.name;
 };
 
 

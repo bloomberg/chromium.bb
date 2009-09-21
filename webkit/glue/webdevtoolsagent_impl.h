@@ -43,7 +43,11 @@ class WebDevToolsAgentImpl
   virtual ~WebDevToolsAgentImpl();
 
   // ToolsAgent implementation.
-  virtual void ExecuteUtilityFunction(
+  virtual void DispatchOnInspectorController(
+      int call_id,
+      const WebCore::String& function_name,
+      const WebCore::String& json_args);
+  virtual void DispatchOnInjectedScript(
       int call_id,
       const WebCore::String& function_name,
       const WebCore::String& json_args);

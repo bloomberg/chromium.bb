@@ -240,14 +240,12 @@ devtools.InspectorControllerImpl.prototype.evaluateInCallFrame =
 devtools.InspectorControllerImpl.prototype.dispatchOnInjectedScript = function(
     callId, methodName, argsString) {
   var callback = function(result, isException) {
-    WebInspector.didDispatchOnInjectedScript(callId,
-        isException ? result : JSON.parse(result),
-        isException);
+    WebInspector.didDispatchOnInjectedScript(callId, result, isException);
   };
-  RemoteToolsAgent.ExecuteUtilityFunction(
+  RemoteToolsAgent.DispatchOnInjectedScript(
       devtools.Callback.wrap(callback),
-      'InjectedScript',
-      JSON.stringify(['dispatch', methodName, argsString]));
+      methodName,
+      argsString);
 };
 
 
@@ -268,18 +266,11 @@ devtools.InspectorControllerImpl.prototype.installInspectorControllerDelegate_
  */
 devtools.InspectorControllerImpl.prototype.callInspectorController_ =
     function(methodName, var_arg) {
-  var args = Array.prototype.slice.call(arguments);
-  RemoteToolsAgent.ExecuteUtilityFunction(
+  var args = Array.prototype.slice.call(arguments, 1);
+  RemoteToolsAgent.DispatchOnInspectorController(
       devtools.Callback.wrap(function(){}),
-      'InspectorController', JSON.stringify(args));
-};
-
-
-devtools.InspectorControllerImpl.parseWrap_ = function(callback) {
-  return devtools.Callback.wrap(
-      function(data) {
-        callback.call(this, JSON.parse(data));
-      });
+      methodName,
+      JSON.stringify(args));
 };
 
 

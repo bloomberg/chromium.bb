@@ -97,91 +97,15 @@ RemoteToolsAgentStub = function() {
 };
 
 
-RemoteToolsAgentStub.prototype.HideDOMNodeHighlight = function() {
+RemoteToolsAgentStub.prototype.DispatchOnInjectedScript = function() {
 };
 
 
-RemoteToolsAgentStub.prototype.HighlightDOMNode = function() {
-};
-
-
-RemoteToolsAgentStub.prototype.evaluate = function(expr) {
-  window.eval(expr);
-};
-
-RemoteToolsAgentStub.prototype.EvaluateJavaScript = function(callId, script) {
-  setTimeout(function() {
-    var result = eval(script);
-    RemoteToolsAgent.DidEvaluateJavaScript(callId, result);
-  }, 0);
-};
-
-
-RemoteToolsAgentStub.prototype.ExecuteUtilityFunction = function(callId,
-    functionName, args) {
-  setTimeout(function() {
-    var result = [];
-    if (functionName == 'getProperties') {
-      result = [
-        'undefined', 'undefined_key', undefined,
-        'string', 'string_key', 'value',
-        'function', 'func', undefined,
-        'array', 'array_key', [10],
-        'object', 'object_key', undefined,
-        'boolean', 'boolean_key', true,
-        'number', 'num_key', 911,
-        'date', 'date_key', new Date() ];
-    } else if (functionName == 'getPrototypes') {
-      result = ['Proto1', 'Proto2', 'Proto3'];
-    } else if (functionName == 'getStyles') {
-      result = {
-        'computedStyle' : [0, '0px', '0px', null, null, null, ['display', false, false, '', 'none']],
-        'inlineStyle' : [1, '0px', '0px', null, null, null, ['display', false, false, '', 'none']],
-        'styleAttributes' : {
-           attr: [2, '0px', '0px', null, null, null, ['display', false, false, '', 'none']]
-        },
-        'matchedCSSRules' : [
-          { 'selector' : 'S',
-            'style' : [3, '0px', '0px', null, null, null, ['display', false, false, '', 'none']],
-            'parentStyleSheet' : { 'href' : 'http://localhost',
-                                   'ownerNodeName' : 'DIV' }
-          }
-        ]
-      };
-    } else if (functionName == 'toggleNodeStyle' ||
-        functionName == 'applyStyleText' ||
-        functionName == 'setStyleProperty') {
-      alert(functionName + '(' + args + ')');
-    } else if (functionName == 'evaluate') {
-      try {
-        result = [ window.eval(JSON.parse(args)[0]), false ];
-      } catch (e) {
-        result = [ e.toString(), true ];
-      }
-    } else if (functionName == 'InspectorController' ||
-        functionName == 'InjectedScript') {
-      // do nothing;
-    } else {
-      alert('Unexpected utility function:' + functionName);
-    }
-    RemoteToolsAgent.DidExecuteUtilityFunction(callId,
-        JSON.stringify(result), '');
-  }, 0);
+RemoteToolsAgentStub.prototype.DispatchOnInspectorController = function() {
 };
 
 
 RemoteToolsAgentStub.prototype.ExecuteVoidJavaScript = function() {
-};
-
-
-RemoteToolsAgentStub.prototype.SetResourceTrackingEnabled = function(enabled, always) {
-  RemoteToolsAgent.SetResourcesPanelEnabled(enabled);
-  if (enabled) {
-    WebInspector.resourceTrackingWasEnabled();
-  } else {
-    WebInspector.resourceTrackingWasDisabled();
-  }
-  addDummyResource();
 };
 
 
@@ -298,7 +222,6 @@ function addDummyResource() {
 
 DevToolsHostStub.prototype.loaded = function() {
   addDummyResource();
-  uiTests.runAllTests();
 };
 
 

@@ -50,9 +50,10 @@ class DebuggerAgentImpl : public DebuggerAgent {
 
   // Executes function with the given name in the utility context. Passes node
   // and json args as parameters. Note that the function called must be
-  // implemented in the inject.js file.
+  // implemented in the inject_dispatch.js file.
   WebCore::String ExecuteUtilityFunction(
       v8::Handle<v8::Context> context,
+      const char* object,
       const WebCore::String& function_name,
       const WebCore::String& json_args,
       WebCore::String* exception);

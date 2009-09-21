@@ -35,7 +35,7 @@ devtools$$dispatch = function(remoteName, methodName, param1, param2, param3) {
 
 
 devtools.ToolsAgent = function() {
-  RemoteToolsAgent.DidExecuteUtilityFunction =
+  RemoteToolsAgent.DidDispatchOn =
       devtools.Callback.processCallback;
   RemoteToolsAgent.FrameNavigate =
       goog.bind(this.frameNavigate_, this);

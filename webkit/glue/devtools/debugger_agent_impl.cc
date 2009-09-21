@@ -139,11 +139,6 @@ void DebuggerAgentImpl::CreateUtilityContext(
       webkit_glue::GetDataResource(IDR_DEVTOOLS_INJECT_WEBKIT_JS);
   v8::Script::Compile(
       v8::String::New(injectjs_webkit.as_string().c_str()))->Run();
-
-  base::StringPiece injectjs = webkit_glue::GetDataResource(
-      IDR_DEVTOOLS_INJECT_JS);
-  v8::Script::Compile(v8::String::New(injectjs.as_string().c_str()))->Run();
-
   base::StringPiece inject_dispatchjs = webkit_glue::GetDataResource(
       IDR_DEVTOOLS_INJECT_DISPATCH_JS);
   v8::Script::Compile(v8::String::New(
@@ -152,6 +147,7 @@ void DebuggerAgentImpl::CreateUtilityContext(
 
 String DebuggerAgentImpl::ExecuteUtilityFunction(
     v8::Handle<v8::Context> context,
+    const char* object,
     const String &function_name,
     const String& json_args,
     String* exception) {
@@ -165,8 +161,11 @@ String DebuggerAgentImpl::ExecuteUtilityFunction(
 
   DebuggerAgentManager::UtilityContextScope utility_scope;
 
+  v8::Handle<v8::Object> dispatch_object = v8::Handle<v8::Object>::Cast(
+      context->Global()->Get(v8::String::New(object)));
+
   v8::Handle<v8::Value> dispatch_function =
-      context->Global()->Get(v8::String::New("devtools$$dispatch"));
+      dispatch_object->Get(v8::String::New("dispatch"));
   ASSERT(dispatch_function->IsFunction());
   v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(dispatch_function);
 
