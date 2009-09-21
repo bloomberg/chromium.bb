@@ -31,3 +31,4 @@ Local Modifications:
     ltmain.sh, missing.
   * Removed Makefile.in files, *.sln, *.vcproj.
   * Removed "examples", "thirdparty", and "sessions" directories.
+  * Removed a number of unneeded scope specifications to appease gcc.

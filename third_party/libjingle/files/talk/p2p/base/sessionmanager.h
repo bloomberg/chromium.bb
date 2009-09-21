@@ -156,7 +156,7 @@ class SessionManager : public sigslot::has_slots<> {
 
   // Creates and returns an error message from the given components.  The
   // caller is responsible for deleting this.
-  buzz::XmlElement* SessionManager::CreateErrorMessage(
+  buzz::XmlElement* CreateErrorMessage(
       const buzz::XmlElement* stanza,
       const buzz::QName& name,
       const std::string& type,

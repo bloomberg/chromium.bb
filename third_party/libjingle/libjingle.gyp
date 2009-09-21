@@ -10,13 +10,11 @@
     'defines': [
       'FEATURE_ENABLE_SSL',
       'FEATURE_ENABLE_VOICEMAIL',  # TODO(ncarter): Do we really need this?
-      'COMPILER_MSVC',
       '_USE_32BIT_TIME_T',
     ],
     'include_dirs': [
       './overrides',
       './files',
-      '../third_party/platformsdk_win2008_6_1/files/Include',
     ],
     'dependencies': [
       '../expat/expat.gyp:expat',
@@ -32,6 +30,21 @@
         'FEATURE_ENABLE_VOICEMAIL',
       ],
     },
+    'conditions': [
+      ['OS=="win"', {
+        'defines': [
+          'COMPILER_MSVC',
+        ],
+        'include_dirs': [
+          '../third_party/platformsdk_win2008_6_1/files/Include',
+        ],
+      }],
+      ['OS=="linux"', {
+        'defines': [
+          'POSIX',
+        ],
+      }],
+    ],
   },
   'targets': [
     {
@@ -62,13 +75,10 @@
         'files/talk/base/bytebuffer.h',
         'files/talk/base/common.cc',
         'files/talk/base/common.h',
-        'files/talk/base/convert.h',  # win32 only
         'files/talk/base/criticalsection.h',
         'files/talk/base/cryptstring.h',
         'files/talk/base/diskcache.cc',
         'files/talk/base/diskcache.h',
-        'files/talk/base/diskcache_win32.cc',  # win32 only
-        'files/talk/base/diskcache_win32.h',   # win32 only
         'files/talk/base/diskcachestd.cc',
         'files/talk/base/diskcachestd.h',
         'files/talk/base/fileutils.cc',
@@ -110,8 +120,6 @@
         'files/talk/base/proxydetect.h',
         'files/talk/base/proxyinfo.cc',
         'files/talk/base/proxyinfo.h',
-        'files/talk/base/schanneladapter.cc',
-        'files/talk/base/schanneladapter.h',
         'files/talk/base/signalthread.cc',
         'files/talk/base/signalthread.h',
         'files/talk/base/socketadapters.cc',
@@ -154,16 +162,6 @@
         'files/talk/base/urlencode.h',
         'files/talk/base/virtualsocketserver.cc',
         'files/talk/base/virtualsocketserver.h',
-        'files/talk/base/win32.h',
-        'files/talk/base/win32filesystem.cc',
-        'files/talk/base/win32filesystem.h',
-        'files/talk/base/win32socketserver.cc',
-        'files/talk/base/win32socketserver.h',
-        'files/talk/base/win32window.h',
-        'files/talk/base/winfirewall.cc',
-        'files/talk/base/winfirewall.h',
-        'files/talk/base/winping.cc',
-        'files/talk/base/winping.h',
         'files/talk/p2p/base/candidate.h',
         'files/talk/p2p/base/common.h',
         'files/talk/p2p/base/constants.cc',
@@ -247,6 +245,27 @@
         'overrides/base/constructormagic.h',
         'overrides/base/scoped_ptr.h',
         'overrides/config.h',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'sources': [
+            'files/talk/base/convert.h',  # win32 only
+            'files/talk/base/diskcache_win32.cc',  # win32 only
+            'files/talk/base/diskcache_win32.h',   # win32 only
+            'files/talk/base/schanneladapter.cc',
+            'files/talk/base/schanneladapter.h',
+            'files/talk/base/win32.h',
+            'files/talk/base/win32filesystem.cc',
+            'files/talk/base/win32filesystem.h',
+            'files/talk/base/win32socketserver.cc',
+            'files/talk/base/win32socketserver.h',
+            'files/talk/base/win32window.h',
+            'files/talk/base/winfirewall.cc',
+            'files/talk/base/winfirewall.h',
+            'files/talk/base/winping.cc',
+            'files/talk/base/winping.h',
+          ],
+        }],
       ],
     },
   ],

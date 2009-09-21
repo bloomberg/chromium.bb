@@ -23,8 +23,8 @@ public:
   static std::string decode(const std::string & data);
   static std::string encodeFromArray(const char * data, size_t len);
 private:
-  static const std::string Base64::Base64Table;
-  static const std::string::size_type Base64::DecodeTable[];
+  static const std::string Base64Table;
+  static const std::string::size_type DecodeTable[];
 };
 
 } // namespace talk_base

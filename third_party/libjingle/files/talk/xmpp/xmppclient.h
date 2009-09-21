@@ -138,7 +138,7 @@ private:
     }
   }
 
-  std::string XmppClient::GetStateName(int state) const {
+  std::string GetStateName(int state) const {
     switch (state) {
       case STATE_PRE_XMPP_LOGIN:      return "PRE_XMPP_LOGIN";
       case STATE_START_XMPP_LOGIN:  return "START_XMPP_LOGIN";

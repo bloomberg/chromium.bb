@@ -271,7 +271,7 @@ size_t asccpyn(wchar_t* buffer, size_t buflen,
 template<>
 struct Traits<char> {
   typedef std::string string;
-  inline static const char* Traits<char>::empty_str() { return ""; }
+  inline static const char* empty_str() { return ""; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

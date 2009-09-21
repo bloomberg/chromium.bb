@@ -1,8 +1,176 @@
-Only in libjingle/files: .svn
+Only in libjingle/files/: .svn
 Only in libjingle-0.4.0/: Makefile.in
+diff -r libjingle-0.4.0/README libjingle/files/README
+1,39c1,39
+< Libjingle
+< 
+< Libjingle is a set of components provided by Google to interoperate with Google
+< Talk's peer-to-peer and voice capabilities. This package will create several
+< static libraries you may link to your project as needed.
+< 
+< -talk               - No source files in talk/, just these subdirectories
+< |-base              - Contains basic low-level portable utility functions for 
+< |                     things like threads and sockets
+< |-p2p               - The P2P stack
+<   |-base            - Base p2p functionality
+<   |-client          - Hooks to tie it into XMPP
+< |-session           - Signaling
+<   |-phone           - Signaling code specific to making phone calls
+< |-third_party       - Components that aren't ours
+<   |-mediastreamer   - Media components for dealing with sound hardware and 
+<   |                   voice codecs
+< |-xmllite           - XML parser
+< |-xmpp              - XMPP engine
+< 
+< In addition, this package contains two examples in talk/examples which 
+< illustrate the basic concepts of how the provided classes work.
+< 
+< The xmllite component of libjingle depends on expat. You can download expat 
+< from http://expat.sourceforge.net/.
+< 
+< mediastreamer, the media components used by the example applications depend on
+< the oRTP and iLBC components from linphone, which can be found at 
+< http://www.linphone.org. Linphone, in turn depends on GLib, which can be found
+< at http://www.gtk.org. This GLib dependency should be removed in future 
+< releases.
+< 
+< Building Libjingle
+< 
+< Once the dependencies are installed, run ./configure. ./configure will return
+< an error if it failed to locate the proper dependencies. If ./configure
+< succeeds, run 'make' to build the components and examples.
+< 
+< When the build is complete, you can run the call example from 
+---
+> Libjingle
+> 
+> Libjingle is a set of components provided by Google to interoperate with Google
+> Talk's peer-to-peer and voice capabilities. This package will create several
+> static libraries you may link to your project as needed.
+> 
+> -talk               - No source files in talk/, just these subdirectories
+> |-base              - Contains basic low-level portable utility functions for 
+> |                     things like threads and sockets
+> |-p2p               - The P2P stack
+>   |-base            - Base p2p functionality
+>   |-client          - Hooks to tie it into XMPP
+> |-session           - Signaling
+>   |-phone           - Signaling code specific to making phone calls
+> |-third_party       - Components that aren't ours
+>   |-mediastreamer   - Media components for dealing with sound hardware and 
+>   |                   voice codecs
+> |-xmllite           - XML parser
+> |-xmpp              - XMPP engine
+> 
+> In addition, this package contains two examples in talk/examples which 
+> illustrate the basic concepts of how the provided classes work.
+> 
+> The xmllite component of libjingle depends on expat. You can download expat 
+> from http://expat.sourceforge.net/.
+> 
+> mediastreamer, the media components used by the example applications depend on
+> the oRTP and iLBC components from linphone, which can be found at 
+> http://www.linphone.org. Linphone, in turn depends on GLib, which can be found
+> at http://www.gtk.org. This GLib dependency should be removed in future 
+> releases.
+> 
+> Building Libjingle
+> 
+> Once the dependencies are installed, run ./configure. ./configure will return
+> an error if it failed to locate the proper dependencies. If ./configure
+> succeeds, run 'make' to build the components and examples.
+> 
+> When the build is complete, you can run the call example from 
+41,57c41,57
+< 
+< Relay Server
+< 
+< Libjingle will also build a relay server that may be used to relay traffic
+< when a direct peer-to-peer connection could not be established. The relay
+< server will build in talk/p2p/base/relayserver and will listen on UDP
+< ports 5000 and 5001. See the Libjingle Developer Guide at 
+< http://code.google.com/apis/talk/index.html for information about configuring
+< a client to use this relay server.
+< 
+< STUN Server
+< 
+< Lastly, Libjingle builds a STUN server which implements the STUN protocol for
+< Simple Traversal of UDP over NAT. The STUN server is built as
+< talk/p2p/base/stunserver and listens on UDP port 7000. See the Libjingle
+< Developer Guide at http://code.google.com/apis/talk/index.html for information
+< about configuring a client to use this STUN server.
+---
+> 
+> Relay Server
+> 
+> Libjingle will also build a relay server that may be used to relay traffic
+> when a direct peer-to-peer connection could not be established. The relay
+> server will build in talk/p2p/base/relayserver and will listen on UDP
+> ports 5000 and 5001. See the Libjingle Developer Guide at 
+> http://code.google.com/apis/talk/index.html for information about configuring
+> a client to use this relay server.
+> 
+> STUN Server
+> 
+> Lastly, Libjingle builds a STUN server which implements the STUN protocol for
+> Simple Traversal of UDP over NAT. The STUN server is built as
+> talk/p2p/base/stunserver and listens on UDP port 7000. See the Libjingle
+> Developer Guide at http://code.google.com/apis/talk/index.html for information
+> about configuring a client to use this STUN server.
+diff -r libjingle-0.4.0/README.win libjingle/files/README.win
+1,24c1,24
+< 1. Install Visual C++ Express 2005.  It is free from this link:
+<    http://msdn.microsoft.com/vstudio/express/visualc/
+< 
+< 2. Install the platform SDK and integrate it into VC++ express
+<    http://msdn.microsoft.com/vstudio/express/visualc/usingpsdk/
+< 
+< 3. Download and install binary package for expat:
+<    http://sourceforge.net/project/showfiles.php?group_id=10127&package_id=11277
+< 
+< 4. Update the Visual C++ directories in the Projects and Solutions section in the Options dialog box
+<    Library files: C:\expat-VERSION\StaticLibs
+<    Include files: C:\expat-VERSION\Source\Lib
+<    where VERSION is the version of expat you've downoaded
+< 
+< 5. Unzip the libjingle files and open the solution.
+< 
+< 6. If you wish to build the call example with GIPS Voice Engine Lite, download Voice Engine Lite from http://developer.globalipsound.com
+< 
+< 7. Extract the Interface and Library directories from the Voice Engine Lite zip file into talk\third_party\gips
+< 
+< 8. Open talk\third_party\gips\expiration.h and set the GIPS_EXPIRATION #defines to the expiration date provided by GIPS and remove the #error directive
+< 
+< 9. Build the solution
+< 
+---
+> 1. Install Visual C++ Express 2005.  It is free from this link:
+>    http://msdn.microsoft.com/vstudio/express/visualc/
+> 
+> 2. Install the platform SDK and integrate it into VC++ express
+>    http://msdn.microsoft.com/vstudio/express/visualc/usingpsdk/
+> 
+> 3. Download and install binary package for expat:
+>    http://sourceforge.net/project/showfiles.php?group_id=10127&package_id=11277
+> 
+> 4. Update the Visual C++ directories in the Projects and Solutions section in the Options dialog box
+>    Library files: C:\expat-VERSION\StaticLibs
+>    Include files: C:\expat-VERSION\Source\Lib
+>    where VERSION is the version of expat you've downoaded
+> 
+> 5. Unzip the libjingle files and open the solution.
+> 
+> 6. If you wish to build the call example with GIPS Voice Engine Lite, download Voice Engine Lite from http://developer.globalipsound.com
+> 
+> 7. Extract the Interface and Library directories from the Voice Engine Lite zip file into talk\third_party\gips
+> 
+> 8. Open talk\third_party\gips\expiration.h and set the GIPS_EXPIRATION #defines to the expiration date provided by GIPS and remove the #error directive
+> 
+> 9. Build the solution
+> 
 Only in libjingle-0.4.0/: aclocal.m4
 Only in libjingle-0.4.0/: config.guess
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/config.h libjingle/files/config.h
+diff -r libjingle-0.4.0/config.h libjingle/files/config.h
 14c14
 < #define HAVE_ALSA_ASOUNDLIB_H 1
 ---
@@ -42,7 +210,14 @@ Only in libjingle/files/talk: .svn
 Only in libjingle-0.4.0/talk: Makefile.in
 Only in libjingle/files/talk/base: .svn
 Only in libjingle-0.4.0/talk/base: Makefile.in
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/base/common.h libjingle/files/talk/base/common.h
+diff -r libjingle-0.4.0/talk/base/base64.h libjingle/files/talk/base/base64.h
+26,27c26,27
+<   static const std::string Base64::Base64Table;
+<   static const std::string::size_type Base64::DecodeTable[];
+---
+>   static const std::string Base64Table;
+>   static const std::string::size_type DecodeTable[];
+diff -r libjingle-0.4.0/talk/base/common.h libjingle/files/talk/base/common.h
 54c54
 < #define stdmax(x,y) max(x,y)
 ---
@@ -54,15 +229,15 @@ diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/base/comm
 <   TypeName(const TypeName&);                    \
 <   void operator=(const TypeName&)
 < 
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/base/diskcache_win32.cc libjingle/files/talk/base/diskcache_win32.cc
+diff -r libjingle-0.4.0/talk/base/diskcache_win32.cc libjingle/files/talk/base/diskcache_win32.cc
 38c38
 <       entry->streams = max(entry->streams, index + 1);
 ---
 >       entry->streams = _max(entry->streams, index + 1);
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/base/helpers.cc libjingle/files/talk/base/helpers.cc
+diff -r libjingle-0.4.0/talk/base/helpers.cc libjingle/files/talk/base/helpers.cc
 38a39
 > #include <wincrypt.h>
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/base/httpclient.cc libjingle/files/talk/base/httpclient.cc
+diff -r libjingle-0.4.0/talk/base/httpclient.cc libjingle/files/talk/base/httpclient.cc
 670a671
 >         HttpAuthContext *context = context_.get();
 676c677,678
@@ -70,7 +245,7 @@ diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/base/http
 ---
 >           context, response, auth_method);
 >         context_.reset(context);
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/base/messagequeue.cc libjingle/files/talk/base/messagequeue.cc
+diff -r libjingle-0.4.0/talk/base/messagequeue.cc libjingle/files/talk/base/messagequeue.cc
 98,99c98,99
 <     new_ss = true;
 <     ss_ = new PhysicalSocketServer();
@@ -84,13 +259,13 @@ diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/base/mess
 <   if (new_ss)
 <     delete ss_;
 <   new_ss = false;
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/base/messagequeue.h libjingle/files/talk/base/messagequeue.h
+diff -r libjingle-0.4.0/talk/base/messagequeue.h libjingle/files/talk/base/messagequeue.h
 35a36
 > #include "talk/base/scoped_ptr.h"
 192a194,195
 >   // If a server isn't supplied in the constructor, use this one.
 >   scoped_ptr<SocketServer> default_ss_;
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/base/proxydetect.cc libjingle/files/talk/base/proxydetect.cc
+diff -r libjingle-0.4.0/talk/base/proxydetect.cc libjingle/files/talk/base/proxydetect.cc
 205,206c205,206
 <   const char* list = slist.c_str();
 <   while (*list) {
@@ -119,12 +294,12 @@ diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/base/prox
 ---
 >       len = strlen(clist);
 >       clist += len;
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/base/schanneladapter.cc libjingle/files/talk/base/schanneladapter.cc
+diff -r libjingle-0.4.0/talk/base/schanneladapter.cc libjingle/files/talk/base/schanneladapter.cc
 607c607
 <   size_t read = min(cb, readable.size());
 ---
 >   size_t read = _min(cb, readable.size());
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/base/scoped_ptr.h libjingle/files/talk/base/scoped_ptr.h
+diff -r libjingle-0.4.0/talk/base/scoped_ptr.h libjingle/files/talk/base/scoped_ptr.h
 36,257c36
 < namespace talk_base {
 < 
@@ -350,15 +525,45 @@ diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/base/scop
 < using talk_base::scoped_ptr;
 ---
 > #include "base/scoped_ptr.h"
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/base/socket.h libjingle/files/talk/base/socket.h
+diff -r libjingle-0.4.0/talk/base/socket.h libjingle/files/talk/base/socket.h
 77a78
 > #undef ETIMEDOUT // remove pthread.h's definition
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/base/stringutils.h libjingle/files/talk/base/stringutils.h
+diff -r libjingle-0.4.0/talk/base/stringutils.h libjingle/files/talk/base/stringutils.h
 87a88
 > #if 0
 93a95
 > #endif
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/base/task.cc libjingle/files/talk/base/task.cc
+272c274
+<   inline static const char* Traits<char>::empty_str() { return ""; }
+---
+>   inline static const char* empty_str() { return ""; }
+diff -r libjingle-0.4.0/talk/base/task.cc libjingle/files/talk/base/task.cc
+5c5
+<  * Redistribution and use in source and binary forms, with or without 
+---
+>  * Redistribution and use in source and binary forms, with or without
+8c8
+<  *  1. Redistributions of source code must retain the above copyright notice, 
+---
+>  *  1. Redistributions of source code must retain the above copyright notice,
+13c13
+<  *  3. The name of the author may not be used to endorse or promote products 
+---
+>  *  3. The name of the author may not be used to endorse or promote products
+17c17
+<  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF 
+---
+>  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+19c19
+<  * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+---
+>  * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+23,24c23,24
+<  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
+<  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
+---
+>  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+>  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 141c141
 <   if (aborted_ || done_)
 ---
@@ -367,11 +572,16 @@ diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/base/task
 <       Wake();  // to self-delete
 ---
 >       GetRunner()->WakeTasks();
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/base/winping.cc libjingle/files/talk/base/winping.cc
+diff -r libjingle-0.4.0/talk/base/winping.cc libjingle/files/talk/base/winping.cc
 133c133
 <   return sizeof(ICMP_ECHO_REPLY) + max(8UL, data_size);
 ---
 >   return sizeof(ICMP_ECHO_REPLY) + _max((uint32)(8UL), data_size);
+317c317
+< } // namespace talk_base
+\ No newline at end of file
+---
+> } // namespace talk_base
 Only in libjingle-0.4.0/talk: examples
 Only in libjingle-0.4.0/talk: libjingle.sln
 Only in libjingle-0.4.0/talk: libjingle.vcproj
@@ -379,14 +589,19 @@ Only in libjingle/files/talk/p2p: .svn
 Only in libjingle-0.4.0/talk/p2p: Makefile.in
 Only in libjingle/files/talk/p2p/base: .svn
 Only in libjingle-0.4.0/talk/p2p/base: Makefile.in
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/p2p/base/port.cc libjingle/files/talk/p2p/base/port.cc
+diff -r libjingle-0.4.0/talk/p2p/base/port.cc libjingle/files/talk/p2p/base/port.cc
 270c270
 <   talk_base::scoped_ptr<StunMessage> stun_msg(new StunMessage());
 ---
 >   scoped_ptr<StunMessage> stun_msg(new StunMessage());
+diff -r libjingle-0.4.0/talk/p2p/base/sessionmanager.h libjingle/files/talk/p2p/base/sessionmanager.h
+159c159
+<   buzz::XmlElement* SessionManager::CreateErrorMessage(
+---
+>   buzz::XmlElement* CreateErrorMessage(
 Only in libjingle/files/talk/p2p/client: .svn
 Only in libjingle-0.4.0/talk/p2p/client: Makefile.in
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/p2p/client/httpportallocator.cc libjingle/files/talk/p2p/client/httpportallocator.cc
+diff -r libjingle-0.4.0/talk/p2p/client/httpportallocator.cc libjingle/files/talk/p2p/client/httpportallocator.cc
 82c82
 <   relay_hosts_.push_back("relay.l.google.com");
 ---
@@ -395,12 +610,20 @@ Only in libjingle-0.4.0/talk: session
 Only in libjingle-0.4.0/talk: third_party
 Only in libjingle/files/talk/xmllite: .svn
 Only in libjingle-0.4.0/talk/xmllite: Makefile.in
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/xmllite/qname.cc libjingle/files/talk/xmllite/qname.cc
+diff -r libjingle-0.4.0/talk/xmllite/qname.cc libjingle/files/talk/xmllite/qname.cc
 39c39
 <   int result = ns.size() * 101;
 ---
 >   int result = static_cast<int>(ns.size()) * 101;
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/xmllite/xmlelement.cc libjingle/files/talk/xmllite/xmlelement.cc
+diff -r libjingle-0.4.0/talk/xmllite/qname.h libjingle/files/talk/xmllite/qname.h
+64d63
+<       refcount_(1),
+66c65,66
+<       localPart_(local) {}
+---
+>       localPart_(local),
+>       refcount_(1) {}
+diff -r libjingle-0.4.0/talk/xmllite/xmlelement.cc libjingle/files/talk/xmllite/xmlelement.cc
 88c88,89
 <     pLastChild_(NULL) {
 ---
@@ -425,7 +648,7 @@ diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/xmllite/x
 > }
 > 
 > void
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/xmllite/xmlelement.h libjingle/files/talk/xmllite/xmlelement.h
+diff -r libjingle-0.4.0/talk/xmllite/xmlelement.h libjingle/files/talk/xmllite/xmlelement.h
 203a204,206
 >   // Note: CDATA is not supported by XMPP, therefore using this function will
 >   // generate non-XMPP compatible XML.
@@ -435,7 +658,7 @@ diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/xmllite/x
 > 
 228a234
 >   bool cdata_;
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/xmllite/xmlparser.cc libjingle/files/talk/xmllite/xmlparser.cc
+diff -r libjingle-0.4.0/talk/xmllite/xmlparser.cc libjingle/files/talk/xmllite/xmlparser.cc
 28,29d27
 < #include "talk/xmllite/xmlparser.h"
 < 
@@ -504,7 +727,7 @@ diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/xmllite/x
 > XmlParser::ParseContext::~ParseContext() {
 251a291
 > }
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/xmllite/xmlparser.h libjingle/files/talk/xmllite/xmlparser.h
+diff -r libjingle-0.4.0/talk/xmllite/xmlparser.h libjingle/files/talk/xmllite/xmlparser.h
 48a49,50
 >   virtual void GetPosition(unsigned long * line, unsigned long * column,
 >                            unsigned long * byte_index) = 0;
@@ -517,19 +740,19 @@ diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/xmllite/x
 >     XML_Size line_number_;
 >     XML_Size column_number_;
 >     XML_Index byte_index_;
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/xmllite/xmlprinter.cc libjingle/files/talk/xmllite/xmlprinter.cc
+diff -r libjingle-0.4.0/talk/xmllite/xmlprinter.cc libjingle/files/talk/xmllite/xmlprinter.cc
 46a47
 >   void PrintCDATAText(const std::string & text);
-134c135,138
+134,136c135,141
 <       if (pchild->IsText())
+<         PrintBodyText(pchild->AsText()->Text());
+<       else
 ---
 >       if (pchild->IsText()) {
 >         if (element->IsCDATA()) {
 >           PrintCDATAText(pchild->AsText()->Text());
 >         } else {
-136c140,141
-<       else
----
+>           PrintBodyText(pchild->AsText()->Text());
 >         }
 >       } else
 188a194,197
@@ -539,19 +762,19 @@ diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/xmllite/x
 > }
 Only in libjingle/files/talk/xmpp: .svn
 Only in libjingle-0.4.0/talk/xmpp: Makefile.in
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/xmpp/constants.cc libjingle/files/talk/xmpp/constants.cc
+diff -r libjingle-0.4.0/talk/xmpp/constants.cc libjingle/files/talk/xmpp/constants.cc
 206a207,209
 > const std::string NS_GOOGLE_AUTH_PROTOCOL("http://www.google.com/talk/protocol/auth");
 > const QName QN_GOOGLE_AUTH_CLIENT_USES_FULL_BIND_RESULT(true, NS_GOOGLE_AUTH_PROTOCOL, "client-uses-full-bind-result");
 > 
 208a212
 > const QName QN_GOOGLE_ALLOW_NON_GOOGLE_ID_XMPP_LOGIN(true, NS_GOOGLE_AUTH_PROTOCOL, "allow-non-google-login");
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/xmpp/constants.h libjingle/files/talk/xmpp/constants.h
+diff -r libjingle-0.4.0/talk/xmpp/constants.h libjingle/files/talk/xmpp/constants.h
 175a176,178
 > extern const std::string NS_GOOGLE_AUTH_PROTOCOL;
 > extern const QName QN_GOOGLE_AUTH_CLIENT_USES_FULL_BIND_RESULT;
 > extern const QName QN_GOOGLE_ALLOW_NON_GOOGLE_ID_XMPP_LOGIN;
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/xmpp/saslcookiemechanism.h libjingle/files/talk/xmpp/saslcookiemechanism.h
+diff -r libjingle-0.4.0/talk/xmpp/saslcookiemechanism.h libjingle/files/talk/xmpp/saslcookiemechanism.h
 40,41c40,55
 <   SaslCookieMechanism(const std::string & mechanism, const std::string & username, const std::string & cookie) :
 <     mechanism_(mechanism), username_(username), cookie_(cookie) {}
@@ -580,10 +803,15 @@ diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/xmpp/sasl
 >     }
 62a82
 >   std::string token_service_;
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/xmpp/saslhandler.h libjingle/files/talk/xmpp/saslhandler.h
+diff -r libjingle-0.4.0/talk/xmpp/saslhandler.h libjingle/files/talk/xmpp/saslhandler.h
 31a32
 > #include <vector>
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/xmpp/xmppclientsettings.h libjingle/files/talk/xmpp/xmppclientsettings.h
+diff -r libjingle-0.4.0/talk/xmpp/xmppclient.h libjingle/files/talk/xmpp/xmppclient.h
+141c141
+<   std::string XmppClient::GetStateName(int state) const {
+---
+>   std::string GetStateName(int state) const {
+diff -r libjingle-0.4.0/talk/xmpp/xmppclientsettings.h libjingle/files/talk/xmpp/xmppclientsettings.h
 59a60,62
 >   void set_token_service(const std::string & token_service) {
 >     token_service_ = token_service;
@@ -592,7 +820,7 @@ diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/xmpp/xmpp
 >   const std::string & token_service() const { return token_service_; }
 93a98
 >   std::string token_service_;
-diff -r --ignore-space-change --strip-trailing-cr libjingle-0.4.0/talk/xmpp/xmpplogintask.cc libjingle/files/talk/xmpp/xmpplogintask.cc
+diff -r libjingle-0.4.0/talk/xmpp/xmpplogintask.cc libjingle/files/talk/xmpp/xmpplogintask.cc
 218a219,221
 >         auth->SetAttr(QN_GOOGLE_ALLOW_NON_GOOGLE_ID_XMPP_LOGIN, "true");
 >         auth->SetAttr(QN_GOOGLE_AUTH_CLIENT_USES_FULL_BIND_RESULT, "true");
