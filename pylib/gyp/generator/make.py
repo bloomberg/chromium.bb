@@ -128,7 +128,7 @@ quiet_cmd_cxx = CXX $@
 cmd_cxx = $(CXX) $(CXXFLAGS) $(DEPFLAGS) -c -o $@ $<
 
 quiet_cmd_alink = AR+RANLIB $@
-cmd_alink = $(AR) rc $@ $(filter %.o,$^) && $(RANLIB) $@
+cmd_alink = rm -f $@ && $(AR) rc $@ $(filter %.o,$^) && $(RANLIB) $@
 
 quiet_cmd_touch = TOUCH $@
 cmd_touch = touch $@
