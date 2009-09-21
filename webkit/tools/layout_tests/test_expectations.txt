@@ -942,7 +942,7 @@ BUG10295 MAC : LayoutTests/fast/dom/prototype-chain.html = FAIL
 BUG10296 MAC : LayoutTests/fast/text/international/bidi-menulist.html = FAIL
 BUG10296 LINUX : LayoutTests/fast/transforms/transform-on-inline.html = FAIL
 BUG10296 LINUX : LayoutTests/fast/transforms/transform-table-row.html = FAIL
-BUG10296 LINUX : LayoutTests/svg/batik/paints/patternPreserveAspectRatioA.svg = FAIL
+BUG10296 LINUX : LayoutTests/svg/batik/paints/patternPreserveAspectRatioA.svg = FAIL TIMEOUT
 // Needs to be rebaselined.
 BUG10296 LINUX : LayoutTests/svg/custom/deep-dynamic-updates.svg = FAIL
 BUG10296 LINUX : LayoutTests/svg/custom/foreign-object-skew.svg = FAIL
@@ -2330,4 +2330,4 @@ BUG22550 WIN : LayoutTests/media/video-src.html = FAIL
 BUG22552 MAC LINUX : LayoutTests/fast/events/drag-in-frames.html = CRASH
 
 // WebKit merge 48500:48585, due to newly added support for MathML.
-BUG22554 : LayoutTests/mathml = FAIL
+BUG22554 SKIP : LayoutTests/mathml = FAIL
