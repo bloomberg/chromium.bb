@@ -78,7 +78,7 @@ struct RpcTypeTrait<bool> {
   typedef bool ApiType;
   static bool Parse(const std::string& t) {
     int i;
-    bool success = StringToInt(t, &i);
+    ALLOW_UNUSED bool success = StringToInt(t, &i);
     ASSERT(success);
     return i;
   }
@@ -92,7 +92,7 @@ struct RpcTypeTrait<int> {
   typedef int ApiType;
   static int Parse(const std::string& t) {
     int i;
-    bool success = StringToInt(t, &i);
+    ALLOW_UNUSED bool success = StringToInt(t, &i);
     ASSERT(success);
     return i;
   }
