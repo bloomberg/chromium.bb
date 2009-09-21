@@ -34,10 +34,6 @@ Import('env')
 # TODO(sehr): remove the need for the next line
 env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum'])
 
-# Currently, this is only defined for x86, so only compile if x86.
-if env['TARGET_ARCHITECTURE'] != 'x86':
-  Return()
-
 if env['TARGET_SUBARCH'] != '32':
   Return()
 
@@ -78,10 +74,15 @@ if not env.Bit('mac'):
 if env.Bit('linux'):
     env.Append(
         CCFLAGS=['-fPIC', '-Wno-long-long',],
-        CPPDEFINES = ['XP_UNIX', 'MOZ_X11'],
-        LIBS = ['Xt', 'X11'],
+        CPPDEFINES = ['XP_UNIX'],
     )
 
+    # NOTE: for arm the dependency on X11 is currently unsatisfiable
+    if env['TARGET_ARCHITECTURE'] == 'x86':
+      env.Append(
+          CPPDEFINES = ['MOZ_X11'],
+          LIBS = ['Xt', 'X11'],
+          )
 
 if env.Bit('mac'):
     env.Append(
@@ -93,6 +94,7 @@ if env.Bit('mac'):
             'XP_MACOSX',
             'XP_UNIX',
             ['TARGET_API_MAC_CARBON', '1'],
+            # TODO(robertm): NO_X11 may be obsolete
             'NO_X11',
             'USE_SYSTEM_CONSOLE',
         ],

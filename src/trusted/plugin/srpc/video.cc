@@ -474,7 +474,9 @@ int16_t VideoMap::HandleEvent(void *param) {
         if ((x != last_x) ||
             (y != last_y)) {
           dprintf(("The mouse moved %d %d  (event %d)\n",
-              (int)x, (int)y, event->what));
+                   static_cast<int>(x),
+                   static_cast<int>(y),
+                   event->what));
           nacl_event.type = NACL_EVENT_MOUSE_MOTION;
           nacl_event.motion.which = 0;
           nacl_event.motion.state = GetButton();
@@ -489,76 +491,18 @@ int16_t VideoMap::HandleEvent(void *param) {
     }
   }
 
-//#define FIREFOX2
-#if defined(FIREFOX2)
-  // looks for first changed key
-  static bool FindChangedKey(uint32_t *keys, uint32_t *previous,
-    int *which, int *state) {
-      if ((keys[0] != previous[0]) ||
-        (keys[1] != previous[1]) ||
-        (keys[2] != previous[2]) ||
-        (keys[3] != previous[3])) {
-          for (int i = 0; i < 128; ++i) {
-            int idx = (i >> 5);
-            int bit = (1 << (i & 31));
-            int keys_bit = ((keys[idx] & bit) != 0);
-            int previous_bit = ((previous[idx] & bit) != 0);
-            if (keys_bit != previous_bit) {
-              *which = i;
-              *state = keys_bit ? kSet : kClear;
-              previous[idx] = keys[idx];
-              return true;
-            }
-          }
-      }
-      return false;
-  }
-
-  // Firefox2's keyDown keyUp events don't seem to report
-  // ctrl/alt/meta/shift keypresses, so we need to
-  // poll the keyboard CTRL, SHIFT, ALT keys
-  // Unfortunately, this is a global poll, which is bad
-  // because it can see these presses even without focus.
-  // TODO(nfullagar): look into getting a better solution for FF2
-  KeyMap keymap;
-  static uint32_t previous_keys[4] = {0, 0, 0, 0};
-  uint32_t *keys = reinterpret_cast<uint32_t*>(keymap);
-  int which_key;
-  int key_state;
-  GetKeys(keymap);
-  if (FindChangedKey(keys, previous_keys, &which_key, &key_state)) {
-    int nsym = MacKeyToNaCl(which_key);
-    bool doScan =
-        (nsym == NACL_KEY_LCTRL) ||
-        (nsym == NACL_KEY_LALT) ||
-        (nsym == NACL_KEY_LSHIFT);
-    if (doScan) {
-      nacl_event.type = key_state ? NACL_EVENT_KEY_DOWN : NACL_EVENT_KEY_UP;
-      nacl_event.key.which = 0;
-      nacl_event.key.state = key_state;
-      nacl_event.key.keysym.scancode = which_key;
-      SetKeyMod(nsym, kSet);
-      nacl_event.key.keysym.sym = nsym;
-      nacl_event.key.keysym.mod = vs->event_state_key_mod;
-      nacl_event.key.keysym.unicode = 0;
-      EventQueuePut(&nacl_event);
-      dprintf(("A special key has changed scancode: %d sym: %d state: %d\n",
-          which_key, nsym, key_state));
-    }
-  }
-#endif
-
   if ((event->what != 0) && (event->what != updateEvt))
     dprintf(("an event happened %d\n", event->what));
+
   switch (event->what) {
-    case (osEvt + 16): { // NPAPI getFocusEvent:
+    case (osEvt + 16): {  // NPAPI getFocusEvent:
       nacl_event.type = NACL_EVENT_ACTIVE;
       nacl_event.active.state = kSet;
       EventQueuePut(&nacl_event);
       dprintf(("Focus gained\n"));
       break;
     }
-    case (osEvt + 17): { // NPAPI loseFocusEvent:
+    case (osEvt + 17): {  // NPAPI loseFocusEvent:
       nacl_event.type = NACL_EVENT_ACTIVE;
       nacl_event.active.state = kClear;
       EventQueuePut(&nacl_event);
@@ -639,9 +583,10 @@ int16_t VideoMap::HandleEvent(void *param) {
   return 1;
 }
 
-void VideoMap::RedrawAsync(void *platform_parm) {
-  dprintf(("VideoMap::RedrawAsync(%p)\n", static_cast<void *>(platform_parm)));
- if (NULL != platform_parm) {
+void VideoMap::RedrawAsync(void* platform_parm) {
+  dprintf(("VideoMap::RedrawAsync(%p)\n", static_cast<void*>(platform_parm)));
+  if (NULL == platform_parm) return;
+
   if (!window_ || !window_->window || !untrusted_video_share_ ||
       window_->clipRect.right <= window_->clipRect.left) {
     return;
@@ -717,20 +662,19 @@ void VideoMap::RedrawAsync(void *platform_parm) {
   SetClip(saved_clip);
   SetPort(saved_port);
   DisposeRgn(saved_clip);
- }
 }
 
 void VideoMap::Redraw() {
   int i = 0;
   // non-null to tell it we're from npapi thread
-  // TODO: figure out a thread safe way to render on mac
+  // TODO(nfullagar): figure out a thread safe way to render on mac
   this->RedrawAsync(&i);
 }
 #endif  // NACL_OSX
 
 #if NACL_WINDOWS
 static int WinKeyToNacl(int vk) {
-  switch(vk) {
+  switch (vk) {
     case VK_ADD: return NACL_KEY_KP_PLUS;
     case VK_BACK: return NACL_KEY_BACKSPACE;
     case VK_CAPITAL: return NACL_KEY_CAPSLOCK;
@@ -919,7 +863,7 @@ LRESULT CALLBACK VideoMap::WindowProcedure(HWND hwnd,
     case WM_MBUTTONDOWN:
     case WM_MBUTTONDBLCLK:
       SetFocus(hwnd);
-      switch(msg) {
+      switch (msg) {
         case WM_LBUTTONDOWN:
         case WM_LBUTTONDBLCLK:
           button = 1;
@@ -947,7 +891,7 @@ LRESULT CALLBACK VideoMap::WindowProcedure(HWND hwnd,
     case WM_LBUTTONUP:
     case WM_RBUTTONUP:
     case WM_MBUTTONUP:
-      switch(msg) {
+      switch (msg) {
         case WM_LBUTTONUP:
           button = 1;
           break;
@@ -1067,7 +1011,6 @@ int VideoMap::EventQueueIsFull() {
   windex = untrusted_video_share_->u.h.event_write_index;
   windex = (windex + 1) & (NACL_EVENT_RING_BUFFER_SIZE - 1);
   return (windex == untrusted_video_share_->u.h.event_read_index);
-
 }
 
 // Gets the last recorded mouse motion (position)
@@ -1349,12 +1292,13 @@ int VideoMap::InitializeSharedMemory(PluginWindow *window) {
       return -1;
     }
     dprintf(("VideoMap::Initialize about to Map...\n"));
-    untrusted_video_share_ = (NaClVideoShare *)Map(NULL,
-              video_size_,
-              kProtRead | kProtWrite,
-              kMapShared,
-              video_handle_,
-              0);
+    untrusted_video_share_ = static_cast<NaClVideoShare*>(
+      Map(NULL,
+          video_size_,
+          kProtRead | kProtWrite,
+          kMapShared,
+          video_handle_,
+          0));
     if (kMapFailed == untrusted_video_share_) {
       untrusted_video_share_ = NULL;
       nacl::Close(video_handle_);
@@ -1401,8 +1345,8 @@ void VideoMap::RequestRedraw() {
 #endif
 }
 
-VideoMap::VideoMap(PortablePluginInterface *plugin_interface) :
-    event_state_button_(kClear),
+VideoMap::VideoMap(PortablePluginInterface *plugin_interface)
+  : event_state_button_(kClear),
     event_state_key_mod_(kClear),
     event_state_motion_last_x_(0),
     event_state_motion_last_y_(0),
@@ -1444,7 +1388,7 @@ VideoMap::~VideoMap() {
     video_callback_data_ = ReleaseCallbackData(video_callback_data_);
   }
   if (NULL != platform_specific()) {
-#if NACL_LINUX
+#if NACL_LINUX && defined(MOZ_X11)
     XCloseDisplay(static_cast<Display *>(platform_specific()));
 #endif
     set_platform_specific(NULL);
