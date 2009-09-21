@@ -785,7 +785,7 @@ BUG13907 SKIP : LayoutTests/media/controls-strict.html = FAIL
 BUG17397 SKIP WIN : LayoutTests/media/audio-no-installed-engines.html = FAIL
 
 // Very flakey after r24022. Not sure if because of that change though.
-BUG20004 WIN : LayoutTests/media/video-play-pause-events.html = TIMEOUT
+BUG20004 WIN : LayoutTests/media/video-play-pause-events.html = TIMEOUT PASS
 
 BUG13907 SKIP : LayoutTests/media/video-empty-source.html = TIMEOUT
 BUG13907 : LayoutTests/fast/layers/video-layer.html = FAIL
@@ -1675,7 +1675,7 @@ BUG9156 MAC LINUX WIN : LayoutTests/fast/js/console-non-string-values.html = FAI
 
 // New failures from 41660:41709
 // Newly added tests.
-BUG9161 MAC LINUX WIN : LayoutTests/fast/forms/basic-textareas.html = FAIL
+BUG9161 MAC LINUX WIN : LayoutTests/fast/forms/basic-textareas.html = FAIL PASS
 BUG20894 : LayoutTests/http/tests/xmlhttprequest/access-control-basic-whitelist-request-headers.html = FAIL
 
 // Tests that fail in debug mode on linux
@@ -2271,7 +2271,7 @@ BUG21439 : LayoutTests/userscripts/simple-stylesheet.html = FAIL
 BUG21442 : LayoutTests/storage/test-authorizer.html = TIMEOUT
 
 // Need investigation after we enable file URL universal access in test shell.
-BUG_JIANLI : LayoutTests/editing/selection/drag-in-iframe.html = FAIL
+BUG_JIANLI : LayoutTests/editing/selection/drag-in-iframe.html = FAIL PASS
 
 // New test added in r48318 (GoogleURL bug)
 BUG21764 : LayoutTests/fast/forms/ValidityState-typeMismatch-url.html = FAIL
@@ -2295,7 +2295,7 @@ BUG21859 WIN : LayoutTests/fast/overflow/overflow-float-stacking.html = FAIL
 BUG21859 WIN : LayoutTests/tables/mozilla/bugs/bug96343.html = FAIL
 
 // WK roll 48388:48399 (brettw)
-BUG21919 WIN : LayoutTests/http/tests/security/mixedContent/insecure-css-in-main-frame.html = FAIL
+BUG21919 WIN : LayoutTests/http/tests/security/mixedContent/insecure-css-in-main-frame.html = FAIL PASS
 
 // Flaky. The width of containing RenderBlocks sometimes becomes larger
 BUG21958 WIN MAC LINUX DEBUG : LayoutTests/svg/hixie/error/012.xml = FAIL PASS
@@ -2310,3 +2310,24 @@ BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/css/font-smoothing.html = FAIL
 // 48468:48483 (avi for dglazkov for ukai)
 BUG22170 : LayoutTests/http/tests/security/isolatedWorld/window-setTimeout-function.html = FAIL
 BUG22170 : LayoutTests/http/tests/security/isolatedWorld/window-setTimeout-string.html = FAIL
+
+// WebKit merge 48500:48585, newly implemented Object.defineProperty.
+BUG22526 : LayoutTests/fast/js/Object-create.html = FAIL
+BUG22526 : LayoutTests/fast/js/Object-defineProperties.html = FAIL
+BUG22526 : LayoutTests/fast/js/Object-defineProperty.html = FAIL
+BUG22526 : LayoutTests/http/tests/security/xss-DENIED-defineProperty.html = TIMEOUT
+
+// WebKit merge 48500:48585, introduced by a clipping bug fix.
+BUG22549 WIN LINUX : LayoutTests/fast/overflow/position-fixed-transform-clipping.html = FAIL
+
+// WebKit merge 48500:48585, likely due to a video reload crash fix.
+BUG22550 WIN : LayoutTests/media/video-source.html = FAIL
+BUG22550 WIN : LayoutTests/media/video-src-set.html = FAIL
+BUG22550 WIN : LayoutTests/media/video-src-source.html = FAIL
+BUG22550 WIN : LayoutTests/media/video-src.html = FAIL
+
+// WebKit merge 48500:48585, likely due to a fix for file select drag.
+BUG22552 MAC LINUX : LayoutTests/fast/events/drag-in-frames.html = CRASH
+
+// WebKit merge 48500:48585, due to newly added support for MathML.
+BUG22554 : LayoutTests/mathml = FAIL
