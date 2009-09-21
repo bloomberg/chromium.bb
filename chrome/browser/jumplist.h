@@ -35,7 +35,7 @@ class PageUsageData;
 // be executed, this class does not have any variables for it because our
 // utility functions always use "chrome.exe" as the application and we don't
 // need it.
-class ShellLinkItem : public base::RefCounted<ShellLinkItem> {
+class ShellLinkItem : public base::RefCountedThreadSafe<ShellLinkItem> {
  public:
   ShellLinkItem() : index_(0), favicon_(false) {
   }
