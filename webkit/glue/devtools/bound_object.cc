@@ -13,8 +13,8 @@ BoundObject::BoundObject(
     v8::Handle<v8::Context> context,
     void* v8_this,
     const char* object_name)
-    : context_(context),
-      object_name_(object_name) {
+    : object_name_(object_name),
+      context_(context) {
   v8::HandleScope scope;
   v8::Context::Scope context_scope(context);
   v8_this_ = v8::Persistent<v8::External>::New(v8::External::New(v8_this));

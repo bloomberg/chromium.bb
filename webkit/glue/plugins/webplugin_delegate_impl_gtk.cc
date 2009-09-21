@@ -41,9 +41,9 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
     NPAPI::PluginInstance *instance)
     : windowed_handle_(0),
       windowed_did_set_window_(false),
+      windowless_needs_set_window_(true),
       windowless_(false),
       plugin_(NULL),
-      windowless_needs_set_window_(true),
       instance_(instance),
       pixmap_(NULL),
       first_event_time_(-1.0),
@@ -606,6 +606,8 @@ static bool NPEventFromWebMouseEvent(const WebMouseEvent& event,
         case WebMouseEvent::ButtonRight:
           button_event.button = Button3;
           break;
+        default:
+          NOTREACHED();
       }
       button_event.same_screen = True;
       break;

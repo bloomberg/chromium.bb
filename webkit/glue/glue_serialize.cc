@@ -104,7 +104,7 @@ inline double ReadReal(const SerializeObject* obj) {
   const void* tmp;
   int length = 0;
   ReadData(obj, &tmp, &length);
-  if (length > 0 && length >= sizeof(0.0))
+  if (length > 0 && length >= static_cast<int>(sizeof(0.0)))
     return *static_cast<const double*>(tmp);
   else
     return 0.0;
@@ -319,7 +319,7 @@ static WebHistoryItem ReadHistoryItem(
   // The extra referrer string is read for backwards compat.
   const WebHTTPBody& http_body = ReadFormData(obj);
   const WebString& http_content_type = ReadString(obj);
-  const WebString& unused_referrer = ReadString(obj);
+  ALLOW_UNUSED const WebString& unused_referrer = ReadString(obj);
   if (include_form_data) {
     item.setHTTPBody(http_body);
     item.setHTTPContentType(http_content_type);

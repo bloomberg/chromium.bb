@@ -644,7 +644,6 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
   ResponseInfo response_info;
   GetResponseInfo(response, &response_info);
 
-  bool cancel = false;
   bool request_is_seekable = true;
   if (client->IsMultiByteResponseExpected()) {
     if (response.httpStatusCode() == kHttpPartialResponseStatusCode) {

@@ -219,8 +219,6 @@ void BufferedResourceLoader::OnReceivedResponse(
     return;
 
   int64 first_byte_position = -1;
-  int64 last_byte_position = -1;
-  int64 instance_size = -1;
 
   // The file:// protocol should be able to serve any request we want, so we
   // take an exception for file protocol.

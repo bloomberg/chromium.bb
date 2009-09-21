@@ -94,13 +94,13 @@ WebPluginDelegateImpl* WebPluginDelegateImpl::Create(
 WebPluginDelegateImpl::WebPluginDelegateImpl(
     gfx::PluginWindowHandle containing_view,
     NPAPI::PluginInstance *instance)
-    : parent_(containing_view),
-      instance_(instance),
-      quirks_(0),
-      plugin_(NULL),
+    : windowless_needs_set_window_(true),
       // all Mac plugins are "windowless" in the Windows/X11 sense
       windowless_(true),
-      windowless_needs_set_window_(true),
+      plugin_(NULL),
+      instance_(instance),
+      parent_(containing_view),
+      quirks_(0),
       handle_event_depth_(0),
       user_gesture_message_posted_(this),
       user_gesture_msg_factory_(this),
@@ -523,6 +523,8 @@ static bool NPEventFromWebMouseEvent(const WebMouseEvent& event,
     case WebMouseEvent::ButtonRight:
       np_event->modifiers |= controlKey;
       break;
+    default:
+      NOTIMPLEMENTED();
   }
   switch (event.type) {
     case WebInputEvent::MouseMove:
