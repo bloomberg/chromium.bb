@@ -3,9 +3,6 @@
 
 <head>
   <title>Webkit Layout Test History</title>
-  <script>
-    var pageLoadStartTime = Date.now();
-  </script>
   <style>
     body {
       font-family: arial;
@@ -184,6 +181,7 @@
     }
   </style>
 
+  <script src="dashboards/dashboard_base.js"></script>
   <script>
   /**
    * @fileoverview Creates a dashboard for multiple runs of a given set of tests
@@ -202,7 +200,9 @@
    *   -add the builder name to the list of builders below.
    */
 
+  //////////////////////////////////////////////////////////////////////////////
   // CONSTANTS
+  //////////////////////////////////////////////////////////////////////////////
   var FORWARD = 'forward';
   var BACKWARD = 'backward';
   var TEST_URL_BASE_PATH =
@@ -210,164 +210,37 @@
   var BUILDERS_BASE_PATH =
       'http://build.chromium.org/buildbot/waterfall/builders/';
   var TEST_RESULTS_BASE_PATH =
-     'http://build.chromium.org/buildbot/layout_test_results/';
-  var EXPECTATIONS_MAP = {
-    'T': 'TIMEOUT',
-    'C': 'CRASH',
-    'P': 'PASS',
-    'F': 'TEXT FAIL',
-    'S': 'SIMPLIFIED',
-    'I': 'IMAGE',
-    'O': 'OTHER',
-    'N': 'NO DATA'
-  };
+      'http://build.chromium.org/buildbot/layout_test_results/';
   var PLATFORMS = {'MAC': 'MAC', 'LINUX': 'LINUX', 'WIN': 'WIN'};
   var BUILD_TYPES = {'DEBUG': 'DBG', 'RELEASE': 'RELEASE'};
+  var BASE_TABLE_HEADERS = ['bugs', 'modifiers', 'expectations', 'missing',
+      'extra', 'slowest run', 'flakiness (numbers are runtimes in seconds)'];
 
-  // GLOBALS
-  // The DUMMYVALUE gets shifted off the array in the first call to
-  // generatePage.
-  var tableHeaders = ['DUMMYVALUE', 'bugs', 'modifiers', 'expectations',
-      'missing', 'extra', 'slowest run',
-      'flakiness (numbers are runtimes in seconds)'];
-  var perBuilderPlatformAndBuildType = {};
-  var perBuilderFailures = {};
-  // Map of builder to arrays of tests that are listed in the expectations file
-  // but have for that builder.
-  var perBuilderWithExpectationsButNoFailures = {};
-  // Map of builder to arrays of paths that are skipped. This shows the raw
-  // path used in test_expectations.txt rather than the test path since we
-  // don't actually have any data here for skipped tests.
-  var perBuilderSkippedPaths = {};
-  // Maps test path to an array of {builder, testResults} objects.
-  var testToResultsMap = {};
-
-  // Generic utility functions.
-  function $(id) {
-    return document.getElementById(id);
-  }
-
-  function stringContains(a, b) {
-    return a.indexOf(b) != -1;
-  }
-
-  function isValidName(str) {
-    return str.match(/[A-Za-z0-9\-\_,]/);
-  }
-
-  function trimString(str) {
-    return str.replace(/^\s+|\s+$/g, '');
-  }
-
-  function anyKeyInString(object, string) {
-    for (var key in object) {
-      if (stringContains(string, key))
-        return true;
-    }
-    return false;
-  }
-
-  function validateParameter(state, key, value, validateFn) {
-    if (validateFn()) {
-      state[key] = value;
-    } else {
-      console.log(key + ' value is not valid: ' + value);
-    }
-  }
-
-  /**
-   * Parses a string (e.g. window.location.hash) and calls
-   * validValueHandler(key, value) for each key-value pair in the string.
-   */
-  function parseParameters(parameterStr, validValueHandler) {
-    var params = parameterStr.split('&');
-    for (var i = 0; i < params.length; i++) {
-      var thisParam = params[i].split('=');
-      if (thisParam.length != 2) {
-        console.log('Invalid query parameter: ' + params[i]);
-        continue;
-      }
-
-      var key = thisParam[0];
-      var value = decodeURIComponent(thisParam[1]);
-      if (!validValueHandler(key, value))
-        console.log('Invalid key: ' + key + ' value: ' + value);
-    }
-  }
-
-  function appendScript(path) {
-    var script = document.createElement('script');
-    script.src = path;
-    document.getElementsByTagName('head')[0].appendChild(script);
-  }
-
-  // Parse hash parameters.
-  // Permalinkable state of the page.
-  var currentState = {};
-
-  if (stringContains(window.location.hash, "debug=true")) {
-    // In debug mode point to the results.json and expectations.json in the
-    // local tree. Useful for debugging changes to the python JSON generator.
-    var builders = {'DUMMY_BUILDER_NAME': ''};
-    var builderBase = '../../Debug/';
-    currentState['testType'] = 'layout-test-results';
-  } else {
-    // Map of builderName (the name shown in the waterfall)
-    // to builderPath (the path used in the builder's URL)
-    // TODO(ojan): Make this switch based off of the testType.
-    var builders = {
-      'Webkit': 'webkit-rel',
-      'Webkit (dbg)(1)': 'webkit-dbg-1',
-      'Webkit (dbg)(2)': 'webkit-dbg-2',
-      'Webkit (dbg)(3)': 'webkit-dbg-3',
-      'Webkit Linux': 'webkit-rel-linux',
-      'Webkit Linux (dbg)(1)': 'webkit-dbg-linux-1',
-      'Webkit Linux (dbg)(2)': 'webkit-dbg-linux-2',
-      'Webkit Linux (dbg)(3)': 'webkit-dbg-linux-3',
-      'Webkit Mac10.5': 'webkit-rel-mac5',
-      'Webkit Mac10.5 (dbg)(1)': 'webkit-dbg-mac5-1',
-      'Webkit Mac10.5 (dbg)(2)': 'webkit-dbg-mac5-2',
-      'Webkit Mac10.5 (dbg)(3)': 'webkit-dbg-mac5-3'
-    };
-    var builderBase = 'http://build.chromium.org/buildbot/';
-  }
-
-  var defaultStateValues = {
-    sortOrder: BACKWARD,
-    sortColumn: 'flakiness',
-    showWontFix: false,
-    showCorrectExpectations: false,
-    showLegend: true,
-    showFlaky: true,
-    showSkipped: false,
-    maxResults: 200,
-    testType: 'layout_test_results'
-  };
-
-  function fillDefaultStateValues() {
-    for (var state in defaultStateValues) {
-      if (!(state in currentState))
-        currentState[state] = defaultStateValues[state];
-    }
-
+  //////////////////////////////////////////////////////////////////////////////
+  // Methods and objects from dashboard_base.js to override.
+  //////////////////////////////////////////////////////////////////////////////
+  function generatePage() {
     if (!currentState.tests && !('builder' in currentState)) {
       for (var builder in builders) {
         currentState.builder = builder;
         break;
       }
     }
+
+    if (currentState.tests) {
+      createTableHeadersArray('builder');
+      generatePageForIndividualTests(currentState.tests.split(','));
+    } else {
+      createTableHeadersArray('test');
+      generatePageForBuilder(currentState.builder);
+    }
+
+    $('max-results-input').value = currentState.maxResults;
+    updateLegendDisplay();
   }
 
   function handleValidHashParameter(key, value) {
     switch(key) {
-      case 'testType':
-        validateParameter(currentState, key, value,
-            function() {
-              return isValidName(value);
-            });
-
-        return true;
-
       case 'tests':
         validateParameter(currentState, key, value,
             function() {
@@ -387,11 +260,12 @@
       case 'sortColumn':
         validateParameter(currentState, key, value,
             function() {
-              for (var i = 0; i < tableHeaders.length; i++) {
-                if (value == getSortColumnFromTableHeader(tableHeaders[i]))
+              for (var i = 0; i < BASE_TABLE_HEADERS.length; i++) {
+                if (value ==
+                        getSortColumnFromTableHeader(BASE_TABLE_HEADERS[i]))
                   return true;
               }
-              return value == 'test';
+              return value == 'test' || value == 'builder';
             });
 
         return true;
@@ -412,7 +286,6 @@
 
         return true;
 
-      case 'debug':
       case 'showWontFix':
       case 'showCorrectExpectations':
       case 'showFlaky':
@@ -426,50 +299,34 @@
     }
   }
 
-  // Keep the location around for detecting changes to hash arguments
-  // manually typed into the URL bar.
-  var oldLocation;
+  defaultStateValues = {
+    sortOrder: BACKWARD,
+    sortColumn: 'flakiness',
+    showWontFix: false,
+    showCorrectExpectations: false,
+    showLegend: true,
+    showFlaky: true,
+    showSkipped: false,
+    maxResults: 200,
+  };
 
-  function parseAllParameters() {
-    oldLocation = window.location.href;
-    parseParameters(window.location.hash.substring(1),
-        handleValidHashParameter);
-    fillDefaultStateValues();
-  }
+  //////////////////////////////////////////////////////////////////////////////
+  // GLOBALS
+  //////////////////////////////////////////////////////////////////////////////
 
-  parseAllParameters();
-
-  // Append JSON script elements.
-  var resultsByBuilder = {};
-  var expectationsByTest = {};
-  function ADD_RESULTS(builds) {
-    for (var builderName in builds) {
-      if (builderName != 'version')
-        resultsByBuilder[builderName] = builds[builderName];
-    }
-
-    generatePage();
-  }
-
-  function getPathToBuilderResultsFile(builderName) {
-    return builderBase + currentState['testType'] + '/' +
-        builders[builderName] + '/';
-  }
-
-  for (var builderName in builders) {
-    appendScript(getPathToBuilderResultsFile(builderName) + 'results.json');
-  }
-
-  // Grab expectations file from any builder.
-  appendScript(getPathToBuilderResultsFile(builderName) + 'expectations.json');
-
-  var expectationsLoaded = false;
-  function ADD_EXPECTATIONS(expectations) {
-    expectationsLoaded = true;
-    expectationsByTest = expectations;
-    generatePage();
-  }
-
+  // Text to put inside the header for each column of the test table.
+  var tableHeaders;
+  var perBuilderPlatformAndBuildType = {};
+  var perBuilderFailures = {};
+  // Map of builder to arrays of tests that are listed in the expectations file
+  // but have for that builder.
+  var perBuilderWithExpectationsButNoFailures = {};
+  // Map of builder to arrays of paths that are skipped. This shows the raw
+  // path used in test_expectations.txt rather than the test path since we
+  // don't actually have any data here for skipped tests.
+  var perBuilderSkippedPaths = {};
+  // Maps test path to an array of {builder, testResults} objects.
+  var testToResultsMap = {};
 
   function createResultsObjectForTest(test) {
     return {
@@ -658,13 +515,6 @@
     }
 
     return true;
-  }
-
-  /**
-   * Naive check that path points to a directory.
-   */
-  function isDirectory(path) {
-    return !stringContains(path, '.')
   }
 
   function addHTMLToIndividualOptionsArray(array, html, isCurrentPlatform) {
@@ -999,7 +849,7 @@
 
     if (tests.length) {
       html +=  '<h3>Have not failed in last ' +
-          resultsByBuilder[builderName].buildNumbers.length +
+          resultsByBuilder[builder].buildNumbers.length +
           ' runs.</h3><div id="passing-tests"><div>' +
           tests.join('</div><div>') + '</div></div>';
     }
@@ -1205,29 +1055,6 @@
     tests.sort(sortFunctionGetter(resultsProperty, order == BACKWARD));
   }
 
-  function generatePage() {
-    // Only continue if all the JSON files have loaded.
-    if (!expectationsLoaded)
-      return;
-
-    for (var build in builders) {
-      if (!resultsByBuilder[build])
-        return;
-    }
-
-    tableHeaders.shift();
-    if (currentState.tests) {
-      tableHeaders.unshift('builder');
-      generatePageForIndividualTests(currentState.tests.split(','));
-    } else {
-      tableHeaders.unshift('test');
-      generatePageForBuilder(currentState.builder);
-    }
-
-    $('max-results-input').value = currentState.maxResults;
-    updateLegendDisplay();
-  }
-
   function getHTMLForIndividulTestOnAllBuilders(test) {
     for (var builder in builders)
       processTestRunsForBuilder(builder);
@@ -1338,6 +1165,10 @@
     $('legend-contents').style.display = currentState.showLegend ? '' : 'none';
   }
 
+  function createTableHeadersArray(firstColumnHeader) {
+    tableHeaders = [firstColumnHeader].concat(BASE_TABLE_HEADERS);
+  }
+
   /**
    * Clears the processed test state for perBuilderFailures.
    * TODO(ojan): This really should probably clear all the state we've
@@ -1363,8 +1194,11 @@
    * pairs.
    */
   function setState(key, value) {
-    for (var i = 0; i < arguments.length; i = i + 2) {
-      var key = arguments[i];
+    var keys = setQueryParameter.apply(null, arguments);
+    var shouldRegeneratePage = true;
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+
       if (key != 'tests' && key != 'maxResults') {
         delete currentState.tests;
       }
@@ -1376,97 +1210,20 @@
         clearProcessedTestState();
       }
 
-      currentState[key] = arguments[i + 1];
-    }
-    window.location.replace(getPermaLinkURL());
-    if (key == 'showLegend') {
-      saveStoredWindowLocation();
-      updateLegendDisplay();
-      $('legend-toggle').innerHTML = getLinkHTMLToToggleLegendDisplay();
-    } else {
-      handleLocationChange();
-    }
-  }
-
-  function saveStoredWindowLocation() {
-    oldLocation = window.location.href;
-  }
-
-  function handleLocationChange() {
-    $('loading-ui').style.display = 'block';
-    setTimeout(function() {
-      saveStoredWindowLocation();
-      generatePage();
-    }, 0);
-  }
-
-  function getPermaLinkURL() {
-    return window.location.pathname + '#' + joinParameters(currentState);
-  }
-
-  function joinParameters(stateObject) {
-    var state = [];
-    for (var key in stateObject) {
-      state.push(key + '=' + encodeURIComponent(stateObject[key]));
-    }
-    return state.join('&');
-  }
-
-  function logTime(msg, startTime) {
-    console.log(msg + ': ' + (Date.now() - startTime));
-  }
-
-  function hidePopup() {
-    var popup = $('popup');
-    popup.parentNode.removeChild(popup);
-  }
-
-  function showPopup(e, html) {
-    var popup = $('popup');
-    if (!popup) {
-      popup = document.createElement('div');
-      popup.id = 'popup';
-      document.body.appendChild(popup);
-    }
-
-    // Set html first so that we can get accurate size metrics on the popup.
-    popup.innerHTML = html;
-
-    var targetRect = e.target.getBoundingClientRect();
-
-    var x = Math.min(targetRect.left - 10,
-        document.documentElement.clientWidth - popup.offsetWidth);
-    x = Math.max(0, x);
-    popup.style.left = x + document.body.scrollLeft + 'px';
-
-    var y = targetRect.top + targetRect.height;
-    if (y + popup.offsetHeight > document.documentElement.clientHeight) {
-      y = targetRect.top - popup.offsetHeight;
-    }
-    y = Math.max(0, y);
-    popup.style.top = y + document.body.scrollTop + 'px';
-  }
-
-  document.onmousedown = function(e) {
-    // Clear the open popup, unless the click was inside the popup.
-    var popup = $('popup');
-    if (popup && e.target != popup &&
-        !(popup.compareDocumentPosition(e.target) & 16)) {
-      hidePopup();
-    }
-  };
-
-  window.onload = function() {
-    // This doesn't seem totally accurate as there is a race between
-    // onload firing and the last script tag being executed.
-    logTime('Time to load JS', pageLoadStartTime);
-    setInterval(function() {
-      if (oldLocation != window.location.href) {
-        parseAllParameters();
-        handleLocationChange();
+      if (key == 'showLegend') {
+        // No need to regenerate the page if only the legend's display is being
+        // updated.
+        shouldRegeneratePage = keys.length == 1;
+        updateLegendDisplay();
+        $('legend-toggle').innerHTML = getLinkHTMLToToggleLegendDisplay();
       }
-    }, 100);
+    }
+
+    if (shouldRegeneratePage)
+      handleLocationChange();
   }
+
+
   </script>
 </head>
 

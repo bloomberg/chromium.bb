@@ -1,0 +1,96 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <title>Layout test passing status</title>
+  <style>
+    h2 {
+      margin: 0;
+    }
+    h3 {
+      margin-bottom: 0;
+    }
+    .container {
+      border: 2px solid;
+      margin: 3px 0;
+    }
+  </style>
+  <script src="dashboard_base.js"></script>
+  <script>
+  /**
+   * @fileoverview Creates a dashboard for tracking number of passes/failures
+   * per run.
+   *
+   * Currently, only webkit tests are supported, but adding other test types
+   * should just require the following steps:
+   *   -generate results.json for these tests
+   *   -copy them to the appropriate location
+   *   -add the builder name to the list of builders in dashboard_base.js.
+   */
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Methods and objects from dashboard_base.js to override.
+  //////////////////////////////////////////////////////////////////////////////
+  function generatePage() {
+    var html = '';
+    for (var builder in builders) {
+      html += getHTMLForBuilder(builder);
+    }
+    document.body.innerHTML = html;
+  }
+
+
+  function getHTMLForBuilder(builder) {
+    var results = resultsByBuilder[builder];
+    return '<div class=container><h2>' + builder + '</h2>' +
+        getHTMLForTestType(results, NON_WONTFIX_COUNTS_KEY,
+            NON_WONTFIX_DESCRIPTION) +
+        getHTMLForTestType(results, DEFERRED_COUNTS_KEY, DEFERRED_DESCRIPTION) +
+        getHTMLForTestType(results, ALL_COUNTS_KEY, ALL_COUNTS_DESCRIPTION) +
+        '</div>';
+  }
+
+  function getHTMLForTestType(results, key, description) {
+    // TODO(dglazkov): Make these pretty canvasy graphs.
+    var html = '<h3>' + description + '</h3><table><tbody>';
+    var counts = results[key];
+
+    var numColumns = counts.length;
+    html += getHTMLForTableRow('WebKit Revision',
+        results[WEBKIT_REVISIONS_KEY].slice(0, numColumns));
+    html += getHTMLForTableRow('Chrome Revision',
+        results[CHROME_REVISIONS_KEY].slice(0, numColumns));
+    html += getHTMLForTableRow('Failures (deduped)',
+        results[FIXABLE_COUNT_KEY].slice(0, numColumns));
+
+    var htmlForEachRow = {};
+    for (var i = 0; i < counts.length; i++) {
+      for (var expectation in EXPECTATIONS_MAP) {
+        if (expectation in counts[i]) {
+          var count = counts[i][expectation];
+
+          if (!htmlForEachRow[expectation])
+            htmlForEachRow[expectation] = [];
+
+          htmlForEachRow[expectation].push(count);
+        }
+      }
+    }
+
+    for (var expectation in htmlForEachRow) {
+      html += getHTMLForTableRow(EXPECTATIONS_MAP[expectation],
+          htmlForEachRow[expectation]);
+    }
+
+    return html + '</tbody></table>';
+  }
+
+  function getHTMLForTableRow(columnName, values) {
+    return '<tr><td>' + columnName + '</td><td>' + values.join('</td><td>') +
+        '</td></tr>';
+  }
+
+  </script>
+  </head>
+  <body></body>
+</html>
