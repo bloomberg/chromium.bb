@@ -302,8 +302,6 @@ void StatusAreaView::CreateAppMenu() {
                                   IDS_ABOUT,
                                   l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
   app_menu_contents_->AddItemWithStringId(IDC_HELP_PAGE, IDS_HELP_PAGE);
-  app_menu_contents_->AddSeparator();
-  app_menu_contents_->AddItemWithStringId(IDC_EXIT, IDS_EXIT);
 
   app_menu_menu_.reset(new views::Menu2(app_menu_contents_.get()));
 }
