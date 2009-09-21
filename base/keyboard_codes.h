@@ -9,10 +9,8 @@
 
 #if defined(OS_WIN)
 #include "base/keyboard_codes_win.h"
-#elif defined(USE_X11)
-#include "base/keyboard_codes_linux.h"
-#elif defined(OS_MACOSX)
-#include "base/keyboard_codes_mac.h"
+#elif defined(USE_X11) || defined(OS_MACOSX)
+#include "base/keyboard_codes_posix.h"
 #endif
 
 #endif  // BASE_KEYBOARD_CODES_H_
