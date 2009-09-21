@@ -96,6 +96,7 @@ window_draw_decorations(struct window *window)
 	cairo_pattern_t *gradient, *outline, *bright, *dim;
 	struct wl_visual *visual;
 	int width, height;
+	int shadow_dx = 4, shadow_dy = 4;
 
 	window->cairo_surface =
 		cairo_drm_surface_create(window->display->device,
@@ -112,10 +113,11 @@ window_draw_decorations(struct window *window)
 	width = window->allocation.width - window->margin * 2;
 	height = window->allocation.height - window->margin * 2;
 
-	cairo_translate(cr, window->margin + 7, window->margin + 5);
+	cairo_translate(cr, window->margin + shadow_dx,
+			window->margin + shadow_dy);
 	cairo_set_line_width (cr, border);
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.7);
-	rounded_rect(cr, 0, 0, width, height, radius);
+	rounded_rect(cr, -1, -1, width + 1, height + 1, radius);
 	cairo_fill(cr);
 
 #define SLOW_BUT_PWETTY
@@ -133,25 +135,20 @@ window_draw_decorations(struct window *window)
 	}
 #endif
 
-	cairo_translate(cr, -7, -5);
-	cairo_set_line_width (cr, border);
-	rounded_rect(cr, 1, 1, width - 1, height - 1, radius);
-	cairo_set_source(cr, outline);
-	cairo_stroke(cr);
-	rounded_rect(cr, 2, 2, width - 2, height - 2, radius - 1);
-	cairo_set_source(cr, bright);
-	cairo_stroke(cr);
-	rounded_rect(cr, 3, 3, width - 2, height - 2, radius - 1);
-	cairo_set_source(cr, dim);
-	cairo_stroke(cr);
-
-	rounded_rect(cr, 2, 2, width - 2, height - 2, radius - 1);
-	gradient = cairo_pattern_create_linear (0, 0, 0, 100);
-	cairo_pattern_add_color_stop_rgb(gradient, 0, 0.6, 0.6, 0.4);
-	cairo_pattern_add_color_stop_rgb(gradient, 1, 0.8, 0.8, 0.7);
-	cairo_set_source(cr, gradient);
-	cairo_fill(cr);
-	cairo_pattern_destroy(gradient);
+	cairo_translate(cr, -shadow_dx, -shadow_dy);
+	if (window->keyboard_device) {
+		rounded_rect(cr, 0, 0, width, height, radius);
+		gradient = cairo_pattern_create_linear (0, 0, 0, 100);
+		cairo_pattern_add_color_stop_rgb(gradient, 0, 0.6, 0.6, 0.6);
+		cairo_pattern_add_color_stop_rgb(gradient, 1, 0.8, 0.8, 0.8);
+		cairo_set_source(cr, gradient);
+		cairo_fill(cr);
+		cairo_pattern_destroy(gradient);
+	} else {
+		rounded_rect(cr, 0, 0, width, height, radius);
+		cairo_set_source_rgba(cr, 0.6, 0.6, 0.6, 1);
+		cairo_fill(cr);
+	}
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_move_to(cr, 10, 50);
@@ -178,10 +175,15 @@ window_draw_decorations(struct window *window)
 	cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
 	cairo_set_line_width (cr, 4);
 	cairo_text_path(cr, window->title);
-	cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
-	cairo_stroke_preserve(cr);
-	cairo_set_source_rgb(cr, 1, 1, 1);
-	cairo_fill(cr);
+	if (window->keyboard_device) {
+		cairo_set_source_rgb(cr, 0.56, 0.56, 0.56);
+		cairo_stroke_preserve(cr);
+		cairo_set_source_rgb(cr, 1, 1, 1);
+		cairo_fill(cr);
+	} else {
+		cairo_set_source_rgb(cr, 0.8, 0.8, 0.8);
+		cairo_fill(cr);
+	}
 	cairo_destroy(cr);
 
 	visual = wl_display_get_premultiplied_argb_visual(window->display->display);
