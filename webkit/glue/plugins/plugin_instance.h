@@ -101,6 +101,13 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
 
   NPAPI::PluginLib* plugin_lib() { return plugin_; }
 
+#if defined(OS_MACOSX)
+  int drawing_model() { return drawing_model_; }
+  void set_drawing_model(int value) { drawing_model_ = value; }
+  int event_model() { return event_model_; }
+  void set_event_model(int value) { event_model_ = value; }
+#endif
+
 #if defined(OS_WIN)
   // Handles a windows native message which this PluginInstance should deal
   // with.  Returns true if the event is handled, false otherwise.
@@ -237,6 +244,10 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   bool                                     use_mozilla_user_agent_;
 #if defined(OS_WIN)
   scoped_refptr<MozillaExtensionApi>       mozilla_extenstions_;
+#endif
+#if defined(OS_MACOSX)
+  int                                      drawing_model_;
+  int                                      event_model_;
 #endif
   MessageLoop*                             message_loop_;
   scoped_refptr<PluginStreamUrl>           plugin_data_stream_;
