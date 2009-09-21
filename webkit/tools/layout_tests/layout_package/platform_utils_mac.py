@@ -101,3 +101,9 @@ def ShutDownHTTPServer(server_process):
   else:
     os.kill(server_process.pid, signal.SIGTERM)
 
+def KillAllTestShells():
+   """Kills all instances of the test_shell binary currently running."""
+   subprocess.Popen(('killall', '-TERM', 'test_shell'),
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE).wait()
+

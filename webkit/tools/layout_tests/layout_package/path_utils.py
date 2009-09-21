@@ -290,3 +290,6 @@ def FuzzyMatchPath():
 
 def ShutDownHTTPServer(server_process):
   return platform_utils.ShutDownHTTPServer(server_process)
+
+def KillAllTestShells():
+  platform_utils.KillAllTestShells()
