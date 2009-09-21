@@ -1065,6 +1065,31 @@ void DefineOneByteOpcodes() {
   DefineOperand(RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit));
   DefineOperand(RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
 
+  DefineOpcode(0xa6, NACLi_386RE,
+               InstFlag(OperandSize_b),
+               InstCmpsb);
+  DefineOperand(RegES_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0xa7, NACLi_386RE,
+               InstFlag(OperandSize_w),
+               InstCmpsw);
+  DefineOperand(RegES_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0xa7, NACLi_386RE,
+               InstFlag(OperandSize_v),
+               InstCmpsd);
+  DefineOperand(RegES_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0xa7, NACLi_386RE,
+               InstFlag(Opcode64Only) | InstFlag(OperandSize_o) |
+               InstFlag(OpcodeUsesRexW),
+               InstCmpsq);
+  DefineOperand(RegES_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+
   DefineOpcode(0xA8, NACLi_386,
                InstFlag(OperandSize_b) | InstFlag(OpcodeHasImmed),
                InstTest);
@@ -1089,6 +1114,83 @@ void DefineOneByteOpcodes() {
                InstTest);
   DefineOperand(RegRAX, OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xaa, NACLi_386R,
+               InstFlag(OperandSize_b),
+               InstStosb);
+  DefineOperand(RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegAL, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0xab, NACLi_386R,
+               InstFlag(OperandSize_w),
+               InstStosw);
+  DefineOperand(RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegAX, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0xab, NACLi_386R,
+               InstFlag(OperandSize_v),
+               InstStosd);
+  DefineOperand(RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegEAX, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0xab, NACLi_386R,
+               InstFlag(Opcode64Only) | InstFlag(OperandSize_o) |
+               InstFlag(OpcodeUsesRexW),
+               InstStosq);
+  DefineOperand(RegES_EDI, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegRAX, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  /* ISE reviewers suggested omitting lods */
+  DefineOpcode(0xac, NACLi_ILLEGAL,
+               InstFlag(OperandSize_b),
+               InstLodsb);
+  DefineOperand(RegAL, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0xad, NACLi_ILLEGAL,
+               InstFlag(OperandSize_w),
+               InstLodsw);
+  DefineOperand(RegAX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0xad, NACLi_ILLEGAL,
+               InstFlag(OperandSize_v),
+               InstLodsd);
+  DefineOperand(RegEAX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0xad, NACLi_ILLEGAL,
+               InstFlag(Opcode64Only) | InstFlag(OperandSize_o) |
+               InstFlag(OpcodeUsesRexW),
+               InstLodsq);
+  DefineOperand(RegRAX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  /* ISE reviewers suggested omitting scas */
+  DefineOpcode(0xae, NACLi_386RE,
+               InstFlag(OperandSize_b),
+               InstScasb);
+  DefineOperand(RegAL, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0xaf, NACLi_386RE,
+               InstFlag(OperandSize_w),
+               InstScasw);
+  DefineOperand(RegAX, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0xaf, NACLi_386RE,
+               InstFlag(OperandSize_v),
+               InstScasd);
+  DefineOperand(RegEAX, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0xaf, NACLi_386RE,
+               InstFlag(Opcode64Only) | InstFlag(OperandSize_o) |
+               InstFlag(OpcodeUsesRexW),
+               InstScasq);
+  DefineOperand(RegRAX, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(RegDS_EDI, OpFlag(OpUse) | OpFlag(OpImplicit));
 
   for (i = 0; i < 8; ++i) {
     DefineOpcode(0xB8 + i, NACLi_386,
