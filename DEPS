@@ -99,7 +99,7 @@ deps_os = {
       "/trunk/deps/third_party/ffmpeg/binaries/win@" + Var("ffmpeg_revision"),
 
     "src/third_party/pthreads-win32":
-      "/trunk/deps/third_party/pthreads-win32@26337",
+      "/trunk/deps/third_party/pthreads-win32@26716",
   },
   "mac": {
     "src/third_party/GTM":
