@@ -66,6 +66,7 @@ class BrowserBubble {
   void MoveTo(int x, int y);
   int width() { return bounds_.width(); }
   int height() { return bounds_.height(); }
+  const gfx::Rect& bounds() const { return bounds_; }
 
   // Reposition the bubble - as we are using a WS_POPUP for the bubble,
   // we have to manually position it when the browser window moves.

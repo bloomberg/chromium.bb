@@ -456,8 +456,11 @@ void BrowserView::WindowMoved() {
 
   status_bubble_->Reposition();
 
-  BubbleSet::iterator bubble = browser_bubbles_.begin();
-  for (; bubble != browser_bubbles_.end(); ++bubble) {
+  // Do safe iteration in case the bubble winds up closing as a result of this
+  // message.
+  for (BubbleSet::iterator i = browser_bubbles_.begin();
+       i != browser_bubbles_.end();) {
+    BubbleSet::iterator bubble = i++;
     (*bubble)->BrowserWindowMoved();
   }
 
