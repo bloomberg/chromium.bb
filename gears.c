@@ -293,6 +293,15 @@ resize_handler(struct window *window, void *data)
 }
 
 static void
+keyboard_focus_handler(struct window *window,
+		       struct wl_input_device *device, void *data)
+{
+	struct gears *gears = data;
+
+	gears->resized = 1;
+}
+
+static void
 handle_acknowledge(void *data,
 		   struct wl_compositor *compositor,
 		   uint32_t key, uint32_t frame)
@@ -404,6 +413,7 @@ gears_create(struct display *display)
 	handle_frame(gears, gears->compositor, 0, 0);
 
 	window_set_resize_handler(gears->window, resize_handler, gears);
+	window_set_keyboard_focus_handler(gears->window, keyboard_focus_handler, gears);
 
 	wl_compositor_add_listener(gears->compositor,
 				   &compositor_listener, gears);
