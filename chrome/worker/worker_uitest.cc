@@ -47,6 +47,7 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
     "worker-gc.html",
     "worker-location.html",
     "worker-messageport.html",
+    "worker-messageport-gc.html",
     "worker-navigator.html",
     "worker-replace-global-constructor.html",
     "worker-replace-self.html",

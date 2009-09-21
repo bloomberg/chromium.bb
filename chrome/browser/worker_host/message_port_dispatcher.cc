@@ -193,8 +193,9 @@ void MessagePortDispatcher::OnQueueMessages(int message_port_id) {
   }
 
   MessagePort& port = message_ports_[message_port_id];
-  port.queue_messages = true;
   port.sender->Send(new WorkerProcessMsg_MessagesQueued(port.route_id));
+  port.queue_messages = true;
+  port.sender = NULL;
 }
 
 void MessagePortDispatcher::OnSendQueuedMessages(
@@ -212,6 +213,14 @@ void MessagePortDispatcher::OnSendQueuedMessages(
   port.queued_messages.insert(port.queued_messages.begin(),
                               queued_messages.begin(),
                               queued_messages.end());
+  SendQueuedMessagesIfPossible(message_port_id);
+}
+
+void MessagePortDispatcher::SendQueuedMessagesIfPossible(int message_port_id) {
+  MessagePort& port = message_ports_[message_port_id];
+  if (port.queue_messages || !port.sender)
+    return;
+
   for (QueuedMessages::iterator iter = port.queued_messages.begin();
        iter != port.queued_messages.end(); ++iter) {
     PostMessageTo(message_port_id, iter->first, iter->second);

@@ -228,33 +228,40 @@ void WorkerProcessHost::RelayMessage(
     IPC::Message::Sender* sender,
     int route_id,
     CallbackWithReturnValue<int>::Type* next_route_id) {
-  IPC::Message* new_message;
-  if (message.type() == WorkerMsg_PostMessage::ID) {
-    // We want to send the receiver a routing id for the new channel, so
-    // crack the message first.
-    string16 msg;
-    std::vector<int> sent_message_port_ids;
-    std::vector<int> new_routing_ids;
-    if (!WorkerMsg_PostMessage::Read(
-            &message, &msg, &sent_message_port_ids, &new_routing_ids)) {
-      return;
-    }
-    DCHECK(sent_message_port_ids.size() == new_routing_ids.size());
-
-    for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
-      new_routing_ids[i] = next_route_id->Run();
-      MessagePortDispatcher::GetInstance()->UpdateMessagePort(
-          sent_message_port_ids[i], sender, new_routing_ids[i], next_route_id);
-    }
-
-    new_message = new WorkerMsg_PostMessage(
-        route_id, msg, sent_message_port_ids, new_routing_ids);
-  } else {
-    new_message = new IPC::Message(message);
+  if (message.type() != WorkerMsg_PostMessage::ID) {
+    IPC::Message* new_message = new IPC::Message(message);
     new_message->set_routing_id(route_id);
+    sender->Send(new_message);
+    return;
   }
 
-  sender->Send(new_message);
+  // We want to send the receiver a routing id for the new channel, so
+  // crack the message first.
+  string16 msg;
+  std::vector<int> sent_message_port_ids;
+  std::vector<int> new_routing_ids;
+  if (!WorkerMsg_PostMessage::Read(
+          &message, &msg, &sent_message_port_ids, &new_routing_ids)) {
+    return;
+  }
+  DCHECK(sent_message_port_ids.size() == new_routing_ids.size());
+
+  for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
+    new_routing_ids[i] = next_route_id->Run();
+    MessagePortDispatcher::GetInstance()->UpdateMessagePort(
+        sent_message_port_ids[i], sender, new_routing_ids[i], next_route_id);
+  }
+
+  sender->Send(new WorkerMsg_PostMessage(
+      route_id, msg, sent_message_port_ids, new_routing_ids));
+
+  // Send any queued messages to the sent message ports.  We can only do this
+  // after sending the above message, since it's the one that sets up the
+  // message port route which the queued messages are sent to.
+  for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
+    MessagePortDispatcher::GetInstance()->
+        SendQueuedMessagesIfPossible(sent_message_port_ids[i]);
+  }
 }
 
 void WorkerProcessHost::SenderShutdown(IPC::Message::Sender* sender) {

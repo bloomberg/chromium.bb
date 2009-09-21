@@ -28,11 +28,16 @@ class MessagePortDispatcher : public NotificationObserver {
                          CallbackWithReturnValue<int>::Type* next_routing_id,
                          bool* message_was_ok);
 
+  // Updates the information needed to reach a message port when it's sent to a
+  // (possibly different) process.
   void UpdateMessagePort(
       int message_port_id,
       IPC::Message::Sender* sender,
       int routing_id,
       CallbackWithReturnValue<int>::Type* next_routing_id);
+
+  // Attempts to send the queued messages for a message port.
+  void SendQueuedMessagesIfPossible(int message_port_id);
 
   bool Send(IPC::Message* message);
 
