@@ -7,6 +7,7 @@
 #include <string>
 
 #include "chrome/browser/browser.h" // TODO(beng): this dependency is awful.
+#import "chrome/browser/cocoa/focus_tracker.h"
 #include "chrome/browser/cocoa/sad_tab_view.h"
 #import "chrome/browser/cocoa/web_drag_source.h"
 #import "chrome/browser/cocoa/web_drop_target.h"
@@ -158,32 +159,26 @@ void TabContentsViewMac::SetInitialFocus() {
 }
 
 void TabContentsViewMac::StoreFocus() {
-  NSResponder* current_focus = [[cocoa_view_.get() window] firstResponder];
-  if ([current_focus isKindOfClass:[NSView class]]) {
-    NSView* current_focus_view = (NSView*)current_focus;
-
-    if ([current_focus_view isDescendantOf:cocoa_view_.get()]) {
-      latent_focus_view_.reset([current_focus_view retain]);
-      return;
-    }
-  }
-
-  latent_focus_view_.reset();
+  // We're explicitly being asked to store focus, so don't worry if there's
+  // already a view saved.
+  focus_tracker_.reset(
+      [[FocusTracker alloc] initWithWindow:[cocoa_view_ window]]);
 }
 
 void TabContentsViewMac::RestoreFocus() {
   // TODO(avi): Could we be restoring a view that's no longer in the key view
   // chain?
-  if (latent_focus_view_.get()) {
-    [[cocoa_view_ window] makeFirstResponder:latent_focus_view_.get()];
-    latent_focus_view_.reset();
-  } else {
+  if (!(focus_tracker_.get() &&
+        [focus_tracker_ restoreFocusInWindow:[cocoa_view_ window]])) {
+    // Fall back to the default focus behavior if we could not restore focus.
     // TODO(shess): If location-bar gets focus by default, this will
     // select-all in the field.  If there was a specific selection in
     // the field when we navigated away from it, we should restore
     // that selection.
     SetInitialFocus();
   }
+
+  focus_tracker_.reset(nil);
 }
 
 void TabContentsViewMac::UpdateDragCursor(WebDragOperation operation) {
