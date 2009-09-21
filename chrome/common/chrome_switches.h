@@ -245,10 +245,6 @@ extern const wchar_t kExplicitlyAllowedPorts[];
 
 extern const wchar_t kActivateOnLaunch[];
 
-#if defined(OS_LINUX)
-extern const wchar_t kEnablePrinting[];
-#endif
-
 }  // namespace switches
 
 #endif  // CHROME_COMMON_CHROME_SWITCHES_H_
