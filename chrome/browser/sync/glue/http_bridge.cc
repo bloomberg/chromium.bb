@@ -143,19 +143,6 @@ void HttpBridge::SetPostPayload(const char* content_type,
   }
 }
 
-void HttpBridge::AddCookieForRequest(const char* cookie) {
-  DCHECK_EQ(MessageLoop::current(), created_on_loop_);
-  DCHECK(!request_completed_);
-  DCHECK(url_for_request_.is_valid()) << "Valid URL not set.";
-  if (!url_for_request_.is_valid()) return;
-
-  if (!context_for_request_->cookie_store()->SetCookie(url_for_request_,
-                                                       cookie)) {
-    DLOG(WARNING) << "Cookie " << cookie
-                  << " could not be added for url: " << url_for_request_ << ".";
-  }
-}
-
 bool HttpBridge::MakeSynchronousPost(int* os_error_code, int* response_code) {
   DCHECK_EQ(MessageLoop::current(), created_on_loop_);
   DCHECK(!request_completed_);
@@ -202,23 +189,6 @@ const char* HttpBridge::GetResponseContent() const {
   return response_content_.data();
 }
 
-int HttpBridge::GetResponseCookieCount() const {
-  DCHECK_EQ(MessageLoop::current(), created_on_loop_);
-  DCHECK(request_completed_);
-  return response_cookies_.size();
-}
-
-const char* HttpBridge::GetResponseCookieAt(int cookie_number) const {
-  DCHECK_EQ(MessageLoop::current(), created_on_loop_);
-  DCHECK(request_completed_);
-  bool valid_number = (cookie_number >= 0) &&
-      (static_cast<size_t>(cookie_number) < response_cookies_.size());
-  DCHECK(valid_number);
-  if (!valid_number)
-    return NULL;
-  return response_cookies_[cookie_number].c_str();
-}
-
 void HttpBridge::OnURLFetchComplete(const URLFetcher *source, const GURL &url,
                                     const URLRequestStatus &status,
                                     int response_code,
@@ -230,17 +200,6 @@ void HttpBridge::OnURLFetchComplete(const URLFetcher *source, const GURL &url,
   request_succeeded_ = (URLRequestStatus::SUCCESS == status.status());
   http_response_code_ = response_code;
   os_error_code_ = status.os_error();
-
-  // TODO(timsteele): For now we need this "fixup" to match up with what the
-  // sync backend expects. This seems to be non-standard and shouldn't be done
-  // here in HttpBridge, and it breaks part of the unittest.
-  for (size_t i = 0; i < cookies.size(); ++i) {
-    net::CookieMonster::ParsedCookie parsed_cookie(cookies[i]);
-    std::string cookie = " \t \t \t \t \t";
-    cookie += parsed_cookie.Name() + "\t";
-    cookie += parsed_cookie.Value();
-    response_cookies_.push_back(cookie);
-  }
 
   response_content_ = data;
 

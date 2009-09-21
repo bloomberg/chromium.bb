@@ -81,7 +81,6 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   virtual void SetURL(const char* url, int port);
   virtual void SetPostPayload(const char* content_type, int content_length,
                               const char* content);
-  virtual void AddCookieForRequest(const char* cookie);
   virtual bool MakeSynchronousPost(int* os_error_code, int* response_code);
 
   // WARNING: these response content methods are used to extract plain old data
@@ -90,8 +89,6 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   // string r(b->GetResponseContent(), b->GetResponseContentLength()).
   virtual int GetResponseContentLength() const;
   virtual const char* GetResponseContent() const;
-  virtual int GetResponseCookieCount() const;
-  virtual const char* GetResponseCookieAt(int cookie_number) const;
 
   // URLFetcher::Delegate implementation.
   virtual void OnURLFetchComplete(const URLFetcher* source, const GURL& url,
@@ -147,7 +144,6 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   bool request_succeeded_;
   int http_response_code_;
   int os_error_code_;
-  ResponseCookies response_cookies_;
   std::string response_content_;
 
   // A waitable event we use to provide blocking semantics to

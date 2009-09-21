@@ -632,11 +632,6 @@ class HttpPostProviderInterface {
   virtual void SetPostPayload(const char* content_type, int content_length,
                               const char* content) = 0;
 
-  // Add the specified cookie to the request context using the url set by
-  // SetURL as the key. |cookie| should be a standard cookie line
-  // [e.g "name=val; name2=val2"]. |cookie| should be copied.
-  virtual void AddCookieForRequest(const char* cookie) = 0;
-
   // Returns true if the URL request succeeded. If the request failed,
   // os_error() may be non-zero and hence contain more information.
   virtual bool MakeSynchronousPost(int* os_error_code, int* response_code) = 0;
@@ -650,13 +645,6 @@ class HttpPostProviderInterface {
   // This is a null terminated string of characters.
   // Value should be copied.
   virtual const char* GetResponseContent() const = 0;
-
-  // To simplify passing a vector<string> across this API, we provide the
-  // following two methods. Use GetResponseCookieCount to bound a loop calling
-  // GetResponseCookieAt once for each integer in the range
-  // [0, GetNumCookiesInResponse). The char* returned should be copied.
-  virtual int GetResponseCookieCount() const = 0;
-  virtual const char* GetResponseCookieAt(int cookie_number) const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HttpPostProviderInterface);

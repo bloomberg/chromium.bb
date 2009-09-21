@@ -100,7 +100,6 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostShunted) {
   EXPECT_TRUE(success);
   EXPECT_EQ(200, response_code);
   EXPECT_EQ(0, os_error);
-  EXPECT_EQ(0, http_bridge->GetResponseCookieCount());
 
   EXPECT_EQ(8, http_bridge->GetResponseContentLength());
   EXPECT_EQ(std::string("success!"),
@@ -127,13 +126,12 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveWithPayload) {
   EXPECT_TRUE(success);
   EXPECT_EQ(200, response_code);
   EXPECT_EQ(0, os_error);
-  EXPECT_EQ(0, http_bridge->GetResponseCookieCount());
+
   EXPECT_EQ(payload.length() + 1, http_bridge->GetResponseContentLength());
   EXPECT_EQ(payload, std::string(http_bridge->GetResponseContent()));
 }
 
-// Full round-trip test of the HttpBridge, using custom UA string and
-// multiple request cookies. Cookies should not come back.
+// Full round-trip test of the HttpBridge, using custom UA string
 TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
   scoped_refptr<HTTPTestServer> server = HTTPTestServer::CreateServer(kDocRoot,
                                                                       NULL);
@@ -143,8 +141,7 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
   GURL echo_header = server->TestServerPage("echoall");
   http_bridge->SetUserAgent("bob");
   http_bridge->SetURL(echo_header.spec().c_str(), echo_header.IntPort());
-  http_bridge->AddCookieForRequest("foo=bar");
-  http_bridge->AddCookieForRequest("baz=boo");
+
   std::string test_payload = "###TEST PAYLOAD###";
   http_bridge->SetPostPayload("text/html", test_payload.length() + 1,
                               test_payload.c_str());
@@ -155,7 +152,7 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
   EXPECT_TRUE(success);
   EXPECT_EQ(200, response_code);
   EXPECT_EQ(0, os_error);
-  EXPECT_EQ(0, http_bridge->GetResponseCookieCount());
+
   std::string response(http_bridge->GetResponseContent(),
                        http_bridge->GetResponseContentLength());
   EXPECT_EQ(std::string::npos, response.find("Cookie:"));
@@ -184,7 +181,7 @@ TEST_F(HttpBridgeTest, TestExtraRequestHeaders) {
   EXPECT_TRUE(success);
   EXPECT_EQ(200, response_code);
   EXPECT_EQ(0, os_error);
-  EXPECT_EQ(0, http_bridge->GetResponseCookieCount());
+
   std::string response(http_bridge->GetResponseContent(),
                        http_bridge->GetResponseContentLength());
 
