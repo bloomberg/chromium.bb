@@ -784,14 +784,6 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void *value) {
     break;
   }
 #if defined(OS_MACOSX)
-  case NPNVpluginDrawingModel:
-  {
-    // return the drawing model that was negotiated when we initialized
-    scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-    *reinterpret_cast<int*>(value) = plugin->drawing_model();
-    rv = NPERR_NO_ERROR;
-    break;
-  }
   case NPNVsupportsQuickDrawBool:
   {
     // we do not support the QuickDraw drawing model
@@ -859,35 +851,15 @@ NPError  NPN_SetValue(NPP id, NPPVariable variable, void *value) {
     DLOG(INFO) << "NPN_SetValue(NPPVpluginKeepLibraryInMemory) is not implemented.";
     return NPERR_GENERIC_ERROR;
 #if defined(OS_MACOSX)
-  case NPPVpluginDrawingModel:
-  {
-    // we only admit to supporting the CoreGraphics drawing model.  The logic
-    // here is that our QuickDraw plugin support is so rudimentary that we
-    // only want to use it as a fallback to keep plugins from crashing: if
-    // a plugin knows enough to ask, we want them to use CoreGraphics.
-    int model = reinterpret_cast<int>(value);
-    if (model == NPDrawingModelCoreGraphics) {
-      plugin->set_drawing_model(model);
+  case NPNVpluginDrawingModel:
+    // we only support the CoreGraphics drawing model
+    if (reinterpret_cast<int>(value) == NPDrawingModelCoreGraphics)
       return NPERR_NO_ERROR;
-    }
     return NPERR_GENERIC_ERROR;
-  }
-  case NPPVpluginEventModel:
-  {
-    // we only support the Carbon event model
-    int model = reinterpret_cast<int>(value);
-    switch (model) {
-      case NPNVsupportsCarbonBool:
-        plugin->set_event_model(model);
-        return NPERR_NO_ERROR;
-        break;
-    }
-    return NPERR_GENERIC_ERROR;
-  }
 #endif
   default:
     // TODO: implement me
-    LOG(WARNING) << "NPN_SetValue(" << variable << ") is not implemented.";
+    DLOG(INFO) << "NPN_SetValue(" << variable << ") is not implemented.";
     break;
   }
 
