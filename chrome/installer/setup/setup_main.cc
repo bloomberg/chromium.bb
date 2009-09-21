@@ -281,9 +281,11 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
         if (install_status == installer_util::FIRST_INSTALL_SUCCESS) {
           LOG(INFO) << "First install successful.";
           // We never want to launch Chrome in system level install mode.
-          if (!system_level && !installer_util::GetDistroBooleanPreference(prefs,
-              installer_util::master_preferences::kDoNotLaunchChrome))
+          if (!system_level && !installer_util::GetDistroBooleanPreference(
+              prefs, installer_util::master_preferences::kDoNotLaunchChrome))
             installer::LaunchChrome(system_level);
+        } else if (install_status == installer_util::NEW_VERSION_UPDATED) {
+          installer_setup::RemoveLegacyRegistryKeys();
         }
       }
     }
@@ -328,6 +330,7 @@ installer_util::InstallStatus UninstallChrome(const CommandLine& cmd_line,
 
   bool remove_all = !cmd_line.HasSwitch(
       installer_util::switches::kDoNotRemoveSharedItems);
+
   return installer_setup::UninstallChrome(cmd_line.program(), system_install,
                                           remove_all, force,
                                           cmd_line, cmd_params);

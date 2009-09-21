@@ -71,12 +71,6 @@ class ShellUtil {
   // Registry value name that is needed for ChromeHTML ProgId
   static const wchar_t* kRegUrlProtocol;
 
-  // Name that we give to Chrome extension file association handler ProgId.
-  static const wchar_t* kChromeExtProgId;
-
-  // Description of Chrome file/URL association handler ProgId.
-  static const wchar_t* kChromeExtProgIdDesc;
-
   // Checks if we need Admin rights for registry cleanup by checking if any
   // entry exists in HKLM.
   static bool AdminNeededForRegistryCleanup(const std::wstring& suffix);
@@ -117,11 +111,6 @@ class ShellUtil {
   // this command is written to the registry under shell\open\command key.
   // chrome_exe: the full path to chrome.exe
   static std::wstring GetChromeShellOpenCmd(const std::wstring& chrome_exe);
-
-  // This method returns the command to open .crx files using chrome in order
-  // to install them as extensions. Similar to above method.
-  static std::wstring GetChromeInstallExtensionCmd(
-      const std::wstring& chrome_exe);
 
   // Returns the localized name of Chrome shortcut. If |alternate| is true
   // it returns a second localized text that is better suited for certain

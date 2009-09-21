@@ -827,17 +827,6 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
                                                  profile, expected_tabs);
   }
 
-  if (command_line.HasSwitch(switches::kInstallExtension)) {
-    std::wstring path_string =
-        command_line.GetSwitchValue(switches::kInstallExtension);
-    FilePath path = FilePath::FromWStringHack(path_string);
-    profile->GetExtensionsService()->InstallExtension(path);
-
-    // If the chrome process was already running, install the extension without
-    // popping up another browser window.
-    silent_launch = !process_startup;
-  }
-
   if (command_line.HasSwitch(switches::kExplicitlyAllowedPorts)) {
     std::wstring allowed_ports =
       command_line.GetSwitchValue(switches::kExplicitlyAllowedPorts);

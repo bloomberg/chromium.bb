@@ -24,6 +24,11 @@ bool DeleteChromeRegistrationKeys(HKEY root,
                                   const std::wstring& browser_entry_suffix,
                                   installer_util::InstallStatus& exit_code);
 
+// Removes any legacy registry keys from earlier versions of Chrome that are no
+// longer needed. This is used during autoupdate since we don't do full
+// uninstalls/reinstalls to update.
+void RemoveLegacyRegistryKeys();
+
 // This function uninstalls Chrome.
 //
 // exe_path: Path to the executable (setup.exe) as it will be copied

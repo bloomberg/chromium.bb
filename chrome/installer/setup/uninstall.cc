@@ -279,18 +279,6 @@ bool installer_setup::DeleteChromeRegistrationKeys(HKEY root,
   html_prog_id.append(browser_entry_suffix);
   DeleteRegistryKey(key, html_prog_id);
 
-  // Delete Software\Classes\ChromeExt,
-  std::wstring ext_prog_id(ShellUtil::kRegClasses);
-  file_util::AppendToPath(&ext_prog_id, ShellUtil::kChromeExtProgId);
-  ext_prog_id.append(browser_entry_suffix);
-  DeleteRegistryKey(key, ext_prog_id);
-
-  // Delete Software\Classes\.crx,
-  std::wstring ext_association(ShellUtil::kRegClasses);
-  ext_association.append(L"\\.");
-  ext_association.append(chrome::kExtensionFileExtension);
-  DeleteRegistryKey(key, ext_association);
-
   // Delete Software\Clients\StartMenuInternet\Chromium
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   std::wstring set_access_key(ShellUtil::kRegStartMenuInternet);
@@ -332,6 +320,40 @@ bool installer_setup::DeleteChromeRegistrationKeys(HKEY root,
   key.Close();
   exit_code = installer_util::UNINSTALL_SUCCESSFUL;
   return true;
+}
+
+void installer_setup::RemoveLegacyRegistryKeys() {
+  // We used to register Chrome to handle crx files, but this turned out
+  // to be not worth the hassle. Remove these old registry entries if
+  // they exist. See: http://codereview.chromium.org/210007
+
+#if defined(GOOGLE_CHROME_BUILD)
+const wchar_t kChromeExtProgId[] = L"ChromeExt";
+#else
+const wchar_t kChromeExtProgId[] = L"ChromiumExt";
+#endif
+
+  HKEY roots[] = {HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER};
+  for (size_t i = 0; i < arraysize(roots); ++i) {
+    RegKey key(roots[i], L"", KEY_ALL_ACCESS);
+
+    std::wstring suffix;
+    if (roots[i] == HKEY_LOCAL_MACHINE &&
+        !ShellUtil::GetUserSpecificDefaultBrowserSuffix(&suffix))
+      suffix = L"";
+
+    // Delete Software\Classes\ChromeExt,
+    std::wstring ext_prog_id(ShellUtil::kRegClasses);
+    file_util::AppendToPath(&ext_prog_id, kChromeExtProgId);
+    ext_prog_id.append(suffix);
+    DeleteRegistryKey(key, ext_prog_id);
+
+    // Delete Software\Classes\.crx,
+    std::wstring ext_association(ShellUtil::kRegClasses);
+    ext_association.append(L"\\.");
+    ext_association.append(chrome::kExtensionFileExtension);
+    DeleteRegistryKey(key, ext_association);
+  }
 }
 
 installer_util::InstallStatus installer_setup::UninstallChrome(

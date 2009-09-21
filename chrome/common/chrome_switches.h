@@ -146,7 +146,6 @@ extern const wchar_t kSdchFilter[];
 extern const wchar_t kEnableUserScripts[];
 extern const wchar_t kDisableExtensions[];
 extern const wchar_t kExtensionsUpdateFrequency[];
-extern const wchar_t kInstallExtension[];
 extern const wchar_t kLoadExtension[];
 extern const wchar_t kPackExtension[];
 extern const wchar_t kPackExtensionKey[];

@@ -59,19 +59,6 @@ class RegistryEntry {
     entries->push_front(new RegistryEntry(
         chrome_html_prog_id + ShellUtil::kRegShellOpen, open_cmd));
 
-    // Chrome Extension ProgId
-    std::wstring ext_prog_id(ShellUtil::kRegClasses);
-    file_util::AppendToPath(&ext_prog_id, ShellUtil::kChromeExtProgId);
-    ext_prog_id.append(suffix);
-    entries->push_front(new RegistryEntry(
-        ext_prog_id, ShellUtil::kChromeExtProgIdDesc));
-    entries->push_front(new RegistryEntry(
-        ext_prog_id + ShellUtil::kRegDefaultIcon, icon_path));
-    std::wstring install_cmd =
-        ShellUtil::GetChromeInstallExtensionCmd(chrome_exe);
-    entries->push_front(new RegistryEntry(
-        ext_prog_id + ShellUtil::kRegShellOpen, install_cmd));
-
     return true;
   }
 
@@ -127,11 +114,6 @@ class RegistryEntry {
           capabilities + L"\\URLAssociations",
           ShellUtil::kProtocolAssociations[i], html_prog_id));
     }
-    std::wstring ext_prog_id(ShellUtil::kChromeExtProgId);
-    ext_prog_id.append(suffix);
-    entries->push_front(new RegistryEntry(
-        capabilities + L"\\FileAssociations",
-        chrome::kExtensionFileExtension, ext_prog_id));
 
     FilePath chrome_path(chrome_exe);
     std::wstring app_path_key(ShellUtil::kAppPathsRegistryKey);
@@ -157,14 +139,6 @@ class RegistryEntry {
       file_util::AppendToPath(&ext_key, ShellUtil::kFileAssociations[i]);
       entries->push_front(new RegistryEntry(ext_key, html_prog_id));
     }
-
-    // .crx file type extension.
-    std::wstring ext_key(ShellUtil::kRegClasses);
-    ext_key.append(L".");
-    ext_key.append(chrome::kExtensionFileExtension);
-    std::wstring ext_prog_id(ShellUtil::kChromeExtProgId);
-    ext_prog_id.append(suffix);
-    entries->push_front(new RegistryEntry(ext_key, ext_prog_id));
 
     // Protocols associations.
     std::wstring chrome_open = ShellUtil::GetChromeShellOpenCmd(chrome_exe);
@@ -420,11 +394,9 @@ const wchar_t* ShellUtil::kAppPathsRegistryKey =
 const wchar_t* ShellUtil::kAppPathsRegistryPathName = L"Path";
 
 #if defined(GOOGLE_CHROME_BUILD)
-const wchar_t* ShellUtil::kChromeExtProgId = L"ChromeExt";
 const wchar_t* ShellUtil::kChromeHTMLProgId = L"ChromeHTML";
 const wchar_t* ShellUtil::kChromeHTMLProgIdDesc = L"Chrome HTML Document";
 #else
-const wchar_t* ShellUtil::kChromeExtProgId = L"ChromiumExt";
 const wchar_t* ShellUtil::kChromeHTMLProgId = L"ChromiumHTML";
 const wchar_t* ShellUtil::kChromeHTMLProgIdDesc = L"Chromium HTML Document";
 #endif
@@ -434,8 +406,6 @@ const wchar_t* ShellUtil::kFileAssociations[] = {L".htm", L".html", L".shtml",
 const wchar_t* ShellUtil::kProtocolAssociations[] = {L"ftp", L"http", L"https",
     NULL};
 const wchar_t* ShellUtil::kRegUrlProtocol = L"URL Protocol";
-
-const wchar_t* ShellUtil::kChromeExtProgIdDesc = L"Chrome Extension Installer";
 
 bool ShellUtil::AdminNeededForRegistryCleanup(const std::wstring& suffix) {
   bool cleanup_needed = false;
@@ -524,11 +494,6 @@ std::wstring ShellUtil::GetChromeIcon(const std::wstring& chrome_exe) {
   std::wstring chrome_icon(chrome_exe);
   chrome_icon.append(L",0");
   return chrome_icon;
-}
-
-std::wstring ShellUtil::GetChromeInstallExtensionCmd(
-    const std::wstring& chrome_exe) {
-  return L"\"" + chrome_exe + L"\" --install-extension=\"%1\"";
 }
 
 std::wstring ShellUtil::GetChromeShellOpenCmd(const std::wstring& chrome_exe) {
