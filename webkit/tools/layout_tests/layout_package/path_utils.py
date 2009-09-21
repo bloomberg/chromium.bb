@@ -12,6 +12,8 @@ us including a few things that don't really have anything to do
 
 import errno
 import os
+import sys
+
 import platform_utils
 import platform_utils_win
 import platform_utils_mac
@@ -208,7 +210,9 @@ def FilenameToUri(full_path):
       protocol = "http"
     return "%s://127.0.0.1:%u/%s" % (protocol, port, relative_path)
 
-  return "file:///" + GetAbsolutePath(full_path)
+  if sys.platform in ('cygwin', 'win32'):
+    return "file:///" + GetAbsolutePath(full_path)
+  return "file://" + GetAbsolutePath(full_path)
 
 def GetAbsolutePath(path):
   """Returns an absolute UNIX path."""
