@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/app/keystone_glue.h"
+#include "chrome/browser/browser_list.h"
 #import "chrome/browser/cocoa/about_window_controller.h"
 #import "chrome/browser/cocoa/background_tile_view.h"
 #include "chrome/browser/cocoa/restart_browser.h"
@@ -63,9 +64,14 @@ void AttributedStringAppendHyperlink(NSMutableAttributedString* attr_str,
   [attr_str addAttribute:NSUnderlineStyleAttributeName
                    value:[NSNumber numberWithInt:NSSingleUnderlineStyle]
                    range:range];
+  [attr_str addAttribute:NSCursorAttributeName
+                   value:[NSCursor pointingHandCursor]
+                   range:range];
 }
 
-NSAttributedString* BuildLegalTextBlock() {
+}  // namespace
+
+NSAttributedString* BuildAboutWindowLegalTextBlock() {
   // Windows builds this up in a very complex way, we're just trying to model
   // it the best we can to get all the information in (they actually do it
   // but created Labels and Links that they carefully place to make it appear
@@ -162,7 +168,7 @@ NSAttributedString* BuildLegalTextBlock() {
   NSString* about_terms = base::SysWideToNSString(w_about_terms);
   NSString* terms_link_text = l10n_util::GetNSString(IDS_TERMS_OF_SERVICE);
 
-  AttributedStringAppendString(legal_block, @"\n");
+  AttributedStringAppendString(legal_block, @"\n\n");
   sub_str = [about_terms substringToIndex:url_offsets[0]];
   AttributedStringAppendString(legal_block, sub_str);
   AttributedStringAppendHyperlink(legal_block, terms_link_text, kTOS);
@@ -170,11 +176,16 @@ NSAttributedString* BuildLegalTextBlock() {
   AttributedStringAppendString(legal_block, sub_str);
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
+  // We need to explicitly select Lucida Grande because once we click on
+  // the NSTextView, it changes to Helvetica 12 otherwise.
+  NSRange string_range = NSMakeRange(0, [legal_block length]);
+  [legal_block addAttribute:NSFontAttributeName
+                      value:[NSFont labelFontOfSize:11]
+                      range:string_range];
+
   [legal_block endEditing];
   return legal_block;
 }
-
-}  // namespace
 
 @implementation AboutWindowController
 
@@ -209,8 +220,22 @@ NSAttributedString* BuildLegalTextBlock() {
   DCHECK(logoImage);
   [logoView_ setImage:logoImage];
 
-  // Put the legal text into
-  [legalBlock_ setAttributedStringValue:BuildLegalTextBlock()];
+  [[legalText_ textStorage]
+    setAttributedString:BuildAboutWindowLegalTextBlock()];
+
+  // Resize our text view now so that the |updateShift| below is set
+  // correctly. The about box has its controls manually positioned, so we need
+  // to calculate how much larger (or smaller) our text box is and store that
+  // difference in |legalShift|. We do something similar with |updateShift|
+  // below, which is either 0, or the amount of space to offset the window size
+  // because the view that contains the update button has been removed because
+  // this build doesn't have KeyStone.
+  NSRect oldLegalRect = [legalBlock_ frame];
+  [legalText_ sizeToFit];
+  NSRect newRect = oldLegalRect;
+  newRect.size.height = [legalText_ frame].size.height;
+  [legalBlock_ setFrame:newRect];
+  CGFloat legalShift = newRect.size.height - oldLegalRect.size.height;
 
   KeystoneGlue* keystone = [self defaultKeystoneGlue];
   CGFloat updateShift = 0.0;
@@ -228,10 +253,6 @@ NSAttributedString* BuildLegalTextBlock() {
   }
 
   // Adjust the sizes/locations.
-
-  CGFloat legalShift =
-      [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:legalBlock_];
-
   NSRect rect = [legalBlock_ frame];
   rect.origin.y -= updateShift;
   [legalBlock_ setFrame:rect];
@@ -378,6 +399,19 @@ NSAttributedString* BuildLegalTextBlock() {
                                 IntToString16(kUpdateInstallFailedToStart));
     [self stopProgressMessage:message imageID:IDR_UPDATE_FAIL];
   }
+}
+
+- (BOOL)textView:(NSTextView *)aTextView
+   clickedOnLink:(id)link
+         atIndex:(NSUInteger)charIndex {
+  BrowserList::GetLastActive()->
+    OpenURL(GURL([link UTF8String]), GURL(), NEW_WINDOW,
+            PageTransition::LINK);
+  return YES;
+}
+
+- (NSTextView*)legalText {
+  return legalText_;
 }
 
 - (NSButton*)updateButton {

@@ -11,6 +11,9 @@
 
 @class BackgroundTileView;
 
+// Returns an NSAttributedString that contains the locale specific legal text.
+NSAttributedString* BuildAboutWindowLegalTextBlock();
+
 // A window controller that handles the branded (Chrome.app) about
 // window.  The branded about window has a few features beyond the
 // standard Cocoa about panel.  For example, opening the about window
@@ -21,7 +24,8 @@
   IBOutlet NSTextField* version_;
   IBOutlet BackgroundTileView* backgroundView_;
   IBOutlet NSImageView* logoView_;
-  IBOutlet NSTextField* legalBlock_;
+  IBOutlet NSView* legalBlock_;
+  IBOutlet NSTextView* legalText_;
   IBOutlet NSView* updateBlock_;  // Holds everything related to updates
   IBOutlet NSProgressIndicator* spinner_;
   IBOutlet NSImageView* updateStatusIndicator_;
@@ -41,6 +45,7 @@
 
 
 @interface AboutWindowController (JustForTesting)
+- (NSTextView*)legalText;
 - (NSButton*)updateButton;
 - (NSTextField*)updateText;
 @end
