@@ -1176,6 +1176,16 @@ init_egl(struct wlsc_compositor *ec, struct udev_device *device)
 	return 0;
 }
 
+static drmModeModeInfo builtin_1024x768 = {
+	63500,			/* clock */
+	1024, 1072, 1176, 1328, 0,
+	768, 771, 775, 798, 0,
+	59920,
+	DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_PVSYNC,
+	0,
+	"1024x768"
+};
+
 static int
 create_output(struct wlsc_compositor *ec, struct udev_device *device)
 {
@@ -1209,7 +1219,6 @@ create_output(struct wlsc_compositor *ec, struct udev_device *device)
 			continue;
 
 		if (connector->connection == DRM_MODE_CONNECTED &&
-		    connector->count_modes > 0 &&
 		    (option_connector == 0 ||
 		     connector->connector_id == option_connector))
 			break;
@@ -1222,28 +1231,40 @@ create_output(struct wlsc_compositor *ec, struct udev_device *device)
 		return -1;
 	}
 
-	mode = &connector->modes[0];
+	if (connector->count_modes > 0) 
+		mode = &connector->modes[0];
+	else
+		mode = &builtin_1024x768;
 
-	for (i = 0; i < resources->count_encoders; i++) {
-		encoder = drmModeGetEncoder(fd, resources->encoders[i]);
+	encoder = drmModeGetEncoder(fd, connector->encoders[0]);
+	if (encoder == NULL) {
+		fprintf(stderr, "No encoder for connector.\n");
+		return -1;
+	}
 
-		if (encoder == NULL)
-			continue;
-
-		if (encoder->encoder_id == connector->encoder_id)
+	for (i = 0; i < resources->count_crtcs; i++) {
+		if (encoder->possible_crtcs & (1 << i))
 			break;
-
-		drmModeFreeEncoder(encoder);
+	}
+	if (i == resources->count_crtcs) {
+		fprintf(stderr, "No usable crtc for encoder.\n");
+		return -1;
 	}
 
 	output->compositor = ec;
-	output->crtc_id = encoder->crtc_id;
+	output->crtc_id = resources->crtcs[i];
 	output->connector_id = connector->connector_id;
 	output->mode = mode;
 	output->x = 0;
 	output->y = 0;
 	output->width = mode->hdisplay;
 	output->height = mode->vdisplay;
+
+	printf("using crtc %d, connector %d and encoder %d, mode %s\n",
+	       output->crtc_id,
+	       output->connector_id,
+	       encoder->encoder_id,
+	       mode->name);
 
 	output->surface = eglCreateSurface(ec->display,
 					   ec->config,
@@ -1268,9 +1289,9 @@ create_output(struct wlsc_compositor *ec, struct udev_device *device)
 	}
 
 	output->current = 0;
-	ret = drmModeSetCrtc(fd, encoder->crtc_id,
+	ret = drmModeSetCrtc(fd, output->crtc_id,
 			     output->fb_id[output->current ^ 1], 0, 0,
-			     &connector->connector_id, 1, mode);
+			     &output->connector_id, 1, mode);
 	if (ret) {
 		fprintf(stderr, "failed to set mode: %m\n");
 		return -1;
