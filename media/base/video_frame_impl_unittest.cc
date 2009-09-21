@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/string_util.h"
 #include "media/base/buffers.h"
 #include "media/base/mock_filters.h"
 #include "media/base/video_frame_impl.h"
@@ -19,7 +20,7 @@ void InitializeYV12Frame(VideoFrame* frame, double white_to_black) {
     ADD_FAILURE();
     return;
   }
-  EXPECT_EQ(surface.format, VideoSurface::YV12);
+  EXPECT_EQ(VideoSurface::YV12, surface.format);
   size_t first_black_row = static_cast<size_t>(surface.height * white_to_black);
   uint8* y_plane = surface.data[VideoSurface::kYPlane];
   for (size_t row = 0; row < surface.height; ++row) {
@@ -48,10 +49,10 @@ void ExpectFrameColor(media::VideoFrame* yv12_frame, uint32 expect_rgb_color) {
   const size_t expect_rgb_planes = VideoSurface::kNumRGBPlanes;
 
   VideoSurface yuv_surface;
-  EXPECT_TRUE(yv12_frame->Lock(&yuv_surface));
-  EXPECT_EQ(yuv_surface.format, VideoSurface::YV12);
-  EXPECT_EQ(yuv_surface.planes, expect_yuv_planes);
-  EXPECT_EQ(yuv_surface.strides[VideoSurface::kUPlane],
+  ASSERT_TRUE(yv12_frame->Lock(&yuv_surface));
+  ASSERT_EQ(VideoSurface::YV12, yuv_surface.format);
+  ASSERT_EQ(expect_yuv_planes, yuv_surface.planes);
+  ASSERT_EQ(yuv_surface.strides[VideoSurface::kUPlane],
             yuv_surface.strides[VideoSurface::kVPlane]);
 
   scoped_refptr<media::VideoFrame> rgb_frame;
@@ -62,10 +63,10 @@ void ExpectFrameColor(media::VideoFrame* yv12_frame, uint32 expect_rgb_color) {
                                      yv12_frame->GetDuration(),
                                      &rgb_frame);
   media::VideoSurface rgb_surface;
-  EXPECT_TRUE(rgb_frame->Lock(&rgb_surface));
-  EXPECT_EQ(rgb_surface.width, yuv_surface.width);
-  EXPECT_EQ(rgb_surface.height, yuv_surface.height);
-  EXPECT_EQ(rgb_surface.planes, expect_rgb_planes);
+  ASSERT_TRUE(rgb_frame->Lock(&rgb_surface));
+  ASSERT_EQ(yuv_surface.width, rgb_surface.width);
+  ASSERT_EQ(yuv_surface.height, rgb_surface.height);
+  ASSERT_EQ(expect_rgb_planes, rgb_surface.planes);
 
   media::ConvertYUVToRGB32(yuv_surface.data[VideoSurface::kYPlane],
                            yuv_surface.data[VideoSurface::kUPlane],
@@ -83,7 +84,8 @@ void ExpectFrameColor(media::VideoFrame* yv12_frame, uint32 expect_rgb_color) {
         rgb_surface.data[VideoSurface::kRGBPlane] +
         (rgb_surface.strides[VideoSurface::kRGBPlane] * row));
     for (size_t col = 0; col < rgb_surface.width; ++col) {
-      EXPECT_EQ(rgb_row_data[col], expect_rgb_color);
+      SCOPED_TRACE(StringPrintf("Checking (%zd, %u)", row, col));
+      EXPECT_EQ(expect_rgb_color, rgb_row_data[col]);
     }
   }
   rgb_frame->Unlock();
@@ -105,14 +107,16 @@ TEST(VideoFrameImpl, CreateFrame) {
   ASSERT_TRUE(frame);
 
   // Test StreamSample implementation.
-  EXPECT_TRUE(kTimestampA == frame->GetTimestamp());
-  EXPECT_TRUE(kDurationA == frame->GetDuration());
+  EXPECT_EQ(kTimestampA.InMicroseconds(),
+            frame->GetTimestamp().InMicroseconds());
+  EXPECT_EQ(kDurationA.InMicroseconds(), frame->GetDuration().InMicroseconds());
   EXPECT_FALSE(frame->IsEndOfStream());
   EXPECT_FALSE(frame->IsDiscontinuous());
   frame->SetTimestamp(kTimestampB);
   frame->SetDuration(kDurationB);
-  EXPECT_TRUE(kTimestampB == frame->GetTimestamp());
-  EXPECT_TRUE(kDurationB == frame->GetDuration());
+  EXPECT_EQ(kTimestampB.InMicroseconds(),
+            frame->GetTimestamp().InMicroseconds());
+  EXPECT_EQ(kDurationB.InMicroseconds(), frame->GetDuration().InMicroseconds());
   EXPECT_FALSE(frame->IsEndOfStream());
   frame->SetDiscontinuous(true);
   EXPECT_TRUE(frame->IsDiscontinuous());
@@ -120,10 +124,16 @@ TEST(VideoFrameImpl, CreateFrame) {
   EXPECT_FALSE(frame->IsDiscontinuous());
 
   // Test VideoFrame implementation.
-  InitializeYV12Frame(frame, 0.0f);
-  ExpectFrameColor(frame, 0xFF000000);
-  InitializeYV12Frame(frame, 1.0f);
-  ExpectFrameColor(frame, 0xFFFFFFFF);
+  {
+    SCOPED_TRACE("");
+    InitializeYV12Frame(frame, 0.0f);
+    ExpectFrameColor(frame, 0xFF000000);
+  }
+  {
+    SCOPED_TRACE("");
+    InitializeYV12Frame(frame, 1.0f);
+    ExpectFrameColor(frame, 0xFFFFFFFF);
+  }
 
   // Test an empty frame.
   VideoFrameImpl::CreateEmptyFrame(&frame);
