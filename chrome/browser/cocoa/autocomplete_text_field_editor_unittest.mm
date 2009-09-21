@@ -33,6 +33,9 @@ bool ClipboardContainsText(NSPasteboard* pb, NSString* cmp) {
   return [clipboard_text isEqualToString:cmp];
 }
 
+// TODO(shess): Very similar to AutocompleteTextFieldTest.  Maybe
+// those can be shared.
+
 class AutocompleteTextFieldEditorTest : public PlatformTest {
  public:
   AutocompleteTextFieldEditorTest()
@@ -78,7 +81,7 @@ class AutocompleteTextFieldEditorTest : public PlatformTest {
   CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   scoped_nsobject<AutocompleteTextFieldEditor> editor_;
   scoped_nsobject<AutocompleteTextField> field_;
-  AutocompleteTextFieldObserverMock field_observer_;
+  MockAutocompleteTextFieldObserver field_observer_;
   scoped_nsobject<AutocompleteTextFieldWindowTestDelegate> window_delegate_;
 
  private:
@@ -149,10 +152,8 @@ TEST_F(AutocompleteTextFieldEditorTest, Display) {
 
 // Test that -paste: is correctly delegated to the observer.
 TEST_F(AutocompleteTextFieldEditorTest, Paste) {
-  field_observer_.Reset();
-  EXPECT_FALSE(field_observer_.on_paste_called_);
+  EXPECT_CALL(field_observer_, OnPaste());
   [editor_.get() paste:nil];
-  EXPECT_TRUE(field_observer_.on_paste_called_);
 }
 
 }  // namespace

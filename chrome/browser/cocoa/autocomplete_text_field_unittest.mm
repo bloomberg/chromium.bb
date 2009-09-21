@@ -14,6 +14,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+using ::testing::InSequence;
+
 @interface AutocompleteTextFieldTestDelegate : NSObject {
   BOOL receivedControlTextDidBeginEditing_;
   BOOL receivedControlTextShouldEndEditing_;
@@ -65,7 +67,7 @@ class AutocompleteTextFieldTest : public PlatformTest {
 
   CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   scoped_nsobject<AutocompleteTextField> field_;
-  AutocompleteTextFieldObserverMock field_observer_;
+  MockAutocompleteTextFieldObserver field_observer_;
   scoped_nsobject<AutocompleteTextFieldWindowTestDelegate> window_delegate_;
 };
 
@@ -117,19 +119,15 @@ TEST_F(AutocompleteTextFieldTest, Display) {
 }
 
 TEST_F(AutocompleteTextFieldTest, FlagsChanged) {
+  InSequence dummy;  // Call mock in exactly the order specified.
+
   // Test without Control key down, but some other modifier down.
-  field_observer_.Reset();
-  EXPECT_FALSE(field_observer_.on_control_key_changed_called_);
+  EXPECT_CALL(field_observer_, OnControlKeyChanged(false));
   [field_ flagsChanged:KeyDownEventWithFlags(NSShiftKeyMask)];
-  EXPECT_TRUE(field_observer_.on_control_key_changed_called_);
-  EXPECT_FALSE(field_observer_.on_control_key_changed_value_);
 
   // Test with Control key down.
-  field_observer_.Reset();
-  EXPECT_FALSE(field_observer_.on_control_key_changed_called_);
+  EXPECT_CALL(field_observer_, OnControlKeyChanged(true));
   [field_ flagsChanged:KeyDownEventWithFlags(NSControlKeyMask)];
-  EXPECT_TRUE(field_observer_.on_control_key_changed_called_);
-  EXPECT_TRUE(field_observer_.on_control_key_changed_value_);
 }
 
 // This test is here rather than in the editor's tests because the
@@ -140,19 +138,15 @@ TEST_F(AutocompleteTextFieldTest, FieldEditorFlagsChanged) {
   NSResponder* firstResponder = [[field_ window] firstResponder];
   EXPECT_EQ(firstResponder, [field_ currentEditor]);
 
+  InSequence dummy;  // Call mock in exactly the order specified.
+
   // Test without Control key down, but some other modifier down.
-  field_observer_.Reset();
-  EXPECT_FALSE(field_observer_.on_control_key_changed_called_);
+  EXPECT_CALL(field_observer_, OnControlKeyChanged(false));
   [firstResponder flagsChanged:KeyDownEventWithFlags(NSShiftKeyMask)];
-  EXPECT_TRUE(field_observer_.on_control_key_changed_called_);
-  EXPECT_FALSE(field_observer_.on_control_key_changed_value_);
 
   // Test with Control key down.
-  field_observer_.Reset();
-  EXPECT_FALSE(field_observer_.on_control_key_changed_called_);
+  EXPECT_CALL(field_observer_, OnControlKeyChanged(true));
   [firstResponder flagsChanged:KeyDownEventWithFlags(NSControlKeyMask)];
-  EXPECT_TRUE(field_observer_.on_control_key_changed_called_);
-  EXPECT_TRUE(field_observer_.on_control_key_changed_value_);
 }
 
 // Test that the field editor is reset correctly when search keyword

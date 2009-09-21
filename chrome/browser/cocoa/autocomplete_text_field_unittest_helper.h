@@ -9,6 +9,7 @@
 
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 @class AutocompleteTextFieldEditor;
 
@@ -23,27 +24,14 @@
 namespace {
 
 // Allow monitoring calls into AutocompleteTextField's observer.
+// Being in a .h file with an anonymous namespace is strange, but this
+// is here so the mock interface doesn't have to change in multiple
+// places.
 
-class AutocompleteTextFieldObserverMock : public AutocompleteTextFieldObserver {
+class MockAutocompleteTextFieldObserver : public AutocompleteTextFieldObserver {
  public:
-  virtual void OnControlKeyChanged(bool pressed) {
-    on_control_key_changed_called_ = true;
-    on_control_key_changed_value_ = pressed;
-  }
-
-  virtual void OnPaste() {
-    on_paste_called_ = true;
-  }
-
-  void Reset() {
-    on_control_key_changed_called_ = false;
-    on_control_key_changed_value_ = false;
-    on_paste_called_ = false;
-  }
-
-  bool on_control_key_changed_called_;
-  bool on_control_key_changed_value_;
-  bool on_paste_called_;
+  MOCK_METHOD1(OnControlKeyChanged, void(bool pressed));
+  MOCK_METHOD0(OnPaste, void());
 };
 
 }  // namespace
