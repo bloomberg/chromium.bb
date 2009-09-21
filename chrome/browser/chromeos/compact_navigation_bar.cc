@@ -40,6 +40,7 @@ CompactNavigationBar::CompactNavigationBar(Browser* browser)
 }
 
 CompactNavigationBar::~CompactNavigationBar() {
+  location_entry_view_->Detach();
 }
 
 void CompactNavigationBar::Init() {
