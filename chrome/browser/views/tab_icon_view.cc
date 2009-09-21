@@ -49,7 +49,7 @@ void TabIconView::InitializeIfNeeded() {
         IconUtil::CreateSkBitmapFromHICON(app_icon, gfx::Size(16, 16));
     DestroyIcon(app_icon);
 #else
-    NOTIMPLEMENTED();
+    g_default_fav_icon = rb.GetBitmapNamed(IDR_PRODUCT_LOGO_16);
 #endif
 
     g_throbber_frames = rb.GetBitmapNamed(IDR_THROBBER);
