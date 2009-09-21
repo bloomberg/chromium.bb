@@ -84,10 +84,6 @@
 #include "chrome/browser/views/panel_controller.h"
 #include "chrome/browser/views/tabs/tab_overview_types.h"
 #include "views/widget/widget_gtk.h"
-
-// This command-line switch enables the main menu button in the upper left
-// corner. By default it isn't shown.
-static const wchar_t kShowMainMenuButton[] = L"main-menu-button";
 #endif
 
 namespace {
@@ -1553,13 +1549,23 @@ void BrowserWindowGtk::InitWidgets() {
   GtkWidget* status_hbox = NULL;
   bool has_compact_nav_bar = next_window_should_use_compact_nav_;
   if (browser_->type() == Browser::TYPE_NORMAL) {
-    bool show_main_menu_button =
-        CommandLine::ForCurrentProcess()->HasSwitch(kShowMainMenuButton);
     // Make a box that we'll later insert the compact navigation bar into. The
     // tabstrip must go into an hbox with our box so that they can get arranged
     // horizontally.
     titlebar_hbox = gtk_hbox_new(FALSE, 0);
     gtk_widget_show(titlebar_hbox);
+
+    // Main menu button.
+    CustomDrawButton* main_menu_button =
+        new CustomDrawButton(IDR_MAIN_MENU_BUTTON, IDR_MAIN_MENU_BUTTON,
+                             IDR_MAIN_MENU_BUTTON, 0);
+    gtk_widget_show(main_menu_button->widget());
+    g_signal_connect(G_OBJECT(main_menu_button->widget()), "clicked",
+                     G_CALLBACK(OnMainMenuButtonClicked), this);
+    GTK_WIDGET_UNSET_FLAGS(main_menu_button->widget(), GTK_CAN_FOCUS);
+    gtk_box_pack_start(GTK_BOX(titlebar_hbox), main_menu_button->widget(),
+                       FALSE, FALSE, 0);
+
     if (has_compact_nav_bar) {
       navbar_hbox = gtk_hbox_new(FALSE, 0);
       gtk_widget_show(navbar_hbox);
@@ -1568,16 +1574,6 @@ void BrowserWindowGtk::InitWidgets() {
       // Reset the compact nav bit now that we're creating the next toplevel
       // window. Code below will use our local has_compact_nav_bar variable.
       next_window_should_use_compact_nav_ = false;
-    } else if (show_main_menu_button) {
-      CustomDrawButton* main_menu_button =
-          new CustomDrawButton(IDR_MAIN_MENU_BUTTON, IDR_MAIN_MENU_BUTTON,
-                               IDR_MAIN_MENU_BUTTON, 0);
-      gtk_widget_show(main_menu_button->widget());
-      g_signal_connect(G_OBJECT(main_menu_button->widget()), "clicked",
-                       G_CALLBACK(OnMainMenuButtonClicked), this);
-      GTK_WIDGET_UNSET_FLAGS(main_menu_button->widget(), GTK_CAN_FOCUS);
-      gtk_box_pack_start(GTK_BOX(titlebar_hbox), main_menu_button->widget(),
-                         FALSE, FALSE, 0);
     }
     status_hbox = gtk_hbox_new(FALSE, 0);
     gtk_widget_show(status_hbox);

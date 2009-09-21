@@ -32,12 +32,12 @@ void MainMenu::Show(Browser* browser) {
 }
 
 MainMenu::MainMenu(Browser* browser)
-  : browser_(browser),
-    popup_(NULL),
-    site_instance_(NULL),
-    menu_rvh_(NULL),
-    rwhv_(NULL),
-    child_rvh_(NULL) {
+    : browser_(browser),
+      popup_(NULL),
+      site_instance_(NULL),
+      menu_rvh_(NULL),
+      rwhv_(NULL),
+      child_rvh_(NULL) {
 }
 
 MainMenu::~MainMenu() {

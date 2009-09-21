@@ -352,7 +352,6 @@
         <include name="IDR_THEME_FRAME_INCOGNITO" file="theme_frame_default_incognito2.png" type="BINDATA" />
         <include name="IDR_THEME_FRAME_INACTIVE" file="theme_frame_default_inactive2.png" type="BINDATA" />
 
-        <include name="IDR_COMPACTNAV_CHROME" file="compactnav_chrome.png" type="BINDATA" />
         <include name="IDR_COMPACTNAV_BACK" file="compactnav_back.png" type="BINDATA" />
         <include name="IDR_COMPACTNAV_FORWARD" file="compactnav_forward.png" type="BINDATA" />
         <include name="IDR_COMPACTNAV_SEPARATOR" file="compactnav_separator.png" type="BINDATA" />

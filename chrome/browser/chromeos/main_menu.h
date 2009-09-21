@@ -17,7 +17,7 @@ namespace views {
 class Widget;
 }
 
-// MainMenu manages shoing the main menu. The menu is currently an HTML page.
+// MainMenu manages showing the main menu. The menu is currently an HTML page.
 // When the user clicks a link on the page a new tab is added to the current
 // browser and the menu is hidden.
 //

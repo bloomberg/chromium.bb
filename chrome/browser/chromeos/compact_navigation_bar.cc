@@ -27,7 +27,8 @@ static const int kHorizPadding = 3;
 
 static const int kURLWidth = 180;
 
-static const int kChromeButtonSize = 25;
+// Preferred height.
+static const int kPreferredHeight = 25;
 
 // Draw this much white around the URL bar to make it look larger than it
 // actually is.
@@ -46,13 +47,6 @@ void CompactNavigationBar::Init() {
   initialized_ = true;
 
   ResourceBundle& resource_bundle = ResourceBundle::GetSharedInstance();
-
-  chrome_button_ = new views::ImageButton(this);
-  chrome_button_->SetImage(views::CustomButton::BS_NORMAL,
-      resource_bundle.GetBitmapNamed(IDR_COMPACTNAV_CHROME));
-  chrome_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                    views::ImageButton::ALIGN_MIDDLE);
-  AddChildView(chrome_button_);
 
   back_button_ = new views::ImageButton(this);
   back_button_->SetImage(views::CustomButton::BS_NORMAL,
@@ -90,7 +84,6 @@ void CompactNavigationBar::Init() {
 gfx::Size CompactNavigationBar::GetPreferredSize() {
   int width = 0;
 
-  width += kChromeButtonSize + kHorizPadding;  // Chrome button.
   width += kURLWidth + kHorizPadding + kURLPadding * 2;  // URL bar.
   width += back_button_->GetPreferredSize().width() + kHorizPadding +
       kInnerPadding * 2;
@@ -99,7 +92,7 @@ gfx::Size CompactNavigationBar::GetPreferredSize() {
       kInnerPadding * 2;
 
   width++;
-  return gfx::Size(width, kChromeButtonSize);
+  return gfx::Size(width, kPreferredHeight);
 }
 
 void CompactNavigationBar::Layout() {
@@ -107,9 +100,6 @@ void CompactNavigationBar::Layout() {
     return;
 
   int curx = 0;
-
-  chrome_button_->SetBounds(curx, 0, kChromeButtonSize, height());
-  curx += kChromeButtonSize + kHorizPadding;
 
   // "Back | Forward" section.
   gfx::Size button_size = back_button_->GetPreferredSize();
@@ -159,10 +149,7 @@ void CompactNavigationBar::ButtonPressed(
   if (!tab_contents)
     return;
 
-  if (sender == chrome_button_) {
-    AddTabWithURL(GURL("http://goto.ext.google.com/tik-tok"),
-                  PageTransition::START_PAGE);
-  } else if (sender == back_button_) {
+  if (sender == back_button_) {
     if (tab_contents->controller().CanGoBack())
       tab_contents->controller().GoBack();
   } else if (sender == forward_button_) {

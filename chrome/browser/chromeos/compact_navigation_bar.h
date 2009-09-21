@@ -64,8 +64,6 @@ class CompactNavigationBar : public views::View,
 
   bool initialized_;
 
-  views::ImageButton* chrome_button_;
-
   views::ImageButton* back_button_;
   views::ImageView* bf_separator_;
   views::ImageButton* forward_button_;
