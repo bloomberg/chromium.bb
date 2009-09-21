@@ -410,8 +410,6 @@ class SYNC_EXPORT SyncManager {
       SYNCING,
       // Connected, no pending changes.
       READY,
-      // User has chosen to pause syncing.
-      PAUSED,
       // Internal sync error.
       CONFLICT,
       // Can't connect to server, and we haven't completed the initial
@@ -436,7 +434,6 @@ class SYNC_EXPORT SyncManager {
     int unsynced_count;
     int conflicting_count;
     bool syncing;
-    bool syncer_paused;
     bool initial_sync_ended;
     bool syncer_stuck;
     int64 updates_available;

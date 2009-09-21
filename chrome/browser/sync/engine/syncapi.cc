@@ -1358,7 +1358,6 @@ SyncManager::Status SyncManager::SyncInternal::ComputeAggregatedStatus() {
         allstatus()->status().unsynced_count,
         allstatus()->status().conflicting_count,
         allstatus()->status().syncing,
-        false,  // TODO(ncarter): remove syncer_paused
         allstatus()->status().initial_sync_ended,
         allstatus()->status().syncer_stuck,
         allstatus()->status().updates_available,
