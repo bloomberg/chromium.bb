@@ -20,14 +20,8 @@
 #include "app/app_switches.h"
 #include "base/command_line.h"
 #include "base/field_trial.h"
-#include "base/linked_ptr.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/rand_util.h"
-#include "base/scoped_ptr.h"
-#include "base/shared_memory.h"
-#include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
@@ -56,7 +50,6 @@
 #include "chrome/common/result_codes.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
-#include "chrome/installer/util/google_update_settings.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_switches.h"
 
@@ -64,7 +57,7 @@
 #include "app/win_util.h"
 #include "chrome/browser/sandbox_policy.h"
 #elif defined(OS_LINUX)
-#include "base/linux_util.h"
+#include "base/singleton.h"
 #include "chrome/browser/zygote_host_linux.h"
 #include "chrome/browser/renderer_host/render_crash_handler_host_linux.h"
 #include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
@@ -119,15 +112,6 @@ class RendererMainThread : public base::Thread {
   RenderProcess* render_process_;
 };
 
-
-#if defined(OS_LINUX)
-// This is defined in chrome/browser/google_update_settings_linux.cc, it's the
-// static string containing the user's unique GUID. We send this in the crash
-// report.
-namespace google_update {
-extern std::string linux_guid;
-}
-#endif
 
 // Size of the buffer after which individual link updates deemed not warranted
 // and the overall update should be used instead.
