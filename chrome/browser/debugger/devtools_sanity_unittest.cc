@@ -140,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEnableResourcesTab) {
 }
 
 // Tests resource headers.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestResourceHeaders) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestResourceHeaders) {
   RunTest("testResourceHeaders", kResourceTestPage);
 }
 
@@ -173,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseInEval) {
 }
 
 // Tests console eval.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleEval) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestConsoleEval) {
   RunTest("testConsoleEval", kConsoleTestPage);
 }
 
