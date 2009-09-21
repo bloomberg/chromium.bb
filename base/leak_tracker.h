@@ -72,15 +72,35 @@ class LeakTracker : public LinkNode<LeakTracker<T> > {
 
   static void CheckForLeaks() {
     // Walk the allocation list and print each entry it contains.
-    int count = 0;
+    size_t count = 0;
+
+    // Copy the first 3 leak allocation callstacks onto the stack.
+    // This way if we hit the CHECK() in a release build, the leak
+    // information will be available in mini-dump.
+    const size_t kMaxStackTracesToCopyOntoStack = 3;
+    StackTrace stacktraces[kMaxStackTracesToCopyOntoStack];
+
     for (LinkNode<LeakTracker<T> >* node = instances()->head();
          node != instances()->end();
          node = node->next()) {
+      StackTrace& allocation_stack = node->value()->allocation_stack_;
+
+      if (count < kMaxStackTracesToCopyOntoStack)
+        stacktraces[count] = allocation_stack;
+
       ++count;
       LOG(ERROR) << "Leaked " << node << " which was allocated by:";
-      node->value()->allocation_stack_.PrintBacktrace();
+      allocation_stack.PrintBacktrace();
     }
-    CHECK(0 == count);
+
+    CHECK(0u == count);
+
+    // Hack to keep |stacktraces| and |count| alive (so compiler
+    // doesn't optimize it out, and it will appear in mini-dumps).
+    if (count == 0x1234) {
+      for (size_t i = 0; i < kMaxStackTracesToCopyOntoStack; ++i)
+        stacktraces[i].PrintBacktrace();
+    }
   }
 
   static int NumLiveInstances() {

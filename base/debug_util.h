@@ -25,6 +25,10 @@ class StackTrace {
  public:
   // Creates a stacktrace from the current location
   StackTrace();
+
+  // Note that the default copy constructor and assignment constructors
+  // are OK.
+
 #if defined(OS_WIN)
   // Creates a stacktrace for an exception.
   // Note: this function will throw an import not found (StackWalk64) exception
@@ -48,8 +52,6 @@ class StackTrace {
   static const int MAX_TRACES = 62;
   void* trace_[MAX_TRACES];
   int count_;
-
-  DISALLOW_EVIL_CONSTRUCTORS(StackTrace);
 };
 
 class DebugUtil {
