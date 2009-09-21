@@ -237,6 +237,10 @@
 
     $('max-results-input').value = currentState.maxResults;
     updateLegendDisplay();
+
+    for (var builder in builders) {
+      processTestResultsForBuilderAsync(builder);
+    }
   }
 
   function handleValidHashParameter(key, value) {
@@ -290,6 +294,7 @@
       case 'showCorrectExpectations':
       case 'showFlaky':
       case 'showLegend':
+      case 'showSkipped':
         currentState[key] = value == 'true';
 
         return true;
@@ -533,6 +538,12 @@
         isCurrentPlatform);
     addHTMLToIndividualOptionsArray(htmlArrays.bugs, getHtmlForBugs(bugs),
         isCurrentPlatform);
+  }
+
+  function processTestResultsForBuilderAsync(builder) {
+    setTimeout(function() {
+        processTestRunsForBuilder(builder);
+      }, 0);
   }
 
   function processTestRunsForBuilder(builderName) {
