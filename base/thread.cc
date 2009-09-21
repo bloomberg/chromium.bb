@@ -121,7 +121,7 @@ void Thread::StopSoon() {
   // We should only be called on the same thread that started us.
   DCHECK_NE(thread_id_, PlatformThread::CurrentId());
 
-  if (!message_loop_ || stopping_)
+  if (stopping_ || !message_loop_)
     return;
 
   stopping_ = true;
