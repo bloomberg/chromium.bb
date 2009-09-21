@@ -2367,7 +2367,6 @@
                 ],
               },
               'action_name': 'Process xibs for localization',
-              'process_outputs_as_sources': 1,
               'inputs': [
                 '<(xib_localizer_tool_path)',
                 '<@(xib_files_to_scan)',
