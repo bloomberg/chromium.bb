@@ -72,7 +72,7 @@ struct wlsc_output {
 	EGLSurface surface;
 	int32_t x, y, width, height;
 
-	drmModeModeInfo *mode;
+	drmModeModeInfo mode;
 	uint32_t crtc_id;
 	uint32_t connector_id;
 
@@ -1187,49 +1187,21 @@ static drmModeModeInfo builtin_1024x768 = {
 };
 
 static int
-create_output(struct wlsc_compositor *ec, struct udev_device *device)
+create_output_for_connector(struct wlsc_compositor *ec,
+			    drmModeRes *resources,
+			    drmModeConnector *connector)
 {
-	drmModeConnector *connector;
-	drmModeRes *resources;
+	struct wlsc_output *output;
 	drmModeEncoder *encoder;
 	drmModeModeInfo *mode;
-	struct wlsc_output *output;
 	uint32_t name, handle, stride;
 	int i, ret, fd;
 
-	if (ec->display == NULL && init_egl(ec, device) < 0) {
-		fprintf(stderr, "failed to initialize egl\n");
-		return -1;
-	}
+	fd = eglGetDisplayFD(ec->display);
 
 	output = malloc(sizeof *output);
 	if (output == NULL)
 		return -1;
-
-	fd = eglGetDisplayFD(ec->display);
-	resources = drmModeGetResources(fd);
-	if (!resources) {
-		fprintf(stderr, "drmModeGetResources failed\n");
-		return -1;
-	}
-
-	for (i = 0; i < resources->count_connectors; i++) {
-		connector = drmModeGetConnector(fd, resources->connectors[i]);
-		if (connector == NULL)
-			continue;
-
-		if (connector->connection == DRM_MODE_CONNECTED &&
-		    (option_connector == 0 ||
-		     connector->connector_id == option_connector))
-			break;
-
-		drmModeFreeConnector(connector);
-	}
-
-	if (i == resources->count_connectors) {
-		fprintf(stderr, "No currently active connector found.\n");
-		return -1;
-	}
 
 	if (connector->count_modes > 0) 
 		mode = &connector->modes[0];
@@ -1254,7 +1226,7 @@ create_output(struct wlsc_compositor *ec, struct udev_device *device)
 	output->compositor = ec;
 	output->crtc_id = resources->crtcs[i];
 	output->connector_id = connector->connector_id;
-	output->mode = mode;
+	output->mode = *mode;
 	output->x = 0;
 	output->y = 0;
 	output->width = mode->hdisplay;
@@ -1265,6 +1237,8 @@ create_output(struct wlsc_compositor *ec, struct udev_device *device)
 	       output->connector_id,
 	       encoder->encoder_id,
 	       mode->name);
+
+	drmModeFreeEncoder(encoder);
 
 	output->surface = eglCreateSurface(ec->display,
 					   ec->config,
@@ -1291,7 +1265,7 @@ create_output(struct wlsc_compositor *ec, struct udev_device *device)
 	output->current = 0;
 	ret = drmModeSetCrtc(fd, output->crtc_id,
 			     output->fb_id[output->current ^ 1], 0, 0,
-			     &output->connector_id, 1, mode);
+			     &output->connector_id, 1, &output->mode);
 	if (ret) {
 		fprintf(stderr, "failed to set mode: %m\n");
 		return -1;
@@ -1308,6 +1282,44 @@ create_output(struct wlsc_compositor *ec, struct udev_device *device)
 	}
 
 	output->background = background_create(output, option_background);
+
+	return 0;
+}
+
+static int
+create_outputs(struct wlsc_compositor *ec)
+{
+	drmModeConnector *connector;
+	drmModeRes *resources;
+	int fd, i;
+
+	fd = eglGetDisplayFD(ec->display);
+	resources = drmModeGetResources(fd);
+	if (!resources) {
+		fprintf(stderr, "drmModeGetResources failed\n");
+		return -1;
+	}
+
+	for (i = 0; i < resources->count_connectors; i++) {
+		connector = drmModeGetConnector(fd, resources->connectors[i]);
+		if (connector == NULL)
+			continue;
+
+		if (connector->connection == DRM_MODE_CONNECTED &&
+		    (option_connector == 0 ||
+		     connector->connector_id == option_connector))
+			if (create_output_for_connector(ec, resources, connector) < 0)
+				return -1;
+
+		drmModeFreeConnector(connector);
+	}
+
+	if (wl_list_empty(&ec->output_list)) {
+		fprintf(stderr, "No currently active connector found.\n");
+		return -1;
+	}
+
+	drmModeFreeResources(resources);
 
 	return 0;
 }
@@ -1351,7 +1363,7 @@ static void on_enter_vt(int signal_number, void *data)
 	while (&output->link != &ec->output_list) {
 		ret = drmModeSetCrtc(fd, output->crtc_id,
 				     output->fb_id[output->current ^ 1], 0, 0,
-				     &output->connector_id, 1, output->mode);
+				     &output->connector_id, 1, &output->mode);
 		if (ret)
 			fprintf(stderr, "failed to set mode for connector %d: %m\n",
 				output->connector_id);
@@ -1474,7 +1486,11 @@ init_libudev(struct wlsc_compositor *ec)
         udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
 		path = udev_list_entry_get_name(entry);
 		device = udev_device_new_from_syspath(ec->udev, path);
-		if (create_output(ec, device) < 0) {
+		if (init_egl(ec, device) < 0) {
+			fprintf(stderr, "failed to initialize egl\n");
+			return -1;
+		}
+		if (create_outputs(ec) < 0) {
 			fprintf(stderr, "failed to create output for %s\n", path);
 			return -1;
 		}
