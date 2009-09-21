@@ -492,6 +492,7 @@ class MemcheckAnalyze:
     for item in sorted(self._suppcounts.items(), key=lambda (k,v): (v,k)):
       print "%7s %s" % (item[1], item[0])
     print "-----------------------------------------------------"
+    sys.stdout.flush()
 
     if self._errors:
       logging.error("FAIL! There were %s errors: " % len(self._errors))
