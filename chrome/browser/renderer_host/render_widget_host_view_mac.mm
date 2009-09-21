@@ -5,6 +5,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 
 #include "base/histogram.h"
+#include "base/scoped_nsobject.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_trial.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/common/native_web_keyboard_event.h"
+#include "chrome/common/edit_command.h"
 #include "chrome/common/render_messages.h"
 #include "skia/ext/platform_canvas.h"
 #include "webkit/api/public/mac/WebInputEventFactory.h"
@@ -430,6 +432,60 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
         render_widget_host_->routing_id(), background));
 }
 
+// EditCommandMatcher ---------------------------------------------------------
+
+// This class is used to capture the shortcuts that a given key event maps to.
+// We instantiate a vanilla NSResponder, call interpretKeyEvents on it, and
+// record all of the selectors passed into doCommandBySelector while
+// interpreting the key event.  The selectors are converted into edit commands
+// which can be passed to the render process.
+//
+// Caveats:
+// - Shortcuts involving a sequence of key combinations (chords) don't work,
+// because we instantiate a new responder for each event.
+// - We ignore key combinations that don't include a modifier (ctrl, cmd, alt)
+// because this was causing strange behavior (e.g. tab always inserted a tab
+// rather than moving to the next field on the page).
+
+@interface EditCommandMatcher : NSResponder {
+  EditCommands* edit_commands_;
+}
+@end
+
+@implementation EditCommandMatcher
+
+- (id)initWithEditCommands:(EditCommands*)edit_commands {
+  if ((self = [super init]) != nil) {
+    edit_commands_ = edit_commands;
+  }
+  return self;
+}
+
+- (void)doCommandBySelector:(SEL)selector {
+  NSString* editCommand =
+      RWHVMEditCommandHelper::CommandNameForSelector(selector);
+  edit_commands_->push_back(
+      EditCommand(base::SysNSStringToUTF8(editCommand), ""));
+}
+
+- (void)insertText:(id)string {
+  // If we don't ignore this, then sometimes we get a bell.
+}
+
++ (void)matchEditCommands:(EditCommands*)edit_commands
+                 forEvent:(NSEvent*)theEvent {
+  if ([theEvent type] != NSKeyDown) return;
+  // Don't interpret plain key presses.  This screws up things like <Tab>.
+  NSUInteger flags = [theEvent modifierFlags];
+  flags &= (NSControlKeyMask | NSAlternateKeyMask | NSCommandKeyMask);
+  if (flags == 0) return;
+  scoped_nsobject<EditCommandMatcher> matcher(
+      [[EditCommandMatcher alloc] initWithEditCommands:edit_commands]);
+  [matcher.get() interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
+}
+
+@end
+
 // RenderWidgetHostViewCocoa ---------------------------------------------------
 
 @implementation RenderWidgetHostViewCocoa
@@ -465,7 +521,7 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
   closeOnDeactivate_ = b;
 }
 
-- (void)mouseEvent:(NSEvent *)theEvent {
+- (void)mouseEvent:(NSEvent*)theEvent {
   // Don't cancel child popups; killing them on a mouse click would prevent the
   // user from positioning the insertion point in the text field spawning the
   // popup. A click outside the text field would cause the text field to drop
@@ -478,7 +534,7 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
     renderWidgetHostView_->render_widget_host_->ForwardMouseEvent(event);
 }
 
-- (void)keyEvent:(NSEvent *)theEvent {
+- (void)keyEvent:(NSEvent*)theEvent {
   // TODO(avi): Possibly kill self? See RenderWidgetHostViewWin::OnKeyEvent and
   // http://b/issue?id=1192881 .
 
@@ -499,8 +555,15 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
     event.windowsKeyCode = 0xE5;
 
   // Dispatch this keyboard event to the renderer.
-  if (renderWidgetHostView_->render_widget_host_)
-    renderWidgetHostView_->render_widget_host_->ForwardKeyboardEvent(event);
+  if (renderWidgetHostView_->render_widget_host_) {
+    RenderWidgetHost* widgetHost = renderWidgetHostView_->render_widget_host_;
+    // Look up shortcut, if any, for this key combination.
+    EditCommands editCommands;
+    [EditCommandMatcher matchEditCommands:&editCommands forEvent:theEvent];
+    if (!editCommands.empty())
+      widgetHost->ForwardEditCommandsForNextKeyEvent(editCommands);
+    widgetHost->ForwardKeyboardEvent(event);
+  }
 
   // Dispatch a NSKeyDown event to an input method.
   // To send an onkeydown() event before an onkeypress() event, we should

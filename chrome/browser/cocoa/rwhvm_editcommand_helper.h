@@ -51,6 +51,10 @@ class RWHVMEditCommandHelper {
   bool IsMenuItemEnabled(SEL item_action,
                          id<RenderWidgetHostViewMacOwner> owner);
 
+  // Converts an editing selector into a command name that can be sent to
+  // webkit.
+  static NSString* CommandNameForSelector(SEL selector);
+
  protected:
   // Gets a list of all the selectors that AddEditingSelectorsToClass adds to
   // the aforementioned class.

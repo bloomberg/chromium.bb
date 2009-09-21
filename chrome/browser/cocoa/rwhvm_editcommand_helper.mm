@@ -105,35 +105,6 @@ const char* kEditCommands[] = {
   "yank",
   "yankAndSelect"};
 
-// Maps an objc-selector to a core command name.
-//
-// Returns the core command name (which is the selector name with the trailing
-// ':' stripped in most cases).
-//
-// Adapted from a function by the same name in
-// WebKit/mac/WebView/WebHTMLView.mm .
-// Capitalized names are returned from this function, but that's simply
-// matching WebHTMLView.mm.
-NSString* CommandNameForSelector(SEL selector) {
-  if (selector == @selector(insertParagraphSeparator:) ||
-      selector == @selector(insertNewlineIgnoringFieldEditor:))
-    return @"InsertNewline";
-  if (selector == @selector(insertTabIgnoringFieldEditor:))
-      return @"InsertTab";
-  if (selector == @selector(pageDown:))
-      return @"MovePageDown";
-  if (selector == @selector(pageDownAndModifySelection:))
-      return @"MovePageDownAndModifySelection";
-  if (selector == @selector(pageUp:))
-      return @"MovePageUp";
-  if (selector == @selector(pageUpAndModifySelection:))
-      return @"MovePageUpAndModifySelection";
-
-  // Remove the trailing colon.
-  NSString* selector_str = NSStringFromSelector(selector);
-  int selector_len = [selector_str length];
-  return [selector_str substringToIndex:selector_len - 1];
-}
 
 // This function is installed via the objc runtime as the implementation of all
 // the various editing selectors.
@@ -157,7 +128,8 @@ void EditCommandImp(id self, SEL _cmd, id sender) {
   DCHECK([self conformsToProtocol:@protocol(RenderWidgetHostViewMacOwner)]);
 
   // SEL -> command name string.
-  NSString* command_name_ns = CommandNameForSelector(_cmd);
+  NSString* command_name_ns =
+      RWHVMEditCommandHelper::CommandNameForSelector(_cmd);
   std::string edit_command([command_name_ns UTF8String]);
 
   // Forward the edit command string down the pipeline.
@@ -170,6 +142,36 @@ void EditCommandImp(id self, SEL _cmd, id sender) {
 }
 
 }  // namespace
+
+// Maps an objc-selector to a core command name.
+//
+// Returns the core command name (which is the selector name with the trailing
+// ':' stripped in most cases).
+//
+// Adapted from a function by the same name in
+// WebKit/mac/WebView/WebHTMLView.mm .
+// Capitalized names are returned from this function, but that's simply
+// matching WebHTMLView.mm.
+NSString* RWHVMEditCommandHelper::CommandNameForSelector(SEL selector) {
+  if (selector == @selector(insertParagraphSeparator:) ||
+      selector == @selector(insertNewlineIgnoringFieldEditor:))
+    return @"InsertNewline";
+  if (selector == @selector(insertTabIgnoringFieldEditor:))
+      return @"InsertTab";
+  if (selector == @selector(pageDown:))
+      return @"MovePageDown";
+  if (selector == @selector(pageDownAndModifySelection:))
+      return @"MovePageDownAndModifySelection";
+  if (selector == @selector(pageUp:))
+      return @"MovePageUp";
+  if (selector == @selector(pageUpAndModifySelection:))
+      return @"MovePageUpAndModifySelection";
+
+  // Remove the trailing colon.
+  NSString* selector_str = NSStringFromSelector(selector);
+  int selector_len = [selector_str length];
+  return [selector_str substringToIndex:selector_len - 1];
+}
 
 RWHVMEditCommandHelper::RWHVMEditCommandHelper() {
   for (size_t i = 0; i < arraysize(kEditCommands); ++i) {
