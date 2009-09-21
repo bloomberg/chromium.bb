@@ -710,10 +710,16 @@ ExtensionShelf::~ExtensionShelf() {
 void ExtensionShelf::PaintChildren(gfx::Canvas* canvas) {
   InitBackground(canvas);
 
+  int max_x = width();
+  if (IsDetached())
+    max_x -= 2 * kNewtabHorizontalPadding;
+
   // Draw vertical dividers between Toolstrip items in the Extension shelf.
   int count = GetChildViewCount();
   for (int i = 0; i < count; ++i) {
     int right = GetChildViewAt(i)->bounds().right() + kToolstripPadding;
+    if (right >= max_x)
+      break;
     int vertical_padding = IsDetached() ? (height() - kShelfHeight) / 2 : 1;
 
     DetachableToolbarView::PaintVerticalDivider(
@@ -1036,7 +1042,7 @@ gfx::Size ExtensionShelf::LayoutItems(bool compute_bounds_only) {
     y += static_cast<int>(static_cast<double>
         (kNewtabVerticalPadding + kNewtabExtraVerMargin) * current_state);
     max_x -= static_cast<int>(static_cast<double>
-        (kNewtabHorizontalPadding) * current_state);
+        (2 * kNewtabHorizontalPadding) * current_state);
   }
 
   int count = model_->count();
@@ -1047,10 +1053,15 @@ gfx::Size ExtensionShelf::LayoutItems(bool compute_bounds_only) {
       continue;
     View* view = toolstrip->GetShelfView();
     gfx::Size pref = view->GetPreferredSize();
+
+    // |next_x| is the x value for where the next toolstrip in the list will be.
     int next_x = x + pref.width() + kToolstripPadding;  // Right padding.
     if (!compute_bounds_only) {
+      bool clipped = next_x >= max_x;
+      if (clipped)
+        pref.set_width(std::max(0, max_x - x));
       if (view == toolstrip->view())
-        toolstrip->view()->set_is_clipped(next_x >= max_x);
+        toolstrip->view()->set_is_clipped(clipped);
       view->SetBounds(x, y, pref.width(), content_height);
       view->Layout();
       if (toolstrip->window_visible())
