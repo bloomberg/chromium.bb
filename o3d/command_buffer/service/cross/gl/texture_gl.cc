@@ -207,7 +207,8 @@ Texture2DGL *Texture2DGL::Create(unsigned int width,
                                  unsigned int height,
                                  unsigned int levels,
                                  texture::Format format,
-                                 unsigned int flags) {
+                                 unsigned int flags,
+                                 bool enable_render_surfaces) {
   DCHECK_GT(width, 0);
   DCHECK_GT(height, 0);
   DCHECK_GT(levels, 0);
@@ -223,18 +224,19 @@ Texture2DGL *Texture2DGL::Create(unsigned int width,
   // glCompressedTexImage2D does't accept NULL as a parameter, so we need
   // to pass in some data.
   scoped_array<unsigned char> buffer;
-  if (!gl_format) {
-    MipLevelInfo mip_info;
-    MakeMipLevelInfo(&mip_info, format, width, height, 1, 0);
-    unsigned int size = GetMipLevelSize(mip_info);
-    buffer.reset(new unsigned char[size]);
-  }
+  MipLevelInfo mip_info;
+  MakeMipLevelInfo(&mip_info, format, width, height, 1, 0);
+  unsigned int size = GetMipLevelSize(mip_info);
+  buffer.reset(new unsigned char[size]);
+  memset(buffer.get(), 0, size);
+
   unsigned int mip_width = width;
   unsigned int mip_height = height;
+
   for (unsigned int i = 0; i < levels; ++i) {
     if (gl_format) {
       glTexImage2D(GL_TEXTURE_2D, i, gl_internal_format, mip_width, mip_height,
-                   0, gl_format, gl_type, NULL);
+                   0, gl_format, gl_type, buffer.get());
     } else {
       MipLevelInfo mip_info;
       MakeMipLevelInfo(&mip_info, format, width, height, 1, i);
@@ -245,7 +247,8 @@ Texture2DGL *Texture2DGL::Create(unsigned int width,
     mip_width = std::max(1U, mip_width >> 1);
     mip_height = std::max(1U, mip_height >> 1);
   }
-  return new Texture2DGL(levels, format, flags, width, height, gl_texture);
+  return new Texture2DGL(
+      levels, format, enable_render_surfaces, flags, width, height, gl_texture);
 }
 
 // Sets data into a 2D texture resource.
@@ -313,12 +316,37 @@ bool Texture2DGL::GetData(const Volume& volume,
   return true;
 }
 
+bool Texture2DGL::CreateRenderSurface(int width,
+                                      int height,
+                                      int mip_level,
+                                      int side) {
+  return false;
+}
+
+bool Texture2DGL::InstallFrameBufferObjects(
+    RenderSurfaceGL *gl_surface) {
+  ::glFramebufferTexture2DEXT(
+        GL_FRAMEBUFFER_EXT,
+        GL_COLOR_ATTACHMENT0_EXT,
+        GL_TEXTURE_2D,
+        gl_texture_,
+        gl_surface->mip_level());
+
+  GLenum framebuffer_status = ::glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+  if (GL_FRAMEBUFFER_COMPLETE_EXT != framebuffer_status) {
+    return false;
+  }
+
+  return true;
+}
+
 Texture3DGL *Texture3DGL::Create(unsigned int width,
                                  unsigned int height,
                                  unsigned int depth,
                                  unsigned int levels,
                                  texture::Format format,
-                                 unsigned int flags) {
+                                 unsigned int flags,
+                                 bool enable_render_surfaces) {
   DCHECK_GT(width, 0);
   DCHECK_GT(height, 0);
   DCHECK_GT(depth, 0);
@@ -335,19 +363,19 @@ Texture3DGL *Texture3DGL::Create(unsigned int width,
   // glCompressedTexImage3D does't accept NULL as a parameter, so we need
   // to pass in some data.
   scoped_array<unsigned char> buffer;
-  if (!gl_format) {
-    MipLevelInfo mip_info;
-    MakeMipLevelInfo(&mip_info, format, width, height, depth, 0);
-    unsigned int size = GetMipLevelSize(mip_info);
-    buffer.reset(new unsigned char[size]);
-  }
+  MipLevelInfo mip_info;
+  MakeMipLevelInfo(&mip_info, format, width, height, depth, 0);
+  unsigned int size = GetMipLevelSize(mip_info);
+  buffer.reset(new unsigned char[size]);
+  memset(buffer.get(), 0, size);
+
   unsigned int mip_width = width;
   unsigned int mip_height = height;
   unsigned int mip_depth = depth;
   for (unsigned int i = 0; i < levels; ++i) {
     if (gl_format) {
       glTexImage3D(GL_TEXTURE_3D, i, gl_internal_format, mip_width, mip_height,
-                   mip_depth, 0, gl_format, gl_type, NULL);
+                   mip_depth, 0, gl_format, gl_type, buffer.get());
     } else {
       MipLevelInfo mip_info;
       MakeMipLevelInfo(&mip_info, format, width, height, depth, i);
@@ -359,8 +387,8 @@ Texture3DGL *Texture3DGL::Create(unsigned int width,
     mip_height = std::max(1U, mip_height >> 1);
     mip_depth = std::max(1U, mip_depth >> 1);
   }
-  return new Texture3DGL(levels, format, flags, width, height, depth,
-                         gl_texture);
+  return new Texture3DGL(levels, format, enable_render_surfaces, flags, width,
+      height, depth, gl_texture);
 }
 
 bool Texture3DGL::SetData(const Volume& volume,
@@ -429,10 +457,23 @@ bool Texture3DGL::GetData(const Volume& volume,
   return true;
 }
 
+bool Texture3DGL::CreateRenderSurface(int width,
+                                       int height,
+                                       int mip_level,
+                                       int side) {
+  return false;
+}
+
+bool Texture3DGL::InstallFrameBufferObjects(
+    RenderSurfaceGL *gl_surface) {
+  return false;
+}
+
 TextureCubeGL *TextureCubeGL::Create(unsigned int side,
                                      unsigned int levels,
                                      texture::Format format,
-                                     unsigned int flags) {
+                                     unsigned int flags,
+                                     bool enable_render_surfaces) {
   DCHECK_GT(side, 0);
   DCHECK_GT(levels, 0);
   GLenum gl_internal_format = 0;
@@ -448,19 +489,19 @@ TextureCubeGL *TextureCubeGL::Create(unsigned int side,
   // glCompressedTexImage2D does't accept NULL as a parameter, so we need
   // to pass in some data.
   scoped_array<unsigned char> buffer;
-  if (!gl_format) {
-    MipLevelInfo mip_info;
-    MakeMipLevelInfo(&mip_info, format, side, side, 1, 0);
-    unsigned int size = GetMipLevelSize(mip_info);
-    buffer.reset(new unsigned char[size]);
-  }
+  MipLevelInfo mip_info;
+  MakeMipLevelInfo(&mip_info, format, side, side, 1, 0);
+  unsigned int size = GetMipLevelSize(mip_info);
+  buffer.reset(new unsigned char[size]);
+  memset(buffer.get(), 0, size);
+
   unsigned int mip_side = side;
   for (unsigned int i = 0; i < levels; ++i) {
     if (gl_format) {
       for (unsigned int face = 0; face < 6; ++face) {
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, i,
                      gl_internal_format, mip_side, mip_side,
-                     0, gl_format, gl_type, NULL);
+                     0, gl_format, gl_type, buffer.get());
       }
     } else {
       MipLevelInfo mip_info;
@@ -474,7 +515,8 @@ TextureCubeGL *TextureCubeGL::Create(unsigned int side,
     }
     mip_side = std::max(1U, mip_side >> 1);
   }
-  return new TextureCubeGL(levels, format, flags, side, gl_texture);
+  return new TextureCubeGL(
+      levels, format, enable_render_surfaces, flags, side, gl_texture);
 }
 
 // Check that GL_TEXTURE_CUBE_MAP_POSITIVE_X + face yields the correct GLenum.
@@ -557,6 +599,31 @@ bool TextureCubeGL::GetData(const Volume& volume,
   return true;
 }
 
+bool TextureCubeGL::CreateRenderSurface(int width,
+                                        int height,
+                                        int mip_level,
+                                        int side) {
+  return false;
+}
+
+bool TextureCubeGL::InstallFrameBufferObjects(
+    RenderSurfaceGL *gl_surface) {
+  ::glFramebufferTexture2DEXT(
+        GL_FRAMEBUFFER_EXT,
+        GL_COLOR_ATTACHMENT0_EXT,
+        gl_surface->side(),
+        gl_texture_,
+        gl_surface->mip_level());
+
+  GLenum framebuffer_status = ::glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+  if (GL_FRAMEBUFFER_COMPLETE_EXT != framebuffer_status) {
+    return false;
+  }
+
+  return true;
+}
+
+
 // GAPIGL functions.
 
 // Destroys a texture resource.
@@ -575,9 +642,10 @@ BufferSyncInterface::ParseError GAPIGL::CreateTexture2D(
     unsigned int height,
     unsigned int levels,
     texture::Format format,
-    unsigned int flags) {
-  Texture2DGL *texture = Texture2DGL::Create(width, height, levels, format,
-                                             flags);
+    unsigned int flags,
+    bool enable_render_surfaces) {
+  Texture2DGL *texture = Texture2DGL::Create(
+      width, height, levels, format, flags, enable_render_surfaces);
   if (!texture) return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
   // Dirty effect, because this texture id may be used.
   DirtyEffect();
@@ -593,9 +661,10 @@ BufferSyncInterface::ParseError GAPIGL::CreateTexture3D(
     unsigned int depth,
     unsigned int levels,
     texture::Format format,
-    unsigned int flags) {
-  Texture3DGL *texture = Texture3DGL::Create(width, height, depth, levels,
-                                             format, flags);
+    unsigned int flags,
+    bool enable_render_surfaces) {
+  Texture3DGL *texture = Texture3DGL::Create(
+      width, height, depth, levels, format, flags, enable_render_surfaces);
   if (!texture) return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
   // Dirty effect, because this texture id may be used.
   DirtyEffect();
@@ -609,8 +678,10 @@ BufferSyncInterface::ParseError GAPIGL::CreateTextureCube(
     unsigned int side,
     unsigned int levels,
     texture::Format format,
-    unsigned int flags) {
-  TextureCubeGL *texture = TextureCubeGL::Create(side, levels, format, flags);
+    unsigned int flags,
+    bool enable_render_surfaces) {
+  TextureCubeGL *texture = TextureCubeGL::Create(
+      side, levels, format, flags, enable_render_surfaces);
   if (!texture) return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
   // Dirty effect, because this texture id may be used.
   DirtyEffect();

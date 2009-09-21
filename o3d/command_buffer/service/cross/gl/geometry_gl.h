@@ -126,7 +126,7 @@ class VertexStructGL : public VertexStruct {
     GLenum type;
     GLboolean normalized;
     GLsizei stride;
-    GLintptr offset;
+    ptrdiff_t offset;
   };
 
   // Compiles the vertex declaration into the attribute array.

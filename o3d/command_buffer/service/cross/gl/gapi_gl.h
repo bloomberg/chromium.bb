@@ -41,6 +41,7 @@
 #include "command_buffer/service/cross/gl/gl_utils.h"
 #include "command_buffer/service/cross/gl/effect_gl.h"
 #include "command_buffer/service/cross/gl/geometry_gl.h"
+#include "command_buffer/service/cross/gl/render_surface_gl.h"
 #include "command_buffer/service/cross/gl/sampler_gl.h"
 #include "command_buffer/service/cross/gl/texture_gl.h"
 
@@ -226,7 +227,8 @@ class GAPIGL : public GAPIInterface {
                                      unsigned int height,
                                      unsigned int levels,
                                      texture::Format format,
-                                     unsigned int flags);
+                                     unsigned int flags,
+                                     bool enable_render_surfaces);
 
   // Implements the CreateTexture3D function for GL.
   virtual ParseError CreateTexture3D(ResourceID id,
@@ -235,14 +237,16 @@ class GAPIGL : public GAPIInterface {
                                      unsigned int depth,
                                      unsigned int levels,
                                      texture::Format format,
-                                     unsigned int flags);
+                                     unsigned int flags,
+                                     bool enable_render_surfaces);
 
   // Implements the CreateTextureCube function for GL.
   virtual ParseError CreateTextureCube(ResourceID id,
                                        unsigned int side,
                                        unsigned int levels,
                                        texture::Format format,
-                                       unsigned int flags);
+                                       unsigned int flags,
+                                       bool enable_render_surfaces);
 
   // Implements the SetTextureData function for GL.
   virtual ParseError SetTextureData(ResourceID id,
@@ -356,6 +360,32 @@ class GAPIGL : public GAPIInterface {
   // Implements the SetBlendingColor function for GL.
   virtual void SetBlendingColor(const RGBA &color);
 
+  // Implements the CreateRenderSurface function for GL.
+  virtual ParseError CreateRenderSurface(ResourceID id,
+                                         unsigned int width,
+                                         unsigned int height,
+                                         unsigned int mip_level,
+                                         unsigned int side,
+                                         ResourceID texture_id);
+
+  // Implements the DestroyRenderSurface function for GL.
+  virtual ParseError DestroyRenderSurface(ResourceID id);
+
+  // Implements the CreateDepthSurface function for GL.
+  virtual ParseError CreateDepthSurface(ResourceID id,
+                                        unsigned int width,
+                                        unsigned int height);
+
+  // Implements the DestroyDepthSurface function for GL.
+  virtual ParseError DestroyDepthSurface(ResourceID id);
+
+  // Implements the SetRenderSurface function for GL.
+  virtual ParseError SetRenderSurface(ResourceID render_surface_id,
+                                      ResourceID depth_stencil_id);
+
+  // Implements the SetBackSurfaces function for GL.
+  virtual void SetBackSurfaces();
+
   // Gets a vertex buffer by resource ID.
   VertexBufferGL *GetVertexBuffer(ResourceID id) {
     return vertex_buffers_.Get(id);
@@ -407,6 +437,9 @@ class GAPIGL : public GAPIInterface {
   ResourceID current_effect_id_;
   bool validate_effect_;
   EffectGL *current_effect_;
+  ResourceID current_surface_id_;
+  ResourceID current_depth_surface_id_;
+  GLuint render_surface_framebuffer_;
 
   ResourceMap<VertexBufferGL> vertex_buffers_;
   ResourceMap<IndexBufferGL> index_buffers_;
@@ -415,6 +448,8 @@ class GAPIGL : public GAPIInterface {
   ResourceMap<EffectParamGL> effect_params_;
   ResourceMap<TextureGL> textures_;
   ResourceMap<SamplerGL> samplers_;
+  ResourceMap<RenderSurfaceGL> render_surfaces_;
+  ResourceMap<RenderDepthStencilSurfaceGL> depth_surfaces_;
 };
 
 }  // namespace command_buffer

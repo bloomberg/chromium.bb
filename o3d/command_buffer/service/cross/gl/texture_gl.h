@@ -44,6 +44,9 @@
 namespace o3d {
 namespace command_buffer {
 
+class RenderDepthStencilSurfaceGL;
+class RenderSurfaceGL;
+
 // The base class for a GL texture resource, providing access to the base GL
 // texture that can be assigned to an effect parameter or a sampler unit.
 class TextureGL : public Texture {
@@ -51,9 +54,10 @@ class TextureGL : public Texture {
   TextureGL(texture::Type type,
             unsigned int levels,
             texture::Format format,
+            bool enable_render_surfaces,
             unsigned int flags,
             GLuint gl_texture)
-      : Texture(type, levels, format, flags),
+      : Texture(type, levels, format, enable_render_surfaces, flags),
         gl_texture_(gl_texture) {}
   virtual ~TextureGL();
 
@@ -78,6 +82,15 @@ class TextureGL : public Texture {
                        unsigned int size,
                        void *data) = 0;
 
+  // Creates the render surface, returning false if unable to.
+  virtual bool CreateRenderSurface(int width,
+                                   int height,
+                                   int mip_level,
+                                   int side) = 0;
+
+  virtual bool InstallFrameBufferObjects(
+    RenderSurfaceGL *gl_surface) = 0;
+
  protected:
   const GLuint gl_texture_;
 
@@ -90,11 +103,17 @@ class Texture2DGL : public TextureGL {
  public:
   Texture2DGL(unsigned int levels,
               texture::Format format,
+              bool enable_render_surfaces,
               unsigned int flags,
               unsigned int width,
               unsigned int height,
               GLuint gl_texture)
-      : TextureGL(texture::TEXTURE_2D, levels, format, flags, gl_texture),
+      : TextureGL(texture::TEXTURE_2D,
+                  levels,
+                  format,
+                  enable_render_surfaces,
+                  flags,
+                  gl_texture),
         width_(width),
         height_(height) {}
 
@@ -103,7 +122,8 @@ class Texture2DGL : public TextureGL {
                              unsigned int height,
                              unsigned int levels,
                              texture::Format format,
-                             unsigned int flags);
+                             unsigned int flags,
+                             bool enable_render_surfaces);
 
   // Sets data into a 2D texture resource.
   virtual bool SetData(const Volume& volume,
@@ -123,6 +143,15 @@ class Texture2DGL : public TextureGL {
                        unsigned int size,
                        void *data);
 
+  // Create a render surface which matches this texture type.
+  virtual bool CreateRenderSurface(int width,
+                                   int height,
+                                   int mip_level,
+                                   int side);
+
+  virtual bool InstallFrameBufferObjects(
+    RenderSurfaceGL *gl_surface);
+
  private:
   unsigned int width_;
   unsigned int height_;
@@ -134,12 +163,18 @@ class Texture3DGL : public TextureGL {
  public:
   Texture3DGL(unsigned int levels,
               texture::Format format,
+              bool enable_render_surfaces,
               unsigned int flags,
               unsigned int width,
               unsigned int height,
               unsigned int depth,
               GLuint gl_texture)
-      : TextureGL(texture::TEXTURE_2D, levels, format, flags, gl_texture),
+      : TextureGL(texture::TEXTURE_2D,
+                  levels,
+                  format,
+                  enable_render_surfaces,
+                  flags,
+                  gl_texture),
         width_(width),
         height_(height),
         depth_(depth) {}
@@ -150,7 +185,8 @@ class Texture3DGL : public TextureGL {
                              unsigned int depth,
                              unsigned int levels,
                              texture::Format format,
-                             unsigned int flags);
+                             unsigned int flags,
+                             bool enable_render_surfaces);
 
   // Sets data into a 3D texture resource.
   virtual bool SetData(const Volume& volume,
@@ -170,6 +206,15 @@ class Texture3DGL : public TextureGL {
                        unsigned int size,
                        void *data);
 
+  // Create a render surface which matches this texture type.
+  virtual bool CreateRenderSurface(int width,
+                                   int height,
+                                   int mip_level,
+                                   int side);
+
+  virtual bool InstallFrameBufferObjects(
+    RenderSurfaceGL *gl_surface);
+
  private:
   unsigned int width_;
   unsigned int height_;
@@ -182,17 +227,24 @@ class TextureCubeGL : public TextureGL {
  public:
   TextureCubeGL(unsigned int levels,
                 texture::Format format,
+                bool render_surface_enabled,
                 unsigned int flags,
                 unsigned int side,
                 GLuint gl_texture)
-      : TextureGL(texture::TEXTURE_CUBE, levels, format, flags, gl_texture),
+      : TextureGL(texture::TEXTURE_CUBE,
+                  levels,
+                  format,
+                  render_surface_enabled,
+                  flags,
+                  gl_texture),
         side_(side) {}
 
   // Creates a cube map texture resource.
   static TextureCubeGL *Create(unsigned int side,
                                unsigned int levels,
                                texture::Format format,
-                               unsigned int flags);
+                               unsigned int flags,
+                               bool enable_render_surfaces);
 
   // Sets data into a cube map texture resource.
   virtual bool SetData(const Volume& volume,
@@ -211,6 +263,15 @@ class TextureCubeGL : public TextureGL {
                        unsigned int slice_pitch,
                        unsigned int size,
                        void *data);
+
+  // Create a render surface which matches this texture type.
+  virtual bool CreateRenderSurface(int width,
+                                   int height,
+                                   int mip_level,
+                                   int side);
+
+  virtual bool InstallFrameBufferObjects(
+    RenderSurfaceGL *gl_surface);
 
  private:
   unsigned int side_;

@@ -293,6 +293,9 @@ bool GAPIGL::InitCommon() {
   glGetIntegerv(GL_VIEWPORT, viewport);
   SetViewport(viewport[0], viewport[1], viewport[2], viewport[3], 0.f, 1.f);
   CHECK_GL_ERROR();
+
+  ::glGenFramebuffersEXT(1, &render_surface_framebuffer_);
+  CHECK_GL_ERROR();
   return true;
 }
 

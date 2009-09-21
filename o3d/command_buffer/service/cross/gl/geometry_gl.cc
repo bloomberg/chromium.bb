@@ -249,7 +249,7 @@ inline unsigned int GetAttribIndex(vertex_struct::Semantic semantic,
       return 8 + semantic_index;
     default:
       DLOG(FATAL) << "Not reached.";
-      break;
+      return 0;
   }
 }
 

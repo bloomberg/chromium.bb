@@ -100,6 +100,7 @@ if env['TARGET_PLATFORM'] == 'WINDOWS':
     INPUTS += ['cross/gl/effect_gl.cc',
                'cross/gl/gapi_gl.cc',
                'cross/gl/geometry_gl.cc',
+               'cross/gl/render_surface_gl.cc',
                'cross/gl/sampler_gl.cc',
                'cross/gl/states_gl.cc',
                'cross/gl/texture_gl.cc']
@@ -110,6 +111,7 @@ elif env['TARGET_PLATFORM'] == 'LINUX':
   INPUTS += ['cross/gl/effect_gl.cc',
              'cross/gl/gapi_gl.cc',
              'cross/gl/geometry_gl.cc',
+             'cross/gl/render_surface_gl.cc',
              'cross/gl/sampler_gl.cc',
              'cross/gl/states_gl.cc',
              'cross/gl/texture_gl.cc',

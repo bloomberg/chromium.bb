@@ -105,6 +105,9 @@ GLenum GLTextureTarget(texture::Type type) {
       return GL_TEXTURE_3D;
     case texture::TEXTURE_CUBE:
       return GL_TEXTURE_CUBE_MAP;
+    default:
+      DLOG(FATAL) << "Not Reached";
+      return GL_TEXTURE_2D;
   }
 }
 
