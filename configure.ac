@@ -9,6 +9,7 @@ PKG_CHECK_MODULES(EGL_COMPOSITOR,
 PKG_CHECK_MODULES(EGL_CLIENT, [eagle cairo glib-2.0 libudev])
 PKG_CHECK_MODULES(CAIRO_CLIENT, [cairo-drm glib-2.0])
 PKG_CHECK_MODULES(GDK_PIXBUF, [gdk-pixbuf-2.0])
+PKG_CHECK_MODULES(POPPLER, [poppler-glib gdk-2.0])
 
 if test $CC = gcc; then
 	GCC_CFLAGS="-Wall -g -Wstrict-prototypes -Wmissing-prototypes -fvisibility=hidden"
