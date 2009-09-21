@@ -657,6 +657,16 @@ void CleanupAllWindows(PluginObject *obj) {
   DCHECK(obj->GetContentHWnd());
   DCHECK(obj->GetPluginHWnd());
   ::KillTimer(obj->GetContentHWnd(), 0);
+
+  // Restore the original WNDPROC on the plugin window so that we
+  // don't attempt to call into the O3D DLL after it's been unloaded.
+  LONG_PTR origWndProc = reinterpret_cast<LONG_PTR>(
+      GetProp(obj->GetPluginHWnd(),
+              kOrigWndProcName));
+  DCHECK(origWndProc != NULL);
+  RemoveProp(obj->GetPluginHWnd(), kOrigWndProcName);
+  SetWindowLongPtr(obj->GetPluginHWnd(), GWLP_WNDPROC, origWndProc);
+
   PluginObject::ClearPluginProperty(obj->GetContentHWnd());
   PluginObject::ClearPluginProperty(obj->GetPluginHWnd());
   ::DestroyWindow(obj->GetContentHWnd());
