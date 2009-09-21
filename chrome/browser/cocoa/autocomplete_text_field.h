@@ -23,30 +23,33 @@
 // Chrome internals, though it's really more of a mish-mash of model,
 // view, and controller.
 
-// AutocompleteTextFieldDelegateMethods are meant to be similar to
-// NSControl delegate methods, adding additional intercepts relevant
-// to the Omnibox implementation.
+// Provides a hook so that we can call directly down to
+// AutocompleteEditViewMac rather than traversing the delegate chain.
+
+class AutocompleteTextFieldObserver {
+ public:
+
+  // Called when the control-key state changes while the field is
+  // first responder.
+  virtual void OnControlKeyChanged(bool pressed) = 0;
+
+  // Called when the user pastes into the field.
+  virtual void OnPaste() = 0;
+};
 
 @protocol AutocompleteTextFieldDelegateMethods
-
-// Delegate -textShouldPaste: implementation to the field being
-// edited.  See AutocompleteTextFieldEditor implementation.
-- (BOOL)control:(NSControl*)control textShouldPaste:(NSText*)fieldEditor;
-
 // Returns nil if paste actions are not supported.
 - (NSString*)control:(NSControl*)control
              textPasteActionString:(NSText*)fieldEditor;
 - (void)control:(NSControl*)control textDidPasteAndGo:(NSText*)fieldEditor;
-
-// Let the delegate track -flagsChanged: events.
-- (void)control:(NSControl*)control flagsChanged:(NSEvent*)theEvent;
-
 @end
 
 @interface AutocompleteTextField : NSTextField {
+ @private
+  AutocompleteTextFieldObserver* observer_;  // weak, owned by location bar.
 }
 
-- (BOOL)textShouldPaste:(NSText*)fieldEditor;
+@property AutocompleteTextFieldObserver* observer;
 
 // Convenience method to return the cell, casted appropriately.
 - (AutocompleteTextFieldCell*)autocompleteTextFieldCell;

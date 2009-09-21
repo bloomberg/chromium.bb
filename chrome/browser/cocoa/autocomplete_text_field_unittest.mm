@@ -9,29 +9,18 @@
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
+#import "chrome/browser/cocoa/autocomplete_text_field_unittest_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
 @interface AutocompleteTextFieldTestDelegate : NSObject {
-  BOOL textShouldPaste_;
-  BOOL receivedTextShouldPaste_;
-  BOOL receivedFlagsChanged_;
   BOOL receivedControlTextDidBeginEditing_;
   BOOL receivedControlTextShouldEndEditing_;
 }
-- initWithTextShouldPaste:(BOOL)flag;
-- (BOOL)receivedTextShouldPaste;
-- (BOOL)receivedFlagsChanged;
+- init;
 - (BOOL)receivedControlTextDidBeginEditing;
 - (BOOL)receivedControlTextShouldEndEditing;
-@end
-
-@interface AutocompleteTextFieldWindowTestDelegate :
-    NSObject<NSWindowDelegate> {
-  scoped_nsobject<AutocompleteTextFieldEditor> editor_;
-}
-- (id)windowWillReturnFieldEditor:(NSWindow *)sender toObject:(id)anObject;
 @end
 
 namespace {
@@ -44,6 +33,7 @@ class AutocompleteTextFieldTest : public PlatformTest {
     NSRect frame = NSMakeRect(0, 0, 300, 30);
     field_.reset([[AutocompleteTextField alloc] initWithFrame:frame]);
     [field_ setStringValue:@"Testing"];
+    [field_ setObserver:&field_observer_];
     [cocoa_helper_.contentView() addSubview:field_.get()];
 
     window_delegate_.reset(
@@ -51,14 +41,31 @@ class AutocompleteTextFieldTest : public PlatformTest {
     [cocoa_helper_.window() setDelegate:window_delegate_.get()];
   }
 
-  // The removeFromSuperview call is needed to prevent crashes in later tests.
+  // The removeFromSuperview call is needed to prevent crashes in
+  // later tests.
+  // TODO(shess): -removeromSuperview should not be necessary.  Fix
+  // it.  Also in autocomplete_text_field_editor_unittest.mm.
   ~AutocompleteTextFieldTest() {
     [cocoa_helper_.window() setDelegate:nil];
     [field_ removeFromSuperview];
   }
 
+  NSEvent* KeyDownEventWithFlags(NSUInteger flags) {
+    return [NSEvent keyEventWithType:NSKeyDown
+                            location:NSZeroPoint
+                       modifierFlags:flags
+                           timestamp:0.0
+                        windowNumber:[cocoa_helper_.window() windowNumber]
+                             context:nil
+                          characters:@"a"
+         charactersIgnoringModifiers:@"a"
+                           isARepeat:NO
+                             keyCode:'a'];
+  }
+
   CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   scoped_nsobject<AutocompleteTextField> field_;
+  AutocompleteTextFieldObserverMock field_observer_;
   scoped_nsobject<AutocompleteTextFieldWindowTestDelegate> window_delegate_;
 };
 
@@ -109,68 +116,43 @@ TEST_F(AutocompleteTextFieldTest, Display) {
   [field_ display];
 }
 
-// Test that -textShouldPaste: properly queries the delegate.
-TEST_F(AutocompleteTextFieldTest, TextShouldPaste) {
-  EXPECT_TRUE(![field_ delegate]);
-  EXPECT_TRUE([field_ textShouldPaste:nil]);
-
-  scoped_nsobject<AutocompleteTextFieldTestDelegate> shouldPaste(
-      [[AutocompleteTextFieldTestDelegate alloc] initWithTextShouldPaste:YES]);
-  [field_ setDelegate:shouldPaste];
-  EXPECT_FALSE([shouldPaste receivedTextShouldPaste]);
-  EXPECT_TRUE([field_ textShouldPaste:nil]);
-  EXPECT_TRUE([shouldPaste receivedTextShouldPaste]);
-
-  scoped_nsobject<AutocompleteTextFieldTestDelegate> shouldNotPaste(
-      [[AutocompleteTextFieldTestDelegate alloc] initWithTextShouldPaste:NO]);
-  [field_ setDelegate:shouldNotPaste];
-  EXPECT_FALSE([shouldNotPaste receivedTextShouldPaste]);
-  EXPECT_FALSE([field_ textShouldPaste:nil]);
-  EXPECT_TRUE([shouldNotPaste receivedTextShouldPaste]);
-  [field_ setDelegate:nil];
-}
-
-// Test that -control:flagsChanged: properly reaches the delegate.
 TEST_F(AutocompleteTextFieldTest, FlagsChanged) {
-  EXPECT_TRUE(![field_ delegate]);
+  // Test without Control key down, but some other modifier down.
+  field_observer_.Reset();
+  EXPECT_FALSE(field_observer_.on_control_key_changed_called_);
+  [field_ flagsChanged:KeyDownEventWithFlags(NSShiftKeyMask)];
+  EXPECT_TRUE(field_observer_.on_control_key_changed_called_);
+  EXPECT_FALSE(field_observer_.on_control_key_changed_value_);
 
-  // This shouldn't crash, at least.
-  [field_ flagsChanged:nil];
-
-  scoped_nsobject<AutocompleteTextFieldTestDelegate> delegate(
-      [[AutocompleteTextFieldTestDelegate alloc] initWithTextShouldPaste:NO]);
-  [field_ setDelegate:delegate];
-  EXPECT_FALSE([delegate receivedFlagsChanged]);
-  [field_ flagsChanged:nil];
-  EXPECT_TRUE([delegate receivedFlagsChanged]);
-  [field_ setDelegate:nil];
+  // Test with Control key down.
+  field_observer_.Reset();
+  EXPECT_FALSE(field_observer_.on_control_key_changed_called_);
+  [field_ flagsChanged:KeyDownEventWithFlags(NSControlKeyMask)];
+  EXPECT_TRUE(field_observer_.on_control_key_changed_called_);
+  EXPECT_TRUE(field_observer_.on_control_key_changed_value_);
 }
 
-// Test that -control:flagsChanged: properly reaches the delegate when
-// the -flagsChanged: message goes to the editor.  In that case it is
-// forwarded via the responder chain.
+// This test is here rather than in the editor's tests because the
+// field catches -flagsChanged: because it's on the responder chain,
+// the field editor doesn't implement it.
 TEST_F(AutocompleteTextFieldTest, FieldEditorFlagsChanged) {
-  EXPECT_TRUE(![field_ delegate]);
+  cocoa_helper_.makeFirstResponder(field_);
+  NSResponder* firstResponder = [[field_ window] firstResponder];
+  EXPECT_EQ(firstResponder, [field_ currentEditor]);
 
-  scoped_nsobject<AutocompleteTextFieldTestDelegate> delegate(
-      [[AutocompleteTextFieldTestDelegate alloc] initWithTextShouldPaste:NO]);
+  // Test without Control key down, but some other modifier down.
+  field_observer_.Reset();
+  EXPECT_FALSE(field_observer_.on_control_key_changed_called_);
+  [firstResponder flagsChanged:KeyDownEventWithFlags(NSShiftKeyMask)];
+  EXPECT_TRUE(field_observer_.on_control_key_changed_called_);
+  EXPECT_FALSE(field_observer_.on_control_key_changed_value_);
 
-  // Setup a field editor for |field_|.
-  scoped_nsobject<AutocompleteTextFieldEditor> editor(
-      [[AutocompleteTextFieldEditor alloc] init]);
-  [field_ setDelegate:delegate];
-
-  [editor setFieldEditor:YES];
-  [[field_ cell] setUpFieldEditorAttributes:editor];
-  [[field_ cell] editWithFrame:[field_ bounds]
-                        inView:field_
-                        editor:editor
-                      delegate:[field_ delegate]
-                         event:nil];
-  EXPECT_FALSE([delegate receivedFlagsChanged]);
-  [editor flagsChanged:nil];
-  EXPECT_TRUE([delegate receivedFlagsChanged]);
-  [field_ setDelegate:nil];
+  // Test with Control key down.
+  field_observer_.Reset();
+  EXPECT_FALSE(field_observer_.on_control_key_changed_called_);
+  [firstResponder flagsChanged:KeyDownEventWithFlags(NSControlKeyMask)];
+  EXPECT_TRUE(field_observer_.on_control_key_changed_called_);
+  EXPECT_TRUE(field_observer_.on_control_key_changed_value_);
 }
 
 // Test that the field editor is reset correctly when search keyword
@@ -254,7 +236,7 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBlocksEndEditing) {
   // the expected times.
   {
     scoped_nsobject<AutocompleteTextFieldTestDelegate> delegate(
-        [[AutocompleteTextFieldTestDelegate alloc] initWithTextShouldPaste:NO]);
+        [[AutocompleteTextFieldTestDelegate alloc] init]);
     EXPECT_FALSE([delegate receivedControlTextDidBeginEditing]);
     EXPECT_FALSE([delegate receivedControlTextShouldEndEditing]);
 
@@ -280,7 +262,7 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBlocksEndEditing) {
   // sending that message.
   {
     scoped_nsobject<AutocompleteTextFieldTestDelegate> delegate(
-        [[AutocompleteTextFieldTestDelegate alloc] initWithTextShouldPaste:NO]);
+        [[AutocompleteTextFieldTestDelegate alloc] init]);
     [field_ setDelegate:delegate];
     EXPECT_FALSE([delegate receivedControlTextDidBeginEditing]);
     EXPECT_FALSE([delegate receivedControlTextShouldEndEditing]);
@@ -301,24 +283,13 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBlocksEndEditing) {
 
 @implementation AutocompleteTextFieldTestDelegate
 
-- initWithTextShouldPaste:(BOOL)flag {
+- init {
   self = [super init];
   if (self) {
-    textShouldPaste_ = flag;
-    receivedTextShouldPaste_ = NO;
-    receivedFlagsChanged_ = NO;
     receivedControlTextDidBeginEditing_ = NO;
     receivedControlTextShouldEndEditing_ = NO;
   }
   return self;
-}
-
-- (BOOL)receivedTextShouldPaste {
-  return receivedTextShouldPaste_;
-}
-
-- (BOOL)receivedFlagsChanged {
-  return receivedFlagsChanged_;
 }
 
 - (BOOL)receivedControlTextDidBeginEditing {
@@ -329,15 +300,6 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBlocksEndEditing) {
   return receivedControlTextShouldEndEditing_;
 }
 
-- (BOOL)control:(NSControl*)control textShouldPaste:(NSText*)fieldEditor {
-  receivedTextShouldPaste_ = YES;
-  return textShouldPaste_;
-}
-
-- (void)control:(id)control flagsChanged:(NSEvent*)theEvent {
-  receivedFlagsChanged_ = YES;
-}
-
 - (void)controlTextDidBeginEditing:(NSNotification*)aNotification {
   receivedControlTextDidBeginEditing_ = YES;
 }
@@ -345,24 +307,6 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBlocksEndEditing) {
 - (BOOL)control:(NSControl*)control textShouldEndEditing:(NSText*)fieldEditor {
   receivedControlTextShouldEndEditing_ = YES;
   return YES;
-}
-
-@end
-
-@implementation AutocompleteTextFieldWindowTestDelegate
-
-- (id)windowWillReturnFieldEditor:(NSWindow *)sender toObject:(id)anObject {
-  EXPECT_TRUE([anObject isKindOfClass:[AutocompleteTextField class]]);
-
-  if (editor_ == nil) {
-    editor_.reset([[AutocompleteTextFieldEditor alloc] init]);
-  }
-  EXPECT_TRUE(editor_ != nil);
-
-  // This needs to be called every time, otherwise notifications
-  // aren't sent correctly.
-  [editor_ setFieldEditor:YES];
-  return editor_;
 }
 
 @end

@@ -13,6 +13,7 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/toolbar_model.h"
+#include "chrome/browser/cocoa/autocomplete_text_field.h"
 #include "chrome/common/page_transition_types.h"
 #include "grit/generated_resources.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -21,7 +22,6 @@ class AutocompleteEditController;
 class AutocompleteEditModel;
 @class AutocompleteFieldDelegate;
 class AutocompletePopupViewMac;
-@class AutocompleteTextField;
 class BubblePositioner;
 class Clipboard;
 class CommandUpdater;
@@ -31,7 +31,8 @@ class ToolbarModel;
 
 // Implements AutocompleteEditView on an AutocompleteTextField.
 
-class AutocompleteEditViewMac : public AutocompleteEditView {
+class AutocompleteEditViewMac : public AutocompleteEditView,
+                                public AutocompleteTextFieldObserver {
  public:
   AutocompleteEditViewMac(AutocompleteEditController* controller,
                           const BubblePositioner* bubble_positioner,
@@ -89,14 +90,17 @@ class AutocompleteEditViewMac : public AutocompleteEditView {
   virtual bool OnAfterPossibleChange();
   virtual gfx::NativeView GetNativeView() const;
 
-  // Helper functions for use from AutocompleteFieldDelegate Objective-C
+  // Implement the AutocompleteTextFieldObserver interface.
+  virtual void OnControlKeyChanged(bool pressed);
+  virtual void OnPaste();
+
+  // Helper functions for use from AutocompleteEditHelper Objective-C
   // class.
 
   // Returns true if |popup_view_| is open.
   bool IsPopupOpen() const;
 
   // Trivial wrappers forwarding to |model_| methods.
-  void OnControlKeyChanged(bool pressed);
   void OnEscapeKeyPressed();
   void OnUpOrDownKeyPressed(bool up, bool by_page);
 
@@ -110,9 +114,6 @@ class AutocompleteEditViewMac : public AutocompleteEditView {
   // Called when the window |field_| is in loses key to clean up
   // visual state (such as closing the popup).
   void OnDidResignKey();
-
-  // Called when the user attempts to paste into |field_|.
-  void OnPaste();
 
   // Returns true if the current clipboard text supports paste and go (or paste
   // and search).

@@ -9,20 +9,14 @@
 
 @implementation AutocompleteTextField
 
+@synthesize observer = observer_;
+
 + (Class)cellClass {
   return [AutocompleteTextFieldCell class];
 }
 
 - (void)awakeFromNib {
   DCHECK([[self cell] isKindOfClass:[AutocompleteTextFieldCell class]]);
-}
-
-- (BOOL)textShouldPaste:(NSText*)fieldEditor {
-  id delegate = [self delegate];
-  if ([delegate respondsToSelector:@selector(control:textShouldPaste:)]) {
-    return [delegate control:self textShouldPaste:fieldEditor];
-  }
-  return YES;
 }
 
 - (NSString*)textPasteActionString:(NSText*)fieldEditor {
@@ -41,11 +35,8 @@
 }
 
 - (void)flagsChanged:(NSEvent*)theEvent {
-  id delegate = [self delegate];
-  if ([delegate respondsToSelector:@selector(control:flagsChanged:)]) {
-    [delegate control:self flagsChanged:theEvent];
-  }
-  [super flagsChanged:theEvent];
+  bool controlFlag = ([theEvent modifierFlags]&NSControlKeyMask) != 0;
+  observer_->OnControlKeyChanged(controlFlag);
 }
 
 - (AutocompleteTextFieldCell*)autocompleteTextFieldCell {

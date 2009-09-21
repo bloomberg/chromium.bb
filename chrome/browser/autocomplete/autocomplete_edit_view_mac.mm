@@ -16,7 +16,6 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view_mac.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/cocoa/autocomplete_text_field.h"
 #include "chrome/browser/cocoa/event_utils.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
@@ -128,6 +127,9 @@ NSRange ComponentToNSRange(const url_parse::Component& component) {
 // It intercepts various control delegate methods and vectors them to
 // the edit view.
 
+// TODO(shess): Consider moving more of this code off to
+// AutocompleteTextFieldObserver.
+
 @interface AutocompleteFieldDelegate : NSObject<NSTextFieldDelegate> {
  @private
   AutocompleteEditViewMac* edit_view_;  // weak, owns us.
@@ -161,6 +163,7 @@ AutocompleteEditViewMac::AutocompleteEditViewMac(
   DCHECK(command_updater);
   DCHECK(field);
   [field_ setDelegate:edit_helper_.get()];
+  [field_ setObserver:this];
 
   // Needed so that editing doesn't lose the styling.
   [field_ setAllowsEditingTextAttributes:YES];
@@ -187,6 +190,7 @@ AutocompleteEditViewMac::~AutocompleteEditViewMac() {
   // Disconnect field_ from edit_helper_ so that we don't get calls
   // after destruction.
   [field_ setDelegate:nil];
+  [field_ setObserver:NULL];
 }
 
 void AutocompleteEditViewMac::SaveStateToTab(TabContents* tab) {
@@ -858,15 +862,6 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
   // it's set to the start of the text.
 }
 
-// AutocompleteTextField/Editor adds a delegate method which allows us
-// to intercept and handle -paste: calls.
-- (BOOL)control:(NSControl*)control textShouldPaste:(NSText*)fieldEditor {
-  edit_view_->OnPaste();
-
-  // Caller shouldn't also paste.
-  return NO;
-}
-
 - (NSString*)control:(NSControl*)control
              textPasteActionString:(NSText*)fieldEditor {
   if (!edit_view_->CanPasteAndGo())
@@ -882,19 +877,6 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
 // Signal that we've lost focus when the window resigns key.
 - (void)windowDidResignKey:(NSNotification*)notification {
   edit_view_->OnDidResignKey();
-}
-
-// AutocompleteTextField adds a delegate method which allows us to
-// track -flagsChanged: calls.
-//
-// When the user types Control-Enter, the existing content has "www."
-// prepended and ".com" appended.  This calls down to
-// AutocompleteEditModel::OnControlKeyChanged() so that it can change
-// the popup to reflect this.  See autocomplete_edit.cc
-// OnControlKeyChanged() and OnAfterPossibleChange().
-- (void)control:(NSControl*)control flagsChanged:(NSEvent*)theEvent {
-  bool controlFlag = ([theEvent modifierFlags]&NSControlKeyMask) != 0;
-  edit_view_->OnControlKeyChanged(controlFlag);
 }
 
 @end

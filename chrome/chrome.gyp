@@ -4064,6 +4064,7 @@
         'browser/cocoa/autocomplete_text_field_cell_unittest.mm',
         'browser/cocoa/autocomplete_text_field_editor_unittest.mm',
         'browser/cocoa/autocomplete_text_field_unittest.mm',
+        'browser/cocoa/autocomplete_text_field_unittest_helper.mm',
         'browser/cocoa/base_view_unittest.mm',
         'browser/cocoa/background_gradient_view_unittest.mm',
         'browser/cocoa/background_tile_view_unittest.mm',

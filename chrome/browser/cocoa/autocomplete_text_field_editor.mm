@@ -7,6 +7,8 @@
 #include "app/l10n_util_mac.h"
 #include "base/string_util.h"
 #include "grit/generated_resources.h"
+#include "base/sys_string_conversions.h"
+#import "chrome/browser/cocoa/autocomplete_text_field.h"
 
 @implementation AutocompleteTextFieldEditor
 
@@ -31,18 +33,25 @@
   [self delete:nil];
 }
 
-- (BOOL)shouldPaste {
-  id delegate = [self delegate];
-  if (![delegate respondsToSelector:@selector(textShouldPaste:)] ||
-      [delegate textShouldPaste:self]) {
-    return YES;
-  }
-  return NO;
+// This class assumes that the delegate is an AutocompleteTextField.
+// Enforce that assumption.
+- (void)setDelegate:(id)anObject {
+  DCHECK(anObject == nil ||
+         [anObject isKindOfClass:[AutocompleteTextField class]]);
+  [super setDelegate:anObject];
+}
+
+// Convenience method for retrieving the observer from the delegate.
+- (AutocompleteTextFieldObserver*)observer {
+  DCHECK([[self delegate] isKindOfClass:[AutocompleteTextField class]]);
+  return [static_cast<AutocompleteTextField*>([self delegate]) observer];
 }
 
 - (void)paste:(id)sender {
-  if ([self shouldPaste]) {
-    [super paste:sender];
+  AutocompleteTextFieldObserver* observer = [self observer];
+  DCHECK(observer);
+  if (observer) {
+    observer->OnPaste();
   }
 }
 
