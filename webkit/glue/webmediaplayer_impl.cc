@@ -11,6 +11,7 @@
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/null_audio_renderer.h"
+#include "skia/ext/platform_canvas.h"
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebSize.h"
 #include "webkit/api/public/WebURL.h"
@@ -435,9 +436,41 @@ void WebMediaPlayerImpl::paint(WebCanvas* canvas,
 
 #if WEBKIT_USING_SKIA
   proxy_->Paint(canvas, rect);
+#elif WEBKIT_USING_CG
+  // If there is no preexisting platform canvas, or if the size has
+  // changed, recreate the canvas.  This is to avoid recreating the bitmap
+  // buffer over and over for each frame of video.
+  if (!skia_canvas_.get() ||
+      skia_canvas_->getDevice()->width() != rect.width ||
+      skia_canvas_->getDevice()->height() != rect.height) {
+    skia_canvas_.reset(new skia::PlatformCanvas(rect.width, rect.height, true));
+  }
+
+  // Draw to our temporary skia canvas.
+  gfx::Rect normalized_rect(rect.width, rect.height);
+  proxy_->Paint(skia_canvas_.get(), normalized_rect);
+
+  // The mac coordinate system is flipped vertical from the normal skia
+  // coordinates.  During painting of the frame, flip the coordinates
+  // system and, for simplicity, also translate the clip rectangle to
+  // start at 0,0.
+  CGContextSaveGState(canvas);
+  CGContextTranslateCTM(canvas, rect.x, rect.height + rect.y);
+  CGContextScaleCTM(canvas, 1.0, -1.0);
+
+  // We need a local variable CGRect version for DrawToContext.
+  CGRect normalized_cgrect =
+      CGRectMake(normalized_rect.x(), normalized_rect.y(),
+                 normalized_rect.width(), normalized_rect.height());
+
+  // Copy the frame rendered to our temporary skia canvas onto the passed in
+  // canvas.
+  skia_canvas_->getTopPlatformDevice().DrawToContext(canvas, 0, 0,
+                                                     &normalized_cgrect);
+
+  CGContextRestoreGState(canvas);
 #else
-  // TODO(darin): Implement this for Mac, where WebCanvas is a CGContext.
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED() << "We only support rendering to skia or CG";
 #endif
 }
 

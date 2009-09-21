@@ -272,6 +272,10 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
 
   scoped_refptr<Proxy> proxy_;
 
+#if WEBKIT_USING_CG
+  scoped_ptr<skia::PlatformCanvas> skia_canvas_;
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
 
