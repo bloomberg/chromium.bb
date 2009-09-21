@@ -1,26 +1,82 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
-
 #include "chrome/browser/browser_list.h"
 
+#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/profile_manager.h"
+#include "chrome/browser/tab_contents/navigation_controller.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/result_codes.h"
 
-#if defined(OS_WIN)
-// TODO(port): these can probably all go away, even on win
-#include "chrome/browser/profile.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
-#endif
+namespace {
 
+// This object is instantiated when the first Browser object is added to the
+// list and delete when the last one is removed. It watches for loads and
+// creates histograms of some global object counts.
+class BrowserActivityObserver : public NotificationObserver {
+ public:
+  BrowserActivityObserver() {
+    registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+                   NotificationService::AllSources());
+  }
+  ~BrowserActivityObserver() {}
+
+ private:
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    DCHECK(type == NotificationType::NAV_ENTRY_COMMITTED);
+    const NavigationController::LoadCommittedDetails& load =
+        *Details<NavigationController::LoadCommittedDetails>(details).ptr();
+    if (!load.is_main_frame || load.is_auto || load.is_in_page)
+      return;  // Don't log for subframes or other trivial types.
+
+    LogRenderProcessHostCount();
+    LogBrowserTabCount();
+  }
+
+  // Counts the number of active RenderProcessHosts and logs them.
+  void LogRenderProcessHostCount() const {
+    int hosts_count = 0;
+    RenderProcessHost::iterator iter(RenderProcessHost::AllHostsIterator());
+    while (!iter.IsAtEnd()) {
+      hosts_count++;
+      iter.Advance();
+    }
+    UMA_HISTOGRAM_CUSTOM_COUNTS("MPArch.RPHCountPerLoad", hosts_count,
+                                1, 50, 50);
+  }
+
+  // Counts the number of tabs in each browser window and logs them. This is
+  // different than the number of TabContents objects since TabContents objects
+  // can be used for popups and in dialog boxes. We're just counting toplevel
+  // tabs here.
+  void LogBrowserTabCount() const {
+    int tab_count = 0;
+    for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
+         browser_iterator != BrowserList::end(); browser_iterator++)
+      tab_count += (*browser_iterator)->tab_count();
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerLoad", tab_count, 1, 200, 50);
+  }
+
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserActivityObserver);
+};
+
+BrowserActivityObserver* activity_observer = NULL;
+
+}  // namespace
 
 BrowserList::list_type BrowserList::browsers_;
 std::vector<BrowserList::Observer*> BrowserList::observers_;
@@ -31,6 +87,9 @@ void BrowserList::AddBrowser(Browser* browser) {
   browsers_.push_back(browser);
 
   g_browser_process->AddRefModule();
+
+  if (!activity_observer)
+    activity_observer = new BrowserActivityObserver;
 
   NotificationService::current()->Notify(
       NotificationType::BROWSER_OPENED,
@@ -67,8 +126,12 @@ void BrowserList::RemoveBrowser(Browser* browser) {
 
   // If the last Browser object was destroyed, make sure we try to close any
   // remaining dependent windows too.
-  if (browsers_.empty())
+  if (browsers_.empty()) {
     AllBrowsersClosed();
+
+    delete activity_observer;
+    activity_observer = NULL;
+  }
 
   g_browser_process->ReleaseModule();
 }

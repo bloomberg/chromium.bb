@@ -1019,6 +1019,11 @@ void RenderView::UpdateURL(WebFrame* frame) {
     if (EqualsASCII(method, "POST"))
       params.is_post = true;
 
+    // Save some histogram data so we can compute the average memory used per
+    // page load of the glyphs.
+    UMA_HISTOGRAM_COUNTS_10000("Memory.GlyphPagesPerLoad",
+                               webkit_glue::GetGlyphPageCount());
+
     Send(new ViewHostMsg_FrameNavigate(routing_id_, params));
   } else {
     // Subframe navigation: the type depends on whether this navigation

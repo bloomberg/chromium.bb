@@ -117,6 +117,11 @@ WebKit::WebString FilePathToWebString(const FilePath& file_path);
 // Returns a WebCanvas pointer associated with the given Skia canvas.
 WebKit::WebCanvas* ToWebCanvas(skia::PlatformCanvas*);
 
+// Returns the number of currently-active glyph pages this process is using.
+// There can be many such pages (maps of 256 character -> glyph) so this is
+// used to get memory usage statistics.
+int GetGlyphPageCount();
+
 //---- END FUNCTIONS IMPLEMENTED BY WEBKIT/GLUE -------------------------------
 
 

@@ -17,6 +17,7 @@
 #include "FrameTree.h"
 #include "FrameView.h"
 #include "Frame.h"
+#include "GlyphPageTreeNode.h"
 #include "HistoryItem.h"
 #include "ImageSource.h"
 #include "KURL.h"
@@ -446,6 +447,10 @@ WebCanvas* ToWebCanvas(skia::PlatformCanvas* canvas) {
   NOTIMPLEMENTED();
   return NULL;
 #endif
+}
+
+int GetGlyphPageCount() {
+  return WebCore::GlyphPageTreeNode::treeGlyphPageCount();
 }
 
 } // namespace webkit_glue

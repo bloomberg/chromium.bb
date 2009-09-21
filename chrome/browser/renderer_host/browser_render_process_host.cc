@@ -361,9 +361,10 @@ bool BrowserRenderProcessHost::Init() {
   // relating to the FieldTrial states.
   std::string field_trial_states;
   FieldTrialList::StatesToString(&field_trial_states);
-  if (!field_trial_states.empty())
+  if (!field_trial_states.empty()) {
     cmd_line.AppendSwitchWithValue(switches::kForceFieldTestNameAndValue,
         ASCIIToWide(field_trial_states));
+  }
 
 #if defined(OS_POSIX)
   const bool has_cmd_prefix =
@@ -407,6 +408,7 @@ bool BrowserRenderProcessHost::Init() {
 #endif
     in_process_renderer_->StartWithOptions(options);
   } else {
+    base::TimeTicks begin_launch_time = base::TimeTicks::Now();
     base::ProcessHandle process = 0;
 #if defined(OS_WIN)
     process = sandbox::StartProcess(&cmd_line);
@@ -447,13 +449,25 @@ bool BrowserRenderProcessHost::Init() {
 #if defined(OS_LINUX)
     }
 #endif  // defined(OS_LINUX)
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_POSIX)
 
     if (!process) {
       channel_.reset();
       return false;
     }
     process_.set_handle(process);
+
+    // Log the launch time, separating out the first one (which will likely be
+    // slower due to the rest of the browser initializing at the same time).
+    static bool done_first_launch = false;
+    if (done_first_launch) {
+      UMA_HISTOGRAM_TIMES("MPArch.RendererLaunchSubsequent",
+                          base::TimeTicks::Now() - begin_launch_time);
+    } else {
+      UMA_HISTOGRAM_TIMES("MPArch.RendererLaunchFirst",
+                          base::TimeTicks::Now() - begin_launch_time);
+      done_first_launch = true;
+    }
   }
 
   resource_message_filter->Init();
