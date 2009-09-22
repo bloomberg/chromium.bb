@@ -844,6 +844,11 @@ void BrowserView::SetFullscreen(bool fullscreen) {
   if (bookmark_bar_view_.get())
     bookmark_bar_view_->OnFullscreenToggled(fullscreen);
 
+  // Notify extension shelf, so it can set itself to the appropriate drawing
+  // state.
+  if (extension_shelf_)
+    extension_shelf_->OnFullscreenToggled(fullscreen);
+
   // Toggle fullscreen mode.
   frame_->GetWindow()->SetFullscreen(fullscreen);
 

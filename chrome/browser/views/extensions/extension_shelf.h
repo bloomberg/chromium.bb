@@ -79,6 +79,9 @@ class ExtensionShelf : public DetachableToolbarView,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // Toggle fullscreen mode.
+  void OnFullscreenToggled(bool fullscreen);
+
  protected:
   // View methods:
   virtual void ChildPreferredSizeChanged(View* child);
@@ -143,6 +146,9 @@ class ExtensionShelf : public DetachableToolbarView,
 
   // Animation controlling showing and hiding of the shelf.
   scoped_ptr<SlideAnimation> size_animation_;
+
+  // Are we in fullscreen mode or not.
+  bool fullscreen_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionShelf);
 };

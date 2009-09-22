@@ -681,7 +681,8 @@ void ExtensionShelf::Toolstrip::HideShelfHandle(int delay_ms) {
 ExtensionShelf::ExtensionShelf(Browser* browser)
   :   background_needs_repaint_(true),
       browser_(browser),
-      model_(browser->extension_shelf_model()) {
+      model_(browser->extension_shelf_model()),
+      fullscreen_(false) {
   model_->AddObserver(this);
   LoadFromModel();
   EnableCanvasFlippingForRTLUI(true);
@@ -883,6 +884,8 @@ void ExtensionShelf::Observe(NotificationType type,
                              const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::EXTENSION_SHELF_VISIBILITY_PREF_CHANGED: {
+      if (fullscreen_)
+        break;
       if (IsAlwaysShown())
         size_animation_->Show();
       else
@@ -1108,4 +1111,16 @@ bool ExtensionShelf::IsAlwaysShown() const {
 bool ExtensionShelf::OnNewTabPage() const {
   return (browser_ && browser_->GetSelectedTabContents() &&
       browser_->GetSelectedTabContents()->IsExtensionShelfAlwaysVisible());
+}
+
+void ExtensionShelf::OnFullscreenToggled(bool fullscreen) {
+  if (fullscreen == fullscreen_)
+    return;
+  fullscreen_ = fullscreen;
+  if (!IsAlwaysShown() || IsOnTop())
+    return;
+  if (fullscreen_)
+    size_animation_->Hide();
+  else
+    size_animation_->Show();
 }
