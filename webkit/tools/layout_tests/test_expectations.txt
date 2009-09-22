@@ -255,6 +255,10 @@ WONTFIX : LayoutTests/fast/dom/gc-9.html = PASS FAIL
 // says that it must be a string.
 WONTFIX : LayoutTests/fast/js/kde/evil-n.html = FAIL
 
+// This test checks that properties of arguments arrays are non-enumerable
+// which is incorrect according to the ES5 spec.
+WONTFIX : LayoutTests/fast/js/kde/function.html = FAIL
+
 // This test is broken.  The regular expression used contains an error
 // which kjs swallows and returns false, which is the expected result,
 // but for which we issue a syntax error.
