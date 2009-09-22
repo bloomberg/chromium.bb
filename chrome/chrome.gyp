@@ -2404,11 +2404,12 @@
             'third_party/wtl/include',
           ],
           'dependencies': [
-            '../google_update/google_update.gyp:google_update',
-            'installer/installer.gyp:installer_util',
-            '../third_party/cld/cld.gyp:cld',
-            '../views/views.gyp:views',
             '../gears/gears.gyp:gears',
+            '../google_update/google_update.gyp:google_update',
+            '../third_party/cld/cld.gyp:cld',
+            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+            '../views/views.gyp:views',
+            'installer/installer.gyp:installer_util',
           ],
           'export_dependent_settings': [
             '../views/views.gyp:views',

@@ -52,6 +52,10 @@
 #include "chrome/browser/chromeos/chromeos_version_loader.h"
 #endif
 
+#if defined(USE_TCMALLOC)
+#include "third_party/tcmalloc/google/malloc_extension.h"
+#endif
+
 #ifdef CHROME_PERSONALIZATION
 #include "chrome/browser/sync/auth_error_state.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -70,6 +74,7 @@ const char kHistogramsPath[] = "histograms";
 const char kObjectsPath[] = "objects";
 const char kMemoryRedirectPath[] = "memory-redirect";
 const char kMemoryPath[] = "memory";
+const char kTcmallocPath[] = "tcmalloc";
 const char kPluginsPath[] = "plugins";
 const char kStatsPath[] = "stats";
 const char kVersionPath[] = "version";
@@ -180,6 +185,18 @@ std::string AboutDns() {
   chrome_browser_net::DnsPrefetchGetHtmlInfo(&data);
   return data;
 }
+
+#if defined(USE_TCMALLOC)
+std::string AboutTcmalloc(const std::string& query) {
+  std::string data;
+  char buffer[1024*32];
+  MallocExtension::instance()->GetStats(buffer, sizeof(buffer));
+  data.append("<html><head><title>About tcmalloc</title></head><body><pre>\n");
+  data.append(buffer);
+  data.append("</pre></body></html>\n");
+  return data;
+}
+#endif
 
 std::string AboutHistograms(const std::string& query) {
   TimeDelta wait_time = TimeDelta::FromMilliseconds(10000);
@@ -550,6 +567,10 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
     response = AboutPlugins();
   } else if (path == kStatsPath) {
     response = AboutStats();
+#if defined(USE_TCMALLOC)
+  } else if (path == kTcmallocPath) {
+    response = AboutTcmalloc(info);
+#endif
   } else if (path == kVersionPath || path.empty()) {
 #if defined(OS_CHROMEOS)
     new ChromeOSAboutVersionHandler(this, request_id);

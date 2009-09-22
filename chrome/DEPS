@@ -24,6 +24,9 @@ include_rules = [
   # Allow inclusion of Mozilla interface headers.
   "+third_party/mozilla",
 
+  # Allow inclusion of tcmalloc header.
+  "+third_party/tcmalloc",
+
   # Allow usage of Google Toolbox for Mac.
   "+third_party/GTM",
 
