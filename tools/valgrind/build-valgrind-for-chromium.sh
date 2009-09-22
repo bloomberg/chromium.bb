@@ -18,6 +18,11 @@ VEX_SVN_REV=1914
 # and TSAN may be out of sync, so you have to check that out by rev anyway
 TSAN_SVN_REV=1129
 
+# suffix for build and install dir to denote our set of patches (may be empty)
+PATCHLEVEL=-redzone
+
+DIRNAME=valgrind-${VALGRIND_SVN_REV}${PATCHLEVEL}
+
 THISDIR=$(dirname "${0}")
 THISDIR=$(cd "${THISDIR}" && /bin/pwd)
 
@@ -27,8 +32,7 @@ x|x/*) ;;
   echo "Usage: sh build-valgrind-for-chromium.sh [prefix]"
   echo "Prefix is optional, but if present, must be the absolute path to where"
   echo "you want to install valgrind's bin, include, and lib directories."
-  echo "Prefix defaults to /usr/local/valgrind-${VALGRIND_SVN_REV}, where"
-  echo "${VALGRIND_SVN_REV} is the revision used when retrieving valgrind from svn."
+  echo "Prefix defaults to /usr/local/$DIRNAME."
   echo "Will use sudo to do the install if you don't own the parent of prefix."
   exit 1
   ;;
@@ -44,15 +48,15 @@ then
 fi
 
 # Clean checkout our untar
-rm -rf "valgrind-${VALGRIND_SVN_REV}"
-mkdir -p "valgrind-${VALGRIND_SVN_REV}"
+test -d "$DIRNAME" && rm -rf ./"$DIRNAME"
+mkdir -p "$DIRNAME"
 
 if test "x${USE_TARBALL}" != "xyes"
 then
   # Check out latest version that following patches known to apply against
-  svn co -r "${VALGRIND_SVN_REV}" "svn://svn.valgrind.org/valgrind/trunk" "valgrind-${VALGRIND_SVN_REV}"
+  svn co -r "${VALGRIND_SVN_REV}" "svn://svn.valgrind.org/valgrind/trunk" "$DIRNAME"
 
-  cd "valgrind-${VALGRIND_SVN_REV}"
+  cd "$DIRNAME"
 
   # Make sure svn gets the right version of the external VEX repo, too
   svn update -r "${VEX_SVN_REV}" VEX/
@@ -68,6 +72,9 @@ then
   # Add feature bug https://bugs.kde.org/show_bug.cgi?id=205000
   # "Need library load address in log files"
   patch -p0 < "${THISDIR}/xml-loadadr.patch"
+
+  # Make red zone 64 bytes bigger to catch more buffer overruns
+  patch -p0 < "${THISDIR}/redzone.patch"
 
   if [ "${INSTALL_TSAN}" = "yes" ]
   then
@@ -85,7 +92,7 @@ then
   then
     # replace symlink with actual contents!
     cp install-sh install-sh.new
-    mv install-sh.new install-sh
+    mv -f install-sh.new install-sh
     chmod +x install-sh
   fi
 
@@ -101,17 +108,17 @@ fi
 
 if test "x${MAKE_TARBALL}" = "xyes"
 then
-  tar -czvf "valgrind-${VALGRIND_SVN_REV}.tgz" "valgrind-${VALGRIND_SVN_REV}"
+  tar -czvf "$DIRNAME".tgz "$DIRNAME"
 fi
 
 if test "x${USE_TARBALL}" = "xyes"
 then
-  tar -xzvf "valgrind-${VALGRIND_SVN_REV}.tgz"
+  tar -xzvf "$DIRNAME".tgz
 fi
 
 if test "x${MAKE_TARBALL}" != "xyes"
 then
-  cd "valgrind-${VALGRIND_SVN_REV}"
+  cd "$DIRNAME"
 
   OVERRIDE_LD_DIR="${THISDIR}/override_ld"
   if ld --version | grep gold
@@ -139,7 +146,7 @@ then
   fi
 
   # Desired parent directory for valgrind's bin, include, etc.
-  PREFIX="${1:-/usr/local/valgrind-${VALGRIND_SVN_REV}}"
+  PREFIX="${1:-/usr/local/$DIRNAME}"
   parent_of_prefix=$(dirname "${PREFIX}")
   if test ! -d "${parent_of_prefix}"
   then
