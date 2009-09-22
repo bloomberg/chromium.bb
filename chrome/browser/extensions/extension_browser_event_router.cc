@@ -121,13 +121,19 @@ void ExtensionBrowserEventRouter::OnBrowserAdded(const Browser* browser) {
   // Start listening to TabStripModel events for this browser.
   browser->tabstrip_model()->AddObserver(this);
 
+  // The window isn't ready at this point, so we defer until it is.
+  registrar_.Add(this, NotificationType::BROWSER_WINDOW_READY,
+      Source<const Browser>(browser));
+}
+
+void ExtensionBrowserEventRouter::OnBrowserWindowReady(const Browser* browser) {
   ListValue args;
-  // TODO(rafaelw): This would ideally be returning a full Window object
-  // via ExtensionTabUtil::CreateWindowValue(), but the browser->window()
-  // isn't ready at the time we get the OnBrowserAdded event.
-  DictionaryValue* window_dictionary = new DictionaryValue();
-  window_dictionary->SetInteger(extension_tabs_module_constants::kIdKey,
-      ExtensionTabUtil::GetWindowId(browser));
+
+  registrar_.Remove(this, NotificationType::BROWSER_WINDOW_READY,
+      Source<const Browser>(browser));
+
+  DictionaryValue* window_dictionary = ExtensionTabUtil::CreateWindowValue(
+      browser, false);
   args.Append(window_dictionary);
 
   std::string json_args;
@@ -329,6 +335,9 @@ void ExtensionBrowserEventRouter::Observe(NotificationType type,
         Source<NavigationController>(&contents->controller()));
     registrar_.Remove(this, NotificationType::TAB_CONTENTS_DESTROYED,
         Source<TabContents>(contents));
+  } else if (type == NotificationType::BROWSER_WINDOW_READY) {
+    const Browser* browser = Source<const Browser>(source).ptr();
+    OnBrowserWindowReady(browser);
   } else {
     NOTREACHED();
   }

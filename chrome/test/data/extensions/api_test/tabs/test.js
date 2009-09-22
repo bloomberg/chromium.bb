@@ -10,6 +10,7 @@ var testTabId = null;
 
 var moveWindow1 = null;
 var moveWindow2 = null;
+var windowEventsWindow = null;
 var moveTabIds = {};
 
 var pass = chrome.test.callbackPass;
@@ -273,7 +274,7 @@ chrome.test.runTests([
     }));
   }, */
 
-  function onCreated() {
+  function tabsOnCreated() {
     chrome.test.listenOnce(chrome.tabs.onCreated, function(tab) {
       assertEq(pageUrl("f"), tab.url);
     });
@@ -282,7 +283,7 @@ chrome.test.runTests([
                         "selected": true}, pass(function(tab) {}));
   },
 
-  function onUpdated() {
+  function tabsOnUpdated() {
     var onUpdatedCompleted = chrome.test.listenForever(chrome.tabs.onUpdated,
       function(tabid, info) {
         if (tabid == moveTabIds['a'] && info.status == "complete") {
@@ -295,7 +296,7 @@ chrome.test.runTests([
                        pass());
   },
 
-  function onMoved() {
+  function tabsOnMoved() {
     chrome.test.listenOnce(chrome.tabs.onMoved, function(tabid, info) {
       assertEq(moveTabIds['a'], tabid);
     });
@@ -303,7 +304,7 @@ chrome.test.runTests([
     chrome.tabs.move(moveTabIds['a'], {"index": 0}, pass());
   },
 
-  function onSelectionChanged() {
+  function tabsOnSelectionChanged() {
     chrome.test.listenOnce(chrome.tabs.onSelectionChanged,
       function(tabid, info) {
         assertEq(moveTabIds['c'], tabid);
@@ -314,7 +315,7 @@ chrome.test.runTests([
                        pass());
   },
 
-  function onRemoved() {
+  function tabsOnRemoved() {
     chrome.test.listenOnce(chrome.tabs.onRemoved, function(tabid) {
       assertEq(moveTabIds['c'], tabid);
     });
@@ -366,6 +367,27 @@ chrome.test.runTests([
     window.relativePageLoaded = chrome.test.callbackAdded();
  
     chrome.windows.create({url: "relative.html"});
+  },
+  
+  function windowsOnCreated() {
+    chrome.test.listenOnce(chrome.windows.onCreated, function(window) {
+      chrome.test.assertTrue(window.width > 0);
+      chrome.test.assertTrue(window.height > 0);
+      windowEventsWindow = window;
+      chrome.tabs.getAllInWindow(window.id, pass(function(tabs) {
+        assertEq(pageUrl("a"), tabs[0].url);
+      }));
+    });
+
+    chrome.windows.create({"url": pageUrl("a")}, pass(function(tab) {}));
+  },
+
+  function windowsOnRemoved() {
+    chrome.test.listenOnce(chrome.windows.onRemoved, function(windowId) {
+      assertEq(windowEventsWindow.id, windowId);
+    });
+
+    chrome.windows.remove(windowEventsWindow.id, pass());
   }
 
   // TODO(asargent) We still need to add tests for the following:

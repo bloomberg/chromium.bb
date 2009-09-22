@@ -1875,7 +1875,7 @@ the value of the current window falls back to the topmost window.
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.windows.</span><span>onCreated</span><span class="subdued">.addListener</span>(function(<span>object createInfo</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.windows.</span><span>onCreated</span><span class="subdued">.addListener</span>(function(<span>Window window</span>) <span class="subdued">{...}</span>);
               </div>
 
               <div class="description">
@@ -1888,7 +1888,7 @@ the value of the current window falls back to the topmost window.
                   <div jsinstance="*0">
                     <div>
           <dt>
-            <var>createInfo</var>
+            <var>window</var>
               <em>
 
                 <!-- TYPE -->
@@ -1896,50 +1896,14 @@ the value of the current window falls back to the topmost window.
                   (
                     <span class="optional" style="display: none; ">optional</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
+                        <a href="windows.html#type-Window">Window</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
                           array of <span><span></span></span>
                         </span>
-                        <span>object</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div jsinstance="*0">
-                <div>
-          <dt>
-            <var>id</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
+                        <span>paramType</span>
                       </span>
                     </span>
                   )
@@ -1950,7 +1914,7 @@ the value of the current window falls back to the topmost window.
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>ID of the new window.</dd>
+          <dd>Details of the window that was created.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -1958,10 +1922,6 @@ the value of the current window falls back to the topmost window.
               <div>
                 <div>
                 </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
               </div>
             </dl>
           </dd>

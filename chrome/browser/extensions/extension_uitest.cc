@@ -333,7 +333,8 @@ class BrowserEventAutomationProxy : public MultiMessageAutomationProxy {
 
 const char* BrowserEventAutomationProxy::events_[] = {
   // Window events.
-  "[\"windows.onCreated\", \"[{'id':42}]\"]",
+  "[\"windows.onCreated\", \"[{'id':42,'focused':true,'top':0,'left':0,"
+      "'width':100,'height':100}]\"]",
 
   "[\"windows.onRemoved\", \"[42]\"]",
 

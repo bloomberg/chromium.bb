@@ -156,7 +156,7 @@ chrome.windows.onRemoved.addListener(function(windowId) {
 });
 
 chrome.tabs.onCreated.addListener(function(tab) {
-  appendToLog('tabs.onCreated -- window: ' + tab.windowId + ' tab: ' + tab.id + ' index ' + tab.index + ' url ' + tab.url);
+  appendToLog('tabs.onCreated -- window: ' + tab.windowId + ' tab: ' + tab.id + ' title: ' + tab.title + ' index ' + tab.index + ' url ' + tab.url);
   loadWindowList();
 });
 

@@ -35,6 +35,10 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   virtual void OnBrowserRemoving(const Browser* browser);
   virtual void OnBrowserSetLastActive(const Browser* browser);
 
+  // Called from Observe() on BROWSER_WINDOW_READY (not a part of
+  // BrowserList::Observer).
+  void OnBrowserWindowReady(const Browser* browser);
+
   // TabStripModelObserver
   void TabInsertedAt(TabContents* contents, int index, bool foreground);
   void TabClosingAt(TabContents* contents, int index);

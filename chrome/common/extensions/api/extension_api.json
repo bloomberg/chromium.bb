@@ -285,11 +285,9 @@
         "description": "Fired when a window is created.",
         "parameters": [
           {
-            "type": "object",
-            "name": "createInfo",
-            "properties": {
-              "id": {"type": "integer", "minimum": 0, "description": "ID of the new window."}
-            }
+            "$ref": "Window",
+            "name": "window",
+            "description": "Details of the window that was created."
           }
         ]
       },

@@ -294,6 +294,11 @@ void Browser::CreateBrowserWindow() {
 
   window_ = BrowserWindow::CreateBrowserWindow(this);
 
+  NotificationService::current()->Notify(
+      NotificationType::BROWSER_WINDOW_READY,
+      Source<Browser>(this),
+      NotificationService::NoDetails());
+
   // Show the First Run information bubble if we've been told to.
   PrefService* local_state = g_browser_process->local_state();
   if (!local_state)

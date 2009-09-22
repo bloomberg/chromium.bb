@@ -182,16 +182,21 @@ class NotificationType {
     // Browser-window ----------------------------------------------------------
 
     // This message is sent after a window has been opened.  The source is a
-    // Source<Browser> with a pointer to the new window.  No details are
+    // Source<Browser> containing the affected Browser.  No details are
     // expected.
     BROWSER_OPENED,
 
+    // This message is sent soon after BROWSER_OPENED, and indicates that
+    // the Browser's |window_| is now non-NULL. The source is a Source<Browser>
+    // containing the affected Browser.  No details are expected.
+    BROWSER_WINDOW_READY,
+
     // This message is sent after a window has been closed.  The source is a
-    // Source<Browser> with a pointer to the closed window.  Details is a
-    // boolean that if true indicates that the application will be closed as a
-    // result of this browser window closure (i.e. this was the last opened
-    // browser window).  Note that the boolean pointed to by Details is only
-    // valid for the duration of this call.
+    // Source<Browser> containing the affected Browser.  Details is a boolean
+    // that if true indicates that the application will be closed as a result of
+    // this browser window closure (i.e. this was the last opened browser
+    // window).  Note that the boolean pointed to by Details is only valid for
+    // the duration of this call.
     BROWSER_CLOSED,
 
     // This message is sent when the last window considered to be an
