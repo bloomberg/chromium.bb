@@ -460,10 +460,10 @@ void ResourceMessageFilter::OnSetCookie(const GURL& url,
           context->cookie_store()->SetCookie(url, cookie);
         }
         delete match;
+        return;
       }
-    } else {
-      context->cookie_store()->SetCookie(url, cookie);
     }
+    context->cookie_store()->SetCookie(url, cookie);
   }
 }
 
