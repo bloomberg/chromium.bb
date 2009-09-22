@@ -555,7 +555,7 @@ class GClient(object):
                 raise Error(
                     "relative DEPS entry \"%s\" must begin with a slash" % d)
               # Create a scm just to query the full url.
-              scm = gclient_scm.SCMWrapper(solution["url"], self._root_dir,
+              scm = gclient_scm.CreateSCM(solution["url"], self._root_dir,
                                            None)
               url = scm.FullUrlForRelativeUrl(url)
         if d in deps and deps[d] != url:
@@ -672,7 +672,7 @@ class GClient(object):
       entries[name] = url
       if run_scm:
         self._options.revision = revision_overrides.get(name)
-        scm = gclient_scm.SCMWrapper(url, self._root_dir, name)
+        scm = gclient_scm.CreateSCM(url, self._root_dir, name)
         scm.RunCommand(command, self._options, args, file_list)
         file_list = [os.path.join(name, file.strip()) for file in file_list]
         self._options.revision = None
@@ -698,7 +698,7 @@ class GClient(object):
         entries[d] = url
         if run_scm:
           self._options.revision = revision_overrides.get(d)
-          scm = gclient_scm.SCMWrapper(url, self._root_dir, d)
+          scm = gclient_scm.CreateSCM(url, self._root_dir, d)
           scm.RunCommand(command, self._options, args, file_list)
           self._options.revision = None
 
@@ -715,7 +715,7 @@ class GClient(object):
         entries[d] = url
         if run_scm:
           self._options.revision = revision_overrides.get(d)
-          scm = gclient_scm.SCMWrapper(url, self._root_dir, d)
+          scm = gclient_scm.CreateSCM(url, self._root_dir, d)
           scm.RunCommand(command, self._options, args, file_list)
           self._options.revision = None
 

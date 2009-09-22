@@ -28,6 +28,20 @@ SVN_COMMAND = "svn"
 ### SCM abstraction layer
 
 
+# Factory Method for SCM wrapper creation
+
+def CreateSCM(url=None, root_dir=None, relpath=None, scm_name='svn'):
+  # TODO(maruel): Deduce the SCM from the url.
+  scm_map = {
+    'svn' : SVNWrapper,
+  }
+  if not scm_name in scm_map:
+    raise gclient_utils.Error('Unsupported scm %s' % scm_name)
+  return scm_map[scm_name](url, root_dir, relpath, scm_name)
+
+
+# SCMWrapper base class
+
 class SCMWrapper(object):
   """Add necessary glue between all the supported SCM.
 
@@ -36,7 +50,6 @@ class SCMWrapper(object):
   once another SCM is supported."""
   def __init__(self, url=None, root_dir=None, relpath=None,
                scm_name='svn'):
-    # TODO(maruel): Deduce the SCM from the url.
     self.scm_name = scm_name
     self.url = url
     self._root_dir = root_dir
@@ -55,21 +68,21 @@ class SCMWrapper(object):
     if file_list is None:
       file_list = []
 
-    commands = {
-      'cleanup':  self.cleanup,
-      'export':   self.export,
-      'update':   self.update,
-      'revert':   self.revert,
-      'status':   self.status,
-      'diff':     self.diff,
-      'pack':     self.pack,
-      'runhooks': self.status,
-    }
+    commands = ['cleanup', 'export', 'update', 'revert',
+                'status', 'diff', 'pack', 'runhooks']
 
     if not command in commands:
       raise gclient_utils.Error('Unknown command %s' % command)
 
-    return commands[command](options, args, file_list)
+    if not command in dir(self):
+      raise gclient_utils.Error('Command %s not implemnted in %s wrapper' % (
+          command, self.scm_name))
+
+    return getattr(self, command)(options, args, file_list)
+
+
+class SVNWrapper(SCMWrapper):
+  """ Wrapper for SVN """
 
   def cleanup(self, options, args, file_list):
     """Cleanup working copy."""
@@ -254,6 +267,9 @@ class SCMWrapper(object):
     # svn revert is so broken we don't even use it. Using
     # "svn up --revision BASE" achieve the same effect.
     RunSVNAndGetFileList(['update', '--revision', 'BASE'], path, file_list)
+
+  def runhooks(self, options, args, file_list):
+    self.status(options, args, file_list)
 
   def status(self, options, args, file_list):
     """Display status information."""

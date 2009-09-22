@@ -71,12 +71,12 @@ class GClientBaseTestCase(BaseTestCase):
     self.mox.StubOutWithMock(gclient_scm, 'RunSVNAndGetFileList')
     self._gclient_gclient = gclient.GClient
     gclient.GClient = self.mox.CreateMockAnything()
-    self._scm_wrapper = gclient_scm.SCMWrapper
-    gclient_scm.SCMWrapper = self.mox.CreateMockAnything()
+    self._scm_wrapper = gclient_scm.CreateSCM
+    gclient_scm.CreateSCM = self.mox.CreateMockAnything()
 
   def tearDown(self):
     gclient.GClient = self._gclient_gclient
-    gclient_scm.SCMWrapper = self._scm_wrapper
+    gclient_scm.CreateSCM = self._scm_wrapper
     BaseTestCase.tearDown(self)
 
 
@@ -409,7 +409,7 @@ class GClientClassTestCase(GclientTestCase):
 
     # An scm will be requested for the solution.
     scm_wrapper_sol = self.mox.CreateMockAnything()
-    gclient_scm.SCMWrapper(self.url, self.root_dir, solution_name
+    gclient_scm.CreateSCM(self.url, self.root_dir, solution_name
         ).AndReturn(scm_wrapper_sol)
     # Then an update will be performed.
     scm_wrapper_sol.RunCommand('update', options, self.args, [])
@@ -466,7 +466,7 @@ class GClientClassTestCase(GclientTestCase):
         ).AndReturn(False)
 
     # An scm will be requested for the solution.
-    gclient_scm.SCMWrapper(self.url, self.root_dir, solution_name
+    gclient_scm.CreateSCM(self.url, self.root_dir, solution_name
         ).AndReturn(scm_wrapper_sol)
     # Then an update will be performed.
     scm_wrapper_sol.RunCommand('update', options, self.args, [])
@@ -478,7 +478,7 @@ class GClientClassTestCase(GclientTestCase):
     # Next we expect an scm to be request for dep src/t but it should
     # use the url specified in deps and the relative path should now
     # be relative to the DEPS file.
-    gclient_scm.SCMWrapper(
+    gclient_scm.CreateSCM(
         'svn://scm.t/trunk',
         self.root_dir,
         os.path.join(solution_name, "src", "t")).AndReturn(scm_wrapper_t)
@@ -540,7 +540,7 @@ class GClientClassTestCase(GclientTestCase):
         ).AndReturn(False)
 
     # An scm will be requested for the solution.
-    gclient_scm.SCMWrapper(self.url, self.root_dir, solution_name
+    gclient_scm.CreateSCM(self.url, self.root_dir, solution_name
         ).AndReturn(scm_wrapper_sol)
     # Then an update will be performed.
     scm_wrapper_sol.RunCommand('update', options, self.args, [])
@@ -550,13 +550,13 @@ class GClientClassTestCase(GclientTestCase):
 
     # Next we expect an scm to be request for dep src/n even though it does not
     # exist in the DEPS file.
-    gclient_scm.SCMWrapper('svn://custom.n/trunk',
-                       self.root_dir,
-                       "src/n").AndReturn(scm_wrapper_n)
+    gclient_scm.CreateSCM('svn://custom.n/trunk',
+                           self.root_dir,
+                           "src/n").AndReturn(scm_wrapper_n)
 
     # Next we expect an scm to be request for dep src/t but it should
     # use the url specified in custom_deps.
-    gclient_scm.SCMWrapper('svn://custom.t/trunk',
+    gclient_scm.CreateSCM('svn://custom.t/trunk',
                        self.root_dir,
                        "src/t").AndReturn(scm_wrapper_t)
 
@@ -626,7 +626,7 @@ class GClientClassTestCase(GclientTestCase):
         ).AndReturn(False)
 
     # An scm will be requested for the first solution.
-    gclient_scm.SCMWrapper(url_a, self.root_dir, name_a).AndReturn(
+    gclient_scm.CreateSCM(url_a, self.root_dir, name_a).AndReturn(
         scm_wrapper_a)
     # Then an attempt will be made to read it's DEPS file.
     gclient.FileRead(os.path.join(self.root_dir, name_a, options.deps_file)
@@ -635,7 +635,7 @@ class GClientClassTestCase(GclientTestCase):
     scm_wrapper_a.RunCommand('update', options, self.args, [])
 
     # An scm will be requested for the second solution.
-    gclient_scm.SCMWrapper(url_b, self.root_dir, name_b).AndReturn(
+    gclient_scm.CreateSCM(url_b, self.root_dir, name_b).AndReturn(
         scm_wrapper_b)
     # Then an attempt will be made to read its DEPS file.
     gclient.FileRead(os.path.join(self.root_dir, name_b, options.deps_file)
@@ -644,7 +644,7 @@ class GClientClassTestCase(GclientTestCase):
     scm_wrapper_b.RunCommand('update', options, self.args, [])
 
     # Finally, an scm is requested for the shared dep.
-    gclient_scm.SCMWrapper('http://svn.t/trunk', self.root_dir, 'src/t'
+    gclient_scm.CreateSCM('http://svn.t/trunk', self.root_dir, 'src/t'
         ).AndReturn(scm_wrapper_dep)
     # And an update is run on it.
     scm_wrapper_dep.RunCommand('update', options, self.args, [])
@@ -672,9 +672,9 @@ class GClientClassTestCase(GclientTestCase):
         ).AndReturn(False)
     gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
-    gclient_scm.SCMWrapper(self.url, self.root_dir, name).AndReturn(
-        gclient_scm.SCMWrapper)
-    gclient_scm.SCMWrapper.RunCommand('update', options, self.args, [])
+    gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
+        gclient_scm.CreateSCM)
+    gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
     gclient.FileRead(os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn("Boo = 'a'")
     gclient.FileWrite(os.path.join(self.root_dir, options.entries_filename),
@@ -766,36 +766,36 @@ deps_os = {
     gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
 
-    gclient_scm.SCMWrapper(self.url, self.root_dir, 'src').AndReturn(
+    gclient_scm.CreateSCM(self.url, self.root_dir, 'src').AndReturn(
         scm_wrapper_src)
     scm_wrapper_src.RunCommand('update', mox.Func(OptIsRev123), self.args, [])
 
-    gclient_scm.SCMWrapper(self.url, self.root_dir,
+    gclient_scm.CreateSCM(self.url, self.root_dir,
                        None).AndReturn(scm_wrapper_src2)
     scm_wrapper_src2.FullUrlForRelativeUrl('/trunk/deps/third_party/cygwin@3248'
         ).AndReturn(cygwin_path)
 
-    gclient_scm.SCMWrapper(self.url, self.root_dir,
+    gclient_scm.CreateSCM(self.url, self.root_dir,
                        None).AndReturn(scm_wrapper_src2)
     scm_wrapper_src2.FullUrlForRelativeUrl('/trunk/deps/third_party/WebKit'
         ).AndReturn(webkit_path)
 
-    gclient_scm.SCMWrapper(webkit_path, self.root_dir,
+    gclient_scm.CreateSCM(webkit_path, self.root_dir,
                        'foo/third_party/WebKit').AndReturn(scm_wrapper_webkit)
     scm_wrapper_webkit.RunCommand('update', mox.Func(OptIsRev42), self.args, [])
 
-    gclient_scm.SCMWrapper(
+    gclient_scm.CreateSCM(
         'http://google-breakpad.googlecode.com/svn/trunk/src@285',
         self.root_dir, 'src/breakpad/bar').AndReturn(scm_wrapper_breakpad)
     scm_wrapper_breakpad.RunCommand('update', mox.Func(OptIsRevNone),
                                     self.args, [])
 
-    gclient_scm.SCMWrapper(cygwin_path, self.root_dir,
+    gclient_scm.CreateSCM(cygwin_path, self.root_dir,
                        'src/third_party/cygwin').AndReturn(scm_wrapper_cygwin)
     scm_wrapper_cygwin.RunCommand('update', mox.Func(OptIsRev333), self.args,
                                   [])
 
-    gclient_scm.SCMWrapper('svn://random_server:123/trunk/python_24@5580',
+    gclient_scm.CreateSCM('svn://random_server:123/trunk/python_24@5580',
                        self.root_dir,
                        'src/third_party/python_24').AndReturn(
                             scm_wrapper_python)
@@ -871,18 +871,18 @@ deps = {
         ).AndReturn(False)
     gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
-    gclient_scm.SCMWrapper(self.url, self.root_dir, name).AndReturn(
-        gclient_scm.SCMWrapper)
-    gclient_scm.SCMWrapper.RunCommand('update', options, self.args, [])
+    gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
+        gclient_scm.CreateSCM)
+    gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
-    gclient_scm.SCMWrapper(self.url, self.root_dir,
+    gclient_scm.CreateSCM(self.url, self.root_dir,
                        None).AndReturn(scm_wrapper_src)
     scm_wrapper_src.FullUrlForRelativeUrl('/trunk/bar/WebKit'
         ).AndReturn(webkit_path)
 
-    gclient_scm.SCMWrapper(webkit_path, self.root_dir,
-        'foo/third_party/WebKit').AndReturn(gclient_scm.SCMWrapper)
-    gclient_scm.SCMWrapper.RunCommand('update', options, self.args, [])
+    gclient_scm.CreateSCM(webkit_path, self.root_dir,
+        'foo/third_party/WebKit').AndReturn(gclient_scm.CreateSCM)
+    gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
     self.mox.ReplayAll()
     client = self._gclient_gclient(self.root_dir, options)
@@ -927,18 +927,18 @@ deps = {
         ).AndReturn(False)
     gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
-    gclient_scm.SCMWrapper(self.url, self.root_dir, name).AndReturn(
-        gclient_scm.SCMWrapper)
-    gclient_scm.SCMWrapper.RunCommand('update', options, self.args, [])
+    gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
+        gclient_scm.CreateSCM)
+    gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
-    gclient_scm.SCMWrapper(self.url, self.root_dir,
+    gclient_scm.CreateSCM(self.url, self.root_dir,
                        None).AndReturn(scm_wrapper_src)
     scm_wrapper_src.FullUrlForRelativeUrl('/trunk/bar_custom/WebKit'
         ).AndReturn(webkit_path)
 
-    gclient_scm.SCMWrapper(webkit_path, self.root_dir,
-        'foo/third_party/WebKit').AndReturn(gclient_scm.SCMWrapper)
-    gclient_scm.SCMWrapper.RunCommand('update', options, self.args, [])
+    gclient_scm.CreateSCM(webkit_path, self.root_dir,
+        'foo/third_party/WebKit').AndReturn(gclient_scm.CreateSCM)
+    gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
     self.mox.ReplayAll()
     client = self._gclient_gclient(self.root_dir, options)
@@ -962,9 +962,9 @@ deps = {
     options = self.Options()
     gclient.FileRead(os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn(deps_content)
-    gclient_scm.SCMWrapper(self.url, self.root_dir, name).AndReturn(
-        gclient_scm.SCMWrapper)
-    gclient_scm.SCMWrapper.RunCommand('update', options, self.args, [])
+    gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
+        gclient_scm.CreateSCM)
+    gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
     self.mox.ReplayAll()
     client = self._gclient_gclient(self.root_dir, options)
@@ -1039,11 +1039,18 @@ class SCMWrapperTestCase(GClientBaseTestCase):
   def testDir(self):
     members = [
       'FullUrlForRelativeUrl', 'RunCommand', 'cleanup', 'diff', 'export',
-      'pack', 'relpath', 'revert', 'scm_name', 'status', 'update', 'url',
+      'pack', 'relpath', 'revert', 'runhooks', 'scm_name', 'status',
+      'update', 'url',
     ]
 
     # If you add a member, be sure to add the relevant test!
     self.compareMembers(self._scm_wrapper(), members)
+
+  def testUnsupportedSCM(self):
+    args = [self.url, self.root_dir, self.relpath]
+    kwargs = {'scm_name' : 'foo'}
+    exception_msg = 'Unsupported scm %(scm_name)s' % kwargs
+    self.assertRaisesError(exception_msg, self._scm_wrapper, *args, **kwargs)
 
   def testFullUrlForRelativeUrl(self):
     self.url = 'svn://a/b/c/d'
@@ -1062,8 +1069,8 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     exception = "Unsupported argument(s): %s" % ','.join(self.args)
-    self.assertRaisesError(exception, self._scm_wrapper.RunCommand,
-                           scm, 'update', options, self.args)
+    self.assertRaisesError(exception, scm.RunCommand,
+                           'update', options, self.args)
 
   def testRunCommandUnknown(self):
     # TODO(maruel): if ever used.
