@@ -229,7 +229,7 @@
 
     if (currentState.tests) {
       createTableHeadersArray('builder');
-      generatePageForIndividualTests(currentState.tests.split(','));
+      generatePageForIndividualTests(getIndividualTests());
     } else {
       createTableHeadersArray('test');
       generatePageForBuilder(currentState.builder);
@@ -445,6 +445,34 @@
       }
     }
     return allTests;
+  }
+
+  /**
+   * Returns an array of tests to be displayed in the individual tests view.
+   * Note that a directory can be listed as a test, so we expand that into all
+   * tests in the directory.
+   */
+  function getIndividualTests() {
+    if (!currentState.tests) {
+      return [];
+    }
+    var testList = currentState.tests.split(',');
+    var tests = [];
+    for (var i = 0; i < testList.length; i++) {
+      var path = testList[i];
+      if (!isDirectory(path)) {
+        tests.push(path);
+      } else {
+        // Loop over all tests and find the ones that are in the directory.
+        var allTests = getAllTests();
+        for (var test in allTests) {
+          if (stringContains(test, path)) {
+            tests.push(test);
+          }
+        }
+      }
+    }
+    return tests;
   }
 
   /**
@@ -1125,7 +1153,7 @@
         '<form id=tests-form ' +
         'onsubmit="setState(\'tests\', tests.value);return false;">' +
         '<div>Show tests on all platforms (slow): </div><input name=tests ' +
-        'placeholder="LayoutTests/foo/bar.html,LayoutTests/foo/baz.html" ' +
+        'placeholder="LayoutTests/foo/bar.html,LayoutTests/foo/baz" ' +
         'id=tests-input></form>' +
         '<form id=max-results-form ' +
         'onsubmit="setState(\'maxResults\', maxResults.value);return false;"' +
