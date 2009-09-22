@@ -1371,11 +1371,8 @@ void RenderView::didAddMessageToConsole(
 }
 
 void RenderView::printPage(WebFrame* frame) {
-  DCHECK(webview());
-  if (webview()) {
-    // Print the full page - not just the frame the javascript is running from.
-    Print(webview()->GetMainFrame(), true);
-  }
+  DCHECK(frame);
+  Print(frame, true);
 }
 
 void RenderView::didStartLoading() {
