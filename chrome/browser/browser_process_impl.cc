@@ -106,8 +106,17 @@ class IOThread : public BrowserProcessSubThread {
  protected:
   virtual void CleanUp() {
     // URLFetcher and URLRequest instances must NOT outlive the IO thread.
-    base::LeakTracker<URLRequest>::CheckForLeaks();
+    //
+    // Strictly speaking, URLFetcher's CheckForLeaks() should be done on the
+    // UI thread. However, since there _shouldn't_ be any instances left
+    // at this point, it shouldn't be a race.
+    //
+    // We check URLFetcher first, since if it has leaked then an associated
+    // URLRequest will also have leaked. However it is more useful to
+    // crash showing the callstack of URLFetcher's allocation than its
+    // URLRequest member.
     base::LeakTracker<URLFetcher>::CheckForLeaks();
+    base::LeakTracker<URLRequest>::CheckForLeaks();
 
     BrowserProcessSubThread::CleanUp();
   }

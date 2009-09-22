@@ -5,8 +5,16 @@
 #ifndef BASE_LEAK_TRACKER_H_
 #define BASE_LEAK_TRACKER_H_
 
-// Only enable leak tracking in debug builds.
-#ifndef NDEBUG
+// Temporarily enable LeakTracker in all builds (both
+// release and debug). This will have an impact on performance, but
+// is intended to help track down a leak which reproduces on dev
+// channel.
+//
+// TODO(eroman): Restore the old code which only enabled LeakTracker
+// for debug builds.
+//
+// http://crbug.com/21199, http://crbug.com/18372
+#ifndef ENABLE_LEAK_TRACKER
 #define ENABLE_LEAK_TRACKER
 #endif
 
