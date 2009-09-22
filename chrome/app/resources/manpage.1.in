@@ -12,16 +12,19 @@
 .SH DESCRIPTION
 See the Google Chrome help center for help on using the browser.
 .IP
-http://www.google.com/support/chrome/
+<http://www.google.com/support/chrome/>
 .PP
 This manpage only describes invocation, environment, and arguments.
 
 .SH OPTIONS
+@@NAME@@ has hundreds of undocumented command-line flags that are added
+and removed at the whim of the developers.  Here, we document relatively
+stable flags.
 .TP
 \fB\-\-user\-data\-dir\fR=\fIDIR\fR
 Specifies the directory that user data (your "profile") is kept in.
 Defaults to
-.IR ~/.config/@@CONFDIR@@/Default .
+.I ~/.config/@@CONFDIR@@/Default .
 Separate instances of @@NAME@@ must use separate user data directories;
 repeated invocations of @@FILENAME@@ will reuse an existing process for
 a given user data directory.
@@ -36,18 +39,48 @@ in "app mode": with no browser toolbars.
 As a GTK+ app, @@NAME@@ also obeys GTK+ command-line flags, such
 as
 .BR \-\-display .
-See
+See the GTK documentation for more:
+.IP
 <http://library.gnome.org/devel/gtk/stable/gtk-running.html>
-and
-<http://library.gnome.org/devel/gtk/stable/gtk-x11.html> .
+<http://library.gnome.org/devel/gtk/stable/gtk-x11.html>
 
 .SH ENVIRONMENT
-@@NAME@@ obeys the
-.B http_proxy
-environment variable for setting the proxy.  This overrides any Gnome
-proxy setting.
+@@NAME@@ obeys the following environment variables:
 
-TODO(evanm): doc all the proxy-related environment settings.
+.TP
+.B all_proxy
+Shorthand for specifying all of
+.B http_proxy, https_proxy, ftp_proxy
+
+.TP
+.B http_proxy
+The proxy server used for HTTP. This overrides any Gnome/KDE proxy
+setting.
+
+.TP
+.B http_proxy
+The proxy server used for HTTPS. This overrides any Gnome/KDE proxy
+setting.
+
+.TP
+.B ftp_proxy
+The proxy server used for FTP. This overrides any Gnome/KDE proxy
+setting.
+
+.TP
+.B auto_proxy
+Specify proxy autoconfiguration.  Defined and empty autodetects; otherwise,
+it should be an autoconfig URL.
+
+.SH FILES
+.TP
+.I ~/.config/@@CONFDIR@@
+Default directory for configuration data.
+
+.TP
+.I ~/.cache/@@CONFDIR@@
+Default directory for cache data.  (Why?  See
+<http://standards.freedesktop.org/basedir-spec/latest/> .)
 
 .SH BUGS
 Bug tracker:
