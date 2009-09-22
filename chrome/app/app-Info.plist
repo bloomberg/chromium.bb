@@ -150,6 +150,8 @@
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
 	<string>${CHROMIUM_CREATOR}</string>
+	<key>NSAppleScriptEnabled</key>
+	<true/>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
