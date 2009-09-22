@@ -1092,8 +1092,8 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     base_path = os.path.join(self.root_dir, self.relpath)
     gclient.os.path.isdir(base_path).AndReturn(True)
     gclient_scm.CaptureSVNStatus(base_path).AndReturn([])
-    gclient_scm.RunSVNAndGetFileList(['update', '--revision', 'BASE'], base_path,
-                                     mox.IgnoreArg())
+    gclient_scm.RunSVNAndGetFileList(['update', '--revision', 'BASE'],
+                                     base_path, mox.IgnoreArg())
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -1118,8 +1118,8 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     gclient_scm.os.path.exists(file_path2).AndReturn(True)
     gclient_scm.os.path.isfile(file_path2).AndReturn(True)
     gclient_scm.os.remove(file_path2)
-    gclient_scm.RunSVNAndGetFileList(['update', '--revision', 'BASE'], base_path,
-                                     mox.IgnoreArg())
+    gclient_scm.RunSVNAndGetFileList(['update', '--revision', 'BASE'],
+                                     base_path, mox.IgnoreArg())
     print(os.path.join(base_path, 'a'))
     print(os.path.join(base_path, 'b'))
 
@@ -1142,7 +1142,6 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     gclient_scm.os.path.exists(file_path).AndReturn(True)
     gclient_scm.os.path.isfile(file_path).AndReturn(False)
     gclient_scm.os.path.isdir(file_path).AndReturn(True)
-    #gclient_scm.os.remove(file_path)
     gclient_utils.RemoveDirectory(file_path)
     file_list1 = []
     gclient_scm.RunSVNAndGetFileList(['update', '--revision', 'BASE'], base_path,
