@@ -96,8 +96,7 @@ FlipSession::FlipSession(std::string host, HttpNetworkSession* session)
       connection_started_(false),
       delayed_write_pending_(false),
       write_pending_(false),
-      read_buffer_(new net::MovableIOBuffer(kReadBufferSize)),
-      read_buffer_bytes_read_(0),
+      read_buffer_(new IOBuffer(kReadBufferSize)),
       read_pending_(false),
       stream_hi_water_mark_(0) {
   // Always start at 1 for the first stream id.
@@ -365,10 +364,8 @@ void FlipSession::ReadSocket() {
   if (read_pending_)
     return;
 
-  size_t max_bytes = kReadBufferSize;
-  read_buffer_->set_data(read_buffer_bytes_read_);
-  max_bytes -= read_buffer_bytes_read_;
-  int bytes_read = connection_.socket()->Read(read_buffer_.get(), max_bytes,
+  int bytes_read = connection_.socket()->Read(read_buffer_.get(),
+                                              kReadBufferSize,
                                               &read_callback_);
   switch (bytes_read) {
     case 0:

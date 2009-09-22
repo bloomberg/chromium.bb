@@ -180,8 +180,7 @@ class FlipSession : public base::RefCounted<FlipSession>,
 
   // The read buffer used to read data from the socket.
   enum { kReadBufferSize = (4 * 1024) };
-  scoped_refptr<net::MovableIOBuffer> read_buffer_;
-  int read_buffer_bytes_read_;  // bytes left in the buffer from prior read.
+  scoped_refptr<IOBuffer> read_buffer_;
   bool read_pending_;
 
   int stream_hi_water_mark_;  // The next stream id to use.
