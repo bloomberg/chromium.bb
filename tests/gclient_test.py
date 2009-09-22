@@ -35,6 +35,7 @@ class BaseTestCase(super_mox.SuperMoxTestBase):
   def setUp(self):
     super_mox.SuperMoxTestBase.setUp(self)
     self.mox.StubOutWithMock(gclient.os.path, 'exists')
+    self.mox.StubOutWithMock(gclient.os.path, 'isfile')
     self.mox.StubOutWithMock(gclient.os.path, 'isdir')
     self.mox.StubOutWithMock(gclient.os, 'remove')
     self.mox.StubOutWithMock(gclient.sys, 'stdout')
@@ -1091,6 +1092,8 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     base_path = os.path.join(self.root_dir, self.relpath)
     gclient.os.path.isdir(base_path).AndReturn(True)
     gclient_scm.CaptureSVNStatus(base_path).AndReturn([])
+    gclient_scm.RunSVNAndGetFileList(['update', '--revision', 'BASE'], base_path,
+                                     mox.IgnoreArg())
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -1106,21 +1109,27 @@ class SCMWrapperTestCase(GClientBaseTestCase):
       ('M      ', 'a'),
       ('A      ', 'b'),
     ]
+    file_path1 = os.path.join(base_path, 'a')
+    file_path2 = os.path.join(base_path, 'b')
     gclient_scm.CaptureSVNStatus(base_path).AndReturn(items)
-
+    gclient_scm.os.path.exists(file_path1).AndReturn(True)
+    gclient_scm.os.path.isfile(file_path1).AndReturn(True)
+    gclient_scm.os.remove(file_path1)
+    gclient_scm.os.path.exists(file_path2).AndReturn(True)
+    gclient_scm.os.path.isfile(file_path2).AndReturn(True)
+    gclient_scm.os.remove(file_path2)
+    gclient_scm.RunSVNAndGetFileList(['update', '--revision', 'BASE'], base_path,
+                                     mox.IgnoreArg())
     print(os.path.join(base_path, 'a'))
     print(os.path.join(base_path, 'b'))
-    gclient_scm.RunSVN(['revert', 'a', 'b'], base_path)
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     file_list = []
     scm.revert(options, self.args, file_list)
-    self.assertEquals(sorted(file_list), sorted([os.path.join(base_path, 'a'),
-                                                 os.path.join(base_path, 'b')]))
 
-  def testRevertUnversionedUnexpectedFile(self):
+  def testRevertDirectory(self):
     options = self.Options(verbose=True)
     base_path = os.path.join(self.root_dir, self.relpath)
     gclient.os.path.isdir(base_path).AndReturn(True)
@@ -1130,17 +1139,20 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     gclient_scm.CaptureSVNStatus(base_path).AndReturn(items)
     file_path = os.path.join(base_path, 'a')
     print(file_path)
-    gclient_scm.os.remove(file_path).AndRaise(EnvironmentError())
+    gclient_scm.os.path.exists(file_path).AndReturn(True)
+    gclient_scm.os.path.isfile(file_path).AndReturn(False)
+    gclient_scm.os.path.isdir(file_path).AndReturn(True)
+    #gclient_scm.os.remove(file_path)
     gclient_utils.RemoveDirectory(file_path)
-    gclient_scm.RunSVN(['revert', 'a'], base_path)
+    file_list1 = []
+    gclient_scm.RunSVNAndGetFileList(['update', '--revision', 'BASE'], base_path,
+                                     mox.IgnoreArg())
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
-    file_list = []
-    scm.revert(options, self.args, file_list)
-    # TODO(msb): fix bug (file_list contains dupes) and enable assertion
-    #self.assertEquals(file_list, [os.path.join(base_path, 'a')])
+    file_list2 = []
+    scm.revert(options, self.args, file_list2)
 
   def testStatus(self):
     options = self.Options(verbose=True)
