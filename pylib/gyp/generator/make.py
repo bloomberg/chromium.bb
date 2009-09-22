@@ -143,9 +143,11 @@ quiet_cmd_link = LINK $@
 cmd_link = $(LD) $(LDFLAGS) -o $@ -Wl,--start-group $^ -Wl,--end-group $(LIBS)
 
 # Shared-object link (for generating .so).
+# Set SONAME to the library filename so our binaries don't reference the local,
+# absolute paths used on the link command-line.
 # TODO: perhaps this can share with the LINK command above?
 quiet_cmd_solink = SOLINK $@
-cmd_solink = $(LD) -shared $(LDFLAGS) -o $@ -Wl,--start-group $^ -Wl,--end-group $(LIBS)
+cmd_solink = $(LD) -shared $(LDFLAGS) -Wl,-soname=$(@F) -o $@ -Wl,--start-group $^ -Wl,--end-group $(LIBS)
 """
 r"""
 # Define an escape_quotes function to escape single quotes.
@@ -316,7 +318,8 @@ class MakefileWriter:
     extra_link_deps = []
 
     self.output = self.ComputeOutput(spec)
-    self._INSTALLABLE_TARGETS = ('executable', 'loadable_module')
+    self._INSTALLABLE_TARGETS = ('executable', 'loadable_module',
+                                 'shared_library')
     if self.type in self._INSTALLABLE_TARGETS:
       self.alias = os.path.basename(self.output)
     else:
@@ -393,7 +396,10 @@ class MakefileWriter:
         self.WriteLn('quiet_cmd_%s = ACTION %s $@' % (name, name))
       if len(dirs) > 0:
         command = 'mkdir -p %s' % ' '.join(dirs) + '; ' + command
-      self.WriteLn('cmd_%s = cd %s; %s' % (name, self.path, command))
+      # Set LD_LIBRARY_PATH in case the action runs an executable from this
+      # build which links to shared libs from this build.
+      self.WriteLn('cmd_%s = export LD_LIBRARY_PATH=$(builddir)/lib:$$LD_LIBRARY_PATH; cd %s; %s'
+                   % (name, self.path, command))
       self.WriteLn()
       outputs = map(self.Absolutify, outputs)
       # The makefile rules are all relative to the top dir, but the gyp actions
@@ -671,17 +677,25 @@ class MakefileWriter:
     # 2) They get shortcuts for building (e.g. "make chrome").
     # 3) They are part of "make all".
     if self.type in self._INSTALLABLE_TARGETS:
-      binpath = '$(builddir)/' + self.alias
+      if self.type in ('shared_library'):
+        file_desc = 'shared library'
+        # Install all shared libs into a common lib/ directory for convenient
+        # access with LD_LIBRARY_PATH.
+        binpath = '$(builddir)/lib/' + self.alias
+      else:
+        file_desc = 'executable'
+        binpath = '$(builddir)/' + self.alias
       installable_deps = [self.output]
       if binpath != self.output:
         self.WriteDoCmd([binpath], [self.output], 'copy',
-                        comment = 'Copy this to the binary output path.')
+                        comment = 'Copy this to the %s output path.' %
+                        file_desc)
         installable_deps.append(binpath)
       self.WriteMakeRule([self.alias], installable_deps,
-                         comment = 'Short alias for building this executable.',
-                         phony = True)
+                         comment = 'Short alias for building this %s.' %
+                         file_desc, phony = True)
       self.WriteMakeRule(['all'], [binpath],
-                         comment = 'Add executable to "all" target.',
+                         comment = 'Add %s to "all" target.' % file_desc,
                          phony = True)
 
 
