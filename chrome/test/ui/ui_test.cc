@@ -219,6 +219,7 @@ void UITest::LaunchBrowserAndServer() {
   server_.reset(CreateAutomationProxy(command_execution_timeout_ms_));
 
   LaunchBrowser(launch_arguments_, clear_profile_);
+  server_->WaitForAppLaunch();
   if (wait_for_initial_loads_)
     ASSERT_TRUE(server_->WaitForInitialLoads());
   else
