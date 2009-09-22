@@ -2357,3 +2357,4 @@ BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/events/space-scroll-event.html = FAI
 BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/forms/formmove3.html = FAIL
 BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/forms/formnovalidate-attribute.html = FAIL
 BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/images/imagemap-case.html = FAIL
+BUG_PAUL LINUX DEBUG : LayoutTests/fast/backgrounds/size/contain-and-cover.html = PASS FAIL
