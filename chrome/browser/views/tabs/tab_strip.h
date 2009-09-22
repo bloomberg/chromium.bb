@@ -12,9 +12,6 @@
 #include "chrome/browser/views/tabs/tab_strip_wrapper.h"
 #include "views/controls/button/image_button.h"
 #include "views/view.h"
-#if defined(OS_WIN)
-#include "views/widget/widget_win.h"
-#endif
 
 class DraggedTabController;
 class ScopedMouseCloseWidthCalculator;
@@ -22,6 +19,11 @@ class TabStripModel;
 
 namespace views {
 class ImageView;
+#if defined(OS_LINUX)
+class WidgetGtk;
+#elif defined(OS_WIN)
+class WidgetWin;
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -370,6 +372,8 @@ class TabStrip : public views::View,
     // TODO(beng): should be views::Widget.
 #if defined(OS_WIN)
     views::WidgetWin* arrow_window;
+#else
+    views::WidgetGtk* arrow_window;
 #endif
     views::ImageView* arrow_view;
 

@@ -11,9 +11,6 @@
 #include "app/os_exchange_data.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#endif
 #include "base/gfx/size.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/browser_theme_provider.h"
@@ -32,6 +29,13 @@
 #include "views/widget/default_theme_provider.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
+
+#if defined(OS_WIN)
+#include "app/win_util.h"
+#include "views/widget/widget_win.h"
+#elif defined(OS_LINUX)
+#include "views/widget/widget_gtk.h"
+#endif
 
 #undef min
 #undef max
@@ -1680,7 +1684,8 @@ void TabStrip::SetDropIndex(int index, bool drop_before) {
       HWND_TOPMOST, drop_bounds.x(), drop_bounds.y(), drop_bounds.width(),
       drop_bounds.height(), SWP_NOACTIVATE | SWP_SHOWWINDOW);
 #else
-  NOTIMPLEMENTED();
+  drop_info_->arrow_window->SetBounds(drop_bounds);
+  drop_info_->arrow_window->Show();
 #endif
 }
 
@@ -1705,29 +1710,30 @@ TabStrip::DropInfo::DropInfo(int drop_index, bool drop_before, bool point_down)
     : drop_index(drop_index),
       drop_before(drop_before),
       point_down(point_down) {
-#if defined(OS_WIN)
-  arrow_window = new views::WidgetWin;
-  arrow_window->set_window_style(WS_POPUP);
-  arrow_window->set_window_ex_style(WS_EX_TOPMOST | WS_EX_NOACTIVATE |
-                                    WS_EX_LAYERED | WS_EX_TRANSPARENT);
-
   arrow_view = new views::ImageView;
   arrow_view->SetImage(GetDropArrowImage(point_down));
 
+#if defined(OS_WIN)
+  arrow_window = new views::WidgetWin;
   arrow_window->Init(
       NULL,
       gfx::Rect(0, 0, drop_indicator_width, drop_indicator_height));
-  arrow_window->SetContentsView(arrow_view);
+  arrow_window->set_window_style(WS_POPUP);
+  arrow_window->set_window_ex_style(WS_EX_TOPMOST | WS_EX_NOACTIVATE |
+                                    WS_EX_LAYERED | WS_EX_TRANSPARENT);
 #else
-  NOTIMPLEMENTED();
+  arrow_window = new views::WidgetGtk(views::WidgetGtk::TYPE_POPUP);
+  arrow_window->MakeTransparent();
+  arrow_window->Init(
+      NULL,
+      gfx::Rect(0, 0, drop_indicator_width, drop_indicator_height));
 #endif
+  arrow_window->SetContentsView(arrow_view);
 }
 
 TabStrip::DropInfo::~DropInfo() {
   // Close eventually deletes the window, which deletes arrow_view too.
-#if defined(OS_WIN)
   arrow_window->Close();
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

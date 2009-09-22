@@ -29,6 +29,10 @@
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 
+#if defined(OS_WIN)
+#include "views/widget/widget_win.h"
+#endif
+
 static const int kHorizontalMoveThreshold = 16; // pixels
 
 // Threshold for pinned tabs.
