@@ -512,7 +512,8 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
     SetViewForNative(widget_, this);
   } else {
     widget_ = gtk_window_new(
-        type_ == TYPE_WINDOW ? GTK_WINDOW_TOPLEVEL : GTK_WINDOW_POPUP);
+        (type_ == TYPE_WINDOW || type_ == TYPE_DECORATED_WINDOW) ?
+        GTK_WINDOW_TOPLEVEL : GTK_WINDOW_POPUP);
     GTK_WIDGET_UNSET_FLAGS(widget_, GTK_DOUBLE_BUFFERED);
 
     if (!bounds.size().IsEmpty()) {
@@ -522,9 +523,11 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
       GtkAllocation alloc = { 0, 0, bounds.width(), bounds.height() };
       gtk_widget_size_allocate(widget_, &alloc);
     }
-    gtk_window_set_decorated(GTK_WINDOW(widget_), false);
-    // We'll take care of positioning our window.
-    gtk_window_set_position(GTK_WINDOW(widget_), GTK_WIN_POS_NONE);
+    if (type_ != TYPE_DECORATED_WINDOW) {
+      gtk_window_set_decorated(GTK_WINDOW(widget_), false);
+      // We'll take care of positioning our window.
+      gtk_window_set_position(GTK_WINDOW(widget_), GTK_WIN_POS_NONE);
+    }
     SetWindowForNative(widget_, static_cast<WindowGtk*>(this));
     SetViewForNative(widget_, this);
 

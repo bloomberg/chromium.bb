@@ -32,9 +32,11 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   enum Type {
     // Used for popup type windows (bubbles, menus ...).
     TYPE_POPUP,
-    // A top level window.
+    // A top level window with no title, no control buttons.
+    // control.
     TYPE_WINDOW,
-
+    // A top level, decorated window.
+    TYPE_DECORATED_WINDOW,
     // A child widget.
     TYPE_CHILD
   };
