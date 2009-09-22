@@ -40,6 +40,12 @@ OpcodeHasImmed_v
 OpcodeHasImmed_p  # 6 bytes.
 OpcodeHasImmed_o
 
+# Define the size of the second immediate value that must follow the first
+# immediate opcode (if more than one immediate value).
+OpcodeHasImmed2_b
+OpcodeHasImmed2_w
+OpcodeHasImmed2_v
+
 # In 32-bit mode, same as OpcodeHasImmed_v, In 64-bit mode, same as
 # OpcodeHasImmed_o.
 OpcodeHasImmed_Addr

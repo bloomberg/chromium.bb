@@ -625,6 +625,20 @@ static ExprNode* AppendOperandRegister(
   return AppendRegisterKind(state, reg_kind, reg_index);
 }
 
+/* Same as AppendOperandRegister, except register is combined with ES
+ * To define a segment address.
+ */
+static ExprNode* AppendEsOperandRegister(
+    NcInstState* state,
+    Operand* operand,
+    int reg_index,
+    ModRmRegisterKind modrm_reg_kind) {
+  ExprNode* results = AppendExprNode(ExprSegmentAddress, 0, 0, &state->nodes);
+  AppendRegister(RegES, &state->nodes);
+  AppendOperandRegister(state, operand, reg_index, modrm_reg_kind);
+  return results;
+}
+
 /* For the given instruction state, and the corresponding 3-bit specification
  * of a register, update it to a 4-bit specification, based on the REX.R bit.
  */
@@ -790,6 +804,14 @@ static uint64_t ExtractUnsignedImmediate(NcInstState* state) {
                                     state->num_imm_bytes);
 }
 
+/* Get the binary value denoted by the 2nd immediate bytes of the state. */
+static uint64_t ExtractUnsignedImmediate2(NcInstState* state) {
+  return ExtractUnsignedBinaryValue(
+      state,
+      state->first_imm_byte + state->num_imm_bytes,
+      state->num_imm2_bytes);
+}
+
 /* Get the binary value denoted by the immediate bytes of the state. */
 static int64_t ExtractSignedImmediate(NcInstState* state) {
   return ExtractSignedBinaryValue(state,
@@ -817,6 +839,30 @@ static ExprNode* AppendImmediate(NcInstState* state) {
   /* Append the generated immediate value onto the vector. */
   return AppendConstant(value, flags,  &state->nodes);
 }
+
+/* Append the second immediate value of the given instruction state onto
+ * the vector of expression nodes. Returns the appended immediate value.
+ */
+static ExprNode* AppendImmediate2(NcInstState* state) {
+  ExprNodeFlags flags;
+
+  /* First compute the immedaite value. */
+  uint64_t value;
+  DEBUG(printf("append 2nd immedaite\n"));
+
+  value = ExtractUnsignedImmediate2(state);
+
+  /* Now compute any appropriate flags to be associated with the immediate
+   * value.
+   */
+  flags =
+      ExprFlag(ExprUnsignedHex) |
+      GetExprSizeFlagForBytes(state->num_imm2_bytes);
+
+  /* Append the generated immediate value onto the vector. */
+  return AppendConstant(value, flags,  &state->nodes);
+}
+
 
 /* Append the immediate value of the given instruction as the displacement
  * of a memory offset.
@@ -1189,6 +1235,10 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
     case Go_Operand:
       return AppendOperandRegister(state, operand, GetGenRegRegister(state),
                                    ModRmGeneral);
+
+    case ES_G_Operand:
+      return AppendEsOperandRegister(state, operand, GetGenRegRegister(state),
+                                     ModRmGeneral);
     case G_OpcodeBase:
       return AppendOpcodeBaseRegister(state, operand);
     case I_Operand:
@@ -1197,6 +1247,8 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
     case Iv_Operand:
     case Io_Operand:
       return AppendImmediate(state);
+    case I2_Operand:
+      return AppendImmediate2(state);
     case J_Operand:
     case Jb_Operand:
     case Jw_Operand:

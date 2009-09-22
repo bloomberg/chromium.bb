@@ -577,6 +577,21 @@ static int GetNumImmediateBytes(NcInstState* state) {
   }
 }
 
+/* Returns the number of immedidate bytes to parse if a second immediate
+ * number appears in the instruction (zero if no second immediate value).
+ */
+static int GetNumImmediate2Bytes(NcInstState* state) {
+  if (state->opcode->flags & InstFlag(OpcodeHasImmed2_b)) {
+    return 1;
+  } else if (state->opcode->flags & InstFlag(OpcodeHasImmed2_w)) {
+    return 2;
+  } else if (state->opcode->flags & InstFlag(OpcodeHasImmed2_v)) {
+    return 4;
+  } else {
+    return 0;
+  }
+}
+
 /* Consume the needed immediate bytes, if applicable. Abort the
  * pattern match if any problems are found.
  */
@@ -597,6 +612,22 @@ static Bool ConsumeImmediateBytes(NcInstState* state) {
     }
     /* Read the immediate bytes. */
     state->first_imm_byte = state->length;
+    state->length = new_length;
+  }
+  /* Before returning, see if second immediate value specified. */
+  state->num_imm2_bytes = GetNumImmediate2Bytes(state);
+  DEBUG(printf("num immediate 2 bytes = %"PRIu8"\n", state->num_imm2_bytes));
+  if (state->num_imm2_bytes > 0) {
+    int new_length;
+    /* Before reading immediate bytes, be sure that we don't walk
+     * past the end of the code segment.
+     */
+    new_length = state->length + state->num_imm2_bytes;
+    if (new_length > state->length_limit) {
+      DEBUG(printf("Can't consume 2nd immediate, no more bytes!\n"));
+      return FALSE;
+    }
+    /* Read the immediate bytes. */
     state->length = new_length;
   }
   return TRUE;
@@ -641,6 +672,7 @@ static void ClearOpcodeState(NcInstState* state, uint8_t opcode_length,
   state->first_disp_byte = 0;
   state->num_imm_bytes = 0;
   state->first_imm_byte = 0;
+  state->num_imm2_bytes = 0;
   state->operand_size = 32;
   state->address_size = 32;
 }

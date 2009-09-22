@@ -1243,9 +1243,45 @@ void DefineOneByteOpcodes() {
 
   /* 0xC0 and 0xC1 defined by DefineGroup2OpcodesInModRm */
 
+  DefineOpcode(0xc2, NACLi_RETURN, InstFlag(OpcodeHasImmed_w), InstRet);
+  DefineOperand(RegREIP, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegRESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(I_Operand, OpFlag(OpUse) | OpFlag(OperandNear));
+
   DefineOpcode(0xc3, NACLi_RETURN, 0, InstRet);
   DefineOperand(RegREIP, OpFlag(OpSet) | OpFlag(OpImplicit));
   DefineOperand(RegRESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+
+  DefineOpcode(0xc4, NACLi_ILLEGAL,
+               InstFlag(Opcode32Only) | InstFlag(OperandSize_w) |
+               InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeHasImmed_v),
+               InstLes);
+  DefineOperand(ES_G_Operand, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(G_Operand, OpFlag(OpUse));
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xc4, NACLi_ILLEGAL,
+               InstFlag(Opcode32Only) | InstFlag(OperandSize_v) |
+               InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeHasImmed_p),
+               InstLes);
+  DefineOperand(ES_G_Operand, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(G_Operand, OpFlag(OpUse));
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xc5, NACLi_ILLEGAL,
+               InstFlag(Opcode32Only) | InstFlag(OperandSize_w) |
+               InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeHasImmed_v),
+               InstLds);
+  DefineOperand(G_Operand, OpFlag(OpUse));
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xc5, NACLi_ILLEGAL,
+               InstFlag(Opcode32Only) | InstFlag(OperandSize_v) |
+               InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeHasImmed_p),
+               InstLes);
+  DefineOperand(ES_G_Operand, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(G_Operand, OpFlag(OpUse));
+  DefineOperand(I_Operand, OpFlag(OpUse));
 
   /* GROUP 11 */
   DefineOpcode(0xC6, NACLi_386,
@@ -1282,8 +1318,23 @@ void DefineOneByteOpcodes() {
   DefineOperand(E_Operand, OpFlag(OpSet));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
+  DefineOpcode(0xC8, NACLi_ILLEGAL,
+               InstFlag(OpcodeHasImmed_w) | InstFlag(OpcodeHasImmed2_b),
+               InstEnter);
+  DefineOperand(I_Operand, OpFlag(OpUse));
+  DefineOperand(I2_Operand, OpFlag(OpUse));
+
   DefineOpcode(0xc9, NACLi_386, 0, InstLeave);
   DefineOperand(RegREBP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegRESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+
+  DefineOpcode(0xca, NACLi_RETURN, InstFlag(OpcodeHasImmed_w), InstRet);
+  DefineOperand(RegREIP, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegRESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(I_Operand, OpFlag(OpUse) | OpFlag(OperandFar));
+
+  DefineOpcode(0xcb, NACLi_RETURN, 0, InstRet);
+  DefineOperand(RegREIP, OpFlag(OpSet) | OpFlag(OpImplicit));
   DefineOperand(RegRESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
 
   /* Group 2 - 0xC0, 0xC1, 0xD0, 0XD1, 0xD2, 0xD3 */

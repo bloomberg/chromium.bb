@@ -1760,3 +1760,18 @@ ExprNodeVector[6] = {
   { ExprRegister[0] , %ds, ExprSize16 },
   { ExprRegister[0] , %rdi, ExprSize64 },
 };
+0000000000000000: c8 2c 01 00                                  enter 0x12c, 0x0; *NACL Disallows!*
+  { 1, { 0xc8, 0x00, 0x00 },
+    NACLi_ILLEGAL,
+    InstFlag(OpcodeHasImmed_w) | InstFlag(OpcodeHasImmed2_b),
+    InstEnter,
+    2, {
+      { I_Operand, OpFlag(OpUse) },
+      { I2_Operand, OpFlag(OpUse) },
+  } };
+ExprNodeVector[4] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprConstant[0] , 0x12c, ExprUsed | ExprSize16 | ExprUnsignedHex },
+  { OperandReference[1] , 1, 0 },
+  { ExprConstant[0] , 0x0, ExprUsed | ExprSize8 | ExprUnsignedHex },
+};

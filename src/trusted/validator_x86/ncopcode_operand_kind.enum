@@ -70,6 +70,9 @@ Gv_Operand
 # Intel's notation is r64.
 Go_Operand
 
+# Models a G operand which is combined with ES to generate a segment address
+ES_G_Operand
+
 # Models registers using the difference in the opcode base, from the opcode
 # value.
 G_OpcodeBase
@@ -92,6 +95,9 @@ Iv_Operand
 
 # An immediate 64-bit value. Intel's notation is imm64.
 Io_Operand
+
+# Model the 2n'd immediate value. Size defined by the OpcodeHasImmed2_x flag.
+I2_Operand
 
 # Note: The instruction decoder may count on the fact that the J_Operand
 # values are contiguous, in the order specified.

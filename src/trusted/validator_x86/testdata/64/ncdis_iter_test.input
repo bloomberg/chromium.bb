@@ -123,3 +123,4 @@
 -i=af                                    #0000000000000000: af                                           scasd
 -i=66af                                  #0000000000000000: 66 af                                        scasw
 -i=48af                                  #0000000000000000: 48 af                                        scasq
+-i=C82C0100                              #0000000000000000: c8 2c 01 00                                  enter 0x12c, 0x0; *NACL Disallows!*

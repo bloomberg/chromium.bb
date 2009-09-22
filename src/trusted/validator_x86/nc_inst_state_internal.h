@@ -82,6 +82,10 @@ struct NcInstState {
    * zero if num_imm_bytes == 0;.
    */
   uint8_t first_imm_byte;
+  /* Define the number of bytes to the second immediate value if defined
+   * (defaults to zero).
+   */
+  uint8_t num_imm2_bytes;
   /* The computed (default) operand size associated with the instruction. */
   uint8_t operand_size;
   /* The computed (default) address size associated with the instruction. */
