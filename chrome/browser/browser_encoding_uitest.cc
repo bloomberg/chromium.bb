@@ -75,7 +75,7 @@ TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
     { "KOI8-U.html", "KOI8-U" },
     { "macintosh.html", "macintosh" },
     { "Shift-JIS.html", "Shift_JIS" },
-    { "US-ASCII.html", "ISO-8859-1" },  // http://crbug.com/15801    
+    { "US-ASCII.html", "ISO-8859-1" },  // http://crbug.com/15801
     { "UTF-8.html", "UTF-8" },
     { "UTF-16LE.html", "UTF-16LE" },
     { "windows-874.html", "windows-874" },
@@ -238,20 +238,20 @@ TEST_F(BrowserEncodingTest, TestEncodingAutoDetect) {
 
   FilePath test_dir_path = FilePath(kTestDir).AppendASCII(kAutoDetectDir);
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestDatas);i++) {
-    scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-    ASSERT_TRUE(browser.get());
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+  // Set the default charset to one of encodings not supported by the current
+  // auto-detector (Please refer to the above comments) to make sure we
+  // incorrectly decode the page. Now we use ISO-8859-4.
+  browser->SetStringPreference(prefs::kDefaultCharset, L"ISO-8859-4");
+  scoped_refptr<TabProxy> tab(GetActiveTab());
+  ASSERT_TRUE(tab.get());
 
-    // Set the default charset to one of encodings not supported by the current
-    // auto-detector (Please refer to the above comments) to make sure we
-    // incorrectly decode the page. Now we use ISO-8859-4.
-    browser->SetStringPreference(prefs::kDefaultCharset, L"ISO-8859-4");
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestDatas);i++) {
     FilePath test_file_path(test_dir_path);
     test_file_path = test_file_path.AppendASCII(kTestDatas[i].test_file_name);
     GURL url =
         URLRequestMockHTTPJob::GetMockUrl(test_file_path.ToWStringHack());
-    scoped_refptr<TabProxy> tab(GetActiveTab());
-    ASSERT_TRUE(tab.get());
     ASSERT_TRUE(tab->NavigateToURL(url));
     WaitUntilTabCount(1);
 

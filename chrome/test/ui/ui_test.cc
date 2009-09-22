@@ -936,7 +936,8 @@ void UITest::WaitForGeneratedFileAndCheck(const FilePath& generated_file,
   // Check whether the target file has been generated.
   file_util::FileInfo previous, current;
   bool exist = false;
-  for (int i = 0; i < 20; ++i) {
+  const int kCycles = 20;
+  for (int i = 0; i < kCycles; ++i) {
     if (exist) {
       file_util::GetFileInfo(generated_file, &current);
       if (current.size == previous.size)
@@ -946,7 +947,7 @@ void UITest::WaitForGeneratedFileAndCheck(const FilePath& generated_file,
       file_util::GetFileInfo(generated_file, &previous);
       exist = true;
     }
-    PlatformThread::Sleep(sleep_timeout_ms());
+    PlatformThread::Sleep(sleep_timeout_ms() / kCycles);
   }
   EXPECT_TRUE(exist);
 
