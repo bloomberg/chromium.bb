@@ -555,15 +555,9 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
     sar       eax, 4
     movzx     eax, byte ptr [edx + eax]
     movq      mm1, [kCoefficientsRgbY + 8 * eax]
-    mov       eax, ebx
-    sar       eax, 4
-    movzx     eax, byte ptr [edx + eax]
-    movq      mm2, [kCoefficientsRgbY + 8 * eax]
     paddsw    mm1, mm0
-    paddsw    mm2, mm0
     psraw     mm1, 6
-    psraw     mm2, 6
-    packuswb  mm1, mm2
+    packuswb  mm1, mm1
     movd      [ebp], mm1
 
  scaledone :
