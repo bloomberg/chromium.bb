@@ -1092,7 +1092,7 @@ diff -uNr binutils-2.19.51.20090622.orig/include/elf/nacl.h binutils-2.19.51.200
 +#define EF_NACL_ALIGN_LIB   0x000000	/* aligned to pass either way */
 +
 +/* ABI version number -- increment when ABI changes are incompatible. */
-+#define EF_NACL_ABIVERSION  5
++#define EF_NACL_ABIVERSION  6
 +
 +#endif
 diff -uNr binutils-2.19.51.20090622.orig/ld/Makefile.am binutils-2.19.51.20090622/ld/Makefile.am
