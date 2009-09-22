@@ -583,7 +583,7 @@ BUG20995 SKIP : LayoutTests/storage/statement-error-callback.html = FAIL
 BUG20826 LINUX WIN : LayoutTests/fast/forms/textarea-scrollbar-height.html = FAIL
 
 // Pixeltest failure: Form control metrics incorrect
-BUG10273 LINUX : LayoutTests/http/tests/navigation/javascriptlink-frames.html = FAIL PASS
+BUG10273 LINUX : LayoutTests/http/tests/navigation/javascriptlink-frames.html = FAIL PASS TIMEOUT
 
 // Mac Safari under certain circumstances automatically places
 // a caret in editable document even when none was requested programatically.
@@ -1817,7 +1817,7 @@ BUG9798 WIN RELEASE : LayoutTests/transitions/change-values-during-transition.ht
 BUG9797 LINUX DEBUG : LayoutTests/svg/carto.net/colourpicker.svg = FAIL
 BUG9797 WIN DEBUG : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
 BUG9797 WIN LINUX : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
-BUG9797 BUG9798 WIN DEBUG : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = CRASH TIMEOUT PASS
+BUG9797 BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = CRASH TIMEOUT PASS
 
 // Failed in WebKit merge 42287:42324
 BUG9916 WIN LINUX : LayoutTests/css2.1/t0803-c5502-mrgn-r-02-c.html = FAIL
@@ -2159,7 +2159,6 @@ BUG17398 LINUX : LayoutTests/fast/css/pseudo-cache-stale.html = FAIL
 BUG17398 LINUX : LayoutTests/fast/forms/search-zoomed.html = FAIL
 
 // Test failures from WebKit merge r46194:46229
-BUG17497 WIN DEBUG : LayoutTests/media/unsupported-rtsp.html = FAIL
 BUG17499 MAC : LayoutTests/platform/mac/fast/loader/non-html-load-event.html = FAIL
 
 // not sure why this started failing
@@ -2339,3 +2338,22 @@ BUG22554 SKIP : LayoutTests/mathml = FAIL
 BUG_PAUL : LayoutTests/fast/dom/HTMLImageElement/image-loading-gc.html = TIMEOUT
 BUG_PAUL LINUX : LayoutTests/editing/selection/click-outside-editable-div.html = FAIL
 BUG_PAUL LINUX : LayoutTests/fast/events/frame-tab-focus.html = FAIL
+BUG_PAUL WIN MAC DEBUG : LayoutTests/svg/dynamic-updates/SVGLinearGradientElement-dom-x2-attr.html = TIMEOUT
+BUG_PAUL MAC : pending/plugins/iframe-shims.html = FAIL
+BUG_PAUL MAC DEBUG : LayoutTests/fast/forms/button-generated-content.html = TIMEOUT
+BUG_PAUL MAC DEBUG : LayoutTests/fast/forms/fieldset-align.html = TIMEOUT
+BUG_PAUL MAC LINUX DEBUG : LayoutTests/http/tests/navigation/javascriptlink-basic.html = TIMEOUT
+BUG_PAUL MAC DEBUG : LayoutTests/http/tests/navigation/javascriptlink-frames.html = TIMEOUT
+BUG_PAUL MAC LINUX DEBUG : LayoutTests/http/tests/navigation/javascriptlink-goback.html = TIMEOUT
+BUG_PAUL MAC LINUX DEBUG : LayoutTests/http/tests/navigation/javascriptlink-subframeload.html = TIMEOUT
+BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/images/load-img-with-empty-src.html = TIMEOUT
+BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/events/event-listener-html-non-html-confusion.html = FAIL
+BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/events/keydown-keypress-preventDefault.html = FAIL
+BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/events/mouse-drag-from-frame-to-other-frame.html = FAIL
+BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/events/mouse-drag-from-frame.html = FAIL
+BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/events/nested-window-event.html = FAIL
+BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/events/onsubmit-bubbling.html = FAIL
+BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/events/space-scroll-event.html = FAIL
+BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/forms/formmove3.html = FAIL
+BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/forms/formnovalidate-attribute.html = FAIL
+BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/images/imagemap-case.html = FAIL
