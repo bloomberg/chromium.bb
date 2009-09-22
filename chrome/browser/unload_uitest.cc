@@ -239,6 +239,7 @@ TEST_F(UnloadTest, BrowserCloseUnload) {
 
 // Tests closing the browser with a beforeunload handler and clicking
 // OK in the beforeunload confirm dialog.
+#if !defined(OS_LINUX)
 TEST_F(UnloadTest, BrowserCloseBeforeUnloadOK) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   NavigateToDataURL(BEFORE_UNLOAD_HTML, L"beforeunload");
@@ -265,6 +266,7 @@ TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
   WaitForBrowserClosed();
   EXPECT_FALSE(IsBrowserRunning());
 }
+#endif  // !defined(OS_LINUX)
 
 // Tests closing the browser with a beforeunload handler that takes
 // two seconds to run.
