@@ -17,23 +17,23 @@
 
 class BSDiffMemoryTest : public testing::Test {
  public:
-  std::string FileContents(const char *file_name) const;
+  std::string FileContents(const char* file_name) const;
   void GenerateAndTestPatch(const std::string& a, const std::string& b) const;
 
  private:
   void SetUp() {
     PathService::Get(base::DIR_SOURCE_ROOT, &test_dir_);
-    file_util::AppendToPath(&test_dir_, L"courgette");
-    file_util::AppendToPath(&test_dir_, L"testdata");
+    test_dir_ = test_dir_.AppendASCII("courgette");
+    test_dir_ = test_dir_.AppendASCII("testdata");
   }
 
-  std::wstring test_dir_;
+  FilePath test_dir_;
 };
 
 //  Reads a test file into a string.
-std::string BSDiffMemoryTest::FileContents(const char *file_name) const {
-  std::wstring file_path = test_dir_;
-  file_util::AppendToPath(&file_path, UTF8ToWide(file_name));
+std::string BSDiffMemoryTest::FileContents(const char* file_name) const {
+  FilePath file_path = test_dir_;
+  file_path = file_path.AppendASCII(file_name);
   std::string file_bytes;
   if (!file_util::ReadFileToString(file_path, &file_bytes)) {
     EXPECT_TRUE(!"Could not read test data");

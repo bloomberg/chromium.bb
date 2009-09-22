@@ -20,8 +20,8 @@ class EncodeDecodeTest : public testing::Test {
  private:
   void SetUp() {
     PathService::Get(base::DIR_SOURCE_ROOT, &testdata_dir_);
-    file_util::AppendToPath(&testdata_dir_, L"courgette");
-    file_util::AppendToPath(&testdata_dir_, L"testdata");
+    testdata_dir_ = testdata_dir_.AppendASCII("courgette");
+    testdata_dir_ = testdata_dir_.AppendASCII("testdata");
   }
 
   void TearDown() { }
@@ -29,13 +29,13 @@ class EncodeDecodeTest : public testing::Test {
   // Returns contents of |file_name| as uninterprested bytes stored in a string.
   std::string FileContents(const char* file_name) const;
 
-  std::wstring testdata_dir_;  // Full path name of testdata directory
+  FilePath testdata_dir_;  // Full path name of testdata directory
 };
 
 //  Reads a test file into a string.
 std::string EncodeDecodeTest::FileContents(const char* file_name) const {
-  std::wstring file_path = testdata_dir_;
-  file_util::AppendToPath(&file_path, UTF8ToWide(file_name));
+  FilePath file_path = testdata_dir_;
+  file_path = file_path.AppendASCII(file_name);
   std::string file_contents;
   if (!file_util::ReadFileToString(file_path, &file_contents)) {
     EXPECT_TRUE(!"Could not read test data");
