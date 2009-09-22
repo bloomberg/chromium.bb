@@ -16,7 +16,7 @@
               "version": "1.0.0.0",
               "name": "1 content script",
               "content_scripts": [
-                { "matches": ["file://*"], "js": ["script1.js"] }
+                { "matches": ["file://*"], "js": ["script.js"] }
               ]
             },
             "path": "behllobkkfkfnphdnhnkndlbkcpglgmj/1.0.0.0",
