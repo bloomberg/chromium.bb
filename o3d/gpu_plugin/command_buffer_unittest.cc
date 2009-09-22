@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/thread.h"
 #include "o3d/gpu_plugin/command_buffer.h"
 #include "o3d/gpu_plugin/np_utils/dynamic_np_object.h"
 #include "o3d/gpu_plugin/np_utils/np_browser_mock.h"
@@ -156,6 +157,83 @@ TEST_F(CommandBufferTest, CanSyncGetAndPutOffset) {
 
   EXPECT_EQ(-1, command_buffer_->SyncOffsets(-1));
   EXPECT_EQ(-1, command_buffer_->SyncOffsets(1024));
+}
+
+TEST_F(CommandBufferTest, ZeroHandleMapsToNull) {
+  EXPECT_TRUE(NULL == command_buffer_->GetRegisteredObject(0).Get());
+}
+
+TEST_F(CommandBufferTest, RegisteringNullObjectReturnsZero) {
+  EXPECT_EQ(0, command_buffer_->RegisterObject(NPObjectPointer<NPObject>()));
+}
+
+TEST_F(CommandBufferTest, RegistersDistinctNonZeroHandlesForObject) {
+  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
+  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
+  EXPECT_EQ(2, command_buffer_->RegisterObject(window_object_));
+  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(2));
+}
+
+TEST_F(CommandBufferTest, RegisterObjectReusesUnregisteredHandles) {
+  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
+  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
+  EXPECT_EQ(2, command_buffer_->RegisterObject(window_object_));
+  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(2));
+  command_buffer_->UnregisterObject(window_object_, 1);
+  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
+  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
+  EXPECT_EQ(3, command_buffer_->RegisterObject(window_object_));
+  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(3));
+}
+
+TEST_F(CommandBufferTest, CannotUnregisterHandleZero) {
+  command_buffer_->UnregisterObject(window_object_, 0);
+  EXPECT_TRUE(NULL == command_buffer_->GetRegisteredObject(0).Get());
+  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
+  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
+}
+
+TEST_F(CommandBufferTest, CannotUnregisterNegativeHandles) {
+  command_buffer_->UnregisterObject(window_object_, -1);
+  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
+  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
+}
+
+TEST_F(CommandBufferTest, CannotUnregisterUnregisteredHandles) {
+  command_buffer_->UnregisterObject(window_object_, 1);
+  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
+  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
+}
+
+TEST_F(CommandBufferTest,
+    CannotUnregisterHandleWithoutDemonstratingAccessToObject) {
+  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
+  command_buffer_->UnregisterObject(chromium_object_, 1);
+  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
+  EXPECT_EQ(2, command_buffer_->RegisterObject(window_object_));
+}
+
+// Testing this case specifically because there is an optimization that takes
+// a different code path in this case.
+TEST_F(CommandBufferTest, UnregistersLastRegisteredHandle) {
+  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
+  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
+  command_buffer_->UnregisterObject(window_object_, 1);
+  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
+  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
+}
+
+// Testing this case specifically because there is an optimization that takes
+// a different code path in this case.
+TEST_F(CommandBufferTest, UnregistersTwoLastRegisteredHandles) {
+  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
+  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
+  EXPECT_EQ(2, command_buffer_->RegisterObject(window_object_));
+  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(2));
+  command_buffer_->UnregisterObject(window_object_, 2);
+  command_buffer_->UnregisterObject(window_object_, 1);
+  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
+  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
 }
 
 }  // namespace gpu_plugin

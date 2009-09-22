@@ -5,6 +5,9 @@
 #ifndef O3D_GPU_PLUGIN_COMMAND_BUFFER_H_
 #define O3D_GPU_PLUGIN_COMMAND_BUFFER_H_
 
+#include <set>
+#include <vector>
+
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
@@ -55,7 +58,21 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
   // synchronize reader and writer reduces the risk of deadlock.
   // Takes ownership of callback. The callback is invoked on the plugin thread.
   virtual void SetPutOffsetChangeCallback(Callback0::Type* callback);
-  
+
+  // Get an opaque integer handle for an NPObject. This can be used
+  // to identify the shared memory object from the ring buffer. Note that the
+  // object will be retained. Consider reference cycle issues. Returns zero for
+  // NULL, positive for non-NULL and -1 on error. Objects may be registered
+  // multiple times and have multiple associated handles. Each handle for a
+  // distinct object must be separately unregistered.
+  virtual int32 RegisterObject(NPObjectPointer<NPObject> object);
+
+  // Unregister a previously registered NPObject. It is safe to unregister the
+  // zero handle.
+  virtual void UnregisterObject(NPObjectPointer<NPObject> object, int32 handle);
+
+  virtual NPObjectPointer<NPObject> GetRegisteredObject(int32 handle);
+
   NP_UTILS_BEGIN_DISPATCHER_CHAIN(CommandBuffer, DefaultNPObject<NPObject>)
     NP_UTILS_DISPATCHER(Initialize, bool(int32))
     NP_UTILS_DISPATCHER(GetRingBuffer, NPObjectPointer<CHRSharedMemory>())
@@ -63,6 +80,9 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
     NP_UTILS_DISPATCHER(SyncOffsets, int32(int32))
     NP_UTILS_DISPATCHER(GetGetOffset, int32());
     NP_UTILS_DISPATCHER(GetPutOffset, int32());
+    NP_UTILS_DISPATCHER(RegisterObject, int32(NPObjectPointer<NPObject>));
+    NP_UTILS_DISPATCHER(UnregisterObject,
+                        void(NPObjectPointer<NPObject>, int32));
   NP_UTILS_END_DISPATCHER_CHAIN
 
  private:
@@ -72,6 +92,8 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
   int32 get_offset_;
   int32 put_offset_;
   scoped_ptr<Callback0::Type> put_offset_change_callback_;
+  std::vector<NPObjectPointer<NPObject> > registered_objects_;
+  std::set<int32> unused_registered_object_elements_;
 };
 
 }  // namespace gpu_plugin

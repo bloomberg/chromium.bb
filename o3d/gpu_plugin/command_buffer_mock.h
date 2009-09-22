@@ -26,6 +26,9 @@ class MockCommandBuffer : public CommandBuffer {
   MOCK_METHOD1(SetGetOffset, void(int32));
   MOCK_METHOD0(GetPutOffset, int32());
   MOCK_METHOD1(SetPutOffsetChangeCallback, void(Callback0::Type*));
+  MOCK_METHOD1(RegisterObject, int32(NPObjectPointer<NPObject>));
+  MOCK_METHOD2(UnregisterObject, void(NPObjectPointer<NPObject>, int32));
+  MOCK_METHOD0(GetRegisteredObject, NPObjectPointer<NPObject>());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCommandBuffer);
