@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,13 +29,13 @@ struct LabColor {
 
 // Convert between different color spaces
 void SkColorToCIEXYZ(SkColor c, CIE_XYZ* xyz);
-void CIEXYZToLabColor(const CIE_XYZ& xyz, LabColor* lab);
-
 SkColor CIEXYZToSkColor(SkAlpha alpha, const CIE_XYZ& xyz);
-void LabColorToCIEXYZ(const LabColor& lab, CIE_XYZ* xyz);
 
 void SkColorToLabColor(SkColor c, LabColor* lab);
 SkColor LabColorToSkColor(const LabColor& lab, SkAlpha alpha);
+
+void CIEXYZToLabColor(const CIE_XYZ& xyz, LabColor* lab);
+void LabColorToCIEXYZ(const LabColor& lab, CIE_XYZ* xyz);
 
 // Determine if a given alpha value is nearly completely transparent.
 bool IsColorCloseToTransparent(SkAlpha alpha);

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,18 +19,22 @@
 
 namespace color_utils {
 
+// Helper functions -----------------------------------------------------------
+
+namespace {
+
 // These transformations are based on the equations in:
 // http://en.wikipedia.org/wiki/Lab_color
 // http://en.wikipedia.org/wiki/SRGB_color_space#Specification_of_the_transformation
 // See also:
 // http://www.brucelindbloom.com/index.html?ColorCalculator.html
 
-static const double kCIEConversionAlpha = 0.055;
-static const double kCIEConversionGamma = 2.2;
-static const double kE = 0.008856;
-static const double kK = 903.3;
+const double kCIEConversionAlpha = 0.055;
+const double kCIEConversionGamma = 2.2;
+const double kE = 0.008856;
+const double kK = 903.3;
 
-static double CIEConvertNonLinear(uint8 color_component) {
+double CIEConvertNonLinear(uint8 color_component) {
   double color_component_d = static_cast<double>(color_component) / 255.0;
   if (color_component_d > 0.04045) {
     double base = (color_component_d + kCIEConversionAlpha) /
@@ -41,46 +45,7 @@ static double CIEConvertNonLinear(uint8 color_component) {
   }
 }
 
-// Note: this works only for sRGB.
-void SkColorToCIEXYZ(SkColor c, CIE_XYZ* xyz) {
-  uint8 r = SkColorGetR(c);
-  uint8 g = SkColorGetG(c);
-  uint8 b = SkColorGetB(c);
-
-  xyz->X =
-    0.4124 * CIEConvertNonLinear(r) +
-    0.3576 * CIEConvertNonLinear(g) +
-    0.1805 * CIEConvertNonLinear(b);
-  xyz->Y =
-    0.2126 * CIEConvertNonLinear(r) +
-    0.7152 * CIEConvertNonLinear(g) +
-    0.0722 * CIEConvertNonLinear(g);
-  xyz->Z =
-    0.0193 * CIEConvertNonLinear(r) +
-    0.1192 * CIEConvertNonLinear(g) +
-    0.9505 * CIEConvertNonLinear(b);
-}
-
-static double LabConvertNonLinear(double value) {
-  if (value > 0.008856) {
-    double goat = pow(value, static_cast<double>(1) / 3);
-    return goat;
-  }
-  return (kK * value + 16) / 116;
-}
-
-void CIEXYZToLabColor(const CIE_XYZ& xyz, LabColor* lab) {
-  CIE_XYZ white_xyz;
-  SkColorToCIEXYZ(SkColorSetRGB(255, 255, 255), &white_xyz);
-  double fx = LabConvertNonLinear(xyz.X / white_xyz.X);
-  double fy = LabConvertNonLinear(xyz.Y / white_xyz.Y);
-  double fz = LabConvertNonLinear(xyz.Z / white_xyz.Z);
-  lab->L = static_cast<int>(116 * fy) - 16;
-  lab->a = static_cast<int>(500 * (fx - fy));
-  lab->b = static_cast<int>(200 * (fy - fz));
-}
-
-static uint8 sRGBColorComponentFromLinearComponent(double component) {
+uint8 sRGBColorComponentFromLinearComponent(double component) {
   double result;
   if (component <= 0.0031308) {
     result = 12.92 * component;
@@ -90,6 +55,108 @@ static uint8 sRGBColorComponentFromLinearComponent(double component) {
                  kCIEConversionAlpha;
   }
   return std::min(static_cast<uint8>(255), static_cast<uint8>(result * 255));
+}
+
+double LabConvertNonLinear(double value) {
+  if (value > 0.008856) {
+    double goat = pow(value, static_cast<double>(1) / 3);
+    return goat;
+  }
+  return (kK * value + 16) / 116;
+}
+
+double gen_yr(const LabColor& lab) {
+  if (lab.L > (kE * kK))
+    return pow((lab.L + 16.0) / 116, 3.0);
+  return static_cast<double>(lab.L) / kK;
+}
+
+double fy(const LabColor& lab) {
+  double yr = gen_yr(lab);
+  if (yr > kE)
+    return (lab.L + 16.0) / 116;
+  return (kK * yr + 16.0) / 116;
+}
+
+double fx(const LabColor& lab) {
+  return (static_cast<double>(lab.a) / 500) + fy(lab);
+}
+
+double gen_xr(const LabColor& lab) {
+  double x = fx(lab);
+  double x_cubed = pow(x, 3.0);
+  if (x_cubed > kE)
+    return x_cubed;
+  return (116.0 * x - 16.0) / kK;
+}
+
+double fz(const LabColor& lab) {
+  return fy(lab) - (static_cast<double>(lab.b) / 200);
+}
+
+double gen_zr(const LabColor& lab) {
+  double z = fz(lab);
+  double z_cubed = pow(z, 3.0);
+  if (z_cubed > kE)
+    return z_cubed;
+  return (116.0 * z - 16.0) / kK;
+}
+
+int GetLumaForColor(SkColor* color) {
+  int r = SkColorGetR(*color);
+  int g = SkColorGetG(*color);
+  int b = SkColorGetB(*color);
+
+  int luma = static_cast<int>(0.3*r + 0.59*g + 0.11*b);
+  if (luma < 0)
+    luma = 0;
+  else if (luma > 255)
+    luma = 255;
+
+  return luma;
+}
+
+// Next three functions' formulas from:
+// http://www.w3.org/TR/WCAG20/#relativeluminancedef
+// http://www.w3.org/TR/WCAG20/#contrast-ratiodef
+
+double ConvertSRGB(double eight_bit_component) {
+  const double component = eight_bit_component / 255.0;
+  return (component <= 0.03928) ?
+      (component / 12.92) : pow((component + 0.055) / 1.055, 2.4);
+}
+
+double RelativeLuminance(SkColor color) {
+  return (0.2126 * ConvertSRGB(SkColorGetR(color))) +
+      (0.7152 * ConvertSRGB(SkColorGetG(color))) +
+      (0.0722 * ConvertSRGB(SkColorGetB(color)));
+}
+
+double ContrastRatio(SkColor color1, SkColor color2) {
+  const double l1 = RelativeLuminance(color1) + 0.05;
+  const double l2 = RelativeLuminance(color2) + 0.05;
+  return (l1 > l2) ? (l1 / l2) : (l2 / l1);
+}
+
+}  // namespace
+
+// ----------------------------------------------------------------------------
+
+// Note: this works only for sRGB.
+void SkColorToCIEXYZ(SkColor c, CIE_XYZ* xyz) {
+  uint8 r = SkColorGetR(c);
+  uint8 g = SkColorGetG(c);
+  uint8 b = SkColorGetB(c);
+
+  xyz->X = 0.4124 * CIEConvertNonLinear(r) +
+           0.3576 * CIEConvertNonLinear(g) +
+           0.1805 * CIEConvertNonLinear(b);
+  xyz->Y = 0.2126 * CIEConvertNonLinear(r) +
+           0.7152 * CIEConvertNonLinear(g) +
+           0.0722 * CIEConvertNonLinear(g);
+  xyz->Z = 0.0193 * CIEConvertNonLinear(r) +
+           0.1192 * CIEConvertNonLinear(g) +
+           0.9505 * CIEConvertNonLinear(b);
 }
 
 SkColor CIEXYZToSkColor(SkAlpha alpha, const CIE_XYZ& xyz) {
@@ -102,41 +169,27 @@ SkColor CIEXYZToSkColor(SkAlpha alpha, const CIE_XYZ& xyz) {
   return SkColorSetARGB(alpha, r, g, b);
 }
 
-static double gen_yr(const LabColor& lab) {
-  if (lab.L > (kE * kK))
-    return pow((lab.L + 16.0) / 116, 3.0);
-  return static_cast<double>(lab.L) / kK;
+void SkColorToLabColor(SkColor c, LabColor* lab) {
+  CIE_XYZ xyz;
+  SkColorToCIEXYZ(c, &xyz);
+  CIEXYZToLabColor(xyz, lab);
 }
 
-static double fy(const LabColor& lab) {
-  double yr = gen_yr(lab);
-  if (yr > kE)
-    return (lab.L + 16.0) / 116;
-  return (kK * yr + 16.0) / 116;
+SkColor LabColorToSkColor(const LabColor& lab, SkAlpha alpha) {
+  CIE_XYZ xyz;
+  LabColorToCIEXYZ(lab, &xyz);
+  return CIEXYZToSkColor(alpha, xyz);
 }
 
-static double fx(const LabColor& lab) {
-  return (static_cast<double>(lab.a) / 500) + fy(lab);
-}
-
-static double gen_xr(const LabColor& lab) {
-  double x = fx(lab);
-  double x_cubed = pow(x, 3.0);
-  if (x_cubed > kE)
-    return x_cubed;
-  return (116.0 * x - 16.0) / kK;
-}
-
-static double fz(const LabColor& lab) {
-  return fy(lab) - (static_cast<double>(lab.b) / 200);
-}
-
-static double gen_zr(const LabColor& lab) {
-  double z = fz(lab);
-  double z_cubed = pow(z, 3.0);
-  if (z_cubed > kE)
-    return z_cubed;
-  return (116.0 * z - 16.0) / kK;
+void CIEXYZToLabColor(const CIE_XYZ& xyz, LabColor* lab) {
+  CIE_XYZ white_xyz;
+  SkColorToCIEXYZ(SkColorSetRGB(255, 255, 255), &white_xyz);
+  double fx = LabConvertNonLinear(xyz.X / white_xyz.X);
+  double fy = LabConvertNonLinear(xyz.Y / white_xyz.Y);
+  double fz = LabConvertNonLinear(xyz.Z / white_xyz.Z);
+  lab->L = static_cast<int>(116 * fy) - 16;
+  lab->a = static_cast<int>(500 * (fx - fy));
+  lab->b = static_cast<int>(200 * (fy - fz));
 }
 
 void LabColorToCIEXYZ(const LabColor& lab, CIE_XYZ* xyz) {
@@ -152,26 +205,13 @@ void LabColorToCIEXYZ(const LabColor& lab, CIE_XYZ* xyz) {
   *xyz = result;
 }
 
-void SkColorToLabColor(SkColor c, LabColor* lab) {
-  CIE_XYZ xyz;
-  SkColorToCIEXYZ(c, &xyz);
-  CIEXYZToLabColor(xyz, lab);
-}
-
-SkColor LabColorToSkColor(const LabColor& lab, SkAlpha alpha) {
-  CIE_XYZ xyz;
-  LabColorToCIEXYZ(lab, &xyz);
-  return CIEXYZToSkColor(alpha, xyz);
-}
-
-static const int kCloseToBoundary = 64;
-static const int kAverageBoundary = 15;
-
 bool IsColorCloseToTransparent(SkAlpha alpha) {
+  const int kCloseToBoundary = 64;
   return alpha < kCloseToBoundary;
 }
 
 bool IsColorCloseToGrey(int r, int g, int b) {
+  const int kAverageBoundary = 15;
   int average = (r + g + b) / 3;
   return (abs(r - average) < kAverageBoundary) &&
          (abs(g - average) < kAverageBoundary) &&
@@ -221,20 +261,6 @@ SkColor GetAverageColorOfFavicon(SkBitmap* favicon, SkAlpha alpha) {
   return result;
 }
 
-inline int GetLumaForColor(SkColor* color) {
-  int r = SkColorGetR(*color);
-  int g = SkColorGetG(*color);
-  int b = SkColorGetB(*color);
-
-  int luma = static_cast<int>(0.3*r + 0.59*g + 0.11*b);
-  if (luma < 0)
-    luma = 0;
-  else if (luma > 255)
-    luma = 255;
-
-  return luma;
-}
-
 void BuildLumaHistogram(SkBitmap* bitmap, int histogram[256]) {
   SkAutoLockPixels bitmap_lock(*bitmap);
   // Assume ARGB_8888 format.
@@ -263,27 +289,6 @@ SkColor AlphaBlend(SkColor foreground, SkColor background, SkAlpha alpha) {
      (SkColorGetG(background) * (0xFF - alpha))) / 0xFF,
     ((SkColorGetB(foreground) * alpha) +
      (SkColorGetB(background) * (0xFF - alpha))) / 0xFF);
-}
-
-// Next three functions' formulas from:
-// http://www.w3.org/TR/WCAG20/#relativeluminancedef
-// http://www.w3.org/TR/WCAG20/#contrast-ratiodef
-static double ConvertSRGB(double eight_bit_component) {
-  const double component = eight_bit_component / 255.0;
-  return (component <= 0.03928) ?
-      (component / 12.92) : pow((component + 0.055) / 1.055, 2.4);
-}
-
-static double RelativeLuminance(SkColor color) {
-  return (0.2126 * ConvertSRGB(SkColorGetR(color))) +
-      (0.7152 * ConvertSRGB(SkColorGetG(color))) +
-      (0.0722 * ConvertSRGB(SkColorGetB(color)));
-}
-
-static double ContrastRatio(SkColor color1, SkColor color2) {
-  const double l1 = RelativeLuminance(color1) + 0.05;
-  const double l2 = RelativeLuminance(color2) + 0.05;
-  return (l1 > l2) ? (l1 / l2) : (l2 / l1);
 }
 
 SkColor PickMoreReadableColor(SkColor foreground1,
