@@ -32,7 +32,8 @@
 {
   bug_22520
   ThreadSanitizer:Race
-  fun:CancelableRequest*
+  fun:*CancelableRequestBase*
+  fun:*CancelableRequest*
 }
 
 ############################
