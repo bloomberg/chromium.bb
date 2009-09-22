@@ -51,19 +51,19 @@ class WidgetGtk::DropObserver : public MessageLoopForUI::Observer {
 
 // Returns the position of a widget on screen.
 static void GetWidgetPositionOnScreen(GtkWidget* widget, int* x, int *y) {
-  while (widget) {
-    if (GTK_IS_WINDOW(widget)) {
-      int window_x, window_y;
-      gtk_window_get_position(GTK_WINDOW(widget), &window_x, &window_y);
-      *x += window_x;
-      *y += window_y;
-      return;
-    }
-    // Not a window.
-    *x += widget->allocation.x;
-    *y += widget->allocation.y;
-    widget = gtk_widget_get_parent(widget);
+  // First get the root window.
+  GtkWidget* root = widget;
+  while (root && !GTK_IS_WINDOW(root)) {
+    root = gtk_widget_get_parent(root);
   }
+  DCHECK(root);
+  // Translate the coordinate from widget to root window.
+  gtk_widget_translate_coordinates(widget, root, 0, 0, x, y);
+  // Then adjust the position with the position of the root window.
+  int window_x, window_y;
+  gtk_window_get_position(GTK_WINDOW(root), &window_x, &window_y);
+  *x += window_x;
+  *y += window_y;
 }
 
 // Returns the view::Event::flags for a GdkEventButton.
