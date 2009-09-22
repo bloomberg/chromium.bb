@@ -772,26 +772,25 @@ class TestTabbedPane : public TabbedPane {
 
 // Tests that NativeControls do set the focus View appropriately on the
 // FocusManager.
+// TODO(jcampan): make these tests work on the Linux build-bot. They don't work
+//                when the screen is locked.
+#if defined(OS_WIN)
 TEST_F(FocusManagerTest, FocusNativeControls) {
   TestNativeButton* button = new TestNativeButton(L"Press me");
   TestCheckbox* checkbox = new TestCheckbox(L"Checkbox");
-#if defined(OS_WIN)
   TestRadioButton* radio_button = new TestRadioButton(L"RadioButton");
   TestTextfield* textfield = new TestTextfield();
   TestCombobox* combobox = new TestCombobox();
   TestTabbedPane* tabbed_pane = new TestTabbedPane();
   TestNativeButton* tab_button = new TestNativeButton(L"tab button");
-#endif
 
   content_view_->AddChildView(button);
   content_view_->AddChildView(checkbox);
-#if defined(OS_WIN)
   content_view_->AddChildView(radio_button);
   content_view_->AddChildView(textfield);
   content_view_->AddChildView(combobox);
   content_view_->AddChildView(tabbed_pane);
   tabbed_pane->AddTab(L"Awesome tab", tab_button);
-#endif
 
   // Simulate the native view getting the native focus (such as by user click).
   FocusNativeView(button->TestGetNativeControlView());
@@ -800,7 +799,6 @@ TEST_F(FocusManagerTest, FocusNativeControls) {
   FocusNativeView(checkbox->TestGetNativeControlView());
   EXPECT_EQ(checkbox, GetFocusManager()->GetFocusedView());
 
-#if defined(OS_WIN)
   FocusNativeView(radio_button->TestGetNativeControlView());
   EXPECT_EQ(radio_button, GetFocusManager()->GetFocusedView());
 
@@ -815,8 +813,8 @@ TEST_F(FocusManagerTest, FocusNativeControls) {
 
   FocusNativeView(tab_button->TestGetNativeControlView());
   EXPECT_EQ(tab_button, GetFocusManager()->GetFocusedView());
-#endif
 }
+#endif
 
 // Test that when activating/deactivating the top window, the focus is stored/
 // restored properly.
