@@ -1319,9 +1319,12 @@ void BrowserWindowGtk::OnBoundsChanged(const gfx::Rect& bounds) {
   if (bounds_.size() != bounds.size())
     OnSizeChanged(bounds.width(), bounds.height());
 
+  // We update |bounds_| but not |restored_bounds_| here.  The latter needs
+  // to be updated conditionally when the window is non-maximized and non-
+  // fullscreen, but whether those state updates have been processed yet is
+  // window-manager specific.  We update |restored_bounds_| in the debounced
+  // handler below, after the window state has been updated.
   bounds_ = bounds;
-  if (!IsFullscreen() && !IsMaximized())
-    restored_bounds_ = bounds;
 
   // When a window is moved or resized, GTK will call MainWindowConfigured()
   // above.  The GdkEventConfigure* that it gets doesn't have quite the right
@@ -1346,7 +1349,7 @@ void BrowserWindowGtk::OnDebouncedBoundsChanged() {
   gfx::Point origin(x, y);
   bounds_.set_origin(origin);
   if (!IsFullscreen() && !IsMaximized())
-    restored_bounds_.set_origin(origin);
+    restored_bounds_ = bounds_;
   SaveWindowPosition();
 }
 
