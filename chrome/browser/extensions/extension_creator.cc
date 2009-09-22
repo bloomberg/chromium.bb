@@ -137,11 +137,12 @@ bool ExtensionCreator::SignZip(const FilePath& zip_path,
   scoped_ptr<base::SignatureCreator> signature_creator(
       base::SignatureCreator::Create(private_key));
   ScopedStdioHandle zip_handle(file_util::OpenFile(zip_path, "rb"));
-  uint8 buffer[1 << 16];
+  size_t buffer_size = 1 << 16;
+  scoped_array<uint8> buffer(new uint8[buffer_size]);
   int bytes_read = -1;
-  while ((bytes_read = fread(buffer, 1, sizeof(buffer),
+  while ((bytes_read = fread(buffer.get(), 1, buffer_size,
        zip_handle.get())) > 0) {
-    if (!signature_creator->Update(buffer, bytes_read)) {
+    if (!signature_creator->Update(buffer.get(), bytes_read)) {
       error_message_ = "Error while signing extension.";
       return false;
     }
@@ -180,12 +181,13 @@ bool ExtensionCreator::WriteCRX(const FilePath& zip_path,
   fwrite(&signature.front(), sizeof(uint8), signature.size(),
       crx_handle.get());
 
-  uint8 buffer[1 << 16];
+  size_t buffer_size = 1 << 16;
+  scoped_array<uint8> buffer(new uint8[buffer_size]);
   int bytes_read = -1;
   ScopedStdioHandle zip_handle(file_util::OpenFile(zip_path, "rb"));
-  while ((bytes_read = fread(buffer, 1, sizeof(buffer),
+  while ((bytes_read = fread(buffer.get(), 1, buffer_size,
       zip_handle.get())) > 0) {
-    fwrite(buffer, sizeof(char), bytes_read, crx_handle.get());
+    fwrite(buffer.get(), sizeof(char), bytes_read, crx_handle.get());
   }
 
   return true;
