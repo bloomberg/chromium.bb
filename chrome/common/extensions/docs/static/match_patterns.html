@@ -59,41 +59,41 @@ The following table shows some valid patterns.
   <th>What it does</th>
   <th>Examples of matching URLs</th>
 </tr>
-  
+
 <tr>
   <td>
     <code>http://*/*</code>
   </td>
-    
+
   <td>Matches any URL that uses the <code>http</code> scheme</td>
-  
+
   <td>
     http://www.google.com/<br>
     http://example.org/foo/bar.html
   </td>
 </tr>
-  
+
 <tr>
   <td>
     <code>http://*/foo*</code>
   </td>
-    
+
   <td>
     Matches any URL that uses the <code>http</code> scheme, on any host,
     as long as the path starts with <code>/foo</code>
   </td>
-  
+
   <td>
     http://example.com/foo/bar.html<br>
     http://www.google.com/foo<b></b>
   </td>
 </tr>
-  
+
 <tr>
   <td>
     <code>https://*.google.com/foo*bar </code>
   </td>
-    
+
   <td>
     Matches any URL that uses the <code>https</code> scheme,
     is on a google.com host
@@ -101,43 +101,43 @@ The following table shows some valid patterns.
     as long as the path starts with <code>/foo</code>
     and ends with <code>bar</code>
   </td>
-  
+
   <td>
     http://www.google.com/foo/baz/bar<br>
     http://docs.google.com/foobar
   </td>
 </tr>
-  
+
 <tr>
   <td>
     <code>http://example.org/foo/bar.html </code>
   </td>
-    
+
   <td>Matches the specified URL</td>
-  
+
   <td>
     http://example.org/foo/bar.html
   </td>
 </tr>
-  
+
 <tr>
   <td>
     <code>file:///foo*</code>
   </td>
-    
+
   <td>Matches any local file whose path starts with <code>/foo</code></td>
-  
+
   <td>
     file:///foo/bar.html<br>
     file:///foo
   </td>
 </tr>
-  
+
 <tr>
   <td>
     <code>http://127.0.0.1/*</code>
   </td>
-    
+
   <td>
     Matches any URL that uses the <code>http</code> scheme
     and is on the host 127.0.0.1
@@ -160,27 +160,27 @@ Here are some examples of <em>invalid</em> pattern matches:
   <th>Bad pattern</th>
   <th>Why it's bad</th>
 </tr>
-  
+
 <tr>
   <td><code>http://*</code></td>
   <td>No <em>path</em></td>
 </tr>
-  
+
 <tr>
   <td><code>http://*foo/bar</code></td>
   <td>'*' in the <em>host</em> can be followed only by a '.' or '/'</td>
 </tr>
-  
+
 <tr>
   <td><code>http://foo.*.bar/baz&nbsp; </code></td>
   <td>If '*' is in the <em>host</em>, it must be the first character</td>
   </tr>
-  
+
 <tr>
   <td><code>http:/bar</code></td>
   <td>Missing <em>scheme</em> separator ("/" should be "//")</td>
 </tr>
-  
+
 <tr>
   <td><code>foo://*</code></td>
   <td>Invalid <em>scheme</em></td>

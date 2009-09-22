@@ -260,7 +260,7 @@ in the form of
 and <a href="pageActions.html">page actions</a>
 (clickable badges in the address bar).
 Extensions can also interact programmatically
-with browser features such as 
+with browser features such as
 <a href="bookmarks.html">bookmarks</a>
 and <a href="tabs.html">tabs</a>.
 </p>
@@ -564,7 +564,7 @@ Here are some keys to communication between an extension's pages:
 </ul>
 
 <p>
-Here's an example of 
+Here's an example of
 communication between toolstrips and the background page.
 </p>
 
@@ -756,6 +756,29 @@ PENDING: summarize, suggest where to go next. Probably:
   <p>
   ©2009 Google
   </p>
+
+<!-- begin analytics -->
+<script src="http://www.google-analytics.com/urchin.js" type="text/javascript"></script>
+<script src="http://www.google-analytics.com/ga.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+  // chrome doc tracking
+  try {
+    var engdocs = _gat._getTracker("YT-10763712-2");
+    engdocs._trackPageview();
+  } catch(err) {}
+
+  // code.google.com site-wide tracking
+  try {
+    _uacct="UA-18071-1";
+    _uanchor=1;
+    _uff=0;
+    urchinTracker();
+  }
+  catch(e) {/* urchinTracker not available. */}
+</script>
+<!-- end analytics -->
+
     </div> <!-- /pageFooter -->
   </div> <!-- /container -->
 </body></html>

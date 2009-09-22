@@ -229,8 +229,8 @@ unless the extension has requested the appropriate cross-origin permissions.
 <h2 id="requesting-permission">Requesting cross-origin permissions</h2>
 
 <p>By adding hosts or host match patterns (or both) to the
-<a href="manifest.html#permissions">permissions</a><a> section of the 
-</a><a href="manifest.html">manifest</a> file, the extension can request access to 
+<a href="manifest.html#permissions">permissions</a> section of the
+<a href="manifest.html">manifest</a> file, the extension can request access to
 remote servers outside of its origin.</p>
 
 <pre>"permissions": [
@@ -428,6 +428,29 @@ of hosts, it must declare the permissions separately:</p>
   <p>
   ©2009 Google
   </p>
+
+<!-- begin analytics -->
+<script src="http://www.google-analytics.com/urchin.js" type="text/javascript"></script>
+<script src="http://www.google-analytics.com/ga.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+  // chrome doc tracking
+  try {
+    var engdocs = _gat._getTracker("YT-10763712-2");
+    engdocs._trackPageview();
+  } catch(err) {}
+
+  // code.google.com site-wide tracking
+  try {
+    _uacct="UA-18071-1";
+    _uanchor=1;
+    _uff=0;
+    urchinTracker();
+  }
+  catch(e) {/* urchinTracker not available. */}
+</script>
+<!-- end analytics -->
+
     </div> <!-- /pageFooter -->
   </div> <!-- /container -->
 </body></html>

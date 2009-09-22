@@ -4,7 +4,7 @@
 Leveraging HTML and JavaScript
 makes developing new extensions really easy,
 but what if you have existing legacy or proprietary code
-that you want to reuse in your extension? 
+that you want to reuse in your extension?
 You can bundle an NPAPI plugin with your extension,
 allowing you to call into native binary code from JavaScript.
 </p>
@@ -23,11 +23,11 @@ follow these steps to get your extension using it.
 </p>
 
 <ol>
-  <li> 
+  <li>
     Add a section to your extension's <code>manifest.json</code>
     that describes where to find the plugin,
     along with other properties about it:
-    
+
 <pre>{
   "name": "My extension",
   ...
@@ -46,7 +46,7 @@ follow these steps to get your extension using it.
     meaning only your extension can load the plugin.
     </p>
    </li>
-   
+
    <li>
      Create an HTML file that loads your plugin by mime-type.
      Assuming your mime-type is "application/x-my-extension":
