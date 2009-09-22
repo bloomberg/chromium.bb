@@ -451,7 +451,7 @@
       Browser::OpenEmptyWindow(defaultProfile);
       break;
     case IDC_NEW_INCOGNITO_WINDOW:
-      Browser::OpenURLOffTheRecord(defaultProfile, GURL());
+      Browser::OpenEmptyWindow(defaultProfile->GetOffTheRecordProfile());
       break;
     case IDC_RESTORE_TAB:
       Browser::OpenWindowWithRestoredTabs(defaultProfile);
