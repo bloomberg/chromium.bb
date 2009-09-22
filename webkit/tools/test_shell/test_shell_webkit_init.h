@@ -18,14 +18,16 @@
 #include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
+#include "webkit/database/vfs_backend.h"
+#include "webkit/extensions/v8/gears_extension.h"
+#include "webkit/extensions/v8/interval_extension.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitclient_impl.h"
-#include "webkit/extensions/v8/gears_extension.h"
-#include "webkit/extensions/v8/interval_extension.h"
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
+#include "webkit/tools/test_shell/simple_database_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "v8/include/v8.h"
 
@@ -91,14 +93,37 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   }
 
   virtual bool sandboxEnabled() {
-    return false;
+    return true;
   }
 
-  virtual bool getFileSize(const WebKit::WebString& path,
-                           long long& result) {
+  virtual base::PlatformFile databaseOpenFile(
+      const WebKit::WebString& file_name, int desired_flags,
+      base::PlatformFile* dir_handle) {
+    return SimpleDatabaseSystem::GetInstance()->OpenFile(
+        webkit_glue::WebStringToFilePath(file_name),
+        desired_flags, dir_handle);
+  }
+
+  virtual int databaseDeleteFile(const WebKit::WebString& file_name,
+                                 bool sync_dir) {
+    return SimpleDatabaseSystem::GetInstance()->DeleteFile(
+        webkit_glue::WebStringToFilePath(file_name), sync_dir);
+  }
+
+  virtual long databaseGetFileAttributes(const WebKit::WebString& file_name) {
+    return SimpleDatabaseSystem::GetInstance()->GetFileAttributes(
+        webkit_glue::WebStringToFilePath(file_name));
+  }
+
+  virtual long long databaseGetFileSize(const WebKit::WebString& file_name) {
+    return SimpleDatabaseSystem::GetInstance()->GetFileSize(
+        webkit_glue::WebStringToFilePath(file_name));
+  }
+
+  virtual bool getFileSize(const WebKit::WebString& path, long long& result) {
     return file_util::GetFileSize(
-        FilePath(webkit_glue::WebStringToFilePathString(path)),
-                 reinterpret_cast<int64*>(&result));
+        webkit_glue::WebStringToFilePath(path),
+        reinterpret_cast<int64*>(&result));
   }
 
   virtual unsigned long long visitedLinkHash(const char* canonicalURL,
@@ -185,6 +210,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   webkit_glue::WebClipboardImpl real_clipboard_;
   ScopedTempDir appcache_dir_;
   SimpleAppCacheSystem appcache_system_;
+  SimpleDatabaseSystem database_system_;
 
 #if defined(OS_WIN)
   WebKit::WebThemeEngine* active_theme_engine_;

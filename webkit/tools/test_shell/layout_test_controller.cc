@@ -22,6 +22,7 @@
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/webview.h"
+#include "webkit/tools/test_shell/simple_database_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell.h"
@@ -125,6 +126,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) {
   BindMethod("waitForPolicyDelegate", &LayoutTestController::waitForPolicyDelegate);
   BindMethod("setWillSendRequestReturnsNullOnRedirect", &LayoutTestController::setWillSendRequestReturnsNullOnRedirect);
   BindMethod("whiteListAccessFromOrigin", &LayoutTestController::whiteListAccessFromOrigin);
+  BindMethod("clearAllDatabases", &LayoutTestController::clearAllDatabases);
 
   // The following are stubs.
   BindMethod("dumpAsWebArchive", &LayoutTestController::dumpAsWebArchive);
@@ -946,8 +948,7 @@ void LayoutTestController::fallbackMethod(
 }
 
 void LayoutTestController::whiteListAccessFromOrigin(
-    const CppArgumentList& args, CppVariant* result)
-{
+    const CppArgumentList& args, CppVariant* result) {
   result->SetNull();
 
   if (args.size() != 4 || !args[0].isString() || !args[1].isString() ||
@@ -962,6 +963,12 @@ void LayoutTestController::whiteListAccessFromOrigin(
                                     WebString::fromUTF8(args[1].ToString()),
                                     WebString::fromUTF8(args[2].ToString()),
                                     args[3].ToBoolean());
+}
+
+void LayoutTestController::clearAllDatabases(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+  SimpleDatabaseSystem::GetInstance()->ClearAllDatabases();
 }
 
 void LayoutTestController::LogErrorToConsole(const std::string& text) {

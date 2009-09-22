@@ -14,39 +14,39 @@
 #include "third_party/sqlite/preprocessed/sqlite3.h"
 #endif
 
-#include "base/file_path.h"
-#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/process.h"
-#include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_message.h"
+#include "webkit/database/vfs_backend.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
 #endif
 
-const int kNumDeleteRetries = 5;
+using webkit_database::VfsBackend;
+
+const int kNumDeleteRetries = 3;
 const int kDelayDeleteRetryMs = 100;
 
 namespace {
 
 struct OpenFileParams {
-  FilePath db_dir; // directory where all DB files are stored
-  FilePath file_name; // DB file
-  int desired_flags;  // flags to be used to open the file
-  base::ProcessHandle handle; // the handle of the renderer process
+  FilePath db_dir;
+  FilePath file_name;
+  int desired_flags;
+  base::ProcessHandle handle;
 };
 
 struct DeleteFileParams {
-  FilePath db_dir; // directory where all DB files are stored
-  FilePath file_name; // DB file
-  bool sync_dir; // sync DB directory after the file is deleted?
+  FilePath db_dir;
+  FilePath file_name;
+  bool sync_dir;
 };
 
 // Scheduled by the file Thread on the IO thread.
@@ -62,71 +62,6 @@ static void SendMessage(ResourceMessageFilter* sender,
   sender->Release();
 }
 
-// Make sure the flags used to open a DB file are consistent.
-static bool OpenFileFlagsAreConsistent(const OpenFileParams& params) {
-  // Is this a request for a temp file?
-  // We should be able to delete temp files when they're closed
-  // and create them as needed
-  if ((params.file_name == params.db_dir) &&
-      (!(params.desired_flags & SQLITE_OPEN_DELETEONCLOSE) ||
-       !(params.desired_flags & SQLITE_OPEN_CREATE))) {
-    return false;
-  }
-
-  const int file_type = params.desired_flags & 0x00007F00;
-  const bool is_exclusive =
-    (params.desired_flags & SQLITE_OPEN_EXCLUSIVE) != 0;
-  const bool is_delete =
-    (params.desired_flags & SQLITE_OPEN_DELETEONCLOSE) != 0;
-  const bool is_create =
-    (params.desired_flags & SQLITE_OPEN_CREATE) != 0;
-  const bool is_read_only =
-    (params.desired_flags & SQLITE_OPEN_READONLY) != 0;
-  const bool is_read_write =
-    (params.desired_flags & SQLITE_OPEN_READWRITE) != 0;
-
-  // All files should be opened either read-write or read-only.
-  if (!(is_read_only ^ is_read_write)) {
-    return false;
-  }
-
-  // If a new file is created, it must also be writtable.
-  if (is_create && !is_read_write) {
-    return false;
-  }
-
-  // We must be able to create a new file, if exclusive access is desired.
-  if (is_exclusive && !is_create) {
-    return false;
-  }
-
-  // We cannot delete the files that we expect to already exist.
-  if (is_delete && !is_create) {
-    return false;
-  }
-
-  // The main DB, main journal and master journal cannot be auto-deleted.
-  if (((file_type == SQLITE_OPEN_MAIN_DB) ||
-       (file_type == SQLITE_OPEN_MAIN_JOURNAL) ||
-       (file_type == SQLITE_OPEN_MASTER_JOURNAL)) &&
-      is_delete) {
-    return false;
-  }
-
-  // Make sure we're opening the DB directory or that a file type is set.
-  if ((file_type != SQLITE_OPEN_MAIN_DB) &&
-      (file_type != SQLITE_OPEN_TEMP_DB) &&
-      (file_type != SQLITE_OPEN_MAIN_JOURNAL) &&
-      (file_type != SQLITE_OPEN_TEMP_JOURNAL) &&
-      (file_type != SQLITE_OPEN_SUBJOURNAL) &&
-      (file_type != SQLITE_OPEN_MASTER_JOURNAL) &&
-      (file_type != SQLITE_OPEN_TRANSIENT_DB)) {
-    return false;
-  }
-
-  return true;
-}
-
 // Scheduled by the IO thread on the file thread.
 // Opens the given database file, then schedules
 // a task on the IO thread's message loop to send an IPC back to
@@ -136,85 +71,10 @@ static void DatabaseOpenFile(MessageLoop* io_thread_message_loop,
                              int32 message_id,
                              ResourceMessageFilter* sender) {
   base::PlatformFile target_handle = base::kInvalidPlatformFileValue;
-#if defined(OS_POSIX)
   base::PlatformFile target_dir_handle = base::kInvalidPlatformFileValue;
-#endif
-
-  // Verify the flags for consistency and create the database
-  // directory if it doesn't exist.
-  if (OpenFileFlagsAreConsistent(params) &&
-      file_util::CreateDirectory(params.db_dir)) {
-    int flags = 0;
-    flags |= base::PLATFORM_FILE_READ;
-    if (params.desired_flags & SQLITE_OPEN_READWRITE) {
-      flags |= base::PLATFORM_FILE_WRITE;
-    }
-
-    if (!(params.desired_flags & SQLITE_OPEN_MAIN_DB)) {
-      flags |= base::PLATFORM_FILE_EXCLUSIVE_READ |
-               base::PLATFORM_FILE_EXCLUSIVE_WRITE;
-    }
-
-    if (params.desired_flags & SQLITE_OPEN_CREATE) {
-      flags |= base::PLATFORM_FILE_OPEN_ALWAYS;
-    } else {
-      flags |= base::PLATFORM_FILE_OPEN;
-    }
-
-    if (params.desired_flags & SQLITE_OPEN_EXCLUSIVE) {
-      flags |= base::PLATFORM_FILE_EXCLUSIVE_READ |
-               base::PLATFORM_FILE_EXCLUSIVE_WRITE;
-    }
-
-    if (params.desired_flags & SQLITE_OPEN_DELETEONCLOSE) {
-      flags |= base::PLATFORM_FILE_TEMPORARY | base::PLATFORM_FILE_HIDDEN |
-               base::PLATFORM_FILE_DELETE_ON_CLOSE;
-    }
-
-    // If this is a request for a handle to a temp file, get a unique file name
-    FilePath file_name;
-    if (params.file_name == params.db_dir) {
-      if (!file_util::CreateTemporaryFileInDir(params.db_dir, &file_name)) {
-        file_name = FilePath();
-      }
-    } else {
-      file_name = params.file_name;
-    }
-
-    // Try to open/create the DB file.
-    base::PlatformFile file_handle =
-        (file_name.empty() ? base::kInvalidPlatformFileValue :
-         base::CreatePlatformFile(file_name.ToWStringHack(), flags, NULL));
-    if (file_handle != base::kInvalidPlatformFileValue) {
-#if defined(OS_WIN)
-      // Duplicate the file handle.
-      if (!DuplicateHandle(GetCurrentProcess(), file_handle,
-                           params.handle, &target_handle, 0, false,
-                           DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
-          // file_handle is closed whether or not DuplicateHandle succeeds.
-          target_handle = INVALID_HANDLE_VALUE;
-      }
-#elif defined(OS_POSIX)
-      target_handle = file_handle;
-
-      int file_type = params.desired_flags & 0x00007F00;
-      bool creating_new_file = (params.desired_flags & SQLITE_OPEN_CREATE);
-      if (creating_new_file && ((file_type == SQLITE_OPEN_MASTER_JOURNAL) ||
-                                (file_type == SQLITE_OPEN_MAIN_JOURNAL))) {
-        // We return a handle to the containing directory because on POSIX
-        // systems the VFS might want to fsync it after changing a file.
-        // By returning it here, we avoid an extra IPC call.
-        target_dir_handle = base::CreatePlatformFile(
-            params.db_dir.ToWStringHack(),
-            base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ, NULL);
-        if (target_dir_handle == base::kInvalidPlatformFileValue) {
-          base::ClosePlatformFile(target_handle);
-          target_handle = base::kInvalidPlatformFileValue;
-        }
-      }
-#endif
-    }
-  }
+  VfsBackend::OpenFile(
+      params.file_name, params.db_dir, params.desired_flags,
+      params.handle, &target_handle, &target_dir_handle);
 
   ViewMsg_DatabaseOpenFileResponse_Params response_params;
 #if defined(OS_WIN)
@@ -223,7 +83,6 @@ static void DatabaseOpenFile(MessageLoop* io_thread_message_loop,
   response_params.file_handle = base::FileDescriptor(target_handle, true);
   response_params.dir_handle = base::FileDescriptor(target_dir_handle, true);
 #endif
-
    io_thread_message_loop->PostTask(FROM_HERE,
        NewRunnableFunction(SendMessage, sender,
            new ViewMsg_DatabaseOpenFileResponse(message_id, response_params)));
@@ -249,41 +108,16 @@ static void DatabaseDeleteFile(
     return;
   }
 
-  // If the file does not exist, we're done.
-  if (!file_util::PathExists(params.file_name)) {
-    io_thread_message_loop->PostTask(FROM_HERE,
-        NewRunnableFunction(SendMessage, sender,
-            new ViewMsg_DatabaseDeleteFileResponse(message_id, SQLITE_OK)));
-    return;
-  }
-
-
-  // If the file could not be deleted, try again.
-  if (!file_util::Delete(params.file_name, false)) {
+  int error_code = VfsBackend::DeleteFile(
+      params.file_name, params.db_dir, params.sync_dir);
+  if (error_code == SQLITE_IOERR_DELETE) {
+    // If the file could not be deleted, try again.
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
         NewRunnableFunction(DatabaseDeleteFile, io_thread_message_loop,
             params, message_id, reschedule_count - 1, sender),
       kDelayDeleteRetryMs);
     return;
   }
-
-  // File existed and it was successfully deleted
-  int error_code = SQLITE_OK;
-#if defined(OS_POSIX)
-  // sync the DB directory if needed
-  if (params.sync_dir) {
-    base::PlatformFile dir_fd = base::CreatePlatformFile(
-      params.db_dir.ToWStringHack(), base::PLATFORM_FILE_READ, NULL);
-    if (dir_fd == base::kInvalidPlatformFileValue) {
-      error_code = SQLITE_CANTOPEN;
-    } else {
-      if (fsync(dir_fd)) {
-        error_code = SQLITE_IOERR_DIR_FSYNC;
-      }
-      base::ClosePlatformFile(dir_fd);
-    }
-  }
-#endif
 
   io_thread_message_loop->PostTask(FROM_HERE,
       NewRunnableFunction(SendMessage, sender,
@@ -299,21 +133,7 @@ static void DatabaseGetFileAttributes(
     const FilePath& file_name,
     int32 message_id,
     ResourceMessageFilter* sender) {
-#if defined(OS_WIN)
-  uint32 attributes = GetFileAttributes(file_name.value().c_str());
-#elif defined(OS_POSIX)
-  uint32 attributes = 0;
-  if (!access(file_name.value().c_str(), R_OK)) {
-    attributes |= static_cast<uint32>(R_OK);
-  }
-  if (!access(file_name.value().c_str(), W_OK)) {
-    attributes |= static_cast<uint32>(W_OK);
-  }
-  if (!attributes) {
-    attributes = -1;
-  }
-#endif
-
+  uint32 attributes = VfsBackend::GetFileAttributes(file_name);
   io_thread_message_loop->PostTask(FROM_HERE,
       NewRunnableFunction(SendMessage, sender,
           new ViewMsg_DatabaseGetFileAttributesResponse(
@@ -329,11 +149,7 @@ static void DatabaseGetFileSize(
     const FilePath& file_name,
     int32 message_id,
     ResourceMessageFilter* sender) {
-  int64 size = 0;
-  if (!file_util::GetFileSize(file_name, &size)) {
-    size = 0;
-  }
-
+  int64 size = VfsBackend::GetFileSize(file_name);
   io_thread_message_loop->PostTask(FROM_HERE,
       NewRunnableFunction(SendMessage, sender,
           new ViewMsg_DatabaseGetFileSizeResponse(message_id, size)));
@@ -419,8 +235,11 @@ void DatabaseDispatcherHost::OnDatabaseOpenFile(
     return;
   }
 
-  OpenFileParams params = { GetDBDir(), db_file_name, desired_flags,
-    resource_message_filter_->handle() };
+  OpenFileParams params;
+  params.db_dir = GetDBDir();
+  params.file_name = db_file_name;
+  params.desired_flags = desired_flags;
+  params.handle = resource_message_filter_->handle();
   resource_message_filter_->AddRef();
   file_thread_message_loop_->PostTask(FROM_HERE,
       NewRunnableFunction(DatabaseOpenFile, MessageLoop::current(),
@@ -436,7 +255,10 @@ void DatabaseDispatcherHost::OnDatabaseDeleteFile(
     return;
   }
 
-  DeleteFileParams params = { GetDBDir(), db_file_name, sync_dir };
+  DeleteFileParams params;
+  params.db_dir = GetDBDir();
+  params.file_name = db_file_name;
+  params.sync_dir = sync_dir;
   resource_message_filter_->AddRef();
   file_thread_message_loop_->PostTask(FROM_HERE,
       NewRunnableFunction(DatabaseDeleteFile, MessageLoop::current(),

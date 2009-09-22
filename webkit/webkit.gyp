@@ -349,6 +349,19 @@
       ],
     },
     {
+      'target_name': 'database',
+      'type': '<(library)',
+      'msvs_guid': '1DA00DDD-44E5-4C56-B2CC-414FB0164492',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../third_party/sqlite/sqlite.gyp:sqlite',
+      ],
+      'sources': [
+        'database/vfs_backend.cc',
+        'database/vfs_backend.h',
+      ],
+    },
+    {
       'target_name': 'glue',
       'type': '<(library)',
       'msvs_guid': 'C66B126D-0ECE-4CA2-B6DC-FA780AFBBF09',

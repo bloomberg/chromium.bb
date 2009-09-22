@@ -11,6 +11,7 @@ include_rules = [
   # For bridge/c/c_utility.h in npruntime_util.cc
   "+bridge",
   "+grit",  # For generated headers
+  "+third_party/sqlite",
 
   # TODO(brettw) - review these; move up if it's ok, or remove the dependency
   "+net/base",
