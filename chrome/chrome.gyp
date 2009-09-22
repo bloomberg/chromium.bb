@@ -4564,7 +4564,6 @@
             '<(protoc_out_dir)',
           ],
           'defines' : [
-            'COMPILER_MSVC',
             'COMPILING_SYNCAPI_LIBRARY',
             '_CRT_SECURE_NO_WARNINGS',
             '_USE_32BIT_TIME_T',
@@ -4582,6 +4581,9 @@
           ],
           'conditions': [
             ['OS=="win"', {
+              'defines' : [
+                'COMPILER_MSVC',
+              ],
               'msvs_settings': {
                 'VCLinkerTool': {
                   'ImportLibrary': '$(OutDir)\\lib\\syncapi.lib',
@@ -4597,6 +4599,11 @@
               },
               'dependencies': [
                 '../third_party/pthreads-win32/pthreads.gyp:pthreads',
+              ],
+            }],
+            ['OS=="linux"', {
+              'defines': [
+                'POSIX',
               ],
             }],
           ],
@@ -6381,7 +6388,6 @@
             '<(protoc_out_dir)',
           ],
           'defines' : [
-            'COMPILER_MSVC',
             '_CRT_SECURE_NO_WARNINGS',
             '_USE_32BIT_TIME_T',
             'kXmppProductName="chromium-sync"',
@@ -6394,8 +6400,17 @@
           ],
           'conditions': [
             ['OS=="win"', {
+              'defines' : [
+                'COMPILER_MSVC',
+              ],
               'dependencies': [
                 '../third_party/pthreads-win32/pthreads.gyp:pthreads',
+              ],
+            }],
+            ['OS=="linux"', {
+              'defines': [
+                'POSIX',
+                'OS_LINUX',
               ],
             }],
           ],
@@ -6436,7 +6451,6 @@
             '<(protoc_out_dir)',
           ],
           'defines' : [
-            'COMPILER_MSVC',
             'COMPILING_SYNCAPI_LIBRARY',
             'SYNC_ENGINE_VERSION_STRING="Unknown"',
             '_CRT_SECURE_NO_WARNINGS',
@@ -6453,6 +6467,9 @@
           ],
           'conditions': [
             ['OS=="win"', {
+              'defines' : [
+                'COMPILER_MSVC',
+              ],
               'dependencies': [
                 '../third_party/pthreads-win32/pthreads.gyp:pthreads',
               ],
@@ -6463,6 +6480,11 @@
                   '-lsecur32.lib',
                 ],
               },
+            }],
+            ['OS=="linux"', {
+              'defines': [
+                'POSIX',
+              ],
             }],
           ],
         },
@@ -6567,8 +6589,6 @@
             'browser/sync/util/compat_pthread.h',
             'browser/sync/util/crypto_helpers.cc',
             'browser/sync/util/crypto_helpers.h',
-            'browser/sync/util/data_encryption.cc',
-            'browser/sync/util/data_encryption.h',
             'browser/sync/util/dbgq.h',
             'browser/sync/util/event_sys-inl.h',
             'browser/sync/util/event_sys.h',
@@ -6578,7 +6598,6 @@
             'browser/sync/util/highres_timer_linux.h',
             'browser/sync/util/highres_timer_win.cc',
             'browser/sync/util/highres_timer_win.h',
-            'browser/sync/util/path_helpers.cc',
             'browser/sync/util/path_helpers.h',
             'browser/sync/util/path_helpers_linux.cc',
             'browser/sync/util/path_helpers_posix.cc',
@@ -6600,7 +6619,6 @@
             '<(protoc_out_dir)',
           ],
           'defines' : [
-            'COMPILER_MSVC',
             'COMPILING_SYNCAPI_LIBRARY',
             'SYNC_ENGINE_VERSION_STRING="Unknown"',
             '_CRT_SECURE_NO_WARNINGS',
@@ -6613,8 +6631,21 @@
           ],
           'conditions': [
             ['OS=="win"', {
+              'sources' : [
+                'browser/sync/util/data_encryption.cc',
+                'browser/sync/util/data_encryption.h',
+                'browser/sync/util/path_helpers.cc',
+              ],
+              'defines' : [
+                'COMPILER_MSVC',
+              ],
               'dependencies': [
                 '../third_party/pthreads-win32/pthreads.gyp:pthreads',
+              ],
+            }],
+            ['OS=="linux"', {
+              'defines': [
+                'POSIX',
               ],
             }],
           ],
