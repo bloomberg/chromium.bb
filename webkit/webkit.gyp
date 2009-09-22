@@ -9,6 +9,14 @@
   'variables': {
     # TODO: remove this helper when we have loops in GYP
     'apply_locales_cmd': ['python', '../chrome/tools/build/apply_locales.py',],
+
+    # We can't turn on warnings on Windows and Linux until we upstream the
+    # WebKit API.
+    'conditions': [
+      ['OS=="mac"', {
+        'chromium_code': 1,
+      }],
+    ],
   },
   'targets': [
     {
