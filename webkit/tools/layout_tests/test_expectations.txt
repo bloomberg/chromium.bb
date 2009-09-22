@@ -114,6 +114,7 @@ WONTFIX SKIP BUG19635 : LayoutTests/fast/dom/Window/timer-resume-on-navigation-b
 // Depends on page cache, as far as I can tell.
 WONTFIX SKIP BUG19635 : LayoutTests/fast/events/pageshow-pagehide-on-back-cached.html = TIMEOUT FAIL
 WONTFIX SKIP BUG19635 : LayoutTests/fast/events/pageshow-pagehide-on-back-cached-with-frames.html = TIMEOUT
+WONTFIX SKIP BUG19635 : LayoutTests/media/restore-from-page-cache.html = TIMEOUT
 
 // No support for WebGL yet
 BUG21852 SKIP : LayoutTests/fast/canvas/webgl = FAIL
@@ -2196,7 +2197,6 @@ BUG18939 : LayoutTests/fast/js/prototypes.html = FAIL
 // Fallout from webkit 47041:47189
 BUG19248 : LayoutTests/fast/js/const.html = FAIL
 BUG22296 : LayoutTests/storage/multiple-transactions-on-different-handles.html = TIMEOUT
-BUG22299 : LayoutTests/fast/dom/Window/window-property-shadowing.html = FAIL
 
 BUG_LEVIN WIN : LayoutTests/fast/events/mouse-click-events.html = FAIL
 
