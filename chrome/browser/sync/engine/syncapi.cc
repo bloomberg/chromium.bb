@@ -90,8 +90,8 @@ struct ThreadParams {
 void* AddressWatchThread(void* arg) {
   NameCurrentThreadForDebugging("SyncEngine_AddressWatcher");
   LOG(INFO) << "starting the address watch thread";
-  const ThreadParams* const params = reinterpret_cast<const ThreadParams*>(arg);
 #if defined(OS_WIN)
+  const ThreadParams* const params = reinterpret_cast<const ThreadParams*>(arg);
   OVERLAPPED overlapped = {0};
   overlapped.hEvent = CreateEvent(NULL, FALSE, TRUE, NULL);
   HANDLE file;
@@ -156,7 +156,7 @@ static int64 IdToMetahandle(syncable::BaseTransaction* trans,
 // also illegal, but are not considered here.
 static bool IsNameServerIllegalAfterTrimming(const string16& name) {
   size_t untrimmed_count = name.find_last_not_of(' ') + 1;
-  for (int i = 0; i < arraysize(kForbiddenServerNames); ++i) {
+  for (size_t i = 0; i < arraysize(kForbiddenServerNames); ++i) {
     if (name.compare(0, untrimmed_count, kForbiddenServerNames[i]) == 0)
       return true;
   }
@@ -1022,7 +1022,9 @@ bool SyncManager::SyncInternal::Init(
   address_watch_params_.conn_mgr = connection_manager();
   address_watch_thread_ = CreatePThread(AddressWatchThread,
                                         &address_watch_params_);
+#if defined(OS_WIN)
   DCHECK(NULL != address_watch_thread_);
+#endif
 
   // Hand over the bridged POST factory to be owned by the connection
   // dir_manager.

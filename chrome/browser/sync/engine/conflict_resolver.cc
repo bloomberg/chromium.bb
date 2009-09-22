@@ -65,7 +65,7 @@ Name FindNewName(BaseTransaction* trans,
                  const SyncName& original_name) {
   const PathString name = original_name.value();
   // 255 is defined in our spec.
-  const int allowed_length = kSyncProtocolMaxNameLengthBytes;
+  const size_t allowed_length = kSyncProtocolMaxNameLengthBytes;
   // TODO(sync): How do we get length on other platforms? The limit is
   // checked in java on the server, so it's not the number of glyphs its the
   // number of 16 bit characters in the UTF-16 representation.
@@ -664,8 +664,8 @@ bool ConflictResolver::ResolveSimpleConflicts(const ScopedDirLookup& dir,
         case NO_SYNC_PROGRESS:
           {
             int conflict_count = (simple_conflict_count_map_[id] += 2);
-            bool stuck = LogAndSignalIfConflictStuck(&trans, conflict_count,
-                                                     &id, &id + 1, view);
+            LogAndSignalIfConflictStuck(&trans, conflict_count,
+                                        &id, &id + 1, view);
             break;
           }
         case SYNC_PROGRESS:
@@ -724,9 +724,9 @@ bool ConflictResolver::ResolveConflicts(const ScopedDirLookup& dir,
       rv = true;
     }
     SyncerStatus status(session);
-    bool stuck = LogAndSignalIfConflictStuck(&trans, conflict_count,
-                                             conflict_set->begin(),
-                                             conflict_set->end(), view);
+    LogAndSignalIfConflictStuck(&trans, conflict_count,
+                                conflict_set->begin(),
+                                conflict_set->end(), view);
   }
   if (rv) {
     // This code means we don't signal that syncing is stuck when any conflict

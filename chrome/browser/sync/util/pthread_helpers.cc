@@ -133,7 +133,7 @@ struct timespec GetPThreadAbsoluteTime(uint32 ms) {
 #endif  // OS_WIN
 }
 
-void NameCurrentThreadForDebugging(char* name) {
+void NameCurrentThreadForDebugging(const char* name) {
 #if defined(OS_WIN)
   // This implementation is taken from Chromium's platform_thread framework.
   // The information on how to set the thread name comes from a MSDN article:

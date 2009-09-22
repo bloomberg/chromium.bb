@@ -4,7 +4,6 @@
 
 #include <sys/types.h>
 
-#include <glib.h>
 #include <string.h>
 
 #include "base/logging.h"
@@ -41,11 +40,4 @@ PathString AppendSlash(const PathString& path) {
     return path + '/';
   }
   return path;
-}
-
-PathString LowercasePath(const PathString& path) {
-  gchar* ret = g_utf8_strdown(path.c_str(), -1);
-  PathString retstr(ret);
-  g_free(ret);
-  return retstr;
 }

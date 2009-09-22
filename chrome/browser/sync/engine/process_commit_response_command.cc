@@ -103,7 +103,6 @@ void ProcessCommitResponseCommand::ModelChangingExecuteImpl(
   bool over_quota = false;
   set<syncable::Id> conflicting_new_folder_ids;
   set<syncable::Id> deleted_folders;
-  bool truncated_commit_logged = false;
   { // Scope for WriteTransaction.
     WriteTransaction trans(dir, SYNCER, __FILE__, __LINE__);
     for (int i = 0; i < cr.entryresponse_size(); i++) {

@@ -12,14 +12,16 @@ void UserSettings::ClearAllServiceTokens() {
   service_tokens_.clear();
 }
 
-void UserSettings::SetAuthTokenForService(const string& email,
-    const string& service_name, const string& long_lived_service_token) {
+void UserSettings::SetAuthTokenForService(
+    const std::string& email,
+    const std::string& service_name,
+    const std::string& long_lived_service_token) {
   service_tokens_[service_name] = long_lived_service_token;
 }
 
-bool UserSettings::GetLastUserAndServiceToken(const string& service_name,
-                                              string* username,
-                                              string* service_token) {
+bool UserSettings::GetLastUserAndServiceToken(const std::string& service_name,
+                                              std::string* username,
+                                              std::string* service_token) {
   ServiceTokenMap::const_iterator iter = service_tokens_.find(service_name);
 
   if (iter != service_tokens_.end()) {

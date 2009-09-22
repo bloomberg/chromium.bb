@@ -23,7 +23,7 @@ namespace buzz {
 static const int kGaiaAuthTimeoutMs = 30 * 1000;  // 30 sec
 
 // Warning, this is externed.
-GaiaServer buzz::g_gaia_server;
+GaiaServer g_gaia_server;
 
 ///////////////////////////////////////////////////////////////////////////////
 // GaiaAuth::WorkerThread

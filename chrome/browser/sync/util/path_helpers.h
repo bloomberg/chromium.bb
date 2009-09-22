@@ -72,7 +72,6 @@ PathString LastPathSegment(const PathString& path);
 std::string LastPathSegment(const std::string& path);
 PathString AppendSlash(const PathString& path);
 PathString GetFullPath(const PathString& path);
-PathString LowercasePath(const PathString& path);
 PathString ExpandTilde(const PathString& path);
 
 inline bool HasSuffixPathString(const PathString& str,

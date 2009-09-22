@@ -5,6 +5,7 @@
 #include <pwd.h>
 #include <string.h>
 
+#include "chrome/browser/sync/notifier/base/string.h"
 #include "chrome/browser/sync/util/path_helpers.h"
 
 #if ((!defined(OS_LINUX)) && (!defined(OS_MACOSX)))
@@ -25,15 +26,15 @@ PathString ExpandTilde(const PathString& path) {
 
 namespace {
 // TODO(sync): We really should use char[].
-string cache_dir_;
+  std::string cache_dir_;
 }
 
-void set_cache_dir(string cache_dir) {
+void set_cache_dir(std::string cache_dir) {
   CHECK(cache_dir_.empty());
   cache_dir_ = cache_dir;
 }
 
-string get_cache_dir() {
+std::string get_cache_dir() {
   CHECK(!cache_dir_.empty());
   return cache_dir_;
 }
@@ -41,7 +42,7 @@ string get_cache_dir() {
 // On Posix, PathStrings are UTF-8, not UTF-16 as they are on Windows. Thus,
 // this function is different from the Windows version.
 PathString TruncatePathString(const PathString& original, int length) {
-  if (original.size() <= length)
+  if (original.size() <= static_cast<size_t>(length))
     return original;
   if (length <= 0)
     return original;
@@ -89,8 +90,7 @@ PathString TruncatePathString(const PathString& original, int length) {
 PathString MakePathComponentOSLegal(const PathString& component) {
   if (PathString::npos == component.find("/"))
     return PSTR("");
-  PathString new_name;
-  new_name.reserve(component.size());
-  StringReplace(component, "/", ":", true, &new_name);
+  PathString new_name(component);
+  notifier::StringReplace(&new_name, "/", ":", true);
   return new_name;
 }

@@ -127,18 +127,27 @@ SyncerThread::SyncerThread(
     ServerConnectionManager* connection_manager,
     AllStatus* all_status,
     ModelSafeWorker* model_safe_worker)
-    : dirman_(mgr), scm_(connection_manager),
-      syncer_(NULL), syncer_events_(NULL), thread_running_(false),
+    : stop_syncer_thread_(false),
+      thread_running_(false),
+      connected_(false),
+      p2p_authenticated_(false),
+      p2p_subscribed_(false),
+      client_command_hookup_(NULL),
+      conn_mgr_hookup_(NULL),
+      allstatus_(all_status),
+      syncer_(NULL),
+      dirman_(mgr),
+      scm_(connection_manager),
       syncer_short_poll_interval_seconds_(kDefaultShortPollIntervalSeconds),
       syncer_long_poll_interval_seconds_(kDefaultLongPollIntervalSeconds),
       syncer_polling_interval_(kDefaultShortPollIntervalSeconds),
       syncer_max_interval_(kDefaultMaxPollIntervalMs),
-      stop_syncer_thread_(false), connected_(false), conn_mgr_hookup_(NULL),
-      p2p_authenticated_(false), p2p_subscribed_(false),
-      allstatus_(all_status), talk_mediator_hookup_(NULL),
-      command_channel_(command_channel), directory_manager_hookup_(NULL),
+      talk_mediator_hookup_(NULL),
+      command_channel_(command_channel),
+      directory_manager_hookup_(NULL),
+      syncer_events_(NULL),
       model_safe_worker_(model_safe_worker),
-      client_command_hookup_(NULL), disable_idle_detection_(false) {
+      disable_idle_detection_(false) {
 
   SyncerEvent shutdown = { SyncerEvent::SHUTDOWN_USE_WITH_CARE };
   syncer_event_channel_.reset(new SyncerEventChannel(shutdown));

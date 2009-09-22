@@ -29,7 +29,7 @@ void TrimPathStringToValidCharacter(PathString* string) {
     return;
   if (0 == (string->at(string->length() - 1) & 0x080))
     return;
-  int partial_enc_bytes = 0;
+  size_t partial_enc_bytes = 0;
   for (partial_enc_bytes = 0 ; true ; ++partial_enc_bytes) {
     if (4 == partial_enc_bytes || partial_enc_bytes == string->length()) {
       // original string was broken, garbage in, garbage out.

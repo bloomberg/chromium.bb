@@ -8,8 +8,6 @@
 
 #ifdef OS_MACOSX
 #include <CoreFoundation/CoreFoundation.h>
-#elif defined(OS_LINUX)
-#include <glib.h>
 #endif
 
 #include <string>
@@ -23,6 +21,12 @@
 #include "chrome/browser/sync/util/path_helpers.h"
 #include "chrome/browser/sync/util/query_helpers.h"
 #include "third_party/sqlite/preprocessed/sqlite3.h"
+
+// Sometimes threads contend on the DB lock itself, especially when one thread
+// is calling SaveChanges.  In the worst case scenario, the user can put his
+// laptop to sleep during db contention, and wake up the laptop days later, so
+// infinity seems like the best choice here.
+const int kDirectoryBackingStoreBusyTimeoutMs = std::numeric_limits<int>::max();
 
 // If sizeof(time_t) != sizeof(int32) we need to alter or expand the sqlite
 // datatype.
@@ -39,6 +43,7 @@ static const string::size_type kUpdateStatementBufferSize = 2048;
 // Increment this version whenever updating DB tables.
 static const int32 kCurrentDBVersion = 67;
 
+#if OS_WIN
 // TODO(sync): remove
 static void PathNameMatch16(sqlite3_context* context, int argc,
                             sqlite3_value** argv) {
@@ -67,6 +72,7 @@ static void PathNameMatch16WithEscape(sqlite3_context* context,
   // Never seen this called, but just in case.
   LOG(FATAL) << "PathNameMatch16WithEscape() not implemented";
 }
+#endif
 
 static void RegisterPathNameCollate(sqlite3* dbhandle) {
 #ifdef OS_WIN
@@ -245,8 +251,10 @@ static string ComposeCreateTableColumnSpecs(const ColumnSpec* begin,
 
 DirectoryBackingStore::DirectoryBackingStore(const PathString& dir_name,
     const PathString& backing_filepath)
-    : dir_name_(dir_name), backing_filepath_(backing_filepath),
-      load_dbhandle_(NULL), save_dbhandle_(NULL) {
+    : load_dbhandle_(NULL),
+      save_dbhandle_(NULL),
+      dir_name_(dir_name),
+      backing_filepath_(backing_filepath) {
 }
 
 DirectoryBackingStore::~DirectoryBackingStore() {
@@ -636,7 +644,7 @@ int DirectoryBackingStore::CreateTables() {
            GenerateCacheGUID());         // cache_guid
   // Create the big metas table.
   string query = "CREATE TABLE metas " + ComposeCreateTableColumnSpecs
-      (g_metas_columns, g_metas_columns + ARRAYSIZE(g_metas_columns));
+      (g_metas_columns, g_metas_columns + arraysize(g_metas_columns));
   result = SQLITE_DONE != result ? result : Exec(load_dbhandle_, query.c_str());
   // Insert the entry for the root into the metas table.
   const int64 now = Now();

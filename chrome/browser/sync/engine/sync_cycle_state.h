@@ -46,8 +46,8 @@ class SyncCycleState {
         conflicts_resolved_(false),
         items_committed_(false),
         over_quota_(false),
-        dirty_(true),
-        timestamp_dirty_(false) {}
+        timestamp_dirty_(false),
+        dirty_(true) {}
 
   void set_update_response(const ClientToServerResponse& update_response) {
     update_response_.CopyFrom(update_response);

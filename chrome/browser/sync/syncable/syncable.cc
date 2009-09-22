@@ -7,12 +7,13 @@
 #include "build/build_config.h"
 
 #include <sys/stat.h>
+#ifdef OS_LINUX
+#include <sys/time.h>
+#endif
 #include <sys/types.h>
 #include <time.h>
 #ifdef OS_MACOSX
 #include <CoreFoundation/CoreFoundation.h>
-#elif defined(OS_LINUX)
-#include <glib.h>
 #elif defined(OS_WIN)
 #include <shlwapi.h>  // for PathMatchSpec
 #endif
@@ -102,20 +103,14 @@ int ComparePathNames16(void*, int a_bytes, const void* a, int b_bytes,
   CHECK(0 != result) << "Error comparing strings: " << GetLastError();
   return result - 2;  // Convert to -1, 0, 1
 #elif defined(OS_LINUX)
-// misnomer for Linux. These are already utf8 bit strings.
-  gchar *case_folded_a;
-  gchar *case_folded_b;
-  GError *err = NULL;
-  case_folded_a = g_utf8_casefold(reinterpret_cast<const gchar*>(a), a_bytes);
-  CHECK(case_folded_a != NULL) << "g_utf8_casefold failed";
-  case_folded_b = g_utf8_casefold(reinterpret_cast<const gchar*>(b), b_bytes);
-  CHECK(case_folded_b != NULL) << "g_utf8_casefold failed";
-  gint result = g_utf8_collate(case_folded_a, case_folded_b);
-  g_free(case_folded_a);
-  g_free(case_folded_b);
-  if (result < 0) return -1;
-  if (result > 0) return 1;
-  return 0;
+  int result = base::strncasecmp(reinterpret_cast<const char *>(a),
+                                 reinterpret_cast<const char *>(b),
+                                 std::min(a_bytes, b_bytes));
+  if (result != 0) {
+    return result;
+  } else {
+    return a_bytes > b_bytes ? 1 : b_bytes > a_bytes ? -1 : 0;
+  }
 #elif defined(OS_MACOSX)
   CFStringRef a_str;
   CFStringRef b_str;
@@ -210,9 +205,9 @@ Directory::Kernel::Kernel(const PathString& db_path,
   last_sync_timestamp_(info.kernel_info.last_sync_timestamp),
   initial_sync_ended_(info.kernel_info.initial_sync_ended),
   store_birthday_(info.kernel_info.store_birthday),
-  next_id(info.kernel_info.next_id),
   cache_guid_(info.cache_guid),
-  next_metahandle(info.max_metahandle + 1) {
+  next_metahandle(info.max_metahandle + 1),
+  next_id(info.kernel_info.next_id) {
   info_status_ = Directory::KERNEL_SHARE_INFO_VALID;
   CHECK(0 == pthread_mutex_init(&mutex, NULL));
   CHECK(0 == pthread_key_create(&thread_node_key, &DestroyThreadNodeKey));
@@ -811,9 +806,9 @@ void Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
       size_t num_erased = 0;
       kernel_->flushed_metahandles_.Push(entry->ref(META_HANDLE));
       num_erased = kernel_->ids_index->erase(entry);
-      DCHECK_EQ(1, num_erased);
+      DCHECK(1 == num_erased);
       num_erased = kernel_->metahandles_index->erase(entry);
-      DCHECK_EQ(1, num_erased);
+      DCHECK(1 == num_erased);
       delete entry;
     }
   }

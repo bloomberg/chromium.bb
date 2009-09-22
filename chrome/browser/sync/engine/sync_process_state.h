@@ -289,21 +289,23 @@ class SyncProcessState {
  private:
   // For testing.
   SyncProcessState()
-      : account_name_(PSTR("")),
-        dirman_(NULL),
-        syncer_event_channel_(NULL),
-        connection_manager_(NULL),
-        model_safe_worker_(NULL),
-        resolver_(NULL),
-        syncer_stuck_(false),
-        num_sync_cycles_(0),
+      : num_sync_cycles_(0),
         silenced_until_(0),
+        connection_manager_(NULL),
+        account_name_(PSTR("")),
+        dirman_(NULL),
+        resolver_(NULL),
+        model_safe_worker_(NULL),
+        syncer_event_channel_(NULL),
         error_rate_(0),
         current_sync_timestamp_(0),
         servers_latest_timestamp_(0),
+        syncing_(false),
+        invalid_store_(false),
+        syncer_stuck_(false),
         error_commits_(0),
-        stalled_commits_(0),
         conflicting_commits_(0),
+        stalled_commits_(0),
         consecutive_problem_get_updates_(0),
         consecutive_problem_commits_(0),
         consecutive_transient_error_commits_(0),
@@ -311,9 +313,7 @@ class SyncProcessState {
         successful_commits_(0),
         dirty_(false),
         auth_dirty_(false),
-        auth_failed_(false),
-        syncing_(false),
-        invalid_store_(false) {}
+        auth_failed_(false) {}
 
   ServerConnectionManager* connection_manager_;
   const PathString account_name_;

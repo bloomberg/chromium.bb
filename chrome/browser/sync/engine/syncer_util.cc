@@ -299,7 +299,6 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntryWithoutMerge(
     }
   }
 
-  int64 old_version = entry->Get(BASE_VERSION);
   SyncerUtil::UpdateLocalDataFromServerData(trans, entry);
 
   return SUCCESS;

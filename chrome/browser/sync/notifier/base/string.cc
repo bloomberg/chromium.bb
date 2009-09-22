@@ -16,7 +16,9 @@
 #include "talk/base/logging.h"
 #include "talk/base/stringencode.h"
 
+#ifdef OS_WIN
 using base::snprintf;
+#endif
 
 namespace notifier {
 
@@ -278,7 +280,11 @@ std::string DoubleToString(double d) {
 
 std::string UIntToString(uint32 i) {
   char buf[80];
+#ifdef OS_LINUX
+  snprintf(buf, sizeof(buf), "%u", i);
+#else
   snprintf(buf, sizeof(buf), "%lu", i);
+#endif
   return std::string(buf);
 }
 

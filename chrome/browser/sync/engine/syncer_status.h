@@ -27,8 +27,8 @@ class SyncerSession;
 class SyncerStatus {
  public:
    SyncerStatus(SyncCycleState* cycle_state, SyncProcessState* state)
-       : sync_process_state_(state),
-         sync_cycle_state_(cycle_state){}
+       : sync_cycle_state_(cycle_state),
+         sync_process_state_(state) {}
    explicit SyncerStatus(SyncerSession* s);
    ~SyncerStatus();
 

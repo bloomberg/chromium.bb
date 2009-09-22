@@ -255,6 +255,6 @@ struct timespec GetPThreadAbsoluteTime(uint32 ms_from_now);
 
 // Assign a descriptive label to the current thread. This is useful to see
 // in a GUI debugger, but may not be implementable on all platforms.
-void NameCurrentThreadForDebugging(char* name);
+void NameCurrentThreadForDebugging(const char* name);
 
 #endif  // CHROME_BROWSER_SYNC_UTIL_PTHREAD_HELPERS_H_

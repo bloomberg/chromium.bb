@@ -30,8 +30,8 @@ static const int kBackoffRandomizationFactor = 2;
 const char* AllStatus::GetSyncStatusString(SyncStatus icon) {
   const char* strings[] = {"OFFLINE", "OFFLINE_UNSYNCED", "SYNCING", "READY",
       "CONFLICT", "OFFLINE_UNUSABLE"};
-  COMPILE_ASSERT(ARRAYSIZE(strings) == ICON_STATUS_COUNT, enum_indexed_array);
-  if (icon < 0 || icon >= ARRAYSIZE(strings))
+  COMPILE_ASSERT(arraysize(strings) == ICON_STATUS_COUNT, enum_indexed_array);
+  if (icon < 0 || icon >= static_cast<SyncStatus>(arraysize(strings)))
     LOG(FATAL) << "Illegal Icon State:" << icon;
   return strings[icon];
 }
@@ -42,8 +42,8 @@ static const AllStatus::Status init_status =
 static const AllStatusEvent shutdown_event =
   { AllStatusEvent::SHUTDOWN, init_status };
 
-AllStatus::AllStatus() : channel_(new Channel(shutdown_event)),
-                         status_(init_status) {
+AllStatus::AllStatus() : status_(init_status),
+                         channel_(new Channel(shutdown_event)) {
   status_.initial_sync_ended = true;
   status_.notifications_enabled = false;
 }

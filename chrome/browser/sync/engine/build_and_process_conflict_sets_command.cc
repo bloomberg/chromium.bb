@@ -60,7 +60,7 @@ bool BuildAndProcessConflictSetsCommand::ProcessSingleDirectionConflictSets(
     CHECK(conflict_set->size() >= 2);
     // We scan the set to see if it consists of changes of only one type.
     ConflictSet::const_iterator i;
-    int unsynced_count = 0, unapplied_count = 0;
+    size_t unsynced_count = 0, unapplied_count = 0;
     for (i = conflict_set->begin(); i != conflict_set->end(); ++i) {
       syncable::Entry entry(trans, syncable::GET_BY_ID, *i);
       CHECK(entry.good());
@@ -120,7 +120,6 @@ bool RollbackEntry(syncable::WriteTransaction* trans,
   syncable::MutableEntry entry(trans, syncable::GET_BY_HANDLE,
                                backup->ref(syncable::META_HANDLE));
   CHECK(entry.good());
-  bool was_del = entry.Get(syncable::IS_DEL);
 
   if (!entry.Put(syncable::IS_DEL, backup->ref(syncable::IS_DEL)))
     return false;

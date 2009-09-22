@@ -61,6 +61,9 @@ bool UpdateApplicator::AttemptOneApplication(
       pointer_++;
       blocked_ids_.push_back(entry.Get(syncable::ID));
       break;
+    default:
+      NOTREACHED();
+      break;
   }
   LOG(INFO) << "Apply Status for " << entry.Get(syncable::META_HANDLE)
             << " is " << updateResponse;

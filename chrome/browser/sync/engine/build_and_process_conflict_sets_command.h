@@ -39,9 +39,8 @@ class BuildAndProcessConflictSetsCommand : public ModelChangingSyncerCommand {
       syncable::WriteTransaction* trans,
       const std::vector<syncable::Id>* const update_set,
       SyncerSession* const session);
-  void BuildAndProcessConflictSetsCommand::BuildConflictSets(
-      syncable::BaseTransaction* trans,
-      ConflictResolutionView* view);
+  void BuildConflictSets(syncable::BaseTransaction* trans,
+                         ConflictResolutionView* view);
 
   void MergeSetsForNameClash(syncable::BaseTransaction* trans,
                              syncable::Entry* entry,

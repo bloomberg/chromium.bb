@@ -17,7 +17,6 @@ TaskPump::TaskPump() : timeout_change_count_(0), posted_(false) {
 
 void TaskPump::OnMessage(talk_base::Message* msg) {
   posted_ = false;
-  int initial_count = timeout_change_count_;
 
   // If a task timed out, ensure that it is not blocked, so it will be deleted.
   // This may result in a WakeTasks if a task is timed out.

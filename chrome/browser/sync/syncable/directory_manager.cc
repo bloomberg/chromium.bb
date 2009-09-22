@@ -37,8 +37,8 @@ const PathString DirectoryManager::GetSyncDataDatabasePath() const {
 
 DirectoryManager::DirectoryManager(const PathString& path)
     : root_path_(AppendSlash(path)),
-      channel_(new Channel(DirectoryManagerShutdownEvent())),
-      managed_directory_(NULL) {
+      managed_directory_(NULL),
+      channel_(new Channel(DirectoryManagerShutdownEvent())) {
   CHECK(0 == pthread_mutex_init(&mutex_, NULL));
 }
 

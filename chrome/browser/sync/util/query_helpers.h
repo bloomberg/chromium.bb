@@ -17,12 +17,6 @@
 #include "chrome/browser/sync/util/sync_types.h"
 #include "third_party/sqlite/preprocessed/sqlite3.h"
 
-// Sometimes threads contend on the DB lock itself, especially when one thread
-// is calling SaveChanges.  In the worst case scenario, the user can put his
-// laptop to sleep during db contention, and wake up the laptop days later, so
-// infinity seems like the best choice here.
-const int kDirectoryBackingStoreBusyTimeoutMs = std::numeric_limits<int>::max();
-
 enum SqliteNullType {
   SQLITE_NULL_VALUE
 };

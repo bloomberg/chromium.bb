@@ -30,7 +30,7 @@ bool SplitStringIntoKeyValues(const string& line,
   values->clear();
 
   // find the key string
-  int end_key_pos = line.find_first_of(key_value_delimiter);
+  size_t end_key_pos = line.find_first_of(key_value_delimiter);
   if (end_key_pos == string::npos) {
     DLOG(INFO) << "cannot parse key from line: " << line;
     return false;    // no key
@@ -39,7 +39,7 @@ bool SplitStringIntoKeyValues(const string& line,
 
   // find the values string
   string remains(line, end_key_pos, line.size() - end_key_pos);
-  int begin_values_pos = remains.find_first_not_of(key_value_delimiter);
+  size_t begin_values_pos = remains.find_first_not_of(key_value_delimiter);
   if (begin_values_pos == string::npos) {
     DLOG(INFO) << "cannot parse value from line: " << line;
     return false;   // no value
@@ -92,9 +92,9 @@ GaiaAuthenticator::GaiaAuthenticator(const string& user_agent,
       service_id_(service_id),
       gaia_url_(gaia_url),
       request_count_(0),
-      early_auth_attempt_count_(0),
       delay_(0),
-      next_allowed_auth_attempt_time_(0) {
+      next_allowed_auth_attempt_time_(0),
+      early_auth_attempt_count_(0) {
   GaiaAuthEvent done = { GaiaAuthEvent::GAIA_AUTHENTICATOR_DESTROYED, None,
                          this };
   channel_ = new Channel(done);

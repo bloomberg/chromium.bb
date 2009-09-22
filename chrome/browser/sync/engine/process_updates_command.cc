@@ -92,6 +92,9 @@ void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncerSession* session) {
         if (update.sync_timestamp() > new_timestamp)
           new_timestamp = update.sync_timestamp();
         break;
+      default:
+        NOTREACHED();
+        break;
     }
 
   }

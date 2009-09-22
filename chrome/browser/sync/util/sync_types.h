@@ -35,7 +35,7 @@ inline size_t PathLen(const wchar_t* s) {
 #else  // Mac and Linux
 #define PATHSTRING_IS_STD_STRING 1
 #define PSTR_CHAR char
-typedef string PathString;
+typedef std::string PathString;
 #define PSTR(s) s
 inline size_t PathLen(const char* s) {
   return strlen(s);
@@ -71,6 +71,6 @@ inline PathString IntToPathString(int digit) {
   return PathString(tmp.begin(), tmp.end());
 }
 
-const int kSyncProtocolMaxNameLengthBytes = 255;
+const size_t kSyncProtocolMaxNameLengthBytes = 255;
 
 #endif  // CHROME_BROWSER_SYNC_UTIL_SYNC_TYPES_H_

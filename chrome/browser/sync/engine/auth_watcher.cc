@@ -50,16 +50,16 @@ AuthWatcher::AuthWatcher(DirectoryManager* dirman,
                          UserSettings* user_settings,
                          GaiaAuthenticator* gaia_auth,
                          TalkMediator* talk_mediator)
-    : dirman_(dirman),
+    : gaia_(gaia_auth),
+      dirman_(dirman),
       scm_(scm),
       allstatus_(allstatus),
       status_(NOT_AUTHENTICATED),
+      user_settings_(user_settings),
+      talk_mediator_(talk_mediator),
       thread_handle_valid_(false),
       authenticating_now_(false),
-      current_attempt_trigger_(AuthWatcherEvent::USER_INITIATED),
-      user_settings_(user_settings),
-      gaia_(gaia_auth),
-      talk_mediator_(talk_mediator) {
+      current_attempt_trigger_(AuthWatcherEvent::USER_INITIATED) {
   connmgr_hookup_.reset(
       NewEventListenerHookup(scm->channel(), this,
                              &AuthWatcher::HandleServerConnectionEvent));
@@ -190,7 +190,7 @@ bool AuthWatcher::AuthenticateWithToken(const string& gaia_email,
 
 bool AuthWatcher::AuthenticateLocally(string email) {
   user_settings_->GetEmailForSignin(&email);
-  if (file_util::PathExists(dirman_->GetSyncDataDatabasePath())) {
+  if (file_util::PathExists(FilePath(dirman_->GetSyncDataDatabasePath()))) {
     gaia_->SetUsername(email);
     status_ = LOCALLY_AUTHENTICATED;
     user_settings_->SwitchUser(email);

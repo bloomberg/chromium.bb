@@ -88,8 +88,8 @@ void UserSettings::MigrateOldVersionsAsNeeded(sqlite3* const handle,
         GetColumn(share_query.get(), 0, &share_name);
         GetColumn(share_query.get(), 1, &file_name);
 
-        if (!file_util::Move(file_name,
-            DirectoryManager::GetSyncDataDatabaseFilename())) {
+        if (!file_util::Move(FilePath(file_name),
+            FilePath(DirectoryManager::GetSyncDataDatabaseFilename()))) {
           LOG(WARNING) << "Unable to upgrade UserSettings from v10";
           return;
         }

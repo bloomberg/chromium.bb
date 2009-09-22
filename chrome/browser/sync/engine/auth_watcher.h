@@ -71,7 +71,6 @@ class AuthWatcher {
   enum Status { LOCALLY_AUTHENTICATED, GAIA_AUTHENTICATED, NOT_AUTHENTICATED };
   typedef syncable::DirectoryManagerEvent DirectoryManagerEvent;
   typedef syncable::DirectoryManager DirectoryManager;
-  typedef TalkMediator TalkMediator;
 
   AuthWatcher(DirectoryManager* dirman,
               ServerConnectionManager* scm,

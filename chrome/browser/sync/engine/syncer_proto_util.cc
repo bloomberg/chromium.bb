@@ -161,6 +161,9 @@ bool SyncerProtoUtil::PostClientToServerMessage(ClientToServerMessage* msg,
         session->set_silenced_until(time(0) + kSyncDelayAfterThrottled);
         rv = false;
         break;
+      default:
+        NOTREACHED();
+        break;
     }
 
   } else if (session->connection_manager()->IsServerReachable()) {

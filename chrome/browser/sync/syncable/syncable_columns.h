@@ -65,8 +65,8 @@ static const ColumnSpec g_metas_columns[] = {
 };
 
 // At least enforce that there are equal number of column names and fields.
-COMPILE_ASSERT(ARRAYSIZE(g_metas_columns) >= FIELD_COUNT, missing_column_name);
-COMPILE_ASSERT(ARRAYSIZE(g_metas_columns) <= FIELD_COUNT, extra_column_names);
+COMPILE_ASSERT(arraysize(g_metas_columns) >= FIELD_COUNT, missing_column_name);
+COMPILE_ASSERT(arraysize(g_metas_columns) <= FIELD_COUNT, extra_column_names);
 
 static inline const char* ColumnName(int field) {
   DCHECK(field < BEGIN_TEMPS);

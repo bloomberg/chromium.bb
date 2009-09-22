@@ -143,16 +143,20 @@ struct WatchServerStatus {
 ServerConnectionManager::ServerConnectionManager(
     const string& server, int port, bool use_ssl, const string& user_agent,
     const string& client_id)
-    : sync_server_(server), sync_server_port_(port),
-      channel_(new Channel(shutdown_event)),
-      server_status_(HttpResponse::NONE), server_reachable_(false),
-      client_id_(client_id), use_ssl_(use_ssl),
+    : sync_server_(server),
+      sync_server_port_(port),
+      client_id_(client_id),
       user_agent_(user_agent),
-      platform_(new PlatformMembers(user_agent)),
-      reset_count_(0), error_count_(0),
-      terminate_all_io_(false),
+      use_ssl_(use_ssl),
       proto_sync_path_(kSyncServerSyncPath),
-      get_time_path_(kSyncServerGetTimePath) {
+      get_time_path_(kSyncServerGetTimePath),
+      error_count_(0),
+      channel_(new Channel(shutdown_event)),
+      server_status_(HttpResponse::NONE),
+      server_reachable_(false),
+      platform_(new PlatformMembers(user_agent)),
+      reset_count_(0),
+      terminate_all_io_(false) {
 }
 
 ServerConnectionManager::~ServerConnectionManager() {

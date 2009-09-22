@@ -22,12 +22,12 @@ using std::vector;
 namespace browser_sync {
 
 SyncProcessState::SyncProcessState(const SyncProcessState& counts)
-    : account_name_(counts.account_name_),
+    : connection_manager_(counts.connection_manager_),
+      account_name_(counts.account_name_),
       dirman_(counts.dirman_),
-      syncer_event_channel_(counts.syncer_event_channel_),
-      connection_manager_(counts.connection_manager_),
       resolver_(counts.resolver_),
-      model_safe_worker_(counts.model_safe_worker_) {
+      model_safe_worker_(counts.model_safe_worker_),
+      syncer_event_channel_(counts.syncer_event_channel_) {
   *this = counts;
 }
 
@@ -37,21 +37,23 @@ SyncProcessState::SyncProcessState(syncable::DirectoryManager* dirman,
                                    ConflictResolver* const resolver,
                                    SyncerEventChannel* syncer_event_channel,
                                    ModelSafeWorker* model_safe_worker)
-    : account_name_(account_name),
-      dirman_(dirman),
-      syncer_event_channel_(syncer_event_channel),
-      connection_manager_(connection_manager),
-      model_safe_worker_(model_safe_worker),
-      resolver_(resolver),
-      syncer_stuck_(false),
-      num_sync_cycles_(0),
+    : num_sync_cycles_(0),
       silenced_until_(0),
+      connection_manager_(connection_manager),
+      account_name_(account_name),
+      dirman_(dirman),
+      resolver_(resolver),
+      model_safe_worker_(model_safe_worker),
+      syncer_event_channel_(syncer_event_channel),
       error_rate_(0),
       current_sync_timestamp_(0),
       servers_latest_timestamp_(0),
+      syncing_(false),
+      invalid_store_(false),
+      syncer_stuck_(false),
       error_commits_(0),
-      stalled_commits_(0),
       conflicting_commits_(0),
+      stalled_commits_(0),
       consecutive_problem_get_updates_(0),
       consecutive_problem_commits_(0),
       consecutive_transient_error_commits_(0),
@@ -59,8 +61,7 @@ SyncProcessState::SyncProcessState(syncable::DirectoryManager* dirman,
       successful_commits_(0),
       dirty_(false),
       auth_dirty_(false),
-      auth_failed_(false),
-      invalid_store_(false) {
+      auth_failed_(false) {
   syncable::ScopedDirLookup dir(dirman_, account_name_);
 
   // The directory must be good here.

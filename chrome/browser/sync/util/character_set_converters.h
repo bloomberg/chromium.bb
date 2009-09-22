@@ -24,10 +24,6 @@
 //   CHECK(browser_sync::Append(utf8, &bob));
 //   PathString fred = bob;
 
-#ifdef OS_LINUX
-#include <glib.h>
-#endif
-
 #include <string>
 
 #include "base/basictypes.h"
