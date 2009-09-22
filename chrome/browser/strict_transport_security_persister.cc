@@ -29,6 +29,10 @@ StrictTransportSecurityPersister::StrictTransportSecurityPersister(
                                                1000 /* 1 second */);
 }
 
+StrictTransportSecurityPersister::~StrictTransportSecurityPersister() {
+  strict_transport_security_state_->SetDelegate(NULL);
+}
+
 void StrictTransportSecurityPersister::LoadState() {
   // Runs on |file_thread_|
   AutoLock locked_(lock_);

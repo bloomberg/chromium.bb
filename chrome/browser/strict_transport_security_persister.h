@@ -47,6 +47,8 @@ class StrictTransportSecurityPersister :
                                    base::Thread* file_thread,
                                    const FilePath& profile_path);
 
+  ~StrictTransportSecurityPersister();
+
   // Called by the StrictTransportSecurityState when it changes its state.
   virtual void StateIsDirty(net::StrictTransportSecurityState*);
 
