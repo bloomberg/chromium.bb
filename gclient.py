@@ -670,7 +670,7 @@ class GClient(object):
         raise Error("solution %s specified more than once" % name)
       url = solution["url"]
       entries[name] = url
-      if run_scm:
+      if run_scm and url:
         self._options.revision = revision_overrides.get(name)
         scm = gclient_scm.CreateSCM(url, self._root_dir, name)
         scm.RunCommand(command, self._options, args, file_list)
