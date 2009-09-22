@@ -20,11 +20,13 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/main_function_params.h"
+#include "chrome/common/net/net_resource_provider.h"
 #include "chrome/renderer/renderer_main_platform_delegate.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "net/base/net_module.h"
 
 #if defined(OS_LINUX)
 #include "chrome/app/breakpad_linux.h"
@@ -85,6 +87,9 @@ int RendererMain(const MainFunctionParams& parameters) {
   // Needs to be called after we have chrome::DIR_USER_DATA.
   InitCrashReporter();
 #endif
+
+  // Configure the network module so it has access to resources.
+  net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
 
   // This function allows pausing execution using the --renderer-startup-dialog
   // flag allowing us to attach a debugger.

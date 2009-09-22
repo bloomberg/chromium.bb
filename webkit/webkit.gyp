@@ -482,6 +482,8 @@
         'glue/feed_preview.cc',
         'glue/feed_preview.h',
         'glue/form_data.h',
+        'glue/ftp_directory_listing_response_delegate.cc',
+        'glue/ftp_directory_listing_response_delegate.h',
         'glue/glue_accessibility_object.cc',
         'glue/glue_accessibility_object.h',
         'glue/glue_serialize.cc',

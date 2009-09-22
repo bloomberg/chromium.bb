@@ -51,6 +51,7 @@
 #include "chrome/common/histogram_synchronizer.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/main_function_params.h"
+#include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/result_codes.h"
@@ -58,7 +59,6 @@
 #include "chrome/installer/util/master_preferences.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "grit/net_resources.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/net_module.h"
 #include "net/http/http_network_session.h"
@@ -140,44 +140,6 @@ void HandleErrorTestParameters(const CommandLine& command_line) {
     int* bad_pointer = NULL;
     *bad_pointer = 0;
   }
-}
-
-// The net module doesn't have access to this HTML or the strings that need to
-// be localized.  The Chrome locale will never change while we're running, so
-// it's safe to have a static string that we always return a pointer into.
-// This allows us to have the ResourceProvider return a pointer into the actual
-// resource (via a StringPiece), instead of always copying resources.
-struct LazyDirectoryListerCacher {
-  LazyDirectoryListerCacher() {
-    DictionaryValue value;
-    value.SetString(L"header",
-                    l10n_util::GetString(IDS_DIRECTORY_LISTING_HEADER));
-    value.SetString(L"parentDirText",
-                    l10n_util::GetString(IDS_DIRECTORY_LISTING_PARENT));
-    value.SetString(L"headerName",
-                    l10n_util::GetString(IDS_DIRECTORY_LISTING_NAME));
-    value.SetString(L"headerSize",
-                    l10n_util::GetString(IDS_DIRECTORY_LISTING_SIZE));
-    value.SetString(L"headerDateModified",
-                    l10n_util::GetString(IDS_DIRECTORY_LISTING_DATE_MODIFIED));
-    html_data = jstemplate_builder::GetI18nTemplateHtml(
-        ResourceBundle::GetSharedInstance().GetRawDataResource(
-            IDR_DIR_HEADER_HTML),
-        &value);
-  }
-
-  std::string html_data;
-};
-
-base::LazyInstance<LazyDirectoryListerCacher> lazy_dir_lister(
-    base::LINKER_INITIALIZED);
-
-// This is called indirectly by the network layer to access resources.
-base::StringPiece NetResourceProvider(int key) {
-  if (IDR_DIR_HEADER_HTML == key)
-    return base::StringPiece(lazy_dir_lister.Pointer()->html_data);
-
-  return ResourceBundle::GetSharedInstance().GetRawDataResource(key);
 }
 
 void RunUIMessageLoop(BrowserProcess* browser_process) {
@@ -703,8 +665,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   RLZTracker::InitRlzDelayed(base::DIR_MODULE, is_first_run, rlz_ping_delay);
 #endif
 
-  // Config the network module so it has access to resources.
-  net::NetModule::SetResourceProvider(NetResourceProvider);
+  // Configure the network module so it has access to resources.
+  net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
 
   // Register our global network handler for chrome:// and
   // chrome-extension:// URLs.

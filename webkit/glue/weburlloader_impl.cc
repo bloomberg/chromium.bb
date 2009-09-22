@@ -21,6 +21,7 @@
 #include "webkit/api/public/WebURLLoaderClient.h"
 #include "webkit/api/public/WebURLRequest.h"
 #include "webkit/api/public/WebURLResponse.h"
+#include "webkit/glue/ftp_directory_listing_response_delegate.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/multipart_response_delegate.h"
 #include "webkit/glue/resource_loader_bridge.h"
@@ -225,6 +226,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   WebURLRequest request_;
   WebURLLoaderClient* client_;
   scoped_ptr<ResourceLoaderBridge> bridge_;
+  scoped_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
   scoped_ptr<MultipartResponseDelegate> multipart_delegate_;
   int64 expected_content_length_;
 };
@@ -427,13 +429,17 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
 
   expected_content_length_ = response.expectedContentLength();
 
+  if (info.mime_type == "text/vnd.chromium.ftp-dir")
+    response.setMIMEType(WebString::fromUTF8("text/html"));
+
   client_->didReceiveResponse(loader_, response);
 
-  // we may have been cancelled after didReceiveResponse, which would leave us
-  // without a client and therefore without much need to do multipart handling.
+  // We may have been cancelled after didReceiveResponse, which would leave us
+  // without a client and therefore without much need to do further handling.
   if (!client_)
     return;
 
+  DCHECK(!ftp_listing_delegate_.get());
   DCHECK(!multipart_delegate_.get());
   if (info.headers && info.mime_type == "multipart/x-mixed-replace") {
     std::string content_type;
@@ -448,6 +454,9 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
       multipart_delegate_.reset(
           new MultipartResponseDelegate(client_, loader_, response, boundary));
     }
+  } else if (info.mime_type == "text/vnd.chromium.ftp-dir") {
+    ftp_listing_delegate_.reset(
+        new FtpDirectoryListingResponseDelegate(client_, loader_, response));
   }
 }
 
@@ -455,7 +464,11 @@ void WebURLLoaderImpl::Context::OnReceivedData(const char* data, int len) {
   if (!client_)
     return;
 
-  if (multipart_delegate_.get()) {
+  if (ftp_listing_delegate_.get()) {
+    // The FTP listing delegate will make the appropriate calls to
+    // client_->didReceiveData and client_->didReceiveResponse.
+    ftp_listing_delegate_->OnReceivedData(data, len);
+  } else if (multipart_delegate_.get()) {
     // The multipart delegate will make the appropriate calls to
     // client_->didReceiveData and client_->didReceiveResponse.
     multipart_delegate_->OnReceivedData(data, len);
@@ -467,7 +480,10 @@ void WebURLLoaderImpl::Context::OnReceivedData(const char* data, int len) {
 void WebURLLoaderImpl::Context::OnCompletedRequest(
     const URLRequestStatus& status,
     const std::string& security_info) {
-  if (multipart_delegate_.get()) {
+  if (ftp_listing_delegate_.get()) {
+    ftp_listing_delegate_->OnCompletedRequest();
+    ftp_listing_delegate_.reset(NULL);
+  } else if (multipart_delegate_.get()) {
     multipart_delegate_->OnCompletedRequest();
     multipart_delegate_.reset(NULL);
   }

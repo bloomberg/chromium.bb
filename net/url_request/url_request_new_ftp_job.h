@@ -30,6 +30,9 @@ class URLRequestNewFtpJob : public URLRequestJob {
 
   static URLRequestJob* Factory(URLRequest* request, const std::string& scheme);
 
+  // URLRequestJob methods:
+  virtual bool GetMimeType(std::string* mime_type) const;
+
  private:
   // URLRequestJob methods:
   virtual void Start();
@@ -54,23 +57,15 @@ class URLRequestNewFtpJob : public URLRequestJob {
 
   void RestartTransactionWithAuth();
 
-  int ProcessFtpDir(net::IOBuffer *buf, int buf_size, int bytes_read);
-
   void LogFtpServerType(char server_type);
 
   net::FtpRequestInfo request_info_;
   scoped_ptr<net::FtpTransaction> transaction_;
-  const net::FtpResponseInfo* response_info_;
-
-  scoped_refptr<net::IOBuffer> dir_listing_buf_;
-  int dir_listing_buf_size_;
 
   net::CompletionCallbackImpl<URLRequestNewFtpJob> start_callback_;
   net::CompletionCallbackImpl<URLRequestNewFtpJob> read_callback_;
 
-  std::string directory_html_;
   bool read_in_progress_;
-  std::string encoding_;
 
   scoped_refptr<net::AuthData> server_auth_;
 
