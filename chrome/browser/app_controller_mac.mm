@@ -208,11 +208,24 @@
   return nil;
 }
 
+// Helper routine to get the window controller if the main window is a tabbed
+// window, or nil if not. Examples of non-tabbed windows are "about" or
+// "preferences".
+- (TabWindowController*)mainWindowTabController {
+  NSWindowController* mainWindowController =
+      [[NSApp mainWindow] windowController];
+  if ([mainWindowController isKindOfClass:[TabWindowController class]])
+    return (TabWindowController*)mainWindowController;
+
+  return nil;
+}
+
 // If the window has tabs, make "close window" be cmd-shift-w, otherwise leave
 // it as the normal cmd-w. Capitalization of the key equivalent affects whether
 // the shift modifer is used.
 - (void)adjustCloseWindowMenuItemKeyEquivalent:(BOOL)inHaveTabs {
   [closeWindowMenuItem_ setKeyEquivalent:(inHaveTabs ? @"W" : @"w")];
+  [closeWindowMenuItem_ setKeyEquivalentModifierMask:NSCommandKeyMask];
 }
 
 // If the window has tabs, make "close tab" take over cmd-w, otherwise it
@@ -227,10 +240,25 @@
   }
 }
 
+// Explicitly remove any command-key equivalents from the close tab/window
+// menus so that nothing can go haywire if we get a user action during pending
+// updates.
+- (void)clearCloseMenuItemKeyEquivalents {
+  [closeTabMenuItem_ setKeyEquivalent:@""];
+  [closeTabMenuItem_ setKeyEquivalentModifierMask:0];
+  [closeWindowMenuItem_ setKeyEquivalent:@""];
+  [closeWindowMenuItem_ setKeyEquivalentModifierMask:0];
+}
+
 // See if we have a window with tabs open, and adjust the key equivalents for
 // Close Tab/Close Window accordingly
 - (void)fixCloseMenuItemKeyEquivalents {
   TabWindowController* tabController = [self keyWindowTabController];
+  if (!tabController && ![NSApp keyWindow]) {
+    // There might be a small amount of time where there is no key window,
+    // so just use our main browser window if there is one.
+    tabController = [self mainWindowTabController];
+  }
   BOOL windowWithMultipleTabs =
       (tabController && [tabController numberOfTabs] > 1);
   [self adjustCloseWindowMenuItemKeyEquivalent:windowWithMultipleTabs];
@@ -243,6 +271,11 @@
 // we do the enabling.
 - (void)delayedFixCloseMenuItemKeyEquivalents {
   if (!fileMenuUpdatePending_) {
+    // The OS prefers keypresses to timers, so it's possible that a cmd-w
+    // can sneak in before this timer fires. In order to prevent that from
+    // having any bad consequences, just clear the keys combos altogether. They
+    // will be reset when the timer eventually fires.
+    [self clearCloseMenuItemKeyEquivalents];
     [self performSelector:@selector(fixCloseMenuItemKeyEquivalents)
                withObject:nil
                afterDelay:0];
