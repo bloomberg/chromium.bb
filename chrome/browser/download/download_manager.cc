@@ -50,10 +50,19 @@
 #include "base/win_util.h"
 #endif
 
-
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>
 #endif
+
+namespace {
+static bool IsExtensionInstall(const DownloadItem* item) {
+  return item->mime_type() == Extension::kMimeType && !item->save_as();
+}
+
+static bool IsExtensionInstall(const DownloadCreateInfo* info) {
+  return info->mime_type == Extension::kMimeType && !info->save_as;
+}
+}
 
 // Periodically update our observers.
 class DownloadItemUpdateTask : public Task {
@@ -151,7 +160,8 @@ DownloadItem::DownloadItem(int32 download_id,
                            int64 download_size,
                            int render_process_id,
                            int request_id,
-                           bool is_dangerous)
+                           bool is_dangerous,
+                           bool save_as)
     : id_(download_id),
       full_path_(path),
       path_uniquifier_(path_uniquifier),
@@ -171,7 +181,8 @@ DownloadItem::DownloadItem(int32 download_id,
       auto_opened_(false),
       original_name_(original_name),
       render_process_id_(render_process_id),
-      request_id_(request_id) {
+      request_id_(request_id),
+      save_as_(save_as) {
   Init(true /* start progress timer */);
 }
 
@@ -444,7 +455,8 @@ void DownloadManager::GetDownloads(Observer* observer,
     download_copy.reserve(downloads_.size());
     for (DownloadMap::iterator it = downloads_.begin();
          it != downloads_.end(); ++it) {
-      download_copy.push_back(it->second);
+      if (it->second->db_handle() > kUninitializedHandle)
+        download_copy.push_back(it->second);
     }
 
     // We retain ownership of the DownloadItems.
@@ -573,7 +585,7 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
     // b) They are an extension that is not from the gallery
     if (IsDangerous(info->suggested_path.BaseName()))
       info->is_dangerous = true;
-    else if (info->mime_type == Extension::kMimeType &&
+    else if (IsExtensionInstall(info) &&
              !ExtensionsService::IsDownloadFromGallery(info->url,
                                                        info->referrer_url)) {
       info->is_dangerous = true;
@@ -694,7 +706,8 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
                                 info->total_bytes,
                                 info->child_id,
                                 info->request_id,
-                                info->is_dangerous);
+                                info->is_dangerous,
+                                info->save_as);
     download->set_manager(this);
     in_progress_[info->download_id] = download;
   } else {
@@ -720,12 +733,14 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
 
   download->Rename(target_path);
 
-  if (profile_->IsOffTheRecord()) {
-    // Fake a db handle for incognito mode, since nothing is actually stored in
-    // the database in this mode. We have to make sure that these handles don't
-    // collide with normal db handles, so we use a negative value. Eventually,
-    // they could overlap, but you'd have to do enough downloading that your ISP
-    // would likely stab you in the neck first. YMMV.
+  // Do not store the download in the history database for a few special cases:
+  // - incognito mode (that is the point of this mode)
+  // - extensions (users don't think of extension installation as 'downloading')
+  // We have to make sure that these handles don't collide with normal db
+  // handles, so we use a negative value. Eventually, they could overlap, but
+  // you'd have to do enough downloading that your ISP would likely stab you in
+  // the neck first. YMMV.
+  if (profile_->IsOffTheRecord() || IsExtensionInstall(download)) {
     static int64 fake_db_handle = kUninitializedHandle - 1;
     OnCreateDownloadEntryComplete(*info, fake_db_handle--);
   } else {
@@ -853,7 +868,7 @@ void DownloadManager::ContinueDownloadFinished(DownloadItem* download) {
     extension = extension.substr(1);
 
   // Handle chrome extensions explicitly and skip the shell execute.
-  if (download->mime_type() == Extension::kMimeType) {
+  if (IsExtensionInstall(download)) {
     OpenChromeExtension(download->full_path(), download->url(),
                         download->referrer_url());
     download->set_auto_opened(true);
@@ -1241,7 +1256,7 @@ void DownloadManager::OpenDownload(const DownloadItem* download,
                                    gfx::NativeView parent_window) {
   // Open Chrome extensions with ExtensionsService. For everything else do shell
   // execute.
-  if (download->mime_type() == Extension::kMimeType) {
+  if (IsExtensionInstall(download)) {
     OpenChromeExtension(download->full_path(), download->url(),
                         download->referrer_url());
   } else {
