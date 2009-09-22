@@ -46,6 +46,16 @@
    fun:_ZN7testing4Test3RunEv
 }
 {
+   # Mac test_shell_tests.  See http://crbug.com/11134
+   # Doesn't happen on bots, but happens like crazy on the smo
+   # test machine 'caliban'.  Don't delete just because it
+   # doesn't happen on the bots.
+   bug_11134
+   Memcheck:Value4
+   fun:vCMMVectorConvert8BitRGBToRGB
+   fun:_ZNK15CMMConvRGBToRGB7ConvertER8CMM8BitsP14CMMRuntimeInfomm
+}
+{
    # Mac system library bug?  See http://crbug.com/11327
    bug_11327
    Memcheck:Cond
@@ -482,14 +492,12 @@
    fun:_CFRuntimeCreateInstance
    fun:__CFArrayInit
    fun:CFArrayCreateMutableCopy
+   ...
    fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
    fun:_ZN3net12CertVerifier7Request8DoVerifyEv
+   ...
    fun:_ZN14RunnableMethodIN3net12CertVerifier7RequestEMS2_FvvE6Tuple0E3RunEv
    fun:-[TaskOperation main]
-   fun:-[NSOperation start]
-   fun:__runop
-   fun:_pthread_wqthread
-   fun:start_wqthread
 }
 {
    bug_20504
@@ -518,6 +526,17 @@
    ...
    fun:SecTrustSettingsEvaluateCert
    ...
+   fun:SecTrustEvaluate
+   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
+}
+{
+   bug_20541b
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:__CFArrayInit
+   fun:CFArrayCreateMutableCopy
+   fun:_ZN8Security12KeychainCore5Trust8evaluateEv
    fun:SecTrustEvaluate
    fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
 }
@@ -777,6 +796,48 @@
    fun:_ZN3WTF10fastMalloc*
    ...
    fun:_ZN7WebCore19V8EventListenerList3addEPNS_15V8EventListenerE
+}
+{
+   bug_22519a
+   Memcheck:Cond
+   fun:gleUpdateViewScissorData
+   fun:gleBindFramebuffer
+   fun:cgl_set_surface
+   fun:ogl_attach_surface
+   fun:ogl_render_layer_group
+   fun:ogl_render_layer_image_
+   fun:ogl_render_layer_
+   fun:ogl_render_layers
+   fun:CARenderOGLRender
+   fun:view_draw
+   fun:view_display_link
+   fun:link_callback
+   fun:_ZN13CVDisplayLink9performIOEP11CVTimeStamp
+   fun:_ZN13CVDisplayLink11runIOThreadEv
+   fun:_pthread_start
+   fun:thread_start
+}
+{
+   bug_22519b
+   Memcheck:Cond
+   fun:gleUpdateFogData
+   fun:glProgramStringARB_Exec
+   fun:gl_context_bind_fragment_program
+   fun:ogl_narrow_blur
+   fun:gl_blur_surface
+   fun:ogl_emit_shadow
+   fun:ogl_render_layer_group
+   fun:ogl_render_layer_image_
+   fun:ogl_render_layer_
+   fun:ogl_render_layers
+   fun:CARenderOGLRender
+   fun:view_draw
+   fun:view_display_link
+   fun:link_callback
+   fun:_ZN13CVDisplayLink9performIOEP11CVTimeStamp
+   fun:_ZN13CVDisplayLink11runIOThreadEv
+   fun:_pthread_start
+   fun:thread_start
 }
 {
    bug_22544
