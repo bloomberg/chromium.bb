@@ -89,19 +89,22 @@ class ResultSummary:
 
   Args:
     deferred: ResultSummary object for deferred tests.
-    non_wontfix: ResultSummary object for non_wontfix tests.
-    all: ResultSummary object for all tests, including skipped tests.
+    wontfix: ResultSummary object for wontfix tests.
     fixable: ResultSummary object for tests marked in test_expectations.txt as
-        needing fixing.
+        needing fixing but are not deferred/wontfix (i.e. should be fixed
+        for the next release).
     fixable_count: Count of all fixable and skipped tests. This is essentially
-        a deduped sum of all the non_wontfix failure counts.
+        a deduped sum of all the failures that are not deferred/wontfix.
+    all_fixable_count: Count of all the tests that are not deferred/wontfix.
+        This includes passing tests.
   """
-  def __init__(self, deferred, non_wontfix, all, fixable, fixable_count):
+  def __init__(self, deferred, wontfix, fixable, fixable_count,
+      all_fixable_count):
     self.deferred = deferred
-    self.non_wontfix = non_wontfix
-    self.all = all
+    self.wontfix = wontfix
     self.fixable = fixable
     self.fixable_count = fixable_count
+    self.all_fixable_count = all_fixable_count
 
 
 class TestRunner:
@@ -237,7 +240,8 @@ class TestRunner:
     skipped = set()
     # If there was only one test file, we'll run it even if it was skipped.
     if len(self._test_files) > 1 and not self._options.force:
-      skipped = (self._expectations.GetSkipped() |
+      skipped = (self._expectations.GetFixableSkipped() |
+                 self._expectations.GetDeferredSkipped() |
                  self._expectations.GetWontFixSkipped())
       self._test_files -= skipped
 
@@ -788,13 +792,13 @@ class TestRunner:
       failures: dictionary mapping the test filename to a list of
           TestFailure objects if the test failed
     """
-    failure_counts = {}
-    deferred_counts = {}
     fixable_counts = {}
-    non_wontfix_counts = {}
+    deferred_counts = {}
+    wontfix_counts = {}
+
     fixable_failures = set()
     deferred_failures = set()
-    non_wontfix_failures = set()
+    wontfix_failures = set()
 
     # Aggregate failures in a dictionary (TestFailure -> frequency),
     # with known (fixable and wontfix) failures separated out.
@@ -806,53 +810,46 @@ class TestRunner:
 
     for test, failures in failures.iteritems():
       for failure in failures:
-        AddFailure(failure_counts, failure.__class__)
         if self._expectations.IsDeferred(test):
-          AddFailure(deferred_counts, failure.__class__)
-          deferred_failures.add(test)
+          count_group = deferred_counts
+          failure_group = deferred_failures
+        elif self._expectations.IsIgnored(test):
+          count_group = wontfix_counts
+          failure_group = wontfix_failures
         else:
-          if self._expectations.IsFixable(test):
-            AddFailure(fixable_counts, failure.__class__)
-            fixable_failures.add(test)
-          if not self._expectations.IsIgnored(test):
-            AddFailure(non_wontfix_counts, failure.__class__)
-            non_wontfix_failures.add(test)
+          count_group = fixable_counts
+          failure_group = fixable_failures
 
-    # Print breakdown of tests we need to fix and want to pass.
+        AddFailure(count_group, failure.__class__)
+        failure_group.add(test)
+
+    deduped_fixable_count = len(fixable_failures |
+        self._expectations.GetFixableSkipped())
+    all_fixable_count = len(self._test_files -
+        self._expectations.GetWontFix() - self._expectations.GetDeferred())
+
+    # Breakdown of tests we need to fix and want to pass.
     # Include skipped fixable tests in the statistics.
-    skipped = (self._expectations.GetSkipped() -
-        self._expectations.GetDeferredSkipped())
-
     fixable_result_summary = ResultSummaryEntry(
-        self._expectations.GetFixable(),
+        self._expectations.GetFixable() | fixable_failures,
         fixable_failures,
         fixable_counts,
-        skipped)
-
-    deferred_tests = self._expectations.GetDeferred()
-    non_wontfix_result_summary = ResultSummaryEntry(
-        (self._test_files - self._expectations.GetWontFix() - deferred_tests),
-        non_wontfix_failures,
-        non_wontfix_counts,
-        skipped)
+        self._expectations.GetFixableSkipped())
 
     deferred_result_summary = ResultSummaryEntry(
-        deferred_tests,
+        self._expectations.GetDeferred(),
         deferred_failures,
         deferred_counts,
         self._expectations.GetDeferredSkipped())
 
-    skipped |= self._expectations.GetWontFixSkipped()
-    all_result_summary = ResultSummaryEntry(
-        self._test_files,
-        failures,
-        failure_counts,
-        skipped)
+    wontfix_result_summary = ResultSummaryEntry(
+        self._expectations.GetWontFix(),
+        wontfix_failures,
+        wontfix_counts,
+        self._expectations.GetWontFixSkipped())
 
-    total_fixable_count = len(self._expectations.GetFixable() | skipped)
-
-    return ResultSummary(deferred_result_summary, non_wontfix_result_summary,
-        all_result_summary, fixable_result_summary, total_fixable_count)
+    return ResultSummary(deferred_result_summary, wontfix_result_summary,
+        fixable_result_summary, deduped_fixable_count, all_fixable_count)
 
   def _PrintResultSummary(self, result_summary, output):
     """Print a short summary to stdout about how many tests passed.
@@ -861,27 +858,24 @@ class TestRunner:
       result_summary: ResultSummary object with failure counts.
       output: file descriptor to write the results to. For example, sys.stdout.
     """
+    failed = result_summary.fixable_count
+    total = result_summary.all_fixable_count
     output.write(
-        "\nTotal expected failures: %s\n" % result_summary.fixable_count)
+        "\nTest summary: %.1f%% Passed | %s Failures | %s Tests to pass for "
+        "this release\n" % (
+        float(total - failed) * 100 / total, failed, total))
 
     self._PrintResultSummaryEntry(
         "Tests to be fixed for the current release",
         result_summary.fixable,
         output)
-
     self._PrintResultSummaryEntry(
-        "Tests we want to pass for the current release",
-        result_summary.non_wontfix,
+        "Tests to be fixed for a future release (DEFER)",
+        result_summary.deferred,
         output)
-
-    self._PrintResultSummaryEntry("Tests to be fixed for a future release",
-                                  result_summary.deferred,
-                                  output)
-
-    # Print breakdown of all tests including all skipped tests.
-    self._PrintResultSummaryEntry("All tests",
-                                  result_summary.all,
-                                  output)
+    self._PrintResultSummaryEntry("Tests never to be fixed (WONTFIX)",
+        result_summary.wontfix,
+        output)
     print
 
   def _PrintResultSummaryEntry(self, heading, result_summary, output):

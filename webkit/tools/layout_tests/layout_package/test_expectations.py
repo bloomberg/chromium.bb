@@ -60,10 +60,10 @@ class TestExpectations:
   def GetFixableCrashes(self):
     return self._expected_failures.GetTestSet(NONE, CRASH)
 
-  def GetSkipped(self):
-    # TODO(ojan): It's confusing that this includes deferred tests.
+  def GetFixableSkipped(self):
     return (self._expected_failures.GetTestSet(SKIP) -
-            self._expected_failures.GetTestSet(WONTFIX))
+            self._expected_failures.GetTestSet(WONTFIX) -
+            self._expected_failures.GetTestSet(DEFER))
 
   def GetDeferred(self):
     return self._expected_failures.GetTestSet(DEFER, include_skips=False)

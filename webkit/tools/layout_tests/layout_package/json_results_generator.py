@@ -37,9 +37,10 @@ class JSONResultsGenerator:
   CHROME_SVN = "chromeRevision"
   TIME = "secondsSinceEpoch"
   TESTS = "tests"
-  NON_WONTFIX = "nonWontfixCounts"
+  WONTFIX = "wontfixCounts"
   DEFERRED = "deferredCounts"
-  ALL = "allCounts"
+  FIXABLE = "fixableCounts"
+  ALL_FIXABLE_COUNT = "allFixableCount"
   FIXABLE_COUNT = "fixableCount"
   FAILURE_CHARS = ("C", "T", "I", "S", "F", "O")
 
@@ -216,16 +217,19 @@ class JSONResultsGenerator:
     self._InsertItemIntoRawList(results_for_builder,
         self._result_summary.fixable_count,
         self.FIXABLE_COUNT)
+    self._InsertItemIntoRawList(results_for_builder,
+        self._result_summary.all_fixable_count,
+        self.ALL_FIXABLE_COUNT)
 
     self._InsertItemIntoRawList(results_for_builder,
         self._GetFailureSummaryEntry(self._result_summary.deferred),
         self.DEFERRED)
     self._InsertItemIntoRawList(results_for_builder,
-        self._GetFailureSummaryEntry(self._result_summary.non_wontfix),
-        self.NON_WONTFIX)
+        self._GetFailureSummaryEntry(self._result_summary.wontfix),
+        self.WONTFIX)
     self._InsertItemIntoRawList(results_for_builder,
-        self._GetFailureSummaryEntry(self._result_summary.all),
-        self.ALL)
+        self._GetFailureSummaryEntry(self._result_summary.fixable),
+        self.FIXABLE)
 
   def _GetFailureSummaryEntry(self, result_summary_entry):
     """Creates a summary object to insert into the JSON.
