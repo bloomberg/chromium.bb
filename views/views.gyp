@@ -334,6 +334,41 @@
           ],
         }],
       ],
-    }
+    },
+    {
+      'target_name': 'view_examples',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../skia/skia.gyp:skia',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'examples/button_example-inl.h',
+        'examples/example_base.h',
+        'examples/example_base.cc',
+        'examples/examples_main_base.h',
+        'examples/examples_main_base.cc',
+        'examples/examples_main_gtk.cc',
+      ],
+      'conditions': [
+        ['OS=="linux"', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
+          ],
+        },
+        ],
+        ['OS=="linux" and toolkit_views==1', {
+          'dependencies': [
+            'views',
+          ],
+        }],
+        ['OS=="win"', {
+	  # TODO(oshima): support win
+        }],
+      ],
+    },
   ],
 }
