@@ -135,7 +135,8 @@ View* NativeTabbedPaneWin::RemoveTabAtIndex(int index) {
   TabCtrl_DeleteItem(native_view(), index);
 
   // The removed tab may have made the contents window bigger.
-  ResizeContents();
+  if (content_window_)
+    ResizeContents();
 
   std::vector<View*>::iterator iter = tab_views_.begin() + index;
   View* removed_tab = *iter;
