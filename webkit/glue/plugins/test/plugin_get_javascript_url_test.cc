@@ -88,8 +88,10 @@ void CALLBACK ExecuteGetJavascriptUrlTest::TimerProc(
 
 NPError ExecuteGetJavascriptUrlTest::NewStream(NPMIMEType type, NPStream* stream,
                               NPBool seekable, uint16* stype) {
-  if (stream == NULL)
+  if (stream == NULL) {
     SetError("NewStream got null stream");
+    return NPERR_INVALID_PARAM;
+  }
 
   if (npn_evaluate_context_) {
     SetError("NewStream received in context of NPN_Evaluate");
@@ -119,10 +121,14 @@ int32 ExecuteGetJavascriptUrlTest::WriteReady(NPStream *stream) {
 
 int32 ExecuteGetJavascriptUrlTest::Write(NPStream *stream, int32 offset, int32 len,
                               void *buffer) {
-  if (stream == NULL)
+  if (stream == NULL) {
     SetError("Write got null stream");
-  if (len < 0 || len > STREAM_CHUNK)
+    return -1;
+  }
+  if (len < 0 || len > STREAM_CHUNK) {
     SetError("Write got bogus stream chunk size");
+    return -1;
+  }
 
   if (npn_evaluate_context_) {
     SetError("Write received in context of NPN_Evaluate");
@@ -146,8 +152,10 @@ int32 ExecuteGetJavascriptUrlTest::Write(NPStream *stream, int32 offset, int32 l
 
 
 NPError ExecuteGetJavascriptUrlTest::DestroyStream(NPStream *stream, NPError reason) {
-  if (stream == NULL)
+  if (stream == NULL) {
     SetError("NewStream got null stream");
+    return NPERR_INVALID_PARAM;
+  }
 
 #ifdef OS_WIN
   KillTimer(window_, kNPNEvaluateTimerID);

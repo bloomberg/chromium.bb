@@ -85,8 +85,10 @@ NPError PluginGetURLTest::SetWindow(NPWindow* pNPWindow) {
 
 NPError PluginGetURLTest::NewStream(NPMIMEType type, NPStream* stream,
                               NPBool seekable, uint16* stype) {
-  if (stream == NULL)
+  if (stream == NULL) {
     SetError("NewStream got null stream");
+    return NPERR_INVALID_PARAM;
+  }
 
   if (test_completed()) {
     return PluginTest::NewStream(type, stream, seekable, stype);
@@ -179,10 +181,14 @@ int32 PluginGetURLTest::Write(NPStream *stream, int32 offset, int32 len,
     return -1;
   }
 
-  if (stream == NULL)
+  if (stream == NULL) {
     SetError("Write got null stream");
-  if (len < 0 || len > STREAM_CHUNK)
+    return -1;
+  }
+  if (len < 0 || len > STREAM_CHUNK) {
     SetError("Write got bogus stream chunk size");
+    return -1;
+  }
 
   COMPILE_ASSERT(sizeof(unsigned long) <= sizeof(stream->notifyData),
                  cast_validity_check);
@@ -221,8 +227,10 @@ NPError PluginGetURLTest::DestroyStream(NPStream *stream, NPError reason) {
     return PluginTest::DestroyStream(stream, reason);
   }
 
-  if (stream == NULL)
+  if (stream == NULL) {
     SetError("NewStream got null stream");
+    return NPERR_INVALID_PARAM;
+  }
 
   COMPILE_ASSERT(sizeof(unsigned long) <= sizeof(stream->notifyData),
                  cast_validity_check);
@@ -259,8 +267,10 @@ NPError PluginGetURLTest::DestroyStream(NPStream *stream, NPError reason) {
 }
 
 void PluginGetURLTest::StreamAsFile(NPStream* stream, const char* fname) {
-  if (stream == NULL)
+  if (stream == NULL) {
     SetError("NewStream got null stream");
+    return;
+  }
 
   COMPILE_ASSERT(sizeof(unsigned long) <= sizeof(stream->notifyData),
                  cast_validity_check);
