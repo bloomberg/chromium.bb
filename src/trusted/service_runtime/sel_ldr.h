@@ -85,6 +85,7 @@ extern int using_debug_configuration;
 #define NACL_DEFAULT_STACK_MAX  (16 << 20)  /* main thread stack */
 
 #define NACL_DATA_SANDBOXING    0
+#define NACL_SANDBOX_CHROOT_FD  "SBX_D"
 /*
  * If 0, address space is allocated to permit text sandboxing or
  * control flow integrity enforcement via masking.  LDT is used to

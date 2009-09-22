@@ -35,6 +35,8 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
 
+#include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -245,6 +247,8 @@ int main(int  ac,
   struct GioFile                log_gio;
 
   struct NaClEnvCleanser        filtered_env;
+
+  const char* sandbox_fd_string;
 
   /* do expiration check first */
   if (NaClHasExpired()) {
@@ -550,6 +554,59 @@ int main(int  ac,
    * output.
    */
   NaClLog(1, "NACL: Application output follows\n");
+
+  /*
+   * Chroot() ourselves.  Based on agl's chrome implementation.,
+   */
+  sandbox_fd_string = getenv(NACL_SANDBOX_CHROOT_FD);
+  if (NULL != sandbox_fd_string) {
+    static const char kChrootMe = 'C';
+    static const char kChrootSuccess = 'O';
+
+    char* endptr;
+    char reply;
+    int fd;
+    long fd_long;
+    errno = 0;  /* To distinguish between success/failure after call */
+    fd_long = strtol(sandbox_fd_string, &endptr, 10);
+
+    fprintf(stdout, "Chrooting the NaCl module\n");
+    if ((ERANGE == errno && (LONG_MAX == fd_long || LONG_MIN == fd_long)) ||
+        (0 != errno && 0 == fd_long)) {
+      perror("strtol");
+      return 1;
+    }
+    if (endptr == sandbox_fd_string) {
+      fprintf(stderr, "Could not initialize sandbox fd: No digits found\n");
+      return 1;
+    }
+    if (*endptr) {
+      fprintf(stderr, "Could not initialize sandbox fd: Extra digits\n");
+      return 1;
+    }
+    fd = fd_long;
+
+    /*
+     * TODO(neha): When we're more merged with chrome, use HANDLE_EINTR()
+     */
+    if (write(fd, &kChrootMe, 1) != 1) {
+      fprintf(stderr, "Cound not signal sandbox to chroot()\n");
+      return 1;
+    }
+
+    /*
+     * TODO(neha): When we're more merged with chrome, use HANDLE_EINTR()
+     */
+    if (read(fd, &reply, 1) != 1) {
+      fprintf(stderr, "Could not get response to chroot() from sandbox\n");
+      return 1;
+    }
+    if (kChrootSuccess != reply) {
+      fprintf(stderr, "%s\n", &reply);
+      fprintf(stderr, "Reply not correct\n");
+      return 1;
+    }
+  }
 
   /*
    * Make sure all the file buffers are flushed before entering
