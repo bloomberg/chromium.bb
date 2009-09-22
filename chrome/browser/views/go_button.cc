@@ -20,7 +20,6 @@
 
 GoButton::GoButton(LocationBarView* location_bar, Browser* browser)
     : ToggleImageButton(this),
-      button_delay_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(stop_timer_(this)),
       location_bar_(location_bar),
       browser_(browser),
@@ -63,16 +62,6 @@ void GoButton::ButtonPressed(views::Button* button, const views::Event& event) {
     // If the go button is visible and not within the double click timer, go.
     browser_->Go(event_utils::DispositionFromEventFlags(mouse_event_flags()));
 
-    // Figure out the system double-click time.
-    if (button_delay_ == 0) {
-#if defined(OS_WIN)
-      button_delay_ = GetDoubleClickTime();
-#else
-      NOTIMPLEMENTED();
-      button_delay_ = 500;
-#endif
-    }
-
     // Stop any existing timers.
     stop_timer_.RevokeAll();
 
@@ -83,7 +72,7 @@ void GoButton::ButtonPressed(views::Button* button, const views::Event& event) {
     // some delay).
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
         stop_timer_.NewRunnableMethod(&GoButton::OnButtonTimer),
-        button_delay_);
+        GetDoubleClickTimeMS());
   }
 }
 

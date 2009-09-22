@@ -15,6 +15,11 @@
 
 namespace views {
 
+// static
+int View::GetDoubleClickTimeMS() {
+  return ::GetDoubleClickTime();
+}
+
 ViewAccessibilityWrapper* View::GetViewAccessibilityWrapper() {
   if (accessibility_.get() == NULL) {
     accessibility_.reset(new ViewAccessibilityWrapper(this));

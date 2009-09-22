@@ -46,7 +46,6 @@ class GoButton : public views::ToggleImageButton,
  private:
   void OnButtonTimer();
 
-  int button_delay_;
   ScopedRunnableMethodFactory<GoButton> stop_timer_;
 
   LocationBarView* location_bar_;

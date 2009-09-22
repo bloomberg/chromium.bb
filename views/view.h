@@ -126,6 +126,9 @@ class View : public AcceleratorTarget {
   View();
   virtual ~View();
 
+  // Returns the amount of time between double clicks, in milliseconds.
+  static int GetDoubleClickTimeMS();
+
   // Sizing functions
 
   // Get the bounds of the View, relative to the parent. Essentially, this

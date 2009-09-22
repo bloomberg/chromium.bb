@@ -10,6 +10,12 @@
 
 namespace views {
 
+// static
+int View::GetDoubleClickTimeMS() {
+  GdkDisplay* display = gdk_display_get_default();
+  return display ? display->double_click_time : 500;
+}
+
 ViewAccessibilityWrapper* View::GetViewAccessibilityWrapper() {
   NOTIMPLEMENTED();
   return NULL;
