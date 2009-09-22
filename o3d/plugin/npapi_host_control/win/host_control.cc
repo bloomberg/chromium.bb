@@ -568,8 +568,8 @@ STDMETHODIMP CHostControl::SetObjectRects(LPCRECT lprcPosRect,
     }
   }
 
-  return IOleInPlaceObjectWindowlessImpl::SetObjectRects(lprcPosRect,
-                                                         lprcClipRect);
+  return CComControlBase::IOleInPlaceObject_SetObjectRects(lprcPosRect,
+                                                           lprcClipRect);
 }
 
 HRESULT CHostControl::GetStringProperty(NPPVariable np_property_variable,
