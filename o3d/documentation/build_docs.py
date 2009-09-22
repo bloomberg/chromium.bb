@@ -249,8 +249,9 @@ def BuildO3DClassHierarchy(html_output_dir):
 
 
 def BuildO3DJSDocs(js_files, ezt_output_dir, html_output_dir, exports_file):
+  # The backslashes below on 'jsdocs/' and '../' must stay.
   RunJSDocToolkit(js_files, ezt_output_dir, html_output_dir, 'js_1_0_', 'o3djs',
-                  'jsdocs', '..', exports_file)
+                  'jsdocs/', '../', exports_file)
 
 
 def BuildO3DExternsFile(js_files_dir, extra_externs_file, externs_file):
