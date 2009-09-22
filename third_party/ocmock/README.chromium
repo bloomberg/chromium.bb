@@ -1,0 +1,14 @@
+URL: http://www.mulle-kybernetik.com/software/OCMock/
+     http://svn.mulle-kybernetik.com/OCMock/trunk/@54
+Version: r54
+License: BSD with advertising clause
+License File: License.txt
+
+Description:
+OCMock is an Objective-C implementation of mock objects. If you are unfamiliar
+with the concept of mock objects please visit mockobjects.com which has more
+details and discussions about this approach to testing software.
+
+Local Modifications:
+No Modifications
+
