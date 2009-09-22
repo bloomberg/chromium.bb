@@ -124,6 +124,14 @@ then
       mkdir "${OVERRIDE_LD_DIR}"
       ln -s /usr/bin/ld.orig "${OVERRIDE_LD_DIR}/ld"
       PATH="${OVERRIDE_LD_DIR}:${PATH}"
+    # Ubuntu diverts original ld to ld.single when it installs binutils-gold
+    elif test -x /usr/bin/ld.single
+    then
+      echo "Using /usr/bin/ld.single instead of gold to link valgrind"
+      test -d "${OVERRIDE_LD_DIR}" && rm -rf "${OVERRIDE_LD_DIR}"
+      mkdir "${OVERRIDE_LD_DIR}"
+      ln -s /usr/bin/ld.single "${OVERRIDE_LD_DIR}/ld"
+      PATH="${OVERRIDE_LD_DIR}:${PATH}"
     else
       echo "Cannot build valgrind with gold.  Please switch to normal /usr/bin/ld, rerun this script, then switch back to gold."
       exit 1
