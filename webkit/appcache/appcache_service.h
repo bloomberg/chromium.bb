@@ -13,8 +13,9 @@
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
-#include "net/url_request/url_request_context.h"
 #include "googleurl/src/gurl.h"
+
+class URLRequestContext;
 
 namespace appcache {
 
@@ -34,7 +35,7 @@ class AppCacheService {
 
     // If a load fails the object pointer will be NULL.
     virtual void CacheLoadedCallback(AppCache* cache, int64 cache_id) = 0;
-    virtual void GroupLoadedCallback(AppCacheGroup* cache,
+    virtual void GroupLoadedCallback(AppCacheGroup* group,
                                      const GURL& manifest_url) = 0;
   };
 
@@ -44,12 +45,12 @@ class AppCacheService {
   void Initialize(const FilePath& cache_directory);
 
   // Context for use during cache updates, should only be accessed
-  // on the IO thread.
-  URLRequestContext* request_context() { return request_context_.get(); }
+  // on the IO thread. We do NOT add a reference to the request context,
+  // it is the callers responsibility to ensure that the pointer
+  // remains valid while set.
+  URLRequestContext* request_context() const { return request_context_; }
   void set_request_context(URLRequestContext* context) {
-    // TODO(michaeln): need to look into test failures that occur
-    // when we take this reference? Stubbing out for now.
-    // request_context_ = context;
+    request_context_ = context;
   }
 
   // TODO(jennb): API to set service settings, like file paths for storage
@@ -62,7 +63,7 @@ class AppCacheService {
     return (it != backends_.end()) ? it->second : NULL;
   }
 
-  // Track what we have in or in-memory cache.
+  // Track what we have in our in-memory cache.
   void AddCache(AppCache* cache);
   void RemoveCache(AppCache* cache);
   void AddGroup(AppCacheGroup* group);
@@ -117,7 +118,7 @@ class AppCacheService {
   FilePath cache_directory_;
 
   // Context for use during cache updates.
-  scoped_refptr<URLRequestContext> request_context_;
+  URLRequestContext* request_context_;
 
   // TODO(michaeln): cache and group loading book keeping.
   // TODO(michaeln): database and response storage

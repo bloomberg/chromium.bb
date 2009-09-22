@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_constants.h"
 #include "webkit/appcache/appcache_service.h"
@@ -28,21 +29,21 @@ class ChromeAppCacheService
  public:
 
   explicit ChromeAppCacheService()
-      : was_initialized_with_io_thread_(false) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+      : is_initialized_(false), was_initialized_with_io_thread_(false) {
   }
 
-  void InitializeOnUIThread(const FilePath& data_directory,
-                            URLRequestContext* request_context,
-                            bool is_incognito) {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    set_request_context(request_context);
+  bool is_initialized() const { return is_initialized_; }
 
-    // Some test cases run without an IO thread.
-    MessageLoop* io_thread = ChromeThread::GetMessageLoop(ChromeThread::IO);
+  void InitializeOnUIThread(const FilePath& data_directory,
+                            bool is_incognito) {
+    DCHECK(!is_initialized_);
+    is_initialized_ = true;
+
+    // The I/O thread may be NULL during testing.
+    base::Thread* io_thread = g_browser_process->io_thread();
     if (io_thread) {
       was_initialized_with_io_thread_ = true;
-      io_thread->PostTask(FROM_HERE,
+      io_thread->message_loop()->PostTask(FROM_HERE,
           NewRunnableMethod(this, &ChromeAppCacheService::InitializeOnIOThread,
               data_directory, is_incognito));
     }
@@ -63,6 +64,7 @@ class ChromeAppCacheService
                             : data_directory.Append(chrome::kAppCacheDirname));
   }
 
+  bool is_initialized_;
   bool was_initialized_with_io_thread_;
 };
 

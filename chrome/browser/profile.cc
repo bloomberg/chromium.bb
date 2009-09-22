@@ -134,13 +134,14 @@ static void CleanupRequestContext(ChromeURLRequestContext* context) {
   }
 }
 
-static void CleanupAppCacheService(ChromeAppCacheService* service) {
-  if (service) {
-    MessageLoop* io_thread = ChromeThread::GetMessageLoop(ChromeThread::IO);
+static void CleanupAppCacheService(ChromeAppCacheService* appcache_service) {
+  if (appcache_service) {
+    // The I/O thread may be NULL during testing.
+    base::Thread* io_thread = g_browser_process->io_thread();
     if (io_thread)
-      io_thread->ReleaseSoon(FROM_HERE, service);
+      io_thread->message_loop()->ReleaseSoon(FROM_HERE, appcache_service);
     else
-      service->Release();
+      appcache_service->Release();
   }
 }
 
@@ -203,7 +204,13 @@ class OffTheRecordProfileImpl : public Profile,
       : profile_(real_profile),
         extensions_request_context_(NULL),
         start_time_(Time::Now()) {
-    request_context_ = ChromeURLRequestContext::CreateOffTheRecord(this);
+    // Created here but lazily inititialized later, finally released on
+    // on the io thread, see CleanupAppCacheService.
+    appcache_service_ = new ChromeAppCacheService();
+    appcache_service_->AddRef();
+
+    request_context_ = ChromeURLRequestContext::CreateOffTheRecord(
+        this, appcache_service_);
     request_context_->AddRef();
 
     // Register for browser close notifications so we can detect when the last
@@ -216,7 +223,7 @@ class OffTheRecordProfileImpl : public Profile,
   virtual ~OffTheRecordProfileImpl() {
     CleanupRequestContext(request_context_);
     CleanupRequestContext(extensions_request_context_);
-    CleanupAppCacheService(appcache_service_.release());
+    CleanupAppCacheService(appcache_service_);
   }
 
   virtual FilePath GetPath() { return profile_->GetPath(); }
@@ -239,12 +246,10 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual ChromeAppCacheService* GetAppCacheService() {
-    if (!appcache_service_.get()) {
-      appcache_service_ = new ChromeAppCacheService();
-      appcache_service_->InitializeOnUIThread(
-          GetPath(), GetRequestContext(), true);
-    }
-    return appcache_service_.get();
+    DCHECK(request_context_);  // should be created in ctor
+    if (!appcache_service_->is_initialized())
+      appcache_service_->InitializeOnUIThread(GetPath(), true);
+    return appcache_service_;
   }
 
   virtual VisitedLinkMaster* GetVisitedLinkMaster() {
@@ -526,7 +531,7 @@ class OffTheRecordProfileImpl : public Profile,
   ChromeURLRequestContext* extensions_request_context_;
 
   // Use a seperate appcache service for OTR.
-  scoped_refptr<ChromeAppCacheService> appcache_service_;
+  ChromeAppCacheService* appcache_service_;
 
   // The download manager that only stores downloaded items in memory.
   scoped_refptr<DownloadManager> download_manager_;
@@ -578,6 +583,11 @@ ProfileImpl::ProfileImpl(const FilePath& path)
       switches::kEnableExtensionTimelineApi)) {
     extension_devtools_manager_ = new ExtensionDevToolsManager(this);
   }
+
+  // Created here but lazily inititialized later, finally released on
+  // on the io thread, see CleanupAppCacheService.
+  appcache_service_ = new ChromeAppCacheService();
+  appcache_service_->AddRef();
 
   extension_process_manager_.reset(new ExtensionProcessManager(this));
   extension_message_service_ = new ExtensionMessageService(this);
@@ -769,7 +779,7 @@ ProfileImpl::~ProfileImpl() {
   CleanupRequestContext(request_context_);
   CleanupRequestContext(media_request_context_);
   CleanupRequestContext(extensions_request_context_);
-  CleanupAppCacheService(appcache_service_.release());
+  CleanupAppCacheService(appcache_service_);
 
   // When the request contexts are gone, the blacklist wont be needed anymore.
   delete blacklist_;
@@ -820,12 +830,11 @@ Profile* ProfileImpl::GetOriginalProfile() {
 }
 
 ChromeAppCacheService* ProfileImpl::GetAppCacheService() {
-  if (!appcache_service_.get()) {
-    appcache_service_ = new ChromeAppCacheService();
-    appcache_service_->InitializeOnUIThread(
-        GetPath(), GetRequestContext(), false);
+  if (!appcache_service_->is_initialized()) {
+    EnsureRequestContextCreated();
+    appcache_service_->InitializeOnUIThread(GetPath(), false);
   }
-  return appcache_service_.get();
+  return appcache_service_;
 }
 
 VisitedLinkMaster* ProfileImpl::GetVisitedLinkMaster() {
@@ -926,7 +935,7 @@ URLRequestContext* ProfileImpl::GetRequestContext() {
 
     cache_path = GetCachePath(cache_path);
     request_context_ = ChromeURLRequestContext::CreateOriginal(
-        this, cookie_path, cache_path, max_size);
+        this, cookie_path, cache_path, max_size, appcache_service_);
     request_context_->AddRef();
 
     // The first request context is always a normal (non-OTR) request context.
@@ -957,7 +966,7 @@ URLRequestContext* ProfileImpl::GetRequestContextForMedia() {
 
     cache_path = GetMediaCachePath(cache_path);
     media_request_context_ = ChromeURLRequestContext::CreateOriginalForMedia(
-        this, cache_path, max_size);
+        this, cache_path, max_size, appcache_service_);
     media_request_context_->AddRef();
 
     DCHECK(media_request_context_->cookie_store());

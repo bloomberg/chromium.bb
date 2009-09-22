@@ -15,7 +15,8 @@ namespace appcache {
 
 AppCacheService::AppCacheService()
     : last_cache_id_(0), last_group_id_(0),
-      last_entry_id_(0), last_response_id_(0) {
+      last_entry_id_(0), last_response_id_(0),
+      request_context_(NULL) {
 }
 
 AppCacheService::~AppCacheService() {

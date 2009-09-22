@@ -110,9 +110,15 @@ static net::ProxyService* CreateProxyService(URLRequestContext* context,
 // static
 ChromeURLRequestContext* ChromeURLRequestContext::CreateOriginal(
     Profile* profile, const FilePath& cookie_store_path,
-    const FilePath& disk_cache_path, int cache_size) {
+    const FilePath& disk_cache_path, int cache_size,
+    ChromeAppCacheService* appcache_service) {
   DCHECK(!profile->IsOffTheRecord());
-  ChromeURLRequestContext* context = new ChromeURLRequestContext(profile);
+  ChromeURLRequestContext* context = new ChromeURLRequestContext(
+      profile, appcache_service);
+
+  // The appcache service uses the profile's original context for UpdateJobs.
+  DCHECK(!appcache_service->request_context());
+  appcache_service->set_request_context(context);
 
   // Global host resolver for the context.
   context->host_resolver_ = chrome_browser_net::GetGlobalHostResolver();
@@ -169,17 +175,19 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOriginal(
 
 // static
 ChromeURLRequestContext* ChromeURLRequestContext::CreateOriginalForMedia(
-    Profile* profile, const FilePath& disk_cache_path, int cache_size) {
+    Profile* profile, const FilePath& disk_cache_path, int cache_size,
+    ChromeAppCacheService* appcache_service) {
   DCHECK(!profile->IsOffTheRecord());
   return CreateRequestContextForMedia(profile, disk_cache_path, cache_size,
-                                      false);
+                                      false, appcache_service);
 }
 
 // static
 ChromeURLRequestContext* ChromeURLRequestContext::CreateOriginalForExtensions(
     Profile* profile, const FilePath& cookie_store_path) {
   DCHECK(!profile->IsOffTheRecord());
-  ChromeURLRequestContext* context = new ChromeURLRequestContext(profile);
+  ChromeURLRequestContext* context = new ChromeURLRequestContext(
+      profile, NULL);
 
   // All we care about for extensions is the cookie store.
   DCHECK(!cookie_store_path.empty());
@@ -200,9 +208,14 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOriginalForExtensions(
 
 // static
 ChromeURLRequestContext* ChromeURLRequestContext::CreateOffTheRecord(
-    Profile* profile) {
+    Profile* profile, ChromeAppCacheService* appcache_service) {
   DCHECK(profile->IsOffTheRecord());
-  ChromeURLRequestContext* context = new ChromeURLRequestContext(profile);
+  ChromeURLRequestContext* context = new ChromeURLRequestContext(
+      profile, appcache_service);
+
+  // The appcache service uses the profile's original context for UpdateJobs.
+  DCHECK(!appcache_service->request_context());
+  appcache_service->set_request_context(context);
 
   // Share the same proxy service and host resolver as the original profile.
   // TODO(eroman): although ProxyService is reference counted, this sharing
@@ -243,7 +256,8 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateOffTheRecord(
 ChromeURLRequestContext*
 ChromeURLRequestContext::CreateOffTheRecordForExtensions(Profile* profile) {
   DCHECK(profile->IsOffTheRecord());
-  ChromeURLRequestContext* context = new ChromeURLRequestContext(profile);
+  ChromeURLRequestContext* context =
+      new ChromeURLRequestContext(profile, NULL);
   net::CookieMonster* cookie_monster = new net::CookieMonster;
 
   // Enable cookies for extension URLs only.
@@ -257,10 +271,11 @@ ChromeURLRequestContext::CreateOffTheRecordForExtensions(Profile* profile) {
 // static
 ChromeURLRequestContext* ChromeURLRequestContext::CreateRequestContextForMedia(
     Profile* profile, const FilePath& disk_cache_path, int cache_size,
-    bool off_the_record) {
+    bool off_the_record, ChromeAppCacheService* appcache_service) {
   URLRequestContext* original_context =
       profile->GetOriginalProfile()->GetRequestContext();
-  ChromeURLRequestContext* context = new ChromeURLRequestContext(profile);
+  ChromeURLRequestContext* context =
+      new ChromeURLRequestContext(profile, appcache_service);
   context->is_media_ = true;
 
   // Share the same proxy service of the common profile.
@@ -301,8 +316,10 @@ ChromeURLRequestContext* ChromeURLRequestContext::CreateRequestContextForMedia(
   return context;
 }
 
-ChromeURLRequestContext::ChromeURLRequestContext(Profile* profile)
-    : prefs_(profile->GetPrefs()),
+ChromeURLRequestContext::ChromeURLRequestContext(
+    Profile* profile, ChromeAppCacheService* appcache_service)
+    : appcache_service_(appcache_service),
+      prefs_(profile->GetPrefs()),
       is_media_(false),
       is_off_the_record_(profile->IsOffTheRecord()) {
   // Set up Accept-Language and Accept-Charset header values
@@ -358,8 +375,6 @@ ChromeURLRequestContext::ChromeURLRequestContext(Profile* profile)
   }
 
   ssl_config_service_ = profile->GetSSLConfigService();
-
-  appcache_service_ = profile->GetAppCacheService();
 }
 
 ChromeURLRequestContext::ChromeURLRequestContext(
@@ -378,13 +393,13 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   referrer_charset_ = other->referrer_charset_;
 
   // Set ChromeURLRequestContext members
+  appcache_service_ = other->appcache_service_;
   extension_paths_ = other->extension_paths_;
   user_script_dir_path_ = other->user_script_dir_path_;
   prefs_ = other->prefs_;
   blacklist_ = other->blacklist_;
   is_media_ = other->is_media_;
   is_off_the_record_ = other->is_off_the_record_;
-  appcache_service_ = other->appcache_service_;
 }
 
 // NotificationObserver implementation.
@@ -538,6 +553,9 @@ void ChromeURLRequestContext::OnUnloadedExtension(
 
 ChromeURLRequestContext::~ChromeURLRequestContext() {
   DCHECK(NULL == prefs_);
+
+  if (appcache_service_.get() && appcache_service_->request_context() == this)
+    appcache_service_->set_request_context(NULL);
 
   NotificationService::current()->Notify(
       NotificationType::URL_REQUEST_CONTEXT_RELEASED,

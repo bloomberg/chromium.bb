@@ -32,13 +32,15 @@ class ChromeURLRequestContext : public URLRequestContext,
   // expected to get called on the UI thread.
   static ChromeURLRequestContext* CreateOriginal(
       Profile* profile, const FilePath& cookie_store_path,
-      const FilePath& disk_cache_path, int cache_size);
+      const FilePath& disk_cache_path, int cache_size,
+      ChromeAppCacheService* appcache_service);
 
   // Create an instance for an original profile for media. This is expected to
   // get called on UI thread. This method takes a profile and reuses the
   // 'original' URLRequestContext for common files.
   static ChromeURLRequestContext* CreateOriginalForMedia(Profile *profile,
-      const FilePath& disk_cache_path, int cache_size);
+      const FilePath& disk_cache_path, int cache_size,
+      ChromeAppCacheService* appcache_service);
 
   // Create an instance for an original profile for extensions. This is expected
   // to get called on UI thread.
@@ -47,7 +49,8 @@ class ChromeURLRequestContext : public URLRequestContext,
 
   // Create an instance for use with an OTR profile. This is expected to get
   // called on the UI thread.
-  static ChromeURLRequestContext* CreateOffTheRecord(Profile* profile);
+  static ChromeURLRequestContext* CreateOffTheRecord(Profile* profile,
+      ChromeAppCacheService* appcache_service);
 
   // Create an instance of request context for OTR profile for extensions.
   static ChromeURLRequestContext* CreateOffTheRecordForExtensions(
@@ -81,16 +84,18 @@ class ChromeURLRequestContext : public URLRequestContext,
   const Blacklist* blacklist() const { return blacklist_; }
 
  protected:
-  // Private constructor, use the static factory methods instead. This is
+  // Private constructors, use the static factory methods instead. This is
   // expected to be called on the UI thread.
-  ChromeURLRequestContext(Profile* profile);
+  ChromeURLRequestContext(
+      Profile* profile, ChromeAppCacheService* appcache_service);
   ChromeURLRequestContext(ChromeURLRequestContext* other);
 
   // Create a request context for media resources from a regular request
   // context. This helper method is called from CreateOriginalForMedia and
   // CreateOffTheRecordForMedia.
   static ChromeURLRequestContext* CreateRequestContextForMedia(Profile* profile,
-      const FilePath& disk_cache_path, int cache_size, bool off_the_record);
+      const FilePath& disk_cache_path, int cache_size, bool off_the_record,
+      ChromeAppCacheService* appache_service);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

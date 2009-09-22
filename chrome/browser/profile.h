@@ -440,6 +440,10 @@ class ProfileImpl : public Profile,
 
   void StopCreateSessionServiceTimer();
 
+  void EnsureRequestContextCreated() {
+    GetRequestContext();
+  }
+
   void EnsureSessionServiceCreated() {
     GetSessionService();
   }
@@ -457,7 +461,6 @@ class ProfileImpl : public Profile,
 
   FilePath path_;
   FilePath base_cache_path_;
-  scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_ptr<VisitedLinkEventListener> visited_link_event_listener_;
   scoped_ptr<VisitedLinkMaster> visited_link_master_;
   scoped_refptr<ExtensionsService> extensions_service_;
@@ -480,6 +483,8 @@ class ProfileImpl : public Profile,
 #ifdef CHROME_PERSONALIZATION
   scoped_ptr<ProfileSyncService> sync_service_;
 #endif
+
+  ChromeAppCacheService* appcache_service_;
 
   ChromeURLRequestContext* request_context_;
 
