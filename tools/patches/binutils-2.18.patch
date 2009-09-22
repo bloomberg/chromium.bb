@@ -13193,7 +13193,7 @@ diff -Naur ../PRISTINE/binutils-2.18/include/elf/nacl.h binutils-2.18/include/el
 +#define EF_NACL_ALIGN_LIB   0x000000	/* aligned to pass either way */
 +
 +/* ABI version number -- increment when ABI changes are incompatible. */
-+#define EF_NACL_ABIVERSION  5
++#define EF_NACL_ABIVERSION  6
 +
 +#endif
 diff -Naur ../PRISTINE/binutils-2.18/ld/Makefile.am binutils-2.18/ld/Makefile.am

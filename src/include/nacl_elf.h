@@ -64,5 +64,5 @@
  * note: also bump the same EF_NACL_ABIVERSION define in:
  *   googleclient/native_client/tools/patches/binutils-2.18.patch
  */
-#define EF_NACL_ABIVERSION 5
+#define EF_NACL_ABIVERSION 6
 #endif  /* NATIVE_CLIENT_SRC_INCLUDE_NACL_ELF_H_ */

@@ -42,17 +42,18 @@ import sys
 
 import set_abi_version
 
+TESTDATA_DIR='src/trusted/service_runtime/testdata/'
 
 NACL_DEATH_TESTS = [
-    'service_runtime/testdata/integer_overflow_while_madvising.nexe',
-    'service_runtime/testdata/negative_hole.nexe',
-    'service_runtime/testdata/text_too_big.nexe',
+    TESTDATA_DIR + 'integer_overflow_while_madvising.nexe',
+    TESTDATA_DIR + 'negative_hole.nexe',
+    TESTDATA_DIR + 'text_too_big.nexe',
     ]
 
 
 def GetCurrentAbiVersion():
   return int(re.search(r'^#define.*EF_NACL_ABIVERSION\s+(\d+)',
-                       open('include/nacl_elf.h', 'rt').read(),
+                       open('src/include/nacl_elf.h', 'rt').read(),
                        re.M).group(1))
 
 
