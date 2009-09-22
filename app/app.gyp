@@ -254,6 +254,11 @@
           'action': ['python', '<@(_inputs)', '-i', '<(RULE_INPUT_PATH)',
             'build', '-o', '<(grit_out_dir)'],
           'message': 'Generating resources from <(RULE_INPUT_PATH)',
+          'conditions': [
+            ['use_titlecase_in_grd_files==1', {
+              'action': ['-D', 'use_titlecase'],
+            }],
+          ],
         },
       ],
       'sources': [

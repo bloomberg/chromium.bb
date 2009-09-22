@@ -214,6 +214,11 @@
             '-D', '<(chrome_build)',
             '-E', '<(branded_env)',
           ],
+          'conditions': [
+            ['use_titlecase_in_grd_files==1', {
+              'action': ['-D', 'use_titlecase'],
+            }],
+          ],
           'message': 'Generating resources from <(RULE_INPUT_PATH)',
         },
       ],
@@ -294,6 +299,9 @@
             ['chromeos==1', {
               'action': ['-D', 'chromeos'],
             }],
+            ['use_titlecase_in_grd_files==1', {
+              'action': ['-D', 'use_titlecase'],
+            }],
           ],
           'message': 'Generating resources from <(RULE_INPUT_PATH)',
         },
@@ -347,6 +355,9 @@
           'conditions': [
             ['chromeos==1', {
               'action': ['-D', 'chromeos'],
+            }],
+            ['use_titlecase_in_grd_files==1', {
+              'action': ['-D', 'use_titlecase'],
             }],
           ],
           'message': 'Generating resources from <(input_path)',
