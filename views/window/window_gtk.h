@@ -31,8 +31,6 @@ class WindowGtk : public WidgetGtk, public Window {
                          gfx::NativeWindow other_window);
   virtual void Show();
   virtual void HideWindow();
-  virtual void PushForceHidden();
-  virtual void PopForceHidden();
   virtual void Activate();
   virtual void Close();
   virtual void Maximize();

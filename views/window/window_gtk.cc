@@ -104,7 +104,7 @@ gfx::Rect WindowGtk::GetBounds() const {
 }
 
 gfx::Rect WindowGtk::GetNormalBounds() const {
-  NOTIMPLEMENTED();
+  // We currently don't support tiling, so this doesn't matter.
   return GetBounds();
 }
 
@@ -122,16 +122,8 @@ void WindowGtk::HideWindow() {
   Hide();
 }
 
-void WindowGtk::PushForceHidden() {
-  NOTIMPLEMENTED();
-}
-
-void WindowGtk::PopForceHidden() {
-  NOTIMPLEMENTED();
-}
-
 void WindowGtk::Activate() {
-  NOTIMPLEMENTED();
+  gtk_window_present(GTK_WINDOW(GetNativeView()));
 }
 
 void WindowGtk::Close() {
@@ -155,7 +147,12 @@ void WindowGtk::Minimize() {
 }
 
 void WindowGtk::Restore() {
-  NOTIMPLEMENTED();
+  if (IsMaximized())
+    gtk_window_unmaximize(GetNativeWindow());
+  else if (IsMinimized())
+    gtk_window_deiconify(GetNativeWindow());
+  else if (IsFullscreen())
+    SetFullscreen(false);
 }
 
 bool WindowGtk::IsActive() const {
@@ -209,7 +206,7 @@ void WindowGtk::UpdateWindowTitle() {
 }
 
 void WindowGtk::UpdateWindowIcon() {
-  NOTIMPLEMENTED();
+  // Doesn't matter for chrome os.
 }
 
 void WindowGtk::SetIsAlwaysOnTop(bool always_on_top) {
@@ -223,6 +220,8 @@ NonClientFrameView* WindowGtk::CreateFrameViewForWindow() {
 }
 
 void WindowGtk::UpdateFrameAfterFrameChange() {
+  // We currently don't support different frame types on Gtk, so we don't
+  // need to implement this.
   NOTIMPLEMENTED();
 }
 
@@ -247,6 +246,8 @@ bool WindowGtk::ShouldUseNativeFrame() const {
 }
 
 void WindowGtk::FrameTypeChanged() {
+  // We currently don't support different frame types on Gtk, so we don't
+  // need to implement this.
   NOTIMPLEMENTED();
 }
 
@@ -404,9 +405,7 @@ void WindowGtk::SaveWindowPosition() {
     return;
 
   bool maximized = window_state_ & GDK_WINDOW_STATE_MAXIMIZED;
-  gfx::Rect bounds;
-  WidgetGtk::GetBounds(&bounds, true);
-  window_delegate_->SaveWindowPlacement(bounds, maximized);
+  window_delegate_->SaveWindowPlacement(GetBounds(), maximized);
 }
 
 void WindowGtk::SetInitialBounds(GtkWindow* parent,

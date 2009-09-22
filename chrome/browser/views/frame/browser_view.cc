@@ -730,7 +730,7 @@ void BrowserView::FlashFrame() {
   fwi.dwTimeout = 0;
   FlashWindowEx(&fwi);
 #else
-  NOTIMPLEMENTED();
+  // Doesn't matter for chrome os.
 #endif
 }
 

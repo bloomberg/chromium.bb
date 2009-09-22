@@ -73,6 +73,7 @@ class Window {
   // Push/PopForceHidden.
   virtual void HideWindow() = 0;
 
+#if defined(OS_WIN)
   // Hides the window if it hasn't already been force-hidden. The force hidden
   // count is tracked, so calling multiple times is allowed, you just have to
   // be sure to call PopForceHidden the same number of times.
@@ -81,6 +82,7 @@ class Window {
   // Decrements the force hidden count, showing the window if we have reached
   // the top of the stack. See PushForceHidden.
   virtual void PopForceHidden() = 0;
+#endif
 
   // Activate the window, assuming it already exists and is visible.
   virtual void Activate() = 0;
