@@ -15,8 +15,8 @@
     # Unique guid for o3d namespace
     'o3d_namespace_guid': 'B445DBAE-F5F9-435A-9A9B-088261CDF00A',
 
-    # Changing the following values would break upgrade paths, so we hard-code the
-    # values instead of generating them.
+    # Changing the following values would break upgrade paths, so we
+    # hard-code the values instead of generating them.
     'bad_old_o3d_upgrade_code': 'dc819ed6-4155-3cff-b580-45626aed5848',
     'o3d_extras_google_update_guid': '{34B2805D-C72C-4f81-AED5-5A22D1E092F1}',
     'o3d_extras_upgrade_code': 'c271f2f0-c7ad-3bc9-8216-211436aa2244',
@@ -76,14 +76,6 @@
       'msvs_configuration_attributes': {
         'UseOfATL': '1', # 1 = static link to ATL, 2 = dynamic link
       },
-      'copies': [
-        {
-          'destination': '<(PRODUCT_DIR)',
-          'files': [
-            'cactions.dll',
-          ],
-        },
-      ],
     },
     {
       'target_name': 'installer',
