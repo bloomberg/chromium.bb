@@ -163,6 +163,7 @@ WebPluginDelegateProxy::WebPluginDelegateProxy(
       windowless_(false),
       window_(NULL),
       mime_type_(mime_type),
+      instance_id_(MSG_ROUTING_NONE),
       npobject_(NULL),
       window_script_object_(NULL),
       sad_plugin_(NULL),
