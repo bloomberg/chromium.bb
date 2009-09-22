@@ -11,7 +11,9 @@ CommandBuffer::CommandBuffer(NPP npp)
     : npp_(npp),
       size_(0),
       get_offset_(0),
-      put_offset_(0) {
+      put_offset_(0),
+      token_(0),
+      error_(ERROR_NO_ERROR) {
   // Element zero is always NULL.
   registered_objects_.push_back(NPObjectPointer<NPObject>());
 }
@@ -150,6 +152,12 @@ NPObjectPointer<NPObject> CommandBuffer::GetRegisteredObject(int32 handle) {
   DCHECK_LT(static_cast<size_t>(handle), registered_objects_.size());
 
   return registered_objects_[handle];
+}
+
+int32 CommandBuffer::ResetError() {
+  int32 last_error = error_;
+  error_ = ERROR_NO_ERROR;
+  return last_error;
 }
 
 }  // namespace gpu_plugin

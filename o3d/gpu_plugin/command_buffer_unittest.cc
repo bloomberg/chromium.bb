@@ -236,5 +236,25 @@ TEST_F(CommandBufferTest, UnregistersTwoLastRegisteredHandles) {
   EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
 }
 
+TEST_F(CommandBufferTest, DefaultTokenIsZero) {
+  EXPECT_EQ(0, command_buffer_->GetToken());
+}
+
+TEST_F(CommandBufferTest, CanSetToken) {
+  command_buffer_->SetToken(7);
+  EXPECT_EQ(7, command_buffer_->GetToken());
+}
+
+TEST_F(CommandBufferTest, DefaultErrorIsNoError) {
+  EXPECT_EQ(CommandBuffer::ERROR_NO_ERROR, command_buffer_->ResetError());
+}
+
+TEST_F(CommandBufferTest, CanSetAndResetError) {
+  command_buffer_->SetError(CommandBuffer::ERROR_UNKNOWN_COMMAND);
+  EXPECT_EQ(CommandBuffer::ERROR_UNKNOWN_COMMAND,
+      command_buffer_->ResetError());
+  EXPECT_EQ(CommandBuffer::ERROR_NO_ERROR, command_buffer_->ResetError());
+}
+
 }  // namespace gpu_plugin
 }  // namespace o3d

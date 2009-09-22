@@ -22,6 +22,14 @@ namespace gpu_plugin {
 // API to manage the put and get pointers.
 class CommandBuffer : public DefaultNPObject<NPObject> {
  public:
+  enum {
+    ERROR_NO_ERROR,
+    ERROR_INVALID_SIZE,
+    ERROR_OUT_OF_BOUNDS,
+    ERROR_UNKNOWN_COMMAND,
+    ERROR_INVALID_ARGUMENTS,
+  };
+
   explicit CommandBuffer(NPP npp);
   virtual ~CommandBuffer();
 
@@ -73,6 +81,29 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
 
   virtual NPObjectPointer<NPObject> GetRegisteredObject(int32 handle);
 
+  // Get the current token value. This is used for by the writer to defer
+  // changes to shared memory objects until the reader has reached a certain
+  // point in the command buffer. The reader is responsible for updating the
+  // token value, for example in response to an asynchronous set token command
+  // embedded in the command buffer. The default token value is zero.
+  int32 GetToken() {
+    return token_;
+  }
+
+  // Allows the reader to update the current token value.
+  void SetToken(int32 token) {
+    token_ = token;
+  }
+
+  // Get the current error status and reset it to ERROR_NO_ERROR.
+  // The default error status is ERROR_NO_ERROR.
+  int32 ResetError();
+
+  // Allows the reader to set the current error status.
+  void SetError(int32 error) {
+    error_ = error;
+  }
+
   NP_UTILS_BEGIN_DISPATCHER_CHAIN(CommandBuffer, DefaultNPObject<NPObject>)
     NP_UTILS_DISPATCHER(Initialize, bool(int32))
     NP_UTILS_DISPATCHER(GetRingBuffer, NPObjectPointer<CHRSharedMemory>())
@@ -83,6 +114,8 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
     NP_UTILS_DISPATCHER(RegisterObject, int32(NPObjectPointer<NPObject>));
     NP_UTILS_DISPATCHER(UnregisterObject,
                         void(NPObjectPointer<NPObject>, int32));
+    NP_UTILS_DISPATCHER(GetToken, int32());
+    NP_UTILS_DISPATCHER(ResetError, int32());
   NP_UTILS_END_DISPATCHER_CHAIN
 
  private:
@@ -94,6 +127,8 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
   scoped_ptr<Callback0::Type> put_offset_change_callback_;
   std::vector<NPObjectPointer<NPObject> > registered_objects_;
   std::set<int32> unused_registered_object_elements_;
+  int32 token_;
+  int32 error_;
 };
 
 }  // namespace gpu_plugin
