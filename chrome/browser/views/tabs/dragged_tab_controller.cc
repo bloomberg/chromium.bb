@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -611,10 +611,16 @@ void DraggedTabController::ContinueDragging() {
   // guaranteed to be correct regardless of monitor config.
   gfx::Point screen_point = GetCursorScreenPoint();
 
+  // TODO(sky): make this define OS_CHROMEOS when we merge views and chromeos.
+#if defined(OS_LINUX)
+  // We don't allow detaching in chrome os.
+  TabStrip* target_tabstrip = source_tabstrip_;
+#else
   // Determine whether or not we have dragged over a compatible TabStrip in
   // another browser window. If we have, we should attach to it and start
   // dragging within it.
   TabStrip* target_tabstrip = GetTabStripForPoint(screen_point);
+#endif
   if (target_tabstrip != attached_tabstrip_) {
     // Make sure we're fully detached from whatever TabStrip we're attached to
     // (if any).
@@ -1059,6 +1065,14 @@ gfx::Point DraggedTabController::GetDraggedViewPoint(
         (tabstrip_bounds.bottom() + vertical_drag_magnetism)) {
       y = max_y;
     }
+    // TODO(sky): make this define OS_CHROMEOS when we merge views and
+    // chromeos.
+#if defined(OS_LINUX)
+    // We currently don't allow detaching on chromeos. This restricts dragging
+    // to the main window.
+    x = std::min(std::max(x, tabstrip_bounds.x()), max_x);
+    y = tabstrip_bounds.y();
+#endif
   }
   return gfx::Point(x, y);
 }

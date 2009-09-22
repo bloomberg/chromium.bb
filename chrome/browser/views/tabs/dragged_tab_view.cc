@@ -61,6 +61,7 @@ DraggedTabView::DraggedTabView(TabContents* datasource,
   }
 #else
   container_.reset(new views::WidgetGtk(views::WidgetGtk::TYPE_POPUP));
+  container_->MakeTransparent();
   container_->set_delete_on_destroy(false);
   container_->Init(NULL, gfx::Rect(0, 0, 0, 0));
   container_->SetContentsView(this);
@@ -71,17 +72,10 @@ DraggedTabView::~DraggedTabView() {
   if (close_animation_.IsAnimating())
     close_animation_.Stop();
   GetParent()->RemoveChildView(this);
-#if defined(OS_WIN)
   container_->CloseNow();
-#else
-  NOTIMPLEMENTED();
-#endif
 }
 
 void DraggedTabView::MoveTo(const gfx::Point& screen_point) {
-#if defined(OS_WIN)
-  int show_flags = container_->IsVisible() ? SWP_NOZORDER : SWP_SHOWWINDOW;
-
   int x;
   if (UILayoutIsRightToLeft() && !attached_) {
     // On RTL locales, a dragged tab (when it is not attached to a tab strip)
@@ -98,10 +92,17 @@ void DraggedTabView::MoveTo(const gfx::Point& screen_point) {
   int y = screen_point.y() + mouse_tab_offset_.y() -
       ScaleValue(mouse_tab_offset_.y());
 
+#if defined(OS_WIN)
+  int show_flags = container_->IsVisible() ? SWP_NOZORDER : SWP_SHOWWINDOW;
+
   container_->SetWindowPos(HWND_TOP, x, y, 0, 0,
                            SWP_NOSIZE | SWP_NOACTIVATE | show_flags);
 #else
-  NOTIMPLEMENTED();
+  gfx::Rect bounds;
+  container_->GetBounds(&bounds, true);
+  container_->SetBounds(gfx::Rect(x, y, bounds.width(), bounds.height()));
+  if (!container_->IsVisible())
+    container_->Show();
 #endif
 }
 
@@ -110,8 +111,6 @@ void DraggedTabView::Attach(int selected_width) {
   photobooth_ = NULL;
 #if defined(OS_WIN)
   container_->SetOpacity(kOpaqueAlpha);
-#else
-  NOTIMPLEMENTED();
 #endif
   Resize(selected_width);
 }
@@ -143,8 +142,6 @@ void DraggedTabView::Detach(NativeViewPhotobooth* photobooth) {
   photobooth_ = photobooth;
 #if defined(OS_WIN)
   container_->SetOpacity(kTransparentAlpha);
-#else
-  NOTIMPLEMENTED();
 #endif
   ResizeContainer();
   Update();
@@ -157,7 +154,7 @@ void DraggedTabView::Update() {
   container_->PaintNow(gfx::Rect());
   container_->set_can_update_layered_window(false);
 #else
-  NOTIMPLEMENTED();
+  SchedulePaint();
 #endif
 }
 
@@ -182,13 +179,16 @@ void DraggedTabView::AnimateToBounds(const gfx::Rect& bounds,
 // DraggedTabView, AnimationDelegate implementation:
 
 void DraggedTabView::AnimationProgressed(const Animation* animation) {
-#if defined(OS_WIN)
   int delta_x = (animation_end_bounds_.x() - animation_start_bounds_.x());
   int x = animation_start_bounds_.x() +
       static_cast<int>(delta_x * animation->GetCurrentValue());
   int y = animation_end_bounds_.y();
+#if defined(OS_WIN)
   container_->SetWindowPos(NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE);
 #else
+  gfx::Rect bounds;
+  container_->GetBounds(&bounds, true);
+  container_->SetBounds(gfx::Rect(x, y, bounds.width(), bounds.height()));
 #endif
 }
 
@@ -305,12 +305,15 @@ void DraggedTabView::PaintFocusRect(gfx::Canvas* canvas) {
 
 void DraggedTabView::ResizeContainer() {
   gfx::Size ps = GetPreferredSize();
+  int w = ScaleValue(ps.width());
+  int h = ScaleValue(ps.height());
 #if defined(OS_WIN)
-  SetWindowPos(container_->GetNativeView(), HWND_TOPMOST, 0, 0,
-               ScaleValue(ps.width()), ScaleValue(ps.height()),
+  SetWindowPos(container_->GetNativeView(), HWND_TOPMOST, 0, 0, w, h,
                SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
 #else
-  NOTIMPLEMENTED();
+  gfx::Rect bounds;
+  container_->GetBounds(&bounds, true);
+  container_->SetBounds(gfx::Rect(bounds.x(), bounds.y(), w, h));
 #endif
 }
 
