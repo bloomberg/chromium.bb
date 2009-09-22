@@ -250,7 +250,13 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
                                   base::SysWideToNSString(child->GetTitle()),
                                   url_string.c_str()];
     [item setToolTip:tooltip];
-
+    const SkBitmap& favicon = bookmarkModel_->GetFavIcon(child);
+    if (!favicon.isNull()) {
+      NSImage* image = gfx::SkBitmapToNSImage(favicon);
+      if (image) {
+        [item setImage:image];
+      }
+    }
   }
 }
 
