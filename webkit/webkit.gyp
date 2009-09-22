@@ -9,7 +9,6 @@
   'variables': {
     # TODO: remove this helper when we have loops in GYP
     'apply_locales_cmd': ['python', '../chrome/tools/build/apply_locales.py',],
-    'grit_info_cmd': ['python', '../tools/grit/grit_info.py',],
   },
   'targets': [
     {
@@ -247,18 +246,20 @@
             'input_path': 'glue/webkit_resources.grd',
           },
           'inputs': [
-            '<!@(<(grit_info_cmd) --inputs <(input_path))',
+            '<(input_path)',
           ],
           'outputs': [
-            '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)/webkit_resources\' <(input_path))',
+            '<(grit_out_dir)/grit/webkit_resources.h',
+            '<(grit_out_dir)/webkit_resources.pak',
+            '<(grit_out_dir)/webkit_resources.rc',
           ],
-          'action': ['python', '<(grit_path)', '-i', '<(input_path)', 'build', '-o', '<(grit_out_dir)/webkit_resources'],
+          'action': ['python', '<(grit_path)', '-i', '<(input_path)', 'build', '-o', '<(grit_out_dir)'],
           'message': 'Generating resources from <(input_path)',
         },
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '<(grit_out_dir)/webkit_resources',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit',
         ],
       },
       'conditions': [
@@ -282,18 +283,20 @@
             'input_path': 'glue/webkit_strings.grd',
           },
           'inputs': [
-            '<!@(<(grit_info_cmd) --inputs <(input_path))',
+            '<(input_path)',
           ],
           'outputs': [
-            '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)/webkit_strings\' <(input_path))',
+            '<(grit_out_dir)/grit/webkit_strings.h',
+            # TODO: remove this helper when we have loops in GYP
+            '>!@(<(apply_locales_cmd) \'<(grit_out_dir)/webkit_strings_ZZLOCALE.pak\' <(locales))',
           ],
-          'action': ['python', '<(grit_path)', '-i', '<(input_path)', 'build', '-o', '<(grit_out_dir)/webkit_strings'],
+          'action': ['python', '<(grit_path)', '-i', '<(input_path)', 'build', '-o', '<(grit_out_dir)'],
           'message': 'Generating resources from <(input_path)',
         },
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '<(grit_out_dir)/webkit_strings',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit',
         ],
       },
       'conditions': [
