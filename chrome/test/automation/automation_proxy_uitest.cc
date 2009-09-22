@@ -29,6 +29,12 @@
 #include "net/url_request/url_request_unittest.h"
 #include "views/event.h"
 
+#if defined(OS_MACOSX)
+#define MAYBE_WindowGetViewBounds DISABLED_WindowGetViewBounds
+#else
+#define MAYBE_WindowGetViewBounds WindowGetViewBounds
+#endif
+
 class AutomationProxyTest : public UITest {
  protected:
   AutomationProxyTest() {
@@ -64,10 +70,8 @@ TEST_F(AutomationProxyTest, GetBrowserWindow) {
   }
 };
 
-// TODO(port): This test is for Chrome Views, which we only use on Windows.
-// Maybe split this into a _win.cc file?
-#if defined(OS_WIN)
-TEST_F(AutomationProxyVisibleTest, WindowGetViewBounds) {
+// TODO(estade): port automation provider for this test to mac.
+TEST_F(AutomationProxyVisibleTest, MAYBE_WindowGetViewBounds) {
   {
     scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
     ASSERT_TRUE(browser.get());
@@ -155,7 +159,6 @@ TEST_F(AutomationProxyVisibleTest, WindowGetViewBounds) {
     */
   }
 }
-#endif  // defined(OS_WIN)
 
 TEST_F(AutomationProxyTest, GetTabCount) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
@@ -457,20 +460,6 @@ TEST_F(AutomationProxyTest, Cookies) {
   EXPECT_TRUE(value_result.find("foo1=baz1") != std::string::npos);
   EXPECT_TRUE(value_result.find("foo2=baz2") != std::string::npos);
 }
-
-// TODO(port): Determine what tests need this and port.
-#if defined(OS_WIN)
-TEST_F(AutomationProxyTest, GetHWND) {
-  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(browser.get());
-  scoped_refptr<WindowProxy> window(browser->GetWindow());
-  ASSERT_TRUE(window.get());
-
-  HWND handle;
-  ASSERT_TRUE(window->GetHWND(&handle));
-  ASSERT_TRUE(handle);
-}
-#endif
 
 TEST_F(AutomationProxyTest, NavigateToURLAsync) {
   AutomationProxy* automation_object = automation();

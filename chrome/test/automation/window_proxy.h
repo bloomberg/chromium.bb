@@ -36,14 +36,6 @@ class WindowProxy : public AutomationResourceProxy {
               int handle)
     : AutomationResourceProxy(tracker, sender, handle) {}
 
-#if defined(OS_WIN)
-  // TODO(port): Use portable replacements for windowsisms.
-
-  // Gets the outermost HWND that corresponds to the given window.
-  // Returns true if the call was successful.
-  bool GetHWND(HWND* handle) const;
-#endif  // defined(OS_WIN)
-
   // Simulates a click at the OS level. |click| is in the window's coordinates
   // and |flags| specifies which buttons are pressed (as defined in
   // chrome/views/event.h).  Note that this is equivalent to the user moving
@@ -72,6 +64,9 @@ class WindowProxy : public AutomationResourceProxy {
   // Returns true if the call was successful.
   bool Activate();
 
+  // Sets |maximized| to true if this window is maximized.
+  bool IsMaximized(bool* maximized);
+
   // Gets the bounds (in window coordinates) that correspond to the view with
   // the given ID in this window.  Returns true if bounds could be obtained.
   // If |screen_coordinates| is true, the bounds are returned in the coordinates
@@ -83,6 +78,10 @@ class WindowProxy : public AutomationResourceProxy {
   bool GetViewBoundsWithTimeout(int view_id, gfx::Rect* bounds,
                                 bool screen_coordinates, uint32 timeout_ms,
                                 bool* is_timeout);
+
+  // Gets the position and size of the window. Returns true if setting the
+  // bounds was successful.
+  bool GetBounds(gfx::Rect* bounds);
 
   // Sets the position and size of the window. Returns true if setting the
   // bounds was successful.

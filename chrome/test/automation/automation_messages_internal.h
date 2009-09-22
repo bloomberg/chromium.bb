@@ -157,18 +157,16 @@ IPC_BEGIN_MESSAGES(Automation)
                              GURL)
 
 #if defined(OS_WIN)
-  // TODO(port): Port these messages.
-  //
-  // This message requests the HWND of the top-level window that corresponds
-  // to the given automation handle.
-  // The return value contains the HWND value, which is 0 if the call fails.
-  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_WindowHWND,
-                             int /* automation handle */,
-                             HWND /* Win32 handle */ )
+  // TODO(estade): delete this unused message.
+  IPC_SYNC_MESSAGE_ROUTED0_0(AutomationMsg_WindowHWND)
 
   // This message requests the HWND of the tab that corresponds
   // to the given automation handle.
   // The return value contains the HWND value, which is 0 if the call fails.
+  //
+  // TODO(estade): The only test that uses this message is
+  // NPAPIVisiblePluginTester.SelfDeletePluginInvokeInSynchronousMouseMove. It
+  // can probably be done in another way, and this can be removed.
   IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_TabHWND,
                              int /* tab_handle */,
                              HWND /* win32 Window Handle */)
@@ -280,14 +278,15 @@ IPC_BEGIN_MESSAGES(Automation)
   // This message requests that a drag be performed in window coordinate space
   // Request:
   //   int - the handle of the window that's the context for this drag
-  //   std::vector<POINT> - the path of the drag in window coordinate space;
-  //       it should have at least 2 points (start and end)
+  //   std::vector<gfx::Point> - the path of the drag in window coordinate
+  //                             space; it should have at least 2 points
+  //                             (start and end)
   //   int - the flags which identify the mouse button(s) for the drag, as
-  //       defined in chrome/views/event.h
+  //         defined in chrome/views/event.h
   // Response:
   //   bool - true if the drag could be performed
   IPC_SYNC_MESSAGE_ROUTED4_1(AutomationMsg_WindowDrag,
-                             int, std::vector<POINT>, int, bool, bool)
+                             int, std::vector<gfx::Point>, int, bool, bool)
 #endif  // defined(OS_WIN)
 
   // Similar to AutomationMsg_InitialLoadsComplete, this indicates that the
@@ -868,11 +867,8 @@ IPC_BEGIN_MESSAGES(Automation)
   IPC_MESSAGE_ROUTED3(AutomationMsg_NavigationFailed, int, int, GURL)
 
 #if defined(OS_WIN)
-  // This message is an outgoing message from an automation client to Chrome.
-  // It is used to reposition a chrome tab window.
-  IPC_MESSAGE_ROUTED2(AutomationMsg_TabReposition,
-                      int /* tab handle */,
-                      IPC::Reposition_Params /* SetWindowPos params */)
+  // TODO(estade): delete this message. It is unused.
+  IPC_MESSAGE_ROUTED0(AutomationMsg_TabReposition)
 #endif  // defined(OS_WIN)
 
   // Gets the title of the top level browser window.
@@ -1077,5 +1073,37 @@ IPC_BEGIN_MESSAGES(Automation)
                              gfx::NativeWindow  /* Tab container window */,
                              gfx::NativeWindow  /* Tab window */,
                              int  /* Handle to the new tab */)
+
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+  // TODO(estade): this should be merged with the windows message of the same
+  // name. See comment for WindowClick.
+  IPC_SYNC_MESSAGE_ROUTED4_1(AutomationMsg_WindowDrag,
+                             int, std::vector<gfx::Point>, int, bool, bool)
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
+
+  // This message gets the bounds of the window.
+  // Request:
+  //   int - the handle of the window to query
+  // Response:
+  //   gfx::Rect - the bounds of the window
+  //   bool - true if the query was successful
+  IPC_SYNC_MESSAGE_ROUTED1_2(AutomationMsg_GetWindowBounds, int, gfx::Rect,
+                             bool)
+
+  // Simulate an end of session. Normally this happens when the user
+  // shuts down the machine or logs off.
+  // Request:
+  //   int - the handle of the browser
+  // Response:
+  //   bool - true if succesful
+  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_TerminateSession, int, bool)
+
+  // Returns whether the window is maximized.
+  // Request:
+  //   int - the handle of the window
+  // Response:
+  //   bool - true if the window is maximized
+  //   bool - true if query is successful
+  IPC_SYNC_MESSAGE_ROUTED1_2(AutomationMsg_IsWindowMaximized, int, bool, bool)
 
 IPC_END_MESSAGES(Automation)

@@ -7,6 +7,12 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 
+#if defined(OS_WINDOWS)
+#define MAYBE(x) x
+#else
+#define MAYBE(x) DISABLED_##x
+#endif
+
 namespace {
 
 bool WaitForURLDisplayedForTab(BrowserProxy* browser, int tab_index,
@@ -24,21 +30,21 @@ bool WaitForURLDisplayedForTab(BrowserProxy* browser, int tab_index,
   return false;
 }
 
-}
+}  // namespace
 
-TEST_F(AutomatedUITestBase, DragOut) {
+TEST_F(AutomatedUITestBase, MAYBE(DragOut)) {
   int tab_count;
   active_browser()->GetTabCount(&tab_count);
   ASSERT_EQ(1, tab_count);
   ASSERT_FALSE(DragTabOut());
   NewTab();
-  Navigate(GURL(L"about:"));
+  Navigate(GURL("about:"));
   active_browser()->GetTabCount(&tab_count);
   ASSERT_EQ(2, tab_count);
   NewTab();
   active_browser()->GetTabCount(&tab_count);
   ASSERT_EQ(3, tab_count);
-  GURL chrome_downloads_url(L"chrome://downloads/");
+  GURL chrome_downloads_url("chrome://downloads/");
   Navigate(chrome_downloads_url);
   ASSERT_TRUE(WaitForURLDisplayedForTab(active_browser(), 2,
                                         chrome_downloads_url));
@@ -48,7 +54,7 @@ TEST_F(AutomatedUITestBase, DragOut) {
   ASSERT_EQ(2, window_count);
 }
 
-TEST_F(AutomatedUITestBase, DragLeftRight) {
+TEST_F(AutomatedUITestBase, MAYBE(DragLeftRight)) {
   int tab_count;
   active_browser()->GetTabCount(&tab_count);
   ASSERT_EQ(1, tab_count);
@@ -57,13 +63,13 @@ TEST_F(AutomatedUITestBase, DragLeftRight) {
   NewTab();
   active_browser()->GetTabCount(&tab_count);
   ASSERT_EQ(2, tab_count);
-  GURL about_url(L"about:");
+  GURL about_url("about:");
   Navigate(about_url);
 
   NewTab();
   active_browser()->GetTabCount(&tab_count);
   ASSERT_EQ(3, tab_count);
-  GURL chrome_downloads_url(L"chrome://downloads/");
+  GURL chrome_downloads_url("chrome://downloads/");
   Navigate(chrome_downloads_url);
   ASSERT_TRUE(WaitForURLDisplayedForTab(active_browser(), 2,
                                         chrome_downloads_url));

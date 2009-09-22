@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 #include "base/gfx/point.h"
 #include "base/gfx/rect.h"
+#include "chrome/test/automation/automation_messages.h"
 
 void AutomationProvider::SetWindowBounds(int handle, const gfx::Rect& bounds,
                                          bool* success) {
@@ -52,6 +53,12 @@ void AutomationProvider::WindowGetViewBounds(int handle, int view_id,
 
 void AutomationProvider::ActivateWindow(int handle) { NOTIMPLEMENTED(); }
 
+void AutomationProvider::IsWindowMaximized(int handle, bool* is_maximized,
+                                           bool* success) {
+  *success = false;
+  NOTIMPLEMENTED();
+}
+
 void AutomationProvider::GetFocusedViewID(int handle, int* view_id) {
   NOTIMPLEMENTED();
 }
@@ -69,5 +76,26 @@ void AutomationProvider::GetBookmarkBarVisibility(int handle, bool* visible,
                                                   bool* animating) {
   *visible = false;
   *animating = false;
+  NOTIMPLEMENTED();
+}
+
+void AutomationProvider::WindowSimulateDrag(int handle,
+                                            std::vector<gfx::Point> drag_path,
+                                            int flags,
+                                            bool press_escape_en_route,
+                                            IPC::Message* reply_message) {
+  NOTIMPLEMENTED();
+  AutomationMsg_WindowDrag::WriteReplyParams(reply_message, false);
+  Send(reply_message);
+}
+
+void AutomationProvider::TerminateSession(int handle, bool* success) {
+  *success = false;
+  NOTIMPLEMENTED();
+}
+
+void AutomationProvider::GetWindowBounds(int handle, gfx::Rect* bounds,
+                                         bool* result) {
+  *result = false;
   NOTIMPLEMENTED();
 }

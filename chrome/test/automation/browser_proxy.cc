@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/gfx/point.h"
 #include "base/logging.h"
 #include "base/platform_thread.h"
 #include "base/time.h"
@@ -178,18 +179,16 @@ bool BrowserProxy::ApplyAccelerator(int id) {
   return RunCommandAsync(id);
 }
 
-#if defined(OS_WIN)
-// TODO(port): Replace POINT.
-bool BrowserProxy::SimulateDrag(const POINT& start,
-                                const POINT& end,
+bool BrowserProxy::SimulateDrag(const gfx::Point& start,
+                                const gfx::Point& end,
                                 int flags,
                                 bool press_escape_en_route) {
   return SimulateDragWithTimeout(start, end, flags, base::kNoTimeout, NULL,
                                  press_escape_en_route);
 }
 
-bool BrowserProxy::SimulateDragWithTimeout(const POINT& start,
-                                           const POINT& end,
+bool BrowserProxy::SimulateDragWithTimeout(const gfx::Point& start,
+                                           const gfx::Point& end,
                                            int flags,
                                            uint32 timeout_ms,
                                            bool* is_timeout,
@@ -197,7 +196,7 @@ bool BrowserProxy::SimulateDragWithTimeout(const POINT& start,
   if (!is_valid())
     return false;
 
-  std::vector<POINT> drag_path;
+  std::vector<gfx::Point> drag_path;
   drag_path.push_back(start);
   drag_path.push_back(end);
 
@@ -209,7 +208,6 @@ bool BrowserProxy::SimulateDragWithTimeout(const POINT& start,
 
   return result;
 }
-#endif  // defined(OS_WIN)
 
 bool BrowserProxy::WaitForTabCountToBecome(int count, int wait_timeout) {
   const TimeTicks start = TimeTicks::Now();
@@ -271,21 +269,6 @@ bool BrowserProxy::IsFindWindowFullyVisible(bool* is_visible) {
   return sender_->Send(
       new AutomationMsg_FindWindowVisibility(0, handle_, is_visible));
 }
-
-#if defined(OS_WIN)
-// TODO(port): Replace HWND.
-bool BrowserProxy::GetHWND(HWND* handle) const {
-  if (!is_valid())
-    return false;
-
-  if (!handle) {
-    NOTREACHED();
-    return false;
-  }
-
-  return sender_->Send(new AutomationMsg_WindowHWND(0, handle_, handle));
-}
-#endif  // defined(OS_WIN)
 
 bool BrowserProxy::RunCommandAsync(int browser_command) const {
   if (!is_valid())
@@ -392,6 +375,17 @@ bool BrowserProxy::SetBooleanPreference(const std::wstring& name,
 
   sender_->Send(new AutomationMsg_SetBooleanPreference(0, handle_, name,
                                                        value, &result));
+  return result;
+}
+
+bool BrowserProxy::TerminateSession() {
+  if (!is_valid())
+    return false;
+
+  bool result = false;
+
+  sender_->Send(new AutomationMsg_TerminateSession(0, handle_, &result));
+
   return result;
 }
 

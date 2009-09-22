@@ -36,7 +36,6 @@
 struct AutomationMsg_Find_Params;
 
 namespace IPC {
-struct Reposition_Params;
 struct ExternalTabSettings;
 }
 
@@ -157,23 +156,17 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void FindNormalBrowserWindow(int* handle);
   void GetLastActiveBrowserWindow(int* handle);
   void GetActiveWindow(int* handle);
-#if defined(OS_WIN)
-  // TODO(port): Replace HWND.
-  void GetWindowHWND(int handle, HWND* win32_handle);
-#endif  // defined(OS_WIN)
   void ExecuteBrowserCommandAsync(int handle, int command, bool* success);
   void ExecuteBrowserCommand(int handle, int command,
                              IPC::Message* reply_message);
+  void TerminateSession(int handle, bool* success);
   void WindowGetViewBounds(int handle, int view_id, bool screen_coordinates,
                            bool* success, gfx::Rect* bounds);
-#if defined(OS_WIN)
-  // TODO(port): Replace POINT.
   void WindowSimulateDrag(int handle,
-                          std::vector<POINT> drag_path,
+                          std::vector<gfx::Point> drag_path,
                           int flags,
                           bool press_escape_en_route,
                           IPC::Message* reply_message);
-#endif  // defined(OS_WIN)
   void WindowSimulateClick(const IPC::Message& message,
                            int handle,
                            const gfx::Point& click,
@@ -182,10 +175,12 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                               int handle,
                               wchar_t key,
                               int flags);
+  void GetWindowBounds(int handle, gfx::Rect* bounds, bool* result);
   void SetWindowBounds(int handle, const gfx::Rect& bounds, bool* result);
   void SetWindowVisible(int handle, bool visible, bool* result);
   void IsWindowActive(int handle, bool* success, bool* is_active);
   void ActivateWindow(int handle);
+  void IsWindowMaximized(int handle, bool* is_maximized, bool* success);
 
   void GetTabCount(int handle, int* tab_count);
   void GetTab(int win_handle, int tab_index, int* tab_handle);
@@ -326,8 +321,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
 // TODO(port): remove windowisms.
 #if defined(OS_WIN)
-  void OnTabReposition(int tab_handle,
-                       const IPC::Reposition_Params& params);
   void OnForwardContextMenuCommandToChrome(int tab_handle, int command);
 #endif  // defined(OS_WIN)
 

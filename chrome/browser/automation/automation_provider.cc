@@ -282,24 +282,24 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                         FindNormalBrowserWindow)
     IPC_MESSAGE_HANDLER(AutomationMsg_IsWindowActive, IsWindowActive)
     IPC_MESSAGE_HANDLER(AutomationMsg_ActivateWindow, ActivateWindow)
-#if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(AutomationMsg_WindowHWND, GetWindowHWND)
-#endif  // defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(AutomationMsg_IsWindowMaximized, IsWindowMaximized)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowExecuteCommandAsync,
                         ExecuteBrowserCommandAsync)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WindowExecuteCommand,
                         ExecuteBrowserCommand)
+    IPC_MESSAGE_HANDLER(AutomationMsg_TerminateSession, TerminateSession)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowViewBounds, WindowGetViewBounds)
+    IPC_MESSAGE_HANDLER(AutomationMsg_GetWindowBounds, GetWindowBounds)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetWindowBounds, SetWindowBounds)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetWindowVisible, SetWindowVisible)
 #if !defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowClick, WindowSimulateClick)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowKeyPress, WindowSimulateKeyPress)
 #endif  // !defined(OS_MACOSX)
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WindowDrag,
                                     WindowSimulateDrag)
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) || defined(OS_LINUX)
     IPC_MESSAGE_HANDLER(AutomationMsg_TabCount, GetTabCount)
     IPC_MESSAGE_HANDLER(AutomationMsg_Tab, GetTab)
 #if defined(OS_WIN)
@@ -347,7 +347,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                                     WaitForTabToBeRestored)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetInitialFocus, SetInitialFocus)
 #if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(AutomationMsg_TabReposition, OnTabReposition)
     IPC_MESSAGE_HANDLER(AutomationMsg_ForwardContextMenuCommandToChrome,
                         OnForwardContextMenuCommandToChrome)
 #endif
@@ -814,34 +813,6 @@ class InvokeTaskLaterTask : public Task {
 
   DISALLOW_COPY_AND_ASSIGN(InvokeTaskLaterTask);
 };
-
-#if defined(OS_WIN)
-// TODO(port): Replace POINT and other windowsisms.
-
-// This task sends a WindowDragResponse message with the appropriate
-// routing ID to the automation proxy.  This is implemented as a task so that
-// we know that the mouse events (and any tasks that they spawn on the message
-// loop) have been processed by the time this is sent.
-class WindowDragResponseTask : public Task {
- public:
-  WindowDragResponseTask(AutomationProvider* provider,
-                         IPC::Message* reply_message)
-      : provider_(provider), reply_message_(reply_message) {}
-  virtual ~WindowDragResponseTask() {}
-
-  virtual void Run() {
-    DCHECK(reply_message_ != NULL);
-    AutomationMsg_WindowDrag::WriteReplyParams(reply_message_, true);
-    provider_->Send(reply_message_);
-  }
-
- private:
-  AutomationProvider* provider_;
-  IPC::Message* reply_message_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowDragResponseTask);
-};
-#endif  // defined(OS_WIN)
 
 #if defined(OS_WIN) || defined(OS_LINUX)
 void AutomationProvider::WindowSimulateClick(const IPC::Message& message,

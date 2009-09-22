@@ -74,10 +74,6 @@ void AutomationProvider::GetActiveWindow(int* handle) {
   *handle = window_tracker_->Add(window);
 }
 
-void AutomationProvider::GetWindowHWND(int handle, HWND* win32_handle) {
-  *win32_handle = window_tracker_->GetResource(handle);
-}
-
 void AutomationProvider::WindowGetViewBounds(int handle, int view_id,
                                              bool screen_coordinates,
                                              bool* success,
@@ -184,15 +180,13 @@ class WindowDragResponseTask : public Task {
 };
 
 void AutomationProvider::WindowSimulateDrag(int handle,
-                                            std::vector<POINT> drag_path,
+                                            std::vector<gfx::Point> drag_path,
                                             int flags,
                                             bool press_escape_en_route,
                                             IPC::Message* reply_message) {
-  bool succeeded = false;
   if (browser_tracker_->ContainsHandle(handle) && (drag_path.size() > 1)) {
     gfx::NativeWindow window =
         browser_tracker_->GetResource(handle)->window()->GetNativeHandle();
-    succeeded = true;
 
     UINT down_message = 0;
     UINT up_message = 0;
@@ -221,19 +215,19 @@ void AutomationProvider::WindowSimulateDrag(int handle,
     DCHECK(browser);
     HWND top_level_hwnd =
         reinterpret_cast<HWND>(browser->window()->GetNativeHandle());
-    POINT temp = drag_path[0];
+    POINT temp = drag_path[0].ToPOINT();
     MapWindowPoints(top_level_hwnd, HWND_DESKTOP, &temp, 1);
     MoveMouse(temp);
     SendMessage(top_level_hwnd, down_message, wparam_flags,
-                MAKELPARAM(drag_path[0].x, drag_path[0].y));
+                MAKELPARAM(drag_path[0].x(), drag_path[0].y()));
     for (int i = 1; i < static_cast<int>(drag_path.size()); ++i) {
-      temp = drag_path[i];
+      temp = drag_path[i].ToPOINT();
       MapWindowPoints(top_level_hwnd, HWND_DESKTOP, &temp, 1);
       MoveMouse(temp);
       SendMessage(top_level_hwnd, WM_MOUSEMOVE, wparam_flags,
-                  MAKELPARAM(drag_path[i].x, drag_path[i].y));
+                  MAKELPARAM(drag_path[i].x(), drag_path[i].y()));
     }
-    POINT end = drag_path[drag_path.size() - 1];
+    POINT end = drag_path[drag_path.size() - 1].ToPOINT();
     MapWindowPoints(top_level_hwnd, HWND_DESKTOP, &end, 1);
     MoveMouse(end);
 
@@ -253,7 +247,7 @@ void AutomationProvider::WindowSimulateDrag(int handle,
     MessageLoop::current()->PostTask(FROM_HERE, new InvokeTaskLaterTask(
         new WindowDragResponseTask(this, reply_message)));
   } else {
-    AutomationMsg_WindowDrag::WriteReplyParams(reply_message, true);
+    AutomationMsg_WindowDrag::WriteReplyParams(reply_message, false);
     Send(reply_message);
   }
 }
@@ -290,6 +284,18 @@ void AutomationProvider::GetBookmarkBarVisibility(int handle, bool* visible,
   }
 }
 
+void AutomationProvider::GetWindowBounds(int handle, gfx::Rect* bounds,
+                                         bool* success) {
+  *success = false;
+  HWND hwnd = window_tracker_->GetResource(handle);
+  if (hwnd) {
+    *success = true;
+    WINDOWPLACEMENT window_placement;
+    GetWindowPlacement(hwnd, &window_placement);
+    *bounds = window_placement.rcNormalPosition;
+  }
+}
+
 void AutomationProvider::SetWindowBounds(int handle, const gfx::Rect& bounds,
                                          bool* success) {
   *success = false;
@@ -316,6 +322,19 @@ void AutomationProvider::SetWindowVisible(int handle, bool visible,
 void AutomationProvider::ActivateWindow(int handle) {
   if (window_tracker_->ContainsHandle(handle)) {
     ::SetActiveWindow(window_tracker_->GetResource(handle));
+  }
+}
+
+void AutomationProvider::IsWindowMaximized(int handle, bool* is_maximized,
+                                           bool* success) {
+  *success = false;
+
+  HWND hwnd = window_tracker_->GetResource(handle);
+  if (hwnd) {
+    *success = true;
+    WINDOWPLACEMENT window_placement;
+    GetWindowPlacement(hwnd, &window_placement);
+    *is_maximized = (window_placement.showCmd == SW_MAXIMIZE);
   }
 }
 
@@ -408,35 +427,6 @@ ExternalTabContainer* AutomationProvider::GetExternalTabForHandle(int handle) {
   return NULL;
 }
 
-void AutomationProvider::OnTabReposition(
-    int tab_handle, const IPC::Reposition_Params& params) {
-  if (!tab_tracker_->ContainsHandle(tab_handle))
-    return;
-
-  if (!IsWindow(params.window))
-    return;
-
-  unsigned long process_id = 0;
-  unsigned long thread_id = 0;
-
-  thread_id = GetWindowThreadProcessId(params.window, &process_id);
-
-  if (thread_id != GetCurrentThreadId()) {
-    NOTREACHED();
-    return;
-  }
-
-  SetWindowPos(params.window, params.window_insert_after, params.left,
-               params.top, params.width, params.height, params.flags);
-
-  if (params.set_parent) {
-    if (IsWindow(params.parent_window)) {
-      if (!SetParent(params.window, params.parent_window))
-        DLOG(WARNING) << "SetParent failed. Error 0x%x" << GetLastError();
-    }
-  }
-}
-
 void AutomationProvider::OnForwardContextMenuCommandToChrome(int tab_handle,
                                                              int command) {
   if (tab_tracker_->ContainsHandle(tab_handle)) {
@@ -485,3 +475,12 @@ void AutomationProvider::ConnectExternalTab(
   }
 }
 
+void AutomationProvider::TerminateSession(int handle, bool* success) {
+  *success = false;
+
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    HWND window = browser->window()->GetNativeHandle();
+    *success = (::PostMessageW(window, WM_ENDSESSION, 0, 0) == TRUE);
+  }
+}

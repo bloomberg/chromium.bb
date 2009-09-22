@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/gfx/point.h"
+#include "base/gfx/rect.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/test/automated_ui_tests/automated_ui_test_base.h"
@@ -9,10 +11,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
-
-#if defined(TOOLKIT_VIEWS)
-#include "views/view.h"
-#endif
+#include "views/event.h"
 
 AutomatedUITestBase::AutomatedUITestBase() {}
 
@@ -84,7 +83,6 @@ bool AutomatedUITestBase::DuplicateTab() {
   return RunCommand(IDC_DUPLICATE_TAB);
 }
 
-#if defined(OS_WIN)
 bool AutomatedUITestBase::DragTabOut() {
   BrowserProxy* browser = active_browser();
   if (browser == NULL) {
@@ -141,13 +139,13 @@ bool AutomatedUITestBase::DragTabOut() {
     return false;
   }
 
-  // Click on the center of the tab, and drag it downwads.
-  POINT start;
-  POINT end;
-  start.x = dragged_tab_bounds.x() + dragged_tab_bounds.width()/2;
-  start.y = dragged_tab_bounds.y() + dragged_tab_bounds.height()/2;
-  end.x = start.x;
-  end.y = start.y + 3*urlbar_bounds.height();
+  // Click on the center of the tab, and drag it downwards.
+  gfx::Point start;
+  gfx::Point end;
+  start.set_x(dragged_tab_bounds.x() + dragged_tab_bounds.width() / 2);
+  start.set_y(dragged_tab_bounds.y() + dragged_tab_bounds.height() / 2);
+  end.set_x(start.x());
+  end.set_y(start.y() + 3 * urlbar_bounds.height());
 
   if (!browser->SimulateDragWithTimeout(start, end,
                                         views::Event::EF_LEFT_BUTTON_DOWN,
@@ -203,8 +201,8 @@ bool AutomatedUITestBase::DragActiveTab(bool drag_right) {
   }
 
   // Click on the center of the tab, and drag it to the left or the right.
-  POINT dragged_tab_point(dragged_tab_bounds.CenterPoint().ToPOINT());
-  POINT destination_point(dragged_tab_point);
+  gfx::Point dragged_tab_point = dragged_tab_bounds.CenterPoint();
+  gfx::Point destination_point = dragged_tab_point;
 
   int new_tab_index;
   if (drag_right) {
@@ -213,14 +211,14 @@ bool AutomatedUITestBase::DragActiveTab(bool drag_right) {
       return false;
     }
     new_tab_index = tab_index + 1;
-    destination_point.x += 2 * dragged_tab_bounds.width() / 3;
+    destination_point.Offset(2 * dragged_tab_bounds.width() / 3, 0);
   } else {
     if (tab_index <= 0) {
       LogInfoMessage("cant_drag_to_left");
       return false;
     }
     new_tab_index = tab_index - 1;
-    destination_point.x -= 2 * dragged_tab_bounds.width() / 3;
+    destination_point.Offset(-2 * dragged_tab_bounds.width() / 3, 0);
   }
 
   if (!browser->SimulateDragWithTimeout(dragged_tab_point,
@@ -239,7 +237,6 @@ bool AutomatedUITestBase::DragActiveTab(bool drag_right) {
 
   return true;
 }
-#endif
 
 bool AutomatedUITestBase::FindInPage() {
   if (!RunCommandAsync(IDC_FIND))

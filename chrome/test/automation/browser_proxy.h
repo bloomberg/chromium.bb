@@ -21,6 +21,7 @@ class WindowProxy;
 class AutocompleteEditProxy;
 
 namespace gfx {
+  class Point;
   class Rect;
 }
 
@@ -122,22 +123,21 @@ class BrowserProxy : public AutomationResourceProxy {
   // desktop.
   bool ApplyAccelerator(int id);
 
-#if defined(OS_WIN)
-  // TODO(port): Use portable replacement for POINT.
-
   // Performs a drag operation between the start and end points (both defined
   // in window coordinates).  |flags| specifies which buttons are pressed for
   // the drag, as defined in chrome/views/event.h.
-  virtual bool SimulateDrag(const POINT& start, const POINT& end, int flags,
+  virtual bool SimulateDrag(const gfx::Point& start,
+                            const gfx::Point& end,
+                            int flags,
                             bool press_escape_en_route);
 
   // Like SimulateDrag, but returns false if response is not received before
   // the specified timeout.
-  virtual bool SimulateDragWithTimeout(const POINT& start, const POINT& end,
+  virtual bool SimulateDragWithTimeout(const gfx::Point& start,
+                                       const gfx::Point& end,
                                        int flags, uint32 timeout_ms,
                                        bool* is_timeout,
                                        bool press_escape_en_route);
-#endif  // defined(OS_WIN)
 
   // Block the thread until the tab count is |count|.
   // |wait_timeout| is the timeout, in milliseconds, for waiting.
@@ -160,17 +160,6 @@ class BrowserProxy : public AutomationResourceProxy {
   // Returns whether the Find window is fully visible If animating, |is_visible|
   // will be false. Returns false on failure.
   bool IsFindWindowFullyVisible(bool* is_visible);
-
-#if defined(OS_WIN)
-  // TODO(port): Use portable equivalent of HWND.
-
-  // Gets the outermost HWND that corresponds to the given browser.
-  // Returns true if the call was successful.
-  // Note that ideally this should go and the version of WindowProxy should be
-  // used instead.  We have to keep it for start_up_tests that test against a
-  // reference build.
-  bool GetHWND(HWND* handle) const;
-#endif  // defined(OS_WIN)
 
   // Run the specified command in the browser (see browser_commands.cc for the
   // list of supported commands).  Returns true if the command was successfully
@@ -205,6 +194,10 @@ class BrowserProxy : public AutomationResourceProxy {
 
   // Sets the boolean value of the specified preference.
   bool SetBooleanPreference(const std::wstring& name, bool value);
+
+  // Simulates a termination the browser session (as if the user logged off the
+  // mahine).
+  bool TerminateSession();
 
  protected:
   virtual ~BrowserProxy() {}

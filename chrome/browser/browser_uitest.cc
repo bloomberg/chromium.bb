@@ -24,17 +24,6 @@
 namespace {
 
 class BrowserTest : public UITest {
- protected:
-#if defined(OS_WIN)
-  HWND GetMainWindow() {
-    scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-    scoped_refptr<WindowProxy> window(browser->GetWindow());
-
-    HWND window_handle;
-    EXPECT_TRUE(window->GetHWND(&window_handle));
-    return window_handle;
-  }
-#endif
 };
 
 class VisibleBrowserTest : public UITest {
@@ -53,10 +42,8 @@ TEST_F(BrowserTest, WindowsSessionEnd) {
   NavigateToURL(net::FilePathToFileURL(test_file));
   PlatformThread::Sleep(action_timeout_ms());
 
-  // Simulate an end of session. Normally this happens when the user
-  // shuts down the pc or logs off.
-  HWND window_handle = GetMainWindow();
-  ASSERT_TRUE(::PostMessageW(window_handle, WM_ENDSESSION, 0, 0));
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser->TerminateSession());
 
   PlatformThread::Sleep(action_timeout_ms());
   ASSERT_FALSE(IsBrowserRunning());

@@ -319,15 +319,12 @@ bool AutomatedUITest::DoAction(const std::string& action) {
     did_complete_action = PressDownArrow();
   } else if (LowerCaseEqualsASCII(action, "downloads")) {
     did_complete_action = ShowDownloads();
-// TODO(estade): port.
-#if defined(OS_WIN)
   } else if (LowerCaseEqualsASCII(action, "dragtableft")) {
     did_complete_action = DragActiveTab(false);
   } else if (LowerCaseEqualsASCII(action, "dragtabout")) {
     did_complete_action = DragTabOut();
   } else if (LowerCaseEqualsASCII(action, "dragtabright")) {
     did_complete_action = DragActiveTab(true);
-#endif  // defined(OS_WIN)
   } else if (LowerCaseEqualsASCII(action, "duplicatetab")) {
     did_complete_action = DuplicateTab();
   } else if (LowerCaseEqualsASCII(action, "editsearchengines")) {
