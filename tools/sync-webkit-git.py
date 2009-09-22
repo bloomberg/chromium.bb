@@ -35,7 +35,7 @@ def FindSVNRev(rev):
   """Map an SVN revision to a git hash.
   Like 'git svn find-rev' but without the git-svn bits."""
   # We find r123 by grepping for a line with "git-svn-id: blahblahblah@123".
-  return RunGit(['rev-list', '-n', '1', '--grep=^git-svn-id: .*@%s$' % rev,
+  return RunGit(['rev-list', '-n', '1', '--grep=^git-svn-id: .*trunk@%s ' % rev,
                  'origin'])
 
 def UpdateGClientBranch(webkit_rev):
