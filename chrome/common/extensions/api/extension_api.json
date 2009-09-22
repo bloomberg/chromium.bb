@@ -621,7 +621,7 @@
             "description": "Note:css are injected in the following definition order.",
             "properties": {
               "code": {"type": "string", "optional": true, "description": "CSS code to be injected."},
-              "file": {"type": "string", "optional": true, "description": "CSS file to be injected."},
+              "file": {"type": "string", "optional": true, "description": "CSS file to be injected."}
             },
             "optional": true
           },
