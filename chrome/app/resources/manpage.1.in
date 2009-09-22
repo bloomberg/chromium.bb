@@ -35,6 +35,26 @@ Runs
 .I URL
 in "app mode": with no browser toolbars.
 
+.TP
+\fB\-\-proxy-server\fR=\fIhost:port\fR
+Specify the HTTP/HTTPS proxy server.  Overrides any environment variables
+or settings picked via the options dialog.
+
+.TP
+\fB\-\-no-proxy-server\fR
+Disables the proxy server.  Overrides any environment variables or
+settings picked via the options dialog.
+
+.TP
+\fB\-\-proxy-auto-detect\fR
+Autodetect proxy configuration.  Overrides any environment variables
+or settings picked via the options dialog.
+
+.TP
+\fB\-\-proxy-pac-url\fR=\fIURL\fR
+Specify proxy autoconfiguration URL.  Overrides any environment variables
+or settings picked via the options dialog.
+
 .PP
 As a GTK+ app, @@NAME@@ also obeys GTK+ command-line flags, such
 as
@@ -53,24 +73,18 @@ Shorthand for specifying all of
 .B http_proxy, https_proxy, ftp_proxy
 
 .TP
-.B http_proxy
-The proxy server used for HTTP. This overrides any Gnome/KDE proxy
-setting.
-
-.TP
-.B http_proxy
-The proxy server used for HTTPS. This overrides any Gnome/KDE proxy
-setting.
-
-.TP
-.B ftp_proxy
-The proxy server used for FTP. This overrides any Gnome/KDE proxy
-setting.
+.B http_proxy, https_proxy, ftp_proxy
+The proxy servers used for HTTP, HTTPS, and FTP.
+.I Note:
+because Gnome/KDE proxy settings may propagate into these variables
+in some terminals, this variable is ignored (in preference for actual
+system proxy settings) when running under Gnome or KDE.  Use the
+command-line flags to set these when you want to force their values.
 
 .TP
 .B auto_proxy
 Specify proxy autoconfiguration.  Defined and empty autodetects; otherwise,
-it should be an autoconfig URL.
+it should be an autoconfig URL.  But see above note about Gnome/KDE.
 
 .SH FILES
 .TP
