@@ -12,4 +12,8 @@
   return NO;
 }
 
+-(NSTextField*)noItemTextfield {
+  return noItemTextfield_;
+}
+
 @end  // @implementation BookmarkBarView

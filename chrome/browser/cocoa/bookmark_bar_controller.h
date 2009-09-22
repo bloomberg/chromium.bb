@@ -68,7 +68,7 @@ class PrefService;
   // Delegate that can open URLs for us.
   id<BookmarkURLOpener> urlDelegate_;  // weak
 
-  IBOutlet NSView* buttonView_;
+  IBOutlet BookmarkBarView* buttonView_;
   IBOutlet MenuButton* offTheSideButton_;
   IBOutlet NSMenu* buttonContextMenu_;
 }
@@ -139,7 +139,7 @@ class PrefService;
 // Set the delegate for a unit test.
 - (void)setUrlDelegate:(id<BookmarkURLOpener>)urlDelegate;
 - (void)clearBookmarkBar;
-- (NSView*)buttonView;
+- (BookmarkBarView*)buttonView;
 - (NSArray*)buttons;
 - (NSRect)frameForBookmarkButtonFromCell:(NSCell*)cell xOffset:(int*)xOffset;
 - (void)checkForBookmarkButtonGrowth:(NSButton*)button;

@@ -10,8 +10,12 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface BookmarkBarView : NSView
+@interface BookmarkBarView : NSView {
+  IBOutlet NSTextField* noItemTextfield_;
+}
+
+-(NSTextField*)noItemTextfield;
+
 @end
-
+  
 #endif  // CHROME_BROWSER_COCOA_BOOKMARK_BAR_VIEW_H_
-

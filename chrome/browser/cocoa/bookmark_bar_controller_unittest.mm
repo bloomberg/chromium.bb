@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
+#import "chrome/browser/cocoa/bookmark_bar_view.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/cocoa/test_event_utils.h"
@@ -565,6 +566,23 @@ TEST_F(BookmarkBarControllerTest, TestBuildOffTheSideMenu) {
   EXPECT_EQ(0U, [[bar_ buttons] count]);
   [bar_ buildOffTheSideMenu];
   EXPECT_EQ(1, [menu numberOfItems]);
+}
+
+TEST_F(BookmarkBarControllerTest, DisplaysHelpMessageOnEmpty) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  [bar_ loaded:model];
+  EXPECT_FALSE([[[bar_ buttonView] noItemTextfield] isHidden]);
+}
+
+TEST_F(BookmarkBarControllerTest, HidesHelpMessageWithBookmark) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  model->AddURL(parent, parent->GetChildCount(),
+                L"title", GURL("http://one.com"));
+
+  [bar_ loaded:model];
+  EXPECT_TRUE([[[bar_ buttonView] noItemTextfield] isHidden]);
 }
 
 // Cannot test these methods since they simply call a single static

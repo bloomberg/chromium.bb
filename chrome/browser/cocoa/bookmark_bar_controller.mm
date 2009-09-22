@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_list.h"
 #import "chrome/browser/cocoa/bookmark_bar_bridge.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
+#import "chrome/browser/cocoa/bookmark_bar_view.h"
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
 #import "chrome/browser/cocoa/bookmark_name_folder_controller.h"
@@ -441,7 +442,7 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   // ends.
 }
 
-- (NSView*)buttonView {
+- (BookmarkBarView*)buttonView {
   return buttonView_;
 }
 
@@ -547,6 +548,10 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 // like the contextual menu which is invoked when not over a
 // bookmark.  On Safari that menu has a "new folder" option.
 - (void)addNodesToBar:(const BookmarkNode*)node {
+  BOOL hidden = (node->GetChildCount() == 0) ? NO : YES;
+  NSView* item = [buttonView_ noItemTextfield];
+  [item setHidden:hidden];
+
   int x_offset = 0;
   for (int i = 0; i < node->GetChildCount(); i++) {
     const BookmarkNode* child = node->GetChild(i);
