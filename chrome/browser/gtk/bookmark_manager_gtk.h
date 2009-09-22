@@ -251,6 +251,13 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
                                      GdkEventKey* key,
                                      BookmarkManagerGtk* bm);
 
+  // Callback from inline edits to folder names.  This changes the name in the
+  // model.
+  static void OnFolderNameEdited(GtkCellRendererText* render,
+                                 gchar* path,
+                                 gchar* new_folder_name,
+                                 BookmarkManagerGtk* bm);
+
   // Tools menu item callbacks.
   static void OnImportItemActivated(GtkMenuItem* menuitem,
                                     BookmarkManagerGtk* bm);

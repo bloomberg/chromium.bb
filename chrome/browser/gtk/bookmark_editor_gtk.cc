@@ -313,11 +313,11 @@ void BookmarkEditorGtk::AddNewGroup(GtkTreeIter* parent, GtkTreeIter* child) {
   gtk_tree_store_append(tree_store_, child, parent);
   gtk_tree_store_set(
       tree_store_, child,
-      bookmark_utils::FOLDER_ICON,
-      GtkThemeProvider::GetFolderIcon(true),
+      bookmark_utils::FOLDER_ICON, GtkThemeProvider::GetFolderIcon(true),
       bookmark_utils::FOLDER_NAME,
-      l10n_util::GetStringUTF8(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME).c_str(),
+          l10n_util::GetStringUTF8(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME).c_str(),
       bookmark_utils::ITEM_ID, static_cast<int64>(0),
+      bookmark_utils::IS_EDITABLE, TRUE,
       -1);
 }
 
@@ -394,6 +394,11 @@ void BookmarkEditorGtk::OnNewFolderClicked(GtkWidget* button,
   GtkTreePath* path = gtk_tree_model_get_path(
       GTK_TREE_MODEL(dialog->tree_store_), &new_item_iter);
   gtk_tree_view_expand_to_path(GTK_TREE_VIEW(dialog->tree_view_), path);
-  gtk_tree_selection_select_path(dialog->tree_selection_, path);
+
+  // Make the folder name editable.
+  gtk_tree_view_set_cursor(GTK_TREE_VIEW(dialog->tree_view_), path,
+      gtk_tree_view_get_column(GTK_TREE_VIEW(dialog->tree_view_), 0),
+      TRUE);
+
   gtk_tree_path_free(path);
 }

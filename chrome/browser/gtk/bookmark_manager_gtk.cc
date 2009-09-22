@@ -446,6 +446,11 @@ GtkWidget* BookmarkManagerGtk::MakeLeftPane() {
   g_signal_connect(left_tree_view_, "key-press-event",
                    G_CALLBACK(OnTreeViewKeyPress), this);
 
+  GtkCellRenderer* cell_renderer_text = bookmark_utils::GetCellRendererText(
+      GTK_TREE_VIEW(left_tree_view_));
+  g_signal_connect(cell_renderer_text, "edited",
+                   G_CALLBACK(OnFolderNameEdited), this);
+
   // The left side is only a drag destination (not a source).
   gtk_drag_dest_set(left_tree_view_, GTK_DEST_DEFAULT_DROP,
                     NULL, 0, GDK_ACTION_MOVE);
@@ -627,6 +632,7 @@ void BookmarkManagerGtk::BuildLeftStore() {
       l10n_util::GetStringUTF8(
           IDS_BOOKMARK_TREE_RECENTLY_BOOKMARKED_NODE_TITLE).c_str(),
       bookmark_utils::ITEM_ID, kRecentID,
+      bookmark_utils::IS_EDITABLE, FALSE,
       -1);
 
   GdkPixbuf* search_icon = gtk_widget_render_icon(
@@ -639,6 +645,7 @@ void BookmarkManagerGtk::BuildLeftStore() {
       l10n_util::GetStringUTF8(
           IDS_BOOKMARK_TREE_SEARCH_NODE_TITLE).c_str(),
       bookmark_utils::ITEM_ID, kSearchID,
+      bookmark_utils::IS_EDITABLE, FALSE,
       -1);
   g_object_unref(search_icon);
 }
@@ -1305,6 +1312,20 @@ gboolean BookmarkManagerGtk::OnTreeViewKeyPress(
   }
 
   return FALSE;
+}
+
+// static
+void BookmarkManagerGtk::OnFolderNameEdited(GtkCellRendererText* render,
+    gchar* path, gchar* new_folder_name, BookmarkManagerGtk* bm) {
+  // A folder named was edited in place.  Sync the change to the bookmark
+  // model.
+  GtkTreeIter iter;
+  GtkTreePath* tree_path = gtk_tree_path_new_from_string(path);
+  gboolean rv = gtk_tree_model_get_iter(GTK_TREE_MODEL(bm->left_store_),
+                                        &iter, tree_path);
+  DCHECK(rv);
+  bm->model_->SetTitle(bm->GetNodeAt(GTK_TREE_MODEL(bm->left_store_), &iter),
+                       UTF8ToWide(new_folder_name));
 }
 
 // static

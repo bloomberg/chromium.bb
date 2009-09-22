@@ -14,6 +14,8 @@
 
 namespace {
 
+const char* kCellRendererTextKey = "__CELL_RENDERER_TEXT__";
+
 void AddSingleNodeToTreeStore(GtkTreeStore* store, const BookmarkNode* node,
                               GtkTreeIter *iter, GtkTreeIter* parent) {
   gtk_tree_store_append(store, iter, parent);
@@ -23,12 +25,11 @@ void AddSingleNodeToTreeStore(GtkTreeStore* store, const BookmarkNode* node,
   // (and indeed, Nautilus does not render an expanded directory any
   // differently).
   gtk_tree_store_set(store, iter,
-                     bookmark_utils::FOLDER_ICON,
-                     GtkThemeProvider::GetFolderIcon(true),
-                     bookmark_utils::FOLDER_NAME,
-                     WideToUTF8(node->GetTitle()).c_str(),
-                     bookmark_utils::ITEM_ID, node->id(),
-                     -1);
+      bookmark_utils::FOLDER_ICON, GtkThemeProvider::GetFolderIcon(true),
+      bookmark_utils::FOLDER_NAME, WideToUTF8(node->GetTitle()).c_str(),
+      bookmark_utils::ITEM_ID, node->id(),
+      bookmark_utils::IS_EDITABLE, node->is_folder(),
+      -1);
 }
 
 // Helper function for CommitTreeStoreDifferencesBetween() which recursively
@@ -73,13 +74,27 @@ void RecursiveResolve(BookmarkModel* bb_model, const BookmarkNode* bb_node,
   }
 }
 
+// Update the folder name in the GtkTreeStore.
+void OnFolderNameEdited(GtkCellRendererText* render,
+    gchar* path, gchar* new_folder_name, GtkTreeStore* tree_store) {
+  GtkTreeIter folder_iter;
+  GtkTreePath* tree_path = gtk_tree_path_new_from_string(path);
+  gboolean rv = gtk_tree_model_get_iter(GTK_TREE_MODEL(tree_store),
+                                        &folder_iter, tree_path);
+  DCHECK(rv);
+  gtk_tree_store_set(tree_store, &folder_iter,
+                     bookmark_utils::FOLDER_NAME, new_folder_name,
+                     -1);
+  gtk_tree_path_free(tree_path);
+}
+
 }  // namespace
 
 namespace bookmark_utils {
 
 GtkTreeStore* MakeFolderTreeStore() {
   return gtk_tree_store_new(FOLDER_STORE_NUM_COLUMNS, GDK_TYPE_PIXBUF,
-                            G_TYPE_STRING, G_TYPE_INT64);
+                            G_TYPE_STRING, G_TYPE_INT64, G_TYPE_BOOLEAN);
 }
 
 void AddToTreeStore(BookmarkModel* model, int64 selected_id,
@@ -99,16 +114,26 @@ GtkWidget* MakeTreeViewForStore(GtkTreeStore* store) {
                                      "pixbuf", FOLDER_ICON);
   GtkCellRenderer* text_renderer = gtk_cell_renderer_text_new();
   g_object_set(text_renderer, "ellipsize", PANGO_ELLIPSIZE_END, NULL);
+  g_signal_connect(text_renderer, "edited", G_CALLBACK(OnFolderNameEdited),
+                   store);
   gtk_tree_view_column_pack_start(column, text_renderer, TRUE);
-  gtk_tree_view_column_add_attribute(column, text_renderer,
-                                     "text", FOLDER_NAME);
+  gtk_tree_view_column_set_attributes(column, text_renderer,
+                                      "text", FOLDER_NAME,
+                                      "editable", IS_EDITABLE,
+                                      NULL);
 
   GtkWidget* tree_view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
   // Let |tree_view| own the store.
   g_object_unref(store);
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree_view), FALSE);
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
+  g_object_set_data(G_OBJECT(tree_view), kCellRendererTextKey, text_renderer);
   return tree_view;
+}
+
+GtkCellRenderer* GetCellRendererText(GtkTreeView* tree_view) {
+  return static_cast<GtkCellRenderer*>(
+      g_object_get_data(G_OBJECT(tree_view), kCellRendererTextKey));
 }
 
 void AddToTreeStoreAt(const BookmarkNode* node, int64 selected_id,

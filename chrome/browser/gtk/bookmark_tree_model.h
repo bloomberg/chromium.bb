@@ -11,9 +11,11 @@
 class BookmarkModel;
 class BookmarkNode;
 
+typedef struct _GtkCellRenderer GtkCellRenderer;
 typedef struct _GtkTreeIter GtkTreeIter;
 typedef struct _GtkTreeModel GtkTreeModel;
 typedef struct _GtkTreeStore GtkTreeStore;
+typedef struct _GtkTreeView GtkTreeView;
 typedef struct _GdkPixbuf GdkPixbuf;
 typedef struct _GtkWidget GtkWidget;
 
@@ -23,6 +25,7 @@ enum FolderTreeStoreColumns {
   FOLDER_ICON,
   FOLDER_NAME,
   ITEM_ID,
+  IS_EDITABLE,
   FOLDER_STORE_NUM_COLUMNS
 };
 
@@ -50,6 +53,10 @@ void AddToTreeStoreAt(const BookmarkNode* node, int64 selected_id,
 // Makes a tree view for the store. This will take ownership of |store| and the
 // returned widget has a floating reference.
 GtkWidget* MakeTreeViewForStore(GtkTreeStore* store);
+
+// A helper method for getting pointer back to the GtkCellRendererText used for
+// the folder names.
+GtkCellRenderer* GetCellRendererText(GtkTreeView* tree_view);
 
 // Commits changes to a GtkTreeStore built from BuildTreeStoreFrom() back
 // into the BookmarkModel it was generated from.  Returns the BookmarkNode that
