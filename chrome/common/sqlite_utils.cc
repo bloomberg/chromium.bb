@@ -42,14 +42,7 @@ class ReleaseSQLErrorHandler : public VanillaSQLErrorHandler {
  public:
   virtual int HandleError(int error, sqlite3* db) {
     error_ = error;
-    // TOD(cpu): Remove this code once it has a few days of air time.
-    if (error == SQLITE_INTERNAL ||
-        error == SQLITE_NOMEM ||
-        error == SQLITE_CORRUPT ||
-        error == SQLITE_IOERR ||
-        error == SQLITE_CONSTRAINT ||
-        error == SQLITE_NOTADB)
-      CHECK(false) << "sqlite fatal error " << error;
+    // Used to have a CHECK here. Got lots of crashes.
     return error;
   }
 };
