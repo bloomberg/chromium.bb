@@ -43,6 +43,30 @@ bool IsPacMimeType(const std::string& mime_type) {
   return false;
 }
 
+// Convert |bytes| (which is encoded by |charset|) in place to UTF8.
+// If |charset| is empty, then we don't know what it was and guess.
+void ConvertResponseToUTF8(const std::string& charset, std::string* bytes) {
+  const char* codepage;
+
+  if (charset.empty()) {
+    // Assume ISO-8859-1 if no charset was specified.
+    codepage = "ISO-8859-1";
+  } else {
+    // Otherwise trust the charset that was provided.
+    codepage = charset.c_str();
+  }
+
+  // We will be generous in the conversion -- if any characters lie
+  // outside of |charset| (i.e. invalid), then substitute them with
+  // U+FFFD rather than failing.
+  std::wstring tmp_wide;
+  CodepageToWide(*bytes, codepage,
+                  OnStringUtilConversionError::SUBSTITUTE,
+                  &tmp_wide);
+  // TODO(eroman): would be nice to have a CodepageToUTF8() function.
+  *bytes = WideToUTF8(tmp_wide);
+}
+
 }  // namespace
 
 class ProxyScriptFetcherImpl : public ProxyScriptFetcher,
@@ -273,9 +297,15 @@ void ProxyScriptFetcherImpl::ReadBody(URLRequest* request) {
 }
 
 void ProxyScriptFetcherImpl::FetchCompleted() {
-  // On error, the caller expects empty string for bytes.
-  if (result_code_ != OK)
+  if (result_code_ == OK) {
+    // The caller expects the response to be encoded as UTF8.
+    std::string charset;
+    cur_request_->GetCharset(&charset);
+    ConvertResponseToUTF8(charset, result_bytes_);
+  } else {
+    // On error, the caller expects empty string for bytes.
     result_bytes_->clear();
+  }
 
   int result_code = result_code_;
   CompletionCallback* callback = callback_;

@@ -289,4 +289,39 @@ TEST_F(ProxyScriptFetcherTest, Hang) {
   }
 }
 
+// The ProxyScriptFetcher should decode any content-codings
+// (like gzip, bzip, etc.), and apply any charset conversions to yield
+// UTF8.
+TEST_F(ProxyScriptFetcherTest, Encodings) {
+  scoped_refptr<HTTPTestServer> server =
+      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  ASSERT_TRUE(NULL != server.get());
+  scoped_refptr<URLRequestContext> context = new RequestContext;
+  scoped_ptr<ProxyScriptFetcher> pac_fetcher(
+      ProxyScriptFetcher::Create(context));
+
+  // Test a response that is gzip-encoded -- should get inflated.
+  {
+    GURL url = server->TestServerPage("files/gzipped_pac");
+    std::string bytes;
+    TestCompletionCallback callback;
+    int result = pac_fetcher->Fetch(url, &bytes, &callback);
+    EXPECT_EQ(ERR_IO_PENDING, result);
+    EXPECT_EQ(OK, callback.WaitForResult());
+    EXPECT_EQ("This data was gzipped.\n", bytes);
+  }
+
+  // Test a response that was served as UTF-16 (BE). It should
+  // be converted to UTF8.
+  {
+    GURL url = server->TestServerPage("files/utf16be_pac");
+    std::string bytes;
+    TestCompletionCallback callback;
+    int result = pac_fetcher->Fetch(url, &bytes, &callback);
+    EXPECT_EQ(ERR_IO_PENDING, result);
+    EXPECT_EQ(OK, callback.WaitForResult());
+    EXPECT_EQ("This was encoded as UTF-16BE.\n", bytes);
+  }
+}
+
 }  // namespace net
