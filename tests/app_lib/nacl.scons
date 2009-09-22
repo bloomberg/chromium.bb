@@ -35,7 +35,10 @@ Import('env')
 ######################################################################
 # Smoke Test
 ######################################################################
-env.ComponentProgram('app_lib_test.nexe', 'app_lib_test.c')
+env.ComponentProgram('app_lib_test.nexe',
+                     'app_lib_test.c',
+                     EXTRA_LIBS=['pthread'],
+                     )
 
 # NOTE: we are using the same file as stdin and on the command line
 #

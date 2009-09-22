@@ -579,8 +579,11 @@ Common tasks:
 
 * build libs needed by sdk: scons --mode=nacl_extra_sdk extra_sdk_update
 * purge libs needed by sdk: scons --mode=nacl_extra_sdk extra_sdk_clean
-* rebuild sdk:              scons --extra_sdk_clean extra_sdk_update_header \
-                                        install_libpthread  extra_sdk_update
+* rebuild sdk:              scons --mode=nacl_extra_sdk \
+                                extra_sdk_clean \
+                                extra_sdk_update_header \
+                                install_libpthread \
+                                extra_sdk_update
 
 * dump system info    scons --mode=nacl,opt-linux dummy
 Options:
@@ -970,9 +973,13 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
 #      'tests/threads/nacl.scons',
 #      'tests/syscalls/nacl.scons',
 #      'tests/nullptr/nacl.scons',
+#      'tests/mmap/nacl.scons',
+#      'tests/app_lib/nacl.scons',
       'tests/hello_world/nacl.scons',
-#      'tests/fib/nacl.scons',
+      'tests/fib/nacl.scons',
       'tests/noop/nacl.scons',
+      'tests/null/nacl.scons',
+      'tests/srpc/nacl.scons',
       'tests/sysbasic/nacl.scons',
       'tests/arm_service_runtime/nacl.scons',
       ])

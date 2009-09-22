@@ -73,8 +73,10 @@ _start:
     nop
     bl _init
 
-    /* TODO: add the real code here */
-    /* bl __srpc_init */
+    nop
+    nop
+    nop
+    bl __srpc_init
 
     /* NOTE: we do not have SDL support on arm yet */
     /* call    __av_wait */

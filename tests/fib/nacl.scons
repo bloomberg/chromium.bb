@@ -33,31 +33,23 @@ Import('env')
 env.ComponentProgram('fib_array.nexe',
                      'fib_array.c',
                      EXTRA_LIBS=['srpc', 'google_nacl_imc_c', 'pthread'])
-
-# NOTE: this is a temporary measure until we have sfi/validator for arm
-if env['TARGET_ARCHITECTURE'] == 'x86':
-  node = env.CommandSelLdrTestNacl(
-      'fib_array_test.out',
-      #sel_ldr_flags=['-I', '-d'],               # NOTE: extra flags for arm
-      command=[env.File('fib_array.nexe')],
-      stdin=env.File('fib_array_test.stdin'),
-      stdout_golden=env.File('fib_array_test.stdout'),
-      )
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_fib_array_test')
+node = env.CommandSelLdrTestNacl(
+    'fib_array_test.out',
+    command=[env.File('fib_array.nexe')],
+    stdin=env.File('fib_array_test.stdin'),
+    stdout_golden=env.File('fib_array_test.stdout'),
+    )
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_fib_array_test')
 
 
 
 env.ComponentProgram('fib_scalar.nexe',
                      'fib_scalar.c',
                      EXTRA_LIBS=['srpc', 'google_nacl_imc_c', 'pthread'])
-
-# NOTE: this is a temporary measure until we have sfi/validator for arm
-if env['TARGET_ARCHITECTURE'] == 'x86':
-  node = env.CommandSelLdrTestNacl(
-      'fib_scalar_test.out',
-      #sel_ldr_flags=['-I', '-d'],               # NOTE: extra flags for arm
-      command=[env.File('fib_scalar.nexe')],
-      stdin=env.File('fib_scalar_test.stdin'),
-      stdout_golden=env.File('fib_scalar_test.stdout'),
+node = env.CommandSelLdrTestNacl(
+    'fib_scalar_test.out',
+    command=[env.File('fib_scalar.nexe')],
+    stdin=env.File('fib_scalar_test.stdin'),
+    stdout_golden=env.File('fib_scalar_test.stdout'),
       )
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_fib_scalar_test')
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_fib_scalar_test')

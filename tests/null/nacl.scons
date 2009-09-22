@@ -30,4 +30,8 @@
 
 Import('env')
 
-env.ComponentProgram('null.nexe', 'null.c')
+# NOTE: this test is used as simple sanity check for an SDK
+env.ComponentProgram('null.nexe',
+                     'null.c',
+                     EXTRA_LIBS=['pthread'],
+                     )
