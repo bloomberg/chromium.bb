@@ -67,9 +67,3 @@ bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
     return file_util::Delete(consent_file, false);
   }
 }
-
-// static
-bool GoogleUpdateSettings::GetLanguage(std::wstring* language) {
-  NOTIMPLEMENTED();
-  return false;
-}

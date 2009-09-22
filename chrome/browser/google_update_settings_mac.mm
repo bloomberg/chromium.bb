@@ -18,12 +18,6 @@ bool GoogleUpdateSettings::GetBrowser(std::wstring* browser) {
 }
 
 // static
-bool GoogleUpdateSettings::GetLanguage(std::wstring* language) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-// static
 bool GoogleUpdateSettings::GetBrand(std::wstring* brand) {
   NOTIMPLEMENTED();
   return false;

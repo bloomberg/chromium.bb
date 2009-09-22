@@ -386,16 +386,15 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
 
   if (is_first_run) {
-#if !defined(OS_MACOSX)
+#if defined(OS_WIN)
     // During first run we read the google_update registry key to find what
     // language the user selected when downloading the installer. This
     // becomes our default language in the prefs.
-    // Mac doesn't need this because it is always using language that Cocoa
-    // selected from the user's language list (in System Preferences).
+    // Other platforms obey the system locale.
     std::wstring install_lang;
     if (GoogleUpdateSettings::GetLanguage(&install_lang))
       local_state->SetString(prefs::kApplicationLocale, install_lang);
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_WIN)
     if (GoogleUpdateSettings::GetCollectStatsConsent())
       local_state->SetBoolean(prefs::kMetricsReportingEnabled, true);
   }
