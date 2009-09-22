@@ -17,6 +17,7 @@
 #include "chrome/browser/renderer_host/resource_handler.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/css_colors.h"
+#include "chrome/common/dom_storage_type.h"
 #include "chrome/common/edit_command.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -501,22 +502,22 @@ struct ParamTraits<ResourceType::Type> {
     switch (p) {
       case ResourceType::MAIN_FRAME:
         type = L"MAIN_FRAME";
-       break;
-     case ResourceType::SUB_FRAME:
-       type = L"SUB_FRAME";
-       break;
-     case ResourceType::SUB_RESOURCE:
-       type = L"SUB_RESOURCE";
-       break;
-     case ResourceType::OBJECT:
-       type = L"OBJECT";
-       break;
-     case ResourceType::MEDIA:
-       type = L"MEDIA";
-       break;
-     default:
-       type = L"UNKNOWN";
-       break;
+        break;
+      case ResourceType::SUB_FRAME:
+        type = L"SUB_FRAME";
+        break;
+      case ResourceType::SUB_RESOURCE:
+        type = L"SUB_RESOURCE";
+        break;
+      case ResourceType::OBJECT:
+        type = L"OBJECT";
+        break;
+      case ResourceType::MEDIA:
+        type = L"MEDIA";
+        break;
+      default:
+        type = L"UNKNOWN";
+        break;
     }
 
     LogParam(type, l);
@@ -688,18 +689,18 @@ struct ParamTraits<ViewHostMsg_ImeControl> {
   static void Log(const param_type& p, std::wstring* l) {
     std::wstring control;
     switch (p) {
-     case IME_DISABLE:
-      control = L"IME_DISABLE";
-      break;
-     case IME_MOVE_WINDOWS:
-      control = L"IME_MOVE_WINDOWS";
-      break;
-     case IME_COMPLETE_COMPOSITION:
-      control = L"IME_COMPLETE_COMPOSITION";
-      break;
-     default:
-      control = L"UNKNOWN";
-      break;
+      case IME_DISABLE:
+        control = L"IME_DISABLE";
+        break;
+      case IME_MOVE_WINDOWS:
+        control = L"IME_MOVE_WINDOWS";
+        break;
+      case IME_COMPLETE_COMPOSITION:
+        control = L"IME_COMPLETE_COMPOSITION";
+        break;
+      default:
+        control = L"UNKNOWN";
+        break;
     }
 
     LogParam(control, l);
@@ -1872,8 +1873,8 @@ struct ParamTraits<ViewMsg_AudioStreamState> {
        state = L"ViewMsg_AudioStreamState::kError";
        break;
      default:
-      state = L"UNKNOWN";
-      break;
+       state = L"UNKNOWN";
+       break;
     }
     LogParam(state, l);
   }
@@ -1922,27 +1923,27 @@ struct ParamTraits<appcache::Status> {
   static void Log(const param_type& p, std::wstring* l) {
     std::wstring state;
     switch (p) {
-     case appcache::UNCACHED:
-      state = L"UNCACHED";
-      break;
-     case appcache::IDLE:
-      state = L"IDLE";
-      break;
-     case appcache::CHECKING:
-      state = L"CHECKING";
-      break;
-     case appcache::DOWNLOADING:
-      state = L"DOWNLOADING";
-      break;
-     case appcache::UPDATE_READY:
-      state = L"UPDATE_READY";
-      break;
-     case appcache::OBSOLETE:
-      state = L"OBSOLETE";
-      break;
-     default:
-      state = L"InvalidStatusValue";
-      break;
+      case appcache::UNCACHED:
+        state = L"UNCACHED";
+        break;
+      case appcache::IDLE:
+        state = L"IDLE";
+        break;
+      case appcache::CHECKING:
+        state = L"CHECKING";
+        break;
+      case appcache::DOWNLOADING:
+        state = L"DOWNLOADING";
+        break;
+      case appcache::UPDATE_READY:
+        state = L"UPDATE_READY";
+        break;
+      case appcache::OBSOLETE:
+        state = L"OBSOLETE";
+        break;
+      default:
+        state = L"InvalidStatusValue";
+        break;
     }
 
     LogParam(state, l);
@@ -1965,33 +1966,33 @@ struct ParamTraits<appcache::EventID> {
   static void Log(const param_type& p, std::wstring* l) {
     std::wstring state;
     switch (p) {
-     case appcache::CHECKING_EVENT:
-      state = L"CHECKING_EVENT";
-      break;
-     case appcache::ERROR_EVENT:
-      state = L"ERROR_EVENT";
-      break;
-     case appcache::NO_UPDATE_EVENT:
-      state = L"NO_UPDATE_EVENT";
-      break;
-     case appcache::DOWNLOADING_EVENT:
-      state = L"DOWNLOADING_EVENT";
-      break;
-     case appcache::PROGRESS_EVENT:
-      state = L"PROGRESS_EVENT";
-      break;
-     case appcache::UPDATE_READY_EVENT:
-      state = L"UPDATE_READY_EVENT";
-      break;
-     case appcache::CACHED_EVENT:
-      state = L"CACHED_EVENT";
-      break;
-     case appcache::OBSOLETE_EVENT:
-      state = L"OBSOLETE_EVENT";
-      break;
-     default:
-      state = L"InvalidEventValue";
-      break;
+      case appcache::CHECKING_EVENT:
+        state = L"CHECKING_EVENT";
+        break;
+      case appcache::ERROR_EVENT:
+        state = L"ERROR_EVENT";
+        break;
+      case appcache::NO_UPDATE_EVENT:
+        state = L"NO_UPDATE_EVENT";
+        break;
+      case appcache::DOWNLOADING_EVENT:
+        state = L"DOWNLOADING_EVENT";
+        break;
+      case appcache::PROGRESS_EVENT:
+        state = L"PROGRESS_EVENT";
+        break;
+      case appcache::UPDATE_READY_EVENT:
+        state = L"UPDATE_READY_EVENT";
+        break;
+      case appcache::CACHED_EVENT:
+        state = L"CACHED_EVENT";
+        break;
+      case appcache::OBSOLETE_EVENT:
+        state = L"OBSOLETE_EVENT";
+        break;
+      default:
+        state = L"InvalidEventValue";
+        break;
     }
 
     LogParam(state, l);
@@ -2227,6 +2228,38 @@ struct ParamTraits<EditCommand> {
     l->append(L":");
     LogParam(p.value, l);
     l->append(L")");
+  }
+};
+
+// Traits for DOMStorageType enum.
+template <>
+struct ParamTraits<DOMStorageType> {
+  typedef DOMStorageType param_type;
+  static void Write(Message* m, const param_type& p) {
+    m->WriteInt(p);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    int type;
+    if (!m->ReadInt(iter, &type))
+      return false;
+    *p = static_cast<param_type>(type);
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    std::wstring control;
+    switch (p) {
+      case DOM_STORAGE_LOCAL:
+        control = L"DOM_STORAGE_LOCAL";
+        break;
+      case DOM_STORAGE_SESSION:
+        control = L"DOM_STORAGE_SESSION";
+        break;
+      default:
+        NOTIMPLEMENTED();
+        control = L"UNKNOWN";
+        break;
+    }
+    LogParam(control, l);
   }
 };
 

@@ -98,20 +98,20 @@ void DOMStorageDispatcherHost::Send(IPC::Message* message) {
       &DOMStorageDispatcherHost::Send, message));
 }
 
-void DOMStorageDispatcherHost::OnNamespaceId(bool is_local_storage,
+void DOMStorageDispatcherHost::OnNamespaceId(DOMStorageType storage_type,
                                              IPC::Message* reply_msg) {
   DCHECK(!shutdown_);
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
     MessageLoop* webkit_loop = webkit_thread_->GetMessageLoop();
     webkit_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
         &DOMStorageDispatcherHost::OnNamespaceId,
-        is_local_storage, reply_msg));
+        storage_type, reply_msg));
     return;
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   StorageNamespace* new_namespace;
-  if (is_local_storage)
+  if (storage_type == DOM_STORAGE_LOCAL)
     new_namespace = Context()->LocalStorage();
   else
     new_namespace = Context()->NewSessionStorage();

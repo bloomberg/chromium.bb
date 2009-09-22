@@ -6,12 +6,14 @@
 #define CHROME_RENDERER_RENDERER_WEBSTORAGENAMESPACE_IMPL_H_
 
 #include "base/basictypes.h"
+#include "chrome/common/dom_storage_type.h"
 #include "webkit/api/public/WebStorageNamespace.h"
 
 class RendererWebStorageNamespaceImpl : public WebKit::WebStorageNamespace {
  public:
-  explicit RendererWebStorageNamespaceImpl(bool is_local_storage);
-  RendererWebStorageNamespaceImpl(bool is_local_storage, int64 namespace_id);
+  explicit RendererWebStorageNamespaceImpl(DOMStorageType storage_type);
+  RendererWebStorageNamespaceImpl(
+      DOMStorageType storage_type, int64 namespace_id);
 
   // See WebStorageNamespace.h for documentation on these functions.
   virtual ~RendererWebStorageNamespaceImpl();
@@ -21,9 +23,8 @@ class RendererWebStorageNamespaceImpl : public WebKit::WebStorageNamespace {
   virtual void close();
 
  private:
-  // Are we local storage (as opposed to session storage).  Used during lazy
-  // initialization of namespace_id_.
-  bool is_local_storage_;
+  // Used during lazy initialization of namespace_id_.
+  const DOMStorageType storage_type_;
 
   // Our namespace ID.  Lazily initialized.
   int64 namespace_id_;

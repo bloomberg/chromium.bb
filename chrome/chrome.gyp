@@ -485,6 +485,7 @@
         'common/debug_flags.h',
         'common/devtools_messages.h',
         'common/devtools_messages_internal.h',
+        'common/dom_storage_type.h',
         'common/env_vars.cc',
         'common/env_vars.h',
         'common/filter_policy.h',

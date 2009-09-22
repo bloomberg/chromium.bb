@@ -26,7 +26,7 @@ StorageNamespace* StorageNamespace::CreateLocalStorageNamespace(
   WebStorageNamespace* web_storage_namespace =
       WebStorageNamespace::createLocalStorageNamespace(path);
   return new StorageNamespace(dom_storage_context, web_storage_namespace, id,
-                              true);
+                              DOM_STORAGE_LOCAL);
 }
 
 /* static */
@@ -37,16 +37,16 @@ StorageNamespace* StorageNamespace::CreateSessionStorageNamespace(
   WebStorageNamespace* web_storage_namespace =
       WebStorageNamespace::createSessionStorageNamespace();
   return new StorageNamespace(dom_storage_context, web_storage_namespace, id,
-                              false);
+                              DOM_STORAGE_SESSION);
 }
 
 StorageNamespace::StorageNamespace(DOMStorageContext* dom_storage_context,
                                    WebStorageNamespace* storage_namespace,
-                                   int64 id, bool is_local_storage)
+                                   int64 id, DOMStorageType storage_type)
     : dom_storage_context_(dom_storage_context),
       storage_namespace_(storage_namespace),
       id_(id),
-      is_local_storage_(is_local_storage) {
+      storage_type_(storage_type) {
   DCHECK(dom_storage_context_);
   DCHECK(storage_namespace_);
   dom_storage_context_->RegisterStorageNamespace(this);
@@ -82,12 +82,12 @@ StorageArea* StorageNamespace::GetStorageArea(const string16& origin) {
 }
 
 StorageNamespace* StorageNamespace::Copy() {
-  DCHECK(!is_local_storage_);
+  DCHECK(storage_type_ == DOM_STORAGE_SESSION);
   int64 id = dom_storage_context_->AllocateStorageNamespaceId();
   DCHECK(!dom_storage_context_->GetStorageNamespace(id));
   WebStorageNamespace* new_storage_namespace = storage_namespace_->copy();
   return new StorageNamespace(dom_storage_context_, new_storage_namespace, id,
-                              is_local_storage_);
+                              storage_type_);
 }
 
 void StorageNamespace::Close() {

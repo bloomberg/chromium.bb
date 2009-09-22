@@ -7,6 +7,7 @@
 
 #include "base/string16.h"
 #include "base/hash_tables.h"
+#include "chrome/common/dom_storage_type.h"
 
 class DOMStorageContext;
 class FilePath;
@@ -36,7 +37,7 @@ class StorageNamespace {
   // Called by the static factory methods above.
   StorageNamespace(DOMStorageContext* dom_storage_context,
                    WebKit::WebStorageNamespace* web_storage_namespace,
-                   int64 id, bool is_local_storage);
+                   int64 id, DOMStorageType storage_type);
 
   // All the storage areas we own.
   typedef base::hash_map<string16, StorageArea*> OriginToStorageAreaMap;
@@ -51,8 +52,8 @@ class StorageNamespace {
   // Our id.  Unique to our parent WebKitContext class.
   int64 id_;
 
-  // Is this a local storage namespace.
-  bool is_local_storage_;
+  // SessionStorage vs. LocalStorage.
+  const DOMStorageType storage_type_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(StorageNamespace);
 };

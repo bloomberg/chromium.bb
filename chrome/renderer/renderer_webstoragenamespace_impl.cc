@@ -9,14 +9,14 @@
 #include "chrome/renderer/renderer_webstoragearea_impl.h"
 
 RendererWebStorageNamespaceImpl::RendererWebStorageNamespaceImpl(
-    bool is_local_storage)
-    : is_local_storage_(is_local_storage),
+    DOMStorageType storage_type)
+    : storage_type_(storage_type),
       namespace_id_(kUninitializedNamespaceId) {
 }
 
 RendererWebStorageNamespaceImpl::RendererWebStorageNamespaceImpl(
-    bool is_local_storage, int64 namespace_id)
-    : is_local_storage_(is_local_storage),
+    DOMStorageType storage_type, int64 namespace_id)
+    : storage_type_(storage_type),
       namespace_id_(namespace_id) {
   DCHECK(namespace_id_ != kUninitializedNamespaceId);
 }
@@ -31,7 +31,7 @@ WebKit::WebStorageArea* RendererWebStorageNamespaceImpl::createStorageArea(
   // whether it's worth the complexity.
   if (namespace_id_ == kUninitializedNamespaceId) {
     RenderThread::current()->Send(
-        new ViewHostMsg_DOMStorageNamespaceId(is_local_storage_,
+        new ViewHostMsg_DOMStorageNamespaceId(storage_type_,
                                               &namespace_id_));
     DCHECK(namespace_id_ != kUninitializedNamespaceId);
   }
@@ -45,14 +45,14 @@ WebKit::WebStorageArea* RendererWebStorageNamespaceImpl::createStorageArea(
 WebKit::WebStorageNamespace* RendererWebStorageNamespaceImpl::copy() {
   // If we haven't been used yet, we might as well start out fresh (and lazy).
   if (namespace_id_ == kUninitializedNamespaceId)
-    return new RendererWebStorageNamespaceImpl(is_local_storage_);
+    return new RendererWebStorageNamespaceImpl(storage_type_);
 
   // This cannot easily be differed because we need a snapshot in time.
   int64 new_namespace_id;
   RenderThread::current()->Send(
       new ViewHostMsg_DOMStorageCloneNamespaceId(namespace_id_,
                                                  &new_namespace_id));
-  return new RendererWebStorageNamespaceImpl(is_local_storage_,
+  return new RendererWebStorageNamespaceImpl(storage_type_,
                                              new_namespace_id);
 }
 

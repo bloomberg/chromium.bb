@@ -9,6 +9,7 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/in_process_webkit/storage_area.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
+#include "chrome/common/dom_storage_type.h"
 #include "ipc/ipc_message.h"
 
 class DOMStorageContext;
@@ -37,7 +38,7 @@ class DOMStorageDispatcherHost :
   ~DOMStorageDispatcherHost();
 
   // Message Handlers.
-  void OnNamespaceId(bool is_local_storage, IPC::Message* reply_msg);
+  void OnNamespaceId(DOMStorageType storage_type, IPC::Message* reply_msg);
   void OnCloneNamespaceId(int64 namespace_id, IPC::Message* reply_msg);
   void OnStorageAreaId(int64 namespace_id, const string16& origin,
                        IPC::Message* reply_msg);

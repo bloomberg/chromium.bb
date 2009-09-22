@@ -142,13 +142,13 @@ WebStorageNamespace* RendererWebKitClientImpl::createLocalStorageNamespace(
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return WebStorageNamespace::createLocalStorageNamespace(path);
   // The browser process decides the path, so ignore that param.
-  return new RendererWebStorageNamespaceImpl(true);
+  return new RendererWebStorageNamespaceImpl(DOM_STORAGE_LOCAL);
 }
 
 WebStorageNamespace* RendererWebKitClientImpl::createSessionStorageNamespace() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
     return WebStorageNamespace::createSessionStorageNamespace();
-  return new RendererWebStorageNamespaceImpl(false);
+  return new RendererWebStorageNamespaceImpl(DOM_STORAGE_SESSION);
 }
 
 WebApplicationCacheHost* RendererWebKitClientImpl::createApplicationCacheHost(
