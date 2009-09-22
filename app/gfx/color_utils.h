@@ -11,32 +11,6 @@ class SkBitmap;
 
 namespace color_utils {
 
-// Represents set of CIE XYZ tristimulus values.
-struct CIE_XYZ {
-  double X;
-  double Y;  // luminance
-  double Z;
-};
-
-// Represents a L*a*b* color value
-struct LabColor {
-  int L;
-  int a;
-  int b;
-};
-
-// Note: these transformations assume sRGB as the source color space
-
-// Convert between different color spaces
-void SkColorToCIEXYZ(SkColor c, CIE_XYZ* xyz);
-SkColor CIEXYZToSkColor(SkAlpha alpha, const CIE_XYZ& xyz);
-
-void SkColorToLabColor(SkColor c, LabColor* lab);
-SkColor LabColorToSkColor(const LabColor& lab, SkAlpha alpha);
-
-void CIEXYZToLabColor(const CIE_XYZ& xyz, LabColor* lab);
-void LabColorToCIEXYZ(const LabColor& lab, CIE_XYZ* xyz);
-
 // Determine if a given alpha value is nearly completely transparent.
 bool IsColorCloseToTransparent(SkAlpha alpha);
 
