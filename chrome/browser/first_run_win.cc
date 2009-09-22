@@ -520,8 +520,13 @@ bool DecodeImportParams(const std::wstring& encoded,
   SplitString(encoded, L'@', &v);
   if (v.size() != 3)
     return false;
-  *browser_type = static_cast<int>(StringToInt64(v[0]));
-  *options = static_cast<int>(StringToInt64(v[1]));
+
+  if (!StringToInt(v[0], browser_type))
+    return false;
+
+  if (!StringToInt(v[1], options))
+    return false;
+
   *window = reinterpret_cast<HWND>(StringToInt64(v[2]));
   return true;
 }

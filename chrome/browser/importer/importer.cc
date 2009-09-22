@@ -528,6 +528,12 @@ void ImporterHost::StartImportSettings(const ProfileInfo& profile_info,
   // will be notified.
   writer_ = writer;
   importer_ = CreateImporterByType(profile_info.browser_type);
+  // If we fail to create Importer, exit as we can not do anything.
+  if (!importer_) {
+    ImportEnded();
+    return;
+  }
+
   importer_->AddRef();
 
   bool import_to_bookmark_bar = first_run;
