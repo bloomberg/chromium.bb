@@ -194,8 +194,8 @@ ResourceMessageFilter::~ResourceMessageFilter() {
 }
 
 void ResourceMessageFilter::Init() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   render_widget_helper_->Init(id(), resource_dispatcher_host_);
-  appcache_dispatcher_host_->Initialize(this, id());
 }
 
 // Called on the IPC thread:
@@ -212,6 +212,8 @@ void ResourceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
 // Called on the IPC thread:
 void ResourceMessageFilter::OnChannelConnected(int32 peer_pid) {
   DCHECK(!handle()) << " " << handle();
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
   base::ProcessHandle peer_handle;
   if (!base::OpenProcessHandle(peer_pid, &peer_handle)) {
     NOTREACHED();
@@ -224,6 +226,8 @@ void ResourceMessageFilter::OnChannelConnected(int32 peer_pid) {
 
   WorkerService::GetInstance()->Initialize(
       resource_dispatcher_host_, ui_loop());
+
+  appcache_dispatcher_host_->Initialize(this, id());
 }
 
 void ResourceMessageFilter::OnChannelError() {
