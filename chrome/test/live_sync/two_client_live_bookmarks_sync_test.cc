@@ -954,21 +954,21 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     int random_int = base::RandInt(1, 100);
     // To create randomness in order, 40% of time add bookmarks
     if (random_int > 60) {
-        string16 title(L"BB - TestBookmark");
-        string16 url(L"http://www.nofaviconurl");
-        string16 index_str = IntToString16(index);
-        title.append(index_str);
-        url.append(index_str);
-        url.append(L".com");
-        const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one, bbn_one,
-            index, title, GURL(url));
+      string16 title(L"BB - TestBookmark");
+      string16 url(L"http://www.nofaviconurl");
+      string16 index_str = IntToString16(index);
+      title.append(index_str);
+      url.append(index_str);
+      url.append(L".com");
+      const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one, bbn_one,
+          index, title, GURL(url));
     } else {
-        // Remaining % of time - Add Bookmark folders
-        string16 title(L"BB - TestBMFolder");
-        string16 index_str = IntToString16(index);
-        title.append(index_str);
-        const BookmarkNode* bm_folder = verifier->AddGroup(model_one, bbn_one,
-            index, title);
+      // Remaining % of time - Add Bookmark folders
+      string16 title(L"BB - TestBMFolder");
+      string16 index_str = IntToString16(index);
+      title.append(index_str);
+      const BookmarkNode* bm_folder = verifier->AddGroup(model_one, bbn_one,
+          index, title);
      }
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));

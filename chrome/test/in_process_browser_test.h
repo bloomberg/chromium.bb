@@ -64,6 +64,19 @@ class InProcessBrowserTest : public testing::Test {
   // Override this rather than TestBody.
   virtual void RunTestOnMainThread() = 0;
 
+  // We need these special methods because InProcessBrowserTest::SetUp is the
+  // bottom of the stack that winds up calling your test method, so it is not
+  // always an option to do what you want by overriding it and calling the
+  // superclass version.
+  //
+  // Override this for things you would normally override SetUp for. It will be
+  // called before your individual test fixture method is run, but after most
+  // of the overhead initialization has occured.
+  virtual void SetUpInProcessBrowserTestFixture() {}
+
+  // Override this for things you would normally override TearDown for.
+  virtual void TearDownInProcessBrowserTestFixture() {}
+
   // Override this to add command line flags specific to your test.
   virtual void SetUpCommandLine(CommandLine* command_line) {}
 

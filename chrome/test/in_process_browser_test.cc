@@ -141,7 +141,10 @@ void InProcessBrowserTest::SetUp() {
 
   net::ScopedDefaultHostResolverProc scoped_host_resolver_proc(
       host_resolver_.get());
+
+  SetUpInProcessBrowserTestFixture();
   BrowserMain(params);
+  TearDownInProcessBrowserTestFixture();
 }
 
 void InProcessBrowserTest::TearDown() {

@@ -69,7 +69,15 @@ class LiveBookmarksSyncTest : public InProcessBrowserTest {
   std::string username_;
   std::string password_;
 
+  virtual void SetUpInProcessBrowserTestFixture();
+  virtual void TearDownInProcessBrowserTestFixture();
+
  private:
+  // LiveBookmarksSyncTests need to make live DNS requests for access to
+  // GAIA and sync server URLs under google.com.  We use a scoped version
+  // to override the default resolver while the test is active.
+  scoped_ptr<net::ScopedDefaultHostResolverProc> mock_host_resolver_override_;
+
   DISALLOW_COPY_AND_ASSIGN(LiveBookmarksSyncTest);
 };
 

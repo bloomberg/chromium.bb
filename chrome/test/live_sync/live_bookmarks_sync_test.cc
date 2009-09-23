@@ -82,4 +82,18 @@ Profile* LiveBookmarksSyncTest::MakeProfile(const string16& name) {
   return ProfileManager::CreateProfile(path, name, L"", L"");
 }
 
+void LiveBookmarksSyncTest::SetUpInProcessBrowserTestFixture() {
+  // We don't take a reference to |resolver|, but mock_host_resolver_override_
+  // does, so effectively assumes ownership.
+  net::RuleBasedHostResolverProc* resolver =
+      new net::RuleBasedHostResolverProc(host_resolver());
+  resolver->AllowDirectLookup("*.google.com");
+  mock_host_resolver_override_.reset(
+      new net::ScopedDefaultHostResolverProc(resolver));
+}
+
+void LiveBookmarksSyncTest::TearDownInProcessBrowserTestFixture() {
+  mock_host_resolver_override_.reset();
+}
+
 #endif  // CHROME_PERSONALIZATION
