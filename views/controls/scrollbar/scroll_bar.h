@@ -5,8 +5,8 @@
 #ifndef VIEWS_CONTROLS_SCROLLBAR_SCROLLBAR_H_
 #define VIEWS_CONTROLS_SCROLLBAR_SCROLLBAR_H_
 
-#include "views/view.h"
 #include "views/event.h"
+#include "views/view.h"
 
 namespace views {
 
@@ -100,3 +100,4 @@ class ScrollBar : public View {
 }  // namespace views
 
 #endif  // #ifndef VIEWS_CONTROLS_SCROLLBAR_SCROLLBAR_H_
+

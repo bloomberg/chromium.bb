@@ -78,7 +78,12 @@ void NativeControlWin::VisibilityChanged(View* starting_from, bool is_visible) {
     Detach();
     DestroyWindow(hwnd);
   } else if (!native_view()) {
-    CreateNativeControl();
+    if (GetWidget())
+      CreateNativeControl();
+  } else {
+    // The view becomes visible after native control is created.
+    // Layout now.
+    Layout();
   }
 }
 
