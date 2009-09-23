@@ -172,6 +172,14 @@ bool PathProvider(int key, FilePath* result) {
 #endif
       }
       break;
+#if defined(OS_CHROMEOS)
+    case chrome::FILE_CHROMEOS_API:
+      if (!PathService::Get(base::DIR_MODULE, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("chromeos"));
+      cur = cur.Append(FILE_PATH_LITERAL("libchromeos-power.so"));
+      break;
+#endif
     // The following are only valid in the development environment, and
     // will fail if executed from an installed executable (because the
     // generated path won't exist).
