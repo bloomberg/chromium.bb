@@ -379,6 +379,14 @@ InjectedScriptAccess.getProperties = function(
 })()
 
 
+InjectedScriptAccess.evaluateInCallFrame = function(callFrameId, code,
+                                                    callback)
+{
+    devtools.tools.getDebuggerAgent().evaluateInCallFrame(
+        callFrameId, code, callback);
+};
+
+
 WebInspector.resourceTrackingWasEnabled = function()
 {
     InspectorController.resourceTrackingEnabled_ = true;

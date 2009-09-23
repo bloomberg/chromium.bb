@@ -227,16 +227,6 @@ devtools.InspectorControllerImpl.prototype.stopProfiling = function() {
 /**
  * @override
  */
-devtools.InspectorControllerImpl.prototype.evaluateInCallFrame =
-    function(callFrameId, code, callback) {
-  devtools.tools.getDebuggerAgent().evaluateInCallFrame(callFrameId, code,
-                                                        callback);
-};
-
-
-/**
- * @override
- */
 devtools.InspectorControllerImpl.prototype.dispatchOnInjectedScript = function(
     callId, methodName, argsString) {
   var callback = function(result, isException) {
