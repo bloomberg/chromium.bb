@@ -1,12 +1,12 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "views/controls/button/image_button.h"
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/skbitmap_operations.h"
 #include "app/throb_animation.h"
+#include "skia/ext/image_operations.h"
 
 namespace views {
 
@@ -41,8 +41,9 @@ void ImageButton::SetBackground(SkColor color,
     return;
   }
 
-  background_image_ =
-      SkBitmapOperations::CreateButtonBackground(color, *image, *mask);
+  background_image_ = skia::ImageOperations::CreateButtonBackground(color,
+                                                                    *image,
+                                                                    *mask);
 }
 
 void ImageButton::SetImageAlignment(HorizontalAlignment h_align,
@@ -94,8 +95,8 @@ SkBitmap ImageButton::GetImageToPaint() {
   SkBitmap img;
 
   if (!images_[BS_HOT].isNull() && hover_animation_->IsAnimating()) {
-    img = SkBitmapOperations::CreateBlendedBitmap(images_[BS_NORMAL],
-        images_[BS_HOT], hover_animation_->GetCurrentValue());
+    img = skia::ImageOperations::CreateBlendedBitmap(images_[BS_NORMAL],
+              images_[BS_HOT], hover_animation_->GetCurrentValue());
   } else {
     img = images_[state_];
   }

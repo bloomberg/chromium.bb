@@ -612,7 +612,8 @@ bool RenderView::CaptureThumbnail(WebView* view,
 
   const SkBitmap& src_bmp = device.accessBitmap(false);
 
-  SkRect dest_rect = { 0, 0, SkIntToScalar(w), SkIntToScalar(h) };
+  SkRect dest_rect;
+  dest_rect.set(0, 0, SkIntToScalar(w), SkIntToScalar(h));
   float dest_aspect = dest_rect.width() / dest_rect.height();
 
   // Get the src rect so that we can preserve the aspect ratio while filling

@@ -7,9 +7,7 @@
 #include "app/gfx/canvas.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "grit/theme_resources.h"
-#include "skia/ext/skia_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkShader.h"
 
 // How round the 'new tab' style bookmarks bar is.
 static const int kNewtabBarRoundness = 5;

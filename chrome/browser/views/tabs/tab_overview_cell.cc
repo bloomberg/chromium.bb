@@ -5,8 +5,8 @@
 #include "chrome/browser/views/tabs/tab_overview_cell.h"
 
 #include "app/gfx/favicon_size.h"
-#include "app/gfx/skbitmap_operations.h"
 #include "base/string_util.h"
+#include "skia/ext/image_operations.h"
 #include "views/border.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
@@ -67,7 +67,7 @@ TabOverviewCell::TabOverviewCell() : configured_thumbnail_(false) {
 void TabOverviewCell::SetThumbnail(const SkBitmap& thumbnail) {
   // Do mipmapped-based resampling to get closer to the correct size. The
   // input bitmap isn't guaranteed to have any specific resolution.
-  thumbnail_view_->SetImage(SkBitmapOperations::DownsampleByTwoUntilSize(
+  thumbnail_view_->SetImage(skia::ImageOperations::DownsampleByTwoUntilSize(
       thumbnail, kThumbnailWidth, kThumbnailHeight));
   configured_thumbnail_ = true;
 }

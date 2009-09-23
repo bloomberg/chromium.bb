@@ -9,10 +9,11 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/color_utils.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/owned_widget_gtk.h"
+
+#include "skia/ext/skia_utils.h"
 
 class CairoCachedSurface;
 class Profile;
@@ -111,7 +112,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // Sets the underlying theme colors/tints from a GTK color.
   void SetThemeColorFromGtk(const char* id, GdkColor* color);
   void SetThemeTintFromGtk(const char* id, GdkColor* color,
-                           const color_utils::HSL& default_tint);
+                           const skia::HSL& default_tint);
 
   // Split out from FreePlatformCaches so it can be called in our destructor;
   // FreePlatformCaches() is called from the BrowserThemeProvider's destructor,

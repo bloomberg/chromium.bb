@@ -135,11 +135,11 @@ void DOMUIThemeSource::InitNewTabCSS() {
   SkColor color_header =
       tp->GetColor(BrowserThemeProvider::COLOR_NTP_HEADER);
   // Generate a lighter color for the header gradients.
-  color_utils::HSL header_lighter;
-  color_utils::SkColorToHSL(color_header, &header_lighter);
+  skia::HSL header_lighter;
+  skia::SkColorToHSL(color_header, header_lighter);
   header_lighter.l += (1 - header_lighter.l) * 0.33;
   SkColor color_header_gradient_light =
-      color_utils::HSLToSkColor(header_lighter, SkColorGetA(color_header));
+      skia::HSLToSkColor(SkColorGetA(color_header), header_lighter);
 
   // Generate section border color from the header color. See
   // BookmarkBarView::Paint for how we do this for the bookmark bar

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/browser_theme_provider.h"
 
-#include "app/gfx/skbitmap_operations.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
 #include "base/gfx/png_decoder.h"
@@ -26,9 +25,10 @@
 #include "grit/theme_resources.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
+#include "skia/ext/image_operations.h"
+#include "skia/ext/skia_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkUnPreMultiply.h"
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
@@ -125,17 +125,15 @@ const SkColor BrowserThemeProvider::kDefaultColorControlBackground = NULL;
 const SkColor BrowserThemeProvider::kDefaultColorButtonBackground = NULL;
 
 // Default tints.
-const color_utils::HSL BrowserThemeProvider::kDefaultTintButtons =
-    { -1, -1, -1 };
-const color_utils::HSL BrowserThemeProvider::kDefaultTintFrame = { -1, -1, -1 };
-const color_utils::HSL BrowserThemeProvider::kDefaultTintFrameInactive =
+const skia::HSL BrowserThemeProvider::kDefaultTintButtons = { -1, -1, -1 };
+const skia::HSL BrowserThemeProvider::kDefaultTintFrame = { -1, -1, -1 };
+const skia::HSL BrowserThemeProvider::kDefaultTintFrameInactive =
     { -1, -1, 0.75f };
-const color_utils::HSL BrowserThemeProvider::kDefaultTintFrameIncognito =
+const skia::HSL BrowserThemeProvider::kDefaultTintFrameIncognito =
     { -1, 0.2f, 0.35f };
-const color_utils::HSL
-    BrowserThemeProvider::kDefaultTintFrameIncognitoInactive =
+const skia::HSL BrowserThemeProvider::kDefaultTintFrameIncognitoInactive =
     { -1, 0.3f, 0.6f };
-const color_utils::HSL BrowserThemeProvider::kDefaultTintBackgroundTab =
+const skia::HSL BrowserThemeProvider::kDefaultTintBackgroundTab =
     { -1, 0.5, 0.75 };
 
 // Saved default values.
@@ -682,7 +680,7 @@ const std::string BrowserThemeProvider::GetTintKey(int id) {
   }
 }
 
-color_utils::HSL BrowserThemeProvider::GetDefaultTint(int id) {
+skia::HSL BrowserThemeProvider::GetDefaultTint(int id) {
   switch (id) {
     case TINT_FRAME:
       return kDefaultTintFrame;
@@ -697,20 +695,23 @@ color_utils::HSL BrowserThemeProvider::GetDefaultTint(int id) {
     case TINT_BACKGROUND_TAB:
       return kDefaultTintBackgroundTab;
     default:
-      color_utils::HSL result = {-1, -1, -1};
+      skia::HSL result = {-1, -1, -1};
       return result;
   }
 }
 
-color_utils::HSL BrowserThemeProvider::GetTint(int id) {
+skia::HSL BrowserThemeProvider::GetTint(int id) {
   DCHECK(CalledOnValidThread());
 
   TintMap::iterator tint_iter = tints_.find(GetTintKey(id));
-  return (tint_iter == tints_.end()) ? GetDefaultTint(id) : tint_iter->second;
+  if (tint_iter != tints_.end())
+    return tint_iter->second;
+  else
+    return GetDefaultTint(id);
 }
 
 SkBitmap BrowserThemeProvider::TintBitmap(const SkBitmap& bitmap, int hsl_id) {
-  return SkBitmapOperations::CreateHSLShiftedBitmap(bitmap, GetTint(hsl_id));
+  return skia::ImageOperations::CreateHSLShiftedBitmap(bitmap, GetTint(hsl_id));
 }
 
 void BrowserThemeProvider::SetImageData(DictionaryValue* images_value,
@@ -783,7 +784,7 @@ void BrowserThemeProvider::SetTintData(DictionaryValue* tints_value) {
     ListValue* tint_list;
     if (tints_value->GetList(*iter, &tint_list) &&
         tint_list->GetSize() == 3) {
-      color_utils::HSL hsl = { -1, -1, -1 };
+      skia::HSL hsl = { -1, -1, -1 };
       int value = 0;
       if (!tint_list->GetReal(0, &hsl.h) && tint_list->GetInteger(0, &value))
         hsl.h = value;
@@ -911,8 +912,7 @@ void BrowserThemeProvider::SetColor(const char* key, const SkColor& color) {
   colors_[key] = color;
 }
 
-void BrowserThemeProvider::SetTint(const char* key,
-                                   const color_utils::HSL& tint) {
+void BrowserThemeProvider::SetTint(const char* key, const skia::HSL& tint) {
   tints_[key] = tint;
 }
 
@@ -1057,8 +1057,9 @@ SkBitmap* BrowserThemeProvider::GenerateBitmap(int id) {
         SkBitmap bg_tint = TintBitmap(*(it->second), TINT_BACKGROUND_TAB);
         int vertical_offset = HasCustomImage(id) ?
             kRestoredTabVerticalOffset : 0;
-        SkBitmap* bg_tab = new SkBitmap(SkBitmapOperations::CreateTiledBitmap(
-            bg_tint, 0, vertical_offset, bg_tint.width(), bg_tint.height()));
+        SkBitmap* bg_tab = new SkBitmap(
+            skia::ImageOperations::CreateTiledBitmap(bg_tint, 0,
+            vertical_offset, bg_tint.width(), bg_tint.height()));
 
         // If they've provided a custom image, overlay it.
         if (HasCustomImage(id)) {
@@ -1142,7 +1143,7 @@ void BrowserThemeProvider::SaveTintData() {
   if (tints_.size()) {
     TintMap::iterator iter = tints_.begin();
     while (iter != tints_.end()) {
-      color_utils::HSL hsl = (*iter).second;
+      skia::HSL hsl = (*iter).second;
       ListValue* hsl_list = new ListValue();
       hsl_list->Set(0, Value::CreateRealValue(hsl.h));
       hsl_list->Set(1, Value::CreateRealValue(hsl.s));

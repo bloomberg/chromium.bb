@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,18 +18,18 @@ namespace skia {
 // object for the filter values contributing to it. You build up the filter
 // list by calling AddFilter for each output pixel (in order).
 //
-// We do 2-dimensional convolution by first convolving each row by one
-// ConvolutionFilter1D, then convolving each column by another one.
+// We do 2-dimensional convolusion by first convolving each row by one
+// ConvolusionFilter1D, then convolving each column by another one.
 //
 // Entries are stored in fixed point, shifted left by kShiftBits.
-class ConvolutionFilter1D {
+class ConvolusionFilter1D {
  public:
   // The number of bits that fixed point values are shifted by.
   enum { kShiftBits = 14 };
 
   typedef short Fixed;
 
-  ConvolutionFilter1D() : max_filter_(0) {
+  ConvolusionFilter1D() : max_filter_(0) {
   }
 
   // Convert between floating point and our fixed point representation.
@@ -106,7 +106,7 @@ class ConvolutionFilter1D {
   int max_filter_;
 };
 
-// Does a two-dimensional convolution on the given source image.
+// Does a two-dimensional convolusion on the given source image.
 //
 // It is assumed the source pixel offsets referenced in the input filters
 // reference only valid pixels, so the source image size is not required. Each
@@ -127,8 +127,8 @@ class ConvolutionFilter1D {
 void BGRAConvolve2D(const unsigned char* source_data,
                     int source_byte_row_stride,
                     bool source_has_alpha,
-                    const ConvolutionFilter1D& xfilter,
-                    const ConvolutionFilter1D& yfilter,
+                    const ConvolusionFilter1D& xfilter,
+                    const ConvolusionFilter1D& yfilter,
                     unsigned char* output);
 
 }  // namespace skia

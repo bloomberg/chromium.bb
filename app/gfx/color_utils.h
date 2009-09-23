@@ -11,33 +11,6 @@ class SkBitmap;
 
 namespace color_utils {
 
-// Represents an HSL color.
-struct HSL {
-  double h;
-  double s;
-  double l;
-};
-
-// Note: these transformations assume sRGB as the source color space
-void SkColorToHSL(SkColor c, HSL* hsl);
-SkColor HSLToSkColor(const HSL& hsl, SkAlpha alpha);
-
-// HSL-Shift an SkColor. The shift values are in the range of 0-1, with the
-// option to specify -1 for 'no change'. The shift values are defined as:
-// hsl_shift[0] (hue): The absolute hue value - 0 and 1 map
-//    to 0 and 360 on the hue color wheel (red).
-// hsl_shift[1] (saturation): A saturation shift, with the
-//    following key values:
-//    0 = remove all color.
-//    0.5 = leave unchanged.
-//    1 = fully saturate the image.
-// hsl_shift[2] (lightness): A lightness shift, with the
-//    following key values:
-//    0 = remove all lightness (make all pixels black).
-//    0.5 = leave unchanged.
-//    1 = full lightness (make all pixels white).
-SkColor HSLShift(SkColor color, const HSL& shift);
-
 // Determine if a given alpha value is nearly completely transparent.
 bool IsColorCloseToTransparent(SkAlpha alpha);
 

@@ -7,7 +7,6 @@
 #include "app/gfx/canvas.h"
 #include "app/gfx/font.h"
 #include "app/gfx/path.h"
-#include "app/gfx/skbitmap_operations.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
@@ -18,6 +17,7 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "skia/ext/image_operations.h"
 #include "views/animator.h"
 #include "views/controls/button/image_button.h"
 #include "views/widget/widget.h"
@@ -525,21 +525,23 @@ void Tab2::PaintInactiveTabBackground(gfx::Canvas* canvas) {
 
   // Draw left edge.  Don't draw over the toolbar, as we're not the foreground
   // tab.
-  SkBitmap tab_l = SkBitmapOperations::CreateTiledBitmap(
-      *tab_bg, offset, background_offset_.y(), tab_active_.l_width, height());
-  SkBitmap theme_l =
-      SkBitmapOperations::CreateMaskedBitmap(tab_l, *tab_alpha_.image_l);
+  SkBitmap tab_l = skia::ImageOperations::CreateTiledBitmap(
+      *tab_bg, offset, background_offset_.y(),
+      tab_active_.l_width, height());
+  SkBitmap theme_l = skia::ImageOperations::CreateMaskedBitmap(
+      tab_l, *tab_alpha_.image_l);
   canvas->DrawBitmapInt(theme_l,
       0, 0, theme_l.width(), theme_l.height() - kToolbarOverlap,
       0, 0, theme_l.width(), theme_l.height() - kToolbarOverlap,
       false);
 
   // Draw right edge.  Again, don't draw over the toolbar.
-  SkBitmap tab_r = SkBitmapOperations::CreateTiledBitmap(*tab_bg,
+  SkBitmap tab_r = skia::ImageOperations::CreateTiledBitmap(
+      *tab_bg,
       offset + width() - tab_active_.r_width, background_offset_.y(),
       tab_active_.r_width, height());
-  SkBitmap theme_r =
-      SkBitmapOperations::CreateMaskedBitmap(tab_r, *tab_alpha_.image_r);
+  SkBitmap theme_r = skia::ImageOperations::CreateMaskedBitmap(
+      tab_r, *tab_alpha_.image_r);
   canvas->DrawBitmapInt(theme_r,
       0, 0, theme_r.width(), theme_r.height() - kToolbarOverlap,
       width() - theme_r.width(), 0, theme_r.width(),
@@ -574,17 +576,19 @@ void Tab2::PaintActiveTabBackground(gfx::Canvas* canvas) {
   SkBitmap* tab_bg = GetThemeProvider()->GetBitmapNamed(IDR_THEME_TOOLBAR);
 
   // Draw left edge.
-  SkBitmap tab_l = SkBitmapOperations::CreateTiledBitmap(
+  SkBitmap tab_l = skia::ImageOperations::CreateTiledBitmap(
       *tab_bg, offset, 0, tab_active_.l_width, height());
-  SkBitmap theme_l =
-      SkBitmapOperations::CreateMaskedBitmap(tab_l, *tab_alpha_.image_l);
+  SkBitmap theme_l = skia::ImageOperations::CreateMaskedBitmap(
+      tab_l, *tab_alpha_.image_l);
   canvas->DrawBitmapInt(theme_l, 0, 0);
 
   // Draw right edge.
-  SkBitmap tab_r = SkBitmapOperations::CreateTiledBitmap(*tab_bg,
-      offset + width() - tab_active_.r_width, 0, tab_active_.r_width, height());
-  SkBitmap theme_r =
-      SkBitmapOperations::CreateMaskedBitmap(tab_r, *tab_alpha_.image_r);
+  SkBitmap tab_r = skia::ImageOperations::CreateTiledBitmap(
+      *tab_bg,
+      offset + width() - tab_active_.r_width, 0,
+      tab_active_.r_width, height());
+  SkBitmap theme_r = skia::ImageOperations::CreateMaskedBitmap(
+      tab_r, *tab_alpha_.image_r);
   canvas->DrawBitmapInt(theme_r, width() - tab_active_.r_width, 0);
 
   // Draw center.  Instead of masking out the top portion we simply skip over it
@@ -603,12 +607,12 @@ void Tab2::PaintActiveTabBackground(gfx::Canvas* canvas) {
 }
 
 void Tab2::PaintHoverTabBackground(gfx::Canvas* canvas, double opacity) {
-  SkBitmap left = SkBitmapOperations::CreateBlendedBitmap(
-      *tab_inactive_.image_l, *tab_active_.image_l, opacity);
-  SkBitmap center = SkBitmapOperations::CreateBlendedBitmap(
-      *tab_inactive_.image_c, *tab_active_.image_c, opacity);
-  SkBitmap right = SkBitmapOperations::CreateBlendedBitmap(
-      *tab_inactive_.image_r, *tab_active_.image_r, opacity);
+  SkBitmap left = skia::ImageOperations::CreateBlendedBitmap(
+                  *tab_inactive_.image_l, *tab_active_.image_l, opacity);
+  SkBitmap center = skia::ImageOperations::CreateBlendedBitmap(
+                    *tab_inactive_.image_c, *tab_active_.image_c, opacity);
+  SkBitmap right = skia::ImageOperations::CreateBlendedBitmap(
+                   *tab_inactive_.image_r, *tab_active_.image_r, opacity);
 
   canvas->DrawBitmapInt(left, 0, 0);
   canvas->TileImageInt(center, tab_active_.l_width, 0,

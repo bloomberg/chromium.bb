@@ -9,7 +9,6 @@
 
 #include "app/gfx/canvas_paint.h"
 #include "app/gfx/favicon_size.h"
-#include "app/gfx/skbitmap_operations.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/browser.h"
@@ -24,6 +23,7 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "skia/ext/image_operations.h"
 
 namespace {
 
@@ -697,13 +697,13 @@ SkBitmap* TabRendererGtk::GetMaskedBitmap(const SkBitmap* mask,
     // offsets.
     delete it->second.bitmap;
   }
-  SkBitmap image = SkBitmapOperations::CreateTiledBitmap(
+  SkBitmap image = skia::ImageOperations::CreateTiledBitmap(
       *background, bg_offset_x, bg_offset_y, mask->width(),
       height() + kToolbarOverlap);
   CachedBitmap bitmap = {
     bg_offset_x,
     bg_offset_y,
-    new SkBitmap(SkBitmapOperations::CreateMaskedBitmap(image, *mask))
+    new SkBitmap(skia::ImageOperations::CreateMaskedBitmap(image, *mask))
   };
   cached_bitmaps_[std::make_pair(mask, background)] = bitmap;
   return bitmap.bitmap;

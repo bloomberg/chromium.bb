@@ -23,6 +23,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "skia/ext/skia_utils.h"
 #include "views/controls/label.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"

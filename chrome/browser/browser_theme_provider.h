@@ -9,12 +9,12 @@
 #include <string>
 #include <vector>
 
-#include "app/gfx/color_utils.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "base/basictypes.h"
 #include "base/non_thread_safe.h"
 #include "base/ref_counted.h"
+#include "skia/ext/skia_utils.h"
 
 class Extension;
 class Profile;
@@ -93,12 +93,12 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   static const SkColor kDefaultColorControlBackground;
   static const SkColor kDefaultColorButtonBackground;
 
-  static const color_utils::HSL kDefaultTintButtons;
-  static const color_utils::HSL kDefaultTintFrame;
-  static const color_utils::HSL kDefaultTintFrameInactive;
-  static const color_utils::HSL kDefaultTintFrameIncognito;
-  static const color_utils::HSL kDefaultTintFrameIncognitoInactive;
-  static const color_utils::HSL kDefaultTintBackgroundTab;
+  static const skia::HSL kDefaultTintButtons;
+  static const skia::HSL kDefaultTintFrame;
+  static const skia::HSL kDefaultTintFrameInactive;
+  static const skia::HSL kDefaultTintFrameIncognito;
+  static const skia::HSL kDefaultTintFrameIncognitoInactive;
+  static const skia::HSL kDefaultTintBackgroundTab;
 
   static const char* kDefaultThemeID;
 
@@ -209,10 +209,10 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   void SetColor(const char* id, const SkColor& color);
 
   // Sets an individual tint value.
-  void SetTint(const char* id, const color_utils::HSL& tint);
+  void SetTint(const char* id, const skia::HSL& tint);
 
   // Get the specified tint - |id| is one of the TINT_* enum values.
-  color_utils::HSL GetTint(int id);
+  skia::HSL GetTint(int id);
 
   // Generate any frame colors that weren't specified.
   void GenerateFrameColors();
@@ -255,7 +255,7 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
  private:
   typedef std::map<const int, std::string> ImageMap;
   typedef std::map<const std::string, SkColor> ColorMap;
-  typedef std::map<const std::string, color_utils::HSL> TintMap;
+  typedef std::map<const std::string, skia::HSL> TintMap;
   typedef std::map<const std::string, int> DisplayPropertyMap;
   typedef std::map<const int, std::vector<unsigned char> > RawDataMap;
   typedef std::map<const int, std::string> ResourceNameMap;
@@ -264,7 +264,7 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   const std::string GetTintKey(int id);
 
   // Returns the default tint for the given tint |id| TINT_* enum value.
-  color_utils::HSL GetDefaultTint(int id);
+  skia::HSL GetDefaultTint(int id);
 
   // Returns the string key for the given color |id| COLOR_* enum value.
   const std::string GetColorKey(int id);

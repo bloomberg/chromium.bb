@@ -9,7 +9,6 @@
 
 #include <string>
 
-#include "app/gfx/color_utils.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
@@ -76,6 +75,7 @@
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "grit/theme_resources.h"
+#include "skia/ext/skia_utils.h"
 #include "skia/ext/skia_utils_gtk.h"
 
 #if defined(OS_CHROMEOS)
@@ -1765,8 +1765,8 @@ void BrowserWindowGtk::SetBackgroundColor() {
   // When the cursor is over the divider, GTK+ normally lightens the background
   // color by 1.3 (see LIGHTNESS_MULT in gtkstyle.c).  Since we're setting the
   // color, override the prelight also.
-  color_utils::HSL hsl = { -1, 0.5, 0.65 };
-  SkColor frame_prelight_color = color_utils::HSLShift(frame_color, hsl);
+  skia::HSL hsl = { -1, 0.5, 0.65 };
+  SkColor frame_prelight_color = skia::HSLShift(frame_color, hsl);
   GdkColor frame_prelight_color_gdk = SkColorToGdkColor(frame_prelight_color);
   gtk_widget_modify_bg(contents_split_, GTK_STATE_PRELIGHT,
       &frame_prelight_color_gdk);
