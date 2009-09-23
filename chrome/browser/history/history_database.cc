@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,9 @@
 #include <algorithm>
 #include <set>
 
+#include "base/file_util.h"
+#include "base/histogram.h"
+#include "base/rand_util.h"
 #include "base/string_util.h"
 #include "chrome/common/sqlite_utils.h"
 
@@ -22,6 +25,29 @@ namespace {
 static const int kCurrentVersionNumber = 17;
 static const int kCompatibleVersionNumber = 16;
 static const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
+
+void ComputeDatabaseMetrics(const FilePath& history_name, sqlite3* db) {
+  if (base::RandInt(1, 100) != 50)
+    return;  // Only do this computation sometimes since it can be expensive.
+
+  int64 file_size = 0;
+  if (!file_util::GetFileSize(history_name, &file_size))
+    return;
+  int file_mb = static_cast<int>(file_size / (1024 * 1024));
+  UMA_HISTOGRAM_MEMORY_MB("History.DatabaseFileMB", file_mb);
+
+  SQLStatement url_count;
+  if (url_count.prepare(db, "SELECT count(*) FROM urls") != SQLITE_OK ||
+      url_count.step() != SQLITE_ROW)
+    return;
+  UMA_HISTOGRAM_COUNTS("History.URLTableCount", url_count.column_int(0));
+
+  SQLStatement visit_count;
+  if (visit_count.prepare(db, "SELECT count(*) FROM visits") != SQLITE_OK ||
+      visit_count.step() != SQLITE_ROW)
+    return;
+  UMA_HISTOGRAM_COUNTS("History.VisitTableCount", visit_count.column_int(0));
+}
 
 }  // namespace
 
@@ -87,6 +113,7 @@ InitStatus HistoryDatabase::Init(const FilePath& history_name,
   // Succeeded: keep the DB open by detaching the auto-closer.
   scoper.Detach();
   db_closer_.Attach(&db_, &statement_cache_);
+  ComputeDatabaseMetrics(history_name, db_);
   return INIT_OK;
 }
 

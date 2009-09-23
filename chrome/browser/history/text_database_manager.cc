@@ -310,8 +310,8 @@ bool TextDatabaseManager::AddPageData(const GURL& url,
                                  ConvertStringForIndexer(title),
                                  ConvertStringForIndexer(body));
 
-  HISTOGRAM_TIMES("History.AddFTSData",
-                  TimeTicks::Now() - beginning_time);
+  UMA_HISTOGRAM_TIMES("History.AddFTSData",
+                      TimeTicks::Now() - beginning_time);
 
   if (history_publisher_)
     history_publisher_->PublishPageContent(visit_time, url, title, body);

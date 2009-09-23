@@ -1041,8 +1041,8 @@ void HistoryBackend::QueryHistory(scoped_refptr<QueryHistoryRequest> request,
   request->ForwardResult(QueryHistoryRequest::TupleType(request->handle(),
                                                         &request->value));
 
-  HISTOGRAM_TIMES("History.QueryHistory",
-                  TimeTicks::Now() - beginning_time);
+  UMA_HISTOGRAM_TIMES("History.QueryHistory",
+                      TimeTicks::Now() - beginning_time);
 }
 
 // Basic time-based querying of history.
@@ -1359,8 +1359,8 @@ void HistoryBackend::GetPageThumbnailDirectly(
     if (!success)
       *data = NULL;  // This will tell the callback there was an error.
 
-    HISTOGRAM_TIMES("History.GetPageThumbnail",
-                    TimeTicks::Now() - beginning_time);
+    UMA_HISTOGRAM_TIMES("History.GetPageThumbnail",
+                        TimeTicks::Now() - beginning_time);
   }
 }
 
@@ -1542,8 +1542,8 @@ void HistoryBackend::GetFavIconForURL(
           TimeDelta::FromDays(kFavIconRefetchDays);
     }
 
-    HISTOGRAM_TIMES("History.GetFavIconForURL",
-                    TimeTicks::Now() - beginning_time);
+    UMA_HISTOGRAM_TIMES("History.GetFavIconForURL",
+                        TimeTicks::Now() - beginning_time);
   }
 
   request->ForwardResult(

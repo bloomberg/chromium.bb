@@ -109,8 +109,8 @@ void HistoryURLProvider::ExecuteWithDB(history::HistoryBackend* backend,
 
     DoAutocomplete(backend, db, params);
 
-    HISTOGRAM_TIMES("Autocomplete.HistoryAsyncQueryTime",
-                    TimeTicks::Now() - beginning_time);
+    UMA_HISTOGRAM_TIMES("Autocomplete.HistoryAsyncQueryTime",
+                        TimeTicks::Now() - beginning_time);
   }
 
   // Return the results (if any) to the main thread.
