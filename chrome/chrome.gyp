@@ -1294,6 +1294,8 @@
         'browser/gtk/custom_button.cc',
         'browser/gtk/custom_button.h',
         'browser/gtk/dialogs_gtk.cc',
+        'browser/gtk/download_in_progress_dialog_gtk.cc',
+        'browser/gtk/download_in_progress_dialog_gtk.h',
         'browser/gtk/download_item_gtk.cc',
         'browser/gtk/download_item_gtk.h',
         'browser/gtk/download_request_dialog_delegate_gtk.cc',

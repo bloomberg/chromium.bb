@@ -37,6 +37,7 @@
 #include "chrome/common/pref_service.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/temp_scaffolding_stubs.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
 @interface AppController(PRIVATE)
@@ -351,15 +352,17 @@
   NSString* waitTitle = nil;
   NSString* exitTitle = nil;
 
+  std::wstring product_name = l10n_util::GetString(IDS_PRODUCT_NAME);
+
   // Set the dialog text based on whether or not there are multiple downloads.
   if (downloadCount == 1) {
     // Dialog text: warning and explanation.
     warningText =
-        base::SysWideToNSString(l10n_util::GetString(
-            IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_WARNING));
+        base::SysWideToNSString(l10n_util::GetStringF(
+            IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_WARNING, product_name));
     explanationText =
-        base::SysWideToNSString(l10n_util::GetString(
-            IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION));
+        base::SysWideToNSString(l10n_util::GetStringF(
+            IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION, product_name));
 
     // Cancel download and exit button text.
     exitTitle =
@@ -374,10 +377,11 @@
     // Dialog text: warning and explanation.
     warningText =
         base::SysWideToNSString(l10n_util::GetStringF(
-            IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING, downloadCount));
+            IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING, product_name,
+            IntToWString(downloadCount)));
     explanationText =
-        base::SysWideToNSString(l10n_util::GetString(
-            IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION));
+        base::SysWideToNSString(l10n_util::GetStringF(
+            IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION, product_name));
 
     // Cancel downloads and exit button text.
     exitTitle =

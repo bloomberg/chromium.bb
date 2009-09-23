@@ -252,7 +252,8 @@ class DownloadInProgressConfirmDialogDelegate : public views::DialogDelegate,
                                                 public views::View {
  public:
   explicit DownloadInProgressConfirmDialogDelegate(Browser* browser)
-      : browser_(browser) {
+      : browser_(browser),
+        product_name_(l10n_util::GetString(IDS_PRODUCT_NAME)) {
     int download_count = browser->profile()->GetDownloadManager()->
         in_progress_count();
 
@@ -260,9 +261,11 @@ class DownloadInProgressConfirmDialogDelegate : public views::DialogDelegate,
     std::wstring explanation_text;
     if (download_count == 1) {
       warning_text =
-          l10n_util::GetString(IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_WARNING);
+          l10n_util::GetStringF(IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_WARNING,
+                                product_name_);
       explanation_text =
-          l10n_util::GetString(IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION);
+          l10n_util::GetStringF(IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_EXPLANATION,
+                                product_name_);
       ok_button_text_ = l10n_util::GetString(
           IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_OK_BUTTON_LABEL);
       cancel_button_text_ = l10n_util::GetString(
@@ -270,10 +273,10 @@ class DownloadInProgressConfirmDialogDelegate : public views::DialogDelegate,
     } else {
       warning_text =
           l10n_util::GetStringF(IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING,
-                                download_count);
+                                product_name_, IntToString16(download_count));
       explanation_text =
-          l10n_util::GetString(
-              IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION);
+          l10n_util::GetStringF(
+              IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION, product_name_);
       ok_button_text_ = l10n_util::GetString(
           IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_OK_BUTTON_LABEL);
       cancel_button_text_ = l10n_util::GetString(
@@ -350,7 +353,7 @@ class DownloadInProgressConfirmDialogDelegate : public views::DialogDelegate,
   }
 
   virtual std::wstring GetWindowTitle() const {
-    return l10n_util::GetString(IDS_PRODUCT_NAME);
+    return product_name_;
   }
 
  private:
@@ -360,6 +363,8 @@ class DownloadInProgressConfirmDialogDelegate : public views::DialogDelegate,
 
   std::wstring ok_button_text_;
   std::wstring cancel_button_text_;
+
+  std::wstring product_name_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadInProgressConfirmDialogDelegate);
 };

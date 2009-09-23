@@ -43,6 +43,7 @@
 #include "chrome/browser/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
+#include "chrome/browser/gtk/download_in_progress_dialog_gtk.h"
 #include "chrome/browser/gtk/download_shelf_gtk.h"
 #include "chrome/browser/gtk/edit_search_engine_dialog.h"
 #include "chrome/browser/gtk/extension_shelf_gtk.h"
@@ -1140,8 +1141,7 @@ void BrowserWindowGtk::ShowAppMenu() {
 }
 
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {
-  NOTIMPLEMENTED();
-  browser_->InProgressDownloadResponse(false);
+  new DownloadInProgressDialogGtk(browser());
 }
 
 void BrowserWindowGtk::Observe(NotificationType type,
