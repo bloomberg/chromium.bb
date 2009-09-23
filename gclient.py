@@ -805,7 +805,7 @@ class GClient(object):
     def GetURLAndRev(name, original_url):
       if original_url.find("@") < 0:
         if revision_overrides.has_key(name):
-          return (original_url, int(revision_overrides[name]))
+          return (original_url, revision_overrides[name])
         else:
           # TODO(aharper): SVN/SCMWrapper cleanup (non-local commandset)
           return (original_url,
@@ -813,9 +813,9 @@ class GClient(object):
       else:
         url_components = original_url.split("@")
         if revision_overrides.has_key(name):
-          return (url_components[0], int(revision_overrides[name]))
+          return (url_components[0], revision_overrides[name])
         else:
-          return (url_components[0], int(url_components[1]))
+          return (url_components[0], url_components[1])
 
     # Run on the base solutions first.
     for solution in solutions:
@@ -823,11 +823,11 @@ class GClient(object):
       if name in entries:
         raise Error("solution %s specified more than once" % name)
       (url, rev) = GetURLAndRev(name, solution["url"])
-      entries[name] = "%s@%d" % (url, rev)
+      entries[name] = "%s@%s" % (url, rev)
       # TODO(aharper): SVN/SCMWrapper cleanup (non-local commandset)
       entries_deps_content[name] = gclient_scm.CaptureSVN(
                                      ["cat",
-                                      "%s/%s@%d" % (url,
+                                      "%s/%s@%s" % (url,
                                                     self._options.deps_file,
                                                     rev)],
                                      os.getcwd())
@@ -842,7 +842,7 @@ class GClient(object):
     for d in deps_to_process:
       if type(deps[d]) == str:
         (url, rev) = GetURLAndRev(d, deps[d])
-        entries[d] = "%s@%d" % (url, rev)
+        entries[d] = "%s@%s" % (url, rev)
 
     # Second pass for inherited deps (via the From keyword)
     for d in deps_to_process:
@@ -865,7 +865,7 @@ class GClient(object):
                                                  self._options.deps_file)),
                            {})
         (url, rev) = GetURLAndRev(d, sub_deps[d])
-        entries[d] = "%s@%d" % (url, rev)
+        entries[d] = "%s@%s" % (url, rev)
     print(";\n\n".join(["%s: %s" % (x, entries[x])
                         for x in sorted(entries.keys())]))
 

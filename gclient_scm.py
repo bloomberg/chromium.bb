@@ -133,15 +133,15 @@ class SVNWrapper(SCMWrapper):
     if options.revision:
       # Override the revision number.
       url = '%s@%s' % (components[0], str(options.revision))
-      revision = int(options.revision)
+      revision = options.revision
       forced_revision = True
     elif len(components) == 2:
-      revision = int(components[1])
+      revision = components[1]
       forced_revision = True
 
     rev_str = ""
     if revision:
-      rev_str = ' at %d' % revision
+      rev_str = ' at %s' % revision
 
     if not os.path.exists(checkout_path):
       # We need to checkout.
@@ -163,8 +163,8 @@ class SVNWrapper(SCMWrapper):
       # Retrieve the current HEAD version because svn is slow at null updates.
       if not revision:
         from_info_live = CaptureSVNInfo(from_info['URL'], '.')
-        revision = int(from_info_live['Revision'])
-        rev_str = ' at %d' % revision
+        revision = from_info_live['Revision']
+        rev_str = ' at %s' % revision
 
     if from_info['URL'] != components[0]:
       to_info = CaptureSVNInfo(url, '.')
@@ -517,7 +517,7 @@ def CaptureSVNHeadRevision(url):
   """
   info = CaptureSVN(["info", "--xml", url], os.getcwd())
   dom = xml.dom.minidom.parseString(info)
-  return int(dom.getElementsByTagName('entry')[0].getAttribute('revision'))
+  return dom.getElementsByTagName('entry')[0].getAttribute('revision')
 
 
 def CaptureSVNStatus(files):
