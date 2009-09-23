@@ -671,6 +671,13 @@ BUG4359 SKIP : LayoutTests/storage/success-callback.html = PASS
 BUG4359 SKIP : LayoutTests/storage/transaction-callback-exception-crash.html = PASS
 BUG4359 SKIP : LayoutTests/storage/transaction-error-callback.html = PASS
 BUG4359 SKIP : LayoutTests/fast/js/exceptions-thrown-in-callbacks.html = PASS
+BUG4359 MAC LINUX : LayoutTests/storage/test-authorizer.html = CRASH
+BUG4359 MAC LINUX : LayoutTests/storage/open-database-while-transaction-in-progress.html = CRASH
+BUG4359 WIN : LayoutTests/storage/read-and-write-transactions-dont-run-together.html = TIMEOUT
+BUG4359 WIN : LayoutTests/storage/read-transactions-running-concurrently.html = TIMEOUT
+BUG4359 MAC LINUX : LayoutTests/storage/read-and-write-transactions-dont-run-together.html = CRASH
+BUG4359 MAC LINUX : LayoutTests/storage/read-transactions-running-concurrently.html = CRASH
+BUG22296 LINUX MAC : LayoutTests/storage/multiple-transactions-on-different-handles.html = TIMEOUT CRASH
 
 // Implement HTML5 Geolocation API.
 BUG11246 : LayoutTests/fast/dom/Geolocation = FAIL
@@ -2200,7 +2207,6 @@ BUG18939 : LayoutTests/fast/js/prototypes.html = FAIL
 
 // Fallout from webkit 47041:47189
 BUG19248 : LayoutTests/fast/js/const.html = FAIL
-BUG22296 : LayoutTests/storage/multiple-transactions-on-different-handles.html = TIMEOUT CRASH
 
 BUG_LEVIN WIN : LayoutTests/fast/events/mouse-click-events.html = FAIL
 
@@ -2213,7 +2219,6 @@ BUG19519 WIN DEBUG : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL 
 BUG19766 WIN : LayoutTests/svg/batik/text/textPosition.svg = FAIL
 BUG19766 WIN LINUX : LayoutTests/svg/batik/text/xmlSpace.svg = FAIL
 BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug83786.html = FAIL
-BUG19766 : LayoutTests/storage/open-database-while-transaction-in-progress.html = TIMEOUT CRASH
 BUG19766 LINUX : LayoutTests/fast/replaced/width100percent-menulist.html = FAIL
 
 // Fails due to textInputController.setInputMethod not implemented for Mac.
@@ -2275,8 +2280,6 @@ BUG21411 SLOW WIN LINUX DEBUG: LayoutTests/svg/dom/SVGScriptElement/script-load-
 // WebKit 48217:48239
 // Fails because we don't support layoutTestController.addUserStyleSheet().
 BUG21439 : LayoutTests/userscripts/simple-stylesheet.html = FAIL
-// New database test that fails.
-BUG21442 : LayoutTests/storage/test-authorizer.html = TIMEOUT CRASH
 
 // Need investigation after we enable file URL universal access in test shell.
 BUG_JIANLI : LayoutTests/editing/selection/drag-in-iframe.html = FAIL PASS
@@ -2352,7 +2355,3 @@ BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/table/fixed-table-with-percent-width-i
 BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/table/fixed-table-with-percent-width-inside-fixed-width-table.html = FAIL
 BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/table/fixed-table-with-small-percent-width.html = FAIL
 BUG_DGLAZKOV WIN LINUX : LayoutTests/tables/mozilla/bugs/bug34176.html = FAIL
-BUG_DGLAZKOV WIN : LayoutTests/storage/read-and-write-transactions-dont-run-together.html = TIMEOUT
-BUG_DGLAZKOV WIN : LayoutTests/storage/read-transactions-running-concurrently.html = TIMEOUT
-BUG_DGLAZKOV MAC LINUX : LayoutTests/storage/read-and-write-transactions-dont-run-together.html = CRASH
-BUG_DGLAZKOV MAC LINUX : LayoutTests/storage/read-transactions-running-concurrently.html = CRASH
