@@ -88,6 +88,7 @@ class ToolbarView;
   IBOutlet MenuButton* pageButton_;
   IBOutlet MenuButton* wrenchButton_;
   IBOutlet AutocompleteTextField* locationBar_;
+  IBOutlet NSMenu* encodingMenu_;
 }
 
 // Initialize the toolbar and register for command updates. The profile is

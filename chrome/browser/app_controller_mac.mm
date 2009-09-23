@@ -338,7 +338,11 @@
   // current locale (see http://crbug.com/7647 for details).
   // We need a valid g_browser_process to get the profile which is why we can't
   // call this from awakeFromNib.
-  EncodingMenuControllerDelegate::BuildEncodingMenu([self defaultProfile]);
+  NSMenu* view_menu = [[[NSApp mainMenu] itemWithTag:IDC_VIEW_MENU] submenu];
+  NSMenuItem* encoding_menu_item = [view_menu itemWithTag:IDC_ENCODING_MENU];
+  NSMenu *encoding_menu = [encoding_menu_item submenu];
+  EncodingMenuControllerDelegate::BuildEncodingMenu([self defaultProfile],
+                                                    encoding_menu);
 
   // Now that we're initialized we can open any URLs we've been holding onto.
   [self openPendingURLs];

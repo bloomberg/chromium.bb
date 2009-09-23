@@ -33,13 +33,9 @@ void AppendMenuItem(NSMenu *parent_menu, int tag, NSString *title) {
 }  // namespace
 
 // static
-void EncodingMenuControllerDelegate::BuildEncodingMenu(Profile *profile) {
+void EncodingMenuControllerDelegate::BuildEncodingMenu(Profile *profile,
+                                                       NSMenu* encoding_menu) {
   DCHECK(profile);
-
-  // Get hold of the Cocoa encoding menu.
-  NSMenu* view_menu = [[[NSApp mainMenu] itemWithTag:IDC_VIEW_MENU] submenu];
-  NSMenuItem* encoding_menu_item = [view_menu itemWithTag:IDC_ENCODING_MENU];
-  NSMenu *encoding_menu = [encoding_menu_item submenu];
 
   typedef EncodingMenuController::EncodingMenuItemList EncodingMenuItemList;
   EncodingMenuItemList menuItems;

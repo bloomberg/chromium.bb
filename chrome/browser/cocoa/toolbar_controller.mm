@@ -14,6 +14,7 @@
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
 #import "chrome/browser/cocoa/back_forward_menu_controller.h"
+#import "chrome/browser/cocoa/encoding_menu_controller_delegate_mac.h"
 #import "chrome/browser/cocoa/gradient_button_cell.h"
 #import "chrome/browser/cocoa/location_bar_view_mac.h"
 #import "chrome/browser/cocoa/menu_button.h"
@@ -195,6 +196,8 @@ class PrefObserverBridge : public NotificationObserver {
   // We want a dynamic tooltip on the go button, so tell the go button to ask
   // use for the tooltip
   [goButton_ addToolTipRect:[goButton_ bounds] owner:self userData:nil];
+
+  EncodingMenuControllerDelegate::BuildEncodingMenu(profile_, encodingMenu_);
 }
 - (void)removeFromSuperview {
   NSLog(@"remove");
@@ -378,7 +381,7 @@ class PrefObserverBridge : public NotificationObserver {
 - (NSArray*)toolbarViews {
   return [NSArray arrayWithObjects:backButton_, forwardButton_, reloadButton_,
             homeButton_, starButton_, goButton_, pageButton_, wrenchButton_,
-            locationBar_, nil];
+            locationBar_, encodingMenu_, nil];
 }
 
 // Moves |rect| to the right by |delta|, keeping the right side fixed by

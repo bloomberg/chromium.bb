@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"  // For DISALLOW_IMPLICIT_CONSTRUCTORS
 
+@class NSMenu;
 class Profile;
 
 // The Windows version of this class manages the Encoding Menu, but since Cocoa
@@ -14,7 +15,7 @@ class Profile;
 // the encoding menu.
 class EncodingMenuControllerDelegate {
  public:
-  static void BuildEncodingMenu(Profile *profile);
+  static void BuildEncodingMenu(Profile *profile, NSMenu* encoding_menu);
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(EncodingMenuControllerDelegate);
 };
