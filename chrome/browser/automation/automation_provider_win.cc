@@ -427,6 +427,35 @@ ExternalTabContainer* AutomationProvider::GetExternalTabForHandle(int handle) {
   return NULL;
 }
 
+void AutomationProvider::OnTabReposition(
+    int tab_handle, const IPC::Reposition_Params& params) {
+  if (!tab_tracker_->ContainsHandle(tab_handle))
+    return;
+
+  if (!IsWindow(params.window))
+    return;
+
+  unsigned long process_id = 0;
+  unsigned long thread_id = 0;
+
+  thread_id = GetWindowThreadProcessId(params.window, &process_id);
+
+  if (thread_id != GetCurrentThreadId()) {
+    DCHECK_EQ(thread_id, GetCurrentThreadId());
+    return;
+  }
+
+  SetWindowPos(params.window, params.window_insert_after, params.left,
+               params.top, params.width, params.height, params.flags);
+
+  if (params.set_parent) {
+    if (IsWindow(params.parent_window)) {
+      if (!SetParent(params.window, params.parent_window))
+        DLOG(WARNING) << "SetParent failed. Error 0x%x" << GetLastError();
+    }
+  }
+}
+
 void AutomationProvider::OnForwardContextMenuCommandToChrome(int tab_handle,
                                                              int command) {
   if (tab_tracker_->ContainsHandle(tab_handle)) {

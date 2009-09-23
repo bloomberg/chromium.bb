@@ -867,8 +867,11 @@ IPC_BEGIN_MESSAGES(Automation)
   IPC_MESSAGE_ROUTED3(AutomationMsg_NavigationFailed, int, int, GURL)
 
 #if defined(OS_WIN)
-  // TODO(estade): delete this message. It is unused.
-  IPC_MESSAGE_ROUTED0(AutomationMsg_TabReposition)
+  // This message is an outgoing message from an automation client to Chrome.
+  // It is used to reposition a chrome tab window.
+  IPC_MESSAGE_ROUTED2(AutomationMsg_TabReposition,
+                      int /* tab handle */,
+                      IPC::Reposition_Params /* SetWindowPos params */)
 #endif  // defined(OS_WIN)
 
   // Gets the title of the top level browser window.

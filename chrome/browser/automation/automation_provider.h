@@ -36,6 +36,7 @@
 struct AutomationMsg_Find_Params;
 
 namespace IPC {
+struct Reposition_Params;
 struct ExternalTabSettings;
 }
 
@@ -321,6 +322,8 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
 // TODO(port): remove windowisms.
 #if defined(OS_WIN)
+  void OnTabReposition(int tab_handle,
+                       const IPC::Reposition_Params& params);
   void OnForwardContextMenuCommandToChrome(int tab_handle, int command);
 #endif  // defined(OS_WIN)
 

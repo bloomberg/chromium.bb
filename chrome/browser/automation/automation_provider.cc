@@ -347,6 +347,7 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                                     WaitForTabToBeRestored)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetInitialFocus, SetInitialFocus)
 #if defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(AutomationMsg_TabReposition, OnTabReposition)
     IPC_MESSAGE_HANDLER(AutomationMsg_ForwardContextMenuCommandToChrome,
                         OnForwardContextMenuCommandToChrome)
 #endif
