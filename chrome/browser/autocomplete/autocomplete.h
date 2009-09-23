@@ -720,6 +720,8 @@ class AutocompleteController : public ACProviderListener {
   // done or the query is Stop()ed.  It is safe to Start() a new query without
   // Stop()ing the previous one.
   //
+  // See AutocompleteInput::desired_tld() for meaning of |desired_tld|.
+  //
   // |prevent_inline_autocomplete| is true if the generated result set should
   // not require inline autocomplete for the default match.  This is difficult
   // to explain in the abstract; the practical use case is that after the user

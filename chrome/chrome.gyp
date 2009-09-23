@@ -42,6 +42,7 @@
     # TODO: remove this helper when we have loops in GYP
     'apply_locales_cmd': ['python', 'tools/build/apply_locales.py',],
     'browser_tests_sources': [
+      'browser/autocomplete/autocomplete_browsertest.cc',
       'browser/browser_browsertest.cc',
       'browser/browser_init_browsertest.cc',
       'browser/crash_recovery_browsertest.cc',
