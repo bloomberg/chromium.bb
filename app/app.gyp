@@ -7,13 +7,6 @@
     # TODO: remove this helper when we have loops in GYP
     'apply_locales_cmd': ['python', '../chrome/tools/build/apply_locales.py',],
     'chromium_code': 1,
-    'grit_info_cmd': ['python', '../tools/grit/grit_info.py',],
-    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/app',
-    'grit_cmd': ['python', '../tools/grit/grit.py'],
-    'localizable_resources': [
-      'resources/app_locale_settings.grd',
-      'resources/app_strings.grd',
-    ],
   },
   'target_defaults': {
     'sources/': [
@@ -248,15 +241,18 @@
           'rule_name': 'grit',
           'extension': 'grd',
           'inputs': [
-            '<!@(<(grit_info_cmd) --inputs <(localizable_resources))',
+            '../tools/grit/grit.py',
           ],
+          'variables': {
+            'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/app',
+          },
           'outputs': [
-            '<(grit_out_dir)/<(RULE_INPUT_ROOT)/grit/<(RULE_INPUT_ROOT).h',
+            '<(SHARED_INTERMEDIATE_DIR)/app/grit/<(RULE_INPUT_ROOT).h',
             # TODO: remove this helper when we have loops in GYP
-            '>!@(<(apply_locales_cmd) \'<(grit_out_dir)/<(RULE_INPUT_ROOT)/<(RULE_INPUT_ROOT)_ZZLOCALE.pak\' <(locales))',
+            '>!@(<(apply_locales_cmd) \'<(SHARED_INTERMEDIATE_DIR)/app/<(RULE_INPUT_ROOT)_ZZLOCALE.pak\' <(locales))',
           ],
-          'action': ['<@(grit_cmd)', '-i', '<(RULE_INPUT_PATH)',
-            'build', '-o', '<(grit_out_dir)/<(RULE_INPUT_ROOT)'],
+          'action': ['python', '<@(_inputs)', '-i', '<(RULE_INPUT_PATH)',
+            'build', '-o', '<(grit_out_dir)'],
           'message': 'Generating resources from <(RULE_INPUT_PATH)',
           'conditions': [
             ['use_titlecase_in_grd_files==1', {
@@ -266,12 +262,13 @@
         },
       ],
       'sources': [
-        '<@(localizable_resources)',
+        # Localizable resources.
+        'resources/app_locale_settings.grd',
+        'resources/app_strings.grd',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '<(grit_out_dir)/app_locale_settings',
-          '<(grit_out_dir)/app_strings',
+          '<(SHARED_INTERMEDIATE_DIR)/app',
         ],
       },
       'conditions': [
@@ -284,6 +281,10 @@
       'target_name': 'app_resources',
       'type': 'none',
       'msvs_guid': '3FBC4235-3FBD-46DF-AEDC-BADBBA13A095',
+      'variables': {
+        'grit_path': '../tools/grit/grit.py',
+        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/app',
+      },
       'actions': [
         {
           'action_name': 'app_resources',
@@ -291,20 +292,20 @@
             'input_path': 'resources/app_resources.grd',
           },
           'inputs': [
-            '<!@(<(grit_info_cmd) --inputs <(input_path))',
+            '<(input_path)',
           ],
           'outputs': [
-            '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)/app_resources\' <(input_path))',
+            '<(grit_out_dir)/grit/app_resources.h',
+            '<(grit_out_dir)/app_resources.pak',
+            '<(grit_out_dir)/app_resources.rc',
           ],
-          'action': ['<@(grit_cmd)',
-                     '-i', '<(input_path)', 'build',
-                     '-o', '<(grit_out_dir)/app_resources'],
+          'action': ['python', '<(grit_path)', '-i', '<(input_path)', 'build', '-o', '<(grit_out_dir)'],
           'message': 'Generating resources from <(input_path)',
         },
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '<(grit_out_dir)/app_resources',
+          '<(SHARED_INTERMEDIATE_DIR)/app',
         ],
       },
       'conditions': [
@@ -318,7 +319,7 @@
       'type': 'none',
       'msvs_guid': '83100055-172B-49EA-B422-B1A92B627D37',
       'conditions': [
-        ['OS=="win"',
+        ['OS=="win"', 
           {
             'actions': [
               {
@@ -331,7 +332,7 @@
                     'variables': {
                       'appid_value': '<(google_update_appid)',
                     },
-                  }, { # else
+                  }, { # else 
                     'variables': {
                       'appid_value': '',
                     },

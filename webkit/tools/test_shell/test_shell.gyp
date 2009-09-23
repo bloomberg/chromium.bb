@@ -38,7 +38,6 @@
         '../../webkit.gyp:database',
         '../../webkit.gyp:glue',
         '../../webkit.gyp:webkit',
-        '../../webkit.gyp:webkit_resources',
         '../../webkit.gyp:inspector_resources',
       ],
       'msvs_guid': '77C32787-1B96-CB84-B905-7F170629F0AC',

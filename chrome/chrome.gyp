@@ -37,11 +37,10 @@
       'common/common_resources.grd',
       'renderer/renderer_resources.grd',
     ],
-    'grit_info_cmd': ['python', '../tools/grit/grit_info.py'],
-    'grit_cmd': ['python', '../tools/grit/grit.py'],
-    'repack_locales_cmd': ['python', 'tools/build/repack_locales.py'],
+    'grit_info_cmd': ['python', '../tools/grit/grit_info.py',],
+    'repack_locales_cmd': ['python', 'tools/build/repack_locales.py',],
     # TODO: remove this helper when we have loops in GYP
-    'apply_locales_cmd': ['python', 'tools/build/apply_locales.py'],
+    'apply_locales_cmd': ['python', 'tools/build/apply_locales.py',],
     'browser_tests_sources': [
       'browser/browser_browsertest.cc',
       'browser/browser_init_browsertest.cc',
@@ -198,10 +197,10 @@
             '<@(chrome_resources_inputs)',
           ],
           'outputs': [
-            '<(grit_out_dir)/<(RULE_INPUT_ROOT)/grit/<(RULE_INPUT_ROOT).h',
-            '<(grit_out_dir)/<(RULE_INPUT_ROOT)/<(RULE_INPUT_ROOT).pak',
+            '<(grit_out_dir)/grit/<(RULE_INPUT_ROOT).h',
+            '<(grit_out_dir)/<(RULE_INPUT_ROOT).pak',
             # TODO(bradnelson): move to something like this instead
-            #'<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)/<(RULE_INPUT_ROOT)\' <(chrome_resources_grds))',
+            #'<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(chrome_resources_grds))',
             # This currently cannot work because gyp only evaluates the
             # outputs once (rather than per case where the rule applies).
             # This means you end up with all the outputs from all the grd
@@ -209,9 +208,9 @@
             # One alternative would be to turn this into several actions,
             # but that would be rather verbose.
           ],
-          'action': ['<@(grit_cmd)', '-i',
+          'action': ['python', '../tools/grit/grit.py', '-i',
             '<(RULE_INPUT_PATH)',
-            'build', '-o', '<(grit_out_dir)/<(RULE_INPUT_ROOT)',
+            'build', '-o', '<(grit_out_dir)',
             '-D', '<(chrome_build)',
             '-E', '<(branded_env)',
           ],
@@ -229,9 +228,7 @@
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '<(grit_out_dir)/browser_resources',
-          '<(grit_out_dir)/common_resources',
-          '<(grit_out_dir)/renderer_resources',
+          '<(grit_out_dir)',
         ],
       },
       'conditions': [
@@ -287,15 +284,16 @@
             '<@(chrome_strings_inputs)',
           ],
           'outputs': [
-            '<(grit_out_dir)/<(RULE_INPUT_ROOT)/grit/<(RULE_INPUT_ROOT).h',
+            '<(grit_out_dir)/grit/<(RULE_INPUT_ROOT).h',
             # TODO: remove this helper when we have loops in GYP
-            '>!@(<(apply_locales_cmd) \'<(grit_out_dir)/<(RULE_INPUT_ROOT)/<(RULE_INPUT_ROOT)_ZZLOCALE.pak\' <(locales))',
+            '>!@(<(apply_locales_cmd) \'<(grit_out_dir)/<(RULE_INPUT_ROOT)_ZZLOCALE.pak\' <(locales))',
             # TODO(bradnelson): move to something like this
-            #'<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)/<(RULE_INPUT_ROOT)\' <(chrome_strings_grds))',
+            #'<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(chrome_strings_grds))',
             # See comment in chrome_resources as to why.
           ],
-          'action': ['<@(grit_cmd)', '-i', '<(RULE_INPUT_PATH)',
-                    'build', '-o', '<(grit_out_dir)/<(RULE_INPUT_ROOT)',
+          'action': ['python', '../tools/grit/grit.py', '-i',
+                    '<(RULE_INPUT_PATH)',
+                    'build', '-o', '<(grit_out_dir)',
                     '-D', '<(chrome_build)'],
           'conditions': [
             ['chromeos==1', {
@@ -314,10 +312,7 @@
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '<(grit_out_dir)/locale_settings',
-          '<(grit_out_dir)/chromium_strings',
-          '<(grit_out_dir)/generated_resources',
-          '<(grit_out_dir)/google_chrome_strings',
+          '<(grit_out_dir)',
         ],
       },
     },
@@ -326,6 +321,9 @@
       'target_name': 'theme_resources',
       'type': 'none',
       'msvs_guid' : 'A158FB0A-25E4-6523-6B5A-4BB294B73D31',
+      'variables': {
+        'grit_path': '../tools/grit/grit.py',
+      },
       'actions': [
         {
           'action_name': 'theme_resources',
@@ -346,12 +344,12 @@
             '<!@(<(grit_info_cmd) --inputs <(input_path))',
           ],
           'outputs': [
-            '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)/theme_resources\' <(input_path))',
+            '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(input_path))',
           ],
           'action': [
-            '<@(grit_cmd)',
+            'python', '<(grit_path)',
             '-i', '<(input_path)', 'build',
-            '-o', '<(grit_out_dir)/theme_resources',
+            '-o', '<(grit_out_dir)',
             '-D', '<(chrome_build)'
           ],
           'conditions': [
@@ -367,7 +365,7 @@
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '<(grit_out_dir)/theme_resources',
+          '<(grit_out_dir)',
         ],
       },
       'conditions': [
@@ -2865,7 +2863,6 @@
         '../third_party/npapi/npapi.gyp:npapi',
         '../webkit/webkit.gyp:glue',
         '../webkit/webkit.gyp:webkit',
-        '../webkit/webkit.gyp:webkit_resources',
       ],
       'include_dirs': [
         '..',
@@ -3864,7 +3861,6 @@
         'chrome_strings',
         'syncapi',
         'test_support_ui',
-        'theme_resources',
         '../base/base.gyp:base',
         '../net/net.gyp:net',
         '../build/temp_gyp/googleurl.gyp:googleurl',
@@ -4014,7 +4010,6 @@
         'debugger',
         'renderer',
         'syncapi',
-        'theme_resources',
         'test_support_unit',
         'utility',
         '../app/app.gyp:app_resources',
@@ -4644,7 +4639,6 @@
         'debugger',
         'test_support_common',
         'test_support_ui',
-        'theme_resources',
         '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
@@ -5330,7 +5324,6 @@
             'debugger',
             'test_support_common',
             'test_support_ui',
-            'theme_resources',
             'syncapi',
             '../third_party/hunspell/hunspell.gyp:hunspell',
             '../net/net.gyp:net_resources',
@@ -5529,7 +5522,6 @@
             'chrome_strings',
             'debugger',
             'test_support_common',
-            'theme_resources',
             '../base/base.gyp:test_support_base',
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
@@ -6106,7 +6098,6 @@
             'security_tests',  # run time dependency
             'test_support_common',
             'test_support_ui',
-            'theme_resources',
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
             '../third_party/libxml/libxml.gyp:libxml',
@@ -6153,7 +6144,6 @@
             'chrome_strings',
             'test_support_common',
             'test_support_ui',
-            'theme_resources',
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
           ],
