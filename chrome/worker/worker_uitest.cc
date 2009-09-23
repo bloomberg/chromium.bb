@@ -38,16 +38,28 @@ TEST_F(WorkerTest, MultipleWorkers) {
 TEST_F(WorkerTest, WorkerFastLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "stress-js-execution.html",
+#if defined(OS_WIN)
+    // Workers don't properly initialize the V8 stack guard.
+    // (http://code.google.com/p/chromium/issues/detail?id=21653).
     "use-machine-stack.html",
+#endif
     "worker-call.html",
-    //"worker-close.html",
+    "worker-cloneport.html",
+    // Disabled because worker exceptions outside of script eval() are not
+    // reported (http://code.google.com/p/chromium/issues/detail?id=20953)
+    // "worker-close.html",
     "worker-constructor.html",
     "worker-context-gc.html",
+    "worker-context-multi-port.html",
     "worker-event-listener.html",
     "worker-gc.html",
+    // worker-lifecycle.html relies on layoutTestController.workerThreadCount
+    // which is not currently implemented.
+    // "worker-lifecycle.html",
     "worker-location.html",
     "worker-messageport.html",
     "worker-messageport-gc.html",
+    "worker-multi-port.html",
     "worker-navigator.html",
     "worker-replace-global-constructor.html",
     "worker-replace-self.html",
@@ -64,6 +76,12 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
   worker_test_dir = worker_test_dir.AppendASCII("workers");
   InitializeForLayoutTest(fast_test_dir, worker_test_dir, false);
 
+  // Worker tests also rely on common files in js/resources.
+  FilePath js_dir = fast_test_dir.AppendASCII("js");
+  FilePath resource_dir;
+  resource_dir = resource_dir.AppendASCII("resources");
+  AddResourceForLayoutTest(js_dir, resource_dir);
+
   for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
     RunLayoutTest(kLayoutTestFiles[i], false);
 }
@@ -71,7 +89,11 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
 TEST_F(WorkerTest, WorkerHttpLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     // flakey? BUG 16934 "text-encoding.html",
+#if defined(OS_WIN)
+    // Fails on the mac (and linux?):
+    // http://code.google.com/p/chromium/issues/detail?id=22599
     "worker-importScripts.html",
+#endif
     "worker-redirect.html",
   };
 
@@ -93,7 +115,11 @@ TEST_F(WorkerTest, WorkerHttpLayoutTests) {
 TEST_F(WorkerTest, WorkerXhrHttpLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "abort-exception-assert.html",
+#if defined(OS_WIN)
+    // Fails on the mac (and linux?):
+    // http://code.google.com/p/chromium/issues/detail?id=22599
     "close.html",
+#endif
     //"methods-async.html",
     //"methods.html",
     "xmlhttprequest-file-not-found.html"
@@ -127,6 +153,7 @@ TEST_F(WorkerTest, MessagePorts) {
     "message-port-deleted-document.html",
     "message-port-deleted-frame.html",
     "message-port-inactive-document.html",
+    "message-port-multi.html",
     "message-port-no-wrapper.html",
     // Only works with run-webkit-tests --leaks.
     //"message-channel-listener-circular-ownership.html",
@@ -140,10 +167,19 @@ TEST_F(WorkerTest, MessagePorts) {
   worker_test_dir = worker_test_dir.AppendASCII("events");
   InitializeForLayoutTest(fast_test_dir, worker_test_dir, false);
 
+  // MessagePort tests also rely on common files in js/resources.
+  FilePath js_dir = fast_test_dir.AppendASCII("js");
+  FilePath resource_dir;
+  resource_dir = resource_dir.AppendASCII("resources");
+  AddResourceForLayoutTest(js_dir, resource_dir);
+
   for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
     RunLayoutTest(kLayoutTestFiles[i], false);
 }
 
+// Disable LimitPerPage on Linux. Seems to work on Mac though:
+// http://code.google.com/p/chromium/issues/detail?id=22608
+#if !defined(OS_LINUX)
 TEST_F(WorkerTest, LimitPerPage) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   GURL url = GetTestUrl(L"workers", L"many_workers.html");
@@ -156,7 +192,11 @@ TEST_F(WorkerTest, LimitPerPage) {
   EXPECT_EQ(max_workers_per_tab + 1 + (UITest::in_process_renderer() ? 0 : 1),
             UITest::GetBrowserProcessCount());
 }
+#endif
 
+// Disable LimitTotal on Linux and Mac.
+// http://code.google.com/p/chromium/issues/detail?id=22608
+#if defined(OS_WIN)
 TEST_F(WorkerTest, LimitTotal) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   int total_workers = WorkerService::kMaxWorkersWhenSeparate;
@@ -183,3 +223,4 @@ TEST_F(WorkerTest, LimitTotal) {
   EXPECT_EQ(total_workers + 1 + (UITest::in_process_renderer() ? 0 : tab_count),
             UITest::GetBrowserProcessCount());
 }
+#endif

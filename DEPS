@@ -66,6 +66,9 @@ deps = {
   "src/chrome/test/data/layout_tests/LayoutTests/fast/events":
     Var("webkit_trunk") + "/LayoutTests/fast/events@" +
     Var("webkit_revision"),
+  "src/chrome/test/data/layout_tests/LayoutTests/fast/js/resources":
+    Var("webkit_trunk") + "/LayoutTests/fast/js/resources@" +
+    Var("webkit_revision"),
   "src/chrome/test/data/layout_tests/LayoutTests/fast/workers":
     Var("webkit_trunk") + "/LayoutTests/fast/workers@" +
     Var("webkit_revision"),

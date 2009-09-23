@@ -142,6 +142,25 @@ void UILayoutTest::InitializeForLayoutTest(const FilePath& test_parent_dir,
   ASSERT_TRUE(file_util::ReadFileToString(path, &layout_test_controller_));
 }
 
+void UILayoutTest::AddResourceForLayoutTest(const FilePath& parent_dir,
+                                            const FilePath& resource_dir) {
+  FilePath root_dir;
+  PathService::Get(base::DIR_SOURCE_ROOT, &root_dir);
+
+  FilePath src_dir = root_dir.AppendASCII("chrome");
+  src_dir = src_dir.AppendASCII("test");
+  src_dir = src_dir.AppendASCII("data");
+  src_dir = src_dir.AppendASCII("layout_tests");
+  src_dir = src_dir.Append(parent_dir);
+  src_dir = src_dir.Append(resource_dir);
+  ASSERT_TRUE(file_util::DirectoryExists(src_dir));
+
+  FilePath dest_parent_dir = temp_test_dir_.Append(parent_dir);
+  ASSERT_TRUE(file_util::CreateDirectory(dest_parent_dir));
+  FilePath dest_dir = dest_parent_dir.Append(resource_dir);
+  ASSERT_TRUE(file_util::CopyDirectory(src_dir, dest_dir, true));
+}
+
 void UILayoutTest::RunLayoutTest(const std::string& test_case_file_name,
                                  bool is_http_test) {
   SCOPED_TRACE(test_case_file_name.c_str());
