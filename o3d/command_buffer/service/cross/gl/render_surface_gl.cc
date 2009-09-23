@@ -118,11 +118,11 @@ BufferSyncInterface::ParseError GAPIGL::CreateRenderSurface(
     ResourceID texture_id) {
   if (id == current_surface_id_) {
     // This will delete the current surface which would be bad.
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
   TextureGL *texture = textures_.Get(texture_id);
   if (!texture->render_surfaces_enabled()) {
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   } else {
     RenderSurfaceGL* render_surface = RenderSurfaceGL::Create(width,
                                                               height,
@@ -130,20 +130,20 @@ BufferSyncInterface::ParseError GAPIGL::CreateRenderSurface(
                                                               side,
                                                               texture);
     if (render_surface == NULL) {
-      return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+      return BufferSyncInterface::kParseInvalidArguments;
     }
     render_surfaces_.Assign(id, render_surface);
   }
-  return BufferSyncInterface::PARSE_NO_ERROR;
+  return BufferSyncInterface::kParseNoError;
 }
 
 BufferSyncInterface::ParseError GAPIGL::DestroyRenderSurface(ResourceID id) {
   if (id == current_surface_id_) {
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
   return render_surfaces_.Destroy(id) ?
-      BufferSyncInterface::PARSE_NO_ERROR :
-      BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+      BufferSyncInterface::kParseNoError :
+      BufferSyncInterface::kParseInvalidArguments;
 }
 
 BufferSyncInterface::ParseError GAPIGL::CreateDepthSurface(
@@ -152,24 +152,24 @@ BufferSyncInterface::ParseError GAPIGL::CreateDepthSurface(
     unsigned int height) {
   if (id == current_depth_surface_id_) {
     // This will delete the current surface which would be bad.
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
   RenderDepthStencilSurfaceGL* depth_surface =
     RenderDepthStencilSurfaceGL::Create(width, height);
   if (depth_surface == NULL) {
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
   depth_surfaces_.Assign(id, depth_surface);
-  return BufferSyncInterface::PARSE_NO_ERROR;
+  return BufferSyncInterface::kParseNoError;
 }
 
 BufferSyncInterface::ParseError GAPIGL::DestroyDepthSurface(ResourceID id) {
   if (id == current_depth_surface_id_) {
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
   return depth_surfaces_.Destroy(id) ?
-      BufferSyncInterface::PARSE_NO_ERROR :
-      BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+      BufferSyncInterface::kParseNoError :
+      BufferSyncInterface::kParseInvalidArguments;
 }
 
 void ResetBoundAttachments() {
@@ -224,7 +224,7 @@ BufferSyncInterface::ParseError GAPIGL::SetRenderSurface(
     ResourceID depth_stencil_id) {
   if (render_surfaces_.Get(render_surface_id) == NULL &&
       depth_surfaces_.Get(depth_stencil_id) == NULL) {
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
 
   ::glBindFramebufferEXT(GL_FRAMEBUFFER, render_surface_framebuffer_);
@@ -237,7 +237,7 @@ BufferSyncInterface::ParseError GAPIGL::SetRenderSurface(
   if (!render_surface->texture()->
           InstallFrameBufferObjects(render_surface) ||
       !BindDepthStencilBuffer(depth_surface)) {
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
 
   // RenderSurface rendering is performed with an inverted Y, so the front
@@ -247,7 +247,7 @@ BufferSyncInterface::ParseError GAPIGL::SetRenderSurface(
 
   current_surface_id_ = render_surface_id;
   current_depth_surface_id_ = depth_stencil_id;
-  return BufferSyncInterface::PARSE_NO_ERROR;
+  return BufferSyncInterface::kParseNoError;
 }
 
 void GAPIGL::SetBackSurfaces() {
