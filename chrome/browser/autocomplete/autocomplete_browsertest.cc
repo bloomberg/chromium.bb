@@ -14,6 +14,22 @@
 #include "chrome/test/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+std::wstring AutocompleteResultAsString(const AutocompleteResult& result) {
+  std::wstring output(StringPrintf(L"{%d} ", result.size()));
+  for (size_t i = 0; i < result.size(); ++i) {
+    AutocompleteMatch match = result.match_at(i);
+    std::wstring provider_name(ASCIIToWide(match.provider->name()));
+    output.append(StringPrintf(L"[\"%ls\" by \"%ls\"] ",
+                               match.contents.c_str(),
+                               provider_name.c_str()));
+  }
+  return output;
+}
+
+}  // namespace
+
 class AutocompleteBrowserTest : public InProcessBrowserTest {
  protected:
   LocationBar* GetLocationBar() const {
@@ -77,7 +93,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Autocomplete) {
     EXPECT_EQ(std::wstring(), location_bar->location_entry()->GetText());
     EXPECT_TRUE(location_bar->location_entry()->IsSelectAll());
     const AutocompleteResult& result = autocomplete_controller->result();
-    ASSERT_EQ(1U, result.size());
+    ASSERT_EQ(1U, result.size()) << AutocompleteResultAsString(result);
     AutocompleteMatch match = result.match_at(0);
     EXPECT_EQ(AutocompleteMatch::SEARCH_WHAT_YOU_TYPED, match.type);
     EXPECT_FALSE(match.deletable);
@@ -91,6 +107,6 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Autocomplete) {
               location_bar->location_entry()->GetText());
     EXPECT_FALSE(location_bar->location_entry()->IsSelectAll());
     const AutocompleteResult& result = autocomplete_controller->result();
-    EXPECT_TRUE(result.empty());
+    EXPECT_TRUE(result.empty()) << AutocompleteResultAsString(result);
   }
 }
