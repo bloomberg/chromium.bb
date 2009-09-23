@@ -28,7 +28,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/net_module.h"
 
-#if defined(OS_LINUX)
+#if defined(USE_LINUX_BREAKPAD)
 #include "chrome/app/breakpad_linux.h"
 #endif
 
@@ -83,7 +83,7 @@ int RendererMain(const MainFunctionParams& parameters) {
   const CommandLine& parsed_command_line = parameters.command_line_;
   base::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool_;
 
-#if defined(OS_LINUX)
+#if defined(USE_LINUX_BREAKPAD)
   // Needs to be called after we have chrome::DIR_USER_DATA.
   InitCrashReporter();
 #endif

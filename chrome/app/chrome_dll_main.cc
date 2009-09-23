@@ -56,6 +56,8 @@
 #endif
 #if defined(OS_LINUX)
 #include "base/nss_init.h"
+#endif
+#if defined(USE_LINUX_BREAKPAD)
 #include "chrome/app/breakpad_linux.h"
 #endif
 #include "chrome/app/scoped_ole_initializer.h"

@@ -24,7 +24,6 @@
 #include "base/format_macros.h"
 #include "base/global_descriptors_posix.h"
 #include "base/json_writer.h"
-#include "base/linux_util.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/scoped_fd.h"
@@ -644,7 +643,6 @@ void InitCrashReporter() {
   if (process_type.empty()) {
     if (!(unattended || GoogleUpdateSettings::GetCollectStatsConsent()))
       return;
-    base::GetLinuxDistro();  // Initialize base::linux_distro if needed.
     EnableCrashDumping(unattended);
   } else if (process_type == switches::kRendererProcess ||
              process_type == switches::kZygoteProcess) {

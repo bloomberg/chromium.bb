@@ -2275,11 +2275,9 @@
                 # breakpad_linux.cc wants file_version_info_linux.h
                 '<(SHARED_INTERMEDIATE_DIR)',
               ],
-            }, {
+            }, {  # linux_breakpad==0
               'sources': [
                 'browser/renderer_host/render_crash_handler_host_linux_stub.cc',
-                'app/breakpad_linux_stub.cc',
-                'app/breakpad_linux.h',
               ],
             }],
             ['linux_sandbox_path != ""', {

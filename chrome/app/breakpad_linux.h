@@ -9,7 +9,6 @@
 
 extern void InitCrashReporter();
 
-#if defined(USE_LINUX_BREAKPAD)
 static const size_t kMaxActiveURLSize = 1024;
 static const size_t kGuidSize = 32;  // 128 bits = 32 chars in hex.
 static const size_t kDistroSize = 128;
@@ -28,7 +27,6 @@ struct BreakpadInfo {
 };
 
 extern int HandleCrashDump(const BreakpadInfo& info);
-#endif  // defined(USE_LINUX_BREAKPAD)
 
 #if defined(GOOGLE_CHROME_BUILD)
 // Checks that the kernel's core filename pattern is "core" and moves the

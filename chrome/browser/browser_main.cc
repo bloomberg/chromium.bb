@@ -13,6 +13,7 @@
 #include "base/file_util.h"
 #include "base/histogram.h"
 #include "base/lazy_instance.h"
+#include "base/linux_util.h"
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -67,14 +68,17 @@
 #if defined(OS_POSIX)
 // TODO(port): get rid of this include. It's used just to provide declarations
 // and stub definitions for classes we encouter during the porting effort.
-#include "chrome/common/temp_scaffolding_stubs.h"
 #include <errno.h>
 #include <signal.h>
 #include <sys/resource.h>
 #endif
 
-#if defined(OS_LINUX)
+#if defined(USE_LINUX_BREAKPAD)
 #include "chrome/app/breakpad_linux.h"
+#endif
+
+#if defined(OS_LINUX)
+#include "chrome/common/gtk_util.h"
 #endif
 
 // TODO(port): several win-only methods have been pulled out of this, but
@@ -111,10 +115,6 @@
 #include "printing/printed_document.h"
 #include "sandbox/src/sandbox.h"
 #endif  // defined(OS_WIN)
-
-#if defined(OS_LINUX)
-#include "chrome/common/gtk_util.h"
-#endif
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/chrome_views_delegate.h"
@@ -195,18 +195,24 @@ void AddFirstRunNewTabs(BrowserInit* browser_init,
 }
 #endif
 
+#if defined(USE_LINUX_BREAKPAD)
+class GetLinuxDistroTask : public Task {
+ public:
+  explicit GetLinuxDistroTask() {}
+
+  virtual void Run() {
+    base::GetLinuxDistro();  // Initialize base::linux_distro if needed.
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(GetLinuxDistroTask);
+};
+#endif  // USE_LINUX_BREAKPAD
 }  // namespace
 
 // Main routine for running as the Browser process.
 int BrowserMain(const MainFunctionParams& parameters) {
   const CommandLine& parsed_command_line = parameters.command_line_;
   base::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool_;
-
-#if defined(OS_LINUX)
-  // Needs to be called after we have chrome::DIR_USER_DATA.
-  if (!parsed_command_line.HasSwitch(switches::kGoogleInternalCrashReporting))
-    InitCrashReporter();
-#endif
 
   // WARNING: If we get a WM_ENDSESSION objects created on the stack here
   // are NOT deleted. If you need something to run during WM_ENDSESSION add it
@@ -298,6 +304,16 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // BrowserProcessImpl's constructor should set g_browser_process.
   DCHECK(g_browser_process);
+
+#if defined(USE_LINUX_BREAKPAD)
+  // Needs to be called after we have chrome::DIR_USER_DATA and
+  // g_browser_process.
+  if (!parsed_command_line.HasSwitch(switches::kGoogleInternalCrashReporting)) {
+    g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
+        new GetLinuxDistroTask());
+    InitCrashReporter();
+  }
+#endif
 
 #if defined(OS_WIN)
   // IMPORTANT: This piece of code needs to run as early as possible in the

@@ -7,7 +7,6 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
-#include "chrome/app/breakpad_linux.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/gtk_util.h"
@@ -16,6 +15,10 @@
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "grit/locale_settings.h"
+
+#if defined(USE_LINUX_BREAKPAD)
+#include "chrome/app/breakpad_linux.h"
+#endif
 
 // static
 bool FirstRunDialog::Show(Profile* profile) {
@@ -134,9 +137,11 @@ void FirstRunDialog::OnDialogResponse(GtkWidget* widget, int response) {
     // Check if user has opted into reporting.
     if (report_crashes_ &&
         gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(report_crashes_))) {
+#if defined(USE_LINUX_BREAKPAD)
       if (GoogleUpdateSettings::SetCollectStatsConsent(true)) {
         InitCrashReporter();
       }
+#endif
     } else {
       GoogleUpdateSettings::SetCollectStatsConsent(false);
     }
