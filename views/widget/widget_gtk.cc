@@ -390,8 +390,10 @@ gfx::NativeView WidgetGtk::GetNativeView() const {
 }
 
 void WidgetGtk::PaintNow(const gfx::Rect& update_rect) {
-  gtk_widget_queue_draw_area(widget_, update_rect.x(), update_rect.y(),
-                             update_rect.width(), update_rect.height());
+  if (widget_) {
+    gtk_widget_queue_draw_area(widget_, update_rect.x(), update_rect.y(),
+                               update_rect.width(), update_rect.height());
+  }
 }
 
 void WidgetGtk::SetOpacity(unsigned char opacity) {
@@ -726,8 +728,11 @@ void WidgetGtk::OnGrabNotify(GtkWidget* widget, gboolean was_grabbed) {
 
 void WidgetGtk::OnDestroy() {
   widget_ = window_contents_ = NULL;
-  if (delete_on_destroy_)
-    delete this;
+  if (delete_on_destroy_) {
+    // Delays the deletion of this WidgetGtk as we want its children to have
+    // access to it when destroyed.
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  }
 }
 
 void WidgetGtk::DoGrab() {
