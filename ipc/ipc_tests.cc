@@ -286,6 +286,73 @@ TEST_F(IPCChannelTest, ChannelProxyTest) {
   thread.Stop();
 }
 
+class ChannelListenerWithOnConnectedSend : public IPC::Channel::Listener {
+ public:
+  virtual void OnChannelConnected(int32 peer_pid) {
+    SendNextMessage();
+  }
+
+  virtual void OnMessageReceived(const IPC::Message& message) {
+    IPC::MessageIterator iter(message);
+
+    iter.NextInt();
+    const std::string data = iter.NextString();
+    const std::string big_string = iter.NextString();
+    EXPECT_EQ(kLongMessageStringNumBytes - 1, big_string.length());
+    SendNextMessage();
+  }
+
+  virtual void OnChannelError() {
+    // There is a race when closing the channel so the last message may be lost.
+    EXPECT_LE(messages_left_, 1);
+    MessageLoop::current()->Quit();
+  }
+
+  void Init(IPC::Message::Sender* s) {
+    sender_ = s;
+    messages_left_ = 50;
+  }
+
+ private:
+  void SendNextMessage() {
+    if (--messages_left_ == 0) {
+      MessageLoop::current()->Quit();
+    } else {
+      Send(sender_, "Foo");
+    }
+  }
+
+  IPC::Message::Sender* sender_;
+  int messages_left_;
+};
+
+TEST_F(IPCChannelTest, SendMessageInChannelConnected) {
+  // This tests the case of a listener sending back an event in it's
+  // OnChannelConnected handler.
+
+  ChannelListenerWithOnConnectedSend channel_listener;
+  // Setup IPC channel.
+  IPC::Channel channel(kTestClientChannel, IPC::Channel::MODE_SERVER,
+                       &channel_listener);
+  channel_listener.Init(&channel);
+  channel.Connect();
+
+  base::ProcessHandle process_handle = SpawnChild(TEST_CLIENT, &channel);
+  ASSERT_TRUE(process_handle);
+
+  Send(&channel, "hello from parent");
+
+  // Run message loop.
+  MessageLoop::current()->Run();
+
+  // Close Channel so client gets its OnChannelError() callback fired.
+  channel.Close();
+
+  // Cleanup child process.
+  EXPECT_TRUE(base::WaitForSingleProcess(process_handle, 5000));
+  base::CloseProcessHandle(process_handle);
+}
+
 MULTIPROCESS_TEST_MAIN(RunTestClient) {
   MessageLoopForIO main_message_loop;
   MyChannelListener channel_listener;

@@ -913,8 +913,6 @@ void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
   // This gives us a chance to kill the client if the incoming handshake
   // is invalid.
   if (send_server_hello_msg) {
-    // This should be our first write so there's no chance we can block here...
-    DCHECK(is_blocked_on_write_ == false);
     ProcessOutgoingMessages();
   }
 }
