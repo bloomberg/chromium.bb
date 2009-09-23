@@ -500,7 +500,6 @@ bool BrowserInit::LaunchWithProfile::OpenStartupURLs(
         return false;
 
       if (!profile_->DidLastSessionExitCleanly() &&
-          !browser_defaults::kRestoreAfterCrash &&
           !command_line_.HasSwitch(switches::kRestoreLastSession)) {
         // The last session crashed. It's possible automatically loading the
         // page will trigger another crash, locking the user out of chrome.

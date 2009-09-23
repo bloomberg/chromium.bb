@@ -34,11 +34,6 @@ extern const SessionStartupPref::Type kDefaultSessionStartupType;
 // On launching Chrome should we show the crash info bar if Chrome crashed?
 extern const bool kSuppressCrashInfoBar;
 
-// Should we restore the last session if the user opted to restore the last
-// session on startup and Chrome crashed?
-// TODO(sky): this should be removed once Chrome OS cleanly shuts down Chrome.
-extern const bool kRestoreAfterCrash;
-
 // Width of pinned tabs.
 extern const int kPinnedTabWidth;
 
