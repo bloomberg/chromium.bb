@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_TAB_CONTENTS_PROVISIONAL_LOAD_DETAILS_H_
 #define CHROME_BROWSER_TAB_CONTENTS_PROVISIONAL_LOAD_DETAILS_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "googleurl/src/gurl.h"
 
@@ -26,7 +28,7 @@ class ProvisionalLoadDetails {
                          bool is_filtered);
   virtual ~ProvisionalLoadDetails() { }
 
-  void set_error_code(int error_code) { error_code_ = error_code; };
+  void set_error_code(int error_code) { error_code_ = error_code; }
   int error_code() const { return error_code_; }
 
   const GURL& url() const { return url_; }
