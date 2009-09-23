@@ -23,10 +23,10 @@
 }
 
 {
-  bug_21474
+  bug_22272
   ThreadSanitizer:Race
   ...
-  fun:*ibevent*
+  fun:*RefCounted*LoadLog*
 }
 
 {
@@ -85,6 +85,16 @@
   ThreadSanitizer:Race
   ...
   fun:*ThreadTest_SleepInsideInit*TestBody*
+}
+
+# TODO(timurrrr): bug item
+{
+  Data race on vfptr in ipc/ipc_sync_channel_unittest
+  ThreadSanitizer:Race
+  ...
+  fun:*STLDeleteContainerPointers*Worker*
+  ...
+  fun:*IPCSyncChannelTest*
 }
 
 ############################
