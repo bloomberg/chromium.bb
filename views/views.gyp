@@ -346,12 +346,16 @@
         '..',
       ],
       'sources': [
-        'examples/button_example-inl.h',
-        'examples/example_base.h',
+        'examples/button_example.h',
+        'examples/combobox_example.h',
         'examples/example_base.cc',
-        'examples/examples_main_base.h',
+        'examples/example_base.h',
         'examples/examples_main_base.cc',
+        'examples/examples_main_base.h',
         'examples/examples_main_gtk.cc',
+        'examples/message_box_example.h',
+        'examples/radio_button_example.h',
+        'examples/tabbed_pane_example.h',
       ],
       'conditions': [
         ['OS=="linux"', {

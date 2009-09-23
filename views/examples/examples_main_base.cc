@@ -16,6 +16,9 @@
 // Examples
 #include "views/examples/button_example.h"
 #include "views/examples/combobox_example.h"
+#include "views/examples/message_box_example.h"
+#include "views/examples/radio_button_example.h"
+#include "views/examples/tabbed_pane_example.h"
 
 namespace examples {
 
@@ -68,6 +71,9 @@ void ExamplesMainBase::Run() {
 
   ButtonExample button_example(tabbed_pane, message);
   ComboboxExample combobox_example(tabbed_pane, message);
+  TabbedPaneExample tabbed_pane_example(tabbed_pane, message);
+  MessageBoxExample message_box_example(tabbed_pane, message);
+  RadioButtonExample radio_button_example(tabbed_pane, message);
 
   widget->Show();
 
@@ -76,4 +82,3 @@ void ExamplesMainBase::Run() {
 }
 
 }  // namespace examples
-
