@@ -1818,6 +1818,8 @@ BUG9797 LINUX DEBUG : LayoutTests/svg/carto.net/colourpicker.svg = FAIL
 BUG9797 WIN DEBUG : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
 BUG9797 WIN LINUX : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
 BUG9797 BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = CRASH TIMEOUT PASS
+BUG9798 LINUX : LayoutTests/transitions/transition-end-event-multiple-02.html = FAIL
+BUG9798 LINUX : LayoutTests/transitions/transition-end-event-multiple-04.html = FAIL
 
 // Failed in WebKit merge 42287:42324
 BUG9916 WIN LINUX : LayoutTests/css2.1/t0803-c5502-mrgn-r-02-c.html = FAIL
