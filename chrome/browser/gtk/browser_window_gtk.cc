@@ -1542,7 +1542,7 @@ void BrowserWindowGtk::InitWidgets() {
                    G_CALLBACK(&OnCustomFrameExpose), this);
   gtk_container_add(GTK_CONTAINER(window_container_), window_vbox);
 
-  tabstrip_.reset(new TabStripGtk(browser_->tabstrip_model()));
+  tabstrip_.reset(new TabStripGtk(browser_->tabstrip_model(), this));
   tabstrip_->Init();
 
   // Build the titlebar (tabstrip + header space + min/max/close buttons).

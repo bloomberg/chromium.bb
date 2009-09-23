@@ -18,6 +18,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/owned_widget_gtk.h"
 
+class BrowserWindowGtk;
 class CustomDrawButton;
 class DraggedTabControllerGtk;
 class GtkThemeProvider;
@@ -30,7 +31,7 @@ class TabStripGtk : public TabStripModelObserver,
  public:
   class TabAnimation;
 
-  explicit TabStripGtk(TabStripModel* model);
+  TabStripGtk(TabStripModel* model, BrowserWindowGtk* window);
   virtual ~TabStripGtk();
 
   // Initialize and load the TabStrip into a container.
@@ -41,6 +42,8 @@ class TabStripGtk : public TabStripModelObserver,
   void Hide();
 
   TabStripModel* model() const { return model_; }
+
+  BrowserWindowGtk* window() const { return window_; }
 
   GtkWidget* widget() const { return tabstrip_.get(); }
 
@@ -425,6 +428,9 @@ class TabStripGtk : public TabStripModelObserver,
 
   // Our model.
   TabStripModel* model_;
+
+  // The BrowserWindowGtk containing this tab strip.
+  BrowserWindowGtk* window_;
 
   // Theme resources.
   GtkThemeProvider* theme_provider_;

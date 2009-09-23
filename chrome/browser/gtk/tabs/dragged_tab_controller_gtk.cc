@@ -783,15 +783,9 @@ bool DraggedTabControllerGtk::CompleteDrag() {
     destroy_immediately = false;
   } else {
     // Compel the model to construct a new window for the detached TabContents.
-    GtkWindow* browser_window =
-        platform_util::GetTopLevel(source_tabstrip_->widget());
-    gint x, y, width, height;
-    gtk_window_get_position(browser_window, &x, &y);
-    gtk_window_get_size(browser_window, &width, &height);
-    gfx::Rect browser_rect = gfx::Rect(x, y, width, height);
-    gfx::Rect window_bounds(
-        GetWindowCreatePoint(),
-        gfx::Size(browser_rect.width(), browser_rect.height()));
+    BrowserWindowGtk* window = source_tabstrip_->window();
+    gfx::Rect window_bounds = window->GetRestoredBounds();
+    window_bounds.set_origin(GetWindowCreatePoint());
     Browser* new_browser =
         source_tabstrip_->model()->delegate()->CreateNewStripWithContents(
             dragged_contents_, window_bounds, dock_info_);

@@ -672,12 +672,13 @@ class PinAndMoveAnimation : public TabStripGtk::TabAnimation {
 // static
 const int TabStripGtk::pinned_to_non_pinned_gap_ = 3;
 
-TabStripGtk::TabStripGtk(TabStripModel* model)
+TabStripGtk::TabStripGtk(TabStripModel* model, BrowserWindowGtk* window)
     : current_unselected_width_(TabGtk::GetStandardSize().width()),
       current_selected_width_(TabGtk::GetStandardSize().width()),
       available_width_for_tabs_(-1),
       resize_layout_scheduled_(false),
       model_(model),
+      window_(window),
       theme_provider_(GtkThemeProvider::GetFrom(model->profile())),
       resize_layout_factory_(this),
       added_as_message_loop_observer_(false) {
