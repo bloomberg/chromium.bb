@@ -150,7 +150,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestProfilerTab) {
 }
 
 // Tests scripts panel showing.
-// http://crbug.com/16767
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
@@ -162,7 +161,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 }
 
 // Tests set breakpoint.
-// http://crbug.com/16767
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSetBreakpoint) {
   RunTest("testSetBreakpoint", kDebuggerTestPage);
 }
@@ -173,17 +171,17 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseInEval) {
 }
 
 // Tests console eval.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestConsoleEval) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleEval) {
   RunTest("testConsoleEval", kConsoleTestPage);
 }
 
 // Tests console log.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestConsoleLog) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleLog) {
   RunTest("testConsoleLog", kConsoleTestPage);
 }
 
 // Tests eval global values.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestEvalGlobal) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalGlobal) {
   RunTest("testEvalGlobal", kEvalTestPage);
 }
 

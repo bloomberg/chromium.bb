@@ -619,6 +619,9 @@ TestSuite.prototype.testConsoleLog = function() {
   assertNext('29', 'group', 'group-title');
   index++;
   assertNext('33', 'timer:', 'log-level', '', true);
+  assertNext('35', '1 2 3', 'log-level');
+  assertNext('37', 'HTMLDocument', 'log-level');
+  assertNext('39', '<html>', 'log-level', '', true);
 };
 
 
@@ -627,18 +630,36 @@ TestSuite.prototype.testConsoleLog = function() {
  */
 TestSuite.prototype.testEvalGlobal = function() {
   WebInspector.console.visible = true;
-  WebInspector.console.prompt.text = 'foo';
-  WebInspector.console.promptElement.handleKeyEvent(
-      new TestSuite.KeyEvent('Enter'));
 
+  var inputs = ['foo', 'foobar'];
+  var expectations = ['foo', 'fooValue',
+                      'foobar', 'ReferenceError: foobar is not defined'];
+
+  // Do not change code below - simply add inputs and expectations above.
+  var initEval = function(input) {
+    WebInspector.console.prompt.text = input;
+    WebInspector.console.promptElement.handleKeyEvent(
+        new TestSuite.KeyEvent('Enter'));
+  };
   var test = this;
+  var messagesCount = 0;
+  var inputIndex = 0;
   this.addSniffer(WebInspector.ConsoleView.prototype, 'addMessage',
       function(commandResult) {
-        test.assertEquals('fooValue',
-                          commandResult.toMessageElement().textContent);
-        test.releaseControl();
-      });
+        messagesCount++;
+        if (messagesCount == expectations.length) {
+          var messages = WebInspector.console.messages;
+          for (var i = 0; i < expectations; ++i) {
+            var elem = messages[i++].toMessageElement();
+            test.assertEquals(elem.textContent, expectations[i]);
+          }
+          test.releaseControl();
+        } else if (messagesCount % 2 == 0) {
+          initEval(inputs[inputIndex++]);
+        }
+      }, true);
 
+  initEval(inputs[inputIndex++]);
   this.takeControl();
 };
 
