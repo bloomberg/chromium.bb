@@ -234,7 +234,7 @@ if __name__ == '__main__':
   else:
     print "Could not get server config -- if you're within Google, "
     print "do you have have src-internal checked out?"
-    sendmsg = "Sending %s using SVN..." % patch_name
+    sendmsg = "Sending %s using SVN..." % '-'.join(patch_names)
     args.extend([
         '--use_svn', '--svn_repo',
         'svn://svn.chromium.org/chrome-try/try',
