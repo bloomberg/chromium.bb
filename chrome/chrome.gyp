@@ -3941,10 +3941,6 @@
           ],
         }],
         ['OS=="mac"', {
-          'sources': [
-            'app/keystone_glue.h',
-            'app/keystone_glue.m',
-          ],
           'sources!': [
             # TODO(port)
             'app/chrome_main_uitest.cc',
@@ -3997,6 +3993,7 @@
             'common/logging_chrome_uitest.cc',
             'test/ui/npapi_uitest.cc',
             'test/ui/sandbox_uitests.cc',
+            'worker/worker_uitest.cc',
           ],
         }],
       ],
