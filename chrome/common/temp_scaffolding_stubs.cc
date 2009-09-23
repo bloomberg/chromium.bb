@@ -169,6 +169,7 @@ bool RLZTracker::RecordProductEvent(Product product, AccessPoint point,
 #if defined(OS_MACOSX)
 MemoryDetails::MemoryDetails() {
   NOTIMPLEMENTED();
+  process_data_.push_back(ProcessData());
 }
 
 void MemoryDetails::StartFetch() {
