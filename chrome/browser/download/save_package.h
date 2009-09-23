@@ -55,6 +55,8 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
                     public SelectFileDialog::Listener {
  public:
   enum SavePackageType {
+    // The value of the save type before its set by the user.
+    SAVE_TYPE_UNKNOWN = -1,
     // User chose to save only the HTML of the page.
     SAVE_AS_ONLY_HTML = 0,
     // User chose to save complete-html page.
@@ -81,7 +83,7 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // Constructor for user initiated page saving. This constructor results in a
   // SavePackage that will generate and sanitize a suggested name for the user
   // in the "Save As" dialog box.
-  SavePackage(TabContents* web_content);
+  explicit SavePackage(TabContents* web_content);
 
   // This contructor is used only for testing. We can bypass the file and
   // directory name generation / sanitization by providing well known paths

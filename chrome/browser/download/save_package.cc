@@ -54,7 +54,7 @@ struct SavePackageParam {
   // Directory path for saving sub resources and sub html frames.
   FilePath dir;
 
-  SavePackageParam(const std::string& mime_type)
+  explicit SavePackageParam(const std::string& mime_type)
       : current_tab_mime_type(mime_type) { }
 };
 
@@ -151,6 +151,7 @@ SavePackage::SavePackage(TabContents* tab_contents)
       finished_(false),
       user_canceled_(false),
       disk_error_occurred_(false),
+      save_type_(SAVE_TYPE_UNKNOWN),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
       tab_id_(tab_contents->process()->id()) {
@@ -170,6 +171,7 @@ SavePackage::SavePackage(const FilePath& file_full_path,
       finished_(true),
       user_canceled_(false),
       disk_error_occurred_(false),
+      save_type_(SAVE_TYPE_UNKNOWN),
       all_save_items_count_(0),
       tab_id_(0) {
   DCHECK(!saved_main_file_path_.empty() &&
