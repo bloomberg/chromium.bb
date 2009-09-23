@@ -259,6 +259,11 @@ class TestRunner:
     else:
       self._test_files_list.sort(self.TestFilesSort)
 
+    # Chunking replaces self._expectations, which loses all the skipped test
+    # information. Keep the prechunk expectations for tracking number of
+    # skipped tests.
+    self.prechunk_expectations = self._expectations;
+
     # If the user specifies they just want to run a subset of the tests,
     # just grab a subset of the non-skipped tests.
     if self._options.run_chunk or self._options.run_part:
@@ -823,8 +828,15 @@ class TestRunner:
         AddFailure(count_group, failure.__class__)
         failure_group.add(test)
 
+    # Here and below, use the prechuncked expectations object for numbers of
+    # skipped tests. Chunking removes the skipped tests before creating the
+    # expectations file.
+    #
+    # This is a bit inaccurate, since the number of skipped tests will be
+    # duplicated across all shard, but it's the best we can reasonably do.
+
     deduped_fixable_count = len(fixable_failures |
-        self._expectations.GetFixableSkipped())
+        self.prechunk_expectations.GetFixableSkipped())
     all_fixable_count = len(self._test_files -
         self._expectations.GetWontFix() - self._expectations.GetDeferred())
 
@@ -834,19 +846,19 @@ class TestRunner:
         self._expectations.GetFixable() | fixable_failures,
         fixable_failures,
         fixable_counts,
-        self._expectations.GetFixableSkipped())
+        self.prechunk_expectations.GetFixableSkipped())
 
     deferred_result_summary = ResultSummaryEntry(
         self._expectations.GetDeferred(),
         deferred_failures,
         deferred_counts,
-        self._expectations.GetDeferredSkipped())
+        self.prechunk_expectations.GetDeferredSkipped())
 
     wontfix_result_summary = ResultSummaryEntry(
         self._expectations.GetWontFix(),
         wontfix_failures,
         wontfix_counts,
-        self._expectations.GetWontFixSkipped())
+        self.prechunk_expectations.GetWontFixSkipped())
 
     return ResultSummary(deferred_result_summary, wontfix_result_summary,
         fixable_result_summary, deduped_fixable_count, all_fixable_count)
