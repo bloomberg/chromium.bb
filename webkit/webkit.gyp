@@ -38,7 +38,7 @@
       'type': '<(library)',
       'msvs_guid': '5ECEC9E5-8F23-47B6-93E0-C3B328B3BE65',
       'dependencies': [
-        'webcore.gyp:webcore',
+        '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
       ],
       'include_dirs': [
         'api/public',
@@ -368,7 +368,7 @@
       'dependencies': [
         '../net/net.gyp:net',
         'inspector_resources',
-        'webcore.gyp:webcore',
+        '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
         'webkit',
         'webkit_resources',
         'webkit_strings',
@@ -579,7 +579,7 @@
       # own hard dependencies.
       'hard_dependency': 1,
       'export_dependent_settings': [
-        'webcore.gyp:webcore',
+        '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
       ],
       'conditions': [
         ['OS=="linux" or OS=="freebsd"', {

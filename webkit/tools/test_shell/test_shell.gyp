@@ -464,7 +464,7 @@
           ],
           'dependencies': [
             '../../../third_party/npapi/npapi.gyp:npapi',
-            '../../javascriptcore.gyp:wtf',
+            '../../../third_party/WebKit/JavaScriptCore/JavaScriptCore.gyp/JavaScriptCore.gyp:wtf',
           ],
           'msvs_disabled_warnings': [ 4996 ],
           'mac_bundle_resources': [
