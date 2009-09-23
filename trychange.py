@@ -167,8 +167,8 @@ class SVN(SCM):
         file_handle = open(file, 'rb')
         file_content = file_handle.read()
         file_handle.close()
-        # Prepend '+ ' to every lines.
-        file_content = ['+ ' + i for i in file_content.splitlines(True)]
+        # Prepend '+' to every lines.
+        file_content = ['+' + i for i in file_content.splitlines(True)]
         nb_lines = len(file_content)
         # We need to use / since patch on unix will fail otherwise.
         file = file.replace('\\', '/')
