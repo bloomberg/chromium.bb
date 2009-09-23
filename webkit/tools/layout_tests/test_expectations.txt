@@ -2358,3 +2358,4 @@ BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/forms/formmove3.html = FAIL
 BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/forms/formnovalidate-attribute.html = FAIL
 BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/images/imagemap-case.html = FAIL
 BUG_PAUL LINUX DEBUG : LayoutTests/fast/backgrounds/size/contain-and-cover.html = PASS FAIL
+BUG_PAUL MAC DEBUG : LayoutTests/fast/forms/onselect-selectall.html = PASS TIMEOUT
