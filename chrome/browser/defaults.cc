@@ -17,6 +17,7 @@ const SessionStartupPref::Type kDefaultSessionStartupType =
 const bool kSuppressCrashInfoBar = true;
 const bool kRestoreAfterCrash = true;
 const int kPinnedTabWidth = 64;
+const bool kCanToggleSystemTitleBar = false;
 
 #elif defined(OS_LINUX)
 
@@ -29,6 +30,8 @@ const double kAutocompleteEditFontPixelSizeInPopup =
     kAutocompleteEditFontPixelSize * 5.0 / 6.0;
 
 const int kAutocompletePopupFontSize = 10;
+
+const bool kCanToggleSystemTitleBar = true;
 
 #endif
 

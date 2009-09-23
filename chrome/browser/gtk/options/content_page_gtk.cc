@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "base/gfx/gtk_util.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/import_dialog_gtk.h"
@@ -27,6 +28,7 @@
 
 ContentPageGtk::ContentPageGtk(Profile* profile)
     : OptionsPageBase(profile),
+      system_title_bar_checkbox_(NULL),
       initializing_(true) {
 
   // Prepare the group options layout.
@@ -83,7 +85,8 @@ void ContentPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
           GTK_TOGGLE_BUTTON(form_autofill_neversave_radio_), TRUE);
     }
   }
-  if (!pref_name || *pref_name == prefs::kUseCustomChromeFrame) {
+  if (browser_defaults::kCanToggleSystemTitleBar &&
+      (!pref_name || *pref_name == prefs::kUseCustomChromeFrame)) {
     gtk_toggle_button_set_active(
         GTK_TOGGLE_BUTTON(system_title_bar_checkbox_),
         !use_custom_chrome_frame_.GetValue());
@@ -187,12 +190,14 @@ GtkWidget* ContentPageGtk::InitThemesGroup() {
   GtkWidget* hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
 
   // "Use system title bar and borders" checkbox.
-  system_title_bar_checkbox_ = gtk_check_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_SHOW_WINDOW_DECORATIONS).c_str());
-  g_signal_connect(G_OBJECT(system_title_bar_checkbox_), "clicked",
-                   G_CALLBACK(OnSystemTitleBarCheckboxClicked), this);
-  gtk_box_pack_start(GTK_BOX(vbox), system_title_bar_checkbox_,
-                     FALSE, FALSE, 0);
+  if (browser_defaults::kCanToggleSystemTitleBar) {
+    system_title_bar_checkbox_ = gtk_check_button_new_with_label(
+        l10n_util::GetStringUTF8(IDS_SHOW_WINDOW_DECORATIONS).c_str());
+    g_signal_connect(G_OBJECT(system_title_bar_checkbox_), "clicked",
+                     G_CALLBACK(OnSystemTitleBarCheckboxClicked), this);
+    gtk_box_pack_start(GTK_BOX(vbox), system_title_bar_checkbox_,
+                       FALSE, FALSE, 0);
+  }
 
 #if defined(TOOLKIT_GTK)
   // GTK theme button.
@@ -267,6 +272,7 @@ void ContentPageGtk::OnGetThemesButtonClicked(GtkButton* widget,
 // static
 void ContentPageGtk::OnSystemTitleBarCheckboxClicked(GtkButton* widget,
                                                      ContentPageGtk* page) {
+  DCHECK(browser_defaults::kCanToggleSystemTitleBar);
   bool use_custom = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   page->use_custom_chrome_frame_.SetValue(use_custom);
 }

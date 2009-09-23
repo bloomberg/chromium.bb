@@ -23,6 +23,9 @@ extern const double kAutocompleteEditFontPixelSizeInPopup;
 // Size of the font used in the autocomplete popup.
 extern const int kAutocompletePopupFontSize;
 
+// Can the user toggle the system title bar?
+extern const bool kCanToggleSystemTitleBar;
+
 #endif
 
 // The default value for session startup.
