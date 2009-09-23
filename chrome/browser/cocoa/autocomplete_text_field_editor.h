@@ -13,15 +13,6 @@ class AutocompleteTextFieldObserver;
 // is styled but should not appear that way when copied to the
 // pasteboard).
 
-// TODO(shess): Move delegate stuff to AutocompleteTextFieldObserver.
-
-@protocol AutocompleteTextFieldEditorDelegateMethods
-
-// Returns nil if paste actions are not supported.
-- (NSString*)textPasteActionString:(NSText*)fieldEditor;
-- (void)textDidPasteAndGo:(NSText*)fieldEditor;
-@end
-
 // Field editor used for the autocomplete field.
 @interface AutocompleteTextFieldEditor : NSTextView {
 }
@@ -37,4 +28,5 @@ class AutocompleteTextFieldObserver;
 
 @interface AutocompleteTextFieldEditor(PrivateTestMethods)
 - (AutocompleteTextFieldObserver*)observer;
+- (void)pasteAndGo:sender;
 @end

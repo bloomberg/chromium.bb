@@ -35,14 +35,21 @@ class AutocompleteTextFieldObserver {
 
   // Called when the user pastes into the field.
   virtual void OnPaste() = 0;
-};
 
-@protocol AutocompleteTextFieldDelegateMethods
-// Returns nil if paste actions are not supported.
-- (NSString*)control:(NSControl*)control
-             textPasteActionString:(NSText*)fieldEditor;
-- (void)control:(NSControl*)control textDidPasteAndGo:(NSText*)fieldEditor;
-@end
+  // Returns true if the current clipboard text supports paste and go
+  // (or paste and search).
+  virtual bool CanPasteAndGo() = 0;
+
+  // Returns the appropriate "Paste and Go" or "Paste and Search"
+  // context menu string, depending on what is currently in the
+  // clipboard.  Must not be called unless CanPasteAndGo() returns
+  // true.
+  virtual int GetPasteActionStringId() = 0;
+
+  // Called when the user initiates a "paste and go" or "paste and
+  // search" into |field_|.
+  virtual void OnPasteAndGo() = 0;
+};
 
 @interface AutocompleteTextField : NSTextField {
  @private

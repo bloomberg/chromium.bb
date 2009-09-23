@@ -9,8 +9,11 @@
 #include "base/string_util.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_unittest_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+using ::testing::Return;
 
 namespace {
 
@@ -154,6 +157,45 @@ TEST_F(AutocompleteTextFieldEditorTest, Display) {
 TEST_F(AutocompleteTextFieldEditorTest, Paste) {
   EXPECT_CALL(field_observer_, OnPaste());
   [editor_.get() paste:nil];
+}
+
+// Test that -pasteAndGo: is correctly delegated to the observer.
+TEST_F(AutocompleteTextFieldEditorTest, PasteAndGo) {
+  EXPECT_CALL(field_observer_, OnPasteAndGo());
+  [editor_.get() pasteAndGo:nil];
+}
+
+// Test that the menu is constructed correctly when CanPasteAndGo().
+TEST_F(AutocompleteTextFieldEditorTest, CanPasteAndGoMenu) {
+  EXPECT_CALL(field_observer_, CanPasteAndGo())
+      .WillOnce(Return(true));
+  EXPECT_CALL(field_observer_, GetPasteActionStringId())
+      .WillOnce(Return(IDS_PASTE_AND_GO));
+
+  NSMenu* menu = [editor_.get() menuForEvent:nil];
+  NSArray* items = [menu itemArray];
+  ASSERT_EQ([items count], 4U);
+  // TODO(shess): Check the titles, too?
+  NSUInteger i = 0;  // Use an index to make future changes easier.
+  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(cut:));
+  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(copy:));
+  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(paste:));
+  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(pasteAndGo:));
+}
+
+// Test that the menu is constructed correctly when !CanPasteAndGo().
+TEST_F(AutocompleteTextFieldEditorTest, CannotPasteAndGoMenu) {
+  EXPECT_CALL(field_observer_, CanPasteAndGo())
+      .WillOnce(Return(false));
+
+  NSMenu* menu = [editor_.get() menuForEvent:nil];
+  NSArray* items = [menu itemArray];
+  ASSERT_EQ([items count], 3U);
+  // TODO(shess): Check the titles, too?
+  NSUInteger i = 0;  // Use an index to make future changes easier.
+  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(cut:));
+  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(copy:));
+  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(paste:));
 }
 
 }  // namespace

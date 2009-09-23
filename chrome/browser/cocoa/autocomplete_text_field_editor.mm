@@ -56,9 +56,11 @@
 }
 
 - (void)pasteAndGo:sender {
-  id delegate = [self delegate];
-  if ([delegate respondsToSelector:@selector(textDidPasteAndGo:)])
-    [delegate textDidPasteAndGo:self];
+  AutocompleteTextFieldObserver* observer = [self observer];
+  DCHECK(observer);
+  if (observer) {
+    observer->OnPasteAndGo();
+  }
 }
 
 // We have rich text, but it shouldn't be modified by the user, so
@@ -76,26 +78,29 @@
 
 - (NSMenu*)menuForEvent:(NSEvent*)event {
   NSMenu* menu = [[[NSMenu alloc] initWithTitle:@"TITLE"] autorelease];
-  [menu insertItemWithTitle:l10n_util::GetNSStringWithFixup(IDS_CUT)
-        action:@selector(cut:)
-        keyEquivalent:@"" atIndex:0];
-  [menu insertItemWithTitle:l10n_util::GetNSStringWithFixup(IDS_COPY)
-        action:@selector(copy:)
-        keyEquivalent:@"" atIndex:1];
-  [menu insertItemWithTitle:l10n_util::GetNSStringWithFixup(IDS_PASTE)
-        action:@selector(paste:)
-        keyEquivalent:@"" atIndex:2];
+  [menu addItemWithTitle:l10n_util::GetNSStringWithFixup(IDS_CUT)
+                  action:@selector(cut:)
+           keyEquivalent:@""];
+  [menu addItemWithTitle:l10n_util::GetNSStringWithFixup(IDS_COPY)
+                  action:@selector(copy:)
+           keyEquivalent:@""];
+  [menu addItemWithTitle:l10n_util::GetNSStringWithFixup(IDS_PASTE)
+                  action:@selector(paste:)
+           keyEquivalent:@""];
 
   // Paste and go/search.
-  id delegate = [self delegate];
+  AutocompleteTextFieldObserver* observer = [self observer];
+  DCHECK(observer);
+  if (observer && observer->CanPasteAndGo()) {
+    const int string_id = observer->GetPasteActionStringId();
+    NSString* label = l10n_util::GetNSStringWithFixup(string_id);
 
-  if ([delegate respondsToSelector:@selector(textPasteActionString:)]) {
-    NSString* label = [delegate textPasteActionString:self];
-    // TODO(rohitrao): If the clipboard is empty, should we show a greyed-out
-    // "Paste and Go" or nothing at all?
+    // TODO(rohitrao): If the clipboard is empty, should we show a
+    // greyed-out "Paste and Go" or nothing at all?
     if (label) {
-      [menu insertItemWithTitle:label action:@selector(pasteAndGo:)
-            keyEquivalent:@"" atIndex:3];
+      [menu addItemWithTitle:label
+                      action:@selector(pasteAndGo:)
+               keyEquivalent:@""];
     }
   }
 

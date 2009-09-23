@@ -19,21 +19,6 @@
   DCHECK([[self cell] isKindOfClass:[AutocompleteTextFieldCell class]]);
 }
 
-- (NSString*)textPasteActionString:(NSText*)fieldEditor {
-  id delegate = [self delegate];
-  if ([delegate respondsToSelector:@selector(control:textPasteActionString:)]) {
-    return [delegate control:self textPasteActionString:fieldEditor];
-  }
-  return nil;
-}
-
-- (void)textDidPasteAndGo:(NSText*)fieldEditor {
-  id delegate = [self delegate];
-  if ([delegate respondsToSelector:@selector(control:textDidPasteAndGo:)]) {
-    [delegate control:self textDidPasteAndGo:fieldEditor];
-  }
-}
-
 - (void)flagsChanged:(NSEvent*)theEvent {
   bool controlFlag = ([theEvent modifierFlags]&NSControlKeyMask) != 0;
   observer_->OnControlKeyChanged(controlFlag);

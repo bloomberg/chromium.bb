@@ -93,6 +93,9 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   // Implement the AutocompleteTextFieldObserver interface.
   virtual void OnControlKeyChanged(bool pressed);
   virtual void OnPaste();
+  virtual bool CanPasteAndGo();
+  virtual int GetPasteActionStringId();
+  virtual void OnPasteAndGo();
 
   // Helper functions for use from AutocompleteEditHelper Objective-C
   // class.
@@ -114,19 +117,6 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   // Called when the window |field_| is in loses key to clean up
   // visual state (such as closing the popup).
   void OnDidResignKey();
-
-  // Returns true if the current clipboard text supports paste and go (or paste
-  // and search).
-  bool CanPasteAndGo();
-
-  // Returns the appropriate "Paste and Go" or "Paste and Search" context menu
-  // string, depending on what is currently in the clipboard.  Must not be
-  // called unless CanPasteAndGo() returns true.
-  int GetPasteActionStringId();
-
-  // Called when the user initiates a "paste and go" or "paste and search" into
-  // |field_|.
-  void OnPasteAndGo();
 
   // Checks if a keyword search is possible and forwards to |model_|
   // if so.  Returns true if the tab should be eaten.

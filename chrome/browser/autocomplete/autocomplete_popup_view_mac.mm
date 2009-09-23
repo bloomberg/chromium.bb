@@ -326,6 +326,7 @@ void AutocompletePopupViewMac::CreatePopupIfNeeded() {
 void AutocompletePopupViewMac::UpdatePopupAppearance() {
   const AutocompleteResult& result = model_->result();
   if (result.empty()) {
+    NSLog(@"Empty results in UpdatePopupAppearance");
     [[popup_ parentWindow] removeChildWindow:popup_];
     [popup_ orderOut:nil];
 

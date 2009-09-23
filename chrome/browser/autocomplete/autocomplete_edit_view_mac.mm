@@ -862,18 +862,6 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
   // it's set to the start of the text.
 }
 
-- (NSString*)control:(NSControl*)control
-             textPasteActionString:(NSText*)fieldEditor {
-  if (!edit_view_->CanPasteAndGo())
-    return nil;
-
-  return l10n_util::GetNSStringWithFixup(edit_view_->GetPasteActionStringId());
-}
-
-- (void)control:(NSControl*)control textDidPasteAndGo:(NSText*)fieldEditor {
-  edit_view_->OnPasteAndGo();
-}
-
 // Signal that we've lost focus when the window resigns key.
 - (void)windowDidResignKey:(NSNotification*)notification {
   edit_view_->OnDidResignKey();
