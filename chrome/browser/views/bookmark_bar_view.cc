@@ -4,7 +4,10 @@
 
 #include "chrome/browser/views/bookmark_bar_view.h"
 
+#include <algorithm>
 #include <limits>
+#include <set>
+#include <vector>
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/text_elider.h"
@@ -247,7 +250,17 @@ class BookmarkFolderButton : public views::MenuButton {
 // Tracks drops on the BookmarkBarView.
 
 struct BookmarkBarView::DropInfo {
-  DropInfo() : valid(false), drop_index(-1), is_menu_showing(false) {}
+  DropInfo()
+      : valid(false),
+        drop_index(-1),
+        is_menu_showing(false),
+        drop_on(false),
+        is_over_overflow(false),
+        is_over_other(false),
+        x(0),
+        y(0),
+        drag_operation(0) {
+  }
 
   // Whether the data is valid.
   bool valid;
@@ -970,7 +983,7 @@ void BookmarkBarView::BookmarkNodeChangedImpl(BookmarkModel* model,
     return;
   }
   int index = model_->GetBookmarkBarNode()->IndexOfChild(node);
-  DCHECK(index != -1);
+  DCHECK_NE(-1, index);
   views::TextButton* button = GetBookmarkButton(index);
   gfx::Size old_pref = button->GetPreferredSize();
   ConfigureButton(node, button);
@@ -1091,7 +1104,7 @@ void BookmarkBarView::RunMenu(views::View* view,
       anchor_point = MenuItemView::TOPRIGHT;
   } else {
     int button_index = GetChildIndex(view);
-    DCHECK(button_index != -1);
+    DCHECK_NE(-1, button_index);
     node = model_->GetBookmarkBarNode()->GetChild(button_index);
 
     // When the UI layout is RTL, the bookmarks are laid out from right to left
@@ -1130,7 +1143,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
     node = model_->other_node();
   } else {
     int index = GetChildIndex(sender);
-    DCHECK(index != -1);
+    DCHECK_NE(-1, index);
     node = model_->GetBookmarkBarNode()->GetChild(index);
   }
   DCHECK(page_navigator_);
