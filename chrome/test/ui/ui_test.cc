@@ -453,7 +453,15 @@ scoped_refptr<TabProxy> UITest::GetActiveTab(int window_index) {
 }
 
 scoped_refptr<TabProxy> UITest::GetActiveTab() {
-  return GetActiveTab(0);
+  scoped_refptr<BrowserProxy> window_proxy(automation()->
+      GetBrowserWindow(0));
+  EXPECT_TRUE(window_proxy.get());
+  if (!window_proxy.get())
+    return NULL;
+
+  scoped_refptr<TabProxy> tab_proxy = window_proxy->GetActiveTab();
+  EXPECT_TRUE(tab_proxy.get());
+  return tab_proxy;
 }
 
 void UITest::NavigateToURLAsync(const GURL& url) {
@@ -542,11 +550,14 @@ bool UITest::WaitForBookmarkBarVisibilityChange(BrowserProxy* browser,
 
 GURL UITest::GetActiveTabURL(int window_index) {
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab(window_index));
+  EXPECT_TRUE(tab_proxy.get());
   if (!tab_proxy.get())
     return GURL();
 
   GURL url;
-  if (!tab_proxy->GetCurrentURL(&url))
+  bool success = tab_proxy->GetCurrentURL(&url);
+  EXPECT_TRUE(success);
+  if (!success)
     return GURL();
   return url;
 }
@@ -554,6 +565,7 @@ GURL UITest::GetActiveTabURL(int window_index) {
 std::wstring UITest::GetActiveTabTitle(int window_index) {
   std::wstring title;
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab(window_index));
+  EXPECT_TRUE(tab_proxy.get());
   if (!tab_proxy.get())
     return title;
 
@@ -562,13 +574,15 @@ std::wstring UITest::GetActiveTabTitle(int window_index) {
 }
 
 int UITest::GetActiveTabIndex(int window_index) {
-  scoped_refptr<TabProxy> tab_proxy(GetActiveTab(window_index));
-  if (!tab_proxy.get())
+  scoped_refptr<BrowserProxy> window_proxy(automation()->
+      GetBrowserWindow(window_index));
+  EXPECT_TRUE(window_proxy.get());
+  if (!window_proxy.get())
     return -1;
 
-  int index;
-  EXPECT_TRUE(tab_proxy->GetTabIndex(&index));
-  return index;
+  int active_tab_index = -1;
+  EXPECT_TRUE(window_proxy->GetActiveTabIndex(&active_tab_index));
+  return active_tab_index;
 }
 
 bool UITest::IsBrowserRunning() {
@@ -721,8 +735,9 @@ void UITest::WaitUntilTabCount(int tab_count) {
 
 std::wstring UITest::GetDownloadDirectory() {
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
+  EXPECT_TRUE(tab_proxy.get());
   if (!tab_proxy.get())
-    return false;
+    return std::wstring();
 
   std::wstring download_directory;
   EXPECT_TRUE(tab_proxy->GetDownloadDirectory(&download_directory));
@@ -792,14 +807,12 @@ void UITest::WaitForFinish(const std::string &name,
   cookie_name.append(test_complete_cookie);
 
   scoped_refptr<TabProxy> tab(GetActiveTab());
-  EXPECT_TRUE(tab.get());
-  if (tab.get()) {
-    bool test_result = WaitUntilCookieValue(tab.get(), url,
-                                            cookie_name.c_str(),
-                                            kIntervalMilliSeconds, wait_time,
-                                            expected_cookie_value.c_str());
-    EXPECT_EQ(true, test_result);
-  }
+  ASSERT_TRUE(tab.get());
+  bool test_result = WaitUntilCookieValue(tab.get(), url,
+                                          cookie_name.c_str(),
+                                          kIntervalMilliSeconds, wait_time,
+                                          expected_cookie_value.c_str());
+  EXPECT_EQ(true, test_result);
 }
 
 void UITest::PrintResult(const std::string& measurement,
