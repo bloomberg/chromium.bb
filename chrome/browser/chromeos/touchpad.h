@@ -43,20 +43,24 @@ class Touchpad : public NotificationObserver {
  private:
   // This methods makes a system call to synclient to change touchpad settings.
   // The system call will be invoked on the file thread.
-  void SetSynclientParam(const std::string& param, const std::string& value);
+  void SetSynclientParam(const std::string& param, double value);
 
-  // Set tap-to-click to value stored in preference.
+  // Set tap-to-click to value stored in preferences.
   void SetTapToClick();
 
-  // Set vertical edge scrolling to value stored in preference.
+  // Set vertical edge scrolling to value stored in preferences.
   void SetVertEdgeScroll();
 
-  // Set touchpad speed factor to value stored in preference.
+  // Set touchpad speed factor to value stored in preferences.
   void SetSpeedFactor();
+
+  // Set tap sensitivity to value stored in preferences.
+  void SetSensitivity();
 
   BooleanPrefMember tap_to_click_enabled_;
   BooleanPrefMember vert_edge_scroll_enabled_;
-  RealPrefMember speed_factor_;
+  IntegerPrefMember speed_factor_;
+  IntegerPrefMember sensitivity_;
 
   DISALLOW_COPY_AND_ASSIGN(Touchpad);
 };

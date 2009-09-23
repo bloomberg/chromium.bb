@@ -381,11 +381,13 @@ class TouchpadSection : public OptionsPageView,
   views::Checkbox* enable_tap_to_click_checkbox_;
   views::Checkbox* enable_vert_edge_scroll_checkbox_;
   views::Slider* speed_factor_slider_;
+  views::Slider* sensitivity_slider_;
 
   // Preferences for this section:
   BooleanPrefMember tap_to_click_enabled_;
   BooleanPrefMember vert_edge_scroll_enabled_;
-  RealPrefMember speed_factor_;
+  IntegerPrefMember speed_factor_;
+  IntegerPrefMember sensitivity_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchpadSection);
 };
@@ -395,7 +397,8 @@ TouchpadSection::TouchpadSection(Profile* profile)
       contents_(NULL),
       enable_tap_to_click_checkbox_(NULL),
       enable_vert_edge_scroll_checkbox_(NULL),
-      speed_factor_slider_(NULL) {
+      speed_factor_slider_(NULL),
+      sensitivity_slider_(NULL) {
 }
 
 void TouchpadSection::ButtonPressed(
@@ -423,6 +426,11 @@ void TouchpadSection::SliderValueChanged(views::Slider* sender) {
     UserMetricsRecordAction(L"Options_SpeedFactorSlider_Changed",
                             profile()->GetPrefs());
     speed_factor_.SetValue(value);
+  } else if (sender == sensitivity_slider_) {
+    double value = sensitivity_slider_->value();
+    UserMetricsRecordAction(L"Options_SensitivitySlider_Changed",
+                            profile()->GetPrefs());
+    sensitivity_.SetValue(value);
   }
 }
 
@@ -467,11 +475,16 @@ void TouchpadSection::InitContents() {
       IDS_OPTIONS_SETTINGS_VERT_EDGE_SCROLL_ENABLED_DESCRIPTION));
   enable_vert_edge_scroll_checkbox_->set_listener(this);
   enable_vert_edge_scroll_checkbox_->SetMultiLine(true);
-  // Create speed factor slider with values between 0.1 and 1.0 step 0.1
-  speed_factor_slider_ = new views::Slider(0.1, 1.0, 0.1,
+  // Create speed factor slider with values between 1 and 10 step 1
+  speed_factor_slider_ = new views::Slider(1, 10, 1,
       static_cast<views::Slider::StyleFlags>(
           views::Slider::STYLE_DRAW_VALUE |
-          views::Slider::STYLE_ONE_DIGIT |
+          views::Slider::STYLE_UPDATE_ON_RELEASE),
+      this);
+  // Create sensitivity slider with values between 1 and 10 step 1
+  sensitivity_slider_ = new views::Slider(1, 10, 1,
+      static_cast<views::Slider::StyleFlags>(
+          views::Slider::STYLE_DRAW_VALUE |
           views::Slider::STYLE_UPDATE_ON_RELEASE),
       this);
 
@@ -488,6 +501,11 @@ void TouchpadSection::InitContents() {
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
 
+  layout->StartRow(0, double_column_view_set_id);
+  layout->AddView(new views::Label(
+      l10n_util::GetString(IDS_OPTIONS_SETTINGS_SENSITIVITY_DESCRIPTION)));
+  layout->AddView(sensitivity_slider_);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, double_column_view_set_id);
   layout->AddView(new views::Label(
       l10n_util::GetString(IDS_OPTIONS_SETTINGS_SPEED_FACTOR_DESCRIPTION)));
@@ -507,6 +525,8 @@ void TouchpadSection::InitContents() {
                                  profile()->GetPrefs(), this);
   speed_factor_.Init(prefs::kTouchpadSpeedFactor,
                      profile()->GetPrefs(), this);
+  sensitivity_.Init(prefs::kTouchpadSensitivity,
+                    profile()->GetPrefs(), this);
 }
 
 void TouchpadSection::NotifyPrefChanged(const std::wstring* pref_name) {
@@ -521,6 +541,10 @@ void TouchpadSection::NotifyPrefChanged(const std::wstring* pref_name) {
   if (!pref_name || *pref_name == prefs::kTouchpadSpeedFactor) {
     double value =  speed_factor_.GetValue();
     speed_factor_slider_->SetValue(value);
+  }
+  if (!pref_name || *pref_name == prefs::kTouchpadSensitivity) {
+    double value =  sensitivity_.GetValue();
+    sensitivity_slider_->SetValue(value);
   }
 }
 

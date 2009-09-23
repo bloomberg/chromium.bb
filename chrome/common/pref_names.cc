@@ -190,8 +190,11 @@ extern const wchar_t kTapToClickEnabled[] =
 extern const wchar_t kVertEdgeScrollEnabled[] =
     L"settings.touchpad.enable_vert_edge_scroll";
 
-// A double pref for the touchpad speed factor.
+// A integer pref for the touchpad speed factor.
 extern const wchar_t kTouchpadSpeedFactor[] = L"settings.touchpad.speed_factor";
+
+// A integer pref for the touchpad sensitivity.
+extern const wchar_t kTouchpadSensitivity[] = L"settings.touchpad.sensitivity";
 #endif
 
 // The disabled messages in IPC logging.

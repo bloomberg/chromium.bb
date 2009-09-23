@@ -32,18 +32,21 @@ void RunnableMethodTraits<Touchpad>::ReleaseCallee(
 void Touchpad::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kTapToClickEnabled, false);
   prefs->RegisterBooleanPref(prefs::kVertEdgeScrollEnabled, true);
-  prefs->RegisterRealPref(prefs::kTouchpadSpeedFactor, 0.5);
+  prefs->RegisterIntegerPref(prefs::kTouchpadSpeedFactor, 5);
+  prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity, 5);
 }
 
 void Touchpad::Init(PrefService* prefs) {
   tap_to_click_enabled_.Init(prefs::kTapToClickEnabled, prefs, this);
   vert_edge_scroll_enabled_.Init(prefs::kVertEdgeScrollEnabled, prefs, this);
   speed_factor_.Init(prefs::kTouchpadSpeedFactor, prefs, this);
+  sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, this);
 
   // Initialize touchpad settings to what's saved in user preferences.
   SetTapToClick();
   SetVertEdgeScroll();
   SetSpeedFactor();
+  SetSensitivity();
 }
 
 void Touchpad::Observe(NotificationType type,
@@ -60,10 +63,11 @@ void Touchpad::NotifyPrefChanged(const std::wstring* pref_name) {
     SetVertEdgeScroll();
   if (!pref_name || *pref_name == prefs::kTouchpadSpeedFactor)
     SetSpeedFactor();
+  if (!pref_name || *pref_name == prefs::kTouchpadSensitivity)
+    SetSensitivity();
 }
 
-void Touchpad::SetSynclientParam(const std::string& param,
-                                 const std::string& value) {
+void Touchpad::SetSynclientParam(const std::string& param, double value) {
   // If not running on the file thread, then re-run on the file thread.
   if (!ChromeThread::CurrentlyOn(ChromeThread::FILE)) {
     base::Thread* file_thread = g_browser_process->file_thread();
@@ -74,7 +78,7 @@ void Touchpad::SetSynclientParam(const std::string& param,
     // launch binary synclient to set the parameter
     std::vector<std::string> argv;
     argv.push_back("/usr/bin/synclient");
-    argv.push_back(param + "=" + value);
+    argv.push_back(StringPrintf("%s=%f", param.c_str(), value));
     base::file_handle_mapping_vector no_files;
     base::ProcessHandle handle;
     if (!base::LaunchApp(argv, no_files, true, &handle))
@@ -87,9 +91,9 @@ void Touchpad::SetTapToClick() {
   // mouse click event), we set MaxTapTime to 0. MaxTapTime is the maximum time
   // (in milliseconds) for detecting a tap. The default is 180.
   if (tap_to_click_enabled_.GetValue())
-    SetSynclientParam("MaxTapTime", "180");
+    SetSynclientParam("MaxTapTime", 180);
   else
-    SetSynclientParam("MaxTapTime", "0");
+    SetSynclientParam("MaxTapTime", 0);
 }
 
 void Touchpad::SetVertEdgeScroll() {
@@ -97,20 +101,39 @@ void Touchpad::SetVertEdgeScroll() {
   // scroll lets you use the right edge of the touchpad to control the movement
   // of the vertical scroll bar.
   if (vert_edge_scroll_enabled_.GetValue())
-    SetSynclientParam("VertEdgeScroll", "1");
+    SetSynclientParam("VertEdgeScroll", 1);
   else
-    SetSynclientParam("VertEdgeScroll", "0");
+    SetSynclientParam("VertEdgeScroll", 0);
 }
 
 void Touchpad::SetSpeedFactor() {
   // To set speed factor, we use MinSpeed. Both MaxSpeed and AccelFactor are 0.
   // So MinSpeed will control the speed of the cursor with respect to the
   // touchpad movement and there will not be any acceleration.
-  // We enforce that MinSpeed is between 0.01 and 1.00.
-  double value = speed_factor_.GetValue();
-  if (value < 0.01)
-    value = 0.01;
-  if (value > 1.0)
-    value = 1.0;
-  SetSynclientParam("MinSpeed", StringPrintf("%f", value));
+  // MinSpeed is between 0.01 and 1.00. The preference is an integer between
+  // 1 and 10, so we divide that by 10 for the value of MinSpeed.
+  int value = speed_factor_.GetValue();
+  if (value < 1)
+    value = 1;
+  if (value > 10)
+    value = 10;
+  // Convert from 1-10 to 0.1-1.0
+  double d = static_cast<double>(value) / 10.0;
+  SetSynclientParam("MinSpeed", d);
+}
+
+void Touchpad::SetSensitivity() {
+  // To set the touch sensitivity, we use FingerHigh, which represents the
+  // the pressure needed for a tap to be registered. The range of FingerHigh
+  // goes from 30 to 75. We store the sensitivity preference as an int from
+  // 1 to 10. So we need to map the preference value of 1 to 10 to the
+  // FingerHigh value of 30 to 75.
+  int value = sensitivity_.GetValue();
+  if (value < 1)
+    value = 1;
+  if (value > 10)
+    value = 10;
+  // Convert from 1-10 to 30-75.
+  double d = value * 5 + 25;
+  SetSynclientParam("FingerHigh", d);
 }

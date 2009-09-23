@@ -34,6 +34,7 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
     prefs::kTapToClickEnabled,
     prefs::kVertEdgeScrollEnabled,
     prefs::kTouchpadSpeedFactor,
+    prefs::kTouchpadSensitivity,
 #endif
     prefs::kDownloadDefaultDirectory,
     prefs::kDownloadExtensionsToOpen,

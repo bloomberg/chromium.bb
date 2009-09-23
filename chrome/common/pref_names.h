@@ -72,6 +72,7 @@ extern const wchar_t kTLS1Enabled[];
 extern const wchar_t kTapToClickEnabled[];
 extern const wchar_t kVertEdgeScrollEnabled[];
 extern const wchar_t kTouchpadSpeedFactor[];
+extern const wchar_t kTouchpadSensitivity[];
 #endif
 extern const wchar_t kIpcDisabledMessages[];
 extern const wchar_t kShowHomeButton[];
