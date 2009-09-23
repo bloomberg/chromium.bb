@@ -234,7 +234,7 @@ class AutocompletePopupMenuClient : public WebCore::PopupMenuClient {
     return selected_index_;
   }
   virtual void popupDidHide() {
-    webview_->HideAutoCompletePopup();
+    webview_->AutoCompletePopupDidHide();
   }
   virtual bool itemIsSeparator(unsigned listIndex) const {
     return false;
@@ -1856,8 +1856,12 @@ void WebViewImpl::DeleteImageResourceFetcher(ImageResourceFetcher* fetcher) {
 void WebViewImpl::HideAutoCompletePopup() {
   if (autocomplete_popup_showing_) {
     autocomplete_popup_->hidePopup();
-    autocomplete_popup_showing_ = false;
+    AutoCompletePopupDidHide();
   }
+}
+
+void WebViewImpl::AutoCompletePopupDidHide() {
+  autocomplete_popup_showing_ = false;
 }
 
 void WebViewImpl::SetIgnoreInputEvents(bool new_value) {

@@ -239,6 +239,7 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
 
   // Hides the autocomplete popup if it is showing.
   void HideAutoCompletePopup();
+  void AutoCompletePopupDidHide();
 
   // Converts |x|, |y| from window coordinates to contents coordinates and gets
   // the underlying Node for them.
