@@ -112,15 +112,17 @@ WebRect TestWebViewDelegate::windowRect() {
 }
 
 void TestWebViewDelegate::setWindowRect(const WebRect& rect) {
-  // TODO: Mac window movement
   if (this == shell_->delegate()) {
-    // ignored
+    set_fake_window_rect(rect);
   } else if (this == shell_->popup_delegate()) {
     popup_bounds_ = rect;  // The initial position of the popup.
   }
 }
 
 WebRect TestWebViewDelegate::rootWindowRect() {
+  if (using_fake_rect_) {
+    return fake_window_rect();
+  }
   if (WebWidgetHost* host = GetWidgetHost()) {
     NSView *view = host->view_handle();
     NSRect rect = [[[view window] contentView] frame];

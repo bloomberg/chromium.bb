@@ -899,6 +899,7 @@ TestWebViewDelegate::TestWebViewDelegate(TestShell* shell)
       top_loading_frame_(NULL),
       page_id_(-1),
       last_page_id_updated_(-1),
+      using_fake_rect_(false),
 #if defined(OS_LINUX)
       cursor_type_(GDK_X_CURSOR),
 #endif
@@ -1078,4 +1079,13 @@ std::wstring TestWebViewDelegate::GetFrameDescription(WebFrame* webframe) {
     else
       return L"frame (anonymous)";
   }
+}
+
+void TestWebViewDelegate::set_fake_window_rect(const WebRect& rect) {
+  fake_rect_ = rect;
+  using_fake_rect_ = true;
+}
+
+WebRect TestWebViewDelegate::fake_window_rect() {
+  return fake_rect_;
 }

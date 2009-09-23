@@ -156,7 +156,7 @@ WebRect TestWebViewDelegate::windowRect() {
 
 void TestWebViewDelegate::setWindowRect(const WebRect& rect) {
   if (this == shell_->delegate()) {
-    // ignored
+    set_fake_window_rect(rect);
   } else if (this == shell_->popup_delegate()) {
     WebWidgetHost* host = GetWidgetHost();
     GtkWidget* drawing_area = host->view_handle();
@@ -168,6 +168,9 @@ void TestWebViewDelegate::setWindowRect(const WebRect& rect) {
 }
 
 WebRect TestWebViewDelegate::rootWindowRect() {
+  if (using_fake_rect_) {
+    return fake_window_rect();
+  }
   if (WebWidgetHost* host = GetWidgetHost()) {
     // We are being asked for the x/y and width/height of the entire browser
     // window.  This means the x/y is the distance from the corner of the

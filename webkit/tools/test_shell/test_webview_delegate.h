@@ -25,8 +25,8 @@
 #include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
 #include "webkit/api/public/WebFrameClient.h"
-#if defined(OS_MACOSX)
 #include "webkit/api/public/WebRect.h"
+#if defined(OS_MACOSX)
 #include "webkit/api/public/WebPopupMenuInfo.h"
 #endif
 #include "webkit/glue/webcursor.h"
@@ -312,6 +312,16 @@ class TestWebViewDelegate : public WebViewDelegate,
   // test.
   void LocationChangeDone(WebKit::WebFrame*);
 
+  // Tests that require moving or resizing the main window (via resizeTo() or
+  // moveTo()) pass in Chrome even though Chrome disregards move requests for
+  // non-popup windows (see TabContents::RequestMove()).  These functions allow
+  // the test shell to mimic its behavior.  If setWindowRect() is called for
+  // the main window, the passed in WebRect is saved as fake_rect_ and we return
+  // it instead of the real window dimensions whenever rootWindowRect() is
+  // called.
+  WebKit::WebRect fake_window_rect();
+  void set_fake_window_rect(const WebKit::WebRect&);
+
   WebWidgetHost* GetWidgetHost();
 
   void UpdateForCommittedLoad(WebKit::WebFrame* webframe, bool is_new_navigation);
@@ -354,6 +364,9 @@ class TestWebViewDelegate : public WebViewDelegate,
   CapturedContextMenuEvents captured_context_menu_events_;
 
   WebCursor current_cursor_;
+
+  WebKit::WebRect fake_rect_;
+  bool using_fake_rect_;
 
 #if defined(OS_WIN)
   // Classes needed by drag and drop.

@@ -86,7 +86,7 @@ WebRect TestWebViewDelegate::windowRect() {
 
 void TestWebViewDelegate::setWindowRect(const WebRect& rect) {
   if (this == shell_->delegate()) {
-    // ignored
+    set_fake_window_rect(rect);
   } else if (this == shell_->popup_delegate()) {
     MoveWindow(shell_->popupWnd(),
                rect.x, rect.y, rect.width, rect.height, FALSE);
@@ -94,6 +94,9 @@ void TestWebViewDelegate::setWindowRect(const WebRect& rect) {
 }
 
 WebRect TestWebViewDelegate::rootWindowRect() {
+  if (using_fake_rect_) {
+    return fake_window_rect();
+  }
   if (WebWidgetHost* host = GetWidgetHost()) {
     RECT rect;
     HWND root_window = ::GetAncestor(host->view_handle(), GA_ROOT);
