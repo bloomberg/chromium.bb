@@ -25,6 +25,7 @@
 ThumbnailStore::ThumbnailStore()
     : cache_(NULL),
       db_(NULL),
+      statement_cache_(NULL),
       hs_(NULL),
       url_blacklist_(NULL),
       disk_data_loaded_(false) {
