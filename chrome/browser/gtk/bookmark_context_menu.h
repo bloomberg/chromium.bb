@@ -50,6 +50,12 @@ class BookmarkContextMenu : public BookmarkModelObserver,
     BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER
   };
 
+  class Delegate {
+   public:
+    // Called when one of the menu items is selected and executed.
+    virtual void WillExecuteCommand() = 0;
+  };
+
   // Creates the bookmark context menu.
   // |profile| is used for opening urls as well as enabling 'open incognito'.
   // |browser| is used to determine the PageNavigator and may be null.
@@ -63,7 +69,8 @@ class BookmarkContextMenu : public BookmarkModelObserver,
                       PageNavigator* navigator,
                       const BookmarkNode* parent,
                       const std::vector<const BookmarkNode*>& selection,
-                      ConfigurationType configuration);
+                      ConfigurationType configuration,
+                      Delegate* delegate);
   virtual ~BookmarkContextMenu();
 
 #if defined(TOOLKIT_VIEWS)
@@ -79,6 +86,9 @@ class BookmarkContextMenu : public BookmarkModelObserver,
   // Returns the menu.
   GtkWidget* menu() const { return menu_->widget(); }
 #endif
+
+  // Should be called by the delegate when it is no longer valid.
+  void DelegateDestroyed();
 
   // Menu::Delegate / MenuGtk::Delegate methods.
   virtual void ExecuteCommand(int id);
@@ -143,6 +153,7 @@ class BookmarkContextMenu : public BookmarkModelObserver,
   std::vector<const BookmarkNode*> selection_;
   BookmarkModel* model_;
   ConfigurationType configuration_;
+  Delegate* delegate_;
 
 #if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
   scoped_ptr<views::MenuItemView> menu_;

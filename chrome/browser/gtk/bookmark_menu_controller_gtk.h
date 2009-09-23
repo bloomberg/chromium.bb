@@ -11,10 +11,10 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
+#include "chrome/browser/gtk/bookmark_context_menu.h"
 #include "chrome/common/owned_widget_gtk.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class BookmarkContextMenu;
 class Browser;
 class Profile;
 class Profiler;
@@ -22,7 +22,8 @@ class PageNavigator;
 class BookmarkModel;
 class BookmarkNode;
 
-class BookmarkMenuController : public BaseBookmarkModelObserver {
+class BookmarkMenuController : public BaseBookmarkModelObserver,
+                               public BookmarkContextMenu::Delegate {
  public:
   // Creates a BookmarkMenuController showing the children of |node| starting
   // at index |start_child_index|.
@@ -44,6 +45,9 @@ class BookmarkMenuController : public BaseBookmarkModelObserver {
   virtual void BookmarkModelChanged();
   virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
                                          const BookmarkNode* node);
+
+  // Overridden from BookmarkContextMenu::Delegate:
+  virtual void WillExecuteCommand();
 
  private:
   // Recursively change the bookmark hierarchy rooted in |parent| into a set of

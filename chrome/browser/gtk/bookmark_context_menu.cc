@@ -215,7 +215,8 @@ BookmarkContextMenu::BookmarkContextMenu(
     PageNavigator* navigator,
     const BookmarkNode* parent,
     const std::vector<const BookmarkNode*>& selection,
-    ConfigurationType configuration)
+    ConfigurationType configuration,
+    Delegate* delegate)
     : wnd_(wnd),
       profile_(profile),
       browser_(browser),
@@ -223,7 +224,8 @@ BookmarkContextMenu::BookmarkContextMenu(
       parent_(parent),
       selection_(selection),
       model_(profile->GetBookmarkModel()),
-      configuration_(configuration) {
+      configuration_(configuration),
+      delegate_(delegate) {
   DCHECK(profile_);
   DCHECK(model_->IsLoaded());
   CreateMenuObject();
@@ -294,7 +296,14 @@ BookmarkContextMenu::~BookmarkContextMenu() {
     model_->RemoveObserver(this);
 }
 
+void BookmarkContextMenu::DelegateDestroyed() {
+  delegate_ = NULL;
+}
+
 void BookmarkContextMenu::ExecuteCommand(int id) {
+  if (delegate_)
+    delegate_->WillExecuteCommand();
+
   switch (id) {
     case IDS_BOOMARK_BAR_OPEN_ALL:
     case IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO:

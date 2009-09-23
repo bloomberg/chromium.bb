@@ -105,6 +105,9 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
 }
 
 BookmarkMenuController::~BookmarkMenuController() {
+
+  if (context_menu_.get())
+    context_menu_->DelegateDestroyed();
   profile_->GetBookmarkModel()->RemoveObserver(this);
   gtk_menu_popdown(GTK_MENU(menu_));
 }
@@ -131,6 +134,10 @@ void BookmarkMenuController::BookmarkNodeFavIconLoaded(
       node_to_menu_widget_map_.find(node);
   if (it != node_to_menu_widget_map_.end())
     SetImageMenuItem(it->second, node, model);
+}
+
+void BookmarkMenuController::WillExecuteCommand() {
+  gtk_menu_popdown(GTK_MENU(menu_));
 }
 
 void BookmarkMenuController::NavigateToMenuItem(
@@ -245,7 +252,7 @@ gboolean BookmarkMenuController::OnButtonPressed(
         new BookmarkContextMenu(
             GTK_WIDGET(controller->parent_window_), controller->profile_,
             controller->browser_, controller->page_navigator_, parent, nodes,
-            BookmarkContextMenu::BOOKMARK_BAR));
+            BookmarkContextMenu::BOOKMARK_BAR, controller));
 
     // Our bookmark folder menu loses the grab to the context menu. When the
     // context menu is hidden, re-assert our grab.

@@ -607,7 +607,8 @@ void BookmarkManagerGtk::ResetOrganizeMenu(bool left) {
     MessageLoop::current()->DeleteSoon(FROM_HERE, old_menu);
 
   organize_menu_.reset(new BookmarkContextMenu(window_, profile_, NULL, NULL,
-      parent, nodes, BookmarkContextMenu::BOOKMARK_MANAGER_ORGANIZE_MENU));
+      parent, nodes, BookmarkContextMenu::BOOKMARK_MANAGER_ORGANIZE_MENU,
+      NULL));
 #if defined(TOOLKIT_GTK)
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(organize_), organize_menu_->menu());
 #else

@@ -414,6 +414,9 @@ void BookmarkBarGtk::SetInstructionState() {
 }
 
 void BookmarkBarGtk::SetChevronState() {
+  if (!GTK_WIDGET_VISIBLE(bookmark_toolbar_.get()))
+    return;
+
   int extra_space = 0;
 
   if (GTK_WIDGET_VISIBLE(overflow_button_))
@@ -647,7 +650,7 @@ void BookmarkBarGtk::PopupMenuForNode(GtkWidget* sender,
   current_context_menu_.reset(new BookmarkContextMenu(
                                   sender, profile_, browser_, page_navigator_,
                                   parent, nodes,
-                                  BookmarkContextMenu::BOOKMARK_BAR));
+                                  BookmarkContextMenu::BOOKMARK_BAR, NULL));
   current_context_menu_->PopupAsContext(event->time);
 }
 
