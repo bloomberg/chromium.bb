@@ -133,21 +133,21 @@ TEST_F(CommandBufferEngineTest, TestInitialization) {
   // Check initial state
   EXPECT_TRUE(engine()->rpc_impl() != NULL);
   EXPECT_TRUE(engine()->parser() == NULL);
-  EXPECT_EQ(BufferSyncInterface::NOT_CONNECTED, engine()->GetStatus());
-  EXPECT_EQ(BufferSyncInterface::PARSE_NO_ERROR, engine()->GetParseError());
+  EXPECT_EQ(BufferSyncInterface::kNotConnected, engine()->GetStatus());
+  EXPECT_EQ(BufferSyncInterface::kParseNoError, engine()->GetParseError());
   EXPECT_EQ(-1, engine()->Get());
   EXPECT_EQ(0, engine()->GetToken());
 
   engine()->InitConnection();
-  EXPECT_EQ(BufferSyncInterface::NO_BUFFER, engine()->GetStatus());
-  EXPECT_EQ(BufferSyncInterface::PARSE_NO_ERROR, engine()->GetParseError());
+  EXPECT_EQ(BufferSyncInterface::kNoBuffer, engine()->GetStatus());
+  EXPECT_EQ(BufferSyncInterface::kParseNoError, engine()->GetParseError());
   EXPECT_EQ(-1, engine()->Get());
 
   CommandBufferEntry *entries = InitCommandBuffer(25, 5);
   ASSERT_TRUE(entries != NULL);
 
-  EXPECT_EQ(BufferSyncInterface::PARSING, engine()->GetStatus());
-  EXPECT_EQ(BufferSyncInterface::PARSE_NO_ERROR, engine()->GetParseError());
+  EXPECT_EQ(BufferSyncInterface::kParsing, engine()->GetStatus());
+  EXPECT_EQ(BufferSyncInterface::kParseNoError, engine()->GetParseError());
   EXPECT_EQ(5, engine()->Get());
   EXPECT_TRUE(engine()->parser() != NULL);
 
@@ -157,8 +157,8 @@ TEST_F(CommandBufferEngineTest, TestInitialization) {
   engine()->CloseConnection();
   DestroyCommandBuffer();
 
-  EXPECT_EQ(BufferSyncInterface::NOT_CONNECTED, engine()->GetStatus());
-  EXPECT_EQ(BufferSyncInterface::PARSE_NO_ERROR, engine()->GetParseError());
+  EXPECT_EQ(BufferSyncInterface::kNotConnected, engine()->GetStatus());
+  EXPECT_EQ(BufferSyncInterface::kParseNoError, engine()->GetParseError());
   EXPECT_EQ(-1, engine()->Get());
   EXPECT_TRUE(engine()->parser() == NULL);
 }
@@ -231,7 +231,7 @@ TEST_F(CommandBufferEngineTest, TestCommandProcessing) {
 
   // Create a command buffer with 3 commands
   put += AddCommandWithExpect(entries + put,
-                              BufferSyncInterface::PARSE_NO_ERROR,
+                              BufferSyncInterface::kParseNoError,
                               0,
                               0,
                               NULL);
@@ -240,7 +240,7 @@ TEST_F(CommandBufferEngineTest, TestCommandProcessing) {
   args1[0].value_uint32 = 3;
   args1[1].value_float = 4.f;
   put += AddCommandWithExpect(entries + put,
-                              BufferSyncInterface::PARSE_NO_ERROR,
+                              BufferSyncInterface::kParseNoError,
                               1,
                               2,
                               args1);
@@ -249,7 +249,7 @@ TEST_F(CommandBufferEngineTest, TestCommandProcessing) {
   args2[0].value_uint32 = 5;
   args2[1].value_float = 6.f;
   put += AddCommandWithExpect(entries + put,
-                              BufferSyncInterface::PARSE_NO_ERROR,
+                              BufferSyncInterface::kParseNoError,
                               2,
                               2,
                               args2);
@@ -259,8 +259,8 @@ TEST_F(CommandBufferEngineTest, TestCommandProcessing) {
     // Check that the parsing progresses, and that no error occurs.
     CommandBufferOffset new_get = engine()->WaitGetChanges(get);
     EXPECT_NE(get, new_get);
-    ASSERT_EQ(BufferSyncInterface::PARSING, engine()->GetStatus());
-    EXPECT_EQ(BufferSyncInterface::PARSE_NO_ERROR, engine()->GetParseError());
+    ASSERT_EQ(BufferSyncInterface::kParsing, engine()->GetStatus());
+    EXPECT_EQ(BufferSyncInterface::kParseNoError, engine()->GetParseError());
     EXPECT_EQ(new_get, engine()->Get());
     get = new_get;
   }
@@ -283,7 +283,7 @@ TEST_F(CommandBufferEngineTest, TestCommandWrapping) {
 
   // Create a command buffer with 3 commands
   put += AddCommandWithExpect(entries + put,
-                              BufferSyncInterface::PARSE_NO_ERROR,
+                              BufferSyncInterface::kParseNoError,
                               0,
                               0,
                               NULL);
@@ -292,7 +292,7 @@ TEST_F(CommandBufferEngineTest, TestCommandWrapping) {
   args1[0].value_uint32 = 3;
   args1[1].value_float = 4.f;
   put += AddCommandWithExpect(entries + put,
-                              BufferSyncInterface::PARSE_NO_ERROR,
+                              BufferSyncInterface::kParseNoError,
                               1,
                               2,
                               args1);
@@ -303,7 +303,7 @@ TEST_F(CommandBufferEngineTest, TestCommandWrapping) {
   args2[0].value_uint32 = 5;
   args2[1].value_float = 6.f;
   put += AddCommandWithExpect(entries + put,
-                              BufferSyncInterface::PARSE_NO_ERROR,
+                              BufferSyncInterface::kParseNoError,
                               2,
                               2,
                               args2);
@@ -313,8 +313,8 @@ TEST_F(CommandBufferEngineTest, TestCommandWrapping) {
     // Check that the parsing progresses, and that no error occurs.
     CommandBufferOffset new_get = engine()->WaitGetChanges(get);
     EXPECT_NE(get, new_get);
-    ASSERT_EQ(BufferSyncInterface::PARSING, engine()->GetStatus());
-    EXPECT_EQ(BufferSyncInterface::PARSE_NO_ERROR, engine()->GetParseError());
+    ASSERT_EQ(BufferSyncInterface::kParsing, engine()->GetStatus());
+    EXPECT_EQ(BufferSyncInterface::kParseNoError, engine()->GetParseError());
     EXPECT_EQ(new_get, engine()->Get());
     get = new_get;
   }
@@ -337,7 +337,7 @@ TEST_F(CommandBufferEngineTest, TestSetBufferAndClose) {
 
   // Create a command buffer with 3 commands
   put += AddCommandWithExpect(entries + put,
-                              BufferSyncInterface::PARSE_NO_ERROR,
+                              BufferSyncInterface::kParseNoError,
                               0,
                               0,
                               NULL);
@@ -346,7 +346,7 @@ TEST_F(CommandBufferEngineTest, TestSetBufferAndClose) {
   args1[0].value_uint32 = 3;
   args1[1].value_float = 4.f;
   put += AddCommandWithExpect(entries + put,
-                              BufferSyncInterface::PARSE_NO_ERROR,
+                              BufferSyncInterface::kParseNoError,
                               1,
                               2,
                               args1);
@@ -355,7 +355,7 @@ TEST_F(CommandBufferEngineTest, TestSetBufferAndClose) {
   args2[0].value_uint32 = 5;
   args2[1].value_float = 6.f;
   put += AddCommandWithExpect(entries + put,
-                              BufferSyncInterface::PARSE_NO_ERROR,
+                              BufferSyncInterface::kParseNoError,
                               2,
                               2,
                               args2);
@@ -371,8 +371,8 @@ TEST_F(CommandBufferEngineTest, TestSetBufferAndClose) {
   CommandBufferEntry *entries2 = static_cast<CommandBufferEntry *>(
       engine()->GetSharedMemoryAddress(shm_id));
   engine()->SetCommandBuffer(shm_id, 0, kShmSize, 0);
-  EXPECT_EQ(BufferSyncInterface::PARSING, engine()->GetStatus());
-  EXPECT_EQ(BufferSyncInterface::PARSE_NO_ERROR, engine()->GetParseError());
+  EXPECT_EQ(BufferSyncInterface::kParsing, engine()->GetStatus());
+  EXPECT_EQ(BufferSyncInterface::kParseNoError, engine()->GetParseError());
   EXPECT_EQ(0, engine()->Get());
 
   // Destroy the old command buffer.
@@ -381,7 +381,7 @@ TEST_F(CommandBufferEngineTest, TestSetBufferAndClose) {
   get = engine()->Get();
   put = get;
   put += AddCommandWithExpect(entries2 + put,
-                              BufferSyncInterface::PARSE_NO_ERROR,
+                              BufferSyncInterface::kParseNoError,
                               1,
                               2,
                               args1);
@@ -409,7 +409,7 @@ TEST_F(CommandBufferEngineTest, TestRecoverableError) {
 
   // Create a command buffer with 3 commands, 2 of them generating errors
   put += AddCommandWithExpect(entries + put,
-                              BufferSyncInterface::PARSE_NO_ERROR,
+                              BufferSyncInterface::kParseNoError,
                               0,
                               0,
                               NULL);
@@ -418,7 +418,7 @@ TEST_F(CommandBufferEngineTest, TestRecoverableError) {
   args1[0].value_uint32 = 3;
   args1[1].value_float = 4.f;
   put += AddCommandWithExpect(entries + put,
-                              BufferSyncInterface::PARSE_INVALID_ARGUMENTS,
+                              BufferSyncInterface::kParseInvalidArguments,
                               1,
                               2,
                               args1);
@@ -427,7 +427,7 @@ TEST_F(CommandBufferEngineTest, TestRecoverableError) {
   args2[0].value_uint32 = 5;
   args2[1].value_float = 6.f;
   put += AddCommandWithExpect(entries + put,
-                              BufferSyncInterface::PARSE_UNKNOWN_COMMAND,
+                              BufferSyncInterface::kParseUnknownCommand,
                               2,
                               2,
                               args2);
@@ -437,7 +437,7 @@ TEST_F(CommandBufferEngineTest, TestRecoverableError) {
     // Check that the parsing progresses, and that no error occurs.
     CommandBufferOffset new_get = engine()->WaitGetChanges(get);
     EXPECT_NE(get, new_get);
-    ASSERT_EQ(BufferSyncInterface::PARSING, engine()->GetStatus());
+    ASSERT_EQ(BufferSyncInterface::kParsing, engine()->GetStatus());
     EXPECT_EQ(new_get, engine()->Get());
     get = new_get;
   }
@@ -445,10 +445,10 @@ TEST_F(CommandBufferEngineTest, TestRecoverableError) {
   Mock::VerifyAndClearExpectations(api_mock());
 
   // Check that the error status was set to the first error.
-  EXPECT_EQ(BufferSyncInterface::PARSE_INVALID_ARGUMENTS,
+  EXPECT_EQ(BufferSyncInterface::kParseInvalidArguments,
             engine()->GetParseError());
   // Check that the error status was reset after the query.
-  EXPECT_EQ(BufferSyncInterface::PARSE_NO_ERROR, engine()->GetParseError());
+  EXPECT_EQ(BufferSyncInterface::kParseNoError, engine()->GetParseError());
 
   engine()->CloseConnection();
   DestroyCommandBuffer();
@@ -477,7 +477,7 @@ TEST_F(CommandBufferEngineTest, TestNonRecoverableError) {
   // Create a command buffer with 3 commands, the last one overlapping the end
   // of the buffer.
   put += AddCommandWithExpect(entries + put,
-                              BufferSyncInterface::PARSE_NO_ERROR,
+                              BufferSyncInterface::kParseNoError,
                               0,
                               0,
                               NULL);
@@ -486,7 +486,7 @@ TEST_F(CommandBufferEngineTest, TestNonRecoverableError) {
   args1[0].value_uint32 = 3;
   args1[1].value_float = 4.f;
   put += AddCommandWithExpect(entries + put,
-                              BufferSyncInterface::PARSE_NO_ERROR,
+                              BufferSyncInterface::kParseNoError,
                               1,
                               2,
                               args1);
@@ -514,12 +514,12 @@ TEST_F(CommandBufferEngineTest, TestNonRecoverableError) {
     get = new_get;
   }
   // We should be in an error case now.
-  EXPECT_EQ(BufferSyncInterface::PARSE_ERROR, engine()->GetStatus());
+  EXPECT_EQ(BufferSyncInterface::kParseError, engine()->GetStatus());
   // Check that the error status was set to the first error.
-  EXPECT_EQ(BufferSyncInterface::PARSE_OUT_OF_BOUNDS,
+  EXPECT_EQ(BufferSyncInterface::kParseOutOfBounds,
             engine()->GetParseError());
   // Check that the error status was reset after the query.
-  EXPECT_EQ(BufferSyncInterface::PARSE_NO_ERROR, engine()->GetParseError());
+  EXPECT_EQ(BufferSyncInterface::kParseNoError, engine()->GetParseError());
 
   // Check that the valid commands did happen.
   Mock::VerifyAndClearExpectations(api_mock());
@@ -568,7 +568,7 @@ TEST_F(CommandBufferEngineTest, TestDoWork) {
   process_mock()->Reset();
   EXPECT_CALL(*process_mock(), HasMessage()).Times(AnyNumber());
   put += AddCommandWithExpect(entries + put,
-                              BufferSyncInterface::PARSE_NO_ERROR,
+                              BufferSyncInterface::kParseNoError,
                               0,
                               0,
                               NULL);
@@ -577,7 +577,7 @@ TEST_F(CommandBufferEngineTest, TestDoWork) {
   args1[0].value_uint32 = 3;
   args1[1].value_float = 4.f;
   put += AddCommandWithExpect(entries + put,
-                              BufferSyncInterface::PARSE_NO_ERROR,
+                              BufferSyncInterface::kParseNoError,
                               1,
                               2,
                               args1);
@@ -586,7 +586,7 @@ TEST_F(CommandBufferEngineTest, TestDoWork) {
   args2[0].value_uint32 = 5;
   args2[1].value_float = 6.f;
   put += AddCommandWithExpect(entries + put,
-                              BufferSyncInterface::PARSE_NO_ERROR,
+                              BufferSyncInterface::kParseNoError,
                               2,
                               2,
                               args2);
@@ -603,8 +603,8 @@ TEST_F(CommandBufferEngineTest, TestDoWork) {
   EXPECT_FALSE(process_mock()->would_have_blocked());
   get = engine()->Get();
   EXPECT_EQ(put, get);  // once we're done, we should have executed everything.
-  ASSERT_EQ(BufferSyncInterface::PARSING, engine()->GetStatus());
-  EXPECT_EQ(BufferSyncInterface::PARSE_NO_ERROR, engine()->GetParseError());
+  ASSERT_EQ(BufferSyncInterface::kParsing, engine()->GetStatus());
+  EXPECT_EQ(BufferSyncInterface::kParseNoError, engine()->GetParseError());
   Mock::VerifyAndClearExpectations(process_mock());
   Mock::VerifyAndClearExpectations(api_mock());
 

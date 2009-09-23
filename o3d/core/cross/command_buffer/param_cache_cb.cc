@@ -70,15 +70,8 @@ class TypedParamHandlerCB : public ParamHandlerCB {
   // This template definition only works for value types (floatn, matrix, int,
   // ..., but not textures or samplers).
   virtual void SetValue(CommandBufferHelper *helper) {
-    static const unsigned int kEntryCount =
-        (sizeof(typename T::DataType) + 3) / 4;
-    CommandBufferEntry args[2 + kEntryCount];
     typename T::DataType value = param_->value();
-    args[0].value_uint32 = id_;
-    args[1].value_uint32 = sizeof(value);
-    memcpy(args + 2, &value, sizeof(value));
-    helper->AddCommand(command_buffer::SET_PARAM_DATA_IMMEDIATE,
-                       2 + kEntryCount, args);
+    helper->SetParamDataImmediate(id_, sizeof(value), &value);
   }
  private:
   T* param_;
@@ -99,12 +92,8 @@ class MatrixParamHandlerColumnsCB : public ParamHandlerCB {
 
   // Sends the param value to the service.
   virtual void SetValue(CommandBufferHelper *helper) {
-    CommandBufferEntry args[18];
     Matrix4 value = transpose(param_->value());
-    args[0].value_uint32 = id_;
-    args[1].value_uint32 = sizeof(value);
-    memcpy(args + 2, &value, sizeof(value));
-    helper->AddCommand(command_buffer::SET_PARAM_DATA_IMMEDIATE, 18, args);
+    helper->SetParamDataImmediate(id_, sizeof(value), &value);
   }
  private:
   ParamMatrix4* param_;
@@ -121,17 +110,15 @@ class SamplerParamHandlerCB : public ParamHandlerCB {
   // Sends the param value to the service.
   virtual void SetValue(CommandBufferHelper *helper) {
     SamplerCB *sampler = down_cast<SamplerCB *>(param_->value());
-    CommandBufferEntry args[3];
-    args[0].value_uint32 = id_;
-    args[1].value_uint32 = sizeof(ResourceID);
+    uint32 value;
     if (!sampler) {
       // TODO: use error sampler
-      args[2].value_uint32 = command_buffer::kInvalidResource;
+      value = command_buffer::kInvalidResource;
     } else {
       sampler->SetTextureAndStates();
-      args[2].value_uint32 = sampler->resource_id();
+      value = sampler->resource_id();
     }
-    helper->AddCommand(command_buffer::SET_PARAM_DATA_IMMEDIATE, 3, args);
+    helper->SetParamDataImmediate(id_, sizeof(value), &value);
   }
  private:
   ParamSampler* param_;

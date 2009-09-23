@@ -52,7 +52,7 @@ class AsyncAPIMock : public AsyncAPIInterface {
  public:
   AsyncAPIMock() {
     testing::DefaultValue<BufferSyncInterface::ParseError>::Set(
-        BufferSyncInterface::PARSE_NO_ERROR);
+        BufferSyncInterface::kParseNoError);
   }
 
   // Predicate that matches args passed to DoCommand, by looking at the values.
@@ -60,11 +60,12 @@ class AsyncAPIMock : public AsyncAPIInterface {
    public:
     IsArgs(unsigned int arg_count, const void* args)
         : arg_count_(arg_count),
-          args_(static_cast<CommandBufferEntry*>(const_cast<void*>(args))) { }
+          args_(static_cast<CommandBufferEntry*>(const_cast<void*>(args))) {
+    }
 
     bool operator() (const void* _args) const {
       const CommandBufferEntry* args =
-          static_cast<const CommandBufferEntry*>(_args);
+          static_cast<const CommandBufferEntry*>(_args) + 1;
       for (unsigned int i = 0; i < arg_count_; ++i) {
         if (args[i].value_uint32 != args_[i].value_uint32) return false;
       }
@@ -79,9 +80,9 @@ class AsyncAPIMock : public AsyncAPIInterface {
   MOCK_METHOD3(DoCommand, BufferSyncInterface::ParseError(
       unsigned int command,
       unsigned int arg_count,
-      const void* args));
+      const void* cmd_data));
 
-  // Sets the engine, to forward SET_TOKEN commands to it.
+  // Sets the engine, to forward SetToken commands to it.
   void set_engine(CommandBufferEngine *engine) { engine_ = engine; }
 
   // Forwards the SetToken commands to the engine.

@@ -187,38 +187,31 @@ void RendererCB::PlatformSpecificClear(const Float4 &color,
   uint32 buffers = (color_flag ? GAPIInterface::COLOR : 0) |
       (depth_flag ? GAPIInterface::DEPTH : 0) |
       (stencil_flag ? GAPIInterface::STENCIL : 0);
-  command_buffer::CommandBufferEntry args[7];
-  args[0].value_uint32 = buffers;
-  args[1].value_float = color[0];
-  args[2].value_float = color[1];
-  args[3].value_float = color[2];
-  args[4].value_float = color[3];
-  args[5].value_float = depth;
-  args[6].value_uint32 = stencil;
-  helper_->AddCommand(command_buffer::CLEAR, 7, args);
+  helper_->Clear(buffers, color[0], color[1], color[2], color[3],
+                 depth, stencil);
 }
 
 void RendererCB::PlatformSpecificEndDraw() {
 }
 
-// Adds the BEGIN_FRAME command to the command buffer.
+// Adds the BeginFrame command to the command buffer.
 bool RendererCB::PlatformSpecificStartRendering() {
   // Any device issues are handled in the command buffer backend
   DCHECK(helper_);
-  helper_->AddCommand(command_buffer::BEGIN_FRAME, 0 , NULL);
+  helper_->BeginFrame();
   return true;
 }
 
-// Adds the END_FRAME command to the command buffer, and flushes the commands.
+// Adds the EndFrame command to the command buffer, and flushes the commands.
 void RendererCB::PlatformSpecificFinishRendering() {
   // Any device issues are handled in the command buffer backend
-  helper_->AddCommand(command_buffer::END_FRAME, 0 , NULL);
+  helper_->EndFrame();
   helper_->WaitForToken(frame_token_);
   frame_token_ = helper_->InsertToken();
 }
 
 void RendererCB::PlatformSpecificPresent() {
-  // TODO(gman): The END_FRAME command needs to be split into END_FRAME
+  // TODO(gman): The EndFrame command needs to be split into EndFrame
   //     and PRESENT.
 }
 
@@ -231,14 +224,13 @@ void RendererCB::SetRenderSurfacesPlatformSpecific(
       down_cast<const RenderSurfaceCB*>(surface);
   const RenderDepthStencilSurfaceCB* surface_depth_cb =
       down_cast<const RenderDepthStencilSurfaceCB*>(surface_depth);
-  command_buffer::CommandBufferEntry args[2];
-  args[0].value_uint32 = surface_cb->resource_id();
-  args[1].value_uint32 = surface_depth_cb->resource_id();
-  helper_->AddCommand(command_buffer::SET_RENDER_SURFACE, 2, args);
+  helper_->SetRenderSurface(
+      surface_cb->resource_id(),
+      surface_depth_cb->resource_id());
 }
 
 void RendererCB::SetBackBufferPlatformSpecific() {
-  helper_->AddCommand(command_buffer::SET_BACK_SURFACES, 0, NULL);
+  helper_->SetBackSurfaces();
 }
 
 // Creates a StreamBank, returning a platform specific implementation class.
@@ -314,14 +306,7 @@ void RendererCB::SetViewportInPixels(int left,
                                      int height,
                                      float min_z,
                                      float max_z) {
-  command_buffer::CommandBufferEntry args[6];
-  args[0].value_uint32 = left;
-  args[1].value_uint32 = top;
-  args[2].value_uint32 = width;
-  args[3].value_uint32 = height;
-  args[4].value_float = min_z;
-  args[5].value_float = max_z;
-  helper_->AddCommand(command_buffer::SET_VIEWPORT, 6, args);
+  helper_->SetViewport(left, top, width, height, min_z, max_z);
 }
 
 const int* RendererCB::GetRGBAUByteNSwizzleTable() {

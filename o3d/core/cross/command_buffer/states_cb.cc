@@ -441,31 +441,6 @@ class BlendEqStateHandler : public TypedStateHandler<ParamInteger> {
   bool *dirty_;
 };
 
-// A handler that sets the blending color.
-// Parameters:
-//   args: a pointer to the arguments.
-//   dirty: a pointer to the dirty bit.
-class BlendColorStateHandler : public TypedStateHandler<ParamFloat4> {
- public:
-  BlendColorStateHandler(CommandBufferEntry *args, bool *dirty)
-      : args_(args),
-        dirty_(dirty) {
-  }
-
-  virtual void SetStateFromTypedParam(RendererCB* renderer,
-                                      ParamFloat4* param) const {
-    Float4 value = param->value();
-    args_[0].value_float = value[0];
-    args_[1].value_float = value[1];
-    args_[2].value_float = value[2];
-    args_[3].value_float = value[3];
-    *dirty_ = true;
-  }
- private:
-  CommandBufferEntry *args_;
-  bool *dirty_;
-};
-
 // Adds all the state handlers for all the states. The list of handlers must
 // match in names and types the list in Renderer::AddDefaultStates()
 // (in renderer.cc).
@@ -475,52 +450,58 @@ void RendererCB::StateManager::AddStateHandlers(RendererCB *renderer) {
     using command_buffer::set_point_line_raster::LineSmoothEnable;
     using command_buffer::set_point_line_raster::PointSpriteEnable;
     bool *dirty = point_line_helper_.dirty_ptr();
-    uint32 *arg0 = &(point_line_helper_.args()[0].value_uint32);
-    float *arg1 = &(point_line_helper_.args()[1].value_float);
+    command_buffer::cmd::SetPointLineRaster& cmd =
+        point_line_helper_.command();
     renderer->AddStateHandler(
         State::kLineSmoothEnableParamName,
-        new EnableStateHandler<LineSmoothEnable>(arg0, dirty));
+        new EnableStateHandler<LineSmoothEnable>(&cmd.fixme0, dirty));
     renderer->AddStateHandler(
         State::kPointSpriteEnableParamName,
-        new EnableStateHandler<PointSpriteEnable>(arg0, dirty));
+        new EnableStateHandler<PointSpriteEnable>(&cmd.fixme0, dirty));
     renderer->AddStateHandler(State::kPointSizeParamName,
-                              new ValueStateHandler<ParamFloat>(arg1, dirty));
+                              new ValueStateHandler<ParamFloat>(
+                                  &cmd.point_size, dirty));
   }
 
   // Polygon Raster
   {
     bool *dirty = poly_raster_helper_.dirty_ptr();
-    uint32 *arg = &(poly_raster_helper_.args()[0].value_uint32);
+    command_buffer::cmd::SetPolygonRaster& cmd =
+        poly_raster_helper_.command();
     renderer->AddStateHandler(State::kCullModeParamName,
-                              new CullModeStateHandler(arg, dirty));
+                              new CullModeStateHandler(&cmd.fixme0, dirty));
     renderer->AddStateHandler(State::kFillModeParamName,
-                              new FillModeStateHandler(arg, dirty));
+                              new FillModeStateHandler(&cmd.fixme0, dirty));
   }
 
   // Polygon Offset
   {
     bool *dirty = poly_offset_helper_.dirty_ptr();
-    float *arg0 = &(poly_offset_helper_.args()[0].value_float);
-    float *arg1 = &(poly_offset_helper_.args()[1].value_float);
-    renderer->AddStateHandler(State::kPolygonOffset1ParamName,
-                              new ValueStateHandler<ParamFloat>(arg0, dirty));
-    renderer->AddStateHandler(State::kPolygonOffset2ParamName,
-                              new ValueStateHandler<ParamFloat>(arg1, dirty));
+    command_buffer::cmd::SetPolygonOffset& cmd =
+        poly_offset_helper_.command();
+    renderer->AddStateHandler(
+        State::kPolygonOffset1ParamName,
+        new ValueStateHandler<ParamFloat>(&cmd.slope_factor, dirty));
+    renderer->AddStateHandler(
+        State::kPolygonOffset2ParamName,
+        new ValueStateHandler<ParamFloat>(&cmd.units, dirty));
   }
 
   // Alpha test
   {
     using command_buffer::set_alpha_test::Enable;
     using command_buffer::set_alpha_test::Func;
+    command_buffer::cmd::SetAlphaTest& cmd = alpha_test_helper_.command();
     bool *dirty = alpha_test_helper_.dirty_ptr();
-    uint32 *arg0 = &(alpha_test_helper_.args()[0].value_uint32);
-    float *arg1 = &(alpha_test_helper_.args()[1].value_float);
-    renderer->AddStateHandler(State::kAlphaTestEnableParamName,
-                              new EnableStateHandler<Enable>(arg0, dirty));
-    renderer->AddStateHandler(State::kAlphaComparisonFunctionParamName,
-                              new ComparisonStateHandler<Func>(arg0, dirty));
-    renderer->AddStateHandler(State::kAlphaReferenceParamName,
-                              new ValueStateHandler<ParamFloat>(arg1, dirty));
+    renderer->AddStateHandler(
+        State::kAlphaTestEnableParamName,
+        new EnableStateHandler<Enable>(&cmd.fixme0, dirty));
+    renderer->AddStateHandler(
+        State::kAlphaComparisonFunctionParamName,
+        new ComparisonStateHandler<Func>(&cmd.fixme0, dirty));
+    renderer->AddStateHandler(
+        State::kAlphaReferenceParamName,
+        new ValueStateHandler<ParamFloat>(&cmd.value, dirty));
   }
 
   // Depth Test
@@ -529,13 +510,16 @@ void RendererCB::StateManager::AddStateHandlers(RendererCB *renderer) {
     using command_buffer::set_depth_test::WriteEnable;
     using command_buffer::set_depth_test::Func;
     bool *dirty = depth_test_helper_.dirty_ptr();
-    uint32 *arg = &(depth_test_helper_.args()[0].value_uint32);
-    renderer->AddStateHandler(State::kZWriteEnableParamName,
-                              new EnableStateHandler<WriteEnable>(arg, dirty));
-    renderer->AddStateHandler(State::kZEnableParamName,
-                              new EnableStateHandler<Enable>(arg, dirty));
-    renderer->AddStateHandler(State::kZComparisonFunctionParamName,
-                              new ComparisonStateHandler<Func>(arg, dirty));
+    command_buffer::cmd::SetDepthTest& cmd = depth_test_helper_.command();
+    renderer->AddStateHandler(
+        State::kZWriteEnableParamName,
+        new EnableStateHandler<WriteEnable>(&cmd.fixme0, dirty));
+    renderer->AddStateHandler(
+        State::kZEnableParamName,
+        new EnableStateHandler<Enable>(&cmd.fixme0, dirty));
+    renderer->AddStateHandler(
+        State::kZComparisonFunctionParamName,
+        new ComparisonStateHandler<Func>(&cmd.fixme0, dirty));
   }
 
   // Stencil Test
@@ -554,42 +538,49 @@ void RendererCB::StateManager::AddStateHandlers(RendererCB *renderer) {
     using command_buffer::set_stencil_test::CCWFailOp;
     using command_buffer::set_stencil_test::CCWZFailOp;
     bool *dirty = stencil_test_helper_.dirty_ptr();
-    uint32 *arg0 = &(stencil_test_helper_.args()[0].value_uint32);
-    uint32 *arg1 = &(stencil_test_helper_.args()[1].value_uint32);
-    renderer->AddStateHandler(State::kStencilEnableParamName,
-                              new EnableStateHandler<Enable>(arg0, dirty));
-    renderer->AddStateHandler(State::kTwoSidedStencilEnableParamName,
-                              new EnableStateHandler<SeparateCCW>(arg0, dirty));
+    command_buffer::cmd::SetStencilTest& cmd = stencil_test_helper_.command();
+    renderer->AddStateHandler(
+        State::kStencilEnableParamName,
+        new EnableStateHandler<Enable>(&cmd.fixme0, dirty));
+    renderer->AddStateHandler(
+        State::kTwoSidedStencilEnableParamName,
+        new EnableStateHandler<SeparateCCW>(&cmd.fixme0, dirty));
     renderer->AddStateHandler(
         State::kStencilReferenceParamName,
-        new BitFieldStateHandler<ReferenceValue>(arg0, dirty));
+        new BitFieldStateHandler<ReferenceValue>(&cmd.fixme0, dirty));
     renderer->AddStateHandler(
         State::kStencilMaskParamName,
-        new BitFieldStateHandler<CompareMask>(arg0, dirty));
-    renderer->AddStateHandler(State::kStencilWriteMaskParamName,
-                              new BitFieldStateHandler<WriteMask>(arg0, dirty));
+        new BitFieldStateHandler<CompareMask>(&cmd.fixme0, dirty));
+    renderer->AddStateHandler(
+        State::kStencilWriteMaskParamName,
+        new BitFieldStateHandler<WriteMask>(&cmd.fixme0, dirty));
 
-    renderer->AddStateHandler(State::kStencilComparisonFunctionParamName,
-                              new ComparisonStateHandler<CWFunc>(arg1, dirty));
-    renderer->AddStateHandler(State::kStencilPassOperationParamName,
-                              new StencilOpStateHandler<CWPassOp>(arg1, dirty));
-    renderer->AddStateHandler(State::kStencilFailOperationParamName,
-                              new StencilOpStateHandler<CWFailOp>(arg1, dirty));
+    renderer->AddStateHandler(
+        State::kStencilComparisonFunctionParamName,
+        new ComparisonStateHandler<CWFunc>(&cmd.fixme1, dirty));
+    renderer->AddStateHandler(
+        State::kStencilPassOperationParamName,
+        new StencilOpStateHandler<CWPassOp>(&cmd.fixme1, dirty));
+    renderer->AddStateHandler(
+        State::kStencilFailOperationParamName,
+        new StencilOpStateHandler<CWFailOp>(&cmd.fixme1, dirty));
     renderer->AddStateHandler(
         State::kStencilZFailOperationParamName,
-        new StencilOpStateHandler<CWZFailOp>(arg1, dirty));
+        new StencilOpStateHandler<CWZFailOp>(&cmd.fixme1, dirty));
 
-    renderer->AddStateHandler(State::kCCWStencilComparisonFunctionParamName,
-                              new ComparisonStateHandler<CCWFunc>(arg1, dirty));
+    renderer->AddStateHandler(
+        State::kCCWStencilComparisonFunctionParamName,
+        new ComparisonStateHandler<CCWFunc>(&cmd.fixme1, dirty));
+
     renderer->AddStateHandler(
         State::kCCWStencilPassOperationParamName,
-        new StencilOpStateHandler<CCWPassOp>(arg1, dirty));
+        new StencilOpStateHandler<CCWPassOp>(&cmd.fixme1, dirty));
     renderer->AddStateHandler(
         State::kCCWStencilFailOperationParamName,
-        new StencilOpStateHandler<CCWFailOp>(arg1, dirty));
+        new StencilOpStateHandler<CCWFailOp>(&cmd.fixme1, dirty));
     renderer->AddStateHandler(
         State::kCCWStencilZFailOperationParamName,
-        new StencilOpStateHandler<CCWZFailOp>(arg1, dirty));
+        new StencilOpStateHandler<CCWZFailOp>(&cmd.fixme1, dirty));
   }
 
   // Blending
@@ -603,29 +594,32 @@ void RendererCB::StateManager::AddStateHandlers(RendererCB *renderer) {
     using command_buffer::set_blending::AlphaSrcFunc;
     using command_buffer::set_blending::AlphaDstFunc;
     bool *dirty = blending_helper_.dirty_ptr();
-    uint32 *arg = &(blending_helper_.args()[0].value_uint32);
-    renderer->AddStateHandler(State::kAlphaBlendEnableParamName,
-                              new EnableStateHandler<Enable>(arg, dirty));
+    command_buffer::cmd::SetBlending& cmd = blending_helper_.command();
+    renderer->AddStateHandler(
+        State::kAlphaBlendEnableParamName,
+        new EnableStateHandler<Enable>(&cmd.fixme0, dirty));
     renderer->AddStateHandler(
         State::kSeparateAlphaBlendEnableParamName,
-        new EnableStateHandler<SeparateAlpha>(arg, dirty));
+        new EnableStateHandler<SeparateAlpha>(&cmd.fixme0, dirty));
 
     renderer->AddStateHandler(
         State::kSourceBlendFunctionParamName,
-        new BlendFuncStateHandler<ColorSrcFunc>(arg, dirty));
+        new BlendFuncStateHandler<ColorSrcFunc>(&cmd.fixme0, dirty));
     renderer->AddStateHandler(
         State::kDestinationBlendFunctionParamName,
-        new BlendFuncStateHandler<ColorDstFunc>(arg, dirty));
-    renderer->AddStateHandler(State::kBlendEquationParamName,
-                              new BlendEqStateHandler<ColorEq>(arg, dirty));
+        new BlendFuncStateHandler<ColorDstFunc>(&cmd.fixme0, dirty));
+    renderer->AddStateHandler(
+        State::kBlendEquationParamName,
+        new BlendEqStateHandler<ColorEq>(&cmd.fixme0, dirty));
     renderer->AddStateHandler(
         State::kSourceBlendAlphaFunctionParamName,
-        new BlendFuncStateHandler<AlphaSrcFunc>(arg, dirty));
+        new BlendFuncStateHandler<AlphaSrcFunc>(&cmd.fixme0, dirty));
     renderer->AddStateHandler(
         State::kDestinationBlendAlphaFunctionParamName,
-        new BlendFuncStateHandler<AlphaDstFunc>(arg, dirty));
-    renderer->AddStateHandler(State::kBlendAlphaEquationParamName,
-                              new BlendEqStateHandler<AlphaEq>(arg, dirty));
+        new BlendFuncStateHandler<AlphaDstFunc>(&cmd.fixme0, dirty));
+    renderer->AddStateHandler(
+        State::kBlendAlphaEquationParamName,
+        new BlendEqStateHandler<AlphaEq>(&cmd.fixme0, dirty));
   }
 
   // Color Write
@@ -633,12 +627,13 @@ void RendererCB::StateManager::AddStateHandlers(RendererCB *renderer) {
     using command_buffer::set_color_write::DitherEnable;
     using command_buffer::set_color_write::AllColorsMask;
     bool *dirty = color_write_helper_.dirty_ptr();
-    uint32 *arg = &(color_write_helper_.args()[0].value_uint32);
-    renderer->AddStateHandler(State::kDitherEnableParamName,
-                              new EnableStateHandler<DitherEnable>(arg, dirty));
+    command_buffer::cmd::SetColorWrite& cmd = color_write_helper_.command();
+    renderer->AddStateHandler(
+        State::kDitherEnableParamName,
+        new EnableStateHandler<DitherEnable>(&cmd.flags, dirty));
     renderer->AddStateHandler(
         State::kColorWriteEnableParamName,
-        new ColorWriteStateHandler(arg, dirty));
+        new ColorWriteStateHandler(&cmd.flags, dirty));
   }
 }
 
@@ -651,7 +646,6 @@ void RendererCB::StateManager::ValidateStates(CommandBufferHelper *helper) {
   stencil_test_helper_.Validate(helper);
   color_write_helper_.Validate(helper);
   blending_helper_.Validate(helper);
-  blending_color_helper_.Validate(helper);
 }
 
 }  // namespace o3d

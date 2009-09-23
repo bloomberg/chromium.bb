@@ -97,14 +97,14 @@ class AsyncAPIInterface {
   // Parameters:
   //    command: the command index.
   //    arg_count: the number of CommandBufferEntry arguments.
-  //    args: the arguments.
+  //    cmd_data: the command data.
   // Returns:
   //   BufferSyncInterface::NO_ERROR if no error was found, one of
   //   BufferSyncInterface::ParseError otherwise.
   virtual BufferSyncInterface::ParseError DoCommand(
       unsigned int command,
       unsigned int arg_count,
-      const void* args) = 0;
+      const void* cmd_data) = 0;
 };
 
 }  // namespace command_buffer

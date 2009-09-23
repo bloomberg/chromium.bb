@@ -59,17 +59,10 @@ RenderSurfaceCB::RenderSurfaceCB(ServiceLocator *service_locator,
   ResourceID id = renderer_->render_surface_ids().AllocateID();
   resource_id_ = id;
   CommandBufferHelper *helper = renderer_->helper();
-  CommandBufferEntry args[4];
-  args[0].value_uint32 = id;
-  args[1].value_uint32 =
-    create_render_surface_cmd::Width::MakeValue(width) |
-    create_render_surface_cmd::Height::MakeValue(height);
-  args[2].value_uint32 =
-    create_render_surface_cmd::Levels::MakeValue(mip_level) |
-    create_render_surface_cmd::Side::MakeValue(side);
-  args[3].value_uint32 =
-    reinterpret_cast<ResourceID>(texture->GetTextureHandle());
-  helper->AddCommand(command_buffer::CREATE_RENDER_SURFACE, 4, args);
+  helper->CreateRenderSurface(
+      id,
+      reinterpret_cast<uint32>(texture->GetTextureHandle()),
+      width, height, mip_level, side);
 }
 
 RenderSurfaceCB::~RenderSurfaceCB() {
@@ -80,9 +73,7 @@ void RenderSurfaceCB::Destroy() {
   // This should never be called during rendering.
   if (resource_id_ != command_buffer::kInvalidResource) {
     CommandBufferHelper *helper = renderer_->helper();
-    CommandBufferEntry args[1];
-    args[0].value_uint32 = resource_id_;
-    helper->AddCommand(command_buffer::DESTROY_RENDER_SURFACE, 1, args);
+    helper->DestroyRenderSurface(resource_id_);
     renderer_->render_surface_ids().FreeID(resource_id_);
     resource_id_ = command_buffer::kInvalidResource;
   }
@@ -102,20 +93,13 @@ RenderDepthStencilSurfaceCB::RenderDepthStencilSurfaceCB(
   ResourceID id = renderer_->depth_surface_ids().AllocateID();
   resource_id_ = id;
   CommandBufferHelper *helper = renderer_->helper();
-  CommandBufferEntry args[2];
-  args[0].value_uint32 = id;
-  args[1].value_uint32 =
-    create_render_surface_cmd::Width::MakeValue(width) |
-    create_render_surface_cmd::Height::MakeValue(height);
-  helper->AddCommand(command_buffer::CREATE_DEPTH_SURFACE, 2, args);
+  helper->CreateDepthSurface(id, width, height);
 }
 
 void RenderDepthStencilSurfaceCB::Destroy() {
   if (resource_id_ != command_buffer::kInvalidResource) {
     CommandBufferHelper *helper = renderer_->helper();
-    CommandBufferEntry args[1];
-    args[0].value_uint32 = resource_id_;
-    helper->AddCommand(command_buffer::DESTROY_DEPTH_SURFACE, 1, args);
+    helper->DestroyDepthSurface(resource_id_);
     renderer_->depth_surface_ids().FreeID(resource_id_);
     resource_id_ = command_buffer::kInvalidResource;
   }

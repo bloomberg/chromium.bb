@@ -147,10 +147,7 @@ void StreamBankCB::CreateVertexStruct() {
   DCHECK_EQ(kInvalidResource, vertex_struct_id_);
   vertex_struct_id_ = renderer_->vertex_structs_ids().AllocateID();
   CommandBufferHelper *helper = renderer_->helper();
-  CommandBufferEntry args[5];
-  args[0].value_uint32 = vertex_struct_id_;
-  args[1].value_uint32 = vertex_stream_params_.size();
-  helper->AddCommand(command_buffer::CREATE_VERTEX_STRUCT, 2, args);
+  helper->CreateVertexStruct(vertex_struct_id_, vertex_stream_params_.size());
   for (unsigned int i = 0; i < vertex_stream_params_.size(); ++i) {
     const Stream &stream = vertex_stream_params_[i]->stream();
     vertex_struct::Semantic cb_semantic;
@@ -168,19 +165,16 @@ void StreamBankCB::CreateVertexStruct() {
       continue;
     }
 
-    namespace cmd = command_buffer::set_vertex_input_cmd;
     VertexBufferCB *vertex_buffer =
         static_cast<VertexBufferCB *>(stream.field().buffer());
-    args[0].value_uint32 = vertex_struct_id_;
-    args[1].value_uint32 = i;
-    args[2].value_uint32 = vertex_buffer->resource_id();
-    args[3].value_uint32 = stream.field().offset();
-    args[4].value_uint32 =
-        cmd::SemanticIndex::MakeValue(cb_semantic_index) |
-        cmd::Semantic::MakeValue(cb_semantic) |
-        cmd::Type::MakeValue(cb_type) |
-        cmd::Stride::MakeValue(vertex_buffer->stride());
-    helper->AddCommand(command_buffer::SET_VERTEX_INPUT, 5, args);
+    helper->SetVertexInput(
+        vertex_struct_id_, i,
+        vertex_buffer->resource_id(),
+        stream.field().offset(),
+        cb_semantic,
+        cb_semantic_index,
+        cb_type,
+        vertex_buffer->stride());
   }
 }
 
@@ -188,9 +182,7 @@ void StreamBankCB::CreateVertexStruct() {
 void StreamBankCB::DestroyVertexStruct() {
   if (vertex_struct_id_ != kInvalidResource) {
     CommandBufferHelper *helper = renderer_->helper();
-    CommandBufferEntry args[1];
-    args[0].value_uint32 = vertex_struct_id_;
-    helper->AddCommand(command_buffer::DESTROY_VERTEX_STRUCT, 1, args);
+    helper->DestroyVertexStruct(vertex_struct_id_);
     renderer_->vertex_structs_ids().FreeID(vertex_struct_id_);
     vertex_struct_id_ = kInvalidResource;
   }
@@ -200,10 +192,7 @@ void StreamBankCB::BindStreamsForRendering() {
   if (vertex_struct_id_ == kInvalidResource)
     CreateVertexStruct();
   CommandBufferHelper *helper = renderer_->helper();
-  CommandBufferEntry args[6];
-  // Sets current vertex struct.
-  args[0].value_uint32 = vertex_struct_id_;
-  helper->AddCommand(command_buffer::SET_VERTEX_STRUCT, 1, args);
+  helper->SetVertexStruct(vertex_struct_id_);
 }
 
 }  // namespace o3d

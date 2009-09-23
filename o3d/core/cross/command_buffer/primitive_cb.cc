@@ -112,8 +112,7 @@ void PrimitiveCB::PlatformSpecificRender(Renderer* renderer,
   IndexBufferCB *index_buffer_cb =
       down_cast<IndexBufferCB *>(index_buffer());
   if (!index_buffer_cb) {
-    // TODO: draw non-index in this case ? we don't do it currently on
-    // other platforms, so keep compatibility.
+    // TODO(gman): draw non-indexed primitives.
     DLOG(INFO) << "Trying to draw with an empty index buffer.";
     return;
   }
@@ -130,23 +129,15 @@ void PrimitiveCB::PlatformSpecificRender(Renderer* renderer,
   stream_bank_cb->BindStreamsForRendering();
 
   CommandBufferHelper *helper = renderer_->helper();
-  CommandBufferEntry args[6];
 
   // Sets current effect.
   // TODO: cache current effect ?
-  args[0].value_uint32 = effect_cb->resource_id();
-  helper->AddCommand(command_buffer::SET_EFFECT, 1, args);
+  helper->SetEffect(effect_cb->resource_id());
   param_cache_cb->RunHandlers(helper);
 
-
   // Draws.
-  args[0].value_uint32 = cb_primitive_type;
-  args[1].value_uint32 = index_buffer_cb->resource_id();
-  args[2].value_uint32 = 0;                     // first index.
-  args[3].value_uint32 = number_primitives_;    // primitive count.
-  args[4].value_uint32 = 0;                     // min index.
-  args[5].value_uint32 = number_vertices_ - 1;  // max index.
-  helper->AddCommand(command_buffer::DRAW_INDEXED, 6, args);
+  helper->DrawIndexed(cb_primitive_type, index_buffer_cb->resource_id(),
+                       0, number_primitives_, 0, number_vertices_ - 1);
 }
 
 }  // namespace o3d

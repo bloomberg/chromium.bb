@@ -131,8 +131,8 @@ class CommandBufferEngine : public BufferSyncInterface {
 
   // Gets the current parse error. The current parse error is set when the
   // service is in the PARSE_ERROR status. It may also be set while in the
-  // PARSING state, if a recoverable error (like PARSE_UNKNOWN_METHOD) was
-  // encountered. Getting the error resets it to PARSE_NO_ERROR.
+  // kParsing state, if a recoverable error (like PARSE_UNKNOWN_METHOD) was
+  // encountered. Getting the error resets it to kParseNoError.
   // Returns:
   //   The current parse error.
   virtual ParseError GetParseError();

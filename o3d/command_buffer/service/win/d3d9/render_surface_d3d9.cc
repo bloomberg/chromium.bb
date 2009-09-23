@@ -136,11 +136,11 @@ BufferSyncInterface::ParseError GAPID3D9::CreateRenderSurface(
     ResourceID texture_id) {
   if (id == current_surface_id_) {
     // This will delete the current surface which would be bad.
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
   TextureD3D9 *texture = textures_.Get(texture_id);
   if (!texture->render_surfaces_enabled()) {
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   } else {
     RenderSurfaceD3D9 *render_surface = RenderSurfaceD3D9::Create(this,
                                                                   width,
@@ -149,20 +149,20 @@ BufferSyncInterface::ParseError GAPID3D9::CreateRenderSurface(
                                                                   side,
                                                                   texture);
     if (render_surface == NULL) {
-      return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+      return BufferSyncInterface::kParseInvalidArguments;
     }
     render_surfaces_.Assign(id, render_surface);
   }
-  return BufferSyncInterface::PARSE_NO_ERROR;
+  return BufferSyncInterface::kParseNoError;
 }
 
 BufferSyncInterface::ParseError GAPID3D9::DestroyRenderSurface(ResourceID id) {
   if (id == current_surface_id_) {
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
   return render_surfaces_.Destroy(id) ?
-    BufferSyncInterface::PARSE_NO_ERROR :
-    BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    BufferSyncInterface::kParseNoError :
+    BufferSyncInterface::kParseInvalidArguments;
 }
 
 BufferSyncInterface::ParseError GAPID3D9::CreateDepthSurface(
@@ -171,24 +171,24 @@ BufferSyncInterface::ParseError GAPID3D9::CreateDepthSurface(
     unsigned int height) {
   if (id == current_depth_surface_id_) {
     // This will delete the current surface which would be bad.
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
   RenderDepthStencilSurfaceD3D9 *depth_surface =
     RenderDepthStencilSurfaceD3D9::Create(this, width, height);
   if (depth_surface == NULL) {
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
   depth_surfaces_.Assign(id, depth_surface);
-  return BufferSyncInterface::PARSE_NO_ERROR;
+  return BufferSyncInterface::kParseNoError;
 }
 
 BufferSyncInterface::ParseError GAPID3D9::DestroyDepthSurface(ResourceID id) {
   if (id == current_depth_surface_id_) {
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
   return depth_surfaces_.Destroy(id) ?
-    BufferSyncInterface::PARSE_NO_ERROR :
-    BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    BufferSyncInterface::kParseNoError :
+    BufferSyncInterface::kParseInvalidArguments;
 }
 
 BufferSyncInterface::ParseError GAPID3D9::SetRenderSurface(
@@ -200,7 +200,7 @@ BufferSyncInterface::ParseError GAPID3D9::SetRenderSurface(
     depth_surfaces_.Get(depth_stencil_id);
 
   if (d3d_render_surface == NULL && d3d_render_depth_surface == NULL) {
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
 
   IDirect3DSurface9 *d3d_surface =
@@ -215,7 +215,7 @@ BufferSyncInterface::ParseError GAPID3D9::SetRenderSurface(
   HR(device->SetDepthStencilSurface(d3d_depth_surface));
   current_surface_id_ = render_surface_id;
   current_depth_surface_id_ = depth_stencil_id;
-  return BufferSyncInterface::PARSE_NO_ERROR;
+  return BufferSyncInterface::kParseNoError;
 }
 
 void GAPID3D9::SetBackSurfaces() {

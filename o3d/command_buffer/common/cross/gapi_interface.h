@@ -180,8 +180,8 @@ class GAPIInterface {
   //   size: the size of the vertex buffer, in bytes.
   //   flags: the vertex buffer flags, as a combination of vertex_buffer::Flags
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
-  //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
+  //   passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError CreateVertexBuffer(ResourceID id,
                                         unsigned int size,
                                         unsigned int flags) = 0;
@@ -190,8 +190,8 @@ class GAPIInterface {
   // Parameters:
   //   id: the resource ID of the vertex buffer.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if an invalid vertex buffer
-  //   ID was passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if an invalid vertex buffer
+  //   ID was passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError DestroyVertexBuffer(ResourceID id) = 0;
 
   // Sets data into a vertex buffer.
@@ -201,9 +201,9 @@ class GAPIInterface {
   //   size: the size of the data.
   //   data: the source data.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments were
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments were
   //   passed: invalid resource ID, or offset or size out of range.
-  //   BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError SetVertexBufferData(ResourceID id,
                                          unsigned int offset,
                                          unsigned int size,
@@ -216,9 +216,9 @@ class GAPIInterface {
   //   size: the size of the data.
   //   data: the destination buffer.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments were
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments were
   //   passed: invalid resource ID, or offset or size out of range.
-  //   BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError GetVertexBufferData(ResourceID id,
                                          unsigned int offset,
                                          unsigned int size,
@@ -232,8 +232,8 @@ class GAPIInterface {
   //          Note that indices are 16 bits unless the index_buffer::INDEX_32BIT
   //          flag is specified.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
-  //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
+  //   passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError CreateIndexBuffer(ResourceID id,
                                        unsigned int size,
                                        unsigned int flags) = 0;
@@ -242,8 +242,8 @@ class GAPIInterface {
   // Parameters:
   //   id: the resource ID of the index buffer.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if an invalid index buffer
-  //   ID was passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if an invalid index buffer
+  //   ID was passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError DestroyIndexBuffer(ResourceID id) = 0;
 
   // Sets data into an index buffer.
@@ -253,9 +253,9 @@ class GAPIInterface {
   //   size: the size of the data.
   //   data: the source data.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments were
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments were
   //   passed: invalid resource ID, or offset or size out of range.
-  //   BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError SetIndexBufferData(ResourceID id,
                                         unsigned int offset,
                                         unsigned int size,
@@ -268,9 +268,9 @@ class GAPIInterface {
   //   size: the size of the data.
   //   data: the destination buffer.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments were
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments were
   //   passed: invalid resource ID, or offset or size out of range.
-  //   BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError GetIndexBufferData(ResourceID id,
                                         unsigned int offset,
                                         unsigned int size,
@@ -282,8 +282,8 @@ class GAPIInterface {
   //   id: the resource ID of the vertex struct.
   //   input_count: the number of input vertex attributes.
   // returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
-  //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
+  //   passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError CreateVertexStruct(ResourceID id,
                                         unsigned int input_count) = 0;
 
@@ -291,8 +291,8 @@ class GAPIInterface {
   // Parameters:
   //   id: the resource ID of the vertex struct.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if an invalid vertex struct
-  //   ID was passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if an invalid vertex struct
+  //   ID was passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError DestroyVertexStruct(ResourceID id) = 0;
 
   // Sets an input into a vertex struct.
@@ -307,8 +307,8 @@ class GAPIInterface {
   //   semantic: the semantic of the input.
   //   semantic_index: the semantic index of the input.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
-  //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
+  //   passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError SetVertexInput(ResourceID vertex_struct_id,
                                     unsigned int input_index,
                                     ResourceID vertex_buffer_id,
@@ -322,8 +322,8 @@ class GAPIInterface {
   // Parameters:
   //   id: the resource ID of the vertex struct.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
-  //   passed (invalid vertex struct), BufferSyncInterface::PARSE_NO_ERROR
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
+  //   passed (invalid vertex struct), BufferSyncInterface::kParseNoError
   //   otherwise.
   virtual ParseError SetVertexStruct(ResourceID id) = 0;
 
@@ -333,8 +333,8 @@ class GAPIInterface {
   //   first: the index of the first vertex.
   //   count: the number of primitives to draw.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
-  //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
+  //   passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError Draw(PrimitiveType primitive_type,
                           unsigned int first,
                           unsigned int count) = 0;
@@ -349,8 +349,8 @@ class GAPIInterface {
   //   min_index: the lowest index being drawn.
   //   max_index: the highest index being drawn.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
-  //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
+  //   passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError DrawIndexed(PrimitiveType primitive_type,
                                  ResourceID index_buffer_id,
                                  unsigned int first,
@@ -364,9 +364,9 @@ class GAPIInterface {
   //   size: the size of data.
   //   data: the source code for the effect.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
   //   passed or the effect failed to compile,
-  //   BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError CreateEffect(ResourceID id,
                                   unsigned int size,
                                   const void *data) = 0;
@@ -375,16 +375,16 @@ class GAPIInterface {
   // Parameters:
   //   id: the resource ID of the effect.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if an invalid effect ID
-  //   was passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if an invalid effect ID
+  //   was passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError DestroyEffect(ResourceID id) = 0;
 
   // Sets the active effect for drawing.
   // Parameters:
   //   id: the resource ID of the effect.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
-  //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
+  //   passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError SetEffect(ResourceID id) = 0;
 
   // Gets the number of parameters in an effect, returning it in a memory
@@ -395,8 +395,8 @@ class GAPIInterface {
   //   Uint32).
   //   data: the buffer receiving the data.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
-  //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
+  //   passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError GetParamCount(ResourceID id,
                                    unsigned int size,
                                    void *data) = 0;
@@ -409,9 +409,9 @@ class GAPIInterface {
   //     the effect source.
   //   index: the index of the parameter.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
   //   passed, such as invalid effect ID, unmatching data type or invalid
-  //   index, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   index, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError CreateParam(ResourceID param_id,
                                  ResourceID effect_id,
                                  unsigned int index) = 0;
@@ -426,9 +426,9 @@ class GAPIInterface {
   //   name: the parameter name, as an array of char. Doesn't have to be
   //     nul-terminated (though nul will terminate the string).
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
   //   passed, such as invalid effect ID, unmatching data type or no parameter
-  //   was found with this name, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   was found with this name, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError CreateParamByName(ResourceID param_id,
                                        ResourceID effect_id,
                                        unsigned int size,
@@ -438,8 +438,8 @@ class GAPIInterface {
   // Parameters:
   //   id: the resource ID of the parameter.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if an invalid parameter ID
-  //   was passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if an invalid parameter ID
+  //   was passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError DestroyParam(ResourceID id) = 0;
 
   // Sets the effect parameter data.
@@ -448,9 +448,9 @@ class GAPIInterface {
   //   size: the size of the data. Must be at least the size of the parameter
   //     as described by its type.
   //   data: the parameter data.
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
   //   passed, such as invalid parameter ID, or unmatching data size,
-  //   BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError SetParamData(ResourceID id,
                                   unsigned int size,
                                   const void *data) = 0;
@@ -470,10 +470,10 @@ class GAPIInterface {
   //     description. Must be at least sizeof(effect_param::Desc).
   //   data: the memory buffer.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
   //   passed, such as invalid parameter ID, or unsufficient data size,
-  //   BufferSyncInterface::PARSE_NO_ERROR otherwise. Note that
-  //   BufferSyncInterface::PARSE_NO_ERROR will be returned if the structure
+  //   BufferSyncInterface::kParseNoError otherwise. Note that
+  //   BufferSyncInterface::kParseNoError will be returned if the structure
   //   itself fits, not necessarily the names. To make sure all the information
   //   is available, the caller should compare the returned size member of the
   //   effect_param::Desc structure to the size parameter passed in.
@@ -489,8 +489,8 @@ class GAPIInterface {
   //   Uint32).
   //   data: the buffer receiving the data.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
-  //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
+  //   passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError GetStreamCount(ResourceID id,
                                     unsigned int size,
                                     void *data) = 0;
@@ -520,8 +520,8 @@ class GAPIInterface {
   //   flags: the texture flags, as a combination of texture::Flags.
   //   enable_render_surfaces: bool for whether to enable render surfaces
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
-  //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
+  //   passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError CreateTexture2D(ResourceID id,
                                      unsigned int width,
                                      unsigned int height,
@@ -542,8 +542,8 @@ class GAPIInterface {
   //   flags: the texture flags, as a combination of texture::Flags.
   //   enable_render_surfaces: bool for whether to enable render surfaces
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
-  //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
+  //   passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError CreateTexture3D(ResourceID id,
                                      unsigned int width,
                                      unsigned int height,
@@ -563,8 +563,8 @@ class GAPIInterface {
   //   flags: the texture flags, as a combination of texture::Flags.
   //   enable_render_surfaces: bool for whether to enable render surfaces
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
-  //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
+  //   passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError CreateTextureCube(ResourceID id,
                                        unsigned int side,
                                        unsigned int levels,
@@ -599,9 +599,9 @@ class GAPIInterface {
   //   size: the size of the data.
   //   data: the texel data.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
   //   passed, for example invalid size, or out-of-bounds rectangle/volume,
-  //   BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError SetTextureData(ResourceID id,
                                     unsigned int x,
                                     unsigned int y,
@@ -643,9 +643,9 @@ class GAPIInterface {
   //   size: the size of the data.
   //   data: the destination buffer.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
   //   passed, for example invalid size, or out-of-bounds rectangle/volume,
-  //   BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError GetTextureData(ResourceID id,
                                     unsigned int x,
                                     unsigned int y,
@@ -664,23 +664,23 @@ class GAPIInterface {
   // Parameters:
   //   id: the resource ID of the texture.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if an invalid texture
-  //   resource ID was passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if an invalid texture
+  //   resource ID was passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError DestroyTexture(ResourceID id) = 0;
 
   // Creates a sampler resource.
   // Parameters:
   //   id: the resource ID of the sampler.
   // Returns:
-  //   BufferSyncInterface::PARSE_NO_ERROR.
+  //   BufferSyncInterface::kParseNoError.
   virtual ParseError CreateSampler(ResourceID id) = 0;
 
   // Destroys a sampler resource.
   // Parameters:
   //   id: the resource ID of the sampler.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if an invalid sampler
-  //   resource ID was passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if an invalid sampler
+  //   resource ID was passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError DestroySampler(ResourceID id) = 0;
 
   // Sets the states in a sampler resource.
@@ -694,8 +694,8 @@ class GAPIInterface {
   //   mip_filter: the filtering mode for mip-map interpolation textures.
   //   max_anisotropy: the maximum anisotropy.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if an invalid sampler
-  //   resource ID was passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if an invalid sampler
+  //   resource ID was passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError SetSamplerStates(ResourceID id,
                                       sampler::AddressingMode addressing_u,
                                       sampler::AddressingMode addressing_v,
@@ -710,8 +710,8 @@ class GAPIInterface {
   //   id: the resource ID of the sampler.
   //   color: the border color.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if an invalid sampler
-  //   resource ID was passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if an invalid sampler
+  //   resource ID was passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError SetSamplerBorderColor(ResourceID id,
                                            const RGBA &color) = 0;
 
@@ -720,8 +720,8 @@ class GAPIInterface {
   //   id: the resource ID of the sampler.
   //   texture_id: the resource id of the texture.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if an invalid sampler
-  //   resource ID was passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if an invalid sampler
+  //   resource ID was passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError SetSamplerTexture(ResourceID id,
                                        ResourceID texture_id) = 0;
 
@@ -860,8 +860,8 @@ class GAPIInterface {
   //   height: the texture height. Must be positive.
   //   texture_id: the resource id of the texture.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
-  //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
+  //   passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError CreateRenderSurface(ResourceID id,
                                          unsigned int width,
                                          unsigned int height,
@@ -873,9 +873,9 @@ class GAPIInterface {
   // Parameters:
   //   id: the resource ID of the render surface.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if an invalid render
+  //   BufferSyncInterface::kParseInvalidArguments if an invalid render
   //     surface
-  //   resource ID was passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   resource ID was passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError DestroyRenderSurface(ResourceID id) = 0;
 
   // Creates a depth stencil surface resource.
@@ -884,8 +884,8 @@ class GAPIInterface {
   //   width: the texture width. Must be positive.
   //   height: the texture height. Must be positive.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
-  //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
+  //   passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError CreateDepthSurface(ResourceID id,
                                         unsigned int width,
                                         unsigned int height) = 0;
@@ -894,9 +894,9 @@ class GAPIInterface {
   // Parameters:
   //   id: the resource ID of the depth stencil surface.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if an invalid render
+  //   BufferSyncInterface::kParseInvalidArguments if an invalid render
   //     surface
-  //   resource ID was passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   resource ID was passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError DestroyDepthSurface(ResourceID id) = 0;
 
   // Switches the render surface and depth stencil surface to those
@@ -905,8 +905,8 @@ class GAPIInterface {
   //   render_surface_id: the resource ID of the render surface.
   //   depth_stencil_id: the resource ID of the render depth stencil surface.
   // Returns:
-  //   BufferSyncInterface::PARSE_INVALID_ARGUMENTS if invalid arguments are
-  //   passed, BufferSyncInterface::PARSE_NO_ERROR otherwise.
+  //   BufferSyncInterface::kParseInvalidArguments if invalid arguments are
+  //   passed, BufferSyncInterface::kParseNoError otherwise.
   virtual ParseError SetRenderSurface(ResourceID render_surface_id,
                                       ResourceID depth_stencil_id) = 0;
 

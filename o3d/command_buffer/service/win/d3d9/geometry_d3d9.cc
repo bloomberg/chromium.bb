@@ -316,14 +316,14 @@ BufferSyncInterface::ParseError GAPID3D9::CreateVertexBuffer(
   VertexBufferD3D9 *vertex_buffer = new VertexBufferD3D9(size, flags);
   vertex_buffer->Create(this);
   vertex_buffers_.Assign(id, vertex_buffer);
-  return BufferSyncInterface::PARSE_NO_ERROR;
+  return BufferSyncInterface::kParseNoError;
 }
 
 // Destroys a VertexBufferD3D9 resource.
 BufferSyncInterface::ParseError GAPID3D9::DestroyVertexBuffer(ResourceID id) {
   return vertex_buffers_.Destroy(id) ?
-      BufferSyncInterface::PARSE_NO_ERROR :
-      BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+      BufferSyncInterface::kParseNoError :
+      BufferSyncInterface::kParseInvalidArguments;
 }
 
 // Copies the data into the VertexBufferD3D9 resource.
@@ -333,10 +333,10 @@ BufferSyncInterface::ParseError GAPID3D9::SetVertexBufferData(
     unsigned int size,
     const void *data) {
   VertexBufferD3D9 *vertex_buffer = vertex_buffers_.Get(id);
-  if (!vertex_buffer) return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+  if (!vertex_buffer) return BufferSyncInterface::kParseInvalidArguments;
   return vertex_buffer->SetData(offset, size, data) ?
-      BufferSyncInterface::PARSE_NO_ERROR :
-      BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+      BufferSyncInterface::kParseNoError :
+      BufferSyncInterface::kParseInvalidArguments;
 }
 
 // Copies the data from the VertexBufferD3D9 resource.
@@ -346,10 +346,10 @@ BufferSyncInterface::ParseError GAPID3D9::GetVertexBufferData(
     unsigned int size,
     void *data) {
   VertexBufferD3D9 *vertex_buffer = vertex_buffers_.Get(id);
-  if (!vertex_buffer) return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+  if (!vertex_buffer) return BufferSyncInterface::kParseInvalidArguments;
   return vertex_buffer->GetData(offset, size, data) ?
-      BufferSyncInterface::PARSE_NO_ERROR :
-      BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+      BufferSyncInterface::kParseNoError :
+      BufferSyncInterface::kParseInvalidArguments;
 }
 
 // Creates and assigns an IndexBufferD3D9 resource.
@@ -360,14 +360,14 @@ BufferSyncInterface::ParseError GAPID3D9::CreateIndexBuffer(
   IndexBufferD3D9 *index_buffer = new IndexBufferD3D9(size, flags);
   index_buffer->Create(this);
   index_buffers_.Assign(id, index_buffer);
-  return BufferSyncInterface::PARSE_NO_ERROR;
+  return BufferSyncInterface::kParseNoError;
 }
 
 // Destroys an IndexBufferD3D9 resource.
 BufferSyncInterface::ParseError GAPID3D9::DestroyIndexBuffer(ResourceID id) {
   return index_buffers_.Destroy(id) ?
-      BufferSyncInterface::PARSE_NO_ERROR :
-      BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+      BufferSyncInterface::kParseNoError :
+      BufferSyncInterface::kParseInvalidArguments;
 }
 
 // Copies the data into the IndexBufferD3D9 resource.
@@ -377,10 +377,10 @@ BufferSyncInterface::ParseError GAPID3D9::SetIndexBufferData(
     unsigned int size,
     const void *data) {
   IndexBufferD3D9 *index_buffer = index_buffers_.Get(id);
-  if (!index_buffer) return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+  if (!index_buffer) return BufferSyncInterface::kParseInvalidArguments;
   return index_buffer->SetData(offset, size, data) ?
-      BufferSyncInterface::PARSE_NO_ERROR :
-      BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+      BufferSyncInterface::kParseNoError :
+      BufferSyncInterface::kParseInvalidArguments;
 }
 
 // Copies the data from the IndexBufferD3D9 resource.
@@ -390,10 +390,10 @@ BufferSyncInterface::ParseError GAPID3D9::GetIndexBufferData(
     unsigned int size,
     void *data) {
   IndexBufferD3D9 *index_buffer = index_buffers_.Get(id);
-  if (!index_buffer) return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+  if (!index_buffer) return BufferSyncInterface::kParseInvalidArguments;
   return index_buffer->GetData(offset, size, data) ?
-      BufferSyncInterface::PARSE_NO_ERROR :
-      BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+      BufferSyncInterface::kParseNoError :
+      BufferSyncInterface::kParseInvalidArguments;
 }
 
 // Creates and assigns a VertexStructD3D9 resource.
@@ -402,15 +402,15 @@ BufferSyncInterface::ParseError GAPID3D9::CreateVertexStruct(
   if (id == current_vertex_struct_) validate_streams_ = true;
   VertexStructD3D9 *vertex_struct = new VertexStructD3D9(input_count);
   vertex_structs_.Assign(id, vertex_struct);
-  return BufferSyncInterface::PARSE_NO_ERROR;
+  return BufferSyncInterface::kParseNoError;
 }
 
 // Destroys a VertexStructD3D9 resource.
 BufferSyncInterface::ParseError GAPID3D9::DestroyVertexStruct(ResourceID id) {
   if (id == current_vertex_struct_) validate_streams_ = true;
   return vertex_structs_.Destroy(id) ?
-      BufferSyncInterface::PARSE_NO_ERROR :
-      BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+      BufferSyncInterface::kParseNoError :
+      BufferSyncInterface::kParseInvalidArguments;
 }
 
 // Sets an input into a VertexStructD3D9 resource.
@@ -426,10 +426,10 @@ BufferSyncInterface::ParseError GAPID3D9::SetVertexInput(
   if (vertex_buffer_id == current_vertex_struct_) validate_streams_ = true;
   VertexStructD3D9 *vertex_struct = vertex_structs_.Get(vertex_struct_id);
   if (!vertex_struct || input_index >= vertex_struct->count())
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   vertex_struct->SetInput(input_index, vertex_buffer_id, offset, stride, type,
                           semantic, semantic_index);
-  return BufferSyncInterface::PARSE_NO_ERROR;
+  return BufferSyncInterface::kParseNoError;
 }
 
 }  // namespace command_buffer

@@ -47,10 +47,10 @@ CommandBufferEngine::CommandBufferEngine(AsyncAPIInterface *handler)
       handler_(handler),
       client_rpc_(NULL),
       token_(0),
-      status_(NOT_CONNECTED),
+      status_(kNotConnected),
       signal_change_(false),
       signal_rpc_message_id_(0),
-      parse_error_(PARSE_NO_ERROR) {
+      parse_error_(kParseNoError) {
   buffer_rpc_impl_.reset(new BufferRPCImpl(this));
 }
 
@@ -58,13 +58,13 @@ CommandBufferEngine::~CommandBufferEngine() {}
 
 // Inits the connection. Registers the client RPC service.
 void CommandBufferEngine::InitConnection() {
-  status_ = NO_BUFFER;
+  status_ = kNoBuffer;
 }
 
 // Closes the connection. Executes all remaining commands.
 void CommandBufferEngine::CloseConnection() {
   FinishParsing();
-  status_ = NOT_CONNECTED;
+  status_ = kNotConnected;
   parser_.reset(NULL);
 }
 
@@ -113,13 +113,13 @@ void CommandBufferEngine::SetCommandBuffer(unsigned int shm_id,
                << "shared memory";
     return;
   }
-  if (status_ == NOT_CONNECTED) return;
+  if (status_ == kNotConnected) return;
   FinishParsing();
   parser_.reset(new CommandParser(shared_memory_buffers_[shm_id].address,
                                   shared_memory_buffers_[shm_id].size, offset,
                                   size, start_get, handler_));
-  status_ = PARSING;
-  parse_error_ = PARSE_NO_ERROR;
+  status_ = kParsing;
+  parse_error_ = kParseNoError;
 }
 
 // Changes the put value.
@@ -145,12 +145,12 @@ unsigned int CommandBufferEngine::GetToken() {
 
 // Executes commands until get is different from the value passed in. It will
 // return immediately if the get value is already different, or if the engine
-// is not in the PARSING status, or if the buffer is empty. It will return -1
+// is not in the kParsing status, or if the buffer is empty. It will return -1
 // if there is no current buffer.
 CommandBufferOffset CommandBufferEngine::WaitGetChanges(
     CommandBufferOffset current_value) {
   if (parser_.get()) {
-    while (status_ == PARSING &&
+    while (status_ == kParsing &&
            parser_->get() == current_value &&
            !parser_->IsEmpty()) {
       ProcessOneCommand();
@@ -162,12 +162,12 @@ CommandBufferOffset CommandBufferEngine::WaitGetChanges(
 }
 
 // Signals the client when get gets different from the value passed in. If get
-// is already different, or if the engine is not in the PARSING status, that
+// is already different, or if the engine is not in the kParsing status, that
 // will happen immediately, otherwise it will happen when commands get
 // executed, moving the get pointer.
 void CommandBufferEngine::SignalGetChanges(CommandBufferOffset current_value,
                                            int rpc_message_id) {
-  if (status_ != PARSING || parser_->get() != current_value) {
+  if (status_ != kParsing || parser_->get() != current_value) {
     DoSignalChangedGet(rpc_message_id);
   } else {
     signal_change_ = true;
@@ -200,10 +200,10 @@ BufferSyncInterface::ParserStatus CommandBufferEngine::GetStatus() {
   return status_;
 }
 
-// Gets the current parse error, reset it to PARSE_NO_ERROR.
+// Gets the current parse error, reset it to kParseNoError.
 BufferSyncInterface::ParseError CommandBufferEngine::GetParseError() {
   ParseError error = parse_error_;
-  parse_error_ = PARSE_NO_ERROR;
+  parse_error_ = kParseNoError;
   return error;
 }
 
@@ -211,32 +211,32 @@ BufferSyncInterface::ParseError CommandBufferEngine::GetParseError() {
 // parsing error occurs.
 void CommandBufferEngine::FinishParsing() {
   // terminates current parsing, that is, execute all the commands
-  // NOTE: status_ == PARSING implies parser_ != NULL
-  while (status_ == PARSING && !parser_->IsEmpty()) {
+  // NOTE: status_ == kParsing implies parser_ != NULL
+  while (status_ == kParsing && !parser_->IsEmpty()) {
     ProcessOneCommand();
   }
 }
 
 // Processes one command from the command buffer. This must only be called when
-// in the PARSING status.
+// in the kParsing status.
 // This will update the status_ and the parse_error_ fields if an error occurs.
 void CommandBufferEngine::ProcessOneCommand() {
-  DCHECK_EQ(PARSING, status_);
+  DCHECK_EQ(kParsing, status_);
   DCHECK(parser_.get());
   ParseError result = parser_->ProcessCommand();
   switch (result) {
-    case PARSE_NO_ERROR:
+    case kParseNoError:
       break;
-    case PARSE_OUT_OF_BOUNDS:
-    case PARSE_INVALID_SIZE:
-      status_ = PARSE_ERROR;
+    case kParseOutOfBounds:
+    case kParseInvalidSize:
+      status_ = kParseError;
       // Always override the error, to properly signal the stopping condition.
       parse_error_ = result;
       break;
-    case PARSE_INVALID_ARGUMENTS:
-    case PARSE_UNKNOWN_COMMAND:
+    case kParseInvalidArguments:
+    case kParseUnknownCommand:
       // Only set the error if it is not set already.
-      if (parse_error_ == PARSE_NO_ERROR) {
+      if (parse_error_ == kParseNoError) {
         parse_error_ = result;
       }
       break;
@@ -255,16 +255,16 @@ void CommandBufferEngine::DoMainLoop() {
   while (DoWork()) { }
   // Clean up if needed: execute all pending commands, then close the
   // connection.
-  if (status_ != NOT_CONNECTED) CloseConnection();
+  if (status_ != kNotConnected) CloseConnection();
 }
 
 bool CommandBufferEngine::HasWork() {
-  return (status_ == PARSING && !parser_->IsEmpty()) ||
+  return (status_ == kParsing && !parser_->IsEmpty()) ||
       process_interface_->HasMessage();
 }
 
 bool CommandBufferEngine::DoWork() {
-  if (status_ == PARSING && !parser_->IsEmpty()) {
+  if (status_ == kParsing && !parser_->IsEmpty()) {
     bool running = true;
     // process as many messages as available but do not block.
     while (process_interface_->HasMessage()) {

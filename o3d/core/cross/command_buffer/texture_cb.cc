@@ -120,7 +120,7 @@ void SetTextureDataBuffer(Texture::Format format,
   }
 }
 
-// Sends the SET_TEXTURE_DATA command after formatting the args properly.
+// Sends the SetTextureData command after formatting the args properly.
 void SetTextureData(RendererCB *renderer,
                     ResourceID texture_id,
                     unsigned int x,
@@ -136,27 +136,16 @@ void SetTextureData(RendererCB *renderer,
                     unsigned char* mip_data) {
   FencedAllocatorWrapper *allocator = renderer->allocator();
   CommandBufferHelper *helper = renderer->helper();
-
-  CommandBufferEntry args[10];
-  args[0].value_uint32 = texture_id;
-  args[1].value_uint32 =
-      set_texture_data_cmd::X::MakeValue(x) |
-      set_texture_data_cmd::Y::MakeValue(y);
-  args[2].value_uint32 =
-      set_texture_data_cmd::Width::MakeValue(mip_width) |
-      set_texture_data_cmd::Height::MakeValue(mip_height);
-  args[3].value_uint32 =
-      set_texture_data_cmd::Z::MakeValue(z) |
-      set_texture_data_cmd::Depth::MakeValue(depth);
-  args[4].value_uint32 =
-      set_texture_data_cmd::Level::MakeValue(level) |
-      set_texture_data_cmd::Face::MakeValue(face);
-  args[5].value_uint32 = pitch;
-  args[6].value_uint32 = 0;  // slice_pitch
-  args[7].value_uint32 = mip_size;
-  args[8].value_uint32 = renderer->transfer_shm_id();
-  args[9].value_uint32 = allocator->GetOffset(mip_data);
-  helper->AddCommand(command_buffer::SET_TEXTURE_DATA, 10, args);
+  helper->SetTextureData(
+      texture_id,
+      x, y, z,
+      mip_width, mip_height, depth,
+      level, face,
+      pitch,
+      0,  // slice_pitch
+      mip_size,
+      renderer->transfer_shm_id(),
+      allocator->GetOffset(mip_data));
   allocator->FreePendingToken(mip_data, helper->InsertToken());
 }
 // Updates a command buffer texture resource from a bitmap, rescaling if
@@ -213,26 +202,21 @@ void CopyBackResourceToBitmap(RendererCB *renderer,
 
   size_t pitch = image::ComputeBufferSize(mip_width, 1, bitmap.format());
 
-  CommandBufferEntry args[10];
-  args[0].value_uint32 = texture_id;
-  args[1].value_uint32 =
-      get_texture_data_cmd::X::MakeValue(0) |
-      get_texture_data_cmd::Y::MakeValue(0);
-  args[2].value_uint32 =
-      get_texture_data_cmd::Width::MakeValue(mip_width) |
-      get_texture_data_cmd::Height::MakeValue(mip_height);
-  args[3].value_uint32 =
-      get_texture_data_cmd::Z::MakeValue(0) |
-      get_texture_data_cmd::Depth::MakeValue(1);
-  args[4].value_uint32 =
-      get_texture_data_cmd::Level::MakeValue(level) |
-      get_texture_data_cmd::Face::MakeValue(face);
-  args[5].value_uint32 = pitch;
-  args[6].value_uint32 = 0;  // slice_pitch
-  args[7].value_uint32 = mip_size;
-  args[8].value_uint32 = renderer->transfer_shm_id();
-  args[9].value_uint32 = allocator->GetOffset(buffer);
-  helper->AddCommand(command_buffer::GET_TEXTURE_DATA, 10, args);
+  helper->GetTextureData(
+      texture_id,
+      0,
+      0,
+      0,
+      mip_width,
+      mip_height,
+      1,
+      level,
+      face,
+      pitch,
+      0,
+      mip_size,
+      renderer->transfer_shm_id(),
+      allocator->GetOffset(buffer));
   helper->Finish();
   memcpy(bitmap.GetMipData(level), buffer, mip_size);
   allocator->Free(buffer);
@@ -272,9 +256,7 @@ Texture2DCB::Texture2DCB(ServiceLocator* service_locator,
 
 Texture2DCB::~Texture2DCB() {
   if (resource_id_ != command_buffer::kInvalidResource) {
-    CommandBufferEntry args[1];
-    args[0].value_uint32 = resource_id_;
-    renderer_->helper()->AddCommand(command_buffer::DESTROY_TEXTURE, 1, args);
+    renderer_->helper()->DestroyTexture(resource_id_);
   }
 }
 
@@ -301,16 +283,10 @@ Texture2DCB* Texture2DCB::Create(ServiceLocator* service_locator,
   }
 
   ResourceID texture_id = renderer->texture_ids().AllocateID();
-  CommandBufferEntry args[3];
-  args[0].value_uint32 = texture_id;
-  args[1].value_uint32 =
-      create_texture_2d_cmd::Width::MakeValue(width) |
-      create_texture_2d_cmd::Height::MakeValue(height);
-  args[2].value_uint32 =
-      create_texture_2d_cmd::Levels::MakeValue(levels) |
-      create_texture_2d_cmd::Format::MakeValue(cb_format) |
-      create_texture_2d_cmd::Flags::MakeValue(enable_render_surfaces);
-  renderer->helper()->AddCommand(command_buffer::CREATE_TEXTURE_2D, 3, args);
+  renderer->helper()->CreateTexture2d(
+      texture_id,
+      width, height,
+      levels, cb_format, enable_render_surfaces);
 
   Texture2DCB *texture = new Texture2DCB(service_locator, texture_id,
                                          format, levels, width, height,
@@ -496,9 +472,7 @@ TextureCUBECB::TextureCUBECB(ServiceLocator* service_locator,
 
 TextureCUBECB::~TextureCUBECB() {
   if (resource_id_ != command_buffer::kInvalidResource) {
-    CommandBufferEntry args[1];
-    args[0].value_uint32 = resource_id_;
-    renderer_->helper()->AddCommand(command_buffer::DESTROY_TEXTURE, 1, args);
+    renderer_->helper()->DestroyTexture(resource_id_);
   }
 }
 
@@ -524,14 +498,10 @@ TextureCUBECB* TextureCUBECB::Create(ServiceLocator* service_locator,
   }
 
   ResourceID texture_id = renderer->texture_ids().AllocateID();
-  CommandBufferEntry args[3];
-  args[0].value_uint32 = texture_id;
-  args[1].value_uint32 = create_texture_cube_cmd::Side::MakeValue(edge_length);
-  args[2].value_uint32 =
-      create_texture_cube_cmd::Levels::MakeValue(levels) |
-      create_texture_cube_cmd::Format::MakeValue(cb_format) |
-      create_texture_cube_cmd::Flags::MakeValue(enable_render_surfaces);
-  renderer->helper()->AddCommand(command_buffer::CREATE_TEXTURE_CUBE, 3, args);
+  renderer->helper()->CreateTextureCube(
+      texture_id,
+      edge_length,
+      levels, cb_format, enable_render_surfaces);
 
   TextureCUBECB* texture =
       new TextureCUBECB(service_locator, texture_id, format, levels,

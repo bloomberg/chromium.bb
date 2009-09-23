@@ -229,7 +229,7 @@ TEST_F(BufferSyncProxyTest, TestSignalGetChanges) {
 // message and returns the correct value.
 TEST_F(BufferSyncProxyTest, TestGetStatus) {
   RPCSendInterfaceMock::SendCallExpect expect;
-  expect._return = BufferSyncInterface::PARSING;
+  expect._return = BufferSyncInterface::kParsing;
   expect.message_id = BufferRPCImpl::GET_STATUS;
   expect.data = NULL;
   expect.size = 0;
@@ -237,14 +237,14 @@ TEST_F(BufferSyncProxyTest, TestGetStatus) {
   expect.handle_count = 0;
   server_mock()->AddSendCallExpect(expect);
 
-  EXPECT_EQ(BufferSyncInterface::PARSING, proxy()->GetStatus());
+  EXPECT_EQ(BufferSyncInterface::kParsing, proxy()->GetStatus());
 }
 
 // Tests the implementation of GetParseError, checking that it sends the correct
 // message and returns the correct value.
 TEST_F(BufferSyncProxyTest, TestGetParseError) {
   RPCSendInterfaceMock::SendCallExpect expect;
-  expect._return = BufferSyncInterface::PARSE_UNKNOWN_COMMAND;
+  expect._return = BufferSyncInterface::kParseUnknownCommand;
   expect.message_id = BufferRPCImpl::GET_PARSE_ERROR;
   expect.data = NULL;
   expect.size = 0;
@@ -252,7 +252,7 @@ TEST_F(BufferSyncProxyTest, TestGetParseError) {
   expect.handle_count = 0;
   server_mock()->AddSendCallExpect(expect);
 
-  EXPECT_EQ(BufferSyncInterface::PARSE_UNKNOWN_COMMAND,
+  EXPECT_EQ(BufferSyncInterface::kParseUnknownCommand,
             proxy()->GetParseError());
 }
 

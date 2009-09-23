@@ -217,7 +217,7 @@ static unsigned int RGBAToARGB(unsigned int rgba) {
 BufferSyncInterface::ParseError GAPID3D9::SetVertexStruct(ResourceID id) {
   current_vertex_struct_ = id;
   validate_streams_ = true;
-  return BufferSyncInterface::PARSE_NO_ERROR;
+  return BufferSyncInterface::kParseNoError;
 }
 
 // Sets in D3D the input streams of the current vertex struct.
@@ -261,22 +261,22 @@ BufferSyncInterface::ParseError GAPID3D9::Draw(
     unsigned int count) {
   if (validate_streams_ && !ValidateStreams()) {
     // TODO: add proper error management
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
   if (validate_effect_ && !ValidateEffect()) {
     // TODO: add proper error management
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
   DCHECK(current_effect_);
   if (!current_effect_->CommitParameters(this)) {
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
   if (first + count > max_vertices_) {
     // TODO: add proper error management
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
   HR(d3d_device_->DrawPrimitive(D3DPrimitive(primitive_type), first, count));
-  return BufferSyncInterface::PARSE_NO_ERROR;
+  return BufferSyncInterface::kParseNoError;
 }
 
 // Draws with the current vertex struct.
@@ -288,29 +288,29 @@ BufferSyncInterface::ParseError GAPID3D9::DrawIndexed(
     unsigned int min_index,
     unsigned int max_index) {
   IndexBufferD3D9 *index_buffer = index_buffers_.Get(index_buffer_id);
-  if (!index_buffer) return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+  if (!index_buffer) return BufferSyncInterface::kParseInvalidArguments;
   if (validate_streams_ && !ValidateStreams()) {
     // TODO: add proper error management
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
   if (validate_effect_ && !ValidateEffect()) {
     // TODO: add proper error management
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
   DCHECK(current_effect_);
   if (!current_effect_->CommitParameters(this)) {
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
   if ((min_index >= max_vertices_) || (max_index > max_vertices_)) {
     // TODO: add proper error management
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   }
 
   HR(d3d_device_->SetIndices(index_buffer->d3d_index_buffer()));
   HR(d3d_device_->DrawIndexedPrimitive(D3DPrimitive(primitive_type), 0,
                                        min_index, max_index - min_index + 1,
                                        first, count));
-  return BufferSyncInterface::PARSE_NO_ERROR;
+  return BufferSyncInterface::kParseNoError;
 }
 
 }  // namespace command_buffer

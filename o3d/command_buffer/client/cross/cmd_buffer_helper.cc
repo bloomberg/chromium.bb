@@ -43,7 +43,7 @@ CommandBufferHelper::CommandBufferHelper(BufferSyncInterface *interface)
       entry_count_(0),
       token_(0) {
   // The interface should be connected already.
-  DCHECK_NE(BufferSyncInterface::NOT_CONNECTED, interface_->GetStatus());
+  DCHECK_NE(BufferSyncInterface::kNotConnected, interface_->GetStatus());
 }
 
 bool CommandBufferHelper::Init(unsigned int entry_count) {
@@ -94,7 +94,7 @@ unsigned int CommandBufferHelper::InsertToken() {
   ++token_;
   CommandBufferEntry args;
   args.value_uint32 = token_;
-  AddCommand(SET_TOKEN, 1, &args);
+  AddCommand(command_buffer::kSetToken, 1, &args);
   if (token_ == 0) {
     // we wrapped
     Finish();
@@ -129,20 +129,20 @@ void CommandBufferHelper::WaitForGetChange() {
     // If get_ didn't change or is invalid (-1), it means an error may have
     // occured. Check that.
     BufferSyncInterface::ParserStatus status = interface_->GetStatus();
-    if (status != BufferSyncInterface::PARSING) {
+    if (status != BufferSyncInterface::kParsing) {
       switch (status) {
-        case BufferSyncInterface::NOT_CONNECTED:
+        case BufferSyncInterface::kNotConnected:
           LOG(FATAL) << "Service disconnected.";
           return;
-        case BufferSyncInterface::NO_BUFFER:
+        case BufferSyncInterface::kNoBuffer:
           LOG(FATAL) << "Service doesn't have a buffer set.";
           return;
-        case BufferSyncInterface::PARSE_ERROR: {
+        case BufferSyncInterface::kParseError: {
           BufferSyncInterface::ParseError error = interface_->GetParseError();
           LOG(WARNING) << "Parse error: " << error;
           return;
         }
-        case BufferSyncInterface::PARSING:
+        case BufferSyncInterface::kParsing:
           break;
       }
     }
@@ -179,6 +179,13 @@ void CommandBufferHelper::WaitForAvailableEntries(unsigned int count) {
   // Otherwise flush, and wait until we do have enough room.
   Flush();
   while (AvailableEntries() < count) WaitForGetChange();
+}
+
+CommandBufferEntry* CommandBufferHelper::GetSpace(uint32 entries) {
+  WaitForAvailableEntries(entries);
+  CommandBufferEntry* space = &entries_[put_];
+  put_ += entries;
+  return space;
 }
 
 }  // namespace command_buffer

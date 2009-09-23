@@ -59,41 +59,43 @@ class RendererCB::StateManager {
   // A template helper. This wraps a command sent to set a set of states. It
   // keeps all the arguments of a single command, that get modified by the
   // various handles, as well as a dirty bit.
-  template <command_buffer::CommandId command, unsigned int arg_count>
+  template <typename CommandType>
   class StateHelper {
    public:
-    static const unsigned int kArgCount = arg_count;
-
     StateHelper() : dirty_(false) {
-      for (unsigned int i = 0; i < kArgCount; ++i) {
-        args_[i].value_uint32 = 0;
-      }
+      // NOTE: This code assumes the state commands only need their
+      // header set and that the rest will be set by the state handlers.
+      memset(&command_, 0, sizeof(command_));
+      command_.SetHeader();
     }
 
     // Sends the command if it is marked as dirty.
     void Validate(command_buffer::CommandBufferHelper *helper) {
       if (!dirty_) return;
-      helper->AddCommand(command, kArgCount, args_);
+      helper->AddTypedCmdData(command_);
       dirty_ = false;
     }
 
-    command_buffer::CommandBufferEntry *args() { return args_; }
+    CommandType& command() {
+      return command_;
+    }
+
     bool *dirty_ptr() { return &dirty_; }
    private:
     bool dirty_;
-    command_buffer::CommandBufferEntry args_[kArgCount];
+    CommandType command_;
     DISALLOW_COPY_AND_ASSIGN(StateHelper);
   };
 
-  StateHelper<command_buffer::SET_POINT_LINE_RASTER, 2> point_line_helper_;
-  StateHelper<command_buffer::SET_POLYGON_OFFSET, 2> poly_offset_helper_;
-  StateHelper<command_buffer::SET_POLYGON_RASTER, 1> poly_raster_helper_;
-  StateHelper<command_buffer::SET_ALPHA_TEST, 2> alpha_test_helper_;
-  StateHelper<command_buffer::SET_DEPTH_TEST, 1> depth_test_helper_;
-  StateHelper<command_buffer::SET_STENCIL_TEST, 2> stencil_test_helper_;
-  StateHelper<command_buffer::SET_COLOR_WRITE, 1> color_write_helper_;
-  StateHelper<command_buffer::SET_BLENDING, 1> blending_helper_;
-  StateHelper<command_buffer::SET_BLENDING_COLOR, 4> blending_color_helper_;
+  StateHelper<command_buffer::cmd::SetPointLineRaster> point_line_helper_;
+  StateHelper<command_buffer::cmd::SetPolygonOffset> poly_offset_helper_;
+  StateHelper<command_buffer::cmd::SetPolygonRaster> poly_raster_helper_;
+  StateHelper<command_buffer::cmd::SetAlphaTest> alpha_test_helper_;
+  StateHelper<command_buffer::cmd::SetDepthTest> depth_test_helper_;
+  StateHelper<command_buffer::cmd::SetStencilTest> stencil_test_helper_;
+  StateHelper<command_buffer::cmd::SetColorWrite> color_write_helper_;
+  StateHelper<command_buffer::cmd::SetBlending> blending_helper_;
+  StateHelper<command_buffer::cmd::SetBlendingColor> blending_color_helper_;
   DISALLOW_COPY_AND_ASSIGN(StateManager);
 };
 

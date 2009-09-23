@@ -66,14 +66,14 @@ CommandParser::CommandParser(void *shm_address,
 // - get_ is modified *after* the command has been executed.
 BufferSyncInterface::ParseError CommandParser::ProcessCommand() {
   CommandBufferOffset get = get_;
-  if (get == put_) return BufferSyncInterface::PARSE_NO_ERROR;
+  if (get == put_) return BufferSyncInterface::kParseNoError;
 
   CommandHeader header = buffer_[get].value_header;
-  if (header.size == 0) return BufferSyncInterface::PARSE_INVALID_SIZE;
+  if (header.size == 0) return BufferSyncInterface::kParseInvalidSize;
   if (header.size + get > entry_count_)
-    return BufferSyncInterface::PARSE_OUT_OF_BOUNDS;
+    return BufferSyncInterface::kParseOutOfBounds;
   BufferSyncInterface::ParseError result = handler_->DoCommand(
-      header.command, header.size - 1, buffer_ + get + 1);
+      header.command, header.size - 1, buffer_ + get);
   get_ = (get + header.size) % entry_count_;
   return result;
 }
@@ -85,7 +85,7 @@ BufferSyncInterface::ParseError CommandParser::ProcessAllCommands() {
     BufferSyncInterface::ParseError error = ProcessCommand();
     if (error) return error;
   }
-  return BufferSyncInterface::PARSE_NO_ERROR;
+  return BufferSyncInterface::kParseNoError;
 }
 
 }  // namespace command_buffer

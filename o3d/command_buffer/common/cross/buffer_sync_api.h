@@ -49,21 +49,21 @@ typedef size_t CommandBufferOffset;
 class BufferSyncInterface {
  public:
   // Status of the command buffer service. It does not process commands
-  // (meaning: get will not change) unless in PARSING state.
+  // (meaning: get will not change) unless in kParsing state.
   enum ParserStatus {
-    NOT_CONNECTED,  // The service is not connected - initial state.
-    NO_BUFFER,      // The service is connected but no buffer was set.
-    PARSING,        // The service is connected, and parsing commands from the
+    kNotConnected,  // The service is not connected - initial state.
+    kNoBuffer,      // The service is connected but no buffer was set.
+    kParsing,       // The service is connected, and parsing commands from the
                     // buffer.
-    PARSE_ERROR,    // Parsing stopped because a parse error was found.
+    kParseError,    // Parsing stopped because a parse error was found.
   };
 
   enum ParseError {
-    PARSE_NO_ERROR,
-    PARSE_INVALID_SIZE,
-    PARSE_OUT_OF_BOUNDS,
-    PARSE_UNKNOWN_COMMAND,
-    PARSE_INVALID_ARGUMENTS,
+    kParseNoError,
+    kParseInvalidSize,
+    kParseOutOfBounds,
+    kParseUnknownCommand,
+    kParseInvalidArguments,
   };
 
   // Invalid shared memory Id, returned by RegisterSharedMemory in case of
@@ -155,8 +155,8 @@ class BufferSyncInterface {
 
   // Gets the current parse error. The current parse error is set when the
   // service is in the PARSE_ERROR status. It may also be set while in the
-  // PARSING state, if a recoverable error (like PARSE_UNKNOWN_METHOD) was
-  // encountered. Getting the error resets it to PARSE_NO_ERROR.
+  // kParsing state, if a recoverable error (like PARSE_UNKNOWN_METHOD) was
+  // encountered. Getting the error resets it to kParseNoError.
   // Returns:
   //   The current parse error.
   virtual ParseError GetParseError() = 0;

@@ -40,7 +40,7 @@
 namespace o3d {
 namespace command_buffer {
 
-// This function parses the data passed to the CREATE_EFFECT commands, which
+// This function parses the data passed to the CreateEffect commands, which
 // follows the following format:
 //   vertex_program_entry \0 fragment_program_entry \0 effect_code
 // It returns the various components.

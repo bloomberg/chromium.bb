@@ -38,7 +38,7 @@
 #ifdef __native_demo__
 #include <sys/nacl_syscalls.h>
 #else
-#include "native_client/service_runtime/nrd_xfer_lib/nrd_all_modules.h"
+#include "native_client/src/shared/imc/nacl_imc.h"
 #endif
 #include "command_buffer/common/cross/gapi_interface.h"
 #include "command_buffer/common/cross/rpc_imc.h"
@@ -50,8 +50,7 @@
 #include "command_buffer/samples/bubble/perlin_noise.h"
 #include "third_party/vectormath/files/vectormathlibrary/include/vectormath/scalar/cpp/vectormath_aos.h"  // NOLINT
 
-#include "native_client/intermodule_comm/nacl_imc.h"
-#include "native_client/tools/npapi_runtime/nacl_npapi.h"
+#include "native_client/src/shared/npruntime/nacl_npapi.h"
 
 // Cube map data is hard-coded in cubemap.cc as a byte array.
 // Format is 64x64xBRGA, D3D face ordering (+X, -X, +Y, -Y, +Z, -Z).
@@ -68,7 +67,7 @@ const unsigned int kCubeMapFaceSize = kCubeMapWidth * kCubeMapHeight * 4;
     HELPER->Finish();                                                   \
     BufferSyncInterface::ParseError error =                             \
         HELPER->interface()->GetParseError();                           \
-    if (error != BufferSyncInterface::PARSE_NO_ERROR) {                 \
+    if (error != BufferSyncInterface::kParseNoError) {                 \
       printf("CMD error %d at %s:%d\n", error, __FILE__, __LINE__);     \
     }                                                                   \
   } while (false)
@@ -114,15 +113,8 @@ void ClearCmd(CommandBufferHelper *cmd_buffer,
               const RGBA &color,
               float depth,
               unsigned int stencil) {
-  CommandBufferEntry args[7];
-  args[0].value_uint32 = buffers;
-  args[1].value_float = color.red;
-  args[2].value_float = color.green;
-  args[3].value_float = color.blue;
-  args[4].value_float = color.alpha;
-  args[5].value_float = depth;
-  args[6].value_uint32 = stencil;
-  cmd_buffer->AddCommand(command_buffer::CLEAR, 7, args);
+  cmd_buffer->Clear(buffers, color.red, color.green, color.blue, color.alpha,
+                    depth, stencil);
   CHECK_ERROR(cmd_buffer);
 }
 
@@ -138,14 +130,7 @@ void SetViewportCmd(CommandBufferHelper *cmd_buffer,
                     unsigned int height,
                     float z_near,
                     float z_far) {
-  CommandBufferEntry args[6];
-  args[0].value_uint32 = x;
-  args[1].value_uint32 = y;
-  args[2].value_uint32 = width;
-  args[3].value_uint32 = height;
-  args[4].value_float = z_near;
-  args[5].value_float = z_far;
-  cmd_buffer->AddCommand(command_buffer::SET_VIEWPORT, 6, args);
+  cmd_buffer->SetViewport(x, y, width, height, z_near, z_far);
   CHECK_ERROR(cmd_buffer);
 }
 
@@ -311,9 +296,10 @@ void MakeNoiseTexture(unsigned int width,
 
 // Gets current time in microseconds.
 uint64_t GetTimeUsec() {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return tv.tv_sec * 1000000ULL + tv.tv_usec;
+  return 0ULL;
+//  struct timeval tv;
+//  gettimeofday(&tv, NULL);
+//  return tv.tv_sec * 1000000ULL + tv.tv_usec;
 }
 
 class BubbleDemo {
@@ -483,16 +469,11 @@ void BubbleDemo::Initialize() {
   ClearCmd(helper_.get(), GAPIInterface::COLOR | GAPIInterface::DEPTH, color,
            1.f, 0);
 
-  // AddCommand copies the args, so it is safe to re-use args across various
-  // calls.
-  // 20 is the largest command we use (SET_PARAM_DATA_IMMEDIATE for matrices).
-  CommandBufferEntry args[20];
-
   // Create geometry arrays and structures
   args[0].value_uint32 = vertex_buffer_id_;
   args[1].value_uint32 = kVertexBufferSize;  // size
   args[2].value_uint32 = 0;  // flags
-  helper_->AddCommand(CREATE_VERTEX_BUFFER, 3, args);
+  helper_->AddCommand(CreateVertexBuffer, 3, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = vertex_buffer_id_;
@@ -500,13 +481,13 @@ void BubbleDemo::Initialize() {
   args[2].value_uint32 = kVertexBufferSize;  // size
   args[3].value_uint32 = shm_id_;  // shm
   args[4].value_uint32 = allocator_->GetOffset(vertices_);  // offset in shm
-  helper_->AddCommand(SET_VERTEX_BUFFER_DATA, 5, args);
+  helper_->AddCommand(SetVertexBufferData, 5, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = index_buffer_id_;
   args[1].value_uint32 = kIndexBufferSize;  // size
   args[2].value_uint32 = index_buffer::INDEX_32BIT;  // flags
-  helper_->AddCommand(CREATE_INDEX_BUFFER, 3, args);
+  helper_->AddCommand(CreateIndexBuffer, 3, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = index_buffer_id_;
@@ -514,12 +495,12 @@ void BubbleDemo::Initialize() {
   args[2].value_uint32 = kIndexBufferSize;  // size
   args[3].value_uint32 = shm_id_;  // shm
   args[4].value_uint32 = allocator_->GetOffset(indices_);  // offset in shm
-  helper_->AddCommand(SET_INDEX_BUFFER_DATA, 5, args);
+  helper_->AddCommand(SetIndexBufferData, 5, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = vertex_struct_id_;
   args[1].value_uint32 = 3;  // input count
-  helper_->AddCommand(CREATE_VERTEX_STRUCT, 2, args);
+  helper_->AddCommand(CreateVertexStruct, 2, args);
   CHECK_ERROR(helper_);
 
   // Set POSITION input stream
@@ -532,7 +513,7 @@ void BubbleDemo::Initialize() {
       set_vertex_input_cmd::Type::MakeValue(vertex_struct::FLOAT3) |
       set_vertex_input_cmd::Semantic::MakeValue(vertex_struct::POSITION) |
       set_vertex_input_cmd::SemanticIndex::MakeValue(0);
-  helper_->AddCommand(SET_VERTEX_INPUT, 5, args);
+  helper_->AddCommand(SetVertexInput, 5, args);
   CHECK_ERROR(helper_);
 
   // Set NORMAL input stream
@@ -543,7 +524,7 @@ void BubbleDemo::Initialize() {
       set_vertex_input_cmd::Type::MakeValue(vertex_struct::FLOAT3) |
       set_vertex_input_cmd::Semantic::MakeValue(vertex_struct::NORMAL) |
       set_vertex_input_cmd::SemanticIndex::MakeValue(0);
-  helper_->AddCommand(SET_VERTEX_INPUT, 5, args);
+  helper_->AddCommand(SetVertexInput, 5, args);
   CHECK_ERROR(helper_);
 
   // Set TEXCOORD0 input stream
@@ -554,7 +535,7 @@ void BubbleDemo::Initialize() {
       set_vertex_input_cmd::Type::MakeValue(vertex_struct::FLOAT2) |
       set_vertex_input_cmd::Semantic::MakeValue(vertex_struct::TEX_COORD) |
       set_vertex_input_cmd::SemanticIndex::MakeValue(0);
-  helper_->AddCommand(SET_VERTEX_INPUT, 5, args);
+  helper_->AddCommand(SetVertexInput, 5, args);
   CHECK_ERROR(helper_);
 
   // Create a 2D texture.
@@ -566,7 +547,7 @@ void BubbleDemo::Initialize() {
       create_texture_2d_cmd::Levels::MakeValue(0) |
       create_texture_2d_cmd::Format::MakeValue(texture::ARGB8) |
       create_texture_2d_cmd::Flags::MakeValue(0);
-  helper_->AddCommand(CREATE_TEXTURE_2D, 3, args);
+  helper_->AddCommand(CreateTexture2d, 3, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = noise_texture_id_;
@@ -585,16 +566,16 @@ void BubbleDemo::Initialize() {
   args[7].value_uint32 = kTexSize;  // size
   args[8].value_uint32 = shm_id_;
   args[9].value_uint32 = allocator_->GetOffset(noise_texture_);
-  helper_->AddCommand(SET_TEXTURE_DATA, 10, args);
+  helper_->AddCommand(SetTextureData, 10, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = noise_sampler_id_;
-  helper_->AddCommand(CREATE_SAMPLER, 1, args);
+  helper_->AddCommand(CreateSampler, 1, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = noise_sampler_id_;
   args[1].value_uint32 = noise_texture_id_;
-  helper_->AddCommand(SET_SAMPLER_TEXTURE, 2, args);
+  helper_->AddCommand(SetSamplerTexture, 2, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = noise_sampler_id_;
@@ -606,7 +587,7 @@ void BubbleDemo::Initialize() {
       set_sampler_states::MinFilter::MakeValue(sampler::LINEAR) |
       set_sampler_states::MipFilter::MakeValue(sampler::NONE) |
       set_sampler_states::MaxAnisotropy::MakeValue(1);
-  helper_->AddCommand(SET_SAMPLER_STATES, 2, args);
+  helper_->AddCommand(SetSamplerStates, 2, args);
   CHECK_ERROR(helper_);
 
   // Create a 2D texture.
@@ -618,7 +599,7 @@ void BubbleDemo::Initialize() {
       create_texture_2d_cmd::Levels::MakeValue(0) |
       create_texture_2d_cmd::Format::MakeValue(texture::ARGB8) |
       create_texture_2d_cmd::Flags::MakeValue(0);
-  helper_->AddCommand(CREATE_TEXTURE_2D, 3, args);
+  helper_->AddCommand(CreateTexture2d, 3, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = iridescence_texture_id_;
@@ -637,16 +618,16 @@ void BubbleDemo::Initialize() {
   args[7].value_uint32 = kTexSize;  // size
   args[8].value_uint32 = shm_id_;
   args[9].value_uint32 = allocator_->GetOffset(iridescence_texture_);
-  helper_->AddCommand(SET_TEXTURE_DATA, 10, args);
+  helper_->AddCommand(SetTextureData, 10, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = iridescence_sampler_id_;
-  helper_->AddCommand(CREATE_SAMPLER, 1, args);
+  helper_->AddCommand(CreateSampler, 1, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = iridescence_sampler_id_;
   args[1].value_uint32 = iridescence_texture_id_;
-  helper_->AddCommand(SET_SAMPLER_TEXTURE, 2, args);
+  helper_->AddCommand(SetSamplerTexture, 2, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = iridescence_sampler_id_;
@@ -658,7 +639,7 @@ void BubbleDemo::Initialize() {
       set_sampler_states::MinFilter::MakeValue(sampler::LINEAR) |
       set_sampler_states::MipFilter::MakeValue(sampler::NONE) |
       set_sampler_states::MaxAnisotropy::MakeValue(1);
-  helper_->AddCommand(SET_SAMPLER_STATES, 2, args);
+  helper_->AddCommand(SetSamplerStates, 2, args);
   CHECK_ERROR(helper_);
 
   // Create a Cubemap texture.
@@ -669,7 +650,7 @@ void BubbleDemo::Initialize() {
       create_texture_cube_cmd::Levels::MakeValue(0) |
       create_texture_cube_cmd::Format::MakeValue(texture::ARGB8) |
       create_texture_cube_cmd::Flags::MakeValue(0);
-  helper_->AddCommand(CREATE_TEXTURE_CUBE, 3, args);
+  helper_->AddCommand(CreateTextureCube, 3, args);
   CHECK_ERROR(helper_);
 
   for (unsigned int face = 0; face < 6; ++face) {
@@ -693,18 +674,18 @@ void BubbleDemo::Initialize() {
     args[7].value_uint32 = kCubeMapFaceSize;  // size
     args[8].value_uint32 = shm_id_;
     args[9].value_uint32 = allocator_->GetOffset(data);
-    helper_->AddCommand(SET_TEXTURE_DATA, 10, args);
+    helper_->AddCommand(SetTextureData, 10, args);
     CHECK_ERROR(helper_);
     allocator_->FreePendingToken(data, helper_->InsertToken());
   }
 
   args[0].value_uint32 = cubemap_sampler_id_;
-  helper_->AddCommand(CREATE_SAMPLER, 1, args);
+  helper_->AddCommand(CreateSampler, 1, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = cubemap_sampler_id_;
   args[1].value_uint32 = cubemap_id_;
-  helper_->AddCommand(SET_SAMPLER_TEXTURE, 2, args);
+  helper_->AddCommand(SetSamplerTexture, 2, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = cubemap_sampler_id_;
@@ -716,7 +697,7 @@ void BubbleDemo::Initialize() {
       set_sampler_states::MinFilter::MakeValue(sampler::LINEAR) |
       set_sampler_states::MipFilter::MakeValue(sampler::NONE) |
       set_sampler_states::MaxAnisotropy::MakeValue(1);
-  helper_->AddCommand(SET_SAMPLER_STATES, 2, args);
+  helper_->AddCommand(SetSamplerStates, 2, args);
   CHECK_ERROR(helper_);
 
   // Create the effect, and parameters.
@@ -726,7 +707,7 @@ void BubbleDemo::Initialize() {
   args[1].value_uint32 = sizeof(effect_data);  // size
   args[2].value_uint32 = shm_id_;  // shm
   args[3].value_uint32 = allocator_->GetOffset(data);  // offset in shm
-  helper_->AddCommand(CREATE_EFFECT, 4, args);
+  helper_->AddCommand(CreateEffect, 4, args);
   CHECK_ERROR(helper_);
   allocator_->FreePendingToken(data, helper_->InsertToken());
 
@@ -737,7 +718,7 @@ void BubbleDemo::Initialize() {
     args[2].value_uint32 = sizeof(param_name);
     unsigned int arg_count = CopyToArgs(args + 3, param_name,
                                         sizeof(param_name));
-    helper_->AddCommand(CREATE_PARAM_BY_NAME_IMMEDIATE, 3 + arg_count, args);
+    helper_->AddCommand(CreateParamByNameImmediate, 3 + arg_count, args);
     CHECK_ERROR(helper_);
   }
 
@@ -748,7 +729,7 @@ void BubbleDemo::Initialize() {
     args[2].value_uint32 = sizeof(param_name);
     unsigned int arg_count = CopyToArgs(args + 3, param_name,
                                         sizeof(param_name));
-    helper_->AddCommand(CREATE_PARAM_BY_NAME_IMMEDIATE, 3 + arg_count, args);
+    helper_->AddCommand(CreateParamByNameImmediate, 3 + arg_count, args);
     CHECK_ERROR(helper_);
   }
 
@@ -759,7 +740,7 @@ void BubbleDemo::Initialize() {
     args[2].value_uint32 = sizeof(param_name);
     unsigned int arg_count = CopyToArgs(args + 3, param_name,
                                         sizeof(param_name));
-    helper_->AddCommand(CREATE_PARAM_BY_NAME_IMMEDIATE, 3 + arg_count, args);
+    helper_->AddCommand(CreateParamByNameImmediate, 3 + arg_count, args);
     CHECK_ERROR(helper_);
   }
 
@@ -770,7 +751,7 @@ void BubbleDemo::Initialize() {
     args[2].value_uint32 = sizeof(param_name);
     unsigned int arg_count = CopyToArgs(args + 3, param_name,
                                         sizeof(param_name));
-    helper_->AddCommand(CREATE_PARAM_BY_NAME_IMMEDIATE, 3 + arg_count, args);
+    helper_->AddCommand(CreateParamByNameImmediate, 3 + arg_count, args);
     CHECK_ERROR(helper_);
   }
 
@@ -781,7 +762,7 @@ void BubbleDemo::Initialize() {
     args[2].value_uint32 = sizeof(param_name);
     unsigned int arg_count = CopyToArgs(args + 3, param_name,
                                         sizeof(param_name));
-    helper_->AddCommand(CREATE_PARAM_BY_NAME_IMMEDIATE, 3 + arg_count, args);
+    helper_->AddCommand(CreateParamByNameImmediate, 3 + arg_count, args);
     CHECK_ERROR(helper_);
   }
 
@@ -792,7 +773,7 @@ void BubbleDemo::Initialize() {
     args[2].value_uint32 = sizeof(param_name);
     unsigned int arg_count = CopyToArgs(args + 3, param_name,
                                         sizeof(param_name));
-    helper_->AddCommand(CREATE_PARAM_BY_NAME_IMMEDIATE, 3 + arg_count, args);
+    helper_->AddCommand(CreateParamByNameImmediate, 3 + arg_count, args);
     CHECK_ERROR(helper_);
   }
 
@@ -803,7 +784,7 @@ void BubbleDemo::Initialize() {
     args[2].value_uint32 = sizeof(param_name);
     unsigned int arg_count = CopyToArgs(args + 3, param_name,
                                         sizeof(param_name));
-    helper_->AddCommand(CREATE_PARAM_BY_NAME_IMMEDIATE, 3 + arg_count, args);
+    helper_->AddCommand(CreateParamByNameImmediate, 3 + arg_count, args);
     CHECK_ERROR(helper_);
   }
 
@@ -814,7 +795,7 @@ void BubbleDemo::Initialize() {
     args[2].value_uint32 = sizeof(param_name);
     unsigned int arg_count = CopyToArgs(args + 3, param_name,
                                         sizeof(param_name));
-    helper_->AddCommand(CREATE_PARAM_BY_NAME_IMMEDIATE, 3 + arg_count, args);
+    helper_->AddCommand(CreateParamByNameImmediate, 3 + arg_count, args);
     CHECK_ERROR(helper_);
   }
 
@@ -822,19 +803,19 @@ void BubbleDemo::Initialize() {
   args[0].value_uint32 = noise_sampler_param_id_;
   args[1].value_uint32 = sizeof(Uint32);  // NOLINT
   args[2].value_uint32 = noise_sampler_id_;
-  helper_->AddCommand(SET_PARAM_DATA_IMMEDIATE, 3, args);
+  helper_->AddCommand(SetParamDataImmediate, 3, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = iridescence_sampler_param_id_;
   args[1].value_uint32 = sizeof(Uint32);  // NOLINT
   args[2].value_uint32 = iridescence_sampler_id_;
-  helper_->AddCommand(SET_PARAM_DATA_IMMEDIATE, 3, args);
+  helper_->AddCommand(SetParamDataImmediate, 3, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = cubemap_sampler_param_id_;
   args[1].value_uint32 = sizeof(Uint32);  // NOLINT
   args[2].value_uint32 = cubemap_sampler_id_;
-  helper_->AddCommand(SET_PARAM_DATA_IMMEDIATE, 3, args);
+  helper_->AddCommand(SetParamDataImmediate, 3, args);
   CHECK_ERROR(helper_);
 
   // Create our random bubbles.
@@ -900,35 +881,35 @@ void BubbleDemo::DrawBubble(const math::Matrix4& view,
 
   // AddCommand copies the args, so it is safe to re-use args across various
   // calls.
-  // 20 is the largest command we use (SET_PARAM_DATA_IMMEDIATE for matrices).
+  // 20 is the largest command we use (SetParamDataImmediate for matrices).
   CommandBufferEntry args[20];
 
   args[0].value_uint32 = vertex_struct_id_;
-  helper_->AddCommand(SET_VERTEX_STRUCT, 1, args);
+  helper_->AddCommand(SetVertexStruct, 1, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = mvp_param_id_;
   args[1].value_uint32 = sizeof(mvp);
   unsigned int arg_count = CopyToArgs(args + 2, &mvp, sizeof(mvp));
-  helper_->AddCommand(SET_PARAM_DATA_IMMEDIATE, 2 + arg_count, args);
+  helper_->AddCommand(SetParamDataImmediate, 2 + arg_count, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = world_param_id_;
   args[1].value_uint32 = sizeof(model);
   arg_count = CopyToArgs(args + 2, &model, sizeof(model));
-  helper_->AddCommand(SET_PARAM_DATA_IMMEDIATE, 2 + arg_count, args);
+  helper_->AddCommand(SetParamDataImmediate, 2 + arg_count, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = worldIT_param_id_;
   args[1].value_uint32 = sizeof(modelIT);
   arg_count = CopyToArgs(args + 2, &modelIT, sizeof(modelIT));
-  helper_->AddCommand(SET_PARAM_DATA_IMMEDIATE, 2 + arg_count, args);
+  helper_->AddCommand(SetParamDataImmediate, 2 + arg_count, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = eye_param_id_;
   args[1].value_uint32 = sizeof(eye);
   arg_count = CopyToArgs(args + 2, &eye, sizeof(eye));
-  helper_->AddCommand(SET_PARAM_DATA_IMMEDIATE, 2 + arg_count, args);
+  helper_->AddCommand(SetParamDataImmediate, 2 + arg_count, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 =
@@ -938,11 +919,11 @@ void BubbleDemo::DrawBubble(const math::Matrix4& view,
       set_blending::ColorEq::MakeValue(GAPIInterface::BLEND_EQ_ADD) |
       set_blending::SeparateAlpha::MakeValue(0) |
       set_blending::Enable::MakeValue(1);
-  helper_->AddCommand(SET_BLENDING, 1, args);
+  helper_->AddCommand(SetBlending, 1, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = effect_id_;
-  helper_->AddCommand(SET_EFFECT, 1, args);
+  helper_->AddCommand(SetEffect, 1, args);
   CHECK_ERROR(helper_);
 
   // Draw back faces first.
@@ -950,7 +931,7 @@ void BubbleDemo::DrawBubble(const math::Matrix4& view,
       set_polygon_raster::FillMode::MakeValue(
           GAPIInterface::POLYGON_MODE_FILL) |
       set_polygon_raster::CullMode::MakeValue(GAPIInterface::CULL_CCW);
-  helper_->AddCommand(SET_POLYGON_RASTER, 1, args);
+  helper_->AddCommand(SetPolygonRaster, 1, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = thickness_param_id_;
@@ -959,7 +940,7 @@ void BubbleDemo::DrawBubble(const math::Matrix4& view,
   args[3].value_float = bubble.base_thickness;
   args[4].value_float = bubble.noise_ratio;
   args[5].value_float = .5f;  // back face attenuation
-  helper_->AddCommand(SET_PARAM_DATA_IMMEDIATE, 6, args);
+  helper_->AddCommand(SetParamDataImmediate, 6, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = GAPIInterface::TRIANGLES;
@@ -968,7 +949,7 @@ void BubbleDemo::DrawBubble(const math::Matrix4& view,
   args[3].value_uint32 = kIndexCount/3;  // primitive count
   args[4].value_uint32 = 0;  // min index
   args[5].value_uint32 = kVertexCount-1;  // max index
-  helper_->AddCommand(DRAW_INDEXED, 6, args);
+  helper_->AddCommand(DrawIndexed, 6, args);
   CHECK_ERROR(helper_);
 
   // Then front faces.
@@ -976,7 +957,7 @@ void BubbleDemo::DrawBubble(const math::Matrix4& view,
       set_polygon_raster::FillMode::MakeValue(
           GAPIInterface::POLYGON_MODE_FILL) |
       set_polygon_raster::CullMode::MakeValue(GAPIInterface::CULL_CW);
-  helper_->AddCommand(SET_POLYGON_RASTER, 1, args);
+  helper_->AddCommand(SetPolygonRaster, 1, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = thickness_param_id_;
@@ -985,7 +966,7 @@ void BubbleDemo::DrawBubble(const math::Matrix4& view,
   args[3].value_float = bubble.base_thickness;
   args[4].value_float = bubble.noise_ratio;
   args[5].value_float = 1.f;
-  helper_->AddCommand(SET_PARAM_DATA_IMMEDIATE, 6, args);
+  helper_->AddCommand(SetParamDataImmediate, 6, args);
   CHECK_ERROR(helper_);
 
   args[0].value_uint32 = GAPIInterface::TRIANGLES;
@@ -994,7 +975,7 @@ void BubbleDemo::DrawBubble(const math::Matrix4& view,
   args[3].value_uint32 = kIndexCount/3;  // primitive count
   args[4].value_uint32 = 0;  // min index
   args[5].value_uint32 = kVertexCount-1;  // max index
-  helper_->AddCommand(DRAW_INDEXED, 6, args);
+  helper_->AddCommand(DrawIndexed, 6, args);
   CHECK_ERROR(helper_);
 }
 
@@ -1012,7 +993,7 @@ void BubbleDemo::Render() {
       math::CreatePerspectiveMatrix(kPi / 4.f, 1.f, .1f, 10000.f);
   math::Matrix4 view = math::Matrix4::lookAt(eye, target, up);
 
-  helper_->AddCommand(BEGIN_FRAME, 0 , NULL);
+  helper_->AddCommand(BeginFrame, 0 , NULL);
   CHECK_ERROR(helper_);
   RGBA color = {0.2f, 0.2f, 0.2f, 1.f};
   ClearCmd(helper_.get(), GAPIInterface::COLOR | GAPIInterface::DEPTH, color,
@@ -1026,7 +1007,7 @@ void BubbleDemo::Render() {
     DrawBubble(view, proj, bubble, time_ * 2.f * kPi * bubble.rotation_speed);
   }
 
-  helper_->AddCommand(END_FRAME, 0 , NULL);
+  helper_->AddCommand(EndFrame, 0 , NULL);
   CHECK_ERROR(helper_);
   helper_->Flush();
 }
@@ -1034,6 +1015,7 @@ void BubbleDemo::Render() {
 }  // namespace command_buffer
 }  // namespace o3d
 
+#if 0
 // Scriptable object for the plug-in, provides the glue with the browser.
 // Creates a BubbleDemo object and delegates calls to it.
 class Plugin : public NPObject {
@@ -1264,3 +1246,60 @@ int main(int argc, char **argv) {
   NaClNP_MainLoop(0);
   return 0;
 }
+#endif
+
+nacl::HtpHandle InitConnection(int argc, char **argv) {
+  nacl::Handle handle = nacl::kInvalidHandle;
+#ifndef __native_client__
+  NaClNrdAllModulesInit();
+
+  static nacl::SocketAddress g_address = { "command-buffer" };
+  static nacl::SocketAddress g_local_address = { "cb-client" };
+
+  nacl::Handle sockets[2];
+  nacl::SocketPair(sockets);
+
+  nacl::MessageHeader msg;
+  msg.iov = NULL;
+  msg.iov_length = 0;
+  msg.handles = &sockets[1];
+  msg.handle_count = 1;
+  nacl::Handle local_socket = nacl::BoundSocket(&g_local_address);
+  nacl::SendDatagramTo(local_socket, &msg, 0, &g_address);
+  nacl::Close(local_socket);
+  nacl::Close(sockets[1]);
+  handle = sockets[0];
+#else
+  if (argc < 3 || strcmp(argv[1], "-fd") != 0) {
+    fprintf(stderr, "Usage: %s -fd file_descriptor\n", argv[0]);
+    return nacl::kInvalidHtpHandle;
+  }
+  int fd = atoi(argv[2]);
+  handle = imc_connect(fd);
+  if (handle < 0) {
+    fprintf(stderr, "Could not connect to file descriptor %d.\n"
+            "Did you use the -a and -X options to sel_ldr ?\n", fd);
+    return nacl::kInvalidHtpHandle;
+  }
+#endif
+  return nacl::CreateImcDesc(handle);
+}
+
+void CloseConnection(nacl::HtpHandle handle) {
+  nacl::Close(handle);
+#ifndef __native_client__
+  NaClNrdAllModulesFini();
+#endif
+}
+
+int main(int argc, char **argv) {
+  nacl::HtpHandle htp_handle = InitConnection(argc, argv);
+  if (htp_handle == nacl::kInvalidHtpHandle) {
+    return 1;
+  }
+
+  o3d::command_buffer::BubbleDemo(htp_handle);
+  CloseConnection(htp_handle);
+  return 0;
+}
+

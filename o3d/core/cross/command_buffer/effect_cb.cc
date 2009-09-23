@@ -92,19 +92,17 @@ bool EffectCB::LoadFromFXString(const String& source) {
   ResourceID resource_id = renderer_->effect_ids().AllocateID();
 
   CommandBufferHelper *helper = renderer_->helper();
-  CommandBufferEntry args[4];
-  args[0].value_uint32 = resource_id;
-  args[1].value_uint32 = source_size;
-  args[2].value_uint32 = renderer_->transfer_shm_id();
-  args[3].value_uint32 = renderer_->allocator()->GetOffset(buffer_data);
-  helper->AddCommand(command_buffer::CREATE_EFFECT, 4, args);
+  helper->CreateEffect(
+      resource_id, source_size,
+      renderer_->transfer_shm_id(),
+      renderer_->allocator()->GetOffset(buffer_data));
   renderer_->allocator()->FreePendingToken(buffer_data, helper->InsertToken());
 
   // NOTE: we're calling Finish to check the command result, to see if
   // the effect has succesfully compiled.
   helper->Finish();
   if (renderer_->sync_interface()->GetParseError() !=
-      BufferSyncInterface::PARSE_NO_ERROR) {
+      BufferSyncInterface::kParseNoError) {
     O3D_ERROR(service_locator()) << "Effect failed to compile.";
     renderer_->effect_ids().FreeID(resource_id);
     return false;
@@ -140,9 +138,7 @@ void EffectCB::Destroy() {
   ++generation_;
   if (resource_id_ != command_buffer::kInvalidResource) {
     CommandBufferHelper *helper = renderer_->helper();
-    CommandBufferEntry args[1];
-    args[0].value_uint32 = resource_id_;
-    helper->AddCommand(command_buffer::DESTROY_EFFECT, 1, args);
+    helper->DestroyEffect(resource_id_);
     renderer_->effect_ids().FreeID(resource_id_);
     resource_id_ = command_buffer::kInvalidResource;
   }

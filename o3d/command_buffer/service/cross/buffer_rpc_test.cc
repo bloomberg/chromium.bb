@@ -151,8 +151,8 @@ TEST_F(BufferRPCImplTest, TestSignalGetChanges) {
 // is properly forwarded.
 TEST_F(BufferRPCImplTest, TestGetStatus) {
   EXPECT_CALL(buffer_sync_mock(), GetStatus())
-      .WillOnce(Return(BufferSyncInterface::PARSE_ERROR));
-  EXPECT_EQ(BufferSyncInterface::PARSE_ERROR,
+      .WillOnce(Return(BufferSyncInterface::kParseError));
+  EXPECT_EQ(BufferSyncInterface::kParseError,
             buffer_rpc_impl()->DoCall(BufferRPCImpl::GET_STATUS, NULL, 0, NULL,
                                       0));
 }
@@ -161,8 +161,8 @@ TEST_F(BufferRPCImplTest, TestGetStatus) {
 // is properly forwarded.
 TEST_F(BufferRPCImplTest, TestGetParseError) {
   EXPECT_CALL(buffer_sync_mock(), GetParseError())
-      .WillOnce(Return(BufferSyncInterface::PARSE_OUT_OF_BOUNDS));
-  EXPECT_EQ(BufferSyncInterface::PARSE_OUT_OF_BOUNDS,
+      .WillOnce(Return(BufferSyncInterface::kParseOutOfBounds));
+  EXPECT_EQ(BufferSyncInterface::kParseOutOfBounds,
             buffer_rpc_impl()->DoCall(BufferRPCImpl::GET_PARSE_ERROR, NULL, 0,
                                       NULL, 0));
 }

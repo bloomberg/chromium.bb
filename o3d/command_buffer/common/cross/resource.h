@@ -46,6 +46,7 @@ namespace o3d {
 namespace command_buffer {
 
 // A resource ID, key to the resource maps.
+// TODO(gman): Shouldn't this be a uint32?
 typedef unsigned int ResourceID;
 // Invalid resource ID.
 static const ResourceID kInvalidResource = 0xffffffffU;

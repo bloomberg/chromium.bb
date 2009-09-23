@@ -178,7 +178,7 @@ BufferSyncInterface::ParseError GAPIGL::CreateSampler(
   // Dirty effect, because this sampler id may be used.
   DirtyEffect();
   samplers_.Assign(id, new SamplerGL());
-  return BufferSyncInterface::PARSE_NO_ERROR;
+  return BufferSyncInterface::kParseNoError;
 }
 
 // Destroys the Sampler resource.
@@ -186,8 +186,8 @@ BufferSyncInterface::ParseError GAPIGL::DestroySampler(ResourceID id) {
   // Dirty effect, because this sampler id may be used.
   DirtyEffect();
   return samplers_.Destroy(id) ?
-      BufferSyncInterface::PARSE_NO_ERROR :
-      BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+      BufferSyncInterface::kParseNoError :
+      BufferSyncInterface::kParseInvalidArguments;
 }
 
 BufferSyncInterface::ParseError GAPIGL::SetSamplerStates(
@@ -201,12 +201,12 @@ BufferSyncInterface::ParseError GAPIGL::SetSamplerStates(
     unsigned int max_anisotropy) {
   SamplerGL *sampler = samplers_.Get(id);
   if (!sampler)
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   // Dirty effect, because this sampler id may be used.
   DirtyEffect();
   sampler->SetStates(addressing_u, addressing_v, addressing_w,
                      mag_filter, min_filter, mip_filter, max_anisotropy);
-  return BufferSyncInterface::PARSE_NO_ERROR;
+  return BufferSyncInterface::kParseNoError;
 }
 
 BufferSyncInterface::ParseError GAPIGL::SetSamplerBorderColor(
@@ -214,11 +214,11 @@ BufferSyncInterface::ParseError GAPIGL::SetSamplerBorderColor(
     const RGBA &color) {
   SamplerGL *sampler = samplers_.Get(id);
   if (!sampler)
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   // Dirty effect, because this sampler id may be used.
   DirtyEffect();
   sampler->SetBorderColor(color);
-  return BufferSyncInterface::PARSE_NO_ERROR;
+  return BufferSyncInterface::kParseNoError;
 }
 
 BufferSyncInterface::ParseError GAPIGL::SetSamplerTexture(
@@ -226,11 +226,11 @@ BufferSyncInterface::ParseError GAPIGL::SetSamplerTexture(
     ResourceID texture_id) {
   SamplerGL *sampler = samplers_.Get(id);
   if (!sampler)
-    return BufferSyncInterface::PARSE_INVALID_ARGUMENTS;
+    return BufferSyncInterface::kParseInvalidArguments;
   // Dirty effect, because this sampler id may be used.
   DirtyEffect();
   sampler->SetTexture(texture_id);
-  return BufferSyncInterface::PARSE_NO_ERROR;
+  return BufferSyncInterface::kParseNoError;
 }
 
 

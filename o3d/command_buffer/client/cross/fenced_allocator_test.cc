@@ -50,8 +50,8 @@ using testing::_;
 
 // Test fixture for FencedAllocator test - Creates a FencedAllocator, using a
 // CommandBufferHelper with a mock AsyncAPIInterface for its interface (calling
-// it directly, not through the RPC mechanism), making sure NOOPs are ignored
-// and SET_TOKEN are properly forwarded to the engine.
+// it directly, not through the RPC mechanism), making sure Noops are ignored
+// and SetToken are properly forwarded to the engine.
 class FencedAllocatorTest : public testing::Test {
  public:
   static const unsigned int kBufferSize = 1024;
@@ -61,12 +61,12 @@ class FencedAllocatorTest : public testing::Test {
     api_mock_.reset(new AsyncAPIMock);
     // ignore noops in the mock - we don't want to inspect the internals of the
     // helper.
-    EXPECT_CALL(*api_mock_, DoCommand(NOOP, 0, _))
-        .WillRepeatedly(Return(BufferSyncInterface::PARSE_NO_ERROR));
+    EXPECT_CALL(*api_mock_, DoCommand(kNoop, 0, _))
+        .WillRepeatedly(Return(BufferSyncInterface::kParseNoError));
     // Forward the SetToken calls to the engine
-    EXPECT_CALL(*api_mock(), DoCommand(SET_TOKEN, 1, _))
+    EXPECT_CALL(*api_mock(), DoCommand(kSetToken, 1, _))
         .WillRepeatedly(DoAll(Invoke(api_mock(), &AsyncAPIMock::SetToken),
-                              Return(BufferSyncInterface::PARSE_NO_ERROR)));
+                              Return(BufferSyncInterface::kParseNoError)));
     engine_.reset(new CommandBufferEngine(api_mock_.get()));
     api_mock_->set_engine(engine_.get());
 
@@ -312,7 +312,7 @@ TEST_F(FencedAllocatorTest, TestGetLargestFreeOrPendingSize) {
 // Test fixture for FencedAllocatorWrapper test - Creates a
 // FencedAllocatorWrapper, using a CommandBufferHelper with a mock
 // AsyncAPIInterface for its interface (calling it directly, not through the
-// RPC mechanism), making sure NOOPs are ignored and SET_TOKEN are properly
+// RPC mechanism), making sure Noops are ignored and SetToken are properly
 // forwarded to the engine.
 class FencedAllocatorWrapperTest : public testing::Test {
  public:
@@ -323,12 +323,12 @@ class FencedAllocatorWrapperTest : public testing::Test {
     api_mock_.reset(new AsyncAPIMock);
     // ignore noops in the mock - we don't want to inspect the internals of the
     // helper.
-    EXPECT_CALL(*api_mock_, DoCommand(NOOP, 0, _))
-        .WillRepeatedly(Return(BufferSyncInterface::PARSE_NO_ERROR));
+    EXPECT_CALL(*api_mock_, DoCommand(kNoop, 0, _))
+        .WillRepeatedly(Return(BufferSyncInterface::kParseNoError));
     // Forward the SetToken calls to the engine
-    EXPECT_CALL(*api_mock(), DoCommand(SET_TOKEN, 1, _))
+    EXPECT_CALL(*api_mock(), DoCommand(kSetToken, 1, _))
         .WillRepeatedly(DoAll(Invoke(api_mock(), &AsyncAPIMock::SetToken),
-                              Return(BufferSyncInterface::PARSE_NO_ERROR)));
+                              Return(BufferSyncInterface::kParseNoError)));
     engine_.reset(new CommandBufferEngine(api_mock_.get()));
     api_mock_->set_engine(engine_.get());
 

@@ -47,30 +47,6 @@ namespace command_buffer {
 
 namespace math = Vectormath::Aos;
 
-// Adds a Clear command into the command buffer.
-// Parameters:
-//   cmd_buffer: the command buffer helper.
-//   buffers: a bitfield of which buffers to clear (a combination of
-//     GAPIInterface::COLOR, GAPIInterface::DEPTH and GAPIInterface::STENCIL).
-//   color: the color buffer clear value.
-//   depth: the depth buffer clear value.
-//   stencil: the stencil buffer clear value.
-void ClearCmd(CommandBufferHelper *cmd_buffer,
-              const unsigned int buffers,
-              const RGBA &color,
-              float depth,
-              unsigned int stencil) {
-  CommandBufferEntry args[7];
-  args[0].value_uint32 = buffers;
-  args[1].value_float = color.red;
-  args[2].value_float = color.green;
-  args[3].value_float = color.blue;
-  args[4].value_float = color.alpha;
-  args[5].value_float = depth;
-  args[6].value_uint32 = stencil;
-  cmd_buffer->AddCommand(command_buffer::CLEAR, 7, args);
-}
-
 // Adds a SetViewport command into the buffer.
 // Parameters:
 //   cmd_buffer: the command buffer helper.
@@ -83,14 +59,7 @@ void SetViewportCmd(CommandBufferHelper *cmd_buffer,
                     unsigned int height,
                     float z_near,
                     float z_far) {
-  CommandBufferEntry args[6];
-  args[0].value_uint32 = x;
-  args[1].value_uint32 = y;
-  args[2].value_uint32 = width;
-  args[3].value_uint32 = height;
-  args[4].value_float = z_near;
-  args[5].value_float = z_far;
-  cmd_buffer->AddCommand(command_buffer::SET_VIEWPORT, 6, args);
+  cmd_buffer->SetViewport(x, y, width, height, z_near, z_far);
 }
 
 // Copy a data buffer to args, for IMMEDIATE commands. Returns the number of
@@ -143,88 +112,51 @@ void BigTestClient(nacl::HtpHandle handle) {
 
     // Clear the buffers.
     RGBA color = {0.2f, 0.2f, 0.2f, 1.f};
-    ClearCmd(&cmd_buffer, GAPIInterface::COLOR | GAPIInterface::DEPTH, color,
-             1.f, 0);
+    cmd_buffer.Clear(GAPIInterface::COLOR | GAPIInterface::DEPTH,
+                     color.red, color.green, color.blue, color.alpha,
+                     1.f, 0);
 
     const ResourceID vertex_buffer_id = 1;
     const ResourceID vertex_struct_id = 1;
 
-    // AddCommand copies the args, so it is safe to re-use args across various
-    // calls.
-    // 20 is the largest command we use (SET_PARAM_DATA_IMMEDIATE for matrices).
-    CommandBufferEntry args[20];
-
-    CustomVertex vertices[4] = {
+    static const CustomVertex vertices[4] = {
       {-.5f, -.5f, 0.f, 1.f,  0, 0},
       {.5f,  -.5f, 0.f, 1.f,  1, 0},
       {-.5f,  .5f, 0.f, 1.f,  0, 1},
       {.5f,   .5f, 0.f, 1.f,  1, 1},
     };
-    args[0].value_uint32 = vertex_buffer_id;
-    args[1].value_uint32 = sizeof(vertices);  // size
-    args[2].value_uint32 = 0;  // flags
-    cmd_buffer.AddCommand(command_buffer::CREATE_VERTEX_BUFFER, 3, args);
+    cmd_buffer.CreateVertexBuffer(vertex_buffer_id, sizeof(vertices), 0);
 
     memcpy(shm_address, vertices, sizeof(vertices));
-    args[0].value_uint32 = vertex_buffer_id;
-    args[1].value_uint32 = 0;  // offset in VB
-    args[2].value_uint32 = sizeof(vertices);  // size
-    args[3].value_uint32 = shm_id;  // shm
-    args[4].value_uint32 = 0;  // offset in shm
-    cmd_buffer.AddCommand(command_buffer::SET_VERTEX_BUFFER_DATA, 5, args);
+    cmd_buffer.SetVertexBufferData(
+        vertex_buffer_id, 0, sizeof(vertices), shm_id, 0);
     unsigned int token = cmd_buffer.InsertToken();
 
-    args[0].value_uint32 = vertex_struct_id;
-    args[1].value_uint32 = 2;  // input count
-    cmd_buffer.AddCommand(command_buffer::CREATE_VERTEX_STRUCT, 2, args);
+    cmd_buffer.CreateVertexStruct(vertex_struct_id, 2);
 
     // Set POSITION input stream
-    args[0].value_uint32 = vertex_struct_id;
-    args[1].value_uint32 = 0;                               // input
-    args[2].value_uint32 = vertex_buffer_id;                // buffer
-    args[3].value_uint32 = 0;                               // offset
-    args[4].value_uint32 =
-        set_vertex_input_cmd::Stride::MakeValue(sizeof(CustomVertex)) |
-        set_vertex_input_cmd::Type::MakeValue(vertex_struct::FLOAT4) |
-        set_vertex_input_cmd::Semantic::MakeValue(vertex_struct::POSITION) |
-        set_vertex_input_cmd::SemanticIndex::MakeValue(0);
-    cmd_buffer.AddCommand(command_buffer::SET_VERTEX_INPUT, 5, args);
+    cmd_buffer.SetVertexInput(vertex_struct_id, 0, vertex_buffer_id, 0,
+                              vertex_struct::POSITION, 0,
+                              vertex_struct::FLOAT4, sizeof(CustomVertex));
 
     // Set TEXCOORD0 input stream
-    args[1].value_uint32 = 1;                               // input
-    args[3].value_uint32 = 16;                              // offset
-    args[4].value_uint32 =
-        set_vertex_input_cmd::Stride::MakeValue(sizeof(CustomVertex)) |
-        set_vertex_input_cmd::Type::MakeValue(vertex_struct::FLOAT2) |
-        set_vertex_input_cmd::Semantic::MakeValue(vertex_struct::TEX_COORD) |
-        set_vertex_input_cmd::SemanticIndex::MakeValue(0);
-    cmd_buffer.AddCommand(command_buffer::SET_VERTEX_INPUT, 5, args);
+    cmd_buffer.SetVertexInput(vertex_struct_id, 1, vertex_buffer_id, 16,
+                              vertex_struct::TEX_COORD, 0,
+                              vertex_struct::FLOAT2, sizeof(CustomVertex));
 
     // wait for previous transfer to be executed, so that we can re-use the
     // transfer shared memory buffer.
     cmd_buffer.WaitForToken(token);
     memcpy(shm_address, effect_data, sizeof(effect_data));
     const ResourceID effect_id = 1;
-    args[0].value_uint32 = effect_id;
-    args[1].value_uint32 = sizeof(effect_data);  // size
-    args[2].value_uint32 = shm_id;  // shm
-    args[3].value_uint32 = 0;  // offset in shm
-    cmd_buffer.AddCommand(command_buffer::CREATE_EFFECT, 4, args);
+    cmd_buffer.CreateEffect(effect_id, sizeof(effect_data), shm_id, 0);
     token = cmd_buffer.InsertToken();
 
     // Create a 4x4 2D texture.
     const ResourceID texture_id = 1;
-    args[0].value_uint32 = texture_id;
-    args[1].value_uint32 =
-        create_texture_2d_cmd::Width::MakeValue(4) |
-        create_texture_2d_cmd::Height::MakeValue(4);
-    args[2].value_uint32 =
-        create_texture_2d_cmd::Levels::MakeValue(0) |
-        create_texture_2d_cmd::Format::MakeValue(texture::ARGB8) |
-        create_texture_2d_cmd::Flags::MakeValue(0);
-    cmd_buffer.AddCommand(command_buffer::CREATE_TEXTURE_2D, 3, args);
+    cmd_buffer.CreateTexture2d(texture_id, 4, 4, 1, texture::ARGB8, 0);
 
-    unsigned int texels[4] = {
+    static const unsigned int texels[4] = {
       0xff0000ff,
       0xffff00ff,
       0xff00ffff,
@@ -237,68 +169,40 @@ void BigTestClient(nacl::HtpHandle handle) {
     // Creates a 4x4 texture by uploading 2x2 data in each quadrant.
     for (unsigned int x = 0; x < 2; ++x)
       for (unsigned int y = 0; y < 2; ++y) {
-        args[0].value_uint32 = texture_id;
-        args[1].value_uint32 =
-            set_texture_data_cmd::X::MakeValue(x*2) |
-            set_texture_data_cmd::Y::MakeValue(y*2);
-        args[2].value_uint32 =
-            set_texture_data_cmd::Width::MakeValue(2) |
-            set_texture_data_cmd::Height::MakeValue(2);
-        args[3].value_uint32 =
-            set_texture_data_cmd::Z::MakeValue(0) |
-            set_texture_data_cmd::Depth::MakeValue(1);
-        args[4].value_uint32 = set_texture_data_cmd::Level::MakeValue(0);
-        args[5].value_uint32 = sizeof(texels[0]) * 2;  // row_pitch
-        args[6].value_uint32 = 0;  // slice_pitch
-        args[7].value_uint32 = sizeof(texels);  // size
-        args[8].value_uint32 = shm_id;
-        args[9].value_uint32 = 0;
-        cmd_buffer.AddCommand(command_buffer::SET_TEXTURE_DATA, 10, args);
+        cmd_buffer.SetTextureData(texture_id, x * 2, y * 2, 0, 2, 2, 1, 0, 0,
+                                  sizeof(texels[0]) * 2,  // row_pitch
+                                  0,  // slice_pitch
+                                  sizeof(texels),  // size
+                                  shm_id,
+                                  0);
       }
     token = cmd_buffer.InsertToken();
 
     const ResourceID sampler_id = 1;
-    args[0].value_uint32 = sampler_id;
-    cmd_buffer.AddCommand(command_buffer::CREATE_SAMPLER, 1, args);
-
-    args[0].value_uint32 = sampler_id;
-    args[1].value_uint32 = texture_id;
-    cmd_buffer.AddCommand(command_buffer::SET_SAMPLER_TEXTURE, 2, args);
-
-    args[0].value_uint32 = sampler_id;
-    args[1].value_uint32 =
-        set_sampler_states::AddressingU::MakeValue(sampler::CLAMP_TO_EDGE) |
-        set_sampler_states::AddressingV::MakeValue(sampler::CLAMP_TO_EDGE) |
-        set_sampler_states::AddressingW::MakeValue(sampler::CLAMP_TO_EDGE) |
-        set_sampler_states::MagFilter::MakeValue(sampler::POINT) |
-        set_sampler_states::MinFilter::MakeValue(sampler::POINT) |
-        set_sampler_states::MipFilter::MakeValue(sampler::NONE) |
-        set_sampler_states::MaxAnisotropy::MakeValue(1);
-    cmd_buffer.AddCommand(command_buffer::SET_SAMPLER_STATES, 2, args);
+    cmd_buffer.CreateSampler(sampler_id);
+    cmd_buffer.SetSamplerTexture(sampler_id, texture_id);
+    cmd_buffer.SetSamplerStates(sampler_id,
+                                sampler::CLAMP_TO_EDGE,
+                                sampler::CLAMP_TO_EDGE,
+                                sampler::CLAMP_TO_EDGE,
+                                sampler::POINT,
+                                sampler::POINT,
+                                sampler::NONE,
+                                1);
 
     // Create a parameter for the sampler.
     const ResourceID sampler_param_id = 1;
     {
-      const char param_name[] = "s0";
-      args[0].value_uint32 = sampler_param_id;
-      args[1].value_uint32 = effect_id;
-      args[2].value_uint32 = sizeof(param_name);
-      unsigned int arg_count = CopyToArgs(args + 3, param_name,
-                                          sizeof(param_name));
-      cmd_buffer.AddCommand(command_buffer::CREATE_PARAM_BY_NAME_IMMEDIATE,
-                            3 + arg_count, args);
+      static const char param_name[] = "s0";
+      cmd_buffer.CreateParamByNameImmediate(sampler_param_id, effect_id,
+                                            sizeof(param_name), param_name);
     }
 
     const ResourceID matrix_param_id = 2;
     {
-      const char param_name[] = "worldViewProj";
-      args[0].value_uint32 = matrix_param_id;
-      args[1].value_uint32 = effect_id;
-      args[2].value_uint32 = sizeof(param_name);
-      unsigned int arg_count = CopyToArgs(args + 3, param_name,
-                                          sizeof(param_name));
-      cmd_buffer.AddCommand(command_buffer::CREATE_PARAM_BY_NAME_IMMEDIATE,
-                            3 + arg_count, args);
+      static const char param_name[] = "worldViewProj";
+      cmd_buffer.CreateParamByNameImmediate(matrix_param_id, effect_id,
+                                            sizeof(param_name), param_name);
     }
 
     float t = 0.f;
@@ -307,34 +211,21 @@ void BigTestClient(nacl::HtpHandle handle) {
       math::Matrix4 m =
           math::Matrix4::translation(math::Vector3(0.f, 0.f, .5f));
       m *= math::Matrix4::rotationY(t * 2 * 3.1415926f);
-      cmd_buffer.AddCommand(command_buffer::BEGIN_FRAME, 0 , NULL);
+      cmd_buffer.BeginFrame();
       // Clear the background with an animated color (black to red).
-      ClearCmd(&cmd_buffer, GAPIInterface::COLOR | GAPIInterface::DEPTH, color,
-               1.f, 0);
+      cmd_buffer.Clear(GAPIInterface::COLOR | GAPIInterface::DEPTH,
+                       color.red, color.green, color.blue, color.alpha,
+                       1.f, 0);
 
-      args[0].value_uint32 = vertex_struct_id;
-      cmd_buffer.AddCommand(command_buffer::SET_VERTEX_STRUCT, 1, args);
+      cmd_buffer.SetVertexStruct(vertex_struct_id);
+      cmd_buffer.SetEffect(effect_id);
+      cmd_buffer.SetParamDataImmediate(
+          sampler_param_id, sizeof(uint32), &sampler_id);  // NOLINT
+      cmd_buffer.SetParamDataImmediate(
+          matrix_param_id, sizeof(m), &m);
+      cmd_buffer.Draw(GAPIInterface::TRIANGLE_STRIPS, 0, 2);
 
-      args[0].value_uint32 = effect_id;
-      cmd_buffer.AddCommand(command_buffer::SET_EFFECT, 1, args);
-
-      args[0].value_uint32 = sampler_param_id;
-      args[1].value_uint32 = sizeof(Uint32);  // NOLINT
-      args[2].value_uint32 = sampler_id;
-      cmd_buffer.AddCommand(command_buffer::SET_PARAM_DATA_IMMEDIATE, 3, args);
-
-      args[0].value_uint32 = matrix_param_id;
-      args[1].value_uint32 = sizeof(m);
-      unsigned int arg_count = CopyToArgs(args + 2, &m, sizeof(m));
-      cmd_buffer.AddCommand(command_buffer::SET_PARAM_DATA_IMMEDIATE,
-                            2 + arg_count, args);
-
-      args[0].value_uint32 = GAPIInterface::TRIANGLE_STRIPS;
-      args[1].value_uint32 = 0;  // first
-      args[2].value_uint32 = 2;  // primitive count
-      cmd_buffer.AddCommand(command_buffer::DRAW, 3, args);
-
-      cmd_buffer.AddCommand(command_buffer::END_FRAME, 0 , NULL);
+      cmd_buffer.EndFrame();
       cmd_buffer.Flush();
     }
 

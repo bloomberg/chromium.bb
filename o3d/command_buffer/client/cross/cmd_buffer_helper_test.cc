@@ -58,7 +58,7 @@ class CommandBufferHelperTest : public testing::Test {
     // ignore noops in the mock - we don't want to inspect the internals of the
     // helper.
     EXPECT_CALL(*api_mock_, DoCommand(0, 0, _))
-        .WillRepeatedly(Return(BufferSyncInterface::PARSE_NO_ERROR));
+        .WillRepeatedly(Return(BufferSyncInterface::kParseNoError));
     engine_.reset(new CommandBufferEngine(api_mock_.get()));
     api_mock_->set_engine(engine_.get());
 
@@ -126,22 +126,22 @@ TEST_F(CommandBufferHelperTest, TestCommandProcessing) {
   // helper.
   EXPECT_TRUE(engine()->rpc_impl() != NULL);
   EXPECT_TRUE(engine()->parser() != NULL);
-  EXPECT_EQ(BufferSyncInterface::PARSING, engine()->GetStatus());
-  EXPECT_EQ(BufferSyncInterface::PARSE_NO_ERROR, engine()->GetParseError());
+  EXPECT_EQ(BufferSyncInterface::kParsing, engine()->GetStatus());
+  EXPECT_EQ(BufferSyncInterface::kParseNoError, engine()->GetParseError());
   EXPECT_EQ(0, engine()->Get());
 
   // Add 3 commands through the helper
-  AddCommandWithExpect(BufferSyncInterface::PARSE_NO_ERROR, 1, 0, NULL);
+  AddCommandWithExpect(BufferSyncInterface::kParseNoError, 1, 0, NULL);
 
   CommandBufferEntry args1[2];
   args1[0].value_uint32 = 3;
   args1[1].value_float = 4.f;
-  AddCommandWithExpect(BufferSyncInterface::PARSE_NO_ERROR, 2, 2, args1);
+  AddCommandWithExpect(BufferSyncInterface::kParseNoError, 2, 2, args1);
 
   CommandBufferEntry args2[2];
   args2[0].value_uint32 = 5;
   args2[1].value_float = 6.f;
-  AddCommandWithExpect(BufferSyncInterface::PARSE_NO_ERROR, 3, 2, args2);
+  AddCommandWithExpect(BufferSyncInterface::kParseNoError, 3, 2, args2);
 
   helper()->Flush();
   // Check that the engine has work to do now.
@@ -156,8 +156,8 @@ TEST_F(CommandBufferHelperTest, TestCommandProcessing) {
   Mock::VerifyAndClearExpectations(api_mock());
 
   // Check the error status.
-  ASSERT_EQ(BufferSyncInterface::PARSING, engine()->GetStatus());
-  EXPECT_EQ(BufferSyncInterface::PARSE_NO_ERROR, engine()->GetParseError());
+  ASSERT_EQ(BufferSyncInterface::kParsing, engine()->GetStatus());
+  EXPECT_EQ(BufferSyncInterface::kParseNoError, engine()->GetParseError());
 }
 
 // Checks that commands in the buffer are properly executed when wrapping the
@@ -169,7 +169,7 @@ TEST_F(CommandBufferHelperTest, TestCommandWrapping) {
   args1[1].value_float = 4.f;
 
   for (unsigned int i = 0; i < 5; ++i) {
-    AddCommandWithExpect(BufferSyncInterface::PARSE_NO_ERROR, i+1, 2, args1);
+    AddCommandWithExpect(BufferSyncInterface::kParseNoError, i+1, 2, args1);
   }
 
   helper()->Finish();
@@ -177,8 +177,8 @@ TEST_F(CommandBufferHelperTest, TestCommandWrapping) {
   Mock::VerifyAndClearExpectations(api_mock());
 
   // Check the error status.
-  ASSERT_EQ(BufferSyncInterface::PARSING, engine()->GetStatus());
-  EXPECT_EQ(BufferSyncInterface::PARSE_NO_ERROR, engine()->GetParseError());
+  ASSERT_EQ(BufferSyncInterface::kParsing, engine()->GetStatus());
+  EXPECT_EQ(BufferSyncInterface::kParseNoError, engine()->GetParseError());
 }
 
 
@@ -191,9 +191,9 @@ TEST_F(CommandBufferHelperTest, TestRecoverableError) {
   args[1].value_float = 4.f;
 
   // Create a command buffer with 3 commands, 2 of them generating errors
-  AddCommandWithExpect(BufferSyncInterface::PARSE_NO_ERROR, 1, 2, args);
-  AddCommandWithExpect(BufferSyncInterface::PARSE_UNKNOWN_COMMAND, 2, 2, args);
-  AddCommandWithExpect(BufferSyncInterface::PARSE_INVALID_ARGUMENTS, 3, 2,
+  AddCommandWithExpect(BufferSyncInterface::kParseNoError, 1, 2, args);
+  AddCommandWithExpect(BufferSyncInterface::kParseUnknownCommand, 2, 2, args);
+  AddCommandWithExpect(BufferSyncInterface::kParseInvalidArguments, 3, 2,
                        args);
 
   helper()->Finish();
@@ -201,10 +201,10 @@ TEST_F(CommandBufferHelperTest, TestRecoverableError) {
   Mock::VerifyAndClearExpectations(api_mock());
 
   // Check that the error status was set to the first error.
-  EXPECT_EQ(BufferSyncInterface::PARSE_UNKNOWN_COMMAND,
+  EXPECT_EQ(BufferSyncInterface::kParseUnknownCommand,
             engine()->GetParseError());
   // Check that the error status was reset after the query.
-  EXPECT_EQ(BufferSyncInterface::PARSE_NO_ERROR, engine()->GetParseError());
+  EXPECT_EQ(BufferSyncInterface::kParseNoError, engine()->GetParseError());
 
   engine()->CloseConnection();
 }
@@ -217,10 +217,10 @@ TEST_F(CommandBufferHelperTest, TestAvailableEntries) {
   args[1].value_float = 4.f;
 
   // Add 2 commands through the helper - 8 entries
-  AddCommandWithExpect(BufferSyncInterface::PARSE_NO_ERROR, 1, 0, NULL);
-  AddCommandWithExpect(BufferSyncInterface::PARSE_NO_ERROR, 2, 0, NULL);
-  AddCommandWithExpect(BufferSyncInterface::PARSE_NO_ERROR, 3, 2, args);
-  AddCommandWithExpect(BufferSyncInterface::PARSE_NO_ERROR, 4, 2, args);
+  AddCommandWithExpect(BufferSyncInterface::kParseNoError, 1, 0, NULL);
+  AddCommandWithExpect(BufferSyncInterface::kParseNoError, 2, 0, NULL);
+  AddCommandWithExpect(BufferSyncInterface::kParseNoError, 3, 2, args);
+  AddCommandWithExpect(BufferSyncInterface::kParseNoError, 4, 2, args);
 
   // Ask for 5 entries.
   helper()->WaitForAvailableEntries(5);
@@ -229,7 +229,7 @@ TEST_F(CommandBufferHelperTest, TestAvailableEntries) {
   CheckFreeSpace(put, 5);
 
   // Add more commands.
-  AddCommandWithExpect(BufferSyncInterface::PARSE_NO_ERROR, 5, 2, args);
+  AddCommandWithExpect(BufferSyncInterface::kParseNoError, 5, 2, args);
 
   // Wait until everything is done done.
   helper()->Finish();
@@ -238,8 +238,8 @@ TEST_F(CommandBufferHelperTest, TestAvailableEntries) {
   Mock::VerifyAndClearExpectations(api_mock());
 
   // Check the error status.
-  ASSERT_EQ(BufferSyncInterface::PARSING, engine()->GetStatus());
-  EXPECT_EQ(BufferSyncInterface::PARSE_NO_ERROR, engine()->GetParseError());
+  ASSERT_EQ(BufferSyncInterface::kParsing, engine()->GetStatus());
+  EXPECT_EQ(BufferSyncInterface::kParseNoError, engine()->GetParseError());
 }
 
 // Checks that the InsertToken/WaitForToken work.
@@ -249,16 +249,16 @@ TEST_F(CommandBufferHelperTest, TestToken) {
   args[1].value_float = 4.f;
 
   // Add a first command.
-  AddCommandWithExpect(BufferSyncInterface::PARSE_NO_ERROR, 3, 2, args);
+  AddCommandWithExpect(BufferSyncInterface::kParseNoError, 3, 2, args);
   // keep track of the buffer position.
   CommandBufferOffset command1_put = get_helper_put();
   unsigned int token = helper()->InsertToken();
 
-  EXPECT_CALL(*api_mock(), DoCommand(SET_TOKEN, 1, _))
+  EXPECT_CALL(*api_mock(), DoCommand(kSetToken, 1, _))
       .WillOnce(DoAll(Invoke(api_mock(), &AsyncAPIMock::SetToken),
-                      Return(BufferSyncInterface::PARSE_NO_ERROR)));
+                      Return(BufferSyncInterface::kParseNoError)));
   // Add another command.
-  AddCommandWithExpect(BufferSyncInterface::PARSE_NO_ERROR, 4, 2, args);
+  AddCommandWithExpect(BufferSyncInterface::kParseNoError, 4, 2, args);
   helper()->WaitForToken(token);
   // check that the get pointer is beyond the first command.
   EXPECT_LE(command1_put, engine()->Get());
@@ -268,8 +268,8 @@ TEST_F(CommandBufferHelperTest, TestToken) {
   Mock::VerifyAndClearExpectations(api_mock());
 
   // Check the error status.
-  ASSERT_EQ(BufferSyncInterface::PARSING, engine()->GetStatus());
-  EXPECT_EQ(BufferSyncInterface::PARSE_NO_ERROR, engine()->GetParseError());
+  ASSERT_EQ(BufferSyncInterface::kParsing, engine()->GetStatus());
+  EXPECT_EQ(BufferSyncInterface::kParseNoError, engine()->GetParseError());
 }
 
 }  // namespace command_buffer
