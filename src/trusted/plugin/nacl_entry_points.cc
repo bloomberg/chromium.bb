@@ -30,6 +30,7 @@
 */
 
 #include "webkit/glue/plugins/nphostapi.h"
+#include "webkit/glue/plugins/plugin_list.h"
 
 // This code inside the ifdef is copied from
 // native_client/src/third_party_mod/npapi_plugin/np_entry.cc
@@ -73,3 +74,25 @@ NPError API_CALL NaCl_NP_Shutdown() {
   return NP_Shutdown();
 }
 
+void RegisterInternalNaClPlugin() {
+  NPAPI::PluginEntryPoints entry_points = {
+#if !defined(OS_LINUX)
+      NaCl_NP_GetEntryPoints,
+#endif
+      NaCl_NP_Initialize,
+      NaCl_NP_Shutdown
+  };
+
+  const NPAPI::PluginVersionInfo nacl_plugin_info = {
+      FilePath(FILE_PATH_LITERAL("internal_nacl")),
+      L"Native Client",
+      L"Statically linked NaCl",
+      L"1, 0, 0, 1",
+      L"application/x-nacl-srpc",
+      L"",
+      L"",
+      entry_points
+  };
+
+  NPAPI::PluginList::Singleton()->RegisterInternalPlugin(nacl_plugin_info);
+}

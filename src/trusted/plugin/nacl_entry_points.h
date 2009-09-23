@@ -32,18 +32,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NACL_ENTRY_POINTS_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NACL_ENTRY_POINTS_H_
 
-#include "webkit/glue/plugins/plugin_list.h"
-
-// Native Client entry points
-// NOTE: These functions are declared using Chrome includes, do not include this
-// file in NaCl files.
-NPError API_CALL NaCl_NP_GetEntryPoints(NPPluginFuncs* funcs);
-#if defined(OS_LINUX)
-NPError API_CALL NaCl_NP_Initialize(NPNetscapeFuncs* funcs,
-                                    NPPluginFuncs* pluginFuncs);
-#else
-NPError API_CALL NaCl_NP_Initialize(NPNetscapeFuncs* funcs);
-#endif
-NPError API_CALL NaCl_NP_Shutdown(void);
+// Registers the internal NaCl plugin with PluginList.
+void RegisterInternalNaClPlugin();
 
 #endif // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_NACL_ENTRY_POINTS_H_
