@@ -486,66 +486,130 @@ each locale. aa1 -->
         Show pages
       </message>
       <!-- Page menu -->
-      <message name="IDS_NEW_TAB" desc="The text label of the New Tab menu item">
-        New &amp;tab
-      </message>
-      <message name="IDS_SHOW_AS_TAB" desc="The text label for the Show As tab menu item">
-        &amp;Show as tab
-      </message>
-      <message name="IDS_NEW_WINDOW" desc="The text label of the New Window menu item">
-        &amp;New window
-      </message>
-      <message name="IDS_PROFILE_MENU" desc="The text label of the New profile Window menu item">
-        New window in &amp;profile
-      </message>
-      <message name="IDS_SELECT_PROFILE" desc="The text label of the menu item to select a profile other than the ones displayed directly in the Profile submenu.">
-        Other...
-      </message>
-      <message name="IDS_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
-        New &amp;incognito window
-      </message>
-      <message name="IDS_UNDO" desc="The text label of the Undo menu item">
-        &amp;Undo
-      </message>
-      <message name="IDS_CUT" desc="The text label of the Cut menu item">
-        Cu&amp;t
-      </message>
-      <message name="IDS_COPY" desc="The text label of the Copy menu item">
-        &amp;Copy
-      </message>
-      <message name="IDS_PASTE" desc="The text label of the Paste menu item">
-        &amp;Paste
-      </message>
-      <message name="IDS_SELECT_ALL" desc="The text label of the Select All menu item">
-        Select &amp;all
-      </message>
-      <message name="IDS_FIND" desc="The text label of the Find in Page menu item">
-        &amp;Find in page
-      </message>
-      <message name="IDS_SAVE_PAGE" desc="The text label of the Save Page As menu item">
-        Save page &amp;as...
-      </message>
-      <message name="IDS_PRINT" desc="The text label of the Print... menu item. Opens a dialog box to select print settings">
-        &amp;Print...
-      </message>
-      <message name="IDS_ZOOM_MENU" desc="The text label of the Zoom submenu">
-        &amp;Zoom
-      </message>
-      <message name="IDS_ZOOM_PLUS" desc="The text label of the Make Text Larger menu item">
-        &amp;Larger
-      </message>
-      <message name="IDS_ZOOM_NORMAL" desc="The text label of the Make Text Normal Size menu item">
-        &amp;Normal
-      </message>
-      <message name="IDS_ZOOM_MINUS" desc="The text label of the Make Text Smaller menu item">
-        &amp;Smaller
-      </message>
-      <message name="IDS_ENCODING_MENU" desc="The text label of the Encoding submenu">
-        &amp;Encoding
-      </message>
-      <message name="IDS_ENCODING_AUTO_DETECT" desc="The text label of the Auto Dectect submenu">
-        Auto detect
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_NEW_TAB" desc="The text label of the New Tab menu item">
+          New &amp;tab
+        </message>
+        <message name="IDS_SHOW_AS_TAB" desc="The text label for the Show As tab menu item">
+          &amp;Show as tab
+        </message>
+        <message name="IDS_NEW_WINDOW" desc="The text label of the New Window menu item">
+          &amp;New window
+        </message>
+        <message name="IDS_PROFILE_MENU" desc="The text label of the New profile Window menu item">
+          New window in &amp;profile
+        </message>
+        <message name="IDS_SELECT_PROFILE" desc="The text label of the menu item to select a profile other than the ones displayed directly in the Profile submenu.">
+          Other...
+        </message>
+        <message name="IDS_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
+          New &amp;incognito window
+        </message>
+        <message name="IDS_UNDO" desc="The text label of the Undo menu item">
+          &amp;Undo
+        </message>
+        <message name="IDS_CUT" desc="The text label of the Cut menu item">
+          Cu&amp;t
+        </message>
+        <message name="IDS_COPY" desc="The text label of the Copy menu item">
+          &amp;Copy
+        </message>
+        <message name="IDS_PASTE" desc="The text label of the Paste menu item">
+          &amp;Paste
+        </message>
+        <message name="IDS_SELECT_ALL" desc="The text label of the Select All menu item">
+          Select &amp;all
+        </message>
+        <message name="IDS_FIND" desc="The text label of the Find in Page menu item">
+          &amp;Find in page
+        </message>
+        <message name="IDS_SAVE_PAGE" desc="The text label of the Save Page As menu item">
+          Save page &amp;as...
+        </message>
+        <message name="IDS_PRINT" desc="The text label of the Print... menu item. Opens a dialog box to select print settings">
+          &amp;Print...
+        </message>
+        <message name="IDS_ZOOM_MENU" desc="The text label of the Zoom submenu">
+          &amp;Zoom
+        </message>
+        <message name="IDS_ZOOM_PLUS" desc="The text label of the Make Text Larger menu item">
+          &amp;Larger
+        </message>
+        <message name="IDS_ZOOM_NORMAL" desc="The text label of the Make Text Normal Size menu item">
+          &amp;Normal
+        </message>
+        <message name="IDS_ZOOM_MINUS" desc="The text label of the Make Text Smaller menu item">
+          &amp;Smaller
+        </message>
+        <message name="IDS_ENCODING_MENU" desc="The text label of the Encoding submenu">
+          &amp;Encoding
+        </message>
+        <message name="IDS_ENCODING_AUTO_DETECT" desc="The text label of the Auto Dectect submenu">
+          Auto detect
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_NEW_TAB" desc="In Title Case: The text label of the New Tab menu item">
+          New &amp;Tab
+        </message>
+        <message name="IDS_SHOW_AS_TAB" desc="In Title Case: The text label for the Show As tab menu item">
+          &amp;Show As Tab
+        </message>
+        <message name="IDS_NEW_WINDOW" desc="In Title Case: The text label of the New Window menu item">
+          &amp;New Window
+        </message>
+        <message name="IDS_PROFILE_MENU" desc="In Title Case: The text label of the New profile Window menu item">
+          New Window in &amp;Profile
+        </message>
+        <message name="IDS_SELECT_PROFILE" desc="In Title Case: The text label of the menu item to select a profile other than the ones displayed directly in the Profile submenu.">
+          Other...
+        </message>
+        <message name="IDS_NEW_INCOGNITO_WINDOW" desc="In Title Case: The text label of the New incognito window menu item">
+          New &amp;Incognito Window
+        </message>
+        <message name="IDS_UNDO" desc="In Title Case: The text label of the Undo menu item">
+          &amp;Undo
+        </message>
+        <message name="IDS_CUT" desc="In Title Case: The text label of the Cut menu item">
+          Cu&amp;t
+        </message>
+        <message name="IDS_COPY" desc="In Title Case: The text label of the Copy menu item">
+          &amp;Copy
+        </message>
+        <message name="IDS_PASTE" desc="In Title Case: The text label of the Paste menu item">
+          &amp;Paste
+        </message>
+        <message name="IDS_SELECT_ALL" desc="In Title Case: The text label of the Select All menu item">
+          Select &amp;All
+        </message>
+        <message name="IDS_FIND" desc="In Title Case: The text label of the Find in Page menu item">
+          &amp;Find in Page
+        </message>
+        <message name="IDS_SAVE_PAGE" desc="In Title Case: The text label of the Save Page As menu item">
+          Save Page &amp;As...
+        </message>
+        <message name="IDS_PRINT" desc="In Title Case: The text label of the Print... menu item. Opens a dialog box to select print settings">
+          &amp;Print...
+        </message>
+        <message name="IDS_ZOOM_MENU" desc="In Title Case: The text label of the Zoom submenu">
+          &amp;Zoom
+        </message>
+        <message name="IDS_ZOOM_PLUS" desc="In Title Case: The text label of the Make Text Larger menu item">
+          &amp;Larger
+        </message>
+        <message name="IDS_ZOOM_NORMAL" desc="In Title Case: The text label of the Make Text Normal Size menu item">
+          &amp;Normal
+        </message>
+        <message name="IDS_ZOOM_MINUS" desc="In Title Case: The text label of the Make Text Smaller menu item">
+          &amp;Smaller
+        </message>
+        <message name="IDS_ENCODING_MENU" desc="In Title Case: The text label of the Encoding submenu">
+          &amp;Encoding
+        </message>
+        <message name="IDS_ENCODING_AUTO_DETECT" desc="In Title Case: The text label of the Auto Dectect submenu">
+          Auto Detect
+        </message>
+      </if>
       <message name="IDS_ENCODING_DISPLAY_TEMPLATE" desc="The format of encodings in the encoding menu. Encoding categories are Unicode, Western, Turkish, Cyrillic, Chinese Simplified, Thai, Arabic, Hebrew and so forth. Encoding names are UTF-8, ISO-8859-1, Windows-1251, GB2312, etc.">
         <ph name="ENCODING_CATEGORY">$1<ex>Japanese</ex></ph> (<ph name="ENCODING_NAME">$2<ex>Shift_JIS</ex></ph>)
       </message>
@@ -606,27 +670,52 @@ each locale. aa1 -->
       <message name="IDS_ENCODING_VIETNAMESE" desc="The text label of Vietnamese encoding">
         Vietnamese
       </message>
-      <message name="IDS_DEVELOPER_MENU" desc="The text label of the Developer submenu">
-        Developer
-      </message>
-      <message name="IDS_VIEW_SOURCE" desc="The text label of the View Page Source menu item">
-        View s&amp;ource
-      </message>
-      <message name="IDS_REPORT_BUG" desc="The text label of the Report Bug menu item">
-        &amp;Report bug or broken website...
-      </message>
-      <message name="IDS_DEV_TOOLS" desc="The text label of the Developer Tools menu item">
-        &amp;Developer Tools
-      </message>
-      <message name="IDS_TASK_MANAGER" desc="The text label of the Task Manager menu item">
-        &amp;Task manager
-      </message>
-      <message name="IDS_RESTORE_TAB" desc="The text label of the Restore Tab menu item">
-        R&amp;eopen closed tab
-      </message>
-      <message name="IDS_RESTORE_WINDOW" desc="The text label of the Restore Window menu item">
-        R&amp;eopen closed window
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_DEVELOPER_MENU" desc="The text label of the Developer submenu">
+          Developer
+        </message>
+        <message name="IDS_VIEW_SOURCE" desc="The text label of the View Page Source menu item">
+          View s&amp;ource
+        </message>
+        <message name="IDS_REPORT_BUG" desc="The text label of the Report Bug menu item">
+          &amp;Report bug or broken website...
+        </message>
+        <message name="IDS_DEV_TOOLS" desc="The text label of the Developer Tools menu item">
+          &amp;Developer Tools
+        </message>
+        <message name="IDS_TASK_MANAGER" desc="The text label of the Task Manager menu item">
+          &amp;Task manager
+        </message>
+        <message name="IDS_RESTORE_TAB" desc="The text label of the Restore Tab menu item">
+          R&amp;eopen closed tab
+        </message>
+        <message name="IDS_RESTORE_WINDOW" desc="The text label of the Restore Window menu item">
+          R&amp;eopen closed window
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_DEVELOPER_MENU" desc="In Title Case: The text label of the Developer submenu">
+          Developer
+        </message>
+        <message name="IDS_VIEW_SOURCE" desc="In Title Case: The text label of the View Page Source menu item">
+          View S&amp;ource
+        </message>
+        <message name="IDS_REPORT_BUG" desc="In Title Case: The text label of the Report Bug menu item">
+          &amp;Report Bug or Broken Website...
+        </message>
+        <message name="IDS_DEV_TOOLS" desc="In Title Case: The text label of the Developer Tools menu item">
+          &amp;Developer Tools
+        </message>
+        <message name="IDS_TASK_MANAGER" desc="In Title Case: The text label of the Task Manager menu item">
+          &amp;Task Manager
+        </message>
+        <message name="IDS_RESTORE_TAB" desc="In Title Case: The text label of the Restore Tab menu item">
+          R&amp;eopen Closed Tab
+        </message>
+        <message name="IDS_RESTORE_WINDOW" desc="In Title Case: The text label of the Restore Window menu item">
+          R&amp;eopen Closed Window
+        </message>
+      </if>
 
       <!-- This really belongs under Generic Terms above. -->
       <message name="IDS_CLOSE" desc="A generic term for Close on buttons and menus.">
@@ -648,36 +737,70 @@ each locale. aa1 -->
       </message>
 
       <!-- App menu -->
-      <message name="IDS_IMPORT_SETTINGS" desc="The text label for the Import menu item">
-        &amp;Import bookmarks &amp;&amp; settings...
-      </message>
-      <message name="IDS_SHOW_HISTORY" desc="The show history menu in the app menu">
-        &amp;History
-      </message>
-      <message name="IDS_SHOW_BOOKMARK_BAR" desc="The toggle to show the bookmark bar">
-        &amp;Always show bookmarks bar
-      </message>
-      <message name="IDS_FULLSCREEN" desc="Switches into fullscreen mode">
-        &amp;Full screen
-      </message>
-      <message name="IDS_CLEAR_BROWSING_DATA" desc="The text label for the menu item for clearing of browsing data">
-        &amp;Clear browsing data...
-      </message>
-      <message name="IDS_SHOW_DOWNLOADS" desc="The show downloads menu in the app menu">
-        &amp;Downloads
-      </message>
-      <message name="IDS_OPTIONS" desc="The text label of the Options menu item">
-        &amp;Options
-      </message>
-      <message name="IDS_HELP_PAGE" desc="The text label of the Help menu item">
-        H&amp;elp
-      </message>
-      <message name="IDS_ABOUT" desc="The text label of the About Chrome menu item">
-        About &amp;<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
-      </message>
-      <message name="IDS_EXIT" desc="The text label of the Exit menu item">
-        E&amp;xit
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_IMPORT_SETTINGS" desc="The text label for the Import menu item">
+          &amp;Import bookmarks &amp;&amp; settings...
+        </message>
+        <message name="IDS_SHOW_HISTORY" desc="The show history menu in the app menu">
+          &amp;History
+        </message>
+        <message name="IDS_SHOW_BOOKMARK_BAR" desc="The toggle to show the bookmark bar">
+          &amp;Always show bookmarks bar
+        </message>
+        <message name="IDS_FULLSCREEN" desc="Switches into fullscreen mode">
+          &amp;Full screen
+        </message>
+        <message name="IDS_CLEAR_BROWSING_DATA" desc="The text label for the menu item for clearing of browsing data">
+          &amp;Clear browsing data...
+        </message>
+        <message name="IDS_SHOW_DOWNLOADS" desc="The show downloads menu in the app menu">
+          &amp;Downloads
+        </message>
+        <message name="IDS_OPTIONS" desc="The text label of the Options menu item">
+          &amp;Options
+        </message>
+        <message name="IDS_HELP_PAGE" desc="The text label of the Help menu item">
+          H&amp;elp
+        </message>
+        <message name="IDS_ABOUT" desc="The text label of the About Chrome menu item">
+          About &amp;<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+        </message>
+        <message name="IDS_EXIT" desc="The text label of the Exit menu item">
+          E&amp;xit
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_IMPORT_SETTINGS" desc="In Title Case: The text label for the Import menu item">
+          &amp;Import Bookmarks &amp;&amp; Settings...
+        </message>
+        <message name="IDS_SHOW_HISTORY" desc="In Title Case: The show history menu in the app menu">
+          &amp;History
+        </message>
+        <message name="IDS_SHOW_BOOKMARK_BAR" desc="In Title Case: The toggle to show the bookmark bar">
+          &amp;Always Show Bookmarks Bar
+        </message>
+        <message name="IDS_FULLSCREEN" desc="In Title Case: Switches into fullscreen mode">
+          &amp;Full Screen
+        </message>
+        <message name="IDS_CLEAR_BROWSING_DATA" desc="In Title Case: The text label for the menu item for clearing of browsing data">
+          &amp;Clear Browsing Data...
+        </message>
+        <message name="IDS_SHOW_DOWNLOADS" desc="In Title Case: The show downloads menu in the app menu">
+          &amp;Downloads
+        </message>
+        <message name="IDS_OPTIONS" desc="In Title Case: The text label of the Options menu item">
+          &amp;Options
+        </message>
+        <message name="IDS_HELP_PAGE" desc="In Title Case: The text label of the Help menu item">
+          H&amp;elp
+        </message>
+        <message name="IDS_ABOUT" desc="In Title Case: The text label of the About Chrome menu item">
+          About &amp;<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
+        </message>
+        <message name="IDS_EXIT" desc="In Title Case: The text label of the Exit menu item">
+          E&amp;xit
+        </message>
+      </if>
 
       <!-- Keywords -->
       <message name="IDS_KEYWORD_SEARCH"
@@ -1805,9 +1928,16 @@ each locale. aa1 -->
       </message>
 
       <!-- Gears shortcut strings -->
-      <message name="IDS_CREATE_SHORTCUTS" desc="Default installation menu label">
-        Create application &amp;shortcuts...
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_CREATE_SHORTCUTS" desc="Default installation menu label">
+          Create application &amp;shortcuts...
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_CREATE_SHORTCUTS" desc="In Title Case: Default installation menu label">
+          Create Application &amp;Shortcuts...
+        </message>
+      </if>
 
       <!-- "Create application shortcuts" dialog (non-Gears) -->
       <message name="IDS_CREATE_SHORTCUTS_TITLE" desc="Title of the dialog to create application shortcuts for current page.">
@@ -2835,30 +2965,58 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Tab Context Menu -->
-      <message name="IDS_TAB_CXMENU_NEWTAB" desc="The label of the 'New Tab' Tab context menu item.">
-        New tab
-      </message>
-      <message name="IDS_TAB_CXMENU_RELOAD" desc="The label of the 'Reload' Tab context menu item.">
-        Reload
-      </message>
-      <message name="IDS_TAB_CXMENU_DUPLICATE" desc="The label of the 'Duplicate' Tab context menu item.">
-        Duplicate
-      </message>
-      <message name="IDS_TAB_CXMENU_CLOSETAB" desc="The label of the 'Close Tab' Tab context menu item.">
-        Close tab
-      </message>
-      <message name="IDS_TAB_CXMENU_CLOSEOTHERTABS" desc="The label of the 'Close Other Tabs' Tab context menu item.">
-        Close other tabs
-      </message>
-      <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="The label of the 'Close Tabs to the Right' Tab context menu item.">
-        Close tabs to the right
-      </message>
-      <message name="IDS_TAB_CXMENU_CLOSETABSOPENEDBY" desc="The label of the 'Close Tabs opened by this Tab' Tab context menu item.">
-        Close tabs opened by this tab
-      </message>
-      <message name="IDS_TAB_CXMENU_PIN_TAB" desc="The label of the tab context menu item for pinning a tab.">
-        Pin tab
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_TAB_CXMENU_NEWTAB" desc="The label of the 'New Tab' Tab context menu item.">
+          New tab
+        </message>
+        <message name="IDS_TAB_CXMENU_RELOAD" desc="The label of the 'Reload' Tab context menu item.">
+          Reload
+        </message>
+        <message name="IDS_TAB_CXMENU_DUPLICATE" desc="The label of the 'Duplicate' Tab context menu item.">
+          Duplicate
+        </message>
+        <message name="IDS_TAB_CXMENU_CLOSETAB" desc="The label of the 'Close Tab' Tab context menu item.">
+          Close tab
+        </message>
+        <message name="IDS_TAB_CXMENU_CLOSEOTHERTABS" desc="The label of the 'Close Other Tabs' Tab context menu item.">
+          Close other tabs
+        </message>
+        <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="The label of the 'Close Tabs to the Right' Tab context menu item.">
+          Close tabs to the right
+        </message>
+        <message name="IDS_TAB_CXMENU_CLOSETABSOPENEDBY" desc="The label of the 'Close Tabs opened by this Tab' Tab context menu item.">
+          Close tabs opened by this tab
+        </message>
+        <message name="IDS_TAB_CXMENU_PIN_TAB" desc="The label of the tab context menu item for pinning a tab.">
+          Pin tab
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_TAB_CXMENU_NEWTAB" desc="In Title Case: The label of the 'New Tab' Tab context menu item.">
+          New Tab
+        </message>
+        <message name="IDS_TAB_CXMENU_RELOAD" desc="In Title Case: The label of the 'Reload' Tab context menu item.">
+          Reload
+        </message>
+        <message name="IDS_TAB_CXMENU_DUPLICATE" desc="In Title Case: The label of the 'Duplicate' Tab context menu item.">
+          Duplicate
+        </message>
+        <message name="IDS_TAB_CXMENU_CLOSETAB" desc="In Title Case: The label of the 'Close Tab' Tab context menu item.">
+          Close Tab
+        </message>
+        <message name="IDS_TAB_CXMENU_CLOSEOTHERTABS" desc="In Title Case: The label of the 'Close Other Tabs' Tab context menu item.">
+          Close Other Tabs
+        </message>
+        <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT" desc="In Title Case: The label of the 'Close Tabs to the Right' Tab context menu item.">
+          Close Tabs to the Right
+        </message>
+        <message name="IDS_TAB_CXMENU_CLOSETABSOPENEDBY" desc="In Title Case: The label of the 'Close Tabs opened by this Tab' Tab context menu item.">
+          Close Tabs Opened by This Tab
+        </message>
+        <message name="IDS_TAB_CXMENU_PIN_TAB" desc="In Title Case: The label of the tab context menu item for pinning a tab.">
+          Pin Tab
+        </message>
+      </if>
 
       <!-- Items in the bookmarks destination mode -->
       <message name="IDS_BOOKMARKS_DEST_MODE_BOOKMARK_BAR_ON_BOOKMARK_BAR" desc="Text shown when entry is on the bookmark bar">
@@ -4796,7 +4954,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- Mac Menubar Menus -->
       <if expr="os == 'darwin'">
         <!-- Menubar Menu Titles -->
-        <!-- TODO: these titles aren't in MainMenu.xib because of UI flash, see http://crbug.com/17380 for what needs to happen to get them into the xib -->
+        <!-- NOTE: Some of these exist in context menus with Title Case support, but we use different IDs in case we need slightly different strings in some language due to the different context. -->
         <message name="IDS_FILE_MENU_MAC" desc="The menu title of the Mac file menu.">
           File
         </message>
