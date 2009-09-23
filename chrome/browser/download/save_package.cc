@@ -55,7 +55,9 @@ struct SavePackageParam {
   FilePath dir;
 
   explicit SavePackageParam(const std::string& mime_type)
-      : current_tab_mime_type(mime_type) { }
+      : current_tab_mime_type(mime_type),
+        save_type(SavePackage::SAVE_TYPE_UNKNOWN) {
+  }
 };
 
 namespace {
