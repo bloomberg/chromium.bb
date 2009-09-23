@@ -103,6 +103,8 @@ _start:
 /* NOTE: this code assumes the "USE_R9_AS_TLS_REG" #define */
 /* ====================================================================== */
     .section .text
+
+
     .align ARM_BUNDLE_SIZE
     .global __aeabi_read_tp
 
@@ -113,9 +115,20 @@ __aeabi_read_tp:
     /* TODO(robertm): check whether this is really or a bug */
     sub r0, r0, #8
     /* This has to wait until new lib is properly sfi compiled */
-    /* TODO(robertm): fix this */
+/* TODO(robertm): fix this */
 /*
     bic lr, lr, #0xF000000F
 */
     bx lr
 
+
+/* NOTE: this is only here to make c++ programs link */
+    .align ARM_BUNDLE_SIZE
+    .global __aeabi_unwind_cpp_pr0
+
+__aeabi_unwind_cpp_pr0:
+/* TODO(robertm): fix this */
+/*
+    bic lr, lr, #0xF000000F
+*/
+    bx lr

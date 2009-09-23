@@ -30,6 +30,9 @@
 
 Import('env')
 
-env.ComponentProgram('imc_shm_mmap_test.nexe', 'imc_shm_mmap_test.c')
+env.ComponentProgram('imc_shm_mmap_test.nexe',
+                     'imc_shm_mmap_test.c',
+                     EXTRA_LIBS=['pthread'],
+                     )
 
-# TODO: add test
+# TODO(bsy): add test

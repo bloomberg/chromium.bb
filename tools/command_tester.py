@@ -95,7 +95,7 @@ def DifferentFromGolden(actual, golden, output_type, fail_msg):
 
 
 GlobalSettings = {
-    'exit_status': 0,
+    'exit_status': [0],
     'osenv': None,
 
     'name': None,
@@ -128,6 +128,24 @@ def SuccessMessage():
   return 'RESULT: %s PASSED' % GlobalSettings['name']
 
 
+# NOTE: this code contains a small hack to support qemu which sometimes
+#       returns  245 on a coredump. On unix the exit status is an 8 bit
+#       quantity, so 245 and -11 is the same number but python does not agree
+def MassageExitStatus(v):
+  if v == 'segfault':
+    if sys.platform in ['linux2']:
+        return [245, -11]
+    elif sys.platform in ['darwin']:
+      return [-10]
+    elif sys.platform in ['cygwin', 'win32']:
+      return [-1073741819]  # 0x3ffffffb
+    else:
+      assert 0
+      return [-1]
+  else:
+    return [int(v)]
+
+
 def ProcessOptions(argv):
   """Process command line options and return the unprocessed left overs."""
   try:
@@ -140,7 +158,9 @@ def ProcessOptions(argv):
     # strip the leading '--'
     option = o[2:]
     assert option in GlobalSettings
-    if type(GlobalSettings[option]) == int:
+    if option == 'exit_status':
+      GlobalSettings[option] = MassageExitStatus(a)
+    elif type(GlobalSettings[option]) == int:
       GlobalSettings[option] = int(a)
     else:
       GlobalSettings[option] = a
@@ -182,7 +202,7 @@ def main(argv):
       command, stdin_data)
   total_time = time.time() - start_time
 
-  if exit_status != GlobalSettings['exit_status'] or failed:
+  if exit_status not in GlobalSettings['exit_status'] or failed:
     if failed:
       Print('command failed')
     else:

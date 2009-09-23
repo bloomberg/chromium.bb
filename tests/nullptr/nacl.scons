@@ -31,19 +31,13 @@
 
 Import('env')
 
-nexe = env.ComponentProgram('nullptr.nexe', 'nullptr.c')
-
-# code copied from service_runtime/build.scons
-null_ptr_exit = None
-if env.Bit('host_linux'):
-  null_ptr_exit = '-11'  # SIGSEGV
-elif env.Bit('host_mac'):
-  null_ptr_exit = '-10'  # SIGBUS
-elif env.Bit('host_windows'):
-  null_ptr_exit = '-1073741819'  # 0x3ffffffB
+nexe = env.ComponentProgram('nullptr.nexe',
+                            'nullptr.c',
+                            EXTRA_LIBS=['pthread'],
+                            )
 
 node = env.CommandSelLdrTestNacl('nullptr.out',
                                  command=[env.File('nullptr.nexe')],
-                                 exit_status=null_ptr_exit)
+                                 exit_status='segfault')
 
-env.AddNodeToTestSuite(node, ['small_tests'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_nullptr_test')

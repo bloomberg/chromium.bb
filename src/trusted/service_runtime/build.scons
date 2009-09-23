@@ -605,20 +605,7 @@ if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '32':
 # ----------------------------------------------------------
 # Death Tests With Canned x86 Binaries
 # ----------------------------------------------------------
-def GetNullPointerExitCode(env):
-  if env.Bit('linux'):
-    return '-11'  # SIGSEGV
-  elif env.Bit('mac'):
-    return '-10'  # SIGBUS
-  elif env.Bit('windows'):
-    return'-1073741819'  # 0x3ffffffB
-  else:
-    assert 0
-    return None
-
-
 ERROR_WHILE_LOADING = '"^(Error while loading).*' +  '(:[^:]*)"'
-NULL_POINTER_EXIT_CODE = GetNullPointerExitCode(env)
 
 
 if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '32':
@@ -663,7 +650,7 @@ if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '32':
       'nullptr.out',
       # built in tests/nullptr/
       command=[env.File('testdata/nullptr.nexe')],
-      exit_status=NULL_POINTER_EXIT_CODE)
+      exit_status='segfault')
   env.AddNodeToTestSuite(node, ['medium_tests'])
 
 
@@ -680,7 +667,7 @@ if env['TARGET_ARCHITECTURE'] == 'x86':
   node = env.CommandTestAgainstGoldenOutput(
       'sel_ldr_thread_death_test.out',
       command=[sel_ldr_thread_death_test_exe],
-      exit_status=NULL_POINTER_EXIT_CODE)
+      exit_status='segfault')
 
 # TODO(tuduce): Make it work on windows.
 if not env.Bit('windows'):

@@ -931,8 +931,6 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'x86' and
           'tests/syscalls/nacl.scons',
           'tests/threads/nacl.scons',
           'tests/vim/nacl.scons',
-
-          'tools/tests/nacl.scons',
           ####  ALPHABETICALLY SORTED ####
           ],
       )
@@ -950,6 +948,8 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'x86' and
             'tests/selenium_dummy/nacl.scons',
             'tests/tone/nacl.scons',
             'tests/voronoi/nacl.scons',
+
+            'tools/tests/nacl.scons',
             ])
 
 if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
@@ -968,20 +968,34 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
       EMULATOR  = EMULATOR,
       )
 
+  # TODO(robertm): merge this with list above as soon as they are similar
+  #                enough
   nacl_env.Append(
       BUILD_SCONSCRIPTS = [
 #      NOTE: The commented out case are earmarked to be tried next
-#      'tests/threads/nacl.scons',
-#      'tests/syscalls/nacl.scons',
-#      'tests/nullptr/nacl.scons',
-#      'tests/mmap/nacl.scons',
 #      'tests/app_lib/nacl.scons',
-      'tests/hello_world/nacl.scons',
+      'tests/autoloader/nacl.scons',
+#      'tests/contest_issues/nacl.scons',
       'tests/fib/nacl.scons',
+#      'tests/file/nacl.scons',
+      'tests/hello_world/nacl.scons',
+      'tests/imc_shm_mmap/nacl.scons',
+      'tests/mandel/nacl.scons',
+#      'tests/mmap/nacl.scons',
+      'tests/native_worker/nacl.scons',
       'tests/noop/nacl.scons',
+      'tests/nrd_xfer/nacl.scons',
+#      'tests/nthread_nice/nacl.scons',
       'tests/null/nacl.scons',
+      'tests/nullptr/nacl.scons',
       'tests/srpc/nacl.scons',
+      'tests/srpc_hw/nacl.scons',
+      'tests/srpc_without_pthread/nacl.scons',
       'tests/sysbasic/nacl.scons',
+#      'tests/syscalls/nacl.scons',
+#      'tests/threads/nacl.scons',
+      'tests/vim/nacl.scons',
+
       'tests/arm_service_runtime/nacl.scons',
       ])
 
