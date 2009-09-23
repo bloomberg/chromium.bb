@@ -27,6 +27,8 @@ enum ViewID {
   VIEW_ID_TAB_9,
   VIEW_ID_TAB_LAST,
 
+  VIEW_ID_TAB_STRIP,
+
   // Toolbar & toolbar elements.
   VIEW_ID_TOOLBAR = 1000,
   VIEW_ID_BACK_BUTTON,
@@ -46,10 +48,17 @@ enum ViewID {
 
   // Find in page.
   VIEW_ID_FIND_IN_PAGE_TEXT_FIELD,
+  VIEW_ID_FIND_IN_PAGE,
 
   // Tab Container window.
   VIEW_ID_TAB_CONTAINER,
   VIEW_ID_TAB_CONTAINER_FOCUS_VIEW,
+
+  // Docked dev tools.
+  VIEW_ID_DEV_TOOLS_DOCKED,
+
+  // Bottom extension shelf.
+  VIEW_ID_DEV_EXTENSION_SHELF,
 
   VIEW_ID_PREDEFINED_COUNT
 };

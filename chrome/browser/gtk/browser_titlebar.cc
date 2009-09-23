@@ -163,6 +163,7 @@ void BrowserTitlebar::Init() {
   GtkWidget* container_hbox = gtk_hbox_new(FALSE, 0);
 
   container_ = gtk_event_box_new();
+  gtk_widget_set_name(container_, "chrome-browser-titlebar");
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(container_), FALSE);
   gtk_container_add(GTK_CONTAINER(container_), container_hbox);
 

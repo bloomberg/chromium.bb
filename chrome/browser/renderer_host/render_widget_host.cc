@@ -637,7 +637,7 @@ void RenderWidgetHost::OnMsgPaintRect(
 
   // We don't need to update the view if the view is hidden. We must do this
   // early return after the ACK is sent, however, or the renderer will not send
-  // is more data.
+  // us more data.
   if (is_hidden_)
     return;
 

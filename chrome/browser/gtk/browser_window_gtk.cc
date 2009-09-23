@@ -1535,6 +1535,7 @@ void BrowserWindowGtk::InitWidgets() {
 
   // The window container draws the custom browser frame.
   window_container_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  gtk_widget_set_name(window_container_, "chrome-custom-frame-border");
   gtk_widget_set_app_paintable(window_container_, TRUE);
   gtk_widget_set_double_buffered(window_container_, FALSE);
   gtk_widget_set_redraw_on_allocate(window_container_, TRUE);
@@ -1646,6 +1647,7 @@ void BrowserWindowGtk::InitWidgets() {
 
   contents_container_.reset(new TabContentsContainerGtk(status_bubble_.get()));
   devtools_container_.reset(new TabContentsContainerGtk(NULL));
+  ViewIDUtil::SetID(devtools_container_->widget(), VIEW_ID_DEV_TOOLS_DOCKED);
   contents_split_ = gtk_vpaned_new();
   gtk_paned_pack1(GTK_PANED(contents_split_), contents_container_->widget(),
                   TRUE, TRUE);

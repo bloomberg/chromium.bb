@@ -212,6 +212,7 @@ void FindBarGtk::InitWidgets() {
   container_ = gtk_util::CreateGtkBorderBin(hbox, NULL,
       kBarPaddingTopBottom, kBarPaddingTopBottom,
       kEntryPaddingLeft, kBarPaddingRight);
+  ViewIDUtil::SetID(container_, VIEW_ID_FIND_IN_PAGE);
   gtk_widget_set_app_paintable(container_, TRUE);
 
   slide_widget_.reset(new SlideAnimatorGtk(container_,

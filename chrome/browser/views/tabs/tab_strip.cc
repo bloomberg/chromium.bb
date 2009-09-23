@@ -1364,6 +1364,7 @@ TabStrip* TabStrip::AsTabStrip() {
 // TabStrip, private:
 
 void TabStrip::Init() {
+  SetID(VIEW_ID_TAB_STRIP);
   model_->AddObserver(this);
   newtab_button_size_.SetSize(kNewTabButtonWidth, kNewTabButtonHeight);
   if (drop_indicator_width == 0) {

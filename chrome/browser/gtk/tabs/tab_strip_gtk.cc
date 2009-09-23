@@ -710,6 +710,7 @@ void TabStripGtk::Init() {
   model_->AddObserver(this);
 
   tabstrip_.Own(gtk_fixed_new());
+  ViewIDUtil::SetID(tabstrip_.get(), VIEW_ID_TAB_STRIP);
   gtk_widget_set_size_request(tabstrip_.get(), -1,
                               TabGtk::GetMinimumUnselectedSize().height());
   gtk_widget_set_app_paintable(tabstrip_.get(), TRUE);

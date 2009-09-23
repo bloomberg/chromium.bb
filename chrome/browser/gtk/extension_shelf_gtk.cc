@@ -8,6 +8,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"
 #include "grit/app_resources.h"
@@ -176,6 +177,7 @@ void ExtensionShelfGtk::Init(Profile* profile) {
   // The event box provides a background for the shelf and is its top-level
   // widget.
   event_box_.Own(gtk_event_box_new());
+  ViewIDUtil::SetID(event_box_.get(), VIEW_ID_DEV_EXTENSION_SHELF);
   gtk_widget_modify_bg(event_box_.get(), GTK_STATE_NORMAL, &kBackgroundColor);
 
   shelf_hbox_ = gtk_hbox_new(FALSE, 0);

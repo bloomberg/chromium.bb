@@ -1630,6 +1630,7 @@ void BrowserView::Init() {
 
   contents_container_ = new TabContentsContainer;
   devtools_container_ = new TabContentsContainer;
+  devtools_container_->SetID(VIEW_ID_DEV_TOOLS_DOCKED);
   devtools_container_->SetVisible(false);
   contents_split_ = new views::SingleSplitView(
       contents_container_,

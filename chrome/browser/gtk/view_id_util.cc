@@ -59,6 +59,9 @@ void SearchForWidgetWithViewID(GtkWidget* widget, gpointer data) {
 
 const char* GetNameFromID(ViewID id) {
   switch (id) {
+    case VIEW_ID_TAB_STRIP:
+      return "chrome-tab-strip";
+
     case VIEW_ID_TOOLBAR:
       return "chrome-toolbar";
 
@@ -100,6 +103,15 @@ const char* GetNameFromID(ViewID id) {
 
     case VIEW_ID_FIND_IN_PAGE_TEXT_FIELD:
       return "chrome-find-in-page-entry";
+
+    case VIEW_ID_FIND_IN_PAGE:
+      return "chrome-find-in-page";
+
+    case VIEW_ID_DEV_TOOLS_DOCKED:
+      return "chrome-dev-tools-docked";
+
+    case VIEW_ID_DEV_EXTENSION_SHELF:
+      return "chrome-extension-shelf";
 
     // These are never hit because the tab container uses the delegate to
     // set its ID.

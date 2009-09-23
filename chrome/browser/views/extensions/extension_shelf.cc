@@ -19,6 +19,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/extensions/extension_view.h"
+#include "chrome/browser/view_ids.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
@@ -683,6 +684,7 @@ ExtensionShelf::ExtensionShelf(Browser* browser)
       browser_(browser),
       model_(browser->extension_shelf_model()),
       fullscreen_(false) {
+  SetID(VIEW_ID_DEV_EXTENSION_SHELF);
   model_->AddObserver(this);
   LoadFromModel();
   EnableCanvasFlippingForRTLUI(true);
