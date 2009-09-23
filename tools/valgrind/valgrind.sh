@@ -72,10 +72,9 @@ if test x"$CHROME_VALGRIND_BIN" = x
 then
   # Figure out which valgrind is installed.  Use most recent one.
   # See build-valgrind-for-chromium.sh and its history for these constants.
-  for SVNREV in '10880' '10771' '{2009-07-15}'
+  for SVNREV in 10880-redzone 10880 10771 20090715
   do
-    SHORTSVNREV=`echo $SVNREV | tr -d '{\-}'`
-    CHROME_VALGRIND_BIN=/usr/local/valgrind-$SHORTSVNREV/bin
+    CHROME_VALGRIND_BIN=/usr/local/valgrind-$SVNREV/bin
     test -x $CHROME_VALGRIND_BIN/valgrind && break
   done
 fi
