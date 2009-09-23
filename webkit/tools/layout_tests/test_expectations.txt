@@ -2363,3 +2363,17 @@ BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/forms/formnovalidate-attribute.html 
 BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/images/imagemap-case.html = FAIL
 BUG_PAUL LINUX DEBUG : LayoutTests/fast/backgrounds/size/contain-and-cover.html = PASS FAIL
 BUG_PAUL MAC DEBUG : LayoutTests/fast/forms/onselect-selectall.html = PASS TIMEOUT
+
+// WebKit update 48642:48665
+BUG_DGLAZKOV : LayoutTests/fast/loader/fragment-after-redirect-gets-back-entry.html = FAIL
+BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/table/fixed-table-with-percent-inside-percent-table.html = FAIL
+BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/table/fixed-table-with-percent-width-inside-auto-table.html = FAIL
+BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/table/fixed-table-with-percent-width-inside-div.html = FAIL
+BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/table/fixed-table-with-percent-width-inside-extra-large-div.html = FAIL
+BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/table/fixed-table-with-percent-width-inside-fixed-width-table.html = FAIL
+BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/table/fixed-table-with-small-percent-width.html = FAIL
+BUG_DGLAZKOV WIN LINUX : LayoutTests/tables/mozilla/bugs/bug34176.html = FAIL
+BUG_DGLAZKOV WIN : LayoutTests/storage/read-and-write-transactions-dont-run-together.html = TIMEOUT
+BUG_DGLAZKOV WIN : LayoutTests/storage/read-transactions-running-concurrently.html = TIMEOUT
+BUG_DGLAZKOV MAC LINUX : LayoutTests/storage/read-and-write-transactions-dont-run-together.html = CRASH
+BUG_DGLAZKOV MAC LINUX : LayoutTests/storage/read-transactions-running-concurrently.html = CRASH
