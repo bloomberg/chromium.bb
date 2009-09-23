@@ -32,15 +32,6 @@ void OSExchangeData::SetPickledData(CustomFormat format, const Pickle& data) {
   provider_->SetPickledData(format, data);
 }
 
-void OSExchangeData::SetFileContents(const std::wstring& filename,
-                                     const std::string& file_contents) {
-  provider_->SetFileContents(filename, file_contents);
-}
-
-void OSExchangeData::SetHtml(const std::wstring& html, const GURL& base_url) {
-  provider_->SetHtml(html, base_url);
-}
-
 bool OSExchangeData::GetString(std::wstring* data) const {
   return provider_->GetString(data);
 }
@@ -55,15 +46,6 @@ bool OSExchangeData::GetFilename(std::wstring* full_path) const {
 
 bool OSExchangeData::GetPickledData(CustomFormat format, Pickle* data) const {
   return provider_->GetPickledData(format, data);
-}
-
-bool OSExchangeData::GetFileContents(std::wstring* filename,
-                                     std::string* file_contents) const {
-  return provider_->GetFileContents(filename, file_contents);
-}
-
-bool OSExchangeData::GetHtml(std::wstring* html, GURL* base_url) const {
-  return provider_->GetHtml(html, base_url);
 }
 
 bool OSExchangeData::HasString() const {
@@ -89,11 +71,13 @@ bool OSExchangeData::HasAllFormats(
     return false;
   if ((formats & URL) != 0 && !HasURL())
     return false;
+#if defined(OS_WIN)
   if ((formats & FILE_CONTENTS) != 0 && !provider_->HasFileContents())
     return false;
-  if ((formats & FILE_NAME) != 0 && !provider_->HasFile())
-    return false;
   if ((formats & HTML) != 0 && !provider_->HasHtml())
+    return false;
+#endif
+  if ((formats & FILE_NAME) != 0 && !provider_->HasFile())
     return false;
   for (std::set<CustomFormat>::const_iterator i = custom_formats.begin();
        i != custom_formats.end(); ++i) {
@@ -110,11 +94,13 @@ bool OSExchangeData::HasAnyFormat(
     return true;
   if ((formats & URL) != 0 && HasURL())
     return true;
+#if defined(OS_WIN)
   if ((formats & FILE_CONTENTS) != 0 && provider_->HasFileContents())
     return true;
-  if ((formats & FILE_NAME) != 0 && provider_->HasFile())
-    return true;
   if ((formats & HTML) != 0 && provider_->HasHtml())
+    return true;
+#endif
+  if ((formats & FILE_NAME) != 0 && provider_->HasFile())
     return true;
   for (std::set<CustomFormat>::const_iterator i = custom_formats.begin();
        i != custom_formats.end(); ++i) {
@@ -123,3 +109,23 @@ bool OSExchangeData::HasAnyFormat(
   }
   return false;
 }
+
+#if defined(OS_WIN)
+void OSExchangeData::SetFileContents(const std::wstring& filename,
+                                     const std::string& file_contents) {
+  provider_->SetFileContents(filename, file_contents);
+}
+
+void OSExchangeData::SetHtml(const std::wstring& html, const GURL& base_url) {
+  provider_->SetHtml(html, base_url);
+}
+
+bool OSExchangeData::GetFileContents(std::wstring* filename,
+                                     std::string* file_contents) const {
+  return provider_->GetFileContents(filename, file_contents);
+}
+
+bool OSExchangeData::GetHtml(std::wstring* html, GURL* base_url) const {
+  return provider_->GetHtml(html, base_url);
+}
+#endif

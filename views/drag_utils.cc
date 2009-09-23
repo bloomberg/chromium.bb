@@ -55,7 +55,7 @@ void SetURLAndDragImage(const GURL& url,
                            data);
 }
 
-void CreateDragImageForFile(const std::wstring& file_name,
+void CreateDragImageForFile(const FilePath::StringType& file_name,
                             SkBitmap* icon,
                             OSExchangeData* data_object) {
   DCHECK(icon);
@@ -74,15 +74,18 @@ void CreateDragImageForFile(const std::wstring& file_name,
   // Paint the icon.
   canvas.DrawBitmapInt(*icon, (width - icon->width()) / 2, 0);
 
-  // Paint the file name. We inset it one pixel to allow room for the halo.
 #if defined(OS_WIN)
-  const std::wstring& name = file_util::GetFilenameFromPath(file_name);
+  // Paint the file name. We inset it one pixel to allow room for the halo.
+  std::wstring name = file_util::GetFilenameFromPath(file_name);
   canvas.DrawStringWithHalo(name, font, kFileDragImageTextColor, SK_ColorWHITE,
                             1, icon->height() + kLinkDragImageVPadding + 1,
                             width - 2, font.height(),
                             gfx::Canvas::TEXT_ALIGN_CENTER);
 #else
-  NOTIMPLEMENTED();
+  std::wstring name = file_util::GetFilenameFromPath(UTF8ToWide(file_name));
+  canvas.DrawStringInt(name, font, kFileDragImageTextColor,
+                       0, icon->height() + kLinkDragImageVPadding,
+                       width, font.height(), gfx::Canvas::TEXT_ALIGN_CENTER);
 #endif
 
   SetDragImageOnDataObject(canvas, width, height, width / 2,

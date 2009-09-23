@@ -910,8 +910,11 @@ bool DownloadItemView::OnMouseDragged(const views::MouseEvent& event) {
       IconManager* im = g_browser_process->icon_manager();
       SkBitmap* icon = im->LookupIcon(download_->full_path(),
                                       IconLoader::SMALL);
-      if (icon)
-        download_util::DragDownload(download_, icon, NULL);
+      if (icon) {
+        views::Widget* widget = GetWidget();
+        download_util::DragDownload(download_, icon,
+                                    widget ? widget->GetNativeView() : NULL);
+      }
     }
   } else if (ExceededDragThreshold(
                  event.location().x() - drag_start_point_.x(),

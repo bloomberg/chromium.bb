@@ -24,14 +24,19 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkShader.h"
 
-#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
 #include "app/os_exchange_data.h"
+#include "views/drag_utils.h"
+#endif
+
+#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
+#include "app/drag_drop_types.h"
+#include "views/widget/widget_gtk.h"
 #endif
 
 #if defined(OS_WIN)
 #include "app/os_exchange_data_provider_win.h"
 #include "base/base_drag_source.h"
-#include "views/drag_utils.h"
 #endif
 
 namespace download_util {
@@ -72,7 +77,7 @@ SkBitmap* g_foreground_32 = NULL;
 SkBitmap* g_background_32 = NULL;
 
 void PaintDownloadProgress(gfx::Canvas* canvas,
-#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
                            views::View* containing_view,
 #endif
                            int origin_x,
@@ -102,7 +107,7 @@ void PaintDownloadProgress(gfx::Canvas* canvas,
   gfx::Rect foreground_bounds(origin_x, origin_y,
                               foreground->width(), foreground->height());
 
-#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
   // Mirror the positions if necessary.
   int mirrored_x = containing_view->MirroredLeftPointForRect(background_bounds);
   background_bounds.set_x(mirrored_x);
@@ -171,7 +176,7 @@ void PaintDownloadProgress(gfx::Canvas* canvas,
 }
 
 void PaintDownloadComplete(gfx::Canvas* canvas,
-#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
                            views::View* containing_view,
 #endif
                            int origin_x,
@@ -189,7 +194,7 @@ void PaintDownloadComplete(gfx::Canvas* canvas,
 
   gfx::Rect complete_bounds(origin_x, origin_y,
                             complete->width(), complete->height());
-#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
   // Mirror the positions if necessary.
   complete_bounds.set_x(
       containing_view->MirroredLeftPointForRect(complete_bounds));
@@ -235,41 +240,50 @@ int GetBigProgressIconOffset() {
   return (GetBigProgressIconSize() - kBigIconSize) / 2;
 }
 
-#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
 // Download dragging
 void DragDownload(const DownloadItem* download,
                   SkBitmap* icon,
                   gfx::NativeView view) {
-#if defined(OS_WIN)
   DCHECK(download);
 
   // Set up our OLE machinery
   OSExchangeData data;
 
-  const FilePath::StringType file_name = download->file_name().value();
-  if (icon)
-    drag_utils::CreateDragImageForFile(file_name, icon, &data);
-  data.SetFilename(download->full_path().ToWStringHack());
+  if (icon) {
+    drag_utils::CreateDragImageForFile(download->file_name().value(), icon,
+                                       &data);
+  }
 
   const FilePath full_path = download->full_path();
-  data.SetFilename(full_path.value());
+  data.SetFilename(full_path.ToWStringHack());
 
   std::string mime_type = download->mime_type();
   if (mime_type.empty())
     net::GetMimeTypeFromFile(full_path, &mime_type);
 
   // Add URL so that we can load supported files when dragged to TabContents.
-  if (net::IsSupportedMimeType(mime_type))
-    data.SetURL(GURL(full_path.value()), file_name);
+  if (net::IsSupportedMimeType(mime_type)) {
+    data.SetURL(GURL(WideToUTF8(full_path.ToWStringHack())),
+                     download->file_name().ToWStringHack());
+  }
 
+#if defined(OS_WIN)
   scoped_refptr<BaseDragSource> drag_source(new BaseDragSource);
 
   // Run the drag and drop loop
   DWORD effects;
   DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source.get(),
              DROPEFFECT_COPY | DROPEFFECT_LINK, &effects);
-#else
-  NOTIMPLEMENTED();
+#elif defined(OS_LINUX)
+  GtkWidget* root = gtk_widget_get_toplevel(view);
+  if (!root)
+    return;
+  views::WidgetGtk* widget = views::WidgetGtk::GetViewForNative(root);
+  if (!widget)
+    return;
+
+  widget->DoDrag(data, DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_LINK);
 #endif  // OS_WIN
 }
 #endif

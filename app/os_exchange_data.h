@@ -32,6 +32,11 @@ class Pickle;
 //  translating that into something the OS can understand.
 //
 ///////////////////////////////////////////////////////////////////////////////
+
+// NOTE: Support for html and file contents is required by TabContentViewWin.
+// TabContentsViewGtk uses a different class to handle drag support that does
+// not use OSExchangeData. As such, file contents and html support is only
+// compiled on windows.
 class OSExchangeData {
  public:
   // CustomFormats are used for non-standard data types. For example, bookmark
@@ -46,10 +51,12 @@ class OSExchangeData {
   enum Format {
     STRING         = 1 << 0,
     URL            = 1 << 1,
-    FILE_CONTENTS  = 1 << 2,
-    FILE_NAME      = 1 << 3,
-    PICKLED_DATA   = 1 << 4,
-    HTML           = 1 << 5
+    FILE_NAME      = 1 << 2,
+    PICKLED_DATA   = 1 << 3,
+#if defined(OS_WIN)
+    FILE_CONTENTS  = 1 << 4,
+    HTML           = 1 << 5,
+#endif
   };
 
   // Provider defines the platform specific part of OSExchangeData that
@@ -63,25 +70,28 @@ class OSExchangeData {
     virtual void SetURL(const GURL& url, const std::wstring& title) = 0;
     virtual void SetFilename(const std::wstring& full_path) = 0;
     virtual void SetPickledData(CustomFormat format, const Pickle& data) = 0;
-    virtual void SetFileContents(const std::wstring& filename,
-                                 const std::string& file_contents) = 0;
-    virtual void SetHtml(const std::wstring& html, const GURL& base_url) = 0;
 
     virtual bool GetString(std::wstring* data) const = 0;
     virtual bool GetURLAndTitle(GURL* url, std::wstring* title) const = 0;
     virtual bool GetFilename(std::wstring* full_path) const = 0;
     virtual bool GetPickledData(CustomFormat format, Pickle* data) const = 0;
-    virtual bool GetFileContents(std::wstring* filename,
-                                 std::string* file_contents) const = 0;
-    virtual bool GetHtml(std::wstring* html, GURL* base_url) const = 0;
 
     virtual bool HasString() const = 0;
     virtual bool HasURL() const = 0;
     virtual bool HasFile() const = 0;
-    virtual bool HasFileContents() const = 0;
-    virtual bool HasHtml() const = 0;
     virtual bool HasCustomFormat(
         OSExchangeData::CustomFormat format) const = 0;
+
+#if defined(OS_WIN)
+    virtual void SetFileContents(const std::wstring& filename,
+                                 const std::string& file_contents) = 0;
+    virtual void SetHtml(const std::wstring& html, const GURL& base_url) = 0;
+    virtual bool GetFileContents(std::wstring* filename,
+                                 std::string* file_contents) const = 0;
+    virtual bool GetHtml(std::wstring* html, GURL* base_url) const = 0;
+    virtual bool HasFileContents() const = 0;
+    virtual bool HasHtml() const = 0;
+#endif
   };
 
   OSExchangeData();
@@ -111,16 +121,11 @@ class OSExchangeData {
   void SetString(const std::wstring& data);
   // A URL can have an optional title in some exchange formats.
   void SetURL(const GURL& url, const std::wstring& title);
-  // A full path to a file
+  // A full path to a file.
+  // TODO: convert to Filepath.
   void SetFilename(const std::wstring& full_path);
   // Adds pickled data of the specified format.
   void SetPickledData(CustomFormat format, const Pickle& data);
-  // Adds the bytes of a file (CFSTR_FILECONTENTS and CFSTR_FILEDESCRIPTOR).
-  void SetFileContents(const std::wstring& filename,
-                       const std::string& file_contents);
-  // Adds a snippet of HTML.  |html| is just raw html but this sets both
-  // text/html and CF_HTML.
-  void SetHtml(const std::wstring& html, const GURL& base_url);
 
   // These functions retrieve data of the specified type. If data exists, the
   // functions return and the result is in the out parameter. If the data does
@@ -131,9 +136,6 @@ class OSExchangeData {
   // Return the path of a file, if available.
   bool GetFilename(std::wstring* full_path) const;
   bool GetPickledData(CustomFormat format, Pickle* data) const;
-  bool GetFileContents(std::wstring* filename,
-                       std::string* file_contents) const;
-  bool GetHtml(std::wstring* html, GURL* base_url) const;
 
   // Test whether or not data of certain types is present, without actually
   // returning anything.
@@ -151,6 +153,18 @@ class OSExchangeData {
   // |formats| or any custom format in |custom_formats|.
   bool HasAnyFormat(int formats,
                      const std::set<CustomFormat>& custom_formats) const;
+
+#if defined(OS_WIN)
+  // Adds the bytes of a file (CFSTR_FILECONTENTS and CFSTR_FILEDESCRIPTOR).
+  void SetFileContents(const std::wstring& filename,
+                       const std::string& file_contents);
+  // Adds a snippet of HTML.  |html| is just raw html but this sets both
+  // text/html and CF_HTML.
+  void SetHtml(const std::wstring& html, const GURL& base_url);
+  bool GetFileContents(std::wstring* filename,
+                       std::string* file_contents) const;
+  bool GetHtml(std::wstring* html, GURL* base_url) const;
+#endif
 
  private:
   // Creates the platform specific Provider.

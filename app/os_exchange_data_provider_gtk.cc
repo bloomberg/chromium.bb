@@ -7,7 +7,9 @@
 #include <algorithm>
 
 #include "app/gtk_dnd_util.h"
+#include "base/file_path.h"
 #include "base/string_util.h"
+#include "net/base/net_util.h"
 
 OSExchangeDataProviderGtk::OSExchangeDataProviderGtk(
     int known_formats,
@@ -53,15 +55,8 @@ GtkTargetList* OSExchangeDataProviderGtk::GetTargetList() const {
         OSExchangeData::URL);
   }
 
-  if ((formats_ & OSExchangeData::FILE_CONTENTS) != 0)
-    NOTIMPLEMENTED();
-
   if ((formats_ & OSExchangeData::FILE_NAME) != 0)
-    NOTIMPLEMENTED();
-
-  if ((formats_ & OSExchangeData::HTML) != 0)
-    NOTIMPLEMENTED();
-
+    gtk_target_list_add_uri_targets(targets, OSExchangeData::FILE_NAME);
 
   for (PickleData::const_iterator i = pickle_data_.begin();
        i != pickle_data_.end(); ++i) {
@@ -101,15 +96,14 @@ void OSExchangeDataProviderGtk::WriteFormatToSelection(
     free(uri_array[0]);
   }
 
-  if ((format & OSExchangeData::FILE_CONTENTS) != 0)
-    NOTIMPLEMENTED();
-
-  if ((format & OSExchangeData::FILE_NAME) != 0)
-    NOTIMPLEMENTED();
-
-  if ((format & OSExchangeData::HTML) != 0)
-    NOTIMPLEMENTED();
-
+  if ((format & OSExchangeData::FILE_NAME) != 0) {
+    gchar* uri_array[2];
+    uri_array[0] =
+        strdup(net::FilePathToFileURL(FilePath(filename_)).spec().c_str());
+    uri_array[1] = NULL;
+    gtk_selection_data_set_uris(selection, uri_array);
+    free(uri_array[0]);
+  }
 
   if ((format & OSExchangeData::PICKLED_DATA) != 0) {
     for (PickleData::const_iterator i = pickle_data_.begin();
@@ -138,7 +132,7 @@ void OSExchangeDataProviderGtk::SetURL(const GURL& url,
 }
 
 void OSExchangeDataProviderGtk::SetFilename(const std::wstring& full_path) {
-  filename_ = WideToUTF16Hack(full_path);
+  filename_ = WideToUTF8(full_path);
   formats_ |= OSExchangeData::FILE_NAME;
 }
 
@@ -146,21 +140,6 @@ void OSExchangeDataProviderGtk::SetPickledData(GdkAtom format,
                                                const Pickle& data) {
   pickle_data_[format] = data;
   formats_ |= OSExchangeData::PICKLED_DATA;
-}
-
-void OSExchangeDataProviderGtk::SetFileContents(
-    const std::wstring& filename,
-    const std::string& file_contents) {
-  filename_ = WideToUTF16Hack(filename);
-  file_contents_ = file_contents;
-  formats_ |= OSExchangeData::FILE_CONTENTS;
-}
-
-void OSExchangeDataProviderGtk::SetHtml(const std::wstring& html,
-                                        const GURL& base_url) {
-  html_ = WideToUTF16Hack(html);
-  base_url_ = base_url;
-  formats_ |= OSExchangeData::HTML;
 }
 
 bool OSExchangeDataProviderGtk::GetString(std::wstring* data) const {
@@ -172,8 +151,11 @@ bool OSExchangeDataProviderGtk::GetString(std::wstring* data) const {
 
 bool OSExchangeDataProviderGtk::GetURLAndTitle(GURL* url,
                                                std::wstring* title) const {
-  if ((formats_ & OSExchangeData::URL) == 0)
-    return false;
+  if ((formats_ & OSExchangeData::URL) == 0) {
+    title->clear();
+    return GetPlainTextURL(url);
+  }
+
   if (!url_.is_valid())
     return false;
 
@@ -185,7 +167,7 @@ bool OSExchangeDataProviderGtk::GetURLAndTitle(GURL* url,
 bool OSExchangeDataProviderGtk::GetFilename(std::wstring* full_path) const {
   if ((formats_ & OSExchangeData::FILE_NAME) == 0)
     return false;
-  *full_path = UTF16ToWideHack(filename_);
+  *full_path = UTF8ToWide(filename_);
   return true;
 }
 
@@ -199,33 +181,18 @@ bool OSExchangeDataProviderGtk::GetPickledData(GdkAtom format,
   return true;
 }
 
-bool OSExchangeDataProviderGtk::GetFileContents(
-    std::wstring* filename,
-    std::string* file_contents) const {
-  if ((formats_ & OSExchangeData::FILE_CONTENTS) == 0)
-    return false;
-  *filename = UTF16ToWideHack(filename_);
-  *file_contents = file_contents_;
-  return true;
-}
-
-bool OSExchangeDataProviderGtk::GetHtml(std::wstring* html,
-                                        GURL* base_url) const {
-  if ((formats_ & OSExchangeData::HTML) == 0)
-    return false;
-  *html = UTF16ToWideHack(filename_);
-  *base_url = base_url_;
-  return true;
-}
-
 bool OSExchangeDataProviderGtk::HasString() const {
   return (known_formats_ & OSExchangeData::STRING) != 0 ||
          (formats_ & OSExchangeData::STRING) != 0;
 }
 
 bool OSExchangeDataProviderGtk::HasURL() const {
-  return (known_formats_ & OSExchangeData::URL) != 0 ||
-         (formats_ & OSExchangeData::URL) != 0;
+  if ((known_formats_ & OSExchangeData::URL) != 0 ||
+      (formats_ & OSExchangeData::URL) != 0) {
+    return true;
+  }
+  // No URL, see if we have plain text that can be parsed as a URL.
+  return GetPlainTextURL(NULL);
 }
 
 bool OSExchangeDataProviderGtk::HasFile() const {
@@ -233,19 +200,22 @@ bool OSExchangeDataProviderGtk::HasFile() const {
          (formats_ & OSExchangeData::FILE_NAME) != 0;
   }
 
-bool OSExchangeDataProviderGtk::HasFileContents() const {
-  return (known_formats_ & OSExchangeData::FILE_CONTENTS) != 0 ||
-         (formats_ & OSExchangeData::FILE_CONTENTS) != 0;
-}
-
-bool OSExchangeDataProviderGtk::HasHtml() const {
-  return (known_formats_ & OSExchangeData::HTML) != 0 ||
-         (formats_ & OSExchangeData::HTML) != 0;
-}
-
 bool OSExchangeDataProviderGtk::HasCustomFormat(GdkAtom format) const {
   return known_custom_formats_.find(format) != known_custom_formats_.end() ||
          pickle_data_.find(format) != pickle_data_.end();
+}
+
+bool OSExchangeDataProviderGtk::GetPlainTextURL(GURL* url) const {
+  if ((formats_ & OSExchangeData::STRING) == 0)
+    return false;
+
+  GURL test_url(string_);
+  if (!test_url.is_valid())
+    return false;
+
+  if (url)
+    *url = test_url;
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

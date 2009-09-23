@@ -59,26 +59,22 @@ class OSExchangeDataProviderGtk : public OSExchangeData::Provider {
   virtual void SetFilename(const std::wstring& full_path);
   virtual void SetPickledData(OSExchangeData::CustomFormat format,
                               const Pickle& data);
-  virtual void SetFileContents(const std::wstring& filename,
-                               const std::string& file_contents);
-  virtual void SetHtml(const std::wstring& html, const GURL& base_url);
   virtual bool GetString(std::wstring* data) const;
   virtual bool GetURLAndTitle(GURL* url, std::wstring* title) const;
   virtual bool GetFilename(std::wstring* full_path) const;
   virtual bool GetPickledData(OSExchangeData::CustomFormat format,
                               Pickle* data) const;
-  virtual bool GetFileContents(std::wstring* filename,
-                               std::string* file_contents) const;
-  virtual bool GetHtml(std::wstring* html, GURL* base_url) const;
   virtual bool HasString() const;
   virtual bool HasURL() const;
   virtual bool HasFile() const;
-  virtual bool HasFileContents() const;
-  virtual bool HasHtml() const;
   virtual bool HasCustomFormat(OSExchangeData::CustomFormat format) const;
 
  private:
   typedef std::map<OSExchangeData::CustomFormat, Pickle>  PickleData;
+
+  // Returns true if |formats_| contains a string format and the string can be
+  // parsed as a URL.
+  bool GetPlainTextURL(GURL* url) const;
 
   // These are the possible formats the OSExchangeData may contain. Don't
   // confuse this with the actual formats that have been set, which are
@@ -97,13 +93,8 @@ class OSExchangeDataProviderGtk : public OSExchangeData::Provider {
   GURL url_;
   string16 title_;
 
-  // File contents.
-  string16 filename_;
-  std::string file_contents_;
-
-  // HTML contents.
-  string16 html_;
-  GURL base_url_;
+  // File name.
+  std::string filename_;
 
   // PICKLED_DATA contents.
   PickleData pickle_data_;

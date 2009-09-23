@@ -10,8 +10,10 @@
 #include "app/drag_drop_types.h"
 #include "app/gtk_dnd_util.h"
 #include "app/os_exchange_data_provider_gtk.h"
+#include "base/file_path.h"
 #include "base/gfx/point.h"
 #include "base/string_util.h"
+#include "net/base/net_util.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
 
@@ -27,14 +29,14 @@ std::string GdkAtomToString(GdkAtom atom) {
 // Returns true if |name| is a known name of plain text.
 bool IsTextType(const std::string& name) {
   return name == "text/plain" || name == "TEXT" ||
-         name == "STRING" || name == "UTF8_STRING";
+         name == "STRING" || name == "UTF8_STRING" ||
+         name == "text/plain;charset=utf-8";
 }
 
 // Returns the OSExchangeData::Formats in |targets| and all the
 // OSExchangeData::CustomFormats in |type_set|.
 int CalculateTypes(GList* targets, std::set<GdkAtom>* type_set) {
   int types = 0;
-  NOTIMPLEMENTED();  // Need to support FILE_NAME, FILE_CONTENTS
   for (GList* element = targets; element;
        element = g_list_next(element)) {
     GdkAtom atom = static_cast<GdkAtom>(element->data);
@@ -42,15 +44,15 @@ int CalculateTypes(GList* targets, std::set<GdkAtom>* type_set) {
     if (atom == GDK_TARGET_STRING) {
       types |= OSExchangeData::STRING;
     } else if (atom == GtkDndUtil::GetAtomForTarget(
-                   GtkDndUtil::CHROME_NAMED_URL) ||
-               atom == GtkDndUtil::GetAtomForTarget(
-                   GtkDndUtil::TEXT_URI_LIST)) {
+                   GtkDndUtil::CHROME_NAMED_URL)) {
       types |= OSExchangeData::URL;
+    } else if (atom == GtkDndUtil::GetAtomForTarget(
+                   GtkDndUtil::TEXT_URI_LIST)) {
+      // TEXT_URI_LIST is used for files as well as urls.
+      types |= OSExchangeData::URL | OSExchangeData::FILE_NAME;
     } else {
       std::string target_name = GdkAtomToString(atom);
-      if (target_name == "text/html") {
-        types |= OSExchangeData::HTML;
-      } else if (IsTextType(target_name)) {
+      if (IsTextType(target_name)) {
         types |= OSExchangeData::STRING;
       } else {
         // Assume any unknown data is pickled.
@@ -117,16 +119,21 @@ void DropTargetGtk::OnDragDataReceived(GdkDragContext* context,
                  GtkDndUtil::TEXT_URI_LIST)) {
     std::vector<GURL> urls;
     GtkDndUtil::ExtractURIList(data, &urls);
-    if (urls.size() == 1) {
+    if (urls.size() == 1 && urls[0].is_valid()) {
       data_provider().SetURL(urls[0], std::wstring());
+
+      // TEXT_URI_LIST is used for files as well as urls.
+      if (urls[0].SchemeIsFile()) {
+        FilePath file_path;
+        if (net::FileURLToFilePath(urls[0], &file_path))
+          data_provider().SetFilename(file_path.ToWStringHack());
+      }
     } else {
       // Consumers of OSExchangeData will see this as an invalid URL. That is,
       // when GetURL is invoked on the OSExchangeData this triggers false to
       // be returned.
       data_provider().SetURL(GURL(), std::wstring());
     }
-  } else {
-    NOTIMPLEMENTED();  // Need to support FILE_NAME, FILE_CONTENTS, HTML.
   }
 
   if (!data_->HasAllFormats(requested_formats_, requested_custom_formats_))
@@ -271,6 +278,11 @@ void DropTargetGtk::RequestFormats(GdkDragContext* context,
     } else if (known_formats.count(gdk_atom_intern("text/plain", false))) {
       gtk_drag_get_data(widget, context, gdk_atom_intern("text/plain", false),
                         time);
+    } else if (known_formats.count(gdk_atom_intern("text/plain;charset=utf-8",
+                                                   false))) {
+      gtk_drag_get_data(widget, context,
+                        gdk_atom_intern("text/plain;charset=utf-8", false),
+                        time);
     } else if (known_formats.count(gdk_atom_intern("TEXT", false))) {
         gtk_drag_get_data(widget, context, gdk_atom_intern("TEXT", false),
                           time);
@@ -297,20 +309,12 @@ void DropTargetGtk::RequestFormats(GdkDragContext* context,
                             GtkDndUtil::TEXT_URI_LIST), time);
     }
   }
-  if ((formats & OSExchangeData::FILE_CONTENTS) != 0 &&
-      (requested_formats_ & OSExchangeData::FILE_CONTENTS) == 0) {
-    requested_formats_ |= OSExchangeData::FILE_CONTENTS;
-    NOTIMPLEMENTED();
-  }
   if (((formats & OSExchangeData::FILE_NAME) != 0) &&
       (requested_formats_ & OSExchangeData::FILE_NAME) == 0) {
     requested_formats_ |= OSExchangeData::FILE_NAME;
-    NOTIMPLEMENTED();
-  }
-  if ((formats & OSExchangeData::HTML) != 0 &&
-      (requested_formats_ & OSExchangeData::HTML) == 0) {
-    requested_formats_ |= OSExchangeData::HTML;
-    NOTIMPLEMENTED();
+    gtk_drag_get_data(widget, context,
+                      GtkDndUtil::GetAtomForTarget(
+                          GtkDndUtil::TEXT_URI_LIST), time);
   }
   for (std::set<GdkAtom>::const_iterator i = custom_formats.begin();
        i != custom_formats.end(); ++i) {
