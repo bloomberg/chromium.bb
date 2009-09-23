@@ -355,6 +355,11 @@ void FindBarHost::UnregisterEscAccelerator() {
 
 bool FindBarHost::MaybeForwardKeystrokeToWebpage(
     const views::Textfield::Keystroke& key_stroke) {
+  if (!ShouldForwardKeystrokeToWebpageNative(key_stroke)) {
+    // Native implementation says not to forward these events.
+    return false;
+  }
+
   switch (key_stroke.GetKeyboardCode()) {
     case base::VKEY_DOWN:
     case base::VKEY_UP:

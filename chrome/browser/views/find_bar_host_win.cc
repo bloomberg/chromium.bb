@@ -189,3 +189,9 @@ gfx::NativeView FindBarHost::GetNativeView(BrowserView* browser_view) {
   return browser_view->GetWidget()->GetNativeView();
 }
 
+bool FindBarHost::ShouldForwardKeystrokeToWebpageNative(
+    const views::Textfield::Keystroke& key_stroke) {
+  // We specifically ignore WM_CHAR. See http://crbug.com/10509.
+  return key_stroke.message() == WM_KEYDOWN || key_stroke.message() == WM_KEYUP;
+}
+

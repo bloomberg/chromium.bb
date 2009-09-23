@@ -71,3 +71,8 @@ NativeWebKeyboardEvent FindBarHost::GetKeyboardEvent(
   return NativeWebKeyboardEvent(key_stroke.event());
 }
 
+bool FindBarHost::ShouldForwardKeystrokeToWebpageNative(
+  const views::Textfield::Keystroke& key_stroke) {
+    return true;
+}
+

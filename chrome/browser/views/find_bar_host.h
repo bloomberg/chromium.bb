@@ -44,10 +44,10 @@ class View;
 //
 ////////////////////////////////////////////////////////////////////////////////
 class FindBarHost : public views::AcceleratorTarget,
-                   public views::FocusChangeListener,
-                   public AnimationDelegate,
-                   public FindBar,
-                   public FindBarTesting {
+                    public views::FocusChangeListener,
+                    public AnimationDelegate,
+                    public FindBar,
+                    public FindBarTesting {
  public:
   explicit FindBarHost(BrowserView* browser_view);
   virtual ~FindBarHost();
@@ -154,6 +154,9 @@ class FindBarHost : public views::AcceleratorTarget,
   // Returns a keyboard event suitable for fowarding.
   NativeWebKeyboardEvent GetKeyboardEvent(
       const TabContents* contents,
+      const views::Textfield::Keystroke& key_stroke);
+  // Allows native implementation to prevent keystrokes from being forwarded.
+  bool ShouldForwardKeystrokeToWebpageNative(
       const views::Textfield::Keystroke& key_stroke);
 
   // The BrowserView that created us.
