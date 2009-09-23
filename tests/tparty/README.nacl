@@ -4,6 +4,11 @@ tparty.sh Test Script
 This bash script will run through some of the non-scons based Native Client
 demos, such as Quake, Xaos, Lua, Awk, and some of the bundled examples.
 
+Note that this script requires both debug and optimized versions of Native
+Client runtime to be available.  The pre-built tarballs do not contain
+both builds.  Please see the documentation for how to build both debug
+and optimized versions of Native Client for your platform.
+
 On all platforms, make sure the python http server is running before
 launching this script, ie. from the native_client directory:
 
@@ -12,7 +17,7 @@ launching this script, ie. from the native_client directory:
 If the server isn't running, the Firefox browser tests will fail.
 
 Many of the tests launched by this script will require user interaction --
-the non-browser tests must be manually shutdown to advance to the next test.
+the non-browser tests may require manual shutdown to advance to the next test.
 
 Special Note for Windows Users
 ------------------------------
