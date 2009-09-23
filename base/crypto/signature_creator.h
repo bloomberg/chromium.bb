@@ -5,11 +5,15 @@
 #ifndef BASE_CRYPTO_SIGNATURE_CREATOR_H_
 #define BASE_CRYPTO_SIGNATURE_CREATOR_H_
 
-#if defined(OS_WIN)
+#include "build/build_config.h"
+
+#if defined(USE_NSS)
+#include <cryptoht.h>
+#elif defined(OS_MACOSX)
+// TODO(port)
+#elif defined(OS_WIN)
 #include <windows.h>
 #include <wincrypt.h>
-#else
-// TODO(PORT)
 #endif
 
 #include <vector>
@@ -37,11 +41,15 @@ class SignatureCreator {
 
  private:
   // Private constructor. Use the Create() method instead.
-  SignatureCreator() {}
+  SignatureCreator();
 
   RSAPrivateKey* key_;
 
-#if defined(OS_WIN)
+#if defined(USE_NSS)
+  SGNContext* sign_context_;
+#elif defined(OS_MACOSX)
+  // TODO(port)
+#elif defined(OS_WIN)
   HCRYPTHASH hash_object_;
 #endif
 

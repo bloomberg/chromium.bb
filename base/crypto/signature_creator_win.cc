@@ -23,6 +23,8 @@ SignatureCreator* SignatureCreator::Create(RSAPrivateKey* key) {
   return result.release();
 }
 
+SignatureCreator::SignatureCreator() : hash_object_(0) {}
+
 SignatureCreator::~SignatureCreator() {
   if (hash_object_) {
     if (!CryptDestroyHash(hash_object_))
