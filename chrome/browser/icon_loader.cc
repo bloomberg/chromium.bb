@@ -12,7 +12,8 @@
 
 IconLoader::IconLoader(const IconGroupID& group, IconSize size,
                        Delegate* delegate)
-    : group_(group),
+    : target_message_loop_(NULL),
+      group_(group),
       icon_size_(size),
       bitmap_(NULL),
       delegate_(delegate) {
