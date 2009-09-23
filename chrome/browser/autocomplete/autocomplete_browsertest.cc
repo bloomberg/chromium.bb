@@ -32,7 +32,8 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Basic) {
   EXPECT_EQ(std::wstring(), location_bar->GetInputString());
   EXPECT_EQ(UTF8ToWide(chrome::kAboutBlankURL),
             location_bar->location_entry()->GetText());
-  EXPECT_FALSE(location_bar->location_entry()->IsSelectAll());
+  // TODO(phajdan.jr): check state of IsSelectAll when it's consistent across
+  // platforms.
 
   location_bar->FocusLocation();
 
