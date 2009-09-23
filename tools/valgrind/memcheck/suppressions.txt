@@ -1279,3 +1279,19 @@
    fun:_ZN7WebCore12NodeInternal21dispatchEventCallbackERKN2v89ArgumentsE
    fun:_ZN2v88internal21Builtin_HandleApiCallENS0_9ArgumentsE
 }
+{
+   bug_22702_c
+   Memcheck:Cond
+   fun:_ZN7WebCore23V8AbstractEventListener18invokeEventHandlerEN2v86HandleINS1_7ContextEEEPNS_5EventENS2_INS1_5ValueEEEb
+   fun:_ZN7WebCore23V8AbstractEventListener11handleEventEPNS_5EventEb
+   ...
+   fun:_ZN7WebCore11FrameLoader8loadDoneEv
+}
+{
+   bug_22702_d
+   Memcheck:Cond
+   fun:_ZN7WebCore23V8AbstractEventListener18invokeEventHandlerEN2v86HandleINS1_7ContextEEEPNS_5EventENS2_INS1_5ValueEEEb
+   fun:_ZN7WebCore23V8AbstractEventListener11handleEventEPNS_5EventEb
+   ...
+   fun:_ZN7WebCore24DocumentThreadableLoader16didFinishLoadingEm
+}
