@@ -2355,3 +2355,7 @@ BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/table/fixed-table-with-percent-width-i
 BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/table/fixed-table-with-percent-width-inside-fixed-width-table.html = FAIL
 BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/table/fixed-table-with-small-percent-width.html = FAIL
 BUG_DGLAZKOV WIN LINUX : LayoutTests/tables/mozilla/bugs/bug34176.html = FAIL
+
+// WebKit update 48665:48679
+BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/multicol/float-multicol.html = FAIL
+BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/multicol/positioned-with-constrained-height.html = FAIL
