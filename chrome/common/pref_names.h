@@ -110,6 +110,7 @@ extern const wchar_t kCurrentThemeDisplayProperties[];
 extern const wchar_t kCheckDefaultBrowser[];
 extern const wchar_t kUseCustomChromeFrame[];
 extern const wchar_t kShowOmniboxSearchHint[];
+extern const wchar_t kNTPThemePromoRemaining[];
 
 // Local state
 extern const wchar_t kMetricsClientID[];

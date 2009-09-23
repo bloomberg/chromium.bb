@@ -395,7 +395,8 @@ void NewTabHTMLSource::InitFullHTML() {
       l10n_util::GetString(IDS_NEW_TAB_CLOSE_FIRST_RUN_NOTIFICATION));
   localized_strings.SetString(L"makethishomepage",
       l10n_util::GetString(IDS_NEW_TAB_MAKE_THIS_HOMEPAGE));
-
+  localized_strings.SetString(L"themelink",
+      l10n_util::GetString(IDS_THEMES_GALLERY_URL));
   // Don't initiate the sync related message passing with the page if the sync
   // code is not present.
   if (profile_->GetProfileSyncService())
@@ -409,9 +410,15 @@ void NewTabHTMLSource::InitFullHTML() {
   SetFontAndTextDirection(&localized_strings);
 
   // Let the tab know whether it's the first tab being viewed.
-  localized_strings.SetString(L"firstview",
-                              first_view_ ? L"true" : std::wstring());
-  first_view_ = false;
+  if (first_view_) {
+    localized_strings.SetString(L"firstview", L"true");
+
+    // Decrement ntp promo counter; the default value is specified in
+    // Browser::RegisterUserPrefs.
+    profile_->GetPrefs()->SetInteger(prefs::kNTPThemePromoRemaining,
+        profile_->GetPrefs()->GetInteger(prefs::kNTPThemePromoRemaining) - 1);
+    first_view_ = false;
+  }
 
   // Control fade and resize animations.
   std::wstring anim =

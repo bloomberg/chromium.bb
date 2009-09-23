@@ -180,6 +180,11 @@ void DOMUIThemeSource::InitNewTabCSS() {
   subst2.push_back(SkColorToRGBAString(color_link_underline));  // $$6
   subst2.push_back(SkColorToRGBAString(color_section_link_underline));  // $$7
 
+  if (profile_->GetPrefs()->GetInteger(prefs::kNTPThemePromoRemaining) > 0)
+    subst2.push_back(UTF8ToUTF16("block"));  // $$8
+  else
+    subst2.push_back(UTF8ToUTF16("none"));  // $$8
+
   // Get our template.
   static const base::StringPiece new_tab_theme_css(
       ResourceBundle::GetSharedInstance().GetRawDataResource(

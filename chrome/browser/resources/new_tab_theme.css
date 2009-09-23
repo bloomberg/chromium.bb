@@ -100,3 +100,7 @@ body {
 .list > .thumbnail-container {
   color: $$6; /* COLOR_NTP_LINK_UNDERLINE */
 }
+
+#themes-promo {
+  display: $$8;
+}
