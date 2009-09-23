@@ -1173,6 +1173,7 @@
    Memcheck:Leak
    fun:malloc
    fun:_ZN3WTF10fastMallocE*
+   ...
    fun:_ZN7WebCore19V8EventListenerList3addEPNS_15V8EventListenerE
 }
 {
@@ -1261,37 +1262,8 @@
    fun:_ZN16browser_shutdown8ShutdownEv
 }
 {
-   bug_22702_a
+   bug_22702
    Memcheck:Cond
    fun:_ZN7WebCore23V8AbstractEventListener18invokeEventHandlerEN2v86HandleINS1_7ContextEEEPNS_5EventENS2_INS1_5ValueEEEb
    fun:_ZN7WebCore23V8AbstractEventListener11handleEventEPNS_5EventEb
-   ...
-   fun:_ZN7WebCore8Document15finishedParsingEv
-}
-{
-   bug_22702_b
-   Memcheck:Cond
-   fun:_ZN7WebCore23V8AbstractEventListener18invokeEventHandlerEN2v86HandleINS1_7ContextEEEPNS_5EventENS2_INS1_5ValueEEEb
-   fun:_ZN7WebCore23V8AbstractEventListener11handleEventEPNS_5EventEb
-   fun:_ZN7WebCore4Node17handleLocalEventsEPNS_5EventEb
-   fun:_ZN7WebCore4Node20dispatchGenericEventEN3WTF10PassRefPtrINS_5EventEEE
-   fun:_ZN7WebCore4Node13dispatchEventEN3WTF10PassRefPtrINS_5EventEEERi
-   fun:_ZN7WebCore12NodeInternal21dispatchEventCallbackERKN2v89ArgumentsE
-   fun:_ZN2v88internal21Builtin_HandleApiCallENS0_9ArgumentsE
-}
-{
-   bug_22702_c
-   Memcheck:Cond
-   fun:_ZN7WebCore23V8AbstractEventListener18invokeEventHandlerEN2v86HandleINS1_7ContextEEEPNS_5EventENS2_INS1_5ValueEEEb
-   fun:_ZN7WebCore23V8AbstractEventListener11handleEventEPNS_5EventEb
-   ...
-   fun:_ZN7WebCore11FrameLoader8loadDoneEv
-}
-{
-   bug_22702_d
-   Memcheck:Cond
-   fun:_ZN7WebCore23V8AbstractEventListener18invokeEventHandlerEN2v86HandleINS1_7ContextEEEPNS_5EventENS2_INS1_5ValueEEEb
-   fun:_ZN7WebCore23V8AbstractEventListener11handleEventEPNS_5EventEb
-   ...
-   fun:_ZN7WebCore24DocumentThreadableLoader16didFinishLoadingEm
 }
