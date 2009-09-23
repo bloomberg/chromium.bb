@@ -335,6 +335,9 @@ void RenderCrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   HANDLE_EINTR(sendmsg(signal_fd, &msg, MSG_DONTWAIT | MSG_NOSIGNAL));
   HANDLE_EINTR(close(signal_fd));
 
+  // Sanitize the string data a bit more
+  guid[kGuidSize] = crash_url[kMaxActiveURLSize] = distro[kDistroSize] = 0;
+
   BreakpadInfo info;
   info.filename = minidump_filename.c_str();
   info.process_type = "renderer";

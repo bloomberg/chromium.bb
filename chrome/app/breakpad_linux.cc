@@ -576,7 +576,7 @@ RendererCrashHandler(const void* crash_context, size_t crash_context_size,
   const int fd = reinterpret_cast<intptr_t>(context);
   int fds[2];
   socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
-  char guid[kGuidSize] = {0};
+  char guid[kGuidSize + 1] = {0};
   char crash_url[kMaxActiveURLSize + 1] = {0};
   char distro[kDistroSize + 1] = {0};
   const size_t guid_len = std::min(google_update::linux_guid.size(),
