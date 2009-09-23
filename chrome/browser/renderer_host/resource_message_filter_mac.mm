@@ -6,12 +6,27 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
+#import "chrome/browser/cocoa/find_pasteboard.h"
 
 // The number of utf16 code units that will be written to the find pasteboard,
 // longer texts are silently ignored. This is to prevent that a compromised
 // renderer can write unlimited amounts of data into the find pasteboard.
 static const size_t kMaxFindPboardStringLength = 4096;
+
+class WriteFindPboardTask : public Task {
+ public:
+  explicit WriteFindPboardTask(NSString* text)
+      : text_([text retain]) {}
+
+  void Run() {
+    [[FindPasteboard sharedInstance] setFindText:text_];
+  }
+
+ private:
+  scoped_nsobject<NSString> text_;
+};
 
 // Called on the IO thread.
 void ResourceMessageFilter::OnClipboardFindPboardWriteString(
@@ -19,10 +34,8 @@ void ResourceMessageFilter::OnClipboardFindPboardWriteString(
   if (text.length() <= kMaxFindPboardStringLength) {
     NSString* nsText = base::SysUTF16ToNSString(text);
     if (nsText) {
-      NSPasteboard* findPboard = [NSPasteboard pasteboardWithName:NSFindPboard];
-      [findPboard declareTypes:[NSArray arrayWithObject:NSStringPboardType]
-                         owner:nil];
-      [findPboard setString:nsText forType:NSStringPboardType];
+      // FindPasteboard must be used on the UI thread.
+      ui_loop()->PostTask(FROM_HERE, new WriteFindPboardTask(nsText));
     }
   }
 }

@@ -12,13 +12,15 @@
 #include "chrome/browser/find_notification_details.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/find_bar_cocoa_controller.h"
+#import "chrome/browser/cocoa/find_pasteboard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
 // Expose private variables to make testing easier.
 @interface FindBarCocoaController(Testing)
 - (NSView*)findBarView;
-- (NSTextField*)findText;
+- (NSString*)findText;
+- (NSTextField*)findTextField;
 - (NSTextField*)resultsLabel;
 @end
 
@@ -27,7 +29,11 @@
   return findBarView_;
 }
 
-- (NSTextField*)findText {
+- (NSString*)findText {
+  return [findText_ stringValue];
+}
+
+- (NSTextField*)findTextField {
   return findText_;
 }
 
@@ -70,18 +76,18 @@ TEST_F(FindBarCocoaControllerTest, ShowAndHide) {
 }
 
 TEST_F(FindBarCocoaControllerTest, SetFindText) {
-  NSTextField* findText = [controller_ findText];
+  NSTextField* findTextField = [controller_ findTextField];
 
   // Start by making the find bar visible.
   [controller_ showFindBar:NO];
   EXPECT_TRUE([controller_ isFindBarVisible]);
 
   // Set the find text.
-  const std::string kFindText = "Google";
-  [controller_ setFindText:ASCIIToUTF16(kFindText)];
+  const NSString* kFindText = @"Google";
+  [controller_ setFindText:kFindText];
   EXPECT_EQ(
       NSOrderedSame,
-      [[findText stringValue] compare:base::SysUTF8ToNSString(kFindText)]);
+      [[findTextField stringValue] compare:kFindText]);
 
   // Call clearResults, which doesn't actually clear the find text but
   // simply sets it back to what it was before.  This is silly, but
@@ -92,12 +98,38 @@ TEST_F(FindBarCocoaControllerTest, SetFindText) {
   [controller_ clearResults:details];
   EXPECT_EQ(
       NSOrderedSame,
-      [[findText stringValue] compare:base::SysUTF8ToNSString(kFindText)]);
+      [[findTextField stringValue] compare:kFindText]);
 }
 
 TEST_F(FindBarCocoaControllerTest, ResultLabelUpdatesCorrectly) {
   // TODO(rohitrao): Test this.  It may involve creating some dummy
   // FindNotificationDetails objects.
+}
+
+TEST_F(FindBarCocoaControllerTest, FindTextIsGlobal) {
+  scoped_nsobject<FindBarCocoaController> otherController(
+      [[FindBarCocoaController alloc] init]);
+  [helper_.contentView() addSubview:[otherController view]];
+
+  // Setting the text in one controller should update the other controller's
+  // text as well.
+  const NSString* kFindText = @"Respect to the man in the ice cream van";
+  [controller_ setFindText:kFindText];
+  EXPECT_EQ(
+      NSOrderedSame,
+      [[controller_ findText] compare:kFindText]);
+  EXPECT_EQ(
+      NSOrderedSame,
+      [[otherController.get() findText] compare:kFindText]);
+}
+
+TEST_F(FindBarCocoaControllerTest, SettingFindTextUpdatesFindPboard) {
+  const NSString* kFindText =
+      @"It's not a bird, it's not a plane, it must be Dave who's on the train";
+  [controller_ setFindText:kFindText];
+  EXPECT_EQ(
+      NSOrderedSame,
+      [[[FindPasteboard sharedInstance] findText] compare:kFindText]);
 }
 
 }  // namespace

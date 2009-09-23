@@ -75,6 +75,7 @@ void FindBarController::ChangeTabContents(TabContents* contents) {
   registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
                  Source<NavigationController>(&tab_contents_->controller()));
 
+#if !defined(OS_MACOSX)
   // Find out what we should show in the find text box. Usually, this will be
   // the last search in this tab, but if no search has been issued in this tab
   // we use the last search string (from any tab).
@@ -88,6 +89,11 @@ void FindBarController::ChangeTabContents(TabContents* contents) {
   // _first_ since the FindBarView checks its emptiness to see if it should
   // clear the result count display when there's nothing in the box.
   find_bar_->SetFindText(find_string);
+#else
+  // Having a per-tab find_string is not compatible with OS X's find pasteboard,
+  // so we always have the same find text in all find bars. This is done through
+  // the find pasteboard mechanism, so don't set the text here.
+#endif
 
   if (tab_contents_->find_ui_active()) {
     // A tab with a visible find bar just got selected and we need to show the

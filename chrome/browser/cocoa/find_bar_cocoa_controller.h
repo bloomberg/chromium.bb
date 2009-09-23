@@ -62,7 +62,7 @@ class FindNotificationDetails;
 - (void)stopAnimation;
 - (void)setFocusAndSelection;
 - (void)restoreSavedFocus;
-- (void)setFindText:(const string16&)findText;
+- (void)setFindText:(NSString*)findText;
 
 - (void)clearResults:(const FindNotificationDetails&)results;
 - (void)updateUIForFindResult:(const FindNotificationDetails&)results

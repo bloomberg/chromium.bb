@@ -91,6 +91,10 @@
 #include "chrome/browser/dock_info.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/cocoa/find_pasteboard.h"
+#endif
+
 using base::TimeDelta;
 
 // How long we wait before updating the browser chrome while loading a page.
@@ -2888,7 +2892,12 @@ GURL Browser::GetHomePage() const {
 void Browser::FindInPage(bool find_next, bool forward_direction) {
   ShowFindBar();
   if (find_next) {
-    GetSelectedTabContents()->StartFinding(string16(),
+    string16 find_text;
+#if defined(OS_MACOSX)
+    // We always want to search for the contents of the find pasteboard on OS X.
+    find_text = GetFindPboardText();
+#endif
+    GetSelectedTabContents()->StartFinding(find_text,
                                            forward_direction,
                                            false);  // Not case sensitive.
   }

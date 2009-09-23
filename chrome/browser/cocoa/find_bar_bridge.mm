@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/cocoa/find_bar_bridge.h"
+
+#include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/find_bar_cocoa_controller.h"
 
 FindBarBridge::FindBarBridge() {
@@ -30,7 +32,7 @@ void FindBarBridge::ClearResults(const FindNotificationDetails& results) {
 }
 
 void FindBarBridge::SetFindText(const string16& find_text) {
-  [cocoa_controller_ setFindText:find_text];
+  [cocoa_controller_ setFindText:base::SysUTF16ToNSString(find_text)];
 }
 
 void FindBarBridge::UpdateUIForFindResult(const FindNotificationDetails& result,

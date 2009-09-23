@@ -12,6 +12,7 @@
 #include "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/find_bar_cocoa_controller.h"
 #import "chrome/browser/cocoa/find_bar_bridge.h"
+#import "chrome/browser/cocoa/find_pasteboard.h"
 #import "chrome/browser/cocoa/focus_tracker.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -36,6 +37,11 @@ static float kFindBarCloseDuration = 0.15;
 - (id)init {
   if ((self = [super initWithNibName:@"FindBar"
                               bundle:mac_util::MainAppBundle()])) {
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(findPboardUpdated:)
+               name:kFindPasteboardChangedNotification
+             object:[FindPasteboard sharedInstance]];
   }
   return self;
 }
@@ -44,6 +50,7 @@ static float kFindBarCloseDuration = 0.15;
   // All animations should be explicitly stopped by the TabContents before a tab
   // is closed.
   DCHECK(!currentAnimation_.get());
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
 
@@ -73,6 +80,10 @@ static float kFindBarCloseDuration = 0.15;
     findBarBridge_->GetFindBarController()->tab_contents()->StartFinding(
         base::SysNSStringToUTF16([findText_ stringValue]),
         true, false);
+}
+
+- (void)findPboardUpdated:(NSNotification*)notification {
+  [self setFindText:[[FindPasteboard sharedInstance] findText]];
 }
 
 // Positions the find bar container view in the correct location based on the
@@ -110,14 +121,16 @@ static float kFindBarCloseDuration = 0.15;
   if (!tab_contents)
     return;
 
-  string16 findText = base::SysNSStringToUTF16([findText_ stringValue]);
-  if (findText.length() > 0) {
-    tab_contents->StartFinding(findText, true, false);
+  NSString* findText = [findText_ stringValue];
+  [[FindPasteboard sharedInstance] setFindText:findText];
+
+  if ([findText length] > 0) {
+    tab_contents->StartFinding(base::SysNSStringToUTF16(findText), true, false);
   } else {
     // The textbox is empty so we reset.
     tab_contents->StopFinding(true);  // true = clear selection on page.
     [self updateUIForFindResult:tab_contents->find_result()
-          withText:string16()];
+                       withText:string16()];
   }
 }
 
@@ -210,8 +223,12 @@ static float kFindBarCloseDuration = 0.15;
   focusTracker_.reset(nil);
 }
 
-- (void)setFindText:(const string16&)findText {
-  [findText_ setStringValue:base::SysUTF16ToNSString(findText)];
+- (void)setFindText:(NSString*)findText {
+  [findText_ setStringValue:findText];
+
+  // Make sure the text in the find bar always ends up in the find pasteboard
+  // (and, via notifications, in the other find bars too).
+  [[FindPasteboard sharedInstance] setFindText:findText];
 }
 
 - (void)clearResults:(const FindNotificationDetails&)results {
@@ -266,7 +283,8 @@ static float kFindBarCloseDuration = 0.15;
   [resultsLabel_ setFrame:labelFrame];
 
   // TODO(rohitrao): If the search string is too long, then it will overlap with
-  // the results label.  Fix.
+  // the results label. Fix. Perhaps use the code that fades out the tab titles
+  // if they are too long.
 }
 
 - (BOOL)isFindBarVisible {
