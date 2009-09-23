@@ -7,14 +7,11 @@
 
 #include "build/build_config.h"
 
-#if defined(USE_NSS)
-#include <cryptoht.h>
-#include <keythi.h>
-#elif defined(OS_MACOSX)
-// TODO(port);
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
 #include <windows.h>
 #include <wincrypt.h>
+#else
+// TODO(port)
 #endif
 
 #include <vector>
@@ -38,9 +35,7 @@ class RSAPrivateKey {
 
   ~RSAPrivateKey();
 
-#if defined(USE_NSS)
-  SECKEYPrivateKey* key() { return key_; }
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   HCRYPTPROV provider() { return provider_; }
   HCRYPTKEY key() { return key_; }
 #endif
@@ -56,10 +51,7 @@ private:
   // instead.
   RSAPrivateKey();
 
-#if defined(USE_NSS)
-  SECKEYPrivateKey* key_;
-  SECKEYPublicKey* public_key_;
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   bool InitProvider();
 
   HCRYPTPROV provider_;
