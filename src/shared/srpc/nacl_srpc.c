@@ -119,6 +119,7 @@ static int BuildInterfaceDesc(NaClSrpcChannel* channel) {
  * Set up the buffering structures for a channel.
  */
 int NaClSrpcClientCtor(NaClSrpcChannel* channel, NaClSrpcImcDescType handle) {
+  /* TODO(sehr): we should actually do a NaClDescRef here. */
   channel->imc_handle = handle;
 
 #ifndef __native_client__
@@ -153,6 +154,7 @@ int NaClSrpcServerCtor(NaClSrpcChannel* channel,
                        NaClSrpcImcDescType handle,
                        NaClSrpcService* service,
                        void* server_instance_data) {
+  /* TODO(sehr): we should actually do a NaClDescRef here. */
   channel->imc_handle = handle;
 #ifndef __native_client__
   if (NULL == channel->imc_handle) {

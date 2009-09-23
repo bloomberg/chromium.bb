@@ -29,6 +29,11 @@
 #            '../src/trusted/sandbox/sandbox.gyp:*',
           ],
         }],
+        ['OS=="win"', {
+          'dependencies': [
+            '../src/trusted/handle_pass/handle_pass.gyp:*',
+          ],
+        }],
       ],
     },
   ],
