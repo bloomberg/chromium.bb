@@ -209,7 +209,6 @@ class ValgrindTool(object):
     # Construct the valgrind command.
     proc = ["valgrind",
             "--tool=%s" % tool_name,
-            "--smc-check=all",
             "--num-callers=%i" % self._num_callers]
 
     if self._options.trace_children:
