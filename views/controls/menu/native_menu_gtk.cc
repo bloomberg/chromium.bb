@@ -4,8 +4,12 @@
 
 #include "views/controls/menu/native_menu_gtk.h"
 
+#include <string>
+
+#include "base/gfx/gtk_util.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "views/accelerator.h"
 #include "views/controls/menu/menu_2.h"
 
@@ -131,15 +135,23 @@ void NativeMenuGtk::AddMenuItemAt(int index,
       }
       break;
     case Menu2Model::TYPE_SUBMENU:
-    case Menu2Model::TYPE_COMMAND:
-      menu_item = gtk_menu_item_new_with_mnemonic(label.c_str());
+    case Menu2Model::TYPE_COMMAND: {
+      SkBitmap icon;
+      // Create menu item with icon if icon exists.
+      if (model_->HasIcons() && model_->GetIconAt(index, &icon)) {
+        menu_item = gtk_image_menu_item_new_with_mnemonic(label.c_str());
+        GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
+        gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
+                                      gtk_image_new_from_pixbuf(pixbuf));
+      } else {
+        menu_item = gtk_menu_item_new_with_mnemonic(label.c_str());
+      }
       break;
+    }
     default:
       NOTREACHED();
       break;
   }
-
-  // TODO(beng): icons
 
   if (type == Menu2Model::TYPE_SUBMENU) {
     // TODO(beng): we're leaking these objects right now... consider some other
