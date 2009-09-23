@@ -485,12 +485,25 @@ bool NavigationController::RendererDidNavigate(
 
 NavigationType::Type NavigationController::ClassifyNavigation(
     const ViewHostMsg_FrameNavigate_Params& params) const {
-  // If a page makes a popup navigated to about blank, and then writes stuff
-  // like a subframe navigated to a real site, we'll get a notification with an
-  // invalid page ID. There's nothing we can do with these, so just ignore them.
   if (params.page_id == -1) {
-    DCHECK(!GetActiveEntry()) << "Got an invalid page ID but we seem to be "
-      " navigated to a valid page. This should be impossible.";
+    // The renderer generates the page IDs, and so if it gives us the invalid
+    // page ID (-1) we know it didn't actually navigate. This happens in a few
+    // cases:
+    //
+    // - If a page makes a popup navigated to about blank, and then writes
+    //   stuff like a subframe navigated to a real page. We'll get the commit
+    //   for the subframe, but there won't be any commit for the outer page.
+    //
+    // - We were also getting these for failed loads (for example, bug 21849).
+    //   The guess is that we get a "load commit" for the alternate error page,
+    //   but that doesn't affect the page ID, so we get the "old" one, which
+    //   could be invalid. This can also happen for a cross-site transition
+    //   that causes us to swap processes. Then the error page load will be in
+    //   a new process with no page IDs ever assigned (and hence a -1 value),
+    //   yet the navigation controller still might have previous pages in its
+    //   list.
+    //
+    // In these cases, there's nothing we can do with them, so ignore.
     return NavigationType::NAV_IGNORE;
   }
 
