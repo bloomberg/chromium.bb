@@ -165,6 +165,11 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSetBreakpoint) {
   RunTest("testSetBreakpoint", kDebuggerTestPage);
 }
 
+// Tests eval on call frame.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalOnCallFrame) {
+  RunTest("testEvalOnCallFrame", kDebuggerTestPage);
+}
+
 // Tests that 'Pause' button works for eval.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseInEval) {
   RunTest("testPauseInEval", kDebuggerTestPage);
@@ -183,11 +188,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleLog) {
 // Tests eval global values.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalGlobal) {
   RunTest("testEvalGlobal", kEvalTestPage);
-}
-
-// Tests eval on call frame.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalCallFrame) {
-  RunTest("testEvalCallFrame", kEvalTestPage);
 }
 
 }  // namespace

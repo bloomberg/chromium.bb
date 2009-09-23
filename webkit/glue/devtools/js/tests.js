@@ -460,7 +460,6 @@ TestSuite.prototype.testSetBreakpoint = function() {
   var breakpointLine = 12;
 
   var test = this;
-  var orig = devtools.DebuggerAgent.prototype.handleScriptsResponse_;
   this.addSniffer(devtools.DebuggerAgent.prototype, 'handleScriptsResponse_',
       function(msg) {
         var scriptSelect = document.getElementById('scripts-files');
@@ -468,52 +467,130 @@ TestSuite.prototype.testSetBreakpoint = function() {
 
         // There should be console API source (see
         // InjectedScript._ensureCommandLineAPIInstalled) and the page script.
-        test.assertEquals(2, options.length, 'Unexpected number of scripts.');
+        test.assertEquals(2, options.length, 'Unexpected number of scripts(' +
+            test.optionsToString_(options) + ')');
 
-        // Select page's script if it's not current option.
-        var scriptResource;
-        if (options[scriptSelect.selectedIndex].text ==
-            'debugger_test_page.html') {
-          scriptResource =
-              options[scriptSelect.selectedIndex].representedObject;
-        } else {
-          var pageScriptIndex = (1 - scriptSelect.selectedIndex);
-          test.assertEquals('debugger_test_page.html',
-                            options[pageScriptIndex].text);
-          scriptResource = options[pageScriptIndex].representedObject;
-          // Current panel is 'Scripts'.
-          WebInspector.currentPanel._showScriptOrResource(scriptResource);
-        }
-
-        test.assertTrue(scriptResource instanceof WebInspector.Resource,
-                        'Unexpected resource class.');
-        test.assertTrue(!!scriptResource.url, 'Resource URL is null.');
-        test.assertTrue(
-            scriptResource.url.search(/debugger_test_page.html$/) != -1,
-            'Main HTML resource should be selected.');
-
-        // Store for access from setbreakpoint handler.
-        scriptUrl = scriptResource.url;
-
-        var scriptsPanel = WebInspector.panels.scripts;
-
-        var view = scriptsPanel.visibleView;
-        test.assertTrue(view instanceof WebInspector.SourceView);
-
-        if (!view.sourceFrame._isContentLoaded()) {
-          test.addSniffer(view, '_sourceFrameSetupFinished', function(event) {
-            view._addBreakpoint(breakpointLine);
-            // Force v8 execution.
-            RemoteToolsAgent.ExecuteVoidJavaScript();
-          });
-        } else {
-          view._addBreakpoint(breakpointLine);
-          // Force v8 execution.
-          RemoteToolsAgent.ExecuteVoidJavaScript();
-        }
+        test.showMainPageScriptSource_(
+            'debugger_test_page.html',
+            function(view, url) {
+              view._addBreakpoint(breakpointLine);
+              // Force v8 execution.
+              RemoteToolsAgent.ExecuteVoidJavaScript();
+              test.waitForSetBreakpointResponse_(url, breakpointLine,
+                  function() {
+                    test.releaseControl();
+                  });
+            });
       });
 
-  this.addSniffer(
+
+  this.takeControl();
+};
+
+
+/**
+ * Serializes options collection to string.
+ * @param {HTMLOptionsCollection} options
+ * @return {string}
+ */
+TestSuite.prototype.optionsToString_ = function(options) {
+  var names = [];
+  for (var i = 0; i < options.length; i++) {
+    names.push('"' + options[i].text + '"');
+  }
+  return names.join(',');
+};
+
+
+/**
+ * Ensures that main HTML resource is selected in Scripts panel and that its
+ * source frame is setup. Invokes the callback when the condition is satisfied.
+ * @param {HTMLOptionsCollection} options
+ * @param {function(WebInspector.SourceView,string)} callback
+ */
+TestSuite.prototype.showMainPageScriptSource_ = function(scriptName, callback) {
+  var test = this;
+
+  var scriptSelect = document.getElementById('scripts-files');
+  var options = scriptSelect.options;
+
+  // There should be console API source (see
+  // InjectedScript._ensureCommandLineAPIInstalled) and the page script.
+  test.assertEquals(2, options.length,
+      'Unexpected number of scripts(' + test.optionsToString_(options) + ')');
+
+  // Select page's script if it's not current option.
+  if (options[scriptSelect.selectedIndex].text !== scriptName) {
+    var pageScriptIndex = -1;
+    for (var i = 0; i < options.length; i++) {
+      if (options[i].text === scriptName) {
+        pageScriptIndex = i;
+        break;
+      }
+    }
+    test.assertTrue(-1 !== pageScriptIndex,
+                    'Script with url ' + scriptName + ' not found among ' +
+                        test.optionsToString_(options));
+    // Current panel is 'Scripts'.
+    WebInspector.currentPanel._showScriptOrResource(scriptResource);
+    test.assertEquals(pageScriptIndex, scriptSelect.selectedIndex,
+                      'Unexpected selected option index.');
+  }
+  var scriptResource = options[scriptSelect.selectedIndex].representedObject;
+
+  test.assertTrue(scriptResource instanceof WebInspector.Resource,
+                  'Unexpected resource class.');
+  test.assertTrue(!!scriptResource.url, 'Resource URL is null.');
+  test.assertTrue(
+      scriptResource.url.search(scriptName + '$') != -1,
+      'Main HTML resource should be selected.');
+
+  var scriptsPanel = WebInspector.panels.scripts;
+
+  var view = scriptsPanel.visibleView;
+  test.assertTrue(view instanceof WebInspector.SourceView);
+
+  if (!view.sourceFrame._isContentLoaded()) {
+    test.addSniffer(view, '_sourceFrameSetupFinished', function(event) {
+      callback(view, scriptResource.url);
+    });
+  } else {
+    callback(view, scriptResource.url);
+  }
+};
+
+
+/*
+ * Evaluates the code in the console as if user typed it manually and invokes
+ * the callback when the result message is received and added to the console.
+ * @param {string} code
+ * @param {function(string)} callback
+ */
+TestSuite.prototype.evaluateInConsole_ = function(code, callback) {
+  WebInspector.console.visible = true;
+  WebInspector.console.prompt.text = code;
+  WebInspector.console.promptElement.handleKeyEvent(
+      new TestSuite.KeyEvent('Enter'));
+
+  this.addSniffer(WebInspector.ConsoleView.prototype, 'addMessage',
+      function(commandResult) {
+        callback(commandResult.toMessageElement().textContent);
+      });
+};
+
+
+/*
+ * Waits for 'setbreakpoint' response, checks that corresponding breakpoint
+ * was successfully set and invokes the callback if it was.
+ * @param {string} scriptUrl
+ * @param {number} breakpointLine
+ * @param {function()} callback
+ */
+TestSuite.prototype.waitForSetBreakpointResponse_ = function(scriptUrl,
+                                                             breakpointLine,
+                                                             callback) {
+  var test = this;
+  test.addSniffer(
       devtools.DebuggerAgent.prototype,
       'handleSetBreakpointResponse_',
       function(msg) {
@@ -522,8 +599,64 @@ TestSuite.prototype.testSetBreakpoint = function() {
         var line = devtools.DebuggerAgent.webkitToV8LineNumber_(breakpointLine);
         test.assertTrue(!!bps[line].getV8Id(),
                         'Breakpoint id was not assigned.');
-        test.releaseControl();
+        callback();
       });
+};
+
+
+/**
+ * Tests eval on call frame.
+ */
+TestSuite.prototype.testEvalOnCallFrame = function() {
+  this.showPanel('scripts');
+
+  var breakpointLine = 16;
+
+  var test = this;
+  this.addSniffer(devtools.DebuggerAgent.prototype, 'handleScriptsResponse_',
+      function(msg) {
+        test.showMainPageScriptSource_(
+            'debugger_test_page.html',
+            function(view, url) {
+              view._addBreakpoint(breakpointLine);
+              // Force v8 execution.
+              RemoteToolsAgent.ExecuteVoidJavaScript();
+              test.waitForSetBreakpointResponse_(url, breakpointLine,
+                                                 setBreakpointCallback);
+            });
+      });
+
+  function setBreakpointCallback() {
+    // Since breakpoints are ignored in evals' calculate() function is
+    // execute after zero-timeout so that the breakpoint is hit.
+    test.evaluateInConsole_(
+        'setTimeout("calculate(123)" , 0)',
+        function(resultText) {
+          test.assertTrue(!isNaN(resultText),
+                          'Failed to get timer id: ' + resultText);
+          waitForBreakpointHit();
+        });
+  }
+
+  function waitForBreakpointHit() {
+    test.addSniffer(
+        devtools.DebuggerAgent.prototype,
+        'handleBacktraceResponse_',
+        function(msg) {
+          test.assertEquals(2, this.callFrames_.length,
+                            'Unexpected stack depth on the breakpoint. ' +
+                                JSON.stringify(msg));
+          test.assertEquals('calculate', this.callFrames_[0].functionName,
+                            'Unexpected top frame function.');
+          // Evaluate 'e+1' where 'e' is an argument of 'calculate' function.
+          test.evaluateInConsole_(
+              'e+1',
+              function(resultText) {
+                test.assertEquals('124', resultText, 'Unexpected "e+1" value.');
+                test.releaseControl();
+              });
+        });
+  }
 
   this.takeControl();
 };
@@ -661,13 +794,6 @@ TestSuite.prototype.testEvalGlobal = function() {
 
   initEval(inputs[inputIndex++]);
   this.takeControl();
-};
-
-
-/**
- * Tests eval on call frame.
- */
-TestSuite.prototype.testEvalCallFrame = function() {
 };
 
 
