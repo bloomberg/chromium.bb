@@ -48,6 +48,25 @@
 
 #include "native_client/src/shared/utils/debugging.h"
 
+void PrintExprNodeFlags(FILE* file, ExprNodeFlags flags) {
+  if (flags == 0) {
+    fprintf(file, "0");
+  } else {
+    ExprNodeFlag f;
+    Bool is_first = TRUE;
+    for (f = 0; f < ExprNodeFlagEnumSize; f++) {
+      if (flags & ExprFlag(f)) {
+        if (is_first) {
+          is_first = FALSE;
+        } else {
+          fprintf(file, " | ");
+        }
+        fprintf(file, "%s", ExprNodeFlagName(f));
+      }
+    }
+  }
+}
+
 typedef struct {
   /* The name of the expression operator. */
   ExprNodeKind name;
@@ -192,22 +211,7 @@ void PrintExprNodeVector(FILE* file, ExprNodeVector* vector) {
         break;
     }
     fprintf(file, ", ");
-    if (node->flags == 0) {
-      fprintf(file, "0");
-    } else {
-      ExprNodeFlag f;
-      Bool is_first = TRUE;
-      for (f = 0; f < ExprNodeFlagEnumSize; f++) {
-        if (node->flags & ExprFlag(f)) {
-          if (is_first) {
-            is_first = FALSE;
-          } else {
-            fprintf(file, " | ");
-          }
-          fprintf(file, "%s", ExprNodeFlagName(f));
-        }
-      }
-    }
+    PrintExprNodeFlags(file, node->flags);
     fprintf(file, " },\n");
   }
   fprintf(file, "};\n");
@@ -408,7 +412,7 @@ uint64_t GetExprConstant(ExprNodeVector* vector, int index) {
     case ExprConstant:
       return node->value;
     case ExprConstant64:
-      return (uint64_t) vector->node[index+1].value |
+      return (uint64_t) (uint32_t) vector->node[index+1].value |
           (((uint64_t) vector->node[index+2].value) << 32);
     default:
       assert(0);

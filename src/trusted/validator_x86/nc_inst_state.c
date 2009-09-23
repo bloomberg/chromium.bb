@@ -812,15 +812,32 @@ void DecodeInstruction(
   }
   /* Update nacl legal flag based on opcode information. */
   if (state->is_nacl_legal) {
-    switch (state->opcode->insttype) {
-      case NACLi_UNDEFINED:
-      case NACLi_ILLEGAL:
-      case NACLi_INVALID:
-      case NACLi_SYSTEM:
+    /* Don't allow more than one (non-REX) prefix. */
+    int num_prefix_bytes = state->num_prefix_bytes;
+    if (state->rexprefix) --num_prefix_bytes;
+    if (num_prefix_bytes > 1) {
+      state->is_nacl_legal = FALSE;
+    } else {
+      switch (state->opcode->insttype) {
+        case NACLi_UNDEFINED:
+        case NACLi_ILLEGAL:
+        case NACLi_INVALID:
+        case NACLi_SYSTEM:
+          state->is_nacl_legal = FALSE;
+          break;
+        default:
+          break;
+      }
+    }
+    if (NACL_TARGET_SUBARCH == 64) {
+      /* Don't allow CS, DS, ES, or SS prefix overrides,
+       * since it has no effect.
+       */
+      if (state->prefix_mask &
+          (kPrefixSEGCS | kPrefixSEGSS | kPrefixSEGES |
+           kPrefixSEGDS)) {
         state->is_nacl_legal = FALSE;
-        break;
-      default:
-        break;
+      }
     }
   }
 }

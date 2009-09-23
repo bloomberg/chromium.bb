@@ -56,6 +56,10 @@ typedef uint32_t ExprNodeFlags;
  */
 #define ExprFlag(x) (((ExprNodeFlags) 1) << (x))
 
+
+/* Print out the set of defined expr flags. */
+void PrintExprNodeFlags(FILE* file, ExprNodeFlags flags);
+
 /* Defines a node in the vector of nodes, corresponding to the flattened
  * (preorder) tree.
  */

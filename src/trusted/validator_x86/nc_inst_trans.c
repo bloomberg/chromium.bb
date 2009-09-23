@@ -49,6 +49,29 @@
 
 #include "native_client/src/shared/utils/debugging.h"
 
+/* Return the segment register to use if DS is the default. */
+static OperandKind GetDsSegmentRegister(NcInstState* state) {
+  if (NACL_TARGET_SUBARCH == 32) {
+    if (state->prefix_mask & kPrefixSEGCS) {
+      return RegCS;
+    } else if (state->prefix_mask & kPrefixSEGSS) {
+      return RegSS;
+    } else if (state->prefix_mask & kPrefixSEGFS) {
+      return RegFS;
+    } else if (state->prefix_mask & kPrefixSEGGS) {
+      return RegGS;
+    } else if (state->prefix_mask & kPrefixSEGES) {
+      return RegES;
+    } else if (state->prefix_mask & kPrefixSEGDS) {
+      return RegDS;
+    } else {
+      return RegDS;
+    }
+  } else {
+    return RegDS;
+  }
+}
+
 /* Append the given expression node onto the given vector of expression
  * nodes. Returns the appended expression node.
  */
@@ -97,6 +120,9 @@ static ExprNode* AppendConstant(uint64_t value, ExprNodeFlags flags,
                                 ExprNodeVector* vector) {
   uint32_t val1;
   uint32_t val2;
+  DEBUG(printf("Append constant %"PRIx64" : ", value);
+        PrintExprNodeFlags(stdout, flags);
+        printf("\n"));
   SplitExprConstant(value, &val1, &val2);
   if (val2 == 0) {
     return AppendExprNode(ExprConstant, val1, flags, vector);
@@ -117,11 +143,38 @@ static ExprNode* AppendConstant(uint64_t value, ExprNodeFlags flags,
 #define REGISTER_TABLE_SIZE 8
 #endif
 
-/* Define the available 8-bit registers, for the given subarchitecture.
+/* Define the available 8-bit registers, for the given subarchitecture,
+ * assuming the REX prefix is not present.
  * Note: The order is important, and is based on the indexing values used
  * in the ModRm and SIB bytes (and the REX prefix if appropriate).
  */
-static const OperandKind RegisterTable8[REGISTER_TABLE_SIZE] = {
+static const OperandKind RegisterTable8NoRex[REGISTER_TABLE_SIZE] = {
+  RegAL,
+  RegCL,
+  RegDL,
+  RegBL,
+  RegAH,
+  RegCH,
+  RegDH,
+  RegBH,
+#if NACL_TARGET_SUBARCH == 64
+  RegUnknown,
+  RegUnknown,
+  RegUnknown,
+  RegUnknown,
+  RegUnknown,
+  RegUnknown,
+  RegUnknown,
+  RegUnknown
+#endif
+};
+
+/* Define the available 8-bit registers, for the given subarchitecture,
+ * assuming the rex prefix is present.
+ * Note: The order is important, and is based on the indexing values used
+ * in the ModRm and SIB bytes (and the REX prefix if appropriate).
+ */
+static const OperandKind RegisterTable8Rex[REGISTER_TABLE_SIZE] = {
   RegAL,
   RegCL,
   RegDL,
@@ -311,12 +364,15 @@ OperandKind NcGet32For64BitRegister(OperandKind reg64) {
   return RegUnknown;
 }
 
-Bool NcIs64Subregister(OperandKind subreg, OperandKind reg64) {
+Bool NcIs64Subregister(NcInstState* state,
+                       OperandKind subreg, OperandKind reg64) {
 #if NACL_TARGET_SUBARCH == 64
   int i;
   for (i = 0; i < REGISTER_TABLE_SIZE; ++i) {
     if (reg64 == RegisterTable64[i]) {
-      return subreg == RegisterTable8[i] ||
+      return (state->rexprefix
+              ? subreg == RegisterTable8Rex[i]
+              : subreg == RegisterTable8NoRex[i]) ||
           subreg == RegisterTable16[i] ||
           subreg == RegisterTable32[i];
     }
@@ -334,7 +390,7 @@ Bool Is32To64RegisterPair(OperandKind reg32, OperandKind reg64) {
  * in the ModRm and SIB bytes (and the REX prefix if appropriate).
  */
 static RegisterTableGroup* const RegisterTable[] = {
-  &RegisterTable8,
+  &RegisterTable8NoRex,
   &RegisterTable16,
   &RegisterTable32,
   &RegisterTable64,
@@ -426,12 +482,17 @@ static RegKind GetOperandKindRegKind(OperandKind kind) {
   }
 }
 
-static OperandKind LookupRegister(RegKind kind, int reg_index) {
-  DEBUG(printf("Lookup register %s:%d\n", RegKindName(kind), reg_index));
+static OperandKind LookupRegister(NcInstState* state,
+                                  RegKind kind, int reg_index) {
+  DEBUG(printf("Lookup register (rex=%"PRIx8") %s:%d\n",
+               state->rexprefix, RegKindName(kind), reg_index));
   if (32 == NACL_TARGET_SUBARCH && kind == RegSize64) {
     FatallyLost("Architecture doesn't define 64 bit registers");
   } else if (RegUndefined == kind) {
     return RegUnknown;
+  }
+  if (64 == NACL_TARGET_SUBARCH && kind == RegSize8 && state->rexprefix) {
+    return RegisterTable8Rex[reg_index];
   }
   return (*(RegisterTable[kind]))[reg_index];
 }
@@ -546,7 +607,7 @@ static ExprNode* AppendRegisterKind(NcInstState* state,
                                     RegKind kind, int reg_index) {
   DEBUG(printf("AppendRegisterKind(%d, %d) = %s\n",
                (int) kind, reg_index, RegKindName(kind)));
-  return AppendRegister(LookupRegister(kind, reg_index), &state->nodes);
+  return AppendRegister(LookupRegister(state, kind, reg_index), &state->nodes);
 }
 
 /* Given an operand of the corresponding opcode instruction of the
@@ -777,6 +838,9 @@ static ExprNodeFlags GetExprSizeFlagForBytes(uint8_t num_bytes) {
 static void ExtractDisplacement(NcInstState* state,
                                 Displacement* displacement,
                                 ExprNodeFlags flags) {
+  DEBUG(printf("-> Extract displacement, flags = ");
+        PrintExprNodeFlags(stdout, flags);
+        printf("\n"));
   /* First compute the displacement value. */
   displacement->value = ExtractUnsignedBinaryValue(state,
                                                    state->first_disp_byte,
@@ -784,6 +848,9 @@ static void ExtractDisplacement(NcInstState* state,
 
   /* Now compute any appropriate flags to be associated with the value. */
   displacement->flags = flags | GetExprSizeFlagForBytes(state->num_disp_bytes);
+  DEBUG(printf("<- value = %"PRIx64", flags = ", displacement->value);
+        PrintExprNodeFlags(stdout, displacement->flags);
+        printf("\n"));
 }
 
 /* Append the displacement value of the given instruction state
@@ -926,20 +993,36 @@ static ExprNode* AppendMemoryOffset(NcInstState* state,
                                     OperandKind index,
                                     uint8_t scale,
                                     Displacement* displacement) {
-  ExprNode* root;
+  ExprNode* root = NULL;
   ExprNode* n;
 
-  DEBUG(printf("memory offset(%s + %s * %d +  %"PRId64")\n",
+  DEBUG(printf("memory offset(%s + %s * %d +  %"PRId64" : %"PRIx32")\n",
                OperandKindName(base),
                OperandKindName(index),
                scale,
-               displacement->value));
+               displacement->value,
+               displacement->flags));
   if (NACL_TARGET_SUBARCH == 64) {
-    root = AppendExprNode(ExprMemOffset, 0, 0, &state->nodes);
+    if (state->prefix_mask & kPrefixSEGFS) {
+      root = AppendExprNode(ExprSegmentAddress, 0, 0, &state->nodes);
+      n = AppendRegister(RegFS, &state->nodes);
+      n->flags |= ExprFlag(ExprUsed);
+    } else if (state->prefix_mask & kPrefixSEGGS) {
+      root = AppendExprNode(ExprSegmentAddress, 0, 0, &state->nodes);
+      n = AppendRegister(RegGS, &state->nodes);
+      n->flags |= ExprFlag(ExprUsed);
+    }
+    if (root == NULL) {
+      root = AppendExprNode(ExprMemOffset, 0, 0, &state->nodes);
+    } else {
+      AppendExprNode(ExprMemOffset, 0, 0, &state->nodes);
+    }
   } else {
     /* Need to add segmentation base. */
     root = AppendExprNode(ExprSegmentAddress, 0, 0, &state->nodes);
-    n = AppendRegister(((base == RegBP || base == RegEBP) ? RegSS : RegDS),
+    n = AppendRegister(((base == RegBP || base == RegEBP)
+                        ? RegSS
+                        : GetDsSegmentRegister(state)),
                        &state->nodes);
     n->flags |= ExprFlag(ExprUsed);
     AppendExprNode(ExprMemOffset, 0, 0, &state->nodes);
@@ -987,7 +1070,7 @@ static OperandKind GetSibBase(NcInstState* state) {
     }
   } else {
     RegKind kind = ExtractAddressRegKind(state);
-    base_reg = LookupRegister(kind, GetRexBRegister(state, base));
+    base_reg = LookupRegister(state, kind, GetRexBRegister(state, base));
   }
   return base_reg;
 }
@@ -1013,14 +1096,12 @@ static ExprNode* AppendSib(NcInstState* state) {
   InitializeDisplacement(0, 0, &displacement);
   base_reg = GetSibBase(state);
   if (0x4 != index || NACL_TARGET_SUBARCH != 64 || (state->rexprefix & 0x2)) {
-    index_reg = LookupRegister(kind, GetRexXRegister(state, index));
+    index_reg = LookupRegister(state, kind, GetRexXRegister(state, index));
     scale = sib_scale[sib_ss(state->sib)];
   }
   if (state->num_disp_bytes > 0) {
     ExtractDisplacement(state, &displacement,
-                        RegUnknown == base_reg
-                        ? ExprFlag(ExprUnsignedHex)
-                        : ExprFlag(ExprSignedHex));
+                        ExprFlag(ExprSignedHex));
   } else {
     displacement.flags = ExprFlag(ExprSize8);
   }
@@ -1046,7 +1127,7 @@ static void AppendEDI(NcInstState* state) {
 
 static ExprNode* AppendDS_EDI(NcInstState* state) {
   ExprNode* results = AppendExprNode(ExprSegmentAddress, 0, 0, &state->nodes);
-  AppendRegister(RegDS, &state->nodes);
+  AppendRegister(GetDsSegmentRegister(state),  &state->nodes);
   AppendEDI(state);
   return results;
 }
@@ -1109,6 +1190,7 @@ static ExprNode* AppendMod00EffectiveAddress(
       InitializeDisplacement(0, ExprFlag(ExprSize8), &displacement);
       return AppendMemoryOffset(state,
                                 LookupRegister(
+                                    state,
                                     ExtractAddressRegKind(state),
                                     GetGenRmRegister(state)),
                                 RegUnknown,
@@ -1136,6 +1218,7 @@ static ExprNode* AppendMod01EffectiveAddress(
     ExtractDisplacement(state, &displacement, ExprFlag(ExprSignedHex));
     return AppendMemoryOffset(state,
                               LookupRegister(
+                                  state,
                                   ExtractAddressRegKind(state),
                                   GetGenRmRegister(state)),
                               RegUnknown,
@@ -1158,7 +1241,8 @@ static ExprNode* AppendMod10EffectiveAddress(
   } else {
     Displacement displacement;
     OperandKind base =
-        LookupRegister(ExtractAddressRegKind(state),
+        LookupRegister(state,
+                       ExtractAddressRegKind(state),
                        GetGenRmRegister(state));
     ExtractDisplacement(state, &displacement, ExprFlag(ExprSignedHex));
     return AppendMemoryOffset(state, base, RegUnknown, 1, &displacement);
@@ -1399,7 +1483,7 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
 
     case Const_1:
       return AppendConstant(1,
-                            ExprFlag(ExprSize8) | ExprFlag(ExprUnsignedInt),
+                            ExprFlag(ExprSize8) | ExprFlag(ExprUnsignedHex),
                             &state->nodes);
       /* TODO(karl) fill in the rest of the possibilities of type
        * OperandKind, or remove them if not needed.

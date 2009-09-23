@@ -191,19 +191,19 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
               /* Don't allow any subregister assignments of the
                * base register (R15), RSP, or RBP.
                */
-              if (NcIs64Subregister(reg_name, state->base_register)) {
+              if (NcIs64Subregister(inst, reg_name, state->base_register)) {
                 NcValidatorInstMessage(
                     LOG_ERROR, state, inst,
                     "Changing %s changes the value of register %s\n",
                     OperandKindName(reg_name),
                     OperandKindName(state->base_register));
-              } else if (NcIs64Subregister(reg_name, RegRSP)) {
+              } else if (NcIs64Subregister(inst, reg_name, RegRSP)) {
                 NcValidatorInstMessage(
                     LOG_ERROR, state, inst,
                     "Changing %s changes the value of register %s\n",
                     OperandKindName(reg_name),
                     OperandKindName(RegRSP));
-              } else if (NcIs64Subregister(reg_name, RegRBP)) {
+              } else if (NcIs64Subregister(inst, reg_name, RegRBP)) {
                 NcValidatorInstMessage(
                     LOG_ERROR, state, inst,
                     "Changing %s changes the value of register %s\n",
