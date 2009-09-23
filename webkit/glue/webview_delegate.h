@@ -195,9 +195,6 @@ class WebViewDelegate : public WebKit::WebViewClient {
                                const std::string& frame_charset) {
   }
 
-  // Notification that a user metric has occurred.
-  virtual void UserMetricsRecordAction(const std::wstring& action) { }
-
   // -------------------------------------------------------------------------
 
   // Notification that a request to download an image has completed. |errored|
@@ -224,32 +221,6 @@ class WebViewDelegate : public WebKit::WebViewClient {
   }
 
   // Editor Client -----------------------------------------------------------
-
-  // Returns true if the word is spelled correctly. The word may begin or end
-  // with whitespace or punctuation, so the implementor should be sure to handle
-  // these cases.
-  //
-  // If the word is misspelled (returns false), the given first and last
-  // indices (inclusive) will be filled with the offsets of the boundary of the
-  // word within the given buffer. The out pointers must be specified. If the
-  // word is correctly spelled (returns true), they will be set to (0,0).
-  virtual void SpellCheck(const std::wstring& word,
-                          int* misspell_location,
-                          int* misspell_length) {
-    *misspell_location = *misspell_length = 0;
-  }
-
-  // Computes an auto correct word for a misspelled word. If no word is found,
-  // empty string is computed.
-  virtual std::wstring GetAutoCorrectWord(const std::wstring& misspelled_word) {
-    return std::wstring();
-  }
-
-  // Switches the spelling panel to be displayed or not based on |show|.
-  virtual void ShowSpellingUI(bool show) { }
-
-  // Update the spelling panel with the |word|.
-  virtual void UpdateSpellingUIWithMisspelledWord(const std::wstring& word) { }
 
   // The "CurrentKeyboardEvent" refers to the keyboard event passed to
   // WebView's handleInputEvent method.

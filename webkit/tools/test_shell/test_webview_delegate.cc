@@ -442,6 +442,11 @@ void TestWebViewDelegate::didEndEditing() {
   }
 }
 
+WebString TestWebViewDelegate::autoCorrectWord(const WebString& word) {
+  // Dummy implementation.
+  return word;
+}
+
 void TestWebViewDelegate::runModalAlertDialog(
     WebFrame* frame, const WebString& message) {
   if (!shell_->layout_test_mode()) {

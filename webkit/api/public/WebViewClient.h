@@ -116,11 +116,20 @@ namespace WebKit {
 
         // Spellchecker --------------------------------------------------------
 
-        // The client should perform spell-checking on the given word
-        // synchronously.  Return a length of 0 if the word is not misspelled.
-        // FIXME hook this up
-        //virtual void spellCheck(
-        //    const WebString& word, int& misspelledOffset, int& misspelledLength) = 0;
+        // The client should perform spell-checking on the given text.  If the
+        // text contains a misspelled word, then upon return misspelledOffset
+        // will point to the start of the misspelled word, and misspelledLength
+        // will indicates its length.  Otherwise, if there was not a spelling
+        // error, then upon return misspelledLength is 0.
+        virtual void spellCheck(
+            const WebString& text, int& misspelledOffset, int& misspelledLength) = 0;
+
+        // Computes an auto-corrected replacement for a misspelled word.  If no
+        // replacement is found, then an empty string is returned.
+        virtual WebString autoCorrectWord(const WebString& misspelledWord) = 0;
+
+        // Update the spelling UI with the given word.
+        virtual void updateSpellingUIWithMisspelledWord(const WebString& word) = 0;
 
 
         // Dialogs -------------------------------------------------------------

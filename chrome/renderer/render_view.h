@@ -212,12 +212,6 @@ class RenderView : public RenderWidget,
                                          const WebKit::WebRect& selection);
   virtual bool WasOpenedByUserGesture() const;
   virtual void FocusAccessibilityObject(WebCore::AccessibilityObject* acc_obj);
-  virtual void SpellCheck(const std::wstring& word,
-                          int* misspell_location,
-                          int* misspell_length);
-  virtual std::wstring GetAutoCorrectWord(const std::wstring& word);
-  virtual void UpdateSpellingUIWithMisspelledWord(const std::wstring& word);
-  virtual void ShowSpellingUI(bool show);
   virtual void UserMetricsRecordAction(const std::wstring& action);
   virtual void DnsPrefetch(const std::vector<std::string>& host_names);
   virtual bool HandleCurrentKeyboardEvent();
@@ -255,6 +249,12 @@ class RenderView : public RenderWidget,
   virtual void didChangeContents() {}
   virtual void didExecuteCommand(const WebKit::WebString& command_name);
   virtual void didEndEditing() {}
+  virtual void spellCheck(
+      const WebKit::WebString& text, int& offset, int& length);
+  virtual WebKit::WebString autoCorrectWord(
+      const WebKit::WebString& misspelled_word);
+  virtual void updateSpellingUIWithMisspelledWord(
+      const WebKit::WebString& word);
   virtual void runModalAlertDialog(
       WebKit::WebFrame* frame, const WebKit::WebString& message);
   virtual bool runModalConfirmDialog(

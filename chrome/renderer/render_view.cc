@@ -274,6 +274,10 @@ void RenderView::SetNextPageID(int32 next_page_id) {
   next_page_id_ = next_page_id;
 }
 
+void RenderView::UserMetricsRecordAction(const std::wstring& action) {
+  Send(new ViewHostMsg_UserMetricsRecordAction(routing_id_, action));
+}
+
 void RenderView::PluginCrashed(base::ProcessId pid,
                                const FilePath& plugin_path) {
   Send(new ViewHostMsg_CrashedPlugin(routing_id_, pid, plugin_path));
@@ -1513,6 +1517,30 @@ void RenderView::didExecuteCommand(const WebString& command_name) {
   UserMetricsRecordAction(name);
 }
 
+void RenderView::spellCheck(
+    const WebString& text, int& misspelled_offset, int& misspelled_length) {
+  EnsureDocumentTag();
+  Send(new ViewHostMsg_SpellCheck(
+      routing_id_, UTF16ToWideHack(text), document_tag_,
+      &misspelled_offset, &misspelled_length));
+}
+
+WebString RenderView::autoCorrectWord(const WebKit::WebString& word) {
+  std::wstring autocorrect_word;
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kAutoSpellCorrect)) {
+    EnsureDocumentTag();
+    Send(new ViewHostMsg_GetAutoCorrectWord(
+        routing_id_, UTF16ToWideHack(word), document_tag_, &autocorrect_word));
+  }
+  return WideToUTF16Hack(autocorrect_word);
+}
+
+void RenderView::updateSpellingUIWithMisspelledWord(const WebString& word) {
+  Send(new ViewHostMsg_UpdateSpellingPanelWithMisspelledWord(
+      routing_id_, UTF16ToWideHack(word)));
+}
+
 void RenderView::runModalAlertDialog(
     WebFrame* frame, const WebString& message) {
   RunJavaScriptMessage(MessageBoxFlags::kIsJavascriptAlert,
@@ -2671,39 +2699,6 @@ void RenderView::ReportFindInPageSelection(int request_id,
 
 bool RenderView::WasOpenedByUserGesture() const {
   return opened_by_user_gesture_;
-}
-
-void RenderView::SpellCheck(const std::wstring& word,
-                            int* misspell_location,
-                            int* misspell_length) {
-  EnsureDocumentTag();
-  Send(new ViewHostMsg_SpellCheck(
-      routing_id_, word, document_tag_, misspell_location, misspell_length));
-}
-
-std::wstring RenderView::GetAutoCorrectWord(
-    const std::wstring& misspelled_word) {
-  std::wstring autocorrect_word;
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kAutoSpellCorrect)) {
-    EnsureDocumentTag();
-    Send(new ViewHostMsg_GetAutoCorrectWord(
-        routing_id_, misspelled_word, document_tag_, &autocorrect_word));
-  }
-  return autocorrect_word;
-}
-
-void RenderView::ShowSpellingUI(bool show) {
-  Send(new ViewHostMsg_ShowSpellingPanel(routing_id_, show));
-}
-
-void RenderView::UpdateSpellingUIWithMisspelledWord(const std::wstring& word) {
-  Send(new ViewHostMsg_UpdateSpellingPanelWithMisspelledWord(
-      routing_id_, word));
-}
-
-void RenderView::UserMetricsRecordAction(const std::wstring& action) {
-  Send(new ViewHostMsg_UserMetricsRecordAction(routing_id_, action));
 }
 
 void RenderView::DnsPrefetch(const std::vector<std::string>& host_names) {

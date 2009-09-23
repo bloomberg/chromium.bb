@@ -163,6 +163,10 @@ void PrintWebViewHelper::didStopLoading() {
   PrintPages(*print_pages_params_.get(), print_web_view_->GetMainFrame());
 }
 
+WebString PrintWebViewHelper::autoCorrectWord(const WebString& word) {
+  return word;
+}
+
 WebRect PrintWebViewHelper::windowRect() {
   NOTREACHED();
   return WebRect();

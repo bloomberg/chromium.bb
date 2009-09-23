@@ -823,20 +823,18 @@ void EditorClientImpl::learnWord(const WebCore::String&) {
   NOTIMPLEMENTED();
 }
 
-void EditorClientImpl::checkSpellingOfString(const UChar* str, int length,
+void EditorClientImpl::checkSpellingOfString(const UChar* text, int length,
                                              int* misspellingLocation,
                                              int* misspellingLength) {
   // SpellCheckWord will write (0, 0) into the output vars, which is what our
   // caller expects if the word is spelled correctly.
   int spell_location = -1;
   int spell_length = 0;
-  WebViewDelegate* d = webview_->delegate();
 
-  // Check to see if the provided str is spelled correctly.
-  if (isContinuousSpellCheckingEnabled() && d) {
-    std::wstring word =
-        webkit_glue::StringToStdWString(WebCore::String(str, length));
-    d->SpellCheck(word, &spell_location, &spell_length);
+  // Check to see if the provided text is spelled correctly.
+  if (isContinuousSpellCheckingEnabled() && webview_->client()) {
+    webview_->client()->spellCheck(
+        WebString(text, length), spell_location, spell_length);
   } else {
     spell_location = 0;
     spell_length = 0;
@@ -852,21 +850,18 @@ void EditorClientImpl::checkSpellingOfString(const UChar* str, int length,
 
 WebCore::String EditorClientImpl::getAutoCorrectSuggestionForMisspelledWord(
     const WebCore::String& misspelledWord) {
-  WebViewDelegate* d = webview_->delegate();
-  if (!(isContinuousSpellCheckingEnabled() && d))
+  if (!(isContinuousSpellCheckingEnabled() && webview_->client()))
     return WebCore::String();
-
-  std::wstring word = webkit_glue::StringToStdWString(misspelledWord);
 
   // Do not autocorrect words with capital letters in it except the
   // first letter. This will remove cases changing "IMB" to "IBM".
-  for (size_t i = 1; i < word.length(); i++) {
-    if (u_isupper(static_cast<UChar32>(word[i])))
+  for (size_t i = 1; i < misspelledWord.length(); i++) {
+    if (u_isupper(static_cast<UChar32>(misspelledWord[i])))
       return WebCore::String();
   }
 
-  std::wstring autocorrect_word = d->GetAutoCorrectWord(word);
-  return webkit_glue::StdWStringToString(autocorrect_word);
+  return webkit_glue::WebStringToString(webview_->client()->autoCorrectWord(
+      webkit_glue::StringToWebString(misspelledWord)));
 }
 
 void EditorClientImpl::checkGrammarOfString(const UChar*, int length,
@@ -887,18 +882,14 @@ void EditorClientImpl::updateSpellingUIWithGrammarString(const WebCore::String&,
 
 void EditorClientImpl::updateSpellingUIWithMisspelledWord(
     const WebCore::String& misspelled_word) {
-  std::wstring word = webkit_glue::StringToStdWString(misspelled_word);
-  WebViewDelegate* d = webview_->delegate();
-  if (d) {
-    d->UpdateSpellingUIWithMisspelledWord(word);
+  if (webview_->client()) {
+    webview_->client()->updateSpellingUIWithMisspelledWord(
+        webkit_glue::StringToWebString(misspelled_word));
   }
 }
 
 void EditorClientImpl::showSpellingUI(bool show) {
-  WebViewDelegate* d = webview_->delegate();
-  if (d) {
-    d->ShowSpellingUI(show);
-  }
+  ASSERT_NOT_REACHED();
 }
 
 bool EditorClientImpl::spellingUIIsShowing() {

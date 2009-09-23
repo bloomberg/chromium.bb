@@ -114,6 +114,12 @@ class TestWebViewDelegate : public WebViewDelegate,
   virtual void didChangeContents();
   virtual void didExecuteCommand(const WebKit::WebString& command_name) {}
   virtual void didEndEditing();
+  virtual void spellCheck(
+      const WebKit::WebString& text, int& offset, int& length) {}
+  virtual WebKit::WebString autoCorrectWord(
+      const WebKit::WebString& misspelled_word);
+  virtual void updateSpellingUIWithMisspelledWord(
+      const WebKit::WebString& word) {}
   virtual void runModalAlertDialog(
       WebKit::WebFrame* frame, const WebKit::WebString& message);
   virtual bool runModalConfirmDialog(
