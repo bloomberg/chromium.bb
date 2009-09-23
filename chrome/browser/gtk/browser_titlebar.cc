@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "app/gfx/skbitmap_operations.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/gtk_util.h"
@@ -31,7 +32,6 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "skia/ext/image_operations.h"
 
 namespace {
 
@@ -590,7 +590,7 @@ static void MakeThrobberFrames(int resource_id,
 
   // Make a separate GdkPixbuf for each frame of the animation.
   for (size_t i = 0; i < num_frames; ++i) {
-    SkBitmap frame = skia::ImageOperations::CreateTiledBitmap(*frame_strip,
+    SkBitmap frame = SkBitmapOperations::CreateTiledBitmap(*frame_strip,
         i * frame_size, 0, frame_size, frame_size);
     frames->push_back(gfx::GdkPixbufFromSkBitmap(&frame));
   }

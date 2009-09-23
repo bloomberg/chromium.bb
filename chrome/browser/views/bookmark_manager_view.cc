@@ -29,6 +29,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "skia/ext/skia_utils.h"
+#include "third_party/skia/include/core/SkShader.h"
 #include "views/grid_layout.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_item_view.h"

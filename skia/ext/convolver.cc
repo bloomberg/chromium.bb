@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,14 +112,14 @@ class CircularRowBuffer {
 // |src_data| and continues for the num_values() of the filter.
 template<bool has_alpha>
 void ConvolveHorizontally(const unsigned char* src_data,
-                          const ConvolusionFilter1D& filter,
+                          const ConvolutionFilter1D& filter,
                           unsigned char* out_row) {
   // Loop over each pixel on this row in the output image.
   int num_values = filter.num_values();
   for (int out_x = 0; out_x < num_values; out_x++) {
     // Get the filter that determines the current output pixel.
     int filter_offset, filter_length;
-    const ConvolusionFilter1D::Fixed* filter_values =
+    const ConvolutionFilter1D::Fixed* filter_values =
         filter.FilterForValue(out_x, &filter_offset, &filter_length);
 
     // Compute the first pixel in this row that the filter affects. It will
@@ -129,7 +129,7 @@ void ConvolveHorizontally(const unsigned char* src_data,
     // Apply the filter to the row to get the destination pixel in |accum|.
     int accum[4] = {0};
     for (int filter_x = 0; filter_x < filter_length; filter_x++) {
-      ConvolusionFilter1D::Fixed cur_filter = filter_values[filter_x];
+      ConvolutionFilter1D::Fixed cur_filter = filter_values[filter_x];
       accum[0] += cur_filter * row_to_filter[filter_x * 4 + 0];
       accum[1] += cur_filter * row_to_filter[filter_x * 4 + 1];
       accum[2] += cur_filter * row_to_filter[filter_x * 4 + 2];
@@ -139,11 +139,11 @@ void ConvolveHorizontally(const unsigned char* src_data,
 
     // Bring this value back in range. All of the filter scaling factors
     // are in fixed point with kShiftBits bits of fractional part.
-    accum[0] >>= ConvolusionFilter1D::kShiftBits;
-    accum[1] >>= ConvolusionFilter1D::kShiftBits;
-    accum[2] >>= ConvolusionFilter1D::kShiftBits;
+    accum[0] >>= ConvolutionFilter1D::kShiftBits;
+    accum[1] >>= ConvolutionFilter1D::kShiftBits;
+    accum[2] >>= ConvolutionFilter1D::kShiftBits;
     if (has_alpha)
-      accum[3] >>= ConvolusionFilter1D::kShiftBits;
+      accum[3] >>= ConvolutionFilter1D::kShiftBits;
 
     // Store the new pixel.
     out_row[out_x * 4 + 0] = ClampTo8(accum[0]);
@@ -154,19 +154,19 @@ void ConvolveHorizontally(const unsigned char* src_data,
   }
 }
 
-// Does vertical convolusion to produce one output row. The filter values and
+// Does vertical convolution to produce one output row. The filter values and
 // length are given in the first two parameters. These are applied to each
 // of the rows pointed to in the |source_data_rows| array, with each row
 // being |pixel_width| wide.
 //
 // The output must have room for |pixel_width * 4| bytes.
 template<bool has_alpha>
-void ConvolveVertically(const ConvolusionFilter1D::Fixed* filter_values,
+void ConvolveVertically(const ConvolutionFilter1D::Fixed* filter_values,
                         int filter_length,
                         unsigned char* const* source_data_rows,
                         int pixel_width,
                         unsigned char* out_row) {
-  // We go through each column in the output and do a vertical convolusion,
+  // We go through each column in the output and do a vertical convolution,
   // generating one output pixel each time.
   for (int out_x = 0; out_x < pixel_width; out_x++) {
     // Compute the number of bytes over in each row that the current column
@@ -176,7 +176,7 @@ void ConvolveVertically(const ConvolusionFilter1D::Fixed* filter_values,
     // Apply the filter to one column of pixels.
     int accum[4] = {0};
     for (int filter_y = 0; filter_y < filter_length; filter_y++) {
-      ConvolusionFilter1D::Fixed cur_filter = filter_values[filter_y];
+      ConvolutionFilter1D::Fixed cur_filter = filter_values[filter_y];
       accum[0] += cur_filter * source_data_rows[filter_y][byte_offset + 0];
       accum[1] += cur_filter * source_data_rows[filter_y][byte_offset + 1];
       accum[2] += cur_filter * source_data_rows[filter_y][byte_offset + 2];
@@ -186,11 +186,11 @@ void ConvolveVertically(const ConvolusionFilter1D::Fixed* filter_values,
 
     // Bring this value back in range. All of the filter scaling factors
     // are in fixed point with kShiftBits bits of precision.
-    accum[0] >>= ConvolusionFilter1D::kShiftBits;
-    accum[1] >>= ConvolusionFilter1D::kShiftBits;
-    accum[2] >>= ConvolusionFilter1D::kShiftBits;
+    accum[0] >>= ConvolutionFilter1D::kShiftBits;
+    accum[1] >>= ConvolutionFilter1D::kShiftBits;
+    accum[2] >>= ConvolutionFilter1D::kShiftBits;
     if (has_alpha)
-      accum[3] >>= ConvolusionFilter1D::kShiftBits;
+      accum[3] >>= ConvolutionFilter1D::kShiftBits;
 
     // Store the new pixel.
     out_row[byte_offset + 0] = ClampTo8(accum[0]);
@@ -221,9 +221,9 @@ void ConvolveVertically(const ConvolusionFilter1D::Fixed* filter_values,
 
 }  // namespace
 
-// ConvolusionFilter1D ---------------------------------------------------------
+// ConvolutionFilter1D ---------------------------------------------------------
 
-void ConvolusionFilter1D::AddFilter(int filter_offset,
+void ConvolutionFilter1D::AddFilter(int filter_offset,
                                     const float* filter_values,
                                     int filter_length) {
   FilterInstance instance;
@@ -239,7 +239,7 @@ void ConvolusionFilter1D::AddFilter(int filter_offset,
   max_filter_ = std::max(max_filter_, filter_length);
 }
 
-void ConvolusionFilter1D::AddFilter(int filter_offset,
+void ConvolutionFilter1D::AddFilter(int filter_offset,
                                     const Fixed* filter_values,
                                     int filter_length) {
   FilterInstance instance;
@@ -260,8 +260,8 @@ void ConvolusionFilter1D::AddFilter(int filter_offset,
 void BGRAConvolve2D(const unsigned char* source_data,
                     int source_byte_row_stride,
                     bool source_has_alpha,
-                    const ConvolusionFilter1D& filter_x,
-                    const ConvolusionFilter1D& filter_y,
+                    const ConvolutionFilter1D& filter_x,
+                    const ConvolutionFilter1D& filter_y,
                     unsigned char* output) {
   int max_y_filter_size = filter_y.max_filter();
 
@@ -269,22 +269,22 @@ void BGRAConvolve2D(const unsigned char* source_data,
   // convolved row for. If the filter doesn't start at the beginning of the
   // image (this is the case when we are only resizing a subset), then we
   // don't want to generate any output rows before that. Compute the starting
-  // row for convolusion as the first pixel for the first vertical filter.
+  // row for convolution as the first pixel for the first vertical filter.
   int filter_offset, filter_length;
-  const ConvolusionFilter1D::Fixed* filter_values =
+  const ConvolutionFilter1D::Fixed* filter_values =
       filter_y.FilterForValue(0, &filter_offset, &filter_length);
   int next_x_row = filter_offset;
 
-  // We loop over each row in the input doing a horizontal convolusion. This
+  // We loop over each row in the input doing a horizontal convolution. This
   // will result in a horizontally convolved image. We write the results into
-  // a circular buffer of convolved rows and do vertical convolusion as rows
+  // a circular buffer of convolved rows and do vertical convolution as rows
   // are available. This prevents us from having to store the entire
   // intermediate image and helps cache coherency.
   CircularRowBuffer row_buffer(filter_x.num_values(), max_y_filter_size,
                                filter_offset);
 
   // Loop over every possible output row, processing just enough horizontal
-  // convolusions to run each subsequent vertical convolusion.
+  // convolutions to run each subsequent vertical convolution.
   int output_row_byte_width = filter_x.num_values() * 4;
   int num_output_rows = filter_y.num_values();
   for (int out_y = 0; out_y < num_output_rows; out_y++) {

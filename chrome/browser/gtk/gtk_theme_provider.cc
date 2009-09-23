@@ -352,8 +352,8 @@ void GtkThemeProvider::LoadGtkValues() {
     // color, change the luminosity of the frame color downwards to 80% of what
     // it currently is. This is in a futile attempt to match the default
     // metacity and xfwm themes.
-    SkColor shifted = skia::HSLShift(GdkToSkColor(&frame_color),
-                                     kDefaultFrameShift);
+    SkColor shifted = color_utils::HSLShift(GdkToSkColor(&frame_color),
+                                            kDefaultFrameShift);
     frame_color.pixel = 0;
     frame_color.red = SkColorGetR(shifted) * kSkiaToGDKMultiplier;
     frame_color.green = SkColorGetG(shifted) * kSkiaToGDKMultiplier;
