@@ -273,7 +273,7 @@ class DownloadInProgressConfirmDialogDelegate : public views::DialogDelegate,
     } else {
       warning_text =
           l10n_util::GetStringF(IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING,
-                                product_name_, IntToString16(download_count));
+                                product_name_, IntToWString(download_count));
       explanation_text =
           l10n_util::GetStringF(
               IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION, product_name_);
