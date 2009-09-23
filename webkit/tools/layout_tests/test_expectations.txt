@@ -2340,30 +2340,8 @@ BUG22552 MAC LINUX : LayoutTests/fast/events/drag-in-frames.html = CRASH
 BUG22554 SKIP : LayoutTests/mathml = FAIL
 
 // WebKit merge 48610:48642
-BUG_PAUL : LayoutTests/fast/dom/HTMLImageElement/image-loading-gc.html = TIMEOUT
-BUG_PAUL LINUX : LayoutTests/editing/selection/click-outside-editable-div.html = FAIL
-BUG_PAUL LINUX : LayoutTests/fast/events/frame-tab-focus.html = FAIL
-BUG_PAUL WIN MAC DEBUG : LayoutTests/svg/dynamic-updates/SVGLinearGradientElement-dom-x2-attr.html = TIMEOUT
 BUG_PAUL MAC : pending/plugins/iframe-shims.html = FAIL
-BUG_PAUL MAC DEBUG : LayoutTests/fast/forms/button-generated-content.html = TIMEOUT
-BUG_PAUL MAC DEBUG : LayoutTests/fast/forms/fieldset-align.html = TIMEOUT
-BUG_PAUL MAC LINUX DEBUG : LayoutTests/http/tests/navigation/javascriptlink-basic.html = TIMEOUT
-BUG_PAUL MAC DEBUG : LayoutTests/http/tests/navigation/javascriptlink-frames.html = TIMEOUT
-BUG_PAUL MAC LINUX DEBUG : LayoutTests/http/tests/navigation/javascriptlink-goback.html = TIMEOUT
-BUG_PAUL MAC LINUX DEBUG : LayoutTests/http/tests/navigation/javascriptlink-subframeload.html = TIMEOUT
-BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/images/load-img-with-empty-src.html = TIMEOUT
-BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/events/event-listener-html-non-html-confusion.html = FAIL
-BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/events/keydown-keypress-preventDefault.html = FAIL
-BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/events/mouse-drag-from-frame-to-other-frame.html = FAIL
-BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/events/mouse-drag-from-frame.html = FAIL
-BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/events/nested-window-event.html = FAIL
-BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/events/onsubmit-bubbling.html = FAIL
-BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/events/space-scroll-event.html = FAIL
-BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/forms/formmove3.html = FAIL
-BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/forms/formnovalidate-attribute.html = FAIL
-BUG_PAUL MAC LINUX DEBUG : LayoutTests/fast/images/imagemap-case.html = FAIL
 BUG_PAUL LINUX DEBUG : LayoutTests/fast/backgrounds/size/contain-and-cover.html = PASS FAIL
-BUG_PAUL MAC DEBUG : LayoutTests/fast/forms/onselect-selectall.html = PASS TIMEOUT
 
 // WebKit update 48642:48665
 BUG_DGLAZKOV : LayoutTests/fast/loader/fragment-after-redirect-gets-back-entry.html = FAIL
