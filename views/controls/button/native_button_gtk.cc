@@ -17,8 +17,7 @@
 namespace views {
 
 NativeButtonGtk::NativeButtonGtk(NativeButton* native_button)
-    : NativeControlGtk(),
-      native_button_(native_button) {
+    : native_button_(native_button) {
   // Associates the actual GtkWidget with the native_button so the native_button
   // is the one considered as having the focus (not the wrapper) when the
   // GtkWidget is focused directly (with a click for example).
