@@ -48,13 +48,14 @@ var EXPECTATIONS_MAP = {
 };
 
 // Keys in the JSON files.
-var NON_WONTFIX_COUNTS_KEY = 'nonWontfixCounts';
-var ALL_COUNTS_KEY = 'allCounts';
+var WONTFIX_COUNTS_KEY = 'wontfixCounts';
+var FIXABLE_COUNTS_KEY = 'fixableCounts';
 var DEFERRED_COUNTS_KEY = 'deferredCounts';
-var NON_WONTFIX_DESCRIPTION = 'All tests we want to pass for this release';
-var ALL_COUNTS_DESCRIPTION = 'All tests (inludes WONTFIX)';
-var DEFERRED_DESCRIPTION = 'All deferred tests';
+var WONTFIX_DESCRIPTION = 'Tests never to be fixed (WONTFIX)';
+var FIXABLE_DESCRIPTION = 'All tests for this release';
+var DEFERRED_DESCRIPTION = 'All deferred tests (DEFER)';
 var FIXABLE_COUNT_KEY = 'fixableCount';
+var ALL_FIXABLE_COUNT_KEY = 'allFixableCount';
 var CHROME_REVISIONS_KEY = 'chromeRevision';
 var WEBKIT_REVISIONS_KEY = 'webkitRevision';
 

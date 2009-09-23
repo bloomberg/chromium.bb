@@ -42,47 +42,75 @@
 
   function getHTMLForBuilder(builder) {
     var results = resultsByBuilder[builder];
+    // Some keys were added later than others, so they don't have as many
+    // builds. Use the shortest.
+    // TODO(ojan): Once 500 runs have finished, we can get rid of passing this
+    // around and just assume all keys have the same number of builders for a
+    // given builder.
+    var numColumns = results[ALL_FIXABLE_COUNT_KEY].length;
     return '<div class=container><h2>' + builder + '</h2>' +
-        getHTMLForTestType(results, NON_WONTFIX_COUNTS_KEY,
-            NON_WONTFIX_DESCRIPTION) +
-        getHTMLForTestType(results, DEFERRED_COUNTS_KEY, DEFERRED_DESCRIPTION) +
-        getHTMLForTestType(results, ALL_COUNTS_KEY, ALL_COUNTS_DESCRIPTION) +
-        '</div>';
+        getHTMLForSummaryTable(results, numColumns) +
+        getHTMLForTestType(results, FIXABLE_COUNTS_KEY, FIXABLE_DESCRIPTION,
+            numColumns) +
+        getHTMLForTestType(results, DEFERRED_COUNTS_KEY, DEFERRED_DESCRIPTION,
+            numColumns) +
+        getHTMLForTestType(results, WONTFIX_COUNTS_KEY, WONTFIX_DESCRIPTION,
+            numColumns) + '</div>';
   }
 
-  function getHTMLForTestType(results, key, description) {
+  function getHTMLForRevisionRows(results, numColumns) {
+    return getHTMLForTableRow('WebKit Revision',
+            results[WEBKIT_REVISIONS_KEY].slice(0, numColumns)) +
+        getHTMLForTableRow('Chrome Revision',
+            results[CHROME_REVISIONS_KEY].slice(0, numColumns));
+  }
+
+  function wrapHTMLInTable(description, html) {
+    return '<h3>' + description + '</h3><table><tbody>' + html +
+        '</tbody></table>';
+  }
+
+  function getHTMLForSummaryTable(results, numColumns) {
+    var percent = [];
+    var fixable = results[FIXABLE_COUNT_KEY].slice(0, numColumns);
+    var allFixable = results[ALL_FIXABLE_COUNT_KEY].slice(0, numColumns);
+    for (var i = 0; i < numColumns; i++) {
+      var percentage = 100 * (allFixable[i] - fixable[i]) / allFixable[i];
+      // Round to the nearest tenth of a percent.
+      percent.push(Math.round(percentage * 10) / 10 + '%');
+    }
+    var html = getHTMLForRevisionRows(results, numColumns) +
+        getHTMLForTableRow('Percent passed', percent) +
+        getHTMLForTableRow('Failures (deduped)', fixable) +
+        getHTMLForTableRow('Fixable Tests', allFixable);
+    return wrapHTMLInTable('Summary', html);
+  }
+
+  function getHTMLForTestType(results, key, description, numColumns) {
     // TODO(dglazkov): Make these pretty canvasy graphs.
-    var html = '<h3>' + description + '</h3><table><tbody>';
     var counts = results[key];
+    var html = getHTMLForRevisionRows(results, numColumns);
 
-    var numColumns = counts.length;
-    html += getHTMLForTableRow('WebKit Revision',
-        results[WEBKIT_REVISIONS_KEY].slice(0, numColumns));
-    html += getHTMLForTableRow('Chrome Revision',
-        results[CHROME_REVISIONS_KEY].slice(0, numColumns));
-    html += getHTMLForTableRow('Failures (deduped)',
-        results[FIXABLE_COUNT_KEY].slice(0, numColumns));
-
-    var htmlForEachRow = {};
-    for (var i = 0; i < counts.length; i++) {
+    var valuesForEachRow = {};
+    for (var i = 0; i < numColumns; i++) {
       for (var expectation in EXPECTATIONS_MAP) {
         if (expectation in counts[i]) {
           var count = counts[i][expectation];
 
-          if (!htmlForEachRow[expectation])
-            htmlForEachRow[expectation] = [];
+          if (!valuesForEachRow[expectation])
+            valuesForEachRow[expectation] = [];
 
-          htmlForEachRow[expectation].push(count);
+          valuesForEachRow[expectation].push(count);
         }
       }
     }
 
-    for (var expectation in htmlForEachRow) {
+    for (var expectation in valuesForEachRow) {
       html += getHTMLForTableRow(EXPECTATIONS_MAP[expectation],
-          htmlForEachRow[expectation]);
+          valuesForEachRow[expectation]);
     }
 
-    return html + '</tbody></table>';
+    return wrapHTMLInTable(description, html);
   }
 
   function getHTMLForTableRow(columnName, values) {
