@@ -168,6 +168,10 @@ class SVNWrapper(SCMWrapper):
 
     if from_info['URL'] != components[0]:
       to_info = CaptureSVNInfo(url, '.')
+      if not to_info.get('Repository Root') or not to_info.get('UUID'):
+        # The url is invalid or the server is not accessible, it's safer to bail
+        # out right now.
+        raise gclient_utils.Error('This url is unreachable: %s' % url)
       can_switch = ((from_info['Repository Root'] != to_info['Repository Root'])
                     and (from_info['UUID'] == to_info['UUID']))
       if can_switch:
