@@ -296,6 +296,8 @@ const struct AcceleratorMapping {
   { GDK_u, IDC_VIEW_SOURCE, GDK_CONTROL_MASK },
   { GDK_p, IDC_PRINT, GDK_CONTROL_MASK },
   { GDK_Escape, IDC_TASK_MANAGER, GDK_SHIFT_MASK },
+  { GDK_Delete, IDC_CLEAR_BROWSING_DATA,
+    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
 
 #if defined(OS_CHROMEOS)
   { GDK_f, IDC_FULLSCREEN,
