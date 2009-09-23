@@ -2341,14 +2341,3 @@ BUG_PAUL LINUX DEBUG : LayoutTests/fast/backgrounds/size/contain-and-cover.html 
 
 // WebKit update 48642:48665
 BUG_DGLAZKOV : LayoutTests/fast/loader/fragment-after-redirect-gets-back-entry.html = FAIL
-BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/table/fixed-table-with-percent-inside-percent-table.html = FAIL
-BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/table/fixed-table-with-percent-width-inside-auto-table.html = FAIL
-BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/table/fixed-table-with-percent-width-inside-div.html = FAIL
-BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/table/fixed-table-with-percent-width-inside-extra-large-div.html = FAIL
-BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/table/fixed-table-with-percent-width-inside-fixed-width-table.html = FAIL
-BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/table/fixed-table-with-small-percent-width.html = FAIL
-BUG_DGLAZKOV WIN LINUX : LayoutTests/tables/mozilla/bugs/bug34176.html = FAIL
-
-// WebKit update 48665:48679
-BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/multicol/float-multicol.html = FAIL
-BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/multicol/positioned-with-constrained-height.html = FAIL
