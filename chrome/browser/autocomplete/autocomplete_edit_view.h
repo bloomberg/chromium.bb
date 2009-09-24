@@ -128,6 +128,10 @@ class AutocompleteEditView {
 
   // Returns the gfx::NativeView of the edit view.
   virtual gfx::NativeView GetNativeView() const = 0;
+
+  // Returns the gfx::NativeView of the edit view that should receive focus when
+  // the location bar is focused.
+  virtual gfx::NativeView GetFocusNativeView() const = 0;
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_AUTOCOMPLETE_EDIT_VIEW_H_

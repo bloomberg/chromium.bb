@@ -89,6 +89,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   virtual void OnBeforePossibleChange();
   virtual bool OnAfterPossibleChange();
   virtual gfx::NativeView GetNativeView() const;
+  virtual gfx::NativeView GetFocusNativeView() const;
 
   // Implement the AutocompleteTextFieldObserver interface.
   virtual void OnControlKeyChanged(bool pressed);

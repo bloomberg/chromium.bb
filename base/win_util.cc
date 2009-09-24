@@ -279,6 +279,8 @@ bool Subclass(HWND window, WNDPROC subclass_proc) {
   WNDPROC original_handler =
       reinterpret_cast<WNDPROC>(GetWindowLongPtr(window, GWLP_WNDPROC));
   if (original_handler != subclass_proc) {
+    DCHECK(!GetProp(window, kHandlerKey)) << "subclassing a HWND more than "
+        "once";
     win_util::SetWindowProc(window, subclass_proc);
     SetProp(window, kHandlerKey, original_handler);
     return true;

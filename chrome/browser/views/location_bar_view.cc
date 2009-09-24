@@ -157,6 +157,8 @@ void LocationBarView::Init() {
   location_entry_view_->SetID(VIEW_ID_AUTOCOMPLETE);
   AddChildView(location_entry_view_);
   location_entry_view_->set_focus_view(this);
+  location_entry_view_->set_focus_native_view(location_entry_->
+        GetFocusNativeView());
   location_entry_view_->Attach(
 #if defined(OS_WIN)
                                location_entry_->m_hWnd
@@ -290,8 +292,9 @@ void LocationBarView::InvalidatePageActions() {
 }
 
 void LocationBarView::Focus() {
-  // Focus the location entry native view.
-  location_entry_->SetFocus();
+  // Forward the focus to the NativeViewHost that will focus the right
+  // native-view.
+  location_entry_view_->Focus();
 }
 
 void LocationBarView::SetProfile(Profile* profile) {
@@ -415,15 +418,6 @@ void LocationBarView::OnAutocompleteAccept(
 
 void LocationBarView::OnChanged() {
   DoLayout(false);
-}
-
-void LocationBarView::OnSetFocus() {
-  views::FocusManager* focus_manager = GetFocusManager();
-  if (!focus_manager) {
-    NOTREACHED();
-    return;
-  }
-  focus_manager->SetFocusedView(this);
 }
 
 SkBitmap LocationBarView::GetFavIcon() const {
