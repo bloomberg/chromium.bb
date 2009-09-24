@@ -667,6 +667,68 @@ TestSuite.prototype.testEvalOnCallFrame = function() {
 
 
 /**
+ * Tests that inspected page doesn't hang on reload if it contains a syntax
+ * error and DevTools window is open.
+ */
+TestSuite.prototype.testAutoContinueOnSyntaxError = function() {
+  this.showPanel('scripts');
+  var test = this;
+
+  function checkScriptsList() {
+    var scriptSelect = document.getElementById('scripts-files');
+    var options = scriptSelect.options;
+    // There should be only console API source (see
+    // InjectedScript._ensureCommandLineAPIInstalled) since the page script
+    // contains a syntax error.
+    for (var i = 0 ; i < options.length; i++) {
+      if (options[i].text.search('script_syntax_error.html$') != -1) {
+        test.fail('Script with syntax error should not be in the list of ' +
+                  'parsed scripts.');
+      }
+    }
+  }
+
+  this.addSniffer(devtools.DebuggerAgent.prototype, 'handleScriptsResponse_',
+      function(msg) {
+        checkScriptsList();
+
+        // Reload inspected page.
+        test.evaluateInConsole_(
+            'window.location.reload(true);',
+            function(resultText) {
+              test.assertEquals('undefined', resultText,
+                                'Unexpected result of reload().');
+              waitForExceptionEvent();
+            });
+      });
+
+  function waitForExceptionEvent() {
+    var exceptionCount = 0;
+    test.addSniffer(
+        devtools.DebuggerAgent.prototype,
+        'handleExceptionEvent_',
+        function(msg) {
+          exceptionCount++;
+          test.assertEquals(1, exceptionCount, 'Too many exceptions.');
+          test.assertEquals(undefined, msg.getBody().script,
+                            'Unexpected exception: ' + JSON.stringify(msg));
+          test.releaseControl();
+        });
+
+    // Check that the script is not paused on parse error.
+    test.addSniffer(
+        WebInspector,
+        'pausedScript',
+        function(callFrames) {
+          test.fail('Script execution should not pause on syntax error.');
+        });
+  }
+
+  this.takeControl();
+};
+
+
+/**
  * Tests 'Pause' button will pause debugger when a snippet is evaluated.
  */
 TestSuite.prototype.testPauseInEval = function() {
@@ -702,15 +764,10 @@ TestSuite.KeyEvent.prototype.stopPropagation = function() {};
  * Tests console eval.
  */
 TestSuite.prototype.testConsoleEval = function() {
-  WebInspector.console.visible = true;
-  WebInspector.console.prompt.text = '123';
-  WebInspector.console.promptElement.handleKeyEvent(
-      new TestSuite.KeyEvent('Enter'));
-
   var test = this;
-  this.addSniffer(WebInspector.ConsoleView.prototype, 'addMessage',
-      function(commandResult) {
-        test.assertEquals('123', commandResult.toMessageElement().textContent);
+  this.evaluateInConsole_('123',
+      function(resultText) {
+        test.assertEquals('123', resultText);
         test.releaseControl();
       });
 

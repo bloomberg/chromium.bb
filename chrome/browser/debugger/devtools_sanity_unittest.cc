@@ -48,6 +48,9 @@ const wchar_t kEvalTestPage[] = L"files/devtools/eval_test_page.html";
 const wchar_t kJsPage[] = L"files/devtools/js_page.html";
 const wchar_t kResourceTestPage[] = L"files/devtools/resource_test_page.html";
 const wchar_t kSimplePage[] = L"files/devtools/simple_page.html";
+const wchar_t kSyntaxErrorTestPage[] =
+    L"files/devtools/script_syntax_error.html";
+
 
 class DevToolsSanityTest : public InProcessBrowserTest {
  public:
@@ -168,6 +171,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSetBreakpoint) {
 // Tests eval on call frame.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalOnCallFrame) {
   RunTest("testEvalOnCallFrame", kDebuggerTestPage);
+}
+
+// Tests that execution continues automatically when there is a syntax error in
+// script and DevTools are open.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestAutoContinueOnSyntaxError) {
+  RunTest("testAutoContinueOnSyntaxError", kSyntaxErrorTestPage);
 }
 
 // Tests that 'Pause' button works for eval.

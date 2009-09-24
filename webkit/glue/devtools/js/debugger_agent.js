@@ -790,8 +790,9 @@ devtools.DebuggerAgent.prototype.handleExceptionEvent_ = function(msg) {
   WebInspector.currentPanel = WebInspector.panels.scripts;
 
   var body = msg.getBody();
-  if (this.pauseOnExceptions_) {
-    var body = msg.getBody();
+  // No script field in the body means that v8 failed to parse the script. We
+  // resume execution on parser errors automatically.
+  if (this.pauseOnExceptions_ && body.script) {
     var line = devtools.DebuggerAgent.v8ToWwebkitLineNumber_(body.sourceLine);
     this.createExceptionMessage_(body.script.name, line, body.exception.text);
     this.requestBacktrace_();
