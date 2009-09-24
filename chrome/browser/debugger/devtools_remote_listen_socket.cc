@@ -47,6 +47,7 @@ DevToolsRemoteListenSocket::DevToolsRemoteListenSocket(
     DevToolsRemoteListener* message_listener)
         : ListenSocket(s, del),
           state_(HANDSHAKE),
+          remaining_payload_length_(0),
           message_listener_(message_listener),
           cr_received_(false) {}
 
