@@ -418,6 +418,10 @@ void AutocompleteEditViewMac::SetText(const std::wstring& display_text) {
       color = SecureSchemeColor();
     } else {
       color = InsecureSchemeColor();
+      // Add a strikethrough through the scheme.
+      [as addAttribute:NSStrikethroughStyleAttributeName
+                 value:[NSNumber numberWithInt:NSUnderlineStyleSingle]
+                 range:ComponentToNSRange(parts.scheme)];
     }
     [as addAttribute:NSForegroundColorAttributeName value:color
                range:ComponentToNSRange(parts.scheme)];
