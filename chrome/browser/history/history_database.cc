@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <set>
+#include <string>
 
 #include "base/file_util.h"
 #include "base/histogram.h"
@@ -54,6 +55,7 @@ void ComputeDatabaseMetrics(const FilePath& history_name, sqlite3* db) {
 HistoryDatabase::HistoryDatabase()
     : transaction_nesting_(0),
       db_(NULL),
+      statement_cache_(NULL),
       needs_version_17_migration_(false) {
 }
 
@@ -137,7 +139,7 @@ void HistoryDatabase::BeginTransaction() {
 
 void HistoryDatabase::CommitTransaction() {
   DCHECK(db_);
-  DCHECK(transaction_nesting_ > 0) << "Committing too many transactions";
+  DCHECK_GT(transaction_nesting_, 0) << "Committing too many transactions";
   transaction_nesting_--;
   if (transaction_nesting_ == 0) {
     int rv = sqlite3_exec(db_, "COMMIT", NULL, NULL, NULL);
@@ -169,7 +171,7 @@ bool HistoryDatabase::RecreateAllTablesButURL() {
 }
 
 void HistoryDatabase::Vacuum() {
-  DCHECK(transaction_nesting_ == 0) <<
+  DCHECK_EQ(0, transaction_nesting_) <<
       "Can not have a transaction when vacuuming.";
   sqlite3_exec(db_, "VACUUM", NULL, NULL, NULL);
 }
