@@ -10,6 +10,7 @@
 #include "DedicatedWorkerThread.h"
 #include "GenericWorkerTask.h"
 #include "KURL.h"
+#include "MessageEvent.h"
 #include "MessagePort.h"
 #include "MessagePortChannel.h"
 #include "ScriptExecutionContext.h"
@@ -122,7 +123,8 @@ void WebWorkerImpl::PostMessageToWorkerContextTask(
 
   WTF::OwnPtr<WebCore::MessagePortArray> ports =
       WebCore::MessagePort::entanglePorts(*context, channels.release());
-  worker_context->dispatchMessage(message, ports.release());
+  worker_context->dispatchEvent(
+      WebCore::MessageEvent::create(ports.release(), message));
 
   this_ptr->confirmMessageFromWorkerObject(
       worker_context->hasPendingActivity());

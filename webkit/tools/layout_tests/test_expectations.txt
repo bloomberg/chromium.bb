@@ -430,8 +430,7 @@ BUG18978 MAC : LayoutTests/http/tests/xmlhttprequest/cache-override.html = FAIL
 // LightTPD doesn't accept unknown HTTP methods
 BUG18978 SKIP : LayoutTests/http/tests/xmlhttprequest/methods-lower-case.html = TIMEOUT CRASH
 BUG18978 : LayoutTests/http/tests/xmlhttprequest/methods-async.html = TIMEOUT
-BUG18978 LINUX MAC : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL
-BUG18978 WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL TIMEOUT
+BUG18978 : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL TIMEOUT
 // LightTPD doesn't accept unknown HTTP methods and passes CGIs a Content-Type
 // even when a request didn't send the header.
 BUG18978 WIN LINUX : LayoutTests/http/tests/xmlhttprequest/methods.html = FAIL
@@ -1810,9 +1809,9 @@ BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/empty-file-formdata.html = TIMEO
 BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/refresh-headers.php = TIMEOUT PASS
 BUG9798 WIN RELEASE : LayoutTests/http/tests/security/dataURL/xss-DENIED-from-data-url-in-foreign-domain-subframe.html = TIMEOUT PASS
 BUG9798 WIN RELEASE : LayoutTests/http/tests/uri/utf8-path.html = TIMEOUT PASS
-BUG9798 WIN MAC : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-header.html = TIMEOUT PASS
-BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = TIMEOUT PASS
-BUG9798 WIN MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache.html = TIMEOUT PASS
+BUG9798 : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-header.html = TIMEOUT PASS
+BUG9798 : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = TIMEOUT PASS
+BUG9798 : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache.html = TIMEOUT PASS
 BUG9798 : LayoutTests/http/tests/xmlhttprequest/failed-auth.html = TIMEOUT PASS
 BUG9798 WIN RELEASE : LayoutTests/transitions/change-values-during-transition.html = FAIL PASS
 BUG9797 LINUX DEBUG : LayoutTests/svg/carto.net/colourpicker.svg = FAIL
@@ -2345,3 +2344,8 @@ BUG_DGLAZKOV : LayoutTests/fast/loader/fragment-after-redirect-gets-back-entry.h
 BUG_DGLAZKOV LINUX WIN : LayoutTests/fast/forms/basic-buttons.html = FAIL
 BUG_DGLAZKOV LINUX WIN : LayoutTests/fast/forms/basic-inputs.html = FAIL
 BUG_DGLAZKOV : LayoutTests/fast/forms/textarea-maxlength.html = FAIL
+
+// WebKit update 48700:48721
+BUG_DGLAZKOV : LayoutTests/fast/xmlhttprequest/xmlhttprequest-get.xhtml = FAIL
+BUG_DGLAZKOV : LayoutTests/http/tests/xmlhttprequest/event-target.html = FAIL
+BUG_DGLAZKOV : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-abort-readyState-shouldDispatchEvent.html = FAIL

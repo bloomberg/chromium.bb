@@ -9,16 +9,18 @@
 #include "base/compiler_specific.h"
 
 #include "DedicatedWorkerThread.h"
+#include "ErrorEvent.h"
 #include "Frame.h"
 #include "FrameLoaderClient.h"
 #include "GenericWorkerTask.h"
+#include "MessageEvent.h"
 #include "MessagePort.h"
 #include "MessagePortChannel.h"
 #include "ScriptExecutionContext.h"
-#include "WorkerContextExecutionProxy.h"
-#include "WorkerMessagingProxy.h"
 #include "Worker.h"
 #include "WorkerContext.h"
+#include "WorkerContextExecutionProxy.h"
+#include "WorkerMessagingProxy.h"
 #include <wtf/Threading.h>
 
 #undef LOG
@@ -237,10 +239,10 @@ void WebWorkerClientImpl::postExceptionToWorkerObject(
   }
 
   bool handled = false;
-  handled = worker_->dispatchScriptErrorEvent(
-      webkit_glue::WebStringToString(error_message),
-      webkit_glue::WebStringToString(source_url),
-      line_number);
+  handled = worker_->dispatchEvent(
+      WebCore::ErrorEvent::create(webkit_glue::WebStringToString(error_message),
+                                  webkit_glue::WebStringToString(source_url),
+                                  line_number));
   if (!handled)
     script_execution_context_->reportException(
         webkit_glue::WebStringToString(error_message),
@@ -347,7 +349,8 @@ void WebWorkerClientImpl::PostMessageToWorkerObjectTask(
   if (this_ptr->worker_) {
     WTF::OwnPtr<WebCore::MessagePortArray> ports =
         WebCore::MessagePort::entanglePorts(*context, channels.release());
-    this_ptr->worker_->dispatchMessage(message, ports.release());
+    this_ptr->worker_->dispatchEvent(
+        WebCore::MessageEvent::create(ports.release(), message));
   }
 }
 
@@ -359,8 +362,8 @@ void WebWorkerClientImpl::PostExceptionToWorkerObjectTask(
     const WebCore::String& source_url) {
   bool handled = false;
   if (this_ptr->worker_)
-    handled = this_ptr->worker_->dispatchScriptErrorEvent(
-        error_message, source_url, line_number);
+    handled = this_ptr->worker_->dispatchEvent(
+        WebCore::ErrorEvent::create(error_message, source_url, line_number));
   if (!handled)
     this_ptr->script_execution_context_->reportException(
         error_message, line_number, source_url);

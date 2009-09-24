@@ -63,7 +63,8 @@ public:
 
     virtual void notifyEventListener(WebApplicationCacheHost::EventID eventID)
     {
-        m_innerHost->notifyEventListener(static_cast<ApplicationCacheHost::EventID>(eventID));
+        m_innerHost->notifyDOMApplicationCache(
+            static_cast<ApplicationCacheHost::EventID>(eventID));
     }
 
     ApplicationCacheHost* m_innerHost;
@@ -217,10 +218,15 @@ void ApplicationCacheHost::setDOMApplicationCache(DOMApplicationCache* domApplic
     m_domApplicationCache = domApplicationCache;
 }
 
-void ApplicationCacheHost::notifyEventListener(EventID id)
+void ApplicationCacheHost::notifyDOMApplicationCache(EventID id)
 {
-    if (m_domApplicationCache)
-        m_domApplicationCache->callEventListener(id);
+    if (m_domApplicationCache) {
+        ExceptionCode ec = 0;
+        m_domApplicationCache->dispatchEvent(
+            Event::create(DOMApplicationCache::toEventType(id), false, false),
+            ec);
+        ASSERT(!ec);
+    }
 }
 
 ApplicationCacheHost::Status ApplicationCacheHost::status() const
