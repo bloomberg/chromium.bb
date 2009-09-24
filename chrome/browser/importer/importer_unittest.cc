@@ -71,7 +71,6 @@ class ImporterTest : public testing::Test {
       file_util::AppendToPath(&data_path, L"firefox3_searchplugins");
       if (!file_util::PathExists(data_path)) {
         // TODO(maruel):  Create search test data that we can open source!
-        delete observer;
         LOG(ERROR) << L"Missing internal test data";
         return;
       }
@@ -838,14 +837,16 @@ class Firefox3Observer : public ProfileWriter,
 };
 
 // This test is disabled, see bug 22884
-TEST_F(ImporterTest, DISABLED_Firefox30Importer) {
-  Firefox3Observer* observer = new Firefox3Observer();
-  Firefox3xImporterTest(L"firefox3_profile", observer, observer, true);
+TEST_F(ImporterTest, Firefox30Importer) {
+  scoped_refptr<Firefox3Observer> observer = new Firefox3Observer();
+  Firefox3xImporterTest(L"firefox3_profile", observer.get(), observer.get(),
+                        true);
 }
 
 TEST_F(ImporterTest, Firefox35Importer) {
   bool import_search_engines = false;
-  Firefox3Observer* observer = new Firefox3Observer(import_search_engines);
-  Firefox3xImporterTest(L"firefox35_profile", observer, observer,
+  scoped_refptr<Firefox3Observer> observer =
+      new Firefox3Observer(import_search_engines);
+  Firefox3xImporterTest(L"firefox35_profile", observer.get(), observer.get(),
                         import_search_engines);
 }
