@@ -163,7 +163,7 @@ class SVNWrapper(SCMWrapper):
       # Retrieve the current HEAD version because svn is slow at null updates.
       if not revision:
         from_info_live = CaptureSVNInfo(from_info['URL'], '.')
-        revision = from_info_live['Revision']
+        revision = str(from_info_live['Revision'])
         rev_str = ' at %s' % revision
 
     if from_info['URL'] != components[0]:
