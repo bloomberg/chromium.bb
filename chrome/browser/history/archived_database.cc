@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+#include <string>
+
 #include "base/string_util.h"
 #include "chrome/browser/history/archived_database.h"
 #include "chrome/common/sqlite_utils.h"
@@ -17,6 +20,7 @@ static const int kCompatibleVersionNumber = 2;
 
 ArchivedDatabase::ArchivedDatabase()
     : db_(NULL),
+      statement_cache_(NULL),
       transaction_nesting_(0) {
 }
 
@@ -80,7 +84,7 @@ void ArchivedDatabase::BeginTransaction() {
 
 void ArchivedDatabase::CommitTransaction() {
   DCHECK(db_);
-  DCHECK(transaction_nesting_ > 0) << "Committing too many transactions";
+  DCHECK_GT(transaction_nesting_, 0) << "Committing too many transactions";
   transaction_nesting_--;
   if (transaction_nesting_ == 0) {
     int rv = sqlite3_exec(db_, "COMMIT", NULL, NULL, NULL);
