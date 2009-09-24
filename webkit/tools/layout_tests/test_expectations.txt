@@ -794,7 +794,7 @@ BUG20004 WIN : LayoutTests/media/video-play-pause-events.html = TIMEOUT PASS
 
 BUG13907 SKIP : LayoutTests/media/video-empty-source.html = TIMEOUT
 BUG13907 : LayoutTests/fast/layers/video-layer.html = FAIL
-BUG13907 WIN : LayoutTests/media/event-attributes.html = FAIL
+BUG13907 WIN : LayoutTests/media/event-attributes.html = TIMEOUT
 
 // Crash on Mac and Linux. Need investigation.
 BUG_JIANLI MAC LINUX : LayoutTests/fast/events/drag-to-navigate.html = TIMEOUT CRASH
