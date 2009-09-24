@@ -337,6 +337,7 @@ if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
   env.AddPluginPrerequisite(SEL_LDR_NODE[0])
 
   env.ComponentProgram('sel_universal', 'sel_universal.c')
+  # NOTE: we do not have segments on ARM
   if env['BUILD_ARCHITECTURE'] == 'x86':
     env.ComponentProgram('nacl_ldt_unittest', 'nacl_ldt_unittest.c')
   env.Requires(SEL_LDR_NODE, crt)
@@ -657,16 +658,16 @@ if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '32':
 # ----------------------------------------------------------
 # More Death Tests
 # ----------------------------------------------------------
-sel_ldr_thread_death_test_exe = env.ComponentProgram(
-    'sel_ldr_thread_death_test',
-    ['sel_ldr_thread_death_test.c'])
+if env['TARGET_ARCHITECTURE'] == env['BUILD_ARCHITECTURE']:
+  sel_ldr_thread_death_test_exe = env.ComponentProgram(
+      'sel_ldr_thread_death_test',
+      ['sel_ldr_thread_death_test.c'])
 
+  node = env.CommandTestAgainstGoldenOutput(
+      'sel_ldr_thread_death_test.out',
+      command=[sel_ldr_thread_death_test_exe],
+      exit_status='segfault')
 
-node = env.CommandTestAgainstGoldenOutput(
-    'sel_ldr_thread_death_test.out',
-    command=[sel_ldr_thread_death_test_exe],
-    exit_status='segfault')
-
-# TODO(tuduce): Make it work on windows.
-if not env.Bit('windows'):
-  env.AddNodeToTestSuite(node, ['medium_tests'], 'run_ichi')
+  # TODO(tuduce): Make it work on windows.
+  if not env.Bit('windows'):
+    env.AddNodeToTestSuite(node, ['medium_tests'], 'run_ichi')
