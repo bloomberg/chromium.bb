@@ -55,8 +55,12 @@ void CairoCachedSurface::SetSource(cairo_t* cr, int x, int y) {
         gdk_pixbuf_get_height(pixbuf_));
 
     DCHECK(surface_);
-    DCHECK(cairo_surface_get_type(surface_) == CAIRO_SURFACE_TYPE_XLIB ||
-           cairo_surface_get_type(surface_) == CAIRO_SURFACE_TYPE_XCB);
+#if !defined(NDEBUG)
+    int surface_type = cairo_surface_get_type(surface_);
+    DCHECK(surface_type == CAIRO_SURFACE_TYPE_XLIB ||
+           surface_type == CAIRO_SURFACE_TYPE_XCB ||
+           surface_type == CAIRO_SURFACE_TYPE_IMAGE);
+#endif
 
     cairo_t* copy_cr = cairo_create(surface_);
     gdk_cairo_set_source_pixbuf(copy_cr, pixbuf_, 0, 0);
