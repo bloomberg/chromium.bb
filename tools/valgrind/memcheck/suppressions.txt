@@ -1276,3 +1276,31 @@
    fun:_ZN7WebCore23V8AbstractEventListener18invokeEventHandlerEN2v86HandleINS1_7ContextEEEPNS_5EventENS2_INS1_5ValueEEEb
    fun:_ZN7WebCore23V8AbstractEventListener11handleEventEPNS_5EventEb
 }
+{
+   bug_22923
+   Memcheck:Leak
+   fun:_Znwj
+   ...
+   fun:_ZN17WorkerProcessHost4InitEv
+   fun:_ZN13WorkerService21CreateDedicatedWorkerERK4GURLiiPN3IPC7Message6SenderEii
+   fun:_ZN21ResourceMessageFilter23OnCreateDedicatedWorkerERK4GURLiPi
+   fun:_Z16DispatchToMethodI21ResourceMessageFilterMS0_FvRK4GURLiPiES1_iiEvPT_T0_RK6Tuple2IT1_T2_EP6Tuple1IT3_E
+   fun:_ZN3IPC16MessageWithReplyI6Tuple2I4GURLiE6Tuple1IRiEE8DispatchI21ResourceMessageFilterMS9_FvRKS2_iPiEEEbPKNS_7MessageEPT_T0_
+   fun:_ZN21ResourceMessageFilter17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context10TryFiltersERKNS_7MessageE
+   fun:_ZN3IPC11SyncChannel11SyncContext17OnMessageReceivedERKNS_7MessageE
+   fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
+   fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
+   fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
+   fun:event_process_active
+   fun:event_base_loop
+   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+   fun:_ZN11MessageLoop3RunEv
+   fun:_ZN4base6Thread3RunEP11MessageLoop
+   fun:_ZN4base6Thread10ThreadMainEv
+   fun:_Z10ThreadFuncPv
+   fun:start_thread
+   fun:clone
+}
