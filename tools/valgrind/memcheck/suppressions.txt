@@ -1290,7 +1290,6 @@
    Memcheck:Leak
    fun:_Znwj
    ...
-   fun:_ZN17WorkerProcessHost4InitEv
    fun:_ZN13WorkerService21CreateDedicatedWorkerERK4GURLiiPN3IPC7Message6SenderEii
    fun:_ZN21ResourceMessageFilter23OnCreateDedicatedWorkerERK4GURLiPi
    fun:_Z16DispatchToMethodI21ResourceMessageFilterMS0_FvRK4GURLiPiES1_iiEvPT_T0_RK6Tuple2IT1_T2_EP6Tuple1IT3_E
