@@ -63,10 +63,13 @@ void ExtractFullLinesFromBuffer(std::string* buffer,
                                 std::vector<std::string>* lines) {
   int cut_pos = 0;
   for (size_t i = 0; i < buffer->length(); i++) {
-    if (i >= 1 && (*buffer)[i - 1] == '\r' && (*buffer)[i] == '\n') {
-      lines->push_back(buffer->substr(cut_pos, i - cut_pos - 1));
-      cut_pos = i + 1;
-    }
+    if ((*buffer)[i] != '\n')
+      continue;
+    size_t line_length = i - cut_pos;
+    if (line_length > 0 && (*buffer)[i - 1] == '\r')
+      line_length--;
+    lines->push_back(buffer->substr(cut_pos, line_length));
+    cut_pos = i + 1;
   }
   buffer->erase(0, cut_pos);
 }
