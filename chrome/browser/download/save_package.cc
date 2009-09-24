@@ -167,6 +167,7 @@ SavePackage::SavePackage(TabContents* tab_contents)
 SavePackage::SavePackage(const FilePath& file_full_path,
                          const FilePath& directory_full_path)
     : file_manager_(NULL),
+      tab_contents_(NULL),
       download_(NULL),
       saved_main_file_path_(file_full_path),
       saved_main_directory_path_(directory_full_path),
@@ -175,6 +176,7 @@ SavePackage::SavePackage(const FilePath& file_full_path,
       disk_error_occurred_(false),
       save_type_(SAVE_TYPE_UNKNOWN),
       all_save_items_count_(0),
+      wait_state_(INITIALIZE),
       tab_id_(0) {
   DCHECK(!saved_main_file_path_.empty() &&
          saved_main_file_path_.value().length() <= kMaxFilePathLength);
