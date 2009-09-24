@@ -13,7 +13,7 @@ deps = {
     "/trunk/deps/support@20411",
 
   "src/googleurl":
-    "http://google-url.googlecode.com/svn/trunk@116",
+    "http://google-url.googlecode.com/svn/trunk@118",
 
   "src/sdch/open-vcdiff":
     "http://open-vcdiff.googlecode.com/svn/trunk@26",
