@@ -376,7 +376,7 @@ InjectedScriptAccess.getProperties = function(
     orig.apply(this, arguments);
   }
 };
-})()
+})();
 
 
 InjectedScriptAccess.evaluateInCallFrame = function(callFrameId, code,
@@ -398,3 +398,15 @@ WebInspector.resourceTrackingWasDisabled = function()
     InspectorController.resourceTrackingEnabled_ = false;
     this.panels.resources.resourceTrackingWasDisabled();
 };
+
+(function() {
+var orig = WebInspector.ConsoleMessage.prototype.setMessageBody;
+WebInspector.ConsoleMessage.prototype.setMessageBody = function(args) {
+  for (var i = 0; i < args.length; ++i) {
+    if (typeof args[i] == "string") {
+      args[i] = WebInspector.ObjectProxy.wrapPrimitiveValue(args[i]);
+    }
+  }
+  orig.call(this, args);
+};
+})();
