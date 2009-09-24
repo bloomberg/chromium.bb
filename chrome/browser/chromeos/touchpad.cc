@@ -31,7 +31,7 @@ void RunnableMethodTraits<Touchpad>::ReleaseCallee(
 // static
 void Touchpad::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kTapToClickEnabled, false);
-  prefs->RegisterBooleanPref(prefs::kVertEdgeScrollEnabled, true);
+  prefs->RegisterBooleanPref(prefs::kVertEdgeScrollEnabled, false);
   prefs->RegisterIntegerPref(prefs::kTouchpadSpeedFactor, 5);
   prefs->RegisterIntegerPref(prefs::kTouchpadSensitivity, 5);
 }
@@ -125,15 +125,15 @@ void Touchpad::SetSpeedFactor() {
 void Touchpad::SetSensitivity() {
   // To set the touch sensitivity, we use FingerHigh, which represents the
   // the pressure needed for a tap to be registered. The range of FingerHigh
-  // goes from 30 to 75. We store the sensitivity preference as an int from
+  // goes from 25 to 70. We store the sensitivity preference as an int from
   // 1 to 10. So we need to map the preference value of 1 to 10 to the
-  // FingerHigh value of 30 to 75.
+  // FingerHigh value of 25 to 70 inversely.
   int value = sensitivity_.GetValue();
   if (value < 1)
     value = 1;
   if (value > 10)
     value = 10;
-  // Convert from 1-10 to 30-75.
-  double d = value * 5 + 25;
+  // Convert from 1-10 to 70-25.
+  double d = (15 - value) * 5;
   SetSynclientParam("FingerHigh", d);
 }
