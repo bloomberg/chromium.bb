@@ -23,6 +23,22 @@ namespace color_utils {
 
 namespace {
 
+double calcHue(double temp1, double temp2, double hue) {
+  if (hue < 0.0)
+    ++hue;
+  else if (hue > 1.0)
+    --hue;
+
+  if (hue * 6.0 < 1.0)
+    return temp1 + (temp2 - temp1) * hue * 6.0;
+  if (hue * 2.0 < 1.0)
+    return temp2;
+  if (hue * 3.0 < 2.0)
+    return temp1 + (temp2 - temp1) * (2.0 / 3.0 - hue) * 6.0;
+
+  return temp1;
+}
+
 int GetLumaForColor(SkColor* color) {
   int luma = static_cast<int>((0.3 * SkColorGetR(*color)) +
                               (0.59 * SkColorGetG(*color)) +
@@ -55,6 +71,109 @@ double ContrastRatio(SkColor color1, SkColor color2) {
 }  // namespace
 
 // ----------------------------------------------------------------------------
+
+void SkColorToHSL(SkColor c, HSL* hsl) {
+  double r = static_cast<double>(SkColorGetR(c)) / 255.0;
+  double g = static_cast<double>(SkColorGetG(c)) / 255.0;
+  double b = static_cast<double>(SkColorGetB(c)) / 255.0;
+  double vmax = std::max(std::max(r, g), b);
+  double vmin = std::min(std::min(r, g), b);
+  double delta = vmax - vmin;
+  hsl->l = (vmax + vmin) / 2;
+  if (delta) {
+    double dr = (((vmax - r) / 6.0) + (delta / 2.0)) / delta;
+    double dg = (((vmax - g) / 6.0) + (delta / 2.0)) / delta;
+    double db = (((vmax - b) / 6.0) + (delta / 2.0)) / delta;
+    if (r == vmax)
+      hsl->h = db - dg;
+    else if (g == vmax)
+      hsl->h = (1.0 / 3.0) + dr - db;
+    else if (b == vmax)
+      hsl->h = (2.0 / 3.0) + dg - dr;
+
+    if (hsl->h < 0.0)
+      ++hsl->h;
+    else if (hsl->h > 1.0)
+      --hsl->h;
+
+    hsl->s = delta / ((hsl->l < 0.5) ? (vmax + vmin) : (2 - vmax - vmin));
+  } else {
+    hsl->h = hsl->s = 0;
+  }
+}
+
+SkColor HSLToSkColor(const HSL& hsl, SkAlpha alpha) {
+  double hue = hsl.h;
+  double saturation = hsl.s;
+  double lightness = hsl.l;
+
+  // If there's no color, we don't care about hue and can do everything based
+  // on brightness.
+  if (!saturation) {
+    uint8 light;
+
+    if (lightness < 0)
+      light = 0;
+    else if (lightness >= 1.0)
+      light = 255;
+    else
+      light = SkDoubleToFixed(lightness) >> 8;
+
+    return SkColorSetARGB(alpha, light, light, light);
+  }
+
+  double temp2 = (lightness < 0.5) ?
+      (lightness * (1.0 + saturation)) :
+      (lightness + saturation - (lightness * saturation));
+  double temp1 = 2.0 * lightness - temp2;
+  return SkColorSetARGB(alpha,
+      static_cast<int>(calcHue(temp1, temp2, hue + 1.0 / 3.0) * 255),
+      static_cast<int>(calcHue(temp1, temp2, hue) * 255),
+      static_cast<int>(calcHue(temp1, temp2, hue - 1.0 / 3.0) * 255));
+}
+
+SkColor HSLShift(SkColor color, const HSL& shift) {
+  HSL hsl;
+  int alpha = SkColorGetA(color);
+  SkColorToHSL(color, &hsl);
+
+  // Replace the hue with the tint's hue.
+  if (shift.h >= 0)
+    hsl.h = shift.h;
+
+  // Change the saturation.
+  if (shift.s >= 0) {
+    if (shift.s <= 0.5)
+      hsl.s *= shift.s * 2.0;
+    else
+      hsl.s += (1.0 - hsl.s) * ((shift.s - 0.5) * 2.0);
+  }
+
+  SkColor result = HSLToSkColor(hsl, alpha);
+
+  if (shift.l < 0)
+    return result;
+
+  // Lightness shifts in the style of popular image editors aren't
+  // actually represented in HSL - the L value does have some effect
+  // on saturation.
+  double r = static_cast<double>(SkColorGetR(result));
+  double g = static_cast<double>(SkColorGetG(result));
+  double b = static_cast<double>(SkColorGetB(result));
+  if (shift.l <= 0.5) {
+    r *= (shift.l * 2.0);
+    g *= (shift.l * 2.0);
+    b *= (shift.l * 2.0);
+  } else {
+    r += (255.0 - r) * ((shift.l - 0.5) * 2.0);
+    g += (255.0 - g) * ((shift.l - 0.5) * 2.0);
+    b += (255.0 - b) * ((shift.l - 0.5) * 2.0);
+  }
+  return SkColorSetARGB(alpha,
+                        static_cast<int>(r),
+                        static_cast<int>(g),
+                        static_cast<int>(b));
+}
 
 bool IsColorCloseToTransparent(SkAlpha alpha) {
   const int kCloseToBoundary = 64;

@@ -6,14 +6,14 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "app/gfx/color_utils.h"
 #include "base/logging.h"
-#include "skia/ext/skia_utils.h"
 #include "skia/ext/skia_utils_mac.h"
 
 namespace {
 
-void HSLToHSB(const skia::HSL& hsl, CGFloat* h, CGFloat* s, CGFloat* b) {
-  SkColor color = skia::HSLToSkColor(1.0, hsl);  // alpha value doesn't matter
+void HSLToHSB(const color_utils::HSL& hsl, CGFloat* h, CGFloat* s, CGFloat* b) {
+  SkColor color = color_utils::HSLToSkColor(hsl, 255);  // alpha doesn't matter
   SkScalar hsv[3];
   SkColorToHSV(color, hsv);
 
@@ -106,7 +106,7 @@ NSColor* BrowserThemeProvider::GetNSColorTint(int id) {
 
   TintMap::iterator tint_iter = tints_.find(GetTintKey(id));
   if (tint_iter != tints_.end()) {
-    skia::HSL tint = tint_iter->second;
+    color_utils::HSL tint = tint_iter->second;
     CGFloat hue, saturation, brightness;
     HSLToHSB(tint, &hue, &saturation, &brightness);
 

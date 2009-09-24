@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "app/gfx/skbitmap_operations.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/gtk_util.h"
@@ -31,7 +32,6 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "skia/ext/image_operations.h"
 
 namespace {
 
@@ -93,12 +93,12 @@ GdkPixbuf* GetOTRAvatar() {
   return otr_avatar;
 }
 
-// Converts a GdkColor to a skia::HSL.
-skia::HSL GdkColorToHSL(const GdkColor* color) {
-  skia::HSL hsl;
-  skia::SkColorToHSL(SkColorSetRGB(color->red >> 8,
-                                   color->green >> 8,
-                                   color->blue >> 8), hsl);
+// Converts a GdkColor to a color_utils::HSL.
+color_utils::HSL GdkColorToHSL(const GdkColor* color) {
+  color_utils::HSL hsl;
+  color_utils::SkColorToHSL(SkColorSetRGB(color->red >> 8,
+                                          color->green >> 8,
+                                          color->blue >> 8), &hsl);
   return hsl;
 }
 
@@ -107,10 +107,10 @@ skia::HSL GdkColorToHSL(const GdkColor* color) {
 GdkColor PickLuminosityContrastingColor(const GdkColor* base,
                                         const GdkColor* one,
                                         const GdkColor* two) {
-  // Convert all GdkColors to skia::HSLs.
-  skia::HSL baseHSL = GdkColorToHSL(base);
-  skia::HSL oneHSL = GdkColorToHSL(one);
-  skia::HSL twoHSL = GdkColorToHSL(two);
+  // Convert all GdkColors to color_utils::HSLs.
+  color_utils::HSL baseHSL = GdkColorToHSL(base);
+  color_utils::HSL oneHSL = GdkColorToHSL(one);
+  color_utils::HSL twoHSL = GdkColorToHSL(two);
   double one_difference = fabs(baseHSL.l - oneHSL.l);
   double two_difference = fabs(baseHSL.l - twoHSL.l);
 
@@ -591,7 +591,7 @@ static void MakeThrobberFrames(int resource_id,
 
   // Make a separate GdkPixbuf for each frame of the animation.
   for (size_t i = 0; i < num_frames; ++i) {
-    SkBitmap frame = skia::ImageOperations::CreateTiledBitmap(*frame_strip,
+    SkBitmap frame = SkBitmapOperations::CreateTiledBitmap(*frame_strip,
         i * frame_size, 0, frame_size, frame_size);
     frames->push_back(gfx::GdkPixbufFromSkBitmap(&frame));
   }

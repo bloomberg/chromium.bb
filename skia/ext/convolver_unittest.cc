@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,7 @@ namespace skia {
 namespace {
 
 // Fills the given filter with impulse functions for the range 0->num_entries.
-void FillImpulseFilter(int num_entries, ConvolusionFilter1D* filter) {
+void FillImpulseFilter(int num_entries, ConvolutionFilter1D* filter) {
   float one = 1.0f;
   for (int i = 0; i < num_entries; i++)
     filter->AddFilter(i, &one, 1);
@@ -22,13 +22,13 @@ void FillImpulseFilter(int num_entries, ConvolusionFilter1D* filter) {
 
 // Filters the given input with the impulse function, and verifies that it
 // does not change.
-void TestImpulseConvolusion(const unsigned char* data, int width, int height) {
+void TestImpulseConvolution(const unsigned char* data, int width, int height) {
   int byte_count = width * height * 4;
 
-  ConvolusionFilter1D filter_x;
+  ConvolutionFilter1D filter_x;
   FillImpulseFilter(width, &filter_x);
 
-  ConvolusionFilter1D filter_y;
+  ConvolutionFilter1D filter_y;
   FillImpulseFilter(height, &filter_y);
 
   std::vector<unsigned char> output;
@@ -41,7 +41,7 @@ void TestImpulseConvolusion(const unsigned char* data, int width, int height) {
 
 // Fills the destination filter with a box filter averaging every two pixels
 // to produce the output.
-void FillBoxFilter(int size, ConvolusionFilter1D* filter) {
+void FillBoxFilter(int size, ConvolutionFilter1D* filter) {
   const float box[2] = { 0.5, 0.5 };
   for (int i = 0; i < size; i++)
     filter->AddFilter(i * 2, box, 2);
@@ -68,7 +68,7 @@ TEST(Convolver, Impulse) {
         input_ptr[(y * width + x) * 4 + channel] = 0xff;
         // Always set the alpha channel or it will attempt to "fix" it for us.
         input_ptr[(y * width + x) * 4 + 3] = 0xff;
-        TestImpulseConvolusion(input_ptr, width, height);
+        TestImpulseConvolution(input_ptr, width, height);
       }
     }
   }
@@ -98,11 +98,11 @@ TEST(Convolver, Halve) {
     input[i] = rand() * 255 / RAND_MAX;
 
   // Compute the filters.
-  ConvolusionFilter1D filter_x, filter_y;
+  ConvolutionFilter1D filter_x, filter_y;
   FillBoxFilter(dest_width, &filter_x);
   FillBoxFilter(dest_height, &filter_y);
 
-  // Do the convolusion.
+  // Do the convolution.
   BGRAConvolve2D(&input[0], src_width, true, filter_x, filter_y, &output[0]);
 
   // Compute the expected results and check, allowing for a small difference

@@ -6,13 +6,13 @@
 
 #include <algorithm>
 
+#include "app/gfx/skbitmap_operations.h"
 #include "base/histogram.h"
 #include "base/time.h"
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/property_bag.h"
-#include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -139,9 +139,8 @@ SkBitmap GetThumbnailForBackingStore(BackingStore* backing_store) {
   NOTIMPLEMENTED();
 #endif
 
-  result = skia::ImageOperations::DownsampleByTwoUntilSize(
-      bmp,
-      kThumbnailWidth, kThumbnailHeight);
+  result = SkBitmapOperations::DownsampleByTwoUntilSize(bmp, kThumbnailWidth,
+                                                        kThumbnailHeight);
 
 #if defined(OS_WIN)
   // This is a bit subtle. SkBitmaps are refcounted, but the magic ones in

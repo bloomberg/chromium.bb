@@ -6,6 +6,7 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gfx/color_utils.h"
 #include "base/gfx/gtk_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
@@ -31,9 +32,9 @@ namespace {
 const int kToolbarImageWidth = 64;
 const int kToolbarImageHeight = 128;
 
-const skia::HSL kExactColor = { -1, -1, -1 };
+const color_utils::HSL kExactColor = { -1, -1, -1 };
 
-const skia::HSL kDefaultFrameShift = { -1, -1, 0.4 };
+const color_utils::HSL kDefaultFrameShift = { -1, -1, 0.4 };
 
 // Values used as the new luminance and saturation values in the inactive tab
 // text color.
@@ -352,8 +353,8 @@ void GtkThemeProvider::LoadGtkValues() {
     // color, change the luminosity of the frame color downwards to 80% of what
     // it currently is. This is in a futile attempt to match the default
     // metacity and xfwm themes.
-    SkColor shifted = skia::HSLShift(GdkToSkColor(&frame_color),
-                                     kDefaultFrameShift);
+    SkColor shifted = color_utils::HSLShift(GdkToSkColor(&frame_color),
+                                            kDefaultFrameShift);
     frame_color.pixel = 0;
     frame_color.red = SkColorGetR(shifted) * kSkiaToGDKMultiplier;
     frame_color.green = SkColorGetG(shifted) * kSkiaToGDKMultiplier;
@@ -363,15 +364,15 @@ void GtkThemeProvider::LoadGtkValues() {
   // By default, the button tint color is the background selection color. But
   // this can be unreadable in some dark themes, so we set a minimum contrast
   // between the button color and the toolbar color.
-  skia::HSL button_hsl;
-  skia::SkColorToHSL(GdkToSkColor(&button_color), button_hsl);
-  skia::HSL toolbar_hsl;
-  skia::SkColorToHSL(GdkToSkColor(&toolbar_color), toolbar_hsl);
+  color_utils::HSL button_hsl;
+  color_utils::SkColorToHSL(GdkToSkColor(&button_color), &button_hsl);
+  color_utils::HSL toolbar_hsl;
+  color_utils::SkColorToHSL(GdkToSkColor(&toolbar_color), &toolbar_hsl);
   double hsl_difference = fabs(button_hsl.l - toolbar_hsl.l);
   if (hsl_difference <= kMinimumLuminanceDifference) {
     // Not enough contrast. Try the text color instead.
-    skia::HSL label_hsl;
-    skia::SkColorToHSL(GdkToSkColor(&label_color), label_hsl);
+    color_utils::HSL label_hsl;
+    color_utils::SkColorToHSL(GdkToSkColor(&label_color), &label_hsl);
     double label_difference = fabs(label_hsl.l - toolbar_hsl.l);
     if (label_difference >= kMinimumLuminanceDifference) {
       button_color = label_color;
@@ -405,7 +406,7 @@ void GtkThemeProvider::LoadGtkValues() {
   // background tab color, with the lightness and saturation moved in the
   // opposite direction. (We don't touch the hue, since there should be subtle
   // hints of the color in the text.)
-  skia::HSL inactive_tab_text_hsl = GetTint(TINT_BACKGROUND_TAB);
+  color_utils::HSL inactive_tab_text_hsl = GetTint(TINT_BACKGROUND_TAB);
   if (inactive_tab_text_hsl.l < 0.5)
     inactive_tab_text_hsl.l = kDarkInactiveLuminance;
   else
@@ -417,7 +418,7 @@ void GtkThemeProvider::LoadGtkValues() {
     inactive_tab_text_hsl.s = kLightInactiveSaturation;
 
   SetColor(kColorBackgroundTabText,
-           skia::HSLToSkColor(255, inactive_tab_text_hsl));
+           color_utils::HSLToSkColor(inactive_tab_text_hsl, 255));
 
   // The inactive color/tint is special: We *must* use the exact insensitive
   // color for all inactive windows, otherwise we end up neon pink half the
@@ -437,10 +438,12 @@ void GtkThemeProvider::SetThemeColorFromGtk(const char* id, GdkColor* color) {
   SetColor(id, GdkToSkColor(color));
 }
 
-void GtkThemeProvider::SetThemeTintFromGtk(const char* id, GdkColor* color,
-                                           const skia::HSL& default_tint) {
-  skia::HSL hsl;
-  skia::SkColorToHSL(GdkToSkColor(color), hsl);
+void GtkThemeProvider::SetThemeTintFromGtk(
+    const char* id,
+    GdkColor* color,
+    const color_utils::HSL& default_tint) {
+  color_utils::HSL hsl;
+  color_utils::SkColorToHSL(GdkToSkColor(color), &hsl);
 
   if (default_tint.s != -1)
     hsl.s = default_tint.s;

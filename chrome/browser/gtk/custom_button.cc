@@ -4,6 +4,7 @@
 
 #include "chrome/browser/gtk/custom_button.h"
 
+#include "app/gfx/skbitmap_operations.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
@@ -15,7 +16,6 @@
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "grit/theme_resources.h"
-#include "skia/ext/image_operations.h"
 
 CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeProvider* theme_provider,
     int normal_id, int active_id, int highlight_id, int depressed_id)
@@ -104,8 +104,8 @@ void CustomDrawButtonBase::SetBackground(SkColor color,
       background_image_->UsePixbuf(NULL);
     }
   } else {
-    SkBitmap img = skia::ImageOperations::CreateButtonBackground(color,
-                                                                 *image, *mask);
+    SkBitmap img =
+        SkBitmapOperations::CreateButtonBackground(color, *image, *mask);
 
     GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&img);
     background_image_->UsePixbuf(pixbuf);

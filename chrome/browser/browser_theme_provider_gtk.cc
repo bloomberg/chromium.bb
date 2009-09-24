@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/gfx/gtk_util.h"
 #include "base/logging.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 GdkPixbuf* BrowserThemeProvider::GetPixbufNamed(int id) {
   return GetPixbufImpl(id, false);
