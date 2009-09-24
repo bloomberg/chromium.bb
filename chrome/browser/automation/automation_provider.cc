@@ -1850,7 +1850,6 @@ void AutomationProvider::OverrideEncoding(int tab_handle,
     DCHECK(browser);
 
     if (browser->command_updater()->IsCommandEnabled(IDC_ENCODING_MENU)) {
-      TabContents* tab_contents = nav->tab_contents();
       int selected_encoding_id =
           CharacterEncoding::GetCommandIdByCanonicalEncodingName(encoding_name);
       if (selected_encoding_id) {
