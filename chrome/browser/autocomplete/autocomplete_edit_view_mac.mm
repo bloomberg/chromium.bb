@@ -804,9 +804,9 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
     return YES;
   }
 
-  // TODO(shess): Option-return, would normally insert a literal
-  // newline.  Consider combining with -insertNewline:.
+  // Option-Return
   if (cmd == @selector(insertNewlineIgnoringFieldEditor:)) {
+    edit_view_->AcceptInput(NEW_FOREGROUND_TAB, false);
     return YES;
   }
 
