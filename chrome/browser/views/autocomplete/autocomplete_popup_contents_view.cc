@@ -67,13 +67,11 @@ SkColor GetColor(ResultViewState state, ColorKind kind) {
         color_utils::AlphaBlend(colors[SELECTED][BACKGROUND],
                                 colors[NORMAL][BACKGROUND], 64);
     colors[HOVERED][TEXT] = colors[NORMAL][TEXT];
-    const SkColor kDarkURL = SkColorSetRGB(0, 128, 0);
-    const SkColor kLightURL = SkColorSetRGB(128, 255, 128);
     for (int i = 0; i < NUM_STATES; ++i) {
       colors[i][DIMMED_TEXT] =
           color_utils::AlphaBlend(colors[i][TEXT], colors[i][BACKGROUND], 128);
-      colors[i][URL] = color_utils::PickMoreReadableColor(kDarkURL, kLightURL,
-          colors[i][BACKGROUND]);
+      colors[i][URL] = color_utils::GetReadableColor(SkColorSetRGB(0, 128, 0),
+                                                     colors[i][BACKGROUND]);
     }
     initialized = true;
   }

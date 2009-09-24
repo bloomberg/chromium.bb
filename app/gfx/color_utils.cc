@@ -56,16 +56,25 @@ double ConvertSRGB(double eight_bit_component) {
       (component / 12.92) : pow((component + 0.055) / 1.055, 2.4);
 }
 
+SkColor LumaInvertColor(const SkColor& color) {
+  HSL hsl;
+  SkColorToHSL(color, &hsl);
+  hsl.l = 1.0 - hsl.l;
+  return HSLToSkColor(hsl, 255);
+}
+
 double RelativeLuminance(SkColor color) {
   return (0.2126 * ConvertSRGB(SkColorGetR(color))) +
       (0.7152 * ConvertSRGB(SkColorGetG(color))) +
-      (0.0722 * ConvertSRGB(SkColorGetB(color)));
+      (0.0722 * ConvertSRGB(SkColorGetB(color))) + 0.05;
 }
 
-double ContrastRatio(SkColor color1, SkColor color2) {
-  const double l1 = RelativeLuminance(color1) + 0.05;
-  const double l2 = RelativeLuminance(color2) + 0.05;
-  return (l1 > l2) ? (l1 / l2) : (l2 / l1);
+double ContrastRatio(double foreground_luminance, double background_luminance) {
+  // NOTE: Only pass in numbers obtained from RelativeLuminance(), since those
+  // are guaranteed to be > 0 and thus not cause a divide-by-zero error here.
+  return (foreground_luminance > background_luminance) ?
+      (foreground_luminance / background_luminance) :
+      (background_luminance / foreground_luminance);
 }
 
 }  // namespace
@@ -252,11 +261,12 @@ SkColor AlphaBlend(SkColor foreground, SkColor background, SkAlpha alpha) {
      (SkColorGetB(background) * (255 - alpha))) / 255);
 }
 
-SkColor PickMoreReadableColor(SkColor foreground1,
-                              SkColor foreground2,
-                              SkColor background) {
-  return (ContrastRatio(foreground1, background) >=
-      ContrastRatio(foreground2, background)) ? foreground1 : foreground2;
+SkColor GetReadableColor(SkColor foreground, SkColor background) {
+  const SkColor foreground2 = LumaInvertColor(foreground);
+  const double background_luminance = RelativeLuminance(background);
+  return (ContrastRatio(RelativeLuminance(foreground), background_luminance) >=
+          ContrastRatio(RelativeLuminance(foreground2), background_luminance)) ?
+      foreground : foreground2;
 }
 
 SkColor GetSysSkColor(int which) {

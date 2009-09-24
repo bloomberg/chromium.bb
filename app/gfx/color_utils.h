@@ -57,11 +57,14 @@ void BuildLumaHistogram(SkBitmap* bitmap, int histogram[256]);
 // |alpha| == 0) to |foreground| (for |alpha| == 255).
 SkColor AlphaBlend(SkColor foreground, SkColor background, SkAlpha alpha);
 
-// Given two possible foreground colors, return the one that is more readable
-// over |background|.
-SkColor PickMoreReadableColor(SkColor foreground1,
-                              SkColor foreground2,
-                              SkColor background);
+// Given a foreground and background color, try to return a foreground color
+// that is "readable" over the background color by luma-inverting the foreground
+// color and then picking whichever foreground color has higher contrast against
+// the background color.
+//
+// NOTE: This won't do anything but waste time if the supplied foreground color
+// has a luma value close to the midpoint (0.5 in the HSL representation).
+SkColor GetReadableColor(SkColor foreground, SkColor background);
 
 // Gets a Windows system color as a SkColor
 SkColor GetSysSkColor(int which);

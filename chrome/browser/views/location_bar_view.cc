@@ -238,27 +238,15 @@ SkColor LocationBarView::GetColor(bool is_secure, ColorKind kind) {
     colors[SECURE][DEEMPHASIZED_TEXT] =
         color_utils::AlphaBlend(colors[SECURE][TEXT],
                                 colors[SECURE][BACKGROUND], 128);
-    const SkColor kDarkNotSecureText = SkColorSetRGB(200, 0, 0);
-    const SkColor kLightNotSecureText = SkColorSetRGB(255, 55, 55);
-    colors[NOT_SECURE][SECURITY_TEXT] =
-        color_utils::PickMoreReadableColor(kDarkNotSecureText,
-                                           kLightNotSecureText,
-                                           colors[NOT_SECURE][BACKGROUND]);
+    colors[NOT_SECURE][SECURITY_TEXT] = color_utils::GetReadableColor(
+        SkColorSetRGB(200, 0, 0), colors[NOT_SECURE][BACKGROUND]);
     colors[SECURE][SECURITY_TEXT] = SkColorSetRGB(0, 150, 20);
     colors[NOT_SECURE][SECURITY_INFO_BUBBLE_TEXT] =
         colors[NOT_SECURE][SECURITY_TEXT];
-    const SkColor kDarkSecureInfoBubbleText = SkColorSetRGB(0, 153, 51);
-    const SkColor kLightSecureInfoBubbleText = SkColorSetRGB(102, 255, 152);
-    colors[SECURE][SECURITY_INFO_BUBBLE_TEXT] =
-        color_utils::PickMoreReadableColor(kDarkSecureInfoBubbleText,
-                                           kLightSecureInfoBubbleText,
-                                           colors[NOT_SECURE][BACKGROUND]);
-    const SkColor kDarkSchemeStrikeout = SkColorSetRGB(210, 0, 0);
-    const SkColor kLightSchemeStrikeout = SkColorSetRGB(255, 45, 45);
-    colors[NOT_SECURE][SCHEME_STRIKEOUT] =
-        color_utils::PickMoreReadableColor(kDarkSchemeStrikeout,
-                                           kLightSchemeStrikeout,
-                                           colors[NOT_SECURE][BACKGROUND]);
+    colors[SECURE][SECURITY_INFO_BUBBLE_TEXT] = color_utils::GetReadableColor(
+        SkColorSetRGB(0, 153, 51), colors[NOT_SECURE][BACKGROUND]);
+    colors[NOT_SECURE][SCHEME_STRIKEOUT] = color_utils::GetReadableColor(
+        SkColorSetRGB(210, 0, 0), colors[NOT_SECURE][BACKGROUND]);
     colors[SECURE][SCHEME_STRIKEOUT] = 0;  // Unused
     initialized = true;
   }
