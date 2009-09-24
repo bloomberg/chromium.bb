@@ -15,7 +15,7 @@
  @public
   int notificationCount_;
  @private
-  scoped_nsobject<NSPasteboard> pboard_;
+  NSPasteboard* pboard_;
 }
 - (NSPasteboard*)findPboard;
 
@@ -31,13 +31,18 @@
 
 - (id)init {
   if ((self = [super init])) {
-    pboard_.reset([[NSPasteboard pasteboardWithUniqueName] retain]);
+    pboard_ = [NSPasteboard pasteboardWithUniqueName];
   }
   return self;
 }
 
+- (void)dealloc {
+  [pboard_ releaseGlobally];
+  [super dealloc];
+}
+
 - (NSPasteboard*)findPboard {
-  return pboard_.get();
+  return pboard_;
 }
 
 - (void)callback:(id)sender {
@@ -45,13 +50,13 @@
 }
 
 - (void)setFindPboardText:(NSString*)text {
-  [pboard_.get() declareTypes:[NSArray arrayWithObject:NSStringPboardType]
+  [pboard_ declareTypes:[NSArray arrayWithObject:NSStringPboardType]
                         owner:nil];
-  [pboard_.get() setString:text forType:NSStringPboardType];
+  [pboard_ setString:text forType:NSStringPboardType];
 }
 
 - (NSString*)findPboardText {
-  return [pboard_.get() stringForType:NSStringPboardType];
+  return [pboard_ stringForType:NSStringPboardType];
 }
 @end
 
@@ -63,8 +68,8 @@ class FindPasteboardTest : public PlatformTest {
     pboard_.reset([[FindPasteboardTesting alloc] init]);
   }
  protected:
-  scoped_nsobject<FindPasteboardTesting> pboard_;
   CocoaTestHelper helper_;
+  scoped_nsobject<FindPasteboardTesting> pboard_;
 };
 
 TEST_F(FindPasteboardTest, SettingTextUpdatesPboard) {
