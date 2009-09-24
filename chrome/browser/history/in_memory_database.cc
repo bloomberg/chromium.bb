@@ -11,7 +11,10 @@
 
 namespace history {
 
-InMemoryDatabase::InMemoryDatabase() : URLDatabase(), db_(NULL) {
+InMemoryDatabase::InMemoryDatabase()
+    : URLDatabase(),
+      db_(NULL),
+      statement_cache_(NULL) {
 }
 
 InMemoryDatabase::~InMemoryDatabase() {
