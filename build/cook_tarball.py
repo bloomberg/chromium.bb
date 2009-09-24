@@ -89,7 +89,7 @@ def CookTarball(tgz_name, build_mode):
 
   # Drop old working area.
   WindowsRemoveReadOnly(tmp_dir)
-  shutil.rmtree(tmp_dir)
+  shutil.rmtree(tmp_dir, ignore_errors=True)
 
   # Copy over everything.
   shutil.copytree(src_dir, tmp_dir)
