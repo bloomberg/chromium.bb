@@ -4,6 +4,8 @@
 
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
@@ -36,16 +38,19 @@ AutocompleteEditModel::AutocompleteEditModel(
     AutocompleteEditController* controller,
     Profile* profile)
     : view_(view),
+      popup_(NULL),
       controller_(controller),
       has_focus_(false),
       user_input_in_progress_(false),
       just_deleted_text_(false),
       has_temporary_text_(false),
+      original_keyword_ui_state_(NORMAL),
       paste_state_(NONE),
       control_key_state_(UP),
       is_keyword_hint_(false),
       keyword_ui_state_(NORMAL),
       show_search_hint_(true),
+      paste_and_go_transition_(PageTransition::TYPED),
       profile_(profile) {
   if (++synchronous_controller_refcount == 1) {
     // We don't have a controller yet, so create one.  No profile is set since
