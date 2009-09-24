@@ -520,7 +520,10 @@ TestSuite.prototype.showMainPageScriptSource_ = function(scriptName, callback) {
       'Unexpected number of scripts(' + test.optionsToString_(options) + ')');
 
   // Select page's script if it's not current option.
-  if (options[scriptSelect.selectedIndex].text !== scriptName) {
+  var scriptResource;
+  if (options[scriptSelect.selectedIndex].text === scriptName) {
+    scriptResource = options[scriptSelect.selectedIndex].representedObject;
+  } else {
     var pageScriptIndex = -1;
     for (var i = 0; i < options.length; i++) {
       if (options[i].text === scriptName) {
@@ -531,12 +534,13 @@ TestSuite.prototype.showMainPageScriptSource_ = function(scriptName, callback) {
     test.assertTrue(-1 !== pageScriptIndex,
                     'Script with url ' + scriptName + ' not found among ' +
                         test.optionsToString_(options));
+    scriptResource = options[pageScriptIndex].representedObject;
+
     // Current panel is 'Scripts'.
     WebInspector.currentPanel._showScriptOrResource(scriptResource);
     test.assertEquals(pageScriptIndex, scriptSelect.selectedIndex,
                       'Unexpected selected option index.');
   }
-  var scriptResource = options[scriptSelect.selectedIndex].representedObject;
 
   test.assertTrue(scriptResource instanceof WebInspector.Resource,
                   'Unexpected resource class.');
