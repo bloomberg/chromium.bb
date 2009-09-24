@@ -1306,3 +1306,16 @@
    fun:start_thread
    fun:clone
 }
+{
+   bug_22932
+   Memcheck:Leak
+   fun:_Znwj
+   fun:_ZN7WebCore26PlatformMessagePortChannel19postMessageToRemoteEN3WTF10PassOwnPtrINS_18MessagePortChannel9EventDataEEE
+   fun:_ZN7WebCore18MessagePortChannel19postMessageToRemoteEN3WTF10PassOwnPtrINS0_9EventDataEEE
+   fun:_ZN7WebCore11MessagePort11postMessageERKNS_6StringEPKN3WTF6VectorINS4_6RefPtrIS0_EELj1EEERi
+   fun:_ZN7WebCore8V8Custom32v8MessagePortPostMessageCallbackERKN2v89ArgumentsE
+   fun:_ZN2v88internal21Builtin_HandleApiCallENS0_9ArgumentsE
+   ...
+   fun:_ZN2v88internal6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPPPS4_Pb
+   fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_10JSFunctionEEENS2_INS0_6ObjectEEEiPPPS5_Pb
+}
