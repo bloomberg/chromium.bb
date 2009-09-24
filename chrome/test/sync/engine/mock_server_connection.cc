@@ -25,7 +25,6 @@ using sync_pb::CommitResponse_EntryResponse;
 using sync_pb::GetUpdatesMessage;
 using sync_pb::SyncEntity;
 using syncable::DirectoryManager;
-using syncable::ScopedDirLookup;
 using syncable::WriteTransaction;
 
 MockConnectionManager::MockConnectionManager(DirectoryManager* dirmgr,
@@ -39,13 +38,12 @@ MockConnectionManager::MockConnectionManager(DirectoryManager* dirmgr,
       client_stuck_(false),
       commit_time_rename_prepended_string_(""),
       fail_next_postbuffer_(false),
-      directory_manager_(dirmgr),
-      directory_name_(name),
+      directory_(dirmgr, name),
       mid_commit_callback_function_(NULL),
-      mid_commit_observer_(NULL),
       client_command_(NULL),
       next_position_in_parent_(2) {
     server_reachable_ = true;
+    CHECK(directory_.good());
 };
 
 MockConnectionManager::~MockConnectionManager() {
@@ -62,18 +60,9 @@ void MockConnectionManager::SetMidCommitCallbackFunction(
   mid_commit_callback_function_ = callback;
 }
 
-void MockConnectionManager::SetMidCommitObserver(
-    MockConnectionManager::MidCommitObserver* observer) {
-    mid_commit_observer_ = observer;
-}
-
 bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
                                              const string& path,
                                              const string& auth_token) {
-
-  ScopedDirLookup directory(directory_manager_, directory_name_);
-  CHECK(directory.good());
-
   ClientToServerMessage post;
   CHECK(post.ParseFromString(params->buffer_in));
   client_stuck_ = post.sync_problem_detected();
@@ -84,7 +73,7 @@ bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
   // network. As we can't test this we do the next best thing and hang here
   // when there's an issue.
   {
-    WriteTransaction wt(directory, syncable::UNITTEST, __FILE__, __LINE__);
+    WriteTransaction wt(directory_, syncable::UNITTEST, __FILE__, __LINE__);
   }
   if (fail_next_postbuffer_) {
     fail_next_postbuffer_ = false;
@@ -116,11 +105,8 @@ bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
   }
   response.SerializeToString(params->buffer_out);
   if (mid_commit_callback_function_) {
-    if (mid_commit_callback_function_(directory))
+    if (mid_commit_callback_function_(directory_))
       mid_commit_callback_function_ = 0;
-  }
-  if (mid_commit_observer_) {
-    mid_commit_observer_->Observe();
   }
   return result;
 }

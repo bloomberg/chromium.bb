@@ -378,16 +378,6 @@ const wchar_t kEnableFastback[]                = L"enable-fastback";
 // Enable syncing bookmarks to a Google Account.
 const wchar_t kEnableSync[]                   = L"enable-sync";
 
-// Use the SyncerThread implementation that matches up with the old pthread
-// impl semantics, but using Chrome synchronization primitives.  The only
-// difference between this and the default is that we now have no timeout on
-// Stop().  Should only use if you experience problems with the default.
-const wchar_t kSyncerThreadTimedStop[] = L"syncer-thread-timed-stop";
-
-// Use the old pthreads SyncerThread implementation.
-// Should only use if you experience problems with the default.
-const wchar_t kSyncerThreadPthreads[] = L"syncer-thread-pthreads";
-
 // Enable support for SDCH filtering (dictionary based expansion of content).
 // Optional argument is *the* only domain name that will have SDCH suppport.
 // Default is  "-enable-sdch" to advertise SDCH on all domains.

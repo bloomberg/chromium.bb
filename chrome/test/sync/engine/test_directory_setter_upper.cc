@@ -20,15 +20,12 @@ TestDirectorySetterUpper::TestDirectorySetterUpper() : name_(PSTR("Test")) {}
 
 TestDirectorySetterUpper::~TestDirectorySetterUpper() {}
 
-void TestDirectorySetterUpper::Init() {
+void TestDirectorySetterUpper::SetUp() {
   PathString test_data_dir_ = PSTR(".");
   manager_.reset(new DirectoryManager(test_data_dir_));
   file_path_ = manager_->GetSyncDataDatabasePath();
   PathRemove(file_path_.c_str());
-}
 
-void TestDirectorySetterUpper::SetUp() {
-  Init();
   ASSERT_TRUE(manager()->Open(name()));
 }
 
@@ -64,21 +61,6 @@ void TestDirectorySetterUpper::RunInvariantCheck(const ScopedDirLookup& dir) {
     // Check invariants for all items.
     ReadTransaction trans(dir, __FILE__, __LINE__);
     dir->CheckTreeInvariants(&trans, true);
-  }
-}
-
-void ManuallyOpenedTestDirectorySetterUpper::SetUp() {
-  Init();
-}
-
-void ManuallyOpenedTestDirectorySetterUpper::Open() {
-  ASSERT_TRUE(manager()->Open(name()));
-  was_opened_ = true;
-}
-
-void ManuallyOpenedTestDirectorySetterUpper::TearDown() {
-  if (was_opened_) {
-    TestDirectorySetterUpper::TearDown();
   }
 }
 

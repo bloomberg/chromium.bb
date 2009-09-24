@@ -140,8 +140,6 @@ extern const wchar_t kGearsPluginPathOverride[];
 extern const wchar_t kEnableFastback[];
 
 extern const wchar_t kEnableSync[];
-extern const wchar_t kSyncerThreadTimedStop[];
-extern const wchar_t kSyncerThreadPthreads[];
 
 extern const wchar_t kSdchFilter[];
 

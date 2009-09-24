@@ -31,10 +31,6 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   // activity would normally take place. This aids simulation of race
   // conditions.
   typedef bool (*TestCallbackFunction)(syncable::Directory* dir);
-  class MidCommitObserver {
-   public:
-    virtual void Observe() = 0;
-  };
 
   MockConnectionManager(syncable::DirectoryManager* dirmgr, PathString name);
   virtual ~MockConnectionManager();
@@ -49,7 +45,6 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   // Control of commit response.
   void SetMidCommitCallbackFunction(TestCallbackFunction callback);
-  void SetMidCommitObserver(MidCommitObserver* observer);
 
   // Set this if you want commit to perform commit time rename. Will request
   // that the client renames all commited entries, prepending this string.
@@ -182,13 +177,11 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   bool fail_next_postbuffer_;
 
   // Our directory.
-  syncable::DirectoryManager* directory_manager_;
-  PathString directory_name_;
+  syncable::ScopedDirLookup directory_;
 
   // The updates we'll return to the next request.
   sync_pb::GetUpdatesResponse updates_;
   TestCallbackFunction mid_commit_callback_function_;
-  MidCommitObserver* mid_commit_observer_;
 
   scoped_ptr<sync_pb::ClientCommand> client_command_;
 
