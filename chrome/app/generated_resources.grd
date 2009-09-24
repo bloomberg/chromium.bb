@@ -3797,6 +3797,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_THEMES_GTK_BUTTON" desc="The button to choose GTK colors and icons as the current theme.">
         Set to GTK+ theme
       </message>
+      <message name="IDS_THEMES_SET_CLASSIC" desc="The button to choose the classic windows theme in GTK">
+	    Set to Classic theme
+      </message>
       <message name="IDS_THEMES_RESET_BUTTON" desc="The button to reset your theme">
         Reset to default theme
       </message>

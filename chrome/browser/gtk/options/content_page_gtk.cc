@@ -210,7 +210,7 @@ GtkWidget* ContentPageGtk::InitThemesGroup() {
 
   // Reset theme button.
   GtkWidget* themes_reset_button = gtk_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_THEMES_RESET_BUTTON).c_str());
+      l10n_util::GetStringUTF8(IDS_THEMES_SET_CLASSIC).c_str());
   g_signal_connect(G_OBJECT(themes_reset_button), "clicked",
                    G_CALLBACK(OnResetDefaultThemeButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(hbox), themes_reset_button, FALSE, FALSE, 0);
