@@ -88,19 +88,23 @@
                   action:@selector(paste:)
            keyEquivalent:@""];
 
-  // Paste and go/search.
-  AutocompleteTextFieldObserver* observer = [self observer];
-  DCHECK(observer);
-  if (observer && observer->CanPasteAndGo()) {
-    const int string_id = observer->GetPasteActionStringId();
-    NSString* label = l10n_util::GetNSStringWithFixup(string_id);
+  // TODO(shess): If the control is not editable, should we show a
+  // greyed-out "Paste and Go"?
+  if ([self isEditable]) {
+    // Paste and go/search.
+    AutocompleteTextFieldObserver* observer = [self observer];
+    DCHECK(observer);
+    if (observer && observer->CanPasteAndGo()) {
+      const int string_id = observer->GetPasteActionStringId();
+      NSString* label = l10n_util::GetNSStringWithFixup(string_id);
 
-    // TODO(rohitrao): If the clipboard is empty, should we show a
-    // greyed-out "Paste and Go" or nothing at all?
-    if (label) {
-      [menu addItemWithTitle:label
-                      action:@selector(pasteAndGo:)
-               keyEquivalent:@""];
+      // TODO(rohitrao): If the clipboard is empty, should we show a
+      // greyed-out "Paste and Go" or nothing at all?
+      if (label) {
+        [menu addItemWithTitle:label
+                        action:@selector(pasteAndGo:)
+                 keyEquivalent:@""];
+      }
     }
   }
 

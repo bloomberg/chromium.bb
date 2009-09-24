@@ -198,4 +198,26 @@ TEST_F(AutocompleteTextFieldEditorTest, CannotPasteAndGoMenu) {
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(paste:));
 }
 
+// Test that the menu is constructed correctly when field isn't
+// editable.
+TEST_F(AutocompleteTextFieldEditorTest, CanPasteAndGoMenuNotEditable) {
+  [field_.get() setEditable:NO];
+  [editor_.get() setEditable:NO];
+
+  // Never call these when not editable.
+  EXPECT_CALL(field_observer_, CanPasteAndGo())
+      .Times(0);
+  EXPECT_CALL(field_observer_, GetPasteActionStringId())
+      .Times(0);
+
+  NSMenu* menu = [editor_.get() menuForEvent:nil];
+  NSArray* items = [menu itemArray];
+  ASSERT_EQ([items count], 3U);
+  // TODO(shess): Check the titles, too?
+  NSUInteger i = 0;  // Use an index to make future changes easier.
+  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(cut:));
+  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(copy:));
+  EXPECT_EQ([[items objectAtIndex:i++] action], @selector(paste:));
+}
+
 }  // namespace
