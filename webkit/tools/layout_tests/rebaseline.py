@@ -37,12 +37,12 @@ from test_types import text_diff
 
 BASELINE_SUFFIXES = ['.txt', '.png', '.checksum']
 REBASELINE_PLATFORM_ORDER = ['mac', 'win', 'win-xp', 'linux']
-ARCHIVE_DIR_NAME_DICT = {'win': 'webkit-dbg-vista',
+ARCHIVE_DIR_NAME_DICT = {'win': 'webkit-rel',
                          'win-vista': 'webkit-dbg-vista',
                          'win-xp': 'webkit-rel',
                          'mac': 'webkit-rel-mac5',
                          'linux': 'webkit-rel-linux',
-                         'win-canary': 'webkit-dbg-vista',
+                         'win-canary': 'webkit-rel-webkit-org',
                          'win-vista-canary': 'webkit-dbg-vista',
                          'win-xp-canary': 'webkit-rel-webkit-org',
                          'mac-canary': 'webkit-rel-mac-webkit-org',
