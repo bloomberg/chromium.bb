@@ -1491,8 +1491,6 @@ BUG10382 MAC : LayoutTests/transitions/shorthand-border-transitions.html = FAIL 
 BUG10384 MAC : LayoutTests/fast/dom/Window/new-window-opener.html = CRASH TIMEOUT FAIL
 BUG10384 MAC : LayoutTests/fast/forms/focus2.html = CRASH FAIL
 
-BUG10384 MAC : LayoutTests/fast/dom/HTMLObjectElement/object-as-frame.html = TIMEOUT FAIL PASS
-
 BUG10399 MAC : LayoutTests/fast/encoding/char-encoding-mac.html = FAIL
 
 // -----------------------------------------------------------------
@@ -1796,7 +1794,6 @@ BUG9798 WIN DEBUG : LayoutTests/editing/selection/4776665.html = FAIL PASS
 BUG9798 DEBUG : LayoutTests/svg/custom/path-bad-data.svg = CRASH FAIL
 BUG9798 LINUX DEBUG : chrome/fast/dom/extensions/interval.html = CRASH FAIL PASS
 BUG9798 MAC DEBUG : chrome/fast/dom/extensions/interval.html = FAIL PASS
-BUG9798 LINUX : LayoutTests/fast/dom/HTMLObjectElement/object-as-frame.html = FAIL PASS
 BUG9798 LINUX MAC : LayoutTests/http/tests/misc/BOM-override-script.html = TIMEOUT PASS
 BUG9798 LINUX DEBUG : LayoutTests/svg/text/text-text-07-t.svg = FAIL PASS
 BUG9798 LINUX : LayoutTests/tables/mozilla/bugs/45621.html = FAIL PASS CRASH
@@ -1979,10 +1976,6 @@ BUG12477 : LayoutTests/http/tests/security/drag-over-remote-content-iframe.html 
 BUG12881 WIN LINUX : LayoutTests/fast/forms/isindex-placeholder.html = FAIL
 BUG12881 WIN LINUX : LayoutTests/fast/borders/border-radius-constraints.html = FAIL
 BUG12881 WIN LINUX : LayoutTests/fast/borders/border-radius-split-inline.html = FAIL
-
-// WebKit 44202:44252 introduced new failures (old tests)
-BUG12882 WIN : LayoutTests/fast/dom/HTMLObjectElement/object-as-frame.html = FAIL
-BUG12882 WIN : LayoutTests/fast/box-shadow/basic-shadows.html = FAIL
 
 // WebKit 44286:44342
 BUG13174 WIN DEBUG : LayoutTests/transitions/shorthand-border-transitions.html = PASS FAIL
