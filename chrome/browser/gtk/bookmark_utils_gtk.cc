@@ -124,8 +124,13 @@ void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
   std::string label_string = WideToUTF8(node->GetTitle());
   if (!label_string.empty()) {
     GtkWidget* label = gtk_label_new(label_string.c_str());
-    gtk_label_set_max_width_chars(GTK_LABEL(label), kMaxCharsOnAButton);
-    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+
+    // Ellipsize long bookmark names.
+    if (node != model->other_node()) {
+      gtk_label_set_max_width_chars(GTK_LABEL(label), kMaxCharsOnAButton);
+      gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+    }
+
     gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
     SetButtonTextColors(label, provider);
   }
