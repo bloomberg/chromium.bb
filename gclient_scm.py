@@ -212,7 +212,7 @@ class SVNWrapper(SCMWrapper):
 
     # If the provided url has a revision number that matches the revision
     # number of the existing directory, then we don't need to bother updating.
-    if not options.force and from_info['Revision'] == revision:
+    if not options.force and str(from_info['Revision']) == revision:
       if options.verbose or not forced_revision:
         print("\n_____ %s%s" % (self.relpath, rev_str))
       return
