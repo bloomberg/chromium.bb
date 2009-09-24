@@ -657,17 +657,15 @@ if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '32':
 # ----------------------------------------------------------
 # More Death Tests
 # ----------------------------------------------------------
-# TODO: This acutally works on arm but the signal does not make it through the
-#       emulator. Maybe rewrite to catch the signal internally
-if env['TARGET_ARCHITECTURE'] == 'x86':
-  sel_ldr_thread_death_test_exe = env.ComponentProgram(
-      'sel_ldr_thread_death_test',
-      ['sel_ldr_thread_death_test.c'])
+sel_ldr_thread_death_test_exe = env.ComponentProgram(
+    'sel_ldr_thread_death_test',
+    ['sel_ldr_thread_death_test.c'])
 
-  node = env.CommandTestAgainstGoldenOutput(
-      'sel_ldr_thread_death_test.out',
-      command=[sel_ldr_thread_death_test_exe],
-      exit_status='segfault')
+
+node = env.CommandTestAgainstGoldenOutput(
+    'sel_ldr_thread_death_test.out',
+    command=[sel_ldr_thread_death_test_exe],
+    exit_status='segfault')
 
 # TODO(tuduce): Make it work on windows.
 if not env.Bit('windows'):
