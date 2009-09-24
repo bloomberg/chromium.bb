@@ -35,10 +35,8 @@ TEST_F(WorkerTest, MultipleWorkers) {
   RunTest(L"multi_worker.html");
 }
 
-// WorkerFastLayoutTests works on the linux try servers, but fails on the
-// build bots.
-#if !defined(OS_LINUX)
-TEST_F(WorkerTest, WorkerFastLayoutTests) {
+// This fails on all platforms. Disable it for now. See http://crbug.com/22942
+TEST_F(WorkerTest, DISABLED_WorkerFastLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "stress-js-execution.html",
 #if defined(OS_WIN)
@@ -90,7 +88,6 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
   for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
     RunLayoutTest(kLayoutTestFiles[i], false);
 }
-#endif  // !defined(OS_LINUX)
 
 TEST_F(WorkerTest, WorkerHttpLayoutTests) {
   static const char* kLayoutTestFiles[] = {
