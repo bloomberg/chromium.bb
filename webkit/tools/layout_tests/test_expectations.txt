@@ -2341,3 +2341,8 @@ BUG_PAUL LINUX DEBUG : LayoutTests/fast/backgrounds/size/contain-and-cover.html 
 
 // WebKit update 48642:48665
 BUG_DGLAZKOV : LayoutTests/fast/loader/fragment-after-redirect-gets-back-entry.html = FAIL
+
+// WebKit update 48684:48700
+BUG_DGLAZKOV LINUX WIN : LayoutTests/fast/forms/basic-buttons.html = FAIL
+BUG_DGLAZKOV LINUX WIN : LayoutTests/fast/forms/basic-inputs.html = FAIL
+BUG_DGLAZKOV : LayoutTests/fast/forms/textarea-maxlength.html = FAIL
