@@ -484,7 +484,7 @@
             # AdditionalDependencies, which tries to do the copy before
             # the file is built...
             #
-            #}, { # OS == "win"
+            }, { # OS == "win"
             #  # The old VS build would explicitly copy the .dll into the
             #  # plugins subdirectory like this.  It might be possible to
             #  # use the 'product_dir' setting to build directly into
@@ -496,6 +496,11 @@
             #      'files': ['<(PRODUCT_DIR)/npapi_layout_test_plugin.dll'],
             #    },
             #  ],
+              'link_settings': {
+                'libraries': [
+                  "winmm.lib",
+                 ],
+              },
             }],
             ['OS=="mac"', {
               'product_name': 'TestNetscapePlugIn',

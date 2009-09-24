@@ -208,8 +208,6 @@
             'tcmalloc/src/profile-handler.cc',
             'tcmalloc/src/profile-handler.h',
             'tcmalloc/src/profiler.cc',
-            'tcmalloc/src/raw_printer.cc',
-            'tcmalloc/src/raw_printer.h',
 
             # don't use linux forked versions
             'malloc_hook.cc',

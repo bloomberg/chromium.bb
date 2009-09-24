@@ -79,8 +79,6 @@
             'util/work_item.h',
             'util/work_item_list.cc',
             'util/work_item_list.h',
-            '../common/json_value_serializer.cc',
-            '../common/pref_names.cc',
           ],
           'variables': {
             'extra_installer_util_sources%': 0,

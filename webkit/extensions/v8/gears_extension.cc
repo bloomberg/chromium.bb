@@ -7,11 +7,11 @@
 
 namespace extensions_v8 {
 
-const char* kGearsExtensionName = "v8/Gears";
+const char* const kGearsExtensionName = "v8/Gears";
 
 // Note: when a page touches the "google.gears.factory" object, this script
 // touches the DOM.  We expect the DOM to be available at that time.
-const char* kGearsExtensionScript =
+const char* const kGearsExtensionScript =
     "var google;"
     "if (!google)"
     "  google = {};"
