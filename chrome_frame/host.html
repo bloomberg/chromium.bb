@@ -1,0 +1,47 @@
+<HTML>
+<!-- TODO(slightlyoff): Move to tests directory? -->
+<HEAD>
+<TITLE> Chrome Frame Test </TITLE>
+<SCRIPT type="text/javascript">
+function GetChromeFrame() {
+  var chromeFrame = window.document.ChromeFrame
+  return chromeFrame;
+}
+
+function OnChromeFrameMessage(text) {
+  window.alert("In host:  \r\nMessage from ChromeFrame: " + text);
+  
+  var chromeFrame = GetChromeFrame();
+  chromeFrame.PostMessageToFrame("Hello from host");
+  return "OK";
+}
+
+function OnNavigate() {
+  var url = document.getElementById('inputurl');
+  var chromeFrame = GetChromeFrame();
+  chromeFrame.src = url.value;
+}
+
+function onLoad() {
+  var chromeFrame = GetChromeFrame();
+  chromeFrame.onmessage = OnChromeFrameMessage;
+}
+
+</SCRIPT>
+</HEAD>
+<BODY onload="onLoad();">
+Chrome Frame Test activex
+<br><br>
+<input id="inputurl" type="text" name="URL">
+<input type="submit" value="Navigate" onClick="OnNavigate();"> 
+<center>
+<OBJECT ID="ChromeFrame" WIDTH=500 HEIGHT=500 CODEBASE="http://www.google.com"
+        CLASSID="CLSID:E0A900DF-9611-4446-86BD-4B1D47E7DB2A">
+    <PARAM NAME="src" VALUE="http://www.google.com">
+    <embed ID="ChromeFramePlugin" WIDTH=500 HEIGHT=500 NAME="ChromeFrame"
+        SRC="http://www.google.com" TYPE="application/chromeframe">
+    </embed>
+</OBJECT>
+</center>
+</BODY>
+</HTML>

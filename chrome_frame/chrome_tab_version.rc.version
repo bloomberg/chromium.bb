@@ -1,0 +1,45 @@
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION @MAJOR@,@MINOR@,@BUILD@,@PATCH@
+ PRODUCTVERSION @MAJOR@,@MINOR@,@BUILD@,@PATCH@
+ FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        // Note that Firefox 3.0 requires the charset to be 04e4 (multi-lingual).
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "@COMPANY_FULLNAME@"
+            VALUE "CompanyShortName", "@COMPANY_SHORTNAME@"
+            VALUE "ProductName", "Google Chrome Frame"
+            VALUE "ProductVersion", "@MAJOR@.@MINOR@.@BUILD@.@PATCH@"
+            VALUE "FileDescription", "Chrome Frame renders the Web of the future in the browsers of the past. It's like strapping a rocket engine to a minivan."
+            VALUE "FileVersion", "@MAJOR@.@MINOR@.@BUILD@.@PATCH@"
+            VALUE "InternalName", "Google Chrome Frame"
+            VALUE "LegalCopyright", "@COPYRIGHT@"
+            VALUE "MIMEType", "application/chromeframe"
+            VALUE "FileExtents", "chromeframe"
+            VALUE "FileOpenName", "chromeframe"
+            VALUE "OriginalFilename", "npchrome_tab.dll"
+            VALUE "LastChange", "@LASTCHANGE@"
+            VALUE "Official Build", "@OFFICIAL_BUILD@"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        // Note that Firefox 3.0 requires the charset to be 1252 (multi-lingual).
+        VALUE "Translation", 0x409, 1252
+    END
+END

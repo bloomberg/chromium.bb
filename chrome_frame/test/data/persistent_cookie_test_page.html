@@ -1,0 +1,36 @@
+<html>
+  <head><title>Persistent host browser chrome frame cookie test</title>
+    <script type="text/javascript"
+    src="chrome_frame_tester_helpers.js"></script>
+
+    <script type="text/javascript">
+      function validatePersistentCookie() {
+        if (readCookie("PersistentCookie1") != "Cookie1" ||
+            readCookie("PersistentCookie2") != "Cookie2") {
+          onFailure("PersistentCookieTest", 1, "Failed");
+        } else {
+          onSuccess("PersistentCookieTest", 1);
+        }
+        eraseCookie("PersistentCookie1");
+        eraseCookie("PersistentCookie2");
+      }
+
+      function setPersistentCookieAndRedirect() {
+        if (isRunningInMSIE()) {
+          eraseCookie("PersistentCookie1");
+          eraseCookie("PersistentCookie2");
+          createCookie("PersistentCookie1", "Cookie1", 365);
+          createCookie("PersistentCookie2", "Cookie2", 365);
+          reloadUsingCFProtocol();
+        } else {
+          validatePersistentCookie();
+        }
+      }
+    </script>
+  </head>
+  <body onLoad="setTimeout(setPersistentCookieAndRedirect, 100);">
+    <h2>Prepare to be redirected!</h2>
+    <p>Sets two persistent cookies in the host and redirects ChromeFrame <br />
+       to the same page </p>
+  </body>
+</html>

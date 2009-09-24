@@ -1,0 +1,26 @@
+<!-- saved from url=(0014)about:internet -->
+<html>
+<!-- This page is meant to load inside ChromeFrame -->
+  <head>
+    <script type="text/javascript" 
+            src="chrome_frame_tester_helpers.js"></script>
+    <script type="text/javascript" 
+            src="CFInstance.js"></script>
+    <script>
+      var cf = CFInstance;
+
+      cf.listen("load", function() {
+        cf.postMessage("hola!");
+      })
+    </script>
+  </head>
+
+  <body>
+    <div id="statusPanel" style="border: 1px solid red; width: 100%">
+      Test running....
+    </div>
+
+    <p>ChromeFrame + CFInstance PostMessage Test
+    <br>Test for PostMessage from the host browser to iframe and back</p>
+  </body>
+</html>

@@ -1,0 +1,20 @@
+<html>
+  <head>
+    <title>talk to me...</title>
+    <script type="text/javascript" src="CFInstance.js"></script>
+    <script type="text/javascript">
+      CFInstance.listen("load", function() {
+        document.body.innerHTML = "sending 'foo'";
+        CFInstance.postMessage("foo");
+        document.body.innerHTML = "...waiting...";
+      });
+      CFInstance.listen("message", function(evt) {
+        document.body.innerHTML = "sending 'baz'";
+        CFInstance.postMessage("baz");
+      });
+    </script>
+  </head>
+  <body>
+    <h1>sends a message to the parent</h1>
+  </body>
+</html>

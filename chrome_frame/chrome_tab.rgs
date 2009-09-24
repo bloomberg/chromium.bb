@@ -1,0 +1,12 @@
+HKLM {
+  NoRemove Software {
+    NoRemove Classes {
+      NoRemove AppID {
+        '%APPID%' = s 'ChromeTab'
+        'ChromeTab.DLL' {
+          val AppID = s '%APPID%'
+        }
+      }
+    }
+  }
+}

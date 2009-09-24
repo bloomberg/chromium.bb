@@ -1,0 +1,48 @@
+<html>
+<!-- This page is meant to load inside ChromeFrame -->
+<head>
+
+<script type="text/javascript" src="chrome_frame_tester_helpers.js"></script>
+<script type="text/javascript">
+
+function onLoad() {
+  var host = window.externalHost;
+  if (host) {
+    host.postMessage(
+        "ChromeFrame navigated to: " + window.location);
+  } else {
+    appendStatus("Running in non-hosted mode");
+  }
+}
+
+var resize_event_counter = 0;
+
+function OnResizeEvent() {
+  width = window.innerWidth;
+  height = window.innerHeight;
+
+  appendStatus(resize_event_counter + ". Resized to (" + width +
+               "," + height + ")");
+
+  var host = window.externalHost;
+  if (host) {
+    host.postMessage(
+        resize_event_counter + ":(" + width + "," + height + ")");
+  } else {
+    appendStatus("window.externalHost is null!");
+  }
+}
+</script>
+</head>
+
+<body onload="onLoad();" bgcolor="#999999" onresize="OnResizeEvent();">
+<div id="description" style="border: 2px solid black; width: 100%">
+  Hosted resize test component.
+</div>
+
+<div id="statusPanel" style="border: 1px solid red; width: 100%">
+Test running....
+</div>
+
+</body>
+</html>

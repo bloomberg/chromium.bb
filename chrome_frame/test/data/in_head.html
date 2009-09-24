@@ -1,0 +1,62 @@
+<html>
+  <!-- This page is meant to load inside the host browser like IE/FF -->
+  <head><title>Initialize hidden chrome frame</title>
+    <script type="text/javascript" src="chrome_frame_tester_helpers.js">
+    </script>
+    <script type="text/javascript">
+      var g_failure_timeout = null;
+      var g_test_id = 1;
+      var g_test_name = 'InHead';
+      var g_cf3_loaded = false;
+
+      function OnNavigationFailed() {
+        onFailure(g_test_name, g_test_id, 'ChromeFrame Navigation failed');
+      }
+
+      function OnObjectFocusFailed() {
+        appendStatus('chrome frame focus failed');
+        onFailure(g_test_name, g_test_id, 'Embed in head test failed');
+      }
+
+      function OnFrameMessage(evt) {
+        appendStatus('Chrome frame visible and focused');
+        if (evt.data == 'btnOnFocus') {
+          window.clearTimeout(g_failure_timeout);
+          g_failure_timeout = null;
+          appendStatus('Chrome frame visible and focused');
+
+          onSuccess(g_test_name, g_test_id);
+        }
+      }
+
+    function OnFrameLoad() {
+      document.ChromeFrame.focus();
+    }
+
+    function OnLoad() {
+      g_failure_timeout = window.setTimeout(OnObjectFocusFailed, 10000);
+    }
+    </script>
+    <object id="ChromeFrame" width="300" height="80" tabindex="0"
+            codebase="http://www.google.com"
+            classid="CLSID:E0A900DF-9611-4446-86BD-4B1D47E7DB2A">
+      <param name="src" value="simple_object_focus_cf.html">
+      <param name="onload" value="OnFrameLoad();">
+      <param name="onloaderror" value="OnNavigationFailed();">
+      <param name="onmessage" value="OnFrameMessage(arguments[0]);">
+      <embed width="300" height="80" name="ChromeFrame"
+             type="application/chromeframe"
+             src="simple_object_focus_cf.html"
+             onload="OnFrameLoad();"
+             onloaderror="OnNavigationFailed();"
+             onmessage="OnFrameMessage(arguments[0]);">
+      </embed>
+    </object>
+  </head>
+  <body onload = "OnLoad();">
+    <div id="statusPanel" style="border: 1px solid red; width: 100%">
+    Test running....
+    </div>
+    <div id = "dummy"> </div>
+  </body>
+</html>

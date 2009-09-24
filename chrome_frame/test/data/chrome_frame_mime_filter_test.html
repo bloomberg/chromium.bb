@@ -1,0 +1,32 @@
+<!-- saved from url=(0014)about:internet -->
+<!-- Note that for the above Mark of the Web to work, the comment must
+     be followed by a CR/LF ending, so please do not change the line endings. -->
+<html>
+<!-- This page is meant to load inside a host browser like IE/FF -->
+<head>
+<meta http-equiv="X-UA-Compatible" content="chrome=1"/>
+<script type="text/javascript" src="chrome_frame_tester_helpers.js"></script>
+<script type="text/javascript">
+
+function TestIfRunningInChrome() {
+  var is_chrome = /chrome/.test(navigator.userAgent.toLowerCase());
+  if (is_chrome) {
+    onSuccess("MIMEFilter", "MIME filter worked!");
+  } else {
+    onFailure("MIMEFilter", "MIME filter failed :-(",
+              "User agent = " + navigator.userAgent.toLowerCase());
+  }
+}
+
+</script>
+</head>
+
+<body onload="TestIfRunningInChrome();">
+<div id="statusPanel" style="border: 1px solid red; width: 100%">
+Test running....
+</div>
+
+<p>
+
+</body>
+</html>
