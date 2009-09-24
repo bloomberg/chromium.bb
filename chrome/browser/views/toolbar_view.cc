@@ -619,10 +619,6 @@ void ToolbarView::DidGainFocus() {
 }
 
 void ToolbarView::WillLoseFocus() {
-  if (acc_focused_view_) {
-    // Resetting focus state.
-    acc_focused_view_->SetHotTracked(false);
-  }
   // Any tooltips that are active should be hidden when toolbar loses focus.
   if (GetWidget() && GetWidget()->GetTooltipManager())
     GetWidget()->GetTooltipManager()->HideKeyboardTooltip();

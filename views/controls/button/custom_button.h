@@ -72,6 +72,9 @@ class CustomButton : public Button,
   virtual void OnDragDone();
   virtual void ShowContextMenu(int x, int y, bool is_mouse_gesture);
   virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child);
+  virtual void SetHotTracked(bool flag);
+  virtual bool IsHotTracked() const;
+  virtual void WillLoseFocus();
 
   // Overridden from AnimationDelegate:
   virtual void AnimationProgressed(const Animation* animation);

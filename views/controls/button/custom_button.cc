@@ -219,6 +219,20 @@ void CustomButton::ViewHierarchyChanged(bool is_add, View *parent,
     SetState(BS_NORMAL);
 }
 
+void CustomButton::SetHotTracked(bool flag) {
+  if (state_ != BS_DISABLED)
+    SetState(flag ? BS_HOT : BS_NORMAL);
+}
+
+bool CustomButton::IsHotTracked() const {
+  return state_ == BS_HOT;
+}
+
+void CustomButton::WillLoseFocus() {
+  if (IsHotTracked())
+    SetState(BS_NORMAL);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, AnimationDelegate implementation:
 
