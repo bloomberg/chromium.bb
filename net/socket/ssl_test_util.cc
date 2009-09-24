@@ -177,7 +177,7 @@ void AppendToPythonPath(const FilePath& dir) {
   const wchar_t kPythonPath[] = L"PYTHONPATH";
   // FIXME(dkegel): handle longer PYTHONPATH variables
   wchar_t oldpath[4096];
-  if (GetEnvironmentVariable(kPythonPath, oldpath, sizeof(oldpath)) == 0) {
+  if (GetEnvironmentVariable(kPythonPath, oldpath, arraysize(oldpath)) == 0) {
     SetEnvironmentVariableW(kPythonPath, dir.value().c_str());
   } else if (!wcsstr(oldpath, dir.value().c_str())) {
     std::wstring newpath(oldpath);
