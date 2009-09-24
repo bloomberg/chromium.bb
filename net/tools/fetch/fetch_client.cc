@@ -50,12 +50,13 @@ class Client {
  public:
   Client(net::HttpTransactionFactory* factory, const std::string& url) :
       url_(url),
-      transaction_(factory->CreateTransaction()),
       buffer_(new net::IOBuffer(kBufferSize)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           connect_callback_(this, &Client::OnConnectComplete)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           read_callback_(this, &Client::OnReadComplete)) {
+    int rv = factory->CreateTransaction(&transaction_);
+    DCHECK_EQ(net::OK, rv);
     buffer_->AddRef();
     driver_->ClientStarted();
     request_info_.url = url_;
