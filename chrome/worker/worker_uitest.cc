@@ -35,8 +35,7 @@ TEST_F(WorkerTest, MultipleWorkers) {
   RunTest(L"multi_worker.html");
 }
 
-// This fails on all platforms. Disable it for now. See http://crbug.com/22942
-TEST_F(WorkerTest, DISABLED_WorkerFastLayoutTests) {
+TEST_F(WorkerTest, WorkerFastLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "stress-js-execution.html",
 #if defined(OS_WIN)
@@ -61,7 +60,8 @@ TEST_F(WorkerTest, DISABLED_WorkerFastLayoutTests) {
     // "worker-lifecycle.html",
     "worker-location.html",
     "worker-messageport.html",
-    "worker-messageport-gc.html",
+    // Disabled after r27089 (WebKit merge), http://crbug.com/22947
+    // "worker-messageport-gc.html",
     "worker-multi-port.html",
     "worker-navigator.html",
     "worker-replace-global-constructor.html",
