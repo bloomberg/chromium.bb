@@ -65,6 +65,19 @@ class AutocompleteTextFieldTest : public PlatformTest {
                              keyCode:'a'];
   }
 
+  // Helper to return the field-editor frame being used w/in |field_|.
+  NSRect EditorFrame() {
+    EXPECT_TRUE([field_.get() currentEditor]);
+    EXPECT_EQ([[field_.get() subviews] count], 1U);
+    if ([[field_.get() subviews] count] > 0) {
+      return [[[field_.get() subviews] objectAtIndex:0] frame];
+    } else {
+      // Return something which won't work so the caller can soldier
+      // on.
+      return NSZeroRect;
+    }
+  }
+
   CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   scoped_nsobject<AutocompleteTextField> field_;
   MockAutocompleteTextFieldObserver field_observer_;
@@ -90,6 +103,20 @@ TEST_F(AutocompleteTextFieldTest, Cell) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
   EXPECT_EQ(cell, [field_ cell]);
   EXPECT_TRUE(cell != nil);
+}
+
+// Test that becoming first responder sets things up correctly.
+TEST_F(AutocompleteTextFieldTest, FirstResponder) {
+  EXPECT_EQ(nil, [field_ currentEditor]);
+  EXPECT_EQ([[field_ subviews] count], 0U);
+  cocoa_helper_.makeFirstResponder(field_);
+  EXPECT_FALSE(nil == [field_ currentEditor]);
+  EXPECT_EQ([[field_ subviews] count], 1U);
+  EXPECT_TRUE([[field_ currentEditor] isDescendantOf:field_.get()]);
+
+  // Check that the window delegate is providing the right editor.
+  Class c = [AutocompleteTextFieldEditor class];
+  EXPECT_TRUE([[field_ currentEditor] isKindOfClass:c]);
 }
 
 // Test drawing, mostly to ensure nothing leaks or crashes.
@@ -149,81 +176,113 @@ TEST_F(AutocompleteTextFieldTest, FieldEditorFlagsChanged) {
   [firstResponder flagsChanged:KeyDownEventWithFlags(NSControlKeyMask)];
 }
 
-// Test that the field editor is reset correctly when search keyword
-// or hints change.
-TEST_F(AutocompleteTextFieldTest, ResetFieldEditor) {
-  EXPECT_EQ(nil, [field_ currentEditor]);
-  EXPECT_EQ([[field_ subviews] count], 0U);
-  [[field_ window] makeFirstResponder:field_];
-  EXPECT_FALSE(nil == [field_ currentEditor]);
-  EXPECT_EQ([[field_ subviews] count], 1U);
-
-  // Check that the window delegate is working right.
-  {
-    Class c = [AutocompleteTextFieldEditor class];
-    EXPECT_TRUE([[field_ currentEditor] isKindOfClass:c]);
-  }
-
-  // The field editor may not be an immediate subview of |field_|, it
-  // may be a subview of a clipping view (for purposes of scrolling).
-  // So just look at the immediate subview.
-  EXPECT_EQ([[field_ subviews] count], 1U);
-  const NSRect baseEditorFrame([[[field_ subviews] objectAtIndex:0] frame]);
-
+// Test that the field editor gets the same bounds when focus is
+// delivered by the standard focusing machinery, or by
+// -resetFieldEditorFrameIfNeeded.
+TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBase) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
 
-  // Asking the cell to add a search hint should leave the field
-  // editor alone until -resetFieldEditorFrameIfNeeded is called.
-  // Then the field editor should be moved to a smaller region with
-  // the same left-hand side.
-  [cell setSearchHintString:@"Type to search"];
+  // Capture the editor frame resulting from the standard focus
+  // machinery.
+  cocoa_helper_.makeFirstResponder(field_);
+  const NSRect baseEditorFrame(EditorFrame());
+
+  // Setting a hint should result in a strictly smaller editor frame.
+  [cell setSearchHintString:@"search hint"];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
-  NSRect r = [[[field_ subviews] objectAtIndex:0] frame];
-  EXPECT_TRUE(NSEqualRects(r, baseEditorFrame));
   [field_ resetFieldEditorFrameIfNeeded];
-  r = [[[field_ subviews] objectAtIndex:0] frame];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
-  EXPECT_FALSE(NSEqualRects(r, baseEditorFrame));
-  EXPECT_TRUE(NSContainsRect(baseEditorFrame, r));
-  EXPECT_EQ(NSMinX(r), NSMinX(baseEditorFrame));
-  EXPECT_LT(NSWidth(r), NSWidth(baseEditorFrame));
+  EXPECT_FALSE(NSEqualRects(baseEditorFrame, EditorFrame()));
+  EXPECT_TRUE(NSContainsRect(baseEditorFrame, EditorFrame()));
 
-  // Save the search-hint editor frame for later.
-  const NSRect searchHintEditorFrame(r);
-
-  // Asking the cell to change to keyword mode should leave the field
-  // editor alone until -resetFieldEditorFrameIfNeeded is called.
-  // Then the field editor should be moved to a smaller region with
-  // the same right-hand side.
-  [cell setKeywordString:@"Search Engine:"];
-  EXPECT_TRUE([cell fieldEditorNeedsReset]);
-  r = [[[field_ subviews] objectAtIndex:0] frame];
-  EXPECT_TRUE(NSEqualRects(r, searchHintEditorFrame));
-  [field_ resetFieldEditorFrameIfNeeded];
-  r = [[[field_ subviews] objectAtIndex:0] frame];
-  EXPECT_FALSE([cell fieldEditorNeedsReset]);
-  EXPECT_FALSE(NSEqualRects(r, baseEditorFrame));
-  EXPECT_FALSE(NSEqualRects(r, searchHintEditorFrame));
-  EXPECT_TRUE(NSContainsRect(baseEditorFrame, r));
-  EXPECT_EQ(NSMaxX(r), NSMaxX(baseEditorFrame));
-  EXPECT_LT(NSWidth(r), NSWidth(baseEditorFrame));
-
-  // Asking the cell to clear everything should leave the field editor
-  // alone until -resetFieldEditorFrameIfNeeded is called.  Then the
-  // field editor should be back to baseEditorFrame.
+  // Clearing hint string and using -resetFieldEditorFrameIfNeeded
+  // should result in the same frame as the standard focus machinery.
   [cell clearKeywordAndHint];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
   [field_ resetFieldEditorFrameIfNeeded];
-  r = [[[field_ subviews] objectAtIndex:0] frame];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
-  EXPECT_TRUE(NSEqualRects(r, baseEditorFrame));
+  EXPECT_TRUE(NSEqualRects(baseEditorFrame, EditorFrame()));
 }
 
-// Test that the field editor is reset correctly when search keyword
-// or hints change.
+// Test that the field editor gets the same bounds when focus is
+// delivered by the standard focusing machinery, or by
+// -resetFieldEditorFrameIfNeeded.
+TEST_F(AutocompleteTextFieldTest, ResetFieldEditorSearchHint) {
+  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+
+  const NSString* kHintString(@"Type to search");
+
+  // Capture the editor frame resulting from the standard focus
+  // machinery.
+  [cell setSearchHintString:kHintString];
+  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+  [cell setFieldEditorNeedsReset:NO];
+  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+  cocoa_helper_.makeFirstResponder(field_);
+  const NSRect baseEditorFrame(EditorFrame());
+
+  // Clearing the hint should result in a strictly larger editor
+  // frame.
+  [cell clearKeywordAndHint];
+  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+  [field_ resetFieldEditorFrameIfNeeded];
+  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+  EXPECT_FALSE(NSEqualRects(baseEditorFrame, EditorFrame()));
+  EXPECT_TRUE(NSContainsRect(EditorFrame(), baseEditorFrame));
+
+  // Setting the same hint string and using
+  // -resetFieldEditorFrameIfNeeded should result in the same frame as
+  // the standard focus machinery.
+  [cell setSearchHintString:kHintString];
+  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+  [field_ resetFieldEditorFrameIfNeeded];
+  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+  EXPECT_TRUE(NSEqualRects(baseEditorFrame, EditorFrame()));
+}
+
+// Test that the field editor gets the same bounds when focus is
+// delivered by the standard focusing machinery, or by
+// -resetFieldEditorFrameIfNeeded.
+TEST_F(AutocompleteTextFieldTest, ResetFieldEditorKeywordHint) {
+  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+
+  const NSString* kHintString(@"Search Engine:");
+
+  // Capture the editor frame resulting from the standard focus
+  // machinery.
+  [cell setKeywordString:kHintString];
+  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+  [cell setFieldEditorNeedsReset:NO];
+  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+  cocoa_helper_.makeFirstResponder(field_);
+  const NSRect baseEditorFrame(EditorFrame());
+
+  // Clearing the hint should result in a strictly larger editor
+  // frame.
+  [cell clearKeywordAndHint];
+  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+  [field_ resetFieldEditorFrameIfNeeded];
+  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+  EXPECT_FALSE(NSEqualRects(baseEditorFrame, EditorFrame()));
+  EXPECT_TRUE(NSContainsRect(EditorFrame(), baseEditorFrame));
+
+  // Setting the same hint string and using
+  // -resetFieldEditorFrameIfNeeded should result in the same frame as
+  // the standard focus machinery.
+  [cell setKeywordString:kHintString];
+  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+  [field_ resetFieldEditorFrameIfNeeded];
+  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+  EXPECT_TRUE(NSEqualRects(baseEditorFrame, EditorFrame()));
+}
+
+// Test that resetting the field editor bounds does not cause untoward
+// messages to the field's delegate.
 TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBlocksEndEditing) {
-  [[field_ window] makeFirstResponder:field_];
+  cocoa_helper_.makeFirstResponder(field_);
 
   // First, test that -makeFirstResponder: sends
   // -controlTextDidBeginEditing: and -control:textShouldEndEditing at
