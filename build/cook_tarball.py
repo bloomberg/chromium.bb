@@ -122,11 +122,13 @@ def CookTarball(tgz_name, build_mode):
       'linux': 'linux',
       'linux2': 'linux',
   }[sys.platform]
+  doxy_path = os.path.normpath('../third_party/doxygen/%s/doxygen' %
+                               doxy_version)
 
   # Build the desired version.
   subprocess.call([scons, '--mode='+build_mode,
                    '--verbose', '--download',
-                   'DOXYGEN=../third_party/doxygen/%s/doxygen' % doxy_version],
+                   'DOXYGEN=%s' % doxy_path],
                   cwd=os.path.join(tmp_dir, 'native_client'))
 
   # Drop items only needed for sdk.
