@@ -139,6 +139,11 @@ def CookTarball(tgz_name, build_mode):
   shutil.rmtree(os.path.join(tmp_dir, 'third_party', 'gcc'), ignore_errors=True)
   shutil.rmtree(os.path.join(tmp_dir, 'third_party', 'gdb'), ignore_errors=True)
 
+  # Drop doxygen if present.
+  shutil.rmtree(os.path.join(tmp_dir, 'third_party', 'doxygen'),
+                ignore_errors=True)
+  shutil.rmtree(os.path.join(tmp_dir, 'doxygen.DEPS', ignore_errors=True)
+
   # Drop nacl_sdk.
   shutil.rmtree(os.path.join(tmp_dir, 'native_client', 'src', 'third_party',
                              'nacl_sdk'), ignore_errors=True)
