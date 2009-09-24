@@ -478,7 +478,7 @@ bool FindBarView::HandleKeystroke(views::Textfield* sender,
       // Search forwards for enter, backwards for shift-enter.
       container_->GetFindBarController()->tab_contents()->StartFinding(
           find_string,
-          key.IsShiftHeld(),
+          !key.IsShiftHeld(),
           false);  // Not case sensitive.
     }
   }

@@ -308,15 +308,15 @@ WNDPROC GetSuperclassWNDPROC(HWND window) {
 #pragma warning(pop)
 
 bool IsShiftPressed() {
-  return (::GetKeyState(VK_SHIFT) & 0x80) == 0x80;
+  return (::GetKeyState(VK_SHIFT) & 0x8000) == 0x8000;
 }
 
 bool IsCtrlPressed() {
-  return (::GetKeyState(VK_CONTROL) & 0x80) == 0x80;
+  return (::GetKeyState(VK_CONTROL) & 0x8000) == 0x8000;
 }
 
 bool IsAltPressed() {
-  return (::GetKeyState(VK_MENU) & 0x80) == 0x80;
+  return (::GetKeyState(VK_MENU) & 0x8000) == 0x8000;
 }
 
 std::wstring GetClassName(HWND window) {
