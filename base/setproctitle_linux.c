@@ -91,7 +91,7 @@ void setproctitle(const char* fmt, ...) {
   memset(g_main_argv[0], 0, avail_size);
   va_start(ap, fmt);
   if (fmt[0] == '-') {
-    vsnprintf(g_main_argv[0], avail_size, fmt, ap);
+    vsnprintf(g_main_argv[0], avail_size, &fmt[1], ap);
   } else {
     size_t size = snprintf(g_main_argv[0], avail_size, "%s ", g_orig_argv0);
     if (size < avail_size)
