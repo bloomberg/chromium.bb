@@ -137,12 +137,6 @@ class WebViewDelegate : public WebKit::WebViewClient {
                                          const std::wstring& value) {
   }
 
-  // Called to retrieve the provider of desktop notifications.  Pointer
-  // is owned by the implementation of WebViewDelegate.
-  virtual WebKit::WebNotificationPresenter* GetNotificationPresenter() {
-    return NULL;
-  }
-
   // UIDelegate --------------------------------------------------------------
 
   // Called to display a file chooser prompt.  The prompt should be pre-
@@ -208,8 +202,6 @@ class WebViewDelegate : public WebKit::WebViewClient {
                                 const SkBitmap& image) {
   }
 
-  // History Related ---------------------------------------------------------
-
   // InspectorClient ---------------------------------------------------------
 
   virtual void UpdateInspectorSettings(const std::wstring& raw_settings) { }
@@ -218,21 +210,6 @@ class WebViewDelegate : public WebKit::WebViewClient {
 
   virtual WebDevToolsAgentDelegate* GetWebDevToolsAgentDelegate() {
     return NULL;
-  }
-
-  // Editor Client -----------------------------------------------------------
-
-  // The "CurrentKeyboardEvent" refers to the keyboard event passed to
-  // WebView's handleInputEvent method.
-  //
-  // This method is called in response to WebView's handleInputEvent() when
-  // the default action for the current keyboard event is not suppressed by the
-  // page, to give WebViewDelegate a chance to handle the keyboard event
-  // specially.
-  //
-  // Returns true if the keyboard event was handled by WebViewDelegate.
-  virtual bool HandleCurrentKeyboardEvent() {
-    return false;
   }
 
  protected:

@@ -43,6 +43,7 @@ namespace WebKit {
     class WebFileChooserCompletion;
     class WebFrame;
     class WebNode;
+    class WebNotificationPresenter;
     class WebRange;
     class WebString;
     class WebWidget;
@@ -79,6 +80,9 @@ namespace WebKit {
         // should be printed.
         virtual void printPage(WebFrame*) = 0;
 
+        // Called to retrieve the provider of desktop notifications.
+        virtual WebNotificationPresenter* notificationPresenter() = 0;
+
 
         // Navigational --------------------------------------------------------
 
@@ -112,6 +116,15 @@ namespace WebKit {
         virtual void didChangeContents() = 0;
         virtual void didExecuteCommand(const WebString& commandName) = 0;
         virtual void didEndEditing() = 0;
+
+        // This method is called in response to WebView's handleInputEvent()
+        // when the default action for the current keyboard event is not
+        // suppressed by the page, to give the embedder a chance to handle
+        // the keyboard event specially.
+        //
+        // Returns true if the keyboard event was handled by the embedder,
+        // indicating that the default action should be suppressed.
+        virtual bool handleCurrentKeyboardEvent() = 0;
 
 
         // Spellchecker --------------------------------------------------------

@@ -214,7 +214,6 @@ class RenderView : public RenderWidget,
   virtual void FocusAccessibilityObject(WebCore::AccessibilityObject* acc_obj);
   virtual void UserMetricsRecordAction(const std::wstring& action);
   virtual void DnsPrefetch(const std::vector<std::string>& host_names);
-  virtual bool HandleCurrentKeyboardEvent();
 
   // WebKit::WebViewClient
   virtual WebView* createView(WebKit::WebFrame* creator);
@@ -225,6 +224,9 @@ class RenderView : public RenderWidget,
       const WebKit::WebConsoleMessage& message,
       const WebKit::WebString& source_name, unsigned source_line);
   virtual void printPage(WebKit::WebFrame* frame);
+  virtual WebKit::WebNotificationPresenter* notificationPresenter() {
+    return NULL;
+  }
   virtual void didStartLoading();
   virtual void didStopLoading();
   virtual bool shouldBeginEditing(const WebKit::WebRange& range);
@@ -249,6 +251,7 @@ class RenderView : public RenderWidget,
   virtual void didChangeContents() {}
   virtual void didExecuteCommand(const WebKit::WebString& command_name);
   virtual void didEndEditing() {}
+  virtual bool handleCurrentKeyboardEvent();
   virtual void spellCheck(
       const WebKit::WebString& text, int& offset, int& length);
   virtual WebKit::WebString autoCorrectWord(

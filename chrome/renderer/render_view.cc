@@ -1516,6 +1516,26 @@ void RenderView::didExecuteCommand(const WebString& command_name) {
   UserMetricsRecordAction(name);
 }
 
+bool RenderView::handleCurrentKeyboardEvent() {
+  if (edit_commands_.empty())
+    return false;
+
+  WebFrame* frame = webview()->GetFocusedFrame();
+  if (!frame)
+    return false;
+
+  EditCommands::iterator it = edit_commands_.begin();
+  EditCommands::iterator end = edit_commands_.end();
+
+  for (; it != end; ++it) {
+    if (!frame->executeCommand(WebString::fromUTF8(it->name),
+                               WebString::fromUTF8(it->value)))
+      break;
+  }
+
+  return true;
+}
+
 void RenderView::spellCheck(
     const WebString& text, int& misspelled_offset, int& misspelled_length) {
   EnsureDocumentTag();
@@ -3542,26 +3562,6 @@ void RenderView::OnExecuteCode(int request_id, const std::string& extension_id,
 
 void RenderView::DidHandleKeyEvent() {
   edit_commands_.clear();
-}
-
-bool RenderView::HandleCurrentKeyboardEvent() {
-  if (edit_commands_.empty())
-    return false;
-
-  WebFrame* frame = webview()->GetFocusedFrame();
-  if (!frame)
-    return false;
-
-  EditCommands::iterator it = edit_commands_.begin();
-  EditCommands::iterator end = edit_commands_.end();
-
-  for (; it != end; ++it) {
-    if (!frame->executeCommand(WebString::fromUTF8(it->name),
-                               WebString::fromUTF8(it->value)))
-      break;
-  }
-
-  return true;
 }
 
 void RenderView::EnsureDocumentTag() {

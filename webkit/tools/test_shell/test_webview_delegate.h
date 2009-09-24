@@ -90,6 +90,9 @@ class TestWebViewDelegate : public WebViewDelegate,
       const WebKit::WebConsoleMessage& message,
       const WebKit::WebString& source_name, unsigned source_line);
   virtual void printPage(WebKit::WebFrame* frame) {}
+  virtual WebKit::WebNotificationPresenter* notificationPresenter() {
+    return NULL;
+  }
   virtual void didStartLoading() {}
   virtual void didStopLoading() {}
   virtual bool shouldBeginEditing(const WebKit::WebRange& range);
@@ -114,6 +117,7 @@ class TestWebViewDelegate : public WebViewDelegate,
   virtual void didChangeContents();
   virtual void didExecuteCommand(const WebKit::WebString& command_name) {}
   virtual void didEndEditing();
+  virtual bool handleCurrentKeyboardEvent() { return false; }
   virtual void spellCheck(
       const WebKit::WebString& text, int& offset, int& length) {}
   virtual WebKit::WebString autoCorrectWord(

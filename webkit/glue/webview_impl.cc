@@ -1876,8 +1876,8 @@ WebCore::Node* WebViewImpl::GetNodeForWindowPos(int x, int y) {
 
 #if ENABLE(NOTIFICATIONS)
 WebKit::NotificationPresenterImpl* WebViewImpl::GetNotificationPresenter() {
-  if (!notification_presenter_.isInitialized() && delegate_)
-    notification_presenter_.initialize(delegate_->GetNotificationPresenter());
+  if (!notification_presenter_.isInitialized() && client())
+    notification_presenter_.initialize(client()->notificationPresenter());
   return &notification_presenter_;
 }
 #endif

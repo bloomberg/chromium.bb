@@ -630,11 +630,10 @@ void EditorClientImpl::handleKeyboardEvent(WebCore::KeyboardEvent* evt) {
     ShowFormAutofillForNode(evt->target()->toNode());
   }
 
-  // Calls WebViewDelegate's HandleCurrentKeyboardEvent() first to give it a
-  // chance to handle the keyboard event. Bypass handleEditingKeyboardEvent(),
-  // if WebViewDelegate handles the event.
-  WebViewDelegate* d = webview_->delegate();
-  if ((d && d->HandleCurrentKeyboardEvent()) || handleEditingKeyboardEvent(evt))
+  // Give the embedder a chance to handle the keyboard event.
+  if ((webview_->client() &&
+       webview_->client()->handleCurrentKeyboardEvent()) ||
+      handleEditingKeyboardEvent(evt))
     evt->setDefaultHandled();
 }
 
