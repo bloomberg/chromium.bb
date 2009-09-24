@@ -809,6 +809,7 @@
         'browser/browser_accessibility_manager.h',
         'browser/browser_init.cc',
         'browser/browser_init.h',
+        'browser/browser_list_gtk.cc',
         'browser/browser_list.cc',
         'browser/browser_list.h',
         'browser/browser_main.cc',

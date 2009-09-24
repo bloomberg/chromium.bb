@@ -8,7 +8,6 @@
 
 #include "base/gfx/rect.h"
 #include "base/logging.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/rlz/rlz.h"
 
@@ -19,6 +18,7 @@
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/automation/automation_provider.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/memory_details.h"
 #endif
@@ -216,16 +216,14 @@ void DragDownload(const DownloadItem* download,
 }  // namespace download_util
 #endif
 
-#if !defined(TOOLKIT_VIEWS)
+#if defined(OS_MACOSX)
 void BrowserList::AllBrowsersClosed() {
   // TODO(port): Close any dependent windows if necessary when the last browser
   //             window is closed.
 }
-#endif
 
 //--------------------------------------------------------------------------
 
-#if defined(OS_MACOSX)
 bool DockInfo::GetNewWindowBounds(gfx::Rect* new_window_bounds,
                                   bool* maximize_new_window) const {
   // TODO(pinkerton): Implement on Mac.
