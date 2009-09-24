@@ -51,7 +51,7 @@
 
 - (void)setFindPboardText:(NSString*)text {
   [pboard_ declareTypes:[NSArray arrayWithObject:NSStringPboardType]
-                        owner:nil];
+                  owner:nil];
   [pboard_ setString:text forType:NSStringPboardType];
 }
 
