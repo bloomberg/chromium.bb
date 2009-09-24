@@ -312,6 +312,7 @@ if pre_base_env['TARGET_ARCHITECTURE'] == 'x86':
 def CommandSelLdrTestNacl(env, name, command,
                           log_verbosity=2,
                           sel_ldr_flags=None,
+                          loader='sel_ldr',
                           size='medium',
                           **extra):
   if env['BUILD_SUBARCH'] == '64':
@@ -326,8 +327,8 @@ def CommandSelLdrTestNacl(env, name, command,
     sel_ldr_flags = []
 
   trusted_env = env['TRUSTED_ENV']
-  sel_ldr = trusted_env.File('${STAGING_DIR}/'
-                             + '${PROGPREFIX}sel_ldr${PROGSUFFIX}')
+  sel_ldr = trusted_env.File('${STAGING_DIR}/${PROGPREFIX}%s${PROGSUFFIX}' %
+                             loader)
 
   # Temporarily: ignore ABI mismatch on ARM.
   if env['BUILD_ARCHITECTURE'] == 'arm':
@@ -349,37 +350,6 @@ def CommandSelLdrTestNacl(env, name, command,
 pre_base_env.AddMethod(CommandSelLdrTestNacl)
 
 # ----------------------------------------------------------
-def CommandSelUniversalTestNacl(env, name, command,
-                                log_verbosity=2,
-                                sel_universal_flags=['-d'],
-                                size='medium',
-                                **extra):
-  if env['BUILD_SUBARCH'] == '64':
-    return []
-
-  # NOTE: that the variable TRUSTED_ENV is set by ExportSpecialFamilyVars()
-  if 'TRUSTED_ENV' not in env:
-    print 'WARNING: no trusted env specified skipping test %s' % name
-    return []
-
-  trusted_env = env['TRUSTED_ENV']
-  sel_universal = trusted_env.File('${STAGING_DIR}/'
-                                   + '${PROGPREFIX}sel_universal${PROGSUFFIX}')
-  command = [sel_universal] + sel_universal_flags  + ['-f'] + command
-
-  # NOTE(robertm): log handling is a little magical
-  # We do not pass these via flags because those are not usable for
-  # sel_universal when testing via plugin, esp windows.
-  if 'log_golden' in extra:
-    logout = '${TARGET}.log'
-    extra['logout'] = logout
-    extra['osenv'] = 'NACLLOG=%s,NACLVERBOSITY=%d' % (logout, log_verbosity)
-
-  return CommandTestAgainstGoldenOutput(env, name, command, size, **extra)
-
-pre_base_env.AddMethod(CommandSelUniversalTestNacl)
-
-# ----------------------------------------------------------
 TEST_EXTRA_ARGS = ['stdin', 'logout',
                    'stdout_golden', 'stderr_golden', 'log_golden',
                    'stdout_filter', 'stderr_filter', 'log_filter',
@@ -395,7 +365,7 @@ TEST_TIME_THRESHOLD = {
 TEST_SCRIPT = '${SCONSTRUCT_DIR}/tools/command_tester.py'
 
 def CommandTestAgainstGoldenOutput(env, name, command, size='small',
-                                   permit_emultation=True, **extra):
+                                   direct_emulation=True, **extra):
   if not  name.endswith('.out') or name.startswith('$'):
     print "ERROR: bad  test filename for test output ", name
     assert 0
@@ -417,6 +387,15 @@ def CommandTestAgainstGoldenOutput(env, name, command, size='small',
       deps.append(c)
       command[n] = '${SOURCES[%d].abspath}' % (len(deps) - 1)
 
+  if env.get('EMULATOR', ''):
+    if direct_emulation:
+      command = ['${EMULATOR}'] + command
+    else:
+      orig = extra.get('osenv', '')
+      if orig: orig = orig + ','
+      extra['osenv'] = (orig +
+                        'EMULATOR=%s' %  env['EMULATOR'].replace(' ', r'\ '))
+
   # extract deps from flags and rewrite
   for e in extra:
     assert e in TEST_EXTRA_ARGS
@@ -425,9 +404,6 @@ def CommandTestAgainstGoldenOutput(env, name, command, size='small',
       extra[e] = '${SOURCES[%d].abspath}' % (len(deps) - 1)
     script_flags.append('--' + e)
     script_flags.append(extra[e])
-
-  if permit_emultation and env.get('EMULATOR', ''):
-    command = ['${EMULATOR}'] + command
 
 
   # NOTE: "SOURCES[X]" references the scons object in deps[x]
@@ -842,7 +818,8 @@ elif linux_env['BUILD_ARCHITECTURE'] == 'arm':
                     LIBPATH=['${LIB_DIR}',
                              os.getenv('ARM_LIB_DIR', '').split()],
                     CCFLAGS=['-march=armv6','-pedantic','-Wall','-Werror'],
-                    LINKFLAGS=ARGUMENTS.get('ARM_LINKFLAGS', ''),
+# TODO(robertm): we are missing static libs (rt), enable this ASAP
+#                    LINKFLAGS=os.getenv('ARM_LINKFLAGS', ''),
                     )
 
   linux_env.Append(LIBS=['rt', 'dl', 'pthread', 'ssl', 'crypto'])

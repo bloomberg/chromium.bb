@@ -5,7 +5,7 @@
 set -o nounset
 set -o errexit
 
-
+readonly EMULATOR=${EMULATOR:-}
 readonly TEST_EXE=$1
 readonly TMP_FILE="/tmp/nrd_xfer_test.$$"
 readonly MESSAGE="TEST_STRING_PAYLOAD"
@@ -22,7 +22,7 @@ trap 'rm -f ${TMP_FILE}; exit ${exit_code}' EXIT SIGHUP SIGINT SIGQUIT SIGTERM
 echo
 echo "starting server in background"
 echo
-${TEST_EXE} -s  > ${TMP_FILE} &
+${EMULATOR} ${TEST_EXE} -s  > ${TMP_FILE} &
 
 sleep ${WAIT_TIME}
 
@@ -32,7 +32,7 @@ echo "socket address is ${ADDR}"
 echo
 echo "running client"
 echo
-${TEST_EXE} -c ${ADDR} -m ${MESSAGE}
+${EMULATOR} ${TEST_EXE} -c ${ADDR} -m ${MESSAGE}
 
 sleep ${WAIT_TIME}
 

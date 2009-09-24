@@ -179,9 +179,11 @@ def main(argv):
     GlobalSettings['name'] = command[0]
 
   if GlobalSettings['osenv']:
+    Banner('setting environment')
     env = GlobalSettings['osenv'].split(',')
     for e in env:
       key, val = e.split('=')
+      Print('[%s] = [%s]' % (key, val))
       os.putenv(key, val)
 
   if GlobalSettings['logout']:

@@ -34,7 +34,7 @@ Import('env')
 node = env.CommandTestAgainstGoldenOutput(
     "python_version.out",
     command=["${PYTHON}", env.File('python_version.py')],
-    permit_emultation=False,
+    direct_emulation=False,
     )
 
 env.AddNodeToTestSuite(node, ['medium_tests'])

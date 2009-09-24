@@ -72,13 +72,14 @@ env.ComponentProgram('srpc_bidir.nexe', 'srpc_bidir.c',
                      EXTRA_LIBS=['srpc', 'm', 'pthread'])
 env.Publish('srpc_bidir.nexe', 'run', ['srpc_bidir.html'])
 
-# TODO(robertm): make this work for ARM
+# NOTE: sel_universal launches sel_ldr internally and we do not have a
+# good hook to sneak in an emulator yet
 if env['TARGET_ARCHITECTURE'] == 'x86':
-  node = env.CommandSelUniversalTestNacl(
-        'srpc_basic_test.out',
-        sel_universal_flags=[],
-        command=[env.File('srpc_test.nexe')],
-        stdin=env.File('srpc_basic_test.stdin'),
-        stdout_golden=env.File('srpc_basic_test.stdout'),
-        )
+  node = env.CommandSelLdrTestNacl(
+      'srpc_basic_test.out',
+      loader='sel_universal',
+      command=[env.File('srpc_test.nexe')],
+      stdin=env.File('srpc_basic_test.stdin'),
+      stdout_golden=env.File('srpc_basic_test.stdout'),
+      )
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_basic_test')
