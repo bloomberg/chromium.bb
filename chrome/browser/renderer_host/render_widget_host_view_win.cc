@@ -390,6 +390,7 @@ HWND RenderWidgetHostViewWin::ReparentWindow(HWND window) {
     wcex.hIconSm        = 0;
     window_class = RegisterClassEx(&wcex);
   }
+  DCHECK(window_class);
 
   HWND parent = CreateWindowEx(
       WS_EX_LEFT | WS_EX_LTRREADING | WS_EX_RIGHTSCROLLBAR,
