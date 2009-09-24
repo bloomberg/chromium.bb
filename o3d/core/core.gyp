@@ -17,6 +17,16 @@
       'O3D_PLUGIN_VERSION="<!(python ../plugin/version_info.py --version)"',
     ],
     'conditions': [
+      ['OS == "win"',
+        {
+          'msvs_settings': {
+            'VCCLCompilerTool': {
+              'ForcedIncludeFiles':
+              'core/cross/precompile.h',
+            },
+          },
+        },
+      ],
       ['renderer == "d3d9" and OS == "win"',
         {
           'include_dirs': [

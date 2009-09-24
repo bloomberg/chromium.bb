@@ -14,6 +14,7 @@
       '..',
       '../..',
       '../../<(cgdir)/include',
+      '../../<(glewdir)/include',
       '../../<(gtestdir)',
     ],
   },
@@ -28,6 +29,7 @@
         '../../<(jpegdir)/libjpeg.gyp:libjpeg',
         '../../<(pngdir)/libpng.gyp:libpng',
         '../../<(zlibdir)/zlib.gyp:zlib',
+        '../build/libs.gyp:cg_libs',
         '../compiler/technique/technique.gyp:o3dTechnique',
       ],
       'sources': [
@@ -49,22 +51,11 @@
       ],
 
       'conditions' : [
-        ['renderer == "gl"',
-          {
-            'dependencies': [
-              '../build/libs.gyp:cg_libs',
-            ],
-          },
-        ],
-        ['renderer == "d3d9" and OS == "win"',
+        ['OS == "win"',
           {
             'include_dirs': [
               '$(DXSDK_DIR)/Include',
             ],
-          }
-        ],
-        ['OS == "win"',
-          {
             'sources': [
               'win/collada_conditioner_win.cc',
             ],

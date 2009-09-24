@@ -28,9 +28,13 @@
         '../../base/base.gyp:base',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
+        '../../testing/gmock.gyp:gmock',
         '../../native_client/src/shared/imc/imc.gyp:google_nacl_imc',
         '../compiler/technique/technique.gyp:o3dTechnique',
         '../compiler/technique/technique.gyp:o3dTechniqueTest',
+        '../command_buffer/command_buffer.gyp:command_buffer_client_test',
+        '../command_buffer/command_buffer.gyp:command_buffer_common_test',
+        '../command_buffer/command_buffer.gyp:command_buffer_service_test',
         '../core/core.gyp:o3dCore',
         '../core/core.gyp:o3dCorePlatform',
         '../core/core.gyp:o3dCoreTest',
@@ -162,7 +166,7 @@
               'editbin /SUBSYSTEM:CONSOLE $(OutDir)/$(TargetFileName)',
           },
         ],
-        ['OS == "win" and (renderer == "d3d9" or renderer == "cb")',
+        ['OS == "win" and (renderer == "d3d9" or cb_service == "d3d9")',
           {
             'sources': [
               'common/win/dxcapture.cc',

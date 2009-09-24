@@ -1190,7 +1190,7 @@ void RendererGL::SetViewportInPixels(int left,
   int vieport_top =
       RenderSurfaceActive() ? top : display_height() - top - height;
   ::glViewport(left, vieport_top, width, height);
-  UpdateHelperConstant(width, height);
+  UpdateHelperConstant(static_cast<float>(width), static_cast<float>(height));
 
   // If it's the full client area turn off scissor test for speed.
   if (left == 0 &&

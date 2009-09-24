@@ -36,7 +36,6 @@
 
 #include <windows.h>
 #include <Shellapi.h>
-#include <d3dx9.h>
 
 #include "tests/common/win/testing_common.h"
 #include "core/cross/install_check.h"

@@ -500,7 +500,7 @@ TEST_F(CommandBufferEngineTest, TestNonRecoverableError) {
   entries[put++].value_uint32 = 6;
 
   // we should be beyond the end of the buffer now.
-  DCHECK_LT(6, put);
+  DCHECK_LT(6U, put);
   put = 0;
 
   engine()->Put(put);

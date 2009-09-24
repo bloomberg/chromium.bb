@@ -16,25 +16,6 @@
       '../../<(gtestdir)',
       '../../<(nacldir)',
     ],
-    'defines': [
-    ],
-    'conditions': [
-      ['OS == "win"',
-        {
-          'include_dirs': [
-            '$(DXSDK_DIR)/Include',
-          ],
-        }
-      ],
-      ['OS == "mac" or OS == "linux"',
-        {
-          'include_dirs': [
-            '../../<(glewdir)/include',
-            '../../<(cgdir)/include',
-          ],
-        },
-      ],
-    ],
   },
   'targets': [
     {
@@ -64,6 +45,18 @@
       ],
     },
     {
+      'target_name': 'command_buffer_common_test',
+      'type': 'none',
+      'direct_dependent_settings': {
+        'sources': [
+          'common/cross/bitfield_helpers_test.cc',
+          'client/cross/cmd_buffer_helper_test.cc',
+          'client/cross/fenced_allocator_test.cc',
+          'client/cross/id_allocator_test.cc',
+        ],
+      },
+    },
+    {
       'target_name': 'command_buffer_client',
       'type': 'static_library',
       'dependencies': [
@@ -81,6 +74,18 @@
         'client/cross/id_allocator.cc',
         'client/cross/id_allocator.h',
       ],
+    },
+    {
+      'target_name': 'command_buffer_client_test',
+      'type': 'none',
+      'direct_dependent_settings': {
+        'sources': [
+          'client/cross/buffer_sync_proxy_test.cc',
+          'client/cross/cmd_buffer_helper_test.cc',
+          'client/cross/fenced_allocator_test.cc',
+          'client/cross/id_allocator_test.cc',
+        ],
+      },
     },
     {
       'target_name': 'command_buffer_service',
@@ -110,6 +115,34 @@
       'conditions': [
         ['OS == "win"',
           {
+            'msvs_settings': {
+              'VCCLCompilerTool': {
+                'ForcedIncludeFiles':
+                'command_buffer/service/cross/precompile.h',
+              },
+            },
+          },
+        ],
+        ['OS == "mac"',
+          {
+            'xcode_settings': {
+              'GCC_PREFIX_HEADER': 'command_buffer/service/cross/precompile.h',
+            },
+          },
+        ],
+        ['OS == "linux"',
+          {
+            'cflags': [
+              '-include',
+              'command_buffer/service/cross/precompile.h',
+            ],
+          },
+        ],
+        ['cb_service == "d3d9"',
+          {
+            'include_dirs': [
+              '$(DXSDK_DIR)/Include',
+            ],
             'sources': [
               'service/win/d3d9/d3d9_utils.h',
               'service/win/d3d9/effect_d3d9.cc',
@@ -133,8 +166,12 @@
             },  # 'direct_dependent_settings'
           },
         ],
-        ['OS == "mac" or OS == "linux"',
+        ['cb_service == "gl"',
           {
+            'include_dirs': [
+              '../../<(glewdir)/include',
+              '../../<(cgdir)/include',
+            ],
             'sources': [
               'service/cross/gl/effect_gl.cc',
               'service/cross/gl/effect_gl.h',
@@ -161,5 +198,17 @@
         ],
       ],  # 'conditions'
     },
-  ],
+    {
+      'target_name': 'command_buffer_service_test',
+      'type': 'none',
+      'direct_dependent_settings': {
+        'sources': [
+          'service/cross/buffer_rpc_test.cc',
+          'service/cross/cmd_buffer_engine_test.cc',
+          'service/cross/cmd_parser_test.cc',
+          'service/cross/resource_test.cc',
+        ],
+      },
+    },
+  ],  # 'targets'
 }

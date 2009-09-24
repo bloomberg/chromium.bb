@@ -214,7 +214,7 @@
             },
           },
         ],
-        ['OS == "win" and (renderer == "d3d9" or renderer == "cb")',
+        ['OS == "win" and (renderer == "d3d9" or cb_service == "d3d9")',
           {
             'link_settings': {
               'libraries': [

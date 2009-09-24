@@ -6,6 +6,7 @@
   'variables': {
     'antlrdir': 'third_party/antlr3',
     'breakpaddir': 'breakpad/src',
+    'cb_service%': 'none',
     'fcolladadir': 'third_party/fcollada/files',
     'glewdir': 'third_party/glew/files',
     'gtestdir': 'testing/gtest/include',
@@ -41,7 +42,7 @@
     ['OS == "win"',
       {
         'variables': {
-          'renderer': 'd3d9',
+          'renderer%': 'd3d9',
           'cgdir': 'third_party/cg/files/win',
           'swiftshaderdir': 'o3d-internal/third_party/swiftshader/files',
           'LIBRARY_SUFFIX': '.lib',
@@ -49,7 +50,6 @@
         'target_defaults': {
           'defines': [
             '_CRT_SECURE_NO_WARNINGS',
-            'RENDERER_D3D9',
             'OS_WIN',
             'UNICODE',
             'NACL_WINDOWS',
@@ -62,13 +62,12 @@
     ['OS == "mac"',
       {
         'variables': {
-          'renderer': 'gl',
+          'renderer%': 'gl',
           'cgdir': 'third_party/cg/files/mac',
           'LIBRARY_SUFFIX': '.a',
         },
         'target_defaults': {
           'defines': [
-            'RENDERER_GL',
             'OS_MACOSX',
             'UNICODE',
             'GTEST_NOT_MAC_FRAMEWORK_MODE',
@@ -99,7 +98,7 @@
     ['OS == "linux"',
       {
         'variables': {
-          'renderer': 'gl',
+          'renderer%': 'gl',
           'cgdir': 'third_party/cg/files/linux',
           'LIBRARY_SUFFIX': '.a',
         },
@@ -109,7 +108,6 @@
             'MOZ_X11',
             'NACL_LINUX=1',
             'OS_LINUX',
-            'RENDERER_GL',
             'SK_BUILD_FOR_UNIX',
             'UNICODE',
             'XP_UNIX',
@@ -117,6 +115,51 @@
           'cflags': [
             '-fvisibility=hidden',
             '-Wstrict-aliasing',
+          ],
+        },
+      },
+    ],
+    ['renderer == "d3d9"',
+      {
+        'target_defaults': {
+          'defines': [
+            'RENDERER_D3D9',
+          ],
+        },
+      },
+    ],
+    ['renderer == "gl"',
+      {
+        'target_defaults': {
+          'defines': [
+            'RENDERER_GL',
+          ],
+        },
+      },
+    ],
+    ['renderer == "cb"',
+      {
+        'target_defaults': {
+          'defines': [
+            'RENDERER_CB',
+          ],
+        },
+      },
+    ],
+    ['cb_service == "d3d9"',
+      {
+        'target_defaults': {
+          'defines': [
+            'CB_SERVICE_D3D9',
+          ],
+        },
+      },
+    ],
+    ['cb_service == "gl"',
+      {
+        'target_defaults': {
+          'defines': [
+            'CB_SERVICE_GL',
           ],
         },
       },

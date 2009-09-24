@@ -100,7 +100,7 @@ class CommandBufferHelperTest : public testing::Test {
       // put to the limit) and the bottom side (from 0 to get).
       if (put >= parser_put) {
         // we're on the top side, check we are below the limit.
-        EXPECT_GE(10, limit);
+        EXPECT_GE(10U, limit);
       } else {
         // we're on the bottom side, check we are below get.
         EXPECT_GT(parser_get, limit);

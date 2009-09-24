@@ -35,8 +35,6 @@
 #ifndef O3D_COMMAND_BUFFER_SERVICE_CROSS_GL_EFFECT_GL_H_
 #define O3D_COMMAND_BUFFER_SERVICE_CROSS_GL_EFFECT_GL_H_
 
-#include <Cg/cg.h>
-#include <Cg/cgGL.h>
 #include <vector>
 
 #include "command_buffer/common/cross/gapi_interface.h"

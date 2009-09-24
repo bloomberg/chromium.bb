@@ -82,7 +82,7 @@ TEST_F(IdAllocatorTest, TestAdvanced) {
   IdAllocator *allocator = id_allocator();
 
   // Allocate a significant number of resources.
-  const int kNumResources = 100;
+  const unsigned int kNumResources = 100;
   ResourceID ids[kNumResources];
   for (int i = 0; i < kNumResources; ++i) {
     ids[i] = allocator->AllocateID();

@@ -37,17 +37,20 @@
 #include <windows.h>
 #include <shellapi.h>
 #include <stdlib.h>
-#include <d3dx9.h>
 #endif
 
 #ifdef __cplusplus
+
+#if defined(RENDERER_D3D9)
+#include <d3dx9.h>
+#endif  // defined(RENDERER_D3D9)
 
 #if defined(RENDERER_GL)
 #include <GL/glew.h>
 #if defined(OS_WIN)
 #include <GL/wglew.h>
 #endif
-#endif // defined(RENDERER_GL)
+#endif  // defined(RENDERER_GL)
 
 #include <Cg/cg.h>
 #include <Cg/cgGL.h>
