@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_DISPATCHER_HOST_H_
 
 #include "base/hash_tables.h"
+#include "base/process.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/in_process_webkit/storage_area.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
@@ -23,7 +24,10 @@ class DOMStorageDispatcherHost :
  public:
   // Only call the constructor from the UI thread.
   DOMStorageDispatcherHost(IPC::Message::Sender* message_sender,
-                           WebKitContext*, WebKitThread*);
+      WebKitContext* webkit_context, WebKitThread* webkit_thread);
+
+  // Only call from ResourceMessageFilter on the IO thread.
+  void Init(base::ProcessHandle process_handle);
 
   // Only call from ResourceMessageFilter on the IO thread.
   void Shutdown();
@@ -65,6 +69,10 @@ class DOMStorageDispatcherHost :
 
   // Only set on the IO thread.
   IPC::Message::Sender* message_sender_;
+
+  // If we get a corrupt message from a renderer, we need to kill it using this
+  // handle.
+  base::ProcessHandle process_handle_;
 
   // Has this dispatcher ever handled a message.  If not, then we can skip
   // the entire shutdown procedure.  This is only set to true on the IO thread
