@@ -23,6 +23,12 @@ class HistoryContentsProvider : public AutocompleteProvider {
  public:
   HistoryContentsProvider(ACProviderListener* listener, Profile* profile)
       : AutocompleteProvider(listener, profile, "HistoryContents"),
+        star_title_count_(0),
+        star_contents_count_(0),
+        title_count_(0),
+        contents_count_(0),
+        input_type_(AutocompleteInput::INVALID),
+        trim_http_(false),
         have_results_(false) {
   }
 
