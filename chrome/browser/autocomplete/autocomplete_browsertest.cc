@@ -8,7 +8,12 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/history/history.h"
 #include "chrome/browser/location_bar.h"
+#include "chrome/browser/profile.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
@@ -30,7 +35,8 @@ std::wstring AutocompleteResultAsString(const AutocompleteResult& result) {
 
 }  // namespace
 
-class AutocompleteBrowserTest : public InProcessBrowserTest {
+class AutocompleteBrowserTest : public InProcessBrowserTest,
+                                public NotificationObserver {
  protected:
   LocationBar* GetLocationBar() const {
     return browser()->window()->GetLocationBar();
@@ -40,6 +46,25 @@ class AutocompleteBrowserTest : public InProcessBrowserTest {
     return GetLocationBar()->location_entry()->model()->popup_model()->
         autocomplete_controller();
   }
+
+  void WaitForHistoryBackendToLoad() {
+    HistoryService* history_service =
+        browser()->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    if (!history_service->backend_loaded()) {
+      NotificationRegistrar registrar;
+      registrar.Add(this, NotificationType::HISTORY_LOADED,
+                    NotificationService::AllSources());
+      ui_test_utils::RunMessageLoop();
+    }
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    DCHECK(type == NotificationType::HISTORY_LOADED);
+    MessageLoop::current()->Quit();
+  }
+
 };
 
 IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Basic) {
@@ -81,6 +106,10 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Basic) {
 }
 
 IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Autocomplete) {
+  // The results depend on the history backend being loaded. Make sure it is
+  // loaded so that the autocomplete results are consistent.
+  WaitForHistoryBackendToLoad();
+
   LocationBar* location_bar = GetLocationBar();
   AutocompleteController* autocomplete_controller = GetAutocompleteController();
 
