@@ -91,34 +91,40 @@ def CookTarball(tgz_name, build_mode):
   WindowsRemoveReadOnly(tmp_dir)
   shutil.rmtree(tmp_dir, ignore_errors=True)
 
+  # Create working area directory.
+  os.mkdir(tmp_dir)
+
+  # Pick the root directory name in the destination.
+  dst_dir = os.path.join(tmp_dir, 'build')
+
   # Copy over everything.
-  shutil.copytree(src_dir, tmp_dir)
-  WindowsRemoveReadOnly(tmp_dir)
+  shutil.copytree(src_dir, dst_dir)
+  WindowsRemoveReadOnly(dst_dir)
 
   # Drop old tarballs/zips.
-  DeleteAllMatching(os.path.join(tmp_dir, 'native_client', 'build'),
+  DeleteAllMatching(os.path.join(dst_dir, 'native_client', 'build'),
                     re.compile(r'.*\.tgz$'))
-  DeleteAllMatching(os.path.join(tmp_dir, 'native_client', 'build'),
+  DeleteAllMatching(os.path.join(dst_dir, 'native_client', 'build'),
                     re.compile(r'.*\.zip$'))
 
   # Drop .svn files.
-  DeleteAllMatching(tmp_dir, re.compile(r'^\.svn$'))
+  DeleteAllMatching(dst_dir, re.compile(r'^\.svn$'))
 
   # Drop gyp stuff.
-  shutil.rmtree(os.path.join(tmp_dir, 'sconsbuild'), ignore_errors=True)
-  shutil.rmtree(os.path.join(tmp_dir, 'xcodebuild'), ignore_errors=True)
-  shutil.rmtree(os.path.join(tmp_dir, 'build', 'Debug'), ignore_errors=True)
-  shutil.rmtree(os.path.join(tmp_dir, 'build', 'Release'), ignore_errors=True)
+  shutil.rmtree(os.path.join(dst_dir, 'sconsbuild'), ignore_errors=True)
+  shutil.rmtree(os.path.join(dst_dir, 'xcodebuild'), ignore_errors=True)
+  shutil.rmtree(os.path.join(dst_dir, 'build', 'Debug'), ignore_errors=True)
+  shutil.rmtree(os.path.join(dst_dir, 'build', 'Release'), ignore_errors=True)
 
   # Drop scons outputs.
-  shutil.rmtree(os.path.join(tmp_dir, 'native_client', 'scons-out'),
+  shutil.rmtree(os.path.join(dst_dir, 'native_client', 'scons-out'),
                 ignore_errors=True)
 
   # Pick scons version.
   if sys.platform in ['win32']:
-    scons = os.path.join(tmp_dir, 'native_client', 'scons.bat')
+    scons = os.path.join(dst_dir, 'native_client', 'scons.bat')
   else:
-    scons = os.path.join(tmp_dir, 'native_client', 'scons')
+    scons = os.path.join(dst_dir, 'native_client', 'scons')
 
   # Pick doxygen version.
   doxy_version = {
@@ -135,24 +141,20 @@ def CookTarball(tgz_name, build_mode):
   subprocess.call([scons, '--mode='+build_mode,
                    '--verbose', '--download',
                    'DOXYGEN=%s' % doxy_path],
-                  cwd=os.path.join(tmp_dir, 'native_client'))
+                  cwd=os.path.join(dst_dir, 'native_client'))
 
-  # Drop items only needed for sdk.
-  shutil.rmtree(os.path.join(tmp_dir, 'third_party', 'binutils'),
+  # Drop items only needed for sdk build.
+  shutil.rmtree(os.path.join(dst_dir, 'third_party', 'binutils'),
                 ignore_errors=True)
-  shutil.rmtree(os.path.join(tmp_dir, 'third_party', 'newlib'),
+  shutil.rmtree(os.path.join(dst_dir, 'third_party', 'newlib'),
                 ignore_errors=True)
-  shutil.rmtree(os.path.join(tmp_dir, 'third_party', 'gcc'), ignore_errors=True)
-  shutil.rmtree(os.path.join(tmp_dir, 'third_party', 'gdb'), ignore_errors=True)
+  shutil.rmtree(os.path.join(dst_dir, 'third_party', 'gcc'), ignore_errors=True)
+  shutil.rmtree(os.path.join(dst_dir, 'third_party', 'gdb'), ignore_errors=True)
 
   # Drop doxygen if present.
-  shutil.rmtree(os.path.join(tmp_dir, 'third_party', 'doxygen'),
+  shutil.rmtree(os.path.join(dst_dir, 'third_party', 'doxygen'),
                 ignore_errors=True)
-  shutil.rmtree(os.path.join(tmp_dir, 'doxygen.DEPS'), ignore_errors=True)
-
-  # Drop nacl_sdk.
-  shutil.rmtree(os.path.join(tmp_dir, 'native_client', 'src', 'third_party',
-                             'nacl_sdk'), ignore_errors=True)
+  shutil.rmtree(os.path.join(dst_dir, 'doxygen.DEPS'), ignore_errors=True)
 
   # Pare back scons-out.
   for ext in [re.compile(r'.*\.o$'),
@@ -160,7 +162,7 @@ def CookTarball(tgz_name, build_mode):
               re.compile(r'.*\.a$'),
               re.compile(r'.*\.lib$', re.I),
               re.compile(r'.*\.sconsign.*')]:
-    DeleteAllMatching(os.path.join(tmp_dir, 'native_client', 'scons-out'), ext)
+    DeleteAllMatching(os.path.join(dst_dir, 'native_client', 'scons-out'), ext)
 
   # Tar it up.
   if sys.platform in ['win32']:
