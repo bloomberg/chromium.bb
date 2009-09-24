@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 //
 // A class to run the syncer on a thread.
-
+// This is the default implementation of SyncerThread whose Stop implementation
+// does not support a timeout, but is greatly simplified.
 #ifndef CHROME_BROWSER_SYNC_ENGINE_SYNCER_THREAD_H_
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCER_THREAD_H_
 
@@ -13,11 +14,15 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/condition_variable.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/thread.h"
+#include "base/time.h"
+#include "base/waitable_event.h"
 #include "chrome/browser/sync/engine/all_status.h"
 #include "chrome/browser/sync/engine/client_command_channel.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
-#include "chrome/browser/sync/util/pthread_helpers.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 class EventListenerHookup;
@@ -39,20 +44,42 @@ struct SyncerEvent;
 struct SyncerShutdownEvent;
 struct TalkMediatorEvent;
 
-class SyncerThread {
+class SyncerThreadFactory {
+ public:
+  // Creates a SyncerThread based on the default (or user-overridden)
+  // implementation.  The thread does not start running until you call Start(),
+  // which will cause it to check-and-wait for certain conditions to be met
+  // (such as valid connection with Server established, syncable::Directory has
+  // been opened) before performing an intial sync with a server.  It uses
+  // |connection_manager| to detect valid connections, and |mgr| to detect the
+  // opening of a Directory, which will cause it to create a Syncer object for
+  // said Directory, and assign |model_safe_worker| to it.  |connection_manager|
+  // and |mgr| should outlive the SyncerThread.  You must stop the thread by
+  // calling Stop before destroying the object.  Stopping will first tear down
+  // the Syncer object, allowing it to finish work in progress, before joining
+  // the Stop-calling thread with the internal thread.
+  static SyncerThread* Create(ClientCommandChannel* command_channel,
+      syncable::DirectoryManager* mgr,
+      ServerConnectionManager* connection_manager, AllStatus* all_status,
+      ModelSafeWorker* model_safe_worker);
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(SyncerThreadFactory);
+};
+
+class SyncerThread : public base::RefCountedThreadSafe<SyncerThread> {
   FRIEND_TEST(SyncerThreadTest, CalculateSyncWaitTime);
   FRIEND_TEST(SyncerThreadTest, CalculatePollingWaitTime);
-
- public:
-  friend class SyncerThreadTest;
-
+  FRIEND_TEST(SyncerThreadWithSyncerTest, Polling);
+  FRIEND_TEST(SyncerThreadWithSyncerTest, Nudge);
+  friend class SyncerThreadWithSyncerTest;
+  friend class SyncerThreadFactory;
+public:
   enum NudgeSource {
     kUnknown = 0,
     kNotification,
     kLocal,
     kContinuation
   };
-
   // Server can overwrite these values via client commands.
   // Standard short poll. This is used when XMPP is off.
   static const int kDefaultShortPollIntervalSeconds = 60;
@@ -62,32 +89,99 @@ class SyncerThread {
   // longest possible poll interval.
   static const int kDefaultMaxPollIntervalMs = 30 * 60 * 1000;
 
+  virtual ~SyncerThread();
+
+  virtual void WatchConnectionManager(ServerConnectionManager* conn_mgr);
+
+  // Starts a syncer thread.
+  // Returns true if it creates a thread or if there's currently a thread
+  // running and false otherwise.
+  virtual bool Start();
+
+  // Stop processing. |max_wait| doesn't do anything in this version.
+  virtual bool Stop(int max_wait);
+
+  // Nudges the syncer to sync with a delay specified. This API is for access
+  // from the SyncerThread's controller and will cause a mutex lock.
+  virtual bool NudgeSyncer(int milliseconds_from_now, NudgeSource source);
+
+  // Registers this thread to watch talk mediator events.
+  virtual void WatchTalkMediator(TalkMediator* talk_mediator);
+
+  virtual void WatchClientCommands(ClientCommandChannel* channel);
+
+  virtual SyncerEventChannel* channel();
+
+ protected:
+  SyncerThread();  // Necessary for temporary pthreads-based PIMPL impl.
   SyncerThread(ClientCommandChannel* command_channel,
       syncable::DirectoryManager* mgr,
       ServerConnectionManager* connection_manager, AllStatus* all_status,
       ModelSafeWorker* model_safe_worker);
-  ~SyncerThread();
+  virtual void ThreadMain();
+  void ThreadMainLoop();
 
-  void WatchConnectionManager(ServerConnectionManager* conn_mgr);
-  // Creates and starts a syncer thread.
-  // Returns true if it creates a thread or if there's currently a thread
-  // running and false otherwise.
-  bool Start();
+  virtual void SetConnected(bool connected) {
+    DCHECK(!thread_.IsRunning());
+    vault_.connected_ = connected;
+  }
 
-  // Stop processing. A max wait of at least 2*server RTT time is recommended.
-  // returns true if we stopped, false otherwise.
-  bool Stop(int max_wait);
+  virtual void SetSyncerPollingInterval(base::TimeDelta interval) {
+    // TODO(timsteele): Use TimeDelta internally.
+    syncer_polling_interval_ = static_cast<int>(interval.InSeconds());
+  }
+  virtual void SetSyncerShortPollInterval(base::TimeDelta interval) {
+    // TODO(timsteele): Use TimeDelta internally.
+    syncer_short_poll_interval_seconds_ =
+        static_cast<int>(interval.InSeconds());
+  }
 
-  // Nudges the syncer to sync with a delay specified.  This API is for access
-  // from the SyncerThread's controller and will cause a mutex lock.
-  bool NudgeSyncer(int milliseconds_from_now, NudgeSource source);
+  // Needed to emulate the behavior of pthread_create, which synchronously
+  // started the thread and set the value of thread_running_ to true.
+  // We can't quite match that because we asynchronously post the task,
+  // which opens a window for Stop to get called before the task actually
+  // makes it.  To prevent this, we block Start() until we're sure it's ok.
+  base::WaitableEvent thread_main_started_;
 
-  // Registers this thread to watch talk mediator events.
-  void WatchTalkMediator(TalkMediator* talk_mediator);
+  // Handle of the running thread.
+  base::Thread thread_;
 
-  void WatchClientCommands(ClientCommandChannel* channel);
+  typedef std::pair<base::TimeTicks, NudgeSource> NudgeObject;
 
-  SyncerEventChannel* channel();
+  struct IsTimeTicksGreater {
+    inline bool operator() (const NudgeObject& lhs, const NudgeObject& rhs) {
+      return lhs.first > rhs.first;
+    }
+  };
+
+  typedef std::priority_queue<NudgeObject, std::vector<NudgeObject>,
+                              IsTimeTicksGreater> NudgeQueue;
+
+  // Fields that are modified / accessed by multiple threads go in this struct
+  // for clarity and explicitness.
+  struct ProtectedFields {
+    // False when we want to stop the thread.
+    bool stop_syncer_thread_;
+
+    Syncer* syncer_;
+
+    // State of the server connection.
+    bool connected_;
+
+    // A queue of all scheduled nudges.  One insertion for every call to
+    // NudgeQueue().
+    NudgeQueue nudge_queue_;
+
+    ProtectedFields()
+        : stop_syncer_thread_(false), syncer_(NULL), connected_(false) {}
+  } vault_;
+
+  // Gets signaled whenever a thread outside of the syncer thread changes a
+  // protected field in the vault_.
+  ConditionVariable vault_field_changed_;
+
+  // Used to lock everything in |vault_|.
+  Lock lock_;
 
  private:
   // A few members to gate the rate at which we nudge the syncer.
@@ -95,21 +189,6 @@ class SyncerThread {
     kNudgeRateLimitCount = 6,
     kNudgeRateLimitTime = 180,
   };
-
-  // A queue of all scheduled nudges.  One insertion for every call to
-  // NudgeQueue().
-  typedef std::pair<timespec, NudgeSource> NudgeObject;
-
-  struct IsTimeSpecGreater {
-    inline bool operator() (const NudgeObject& lhs, const NudgeObject& rhs) {
-      return lhs.first.tv_sec == rhs.first.tv_sec ?
-          lhs.first.tv_nsec > rhs.first.tv_nsec :
-          lhs.first.tv_sec > rhs.first.tv_sec;
-    }
-  };
-
-  typedef std::priority_queue<NudgeObject, std::vector<NudgeObject>,
-                              IsTimeSpecGreater> NudgeQueue;
 
   // Threshold multipler for how long before user should be considered idle.
   static const int kPollBackoffThresholdMultiplier = 10;
@@ -125,9 +204,6 @@ class SyncerThread {
 
   void HandleTalkMediatorEvent(const TalkMediatorEvent& event);
 
-  void* ThreadMain();
-  void ThreadMainLoop();
-
   void SyncMain(Syncer* syncer);
 
   // Calculates the next sync wait time in seconds.  last_poll_wait is the time
@@ -137,42 +213,24 @@ class SyncerThread {
   // continue_sync_cycle parameter is used to determine whether or not we are
   // calculating a polling wait time that is a continuation of an sync cycle
   // which terminated while the syncer still had work to do.
-  int CalculatePollingWaitTime(
+  virtual int CalculatePollingWaitTime(
       const AllStatus::Status& status,
       int last_poll_wait,  // in s
       int* user_idle_milliseconds,
       bool* continue_sync_cycle);
   // Helper to above function, considers effect of user idle time.
-  int CalculateSyncWaitTime(int last_wait, int user_idle_ms);
+  virtual int CalculateSyncWaitTime(int last_wait, int user_idle_ms);
 
   // Sets the source value of the controlled syncer's updates_source value.
   // The initial sync boolean is updated if read as a sentinel.  The following
   // two methods work in concert to achieve this goal.
-  void UpdateNudgeSource(const timespec& now, bool* continue_sync_cycle,
+  void UpdateNudgeSource(bool* continue_sync_cycle,
                          bool* initial_sync);
   void SetUpdatesSource(bool nudged, NudgeSource nudge_source,
                         bool* initial_sync);
 
   // For unit tests only.
-  void DisableIdleDetection() { disable_idle_detection_ = true; }
-
-  // False when we want to stop the thread.
-  bool stop_syncer_thread_;
-
-  // We use one mutex for all members except the channel.
-  PThreadMutex mutex_;
-  typedef PThreadScopedLock<PThreadMutex> MutexLock;
-
-  // Handle of the running thread.
-  pthread_t thread_;
-  bool thread_running_;
-
-  // Gets signaled whenever a thread outside of the syncer thread changes a
-  // member variable.
-  PThreadCondVar changed_;
-
-  // State of the server connection.
-  bool connected_;
+  virtual void DisableIdleDetection() { disable_idle_detection_ = true; }
 
   // State of the notification framework is tracked by these values.
   bool p2p_authenticated_;
@@ -181,8 +239,6 @@ class SyncerThread {
   scoped_ptr<EventListenerHookup> client_command_hookup_;
   scoped_ptr<EventListenerHookup> conn_mgr_hookup_;
   const AllStatus* allstatus_;
-
-  Syncer* syncer_;
 
   syncable::DirectoryManager* dirman_;
   ServerConnectionManager* scm_;
@@ -207,8 +263,6 @@ class SyncerThread {
   // high the request will be silently dropped.  mutex_ should be held when
   // this is called.
   void NudgeSyncImpl(int milliseconds_from_now, NudgeSource source);
-
-  NudgeQueue nudge_queue_;
 
   scoped_ptr<EventListenerHookup> talk_mediator_hookup_;
   ClientCommandChannel* const command_channel_;
