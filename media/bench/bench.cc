@@ -35,12 +35,14 @@
 namespace switches {
 const wchar_t kStream[]                 = L"stream";
 const wchar_t kVideoThreads[]           = L"video-threads";
+const wchar_t kVerbose[]                = L"verbose";
 const wchar_t kFast2[]                  = L"fast2";
 const wchar_t kSkip[]                   = L"skip";
 const wchar_t kFlush[]                  = L"flush";
 const wchar_t kDjb2[]                   = L"djb2";
 const wchar_t kMd5[]                    = L"md5";
 const wchar_t kFrames[]                 = L"frames";
+
 }  // namespace switches
 
 namespace {
@@ -98,6 +100,8 @@ int main(int argc, const char** argv) {
               << "Benchmark either the audio or video stream\n"
               << "  --video-threads=N               "
               << "Decode video using N threads\n"
+              << "  --verbose=N                     "
+              << "Set FFmpeg log verbosity (-8 to 48)\n"
               << "  --frames=N                      "
               << "Decode N frames\n"
               << "  --fast2                         "
@@ -150,6 +154,14 @@ int main(int argc, const char** argv) {
     video_threads = 0;
   }
 
+  // FFmpeg verbosity.  See libavutil/log.h for values: -8 quiet..48 verbose.
+  int verbose_level = AV_LOG_FATAL;
+  std::wstring verbose(cmd_line->GetSwitchValue(switches::kVerbose));
+  if (!verbose.empty() &&
+      !StringToInt(WideToUTF16Hack(verbose), &verbose_level)) {
+    verbose_level = AV_LOG_FATAL;
+  }
+
   // Determine number of frames to decode (optional).
   int max_frames = 0;
   std::wstring frames_opt(cmd_line->GetSwitchValue(switches::kFrames));
@@ -174,7 +186,7 @@ int main(int argc, const char** argv) {
     hash_djb2 = true;
   }
 
-  MD5Context ctx; // intermediate MD5 data: do not use
+  MD5Context ctx;  // Intermediate MD5 data: do not use
   MD5Init(&ctx);
   bool hash_md5 = false;
   if (cmd_line->HasSwitch(switches::kMd5)) {
@@ -197,6 +209,7 @@ int main(int argc, const char** argv) {
 
   // Register FFmpeg and attempt to open file.
   avcodec_init();
+  av_log_set_level(verbose_level);
   av_register_all();
   av_register_protocol(&kFFmpegFileProtocol);
   AVFormatContext* format_context = NULL;
@@ -215,7 +228,7 @@ int main(int argc, const char** argv) {
       output = stdout;
       log_out = &std::cerr;
 #if defined(OS_WIN)
-      _setmode(_fileno(stdout),_O_BINARY);
+      _setmode(_fileno(stdout), _O_BINARY);
 #endif
     } else {
       output = file_util::OpenFile(out_path.c_str(), "wb");
@@ -499,7 +512,7 @@ int main(int argc, const char** argv) {
              << "  " << in_path << std::endl;
   }
   if (hash_md5) {
-    MD5Digest digest; // The result of the computation.
+    MD5Digest digest;  // The result of the computation.
     MD5Final(&digest, &ctx);
     *log_out << "        MD5: " << MD5DigestToBase16(digest)
              << " " << in_path << std::endl;
