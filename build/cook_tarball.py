@@ -95,6 +95,12 @@ def CookTarball(tgz_name, build_mode):
   shutil.copytree(src_dir, tmp_dir)
   WindowsRemoveReadOnly(tmp_dir)
 
+  # Drop old tarballs/zips.
+  DeleteAllMatching(os.path.join(tmp_dir, 'native_client', 'build'),
+                    re.compile(r'.*\.tgz$'))
+  DeleteAllMatching(os.path.join(tmp_dir, 'native_client', 'build'),
+                    re.compile(r'.*\.zip$'))
+
   # Drop .svn files.
   DeleteAllMatching(tmp_dir, re.compile(r'^\.svn$'))
 
