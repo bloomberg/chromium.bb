@@ -52,9 +52,7 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
     // http://code.google.com/p/chromium/issues/detail?id=22780
     // "worker-cloneport.html",
 
-    // Disabled because worker exceptions outside of script eval() are not
-    // reported (http://code.google.com/p/chromium/issues/detail?id=20953)
-    // "worker-close.html",
+    "worker-close.html",
     "worker-constructor.html",
     "worker-context-gc.html",
     "worker-context-multi-port.html",
