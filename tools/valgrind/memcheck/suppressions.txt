@@ -287,7 +287,16 @@
    ...
    fun:_ZN5NPAPI9PluginLib17ReadWebPluginInfoERK8FilePathP13WebPluginInfo
 }
-
+{
+   # NSS bug https://bugzilla.mozilla.org/show_bug.cgi?id=518443
+   https://bugzilla.mozilla.org/show_bug.cgi?id=518443
+   Memcheck:Leak
+   fun:calloc
+   fun:PR_Calloc
+   fun:PORT_ZAlloc_Util
+   fun:PORT_NewArena_Util
+   fun:PK11_ImportAndReturnPrivateKey
+}
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
