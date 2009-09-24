@@ -800,8 +800,8 @@ class TryChromeDialog : public views::ButtonListener,
       layout->StartRowWithPadding(0, 1, 0, 10);
       try_chrome_ = new views::RadioButton(
           kGiveChromeATry[kDialogVersion[version_].try_index], 1);
-      try_chrome_->SetChecked(true);
       layout->AddView(try_chrome_);
+      try_chrome_->SetChecked(true);
     }
     // Third row views.
     if (kDialogVersion[version_].try_index >= 0) {
