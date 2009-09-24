@@ -620,16 +620,16 @@ bool HistoryService::CanAddURL(const GURL& url) const {
   if (!url.is_valid())
     return false;
 
+  // We allow chrome://* URLs so that they will be added to history and
+  // autocomplete suggestions.
   if (url.SchemeIs(chrome::kJavaScriptScheme) ||
-      url.SchemeIs(chrome::kChromeUIScheme) ||
       url.SchemeIs(chrome::kViewSourceScheme) ||
       url.SchemeIs(chrome::kChromeInternalScheme) ||
       url.SchemeIs(chrome::kPrintScheme))
     return false;
 
   if (url.SchemeIs(chrome::kAboutScheme)) {
-    std::string path = url.path();
-    if (path.empty() || LowerCaseEqualsASCII(path, "blank"))
+    if (LowerCaseEqualsASCII(url.path(), "blank"))
       return false;
     // We allow all other about URLs since the user may like to see things
     // like "about:memory" or "about:histograms" in their history and
