@@ -383,7 +383,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, Escape) {
   EXPECT_TRUE(edit_view->IsSelectAll());
 }
 
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DISABLED_DesiredTLD) {
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DesiredTLD) {
   ASSERT_NO_FATAL_FAILURE(SetupHostResolver());
   ASSERT_NO_FATAL_FAILURE(SetupSearchEngine());
   browser()->FocusLocationBar();
@@ -404,7 +404,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DISABLED_DesiredTLD) {
   EXPECT_STREQ(kDesiredTLDHostname, url.host().c_str());
 }
 
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DISABLED_AltEnter) {
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, AltEnter) {
   ASSERT_NO_FATAL_FAILURE(SetupHostResolver());
   browser()->FocusLocationBar();
 
@@ -418,7 +418,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DISABLED_AltEnter) {
   ASSERT_NO_FATAL_FAILURE(WaitForTabOpenOrClose(tab_count + 1));
 }
 
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DISABLED_EnterToSearch) {
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, EnterToSearch) {
   ASSERT_NO_FATAL_FAILURE(SetupHostResolver());
   ASSERT_NO_FATAL_FAILURE(SetupSearchEngine());
   browser()->FocusLocationBar();
