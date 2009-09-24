@@ -273,6 +273,17 @@
    fun:+[NSObject alloc]
    fun:+[GTMTheme(BrowserThemeProviderInitialization) themeWithBrowserThemeProvider:isOffTheRecord:]
 }
+{
+   # Singleton that we leak, but only on shutdown.
+   find_pasteboard_singleton
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:CFPasteboardCreate
+   fun:+[NSPasteboard _pasteboardWithName:]
+   fun:-[FindPasteboard findPboard]
+   fun:-[FindPasteboard setFindText:]
+}
 
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 {
