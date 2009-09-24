@@ -68,6 +68,10 @@ env.ComponentProgram('cat.nexe', 'cat.c',
 env.Publish('cat.nexe', 'run', ['srpc_url_as_nacl_desc.html',
                                 'srpc_url_as_nacl_desc_success.html'])
 
+env.ComponentProgram('srpc_bidir.nexe', 'srpc_bidir.c',
+                     EXTRA_LIBS=['srpc', 'm', 'pthread'])
+env.Publish('srpc_bidir.nexe', 'run', ['srpc_bidir.html'])
+
 # TODO(robertm): make this work for ARM
 if env['TARGET_ARCHITECTURE'] == 'x86':
   node = env.CommandSelUniversalTestNacl(

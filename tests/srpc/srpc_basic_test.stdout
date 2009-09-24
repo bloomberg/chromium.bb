@@ -18,6 +18,8 @@ double RESULTS:   d(-1.000000)
 int RESULTS:   i(-1)
 string RESULTS:   i(5)
 char_array RESULTS:   olleh
+char_array RESULTS:   .dlrow,olleH
+char_array RESULTS:   \x7f\\\"\"\t\n\f\bA
 double_array RESULTS:   D(5,5.900000,1.500000,4.100000,1.400000,3.100000)
 int_array RESULTS:   I(5,5,4,3,2,1)
 null_method RESULTS: 

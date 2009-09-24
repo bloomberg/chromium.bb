@@ -5,6 +5,8 @@ rpc double d(1.0) * d(0)
 rpc int i(1) * i(0)
 rpc string s("hello") * i(0)
 rpc char_array C(5,hello) * C(5)
+rpc char_array C(12,\110\145\154\154\157,\x77\x6f\x72\x6C\x64\X2E) * C(12)
+rpc char_array C(9,A\b\f\n\t\"\"\\\x7F) * C(9)
 rpc double_array D(5,3.1,1.4,4.1,1.5,5.9) * D(5)
 rpc int_array I(5,1,2,3,4,5) * I(5)
 rpc null_method *

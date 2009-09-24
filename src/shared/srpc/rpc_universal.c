@@ -138,32 +138,118 @@ typedef struct {
   int length;
 } TOKEN;
 
+static int HandleEscapedChar(const char** p) {
+  int ival;
+  int count;
+
+  switch (**p) {
+   case '\\':
+    ++*p;
+    return '\\';
+   case '\"':
+    ++*p;
+    return '\"';
+   case 'b':
+    ++*p;
+    return '\b';
+   case 'f':
+    ++*p;
+    return '\f';
+   case 'n':
+    ++*p;
+    return '\n';
+   case 't':
+    ++*p;
+    return '\t';
+   case 'v':
+    ++*p;
+    return '\v';
+
+   /* Octal sequences. */
+   case '0':
+   case '1':
+   case '2':
+   case '3':
+   case '4':
+   case '5':
+   case '6':
+   case '7':
+    ival = 0;
+    count = 0;
+    while ('0' <= **p && '7' >= **p && 3 > count) {
+      ival = ival * 8 + **p - '0';
+      ++*p;
+      ++count;
+    }
+    return ival;
+
+   /* Hexadecimal sequences. */
+   case 'x':
+   case 'X':
+    ival = 0;
+    count = 0;
+    ++*p;
+    while (isxdigit(**p) && 2 > count) {
+      if (isdigit(**p)) {
+        ival = ival * 16 + **p - '0';
+      } else {
+        ival = ival * 16 + toupper(**p) - 'A' + 10;
+      }
+      ++*p;
+      ++count;
+    }
+    return ival;
+
+   default:
+    /* Unrecognized token. Return the '\\' and let the caller come back */
+    return '\\';
+  }
+  return -1;
+}
+
+/*
+ * Reads one char from *p and advances *p to the next read point in the input.
+ * This handles some meta characters ('\\', '\"', '\b', '\f', '\n', '\t',
+ * and '\v'), \ddd, where ddd is interpreted as an octal character value, and
+ * \[xX]dd, where dd is interpreted as a hexadecimal character value.
+ */
+static int ReadOneChar(const char** p) {
+  int ival;
+
+  switch (**p) {
+   case '\0':
+    /* End of string is returned as -1 so that we can embed '\0' in strings. */
+    return -1;
+   case '\\':
+    ++*p;
+    return HandleEscapedChar(p);
+   default:
+    ival = **p;
+    ++*p;
+    return ival;
+  }
+  return -1;
+}
+
 /* expects *from to point to leading \" and returns pointer to trailing \" */
 static const char* ScanEscapeString(char* to, const char* from) {
+  int ival;
   from++;
-  while (*from) {
-    if (*from == '\"') {
-      if (to) *to = '\0';
-      return from;
-    }else if (*from != '\\') {
-      if (to) *to++ = *from;
-      from++;
-    } else {
-      char next = *from++;
-      switch(next) {
-       case '\0':
-        return 0;
-       case '\\':
-       case '\"':
-        if (to) *to++ = next;
-        break;
-       case 'n':
-        if (to) *to++ = '\n';
-        break;
-       default:
-        return 0;
+  ival = ReadOneChar(&from);
+  while (-1 != ival) {
+    if ('\"' == ival) {
+      if (NULL != to) {
+        *to = '\0';
       }
+      return from;
     }
+    if (NULL != to) {
+      *to++ = ival;
+    }
+    ival = ReadOneChar(&from);
+  }
+  if (NULL != to) {
+    *to = ival;
   }
   return 0;
 }
@@ -196,6 +282,7 @@ static int Tokenize(char* line, TOKEN *array, int n) {
       if (isspace(c)) {
         break;
       } else if (c == '\"') {
+        /* TBD(sehr): quotes are only really relevant in s("..."). */
         const char* end = ScanEscapeString(0, &line[pos_end]);
         if (!end) return -1;
         pos_end = end - &line[0];
@@ -212,7 +299,6 @@ static int Tokenize(char* line, TOKEN *array, int n) {
       pos_end++;
     }
     pos_start = pos_end;
-    /* printf("TOKEN %s\n", array[count].start); */
   }
 
   return count;
@@ -251,9 +337,14 @@ static int ParseArg(NaClSrpcArg* arg, const char* token) {
     arg->u.caval.count = dim;
     comma = strstr(token, ",");
     if (comma) {
-      const char* p;
-      for (p = comma+1, i = 0; *p != ')' && i < dim; ++p, ++i)
-        arg->u.caval.carr[i] = *p;
+      const char* p = comma + 1;
+      for (i = 0; *p != ')' && i < dim; ++i) {
+        int ival = ReadOneChar(&p);
+        if (-1 == ival || ')' == ival) {
+          break;
+        }
+        arg->u.caval.carr[i] = ival;
+      }
     }
     break;
    case NACL_SRPC_ARG_TYPE_DOUBLE:
@@ -343,9 +434,42 @@ static int ParseArgs(NaClSrpcArg* arg, const TOKEN* token, int n) {
   return n;
 }
 
+static void PrintOneChar(char c) {
+  switch (c) {
+   case '\"':
+    printf("\\\"");
+    break;
+   case '\b':
+    printf("\\b");
+    break;
+   case '\f':
+    printf("\\f");
+    break;
+   case '\n':
+    printf("\\n");
+    break;
+   case '\t':
+    printf("\\t");
+    break;
+   case '\v':
+    printf("\\v");
+    break;
+   case '\\':
+    printf("\\\\");
+    break;
+   default:
+    if (' ' > c || 127 == c) {
+      printf("\\x%02x", c);
+    } else {
+      printf("%c", c);
+    }
+  }
+}
+
 static void DumpArg(const NaClSrpcArg* arg) {
   uint32_t count;
   uint32_t i;
+  char* p;
 
   switch(arg->tag) {
    case NACL_SRPC_ARG_TYPE_INVALID:
@@ -356,7 +480,7 @@ static void DumpArg(const NaClSrpcArg* arg) {
     break;
    case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
     for (i = 0; i < arg->u.caval.count; ++i)
-      putchar(arg->u.caval.carr[i]);
+      PrintOneChar(arg->u.caval.carr[i]);
     break;
    case NACL_SRPC_ARG_TYPE_DOUBLE:
     printf("d(%f)", arg->u.dval);
@@ -382,8 +506,10 @@ static void DumpArg(const NaClSrpcArg* arg) {
     printf(")");
     break;
    case NACL_SRPC_ARG_TYPE_STRING:
-    /* TODO(robertm): do proper escaping */
-    printf("s(\"%s\")", arg->u.sval);
+    printf("s(\"");
+    for (p = arg->u.sval; '\0' != *p; ++p)
+      PrintOneChar(*p);
+    printf("\")");
     break;
     /*
      * The two cases below are added to avoid warnings, they are only used
@@ -472,6 +598,13 @@ static void PrintHelp() {
   /* TODO(sehr,robertm): we should have a syntax description option */
 }
 
+static NaClSrpcError UpcallString(NaClSrpcChannel* channel,
+                                  NaClSrpcArg** ins,
+                                  NaClSrpcArg** outs) {
+  printf("UpcallString: called with '%s'\n", ins[0]->u.sval);
+  return NACL_SRPC_RESULT_OK;
+}
+
 void NaClSrpcCommandLoop(NaClSrpcService* service,
                          NaClSrpcChannel* channel,
                          NaClSrpcInterpreter interpreter,
@@ -483,6 +616,23 @@ void NaClSrpcCommandLoop(NaClSrpcService* service,
   BuildDefaultDescList();
   if (kNaClSrpcInvalidImcDesc != default_socket_address) {
     AddDescToList(default_socket_address, "module socket address");
+  }
+  /* Add a simple upcall service to the channel (if any) */
+  if (NULL != channel) {
+    static const NaClSrpcHandlerDesc upcall_handlers[] = {
+      { "upcall_string:s:", UpcallString },
+      { NULL, NULL }
+    };
+    NaClSrpcService* service = (NaClSrpcService*) malloc(sizeof(*service));
+    if (NULL == service) {
+      fprintf(stderr, "Couldn't allocate upcall service\n");
+      return;
+    }
+    if (!NaClSrpcServiceHandlerCtor(service, upcall_handlers)) {
+      fprintf(stderr, "Couldn't construct upcall service\n");
+      return;
+    }
+    channel->server = service;
   }
   /* Read RPC requests from stdin and send them. */
   for (;;) {
