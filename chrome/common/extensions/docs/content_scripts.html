@@ -225,7 +225,7 @@
 <div id="pageData-showTOC" class="pageData">true</div>
 
 <p>
-Content Scripts are JavaScript files that run in the context of web pages.
+Content scripts are JavaScript files that run in the context of web pages.
 By using the standard
 <a href="http://www.w3.org/TR/DOM-Level-2-HTML/">Document
 Object Model</a> (DOM),
@@ -245,20 +245,23 @@ Here are some examples of what content scripts can do:
 
 <p>
 However, content scripts have some limitations.
-They <b>cannot use</b>:
+They <b>cannot</b>:
 </p>
 
 <ul>
   <li>
-    chrome.* APIs
+    Use chrome.* APIs
     (except for parts of
     <a href="extension.html"><code>chrome.extension</code></a>)
   </li>
   <li>
-    variables or functions defined by their extension's pages
+    Use variables or functions defined by their extension's pages
   </li>
   <li>
-    variables or functions defined by web pages or by other content scripts
+    Use variables or functions defined by web pages or by other content scripts
+  </li>
+  <li>
+    Make cross-site XMLHttpRequests
   </li>
 </ul>
 

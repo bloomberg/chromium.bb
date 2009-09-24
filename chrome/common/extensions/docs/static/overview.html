@@ -2,14 +2,12 @@
 <div id="pageData-showTOC" class="pageData">true</div>
 
 <p>
-Please read this page;
-it has vital information about the extension architecture.
-If you get bored or restless,
-take a break!
-We suggest bouncing between this page
-and tutorials
-such as <a href="getstarted.html">Getting Started</a>
-and <a href="tut_debugging.html">Debugging</a>.
+Read this page!
+It has vital information about the extension architecture.
+Once you've finished this page
+and the
+<a href="getstarted.html">Getting Started</a> tutorial,
+you'll be all set to start writing extensions.
 </p>
 
 
@@ -19,30 +17,34 @@ and <a href="tut_debugging.html">Debugging</a>.
 An extension is a zipped bundle of files &mdash;
 HTML, CSS, JavaScript, images, and anything else you need &mdash;
 that adds functionality to the Google Chrome browser.
-Because an extension is just a special kind of web page,
-it can use all the APIs
+Extensions are essentially web pages,
+and they can use all the APIs
 that the browser provides
-to web pages and apps,
-from XMLHttpRequest to JSON to localStorage.
+to web pages,
+from XMLHttpRequest to JSON to HTML5 local storage.
 </p>
 
 <p>
-Extensions can add UI to Google Chrome,
+Many extensions add UI to Google Chrome,
 in the form of
 <a href="toolstrip.html">toolstrips</a> (toolbar additions)
-and <a href="pageActions.html">page actions</a>
+or <a href="pageActions.html">page actions</a>
 (clickable badges in the address bar).
 Extensions can also interact programmatically
 with browser features such as
 <a href="bookmarks.html">bookmarks</a>
 and <a href="tabs.html">tabs</a>.
+To interact with web pages or servers,
+extensions can use
+<a href="content_scripts.html">content scripts</a> or
+<a href="xhr.html">cross-origin XMLHttpRequests</a>.
 </p>
 
 <p>
-To find a complete list of extension features,
+See the <a href="devguide.html">Developer's Guide</a>
+for a complete list of extension features,
 with implementation details
-for each one,
-see the <a href="devguide.html">Developer's Guide</a>.
+for each one.
 </p>
 
 
@@ -56,14 +58,15 @@ Each extension has the following files:
   <li>A <b>manifest file</b></li>
   <li>One or more <b>HTML files</b> (unless the extension is a theme)</li>
   <li><em>Optional:</em> One or more <b>JavaScript files</b></li>
-  <li><em>Optional:</em> Any other files your extension needs &mdash; for example, image files</li>
+  <li><em>Optional:</em> Any other files your extension needs &mdash;
+  for example, image files</li>
 </ul>
 
 <p>
 While you're working on your extension,
 you put all these files into a single folder.
 When you distribute your extension,
-the contents of the folder are packaged into a special zipfile
+the contents of the folder are packaged into a special ZIP file
 that has a <code>.crx</code> suffix,
 as described in <a href="packaging.html">Packaging</a>.
 </p>
@@ -83,7 +86,7 @@ that's in a subfolder named <code>images</code>.
 </p>
 
 <pre>
-&lt;img <b>src="images/myimage.png"</b> style="width:auto; height:auto">
+&lt;img <b>src="images/myimage.png"</b>>
 </pre>
 
 <p>
@@ -105,70 +108,10 @@ under the extension's top folder;
 it's the same as the relative URL.
 </p>
 
-<p>
-For example, assume your extension has
-the ID <b>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</b>
-and the files shown in the following figure:
-</p>
-
-<pre>
-<span class="tbd">[PENDING: someday this will be a real figure]</span>
-toolstrip.html
-styles.css
-images:
-  myimage.png
-  ...
-other:
-  more.html
-  morestyles.css
-  ...
-</pre>
-
-<p>
-Here's a table that shows the relative and absolute URLs of these files.
-Keep in mind that the relative URL is the same no matter where you're using it &mdash;
-the relative URL of <code>myimage.png</code> is
-<b>images/myimage.png</b>,
-no matter whether it's being used by
-<code>toolstrip.html</code> or <code>other/more.html</code>.
-</p>
-
-<table>
-<tr>
-  <th> File </th>
-  <th> Relative URL </th>
-  <th> Absolute URL </th>
-</tr>
-<tr>
-  <td> toolstrip.html </td>
-  <td> toolstrip.html </td>
-  <td> chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/toolstrip.html </td>
-</tr>
-<tr>
-  <td> styles.css </td>
-  <td> styles.css </td>
-  <td> chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/styles.css </td>
-</tr>
-<tr>
-  <td> myimage.png </td>
-  <td> images/myimage.png </td>
-  <td> chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/images/myimage.png </td>
-</tr>
-<tr>
-  <td> more.html </td>
-  <td> other/more.html </td>
-  <td> chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/other/more.html </td>
-</tr>
-<tr>
-  <td> morestyles.css </td>
-  <td> other/morestyles.css </td>
-  <td> chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/other/morestyles.css </td>
-</tr>
-</table>
-
-<p class="tbd">
-[PENDING: Mention/reflect/link to
-<a href="http://dev.chromium.org/developers/design-documents/extensions/i18n">internationalization</a>]
+<p class="comment">
+[PENDING: Should mention/reflect/link to
+<a href="http://dev.chromium.org/developers/design-documents/extensions/i18n">internationalization</a>
+when it's ready.]
 </p>
 
 
@@ -201,63 +144,59 @@ For details, see
 <h2 id="arch">Architecture</h2>
 
 <p>
-The following pictures shows the web pages associated with a typical extension
-(in this case, a simple toolstrip).
-The first figure shows what an extension might look like
+Remember that extensions are essentially web pages.
+The following figure shows what
+a simple extension with a toolstrip
+might look like
 when there's a single browser window.
+The toolstrip (T1) is at the bottom of the window.
+The HTML and JavaScript code for T1
+is in a web page
+(<code>toolstrip.html</code>).
 </p>
 
-<p class="tbd"> [PENDING: image goes here] </p>
+<img src="images/arch-1.gif">
 
 <p>
-The next figure shows that all the code in the extension's main HTML file
-is duplicated each time you create a new window.
-In other words, each window has its own widgets for the extension,
-which means each window adds another web page for that extension.
+Each time the user creates a new window,
+the browser creates new toolstrips, page actions, and so on.
+Each new bit of UI gets its own web page,
+which means that toolstrips (for example)
+that are in different windows can have different states.
+In the following figure,
+the two toolstrips (T1 and T2)
+are associated with two separate web pages,
+both of which contain code from <code>toolstrip.html</code>.
+This means that although both toolstrips use the same code,
+one can be blue while the other is green.
 </p>
 
-<p class="tbd"> [PENDING: image goes here] </p>
-
-<p>
-To more easily coordinate all these web pages and to avoid duplication,
-you should design your extension
-so that most of the code &mdash;
-especially the state of the extension &mdash;
-is in a <em>background page</em>,
-as shown in the following figure.
-</p>
-
-<p class="tbd"> [PENDING: image goes here] </p>
+<img src="images/arch-2.gif">
 
 
 <h3 id="background">The background page</h3>
+
 <p>
-Any non-trivial extension can (and probably should)
-have a background page.
+If your extension's web pages need to communicate
+or otherwise share information &mdash;
+for example, if a browser event
+can affect more than just one window's toolstrip &mdash;
+the extension can use a background page.
+The following figure shows a background page
+(<code>background.html</code>)
+that controls
+the toolstrips in an extension.
+</p>
+
+<img src="images/arch-3.gif">
+
+<p>
 The background page is an invisible page
-where you put the main logic of the extension.
+where you can put the main logic of the extension.
 The extension's other pages should have
 only the code that's necessary
 to show the state of the extension
 and to get input from the user.</p>
-
-<p>
-An extension's background page exists
-before any of the extension's other pages exist.
-It continues to exist as long as the browser is running
-and the extension is installed,
-even if other pages and windows go away.
-</p>
-
-<p>
-Your extension's UI &mdash;
-its toolstrips, page actions, and so on &mdash;
-should be dumb views.
-When the view needs some state,
-it should request it from the background page.
-When the background page notices some state change,
-it should update all the views.
-</p>
 
 <p>
 For more information, see
@@ -267,18 +206,31 @@ For more information, see
 <h3 id="contentScripts">Content scripts</h3>
 
 <p>
-If you want your extension to interact with web pages,
-you need a content script.
+If your extension needs to interact with web pages,
+then it needs a <em>content script</em>.
 Content scripts are JavaScript files that run in the context of web pages.
-By using the standard Document Object Model (DOM),
-they can read details of the web pages the browser visits,
+Using the standard
+<a href="http://www.w3.org/TR/DOM-Level-2-HTML/">Document Object Model</a>
+(DOM),
+content scripts can read details of the web pages the browser visits,
 and they can make changes to the pages.
 </p>
 
+<p>
+In the following figure,
+the content script
+can read and modify
+the DOM for the web page displayed in Window 1.
+If the toolstrip's UI needs to change
+to reflect the web page's contents,
+the content script can request that change
+by sending a message to the parent extension.
+</p>
+
+<img src="images/arch-cs.gif">
+
 <p class="comment">
-[PENDING: add an architectural figure here,
-showing the extension's pages, a web page, and the content script
-interacting with the web page. explain the figure.]
+[PENDING: Add overview of message passing.]
 </p>
 
 <p>
@@ -287,57 +239,29 @@ see <a href="content_scripts.html">Content Scripts</a>.
 </p>
 
 
-<h2>Communication </h2>
+<h2>Communication between pages </h2>
 
 <p>
-Two kinds of communication happen within an extension:
+The HTML pages within an extension often need to communicate.
+An example is when the background page tells
+UI pages (such as toolstrips)
+to update their appearance.
+Because all of an extension's pages
+execute in same process on the same thread,
+the pages can make direct function calls to each other.
 </p>
-
-<ul>
-  <li>
-    Communication <b>between pages</b> in the extension.
-    <br />
-    For example, sometimes the background page
-    needs to update all the UI pages
-    to reflect a change in the extension's state.
-  </li>
-  <li>
-    Communication <b>between content scripts and the extension</b>.
-    <br />
-    For example,
-    <span class="tbd">[PENDING: typical use case goes here]</span>.
-    See <a href="content_scripts.html">Content Scripts</a>
-    for information about this type of communication.
-  </li>
-</ul>
 
 <p>
-Here are some keys to communication between an extension's pages:
+To find pages in the extension, use
+<a href="extension.html"><code>chrome.extension</code></a>
+methods such as
+<code>getViews()</code>,
+<code>getBackgroundPage()</code>,
+and <code>getToolstrips()</code>.
+Once a page has a reference to other pages within the extension,
+the first page can invoke functions on the other pages.
+It can even manipulate their DOMs.
 </p>
-
-<ul>
-  <li>
-    All the extension's pages execute in same process,
-    on the same thread.
-  </li>
-  <li>
-    Extension pages can use
-    <a href="extension.html"><code>chrome.extension</code></a>
-    methods such as
-    <code>getViews()</code>,
-    <code>getBackgroundPage()</code>,
-    and <code>getToolstrips()</code>
-    to get access to the extension's pages.
-  </li>
-  <li>
-    Once you have references to an extension's pages,
-    you can manipulate the DOM for each page.
-  </li>
-  <li>
-    You can also make direct function calls to the pages,
-    as shown in the following example.
-  </li>
-</ul>
 
 <p>
 Here's an example of
@@ -345,7 +269,7 @@ communication between toolstrips and the background page.
 </p>
 
 <pre>
-//In background_page.html:
+//In background.html:
 function updateUI(checked) {
   var toolstrips = chrome.extension.getToolstrips();
   for (var i in toolstrips) {

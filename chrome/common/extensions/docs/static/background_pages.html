@@ -15,7 +15,19 @@ The background page is similar to a toolstrip,
 in that it is an HTML page that runs in the extension process.
 The difference is that the background page exists
 for the lifetime of your extension,
-and only one instance of it at a time is active.</p>
+and only one instance of it at a time is active.
+</p>
+
+<p>
+In a typical extension with a background page,
+the UI &mdash;
+toolstrips, page actions, and so on &mdash;
+is implemented with dumb views.
+When the view needs some state,
+it requests the state from the background page.
+When the background page notices a state change,
+the background page tells the views to update.
+</p>
 
 <h2 id="manifest">Manifest</h2>
 
