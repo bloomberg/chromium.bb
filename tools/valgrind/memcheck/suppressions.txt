@@ -171,7 +171,16 @@
 }
 
 {
-   # Strange...
+   # "The section of the SQLite library identified works exactly as it should."
+   # http://www.sqlite.org/cvstrac/tktview?tn=536,39
+   # http://www.sqlite.org/cvstrac/tktview?tn=694,39
+   # http://www.sqlite.org/cvstrac/tktview?tn=964,39
+   # This looks like a case where an entire page was allocated, the header and
+   # perhaps some data was written, but the entire buffer was not written to.
+   # The SQLite authors aren't very interested in adding code to clear buffers
+   # for no reason other than pleasing valgrind, but a patch might be accepted
+   # under a macro like SQLITE_SECURE_DELETE which could be construed to apply
+   # to cases like this. (Note that we compile with SQLITE_SECURE_DELETE.)
    bug_20653a
    Memcheck:Param
    write(buf)
