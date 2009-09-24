@@ -686,7 +686,8 @@ base::ProcessHandle TaskManagerBrowserProcessResource::GetProcess() const {
 
 TaskManagerBrowserProcessResourceProvider::
     TaskManagerBrowserProcessResourceProvider(TaskManager* task_manager)
-    : task_manager_(task_manager) {
+    : updating_(false),
+      task_manager_(task_manager) {
 }
 
 TaskManagerBrowserProcessResourceProvider::
