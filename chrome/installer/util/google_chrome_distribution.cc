@@ -35,12 +35,12 @@ namespace {
 // The following strings are the possible outcomes of the toast experiment
 // as recorded in the  |client| field. Previously the groups used "TSxx" but
 // the data captured is not valid.
-const wchar_t kToastExpQualifyGroup[] =      L"T%c01";
-const wchar_t kToastExpCancelGroup[] =       L"T%c02";
-const wchar_t kToastExpUninstallGroup[] =    L"T%c04";
-const wchar_t kToastExpTriesOkGroup[] =      L"T%c18";
-const wchar_t kToastExpTriesErrorGroup[] =   L"T%c28";
-const wchar_t kToastExpBaseGroup[] =         L"T%c80";
+const wchar_t kToastExpQualifyGroup[] =      L"T%lc01";
+const wchar_t kToastExpCancelGroup[] =       L"T%lc02";
+const wchar_t kToastExpUninstallGroup[] =    L"T%lc04";
+const wchar_t kToastExpTriesOkGroup[] =      L"T%lc18";
+const wchar_t kToastExpTriesErrorGroup[] =   L"T%lc28";
+const wchar_t kToastExpBaseGroup[] =         L"T%lc80";
 
 // Generates the actual group that gets written in the registry.
 // |group| is a printf style string with a single %c replacement and |value|
@@ -474,7 +474,8 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor) {
   // User qualifies for the experiment. Launch chrome with --try-chrome. Before
   // that we need to change the client so we can track the progress.
   int32 exit_code = 0;
-  std::wstring option(std::wstring(L" --") + switches::kTryChromeAgain);
+  std::wstring option(
+      StringPrintf(L"--%ls=%d", switches::kTryChromeAgain, flavor));
   if (!installer::LaunchChromeAndWaitForResult(false, option, &exit_code))
     return;
   // The chrome process has exited, figure out what happened.
