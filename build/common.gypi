@@ -68,11 +68,7 @@
     'msvs_debug_link_incremental%': '2',
 
     # The architecture that we're building for (x86, arm).
-    'target_arch%': 'x86',
-
-    # The sub-architecture that we're building for (32 or 64 in x86 case).
-    'target_sub_arch%': '32',
-
+    'target_arch%': 'ia32',
 
     # By default linux does not use views. To turn on views in Linux
     # set the variable GYP_DEFINES to "toolkit_views=1", or modify
@@ -96,15 +92,17 @@
           'NACL_STANDALONE=1',
         ]
       }],
-      ['target_arch=="x86" and target_sub_arch=="32"', {
+      # TODO(gregoryd): split target and build subarchs
+      ['target_arch=="ia32"', {
         'defines': [
           'NACL_TARGET_SUBARCH=32',
           'NACL_BUILD_SUBARCH=32',
         ],
-      },{
+      }],
+      ['target_arch=="x64"', {
         'defines': [
-          'NACL_TARGET_SUBARCH=32',
-          'NACL_BUILD_SUBARCH=32',
+          'NACL_TARGET_SUBARCH=64',
+          'NACL_BUILD_SUBARCH=64',
         ],
       }],
       ['branding=="Chrome"', {

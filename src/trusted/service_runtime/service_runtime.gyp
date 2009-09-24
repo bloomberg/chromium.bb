@@ -89,17 +89,17 @@
         '../../shared/srpc/srpc.gyp:nonnacl_srpc',
       ],
       'conditions': [
-        ['target_arch == "x86"', {
+        ['target_arch=="ia32" or target_arch=="x64"', {
           'dependencies': [
             'arch/x86/service_runtime_x86.gyp:service_runtime_x86',
           ],
         }],
-        ['target_arch == "x86" and target_sub_arch == "32"', {
+        ['target_arch == "ia32"', {
           'dependencies': [
             'arch/x86_32/service_runtime_x86_32.gyp:service_runtime_x86_32',
           ],
         }],
-        ['target_arch == "x86" and target_sub_arch == "64"', {
+        ['target_arch == "x64"', {
           'dependencies': [
             'arch/x86_32/service_runtime_x86_64.gyp:service_runtime_x86_64',
           ],
@@ -127,7 +127,7 @@
             'linux/nacl_thread_nice.c',
           ],
           'conditions': [
-            ['target_arch=="x86"', {
+            ['target_arch=="ia32" or target_arch=="x64"', {
               'sources': [
                 'linux/x86/nacl_ldt.c',
                 'linux/x86/sel_segments.c',
