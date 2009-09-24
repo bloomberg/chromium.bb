@@ -15,6 +15,7 @@ import optparse
 import os
 import shutil
 import socket
+import subprocess
 import sys
 import tempfile
 import traceback
@@ -317,11 +318,14 @@ def _SendChangeSVN(options):
   try:
     # Don't use  '--non-interactive', since we want it to prompt for
     # crendentials if necessary.
-    command = ['svn', 'checkout', '--depth', 'empty',
+    command = ['svn', 'checkout', '--depth', 'empty', '-q',
                options.svn_repo, temp_dir]
     if options.email:
       command += ['--username', options.email]
-    RunCommand(command)
+    # Don't use RunCommand() since svn may prompt for information.
+    use_shell = sys.platform.startswith("win")
+    subprocess.Popen(command, shell=use_shell).communicate()
+
     # TODO(maruel): Use a subdirectory per user?
     current_time = str(datetime.datetime.now()).replace(':', '.')
     file_name = (EscapeDot(options.user) + '.' + EscapeDot(options.name) +
