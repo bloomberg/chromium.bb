@@ -917,12 +917,6 @@
    fun:_ZN7WebCore8SVGNames4initEv
 }
 {
-   bug_18268
-   Memcheck:Cond
-   fun:_ZN20NavigationController22IsLikelyAutoNavigationEN4base9TimeTicksE
-   fun:_ZN20NavigationController28RendererDidNavigateToNewPageERK32ViewHostMsg_FrameNavigate_ParamsPb
-}
-{
    bug_18654
    Memcheck:Leak
    ...
