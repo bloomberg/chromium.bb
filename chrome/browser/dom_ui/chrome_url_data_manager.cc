@@ -344,7 +344,10 @@ URLRequestJob* ChromeURLDataManager::Factory(URLRequest* request,
 }
 
 URLRequestChromeJob::URLRequestChromeJob(URLRequest* request)
-    : URLRequestJob(request), data_offset_(0) {}
+    : URLRequestJob(request),
+      data_offset_(0),
+      pending_buf_size_(0) {
+}
 
 URLRequestChromeJob::~URLRequestChromeJob() {
   CHECK(!chrome_url_data_manager.HasPendingJob(this));
