@@ -1280,10 +1280,21 @@ void WindowWin::ResetWindowRegion(bool force) {
   CRect window_rect;
   GetWindowRect(&window_rect);
   HRGN new_region;
-  gfx::Path window_mask;
-  non_client_view_->GetWindowMask(
-      gfx::Size(window_rect.Width(), window_rect.Height()), &window_mask);
-  new_region = window_mask.CreateHRGN();
+  if (IsMaximized()) {
+    HMONITOR monitor =
+        MonitorFromWindow(GetNativeView(), MONITOR_DEFAULTTONEAREST);
+    MONITORINFO mi;
+    mi.cbSize = sizeof mi;
+    GetMonitorInfo(monitor, &mi);
+    CRect work_rect = mi.rcWork;
+    work_rect.OffsetRect(-window_rect.left, -window_rect.top);
+    new_region = CreateRectRgnIndirect(&work_rect);
+  } else {
+    gfx::Path window_mask;
+    non_client_view_->GetWindowMask(
+        gfx::Size(window_rect.Width(), window_rect.Height()), &window_mask);
+    new_region = window_mask.CreateHRGN();
+  }
 
   if (current_rgn_result == ERROR || !EqualRgn(current_rgn, new_region)) {
     // SetWindowRgn takes ownership of the HRGN created by CreateHRGN.
