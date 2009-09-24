@@ -836,7 +836,6 @@ class Firefox3Observer : public ProfileWriter,
   std::wstring default_keyword_url_;
 };
 
-// This test is disabled, see bug 22884
 TEST_F(ImporterTest, Firefox30Importer) {
   scoped_refptr<Firefox3Observer> observer = new Firefox3Observer();
   Firefox3xImporterTest(L"firefox3_profile", observer.get(), observer.get(),
