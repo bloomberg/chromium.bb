@@ -61,7 +61,7 @@ PassRefPtr<StorageNamespace> StorageNamespaceProxy::copy()
     return adoptRef(new StorageNamespaceProxy(m_storageNamespace->copy()));
 }
 
-PassRefPtr<StorageArea> StorageNamespaceProxy::storageArea(SecurityOrigin* origin)
+PassRefPtr<StorageArea> StorageNamespaceProxy::storageArea(PassRefPtr<SecurityOrigin> origin)
 {
     return adoptRef(new StorageAreaProxy(m_storageNamespace->createStorageArea(origin->toString())));
 }
