@@ -4,6 +4,8 @@
 
 #include "base/at_exit.h"
 #include "base/message_loop.h"
+#include "o3d/command_buffer/common/cross/cmd_buffer_format.h"
+#include "o3d/command_buffer/service/cross/mocks.h"
 #include "o3d/gpu_plugin/command_buffer_mock.h"
 #include "o3d/gpu_plugin/gpu_processor.h"
 #include "o3d/gpu_plugin/np_utils/np_browser_stub.h"
@@ -33,8 +35,30 @@ class GPUProcessorTest : public testing::Test {
     command_buffer_ = NPCreateObject<MockCommandBuffer>(NULL);
     ON_CALL(*command_buffer_.Get(), GetRingBuffer())
       .WillByDefault(Return(shared_memory_));
+    ON_CALL(*command_buffer_.Get(), GetSize())
+      .WillByDefault(Return(sizeof(buffer_)));
 
-    processor_ = new GPUProcessor(command_buffer_);
+#if defined(OS_WIN)
+    gapi_ = new command_buffer::GAPID3D9;
+#endif
+
+    async_api_.reset(new StrictMock<command_buffer::AsyncAPIMock>);
+
+    decoder_ = new command_buffer::GAPIDecoder(gapi_);
+
+    parser_ = new command_buffer::CommandParser(buffer_,
+                                                sizeof(buffer_),
+                                                0,
+                                                sizeof(buffer_),
+                                                0,
+                                                async_api_.get());
+
+    processor_ = new GPUProcessor(NULL,
+                                  command_buffer_,
+                                  gapi_,
+                                  decoder_,
+                                  parser_,
+                                  2);
   }
 
   virtual void TearDown() {
@@ -49,114 +73,233 @@ class GPUProcessorTest : public testing::Test {
   NPObjectPointer<MockCommandBuffer> command_buffer_;
   NPObjectPointer<NiceMock<MockSharedMemory> > shared_memory_;
   int32 buffer_[1024 / sizeof(int32)];
+  command_buffer::GAPIDecoder* decoder_;
+  command_buffer::CommandParser* parser_;
+  scoped_ptr<command_buffer::AsyncAPIMock> async_api_;
   scoped_refptr<GPUProcessor> processor_;
+
+#if defined(OS_WIN)
+  command_buffer::GAPID3D9* gapi_;
+#endif
 };
 
-TEST_F(GPUProcessorTest, ProcessorDoesNothingIfNoSharedMemory) {
-  EXPECT_CALL(*command_buffer_, GetGetOffset())
-    .WillOnce(Return(0));
+TEST_F(GPUProcessorTest, ProcessorDoesNothingIfRingBufferIsEmpty) {
   EXPECT_CALL(*command_buffer_, GetPutOffset())
     .WillOnce(Return(0));
-  EXPECT_CALL(*command_buffer_, GetSize())
-    .WillOnce(Return(1024));
-  ON_CALL(*command_buffer_.Get(), GetRingBuffer())
-    .WillByDefault(Return(NPObjectPointer<CHRSharedMemory>()));
-
-  processor_->ProcessCommands();
-}
-
-TEST_F(GPUProcessorTest, ProcessorDoesNothingIfSharedMemoryIsUnmapped) {
-  EXPECT_CALL(*command_buffer_, GetGetOffset())
-    .WillOnce(Return(0));
-  EXPECT_CALL(*command_buffer_, GetPutOffset())
-    .WillOnce(Return(0));
-  EXPECT_CALL(*command_buffer_, GetSize())
-    .WillOnce(Return(1024));
-  shared_memory_->ptr = NULL;
-
-  processor_->ProcessCommands();
-}
-
-TEST_F(GPUProcessorTest, ProcessorDoesNothingIfCommandBufferIsZeroSize) {
-  EXPECT_CALL(*command_buffer_, GetGetOffset())
-    .WillOnce(Return(0));
-  EXPECT_CALL(*command_buffer_, GetPutOffset())
-    .WillOnce(Return(0));
-  EXPECT_CALL(*command_buffer_, GetSize())
-    .WillOnce(Return(0));
-
-  processor_->ProcessCommands();
-}
-
-TEST_F(GPUProcessorTest, ProcessorDoesNothingIfCommandBufferIsEmpty) {
-  EXPECT_CALL(*command_buffer_, GetGetOffset())
-    .WillOnce(Return(0));
-  EXPECT_CALL(*command_buffer_, GetPutOffset())
-    .WillOnce(Return(0));
-  EXPECT_CALL(*command_buffer_, GetSize())
-    .WillOnce(Return(sizeof(buffer_)));
-
-  processor_->ProcessCommands();
-}
-
-TEST_F(GPUProcessorTest, ProcessorHandlesSingleNopCommand) {
-  EXPECT_CALL(*command_buffer_, GetGetOffset())
-    .WillOnce(Return(0));
-  EXPECT_CALL(*command_buffer_, GetPutOffset())
-    .WillOnce(Return(4));
-  EXPECT_CALL(*command_buffer_, GetSize())
-    .WillOnce(Return(sizeof(buffer_)));
-  EXPECT_CALL(*command_buffer_, SetGetOffset(4));
-
-  processor_->ProcessCommands();
-}
-
-TEST_F(GPUProcessorTest, ProcessorWrapsAroundToBeginningOfCommandBuffer) {
-  EXPECT_CALL(*command_buffer_, GetGetOffset())
-    .WillOnce(Return(4));
-  EXPECT_CALL(*command_buffer_, GetPutOffset())
-    .WillOnce(Return(0));
-  EXPECT_CALL(*command_buffer_, GetSize())
-    .WillOnce(Return(8));
   EXPECT_CALL(*command_buffer_, SetGetOffset(0));
 
   processor_->ProcessCommands();
+
+  EXPECT_EQ(command_buffer::BufferSyncInterface::kParseNoError,
+            command_buffer_->ResetParseError());
+  EXPECT_FALSE(command_buffer_->GetErrorStatus());
+}
+
+TEST_F(GPUProcessorTest, ProcessesOneCommand) {
+  command_buffer::CommandHeader* header =
+      reinterpret_cast<command_buffer::CommandHeader*>(&buffer_[0]);
+  header[0].command = 7;
+  header[0].size = 2;
+  buffer_[1] = 123;
+
+  EXPECT_CALL(*command_buffer_, GetPutOffset())
+    .WillOnce(Return(2));
+  EXPECT_CALL(*command_buffer_, SetGetOffset(2));
+
+  EXPECT_CALL(*async_api_, DoCommand(7, 1, &buffer_[0]))
+    .WillOnce(Return(command_buffer::BufferSyncInterface::kParseNoError));
+
+  processor_->ProcessCommands();
+
+  EXPECT_EQ(command_buffer::BufferSyncInterface::kParseNoError,
+            command_buffer_->ResetParseError());
+  EXPECT_FALSE(command_buffer_->GetErrorStatus());
+}
+
+TEST_F(GPUProcessorTest, ProcessesTwoCommands) {
+  command_buffer::CommandHeader* header =
+      reinterpret_cast<command_buffer::CommandHeader*>(&buffer_[0]);
+  header[0].command = 7;
+  header[0].size = 2;
+  buffer_[1] = 123;
+  header[2].command = 8;
+  header[2].size = 1;
+
+  EXPECT_CALL(*command_buffer_, GetPutOffset())
+    .WillOnce(Return(3));
+  EXPECT_CALL(*command_buffer_, SetGetOffset(3));
+
+  EXPECT_CALL(*async_api_, DoCommand(7, 1, &buffer_[0]))
+    .WillOnce(Return(command_buffer::BufferSyncInterface::kParseNoError));
+
+  EXPECT_CALL(*async_api_, DoCommand(8, 0, &buffer_[2]))
+    .WillOnce(Return(command_buffer::BufferSyncInterface::kParseNoError));
+
+  processor_->ProcessCommands();
+}
+
+TEST_F(GPUProcessorTest, PostsTaskToFinishRemainingCommands) {
+  command_buffer::CommandHeader* header =
+      reinterpret_cast<command_buffer::CommandHeader*>(&buffer_[0]);
+  header[0].command = 7;
+  header[0].size = 2;
+  buffer_[1] = 123;
+  header[2].command = 8;
+  header[2].size = 1;
+  header[3].command = 9;
+  header[3].size = 1;
+
+  EXPECT_CALL(*command_buffer_, GetPutOffset())
+    .WillOnce(Return(4));
+
+  EXPECT_CALL(*async_api_, DoCommand(7, 1, &buffer_[0]))
+    .WillOnce(Return(command_buffer::BufferSyncInterface::kParseNoError));
+
+  EXPECT_CALL(*async_api_, DoCommand(8, 0, &buffer_[2]))
+    .WillOnce(Return(command_buffer::BufferSyncInterface::kParseNoError));
+
+  EXPECT_CALL(*command_buffer_, SetGetOffset(3));
+
+  processor_->ProcessCommands();
+
+  // ProcessCommands is called a second time when the pending task is run.
+
+  EXPECT_CALL(*command_buffer_, GetPutOffset())
+    .WillOnce(Return(4));
+
+  EXPECT_CALL(*async_api_, DoCommand(9, 0, &buffer_[3]))
+    .WillOnce(Return(command_buffer::BufferSyncInterface::kParseNoError));
+
+  EXPECT_CALL(*command_buffer_, SetGetOffset(4));
+
+  MessageLoop::current()->RunAllPending();
+}
+
+TEST_F(GPUProcessorTest, SetsErrorCodeOnCommandBuffer) {
+  command_buffer::CommandHeader* header =
+      reinterpret_cast<command_buffer::CommandHeader*>(&buffer_[0]);
+  header[0].command = 7;
+  header[0].size = 1;
+
+  EXPECT_CALL(*command_buffer_, GetPutOffset())
+    .WillOnce(Return(1));
+  EXPECT_CALL(*command_buffer_, SetGetOffset(1));
+
+  EXPECT_CALL(*async_api_, DoCommand(7, 0, &buffer_[0]))
+    .WillOnce(Return(
+        command_buffer::BufferSyncInterface::kParseUnknownCommand));
+
+  processor_->ProcessCommands();
+
+  EXPECT_EQ(command_buffer::BufferSyncInterface::kParseUnknownCommand,
+            command_buffer_->ResetParseError());
+  EXPECT_FALSE(command_buffer_->GetErrorStatus());
 }
 
 TEST_F(GPUProcessorTest,
-    ProcessorHandlesSingleCommandAndPostsTaskToProcessAdditionalCommands) {
-  EXPECT_CALL(*command_buffer_, GetGetOffset())
-    .WillOnce(Return(0))
-    .WillOnce(Return(4));
+       RecoverableParseErrorsAreNotClearedByFollowingSuccessfulCommands) {
+  command_buffer::CommandHeader* header =
+      reinterpret_cast<command_buffer::CommandHeader*>(&buffer_[0]);
+  header[0].command = 7;
+  header[0].size = 1;
+  header[1].command = 8;
+  header[1].size = 1;
+
   EXPECT_CALL(*command_buffer_, GetPutOffset())
-    .WillOnce(Return(8))
-    .WillOnce(Return(8));
-  EXPECT_CALL(*command_buffer_, GetSize())
-    .WillOnce(Return(sizeof(buffer_)))
-    .WillOnce(Return(sizeof(buffer_)));
-  EXPECT_CALL(*command_buffer_, SetGetOffset(4));
+    .WillOnce(Return(2));
+  EXPECT_CALL(*command_buffer_, SetGetOffset(2));
+
+  EXPECT_CALL(*async_api_, DoCommand(7, 0, &buffer_[0]))
+    .WillOnce(Return(
+        command_buffer::BufferSyncInterface::kParseUnknownCommand));
+
+  EXPECT_CALL(*async_api_, DoCommand(8, 0, &buffer_[1]))
+    .WillOnce(Return(command_buffer::BufferSyncInterface::kParseNoError));
 
   processor_->ProcessCommands();
 
-  EXPECT_CALL(*command_buffer_, SetGetOffset(8));
-  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(command_buffer::BufferSyncInterface::kParseUnknownCommand,
+            command_buffer_->ResetParseError());
+  EXPECT_FALSE(command_buffer_->GetErrorStatus());
 }
 
-TEST_F(GPUProcessorTest, ProcessorDoesNotImmediatelyHandlePartialCommands) {
-  EXPECT_CALL(*command_buffer_, GetGetOffset())
-    .WillOnce(Return(0))
-    .WillOnce(Return(0));
+TEST_F(GPUProcessorTest, UnrecoverableParseErrorsRaiseTheErrorStatus) {
+  command_buffer::CommandHeader* header =
+      reinterpret_cast<command_buffer::CommandHeader*>(&buffer_[0]);
+  header[0].command = 7;
+  header[0].size = 1;
+  header[1].command = 8;
+  header[1].size = 1;
+
   EXPECT_CALL(*command_buffer_, GetPutOffset())
-    .WillOnce(Return(2))
-    .WillOnce(Return(4));
-  EXPECT_CALL(*command_buffer_, GetSize())
-    .WillOnce(Return(sizeof(buffer_)))
-    .WillOnce(Return(sizeof(buffer_)));
+    .WillOnce(Return(2));
+
+  EXPECT_CALL(*async_api_, DoCommand(7, 0, &buffer_[0]))
+    .WillOnce(Return(command_buffer::BufferSyncInterface::kParseInvalidSize));
 
   processor_->ProcessCommands();
 
-  EXPECT_CALL(*command_buffer_, SetGetOffset(4));
-  MessageLoop::current()->RunAllPending();
+  EXPECT_EQ(command_buffer::BufferSyncInterface::kParseInvalidSize,
+            command_buffer_->ResetParseError());
+  EXPECT_TRUE(command_buffer_->GetErrorStatus());
+}
+
+TEST_F(GPUProcessorTest, ProcessCommandsDoesNothingAfterUnrecoverableError) {
+  command_buffer::CommandHeader* header =
+      reinterpret_cast<command_buffer::CommandHeader*>(&buffer_[0]);
+  header[0].command = 7;
+  header[0].size = 1;
+  header[1].command = 8;
+  header[1].size = 1;
+
+  EXPECT_CALL(*command_buffer_, GetPutOffset())
+    .WillOnce(Return(2));
+
+  EXPECT_CALL(*async_api_, DoCommand(7, 0, &buffer_[0]))
+    .WillOnce(Return(command_buffer::BufferSyncInterface::kParseInvalidSize));
+
+  processor_->ProcessCommands();
+  processor_->ProcessCommands();
+
+  EXPECT_EQ(command_buffer::BufferSyncInterface::kParseInvalidSize,
+            command_buffer_->ResetParseError());
+  EXPECT_TRUE(command_buffer_->GetErrorStatus());
+}
+
+TEST_F(GPUProcessorTest, CanGetAddressOfSharedMemory) {
+  EXPECT_CALL(*command_buffer_.Get(), GetRegisteredObject(7))
+    .WillOnce(Return(shared_memory_));
+
+  EXPECT_EQ(&buffer_[0], processor_->GetSharedMemoryAddress(7));
+}
+
+ACTION_P2(SetPointee, address, value) {
+  *address = value;
+}
+
+TEST_F(GPUProcessorTest, GetAddressOfSharedMemoryMapsMemoryIfUnmapped) {
+  EXPECT_CALL(*command_buffer_.Get(), GetRegisteredObject(7))
+    .WillOnce(Return(shared_memory_));
+
+  shared_memory_->ptr = NULL;
+
+  EXPECT_CALL(*shared_memory_.Get(), Map())
+    .WillOnce(DoAll(SetPointee(&shared_memory_->ptr, &buffer_[0]),
+                    Return(true)));
+
+  EXPECT_EQ(&buffer_[0], processor_->GetSharedMemoryAddress(7));
+}
+
+TEST_F(GPUProcessorTest, CanGetSizeOfSharedMemory) {
+  EXPECT_CALL(*command_buffer_.Get(), GetRegisteredObject(7))
+    .WillOnce(Return(shared_memory_));
+
+  EXPECT_EQ(sizeof(buffer_), processor_->GetSharedMemorySize(7));
+}
+
+TEST_F(GPUProcessorTest, SetTokenForwardsToCommandBuffer) {
+  processor_->set_token(7);
+  EXPECT_EQ(7, command_buffer_->GetToken());
 }
 
 }  // namespace gpu_plugin

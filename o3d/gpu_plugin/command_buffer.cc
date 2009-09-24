@@ -13,7 +13,8 @@ CommandBuffer::CommandBuffer(NPP npp)
       get_offset_(0),
       put_offset_(0),
       token_(0),
-      error_(ERROR_NO_ERROR) {
+      parse_error_(0),
+      error_status_(false) {
   // Element zero is always NULL.
   registered_objects_.push_back(NPObjectPointer<NPObject>());
 }
@@ -22,6 +23,12 @@ CommandBuffer::~CommandBuffer() {
 }
 
 bool CommandBuffer::Initialize(int32 size) {
+  // Check the size will not overflow when it is converted from count of int32s
+  // to count of bytes.
+  int32 num_bytes =  static_cast<int32>(size * sizeof(int32));
+  if (num_bytes / sizeof(int32) != size)
+    return false;
+
   if (shared_memory_.Get())
     return false;
 
@@ -41,7 +48,7 @@ bool CommandBuffer::Initialize(int32 size) {
   }
 
   NPObjectPointer<NPObject> result;
-  if (!NPInvoke(npp_, system, "createSharedMemory", size,
+  if (!NPInvoke(npp_, system, "createSharedMemory", num_bytes,
                 &result)) {
     return false;
   }
@@ -148,15 +155,18 @@ void CommandBuffer::UnregisterObject(NPObjectPointer<NPObject> object,
 }
 
 NPObjectPointer<NPObject> CommandBuffer::GetRegisteredObject(int32 handle) {
-  DCHECK_GE(handle, 0);
-  DCHECK_LT(static_cast<size_t>(handle), registered_objects_.size());
+  if (handle < 0)
+    return NPObjectPointer<NPObject>();
+
+  if (static_cast<size_t>(handle) >= registered_objects_.size())
+    return NPObjectPointer<NPObject>();
 
   return registered_objects_[handle];
 }
 
-int32 CommandBuffer::ResetError() {
-  int32 last_error = error_;
-  error_ = ERROR_NO_ERROR;
+int32 CommandBuffer::ResetParseError() {
+  int32 last_error = parse_error_;
+  parse_error_ = 0;
   return last_error;
 }
 

@@ -37,15 +37,20 @@ class SharedMemory : public DefaultNPObject<CHRSharedMemory> {
   // JavaScript for the purposes of testing.
   bool SetInt32(int32 offset, int32 value);
 
+  // This is a temporary function to allow me to drive the command buffer from
+  // JavaScript for the purposes of testing.
+  bool SetFloat(int32 offset, float value);
+
   base::SharedMemory* shared_memory() const {
     return shared_memory_;
   }
 
   NP_UTILS_BEGIN_DISPATCHER_CHAIN(SharedMemory, DefaultNPObject<NPObject>)
-    NP_UTILS_DISPATCHER(Initialize, bool(int32));
+    NP_UTILS_DISPATCHER(Initialize, bool(int32 size));
     NP_UTILS_DISPATCHER(GetSize, int32())
     NP_UTILS_DISPATCHER(Map, bool())
-    NP_UTILS_DISPATCHER(SetInt32, bool(int32, int32));
+    NP_UTILS_DISPATCHER(SetInt32, bool(int32 offset, int32 value));
+    NP_UTILS_DISPATCHER(SetFloat, bool(int32 offset, float value));
   NP_UTILS_END_DISPATCHER_CHAIN
 
  private:

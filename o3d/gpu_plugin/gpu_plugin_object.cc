@@ -89,14 +89,17 @@ NPObjectPointer<NPObject> GPUPluginObject::OpenCommandBuffer() {
 
   command_buffer_ = NPCreateObject<CommandBuffer>(npp_);
   if (command_buffer_->Initialize(kCommandBufferSize)) {
-    processor_ = new GPUProcessor(command_buffer_);
-    command_buffer_->SetPutOffsetChangeCallback(
-        NewCallback(processor_.get(),
-                    &GPUProcessor::ProcessCommands));
-    UpdateProcessorWindow();
-    return command_buffer_;
+    processor_ = new GPUProcessor(npp_, command_buffer_);
+    if (processor_->Initialize(static_cast<HWND>(window_.window))) {
+      command_buffer_->SetPutOffsetChangeCallback(
+          NewCallback(processor_.get(),
+                      &GPUProcessor::ProcessCommands));
+      UpdateProcessorWindow();
+      return command_buffer_;
+    }
   }
 
+  processor_ = NULL;
   command_buffer_ = NPObjectPointer<CommandBuffer>();
   return command_buffer_;
 }

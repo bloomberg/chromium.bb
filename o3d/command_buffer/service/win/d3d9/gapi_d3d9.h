@@ -54,6 +54,7 @@ class GAPID3D9 : public GAPIInterface {
   virtual ~GAPID3D9();
 
   void set_hwnd(HWND hwnd) { hwnd_ = hwnd; }
+  HWND hwnd() const { return hwnd_; }
 
   // Initializes the graphics context, bound to a window.
   // Returns:

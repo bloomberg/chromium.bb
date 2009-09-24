@@ -46,7 +46,33 @@ namespace command_buffer {
 
 class BufferRPCImpl;
 
-class CommandBufferEngine : public BufferSyncInterface {
+class CommandBufferUpcallInterface {
+ public:
+  CommandBufferUpcallInterface() {
+  }
+
+  virtual ~CommandBufferUpcallInterface() {
+  }
+
+  // Gets the base address of a registered shared memory buffer.
+  // Parameters:
+  //   shm_id: the identifier for the shared memory buffer.
+  virtual void *GetSharedMemoryAddress(unsigned int shm_id) = 0;
+
+  // Gets the size of a registered shared memory buffer.
+  // Parameters:
+  //   shm_id: the identifier for the shared memory buffer.
+  virtual size_t GetSharedMemorySize(unsigned int shm_id) = 0;
+
+  // Sets the token value.
+  virtual void set_token(unsigned int token) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CommandBufferUpcallInterface);
+};
+
+class CommandBufferEngine : public BufferSyncInterface,
+                            public CommandBufferUpcallInterface {
  public:
   explicit CommandBufferEngine(AsyncAPIInterface *handler);
   virtual ~CommandBufferEngine();

@@ -3,75 +3,74 @@
 // found in the LICENSE file.
 
 #include "o3d/gpu_plugin/gpu_processor.h"
+#include "o3d/gpu_plugin/system_services/shared_memory_public.h"
 
 namespace o3d {
 namespace gpu_plugin {
 
-// Placeholder command processing.
 void GPUProcessor::ProcessCommands() {
-  int32 get_offset = command_buffer_->GetGetOffset();
-  int32 put_offset = command_buffer_->GetPutOffset();
-  int32 size = command_buffer_->GetSize();
-  if (size == 0)
+  if (command_buffer_->GetErrorStatus())
     return;
 
-  NPObjectPointer<CHRSharedMemory> shared_memory =
-      command_buffer_->GetRingBuffer();
-  if (!shared_memory.Get())
-    return;
-  if (!shared_memory->ptr)
-    return;
+  parser_->set_put(command_buffer_->GetPutOffset());
 
-  int8* ptr = static_cast<int8*>(shared_memory->ptr);
-
-  int32 end_offset = (get_offset + sizeof(int32)) % size;
-  if (get_offset > put_offset || end_offset <= put_offset) {
-    int32 command = *reinterpret_cast<int32*>(ptr + get_offset);
-
-    switch (command) {
-      case 0:
-        get_offset = end_offset;
-        command_buffer_->SetGetOffset(get_offset);
+  int commands_processed = 0;
+  while (commands_processed < commands_per_update_ && !parser_->IsEmpty()) {
+    command_buffer::BufferSyncInterface::ParseError parse_error =
+        parser_->ProcessCommand();
+    switch (parse_error) {
+      case command_buffer::BufferSyncInterface::kParseUnknownCommand:
+      case command_buffer::BufferSyncInterface::kParseInvalidArguments:
+        command_buffer_->SetParseError(parse_error);
         break;
 
-      // Rectangle case is temporary and not tested.
-      case 1: {
-        end_offset += 20;
-        if (end_offset >= size) {
-          DCHECK(false);
-          break;
-        }
-
-        if (get_offset <= put_offset && end_offset > put_offset) {
-          DCHECK(false);
-          break;
-        }
-
-        uint32 color = *reinterpret_cast<uint32*>(ptr + get_offset + 4);
-        int32 left = *reinterpret_cast<int32*>(ptr + get_offset + 8);
-        int32 top = *reinterpret_cast<int32*>(ptr + get_offset + 12);
-        int32 right = *reinterpret_cast<int32*>(ptr + get_offset + 16);
-        int32 bottom = *reinterpret_cast<int32*>(ptr + get_offset + 20);
-        DrawRectangle(color, left, top, right, bottom);
-
-        get_offset = end_offset;
-        command_buffer_->SetGetOffset(get_offset);
-        break;
-      }
-      default:
-        DCHECK(false);
-        break;
+      case command_buffer::BufferSyncInterface::kParseInvalidSize:
+      case command_buffer::BufferSyncInterface::kParseOutOfBounds:
+        command_buffer_->SetParseError(parse_error);
+        command_buffer_->RaiseErrorStatus();
+        return;
     }
 
+    ++commands_processed;
   }
 
-  // In practice, this will handle many more than one command before posting
-  // the processing of the remainder to the message loop.
-  if (get_offset != put_offset) {
+  command_buffer_->SetGetOffset(static_cast<int32>(parser_->get()));
+
+  if (!parser_->IsEmpty()) {
     MessageLoop::current()->PostTask(
         FROM_HERE,
         NewRunnableMethod(this, &GPUProcessor::ProcessCommands));
   }
+}
+
+void *GPUProcessor::GetSharedMemoryAddress(unsigned int shm_id) {
+  // TODO(apatrick): Verify that the NPClass is in fact shared memory before
+  //    accessing the members.
+  NPObjectPointer<CHRSharedMemory> shared_memory(static_cast<CHRSharedMemory*>(
+      command_buffer_->GetRegisteredObject(static_cast<int32>(shm_id)).Get()));
+
+  // Return address if shared memory is already mapped to this process.
+  if (shared_memory->ptr)
+    return shared_memory->ptr;
+
+  // If the call fails or returns false then ptr will still be NULL.
+  bool result;
+  NPInvoke(npp_, shared_memory, "map", &result);
+
+  return shared_memory->ptr;
+}
+
+size_t GPUProcessor::GetSharedMemorySize(unsigned int shm_id) {
+  // TODO(apatrick): Verify that the NPClass is in fact shared memory before
+  //    accessing the members.
+  NPObjectPointer<CHRSharedMemory> shared_memory(static_cast<CHRSharedMemory*>(
+      command_buffer_->GetRegisteredObject(static_cast<int32>(shm_id)).Get()));
+
+  return shared_memory->size;
+}
+
+void GPUProcessor::set_token(unsigned int token) {
+  command_buffer_->SetToken(static_cast<int32>(token));
 }
 
 }  // namespace gpu_plugin

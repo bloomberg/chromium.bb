@@ -106,7 +106,7 @@ TEST_F(GPUPluginObjectTest, CanGetScriptableNPObject) {
 TEST_F(GPUPluginObjectTest, OpenCommandBufferReturnsInitializedCommandBuffer) {
   // Intercept creation of command buffer object and return mock.
   NPObjectPointer<MockCommandBuffer> command_buffer =
-      NPCreateObject<StrictMock<MockCommandBuffer> >(NULL);
+      NPCreateObject<MockCommandBuffer>(NULL);
   EXPECT_CALL(mock_browser_, CreateObject(NULL,
       NPGetClass<CommandBuffer>()))
     .WillOnce(Return(command_buffer.ToReturned()));

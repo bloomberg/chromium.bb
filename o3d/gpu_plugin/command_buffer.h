@@ -22,14 +22,6 @@ namespace gpu_plugin {
 // API to manage the put and get pointers.
 class CommandBuffer : public DefaultNPObject<NPObject> {
  public:
-  enum {
-    ERROR_NO_ERROR,
-    ERROR_INVALID_SIZE,
-    ERROR_OUT_OF_BOUNDS,
-    ERROR_UNKNOWN_COMMAND,
-    ERROR_INVALID_ARGUMENTS,
-  };
-
   explicit CommandBuffer(NPP npp);
   virtual ~CommandBuffer();
 
@@ -95,27 +87,40 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
     token_ = token;
   }
 
-  // Get the current error status and reset it to ERROR_NO_ERROR.
-  // The default error status is ERROR_NO_ERROR.
-  int32 ResetError();
+  // Get the current parse error and reset it to zero. Zero means no error. Non-
+  // zero means error. The default error status is zero.
+  int32 ResetParseError();
 
-  // Allows the reader to set the current error status.
-  void SetError(int32 error) {
-    error_ = error;
+  // Allows the reader to set the current parse error.
+  void SetParseError(int32 parse_error) {
+    parse_error_ = parse_error;
+  }
+
+  // Returns whether the command buffer is in the error state.
+  bool GetErrorStatus() {
+    return error_status_;
+  }
+
+  // Allows the reader to set the error status. Once in an error state, the
+  // command buffer cannot recover and ceases to process commands.
+  void RaiseErrorStatus() {
+    error_status_ = true;
   }
 
   NP_UTILS_BEGIN_DISPATCHER_CHAIN(CommandBuffer, DefaultNPObject<NPObject>)
-    NP_UTILS_DISPATCHER(Initialize, bool(int32))
+    NP_UTILS_DISPATCHER(Initialize, bool(int32 size))
     NP_UTILS_DISPATCHER(GetRingBuffer, NPObjectPointer<CHRSharedMemory>())
     NP_UTILS_DISPATCHER(GetSize, int32())
-    NP_UTILS_DISPATCHER(SyncOffsets, int32(int32))
+    NP_UTILS_DISPATCHER(SyncOffsets, int32(int32 get_offset))
     NP_UTILS_DISPATCHER(GetGetOffset, int32());
     NP_UTILS_DISPATCHER(GetPutOffset, int32());
-    NP_UTILS_DISPATCHER(RegisterObject, int32(NPObjectPointer<NPObject>));
+    NP_UTILS_DISPATCHER(RegisterObject,
+                        int32(NPObjectPointer<NPObject> object));
     NP_UTILS_DISPATCHER(UnregisterObject,
-                        void(NPObjectPointer<NPObject>, int32));
+                        void(NPObjectPointer<NPObject> object, int32 handle));
     NP_UTILS_DISPATCHER(GetToken, int32());
-    NP_UTILS_DISPATCHER(ResetError, int32());
+    NP_UTILS_DISPATCHER(ResetParseError, int32());
+    NP_UTILS_DISPATCHER(GetErrorStatus, bool());
   NP_UTILS_END_DISPATCHER_CHAIN
 
  private:
@@ -128,7 +133,8 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
   std::vector<NPObjectPointer<NPObject> > registered_objects_;
   std::set<int32> unused_registered_object_elements_;
   int32 token_;
-  int32 error_;
+  int32 parse_error_;
+  bool error_status_;
 };
 
 }  // namespace gpu_plugin

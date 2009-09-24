@@ -106,11 +106,131 @@
       ],
     },
 
+    # This builds a subset of the O3D command buffer common library. This is a
+    # separate library for the time being because I need a subset that is not
+    # dependent on NaCl.
+    {
+      'target_name': 'command_buffer_common_subset',
+      'type': '<(library)',
+      'include_dirs': [
+        '..',
+        '../..',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '..',
+        ],
+      },  # 'direct_dependent_settings'
+      'sources': [
+        '../command_buffer/common/cross/bitfield_helpers.h',
+        '../command_buffer/common/cross/cmd_buffer_format.h',
+        '../command_buffer/common/cross/gapi_interface.h',
+        '../command_buffer/common/cross/logging.h',
+        '../command_buffer/common/cross/mocks.h',
+        '../command_buffer/common/cross/resource.cc',
+        '../command_buffer/common/cross/resource.h',
+        '../command_buffer/common/cross/types.h',
+      ],
+    },
+
+    # This builds a subset of the O3D command buffer service. This is a separate
+    # library for the time being because I need a subset that is not dependent
+    # on NaCl.
+    {
+      'target_name': 'command_buffer_service_subset',
+      'type': '<(library)',
+      'include_dirs': [
+        '..',
+        '../..',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '..',
+        ],
+      },  # 'direct_dependent_settings'
+      'dependencies': [
+        'command_buffer_common_subset',
+      ],
+      'sources': [
+        '../command_buffer/service/cross/cmd_parser.cc',
+        '../command_buffer/service/cross/cmd_parser.h',
+        '../command_buffer/service/cross/effect_utils.cc',
+        '../command_buffer/service/cross/effect_utils.h',
+        '../command_buffer/service/cross/gapi_decoder.cc',
+        '../command_buffer/service/cross/gapi_decoder.h',
+        '../command_buffer/service/cross/mocks.h',
+        '../command_buffer/service/cross/precompile.cc',
+        '../command_buffer/service/cross/precompile.h',
+        '../command_buffer/service/cross/resource.cc',
+        '../command_buffer/service/cross/resource.h',
+        '../command_buffer/service/cross/texture_utils.cc',
+        '../command_buffer/service/cross/texture_utils.h',
+      ],
+
+      'conditions': [
+        ['OS == "win"',
+          {
+            'sources': [
+              '../command_buffer/service/win/d3d9/d3d9_utils.h',
+              '../command_buffer/service/win/d3d9/effect_d3d9.cc',
+              '../command_buffer/service/win/d3d9/effect_d3d9.h',
+              '../command_buffer/service/win/d3d9/gapi_d3d9.cc',
+              '../command_buffer/service/win/d3d9/gapi_d3d9.h',
+              '../command_buffer/service/win/d3d9/geometry_d3d9.cc',
+              '../command_buffer/service/win/d3d9/geometry_d3d9.h',
+              '../command_buffer/service/win/d3d9/render_surface_d3d9.cc',
+              '../command_buffer/service/win/d3d9/render_surface_d3d9.h',
+              '../command_buffer/service/win/d3d9/sampler_d3d9.cc',
+              '../command_buffer/service/win/d3d9/sampler_d3d9.h',
+              '../command_buffer/service/win/d3d9/states_d3d9.cc',
+              '../command_buffer/service/win/d3d9/texture_d3d9.cc',
+              '../command_buffer/service/win/d3d9/texture_d3d9.h',
+            ],  # 'sources'
+            'include_dirs': [
+              '$(DXSDK_DIR)/Include',
+            ],
+            'direct_dependent_settings': {
+              'include_dirs': [
+                '$(DXSDK_DIR)/Include',
+              ],
+            },  # 'direct_dependent_settings'
+          },
+        ],
+        ['OS == "mac" or OS == "linux"',
+          {
+            'sources': [
+              '../command_buffer/service/cross/gl/effect_gl.cc',
+              '../command_buffer/service/cross/gl/effect_gl.h',
+              '../command_buffer/service/cross/gl/gapi_gl.cc',
+              '../command_buffer/service/cross/gl/gapi_gl.h',
+              '../command_buffer/service/cross/gl/geometry_gl.cc',
+              '../command_buffer/service/cross/gl/geometry_gl.h',
+              '../command_buffer/service/cross/gl/gl_utils.h',
+              '../command_buffer/service/cross/gl/sampler_gl.cc',
+              '../command_buffer/service/cross/gl/sampler_gl.h',
+              '../command_buffer/service/cross/gl/states_gl.cc',
+              '../command_buffer/service/cross/gl/texture_gl.cc',
+              '../command_buffer/service/cross/gl/texture_gl.h',
+            ],  # 'sources'
+          },
+        ],
+        ['OS == "linux"',
+          {
+            'sources': [
+              '../command_buffer/service/linux/x_utils.cc',
+              '../command_buffer/service/linux/x_utils.h',
+            ],
+          },
+        ],
+      ],
+    },
+
     {
       'target_name': 'gpu_plugin',
       'type': '<(library)',
       'dependencies': [
         '../../base/base.gyp:base',
+        'command_buffer_service_subset',
         'np_utils',
       ],
       'include_dirs': [
@@ -140,6 +260,7 @@
       'target_name': 'gpu_plugin_unittests',
       'type': 'executable',
       'dependencies': [
+        'command_buffer_service_subset',
         'gpu_plugin',
         'np_utils',
         'system_services',
@@ -150,6 +271,21 @@
       'include_dirs': [
         '../..',
         '../../third_party/npapi',
+      ],
+      'conditions': [
+        ['OS == "win" and (renderer == "d3d9" or renderer == "cb")',
+          {
+            # These dependencies are temporary until the command buffer code
+            # loads D3D and D3DX dynamically.
+            'link_settings': {
+              'libraries': [
+                '"$(DXSDK_DIR)/Lib/x86/DxErr.lib"',
+                '"$(DXSDK_DIR)/Lib/x86/d3dx9.lib"',
+                '-ld3d9.lib',
+              ],
+            },
+          },
+        ],
       ],
       'sources': [
         'command_buffer_unittest.cc',

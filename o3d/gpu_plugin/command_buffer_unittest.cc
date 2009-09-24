@@ -26,10 +26,11 @@ class MockSystemNPObject : public DefaultNPObject<NPObject> {
   explicit MockSystemNPObject(NPP npp) {
   }
 
-  MOCK_METHOD1(CreateSharedMemory, NPObjectPointer<NPObject>(int32));
+  MOCK_METHOD1(CreateSharedMemory, NPObjectPointer<NPObject>(int32 size));
 
   NP_UTILS_BEGIN_DISPATCHER_CHAIN(MockSystemNPObject, DefaultNPObject<NPObject>)
-    NP_UTILS_DISPATCHER(CreateSharedMemory, NPObjectPointer<NPObject>(int32))
+    NP_UTILS_DISPATCHER(CreateSharedMemory,
+                        NPObjectPointer<NPObject>(int32 size))
   NP_UTILS_END_DISPATCHER_CHAIN
 
  private:
@@ -75,12 +76,16 @@ TEST_F(CommandBufferTest, InitializesCommandBuffer) {
   EXPECT_CALL(*expected_shared_memory.Get(), Map())
     .WillOnce(Return(true));
 
-  EXPECT_TRUE(command_buffer_->Initialize(1024));
+  EXPECT_TRUE(command_buffer_->Initialize(256));
   EXPECT_EQ(expected_shared_memory, command_buffer_->GetRingBuffer());
 
   // Cannot reinitialize.
-  EXPECT_FALSE(command_buffer_->Initialize(1024));
+  EXPECT_FALSE(command_buffer_->Initialize(256));
   EXPECT_EQ(expected_shared_memory, command_buffer_->GetRingBuffer());
+}
+
+TEST_F(CommandBufferTest, InitializeFailsIfSizeIsTooBig) {
+  EXPECT_FALSE(command_buffer_->Initialize(0x40000000));
 }
 
 TEST_F(CommandBufferTest, InitializeFailsIfCannotCreateSharedMemory) {
@@ -90,7 +95,7 @@ TEST_F(CommandBufferTest, InitializeFailsIfCannotCreateSharedMemory) {
   EXPECT_CALL(*system_object_.Get(), CreateSharedMemory(1024))
     .WillOnce(Return(NPObjectPointer<NPObject>()));
 
-  EXPECT_FALSE(command_buffer_->Initialize(1024));
+  EXPECT_FALSE(command_buffer_->Initialize(256));
   EXPECT_EQ(NPObjectPointer<NPObject>(),
             command_buffer_->GetRingBuffer());
 }
@@ -108,7 +113,7 @@ TEST_F(CommandBufferTest, InitializeFailsIfCannotMapSharedMemory) {
   EXPECT_CALL(*expected_shared_memory.Get(), Map())
     .WillOnce(Return(false));
 
-  EXPECT_FALSE(command_buffer_->Initialize(1024));
+  EXPECT_FALSE(command_buffer_->Initialize(256));
   EXPECT_EQ(NPObjectPointer<NPObject>(),
             command_buffer_->GetRingBuffer());
 }
@@ -136,7 +141,7 @@ TEST_F(CommandBufferTest, CanSyncGetAndPutOffset) {
   EXPECT_CALL(*expected_shared_memory.Get(), Map())
     .WillOnce(Return(true));
 
-  EXPECT_TRUE(command_buffer_->Initialize(1024));
+  EXPECT_TRUE(command_buffer_->Initialize(256));
 
   StrictMock<MockCallback>* put_offset_change_callback =
       new StrictMock<MockCallback>;
@@ -161,6 +166,14 @@ TEST_F(CommandBufferTest, CanSyncGetAndPutOffset) {
 
 TEST_F(CommandBufferTest, ZeroHandleMapsToNull) {
   EXPECT_TRUE(NULL == command_buffer_->GetRegisteredObject(0).Get());
+}
+
+TEST_F(CommandBufferTest, NegativeHandleMapsToNull) {
+  EXPECT_TRUE(NULL == command_buffer_->GetRegisteredObject(-1).Get());
+}
+
+TEST_F(CommandBufferTest, OutOfRangeHandleMapsToNull) {
+  EXPECT_TRUE(NULL == command_buffer_->GetRegisteredObject(1).Get());
 }
 
 TEST_F(CommandBufferTest, RegisteringNullObjectReturnsZero) {
@@ -245,15 +258,23 @@ TEST_F(CommandBufferTest, CanSetToken) {
   EXPECT_EQ(7, command_buffer_->GetToken());
 }
 
-TEST_F(CommandBufferTest, DefaultErrorIsNoError) {
-  EXPECT_EQ(CommandBuffer::ERROR_NO_ERROR, command_buffer_->ResetError());
+TEST_F(CommandBufferTest, DefaultParseErrorIsNoError) {
+  EXPECT_EQ(0, command_buffer_->ResetParseError());
 }
 
-TEST_F(CommandBufferTest, CanSetAndResetError) {
-  command_buffer_->SetError(CommandBuffer::ERROR_UNKNOWN_COMMAND);
-  EXPECT_EQ(CommandBuffer::ERROR_UNKNOWN_COMMAND,
-      command_buffer_->ResetError());
-  EXPECT_EQ(CommandBuffer::ERROR_NO_ERROR, command_buffer_->ResetError());
+TEST_F(CommandBufferTest, CanSetAndResetParseError) {
+  command_buffer_->SetParseError(1);
+  EXPECT_EQ(1, command_buffer_->ResetParseError());
+  EXPECT_EQ(0, command_buffer_->ResetParseError());
+}
+
+TEST_F(CommandBufferTest, DefaultErrorStatusIsFalse) {
+  EXPECT_FALSE(command_buffer_->GetErrorStatus());
+}
+
+TEST_F(CommandBufferTest, CanRaiseErrorStatus) {
+  command_buffer_->RaiseErrorStatus();
+  EXPECT_TRUE(command_buffer_->GetErrorStatus());
 }
 
 }  // namespace gpu_plugin

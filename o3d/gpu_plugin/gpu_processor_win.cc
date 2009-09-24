@@ -9,30 +9,75 @@
 namespace o3d {
 namespace gpu_plugin {
 
-GPUProcessor::GPUProcessor(const NPObjectPointer<CommandBuffer>& command_buffer)
-    : command_buffer_(command_buffer),
-      window_handle_(NULL),
-      window_width_(0),
-      window_height_(0) {
+GPUProcessor::GPUProcessor(NPP npp,
+                           const NPObjectPointer<CommandBuffer>& command_buffer)
+    : npp_(npp),
+      command_buffer_(command_buffer),
+      commands_per_update_(100) {
+  gapi_.reset(new command_buffer::GAPID3D9);
+
+  decoder_.reset(new command_buffer::GAPIDecoder(gapi_.get()));
+
+  NPObjectPointer<CHRSharedMemory> ring_buffer =
+      command_buffer->GetRingBuffer();
+
+  if (ring_buffer.Get()) {
+    parser_.reset(new command_buffer::CommandParser(ring_buffer->ptr,
+                                                    ring_buffer->size,
+                                                    0,
+                                                    ring_buffer->size,
+                                                    0,
+                                                    decoder_.get()));
+  } else {
+    parser_.reset(new command_buffer::CommandParser(NULL, 0, 0, 0, 0,
+                                                    decoder_.get()));
+  }
+}
+
+GPUProcessor::GPUProcessor(NPP npp,
+                           const NPObjectPointer<CommandBuffer>& command_buffer,
+                           command_buffer::GAPID3D9* gapi,
+                           command_buffer::GAPIDecoder* decoder,
+                           command_buffer::CommandParser* parser,
+                           int commands_per_update)
+    : npp_(npp),
+      command_buffer_(command_buffer),
+      commands_per_update_(commands_per_update) {
+  gapi_.reset(gapi);
+  decoder_.reset(decoder);
+  parser_.reset(parser);
+}
+
+bool GPUProcessor::Initialize(HWND handle) {
+  // Cannot reinitialize.
+  DCHECK(gapi_->hwnd() == NULL);
+
+  // Initialize GAPI immediately if the window handle is valid.
+  if (handle) {
+    gapi_->set_hwnd(handle);
+    return gapi_->Initialize();
+  } else {
+    return true;
+  }
+}
+
+void GPUProcessor::Destroy() {
+  // Destroy GAPI if window handle has not already become invalid.
+  if (gapi_->hwnd()) {
+    gapi_->Destroy();
+    gapi_->set_hwnd(NULL);
+  }
 }
 
 void GPUProcessor::SetWindow(HWND handle, int width, int height) {
-  window_handle_ = handle;
-  window_width_ = width;
-  window_height_ = height;
-}
-
-void GPUProcessor::DrawRectangle(uint32 color,
-                                 int left, int top, int right, int bottom) {
-  if (!window_handle_)
-    return;
-
-  HBRUSH brush = ::CreateSolidBrush(color);
-  HDC dc = ::GetDC(window_handle_);
-  RECT rect = { left, right, top, bottom };
-  ::FillRect(dc, &rect, brush);
-  ::ReleaseDC(window_handle_, dc);
-  ::DeleteObject(brush);
+  if (handle == NULL) {
+    // Destroy GAPI when the window handle becomes invalid.
+    Destroy();
+  } else {
+    if (handle != gapi_->hwnd()) {
+      Initialize(handle);
+    }
+  }
 }
 
 }  // namespace gpu_plugin

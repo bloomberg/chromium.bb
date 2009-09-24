@@ -115,10 +115,10 @@ TEST_F(SharedMemoryTest, CanSetInt32) {
   shared_memory_->Initialize(temp_shared_memory, 65536);
   EXPECT_TRUE(shared_memory_->Map());
 
-  EXPECT_TRUE(shared_memory_->SetInt32(4, 7));
+  EXPECT_TRUE(shared_memory_->SetInt32(1, 7));
   EXPECT_EQ(7, static_cast<int32*>(shared_memory_->ptr)[1]);
 
-  EXPECT_TRUE(shared_memory_->SetInt32(4, 8));
+  EXPECT_TRUE(shared_memory_->SetInt32(1, 8));
   EXPECT_EQ(8, static_cast<int32*>(shared_memory_->ptr)[1]);
 }
 
@@ -128,7 +128,7 @@ TEST_F(SharedMemoryTest, FailsIfSetInt32CalledBeforeMap) {
 
   shared_memory_->Initialize(temp_shared_memory, 65536);
 
-  EXPECT_FALSE(shared_memory_->SetInt32(4, 7));
+  EXPECT_FALSE(shared_memory_->SetInt32(1, 7));
 }
 
 TEST_F(SharedMemoryTest, FailsIfSetInt32OffsetIsOutOfRange) {
@@ -139,17 +139,41 @@ TEST_F(SharedMemoryTest, FailsIfSetInt32OffsetIsOutOfRange) {
   EXPECT_TRUE(shared_memory_->Map());
 
   EXPECT_FALSE(shared_memory_->SetInt32(-1, 7));
-  EXPECT_FALSE(shared_memory_->SetInt32(65536, 7));
+  EXPECT_FALSE(shared_memory_->SetInt32(16384, 7));
 }
 
-TEST_F(SharedMemoryTest, FailsIfSetInt32OffsetIsMisaligned) {
+TEST_F(SharedMemoryTest, CanSetFloat) {
   base::SharedMemory* temp_shared_memory = new base::SharedMemory;
   EXPECT_TRUE(temp_shared_memory->Create(std::wstring(), false, false, 65536));
 
   shared_memory_->Initialize(temp_shared_memory, 65536);
   EXPECT_TRUE(shared_memory_->Map());
 
-  EXPECT_FALSE(shared_memory_->SetInt32(1, 7));
+  EXPECT_TRUE(shared_memory_->SetFloat(1, 7));
+  EXPECT_EQ(7, static_cast<float*>(shared_memory_->ptr)[1]);
+
+  EXPECT_TRUE(shared_memory_->SetFloat(1, 8));
+  EXPECT_EQ(8, static_cast<float*>(shared_memory_->ptr)[1]);
+}
+
+TEST_F(SharedMemoryTest, FailsIfSetFloatCalledBeforeMap) {
+  base::SharedMemory* temp_shared_memory = new base::SharedMemory;
+  EXPECT_TRUE(temp_shared_memory->Create(std::wstring(), false, false, 65536));
+
+  shared_memory_->Initialize(temp_shared_memory, 65536);
+
+  EXPECT_FALSE(shared_memory_->SetFloat(1, 7));
+}
+
+TEST_F(SharedMemoryTest, FailsIfSetFloatOffsetIsOutOfRange) {
+  base::SharedMemory* temp_shared_memory = new base::SharedMemory;
+  EXPECT_TRUE(temp_shared_memory->Create(std::wstring(), false, false, 65536));
+
+  shared_memory_->Initialize(temp_shared_memory, 65536);
+  EXPECT_TRUE(shared_memory_->Map());
+
+  EXPECT_FALSE(shared_memory_->SetFloat(-1, 7));
+  EXPECT_FALSE(shared_memory_->SetFloat(16384, 7));
 }
 
 }  // namespace gpu_plugin

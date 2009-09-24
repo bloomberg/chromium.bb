@@ -65,15 +65,22 @@ bool SharedMemory::SetInt32(int32 offset, int32 value) {
   if (!ptr)
     return false;
 
-  if (offset < 0 || offset + sizeof(value) >= size)
+  if (offset < 0 || offset * sizeof(value) >= size)
     return false;
 
-  if ((offset % sizeof(value)) != 0)
-    return false;
-
-  *reinterpret_cast<int32*>(static_cast<int8*>(ptr) + offset) = value;
+  reinterpret_cast<int32*>(ptr)[offset] = value;
   return true;
 }
 
+bool SharedMemory::SetFloat(int32 offset, float value) {
+  if (!ptr)
+    return false;
+
+  if (offset < 0 || offset * sizeof(value) >= size)
+    return false;
+
+  reinterpret_cast<float*>(ptr)[offset] = value;
+  return true;
+}
 }  // namespace gpu_plugin
 }  // namespace o3d
