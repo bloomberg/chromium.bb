@@ -50,6 +50,7 @@ DEFAULT_SCREENSHOT_PATH = os.path.join(o3d_dir,
 # Path where reference screenshots will be stored.
 # Unfortunately we need separate reference images for certain platforms
 # for certain tests.
+DEFAULT_SCREENSHOT_DIR = "reference"
 if sys.platform == "darwin":
   PLATFORM_SCREENSHOT_DIR = "reference-mac"
 elif sys.platform[:5] == "linux":
@@ -68,3 +69,6 @@ SELENIUM_BROWSER_SET = ["*iexplore", "*firefox", "*googlechrome", "*safari"]
 # otherwise the OpenGL context will be clipped to the size of the window
 RESIZE_WIDTH = 1400
 RESIZE_HEIGHT = 1200
+
+# Time to wait (after load timeout) till assume the browser has crashed.
+MAX_SELENIUM_TEST_TIME = 60

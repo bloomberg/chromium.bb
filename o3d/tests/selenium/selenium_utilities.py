@@ -61,6 +61,25 @@ def IsValidSuffix(name):
       return True
   return False
 
+def ScreenshotNameFromTestName(name):
+  name = StripTestTypeSuffix(name)
+
+  if name.startswith("Test"):
+    # Make sure these are in order.
+    prefixes = ["TestStress", "TestSample", "Test"]
+    for prefix in prefixes:
+      if name.startswith(prefix):
+        name = name[len(prefix):]
+        break
+
+    # Lowercase the name only for custom test methods.
+    name = name.lower()
+  
+  name = name.replace("_", "-")
+  name = name.replace("/", "_")
+
+  return name 
+
 
 def StripTestTypeSuffix(name):
   """Removes the suffix from name if it is a valid test type."""
@@ -205,7 +224,6 @@ def TakeScreenShotAtPath(session,
     file = open(full_path + ".png", 'wb')
     file.write(png)
     file.close()
-    print "Saved screenshot %s." % full_path
     return True
 
   return False
@@ -214,7 +232,7 @@ def TakeScreenShotAtPath(session,
 class SeleniumTestCase(unittest.TestCase):
   """Wrapper for TestCase for selenium."""
 
-  def __init__(self, name, session, browser, path_to_html, test_type=None,
+  def __init__(self, name, browser, path_to_html, test_type=None,
               sample_path=None, options=None):
     """Constructor for SampleTests.
 
@@ -229,12 +247,33 @@ class SeleniumTestCase(unittest.TestCase):
     """
 
     unittest.TestCase.__init__(self, name)
-    self.session = session
+    self.name = name
+    self.session = None
     self.browser = browser
     self.test_type = test_type
     self.sample_path = sample_path
-    self.options = options
     self.path_to_html = path_to_html
+    self.screenshots = []
+    self.timeout = 10000
+    self.client = "g_client"
+    # parse options
+    for option in options:
+      if option.startswith("screenshot"):
+        clock = GetArgument(option)
+        if clock is None:
+          clock = "27.5"
+        self.screenshots.append(clock)
+      elif option.startswith("timeout"):
+        self.timeout = int(GetArgument(option))
+      elif option.startswith("client"):
+        self.client = GetArgument(option)
+        
+
+  def SetSession(self, session):
+    self.session = session
+
+  def GetTestTimeout(self):
+    return self.timeout
 
   def GetURL(self, url):
     """Gets a URL for the test."""
@@ -267,25 +306,9 @@ class SeleniumTestCase(unittest.TestCase):
     g_client which is the o3d client object for that sample.  This is
     used to take a screenshot.
     """
-    screenshots = []
-    timeout = 10000
-    client = "g_client"
-
+    self.assertTrue(not self.timeout is None)
+    self.assertTrue(not self.client is None)
     self.assertTrue(self.test_type in ["small", "medium", "large"])
-
-    # parse options
-    for option in self.options:
-      if option.startswith("screenshot"):
-        clock = GetArgument(option)
-        if clock is None:
-          clock = "27.5"
-        screenshots.append(clock)
-      elif option.startswith("timeout"):
-        timeout = GetArgument(option)
-        self.assertTrue(not timeout is None)
-      elif option.startswith("client"):
-        client = GetArgument(option)
-        self.assertTrue(not client is None)
 
     url = self.GetURL(base_path + self.sample_path + ".html")
 
@@ -293,7 +316,7 @@ class SeleniumTestCase(unittest.TestCase):
     self.session.open(url)
 
     # wait for it to initialize.
-    self.session.wait_for_condition(ready_condition, timeout)
+    self.session.wait_for_condition(ready_condition, self.timeout)
 
     self.session.run_script(
         "if (window.o3d_prepForSelenium) { window.o3d_prepForSelenium(); }")
@@ -303,14 +326,15 @@ class SeleniumTestCase(unittest.TestCase):
 
     # take a screenshot.
     screenshot_id = 1
-    for clock in screenshots:
+    for clock in self.screenshots:
       # if they are animated we need to stop the animation and set the clock
       # to some time so we get a known state.
       self.session.run_script("g_timeMult = 0")
       self.session.run_script("g_clock = " + clock)
 
       # take a screenshot.
-      screenshot = self.sample_path.replace("/", "_") + str(screenshot_id)
+      screenshot = self.sample_path.replace("_", "-").replace("/", "_")
+      screenshot += str(screenshot_id)
       self.assertTrue(TakeScreenShot(self.session, self.browser,
-                                     client, screenshot))
+                                     self.client, screenshot))
       screenshot_id += 1

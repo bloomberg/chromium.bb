@@ -49,10 +49,10 @@ import selenium_utilities
 class JavaScriptUnitTests(selenium_utilities.SeleniumTestCase):
   """Runs the JavaScript unit tests for the sample utilities."""
 
-  def __init__(self, name, session, browser, path_to_html, test_type=None,
-               sample_path=None,  options=None):
+  def __init__(self, name, browser, path_to_html, test_type=None,
+               sample_path=None, options=None):
     selenium_utilities.SeleniumTestCase.__init__(
-        self, name, session, browser, path_to_html, test_type, sample_path,
+        self, name, browser, path_to_html, test_type, sample_path,
         options)
 
   def GenericTest(self):
@@ -275,7 +275,7 @@ class JavaScriptUnitTests(selenium_utilities.SeleniumTestCase):
       s.run_script("window.g_clock = " + str(clock * 3.14159 * 2.5 + 0.5))
       self.assertTrue(
           selenium_utilities.TakeScreenShot(s, self.browser, "window.g_client",
-                                            "cullingzsort" + str(clock)))
+                                            "cullingzsort" + str(clock + 1)))
       s.run_script("g_framesRendered = 0")
       while int(s.get_eval("window.g_framesRendered")) < 3:
         s.run_script("window.g_client.render()")

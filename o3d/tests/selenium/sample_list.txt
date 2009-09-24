@@ -72,9 +72,9 @@
 # http://wiki.corp.google.com/twiki/bin/view/Main/ClientThreeDSampleGuidelines
 #
 #
-medium  2d                                screenshot pdiff_threshold(200) pdiff_threshold_mac(41200) colorfactor(0.8) downsample(1)
+medium  2d                                screenshot timeout(30000) pdiff_threshold(200) pdiff_threshold_mac(41200) colorfactor(0.8) downsample(1)
 medium  animation
-large   animated-scene                    screenshot timeout(45000) pdiff_threshold(200)
+large   animated-scene                    screenshot timeout(55000) pdiff_threshold(200)
 large   beachdemo/beachdemo               screenshot timeout(120000) pdiff_threshold(200) pdiff_threshold_mac(2100) downsample(1) except(*iexplore, *googlechrome)
 medium  billboards                        screenshot pdiff_threshold(200)
 medium  bitmap-draw-image                 screenshot pdiff_threshold(200)
@@ -124,16 +124,19 @@ large   GoogleIO-2009/step14ex            screenshot pdiff_threshold(200) timeou
 #    function to custom run the test. As such, only the 'except' and
 #    pdiff_threshold options have any meaning
 
-small   TestSampleErrorTextureSmall       pdiff_threshold(200)
-small   TestSampleHelloCube_TexturesSmall pdiff_threshold(450)
+small   TestSampleErrorTextureSmall       pdiff_threshold(200) screenshots(5)
+small   TestSampleHelloCube_TexturesSmall pdiff_threshold(450) screenshot
 small   TestSampleRefreshPageLoad_Small
-medium  TestSampleCustomCamera            pdiff_threshold(200) pdiff_threshold_win(200)
+medium  TestSampleCustomCamera            pdiff_threshold(200) pdiff_threshold_win(200) screenshot
 medium  TestSamplePicking
 medium  TestSampleRenderMode
-medium  TestSampleRotateModel             pdiff_threshold(200)
-medium  TestSampleShader_Test             pdiff_threshold(200) pdiff_threshold_win(200)
+medium  TestSampleRotateModel             pdiff_threshold(200) screenshot
+medium  TestSampleShader_Test             pdiff_threshold(200) pdiff_threshold_win(200) screenshots(13)
 large   TestSampleMultipleClientsLarge
 large   TestSamplePingPongLarge
 # This test currently fails on IE as it considers localhost: to be a trusted
 # domain.
-small   TestLoadTextureFromFileSmall      except(*iexplore)
+# Do not run this test until get rid of scons.  It assumes a particular
+# directory structure to find an asset.  Need to change to reflect new gyp
+# directory structure.  Should be changed when scons is gone.
+#small   TestLoadTextureFromFileSmall      except(*iexplore)

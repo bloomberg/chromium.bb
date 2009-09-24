@@ -59,10 +59,10 @@ class SampleTests(selenium_utilities.SeleniumTestCase):
   # TODO: Change to correct object class when NPAPI class is exposed.
   SELENIUM_OBJ_TYPE = "[object HTMLObjectElement]"
 
-  def __init__(self, name, session, browser, path_to_html, test_type=None,
+  def __init__(self, name, browser, path_to_html, test_type=None,
                sample_path=None, options=None):
     selenium_utilities.SeleniumTestCase.__init__(
-        self, name, session, browser, path_to_html, test_type, sample_path,
+        self, name, browser, path_to_html, test_type, sample_path,
         options)
 
   def GenericTest(self):
@@ -314,7 +314,7 @@ class SampleTests(selenium_utilities.SeleniumTestCase):
       s.select("//select[@id='shaderSelect']", ("index=%d" % shader))
       # Take screenshot
       self.assertTrue(selenium_utilities.TakeScreenShot(
-          s, self.browser, "g_client", ("shader-test%d" % shader)))
+          s, self.browser, "g_client", "shader-test%d" % (shader + 1)))
 
   def TestSampleErrorTextureSmall(self):
     """Tests error-texture.html."""

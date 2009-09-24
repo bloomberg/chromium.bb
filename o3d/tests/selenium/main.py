@@ -61,12 +61,13 @@ import time
 import unittest
 import gflags
 import javascript_unit_tests
-# Import custom testrunner for pulse
-import pulse_testrunner
+import test_runner
 import selenium
 import samples_tests
 import selenium_constants
 import selenium_utilities
+import pdiff_test
+import Queue
 
 if sys.platform == 'win32' or sys.platform == 'cygwin':
   default_java_exe = "java.exe"
@@ -114,6 +115,7 @@ gflags.DEFINE_string(
     "30",
     "Specifies the timeout value, in seconds, for the selenium server.")
 
+
 # Browsers to choose from (for browser flag).
 # use --browser $BROWSER_NAME to run
 # tests for that browser
@@ -133,7 +135,6 @@ gflags.DEFINE_string(
     "",
     "specifies the path from the web root to the samples.")
 
-
 class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
   """Hook to handle HTTP server requests.
 
@@ -146,6 +147,8 @@ class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     # For now, just suppress logging.
     pass
     # TODO: might be nice to have a verbose option for debugging.
+
+    
 
 
 class LocalFileHTTPServer(threading.Thread):
@@ -348,137 +351,104 @@ class SeleniumRemoteControl(threading.Thread):
     return selenium_server
 
 
-class SeleniumSession(object):
-  """A selenium browser session, with support servers.
+class SeleniumSessionBuilder:
+  def __init__(self, sel_port, sel_timeout, http_port, browserpath):
 
-    The support servers include a Selenium Remote Control server, and
-    a local HTTP server to serve static test files.
+    self.sel_port = sel_port
+    self.sel_timeout = sel_timeout
+    self.http_port = http_port
+    self.browserpath = browserpath
 
-  Members:
-    session: a selenium() instance
-    selenium_server: a SeleniumRemoteControl() instance
-    http_server: a LocalFileHTTPServer() instance
-    runner: a TestRunner() instance
-  """
-
-  def __init__(self, verbose, java_path, selenium_server, server_timeout,
-               http_root=None):
-    """Initializes a Selenium Session.
-
-    Args:
-      verbose: boolean verbose flag
-      java_path: path to java used to run selenium.
-      selenium_server: path to jar containing selenium server.
-      server_timeout: server timeout value, in seconds.
-      http_root: Serve http pages using this path as the document root.  When
-      None, use the default.
-    """
-    # Start up a static file server, to serve the test pages.
-
-    if not http_root:
-        http_root = FLAGS.product_dir
-
-    self.http_server = LocalFileHTTPServer.StartServer(http_root)
-
-    if self.http_server:
-      # Start up the Selenium Remote Control Server
-      self.selenium_server = SeleniumRemoteControl.StartServer(verbose,
-                                                               java_path,
-                                                               selenium_server,
-                                                               server_timeout)
-    if not self.http_server or not self.selenium_server:
-      return
-
-    # Set up a testing runner
-    self.runner = pulse_testrunner.PulseTestRunner()
-
-    # Set up a phantom selenium session so we can call shutdown if needed.
-    self.session = selenium.selenium(
-        "localhost", self.selenium_server.selenium_port, "*firefox",
-        "http://" + socket.gethostname() + ":" +
-        str(self.http_server.http_port))
-
-  def StartSession(self, browser):
-    """Starts the Selenium Session and connects to the HTTP server.
-
-    Args:
-      browser: selenium browser name
-    """
-
+  def NewSeleniumSession(self, browser):
     if browser == "*googlechrome":
       # TODO: Replace socket.gethostname() with "localhost"
       #                 once Chrome local proxy fix is in.
       server_url = "http://" + socket.gethostname() + ":"
     else:
       server_url = "http://localhost:"
-    server_url += str(self.http_server.http_port)
+    server_url += str(self.http_port)
 
     browser_path_with_space = ""
-    if FLAGS.browserpath:
-      browser_path_with_space = " " + FLAGS.browserpath
-
-    self.session = selenium.selenium("localhost",
-                                     self.selenium_server.selenium_port,
-                                     browser + browser_path_with_space,
-                                     server_url)
-    self.session.start()
-
-  def CloseSession(self):
-    """Closes the selenium sesssion."""
-    self.session.stop()
-
-  def TearDown(self):
-    """Stops the selenium server."""
-    self.session.shut_down_selenium_server()
-
-  def TestBrowser(self, browser, test_list, test_prefix, test_suffixes,
-                  server_timeout):
-    """Runs Selenium tests for a specific browser.
-
-    Args:
-      browser: selenium browser name (eg. *iexplore, *firefox).
-      test_list: list to add tests to.
-      test_prefix: prefix of tests to run.
-      test_suffixes: comma separated suffixes of tests to run.
-      server_timeout: server timeout value, in milliseconds
-
-    Returns:
-      result: result of test runner.
-    """
-    print "Testing %s..." % browser
-    self.StartSession(browser)
-    self.session.set_timeout(server_timeout)
-    self.runner.setBrowser(browser)
-
-    try:
-      result = self.runner.run(
-          SeleniumSuite(self.session, browser, test_list,
-                        test_prefix, test_suffixes))
-    finally:
-      self.CloseSession()
-
-    return result
+    if self.browserpath:
+      browser_path_with_space = " " + self.browserpath
 
 
-class LocalTestSuite(unittest.TestSuite):
-  """Wrapper for unittest.TestSuite so we can collect the tests."""
+    new_session = selenium.selenium("localhost",
+                                    self.sel_port,
+                                    browser + browser_path_with_space,
+                                    server_url)
+    
+    new_session.start()
+    new_session.set_timeout(self.sel_timeout)
+    
+    return new_session
 
-  def __init__(self):
-    unittest.TestSuite.__init__(self)
-    self.test_list = []
 
-  def addTest(self, name, test):
-    """Adds a test to the TestSuite and records its name and test_path.
+def TestBrowser(session_builder, browser, test_list):
+  """Runs Selenium tests for a specific browser.
 
-    Args:
-      name: name of test.
-      test: test to pass to unittest.TestSuite.
-    """
-    unittest.TestSuite.addTest(self, test)
-    try:
-      self.test_list.append((name, test.options))
-    except AttributeError:
-      self.test_list.append((name, []))
+  Args:
+    session_builder: session_builder for creating new selenium sessions.
+    browser: selenium browser name (eg. *iexplore, *firefox).
+    test_list: list of tests.
+    
+  Returns:
+    summary_result: result of test runners.
+  """
+  print "Testing %s..." % browser
+  
+  summary_result = test_runner.TestResult(test_runner.StringBuffer(), browser)
+  
+  # Fill up the selenium test queue.
+  test_queue = Queue.Queue()
+  for test in test_list:
+    test_queue.put(test)
+
+
+  pdiff_queue = None
+  if FLAGS.screenshots:
+    # Need to do screen comparisons.
+    # |pdiff_queue| is the queue of perceptual diff tests that need to be done.
+    # This queue is added to by individual slenium test runners.
+    # |pdiff_result_queue| is the result of the perceptual diff tests.
+    pdiff_queue = Queue.Queue()
+    pdiff_result_queue = Queue.Queue()
+    pdiff_worker = test_runner.PDiffTestRunner(pdiff_queue,
+                                               pdiff_result_queue,
+                                               browser)
+    pdiff_worker.start()
+    
+  # Start initial selenium test runner.
+  worker = test_runner.SeleniumTestRunner(session_builder, browser,
+                                          test_queue, pdiff_queue)
+  worker.start()
+
+  # Run through all selenium tests.
+  while not worker.IsCompletelyDone():
+    if worker.IsTesting() and worker.IsPastDeadline():
+      # Test has taken more than allotted. Abort and go to next test.
+      worker.AbortTest()
+
+    elif worker.DidFinishTest():
+      # Do this so that a worker does not grab test off queue till we tell it.     
+      result = worker.Continue()
+      result.printAll(sys.stdout)
+      summary_result.merge(result)
+
+  if FLAGS.screenshots:
+    # Finish screenshot comparisons.
+    pdiff_worker.EndTesting()
+    while not pdiff_worker.IsCompletelyDone():
+      time.sleep(1)
+
+    # Be careful here, make sure no one else is editing |pdiff_reult_queue|.
+    while not pdiff_result_queue.empty():
+      result = pdiff_result_queue.get()
+      result.printAll(sys.stdout)
+      summary_result.merge(result)
+      
+  return summary_result
+
 
 
 def MatchesSuffix(name, suffixes):
@@ -500,21 +470,20 @@ def MatchesSuffix(name, suffixes):
     return True
 
 
-def AddTests(test_suite, session, browser, module, filename, prefix,
-             test_prefix_filter, test_suffixes, path_to_html):
-  """Add tests defined in filename.
+def _GetTestsFromFile(filename, prefix, test_prefix_filter, test_suffixes,
+                      browser, module, path_to_html):
+  """Add tests defined in filename, and associated perceptual diff test, if
+  needed.
 
   Assumes module has a method "GenericTest" that uses self.args to run.
 
   Args:
-    test_suite: A Selenium test_suite to add tests to.
-    session: a Selenium instance.
-    browser: browser name.
-    module: module which will have method GenericTest() called to run each test.
     filename: filename of file with list of tests.
     prefix: prefix to add to the beginning of each test.
     test_prefix_filter: Only adds a test if it starts with this.
     test_suffixes: list of suffixes to filter by. An empty list = pass all.
+    browser: browser name.
+    module: module which will have method GenericTest() called to run each test.   
     path_to_html: Path from server root to html
   """
   # See comments in that file for the expected format.
@@ -523,6 +492,8 @@ def AddTests(test_suite, session, browser, module, filename, prefix,
   test_list_file = open(filename, "r")
   samples = test_list_file.readlines()
   test_list_file.close()
+
+  tests = []
 
   for sample in samples:
     sample = sample.strip()
@@ -535,13 +506,17 @@ def AddTests(test_suite, session, browser, module, filename, prefix,
     options = arguments[2:]
 
     # TODO: Add filter based on test_type
-
-    name = ("Test" + prefix + re.sub("\W", "_", test_path) +
-            test_type.capitalize())
+    if test_path.startswith("Test"):
+      name = test_path
+    else:
+      # Need to make a name.
+      name = ("Test" + prefix + re.sub("\W", "_", test_path) +
+              test_type.capitalize())
 
     # Only execute this test if the current browser is not in the list
     # of skipped browsers.
     test_skipped = False
+    screenshot_count = 0
     for option in options:
       if option.startswith("except"):
         skipped_platforms = selenium_utilities.GetArgument(option)
@@ -549,388 +524,90 @@ def AddTests(test_suite, session, browser, module, filename, prefix,
           skipped_platforms = skipped_platforms.split(",")
           if browser in skipped_platforms:
             test_skipped = True
+      elif option.startswith("screenshots"):
+        screenshot_count += int(selenium_utilities.GetArgument(option))
+      elif option.startswith("screenshot"):
+        screenshot_count += 1
+
+    if (test_prefix_filter and not name.startswith(test_prefix_filter) or
+        test_suffixes and not MatchesSuffix(name, test_suffixes)):
+      test_skipped = True
 
     if not test_skipped:
-      # Check if there is already a test function by this name in the module.
-      if (test_path.startswith(test_prefix_filter) and
-          hasattr(module, test_path) and callable(getattr(module, test_path))):
-        test_suite.addTest(test_path, module(test_path, session, browser,
-                                             path_to_html, options=options))
-      elif (name.startswith(test_prefix_filter) and
-            MatchesSuffix(name, test_suffixes)):
-        # no, so add a method that will run a test generically.
+      # Add a test method with this name if it doesn't exist.
+      if not (hasattr(module, name) and callable(getattr(module, name))):
         setattr(module, name, module.GenericTest)
-        test_suite.addTest(name, module(name, session, browser, path_to_html,
-                                        test_type, test_path, options))
+             
+      new_test = module(name, browser, path_to_html, test_type, test_path,
+                        options)
+      
+      if screenshot_count and FLAGS.screenshots:
+        pdiff_name = name + 'Screenshots'
+        screenshot = selenium_utilities.ScreenshotNameFromTestName(test_path)
+        setattr(pdiff_test.PDiffTest, pdiff_name,
+                pdiff_test.PDiffTest.PDiffTest)
+        new_pdiff = pdiff_test.PDiffTest(pdiff_name,
+                                         screenshot_count,
+                                         screenshot,
+                                         FLAGS.screencompare,
+                                         FLAGS.screenshotsdir,
+                                         FLAGS.referencedir,
+                                         options)
+        tests += [(new_test, new_pdiff)]
+      else:
+        tests += [new_test]
+        
+
+  return tests
 
 
-def SeleniumSuite(session, browser, test_list, test_prefix, test_suffixes):
-  """Creates a test suite to run the unit tests.
+def GetTestsForBrowser(browser, test_prefix, test_suffixes):
+  """Returns list of tests from test files.
 
   Args:
-    session: a selenium() instance
     browser: browser name
-    test_list: list to add tests to.
     test_prefix: prefix of tests to run.
     test_suffixes: A comma separated string of suffixes to filter by.
   Returns:
-    A selenium test suite.
+    A list of unittest.TestCase.
   """
-
-  test_suite = LocalTestSuite()
-
+  tests = []
   suffixes = test_suffixes.split(",")
 
   # add sample tests.
   filename = os.path.abspath(os.path.join(script_dir, "sample_list.txt"))
-  AddTests(test_suite,
-           session,
-           browser,
-           samples_tests.SampleTests,
-           filename,
-           "Sample",
-           test_prefix,
-           suffixes,
-           FLAGS.samplespath.replace("\\", "/"))
-
+  tests += _GetTestsFromFile(filename, "Sample", test_prefix, suffixes, browser,
+                             samples_tests.SampleTests,
+                             FLAGS.samplespath.replace("\\","/"))
+  
   # add javascript tests.
   filename = os.path.abspath(os.path.join(script_dir,
                                           "javascript_unit_test_list.txt"))
-  AddTests(test_suite,
-           session,
-           browser,
-           javascript_unit_tests.JavaScriptUnitTests,
-           filename,
-           "UnitTest",
-           test_prefix,
-           suffixes,
-           '')
+  tests += _GetTestsFromFile(filename, "UnitTest", test_prefix, suffixes,
+                             browser, javascript_unit_tests.JavaScriptUnitTests,
+                             "")
 
-  test_list += test_suite.test_list
-
-  return test_suite
+  return tests
 
 
-def CompareScreenshots(browser, test_list, screencompare, screenshotsdir,
-                       screencompare_tool, verbose):
-  """Performs the image validation for test-case frame captures.
-
-  Args:
-    browser: selenium browser name
-    test_list: list of tests that ran.
-    screencompare: True to actually run tests.
-    screenshotsdir: path of directory containing images to compare.
-    screencompare_tool: path to image diff tool.
-    verbose: If True then outputs verbose info.
-
-  Returns:
-    A Results object.
-  """
-  print "Validating captured frames against reference data..."
-
-  class Results(object):
-    """An object to return results of screenshot compares.
-
-    Similar to unittest.TestResults.
-    """
-
-    def __init__(self):
-      object.__init__(self)
-      self.tests_run = 0
-      self.current_test = None
-      self.errors = []
-      self.failures = []
-      self.start_time = 0
-
-    def StartTest(self, test):
-      """Adds a test.
-
-      Args:
-        test: name of test.
-      """
-      self.start_time = time.time()
-      self.tests_run += 1
-      self.current_test = test
-
-    def TimeTaken(self):
-      """Returns the time since the last call to StartTest."""
-      return time.time() - self.start_time
-
-    def AddFailure(self, test, browser, message):
-      """Adds a failure.
-
-      Args:
-        test: name of the test.
-        browser: name of the browser.
-        message: error message to print
-      """
-      self.failures.append(test)
-      print "ERROR: ", message
-      print("SELENIUMRESULT %s <%s> [%.3fs]: FAIL"
-            % (test, browser, self.TimeTaken()))
-
-    def AddSuccess(self, test):
-      """Adds a success.
-
-      Args:
-        test: name of the test.
-      """
-      print("SELENIUMRESULT %s <%s> [%.3fs]: PASS"
-            % (test, browser, self.TimeTaken()))
-
-    def WasSuccessful(self):
-      """Returns true if all tests were successful."""
-      return not self.errors and not self.failures
-
-  results = Results()
-
-  if not screencompare:
-    return results
-
-  base_path = os.getcwd()
-
-  reference_files = os.listdir(os.path.join(
-      base_path,
-      selenium_constants.REFERENCE_SCREENSHOT_PATH))
-
-  generated_files = os.listdir(os.path.join(base_path, screenshotsdir))
-
-  # Prep the test list for matching
-  temp = []
-  for (test, options) in test_list:
-    test = selenium_utilities.StripTestTypeSuffix(test)
-    temp.append((test.lower(), options))
-  test_list = temp
-
-  # Create regex object for filename
-  # file is in format "FILENAME_reference.png"
-  reference_file_name_regex = re.compile(r"^(.*)_reference\.png")
-  generated_file_name_regex = re.compile(r"^(.*)\.png")
-
-  # check that there is a reference file for each generated file.
-  for file_name in generated_files:
-    match = generated_file_name_regex.search(file_name)
-
-    if match is None:
-      # no matches
-      continue
-
-    # Generated file name without png extension
-    actual_name = match.group(1)
-
-    # Get full paths to reference and generated files
-    reference_file = os.path.join(
-        base_path,
-        selenium_constants.REFERENCE_SCREENSHOT_PATH,
-        actual_name + "_reference.png")
-    generated_file = os.path.join(
-        base_path,
-        screenshotsdir,
-        actual_name + ".png")
-
-    test_name = "TestReferenceScreenshotExists_" + actual_name
-    results.StartTest(test_name)
-    if not os.path.exists(reference_file):
-      # reference file does not exist
-      results.AddFailure(
-          test_name, browser,
-          "Missing reference file %s for generated file %s." %
-          (reference_file, generated_file))
-    else:
-      results.AddSuccess(test_name)
-
-  # Assuming both the result and reference image sets are the same size,
-  # verify that corresponding images are similar within tolerance.
-  for file_name in reference_files:
-    match = reference_file_name_regex.search(file_name)
-
-    if match is None:
-      # no matches
-      continue
-
-    # Generated file name without png extension
-    actual_name = match.group(1)
-    # Get full paths to reference and generated files
-    reference_file = os.path.join(
-        base_path,
-        selenium_constants.REFERENCE_SCREENSHOT_PATH,
-        file_name)
-    platform_specific_reference_file = os.path.join(
-        base_path,
-        selenium_constants.PLATFORM_SPECIFIC_REFERENCE_SCREENSHOT_PATH,
-        actual_name + "_reference.png")
-    generated_file = os.path.join(
-        base_path,
-        screenshotsdir,
-        actual_name + ".png")
-
-    # Generate a test case name
-    test_name = "TestScreenCompare_" + actual_name
-
-    # skip the reference file if the test is not in the test list.
-    basename = os.path.splitext(os.path.basename(file_name))[0]
-    basename = re.sub("\d+_reference", "", basename).lower()
-    basename = re.sub("\W", "_", basename)
-    test_was_run = False
-    test_options = []
-    for (test, options) in test_list:
-      if test.endswith(basename):
-        test_was_run = True
-        test_options = options or []
-        break
-
-    if test_was_run:
-      results.StartTest(test_name)
-    else:
-      # test was not planned to run for this reference image.
-      if os.path.exists(generated_file):
-        # a generated file exists? The test name does not match the screenshot.
-        results.StartTest(test_name)
-        results.AddFailure(test_name, browser,
-                           "Test name and screenshot name do not match.")
-      continue
-
-    # Check if there is a platform specific version of the reference image
-    if os.path.exists(platform_specific_reference_file):
-      reference_file = platform_specific_reference_file
-
-    # Check if perceptual diff exists
-    pdiff_path = os.path.join(base_path, screencompare_tool)
-    if not os.path.exists(pdiff_path):
-      # Perceptualdiff.exe does not exist, fail.
-      results.AddFailure(
-          test_name, browser,
-          "Perceptual diff %s does not exist." % pdiff_path)
-      continue
-
-    pixel_threshold = "10"
-    alpha_threshold = "1.0"
-    use_colorfactor = False
-    use_downsample = False
-    use_edge = True
-    edge_threshold = "5"
-
-    # Find out if the test specified any options relating to perceptual diff
-    # that will override the defaults.
-    for opt in test_options:
-      if opt.startswith("pdiff_threshold"):
-        pixel_threshold = selenium_utilities.GetArgument(opt)
-      elif (opt.startswith("pdiff_threshold_mac") and
-            sys.platform == "darwin"):
-        pixel_threshold = selenium_utilities.GetArgument(opt)
-      elif (opt.startswith("pdiff_threshold_win") and
-            sys.platform == 'win32' or sys.platform == "cygwin"):
-        pixel_threshold = selenium_utilities.GetArgument(opt)
-      elif (opt.startswith("pdiff_threshold_linux") and
-            sys.platform[:5] == "linux"):
-        pixel_threshold = selenium_utilities.GetArgument(opt)
-      elif (opt.startswith("colorfactor")):
-        colorfactor = selenium_utilities.GetArgument(opt)
-        use_colorfactor = True
-      elif (opt.startswith("downsample")):
-        downsample_factor = selenium_utilities.GetArgument(opt)
-        use_downsample = True
-      elif (opt.startswith("pdiff_edge_ignore_off")):
-        use_edge = False
-      elif (opt.startswith("pdiff_edge_threshold")):
-        edge_threshold = selenium_utilities.GetArgument(opt)
-
-    # Check if file exists
-    if os.path.exists(generated_file):
-      diff_file = os.path.join(base_path, screenshotsdir,
-                               "compare_%s.png" % actual_name)
-
-      # Run perceptual diff
-      arguments = [pdiff_path,
-                   reference_file,
-                   generated_file,
-                   "-output", diff_file,
-                   "-fov", "45",
-                   "-alphaThreshold", alpha_threshold,
-                   # Turn on verbose output for the percetual diff so we
-                   # can see how far off we are on the threshold.
-                   "-verbose",
-                   # Set the threshold to zero so we can get a count
-                   # of the different pixels.  This causes the program
-                   # to return failure for most images, but we can compare
-                   # the values ourselves below.
-                   "-threshold", "0"]
-      if use_colorfactor:
-        arguments += ["-colorfactor", colorfactor]
-      if use_downsample:
-        arguments += ["-downsample", downsample_factor]
-      if use_edge:
-        arguments += ["-ignoreEdges", edge_threshold]
-
-      # Print the perceptual diff command line so we can debug easier.
-      if verbose:
-        print " ".join(arguments)
-
-      # diff tool should return 0 on success
-      expected_result = 0
-
-      pdiff_pipe = subprocess.Popen(arguments,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
-      (pdiff_stdout, pdiff_stderr) = pdiff_pipe.communicate()
-      result = pdiff_pipe.returncode
-
-      # Find out how many pixels were different by looking at the output.
-      pixel_re = re.compile("(\d+) pixels are different", re.DOTALL)
-      pixel_match = pixel_re.search(pdiff_stdout)
-      different_pixels = "0"
-      if pixel_match:
-        different_pixels = pixel_match.group(1)
-
-      alpha_re = re.compile("max alpha delta of ([0-9\.]+)", re.DOTALL)
-      alpha_delta = "0.0"
-      alpha_match = alpha_re.search(pdiff_stdout)
-      if alpha_match:
-        alpha_delta = alpha_match.group(1)
-
-      if (result == expected_result or (pixel_match and
-          int(different_pixels) <= int(pixel_threshold))):
-        # The perceptual diff passed.
-        pass_re = re.compile("PASS: (.*?)\n", re.DOTALL)
-        pass_match = pass_re.search(pdiff_stdout)
-        reason = "Images are not perceptually different."
-        if pass_match:
-          reason = pass_match.group(1)
-        print ("%s PASSED with %s different pixels "
-               "(threshold %s) because: %s" % (test_name,
-                                               different_pixels,
-                                               pixel_threshold,
-                                               reason))
-        results.AddSuccess(test_name)
-      else:
-        # The perceptual diff failed.
-        if pixel_match and int(different_pixels) > int(pixel_threshold):
-          results.AddFailure(
-              test_name, browser,
-              ("Reference framebuffer (%s) does not match generated "
-               "file (%s):  %s non-matching pixels, max alpha delta: %s, "
-               "threshold: %s, alphaThreshold: %s." %
-               (reference_file, generated_file, different_pixels, alpha_delta, 
-                pixel_threshold, alpha_threshold)))
-        else:
-          # The perceptual diff failed for some reason other than
-          # pixel differencing.
-          fail_re = re.compile("FAIL: (.*?)\n", re.DOTALL)
-          fail_match = fail_re.search(pdiff_stdout)
-          reason = "Unknown failure"
-          if fail_match:
-            reason = fail_match.group(1)
-          results.AddFailure(
-              test_name, browser,
-              ("Perceptual diff of reference (%s) and generated (%s) files "
-               "failed because: %s" %
-               (reference_file, generated_file, reason)))
-    else:
-      # Generated file does not exist
-      results.AddFailure(test_name, browser,
-                         "File %s does not exist." % generated_file)
-
-  return results
+def GetChromePath():
+  value = None
+  if sys.platform == "win32" or sys.platform == "cygwin":
+    import _winreg
+    try:
+      key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT,
+                            "Applications\\chrome.exe\\shell\\open\\command")
+      (value, type) = _winreg.QueryValueEx(key, None)
+      _winreg.CloseKey(key)
+      value = os.path.dirname(value)
+      
+    except WindowsError:
+      value = None
+      if '*googlechrome' in FLAGS.browser:
+        raise Exception("Unable to determine location for Chrome -- " +
+                        "is it installed?")
+    
+  return value
 
 
 def main(unused_argv):
@@ -945,45 +622,84 @@ def main(unused_argv):
     FLAGS.referencedir,
     selenium_constants.PLATFORM_SCREENSHOT_DIR,
     "")
+  
+  # Launch HTTP server.
+  http_server = LocalFileHTTPServer.StartServer(FLAGS.product_dir)
 
-  # Open a new session to Selenium Remote Control
-  selenium_session = SeleniumSession(FLAGS.verbose, FLAGS.java,
-                                     os.path.abspath(FLAGS.selenium_server),
-                                     FLAGS.servertimeout)
-  if not selenium_session.http_server or not selenium_session.selenium_server:
+  if not http_server:
+    print "Could not start a local http server with root." % FLAGS.product_dir
+    return 1
+  
+ 
+  # Start Selenium Remote Control and Selenium Session Builder.
+  sel_server_jar = os.path.abspath(FLAGS.selenium_server)
+  sel_server = SeleniumRemoteControl.StartServer(
+    FLAGS.verbose, FLAGS.java, sel_server_jar,
+    FLAGS.servertimeout)
+
+  if not sel_server:
+    print "Could not start selenium server at %s." % sel_server_jar
     return 1
 
+  session_builder = SeleniumSessionBuilder(
+    sel_server.selenium_port,
+    int(FLAGS.servertimeout) * 1000,
+    http_server.http_port,
+    FLAGS.browserpath)
+
+  all_tests_passed = True
+  # Test browsers.
   for browser in FLAGS.browser:
     if browser in set(selenium_constants.SELENIUM_BROWSER_SET):
-      test_list = []
-      result = selenium_session.TestBrowser(browser, test_list,
-                                            FLAGS.testprefix,
-                                            FLAGS.testsuffixes,
-                                            int(FLAGS.servertimeout) * 1000)
+      test_list = GetTestsForBrowser(browser, FLAGS.testprefix,
+                                     FLAGS.testsuffixes)
 
-      # Compare screenshots
-      compare_result = CompareScreenshots(browser,
-                                          test_list,
-                                          FLAGS.screenshots,
-                                          FLAGS.screenshotsdir,
-                                          FLAGS.screencompare,
-                                          FLAGS.verbose)
-      if not result.wasSuccessful() or not compare_result.WasSuccessful():
+      result = TestBrowser(session_builder, browser, test_list)
+
+      if not result.wasSuccessful():
         all_tests_passed = False
-      # Log results
-      print "Results for %s:" % browser
-      print "  %d tests run." % (result.testsRun + compare_result.tests_run)
-      print "  %d errors." % (len(result.errors) + len(compare_result.errors))
-      print "  %d failures.\n" % (len(result.failures) +
-                                  len(compare_result.failures))
+
+      # Log non-succesful tests, for convenience.
+      print ""
+      print "Failures for %s:" % browser
+      print "[Selenium tests]"
+      for entry in test_list:
+        if type(entry) == tuple:
+          test = entry[0]
+        else:
+          test = entry
+
+        if test in result.results:
+          if result.results[test] != 'PASS':
+            print test.name
+
+      print ""
+      print "[Perceptual Diff tests]"
+      for entry in test_list:
+        if type(entry) == tuple:
+          pdiff_test = entry[1]
+          if pdiff_test in result.results:
+            if result.results[pdiff_test] != 'PASS':
+              print pdiff_test.name
+        
+
+      # Log summary results.
+      print ""
+      print "Summary for %s:" % browser
+      print "  %d tests run." % result.testsRun
+      print "  %d errors." % len(result.errors)
+      print "  %d failures.\n" % len(result.failures)
 
     else:
       print "ERROR: Browser %s is invalid." % browser
       print "Run with --help to view list of supported browsers.\n"
       all_tests_passed = False
 
-  # Wrap up session
-  selenium_session.TearDown()
+  # Shut down remote control
+  shutdown_session = selenium.selenium("localhost",
+      sel_server.selenium_port, "*firefox",
+      "http://%s:%d" % (socket.gethostname(), http_server.http_port))  
+  shutdown_session.shut_down_selenium_server()
 
   if all_tests_passed:
     # All tests successful.
@@ -991,21 +707,6 @@ def main(unused_argv):
   else:
     # Return error code 1.
     return 1
-
-def GetChromePath():
-  value = None
-  if sys.platform == "win32" or sys.platform == "cygwin":
-    import _winreg
-    try:
-      key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT,
-                            "Applications\\chrome.exe\\shell\\open\\command")
-      (value, type) = _winreg.QueryValueEx(key, None)
-      _winreg.CloseKey(key)
-    except WindowsError:
-      raise Exception("Unable to determine location for Chrome -- "
-                      "it is installed?")
-    value = os.path.dirname(value)
-  return value
 
 if __name__ == "__main__":
   remaining_argv = FLAGS(sys.argv)
