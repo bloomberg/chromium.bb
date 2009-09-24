@@ -1957,21 +1957,29 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
   /* make sure that the thread start function is in the text region */
   if ((uintptr_t) prog_ctr >= NACL_TRAMPOLINE_END +
                               natp->nap->text_region_bytes) {
+    NaClLog(LOG_ERROR, "bad pc start\n");
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
   /* make sure that the thread start function is aligned */
+  /* TODO(robertm): there should be a function for this test */
+#if !defined(DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX)
+
   if (0 != ((natp->nap->align_boundary - 1) & (uintptr_t) prog_ctr)) {
+    NaClLog(LOG_ERROR, "bad pc alignment\n");
     retval = -NACL_ABI_EINVAL;
     goto cleanup;
   }
+#endif
   /* we do not enforce stack alignment */
   if (kNaClBadAddress == NaClUserToSysAddr(natp->nap, (uintptr_t) stack_ptr)) {
+    NaClLog(LOG_ERROR, "bad stack\n");
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
   sys_tdb = NaClUserToSysAddrRange(natp->nap, (uintptr_t) tdb, tdb_size);
   if (kNaClBadAddress == sys_tdb) {
+    NaClLog(LOG_ERROR, "bad tdb\n");
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
