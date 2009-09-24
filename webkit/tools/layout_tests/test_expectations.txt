@@ -2336,7 +2336,6 @@ BUG22552 MAC LINUX : LayoutTests/fast/events/drag-in-frames.html = CRASH
 BUG22554 SKIP : LayoutTests/mathml = FAIL
 
 // WebKit merge 48610:48642
-BUG_PAUL MAC : pending/plugins/iframe-shims.html = FAIL
 BUG_PAUL LINUX DEBUG : LayoutTests/fast/backgrounds/size/contain-and-cover.html = PASS FAIL
 
 // WebKit update 48642:48665
