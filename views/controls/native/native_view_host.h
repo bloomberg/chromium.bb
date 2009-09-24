@@ -42,27 +42,15 @@ class NativeViewHost : public View {
   // Sets a preferred size for the native view attached to this View.
   void SetPreferredSize(const gfx::Size& size);
 
-  // A NativeViewHost must keep the focused view in the focus manager and the
-  // native focus with in sync . There are 2 aspects to this:
-  // - when the native view receives focus, the focus manager must be notified
-  //   that the associated view is now the focused view.
-  //   In simple cases where the NativeViewHost directly wraps a native window
-  //   as is, the associated view is this NativeViewHost. In other cases where
-  //   the NativeViewHost is part of another view (such as for the TextField
-  //   class), the actual View is not the NativeViewHost and set_focus_view()
-  //   must be called to set the associated view before Attach() is called.
-  // - when the view is focused (by calling View::RequestFocus()), it must focus
-  //   the appropriate native view.  In simple cases where the native view does
-  //   not have children or is the native view that should really get the focus,
-  //   this works without doing anything.  In case where the native view that
-  //   should get the focus is not the native view passed to Attach(), then
-  //   the appropriate native view should be specified to
-  //   set_focus_native_view() before Attach() is called.
+  // A NativeViewHost has an associated focus View so that the focus of the
+  // native control and of the View are kept in sync. In simple cases where the
+  // NativeViewHost directly wraps a native window as is, the associated view
+  // is this View. In other cases where the NativeViewHost is part of another
+  // view (such as TextField), the actual View is not the NativeViewHost and
+  // this method must be called to set that.
+  // This method must be called before Attach().
   void set_focus_view(View* view) { focus_view_ = view; }
-  void set_focus_native_view(gfx::NativeView native_view) {
-    focus_native_view_ = native_view;
-  }
-  gfx::NativeView focus_native_view() const { return focus_native_view_; }
+  View* focus_view() { return focus_view_; }
 
   // Fast resizing will move the native view and clip its visible region, this
   // will result in white areas and will not resize the content (so scrollbars
@@ -75,10 +63,6 @@ class NativeViewHost : public View {
 
   // Accessor for |native_view_|.
   gfx::NativeView native_view() const { return native_view_; }
-
-  // Called by the NativeViewHostWrapper to notify that the |focus_native_view_|
-  // got focus.
-  void GotNativeFocus();
 
   void NativeViewDestroyed();
 
@@ -111,9 +95,6 @@ class NativeViewHost : public View {
 
   // The view that should be given focus when this NativeViewHost is focused.
   View* focus_view_;
-
-  // The native view that should get the focus when this View gets focused.
-  gfx::NativeView focus_native_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewHost);
 };

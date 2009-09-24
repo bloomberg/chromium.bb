@@ -51,6 +51,9 @@ class NativeViewHostWrapper {
   // is already hidden.
   virtual void HideWidget() = 0;
 
+  // Sets focus to the gfx::NativeView.
+  virtual void SetFocus() = 0;
+
   // Creates a platform-specific instance of an object implementing this
   // interface.
   static NativeViewHostWrapper* CreateWrapper(NativeViewHost* host);

@@ -286,6 +286,8 @@ HWND NativeControl::GetNativeControlHWND() {
 }
 
 void NativeControl::NativeControlDestroyed() {
+  if (hwnd_view_)
+    hwnd_view_->Detach();
   container_ = NULL;
 }
 

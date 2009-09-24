@@ -24,9 +24,10 @@ NativeControlWin::NativeControlWin() {
 NativeControlWin::~NativeControlWin() {
   HWND hwnd = native_view();
   if (hwnd) {
-    // Destroy the hwnd if it still exists. Otherwise we won't shut things down
-    // correctly, leading to leaking and crashing if another message comes in
-    // for the hwnd.
+    // Destroy the hwnd if it still exists. Otherwise we won't have shut things
+    // down correctly, leading to leaking and crashing if another message
+    // comes in for the hwnd.
+    Detach();
     DestroyWindow(hwnd);
   }
 }
@@ -73,7 +74,9 @@ void NativeControlWin::VisibilityChanged(View* starting_from, bool is_visible) {
   if (!is_visible) {
     // We destroy the child control HWND when we become invisible because of the
     // performance cost of maintaining many HWNDs.
-    DestroyWindow(native_view());
+    HWND hwnd = native_view();
+    Detach();
+    DestroyWindow(hwnd);
   } else if (!native_view()) {
     if (GetWidget())
       CreateNativeControl();
@@ -114,13 +117,13 @@ void NativeControlWin::NativeControlCreated(HWND native_control) {
   // Note that we never unset this property. We don't have to.
   SetProp(native_control, kNativeControlWinKey, this);
 
-  Attach(native_control);
-  // native_view() is now valid.
-
-  // Subclass so we get WM_KEYDOWN message.
+  // Subclass so we get WM_KEYDOWN and WM_SETFOCUS messages.
   original_wndproc_ =
       win_util::SetWindowProc(native_control,
                               &NativeControlWin::NativeControlWndProc);
+
+  Attach(native_control);
+  // native_view() is now valid.
 
   // Update the newly created HWND with any resident enabled state.
   EnableWindow(native_view(), IsEnabled());
@@ -183,10 +186,16 @@ LRESULT NativeControlWin::NativeControlWndProc(HWND window,
   if (message == WM_KEYDOWN &&
       native_control->OnKeyDown(static_cast<int>(w_param))) {
       return 0;
+  } else if (message == WM_SETFOCUS) {
+    // Let the focus manager know that the focus changed.
+    FocusManager* focus_manager = native_control->GetFocusManager();
+    if (focus_manager) {
+      focus_manager->SetFocusedView(native_control->focus_view());
+    } else {
+      NOTREACHED();
+    }
   } else if (message == WM_DESTROY) {
-    WNDPROC old_wndproc =
-        win_util::SetWindowProc(window, native_control->original_wndproc_);
-    DCHECK(old_wndproc == &NativeControlWin::NativeControlWndProc);
+    win_util::SetWindowProc(window, native_control->original_wndproc_);
   }
 
   return CallWindowProc(native_control->original_wndproc_, window, message,

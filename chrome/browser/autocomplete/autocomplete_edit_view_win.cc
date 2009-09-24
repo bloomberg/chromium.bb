@@ -869,10 +869,6 @@ gfx::NativeView AutocompleteEditViewWin::GetNativeView() const {
   return m_hWnd;
 }
 
-gfx::NativeView AutocompleteEditViewWin::GetFocusNativeView() const {
-  return m_hWnd;
-}
-
 void AutocompleteEditViewWin::PasteAndGo(const std::wstring& text) {
   if (CanPasteAndGo(text))
     model_->PasteAndGo();
@@ -1640,6 +1636,15 @@ void AutocompleteEditViewWin::OnPaste() {
 }
 
 void AutocompleteEditViewWin::OnSetFocus(HWND focus_wnd) {
+  views::FocusManager* focus_manager = parent_view_->GetFocusManager();
+  if (focus_manager) {
+    // Notify the FocusManager that the focused view is now the location bar
+    // (our parent view).
+    focus_manager->SetFocusedView(parent_view_);
+  } else {
+    NOTREACHED();
+  }
+
   model_->OnSetFocus(GetKeyState(VK_CONTROL) < 0);
 
   // Notify controller if it needs to show hint UI of some kind.
