@@ -165,6 +165,7 @@ include_rules = [
 # checkdeps.py shouldn't check include paths for files in these dirs:
 skip_child_includes = [
    "breakpad",
+   "chrome_frame",
    "gears",
    "native_client",
    "o3d",
