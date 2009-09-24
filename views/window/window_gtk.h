@@ -68,6 +68,9 @@ class WindowGtk : public WidgetGtk, public Window {
   virtual gboolean OnWindowStateEvent(GtkWidget* widget,
                                       GdkEventWindowState* event);
 
+  // WindowGtk specific.
+  virtual void IsActiveChanged();
+
  protected:
   // For  the constructor.
   friend class Window;
@@ -82,6 +85,9 @@ class WindowGtk : public WidgetGtk, public Window {
   static gboolean CallConfigureEvent(GtkWidget* widget,
                                      GdkEventConfigure* event,
                                      WindowGtk* window_gtk);
+  static void CallIsActiveChanged(GtkWidget* widget,
+                                  GParamSpec* pspec,
+                                  WindowGtk* window_gtk);
   static gboolean CallWindowStateEvent(GtkWidget* widget,
                                        GdkEventWindowState* event,
                                        WindowGtk* window_gtk);
@@ -111,6 +117,10 @@ class WindowGtk : public WidgetGtk, public Window {
 
   // Set to true if the window is in the process of closing.
   bool window_closed_;
+
+  // If true, IsActive returns true. This is set by DisableInactiveRendering
+  // to force the window to be treated as active even though it isn't.
+  bool force_active_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowGtk);
 };

@@ -156,7 +156,7 @@ void WindowGtk::Restore() {
 }
 
 bool WindowGtk::IsActive() const {
-  return gtk_window_is_active(GetNativeWindow());
+  return force_active_ || WidgetGtk::IsActive();
 }
 
 bool WindowGtk::IsVisible() const {
@@ -187,7 +187,7 @@ void WindowGtk::EnableClose(bool enable) {
 }
 
 void WindowGtk::DisableInactiveRendering() {
-  NOTIMPLEMENTED();
+  force_active_ = true;
 }
 
 void WindowGtk::UpdateWindowTitle() {
@@ -334,6 +334,11 @@ gboolean WindowGtk::OnWindowStateEvent(GtkWidget* widget,
   return FALSE;
 }
 
+void WindowGtk::IsActiveChanged() {
+  if (force_active_ && WidgetGtk::IsActive())
+    force_active_ = false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WindowGtk, protected:
 
@@ -343,7 +348,8 @@ WindowGtk::WindowGtk(WindowDelegate* window_delegate)
       window_delegate_(window_delegate),
       non_client_view_(new NonClientView(this)),
       window_state_(GDK_WINDOW_STATE_WITHDRAWN),
-      window_closed_(false) {
+      window_closed_(false),
+      force_active_(false) {
   is_window_ = true;
   window_delegate_->window_.reset(this);
 }
@@ -361,6 +367,8 @@ void WindowGtk::Init(GtkWindow* parent, const gfx::Rect& bounds) {
 
   g_signal_connect(G_OBJECT(GetNativeWindow()), "configure-event",
                    G_CALLBACK(CallConfigureEvent), this);
+  g_signal_connect(G_OBJECT(GetNativeWindow()), "notify::is-active",
+                   G_CALLBACK(CallIsActiveChanged), this);
   g_signal_connect(G_OBJECT(GetNativeWindow()), "window-state-event",
                    G_CALLBACK(CallWindowStateEvent), this);
 
@@ -390,6 +398,13 @@ gboolean WindowGtk::CallConfigureEvent(GtkWidget* widget,
                                        GdkEventConfigure* event,
                                        WindowGtk* window_gtk) {
   return window_gtk->OnConfigureEvent(widget, event);
+}
+
+// static
+void WindowGtk::CallIsActiveChanged(GtkWidget* widget,
+                                    GParamSpec* pspec,
+                                    WindowGtk* window_gtk) {
+  return window_gtk->IsActiveChanged();
 }
 
 // static

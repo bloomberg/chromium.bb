@@ -82,16 +82,10 @@ views::RootView* BrowserFrameGtk::CreateRootView() {
   return root_view_;
 }
 
-gboolean BrowserFrameGtk::OnFocusIn(GtkWidget* widget,
-				    GdkEventFocus* event) {
-  browser_view_->ActivationChanged(true);
-  return views::WindowGtk::OnFocusIn(widget, event);
-}
-
-gboolean BrowserFrameGtk::OnFocusOut(GtkWidget* widget,
-				     GdkEventFocus* event) {
-  browser_view_->ActivationChanged(false);
-  return views::WindowGtk::OnFocusOut(widget, event);
+void BrowserFrameGtk::IsActiveChanged() {
+  GetRootView()->SchedulePaint();
+  browser_view_->ActivationChanged(IsActive());
+  views::WindowGtk::IsActiveChanged();
 }
 
 
