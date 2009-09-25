@@ -20,10 +20,10 @@
 #include "talk/base/signalthread.h"
 #include "talk/base/taskrunner.h"
 #include "talk/xmllite/xmlelement.h"
-#include "talk/xmpp/constants.h"
 #include "talk/xmpp/prexmppauth.h"
 #include "talk/xmpp/xmppclient.h"
 #include "talk/xmpp/xmppclientsettings.h"
+#include "talk/xmpp/xmppconstants.h"
 
 namespace notifier {
 

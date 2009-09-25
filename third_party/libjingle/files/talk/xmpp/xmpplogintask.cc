@@ -31,7 +31,7 @@
 #include "talk/base/base64.h"
 #include "talk/base/common.h"
 #include "talk/xmllite/xmlelement.h"
-#include "talk/xmpp/constants.h"
+#include "talk/xmpp/xmppconstants.h"
 #include "talk/xmpp/jid.h"
 #include "talk/xmpp/saslmechanism.h"
 #include "talk/xmpp/xmppengineimpl.h"

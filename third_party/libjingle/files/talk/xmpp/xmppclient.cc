@@ -27,7 +27,7 @@
 
 #include "xmppclient.h"
 #include "xmpptask.h"
-#include "talk/xmpp/constants.h"
+#include "talk/xmpp/xmppconstants.h"
 #include "talk/base/sigslot.h"
 #include "talk/xmpp/saslplainmechanism.h"
 #include "talk/xmpp/prexmppauth.h"

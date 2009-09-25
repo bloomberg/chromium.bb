@@ -9,8 +9,8 @@
 #include "talk/base/httpcommon-inl.h"
 #include "talk/base/stringutils.h"
 #include "talk/base/urlencode.h"
-#include "talk/xmpp/constants.h"
 #include "talk/xmpp/jid.h"
+#include "talk/xmpp/xmppconstants.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 

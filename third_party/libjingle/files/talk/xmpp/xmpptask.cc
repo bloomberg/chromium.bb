@@ -28,7 +28,7 @@
 #include "talk/xmpp/xmpptask.h"
 #include "talk/xmpp/xmppclient.h"
 #include "talk/xmpp/xmppengine.h"
-#include "talk/xmpp/constants.h"
+#include "talk/xmpp/xmppconstants.h"
 #include "talk/xmpp/ratelimitmanager.h"
 
 namespace buzz {

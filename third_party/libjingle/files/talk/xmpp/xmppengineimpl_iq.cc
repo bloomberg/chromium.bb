@@ -29,7 +29,7 @@
 #include <algorithm>
 #include "talk/base/common.h"
 #include "talk/xmpp/xmppengineimpl.h"
-#include "talk/xmpp/constants.h"
+#include "talk/xmpp/xmppconstants.h"
 
 namespace buzz {
 

@@ -32,7 +32,6 @@
 #include "talk/xmllite/qname.h"
 #include "talk/xmpp/jid.h"
 
-
 #define NS_CLIENT Constants::ns_client()
 #define NS_SERVER Constants::ns_server()
 #define NS_STREAM Constants::ns_stream()

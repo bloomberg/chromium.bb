@@ -27,7 +27,7 @@
 
 #include "talk/base/base64.h"
 #include "talk/xmllite/xmlelement.h"
-#include "talk/xmpp/constants.h"
+#include "talk/xmpp/xmppconstants.h"
 #include "talk/xmpp/saslmechanism.h"
 
 using talk_base::Base64;

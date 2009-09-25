@@ -29,7 +29,7 @@
 #include "talk/xmllite/xmlelement.h"
 #include "talk/base/common.h"
 #include "talk/xmpp/xmppstanzaparser.h"
-#include "talk/xmpp/constants.h"
+#include "talk/xmpp/xmppconstants.h"
 
 #define new TRACK_NEW
 

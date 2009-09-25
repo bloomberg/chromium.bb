@@ -29,7 +29,7 @@
 #include "talk/base/common.h"
 #include "talk/base/logging.h"
 #include "talk/base/helpers.h"
-#include "talk/xmpp/constants.h"
+#include "talk/xmpp/xmppconstants.h"
 #include "talk/xmpp/jid.h"
 #include "talk/p2p/base/sessionclient.h"
 #include "talk/p2p/base/transport.h"

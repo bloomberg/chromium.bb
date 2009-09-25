@@ -34,7 +34,7 @@
 #include "talk/base/common.h"
 #include "talk/xmpp/xmppengineimpl.h"
 #include "talk/xmpp/xmpplogintask.h"
-#include "talk/xmpp/constants.h"
+#include "talk/xmpp/xmppconstants.h"
 #include "talk/xmllite/xmlprinter.h"
 #include "talk/xmpp/saslhandler.h"
 

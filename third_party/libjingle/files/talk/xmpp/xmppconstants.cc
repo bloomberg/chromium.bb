@@ -31,7 +31,7 @@
 #include "talk/xmllite/xmlelement.h"
 #include "talk/xmllite/qname.h"
 #include "talk/xmpp/jid.h"
-#include "talk/xmpp/constants.h"
+#include "talk/xmpp/xmppconstants.h"
 namespace buzz {
 
 const Jid JID_EMPTY(STR_EMPTY);

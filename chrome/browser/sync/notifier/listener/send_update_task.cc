@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "talk/xmllite/qname.h"
-#include "talk/xmpp/constants.h"
 #include "talk/xmpp/xmppclient.h"
+#include "talk/xmpp/xmppconstants.h"
 
 namespace browser_sync {
 

@@ -31,7 +31,7 @@
 #include "talk/p2p/base/transportchannelimpl.h"
 #include "talk/p2p/base/constants.h"
 #include "talk/xmllite/xmlelement.h"
-#include "talk/xmpp/constants.h"
+#include "talk/xmpp/xmppconstants.h"
 
 namespace {
 

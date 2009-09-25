@@ -32,3 +32,6 @@ Local Modifications:
   * Removed Makefile.in files, *.sln, *.vcproj.
   * Removed "examples", "thirdparty", and "sessions" directories.
   * Removed a number of unneeded scope specifications to appease gcc.
+  * Renamed "talk/xmpp/constants.*" to "talk/xmpp/xmppconstants.*" to get
+    around an IncrediBuild link error.  Apparently IncrediBuild can become
+    confused when two compilation units have the same filename.

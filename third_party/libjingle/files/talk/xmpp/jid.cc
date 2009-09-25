@@ -30,7 +30,7 @@ extern "C" {
 }
 #include <string>
 #include "talk/xmpp/jid.h"
-#include "talk/xmpp/constants.h"
+#include "talk/xmpp/xmppconstants.h"
 #include "talk/base/common.h"
 #include <algorithm>
 #include "talk/base/logging.h"
