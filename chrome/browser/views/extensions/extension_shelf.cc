@@ -30,6 +30,11 @@
 
 namespace {
 
+// This is the slight padding that is there around the edge of the browser. This
+// has been determined empirically.
+// TODO(sidchat): Compute this value from the root view of the extension shelf.
+static const int kExtensionShelfPaddingOnLeft = 4;
+
 // Margins around the content.
 static const int kTopMarginWhenExtensionsOnTop = 1;
 static const int kTopMarginWhenExtensionsOnBottom = 2;
@@ -177,10 +182,6 @@ class ExtensionShelf::Toolstrip : public views::View,
   virtual void AnimationEnded(const Animation* animation);
 
  private:
-  // The threshold for not tearing the ToolStrip from the Extension Shelf during
-  // click-and-drag the handle.
-  int GetVerticalTearFromShelfThreshold();
-
   // The actual renderer that this toolstrip contains.
   ExtensionHost* host_;
 
@@ -369,15 +370,22 @@ bool ExtensionShelf::Toolstrip::OnMouseDragged(const views::MouseEvent& event) {
     // so we need to convert it back to local coordinates.
     gfx::Point origin(0, 0);
     views::View::ConvertPointToScreen(shelf_->GetRootView(), &origin);
-    screen.set_x(screen.x() - origin.x() - initial_drag_location_.x());
+    int screen_x = screen.x() - initial_drag_location_.x() - origin.x();
 
-    // Restrict the movement to horizontal unless vertical mouse drag exceeds a
-    // threshold.
-    int screen_y = initial_drag_screen_point_.y();
-    if (abs(screen_y - screen.y()) > GetVerticalTearFromShelfThreshold()) {
-      screen_y = screen.y();
+    // Restrict the horizontal and vertical motions of the toolstrip so that it
+    // cannot be dragged out of the extension shelf. If the extension shelf is
+    // on the top along with the bookmark bar, the toolstrip cannot be dragged
+    // into the space allocated for bookmarks. The toolstrip cannot be dragged
+    // out of the browser window.
+    if (screen_x < kExtensionShelfPaddingOnLeft) {
+      screen_x = kExtensionShelfPaddingOnLeft;
+    } else if (screen_x > shelf_->width() - width() +
+               kExtensionShelfPaddingOnLeft) {
+      screen_x = shelf_->width() - width() + kExtensionShelfPaddingOnLeft;
     }
-    screen.set_y(screen_y - origin.y() - initial_drag_location_.y());
+    screen.set_x(screen_x);
+    screen.set_y(initial_drag_screen_point_.y() - origin.y() -
+        initial_drag_location_.y());
 
     // TODO(erikkay) as this gets dragged around, update the placeholder view
     // on the shelf to show where it will get dropped to.
@@ -495,11 +503,6 @@ void ExtensionShelf::Toolstrip::AnimationEnded(const Animation* animation) {
     AttachToShelf(false);
     HideShelfHandle(kHideDelayMs);
   }
-}
-
-int ExtensionShelf::Toolstrip::GetVerticalTearFromShelfThreshold() {
-  // TODO(sidchat): Compute this value from the toolstrip height.
-  return 29;
 }
 
 void ExtensionShelf::Toolstrip::DetachFromShelf(bool browserDetach) {
