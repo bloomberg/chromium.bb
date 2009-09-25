@@ -1761,11 +1761,9 @@ void AutomationProvider::GetLastNavigationTime(int handle,
 void AutomationProvider::WaitForNavigation(int handle,
                                            int64 last_navigation_time,
                                            IPC::Message* reply_message) {
-  NavigationController* controller = NULL;
-  if (tab_tracker_->ContainsHandle(handle))
-    controller = tab_tracker_->GetResource(handle);
-
+  NavigationController* controller = tab_tracker_->GetResource(handle);
   Time time = tab_tracker_->GetLastNavigationTime(handle);
+
   if (time.ToInternalValue() > last_navigation_time || !controller) {
     AutomationMsg_WaitForNavigation::WriteReplyParams(reply_message,
         controller == NULL ? AUTOMATION_MSG_NAVIGATION_ERROR :
