@@ -41,11 +41,17 @@ class ChromeActiveDocument;
 // A call to IOleCommandTarget::Exec on the webbrowser with this command id
 // and a command group of CGID_EXPLORER causes IE to replace the URL in the
 // current travel log entry
-#define UNDOC_CMDID_REPLACE_CURRENT_TRAVEL_LOG_ENTRY_URL (40)
+#define INTERNAL_CMDID_REPLACE_CURRENT_TRAVEL_LOG_ENTRY_URL (40)
 
-#define UNDOC_IE_CONTEXTMENU_ADDFAV        (2261)
-#define UNDOC_IE_CONTEXTMENU_VIEWSOURCE    (2139)
-#define UNDOC_IE_CONTEXTMENU_REFRESH       (6042)
+#define INTERNAL_IE_CONTEXTMENU_VIEWSOURCE    (2139)
+
+#ifndef SBCMDID_MIXEDZONE
+// This command is sent by the frame to allow the document to return the URL
+// security zone for display.
+// Please refer to http://msdn.microsoft.com/en-us/library/aa770042(VS.85).aspx
+// for more information.
+#define SBCMDID_MIXEDZONE                   39
+#endif  // SBCMDID_MIXEDZONE
 
 // This macro should be defined in the public section of the class.
 #define BEGIN_EXEC_COMMAND_MAP(theClass) \
@@ -60,7 +66,7 @@ class ChromeActiveDocument;
 #define EXEC_COMMAND_HANDLER(id, handler) \
   case id: { \
     hr = S_OK;  \
-    handler(cmd_group_guid, command_id, cmd_exec_opt, in_args, out_args)  \
+    handler(cmd_group_guid, command_id, cmd_exec_opt, in_args, out_args);  \
     break;  \
   }
 
@@ -127,13 +133,14 @@ END_MSG_MAP()
 BEGIN_EXEC_COMMAND_MAP(ChromeActiveDocument)
   EXEC_COMMAND_HANDLER_GENERIC(OLECMDID_PRINT, automation_client_->PrintTab())
   EXEC_COMMAND_HANDLER_NO_ARGS(OLECMDID_FIND, OnFindInPage)
-  EXEC_COMMAND_HANDLER_NO_ARGS(UNDOC_IE_CONTEXTMENU_VIEWSOURCE, OnViewSource)
+  EXEC_COMMAND_HANDLER_NO_ARGS(INTERNAL_IE_CONTEXTMENU_VIEWSOURCE, OnViewSource)
   FORWARD_TAB_COMMAND(OLECMDID_SELECTALL, SelectAll)
   FORWARD_TAB_COMMAND(OLECMDID_CUT, Cut)
   FORWARD_TAB_COMMAND(OLECMDID_COPY, Copy)
   FORWARD_TAB_COMMAND(OLECMDID_PASTE, Paste)
   FORWARD_TAB_COMMAND(OLECMDID_REFRESH, ReloadAsync)
   FORWARD_TAB_COMMAND(OLECMDID_STOP, StopAsync)
+  EXEC_COMMAND_HANDLER(SBCMDID_MIXEDZONE, OnDetermineSecurityZone)
 END_EXEC_COMMAND_MAP()
 
   // IPCs from automation server.
@@ -145,9 +152,6 @@ END_EXEC_COMMAND_MAP()
   virtual void OnTabbedOut(int tab_handle, bool reverse);
   virtual void OnDidNavigate(int tab_handle,
                              const IPC::NavigationInfo& nav_info);
-
-  void OnFindInPage();
-
   // Override DoVerb
   STDMETHOD(DoVerb)(LONG verb,
                     LPMSG msg,
@@ -197,7 +201,7 @@ END_EXEC_COMMAND_MAP()
   bool PreProcessContextMenu(HMENU menu);
   bool HandleContextMenuCommand(UINT cmd);
 
-  // Should connections initiated by this class try to block 
+  // Should connections initiated by this class try to block
   // responses served with the X-Frame-Options header?
   bool is_frame_busting_enabled();
 
@@ -220,11 +224,29 @@ END_EXEC_COMMAND_MAP()
   }
 
   // Exec command handlers
+  void OnFindInPage();
   void OnViewSource();
+  void OnDetermineSecurityZone(const GUID* cmd_group_guid, DWORD command_id,
+                               DWORD cmd_exec_opt, VARIANT* in_args,
+                               VARIANT* out_args);
 
   // Call exec on our site's command target
   HRESULT IEExec(const GUID* cmd_group_guid, DWORD command_id,
                  DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args);
+
+  bool IsUrlZoneRestricted(const std::wstring& url);
+
+  // Parses the URL and returns information whether it is a new navigation and
+  // the actual url after stripping out the cf: prefix if any.
+  // This function also checks if the url scheme is valid for navigation within
+  // chrome and whether it is a restricted URL as per IE settings. In either of
+  // these cases it returns false.
+  bool ParseUrl(const std::wstring& url, bool* is_new_navigation,
+                bool* is_chrome_protocol, std::wstring* parsed_url);
+
+  // Initiates navigation to the URL passed in.
+  // Returns true on success.
+  bool LaunchUrl(const std::wstring& url, bool is_new_navigation);
 
  protected:
   typedef std::map<int, bool> EnabledCommandsMap;
@@ -247,6 +269,8 @@ END_EXEC_COMMAND_MAP()
   // an existing ChromeActiveDocument instance which is going away and
   // a new ChromeActiveDocument instance is taking its place.
   bool is_automation_client_reused_;
+
+  ScopedComPtr<IInternetSecurityManager> security_manager_;
 
  public:
   ScopedComPtr<IOleInPlaceFrame> in_place_frame_;

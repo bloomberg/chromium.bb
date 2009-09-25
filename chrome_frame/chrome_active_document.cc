@@ -184,61 +184,21 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
   moniker_name->GetDisplayName(bind_context, NULL, &display_name);
   std::wstring url = display_name;
 
-  bool is_chrome_protocol = StartsWith(url, kChromeProtocolPrefix, false);
+  // The is_new_navigation variable indicates if this a navigation initiated
+  // by typing in a URL for e.g. in the IE address bar, or from Chrome by
+  // a window.open call from javascript, in which case the current IE tab
+  // will attach to an existing ExternalTabContainer instance.
   bool is_new_navigation = true;
+  bool is_chrome_protocol = false;
 
-  if (is_chrome_protocol) {
-    url.erase(0, lstrlen(kChromeProtocolPrefix));
-    is_new_navigation = 
-        !StartsWith(url, kChromeAttachExternalTabPrefix, false);
-  }
-
-  if (!IsValidUrlScheme(url)) {
-    DLOG(WARNING) << __FUNCTION__ << " Disallowing navigation to url: "
-                  << url;
+  if (!ParseUrl(url, &is_new_navigation, &is_chrome_protocol, &url)) {
+    DLOG(WARNING) << __FUNCTION__ << " Failed to parse url:" << url;
     return E_INVALIDARG;
   }
 
-  if (!is_new_navigation) {
-    WStringTokenizer tokenizer(url, L"&");
-    // Skip over kChromeAttachExternalTabPrefix
-    tokenizer.GetNext();
-
-    intptr_t external_tab_cookie = 0;
-
-    if (tokenizer.GetNext())
-      StringToInt(tokenizer.token(),
-                  reinterpret_cast<int*>(&external_tab_cookie));
-
-    if (external_tab_cookie == 0) {
-      NOTREACHED() << "invalid url for attach tab: " << url;
-      return E_FAIL;
-    }
-
-    automation_client_->AttachExternalTab(external_tab_cookie);
-  } 
-
-  // Initiate navigation before launching chrome so that the url will be
-  // cached and sent with launch settings.
-  if (is_new_navigation) {
-    url_.Reset(::SysAllocString(url.c_str()));
-    if (url_.Length()) {
-      std::string utf8_url;
-      WideToUTF8(url_, url_.Length(), &utf8_url);
-      if (!automation_client_->InitiateNavigation(utf8_url)) {
-        DLOG(ERROR) << "Invalid URL: " << url;
-        Error(L"Invalid URL");
-        url_.Reset();
-        return E_INVALIDARG;
-      }
-
-      DLOG(INFO) << "Url is " << url_;
-    }
-  }
-
-  if (!is_automation_client_reused_ &&
-      !InitializeAutomation(GetHostProcessName(false), L"", IsIEInPrivate())) {
-    return E_FAIL;
+  if (!LaunchUrl(url, is_new_navigation)) {
+    NOTREACHED() << __FUNCTION__ << " Failed to launch url:" << url;
+    return E_INVALIDARG;
   }
 
   if (!is_chrome_protocol) {
@@ -394,6 +354,9 @@ HRESULT ChromeActiveDocument::ActiveXDocActivate(LONG verb) {
     }
   }
   m_spClientSite->ShowObject();
+  // Inform IE about the zone for this URL. We do this here as we need to the
+  // IOleInPlaceSite interface to be setup.
+  IEExec(&CGID_Explorer, SBCMDID_MIXEDZONE, 0, NULL, NULL);
   return S_OK;
 }
 
@@ -534,6 +497,11 @@ void ChromeActiveDocument::UpdateNavigationState(
       }
     }
   }
+
+  // Update the IE zone here. Ideally we would like to do it when the active
+  // document is activated. However that does not work at times as the frame we
+  // get there is not the actual frame which handles the command.
+  IEExec(&CGID_Explorer, SBCMDID_MIXEDZONE, 0, NULL, NULL);
 }
 
 void ChromeActiveDocument::OnFindInPage() {
@@ -552,6 +520,17 @@ void ChromeActiveDocument::OnViewSource() {
   std::string url_to_open = "view-source:";
   url_to_open += navigation_info_.url.spec();
   OnOpenURL(0, GURL(url_to_open), NEW_WINDOW);
+}
+
+void ChromeActiveDocument::OnDetermineSecurityZone(const GUID* cmd_group_guid,
+                                                   DWORD command_id,
+                                                   DWORD cmd_exec_opt,
+                                                   VARIANT* in_args,
+                                                   VARIANT* out_args) {
+  if (out_args != NULL) {
+    out_args->vt = VT_UI4;
+    out_args->ulVal = URLZONE_INTERNET;
+  }
 }
 
 void ChromeActiveDocument::OnOpenURL(int tab_handle, const GURL& url_to_open,
@@ -636,13 +615,128 @@ HRESULT ChromeActiveDocument::IEExec(const GUID* cmd_group_guid,
                                      DWORD command_id, DWORD cmd_exec_opt,
                                      VARIANT* in_args, VARIANT* out_args) {
   HRESULT hr = E_FAIL;
+
   ScopedComPtr<IOleCommandTarget> frame_cmd_target;
-  if (m_spInPlaceSite)
-    hr = frame_cmd_target.QueryFrom(m_spInPlaceSite);
+
+  ScopedComPtr<IOleInPlaceSite> in_place_site(m_spInPlaceSite);
+  if (!in_place_site.get()) {
+    in_place_site.QueryFrom(m_spClientSite);
+  }
+
+  if (in_place_site)
+    hr = frame_cmd_target.QueryFrom(in_place_site);
 
   if (frame_cmd_target)
     hr = frame_cmd_target->Exec(cmd_group_guid, command_id, cmd_exec_opt,
                                 in_args, out_args);
 
   return hr;
+}
+
+bool ChromeActiveDocument::IsUrlZoneRestricted(const std::wstring& url) {
+  if (security_manager_.get() == NULL) {
+    HRESULT hr = CoCreateInstance(
+        CLSID_InternetSecurityManager,
+        NULL,
+        CLSCTX_ALL,
+        IID_IInternetSecurityManager,
+        reinterpret_cast<void**>(security_manager_.Receive()));
+
+    if (FAILED(hr)) {
+      NOTREACHED() << __FUNCTION__
+                   << " Failed to create InternetSecurityManager. Error: 0x%x"
+                   << hr;
+      return true;
+    }
+  }
+
+  DWORD zone = URLZONE_UNTRUSTED;
+  security_manager_->MapUrlToZone(url.c_str(), &zone, 0);
+  return zone == URLZONE_UNTRUSTED;
+}
+
+bool ChromeActiveDocument::ParseUrl(const std::wstring& url,
+                                    bool* is_new_navigation,
+                                    bool* is_chrome_protocol,
+                                    std::wstring* parsed_url) {
+  if (!is_new_navigation || !is_chrome_protocol|| !parsed_url) {
+    NOTREACHED() << __FUNCTION__ << " Invalid arguments";
+    return false;
+  }
+
+  std::wstring initial_url = url;
+
+  *is_chrome_protocol = StartsWith(initial_url, kChromeProtocolPrefix,
+                                   false);
+
+  *is_new_navigation = true;
+
+  if (*is_chrome_protocol) {
+    initial_url.erase(0, lstrlen(kChromeProtocolPrefix));
+    *is_new_navigation =
+        !StartsWith(initial_url, kChromeAttachExternalTabPrefix, false);
+  }
+
+  if (!IsValidUrlScheme(initial_url)) {
+    DLOG(WARNING) << __FUNCTION__ << " Disallowing navigation to url: "
+                  << url;
+    return false;
+  }
+
+  if (IsUrlZoneRestricted(initial_url)) {
+    DLOG(WARNING) << __FUNCTION__
+                  << " Disallowing navigation to restricted url: "
+                  << initial_url;
+    return false;
+  }
+
+  *parsed_url = initial_url;
+  return true;
+}
+
+bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
+                                     bool is_new_navigation) {
+  if (!is_new_navigation) {
+    WStringTokenizer tokenizer(url, L"&");
+    // Skip over kChromeAttachExternalTabPrefix
+    tokenizer.GetNext();
+
+    intptr_t external_tab_cookie = 0;
+
+    if (tokenizer.GetNext())
+      StringToInt(tokenizer.token(),
+                  reinterpret_cast<int*>(&external_tab_cookie));
+
+    if (external_tab_cookie == 0) {
+      NOTREACHED() << "invalid url for attach tab: " << url;
+      return false;
+    }
+
+    automation_client_->AttachExternalTab(external_tab_cookie);
+  } else {
+    // Initiate navigation before launching chrome so that the url will be
+    // cached and sent with launch settings.
+    if (is_new_navigation) {
+      url_.Reset(::SysAllocString(url.c_str()));
+      if (url_.Length()) {
+        std::string utf8_url;
+        WideToUTF8(url_, url_.Length(), &utf8_url);
+        if (!automation_client_->InitiateNavigation(utf8_url)) {
+          DLOG(ERROR) << "Invalid URL: " << url;
+          Error(L"Invalid URL");
+          url_.Reset();
+          return false;
+        }
+
+        DLOG(INFO) << "Url is " << url_;
+      }
+    }
+  }
+
+  if (!is_automation_client_reused_ &&
+      !InitializeAutomation(GetHostProcessName(false), L"", IsIEInPrivate())) {
+    return false;
+  }
+
+  return true;
 }
