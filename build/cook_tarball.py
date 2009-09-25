@@ -39,6 +39,13 @@ import subprocess
 import sys
 
 
+def RemoveIfExists(filename):
+  try:
+    os.remove(filename)
+  except IOError:
+    pass
+
+
 def WindowsRemoveReadOnly(top):
   """Only on windows remove the read only attribute from a directory tree.
 
@@ -52,6 +59,20 @@ def WindowsRemoveReadOnly(top):
       os.chmod(os.path.join(root, name), stat.S_IWRITE)
     for name in dirs:
       os.chmod(os.path.join(root, name), stat.S_IWRITE)
+
+
+def FindSVNRevision(path):
+  try:
+    info = subprocess.Popen(['svn', 'info'], shell=True,
+                            stdout=subprocess.PIPE,
+                            cwd=path).communicate()[0]
+  except IOError:
+    return 'UnknownRev'
+  m = re.search('Revision: ([0-9]+)', info)
+  if m:
+    return m.group(1)
+  else:
+    return 'UnknownRev'
 
 
 def DeleteAllMatching(in_dir, regex):
@@ -68,6 +89,17 @@ def DeleteAllMatching(in_dir, regex):
     for name in dirs:
       if regex.match(name):
         shutil.rmtree(os.path.join(root, name))
+
+
+def PickOuterName(build_dir):
+  platform_name = {
+      'win32': 'windows',
+      'cygwin': 'windows',
+      'darwin': 'mac',
+      'linux': 'linux',
+      'linux2': 'linux',
+  }[sys.platform]
+  return 'nacl_%s_%s' % (platform_name, FindSVNRevision(build_dir))
 
 
 def CookTarball(tgz_name, build_mode):
@@ -95,6 +127,9 @@ def CookTarball(tgz_name, build_mode):
   os.mkdir(tmp_dir)
 
   # Pick the root directory name in the destination.
+  # TODO(bradnelson): consider switching this to use the following,
+  # assuming this doesn't complicate the docs.
+  # dst_dir = os.path.join(tmp_dir, PickOuterName(build_dir))
   dst_dir = os.path.join(tmp_dir, 'build')
 
   # Copy over everything.
@@ -113,8 +148,9 @@ def CookTarball(tgz_name, build_mode):
   # Drop gyp stuff.
   shutil.rmtree(os.path.join(dst_dir, 'sconsbuild'), ignore_errors=True)
   shutil.rmtree(os.path.join(dst_dir, 'xcodebuild'), ignore_errors=True)
-  shutil.rmtree(os.path.join(dst_dir, 'build', 'Debug'), ignore_errors=True)
-  shutil.rmtree(os.path.join(dst_dir, 'build', 'Release'), ignore_errors=True)
+  for flavor in ['Debug', 'Release']:
+    shutil.rmtree(os.path.join(dst_dir, 'native_client',
+                               'build', flavor), ignore_errors=True)
 
   # Drop scons outputs.
   shutil.rmtree(os.path.join(dst_dir, 'native_client', 'scons-out'),
@@ -138,8 +174,10 @@ def CookTarball(tgz_name, build_mode):
                                doxy_version)
 
   # Build the desired version.
-  subprocess.call([scons, '--mode='+build_mode,
-                   '--verbose', '--download',
+  subprocess.call([scons,
+                   '--mode='+build_mode,
+                   '--verbose',
+                   '--download',
                    'DOXYGEN=%s' % doxy_path],
                   cwd=os.path.join(dst_dir, 'native_client'))
 
@@ -164,14 +202,15 @@ def CookTarball(tgz_name, build_mode):
               re.compile(r'.*\.sconsign.*')]:
     DeleteAllMatching(os.path.join(dst_dir, 'native_client', 'scons-out'), ext)
 
-  # Tar it up.
+  # Zip/tar it up.
   if sys.platform in ['win32']:
-    subprocess.call(['zip', '-vr',
-                     os.path.abspath(tgz_name + '.zip'), '.'],
+    out_file = os.path.abspath(tgz_name + '.zip')
+    RemoveIfExists(out_file)
+    subprocess.call(['zip', '-vr', out_file, '.'],
                     cwd=os.path.join(tmp_dir))
   else:
-    subprocess.call(['tar', 'cvfz',
-                     os.path.abspath(tgz_name + '.tgz'), './'],
+    out_file = os.path.abspath(tgz_name + '.tgz')
+    subprocess.call(['tar', 'cvfz', out_file, './'],
                     cwd=os.path.join(tmp_dir))
 
 
