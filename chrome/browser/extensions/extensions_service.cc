@@ -483,6 +483,7 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
         if (extension->location() != Extension::LOAD)
           extension_prefs_->MigrateToPrefs(extension);
 
+        LOG(INFO) << "Sending EXTENSION_LOADED";
         NotificationService::current()->Notify(
             NotificationType::EXTENSION_LOADED,
             Source<ExtensionsService>(this),

@@ -182,14 +182,14 @@ bool ExtensionBrowserTest::WaitForExtensionHostsToLoad() {
 
   ExtensionProcessManager* manager =
         browser()->profile()->GetExtensionProcessManager();
-  base::Time start_time = base::Time::Now();
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      new MessageLoop::QuitTask, kTimeoutMs);
   for (ExtensionProcessManager::const_iterator iter = manager->begin();
-     iter != manager->end(); ++iter) {
-    if (!(*iter)->did_stop_loading())
+       iter != manager->end();) {
+    if ((*iter)->did_stop_loading())
+      ++iter;
+    else
       ui_test_utils::RunMessageLoop();
   }
+  LOG(INFO) << "All ExtensionHosts loaded";
 
   return true;
 }

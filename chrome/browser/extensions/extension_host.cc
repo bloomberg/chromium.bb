@@ -94,10 +94,12 @@ bool ExtensionHost::IsRenderViewLive() const {
 }
 
 void ExtensionHost::CreateRenderView(RenderWidgetHostView* host_view) {
+  LOG(INFO) << "Creating RenderView for " + extension_->name();
   render_view_host_->set_view(host_view);
   render_view_host_->CreateRenderView();
   NavigateToURL(url_);
   DCHECK(IsRenderViewLive());
+  LOG(INFO) << "Sending EXTENSION_PROCESS_CREATED";
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_PROCESS_CREATED,
       Source<Profile>(profile_),
@@ -105,6 +107,8 @@ void ExtensionHost::CreateRenderView(RenderWidgetHostView* host_view) {
 }
 
 void ExtensionHost::NavigateToURL(const GURL& url) {
+  LOG(INFO) << "Request to NavigateToURL " << url.spec() << " for "
+      << extension_->name();
   // Prevent explicit navigation to another extension id's pages.
   // This method is only called by some APIs, so we still need to protect
   // DidNavigate below (location = "").
@@ -117,11 +121,14 @@ void ExtensionHost::NavigateToURL(const GURL& url) {
   url_ = url;
 
   if (!is_background_page() && !extension_->GetBackgroundPageReady()) {
+    LOG(INFO) << "...Waiting on EXTENSION_BACKGROUND_PAGE_READY";
     // Make sure the background page loads before any others.
     registrar_.Add(this, NotificationType::EXTENSION_BACKGROUND_PAGE_READY,
                    Source<Extension>(extension_));
     return;
   }
+
+  LOG(INFO) << "Navigating to " << url_.spec();
   render_view_host_->NavigateToURL(url_);
 }
 
@@ -139,6 +146,7 @@ void ExtensionHost::UpdatePreferredWidth(int pref_width) {
 }
 
 void ExtensionHost::RenderViewGone(RenderViewHost* render_view_host) {
+  LOG(INFO) << "Sending EXTENSION_PROCESS_CRASHED for " + extension_->name();
   DCHECK_EQ(render_view_host_, render_view_host);
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_PROCESS_CRASHED,
@@ -176,6 +184,8 @@ void ExtensionHost::DidNavigate(RenderViewHost* render_view_host,
     return;
   }
 
+  LOG(INFO) << "(DidNavigate) Resetting EFD to " << url_.spec() << " for "
+      << extension_->name();
   url_ = params.url;
   extension_function_dispatcher_.reset(
       new ExtensionFunctionDispatcher(render_view_host_, this, url_));
@@ -213,11 +223,12 @@ void ExtensionHost::InsertThemeCSS() {
 
 void ExtensionHost::DidStopLoading(RenderViewHost* render_view_host) {
   if (!did_stop_loading_) {
+    did_stop_loading_ = true;
+    LOG(INFO) << "Sending EXTENSION_HOST_DID_STOP_LOADING";
     NotificationService::current()->Notify(
         NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
         Source<Profile>(profile_),
         Details<ExtensionHost>(this));
-    did_stop_loading_ = true;
   }
   if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP ||
       extension_host_type_ == ViewType::EXTENSION_MOLE) {
@@ -385,6 +396,8 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
   // we'll create 2 EFDs for the first navigation. We should try to find a
   // better way to unify them.
   // See http://code.google.com/p/chromium/issues/detail?id=18240
+  LOG(INFO) << "(RenderViewCreated) Resetting EFD to " << url_.spec() << " for "
+      << extension_->name();
   extension_function_dispatcher_.reset(
       new ExtensionFunctionDispatcher(render_view_host, this, url_));
 

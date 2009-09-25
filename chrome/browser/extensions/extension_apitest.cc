@@ -14,7 +14,10 @@ static const int kTimeoutMs = 60 * 1000;  // 1 minute
 
 // Load an extension and wait for it to notify of PASSED or FAILED.
 bool ExtensionApiTest::RunExtensionTest(const char* extension_name) {
+  // Note the inner scope here. The |registrar| will fall out of scope and
+  // remove listeners *before* the call to WaitForPassFail() below.
   {
+    LOG(INFO) << "Running ExtensionApiTest with: " << extension_name;
     NotificationRegistrar registrar;
     registrar.Add(this, NotificationType::EXTENSION_TEST_PASSED,
                   NotificationService::AllSources());
