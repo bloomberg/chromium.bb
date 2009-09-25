@@ -18,6 +18,7 @@
 
 #include "base/at_exit.h"
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/sync/engine/all_status.h"
@@ -53,6 +54,7 @@ using browser_sync::Syncer;
 using browser_sync::SyncerEvent;
 using browser_sync::SyncerStatus;
 using browser_sync::SyncerThread;
+using browser_sync::SyncerThreadFactory;
 using browser_sync::UserSettings;
 using browser_sync::TalkMediator;
 using browser_sync::TalkMediatorImpl;
@@ -873,7 +875,7 @@ class SyncManager::SyncInternal {
   scoped_ptr<SyncAPIServerConnectionManager> connection_manager_;
 
   // The thread that runs the Syncer. Needs to be explicitly Start()ed.
-  scoped_ptr<SyncerThread> syncer_thread_;
+  scoped_refptr<SyncerThread> syncer_thread_;
 
   // Notification (xmpp) handler.
   scoped_ptr<TalkMediator> talk_mediator_;
@@ -995,6 +997,11 @@ bool SyncManager::SyncInternal::Init(
     g_log_files_initialized = true;
   }
 
+  // TODO(timsteele): We need to do this for syncapi.dll, but should remove
+  // once we link statically.  On windows this will set up the correct command
+  // line, on posix it will be create an empty command line.
+  CommandLine::Init(0, NULL);
+
   // Set up UserSettings, creating the db if necessary. We need this to
   // instantiate a URLFactory to give to the Syncer.
   PathString settings_db_file = AppendSlash(database_location) +
@@ -1063,11 +1070,11 @@ bool SyncManager::SyncInternal::Init(
   // on the Syncer side, and |model_safe_worker| on the API client side.
   ModelSafeWorkerBridge* worker = new ModelSafeWorkerBridge(model_safe_worker);
 
-  syncer_thread_.reset(new SyncerThread(&command_channel_,
-                                        dir_manager(),
-                                        connection_manager(),
-                                        &allstatus_,
-                                        worker));
+  syncer_thread_ = SyncerThreadFactory::Create(&command_channel_,
+                                               dir_manager(),
+                                               connection_manager(),
+                                               &allstatus_,
+                                               worker);
   syncer_thread()->WatchTalkMediator(talk_mediator());
   allstatus()->WatchSyncerThread(syncer_thread());
 
