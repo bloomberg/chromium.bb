@@ -818,12 +818,18 @@ void BrowserWindowGtk::SetBoundsImpl(const gfx::Rect& bounds, bool exterior) {
 
   gtk_window_move(window_, x, y);
 
+#if defined(OS_CHROMEOS)
+  // In Chrome OS we need to get the popup size set here for the panel
+  // to be displayed with its initial size correctly.
+  SetWindowSize(window_, width, height);
+#else
   if (exterior) {
     SetWindowSize(window_, width, height);
   } else {
     gtk_widget_set_size_request(contents_container_->widget(),
                                 width, height);
   }
+#endif
 }
 
 void BrowserWindowGtk::SetBounds(const gfx::Rect& bounds) {
