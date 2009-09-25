@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -15,7 +16,8 @@
 
 // Return the right field editor for AutocompleteTextField instance.
 
-@interface AutocompleteTextFieldWindowTestDelegate : NSObject {
+@interface AutocompleteTextFieldWindowTestDelegate :
+    NSObject<NSWindowDelegate> {
   scoped_nsobject<AutocompleteTextFieldEditor> editor_;
 }
 - (id)windowWillReturnFieldEditor:(NSWindow *)sender toObject:(id)anObject;

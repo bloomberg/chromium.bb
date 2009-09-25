@@ -52,7 +52,7 @@ class AutocompleteTextFieldEditorTest : public PlatformTest {
     // Arrange for |field_| to get the right field editor.
     window_delegate_.reset(
         [[AutocompleteTextFieldWindowTestDelegate alloc] init]);
-    [cocoa_helper_.window() setDelegate:window_delegate_];
+    [cocoa_helper_.window() setDelegate:window_delegate_.get()];
 
     // Get the field editor setup.
     cocoa_helper_.makeFirstResponder(field_);
