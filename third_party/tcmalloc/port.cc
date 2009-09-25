@@ -71,7 +71,8 @@ int getpagesize() {
   if (pagesize == 0) {
     SYSTEM_INFO system_info;
     GetSystemInfo(&system_info);
-    pagesize = system_info.dwPageSize;
+    pagesize = std::max(system_info.dwPageSize,
+                        system_info.dwAllocationGranularity);
   }
   return pagesize;
 }
@@ -188,37 +189,37 @@ static SpinLock alloc_lock(SpinLock::LINKER_INITIALIZED);
 // munmap's in the middle of the page, which is forbidden in windows.
 extern void* TCMalloc_SystemAlloc(size_t size, size_t *actual_size,
                                   size_t alignment) {
-  // Safest is to make actual_size same as input-size.
-  if (actual_size) {
-    *actual_size = size;
-  }
-
   SpinLockHolder sh(&alloc_lock);
   // Align on the pagesize boundary
   const int pagesize = getpagesize();
   if (alignment < pagesize) alignment = pagesize;
   size = ((size + alignment - 1) / alignment) * alignment;
 
-  // Ask for extra memory if alignment > pagesize
-  size_t extra = 0;
-  if (alignment > pagesize) {
-    extra = alignment - pagesize;
+  // Report the total number of bytes the OS actually delivered.  This might be
+  // greater than |size| because of alignment concerns.  The full size is
+  // necessary so that adjacent spans can be coalesced.
+  // TODO(antonm): proper processing of alignments
+  // in actual_size and decommitting.
+  if (actual_size) {
+    *actual_size = size;
   }
 
-  void* result = VirtualAlloc(0, size + extra,
+  // We currently do not support alignments larger than the pagesize or
+  // alignments that are not multiples of the pagesize after being floored.
+  // If this ability is needed it can be done by the caller (assuming it knows
+  // the page size).
+  assert(alignment <= pagesize);
+
+  void* result = VirtualAlloc(0, size,
                               MEM_COMMIT|MEM_RESERVE, PAGE_READWRITE);
   if (result == NULL)
     return NULL;
 
-  // Adjust the return memory so it is aligned
-  uintptr_t ptr = reinterpret_cast<uintptr_t>(result);
-  size_t adjust = 0;
-  if ((ptr & (alignment - 1)) != 0) {
-    adjust = alignment - (ptr & (alignment - 1));
-  }
+  // If the result is not aligned memory fragmentation will result which can
+  // lead to pathological memory use.
+  assert((reinterpret_cast<uintptr_t>(result) & (alignment - 1)) == 0);
 
-  ptr += adjust;
-  return reinterpret_cast<void*>(ptr);
+  return result;
 }
 
 void TCMalloc_SystemRelease(void* start, size_t length) {
