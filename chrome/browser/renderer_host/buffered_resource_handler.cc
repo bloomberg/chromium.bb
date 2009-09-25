@@ -4,20 +4,21 @@
 
 #include "chrome/browser/renderer_host/buffered_resource_handler.h"
 
+#include <vector>
+
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "net/base/mime_sniffer.h"
-#include "net/base/net_errors.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/download_throttling_resource_handler.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/common/url_constants.h"
+#include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/mime_util.h"
-#include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
@@ -51,6 +52,7 @@ BufferedResourceHandler::BufferedResourceHandler(ResourceHandler* handler,
     : real_handler_(handler),
       host_(host),
       request_(request),
+      read_buffer_size_(0),
       bytes_read_(0),
       sniff_content_(false),
       should_buffer_(false),
