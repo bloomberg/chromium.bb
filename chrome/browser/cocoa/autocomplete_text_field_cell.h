@@ -65,7 +65,7 @@
 - (NSRect)textCursorFrameForFrame:(NSRect)cellFrame;
 
 // Return the portion of the cell to use for text display.  This
-// corrosponds to the frame with our added decorations sliced off.
+// corresponds to the frame with our added decorations sliced off.
 - (NSRect)textFrameForFrame:(NSRect)cellFrame;
 
 @end
