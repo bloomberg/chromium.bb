@@ -56,6 +56,29 @@
           ],
           # Disable warning: "'this' : used in base member initialization list."
           'msvs_disabled_warnings': [4355],
+          'conditions': [
+            ['renderer == "d3d9"',
+              {
+                'defines': [
+                  'RENDERER_D3D9',
+                ],
+              },
+            ],
+            ['renderer == "gl"',
+              {
+                'defines': [
+                  'RENDERER_GL',
+                ],
+              },
+            ],
+            ['renderer == "cb"',
+              {
+                'defines': [
+                  'RENDERER_CB',
+                ],
+              },
+            ],
+          ],
         },
       },
     ],
@@ -78,7 +101,6 @@
           'configurations': {
             'Debug': {
               'xcode_settings': {
-#                'OTHER_CFLAGS': ['-ggdb', '-g',],
                 'GCC_DEBUGGING_SYMBOLS': 'full',
         				'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
               },
@@ -92,6 +114,22 @@
             'WARNING_CXXFLAGS': ['-Wstrict-aliasing',
                                  '-Wno-deprecated',],
           },
+          'conditions': [
+            ['renderer == "gl"',
+              {
+                'defines': [
+                  'RENDERER_GL',
+                ],
+              },
+            ],
+            ['renderer == "cb"',
+              {
+                'defines': [
+                  'RENDERER_CB',
+                ],
+              },
+            ],
+          ],
         },
       },
     ],
@@ -116,32 +154,21 @@
             '-fvisibility=hidden',
             '-Wstrict-aliasing',
           ],
-        },
-      },
-    ],
-    ['renderer == "d3d9"',
-      {
-        'target_defaults': {
-          'defines': [
-            'RENDERER_D3D9',
-          ],
-        },
-      },
-    ],
-    ['renderer == "gl"',
-      {
-        'target_defaults': {
-          'defines': [
-            'RENDERER_GL',
-          ],
-        },
-      },
-    ],
-    ['renderer == "cb"',
-      {
-        'target_defaults': {
-          'defines': [
-            'RENDERER_CB',
+          'conditions': [
+            ['renderer == "gl"',
+              {
+                'defines': [
+                  'RENDERER_GL',
+                ],
+              },
+            ],
+            ['renderer == "cb"',
+              {
+                'defines': [
+                  'RENDERER_CB',
+                ],
+              },
+            ],
           ],
         },
       },
