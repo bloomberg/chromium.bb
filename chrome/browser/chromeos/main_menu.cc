@@ -5,12 +5,14 @@
 #include "chrome/browser/chromeos/main_menu.h"
 
 #include "app/resource_bundle.h"
+#include "base/message_loop.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_factory.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/browser/renderer_host/site_instance.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
@@ -31,21 +33,18 @@ void MainMenu::Show(Browser* browser) {
   (new MainMenu(browser))->ShowImpl();
 }
 
+MainMenu::~MainMenu() {
+  popup_->Close();
+  menu_rvh_->Shutdown();
+}
+
 MainMenu::MainMenu(Browser* browser)
     : browser_(browser),
       popup_(NULL),
       site_instance_(NULL),
       menu_rvh_(NULL),
       rwhv_(NULL),
-      child_rvh_(NULL) {
-}
-
-MainMenu::~MainMenu() {
-  gdk_pointer_ungrab(GDK_CURRENT_TIME);
-  popup_->Close();
-  menu_rvh_->Shutdown();
-  if (child_rvh_)
-    child_rvh_->Shutdown();
+      ALLOW_THIS_IN_INITIALIZER_LIST(tab_contents_delegate_(this)) {
 }
 
 void MainMenu::ShowImpl() {
@@ -84,12 +83,33 @@ void MainMenu::ShowImpl() {
   g_signal_connect(rwhv_widget, "button-press-event",
                    G_CALLBACK(CallButtonPressEvent), this);
   // Do a mouse grab on the renderer widget host view's widget so that we can
-  // close the popup if the user clicks anywhere else.
+  // close the popup if the user clicks anywhere else. And do a keyboard
+  // grab so that we get all key events.
   gdk_pointer_grab(rwhv_widget->window, FALSE,
                    static_cast<GdkEventMask>(
                          GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
                          GDK_POINTER_MOTION_MASK),
                    NULL, NULL, GDK_CURRENT_TIME);
+  gdk_keyboard_grab(rwhv_widget->window, FALSE, GDK_CURRENT_TIME);
+}
+
+void MainMenu::Delete(bool now) {
+  gdk_keyboard_ungrab(GDK_CURRENT_TIME);
+  gdk_pointer_ungrab(GDK_CURRENT_TIME);
+  // Hide the popup immediately. We don't close it as it contains the
+  // renderwidgethostview, which hasn't been shutdown yet.
+  popup_->Hide();
+  if (now)
+    delete this;
+  else
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+}
+
+// static
+gboolean MainMenu::CallButtonPressEvent(GtkWidget* widget,
+                                        GdkEventButton* event,
+                                        MainMenu* menu) {
+  return menu->OnButtonPressEvent(widget, event);
 }
 
 gboolean MainMenu::OnButtonPressEvent(GtkWidget* widget,
@@ -99,27 +119,46 @@ gboolean MainMenu::OnButtonPressEvent(GtkWidget* widget,
       event->y >= widget->allocation.height) {
     // The user clicked outside the bounds of the menu, delete the main which
     // results in closing it.
-    delete this;
+    Delete(true);
   }
   return FALSE;
 }
 
-void MainMenu::RequestOpenURL(const GURL& url,
-                              const GURL& referrer,
-                              WindowOpenDisposition disposition) {
-  browser_->OpenURL(url, referrer, NEW_FOREGROUND_TAB, PageTransition::LINK);
-  delete this;
-}
-
 void MainMenu::CreateNewWindow(int route_id,
                                base::WaitableEvent* modal_dialog_event) {
-  if (child_rvh_) {
-    // We should never get here. If we do, it indicates a child render view
-    // host was created and we didn't get a subsequent RequestOpenURL.
+  if (pending_contents_.get()) {
     NOTREACHED();
     return;
   }
-  DCHECK(!child_rvh_);
-  child_rvh_ = RenderViewHostFactory::Create(
-      site_instance_, this, route_id, modal_dialog_event);
+
+  helper_.CreateNewWindow(route_id, modal_dialog_event, browser_->profile(),
+                          site_instance_,
+                          DOMUIFactory::GetDOMUIType(GURL(kMenuURL)));
+  pending_contents_.reset(helper_.GetCreatedWindow(route_id));
+  pending_contents_->set_delegate(&tab_contents_delegate_);
+}
+
+void MainMenu::ShowCreatedWindow(int route_id,
+                                 WindowOpenDisposition disposition,
+                                 const gfx::Rect& initial_pos,
+                                 bool user_gesture,
+                                 const GURL& creator_url) {
+  if (disposition == NEW_POPUP) {
+    pending_contents_->set_delegate(NULL);
+    browser_->GetSelectedTabContents()->AddNewContents(
+        pending_contents_.release(), disposition, initial_pos, user_gesture,
+        creator_url);
+    Delete(false);
+  }
+}
+
+void MainMenu::TabContentsDelegateImpl::OpenURLFromTab(
+    TabContents* source,
+    const GURL& url,
+    const GURL& referrer,
+    WindowOpenDisposition disposition,
+    PageTransition::Type transition) {
+  menu_->browser_->OpenURL(url, referrer, NEW_FOREGROUND_TAB,
+                           PageTransition::LINK);
+  menu_->Delete(true);
 }

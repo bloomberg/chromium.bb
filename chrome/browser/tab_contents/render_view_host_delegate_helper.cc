@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "render_view_host_delegate_helper.h"
+#include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 
 #include "base/command_line.h"
 #include "chrome/browser/browser.h"

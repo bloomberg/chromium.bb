@@ -7,7 +7,10 @@
 
 #include <gtk/gtk.h>
 
+#include "base/scoped_ptr.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
+#include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
+#include "chrome/browser/tab_contents/tab_contents_delegate.h"
 
 class Browser;
 class RenderWidgetHostViewGtk;
@@ -25,34 +28,79 @@ class Widget;
 //
 // MainMenu creates a RenderViewHost and corresponding RenderWidgetHostView
 // to display the html page. MainMenu acts as the RenderViewHostDelegate for
-// the RenderViewHost. Additionally when the user clicks a link a new window
-// is created (child_rvh_). MainMenu is set as the RenderViewHostDelegate of
-// the child_rvh_ so that it can receive the request to open the url
-// (RequestOpenURL).
+// the RenderViewHost. Clicking on a link results in creating a new
+// TabContents (assigned to pending_contents_). One of two things can then
+// happen:
+// . If the page is a popup (ShowCreatedWindow passed NEW_POPUP), the
+//   TabContents is added to the Browser.
+// . If the page requests a URL to be open (OpenURLFromTab), OpenURL is
+//   invoked on the browser.
 //
 // When a new url is opened, or the user clicks outsides the bounds of the
 // widget the menu is closed.
 //
-// MainMenu manages its own lifetime.
+// MainMenu manages its own lifetime. In some cases deletion is delayed because
+// the callers can't deal with being deleted while servicing a message from
+// the renderer.
 class MainMenu : public RenderViewHostDelegate,
                  public RenderViewHostDelegate::View {
  public:
   // Shows the menu.
   static void Show(Browser* browser);
 
- private:
-  explicit MainMenu(Browser* browser);
   ~MainMenu();
 
+ private:
+  // TabContentsDelegate and RenderViewHostDelegate::View have some methods
+  // in common (with differing signatures). The TabContentsDelegate methods are
+  // implemented by this class.
+  class TabContentsDelegateImpl : public TabContentsDelegate {
+   public:
+    explicit TabContentsDelegateImpl(MainMenu* menu) : menu_(menu) {}
+
+    // TabContentsDelegate.
+    virtual void OpenURLFromTab(TabContents* source,
+                                const GURL& url, const GURL& referrer,
+                                WindowOpenDisposition disposition,
+                                PageTransition::Type transition);
+    virtual void NavigationStateChanged(const TabContents* source,
+                                        unsigned changed_flags) {}
+    virtual void AddNewContents(TabContents* source,
+                                TabContents* new_contents,
+                                WindowOpenDisposition disposition,
+                                const gfx::Rect& initial_pos,
+                                bool user_gesture) {}
+    virtual void ActivateContents(TabContents* contents) {}
+    virtual void LoadingStateChanged(TabContents* source) {}
+    virtual void CloseContents(TabContents* source) {}
+    virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
+    virtual bool IsPopup(TabContents* source) { return false; }
+    virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
+    virtual void URLStarredChanged(TabContents* source, bool starred) {}
+    virtual void UpdateTargetURL(TabContents* source, const GURL& url) {}
+
+   private:
+    MainMenu* menu_;
+
+    DISALLOW_COPY_AND_ASSIGN(TabContentsDelegateImpl);
+  };
+
+  friend class TabContentsDelegateImpl;
+
+  explicit MainMenu(Browser* browser);
+
   void ShowImpl();
+
+  // Does cleanup before deletion. If |now| is true delete is invoked
+  // immediately, otherwise deletion occurs after a delay. See description
+  // above class as to why we need to delay deletion in some situations.
+  void Delete(bool now);
 
   // Callback from button presses on the render widget host view. Clicks
   // outside the widget resulting in closing the menu.
   static gboolean CallButtonPressEvent(GtkWidget* widget,
                                        GdkEventButton* event,
-                                       MainMenu* menu) {
-    return menu->OnButtonPressEvent(widget, event);
-  }
+                                       MainMenu* menu);
   gboolean OnButtonPressEvent(GtkWidget* widget,
                               GdkEventButton* event);
 
@@ -66,9 +114,6 @@ class MainMenu : public RenderViewHostDelegate,
   virtual RenderViewHostDelegate::View* GetViewDelegate() {
     return this;
   }
-  virtual void RequestOpenURL(const GURL& url,
-                              const GURL& referrer,
-                              WindowOpenDisposition disposition);
 
   // RenderViewHostDelegate::View overrides.
   virtual void CreateNewWindow(int route_id,
@@ -78,7 +123,7 @@ class MainMenu : public RenderViewHostDelegate,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
                                  bool user_gesture,
-                                 const GURL& creator_url) {}
+                                 const GURL& creator_url);
   virtual void ShowCreatedWidget(int route_id,
                                  const gfx::Rect& initial_pos) {}
   virtual void ShowContextMenu(const ContextMenuParams& params) {}
@@ -107,9 +152,14 @@ class MainMenu : public RenderViewHostDelegate,
   // RenderWidgetHostView from the menu_rvh_.
   RenderWidgetHostViewGtk* rwhv_;
 
-  // If the user clicks an item in the menu a child RenderViewHost is opened.
-  // This is that child.
-  RenderViewHost* child_rvh_;
+  // Handles creating the child TabContents.
+  RenderViewHostDelegateViewHelper helper_;
+
+  // Delegate of the TabContents created by helper_.
+  TabContentsDelegateImpl tab_contents_delegate_;
+
+  // TabContents created when the user clicks a link.
+  scoped_ptr<TabContents> pending_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(MainMenu);
 };
