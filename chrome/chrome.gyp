@@ -4355,11 +4355,6 @@
             'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
           ],
           'sources!': [
-            # This test is mostly about renaming downloads to safe file
-            # names. As such we don't need/want to port it to linux. We
-            # might want to write our own tests for the download manager
-            # on linux, though.
-            'browser/download/download_manager_unittest.cc',
             'browser/views/bookmark_context_menu_test.cc',
             'browser/gtk/options/cookies_view_unittest.cc',
             # Compact Language Detection (cld) is not supported in linux yet.
