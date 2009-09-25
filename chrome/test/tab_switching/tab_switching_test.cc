@@ -25,7 +25,7 @@ namespace {
 // time taken for each switch. It then prints out the times on the console,
 // with the aim that the page cycler parser can interpret these numbers to
 // draw graphs for page cycler Tab Switching Performance.
-// Usage Flags: -enable-logging -dump-histograms-on-exit
+// Usage Flags: -enable-logging -dump-histograms-on-exit -log-level=0
 class TabSwitchingUITest : public UITest {
  public:
   TabSwitchingUITest() {
