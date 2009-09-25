@@ -18,6 +18,7 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class BookmarkContextMenu;
 class BookmarkMenuController;
@@ -26,15 +27,19 @@ class BrowserWindowGtk;
 class CustomContainerButton;
 class PageNavigator;
 class Profile;
+class TabstripOriginProvider;
 struct GtkThemeProvider;
 
 class BookmarkBarGtk : public AnimationDelegate,
                        public BookmarkModelObserver,
                        public MenuBarHelper::Delegate,
                        public NotificationObserver {
+  FRIEND_TEST(BookmarkBarGtkUnittest, DisplaysHelpMessageOnEmpty);
+  FRIEND_TEST(BookmarkBarGtkUnittest, HidesHelpMessageWithBookmark);
+  FRIEND_TEST(BookmarkBarGtkUnittest, BuildsButtons);
  public:
   explicit BookmarkBarGtk(Profile* profile, Browser* browser,
-                          BrowserWindowGtk* window);
+                          TabstripOriginProvider* tabstrip_origin_provider);
   virtual ~BookmarkBarGtk();
 
   // Resets the profile. This removes any buttons for the current profile and
@@ -90,6 +95,7 @@ class BookmarkBarGtk : public AnimationDelegate,
   virtual void PopupForButton(GtkWidget* button);
   virtual void PopupForButtonNextTo(GtkWidget* button,
                                     GtkMenuDirectionType dir);
+
  private:
   // Helper function which generates GtkToolItems for |bookmark_toolbar_|.
   void CreateAllBookmarkButtons();
@@ -230,7 +236,9 @@ class BookmarkBarGtk : public AnimationDelegate,
   PageNavigator* page_navigator_;
 
   Browser* browser_;
-  BrowserWindowGtk* window_;
+
+  // Provides us with the offset into the background theme image.
+  TabstripOriginProvider* tabstrip_origin_provider_;
 
   // Model providing details as to the starred entries/groups that should be
   // shown. This is owned by the Profile.

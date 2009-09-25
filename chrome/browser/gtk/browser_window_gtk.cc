@@ -1629,7 +1629,7 @@ void BrowserWindowGtk::InitWidgets() {
 
   if (IsBookmarkBarSupported()) {
     bookmark_bar_.reset(new BookmarkBarGtk(browser_->profile(), browser_.get(),
-                                           this));
+                                           tabstrip_.get()));
     gtk_box_pack_start(GTK_BOX(window_vbox_), bookmark_bar_->widget(),
                        FALSE, FALSE, 0);
     gtk_widget_show(bookmark_bar_->widget());

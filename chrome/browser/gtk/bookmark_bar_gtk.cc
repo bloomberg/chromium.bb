@@ -25,6 +25,7 @@
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/browser/gtk/tabstrip_origin_provider.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -93,11 +94,11 @@ void SetToolBarStyle() {
 }  // namespace
 
 BookmarkBarGtk::BookmarkBarGtk(Profile* profile, Browser* browser,
-                               BrowserWindowGtk* window)
+                               TabstripOriginProvider* tabstrip_origin_provider)
     : profile_(NULL),
       page_navigator_(NULL),
       browser_(browser),
-      window_(window),
+      tabstrip_origin_provider_(tabstrip_origin_provider),
       model_(NULL),
       instructions_(NULL),
       dragged_node_(NULL),
@@ -923,7 +924,7 @@ gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
                   event->area.width, event->area.height);
   cairo_clip(cr);
   gfx::Point tabstrip_origin =
-      bar->window_->tabstrip()->GetTabStripOriginForWidget(widget);
+      bar->tabstrip_origin_provider_->GetTabStripOriginForWidget(widget);
 
   GtkThemeProvider* theme_provider = bar->theme_provider_;
   CairoCachedSurface* background = theme_provider->GetSurfaceNamed(

@@ -4187,6 +4187,7 @@
         'browser/global_keyboard_shortcuts_mac_unittest.cc',
         'browser/google_url_tracker_unittest.cc',
         'browser/google_update_settings_posix_unittest.cc',
+        'browser/gtk/bookmark_bar_gtk_unittest.cc',
         'browser/gtk/bookmark_editor_gtk_unittest.cc',
         'browser/gtk/gtk_theme_provider_unittest.cc',
         'browser/gtk/go_button_gtk_unittest.cc',

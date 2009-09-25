@@ -12,6 +12,7 @@
 #include "base/gfx/rect.h"
 #include "base/task.h"
 #include "base/message_loop.h"
+#include "chrome/browser/gtk/tabstrip_origin_provider.h"
 #include "chrome/browser/gtk/tabs/tab_gtk.h"
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -27,6 +28,7 @@ class TabStripGtk : public TabStripModelObserver,
                     public TabGtk::TabDelegate,
                     public MessageLoopForUI::Observer,
                     public NotificationObserver,
+                    public TabstripOriginProvider,
                     public ViewIDUtil::Delegate {
  public:
   class TabAnimation;
@@ -82,14 +84,8 @@ class TabStripGtk : public TabStripModelObserver,
   // Retrieve the ideal bounds for the Tab at the specified index.
   gfx::Rect GetIdealBounds(int index);
 
-  // Return the origin of the tab strip in coordinates relative to where we
-  // start drawing the background theme image. This is the x coordinate of
-  // the origin of the GdkWindow of widget(), but the y coordinate of the origin
-  // of widget() itself.
-  // Used to help other widgets draw their background relative to the tabstrip.
-  // Should only be called after both the tabstrip and |widget| have been
-  // allocated.
-  gfx::Point GetTabStripOriginForWidget(GtkWidget* widget);
+  // TabstripOriginProvider implementation -------------------------------------
+  virtual gfx::Point GetTabStripOriginForWidget(GtkWidget* widget);
 
   // ViewIDUtil::Delegate implementation ---------------------------------------
   virtual GtkWidget* GetWidgetForViewID(ViewID id);
