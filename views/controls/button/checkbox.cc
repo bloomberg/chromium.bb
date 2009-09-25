@@ -184,7 +184,8 @@ bool Checkbox::HitTestLabel(const MouseEvent& e) {
 // Checkbox, private:
 
 void Checkbox::Init(const std::wstring& label_text) {
-  set_minimum_size(gfx::Size(0, 0));
+  // Checkboxs don't need to enforce a minimum size.
+  set_ignore_minimum_size(true);
   label_ = new Label(label_text);
   label_->set_has_focus_border(true);
   label_->SetHorizontalAlignment(Label::ALIGN_LEFT);

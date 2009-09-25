@@ -14,7 +14,14 @@
 
 namespace views {
 
-static int kButtonBorderHWidth = 8;
+static const int kButtonBorderHWidth = 8;
+
+#if defined(OS_WIN)
+// The min size in DLUs comes from
+// http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dnwue/html/ch14e.asp
+static const int kMinWidthDLUs = 50;
+static const int kMinHeightDLUs = 14;
+#endif
 
 // static
 const char NativeButton::kViewClassName[] = "views/NativeButton";
@@ -26,10 +33,7 @@ NativeButton::NativeButton(ButtonListener* listener)
     : Button(listener),
       native_wrapper_(NULL),
       is_default_(false),
-      ignore_minimum_size_(false),
-      minimum_size_(50, 14) {
-  // The min size in DLUs comes from
-  // http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dnwue/html/ch14e.asp
+      ignore_minimum_size_(false) {
   InitBorder();
   SetFocusable(true);
 }
@@ -38,11 +42,8 @@ NativeButton::NativeButton(ButtonListener* listener, const std::wstring& label)
     : Button(listener),
       native_wrapper_(NULL),
       is_default_(false),
-      ignore_minimum_size_(false),
-      minimum_size_(50, 14) {
+      ignore_minimum_size_(false) {
   SetLabel(label);  // SetLabel takes care of label layout in RTL UI.
-  // The min size in DLUs comes from
-  // http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dnwue/html/ch14e.asp
   InitBorder();
   SetFocusable(true);
 }
@@ -125,21 +126,16 @@ gfx::Size NativeButton::GetPreferredSize() {
   sz.set_width(sz.width() + border.left() + border.right());
   sz.set_height(sz.height() + border.top() + border.bottom());
 
-  // Clamp the size returned to at least the minimum size.
 #if defined(OS_WIN)
+  // Clamp the size returned to at least the minimum size.
   if (!ignore_minimum_size_) {
-    if (minimum_size_.width()) {
-      int min_width = font_.horizontal_dlus_to_pixels(minimum_size_.width());
-      sz.set_width(std::max(static_cast<int>(sz.width()), min_width));
-    }
-    if (minimum_size_.height()) {
-      int min_height = font_.vertical_dlus_to_pixels(minimum_size_.height());
-      sz.set_height(std::max(static_cast<int>(sz.height()), min_height));
-    }
+    sz.set_width(std::max(sz.width(),
+                          font_.horizontal_dlus_to_pixels(kMinWidthDLUs)));
+    sz.set_height(std::max(sz.height(),
+                           font_.vertical_dlus_to_pixels(kMinHeightDLUs)));
   }
-#else
-    if (minimum_size_.width() || minimum_size_.height())
-      NOTIMPLEMENTED();
+  // GTK returns a meaningful preferred size so that we don't need to adjust
+  // the preferred size as we do on windows.
 #endif
 
   return sz;

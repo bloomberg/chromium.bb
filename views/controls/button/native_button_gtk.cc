@@ -40,11 +40,10 @@ void NativeButtonGtk::UpdateFont() {
   if (!native_view())
     return;
 
-  NOTIMPLEMENTED();
+  gtk_widget_modify_font(
+      native_view(),
+      gfx::Font::PangoFontFromGfxFont(native_button_->font()));
   preferred_size_ = gfx::Size();
-  // SendMessage(GetHWND(), WM_SETFONT,
-  // reinterpret_cast<WPARAM>(native_button_->font().hfont()),
-  // FALSE);
 }
 
 void NativeButtonGtk::UpdateEnabled() {

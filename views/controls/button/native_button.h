@@ -42,9 +42,6 @@ class NativeButton : public Button {
   // registered, use SetIsDefault for that).
   void SetAppearsAsDefault(bool default_button);
 
-  void set_minimum_size(const gfx::Size& minimum_size) {
-    minimum_size_ = minimum_size;
-  }
   void set_ignore_minimum_size(bool ignore_minimum_size) {
     ignore_minimum_size_ = ignore_minimum_size;
   }
@@ -90,12 +87,6 @@ class NativeButton : public Button {
   // True if the button should ignore the minimum size for the platform. Default
   // is false. Set to true to create narrower buttons.
   bool ignore_minimum_size_;
-
-  // The minimum size of the button from the specified size in native dialog
-  // units. The definition of this unit may vary from platform to platform. If
-  // the width/height is non-zero, the preferred size of the button will not be
-  // less than this value when the dialog units are converted to pixels.
-  gfx::Size minimum_size_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeButton);
 };
