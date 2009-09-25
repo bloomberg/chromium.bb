@@ -170,6 +170,15 @@ void NativeTextfieldWin::UpdateBorder() {
                SWP_NOOWNERZORDER | SWP_NOSIZE);
 }
 
+void NativeTextfieldWin::UpdateTextColor() {
+  CHARFORMAT cf = {0};
+  cf.dwMask = CFM_COLOR;
+  cf.crTextColor = textfield_->use_default_text_color() ?
+      GetSysColor(textfield_->read_only() ? COLOR_GRAYTEXT : COLOR_WINDOWTEXT) :
+      skia::SkColorToCOLORREF(textfield_->text_color());
+  CRichEditCtrl::SetDefaultCharFormat(cf);
+}
+
 void NativeTextfieldWin::UpdateBackgroundColor() {
   if (!textfield_->use_default_background_color()) {
     bg_color_ = skia::SkColorToCOLORREF(textfield_->background_color());
@@ -187,6 +196,8 @@ void NativeTextfieldWin::UpdateReadOnly() {
 void NativeTextfieldWin::UpdateFont() {
   SendMessage(m_hWnd, WM_SETFONT,
               reinterpret_cast<WPARAM>(textfield_->font().hfont()), TRUE);
+  // Setting the font blows away any text color we've set, so reset it.
+  UpdateTextColor();
 }
 
 void NativeTextfieldWin::UpdateEnabled() {

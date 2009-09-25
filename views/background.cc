@@ -1,10 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "views/background.h"
 
 #include "app/gfx/canvas.h"
+#include "app/gfx/color_utils.h"
 #include "base/logging.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -17,21 +18,18 @@ namespace views {
 // background in a solid color.
 class SolidBackground : public Background {
  public:
-  explicit SolidBackground(const SkColor& color) :
-      color_(color) {
-    SetNativeControlColor(color_);
+  explicit SolidBackground(const SkColor& color) {
+    SetNativeControlColor(color);
   }
 
   void Paint(gfx::Canvas* canvas, View* view) const {
     // Fill the background. Note that we don't constrain to the bounds as
     // canvas is already clipped for us.
-    canvas->drawColor(color_);
+    canvas->drawColor(get_color());
   }
 
  private:
-  const SkColor color_;
-
-  DISALLOW_EVIL_CONSTRUCTORS(SolidBackground);
+  DISALLOW_COPY_AND_ASSIGN(SolidBackground);
 };
 
 class BackgroundPainter : public Background {
@@ -56,12 +54,13 @@ class BackgroundPainter : public Background {
   bool owns_painter_;
   Painter* painter_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(BackgroundPainter);
+  DISALLOW_COPY_AND_ASSIGN(BackgroundPainter);
 };
 
 Background::Background()
+    : color_(SK_ColorWHITE)
 #if defined(OS_WIN)
-    : native_control_brush_(NULL)
+    , native_control_brush_(NULL)
 #endif
 {
 }
@@ -73,6 +72,7 @@ Background::~Background() {
 }
 
 void Background::SetNativeControlColor(SkColor color) {
+  color_ = color;
 #if defined(OS_WIN)
   DeleteObject(native_control_brush_);
   native_control_brush_ = CreateSolidBrush(skia::SkColorToCOLORREF(color));
@@ -93,13 +93,10 @@ Background* Background::CreateStandardPanelBackground() {
 //static
 Background* Background::CreateVerticalGradientBackground(
     const SkColor& color1, const SkColor& color2) {
-    Background *background =
-        CreateBackgroundPainter(true, Painter::CreateVerticalGradient(color1,
-                                                                      color2));
-    background->SetNativeControlColor(  // 50% blend of colors 1 & 2
-        SkColorSetRGB((SkColorGetR(color1) + SkColorGetR(color2)) / 2,
-                      (SkColorGetG(color1) + SkColorGetG(color2)) / 2,
-                      (SkColorGetB(color1) + SkColorGetB(color2)) / 2));
+    Background* background = CreateBackgroundPainter(
+        true, Painter::CreateVerticalGradient(color1, color2));
+    background->SetNativeControlColor(
+        color_utils::AlphaBlend(color1, color2, 128));
 
     return background;
 }

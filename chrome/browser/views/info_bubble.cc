@@ -14,17 +14,14 @@
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
 
-namespace {
-
 // Background color of the bubble.
 #if defined(OS_WIN)
-const SkColor kBackgroundColor = color_utils::GetSysSkColor(COLOR_WINDOW);
+const SkColor InfoBubble::kBackgroundColor =
+    color_utils::GetSysSkColor(COLOR_WINDOW);
 #else
 // TODO(beng): source from theme provider.
-const SkColor kBackgroundColor = SK_ColorWHITE;
+const SkColor InfoBubble::kBackgroundColor = SK_ColorWHITE;
 #endif
-
-}
 
 // BorderContents -------------------------------------------------------------
 
@@ -75,7 +72,7 @@ void BorderContents::InitAndGetBounds(
   // Set the border.
   BubbleBorder* bubble_border = new BubbleBorder;
   set_border(bubble_border);
-  bubble_border->set_background_color(kBackgroundColor);
+  bubble_border->set_background_color(InfoBubble::kBackgroundColor);
 
   // Give the contents a margin.
   gfx::Size local_contents_size(contents_size);
@@ -128,7 +125,7 @@ void BorderContents::Paint(gfx::Canvas* canvas) {
   SkPaint paint;
   paint.setAntiAlias(true);
   paint.setStyle(SkPaint::kFill_Style);
-  paint.setColor(kBackgroundColor);
+  paint.setColor(InfoBubble::kBackgroundColor);
   gfx::Path path;
   gfx::Rect bounds(GetLocalBounds(false));
   SkRect rect;

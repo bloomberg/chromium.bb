@@ -5,6 +5,7 @@
 #include "chrome/browser/views/bookmark_bubble_view.h"
 
 #include "app/gfx/canvas.h"
+#include "app/gfx/color_utils.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/keyboard_codes.h"
@@ -32,9 +33,6 @@ using views::Label;
 using views::Link;
 using views::NativeButton;
 using views::View;
-
-// Color of the title.
-static const SkColor kTitleColor = SkColorSetRGB(6, 45, 117);
 
 // Padding between "Title:" and the actual title.
 static const int kTitlePadding = 4;
@@ -226,9 +224,15 @@ BookmarkBubbleView::BookmarkBubbleView(InfoBubbleDelegate* delegate,
 }
 
 void BookmarkBubbleView::Init() {
-  if (!kCloseImage) {
+  static SkColor kTitleColor;
+  static bool initialized = false;
+  if (!initialized) {
+    kTitleColor = color_utils::GetReadableColor(SkColorSetRGB(6, 45, 117),
+                                                InfoBubble::kBackgroundColor);
     kCloseImage = ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_INFO_BUBBLE_CLOSE);
+
+    initialized = true;
   }
 
   remove_link_ = new Link(l10n_util::GetString(

@@ -84,6 +84,17 @@ void NativeTextfieldGtk::UpdateBorder() {
     return;
 }
 
+void NativeTextfieldGtk::UpdateTextColor() {
+  if (textfield_->use_default_text_color()) {
+    // Passing NULL as the color undoes the effect of previous calls to
+    // gtk_widget_modify_text.
+    gtk_widget_modify_text(native_view(), GTK_STATE_NORMAL, NULL);
+    return;
+  }
+  GdkColor gdk_color = skia::SkColorToGdkColor(textfield_->text_color());
+  gtk_widget_modify_text(native_view(), GTK_STATE_NORMAL, &gdk_color);
+}
+
 void NativeTextfieldGtk::UpdateBackgroundColor() {
   if (textfield_->use_default_background_color()) {
     // Passing NULL as the color undoes the effect of previous calls to

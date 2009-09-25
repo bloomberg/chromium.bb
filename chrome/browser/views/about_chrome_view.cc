@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -166,6 +166,7 @@ void AboutChromeView::Init() {
       l10n_util::GetString(IDS_PRODUCT_NAME));
   about_title_label_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont).DeriveFont(18, BOLD_FONTTYPE));
+  about_title_label_->SetColor(SK_ColorBLACK);
   AddChildView(about_title_label_);
 
   // This is a text field so people can copy the version number from the dialog.
@@ -173,6 +174,7 @@ void AboutChromeView::Init() {
   version_label_->SetText(current_version_);
   version_label_->SetReadOnly(true);
   version_label_->RemoveBorder();
+  version_label_->SetTextColor(SK_ColorBLACK);
   version_label_->SetBackgroundColor(SK_ColorWHITE);
   version_label_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont).DeriveFont(0, BOLD_FONTTYPE));
@@ -493,6 +495,13 @@ void AboutChromeView::DrawTextStartingFrom(gfx::Canvas* canvas,
                                            const gfx::Rect& bounds,
                                            const gfx::Font& font,
                                            bool ltr_within_rtl) {
+#if defined(OS_WIN)
+  const SkColor text_color = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
+#else
+  // TODO(beng): source from theme provider.
+  const SkColor text_color = SkColor_BLACK;
+#endif
+
   // Iterate through line breaking opportunities (which in English would be
   // spaces and such. This tells us where to wrap.
   WordIterator iter(text, WordIterator::BREAK_LINE);
@@ -537,7 +546,7 @@ void AboutChromeView::DrawTextStartingFrom(gfx::Canvas* canvas,
     int y = position->height() + bounds.y();
 
     // Draw the text on the screen (mirrored, if RTL run).
-    canvas->DrawStringInt(word, font, SK_ColorBLACK, x, y, w, h, flags);
+    canvas->DrawStringInt(word, font, text_color, x, y, w, h, flags);
 
     if (word.size() > 0 && word[word.size() - 1] == L'\x0a') {
       // When we come across '\n', we move to the beginning of the next line.

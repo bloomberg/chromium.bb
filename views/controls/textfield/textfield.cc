@@ -39,7 +39,9 @@ Textfield::Textfield()
       read_only_(false),
       default_width_in_chars_(0),
       draw_border_(true),
+      text_color_(SK_ColorBLACK),
       background_color_(SK_ColorWHITE),
+      use_default_text_color_(true),
       use_default_background_color_(true),
       num_lines_(1),
       initialized_(false) {
@@ -53,7 +55,9 @@ Textfield::Textfield(StyleFlags style)
       read_only_(false),
       default_width_in_chars_(0),
       draw_border_(true),
+      text_color_(SK_ColorBLACK),
       background_color_(SK_ColorWHITE),
+      use_default_text_color_(true),
       use_default_background_color_(true),
       num_lines_(1),
       initialized_(false) {
@@ -75,6 +79,7 @@ void Textfield::SetReadOnly(bool read_only) {
   read_only_ = read_only;
   if (native_wrapper_) {
     native_wrapper_->UpdateReadOnly();
+    native_wrapper_->UpdateTextColor();
     native_wrapper_->UpdateBackgroundColor();
   }
 }
@@ -113,6 +118,19 @@ string16 Textfield::GetSelectedText() const {
 void Textfield::ClearSelection() const {
   if (native_wrapper_)
     native_wrapper_->ClearSelection();
+}
+
+void Textfield::SetTextColor(SkColor color) {
+  text_color_ = color;
+  use_default_text_color_ = false;
+  if (native_wrapper_)
+    native_wrapper_->UpdateTextColor();
+}
+
+void Textfield::UseDefaultTextColor() {
+  use_default_text_color_ = true;
+  if (native_wrapper_)
+    native_wrapper_->UpdateTextColor();
 }
 
 void Textfield::SetBackgroundColor(SkColor color) {
@@ -244,6 +262,7 @@ void Textfield::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
     // TODO(beng): Move this initialization to NativeTextfieldWin once it
     //             subclasses NativeControlWin.
     native_wrapper_->UpdateText();
+    native_wrapper_->UpdateTextColor();
     native_wrapper_->UpdateBackgroundColor();
     native_wrapper_->UpdateReadOnly();
     native_wrapper_->UpdateFont();

@@ -7,6 +7,7 @@
 #include <math.h>
 
 #include "app/gfx/canvas.h"
+#include "app/gfx/color_utils.h"
 #include "app/gfx/font.h"
 #include "app/gfx/insets.h"
 #include "app/gfx/text_elider.h"
@@ -20,9 +21,8 @@ namespace views {
 
 // static
 const char Label::kViewClassName[] = "views/Label";
+SkColor Label::kEnabledColor, Label::kDisabledColor;
 
-static const SkColor kEnabledColor = SK_ColorBLACK;
-static const SkColor kDisabledColor = SkColorSetRGB(161, 161, 146);
 static const int kFocusBorderPadding = 1;
 
 Label::Label() {
@@ -38,6 +38,20 @@ Label::Label(const std::wstring& text, const gfx::Font& font) {
 }
 
 void Label::Init(const std::wstring& text, const gfx::Font& font) {
+  static bool initialized = false;
+  if (!initialized) {
+#if defined(OS_WIN)
+    kEnabledColor = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
+    kDisabledColor = color_utils::GetSysSkColor(COLOR_GRAYTEXT);
+#else
+    // TODO(beng): source from theme provider.
+    kEnabledColor = SK_ColorBLACK;
+    kDisabledColor = SK_ColorGRAY;
+#endif
+
+    initialized = true;
+  }
+
   contains_mouse_ = false;
   font_ = font;
   text_size_valid_ = false;

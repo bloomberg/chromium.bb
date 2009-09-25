@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,6 +73,12 @@ class Background {
   // controls.  Unfortunately alpha=0 is not an option.
   void SetNativeControlColor(SkColor color);
 
+  // Returns the "background color".  This is equivalent to the color set in
+  // SetNativeControlColor().  For solid backgrounds, this is the color; for
+  // gradient backgrounds, it's the midpoint of the gradient; for painter
+  // backgrounds, this is not useful (returns a default color).
+  SkColor get_color() const { return color_; }
+
 #if defined(OS_WIN)
   // TODO(port): Make GetNativeControlBrush portable (currently uses HBRUSH).
 
@@ -81,10 +87,12 @@ class Background {
 #endif  // defined(OS_WIN)
 
  private:
+  SkColor color_;
 #if defined(OS_WIN)
   // TODO(port): Create portable replacement for HBRUSH.
   HBRUSH native_control_brush_;
 #endif  // defined(OS_WIN)
+
   DISALLOW_COPY_AND_ASSIGN(Background);
 };
 

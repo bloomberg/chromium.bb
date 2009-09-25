@@ -61,10 +61,14 @@ class Link : public Label {
   void SetDisabledColor(const SkColor& color);
   void SetNormalColor(const SkColor& color);
 
+  // If you'll be displaying the link over some non-system background color,
+  // call this with the relevant color and the link will auto-set its colors to
+  // be readable.
+  void MakeReadableOverBackgroundColor(const SkColor& color);
+
   static const char kViewClassName[];
 
  private:
-
   // A highlighted link is clicked.
   void SetHighlighted(bool f);
 

@@ -45,6 +45,9 @@ class NativeTextfieldWrapper {
   // by the Textfield.
   virtual void UpdateBorder() = 0;
 
+  // Updates the text color used when painting the native text field.
+  virtual void UpdateTextColor() = 0;
+
   // Updates the background color used when painting the native text field.
   virtual void UpdateBackgroundColor() = 0;
 

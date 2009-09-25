@@ -135,6 +135,18 @@ class Textfield : public View {
   // Accessor for |style_|.
   StyleFlags style() const { return style_; }
 
+  // Gets/Sets the text color to be used when painting the Textfield.
+  // Call |UseDefaultTextColor| to return to the system default colors.
+  SkColor text_color() const { return text_color_; }
+  void SetTextColor(SkColor color);
+
+  // Gets/Sets whether the default text color should be used when painting the
+  // Textfield.
+  bool use_default_text_color() const {
+    return use_default_text_color_;
+  }
+  void UseDefaultTextColor();
+
   // Gets/Sets the background color to be used when painting the Textfield.
   // Call |UseDefaultBackgroundColor| to return to the system default colors.
   SkColor background_color() const { return background_color_; }
@@ -226,6 +238,15 @@ class Textfield : public View {
 
   // Whether the border is drawn.
   bool draw_border_;
+
+  // The text color to be used when painting the Textfield, provided
+  // |use_default_text_color_| is set to false.
+  SkColor text_color_;
+
+  // When true, the system text color for Textfields is used when painting this
+  // Textfield. When false, the value of |text_color_| determines the
+  // Textfield's text color.
+  bool use_default_text_color_;
 
   // The background color to be used when painting the Textfield, provided
   // |use_default_background_color_| is set to false.

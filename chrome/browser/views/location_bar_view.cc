@@ -768,6 +768,8 @@ LocationBarView::SelectedKeywordView::SelectedKeywordView(Profile* profile)
   partial_label_.set_border(
       views::Border::CreateEmptyBorder(kTopInset, kLeftInset, kBottomInset,
                                        kRightInset));
+  full_label_.SetColor(SK_ColorBLACK);
+  partial_label_.SetColor(SK_ColorBLACK);
 }
 
 LocationBarView::SelectedKeywordView::~SelectedKeywordView() {

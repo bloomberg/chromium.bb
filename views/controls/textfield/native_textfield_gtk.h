@@ -27,6 +27,7 @@ class NativeTextfieldGtk : public NativeControlGtk,
   virtual void SelectAll();
   virtual void ClearSelection();
   virtual void UpdateBorder();
+  virtual void UpdateTextColor();
   virtual void UpdateBackgroundColor();
   virtual void UpdateReadOnly();
   virtual void UpdateFont();

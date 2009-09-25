@@ -224,6 +224,10 @@ class Label : public View {
   int ComputeMultiLineFlags();
   gfx::Size GetTextSize();
   void Init(const std::wstring& text, const gfx::Font& font);
+
+  // The colors to use for enabled and disabled labels.
+  static SkColor kEnabledColor, kDisabledColor;
+
   std::wstring text_;
   GURL url_;
   gfx::Font font_;

@@ -56,6 +56,7 @@ void FirstRunView::SetupControls() {
   default_browser_->SetChecked(true);
 
   welcome_label_ = new Label(l10n_util::GetString(IDS_FIRSTRUN_DLG_TEXT));
+  welcome_label_->SetColor(SK_ColorBLACK);
   welcome_label_->SetMultiLine(true);
   welcome_label_->SetHorizontalAlignment(Label::ALIGN_LEFT);
   welcome_label_->SizeToFit(0);

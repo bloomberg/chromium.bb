@@ -8,9 +8,50 @@
 #include <gdk/gdk.h>
 #endif
 
+#include "app/gfx/color_utils.h"
 #include "app/gfx/font.h"
 #include "base/logging.h"
 #include "views/event.h"
+
+namespace {
+
+void GetColors(const SkColor* background_color,  // NULL means "use default"
+               SkColor* highlighted_color,
+               SkColor* disabled_color,
+               SkColor* normal_color) {
+  static SkColor kHighlightedColor, kDisabledColor, kNormalColor;
+  static bool initialized = false;
+  if (!initialized) {
+#if defined(OS_WIN)
+    kHighlightedColor = color_utils::GetReadableColor(
+        SkColorSetRGB(200, 0, 0), color_utils::GetSysSkColor(COLOR_WINDOW));
+    kDisabledColor = color_utils::GetSysSkColor(COLOR_WINDOWTEXT);
+    kNormalColor = color_utils::GetSysSkColor(COLOR_HOTLIGHT);
+#else
+    // TODO(beng): source from theme provider.
+    kHighlightedColor = SK_ColorRED;
+    kDisabledColor = SK_ColorBLACK;
+    kNormalColor = SkColorSetRGB(0, 51, 153);
+#endif
+
+    initialized = true;
+  }
+
+  if (background_color) {
+    *highlighted_color = color_utils::GetReadableColor(kHighlightedColor,
+                                                       *background_color);
+    *disabled_color = color_utils::GetReadableColor(kDisabledColor,
+                                                    *background_color);
+    *normal_color = color_utils::GetReadableColor(kNormalColor,
+                                                  *background_color);
+  } else {
+    *highlighted_color = kHighlightedColor;
+    *disabled_color = kDisabledColor;
+    *normal_color = kNormalColor;
+  }
+}
+
+}
 
 namespace views {
 
@@ -18,34 +59,24 @@ namespace views {
 static HCURSOR g_hand_cursor = NULL;
 #endif
 
-// Default colors used for links.
-static const SkColor kHighlightedColor = SkColorSetRGB(255, 0x00, 0x00);
-static const SkColor kNormalColor = SkColorSetRGB(0, 51, 153);
-static const SkColor kDisabledColor = SkColorSetRGB(0, 0, 0);
-
 const char Link::kViewClassName[] = "views/Link";
 
 Link::Link() : Label(L""),
                controller_(NULL),
-               highlighted_(false),
-               highlighted_color_(kHighlightedColor),
-               disabled_color_(kDisabledColor),
-               normal_color_(kNormalColor) {
+               highlighted_(false) {
   Init();
   SetFocusable(true);
 }
 
 Link::Link(const std::wstring& title) : Label(title),
                                         controller_(NULL),
-                                        highlighted_(false),
-                                        highlighted_color_(kHighlightedColor),
-                                        disabled_color_(kDisabledColor),
-                                        normal_color_(kNormalColor) {
+                                        highlighted_(false) {
   Init();
   SetFocusable(true);
 }
 
 void Link::Init() {
+  GetColors(NULL, &highlighted_color_, &disabled_color_, &normal_color_);
   SetColor(normal_color_);
   ValidateStyle();
 }
@@ -164,6 +195,11 @@ void Link::SetDisabledColor(const SkColor& color) {
 
 void Link::SetNormalColor(const SkColor& color) {
   normal_color_ = color;
+  ValidateStyle();
+}
+
+void Link::MakeReadableOverBackgroundColor(const SkColor& color) {
+  GetColors(&color, &highlighted_color_, &disabled_color_, &normal_color_);
   ValidateStyle();
 }
 

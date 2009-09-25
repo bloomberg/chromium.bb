@@ -270,6 +270,7 @@ AlertInfoBar::AlertInfoBar(AlertInfoBarDelegate* delegate)
   label_ = new views::Label(
       delegate->GetMessageText(),
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont));
+  label_->SetColor(SK_ColorBLACK);
   label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(label_);
 
@@ -332,6 +333,8 @@ LinkInfoBar::LinkInfoBar(LinkInfoBarDelegate* delegate)
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   label_1_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
   label_2_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
+  label_1_->SetColor(SK_ColorBLACK);
+  label_2_->SetColor(SK_ColorBLACK);
   label_1_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   label_2_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(label_1_);
@@ -342,6 +345,7 @@ LinkInfoBar::LinkInfoBar(LinkInfoBarDelegate* delegate)
   link_->SetFont(rb.GetFont(ResourceBundle::MediumFont));
   link_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   link_->SetController(this);
+  link_->MakeReadableOverBackgroundColor(background()->get_color());
   AddChildView(link_);
 }
 
