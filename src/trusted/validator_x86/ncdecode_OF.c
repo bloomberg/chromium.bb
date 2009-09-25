@@ -158,6 +158,20 @@ void Define0FOpcodes() {
   DefineOperand(RegECX, OpFlag(OpSet) | OpFlag(OpImplicit));
   DefineOperand(RegEDX, OpFlag(OpSet) | OpFlag(OpImplicit));
 
+  DefineOpcode(0xaf, NACLi_386,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v),
+               InstImul);
+  DefineOperand(G_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xaf, NACLi_386,
+               InstFlag(Opcode64Only) | InstFlag(OpcodeUsesModRm) |
+               InstFlag(OperandSize_o),
+               InstImul);
+  DefineOperand(G_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+
   /* MOVZX */
   DefineOpcode(0xb6, NACLi_386,
                InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |

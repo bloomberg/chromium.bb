@@ -304,6 +304,8 @@ RegR15
 RegRESP
 # Use AX, EAX, or RAX, based on operand size.
 RegREAX
+# Use DX, EDX, or RDX, based on operand size.
+RegREDX
 # Use EIP or RIP, based on address size - EIP in 32-bits, RIP in 64-bits.
 RegREIP
 # Use EBP or RBP, based on 32/64 bit model.

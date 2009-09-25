@@ -1465,6 +1465,18 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
           return AppendRegister(RegRAX, &state->nodes);
       }
       break;
+    case RegREDX:
+      switch (state->operand_size) {
+        case 1:
+          return AppendRegister(RegDL, &state->nodes);
+        case 2:
+          return AppendRegister(RegDX, &state->nodes);
+        case 4:
+          return AppendRegister(RegEDX, &state->nodes);
+        case 8:
+          return AppendRegister(RegRDX, &state->nodes);
+      }
+      break;
     case RegREIP:
       return AppendRegister(state->address_size == 64 ? RegRIP : RegEIP,
                             &state->nodes);

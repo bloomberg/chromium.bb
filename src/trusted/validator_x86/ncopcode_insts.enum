@@ -14,6 +14,7 @@ Call
 Cbw
 Cdq
 Cdqe
+Cld
 Cmovo
 Cmovno
 Cmovb
@@ -42,6 +43,7 @@ Cwde
 Daa
 Das
 Dec
+Div
 Enter
 Fadd
 Fcom
@@ -61,6 +63,7 @@ Frstor
 Fsub
 Fsubr
 Hlt
+Idiv
 Imul
 Inc
 Insb
@@ -101,7 +104,10 @@ Movsw
 Movsx
 Movsxd
 Movzx
+Mul
+Neg
 Nop
+Not
 Or
 Outsb
 Outsd

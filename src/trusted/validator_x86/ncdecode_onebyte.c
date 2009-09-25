@@ -638,20 +638,12 @@ void DefineOneByteOpcodes() {
   DefineOperand(RegRESP, OpFlag(OpImplicit) | OpFlag(OpUse) | OpFlag(OpSet));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
-  /* TODO(karl) Figure out how the two and three argument versions are
-   * differentiated (two argument form not described)?
+  /* NOTE: The two argument form appears to be the same as the three
+   * argument form, where the first argument is duplicated.
    */
   DefineOpcode(0x69, NACLi_386,
-               InstFlag(OperandSize_w) | InstFlag(OpcodeUsesModRm) |
-               InstFlag(OpcodeHasImmed),
-               InstImul);
-  DefineOperand(G_Operand, OpFlag(OpSet));
-  DefineOperand(E_Operand, OpFlag(OpUse));
-  DefineOperand(I_Operand, OpFlag(OpUse));
-
-  DefineOpcode(0x69, NACLi_386,
-               InstFlag(OperandSize_v) | InstFlag(OpcodeUsesModRm) |
-               InstFlag(OpcodeHasImmed),
+               InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |
+               InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeHasImmed),
                InstImul);
   DefineOperand(G_Operand, OpFlag(OpSet));
   DefineOperand(E_Operand, OpFlag(OpUse));
@@ -672,20 +664,12 @@ void DefineOneByteOpcodes() {
   DefineOperand(RegRESP, OpFlag(OpImplicit) | OpFlag(OpUse) | OpFlag(OpSet));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
-  /* TODO(karl) Figure out how the two and three argument versions are
-   * differentiated (two argument form not described)?
+  /* NOTE: The two argument form appears to be the same as the three
+   * argument form, where the first argument is duplicated.
    */
   DefineOpcode(0x6b, NACLi_386,
-               InstFlag(OperandSize_w) | InstFlag(OpcodeUsesModRm) |
-               InstFlag(OpcodeHasImmed),
-               InstImul);
-  DefineOperand(G_Operand, OpFlag(OpSet));
-  DefineOperand(E_Operand, OpFlag(OpUse));
-  DefineOperand(I_Operand, OpFlag(OpUse));
-
-  DefineOpcode(0x6b, NACLi_386,
-               InstFlag(OperandSize_v) | InstFlag(OpcodeUsesModRm) |
-               InstFlag(OpcodeHasImmed),
+               InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |
+               InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeHasImmed_b),
                InstImul);
   DefineOperand(G_Operand, OpFlag(OpSet));
   DefineOperand(E_Operand, OpFlag(OpUse));
@@ -694,7 +678,7 @@ void DefineOneByteOpcodes() {
   DefineOpcode(0x6b, NACLi_386,
                InstFlag(Opcode64Only) | InstFlag(OperandSize_o) |
                InstFlag(OpcodeUsesRexW) |
-               InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeHasImmed_v),
+               InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeHasImmed_b),
                InstImul);
   DefineOperand(G_Operand, OpFlag(OpSet));
   DefineOperand(E_Operand, OpFlag(OpUse));
@@ -1422,6 +1406,56 @@ void DefineOneByteOpcodes() {
   DefineOperand(E_Operand, OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
+  DefineOpcode(0xF6, NACLi_386L,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_b) |
+               InstFlag(OpcodeRex),
+               InstNot);
+  DefineOperand(Opcode2, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+
+  DefineOpcode(0xF6, NACLi_386L,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_b) |
+               InstFlag(OpcodeRex),
+               InstNeg);
+  DefineOperand(Opcode3, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+
+  DefineOpcode(0xF6, NACLi_386,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_b) |
+               InstFlag(OpcodeRex),
+               InstMul);
+  DefineOperand(Opcode4, OpFlag(OperandExtendsOpcode));
+  DefineOperand(RegAX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegAL, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xF6, NACLi_386,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_b),
+               InstImul);
+  DefineOperand(Opcode5, OpFlag(OperandExtendsOpcode));
+  DefineOperand(RegAX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegAL, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xF6, NACLi_386,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_b) |
+               InstFlag(OpcodeRex),
+               InstDiv);
+  DefineOperand(Opcode6, OpFlag(OperandExtendsOpcode));
+  DefineOperand(RegAX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegAL, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xF6, NACLi_386,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_b) |
+               InstFlag(OpcodeRex),
+               InstIdiv);
+  DefineOperand(Opcode7, OpFlag(OperandExtendsOpcode));
+  DefineOperand(RegAL, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegAH, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegAX, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+
   DefineOpcode(0xF7, NACLi_386,
                InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) |
                InstFlag(OpcodeHasImmed),
@@ -1445,6 +1479,112 @@ void DefineOneByteOpcodes() {
   DefineOperand(Opcode0, OpFlag(OperandExtendsOpcode));
   DefineOperand(E_Operand, OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xF7, NACLi_386L,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v),
+               InstNot);
+  DefineOperand(Opcode2, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+
+  DefineOpcode(0xF7, NACLi_386L,
+               InstFlag(Opcode64Only) | InstFlag(OpcodeInModRm) |
+               InstFlag(OperandSize_o) | InstFlag(OpcodeUsesRexW),
+               InstNot);
+  DefineOperand(Opcode2, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+
+  DefineOpcode(0xF7, NACLi_386L,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v),
+               InstNeg);
+  DefineOperand(Opcode3, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+
+  DefineOpcode(0xF7, NACLi_386L,
+               InstFlag(Opcode64Only) | InstFlag(OpcodeInModRm) |
+               InstFlag(OperandSize_o) | InstFlag(OpcodeUsesRexW),
+               InstNeg);
+  DefineOperand(Opcode3, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+
+  DefineOpcode(0xF7, NACLi_386,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v),
+               InstMul);
+  DefineOperand(Opcode4, OpFlag(OperandExtendsOpcode));
+  DefineOperand(SegmentDX_AX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegREAX, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xF7, NACLi_386,
+               InstFlag(Opcode64Only) | InstFlag(OpcodeInModRm) |
+               InstFlag(OperandSize_o) | InstFlag(OpcodeUsesRexW),
+               InstMul);
+  DefineOperand(Opcode4, OpFlag(OperandExtendsOpcode));
+  DefineOperand(SegmentDX_AX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegRAX, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xF7, NACLi_386,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v),
+               InstImul);
+  DefineOperand(Opcode5, OpFlag(OperandExtendsOpcode));
+  DefineOperand(SegmentDX_AX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegREAX, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xF7, NACLi_386,
+               InstFlag(Opcode64Only) | InstFlag(OpcodeInModRm) |
+               InstFlag(OperandSize_o),
+               InstImul);
+  DefineOperand(Opcode5, OpFlag(OperandExtendsOpcode));
+  DefineOperand(SegmentDX_AX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegREAX, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xF7, NACLi_386,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v),
+               InstDiv);
+  DefineOperand(Opcode6, OpFlag(OperandExtendsOpcode));
+  DefineOperand(RegREAX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegREDX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(SegmentDX_AX, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xF7, NACLi_386,
+               InstFlag(Opcode64Only) | InstFlag(OpcodeInModRm) |
+               InstFlag(OperandSize_o) | InstFlag(OpcodeUsesRexW),
+               InstDiv);
+  DefineOperand(Opcode6, OpFlag(OperandExtendsOpcode));
+  DefineOperand(RegRAX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegRDX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(SegmentDX_AX, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xF7, NACLi_386,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v),
+               InstIdiv);
+  DefineOperand(Opcode7, OpFlag(OperandExtendsOpcode));
+  DefineOperand(RegREAX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegREDX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(SegmentDX_AX, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xF7, NACLi_386,
+               InstFlag(Opcode64Only) | InstFlag(OpcodeInModRm) |
+               InstFlag(OperandSize_o) | InstFlag(OpcodeUsesRexW),
+               InstIdiv);
+  DefineOperand(Opcode7, OpFlag(OperandExtendsOpcode));
+  DefineOperand(RegRAX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegRDX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(SegmentDX_AX, OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xFC, NACLi_386, 0, InstCld);
 
   /* Group5 opcode. */
   DefineOpcode(0xff, NACLi_INDIRECT,
