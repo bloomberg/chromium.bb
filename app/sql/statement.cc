@@ -46,8 +46,13 @@ bool Statement::Step() {
 }
 
 void Statement::Reset() {
-  if (is_valid())
-    CheckError(sqlite3_reset(ref_->stmt()));
+  if (is_valid()) {
+    // We don't call CheckError() here because sqlite3_reset() returns
+    // the last error that Step() caused thereby generating a second
+    // spurious error callback.
+    sqlite3_clear_bindings(ref_->stmt());
+    sqlite3_reset(ref_->stmt());
+  }
   succeeded_ = false;
 }
 
@@ -60,7 +65,6 @@ bool Statement::Succeeded() const {
 bool Statement::BindNull(int col) {
   if (is_valid()) {
     int err = CheckError(sqlite3_bind_null(ref_->stmt(), col + 1));
-    DCHECK(err == SQLITE_OK) << ref_->connection()->GetErrorMessage();
     return err == SQLITE_OK;
   }
   return false;
@@ -69,7 +73,6 @@ bool Statement::BindNull(int col) {
 bool Statement::BindInt(int col, int val) {
   if (is_valid()) {
     int err = CheckError(sqlite3_bind_int(ref_->stmt(), col + 1, val));
-    DCHECK(err == SQLITE_OK) << ref_->connection()->GetErrorMessage();
     return err == SQLITE_OK;
   }
   return false;
@@ -78,7 +81,6 @@ bool Statement::BindInt(int col, int val) {
 bool Statement::BindInt64(int col, int64 val) {
   if (is_valid()) {
     int err = CheckError(sqlite3_bind_int64(ref_->stmt(), col + 1, val));
-    DCHECK(err == SQLITE_OK) << ref_->connection()->GetErrorMessage();
     return err == SQLITE_OK;
   }
   return false;
@@ -87,7 +89,6 @@ bool Statement::BindInt64(int col, int64 val) {
 bool Statement::BindDouble(int col, double val) {
   if (is_valid()) {
     int err = CheckError(sqlite3_bind_double(ref_->stmt(), col + 1, val));
-    DCHECK(err == SQLITE_OK) << ref_->connection()->GetErrorMessage();
     return err == SQLITE_OK;
   }
   return false;
@@ -97,7 +98,6 @@ bool Statement::BindCString(int col, const char* val) {
   if (is_valid()) {
     int err = CheckError(sqlite3_bind_text(ref_->stmt(), col + 1, val, -1,
                          SQLITE_TRANSIENT));
-    DCHECK(err == SQLITE_OK) << ref_->connection()->GetErrorMessage();
     return err == SQLITE_OK;
   }
   return false;
@@ -107,7 +107,6 @@ bool Statement::BindString(int col, const std::string& val) {
   if (is_valid()) {
     int err = CheckError(sqlite3_bind_text(ref_->stmt(), col + 1, val.data(),
                                            val.size(), SQLITE_TRANSIENT));
-    DCHECK(err == SQLITE_OK) << ref_->connection()->GetErrorMessage();
     return err == SQLITE_OK;
   }
   return false;
@@ -117,7 +116,6 @@ bool Statement::BindBlob(int col, const void* val, int val_len) {
   if (is_valid()) {
     int err = CheckError(sqlite3_bind_blob(ref_->stmt(), col + 1,
                          val, val_len, SQLITE_TRANSIENT));
-    DCHECK(err == SQLITE_OK) << ref_->connection()->GetErrorMessage();
     return err == SQLITE_OK;
   }
   return false;
@@ -208,10 +206,15 @@ void Statement::ColumnBlobAsVector(
   ColumnBlobAsVector(col, reinterpret_cast< std::vector<char>* >(val));
 }
 
-int Statement::CheckError(int err) {
-  succeeded_ = (err == SQLITE_OK || err == SQLITE_ROW || err == SQLITE_DONE);
+const char* Statement::GetSQLStatement() {
+  return sqlite3_sql(ref_->stmt());
+}
 
-  // TODO(brettw) enhance this to process the error.
+int Statement::CheckError(int err) {
+  // Please don't add DCHECKs here, OnSqliteError() already has them.
+  succeeded_ = (err == SQLITE_OK || err == SQLITE_ROW || err == SQLITE_DONE);
+  if (!succeeded_ && is_valid())
+    return ref_->connection()->OnSqliteError(err, this);
   return err;
 }
 

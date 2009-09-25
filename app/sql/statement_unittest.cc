@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "app/sql/connection.h"
 #include "app/sql/statement.h"
 #include "base/file_path.h"
@@ -10,20 +12,51 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/preprocessed/sqlite3.h"
 
+class StatementErrorHandler : public sql::ErrorDelegate {
+ public:
+  StatementErrorHandler() : error_(SQLITE_OK) {}
+
+  virtual int OnError(int error, sql::Connection* connection,
+                      sql::Statement* stmt) {
+    error_ = error;
+    const char* sql_txt = stmt->GetSQLStatement();
+    sql_text_ = sql_txt ? sql_txt : "no statement available";
+    return error;
+  }
+
+  int error() const { return error_; }
+
+  void reset_error() {
+    sql_text_.clear();
+    error_ = SQLITE_OK;
+  }
+
+  const char* sql_statement() const { return sql_text_.c_str(); }
+
+ private:
+  int error_;
+  std::string sql_text_;
+};
+
 class SQLStatementTest : public testing::Test {
  public:
-  SQLStatementTest() {}
+  SQLStatementTest() : error_handler_(new StatementErrorHandler) {}
 
   void SetUp() {
     ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &path_));
     path_ = path_.AppendASCII("SQLStatementTest.db");
     file_util::Delete(path_, false);
     ASSERT_TRUE(db_.Init(path_));
+    // The |error_handler_| will be called if any sqlite statement operation
+    // returns an error code.
+    db_.set_error_delegate(error_handler_);
   }
 
   void TearDown() {
+    // If any error happened the original sql statement can be found in
+    // error_handler_->sql_statement().
+    EXPECT_EQ(SQLITE_OK, error_handler_->error());
     db_.Close();
-
     // If this fails something is going on with cleanup and later tests may
     // fail, so we want to identify problems right away.
     ASSERT_TRUE(file_util::Delete(path_, false));
@@ -31,9 +64,13 @@ class SQLStatementTest : public testing::Test {
 
   sql::Connection& db() { return db_; }
 
+  int sqlite_error() const { return error_handler_->error(); }
+  void reset_error() const { error_handler_->reset_error(); }
+
  private:
   FilePath path_;
   sql::Connection db_;
+  scoped_refptr<StatementErrorHandler> error_handler_;
 };
 
 TEST_F(SQLStatementTest, Assign) {
@@ -77,4 +114,18 @@ TEST_F(SQLStatementTest, Run) {
   EXPECT_EQ(12, s.ColumnInt(0));
   EXPECT_FALSE(s.Step());
   EXPECT_TRUE(s.Succeeded());
+}
+
+TEST_F(SQLStatementTest, BasicErrorCallback) {
+  ASSERT_TRUE(db().Execute("CREATE TABLE foo (a INTEGER PRIMARY KEY, b)"));
+  EXPECT_EQ(SQLITE_OK, sqlite_error());
+  // Insert in the foo table the primary key. It is an error to insert
+  // something other than an number. This error causes the error callback
+  // handler to be called with SQLITE_MISMATCH as error code.
+  sql::Statement s(db().GetUniqueStatement("INSERT INTO foo (a) VALUES (?)"));
+  EXPECT_TRUE(s.is_valid());
+  s.BindCString(0, "bad bad");
+  EXPECT_FALSE(s.Run());
+  EXPECT_EQ(SQLITE_MISMATCH, sqlite_error());
+  reset_error();
 }

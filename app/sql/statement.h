@@ -22,6 +22,10 @@ namespace sql {
 //   s.BindInt(0, a);
 //   if (s.Step())
 //     return s.ColumnString(0);
+//
+// Step() and Run() just return true to signal success. If you want to handle
+// specific errors such as database corruption, install an error handler in
+// in the connection object using set_error_delegate().
 class Statement {
  public:
   // Creates an uninitialized statement. The statement will be invalid until
@@ -109,6 +113,11 @@ class Statement {
   const void* ColumnBlob(int col) const;
   void ColumnBlobAsVector(int col, std::vector<char>* val) const;
   void ColumnBlobAsVector(int col, std::vector<unsigned char>* val) const;
+
+  // Diagnostics --------------------------------------------------------------
+
+  // Returns the original text of sql statement. Do not keep a pointer to it.
+  const char* GetSQLStatement();
 
  private:
   // This is intended to check for serious errors and report them to the

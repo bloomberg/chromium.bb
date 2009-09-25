@@ -66,6 +66,27 @@ class StatementID {
 
 #define SQL_FROM_HERE sql::StatementID(__FILE__, __LINE__)
 
+class Connection;
+
+// ErrorDelegate defines the interface to implement error handling and recovery
+// for sqlite operations. This allows the rest of the classes to return true or
+// false while the actual error code and causing statement are delivered using
+// the OnError() callback.
+// The tipical usage is to centralize the code designed to handle database
+// corruption, low-level IO errors or locking violations.
+class ErrorDelegate : public base::RefCounted<ErrorDelegate> {
+ public:
+  virtual ~ErrorDelegate() {}
+  // |error| is an sqlite result code as seen in sqlite\preprocessed\sqlite3.h
+  // |connection| is db connection where the error happened and |stmt| is
+  // our best guess at the statement that triggered the error. Do not store
+  // these pointers.
+  // If the error condition has been fixed an the original statement succesfuly
+  // re-tried then returning SQLITE_OK is appropiate; otherwise is recomended
+  // that you return the original |error| or the appropiae error code.
+  virtual int OnError(int error, Connection* connection, Statement* stmt) = 0;
+};
+
 class Connection {
  private:
   class StatementRef;  // Forward declaration, see real one below.
@@ -103,6 +124,13 @@ class Connection {
   //
   // This must be called before Init() to have an effect.
   void set_exclusive_locking() { exclusive_locking_ = true; }
+
+  // Sets the object that will handle errors. Recomended that it should be set
+  // before calling Init(). If not set, the default is to ignore errors on
+  // release and assert on debug builds.
+  void set_error_delegate(ErrorDelegate* delegate) {
+    error_delegate_ = delegate;
+  }
 
   // Initialization ------------------------------------------------------------
 
@@ -278,6 +306,10 @@ class Connection {
   // Frees all cached statements from statement_cache_.
   void ClearCache();
 
+  // Called by Statement objects when an sqlite function returns an error.
+  // The return value is the error code reflected back to client code.
+  int OnSqliteError(int err, Statement* stmt);
+
   // The actual sqlite database. Will be NULL before Init has been called or if
   // Init resulted in an error.
   sqlite3* db_;
@@ -307,6 +339,10 @@ class Connection {
   // When we get to the outermost transaction, this will determine if we do
   // a rollback instead of a commit.
   bool needs_rollback_;
+
+  // This object handles errors resulting from all forms of executing sqlite
+  // commands or statements. It can be null which means default handling.
+  scoped_refptr<ErrorDelegate> error_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(Connection);
 };
