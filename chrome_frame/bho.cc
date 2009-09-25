@@ -18,7 +18,6 @@
 #include "chrome_frame/utils.h"
 #include "chrome_frame/vtable_patch_manager.h"
 
-const wchar_t kUrlMonDllName[] = L"urlmon.dll";
 const wchar_t kPatchProtocols[] = L"PatchProtocols";
 static const int kIBrowserServiceOnHttpEquivIndex = 30;
 
@@ -217,8 +216,7 @@ void PatchHelper::InitializeAndPatchProtocolsIfNeeded() {
 
   bool patch_protocol = GetConfigBool(true, kPatchProtocols);
   if (patch_protocol) {
-    ProtocolSinkWrap::PatchProtocolHandler(kUrlMonDllName, CLSID_HttpProtocol);
-    ProtocolSinkWrap::PatchProtocolHandler(kUrlMonDllName, CLSID_HttpSProtocol);
+    ProtocolSinkWrap::PatchProtocolHandlers();
     state_ = PATCH_PROTOCOL;
   } else {
     state_ = PATCH_IBROWSER;
@@ -232,12 +230,9 @@ void PatchHelper::PatchBrowserService(IBrowserService* browser_service) {
                                       IBrowserService_PatchInfo);
 }
 
-extern vtable_patch::MethodPatchInfo IInternetProtocol_PatchInfo[];
-extern vtable_patch::MethodPatchInfo IInternetProtocolEx_PatchInfo[];
 void PatchHelper::UnpatchIfNeeded() {
   if (state_ == PATCH_PROTOCOL) {
-    vtable_patch::UnpatchInterfaceMethods(IInternetProtocol_PatchInfo);
-    vtable_patch::UnpatchInterfaceMethods(IInternetProtocolEx_PatchInfo);
+    ProtocolSinkWrap::UnpatchProtocolHandlers();
   } else if (state_ == PATCH_IBROWSER_OK) {
     vtable_patch::UnpatchInterfaceMethods(IBrowserService_PatchInfo);
   }

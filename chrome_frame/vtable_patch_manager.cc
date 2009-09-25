@@ -30,6 +30,15 @@ HRESULT PatchInterfaceMethods(void* unknown, MethodPatchInfo* patches) {
   DCHECK(vtable);
 
   for (MethodPatchInfo* it = patches; it->index_ != -1; ++it) {
+    if (it->stub_ != NULL) {
+      // If this DCHECK fires it means that we are using the same VTable
+      // information to patch two different interfaces.
+      DCHECK(false);
+      DLOG(ERROR) << "Attempting to patch two different VTables with the "
+                  << "same VTable information";
+      continue;
+    }
+
     PROC original_fn = vtable[it->index_];
     FunctionStub* stub = FunctionStub::FromCode(original_fn);
     if (stub != NULL) {
@@ -65,7 +74,7 @@ HRESULT PatchInterfaceMethods(void* unknown, MethodPatchInfo* patches) {
 HRESULT UnpatchInterfaceMethods(MethodPatchInfo* patches) {
   for (MethodPatchInfo* it = patches; it->index_ != -1; ++it) {
     if (it->stub_) {
-      DCHECK(it->stub_->absolute_target() == 
+      DCHECK(it->stub_->absolute_target() ==
           reinterpret_cast<uintptr_t>(it->method_));
       // Modify the stub to just jump directly to the original function.
       it->stub_->BypassStub(reinterpret_cast<void*>(it->stub_->argument()));

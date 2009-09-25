@@ -17,6 +17,7 @@
 #include "base/scoped_comptr_win.h"
 #include "googleurl/src/gurl.h"
 #include "chrome_frame/ie8_types.h"
+#include "chrome_frame/vtable_patch_manager.h"
 
 // Typedefs for IInternetProtocol and related methods that we patch.
 typedef HRESULT (STDMETHODCALLTYPE* InternetProtocol_Start_Fn)(
@@ -85,8 +86,12 @@ END_COM_MAP()
   bool Initialize(IInternetProtocol* protocol,
       IInternetProtocolSink* original_sink, const wchar_t* url);
 
-  static bool PatchProtocolHandler(const wchar_t* dll,
-      const CLSID& handler_clsid);
+  // VTable patches the IInternetProtocol and IIntenetProtocolEx interface.
+  // Returns true on success.
+  static bool PatchProtocolHandlers();
+
+  // Unpatches the IInternetProtocol and IInternetProtocolEx interfaces.
+  static void UnpatchProtocolHandlers();
 
   // IInternetProtocol/Ex patches.
   static HRESULT STDMETHODCALLTYPE OnStart(InternetProtocol_Start_Fn orig_start,
@@ -183,6 +188,21 @@ END_COM_MAP()
     return renderer_type_;
   }
 
+  // Creates an instance of the specified protocol handler and returns the
+  // IInternetProtocol interface pointer.
+  // Returns S_OK on success.
+  static HRESULT CreateProtocolHandlerInstance(const CLSID& clsid,
+                                               IInternetProtocol** protocol);
+
+  // Helper function for patching the VTable of the IInternetProtocol
+  // interface. It instantiates the object identified by the protocol_clsid
+  // parameter and patches its VTable.
+  // Returns S_OK on success.
+  static HRESULT PatchProtocolMethods(
+      const CLSID& protocol_clsid,
+      vtable_patch::MethodPatchInfo* protocol_patch_info,
+      vtable_patch::MethodPatchInfo* protocol_ex_patch_info);
+
   // WARNING: Don't use GURL variables here.  Please see
   // http://b/issue?id=2102171 for details.
 
@@ -202,7 +222,7 @@ END_COM_MAP()
   HRESULT result_code_;
   DWORD result_error_;
   std::wstring result_text_;
-  // For tracking re-entrency and preventing duplicate Read()s from 
+  // For tracking re-entrency and preventing duplicate Read()s from
   // distorting the outcome of ReportData.
   int report_data_recursiveness_;
 

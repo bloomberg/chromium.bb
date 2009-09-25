@@ -14,9 +14,8 @@
 #include "base/string_util.h"
 
 #include "chrome_frame/utils.h"
-#include "chrome_frame/vtable_patch_manager.h"
 
-// BINDSTATUS_SERVER_MIMETYPEAVAILABLE == 54. Introduced in IE 8, so 
+// BINDSTATUS_SERVER_MIMETYPEAVAILABLE == 54. Introduced in IE 8, so
 // not in everyone's headers yet. See:
 // http://msdn.microsoft.com/en-us/library/ms775133(VS.85,loband).aspx
 #ifndef BINDSTATUS_SERVER_MIMETYPEAVAILABLE
@@ -25,17 +24,31 @@
 
 static const wchar_t* kChromeMimeType = L"application/chromepage";
 static const char kTextHtmlMimeType[] = "text/html";
+const wchar_t kUrlMonDllName[] = L"urlmon.dll";
 
 static const int kInternetProtocolStartIndex = 3;
 static const int kInternetProtocolReadIndex = 9;
 static const int kInternetProtocolStartExIndex = 13;
 
+// TODO(ananta)
+// We should avoid duplicate VTable declarations.
 BEGIN_VTABLE_PATCHES(IInternetProtocol)
   VTABLE_PATCH_ENTRY(kInternetProtocolStartIndex, ProtocolSinkWrap::OnStart)
   VTABLE_PATCH_ENTRY(kInternetProtocolReadIndex, ProtocolSinkWrap::OnRead)
 END_VTABLE_PATCHES()
 
+BEGIN_VTABLE_PATCHES(IInternetProtocolSecure)
+  VTABLE_PATCH_ENTRY(kInternetProtocolStartIndex, ProtocolSinkWrap::OnStart)
+  VTABLE_PATCH_ENTRY(kInternetProtocolReadIndex, ProtocolSinkWrap::OnRead)
+END_VTABLE_PATCHES()
+
 BEGIN_VTABLE_PATCHES(IInternetProtocolEx)
+  VTABLE_PATCH_ENTRY(kInternetProtocolStartIndex, ProtocolSinkWrap::OnStart)
+  VTABLE_PATCH_ENTRY(kInternetProtocolReadIndex, ProtocolSinkWrap::OnRead)
+  VTABLE_PATCH_ENTRY(kInternetProtocolStartExIndex, ProtocolSinkWrap::OnStartEx)
+END_VTABLE_PATCHES()
+
+BEGIN_VTABLE_PATCHES(IInternetProtocolExSecure)
   VTABLE_PATCH_ENTRY(kInternetProtocolStartIndex, ProtocolSinkWrap::OnStart)
   VTABLE_PATCH_ENTRY(kInternetProtocolReadIndex, ProtocolSinkWrap::OnRead)
   VTABLE_PATCH_ENTRY(kInternetProtocolStartExIndex, ProtocolSinkWrap::OnStartEx)
@@ -64,12 +77,45 @@ ProtocolSinkWrap::~ProtocolSinkWrap() {
   DLOG(INFO) << "ProtocolSinkWrap: active sinks: " << sink_map_.size();
 }
 
-bool ProtocolSinkWrap::PatchProtocolHandler(const wchar_t* dll,
-    const CLSID& handler_clsid) {
-  HMODULE module = ::GetModuleHandle(dll);
+bool ProtocolSinkWrap::PatchProtocolHandlers() {
+  HRESULT hr = PatchProtocolMethods(CLSID_HttpProtocol,
+                                    IInternetProtocol_PatchInfo,
+                                    IInternetProtocolEx_PatchInfo);
+  if (FAILED(hr)) {
+    NOTREACHED() << "Failed to patch IInternetProtocol interface."
+        << " Error: " << hr;
+    return false;
+  }
+
+  hr = PatchProtocolMethods(CLSID_HttpSProtocol,
+                            IInternetProtocolSecure_PatchInfo,
+                            IInternetProtocolExSecure_PatchInfo);
+  if (FAILED(hr)) {
+    NOTREACHED() << "Failed to patch IInternetProtocol secure interface."
+        << " Error: " << hr;
+    return false;
+  }
+
+  return true;
+}
+
+void ProtocolSinkWrap::UnpatchProtocolHandlers() {
+  vtable_patch::UnpatchInterfaceMethods(IInternetProtocol_PatchInfo);
+  vtable_patch::UnpatchInterfaceMethods(IInternetProtocolEx_PatchInfo);
+  vtable_patch::UnpatchInterfaceMethods(IInternetProtocolSecure_PatchInfo);
+  vtable_patch::UnpatchInterfaceMethods(IInternetProtocolExSecure_PatchInfo);
+}
+
+HRESULT ProtocolSinkWrap::CreateProtocolHandlerInstance(
+    const CLSID& clsid, IInternetProtocol** protocol) {
+  if (!protocol) {
+    return E_INVALIDARG;
+  }
+
+  HMODULE module = ::GetModuleHandle(kUrlMonDllName);
   if (!module) {
     NOTREACHED() << "urlmon is not yet loaded. Error: " << GetLastError();
-    return false;
+    return E_FAIL;
   }
 
   typedef HRESULT (WINAPI* DllGetClassObject_Fn)(REFCLSID, REFIID, LPVOID*);
@@ -77,15 +123,15 @@ bool ProtocolSinkWrap::PatchProtocolHandler(const wchar_t* dll,
       ::GetProcAddress(module, "DllGetClassObject"));
   if (!fn) {
     NOTREACHED() << "DllGetClassObject not found in urlmon.dll";
-    return false;
+    return E_FAIL;
   }
 
   ScopedComPtr<IClassFactory> protocol_class_factory;
-  HRESULT hr = fn(handler_clsid, IID_IClassFactory,
+  HRESULT hr = fn(clsid, IID_IClassFactory,
       reinterpret_cast<LPVOID*>(protocol_class_factory.Receive()));
   if (FAILED(hr)) {
     NOTREACHED() << "DllGetclassObject failed. Error: " << hr;
-    return false;
+    return hr;
   }
 
   ScopedComPtr<IInternetProtocol> handler_instance;
@@ -94,19 +140,39 @@ bool ProtocolSinkWrap::PatchProtocolHandler(const wchar_t* dll,
   if (FAILED(hr)) {
     NOTREACHED() << "ClassFactory::CreateInstance failed for InternetProtocol."
         << " Error: " << hr;
+  } else {
+    *protocol = handler_instance.Detach();
+  }
+
+  return hr;
+}
+
+HRESULT ProtocolSinkWrap::PatchProtocolMethods(
+    const CLSID& clsid_protocol,
+    vtable_patch::MethodPatchInfo* protocol_patch_info,
+    vtable_patch::MethodPatchInfo* protocol_ex_patch_info) {
+  if (!protocol_patch_info || !protocol_ex_patch_info) {
+    return E_INVALIDARG;
+  }
+
+  ScopedComPtr<IInternetProtocol> http_protocol;
+  HRESULT hr = CreateProtocolHandlerInstance(clsid_protocol,
+                                             http_protocol.Receive());
+  if (FAILED(hr)) {
+    NOTREACHED() << "ClassFactory::CreateInstance failed for InternetProtocol."
+        << " Error: " << hr;
     return false;
   }
 
   ScopedComPtr<IInternetProtocolEx> ipex;
-  ipex.QueryFrom(handler_instance);
+  ipex.QueryFrom(http_protocol);
   if (ipex) {
-    vtable_patch::PatchInterfaceMethods(ipex, IInternetProtocolEx_PatchInfo);
+    hr = vtable_patch::PatchInterfaceMethods(ipex, protocol_ex_patch_info);
   } else {
-    vtable_patch::PatchInterfaceMethods(handler_instance,
-                                        IInternetProtocol_PatchInfo);
+    hr = vtable_patch::PatchInterfaceMethods(http_protocol,
+                                             protocol_patch_info);
   }
-
-  return true;
+  return hr;
 }
 
 // IInternetProtocol/Ex method implementation.
@@ -264,10 +330,10 @@ STDMETHODIMP ProtocolSinkWrap::ReportData(DWORD flags, ULONG progress,
   // determination logic.
 
   // NOTE: We use the report_data_recursiveness_ variable to detect situations
-  //    in which calls to ReportData are re-entrant (such as when the entire 
-  //    contents of a page fit inside a single packet). In these cases, we 
-  //    don't care about re-entrant calls beyond the second, and so we compare 
-  //    report_data_recursiveness_ inside the while loop, making sure we skip 
+  //    in which calls to ReportData are re-entrant (such as when the entire
+  //    contents of a page fit inside a single packet). In these cases, we
+  //    don't care about re-entrant calls beyond the second, and so we compare
+  //    report_data_recursiveness_ inside the while loop, making sure we skip
   //    what would otherwise be spurious calls to ReportProgress().
   report_data_recursiveness_++;
 
