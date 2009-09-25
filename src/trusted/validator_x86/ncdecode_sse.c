@@ -896,4 +896,356 @@ void DefineSseOpcodes() {
                InstPtest);
   DefineOperand(Xmm_G_Operand, OpFlag(OpUse));
   DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* f2 0f 2a /r    CVTSI2SD xmm, r/m32    */
+  DefineOpcodePrefix(PrefixF20F);
+  DefineOpcode(0x2a,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_v),
+               InstCvtsi2sd);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+
+  /* f2 REX.W 0f 2a /r    CVTSI2SD xmm, r/m64    */
+  DefineOpcodePrefix(PrefixF20F);
+  DefineOpcode(0x2a,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeUsesRexW),
+               InstCvtsi2sd);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+
+  /* f2 0f 2d /r    CVTSD2SI r32, xmm/m64    */
+  DefineOpcodePrefix(PrefixF20F);
+  DefineOpcode(0x2d,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_v),
+               InstCvtsd2si);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* f2 REX.W 0f 2d /r    CVTSD2SI r64, xmm/m64    */
+  DefineOpcodePrefix(PrefixF20F);
+  DefineOpcode(0x2d,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeUsesRexW),
+               InstCvtsd2si);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+
+  /* f2 0f 2c /r    CVTTSD2SI r32, xmm/m64    */
+  DefineOpcodePrefix(PrefixF20F);
+  DefineOpcode(0x2c,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_v),
+               InstCvttsd2si);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* f2 REX.W 0f 2c /r    CVTTSD2SI r64, xmm/m64    */
+  DefineOpcodePrefix(PrefixF20F);
+  DefineOpcode(0x2c,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeUsesRexW),
+               InstCvttsd2si);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* f2 0f 58 /r  addsd xmm1, xmm2/m64  SSE2 RexR */
+  DefineOpcodePrefix(PrefixF20F);
+  DefineOpcode(0x58,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm),
+               InstAddsd);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* f3 0f 58 /r  addss xmm1, xmm2/m32  SSE RexR */
+  DefineOpcodePrefix(PrefixF30F);
+  DefineOpcode(0x58,
+               NACLi_SSE,
+               InstFlag(OpcodeUsesModRm),
+               InstAddss);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* 66 0f 55 /r  andnpd xmm1, xmm2/m128   SSE2 RexR */
+  DefineOpcodePrefix(Prefix660F);
+  DefineOpcode(0x55,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm),
+               InstAndnpd);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* 66 0f 54 /r  andpd xmm1, xmm2/m128  SSE2 RexR */
+  DefineOpcodePrefix(Prefix660F);
+  DefineOpcode(0x54,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm),
+               InstAndpd);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* 0f 54 /r  andps xmm1, xmm2/m128  SSE RexR */
+  DefineOpcodePrefix(Prefix0F);
+  DefineOpcode(0x54,
+               NACLi_SSE,
+               InstFlag(OpcodeUsesModRm),
+               InstAndps);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* f2 0f c2 /r ib  cmpsd xmm1, xmm2/m64, imm8  SSE2 RexR */
+  DefineOpcodePrefix(PrefixF20F);
+  DefineOpcode(0xc2,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm),
+               InstCmpsd);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* f2 0f 5a /r  cvtsd2ss xmm1, xmm2/m64  SSE2 */
+  DefineOpcodePrefix(PrefixF20F);
+  DefineOpcode(0x5a,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm),
+               InstCvtsd2ss);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* f3 0f 2a /r  cvtsi2ss xmm, r/m32  SSE */
+  DefineOpcodePrefix(PrefixF30F);
+  DefineOpcode(0x2a,
+               NACLi_SSE,
+               InstFlag(OpcodeUsesModRm),
+               InstCvtsi2ss);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+
+  /* f3 REX.W 0f 2a /r cvtsi2ss xmm, r/m64  SSE */
+  DefineOpcodePrefix(PrefixF30F);
+  DefineOpcode(0x2a,
+               NACLi_SSE,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeUsesRexW),
+               InstCvtsi2ss);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+
+  /* f3 0f 5a /r  cvtss2sd xmm1, xmm2/m32  SSE2 RexR */
+  DefineOpcodePrefix(PrefixF30F);
+  DefineOpcode(0x5a,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm),
+               InstCvtss2sd);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* f3 0f 2c /r  cvttss2si r32,xmm/m32  SSE RexR */
+  DefineOpcodePrefix(PrefixF30F);
+  DefineOpcode(0x2c,
+               NACLi_SSE,
+               InstFlag(OpcodeUsesModRm),
+               InstCvttss2si);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* f3 REX.W 0f 2c /r  cvttss2si r64,xmm/m32  SSE RexR */
+  DefineOpcodePrefix(PrefixF30F);
+  DefineOpcode(0x2c,
+               NACLi_SSE,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeUsesRexW),
+               InstCvttss2si);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* f2 0f 5e /r  divsd xmm1, xmm2/m64  SSE2 RexR */
+  DefineOpcodePrefix(PrefixF20F);
+  DefineOpcode(0x5e,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm),
+               InstDivsd);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* f3 0f 5e /r  divss xmm1, xmm2/m32  SSE RexR */
+  DefineOpcodePrefix(PrefixF30F);
+  DefineOpcode(0x5e,
+               NACLi_SSE,
+               InstFlag(OpcodeUsesModRm),
+               InstDivss);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* f3 0f 5f /r  maxss xmm1, xmm2/m32  SSE RexR */
+  DefineOpcodePrefix(PrefixF30F);
+  DefineOpcode(0x5f,
+               NACLi_SSE,
+               InstFlag(OpcodeUsesModRm),
+               InstMaxss);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* f2 0f 5d /r  minsd xmm1, xmm2/m64  SSE2 RexR */
+  DefineOpcodePrefix(PrefixF20F);
+  DefineOpcode(0x5d,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm),
+               InstMinsd);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* f3 0f 5d /r  minss xmm1, xmm2/m32  SSE RexR */
+  DefineOpcodePrefix(PrefixF30F);
+  DefineOpcode(0x5d,
+               NACLi_SSE,
+               InstFlag(OpcodeUsesModRm),
+               InstMinss);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* 66 0f 28 /r  movapd xmm1, xmm2/m128  SSE2 RexR */
+  DefineOpcodePrefix(Prefix660F);
+  DefineOpcode(0x28,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm),
+               InstMovapd);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* 66 0f 29 /r  movapd xmm2/m128, xmm1  SSE2 RexR */
+  DefineOpcodePrefix(Prefix660F);
+  DefineOpcode(0x29,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm),
+               InstMovapd);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* 0f 28 /r  movaps xmm1, xmm2/m128  SSE RexR */
+  DefineOpcodePrefix(Prefix0F);
+  DefineOpcode(0x28,
+               NACLi_SSE,
+               InstFlag(OpcodeUsesModRm),
+               InstMovaps);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* 0f 29 /r  movaps xmm2/m128, xmm1  SSE RexR */
+  DefineOpcodePrefix(Prefix0F);
+  DefineOpcode(0x29,
+               NACLi_SSE,
+               InstFlag(OpcodeUsesModRm),
+               InstMovaps);
+  DefineOperand(Xmm_E_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_G_Operand, OpFlag(OpUse));
+
+  /* f3 0f 10 /r  movss xmm1, xmm2/m32  SSE RexR */
+  DefineOpcodePrefix(PrefixF30F);
+  DefineOpcode(0x10,
+               NACLi_SSE,
+               InstFlag(OpcodeUsesModRm),
+               InstMovss);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* f3 0f 11 /r  movss xmm2/m32, xmm1  SSE RexR */
+  DefineOpcodePrefix(PrefixF30F);
+  DefineOpcode(0x11,
+               NACLi_SSE,
+               InstFlag(OpcodeUsesModRm),
+               InstMovss);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* f2 0f 59 /r  mulsd xmm1, xmm2/m64  SSE2 RexR */
+  DefineOpcodePrefix(PrefixF20F);
+  DefineOpcode(0x59,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm),
+               InstMulsd);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* f3 0f 59 /r  mulss xmm1, xmm2/m32  SSE RexR */
+  DefineOpcodePrefix(PrefixF30F);
+  DefineOpcode(0x59,
+               NACLi_SSE,
+               InstFlag(OpcodeUsesModRm),
+               InstMulss);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* 66 0f 56 /r  orpd xmm1, xmm2/m128  SSE2 RexR */
+  DefineOpcodePrefix(Prefix660F);
+  DefineOpcode(0x56,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm),
+               InstOrpd);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* f2 0f 51 /r  sqrtsd xmm1, xmm2/64  SSE2 RexR */
+  DefineOpcodePrefix(PrefixF20F);
+  DefineOpcode(0x51,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm),
+               InstSqrtsd);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* f2 0f 5c /r  subsd xmm1, xmm2/m64  SSE2 RexR */
+  DefineOpcodePrefix(PrefixF20F);
+  DefineOpcode(0x5c,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm),
+               InstSubsd);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* F3 0f 5C /r  subss xmm1, xmm2/m32  SSE RexR */
+  DefineOpcodePrefix(PrefixF30F);
+  DefineOpcode(0x5c,
+               NACLi_SSE,
+               InstFlag(OpcodeUsesModRm),
+               InstSubss);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* 66 0f 2e /r  ucomisd xmm1, xmm2/m64 SSE2 RexR */
+  DefineOpcodePrefix(Prefix660F);
+  DefineOpcode(0x2e,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm),
+               InstUcomisd);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* 0f 2e /r  ucomiss xmm1, xmm2/m32  SSE RexR */
+  DefineOpcodePrefix(Prefix0F);
+  DefineOpcode(0x2e,
+               NACLi_SSE,
+               InstFlag(OpcodeUsesModRm),
+               InstUcomiss);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* 66 0f 57 /r  xorpd xmm1, xmm2/m128  SSE2 RexR */
+  DefineOpcodePrefix(Prefix660F);
+  DefineOpcode(0x57,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm),
+               InstXorpd);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+
+  /* 0f 57 /r  xorps xmm1, xmm2/m128  SSE RexR */
+  DefineOpcodePrefix(Prefix0F);
+  DefineOpcode(0x57,
+               NACLi_SSE2,
+               InstFlag(OpcodeUsesModRm),
+               InstXorps);
+  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
 }
