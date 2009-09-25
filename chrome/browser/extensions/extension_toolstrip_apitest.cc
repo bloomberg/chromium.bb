@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Toolstrip) {
+// TODO(rafaelw,erikkay) disabled due to flakiness
+// BUG=22668 (probably the same bug)
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Toolstrip) {
   ASSERT_TRUE(RunExtensionTest("toolstrip")) << message_;
 }
