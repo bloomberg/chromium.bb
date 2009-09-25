@@ -365,105 +365,6 @@
 # These should all be in chromium's bug tracking system (but a few aren't yet).
 
 {
-   (Probable memory leak in Skia)
-   Memcheck:Leak
-   fun:_Znwj
-   fun:_ZN10SkFontHost15ResolveTypefaceEj
-   fun:_ZN24SkScalerContext_FreeType9setupSizeEv
-   fun:_ZN24SkScalerContext_FreeType19generateFontMetricsEPN7SkPaint11FontMetricsES2_
-   fun:_ZN15SkScalerContext14getFontMetricsEPN7SkPaint11FontMetricsES2_
-   fun:_ZN12SkGlyphCacheC1EPK12SkDescriptor
-   fun:_ZN12SkGlyphCache10VisitCacheEPK12SkDescriptorPFbPKS_PvES5_
-}
-{
-   Another possible skia leak
-   Memcheck:Leak
-   fun:_Znwj
-   fun:_ZN10SkFontHost15ResolveTypefaceEj
-   fun:_ZN24SkScalerContext_FreeType9setupSizeEv
-   fun:_ZN24SkScalerContext_FreeType15generateMetricsEP7SkGlyph
-   fun:_ZN24SkScalerContext_FreeType15generateAdvanceEP7SkGlyph
-   fun:_ZN15SkScalerContext10getAdvanceEP7SkGlyph
-   fun:_ZN12SkGlyphCache13lookupMetricsEjNS_11MetricsTypeE
-   fun:_ZN12SkGlyphCache17getGlyphIDAdvanceEt
-   fun:_Z24sk_getAdvance_glyph_nextP12SkGlyphCachePPKc
-   fun:_ZNK7SkPaint12measure_textEP12SkGlyphCachePKcjPiP6SkRect
-   fun:_ZNK7SkPaint11measureTextEPKvjP6SkRectf
-   fun:_ZNK7SkPaint11measureTextEPKvj
-   fun:_ZNK7WebCore14SimpleFontData21platformWidthForGlyphEt
-}
-{
-   webcore_parse_leak_todo
-   Memcheck:Leak
-   fun:_Znaj
-   fun:_ZN7WebCore17CSSPrimitiveValue6createEdNS0_9UnitTypesE
-   fun:_ZN7WebCore9CSSParser10parseValueEib
-   fun:_ZN7WebCore9CSSParser12parse4ValuesEiPKib
-   fun:_ZN7WebCore9CSSParser10parseValueEib
-   fun:_Z10cssyyparsePv
-   fun:_ZN7WebCore9CSSParser10parseSheetEPNS_13CSSStyleSheetERKNS_6StringE
-   fun:_ZN7WebCore13CSSStyleSheet11parseStringERKNS_6StringEb
-   fun:_ZN7WebCore12parseUASheetERKNS_6StringE
-   fun:_ZN7WebCore12parseUASheetEPKcj
-   fun:_ZN7WebCore22loadSimpleDefaultStyleEv
-   fun:_ZN7WebCore16CSSStyleSelectorC1EPNS_8DocumentERKNS_6StringEPNS_14StyleSheetListEPNS_13CSSStyleSheetEbb
-   fun:_ZN7WebCore8Document6attachEv
-   fun:_ZN7WebCore5Frame11setDocumentEN3WTF10PassRefPtrINS_8DocumentEEE
-   fun:_ZN7WebCore11FrameLoader5beginERKNS_4KURLEbPNS_14SecurityOriginE
-   fun:_ZN7WebCore11FrameLoader4initEv
-   fun:_ZN7WebCore5Frame4initEv
-   fun:_ZN12WebFrameImpl13InitMainFrameEP11WebViewImpl
-   fun:_ZN7WebView6CreateEP15WebViewDelegateRK14WebPreferences
-   fun:_ZN11WebViewHost6CreateEP10_GtkWidgetP15WebViewDelegateRK14WebPreferences
-   fun:_ZN9TestShell10InitializeERKSbIwSt11char_traitsIwESaIwEE
-   fun:_ZN9TestShell15CreateNewWindowERKSbIwSt11char_traitsIwESaIwEEPPS_
-   fun:_ZN13TestShellTest17CreateEmptyWindowEv
-   fun:_ZN13TestShellTest5SetUpEv
-}
-{
-   webcore_parse_leak_2_todo
-   Memcheck:Leak
-   fun:_Znaj
-   fun:_ZN7WebCore17CSSPrimitiveValue16createIdentifierEi
-   fun:_ZN7WebCore9CSSParser10parseValueEib
-   fun:_Z10cssyyparsePv
-   fun:_ZN7WebCore9CSSParser10parseSheetEPNS_13CSSStyleSheetERKNS_6StringE
-   fun:_ZN7WebCore13CSSStyleSheet11parseStringERKNS_6StringEb
-   fun:_ZN7WebCore12parseUASheetERKNS_6StringE
-   fun:_ZN7WebCore12parseUASheetEPKcj
-   fun:_ZN7WebCore22loadSimpleDefaultStyleEv
-   fun:_ZN7WebCore16CSSStyleSelectorC1EPNS_8DocumentERKNS_6StringEPNS_14StyleSheetListEPNS_13CSSStyleSheetEbb
-   fun:_ZN7WebCore8Document6attachEv
-   fun:_ZN7WebCore5Frame11setDocumentEN3WTF10PassRefPtrINS_8DocumentEEE
-   fun:_ZN7WebCore11FrameLoader5beginERKNS_4KURLEbPNS_14SecurityOriginE
-   fun:_ZN7WebCore11FrameLoader4initEv
-   fun:_ZN7WebCore5Frame4initEv
-   fun:_ZN12WebFrameImpl13InitMainFrameEP11WebViewImpl
-   fun:_ZN7WebView6CreateEP15WebViewDelegateRK14WebPreferences
-   fun:_ZN11WebViewHost6CreateEP10_GtkWidgetP15WebViewDelegateRK14WebPreferences
-   fun:_ZN9TestShell10InitializeERKSbIwSt11char_traitsIwESaIwEE
-   fun:_ZN9TestShell15CreateNewWindowERKSbIwSt11char_traitsIwESaIwEEPPS_
-   fun:_ZN13TestShellTest17CreateEmptyWindowEv
-   fun:_ZN13TestShellTest5SetUpEv
-}
-{
-   # Leak reported by NSS but possibly our fault, see http://crbug/4609
-   bug_4609
-   Memcheck:Leak
-   ...
-   fun:NSS_Shutdown
-}
-{
-   # See http://crbug.com/6522
-   bug_6522
-   Memcheck:Param
-   write(buf)
-   ...
-   fun:fwrite
-   fun:_ZN12DownloadFile16AppendDataToFileEPKci
-   fun:_ZN19DownloadFileManager14UpdateDownloadEiP14DownloadBuffer
-}
-{
    # Chromium flakily leaks tasks at shutdown, see
    # http://crbug.com/6532
    # http://codereview.chromium.org/20067
@@ -502,24 +403,6 @@
    fun:_ZN19TestWebViewDelegate24UpdateSelectionClipboardEb
 }
 {
-   # Possible NSS leak, see http://crbug.com/10750
-   bug_10750
-   Memcheck:Leak
-   fun:calloc
-   fun:PR_Calloc
-   ...
-   fun:SECMOD_UnloadUserModule
-}
-{
-   # See http://crbug.com/11117
-   bug_11117
-   Memcheck:Leak
-   ...
-   fun:_ZN3IPC12ChannelProxy4SendEPNS_7MessageE
-   ...
-   fun:_ZN24RendererWebKitClientImpl24suddenTerminationChangedEb
-}
-{
    # See http://crbug.com/11139
    bug_11139
    Memcheck:Leak
@@ -535,26 +418,6 @@
    fun:_ZN7WebCore14ResourceLoader4loadERKNS_15ResourceRequestE
    fun:_ZN7WebCore17SubresourceLoader6createEPNS_5FrameEPNS_23SubresourceLoaderClientERKNS_15ResourceRequestEbbb
    fun:_ZN7WebCore6Loader4Host20servePendingRequestsERN3WTF5DequeIPNS_7RequestEEERb
-}
-{
-   bug_11838
-   Memcheck:Cond
-   fun:strlen
-   ...
-   fun:__xmlRaiseError
-   ...
-   fun:_ZN16Toolbar5Importer17LocateNextOpenTagEP9XmlReader
-   fun:_ZN16Toolbar5Importer27LocateNextTagWithStopByNameEP9XmlReaderRKSsS3_
-   fun:_ZN16Toolbar5Importer24ParseBookmarksFromReaderEP9XmlReaderPSt6vectorIN13ProfileWriter13BookmarkEntryESaIS4_EE
-   fun:_ZN39Toolbar5ImporterTest_BookmarkParse_Test8TestBodyEv
-}
-{
-   # See bug 12539 and 12549
-   bug_12539
-   Memcheck:Leak
-   ...
-   fun:_ZN7WebCore11ImageSource18createFrameAtIndexEj
-   fun:_ZNK11webkit_glue12ImageDecoder6DecodeEPKhj
 }
 {
    # very common in ui tests
@@ -647,15 +510,6 @@
    fun:FcFontMatch
 }
 {
-   bug_16103
-   Memcheck:Leak
-   fun:_Znwj
-   fun:_ZN20ShownSectionsHandler22HandleGetShownSectionsEPK5Value
-   ...
-   fun:_ZN5DOMUI19ProcessDOMUIMessageERKSsS1_ib
-   fun:_ZN11TabContents19ProcessDOMUIMessageERKSsS1_ib
-}
-{
    bug_16128
    Memcheck:Leak
    fun:_Znw*
@@ -669,23 +523,6 @@
    fun:_ZN3IPC11SyncChannelC2ERKSsNS_7Channel4ModeEPNS3_8ListenerEPNS_12ChannelProxy13MessageFilterEP11MessageLoopbPN4base13WaitableEventE
    fun:_ZN3IPC11SyncChannelC1ERKSsNS_7Channel4ModeEPNS3_8ListenerEPNS_12ChannelProxy13MessageFilterEP11MessageLoopbPN4base13WaitableEventE
    fun:_ZN11ChildThread4InitEv
-}
-{
-   bug_16129
-   Memcheck:Leak
-   fun:_Znwj
-   fun:_Z11NewCallbackI11WebViewImplPN11webkit_glue20ImageResourceFetcherERK8SkBitmapEPN9Callback2IT0_T1_E4TypeEPT_MSD_FvS8_S9_E
-   fun:_ZN11WebViewImpl13DownloadImageEiRK4GURLi
-   fun:_ZN10RenderView15OnDownloadImageEiRK4GURLi
-}
-{
-   bug_16129b
-   Memcheck:Leak
-   fun:_Znwj
-   fun:_Z11NewCallbackIN11webkit_glue20ImageResourceFetcherERKN6WebKit14WebURLResponseERKSsEPN9Callback2IT0_T1_E4TypeEPT_MSE_FvS9_SA_E
-   fun:_ZN11webkit_glue20ImageResourceFetcherC1ERK4GURLP8WebFrameiiP14CallbackRunnerI6Tuple2IPS0_RK8SkBitmapEE
-   fun:_ZN11WebViewImpl13DownloadImageEiRK4GURLi
-   fun:_ZN10RenderView15OnDownloadImageEiRK4GURLi
 }
 {
    bug_16156
@@ -722,16 +559,6 @@
    fun:_ZN12RenderThread22InformHostOfCacheStatsEv
 }
 {
-   # happened 1 in 16 runs
-   bug_16578
-   Memcheck:Leak
-   fun:_Znwj
-   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
-   fun:_ZNSs12_S_constructIPKcEEPcT_S3_RKSaIcESt20forward_iterator_tag
-   fun:_ZNSsC1EPKcRKSaIcE
-   fun:_ZN12WebFrameImplD0Ev
-}
-{
    # Webkit leak in WebCore::HTMLNames::init() ?
    bug_16579
    Memcheck:Leak
@@ -751,84 +578,6 @@
    fun:g_object_new_valist
 }
 {
-   bug_16584
-   Memcheck:Leak
-   fun:_Znwj
-   fun:_ZN7WebCore10CSSRuleSet12addToRuleSetEPNS_16AtomicStringImplERN3WTF7HashMapIS2_PNS_15CSSRuleDataListENS3_7PtrHashIS2_EENS3_10HashTraitsIS2_EENS9_IS6_EEEEPNS_12CSSStyleRuleEPNS_11CSSSelectorE
-   fun:_ZN7WebCore10CSSRuleSet7addRuleEPNS_12CSSStyleRuleEPNS_11CSSSelectorE
-   fun:_ZN7WebCore10CSSRuleSet17addRulesFromSheetEPNS_13CSSStyleSheetERKNS_19MediaQueryEvaluatorEPNS_16CSSStyleSelectorE
-   fun:_ZN7WebCoreL22loadSimpleDefaultStyleEv
-   fun:_ZN7WebCore16CSSStyleSelectorC1EPNS_8DocumentERKNS_6StringEPNS_14StyleSheetListEPNS_13CSSStyleSheetEbb
-   fun:_ZN7WebCore8Document6attachEv
-   fun:_ZN7WebCore5Frame11setDocumentEN3WTF10PassRefPtrINS_8DocumentEEE
-   fun:_ZN7WebCore11FrameLoader5beginERKNS_4KURLEbPNS_14SecurityOriginE
-   fun:_ZN7WebCore11FrameLoader4initEv
-   fun:_ZN7WebCore5Frame4initEv
-}
-{
-   # 1 in 20 runs?
-   bug_16586
-   Memcheck:Leak
-   fun:_Znwj
-   fun:_ZN10URLFetcherC1ERK4GURLNS_11RequestTypeEPNS_8DelegateE
-   fun:_ZN22AlternateNavURLFetcher7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
-   fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
-   fun:_ZN20NavigationController7LoadURLERK4GURLS2_j
-   fun:_ZN7Browser14OpenURLAtIndexEP11TabContentsRK4GURLS4_21WindowOpenDispositionjib
-   fun:_ZN7Browser14OpenCurrentURLEv
-}
-{
-   # 1 in 40 runs?  Handle both leaks with one suppression.
-   # Anonymous namespaces are encoded differently on mac and linux,
-   # hence the wildcard.
-   bug_16625
-   Memcheck:Leak
-   ...
-   fun:_ZN16ChildProcessHost13CreateChannelEv
-   fun:_ZN18UtilityProcessHost12StartProcessERK8FilePath
-   fun:_ZN18UtilityProcessHost22StartExtensionUnpackerERK8FilePath
-   fun:*UtilityProcessHostTest_ExtensionUnpacker_Test8TestBodyEv
-}
-{
-   # 1 in 20 runs?
-   bug_16908
-   Memcheck:Leak
-   fun:_Znwj
-   fun:_ZN7WebCore9CSSParser22createFloatingSelectorEv
-   fun:_Z10cssyyparsePv
-   fun:_ZN7WebCore9CSSParser10parseSheetEPNS_13CSSStyleSheetERKNS_6StringE
-   fun:_ZN7WebCore13CSSStyleSheet11parseStringERKNS_6StringEb
-   fun:_ZN7WebCoreL12parseUASheetERKNS_6StringE
-   fun:_ZN7WebCoreL12parseUASheetEPKcj
-   fun:_ZN7WebCoreL22loadSimpleDefaultStyleEv
-   fun:_ZN7WebCore16CSSStyleSelectorC1EPNS_8DocumentERKNS_6StringEPNS_14StyleSheetListEPNS_13CSSStyleSheetEbb
-   fun:_ZN7WebCore8Document6attachEv
-   fun:_ZN7WebCore5Frame11setDocumentEN3WTF10PassRefPtrINS_8DocumentEEE
-   fun:_ZN7WebCore11FrameLoader5beginERKNS_4KURLEbPNS_14SecurityOriginE
-   fun:_ZN7WebCore11FrameLoader4initEv
-   fun:_ZN7WebCore5Frame4initEv
-}
-{
-   bug_16908
-   Memcheck:Leak
-   fun:_ZdlPv
-   fun:_ZN7WebCore15CSSSelectorList19adoptSelectorVectorERN3WTF6VectorIPNS_11CSSSelectorELm0EEE
-   fun:_ZN7WebCore9CSSParser15createStyleRuleEPN3WTF6VectorIPNS_11CSSSelectorELm0EEE
-   fun:_Z10cssyyparsePv
-   fun:_ZN7WebCore9CSSParser10parseSheetEPNS_13CSSStyleSheetERKNS_6StringE
-   fun:_ZN7WebCore13CSSStyleSheet11parseStringERKNS_6StringEb
-   fun:_ZN7WebCoreL12parseUASheetERKNS_6StringE
-   fun:_ZN7WebCoreL12parseUASheetEPKcj
-   fun:_ZN7WebCore16CSSStyleSelectorC2EPNS_8DocumentERKNS_6StringEPNS_14StyleSheetListEPNS_13CSSStyleSheetEbb
-   fun:_ZN7WebCore16CSSStyleSelectorC1EPNS_8DocumentERKNS_6StringEPNS_14StyleSheetListEPNS_13CSSStyleSheetEbb
-   fun:_ZN7WebCore8Document6attachEv
-   fun:_ZN7WebCore5Frame11setDocumentEN3WTF10PassRefPtrINS_8DocumentEEE
-   fun:_ZN7WebCore11FrameLoader5beginERKNS_4KURLEbPNS_14SecurityOriginE
-   fun:_ZN7WebCore11FrameLoader4initEv
-   fun:_ZN7WebCore5Frame4initEv
-}
-{
    bug_17113
    Memcheck:Leak
    fun:_Znw*
@@ -836,27 +585,6 @@
    fun:_ZN11webkit_glue20ResourceLoaderBridge6CreateERKSsRK4GURLS5_S5_S2_S2_S2_iiN12ResourceType4TypeEii
    fun:_ZN11webkit_glue16WebURLLoaderImpl7Context5StartERKN6WebKit13WebURLRequestEPNS_20ResourceLoaderBridge16SyncLoadResponseE
    fun:_ZN11webkit_glue16WebURLLoaderImpl18loadAsynchronouslyERKN6WebKit13WebURLRequestEPNS1_18WebURLLoaderClientE
-}
-{
-   bug_17185
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEj
-   fun:_ZN7WebCore10StringImpl19createUninitializedEjRPt
-   ...
-   fun:_ZN7WebCore10Pasteboard14writeSelectionEPNS_5RangeEbPNS_5FrameE
-}
-{
-   bug_17187
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEj
-   fun:_ZN7WebCore10StringImpl19createUninitializedEjRPt
-   fun:_ZN7WebCore10StringImpl6createEPKtj
-   fun:_ZN6WebKit9WebString6assignEPKtj
-   fun:_ZN20MockWebClipboardImpl10writeImageERKN6WebKit8WebImageERKNS0_6WebURLERKNS0_9WebStringE
-   fun:_ZN7WebCore14ChromiumBridge19clipboardWriteImageEPK15NativeImageSkiaRKNS_4KURLERKNS_6StringE
-   fun:_ZN7WebCore10Pasteboard10writeImageEPNS_4NodeERKNS_4KURLERKNS_6StringE
 }
 {
    bug_17291
@@ -915,21 +643,6 @@
    Memcheck:Leak
    ...
    fun:_ZN7WebCore8SVGNames4initEv
-}
-{
-   bug_18654
-   Memcheck:Leak
-   ...
-   fun:_ZN12WebFrameImplD0Ev
-   fun:_ZN20WebFrameLoaderClient20frameLoaderDestroyedEv
-   fun:_ZN7WebCore11FrameLoaderD1Ev
-   fun:_ZN7WebCore5FrameD1Ev
-   fun:_ZN7WebCore17InspectorResourceD1Ev
-   fun:_ZN3WTF10RefCountedIN7WebCore17InspectorResourceEE5derefEv
-   fun:_ZN7WebCore19InspectorControllerD1Ev
-   fun:_ZN7WebCore4PageD1Ev
-   fun:_ZN11WebViewImpl5closeEv
-   fun:_ZN12RenderWidget5CloseEv
 }
 {
    # Originally filed as http://crbug.com/6547, but that was closed
@@ -995,34 +708,12 @@
    fun:_ZN4base6Thread10ThreadMainEv
 }
 {
-   bug_19385
-   Memcheck:Leak
-   fun:realloc
-   fun:epoll_add
-   fun:event_add
-   fun:_ZN4base19MessagePumpLibevent4InitEv
-   fun:_ZN4base19MessagePumpLibeventC1Ev
-   fun:_ZN11MessageLoopC1ENS_4TypeE
-   fun:_ZN4base6Thread10ThreadMainEv
-   fun:_Z10ThreadFuncPv
-   fun:start_thread
-}
-{
    bug_19463
    Memcheck:Leak
    fun:_Znwj
    fun:_ZN4base19MessagePumpLibevent4InitEv
    fun:_ZN4base19MessagePumpLibeventC1Ev
    fun:_ZN11MessageLoopC1ENS_4TypeE
-}
-{
-   bug_19490
-   Memcheck:Leak
-   fun:_Znwj
-   ...
-   fun:_ZN19SafeBrowsingService11GetDatabaseEv
-   fun:_ZN19SafeBrowsingService14OnDBInitializeEv
-   fun:_ZN14RunnableMethodI19SafeBrowsingServiceMS0_FvvE6Tuple0E3RunEv
 }
 {
    bug_19546a

@@ -12,6 +12,7 @@
 #include "chrome/common/libxml_utils.h"
 #include "googleurl/src/gurl.h"
 
+// See http://crbug.com/11838
 TEST(Toolbar5ImporterTest, DISABLED_BookmarkParse) {
 #if 0  // Compile breaks if you remove this and leave the test disabled
 static const wchar_t* kTitle = L"MyTitle";

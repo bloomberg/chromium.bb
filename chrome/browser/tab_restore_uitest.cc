@@ -200,7 +200,7 @@ TEST_F(TabRestoreUITest, MiddleTab) {
 
 // Close a tab, switch windows, then restore the tab. The tab should be in its
 // original window and position, and active.
-// Disabled because flacky. See http://crbug.com/14132
+// Disabled because flacky. See http://crbug.com/14132 and 11213.
 TEST_F(TabRestoreUITest, DISABLED_RestoreToDifferentWindow) {
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
 

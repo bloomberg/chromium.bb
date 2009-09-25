@@ -17,9 +17,6 @@ IPCSyncChannelTest.ChattyServer
 # issue 9897
 ExtensionContentScriptInjectTest.Simple
 
-# issue 12661
-ExtensionsServiceTest.InstallExtension
-
 # issue 15276
 CompactLangDetTest.*
 
