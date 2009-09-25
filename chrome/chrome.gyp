@@ -4597,9 +4597,6 @@
           ],
           'conditions': [
             ['OS=="win"', {
-              'defines' : [
-                'COMPILER_MSVC',
-              ],
               'msvs_settings': {
                 'VCLinkerTool': {
                   'ImportLibrary': '$(OutDir)\\lib\\syncapi.lib',
@@ -6411,9 +6408,6 @@
           ],
           'conditions': [
             ['OS=="win"', {
-              'defines' : [
-                'COMPILER_MSVC',
-              ],
               'dependencies': [
                 '../third_party/pthreads-win32/pthreads.gyp:pthreads',
               ],
@@ -6478,9 +6472,6 @@
           ],
           'conditions': [
             ['OS=="win"', {
-              'defines' : [
-                'COMPILER_MSVC',
-              ],
               'dependencies': [
                 '../third_party/pthreads-win32/pthreads.gyp:pthreads',
               ],
@@ -6646,9 +6637,6 @@
                 'browser/sync/util/data_encryption.cc',
                 'browser/sync/util/data_encryption.h',
                 'browser/sync/util/path_helpers.cc',
-              ],
-              'defines' : [
-                'COMPILER_MSVC',
               ],
               'dependencies': [
                 '../third_party/pthreads-win32/pthreads.gyp:pthreads',

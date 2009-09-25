@@ -10,6 +10,7 @@
 #define OVERRIDES_TALK_BASE_BASICTYPES_H__
 
 #include "base/basictypes.h"
+#include "build/build_config.h"
 
 #ifndef INT_TYPES_DEFINED
 #define INT_TYPES_DEFINED

@@ -32,9 +32,6 @@
     },
     'conditions': [
       ['OS=="win"', {
-        'defines': [
-          'COMPILER_MSVC',
-        ],
         'include_dirs': [
           '../third_party/platformsdk_win2008_6_1/files/Include',
         ],
