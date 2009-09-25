@@ -42,7 +42,7 @@ import sys
 def RemoveIfExists(filename):
   try:
     os.remove(filename)
-  except IOError:
+  except OSError:
     pass
 
 
