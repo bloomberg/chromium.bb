@@ -218,7 +218,7 @@ bool EffectParamGL::SetData(GAPIGL *gapi,
       break;
     }
     case effect_param::SAMPLER: {
-      DCHECK_GE(low_level_param.sampler_ids.size(), 1);
+      DCHECK_GE(low_level_param.sampler_ids.size(), 1U);
       low_level_param.sampler_ids[0] = *static_cast<const ResourceID *>(data);
       if (effect_ == gapi->current_effect()) {
         gapi->DirtyEffect();
@@ -445,7 +445,7 @@ void EffectGL::AddLowLevelParams(CGprogram prog, CGenum name_space, bool vp) {
     int num_elements;
     if (cg_type == CG_ARRAY) {
       num_elements = cgGetArraySize(cg_param, 0);
-      // Substitute the first element's type for our type.	
+      // Substitute the first element's type for our type.
       cg_type = cgGetParameterType(cgGetArrayParameter(cg_param, 0));
     } else {
       num_elements = 0;

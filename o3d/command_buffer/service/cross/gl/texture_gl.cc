@@ -209,9 +209,9 @@ Texture2DGL *Texture2DGL::Create(unsigned int width,
                                  texture::Format format,
                                  unsigned int flags,
                                  bool enable_render_surfaces) {
-  DCHECK_GT(width, 0);
-  DCHECK_GT(height, 0);
-  DCHECK_GT(levels, 0);
+  DCHECK_GT(width, 0U);
+  DCHECK_GT(height, 0U);
+  DCHECK_GT(levels, 0U);
   GLenum gl_internal_format = 0;
   GLenum gl_format = 0;
   GLenum gl_type = 0;
@@ -347,10 +347,10 @@ Texture3DGL *Texture3DGL::Create(unsigned int width,
                                  texture::Format format,
                                  unsigned int flags,
                                  bool enable_render_surfaces) {
-  DCHECK_GT(width, 0);
-  DCHECK_GT(height, 0);
-  DCHECK_GT(depth, 0);
-  DCHECK_GT(levels, 0);
+  DCHECK_GT(width, 0U);
+  DCHECK_GT(height, 0U);
+  DCHECK_GT(depth, 0U);
+  DCHECK_GT(levels, 0U);
   GLenum gl_internal_format = 0;
   GLenum gl_format = 0;
   GLenum gl_type = 0;
@@ -474,8 +474,8 @@ TextureCubeGL *TextureCubeGL::Create(unsigned int side,
                                      texture::Format format,
                                      unsigned int flags,
                                      bool enable_render_surfaces) {
-  DCHECK_GT(side, 0);
-  DCHECK_GT(levels, 0);
+  DCHECK_GT(side, 0U);
+  DCHECK_GT(levels, 0U);
   GLenum gl_internal_format = 0;
   GLenum gl_format = 0;
   GLenum gl_type = 0;

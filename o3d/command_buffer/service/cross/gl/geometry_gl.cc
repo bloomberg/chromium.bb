@@ -242,10 +242,10 @@ inline unsigned int GetAttribIndex(vertex_struct::Semantic semantic,
       DCHECK_EQ(semantic_index, 0);
       return 2;
     case vertex_struct::COLOR:
-      DCHECK_LT(semantic_index, 2);
+      DCHECK_LT(semantic_index, 2U);
       return 3 + semantic_index;
     case vertex_struct::TEX_COORD:
-      DCHECK_LT(semantic_index, 8);
+      DCHECK_LT(semantic_index, 8U);
       return 8 + semantic_index;
     default:
       DLOG(FATAL) << "Not reached.";

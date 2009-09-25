@@ -157,7 +157,7 @@ void SamplerGL::SetStates(sampler::AddressingMode addressing_u,
   // These are validated in GAPIDecoder.cc
   DCHECK_NE(mag_filter, sampler::NONE);
   DCHECK_NE(min_filter, sampler::NONE);
-  DCHECK_GT(max_anisotropy, 0);
+  DCHECK_GT(max_anisotropy, 0U);
   gl_wrap_s_ = GLAddressMode(addressing_u);
   gl_wrap_t_ = GLAddressMode(addressing_v);
   gl_wrap_r_ = GLAddressMode(addressing_w);
