@@ -35,7 +35,13 @@ TEST_F(WorkerTest, MultipleWorkers) {
   RunTest(L"multi_worker.html");
 }
 
-TEST_F(WorkerTest, DISABLED_WorkerFastLayoutTests) {
+// WorkerFastLayoutTests works on the linux try servers, but fails on the
+// build bots.
+#if defined(OS_LINUX)
+#define WorkerFastLayoutTests DISABLED_WorkerFastLayoutTests
+#endif
+
+TEST_F(WorkerTest, WorkerFastLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "stress-js-execution.html",
 #if defined(OS_WIN)
