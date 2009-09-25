@@ -815,6 +815,8 @@ class TabContents : public PageNavigator,
       const std::string& frame_origin,
       const std::string& main_frame_origin,
       const std::string& security_info);
+  virtual void DidDisplayInsecureContent();
+  virtual void DidRunInsecureContent(const std::string& security_origin);
   virtual void DidFailProvisionalLoadWithError(
       RenderViewHost* render_view_host,
       bool is_main_frame,

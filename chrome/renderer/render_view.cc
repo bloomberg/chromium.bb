@@ -130,6 +130,7 @@ using WebKit::WebPopupMenuInfo;
 using WebKit::WebRange;
 using WebKit::WebRect;
 using WebKit::WebScriptSource;
+using WebKit::WebSecurityOrigin;
 using WebKit::WebSettings;
 using WebKit::WebSize;
 using WebKit::WebString;
@@ -2297,6 +2298,17 @@ void RenderView::didLoadResourceFromMemoryCache(
       frame->securityOrigin().toString().utf8(),
       frame->top()->securityOrigin().toString().utf8(),
       response.securityInfo()));
+}
+
+void RenderView::didDisplayInsecureContent(WebKit::WebFrame* frame) {
+  Send(new ViewHostMsg_DidDisplayInsecureContent(routing_id_));
+}
+
+void RenderView::didRunInsecureContent(
+    WebFrame* frame, const WebSecurityOrigin& origin) {
+  Send(new ViewHostMsg_DidRunInsecureContent(
+      routing_id_,
+      origin.toString().utf8()));
 }
 
 void RenderView::didExhaustMemoryAvailableForScript(WebFrame* frame) {

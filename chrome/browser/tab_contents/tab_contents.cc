@@ -1773,6 +1773,14 @@ void TabContents::DidLoadResourceFromMemoryCache(
       Details<LoadFromMemoryCacheDetails>(&details));
 }
 
+void TabContents::DidDisplayInsecureContent() {
+  // TODO(abarth): Update the HTTPS state.
+}
+
+void TabContents::DidRunInsecureContent(const std::string& security_origin) {
+  // TODO(abarth): Update the HTTPS state.
+}
+
 void TabContents::DidFailProvisionalLoadWithError(
     RenderViewHost* render_view_host,
     bool is_main_frame,

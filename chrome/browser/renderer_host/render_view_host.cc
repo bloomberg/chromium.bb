@@ -767,6 +767,10 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgDocumentAvailableInMainFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidLoadResourceFromMemoryCache,
                         OnMsgDidLoadResourceFromMemoryCache)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidDisplayInsecureContent,
+                        OnMsgDidDisplayInsecureContent)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidRunInsecureContent,
+                        OnMsgDidRunInsecureContent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidRedirectProvisionalLoad,
                         OnMsgDidRedirectProvisionalLoad)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartProvisionalLoadForFrame,
@@ -1059,6 +1063,13 @@ void RenderViewHost::OnMsgDidLoadResourceFromMemoryCache(
     resource_delegate->DidLoadResourceFromMemoryCache(
         url, frame_origin, main_frame_origin, security_info);
   }
+}
+
+void RenderViewHost::OnMsgDidDisplayInsecureContent() {
+}
+
+void RenderViewHost::OnMsgDidRunInsecureContent(
+    const std::string& security_origin) {
 }
 
 void RenderViewHost::OnMsgDidStartProvisionalLoadForFrame(bool is_main_frame,

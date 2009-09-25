@@ -255,6 +255,9 @@ class RenderViewHostDelegate {
         const std::string& main_frame_origin,
         const std::string& security_info) = 0;
 
+    virtual void DidDisplayInsecureContent() = 0;
+    virtual void DidRunInsecureContent(const std::string& security_origin) = 0;
+
     // The RenderView failed a provisional load with an error.
     virtual void DidFailProvisionalLoadWithError(
         RenderViewHost* render_view_host,

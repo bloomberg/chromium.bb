@@ -489,6 +489,8 @@ class RenderViewHost : public RenderWidgetHost,
                                            const std::string& frame_origin,
                                            const std::string& main_frame_origin,
                                            const std::string& security_info);
+  void OnMsgDidDisplayInsecureContent();
+  void OnMsgDidRunInsecureContent(const std::string& security_origin);
   void OnMsgDidStartProvisionalLoadForFrame(bool main_frame,
                                             const GURL& url);
   void OnMsgDidFailProvisionalLoadWithError(bool main_frame,

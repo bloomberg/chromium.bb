@@ -868,6 +868,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       std::string  /* main_frame_origin */,
                       std::string  /* security info */)
 
+  // Sent when the renderer displays insecure content in a secure page.
+  IPC_MESSAGE_ROUTED0(ViewHostMsg_DidDisplayInsecureContent)
+
+  // Sent when the renderer runs insecure content in a secure origin.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_DidRunInsecureContent,
+                      std::string  /* security_origin */)
+
   // Sent when the renderer starts a provisional load for a frame.
   IPC_MESSAGE_ROUTED2(ViewHostMsg_DidStartProvisionalLoadForFrame,
                       bool /* true if it is the main frame */,
