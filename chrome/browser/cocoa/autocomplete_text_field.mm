@@ -29,38 +29,33 @@
   return static_cast<AutocompleteTextFieldCell*>([self cell]);
 }
 
-// TODO(shess): An alternate implementation of this would be to pick
-// out the field's subview (which may be a clip view around the field
-// editor) and manually resize it to the textFrame returned from the
-// cell's -splitFrame:*.  That doesn't mess with the editing state of
-// the field editor system, but does make other assumptions about how
-// field editors are placed.
+// Cocoa text fields are edited by placing an NSTextView as subview,
+// positioned by the cell's -editWithFrame:inView:... method.  Using
+// the standard -makeFirstResponder: machinery to reposition the field
+// editor results in reseting the field editor's editing state, which
+// AutocompleteEditViewMac monitors.  This causes problems because
+// editing can require the field editor to be repositioned, which
+// could disrupt editing.  This code repositions the subview directly,
+// which causes no editing-state changes.
 - (void)resetFieldEditorFrameIfNeeded {
   AutocompleteTextFieldCell* cell = [self cell];
   if ([cell fieldEditorNeedsReset]) {
-    NSTextView* editor = (id)[self currentEditor];
+    // No change to bounds necessary if not editing.
+    NSText* editor = [self currentEditor];
     if (editor) {
-      // Clear the delegate so that it doesn't see
-      // -control:textShouldEndEditing: (closes autocomplete popup).
-      id delegate = [self delegate];
-      [self setDelegate:nil];
+      // When editing, we should have exactly one subview, which is a
+      // clipview containing the editor (for purposes of scrolling).
+      NSArray* subviews = [self subviews];
+      DCHECK_EQ([subviews count], 1U);
+      DCHECK([editor isDescendantOf:self]);
+      if ([subviews count] > 0) {
+        const NSRect frame([cell drawingRectForBounds:[self bounds]]);
+        [[subviews objectAtIndex:0] setFrame:frame];
 
-      // -makeFirstResponder: will select-all, restore selection.
-      NSRange sel = [editor selectedRange];
-      [[self window] makeFirstResponder:self];
-      [editor setSelectedRange:sel];
-
-      [self setDelegate:delegate];
-
-      // Now provoke call to delegate's -controlTextDidBeginEditing:.
-      // This is necessary to make sure that we'll send the
-      // appropriate -control:textShouldEndEditing: call when we lose
-      // focus.
-      // TODO(shess): Would be better to only restore this state if
-      // -controlTextDidBeginEditing: had already been sent.
-      // Unfortunately, that's hard to detect.  Could either check
-      // popup IsOpen() or model has_focus()?
-      [editor shouldChangeTextInRange:sel replacementString:@""];
+        // Make sure the selection remains visible.
+        // TODO(shess) Could this be janky?
+        [editor scrollRangeToVisible:[editor selectedRange]];
+      }
     }
     [cell setFieldEditorNeedsReset:NO];
   }

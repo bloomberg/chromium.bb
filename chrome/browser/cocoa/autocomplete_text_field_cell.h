@@ -64,7 +64,8 @@
 // Return the portion of the cell to show the text cursor over.
 - (NSRect)textCursorFrameForFrame:(NSRect)cellFrame;
 
-// Return the portion of the cell to use for text display.
+// Return the portion of the cell to use for text display.  This
+// corrosponds to the frame with our added decorations sliced off.
 - (NSRect)textFrameForFrame:(NSRect)cellFrame;
 
 @end

@@ -327,7 +327,7 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBlocksEndEditing) {
     EXPECT_FALSE([delegate receivedControlTextShouldEndEditing]);
     [field_ resetFieldEditorFrameIfNeeded];
     EXPECT_FALSE([delegate receivedControlTextShouldEndEditing]);
-    EXPECT_TRUE([delegate receivedControlTextDidBeginEditing]);
+    EXPECT_FALSE([delegate receivedControlTextDidBeginEditing]);
     [field_ setDelegate:nil];
   }
 }

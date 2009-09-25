@@ -22,6 +22,7 @@ class AutocompleteTextFieldCellTest : public PlatformTest {
     scoped_nsobject<AutocompleteTextFieldCell> cell(
         [[AutocompleteTextFieldCell alloc] initTextCell:@"Testing"]);
     [cell setEditable:YES];
+    [cell setBordered:YES];
     [view_ setCell:cell.get()];
     [cocoa_helper_.contentView() addSubview:view_.get()];
   }
@@ -302,6 +303,56 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   NSRect textFrameWithHintText = [cell textFrameForFrame:bounds];
   EXPECT_TRUE(NSContainsRect(textFrame, textFrameWithHintText));
   EXPECT_LT(NSWidth(textFrameWithHintText), NSWidth(textFrame));
+}
+
+// The editor frame should be slightly inset from the text frame.
+TEST_F(AutocompleteTextFieldCellTest, DrawingRectForBounds) {
+  AutocompleteTextFieldCell* cell =
+      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
+  const NSRect bounds([view_ bounds]);
+  NSRect textFrame, drawingRect;
+
+  textFrame = [cell textFrameForFrame:bounds];
+  drawingRect = [cell drawingRectForBounds:bounds];
+  EXPECT_FALSE(NSIsEmptyRect(drawingRect));
+  EXPECT_TRUE(NSContainsRect(textFrame, NSInsetRect(drawingRect, 1, 1)));
+
+  // Save the starting frame for after clear.
+  const NSRect originalDrawingRect(drawingRect);
+
+  // TODO(shess): Do we really need to test every combination?
+
+  [cell setSearchHintString:@"Search hint"];
+  textFrame = [cell textFrameForFrame:bounds];
+  drawingRect = [cell drawingRectForBounds:bounds];
+  EXPECT_FALSE(NSIsEmptyRect(drawingRect));
+  EXPECT_TRUE(NSContainsRect(textFrame, NSInsetRect(drawingRect, 1, 1)));
+
+  NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
+  [cell setKeywordHintPrefix:@"Keyword " image:image suffix:@" hint"];
+  textFrame = [cell textFrameForFrame:bounds];
+  drawingRect = [cell drawingRectForBounds:bounds];
+  EXPECT_FALSE(NSIsEmptyRect(drawingRect));
+  EXPECT_TRUE(NSContainsRect(NSInsetRect(textFrame, 1, 1), drawingRect));
+
+  [cell setKeywordString:@"Search Engine:"];
+  textFrame = [cell textFrameForFrame:bounds];
+  drawingRect = [cell drawingRectForBounds:bounds];
+  EXPECT_FALSE(NSIsEmptyRect(drawingRect));
+  EXPECT_TRUE(NSContainsRect(NSInsetRect(textFrame, 1, 1), drawingRect));
+
+  [cell clearKeywordAndHint];
+  textFrame = [cell textFrameForFrame:bounds];
+  drawingRect = [cell drawingRectForBounds:bounds];
+  EXPECT_FALSE(NSIsEmptyRect(drawingRect));
+  EXPECT_TRUE(NSContainsRect(NSInsetRect(textFrame, 1, 1), drawingRect));
+  EXPECT_TRUE(NSEqualRects(drawingRect, originalDrawingRect));
+
+  [cell setHintIcon:[NSImage imageNamed:@"NSComputer"]];
+  textFrame = [cell textFrameForFrame:bounds];
+  drawingRect = [cell drawingRectForBounds:bounds];
+  EXPECT_FALSE(NSIsEmptyRect(drawingRect));
+  EXPECT_TRUE(NSContainsRect(NSInsetRect(textFrame, 1, 1), drawingRect));
 }
 
 }  // namespace

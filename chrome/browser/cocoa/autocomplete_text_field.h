@@ -62,8 +62,7 @@ class AutocompleteTextFieldObserver {
 - (AutocompleteTextFieldCell*)autocompleteTextFieldCell;
 
 // If the keyword, keyword hint, or search hint changed, then the
-// field needs to be relaidout.  This accomplishes that in a manner
-// which doesn't disrupt the field delegate.
+// field editor may need to be repositioned.
 - (void)resetFieldEditorFrameIfNeeded;
 
 @end

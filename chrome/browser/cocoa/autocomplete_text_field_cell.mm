@@ -168,6 +168,11 @@ const NSInteger kHintIconHorizontalPad = 5;
   }
 }
 
+// TODO(shess): This code is manually drawing the cell's border area,
+// but otherwise the cell assumes -setBordered:YES for purposes of
+// calculating things like the editing area.  This is probably
+// incorrect.  I know that this affects -drawingRectForBounds:.
+
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   DCHECK([controlView isFlipped]);
   [[NSColor colorWithCalibratedWhite:1.0 alpha:0.25] set];
@@ -240,6 +245,13 @@ const NSInteger kHintIconHorizontalPad = 5;
   }
 
   return textFrame;
+}
+
+// For NSTextFieldCell this is the area within the borders.  For our
+// purposes, we count the info decorations as being part of the
+// border.
+- (NSRect)drawingRectForBounds:(NSRect)theRect {
+  return [super drawingRectForBounds:[self textFrameForFrame:theRect]];
 }
 
 - (void)drawHintWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
@@ -319,33 +331,6 @@ const NSInteger kHintIconHorizontalPad = 5;
 
   [super drawInteriorWithFrame:[self textFrameForFrame:cellFrame]
                         inView:controlView];
-}
-
-// Override these methods so that the field editor shows up in the right place
-- (void)editWithFrame:(NSRect)cellFrame
-               inView:(NSView*)controlView
-               editor:(NSText*)textObj
-             delegate:(id)anObject
-                event:(NSEvent*)theEvent {
-  [super editWithFrame:[self textFrameForFrame:cellFrame]
-                inView:controlView
-                editor:textObj
-              delegate:anObject
-                 event:theEvent];
-}
-
-// Override these methods so that the field editor shows up in the right place
-- (void)selectWithFrame:(NSRect)cellFrame
-                 inView:(NSView*)controlView
-                 editor:(NSText*)textObj
-               delegate:(id)anObject
-                  start:(NSInteger)selStart
-                 length:(NSInteger)selLength {
-  [super selectWithFrame:[self textFrameForFrame:cellFrame]
-                  inView:controlView editor:textObj
-                delegate:anObject
-                   start:selStart
-                  length:selLength];
 }
 
 - (void)resetCursorRect:(NSRect)cellFrame inView:(NSView *)controlView {
