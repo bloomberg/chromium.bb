@@ -13,6 +13,7 @@
 
 #include "base/gfx/native_widget_types.h"
 #include "base/scoped_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/common/owned_widget_gtk.h"
 #include "webkit/glue/plugins/gtk_plugin_container_manager.h"
@@ -112,6 +113,11 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
 
   // Whether we are showing a context menu.
   bool is_showing_context_menu_;
+
+  // The time at which this view started displaying white pixels as a result of
+  // not having anything to paint (empty backing store from renderer). This
+  // value returns true for is_null() if we are not recording whiteout times.
+  base::TimeTicks whiteout_start_time_;
 
   // Variables used only for popups --------------------------------------------
   // Our parent widget.

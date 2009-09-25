@@ -571,9 +571,20 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
       backing_store->ShowRect(
           paint_rect, x11_util::GetX11WindowFromGtkWidget(view_.get()));
     }
+    if (!whiteout_start_time_.is_null()) {
+      base::TimeDelta whiteout_duration = base::TimeTicks::Now() -
+          whiteout_start_time_;
+      UMA_HISTOGRAM_TIMES("MPArch.RWHH_WhiteoutDuration", whiteout_duration);
+
+      // Reset the start time to 0 so that we start recording again the next
+      // time the backing store is NULL...
+      whiteout_start_time_ = base::TimeTicks();
+    }
   } else {
     if (window)
       gdk_window_clear(window);
+    if (whiteout_start_time_.is_null())
+      whiteout_start_time_ = base::TimeTicks::Now();
   }
 }
 
