@@ -133,7 +133,7 @@ void MainMenu::CreateNewWindow(int route_id,
 
   helper_.CreateNewWindow(route_id, modal_dialog_event, browser_->profile(),
                           site_instance_,
-                          DOMUIFactory::GetDOMUIType(GURL(kMenuURL)));
+                          DOMUIFactory::GetDOMUIType(GURL(kMenuURL)), NULL);
   pending_contents_.reset(helper_.GetCreatedWindow(route_id));
   pending_contents_->set_delegate(&tab_contents_delegate_);
 }
