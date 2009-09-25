@@ -12,6 +12,8 @@
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "skia/ext/skia_utils_gtk.h"
+#include "views/background.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/fill_layout.h"
 #include "views/widget/root_view.h"
@@ -128,6 +130,14 @@ void NativeTabbedPaneGtk::DoAddTabAtIndex(int index, const std::wstring& title,
   page_container->Init(NULL, gfx::Rect());
   page_container->SetContentsView(contents);
   page_container->Show();
+
+  if (!contents->background()) {
+    GtkStyle* window_style =
+        gtk_widget_get_style(page_container->GetNativeView());
+    contents->set_background(
+        Background::CreateSolidBackground(
+            skia::GdkColorToSkColor(window_style->bg[GTK_STATE_NORMAL])));
+  }
 
   GtkWidget* page = page_container->GetNativeView();
 
