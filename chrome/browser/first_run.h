@@ -93,6 +93,10 @@ class FirstRun {
   DISALLOW_IMPLICIT_CONSTRUCTORS(FirstRun);
 };
 
+#if !defined(OS_LINUX) || defined(TOOLKIT_VIEWS)
+// TODO(port): remove on Mac and Linux+views as well.
+// http://code.google.com/p/chromium/issues/detail?id=9295
+
 // This class contains the actions that need to be performed when an upgrade
 // is required. This involves mainly swapping the chrome exe and relaunching
 // the new browser.
@@ -129,6 +133,7 @@ class Upgrade {
   // |version| can be 0, 1 or 2 and selects what strings to present.
   static TryResult ShowTryChromeDialog(size_t version);
 };
+#endif
 
 // A subclass of BrowserProcessImpl that does not have a GoogleURLTracker
 // so we don't fetch as we have no IO thread (see bug #1292702).
