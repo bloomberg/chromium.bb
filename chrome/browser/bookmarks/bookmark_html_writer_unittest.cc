@@ -6,7 +6,9 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "base/time.h"
+#include "base/time_format.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/importer/firefox2_importer.h"
@@ -24,6 +26,60 @@ class BookmarkHTMLWriterTest : public testing::Test {
       file_util::Delete(path_, true);
   }
 
+  // Converts a BookmarkEntry to a string suitable for assertion testing.
+  std::wstring BookmarkEntryToString(
+      const ProfileWriter::BookmarkEntry& entry) {
+    std::wstring result;
+    result.append(L"on_toolbar=");
+    if (entry.in_toolbar)
+      result.append(L"false");
+    else
+      result.append(L"true");
+
+    result.append(L" url=" + UTF8ToWide(entry.url.spec()));
+
+    result.append(L" path=");
+    for (size_t i = 0; i < entry.path.size(); ++i) {
+      if (i != 0)
+        result.append(L"/");
+      result.append(entry.path[i]);
+    }
+
+    result.append(L" title=");
+    result.append(entry.title);
+
+    result.append(L" time=");
+    result.append(base::TimeFormatFriendlyDateAndTime(entry.creation_time));
+    return result;
+  }
+
+  // Creates a set of bookmark values to a string for assertion testing.
+  std::wstring BookmarkValuesToString(bool on_toolbar,
+                                      const GURL& url,
+                                      const std::wstring& title,
+                                      base::Time creation_time,
+                                      const std::wstring& f1,
+                                      const std::wstring& f2,
+                                      const std::wstring& f3) {
+    ProfileWriter::BookmarkEntry entry;
+    entry.in_toolbar = on_toolbar;
+    entry.url = url;
+    // The first path element should always be 'x', as that is what we passed
+    // to the importer.
+    entry.path.push_back(L"x");
+    if (!f1.empty()) {
+      entry.path.push_back(f1);
+      if (!f2.empty()) {
+        entry.path.push_back(f2);
+        if (!f3.empty())
+          entry.path.push_back(f3);
+      }
+    }
+    entry.title = title;
+    entry.creation_time = creation_time;
+    return BookmarkEntryToString(entry);
+  }
+
   void AssertBookmarkEntryEquals(const ProfileWriter::BookmarkEntry& entry,
                                  bool on_toolbar,
                                  const GURL& url,
@@ -32,24 +88,9 @@ class BookmarkHTMLWriterTest : public testing::Test {
                                  const std::wstring& f1,
                                  const std::wstring& f2,
                                  const std::wstring& f3) {
-    EXPECT_EQ(on_toolbar, entry.in_toolbar);
-    EXPECT_TRUE(url == entry.url);
-    EXPECT_EQ(title, entry.title);
-    EXPECT_TRUE(creation_time.ToTimeT() == entry.creation_time.ToTimeT());
-    size_t path_count = 0;
-    if (!f3.empty())
-      path_count = 3;
-    else if (!f2.empty())
-      path_count = 2;
-    else if (!f1.empty())
-      path_count = 1;
-    // The first path element should always be 'x', as that is what we passed
-    // to the importer.
-    ASSERT_EQ(path_count + 1, entry.path.size());
-    EXPECT_EQ(L"x", entry.path[0]);
-    EXPECT_TRUE(path_count < 1 || entry.path[1] == f1);
-    EXPECT_TRUE(path_count < 2 || entry.path[2] == f2);
-    EXPECT_TRUE(path_count < 3 || entry.path[3] == f3);
+    EXPECT_EQ(BookmarkValuesToString(on_toolbar, url, title, creation_time,
+                                     f1, f2, f3),
+              BookmarkEntryToString(entry));
   }
 
   FilePath path_;
@@ -57,7 +98,7 @@ class BookmarkHTMLWriterTest : public testing::Test {
 
 // Tests bookmark_html_writer by populating a BookmarkModel, writing it out by
 // way of bookmark_html_writer, then using the importer to read it back in.
-TEST_F(BookmarkHTMLWriterTest, DISABLED_Test) {
+TEST_F(BookmarkHTMLWriterTest, Test) {
   // Populate the BookmarkModel. This creates the following bookmark structure:
   // Bookmarks bar
   //   F1
