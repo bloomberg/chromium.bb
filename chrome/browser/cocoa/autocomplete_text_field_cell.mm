@@ -329,8 +329,7 @@ const NSInteger kHintIconHorizontalPad = 5;
     [self drawHintIconWithFrame:cellFrame inView:controlView];
   }
 
-  [super drawInteriorWithFrame:[self textFrameForFrame:cellFrame]
-                        inView:controlView];
+  [super drawInteriorWithFrame:cellFrame inView:controlView];
 }
 
 - (void)resetCursorRect:(NSRect)cellFrame inView:(NSView *)controlView {
