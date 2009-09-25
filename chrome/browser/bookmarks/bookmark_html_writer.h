@@ -5,9 +5,8 @@
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_HTML_WRITER_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_HTML_WRITER_H_
 
-#include <string>
-
 class BookmarkModel;
+class FilePath;
 class MessageLoop;
 
 namespace bookmark_html_writer {
@@ -20,7 +19,7 @@ namespace bookmark_html_writer {
 // TODO(sky): need a callback on failure.
 void WriteBookmarks(MessageLoop* thread,
                     BookmarkModel* model,
-                    const std::wstring& path);
+                    const FilePath& path);
 
 }
 

@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "base/file_path.h"
-#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/scoped_ptr.h"
@@ -319,13 +318,12 @@ class Writer : public Task {
 
 void WriteBookmarks(MessageLoop* thread,
                     BookmarkModel* model,
-                    const std::wstring& path) {
+                    const FilePath& path) {
   // BookmarkModel isn't thread safe (nor would we want to lock it down
   // for the duration of the write), as such we make a copy of the
   // BookmarkModel using BookmarkCodec then write from that.
   BookmarkCodec codec;
-  scoped_ptr<Writer> writer(new Writer(codec.Encode(model),
-                            FilePath::FromWStringHack(path)));
+  scoped_ptr<Writer> writer(new Writer(codec.Encode(model), path));
   if (thread)
     thread->PostTask(FROM_HERE, writer.release());
   else

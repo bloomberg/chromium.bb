@@ -580,7 +580,7 @@ void BookmarkManagerView::FileSelected(const FilePath& path,
     if (g_browser_process->io_thread()) {
       bookmark_html_writer::WriteBookmarks(
           g_browser_process->io_thread()->message_loop(), GetBookmarkModel(),
-          path.ToWStringHack());
+          path);
     }
   } else {
     NOTREACHED();

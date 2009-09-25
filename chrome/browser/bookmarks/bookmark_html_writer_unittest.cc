@@ -106,7 +106,7 @@ TEST_F(BookmarkHTMLWriterTest, DISABLED_Test) {
                               url4, t4);
 
   // Write to a temp file.
-  bookmark_html_writer::WriteBookmarks(NULL, &model, path_.ToWStringHack());
+  bookmark_html_writer::WriteBookmarks(NULL, &model, path_);
 
   // Read the bookmarks back in.
   std::vector<ProfileWriter::BookmarkEntry> parsed_bookmarks;
