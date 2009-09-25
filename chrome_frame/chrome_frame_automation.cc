@@ -412,8 +412,11 @@ bool ChromeFrameAutomationClient::Initialize(
 
 #ifndef NDEBUG
   // In debug mode give more time to work with a debugger.
-  if (automation_server_launch_timeout != INFINITE)
+  if (IsDebuggerPresent()) {
+    automation_server_launch_timeout = INFINITE;
+  } else {
     automation_server_launch_timeout *= 2;
+  }
 #endif  // NDEBUG
 
   // Create a window on the UI thread for marshaling messages back and forth
@@ -481,7 +484,7 @@ bool ChromeFrameAutomationClient::InitiateNavigation(const std::string& url) {
   url_ = GURL(url);
 
   // Catch invalid URLs early.
-  if (!url_.is_valid()) {
+  if (!url_.is_valid() || !IsValidUrlScheme(UTF8ToWide(url))) {
     DLOG(ERROR) << "Invalid URL passed to InitiateNavigation: " << url;
     return false;
   }
@@ -600,7 +603,7 @@ void ChromeFrameAutomationClient::CreateExternalTab() {
       "ChromeFrame.HostNetworking", !use_chrome_network_, 0, 1, 2);
 
   UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "ChromeFrame.HandleTopLevelRequests", handle_top_level_requests_, 0, 1, 
+      "ChromeFrame.HandleTopLevelRequests", handle_top_level_requests_, 0, 1,
       2);
 
   IPC::SyncMessage* message =
@@ -779,7 +782,7 @@ void ChromeFrameAutomationClient::SetParentWindow(HWND parent_window) {
 void ChromeFrameAutomationClient::ReleaseAutomationServer() {
   DLOG(INFO) << __FUNCTION__;
   if (automation_server_id_) {
-    // Cache the server id and clear the automation_server_id_ before 
+    // Cache the server id and clear the automation_server_id_ before
     // calling ReleaseAutomationServer.  The reason we do this is that
     // we must cancel pending messages before we release the automation server.
     // Furthermore, while ReleaseAutomationServer is running, we could get
