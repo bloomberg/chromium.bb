@@ -28,7 +28,9 @@ const int kPossibleURLTimeScope = 30;
 
 }  // anonymous namespace
 
-PossibleURLModel::PossibleURLModel() : profile_(NULL) {
+PossibleURLModel::PossibleURLModel()
+    : profile_(NULL),
+      observer_(NULL) {
   if (!default_fav_icon) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     default_fav_icon = rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
