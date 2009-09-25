@@ -6,9 +6,14 @@
 body {
   margin:10px 8px 10px 8px;
 }
-.icon {
+html[dir="ltr"] .icon {
   float:right;
-  margin:0px 6px 0px 3px;
+  margin:0 6px 0 3px;
+  -webkit-transform: scale(-1, 1);
+}
+html[dir="rtl"] .icon {
+  float:left;
+  margin:0 3px 0 6px;
 }
 .content {
   -webkit-border-radius: 5px 5px;
