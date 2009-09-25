@@ -1186,6 +1186,34 @@ TEST_F(DefaultButtonTest, DialogDefaultButtonTest) {
 }
 #endif
 
+////////////////////////////////////////////////////////////////////////////////
+// View hierachy / Visibility changes
+////////////////////////////////////////////////////////////////////////////////
+/*
+TEST_F(ViewTest, ChangeVisibility) {
+#if defined(OS_LINUX)
+  // Make CRITICAL messages fatal
+  // TODO(oshima): we probably should enable this for entire tests on linux.
+  g_log_set_always_fatal(G_LOG_LEVEL_CRITICAL);
+#endif
+  scoped_ptr<views::Widget> window(CreateWidget());
+  window->Init(NULL, gfx::Rect(0, 0, 500, 300));
+  views::RootView* root_view = window->GetRootView();
+  NativeButton* native = new NativeButton(NULL, L"Native");
+
+  root_view->SetContentsView(native);
+  native->SetVisible(true);
+
+  root_view->RemoveChildView(native);
+  native->SetVisible(false);
+  // Change visibility to true with no widget.
+  native->SetVisible(true);
+
+  root_view->SetContentsView(native);
+  native->SetVisible(true);
+}
+*/
+
 #if defined(OS_LINUX)
 class TestViewWithControls : public View {
  public:

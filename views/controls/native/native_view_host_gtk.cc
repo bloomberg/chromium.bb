@@ -76,11 +76,12 @@ void NativeViewHostGtk::NativeViewDetaching() {
 
   installed_clip_ = false;
 
-  // Release ownership back to the caller.
-  gtk_widget_unref(host_->native_view());
+  g_object_unref(G_OBJECT(host_->native_view()));
 }
 
 void NativeViewHostGtk::AddedToWidget() {
+  if (!fixed_)
+    CreateFixed(false);
   if (gtk_widget_get_parent(fixed_))
     GetHostWidget()->ReparentChild(fixed_);
   else
