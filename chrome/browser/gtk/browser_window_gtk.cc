@@ -1555,7 +1555,7 @@ void BrowserWindowGtk::InitWidgets() {
 #if defined(OS_CHROMEOS)
   GtkWidget* titlebar_hbox = NULL;
   GtkWidget* navbar_hbox = NULL;
-  GtkWidget* status_hbox = NULL;
+  GtkWidget* status_container = NULL;
   bool has_compact_nav_bar = next_window_should_use_compact_nav_;
   if (browser_->type() == Browser::TYPE_NORMAL) {
     // Make a box that we'll later insert the compact navigation bar into. The
@@ -1584,12 +1584,12 @@ void BrowserWindowGtk::InitWidgets() {
       // window. Code below will use our local has_compact_nav_bar variable.
       next_window_should_use_compact_nav_ = false;
     }
-    status_hbox = gtk_hbox_new(FALSE, 0);
-    gtk_widget_show(status_hbox);
+    status_container = gtk_fixed_new();
+    gtk_widget_show(status_container);
     gtk_box_pack_start(GTK_BOX(titlebar_hbox), titlebar_->widget(), TRUE, TRUE,
                        0);
-    gtk_box_pack_start(GTK_BOX(titlebar_hbox), status_hbox, FALSE, FALSE, 0);
-
+    gtk_box_pack_start(GTK_BOX(titlebar_hbox), status_container, FALSE, FALSE,
+                       0);
     gtk_box_pack_start(GTK_BOX(window_vbox_), titlebar_hbox, FALSE, FALSE, 0);
   }
 
@@ -1721,7 +1721,7 @@ void BrowserWindowGtk::InitWidgets() {
         new views::WidgetGtk(views::WidgetGtk::TYPE_CHILD);
     status_widget->set_delete_on_destroy(true);
     status_widget->Init(NULL, gfx::Rect(0, 0, 100, 30));
-    gtk_widget_reparent(status_widget->GetNativeView(), status_hbox);
+    gtk_widget_reparent(status_widget->GetNativeView(), status_container);
     status_area_ = new StatusAreaView(browser());
     status_widget->SetContentsView(status_area_);
     status_area_->Init();

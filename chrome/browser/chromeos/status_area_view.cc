@@ -251,8 +251,10 @@ gfx::Size StatusAreaView::GetPreferredSize() {
   // TODO(brettw) do we need to use result_h? This is currently hardcoded
   // becuase the menu button really wants to be larger, but we don't want
   // the status bar to force the whole tab strip to be larger. Making it
-  // "small" just means that we'll expand to the height, which we want.
-  return gfx::Size(result_w - kStatusItemSeparation, 10);
+  // "smaller" just means that we'll expand to the height, which we want.
+  // The height of 24 makes it just big enough to sit on top of the shadow
+  // drawn by the browser window.
+  return gfx::Size(result_w - kStatusItemSeparation, 24);
 }
 
 void StatusAreaView::Layout() {
@@ -262,7 +264,9 @@ void StatusAreaView::Layout() {
     gfx::Size cur_size = cur->GetPreferredSize();
 
     // Put next in row horizontally, and center vertically.
-    cur->SetBounds(cur_x, (height() - cur_size.height()) / 2,
+    // Padding the y position by 1 balances the space above and
+    // below the icons, but still allows the shadow to be drawn.
+    cur->SetBounds(cur_x, (height() - cur_size.height()) / 2 + 1,
                    cur_size.width(), cur_size.height());
     cur_x += cur_size.width() + kStatusItemSeparation;
   }
