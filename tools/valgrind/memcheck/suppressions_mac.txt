@@ -858,3 +858,21 @@
    fun:_ZN3net22MacTrustedCertificates27CopyTrustedCertificateArrayEv
    fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
 }
+{
+   bug_22923
+   Memcheck:Leak
+   fun:_Znwm
+   ...
+   fun:_ZN13WorkerService21CreateDedicatedWorkerERK4GURLiiPN3IPC7Message6SenderEii
+   fun:_ZN21ResourceMessageFilter23OnCreateDedicatedWorkerERK4GURLiPi
+   fun:_Z16DispatchToMethodI21ResourceMessageFilterMS0_FvRK4GURLiPiES1_iiEvPT_T0_RK6Tuple2IT1_T2_EP6Tuple1IT3_E
+}
+{
+   bug_22932
+   Memcheck:Leak
+   ...
+   fun:_ZN7WebCore26PlatformMessagePortChannel19postMessageToRemoteEN3WTF10PassOwnPtrINS_18MessagePortChannel9EventDataEEE
+   fun:_ZN7WebCore18MessagePortChannel19postMessageToRemoteEN3WTF10PassOwnPtrINS0_9EventDataEEE
+   fun:_ZN7WebCore11MessagePort11postMessageERKNS_6StringEPKN3WTF6VectorINS4_6RefPtrIS0_EELm1EEERi
+   fun:_ZN7WebCore8V8Custom32v8MessagePortPostMessageCallbackERKN2v89ArgumentsE
+}
