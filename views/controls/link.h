@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,8 +32,6 @@ class LinkController {
 ////////////////////////////////////////////////////////////////////////////////
 class Link : public Label {
  public:
-  static const char kViewClassName[];
-
   Link();
   Link(const std::wstring& title);
   virtual ~Link();
@@ -62,6 +60,8 @@ class Link : public Label {
   void SetHighlightedColor(const SkColor& color);
   void SetDisabledColor(const SkColor& color);
   void SetNormalColor(const SkColor& color);
+
+  static const char kViewClassName[];
 
  private:
 

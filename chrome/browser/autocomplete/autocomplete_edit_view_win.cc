@@ -2006,15 +2006,13 @@ void AutocompleteEditViewWin::EmphasizeURLComponents() {
   // Set the baseline emphasis.
   CHARFORMAT cf = {0};
   cf.dwMask = CFM_COLOR;
-  cf.dwEffects = 0;
   const bool is_secure = (scheme_security_level_ == ToolbarModel::SECURE);
   // If we're going to emphasize parts of the text, then the baseline state
   // should be "de-emphasized".  If not, then everything should be rendered in
   // the standard text color.
   cf.crTextColor = skia::SkColorToCOLORREF(LocationBarView::GetColor(is_secure,
       emphasize ? LocationBarView::DEEMPHASIZED_TEXT : LocationBarView::TEXT));
-  SelectAll(false);
-  SetSelectionCharFormat(cf);
+  SetDefaultCharFormat(cf);
 
   if (emphasize) {
     // We've found a host name, give it more emphasis.

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,25 +61,6 @@ const LinkController* Link::GetController() {
   return controller_;
 }
 
-std::string Link::GetClassName() const {
-  return kViewClassName;
-}
-
-void Link::SetHighlightedColor(const SkColor& color) {
-  normal_color_ = color;
-  ValidateStyle();
-}
-
-void Link::SetDisabledColor(const SkColor& color) {
-  disabled_color_ = color;
-  ValidateStyle();
-}
-
-void Link::SetNormalColor(const SkColor& color) {
-  normal_color_ = color;
-  ValidateStyle();
-}
-
 bool Link::OnMousePressed(const MouseEvent& e) {
   if (!enabled_ || (!e.IsLeftMouseButton() && !e.IsMiddleMouseButton()))
     return false;
@@ -117,18 +98,18 @@ bool Link::OnKeyPressed(const KeyEvent& e) {
   bool activate = false;
   NOTIMPLEMENTED();
 #endif
-  if (activate) {
-    SetHighlighted(false);
+  if (!activate)
+    return false;
 
-    // Focus the link on key pressed.
-    RequestFocus();
+  SetHighlighted(false);
 
-    if (controller_)
-      controller_->LinkActivated(this, e.GetFlags());
+  // Focus the link on key pressed.
+  RequestFocus();
 
-    return true;
-  }
-  return false;
+  if (controller_)
+    controller_->LinkActivated(this, e.GetFlags());
+
+  return true;
 }
 
 bool Link::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
@@ -139,40 +120,6 @@ bool Link::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
   NOTIMPLEMENTED();
   return false;
 #endif
-}
-
-void Link::SetHighlighted(bool f) {
-  if (f != highlighted_) {
-    highlighted_ = f;
-    ValidateStyle();
-    SchedulePaint();
-  }
-}
-
-void Link::ValidateStyle() {
-  gfx::Font font = GetFont();
-
-  if (enabled_) {
-    if ((font.style() & gfx::Font::UNDERLINED) == 0) {
-      Label::SetFont(font.DeriveFont(0, font.style() |
-                                     gfx::Font::UNDERLINED));
-    }
-  } else {
-    if ((font.style() & gfx::Font::UNDERLINED) != 0) {
-      Label::SetFont(font.DeriveFont(0, font.style() &
-                                     ~gfx::Font::UNDERLINED));
-    }
-  }
-
-  if (enabled_) {
-    if (highlighted_) {
-      Label::SetColor(highlighted_color_);
-    } else {
-      Label::SetColor(normal_color_);
-    }
-  } else {
-    Label::SetColor(disabled_color_);
-  }
 }
 
 void Link::SetFont(const gfx::Font& font) {
@@ -190,16 +137,55 @@ void Link::SetEnabled(bool f) {
 
 gfx::NativeCursor Link::GetCursorForPoint(Event::EventType event_type, int x,
                                           int y) {
-  if (enabled_) {
-#if defined(OS_WIN)
-    if (!g_hand_cursor)
-      g_hand_cursor = LoadCursor(NULL, IDC_HAND);
-    return g_hand_cursor;
-#elif defined(OS_LINUX)
-    return gdk_cursor_new(GDK_HAND2);
-#endif
-  } else {
+  if (!enabled_)
     return NULL;
+#if defined(OS_WIN)
+  if (!g_hand_cursor)
+    g_hand_cursor = LoadCursor(NULL, IDC_HAND);
+  return g_hand_cursor;
+#elif defined(OS_LINUX)
+  return gdk_cursor_new(GDK_HAND2);
+#endif
+}
+
+std::string Link::GetClassName() const {
+  return kViewClassName;
+}
+
+void Link::SetHighlightedColor(const SkColor& color) {
+  normal_color_ = color;
+  ValidateStyle();
+}
+
+void Link::SetDisabledColor(const SkColor& color) {
+  disabled_color_ = color;
+  ValidateStyle();
+}
+
+void Link::SetNormalColor(const SkColor& color) {
+  normal_color_ = color;
+  ValidateStyle();
+}
+
+void Link::SetHighlighted(bool f) {
+  if (f != highlighted_) {
+    highlighted_ = f;
+    ValidateStyle();
+    SchedulePaint();
+  }
+}
+
+void Link::ValidateStyle() {
+  gfx::Font font = GetFont();
+
+  if (enabled_) {
+    if ((font.style() & gfx::Font::UNDERLINED) == 0)
+      Label::SetFont(font.DeriveFont(0, font.style() | gfx::Font::UNDERLINED));
+    Label::SetColor(highlighted_ ? highlighted_color_ : normal_color_);
+  } else {
+    if ((font.style() & gfx::Font::UNDERLINED) != 0)
+      Label::SetFont(font.DeriveFont(0, font.style() & ~gfx::Font::UNDERLINED));
+    Label::SetColor(disabled_color_);
   }
 }
 

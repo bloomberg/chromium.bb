@@ -231,8 +231,8 @@ class Textfield : public View {
   // |use_default_background_color_| is set to false.
   SkColor background_color_;
 
-  // When true, the system colors for Textfields are used when painting this
-  // Textfield. When false, the value of |background_color_| determines the
+  // When true, the system background color for Textfields is used when painting
+  // this Textfield. When false, the value of |background_color_| determines the
   // Textfield's background color.
   bool use_default_background_color_;
 

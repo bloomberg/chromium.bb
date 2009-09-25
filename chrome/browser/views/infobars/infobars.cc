@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,6 @@ static const int kVerticalPadding = 3;
 static const int kHorizontalPadding = 3;
 static const int kIconLabelSpacing = 5;
 static const int kButtonSpacing = 5;
-static const int kWordSpacing = 2;
 
 static const SkColor kInfoBackgroundColorTop = SkColorSetRGB(170, 214, 112);
 static const SkColor kInfoBackgroundColorBottom = SkColorSetRGB(146, 205, 114);
@@ -386,7 +385,7 @@ void LinkInfoBar::Layout() {
   bool has_second_label = !label_2_->GetText().empty();
   if (has_second_label) {
     // Embed the link in the text string between the two labels.
-    link_->SetBounds(label_1_->bounds().right() + kWordSpacing,
+    link_->SetBounds(label_1_->bounds().right(),
                      OffsetY(this, link_ps), link_ps.width(), link_ps.height());
   } else {
     // Right-align the link toward the edge of the InfoBar.
@@ -397,7 +396,7 @@ void LinkInfoBar::Layout() {
   // Layout the right label (we do this regardless of whether or not it has
   // text).
   gfx::Size label_2_ps = label_2_->GetPreferredSize();
-  label_2_->SetBounds(link_->bounds().right() + kWordSpacing,
+  label_2_->SetBounds(link_->bounds().right(),
                       OffsetY(this, label_2_ps), label_2_ps.width(),
                       label_2_ps.height());
 }
