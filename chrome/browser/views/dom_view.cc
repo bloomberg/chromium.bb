@@ -22,7 +22,7 @@ bool DOMView::Init(Profile* profile, SiteInstance* instance) {
 
   initialized_ = true;
   tab_contents_.reset(new TabContents(profile, instance,
-                                      MSG_ROUTING_NONE, NULL));
+                                      MSG_ROUTING_NONE, NULL, NULL));
   views::NativeViewHost::Attach(tab_contents_->GetNativeView());
   return true;
 }

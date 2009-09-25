@@ -213,7 +213,8 @@ class TabContents::GearsCreateShortcutCallbackFunctor {
 TabContents::TabContents(Profile* profile,
                          SiteInstance* site_instance,
                          int routing_id,
-                         base::WaitableEvent* modal_dialog_event)
+                         base::WaitableEvent* modal_dialog_event,
+                         const TabContents* base_tab_contents)
     : delegate_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(controller_(this, profile)),
       ALLOW_THIS_IN_INITIALIZER_LIST(view_(
@@ -276,7 +277,10 @@ TabContents::TabContents(Profile* profile,
 
   render_manager_.Init(profile, site_instance, routing_id, modal_dialog_event);
 
-  view_->CreateView();
+  // We have the initial size of the view be based on the size of the passed in
+  // tab contents (normally a tab from the same window).
+  view_->CreateView(base_tab_contents ?
+      base_tab_contents->view()->GetContainerSize() : gfx::Size());
 
   // Register for notifications about all interested prefs change.
   PrefService* prefs = profile->GetPrefs();
@@ -751,7 +755,7 @@ TabContents* TabContents::Clone() {
   // processes for some reason.
   TabContents* tc = new TabContents(profile(),
                                     SiteInstance::CreateSiteInstance(profile()),
-                                    MSG_ROUTING_NONE, NULL);
+                                    MSG_ROUTING_NONE, NULL, this);
   tc->controller().CopyStateFrom(controller_);
   return tc;
 }

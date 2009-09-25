@@ -400,6 +400,7 @@ void RenderWidgetHostViewGtk::SetSize(const gfx::Size& size) {
     // children.
     gtk_widget_set_size_request(view_.get(), width, height);
 #endif
+
     requested_size_ = gfx::Size(width, height);
     host_->WasResized();
   }

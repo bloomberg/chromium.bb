@@ -21,14 +21,15 @@
 
 void RenderViewHostDelegateViewHelper::CreateNewWindow(int route_id,
     base::WaitableEvent* modal_dialog_event, Profile* profile,
-    SiteInstance* site, DOMUITypeID domui_type) {
+    SiteInstance* site, DOMUITypeID domui_type, TabContents* old_tab_contents) {
   // Create the new web contents. This will automatically create the new
   // TabContentsView. In the future, we may want to create the view separately.
   TabContents* new_contents =
       new TabContents(profile,
                       site,
                       route_id,
-                      modal_dialog_event);
+                      modal_dialog_event,
+                      old_tab_contents);
   new_contents->set_opener_dom_ui_type(domui_type);
   TabContentsView* new_view = new_contents->view();
 

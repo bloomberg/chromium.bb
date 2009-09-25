@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/debugger/devtools_manager.h"
+#include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/profile.h"
@@ -271,7 +272,7 @@ void ExtensionHost::CreateNewWindow(int route_id,
                                     base::WaitableEvent* modal_dialog_event) {
   delegate_view_helper_.CreateNewWindow(
       route_id, modal_dialog_event, render_view_host()->process()->profile(),
-      site_instance(), DOMUIFactory::GetDOMUIType(url_));
+      site_instance(), DOMUIFactory::GetDOMUIType(url_), NULL);
 }
 
 void ExtensionHost::CreateNewWidget(int route_id, bool activatable) {

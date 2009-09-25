@@ -117,9 +117,10 @@ TabContentsViewGtk::~TabContentsViewGtk() {
   CloseNow();
 }
 
-void TabContentsViewGtk::CreateView() {
+void TabContentsViewGtk::CreateView(const gfx::Size& initial_size) {
   set_delete_on_destroy(false);
-  WidgetGtk::Init(NULL, gfx::Rect());
+  WidgetGtk::Init(NULL, gfx::Rect(0, 0, initial_size.width(),
+                                  initial_size.height()));
 }
 
 RenderWidgetHostView* TabContentsViewGtk::CreateViewForWidget(

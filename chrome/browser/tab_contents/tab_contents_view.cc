@@ -15,9 +15,6 @@ TabContentsView::TabContentsView(TabContents* tab_contents)
       preferred_width_(0) {
 }
 
-void TabContentsView::CreateView() {
-}
-
 void TabContentsView::RenderWidgetHostDestroyed(RenderWidgetHost* host) {
   delegate_view_helper_.RenderWidgetHostDestroyed(host);
 }
@@ -35,7 +32,7 @@ void TabContentsView::CreateNewWindow(int route_id,
   delegate_view_helper_.CreateNewWindow(
       route_id, modal_dialog_event,
       tab_contents_->profile(), tab_contents_->GetSiteInstance(),
-      DOMUIFactory::GetDOMUIType(tab_contents_->GetURL()));
+      DOMUIFactory::GetDOMUIType(tab_contents_->GetURL()), tab_contents_);
 }
 
 void TabContentsView::CreateNewWidget(int route_id, bool activatable) {

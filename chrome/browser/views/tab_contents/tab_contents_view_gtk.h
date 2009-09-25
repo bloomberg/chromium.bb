@@ -31,7 +31,7 @@ class TabContentsViewGtk : public TabContentsView,
 
   // TabContentsView implementation --------------------------------------------
 
-  virtual void CreateView();
+  virtual void CreateView(const gfx::Size& initial_size);
   virtual RenderWidgetHostView* CreateViewForWidget(
       RenderWidgetHost* render_widget_host);
   virtual gfx::NativeView GetNativeView() const;

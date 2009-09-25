@@ -58,7 +58,7 @@ TabContentsViewMac::TabContentsViewMac(TabContents* tab_contents)
                  Source<TabContents>(tab_contents));
 }
 
-void TabContentsViewMac::CreateView() {
+void TabContentsViewMac::CreateView(const gfx::Size& initial_size) {
   TabContentsViewCocoa* view =
       [[TabContentsViewCocoa alloc] initWithTabContentsViewMac:this];
   cocoa_view_.reset(view);

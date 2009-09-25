@@ -406,9 +406,10 @@ void TabContentsViewGtk::RemoveConstrainedWindow(
   constrained_windows_.erase(item);
 }
 
-void TabContentsViewGtk::CreateView() {
-  // Windows uses this to do initialization, but we do all our initialization
-  // in the constructor.
+void TabContentsViewGtk::CreateView(const gfx::Size& initial_size) {
+  requested_size_ = initial_size;
+  gtk_widget_set_size_request(fixed_, requested_size_.width(),
+                              requested_size_.height());
 }
 
 RenderWidgetHostView* TabContentsViewGtk::CreateViewForWidget(
@@ -636,6 +637,7 @@ gboolean TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
   if (view->tab_contents()->delegate())
     height += view->tab_contents()->delegate()->GetExtraRenderViewHeight();
   gfx::Size size(width, height);
+  view->requested_size_ = size;
   gtk_container_foreach(GTK_CONTAINER(widget), SetSizeRequest, &size);
 
   return FALSE;

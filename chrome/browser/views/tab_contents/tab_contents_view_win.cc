@@ -86,7 +86,7 @@ void TabContentsViewWin::Unparent() {
   ::SetParent(GetNativeView(), NULL);
 }
 
-void TabContentsViewWin::CreateView() {
+void TabContentsViewWin::CreateView(const gfx::Size& initial_size) {
   set_delete_on_destroy(false);
   // Since we create these windows parented to the desktop window initially, we
   // don't want to create them initially visible.

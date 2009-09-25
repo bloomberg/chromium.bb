@@ -113,10 +113,13 @@ class TabContents : public PageNavigator,
     INVALIDATE_EVERYTHING = 0xFFFFFFFF
   };
 
+  // |base_tab_contents| is used if we want to size the new tab contents view
+  // based on an existing tab contents view.  This can be NULL if not needed.
   TabContents(Profile* profile,
               SiteInstance* site_instance,
               int routing_id,
-              base::WaitableEvent* modal_dialog_event);
+              base::WaitableEvent* modal_dialog_event,
+              const TabContents* base_tab_contents);
   virtual ~TabContents();
 
   static void RegisterUserPrefs(PrefService* prefs);
