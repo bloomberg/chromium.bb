@@ -536,8 +536,6 @@ class OffTheRecordProfileImpl : public Profile,
   // The download manager that only stores downloaded items in memory.
   scoped_refptr<DownloadManager> download_manager_;
 
-  scoped_refptr<BrowserThemeProvider> theme_provider_;
-
   // Use a special WebKit context for OTR browsing.
   scoped_refptr<WebKitContext> webkit_context_;
 
@@ -725,7 +723,7 @@ ProfileImpl::~ProfileImpl() {
   download_manager_ = NULL;
 
   // The theme provider provides bitmaps to whoever wants them.
-  theme_provider_ = NULL;
+  theme_provider_.reset();
 
   // The ThumbnailStore saves thumbnails used by the NTP.  Call Shutdown to
   // save any new thumbnails to disk and release its reference to the
@@ -1112,13 +1110,12 @@ bool ProfileImpl::HasCreatedDownloadManager() const {
 void ProfileImpl::InitThemes() {
   if (!created_theme_provider_) {
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
-    scoped_refptr<BrowserThemeProvider> themes(new GtkThemeProvider);
+    theme_provider_.reset(new GtkThemeProvider);
 #else
-    scoped_refptr<BrowserThemeProvider> themes(new BrowserThemeProvider);
+    theme_provider_.reset(new BrowserThemeProvider);
 #endif
-    themes->Init(this);
+    theme_provider_->Init(this);
     created_theme_provider_ = true;
-    theme_provider_.swap(themes);
   }
 }
 

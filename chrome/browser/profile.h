@@ -502,7 +502,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<WebDataService> web_data_service_;
   scoped_refptr<PasswordStore> password_store_;
   scoped_refptr<SessionService> session_service_;
-  scoped_refptr<BrowserThemeProvider> theme_provider_;
+  scoped_ptr<BrowserThemeProvider> theme_provider_;
   scoped_refptr<WebKitContext> webkit_context_;
   bool history_service_created_;
   bool favicon_service_created_;

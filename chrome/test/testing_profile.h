@@ -270,7 +270,7 @@ class TestingProfile : public Profile {
   scoped_refptr<SessionService> session_service_;
 
   // The theme provider. Created lazily by GetThemeProvider()/InitThemes().
-  scoped_refptr<BrowserThemeProvider> theme_provider_;
+  scoped_ptr<BrowserThemeProvider> theme_provider_;
   bool created_theme_provider_;
 
   // Do we have a history service? This defaults to the value of

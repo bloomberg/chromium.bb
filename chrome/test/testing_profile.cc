@@ -175,19 +175,18 @@ void TestingProfile::CreateTemplateURLModel() {
 void TestingProfile::UseThemeProvider(BrowserThemeProvider* theme_provider) {
   theme_provider->Init(this);
   created_theme_provider_ = true;
-  theme_provider_ = theme_provider;
+  theme_provider_.reset(theme_provider);
 }
 
 void TestingProfile::InitThemes() {
   if (!created_theme_provider_) {
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
-    scoped_refptr<BrowserThemeProvider> themes(new GtkThemeProvider);
+    theme_provider_.reset(new GtkThemeProvider);
 #else
-    scoped_refptr<BrowserThemeProvider> themes(new BrowserThemeProvider);
+    theme_provider_.reset(new BrowserThemeProvider);
 #endif
-    themes->Init(this);
+    theme_provider_->Init(this);
     created_theme_provider_ = true;
-    theme_provider_.swap(themes);
   }
 }
 

@@ -20,8 +20,7 @@ class Extension;
 class Profile;
 class DictionaryValue;
 
-class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
-                             public NonThreadSafe,
+class BrowserThemeProvider : public NonThreadSafe,
                              public ThemeProvider {
  public:
   // Public constants used in BrowserThemeProvider and its subclasses:
