@@ -110,6 +110,13 @@ void BrowserWindowCocoa::UpdateTitleBar() {
   [window_ setMiniwindowTitle:newTitle];
 }
 
+void BrowserWindowCocoa::ShelfVisibilityChanged() {
+  // Mac doesn't yet support showing the bookmark bar at a different size on
+  // the new tab page. When it does, this method should attempt to relayout the
+  // bookmark bar/extension shelf as their preferred height may have changed.
+  NOTIMPLEMENTED();
+}
+
 void BrowserWindowCocoa::UpdateDevTools() {
   NOTIMPLEMENTED();
 }

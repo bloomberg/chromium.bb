@@ -2453,6 +2453,7 @@ void Browser::ScheduleUIUpdate(const TabContents* source,
     // the navigation commands since those would have already been updated
     // synchronously by NavigationStateChanged.
     UpdateToolbar(false);
+    changed_flags &= ~TabContents::INVALIDATE_URL;
   }
   if (changed_flags & TabContents::INVALIDATE_LOAD && source) {
     // Update the loading state synchronously. This is so the throbber will
@@ -2461,11 +2462,18 @@ void Browser::ScheduleUIUpdate(const TabContents* source,
     // NULL, so we have to check for that.
     tabstrip_model_.UpdateTabContentsStateAt(
         tabstrip_model_.GetIndexOfController(&source->controller()), true);
+    changed_flags &= ~TabContents::INVALIDATE_LOAD;
+  }
+
+  if (changed_flags & TabContents::INVALIDATE_BOOKMARK_BAR ||
+      changed_flags & TabContents::INVALIDATE_EXTENSION_SHELF) {
+    window()->ShelfVisibilityChanged();
+    changed_flags &= ~(TabContents::INVALIDATE_BOOKMARK_BAR |
+                       TabContents::INVALIDATE_EXTENSION_SHELF);
   }
 
   // If the only updates were synchronously handled above, we're done.
-  if (changed_flags ==
-      (TabContents::INVALIDATE_URL | TabContents::INVALIDATE_LOAD))
+  if (changed_flags == 0)
     return;
 
   // Save the dirty bits.

@@ -751,7 +751,7 @@ TEST_F(NavigationControllerTest, Redirect) {
   NavigationController::LoadCommittedDetails details;
 
   EXPECT_EQ(0U, notifications.size());
-  EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+  EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
 
@@ -795,7 +795,7 @@ TEST_F(NavigationControllerTest, ImmediateRedirect) {
   NavigationController::LoadCommittedDetails details;
 
   EXPECT_EQ(0U, notifications.size());
-  EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+  EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
 
@@ -832,7 +832,7 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   params.is_post = false;
 
   NavigationController::LoadCommittedDetails details;
-  EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+  EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
   EXPECT_EQ(url1, details.previous_url);
@@ -867,7 +867,7 @@ TEST_F(NavigationControllerTest, SubframeOnEmptyPage) {
   params.is_post = false;
 
   NavigationController::LoadCommittedDetails details;
-  EXPECT_FALSE(controller().RendererDidNavigate(params, &details));
+  EXPECT_FALSE(controller().RendererDidNavigate(params, 0, &details));
   EXPECT_EQ(0U, notifications.size());
 }
 
@@ -893,7 +893,7 @@ TEST_F(NavigationControllerTest, AutoSubframe) {
 
   // Navigating should do nothing.
   NavigationController::LoadCommittedDetails details;
-  EXPECT_FALSE(controller().RendererDidNavigate(params, &details));
+  EXPECT_FALSE(controller().RendererDidNavigate(params, 0, &details));
   EXPECT_EQ(0U, notifications.size());
 
   // There should still be only one entry.
@@ -923,7 +923,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
 
   // This should generate a new entry.
   NavigationController::LoadCommittedDetails details;
-  EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+  EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
   EXPECT_EQ(2, controller().entry_count());
@@ -932,7 +932,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   const GURL url3("http://foo3");
   params.page_id = 2;
   params.url = url3;
-  EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+  EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
   EXPECT_EQ(3, controller().entry_count());
@@ -942,7 +942,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   controller().GoBack();
   params.url = url2;
   params.page_id = 1;
-  EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+  EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
   EXPECT_EQ(3, controller().entry_count());
@@ -952,7 +952,7 @@ TEST_F(NavigationControllerTest, BackSubframe) {
   controller().GoBack();
   params.url = url1;
   params.page_id = 0;
-  EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+  EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
   EXPECT_EQ(3, controller().entry_count());
@@ -1007,7 +1007,7 @@ TEST_F(NavigationControllerTest, InPage) {
 
   // This should generate a new entry.
   NavigationController::LoadCommittedDetails details;
-  EXPECT_TRUE(controller().RendererDidNavigate(params, &details));
+  EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
   EXPECT_EQ(2, controller().entry_count());
@@ -1017,8 +1017,7 @@ TEST_F(NavigationControllerTest, InPage) {
   controller().GoBack();
   back_params.url = url1;
   back_params.page_id = 0;
-  EXPECT_TRUE(controller().RendererDidNavigate(back_params,
-                                                          &details));
+  EXPECT_TRUE(controller().RendererDidNavigate(back_params, 0, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
   EXPECT_EQ(2, controller().entry_count());
@@ -1030,8 +1029,7 @@ TEST_F(NavigationControllerTest, InPage) {
   controller().GoForward();
   forward_params.url = url2;
   forward_params.page_id = 1;
-  EXPECT_TRUE(controller().RendererDidNavigate(forward_params,
-                                                          &details));
+  EXPECT_TRUE(controller().RendererDidNavigate(forward_params, 0, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
   EXPECT_EQ(2, controller().entry_count());
@@ -1044,11 +1042,9 @@ TEST_F(NavigationControllerTest, InPage) {
   // one identified by an existing page ID. This would result in the second URL
   // losing the reference fragment when you navigate away from it and then back.
   controller().GoBack();
-  EXPECT_TRUE(controller().RendererDidNavigate(back_params,
-                                                          &details));
+  EXPECT_TRUE(controller().RendererDidNavigate(back_params, 0, &details));
   controller().GoForward();
-  EXPECT_TRUE(controller().RendererDidNavigate(forward_params,
-                                                          &details));
+  EXPECT_TRUE(controller().RendererDidNavigate(forward_params, 0, &details));
   EXPECT_EQ(forward_params.url,
             controller().GetActiveEntry()->url());
 }
@@ -1168,7 +1164,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   params.gesture = NavigationGestureUser;
   params.is_post = false;
   NavigationController::LoadCommittedDetails details;
-  our_controller.RendererDidNavigate(params, &details);
+  our_controller.RendererDidNavigate(params, 0, &details);
 
   // There should be no longer any pending entry and one committed one. This
   // means that we were able to locate the entry, assign its site instance, and
@@ -1432,7 +1428,7 @@ TEST_F(NavigationControllerTest, SameSubframe) {
   params.gesture = NavigationGestureAuto;
   params.is_post = false;
   NavigationController::LoadCommittedDetails details;
-  EXPECT_FALSE(controller().RendererDidNavigate(params, &details));
+  EXPECT_FALSE(controller().RendererDidNavigate(params, 0, &details));
 
   // Nothing should have changed.
   EXPECT_EQ(controller().entry_count(), 1);

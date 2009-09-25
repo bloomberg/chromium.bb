@@ -210,6 +210,7 @@ class BrowserView : public BrowserWindow,
   virtual void SelectedTabToolbarSizeChanged(bool is_animating);
   virtual void SelectedTabExtensionShelfSizeChanged();
   virtual void UpdateTitleBar();
+  virtual void ShelfVisibilityChanged();
   virtual void UpdateDevTools();
   virtual void FocusDevTools();
   virtual void UpdateLoadingAnimations(bool should_animate);

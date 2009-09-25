@@ -772,6 +772,10 @@ void BrowserView::UpdateTitleBar() {
     frame_->GetWindow()->UpdateWindowIcon();
 }
 
+void BrowserView::ShelfVisibilityChanged() {
+  Layout();
+}
+
 void BrowserView::UpdateDevTools() {
   UpdateDevToolsForContents(GetSelectedTabContents());
   Layout();

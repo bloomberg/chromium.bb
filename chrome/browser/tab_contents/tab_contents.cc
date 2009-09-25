@@ -1958,8 +1958,19 @@ void TabContents::RenderViewDeleted(RenderViewHost* rvh) {
 
 void TabContents::DidNavigate(RenderViewHost* rvh,
                               const ViewHostMsg_FrameNavigate_Params& params) {
-  if (PageTransition::IsMainFrame(params.transition))
+  int extra_invalidate_flags = 0;
+
+  if (PageTransition::IsMainFrame(params.transition)) {
+    bool was_bookmark_bar_visible = IsBookmarkBarAlwaysVisible();
+    bool was_extension_shelf_visible = IsExtensionShelfAlwaysVisible();
+
     render_manager_.DidNavigateMainFrame(rvh);
+
+    if (was_bookmark_bar_visible != IsBookmarkBarAlwaysVisible())
+      extra_invalidate_flags |= INVALIDATE_BOOKMARK_BAR;
+    if (was_extension_shelf_visible != IsExtensionShelfAlwaysVisible())
+      extra_invalidate_flags |= INVALIDATE_EXTENSION_SHELF;
+  }
 
   // Update the site of the SiteInstance if it doesn't have one yet.
   if (!GetSiteInstance()->has_site())
@@ -1977,7 +1988,8 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
     contents_mime_type_ = params.contents_mime_type;
 
   NavigationController::LoadCommittedDetails details;
-  bool did_navigate = controller_.RendererDidNavigate(params, &details);
+  bool did_navigate = controller_.RendererDidNavigate(
+      params, extra_invalidate_flags, &details);
 
   // Update history. Note that this needs to happen after the entry is complete,
   // which WillNavigate[Main,Sub]Frame will do before this function is called.

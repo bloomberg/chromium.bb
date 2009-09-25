@@ -914,6 +914,10 @@ void BrowserWindowGtk::UpdateTitleBar() {
   // NTP and "always show bookmark bar" is not set.  On Windows,
   // UpdateTitleBar() causes a layout in BrowserView which checks to see if
   // the bookmarks bar should be shown.
+  ShelfVisibilityChanged();
+}
+
+void BrowserWindowGtk::ShelfVisibilityChanged() {
   MaybeShowBookmarkBar(browser_->GetSelectedTabContents(), false);
 }
 

@@ -82,6 +82,14 @@ class BrowserWindow {
   // frames may need to refresh their title bar.
   virtual void UpdateTitleBar() = 0;
 
+  // Invoked when the visibility of the bookmark bar or extension shelf changes.
+  // NOTE: this is NOT sent when the user toggles the visibility of one of
+  // these shelves, but rather when the user transitions from a page that forces
+  // the shelves to be visibile to one that doesn't have them visible (or
+  // vice-versa).
+  // TODO(sky): see about routing visibility pref changing through here too.
+  virtual void ShelfVisibilityChanged() = 0;
+
   // Inform the frame that the dev tools window for the selected tab has
   // changed.
   virtual void UpdateDevTools() = 0;

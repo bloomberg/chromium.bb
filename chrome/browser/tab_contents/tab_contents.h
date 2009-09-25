@@ -105,12 +105,16 @@ class TabContents : public PageNavigator,
   // Flags passed to the TabContentsDelegate.NavigationStateChanged to tell it
   // what has changed. Combine them to update more than one thing.
   enum InvalidateTypes {
-    INVALIDATE_URL = 1,           // The URL has changed.
-    INVALIDATE_TAB = 2,           // The tab (favicon, title, etc.) has changed
-    INVALIDATE_LOAD = 4,          // The loading state has changed.
-    INVALIDATE_PAGE_ACTIONS = 8,  // Page action icons have changed.
-    // Helper for forcing a refresh.
-    INVALIDATE_EVERYTHING = 0xFFFFFFFF
+    INVALIDATE_URL             = 1 << 0,  // The URL has changed.
+    INVALIDATE_TAB             = 1 << 1,  // The tab (favicon, title, etc.) has
+                                          // changed.
+    INVALIDATE_LOAD            = 1 << 2,  // The loading state has changed.
+    INVALIDATE_PAGE_ACTIONS    = 1 << 3,  // Page action icons have changed.
+    INVALIDATE_BOOKMARK_BAR    = 1 << 4,  // State of IsBookmarkBarAlwaysVisible
+                                          // changed.
+    INVALIDATE_EXTENSION_SHELF = 1 << 5,  // State of
+                                          // IsExtensionShelfAlwaysVisible
+                                          // changed.
   };
 
   // |base_tab_contents| is used if we want to size the new tab contents view

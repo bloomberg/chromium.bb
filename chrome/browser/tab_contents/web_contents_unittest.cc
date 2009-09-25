@@ -210,7 +210,7 @@ TEST_F(TabContentsTest, UpdateTitle) {
   InitNavigateParams(&params, 0, GURL(chrome::kAboutBlankURL));
 
   NavigationController::LoadCommittedDetails details;
-  controller().RendererDidNavigate(params, &details);
+  controller().RendererDidNavigate(params, 0, &details);
 
   contents()->UpdateTitle(rvh(), 0, L"    Lots O' Whitespace\n");
   EXPECT_EQ(ASCIIToUTF16("Lots O' Whitespace"), contents()->GetTitle());
@@ -231,7 +231,7 @@ TEST_F(TabContentsTest, NTPViewSource) {
   ViewHostMsg_FrameNavigate_Params params;
   InitNavigateParams(&params, 0, kGURL);
   NavigationController::LoadCommittedDetails details;
-  controller().RendererDidNavigate(params, &details);
+  controller().RendererDidNavigate(params, 0, &details);
   // Also check title and url.
   EXPECT_EQ(ASCIIToUTF16(kUrl), contents()->GetTitle());
   EXPECT_EQ(true, contents()->ShouldDisplayURL());
