@@ -258,8 +258,8 @@
             },
           },
           'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/ie_alt_tab/chrome_frame_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/ie_alt_tab/chrome_frame_strings.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_frame_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_frame_strings.rc',
           ],
           'dependencies': [
             # TODO(slightlyoff): Get automation targets working on OS X
@@ -337,8 +337,8 @@
             },
           },
           'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/ie_alt_tab/chrome_frame_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/ie_alt_tab/chrome_frame_strings.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_frame_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_frame_strings.rc',
           ],
           'dependencies': [
             '../chrome/chrome.gyp:automation',
@@ -543,11 +543,11 @@
             '../tools/grit/grit.py',
           ],
           'variables': {
-            'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/ie_alt_tab',
+            'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome_frame',
           },
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/ie_alt_tab/grit/<(RULE_INPUT_ROOT).h',
-            '<(SHARED_INTERMEDIATE_DIR)/ie_alt_tab/<(RULE_INPUT_ROOT).pak',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/grit/<(RULE_INPUT_ROOT).h',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/<(RULE_INPUT_ROOT).pak',
           ],
           'action': ['python', '<@(_inputs)', '-i', 
             '<(RULE_INPUT_PATH)',
@@ -563,7 +563,7 @@
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '<(SHARED_INTERMEDIATE_DIR)/ie_alt_tab',
+          '<(SHARED_INTERMEDIATE_DIR)/chrome_frame',
         ],
       },
       'conditions': [
@@ -665,8 +665,8 @@
             '<(INTERMEDIATE_DIR)'
           ],
           'sources': [
-            '<(SHARED_INTERMEDIATE_DIR)/ie_alt_tab/chrome_frame_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/ie_alt_tab/chrome_frame_strings.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_frame_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_frame_strings.rc',
           ],
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad_handler',
