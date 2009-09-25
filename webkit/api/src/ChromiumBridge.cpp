@@ -108,6 +108,11 @@ void ChromiumBridge::clipboardWriteSelection(const String& htmlText,
         htmlText, sourceURL, plainText, writeSmartPaste);
 }
 
+void ChromiumBridge::clipboardWritePlainText(const String& plainText)
+{
+    webKitClient()->clipboard()->writePlainText(plainText);
+}
+
 void ChromiumBridge::clipboardWriteURL(const KURL& url, const String& title)
 {
     webKitClient()->clipboard()->writeURL(url, title);

@@ -63,6 +63,12 @@ void MockWebClipboardImpl::writeHTML(
   m_writeSmartPaste = writeSmartPaste;
 }
 
+void MockWebClipboardImpl::writePlainText(const WebKit::WebString& plain_text) {
+  m_htmlText = WebKit::WebString();
+  m_plainText = plain_text;
+  m_writeSmartPaste = false;
+}
+
 void MockWebClipboardImpl::writeURL(
     const WebKit::WebURL& url, const WebKit::WebString& title) {
   m_htmlText = WebString::fromUTF8(

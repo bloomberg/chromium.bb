@@ -30,6 +30,7 @@ class WebClipboardImpl : public WebKit::WebClipboard {
       const WebKit::WebURL& source_url,
       const WebKit::WebString& plain_text,
       bool write_smart_paste);
+  virtual void writePlainText(const WebKit::WebString& plain_text);
   virtual void writeURL(
       const WebKit::WebURL&,
       const WebKit::WebString& title);

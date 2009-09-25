@@ -22,6 +22,7 @@ class MockWebClipboardImpl : public WebKit::WebClipboard {
   virtual WebKit::WebString readHTML(WebKit::WebClipboard::Buffer,
                                      WebKit::WebURL*);
 
+  virtual void writePlainText(const WebKit::WebString& plain_text);
   virtual void writeHTML(
       const WebKit::WebString& htmlText, const WebKit::WebURL&,
       const WebKit::WebString& plainText, bool writeSmartPaste);

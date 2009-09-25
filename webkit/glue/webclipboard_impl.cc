@@ -129,6 +129,11 @@ void WebClipboardImpl::writeHTML(
     scw.WriteWebSmartPaste();
 }
 
+void WebClipboardImpl::writePlainText(const WebString& plain_text) {
+  ScopedClipboardWriterGlue scw(ClipboardGetClipboard());
+  scw.WriteText(plain_text);
+}
+
 void WebClipboardImpl::writeURL(const WebURL& url, const WebString& title) {
   ScopedClipboardWriterGlue scw(ClipboardGetClipboard());
 

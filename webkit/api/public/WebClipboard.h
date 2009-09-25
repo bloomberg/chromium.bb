@@ -58,6 +58,7 @@ namespace WebKit {
         virtual WebString readPlainText(Buffer) = 0;
         virtual WebString readHTML(Buffer, WebURL*) = 0;
 
+        virtual void writePlainText(const WebString&) = 0;
         virtual void writeHTML(
             const WebString& htmlText, const WebURL&,
             const WebString& plainText, bool writeSmartPaste) = 0;
