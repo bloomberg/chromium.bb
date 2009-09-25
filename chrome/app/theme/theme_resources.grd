@@ -376,6 +376,16 @@
         <include name="IDR_STATUSBAR_BATTERY_DISCHARGING_6" file="statusbar_battery6d.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_DISCHARGING_7" file="statusbar_battery7d.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_DISCHARGING_8" file="statusbar_battery8d.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_DISCONNECTED" file="statusbar_disconnected.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_1" file="statusbar_wifi_1.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_2" file="statusbar_wifi_2.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_3" file="statusbar_wifi_3.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_4" file="statusbar_wifi_4.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_5" file="statusbar_wifi_5.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_6" file="statusbar_wifi_6.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_7" file="statusbar_wifi_7.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIFI_8" file="statusbar_wifi_8.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIRED" file="statusbar_wired.png" type="BINDATA" />
         <include name="IDR_MAIN_MENU_BUTTON" file="google_chrome/button_menu.png" type="BINDATA" />
         <include name="IDR_MAIN_MENU_BUTTON_DROP_DOWN" file="google_chrome/button_menu_drop_down.png" type="BINDATA" />
       </if>

@@ -5290,6 +5290,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_SPEED_FACTOR_DESCRIPTION" desc="In the settings tab, the text next to the slider for the touchpad speed factor.">
         Speed Sensitivity:
       </message>
+      <message name="IDS_STATUSBAR_NO_NETWORKS_MESSAGE" desc="No networks are available">
+        Speed Sensitivity:
+      </message>
     </if>
 
     </messages>

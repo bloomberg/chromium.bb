@@ -12,19 +12,17 @@
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
 #include "base/string_util.h"
+#include "chrome/browser/chromeos/password_dialog_view.h"
 #include "chrome/common/pref_member.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "grit/locale_settings.h"
 #include "views/background.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/slider/slider.h"
-#include "views/controls/textfield/textfield.h"
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"
-#include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
 
 using views::GridLayout;
@@ -126,7 +124,8 @@ void WifiSSIDComboModel::AddWifiNetwork(const string16& ssid,
 
 // Network section for wifi settings
 class NetworkSection : public OptionsPageView,
-                       public views::Combobox::Listener {
+                       public views::Combobox::Listener,
+                       public PasswordDialogDelegate {
  public:
   explicit NetworkSection(Profile* profile);
   virtual ~NetworkSection() {}
@@ -136,8 +135,10 @@ class NetworkSection : public OptionsPageView,
                            int prev_index,
                            int new_index);
 
-  bool OnPasswordWindowCancel();
-  bool OnPasswordWindowAccept(const string16& password);
+  // PasswordDialogDelegate implementation.
+  virtual bool OnPasswordDialogCancel();
+  virtual bool OnPasswordDialogAccept(const string16& password);
+
   bool ConnectToWifi(const string16& ssid, const string16& password);
 
  protected:
@@ -162,101 +163,6 @@ class NetworkSection : public OptionsPageView,
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// PasswordWindowView
-
-static const int kDialogPadding = 7;
-
-// A view for showing a password textfield
-class PasswordWindowView : public views::View,
-                           public views::DialogDelegate {
- public:
-  PasswordWindowView(NetworkSection* network_delegate, Profile* profile);
-  views::Window* container() const { return container_; }
-  void set_container(views::Window* container) {
-    container_ = container;
-  }
-
-  // views::DialogDelegate methods.
-  virtual bool Cancel();
-  virtual bool Accept();
-  virtual std::wstring GetWindowTitle() const;
-
-  // views::WindowDelegate method.
-  virtual bool IsModal() const { return true; }
-  virtual views::View* GetContentsView() { return this; }
-
-  // views::View overrides.
-  virtual void Layout();
-  virtual gfx::Size GetPreferredSize();
-
- protected:
-  virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
-                                    views::View* child);
-
- private:
-  void Init();
-
-  // The Options dialog window.
-  views::Window* container_;
-
-  // Used for Call back to NetworkSection that password has been entered.
-  NetworkSection* network_delegate_;
-
-  // Combobox and its corresponding model.
-  views::Textfield* password_textfield_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordWindowView);
-};
-
-PasswordWindowView::PasswordWindowView(
-    NetworkSection* network_delegate,
-    Profile* profile)
-    : network_delegate_(network_delegate),
-      password_textfield_(NULL) {
-  Init();
-}
-
-std::wstring PasswordWindowView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_OPTIONS_SETTINGS_SECTION_TITLE_PASSWORD);
-}
-
-bool PasswordWindowView::Cancel() {
-  return network_delegate_->OnPasswordWindowCancel();
-}
-
-bool PasswordWindowView::Accept() {
-  // TODO(chocobo): we should not need to call SyncText ourself here.
-  password_textfield_->SyncText();
-  return network_delegate_->OnPasswordWindowAccept(password_textfield_->text());
-}
-
-void PasswordWindowView::Layout() {
-  gfx::Size sz = password_textfield_->GetPreferredSize();
-  password_textfield_->SetBounds(kDialogPadding, kDialogPadding,
-                                 width() - 2*kDialogPadding,
-                                 sz.height());
-}
-
-gfx::Size PasswordWindowView::GetPreferredSize() {
-  // TODO(chocobo): Create our own localized content size once the UI is done.
-  return gfx::Size(views::Window::GetLocalizedContentsSize(
-      IDS_ABOUT_DIALOG_WIDTH_CHARS,
-      IDS_ABOUT_DIALOG_MINIMUM_HEIGHT_LINES));
-}
-
-void PasswordWindowView::ViewHierarchyChanged(bool is_add,
-                                              views::View* parent,
-                                              views::View* child) {
-  if (is_add && child == this)
-    Init();
-}
-
-void PasswordWindowView::Init() {
-  password_textfield_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
-  AddChildView(password_textfield_);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // NetworkSection
 
 NetworkSection::NetworkSection(Profile* profile)
@@ -279,7 +185,8 @@ void NetworkSection::ItemChanged(views::Combobox* sender,
       views::Window* window = views::Window::CreateChromeWindow(
           NULL,
           gfx::Rect(),
-          new PasswordWindowView(this, profile()));
+          new PasswordDialogView(this));
+      window->SetIsAlwaysOnTop(true);
       window->Show();
     } else {
       ConnectToWifi(ssid, string16());
@@ -287,13 +194,13 @@ void NetworkSection::ItemChanged(views::Combobox* sender,
   }
 }
 
-bool NetworkSection::OnPasswordWindowCancel() {
+bool NetworkSection::OnPasswordDialogCancel() {
   // Change combobox to previous setting
   wifi_ssid_combobox_->SetSelectedItem(last_selected_wifi_ssid_index_);
   return true;
 }
 
-bool NetworkSection::OnPasswordWindowAccept(const string16& password) {
+bool NetworkSection::OnPasswordDialogAccept(const string16& password) {
   // Try connecting to wifi
   return ConnectToWifi(wifi_ssid_model_.GetSSIDAt(
                            wifi_ssid_combobox_->selected_item()), password);

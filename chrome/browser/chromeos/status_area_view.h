@@ -12,6 +12,7 @@
 #include "views/view.h"
 
 class Browser;
+class NetworkMenuButton;
 
 namespace views {
 class MenuButton;
@@ -30,7 +31,7 @@ class StatusAreaView : public views::View,
     OPEN_TABS_ON_RIGHT
   };
 
-  StatusAreaView(Browser* browser);
+  explicit StatusAreaView(Browser* browser);
   virtual ~StatusAreaView();
 
   void Init();
@@ -68,6 +69,7 @@ class StatusAreaView : public views::View,
   // The browser window that owns us.
   Browser* browser_;
 
+  NetworkMenuButton* network_view_;
   views::ImageView* battery_view_;
   views::MenuButton* menu_view_;
 

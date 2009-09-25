@@ -4,8 +4,9 @@
 
 #include "chrome/browser/chromeos/status_area_view.h"
 
-#include <algorithm>
 #include <dlfcn.h>
+
+#include <algorithm>
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/font.h"
@@ -19,9 +20,10 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/common/chrome_paths.h"
+#include "chrome/browser/chromeos/network_menu_button.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/chrome_paths.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -204,6 +206,7 @@ bool StatusAreaView::power_library_error_ = false;
 
 StatusAreaView::StatusAreaView(Browser* browser)
     : browser_(browser),
+      network_view_(NULL),
       battery_view_(NULL),
       menu_view_(NULL),
       power_status_connection_(NULL) {
@@ -220,6 +223,10 @@ void StatusAreaView::Init() {
 
   // Clock.
   AddChildView(new ClockView);
+
+  // Network.
+  network_view_ = new NetworkMenuButton(browser_);
+  AddChildView(network_view_);
 
   // Battery.
   battery_view_ = new views::ImageView;
