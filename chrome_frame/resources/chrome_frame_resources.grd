@@ -41,8 +41,6 @@ for localizable strings
       </structure>
     </structures>
     <includes>
-      <include name="IDB_CHROME_ACTIVE_DOCUMENT" file="../chrome_active_document.bmp" 
-               type="BITMAP" />
       <include name="IDR_BHO" file="../bho.rgs" type="REGISTRY" />
       <include name="IDR_CHROMETAB" file="../chrome_tab.rgs" type="REGISTRY" />
       <include name="IDR_CHROMEPROTOCOL" file="../chrome_protocol.rgs" type="REGISTRY" />
