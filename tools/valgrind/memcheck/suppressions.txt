@@ -1050,3 +1050,18 @@
    fun:_ZN7WebCore11FrameLoader4initEv
    fun:_ZN7WebCore5Frame4initEv
 }
+{
+   bug_23018
+   Memcheck:Addr4
+   fun:_ZN12_GLOBAL__N_115KillProcessTask3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop13DoDelayedWorkEPN4base4TimeE
+   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+   fun:_ZN11MessageLoop3RunEv
+   fun:_Z10WorkerMainRK18MainFunctionParams
+   fun:ChromeMain
+   fun:main
+}
