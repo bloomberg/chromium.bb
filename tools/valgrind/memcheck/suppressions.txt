@@ -750,6 +750,7 @@
    Memcheck:Leak
    fun:malloc
    fun:_ZN3WTF10fastMallocEj
+   ...
    fun:_ZN7WebCore16StorageNamespace23sessionStorageNamespaceEv
    fun:_ZN7WebCore4Page14sessionStorageEb
    fun:_ZNK7WebCore9DOMWindow14sessionStorageEv
