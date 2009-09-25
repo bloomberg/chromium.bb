@@ -2357,3 +2357,41 @@ ExprNodeVector[14] = {
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0x57af37, ExprSize32 | ExprSignedHex },
 };
+0000000000000000: f2 0f 10 05 b5 dc 15 00                      movsd %xmm0, [%rip+0x15dcb5]
+  { 2, { 0x0f, 0x10, 0x00 },
+    NACLi_SSE2,
+    InstFlag(OpcodeUsesModRm),
+    InstMovsd,
+    2, {
+      { Xmm_G_Operand, OpFlag(OpSet) },
+      { Xmm_E_Operand, OpFlag(OpUse) },
+  } };
+ExprNodeVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %xmm0, ExprSet },
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprUsed },
+  { ExprRegister[0] , %rip, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0x15dcb5, ExprSize32 | ExprSignedHex },
+};
+0000000000000000: f2 0f 11 54 24 10                            movsd [%rsp+0x10], %xmm2
+  { 2, { 0x0f, 0x11, 0x00 },
+    NACLi_SSE2,
+    InstFlag(OpcodeUsesModRm),
+    InstMovsd,
+    2, {
+      { Xmm_E_Operand, OpFlag(OpSet) },
+      { Xmm_G_Operand, OpFlag(OpUse) },
+  } };
+ExprNodeVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprMemOffset[4] , 0, ExprSet },
+  { ExprRegister[0] , %rsp, ExprUsed | ExprSize64 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0x10, ExprSize8 | ExprSignedHex },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %xmm2, ExprUsed },
+};

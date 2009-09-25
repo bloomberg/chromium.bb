@@ -84,6 +84,12 @@ static OpcodePrefix g_prefix660F38_only[2] = {
   Prefix660F38,
 };
 
+/* Define prefix array that only applies for the prefix F20F. */
+static OpcodePrefix g_prefixF20F_only[2] = {
+  PrefixF20F,
+  OpcodePrefixEnumSize
+};
+
 /* Define an operand kind pair that uses the G_Operand value for
  * prefix opcodes, independent of the appearance of prefix 66.
  */
@@ -107,6 +113,18 @@ static OperandKind g_Mm_G_Operand[2] = {
  */
 static OperandKind g_Mm_E_Operand[2] = {
   Mmx_E_Operand,
+  Xmm_E_Operand
+};
+
+/* Define an operand kind pair that uses Xmm_G_Operand for both forms. */
+static OperandKind g_Xmm_G_Operand[2] = {
+  Xmm_G_Operand,
+  Xmm_G_Operand
+};
+
+/* Define an operand kind pair that uses Xmm_E_Operand for both forms. */
+static OperandKind g_Xmm_E_Operand[2] = {
+  Xmm_E_Operand,
   Xmm_E_Operand
 };
 
@@ -219,6 +237,10 @@ static InstOpcodeMnemonic g_MoveOps[] = {
    g_SSSE3, g_no_flags},
   {g_prefix660F38_only, 0x41, InstPhminposuw, g_Mm_G_Operand, g_Mm_E_Operand,
    g_SSE41, g_no_flags},
+  {g_prefixF20F_only, 0x10, InstMovsd, g_Xmm_G_Operand, g_Xmm_E_Operand,
+   g_SSE2, g_no_flags},
+  {g_prefixF20F_only, 0x11, InstMovsd, g_Xmm_E_Operand, g_Xmm_G_Operand,
+   g_SSE2, g_no_flags},
 };
 
 /* Specify binary instructions that apply a binary operation to both
