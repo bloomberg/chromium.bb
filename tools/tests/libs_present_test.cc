@@ -33,21 +33,22 @@
 // it does not actually execute any of the library code.
 
 
-#include "libs_present_stub.h"
-
 // This list should include all exported header files (directly or indirectly)
 // to ensure they were properly included in the SDK.
+#include <iostream>
+#include <stdio.h>
 #include <math.h>
 #include <pthread.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <nacl/nacl_av.h>
 #include <nacl/nacl_imc.h>
 #include <nacl/nacl_npapi.h>
 #include <nacl/nacl_srpc.h>
-#include <nacl/npruntime.h>
-#include <iostream>
 
+
+// External boolean (initialized to false) to enable test for linking without
+// actually running anything.
+extern bool run_tests;
 
 // Dummy variables used to hold return values.
 bool bool_value;
@@ -80,9 +81,8 @@ static void TestLibsPresent() {
     bool_value = nacl::WouldBlock();
 
   // Test that libgoogle_nacl_npruntime is present.
-  if (run_tests) {
-    NPN_SetException(NULL, "a dummy message");
-  }
+  if (run_tests)
+    NaClNP_MainLoop(0);
 
   // Test that libpthread is present.
   if (run_tests)

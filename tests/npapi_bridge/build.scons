@@ -1,3 +1,4 @@
+# -*- python -*-
 # Copyright 2008, Google Inc.
 # All rights reserved.
 #
@@ -31,33 +32,60 @@
 Import('env')
 
 
-env.Append(CPPDEFINES=['XP_UNIX'])
-env.FilterOut(CCFLAGS=['-Wswitch-enum'])
+if env['TARGET_PLATFORM'] == 'LINUX':
+    env.Append(CPPDEFINES=['XP_UNIX'])
 
-env.ComponentLibrary('google_nacl_npruntime',
-                     ['naclnp_util.cc',
-                      'npbridge.cc',
-                      'npn_gate.cc',
-                      'npnavigator.cc',
-                      'npobject_proxy.cc',
-                      'npobject_stub.cc',
-                      'nprpc.cc',
-                      'npobject_handle.cc',
-                      'naclnp_util.cc',
-                      'nacl/util_nacl.cc',
-                      ])
 
-headers = [
-  'nacl_npapi.h',
-  'nacl_util.h',
-  '$SOURCE_ROOT/native_client/src/third_party/npapi/files/include/npapi.h',
-  '$SOURCE_ROOT/native_client/src/third_party/npapi/files/include/npruntime.h',
-  '$SOURCE_ROOT/native_client/src/third_party/npapi/files/include/nptypes.h',
-  '$SOURCE_ROOT/native_client/src/third_party/npapi/files/include/npupp.h',
-]
+if env['TARGET_PLATFORM'] == 'MAC':
+    env.Append(
+        CPPDEFINES = [
+            'XP_MACOSX',
+            'XP_UNIX',
+            ['TARGET_API_MAC_CARBON', '1'],
+            'NO_X11',
+            'USE_SYSTEM_CONSOLE',
+        ],
+    )
 
-header_install = env.AddHeaderToSdk(headers)
-env.AddLibraryToSdk(['google_nacl_npruntime'])
 
-# because nacl_npapi.h imports headers from the sdk
-env.Requires('google_nacl_npruntime', header_install)
+if env['TARGET_PLATFORM'] == 'WINDOWS':
+    env.Append(
+        CCFLAGS = ['/EHsc'],
+        CPPDEFINES = ['XP_WIN', 'WIN32', '_WINDOWS'],
+    )
+
+# TODO: move this to EXTRA_LIBS
+env.Append(LIBS=['google_nacl_npruntime',
+                 'google_nacl_imc',
+                 'nrd_xfer',
+                 'naclthread',
+                 'google_nacl_imc_c',
+                 'gio'
+                 ])
+
+env.ComponentProgram('npapi_test',
+                     ['base_object.cc',
+                      'npapi_runtime_test.cc',
+                      'npp_gate.cc',
+                      'plugin.cc'])
+
+
+
+
+# Note that the html is required to run this program.
+if env['TARGET_PLATFORM'] == 'WINDOWS':
+  env.Publish('npapi_test', 'run', [
+      'npapi_test_win.html',
+      'npapi_perf_win.html',
+      'npapi_video_win.html',
+      'hello_npapi.txt',
+    ]
+  )
+else:
+  env.Publish('npapi_test', 'run', [
+      'npapi_test_linux.html',
+      'npapi_perf_linux.html',
+      'npapi_video_linux.html',
+      'hello_npapi.txt',
+    ]
+  )

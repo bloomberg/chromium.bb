@@ -58,8 +58,8 @@ class NPObjectProxy : public NPObject {
   // constructor.
   static NPObject* last_allocated;
 
-  // The NPP instance for this proxied object.
-  NPP npp_;
+  // The NPBridge that manages this proxy instance.
+  NPBridge* bridge_;
   // The capability of the remote NPObject for which this proxy instance is
   // created.
   NPCapability capability_;
@@ -67,17 +67,13 @@ class NPObjectProxy : public NPObject {
  public:
   // Creates a new instance of NPObjectProxy within the specified bridge for
   // the remote NPObject represented by the specified capability.
-  NPObjectProxy(NPP npp, const NPCapability& capability);
+  NPObjectProxy(NPBridge* bridge, const NPCapability& capability);
   ~NPObjectProxy();
 
   // Returns true if this proxy instance is created for the remote NPObject
   // represented by the specified capability.
   bool IsMatch(const NPCapability& capability) const {
     return (capability_ == capability) ? true : false;
-  }
-
-  NPP npp() const {
-    return npp_;
   }
 
   const NPCapability& capability() const {
@@ -89,7 +85,6 @@ class NPObjectProxy : public NPObject {
 
   // NPClass methods. NPObjectProxy forwards these invocations to the remote
   // NPObject.
-  void Deallocate();
   void Invalidate();
   bool HasMethod(NPIdentifier name);
   bool Invoke(NPIdentifier name, const NPVariant* args, uint32_t arg_count,
@@ -100,16 +95,20 @@ class NPObjectProxy : public NPObject {
   bool GetProperty(NPIdentifier name, NPVariant* result);
   bool SetProperty(NPIdentifier name, const NPVariant* value);
   bool RemoveProperty(NPIdentifier name);
-  bool Enumerate(NPIdentifier* *value, uint32_t* count);
+  bool Enumeration(NPIdentifier* *value, uint32_t* count);
   bool Construct(const NPVariant* args, uint32_t arg_count,
                  NPVariant* result);
 
   // Requests NPN_SetException() to the remote NPObject.
   void SetException(const NPUTF8* message);
 
+  // Processes NPN_SetException() request from the remote NPObject.
+  int SetException(RpcHeader* request, int len);
+
   // Detaches this instance from the bridge. Note Invalidate() can be called
   // after NPP_Destroy() is called and the bridge is deleted.
   void Detach() {
+    bridge_ = NULL;
   }
 
   // Returns the pointer to the NPObjectProxy instance that is created lastly

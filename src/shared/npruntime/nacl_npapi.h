@@ -56,7 +56,11 @@
 /* from sdk */
 #include <nacl/npapi.h>
 #include <nacl/npruntime.h>
-#include <nacl/nacl_srpc.h>
+#ifdef __cplusplus
+#include <nacl/nacl_htp.h>
+#else
+#include <nacl/nacl_htp_c.h>
+#endif  // __cplusplus
 #else
 /*
  * from third_party primarily for tests/npapi_bridge/ which build in a
@@ -64,12 +68,34 @@
  */
 #include "native_client/src/third_party/npapi/files/include/npapi.h"
 #include "native_client/src/third_party/npapi/files/include/npruntime.h"
-#include "native_client/src/shared/srpc/nacl_srpc.h"
+#ifdef __cplusplus
+#include "native_client/src/shared/imc/nacl_htp.h"
+#else
+#include "native_client/src/shared/imc/nacl_htp_c.h"
+#endif  // __cplusplus
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
+
+/**
+ *  @nacl
+ *  Initializes the NPAPI bridge RPC runtime.
+ *  @param argc Pointer to the program's unmodified argc variable from main().
+ *  @param argv The program's unmodified argv variable from main().
+ *  @return 0 upon success; otherwise, -1.
+ */
+int NaClNP_Init(int* argc, char* argv[]);
+
+/**
+ *  @nacl
+ *  Enters the NPAPI bridge RPC processing loop. NaClNP_MainLoop() should be
+ *  called once after NaClNP_Init() is called successfully.
+ *  @param flags Reserved. Use 0.
+ *  @return 0 upon success; otherwise, -1.
+ */
+int NaClNP_MainLoop(unsigned flags);
 
 /**
  *  @nacl
@@ -97,9 +123,21 @@ NPObject* NaClNPN_CreateArray(NPP npp);
  *         call to the function.
  *  @return NPERR_NO_ERROR if successful; otherwise, an error code.
  */
+#ifdef __cplusplus
 NPError NaClNPN_OpenURL(NPP npp, const char* url, void* notify_data,
                         void (*notify)(const char* url, void* notify_data,
-                                       NaClSrpcImcDescType handle));
+                                       nacl::HtpHandle handle));
+#else   // __cplusplus
+#ifdef __native_client__
+NPError NaClNPN_OpenURL(NPP npp, const char* url, void* notify_data,
+                        void (*notify)(const char* url, void* notify_data,
+                                       int handle));
+#else   // __native_client__
+NPError NaClNPN_OpenURL(NPP npp, const char* url, void* notify_data,
+                        void (*notify)(const char* url, void* notify_data,
+                                       struct NaClDesc* handle));
+#endif  // __native_client__
+#endif  // __cplusplus
 
 /**
  *  @nacl
@@ -110,6 +148,70 @@ NPError NaClNPN_OpenURL(NPP npp, const char* url, void* notify_data,
  *          not.
  */
 NPObject* NPP_GetScriptableInstance(NPP instance);
+
+enum {
+  NPVariantType_Handle = 127
+};
+
+/**
+ *  @nacl
+ *  Checks whether the NPVariant holds a NaCl resource descriptor.
+ *  @param _v The NPVariant value.
+ *  @return Non-zero value if the NPVariant holds a NaCl resource descriptor;
+ *          otherwise, 0.
+ */
+#define NPVARIANT_IS_HANDLE(_v) \
+    ((int) (_v).type == (int) NPVariantType_Handle)
+
+#ifdef __native_client__
+
+/**
+ *  @nacl
+ *  Gets a NaCl resource descriptor from an NPVariant.
+ *  @param _v The NPVariant value.
+ *  @return The NaCl resource descriptor.
+ */
+#define NPVARIANT_TO_HANDLE(_v)  ((_v).value.intValue)
+
+#else  // __native_client__
+
+#ifdef __cplusplus
+
+#define NPVARIANT_TO_HANDLE(_v) \
+    reinterpret_cast<nacl::HtpHandle>((_v).value.objectValue)
+
+#else  // __cplusplus
+
+#define NPVARIANT_TO_HANDLE(_v) \
+    (NaClHtpHandle) ((_v).value.objectValue)
+
+#endif  // __cplusplus
+
+#endif  // __native_client__
+
+#ifdef __native_client__
+
+/**
+ *  @nacl
+ *  Sets a NaCl resource descriptor to an NPVariant.
+ *  @param _val The NaCl resource descriptor to set.
+ *  @param _v The NPVariant value.
+ */
+#define HANDLE_TO_NPVARIANT(_val, _v) \
+    NP_BEGIN_MACRO \
+    (_v).type = (NPVariantType) NPVariantType_Handle; \
+    (_v).value.intValue = _val; \
+    NP_END_MACRO
+
+#else  // __native_client__
+
+#define HANDLE_TO_NPVARIANT(_val, _v) \
+    NP_BEGIN_MACRO \
+    (_v).type = (NPVariantType) NPVariantType_Handle; \
+    (_v).value.objectValue = (NPObject*) (_val); \
+    NP_END_MACRO
+
+#endif  // __native_client__
 
 #ifdef __cplusplus
 }

@@ -35,8 +35,13 @@
 
 #include <map>
 
+#ifdef __native_client__
 #include <nacl/nacl_htp.h>
 #include <nacl/nacl_npapi.h>
+#else
+#include "native_client/src/shared/imc/nacl_htp.h"
+#include "native_client/src/shared/npruntime/nacl_npapi.h"
+#endif  // __native_client__
 #include "native_client/tests/npapi_bridge/base_object.h"
 
 class Plugin {

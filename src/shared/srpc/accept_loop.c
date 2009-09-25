@@ -106,7 +106,7 @@ NACL_SRPC_METHOD("__shutdown::", srpc_shutdown_request);
 static void *srpc_worker(void *arg) {
   struct worker_state *state = (struct worker_state *) arg;
 
-  NaClSrpcServerLoop(state->d, __kNaClSrpcHandlers, NULL);
+  NaClSrpcServerLoop(state->d, __kNaClSrpcHandlers, (void*) arg);
 
   (void) close(state->d);
   if (state->is_privileged) {

@@ -29,7 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// We want to have calls to various library routines, but do not want
-// those calls executed when the test is run.  run_tests is a global boolean
-// initialized in this file to defeat optimizations removing the calls.
-bool run_tests = false;
+
+#include <nacl/nacl_npapi.h>
+
+int main(int argc, char* argv[]) {
+  NaClNP_Init(&argc, argv);
+  NaClNP_MainLoop(0);
+  return 0;
+}

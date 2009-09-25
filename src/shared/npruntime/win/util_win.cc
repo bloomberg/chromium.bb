@@ -29,7 +29,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// We want to have calls to various library routines, but do not want
-// those calls executed when the test is run.  run_tests is a global boolean
-// initialized in this file to defeat optimizations removing the calls.
-bool run_tests = false;
+
+#include <windows.h>
+
+#include "native_client/src/shared/npruntime/nacl_util.h"
+
+namespace nacl {
+
+int GetPID() {
+  return GetCurrentProcessId();
+}
+
+Handle OpenFile(const char* filename) {
+  return CreateFileA(filename,
+                     GENERIC_READ,
+                     FILE_SHARE_READ,
+                     NULL,
+                     OPEN_EXISTING,
+                     FILE_ATTRIBUTE_NORMAL,
+                     NULL);
+}
+
+int ReadFile(Handle handle, void* buffer, size_t length) {
+  DWORD count;
+  if (!::ReadFile(handle, buffer, length, &count, NULL)) {
+    return -1;
+  }
+  return count;
+}
+
+}  // namespace nacl

@@ -34,9 +34,15 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <nacl/nacl_util.h>
-#include <nacl/nacl_srpc.h>
 #include <cstring>
+
+#ifdef __native_client__
+#include <nacl/nacl_htp.h>
+#include <nacl/nacl_util.h>
+#else
+#include "native_client/src/shared/imc/nacl_htp.h"
+#include "native_client/src/shared/npruntime/nacl_util.h"
+#endif  // __native_client__
 
 NPIdentifier ScriptablePluginObject::id_bar;
 NPIdentifier ScriptablePluginObject::id_document;
@@ -82,6 +88,8 @@ bool ScriptablePluginObject::InitializeIdentifiers(NPObject* object,
   id_proxy = NPN_GetStringIdentifier("proxy");
   id_set_proxy = NPN_GetStringIdentifier("setProxy");
   id_use_proxy = NPN_GetStringIdentifier("useProxy");
+  id_set_handle = NPN_GetStringIdentifier("setHandle");
+  id_use_handle = NPN_GetStringIdentifier("useHandle");
   id_null_method = NPN_GetStringIdentifier("nullMethod");
   id_freeze = NPN_GetStringIdentifier("freeze");
   id_paint = NPN_GetStringIdentifier("paint");
@@ -102,6 +110,12 @@ bool ScriptablePluginObject::InitializeIdentifiers(NPObject* object,
   method_table->insert(
     std::pair<NPIdentifier, Method>(id_use_proxy,
                                     &ScriptablePluginObject::UseProxy));
+  method_table->insert(
+    std::pair<NPIdentifier, Method>(id_set_handle,
+                                    &ScriptablePluginObject::SetHandle));
+  method_table->insert(
+    std::pair<NPIdentifier, Method>(id_use_handle,
+                                    &ScriptablePluginObject::UseHandle));
   method_table->insert(
     std::pair<NPIdentifier, Method>(id_null_method,
                                     &ScriptablePluginObject::NullMethod));
@@ -160,10 +174,9 @@ bool ScriptablePluginObject::Invoke(NPIdentifier name,
 }
 
 void ScriptablePluginObject::Notify(const char* url, void* notify_data,
-                                    NaClSrpcImcDescType handle) {
-  // TODO(sehr): reimplement a test for file download.
+                                    nacl::HtpHandle handle) {
   NPP npp = static_cast<NPP>(notify_data);
-  if (handle == kNaClSrpcInvalidImcDesc) {
+  if (handle == nacl::kInvalidHtpHandle) {
     return;
   }
 
@@ -177,7 +190,7 @@ void ScriptablePluginObject::Notify(const char* url, void* notify_data,
   }
 
   char buffer[1024];
-  int count = read(handle, buffer, sizeof buffer);
+  int count = nacl::Read(handle, buffer, sizeof buffer);
   if (0 < count) {
     printf("%.*s", count, buffer);
 
@@ -344,6 +357,46 @@ bool ScriptablePluginObject::UseProxy(const NPVariant* args,
     }
   }
   NPN_ReleaseVariantValue(&proxy);
+  return true;
+}
+
+bool ScriptablePluginObject::SetHandle(const NPVariant* args,
+                                       uint32_t arg_count,
+                                       NPVariant* result) {
+  printf("setHandle called!\n");
+  NPVariant var;
+  NPIdentifier id = NPN_GetStringIdentifier("handleobj");
+#ifdef __native_client__
+  nacl::HtpHandle handle = 1;  // stdout
+#else   // __native_client__
+#if NACL_WINDOWS
+  // Note STD_OUTPUT_HANDLE cannot be transferred to the other processes,
+  // and thus this method fails on Windows
+  nacl::HtpHandle handle = nacl::CreateIoDesc(GetStdHandle(STD_OUTPUT_HANDLE));
+#else   // NACL_WINDOWS
+  nacl::HtpHandle handle = nacl::CreateIoDesc(1);
+#endif  // NACL_WINDOWS
+#endif  // __native_client__
+  HANDLE_TO_NPVARIANT(handle, var);
+  VOID_TO_NPVARIANT(*result);
+  return NPN_SetProperty(npp_, window_object, id, &var);
+}
+
+bool ScriptablePluginObject::UseHandle(const NPVariant* args,
+                                       uint32_t arg_count,
+                                       NPVariant* result) {
+  printf("useHandle called!\n");
+  NPIdentifier id = NPN_GetStringIdentifier("handleobj");
+  NPVariant handle;
+  VOID_TO_NPVARIANT(handle);
+  if (NPN_GetProperty(npp_, window_object, id, &handle) &&
+      NPVARIANT_IS_HANDLE(handle)) {
+    nacl::Write(NPVARIANT_TO_HANDLE(handle), "Hello, there!\n", 14);
+    printf("succeeded!\n");
+  } else {
+    printf("FAILED!\n");
+  }
+  NPN_ReleaseVariantValue(&handle);
   return true;
 }
 

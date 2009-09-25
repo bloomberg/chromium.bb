@@ -29,7 +29,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// We want to have calls to various library routines, but do not want
-// those calls executed when the test is run.  run_tests is a global boolean
-// initialized in this file to defeat optimizations removing the calls.
-bool run_tests = false;
+
+// NaCl-NPAPI Interface
+
+#ifndef NATIVE_CLIENT_SRC_SHARED_NPRUNTIME_NACL_UTIL_H_
+#define NATIVE_CLIENT_SRC_SHARED_NPRUNTIME_NACL_UTIL_H_
+
+#ifdef __native_client__
+#include <nacl/nacl_imc.h>
+#else
+#include "native_client/src/shared/imc/nacl_imc.h"
+#endif  // __native_client__
+
+namespace nacl {
+
+// Gets the current process ID.
+int GetPID();
+
+// Opens the specified file in read only mode.
+Handle OpenFile(const char* filename);
+
+// Reads length bytes from file into buffer.
+int ReadFile(Handle file, void* buffer, size_t length);
+
+}  // namespace nacl
+
+#endif  // NATIVE_CLIENT_SRC_SHARED_NPRUNTIME_NACL_UTIL_H_

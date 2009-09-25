@@ -29,7 +29,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// We want to have calls to various library routines, but do not want
-// those calls executed when the test is run.  run_tests is a global boolean
-// initialized in this file to defeat optimizations removing the calls.
-bool run_tests = false;
+
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#include <fcntl.h>
+#include <unistd.h>
+
+#include "native_client/src/shared/npruntime/nacl_util.h"
+
+namespace nacl {
+
+int GetPID() {
+  return getpid();
+}
+
+// TODO(shiki): This function should be deprecated shortly.
+int ReadFile(Handle handle, void* buffer, size_t length) {
+  return read(handle, buffer, length);
+}
+
+}  // namespace nacl

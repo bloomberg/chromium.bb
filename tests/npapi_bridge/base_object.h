@@ -33,7 +33,11 @@
 #ifndef NATIVE_CLIENT_TESTS_NPAPI_BRIDGE_BASE_OBJECT_H_
 #define NATIVE_CLIENT_TESTS_NPAPI_BRIDGE_BASE_OBJECT_H_
 
+#ifdef __native_client__
 #include <nacl/nacl_npapi.h>
+#else
+#include "native_client/src/shared/npruntime/nacl_npapi.h"
+#endif  // __native_client__
 
 // Helper class that maps calls to the NPObject into virtual methods.
 class BaseObject : public NPObject {

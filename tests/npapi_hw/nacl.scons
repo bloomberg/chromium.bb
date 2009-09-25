@@ -43,10 +43,7 @@ nacl_npapi_hw_test_inputs = [
 ]
 
 env.ComponentProgram('npapi_hw.nexe', nacl_npapi_hw_test_inputs,
-                     EXTRA_LIBS=['google_nacl_npruntime',
-                                 'srpc',
-                                 'pthread',
-                                 'google_nacl_imc'])
+                     EXTRA_LIBS=['google_nacl_npruntime', 'google_nacl_imc'])
 
 # Note that the html is required to run this program.
 env.Publish('npapi_hw.nexe', 'run',

@@ -29,7 +29,51 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// We want to have calls to various library routines, but do not want
-// those calls executed when the test is run.  run_tests is a global boolean
-// initialized in this file to defeat optimizations removing the calls.
-bool run_tests = false;
+
+#include <assert.h>
+#if NACL_WINDOWS
+#include <windows.h>
+#endif
+#if NACL_LINUX || NACL_OSX || defined(__native_client__)
+#include <unistd.h>
+#include <sys/stat.h>
+#endif
+#include <stdio.h>
+
+#ifdef __native_client__
+#include <nacl/nacl_imc.h>
+#include <nacl/nacl_npapi.h>
+#else
+#include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/shared/npruntime/nacl_npapi.h"
+#endif  // __native_client__
+
+int main(int argc, char* argv[]) {
+#ifndef __native_client__
+  int debug = 0;
+  while (debug) {
+    fprintf(stderr, ".");
+#if NACL_WINDOWS
+    Sleep(1000);
+#else
+    sleep(1);
+#endif
+  }
+#endif
+
+#ifdef __native_client__
+  printf("pid: %d %u\n", getpid(), sizeof(struct stat));
+
+  NPVariant v;
+  HANDLE_TO_NPVARIANT(0, v);
+  assert(NPVARIANT_IS_HANDLE(v));
+  if (NPVARIANT_IS_HANDLE(v)) {
+    nacl::Handle handle = NPVARIANT_TO_HANDLE(v);
+    assert(handle == 0);
+  }
+#endif
+
+  NaClNP_Init(&argc, argv);
+  NaClNP_MainLoop(0);
+  return 0;
+}

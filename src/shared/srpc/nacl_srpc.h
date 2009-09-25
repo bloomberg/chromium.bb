@@ -613,12 +613,9 @@ int NaClSrpcServerLoop(NaClSrpcImcDescType              imc_socket_desc,
  * processing loop refers to this section to build its tables.
  * The handler array begins at __kNaclSrpcHandlers.
  */
-#define NACL_SRPC_METHOD_SECTION_ATTRIBUTE \
-  __attribute__((section(".nacl_rpc_methods"))) \
-  __attribute__((aligned(8)))
-
 extern const struct NaClSrpcHandlerDesc
-  NACL_SRPC_METHOD_SECTION_ATTRIBUTE
+  __attribute__((section(".nacl_rpc_methods")))
+  __attribute__((aligned(8)))
   __kNaClSrpcHandlers[];
 /*
  * Not documented: in NativeClient code the default RPC descriptors are
@@ -626,26 +623,10 @@ extern const struct NaClSrpcHandlerDesc
  * The handler array ends at __kNaclSrpcHandlerEnd.
  */
 extern const struct NaClSrpcHandlerDesc
-  NACL_SRPC_METHOD_SECTION_ATTRIBUTE
+  __attribute__((section(".nacl_rpc_methods")))
+  __attribute__((aligned(8)))
   __kNaClSrpcHandlerEnd;
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
-#else
-#define NACL_SRPC_METHOD_SECTION_ATTRIBUTE
-#endif /* defined(__native_client__) ... */
-
-/**
- * Exports an array of method descriptors to the default RPC descriptor array.
- * @param name is the name of the array containing the method descriptors.
- */
-#define NACL_SRPC_METHOD_ARRAY(name) \
-    struct NaClSrpcHandlerDesc NACL_SRPC_METHOD_SECTION_ATTRIBUTE name[]
-
-/*
- * Undocumented: some utility macros to enable NACL_SRPC_METHOD.
- * TODO(sehr): method exporting uses global names, which can still collide.
- */
-#define NACL_SRPC_NAME_CONCAT(a, b) a ## b
-#define NACL_SRPC_METHOD_CONCAT(x)  NACL_SRPC_NAME_CONCAT(NaClSrpcMethod, x)
 
 /**
  * Exports a method to the default RPC descriptor array.
@@ -655,8 +636,13 @@ extern const struct NaClSrpcHandlerDesc
  * method.
  */
 #define NACL_SRPC_METHOD(entry_format, method_handler) \
-  NACL_SRPC_METHOD_ARRAY(NACL_SRPC_METHOD_CONCAT(__LINE__)) = \
-      { { entry_format, method_handler } }
+struct NaClSrpcHandlerDesc \
+  __attribute__((section(".nacl_rpc_methods"))) \
+  __attribute__((aligned(8))) \
+  NaClSrpcMethod##method_handler = \
+  { entry_format, method_handler }
+
+#endif /* defined(NACL_LINUX) ... */
 
 /**
  *  @clientSrpc Invokes a specified RPC on the given channel.  Parameters
