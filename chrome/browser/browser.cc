@@ -154,19 +154,6 @@ class BrowserIdleTimer : public base::IdleTimer {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-struct Browser::UIUpdate {
-  UIUpdate(const TabContents* src, unsigned flags)
-      : source(src),
-        changed_flags(flags) {
-  }
-
-  // The source of the update.
-  const TabContents* source;
-
-  // What changed in the UI.
-  unsigned changed_flags;
-};
-
 namespace {
 
 // Returns true if the specified TabContents has unload listeners registered.
@@ -2477,7 +2464,7 @@ void Browser::ScheduleUIUpdate(const TabContents* source,
     return;
 
   // Save the dirty bits.
-  scheduled_updates_.push_back(UIUpdate(source, changed_flags));
+  scheduled_updates_[source] |= changed_flags;
 
   if (chrome_updater_factory_.empty()) {
     // No task currently scheduled, start another.
@@ -2493,11 +2480,11 @@ void Browser::ProcessPendingUIUpdates() {
   // Validate that all tabs we have pending updates for exist. This is scary
   // because the pending list must be kept in sync with any detached or
   // deleted tabs. This code does not dereference any TabContents pointers.
-  for (size_t i = 0; i < scheduled_updates_.size(); i++) {
+  for (UpdateMap::const_iterator i = scheduled_updates_.begin();
+       i != scheduled_updates_.end(); ++i) {
     bool found = false;
     for (int tab = 0; tab < tab_count(); tab++) {
-      if (&GetTabContentsAt(tab)->controller() ==
-          &scheduled_updates_[i].source->controller()) {
+      if (&GetTabContentsAt(tab)->controller() == &i->first->controller()) {
         found = true;
         break;
       }
@@ -2508,29 +2495,11 @@ void Browser::ProcessPendingUIUpdates() {
 
   chrome_updater_factory_.RevokeAll();
 
-  // We could have many updates for the same thing in the queue. This map
-  // tracks the bits of the stuff we've already updated for each TabContents so
-  // we don't update again.
-  typedef std::map<const TabContents*, unsigned> UpdateTracker;
-  UpdateTracker updated_stuff;
-
-  for (size_t i = 0; i < scheduled_updates_.size(); i++) {
+  for (UpdateMap::const_iterator i = scheduled_updates_.begin();
+       i != scheduled_updates_.end(); ++i) {
     // Do not dereference |contents|, it may be out-of-date!
-    const TabContents* contents = scheduled_updates_[i].source;
-    unsigned flags = scheduled_updates_[i].changed_flags;
-
-    // Remove any bits we have already updated, and save the new bits.
-    UpdateTracker::iterator updated = updated_stuff.find(contents);
-    if (updated != updated_stuff.end()) {
-      // Turn off bits already set.
-      flags &= ~updated->second;
-      if (!flags)
-        continue;
-
-      updated->second |= flags;
-    } else {
-      updated_stuff[contents] = flags;
-    }
+    const TabContents* contents = i->first;
+    unsigned flags = i->second;
 
     if (flags & TabContents::INVALIDATE_PAGE_ACTIONS)
       window()->GetLocationBar()->UpdatePageActions();
@@ -2563,15 +2532,9 @@ void Browser::RemoveScheduledUpdatesFor(TabContents* contents) {
   if (!contents)
     return;
 
-  // Remove any pending UI updates for the detached tab.
-  UpdateVector::iterator cur_update = scheduled_updates_.begin();
-  while (cur_update != scheduled_updates_.end()) {
-    if (cur_update->source == contents) {
-      cur_update = scheduled_updates_.erase(cur_update);
-    } else {
-      ++cur_update;
-    }
-  }
+  UpdateMap::iterator i = scheduled_updates_.find(contents);
+  if (i != scheduled_updates_.end())
+    scheduled_updates_.erase(i);
 }
 
 

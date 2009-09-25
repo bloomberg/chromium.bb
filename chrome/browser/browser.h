@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_BROWSER_H_
 #define CHROME_BROWSER_BROWSER_H_
 
+#include <map>
 #include <set>
 #include <vector>
 
@@ -567,12 +568,15 @@ class Browser : public TabStripModelDelegate,
   // well.
   void UpdateToolbar(bool should_restore_state);
 
-  // Adds an update to the update queue and schedules an update if necessary.
-  // These are subsequently processed by ProcessPendingUIUpdates.
-  // |changed_flags| is a bitfield of TabContents::INVALIDATE_* values.
+  // Does one or both of the following for each bit in |changed_flags|:
+  // . If the update should be processed immediately, it is.
+  // . If the update should processed asynchronously (to avoid lots of ui
+  //   updates), then scheduled_updates_ is updated for the |source| and update
+  //   pair and a task is scheduled (assuming it isn't running already)
+  //   that invokes ProcessPendingUIUpdates.
   void ScheduleUIUpdate(const TabContents* source, unsigned changed_flags);
 
-  // Processes all pending updates to the UI that have been queued by
+  // Processes all pending updates to the UI that have been scheduled by
   // ScheduleUIUpdate in scheduled_updates_.
   void ProcessPendingUIUpdates();
 
@@ -730,14 +734,13 @@ class Browser : public TabStripModelDelegate,
 
   // UI update coalescing and handling ////////////////////////////////////////
 
-  // Tracks invalidates to the UI, see the declaration in the .cc file.
-  struct UIUpdate;
-  typedef std::vector<UIUpdate> UpdateVector;
+  typedef std::map<const TabContents*,int> UpdateMap;
 
-  // Lists all UI updates that are pending. We don't update things like the
-  // URL or tab title right away to avoid flickering and extra painting.
+  // Maps from TabContents to pending UI updates that need to be processed.
+  // We don't update things like the URL or tab title right away to avoid
+  // flickering and extra painting.
   // See ScheduleUIUpdate and ProcessPendingUIUpdates.
-  UpdateVector scheduled_updates_;
+  UpdateMap scheduled_updates_;
 
   // The following factory is used for chrome update coalescing.
   ScopedRunnableMethodFactory<Browser> chrome_updater_factory_;
