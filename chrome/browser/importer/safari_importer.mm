@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "app/l10n_util.h"
+#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_nsobject.h"
 #include "base/string16.h"
@@ -44,8 +45,38 @@ SafariImporter::SafariImporter(const FilePath& library_dir)
 SafariImporter::~SafariImporter() {
 }
 
+// static
+bool SafariImporter::CanImport(const FilePath& library_dir,
+                               uint16 *services_supported) {
+  DCHECK(services_supported);
+  *services_supported = NONE;
+
+  // Import features are toggled by the following:
+  // bookmarks import: existance of ~/Library/Safari/Bookmarks.plist file.
+  // history import: existance of ~/Library/Safari/History.plist file.
+  // homepage import: existance of appropriate key in defaults.
+  FilePath safari_dir = library_dir.Append("Safari");
+  FilePath bookmarks_path = safari_dir.Append("Bookmarks.plist");
+  FilePath history_path = safari_dir.Append("History.plist");
+
+  using file_util::PathExists;
+  if (PathExists(bookmarks_path))
+    *services_supported |= FAVORITES;
+  if (PathExists(history_path))
+    *services_supported |= HISTORY;
+
+  const scoped_nsobject<NSString> homepage_ns(
+      reinterpret_cast<const NSString*>(
+          CFPreferencesCopyAppValue(CFSTR("HomePage"),
+                                    CFSTR("com.apple.Safari"))));
+  if (homepage_ns.get())
+    *services_supported |= HOME_PAGE;
+
+  return *services_supported != NONE;
+}
+
 void SafariImporter::StartImport(ProfileInfo profile_info,
-                                 uint16 items, ProfileWriter* writer,
+                                 uint16 services_supported, ProfileWriter* writer,
                                  MessageLoop* delegate_loop,
                                  ImporterHost* host) {
   writer_ = writer;
@@ -53,19 +84,19 @@ void SafariImporter::StartImport(ProfileInfo profile_info,
 
   // The order here is important!
   NotifyStarted();
-  if ((items & HOME_PAGE) && !cancelled())
+  if ((services_supported & HOME_PAGE) && !cancelled())
     ImportHomepage();  // Doesn't have a UI item.
-  if ((items & HISTORY) && !cancelled()) {
+  if ((services_supported & HISTORY) && !cancelled()) {
     NotifyItemStarted(HISTORY);
     ImportHistory();
     NotifyItemEnded(HISTORY);
   }
-  if ((items & FAVORITES) && !cancelled()) {
+  if ((services_supported & FAVORITES) && !cancelled()) {
     NotifyItemStarted(FAVORITES);
     ImportBookmarks();
     NotifyItemEnded(FAVORITES);
   }
-  if ((items & PASSWORDS) && !cancelled()) {
+  if ((services_supported & PASSWORDS) && !cancelled()) {
     NotifyItemStarted(PASSWORDS);
     ImportPasswords();
     NotifyItemEnded(PASSWORDS);

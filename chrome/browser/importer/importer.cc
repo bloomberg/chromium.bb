@@ -834,13 +834,15 @@ void ImporterHost::DetectGoogleToolbarProfiles() {
 
 #if defined(OS_MACOSX)
 void ImporterHost::DetectSafariProfiles() {
-  // TODO(jeremy):Check that Safari folder is in fact present.
-  ProfileInfo* safari = new ProfileInfo();
-  safari->browser_type = SAFARI;
-  safari->description = l10n_util::GetString(IDS_IMPORT_FROM_SAFARI);
-  safari->source_path.clear();
-  safari->app_path.clear();
-  safari->services_supported = HISTORY | FAVORITES | HOME_PAGE;
-  source_profiles_.push_back(safari);
+  uint16 items = NONE;
+  if (SafariImporter::CanImport(mac_util::GetUserLibraryPath(), &items)) {
+    ProfileInfo* safari = new ProfileInfo();
+    safari->browser_type = SAFARI;
+    safari->description = l10n_util::GetString(IDS_IMPORT_FROM_SAFARI);
+    safari->source_path.clear();
+    safari->app_path.clear();
+    safari->services_supported = items;
+    source_profiles_.push_back(safari);
+  }
 }
 #endif  // OS_MACOSX

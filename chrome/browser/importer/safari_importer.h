@@ -36,6 +36,13 @@ class SafariImporter : public Importer {
                            MessageLoop* delegate_loop,
                            ImporterHost* host);
 
+
+ // Does this user account have a Safari Profile and if so, what items
+ // are supported?
+ // in: library_dir - ~/Library or a standin for testing purposes.
+ // out: services_supported - the service supported for import.
+ // returns true if we can import the Safari profile.
+ static bool CanImport(const FilePath& library_dir, uint16 *services_supported);
  private:
   FRIEND_TEST(SafariImporterTest, BookmarkImport);
   FRIEND_TEST(SafariImporterTest, FavIconImport);

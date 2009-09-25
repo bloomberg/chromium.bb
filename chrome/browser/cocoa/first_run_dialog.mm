@@ -16,6 +16,7 @@
 @synthesize importBookmarks = import_bookmarks_;
 @synthesize browserImportSelectedIndex = browser_import_selected_index_;
 @synthesize browserImportList = browser_import_list_;
+@synthesize browserImportListHidden = browser_import_list_hidden_;
 
 - (id)init {
   self = [super initWithWindowNibName:@"FirstRunDialog"];

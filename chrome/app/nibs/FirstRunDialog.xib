@@ -587,7 +587,7 @@
 						<string key="label">enabled: importBookmarks</string>
 						<reference key="source" ref="21765562"/>
 						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
+						<object class="NSNibBindingConnector" key="connector" id="760401606">
 							<reference key="NSSource" ref="21765562"/>
 							<reference key="NSDestination" ref="1001"/>
 							<string key="NSLabel">enabled: importBookmarks</string>
@@ -637,6 +637,39 @@
 						<reference key="destination" ref="1001"/>
 					</object>
 					<int key="connectionID">92</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">hidden: browserImportListHidden</string>
+						<reference key="source" ref="690083374"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="690083374"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">hidden: browserImportListHidden</string>
+							<string key="NSBinding">hidden</string>
+							<string key="NSKeyPath">browserImportListHidden</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">94</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">hidden: browserImportListHidden</string>
+						<reference key="source" ref="21765562"/>
+						<reference key="destination" ref="1001"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="21765562"/>
+							<reference key="NSDestination" ref="1001"/>
+							<string key="NSLabel">hidden: browserImportListHidden</string>
+							<string key="NSBinding">hidden</string>
+							<string key="NSKeyPath">browserImportListHidden</string>
+							<reference key="NSPreviousConnector" ref="760401606"/>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">96</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -1007,7 +1040,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">92</int>
+			<int key="maxID">96</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1078,6 +1111,13 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/cocoa/tab_strip_model_observer_bridge.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSWindow</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/nswindow_local_state.h</string>
 					</object>
 				</object>
 			</object>

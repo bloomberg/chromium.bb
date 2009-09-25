@@ -179,6 +179,9 @@ bool FirstRunController::DoFirstRun(Profile* profile,
   }
   [dialog.get() setBrowserImportList:browsers];
 
+  BOOL browser_import_disabled = profiles_count == 0;
+  [dialog.get() setBrowserImportListHidden:browser_import_disabled];
+
   // FirstRunDialogController will call exit if "Cancel" is clicked.
   [dialog.get() showWindow:nil];
 
@@ -214,7 +217,7 @@ bool FirstRunController::DoFirstRun(Profile* profile,
   }
 
   // Import bookmarks.
-  if ([dialog.get() importBookmarks]) {
+  if (!browser_import_disabled && [dialog.get() importBookmarks]) {
     const ProfileInfo& source_profile = importer_host_->GetSourceProfileInfoAt(
         [dialog.get() browserImportSelectedIndex]);
     int16 items = source_profile.services_supported;

@@ -18,6 +18,7 @@
   BOOL usage_stats_checkbox_hidden_;
   int  browser_import_selected_index_;
   NSArray* browser_import_list_;
+  BOOL browser_import_list_hidden_;
 }
 
 // Called when the "Start Google Chrome" button is pressed.
@@ -36,6 +37,7 @@
 @property(assign) BOOL importBookmarks;
 @property(assign) int browserImportSelectedIndex;
 @property(retain) NSArray* browserImportList;
+@property(assign) BOOL browserImportListHidden;
 
 @end
 
