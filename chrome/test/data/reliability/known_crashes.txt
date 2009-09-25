@@ -134,4 +134,4 @@ PREFIX : deletetask<webplugindelegateimpl>::run
 PREFIX : deletetask<webkit_glue::webpluginimpl>::run___messageloop::runtask
 
 # 23043
-PREFIX : v8::internal::invoke___v8::internal::execution::call___v8::function::call___webcore::dateextension::setallowsleep___webcore::v8abstracteventlistener::invokeeventhandler___webcore::v8abstracteventlistener::handleevent___webcore::eventtarget::fireeventlisteners___webcore::domwindow::dispatchevent___webcore::frameloader::stoploading___webcore::frameloader::closeurl___renderview::onclosepage
+PREFIX : v8::internal::invoke___v8::internal::execution::call___v8::function::call___webcore::dateextension::setallowsleep___webcore::v8abstracteventlistener::invokeeventhandler___webcore::v8abstracteventlistener::handleevent___webcore::eventtarget::fireeventlisteners___webcore::domwindow::dispatchevent
