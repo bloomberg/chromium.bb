@@ -620,9 +620,11 @@ bool HistoryService::CanAddURL(const GURL& url) const {
   if (!url.is_valid())
     return false;
 
-  // We allow chrome://* URLs so that they will be added to history and
-  // autocomplete suggestions.
+  // TODO: We should allow kChromeUIScheme URLs if they have been explicitly
+  // typed.  Right now, however, these are marked as typed even when triggered
+  // by a shortcut or menu action.
   if (url.SchemeIs(chrome::kJavaScriptScheme) ||
+      url.SchemeIs(chrome::kChromeUIScheme) ||
       url.SchemeIs(chrome::kViewSourceScheme) ||
       url.SchemeIs(chrome::kChromeInternalScheme) ||
       url.SchemeIs(chrome::kPrintScheme))
