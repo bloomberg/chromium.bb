@@ -654,13 +654,15 @@
           'include_dirs': [
             'third_party/wtl/include',
           ],
-          'sources!': [
-            'common/temp_scaffolding_stubs.cc',
-            'common/temp_scaffolding_stubs.h',
-          ],
         }, { # else: OS != "win"
           'sources!': [
             'common/classfactory.cc',
+          ],
+        }],
+        ['OS=="win" or (OS=="linux" and toolkit_views==0)', {
+          'sources!': [
+            'common/temp_scaffolding_stubs.cc',
+            'common/temp_scaffolding_stubs.h',
           ],
         }],
       ],

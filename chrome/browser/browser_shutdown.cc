@@ -22,13 +22,15 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
-#include "chrome/browser/rlz/rlz.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "net/dns_global.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/rlz/rlz.h"
+#endif
 
 using base::Time;
 using base::TimeDelta;
@@ -131,9 +133,11 @@ void Shutdown() {
 
   prefs->SavePersistentPrefs();
 
+#if defined(OS_WIN)
   // Cleanup any statics created by RLZ. Must be done before NotificationService
   // is destroyed.
   RLZTracker::CleanupRlz();
+#endif
 
   // The jank'o'meter requires that the browser process has been destroyed
   // before calling UninstallJankometer().
@@ -146,11 +150,11 @@ void Shutdown() {
   if (delete_resources_on_shutdown)
     ResourceBundle::CleanupSharedInstance();
 
+#if defined(OS_WIN)
   if (!Upgrade::IsBrowserAlreadyRunning()) {
     Upgrade::SwapNewChromeExeIfPresent();
   }
 
-#if defined(OS_WIN)
   if (shutdown_type_ > NOT_VALID && shutdown_num_processes_ > 0) {
     // Measure total shutdown time as late in the process as possible
     // and then write it to a file to be read at startup.

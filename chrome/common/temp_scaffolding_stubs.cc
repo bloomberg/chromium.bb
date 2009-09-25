@@ -84,7 +84,7 @@ void AutomationProvider::OnMessageFromExternalHost(
 
 //--------------------------------------------------------------------------
 
-
+#if defined(OS_MACOSX)
 // static
 bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
                                         const FilePath& master_prefs_path,
@@ -101,6 +101,7 @@ int FirstRun::ImportNow(Profile* profile, const CommandLine& cmdline) {
   // http://code.google.com/p/chromium/issues/detail?id=11971
   return 0;
 }
+#endif
 
 bool FirstRun::CreateChromeDesktopShortcut() {
   NOTIMPLEMENTED();

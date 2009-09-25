@@ -509,9 +509,11 @@ void TemplateURLModel::SetDefaultSearchProvider(const TemplateURL* url) {
     const TemplateURLRef* url_ref = url->url();
     if (url_ref && url_ref->HasGoogleBaseURLs()) {
       GoogleURLTracker::RequestServerCheck();
+#if defined(OS_WIN)
       RLZTracker::RecordProductEvent(RLZTracker::CHROME,
                                      RLZTracker::CHROME_OMNIBOX,
                                      RLZTracker::SET_TO_GOOGLE);
+#endif
     }
   }
 

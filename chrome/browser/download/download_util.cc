@@ -287,6 +287,12 @@ void DragDownload(const DownloadItem* download,
   widget->DoDrag(data, DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_LINK);
 #endif  // OS_WIN
 }
-#endif
+#elif defined(OS_LINUX)
+void DragDownload(const DownloadItem* download,
+                  SkBitmap* icon,
+                  gfx::NativeView view) {
+  NOTIMPLEMENTED();
+}
+#endif  // OS_LINUX
 
 }  // namespace download_util

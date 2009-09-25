@@ -9,10 +9,13 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "net/base/escape.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/rlz/rlz.h"
+#endif
 
 // The TemplateURLRef has any number of terms that need to be replaced. Each of
 // the terms is enclosed in braces. If the character preceeding the final
@@ -298,6 +301,11 @@ std::wstring TemplateURLRef::ReplaceSearchTerms(
         break;
 
       case GOOGLE_RLZ: {
+        // On platforms that don't have RLZ, we still want this branch
+        // to happen so that we replace the RLZ template with the
+        // empty string.  (If we don't handle this case, we hit a
+        // NOTREACHED below.)
+#if defined(OS_WIN)
         std::wstring rlz_string;
         RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz_string);
         if (!rlz_string.empty()) {
@@ -305,6 +313,7 @@ std::wstring TemplateURLRef::ReplaceSearchTerms(
           url.insert(i->index, rlz_string);
         }
         break;
+#endif
       }
 
       case GOOGLE_UNESCAPED_SEARCH_TERMS: {

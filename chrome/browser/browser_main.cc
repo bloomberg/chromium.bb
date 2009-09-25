@@ -278,7 +278,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   const char* thread_name = thread_name_string.c_str();
   PlatformThread::SetName(thread_name);
   main_message_loop.set_thread_name(thread_name);
-  bool already_running = Upgrade::IsBrowserAlreadyRunning();
 
   // Register the main thread by instantiating it, but don't call any methods.
   ChromeThread main_thread;
@@ -436,7 +435,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   int rlz_ping_delay = 0;
   bool homepage_defined = false;
   if (is_first_run) {
-    // On first run, we  need to process the master preferences before the
+    // On first run, we need to process the master preferences before the
     // browser's profile_manager object is created, but after ResourceBundle
     // is initialized.
     std::vector<std::wstring> first_run_tabs;
@@ -551,12 +550,17 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #if defined(OS_WIN)
   // Record last shutdown time into a histogram.
   browser_shutdown::ReadLastShutdownInfo();
-#endif
+
+  // On Windows, we use our startup as an opportunity to do upgrade/uninstall
+  // tasks.  Those care whether the browser is already running.  On Linux/Mac,
+  // upgrade/uninstall happen separately.
+  bool already_running = Upgrade::IsBrowserAlreadyRunning();
 
   // If the command line specifies 'uninstall' then we need to work here
   // unless we detect another chrome browser running.
   if (parsed_command_line.HasSwitch(switches::kUninstall))
     return DoUninstallTasks(already_running);
+#endif
 
   if (parsed_command_line.HasSwitch(switches::kHideIcons) ||
       parsed_command_line.HasSwitch(switches::kShowIcons)) {
@@ -594,10 +598,12 @@ int BrowserMain(const MainFunctionParams& parameters) {
       NOTREACHED();
   }
 
+#if defined(OS_WIN)
   // Do the tasks if chrome has been upgraded while it was last running.
   if (!already_running && DoUpgradeTasks(parsed_command_line)) {
     return ResultCodes::NORMAL_EXIT;
   }
+#endif
 
   // Check if there is any machine level Chrome installed on the current
   // machine. If yes and the current Chrome process is user level, we do not
