@@ -1432,8 +1432,8 @@ BUG8729 WIN : LayoutTests/http/tests/multipart/invalid-image-data.html = FAIL
 // text fields wrong width
 BUG10363 MAC : LayoutTests/tables/mozilla/bugs/bug53690-1.html = FAIL
 BUG10363 MAC : LayoutTests/tables/mozilla/bugs/bug9024.html = FAIL
-BUG10670 MAC : chrome/fast/forms/basic-buttons.html = FAIL
-BUG10670 MAC : chrome/fast/forms/basic-inputs.html = FAIL
+BUG10670 MAC : LayoutTests/fast/forms/basic-buttons.html = FAIL
+BUG10670 MAC : LayoutTests/fast/forms/basic-inputs.html = FAIL
 BUG10670 MAC : chrome/fast/forms/basic-selects.html = FAIL
 
 // we're waiting on upstreaming a change to how textarea padding works. rather
@@ -2336,11 +2336,7 @@ BUG_PAUL LINUX DEBUG : LayoutTests/fast/backgrounds/size/contain-and-cover.html 
 BUG_DGLAZKOV : LayoutTests/fast/loader/fragment-after-redirect-gets-back-entry.html = FAIL
 
 // WebKit update 48684:48700
-BUG_DGLAZKOV LINUX WIN : LayoutTests/fast/forms/basic-buttons.html = FAIL
-BUG_DGLAZKOV LINUX WIN : LayoutTests/fast/forms/basic-inputs.html = FAIL
 BUG_DGLAZKOV : LayoutTests/fast/forms/textarea-maxlength.html = FAIL
 
 // WebKit update 48700:48721
-BUG_DGLAZKOV : LayoutTests/fast/xmlhttprequest/xmlhttprequest-get.xhtml = FAIL
-BUG_DGLAZKOV : LayoutTests/http/tests/xmlhttprequest/event-target.html = FAIL
 BUG_DGLAZKOV : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-abort-readyState-shouldDispatchEvent.html = FAIL
