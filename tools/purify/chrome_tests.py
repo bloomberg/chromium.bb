@@ -103,7 +103,7 @@ class ChromeTests:
         return dir_chrome
       elif os.path.isfile(exe_module) and not os.path.isfile(exe_chrome):
         return dir_module
-      elif (os.stat(exe_module)[stat.ST_MTIME] > 
+      elif (os.stat(exe_module)[stat.ST_MTIME] >
             os.stat(exe_chrome)[stat.ST_MTIME]):
         return dir_module
       else:
@@ -211,16 +211,25 @@ class ChromeTests:
     if gtest_filter:
       cmd.append("--gtest_filter=%s" % gtest_filter)
 
-  def SimpleTest(self, module, name):
+  def SimpleTest(self, module, name, total_shards=None):
     cmd = self._DefaultCommand(module, name)
-    if not self._options.run_singly:
+    exe = cmd[-1]
+    current_path = os.path.dirname(sys.argv[0])
+
+    # TODO(nsylvain): Add a flag to disable this.
+    if total_shards:
+      script = ["python.exe",
+                os.path.join(current_path, "sharded_test_runner.py"), exe,
+                str(total_shards)]
+      return self.ScriptedTest(module, name, name, script, multi=True)
+    elif  self._options.run_singly:
+      script = ["python.exe",
+                os.path.join(current_path, "test_runner.py"), exe]
+      return self.ScriptedTest(module, name, name, script, multi=True)
+    else:
       self._ReadGtestFilterFile(name, cmd)
       cmd.append("--gtest_print_time")
       return common.RunSubprocess(cmd, 0)
-    else:
-      exe = cmd[-1]
-      script = ["python.exe", "test_runner.py", exe]
-      return self.ScriptedTest(module, exe, name, script, multi=True)
 
   def ScriptedTest(self, module, exe, name, script, multi=False, cmd_args=None,
                    out_dir_extra=None):
@@ -289,7 +298,7 @@ class ChromeTests:
     return self.SimpleTest("webkit", "test_shell_tests.exe")
 
   def TestUnit(self):
-    return self.SimpleTest("chrome", "unit_tests.exe")
+    return self.SimpleTest("chrome", "unit_tests.exe", total_shards=5)
 
   def TestLayoutAll(self):
     return self.TestLayout(run_all=True)
