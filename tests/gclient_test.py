@@ -34,17 +34,6 @@ from super_mox import mox
 class BaseTestCase(super_mox.SuperMoxTestBase):
   def setUp(self):
     super_mox.SuperMoxTestBase.setUp(self)
-    self.mox.StubOutWithMock(gclient.os.path, 'exists')
-    self.mox.StubOutWithMock(gclient.os.path, 'isfile')
-    self.mox.StubOutWithMock(gclient.os.path, 'isdir')
-    self.mox.StubOutWithMock(gclient.os, 'remove')
-    self.mox.StubOutWithMock(gclient.sys, 'stdout')
-    self.mox.StubOutWithMock(gclient_utils, 'subprocess')
-    # These are not tested.
-    self.mox.StubOutWithMock(gclient, 'FileRead')
-    self.mox.StubOutWithMock(gclient, 'FileWrite')
-    self.mox.StubOutWithMock(gclient_utils, 'SubprocessCall')
-    self.mox.StubOutWithMock(gclient_utils, 'RemoveDirectory')
 
   # Like unittest's assertRaises, but checks for Gclient.Error.
   def assertRaisesError(self, msg, fn, *args, **kwargs):
@@ -62,6 +51,17 @@ class GClientBaseTestCase(BaseTestCase):
 
   def setUp(self):
     BaseTestCase.setUp(self)
+    self.mox.StubOutWithMock(gclient.os.path, 'exists')
+    self.mox.StubOutWithMock(gclient.os.path, 'isfile')
+    self.mox.StubOutWithMock(gclient.os.path, 'isdir')
+    self.mox.StubOutWithMock(gclient.os, 'remove')
+    self.mox.StubOutWithMock(gclient.sys, 'stdout')
+    self.mox.StubOutWithMock(gclient_utils, 'subprocess')
+    # These are not tested.
+    self.mox.StubOutWithMock(gclient, 'FileRead')
+    self.mox.StubOutWithMock(gclient, 'FileWrite')
+    self.mox.StubOutWithMock(gclient_utils, 'SubprocessCall')
+    self.mox.StubOutWithMock(gclient_utils, 'RemoveDirectory')
     # Mock them to be sure nothing bad happens.
     self.mox.StubOutWithMock(gclient_scm, 'CaptureSVN')
     self._CaptureSVNInfo = gclient_scm.CaptureSVNInfo
@@ -1019,310 +1019,10 @@ deps = {
     pass
 
 
-class SCMWrapperTestCase(GClientBaseTestCase):
-  class OptionsObject(object):
-     def __init__(self, test_case, verbose=False, revision=None):
-      self.verbose = verbose
-      self.revision = revision
-      self.manually_grab_svn_rev = True
-      self.deps_os = None
-      self.force = False
-      self.nohooks = False
-
-  def setUp(self):
-    GClientBaseTestCase.setUp(self)
-    self.root_dir = self.Dir()
-    self.args = self.Args()
-    self.url = self.Url()
-    self.relpath = 'asf'
-
-  def testDir(self):
-    members = [
-      'FullUrlForRelativeUrl', 'RunCommand', 'cleanup', 'diff', 'export',
-      'pack', 'relpath', 'revert', 'runhooks', 'scm_name', 'status',
-      'update', 'url',
-    ]
-
-    # If you add a member, be sure to add the relevant test!
-    self.compareMembers(self._scm_wrapper(), members)
-
-  def testUnsupportedSCM(self):
-    args = [self.url, self.root_dir, self.relpath]
-    kwargs = {'scm_name' : 'foo'}
-    exception_msg = 'Unsupported scm %(scm_name)s' % kwargs
-    self.assertRaisesError(exception_msg, self._scm_wrapper, *args, **kwargs)
-
-  def testFullUrlForRelativeUrl(self):
-    self.url = 'svn://a/b/c/d'
-
-    self.mox.ReplayAll()
-    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
-                            relpath=self.relpath)
-    self.assertEqual(scm.FullUrlForRelativeUrl('/crap'), 'svn://a/b/crap')
-
-  def testRunCommandException(self):
-    options = self.Options(verbose=False)
-    gclient.os.path.exists(os.path.join(self.root_dir, self.relpath, '.git')
-        ).AndReturn(False)
-
-    self.mox.ReplayAll()
-    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
-                            relpath=self.relpath)
-    exception = "Unsupported argument(s): %s" % ','.join(self.args)
-    self.assertRaisesError(exception, scm.RunCommand,
-                           'update', options, self.args)
-
-  def testRunCommandUnknown(self):
-    # TODO(maruel): if ever used.
-    pass
-
-  def testRevertMissing(self):
-    options = self.Options(verbose=True)
-    base_path = os.path.join(self.root_dir, self.relpath)
-    gclient.os.path.isdir(base_path).AndReturn(False)
-    # It'll to a checkout instead.
-    gclient.os.path.exists(os.path.join(base_path, '.git')).AndReturn(False)
-    print("\n_____ %s is missing, synching instead" % self.relpath)
-    # Checkout.
-    gclient.os.path.exists(base_path).AndReturn(False)
-    files_list = self.mox.CreateMockAnything()
-    gclient_scm.RunSVNAndGetFileList(['checkout', self.url, base_path],
-                                 self.root_dir, files_list)
-
-    self.mox.ReplayAll()
-    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
-                            relpath=self.relpath)
-    scm.revert(options, self.args, files_list)
-
-  def testRevertNone(self):
-    options = self.Options(verbose=True)
-    base_path = os.path.join(self.root_dir, self.relpath)
-    gclient.os.path.isdir(base_path).AndReturn(True)
-    gclient_scm.CaptureSVNStatus(base_path).AndReturn([])
-    gclient_scm.RunSVNAndGetFileList(['update', '--revision', 'BASE'],
-                                     base_path, mox.IgnoreArg())
-
-    self.mox.ReplayAll()
-    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
-                            relpath=self.relpath)
-    file_list = []
-    scm.revert(options, self.args, file_list)
-
-  def testRevert2Files(self):
-    options = self.Options(verbose=True)
-    base_path = os.path.join(self.root_dir, self.relpath)
-    gclient.os.path.isdir(base_path).AndReturn(True)
-    items = [
-      ('M      ', 'a'),
-      ('A      ', 'b'),
-    ]
-    file_path1 = os.path.join(base_path, 'a')
-    file_path2 = os.path.join(base_path, 'b')
-    gclient_scm.CaptureSVNStatus(base_path).AndReturn(items)
-    gclient_scm.os.path.exists(file_path1).AndReturn(True)
-    gclient_scm.os.path.isfile(file_path1).AndReturn(True)
-    gclient_scm.os.remove(file_path1)
-    gclient_scm.os.path.exists(file_path2).AndReturn(True)
-    gclient_scm.os.path.isfile(file_path2).AndReturn(True)
-    gclient_scm.os.remove(file_path2)
-    gclient_scm.RunSVNAndGetFileList(['update', '--revision', 'BASE'],
-                                     base_path, mox.IgnoreArg())
-    print(os.path.join(base_path, 'a'))
-    print(os.path.join(base_path, 'b'))
-
-    self.mox.ReplayAll()
-    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
-                            relpath=self.relpath)
-    file_list = []
-    scm.revert(options, self.args, file_list)
-
-  def testRevertDirectory(self):
-    options = self.Options(verbose=True)
-    base_path = os.path.join(self.root_dir, self.relpath)
-    gclient.os.path.isdir(base_path).AndReturn(True)
-    items = [
-      ('~      ', 'a'),
-    ]
-    gclient_scm.CaptureSVNStatus(base_path).AndReturn(items)
-    file_path = os.path.join(base_path, 'a')
-    print(file_path)
-    gclient_scm.os.path.exists(file_path).AndReturn(True)
-    gclient_scm.os.path.isfile(file_path).AndReturn(False)
-    gclient_scm.os.path.isdir(file_path).AndReturn(True)
-    gclient_utils.RemoveDirectory(file_path)
-    file_list1 = []
-    gclient_scm.RunSVNAndGetFileList(['update', '--revision', 'BASE'], base_path,
-                                     mox.IgnoreArg())
-
-    self.mox.ReplayAll()
-    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
-                            relpath=self.relpath)
-    file_list2 = []
-    scm.revert(options, self.args, file_list2)
-
-  def testStatus(self):
-    options = self.Options(verbose=True)
-    base_path = os.path.join(self.root_dir, self.relpath)
-    gclient.os.path.isdir(base_path).AndReturn(True)
-    gclient_scm.RunSVNAndGetFileList(['status'] + self.args, base_path,
-                                 []).AndReturn(None)
-
-    self.mox.ReplayAll()
-    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
-                            relpath=self.relpath)
-    file_list = []
-    self.assertEqual(scm.status(options, self.args, file_list), None)
-
-
-  # TODO(maruel):  TEST REVISIONS!!!
-  # TODO(maruel):  TEST RELOCATE!!!
-  def testUpdateCheckout(self):
-    options = self.Options(verbose=True)
-    base_path = os.path.join(self.root_dir, self.relpath)
-    file_info = gclient_utils.PrintableObject()
-    file_info.root = 'blah'
-    file_info.url = self.url
-    file_info.uuid = 'ABC'
-    file_info.revision = 42
-    gclient.os.path.exists(os.path.join(base_path, '.git')).AndReturn(False)
-    # Checkout.
-    gclient.os.path.exists(base_path).AndReturn(False)
-    files_list = self.mox.CreateMockAnything()
-    gclient_scm.RunSVNAndGetFileList(['checkout', self.url, base_path],
-                                 self.root_dir, files_list)
-    self.mox.ReplayAll()
-    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
-                            relpath=self.relpath)
-    scm.update(options, (), files_list)
-
-  def testUpdateUpdate(self):
-    options = self.Options(verbose=True)
-    base_path = os.path.join(self.root_dir, self.relpath)
-    options.force = True
-    options.nohooks = False
-    file_info = {
-      'Repository Root': 'blah',
-      'URL': self.url,
-      'UUID': 'ABC',
-      'Revision': 42,
-    }
-    gclient.os.path.exists(os.path.join(base_path, '.git')).AndReturn(False)
-    # Checkout or update.
-    gclient.os.path.exists(base_path).AndReturn(True)
-    gclient_scm.CaptureSVNInfo(os.path.join(base_path, "."), '.'
-        ).AndReturn(file_info)
-    # Cheat a bit here.
-    gclient_scm.CaptureSVNInfo(file_info['URL'], '.').AndReturn(file_info)
-    additional_args = []
-    if options.manually_grab_svn_rev:
-      additional_args = ['--revision', str(file_info['Revision'])]
-    files_list = []
-    gclient_scm.RunSVNAndGetFileList(['update', base_path] + additional_args,
-                                 self.root_dir, files_list)
-
-    self.mox.ReplayAll()
-    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
-                            relpath=self.relpath)
-    scm.update(options, (), files_list)
-
-  def testUpdateGit(self):
-    options = self.Options(verbose=True)
-    gclient.os.path.exists(os.path.join(self.root_dir, self.relpath, '.git')
-        ).AndReturn(True)
-    print("________ found .git directory; skipping %s" % self.relpath)
-
-    self.mox.ReplayAll()
-    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
-                            relpath=self.relpath)
-    file_list = []
-    scm.update(options, self.args, file_list)
-
-  def testGetSVNFileInfo(self):
-    xml_text = r"""<?xml version="1.0"?>
-<info>
-<entry kind="file" path="%s" revision="14628">
-<url>http://src.chromium.org/svn/trunk/src/chrome/app/d</url>
-<repository><root>http://src.chromium.org/svn</root></repository>
-<wc-info>
-<schedule>add</schedule>
-<depth>infinity</depth>
-<copy-from-url>http://src.chromium.org/svn/trunk/src/chrome/app/DEPS</copy-from-url>
-<copy-from-rev>14628</copy-from-rev>
-<checksum>369f59057ba0e6d9017e28f8bdfb1f43</checksum>
-</wc-info>
-</entry>
-</info>
-""" % self.url
-    gclient_scm.CaptureSVN(['info', '--xml', self.url],
-                       '.', True).AndReturn(xml_text)
-    expected = {
-      'URL': 'http://src.chromium.org/svn/trunk/src/chrome/app/d',
-      'UUID': None,
-      'Repository Root': 'http://src.chromium.org/svn',
-      'Schedule': 'add',
-      'Copied From URL': 'http://src.chromium.org/svn/trunk/src/chrome/app/DEPS',
-      'Copied From Rev': '14628',
-      'Path': self.url,
-      'Revision': 14628,
-      'Node Kind': 'file',
-    }
-    self.mox.ReplayAll()
-    file_info = self._CaptureSVNInfo(self.url, '.', True)
-    self.assertEquals(sorted(file_info.items()), sorted(expected.items()))
-
-  def testCaptureSvnInfo(self):
-    xml_text = """<?xml version="1.0"?>
-<info>
-<entry
-   kind="dir"
-   path="."
-   revision="35">
-<url>%s</url>
-<repository>
-<root>%s</root>
-<uuid>7b9385f5-0452-0410-af26-ad4892b7a1fb</uuid>
-</repository>
-<wc-info>
-<schedule>normal</schedule>
-<depth>infinity</depth>
-</wc-info>
-<commit
-   revision="35">
-<author>maruel</author>
-<date>2008-12-04T20:12:19.685120Z</date>
-</commit>
-</entry>
-</info>
-""" % (self.url, self.root_dir)
-    gclient_scm.CaptureSVN(['info', '--xml', self.url],
-                       '.', True).AndReturn(xml_text)
-    self.mox.ReplayAll()
-    file_info = self._CaptureSVNInfo(self.url, '.', True)
-    expected = {
-      'URL': self.url,
-      'UUID': '7b9385f5-0452-0410-af26-ad4892b7a1fb',
-      'Revision': 35,
-      'Repository Root': self.root_dir,
-      'Schedule': 'normal',
-      'Copied From URL': None,
-      'Copied From Rev': None,
-      'Path': '.',
-      'Node Kind': 'dir',
-    }
-    self.assertEqual(file_info, expected)
-
-
-class RunSVNTestCase(BaseTestCase):
-  def testRunSVN(self):
-    param2 = 'bleh'
-    gclient_utils.SubprocessCall(['svn', 'foo', 'bar'], param2).AndReturn(None)
-    self.mox.ReplayAll()
-    gclient_scm.RunSVN(['foo', 'bar'], param2)
-
-
 class SubprocessCallAndFilterTestCase(BaseTestCase):
   def setUp(self):
     BaseTestCase.setUp(self)
+    self.mox.StubOutWithMock(gclient_utils, 'subprocess')
     self.mox.StubOutWithMock(gclient_scm, 'CaptureSVN')
 
   def testSubprocessCallAndFilter(self):

@@ -12,6 +12,7 @@ details on the presubmit API built into gcl.
 UNIT_TESTS = [
   'tests.gcl_unittest',
   'tests.gclient_test',
+  'tests.gclient_scm_test',
   'tests.presubmit_unittest',
   'tests.revert_unittest',
   'tests.trychange_unittest',
