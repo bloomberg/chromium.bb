@@ -87,6 +87,7 @@ TestingProfile::TestingProfile()
 
 TestingProfile::TestingProfile(int count)
     : start_time_(Time::Now()),
+      created_theme_provider_(false),
       has_history_service_(false),
       off_the_record_(false),
       last_session_exited_cleanly_(true) {
