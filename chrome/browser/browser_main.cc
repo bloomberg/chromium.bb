@@ -283,7 +283,18 @@ int BrowserMain(const MainFunctionParams& parameters) {
   ChromeThread main_thread;
 
   FilePath user_data_dir;
+#if defined(OS_WIN)
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+#else
+  // Getting the user data dir can fail if the directory isn't
+  // creatable, for example; on Windows in code below we bring up a
+  // dialog prompting the user to pick a different directory.
+  // However, ProcessSingleton needs a real user_data_dir on Mac/Linux,
+  // so it's better to fail here than fail mysteriously elsewhere.
+  CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+      << "Must be able to get user data directory!";
+#endif
+
   ProcessSingleton process_singleton(user_data_dir);
 
   bool is_first_run = FirstRun::IsChromeFirstRun() ||
@@ -483,19 +494,14 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Try to create/load the profile.
   ProfileManager* profile_manager = browser_process->profile_manager();
   Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
+#if defined(OS_WIN)
   if (!profile) {
     // Ideally, we should be able to run w/o access to disk.  For now, we
     // prompt the user to pick a different user-data-dir and restart chrome
     // with the new dir.
     // http://code.google.com/p/chromium/issues/detail?id=11510
-#if defined(OS_WIN)
     user_data_dir = FilePath::FromWStringHack(
         UserDataDirDialog::RunUserDataDirDialog(user_data_dir.ToWStringHack()));
-#elif defined(OS_LINUX)
-    // TODO(port): fix this.
-    user_data_dir = FilePath("/tmp");
-#endif
-#if defined(OS_WIN) || defined(OS_LINUX)
     if (!parameters.ui_task && browser_shutdown::delete_resources_on_shutdown) {
       // Only delete the resources if we're not running tests. If we're running
       // tests the resources need to be reused as many places in the UI cache
@@ -513,10 +519,16 @@ int BrowserMain(const MainFunctionParams& parameters) {
                                              user_data_dir.ToWStringHack());
       base::LaunchApp(new_command_line, false, false, NULL);
     }
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
 
     return ResultCodes::NORMAL_EXIT;
   }
+#else
+  // TODO(port): fix this.  See comments near the definition of
+  // user_data_dir.  It is better to CHECK-fail here than it is to
+  // silently exit because of missing code in the above test.
+  CHECK(profile) << "Cannot get default profile.";
+#endif
+
   if (profile->GetBlacklist() && !profile->GetBlacklist()->is_good()) {
     // TODO(idanan): Enable this for other platforms once the dispatching
     // support code has been ported. See ifdefs in message_loop.h.

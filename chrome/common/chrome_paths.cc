@@ -74,8 +74,10 @@ bool PathProvider(int key, FilePath* result) {
   FilePath cur;
   switch (key) {
     case chrome::DIR_USER_DATA:
-      if (!GetDefaultUserDataDirectory(&cur))
+      if (!GetDefaultUserDataDirectory(&cur)) {
+        NOTREACHED();
         return false;
+      }
       create_dir = true;
       break;
     case chrome::DIR_USER_CACHE:
