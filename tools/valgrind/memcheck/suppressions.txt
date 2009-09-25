@@ -1319,3 +1319,25 @@
    fun:_ZN2v88internal6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPPPS4_Pb
    fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_10JSFunctionEEENS2_INS0_6ObjectEEEiPPPS5_Pb
 }
+{
+   bug_22984
+   Memcheck:Leak
+   fun:_Znwj
+   fun:_ZN27ScopedRunnableMethodFactoryI12SpellCheckerE17NewRunnableMethodIMS0_FvvEEEP4TaskT_
+   fun:_ZN12SpellChecker18OnURLFetchCompleteEPK10URLFetcherRK4GURLRK16URLRequestStatusiRKSt6vectorISsSaISsEERKSs
+   fun:_ZN10URLFetcher4Core21OnCompletedURLRequestERK16URLRequestStatus
+   fun:_Z16DispatchToMethodIN10URLFetcher4CoreEMS1_FvRK16URLRequestStatusES2_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN10URLFetcher4CoreEMS1_FvRK16URLRequestStatusE6Tuple1IS2_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+   fun:_ZN11MessageLoop3RunEv
+   fun:_ZN4base6Thread3RunEP11MessageLoop
+   fun:_ZN4base6Thread10ThreadMainEv
+   fun:_Z10ThreadFuncPv
+   fun:start_thread
+   fun:clone
+}
