@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "base/histogram.h"
+#include "base/message_loop.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
@@ -37,6 +38,7 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
 ExternalProtocolDialogGtk::ExternalProtocolDialogGtk(const GURL& url)
     : url_(url),
       creation_time_(base::Time::Now()) {
+  DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
 
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_EXTERNAL_PROTOCOL_TITLE).c_str(),

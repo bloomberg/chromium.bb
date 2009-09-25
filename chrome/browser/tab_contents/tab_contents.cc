@@ -24,6 +24,7 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_request_manager.h"
+#include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/gears_integration.h"
 #include "chrome/browser/google_util.h"
@@ -1620,6 +1621,7 @@ void TabContents::OnUserGesture() {
   DownloadRequestManager* drm = g_browser_process->download_request_manager();
   if (drm)
     drm->OnUserGesture(this);
+  ExternalProtocolHandler::OnUserGesture();
   controller_.OnUserGesture();
 }
 

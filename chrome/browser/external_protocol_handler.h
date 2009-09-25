@@ -64,6 +64,9 @@ class ExternalProtocolHandler {
   // Prepopulates the dictionary with known protocols to deny or allow, if
   // preferences for them do not already exist.
   static void PrepopulateDictionary(DictionaryValue* win_pref);
+
+  // Called when the user interacts with a web page.
+  static void OnUserGesture();
 };
 
 #endif  // CHROME_BROWSER_EXTERNAL_PROTOCOL_HANDLER_H_

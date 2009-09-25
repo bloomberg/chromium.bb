@@ -20,6 +20,11 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 
+// Whether we accept requests for launching external protocols. This is set to
+// false every time an external protocol is requested, and set back to true on
+// each user gesture. This variable should only be accessed from the UI thread.
+static bool g_accept_requests = true;
+
 // static
 void ExternalProtocolHandler::PrepopulateDictionary(DictionaryValue* win_pref) {
   static bool is_warm = false;
@@ -73,6 +78,10 @@ void ExternalProtocolHandler::PrepopulateDictionary(DictionaryValue* win_pref) {
 // static
 ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
     const std::wstring& scheme) {
+  // If we are being carpet bombed, block the request.
+  if (!g_accept_requests)
+    return BLOCK;
+
   if (scheme.length() == 1) {
     // We have a URL that looks something like:
     //   C:/WINDOWS/system32/notepad.exe
@@ -104,6 +113,8 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
 void ExternalProtocolHandler::LaunchUrl(const GURL& url,
                                         int render_process_host_id,
                                         int tab_contents_id) {
+  DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
+
   // Escape the input scheme to be sure that the command does not
   // have parameters unexpected by the external program.
   std::string escaped_url_string = EscapeExternalHandlerValue(url.spec());
@@ -114,6 +125,7 @@ void ExternalProtocolHandler::LaunchUrl(const GURL& url,
 
   if (block_state == UNKNOWN) {
 #if defined(OS_WIN) || defined(TOOLKIT_GTK)
+    g_accept_requests = false;
     // Ask the user if they want to allow the protocol. This will call
     // LaunchUrlWithoutSecurityCheck if the user decides to accept the protocol.
     RunExternalProtocolDialog(escaped_url,
@@ -131,7 +143,7 @@ void ExternalProtocolHandler::LaunchUrl(const GURL& url,
 // static
 void ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(const GURL& url) {
 #if defined(OS_MACOSX)
-  // This must run on the main thread on OS X.
+  // This must run on the UI thread on OS X.
   platform_util::OpenExternal(url);
 #else
   // Otherwise put this work on the file thread. On Windows ShellExecute may
@@ -149,4 +161,10 @@ void ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(const GURL& url) {
 // static
 void ExternalProtocolHandler::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kExcludedSchemes);
+}
+
+// static
+void ExternalProtocolHandler::OnUserGesture() {
+  DCHECK_EQ(MessageLoop::TYPE_UI, MessageLoop::current()->type());
+  g_accept_requests = true;
 }
