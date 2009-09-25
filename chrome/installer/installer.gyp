@@ -15,7 +15,7 @@
           'dependencies': [
             '../../app/app.gyp:app_id',
             'installer_util_strings',
-            '../chrome.gyp:common',
+            '../chrome.gyp:common_constants',
             '../chrome.gyp:chrome_resources',
             '../chrome.gyp:chrome_strings',
             '../../courgette/courgette.gyp:courgette_lib',

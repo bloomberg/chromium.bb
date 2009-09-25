@@ -8,7 +8,6 @@
 #include "base/json_reader.h"
 #include "base/json_writer.h"
 #include "base/string_util.h"
-#include "chrome/common/logging_chrome.h"
 
 JSONStringValueSerializer::~JSONStringValueSerializer() {}
 
