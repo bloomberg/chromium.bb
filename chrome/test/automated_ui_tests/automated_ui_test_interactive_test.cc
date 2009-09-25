@@ -7,12 +7,6 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 
-#if defined(OS_WINDOWS)
-#define MAYBE(x) x
-#else
-#define MAYBE(x) DISABLED_##x
-#endif
-
 namespace {
 
 bool WaitForURLDisplayedForTab(BrowserProxy* browser, int tab_index,
@@ -32,7 +26,7 @@ bool WaitForURLDisplayedForTab(BrowserProxy* browser, int tab_index,
 
 }  // namespace
 
-TEST_F(AutomatedUITestBase, MAYBE(DragOut)) {
+TEST_F(AutomatedUITestBase, DragOut) {
   int tab_count;
   active_browser()->GetTabCount(&tab_count);
   ASSERT_EQ(1, tab_count);
@@ -54,7 +48,7 @@ TEST_F(AutomatedUITestBase, MAYBE(DragOut)) {
   ASSERT_EQ(2, window_count);
 }
 
-TEST_F(AutomatedUITestBase, MAYBE(DragLeftRight)) {
+TEST_F(AutomatedUITestBase, DragLeftRight) {
   int tab_count;
   active_browser()->GetTabCount(&tab_count);
   ASSERT_EQ(1, tab_count);

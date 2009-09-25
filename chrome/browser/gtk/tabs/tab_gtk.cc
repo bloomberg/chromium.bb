@@ -218,24 +218,27 @@ void TabGtk::WillProcessEvent(GdkEvent* event) {
 }
 
 void TabGtk::DidProcessEvent(GdkEvent* event) {
-  if (event->type != GDK_MOTION_NOTIFY)
+  if (!(event->type == GDK_MOTION_NOTIFY || event->type == GDK_LEAVE_NOTIFY ||
+        event->type == GDK_ENTER_NOTIFY)) {
     return;
+  }
 
   if (drag_widget_) {
     delegate_->ContinueDrag(NULL);
     return;
   }
 
-  GdkEventMotion* motion = reinterpret_cast<GdkEventMotion*>(event);
-  GdkEventButton* button = reinterpret_cast<GdkEventButton*>(last_mouse_down_);
-  bool dragging = gtk_drag_check_threshold(widget(),
-                                           static_cast<gint>(button->x),
-                                           static_cast<gint>(button->y),
-                                           static_cast<gint>(motion->x),
-                                           static_cast<gint>(motion->y));
-  if (dragging) {
-    StartDragging(gfx::Point(static_cast<int>(button->x),
-                             static_cast<int>(button->y)));
+  gint old_x = static_cast<gint>(last_mouse_down_->button.x_root);
+  gint old_y = static_cast<gint>(last_mouse_down_->button.y_root);
+  gdouble new_x;
+  gdouble new_y;
+  gdk_event_get_root_coords(event, &new_x, &new_y);
+
+  if (gtk_drag_check_threshold(widget(), old_x, old_y,
+      static_cast<gint>(new_x), static_cast<gint>(new_y))) {
+    StartDragging(gfx::Point(
+        static_cast<int>(last_mouse_down_->button.x),
+        static_cast<int>(last_mouse_down_->button.y)));
   }
 }
 

@@ -58,9 +58,9 @@ class EventWaiter : public MessageLoopForUI::Observer {
   }
 
  private:
-  // We pass ownership of task_ to MessageLoop when the corrent event is
+  // We pass ownership of task_ to MessageLoop when the current event is
   // received.
-  Task *task_;
+  Task* task_;
   GdkEventType type_;
   // The number of events of this type to wait for.
   int count_;
@@ -86,7 +86,6 @@ class ClickTask : public Task {
   int state_;
   Task* followup_;
 };
-
 
 bool SendKeyEvent(GdkWindow* window, bool press, guint key, guint state) {
   GdkEvent* event = gdk_event_new(press ? GDK_KEY_PRESS : GDK_KEY_RELEASE);
@@ -114,6 +113,35 @@ bool SendKeyEvent(GdkWindow* window, bool press, guint key, guint state) {
   // gdk_event_put appends a copy of the event.
   gdk_event_free(event);
   return true;
+}
+
+void FakeAMouseMotionEvent(gint x, gint y) {
+  GdkEvent* event = gdk_event_new(GDK_MOTION_NOTIFY);
+
+  event->motion.send_event = false;
+  event->motion.time = EventTimeNow();
+
+  GtkWidget* grab_widget = gtk_grab_get_current();
+  if (grab_widget) {
+    // If there is a grab, we need to target all events at it regardless of
+    // what widget the mouse is over.
+    event->motion.window = grab_widget->window;
+  } else {
+    event->motion.window = gdk_window_at_pointer(&x, &y);
+  }
+  g_object_ref(event->motion.window);
+  event->motion.x = x;
+  event->motion.y = y;
+  gint origin_x, origin_y;
+  gdk_window_get_origin(event->motion.window, &origin_x, &origin_y);
+  event->motion.x_root = x + origin_x;
+  event->motion.y_root = y + origin_y;
+
+  event->motion.device = gdk_device_get_core_pointer();
+  event->type = GDK_MOTION_NOTIFY;
+
+  gdk_event_put(event);
+  gdk_event_free(event);
 }
 
 }  // namespace
@@ -205,13 +233,18 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window, wchar_t key,
 bool SendMouseMove(long x, long y) {
   gdk_display_warp_pointer(gdk_display_get_default(), gdk_screen_get_default(),
                            x, y);
+  // Sometimes gdk_display_warp_pointer fails to send back any indication of
+  // the move, even though it succesfully moves the server cursor. We fake it in
+  // order to get drags to work.
+  FakeAMouseMotionEvent(x, y);
+
   return true;
 }
 
 bool SendMouseMoveNotifyWhenDone(long x, long y, Task* task) {
   bool rv = SendMouseMove(x, y);
   // We can't rely on any particular event signalling the completion of the
-  // mouse move. Posting the task to the message loop should gaurantee
+  // mouse move. Posting the task to the message loop hopefully guarantees
   // the pointer has moved before task is run (although it may not run it as
   // soon as it could).
   MessageLoop::current()->PostTask(FROM_HERE, task);
@@ -234,17 +267,18 @@ bool SendMouseEvents(MouseButton type, int state) {
   } else {
     event->button.window = gdk_window_at_pointer(&x, &y);
   }
+
   g_object_ref(event->button.window);
-  event->motion.x = x;
-  event->motion.y = y;
+  event->button.x = x;
+  event->button.y = y;
   gint origin_x, origin_y;
   gdk_window_get_origin(event->button.window, &origin_x, &origin_y);
   event->button.x_root = x + origin_x;
   event->button.y_root = y + origin_y;
 
   event->button.axes = NULL;
-  // TODO(estade): as above, we may want to pack this with the actual state.
-  event->button.state = 0;
+  gdk_window_get_pointer(event->button.window, NULL, NULL,
+      reinterpret_cast<GdkModifierType*>(&event->button.state));
   event->button.button = type == LEFT ? 1 : (type == MIDDLE ? 2 : 3);
   event->button.device = gdk_device_get_core_pointer();
 

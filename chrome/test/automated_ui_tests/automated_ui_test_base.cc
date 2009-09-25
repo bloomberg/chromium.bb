@@ -17,12 +17,14 @@ AutomatedUITestBase::AutomatedUITestBase() {}
 
 AutomatedUITestBase::~AutomatedUITestBase() {}
 
-void AutomatedUITestBase::LogErrorMessage(const std::string& error) {}
+void AutomatedUITestBase::LogErrorMessage(const std::string& error) {
+}
 
 void AutomatedUITestBase::LogWarningMessage(const std::string& warning) {
 }
 
-void AutomatedUITestBase::LogInfoMessage(const std::string& info) {}
+void AutomatedUITestBase::LogInfoMessage(const std::string& info) {
+}
 
 void AutomatedUITestBase::SetUp() {
   UITest::SetUp();
