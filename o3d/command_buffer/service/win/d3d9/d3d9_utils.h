@@ -96,17 +96,6 @@ inline D3DCOLOR RGBAToD3DCOLOR(const RGBA &color) {
                        FloatToClampedByte(color.alpha));
 }
 
-inline bool VerifyHResult(HRESULT hr, const char* file, int line,
-                          const char* call) {
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "DX Error in file " << file
-                << " line " << line << L": "
-                << DXGetErrorStringA(hr) << L": " << call;
-    return false;
-  }
-  return true;
-}
-
 static bool D3DSemanticToCBSemantic(
     D3DDECLUSAGE semantic,
     unsigned int semantic_index,

@@ -38,7 +38,9 @@ namespace o3d {
 namespace command_buffer {
 
 GAPID3D9::GAPID3D9()
-    : d3d_(NULL),
+    : d3d_module_(NULL),
+      d3dx_module_(NULL),
+      d3d_(NULL),
       d3d_device_(NULL),
       hwnd_(NULL),
       current_vertex_struct_(0),
@@ -53,15 +55,25 @@ GAPID3D9::GAPID3D9()
       back_buffer_surface_(NULL),
       back_buffer_depth_surface_(NULL),
       current_surface_id_(kInvalidResource),
-      current_depth_surface_id_(kInvalidResource) {}
+      current_depth_surface_id_(kInvalidResource),
+      direct3d_create9_(NULL),
+      get_shader_constant_table_(NULL),
+      create_effect_(NULL),
+      get_shader_input_semantics_(NULL) {}
 
 GAPID3D9::~GAPID3D9() {}
 
 // Initializes a D3D interface and device, and sets basic states.
 bool GAPID3D9::Initialize() {
-  d3d_ = Direct3DCreate9(D3D_SDK_VERSION);
+  if (!FindDirect3DFunctions()) {
+    Destroy();
+    return false;
+  }
+
+  d3d_ = Direct3DCreate(D3D_SDK_VERSION);
   if (NULL == d3d_) {
     LOG(ERROR) << "Failed to create the initial D3D9 Interface";
+    Destroy();
     return false;
   }
   d3d_device_ = NULL;
@@ -129,6 +141,7 @@ bool GAPID3D9::Initialize() {
                                     &d3dpp,
                                     &d3d_device_))) {
     LOG(ERROR) << "Failed to create the D3D Device";
+    Destroy();
     return false;
   }
   // initialise the d3d graphics state.
@@ -156,6 +169,18 @@ void GAPID3D9::Destroy() {
   if (d3d_) {
     d3d_->Release();
     d3d_ = NULL;
+  }
+  if (d3dx_module_) {
+    FreeLibrary(d3dx_module_);
+    d3dx_module_ = NULL;
+    get_shader_constant_table_ = NULL;
+    create_effect_ = NULL;
+    get_shader_input_semantics_ = NULL;
+  }
+  if (d3d_module_) {
+    FreeLibrary(d3d_module_);
+    d3d_module_ = NULL;
+    direct3d_create9_ = NULL;
   }
 }
 
@@ -220,6 +245,55 @@ BufferSyncInterface::ParseError GAPID3D9::SetVertexStruct(ResourceID id) {
   return BufferSyncInterface::kParseNoError;
 }
 
+bool GAPID3D9::FindDirect3DFunctions() {
+  d3d_module_ = LoadLibrary(TEXT("d3d9.dll"));
+  if (NULL == d3d_module_) {
+    LOG(ERROR) << "Failed to load d3d9.dll";
+    return false;
+  }
+
+  direct3d_create9_ = reinterpret_cast<Direct3DCreate9Proc>(
+      GetProcAddress(d3d_module_, "Direct3DCreate9"));
+  if (NULL == direct3d_create9_) {
+    LOG(ERROR) << "Failed to find Direct3DCreate9 in d3d9.dll";
+    Destroy();
+    return false;
+  }
+
+  d3dx_module_ = LoadLibrary(TEXT("d3dx9_36.dll"));
+  if (NULL == d3d_module_) {
+    LOG(ERROR) << "Failed to load d3dx9_36.dll";
+    return false;
+  }
+
+  get_shader_constant_table_ = reinterpret_cast<D3DXGetShaderConstantTableProc>(
+      GetProcAddress(d3dx_module_, "D3DXGetShaderConstantTable"));
+  if (NULL == get_shader_constant_table_) {
+    LOG(ERROR) << "Failed to find D3DXGetShaderConstantTable in d3dx9_36.dll";
+    Destroy();
+    return false;
+  }
+
+  create_effect_ = reinterpret_cast<D3DXCreateEffectProc>(
+      GetProcAddress(d3dx_module_, "D3DXCreateEffect"));
+  if (NULL == create_effect_) {
+    LOG(ERROR) << "Failed to find D3DXCreateEffect in d3dx9_36.dll";
+    Destroy();
+    return false;
+  }
+
+  get_shader_input_semantics_ =
+      reinterpret_cast<D3DXGetShaderInputSemanticsProc>(
+          GetProcAddress(d3dx_module_, "D3DXGetShaderInputSemantics"));
+  if (NULL == get_shader_input_semantics_) {
+    LOG(ERROR) << "Failed to find D3DXGetShaderInputSemantics in d3dx9_36.dll";
+    Destroy();
+    return false;
+  }
+
+  return true;
+}
+
 // Sets in D3D the input streams of the current vertex struct.
 bool GAPID3D9::ValidateStreams() {
   DCHECK(validate_streams_);
@@ -268,7 +342,7 @@ BufferSyncInterface::ParseError GAPID3D9::Draw(
     return BufferSyncInterface::kParseInvalidArguments;
   }
   DCHECK(current_effect_);
-  if (!current_effect_->CommitParameters(this)) {
+  if (!current_effect_->CommitParameters()) {
     return BufferSyncInterface::kParseInvalidArguments;
   }
   if (first + count > max_vertices_) {
@@ -298,7 +372,7 @@ BufferSyncInterface::ParseError GAPID3D9::DrawIndexed(
     return BufferSyncInterface::kParseInvalidArguments;
   }
   DCHECK(current_effect_);
-  if (!current_effect_->CommitParameters(this)) {
+  if (!current_effect_->CommitParameters()) {
     return BufferSyncInterface::kParseInvalidArguments;
   }
   if ((min_index >= max_vertices_) || (max_index > max_vertices_)) {

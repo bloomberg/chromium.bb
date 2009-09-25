@@ -68,10 +68,12 @@ static void LogFXError(LPD3DXBUFFER error_buffer) {
   }
 }
 
-EffectD3D9::EffectD3D9(ID3DXEffect *d3d_effect,
+EffectD3D9::EffectD3D9(GAPID3D9 *gapi,
+                       ID3DXEffect *d3d_effect,
                        ID3DXConstantTable *fs_constant_table,
                        IDirect3DVertexShader9 *d3d_vertex_shader)
-    : d3d_effect_(d3d_effect),
+    : gapi_(gapi),
+      d3d_effect_(d3d_effect),
       fs_constant_table_(fs_constant_table),
       d3d_vertex_shader_(d3d_vertex_shader),
       sync_parameters_(false) {
@@ -111,15 +113,15 @@ EffectD3D9 *EffectD3D9::Create(GAPID3D9 *gapi,
   ID3DXEffect *d3d_effect = NULL;
   LPD3DXBUFFER error_buffer;
   IDirect3DDevice9 *device = gapi->d3d_device();
-  if (D3DXCreateEffect(device,
-                       prepared_effect.c_str(),
-                       prepared_effect.size(),
-                       NULL,
-                       NULL,
-                       0,
-                       NULL,
-                       &d3d_effect,
-                       &error_buffer) != D3D_OK) {
+  if (gapi->D3DXCreateEffect(device,
+                             prepared_effect.c_str(),
+                             prepared_effect.size(),
+                             NULL,
+                             NULL,
+                             0,
+                             NULL,
+                             &d3d_effect,
+                             &error_buffer) != D3D_OK) {
     LogFXError(error_buffer);
     return NULL;
   }
@@ -150,8 +152,8 @@ EffectD3D9 *EffectD3D9::Create(GAPID3D9 *gapi,
   D3DXPASS_DESC pass_desc;
   HR(d3d_effect->GetPassDesc(pass, &pass_desc));
   ID3DXConstantTable *table = NULL;
-  HR(D3DXGetShaderConstantTable(pass_desc.pPixelShaderFunction,
-                                &table));
+  HR(gapi->D3DXGetShaderConstantTable(pass_desc.pPixelShaderFunction,
+                                      &table));
   if (!table) {
     LOG(ERROR) << "Could not get the constant table.";
     d3d_effect->Release();
@@ -167,20 +169,20 @@ EffectD3D9 *EffectD3D9::Create(GAPID3D9 *gapi,
     return NULL;
   }
 
-  return new EffectD3D9(d3d_effect, table, d3d_vertex_shader);
+  return new EffectD3D9(gapi, d3d_effect, table, d3d_vertex_shader);
 }
 
 // Begins rendering with the effect, setting all the appropriate states.
-bool EffectD3D9::Begin(GAPID3D9 *gapi) {
+bool EffectD3D9::Begin() {
   UINT numpasses;
   HR(d3d_effect_->Begin(&numpasses, 0));
   HR(d3d_effect_->BeginPass(0));
   sync_parameters_ = false;
-  return SetSamplers(gapi);
+  return SetSamplers();
 }
 
 // Terminates rendering with the effect, resetting all the appropriate states.
-void EffectD3D9::End(GAPID3D9 *gapi) {
+void EffectD3D9::End() {
   HR(d3d_effect_->EndPass());
   HR(d3d_effect_->End());
 }
@@ -278,23 +280,23 @@ EffectParamD3D9 *EffectD3D9::CreateParamByName(const char *name) {
   return EffectParamD3D9::Create(this, handle);
 }
 
-bool EffectD3D9::CommitParameters(GAPID3D9 *gapi) {
+bool EffectD3D9::CommitParameters() {
   if (sync_parameters_) {
     sync_parameters_ = false;
     d3d_effect_->CommitChanges();
-    return SetSamplers(gapi);
+    return SetSamplers();
   } else {
     return true;
   }
 }
 
-bool EffectD3D9::SetSamplers(GAPID3D9 *gapi) {
-  IDirect3DDevice9 *d3d_device = gapi->d3d_device();
+bool EffectD3D9::SetSamplers() {
+  IDirect3DDevice9 *d3d_device = gapi_->d3d_device();
   bool result = true;
   for (unsigned int i = 0; i < kMaxSamplerUnits; ++i) {
-    SamplerD3D9 *sampler = gapi->GetSampler(samplers_[i]);
+    SamplerD3D9 *sampler = gapi_->GetSampler(samplers_[i]);
     if (sampler) {
-      result &= sampler->ApplyStates(gapi, i);
+      result &= sampler->ApplyStates(gapi_, i);
     } else {
       HR(d3d_device->SetTexture(i, NULL));
     }
@@ -312,13 +314,13 @@ bool EffectD3D9::SetStreams() {
   d3d_vertex_shader_->GetFunction(function.get(), &size);
 
   UINT num_semantics;
-  HR(D3DXGetShaderInputSemantics(function.get(),
-                                 NULL,
-                                 &num_semantics));
+  HR(gapi_->D3DXGetShaderInputSemantics(function.get(),
+                                        NULL,
+                                        &num_semantics));
   scoped_array<D3DXSEMANTIC> semantics(new D3DXSEMANTIC[num_semantics]);
-  HR(D3DXGetShaderInputSemantics(function.get(),
-                                 semantics.get(),
-                                 &num_semantics));
+  HR(gapi_->D3DXGetShaderInputSemantics(function.get(),
+                                        semantics.get(),
+                                        &num_semantics));
 
   streams_.resize(num_semantics);
   for (UINT i = 0; i < num_semantics; ++i) {
@@ -655,7 +657,7 @@ BufferSyncInterface::ParseError GAPID3D9::GetStreamDesc(
 void GAPID3D9::DirtyEffect() {
   if (validate_effect_) return;
   DCHECK(current_effect_);
-  current_effect_->End(this);
+  current_effect_->End();
   current_effect_ = NULL;
   validate_effect_ = true;
 }
@@ -668,7 +670,7 @@ bool GAPID3D9::ValidateEffect() {
   current_effect_ = effects_.Get(current_effect_id_);
   if (!current_effect_) return false;
   validate_effect_ = false;
-  return current_effect_->Begin(this);
+  return current_effect_->Begin();
 }
 
 }  // namespace command_buffer

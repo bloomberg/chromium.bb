@@ -166,22 +166,28 @@
               'editbin /SUBSYSTEM:CONSOLE $(OutDir)/$(TargetFileName)',
           },
         ],
-        ['OS == "win" and (renderer == "d3d9" or cb_service == "d3d9")',
+        ['OS == "win" and renderer == "d3d9"',
           {
             'sources': [
               'common/win/dxcapture.cc',
             ],
+            'link_settings': {
+              'libraries': [
+                '"$(DXSDK_DIR)/Lib/x86/d3dx9.lib"',
+                'd3d9.lib',
+              ],
+            },
+          },
+        ],
+        ['OS == "win" and (renderer == "d3d9" or cb_service == "d3d9")',
+          {
             'include_dirs': [
               '"$(DXSDK_DIR)/Include"',
             ],
-            'msvs_settings': {
-              'VCLinkerTool': {
-                'AdditionalDependencies': [
-                  '"$(DXSDK_DIR)/Lib/x86/DxErr.lib"',
-                  '"$(DXSDK_DIR)/Lib/x86/d3dx9.lib"',
-                  'd3d9.lib',
-                ],
-              },
+            'link_settings': {
+              'libraries': [
+                '"$(DXSDK_DIR)/Lib/x86/DxErr.lib"',
+              ],
             },
           },
         ],

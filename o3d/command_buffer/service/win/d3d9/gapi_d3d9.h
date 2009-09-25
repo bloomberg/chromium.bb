@@ -392,7 +392,50 @@ class GAPID3D9 : public GAPIInterface {
   }
 
   EffectD3D9 *current_effect() { return current_effect_; }
+
+  // Direct3D functions cannot be called directly because the DLLs are loaded
+  // dynamically via LoadLibrary. If you need to add another Direct3D function
+  // add another function here, a typedef matching the signature and a member
+  // variable of that type below. Then add code to FindDirect3DFunctions to
+  // get the address of that function out of the DLL and assign it to the
+  // member variable. Be careful to initialize the value of the variable to
+  // NULL in the constructor and to set it to again NULL in Destroy.
+
+  IDirect3D9* Direct3DCreate(UINT version) {
+    DCHECK(direct3d_create9_);
+    return direct3d_create9_(version);
+  }
+
+  HRESULT D3DXGetShaderConstantTable(const DWORD* function,
+                                     LPD3DXCONSTANTTABLE* table) {
+    DCHECK(get_shader_constant_table_);
+    return get_shader_constant_table_(function, table);
+  }
+
+  HRESULT D3DXCreateEffect(LPDIRECT3DDEVICE9 device,
+                           LPCVOID src_data,
+                           UINT src_data_len,
+                           CONST D3DXMACRO * defines,
+                           LPD3DXINCLUDE include,
+                           DWORD flags,
+                           LPD3DXEFFECTPOOL pool,
+                           LPD3DXEFFECT * effect,
+                           LPD3DXBUFFER * compilation_errors) {
+    DCHECK(create_effect_);
+    return create_effect_(device, src_data, src_data_len, defines, include,
+                          flags, pool, effect, compilation_errors);
+  }
+
+  HRESULT D3DXGetShaderInputSemantics(const DWORD* function,
+                                      D3DXSEMANTIC* semantics,
+                                      UINT* count) {
+    DCHECK(get_shader_input_semantics_);
+    return get_shader_input_semantics_(function, semantics, count);
+  }
+
  private:
+  bool FindDirect3DFunctions();
+
   // Validates the current vertex struct to D3D, setting the streams.
   bool ValidateStreams();
   // Validates the current effect to D3D. This sends the effect states to D3D.
@@ -400,6 +443,12 @@ class GAPID3D9 : public GAPIInterface {
   // "Dirty" the current effect. This resets the effect states to D3D, and
   // requires ValidateEffect() to be called before further draws occur.
   void DirtyEffect();
+
+  // Module handle for d3d9.dll.
+  HMODULE d3d_module_;
+
+  // Module handle for d3dx9_n.dll
+  HMODULE d3dx_module_;
 
   LPDIRECT3D9 d3d_;
   LPDIRECT3DDEVICE9 d3d_device_;
@@ -424,6 +473,32 @@ class GAPID3D9 : public GAPIInterface {
   ResourceMap<SamplerD3D9> samplers_;
   ResourceMap<RenderSurfaceD3D9> render_surfaces_;
   ResourceMap<RenderDepthStencilSurfaceD3D9> depth_surfaces_;
+
+  typedef IDirect3D9* (WINAPI *Direct3DCreate9Proc)(UINT version);
+  Direct3DCreate9Proc direct3d_create9_;
+
+  typedef HRESULT (WINAPI *D3DXGetShaderConstantTableProc)(
+      const DWORD* function,
+      LPD3DXCONSTANTTABLE* table);
+  D3DXGetShaderConstantTableProc get_shader_constant_table_;
+
+  typedef HRESULT (WINAPI *D3DXCreateEffectProc)(
+      LPDIRECT3DDEVICE9 device,
+      LPCVOID src_data,
+      UINT src_data_len,
+      CONST D3DXMACRO * defines,
+      LPD3DXINCLUDE include,
+      DWORD flags,
+      LPD3DXEFFECTPOOL pool,
+      LPD3DXEFFECT * effect,
+      LPD3DXBUFFER * compilation_errors);
+  D3DXCreateEffectProc create_effect_;
+
+  typedef HRESULT (WINAPI *D3DXGetShaderInputSemanticsProc)(
+      const DWORD* function,
+      D3DXSEMANTIC* semantics,
+      UINT* count);
+  D3DXGetShaderInputSemanticsProc get_shader_input_semantics_;
 };
 
 }  // namespace command_buffer
