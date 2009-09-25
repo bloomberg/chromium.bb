@@ -1,6 +1,0 @@
-deps = {
-  # TODO(slightlyoff): need to add to Chromium third_party/ !!
-  # Chrome Frame needs these gecko SDKs and internals.
-  "src/third_party/xulrunner-sdk":
-      "svn://chrome-svn/chrome/trunk/deps/third_party/xulrunner-sdk",
-}
