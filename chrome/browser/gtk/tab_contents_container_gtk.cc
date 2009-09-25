@@ -18,6 +18,8 @@ namespace {
 // |allocation|.
 void ResizeChildren(GtkWidget* widget, void* param) {
   GtkAllocation* allocation = reinterpret_cast<GtkAllocation*>(param);
+  if (!GTK_WIDGET_VISIBLE(widget))
+    return;
 
   if (widget->allocation.width != allocation->width ||
       widget->allocation.height != allocation->height) {
