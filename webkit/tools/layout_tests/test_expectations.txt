@@ -2273,7 +2273,7 @@ BUG21767 : LayoutTests/fast/js/Object-keys.html = FAIL
 
 // WK roll to 48371
 BUG21841 MAC : LayoutTests/plugins/destroy-during-npp-new.html = FAIL
-BUG21841 LINUX : LayoutTests/plugins/destroy-during-npp-new.html = FAIL PASS
+BUG21841 WIN LINUX : LayoutTests/plugins/destroy-during-npp-new.html = FAIL PASS
 
 // missing upstream baseline from 48368
 BUG21842 SKIP WIN LINUX : LayoutTests/platform/win/accessibility/scroll-to-anchor.html = FAIL
