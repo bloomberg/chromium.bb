@@ -40,7 +40,7 @@ bool ComMessageEvent::Initialize(IOleContainer* container,
     }
   }
 
-  basic_event_ = basic_event;  
+  basic_event_ = basic_event;
   return true;
 }
 
@@ -48,13 +48,13 @@ STDMETHODIMP ComMessageEvent::GetTypeInfoCount(UINT* info) {
   // Don't DCHECK as python scripts might still call this function
   // inadvertently.
   DLOG(WARNING) << "Not implemented: " << __FUNCTION__;
-  return E_NOTIMPL;  
+  return E_NOTIMPL;
 }
 
 STDMETHODIMP ComMessageEvent::GetTypeInfo(UINT which_info, LCID lcid,
                                           ITypeInfo** type_info) {
-  NOTREACHED();
-  return E_NOTIMPL;  
+  DLOG(WARNING) << "Not implemented: " << __FUNCTION__;
+  return E_NOTIMPL;
 }
 
 STDMETHODIMP ComMessageEvent::GetIDsOfNames(REFIID iid, LPOLESTR* names,
@@ -94,7 +94,7 @@ STDMETHODIMP ComMessageEvent::GetIDsOfNames(REFIID iid, LPOLESTR* names,
       }
     }
   }
-  return hr;                           
+  return hr;
 }
 
 STDMETHODIMP ComMessageEvent::Invoke(DISPID dispid, REFIID iid, LCID lcid,
