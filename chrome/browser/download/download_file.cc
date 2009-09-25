@@ -159,6 +159,8 @@ DownloadFileManager::DownloadFileManager(MessageLoop* ui_loop,
                                          ResourceDispatcherHost* rdh)
     : next_id_(0),
       ui_loop_(ui_loop),
+      file_loop_(NULL),
+      io_loop_(NULL),
       resource_dispatcher_host_(rdh) {
 }
 
