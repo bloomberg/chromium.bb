@@ -15,8 +15,34 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_util.h"
 #include "grit/generated_resources.h"
+#include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 static const int kTextWidth = 140;            // Pixels
+
+namespace {
+
+// Helper to widen a view.
+void WidenView(NSView* view, CGFloat widthChange) {
+  // If it is an NSBox, the autoresize of the contentView is the issue.
+  NSView* contentView = view;
+  if ([view isKindOfClass:[NSBox class]]) {
+    contentView = [(NSBox*)view contentView];
+  }
+  BOOL autoresizesSubviews = [contentView autoresizesSubviews];
+  if (autoresizesSubviews) {
+    [contentView setAutoresizesSubviews:NO];
+  }
+
+  NSRect frame = [view frame];
+  frame.size.width += widthChange;
+  [view setFrame:frame];
+
+  if (autoresizesSubviews) {
+    [contentView setAutoresizesSubviews:YES];
+  }
+}
+
+}  // namespace
 
 // A class for the chromium-side part of the download shelf context menu.
 
@@ -66,6 +92,18 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 }
 
 - (void)awakeFromNib {
+  // Since the shelf keeps laying out views as more items are added, relying on
+  // the WidthBaseTweaker to resize the dangerous download part does not work.
+  DCHECK(buttonTweaker_ != nil);
+  CGFloat widthChange = [buttonTweaker_ changedWidth];
+  // Grow the parent views
+  WidenView([self view], widthChange);
+  WidenView(dangerousDownloadView_, widthChange);
+  // Slide the two buttons over.
+  NSPoint frameOrigin = [buttonTweaker_ frame].origin;
+  frameOrigin.x += widthChange;
+  [buttonTweaker_ setFrameOrigin:frameOrigin];
+
   [self setStateFromDownload:bridge_->download_model()];
   bridge_->LoadIcon();
 }

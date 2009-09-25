@@ -13,6 +13,7 @@ class DownloadItem;
 class DownloadItemMac;
 class DownloadShelfContextMenuMac;
 @class DownloadShelfController;
+@class GTMWidthBasedTweaker;
 
 // A controller class that manages one download item.
 
@@ -30,12 +31,16 @@ class DownloadShelfContextMenuMac;
   IBOutlet NSView* dangerousDownloadView_;
   IBOutlet NSTextField* dangerousDownloadLabel_;
 
+  // So we can find out how much the tweaker changed sizes to update the
+  // other views.
+  IBOutlet GTMWidthBasedTweaker* buttonTweaker_;
+
   scoped_ptr<DownloadItemMac> bridge_;
   scoped_ptr<DownloadShelfContextMenuMac> menuBridge_;
 
   // Weak pointer to the shelf that owns us.
   DownloadShelfController* shelf_;
-  
+
   // The time at which this view was created.
   base::Time creationTime_;
 
