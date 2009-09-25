@@ -44,7 +44,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
     const char* expected_output;
   } test_cases[] = {
     // Dumb case.
-    { "ignored", "ignored", "", "" },
+    { "ignored", "ignored", "", "#!/usr/bin/env xdg-open\n" },
 
     // Real-world case.
     { "http://gmail.com",
@@ -62,6 +62,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "Categories=Application;Network;WebBrowser;\n"
       "MimeType=text/html;text/xml;application/xhtml_xml;\n",
 
+      "#!/usr/bin/env xdg-open\n"
       "[Desktop Entry]\n"
       "Version=1.0\n"
       "Encoding=UTF-8\n"
@@ -74,6 +75,32 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "MimeType=text/html;text/xml;application/xhtml_xml;\n"
     },
 
+    // Make sure we don't insert duplicate shebangs.
+    { "http://gmail.com",
+      "GMail",
+
+      "#!/some/shebang\n"
+      "Name=Google Chrome\n"
+      "Exec=/opt/google/chrome/google-chrome %U\n",
+
+      "#!/usr/bin/env xdg-open\n"
+      "Name=GMail\n"
+      "Exec=/opt/google/chrome/google-chrome \"--app=http://gmail.com/\"\n"
+    },
+
+    // Make sure i18n-ed comments are removed.
+    { "http://gmail.com",
+      "GMail",
+
+      "Name=Google Chrome\n"
+      "Exec=/opt/google/chrome/google-chrome %U\n"
+      "Comment[pl]=Jakis komentarz.\n",
+
+      "#!/usr/bin/env xdg-open\n"
+      "Name=GMail\n"
+      "Exec=/opt/google/chrome/google-chrome \"--app=http://gmail.com/\"\n"
+    },
+
     // Now we're starting to be more evil...
     { "http://evil.com/evil --join-the-b0tnet",
       "Ownz0red\nExec=rm -rf /",
@@ -81,9 +108,34 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "Name=Google Chrome\n"
       "Exec=/opt/google/chrome/google-chrome %U\n",
 
+      "#!/usr/bin/env xdg-open\n"
       "Name=http://evil.com/evil%20--join-the-b0tnet\n"
       "Exec=/opt/google/chrome/google-chrome "
       "\"--app=http://evil.com/evil%%20--join-the-b0tnet\"\n"
+    },
+    { "http://evil.com/evil; rm -rf /; \"; rm -rf $HOME >ownz0red",
+      "Innocent Title",
+
+      "Name=Google Chrome\n"
+      "Exec=/opt/google/chrome/google-chrome %U\n",
+
+      "#!/usr/bin/env xdg-open\n"
+      "Name=Innocent Title\n"
+      "Exec=/opt/google/chrome/google-chrome "
+      "\"--app=http://evil.com/evil%%20rm%%20-rf%%20/%%20%%22%%20rm%%20"
+      "-rf%%20HOME%%20%%3Eownz0red\"\n"
+    },
+    { "http://evil.com/evil | cat `echo ownz0red` >/dev/null\\",
+      "Innocent Title",
+
+      "Name=Google Chrome\n"
+      "Exec=/opt/google/chrome/google-chrome %U\n",
+
+      "#!/usr/bin/env xdg-open\n"
+      "Name=Innocent Title\n"
+      "Exec=/opt/google/chrome/google-chrome "
+      "\"--app=http://evil.com/evil%%20%%7C%%20cat%%20%%60echo%%20ownz0red"
+      "%%60%%20%%3E/dev/null/\"\n"
     },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); i++) {

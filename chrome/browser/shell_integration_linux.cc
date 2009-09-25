@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/eintr_wrapper.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -117,15 +118,64 @@ class CreateDesktopShortcutTask : public Task {
     if (!GetDesktopShortcutTemplate(&template_contents))
       return;
 
+    FilePath shortcut_filename =
+        ShellIntegration::GetDesktopShortcutFilename(shortcut_info_.url);
+
     std::string contents = ShellIntegration::GetDesktopFileContents(
         template_contents, shortcut_info_.url, shortcut_info_.title);
 
+    if (shortcut_info_.create_on_desktop)
+      CreateOnDesktop(shortcut_filename, contents);
+
+    if (shortcut_info_.create_in_applications_menu)
+      CreateInApplicationsMenu(shortcut_filename, contents);
+  }
+
+ private:
+  void CreateOnDesktop(const FilePath& shortcut_filename,
+                       const std::string& contents) {
+    // TODO(phajdan.jr): Report errors from this function, possibly as infobars.
+
+    // Make sure that we will later call openat in a secure way.
+    DCHECK_EQ(shortcut_filename.BaseName().value(), shortcut_filename.value());
+
+    FilePath desktop_path;
+    if (!PathService::Get(chrome::DIR_USER_DESKTOP, &desktop_path))
+      return;
+
+    int desktop_fd = open(desktop_path.value().c_str(), O_RDONLY | O_DIRECTORY);
+    if (desktop_fd < 0)
+      return;
+
+    int fd = openat(desktop_fd, shortcut_filename.value().c_str(),
+                    O_CREAT | O_EXCL | O_WRONLY,
+                    S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+    if (fd < 0) {
+      HANDLE_EINTR(close(desktop_fd));
+      return;
+    }
+
+    ssize_t bytes_written = file_util::WriteFileDescriptor(fd, contents.data(),
+                                                           contents.length());
+    HANDLE_EINTR(close(fd));
+
+    if (bytes_written != static_cast<ssize_t>(contents.length())) {
+      // Delete the file. No shortuct is better than corrupted one. Use unlinkat
+      // to make sure we're deleting the file in the directory we think we are.
+      // Even if an attacker manager to put something other at
+      // |shortcut_filename| we'll just undo his action.
+      unlinkat(desktop_fd, shortcut_filename.value().c_str(), 0);
+    }
+
+    HANDLE_EINTR(close(desktop_fd));
+  }
+
+  void CreateInApplicationsMenu(const FilePath& shortcut_filename,
+                                const std::string& contents) {
+    // TODO(phajdan.jr): Report errors from this function, possibly as infobars.
     ScopedTempDir temp_dir;
     if (!temp_dir.CreateUniqueTempDir())
       return;
-
-    FilePath shortcut_filename =
-        ShellIntegration::GetDesktopShortcutFilename(shortcut_info_.url);
 
     FilePath temp_file_path = temp_dir.path().Append(shortcut_filename);
 
@@ -135,32 +185,19 @@ class CreateDesktopShortcutTask : public Task {
     if (bytes_written != static_cast<int>(contents.length()))
         return;
 
-    if (shortcut_info_.create_on_desktop) {
-      FilePath desktop_path;
-      if (!PathService::Get(chrome::DIR_USER_DESKTOP, &desktop_path))
-        return;
-      desktop_path = desktop_path.Append(shortcut_filename);
+    std::vector<std::string> argv;
+    argv.push_back("xdg-desktop-menu");
+    argv.push_back("install");
 
-      if (!file_util::PathExists(desktop_path))
-        file_util::CopyFile(temp_file_path, desktop_path);
-    }
+    // Always install in user mode, even if someone runs the browser as root
+    // (people do that).
+    argv.push_back("--mode");
+    argv.push_back("user");
 
-    if (shortcut_info_.create_in_applications_menu) {
-      std::vector<std::string> argv;
-      argv.push_back("xdg-desktop-menu");
-      argv.push_back("install");
-
-      // Always install in user mode, even if someone runs the browser as root
-      // (people do that).
-      argv.push_back("--mode");
-      argv.push_back("user");
-
-      argv.push_back(temp_file_path.value());
-      LaunchXdgUtility(argv);
-    }
+    argv.push_back(temp_file_path.value());
+    LaunchXdgUtility(argv);
   }
 
- private:
   const ShellIntegration::ShortcutInfo shortcut_info_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateDesktopShortcutTask);
@@ -226,7 +263,9 @@ std::string ShellIntegration::GetDesktopFileContents(
     const std::string& template_contents, const GURL& url,
     const string16& title) {
   // See http://standards.freedesktop.org/desktop-entry-spec/latest/
-  std::string output_buffer;
+  // Although not required by the spec, Nautilus on Ubuntu Karmic creates its
+  // launchers with an xdg-open shebang. Follow that convention.
+  std::string output_buffer("#!/usr/bin/env xdg-open\n");
   StringTokenizer tokenizer(template_contents, "\n");
   while (tokenizer.GetNext()) {
     // TODO(phajdan.jr): Add the icon.
@@ -243,7 +282,10 @@ std::string ShellIntegration::GetDesktopFileContents(
       std::string app_switch(StringPrintf("\"--%s=%s\"",
                                           WideToUTF8(app_switch_wide).c_str(),
                                           url.spec().c_str()));
+      // Sanitize the command line string.
       ReplaceSubstringsAfterOffset(&app_switch, 0, "%", "%%");
+      ReplaceSubstringsAfterOffset(&app_switch, 0, ";", "");
+      ReplaceSubstringsAfterOffset(&app_switch, 0, "$", "");
       output_buffer += std::string("Exec=") + final_path + app_switch + "\n";
     } else if (tokenizer.token().substr(0, 5) == "Name=") {
       std::string final_title = UTF16ToUTF8(title);
@@ -255,8 +297,10 @@ std::string ShellIntegration::GetDesktopFileContents(
           final_title.find("\r") != std::string::npos)
         final_title = url.spec();
       output_buffer += StringPrintf("Name=%s\n", final_title.c_str());
-    } else if (tokenizer.token().substr(0, 8) == "Comment=") {
-      // Skip the line.
+    } else if (tokenizer.token().substr(0, 11) == "GenericName" ||
+               tokenizer.token().substr(0, 7) == "Comment" ||
+               tokenizer.token().substr(0, 1) == "#") {
+      // Skip comment lines.
     } else {
       output_buffer += tokenizer.token() + "\n";
     }
