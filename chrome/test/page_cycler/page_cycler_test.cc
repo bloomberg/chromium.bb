@@ -177,7 +177,6 @@ class PageCyclerTest : public UITest {
   // For HTTP tests, the name must be safe for use in a URL without escaping.
   void RunPageCycler(const char* name, std::wstring* pages,
                      std::string* timings, bool use_http) {
-
     // Make sure the test data is checked out
     FilePath test_path;
     PathService::Get(base::DIR_SOURCE_ROOT, &test_path);
@@ -373,26 +372,29 @@ class PageCyclerTest : public UITest {
     }
 
 #endif  // !defined(OS_MACOSX)
-
   }
 
   // When use_http is true, the test name passed here will be used directly in
   // the path to the test data, so it must be safe for use in a URL without
   // escaping. (No pound (#), question mark (?), semicolon (;), non-ASCII, or
   // other funny stuff.)
-  void RunTest(const char* name, bool use_http) {
+  void RunTestWithSuffix(const char* name, bool use_http, const char* suffix) {
     std::wstring pages;
     std::string timings;
     RunPageCycler(name, &pages, &timings, use_http);
     if (timings.empty())
       return;
 
-    PrintMemoryUsageInfo("");
-    PrintIOPerfInfo("");
-
+    PrintMemoryUsageInfo(suffix);
+    PrintIOPerfInfo(suffix);
+    std::string trace_name = "t" + std::string(suffix);
     wprintf(L"\nPages: [%ls]\n", pages.c_str());
-    PrintResultList("times", "", "t", timings, "ms",
+    PrintResultList("times", "", trace_name, timings, "ms",
                     true /* important */);
+  }
+
+  void RunTest(const char* name, bool use_http) {
+    RunTestWithSuffix(name, use_http, "");
   }
 };
 
@@ -434,94 +436,68 @@ class PageCyclerReferenceTest : public PageCyclerTest {
   }
 };
 
+class PageCyclerExtensionTest : public PageCyclerTest {
+ public:
+  void SetUp() {}
+  void RunTest(const char* extension_profile, const char* output_suffix,
+               const char* name, bool use_http) {
+    // Set up the extension profile directory.
+    ASSERT_TRUE(extension_profile != NULL);
+    FilePath data_dir;
+    PathService::Get(chrome::DIR_TEST_DATA, &data_dir);
+    data_dir = data_dir.AppendASCII("extensions").AppendASCII("profiles").
+        AppendASCII(extension_profile);
+    ASSERT_TRUE(file_util::DirectoryExists(data_dir));
+    set_template_user_data(data_dir.ToWStringHack());
+
+    // Now run the test.
+    PageCyclerTest::SetUp();
+    PageCyclerTest::RunTestWithSuffix(name, use_http, output_suffix);
+  }
+};
+
+// This macro simplifies setting up regular and reference build tests.
+#define PAGE_CYCLER_TESTS(test, name, use_http) \
+TEST_F(PageCyclerTest, name) { \
+  RunTest(test, use_http); \
+} \
+TEST_F(PageCyclerReferenceTest, name) { \
+  RunTest(test, use_http); \
+}
+
+// These are shorthand for File vs. Http tests.
+#define PAGE_CYCLER_FILE_TESTS(test, name)\
+  PAGE_CYCLER_TESTS(test, name, false)
+#define PAGE_CYCLER_HTTP_TESTS(test, name)\
+  PAGE_CYCLER_TESTS(test, name, true)
+
+// This macro lets us define tests with 1 and 10 extensions with 1 content
+// script each. The name for the 10-extension case is changed so as not
+// to run by default on the buildbots.
+#define PAGE_CYCLER_EXTENSIONS_FILE_TESTS(test, name) \
+TEST_F(PageCyclerExtensionTest, name) {  \
+  RunTest("content_scripts1", "_extcs1", test, false); \
+} \
+TEST_F(PageCyclerExtensionTest, name##10) { \
+  RunTest("content_scripts10", "_extcs10", test, false); \
+}
+
 // file-URL tests
-TEST_F(PageCyclerTest, MozFile) {
-  RunTest("moz", false);
-}
-
-TEST_F(PageCyclerReferenceTest, MozFile) {
-  RunTest("moz", false);
-}
-
-TEST_F(PageCyclerTest, Intl1File) {
-  RunTest("intl1", false);
-}
-
-TEST_F(PageCyclerReferenceTest, Intl1File) {
-  RunTest("intl1", false);
-}
-
-TEST_F(PageCyclerTest, Intl2File) {
-  RunTest("intl2", false);
-}
-
-TEST_F(PageCyclerReferenceTest, Intl2File) {
-  RunTest("intl2", false);
-}
-
-TEST_F(PageCyclerTest, DomFile) {
-  RunTest("dom", false);
-}
-
-TEST_F(PageCyclerReferenceTest, DomFile) {
-  RunTest("dom", false);
-}
-
-TEST_F(PageCyclerTest, DhtmlFile) {
-  RunTest("dhtml", false);
-}
-
-TEST_F(PageCyclerReferenceTest, DhtmlFile) {
-  RunTest("dhtml", false);
-}
-
-TEST_F(PageCyclerTest, MorejsFile) {
-  RunTest("morejs", false);
-}
-
-TEST_F(PageCyclerReferenceTest, MorejsFile) {
-  RunTest("morejs", false);
-}
+PAGE_CYCLER_FILE_TESTS("moz", MozFile);
+PAGE_CYCLER_EXTENSIONS_FILE_TESTS("moz", MozFile);
+PAGE_CYCLER_FILE_TESTS("intl1", Intl1File);
+PAGE_CYCLER_FILE_TESTS("intl2", Intl2File);
+PAGE_CYCLER_FILE_TESTS("dom", DomFile);
+PAGE_CYCLER_FILE_TESTS("dhtml", DhtmlFile);
+PAGE_CYCLER_FILE_TESTS("morejs", MorejsFile);
+PAGE_CYCLER_EXTENSIONS_FILE_TESTS("morejs", MorejsFile);
 
 // http (localhost) tests
-TEST_F(PageCyclerTest, MozHttp) {
-  RunTest("moz", true);
-}
+PAGE_CYCLER_HTTP_TESTS("moz", MozHttp);
+PAGE_CYCLER_HTTP_TESTS("intl1", Intl1Http);
+PAGE_CYCLER_HTTP_TESTS("intl2", Intl2Http);
+PAGE_CYCLER_HTTP_TESTS("dom", DomHttp);
+PAGE_CYCLER_HTTP_TESTS("bloat", BloatHttp);
 
-TEST_F(PageCyclerReferenceTest, MozHttp) {
-  RunTest("moz", true);
-}
-
-TEST_F(PageCyclerTest, Intl1Http) {
-  RunTest("intl1", true);
-}
-
-TEST_F(PageCyclerReferenceTest, Intl1Http) {
-  RunTest("intl1", true);
-}
-
-TEST_F(PageCyclerTest, Intl2Http) {
-  RunTest("intl2", true);
-}
-
-TEST_F(PageCyclerReferenceTest, Intl2Http) {
-  RunTest("intl2", true);
-}
-
-TEST_F(PageCyclerTest, DomHttp) {
-  RunTest("dom", true);
-}
-
-TEST_F(PageCyclerReferenceTest, DomHttp) {
-  RunTest("dom", true);
-}
-
-TEST_F(PageCyclerTest, BloatHttp) {
-  RunTest("bloat", true);
-}
-
-TEST_F(PageCyclerReferenceTest, BloatHttp) {
-  RunTest("bloat", true);
-}
 
 }  // namespace
