@@ -312,8 +312,8 @@ std::wstring TemplateURLRef::ReplaceSearchTerms(
           rlz_string = L"rlz=" + rlz_string + L"&";
           url.insert(i->index, rlz_string);
         }
-        break;
 #endif
+        break;
       }
 
       case GOOGLE_UNESCAPED_SEARCH_TERMS: {
