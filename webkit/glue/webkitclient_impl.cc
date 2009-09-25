@@ -2,7 +2,6 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#include <math.h>
 #include "config.h"
 
 #include "FrameView.h"
@@ -266,23 +265,12 @@ void WebKitClientImpl::setSharedTimerFiredFunction(void (*func)()) {
 }
 
 void WebKitClientImpl::setSharedTimerFireTime(double fire_time) {
-  // By converting between double and int64 representation, we run the risk
-  // of losing precision due to rounding errors. Performing computations in
-  // microseconds reduces this risk somewhat. But there still is the potential
-  // of us computing a fire time for the timer that is shorter than what we
-  // need.
-  // As the event loop will check event deadlines prior to actually firing
-  // them, there is a risk of needlessly rescheduling events and of
-  // needlessly looping if sleep times are too short even by small amounts.
-  // This results in measurable performance degradation unless we use ceil() to
-  // always round up the sleep times.
-  int64 interval = static_cast<int64>(
-      ceil((fire_time - currentTime()) * base::Time::kMicrosecondsPerSecond));
+  int interval = static_cast<int>((fire_time - currentTime()) * 1000);
   if (interval < 0)
     interval = 0;
 
   shared_timer_.Stop();
-  shared_timer_.Start(base::TimeDelta::FromMicroseconds(interval), this,
+  shared_timer_.Start(base::TimeDelta::FromMilliseconds(interval), this,
                       &WebKitClientImpl::DoTimeout);
 }
 
