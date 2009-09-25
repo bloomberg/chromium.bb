@@ -715,6 +715,14 @@ TEST_F(ExtensionsServiceTest, InstallExtension) {
   InstallExtension(path, false);
   ValidatePrefKeyCount(pref_count);
 
+  // Extensions cannot have folders or files that have underscores except ofr in
+  // certain whitelisted cases (eg _locales). This is an example of a broader
+  // class of validation that we do to the directory structure of the extension.
+  // We did not used to handle this correctly for installation.
+  path = extensions_path.AppendASCII("bad_underscore.crx");
+  InstallExtension(path, false);
+  ValidatePrefKeyCount(pref_count);
+
   // TODO(erikkay): add more tests for many of the failure cases.
   // TODO(erikkay): add tests for upgrade cases.
 }

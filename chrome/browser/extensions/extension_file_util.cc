@@ -366,8 +366,8 @@ bool CheckForIllegalFilenames(const FilePath& extension_path,
     if (reserved_underscore_names.find(filename) ==
           reserved_underscore_names.end()) {
       *error = StringPrintf(
-        "Cannot load extension with file or directory name %s."
-        "Filenames starting with \"_\" are reserved for use by the system",
+        "Cannot load extension with file or directory name %s. "
+        "Filenames starting with \"_\" are reserved for use by the system.",
         filename.c_str());
       return false;
     }

@@ -11,6 +11,7 @@
 #include "base/thread.h"
 #include "base/values.h"
 #include "net/base/file_stream.h"
+#include "chrome/browser/extensions/extension_file_util.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -131,7 +132,7 @@ bool ExtensionUnpacker::Run() {
   // InitFromValue is allowed to generate a temporary id for the extension.
   // ANY CODE THAT FOLLOWS SHOULD NOT DEPEND ON THE CORRECT ID OF THIS
   // EXTENSION.
-  Extension extension;
+  Extension extension(temp_install_dir_);
   std::string error;
   if (!extension.InitFromValue(*parsed_manifest_,
                                false,
@@ -139,6 +140,12 @@ bool ExtensionUnpacker::Run() {
     SetError(error);
     return false;
   }
+
+  if (!extension_file_util::ValidateExtension(&extension, &error)) {
+    SetError(error);
+    return false;
+  }
+
   // Decode any images that the browser needs to display.
   std::set<FilePath> image_paths = extension.GetBrowserImages();
   for (std::set<FilePath>::iterator it = image_paths.begin();
