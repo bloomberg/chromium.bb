@@ -466,11 +466,18 @@ int BookmarkBarGtk::GetFirstHiddenBookmark(
       gtk_container_get_children(GTK_CONTAINER(bookmark_toolbar_.get()));
   for (GList* iter = toolbar_items; iter; iter = g_list_next(iter)) {
     GtkWidget* tool_item = reinterpret_cast<GtkWidget*>(iter->data);
-    if (tool_item->allocation.x + tool_item->allocation.width >
-        bookmark_toolbar_.get()->allocation.width + extra_space) {
-      overflow = true;
-      break;
+    if (gtk_widget_get_direction(tool_item) == GTK_TEXT_DIR_RTL) {
+      overflow = (tool_item->allocation.x <
+                  bookmark_toolbar_.get()->allocation.x - extra_space);
+    } else {
+      overflow =
+          (tool_item->allocation.x + tool_item->allocation.width >
+           bookmark_toolbar_.get()->allocation.width +
+           bookmark_toolbar_.get()->allocation.x + extra_space);
     }
+    if (overflow)
+      break;
+
     if (showing_folders &&
         model_->GetBookmarkBarNode()->GetChild(rv)->is_folder()) {
       showing_folders->push_back(gtk_bin_get_child(GTK_BIN(tool_item)));
