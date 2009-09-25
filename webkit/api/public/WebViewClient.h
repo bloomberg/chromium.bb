@@ -202,6 +202,10 @@ namespace WebKit {
         virtual void startDragging(
             const WebPoint& from, const WebDragData&, WebDragOperationsMask) = 0;
 
+        // Called to determine if drag-n-drop operations may initiate a page
+        // navigation.
+        virtual bool acceptsLoadDrops() = 0;
+
         // Take focus away from the WebView by focusing an adjacent UI element
         // in the containing window.
         virtual void focusNext() = 0;

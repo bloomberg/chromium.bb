@@ -163,7 +163,6 @@ class RenderView : public RenderWidget,
   virtual void OnMessageReceived(const IPC::Message& msg);
 
   // WebViewDelegate
-  virtual bool CanAcceptLoadDrops() const;
   virtual void QueryFormFieldAutofill(const std::wstring& field_name,
                                       const std::wstring& text,
                                       int64 node_id);
@@ -274,6 +273,7 @@ class RenderView : public RenderWidget,
   virtual void startDragging(
       const WebKit::WebPoint& from, const WebKit::WebDragData& data,
       WebKit::WebDragOperationsMask mask);
+  virtual bool acceptsLoadDrops();
   virtual void focusNext();
   virtual void focusPrevious();
   virtual void navigateBackForwardSoon(int offset);

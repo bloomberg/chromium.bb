@@ -33,7 +33,7 @@ void DragClientImpl::willPerformDragSourceAction(
 
 WebCore::DragDestinationAction DragClientImpl::actionMaskForDrag(
     WebCore::DragData*) {
-  if (webview_->delegate()->CanAcceptLoadDrops()) {
+  if (webview_->client() && webview_->client()->acceptsLoadDrops()) {
     return WebCore::DragDestinationActionAny;
   } else {
     return static_cast<WebCore::DragDestinationAction>

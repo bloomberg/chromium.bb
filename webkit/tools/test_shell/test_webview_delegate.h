@@ -140,6 +140,7 @@ class TestWebViewDelegate : public WebViewDelegate,
   virtual void startDragging(
       const WebKit::WebPoint& from, const WebKit::WebDragData& data,
       WebKit::WebDragOperationsMask mask);
+  virtual bool acceptsLoadDrops() { return true; }
   virtual void focusNext() {}
   virtual void focusPrevious() {}
   virtual void navigateBackForwardSoon(int offset);

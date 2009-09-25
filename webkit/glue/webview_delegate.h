@@ -102,12 +102,6 @@ class WebViewDelegate : public WebKit::WebViewClient {
 
   // FrameLoaderClient -------------------------------------------------------
 
-  virtual bool CanAcceptLoadDrops() const {
-    // Always return true here so layout tests (which use the default WebView
-    // delegate) continue to pass.
-    return true;
-  }
-
   // Notifies that a new script context has been created for this frame.
   // This is similar to WindowObjectCleared but only called once per frame
   // context.

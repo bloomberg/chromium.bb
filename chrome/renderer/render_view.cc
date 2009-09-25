@@ -1110,10 +1110,6 @@ void RenderView::OpenURL(
 
 // WebViewDelegate ------------------------------------------------------------
 
-bool RenderView::CanAcceptLoadDrops() const {
-  return renderer_preferences_.can_accept_load_drops;
-}
-
 void RenderView::DidPaint() {
   WebFrame* main_frame = webview()->GetMainFrame();
 
@@ -1640,6 +1636,10 @@ void RenderView::startDragging(const WebPoint& from, const WebDragData& data,
   Send(new ViewHostMsg_StartDragging(routing_id_,
                                      WebDropData(data),
                                      allowed_ops));
+}
+
+bool RenderView::acceptsLoadDrops() {
+  return renderer_preferences_.can_accept_load_drops;
 }
 
 void RenderView::focusNext() {
