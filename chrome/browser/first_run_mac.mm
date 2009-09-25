@@ -15,83 +15,6 @@
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 
-//------------------ Start Temporary Code ---------------------
-// The Mac version used to store first run in the user defaults, this has
-// now been moved to the profile directory like other platforms.
-// These functions are here to use for migration, they should be removed
-// in the near future once most people are upgraded.
-// This should be removed after 2 dev release cycles following the checkin
-// of this code, or by 15-Sept-2009.  Whichever comes first.
-namespace old_first_run_mac {
-
-const NSString *kOldUsageStatsPrefName = @"usagestats";
-
-// returns true if the first run sentinel is present in the dictionary
-// false if no sentinel is present.
-// |usage_stats_enabled| - Where the usage stats previously enabled?
-bool IsOldChromeFirstRunFromDictionary(NSDictionary *dict,
-                                       bool *usage_stats_enabled) {
-  *usage_stats_enabled = false;
-
-  // Use presence of kOldUsageStatsPrefName key as an indicator of whether or
-  // not this is the first run.
-  NSNumber* val = [dict objectForKey:kOldUsageStatsPrefName];
-
-  if (val == nil) {
-    return false;
-  }
-
-  if ([val respondsToSelector:@selector(boolValue)]) {
-    *usage_stats_enabled = [val boolValue] ? true : false;
-  }
-
-  return true;
-}
-
-bool IsOldChromeFirstRun(bool *usage_stats_enabled) {
-  NSUserDefaults* std_defaults = [NSUserDefaults standardUserDefaults];
-  NSDictionary* defaults_dict = [std_defaults dictionaryRepresentation];
-
-  return IsOldChromeFirstRunFromDictionary(defaults_dict, usage_stats_enabled);
-}
-
-// Remove the old first run key from the defaults dictionary.
-void RemoveOldFirstRunDefaultsKey() {
-  NSUserDefaults* std_defaults = [NSUserDefaults standardUserDefaults];
-  [std_defaults removeObjectForKey:kOldUsageStatsPrefName];
-  [std_defaults synchronize];
-}
-
-// returns:
-//   true - If old first run sentinel found and migration was performed.
-//   false - no previous first run sentinel found.
-bool MigrateOldFirstRun() {
-  bool usage_stats_enabled = false;
-
-  if (!IsOldChromeFirstRun(&usage_stats_enabled))
-    return false;
-
-  FirstRun::CreateSentinel();
-  GoogleUpdateSettings::SetCollectStatsConsent(usage_stats_enabled);
-
-  // Migrate old first run data.
-#if defined(GOOGLE_CHROME_BUILD)
-  // Breakpad is normally enabled very early in the startup process,
-  // however, on the first run it's off by default.  If the user opts-in to
-  // stats, enable breakpad.
-  if (usage_stats_enabled) {
-    InitCrashReporter();
-    InitCrashProcessInfo();
-  }
-#endif  // GOOGLE_CHROME_BUILD
-
-  RemoveOldFirstRunDefaultsKey();
-  return true;
-}
-
-}  // namespace old_first_run_mac
-//------------------ End Temporary Code ---------------------
-
 // Class that handles conducting the first run operation.
 // FirstRunController deletes itself when the first run operation ends.
 class FirstRunController : public ImportObserver {
@@ -155,13 +78,6 @@ bool FirstRunController::DoFirstRun(Profile* profile,
   // respect a user's privacy while still getting any crashes that might happen
   // before this point.  Then remove the need for that dialog here.
   DCHECK(!IsCrashReporterEnabled());
-
-  //------------------ Start Temporary Code ---------------------
-  // Migrate old first run format.
-  if (old_first_run_mac::MigrateOldFirstRun()) {
-    return true;
-  }
-  //------------------ End Temporary Code ---------------------
 
   scoped_nsobject<FirstRunDialogController> dialog(
       [[FirstRunDialogController alloc] init]);

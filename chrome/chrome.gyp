@@ -4183,7 +4183,6 @@
         'browser/extensions/user_script_listener_unittest.cc',
         'browser/extensions/user_script_master_unittest.cc',
         'browser/find_backend_unittest.cc',
-        'browser/first_run_migration_mac_unittest.mm',
         'browser/global_keyboard_shortcuts_mac_unittest.cc',
         'browser/google_url_tracker_unittest.cc',
         'browser/google_update_settings_posix_unittest.cc',
