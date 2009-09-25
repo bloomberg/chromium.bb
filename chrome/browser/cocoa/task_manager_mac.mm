@@ -85,6 +85,11 @@
   [self addColumnWithId:IDS_TASK_MANAGER_CPU_COLUMN visible:YES];
   [self addColumnWithId:IDS_TASK_MANAGER_NET_COLUMN visible:YES];
   [self addColumnWithId:IDS_TASK_MANAGER_PROCESS_ID_COLUMN visible:NO];
+  [self addColumnWithId:IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN
+                visible:NO];
+  [self addColumnWithId:IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN
+                visible:NO];
+  [self addColumnWithId:IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN visible:NO];
   [self addColumnWithId:IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN visible:NO];
 }
 
@@ -164,6 +169,18 @@
       if (!model_->IsResourceFirstInGroup(row))
         return @"";
       return base::SysWideToNSString(model_->GetResourceProcessId(row));
+
+    case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:  // WebCore image cache
+      return base::SysWideToNSString(
+          model_->GetResourceWebCoreImageCacheSize(row));
+
+    case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:  // WebCore script cache
+      return base::SysWideToNSString(
+          model_->GetResourceWebCoreScriptsCacheSize(row));
+
+    case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:  // WebCore CSS cache
+      return base::SysWideToNSString(
+          model_->GetResourceWebCoreCSSCacheSize(row));
 
     case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN:  // Goats Teleported!
       return base::SysWideToNSString(model_->GetResourceGoatsTeleported(row));
