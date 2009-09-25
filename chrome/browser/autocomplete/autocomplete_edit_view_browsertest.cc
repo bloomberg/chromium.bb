@@ -29,6 +29,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/mock_host_resolver.h"
@@ -363,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BackspaceInKeywordMode) {
 }
 
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, Escape) {
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://history/"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIHistoryURL));
   browser()->FocusLocationBar();
 
   AutocompleteEditView* edit_view = NULL;
@@ -411,7 +412,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, AltEnter) {
   AutocompleteEditView* edit_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
 
-  edit_view->SetUserText(L"chrome://history/");
+  edit_view->SetUserText(ASCIIToWide(chrome::kChromeUIHistoryURL));
   int tab_count = browser()->tab_count();
   // alt-Enter opens a new tab.
   ASSERT_NO_FATAL_FAILURE(SendKey(base::VKEY_RETURN, false, false, true));
