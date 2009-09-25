@@ -1853,11 +1853,6 @@ BUG10760 MAC : LayoutTests/svg/custom/marker-overflow-clip.svg = FAIL
 BUG10760 LINUX : LayoutTests/svg/custom/marker-child-changes.svg = PASS FAIL
 BUG10760 LINUX MAC : LayoutTests/svg/custom/marker-viewBox-changes.svg = PASS FAIL
 
-// Needs investigation, perhaps just needs to be re-baselined on all
-// platforms.
-BUG10859 LINUX MAC : LayoutTests/fast/dom/HTMLSelectElement/named-options.html = FAIL
-BUG10861 WIN : LayoutTests/fast/dom/HTMLSelectElement/named-options.html = FAIL
-
 // New failures from WebKit Merge 42671:42725
 BUG10861 WIN : LayoutTests/http/tests/plugins/post-url-file.html = PASS
 BUG10861 MAC : LayoutTests/http/tests/plugins/post-url-file.html = TIMEOUT
