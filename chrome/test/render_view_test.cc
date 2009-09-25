@@ -20,6 +20,7 @@
 #include "webkit/api/public/WebScriptSource.h"
 #include "webkit/api/public/WebURLRequest.h"
 #include "webkit/glue/webview.h"
+#include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebFrame;
 using WebKit::WebScriptSource;
@@ -68,6 +69,9 @@ void RenderViewTest::SetUp() {
   platform_.reset(new RendererMainPlatformDelegate(*params_));
   platform_->PlatformInitialize();
 
+  // Setting flags and really doing anything with WebKit is fairly fragile and
+  // hacky, but this is the world we live in...
+  webkit_glue::SetJavaScriptFlags(L" --expose-gc");
   WebKit::initialize(&webkitclient_);
   WebKit::registerExtension(BaseJsV8Extension::Get());
   WebKit::registerExtension(JsonSchemaJsV8Extension::Get());
@@ -100,6 +104,10 @@ void RenderViewTest::SetUp() {
   mock_keyboard_.reset(new MockKeyboard());
 }
 void RenderViewTest::TearDown() {
+  // Try very hard to collect garbage before shutting down.
+  GetMainFrame()->collectGarbage();
+  GetMainFrame()->collectGarbage();
+
   render_thread_.SendCloseMessage();
 
   // Run the loop so the release task from the renderwidget executes.

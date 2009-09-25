@@ -48,49 +48,46 @@ class JsonSchemaTest : public V8UnitTest {
   }
 };
 
-// TODO: Re-enable this test!  http://crbug.com/22971
-#if 0
-TEST_F(JsonSchemaTest, DISABLED_TestFormatError) {
+TEST_F(JsonSchemaTest, TestFormatError) {
   TestFunction("testFormatError");
 }
 
-TEST_F(JsonSchemaTest, DISABLED_TestComplex) {
+TEST_F(JsonSchemaTest, TestComplex) {
   TestFunction("testComplex");
 }
 
-TEST_F(JsonSchemaTest, DISABLED_TestEnum) {
+TEST_F(JsonSchemaTest, TestEnum) {
   TestFunction("testEnum");
 }
 
-TEST_F(JsonSchemaTest, DISABLED_TestExtends) {
+TEST_F(JsonSchemaTest, TestExtends) {
   TestFunction("testExtends");
 }
 
-TEST_F(JsonSchemaTest, DISABLED_TestObject) {
+TEST_F(JsonSchemaTest, TestObject) {
   TestFunction("testObject");
 }
 
-TEST_F(JsonSchemaTest, DISABLED_TestArrayTuple) {
+TEST_F(JsonSchemaTest, TestArrayTuple) {
   TestFunction("testArrayTuple");
 }
 
-TEST_F(JsonSchemaTest, DISABLED_TestArrayNonTuple) {
+TEST_F(JsonSchemaTest, TestArrayNonTuple) {
   TestFunction("testArrayNonTuple");
 }
 
-TEST_F(JsonSchemaTest, DISABLED_TestString) {
+TEST_F(JsonSchemaTest, TestString) {
   TestFunction("testString");
 }
 
-TEST_F(JsonSchemaTest, DISABLED_TestNumber) {
+TEST_F(JsonSchemaTest, TestNumber) {
   TestFunction("testNumber");
 }
 
-TEST_F(JsonSchemaTest, DISABLED_TestType) {
+TEST_F(JsonSchemaTest, TestType) {
   TestFunction("testType");
 }
 
-TEST_F(JsonSchemaTest, DISABLED_TestTypeReference) {
+TEST_F(JsonSchemaTest, TestTypeReference) {
   TestFunction("testTypeReference");
 }
-#endif
