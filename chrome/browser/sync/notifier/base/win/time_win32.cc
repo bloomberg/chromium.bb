@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Windows specific yime functions.
+// Windows specific time functions.
 
 #include <time.h>
 #include <windows.h>
@@ -97,59 +97,6 @@ bool Time64ToTm(time64 t, struct tm* tm) {
   }
 
   SystemTimeToTmTime(sys_time, tm);
-
-  return true;
-}
-
-bool UtcTimeToLocalTime(struct tm* tm) {
-  ASSERT(tm);
-
-  SYSTEMTIME utc_time;
-  TmTimeToSystemTime(*tm, &utc_time);
-
-  TIME_ZONE_INFORMATION time_zone;
-  if (::GetTimeZoneInformation(&time_zone) == TIME_ZONE_ID_INVALID) {
-    return false;
-  }
-
-  SYSTEMTIME local_time;
-  if (!::SystemTimeToTzSpecificLocalTime(&time_zone, &utc_time, &local_time)) {
-    return false;
-  }
-
-  SystemTimeToTmTime(local_time, tm);
-
-  return true;
-}
-
-bool LocalTimeToUtcTime(struct tm* tm) {
-  ASSERT(tm);
-
-  SYSTEMTIME local_time;
-  TmTimeToSystemTime(*tm, &local_time);
-
-  // Get the bias, which when added to local, gives UTC.
-  TIME_ZONE_INFORMATION time_zone;
-  if (::GetTimeZoneInformation(&time_zone) == TIME_ZONE_ID_INVALID) {
-    return false;
-  }
-
-  // By negating the biases, we can get translation from UTC to local.
-  time_zone.Bias *= -1;
-  time_zone.DaylightBias *= -1;
-  time_zone.StandardBias *= -1;  // This is 0 but negating for completness.
-
-  // We'll tell SystemTimeToTzSpecificLocalTime that the local time is actually
-  // UTC. With the negated bias, the "local" time that the API returns will
-  // actually be UTC. Casting the const off because
-  // SystemTimeToTzSpecificLocalTime's definition requires it, although the
-  // value is not modified.
-  SYSTEMTIME utc_time;
-  if (!::SystemTimeToTzSpecificLocalTime(&time_zone, &local_time, &utc_time)) {
-    return false;
-  }
-
-  SystemTimeToTmTime(utc_time, tm);
 
   return true;
 }

@@ -37,18 +37,4 @@ bool Time64ToTm(time64 t, struct tm* tm) {
   return true;
 }
 
-bool UtcTimeToLocalTime(struct tm* tm) {
-  assert(tm != NULL);
-  time_t t = timegm(tm);
-  localtime_r(&t, tm);
-  return true;
-}
-
-bool LocalTimeToUtcTime(struct tm* tm) {
-  assert(tm != NULL);
-  time_t t = mktime(tm);
-  gmtime_r(&t, tm);
-  return true;
-}
-
 }  // namespace notifier
