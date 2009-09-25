@@ -1741,13 +1741,13 @@ BUG10477 : LayoutTests/http/tests/navigation/onload-navigation-iframe-2.html = T
 // Merge WebKit: 42026:42115 new tests
 BUG10475 WIN LINUX : LayoutTests/fast/block/positioning/negative-rel-position.html = FAIL
 // This test isn't just slow -- sometimes it times out indefinitely.
-BUG10475 WIN : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html = TIMEOUT PASS
+BUG10475 WIN LINUX : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html = TIMEOUT PASS
 BUG10475 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html = TIMEOUT PASS
 BUG10475 WIN LINUX : LayoutTests/fast/forms/range-thumb-height-percentage.html = FAIL
 
 SKIP BUG9613 : LayoutTests/fast/dom/clientWidthAfterDocumentIsRemoved.html = PASS
 
-BUG10476 WIN : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post.html = FAIL PASS
+BUG10476 WIN LINUX : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post.html = FAIL PASS
 
 // Merge WebKit 42133:42199 regressions
 BUG10477 LINUX : LayoutTests/fast/events/context-no-deselect.html = FAIL
@@ -1793,7 +1793,7 @@ BUG9798 WIN DEBUG : LayoutTests/editing/execCommand/paste-2.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/editing/selection/4776665.html = FAIL PASS
 BUG9798 DEBUG : LayoutTests/svg/custom/path-bad-data.svg = CRASH FAIL
 BUG9798 LINUX DEBUG : chrome/fast/dom/extensions/interval.html = CRASH FAIL PASS
-BUG9798 MAC DEBUG : chrome/fast/dom/extensions/interval.html = FAIL PASS
+BUG9798 MAC WIN DEBUG : chrome/fast/dom/extensions/interval.html = FAIL PASS
 BUG9798 LINUX MAC : LayoutTests/http/tests/misc/BOM-override-script.html = TIMEOUT PASS
 BUG9798 LINUX DEBUG : LayoutTests/svg/text/text-text-07-t.svg = FAIL PASS
 BUG9798 LINUX : LayoutTests/tables/mozilla/bugs/45621.html = FAIL PASS CRASH
@@ -1809,13 +1809,15 @@ BUG9798 : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-prefl
 BUG9798 : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = TIMEOUT PASS
 BUG9798 : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache.html = TIMEOUT PASS
 BUG9798 : LayoutTests/http/tests/xmlhttprequest/failed-auth.html = TIMEOUT PASS
-BUG9798 WIN RELEASE : LayoutTests/transitions/change-values-during-transition.html = FAIL PASS
+BUG9798 WIN : LayoutTests/transitions/change-values-during-transition.html = FAIL PASS
 BUG9797 LINUX DEBUG : LayoutTests/svg/carto.net/colourpicker.svg = FAIL
 BUG9797 WIN DEBUG : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
 BUG9797 WIN LINUX MAC : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
 BUG9797 BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = CRASH TIMEOUT PASS
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-multiple-02.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-multiple-04.html = FAIL PASS
+BUG9798 LINUX : LayoutTests/transitions/transition-end-event-container.html = FAIL PASS
+BUG9798 LINUX : LayoutTests/transitions/transition-end-event-set-none.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/interrupt-zero-duration.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/svg/custom/invisible-text-after-scrolling.xhtml = FAIL PASS
 
@@ -2296,7 +2298,7 @@ BUG21958 WIN MAC LINUX DEBUG : LayoutTests/svg/hixie/error/012.xml = FAIL PASS
 
 // WK roll 48399:48423 (brettw)
 BUG22014 : LayoutTests/http/tests/loading/redirect-with-no-location-crash.html = FAIL
-BUG22014 LINUX : LayoutTests/transitions/hang-with-bad-transition-list.html = PASS FAIL
+BUG22014 LINUX MAC : LayoutTests/transitions/hang-with-bad-transition-list.html = PASS FAIL
 
 // WK roll 48423:48468 (dglazkov for ukai)
 BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/css/font-smoothing.html = FAIL
