@@ -40,8 +40,8 @@ Textfield::Textfield()
       default_width_in_chars_(0),
       draw_border_(true),
       text_color_(SK_ColorBLACK),
-      background_color_(SK_ColorWHITE),
       use_default_text_color_(true),
+      background_color_(SK_ColorWHITE),
       use_default_background_color_(true),
       num_lines_(1),
       initialized_(false) {
@@ -56,8 +56,8 @@ Textfield::Textfield(StyleFlags style)
       default_width_in_chars_(0),
       draw_border_(true),
       text_color_(SK_ColorBLACK),
-      background_color_(SK_ColorWHITE),
       use_default_text_color_(true),
+      background_color_(SK_ColorWHITE),
       use_default_background_color_(true),
       num_lines_(1),
       initialized_(false) {
