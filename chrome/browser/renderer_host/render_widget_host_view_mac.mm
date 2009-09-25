@@ -474,11 +474,13 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
 
 + (void)matchEditCommands:(EditCommands*)edit_commands
                  forEvent:(NSEvent*)theEvent {
-  if ([theEvent type] != NSKeyDown) return;
+  if ([theEvent type] != NSKeyDown)
+    return;
   // Don't interpret plain key presses.  This screws up things like <Tab>.
   NSUInteger flags = [theEvent modifierFlags];
   flags &= (NSControlKeyMask | NSAlternateKeyMask | NSCommandKeyMask);
-  if (flags == 0) return;
+  if (!flags)
+    return;
   scoped_nsobject<EditCommandMatcher> matcher(
       [[EditCommandMatcher alloc] initWithEditCommands:edit_commands]);
   [matcher.get() interpretKeyEvents:[NSArray arrayWithObject:theEvent]];

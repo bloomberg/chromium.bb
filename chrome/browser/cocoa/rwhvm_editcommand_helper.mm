@@ -157,15 +157,15 @@ NSString* RWHVMEditCommandHelper::CommandNameForSelector(SEL selector) {
       selector == @selector(insertNewlineIgnoringFieldEditor:))
     return @"InsertNewline";
   if (selector == @selector(insertTabIgnoringFieldEditor:))
-      return @"InsertTab";
+    return @"InsertTab";
   if (selector == @selector(pageDown:))
-      return @"MovePageDown";
+    return @"MovePageDown";
   if (selector == @selector(pageDownAndModifySelection:))
-      return @"MovePageDownAndModifySelection";
+    return @"MovePageDownAndModifySelection";
   if (selector == @selector(pageUp:))
-      return @"MovePageUp";
+    return @"MovePageUp";
   if (selector == @selector(pageUpAndModifySelection:))
-      return @"MovePageUpAndModifySelection";
+    return @"MovePageUpAndModifySelection";
 
   // Remove the trailing colon.
   NSString* selector_str = NSStringFromSelector(selector);
