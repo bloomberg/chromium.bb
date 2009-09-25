@@ -308,10 +308,9 @@ TEST_F(TemplateURLTest, Suggestions) {
   }
 }
 
-TEST_F(TemplateURLTest, RLZ) {
 #if defined(OS_WIN)
+TEST_F(TemplateURLTest, RLZ) {
   RLZTracker::InitRlz(base::DIR_EXE);
-#endif
   std::wstring rlz_string;
   RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz_string);
 
@@ -329,6 +328,7 @@ TEST_F(TemplateURLTest, RLZ) {
   expected_url += "x";
   ASSERT_EQ(expected_url, result.spec());
 }
+#endif
 
 TEST_F(TemplateURLTest, HostAndSearchTermKey) {
   struct TestData {
