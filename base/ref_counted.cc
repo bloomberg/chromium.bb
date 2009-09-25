@@ -83,6 +83,11 @@ bool RefCountedThreadSafeBase::Release() {
   return false;
 }
 
+bool RefCountedThreadSafeBase::HasOneRef() const {
+  return AtomicRefCountIsOne(
+      &const_cast<RefCountedThreadSafeBase*>(this)->ref_count_);
+}
+
 }  // namespace subtle
 
 }  // namespace base

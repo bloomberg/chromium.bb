@@ -13,6 +13,9 @@ namespace base {
 namespace subtle {
 
 class RefCountedBase {
+ public:
+  bool HasOneRef() const { return ref_count_ == 1; }
+
  protected:
   RefCountedBase();
   ~RefCountedBase();
@@ -34,6 +37,9 @@ class RefCountedBase {
 };
 
 class RefCountedThreadSafeBase {
+ public:
+  bool HasOneRef() const;
+
  protected:
   RefCountedThreadSafeBase();
   ~RefCountedThreadSafeBase();

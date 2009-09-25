@@ -63,63 +63,70 @@ namespace internal {
 
 class WeakReference {
  public:
-  void EnsureInitialized() {
-    // Lazy initialization helps faciliate the NonThreadSafe debug checks.
-    if (!flag_) {
-      flag_ = new Flag();
-      flag_->data = true;
-    }
-  }
-
-  void Invalidate() {
-    if (flag_) {
-      DCHECK(flag_->CalledOnValidThread());
-      flag_->data = false;
-    }
-  }
-
-  bool is_valid() const {
-    if (flag_) {
-      DCHECK(flag_->CalledOnValidThread());
-      return flag_->data;
-    }
-    return false;
-  }
-
- private:
-  // A reference counted boolean that is true when the weak reference is valid
-  // and false otherwise.
-  class Flag : public RefCountedData<bool>, public NonThreadSafe {
+  class Flag : public RefCounted<Flag>, public NonThreadSafe {
    public:
+    Flag(Flag** handle) : handle_(handle) {
+    }
+
+    ~Flag() {
+      if (handle_)
+        *handle_ = NULL;
+    }
+
     void AddRef() {
       DCHECK(CalledOnValidThread());
-      RefCountedData<bool>::AddRef();
+      RefCounted<Flag>::AddRef();
     }
 
     void Release() {
       DCHECK(CalledOnValidThread());
-      RefCountedData<bool>::Release();
+      RefCounted<Flag>::Release();
     }
+
+    void Invalidate() { handle_ = NULL; }
+    bool is_valid() const { return handle_ != NULL; }
+
+   private:
+    Flag** handle_;
   };
 
+  WeakReference() {}
+  WeakReference(Flag* flag) : flag_(flag) {}
+
+  bool is_valid() const { return flag_ && flag_->is_valid(); }
+
+ private:
   scoped_refptr<Flag> flag_;
 };
 
 class WeakReferenceOwner {
  public:
+  WeakReferenceOwner() : flag_(NULL) {
+  }
+
   ~WeakReferenceOwner() {
-    ref_.Invalidate();
+    Invalidate();
   }
 
-  const WeakReference& GetRef() const {
-    ref_.EnsureInitialized();
-    return ref_;
+  WeakReference GetRef() const {
+    if (!flag_)
+      flag_ = new WeakReference::Flag(&flag_);
+    return WeakReference(flag_);
   }
 
-  void Invalidate() { ref_.Invalidate(); }
+  bool HasRefs() const {
+    return flag_ != NULL;
+  }
+
+  void Invalidate() {
+    if (flag_) {
+      flag_->Invalidate();
+      flag_ = NULL;
+    }
+  }
 
  private:
-  mutable WeakReference ref_;
+  mutable WeakReference::Flag* flag_;
 };
 
 // This class simplifies the implementation of WeakPtr's type conversion
@@ -231,7 +238,14 @@ class WeakPtrFactory {
   }
 
   // Call this method to invalidate all existing weak pointers.
-  void InvalidateWeakPtrs() { weak_reference_owner_.Invalidate(); }
+  void InvalidateWeakPtrs() {
+    weak_reference_owner_.Invalidate();
+  }
+
+  // Call this method to determine if any weak pointers exist.
+  bool HasWeakPtrs() const {
+    return weak_reference_owner_.HasRefs();
+  }
 
  private:
   internal::WeakReferenceOwner weak_reference_owner_;

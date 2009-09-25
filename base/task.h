@@ -6,9 +6,9 @@
 #define BASE_TASK_H_
 
 #include "base/non_thread_safe.h"
-#include "base/revocable_store.h"
 #include "base/tracked.h"
 #include "base/tuple.h"
+#include "base/weak_ptr.h"
 
 // Task ------------------------------------------------------------------------
 //
@@ -71,73 +71,31 @@ class CancelableTask : public Task {
 //   }
 // };
 
-// A ScopedTaskFactory produces tasks of type |TaskType| and prevents them from
-// running after it is destroyed.
-template<class TaskType>
-class ScopedTaskFactory : public RevocableStore {
- public:
-  ScopedTaskFactory() { }
-
-  // Create a new task.
-  inline TaskType* NewTask() {
-    return new TaskWrapper(this);
-  }
-
-  class TaskWrapper : public TaskType, public NonThreadSafe {
-   public:
-    explicit TaskWrapper(RevocableStore* store) : revocable_(store) { }
-
-    virtual void Run() {
-      if (!revocable_.revoked())
-        TaskType::Run();
-    }
-
-   private:
-    Revocable revocable_;
-
-    DISALLOW_EVIL_CONSTRUCTORS(TaskWrapper);
-  };
-
- private:
-  DISALLOW_EVIL_CONSTRUCTORS(ScopedTaskFactory);
-};
-
 // A ScopedRunnableMethodFactory creates runnable methods for a specified
 // object.  This is particularly useful for generating callbacks for
 // non-reference counted objects when the factory is a member of the object.
 template<class T>
-class ScopedRunnableMethodFactory : public RevocableStore {
+class ScopedRunnableMethodFactory {
  public:
-  explicit ScopedRunnableMethodFactory(T* object) : object_(object) { }
+  explicit ScopedRunnableMethodFactory(T* object) : weak_factory_(object) {
+  }
 
   template <class Method>
   inline Task* NewRunnableMethod(Method method) {
-    typedef typename ScopedTaskFactory<RunnableMethod<
-        Method, Tuple0> >::TaskWrapper TaskWrapper;
-
-    TaskWrapper* task = new TaskWrapper(this);
-    task->Init(object_, method, MakeTuple());
-    return task;
+    return new RunnableMethod<Method, Tuple0>(
+        weak_factory_.GetWeakPtr(), method, MakeTuple());
   }
 
   template <class Method, class A>
   inline Task* NewRunnableMethod(Method method, const A& a) {
-    typedef typename ScopedTaskFactory<RunnableMethod<
-        Method, Tuple1<A> > >::TaskWrapper TaskWrapper;
-
-    TaskWrapper* task = new TaskWrapper(this);
-    task->Init(object_, method, MakeTuple(a));
-    return task;
+    return new RunnableMethod<Method, Tuple1<A> >(
+        weak_factory_.GetWeakPtr(), method, MakeTuple(a));
   }
 
   template <class Method, class A, class B>
   inline Task* NewRunnableMethod(Method method, const A& a, const B& b) {
-    typedef typename ScopedTaskFactory<RunnableMethod<
-        Method, Tuple2<A, B> > >::TaskWrapper TaskWrapper;
-
-    TaskWrapper* task = new TaskWrapper(this);
-    task->Init(object_, method, MakeTuple(a, b));
-    return task;
+    return new RunnableMethod<Method, Tuple2<A, B> >(
+        weak_factory_.GetWeakPtr(), method, MakeTuple(a, b));
   }
 
   template <class Method, class A, class B, class C>
@@ -145,12 +103,8 @@ class ScopedRunnableMethodFactory : public RevocableStore {
                                  const A& a,
                                  const B& b,
                                  const C& c) {
-    typedef typename ScopedTaskFactory<RunnableMethod<
-        Method, Tuple3<A, B, C> > >::TaskWrapper TaskWrapper;
-
-    TaskWrapper* task = new TaskWrapper(this);
-    task->Init(object_, method, MakeTuple(a, b, c));
-    return task;
+    return new RunnableMethod<Method, Tuple3<A, B, C> >(
+        weak_factory_.GetWeakPtr(), method, MakeTuple(a, b, c));
   }
 
   template <class Method, class A, class B, class C, class D>
@@ -159,12 +113,8 @@ class ScopedRunnableMethodFactory : public RevocableStore {
                                  const B& b,
                                  const C& c,
                                  const D& d) {
-    typedef typename ScopedTaskFactory<RunnableMethod<
-        Method, Tuple4<A, B, C, D> > >::TaskWrapper TaskWrapper;
-
-    TaskWrapper* task = new TaskWrapper(this);
-    task->Init(object_, method, MakeTuple(a, b, c, d));
-    return task;
+    return new RunnableMethod<Method, Tuple4<A, B, C, D> >(
+        weak_factory_.GetWeakPtr(), method, MakeTuple(a, b, c, d));
   }
 
   template <class Method, class A, class B, class C, class D, class E>
@@ -174,40 +124,39 @@ class ScopedRunnableMethodFactory : public RevocableStore {
                                  const C& c,
                                  const D& d,
                                  const E& e) {
-    typedef typename ScopedTaskFactory<RunnableMethod<
-        Method, Tuple5<A, B, C, D, E> > >::TaskWrapper TaskWrapper;
-
-    TaskWrapper* task = new TaskWrapper(this);
-    task->Init(object_, method, MakeTuple(a, b, c, d, e));
-    return task;
+    return new RunnableMethod<Method, Tuple5<A, B, C, D, E> >(
+        weak_factory_.GetWeakPtr(), method, MakeTuple(a, b, c, d, e));
   }
+
+  void RevokeAll() { weak_factory_.InvalidateWeakPtrs(); }
+
+  bool empty() const { return !weak_factory_.HasWeakPtrs(); }
 
  protected:
   template <class Method, class Params>
   class RunnableMethod : public Task {
    public:
-    RunnableMethod() { }
-
-    void Init(T* obj, Method meth, const Params& params) {
-      obj_ = obj;
-      meth_ = meth;
-      params_ = params;
+    RunnableMethod(const base::WeakPtr<T>& obj, Method meth, const Params& params)
+        : obj_(obj),
+          meth_(meth),
+          params_(params) {
     }
 
-    virtual void Run() { DispatchToMethod(obj_, meth_, params_); }
+    virtual void Run() {
+      if (obj_)
+        DispatchToMethod(obj_.get(), meth_, params_);
+    }
 
    private:
-    T* obj_;
+    base::WeakPtr<T> obj_;
     Method meth_;
     Params params_;
 
-    DISALLOW_EVIL_CONSTRUCTORS(RunnableMethod);
+    DISALLOW_COPY_AND_ASSIGN(RunnableMethod);
   };
 
  private:
-  T* object_;
-
-  DISALLOW_EVIL_CONSTRUCTORS(ScopedRunnableMethodFactory);
+  base::WeakPtrFactory<T> weak_factory_;
 };
 
 // General task implementations ------------------------------------------------

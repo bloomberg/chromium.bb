@@ -96,8 +96,20 @@ TEST(WeakPtrTest, InvalidateWeakPtrs) {
   WeakPtrFactory<int> factory(&data);
   WeakPtr<int> ptr = factory.GetWeakPtr();
   EXPECT_EQ(&data, ptr.get());
+  EXPECT_TRUE(factory.HasWeakPtrs());
   factory.InvalidateWeakPtrs();
   EXPECT_EQ(NULL, ptr.get());
+  EXPECT_FALSE(factory.HasWeakPtrs());
+}
+
+TEST(WeakPtrTest, HasWeakPtrs) {
+  int data;
+  WeakPtrFactory<int> factory(&data);
+  {
+    WeakPtr<int> ptr = factory.GetWeakPtr();
+    EXPECT_TRUE(factory.HasWeakPtrs());
+  }
+  EXPECT_FALSE(factory.HasWeakPtrs());
 }
 
 TEST(WeakPtrTest, SingleThreaded1) {
