@@ -36,6 +36,8 @@ class ExtensionShelf : public DetachableToolbarView,
   // Toggles a preference for whether to always show the extension shelf.
   static void ToggleWhenExtensionShelfVisible(Profile* profile);
 
+  int top_margin() { return top_margin_; }
+
   // DetachableToolbarView methods:
   virtual bool IsOnTop() const;
   virtual bool IsDetached() const;
@@ -129,6 +131,8 @@ class ExtensionShelf : public DetachableToolbarView,
   // Returns whether the extension shelf is being displayed over the new tab
   // page.
   bool OnNewTabPage() const;
+
+  int top_margin_;
 
   NotificationRegistrar registrar_;
 

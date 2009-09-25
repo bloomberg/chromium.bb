@@ -31,7 +31,8 @@
 namespace {
 
 // Margins around the content.
-static const int kTopMargin = 2;
+static const int kTopMarginWhenExtensionsOnTop = 1;
+static const int kTopMarginWhenExtensionsOnBottom = 2;
 static const int kBottomMargin = 2;
 static const int kLeftMargin = 0;
 static const int kRightMargin = 0;
@@ -58,9 +59,6 @@ static const int kNewtabVerticalPadding = 12;
 // corners of the extension shelf.
 static const int kNewtabExtraHorMargin = 2;
 static const int kNewtabExtraVerMargin = 2;
-
-// Height of the toolstrip within the shelf.
-static const int kToolstripHeight = kShelfHeight - (kTopMargin + kBottomMargin);
 
 // Padding for the title inside the handle.
 static const int kHandlePadding = 4;
@@ -636,7 +634,8 @@ void ExtensionShelf::Toolstrip::Collapse(const GURL& url) {
     mole_animation_->Hide();
 
   gfx::Size extension_size = view()->GetPreferredSize();
-  extension_size.set_height(kToolstripHeight);
+  extension_size.set_height(
+      kShelfHeight - (shelf_->top_margin() + kBottomMargin));
   view()->SetPreferredSize(extension_size);
 
   if (!url.is_empty() && url != host_->GetURL()) {
@@ -684,6 +683,12 @@ ExtensionShelf::ExtensionShelf(Browser* browser)
       model_(browser->extension_shelf_model()),
       fullscreen_(false) {
   SetID(VIEW_ID_DEV_EXTENSION_SHELF);
+
+  if (IsOnTop())
+    top_margin_ = kTopMarginWhenExtensionsOnTop;
+  else
+    top_margin_ = kTopMarginWhenExtensionsOnBottom;
+
   model_->AddObserver(this);
   LoadFromModel();
   EnableCanvasFlippingForRTLUI(true);
@@ -1035,8 +1040,8 @@ gfx::Size ExtensionShelf::LayoutItems(bool compute_bounds_only) {
 
   gfx::Size prefsize;
   int x = kLeftMargin;
-  int y = kTopMargin;
-  int content_height = kShelfHeight - kTopMargin - kBottomMargin;
+  int y = top_margin_;
+  int content_height = kShelfHeight - top_margin_ - kBottomMargin;
   int max_x = width() - kRightMargin;
 
   if (OnNewTabPage()) {
