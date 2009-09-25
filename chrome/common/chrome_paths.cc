@@ -5,7 +5,6 @@
 #include "chrome/common/chrome_paths.h"
 
 #include "base/command_line.h"
-#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -61,8 +60,8 @@ bool PathProvider(int key, FilePath* result) {
       return true;
 #else
       return PathService::Get(base::DIR_EXE, result);
-#endif // defined(OS_MACOSX)
-#endif // NDEBUG
+#endif  // defined(OS_MACOSX)
+#endif  // NDEBUG
     case chrome::FILE_RESOURCE_MODULE:
       return PathService::Get(base::FILE_MODULE, result);
   }
@@ -98,7 +97,8 @@ bool PathProvider(int key, FilePath* result) {
     case chrome::DIR_DEFAULT_DOWNLOADS:
       if (!GetUserDownloadsDirectory(&cur))
         return false;
-      create_dir = true;
+      // Do not create the download directory here, we have done it twice now
+      // and annoyed a lot of users.
       break;
     case chrome::DIR_CRASH_DUMPS:
       // The crash reports are always stored relative to the default user data

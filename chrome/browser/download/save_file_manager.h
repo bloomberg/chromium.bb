@@ -58,6 +58,8 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_SAVE_FILE_MANAGER_H__
 #define CHROME_BROWSER_DOWNLOAD_SAVE_FILE_MANAGER_H__
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/hash_tables.h"
@@ -122,6 +124,9 @@ class SaveFileManager
   void OnShowSavedFileInShell(const FilePath full_path);
 #endif
 
+  // Helper to create the download directory.
+  void CreateDownloadDirectory(FilePath save_dir,
+                               SavePackage* save_package);
   // Helper function for deleting specified file.
   void DeleteDirectoryOrFile(const FilePath& full_path, bool is_dir);
 
@@ -262,7 +267,7 @@ class SaveFileManager
   typedef base::hash_map<int, StartingRequestsMap> TabToStartingRequestsMap;
   TabToStartingRequestsMap tab_starting_requests_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(SaveFileManager);
+  DISALLOW_COPY_AND_ASSIGN(SaveFileManager);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_SAVE_FILE_MANAGER_H__

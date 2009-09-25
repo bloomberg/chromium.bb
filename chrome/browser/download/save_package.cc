@@ -144,6 +144,7 @@ SavePackage::SavePackage(TabContents* web_content,
          saved_main_file_path_.value().length() <= kMaxFilePathLength);
   DCHECK(!saved_main_directory_path_.empty() &&
          saved_main_directory_path_.value().length() < kMaxFilePathLength);
+  InternalInit();
 }
 
 SavePackage::SavePackage(TabContents* tab_contents)
@@ -160,10 +161,12 @@ SavePackage::SavePackage(TabContents* tab_contents)
   const GURL& current_page_url = tab_contents_->GetURL();
   DCHECK(current_page_url.is_valid());
   page_url_ = current_page_url;
+  InternalInit();
 }
 
 // This is for testing use. Set |finished_| as true because we don't want
 // method Cancel to be be called in destructor in test mode.
+// We also don't call InternalInit().
 SavePackage::SavePackage(const FilePath& file_full_path,
                          const FilePath& directory_full_path)
     : file_manager_(NULL),
@@ -233,6 +236,22 @@ void SavePackage::Cancel(bool user_action) {
   }
 }
 
+// Init() can be called directly, or indirectly via GetSaveInfo(). In both
+// cases, we need file_manager_ to be initialized, so we do this first.
+void SavePackage::InternalInit() {
+  ResourceDispatcherHost* rdh = g_browser_process->resource_dispatcher_host();
+  if (!rdh) {
+    NOTREACHED();
+    return;
+  }
+
+  file_manager_ = rdh->save_file_manager();
+  if (!file_manager_) {
+    NOTREACHED();
+    return;
+  }
+}
+
 // Initialize the SavePackage.
 bool SavePackage::Init() {
   // Set proper running state.
@@ -249,18 +268,6 @@ bool SavePackage::Init() {
   }
 
   request_context_ = profile->GetRequestContext();
-
-  ResourceDispatcherHost* rdh = g_browser_process->resource_dispatcher_host();
-  if (!rdh) {
-    NOTREACHED();
-    return false;
-  }
-
-  file_manager_ = rdh->save_file_manager();
-  if (!file_manager_) {
-    NOTREACHED();
-    return false;
-  }
 
   // Create the fake DownloadItem and display the view.
   download_ = new DownloadItem(1, saved_main_file_path_, 0, page_url_, GURL(),
@@ -1046,6 +1053,17 @@ FilePath SavePackage::GetSaveDirPreference(PrefService* prefs) {
 }
 
 void SavePackage::GetSaveInfo() {
+  FilePath save_dir =
+      GetSaveDirPreference(tab_contents_->profile()->GetPrefs());
+  file_manager_->file_loop()->PostTask(FROM_HERE,
+      NewRunnableMethod(file_manager_,
+                        &SaveFileManager::CreateDownloadDirectory,
+                        save_dir,
+                        this));
+  // CreateDownloadDirectory() calls ContinueGetSaveInfo() below.
+}
+
+void SavePackage::ContinueGetSaveInfo(FilePath save_dir) {
   // Use "Web Page, Complete" option as default choice of saving page.
   int file_type_index = 2;
   SelectFileDialog::FileTypeInfo file_type_info;
@@ -1059,8 +1077,6 @@ void SavePackage::GetSaveInfo() {
 
   FilePath title =
       FilePath::FromWStringHack(UTF16ToWideHack(tab_contents_->GetTitle()));
-  FilePath save_dir =
-      GetSaveDirPreference(tab_contents_->profile()->GetPrefs());
   FilePath suggested_path =
       save_dir.Append(GetSuggestedNameForSaveAs(title, can_save_as_complete));
 

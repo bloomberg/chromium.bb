@@ -130,6 +130,7 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   int tab_id() const { return tab_id_; }
 
   void GetSaveInfo();
+  void ContinueGetSaveInfo(FilePath save_dir);
   void ContinueSave(SavePackageParam* param,
                     const FilePath& final_name,
                     int index);
@@ -198,6 +199,9 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // For testing only.
   SavePackage(const FilePath& file_full_path,
               const FilePath& directory_full_path);
+
+  // Notes from Init() above applies here as well.
+  void InternalInit();
 
   void Stop();
   void CheckFinish();
