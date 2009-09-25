@@ -90,6 +90,12 @@ static OpcodePrefix g_prefixF20F_only[2] = {
   OpcodePrefixEnumSize
 };
 
+/* Define prefix array that only applies for the prefix F30F. */
+static OpcodePrefix g_prefixF30F_only[2] = {
+  PrefixF30F,
+  OpcodePrefixEnumSize
+};
+
 /* Define an operand kind pair that uses the G_Operand value for
  * prefix opcodes, independent of the appearance of prefix 66.
  */
@@ -126,6 +132,14 @@ static OperandKind g_Xmm_G_Operand[2] = {
 static OperandKind g_Xmm_E_Operand[2] = {
   Xmm_E_Operand,
   Xmm_E_Operand
+};
+
+/* Define the NaCL instruction type as NACLi_SSE for both kinds of opcode
+ * prefices.
+ */
+static NaClInstType g_SSE[2] = {
+  NACLi_SSE,
+  NACLi_SSE
 };
 
 /* Define the NaCL instruction type as NACLi_SSE2 for both kinds of opcode
@@ -241,6 +255,10 @@ static InstOpcodeMnemonic g_MoveOps[] = {
    g_SSE2, g_no_flags},
   {g_prefixF20F_only, 0x11, InstMovsd, g_Xmm_E_Operand, g_Xmm_G_Operand,
    g_SSE2, g_no_flags},
+  {g_prefixF30F_only, 0x10, InstMovss, g_Xmm_G_Operand, g_Xmm_E_Operand,
+   g_SSE, g_no_flags},
+  {g_prefixF30F_only, 0x11, InstMovss, g_Xmm_E_Operand, g_Xmm_G_Operand,
+   g_SSE, g_no_flags},
 };
 
 /* Specify binary instructions that apply a binary operation to both
