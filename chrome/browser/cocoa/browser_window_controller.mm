@@ -1325,6 +1325,10 @@ willPositionSheet:(NSWindow*)sheet
       forAttribute:@"textColor"
              style:GTMThemeStyleTabBarDeselected
              state:GTMThemeStateActiveWindow];
+    [theme setValue:[NSColor blackColor]
+      forAttribute:@"textColor"
+             style:GTMThemeStyleBookmarksBarButton
+             state:GTMThemeStateActiveWindow];
     return theme;
   }
 
