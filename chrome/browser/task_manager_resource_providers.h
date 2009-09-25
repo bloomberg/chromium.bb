@@ -13,6 +13,7 @@
 #include "chrome/browser/task_manager.h"
 #include "chrome/common/child_process_info.h"
 #include "chrome/common/notification_observer.h"
+#include "webkit/api/public/WebCache.h"
 
 class Extension;
 class ExtensionHost;
@@ -31,14 +32,30 @@ class TaskManagerTabContentsResource : public TaskManager::Resource {
   base::ProcessHandle GetProcess() const;
   TabContents* GetTabContents() const;
 
+  virtual std::wstring GetWebCoreImageCacheSize();
+  virtual std::wstring GetWebCoreScriptsCacheSize();
+  virtual std::wstring GetWebCoreCSSCacheSize();
+
   // TabContents always provide the network usage.
   bool SupportNetworkUsage() const { return true; }
   void SetSupportNetworkUsage() { }
 
+  virtual void NotifyResourceTypeStats(
+      const WebKit::WebCache::ResourceTypeStats& stats);
+
  private:
+  void UpdateResourceStats();
+
   TabContents* tab_contents_;
   base::ProcessHandle process_;
   int pid_;
+  // The stats_ field holds information about resource usage in the renderer
+  // process and so it is updated asynchronously.  A query to any of the
+  // GetWebCore*CacheSize() functions will send an IPC to the renderer asking
+  // for an update unless a query is already outstanding.
+  WebKit::WebCache::ResourceTypeStats stats_;
+  // This flag is true if we are waiting for the renderer to report its stats.
+  bool pending_stats_update_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerTabContentsResource);
 };

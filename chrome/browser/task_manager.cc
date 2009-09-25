@@ -37,6 +37,20 @@ static int ValueCompare(T value1, T value2) {
   return 1;
 }
 
+// TaskManager::Resource default impls.
+
+std::wstring TaskManager::Resource::GetWebCoreImageCacheSize() {
+  return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
+}
+
+std::wstring TaskManager::Resource::GetWebCoreScriptsCacheSize() {
+  return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
+}
+
+std::wstring TaskManager::Resource::GetWebCoreCSSCacheSize() {
+  return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerModel class
 ////////////////////////////////////////////////////////////////////////////////
@@ -158,6 +172,25 @@ std::wstring TaskManagerModel::GetResourceGoatsTeleported(int index) const {
   goats_teleported_ += rand() & 4095;
   return FormatNumber(goats_teleported_);
 }
+
+std::wstring TaskManagerModel::GetResourceWebCoreImageCacheSize(
+    int index) const {
+  DCHECK(index < ResourceCount());
+  return resources_[index]->GetWebCoreImageCacheSize();
+}
+
+std::wstring TaskManagerModel::GetResourceWebCoreScriptsCacheSize(
+    int index) const {
+  DCHECK(index < ResourceCount());
+  return resources_[index]->GetWebCoreScriptsCacheSize();
+}
+
+std::wstring TaskManagerModel::GetResourceWebCoreCSSCacheSize(
+    int index) const {
+  DCHECK(index < ResourceCount());
+  return resources_[index]->GetWebCoreCSSCacheSize();
+}
+
 
 bool TaskManagerModel::IsResourceFirstInGroup(int index) const {
   DCHECK(index < ResourceCount());
@@ -530,6 +563,17 @@ void TaskManagerModel::Clear() {
 
     FOR_EACH_OBSERVER(TaskManagerModelObserver, observer_list_,
                       OnItemsRemoved(0, size));
+  }
+}
+
+void TaskManagerModel::NotifyResourceTypeStats(
+    base::ProcessId renderer_id,
+    const WebKit::WebCache::ResourceTypeStats& stats) {
+  for (ResourceList::iterator it = resources_.begin();
+       it != resources_.end(); ++it) {
+    if (base::GetProcId((*it)->GetProcess()) == renderer_id) {
+      (*it)->NotifyResourceTypeStats(stats);
+    }
   }
 }
 

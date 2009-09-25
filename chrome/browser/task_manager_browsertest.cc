@@ -4,12 +4,14 @@
 
 #include "chrome/browser/task_manager.h"
 
+#include "app/l10n_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -114,4 +116,29 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionChanges) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("common").AppendASCII("background_page")));
   WaitForResourceChange(4);
+}
+
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, PopulateWebCacheFields) {
+  EXPECT_EQ(0, model()->ResourceCount());
+
+  // Show the task manager. This populates the model, and helps with debugging
+  // (you see the task manager).
+  browser()->window()->ShowTaskManager();
+
+  // Browser and the New Tab Page.
+  EXPECT_EQ(2, model()->ResourceCount());
+
+  // Open a new tab and make sure we notice that.
+  GURL url(ui_test_utils::GetTestUrl(L".", L"title1.html"));
+  browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED,
+                           true, 0, false, NULL);
+  WaitForResourceChange(3);
+
+  // Check that we get some value for the cache columns.
+  DCHECK_NE(model()->GetResourceWebCoreImageCacheSize(2),
+            l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT));
+  DCHECK_NE(model()->GetResourceWebCoreScriptsCacheSize(2),
+            l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT));
+  DCHECK_NE(model()->GetResourceWebCoreCSSCacheSize(2),
+            l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT));
 }

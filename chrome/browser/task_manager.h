@@ -21,6 +21,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "net/url_request/url_request_job_tracker.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
+#include "webkit/api/public/WebCache.h"
 
 class MessageLoop;
 class SkBitmap;
@@ -46,6 +47,10 @@ class TaskManager {
     virtual SkBitmap GetIcon() const = 0;
     virtual base::ProcessHandle GetProcess() const = 0;
 
+    virtual std::wstring GetWebCoreImageCacheSize();
+    virtual std::wstring GetWebCoreScriptsCacheSize();
+    virtual std::wstring GetWebCoreCSSCacheSize();
+
     // A helper function for ActivateFocusedTab.  Returns NULL by default
     // because not all resources have an assoiciated tab.
     virtual TabContents* GetTabContents() const {return NULL;}
@@ -60,6 +65,9 @@ class TaskManager {
     // Called when some bytes have been read and support_network_usage returns
     // false (meaning we do have network usage support).
     virtual void SetSupportNetworkUsage() = 0;
+
+    virtual void NotifyResourceTypeStats(
+        const WebKit::WebCache::ResourceTypeStats& stats) {}
   };
 
   // ResourceProviders are responsible for adding/removing resources to the task
@@ -172,6 +180,9 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   std::wstring GetResourcePhysicalMemory(int index) const;
   std::wstring GetResourceProcessId(int index) const;
   std::wstring GetResourceStatsValue(int index, int col_id) const;
+  std::wstring GetResourceWebCoreImageCacheSize(int index) const;
+  std::wstring GetResourceWebCoreScriptsCacheSize(int index) const;
+  std::wstring GetResourceWebCoreCSSCacheSize(int index) const;
   std::wstring GetResourceGoatsTeleported(int index) const;
 
   // Returns true if the resource is first in its group (resources
@@ -212,6 +223,10 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   void StopUpdating();
 
   void Clear();  // Removes all items.
+
+  void NotifyResourceTypeStats(
+        base::ProcessId renderer_handle,
+        const WebKit::WebCache::ResourceTypeStats& stats);
 
  private:
   enum UpdateState {

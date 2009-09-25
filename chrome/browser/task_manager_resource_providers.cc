@@ -35,6 +35,7 @@
 #include "chrome/common/child_process_host.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/render_messages.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
@@ -44,11 +45,17 @@
 
 TaskManagerTabContentsResource::TaskManagerTabContentsResource(
     TabContents* tab_contents)
-    : tab_contents_(tab_contents) {
+    : tab_contents_(tab_contents),
+      pending_stats_update_(false) {
   // We cache the process as when the TabContents is closed the process
   // becomes NULL and the TaskManager still needs it.
   process_ = tab_contents_->process()->process().handle();
   pid_ = base::GetProcId(process_);
+  stats_.images.size = 0;
+  stats_.cssStyleSheets.size = 0;
+  stats_.scripts.size = 0;
+  stats_.xslStyleSheets.size = 0;
+  stats_.fonts.size = 0;
 }
 
 TaskManagerTabContentsResource::~TaskManagerTabContentsResource() {
@@ -76,6 +83,44 @@ std::wstring TaskManagerTabContentsResource::GetTitle() const {
   }
 
   return l10n_util::GetStringF(IDS_TASK_MANAGER_TAB_PREFIX, tab_title);
+}
+
+std::wstring FormatStatsSize(const WebKit::WebCache::ResourceTypeStat& stat) {
+  std::wstring size = FormatBytes(stat.size, DATA_UNITS_KILOBYTE, false);
+  std::wstring live_size = FormatBytes(stat.liveSize,
+                                       DATA_UNITS_KILOBYTE,
+                                       false);
+  return l10n_util::GetStringF(IDS_TASK_MANAGER_CACHE_SIZE_CELL_TEXT,
+                               size,
+                               live_size);
+}
+
+void TaskManagerTabContentsResource::UpdateResourceStats() {
+  if (!pending_stats_update_) {
+    tab_contents_->render_view_host()->Send(new ViewMsg_GetCacheResourceStats);
+    pending_stats_update_ = true;
+  }
+}
+
+std::wstring TaskManagerTabContentsResource::GetWebCoreImageCacheSize() {
+  UpdateResourceStats();
+  return FormatStatsSize(stats_.images);
+}
+
+std::wstring TaskManagerTabContentsResource::GetWebCoreScriptsCacheSize() {
+  UpdateResourceStats();
+  return FormatStatsSize(stats_.scripts);
+}
+
+std::wstring TaskManagerTabContentsResource::GetWebCoreCSSCacheSize() {
+  UpdateResourceStats();
+  return FormatStatsSize(stats_.cssStyleSheets);
+}
+
+void TaskManagerTabContentsResource::NotifyResourceTypeStats(
+    const WebKit::WebCache::ResourceTypeStats& stats) {
+  stats_ = stats;
+  pending_stats_update_ = false;
 }
 
 SkBitmap TaskManagerTabContentsResource::GetIcon() const {

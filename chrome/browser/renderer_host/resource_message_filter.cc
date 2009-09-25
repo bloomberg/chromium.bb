@@ -28,6 +28,7 @@
 #include "chrome/browser/renderer_host/render_widget_helper.h"
 #include "chrome/browser/spellchecker.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
+#include "chrome/browser/task_manager.h"
 #include "chrome/browser/worker_host/message_port_dispatcher.h"
 #include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/appcache/appcache_dispatcher_host.h"
@@ -724,6 +725,20 @@ void ResourceMessageFilter::OnResourceTypeStats(
                    static_cast<int>(stats.xslStyleSheets.size / 1024));
   HISTOGRAM_COUNTS("WebCoreCache.FontsSizeKB",
                    static_cast<int>(stats.fonts.size / 1024));
+  // We need to notify the TaskManager of these statistics from the UI
+  // thread.
+  ui_loop()->PostTask(
+      FROM_HERE, NewRunnableFunction(
+          &ResourceMessageFilter::OnResourceTypeStatsOnUIThread,
+          stats,
+          base::GetProcId(handle())));
+}
+
+void ResourceMessageFilter::OnResourceTypeStatsOnUIThread(
+    WebCache::ResourceTypeStats stats, base::ProcessId renderer_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  TaskManager::GetInstance()->model()->NotifyResourceTypeStats(
+      renderer_id, stats);
 }
 
 void ResourceMessageFilter::OnResolveProxy(const GURL& url,

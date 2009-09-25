@@ -214,6 +214,8 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 #endif
 
   void OnResourceTypeStats(const WebKit::WebCache::ResourceTypeStats& stats);
+  static void OnResourceTypeStatsOnUIThread(WebKit::WebCache::ResourceTypeStats,
+                                            base::ProcessId renderer_id);
 
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
 

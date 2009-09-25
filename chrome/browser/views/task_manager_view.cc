@@ -112,6 +112,15 @@ std::wstring TaskManagerTableModel::GetText(int row, int col_id) {
     case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN:  // Goats Teleported!
       return model_->GetResourceGoatsTeleported(row);
 
+    case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
+      return model_->GetResourceWebCoreImageCacheSize(row);
+
+    case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
+      return model_->GetResourceWebCoreScriptsCacheSize(row);
+
+    case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
+      return model_->GetResourceWebCoreCSSCacheSize(row);
+
     default:
       return model_->GetResourceStatsValue(row, col_id);
   }
@@ -293,6 +302,15 @@ void TaskManagerView::Init() {
   columns_.push_back(TableColumn(IDS_TASK_MANAGER_PROCESS_ID_COLUMN,
                                  TableColumn::RIGHT, -1, 0));
   columns_.back().sortable = true;
+  columns_.push_back(TableColumn(IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN,
+                                 TableColumn::RIGHT, -1, 0));
+  columns_.back().sortable = true;
+  columns_.push_back(TableColumn(IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN,
+                                 TableColumn::RIGHT, -1, 0));
+  columns_.back().sortable = true;
+  columns_.push_back(TableColumn(IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN,
+                                 TableColumn::RIGHT, -1, 0));
+  columns_.back().sortable = true;
 
   tab_table_ = new views::GroupTableView(table_model_.get(), columns_,
                                          views::ICON_AND_TEXT, false, true,
@@ -302,6 +320,12 @@ void TaskManagerView::Init() {
   tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_PROCESS_ID_COLUMN, false);
   tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_SHARED_MEM_COLUMN, false);
   tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN, false);
+  tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN,
+                                  false);
+  tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN,
+                                  false);
+  tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN,
+                                  false);
   tab_table_->SetColumnVisibility(IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN,
                                   false);
 
