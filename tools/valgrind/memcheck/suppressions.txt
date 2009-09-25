@@ -880,6 +880,14 @@
    fun:_ZN7WebCore19V8EventListenerList3addEPNS_15V8EventListenerE
 }
 {
+   bug_22031
+   Memcheck:Param
+   write(buf)
+   ...
+   fun:_ZN3net10FileStream5WriteEPKciP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN14SessionBackend20AppendCommandsToFileEPN3net10FileStreamERKSt6vectorIP14SessionCommandSaIS5_EE
+}
+{
    bug_22098
    Memcheck:Leak
    fun:_Znwj
