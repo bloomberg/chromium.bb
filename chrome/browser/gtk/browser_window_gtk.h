@@ -144,6 +144,10 @@ class BrowserWindowGtk : public BrowserWindow,
   void OnDebouncedBoundsChanged();
   void OnStateChanged(GdkWindowState state, GdkWindowState changed_mask);
 
+  // Request the underlying window to unmaximize.  Also tries to work around
+  // a window manager "feature" that can prevent this in some edge cases.
+  void UnMaximize();
+
   // Returns false if we're not ready to close yet.  E.g., a tab may have an
   // onbeforeunload handler that prevents us from closing.
   bool CanClose() const;
