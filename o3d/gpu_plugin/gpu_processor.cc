@@ -8,6 +8,12 @@
 namespace o3d {
 namespace gpu_plugin {
 
+namespace {
+void InvokeProcessCommands(void* data) {
+  static_cast<GPUProcessor*>(data)->ProcessCommands();
+}
+}  // namespace anonymous
+
 void GPUProcessor::ProcessCommands() {
   if (command_buffer_->GetErrorStatus())
     return;
@@ -37,9 +43,7 @@ void GPUProcessor::ProcessCommands() {
   command_buffer_->SetGetOffset(static_cast<int32>(parser_->get()));
 
   if (!parser_->IsEmpty()) {
-    MessageLoop::current()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(this, &GPUProcessor::ProcessCommands));
+    NPBrowser::get()->PluginThreadAsyncCall(npp_, InvokeProcessCommands, this);
   }
 }
 

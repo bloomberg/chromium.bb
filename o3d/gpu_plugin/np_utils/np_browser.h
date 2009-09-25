@@ -71,6 +71,11 @@ class NPBrowser {
 
   virtual NPObject* GetWindowNPObject(NPP npp);
 
+  typedef void (*PluginThreadAsyncCallProc)(void* data);
+  virtual void PluginThreadAsyncCall(NPP npp,
+                                     PluginThreadAsyncCallProc callback,
+                                     void* data);
+
  private:
   static NPBrowser* browser_;
   NPBrowser* previous_browser_;

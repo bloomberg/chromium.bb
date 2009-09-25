@@ -67,6 +67,10 @@ class StubNPBrowser : public NPBrowser {
 
   virtual NPObject* GetWindowNPObject(NPP npp);
 
+  virtual void PluginThreadAsyncCall(NPP npp,
+                                     PluginThreadAsyncCallProc callback,
+                                     void* data);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(StubNPBrowser);
 };

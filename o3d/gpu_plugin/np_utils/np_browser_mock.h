@@ -29,8 +29,10 @@ class MockNPBrowser : public StubNPBrowser {
                                      &MockNPBrowser::ConcreteCreateObject));
   }
 
-  MOCK_METHOD2(CreateObject, NPObject*(NPP, const NPClass*));
-  MOCK_METHOD1(GetWindowNPObject, NPObject*(NPP));
+  MOCK_METHOD2(CreateObject, NPObject*(NPP npp, const NPClass* cl));
+  MOCK_METHOD1(GetWindowNPObject, NPObject*(NPP cpp));
+  MOCK_METHOD3(PluginThreadAsyncCall,
+               void(NPP npp, PluginThreadAsyncCallProc callback, void* data));
 };
 
 }  // namespace gpu_plugin

@@ -103,5 +103,12 @@ NPObject* NPBrowser::GetWindowNPObject(NPP npp) {
     return NULL;
   }
 }
+
+void NPBrowser::PluginThreadAsyncCall(NPP npp,
+                                      PluginThreadAsyncCallProc callback,
+                                      void* data) {
+  netscape_funcs_->pluginthreadasynccall(npp, callback, data);
+}
+
 }  // namespace gpu_plugin
 }  // namespace o3d

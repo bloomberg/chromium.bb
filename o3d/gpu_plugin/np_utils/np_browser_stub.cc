@@ -4,6 +4,7 @@
 
 #include "o3d/gpu_plugin/np_utils/np_browser_stub.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 
 namespace o3d {
 namespace gpu_plugin {
@@ -102,6 +103,14 @@ bool StubNPBrowser::Invoke(NPP npp,
 
 NPObject* StubNPBrowser::GetWindowNPObject(NPP npp) {
   return NULL;
+}
+
+void StubNPBrowser::PluginThreadAsyncCall(
+    NPP npp,
+    PluginThreadAsyncCallProc callback,
+    void* data) {
+  MessageLoop::current()->PostTask(FROM_HERE,
+                                   NewRunnableFunction(callback, data));
 }
 }  // namespace gpu_plugin
 }  // namespace o3d

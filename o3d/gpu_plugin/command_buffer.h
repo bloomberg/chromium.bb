@@ -8,7 +8,6 @@
 #include <set>
 #include <vector>
 
-#include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "o3d/gpu_plugin/np_utils/default_np_object.h"
