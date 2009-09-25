@@ -277,8 +277,9 @@ bool SendMouseEvents(MouseButton type, int state) {
   event->button.y_root = y + origin_y;
 
   event->button.axes = NULL;
-  gdk_window_get_pointer(event->button.window, NULL, NULL,
-      reinterpret_cast<GdkModifierType*>(&event->button.state));
+  GdkModifierType modifier;
+  gdk_window_get_pointer(event->button.window, NULL, NULL, &modifier);
+  event->button.state = modifier;
   event->button.button = type == LEFT ? 1 : (type == MIDDLE ? 2 : 3);
   event->button.device = gdk_device_get_core_pointer();
 
