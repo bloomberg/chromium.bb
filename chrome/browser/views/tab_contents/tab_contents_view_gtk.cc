@@ -310,7 +310,7 @@ void TabContentsViewGtk::HandleKeyboardEvent(
   bool alt_pressed = (event.modifiers & WebInputEvent::AltKey) ==
                      WebInputEvent::AltKey;
 
-  focus_manager->ProcessAccelerator(views::Accelerator(event.os_event->keyval,
+  focus_manager->ProcessAccelerator(views::Accelerator(event.windowsKeyCode,
                                                        shift_pressed,
                                                        ctrl_pressed,
                                                        alt_pressed));

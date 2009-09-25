@@ -99,7 +99,7 @@ bool CustomButton::AcceleratorPressed(const Accelerator& accelerator) {
     gdk_key.state = (accelerator.IsAltDown() << 3) +
                     (accelerator.IsCtrlDown() << 2) +
                     accelerator.IsShiftDown();
-    KeyEvent key_event(&gdk_key, false);
+    KeyEvent key_event(&gdk_key);
 #endif
     NotifyClick(key_event);
     return true;

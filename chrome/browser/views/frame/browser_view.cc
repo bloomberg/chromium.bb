@@ -2008,17 +2008,10 @@ void BrowserView::LoadAccelerators() {
   DCHECK(focus_manager);
   // Let's fill our own accelerator table.
   for (size_t i = 0; i < browser::kAcceleratorMapLength; ++i) {
-    bool alt_down =
-        (browser::kAcceleratorMap[i].modifier_type & GDK_MOD1_MASK) ==
-        GDK_MOD1_MASK;
-    bool ctrl_down =
-        (browser::kAcceleratorMap[i].modifier_type & GDK_CONTROL_MASK) ==
-        GDK_CONTROL_MASK;
-    bool shift_down =
-        (browser::kAcceleratorMap[i].modifier_type & GDK_SHIFT_MASK) ==
-        GDK_SHIFT_MASK;
-    views::Accelerator accelerator(browser::kAcceleratorMap[i].keyval,
-                                   shift_down, ctrl_down, alt_down);
+    views::Accelerator accelerator(browser::kAcceleratorMap[i].keycode,
+                                   browser::kAcceleratorMap[i].shift_pressed,
+                                   browser::kAcceleratorMap[i].ctrl_pressed,
+                                   browser::kAcceleratorMap[i].alt_pressed);
     accelerator_table_[accelerator] = browser::kAcceleratorMap[i].command_id;
 
     // Also register with the focus manager.

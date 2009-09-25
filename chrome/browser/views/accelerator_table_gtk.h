@@ -5,16 +5,18 @@
 #ifndef CHROME_BROWSER_VIEWS_ACCELERATOR_TABLE_GTK_H_
 #define CHROME_BROWSER_VIEWS_ACCELERATOR_TABLE_GTK_H_
 
-#include <gtk/gtk.h>
+#include <stdio.h>
 
-// This contains the list of accelerators shared between the Linux Gtk and
-// toolkit_view implementation.
+// This contains the list of accelerators for the Linux toolkit_view
+// implementation.
 namespace browser {
 
   struct AcceleratorMapping {
-    guint keyval;
+    int keycode;
+    bool shift_pressed;
+    bool ctrl_pressed;
+    bool alt_pressed;
     int command_id;
-    GdkModifierType modifier_type;
   };
 
   // The list of accelerators.

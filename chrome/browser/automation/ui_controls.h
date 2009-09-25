@@ -42,6 +42,7 @@ namespace ui_controls {
 // these functions, so passing NULL is ok.
 
 // Send a key press with/without modifier keys.
+// |key| should be a VKEY code as defined in base/keyboard_codes.h
 bool SendKeyPress(gfx::NativeWindow window, wchar_t key, bool control,
                   bool shift, bool alt);
 bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window, wchar_t key,

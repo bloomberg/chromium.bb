@@ -8,6 +8,7 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "base/gfx/rect.h"
+#include "base/keyboard_code_conversion_gtk.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/common/gtk_util.h"
@@ -87,7 +88,7 @@ class ClickTask : public Task {
   Task* followup_;
 };
 
-bool SendKeyEvent(GdkWindow* window, bool press, guint key, guint state) {
+bool SendKeyEvent(GdkWindow* window, bool press, guint gdk_key, guint state) {
   GdkEvent* event = gdk_event_new(press ? GDK_KEY_PRESS : GDK_KEY_RELEASE);
 
   event->key.type = press ? GDK_KEY_PRESS : GDK_KEY_RELEASE;
@@ -97,7 +98,7 @@ bool SendKeyEvent(GdkWindow* window, bool press, guint key, guint state) {
   event->key.time = EventTimeNow();
 
   event->key.state = state;
-  event->key.keyval = key;
+  event->key.keyval = gdk_key;
 
   GdkKeymapKey* keys;
   gint n_keys;
@@ -195,6 +196,8 @@ bool SendKeyPress(gfx::NativeWindow window,
   guint state = (control ? GDK_CONTROL_MASK : 0) |
                 (shift ? GDK_SHIFT_MASK : 0) |
                 (alt ? GDK_MOD1_MASK : 0);
+
+  key = base::GdkKeyCodeForWindowsKeyCode(key);
   rv = rv && SendKeyEvent(event_window, true, key, state);
   rv = rv && SendKeyEvent(event_window, false, key, state);
 

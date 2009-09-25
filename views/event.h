@@ -244,9 +244,13 @@ class KeyEvent : public Event {
   // Create a new key event
   KeyEvent(EventType type, int ch, int repeat_count, int message_flags);
 #elif defined(OS_LINUX)
-  KeyEvent(GdkEventKey* event, bool make_lower_case);
+  explicit KeyEvent(GdkEventKey* event);
 #endif
 
+  // This returns a VKEY_ value as defined in base/keyboard_codes.h which is
+  // the Windows value.
+  // On GTK, you can use the methods in keyboard_code_conversion_gtk.cc to
+  // convert this value back to a GDK value if needed.
   int GetCharacter() const {
     return character_;
   }

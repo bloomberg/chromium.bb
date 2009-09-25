@@ -700,12 +700,12 @@ gboolean WidgetGtk::OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
 }
 
 gboolean WidgetGtk::OnKeyPress(GtkWidget* widget, GdkEventKey* event) {
-  KeyEvent key_event(event, false);
+  KeyEvent key_event(event);
   return root_view_->ProcessKeyEvent(key_event);
 }
 
 gboolean WidgetGtk::OnKeyRelease(GtkWidget* widget, GdkEventKey* event) {
-  KeyEvent key_event(event, false);
+  KeyEvent key_event(event);
   return root_view_->ProcessKeyEvent(key_event);
 }
 

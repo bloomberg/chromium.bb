@@ -43,7 +43,7 @@ bool AcceleratorHandler::Dispatch(GdkEvent* event) {
   }
 
   if (event->type == GDK_KEY_PRESS) {
-    KeyEvent view_key_event(key_event, true);
+    KeyEvent view_key_event(key_event);
     // FocusManager::OnKeyPressed and OnKeyReleased return false if this
     // message has been consumed and should not be propagated further.
     if (!focus_manager->OnKeyEvent(view_key_event)) {
