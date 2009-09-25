@@ -197,9 +197,11 @@ class BrowserWindowGtk : public BrowserWindow,
   // Top level window.
   GtkWindow* window_;
   // GtkAlignment that holds the interior components of the chromium window.
+  // This is used to draw the custom frame border and content shadow.
   GtkWidget* window_container_;
-  // VBox that holds everything below the tabs.
-  GtkWidget* content_vbox_;
+  // VBox that holds everything (tabs, toolbar, bookmarks bar, tab contents,
+  // and extension shelf).
+  GtkWidget* window_vbox_;
   // VBox that holds everything below the toolbar.
   GtkWidget* render_area_vbox_;
   // EventBox that holds render_area_vbox_.

@@ -667,13 +667,13 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
   GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(
       window->browser()->profile());
   int left_x, top_y;
-  gtk_widget_translate_coordinates(window->content_vbox_,
+  gtk_widget_translate_coordinates(window->toolbar_->widget(),
       GTK_WIDGET(window->window_), 0, 0, &left_x,
       &top_y);
-  int width = window->content_vbox_->allocation.width;
+  int width = window->window_vbox_->allocation.width;
 
   CairoCachedSurface* top_center = theme_provider->GetSurfaceNamed(
-      IDR_CONTENT_TOP_CENTER, window->content_vbox_);
+      IDR_CONTENT_TOP_CENTER, GTK_WIDGET(window->window_));
   top_center->SetSource(cr, left_x, top_y - kContentShadowThickness);
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr, left_x, top_y - kContentShadowThickness, width,
@@ -690,7 +690,7 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
   // line).
   int right_x = left_x + width;
   CairoCachedSurface* top_left = theme_provider->GetSurfaceNamed(
-      IDR_CONTENT_TOP_LEFT_CORNER, window->content_vbox_);
+      IDR_CONTENT_TOP_LEFT_CORNER, GTK_WIDGET(window->window_));
   top_left->SetSource(
       cr, left_x - kContentShadowThickness, top_y - kContentShadowThickness);
   // The toolbar is shorter in location bar only mode so clip the image to the
@@ -706,7 +706,7 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
 
   // Likewise, we crop off the left column of pixels for the top right corner.
   CairoCachedSurface* top_right = theme_provider->GetSurfaceNamed(
-      IDR_CONTENT_TOP_RIGHT_CORNER, window->content_vbox_);
+      IDR_CONTENT_TOP_RIGHT_CORNER, GTK_WIDGET(window->window_));
   top_right->SetSource(cr, right_x - 1, top_y - kContentShadowThickness);
   cairo_rectangle(cr,
       right_x,
@@ -716,8 +716,11 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
   cairo_fill(cr);
 
   // Fill in the sides.  As above, we only draw 2 of the 3 columns on Linux.
-  int height = window->content_vbox_->allocation.height;
-  int bottom_y = top_y + height;
+  int bottom_y;
+  gtk_widget_translate_coordinates(window->window_vbox_,
+      GTK_WIDGET(window->window_),
+      0, window->window_vbox_->allocation.height,
+      NULL, &bottom_y);
   // |side_y| is where to start drawing the side shadows.  The top corners draw
   // the sides down to the bottom of the toolbar.
   int side_y = top_y - kContentShadowThickness + top_corner_height;
@@ -727,7 +730,7 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
   int side_height = bottom_y - side_y - 1;
   if (side_height > 0) {
     CairoCachedSurface* left = theme_provider->GetSurfaceNamed(
-        IDR_CONTENT_LEFT_SIDE, window->content_vbox_);
+        IDR_CONTENT_LEFT_SIDE, GTK_WIDGET(window->window_));
     left->SetSource(cr, left_x - kContentShadowThickness, side_y);
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
     cairo_rectangle(cr,
@@ -738,7 +741,7 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
     cairo_fill(cr);
 
     CairoCachedSurface* right = theme_provider->GetSurfaceNamed(
-        IDR_CONTENT_RIGHT_SIDE, window->content_vbox_);
+        IDR_CONTENT_RIGHT_SIDE, GTK_WIDGET(window->window_));
     right->SetSource(cr, right_x - 1, side_y);
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
     cairo_rectangle(cr,
@@ -752,19 +755,19 @@ void BrowserWindowGtk::DrawContentShadow(cairo_t* cr,
   // Draw the bottom corners.  The bottom corners also draw the bottom row of
   // pixels of the side shadows.
   CairoCachedSurface* bottom_left = theme_provider->GetSurfaceNamed(
-      IDR_CONTENT_BOTTOM_LEFT_CORNER, window->content_vbox_);
+      IDR_CONTENT_BOTTOM_LEFT_CORNER, GTK_WIDGET(window->window_));
   bottom_left->SetSource(cr, left_x - kContentShadowThickness, bottom_y - 1);
   cairo_paint(cr);
 
   CairoCachedSurface* bottom_right = theme_provider->GetSurfaceNamed(
-      IDR_CONTENT_BOTTOM_RIGHT_CORNER, window->content_vbox_);
+      IDR_CONTENT_BOTTOM_RIGHT_CORNER, GTK_WIDGET(window->window_));
   bottom_right->SetSource(cr, right_x - 1, bottom_y - 1);
   cairo_paint(cr);
 
   // Finally, draw the bottom row. Since we don't overlap the contents, we clip
   // the top row of pixels.
   CairoCachedSurface* bottom = theme_provider->GetSurfaceNamed(
-      IDR_CONTENT_BOTTOM_CENTER, window->content_vbox_);
+      IDR_CONTENT_BOTTOM_CENTER, GTK_WIDGET(window->window_));
   bottom->SetSource(cr, left_x + 1, bottom_y - 1);
   cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
   cairo_rectangle(cr,
@@ -1528,14 +1531,10 @@ void BrowserWindowGtk::InitWidgets() {
   ConnectHandlersToSignals();
   bounds_ = GetInitialWindowBounds(window_);
 
-  // This vbox encompasses all of the widgets within the browser, including the
-  // tabstrip and the content vbox.  The vbox is put in a floating container
-  // (see gtk_floating_container.h) so we can position the
-  // minimize/maximize/close buttons.  The floating container is then put in an
-  // alignment so we can do custom frame drawing if the user turns of window
-  // manager decorations.
-  GtkWidget* window_vbox = gtk_vbox_new(FALSE, 0);
-  gtk_widget_show(window_vbox);
+  // This vbox encompasses all of the widgets within the browser.  This is
+  // everything except the custom frame border.
+  window_vbox_ = gtk_vbox_new(FALSE, 0);
+  gtk_widget_show(window_vbox_);
 
   // The window container draws the custom browser frame.
   window_container_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
@@ -1545,7 +1544,7 @@ void BrowserWindowGtk::InitWidgets() {
   gtk_widget_set_redraw_on_allocate(window_container_, TRUE);
   g_signal_connect(G_OBJECT(window_container_), "expose-event",
                    G_CALLBACK(&OnCustomFrameExpose), this);
-  gtk_container_add(GTK_CONTAINER(window_container_), window_vbox);
+  gtk_container_add(GTK_CONTAINER(window_container_), window_vbox_);
 
   tabstrip_.reset(new TabStripGtk(browser_->tabstrip_model(), this));
   tabstrip_->Init();
@@ -1591,22 +1590,18 @@ void BrowserWindowGtk::InitWidgets() {
                        0);
     gtk_box_pack_start(GTK_BOX(titlebar_hbox), status_hbox, FALSE, FALSE, 0);
 
-    gtk_box_pack_start(GTK_BOX(window_vbox), titlebar_hbox, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(window_vbox_), titlebar_hbox, FALSE, FALSE, 0);
   }
 
 #else
   // Insert the tabstrip into the window.
-  gtk_box_pack_start(GTK_BOX(window_vbox), titlebar_->widget(), FALSE, FALSE,
+  gtk_box_pack_start(GTK_BOX(window_vbox_), titlebar_->widget(), FALSE, FALSE,
                      0);
 #endif  // OS_CHROMEOS
 
-  // The content_vbox_ surrounds the "content": toolbar+bookmarks bar+page.
-  content_vbox_ = gtk_vbox_new(FALSE, 0);
-  gtk_widget_show(content_vbox_);
-
   toolbar_.reset(new BrowserToolbarGtk(browser_.get(), this));
   toolbar_->Init(browser_->profile(), window_);
-  gtk_box_pack_start(GTK_BOX(content_vbox_), toolbar_->widget(),
+  gtk_box_pack_start(GTK_BOX(window_vbox_), toolbar_->widget(),
                      FALSE, FALSE, 0);
 #if defined(OS_CHROMEOS)
   if (browser_->type() == Browser::TYPE_NORMAL && has_compact_nav_bar) {
@@ -1615,7 +1610,7 @@ void BrowserWindowGtk::InitWidgets() {
     GtkWidget* spacer = gtk_vbox_new(FALSE, 0);
     gtk_widget_set_size_request(spacer, -1, 3);
     gtk_widget_show(spacer);
-    gtk_box_pack_start(GTK_BOX(content_vbox_), spacer, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(window_vbox_), spacer, FALSE, FALSE, 0);
     g_signal_connect(spacer, "expose-event",
                      G_CALLBACK(&OnCompactNavSpacerExpose), this);
   }
@@ -1624,7 +1619,7 @@ void BrowserWindowGtk::InitWidgets() {
   if (IsBookmarkBarSupported()) {
     bookmark_bar_.reset(new BookmarkBarGtk(browser_->profile(), browser_.get(),
                                            this));
-    gtk_box_pack_start(GTK_BOX(content_vbox_), bookmark_bar_->widget(),
+    gtk_box_pack_start(GTK_BOX(window_vbox_), bookmark_bar_->widget(),
                        FALSE, FALSE, 0);
     gtk_widget_show(bookmark_bar_->widget());
   }
@@ -1632,7 +1627,7 @@ void BrowserWindowGtk::InitWidgets() {
   if (IsExtensionShelfSupported()) {
     extension_shelf_.reset(new ExtensionShelfGtk(browser()->profile(),
                                                  browser_.get()));
-    extension_shelf_->AddShelfToBox(content_vbox_);
+    extension_shelf_->AddShelfToBox(window_vbox_);
   }
 
   // This vbox surrounds the render area: find bar, info bars and render view.
@@ -1690,8 +1685,7 @@ void BrowserWindowGtk::InitWidgets() {
   render_area_event_box_ = gtk_event_box_new();
   gtk_container_add(GTK_CONTAINER(render_area_event_box_), render_area_vbox_);
   gtk_widget_show(render_area_event_box_);
-  gtk_container_add(GTK_CONTAINER(content_vbox_), render_area_event_box_);
-  gtk_container_add(GTK_CONTAINER(window_vbox), content_vbox_);
+  gtk_container_add(GTK_CONTAINER(window_vbox_), render_area_event_box_);
   gtk_container_add(GTK_CONTAINER(window_), window_container_);
   gtk_widget_show(window_container_);
   browser_->tabstrip_model()->AddObserver(this);
