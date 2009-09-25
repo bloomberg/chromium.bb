@@ -336,7 +336,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
   if (!CreateChannel())
     return false;
 
-  // build command line for plugin, we have to quote the plugin's path to deal
+  // Build command line for plugin, we have to quote the plugin's path to deal
   // with spaces.
   std::wstring exe_path = GetChildPath();
   if (exe_path.empty()) {
@@ -354,7 +354,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
   if (logging::DialogsAreSuppressed())
     cmd_line.AppendSwitch(switches::kNoErrorDialogs);
 
-  // propagate the following switches to the plugin command line (along with
+  // Propagate the following switches to the plugin command line (along with
   // any associated values) if present in the browser command line
   static const wchar_t* const switch_names[] = {
     switches::kPluginStartupDialog,
@@ -434,9 +434,10 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
   env.push_back(std::pair<const char*, const char*>(
       plugin_interpose_strings::kDYLDInsertLibrariesKey,
       interpose_list.c_str()));
-#endif
-  base::LaunchApp(cmd_line.argv(), env, fds_to_map, false, &process);
-#endif
+#endif  // OS_MACOSX
+  if (!base::LaunchApp(cmd_line.argv(), env, fds_to_map, false, &process))
+    return false;
+#endif  // OS_WIN
 
   if (!process)
     return false;

@@ -159,7 +159,7 @@ class ProfileWriter : public base::RefCounted<ProfileWriter> {
 
   Profile* profile_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ProfileWriter);
+  DISALLOW_COPY_AND_ASSIGN(ProfileWriter);
 };
 
 // This class hosts the importers. It enumerates profiles from other
@@ -331,7 +331,7 @@ class ImporterHost : public base::RefCounted<ImporterHost>,
   // Firefox profile lock.
   scoped_ptr<FirefoxProfileLock> firefox_lock_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ImporterHost);
+  DISALLOW_COPY_AND_ASSIGN(ImporterHost);
 };
 
 // The base class of all importers.
@@ -402,7 +402,7 @@ class Importer : public base::RefCounted<Importer> {
   // True if the importer is created in the first run UI.
   bool import_to_bookmark_bar_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(Importer);
+  DISALLOW_COPY_AND_ASSIGN(Importer);
 };
 
 // An interface an object that calls StartImportingWithUI can call to be

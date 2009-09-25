@@ -48,6 +48,8 @@ std::wstring ChildProcessInfo::GetTypeNameInEnglish(
       return L"Web Worker";
     case UTILITY_PROCESS:
       return L"Utility";
+    case PROFILE_IMPORT_PROCESS:
+      return L"Profile Import helper";
     case ZYGOTE_PROCESS:
       return L"Zygote";
     case SANDBOX_HELPER_PROCESS:
@@ -71,6 +73,8 @@ std::wstring ChildProcessInfo::GetLocalizedTitle() const {
     message_id = IDS_TASK_MANAGER_WORKER_PREFIX;
   } else if (type_ == ChildProcessInfo::UTILITY_PROCESS) {
     message_id = IDS_TASK_MANAGER_UTILITY_PREFIX;
+  } else if (type_ == ChildProcessInfo::PROFILE_IMPORT_PROCESS) {
+    message_id = IDS_TASK_MANAGER_PROFILE_IMPORT_PREFIX;
   } else {
     DCHECK(false) << "Need localized name for child process type.";
     return title;

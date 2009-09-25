@@ -8,6 +8,7 @@
 #include <shellapi.h>
 
 #include "app/resource_bundle.h"
+#include "app/theme_provider.h"
 #include "app/win_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/browser_list.h"

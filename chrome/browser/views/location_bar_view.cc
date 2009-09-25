@@ -14,6 +14,7 @@
 #include "app/gfx/color_utils.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "app/theme_provider.h"
 #include "base/file_util.h"
 #include "base/keyboard_codes.h"
 #include "base/path_service.h"

@@ -144,7 +144,7 @@ class PluginProcessHost : public ChildProcessHost,
   std::set<HWND> plugin_parent_windows_set_;
 #endif
 
-  DISALLOW_EVIL_CONSTRUCTORS(PluginProcessHost);
+  DISALLOW_COPY_AND_ASSIGN(PluginProcessHost);
 };
 
 #endif  // CHROME_BROWSER_PLUGIN_PROCESS_HOST_H_

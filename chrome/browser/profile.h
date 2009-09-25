@@ -10,7 +10,6 @@
 #include <set>
 #include <string>
 
-#include "app/theme_provider.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
@@ -52,6 +51,7 @@ class SQLitePersistentCookieStore;
 class TabRestoreService;
 class TemplateURLFetcher;
 class TemplateURLModel;
+class ThemeProvider;
 class ThumbnailStore;
 class URLRequestContext;
 class UserScriptMaster;
