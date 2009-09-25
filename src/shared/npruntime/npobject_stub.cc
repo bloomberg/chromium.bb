@@ -32,10 +32,11 @@
 
 // NaCl-NPAPI Interface
 
+#include "native_client/src/shared/npruntime/npobject_stub.h"
+
 #include <stdarg.h>
 
-#include "native_client/src/shared/npruntime/nacl_util.h"
-
+#include "native_client/src/include/portability_process.h"
 #include "native_client/src/shared/npruntime/npbridge.h"
 
 static void DebugPrintf(const char *fmt, ...) {
@@ -48,206 +49,369 @@ static void DebugPrintf(const char *fmt, ...) {
   fflush(stderr);
 }
 
-
 namespace nacl {
 
-NPObjectStub::NPObjectStub(NPBridge* bridge, NPObject* object)
-    : bridge_(bridge),
+NPObjectStub::NPObjectStub(NPP npp, NPObject* object)
+    : npp_(npp),
       object_(object) {
   NPN_RetainObject(object_);
 }
 
 NPObjectStub::~NPObjectStub() {
   NPN_ReleaseObject(object_);
-  bridge_->RemoveStub(this);
+  NPBridge* bridge = NPBridge::LookupBridge(npp_);
+  bridge->RemoveStub(this);
 }
 
-int NPObjectStub::Dispatch(RpcHeader* request, int len) {
+NPObjectStub* NPObjectStub::Lookup(NaClSrpcChannel* channel, RpcArg* arg) {
+  NPBridge* bridge = NPBridge::LookupBridge(channel);
+  NPCapability* capability = arg->GetCapability();
+  return bridge->GetStub(*capability);
+}
+
+//
+// The table of methods to be exposed by SRPC.
+//
+
+NACL_SRPC_METHOD_ARRAY(NPObjectStub::srpc_methods) = {
+    { "NPN_Deallocate:C:", Deallocate },
+    { "NPN_Invalidate:C:", Invalidate },
+    { "NPN_HasMethod:Ci:i", HasMethod },
+    { "NPN_Invoke:CiCCi:iCC", Invoke },
+    { "NPN_InvokeDefault:CiCi:iCC", InvokeDefault },
+    { "NPN_HasProperty:Ci:i", HasProperty },
+    { "NPN_GetProperty:Ci:iCC", GetProperty },
+    { "NPN_SetProperty:CiCC:i", SetProperty },
+    { "NPN_RemoveProperty:Ci:i", RemoveProperty },
+    { "NPN_Enumerate:C:iCi", NPObjectStub::Enumerate },
+    { "NPN_Construct:CCCi:iCC", Construct },
+    { "NPN_SetException:Cs:", SetException } };
+
+//
+// These methods provide dispatching to the implementation of the object stubs.
+//
+
+// inputs:
+// (char[]) capability
+// outputs:
+// (none)
+NaClSrpcError NPObjectStub::Deallocate(NaClSrpcChannel* channel,
+                                       NaClSrpcArg** inputs,
+                                       NaClSrpcArg** outputs) {
+  RpcArg arg0(NULL, inputs[0]);
+  NPObjectStub* stub = Lookup(channel, &arg0);
+  stub->DeallocateImpl();
+  return NACL_SRPC_RESULT_OK;
+}
+
+// inputs:
+// (char[]) capability
+// outputs:
+// (none)
+NaClSrpcError NPObjectStub::Invalidate(NaClSrpcChannel* channel,
+                                       NaClSrpcArg** inputs,
+                                       NaClSrpcArg** outputs) {
+  RpcArg arg0(NULL, inputs[0]);
+  NPObjectStub* stub = Lookup(channel, &arg0);
+  stub->InvalidateImpl();
+  return NACL_SRPC_RESULT_OK;
+}
+
+// inputs:
+// (char[]) capability
+// (int) name
+// outputs:
+// (int) success
+NaClSrpcError NPObjectStub::HasMethod(NaClSrpcChannel* channel,
+                                      NaClSrpcArg** inputs,
+                                      NaClSrpcArg** outputs) {
+  RpcArg arg0(NULL, inputs[0]);
+  NPObjectStub* stub = Lookup(channel, &arg0);
+  NPIdentifier name = reinterpret_cast<NPIdentifier>(inputs[1]->u.ival);
+  outputs[0]->u.ival = stub->HasMethodImpl(name);
+  return NACL_SRPC_RESULT_OK;
+}
+
+// inputs:
+// (char[]) capability
+// (int) name
+// (char[]) args fixed portion
+// (char[]) args optional portion
+// (int) argument count
+// outputs:
+// (int) NPError
+// (char[]) result fixed portion
+// (char[]) result optional portion
+NaClSrpcError NPObjectStub::Invoke(NaClSrpcChannel* channel,
+                                   NaClSrpcArg** inputs,
+                                   NaClSrpcArg** outputs) {
+  RpcArg arg0(NULL, inputs[0]);
+  NPObjectStub* stub = Lookup(channel, &arg0);
+  NPIdentifier name = reinterpret_cast<NPIdentifier>(inputs[1]->u.ival);
+  RpcArg arg23(stub->npp(), inputs[2], inputs[3]);
+  uint32_t arg_count = inputs[4]->u.ival;
+  const NPVariant* args = arg23.GetVariantArray(arg_count);
   NPVariant variant;
-  bool return_variant = false;
-
-  RpcArg arg(bridge_, request, len);
-  arg.Step(sizeof(RpcHeader));
-  arg.Step(sizeof(NPCapability));
-
-  switch (request->type) {
-    case RPC_DEALLOCATE:
-      request->error_code = true;
-      break;
-    case RPC_INVALIDATE:
-      request->error_code = Invalidate(&arg);
-      break;
-    case RPC_HAS_METHOD:
-      request->error_code = HasMethod(&arg);
-      break;
-    case RPC_INVOKE:
-      return_variant = true;
-      request->error_code = Invoke(request->error_code, &arg, &variant);
-      break;
-    case RPC_INVOKE_DEFAULT:
-      return_variant = true;
-      request->error_code = InvokeDefault(request->error_code, &arg, &variant);
-      break;
-    case RPC_HAS_PROPERTY:
-      request->error_code = HasProperty(&arg);
-      break;
-    case RPC_GET_PROPERTY:
-      return_variant = true;
-      request->error_code = GetProperty(&arg, &variant);
-      break;
-    case RPC_SET_PROPERTY:
-      request->error_code = SetProperty(&arg);
-      break;
-    case RPC_REMOVE_PROPERTY:
-      request->error_code = RemoveProperty(&arg);
-      break;
-    case RPC_ENUMERATION:
-      request->error_code = Enumeration(&arg);
-      break;
-    case RPC_CONSTRUCT:
-      return_variant = true;
-      request->error_code = Construct(request->error_code, &arg, &variant);
-      break;
-    default:
-      return -1;
-  }
-  IOVec vecv[3];
-  IOVec* vecp = vecv;
-  vecp->base = request;
-  vecp->length = sizeof(RpcHeader);
-  ++vecp;
-
-  arg.CloseUnusedHandles();
-
-  RpcStack stack(bridge_);
-  char converted_variant[kNPVariantSizeMax];
-  if (NPERR_NO_ERROR != request->error_code && return_variant) {
-    if (bridge_->peer_npvariant_size() == sizeof(NPVariant)) {
-      vecp->base = &variant;
-      vecp->length = sizeof(variant);
-    } else {
-      ConvertNPVariants(&variant,
-                        converted_variant,
-                        bridge_->peer_npvariant_size(),
-                        1);
-      vecp->base = converted_variant;
-      vecp->length = bridge_->peer_npvariant_size();
-    }
-    ++vecp;
-    stack.Push(variant, false);
-    vecp = stack.SetIOVec(vecp);
-  }
-  int length = bridge_->Respond(request, vecv, vecp - vecv);
-  if (NPERR_NO_ERROR != request->error_code &&
-      return_variant &&
-      NPVARIANT_IS_STRING(variant)) {
-    // We cannot call NPN_ReleaseVariantValue() before bridge_->Respond()
-    // completes since NPN_ReleaseVariantValue() changes the variant type to
-    // NPVariantType_Void.
+  // Invoke the implementation.
+  outputs[0]->u.ival = stub->InvokeImpl(name, args, arg_count, &variant);
+  // Copy the resulting variant back to outputs.
+  RpcArg ret12(stub->npp(), outputs[1], outputs[2]);
+  ret12.PutVariant(&variant);
+  // Free any allocated string in the result variant.
+  if (NPERR_NO_ERROR != outputs[0]->u.ival && NPVARIANT_IS_STRING(variant)) {
     NPN_ReleaseVariantValue(&variant);
   }
-  if (RPC_DEALLOCATE == request->type) {
-    delete this;
-  }
-  return length;
+  return NACL_SRPC_RESULT_OK;
 }
 
-bool NPObjectStub::Invalidate(RpcArg* arg) {
+// inputs:
+// (char[]) capability
+// (char[]) args fixed portion
+// (char[]) args optional portion
+// (int) argument count
+// outputs:
+// (int) NPError
+// (char[]) result fixed portion
+// (char[]) result optional portion
+NaClSrpcError NPObjectStub::InvokeDefault(NaClSrpcChannel* channel,
+                                          NaClSrpcArg** inputs,
+                                          NaClSrpcArg** outputs) {
+  RpcArg arg0(NULL, inputs[0]);
+  NPObjectStub* stub = Lookup(channel, &arg0);
+  RpcArg arg12(stub->npp(), inputs[1], inputs[2]);
+  const uint32_t arg_count = inputs[3]->u.ival;
+  const NPVariant* args = arg12.GetVariantArray(arg_count);
+  NPVariant variant;
+  // Invoke the implementation.
+  outputs[0]->u.ival = stub->InvokeDefaultImpl(args, arg_count, &variant);
+  // Copy the resulting variant back to outputs.
+  RpcArg ret12(stub->npp(), outputs[1], outputs[2]);
+  ret12.PutVariant(&variant);
+  // Free any allocated string in the result variant.
+  if (NPERR_NO_ERROR != outputs[0]->u.ival && NPVARIANT_IS_STRING(variant)) {
+    NPN_ReleaseVariantValue(&variant);
+  }
+  return NACL_SRPC_RESULT_OK;
+}
+
+// inputs:
+// (char[]) capability
+// (char[]) identifier
+// outputs:
+// (int) success
+NaClSrpcError NPObjectStub::HasProperty(NaClSrpcChannel* channel,
+                                        NaClSrpcArg** inputs,
+                                        NaClSrpcArg** outputs) {
+  RpcArg arg0(NULL, inputs[0]);
+  NPObjectStub* stub = Lookup(channel, &arg0);
+  NPIdentifier name = reinterpret_cast<NPIdentifier>(inputs[1]->u.ival);
+  outputs[0]->u.ival = stub->HasPropertyImpl(name);
+  return NACL_SRPC_RESULT_OK;
+}
+
+// inputs:
+// (char[]) capability
+// (int) identifier
+// outputs:
+// (int) success
+// (char[]) result fixed portion
+// (char[]) result optional portion
+NaClSrpcError NPObjectStub::GetProperty(NaClSrpcChannel* channel,
+                                        NaClSrpcArg** inputs,
+                                        NaClSrpcArg** outputs) {
+  RpcArg arg0(NULL, inputs[0]);
+  NPObjectStub* stub = Lookup(channel, &arg0);
+  NPIdentifier name = reinterpret_cast<NPIdentifier>(inputs[1]->u.ival);
+  NPVariant variant;
+  // Invoke the implementation.
+  outputs[0]->u.ival = stub->GetPropertyImpl(name, &variant);
+  // Copy the resulting variant back to outputs.
+  RpcArg ret12(stub->npp(), outputs[1], outputs[2]);
+  ret12.PutVariant(&variant);
+  // Free any allocated string in the result variant.
+  if (NPERR_NO_ERROR != outputs[0]->u.ival && NPVARIANT_IS_STRING(variant)) {
+    NPN_ReleaseVariantValue(&variant);
+  }
+  return NACL_SRPC_RESULT_OK;
+}
+
+// inputs:
+// (char[]) capability
+// (int) identifier
+// (char[]) value fixed portion
+// (char[]) value optional portion
+// outputs:
+// (int) success
+NaClSrpcError NPObjectStub::SetProperty(NaClSrpcChannel* channel,
+                                        NaClSrpcArg** inputs,
+                                        NaClSrpcArg** outputs) {
+  RpcArg arg0(NULL, inputs[0]);
+  NPObjectStub* stub = Lookup(channel, &arg0);
+  NPIdentifier name = reinterpret_cast<NPIdentifier>(inputs[1]->u.ival);
+  RpcArg arg23(stub->npp(), inputs[2], inputs[3]);
+  const NPVariant* variant = arg23.GetVariant(true);
+  outputs[0]->u.ival = stub->SetPropertyImpl(name, variant);
+  return NACL_SRPC_RESULT_OK;
+}
+
+// inputs:
+// (char[]) capability
+// (int) identifier
+// outputs:
+// (int) success
+NaClSrpcError NPObjectStub::RemoveProperty(NaClSrpcChannel* channel,
+                                           NaClSrpcArg** inputs,
+                                           NaClSrpcArg** outputs) {
+  RpcArg arg0(NULL, inputs[0]);
+  NPObjectStub* stub = Lookup(channel, &arg0);
+  NPIdentifier name = reinterpret_cast<NPIdentifier>(inputs[1]->u.ival);
+  outputs[0]->u.ival = stub->RemovePropertyImpl(name);
+  return NACL_SRPC_RESULT_OK;
+}
+
+// inputs:
+// (char[]) capability
+// outputs:
+// (int) success
+// (char[]) identifier list
+// (int) identifier count
+NaClSrpcError NPObjectStub::Enumerate(NaClSrpcChannel* channel,
+                                      NaClSrpcArg** inputs,
+                                      NaClSrpcArg** outputs) {
+  RpcArg arg0(NULL, inputs[0]);
+  NPObjectStub* stub = Lookup(channel, &arg0);
+  RpcArg arg1(stub->npp(), inputs[1]);
+  NPIdentifier* identifiers;
+  uint32_t identifier_count;
+  outputs[0]->u.ival = stub->EnumerateImpl(&identifiers, &identifier_count);
+  return NACL_SRPC_RESULT_OK;
+}
+
+// inputs:
+// (char[]) capability
+// (char[]) args fixed portion
+// (char[]) args optional portion
+// (int) argument_count
+// outputs:
+// (int) success
+// (char[]) result fixed
+// (char[]) result optional
+NaClSrpcError NPObjectStub::Construct(NaClSrpcChannel* channel,
+                                      NaClSrpcArg** inputs,
+                                      NaClSrpcArg** outputs) {
+  RpcArg arg0(NULL, inputs[0]);
+  NPObjectStub* stub = Lookup(channel, &arg0);
+  RpcArg arg12(stub->npp(), inputs[1], inputs[2]);
+  const uint32_t arg_count = inputs[3]->u.ival;
+  const NPVariant* args = arg12.GetVariantArray(arg_count);
+  NPVariant variant;
+  // Invoke the implementation.
+  outputs[0]->u.ival = stub->ConstructImpl(args, inputs[1]->u.ival, &variant);
+  // Copy the resulting variant back to outputs.
+  RpcArg ret12(stub->npp(), outputs[1], outputs[2]);
+  ret12.PutVariant(&variant);
+  // Free any allocated string in the result variant.
+  if (NPERR_NO_ERROR != outputs[0]->u.ival && NPVARIANT_IS_STRING(variant)) {
+    NPN_ReleaseVariantValue(&variant);
+  }
+  return NACL_SRPC_RESULT_OK;
+}
+
+// inputs:
+// (char[]) capability
+// (char*) message
+// outputs:
+// (none)
+NaClSrpcError NPObjectStub::SetException(NaClSrpcChannel* channel,
+                                         NaClSrpcArg** inputs,
+                                         NaClSrpcArg** outputs) {
+  RpcArg arg0(NULL, inputs[0]);
+  NPObjectStub* stub = Lookup(channel, &arg0);
+  const NPUTF8* message = inputs[1]->u.sval;
+  stub->SetExceptionImpl(message);
+  return NACL_SRPC_RESULT_OK;
+}
+
+
+//
+// These methods provide the implementation of the object stubs.
+//
+
+void NPObjectStub::DeallocateImpl() {
+  DebugPrintf("Deallocate\n");
+  // TODO(sehr): remove stub, etc.
+}
+
+void NPObjectStub::InvalidateImpl() {
   DebugPrintf("Invalidate\n");
 
   if (object_->_class && object_->_class->invalidate) {
     object_->_class->invalidate(object_);
     object_->referenceCount = 1;
   }
-  return true;
 }
 
-bool NPObjectStub::HasMethod(RpcArg* arg) {
-  arg->StepOption(sizeof(NPIdentifier));
-  NPIdentifier name = arg->GetIdentifier();
+bool NPObjectStub::HasMethodImpl(NPIdentifier name) {
   DebugPrintf("HasMethod: %p\n", name);
 
-  return NPN_HasMethod(bridge_->npp(), object_, name);
+  return NPN_HasMethod(npp_, object_, name);
 }
 
-bool NPObjectStub::Invoke(uint32_t arg_count,
-                          RpcArg* arg,
-                          NPVariant* variant) {
-  arg->StepOption(sizeof(NPIdentifier) + arg_count * sizeof(NPVariant));
-  NPIdentifier name = arg->GetIdentifier();
+NPError NPObjectStub::InvokeImpl(NPIdentifier name,
+                                 const NPVariant* args,
+                                 uint32_t arg_count,
+                                 NPVariant* variant) {
   DebugPrintf("Invoke: %p\n", name);
 
-  const NPVariant* args = NULL;
-  if (0 < arg_count) {
-    args = arg->GetVariant(true);
-    for (uint32_t i = 1; i < arg_count; ++i) {
-      arg->GetVariant(true);
-    }
-  }
-  bool return_value = NPN_Invoke(bridge_->npp(),
-                                 object_,
-                                 name,
-                                 args,
-                                 arg_count,
-                                 variant);
+  NPError return_value = NPN_Invoke(npp_,
+                                    object_,
+                                    name,
+                                    args,
+                                    arg_count,
+                                    variant);
   for (uint32_t i = 0; i < arg_count; ++i) {
     if (NPVARIANT_IS_OBJECT(args[i])) {
-      NPObject* object = NPVARIANT_TO_OBJECT(args[i]);
-      NPN_ReleaseObject(object);
+      NPN_ReleaseObject(NPVARIANT_TO_OBJECT(args[i]));
     }
   }
   return return_value;
 }
 
-bool NPObjectStub::InvokeDefault(uint32_t arg_count,
-                                 RpcArg* arg,
-                                 NPVariant* variant) {
+NPError NPObjectStub::InvokeDefaultImpl(const NPVariant* args,
+                                        uint32_t arg_count,
+                                        NPVariant* variant) {
   DebugPrintf("InvokeDefault\n");
-  arg->StepOption(arg_count * sizeof(NPVariant));
-  const NPVariant* args = NULL;
-  if (0 < arg_count) {
-    args = arg->GetVariant(true);
-    for (uint32_t i = 1; i < arg_count; ++i) {
-      arg->GetVariant(true);
-    }
-  }
-  bool return_value = NPN_InvokeDefault(bridge_->npp(),
-                                        object_,
-                                        args,
-                                        arg_count,
-                                        variant);
+
+  NPError return_value = NPN_InvokeDefault(npp_,
+                                           object_,
+                                           args,
+                                           arg_count,
+                                           variant);
   for (uint32_t i = 0; i < arg_count; ++i) {
     if (NPVARIANT_IS_OBJECT(args[i])) {
-      NPObject* object = NPVARIANT_TO_OBJECT(args[i]);
-      NPN_ReleaseObject(object);
+      NPN_ReleaseObject(NPVARIANT_TO_OBJECT(args[i]));
     }
   }
   return return_value;
 }
 
-bool NPObjectStub::HasProperty(RpcArg* arg) {
-  arg->StepOption(sizeof(NPIdentifier));
-  NPIdentifier name = arg->GetIdentifier();
+bool NPObjectStub::HasPropertyImpl(NPIdentifier name) {
   DebugPrintf("HasProperty: %p\n", name);
 
-  return NPN_HasProperty(bridge_->npp(), object_, name);
+  return NPN_HasProperty(npp_, object_, name);
 }
 
-bool NPObjectStub::GetProperty(RpcArg* arg, NPVariant* variant) {
-  arg->StepOption(sizeof(NPIdentifier));
-  NPIdentifier name = arg->GetIdentifier();
+bool NPObjectStub::GetPropertyImpl(NPIdentifier name, NPVariant* variant) {
   DebugPrintf("GetProperty: %p\n", name);
 
-  return NPN_GetProperty(bridge_->npp(), object_, name, variant);
+  return NPN_GetProperty(npp_, object_, name, variant);
 }
 
-bool NPObjectStub::SetProperty(RpcArg* arg) {
-  arg->StepOption(sizeof(NPIdentifier) + sizeof(NPVariant));
-  NPIdentifier name = arg->GetIdentifier();
+bool NPObjectStub::SetPropertyImpl(NPIdentifier name,
+                                   const NPVariant* variant) {
   DebugPrintf("SetProperty: %p\n", name);
 
-  const NPVariant* variant = arg->GetVariant(true);
-  bool return_value = NPN_SetProperty(bridge_->npp(), object_, name, variant);
+  bool return_value = NPN_SetProperty(npp_, object_, name, variant);
   if (NPVARIANT_IS_OBJECT(*variant)) {
     NPObject* object = NPVARIANT_TO_OBJECT(*variant);
     NPN_ReleaseObject(object);
@@ -255,42 +419,31 @@ bool NPObjectStub::SetProperty(RpcArg* arg) {
   return return_value;
 }
 
-bool NPObjectStub::RemoveProperty(RpcArg* arg) {
-  arg->StepOption(sizeof(NPIdentifier));
-  NPIdentifier name = arg->GetIdentifier();
+bool NPObjectStub::RemovePropertyImpl(NPIdentifier name) {
   DebugPrintf("RemoveProperty: %p\n", name);
 
-  return NPN_RemoveProperty(bridge_->npp(), object_, name);
+  return NPN_RemoveProperty(npp_, object_, name);
 }
 
-bool NPObjectStub::Enumeration(RpcArg* arg) {
-  // TODO(sehr): need implementation for this method.
-  return false;
+bool NPObjectStub::EnumerateImpl(NPIdentifier** identifiers,
+                                 uint32_t* identifier_count) {
+  return NPN_Enumerate(npp_, object_, identifiers, identifier_count);
 }
 
-bool NPObjectStub::Construct(uint32_t arg_count,
-                             RpcArg* arg,
-                             NPVariant* variant) {
-  // TODO(sehr): need implementation for this method.
-  return false;
+bool NPObjectStub::ConstructImpl(const NPVariant* args,
+                                 uint32_t arg_count,
+                                 NPVariant* variant) {
+  bool return_value = NPN_Construct(npp_, object_, args, arg_count, variant);
+  for (uint32_t i = 0; i < arg_count; ++i) {
+    if (NPVARIANT_IS_OBJECT(args[i])) {
+      NPN_ReleaseObject(NPVARIANT_TO_OBJECT(args[i]));
+    }
+  }
+  return return_value;
 }
 
-void NPObjectStub::SetException(const NPUTF8* message) {
-  RpcHeader request;
-  request.type = RPC_SET_EXCEPTION;
-  IOVec vecv[3];
-  IOVec* vecp = vecv;
-  vecp->base = &request;
-  vecp->length = sizeof request;
-  ++vecp;
-  NPCapability capability = { GetPID(), object_ };
-  vecp->base = &capability;
-  vecp->length = sizeof capability;
-  ++vecp;
-  vecp->base = const_cast<NPUTF8*>(message);
-  vecp->length = strlen(message) + 1;
-  ++vecp;
-  bridge_->Request(&request, vecv, vecp - vecv, NULL);
+void NPObjectStub::SetExceptionImpl(const NPUTF8* message) {
+  NPN_SetException(object_, message);
 }
 
 }  // namespace nacl

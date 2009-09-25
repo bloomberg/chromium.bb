@@ -46,17 +46,17 @@
 #include <X11/Intrinsic.h>
 #endif  // NACL_LINUX && defined(MOZ_X11)
 
-#else //  NACL_STANDALONE
+#else  //  NACL_STANDALONE
 // Don't include video support in Chrome build
 
-#endif //  NACL_STANDALONE
+#endif  //  NACL_STANDALONE
 
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/include/portability.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/audio_video.h"
 #include "native_client/src/untrusted/av/nacl_av_priv.h"
-#include "native_client/src/shared/imc/nacl_htp_c.h"
+#include "native_client/src/shared/imc/nacl_htp.h"
 
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
@@ -137,7 +137,7 @@ class VideoMap {
   nacl_srpc::ScriptableHandle<nacl_srpc::SharedMemory>*
       VideoSharedMemorySetup();
 
-  VideoMap(PortablePluginInterface *plugin_interface);
+  explicit VideoMap(PortablePluginInterface *plugin_interface);
   ~VideoMap();
 
 #ifdef NACL_STANDALONE

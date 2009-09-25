@@ -36,8 +36,9 @@
 #include <stdlib.h>
 
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
-
 #include "native_client/src/shared/npruntime/npnavigator.h"
+#include "native_client/src/shared/npruntime/npobject_proxy.h"
+#include "native_client/src/shared/npruntime/npobject_stub.h"
 
 void* NPN_MemAlloc(uint32_t size) {
   return malloc(size);
@@ -51,52 +52,43 @@ void NPN_Status(NPP instance, const char* message) {
   if (NULL == instance || NULL == message) {
     return;
   }
-  nacl::NPNavigator* navigator = NaClNP_GetNavigator();
+  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
   if (NULL == navigator) {
     return;
   }
-  navigator->SetStatus(message);
+  navigator->SetStatus(instance, message);
 }
 
 NPError NPN_GetValue(NPP instance, NPNVariable variable, void* value) {
   if (NULL == instance) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
-  nacl::NPNavigator* navigator = NaClNP_GetNavigator();
+  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
   if (NULL == navigator) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
-  switch (variable) {
-    case NPNVWindowNPObject:
-      return navigator->GetValue(nacl::RPC_GET_WINDOW_OBJECT, value);
-      break;
-    case NPNVPluginElementNPObject:
-      return navigator->GetValue(nacl::RPC_GET_PLUGIN_ELEMENT_OBJECT, value);
-      break;
-    default:
-      break;
-  }
+  return navigator->GetValue(instance, variable, value);
   return NPERR_INVALID_PARAM;
 }
 
 NPIdentifier NPN_GetStringIdentifier(const NPUTF8* name) {
-  nacl::NPNavigator* navigator = NaClNP_GetNavigator();
+  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
   if (NULL == navigator) {
     return NULL;
   }
-  return const_cast<char*>(navigator->GetStringIdentifier(name));
+  return navigator->GetStringIdentifier(name);
 }
 
-void NPN_GetStringIdentifiers(const NPUTF8** names, int32_t nameCount,
+void NPN_GetStringIdentifiers(const NPUTF8** names,
+                              int32_t nameCount,
                               NPIdentifier* identifiers) {
-  nacl::NPNavigator* navigator = NaClNP_GetNavigator();
+  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
   if (NULL == navigator) {
     return;
   }
   for (int32_t i = 0; i < nameCount; ++i) {
     if (names[i]) {
-      identifiers[i] =
-        const_cast<char*>(navigator->GetStringIdentifier(names[i]));
+      identifiers[i] = navigator->GetStringIdentifier(names[i]);
     } else {
       identifiers[i] = NULL;
     }
@@ -104,33 +96,35 @@ void NPN_GetStringIdentifiers(const NPUTF8** names, int32_t nameCount,
 }
 
 NPIdentifier NPN_GetIntIdentifier(int32_t intid) {
-  return reinterpret_cast<NPIdentifier>((intid << 1) | 1);
+  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  if (NULL == navigator) {
+    return NULL;
+  }
+  return navigator->GetIntIdentifier(intid);
 }
 
 bool NPN_IdentifierIsString(NPIdentifier identifier) {
-  return (reinterpret_cast<uintptr_t>(identifier) & 1) ? false : true;
+  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  if (NULL == navigator) {
+    return NULL;
+  }
+  return navigator->IdentifierIsString(identifier);
 }
 
 NPUTF8* NPN_UTF8FromIdentifier(NPIdentifier identifier) {
-  if (!NPN_IdentifierIsString(identifier)) {
+  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  if (NULL == navigator) {
     return NULL;
   }
-  size_t length = strlen(static_cast<const char*>(identifier)) + 1;
-  char* utf8 = static_cast<char*>(NPN_MemAlloc(length));
-  if (utf8) {
-    memmove(utf8, identifier, length);
-  }
-  return utf8;
+  return navigator->UTF8FromIdentifier(identifier);
 }
 
 int32_t NPN_IntFromIdentifier(NPIdentifier identifier) {
-  uintptr_t intid = reinterpret_cast<uintptr_t>(identifier);
-  if (intid & 1) {
-    return intid >> 1;
-  } else {
-    return -2147483647 - 1;  // PR_INT32_MIN
+  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  if (NULL == navigator) {
+    return NULL;
   }
-  return 0;
+  return navigator->IntFromIdentifier(identifier);
 }
 
 NPObject* NPN_CreateObject(NPP npp, NPClass* aClass) {
@@ -326,13 +320,13 @@ void NPN_SetException(NPObject* object, const NPUTF8* message) {
     proxy->SetException(message);
     return;
   }
-  nacl::NPNavigator* navigator = NaClNP_GetNavigator();
+  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
   if (NULL == navigator) {
     return;
   }
   nacl::NPObjectStub* stub = navigator->LookupStub(object);
   if (stub) {
-    stub->SetException(message);
+    stub->SetExceptionImpl(message);
   }
 }
 
@@ -340,16 +334,20 @@ void NPN_InvalidateRect(NPP instance, NPRect* invalid_rect) {
   if (NULL == instance) {
     return;
   }
-  if (nacl::NPNavigator* navigator = NaClNP_GetNavigator()) {
-    navigator->InvalidateRect(invalid_rect);
+  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  if (NULL == navigator) {
+    return;
   }
+  navigator->InvalidateRect(instance, invalid_rect);
 }
 
 void NPN_ForceRedraw(NPP instance) {
   if (NULL == instance) {
     return;
   }
-  if (nacl::NPNavigator* navigator = NaClNP_GetNavigator()) {
-    navigator->ForceRedraw();
+  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  if (NULL == navigator) {
+    return;
   }
+  navigator->ForceRedraw(instance);
 }

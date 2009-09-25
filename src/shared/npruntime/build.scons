@@ -65,25 +65,11 @@ if env.Bit('linux'):
    env_no_strict_aliasing.Append(CCFLAGS = ['-fno-strict-aliasing'])
 
 NACL_NPRUNTIME_INPUTS = [
-    'naclnp_util.cc',
     'npbridge.cc',
     'npn_gate.cc',
-    'npnavigator.cc',
     'npobject_proxy.cc',
     'npobject_stub.cc',
     env_no_strict_aliasing.ComponentObject('nprpc.cc'),
-    'npobject_handle.cc',
+    'npmodule.cc',
 ]
-if env['TARGET_PLATFORM'] == 'WINDOWS':
-  NACL_NPRUNTIME_INPUTS += [
-    'win/util_win.cc',
-  ]
-if env['TARGET_PLATFORM'] == 'LINUX':
-  NACL_NPRUNTIME_INPUTS += [
-    'linux/util_linux.cc',
-  ]
-if env['TARGET_PLATFORM'] == 'MAC':
-  NACL_NPRUNTIME_INPUTS += [
-    'osx/util_osx.cc',
-  ]
 env.ComponentLibrary('google_nacl_npruntime', NACL_NPRUNTIME_INPUTS)

@@ -34,14 +34,16 @@ env.Prepend(CPPDEFINES = ['XP_UNIX'])
 
 nacl_npplugin_test_inputs = [
   'base_object.cc',
-  'npapi_runtime_test.cc',
   'npp_gate.cc',
   'plugin.cc',
 ]
 
 # TODO: should this link against the sdk version of google_nacl_npruntime?
 env.ComponentProgram('npapi_test.nexe', nacl_npplugin_test_inputs,
-                     EXTRA_LIBS=['google_nacl_npruntime', 'google_nacl_imc'])
+                     EXTRA_LIBS=['google_nacl_npruntime',
+                                 'srpc',
+                                 'pthread',
+                                 'google_nacl_imc'])
 
 
 # Note that the html is required to run this program.

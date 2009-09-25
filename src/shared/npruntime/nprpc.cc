@@ -30,217 +30,233 @@
  */
 
 
+#include "native_client/src/shared/npruntime/nprpc.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
-
-
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/npruntime/npnavigator.h"
 
 namespace nacl {
 
-void* RpcStack::Push(NPIdentifier name) {
-  if (NPNavigator::IdentifierIsString(name)) {
-    NPUTF8* utf8 = NPN_UTF8FromIdentifier(name);
-    assert(utf8 != NULL);
-    size_t length = strlen(utf8) + 1;
-    void* buffer = Alloc(length);
-    if (NULL != buffer) {
-      memmove(buffer, utf8, length);
-    }
-    NPN_MemFree(utf8);
-    return buffer;
-  }
-  return top();
-}
+// This file defines all the serializations for the NPAPI complex objects.
 
-NPIdentifier RpcArg::GetIdentifier() {
-  NPIdentifier* name = reinterpret_cast<NPIdentifier*>(base_);
-  base_ = Step(base_, sizeof(NPIdentifier));
-  if (base_ == NULL) {  // TODO(shiki): Should be checked up-front.
-    return reinterpret_cast<NPIdentifier*>(~static_cast<uintptr_t>(0u));
-  }
-  if (!NPNavigator::IdentifierIsString(*name)) {
-    if (bridge_->is_webkit()) {
-      uintptr_t intid = reinterpret_cast<uintptr_t>(*name);
-      char index[11];
-      // NOTE(robertm): there a signedness issues and this
-      //                and the behavior for large ids is unclear
-      SNPRINTF(index, sizeof(index), "%u", (unsigned)(intid >> 1));
-      *name = NPN_GetStringIdentifier(index);
-    }
-    return *name;
-  }
-  if (opt_) {
-    *name = NPN_GetStringIdentifier(opt_);
-    opt_ = Step(opt_, strlen(opt_) + 1);
-  } else {              // TODO(shiki): Should be checked up-front.
-    return reinterpret_cast<NPIdentifier*>(~static_cast<uintptr_t>(0u));
-  }
-  return *name;
-}
 
-void* RpcStack::Push(const NPVariant& variant, bool param) {
-  if (NPVARIANT_IS_STRING(variant)) {
-    void* buffer = Alloc(NPVARIANT_TO_STRING(variant).utf8length + 1);
-    if (NULL != buffer) {
-      // Note in Safari under OS X, strings are not terminated by zero.
-      memmove(buffer,
-              NPVARIANT_TO_STRING(variant).utf8characters,
-              NPVARIANT_TO_STRING(variant).utf8length);
-      static_cast<char*>(buffer)[NPVARIANT_TO_STRING(variant).utf8length] = 0;
-    }
-    return buffer;
-  }
-  if (NPVARIANT_IS_OBJECT(variant)) {
-    NPObject* object = NPVARIANT_TO_OBJECT(variant);
-    return Push(object);
-  }
-  if (NPVARIANT_IS_HANDLE(variant)) {
-    NPCapability* capability =
-        static_cast<NPCapability*>(Alloc(sizeof(NPCapability)));
-    if (NULL != capability) {
-      bridge_->add_handle(NPVARIANT_TO_HANDLE(variant));
-      capability->pid = NPCapability::kHandle;
-      capability->object = NULL;
-    }
-    return capability;
-  }
-  return top();
-}
+// Converts an array of NPVariant into another array of NPVariant that packed
+// differently to support different ABIs between the NaCl module and the
+// browser plugin. The target NPVariant size is given by peer_npvariant_size.
+//
+// Currently ConvertNPVariants() supports only 16 byte NPVariant (Win32) to
+// 12 byte NPVariant (Linux, OS X, and NaCl) conversion and vice versa.
+static void* ConvertNPVariants(const NPVariant* variant,
+                               void* target,
+                               size_t peer_npvariant_size,
+                               size_t arg_count);
 
-const NPVariant* RpcArg::GetVariant(bool param) {
+// NPVariants are passed in two NaClSrpcArgs.
+// The first contains the fixed-size portion.
+// The second contains the optional portion (such as the bytes for NPStrings
+// valued variants, or capability for NPObjects).
+const NPVariant* RpcArg::GetVariant(bool copy_strings) {
   static const NPVariant null = { NPVariantType_Null, {0} };
-
-  NPVariant* variant = reinterpret_cast<NPVariant*>(base_);
-  base_ = Step(base_, sizeof(NPVariant));
-  if (base_ == NULL) {
+  NPVariant* variant =
+      reinterpret_cast<NPVariant*>(fixed_.Request(sizeof(NPVariant)));
+  if (NULL == variant) {
+    // There aren't enough bytes to store an NPVariant.
     return &null;
   }
+  fixed_.Consume(sizeof(NPVariant));
   if (NPVARIANT_IS_STRING(*variant)) {
-    if (opt_ && NPVARIANT_TO_STRING(*variant).utf8characters) {
-      STRINGZ_TO_NPVARIANT(opt_, *variant);
-      uint32_t length = NPVARIANT_TO_STRING(*variant).utf8length;
-      if (!param) {
+    if (0 == NPVARIANT_TO_STRING(*variant).utf8length &&
+        NULL == NPVARIANT_TO_STRING(*variant).utf8characters) {
+      // Odd, we were passed a NULL string (length == 0 or characters == NULL).
+      STRINGN_TO_NPVARIANT(NULL, 0, *variant);
+    } else {
+      size_t length = NPVARIANT_TO_STRING(*variant).utf8length;
+      char* string = reinterpret_cast<char*>(optional_.Request(length));
+      if (NULL == string) {
+        // Not enough bytes to read string.
+        return &null;
+      }
+      STRINGZ_TO_NPVARIANT(reinterpret_cast<NPUTF8*>(string), *variant);
+      optional_.Consume(length);
+      if (!copy_strings) {
         // Note we cannot use strdup() here since NPN_ReleaseVariantValue() is
         // unhappy with the string allocated by strdup() in some browser
         // versions.
-        void* copy;
-        if (0 < length && (copy = NPN_MemAlloc(length + 1))) {
-          memmove(copy,
-                  NPVARIANT_TO_STRING(*variant).utf8characters,
-                  length + 1);
-          STRINGN_TO_NPVARIANT(static_cast<NPUTF8*>(copy), length, *variant);
-        } else {
+        void* copy = NPN_MemAlloc(length + 1);
+        if (NULL == copy) {
           STRINGN_TO_NPVARIANT(NULL, 0, *variant);
+        } else {
+          memmove(copy, string, length + 1);
+          STRINGN_TO_NPVARIANT(static_cast<NPUTF8*>(copy), length, *variant);
         }
       }
-      opt_ = Step(opt_, length + 1);
-    } else {
-      STRINGN_TO_NPVARIANT(NULL, 0, *variant);
     }
   } else if (NPVARIANT_IS_OBJECT(*variant)) {
-    NPCapability* capability = reinterpret_cast<NPCapability*>(opt_);
-    opt_ = Step(opt_, sizeof(NPCapability));
-    if (NULL == opt_) {
+    NPCapability* capability =
+        reinterpret_cast<NPCapability*>(
+            optional_.Request(sizeof(NPCapability)));
+    if (NULL == capability) {
+      // Not enough bytes to get a capability.
       NULL_TO_NPVARIANT(*variant);
-    } else if (!capability->IsHandle()) {
-      NPObject* object = bridge_->CreateProxy(*capability);
-      if (object == NULL) {
+    } else {
+      NPBridge* bridge = NPBridge::LookupBridge(npp_);
+      NPObject* object = bridge->CreateProxy(npp_, *capability);
+      if (NULL == object) {
         NULL_TO_NPVARIANT(*variant);
       } else {
         OBJECT_TO_NPVARIANT(object, *variant);
       }
-    } else if (0 < GetHandleCount()) {
-      // Convert to NPVariantType_Handle.
-      HtpHandle handle = GetHandle();
-      HANDLE_TO_NPVARIANT(handle, *variant);
-    } else {
-      NULL_TO_NPVARIANT(*variant);
-    }
-  } else if (NPVARIANT_IS_HANDLE(*variant)) {
-    NPObject* object = GetHandleObject();
-    if (object == NULL) {
-      NULL_TO_NPVARIANT(*variant);
-    } else {
-      OBJECT_TO_NPVARIANT(object, *variant);
+      optional_.Consume(sizeof(NPCapability));
     }
   }
   return variant;
 }
 
-void* RpcStack::Push(NPObject* object) {
-  NPCapability* capability =
-      static_cast<NPCapability*>(Alloc(sizeof(NPCapability)));
-  if (NULL == capability) {
+bool RpcArg::PutVariant(const NPVariant* variant) {
+  NPBridge* bridge = NPBridge::LookupBridge(npp_);
+  // Get the size of an NPVariant in the destination.
+  size_t peer_npvariant_size = bridge->peer_npvariant_size();
+  // First the fixed portions.
+  NPVariant* ptr =
+      reinterpret_cast<NPVariant*>(fixed_.Request(peer_npvariant_size));
+  if (NULL == ptr) {
+    // There aren't enough bytes to store an NPVariant.
+    return false;
+  }
+  fixed_.Consume(peer_npvariant_size);
+  ConvertNPVariants(variant, ptr, peer_npvariant_size, 1);
+  // Aid the optional portions.
+  if (NPVARIANT_IS_STRING(*variant)) {
+    if (0 == NPVARIANT_TO_STRING(*variant).utf8length ||
+        NULL == NPVARIANT_TO_STRING(*variant).utf8characters) {
+      // Something's wrong with this string.
+      return false;
+    } else {
+      size_t len = NPVARIANT_TO_STRING(*variant).utf8length;
+      const char* npstr = NPVARIANT_TO_STRING(*variant).utf8characters;
+      void* str = fixed_.Request(len);
+      if (NULL == str) {
+        // There aren't enough bytes to store the string.
+        return false;
+      }
+      fixed_.Consume(len);
+      memcpy(ptr, reinterpret_cast<const void*>(npstr), len);
+    }
+  } else if (NPVARIANT_IS_OBJECT(*variant)) {
+    NPObject* object = NPVARIANT_TO_OBJECT(*variant);
+    // Passing objects is done by passing a capability.
+    NPCapability* capability =
+        reinterpret_cast<NPCapability*>(
+            optional_.Request(sizeof(NPCapability)));
+    if (NULL == capability) {
+      return false;
+    }
+    optional_.Consume(sizeof(NPCapability));
+    bridge->CreateStub(npp_, object, capability);
+  }
+  return true;
+}
+
+const NPVariant* RpcArg::GetVariantArray(uint32_t count) {
+  if (0 == count) {
     return NULL;
   }
-  if (NPHandleObject::IsInstance(object)) {
-    NPHandleObject* object_handle = static_cast<NPHandleObject*>(object);
-    bridge_->add_handle(object_handle->handle());
-    capability->pid = NPCapability::kHandle;
-    capability->object = NULL;
-  } else {
-    bridge_->CreateStub(object, static_cast<NPCapability*>(capability));
+  const NPVariant* variants = GetVariant(true);
+  if (NULL == variants) {
+    // There were no variants present in the array.
+    return NULL;
   }
-  return capability;
+  for (uint32_t i = 1; i < count; ++i) {
+    const NPVariant* next_variant = GetVariant(true);
+    if (variants + i != next_variant) {
+      // The expectation is that the GetVariant calls mutate the received
+      // buffer and return consecutive pointers in that buffer.  If that
+      // expection is not satisfied, we return NULL.
+      return NULL;
+    }
+  }
+  return variants;
+}
+
+bool RpcArg::PutVariantArray(const NPVariant* variants, uint32_t count) {
+  uint32_t i;
+  for (i = 0; i < count; ++i) {
+    if (!PutVariant(variants + i)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 NPObject* RpcArg::GetObject() {
-  NPCapability* capability = reinterpret_cast<NPCapability*>(opt_);
-  opt_ = Step(opt_, sizeof(NPCapability));
-  if (NULL == opt_) {
+  NPBridge* bridge = NPBridge::LookupBridge(npp_);
+  NPCapability* capability =
+      reinterpret_cast<NPCapability*>(fixed_.Request(sizeof(NPCapability)));
+  if (NULL == capability) {
     return NULL;
   }
-  if (capability->IsHandle()) {
-    return GetHandleObject();
-  }
-  return bridge_->CreateProxy(*capability);
+  fixed_.Consume(sizeof(NPCapability));
+  return bridge->CreateProxy(npp_, *capability);
 }
 
-const char* RpcArg::GetString() {
-  const char* string = reinterpret_cast<const char*>(base_);
-  if (NULL == base_) {
-    return NULL;
+bool RpcArg::PutObject(NPObject* object) {
+  NPBridge* bridge = NPBridge::LookupBridge(npp_);
+  NPCapability* capability =
+      reinterpret_cast<NPCapability*>(fixed_.Request(sizeof(NPCapability)));
+  if (NULL == capability) {
+    return false;
   }
-  size_t length = strnlen(string, limit_ - base_);
-  if (length == static_cast<size_t>(limit_ - base_)) {
-    return NULL;
-  }
-  base_ = Step(base_, length + 1);
-  if (NULL == base_) {
-    return NULL;
-  }
-  return string;
+  fixed_.Consume(sizeof(NPCapability));
+  bridge->CreateStub(npp_, object, capability);
+  return true;
 }
 
 NPCapability* RpcArg::GetCapability() {
-  NPCapability* capability = reinterpret_cast<NPCapability*>(base_);
-  base_ = Step(base_, sizeof(NPCapability));
-  if (NULL == base_) {
-    return NULL;
+  return reinterpret_cast<NPCapability*>(fixed_.Request(sizeof(NPCapability)));
+}
+
+bool RpcArg::PutCapability(const NPCapability* capability) {
+  NPCapability* ptr =
+      reinterpret_cast<NPCapability*>(fixed_.Request(sizeof(NPCapability)));
+  if (NULL == ptr) {
+    return false;
   }
-  return capability;
+  fixed_.Consume(sizeof(NPCapability));
+  memcpy(ptr, capability, sizeof(NPCapability));
+  return true;
 }
 
 NPSize* RpcArg::GetSize() {
-  NPSize* size = reinterpret_cast<NPSize*>(base_);
-  base_ = Step(base_, sizeof(*size));
-  if (NULL == base_) {
-    return NULL;
+  return reinterpret_cast<NPSize*>(fixed_.Request(sizeof(NPSize)));
+}
+
+bool RpcArg::PutSize(const NPSize* size) {
+  NPSize* ptr = reinterpret_cast<NPSize*>(fixed_.Request(sizeof(NPSize)));
+  if (NULL == ptr) {
+    return false;
   }
-  return size;
+  fixed_.Consume(sizeof(NPSize));
+  memcpy(ptr, size, sizeof(NPSize));
+  return true;
 }
 
 NPRect* RpcArg::GetRect() {
-  NPRect* rect = reinterpret_cast<NPRect*>(base_);
-  base_ = Step(base_, sizeof(*rect));
-  if (NULL == base_) {
-    return NULL;
-  }
-  return rect;
+  return reinterpret_cast<NPRect*>(fixed_.Request(sizeof(NPRect)));
 }
 
-void* ConvertNPVariants(const NPVariant* variant, void* target,
+bool RpcArg::PutRect(const NPRect* rect) {
+  NPRect* ptr = reinterpret_cast<NPRect*>(fixed_.Request(sizeof(NPRect)));
+  if (NULL == ptr) {
+    return false;
+  }
+  fixed_.Consume(sizeof(NPRect));
+  memcpy(ptr, rect, sizeof(NPRect));
+  return true;
+}
+
+void* ConvertNPVariants(const NPVariant* variant,
+                        void* target,
                         size_t peer_npvariant_size,
                         size_t arg_count) {
   // NPVariant is defined in npruntime.h.

@@ -157,13 +157,6 @@ static bool SetProperty(NPObject* object, NPIdentifier name,
   return false;
 }
 
-int main(int argc, char* argv[]) {
-  printf("*** main\n");
-  NaClNP_Init(&argc, argv);
-  NaClNP_MainLoop(0);
-  return 0;
-}
-
 NPClass *GetNPSimpleClass() {
   return &npcRefClass;
 }
