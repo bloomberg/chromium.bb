@@ -237,6 +237,8 @@ TabContents::TabContents(Profile* profile,
       current_load_start_(),
       load_state_(net::LOAD_STATE_IDLE),
       load_state_host_(),
+      upload_size_(0),
+      upload_position_(0),
       received_page_title_(false),
       is_starred_(false),
       contents_mime_type_(),
@@ -553,7 +555,12 @@ std::wstring TabContents::GetStatusText() const {
     case net::LOAD_STATE_CONNECTING:
       return l10n_util::GetString(IDS_LOAD_STATE_CONNECTING);
     case net::LOAD_STATE_SENDING_REQUEST:
-      return l10n_util::GetString(IDS_LOAD_STATE_SENDING_REQUEST);
+      if (upload_size_)
+        return l10n_util::GetStringF(
+                    IDS_LOAD_STATE_SENDING_REQUEST_WITH_PROGRESS,
+                    static_cast<int>((100 * upload_position_) / upload_size_));
+      else
+        return l10n_util::GetString(IDS_LOAD_STATE_SENDING_REQUEST);
     case net::LOAD_STATE_WAITING_FOR_RESPONSE:
       return l10n_util::GetStringF(IDS_LOAD_STATE_WAITING_FOR_RESPONSE,
                                    load_state_host_);
@@ -1161,6 +1168,8 @@ void TabContents::SetIsLoading(bool is_loading,
   if (!is_loading) {
     load_state_ = net::LOAD_STATE_IDLE;
     load_state_host_.clear();
+    upload_size_ = 0;
+    upload_position_ = 0;
   }
 
   render_manager_.SetIsLoading(is_loading);
@@ -2384,8 +2393,12 @@ void TabContents::RendererResponsive(RenderViewHost* render_view_host) {
 }
 
 void TabContents::LoadStateChanged(const GURL& url,
-                                   net::LoadState load_state) {
+                                   net::LoadState load_state,
+                                   uint64 upload_position,
+                                   uint64 upload_size) {
   load_state_ = load_state;
+  upload_position_ = upload_position;
+  upload_size_ = upload_size;
   std::wstring languages =
       profile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
   load_state_host_.clear();

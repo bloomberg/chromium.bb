@@ -894,7 +894,8 @@ class TabContents : public PageNavigator,
   virtual void RendererUnresponsive(RenderViewHost* render_view_host,
                                     bool is_during_unload);
   virtual void RendererResponsive(RenderViewHost* render_view_host);
-  virtual void LoadStateChanged(const GURL& url, net::LoadState load_state);
+  virtual void LoadStateChanged(const GURL& url, net::LoadState load_state,
+                                uint64 upload_position, uint64 upload_size);
   virtual bool IsExternalTabContainer() const;
   virtual void DidInsertCSS();
   virtual void FocusedNodeChanged();
@@ -1020,6 +1021,10 @@ class TabContents : public PageNavigator,
   // The current load state and the URL associated with it.
   net::LoadState load_state_;
   std::wstring load_state_host_;
+  // Upload progress, for displaying in the status bar.
+  // Set to zero when there is no significant upload happening.
+  uint64 upload_size_;
+  uint64 upload_position_;
 
   // Data for current page -----------------------------------------------------
 

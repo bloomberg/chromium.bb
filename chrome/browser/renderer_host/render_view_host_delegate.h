@@ -537,7 +537,8 @@ class RenderViewHostDelegate {
   virtual void RendererResponsive(RenderViewHost* render_view_host) {}
 
   // Notification that the RenderViewHost's load state changed.
-  virtual void LoadStateChanged(const GURL& url, net::LoadState load_state) {}
+  virtual void LoadStateChanged(const GURL& url, net::LoadState load_state,
+                                uint64 upload_position, uint64 upload_size) {}
 
   // Returns true if this view is used to host an external tab container.
   virtual bool IsExternalTabContainer() const;

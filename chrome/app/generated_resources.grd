@@ -2957,6 +2957,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LOAD_STATE_SENDING_REQUEST">
         Sending request...
       </message>
+      <message name="IDS_LOAD_STATE_SENDING_REQUEST_WITH_PROGRESS">
+        Uploading (<ph name="PROGRESS_PERCENT">$1<ex>27</ex></ph>%)...
+      </message>
       <message name="IDS_LOAD_STATE_WAITING_FOR_RESPONSE">
         Waiting for <ph name="HOST_NAME">$1<ex>www.google.com</ex></ph>...
       </message>
