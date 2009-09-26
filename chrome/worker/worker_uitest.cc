@@ -36,8 +36,8 @@ TEST_F(WorkerTest, MultipleWorkers) {
 }
 
 // WorkerFastLayoutTests works on the linux try servers, but fails on the
-// build bots.
-#if defined(OS_LINUX)
+// build bots and fails on mac valgrind.
+#if !defined(OS_WIN)
 #define WorkerFastLayoutTests DISABLED_WorkerFastLayoutTests
 #endif
 
