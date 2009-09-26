@@ -29,6 +29,7 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "webkit/glue/plugins/nphostapi.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
@@ -49,6 +50,7 @@ extern "C" {
   NPError API_CALL NP_Shutdown(void);
 }
 
+LaunchNaClProcessFunc launch_nacl_process = NULL;
 
 NPError API_CALL NaCl_NP_GetEntryPoints(NPPluginFuncs* pFuncs) {
 #if NACL_WINDOWS || NACL_OSX
@@ -74,7 +76,7 @@ NPError API_CALL NaCl_NP_Shutdown() {
   return NP_Shutdown();
 }
 
-void RegisterInternalNaClPlugin() {
+void RegisterInternalNaClPlugin(LaunchNaClProcessFunc launch_func) {
   NPAPI::PluginEntryPoints entry_points = {
 #if !defined(OS_LINUX)
       NaCl_NP_GetEntryPoints,
@@ -93,6 +95,10 @@ void RegisterInternalNaClPlugin() {
       L"",
       entry_points
   };
+
+  if (NULL != launch_func) {
+    launch_nacl_process = launch_func;
+  }
 
   NPAPI::PluginList::Singleton()->RegisterInternalPlugin(nacl_plugin_info);
 }

@@ -8,22 +8,21 @@
 #define SK_IGNORE_STDINT_DOT_H
 
 #include "native_client/src/include/portability.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/nacl_types.h"
-#include "chrome/renderer/render_thread.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
+#include "native_client/src/trusted/plugin/nacl_entry_points.h"
+
+extern LaunchNaClProcessFunc launch_nacl_process;
 
 namespace nacl {
   bool SelLdrLauncher::Start(int imc_fd) {
     // send a synchronous message to the browser process
-    FileDescriptor handle;
-    if (!RenderThread::current()->Send(new ViewHostMsg_LaunchNaCl(
-        imc_fd, &handle))) {
+    Handle handle;
+    if (!launch_nacl_process || !launch_nacl_process(imc_fd, &handle)) {
       return false;
     }
     // The handle we get back is the plugins end of the initial communication
     // channel - it is now created by the browser process
-    channel_ = NATIVE_HANDLE(handle);
+    channel_ = handle;
     return true;
   }
 }
