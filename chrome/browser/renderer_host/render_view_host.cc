@@ -1066,10 +1066,18 @@ void RenderViewHost::OnMsgDidLoadResourceFromMemoryCache(
 }
 
 void RenderViewHost::OnMsgDidDisplayInsecureContent() {
+  RenderViewHostDelegate::Resource* resource_delegate =
+      delegate_->GetResourceDelegate();
+  if (resource_delegate)
+    resource_delegate->DidDisplayInsecureContent();
 }
 
 void RenderViewHost::OnMsgDidRunInsecureContent(
     const std::string& security_origin) {
+  RenderViewHostDelegate::Resource* resource_delegate =
+      delegate_->GetResourceDelegate();
+  if (resource_delegate)
+    resource_delegate->DidRunInsecureContent(security_origin);
 }
 
 void RenderViewHost::OnMsgDidStartProvisionalLoadForFrame(bool is_main_frame,

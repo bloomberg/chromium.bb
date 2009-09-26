@@ -133,6 +133,19 @@ void SSLPolicy::OnMixedContent(SSLMixedContentHandler* handler) {
   AddMixedContentWarningToConsole(handler);
 }
 
+void SSLPolicy::DidDisplayInsecureContent(NavigationEntry* entry) {
+  if (!entry)
+    return;
+
+  // TODO(abarth): We don't actually need to break the whole origin here,
+  //               but we can handle that in a later patch.
+  AllowMixedContentForOrigin(entry->url().spec());
+}
+
+void SSLPolicy::DidRunInsecureContent(const std::string& security_origin) {
+  AllowMixedContentForOrigin(security_origin);
+}
+
 void SSLPolicy::OnRequestStarted(SSLRequestInfo* info) {
   if (net::IsCertStatusError(info->ssl_cert_status()))
     UpdateStateForUnsafeContent(info);

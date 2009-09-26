@@ -1774,11 +1774,11 @@ void TabContents::DidLoadResourceFromMemoryCache(
 }
 
 void TabContents::DidDisplayInsecureContent() {
-  // TODO(abarth): Update the HTTPS state.
+  controller_.ssl_manager()->DidDisplayInsecureContent();
 }
 
 void TabContents::DidRunInsecureContent(const std::string& security_origin) {
-  // TODO(abarth): Update the HTTPS state.
+  controller_.ssl_manager()->DidRunInsecureContent(security_origin);
 }
 
 void TabContents::DidFailProvisionalLoadWithError(

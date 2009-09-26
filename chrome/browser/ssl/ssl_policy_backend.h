@@ -45,7 +45,7 @@ class SSLPolicyBackend {
   //
   // It will return true if the navigation entry was updated or false if
   // nothing changed. The caller is responsible for broadcasting
-  // NOTIFY_SSY_STATE_CHANGED if it returns true.
+  // NOTIFY_SSL_STATE_CHANGED if it returns true.
   bool SetMaxSecurityStyle(SecurityStyle style);
 
   // Logs a message to the console of the page.

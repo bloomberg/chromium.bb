@@ -87,6 +87,14 @@ void SSLManager::OnSSLCertificateError(ResourceDispatcherHost* rdh,
                         &SSLCertErrorHandler::Dispatch));
 }
 
+void SSLManager::DidDisplayInsecureContent() {
+  policy()->DidDisplayInsecureContent(controller_->GetActiveEntry());
+}
+
+void SSLManager::DidRunInsecureContent(const std::string& security_origin) {
+  policy()->DidRunInsecureContent(security_origin);
+}
+
 // static
 bool SSLManager::ShouldStartRequest(ResourceDispatcherHost* rdh,
                                     URLRequest* request,

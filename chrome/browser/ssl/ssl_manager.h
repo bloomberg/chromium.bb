@@ -77,6 +77,10 @@ class SSLManager : public NotificationObserver {
                                  URLRequest* request,
                                  MessageLoop* ui_loop);
 
+  // Mixed content entry points.
+  void DidDisplayInsecureContent();
+  void DidRunInsecureContent(const std::string& security_origin);
+
   // Entry point for navigation.  This function begins the process of updating
   // the security UI when the main frame navigates to a new URL.
   //

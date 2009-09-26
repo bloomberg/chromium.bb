@@ -30,10 +30,15 @@ class SSLPolicy : public SSLBlockingPage::Delegate {
   // An error occurred with the certificate in an SSL connection.
   void OnCertError(SSLCertErrorHandler* handler);
 
+  // TODO(abarth) Remove this API once the new mixed content path is done.
+  //
   // A request for a mixed-content resource was made.  Note that the resource
   // request was not started yet and the delegate is responsible for starting
   // it.
   void OnMixedContent(SSLMixedContentHandler* handler);
+
+  void DidDisplayInsecureContent(NavigationEntry* entry);
+  void DidRunInsecureContent(const std::string& security_origin);
 
   // We have started a resource request with the given info.
   void OnRequestStarted(SSLRequestInfo* info);
