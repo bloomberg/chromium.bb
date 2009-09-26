@@ -2,5 +2,5 @@
 
 void function2(void)
 {
-  printf("Hello from function2.in\n");
+  printf("Hello from function2.in1\n");
 }

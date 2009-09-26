@@ -32,8 +32,10 @@ test.build_all('rules.gyp', chdir='relocate/gypfiles')
 
 expect = """\
 Hello from program.c
-Hello from function1.in
-Hello from function2.in
+Hello from function1.in1
+Hello from function2.in1
+Hello from define3.in0
+Hello from define4.in0
 """
 
 if sys.platform in ('darwin',):
@@ -43,8 +45,12 @@ else:
 test.run_built_executable('program', chdir=chdir, stdout=expect)
 
 test.must_match('relocate/rules/subdir2/rules-out/file1.out',
-                "Hello from file1.in\n")
+                "Hello from file1.in0\n")
 test.must_match('relocate/rules/subdir2/rules-out/file2.out',
-                "Hello from file2.in\n")
+                "Hello from file2.in0\n")
+test.must_match('relocate/rules/subdir2/rules-out/file3.out',
+                "Hello from file3.in1\n")
+test.must_match('relocate/rules/subdir2/rules-out/file4.out',
+                "Hello from file4.in1\n")
 
 test.pass_test()

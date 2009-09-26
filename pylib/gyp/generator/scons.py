@@ -129,8 +129,12 @@ env['BUILDERS']['%(name)s'] = Builder(action=%(name)s_action,
 _outputs = []
 _processed_input_files = []
 for infile in input_files:
+  if (type(infile) == type('')
+      and not os.path.isabs(infile)
+      and not infile[0] == '$'):
+    infile = %(src_dir)r + infile
   if str(infile).endswith('.%(extension)s'):
-    _generated = env.%(name)s(%(src_dir)r + infile)
+    _generated = env.%(name)s(infile)
     env.Precious(_generated)
     _outputs.append(_generated)
     %(process_outputs_as_sources_line)s
@@ -655,6 +659,9 @@ non_compilable_suffixes = {
         '.html',
         '.hxx',
         '.idl',
+        '.in',
+        '.in0',
+        '.in1',
         '.js',
         '.mk',
         '.rc',
@@ -664,6 +671,9 @@ non_compilable_suffixes = {
         '.h',
         '.dat',
         '.idl',
+        '.in',
+        '.in0',
+        '.in1',
     ]),
 }
 

@@ -5,13 +5,29 @@
       'type': 'none',
       'msvs_cygwin_shell': 0,
       'sources': [
-        'file1.in',
-        'file2.in',
+        'file1.in0',
+        'file2.in0',
+        'file3.in1',
+        'file4.in1',
       ],
       'rules': [
         {
-          'rule_name': 'copy_file',
-          'extension': 'in',
+          'rule_name': 'copy_file_0',
+          'extension': 'in0',
+          'inputs': [
+            '../copy-file.py',
+          ],
+          'outputs': [
+            'rules-out/<(RULE_INPUT_ROOT).out',
+          ],
+          'action': [
+            'python', '<(_inputs)', '<(RULE_INPUT_PATH)', '<@(_outputs)',
+          ],
+          'process_outputs_as_sources': 0,
+        },
+        {
+          'rule_name': 'copy_file_1',
+          'extension': 'in1',
           'inputs': [
             '../copy-file.py',
           ],
