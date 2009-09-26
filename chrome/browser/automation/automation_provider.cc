@@ -1512,8 +1512,8 @@ void AutomationProvider::PrintNow(int tab_handle,
 }
 
 void AutomationProvider::SavePage(int tab_handle,
-                                  const std::wstring& file_name,
-                                  const std::wstring& dir_path,
+                                  const FilePath& file_name,
+                                  const FilePath& dir_path,
                                   int type,
                                   bool* success) {
   if (!tab_tracker_->ContainsHandle(tab_handle)) {

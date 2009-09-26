@@ -272,8 +272,7 @@ class TabProxy : public AutomationResourceProxy {
   // Save the current web page. |file_name| is the HTML file name, and
   // |dir_path| is the directory for saving resource files. |type| indicates
   // which type we're saving as: HTML only or the complete web page.
-  bool SavePage(const std::wstring& file_name,
-                const std::wstring& dir_path,
+  bool SavePage(const FilePath& file_name, const FilePath& dir_path,
                 SavePackage::SavePackageType type);
 
   // Posts a message to the external tab.

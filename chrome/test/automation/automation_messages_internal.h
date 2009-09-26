@@ -658,8 +658,8 @@ IPC_BEGIN_MESSAGES(Automation)
   // for saving resources. The fourth parameter is the saving type: 0 for HTML
   // only; 1 for complete web page.
   // The return value contains a bool which is true on success.
-  IPC_SYNC_MESSAGE_ROUTED4_1(AutomationMsg_SavePage, int, std::wstring,
-                             std::wstring, int, bool)
+  IPC_SYNC_MESSAGE_ROUTED4_1(AutomationMsg_SavePage, int, FilePath, FilePath,
+                             int, bool)
 
   // This message requests the text currently being displayed in the
   // AutocompleteEdit.  The parameter is the handle to the AutocompleteEdit.

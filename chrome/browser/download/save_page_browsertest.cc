@@ -88,8 +88,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
 
   FilePath full_file_name = save_dir_.path().Append(file_name);
   FilePath dir = save_dir_.path().AppendASCII("a_files");
-  ASSERT_TRUE(current_tab->SavePage(full_file_name.ToWStringHack(),
-                                    dir.ToWStringHack(),
+  ASSERT_TRUE(current_tab->SavePage(full_file_name, dir,
                                     SavePackage::SAVE_AS_ONLY_HTML));
 
   SavePageFinishedObserver observer;
@@ -114,8 +113,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
 
   FilePath full_file_name = save_dir_.path().Append(file_name);
   FilePath dir = save_dir_.path().AppendASCII("b_files");
-  ASSERT_TRUE(current_tab->SavePage(full_file_name.ToWStringHack(),
-                                    dir.ToWStringHack(),
+  ASSERT_TRUE(current_tab->SavePage(full_file_name, dir,
                                     SavePackage::SAVE_AS_COMPLETE_HTML));
 
   SavePageFinishedObserver observer;
@@ -159,8 +157,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
   TabContents* current_tab = browser()->GetSelectedTabContents();
   ASSERT_TRUE(current_tab);
 
-  ASSERT_TRUE(current_tab->SavePage(full_file_name.ToWStringHack(),
-                                    dir.ToWStringHack(),
+  ASSERT_TRUE(current_tab->SavePage(full_file_name, dir,
                                     SavePackage::SAVE_AS_COMPLETE_HTML));
   SavePageFinishedObserver observer;
 

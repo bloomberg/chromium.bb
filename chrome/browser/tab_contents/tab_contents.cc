@@ -1127,15 +1127,12 @@ void TabContents::OnSavePage() {
 // Used in automated testing to bypass prompting the user for file names.
 // Instead, the names and paths are hard coded rather than running them through
 // file name sanitation and extension / mime checking.
-bool TabContents::SavePage(const std::wstring& main_file,
-                           const std::wstring& dir_path,
+bool TabContents::SavePage(const FilePath& main_file, const FilePath& dir_path,
                            SavePackage::SavePackageType save_type) {
   // Stop the page from navigating.
   Stop();
 
-  save_package_ = new SavePackage(this, save_type,
-                                  FilePath::FromWStringHack(main_file),
-                                  FilePath::FromWStringHack(dir_path));
+  save_package_ = new SavePackage(this, save_type, main_file, dir_path);
   return save_package_->Init();
 }
 

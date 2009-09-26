@@ -576,8 +576,8 @@ bool TabProxy::PrintAsync() {
   return sender_->Send(new AutomationMsg_PrintAsync(0, handle_));
 }
 
-bool TabProxy::SavePage(const std::wstring& file_name,
-                        const std::wstring& dir_path,
+bool TabProxy::SavePage(const FilePath& file_name,
+                        const FilePath& dir_path,
                         SavePackage::SavePackageType type) {
   if (!is_valid())
     return false;

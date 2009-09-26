@@ -360,8 +360,8 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   // Save the current web page.
   void SavePage(int tab_handle,
-                const std::wstring& file_name,
-                const std::wstring& dir_path,
+                const FilePath& file_name,
+                const FilePath& dir_path,
                 int type,
                 bool* success);
 
