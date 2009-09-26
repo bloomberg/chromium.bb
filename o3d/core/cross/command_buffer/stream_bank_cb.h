@@ -70,7 +70,7 @@ class StreamBankCB : public StreamBank {
 
   // The resource ID for the vertex struct representing the input vertex
   // streams, or kInvalidResource if it hasn't been created yet.
-  command_buffer::ResourceID vertex_struct_id_;
+  command_buffer::ResourceId vertex_struct_id_;
 };
 
 }  // namespace o3d

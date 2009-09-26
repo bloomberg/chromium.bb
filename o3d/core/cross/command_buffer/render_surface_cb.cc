@@ -35,10 +35,9 @@
 
 namespace o3d {
 
-using command_buffer::ResourceID;
+using command_buffer::ResourceId;
 using command_buffer::CommandBufferEntry;
 using command_buffer::CommandBufferHelper;
-namespace create_render_surface_cmd = command_buffer::create_render_surface_cmd;
 
 RenderSurfaceCB::RenderSurfaceCB(ServiceLocator *service_locator,
                                  int width,
@@ -56,7 +55,7 @@ RenderSurfaceCB::RenderSurfaceCB(ServiceLocator *service_locator,
   DCHECK(texture);
   DCHECK(renderer);
 
-  ResourceID id = renderer_->render_surface_ids().AllocateID();
+  ResourceId id = renderer_->render_surface_ids().AllocateID();
   resource_id_ = id;
   CommandBufferHelper *helper = renderer_->helper();
   helper->CreateRenderSurface(
@@ -90,7 +89,7 @@ RenderDepthStencilSurfaceCB::RenderDepthStencilSurfaceCB(
   DCHECK_GT(width, 0);
   DCHECK_GT(height, 0);
   DCHECK(renderer);
-  ResourceID id = renderer_->depth_surface_ids().AllocateID();
+  ResourceId id = renderer_->depth_surface_ids().AllocateID();
   resource_id_ = id;
   CommandBufferHelper *helper = renderer_->helper();
   helper->CreateDepthSurface(id, width, height);

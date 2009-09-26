@@ -105,7 +105,7 @@ class VertexStructGL : public VertexStruct {
 
   // Adds an input to the vertex struct.
   void SetInput(unsigned int input_index,
-                ResourceID vertex_buffer_id,
+                ResourceId vertex_buffer_id,
                 unsigned int offset,
                 unsigned int stride,
                 vertex_struct::Type type,
@@ -121,7 +121,7 @@ class VertexStructGL : public VertexStruct {
   // This struct describes the parameters that are passed to
   // glVertexAttribPointer.
   struct AttribDesc {
-    ResourceID vertex_buffer_id;
+    ResourceId vertex_buffer_id;
     GLint size;
     GLenum type;
     GLboolean normalized;

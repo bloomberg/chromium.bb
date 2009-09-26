@@ -207,9 +207,9 @@ void GAPID3D9::Clear(unsigned int buffers,
                      const RGBA &color,
                      float depth,
                      unsigned int stencil) {
-  DWORD flags = (buffers & COLOR ? D3DCLEAR_TARGET : 0) |
-                (buffers & DEPTH ? D3DCLEAR_ZBUFFER : 0) |
-                (buffers & STENCIL ? D3DCLEAR_STENCIL : 0);
+  DWORD flags = (buffers & kColor ? D3DCLEAR_TARGET : 0) |
+                (buffers & kDepth ? D3DCLEAR_ZBUFFER : 0) |
+                (buffers & kStencil ? D3DCLEAR_STENCIL : 0);
   HR(d3d_device_->Clear(0,
                         NULL,
                         flags,
@@ -239,7 +239,7 @@ static unsigned int RGBAToARGB(unsigned int rgba) {
 }
 
 // Sets the current VertexStruct. Just keep track of the ID.
-BufferSyncInterface::ParseError GAPID3D9::SetVertexStruct(ResourceID id) {
+BufferSyncInterface::ParseError GAPID3D9::SetVertexStruct(ResourceId id) {
   current_vertex_struct_ = id;
   validate_streams_ = true;
   return BufferSyncInterface::kParseNoError;
@@ -308,19 +308,20 @@ bool GAPID3D9::ValidateStreams() {
 }
 
 // Converts a GAPID3D9::PrimitiveType to a D3DPRIMITIVETYPE.
-static D3DPRIMITIVETYPE D3DPrimitive(GAPID3D9::PrimitiveType primitive_type) {
+static D3DPRIMITIVETYPE D3DPrimitive(
+    command_buffer::PrimitiveType primitive_type) {
   switch (primitive_type) {
-    case GAPID3D9::POINTS:
+    case command_buffer::kPoints:
       return D3DPT_POINTLIST;
-    case GAPID3D9::LINES:
+    case command_buffer::kLines:
       return D3DPT_LINELIST;
-    case GAPID3D9::LINE_STRIPS:
+    case command_buffer::kLineStrips:
       return D3DPT_LINESTRIP;
-    case GAPID3D9::TRIANGLES:
+    case command_buffer::kTriangles:
       return D3DPT_TRIANGLELIST;
-    case GAPID3D9::TRIANGLE_STRIPS:
+    case command_buffer::kTriangleStrips:
       return D3DPT_TRIANGLESTRIP;
-    case GAPID3D9::TRIANGLE_FANS:
+    case command_buffer::kTriangleFans:
       return D3DPT_TRIANGLEFAN;
     default:
       LOG(FATAL) << "Invalid primitive type";
@@ -356,7 +357,7 @@ BufferSyncInterface::ParseError GAPID3D9::Draw(
 // Draws with the current vertex struct.
 BufferSyncInterface::ParseError GAPID3D9::DrawIndexed(
     PrimitiveType primitive_type,
-    ResourceID index_buffer_id,
+    ResourceId index_buffer_id,
     unsigned int first,
     unsigned int count,
     unsigned int min_index,

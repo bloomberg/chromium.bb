@@ -114,7 +114,7 @@ class EffectGL : public Effect {
     CGparameter vp_param;
     CGparameter fp_param;
     int num_elements;
-    std::vector<ResourceID> sampler_ids;
+    std::vector<ResourceId> sampler_ids;
   };
   typedef std::vector<LowLevelParam> LowLevelParamList;
   typedef std::vector<EffectParamGL *> ParamList;

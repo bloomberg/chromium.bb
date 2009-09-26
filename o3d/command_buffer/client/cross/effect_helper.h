@@ -50,7 +50,7 @@ class EffectHelper {
  public:
   // A more usable version of effect_param::Desc
   struct EffectParamDesc {
-    ResourceID id;                     // The resource ID for the param.
+    ResourceId id;                     // The resource ID for the param.
     String name;                       // The name of the param.
     String semantic;                   // The semantic of the param.
     effect_param::DataType data_type;  // The data type of a param.
@@ -92,14 +92,14 @@ class EffectHelper {
   // This function will call Finish(), hence will block.
   //
   // Parameters:
-  //   effect_id: the ResourceID of the effect.
+  //   effect_id: the ResourceId of the effect.
   //   descs: A pointer to a vector containing the returned descriptions.
   //   The pointed vector will be cleared.
   // Returns:
   //   true if successful. Reasons for failure are:
   //   - invalid effect_id,
   //   - not enough memory in the shm_allocator_.
-  bool CreateEffectParameters(ResourceID effect_id,
+  bool CreateEffectParameters(ResourceId effect_id,
                               std::vector<EffectParamDesc> *descs);
 
   // Gets the strings for a desc. This will fill in the values for the name and
@@ -112,15 +112,15 @@ class EffectHelper {
   //
   // Parameters:
   //   desc: a pointer to the description for a parameter. The id field should
-  //   be set to the ResourceID of the parameter.
+  //   be set to the ResourceId of the parameter.
   // Returns:
   //   true if successful. Reasons for failure are:
-  //   - invalid parameter ResourceID,
+  //   - invalid parameter ResourceId,
   //   - not enough memory in the shm_allocator_.
   bool GetParamStrings(EffectParamDesc *desc);
 
   // Destroys all parameter resources referenced by the descriptions. The
-  // ResourceID will be freed from the param_id_allocator.
+  // ResourceId will be freed from the param_id_allocator.
   // Parameters:
   //   descs: the vector of descriptions containing the ResourceIDs of the
   //   parameters to destroy.
@@ -132,14 +132,14 @@ class EffectHelper {
   // This function will call Finish(), hence will block.
   //
   // Parameters:
-  //   effect_id: the ResourceID of the effect.
+  //   effect_id: the ResourceId of the effect.
   //   descs:  A pointer to a vector containing the returned descriptions.
   //   The pointed vector will be cleared.
   // Returns:
   //   true if successful. Reasons for failure are:
   //   - invalid effect_id,
   //   - not enough memory in the shm_allocator_.
-  bool GetEffectStreams(ResourceID effect_id,
+  bool GetEffectStreams(ResourceId effect_id,
                         std::vector<EffectStreamDesc> *descs);
 
  private:

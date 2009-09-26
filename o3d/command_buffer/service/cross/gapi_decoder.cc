@@ -152,7 +152,7 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleClear(
   // Pull out some values so they can't be changed by another thread after we've
   // validated them.
   uint32 buffers = args.buffers;
-  if (buffers & ~GAPIInterface::ALL_BUFFERS)
+  if (buffers & ~command_buffer::kAllBuffers)
     return BufferSyncInterface::kParseInvalidArguments;
   RGBA rgba;
   rgba.red = args.red;
@@ -178,13 +178,14 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleSetViewport(
 BufferSyncInterface::ParseError GAPIDecoder::HandleCreateVertexBuffer(
     uint32 arg_count,
     const cmd::CreateVertexBuffer& args) {
-  return gapi_->CreateVertexBuffer(args.id, args.size, args.flags);
+  return gapi_->CreateVertexBuffer(
+      args.vertex_buffer_id, args.size, args.flags);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleDestroyVertexBuffer(
     uint32 arg_count,
     const cmd::DestroyVertexBuffer& args) {
-  return gapi_->DestroyVertexBuffer(args.id);
+  return gapi_->DestroyVertexBuffer(args.vertex_buffer_id);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetVertexBufferDataImmediate(
@@ -192,9 +193,9 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleSetVertexBufferDataImmediate(
     const cmd::SetVertexBufferDataImmediate& args) {
   uint32 size = ImmediateDataSize(arg_count, args);
   if (size == 0) {
-    return ParseError::kParseNoError;
+    return BufferSyncInterface::kParseNoError;
   }
-  return gapi_->SetVertexBufferData(args.id, args.offset,
+  return gapi_->SetVertexBufferData(args.vertex_buffer_id, args.offset,
                                     size,
                                     AddressAfterStruct(args));
 }
@@ -209,7 +210,8 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleSetVertexBufferData(
                                       args.shared_memory.offset,
                                       size);
   if (!data) return BufferSyncInterface::kParseInvalidArguments;
-  return gapi_->SetVertexBufferData(args.id, args.offset, size, data);
+  return gapi_->SetVertexBufferData(
+      args.vertex_buffer_id, args.offset, size, data);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleGetVertexBufferData(
@@ -222,19 +224,20 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleGetVertexBufferData(
                                       args.shared_memory.offset,
                                       size);
   if (!data) return BufferSyncInterface::kParseInvalidArguments;
-  return gapi_->GetVertexBufferData(args.id, args.offset, size, data);
+  return gapi_->GetVertexBufferData(
+      args.vertex_buffer_id, args.offset, size, data);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleCreateIndexBuffer(
     uint32 arg_count,
     const cmd::CreateIndexBuffer& args) {
-  return gapi_->CreateIndexBuffer(args.id, args.size, args.flags);
+  return gapi_->CreateIndexBuffer(args.index_buffer_id, args.size, args.flags);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleDestroyIndexBuffer(
     uint32 arg_count,
     const cmd::DestroyIndexBuffer& args) {
-  return gapi_->DestroyIndexBuffer(args.id);
+  return gapi_->DestroyIndexBuffer(args.index_buffer_id);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetIndexBufferDataImmediate(
@@ -242,9 +245,9 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleSetIndexBufferDataImmediate(
     const cmd::SetIndexBufferDataImmediate& args) {
   uint32 size = ImmediateDataSize(arg_count, args);
   if (size == 0) {
-    return ParseError::kParseNoError;
+    return BufferSyncInterface::kParseNoError;
   }
-  return gapi_->SetIndexBufferData(args.id, args.offset, size,
+  return gapi_->SetIndexBufferData(args.index_buffer_id, args.offset, size,
                                    AddressAfterStruct(args));
 }
 
@@ -258,7 +261,8 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleSetIndexBufferData(
                                       args.shared_memory.offset,
                                       size);
   if (!data) return BufferSyncInterface::kParseInvalidArguments;
-  return gapi_->SetIndexBufferData(args.id, args.offset, size, data);
+  return gapi_->SetIndexBufferData(
+      args.index_buffer_id, args.offset, size, data);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleGetIndexBufferData(
@@ -271,32 +275,36 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleGetIndexBufferData(
                                       args.shared_memory.offset,
                                       size);
   if (!data) return BufferSyncInterface::kParseInvalidArguments;
-  return gapi_->GetIndexBufferData(args.id, args.offset, size, data);
+  return gapi_->GetIndexBufferData(
+      args.index_buffer_id, args.offset, size, data);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleCreateVertexStruct(
     uint32 arg_count,
     const cmd::CreateVertexStruct& args) {
-  return gapi_->CreateVertexStruct(args.id, args.input_count);
+  return gapi_->CreateVertexStruct(args.vertex_struct_id, args.input_count);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleDestroyVertexStruct(
     uint32 arg_count,
     const cmd::DestroyVertexStruct& args) {
-  return gapi_->DestroyVertexStruct(args.id);
+  return gapi_->DestroyVertexStruct(args.vertex_struct_id);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetVertexInput(
     uint32 arg_count,
     const cmd::SetVertexInput& args) {
-  namespace cmd = set_vertex_input_cmd;
-  unsigned int type_stride_semantic = args.fixme4;
-  unsigned int semantic_index = cmd::SemanticIndex::Get(type_stride_semantic);
-  unsigned int semantic = cmd::Semantic::Get(type_stride_semantic);
-  unsigned int type = cmd::Type::Get(type_stride_semantic);
-  unsigned int stride = cmd::Stride::Get(type_stride_semantic);
-  if (semantic >= vertex_struct::NUM_SEMANTICS ||
-      type >= vertex_struct::NUM_TYPES || stride == 0)
+  unsigned int type_stride_semantic = args.type_stride_semantic;
+  unsigned int semantic_index =
+      cmd::SetVertexInput::SemanticIndex::Get(type_stride_semantic);
+  unsigned int semantic =
+      cmd::SetVertexInput::Semantic::Get(type_stride_semantic);
+  unsigned int type =
+      cmd::SetVertexInput::Type::Get(type_stride_semantic);
+  unsigned int stride =
+      cmd::SetVertexInput::Stride::Get(type_stride_semantic);
+  if (semantic >= vertex_struct::kNumSemantics ||
+      type >= vertex_struct::kNumTypes || stride == 0)
     return BufferSyncInterface::kParseInvalidArguments;
   return gapi_->SetVertexInput(
       args.vertex_struct_id, args.input_index, args.vertex_buffer_id,
@@ -309,7 +317,7 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleSetVertexInput(
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetVertexStruct(
     uint32 arg_count,
     const cmd::SetVertexStruct& args) {
-  return gapi_->SetVertexStruct(args.id);
+  return gapi_->SetVertexStruct(args.vertex_struct_id);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleDraw(
@@ -318,10 +326,10 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleDraw(
   // Pull out some values so they can't be changed by another thread after we've
   // validated them.
   uint32 primitive_type = args.primitive_type;
-  if (primitive_type >= GAPIInterface::MAX_PRIMITIVE_TYPE)
+  if (primitive_type >= command_buffer::kMaxPrimitiveType)
     return BufferSyncInterface::kParseInvalidArguments;
   return gapi_->Draw(
-      static_cast<GAPIInterface::PrimitiveType>(primitive_type),
+      static_cast<command_buffer::PrimitiveType>(primitive_type),
       args.first, args.count);
 }
 
@@ -331,10 +339,10 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleDrawIndexed(
   // Pull out some values so they can't be changed by another thread after we've
   // validated them.
   uint32 primitive_type = args.primitive_type;
-  if (primitive_type >= GAPIInterface::MAX_PRIMITIVE_TYPE)
+  if (primitive_type >= command_buffer::kMaxPrimitiveType)
     return BufferSyncInterface::kParseInvalidArguments;
   return gapi_->DrawIndexed(
-      static_cast<GAPIInterface::PrimitiveType>(primitive_type),
+      static_cast<command_buffer::PrimitiveType>(primitive_type),
       args.index_buffer_id,
       args.first, args.count, args.min_index, args.max_index);
 }
@@ -349,7 +357,7 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleCreateEffect(
                                       args.shared_memory.offset,
                                       size);
   if (!data) return BufferSyncInterface::kParseInvalidArguments;
-  return gapi_->CreateEffect(args.id, size, data);
+  return gapi_->CreateEffect(args.effect_id, size, data);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleCreateEffectImmediate(
@@ -359,24 +367,25 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleCreateEffectImmediate(
   // validated them.
   uint32 size = args.size;
   uint32 data_size = ImmediateDataSize(arg_count, args);
-  if (size > data_size)
+  if (size > data_size) {
     return BufferSyncInterface::kParseInvalidArguments;
-  if (data_size == 0) {
-    return ParseError::kParseNoError;
   }
-  return gapi_->CreateEffect(args.id, size, AddressAfterStruct(args));
+  if (data_size == 0) {
+    return BufferSyncInterface::kParseNoError;
+  }
+  return gapi_->CreateEffect(args.effect_id, size, AddressAfterStruct(args));
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleDestroyEffect(
     uint32 arg_count,
     const cmd::DestroyEffect& args) {
-  return gapi_->DestroyEffect(args.id);
+  return gapi_->DestroyEffect(args.effect_id);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetEffect(
     uint32 arg_count,
     const cmd::SetEffect& args) {
-  return gapi_->SetEffect(args.id);
+  return gapi_->SetEffect(args.effect_id);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleGetParamCount(
@@ -389,7 +398,7 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleGetParamCount(
                                       args.shared_memory.offset,
                                       size);
   if (!data) return BufferSyncInterface::kParseInvalidArguments;
-  return gapi_->GetParamCount(args.id, size, data);
+  return gapi_->GetParamCount(args.effect_id, size, data);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleCreateParam(
@@ -422,7 +431,7 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleCreateParamByNameImmediate(
   if (size > data_size)
     return BufferSyncInterface::kParseInvalidArguments;
   if (data_size == 0) {
-    return ParseError::kParseNoError;
+    return BufferSyncInterface::kParseNoError;
   }
   return gapi_->CreateParamByName(args.param_id, args.effect_id, size,
                                   AddressAfterStruct(args));
@@ -431,7 +440,7 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleCreateParamByNameImmediate(
 BufferSyncInterface::ParseError GAPIDecoder::HandleDestroyParam(
     uint32 arg_count,
     const cmd::DestroyParam& args) {
-  return gapi_->DestroyParam(args.id);
+  return gapi_->DestroyParam(args.param_id);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetParamData(
@@ -444,7 +453,7 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleSetParamData(
                                       args.shared_memory.offset,
                                       size);
   if (!data) return BufferSyncInterface::kParseInvalidArguments;
-  return gapi_->SetParamData(args.id, size, data);
+  return gapi_->SetParamData(args.param_id, size, data);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetParamDataImmediate(
@@ -454,12 +463,13 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleSetParamDataImmediate(
   // validated them.
   uint32 size = args.size;
   uint32 data_size = ImmediateDataSize(arg_count, args);
-  if (size > data_size)
+  if (size > data_size) {
     return BufferSyncInterface::kParseInvalidArguments;
-  if (data_size == 0) {
-    return ParseError::kParseNoError;
   }
-  return gapi_->SetParamData(args.id, size, AddressAfterStruct(args));
+  if (data_size == 0) {
+    return BufferSyncInterface::kParseNoError;
+  }
+  return gapi_->SetParamData(args.param_id, size, AddressAfterStruct(args));
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleGetParamDesc(
@@ -472,7 +482,7 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleGetParamDesc(
                                       args.shared_memory.offset,
                                       size);
   if (!data) return BufferSyncInterface::kParseInvalidArguments;
-  return gapi_->GetParamDesc(args.id, size, data);
+  return gapi_->GetParamDesc(args.param_id, size, data);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleGetStreamCount(
@@ -485,7 +495,7 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleGetStreamCount(
                                       args.shared_memory.offset,
                                       size);
   if (!data) return BufferSyncInterface::kParseInvalidArguments;
-  return gapi_->GetStreamCount(args.id, size, data);
+  return gapi_->GetStreamCount(args.effect_id, size, data);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleGetStreamDesc(
@@ -498,31 +508,30 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleGetStreamDesc(
                                       args.shared_memory.offset,
                                       size);
   if (!data) return BufferSyncInterface::kParseInvalidArguments;
-  return gapi_->GetStreamDesc(args.id, args.index, size, data);
+  return gapi_->GetStreamDesc(args.effect_id, args.index, size, data);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleDestroyTexture(
     uint32 arg_count,
     const cmd::DestroyTexture& args) {
-  return gapi_->DestroyTexture(args.id);
+  return gapi_->DestroyTexture(args.texture_id);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleCreateTexture2d(
     uint32 arg_count,
     const cmd::CreateTexture2d& args) {
-  namespace cmd = create_texture_2d_cmd;
-  unsigned int width_height = args.fixme1;
-  unsigned int levels_format_flags = args.fixme2;
-  unsigned int width = cmd::Width::Get(width_height);
-  unsigned int height = cmd::Height::Get(width_height);
-  unsigned int levels = cmd::Levels::Get(levels_format_flags);
-  unsigned int unused = cmd::Unused::Get(levels_format_flags);
-  unsigned int format = cmd::Format::Get(levels_format_flags);
-  unsigned int flags = cmd::Flags::Get(levels_format_flags);
+  unsigned int width_height = args.width_height;
+  unsigned int levels_format_flags = args.levels_format_flags;
+  unsigned int width = cmd::CreateTexture2d::Width::Get(width_height);
+  unsigned int height = cmd::CreateTexture2d::Height::Get(width_height);
+  unsigned int levels = cmd::CreateTexture2d::Levels::Get(levels_format_flags);
+  unsigned int unused = cmd::CreateTexture2d::Unused::Get(levels_format_flags);
+  unsigned int format = cmd::CreateTexture2d::Format::Get(levels_format_flags);
+  unsigned int flags = cmd::CreateTexture2d::Flags::Get(levels_format_flags);
   unsigned int max_levels =
       1 + base::bits::Log2Ceiling(std::max(width, height));
   if ((width == 0) || (height == 0) || (levels > max_levels) ||
-      (unused != 0) || (format >= texture::NUM_FORMATS) || (levels == 0))
+      (unused != 0) || (format >= texture::kNumFormats) || (levels == 0))
     return BufferSyncInterface::kParseInvalidArguments;
   bool enable_render_surfaces = !!flags;
   return gapi_->CreateTexture2D(args.texture_id, width, height, levels,
@@ -533,23 +542,23 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleCreateTexture2d(
 BufferSyncInterface::ParseError GAPIDecoder::HandleCreateTexture3d(
     uint32 arg_count,
     const cmd::CreateTexture3d& args) {
-  namespace cmd = create_texture_3d_cmd;
-  unsigned int width_height = args.fixme1;
-  unsigned int depth_unused = args.fixme2;
-  unsigned int levels_format_flags = args.fixme3;
-  unsigned int width = cmd::Width::Get(width_height);
-  unsigned int height = cmd::Height::Get(width_height);
-  unsigned int depth = cmd::Depth::Get(depth_unused);
-  unsigned int unused1 = cmd::Unused1::Get(depth_unused);
-  unsigned int levels = cmd::Levels::Get(levels_format_flags);
-  unsigned int unused2 = cmd::Unused2::Get(levels_format_flags);
-  unsigned int format = cmd::Format::Get(levels_format_flags);
-  unsigned int flags = cmd::Flags::Get(levels_format_flags);
+  unsigned int width_height = args.width_height;
+  unsigned int depth_unused = args.depth_unused;
+  unsigned int levels_format_flags = args.levels_format_flags;
+  unsigned int width = cmd::CreateTexture3d::Width::Get(width_height);
+  unsigned int height = cmd::CreateTexture3d::Height::Get(width_height);
+  unsigned int depth = cmd::CreateTexture3d::Depth::Get(depth_unused);
+  unsigned int unused1 = cmd::CreateTexture3d::Unused1::Get(depth_unused);
+  unsigned int levels = cmd::CreateTexture3d::Levels::Get(levels_format_flags);
+  unsigned int unused2 =
+      cmd::CreateTexture3d::Unused2::Get(levels_format_flags);
+  unsigned int format = cmd::CreateTexture3d::Format::Get(levels_format_flags);
+  unsigned int flags = cmd::CreateTexture3d::Flags::Get(levels_format_flags);
   unsigned int max_levels =
       1 + base::bits::Log2Ceiling(std::max(depth, std::max(width, height)));
   if ((width == 0) || (height == 0) || (depth == 0) ||
       (levels > max_levels) || (unused1 != 0) || (unused2 != 0) ||
-      (format >= texture::NUM_FORMATS) || (levels == 0))
+      (format >= texture::kNumFormats) || (levels == 0))
     return BufferSyncInterface::kParseInvalidArguments;
   bool enable_render_surfaces = !!flags;
   return gapi_->CreateTexture3D(args.texture_id, width, height, depth, levels,
@@ -560,18 +569,20 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleCreateTexture3d(
 BufferSyncInterface::ParseError GAPIDecoder::HandleCreateTextureCube(
     uint32 arg_count,
     const cmd::CreateTextureCube& args) {
-  namespace cmd = create_texture_cube_cmd;
   unsigned int side_unused = args.edge_length;
-  unsigned int levels_format_flags = args.fixme2;
-  unsigned int side = cmd::Side::Get(side_unused);
-  unsigned int unused1 = cmd::Unused1::Get(side_unused);
-  unsigned int levels = cmd::Levels::Get(levels_format_flags);
-  unsigned int unused2 = cmd::Unused2::Get(levels_format_flags);
-  unsigned int format = cmd::Format::Get(levels_format_flags);
-  unsigned int flags = cmd::Flags::Get(levels_format_flags);
+  unsigned int levels_format_flags = args.levels_format_flags;
+  unsigned int side = cmd::CreateTextureCube::Side::Get(side_unused);
+  unsigned int unused1 = cmd::CreateTextureCube::Unused1::Get(side_unused);
+  unsigned int levels =
+      cmd::CreateTextureCube::Levels::Get(levels_format_flags);
+  unsigned int unused2 =
+      cmd::CreateTextureCube::Unused2::Get(levels_format_flags);
+  unsigned int format =
+      cmd::CreateTextureCube::Format::Get(levels_format_flags);
+  unsigned int flags = cmd::CreateTextureCube::Flags::Get(levels_format_flags);
   unsigned int max_levels = 1 + base::bits::Log2Ceiling(side);
   if ((side == 0) || (levels > max_levels) || (unused1 != 0) ||
-      (unused2 != 0) || (format >= texture::NUM_FORMATS) || (levels == 0))
+      (unused2 != 0) || (format >= texture::kNumFormats) || (levels == 0))
     return BufferSyncInterface::kParseInvalidArguments;
   bool enable_render_surfaces = !!flags;
   return gapi_->CreateTextureCube(args.texture_id, side, levels,
@@ -582,21 +593,20 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleCreateTextureCube(
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetTextureData(
     uint32 arg_count,
     const cmd::SetTextureData& args) {
-  namespace cmd = set_texture_data_cmd;
-  unsigned int x_y = args.fixme1;
-  unsigned int width_height = args.fixme2;
-  unsigned int z_depth = args.fixme3;
-  unsigned int level_face = args.fixme4;
+  unsigned int x_y = args.x_y;
+  unsigned int width_height = args.width_height;
+  unsigned int z_depth = args.z_depth;
+  unsigned int level_face = args.level_face;
   unsigned int size = args.size;
-  unsigned int x = cmd::X::Get(x_y);
-  unsigned int y = cmd::Y::Get(x_y);
-  unsigned int width = cmd::Width::Get(width_height);
-  unsigned int height = cmd::Height::Get(width_height);
-  unsigned int z = cmd::Z::Get(z_depth);
-  unsigned int depth = cmd::Depth::Get(z_depth);
-  unsigned int level = cmd::Level::Get(level_face);
-  unsigned int face = cmd::Face::Get(level_face);
-  unsigned int unused = cmd::Unused::Get(level_face);
+  unsigned int x = cmd::SetTextureData::X::Get(x_y);
+  unsigned int y = cmd::SetTextureData::Y::Get(x_y);
+  unsigned int width = cmd::SetTextureData::Width::Get(width_height);
+  unsigned int height = cmd::SetTextureData::Height::Get(width_height);
+  unsigned int z = cmd::SetTextureData::Z::Get(z_depth);
+  unsigned int depth = cmd::SetTextureData::Depth::Get(z_depth);
+  unsigned int level = cmd::SetTextureData::Level::Get(level_face);
+  unsigned int face = cmd::SetTextureData::Face::Get(level_face);
+  unsigned int unused = cmd::SetTextureData::Unused::Get(level_face);
   const void *data = GetAddressAndCheckSize(args.shared_memory.id,
                                             args.shared_memory.offset, size);
   if (face >= 6 || unused != 0 || !data)
@@ -610,27 +620,26 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleSetTextureData(
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetTextureDataImmediate(
     uint32 arg_count,
     const cmd::SetTextureDataImmediate& args) {
-  namespace cmd = set_texture_data_immediate_cmd;
-  unsigned int x_y = args.fixme1;
-  unsigned int width_height = args.fixme2;
-  unsigned int z_depth = args.fixme3;
-  unsigned int level_face = args.fixme4;
+  unsigned int x_y = args.x_y;
+  unsigned int width_height = args.width_height;
+  unsigned int z_depth = args.z_depth;
+  unsigned int level_face = args.level_face;
   unsigned int size = args.size;
-  unsigned int x = cmd::X::Get(x_y);
-  unsigned int y = cmd::Y::Get(x_y);
-  unsigned int width = cmd::Width::Get(width_height);
-  unsigned int height = cmd::Height::Get(width_height);
-  unsigned int z = cmd::Z::Get(z_depth);
-  unsigned int depth = cmd::Depth::Get(z_depth);
-  unsigned int level = cmd::Level::Get(level_face);
-  unsigned int face = cmd::Face::Get(level_face);
-  unsigned int unused = cmd::Unused::Get(level_face);
+  unsigned int x = cmd::SetTextureDataImmediate::X::Get(x_y);
+  unsigned int y = cmd::SetTextureDataImmediate::Y::Get(x_y);
+  unsigned int width = cmd::SetTextureDataImmediate::Width::Get(width_height);
+  unsigned int height = cmd::SetTextureDataImmediate::Height::Get(width_height);
+  unsigned int z = cmd::SetTextureDataImmediate::Z::Get(z_depth);
+  unsigned int depth = cmd::SetTextureDataImmediate::Depth::Get(z_depth);
+  unsigned int level = cmd::SetTextureDataImmediate::Level::Get(level_face);
+  unsigned int face = cmd::SetTextureDataImmediate::Face::Get(level_face);
+  unsigned int unused = cmd::SetTextureDataImmediate::Unused::Get(level_face);
   uint32 data_size = ImmediateDataSize(arg_count, args);
   if (face >= 6 || unused != 0 ||
       size > data_size)
     return BufferSyncInterface::kParseInvalidArguments;
   if (data_size == 0) {
-    return ParseError::kParseNoError;
+    return BufferSyncInterface::kParseNoError;
   }
   return gapi_->SetTextureData(
       args.texture_id, x, y, z, width, height, depth, level,
@@ -641,21 +650,20 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleSetTextureDataImmediate(
 BufferSyncInterface::ParseError GAPIDecoder::HandleGetTextureData(
     uint32 arg_count,
     const cmd::GetTextureData& args) {
-  namespace cmd = get_texture_data_cmd;
-  unsigned int x_y = args.fixme1;
-  unsigned int width_height = args.fixme2;
-  unsigned int z_depth = args.fixme3;
-  unsigned int level_face = args.fixme4;
+  unsigned int x_y = args.x_y;
+  unsigned int width_height = args.width_height;
+  unsigned int z_depth = args.z_depth;
+  unsigned int level_face = args.level_face;
   unsigned int size = args.size;
-  unsigned int x = cmd::X::Get(x_y);
-  unsigned int y = cmd::Y::Get(x_y);
-  unsigned int width = cmd::Width::Get(width_height);
-  unsigned int height = cmd::Height::Get(width_height);
-  unsigned int z = cmd::Z::Get(z_depth);
-  unsigned int depth = cmd::Depth::Get(z_depth);
-  unsigned int level = cmd::Level::Get(level_face);
-  unsigned int face = cmd::Face::Get(level_face);
-  unsigned int unused = cmd::Unused::Get(level_face);
+  unsigned int x = cmd::GetTextureData::X::Get(x_y);
+  unsigned int y = cmd::GetTextureData::Y::Get(x_y);
+  unsigned int width = cmd::GetTextureData::Width::Get(width_height);
+  unsigned int height = cmd::GetTextureData::Height::Get(width_height);
+  unsigned int z = cmd::GetTextureData::Z::Get(z_depth);
+  unsigned int depth = cmd::GetTextureData::Depth::Get(z_depth);
+  unsigned int level = cmd::GetTextureData::Level::Get(level_face);
+  unsigned int face = cmd::GetTextureData::Face::Get(level_face);
+  unsigned int unused = cmd::GetTextureData::Unused::Get(level_face);
   void *data = GetAddressAndCheckSize(args.shared_memory.id,
                                       args.shared_memory.offset, size);
   if (face >= 6 || unused != 0 || !data)
@@ -669,42 +677,41 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleGetTextureData(
 BufferSyncInterface::ParseError GAPIDecoder::HandleCreateSampler(
     uint32 arg_count,
     const cmd::CreateSampler& args) {
-  return gapi_->CreateSampler(args.id);
+  return gapi_->CreateSampler(args.sampler_id);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleDestroySampler(
     uint32 arg_count,
     const cmd::DestroySampler& args) {
-  return gapi_->DestroySampler(args.id);
+  return gapi_->DestroySampler(args.sampler_id);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetSamplerStates(
     uint32 arg_count,
     const cmd::SetSamplerStates& args) {
-  namespace cmd = set_sampler_states;
-  Uint32 arg = args.fixme1;
-  if (cmd::Unused::Get(arg) != 0)
+  Uint32 arg = args.sampler_states;
+  if (cmd::SetSamplerStates::Unused::Get(arg) != 0)
     return BufferSyncInterface::kParseInvalidArguments;
-  unsigned int address_u_value = cmd::AddressingU::Get(arg);
-  unsigned int address_v_value = cmd::AddressingV::Get(arg);
-  unsigned int address_w_value = cmd::AddressingW::Get(arg);
-  unsigned int mag_filter_value = cmd::MagFilter::Get(arg);
-  unsigned int min_filter_value = cmd::MinFilter::Get(arg);
-  unsigned int mip_filter_value = cmd::MipFilter::Get(arg);
-  unsigned int max_anisotropy = cmd::MaxAnisotropy::Get(arg);
-  if (address_u_value >= sampler::NUM_ADDRESSING_MODE ||
-      address_v_value >= sampler::NUM_ADDRESSING_MODE ||
-      address_w_value >= sampler::NUM_ADDRESSING_MODE ||
-      mag_filter_value >= sampler::NUM_FILTERING_MODE ||
-      min_filter_value >= sampler::NUM_FILTERING_MODE ||
-      mip_filter_value >= sampler::NUM_FILTERING_MODE ||
-      mag_filter_value == sampler::NONE ||
-      min_filter_value == sampler::NONE ||
+  unsigned int address_u_value = cmd::SetSamplerStates::AddressingU::Get(arg);
+  unsigned int address_v_value = cmd::SetSamplerStates::AddressingV::Get(arg);
+  unsigned int address_w_value = cmd::SetSamplerStates::AddressingW::Get(arg);
+  unsigned int mag_filter_value = cmd::SetSamplerStates::MagFilter::Get(arg);
+  unsigned int min_filter_value = cmd::SetSamplerStates::MinFilter::Get(arg);
+  unsigned int mip_filter_value = cmd::SetSamplerStates::MipFilter::Get(arg);
+  unsigned int max_anisotropy = cmd::SetSamplerStates::MaxAnisotropy::Get(arg);
+  if (address_u_value >= sampler::kNumAddressingMode ||
+      address_v_value >= sampler::kNumAddressingMode ||
+      address_w_value >= sampler::kNumAddressingMode ||
+      mag_filter_value >= sampler::kNumFilteringMode ||
+      min_filter_value >= sampler::kNumFilteringMode ||
+      mip_filter_value >= sampler::kNumFilteringMode ||
+      mag_filter_value == sampler::kNone ||
+      min_filter_value == sampler::kNone ||
       max_anisotropy == 0) {
     return BufferSyncInterface::kParseInvalidArguments;
   }
   gapi_->SetSamplerStates(
-      args.id,
+      args.sampler_id,
       static_cast<sampler::AddressingMode>(address_u_value),
       static_cast<sampler::AddressingMode>(address_v_value),
       static_cast<sampler::AddressingMode>(address_w_value),
@@ -723,28 +730,27 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleSetSamplerBorderColor(
   rgba.green = args.green;
   rgba.blue = args.blue;
   rgba.alpha = args.alpha;
-  return gapi_->SetSamplerBorderColor(args.id, rgba);
+  return gapi_->SetSamplerBorderColor(args.sampler_id, rgba);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetSamplerTexture(
     uint32 arg_count,
     const cmd::SetSamplerTexture& args) {
-  return gapi_->SetSamplerTexture(args.id, args.texture_id);
+  return gapi_->SetSamplerTexture(args.sampler_id, args.texture_id);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetScissor(
     uint32 arg_count,
     const cmd::SetScissor& args) {
-  namespace cmd = set_scissor;
-  Uint32 x_y_enable = args.fixme0;
-  if (cmd::Unused::Get(x_y_enable) != 0)
+  Uint32 x_y_enable = args.x_y_enable;
+  if (cmd::SetScissor::Unused::Get(x_y_enable) != 0)
     return BufferSyncInterface::kParseInvalidArguments;
-  unsigned int x = cmd::X::Get(x_y_enable);
-  unsigned int y = cmd::Y::Get(x_y_enable);
-  bool enable = cmd::Enable::Get(x_y_enable) != 0;
-  Uint32 width_height = args.fixme1;
-  unsigned int width = cmd::Width::Get(width_height);
-  unsigned int height = cmd::Height::Get(width_height);
+  unsigned int x = cmd::SetScissor::X::Get(x_y_enable);
+  unsigned int y = cmd::SetScissor::Y::Get(x_y_enable);
+  bool enable = cmd::SetScissor::Enable::Get(x_y_enable) != 0;
+  Uint32 width_height = args.width_height;
+  unsigned int width = cmd::SetScissor::Width::Get(width_height);
+  unsigned int height = cmd::SetScissor::Height::Get(width_height);
   gapi_->SetScissor(enable, x, y, width, height);
   return BufferSyncInterface::kParseNoError;
 }
@@ -759,12 +765,12 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleSetPolygonOffset(
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetPointLineRaster(
     uint32 arg_count,
     const cmd::SetPointLineRaster& args) {
-  namespace cmd = set_point_line_raster;
-  Uint32 enables = args.fixme0;
-  if (cmd::Unused::Get(enables) != 0)
+  Uint32 enables = args.enables;
+  if (cmd::SetPointLineRaster::Unused::Get(enables) != 0)
     return BufferSyncInterface::kParseInvalidArguments;
-  bool line_smooth = !!cmd::LineSmoothEnable::Get(enables);
-  bool point_sprite = !!cmd::PointSpriteEnable::Get(enables);
+  bool line_smooth = !!cmd::SetPointLineRaster::LineSmoothEnable::Get(enables);
+  bool point_sprite =
+      !!cmd::SetPointLineRaster::PointSpriteEnable::Get(enables);
   gapi_->SetPointLineRaster(line_smooth, point_sprite, args.point_size);
   return BufferSyncInterface::kParseNoError;
 }
@@ -772,34 +778,33 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleSetPointLineRaster(
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetPolygonRaster(
     uint32 arg_count,
     const cmd::SetPolygonRaster& args) {
-  namespace cmd = set_polygon_raster;
-  Uint32 fill_cull = args.fixme0;
-  unsigned int fill_value = cmd::FillMode::Get(fill_cull);
-  unsigned int cull_value = cmd::CullMode::Get(fill_cull);
-  if (cmd::Unused::Get(fill_cull) != 0 ||
-      fill_value >= GAPIInterface::NUM_POLYGON_MODE ||
-      cull_value >= GAPIInterface::NUM_FACE_CULL_MODE)
+  Uint32 fill_cull = args.fill_cull;
+  unsigned int fill_value = cmd::SetPolygonRaster::FillMode::Get(fill_cull);
+  unsigned int cull_value = cmd::SetPolygonRaster::CullMode::Get(fill_cull);
+  if (cmd::SetPolygonRaster::Unused::Get(fill_cull) != 0 ||
+      fill_value >= command_buffer::kNumPolygonMode ||
+      cull_value >= command_buffer::kNumFaceCullMode)
     return BufferSyncInterface::kParseInvalidArguments;
   gapi_->SetPolygonRaster(
-      static_cast<GAPIInterface::PolygonMode>(fill_value),
-      static_cast<GAPIInterface::FaceCullMode>(cull_value));
+      static_cast<command_buffer::PolygonMode>(fill_value),
+      static_cast<command_buffer::FaceCullMode>(cull_value));
   return BufferSyncInterface::kParseNoError;
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetAlphaTest(
     uint32 arg_count,
     const cmd::SetAlphaTest& args) {
-  namespace cmd = set_alpha_test;
-  Uint32 func_enable = args.fixme0;
-  if (cmd::Unused::Get(func_enable) != 0)
+  Uint32 func_enable = args.func_enable;
+  if (cmd::SetAlphaTest::Unused::Get(func_enable) != 0)
     return BufferSyncInterface::kParseInvalidArguments;
   // Check that the bitmask get cannot generate values outside of the
   // allowed range.
-  COMPILE_ASSERT(cmd::Func::kMask < GAPIInterface::NUM_COMPARISON,
+  COMPILE_ASSERT(cmd::SetAlphaTest::Func::kMask <
+                 command_buffer::kNumComparison,
                  set_alpha_test_Func_may_produce_invalid_values);
-  GAPIInterface::Comparison comp =
-      static_cast<GAPIInterface::Comparison>(cmd::Func::Get(func_enable));
-  bool enable = cmd::Enable::Get(func_enable) != 0;
+  command_buffer::Comparison comp = static_cast<command_buffer::Comparison>(
+      cmd::SetAlphaTest::Func::Get(func_enable));
+  bool enable = cmd::SetAlphaTest::Enable::Get(func_enable) != 0;
   gapi_->SetAlphaTest(enable, args.value, comp);
   return BufferSyncInterface::kParseNoError;
 }
@@ -807,18 +812,18 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleSetAlphaTest(
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetDepthTest(
     uint32 arg_count,
     const cmd::SetDepthTest& args) {
-  namespace cmd = set_depth_test;
-  Uint32 func_enable = args.fixme0;
-  if (cmd::Unused::Get(func_enable) != 0)
+  Uint32 func_enable = args.func_enable;
+  if (cmd::SetDepthTest::Unused::Get(func_enable) != 0)
     return BufferSyncInterface::kParseInvalidArguments;
   // Check that the bitmask get cannot generate values outside of the
   // allowed range.
-  COMPILE_ASSERT(cmd::Func::kMask < GAPIInterface::NUM_COMPARISON,
+  COMPILE_ASSERT(cmd::SetDepthTest::Func::kMask <
+                 command_buffer::kNumComparison,
                  set_alpha_test_Func_may_produce_invalid_values);
-  GAPIInterface::Comparison comp =
-      static_cast<GAPIInterface::Comparison>(cmd::Func::Get(func_enable));
-  bool write_enable = cmd::WriteEnable::Get(func_enable) != 0;
-  bool enable = cmd::Enable::Get(func_enable) != 0;
+  command_buffer::Comparison comp = static_cast<command_buffer::Comparison>(
+      cmd::SetDepthTest::Func::Get(func_enable));
+  bool write_enable = cmd::SetDepthTest::WriteEnable::Get(func_enable) != 0;
+  bool enable = cmd::SetDepthTest::Enable::Get(func_enable) != 0;
   gapi_->SetDepthTest(enable, write_enable, comp);
   return BufferSyncInterface::kParseNoError;
 }
@@ -826,18 +831,17 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleSetDepthTest(
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetStencilTest(
     uint32 arg_count,
     const cmd::SetStencilTest& args) {
-  namespace cmd = set_stencil_test;
-  Uint32 arg0 = args.fixme0;
-  Uint32 arg1 = args.fixme1;
-  if (cmd::Unused0::Get(arg0) != 0 ||
-      cmd::Unused1::Get(arg1) != 0 ||
-      cmd::Unused2::Get(arg1) != 0)
+  Uint32 arg0 = args.stencil_args0;
+  Uint32 arg1 = args.stencil_args1;
+  if (cmd::SetStencilTest::Unused0::Get(arg0) != 0 ||
+      cmd::SetStencilTest::Unused1::Get(arg1) != 0 ||
+      cmd::SetStencilTest::Unused2::Get(arg1) != 0)
     return BufferSyncInterface::kParseInvalidArguments;
-  unsigned int write_mask = cmd::WriteMask::Get(arg0);
-  unsigned int compare_mask = cmd::CompareMask::Get(arg0);
-  unsigned int ref = cmd::ReferenceValue::Get(arg0);
-  bool enable = cmd::Enable::Get(arg0) != 0;
-  bool separate_ccw = cmd::SeparateCCW::Get(arg0) != 0;
+  unsigned int write_mask = cmd::SetStencilTest::WriteMask::Get(arg0);
+  unsigned int compare_mask = cmd::SetStencilTest::CompareMask::Get(arg0);
+  unsigned int ref = cmd::SetStencilTest::ReferenceValue::Get(arg0);
+  bool enable = cmd::SetStencilTest::Enable::Get(arg0) != 0;
+  bool separate_ccw = cmd::SetStencilTest::SeparateCCW::Get(arg0) != 0;
   gapi_->SetStencilTest(enable, separate_ccw, write_mask, compare_mask, ref,
                         arg1);
   return BufferSyncInterface::kParseNoError;
@@ -846,15 +850,14 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleSetStencilTest(
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetColorWrite(
     uint32 arg_count,
     const cmd::SetColorWrite& args) {
-  namespace cmd = set_color_write;
   Uint32 enables = args.flags;
-  if (cmd::Unused::Get(enables) != 0)
+  if (cmd::SetColorWrite::Unused::Get(enables) != 0)
     return BufferSyncInterface::kParseInvalidArguments;
-  bool red = cmd::RedMask::Get(enables) != 0;
-  bool green = cmd::GreenMask::Get(enables) != 0;
-  bool blue = cmd::BlueMask::Get(enables) != 0;
-  bool alpha = cmd::AlphaMask::Get(enables) != 0;
-  bool dither = cmd::DitherEnable::Get(enables) != 0;
+  bool red = cmd::SetColorWrite::RedMask::Get(enables) != 0;
+  bool green = cmd::SetColorWrite::GreenMask::Get(enables) != 0;
+  bool blue = cmd::SetColorWrite::BlueMask::Get(enables) != 0;
+  bool alpha = cmd::SetColorWrite::AlphaMask::Get(enables) != 0;
+  bool dither = cmd::SetColorWrite::DitherEnable::Get(enables) != 0;
   gapi_->SetColorWrite(red, green, blue, alpha, dither);
   return BufferSyncInterface::kParseNoError;
 }
@@ -862,33 +865,32 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleSetColorWrite(
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetBlending(
     uint32 arg_count,
     const cmd::SetBlending& args) {
-  namespace cmd = set_blending;
-  Uint32 arg = args.fixme0;
-  bool enable = cmd::Enable::Get(arg) != 0;
-  bool separate_alpha = cmd::SeparateAlpha::Get(arg) != 0;
-  unsigned int color_eq = cmd::ColorEq::Get(arg);
-  unsigned int color_src = cmd::ColorSrcFunc::Get(arg);
-  unsigned int color_dst = cmd::ColorDstFunc::Get(arg);
-  unsigned int alpha_eq = cmd::AlphaEq::Get(arg);
-  unsigned int alpha_src = cmd::AlphaSrcFunc::Get(arg);
-  unsigned int alpha_dst = cmd::AlphaDstFunc::Get(arg);
-  if (cmd::Unused0::Get(arg) != 0 ||
-      cmd::Unused1::Get(arg) != 0 ||
-      color_eq >= GAPIInterface::NUM_BLEND_EQ ||
-      color_src >= GAPIInterface::NUM_BLEND_FUNC ||
-      color_dst >= GAPIInterface::NUM_BLEND_FUNC ||
-      alpha_eq >= GAPIInterface::NUM_BLEND_EQ ||
-      alpha_src >= GAPIInterface::NUM_BLEND_FUNC ||
-      alpha_dst >= GAPIInterface::NUM_BLEND_FUNC)
+  Uint32 arg = args.blend_settings;
+  bool enable = cmd::SetBlending::Enable::Get(arg) != 0;
+  bool separate_alpha = cmd::SetBlending::SeparateAlpha::Get(arg) != 0;
+  unsigned int color_eq = cmd::SetBlending::ColorEq::Get(arg);
+  unsigned int color_src = cmd::SetBlending::ColorSrcFunc::Get(arg);
+  unsigned int color_dst = cmd::SetBlending::ColorDstFunc::Get(arg);
+  unsigned int alpha_eq = cmd::SetBlending::AlphaEq::Get(arg);
+  unsigned int alpha_src = cmd::SetBlending::AlphaSrcFunc::Get(arg);
+  unsigned int alpha_dst = cmd::SetBlending::AlphaDstFunc::Get(arg);
+  if (cmd::SetBlending::Unused0::Get(arg) != 0 ||
+      cmd::SetBlending::Unused1::Get(arg) != 0 ||
+      color_eq >= command_buffer::kNumBlendEq ||
+      color_src >= command_buffer::kNumBlendFunc ||
+      color_dst >= command_buffer::kNumBlendFunc ||
+      alpha_eq >= command_buffer::kNumBlendEq ||
+      alpha_src >= command_buffer::kNumBlendFunc ||
+      alpha_dst >= command_buffer::kNumBlendFunc)
     return BufferSyncInterface::kParseInvalidArguments;
   gapi_->SetBlending(enable,
                      separate_alpha,
-                     static_cast<GAPIInterface::BlendEq>(color_eq),
-                     static_cast<GAPIInterface::BlendFunc>(color_src),
-                     static_cast<GAPIInterface::BlendFunc>(color_dst),
-                     static_cast<GAPIInterface::BlendEq>(alpha_eq),
-                     static_cast<GAPIInterface::BlendFunc>(alpha_src),
-                     static_cast<GAPIInterface::BlendFunc>(alpha_dst));
+                     static_cast<command_buffer::BlendEq>(color_eq),
+                     static_cast<command_buffer::BlendFunc>(color_src),
+                     static_cast<command_buffer::BlendFunc>(color_dst),
+                     static_cast<command_buffer::BlendEq>(alpha_eq),
+                     static_cast<command_buffer::BlendFunc>(alpha_src),
+                     static_cast<command_buffer::BlendFunc>(alpha_dst));
   return BufferSyncInterface::kParseNoError;
 }
 
@@ -907,37 +909,36 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleSetBlendingColor(
 BufferSyncInterface::ParseError GAPIDecoder::HandleCreateRenderSurface(
     uint32 arg_count,
     const cmd::CreateRenderSurface& args) {
-  namespace cmd = create_render_surface_cmd;
-  unsigned int width_height = args.fixme1;
-  unsigned int width = cmd::Width::Get(width_height);
-  unsigned int height = cmd::Height::Get(width_height);
-  unsigned int levels_side = args.fixme2;
-  unsigned int mip_level = cmd::Levels::Get(levels_side);
-  unsigned int side = cmd::Side::Get(levels_side);
-  return gapi_->CreateRenderSurface(args.id, width, height, mip_level,
+  unsigned int width_height = args.width_height;
+  unsigned int width = cmd::CreateRenderSurface::Width::Get(width_height);
+  unsigned int height = cmd::CreateRenderSurface::Height::Get(width_height);
+  unsigned int levels_side = args.levels_side;
+  unsigned int mip_level = cmd::CreateRenderSurface::Levels::Get(levels_side);
+  unsigned int side = cmd::CreateRenderSurface::Side::Get(levels_side);
+  return gapi_->CreateRenderSurface(args.render_surface_id,
+                                    width, height, mip_level,
                                     side, args.texture_id);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleDestroyRenderSurface(
     uint32 arg_count,
     const cmd::DestroyRenderSurface& args) {
-  return gapi_->DestroyRenderSurface(args.id);
+  return gapi_->DestroyRenderSurface(args.render_surface_id);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleCreateDepthSurface(
     uint32 arg_count,
     const cmd::CreateDepthSurface& args) {
-  namespace cmd = create_depth_surface_cmd;
-  unsigned int width_height = args.fixme1;
-  unsigned int width = cmd::Width::Get(width_height);
-  unsigned int height = cmd::Height::Get(width_height);
-  return gapi_->CreateDepthSurface(args.id, width, height);
+  unsigned int width_height = args.width_height;
+  unsigned int width = cmd::CreateDepthSurface::Width::Get(width_height);
+  unsigned int height = cmd::CreateDepthSurface::Height::Get(width_height);
+  return gapi_->CreateDepthSurface(args.depth_surface_id, width, height);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleDestroyDepthSurface(
     uint32 arg_count,
     const cmd::DestroyDepthSurface& args) {
-  return gapi_->DestroyDepthSurface(args.id);
+  return gapi_->DestroyDepthSurface(args.depth_surface_id);
 }
 
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetRenderSurface(

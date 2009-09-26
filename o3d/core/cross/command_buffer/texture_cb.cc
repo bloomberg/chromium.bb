@@ -48,12 +48,8 @@ namespace o3d {
 using command_buffer::CommandBufferEntry;
 using command_buffer::CommandBufferHelper;
 using command_buffer::FencedAllocatorWrapper;
-using command_buffer::ResourceID;
+using command_buffer::ResourceId;
 namespace texture = command_buffer::texture;
-namespace set_texture_data_cmd = command_buffer::set_texture_data_cmd;
-namespace get_texture_data_cmd = command_buffer::get_texture_data_cmd;
-namespace create_texture_2d_cmd = command_buffer::create_texture_2d_cmd;
-namespace create_texture_cube_cmd = command_buffer::create_texture_cube_cmd;
 
 namespace {
 
@@ -64,13 +60,13 @@ const Texture::RGBASwizzleIndices g_cb_abgr32f_swizzle_indices =
 texture::Format CBFormatFromO3DFormat(Texture::Format format) {
   switch (format) {
     case Texture::XRGB8:
-      return texture::XRGB8;
+      return texture::kXRGB8;
     case Texture::ARGB8:
-      return texture::ARGB8;
+      return texture::kARGB8;
     case Texture::ABGR16F:
-      return texture::ABGR16F;
+      return texture::kABGR16F;
     case Texture::DXT1:
-      return texture::DXT1;
+      return texture::kDXT1;
       // TODO: DXT3/5. It's not yet supported by the command buffer
       // renderer, though it would be a simple addition.
     default:
@@ -78,22 +74,22 @@ texture::Format CBFormatFromO3DFormat(Texture::Format format) {
   }
   // failed to find a matching format
   LOG(ERROR) << "Unrecognized Texture format type.";
-  return texture::NUM_FORMATS;
+  return texture::kNumFormats;
 }
 
 // Checks that enums match in value, so that they can be directly used in
-// set_texture_data_cmd::Face bitfields.
-COMPILE_ASSERT(TextureCUBE::FACE_POSITIVE_X == texture::FACE_POSITIVE_X,
+// SetTextureData::Face bitfields.
+COMPILE_ASSERT(TextureCUBE::FACE_POSITIVE_X == texture::kFacePositiveX,
                FACE_POSITIVE_X_enums_don_t_match);
-COMPILE_ASSERT(TextureCUBE::FACE_NEGATIVE_X == texture::FACE_NEGATIVE_X,
+COMPILE_ASSERT(TextureCUBE::FACE_NEGATIVE_X == texture::kFaceNegativeX,
                FACE_NEGATIVE_X_enums_don_t_match);
-COMPILE_ASSERT(TextureCUBE::FACE_POSITIVE_Y == texture::FACE_POSITIVE_Y,
+COMPILE_ASSERT(TextureCUBE::FACE_POSITIVE_Y == texture::kFacePositiveY,
                FACE_POSITIVE_Y_enums_don_t_match);
-COMPILE_ASSERT(TextureCUBE::FACE_NEGATIVE_Y == texture::FACE_NEGATIVE_Y,
+COMPILE_ASSERT(TextureCUBE::FACE_NEGATIVE_Y == texture::kFaceNegativeY,
                FACE_NEGATIVE_Y_enums_don_t_match);
-COMPILE_ASSERT(TextureCUBE::FACE_POSITIVE_Z == texture::FACE_POSITIVE_Z,
+COMPILE_ASSERT(TextureCUBE::FACE_POSITIVE_Z == texture::kFacePositiveZ,
                FACE_POSITIVE_Z_enums_don_t_match);
-COMPILE_ASSERT(TextureCUBE::FACE_NEGATIVE_Z == texture::FACE_NEGATIVE_Z,
+COMPILE_ASSERT(TextureCUBE::FACE_NEGATIVE_Z == texture::kFaceNegativeZ,
                FACE_NEGATIVE_Z_enums_don_t_match);
 
 // Writes the data information into a buffer to be sent to the server side.
@@ -122,7 +118,7 @@ void SetTextureDataBuffer(Texture::Format format,
 
 // Sends the SetTextureData command after formatting the args properly.
 void SetTextureData(RendererCB *renderer,
-                    ResourceID texture_id,
+                    ResourceId texture_id,
                     unsigned int x,
                     unsigned int y,
                     unsigned int mip_width,
@@ -140,7 +136,7 @@ void SetTextureData(RendererCB *renderer,
       texture_id,
       x, y, z,
       mip_width, mip_height, depth,
-      level, face,
+      level, static_cast<texture::Face>(face),
       pitch,
       0,  // slice_pitch
       mip_size,
@@ -151,7 +147,7 @@ void SetTextureData(RendererCB *renderer,
 // Updates a command buffer texture resource from a bitmap, rescaling if
 // necessary.
 void UpdateResourceFromBitmap(RendererCB *renderer,
-                              ResourceID texture_id,
+                              ResourceId texture_id,
                               unsigned int level,
                               TextureCUBE::CubeFace face,
                               const Bitmap &bitmap) {
@@ -186,7 +182,7 @@ void UpdateResourceFromBitmap(RendererCB *renderer,
 
 // Copies back texture resource data into a bitmap.
 void CopyBackResourceToBitmap(RendererCB *renderer,
-                              ResourceID texture_id,
+                              ResourceId texture_id,
                               unsigned int level,
                               TextureCUBE::CubeFace face,
                               const Bitmap &bitmap) {
@@ -211,7 +207,7 @@ void CopyBackResourceToBitmap(RendererCB *renderer,
       mip_height,
       1,
       level,
-      face,
+      static_cast<texture::Face>(face),
       pitch,
       0,
       mip_size,
@@ -233,7 +229,7 @@ static const unsigned int kMaxTextureSize = 2048;
 // NOTE: the Texture2DCB now owns the texture resource and will destroy it on
 // exit.
 Texture2DCB::Texture2DCB(ServiceLocator* service_locator,
-                         ResourceID resource_id,
+                         ResourceId resource_id,
                          Texture::Format format,
                          int levels,
                          int width,
@@ -271,7 +267,7 @@ Texture2DCB* Texture2DCB::Create(ServiceLocator* service_locator,
   RendererCB *renderer = static_cast<RendererCB *>(
       service_locator->GetService<Renderer>());
   texture::Format cb_format = CBFormatFromO3DFormat(format);
-  if (cb_format == texture::NUM_FORMATS) {
+  if (cb_format == texture::kNumFormats) {
     O3D_ERROR(service_locator)
         << "Unsupported format in Texture2DCB::Create.";
     return NULL;
@@ -282,7 +278,7 @@ Texture2DCB* Texture2DCB::Create(ServiceLocator* service_locator,
     return NULL;
   }
 
-  ResourceID texture_id = renderer->texture_ids().AllocateID();
+  ResourceId texture_id = renderer->texture_ids().AllocateID();
   renderer->helper()->CreateTexture2d(
       texture_id,
       width, height,
@@ -450,7 +446,7 @@ const Texture::RGBASwizzleIndices& Texture2DCB::GetABGR32FSwizzleIndices() {
 
 // Creates a texture from a pre-existing texture resource.
 TextureCUBECB::TextureCUBECB(ServiceLocator* service_locator,
-                             ResourceID resource_id,
+                             ResourceId resource_id,
                              Texture::Format format,
                              int levels,
                              int edge_length,
@@ -486,7 +482,7 @@ TextureCUBECB* TextureCUBECB::Create(ServiceLocator* service_locator,
   RendererCB *renderer = static_cast<RendererCB *>(
       service_locator->GetService<Renderer>());
   texture::Format cb_format = CBFormatFromO3DFormat(format);
-  if (cb_format == texture::NUM_FORMATS) {
+  if (cb_format == texture::kNumFormats) {
     O3D_ERROR(service_locator)
         << "Unsupported format in Texture2DCB::Create.";
     return NULL;
@@ -497,7 +493,7 @@ TextureCUBECB* TextureCUBECB::Create(ServiceLocator* service_locator,
     return NULL;
   }
 
-  ResourceID texture_id = renderer->texture_ids().AllocateID();
+  ResourceId texture_id = renderer->texture_ids().AllocateID();
   renderer->helper()->CreateTextureCube(
       texture_id,
       edge_length,

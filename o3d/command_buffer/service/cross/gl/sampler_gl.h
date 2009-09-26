@@ -65,7 +65,7 @@ class SamplerGL : public Sampler {
   void SetBorderColor(const RGBA &color);
 
   // Sets the texture.
-  void SetTexture(ResourceID texture) { texture_id_ = texture; }
+  void SetTexture(ResourceId texture) { texture_id_ = texture; }
 
   GLuint gl_texture() const { return gl_texture_; }
 
@@ -78,7 +78,7 @@ class SamplerGL : public Sampler {
   GLuint gl_max_anisotropy_;
   GLfloat gl_border_color_[4];
   GLuint gl_texture_;
-  ResourceID texture_id_;
+  ResourceId texture_id_;
 };
 
 }  // namespace command_buffer

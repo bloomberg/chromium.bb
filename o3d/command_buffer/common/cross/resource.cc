@@ -42,12 +42,12 @@ namespace texture {
 // Gets the number of bytes per block for a given format.
 unsigned int GetBytesPerBlock(Format format) {
   switch (format) {
-    case XRGB8:
-    case ARGB8:
+    case kXRGB8:
+    case kARGB8:
       return 4;
-    case ABGR16F:
+    case kABGR16F:
       return 8;
-    case DXT1:
+    case kDXT1:
       return 8;
     default:
       LOG(FATAL) << "Invalid format";
@@ -58,11 +58,11 @@ unsigned int GetBytesPerBlock(Format format) {
 // Gets the width of a block for a given format.
 unsigned int GetBlockSizeX(Format format) {
   switch (format) {
-    case XRGB8:
-    case ARGB8:
-    case ABGR16F:
+    case kXRGB8:
+    case kARGB8:
+    case kABGR16F:
       return 1;
-    case DXT1:
+    case kDXT1:
       return 4;
     default:
       LOG(FATAL) << "Invalid format";
@@ -83,26 +83,26 @@ namespace effect_param {
 // Gets the size of the data of a given parameter type.
 unsigned int GetDataSize(DataType type) {
   switch (type) {
-    case UNKNOWN:
+    case kUnknown:
       return 0;
-    case FLOAT1:
+    case kFloat1:
       return sizeof(float);  // NOLINT
-    case FLOAT2:
-      return sizeof(float)*2;  // NOLINT
-    case FLOAT3:
-      return sizeof(float)*3;  // NOLINT
-    case FLOAT4:
-      return sizeof(float)*4;  // NOLINT
-    case MATRIX4:
-      return sizeof(float)*16;  // NOLINT
-    case INT:
+    case kFloat2:
+      return sizeof(float) * 2;  // NOLINT
+    case kFloat3:
+      return sizeof(float) * 3;  // NOLINT
+    case kFloat4:
+      return sizeof(float) * 4;  // NOLINT
+    case kMatrix4:
+      return sizeof(float) * 16;  // NOLINT
+    case kInt:
       return sizeof(int);  // NOLINT
-    case BOOL:
+    case kBool:
       return sizeof(bool);  // NOLINT
-    case SAMPLER:
-      return sizeof(ResourceID);  // NOLINT
-    case TEXTURE:
-      return sizeof(ResourceID);  // NOLINT
+    case kSampler:
+      return sizeof(ResourceId);  // NOLINT
+    case kTexture:
+      return sizeof(ResourceId);  // NOLINT
     default:
       LOG(FATAL) << "Invalid type.";
       return 0;

@@ -42,109 +42,109 @@ namespace command_buffer {
 
 namespace {
 
-// Checks that a GAPIInterface enum matches a D3D enum so that it can be
+// Checks that a command_buffer enum matches a D3D enum so that it can be
 // converted quickly.
-#define CHECK_GAPI_ENUM_MATCHES_D3D(GAPI_ENUM, D3D_ENUM)    \
-  COMPILE_ASSERT(GAPIInterface::GAPI_ENUM + 1 == D3D_ENUM,  \
-                 GAPI_ENUM ## _plus_1_not_ ## D3D_ENUM)
+#define CHECK_CB_ENUM_MATCHES_D3D(CB_ENUM, D3D_ENUM)     \
+  COMPILE_ASSERT(command_buffer::CB_ENUM + 1 == D3D_ENUM,  \
+                 CB_ENUM ## _plus_1_not_ ## D3D_ENUM)
 
 // Converts values from the PolygonMode enum to corresponding D3D values
-inline D3DFILLMODE PolygonModeToD3D(GAPIInterface::PolygonMode fill_mode) {
-  DCHECK_LT(fill_mode, GAPIInterface::NUM_POLYGON_MODE);
+inline D3DFILLMODE PolygonModeToD3D(command_buffer::PolygonMode fill_mode) {
+  DCHECK_LT(fill_mode, command_buffer::kNumPolygonMode);
 
   // Check that all acceptable values translate to D3D values by adding 1.
 
-  CHECK_GAPI_ENUM_MATCHES_D3D(POLYGON_MODE_POINTS, D3DFILL_POINT);
-  CHECK_GAPI_ENUM_MATCHES_D3D(POLYGON_MODE_LINES, D3DFILL_WIREFRAME);
-  CHECK_GAPI_ENUM_MATCHES_D3D(POLYGON_MODE_FILL, D3DFILL_SOLID);
+  CHECK_CB_ENUM_MATCHES_D3D(kPolygonModePoints, D3DFILL_POINT);
+  CHECK_CB_ENUM_MATCHES_D3D(kPolygonModeLines, D3DFILL_WIREFRAME);
+  CHECK_CB_ENUM_MATCHES_D3D(kPolygonModeFill, D3DFILL_SOLID);
   return static_cast<D3DFILLMODE>(fill_mode + 1);
 }
 
 // Converts values from the FaceCullMode enum to corresponding D3D values
-inline D3DCULL FaceCullModeToD3D(GAPIInterface::FaceCullMode cull_mode) {
-  DCHECK_LT(cull_mode, GAPIInterface::NUM_FACE_CULL_MODE);
+inline D3DCULL FaceCullModeToD3D(command_buffer::FaceCullMode cull_mode) {
+  DCHECK_LT(cull_mode, command_buffer::kNumFaceCullMode);
 
   // Check that all acceptable values translate to D3D values by adding 1.
-  CHECK_GAPI_ENUM_MATCHES_D3D(CULL_NONE, D3DCULL_NONE);
-  CHECK_GAPI_ENUM_MATCHES_D3D(CULL_CW, D3DCULL_CW);
-  CHECK_GAPI_ENUM_MATCHES_D3D(CULL_CCW, D3DCULL_CCW);
+  CHECK_CB_ENUM_MATCHES_D3D(kCullNone, D3DCULL_NONE);
+  CHECK_CB_ENUM_MATCHES_D3D(kCullCW, D3DCULL_CW);
+  CHECK_CB_ENUM_MATCHES_D3D(kCullCCW, D3DCULL_CCW);
   return static_cast<D3DCULL>(cull_mode + 1);
 }
 
 // Converts values from the Comparison enum to corresponding D3D values
-inline D3DCMPFUNC ComparisonToD3D(GAPIInterface::Comparison comp) {
-  DCHECK_LT(comp, GAPIInterface::NUM_COMPARISON);
+inline D3DCMPFUNC ComparisonToD3D(command_buffer::Comparison comp) {
+  DCHECK_LT(comp, command_buffer::kNumComparison);
 
   // Check that all acceptable values translate to D3D values by adding 1.
-  CHECK_GAPI_ENUM_MATCHES_D3D(NEVER, D3DCMP_NEVER);
-  CHECK_GAPI_ENUM_MATCHES_D3D(LESS, D3DCMP_LESS);
-  CHECK_GAPI_ENUM_MATCHES_D3D(EQUAL, D3DCMP_EQUAL);
-  CHECK_GAPI_ENUM_MATCHES_D3D(LEQUAL, D3DCMP_LESSEQUAL);
-  CHECK_GAPI_ENUM_MATCHES_D3D(GREATER, D3DCMP_GREATER);
-  CHECK_GAPI_ENUM_MATCHES_D3D(NOT_EQUAL, D3DCMP_NOTEQUAL);
-  CHECK_GAPI_ENUM_MATCHES_D3D(GEQUAL, D3DCMP_GREATEREQUAL);
-  CHECK_GAPI_ENUM_MATCHES_D3D(ALWAYS, D3DCMP_ALWAYS);
+  CHECK_CB_ENUM_MATCHES_D3D(kNever, D3DCMP_NEVER);
+  CHECK_CB_ENUM_MATCHES_D3D(kLess, D3DCMP_LESS);
+  CHECK_CB_ENUM_MATCHES_D3D(kEqual, D3DCMP_EQUAL);
+  CHECK_CB_ENUM_MATCHES_D3D(kLEqual, D3DCMP_LESSEQUAL);
+  CHECK_CB_ENUM_MATCHES_D3D(kGreater, D3DCMP_GREATER);
+  CHECK_CB_ENUM_MATCHES_D3D(kNotEqual, D3DCMP_NOTEQUAL);
+  CHECK_CB_ENUM_MATCHES_D3D(kGEqual, D3DCMP_GREATEREQUAL);
+  CHECK_CB_ENUM_MATCHES_D3D(kAlways, D3DCMP_ALWAYS);
   return static_cast<D3DCMPFUNC>(comp + 1);
 }
 
 // Converts values from the StencilOp enum to corresponding D3D values
-inline D3DSTENCILOP StencilOpToD3D(GAPIInterface::StencilOp stencil_op) {
-  DCHECK_LT(stencil_op, GAPIInterface::NUM_STENCIL_OP);
+inline D3DSTENCILOP StencilOpToD3D(command_buffer::StencilOp stencil_op) {
+  DCHECK_LT(stencil_op, command_buffer::kNumStencilOp);
 
   // Check that all acceptable values translate to D3D values by adding 1.
-  CHECK_GAPI_ENUM_MATCHES_D3D(KEEP, D3DSTENCILOP_KEEP);
-  CHECK_GAPI_ENUM_MATCHES_D3D(ZERO, D3DSTENCILOP_ZERO);
-  CHECK_GAPI_ENUM_MATCHES_D3D(REPLACE, D3DSTENCILOP_REPLACE);
-  CHECK_GAPI_ENUM_MATCHES_D3D(INC_NO_WRAP, D3DSTENCILOP_INCRSAT);
-  CHECK_GAPI_ENUM_MATCHES_D3D(DEC_NO_WRAP, D3DSTENCILOP_DECRSAT);
-  CHECK_GAPI_ENUM_MATCHES_D3D(INVERT, D3DSTENCILOP_INVERT);
-  CHECK_GAPI_ENUM_MATCHES_D3D(INC_WRAP, D3DSTENCILOP_INCR);
-  CHECK_GAPI_ENUM_MATCHES_D3D(DEC_WRAP, D3DSTENCILOP_DECR);
+  CHECK_CB_ENUM_MATCHES_D3D(kKeep, D3DSTENCILOP_KEEP);
+  CHECK_CB_ENUM_MATCHES_D3D(kZero, D3DSTENCILOP_ZERO);
+  CHECK_CB_ENUM_MATCHES_D3D(kReplace, D3DSTENCILOP_REPLACE);
+  CHECK_CB_ENUM_MATCHES_D3D(kIncNoWrap, D3DSTENCILOP_INCRSAT);
+  CHECK_CB_ENUM_MATCHES_D3D(kDecNoWrap, D3DSTENCILOP_DECRSAT);
+  CHECK_CB_ENUM_MATCHES_D3D(kInvert, D3DSTENCILOP_INVERT);
+  CHECK_CB_ENUM_MATCHES_D3D(kIncWrap, D3DSTENCILOP_INCR);
+  CHECK_CB_ENUM_MATCHES_D3D(kDecWrap, D3DSTENCILOP_DECR);
   return static_cast<D3DSTENCILOP>(stencil_op + 1);
 }
 
 // Converts values from the BlendEq enum to corresponding D3D values
-inline D3DBLENDOP BlendEqToD3D(GAPIInterface::BlendEq blend_eq) {
-  DCHECK_LT(blend_eq, GAPIInterface::NUM_BLEND_EQ);
+inline D3DBLENDOP BlendEqToD3D(command_buffer::BlendEq blend_eq) {
+  DCHECK_LT(blend_eq, command_buffer::kNumBlendEq);
   // Check that all acceptable values translate to D3D values by adding 1.
-  CHECK_GAPI_ENUM_MATCHES_D3D(BLEND_EQ_ADD, D3DBLENDOP_ADD);
-  CHECK_GAPI_ENUM_MATCHES_D3D(BLEND_EQ_SUB, D3DBLENDOP_SUBTRACT);
-  CHECK_GAPI_ENUM_MATCHES_D3D(BLEND_EQ_REV_SUB, D3DBLENDOP_REVSUBTRACT);
-  CHECK_GAPI_ENUM_MATCHES_D3D(BLEND_EQ_MIN, D3DBLENDOP_MIN);
-  CHECK_GAPI_ENUM_MATCHES_D3D(BLEND_EQ_MAX, D3DBLENDOP_MAX);
+  CHECK_CB_ENUM_MATCHES_D3D(kBlendEqAdd, D3DBLENDOP_ADD);
+  CHECK_CB_ENUM_MATCHES_D3D(kBlendEqSub, D3DBLENDOP_SUBTRACT);
+  CHECK_CB_ENUM_MATCHES_D3D(kBlendEqRevSub, D3DBLENDOP_REVSUBTRACT);
+  CHECK_CB_ENUM_MATCHES_D3D(kBlendEqMin, D3DBLENDOP_MIN);
+  CHECK_CB_ENUM_MATCHES_D3D(kBlendEqMax, D3DBLENDOP_MAX);
   return static_cast<D3DBLENDOP>(blend_eq + 1);
 }
 
 // Converts values from the BlendFunc enum to corresponding D3D values
-D3DBLEND BlendFuncToD3D(GAPIInterface::BlendFunc blend_func) {
+D3DBLEND BlendFuncToD3D(command_buffer::BlendFunc blend_func) {
   // The D3DBLEND enum values don't map 1-to-1 to BlendFunc, so we use a switch
   // here.
   switch (blend_func) {
-    case GAPIInterface::BLEND_FUNC_ZERO:
+    case command_buffer::kBlendFuncZero:
       return D3DBLEND_ZERO;
-    case GAPIInterface::BLEND_FUNC_ONE:
+    case command_buffer::kBlendFuncOne:
       return D3DBLEND_ONE;
-    case GAPIInterface::BLEND_FUNC_SRC_COLOR:
+    case command_buffer::kBlendFuncSrcColor:
       return D3DBLEND_SRCCOLOR;
-    case GAPIInterface::BLEND_FUNC_INV_SRC_COLOR:
+    case command_buffer::kBlendFuncInvSrcColor:
       return D3DBLEND_INVSRCCOLOR;
-    case GAPIInterface::BLEND_FUNC_SRC_ALPHA:
+    case command_buffer::kBlendFuncSrcAlpha:
       return D3DBLEND_SRCALPHA;
-    case GAPIInterface::BLEND_FUNC_INV_SRC_ALPHA:
+    case command_buffer::kBlendFuncInvSrcAlpha:
       return D3DBLEND_INVSRCALPHA;
-    case GAPIInterface::BLEND_FUNC_DST_ALPHA:
+    case command_buffer::kBlendFuncDstAlpha:
       return D3DBLEND_DESTALPHA;
-    case GAPIInterface::BLEND_FUNC_INV_DST_ALPHA:
+    case command_buffer::kBlendFuncInvDstAlpha:
       return D3DBLEND_INVDESTALPHA;
-    case GAPIInterface::BLEND_FUNC_DST_COLOR:
+    case command_buffer::kBlendFuncDstColor:
       return D3DBLEND_DESTCOLOR;
-    case GAPIInterface::BLEND_FUNC_INV_DST_COLOR:
+    case command_buffer::kBlendFuncInvDstColor:
       return D3DBLEND_INVDESTCOLOR;
-    case GAPIInterface::BLEND_FUNC_SRC_ALPHA_SATUTRATE:
+    case command_buffer::kBlendFuncSrcAlphaSaturate:
       return D3DBLEND_SRCALPHASAT;
-    case GAPIInterface::BLEND_FUNC_BLEND_COLOR:
+    case command_buffer::kBlendFuncBlendColor:
       return D3DBLEND_BLENDFACTOR;
-    case GAPIInterface::BLEND_FUNC_INV_BLEND_COLOR:
+    case command_buffer::kBlendFuncInvBlendColor:
       return D3DBLEND_INVBLENDFACTOR;
     default:
       DLOG(FATAL) << "Invalid BlendFunc";
@@ -154,31 +154,38 @@ D3DBLEND BlendFuncToD3D(GAPIInterface::BlendFunc blend_func) {
 
 // Decodes stencil test function and operations from the bitfield.
 void DecodeStencilFuncOps(Uint32 params,
-                          GAPIInterface::Comparison *func,
-                          GAPIInterface::StencilOp *pass,
-                          GAPIInterface::StencilOp *fail,
-                          GAPIInterface::StencilOp *zfail) {
-  namespace cmd = set_stencil_test;
+                          command_buffer::Comparison *func,
+                          command_buffer::StencilOp *pass,
+                          command_buffer::StencilOp *fail,
+                          command_buffer::StencilOp *zfail) {
   // Sanity check. The value has already been tested in
   // GAPIDecoder::DecodeSetStencilTest in gapi_decoder.cc.
-  DCHECK_EQ(cmd::Unused1::Get(params), 0);
+  DCHECK_EQ(cmd::SetStencilTest::Unused1::Get(params), 0);
   // Check that the bitmask get cannot generate values outside of the allowed
   // range.
-  COMPILE_ASSERT(cmd::CWFunc::kMask < GAPIInterface::NUM_COMPARISON,
+  COMPILE_ASSERT(cmd::SetStencilTest::CWFunc::kMask <
+                 command_buffer::kNumComparison,
                  set_stencil_test_CWFunc_may_produce_invalid_values);
-  *func = static_cast<GAPIInterface::Comparison>(cmd::CWFunc::Get(params));
+  *func = static_cast<command_buffer::Comparison>(
+      cmd::SetStencilTest::CWFunc::Get(params));
 
-  COMPILE_ASSERT(cmd::CWPassOp::kMask < GAPIInterface::NUM_STENCIL_OP,
+  COMPILE_ASSERT(cmd::SetStencilTest::CWPassOp::kMask <
+                 command_buffer::kNumStencilOp,
                  set_stencil_test_CWPassOp_may_produce_invalid_values);
-  *pass = static_cast<GAPIInterface::StencilOp>(cmd::CWPassOp::Get(params));
+  *pass = static_cast<command_buffer::StencilOp>(
+      cmd::SetStencilTest::CWPassOp::Get(params));
 
-  COMPILE_ASSERT(cmd::CWFailOp::kMask < GAPIInterface::NUM_STENCIL_OP,
+  COMPILE_ASSERT(cmd::SetStencilTest::CWFailOp::kMask <
+                 command_buffer::kNumStencilOp,
                  set_stencil_test_CWFailOp_may_produce_invalid_values);
-  *fail = static_cast<GAPIInterface::StencilOp>(cmd::CWFailOp::Get(params));
+  *fail = static_cast<command_buffer::StencilOp>(
+      cmd::SetStencilTest::CWFailOp::Get(params));
 
-  COMPILE_ASSERT(cmd::CWZFailOp::kMask < GAPIInterface::NUM_STENCIL_OP,
+  COMPILE_ASSERT(cmd::SetStencilTest::CWZFailOp::kMask <
+                 command_buffer::kNumStencilOp,
                  set_stencil_test_CWZFailOp_may_produce_invalid_values);
-  *zfail = static_cast<GAPIInterface::StencilOp>(cmd::CWZFailOp::Get(params));
+  *zfail = static_cast<command_buffer::StencilOp>(
+      cmd::SetStencilTest::CWZFailOp::Get(params));
 }
 
 }  // anonymous namespace
@@ -273,11 +280,11 @@ void GAPID3D9::SetStencilTest(bool enable,
     // clockwise ones, just shifted by 16 bits, so that we can use
     // DecodeStencilFuncOps on both of them.
 #define CHECK_CCW_MATCHES_CW(FIELD)                                         \
-    COMPILE_ASSERT(set_stencil_test::CW ## FIELD::kLength ==                \
-                   set_stencil_test::CCW ## FIELD::kLength,                 \
+    COMPILE_ASSERT(cmd::SetStencilTest::CW ## FIELD::kLength ==             \
+                   cmd::SetStencilTest::CCW ## FIELD::kLength,              \
                    CCW ## FIELD ## _length_does_not_match_ ## CW ## FIELD); \
-    COMPILE_ASSERT(set_stencil_test::CW ## FIELD::kShift + 16 ==            \
-                   set_stencil_test::CCW ## FIELD::kShift,                  \
+    COMPILE_ASSERT(cmd::SetStencilTest::CW ## FIELD::kShift + 16 ==         \
+                   cmd::SetStencilTest::CCW ## FIELD::kShift,               \
                    CCW ## FIELD ## _shift_does_not_match_ ## CW ## FIELD)
     CHECK_CCW_MATCHES_CW(Func);
     CHECK_CCW_MATCHES_CW(PassOp);

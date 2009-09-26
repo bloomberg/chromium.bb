@@ -46,7 +46,7 @@
 
 namespace o3d {
 
-using command_buffer::ResourceID;
+using command_buffer::ResourceId;
 using command_buffer::CommandBufferHelper;
 using command_buffer::CommandBufferEntry;
 using command_buffer::GAPIInterface;
@@ -77,31 +77,31 @@ static bool GetCBSemantic(
   switch (semantic) {
     case Stream::POSITION:
       if (semantic_index != 0) return false;
-      *out_semantic = vertex_struct::POSITION;
+      *out_semantic = vertex_struct::kPosition;
       *out_semantic_index = 0;
       return true;
     case Stream::NORMAL:
       if (semantic_index != 0) return false;
-      *out_semantic = vertex_struct::NORMAL;
+      *out_semantic = vertex_struct::kNormal;
       *out_semantic_index = 0;
       return true;
     case Stream::TANGENT:
       if (semantic_index != 0) return false;
-      *out_semantic = vertex_struct::TEX_COORD;
+      *out_semantic = vertex_struct::kTexCoord;
       *out_semantic_index = 6;
       return true;
     case Stream::BINORMAL:
       if (semantic_index != 0) return false;
-      *out_semantic = vertex_struct::TEX_COORD;
+      *out_semantic = vertex_struct::kTexCoord;
       *out_semantic_index = 7;
       return true;
     case Stream::COLOR:
       if (semantic_index > 1) return false;
-      *out_semantic = vertex_struct::COLOR;
+      *out_semantic = vertex_struct::kColor;
       *out_semantic_index = semantic_index;
       return true;
     case Stream::TEXCOORD:
-      *out_semantic = vertex_struct::TEX_COORD;
+      *out_semantic = vertex_struct::kTexCoord;
       *out_semantic_index = semantic_index;
       return true;
     default:
@@ -114,22 +114,22 @@ static vertex_struct::Type GetCBType(const Field& field) {
   if (field.IsA(FloatField::GetApparentClass())) {
     switch (field.num_components()) {
       case 1:
-        return vertex_struct::FLOAT1;
+        return vertex_struct::kFloat1;
       case 2:
-        return vertex_struct::FLOAT2;
+        return vertex_struct::kFloat3;
       case 3:
-        return vertex_struct::FLOAT3;
+        return vertex_struct::kFloat3;
       case 4:
-        return vertex_struct::FLOAT4;
+        return vertex_struct::kFloat4;
     }
   } else if (field.IsA(UByteNField::GetApparentClass())) {
     switch (field.num_components()) {
       case 4:
-        return vertex_struct::UCHAR4N;
+        return vertex_struct::kUChar4N;
     }
   }
   DLOG(ERROR) << "Unknown Stream DataType";
-  return vertex_struct::NUM_TYPES;
+  return vertex_struct::kNumTypes;
 }
 
 // This function is overridden so that we can invalidate the vertex struct any
@@ -159,7 +159,7 @@ void StreamBankCB::CreateVertexStruct() {
       continue;
     }
     vertex_struct::Type cb_type = GetCBType(stream.field());
-    if (cb_type == vertex_struct::NUM_TYPES) {
+    if (cb_type == vertex_struct::kNumTypes) {
       DLOG(INFO) << "Invalid type (" << stream.field().num_components()
                  << ") - ignoring stream.";
       continue;

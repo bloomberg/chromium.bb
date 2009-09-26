@@ -219,92 +219,97 @@ class CommandBufferHelper {
     cmd.Init(left, top, width, height, z_min, z_max);
   }
 
-  void CreateVertexBuffer(uint32 id, uint32 size, uint32 flags) {
+  void CreateVertexBuffer(
+      ResourceId vertex_buffer_id, uint32 size, vertex_buffer::Flags flags) {
     cmd::CreateVertexBuffer& cmd = GetCmdSpace<cmd::CreateVertexBuffer>();
-    cmd.Init(id, size, flags);
+    cmd.Init(vertex_buffer_id, size, flags);
   }
 
-  void DestroyVertexBuffer(uint32 id) {
+  void DestroyVertexBuffer(ResourceId vertex_buffer_id) {
     cmd::DestroyVertexBuffer& cmd = GetCmdSpace<cmd::DestroyVertexBuffer>();
-    cmd.Init(id);
+    cmd.Init(vertex_buffer_id);
   }
 
   void SetVertexBufferDataImmediate(
-      uint32 id, uint32 offset,
+      ResourceId vertex_buffer_id, uint32 offset,
       const void* data, uint32 size) {
     cmd::SetVertexBufferDataImmediate& cmd =
         GetImmediateCmdSpace<cmd::SetVertexBufferDataImmediate>(size);
-    cmd.Init(id, offset, data, size);
+    cmd.Init(vertex_buffer_id, offset, data, size);
   }
 
   void SetVertexBufferData(
-      uint32 id, uint32 offset, uint32 size,
+      ResourceId vertex_buffer_id, uint32 offset, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
     cmd::SetVertexBufferData& cmd =
         GetCmdSpace<cmd::SetVertexBufferData>();
-    cmd.Init(id, offset, size,
+    cmd.Init(vertex_buffer_id, offset, size,
              shared_memory_id, shared_memory_offset);
   }
 
   void GetVertexBufferData(
-      uint32 id, uint32 offset, uint32 size,
+      ResourceId vertex_buffer_id, uint32 offset, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
     cmd::GetVertexBufferData& cmd =
         GetCmdSpace<cmd::GetVertexBufferData>();
-    cmd.Init(id, offset, size,
+    cmd.Init(vertex_buffer_id, offset, size,
              shared_memory_id, shared_memory_offset);
   }
 
-  void CreateIndexBuffer(uint32 id, uint32 size, uint32 flags) {
+  void CreateIndexBuffer(
+      ResourceId index_buffer_id, uint32 size, index_buffer::Flags flags) {
     cmd::CreateIndexBuffer& cmd =
         GetCmdSpace<cmd::CreateIndexBuffer>();
-    cmd.Init(id, size, flags);
+    cmd.Init(index_buffer_id, size, flags);
   }
 
-  void DestroyIndexBuffer(uint32 id) {
+  void DestroyIndexBuffer(ResourceId index_buffer_id) {
     cmd::DestroyIndexBuffer& cmd = GetCmdSpace<cmd::DestroyIndexBuffer>();
-    cmd.Init(id);
+    cmd.Init(index_buffer_id);
   }
 
   void SetIndexBufferDataImmediate(
-      uint32 id, uint32 offset, const void* data, uint32 size) {
+      ResourceId index_buffer_id, uint32 offset,
+      const void* data, uint32 size) {
     cmd::SetIndexBufferDataImmediate& cmd =
         GetImmediateCmdSpace<cmd::SetIndexBufferDataImmediate>(size);
-    cmd.Init(id, offset, data, size);
+    cmd.Init(index_buffer_id, offset, data, size);
   }
 
   void SetIndexBufferData(
-      uint32 id, uint32 offset, uint32 size,
+      ResourceId index_buffer_id, uint32 offset, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
     cmd::SetIndexBufferData& cmd = GetCmdSpace<cmd::SetIndexBufferData>();
-    cmd.Init(id, offset, size, shared_memory_id, shared_memory_offset);
+    cmd.Init(index_buffer_id, offset, size,
+             shared_memory_id, shared_memory_offset);
   }
 
   void GetIndexBufferData(
-      uint32 id, uint32 offset, uint32 size,
+      ResourceId index_buffer_id, uint32 offset, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
     cmd::GetIndexBufferData& cmd = GetCmdSpace<cmd::GetIndexBufferData>();
-    cmd.Init(id, offset, size, shared_memory_id, shared_memory_offset);
+    cmd.Init(index_buffer_id, offset, size,
+             shared_memory_id, shared_memory_offset);
   }
 
-  void CreateVertexStruct(uint32 id, uint32 input_count) {
+  void CreateVertexStruct(ResourceId vertex_struct_id, uint32 input_count) {
     cmd::CreateVertexStruct& cmd = GetCmdSpace<cmd::CreateVertexStruct>();
-    cmd.Init(id, input_count);
+    cmd.Init(vertex_struct_id, input_count);
   }
 
-  void DestroyVertexStruct(uint32 id) {
+  void DestroyVertexStruct(ResourceId vertex_struct_id) {
     cmd::DestroyVertexStruct& cmd = GetCmdSpace<cmd::DestroyVertexStruct>();
-    cmd.Init(id);
+    cmd.Init(vertex_struct_id);
   }
 
   void SetVertexInput(
-      uint32 vertex_struct_id,
+      ResourceId vertex_struct_id,
       uint32 input_index,
-      uint32 vertex_buffer_id,
+      ResourceId vertex_buffer_id,
       uint32 offset,
-      uint8 semantic,
+      vertex_struct::Semantic semantic,
       uint32 semantic_index,
-      uint8 type,
+      vertex_struct::Type type,
       uint32 stride) {
     cmd::SetVertexInput& cmd = GetCmdSpace<cmd::SetVertexInput>();
     cmd.Init(
@@ -318,19 +323,19 @@ class CommandBufferHelper {
         stride);
   }
 
-  void SetVertexStruct(uint32 id) {
+  void SetVertexStruct(ResourceId vertex_struct_id) {
     cmd::SetVertexStruct& cmd = GetCmdSpace<cmd::SetVertexStruct>();
-    cmd.Init(id);
+    cmd.Init(vertex_struct_id);
   }
 
-  void Draw(uint32 primitive_type, uint32 first, uint32 count) {
+  void Draw(PrimitiveType primitive_type, uint32 first, uint32 count) {
     cmd::Draw& cmd = GetCmdSpace<cmd::Draw>();
     cmd.Init(primitive_type, first, count);
   }
 
   void DrawIndexed(
-      uint32 primitive_type,
-      uint32 index_buffer_id,
+      PrimitiveType primitive_type,
+      ResourceId index_buffer_id,
       uint32 first,
       uint32 count,
       uint32 min_index,
@@ -346,103 +351,106 @@ class CommandBufferHelper {
   }
 
   void CreateEffect(
-      uint32 id, uint32 size,
+      ResourceId effect_id, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
     cmd::CreateEffect& cmd = GetCmdSpace<cmd::CreateEffect>();
-    cmd.Init(id, size, shared_memory_id, shared_memory_offset);
+    cmd.Init(effect_id, size, shared_memory_id, shared_memory_offset);
   }
 
-  void CreateEffectImmediate(uint32 id, uint32 size, const void* data) {
+  void CreateEffectImmediate(
+      ResourceId effect_id, uint32 size, const void* data) {
     cmd::CreateEffectImmediate& cmd =
         GetImmediateCmdSpace<cmd::CreateEffectImmediate>(size);
-    cmd.Init(id, size, data);
+    cmd.Init(effect_id, size, data);
   }
 
-  void DestroyEffect(uint32 id) {
+  void DestroyEffect(ResourceId effect_id) {
     cmd::DestroyEffect& cmd = GetCmdSpace<cmd::DestroyEffect>();
-    cmd.Init(id);
+    cmd.Init(effect_id);
   }
 
-  void SetEffect(uint32 id) {
+  void SetEffect(ResourceId effect_id) {
     cmd::SetEffect& cmd = GetCmdSpace<cmd::SetEffect>();
-    cmd.Init(id);
+    cmd.Init(effect_id);
   }
 
   void GetParamCount(
-      uint32 id, uint32 size,
+      ResourceId effect_id, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
     cmd::GetParamCount& cmd = GetCmdSpace<cmd::GetParamCount>();
-    cmd.Init(id, size, shared_memory_id, shared_memory_offset);
+    cmd.Init(effect_id, size, shared_memory_id, shared_memory_offset);
   }
 
-  void CreateParam(uint32 param_id, uint32 effect_id, uint32 index) {
+  void CreateParam(ResourceId param_id, ResourceId effect_id, uint32 index) {
     cmd::CreateParam& cmd = GetCmdSpace<cmd::CreateParam>();
     cmd.Init(param_id, effect_id, index);
   }
 
   void CreateParamByName(
-      uint32 param_id, uint32 effect_id, uint32 size,
+      ResourceId param_id, ResourceId effect_id, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
     cmd::CreateParamByName& cmd = GetCmdSpace<cmd::CreateParamByName>();
     cmd.Init(param_id, effect_id, size, shared_memory_id, shared_memory_offset);
   }
 
   void CreateParamByNameImmediate(
-      uint32 param_id, uint32 effect_id, uint32 size, const void* data) {
+      ResourceId param_id, ResourceId effect_id,
+      uint32 size, const void* data) {
     cmd::CreateParamByNameImmediate& cmd =
         GetImmediateCmdSpace<cmd::CreateParamByNameImmediate>(size);
     cmd.Init(param_id, effect_id, size, data);
   }
 
-  void DestroyParam(uint32 id) {
+  void DestroyParam(ResourceId param_id) {
     cmd::DestroyParam& cmd = GetCmdSpace<cmd::DestroyParam>();
-    cmd.Init(id);
+    cmd.Init(param_id);
   }
 
   void SetParamData(
-      uint32 id, uint32 size,
+      ResourceId param_id, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
     cmd::SetParamData& cmd = GetCmdSpace<cmd::SetParamData>();
-    cmd.Init(id, size, shared_memory_id, shared_memory_offset);
+    cmd.Init(param_id, size, shared_memory_id, shared_memory_offset);
   }
 
-  void SetParamDataImmediate(uint32 id, uint32 size, const void* data) {
+  void SetParamDataImmediate(
+      ResourceId param_id, uint32 size, const void* data) {
     cmd::SetParamDataImmediate& cmd =
         GetImmediateCmdSpace<cmd::SetParamDataImmediate>(size);
-    cmd.Init(id, size, data);
+    cmd.Init(param_id, size, data);
   }
 
   void GetParamDesc(
-      uint32 id, uint32 size,
+      ResourceId param_id, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
     cmd::GetParamDesc& cmd = GetCmdSpace<cmd::GetParamDesc>();
-    cmd.Init(id, size, shared_memory_id, shared_memory_offset);
+    cmd.Init(param_id, size, shared_memory_id, shared_memory_offset);
   }
 
   void GetStreamCount(
-      uint32 id, uint32 size,
+      ResourceId effect_id, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
     cmd::GetStreamCount& cmd = GetCmdSpace<cmd::GetStreamCount>();
-    cmd.Init(id, size, shared_memory_id, shared_memory_offset);
+    cmd.Init(effect_id, size, shared_memory_id, shared_memory_offset);
   }
 
   void GetStreamDesc(
-      uint32 id, uint32 index, uint32 size,
+      ResourceId effect_id, uint32 index, uint32 size,
       uint32 shared_memory_id, uint32 shared_memory_offset) {
     cmd::GetStreamDesc& cmd = GetCmdSpace<cmd::GetStreamDesc>();
-    cmd.Init(id, index, size, shared_memory_id, shared_memory_offset);
+    cmd.Init(effect_id, index, size, shared_memory_id, shared_memory_offset);
   }
 
-  void DestroyTexture(uint32 id) {
+  void DestroyTexture(ResourceId texture_id) {
     cmd::DestroyTexture& cmd = GetCmdSpace<cmd::DestroyTexture>();
-    cmd.Init(id);
+    cmd.Init(texture_id);
   }
 
   void CreateTexture2d(
-      uint32 texture_id,
+      ResourceId texture_id,
       uint32 width, uint32 height,
-      uint32 levels, uint32 format,
-      uint32 enable_render_surfaces) {
+      uint32 levels, texture::Format format,
+      bool enable_render_surfaces) {
     cmd::CreateTexture2d& cmd = GetCmdSpace<cmd::CreateTexture2d>();
     cmd.Init(texture_id,
              width, height, levels, format,
@@ -450,10 +458,10 @@ class CommandBufferHelper {
   }
 
   void CreateTexture3d(
-      uint32 texture_id,
+      ResourceId texture_id,
       uint32 width, uint32 height, uint32 depth,
-      uint32 levels, uint32 format,
-      uint32 enable_render_surfaces) {
+      uint32 levels, texture::Format format,
+      bool enable_render_surfaces) {
     cmd::CreateTexture3d& cmd = GetCmdSpace<cmd::CreateTexture3d>();
     cmd.Init(texture_id,
              width, height, depth,
@@ -462,9 +470,9 @@ class CommandBufferHelper {
   }
 
   void CreateTextureCube(
-      uint32 texture_id,
-      uint32 edge_length, uint32 levels, uint32 format,
-      uint32 enable_render_surfaces) {
+      ResourceId texture_id,
+      uint32 edge_length, uint32 levels, texture::Format format,
+      bool enable_render_surfaces) {
     cmd::CreateTextureCube& cmd = GetCmdSpace<cmd::CreateTextureCube>();
     cmd.Init(texture_id,
              edge_length, levels, format,
@@ -472,7 +480,7 @@ class CommandBufferHelper {
   }
 
   void SetTextureData(
-      uint32 texture_id,
+      ResourceId texture_id,
       uint32 x,
       uint32 y,
       uint32 z,
@@ -480,7 +488,7 @@ class CommandBufferHelper {
       uint32 height,
       uint32 depth,
       uint32 level,
-      uint32 face,
+      texture::Face face,
       uint32 row_pitch,
       uint32 slice_pitch,
       uint32 size,
@@ -505,7 +513,7 @@ class CommandBufferHelper {
   }
 
   void SetTextureDataImmediate(
-      uint32 texture_id,
+      ResourceId texture_id,
       uint32 x,
       uint32 y,
       uint32 z,
@@ -513,7 +521,7 @@ class CommandBufferHelper {
       uint32 height,
       uint32 depth,
       uint32 level,
-      uint32 face,
+      texture::Face face,
       uint32 row_pitch,
       uint32 slice_pitch,
       uint32 size,
@@ -537,7 +545,7 @@ class CommandBufferHelper {
   }
 
   void GetTextureData(
-      uint32 texture_id,
+      ResourceId texture_id,
       uint32 x,
       uint32 y,
       uint32 z,
@@ -545,7 +553,7 @@ class CommandBufferHelper {
       uint32 height,
       uint32 depth,
       uint32 level,
-      uint32 face,
+      texture::Face face,
       uint32 row_pitch,
       uint32 slice_pitch,
       uint32 size,
@@ -569,27 +577,28 @@ class CommandBufferHelper {
         shared_memory_offset);
   }
 
-  void CreateSampler(uint32 id) {
+  void CreateSampler(ResourceId sampler_id) {
     cmd::CreateSampler& cmd = GetCmdSpace<cmd::CreateSampler>();
-    cmd.Init(id);
+    cmd.Init(sampler_id);
   }
 
-  void DestroySampler(uint32 id) {
+  void DestroySampler(ResourceId sampler_id) {
     cmd::DestroySampler& cmd = GetCmdSpace<cmd::DestroySampler>();
-    cmd.Init(id);
+    cmd.Init(sampler_id);
   }
 
-  void SetSamplerStates(uint32 id,
-      uint32 address_u_value,
-      uint32 address_v_value,
-      uint32 address_w_value,
-      uint32 mag_filter_value,
-      uint32 min_filter_value,
-      uint32 mip_filter_value,
-      uint32 max_anisotropy) {
+  void SetSamplerStates(
+      ResourceId sampler_id,
+      sampler::AddressingMode address_u_value,
+      sampler::AddressingMode address_v_value,
+      sampler::AddressingMode address_w_value,
+      sampler::FilteringMode mag_filter_value,
+      sampler::FilteringMode min_filter_value,
+      sampler::FilteringMode mip_filter_value,
+      uint8 max_anisotropy) {
     cmd::SetSamplerStates& cmd = GetCmdSpace<cmd::SetSamplerStates>();
     cmd.Init(
-        id,
+        sampler_id,
         address_u_value,
         address_v_value,
         address_w_value,
@@ -600,16 +609,16 @@ class CommandBufferHelper {
   }
 
   void SetSamplerBorderColor(
-      uint32 id,
+      ResourceId sampler_id,
       float red, float green, float blue, float alpha) {
     cmd::SetSamplerBorderColor& cmd =
         GetCmdSpace<cmd::SetSamplerBorderColor>();
-    cmd.Init(id, red, green, blue, alpha);
+    cmd.Init(sampler_id, red, green, blue, alpha);
   }
 
-  void SetSamplerTexture(uint32 id, uint32 texture_id) {
+  void SetSamplerTexture(ResourceId sampler_id, ResourceId texture_id) {
     cmd::SetSamplerTexture& cmd = GetCmdSpace<cmd::SetSamplerTexture>();
-    cmd.Init(id, texture_id);
+    cmd.Init(sampler_id, texture_id);
   }
 
   void SetScissor(
@@ -638,17 +647,17 @@ class CommandBufferHelper {
     cmd.Init(line_smooth_enable, point_sprite_enable, point_size);
   }
 
-  void SetPolygonRaster(uint32 fill_mode, uint32 cull_mode) {
+  void SetPolygonRaster(PolygonMode fill_mode, FaceCullMode cull_mode) {
     cmd::SetPolygonRaster& cmd = GetCmdSpace<cmd::SetPolygonRaster>();
     cmd.Init(fill_mode, cull_mode);
   }
 
-  void SetAlphaTest(uint32 func, bool enable, float value) {
+  void SetAlphaTest(Comparison func, bool enable, float value) {
     cmd::SetAlphaTest& cmd = GetCmdSpace<cmd::SetAlphaTest>();
     cmd.Init(func, enable, value);
   }
 
-  void SetDepthTest(uint32 func, bool write_enable, bool enable) {
+  void SetDepthTest(Comparison func, bool write_enable, bool enable) {
     cmd::SetDepthTest& cmd = GetCmdSpace<cmd::SetDepthTest>();
     cmd.Init(func, write_enable, enable);
   }
@@ -659,14 +668,14 @@ class CommandBufferHelper {
       uint8 reference_value,
       bool separate_ccw,
       bool enable,
-      uint8 cw_func,
-      uint8 cw_pass_op,
-      uint8 cw_fail_op,
-      uint8 cw_z_fail_op,
-      uint8 ccw_func,
-      uint8 ccw_pass_op,
-      uint8 ccw_fail_op,
-      uint8 ccw_z_fail_op) {
+      Comparison cw_func,
+      StencilOp cw_pass_op,
+      StencilOp cw_fail_op,
+      StencilOp cw_z_fail_op,
+      Comparison ccw_func,
+      StencilOp ccw_pass_op,
+      StencilOp ccw_fail_op,
+      StencilOp ccw_z_fail_op) {
     cmd::SetStencilTest& cmd = GetCmdSpace<cmd::SetStencilTest>();
     cmd.Init(
         write_mask,
@@ -690,12 +699,12 @@ class CommandBufferHelper {
   }
 
   void SetBlending(
-      uint8 color_src_func,
-      uint8 color_dst_func,
-      uint8 color_eq,
-      uint8 alpha_src_func,
-      uint8 alpha_dst_func,
-      uint8 alpha_eq,
+      BlendFunc color_src_func,
+      BlendFunc color_dst_func,
+      BlendEq color_eq,
+      BlendFunc alpha_src_func,
+      BlendFunc alpha_dst_func,
+      BlendEq alpha_eq,
       bool separate_alpha,
       bool enable) {
     cmd::SetBlending& cmd = GetCmdSpace<cmd::SetBlending>();
@@ -716,30 +725,32 @@ class CommandBufferHelper {
   }
 
   void CreateRenderSurface(
-      uint32 id, uint32 texture_id,
+      ResourceId render_surface_id, ResourceId texture_id,
       uint32 width, uint32 height,
       uint32 level, uint32 side) {
     cmd::CreateRenderSurface& cmd = GetCmdSpace<cmd::CreateRenderSurface>();
-    cmd.Init(id, texture_id, width, height, level, side);
+    cmd.Init(render_surface_id, texture_id, width, height, level, side);
   }
 
-  void DestroyRenderSurface(uint32 id) {
+  void DestroyRenderSurface(ResourceId render_surface_id) {
     cmd::DestroyRenderSurface& cmd =
         GetCmdSpace<cmd::DestroyRenderSurface>();
-    cmd.Init(id);
+    cmd.Init(render_surface_id);
   }
 
-  void CreateDepthSurface(uint32 id, uint32 width, uint32 height) {
+  void CreateDepthSurface(
+      ResourceId depth_surface_id, uint32 width, uint32 height) {
     cmd::CreateDepthSurface& cmd = GetCmdSpace<cmd::CreateDepthSurface>();
-    cmd.Init(id, width, height);
+    cmd.Init(depth_surface_id, width, height);
   }
 
-  void DestroyDepthSurface(uint32 id) {
+  void DestroyDepthSurface(ResourceId depth_surface_id) {
     cmd::DestroyDepthSurface& cmd = GetCmdSpace<cmd::DestroyDepthSurface>();
-    cmd.Init(id);
+    cmd.Init(depth_surface_id);
   }
 
-  void SetRenderSurface(uint32 render_surface_id, uint32 depth_surface_id) {
+  void SetRenderSurface(
+      ResourceId render_surface_id, ResourceId depth_surface_id) {
     cmd::SetRenderSurface& cmd = GetCmdSpace<cmd::SetRenderSurface>();
     cmd.Init(render_surface_id, depth_surface_id);
   }

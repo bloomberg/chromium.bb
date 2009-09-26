@@ -128,12 +128,12 @@ RenderDepthStencilSurfaceD3D9* RenderDepthStencilSurfaceD3D9::Create(
 
 // Copies the data from a texture resource.
 BufferSyncInterface::ParseError GAPID3D9::CreateRenderSurface(
-    ResourceID id,
+    ResourceId id,
     unsigned int width,
     unsigned int height,
     unsigned int mip_level,
     unsigned int side,
-    ResourceID texture_id) {
+    ResourceId texture_id) {
   if (id == current_surface_id_) {
     // This will delete the current surface which would be bad.
     return BufferSyncInterface::kParseInvalidArguments;
@@ -156,7 +156,7 @@ BufferSyncInterface::ParseError GAPID3D9::CreateRenderSurface(
   return BufferSyncInterface::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPID3D9::DestroyRenderSurface(ResourceID id) {
+BufferSyncInterface::ParseError GAPID3D9::DestroyRenderSurface(ResourceId id) {
   if (id == current_surface_id_) {
     return BufferSyncInterface::kParseInvalidArguments;
   }
@@ -166,7 +166,7 @@ BufferSyncInterface::ParseError GAPID3D9::DestroyRenderSurface(ResourceID id) {
 }
 
 BufferSyncInterface::ParseError GAPID3D9::CreateDepthSurface(
-    ResourceID id,
+    ResourceId id,
     unsigned int width,
     unsigned int height) {
   if (id == current_depth_surface_id_) {
@@ -182,7 +182,7 @@ BufferSyncInterface::ParseError GAPID3D9::CreateDepthSurface(
   return BufferSyncInterface::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPID3D9::DestroyDepthSurface(ResourceID id) {
+BufferSyncInterface::ParseError GAPID3D9::DestroyDepthSurface(ResourceId id) {
   if (id == current_depth_surface_id_) {
     return BufferSyncInterface::kParseInvalidArguments;
   }
@@ -192,8 +192,8 @@ BufferSyncInterface::ParseError GAPID3D9::DestroyDepthSurface(ResourceID id) {
 }
 
 BufferSyncInterface::ParseError GAPID3D9::SetRenderSurface(
-    ResourceID render_surface_id,
-    ResourceID depth_stencil_id) {
+    ResourceId render_surface_id,
+    ResourceId depth_stencil_id) {
   RenderSurfaceD3D9 *d3d_render_surface =
     render_surfaces_.Get(render_surface_id);
   RenderDepthStencilSurfaceD3D9 *d3d_render_depth_surface =

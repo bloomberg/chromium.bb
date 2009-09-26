@@ -38,7 +38,7 @@
 namespace o3d {
 namespace command_buffer {
 
-using command_buffer::ResourceID;
+using command_buffer::ResourceId;
 
 class IdAllocatorTest : public testing::Test {
  protected:
@@ -58,12 +58,12 @@ TEST_F(IdAllocatorTest, TestBasic) {
   EXPECT_FALSE(allocator->InUse(0));
 
   // Allocate an ID, check that it's in use.
-  ResourceID id1 = allocator->AllocateID();
+  ResourceId id1 = allocator->AllocateID();
   EXPECT_TRUE(allocator->InUse(id1));
 
   // Allocate another ID, check that it's in use, and different from the first
   // one.
-  ResourceID id2 = allocator->AllocateID();
+  ResourceId id2 = allocator->AllocateID();
   EXPECT_TRUE(allocator->InUse(id2));
   EXPECT_NE(id1, id2);
 
@@ -83,7 +83,7 @@ TEST_F(IdAllocatorTest, TestAdvanced) {
 
   // Allocate a significant number of resources.
   const unsigned int kNumResources = 100;
-  ResourceID ids[kNumResources];
+  ResourceId ids[kNumResources];
   for (int i = 0; i < kNumResources; ++i) {
     ids[i] = allocator->AllocateID();
     EXPECT_TRUE(allocator->InUse(ids[i]));
@@ -102,10 +102,10 @@ TEST_F(IdAllocatorTest, TestAdvanced) {
   }
 
   // Check that a new allocation re-uses the resource we just freed.
-  ResourceID id1 = ids[kNumResources / 2];
+  ResourceId id1 = ids[kNumResources / 2];
   allocator->FreeID(id1);
   EXPECT_FALSE(allocator->InUse(id1));
-  ResourceID id2 = allocator->AllocateID();
+  ResourceId id2 = allocator->AllocateID();
   EXPECT_TRUE(allocator->InUse(id2));
   EXPECT_EQ(id1, id2);
 }

@@ -43,13 +43,13 @@ namespace {
 // Gets the GL enum corresponding to an addressing mode.
 GLenum GLAddressMode(sampler::AddressingMode o3d_mode) {
   switch (o3d_mode) {
-    case sampler::WRAP:
+    case sampler::kWrap:
       return GL_REPEAT;
-    case sampler::MIRROR_REPEAT:
+    case sampler::kMirrorRepeat:
       return GL_MIRRORED_REPEAT;
-    case sampler::CLAMP_TO_EDGE:
+    case sampler::kClampToEdge:
       return GL_CLAMP_TO_EDGE;
-    case sampler::CLAMP_TO_BORDER:
+    case sampler::kClampToBorder:
       return GL_CLAMP_TO_BORDER;
     default:
       DLOG(FATAL) << "Not Reached";
@@ -62,19 +62,19 @@ GLenum GLAddressMode(sampler::AddressingMode o3d_mode) {
 GLenum GLMinFilter(sampler::FilteringMode min_filter,
                    sampler::FilteringMode mip_filter) {
   switch (min_filter) {
-    case sampler::POINT:
-      if (mip_filter == sampler::NONE)
+    case sampler::kPoint:
+      if (mip_filter == sampler::kNone)
         return GL_NEAREST;
-      else if (mip_filter == sampler::POINT)
+      else if (mip_filter == sampler::kPoint)
         return GL_NEAREST_MIPMAP_NEAREST;
-      else if (mip_filter == sampler::LINEAR)
+      else if (mip_filter == sampler::kLinear)
         return GL_NEAREST_MIPMAP_LINEAR;
-    case sampler::LINEAR:
-      if (mip_filter == sampler::NONE)
+    case sampler::kLinear:
+      if (mip_filter == sampler::kNone)
         return GL_LINEAR;
-      else if (mip_filter == sampler::POINT)
+      else if (mip_filter == sampler::kPoint)
         return GL_LINEAR_MIPMAP_NEAREST;
-      else if (mip_filter == sampler::LINEAR)
+      else if (mip_filter == sampler::kLinear)
         return GL_LINEAR_MIPMAP_LINEAR;
     default:
       DLOG(FATAL) << "Not Reached";
@@ -86,9 +86,9 @@ GLenum GLMinFilter(sampler::FilteringMode min_filter,
 // filtering mode.
 GLenum GLMagFilter(sampler::FilteringMode mag_filter) {
   switch (mag_filter) {
-    case sampler::POINT:
+    case sampler::kPoint:
       return GL_NEAREST;
-    case sampler::LINEAR:
+    case sampler::kLinear:
       return GL_LINEAR;
     default:
       DLOG(FATAL) << "Not Reached";
@@ -99,11 +99,11 @@ GLenum GLMagFilter(sampler::FilteringMode mag_filter) {
 // Gets the GL enum representing the GL target based on the texture type.
 GLenum GLTextureTarget(texture::Type type) {
   switch (type) {
-    case texture::TEXTURE_2D:
+    case texture::kTexture2d:
       return GL_TEXTURE_2D;
-    case texture::TEXTURE_3D:
+    case texture::kTexture3d:
       return GL_TEXTURE_3D;
-    case texture::TEXTURE_CUBE:
+    case texture::kTextureCube:
       return GL_TEXTURE_CUBE_MAP;
     default:
       DLOG(FATAL) << "Not Reached";
@@ -116,12 +116,12 @@ GLenum GLTextureTarget(texture::Type type) {
 SamplerGL::SamplerGL()
     : texture_id_(kInvalidResource),
       gl_texture_(0) {
-  SetStates(sampler::CLAMP_TO_EDGE,
-            sampler::CLAMP_TO_EDGE,
-            sampler::CLAMP_TO_EDGE,
-            sampler::LINEAR,
-            sampler::LINEAR,
-            sampler::POINT,
+  SetStates(sampler::kClampToEdge,
+            sampler::kClampToEdge,
+            sampler::kClampToEdge,
+            sampler::kLinear,
+            sampler::kLinear,
+            sampler::kPoint,
             1);
   RGBA black = {0, 0, 0, 1};
   SetBorderColor(black);
@@ -155,8 +155,8 @@ void SamplerGL::SetStates(sampler::AddressingMode addressing_u,
                           sampler::FilteringMode mip_filter,
                           unsigned int max_anisotropy) {
   // These are validated in GAPIDecoder.cc
-  DCHECK_NE(mag_filter, sampler::NONE);
-  DCHECK_NE(min_filter, sampler::NONE);
+  DCHECK_NE(mag_filter, sampler::kNone);
+  DCHECK_NE(min_filter, sampler::kNone);
   DCHECK_GT(max_anisotropy, 0U);
   gl_wrap_s_ = GLAddressMode(addressing_u);
   gl_wrap_t_ = GLAddressMode(addressing_v);
@@ -174,7 +174,7 @@ void SamplerGL::SetBorderColor(const RGBA &color) {
 }
 
 BufferSyncInterface::ParseError GAPIGL::CreateSampler(
-    ResourceID id) {
+    ResourceId id) {
   // Dirty effect, because this sampler id may be used.
   DirtyEffect();
   samplers_.Assign(id, new SamplerGL());
@@ -182,7 +182,7 @@ BufferSyncInterface::ParseError GAPIGL::CreateSampler(
 }
 
 // Destroys the Sampler resource.
-BufferSyncInterface::ParseError GAPIGL::DestroySampler(ResourceID id) {
+BufferSyncInterface::ParseError GAPIGL::DestroySampler(ResourceId id) {
   // Dirty effect, because this sampler id may be used.
   DirtyEffect();
   return samplers_.Destroy(id) ?
@@ -191,7 +191,7 @@ BufferSyncInterface::ParseError GAPIGL::DestroySampler(ResourceID id) {
 }
 
 BufferSyncInterface::ParseError GAPIGL::SetSamplerStates(
-    ResourceID id,
+    ResourceId id,
     sampler::AddressingMode addressing_u,
     sampler::AddressingMode addressing_v,
     sampler::AddressingMode addressing_w,
@@ -210,7 +210,7 @@ BufferSyncInterface::ParseError GAPIGL::SetSamplerStates(
 }
 
 BufferSyncInterface::ParseError GAPIGL::SetSamplerBorderColor(
-    ResourceID id,
+    ResourceId id,
     const RGBA &color) {
   SamplerGL *sampler = samplers_.Get(id);
   if (!sampler)
@@ -222,8 +222,8 @@ BufferSyncInterface::ParseError GAPIGL::SetSamplerBorderColor(
 }
 
 BufferSyncInterface::ParseError GAPIGL::SetSamplerTexture(
-    ResourceID id,
-    ResourceID texture_id) {
+    ResourceId id,
+    ResourceId texture_id) {
   SamplerGL *sampler = samplers_.Get(id);
   if (!sampler)
     return BufferSyncInterface::kParseInvalidArguments;

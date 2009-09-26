@@ -108,7 +108,7 @@ class Texture2DGL : public TextureGL {
               unsigned int width,
               unsigned int height,
               GLuint gl_texture)
-      : TextureGL(texture::TEXTURE_2D,
+      : TextureGL(texture::kTexture2d,
                   levels,
                   format,
                   enable_render_surfaces,
@@ -169,7 +169,7 @@ class Texture3DGL : public TextureGL {
               unsigned int height,
               unsigned int depth,
               GLuint gl_texture)
-      : TextureGL(texture::TEXTURE_2D,
+      : TextureGL(texture::kTexture3d,
                   levels,
                   format,
                   enable_render_surfaces,
@@ -231,7 +231,7 @@ class TextureCubeGL : public TextureGL {
                 unsigned int flags,
                 unsigned int side,
                 GLuint gl_texture)
-      : TextureGL(texture::TEXTURE_CUBE,
+      : TextureGL(texture::kTextureCube,
                   levels,
                   format,
                   render_surface_enabled,

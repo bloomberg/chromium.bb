@@ -44,13 +44,13 @@ namespace {
 // Converts an addressing mode to corresponding D3D values.
 D3DTEXTUREADDRESS AddressModeToD3D(sampler::AddressingMode mode) {
   switch (mode) {
-    case sampler::WRAP:
+    case sampler::kWrap:
       return D3DTADDRESS_WRAP;
-    case sampler::MIRROR_REPEAT:
+    case sampler::kMirrorRepeat:
       return D3DTADDRESS_MIRROR;
-    case sampler::CLAMP_TO_EDGE:
+    case sampler::kClampToEdge:
       return D3DTADDRESS_CLAMP;
-    case sampler::CLAMP_TO_BORDER:
+    case sampler::kClampToBorder:
       return D3DTADDRESS_BORDER;
   }
   DLOG(FATAL) << "Not reached";
@@ -60,11 +60,11 @@ D3DTEXTUREADDRESS AddressModeToD3D(sampler::AddressingMode mode) {
 // Converts a filtering mode to corresponding D3D values.
 D3DTEXTUREFILTERTYPE FilteringModeToD3D(sampler::FilteringMode mode) {
   switch (mode) {
-    case sampler::NONE:
+    case sampler::kNone:
       return D3DTEXF_NONE;
-    case sampler::POINT:
+    case sampler::kPoint:
       return D3DTEXF_POINT;
-    case sampler::LINEAR:
+    case sampler::kLinear:
       return D3DTEXF_LINEAR;
   }
   DLOG(FATAL) << "Not reached";
@@ -75,12 +75,12 @@ D3DTEXTUREFILTERTYPE FilteringModeToD3D(sampler::FilteringMode mode) {
 
 SamplerD3D9::SamplerD3D9()
     : texture_id_(kInvalidResource) {
-  SetStates(sampler::CLAMP_TO_EDGE,
-            sampler::CLAMP_TO_EDGE,
-            sampler::CLAMP_TO_EDGE,
-            sampler::LINEAR,
-            sampler::LINEAR,
-            sampler::POINT,
+  SetStates(sampler::kClampToEdge,
+            sampler::kClampToEdge,
+            sampler::kClampToEdge,
+            sampler::kLinear,
+            sampler::kLinear,
+            sampler::kPoint,
             1);
   RGBA black = {0, 0, 0, 1};
   SetBorderColor(black);
@@ -114,8 +114,8 @@ void SamplerD3D9::SetStates(sampler::AddressingMode addressing_u,
                             sampler::FilteringMode mip_filter,
                             unsigned int max_anisotropy) {
   // These are validated in GAPIDecoder.cc
-  DCHECK_NE(mag_filter, sampler::NONE);
-  DCHECK_NE(min_filter, sampler::NONE);
+  DCHECK_NE(mag_filter, sampler::kNone);
+  DCHECK_NE(min_filter, sampler::kNone);
   DCHECK_GT(max_anisotropy, 0U);
   d3d_address_u_ = AddressModeToD3D(addressing_u);
   d3d_address_v_ = AddressModeToD3D(addressing_v);
@@ -135,7 +135,7 @@ void SamplerD3D9::SetBorderColor(const RGBA &color) {
 }
 
 BufferSyncInterface::ParseError GAPID3D9::CreateSampler(
-    ResourceID id) {
+    ResourceId id) {
   // Dirty effect, because this sampler id may be used
   DirtyEffect();
   samplers_.Assign(id, new SamplerD3D9());
@@ -143,7 +143,7 @@ BufferSyncInterface::ParseError GAPID3D9::CreateSampler(
 }
 
 // Destroys the Sampler resource.
-BufferSyncInterface::ParseError GAPID3D9::DestroySampler(ResourceID id) {
+BufferSyncInterface::ParseError GAPID3D9::DestroySampler(ResourceId id) {
   // Dirty effect, because this sampler id may be used
   DirtyEffect();
   return samplers_.Destroy(id) ?
@@ -152,7 +152,7 @@ BufferSyncInterface::ParseError GAPID3D9::DestroySampler(ResourceID id) {
 }
 
 BufferSyncInterface::ParseError GAPID3D9::SetSamplerStates(
-    ResourceID id,
+    ResourceId id,
     sampler::AddressingMode addressing_u,
     sampler::AddressingMode addressing_v,
     sampler::AddressingMode addressing_w,
@@ -171,7 +171,7 @@ BufferSyncInterface::ParseError GAPID3D9::SetSamplerStates(
 }
 
 BufferSyncInterface::ParseError GAPID3D9::SetSamplerBorderColor(
-    ResourceID id,
+    ResourceId id,
     const RGBA &color) {
   SamplerD3D9 *sampler = samplers_.Get(id);
   if (!sampler)
@@ -183,8 +183,8 @@ BufferSyncInterface::ParseError GAPID3D9::SetSamplerBorderColor(
 }
 
 BufferSyncInterface::ParseError GAPID3D9::SetSamplerTexture(
-    ResourceID id,
-    ResourceID texture_id) {
+    ResourceId id,
+    ResourceId texture_id) {
   SamplerD3D9 *sampler = samplers_.Get(id);
   if (!sampler)
     return BufferSyncInterface::kParseInvalidArguments;

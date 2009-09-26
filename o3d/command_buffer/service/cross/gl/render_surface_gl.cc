@@ -110,12 +110,12 @@ RenderDepthStencilSurfaceGL* RenderDepthStencilSurfaceGL::Create(
 
 // Copies the data from a texture resource.
 BufferSyncInterface::ParseError GAPIGL::CreateRenderSurface(
-    ResourceID id,
+    ResourceId id,
     unsigned int width,
     unsigned int height,
     unsigned int mip_level,
     unsigned int side,
-    ResourceID texture_id) {
+    ResourceId texture_id) {
   if (id == current_surface_id_) {
     // This will delete the current surface which would be bad.
     return BufferSyncInterface::kParseInvalidArguments;
@@ -137,7 +137,7 @@ BufferSyncInterface::ParseError GAPIGL::CreateRenderSurface(
   return BufferSyncInterface::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPIGL::DestroyRenderSurface(ResourceID id) {
+BufferSyncInterface::ParseError GAPIGL::DestroyRenderSurface(ResourceId id) {
   if (id == current_surface_id_) {
     return BufferSyncInterface::kParseInvalidArguments;
   }
@@ -147,7 +147,7 @@ BufferSyncInterface::ParseError GAPIGL::DestroyRenderSurface(ResourceID id) {
 }
 
 BufferSyncInterface::ParseError GAPIGL::CreateDepthSurface(
-    ResourceID id,
+    ResourceId id,
     unsigned int width,
     unsigned int height) {
   if (id == current_depth_surface_id_) {
@@ -163,7 +163,7 @@ BufferSyncInterface::ParseError GAPIGL::CreateDepthSurface(
   return BufferSyncInterface::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPIGL::DestroyDepthSurface(ResourceID id) {
+BufferSyncInterface::ParseError GAPIGL::DestroyDepthSurface(ResourceId id) {
   if (id == current_depth_surface_id_) {
     return BufferSyncInterface::kParseInvalidArguments;
   }
@@ -220,8 +220,8 @@ bool BindDepthStencilBuffer(const RenderDepthStencilSurfaceGL* gl_surface) {
 }
 
 BufferSyncInterface::ParseError GAPIGL::SetRenderSurface(
-    ResourceID render_surface_id,
-    ResourceID depth_stencil_id) {
+    ResourceId render_surface_id,
+    ResourceId depth_stencil_id) {
   if (render_surfaces_.Get(render_surface_id) == NULL &&
       depth_surfaces_.Get(depth_stencil_id) == NULL) {
     return BufferSyncInterface::kParseInvalidArguments;

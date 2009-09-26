@@ -184,9 +184,9 @@ void RendererCB::PlatformSpecificClear(const Float4 &color,
                                        bool depth_flag,
                                        int stencil,
                                        bool stencil_flag) {
-  uint32 buffers = (color_flag ? GAPIInterface::COLOR : 0) |
-      (depth_flag ? GAPIInterface::DEPTH : 0) |
-      (stencil_flag ? GAPIInterface::STENCIL : 0);
+  uint32 buffers = (color_flag ? command_buffer::kColor : 0) |
+      (depth_flag ? command_buffer::kDepth : 0) |
+      (stencil_flag ? command_buffer::kStencil : 0);
   helper_->Clear(buffers, color[0], color[1], color[2], color[3],
                  depth, stencil);
 }

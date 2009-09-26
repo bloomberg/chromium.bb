@@ -72,7 +72,8 @@ bool VertexBufferCB::ConcreteAllocate(size_t size_in_bytes) {
   if (size_in_bytes > 0) {
     resource_id_ = renderer_->vertex_buffer_ids().AllocateID();
     CommandBufferHelper *helper = renderer_->helper();
-    helper->CreateVertexBuffer(resource_id_, size_in_bytes, 0);
+    helper->CreateVertexBuffer(resource_id_, size_in_bytes,
+                               command_buffer::vertex_buffer::kNone);
     has_data_ = false;
   }
   return true;
@@ -149,7 +150,7 @@ bool IndexBufferCB::ConcreteAllocate(size_t size_in_bytes) {
     CommandBufferHelper *helper = renderer_->helper();
     helper->CreateIndexBuffer(
         resource_id_, size_in_bytes,
-        command_buffer::index_buffer::INDEX_32BIT);
+        command_buffer::index_buffer::kIndex32Bit);
     has_data_ = false;
   }
   return true;

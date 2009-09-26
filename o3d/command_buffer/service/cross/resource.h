@@ -103,7 +103,7 @@ class VertexStruct: public Resource {
  public:
   // The representation of an input data stream.
   struct Element {
-    ResourceID vertex_buffer;
+    ResourceId vertex_buffer;
     unsigned int offset;
     unsigned int stride;
     vertex_struct::Type type;
@@ -222,13 +222,13 @@ class ResourceMapBase {
   // Assigns a resource to a resource ID. Assigning a resource to an ID that
   // already has an existing resource will destroy that existing resource. The
   // map takes ownership of the resource.
-  void Assign(ResourceID id, Resource* resource);
+  void Assign(ResourceId id, Resource* resource);
   // Destroys a resource.
-  bool Destroy(ResourceID id);
+  bool Destroy(ResourceId id);
   // Destroy all resources.
   void DestroyAllResources();
   // Gets a resource by ID.
-  Resource *Get(ResourceID id) {
+  Resource *Get(ResourceId id) {
     return (id < resources_.size()) ? resources_[id] : NULL;
   }
  private:
@@ -246,11 +246,11 @@ template<class T> class ResourceMap {
   // Assigns a resource to a resource ID. Assigning a resource to an ID that
   // already has an existing resource will destroy that existing resource. The
   // map takes ownership of the resource.
-  void Assign(ResourceID id, T* resource) {
+  void Assign(ResourceId id, T* resource) {
     container_.Assign(id, resource);
   }
   // Destroys a resource.
-  bool Destroy(ResourceID id) {
+  bool Destroy(ResourceId id) {
     return container_.Destroy(id);
   }
   // Destroy all resources.
@@ -258,7 +258,7 @@ template<class T> class ResourceMap {
     return container_.DestroyAllResources();
   }
   // Gets a resource by ID.
-  T *Get(ResourceID id) {
+  T *Get(ResourceId id) {
     return down_cast<T*>(container_.Get(id));
   }
  private:

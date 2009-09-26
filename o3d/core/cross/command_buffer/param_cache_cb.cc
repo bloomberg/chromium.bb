@@ -47,7 +47,7 @@ namespace o3d {
 using command_buffer::CommandBufferEntry;
 using command_buffer::CommandBufferHelper;
 using command_buffer::EffectHelper;
-using command_buffer::ResourceID;
+using command_buffer::ResourceId;
 namespace effect_param = command_buffer::effect_param;
 
 // Base class for ParamHandlers.
@@ -61,7 +61,7 @@ class ParamHandlerCB {
 template <typename T>
 class TypedParamHandlerCB : public ParamHandlerCB {
  public:
-  TypedParamHandlerCB(T* param, ResourceID id)
+  TypedParamHandlerCB(T* param, ResourceId id)
       : param_(param),
         id_(id) {
   }
@@ -75,7 +75,7 @@ class TypedParamHandlerCB : public ParamHandlerCB {
   }
  private:
   T* param_;
-  ResourceID id_;
+  ResourceId id_;
 };
 
 // Matrices are expected in row major order in the command buffer, so
@@ -85,7 +85,7 @@ typedef TypedParamHandlerCB<ParamMatrix4> MatrixParamHandlerRowsCB;
 
 class MatrixParamHandlerColumnsCB : public ParamHandlerCB {
  public:
-  MatrixParamHandlerColumnsCB(ParamMatrix4* param, ResourceID id)
+  MatrixParamHandlerColumnsCB(ParamMatrix4* param, ResourceId id)
       : param_(param),
         id_(id) {
   }
@@ -97,12 +97,12 @@ class MatrixParamHandlerColumnsCB : public ParamHandlerCB {
   }
  private:
   ParamMatrix4* param_;
-  ResourceID id_;
+  ResourceId id_;
 };
 
 class SamplerParamHandlerCB : public ParamHandlerCB {
  public:
-  SamplerParamHandlerCB(ParamSampler* param, ResourceID id)
+  SamplerParamHandlerCB(ParamSampler* param, ResourceId id)
       : param_(param),
         id_(id) {
   }
@@ -122,7 +122,7 @@ class SamplerParamHandlerCB : public ParamHandlerCB {
   }
  private:
   ParamSampler* param_;
-  ResourceID id_;
+  ResourceId id_;
 };
 
 static ParamHandlerCB *GetHandlerFromParamAndDesc(
@@ -130,7 +130,7 @@ static ParamHandlerCB *GetHandlerFromParamAndDesc(
     const EffectHelper::EffectParamDesc &desc,
     Effect::MatrixLoadOrder matrix_load_order) {
   switch (desc.data_type) {
-    case effect_param::MATRIX4:
+    case effect_param::kMatrix4:
       if (param->IsA(ParamMatrix4::GetApparentClass())) {
         DCHECK_EQ(sizeof(ParamMatrix4::DataType), desc.data_size);
         ParamMatrix4 *matrix_param = down_cast<ParamMatrix4*>(param);
@@ -141,51 +141,51 @@ static ParamHandlerCB *GetHandlerFromParamAndDesc(
         }
       }
       break;
-    case effect_param::FLOAT1:
+    case effect_param::kFloat1:
       if (param->IsA(ParamFloat::GetApparentClass())) {
         DCHECK_EQ(sizeof(ParamFloat::DataType), desc.data_size);
         return new TypedParamHandlerCB<ParamFloat>(
             down_cast<ParamFloat*>(param), desc.id);
       }
       break;
-    case effect_param::FLOAT2:
+    case effect_param::kFloat2:
       if (param->IsA(ParamFloat2::GetApparentClass())) {
         DCHECK_EQ(sizeof(ParamFloat2::DataType), desc.data_size);
         return new TypedParamHandlerCB<ParamFloat2>(
             down_cast<ParamFloat2*>(param), desc.id);
       }
       break;
-    case effect_param::FLOAT3:
+    case effect_param::kFloat3:
       if (param->IsA(ParamFloat3::GetApparentClass())) {
         DCHECK_EQ(sizeof(ParamFloat3::DataType), desc.data_size);
         return new TypedParamHandlerCB<ParamFloat3>(
             down_cast<ParamFloat3*>(param), desc.id);
       }
       break;
-    case effect_param::FLOAT4:
+    case effect_param::kFloat4:
       if (param->IsA(ParamFloat4::GetApparentClass())) {
         DCHECK_EQ(sizeof(ParamFloat4::DataType), desc.data_size);
         return new TypedParamHandlerCB<ParamFloat4>(
             down_cast<ParamFloat4*>(param), desc.id);
       }
       break;
-    case effect_param::INT:
+    case effect_param::kInt:
       if (param->IsA(ParamInteger::GetApparentClass())) {
         DCHECK_EQ(sizeof(ParamInteger::DataType), desc.data_size);
         return new TypedParamHandlerCB<ParamInteger>(
             down_cast<ParamInteger*>(param), desc.id);
       }
       break;
-    case effect_param::BOOL:
+    case effect_param::kBool:
       if (param->IsA(ParamBoolean::GetApparentClass())) {
         DCHECK_EQ(sizeof(ParamBoolean::DataType), desc.data_size);
         return new TypedParamHandlerCB<ParamBoolean>(
             down_cast<ParamBoolean*>(param), desc.id);
       }
       break;
-    case effect_param::SAMPLER:
+    case effect_param::kSampler:
       if (param->IsA(ParamSampler::GetApparentClass())) {
-        DCHECK_EQ(sizeof(ResourceID), desc.data_size);
+        DCHECK_EQ(sizeof(ResourceId), desc.data_size);
         return new SamplerParamHandlerCB(down_cast<ParamSampler*>(param),
                                          desc.id);
       }

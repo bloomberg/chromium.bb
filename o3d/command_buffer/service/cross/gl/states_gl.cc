@@ -45,8 +45,8 @@ GLenum kGLPolygonModes[] = {
   GL_LINE,
   GL_FILL,
 };
-COMPILE_ASSERT(GAPIInterface::NUM_POLYGON_MODE == arraysize(kGLPolygonModes),
-               kGLPolygonModes_does_not_match_GAPIInterface_PolygonMode);
+COMPILE_ASSERT(command_buffer::kNumPolygonMode == arraysize(kGLPolygonModes),
+               kGLPolygonModes_does_not_match_command_buffer_PolygonMode);
 
 GLenum kGLComparison[] = {
   GL_NEVER,
@@ -58,8 +58,8 @@ GLenum kGLComparison[] = {
   GL_GEQUAL,
   GL_ALWAYS,
 };
-COMPILE_ASSERT(GAPIInterface::NUM_COMPARISON == arraysize(kGLComparison),
-               kGLComparison_does_not_match_GAPIInterface_Comparison);
+COMPILE_ASSERT(command_buffer::kNumComparison == arraysize(kGLComparison),
+               kGLComparison_does_not_match_command_buffer_Comparison);
 
 GLenum kGLBlendFunc[] = {
   GL_ZERO,
@@ -76,8 +76,8 @@ GLenum kGLBlendFunc[] = {
   GL_CONSTANT_COLOR,
   GL_ONE_MINUS_CONSTANT_COLOR,
 };
-COMPILE_ASSERT(GAPIInterface::NUM_BLEND_FUNC == arraysize(kGLBlendFunc),
-               kGLBlendFunc_does_not_match_GAPIInterface_BlendFunc);
+COMPILE_ASSERT(command_buffer::kNumBlendFunc == arraysize(kGLBlendFunc),
+               kGLBlendFunc_does_not_match_command_buffer_BlendFunc);
 
 GLenum kGLBlendEq[] = {
   GL_FUNC_ADD,
@@ -86,8 +86,8 @@ GLenum kGLBlendEq[] = {
   GL_MIN,
   GL_MAX,
 };
-COMPILE_ASSERT(GAPIInterface::NUM_BLEND_EQ == arraysize(kGLBlendEq),
-               kGLBlendEq_does_not_match_GAPIInterface_BlendEq);
+COMPILE_ASSERT(command_buffer::kNumBlendEq == arraysize(kGLBlendEq),
+               kGLBlendEq_does_not_match_command_buffer_BlendEq);
 
 GLenum kGLStencilOp[] = {
   GL_KEEP,
@@ -99,18 +99,18 @@ GLenum kGLStencilOp[] = {
   GL_INCR_WRAP,
   GL_DECR_WRAP,
 };
-COMPILE_ASSERT(GAPIInterface::NUM_STENCIL_OP == arraysize(kGLStencilOp),
-               kGLStencilOp_does_not_match_GAPIInterface_StencilOp);
+COMPILE_ASSERT(command_buffer::kNumStencilOp == arraysize(kGLStencilOp),
+               kGLStencilOp_does_not_match_command_buffer_StencilOp);
 
 // Check that the definition of the counter-clockwise func/ops match the
 // clockwise ones, just shifted by 16 bits, so that we can use
 // DecodeStencilFuncOps on both of them.
 #define CHECK_CCW_MATCHES_CW(FIELD)                                       \
-  COMPILE_ASSERT(set_stencil_test::CW ## FIELD::kLength ==                \
-                 set_stencil_test::CCW ## FIELD::kLength,                 \
+  COMPILE_ASSERT(cmd::SetStencilTest::CW ## FIELD::kLength ==             \
+                 cmd::SetStencilTest::CCW ## FIELD::kLength,              \
                  CCW ## FIELD ## _length_does_not_match_ ## CW ## FIELD); \
-  COMPILE_ASSERT(set_stencil_test::CW ## FIELD::kShift + 16 ==            \
-                 set_stencil_test::CCW ## FIELD::kShift,                  \
+  COMPILE_ASSERT(cmd::SetStencilTest::CW ## FIELD::kShift + 16 ==         \
+                 cmd::SetStencilTest::CCW ## FIELD::kShift,               \
                  CCW ## FIELD ## _shift_does_not_match_ ## CW ## FIELD)
 
 CHECK_CCW_MATCHES_CW(Func);
@@ -126,27 +126,30 @@ void DecodeStencilFuncOps(Uint32 params,
                           GLenum *pass,
                           GLenum *fail,
                           GLenum *zfail) {
-  namespace cmd = set_stencil_test;
   // Sanity check. The value has already been tested in
   // GAPIDecoder::DecodeSetStencilTest in gapi_decoder.cc.
-  DCHECK_EQ(cmd::Unused1::Get(params), 0);
+  DCHECK_EQ(cmd::SetStencilTest::Unused1::Get(params), 0);
   // Check that the bitmask get cannot generate values outside of the allowed
   // range.
-  COMPILE_ASSERT(cmd::CWFunc::kMask < GAPIInterface::NUM_COMPARISON,
+  COMPILE_ASSERT(cmd::SetStencilTest::CWFunc::kMask <
+                 command_buffer::kNumComparison,
                  set_stencil_test_CWFunc_may_produce_invalid_values);
-  *func = kGLComparison[cmd::CWFunc::Get(params)];
+  *func = kGLComparison[cmd::SetStencilTest::CWFunc::Get(params)];
 
-  COMPILE_ASSERT(cmd::CWPassOp::kMask < GAPIInterface::NUM_STENCIL_OP,
+  COMPILE_ASSERT(cmd::SetStencilTest::CWPassOp::kMask <
+                 command_buffer::kNumStencilOp,
                  set_stencil_test_CWPassOp_may_produce_invalid_values);
-  *pass = kGLStencilOp[cmd::CWPassOp::Get(params)];
+  *pass = kGLStencilOp[cmd::SetStencilTest::CWPassOp::Get(params)];
 
-  COMPILE_ASSERT(cmd::CWFailOp::kMask < GAPIInterface::NUM_STENCIL_OP,
+  COMPILE_ASSERT(cmd::SetStencilTest::CWFailOp::kMask <
+                 command_buffer::kNumStencilOp,
                  set_stencil_test_CWFailOp_may_produce_invalid_values);
-  *fail = kGLStencilOp[cmd::CWFailOp::Get(params)];
+  *fail = kGLStencilOp[cmd::SetStencilTest::CWFailOp::Get(params)];
 
-  COMPILE_ASSERT(cmd::CWZFailOp::kMask < GAPIInterface::NUM_STENCIL_OP,
+  COMPILE_ASSERT(cmd::SetStencilTest::CWZFailOp::kMask <
+                 command_buffer::kNumStencilOp,
                  set_stencil_test_CWZFailOp_may_produce_invalid_values);
-  *zfail = kGLStencilOp[cmd::CWZFailOp::Get(params)];
+  *zfail = kGLStencilOp[cmd::SetStencilTest::CWZFailOp::Get(params)];
 }
 
 }  // anonymous namespace
@@ -206,15 +209,15 @@ void GAPIGL::SetPolygonOffset(float slope_factor, float units) {
 
 void GAPIGL::SetPolygonRaster(PolygonMode fill_mode,
                               FaceCullMode cull_mode) {
-  DCHECK_LT(fill_mode, NUM_POLYGON_MODE);
+  DCHECK_LT(fill_mode, kNumPolygonMode);
   glPolygonMode(GL_FRONT_AND_BACK, kGLPolygonModes[fill_mode]);
-  DCHECK_LT(cull_mode, NUM_FACE_CULL_MODE);
+  DCHECK_LT(cull_mode, kNumFaceCullMode);
   switch (cull_mode) {
-    case CULL_CW:
+    case kCullCW:
       glEnable(GL_CULL_FACE);
       glCullFace(GL_BACK);
       break;
-    case CULL_CCW:
+    case kCullCCW:
       glEnable(GL_CULL_FACE);
       glCullFace(GL_FRONT);
       break;
@@ -227,7 +230,7 @@ void GAPIGL::SetPolygonRaster(PolygonMode fill_mode,
 void GAPIGL::SetAlphaTest(bool enable,
                           float reference,
                           Comparison comp) {
-  DCHECK_LT(comp, NUM_COMPARISON);
+  DCHECK_LT(comp, kNumComparison);
   if (enable) {
     glEnable(GL_ALPHA_TEST);
     glAlphaFunc(kGLComparison[comp], reference);
@@ -239,7 +242,7 @@ void GAPIGL::SetAlphaTest(bool enable,
 void GAPIGL::SetDepthTest(bool enable,
                           bool write_enable,
                           Comparison comp) {
-  DCHECK_LT(comp, NUM_COMPARISON);
+  DCHECK_LT(comp, kNumComparison);
   if (enable) {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(kGLComparison[comp]);
@@ -307,12 +310,12 @@ void GAPIGL::SetBlending(bool enable,
                          BlendEq alpha_eq,
                          BlendFunc alpha_src_func,
                          BlendFunc alpha_dst_func) {
-  DCHECK_LT(color_eq, NUM_BLEND_EQ);
-  DCHECK_LT(color_src_func, NUM_BLEND_FUNC);
-  DCHECK_LT(color_dst_func, NUM_BLEND_FUNC);
-  DCHECK_LT(alpha_eq, NUM_BLEND_EQ);
-  DCHECK_LT(alpha_src_func, NUM_BLEND_FUNC);
-  DCHECK_LT(alpha_dst_func, NUM_BLEND_FUNC);
+  DCHECK_LT(color_eq, kNumBlendEq);
+  DCHECK_LT(color_src_func, kNumBlendFunc);
+  DCHECK_LT(color_dst_func, kNumBlendFunc);
+  DCHECK_LT(alpha_eq, kNumBlendEq);
+  DCHECK_LT(alpha_src_func, kNumBlendFunc);
+  DCHECK_LT(alpha_dst_func, kNumBlendFunc);
   if (enable) {
     glEnable(GL_BLEND);
     GLenum gl_color_eq = kGLBlendEq[color_eq];

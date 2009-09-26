@@ -50,19 +50,19 @@ class IdAllocator {
   IdAllocator();
 
   // Allocates a new resource ID.
-  command_buffer::ResourceID AllocateID() {
+  command_buffer::ResourceId AllocateID() {
     unsigned int bit = FindFirstFree();
     SetBit(bit, true);
     return bit;
   }
 
   // Frees a resource ID.
-  void FreeID(command_buffer::ResourceID id) {
+  void FreeID(command_buffer::ResourceId id) {
     SetBit(id, false);
   }
 
   // Checks whether or not a resource ID is in use.
-  bool InUse(command_buffer::ResourceID id) {
+  bool InUse(command_buffer::ResourceId id) {
     return GetBit(id);
   }
  private:

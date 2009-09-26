@@ -66,7 +66,7 @@ class SamplerD3D9 : public Sampler {
   void SetBorderColor(const RGBA &color);
 
   // Sets the texture.
-  void SetTexture(ResourceID texture) { texture_id_ = texture; }
+  void SetTexture(ResourceId texture) { texture_id_ = texture; }
  private:
   D3DTEXTUREADDRESS d3d_address_u_;
   D3DTEXTUREADDRESS d3d_address_v_;
@@ -76,7 +76,7 @@ class SamplerD3D9 : public Sampler {
   D3DTEXTUREFILTERTYPE d3d_mip_filter_;
   DWORD d3d_max_anisotropy_;
   D3DCOLOR d3d_border_color_;
-  ResourceID texture_id_;
+  ResourceId texture_id_;
 };
 
 }  // namespace command_buffer

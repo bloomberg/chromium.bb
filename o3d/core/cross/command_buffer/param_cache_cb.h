@@ -44,7 +44,7 @@ namespace o3d {
 class ParamHandlerCB;
 
 // This class is the command-buffer implementation of the ParamCache class. It
-// keeps a list of Param * -> param ResourceID associations handlers.
+// keeps a list of Param * -> param ResourceId associations handlers.
 class ParamCacheCB : public ParamCache {
  public:
   ParamCacheCB();

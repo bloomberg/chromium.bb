@@ -54,11 +54,11 @@ class SamplerCB : public Sampler {
   void SetTextureAndStates();
 
   // Gets the resource ID for this sampler.
-  command_buffer::ResourceID resource_id() const { return resource_id_; }
+  command_buffer::ResourceId resource_id() const { return resource_id_; }
 
  private:
   RendererCB* renderer_;
-  command_buffer::ResourceID resource_id_;
+  command_buffer::ResourceId resource_id_;
   DISALLOW_COPY_AND_ASSIGN(SamplerCB);
 };
 

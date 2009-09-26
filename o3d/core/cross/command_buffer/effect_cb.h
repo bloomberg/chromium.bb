@@ -57,8 +57,8 @@ class EffectCB : public Effect {
   // a DirectX FX description.
   virtual bool LoadFromFXString(const String& effect);
 
-  // Gets the ResourceID of the effect.
-  command_buffer::ResourceID resource_id() { return resource_id_; }
+  // Gets the ResourceId of the effect.
+  command_buffer::ResourceId resource_id() { return resource_id_; }
 
  protected:
   // Gets info about the parameters this effect needs.
@@ -73,7 +73,7 @@ class EffectCB : public Effect {
  private:
   void Destroy();
   // The command buffer resource ID for the effect.
-  command_buffer::ResourceID resource_id_;
+  command_buffer::ResourceId resource_id_;
   std::vector<EffectHelper::EffectParamDesc> param_descs_;
   std::vector<EffectHelper::EffectStreamDesc> stream_descs_;
   // A generation counter to dirty ParamCacheCBs.

@@ -403,9 +403,9 @@ void GAPIGL::Clear(unsigned int buffers,
   glClearColor(color.red, color.green, color.blue, color.alpha);
   glClearDepth(depth);
   glClearStencil(stencil);
-  glClear((buffers & COLOR ? GL_COLOR_BUFFER_BIT : 0) |
-          (buffers & DEPTH ? GL_DEPTH_BUFFER_BIT : 0) |
-          (buffers & STENCIL ? GL_STENCIL_BUFFER_BIT : 0));
+  glClear((buffers & kColor ? GL_COLOR_BUFFER_BIT : 0) |
+          (buffers & kDepth ? GL_DEPTH_BUFFER_BIT : 0) |
+          (buffers & kStencil ? GL_STENCIL_BUFFER_BIT : 0));
   CHECK_GL_ERROR();
 }
 

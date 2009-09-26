@@ -90,10 +90,10 @@ class RenderSurfaceCB : public RenderSurface {
   virtual void Destroy();
 
   // Returns the render surface resource ID.
-  command_buffer::ResourceID resource_id() const { return resource_id_; }
+  command_buffer::ResourceId resource_id() const { return resource_id_; }
 
  private:
-  command_buffer::ResourceID resource_id_;
+  command_buffer::ResourceId resource_id_;
   RendererCB *renderer_;
   DISALLOW_COPY_AND_ASSIGN(RenderSurfaceCB);
 };
@@ -127,10 +127,10 @@ class RenderDepthStencilSurfaceCB : public RenderDepthStencilSurface {
   virtual void Destroy();
 
   // Returns the render depth stencil surface resource ID.
-  command_buffer::ResourceID resource_id() const { return resource_id_; }
+  command_buffer::ResourceId resource_id() const { return resource_id_; }
 
  private:
-  command_buffer::ResourceID resource_id_;
+  command_buffer::ResourceId resource_id_;
   RendererCB *renderer_;
   DISALLOW_COPY_AND_ASSIGN(RenderDepthStencilSurfaceCB);
 };

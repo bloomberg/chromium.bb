@@ -40,7 +40,7 @@ namespace command_buffer {
 // Assigns a resource to a resource ID, by setting it at the right location
 // into the list, resizing the list if necessary, and destroying an existing
 // resource if one existed already.
-void ResourceMapBase::Assign(ResourceID id, Resource *resource) {
+void ResourceMapBase::Assign(ResourceId id, Resource *resource) {
   if (id >= resources_.size()) {
     resources_.resize(id + 1, NULL);
   } else {
@@ -56,7 +56,7 @@ void ResourceMapBase::Assign(ResourceID id, Resource *resource) {
 
 // Destroys a resource contained in the map, setting its entry to NULL. If
 // necessary, this will trim the list.
-bool ResourceMapBase::Destroy(ResourceID id) {
+bool ResourceMapBase::Destroy(ResourceId id) {
   if (id >= resources_.size()) {
     return false;
   }

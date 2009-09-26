@@ -54,7 +54,7 @@ class VertexBufferCB : public VertexBuffer {
   ~VertexBufferCB();
 
   // Returns the resource ID for this vertex buffer.
-  command_buffer::ResourceID resource_id() const { return resource_id_; }
+  command_buffer::ResourceId resource_id() const { return resource_id_; }
 
  protected:
   // Allocates a vertex buffer resource.
@@ -95,7 +95,7 @@ class VertexBufferCB : public VertexBuffer {
   bool has_data_;
 
   // The command buffer resource ID for the vertex buffer.
-  command_buffer::ResourceID resource_id_;
+  command_buffer::ResourceId resource_id_;
 
   // The renderer that created this vertex buffer.
   RendererCB *renderer_;
@@ -113,7 +113,7 @@ class IndexBufferCB : public IndexBuffer {
   ~IndexBufferCB();
 
   // Returns the resource ID for this vertex buffer.
-  command_buffer::ResourceID resource_id() const { return resource_id_; }
+  command_buffer::ResourceId resource_id() const { return resource_id_; }
 
  protected:
   // Allocates an index buffer resource.
@@ -157,7 +157,7 @@ class IndexBufferCB : public IndexBuffer {
   bool has_data_;
 
   // The command buffer resource ID for the index buffer.
-  command_buffer::ResourceID resource_id_;
+  command_buffer::ResourceId resource_id_;
 
   // The renderer that created this index buffer.
   RendererCB *renderer_;

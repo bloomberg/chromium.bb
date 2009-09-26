@@ -42,10 +42,10 @@ namespace command_buffer {
 // Converts a texture format to a D3D texture format.
 D3DFORMAT TextureD3D9::D3DFormat(texture::Format format) {
   switch (format) {
-    case texture::XRGB8:  return D3DFMT_X8R8G8B8;
-    case texture::ARGB8:  return D3DFMT_A8R8G8B8;
-    case texture::ABGR16F:  return D3DFMT_A16B16G16R16F;
-    case texture::DXT1:  return D3DFMT_DXT1;
+    case texture::kXRGB8:  return D3DFMT_X8R8G8B8;
+    case texture::kARGB8:  return D3DFMT_A8R8G8B8;
+    case texture::kABGR16F:  return D3DFMT_A16B16G16R16F;
+    case texture::kDXT1:  return D3DFMT_DXT1;
     default:  return D3DFMT_UNKNOWN;
   };
 }
@@ -53,17 +53,17 @@ D3DFORMAT TextureD3D9::D3DFormat(texture::Format format) {
 // Converts a cube map face to a D3D face.
 D3DCUBEMAP_FACES TextureD3D9::D3DFace(texture::Face face) {
   switch (face) {
-    case texture::FACE_POSITIVE_X:
+    case texture::kFacePositiveX:
       return D3DCUBEMAP_FACE_POSITIVE_X;
-    case texture::FACE_NEGATIVE_X:
+    case texture::kFaceNegativeX:
       return D3DCUBEMAP_FACE_NEGATIVE_X;
-    case texture::FACE_POSITIVE_Y:
+    case texture::kFacePositiveY:
       return D3DCUBEMAP_FACE_POSITIVE_Y;
-    case texture::FACE_NEGATIVE_Y:
+    case texture::kFaceNegativeY:
       return D3DCUBEMAP_FACE_NEGATIVE_Y;
-    case texture::FACE_POSITIVE_Z:
+    case texture::kFacePositiveZ:
       return D3DCUBEMAP_FACE_POSITIVE_Z;
-    case texture::FACE_NEGATIVE_Z:
+    case texture::kFaceNegativeZ:
       return D3DCUBEMAP_FACE_NEGATIVE_Z;
   }
   LOG(FATAL) << "Not reached.";
@@ -110,7 +110,7 @@ Texture2DD3D9 *Texture2DD3D9::Create(GAPID3D9 *gapi,
     }
     return new Texture2DD3D9(levels, format, flags, width, height, d3d_texture,
                              NULL, enable_render_surfaces);
-  } else if (flags & texture::DYNAMIC) {
+  } else if (flags & texture::kDynamic) {
     CComPtr<IDirect3DTexture9> d3d_texture = NULL;
     HRESULT result = device->CreateTexture(width, height, levels,
                                            D3DUSAGE_DYNAMIC, d3d_format,
@@ -174,7 +174,7 @@ bool Texture2DD3D9::SetData(GAPID3D9 *gapi,
   RECT rect = {volume.x, volume.y, volume.x+volume.width,
                volume.y+volume.height};
   DWORD lock_flags =
-      full_rect && (flags() & texture::DYNAMIC) ? D3DLOCK_DISCARD : 0;
+      full_rect && (flags() & texture::kDynamic) ? D3DLOCK_DISCARD : 0;
   HR(lock_texture->LockRect(level, &locked_rect, full_rect ? NULL : &rect,
                             lock_flags));
 
@@ -288,7 +288,7 @@ Texture3DD3D9 *Texture3DD3D9::Create(GAPID3D9 *gapi,
     }
     return new Texture3DD3D9(levels, format, flags, width, height, depth,
                              d3d_texture, NULL, enable_render_surfaces);
-  } else if (flags & texture::DYNAMIC) {
+  } else if (flags & texture::kDynamic) {
     CComPtr<IDirect3DVolumeTexture9> d3d_texture = NULL;
     HRESULT result = device->CreateVolumeTexture(width, height, depth, levels,
                                                  D3DUSAGE_DYNAMIC, d3d_format,
@@ -355,7 +355,7 @@ bool Texture3DD3D9::SetData(GAPID3D9 *gapi,
   D3DBOX box = {volume.x, volume.y, volume.z, volume.x+volume.width,
                 volume.y+volume.height, volume.z+volume.depth};
   DWORD lock_flags =
-      full_box && (flags() & texture::DYNAMIC) ? D3DLOCK_DISCARD : 0;
+      full_box && (flags() & texture::kDynamic) ? D3DLOCK_DISCARD : 0;
   HR(lock_texture->LockBox(level, &locked_box, full_box ? NULL : &box,
                            lock_flags));
 
@@ -461,7 +461,7 @@ TextureCubeD3D9 *TextureCubeD3D9::Create(GAPID3D9 *gapi,
     }
     return new TextureCubeD3D9(levels, format, flags, side, d3d_texture, NULL,
                                enable_render_surfaces);
-  } else if (flags & texture::DYNAMIC) {
+  } else if (flags & texture::kDynamic) {
     CComPtr<IDirect3DCubeTexture9> d3d_texture = NULL;
     HRESULT result = device->CreateCubeTexture(side, levels, D3DUSAGE_DYNAMIC,
                                                d3d_format, D3DPOOL_DEFAULT,
@@ -526,7 +526,7 @@ bool TextureCubeD3D9::SetData(GAPID3D9 *gapi,
   RECT rect = {volume.x, volume.y, volume.x+volume.width,
                volume.y+volume.height};
   DWORD lock_flags =
-      full_rect && (flags() & texture::DYNAMIC) ? D3DLOCK_DISCARD : 0;
+      full_rect && (flags() & texture::kDynamic) ? D3DLOCK_DISCARD : 0;
   HR(lock_texture->LockRect(d3d_face, level, &locked_rect,
                             full_rect ? NULL : &rect, lock_flags));
 
@@ -608,7 +608,7 @@ bool TextureCubeD3D9::CreateRenderSurface(
 // GAPID3D9 functions.
 
 // Destroys a texture resource.
-BufferSyncInterface::ParseError GAPID3D9::DestroyTexture(ResourceID id) {
+BufferSyncInterface::ParseError GAPID3D9::DestroyTexture(ResourceId id) {
   // Dirty effect, because this texture id may be used
   DirtyEffect();
   return textures_.Destroy(id) ?
@@ -618,7 +618,7 @@ BufferSyncInterface::ParseError GAPID3D9::DestroyTexture(ResourceID id) {
 
 // Creates a 2D texture resource.
 BufferSyncInterface::ParseError GAPID3D9::CreateTexture2D(
-    ResourceID id,
+    ResourceId id,
     unsigned int width,
     unsigned int height,
     unsigned int levels,
@@ -637,7 +637,7 @@ BufferSyncInterface::ParseError GAPID3D9::CreateTexture2D(
 
 // Creates a 3D texture resource.
 BufferSyncInterface::ParseError GAPID3D9::CreateTexture3D(
-    ResourceID id,
+    ResourceId id,
     unsigned int width,
     unsigned int height,
     unsigned int depth,
@@ -657,7 +657,7 @@ BufferSyncInterface::ParseError GAPID3D9::CreateTexture3D(
 
 // Creates a cube map texture resource.
 BufferSyncInterface::ParseError GAPID3D9::CreateTextureCube(
-    ResourceID id,
+    ResourceId id,
     unsigned int side,
     unsigned int levels,
     texture::Format format,
@@ -675,7 +675,7 @@ BufferSyncInterface::ParseError GAPID3D9::CreateTextureCube(
 
 // Copies the data into a texture resource.
 BufferSyncInterface::ParseError GAPID3D9::SetTextureData(
-    ResourceID id,
+    ResourceId id,
     unsigned int x,
     unsigned int y,
     unsigned int z,
@@ -700,7 +700,7 @@ BufferSyncInterface::ParseError GAPID3D9::SetTextureData(
 
 // Copies the data from a texture resource.
 BufferSyncInterface::ParseError GAPID3D9::GetTextureData(
-    ResourceID id,
+    ResourceId id,
     unsigned int x,
     unsigned int y,
     unsigned int z,

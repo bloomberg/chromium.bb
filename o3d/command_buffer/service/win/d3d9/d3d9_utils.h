@@ -104,34 +104,37 @@ static bool D3DSemanticToCBSemantic(
   // TODO: what meaning do we really want to put to our semantics ? How
   // do they match the semantics that are set in the effect ? What combination
   // of (semantic, index) are supposed to work ?
+  // TODO(gman): This is just plain wrong! Fix it. Converting binormal to
+  // texcoord 7 means there will be conflicts if I have both a Binormal and a
+  // texcoord 7 or 2 binormals both of which we have examples of already in O3D!
   switch (semantic) {
     case D3DDECLUSAGE_POSITION:
       if (semantic_index != 0) return false;
-      *out_semantic = vertex_struct::POSITION;
+      *out_semantic = vertex_struct::kPosition;
       *out_semantic_index = 0;
       return true;
     case D3DDECLUSAGE_NORMAL:
       if (semantic_index != 0) return false;
-      *out_semantic = vertex_struct::NORMAL;
+      *out_semantic = vertex_struct::kNormal;
       *out_semantic_index = 0;
       return true;
     case D3DDECLUSAGE_TANGENT:
       if (semantic_index != 0) return false;
-      *out_semantic = vertex_struct::TEX_COORD;
+      *out_semantic = vertex_struct::kTexCoord;
       *out_semantic_index = 6;
       return true;
     case D3DDECLUSAGE_BINORMAL:
       if (semantic_index != 0) return false;
-      *out_semantic = vertex_struct::TEX_COORD;
+      *out_semantic = vertex_struct::kTexCoord;
       *out_semantic_index = 7;
       return true;
     case D3DDECLUSAGE_COLOR:
       if (semantic_index > 1) return false;
-      *out_semantic = vertex_struct::COLOR;
+      *out_semantic = vertex_struct::kColor;
       *out_semantic_index = semantic_index;
       return true;
     case D3DDECLUSAGE_TEXCOORD:
-      *out_semantic = vertex_struct::TEX_COORD;
+      *out_semantic = vertex_struct::kTexCoord;
       *out_semantic_index = semantic_index;
       return true;
     default:

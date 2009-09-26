@@ -98,56 +98,56 @@ class GAPIGL : public GAPIInterface {
                            float z_max);
 
   // Implements the CreateVertexBuffer function for GL.
-  virtual ParseError CreateVertexBuffer(ResourceID id,
+  virtual ParseError CreateVertexBuffer(ResourceId id,
                                         unsigned int size,
                                         unsigned int flags);
 
   // Implements the DestroyVertexBuffer function for GL.
-  virtual ParseError DestroyVertexBuffer(ResourceID id);
+  virtual ParseError DestroyVertexBuffer(ResourceId id);
 
   // Implements the SetVertexBufferData function for GL.
-  virtual ParseError SetVertexBufferData(ResourceID id,
+  virtual ParseError SetVertexBufferData(ResourceId id,
                                          unsigned int offset,
                                          unsigned int size,
                                          const void *data);
 
   // Implements the GetVertexBufferData function for GL.
-  virtual ParseError GetVertexBufferData(ResourceID id,
+  virtual ParseError GetVertexBufferData(ResourceId id,
                                          unsigned int offset,
                                          unsigned int size,
                                          void *data);
 
   // Implements the CreateIndexBuffer function for GL.
-  virtual ParseError CreateIndexBuffer(ResourceID id,
+  virtual ParseError CreateIndexBuffer(ResourceId id,
                                        unsigned int size,
                                        unsigned int flags);
 
   // Implements the DestroyIndexBuffer function for GL.
-  virtual ParseError DestroyIndexBuffer(ResourceID id);
+  virtual ParseError DestroyIndexBuffer(ResourceId id);
 
   // Implements the SetIndexBufferData function for GL.
-  virtual ParseError SetIndexBufferData(ResourceID id,
+  virtual ParseError SetIndexBufferData(ResourceId id,
                                         unsigned int offset,
                                         unsigned int size,
                                         const void *data);
 
   // Implements the GetIndexBufferData function for GL.
-  virtual ParseError GetIndexBufferData(ResourceID id,
+  virtual ParseError GetIndexBufferData(ResourceId id,
                                         unsigned int offset,
                                         unsigned int size,
                                         void *data);
 
   // Implements the CreateVertexStruct function for GL.
-  virtual ParseError CreateVertexStruct(ResourceID id,
+  virtual ParseError CreateVertexStruct(ResourceId id,
                                         unsigned int input_count);
 
   // Implements the DestroyVertexStruct function for GL.
-  virtual ParseError DestroyVertexStruct(ResourceID id);
+  virtual ParseError DestroyVertexStruct(ResourceId id);
 
   // Implements the SetVertexInput function for GL.
-  virtual ParseError SetVertexInput(ResourceID vertex_struct_id,
+  virtual ParseError SetVertexInput(ResourceId vertex_struct_id,
                                     unsigned int input_index,
-                                    ResourceID vertex_buffer_id,
+                                    ResourceId vertex_buffer_id,
                                     unsigned int offset,
                                     unsigned int stride,
                                     vertex_struct::Type type,
@@ -155,7 +155,7 @@ class GAPIGL : public GAPIInterface {
                                     unsigned int semantic_index);
 
   // Implements the SetVertexStruct function for GL.
-  virtual ParseError SetVertexStruct(ResourceID id);
+  virtual ParseError SetVertexStruct(ResourceId id);
 
   // Implements the Draw function for GL.
   virtual ParseError Draw(PrimitiveType primitive_type,
@@ -164,65 +164,65 @@ class GAPIGL : public GAPIInterface {
 
   // Implements the DrawIndexed function for GL.
   virtual ParseError DrawIndexed(PrimitiveType primitive_type,
-                                 ResourceID index_buffer_id,
+                                 ResourceId index_buffer_id,
                                  unsigned int first,
                                  unsigned int count,
                                  unsigned int min_index,
                                  unsigned int max_index);
 
   // Implements the CreateEffect function for GL.
-  virtual ParseError CreateEffect(ResourceID id,
+  virtual ParseError CreateEffect(ResourceId id,
                                   unsigned int size,
                                   const void *data);
 
   // Implements the DestroyEffect function for GL.
-  virtual ParseError DestroyEffect(ResourceID id);
+  virtual ParseError DestroyEffect(ResourceId id);
 
   // Implements the SetEffect function for GL.
-  virtual ParseError SetEffect(ResourceID id);
+  virtual ParseError SetEffect(ResourceId id);
 
   // Implements the GetParamCount function for GL.
-  virtual ParseError GetParamCount(ResourceID id,
+  virtual ParseError GetParamCount(ResourceId id,
                                    unsigned int size,
                                    void *data);
 
   // Implements the CreateParam function for GL.
-  virtual ParseError CreateParam(ResourceID param_id,
-                                 ResourceID effect_id,
+  virtual ParseError CreateParam(ResourceId param_id,
+                                 ResourceId effect_id,
                                  unsigned int index);
 
   // Implements the CreateParamByName function for GL.
-  virtual ParseError CreateParamByName(ResourceID param_id,
-                                       ResourceID effect_id,
+  virtual ParseError CreateParamByName(ResourceId param_id,
+                                       ResourceId effect_id,
                                        unsigned int size,
                                        const void *name);
 
   // Implements the DestroyParam function for GL.
-  virtual ParseError DestroyParam(ResourceID id);
+  virtual ParseError DestroyParam(ResourceId id);
 
   // Implements the SetParamData function for GL.
-  virtual ParseError SetParamData(ResourceID id,
+  virtual ParseError SetParamData(ResourceId id,
                                   unsigned int size,
                                   const void *data);
 
   // Implements the GetParamDesc function for GL.
-  virtual ParseError GetParamDesc(ResourceID id,
+  virtual ParseError GetParamDesc(ResourceId id,
                                   unsigned int size,
                                   void *data);
 
   // Implements the GetStreamCount function for GL.
-  virtual ParseError GetStreamCount(ResourceID id,
+  virtual ParseError GetStreamCount(ResourceId id,
                                     unsigned int size,
                                     void *data);
 
   // Implements the GetStreamDesc function for GL.
-  virtual ParseError GetStreamDesc(ResourceID id,
+  virtual ParseError GetStreamDesc(ResourceId id,
                                    unsigned int index,
                                    unsigned int size,
                                    void *data);
 
   // Implements the CreateTexture2D function for GL.
-  virtual ParseError CreateTexture2D(ResourceID id,
+  virtual ParseError CreateTexture2D(ResourceId id,
                                      unsigned int width,
                                      unsigned int height,
                                      unsigned int levels,
@@ -231,7 +231,7 @@ class GAPIGL : public GAPIInterface {
                                      bool enable_render_surfaces);
 
   // Implements the CreateTexture3D function for GL.
-  virtual ParseError CreateTexture3D(ResourceID id,
+  virtual ParseError CreateTexture3D(ResourceId id,
                                      unsigned int width,
                                      unsigned int height,
                                      unsigned int depth,
@@ -241,7 +241,7 @@ class GAPIGL : public GAPIInterface {
                                      bool enable_render_surfaces);
 
   // Implements the CreateTextureCube function for GL.
-  virtual ParseError CreateTextureCube(ResourceID id,
+  virtual ParseError CreateTextureCube(ResourceId id,
                                        unsigned int side,
                                        unsigned int levels,
                                        texture::Format format,
@@ -249,7 +249,7 @@ class GAPIGL : public GAPIInterface {
                                        bool enable_render_surfaces);
 
   // Implements the SetTextureData function for GL.
-  virtual ParseError SetTextureData(ResourceID id,
+  virtual ParseError SetTextureData(ResourceId id,
                                     unsigned int x,
                                     unsigned int y,
                                     unsigned int z,
@@ -264,7 +264,7 @@ class GAPIGL : public GAPIInterface {
                                     const void *data);
 
   // Implements the GetTextureData function for GL.
-  virtual ParseError GetTextureData(ResourceID id,
+  virtual ParseError GetTextureData(ResourceId id,
                                     unsigned int x,
                                     unsigned int y,
                                     unsigned int z,
@@ -279,16 +279,16 @@ class GAPIGL : public GAPIInterface {
                                     void *data);
 
   // Implements the DestroyTexture function for GL.
-  virtual ParseError DestroyTexture(ResourceID id);
+  virtual ParseError DestroyTexture(ResourceId id);
 
   // Implements the CreateSampler function for GL.
-  virtual ParseError CreateSampler(ResourceID id);
+  virtual ParseError CreateSampler(ResourceId id);
 
   // Implements the DestroySampler function for GL.
-  virtual ParseError DestroySampler(ResourceID id);
+  virtual ParseError DestroySampler(ResourceId id);
 
   // Implements the SetSamplerStates function for GL.
-  virtual ParseError SetSamplerStates(ResourceID id,
+  virtual ParseError SetSamplerStates(ResourceId id,
                                       sampler::AddressingMode addressing_u,
                                       sampler::AddressingMode addressing_v,
                                       sampler::AddressingMode addressing_w,
@@ -298,10 +298,10 @@ class GAPIGL : public GAPIInterface {
                                       unsigned int max_anisotropy);
 
   // Implements the SetSamplerBorderColor function for GL.
-  virtual ParseError SetSamplerBorderColor(ResourceID id, const RGBA &color);
+  virtual ParseError SetSamplerBorderColor(ResourceId id, const RGBA &color);
 
   // Implements the SetSamplerTexture function for GL.
-  virtual ParseError SetSamplerTexture(ResourceID id, ResourceID texture_id);
+  virtual ParseError SetSamplerTexture(ResourceId id, ResourceId texture_id);
 
   // Implements the SetScissor function for GL.
   virtual void SetScissor(bool enable,
@@ -361,43 +361,43 @@ class GAPIGL : public GAPIInterface {
   virtual void SetBlendingColor(const RGBA &color);
 
   // Implements the CreateRenderSurface function for GL.
-  virtual ParseError CreateRenderSurface(ResourceID id,
+  virtual ParseError CreateRenderSurface(ResourceId id,
                                          unsigned int width,
                                          unsigned int height,
                                          unsigned int mip_level,
                                          unsigned int side,
-                                         ResourceID texture_id);
+                                         ResourceId texture_id);
 
   // Implements the DestroyRenderSurface function for GL.
-  virtual ParseError DestroyRenderSurface(ResourceID id);
+  virtual ParseError DestroyRenderSurface(ResourceId id);
 
   // Implements the CreateDepthSurface function for GL.
-  virtual ParseError CreateDepthSurface(ResourceID id,
+  virtual ParseError CreateDepthSurface(ResourceId id,
                                         unsigned int width,
                                         unsigned int height);
 
   // Implements the DestroyDepthSurface function for GL.
-  virtual ParseError DestroyDepthSurface(ResourceID id);
+  virtual ParseError DestroyDepthSurface(ResourceId id);
 
   // Implements the SetRenderSurface function for GL.
-  virtual ParseError SetRenderSurface(ResourceID render_surface_id,
-                                      ResourceID depth_stencil_id);
+  virtual ParseError SetRenderSurface(ResourceId render_surface_id,
+                                      ResourceId depth_stencil_id);
 
   // Implements the SetBackSurfaces function for GL.
   virtual void SetBackSurfaces();
 
   // Gets a vertex buffer by resource ID.
-  VertexBufferGL *GetVertexBuffer(ResourceID id) {
+  VertexBufferGL *GetVertexBuffer(ResourceId id) {
     return vertex_buffers_.Get(id);
   }
 
   // Gets a texture by resource ID.
-  TextureGL *GetTexture(ResourceID id) {
+  TextureGL *GetTexture(ResourceId id) {
     return textures_.Get(id);
   }
 
   // Gets a sampler by resource ID.
-  SamplerGL *GetSampler(ResourceID id) {
+  SamplerGL *GetSampler(ResourceId id) {
     return samplers_.Get(id);
   }
   void set_anti_aliased(bool anti_aliased) { anti_aliased_ = anti_aliased; }
@@ -431,14 +431,14 @@ class GAPIGL : public GAPIInterface {
   CGcontext cg_context_;
 
   bool anti_aliased_;
-  ResourceID current_vertex_struct_;
+  ResourceId current_vertex_struct_;
   bool validate_streams_;
   unsigned int max_vertices_;
-  ResourceID current_effect_id_;
+  ResourceId current_effect_id_;
   bool validate_effect_;
   EffectGL *current_effect_;
-  ResourceID current_surface_id_;
-  ResourceID current_depth_surface_id_;
+  ResourceId current_surface_id_;
+  ResourceId current_depth_surface_id_;
   GLuint render_surface_framebuffer_;
 
   ResourceMap<VertexBufferGL> vertex_buffers_;

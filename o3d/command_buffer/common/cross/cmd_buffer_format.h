@@ -61,286 +61,13 @@
 
 #include "base/basictypes.h"
 #include "command_buffer/common/cross/types.h"
+#include "command_buffer/common/cross/logging.h"
+#include "command_buffer/common/cross/resource.h"
 #include "command_buffer/common/cross/bitfield_helpers.h"
 #include "core/cross/packing.h"
 
 namespace o3d {
 namespace command_buffer {
-
-namespace cmd {
-  enum ArgFlags {
-    kFixed = 0x0,
-    kAtLeastN = 0x1,
-  };
-}  // namespace cmd
-
-// Computes the number of command buffer entries needed for a certain size. In
-// other words it rounds up to a multiple of entries.
-inline uint32 ComputeNumEntries(size_t size_in_bytes) {
-  return static_cast<uint32>(
-      (size_in_bytes + sizeof(uint32) - 1) / sizeof(uint32));  // NOLINT
-}
-
-// Rounds up to a multiple of entries in bytes.
-inline size_t RoundSizeToMultipleOfEntries(size_t size_in_bytes) {
-  return ComputeNumEntries(size_in_bytes) * sizeof(uint32);  // NOLINT
-}
-
-// Struct that defines the command header in the command buffer.
-struct CommandHeader {
-  Uint32 size:8;
-  Uint32 command:24;
-
-  void Init(uint32 _command, uint32 _size) {
-    command = _command;
-    size = _size;
-  }
-
-  // Sets the header based on the passed in command. Can not be used for
-  // variable sized commands like immediate commands or Noop.
-  template <typename T>
-  void SetCmd() {
-    COMPILE_ASSERT(T::kArgFlags == cmd::kFixed, Cmd_kArgFlags_not_kFixed);
-    Init(T::kCmdId, ComputeNumEntries(sizeof(T)));  // NOLINT
-  }
-
-  // Sets the header by a size in bytes.
-  template <typename T>
-  void SetCmdBySize(uint32 size_in_bytes) {
-    COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
-    Init(T::kCmdId, ComputeNumEntries(sizeof(T) + size_in_bytes));  // NOLINT
-  }
-};
-
-COMPILE_ASSERT(sizeof(CommandHeader) == 4, Sizeof_CommandHeader_is_not_4);
-
-// Union that defines possible command buffer entries.
-union CommandBufferEntry {
-  CommandHeader value_header;
-  Uint32 value_uint32;
-  Int32 value_int32;
-  float value_float;
-};
-
-COMPILE_ASSERT(sizeof(CommandBufferEntry) == 4,
-               Sizeof_CommandBufferEntry_is_not_4);
-
-// Bitfields for the SetVertexInput command.
-namespace set_vertex_input_cmd {
-// argument 4
-typedef BitField<0, 4> SemanticIndex;  // TODO(gman): shouldn't this be bigger
-                                       // than 4 bits for future expansion?
-typedef BitField<4, 4> Semantic;
-typedef BitField<8, 8> Type;
-typedef BitField<16, 16> Stride;
-}  // namespace set_vertex_input_cmd
-
-// Bitfields for the CreateTexture2d command.
-namespace create_texture_2d_cmd {
-// argument 1
-typedef BitField<0, 16> Width;
-typedef BitField<16, 16> Height;
-// argument 2
-typedef BitField<0, 4> Levels;
-typedef BitField<4, 4> Unused;
-typedef BitField<8, 8> Format;
-typedef BitField<16, 16> Flags;
-}  // namespace create_texture_2d_cmd
-
-// Bitfields for the CreateTexture3d command.
-namespace create_texture_3d_cmd {
-// argument 1
-typedef BitField<0, 16> Width;
-typedef BitField<16, 16> Height;
-// argument 2
-typedef BitField<0, 16> Depth;
-typedef BitField<16, 16> Unused1;
-// argument 3
-typedef BitField<0, 4> Levels;
-typedef BitField<4, 4> Unused2;
-typedef BitField<8, 8> Format;
-typedef BitField<16, 16> Flags;
-}  // namespace create_texture_3d_cmd
-
-// Bitfields for the CreateTextureCube command.
-namespace create_texture_cube_cmd {
-// argument 1
-typedef BitField<0, 16> Side;
-typedef BitField<16, 16> Unused1;
-// argument 2
-typedef BitField<0, 4> Levels;
-typedef BitField<4, 4> Unused2;
-typedef BitField<8, 8> Format;
-typedef BitField<16, 16> Flags;
-}  // namespace create_texture_cube_cmd
-
-// Bitfields for the CreateRenderSurface command.
-namespace create_render_surface_cmd {
-// argument 1
-typedef BitField<0, 16> Width;
-typedef BitField<16, 16> Height;
-// argument 2 may refer to side or depth
-typedef BitField<0, 16> Levels;
-typedef BitField<16, 16> Side;
-}  // namespace create_render_surface_cmd
-
-// Bitfields for the CreateDepthSurface command.
-namespace create_depth_surface_cmd {
-// argument 1
-typedef BitField<0, 16> Width;
-typedef BitField<16, 16> Height;
-}  // namespace create_depth_surface_cmd
-
-// Bitfields for the SetTextureData command.
-namespace set_texture_data_cmd {
-// argument 1
-typedef BitField<0, 16> X;
-typedef BitField<16, 16> Y;
-// argument 2
-typedef BitField<0, 16> Width;
-typedef BitField<16, 16> Height;
-// argument 3
-typedef BitField<0, 16> Z;
-typedef BitField<16, 16> Depth;
-// argument 4
-typedef BitField<0, 4> Level;
-typedef BitField<4, 3> Face;
-typedef BitField<7, 25> Unused;
-}  // namespace set_texture_data_cmd
-
-// Bitfields for the SetTextureDataImmediate command.
-namespace set_texture_data_immediate_cmd {
-// argument 1
-typedef BitField<0, 16> X;
-typedef BitField<16, 16> Y;
-// argument 2
-typedef BitField<0, 16> Width;
-typedef BitField<16, 16> Height;
-// argument 3
-typedef BitField<0, 16> Z;
-typedef BitField<16, 16> Depth;
-// argument 4
-typedef BitField<0, 4> Level;
-typedef BitField<4, 3> Face;
-typedef BitField<7, 25> Unused;
-}  // namespace set_texture_data_immediate_cmd
-
-// Bitfields for the GetTextureData command.
-namespace get_texture_data_cmd {
-// argument 1
-typedef BitField<0, 16> X;
-typedef BitField<16, 16> Y;
-// argument 2
-typedef BitField<0, 16> Width;
-typedef BitField<16, 16> Height;
-// argument 3
-typedef BitField<0, 16> Z;
-typedef BitField<16, 16> Depth;
-// argument 4
-typedef BitField<0, 4> Level;
-typedef BitField<4, 3> Face;
-typedef BitField<7, 25> Unused;
-}  // namespace get_texture_data_cmd
-
-// Bitfields for the SetSamplerStates command.
-namespace set_sampler_states {
-// argument 2
-typedef BitField<0, 3> AddressingU;
-typedef BitField<3, 3> AddressingV;
-typedef BitField<6, 3> AddressingW;
-typedef BitField<9, 3> MagFilter;
-typedef BitField<12, 3> MinFilter;
-typedef BitField<15, 3> MipFilter;
-typedef BitField<18, 6> Unused;
-typedef BitField<24, 8> MaxAnisotropy;
-}  // namespace get_texture_data_cmd
-
-namespace set_scissor {
-// argument 0
-typedef BitField<0, 15> X;
-typedef BitField<15, 1> Unused;
-typedef BitField<16, 15> Y;
-typedef BitField<31, 1> Enable;
-// argument 1
-typedef BitField<0, 16> Width;
-typedef BitField<16, 16> Height;
-}  // namespace set_scissor
-
-namespace set_point_line_raster {
-// argument 0
-typedef BitField<0, 1> LineSmoothEnable;
-typedef BitField<1, 1> PointSpriteEnable;
-typedef BitField<2, 30> Unused;
-}  // namespace set_point_line_raster
-
-namespace set_polygon_raster {
-// argument 0
-typedef BitField<0, 2> FillMode;
-typedef BitField<2, 2> CullMode;
-typedef BitField<4, 28> Unused;
-}  // namespace set_polygon_raster
-
-namespace set_alpha_test {
-// argument 0
-typedef BitField<0, 3> Func;
-typedef BitField<3, 28> Unused;
-typedef BitField<31, 1> Enable;
-}  // namespace set_alpha_test
-
-namespace set_depth_test {
-// argument 0
-typedef BitField<0, 3> Func;
-typedef BitField<3, 27> Unused;
-typedef BitField<30, 1> WriteEnable;
-typedef BitField<31, 1> Enable;
-}  // namespace set_depth_test
-
-namespace set_stencil_test {
-// argument 0
-typedef BitField<0, 8> WriteMask;
-typedef BitField<8, 8> CompareMask;
-typedef BitField<16, 8> ReferenceValue;
-typedef BitField<24, 6> Unused0;
-typedef BitField<30, 1> SeparateCCW;
-typedef BitField<31, 1> Enable;
-// argument 1
-typedef BitField<0, 3> CWFunc;
-typedef BitField<3, 3> CWPassOp;
-typedef BitField<6, 3> CWFailOp;
-typedef BitField<9, 3> CWZFailOp;
-typedef BitField<12, 4> Unused1;
-typedef BitField<16, 3> CCWFunc;
-typedef BitField<19, 3> CCWPassOp;
-typedef BitField<22, 3> CCWFailOp;
-typedef BitField<25, 3> CCWZFailOp;
-typedef BitField<28, 4> Unused2;
-}  // namespace set_stencil_test
-
-namespace set_color_write {
-// argument 0
-typedef BitField<0, 1> RedMask;
-typedef BitField<1, 1> GreenMask;
-typedef BitField<2, 1> BlueMask;
-typedef BitField<3, 1> AlphaMask;
-typedef BitField<0, 4> AllColorsMask;  // alias for RGBA
-typedef BitField<4, 27> Unused;
-typedef BitField<31, 1> DitherEnable;
-}  // namespace set_color_write
-
-namespace set_blending {
-// argument 0
-typedef BitField<0, 4> ColorSrcFunc;
-typedef BitField<4, 4> ColorDstFunc;
-typedef BitField<8, 3> ColorEq;
-typedef BitField<11, 5> Unused0;
-typedef BitField<16, 4> AlphaSrcFunc;
-typedef BitField<20, 4> AlphaDstFunc;
-typedef BitField<24, 3> AlphaEq;
-typedef BitField<27, 3> Unused1;
-typedef BitField<30, 1> SeparateAlpha;
-typedef BitField<31, 1> Enable;
-}  // namespace set_blending
-
 
 // This macro is used to safely and convienently expand the list of commnad
 // buffer commands in to various lists and never have them get out of sync. To
@@ -423,6 +150,157 @@ enum CommandId {
   O3D_COMMAND_BUFFER_CMDS
 
   #undef O3D_COMMAND_BUFFER_CMD_OP
+
+  kNumCommands,
+};
+
+namespace cmd {
+  enum ArgFlags {
+    kFixed = 0x0,
+    kAtLeastN = 0x1,
+  };
+}  // namespace cmd
+
+// Computes the number of command buffer entries needed for a certain size. In
+// other words it rounds up to a multiple of entries.
+inline uint32 ComputeNumEntries(size_t size_in_bytes) {
+  return static_cast<uint32>(
+      (size_in_bytes + sizeof(uint32) - 1) / sizeof(uint32));  // NOLINT
+}
+
+// Rounds up to a multiple of entries in bytes.
+inline size_t RoundSizeToMultipleOfEntries(size_t size_in_bytes) {
+  return ComputeNumEntries(size_in_bytes) * sizeof(uint32);  // NOLINT
+}
+
+// Struct that defines the command header in the command buffer.
+struct CommandHeader {
+  Uint32 size:8;
+  Uint32 command:24;
+
+  void Init(uint32 _command, uint32 _size) {
+    DCHECK_LT(_size, 256);
+    DCHECK_LT(_command, static_cast<int>(kNumCommands));
+    command = _command;
+    size = _size;
+  }
+
+  // Sets the header based on the passed in command. Can not be used for
+  // variable sized commands like immediate commands or Noop.
+  template <typename T>
+  void SetCmd() {
+    COMPILE_ASSERT(T::kArgFlags == cmd::kFixed, Cmd_kArgFlags_not_kFixed);
+    Init(T::kCmdId, ComputeNumEntries(sizeof(T)));  // NOLINT
+  }
+
+  // Sets the header by a size in bytes.
+  template <typename T>
+  void SetCmdBySize(uint32 size_in_bytes) {
+    COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
+    Init(T::kCmdId, ComputeNumEntries(sizeof(T) + size_in_bytes));  // NOLINT
+  }
+};
+
+COMPILE_ASSERT(sizeof(CommandHeader) == 4, Sizeof_CommandHeader_is_not_4);
+
+// Union that defines possible command buffer entries.
+union CommandBufferEntry {
+  CommandHeader value_header;
+  Uint32 value_uint32;
+  Int32 value_int32;
+  float value_float;
+};
+
+COMPILE_ASSERT(sizeof(CommandBufferEntry) == 4,
+               Sizeof_CommandBufferEntry_is_not_4);
+
+// Bit definitions for buffers to clear.
+enum ClearBuffer {
+  kColor = 0x1,
+  kDepth = 0x2,
+  kStencil = 0x4,
+  kAllBuffers = kColor | kDepth | kStencil
+};
+
+// Polygon mode for SetPolygonRaster
+enum PolygonMode {
+  kPolygonModePoints,
+  kPolygonModeLines,
+  kPolygonModeFill,
+  kNumPolygonMode
+};
+
+// Face culling mode for SetPolygonRaster
+enum FaceCullMode {
+  kCullNone,
+  kCullCW,
+  kCullCCW,
+  kNumFaceCullMode
+};
+
+// Primitive type for Draw and DrawIndexed.
+enum PrimitiveType {
+  kPoints,
+  kLines,
+  kLineStrips,
+  kTriangles,
+  kTriangleStrips,
+  kTriangleFans,
+  kMaxPrimitiveType
+};
+
+// Comparison function for alpha or depth test
+enum Comparison {
+  kNever,
+  kLess,
+  kEqual,
+  kLEqual,
+  kGreater,
+  kNotEqual,
+  kGEqual,
+  kAlways,
+  kNumComparison
+};
+
+// Stencil operation
+enum StencilOp {
+  kKeep,
+  kZero,
+  kReplace,
+  kIncNoWrap,
+  kDecNoWrap,
+  kInvert,
+  kIncWrap,
+  kDecWrap,
+  kNumStencilOp
+};
+
+// Blend Equation
+enum BlendEq {
+  kBlendEqAdd,
+  kBlendEqSub,
+  kBlendEqRevSub,
+  kBlendEqMin,
+  kBlendEqMax,
+  kNumBlendEq
+};
+
+// Blend Funtion
+enum BlendFunc {
+  kBlendFuncZero,
+  kBlendFuncOne,
+  kBlendFuncSrcColor,
+  kBlendFuncInvSrcColor,
+  kBlendFuncSrcAlpha,
+  kBlendFuncInvSrcAlpha,
+  kBlendFuncDstAlpha,
+  kBlendFuncInvDstAlpha,
+  kBlendFuncDstColor,
+  kBlendFuncInvDstColor,
+  kBlendFuncSrcAlphaSaturate,
+  kBlendFuncBlendColor,
+  kBlendFuncInvBlendColor,
+  kNumBlendFunc
 };
 
 namespace cmd {
@@ -714,20 +592,22 @@ struct CreateVertexBuffer {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id, uint32 _size, uint32 _flags) {
+  void Init(ResourceId _vertex_buffer_id, uint32 _size,
+            vertex_buffer::Flags _flags) {
     SetHeader();
-    id = _id;
+    vertex_buffer_id = _vertex_buffer_id;
     size = _size;
-    flags = _flags;
+    flags = static_cast<uint32>(_flags);
   }
 
-  static void* Set(void* cmd, uint32 id, uint32 size, uint32 flags) {
-    static_cast<ValueType*>(cmd)->Init(id, size, flags);
+  static void* Set(void* cmd, ResourceId vertex_buffer_id,
+                   uint32 size, vertex_buffer::Flags flags) {
+    static_cast<ValueType*>(cmd)->Init(vertex_buffer_id, size, flags);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId vertex_buffer_id;
   uint32 size;
   uint32 flags;
 };
@@ -736,8 +616,8 @@ COMPILE_ASSERT(sizeof(CreateVertexBuffer) == 16,
                Sizeof_CreateVertexBuffer_is_not_16);
 COMPILE_ASSERT(offsetof(CreateVertexBuffer, header) == 0,
                OffsetOf_CreateVertexBuffer_header_not_0);
-COMPILE_ASSERT(offsetof(CreateVertexBuffer, id) == 4,
-               OffsetOf_CreateVertexBuffer_id_not_4);
+COMPILE_ASSERT(offsetof(CreateVertexBuffer, vertex_buffer_id) == 4,
+               OffsetOf_CreateVertexBuffer_vertex_buffer_id_not_4);
 COMPILE_ASSERT(offsetof(CreateVertexBuffer, size) == 8,
                OffsetOf_CreateVertexBuffer_size_not_8);
 COMPILE_ASSERT(offsetof(CreateVertexBuffer, flags) == 12,
@@ -752,26 +632,26 @@ struct DestroyVertexBuffer {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id) {
+  void Init(ResourceId _vertex_buffer_id) {
     SetHeader();
-    id = _id;
+    vertex_buffer_id = _vertex_buffer_id;
   }
 
-  static void* Set(void* cmd, uint32 id) {
-    static_cast<ValueType*>(cmd)->Init(id);
+  static void* Set(void* cmd, ResourceId vertex_buffer_id) {
+    static_cast<ValueType*>(cmd)->Init(vertex_buffer_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId vertex_buffer_id;
 };
 
 COMPILE_ASSERT(sizeof(DestroyVertexBuffer) == 8,
                Sizeof_DestroyVertexBuffer_is_not_8);
 COMPILE_ASSERT(offsetof(DestroyVertexBuffer, header) == 0,
                OffsetOf_DestroyVertexBuffer_header_not_0);
-COMPILE_ASSERT(offsetof(DestroyVertexBuffer, id) == 4,
-               OffsetOf_DestroyVertexBuffer_id_not_4);
+COMPILE_ASSERT(offsetof(DestroyVertexBuffer, vertex_buffer_id) == 4,
+               OffsetOf_DestroyVertexBuffer_vertex_buffer_id_not_4);
 
 struct SetVertexBufferDataImmediate {
   typedef SetVertexBufferDataImmediate ValueType;
@@ -782,21 +662,22 @@ struct SetVertexBufferDataImmediate {
     header.SetCmdBySize<ValueType>(size);
   }
 
-  void Init(uint32 _id, uint32 _offset, const void* data, uint32 size) {
+  void Init(ResourceId _vertex_buffer_id, uint32 _offset,
+            const void* data, uint32 size) {
     SetHeader(size);
-    id = _id;
+    vertex_buffer_id = _vertex_buffer_id;
     offset = _offset;
     memcpy(ImmediateDataAddress(this), data, size);
   }
 
-  static void* Set(void* cmd, uint32 id, uint32 offset,
+  static void* Set(void* cmd, ResourceId vertex_buffer_id, uint32 offset,
                    const void* data, uint32 size) {
-    static_cast<ValueType*>(cmd)->Init(id, offset, data, size);
+    static_cast<ValueType*>(cmd)->Init(vertex_buffer_id, offset, data, size);
     return NextImmediateCmdAddress<ValueType>(cmd, size);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId vertex_buffer_id;
   uint32 offset;
 };
 
@@ -804,8 +685,8 @@ COMPILE_ASSERT(sizeof(SetVertexBufferDataImmediate) == 12,
                Sizeof_SetVertexBufferDataImmediate_is_not_12);
 COMPILE_ASSERT(offsetof(SetVertexBufferDataImmediate, header) == 0,
                OffsetOf_SetVertexBufferDataImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(SetVertexBufferDataImmediate, id) == 4,
-               OffsetOf_SetVertexBufferDataImmediate_id_not_4);
+COMPILE_ASSERT(offsetof(SetVertexBufferDataImmediate, vertex_buffer_id) == 4,
+               OffsetOf_SetVertexBufferDataImmediate_vertex_buffer_id_not_4);
 COMPILE_ASSERT(offsetof(SetVertexBufferDataImmediate, offset) == 8,
                OffsetOf_SetVertexBufferDataImmediate_offset_not_8);
 
@@ -818,24 +699,25 @@ struct SetVertexBufferData {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id, uint32 _offset, uint32 _size,
+  void Init(ResourceId _vertex_buffer_id, uint32 _offset, uint32 _size,
             uint32 shared_memory_id, uint32 shared_memory_offset) {
     SetHeader();
-    id = _id;
+    vertex_buffer_id = _vertex_buffer_id;
     offset = _offset;
     size = _size;
     shared_memory.Init(shared_memory_id, shared_memory_offset);
   }
 
-  static void* Set(void* cmd, uint32 id, uint32 offset, uint32 size,
+  static void* Set(void* cmd, ResourceId vertex_buffer_id,
+                   uint32 offset, uint32 size,
                    uint32 shared_memory_id, uint32 shared_memory_offset) {
-    static_cast<ValueType*>(cmd)->Init(id, offset, size,
+    static_cast<ValueType*>(cmd)->Init(vertex_buffer_id, offset, size,
                                        shared_memory_id, shared_memory_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId vertex_buffer_id;
   uint32 offset;
   uint32 size;
   SharedMemory shared_memory;
@@ -845,8 +727,8 @@ COMPILE_ASSERT(sizeof(SetVertexBufferData) == 24,
                Sizeof_SetVertexBufferData_is_not_24);
 COMPILE_ASSERT(offsetof(SetVertexBufferData, header) == 0,
                OffsetOf_SetVertexBufferData_header_not_0);
-COMPILE_ASSERT(offsetof(SetVertexBufferData, id) == 4,
-               OffsetOf_SetVertexBufferData_id_not_4);
+COMPILE_ASSERT(offsetof(SetVertexBufferData, vertex_buffer_id) == 4,
+               OffsetOf_SetVertexBufferData_vertex_buffer_id_not_4);
 COMPILE_ASSERT(offsetof(SetVertexBufferData, offset) == 8,
                OffsetOf_SetVertexBufferData_offset_not_8);
 COMPILE_ASSERT(offsetof(SetVertexBufferData, size) == 12,
@@ -863,24 +745,25 @@ struct GetVertexBufferData {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id, uint32 _offset, uint32 _size,
+  void Init(ResourceId _vertex_buffer_id, uint32 _offset, uint32 _size,
             uint32 shared_memory_id, uint32 shared_memory_offset) {
     SetHeader();
-    id = _id;
+    vertex_buffer_id = _vertex_buffer_id;
     offset = _offset;
     size = _size;
     shared_memory.Init(shared_memory_id, shared_memory_offset);
   }
 
-  static void* Set(void* cmd, uint32 id, uint32 offset, uint32 size,
+  static void* Set(void* cmd, ResourceId vertex_buffer_id,
+                   uint32 offset, uint32 size,
                    uint32 shared_memory_id, uint32 shared_memory_offset) {
-    static_cast<ValueType*>(cmd)->Init(id, offset, size,
+    static_cast<ValueType*>(cmd)->Init(vertex_buffer_id, offset, size,
                                        shared_memory_id, shared_memory_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId vertex_buffer_id;
   uint32 offset;
   uint32 size;
   SharedMemory shared_memory;
@@ -890,8 +773,8 @@ COMPILE_ASSERT(sizeof(GetVertexBufferData) == 24,
                Sizeof_GetVertexBufferData_is_not_24);
 COMPILE_ASSERT(offsetof(GetVertexBufferData, header) == 0,
                OffsetOf_GetVertexBufferData_header_not_0);
-COMPILE_ASSERT(offsetof(GetVertexBufferData, id) == 4,
-               OffsetOf_GetVertexBufferData_id_not_4);
+COMPILE_ASSERT(offsetof(GetVertexBufferData, vertex_buffer_id) == 4,
+               OffsetOf_GetVertexBufferData_vertex_buffer_id_not_4);
 COMPILE_ASSERT(offsetof(GetVertexBufferData, offset) == 8,
                OffsetOf_GetVertexBufferData_offset_not_8);
 COMPILE_ASSERT(offsetof(GetVertexBufferData, size) == 12,
@@ -908,20 +791,22 @@ struct CreateIndexBuffer {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id, uint32 _size, uint32 _flags) {
+  void Init(ResourceId _index_buffer_id, uint32 _size,
+            index_buffer::Flags _flags) {
     SetHeader();
-    id = _id;
+    index_buffer_id = _index_buffer_id;
     size = _size;
-    flags = _flags;
+    flags = static_cast<uint32>(_flags);
   }
 
-  static void* Set(void* cmd, uint32 id, uint32 size, uint32 flags) {
-    static_cast<ValueType*>(cmd)->Init(id, size, flags);
+  static void* Set(void* cmd, ResourceId index_buffer_id,
+                   uint32 size, index_buffer::Flags flags) {
+    static_cast<ValueType*>(cmd)->Init(index_buffer_id, size, flags);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId index_buffer_id;
   uint32 size;
   uint32 flags;
 };
@@ -930,8 +815,8 @@ COMPILE_ASSERT(sizeof(CreateIndexBuffer) == 16,
                Sizeof_CreateIndexBuffer_is_not_16);
 COMPILE_ASSERT(offsetof(CreateIndexBuffer, header) == 0,
                OffsetOf_CreateIndexBuffer_header_not_0);
-COMPILE_ASSERT(offsetof(CreateIndexBuffer, id) == 4,
-               OffsetOf_CreateIndexBuffer_id_not_4);
+COMPILE_ASSERT(offsetof(CreateIndexBuffer, index_buffer_id) == 4,
+               OffsetOf_CreateIndexBuffer_index_buffer_id_not_4);
 COMPILE_ASSERT(offsetof(CreateIndexBuffer, size) == 8,
                OffsetOf_CreateIndexBuffer_size_not_8);
 COMPILE_ASSERT(offsetof(CreateIndexBuffer, flags) == 12,
@@ -946,26 +831,26 @@ struct DestroyIndexBuffer {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id) {
+  void Init(ResourceId _index_buffer_id) {
     SetHeader();
-    id = _id;
+    index_buffer_id = _index_buffer_id;
   }
 
-  static void* Set(void* cmd, uint32 id) {
-    static_cast<ValueType*>(cmd)->Init(id);
+  static void* Set(void* cmd, ResourceId index_buffer_id) {
+    static_cast<ValueType*>(cmd)->Init(index_buffer_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId index_buffer_id;
 };
 
 COMPILE_ASSERT(sizeof(DestroyIndexBuffer) == 8,
                Sizeof_DestroyIndexBuffer_is_not_8);
 COMPILE_ASSERT(offsetof(DestroyIndexBuffer, header) == 0,
                OffsetOf_DestroyIndexBuffer_header_not_0);
-COMPILE_ASSERT(offsetof(DestroyIndexBuffer, id) == 4,
-               OffsetOf_DestroyIndexBuffer_id_not_4);
+COMPILE_ASSERT(offsetof(DestroyIndexBuffer, index_buffer_id) == 4,
+               OffsetOf_DestroyIndexBuffer_index_buffer_id_not_4);
 
 struct SetIndexBufferDataImmediate {
   typedef SetIndexBufferDataImmediate ValueType;
@@ -976,21 +861,22 @@ struct SetIndexBufferDataImmediate {
     header.SetCmdBySize<ValueType>(size);
   }
 
-  void Init(uint32 _id, uint32 _offset, const void* data, uint32 size) {
+  void Init(ResourceId _index_buffer_id, uint32 _offset,
+            const void* data, uint32 size) {
     SetHeader(size);
-    id = _id;
+    index_buffer_id = _index_buffer_id;
     offset = _offset;
     memcpy(ImmediateDataAddress(this), data, size);
   }
 
-  static void* Set(void* cmd, uint32 id, uint32 offset, const void* data,
-                   uint32 size) {
-    static_cast<ValueType*>(cmd)->Init(id, offset, data, size);
+  static void* Set(void* cmd, ResourceId index_buffer_id, uint32 offset,
+                   const void* data, uint32 size) {
+    static_cast<ValueType*>(cmd)->Init(index_buffer_id, offset, data, size);
     return NextImmediateCmdAddress<ValueType>(cmd, size);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId index_buffer_id;
   uint32 offset;
 };
 
@@ -998,8 +884,8 @@ COMPILE_ASSERT(sizeof(SetIndexBufferDataImmediate) == 12,
                Sizeof_SetIndexBufferDataImmediate_is_not_12);
 COMPILE_ASSERT(offsetof(SetIndexBufferDataImmediate, header) == 0,
                OffsetOf_SetIndexBufferDataImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(SetIndexBufferDataImmediate, id) == 4,
-               OffsetOf_SetIndexBufferDataImmediate_id_not_4);
+COMPILE_ASSERT(offsetof(SetIndexBufferDataImmediate, index_buffer_id) == 4,
+               OffsetOf_SetIndexBufferDataImmediate_index_buffer_id_not_4);
 COMPILE_ASSERT(offsetof(SetIndexBufferDataImmediate, offset) == 8,
                OffsetOf_SetIndexBufferDataImmediate_offset_not_8);
 
@@ -1012,24 +898,25 @@ struct SetIndexBufferData {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id, uint32 _offset, uint32 _size,
+  void Init(ResourceId _index_buffer_id, uint32 _offset, uint32 _size,
             uint32 shared_memory_id, uint32 shared_memory_offset) {
     SetHeader();
-    id = _id;
+    index_buffer_id = _index_buffer_id;
     offset = _offset;
     size = _size;
     shared_memory.Init(shared_memory_id, shared_memory_offset);
   }
 
-  static void* Set(void* cmd, uint32 id, uint32 offset, uint32 size,
+  static void* Set(void* cmd,
+                   ResourceId index_buffer_id, uint32 offset, uint32 size,
                    uint32 shared_memory_id, uint32 shared_memory_offset) {
-    static_cast<ValueType*>(cmd)->Init(id, offset, size,
+    static_cast<ValueType*>(cmd)->Init(index_buffer_id, offset, size,
                                        shared_memory_id, shared_memory_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId index_buffer_id;
   uint32 offset;
   uint32 size;
   SharedMemory shared_memory;
@@ -1039,8 +926,8 @@ COMPILE_ASSERT(sizeof(SetIndexBufferData) == 24,
                Sizeof_SetIndexBufferData_is_not_24);
 COMPILE_ASSERT(offsetof(SetIndexBufferData, header) == 0,
                OffsetOf_SetIndexBufferData_header_not_0);
-COMPILE_ASSERT(offsetof(SetIndexBufferData, id) == 4,
-               OffsetOf_SetIndexBufferData_id_not_4);
+COMPILE_ASSERT(offsetof(SetIndexBufferData, index_buffer_id) == 4,
+               OffsetOf_SetIndexBufferData_index_buffer_id_not_4);
 COMPILE_ASSERT(offsetof(SetIndexBufferData, offset) == 8,
                OffsetOf_SetIndexBufferData_offset_not_8);
 COMPILE_ASSERT(offsetof(SetIndexBufferData, size) == 12,
@@ -1057,24 +944,25 @@ struct GetIndexBufferData {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id, uint32 _offset, uint32 _size,
+  void Init(ResourceId _index_buffer_id, uint32 _offset, uint32 _size,
             uint32 shared_memory_id, uint32 shared_memory_offset) {
     SetHeader();
-    id = _id;
+    index_buffer_id = _index_buffer_id;
     offset = _offset;
     size = _size;
     shared_memory.Init(shared_memory_id, shared_memory_offset);
   }
 
-  static void* Set(void* cmd, uint32 id, uint32 offset, uint32 size,
+  static void* Set(void* cmd, ResourceId index_buffer_id,
+                   uint32 offset, uint32 size,
                    uint32 shared_memory_id, uint32 shared_memory_offset) {
-    static_cast<ValueType*>(cmd)->Init(id, offset, size,
+    static_cast<ValueType*>(cmd)->Init(index_buffer_id, offset, size,
                                        shared_memory_id, shared_memory_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId index_buffer_id;
   uint32 offset;
   uint32 size;
   SharedMemory shared_memory;
@@ -1084,8 +972,8 @@ COMPILE_ASSERT(sizeof(GetIndexBufferData) == 24,
                Sizeof_GetIndexBufferData_is_not_24);
 COMPILE_ASSERT(offsetof(GetIndexBufferData, header) == 0,
                OffsetOf_GetIndexBufferData_header_not_0);
-COMPILE_ASSERT(offsetof(GetIndexBufferData, id) == 4,
-               OffsetOf_GetIndexBufferData_id_not_4);
+COMPILE_ASSERT(offsetof(GetIndexBufferData, index_buffer_id) == 4,
+               OffsetOf_GetIndexBufferData_index_buffer_id_not_4);
 COMPILE_ASSERT(offsetof(GetIndexBufferData, offset) == 8,
                OffsetOf_GetIndexBufferData_offset_not_8);
 COMPILE_ASSERT(offsetof(GetIndexBufferData, size) == 12,
@@ -1102,19 +990,19 @@ struct CreateVertexStruct {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id, uint32 _input_count) {
+  void Init(ResourceId _vertex_struct_id, uint32 _input_count) {
     SetHeader();
-    id = _id;
+    vertex_struct_id = _vertex_struct_id;
     input_count = _input_count;
   }
 
-  static void* Set(void* cmd, uint32 id, uint32 input_count) {
-    static_cast<ValueType*>(cmd)->Init(id, input_count);
+  static void* Set(void* cmd, ResourceId vertex_struct_id, uint32 input_count) {
+    static_cast<ValueType*>(cmd)->Init(vertex_struct_id, input_count);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId vertex_struct_id;
   uint32 input_count;
 };
 
@@ -1122,8 +1010,8 @@ COMPILE_ASSERT(sizeof(CreateVertexStruct) == 12,
                Sizeof_CreateVertexStruct_is_not_12);
 COMPILE_ASSERT(offsetof(CreateVertexStruct, header) == 0,
                OffsetOf_CreateVertexStruct_header_not_0);
-COMPILE_ASSERT(offsetof(CreateVertexStruct, id) == 4,
-               OffsetOf_CreateVertexStruct_id_not_4);
+COMPILE_ASSERT(offsetof(CreateVertexStruct, vertex_struct_id) == 4,
+               OffsetOf_CreateVertexStruct_vertex_struct_id_not_4);
 COMPILE_ASSERT(offsetof(CreateVertexStruct, input_count) == 8,
                OffsetOf_CreateVertexStruct_input_count_not_8);
 
@@ -1136,65 +1024,71 @@ struct DestroyVertexStruct {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id) {
+  void Init(ResourceId _vertex_struct_id) {
     SetHeader();
-    id = _id;
+    vertex_struct_id = _vertex_struct_id;
   }
 
-  static void* Set(void* cmd, uint32 id) {
-    static_cast<ValueType*>(cmd)->Init(id);
+  static void* Set(void* cmd, ResourceId vertex_struct_id) {
+    static_cast<ValueType*>(cmd)->Init(vertex_struct_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId vertex_struct_id;
 };
 
 COMPILE_ASSERT(sizeof(DestroyVertexStruct) == 8,
                Sizeof_DestroyVertexStruct_is_not_8);
 COMPILE_ASSERT(offsetof(DestroyVertexStruct, header) == 0,
                OffsetOf_DestroyVertexStruct_header_not_0);
-COMPILE_ASSERT(offsetof(DestroyVertexStruct, id) == 4,
-               OffsetOf_DestroyVertexStruct_id_not_4);
+COMPILE_ASSERT(offsetof(DestroyVertexStruct, vertex_struct_id) == 4,
+               OffsetOf_DestroyVertexStruct_vertex_struct_id_not_4);
 
 struct SetVertexInput {
   typedef SetVertexInput ValueType;
   static const CommandId kCmdId = command_buffer::kSetVertexInput;
   static const ArgFlags kArgFlags = kFixed;
 
+  // type_stride_semantic field.
+  typedef BitField<0, 4> SemanticIndex;
+  typedef BitField<4, 4> Semantic;
+  typedef BitField<8, 8> Type;
+  typedef BitField<16, 16> Stride;
+
   void SetHeader() {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _vertex_struct_id,
+  void Init(ResourceId _vertex_struct_id,
             uint32 _input_index,
-            uint32 _vertex_buffer_id,
+            ResourceId _vertex_buffer_id,
             uint32 _offset,
-            uint8 _semantic,
+            vertex_struct::Semantic _semantic,
             uint32 _semantic_index,
-            uint8 _type,
+            vertex_struct::Type _type,
             uint32 _stride) {
     SetHeader();
     vertex_struct_id = _vertex_struct_id;
     input_index = _input_index;
     vertex_buffer_id = _vertex_buffer_id;
     offset = _offset;
-    fixme4 =
-        set_vertex_input_cmd::Semantic::MakeValue(_semantic) |
-        set_vertex_input_cmd::SemanticIndex::MakeValue(_semantic_index) |
-        set_vertex_input_cmd::Type::MakeValue(_type) |
-        set_vertex_input_cmd::Stride::MakeValue(_stride);
+    type_stride_semantic =
+        Semantic::MakeValue(_semantic) |
+        SemanticIndex::MakeValue(_semantic_index) |
+        Type::MakeValue(_type) |
+        Stride::MakeValue(_stride);
   }
 
   static void* Set(
       void* cmd,
-      uint32 vertex_struct_id,
+      ResourceId vertex_struct_id,
       uint32 input_index,
-      uint32 vertex_buffer_id,
+      ResourceId vertex_buffer_id,
       uint32 offset,
-      uint8 semantic,
+      vertex_struct::Semantic semantic,
       uint32 semantic_index,
-      uint8 type,
+      vertex_struct::Type type,
       uint32 stride) {
     static_cast<ValueType*>(cmd)->Init(
         vertex_struct_id,
@@ -1209,11 +1103,11 @@ struct SetVertexInput {
   }
 
   CommandHeader header;
-  uint32 vertex_struct_id;
+  ResourceId vertex_struct_id;
   uint32 input_index;
-  uint32 vertex_buffer_id;
+  ResourceId vertex_buffer_id;
   uint32 offset;
-  uint32 fixme4;
+  uint32 type_stride_semantic;
 };
 
 COMPILE_ASSERT(sizeof(SetVertexInput) == 24,
@@ -1228,8 +1122,8 @@ COMPILE_ASSERT(offsetof(SetVertexInput, vertex_buffer_id) == 12,
                OffsetOf_SetVertexInput_vertex_buffer_id_not_12);
 COMPILE_ASSERT(offsetof(SetVertexInput, offset) == 16,
                OffsetOf_SetVertexInput_offset_not_16);
-COMPILE_ASSERT(offsetof(SetVertexInput, fixme4) == 20,
-               OffsetOf_SetVertexInput_fixme4_not_20);
+COMPILE_ASSERT(offsetof(SetVertexInput, type_stride_semantic) == 20,
+               OffsetOf_SetVertexInput_type_stride_semantic_not_20);
 
 struct SetVertexStruct {
   typedef SetVertexStruct ValueType;
@@ -1240,26 +1134,26 @@ struct SetVertexStruct {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id) {
+  void Init(ResourceId _vertex_struct_id) {
     SetHeader();
-    id = _id;
+    vertex_struct_id = _vertex_struct_id;
   }
 
-  static void* Set(void* cmd, uint32 id) {
-    static_cast<ValueType*>(cmd)->Init(id);
+  static void* Set(void* cmd, ResourceId vertex_struct_id) {
+    static_cast<ValueType*>(cmd)->Init(vertex_struct_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId vertex_struct_id;
 };
 
 COMPILE_ASSERT(sizeof(SetVertexStruct) == 8,
                Sizeof_SetVertexStruct_is_not_8);
 COMPILE_ASSERT(offsetof(SetVertexStruct, header) == 0,
                OffsetOf_SetVertexStruct_header_not_0);
-COMPILE_ASSERT(offsetof(SetVertexStruct, id) == 4,
-               OffsetOf_SetVertexStruct_id_not_4);
+COMPILE_ASSERT(offsetof(SetVertexStruct, vertex_struct_id) == 4,
+               OffsetOf_SetVertexStruct_vertex_struct_id_not_4);
 
 struct Draw {
   typedef Draw ValueType;
@@ -1270,14 +1164,14 @@ struct Draw {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _primitive_type, uint32 _first, uint32 _count) {
+  void Init(PrimitiveType _primitive_type, uint32 _first, uint32 _count) {
     SetHeader();
     primitive_type = _primitive_type;
     first = _first;
     count = _count;
   }
 
-  static void* Set(void* cmd, uint32 primitive_type, uint32 first,
+  static void* Set(void* cmd, PrimitiveType primitive_type, uint32 first,
                    uint32 count) {
     static_cast<ValueType*>(cmd)->Init(primitive_type, first, count);
     return NextCmdAddress<ValueType>(cmd);
@@ -1309,8 +1203,8 @@ struct DrawIndexed {
   }
 
   void Init(
-      uint32 _primitive_type,
-      uint32 _index_buffer_id,
+      PrimitiveType _primitive_type,
+      ResourceId _index_buffer_id,
       uint32 _first,
       uint32 _count,
       uint32 _min_index,
@@ -1325,8 +1219,8 @@ struct DrawIndexed {
   }
 
   static void* Set(void* cmd,
-      uint32 primitive_type,
-      uint32 index_buffer_id,
+      PrimitiveType primitive_type,
+      ResourceId index_buffer_id,
       uint32 first,
       uint32 count,
       uint32 min_index,
@@ -1343,7 +1237,7 @@ struct DrawIndexed {
 
   CommandHeader header;
   uint32 primitive_type;
-  uint32 index_buffer_id;
+  ResourceId index_buffer_id;
   uint32 first;
   uint32 count;
   uint32 min_index;
@@ -1375,23 +1269,23 @@ struct CreateEffect {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id, uint32 _size,
+  void Init(ResourceId _effect_id, uint32 _size,
             uint32 shared_memory_id, uint32 shared_memory_offset) {
     SetHeader();
-    id = _id;
+    effect_id = _effect_id;
     size = _size;
     shared_memory.Init(shared_memory_id, shared_memory_offset);
   }
 
-  static void* Set(void* cmd, uint32 id, uint32 size,
+  static void* Set(void* cmd, ResourceId effect_id, uint32 size,
                    uint32 shared_memory_id, uint32 shared_memory_offset) {
-    static_cast<ValueType*>(cmd)->Init(id, size,
+    static_cast<ValueType*>(cmd)->Init(effect_id, size,
                                        shared_memory_id, shared_memory_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId effect_id;
   uint32 size;
   SharedMemory shared_memory;
 };
@@ -1399,8 +1293,8 @@ struct CreateEffect {
 COMPILE_ASSERT(sizeof(CreateEffect) == 20, Sizeof_CreateEffect_is_not_20);
 COMPILE_ASSERT(offsetof(CreateEffect, header) == 0,
                OffsetOf_CreateEffect_header_not_0);
-COMPILE_ASSERT(offsetof(CreateEffect, id) == 4,
-               OffsetOf_CreateEffect_id_not_4);
+COMPILE_ASSERT(offsetof(CreateEffect, effect_id) == 4,
+               OffsetOf_CreateEffect_effect_id_not_4);
 COMPILE_ASSERT(offsetof(CreateEffect, size) == 8,
                OffsetOf_CreateEffect_size_not_8);
 COMPILE_ASSERT(offsetof(CreateEffect, shared_memory) == 12,
@@ -1415,19 +1309,20 @@ struct CreateEffectImmediate {
     header.SetCmdBySize<ValueType>(size);
   }
 
-  void Init(uint32 _id, uint32 _size, const void* data) {
+  void Init(ResourceId _effect_id, uint32 _size, const void* data) {
     SetHeader(_size);
-    id = _id;
+    effect_id = _effect_id;
     size = _size;
   }
 
-  static void* Set(void* cmd, uint32 id, uint32 size, const void* data) {
-    static_cast<ValueType*>(cmd)->Init(id, size, data);
+  static void* Set(void* cmd,
+                   ResourceId effect_id, uint32 size, const void* data) {
+    static_cast<ValueType*>(cmd)->Init(effect_id, size, data);
     return NextImmediateCmdAddress<ValueType>(cmd, size);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId effect_id;
   uint32 size;
 };
 
@@ -1435,8 +1330,8 @@ COMPILE_ASSERT(sizeof(CreateEffectImmediate) == 12,
                Sizeof_CreateEffectImmediate_is_not_12);
 COMPILE_ASSERT(offsetof(CreateEffectImmediate, header) == 0,
                OffsetOf_CreateEffectImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(CreateEffectImmediate, id) == 4,
-               OffsetOf_CreateEffectImmediate_id_not_4);
+COMPILE_ASSERT(offsetof(CreateEffectImmediate, effect_id) == 4,
+               OffsetOf_CreateEffectImmediate_effect_id_not_4);
 COMPILE_ASSERT(offsetof(CreateEffectImmediate, size) == 8,
                OffsetOf_CreateEffectImmediate_size_not_8);
 
@@ -1449,25 +1344,25 @@ struct DestroyEffect {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id) {
+  void Init(ResourceId _effect_id) {
     SetHeader();
-    id = _id;
+    effect_id = _effect_id;
   }
 
-  static void* Set(void* cmd, uint32 id) {
-    static_cast<ValueType*>(cmd)->Init(id);
+  static void* Set(void* cmd, ResourceId effect_id) {
+    static_cast<ValueType*>(cmd)->Init(effect_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId effect_id;
 };
 
 COMPILE_ASSERT(sizeof(DestroyEffect) == 8, Sizeof_DestroyEffect_is_not_8);
 COMPILE_ASSERT(offsetof(DestroyEffect, header) == 0,
                OffsetOf_DestroyEffect_header_not_0);
-COMPILE_ASSERT(offsetof(DestroyEffect, id) == 4,
-               OffsetOf_DestroyEffect_id_not_4);
+COMPILE_ASSERT(offsetof(DestroyEffect, effect_id) == 4,
+               OffsetOf_DestroyEffect_effect_id_not_4);
 
 struct SetEffect {
   typedef SetEffect ValueType;
@@ -1478,25 +1373,25 @@ struct SetEffect {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id) {
+  void Init(ResourceId _effect_id) {
     SetHeader();
-    id = _id;
+    effect_id = _effect_id;
   }
 
-  static void* Set(void* cmd, uint32 id) {
-    static_cast<ValueType*>(cmd)->Init(id);
+  static void* Set(void* cmd, ResourceId effect_id) {
+    static_cast<ValueType*>(cmd)->Init(effect_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId effect_id;
 };
 
 COMPILE_ASSERT(sizeof(SetEffect) == 8, Sizeof_SetEffect_is_not_8);
 COMPILE_ASSERT(offsetof(SetEffect, header) == 0,
                OffsetOf_SetEffect_header_not_0);
-COMPILE_ASSERT(offsetof(SetEffect, id) == 4,
-               OffsetOf_SetEffect_id_not_4);
+COMPILE_ASSERT(offsetof(SetEffect, effect_id) == 4,
+               OffsetOf_SetEffect_effect_id_not_4);
 
 struct GetParamCount {
   typedef GetParamCount ValueType;
@@ -1507,23 +1402,23 @@ struct GetParamCount {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id, uint32 _size,
+  void Init(ResourceId _effect_id, uint32 _size,
             uint32 shared_memory_id, uint32 shared_memory_offset) {
     SetHeader();
-    id = _id;
+    effect_id = _effect_id;
     size = _size;
     shared_memory.Init(shared_memory_id, shared_memory_offset);
   }
 
-  static void* Set(void* cmd, uint32 id, uint32 size,
+  static void* Set(void* cmd, ResourceId effect_id, uint32 size,
                    uint32 shared_memory_id, uint32 shared_memory_offset) {
-    static_cast<ValueType*>(cmd)->Init(id, size,
+    static_cast<ValueType*>(cmd)->Init(effect_id, size,
                                        shared_memory_id, shared_memory_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId effect_id;
   uint32 size;
   SharedMemory shared_memory;
 };
@@ -1531,8 +1426,8 @@ struct GetParamCount {
 COMPILE_ASSERT(sizeof(GetParamCount) == 20, Sizeof_GetParamCount_is_not_20);
 COMPILE_ASSERT(offsetof(GetParamCount, header) == 0,
                OffsetOf_GetParamCount_header_not_0);
-COMPILE_ASSERT(offsetof(GetParamCount, id) == 4,
-               OffsetOf_GetParamCount_id_not_4);
+COMPILE_ASSERT(offsetof(GetParamCount, effect_id) == 4,
+               OffsetOf_GetParamCount_effect_id_not_4);
 COMPILE_ASSERT(offsetof(GetParamCount, size) == 8,
                OffsetOf_GetParamCount_size_not_8);
 COMPILE_ASSERT(offsetof(GetParamCount, shared_memory) == 12,
@@ -1547,7 +1442,7 @@ struct CreateParam {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _param_id, uint32 _effect_id, uint32 _index) {
+  void Init(ResourceId _param_id, ResourceId _effect_id, uint32 _index) {
     SetHeader();
     param_id = _param_id;
     effect_id = _effect_id;
@@ -1555,14 +1450,14 @@ struct CreateParam {
   }
 
   static void* Set(void* cmd,
-                   uint32 param_id, uint32 effect_id, uint32 index) {
+                   ResourceId param_id, ResourceId effect_id, uint32 index) {
     static_cast<ValueType*>(cmd)->Init(param_id, effect_id, index);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 param_id;
-  uint32 effect_id;
+  ResourceId param_id;
+  ResourceId effect_id;
   uint32 index;
 };
 
@@ -1585,7 +1480,7 @@ struct CreateParamByName {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _param_id, uint32 _effect_id, uint32 _size,
+  void Init(ResourceId _param_id, ResourceId _effect_id, uint32 _size,
             uint32 shared_memory_id, uint32 shared_memory_offset) {
     SetHeader();
     param_id = _param_id;
@@ -1594,7 +1489,8 @@ struct CreateParamByName {
     shared_memory.Init(shared_memory_id, shared_memory_offset);
   }
 
-  static void* Set(void* cmd, uint32 param_id, uint32 effect_id, uint32 size,
+  static void* Set(void* cmd, ResourceId param_id, ResourceId effect_id,
+                   uint32 size,
                    uint32 shared_memory_id, uint32 shared_memory_offset) {
     static_cast<ValueType*>(cmd)->Init(param_id, effect_id, size,
                                        shared_memory_id, shared_memory_offset);
@@ -1602,8 +1498,8 @@ struct CreateParamByName {
   }
 
   CommandHeader header;
-  uint32 param_id;
-  uint32 effect_id;
+  ResourceId param_id;
+  ResourceId effect_id;
   uint32 size;
   SharedMemory shared_memory;
 };
@@ -1630,7 +1526,7 @@ struct CreateParamByNameImmediate {
     header.SetCmdBySize<ValueType>(size);
   }
 
-  void Init(uint32 _param_id, uint32 _effect_id, uint32 _size,
+  void Init(ResourceId _param_id, ResourceId _effect_id, uint32 _size,
             const void* data) {
     SetHeader(_size);
     param_id = _param_id;
@@ -1639,15 +1535,15 @@ struct CreateParamByNameImmediate {
     memcpy(ImmediateDataAddress(this), data, _size);
   }
 
-  static void* Set(void* cmd, uint32 param_id, uint32 effect_id, uint32 size,
-                   const void* data) {
+  static void* Set(void* cmd, ResourceId param_id, ResourceId effect_id,
+                   uint32 size, const void* data) {
     static_cast<ValueType*>(cmd)->Init(param_id, effect_id, size, data);
     return NextImmediateCmdAddress<ValueType>(cmd, size);
   }
 
   CommandHeader header;
-  uint32 param_id;
-  uint32 effect_id;
+  ResourceId param_id;
+  ResourceId effect_id;
   uint32 size;
 };
 
@@ -1671,25 +1567,25 @@ struct DestroyParam {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id) {
+  void Init(ResourceId _param_id) {
     SetHeader();
-    id = _id;
+    param_id = _param_id;
   }
 
-  static void* Set(void* cmd, uint32 id) {
-    static_cast<ValueType*>(cmd)->Init(id);
+  static void* Set(void* cmd, ResourceId param_id) {
+    static_cast<ValueType*>(cmd)->Init(param_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId param_id;
 };
 
 COMPILE_ASSERT(sizeof(DestroyParam) == 8, Sizeof_DestroyParam_is_not_8);
 COMPILE_ASSERT(offsetof(DestroyParam, header) == 0,
                OffsetOf_DestroyParam_header_not_0);
-COMPILE_ASSERT(offsetof(DestroyParam, id) == 4,
-               OffsetOf_DestroyParam_id_not_4);
+COMPILE_ASSERT(offsetof(DestroyParam, param_id) == 4,
+               OffsetOf_DestroyParam_param_id_not_4);
 
 struct SetParamData {
   typedef SetParamData ValueType;
@@ -1700,23 +1596,23 @@ struct SetParamData {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id, uint32 _size,
+  void Init(ResourceId _param_id, uint32 _size,
             uint32 shared_memory_id, uint32 shared_memory_offset) {
     SetHeader();
-    id = _id;
+    param_id = _param_id;
     size = _size;
     shared_memory.Init(shared_memory_id, shared_memory_offset);
   }
 
-  static void* Set(void* cmd, uint32 id, uint32 size,
+  static void* Set(void* cmd, ResourceId param_id, uint32 size,
                    uint32 shared_memory_id, uint32 shared_memory_offset) {
-    static_cast<ValueType*>(cmd)->Init(id, size,
+    static_cast<ValueType*>(cmd)->Init(param_id, size,
                                        shared_memory_id, shared_memory_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId param_id;
   uint32 size;
   SharedMemory shared_memory;
 };
@@ -1724,8 +1620,8 @@ struct SetParamData {
 COMPILE_ASSERT(sizeof(SetParamData) == 20, Sizeof_SetParamData_is_not_20);
 COMPILE_ASSERT(offsetof(SetParamData, header) == 0,
                OffsetOf_SetParamData_header_not_0);
-COMPILE_ASSERT(offsetof(SetParamData, id) == 4,
-               OffsetOf_SetParamData_id_not_4);
+COMPILE_ASSERT(offsetof(SetParamData, param_id) == 4,
+               OffsetOf_SetParamData_param_id_not_4);
 COMPILE_ASSERT(offsetof(SetParamData, size) == 8,
                OffsetOf_SetParamData_size_not_8);
 COMPILE_ASSERT(offsetof(SetParamData, shared_memory) == 12,
@@ -1740,20 +1636,21 @@ struct SetParamDataImmediate {
     header.SetCmdBySize<ValueType>(size);
   }
 
-  void Init(uint32 _id, uint32 _size, const void* data) {
+  void Init(ResourceId _param_id, uint32 _size, const void* data) {
     SetHeader(_size);
-    id = _id;
+    param_id = _param_id;
     size = _size;
     memcpy(ImmediateDataAddress(this), data, _size);
   }
 
-  static void* Set(void* cmd, uint32 id, uint32 size, const void* data) {
-    static_cast<ValueType*>(cmd)->Init(id, size, data);
+  static void* Set(void* cmd, ResourceId param_id,
+                   uint32 size, const void* data) {
+    static_cast<ValueType*>(cmd)->Init(param_id, size, data);
     return NextImmediateCmdAddress<ValueType>(cmd, size);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId param_id;
   uint32 size;
 };
 
@@ -1761,8 +1658,8 @@ COMPILE_ASSERT(sizeof(SetParamDataImmediate) == 12,
                Sizeof_SetParamDataImmediate_is_not_12);
 COMPILE_ASSERT(offsetof(SetParamDataImmediate, header) == 0,
                OffsetOf_SetParamDataImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(SetParamDataImmediate, id) == 4,
-               OffsetOf_SetParamDataImmediate_id_not_4);
+COMPILE_ASSERT(offsetof(SetParamDataImmediate, param_id) == 4,
+               OffsetOf_SetParamDataImmediate_param_id_not_4);
 COMPILE_ASSERT(offsetof(SetParamDataImmediate, size) == 8,
                OffsetOf_SetParamDataImmediate_size_not_8);
 
@@ -1775,23 +1672,23 @@ struct GetParamDesc {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id, uint32 _size,
+  void Init(ResourceId _param_id, uint32 _size,
             uint32 shared_memory_id, uint32 shared_memory_offset) {
     SetHeader();
-    id = _id;
+    param_id = _param_id;
     size = _size;
     shared_memory.Init(shared_memory_id, shared_memory_offset);
   }
 
-  static void* Set(void* cmd, uint32 id, uint32 size,
+  static void* Set(void* cmd, ResourceId param_id, uint32 size,
                    uint32 shared_memory_id, uint32 shared_memory_offset) {
-    static_cast<ValueType*>(cmd)->Init(id, size,
+    static_cast<ValueType*>(cmd)->Init(param_id, size,
                                        shared_memory_id, shared_memory_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId param_id;
   uint32 size;
   SharedMemory shared_memory;
 };
@@ -1799,7 +1696,7 @@ struct GetParamDesc {
 COMPILE_ASSERT(sizeof(GetParamDesc) == 20, Sizeof_GetParamDesc_is_not_20);
 COMPILE_ASSERT(offsetof(GetParamDesc, header) == 0,
                OffsetOf_GetParamDesc_header_not_0);
-COMPILE_ASSERT(offsetof(GetParamDesc, id) == 4,
+COMPILE_ASSERT(offsetof(GetParamDesc, param_id) == 4,
                OffsetOf_GetParamDesc_id_not_4);
 COMPILE_ASSERT(offsetof(GetParamDesc, size) == 8,
                OffsetOf_GetParamDesc_size_not_8);
@@ -1815,23 +1712,23 @@ struct GetStreamCount {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id, uint32 _size,
+  void Init(ResourceId _effect_id, uint32 _size,
             uint32 shared_memory_id, uint32 shared_memory_offset) {
     SetHeader();
-    id = _id;
+    effect_id = _effect_id;
     size = _size;
     shared_memory.Init(shared_memory_id, shared_memory_offset);
   }
 
-  static void* Set(void* cmd, uint32 id, uint32 size,
+  static void* Set(void* cmd, ResourceId effect_id, uint32 size,
                    uint32 shared_memory_id, uint32 shared_memory_offset) {
-    static_cast<ValueType*>(cmd)->Init(id, size,
+    static_cast<ValueType*>(cmd)->Init(effect_id, size,
                                        shared_memory_id, shared_memory_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId effect_id;
   uint32 size;
   SharedMemory shared_memory;
 };
@@ -1840,8 +1737,8 @@ COMPILE_ASSERT(sizeof(GetStreamCount) == 20,
                Sizeof_GetStreamCount_is_not_20);
 COMPILE_ASSERT(offsetof(GetStreamCount, header) == 0,
                OffsetOf_GetStreamCount_header_not_0);
-COMPILE_ASSERT(offsetof(GetStreamCount, id) == 4,
-               OffsetOf_GetStreamCount_id_not_4);
+COMPILE_ASSERT(offsetof(GetStreamCount, effect_id) == 4,
+               OffsetOf_GetStreamCount_effect_id_not_4);
 COMPILE_ASSERT(offsetof(GetStreamCount, size) == 8,
                OffsetOf_GetStreamCount_size_not_8);
 COMPILE_ASSERT(offsetof(GetStreamCount, shared_memory) == 12,
@@ -1856,24 +1753,24 @@ struct GetStreamDesc {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id, uint32 _index, uint32 _size,
+  void Init(ResourceId _effect_id, uint32 _index, uint32 _size,
             uint32 shared_memory_id, uint32 shared_memory_offset) {
     SetHeader();
-    id = _id;
+    effect_id = _effect_id;
     index = _index;
     size = _size;
     shared_memory.Init(shared_memory_id, shared_memory_offset);
   }
 
-  static void* Set(void* cmd, uint32 id, uint32 index, uint32 size,
+  static void* Set(void* cmd, ResourceId effect_id, uint32 index, uint32 size,
                    uint32 shared_memory_id, uint32 shared_memory_offset) {
-    static_cast<ValueType*>(cmd)->Init(id, index, size,
+    static_cast<ValueType*>(cmd)->Init(effect_id, index, size,
                                        shared_memory_id, shared_memory_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId effect_id;
   uint32 index;
   uint32 size;
   SharedMemory shared_memory;
@@ -1882,8 +1779,8 @@ struct GetStreamDesc {
 COMPILE_ASSERT(sizeof(GetStreamDesc) == 24, Sizeof_GetStreamDesc_is_not_24);
 COMPILE_ASSERT(offsetof(GetStreamDesc, header) == 0,
                OffsetOf_GetStreamDesc_header_not_0);
-COMPILE_ASSERT(offsetof(GetStreamDesc, id) ==4 ,
-               OffsetOf_GetStreamDesc_id_not_4);
+COMPILE_ASSERT(offsetof(GetStreamDesc, effect_id) ==4 ,
+               OffsetOf_GetStreamDesc_effect_id_not_4);
 COMPILE_ASSERT(offsetof(GetStreamDesc, index) == 8,
                OffsetOf_GetStreamDesc_index_not_8);
 COMPILE_ASSERT(offsetof(GetStreamDesc, size) == 12,
@@ -1900,52 +1797,61 @@ struct DestroyTexture {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id) {
+  void Init(ResourceId _texture_id) {
     SetHeader();
-    id = _id;
+    texture_id = _texture_id;
   }
 
-  static void* Set(void* cmd, uint32 id) {
-    static_cast<ValueType*>(cmd)->Init(id);
+  static void* Set(void* cmd, ResourceId texture_id) {
+    static_cast<ValueType*>(cmd)->Init(texture_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId texture_id;
 };
 
 COMPILE_ASSERT(sizeof(DestroyTexture) == 8, Sizeof_DestroyTexture_is_not_8);
 COMPILE_ASSERT(offsetof(DestroyTexture, header) == 0,
                OffsetOf_DestroyTexture_header_not_0);
-COMPILE_ASSERT(offsetof(DestroyTexture, id) == 4,
-               OffsetOf_DestroyTexture_id_not_4);
+COMPILE_ASSERT(offsetof(DestroyTexture, texture_id) == 4,
+               OffsetOf_DestroyTexture_texture_id_not_4);
 
 struct CreateTexture2d {
   typedef CreateTexture2d ValueType;
   static const CommandId kCmdId = command_buffer::kCreateTexture2d;
   static const ArgFlags kArgFlags = kFixed;
 
+  // argument 1
+  typedef BitField<0, 16> Width;
+  typedef BitField<16, 16> Height;
+  // argument 2
+  typedef BitField<0, 4> Levels;
+  typedef BitField<4, 4> Unused;
+  typedef BitField<8, 8> Format;
+  typedef BitField<16, 16> Flags;
+
   void SetHeader() {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _texture_id,
-            uint32 _width, uint32 _height, uint32 _levels, uint32 _format,
-            uint32 _enable_render_surfaces) {
+  void Init(ResourceId _texture_id,
+            uint32 _width, uint32 _height, uint32 _levels,
+            texture::Format _format,
+            bool _enable_render_surfaces) {
     SetHeader();
     texture_id = _texture_id;
-    fixme1 =
-        create_texture_2d_cmd::Width::MakeValue(_width) |
-        create_texture_2d_cmd::Height::MakeValue(_height);
-    fixme2 =
-        create_texture_2d_cmd::Levels::MakeValue(_levels) |
-        create_texture_2d_cmd::Format::MakeValue(_format) |
-        create_texture_2d_cmd::Flags::MakeValue(_enable_render_surfaces);
+    width_height = Width::MakeValue(_width) | Height::MakeValue(_height);
+    levels_format_flags =
+        Levels::MakeValue(_levels) |
+        Format::MakeValue(_format) |
+        Flags::MakeValue(_enable_render_surfaces ? 1 : 0);
   }
 
-  static void* Set(void* cmd, uint32 texture_id,
-                   uint32 width, uint32 height, uint32 levels, uint32 format,
-                   uint32 enable_render_surfaces) {
+  static void* Set(void* cmd, ResourceId texture_id,
+                   uint32 width, uint32 height, uint32 levels,
+                   texture::Format format,
+                   bool enable_render_surfaces) {
     static_cast<ValueType*>(cmd)->Init(texture_id,
                                        width, height, levels, format,
                                        enable_render_surfaces);
@@ -1954,9 +1860,9 @@ struct CreateTexture2d {
 
   // TODO(gman): fix this to not use obfusticated fields.
   CommandHeader header;
-  uint32 texture_id;
-  uint32 fixme1;
-  uint32 fixme2;
+  ResourceId texture_id;
+  uint32 width_height;
+  uint32 levels_format_flags;
 };
 
 COMPILE_ASSERT(sizeof(CreateTexture2d) == 16,
@@ -1965,41 +1871,50 @@ COMPILE_ASSERT(offsetof(CreateTexture2d, header) == 0,
                OffsetOf_CreateTexture2d_header_not_0);
 COMPILE_ASSERT(offsetof(CreateTexture2d, texture_id) == 4,
                OffsetOf_CreateTexture2d_texture_id_not_4);
-COMPILE_ASSERT(offsetof(CreateTexture2d, fixme1) == 8,
-               OffsetOf_CreateTexture2d_fixme1_not_8);
-COMPILE_ASSERT(offsetof(CreateTexture2d, fixme2) == 12,
-               OffsetOf_CreateTexture2d_fixme2_not_12);
+COMPILE_ASSERT(offsetof(CreateTexture2d, width_height) == 8,
+               OffsetOf_CreateTexture2d_width_height_not_8);
+COMPILE_ASSERT(offsetof(CreateTexture2d, levels_format_flags) == 12,
+               OffsetOf_CreateTexture2d_levels_format_flags_not_12);
 
 struct CreateTexture3d {
   typedef CreateTexture3d ValueType;
   static const CommandId kCmdId = command_buffer::kCreateTexture3d;
   static const ArgFlags kArgFlags = kFixed;
 
+  // argument 1
+  typedef BitField<0, 16> Width;
+  typedef BitField<16, 16> Height;
+  // argument 2
+  typedef BitField<0, 16> Depth;
+  typedef BitField<16, 16> Unused1;
+  // argument 3
+  typedef BitField<0, 4> Levels;
+  typedef BitField<4, 4> Unused2;
+  typedef BitField<8, 8> Format;
+  typedef BitField<16, 16> Flags;
+
   void SetHeader() {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _texture_id,
+  void Init(ResourceId _texture_id,
             uint32 _width, uint32 _height, uint32 _depth,
-            uint32 _levels, uint32 _format,
-            uint32 _enable_render_surfaces) {
+            uint32 _levels, texture::Format _format,
+            bool _enable_render_surfaces) {
     SetHeader();
     texture_id = _texture_id;
-    fixme1 =
-        create_texture_3d_cmd::Width::MakeValue(_width) |
-        create_texture_3d_cmd::Height::MakeValue(_height);
-    fixme2 =
-        create_texture_3d_cmd::Depth::MakeValue(_depth);
-    fixme3 =
-        create_texture_3d_cmd::Levels::MakeValue(_levels) |
-        create_texture_3d_cmd::Format::MakeValue(_format) |
-        create_texture_3d_cmd::Flags::MakeValue(_enable_render_surfaces);
+    width_height = Width::MakeValue(_width) | Height::MakeValue(_height);
+    depth_unused = Depth::MakeValue(_depth);
+    levels_format_flags =
+        Levels::MakeValue(_levels) |
+        Format::MakeValue(_format) |
+        Flags::MakeValue(_enable_render_surfaces ? 1 : 0);
   }
 
-  static void* Set(void* cmd, uint32 texture_id,
+  static void* Set(void* cmd, ResourceId texture_id,
                    uint32 width, uint32 height, uint32 depth,
-                   uint32 levels, uint32 format,
-                   uint32 enable_render_surfaces) {
+                   uint32 levels, texture::Format format,
+                   bool enable_render_surfaces) {
     static_cast<ValueType*>(cmd)->Init(texture_id,
                                        width, height, depth,
                                        levels, format,
@@ -2009,10 +1924,10 @@ struct CreateTexture3d {
 
   // TODO(gman): fix this to not use obfusticated fields.
   CommandHeader header;
-  uint32 texture_id;
-  uint32 fixme1;
-  uint32 fixme2;
-  uint32 fixme3;
+  ResourceId texture_id;
+  uint32 width_height;
+  uint32 depth_unused;
+  uint32 levels_format_flags;
 };
 
 COMPILE_ASSERT(sizeof(CreateTexture3d) == 20,
@@ -2021,37 +1936,46 @@ COMPILE_ASSERT(offsetof(CreateTexture3d, header) == 0,
                OffsetOf_CreateTexture3d_header_not_0);
 COMPILE_ASSERT(offsetof(CreateTexture3d, texture_id) == 4,
                OffsetOf_CreateTexture3d_texture_id_not_4);
-COMPILE_ASSERT(offsetof(CreateTexture3d, fixme1) == 8,
-               OffsetOf_CreateTexture3d_fixme1_not_8);
-COMPILE_ASSERT(offsetof(CreateTexture3d, fixme2) == 12,
-               OffsetOf_CreateTexture3d_fixme2_not_12);
-COMPILE_ASSERT(offsetof(CreateTexture3d, fixme3) == 16,
-               OffsetOf_CreateTexture3d_fixme3_not_16);
+COMPILE_ASSERT(offsetof(CreateTexture3d, width_height) == 8,
+               OffsetOf_CreateTexture3d_width_height_not_8);
+COMPILE_ASSERT(offsetof(CreateTexture3d, depth_unused) == 12,
+               OffsetOf_CreateTexture3d_depth_unused_not_12);
+COMPILE_ASSERT(offsetof(CreateTexture3d, levels_format_flags) == 16,
+               OffsetOf_CreateTexture3d_levels_format_flags_not_16);
 
 struct CreateTextureCube {
   typedef CreateTextureCube ValueType;
   static const CommandId kCmdId = command_buffer::kCreateTextureCube;
   static const ArgFlags kArgFlags = kFixed;
 
+  // argument 1
+  typedef BitField<0, 16> Side;
+  typedef BitField<16, 16> Unused1;
+  // argument 2
+  typedef BitField<0, 4> Levels;
+  typedef BitField<4, 4> Unused2;
+  typedef BitField<8, 8> Format;
+  typedef BitField<16, 16> Flags;
+
   void SetHeader() {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _texture_id,
-            uint32 _edge_length, uint32 _levels, uint32 _format,
-            uint32 _enable_render_surfaces) {
+  void Init(ResourceId _texture_id,
+            uint32 _edge_length, uint32 _levels, texture::Format _format,
+            bool _enable_render_surfaces) {
     SetHeader();
     texture_id = _texture_id;
     edge_length = _edge_length;
-    fixme2 =
-        create_texture_2d_cmd::Levels::MakeValue(_levels) |
-        create_texture_2d_cmd::Format::MakeValue(_format) |
-        create_texture_2d_cmd::Flags::MakeValue(_enable_render_surfaces);
+    levels_format_flags =
+        Levels::MakeValue(_levels) |
+        Format::MakeValue(_format) |
+        Flags::MakeValue(_enable_render_surfaces ? 1 : 0);
   }
 
-  static void* Set(void* cmd, uint32 texture_id,
-                   uint32 edge_length, uint32 levels, uint32 format,
-                   uint32 enable_render_surfaces) {
+  static void* Set(void* cmd, ResourceId texture_id,
+                   uint32 edge_length, uint32 levels, texture::Format format,
+                   bool enable_render_surfaces) {
     static_cast<ValueType*>(cmd)->Init(texture_id,
                                        edge_length, levels, format,
                                        enable_render_surfaces);
@@ -2060,9 +1984,9 @@ struct CreateTextureCube {
 
   // TODO(gman): fix this to not use obfusticated fields.
   CommandHeader header;
-  uint32 texture_id;
+  ResourceId texture_id;
   uint32 edge_length;
-  uint32 fixme2;
+  uint32 levels_format_flags;
 };
 
 COMPILE_ASSERT(sizeof(CreateTextureCube) == 16,
@@ -2073,20 +1997,34 @@ COMPILE_ASSERT(offsetof(CreateTextureCube, texture_id) == 4,
                OffsetOf_CreateTextureCube_texture_id_not_4);
 COMPILE_ASSERT(offsetof(CreateTextureCube, edge_length) == 8,
                OffsetOf_CreateTextureCube_edge_length_not_8);
-COMPILE_ASSERT(offsetof(CreateTextureCube, fixme2) == 12,
-               OffsetOf_CreateTextureCube_fixme2_not_12);
+COMPILE_ASSERT(offsetof(CreateTextureCube, levels_format_flags) == 12,
+               OffsetOf_CreateTextureCube_levels_format_flags_not_12);
 
 struct SetTextureData {
   typedef SetTextureData ValueType;
   static const CommandId kCmdId = command_buffer::kSetTextureData;
   static const ArgFlags kArgFlags = kFixed;
 
+  // argument 1
+  typedef BitField<0, 16> X;
+  typedef BitField<16, 16> Y;
+  // argument 2
+  typedef BitField<0, 16> Width;
+  typedef BitField<16, 16> Height;
+  // argument 3
+  typedef BitField<0, 16> Z;
+  typedef BitField<16, 16> Depth;
+  // argument 4
+  typedef BitField<0, 4> Level;
+  typedef BitField<4, 3> Face;
+  typedef BitField<7, 25> Unused;
+
   void SetHeader() {
     header.SetCmd<ValueType>();
   }
 
   void Init(
-      uint32 _texture_id,
+      ResourceId _texture_id,
       uint32 _x,
       uint32 _y,
       uint32 _z,
@@ -2094,7 +2032,7 @@ struct SetTextureData {
       uint32 _height,
       uint32 _depth,
       uint32 _level,
-      uint32 _face,
+      texture::Face _face,
       uint32 _row_pitch,
       uint32 _slice_pitch,
       uint32 _size,
@@ -2102,18 +2040,10 @@ struct SetTextureData {
       uint32 shared_memory_offset) {
     SetHeader();
     texture_id = _texture_id;
-    fixme1 =
-        set_texture_data_cmd::X::MakeValue(_x) |
-        set_texture_data_cmd::Y::MakeValue(_y);
-    fixme2 =
-        set_texture_data_cmd::Width::MakeValue(_width) |
-        set_texture_data_cmd::Height::MakeValue(_height);
-    fixme3 =
-        set_texture_data_cmd::Z::MakeValue(_z) |
-        set_texture_data_cmd::Depth::MakeValue(_depth);
-    fixme4 =
-        set_texture_data_cmd::Level::MakeValue(_level) |
-        set_texture_data_cmd::Face::MakeValue(_face);
+    x_y = X::MakeValue(_x) | Y::MakeValue(_y);
+    width_height = Width::MakeValue(_width) | Height::MakeValue(_height);
+    z_depth = Z::MakeValue(_z) | Depth::MakeValue(_depth);
+    level_face = Level::MakeValue(_level) | Face::MakeValue(_face);
     row_pitch = _row_pitch;
     slice_pitch = _slice_pitch;
     size = _size;
@@ -2122,7 +2052,7 @@ struct SetTextureData {
 
   static void* Set(
       void* cmd,
-      uint32 texture_id,
+      ResourceId texture_id,
       uint32 x,
       uint32 y,
       uint32 z,
@@ -2130,7 +2060,7 @@ struct SetTextureData {
       uint32 height,
       uint32 depth,
       uint32 level,
-      uint32 face,
+      texture::Face face,
       uint32 row_pitch,
       uint32 slice_pitch,
       uint32 size,
@@ -2156,11 +2086,11 @@ struct SetTextureData {
 
   // TODO(gman): fix this to not use obfusticated fields.
   CommandHeader header;
-  uint32 texture_id;
-  uint32 fixme1;
-  uint32 fixme2;
-  uint32 fixme3;
-  uint32 fixme4;
+  ResourceId texture_id;
+  uint32 x_y;
+  uint32 width_height;
+  uint32 z_depth;
+  uint32 level_face;
   uint32 row_pitch;
   uint32 slice_pitch;
   uint32 size;
@@ -2173,14 +2103,14 @@ COMPILE_ASSERT(offsetof(SetTextureData, header) == 0,
                OffsetOf_SetTextureData_header_not_0);
 COMPILE_ASSERT(offsetof(SetTextureData, texture_id) == 4,
                OffsetOf_SetTextureData_texture_id_not_4);
-COMPILE_ASSERT(offsetof(SetTextureData, fixme1) == 8,
-               OffsetOf_SetTextureData_fixme1_not_8);
-COMPILE_ASSERT(offsetof(SetTextureData, fixme2) == 12,
-               OffsetOf_SetTextureData_fixme2_not_12);
-COMPILE_ASSERT(offsetof(SetTextureData, fixme3) == 16,
-               OffsetOf_SetTextureData_fixme3_not_16);
-COMPILE_ASSERT(offsetof(SetTextureData, fixme4) == 20,
-               OffsetOf_SetTextureData_fixme4_not_20);
+COMPILE_ASSERT(offsetof(SetTextureData, x_y) == 8,
+               OffsetOf_SetTextureData_x_y_not_8);
+COMPILE_ASSERT(offsetof(SetTextureData, width_height) == 12,
+               OffsetOf_SetTextureData_width_height_not_12);
+COMPILE_ASSERT(offsetof(SetTextureData, z_depth) == 16,
+               OffsetOf_SetTextureData_z_depth_not_16);
+COMPILE_ASSERT(offsetof(SetTextureData, level_face) == 20,
+               OffsetOf_SetTextureData_level_face_not_20);
 COMPILE_ASSERT(offsetof(SetTextureData, row_pitch) == 24,
                OffsetOf_SetTextureData_row_pitch_not_24);
 COMPILE_ASSERT(offsetof(SetTextureData, slice_pitch) == 28,
@@ -2195,12 +2125,26 @@ struct SetTextureDataImmediate {
   static const CommandId kCmdId = command_buffer::kSetTextureDataImmediate;
   static const ArgFlags kArgFlags = kAtLeastN;
 
+  // argument 1
+  typedef BitField<0, 16> X;
+  typedef BitField<16, 16> Y;
+  // argument 2
+  typedef BitField<0, 16> Width;
+  typedef BitField<16, 16> Height;
+  // argument 3
+  typedef BitField<0, 16> Z;
+  typedef BitField<16, 16> Depth;
+  // argument 4
+  typedef BitField<0, 4> Level;
+  typedef BitField<4, 3> Face;
+  typedef BitField<7, 25> Unused;
+
   void SetHeader(uint32 size) {
     header.SetCmdBySize<ValueType>(size);
   }
 
   void Init(
-      uint32 _texture_id,
+      ResourceId _texture_id,
       uint32 _x,
       uint32 _y,
       uint32 _z,
@@ -2208,25 +2152,17 @@ struct SetTextureDataImmediate {
       uint32 _height,
       uint32 _depth,
       uint32 _level,
-      uint32 _face,
+      texture::Face _face,
       uint32 _row_pitch,
       uint32 _slice_pitch,
       uint32 _size,
       const void* data) {
     SetHeader(_size);
     texture_id = _texture_id;
-    fixme1 =
-        set_texture_data_cmd::X::MakeValue(_x) |
-        set_texture_data_cmd::Y::MakeValue(_y);
-    fixme2 =
-        set_texture_data_cmd::Width::MakeValue(_width) |
-        set_texture_data_cmd::Height::MakeValue(_height);
-    fixme3 =
-        set_texture_data_cmd::Z::MakeValue(_z) |
-        set_texture_data_cmd::Depth::MakeValue(_depth);
-    fixme4 =
-        set_texture_data_cmd::Level::MakeValue(_level) |
-        set_texture_data_cmd::Face::MakeValue(_face);
+    x_y = X::MakeValue(_x) | Y::MakeValue(_y);
+    width_height = Width::MakeValue(_width) | Height::MakeValue(_height);
+    z_depth = Z::MakeValue(_z) | Depth::MakeValue(_depth);
+    level_face = Level::MakeValue(_level) | Face::MakeValue(_face);
     row_pitch = _row_pitch;
     slice_pitch = _slice_pitch;
     size = _size;
@@ -2235,7 +2171,7 @@ struct SetTextureDataImmediate {
 
   static void* Set(
       void* cmd,
-      uint32 texture_id,
+      ResourceId texture_id,
       uint32 x,
       uint32 y,
       uint32 z,
@@ -2243,7 +2179,7 @@ struct SetTextureDataImmediate {
       uint32 height,
       uint32 depth,
       uint32 level,
-      uint32 face,
+      texture::Face face,
       uint32 row_pitch,
       uint32 slice_pitch,
       uint32 size,
@@ -2267,11 +2203,11 @@ struct SetTextureDataImmediate {
 
   // TODO(gman): fix this to not use obfusticated fields.
   CommandHeader header;
-  uint32 texture_id;
-  uint32 fixme1;
-  uint32 fixme2;
-  uint32 fixme3;
-  uint32 fixme4;
+  ResourceId texture_id;
+  uint32 x_y;
+  uint32 width_height;
+  uint32 z_depth;
+  uint32 level_face;
   uint32 row_pitch;
   uint32 slice_pitch;
   uint32 size;
@@ -2283,14 +2219,14 @@ COMPILE_ASSERT(offsetof(SetTextureDataImmediate, header) == 0,
                OffsetOf_SetTextureDataImmediate_header_not_0);
 COMPILE_ASSERT(offsetof(SetTextureDataImmediate, texture_id) == 4,
                OffsetOf_SetTextureDataImmediate_texture_id_not_4);
-COMPILE_ASSERT(offsetof(SetTextureDataImmediate, fixme1) == 8,
-               OffsetOf_SetTextureDataImmediate_fixme1_not_8);
-COMPILE_ASSERT(offsetof(SetTextureDataImmediate, fixme2) == 12,
-               OffsetOf_SetTextureDataImmediate_fixme2_not_12);
-COMPILE_ASSERT(offsetof(SetTextureDataImmediate, fixme3) == 16,
-               OffsetOf_SetTextureDataImmediate_fixme3_not_16);
-COMPILE_ASSERT(offsetof(SetTextureDataImmediate, fixme4) == 20,
-               OffsetOf_SetTextureDataImmediate_fixme4_not_20);
+COMPILE_ASSERT(offsetof(SetTextureDataImmediate, x_y) == 8,
+               OffsetOf_SetTextureDataImmediate_x_y_not_8);
+COMPILE_ASSERT(offsetof(SetTextureDataImmediate, width_height) == 12,
+               OffsetOf_SetTextureDataImmediate_width_height_not_12);
+COMPILE_ASSERT(offsetof(SetTextureDataImmediate, z_depth) == 16,
+               OffsetOf_SetTextureDataImmediate_z_depth_not_16);
+COMPILE_ASSERT(offsetof(SetTextureDataImmediate, level_face) == 20,
+               OffsetOf_SetTextureDataImmediate_level_face_not_20);
 COMPILE_ASSERT(offsetof(SetTextureDataImmediate, row_pitch) == 24,
                OffsetOf_SetTextureDataImmediate_row_pitch_not_24);
 COMPILE_ASSERT(offsetof(SetTextureDataImmediate, slice_pitch) == 28,
@@ -2303,12 +2239,26 @@ struct GetTextureData {
   static const CommandId kCmdId = command_buffer::kGetTextureData;
   static const ArgFlags kArgFlags = kFixed;
 
+  // argument 1
+  typedef BitField<0, 16> X;
+  typedef BitField<16, 16> Y;
+  // argument 2
+  typedef BitField<0, 16> Width;
+  typedef BitField<16, 16> Height;
+  // argument 3
+  typedef BitField<0, 16> Z;
+  typedef BitField<16, 16> Depth;
+  // argument 4
+  typedef BitField<0, 4> Level;
+  typedef BitField<4, 3> Face;
+  typedef BitField<7, 25> Unused;
+
   void SetHeader() {
     header.SetCmd<ValueType>();
   }
 
   void Init(
-      uint32 _texture_id,
+      ResourceId _texture_id,
       uint32 _x,
       uint32 _y,
       uint32 _z,
@@ -2316,7 +2266,7 @@ struct GetTextureData {
       uint32 _height,
       uint32 _depth,
       uint32 _level,
-      uint32 _face,
+      texture::Face _face,
       uint32 _row_pitch,
       uint32 _slice_pitch,
       uint32 _size,
@@ -2324,18 +2274,10 @@ struct GetTextureData {
       uint32 shared_memory_offset) {
     SetHeader();
     texture_id = _texture_id;
-    fixme1 =
-        set_texture_data_cmd::X::MakeValue(_x) |
-        set_texture_data_cmd::Y::MakeValue(_y);
-    fixme2 =
-        set_texture_data_cmd::Width::MakeValue(_width) |
-        set_texture_data_cmd::Height::MakeValue(_height);
-    fixme3 =
-        set_texture_data_cmd::Z::MakeValue(_z) |
-        set_texture_data_cmd::Depth::MakeValue(_depth);
-    fixme4 =
-        set_texture_data_cmd::Level::MakeValue(_level) |
-        set_texture_data_cmd::Face::MakeValue(_face);
+    x_y = X::MakeValue(_x) | Y::MakeValue(_y);
+    width_height = Width::MakeValue(_width) | Height::MakeValue(_height);
+    z_depth = Z::MakeValue(_z) | Depth::MakeValue(_depth);
+    level_face = Level::MakeValue(_level) | Face::MakeValue(_face);
     row_pitch = _row_pitch;
     slice_pitch = _slice_pitch;
     size = _size;
@@ -2344,7 +2286,7 @@ struct GetTextureData {
 
   static void* Set(
       void* cmd,
-      uint32 texture_id,
+      ResourceId texture_id,
       uint32 x,
       uint32 y,
       uint32 z,
@@ -2352,7 +2294,7 @@ struct GetTextureData {
       uint32 height,
       uint32 depth,
       uint32 level,
-      uint32 face,
+      texture::Face face,
       uint32 row_pitch,
       uint32 slice_pitch,
       uint32 size,
@@ -2378,11 +2320,11 @@ struct GetTextureData {
 
   // TODO(gman): fix this to not use obfusticated fields.
   CommandHeader header;
-  uint32 texture_id;
-  uint32 fixme1;
-  uint32 fixme2;
-  uint32 fixme3;
-  uint32 fixme4;
+  ResourceId texture_id;
+  uint32 x_y;
+  uint32 width_height;
+  uint32 z_depth;
+  uint32 level_face;
   uint32 row_pitch;
   uint32 slice_pitch;
   uint32 size;
@@ -2395,14 +2337,14 @@ COMPILE_ASSERT(offsetof(GetTextureData, header) == 0,
                OffsetOf_GetTextureData_header_not_0);
 COMPILE_ASSERT(offsetof(GetTextureData, texture_id) == 4,
                OffsetOf_GetTextureData_texture_id_not_4);
-COMPILE_ASSERT(offsetof(GetTextureData, fixme1) == 8,
-               OffsetOf_GetTextureData_fixme1_not_8);
-COMPILE_ASSERT(offsetof(GetTextureData, fixme2) == 12,
-               OffsetOf_GetTextureData_fixme2_not_12);
-COMPILE_ASSERT(offsetof(GetTextureData, fixme3) == 16,
-               OffsetOf_GetTextureData_fixme3_not_16);
-COMPILE_ASSERT(offsetof(GetTextureData, fixme4) == 20,
-               OffsetOf_GetTextureData_fixme4_not_20);
+COMPILE_ASSERT(offsetof(GetTextureData, x_y) == 8,
+               OffsetOf_GetTextureData_x_y_not_8);
+COMPILE_ASSERT(offsetof(GetTextureData, width_height) == 12,
+               OffsetOf_GetTextureData_width_height_not_12);
+COMPILE_ASSERT(offsetof(GetTextureData, z_depth) == 16,
+               OffsetOf_GetTextureData_z_depth_not_16);
+COMPILE_ASSERT(offsetof(GetTextureData, level_face) == 20,
+               OffsetOf_GetTextureData_level_face_not_20);
 COMPILE_ASSERT(offsetof(GetTextureData, row_pitch) == 24,
                OffsetOf_GetTextureData_row_pitch_not_24);
 COMPILE_ASSERT(offsetof(GetTextureData, slice_pitch) == 28,
@@ -2421,25 +2363,25 @@ struct CreateSampler {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id) {
+  void Init(ResourceId _sampler_id) {
     SetHeader();
-    id = _id;
+    sampler_id = _sampler_id;
   }
 
-  static void* Set(void* cmd, uint32 id) {
-    static_cast<ValueType*>(cmd)->Init(id);
+  static void* Set(void* cmd, ResourceId sampler_id) {
+    static_cast<ValueType*>(cmd)->Init(sampler_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId sampler_id;
 };
 
 COMPILE_ASSERT(sizeof(CreateSampler) == 8, Sizeof_CreateSampler_is_not_8);
 COMPILE_ASSERT(offsetof(CreateSampler, header) == 0,
                OffsetOf_CreateSampler_header_not_0);
-COMPILE_ASSERT(offsetof(CreateSampler, id) == 4,
-               OffsetOf_CreateSampler_id_not_4);
+COMPILE_ASSERT(offsetof(CreateSampler, sampler_id) == 4,
+               OffsetOf_CreateSampler_sampler_id_not_4);
 
 struct DestroySampler {
   typedef DestroySampler ValueType;
@@ -2450,67 +2392,77 @@ struct DestroySampler {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id) {
+  void Init(ResourceId _sampler_id) {
     SetHeader();
-    id = _id;
+    sampler_id = _sampler_id;
   }
 
-  static void* Set(void* cmd, uint32 id) {
-    static_cast<ValueType*>(cmd)->Init(id);
+  static void* Set(void* cmd, ResourceId sampler_id) {
+    static_cast<ValueType*>(cmd)->Init(sampler_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId sampler_id;
 };
 
 COMPILE_ASSERT(sizeof(DestroySampler) == 8, Sizeof_DestroySampler_is_not_8);
 COMPILE_ASSERT(offsetof(DestroySampler, header) == 0,
                OffsetOf_DestroySampler_header_not_0);
-COMPILE_ASSERT(offsetof(DestroySampler, id) == 4,
-               OffsetOf_DestroySampler_id_not_4);
+COMPILE_ASSERT(offsetof(DestroySampler, sampler_id) == 4,
+               OffsetOf_DestroySampler_sampler_id_not_4);
 
 struct SetSamplerStates {
   typedef SetSamplerStates ValueType;
   static const CommandId kCmdId = command_buffer::kSetSamplerStates;
   static const ArgFlags kArgFlags = kFixed;
 
+  // argument 2
+  typedef BitField<0, 3> AddressingU;
+  typedef BitField<3, 3> AddressingV;
+  typedef BitField<6, 3> AddressingW;
+  typedef BitField<9, 3> MagFilter;
+  typedef BitField<12, 3> MinFilter;
+  typedef BitField<15, 3> MipFilter;
+  typedef BitField<18, 6> Unused;
+  typedef BitField<24, 8> MaxAnisotropy;
+
   void SetHeader() {
     header.SetCmd<ValueType>();
   }
 
   void Init(
-      uint32 _id,
-      uint32 _address_u_value,
-      uint32 _address_v_value,
-      uint32 _address_w_value,
-      uint32 _mag_filter_value,
-      uint32 _min_filter_value,
-      uint32 _mip_filter_value,
-      uint32 _max_anisotropy) {
+      ResourceId _sampler_id,
+      sampler::AddressingMode _address_u_value,
+      sampler::AddressingMode _address_v_value,
+      sampler::AddressingMode _address_w_value,
+      sampler::FilteringMode _mag_filter_value,
+      sampler::FilteringMode _min_filter_value,
+      sampler::FilteringMode _mip_filter_value,
+      uint8 _max_anisotropy) {
     SetHeader();
-    id = _id;
-    fixme1 =
-        set_sampler_states::AddressingU::MakeValue(_address_u_value) |
-        set_sampler_states::AddressingV::MakeValue(_address_v_value) |
-        set_sampler_states::AddressingW::MakeValue(_address_w_value) |
-        set_sampler_states::MagFilter::MakeValue(_mag_filter_value) |
-        set_sampler_states::MinFilter::MakeValue(_min_filter_value) |
-        set_sampler_states::MipFilter::MakeValue(_mip_filter_value) |
-        set_sampler_states::MaxAnisotropy::MakeValue(_max_anisotropy);
+    sampler_id = _sampler_id;
+    sampler_states =
+        AddressingU::MakeValue(_address_u_value) |
+        AddressingV::MakeValue(_address_v_value) |
+        AddressingW::MakeValue(_address_w_value) |
+        MagFilter::MakeValue(_mag_filter_value) |
+        MinFilter::MakeValue(_min_filter_value) |
+        MipFilter::MakeValue(_mip_filter_value) |
+        MaxAnisotropy::MakeValue(_max_anisotropy);
   }
 
   static void* Set(void* cmd,
-      uint32 id,
-      uint32 address_u_value,
-      uint32 address_v_value,
-      uint32 address_w_value,
-      uint32 mag_filter_value,
-      uint32 min_filter_value,
-      uint32 mip_filter_value,
-      uint32 max_anisotropy) {
+      ResourceId sampler_id,
+      sampler::AddressingMode address_u_value,
+      sampler::AddressingMode address_v_value,
+      sampler::AddressingMode address_w_value,
+      sampler::FilteringMode mag_filter_value,
+      sampler::FilteringMode min_filter_value,
+      sampler::FilteringMode mip_filter_value,
+      uint8 max_anisotropy) {
     static_cast<ValueType*>(cmd)->Init(
-        id,
+        sampler_id,
         address_u_value,
         address_v_value,
         address_w_value,
@@ -2523,18 +2475,18 @@ struct SetSamplerStates {
 
   // TODO(gman): fix this to not use obfusticated fields.
   CommandHeader header;
-  uint32 id;
-  uint32 fixme1;
+  ResourceId sampler_id;
+  uint32 sampler_states;
 };
 
 COMPILE_ASSERT(sizeof(SetSamplerStates) == 12,
                Sizeof_SetSamplerStates_is_not_12);
 COMPILE_ASSERT(offsetof(SetSamplerStates, header) == 0,
                OffsetOf_SetSamplerStates_header_not_0);
-COMPILE_ASSERT(offsetof(SetSamplerStates, id) == 4,
-               OffsetOf_SetSamplerStates_id_not_4);
-COMPILE_ASSERT(offsetof(SetSamplerStates, fixme1) == 8,
-               OffsetOf_SetSamplerStates_fixme1_not_8);
+COMPILE_ASSERT(offsetof(SetSamplerStates, sampler_id) == 4,
+               OffsetOf_SetSamplerStates_sampler_id_not_4);
+COMPILE_ASSERT(offsetof(SetSamplerStates, sampler_states) == 8,
+               OffsetOf_SetSamplerStates_sampler_states_not_8);
 
 struct SetSamplerBorderColor {
   typedef SetSamplerBorderColor ValueType;
@@ -2545,24 +2497,24 @@ struct SetSamplerBorderColor {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id,
+  void Init(ResourceId _sampler_id,
             float _red, float _green, float _blue, float _alpha) {
     SetHeader();
-    id = _id;
+    sampler_id = _sampler_id;
     red = _red;
     green = _green;
     blue = _blue;
     alpha = _alpha;
   }
 
-  static void* Set(void* cmd, uint32 id,
+  static void* Set(void* cmd, ResourceId sampler_id,
                    float red, float green, float blue, float alpha) {
-    static_cast<ValueType*>(cmd)->Init(id, red, green, blue, alpha);
+    static_cast<ValueType*>(cmd)->Init(sampler_id, red, green, blue, alpha);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId sampler_id;
   float red;
   float blue;
   float green;
@@ -2573,8 +2525,8 @@ COMPILE_ASSERT(sizeof(SetSamplerBorderColor) == 24,
                Sizeof_SetSamplerBorderColor_is_not_24);
 COMPILE_ASSERT(offsetof(SetSamplerBorderColor, header) == 0,
                OffsetOf_SetSamplerBorderColor_header_not_0);
-COMPILE_ASSERT(offsetof(SetSamplerBorderColor, id) == 4,
-               OffsetOf_SetSamplerBorderColor_id_not_4);
+COMPILE_ASSERT(offsetof(SetSamplerBorderColor, sampler_id) == 4,
+               OffsetOf_SetSamplerBorderColor_sampler_id_not_4);
 COMPILE_ASSERT(offsetof(SetSamplerBorderColor, red) == 8,
                OffsetOf_SetSamplerBorderColor_red_not_8);
 COMPILE_ASSERT(offsetof(SetSamplerBorderColor, blue) == 12,
@@ -2593,28 +2545,28 @@ struct SetSamplerTexture {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id, uint32 _texture_id) {
+  void Init(ResourceId _sampler_id, ResourceId _texture_id) {
     SetHeader();
-    id = _id;
+    sampler_id = _sampler_id;
     texture_id = _texture_id;
   }
 
-  static void* Set(void* cmd, uint32 id, uint32 texture_id) {
-    static_cast<ValueType*>(cmd)->Init(id, texture_id);
+  static void* Set(void* cmd, ResourceId sampler_id, ResourceId texture_id) {
+    static_cast<ValueType*>(cmd)->Init(sampler_id, texture_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
-  uint32 texture_id;
+  ResourceId sampler_id;
+  ResourceId texture_id;
 };
 
 COMPILE_ASSERT(sizeof(SetSamplerTexture) == 12,
                Sizeof_SetSamplerTexture_is_not_12);
 COMPILE_ASSERT(offsetof(SetSamplerTexture, header) == 0,
                OffsetOf_SetSamplerTexture_header_not_0);
-COMPILE_ASSERT(offsetof(SetSamplerTexture, id) == 4,
-               OffsetOf_SetSamplerTexture_id_not_4);
+COMPILE_ASSERT(offsetof(SetSamplerTexture, sampler_id) == 4,
+               OffsetOf_SetSamplerTexture_sampler_id_not_4);
 COMPILE_ASSERT(offsetof(SetSamplerTexture, texture_id) == 8,
                OffsetOf_SetSamplerTexture_texture_id_not_8);
 
@@ -2622,6 +2574,15 @@ struct SetScissor {
   typedef SetScissor ValueType;
   static const CommandId kCmdId = command_buffer::kSetScissor;
   static const ArgFlags kArgFlags = kFixed;
+
+  // argument 0
+  typedef BitField<0, 15> X;
+  typedef BitField<15, 1> Unused;
+  typedef BitField<16, 15> Y;
+  typedef BitField<31, 1> Enable;
+  // argument 1
+  typedef BitField<0, 16> Width;
+  typedef BitField<16, 16> Height;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -2633,13 +2594,11 @@ struct SetScissor {
             uint32 _height,
             bool _enable) {
     SetHeader();
-    fixme0 =
-        set_scissor::X::MakeValue(_x) |
-        set_scissor::Y::MakeValue(_y) |
-        set_scissor::Enable::MakeValue(_enable ? 1 : 0);
-    fixme1 =
-      set_scissor::Width::MakeValue(_width) |
-      set_scissor::Height::MakeValue(_height);
+    x_y_enable =
+        X::MakeValue(_x) |
+        Y::MakeValue(_y) |
+        Enable::MakeValue(_enable ? 1 : 0);
+    width_height = Width::MakeValue(_width) | Height::MakeValue(_height);
   }
 
   static void* Set(
@@ -2660,17 +2619,17 @@ struct SetScissor {
 
   // TODO(gman): fix this to not use obfusticated fields.
   CommandHeader header;
-  uint32 fixme0;
-  uint32 fixme1;
+  uint32 x_y_enable;
+  uint32 width_height;
 };
 
 COMPILE_ASSERT(sizeof(SetScissor) == 12, Sizeof_SetScissor_is_not_12);
 COMPILE_ASSERT(offsetof(SetScissor, header) == 0,
                OffsetOf_SetScissor_header_not_0);
-COMPILE_ASSERT(offsetof(SetScissor, fixme0) == 4,
-               OffsetOf_SetScissor_fixme0_not_4);
-COMPILE_ASSERT(offsetof(SetScissor, fixme1) == 8,
-               OffsetOf_SetScissor_fixme1_not_8);
+COMPILE_ASSERT(offsetof(SetScissor, x_y_enable) == 4,
+               OffsetOf_SetScissor_x_y_enable_not_4);
+COMPILE_ASSERT(offsetof(SetScissor, width_height) == 8,
+               OffsetOf_SetScissor_width_height_not_8);
 
 struct SetPolygonOffset {
   typedef SetPolygonOffset ValueType;
@@ -2711,6 +2670,11 @@ struct SetPointLineRaster {
   static const CommandId kCmdId = command_buffer::kSetPointLineRaster;
   static const ArgFlags kArgFlags = kFixed;
 
+  // argument 0
+  typedef BitField<0, 1> LineSmoothEnable;
+  typedef BitField<1, 1> PointSpriteEnable;
+  typedef BitField<2, 30> Unused;
+
   void SetHeader() {
     header.SetCmd<ValueType>();
   }
@@ -2718,11 +2682,9 @@ struct SetPointLineRaster {
   void Init(bool _line_smooth_enable, bool _point_sprite_enable,
             float _point_size) {
     SetHeader();
-    fixme0 =
-        set_point_line_raster::LineSmoothEnable::MakeValue(
-            _line_smooth_enable ? 1 : 0) |
-        set_point_line_raster::PointSpriteEnable::MakeValue(
-            _point_sprite_enable ? 1 : 0);
+    enables =
+        LineSmoothEnable::MakeValue( _line_smooth_enable ? 1 : 0) |
+        PointSpriteEnable::MakeValue(_point_sprite_enable ? 1 : 0);
     point_size = _point_size;
   }
 
@@ -2735,7 +2697,7 @@ struct SetPointLineRaster {
 
   // TODO(gman): fix this to not use obfusticated fields.
   CommandHeader header;
-  uint32 fixme0;
+  uint32 enables;
   float point_size;
 };
 
@@ -2743,8 +2705,8 @@ COMPILE_ASSERT(sizeof(SetPointLineRaster) == 12,
                Sizeof_SetPointLineRaster_is_not_12);
 COMPILE_ASSERT(offsetof(SetPointLineRaster, header) == 0,
                OffsetOf_SetPointLineRaster_header_not_0);
-COMPILE_ASSERT(offsetof(SetPointLineRaster, fixme0) == 4,
-               OffsetOf_SetPointLineRaster_fixme0_not_4);
+COMPILE_ASSERT(offsetof(SetPointLineRaster, enables) == 4,
+               OffsetOf_SetPointLineRaster_enables_not_4);
 COMPILE_ASSERT(offsetof(SetPointLineRaster, point_size) == 8,
                OffsetOf_SetPointLineRaster_point_size_not_8);
 
@@ -2753,67 +2715,74 @@ struct SetPolygonRaster {
   static const CommandId kCmdId = command_buffer::kSetPolygonRaster;
   static const ArgFlags kArgFlags = kFixed;
 
+  // argument 0
+  typedef BitField<0, 2> FillMode;
+  typedef BitField<2, 2> CullMode;
+  typedef BitField<4, 28> Unused;
+
   void SetHeader() {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _fill_mode, uint32 _cull_mode) {
+  void Init(PolygonMode _fill_mode, FaceCullMode _cull_mode) {
     SetHeader();
-    fixme0 =
-        set_polygon_raster::FillMode::MakeValue(_fill_mode) |
-        set_polygon_raster::CullMode::MakeValue(_cull_mode);
+    fill_cull = FillMode::MakeValue(_fill_mode) |
+                CullMode::MakeValue(_cull_mode);
   }
 
-  static void* Set(void* cmd, uint32 fill_mode, uint32 cull_mode) {
+  static void* Set(void* cmd, PolygonMode fill_mode, FaceCullMode cull_mode) {
     static_cast<ValueType*>(cmd)->Init(fill_mode, cull_mode);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   // TODO(gman): fix this to not use obfusticated fields.
   CommandHeader header;
-  uint32 fixme0;
+  uint32 fill_cull;
 };
 
 COMPILE_ASSERT(sizeof(SetPolygonRaster) == 8,
                Sizeof_SetPolygonRaster_is_not_8);
 COMPILE_ASSERT(offsetof(SetPolygonRaster, header) == 0,
                OffsetOf_SetPolygonRaster_header_not_0);
-COMPILE_ASSERT(offsetof(SetPolygonRaster, fixme0) == 4,
-               OffsetOf_SetPolygonRaster_fixme0_not_4);
+COMPILE_ASSERT(offsetof(SetPolygonRaster, fill_cull) == 4,
+               OffsetOf_SetPolygonRaster_fill_cull_not_4);
 
 struct SetAlphaTest {
   typedef SetAlphaTest ValueType;
   static const CommandId kCmdId = command_buffer::kSetAlphaTest;
   static const ArgFlags kArgFlags = kFixed;
 
+  // argument 0
+  typedef BitField<0, 3> Func;
+  typedef BitField<3, 28> Unused;
+  typedef BitField<31, 1> Enable;
+
   void SetHeader() {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _func, bool _enable, float _value) {
+  void Init(Comparison _func, bool _enable, float _value) {
     SetHeader();
-    fixme0 =
-        set_alpha_test::Func::MakeValue(_func) |
-        set_alpha_test::Enable::MakeValue(_enable ? 1 : 0);
+    func_enable = Func::MakeValue(_func) | Enable::MakeValue(_enable ? 1 : 0);
     value = _value;
   }
 
-  static void* Set(void* cmd, uint32 func, bool enable, float value) {
+  static void* Set(void* cmd, Comparison func, bool enable, float value) {
     static_cast<ValueType*>(cmd)->Init(func, enable, value);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   // TODO(gman): fix this to not use obfusticated fields.
   CommandHeader header;
-  uint32 fixme0;
+  uint32 func_enable;
   float value;
 };
 
 COMPILE_ASSERT(sizeof(SetAlphaTest) == 12, Sizeof_SetAlphaTest_is_not_12);
 COMPILE_ASSERT(offsetof(SetAlphaTest, header) == 0,
                OffsetOf_SetAlphaTest_header_not_0);
-COMPILE_ASSERT(offsetof(SetAlphaTest, fixme0) == 4,
-               OffsetOf_SetAlphaTest_fixme0_not_4);
+COMPILE_ASSERT(offsetof(SetAlphaTest, func_enable) == 4,
+               OffsetOf_SetAlphaTest_func_enable_not_4);
 COMPILE_ASSERT(offsetof(SetAlphaTest, value) == 8,
                OffsetOf_SetAlphaTest_value_not_8);
 
@@ -2822,38 +2791,64 @@ struct SetDepthTest {
   static const CommandId kCmdId = command_buffer::kSetDepthTest;
   static const ArgFlags kArgFlags = kFixed;
 
+  // argument 0
+  typedef BitField<0, 3> Func;
+  typedef BitField<3, 27> Unused;
+  typedef BitField<30, 1> WriteEnable;
+  typedef BitField<31, 1> Enable;
+
   void SetHeader() {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _func, bool _write_enable, bool _enable) {
+  void Init(Comparison _func, bool _write_enable, bool _enable) {
     SetHeader();
-    fixme0 =
-        set_depth_test::Func::MakeValue(_func) |
-        set_depth_test::WriteEnable::MakeValue(_write_enable ? 1 : 0) |
-        set_depth_test::Enable::MakeValue(_enable ? 1 : 0);
+    func_enable =
+        Func::MakeValue(_func) |
+        WriteEnable::MakeValue(_write_enable ? 1 : 0) |
+        Enable::MakeValue(_enable ? 1 : 0);
   }
 
-  static void* Set(void* cmd, uint32 func, bool write_enable, bool enable) {
+  static void* Set(void* cmd,
+                   Comparison func, bool write_enable, bool enable) {
     static_cast<ValueType*>(cmd)->Init(func, write_enable, enable);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   // TODO(gman): fix this to not use obfusticated fields.
   CommandHeader header;
-  uint32 fixme0;
+  uint32 func_enable;
 };
 
 COMPILE_ASSERT(sizeof(SetDepthTest) == 8, Sizeof_SetDepthTest_is_not_8);
 COMPILE_ASSERT(offsetof(SetDepthTest, header) == 0,
                OffsetOf_SetDepthTest_header_not_0);
-COMPILE_ASSERT(offsetof(SetDepthTest, fixme0) == 4,
-               OffsetOf_SetDepthTest_fixme0_not_4);
+COMPILE_ASSERT(offsetof(SetDepthTest, func_enable) == 4,
+               OffsetOf_SetDepthTest_func_enable_not_4);
 
 struct SetStencilTest {
   typedef SetStencilTest ValueType;
   static const CommandId kCmdId = command_buffer::kSetStencilTest;
   static const ArgFlags kArgFlags = kFixed;
+
+  // argument 0
+  typedef BitField<0, 8> WriteMask;
+  typedef BitField<8, 8> CompareMask;
+  typedef BitField<16, 8> ReferenceValue;
+  typedef BitField<24, 6> Unused0;
+  typedef BitField<30, 1> SeparateCCW;
+  typedef BitField<31, 1> Enable;
+  // argument 1
+  typedef BitField<0, 3> CWFunc;
+  typedef BitField<3, 3> CWPassOp;
+  typedef BitField<6, 3> CWFailOp;
+  typedef BitField<9, 3> CWZFailOp;
+  typedef BitField<12, 4> Unused1;
+  typedef BitField<16, 3> CCWFunc;
+  typedef BitField<19, 3> CCWPassOp;
+  typedef BitField<22, 3> CCWFailOp;
+  typedef BitField<25, 3> CCWZFailOp;
+  typedef BitField<28, 4> Unused2;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -2864,30 +2859,30 @@ struct SetStencilTest {
             uint8 _reference_value,
             bool _separate_ccw,
             bool _enable,
-            uint8 _cw_func,
-            uint8 _cw_pass_op,
-            uint8 _cw_fail_op,
-            uint8 _cw_z_fail_op,
-            uint8 _ccw_func,
-            uint8 _ccw_pass_op,
-            uint8 _ccw_fail_op,
-            uint8 _ccw_z_fail_op) {
+            Comparison _cw_func,
+            StencilOp _cw_pass_op,
+            StencilOp _cw_fail_op,
+            StencilOp _cw_z_fail_op,
+            Comparison _ccw_func,
+            StencilOp _ccw_pass_op,
+            StencilOp _ccw_fail_op,
+            StencilOp _ccw_z_fail_op) {
     SetHeader();
-    fixme0 =
-        set_stencil_test::WriteMask::MakeValue(_write_mask) |
-        set_stencil_test::CompareMask::MakeValue(_compare_mask) |
-        set_stencil_test::ReferenceValue::MakeValue(_reference_value) |
-        set_stencil_test::SeparateCCW::MakeValue(_separate_ccw ? 1 : 0) |
-        set_stencil_test::Enable::MakeValue(_enable ? 1 : 0);
-    fixme1 =
-        set_stencil_test::CWFunc::MakeValue(_cw_func) |
-        set_stencil_test::CWPassOp::MakeValue(_cw_pass_op) |
-        set_stencil_test::CWFailOp::MakeValue(_cw_fail_op) |
-        set_stencil_test::CWZFailOp::MakeValue(_cw_z_fail_op) |
-        set_stencil_test::CCWFunc::MakeValue(_ccw_func) |
-        set_stencil_test::CCWPassOp::MakeValue(_ccw_pass_op) |
-        set_stencil_test::CCWFailOp::MakeValue(_ccw_fail_op) |
-        set_stencil_test::CCWZFailOp::MakeValue(_ccw_z_fail_op);
+    stencil_args0 =
+        WriteMask::MakeValue(_write_mask) |
+        CompareMask::MakeValue(_compare_mask) |
+        ReferenceValue::MakeValue(_reference_value) |
+        SeparateCCW::MakeValue(_separate_ccw ? 1 : 0) |
+        Enable::MakeValue(_enable ? 1 : 0);
+    stencil_args1 =
+        CWFunc::MakeValue(_cw_func) |
+        CWPassOp::MakeValue(_cw_pass_op) |
+        CWFailOp::MakeValue(_cw_fail_op) |
+        CWZFailOp::MakeValue(_cw_z_fail_op) |
+        CCWFunc::MakeValue(_ccw_func) |
+        CCWPassOp::MakeValue(_ccw_pass_op) |
+        CCWFailOp::MakeValue(_ccw_fail_op) |
+        CCWZFailOp::MakeValue(_ccw_z_fail_op);
   }
 
   static void* Set(
@@ -2897,14 +2892,14 @@ struct SetStencilTest {
       uint8 reference_value,
       bool separate_ccw,
       bool enable,
-      uint8 cw_func,
-      uint8 cw_pass_op,
-      uint8 cw_fail_op,
-      uint8 cw_z_fail_op,
-      uint8 ccw_func,
-      uint8 ccw_pass_op,
-      uint8 ccw_fail_op,
-      uint8 ccw_z_fail_op) {
+      Comparison cw_func,
+      StencilOp cw_pass_op,
+      StencilOp cw_fail_op,
+      StencilOp cw_z_fail_op,
+      Comparison ccw_func,
+      StencilOp ccw_pass_op,
+      StencilOp ccw_fail_op,
+      StencilOp ccw_z_fail_op) {
     static_cast<ValueType*>(cmd)->Init(
         write_mask,
         compare_mask,
@@ -2924,23 +2919,32 @@ struct SetStencilTest {
 
   // TODO(gman): fix this to not use obfusticated fields.
   CommandHeader header;
-  uint32 fixme0;
-  uint32 fixme1;
+  uint32 stencil_args0;
+  uint32 stencil_args1;
 };
 
 COMPILE_ASSERT(sizeof(SetStencilTest) == 12,
                Sizeof_SetStencilTest_is_not_12);
 COMPILE_ASSERT(offsetof(SetStencilTest, header) == 0,
                OffsetOf_SetStencilTest_header_not_0);
-COMPILE_ASSERT(offsetof(SetStencilTest, fixme0) == 4,
-               OffsetOf_SetStencilTest_fixme0_not_4);
-COMPILE_ASSERT(offsetof(SetStencilTest, fixme1) == 8,
-               OffsetOf_SetStencilTest_fixme1_not_8);
+COMPILE_ASSERT(offsetof(SetStencilTest, stencil_args0) == 4,
+               OffsetOf_SetStencilTest_stencil_args0_not_4);
+COMPILE_ASSERT(offsetof(SetStencilTest, stencil_args1) == 8,
+               OffsetOf_SetStencilTest_stencil_args1_not_8);
 
 struct SetColorWrite {
   typedef SetColorWrite ValueType;
   static const CommandId kCmdId = command_buffer::kSetColorWrite;
   static const ArgFlags kArgFlags = kFixed;
+
+  // argument 0
+  typedef BitField<0, 1> RedMask;
+  typedef BitField<1, 1> GreenMask;
+  typedef BitField<2, 1> BlueMask;
+  typedef BitField<3, 1> AlphaMask;
+  typedef BitField<0, 4> AllColorsMask;  // alias for RGBA
+  typedef BitField<4, 27> Unused;
+  typedef BitField<31, 1> DitherEnable;
 
   void SetHeader() {
     header.SetCmd<ValueType>();
@@ -2949,11 +2953,11 @@ struct SetColorWrite {
   void Init(uint8 _mask, bool _dither_enable) {
     SetHeader();
     flags =
-        set_color_write::RedMask::MakeValue((_mask | 0x01) != 0 ? 1 : 0) |
-        set_color_write::GreenMask::MakeValue((_mask | 0x02) != 0 ? 1 : 0) |
-        set_color_write::BlueMask::MakeValue((_mask | 0x02) != 0 ? 1 : 0) |
-        set_color_write::AlphaMask::MakeValue((_mask | 0x02) != 0 ? 1 : 0) |
-        set_color_write::DitherEnable::MakeValue(_dither_enable ? 1 : 0);
+        RedMask::MakeValue((_mask | 0x01) != 0 ? 1 : 0) |
+        GreenMask::MakeValue((_mask | 0x02) != 0 ? 1 : 0) |
+        BlueMask::MakeValue((_mask | 0x02) != 0 ? 1 : 0) |
+        AlphaMask::MakeValue((_mask | 0x02) != 0 ? 1 : 0) |
+        DitherEnable::MakeValue(_dither_enable ? 1 : 0);
   }
 
   static void* Set(void* cmd, uint8 mask, bool dither_enable) {
@@ -2976,39 +2980,51 @@ struct SetBlending {
   static const CommandId kCmdId = command_buffer::kSetBlending;
   static const ArgFlags kArgFlags = kFixed;
 
+  // argument 0
+  typedef BitField<0, 4> ColorSrcFunc;
+  typedef BitField<4, 4> ColorDstFunc;
+  typedef BitField<8, 3> ColorEq;
+  typedef BitField<11, 5> Unused0;
+  typedef BitField<16, 4> AlphaSrcFunc;
+  typedef BitField<20, 4> AlphaDstFunc;
+  typedef BitField<24, 3> AlphaEq;
+  typedef BitField<27, 3> Unused1;
+  typedef BitField<30, 1> SeparateAlpha;
+  typedef BitField<31, 1> Enable;
+
   void SetHeader() {
     header.SetCmd<ValueType>();
   }
 
   void Init(
-      uint8 _color_src_func,
-      uint8 _color_dst_func,
-      uint8 _color_eq,
-      uint8 _alpha_src_func,
-      uint8 _alpha_dst_func,
-      uint8 _alpha_eq,
+      BlendFunc _color_src_func,
+      BlendFunc _color_dst_func,
+      BlendEq _color_eq,
+      BlendFunc _alpha_src_func,
+      BlendFunc _alpha_dst_func,
+      BlendEq _alpha_eq,
       bool _separate_alpha,
       bool _enable) {
     SetHeader();
-    fixme0 =
-        set_blending::ColorSrcFunc::MakeValue(_color_src_func) |
-        set_blending::ColorDstFunc::MakeValue(_color_dst_func) |
-        set_blending::ColorEq::MakeValue(_color_eq) |
-        set_blending::AlphaSrcFunc::MakeValue(_alpha_src_func) |
-        set_blending::AlphaDstFunc::MakeValue(_alpha_dst_func) |
-        set_blending::AlphaEq::MakeValue(_alpha_eq) |
-        set_blending::SeparateAlpha::MakeValue(_separate_alpha ? 1 : 0) |
-        set_blending::Enable::MakeValue(_enable ? 1 : 0);
+    blend_settings =
+        ColorSrcFunc::MakeValue(_color_src_func) |
+        ColorDstFunc::MakeValue(_color_dst_func) |
+        ColorEq::MakeValue(_color_eq) |
+        AlphaSrcFunc::MakeValue(_alpha_src_func) |
+        AlphaDstFunc::MakeValue(_alpha_dst_func) |
+        AlphaEq::MakeValue(_alpha_eq) |
+        SeparateAlpha::MakeValue(_separate_alpha ? 1 : 0) |
+        Enable::MakeValue(_enable ? 1 : 0);
   }
 
   static void* Set(
       void* cmd,
-      uint8 color_src_func,
-      uint8 color_dst_func,
-      uint8 color_eq,
-      uint8 alpha_src_func,
-      uint8 alpha_dst_func,
-      uint8 alpha_eq,
+      BlendFunc color_src_func,
+      BlendFunc color_dst_func,
+      BlendEq color_eq,
+      BlendFunc alpha_src_func,
+      BlendFunc alpha_dst_func,
+      BlendEq alpha_eq,
       bool separate_alpha,
       bool enable) {
     static_cast<ValueType*>(cmd)->Init(
@@ -3025,14 +3041,14 @@ struct SetBlending {
 
   // TODO(gman): fix this to not use obfusticated fields.
   CommandHeader header;
-  uint32 fixme0;
+  uint32 blend_settings;
 };
 
 COMPILE_ASSERT(sizeof(SetBlending) == 8, Sizeof_SetBlending_is_not_8);
 COMPILE_ASSERT(offsetof(SetBlending, header) == 0,
                OffsetOf_SetBlending_header_not_0);
-COMPILE_ASSERT(offsetof(SetBlending, fixme0) == 4,
-               OffsetOf_SetBlending_fixme0_not_4);
+COMPILE_ASSERT(offsetof(SetBlending, blend_settings) == 4,
+               OffsetOf_SetBlending_blend_settings_not_4);
 
 struct SetBlendingColor {
   typedef SetBlendingColor ValueType;
@@ -3082,51 +3098,57 @@ struct CreateRenderSurface {
   static const CommandId kCmdId = command_buffer::kCreateRenderSurface;
   static const ArgFlags kArgFlags = kFixed;
 
+  // argument 1
+  typedef BitField<0, 16> Width;
+  typedef BitField<16, 16> Height;
+  // argument 2 may refer to side or depth
+  typedef BitField<0, 16> Levels;
+  typedef BitField<16, 16> Side;
+
   void SetHeader() {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id, uint32 _texture_id, uint32 _width, uint32 _height,
+  void Init(ResourceId _render_surface_id,
+            ResourceId _texture_id, uint32 _width, uint32 _height,
             uint32 _level, uint32 _side) {
     SetHeader();
-    id = _id;
+    render_surface_id = _render_surface_id;
     // TODO(gman): Why does this need a width and height. It's inherited from
     // the texture isn't it?
-    fixme1 =
-        create_render_surface_cmd::Width::MakeValue(_width) |
-        create_render_surface_cmd::Height::MakeValue(_height);
-    fixme2 =
-        create_render_surface_cmd::Levels::MakeValue(_level) |
-        create_render_surface_cmd::Side::MakeValue(_side);
+    width_height = Width::MakeValue(_width) | Height::MakeValue(_height);
+    levels_side = Levels::MakeValue(_level) | Side::MakeValue(_side);
     texture_id = _texture_id;
   }
 
-  static void* Set(void* cmd, uint32 id, uint32 texture_id,
+  static void* Set(void* cmd,
+                   ResourceId render_surface_id, ResourceId texture_id,
                    uint32 width, uint32 height,
                    uint32 level, uint32 side) {
-    static_cast<ValueType*>(cmd)->Init(id, texture_id, width, height,
+    static_cast<ValueType*>(cmd)->Init(render_surface_id, texture_id,
+                                       width, height,
                                        level, side);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   // TODO(gman): fix this to not use obfusticated fields.
   CommandHeader header;
-  uint32 id;
-  uint32 fixme1;
-  uint32 fixme2;
-  uint32 texture_id;
+  ResourceId render_surface_id;
+  uint32 width_height;
+  uint32 levels_side;
+  ResourceId texture_id;
 };
 
 COMPILE_ASSERT(sizeof(CreateRenderSurface) == 20,
                Sizeof_CreateRenderSurface_is_not_20);
 COMPILE_ASSERT(offsetof(CreateRenderSurface, header) == 0,
                OffsetOf_CreateRenderSurface_header_not_0);
-COMPILE_ASSERT(offsetof(CreateRenderSurface, id) == 4,
-               OffsetOf_CreateRenderSurface_id_not_4);
-COMPILE_ASSERT(offsetof(CreateRenderSurface, fixme1) == 8,
-               OffsetOf_CreateRenderSurface_fixme1_not_8);
-COMPILE_ASSERT(offsetof(CreateRenderSurface, fixme2) == 12,
-               OffsetOf_CreateRenderSurface_fixme2_not_12);
+COMPILE_ASSERT(offsetof(CreateRenderSurface, render_surface_id) == 4,
+               OffsetOf_CreateRenderSurface_render_surface_id_not_4);
+COMPILE_ASSERT(offsetof(CreateRenderSurface, width_height) == 8,
+               OffsetOf_CreateRenderSurface_width_height_not_8);
+COMPILE_ASSERT(offsetof(CreateRenderSurface, levels_side) == 12,
+               OffsetOf_CreateRenderSurface_levels_side_not_12);
 COMPILE_ASSERT(offsetof(CreateRenderSurface, texture_id) == 16,
                OffsetOf_CreateRenderSurface_texture_id_not_16);
 
@@ -3139,63 +3161,66 @@ struct DestroyRenderSurface {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id) {
+  void Init(ResourceId _render_surface_id) {
     SetHeader();
-    id = _id;
+    render_surface_id = _render_surface_id;
   }
 
-  static void* Set(void* cmd, uint32 id) {
-    static_cast<ValueType*>(cmd)->Init(id);
+  static void* Set(void* cmd, ResourceId render_surface_id) {
+    static_cast<ValueType*>(cmd)->Init(render_surface_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId render_surface_id;
 };
 
 COMPILE_ASSERT(sizeof(DestroyRenderSurface) == 8,
                Sizeof_DestroyRenderSurface_is_not_8);
 COMPILE_ASSERT(offsetof(DestroyRenderSurface, header) == 0,
                OffsetOf_DestroyRenderSurface_header_not_0);
-COMPILE_ASSERT(offsetof(DestroyRenderSurface, id) == 4,
-               OffsetOf_DestroyRenderSurface_id_not_4);
+COMPILE_ASSERT(offsetof(DestroyRenderSurface, render_surface_id) == 4,
+               OffsetOf_DestroyRenderSurface_render_surface_id_not_4);
 
 struct CreateDepthSurface {
   typedef CreateDepthSurface ValueType;
   static const CommandId kCmdId = command_buffer::kCreateDepthSurface;
   static const ArgFlags kArgFlags = kFixed;
 
+  // argument 1
+  typedef BitField<0, 16> Width;
+  typedef BitField<16, 16> Height;
+
   void SetHeader() {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id, uint32 _width, uint32 _height) {
+  void Init(ResourceId _depth_surface_id, uint32 _width, uint32 _height) {
     SetHeader();
-    id = _id;
-    fixme1 =
-        create_depth_surface_cmd::Width::MakeValue(_width) |
-        create_depth_surface_cmd::Height::MakeValue(_height);
+    depth_surface_id = _depth_surface_id;
+    width_height = Width::MakeValue(_width) | Height::MakeValue(_height);
   }
 
-  static void* Set(void* cmd, uint32 id, uint32 width, uint32 height) {
-    static_cast<ValueType*>(cmd)->Init(id, width, height);
+  static void* Set(void* cmd, ResourceId depth_surface_id,
+                   uint32 width, uint32 height) {
+    static_cast<ValueType*>(cmd)->Init(depth_surface_id, width, height);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   // TODO(gman): fix this to not use obfusticated fields.
   CommandHeader header;
-  uint32 id;
-  uint32 fixme1;
+  ResourceId depth_surface_id;
+  uint32 width_height;
 };
 
 COMPILE_ASSERT(sizeof(CreateDepthSurface) == 12,
                Sizeof_CreateDepthSurface_is_not_12);
 COMPILE_ASSERT(offsetof(CreateDepthSurface, header) == 0,
                OffsetOf_CreateDepthSurface_header_not_0);
-COMPILE_ASSERT(offsetof(CreateDepthSurface, id) == 4,
-               OffsetOf_CreateDepthSurface_id_not_4);
-COMPILE_ASSERT(offsetof(CreateDepthSurface, fixme1) == 8,
-               OffsetOf_CreateDepthSurface_fixme1_not_8);
+COMPILE_ASSERT(offsetof(CreateDepthSurface, depth_surface_id) == 4,
+               OffsetOf_CreateDepthSurface_depth_surface_id_not_4);
+COMPILE_ASSERT(offsetof(CreateDepthSurface, width_height) == 8,
+               OffsetOf_CreateDepthSurface_width_height_not_8);
 
 struct DestroyDepthSurface {
   typedef DestroyDepthSurface ValueType;
@@ -3206,26 +3231,26 @@ struct DestroyDepthSurface {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _id) {
+  void Init(ResourceId _depth_surface_id) {
     SetHeader();
-    id = _id;
+    depth_surface_id = _depth_surface_id;
   }
 
-  static void* Set(void* cmd, uint32 id) {
-    static_cast<ValueType*>(cmd)->Init(id);
+  static void* Set(void* cmd, ResourceId depth_surface_id) {
+    static_cast<ValueType*>(cmd)->Init(depth_surface_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 id;
+  ResourceId depth_surface_id;
 };
 
 COMPILE_ASSERT(sizeof(DestroyDepthSurface) == 8,
                Sizeof_DestroyDepthSurface_is_not_8);
 COMPILE_ASSERT(offsetof(DestroyDepthSurface, header) == 0,
                OffsetOf_DestroyDepthSurface_header_not_0);
-COMPILE_ASSERT(offsetof(DestroyDepthSurface, id) == 4,
-               OffsetOf_DestroyDepthSurface_id_not_4);
+COMPILE_ASSERT(offsetof(DestroyDepthSurface, depth_surface_id) == 4,
+               OffsetOf_DestroyDepthdepth_surface_id_not_4);
 
 struct SetRenderSurface {
   typedef SetRenderSurface ValueType;
@@ -3236,21 +3261,21 @@ struct SetRenderSurface {
     header.SetCmd<ValueType>();
   }
 
-  void Init(uint32 _render_surface_id, uint32 _depth_surface_id) {
+  void Init(ResourceId _render_surface_id, ResourceId _depth_surface_id) {
     SetHeader();
     render_surface_id = _render_surface_id;
     depth_surface_id = _depth_surface_id;
   }
 
   static void* Set(void* cmd,
-                   uint32 render_surface_id, uint32 depth_surface_id) {
+                   ResourceId render_surface_id, ResourceId depth_surface_id) {
     static_cast<ValueType*>(cmd)->Init(render_surface_id, depth_surface_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   CommandHeader header;
-  uint32 render_surface_id;
-  uint32 depth_surface_id;
+  ResourceId render_surface_id;
+  ResourceId depth_surface_id;
 };
 
 COMPILE_ASSERT(sizeof(SetRenderSurface) == 12,

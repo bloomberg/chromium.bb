@@ -47,7 +47,7 @@ namespace o3d {
 using command_buffer::BufferSyncInterface;
 using command_buffer::CommandBufferEntry;
 using command_buffer::CommandBufferHelper;
-using command_buffer::ResourceID;
+using command_buffer::ResourceId;
 namespace effect_param = command_buffer::effect_param;
 namespace vertex_struct = command_buffer::vertex_struct;
 
@@ -89,7 +89,7 @@ bool EffectCB::LoadFromFXString(const String& source) {
   memcpy(buffer_data + vp_main.size() + 1 + fp_main.size() + 1,
          source.data(), source.size());
 
-  ResourceID resource_id = renderer_->effect_ids().AllocateID();
+  ResourceId resource_id = renderer_->effect_ids().AllocateID();
 
   CommandBufferHelper *helper = renderer_->helper();
   helper->CreateEffect(
@@ -154,21 +154,21 @@ void EffectCB::Destroy() {
 static const ObjectBase::Class* CBTypeToParamType(
     effect_param::DataType type) {
   switch (type) {
-    case effect_param::FLOAT1:
+    case effect_param::kFloat1:
       return ParamFloat::GetApparentClass();
-    case effect_param::FLOAT2:
+    case effect_param::kFloat2:
       return ParamFloat2::GetApparentClass();
-    case effect_param::FLOAT3:
+    case effect_param::kFloat3:
       return ParamFloat3::GetApparentClass();
-    case effect_param::FLOAT4:
+    case effect_param::kFloat4:
       return ParamFloat4::GetApparentClass();
-    case effect_param::INT:
+    case effect_param::kInt:
       return ParamInteger::GetApparentClass();
-    case effect_param::MATRIX4:
+    case effect_param::kMatrix4:
       return ParamMatrix4::GetApparentClass();
-    case effect_param::SAMPLER:
+    case effect_param::kSampler:
       return ParamSampler::GetApparentClass();
-    case effect_param::TEXTURE:
+    case effect_param::kTexture:
       return ParamTexture::GetApparentClass();
     default : {
       DLOG(ERROR) << "Cannot convert command buffer type "
@@ -209,22 +209,22 @@ static bool CBSemanticToO3DSemantic(
     Stream::Semantic *out_semantic,
     unsigned int *out_semantic_index) {
   switch (semantic) {
-    case vertex_struct::POSITION:
+    case vertex_struct::kPosition:
       if (semantic_index != 0) return false;
       *out_semantic = Stream::POSITION;
       *out_semantic_index = 0;
       return true;
-    case vertex_struct::NORMAL:
+    case vertex_struct::kNormal:
       if (semantic_index != 0) return false;
       *out_semantic = Stream::NORMAL;
       *out_semantic_index = 0;
       return true;
-    case vertex_struct::COLOR:
+    case vertex_struct::kColor:
       if (semantic_index > 1) return false;
       *out_semantic = Stream::COLOR;
       *out_semantic_index = semantic_index;
       return true;
-    case vertex_struct::TEX_COORD:
+    case vertex_struct::kTexCoord:
       if (semantic_index == 6) {
         *out_semantic = Stream::TANGENT;
         *out_semantic_index = 0;

@@ -112,12 +112,12 @@ void BigTestClient(nacl::HtpHandle handle) {
 
     // Clear the buffers.
     RGBA color = {0.2f, 0.2f, 0.2f, 1.f};
-    cmd_buffer.Clear(GAPIInterface::COLOR | GAPIInterface::DEPTH,
+    cmd_buffer.Clear(command_buffer::kColor | command_buffer::kDepth,
                      color.red, color.green, color.blue, color.alpha,
                      1.f, 0);
 
-    const ResourceID vertex_buffer_id = 1;
-    const ResourceID vertex_struct_id = 1;
+    const ResourceId vertex_buffer_id = 1;
+    const ResourceId vertex_struct_id = 1;
 
     static const CustomVertex vertices[4] = {
       {-.5f, -.5f, 0.f, 1.f,  0, 0},
@@ -125,7 +125,8 @@ void BigTestClient(nacl::HtpHandle handle) {
       {-.5f,  .5f, 0.f, 1.f,  0, 1},
       {.5f,   .5f, 0.f, 1.f,  1, 1},
     };
-    cmd_buffer.CreateVertexBuffer(vertex_buffer_id, sizeof(vertices), 0);
+    cmd_buffer.CreateVertexBuffer(vertex_buffer_id, sizeof(vertices),
+                                  vertex_buffer::kNone);
 
     memcpy(shm_address, vertices, sizeof(vertices));
     cmd_buffer.SetVertexBufferData(
@@ -136,25 +137,25 @@ void BigTestClient(nacl::HtpHandle handle) {
 
     // Set POSITION input stream
     cmd_buffer.SetVertexInput(vertex_struct_id, 0, vertex_buffer_id, 0,
-                              vertex_struct::POSITION, 0,
-                              vertex_struct::FLOAT4, sizeof(CustomVertex));
+                              vertex_struct::kPosition, 0,
+                              vertex_struct::kFloat4, sizeof(CustomVertex));
 
     // Set TEXCOORD0 input stream
     cmd_buffer.SetVertexInput(vertex_struct_id, 1, vertex_buffer_id, 16,
-                              vertex_struct::TEX_COORD, 0,
-                              vertex_struct::FLOAT2, sizeof(CustomVertex));
+                              vertex_struct::kTexCoord, 0,
+                              vertex_struct::kFloat2, sizeof(CustomVertex));
 
     // wait for previous transfer to be executed, so that we can re-use the
     // transfer shared memory buffer.
     cmd_buffer.WaitForToken(token);
     memcpy(shm_address, effect_data, sizeof(effect_data));
-    const ResourceID effect_id = 1;
+    const ResourceId effect_id = 1;
     cmd_buffer.CreateEffect(effect_id, sizeof(effect_data), shm_id, 0);
     token = cmd_buffer.InsertToken();
 
     // Create a 4x4 2D texture.
-    const ResourceID texture_id = 1;
-    cmd_buffer.CreateTexture2d(texture_id, 4, 4, 1, texture::ARGB8, 0);
+    const ResourceId texture_id = 1;
+    cmd_buffer.CreateTexture2d(texture_id, 4, 4, 1, texture::kARGB8, 0);
 
     static const unsigned int texels[4] = {
       0xff0000ff,
@@ -169,7 +170,8 @@ void BigTestClient(nacl::HtpHandle handle) {
     // Creates a 4x4 texture by uploading 2x2 data in each quadrant.
     for (unsigned int x = 0; x < 2; ++x)
       for (unsigned int y = 0; y < 2; ++y) {
-        cmd_buffer.SetTextureData(texture_id, x * 2, y * 2, 0, 2, 2, 1, 0, 0,
+        cmd_buffer.SetTextureData(texture_id, x * 2, y * 2, 0, 2, 2, 1, 0,
+                                  texture::kFaceNone,
                                   sizeof(texels[0]) * 2,  // row_pitch
                                   0,  // slice_pitch
                                   sizeof(texels),  // size
@@ -178,27 +180,27 @@ void BigTestClient(nacl::HtpHandle handle) {
       }
     token = cmd_buffer.InsertToken();
 
-    const ResourceID sampler_id = 1;
+    const ResourceId sampler_id = 1;
     cmd_buffer.CreateSampler(sampler_id);
     cmd_buffer.SetSamplerTexture(sampler_id, texture_id);
     cmd_buffer.SetSamplerStates(sampler_id,
-                                sampler::CLAMP_TO_EDGE,
-                                sampler::CLAMP_TO_EDGE,
-                                sampler::CLAMP_TO_EDGE,
-                                sampler::POINT,
-                                sampler::POINT,
-                                sampler::NONE,
+                                sampler::kClampToEdge,
+                                sampler::kClampToEdge,
+                                sampler::kClampToEdge,
+                                sampler::kPoint,
+                                sampler::kPoint,
+                                sampler::kNone,
                                 1);
 
     // Create a parameter for the sampler.
-    const ResourceID sampler_param_id = 1;
+    const ResourceId sampler_param_id = 1;
     {
       static const char param_name[] = "s0";
       cmd_buffer.CreateParamByNameImmediate(sampler_param_id, effect_id,
                                             sizeof(param_name), param_name);
     }
 
-    const ResourceID matrix_param_id = 2;
+    const ResourceId matrix_param_id = 2;
     {
       static const char param_name[] = "worldViewProj";
       cmd_buffer.CreateParamByNameImmediate(matrix_param_id, effect_id,
@@ -213,7 +215,7 @@ void BigTestClient(nacl::HtpHandle handle) {
       m *= math::Matrix4::rotationY(t * 2 * 3.1415926f);
       cmd_buffer.BeginFrame();
       // Clear the background with an animated color (black to red).
-      cmd_buffer.Clear(GAPIInterface::COLOR | GAPIInterface::DEPTH,
+      cmd_buffer.Clear(command_buffer::kColor | command_buffer::kDepth,
                        color.red, color.green, color.blue, color.alpha,
                        1.f, 0);
 
@@ -223,7 +225,7 @@ void BigTestClient(nacl::HtpHandle handle) {
           sampler_param_id, sizeof(uint32), &sampler_id);  // NOLINT
       cmd_buffer.SetParamDataImmediate(
           matrix_param_id, sizeof(m), &m);
-      cmd_buffer.Draw(GAPIInterface::TRIANGLE_STRIPS, 0, 2);
+      cmd_buffer.Draw(command_buffer::kTriangleStrips, 0, 2);
 
       cmd_buffer.EndFrame();
       cmd_buffer.Flush();

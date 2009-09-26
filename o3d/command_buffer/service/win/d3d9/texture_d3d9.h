@@ -100,7 +100,7 @@ class Texture2DD3D9 : public TextureD3D9 {
                 IDirect3DTexture9 *texture,
                 IDirect3DTexture9 *shadow,
                 bool enable_render_surfaces)
-      : TextureD3D9(texture::TEXTURE_2D, levels, format,
+      : TextureD3D9(texture::kTexture2d, levels, format,
                     enable_render_surfaces, flags),
         width_(width),
         height_(height),
@@ -164,7 +164,7 @@ class Texture3DD3D9 : public TextureD3D9 {
                 IDirect3DVolumeTexture9 *texture,
                 IDirect3DVolumeTexture9 *shadow,
                 bool enable_render_surfaces)
-      : TextureD3D9(texture::TEXTURE_2D, levels, format,
+      : TextureD3D9(texture::kTexture3d, levels, format,
                     enable_render_surfaces, flags),
         width_(width),
         height_(height),
@@ -228,7 +228,7 @@ class TextureCubeD3D9 : public TextureD3D9 {
                   IDirect3DCubeTexture9 *texture,
                   IDirect3DCubeTexture9 *shadow,
                   bool enable_render_surfaces)
-      : TextureD3D9(texture::TEXTURE_CUBE, levels, format,
+      : TextureD3D9(texture::kTextureCube, levels, format,
                     enable_render_surfaces, flags),
         side_(side),
         d3d_texture_(texture),

@@ -43,8 +43,7 @@ namespace o3d {
 
 using command_buffer::CommandBufferEntry;
 using command_buffer::CommandBufferHelper;
-using command_buffer::ResourceID;
-namespace set_sampler_states = command_buffer::set_sampler_states;
+using command_buffer::ResourceId;
 namespace sampler = command_buffer::sampler;
 
 namespace {
@@ -52,30 +51,30 @@ namespace {
 sampler::AddressingMode AddressModeToCB(Sampler::AddressMode o3d_mode) {
   switch (o3d_mode) {
     case Sampler::WRAP:
-      return sampler::WRAP;
+      return sampler::kWrap;
     case Sampler::MIRROR:
-      return sampler::MIRROR_REPEAT;
+      return sampler::kMirrorRepeat;
     case Sampler::CLAMP:
-      return sampler::CLAMP_TO_EDGE;
+      return sampler::kClampToEdge;
     case Sampler::BORDER:
-      return sampler::CLAMP_TO_BORDER;
+      return sampler::kClampToBorder;
     default:
       DLOG(ERROR) << "Unknown Address mode " << static_cast<int>(o3d_mode);
-      return sampler::WRAP;
+      return sampler::kWrap;
   }
 }
 
 sampler::FilteringMode FilterTypeToCB(Sampler::FilterType o3d_mode) {
   switch (o3d_mode) {
     case Sampler::NONE:
-      return sampler::NONE;
+      return sampler::kNone;
     case Sampler::POINT:
-      return sampler::POINT;
+      return sampler::kPoint;
     case Sampler::LINEAR:
     case Sampler::ANISOTROPIC:
-      return sampler::LINEAR;
+      return sampler::kLinear;
     default:
-      return sampler::NONE;
+      return sampler::kNone;
   }
 }
 
@@ -102,9 +101,10 @@ void SamplerCB::SetTextureAndStates() {
   sampler::FilteringMode mag_filter_cb = FilterTypeToCB(mag_filter());
   sampler::FilteringMode min_filter_cb = FilterTypeToCB(min_filter());
   sampler::FilteringMode mip_filter_cb = FilterTypeToCB(mip_filter());
-  if (mag_filter_cb == sampler::NONE) mag_filter_cb = sampler::POINT;
-  if (min_filter_cb == sampler::NONE) min_filter_cb = sampler::POINT;
-  int max_max_anisotropy = set_sampler_states::MaxAnisotropy::kMask;
+  if (mag_filter_cb == sampler::kNone) mag_filter_cb = sampler::kPoint;
+  if (min_filter_cb == sampler::kNone) min_filter_cb = sampler::kPoint;
+  int max_max_anisotropy =
+      command_buffer::cmd::SetSamplerStates::MaxAnisotropy::kMask;
   unsigned int max_anisotropy_cb =
       std::max(1, std::min(max_max_anisotropy, max_anisotropy()));
   if (min_filter() != Sampler::ANISOTROPIC) {
@@ -122,7 +122,7 @@ void SamplerCB::SetTextureAndStates() {
 
   Float4 color = border_color();
   helper->SetSamplerBorderColor(resource_id_,
-                                   color[0], color[1], color[2], color[3]);
+                                color[0], color[1], color[2], color[3]);
 
   Texture *texture_object = texture();
   if (!texture_object) {

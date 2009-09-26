@@ -62,34 +62,34 @@ static effect_param::DataType CgTypeToCBType(CGtype cg_type) {
   switch (cg_type) {
     case CG_FLOAT:
     case CG_FLOAT1:
-      return effect_param::FLOAT1;
+      return effect_param::kFloat1;
     case CG_FLOAT2:
-      return effect_param::FLOAT2;
+      return effect_param::kFloat2;
     case CG_FLOAT3:
-      return effect_param::FLOAT3;
+      return effect_param::kFloat3;
     case CG_FLOAT4:
-      return effect_param::FLOAT4;
+      return effect_param::kFloat4;
     case CG_INT:
     case CG_INT1:
-      return effect_param::INT;
+      return effect_param::kInt;
     case CG_BOOL:
     case CG_BOOL1:
-      return effect_param::BOOL;
+      return effect_param::kBool;
     case CG_FLOAT4x4:
-      return effect_param::MATRIX4;
+      return effect_param::kMatrix4;
     case CG_SAMPLER:
     case CG_SAMPLER1D:
     case CG_SAMPLER2D:
     case CG_SAMPLER3D:
     case CG_SAMPLERCUBE:
-      return effect_param::SAMPLER;
+      return effect_param::kSampler;
     case CG_TEXTURE:
-      return effect_param::TEXTURE;
+      return effect_param::kTexture;
     default : {
       DLOG(INFO) << "Cannot convert CGtype "
                  << cgGetTypeString(cg_type)
                  << " to a Param type.";
-      return effect_param::UNKNOWN;
+      return effect_param::kUnknown;
     }
   }
 }
@@ -106,7 +106,7 @@ EffectParamGL *EffectParamGL::Create(EffectGL *effect,
   }
   effect_param::DataType type = CgTypeToCBType(cg_type);
 
-  if (type == effect_param::UNKNOWN)
+  if (type == effect_param::kUnknown)
     return NULL;
   return new EffectParamGL(type, effect, index);
 }
@@ -177,49 +177,49 @@ bool EffectParamGL::SetData(GAPIGL *gapi,
     return false;
 
   switch (type) {
-    case effect_param::FLOAT1:
+    case effect_param::kFloat1:
       if (vp_param)
         cgSetParameter1f(vp_param, *static_cast<const float *>(data));
       if (fp_param)
         cgSetParameter1f(fp_param, *static_cast<const float *>(data));
       break;
-    case effect_param::FLOAT2:
+    case effect_param::kFloat2:
       if (vp_param)
         cgSetParameter2fv(vp_param, static_cast<const float *>(data));
       if (fp_param)
         cgSetParameter2fv(fp_param, static_cast<const float *>(data));
       break;
-    case effect_param::FLOAT3:
+    case effect_param::kFloat3:
       if (vp_param)
         cgSetParameter3fv(vp_param, static_cast<const float *>(data));
       if (fp_param)
         cgSetParameter3fv(fp_param, static_cast<const float *>(data));
       break;
-    case effect_param::FLOAT4:
+    case effect_param::kFloat4:
       if (vp_param)
         cgSetParameter4fv(vp_param, static_cast<const float *>(data));
       if (fp_param)
         cgSetParameter4fv(fp_param, static_cast<const float *>(data));
       break;
-    case effect_param::MATRIX4:
+    case effect_param::kMatrix4:
       if (vp_param)
         cgSetMatrixParameterfr(vp_param, static_cast<const float *>(data));
       if (fp_param)
         cgSetMatrixParameterfr(fp_param, static_cast<const float *>(data));
       break;
-    case effect_param::INT:
+    case effect_param::kInt:
       if (vp_param) cgSetParameter1i(vp_param, *static_cast<const int *>(data));
       if (fp_param) cgSetParameter1i(fp_param, *static_cast<const int *>(data));
       break;
-    case effect_param::BOOL: {
+    case effect_param::kBool: {
       int bool_value = *static_cast<const bool *>(data)?1:0;
       if (vp_param) cgSetParameter1i(vp_param, bool_value);
       if (fp_param) cgSetParameter1i(fp_param, bool_value);
       break;
     }
-    case effect_param::SAMPLER: {
+    case effect_param::kSampler: {
       DCHECK_GE(low_level_param.sampler_ids.size(), 1U);
-      low_level_param.sampler_ids[0] = *static_cast<const ResourceID *>(data);
+      low_level_param.sampler_ids[0] = *static_cast<const ResourceId *>(data);
       if (effect_ == gapi->current_effect()) {
         gapi->DirtyEffect();
       }
@@ -470,7 +470,7 @@ void EffectGL::AddLowLevelParams(CGprogram prog, CGenum name_space, bool vp) {
           param.sampler_ids.push_back(kInvalidResource);
         } else {
           param.sampler_ids.resize(num_elements);
-          std::vector<ResourceID>::iterator iter;
+          std::vector<ResourceId>::iterator iter;
           for (iter = param.sampler_ids.begin();
                iter != param.sampler_ids.end();
                ++iter) {
@@ -494,81 +494,82 @@ typedef std::map<String, effect_stream::Desc> SemanticMap;
 
 // The map batween the semantics on vertex program varying parameters names
 // and vertex attribute indices under the VP_30 profile.
+// TODO(gman): remove this.
 SemanticMapElement semantic_map_array[] = {
   SemanticMapElement("POSITION",
-      effect_stream::Desc(vertex_struct::POSITION, 0)),
+      effect_stream::Desc(vertex_struct::kPosition, 0)),
   SemanticMapElement("ATTR0",
-      effect_stream::Desc(vertex_struct::POSITION, 0)),
+      effect_stream::Desc(vertex_struct::kPosition, 0)),
   SemanticMapElement("BLENDWEIGHT",
-      effect_stream::Desc(vertex_struct::UNKNOWN_SEMANTIC, 0)),
+      effect_stream::Desc(vertex_struct::kUnknownSemantic, 0)),
   SemanticMapElement("ATTR1",
-      effect_stream::Desc(vertex_struct::UNKNOWN_SEMANTIC, 0)),
+      effect_stream::Desc(vertex_struct::kUnknownSemantic, 0)),
   SemanticMapElement("NORMAL",
-      effect_stream::Desc(vertex_struct::NORMAL, 0)),
+      effect_stream::Desc(vertex_struct::kNormal, 0)),
   SemanticMapElement("ATTR2",
-      effect_stream::Desc(vertex_struct::NORMAL, 0)),
+      effect_stream::Desc(vertex_struct::kNormal, 0)),
   SemanticMapElement("COLOR0",
-      effect_stream::Desc(vertex_struct::COLOR, 0)),
+      effect_stream::Desc(vertex_struct::kColor, 0)),
   SemanticMapElement("DIFFUSE",
-      effect_stream::Desc(vertex_struct::COLOR, 0)),
+      effect_stream::Desc(vertex_struct::kColor, 0)),
   SemanticMapElement("ATTR3",
-      effect_stream::Desc(vertex_struct::COLOR, 0)),
+      effect_stream::Desc(vertex_struct::kColor, 0)),
   SemanticMapElement("COLOR1",
-      effect_stream::Desc(vertex_struct::COLOR, 1)),
+      effect_stream::Desc(vertex_struct::kColor, 1)),
   SemanticMapElement("SPECULAR",
-      effect_stream::Desc(vertex_struct::COLOR, 1)),
+      effect_stream::Desc(vertex_struct::kColor, 1)),
   SemanticMapElement("ATTR4",
-      effect_stream::Desc(vertex_struct::COLOR, 1)),
+      effect_stream::Desc(vertex_struct::kColor, 1)),
   SemanticMapElement("TESSFACTOR",
-      effect_stream::Desc(vertex_struct::UNKNOWN_SEMANTIC, 0)),
+      effect_stream::Desc(vertex_struct::kUnknownSemantic, 0)),
   SemanticMapElement("FOGCOORD",
-      effect_stream::Desc(vertex_struct::UNKNOWN_SEMANTIC, 0)),
+      effect_stream::Desc(vertex_struct::kUnknownSemantic, 0)),
   SemanticMapElement("ATTR5",
-      effect_stream::Desc(vertex_struct::UNKNOWN_SEMANTIC, 0)),
+      effect_stream::Desc(vertex_struct::kUnknownSemantic, 0)),
   SemanticMapElement("PSIZE",
-      effect_stream::Desc(vertex_struct::UNKNOWN_SEMANTIC, 0)),
+      effect_stream::Desc(vertex_struct::kUnknownSemantic, 0)),
   SemanticMapElement("ATTR6",
-      effect_stream::Desc(vertex_struct::UNKNOWN_SEMANTIC, 0)),
+      effect_stream::Desc(vertex_struct::kUnknownSemantic, 0)),
   SemanticMapElement("BLENDINDICES",
-      effect_stream::Desc(vertex_struct::UNKNOWN_SEMANTIC, 0)),
+      effect_stream::Desc(vertex_struct::kUnknownSemantic, 0)),
   SemanticMapElement("ATTR7",
-      effect_stream::Desc(vertex_struct::UNKNOWN_SEMANTIC, 0)),
+      effect_stream::Desc(vertex_struct::kUnknownSemantic, 0)),
   SemanticMapElement("TEXCOORD0",
-      effect_stream::Desc(vertex_struct::TEX_COORD, 0)),
+      effect_stream::Desc(vertex_struct::kTexCoord, 0)),
   SemanticMapElement("ATTR8",
-      effect_stream::Desc(vertex_struct::TEX_COORD, 0)),
+      effect_stream::Desc(vertex_struct::kTexCoord, 0)),
   SemanticMapElement("TEXCOORD1",
-      effect_stream::Desc(vertex_struct::TEX_COORD, 1)),
+      effect_stream::Desc(vertex_struct::kTexCoord, 1)),
   SemanticMapElement("ATTR9",
-      effect_stream::Desc(vertex_struct::TEX_COORD, 1)),
+      effect_stream::Desc(vertex_struct::kTexCoord, 1)),
   SemanticMapElement("TEXCOORD2",
-      effect_stream::Desc(vertex_struct::TEX_COORD, 2)),
+      effect_stream::Desc(vertex_struct::kTexCoord, 2)),
   SemanticMapElement("ATTR10",
-      effect_stream::Desc(vertex_struct::TEX_COORD, 2)),
+      effect_stream::Desc(vertex_struct::kTexCoord, 2)),
   SemanticMapElement("TEXCOORD3",
-      effect_stream::Desc(vertex_struct::TEX_COORD, 3)),
+      effect_stream::Desc(vertex_struct::kTexCoord, 3)),
   SemanticMapElement("ATTR11",
-      effect_stream::Desc(vertex_struct::TEX_COORD, 3)),
+      effect_stream::Desc(vertex_struct::kTexCoord, 3)),
   SemanticMapElement("TEXCOORD4",
-      effect_stream::Desc(vertex_struct::TEX_COORD, 4)),
+      effect_stream::Desc(vertex_struct::kTexCoord, 4)),
   SemanticMapElement("ATTR12",
-      effect_stream::Desc(vertex_struct::TEX_COORD, 4)),
+      effect_stream::Desc(vertex_struct::kTexCoord, 4)),
   SemanticMapElement("TEXCOORD5",
-      effect_stream::Desc(vertex_struct::TEX_COORD, 5)),
+      effect_stream::Desc(vertex_struct::kTexCoord, 5)),
   SemanticMapElement("ATTR13",
-      effect_stream::Desc(vertex_struct::TEX_COORD, 5)),
+      effect_stream::Desc(vertex_struct::kTexCoord, 5)),
   SemanticMapElement("TEXCOORD6",
-      effect_stream::Desc(vertex_struct::TEX_COORD, 6)),
+      effect_stream::Desc(vertex_struct::kTexCoord, 6)),
   SemanticMapElement("TANGENT",
-      effect_stream::Desc(vertex_struct::TEX_COORD, 6)),
+      effect_stream::Desc(vertex_struct::kTexCoord, 6)),
   SemanticMapElement("ATTR14",
-      effect_stream::Desc(vertex_struct::TEX_COORD, 7)),
+      effect_stream::Desc(vertex_struct::kTexCoord, 7)),
   SemanticMapElement("TEXCOORD7",
-      effect_stream::Desc(vertex_struct::TEX_COORD, 7)),
+      effect_stream::Desc(vertex_struct::kTexCoord, 7)),
   SemanticMapElement("BINORMAL",
-      effect_stream::Desc(vertex_struct::TEX_COORD, 8)),
+      effect_stream::Desc(vertex_struct::kTexCoord, 8)),
   SemanticMapElement("ATTR15",
-      effect_stream::Desc(vertex_struct::TEX_COORD, 8))
+      effect_stream::Desc(vertex_struct::kTexCoord, 8))
 };
 
 static SemanticMap semantic_map(semantic_map_array,
@@ -604,7 +605,7 @@ void EffectGL::AddStreams(CGprogram prog, CGenum name_space) {
     SemanticMap::iterator iter = semantic_map.find(String(cg_semantic));
     if (iter == semantic_map.end()) {
       streams_.push_back(effect_stream::Desc(
-          vertex_struct::UNKNOWN_SEMANTIC, 0));
+          vertex_struct::kUnknownSemantic, 0));
     } else {
       streams_.push_back(iter->second);
     }
@@ -621,11 +622,11 @@ bool EffectGL::Begin(GAPIGL *gapi) {
   // First to set the sampler states on the texture
   for (unsigned int i = 0; i < sampler_params_.size(); ++i) {
     unsigned int param_index = sampler_params_[i];
-    std::vector<ResourceID> &ids = low_level_params_[param_index].sampler_ids;
-    for (std::vector<ResourceID>::iterator iter = ids.begin();
+    std::vector<ResourceId> &ids = low_level_params_[param_index].sampler_ids;
+    for (std::vector<ResourceId>::iterator iter = ids.begin();
          iter != ids.end();
          ++iter) {
-      ResourceID id = *iter;
+      ResourceId id = *iter;
       if (id != kInvalidResource) {
         SamplerGL *sampler = gapi->GetSampler(id);
         if (!sampler->ApplyStates(gapi)) {
@@ -638,15 +639,15 @@ bool EffectGL::Begin(GAPIGL *gapi) {
   for (unsigned int i = 0; i < sampler_params_.size(); ++i) {
     unsigned int param_index = sampler_params_[i];
     const LowLevelParam &ll_param = low_level_params_[param_index];
-    std::vector<ResourceID> &ids = low_level_params_[param_index].sampler_ids;
+    std::vector<ResourceId> &ids = low_level_params_[param_index].sampler_ids;
     // TODO(petersont): Rewrite the following so it handles arrays of samplers
     // instead of simply bailing.
     if (cgGetParameterType(ll_param.fp_param) == CG_ARRAY)
       return false;
-    for (std::vector<ResourceID>::iterator iter = ids.begin();
+    for (std::vector<ResourceId>::iterator iter = ids.begin();
          iter != ids.end();
          ++iter) {
-      ResourceID id = *iter;
+      ResourceId id = *iter;
       if (id != kInvalidResource) {
         SamplerGL *sampler = gapi->GetSampler(id);
         GLuint gl_texture = sampler->gl_texture();
@@ -705,7 +706,7 @@ EffectParamGL *EffectGL::CreateParamByName(const char *name) {
   return EffectParamGL::Create(this, index);
 }
 
-BufferSyncInterface::ParseError GAPIGL::CreateEffect(ResourceID id,
+BufferSyncInterface::ParseError GAPIGL::CreateEffect(ResourceId id,
                                                      unsigned int size,
                                                      const void *data) {
   if (id == current_effect_id_) DirtyEffect();
@@ -730,20 +731,20 @@ BufferSyncInterface::ParseError GAPIGL::CreateEffect(ResourceID id,
   return BufferSyncInterface::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPIGL::DestroyEffect(ResourceID id) {
+BufferSyncInterface::ParseError GAPIGL::DestroyEffect(ResourceId id) {
   if (id == current_effect_id_) DirtyEffect();
   return effects_.Destroy(id) ?
       BufferSyncInterface::kParseNoError :
       BufferSyncInterface::kParseInvalidArguments;
 }
 
-BufferSyncInterface::ParseError GAPIGL::SetEffect(ResourceID id) {
+BufferSyncInterface::ParseError GAPIGL::SetEffect(ResourceId id) {
   DirtyEffect();
   current_effect_id_ = id;
   return BufferSyncInterface::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPIGL::GetParamCount(ResourceID id,
+BufferSyncInterface::ParseError GAPIGL::GetParamCount(ResourceId id,
                                                       unsigned int size,
                                                       void *data) {
   EffectGL *effect = effects_.Get(id);
@@ -753,8 +754,8 @@ BufferSyncInterface::ParseError GAPIGL::GetParamCount(ResourceID id,
   return BufferSyncInterface::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPIGL::CreateParam(ResourceID param_id,
-                                                    ResourceID effect_id,
+BufferSyncInterface::ParseError GAPIGL::CreateParam(ResourceId param_id,
+                                                    ResourceId effect_id,
                                                     unsigned int index) {
   EffectGL *effect = effects_.Get(effect_id);
   if (!effect) return BufferSyncInterface::kParseInvalidArguments;
@@ -764,8 +765,8 @@ BufferSyncInterface::ParseError GAPIGL::CreateParam(ResourceID param_id,
   return BufferSyncInterface::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPIGL::CreateParamByName(ResourceID param_id,
-                                                          ResourceID effect_id,
+BufferSyncInterface::ParseError GAPIGL::CreateParamByName(ResourceId param_id,
+                                                          ResourceId effect_id,
                                                           unsigned int size,
                                                           const void *name) {
   EffectGL *effect = effects_.Get(effect_id);
@@ -777,13 +778,13 @@ BufferSyncInterface::ParseError GAPIGL::CreateParamByName(ResourceID param_id,
   return BufferSyncInterface::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPIGL::DestroyParam(ResourceID id) {
+BufferSyncInterface::ParseError GAPIGL::DestroyParam(ResourceId id) {
   return effect_params_.Destroy(id) ?
       BufferSyncInterface::kParseNoError :
       BufferSyncInterface::kParseInvalidArguments;
 }
 
-BufferSyncInterface::ParseError GAPIGL::SetParamData(ResourceID id,
+BufferSyncInterface::ParseError GAPIGL::SetParamData(ResourceId id,
                                                      unsigned int size,
                                                      const void *data) {
   EffectParamGL *param = effect_params_.Get(id);
@@ -793,7 +794,7 @@ BufferSyncInterface::ParseError GAPIGL::SetParamData(ResourceID id,
       BufferSyncInterface::kParseInvalidArguments;
 }
 
-BufferSyncInterface::ParseError GAPIGL::GetParamDesc(ResourceID id,
+BufferSyncInterface::ParseError GAPIGL::GetParamDesc(ResourceId id,
                                                      unsigned int size,
                                                      void *data) {
   EffectParamGL *param = effect_params_.Get(id);
@@ -804,7 +805,7 @@ BufferSyncInterface::ParseError GAPIGL::GetParamDesc(ResourceID id,
 }
 
 BufferSyncInterface::ParseError GAPIGL::GetStreamCount(
-    ResourceID id,
+    ResourceId id,
     unsigned int size,
     void *data) {
   EffectGL *effect = effects_.Get(id);
@@ -814,7 +815,7 @@ BufferSyncInterface::ParseError GAPIGL::GetStreamCount(
   return BufferSyncInterface::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPIGL::GetStreamDesc(ResourceID id,
+BufferSyncInterface::ParseError GAPIGL::GetStreamDesc(ResourceId id,
                                                       unsigned int index,
                                                       unsigned int size,
                                                       void *data) {

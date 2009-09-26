@@ -43,7 +43,7 @@
 namespace o3d {
 namespace command_buffer {
 
-bool EffectHelper::CreateEffectParameters(ResourceID effect_id,
+bool EffectHelper::CreateEffectParameters(ResourceId effect_id,
                                           std::vector<EffectParamDesc> *descs) {
   using effect_param::Desc;
   DCHECK_NE(effect_id, kInvalidResource);
@@ -197,7 +197,7 @@ void EffectHelper::DestroyEffectParameters(
   }
 }
 
-bool EffectHelper::GetEffectStreams(ResourceID effect_id,
+bool EffectHelper::GetEffectStreams(ResourceId effect_id,
                                     std::vector<EffectStreamDesc> *descs) {
   using effect_stream::Desc;
   DCHECK_NE(effect_id, kInvalidResource);

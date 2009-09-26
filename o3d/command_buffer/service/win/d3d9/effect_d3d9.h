@@ -127,7 +127,7 @@ class EffectD3D9 : public Effect {
   ParamList params_;
   StreamList streams_;
   bool sync_parameters_;
-  ResourceID samplers_[kMaxSamplerUnits];
+  ResourceId samplers_[kMaxSamplerUnits];
 
   friend class EffectParamD3D9;
   DISALLOW_COPY_AND_ASSIGN(EffectD3D9);

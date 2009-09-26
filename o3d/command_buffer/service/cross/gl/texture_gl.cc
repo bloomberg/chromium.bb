@@ -47,22 +47,22 @@ bool GetGLFormatType(texture::Format format,
                      GLenum *gl_format,
                      GLenum *gl_type) {
   switch (format) {
-    case texture::XRGB8:
+    case texture::kXRGB8:
       *internal_format = GL_RGB;
       *gl_format = GL_BGRA;
       *gl_type = GL_UNSIGNED_BYTE;
       return true;
-    case texture::ARGB8:
+    case texture::kARGB8:
       *internal_format = GL_RGBA;
       *gl_format = GL_BGRA;
       *gl_type = GL_UNSIGNED_BYTE;
       return true;
-    case texture::ABGR16F:
+    case texture::kABGR16F:
       *internal_format = GL_RGBA16F_ARB;
       *gl_format = GL_RGBA;
       *gl_type = GL_HALF_FLOAT_ARB;
       return true;
-    case texture::DXT1:
+    case texture::kDXT1:
       *internal_format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
       *gl_format = 0;
       *gl_type = 0;
@@ -520,17 +520,17 @@ TextureCubeGL *TextureCubeGL::Create(unsigned int side,
 }
 
 // Check that GL_TEXTURE_CUBE_MAP_POSITIVE_X + face yields the correct GLenum.
-COMPILE_ASSERT(GL_TEXTURE_CUBE_MAP_POSITIVE_X + texture::FACE_POSITIVE_X ==
+COMPILE_ASSERT(GL_TEXTURE_CUBE_MAP_POSITIVE_X + texture::kFacePositiveX ==
                GL_TEXTURE_CUBE_MAP_POSITIVE_X, POSITIVE_X_ENUMS_DO_NOT_MATCH);
-COMPILE_ASSERT(GL_TEXTURE_CUBE_MAP_POSITIVE_X + texture::FACE_NEGATIVE_X ==
+COMPILE_ASSERT(GL_TEXTURE_CUBE_MAP_POSITIVE_X + texture::kFaceNegativeX ==
                GL_TEXTURE_CUBE_MAP_NEGATIVE_X, NEGATIVE_X_ENUMS_DO_NOT_MATCH);
-COMPILE_ASSERT(GL_TEXTURE_CUBE_MAP_POSITIVE_X + texture::FACE_POSITIVE_Y ==
+COMPILE_ASSERT(GL_TEXTURE_CUBE_MAP_POSITIVE_X + texture::kFacePositiveY ==
                GL_TEXTURE_CUBE_MAP_POSITIVE_Y, POSITIVE_Y_ENUMS_DO_NOT_MATCH);
-COMPILE_ASSERT(GL_TEXTURE_CUBE_MAP_POSITIVE_X + texture::FACE_NEGATIVE_Y ==
+COMPILE_ASSERT(GL_TEXTURE_CUBE_MAP_POSITIVE_X + texture::kFaceNegativeY ==
                GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, NEGATIVE_Y_ENUMS_DO_NOT_MATCH);
-COMPILE_ASSERT(GL_TEXTURE_CUBE_MAP_POSITIVE_X + texture::FACE_POSITIVE_Z ==
+COMPILE_ASSERT(GL_TEXTURE_CUBE_MAP_POSITIVE_X + texture::kFacePositiveZ ==
                GL_TEXTURE_CUBE_MAP_POSITIVE_Z, POSITIVE_Z_ENUMS_DO_NOT_MATCH);
-COMPILE_ASSERT(GL_TEXTURE_CUBE_MAP_POSITIVE_X + texture::FACE_NEGATIVE_Z ==
+COMPILE_ASSERT(GL_TEXTURE_CUBE_MAP_POSITIVE_X + texture::kFaceNegativeZ ==
                GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, NEGATIVE_Z_ENUMS_DO_NOT_MATCH);
 
 bool TextureCubeGL::SetData(const Volume& volume,
@@ -627,7 +627,7 @@ bool TextureCubeGL::InstallFrameBufferObjects(
 // GAPIGL functions.
 
 // Destroys a texture resource.
-BufferSyncInterface::ParseError GAPIGL::DestroyTexture(ResourceID id) {
+BufferSyncInterface::ParseError GAPIGL::DestroyTexture(ResourceId id) {
   // Dirty effect, because this texture id may be used.
   DirtyEffect();
   return textures_.Destroy(id) ?
@@ -637,7 +637,7 @@ BufferSyncInterface::ParseError GAPIGL::DestroyTexture(ResourceID id) {
 
 // Creates a 2D texture resource.
 BufferSyncInterface::ParseError GAPIGL::CreateTexture2D(
-    ResourceID id,
+    ResourceId id,
     unsigned int width,
     unsigned int height,
     unsigned int levels,
@@ -655,7 +655,7 @@ BufferSyncInterface::ParseError GAPIGL::CreateTexture2D(
 
 // Creates a 3D texture resource.
 BufferSyncInterface::ParseError GAPIGL::CreateTexture3D(
-    ResourceID id,
+    ResourceId id,
     unsigned int width,
     unsigned int height,
     unsigned int depth,
@@ -674,7 +674,7 @@ BufferSyncInterface::ParseError GAPIGL::CreateTexture3D(
 
 // Creates a cube map texture resource.
 BufferSyncInterface::ParseError GAPIGL::CreateTextureCube(
-    ResourceID id,
+    ResourceId id,
     unsigned int side,
     unsigned int levels,
     texture::Format format,
@@ -691,7 +691,7 @@ BufferSyncInterface::ParseError GAPIGL::CreateTextureCube(
 
 // Copies the data into a texture resource.
 BufferSyncInterface::ParseError GAPIGL::SetTextureData(
-    ResourceID id,
+    ResourceId id,
     unsigned int x,
     unsigned int y,
     unsigned int z,
@@ -719,7 +719,7 @@ BufferSyncInterface::ParseError GAPIGL::SetTextureData(
 
 // Copies the data from a texture resource.
 BufferSyncInterface::ParseError GAPIGL::GetTextureData(
-    ResourceID id,
+    ResourceId id,
     unsigned int x,
     unsigned int y,
     unsigned int z,

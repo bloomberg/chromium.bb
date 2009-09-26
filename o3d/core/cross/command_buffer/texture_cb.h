@@ -81,7 +81,7 @@ class Texture2DCB : public Texture2D {
   }
 
   // Gets the texture resource ID.
-  command_buffer::ResourceID resource_id() const { return resource_id_; }
+  command_buffer::ResourceId resource_id() const { return resource_id_; }
 
   // Gets a RGBASwizzleIndices that contains a mapping from
   // RGBA to the internal format used by the rendering API.
@@ -103,7 +103,7 @@ class Texture2DCB : public Texture2D {
   // and raw Bitmap data.
   // The texture takes ownership of the bitmap data.
   Texture2DCB(ServiceLocator* service_locator,
-              command_buffer::ResourceID resource_id,
+              command_buffer::ResourceId resource_id,
               Texture::Format format,
               int levels,
               int width,
@@ -117,7 +117,7 @@ class Texture2DCB : public Texture2D {
   }
 
   RendererCB* renderer_;
-  command_buffer::ResourceID resource_id_;
+  command_buffer::ResourceId resource_id_;
 
   // A bitmap used to back the NPOT textures on POT-only hardware, and to back
   // the pixel buffer for Lock().
@@ -162,7 +162,7 @@ class TextureCUBECB : public TextureCUBE {
   }
 
   // Gets the texture resource ID.
-  command_buffer::ResourceID resource_id() const { return resource_id_; }
+  command_buffer::ResourceId resource_id() const { return resource_id_; }
 
   // Gets a RGBASwizzleIndices that contains a mapping from
   // RGBA to the internal format used by the rendering API.
@@ -183,7 +183,7 @@ class TextureCUBECB : public TextureCUBE {
  private:
   // Creates a texture from a pre-existing texture resource.
   TextureCUBECB(ServiceLocator* service_locator,
-                command_buffer::ResourceID texture,
+                command_buffer::ResourceId texture,
                 Texture::Format format,
                 int levels,
                 int edge_length,
@@ -197,7 +197,7 @@ class TextureCUBECB : public TextureCUBE {
   }
 
   RendererCB* renderer_;
-  command_buffer::ResourceID resource_id_;
+  command_buffer::ResourceId resource_id_;
 
   // Bitmaps used to back the NPOT textures on POT-only hardware.
   Bitmap::Ref backing_bitmaps_[NUMBER_OF_FACES];

@@ -206,48 +206,48 @@ static effect_param::DataType GetDataTypeFromD3D(
     case D3DXPT_FLOAT:
       switch (desc.Class) {
         case D3DXPC_SCALAR:
-          return effect_param::FLOAT1;
+          return effect_param::kFloat1;
         case D3DXPC_VECTOR:
           switch (desc.Columns) {
             case 2:
-              return effect_param::FLOAT2;
+              return effect_param::kFloat2;
             case 3:
-              return effect_param::FLOAT3;
+              return effect_param::kFloat3;
             case 4:
-              return effect_param::FLOAT4;
+              return effect_param::kFloat4;
             default:
-              return effect_param::UNKNOWN;
+              return effect_param::kUnknown;
           }
         case D3DXPC_MATRIX_ROWS:
         case D3DXPC_MATRIX_COLUMNS:
           if (desc.Columns == 4 && desc.Rows == 4) {
-            return effect_param::MATRIX4;
+            return effect_param::kMatrix4;
           } else {
-            return effect_param::UNKNOWN;
+            return effect_param::kUnknown;
           }
         default:
-          return effect_param::UNKNOWN;
+          return effect_param::kUnknown;
       }
     case D3DXPT_INT:
       if (desc.Class == D3DXPC_SCALAR) {
-        return effect_param::INT;
+        return effect_param::kInt;
       } else {
-        return effect_param::UNKNOWN;
+        return effect_param::kUnknown;
       }
     case D3DXPT_BOOL:
       if (desc.Class == D3DXPC_SCALAR) {
-        return effect_param::BOOL;
+        return effect_param::kBool;
       } else {
-        return effect_param::UNKNOWN;
+        return effect_param::kUnknown;
       }
     case D3DXPT_SAMPLER:
     case D3DXPT_SAMPLER2D:
     case D3DXPT_SAMPLER3D:
     case D3DXPT_SAMPLERCUBE:
       if (desc.Class == D3DXPC_OBJECT) {
-        return effect_param::SAMPLER;
+        return effect_param::kSampler;
       } else {
-        return effect_param::UNKNOWN;
+        return effect_param::kUnknown;
       }
     case D3DXPT_TEXTURE:
     case D3DXPT_TEXTURE1D:
@@ -255,12 +255,12 @@ static effect_param::DataType GetDataTypeFromD3D(
     case D3DXPT_TEXTURE3D:
     case D3DXPT_TEXTURECUBE:
       if (desc.Class == D3DXPC_OBJECT) {
-        return effect_param::TEXTURE;
+        return effect_param::kTexture;
       } else {
-        return effect_param::UNKNOWN;
+        return effect_param::kUnknown;
       }
     default:
-      return effect_param::UNKNOWN;
+      return effect_param::kUnknown;
   }
 }
 
@@ -381,7 +381,7 @@ EffectParamD3D9 *EffectParamD3D9::Create(EffectD3D9 *effect,
   HR(effect->d3d_effect_->GetParameterDesc(handle, &desc));
   effect_param::DataType data_type = GetDataTypeFromD3D(desc);
   EffectParamD3D9 *param = new EffectParamD3D9(data_type, effect, handle);
-  if (data_type == effect_param::SAMPLER) {
+  if (data_type == effect_param::kSampler) {
     ID3DXConstantTable *table = effect->fs_constant_table_;
     DCHECK(table);
     D3DXHANDLE sampler_handle = table->GetConstantByName(NULL, desc.Name);
@@ -472,39 +472,39 @@ bool EffectParamD3D9::SetData(GAPID3D9 *gapi,
   effect_param::DataType type = data_type();
   if (size < effect_param::GetDataSize(type)) return false;
   switch (type) {
-    case effect_param::FLOAT1:
+    case effect_param::kFloat1:
       HR(d3d_effect->SetFloat(handle_, *static_cast<const float *>(data)));
       break;
-    case effect_param::FLOAT2:
+    case effect_param::kFloat2:
       HR(d3d_effect->SetFloatArray(handle_, static_cast<const float *>(data),
                                    2));
       break;
-    case effect_param::FLOAT3:
+    case effect_param::kFloat3:
       HR(d3d_effect->SetFloatArray(handle_, static_cast<const float *>(data),
                                    3));
       break;
-    case effect_param::FLOAT4:
+    case effect_param::kFloat4:
       HR(d3d_effect->SetFloatArray(handle_, static_cast<const float *>(data),
                                    4));
       break;
-    case effect_param::MATRIX4:
+    case effect_param::kMatrix4:
       HR(d3d_effect->SetMatrix(handle_,
                                reinterpret_cast<const D3DXMATRIX *>(data)));
       break;
-    case effect_param::INT:
+    case effect_param::kInt:
       HR(d3d_effect->SetInt(handle_, *static_cast<const int *>(data)));
       break;
-    case effect_param::BOOL:
+    case effect_param::kBool:
       HR(d3d_effect->SetBool(handle_, *static_cast<const bool *>(data)?1:0));
       break;
-    case effect_param::SAMPLER: {
-      ResourceID id = *static_cast<const ResourceID *>(data);
+    case effect_param::kSampler: {
+      ResourceId id = *static_cast<const ResourceId *>(data);
       for (unsigned int i = 0; i < sampler_unit_count_; ++i) {
         effect_->samplers_[sampler_units_[i]] = id;
       }
       break;
     }
-    case effect_param::TEXTURE: {
+    case effect_param::kTexture: {
       // TODO(rlp): finish
       break;
     }
@@ -521,7 +521,7 @@ bool EffectParamD3D9::SetData(GAPID3D9 *gapi,
 // Calls EffectD3D9::Create, and assign the result to the resource ID.
 // If changing the current effect, dirty it.
 BufferSyncInterface::ParseError GAPID3D9::CreateEffect(
-    ResourceID id,
+    ResourceId id,
     unsigned int size,
     const void *data) {
   if (id == current_effect_id_) DirtyEffect();
@@ -548,7 +548,7 @@ BufferSyncInterface::ParseError GAPID3D9::CreateEffect(
 
 // Destroys the Effect resource.
 // If destroying the current effect, dirty it.
-BufferSyncInterface::ParseError GAPID3D9::DestroyEffect(ResourceID id) {
+BufferSyncInterface::ParseError GAPID3D9::DestroyEffect(ResourceId id) {
   if (id == current_effect_id_) DirtyEffect();
   return effects_.Destroy(id) ?
       BufferSyncInterface::kParseNoError :
@@ -556,7 +556,7 @@ BufferSyncInterface::ParseError GAPID3D9::DestroyEffect(ResourceID id) {
 }
 
 // Sets the current effect ID, dirtying the current effect.
-BufferSyncInterface::ParseError GAPID3D9::SetEffect(ResourceID id) {
+BufferSyncInterface::ParseError GAPID3D9::SetEffect(ResourceId id) {
   DirtyEffect();
   current_effect_id_ = id;
   return BufferSyncInterface::kParseNoError;
@@ -564,7 +564,7 @@ BufferSyncInterface::ParseError GAPID3D9::SetEffect(ResourceID id) {
 
 // Gets the param count from the effect and store it in the memory buffer.
 BufferSyncInterface::ParseError GAPID3D9::GetParamCount(
-    ResourceID id,
+    ResourceId id,
     unsigned int size,
     void *data) {
   EffectD3D9 *effect = effects_.Get(id);
@@ -575,8 +575,8 @@ BufferSyncInterface::ParseError GAPID3D9::GetParamCount(
 }
 
 BufferSyncInterface::ParseError GAPID3D9::CreateParam(
-    ResourceID param_id,
-    ResourceID effect_id,
+    ResourceId param_id,
+    ResourceId effect_id,
     unsigned int index) {
   EffectD3D9 *effect = effects_.Get(effect_id);
   if (!effect) return BufferSyncInterface::kParseInvalidArguments;
@@ -587,8 +587,8 @@ BufferSyncInterface::ParseError GAPID3D9::CreateParam(
 }
 
 BufferSyncInterface::ParseError GAPID3D9::CreateParamByName(
-    ResourceID param_id,
-    ResourceID effect_id,
+    ResourceId param_id,
+    ResourceId effect_id,
     unsigned int size,
     const void *name) {
   EffectD3D9 *effect = effects_.Get(effect_id);
@@ -600,14 +600,14 @@ BufferSyncInterface::ParseError GAPID3D9::CreateParamByName(
   return BufferSyncInterface::kParseNoError;
 }
 
-BufferSyncInterface::ParseError GAPID3D9::DestroyParam(ResourceID id) {
+BufferSyncInterface::ParseError GAPID3D9::DestroyParam(ResourceId id) {
   return effect_params_.Destroy(id) ?
       BufferSyncInterface::kParseNoError :
       BufferSyncInterface::kParseInvalidArguments;
 }
 
 BufferSyncInterface::ParseError GAPID3D9::SetParamData(
-    ResourceID id,
+    ResourceId id,
     unsigned int size,
     const void *data) {
   EffectParamD3D9 *param = effect_params_.Get(id);
@@ -618,7 +618,7 @@ BufferSyncInterface::ParseError GAPID3D9::SetParamData(
 }
 
 BufferSyncInterface::ParseError GAPID3D9::GetParamDesc(
-    ResourceID id,
+    ResourceId id,
     unsigned int size,
     void *data) {
   EffectParamD3D9 *param = effect_params_.Get(id);
@@ -630,7 +630,7 @@ BufferSyncInterface::ParseError GAPID3D9::GetParamDesc(
 
 // Gets the stream count from the effect and stores it in the memory buffer.
 BufferSyncInterface::ParseError GAPID3D9::GetStreamCount(
-    ResourceID id,
+    ResourceId id,
     unsigned int size,
     void *data) {
   EffectD3D9 *effect = effects_.Get(id);
@@ -641,7 +641,7 @@ BufferSyncInterface::ParseError GAPID3D9::GetStreamCount(
 }
 
 BufferSyncInterface::ParseError GAPID3D9::GetStreamDesc(
-    ResourceID id,
+    ResourceId id,
     unsigned int index,
     unsigned int size,
     void *data) {
