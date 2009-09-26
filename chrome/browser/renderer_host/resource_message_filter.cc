@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
+#include "chrome/browser/nacl_process_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/plugin_service.h"
@@ -295,6 +296,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
                                   OnReceiveContextMenuMsg(msg))
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPlugin,
                                       OnOpenChannelToPlugin)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_LaunchNaCl, OnLaunchNaCl)
       IPC_MESSAGE_HANDLER(ViewHostMsg_CreateDedicatedWorker,
                           OnCreateDedicatedWorker)
       IPC_MESSAGE_HANDLER(ViewHostMsg_CancelCreateDedicatedWorker,
@@ -583,6 +585,12 @@ void ResourceMessageFilter::OnOpenChannelToPlugin(const GURL& url,
                                                   IPC::Message* reply_msg) {
   plugin_service_->OpenChannelToPlugin(
       this, url, mime_type, locale, reply_msg);
+}
+
+void ResourceMessageFilter::OnLaunchNaCl(int channel_descriptor,
+                                         nacl::FileDescriptor* handle) {
+  NaClProcessHost* nacl_host = new NaClProcessHost(resource_dispatcher_host_);
+  nacl_host->Launch(this, channel_descriptor, handle);
 }
 
 void ResourceMessageFilter::OnCreateDedicatedWorker(const GURL& url,

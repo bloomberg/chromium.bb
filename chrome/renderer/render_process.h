@@ -8,6 +8,7 @@
 #include "base/timer.h"
 #include "chrome/common/child_process.h"
 #include "chrome/renderer/render_thread.h"
+#include "native_client/src/shared/imc/nacl_imc.h"
 #include "skia/ext/platform_canvas.h"
 
 namespace gfx {
@@ -50,6 +51,10 @@ class RenderProcess : public ChildProcess {
 
   // Just like in_process_plugins(), but called before RenderProcess is created.
   static bool InProcessPlugins();
+
+  // Sends a message to the browser process asking to launch a new NaCl process.
+  // Called from NaCl plugin code.
+  static bool LaunchNaClProcess(int imc_fd, nacl::Handle *handle);
 
  private:
   // Look in the shared memory cache for a suitable object to reuse.
