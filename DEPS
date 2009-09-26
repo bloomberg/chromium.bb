@@ -40,7 +40,7 @@ deps = {
     "http://v8.googlecode.com/svn/trunk@2966",
 
   "src/native_client":
-    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@790",
+    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@730",
 
   "src/third_party/skia":
     "http://skia.googlecode.com/svn/trunk@341",

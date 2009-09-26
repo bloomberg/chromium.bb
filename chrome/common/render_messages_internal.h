@@ -21,7 +21,6 @@
 #include "base/values.h"
 #include "chrome/common/css_colors.h"
 #include "chrome/common/extensions/update_manifest.h"
-#include "chrome/common/nacl_types.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/transport_dib.h"
 #include "chrome/common/view_types.h"
@@ -1089,14 +1088,6 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               std::wstring /* locale */,
                               IPC::ChannelHandle /* handle to channel */,
                               WebPluginInfo /* info */)
-
-  // A renderer sends this to the browser process when it wants to start
-  // a new instance of the Native Client process. The browser will launch
-  // the process and return a handle to an IMC channel.
-  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_LaunchNaCl,
-                              int /* channel number */,
-                              nacl::FileDescriptor /* handle - one side
-                                                      of a socket pair */)
 
 #if defined(OS_LINUX)
   // A renderer sends this when it needs a browser-side widget for

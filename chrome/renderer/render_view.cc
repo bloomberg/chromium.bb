@@ -2357,13 +2357,7 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
   else
     mime_type_to_use = &mime_type;
 
-  bool in_process_plugin = RenderProcess::current()->in_process_plugins();
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInternalNaCl)) {
-    if (mime_type == "application/x-nacl-srpc") {
-      in_process_plugin = true;
-    }
-  }
-  if (in_process_plugin) {
+  if (RenderProcess::current()->in_process_plugins()) {
 #if defined(OS_WIN)  // In-proc plugins aren't supported on Linux or Mac.
     return WebPluginDelegateImpl::Create(
         path, *mime_type_to_use, gfx::NativeViewFromId(host_window_));

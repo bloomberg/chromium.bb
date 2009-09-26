@@ -30,7 +30,6 @@ extern const wchar_t kZygoteProcess[];
 extern const wchar_t kBrowserSubprocessPath[];
 extern const wchar_t kPluginProcess[];
 extern const wchar_t kWorkerProcess[];
-extern const wchar_t kNaClProcess[];
 extern const wchar_t kUtilityProcess[];
 extern const wchar_t kProfileImportProcess[];
 extern const wchar_t kSingleProcess[];
@@ -133,8 +132,6 @@ extern const wchar_t kDisableWebSecurity[];
 extern const wchar_t kEnableRemoteFonts[];
 
 extern const wchar_t kUseLowFragHeapCrt[];
-
-extern const wchar_t kInternalNaCl[];
 
 #ifndef NDEBUG
 extern const wchar_t kGearsPluginPathOverride[];
