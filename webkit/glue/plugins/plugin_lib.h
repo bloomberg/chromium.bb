@@ -61,8 +61,6 @@ class PluginLib : public base::RefCounted<PluginLib> {
   // supports.
   const WebPluginInfo& plugin_info() { return web_plugin_info_; }
 
-  bool internal() { return internal_; }
-
   //
   // NPAPI functions
   //
@@ -93,7 +91,7 @@ class PluginLib : public base::RefCounted<PluginLib> {
   void Shutdown();
 
  private:
-  bool internal_;  // True for plugins that are built-in into chrome.dll
+  bool internal_;  // Whether this an internal plugin.
   WebPluginInfo web_plugin_info_;  // supported mime types, description
   base::NativeLibrary library_;  // the opened library reference
   NPPluginFuncs plugin_funcs_;  // the struct of plugin side functions

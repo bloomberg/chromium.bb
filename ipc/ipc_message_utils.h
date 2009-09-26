@@ -44,7 +44,6 @@ enum IPCMessageStart {
   WorkerProcessHostMsgStart,
   WorkerMsgStart,
   WorkerHostMsgStart,
-  NaClProcessMsgStart,
   // NOTE: When you add a new message class, also update
   // IPCStatusView::IPCStatusView to ensure logging works.
   // NOTE: this enum is used by IPC_MESSAGE_MACRO to generate a unique message
