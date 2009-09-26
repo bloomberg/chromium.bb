@@ -310,8 +310,7 @@ WebWidgetHost::WebWidgetHost()
     : view_(NULL),
       webwidget_(NULL),
       scroll_dx_(0),
-      scroll_dy_(0),
-      track_mouse_leave_(false) {
+      scroll_dy_(0) {
   set_painting(false);
 }
 

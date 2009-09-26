@@ -141,16 +141,12 @@ WebWidgetHost::WebWidgetHost()
     : view_(NULL),
       webwidget_(NULL),
       scroll_dx_(0),
-      scroll_dy_(0),
-      track_mouse_leave_(false)
-{
+      scroll_dy_(0) {
   set_painting(false);
 }
 
 WebWidgetHost::~WebWidgetHost() {
   // win_util::SetWindowUserData(hwnd_, 0);
-
-  TrackMouseLeave(false);
 
   webwidget_->close();
 }
@@ -236,16 +232,6 @@ void WebWidgetHost::Resize(const gfx::Rect& rect) {
 void WebWidgetHost::MouseEvent(NSEvent *event) {
   const WebMouseEvent& web_event = WebInputEventFactory::mouseEvent(
       event, view_);
-  switch (web_event.type) {
-    case WebInputEvent::MouseMove:
-      TrackMouseLeave(true);
-      break;
-    case WebInputEvent::MouseLeave:
-      TrackMouseLeave(false);
-      break;
-    default:
-      break;
-  }
   webwidget_->handleInputEvent(web_event);
 }
 
@@ -271,9 +257,6 @@ void WebWidgetHost::SetFocus(bool enable) {
   // other's focus when running in parallel.
   if (!TestShell::layout_test_mode())
     webwidget_->setFocus(enable);
-}
-
-void WebWidgetHost::TrackMouseLeave(bool track) {
 }
 
 void WebWidgetHost::ResetScrollRect() {

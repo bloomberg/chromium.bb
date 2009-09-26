@@ -109,7 +109,10 @@ class WebWidgetHost {
   void Resize(const gfx::Size& size);
 #endif
 
+#if defined(OS_WIN)
   void TrackMouseLeave(bool enable);
+#endif
+
   void ResetScrollRect();
   void PaintRect(const gfx::Rect& rect);
 
@@ -131,7 +134,10 @@ class WebWidgetHost {
   int scroll_dx_;
   int scroll_dy_;
 
+#if defined(OS_WIN)
   bool track_mouse_leave_;
+#endif
+
 #if defined(OS_LINUX)
   // Since GtkWindow resize is asynchronous, we have to stash the dimensions,
   // so that the backing store doesn't have to wait for sizing to take place.
