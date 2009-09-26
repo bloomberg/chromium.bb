@@ -101,6 +101,10 @@ function stringContains(a, b) {
   return a.indexOf(b) != -1;
 }
 
+function startsWith(a, b) {
+  return a.indexOf(b) == 0;
+}
+
 function isValidName(str) {
   return str.match(/[A-Za-z0-9\-\_,]/);
 }
@@ -114,14 +118,6 @@ function trimString(str) {
  */
 function isDirectory(path) {
   return !stringContains(path, '.')
-}
-
-function anyKeyInString(object, string) {
-  for (var key in object) {
-    if (stringContains(string, key))
-      return true;
-  }
-  return false;
 }
 
 function validateParameter(state, key, value, validateFn) {
@@ -138,6 +134,7 @@ function validateParameter(state, key, value, validateFn) {
  */
 function parseParameters(parameterStr, validValueHandler) {
   var params = parameterStr.split('&');
+  var invalidKeys = [];
   for (var i = 0; i < params.length; i++) {
     var thisParam = params[i].split('=');
     if (thisParam.length != 2) {
@@ -148,8 +145,11 @@ function parseParameters(parameterStr, validValueHandler) {
     var key = thisParam[0];
     var value = decodeURIComponent(thisParam[1]);
     if (!validValueHandler(key, value))
-      console.log('Invalid key: ' + key + ' value: ' + value);
+      invalidKeys.push(key + '=' + value);
   }
+
+  if (invalidKeys.length)
+    console.log("Invalid query parameters: " + invalidKeys.join(','));
 }
 
 

@@ -203,6 +203,7 @@
   //////////////////////////////////////////////////////////////////////////////
   // CONSTANTS
   //////////////////////////////////////////////////////////////////////////////
+  var ALL = 'ALL';
   var FORWARD = 'forward';
   var BACKWARD = 'backward';
   var TEST_URL_BASE_PATH =
@@ -211,7 +212,20 @@
       'http://build.chromium.org/buildbot/waterfall/builders/';
   var TEST_RESULTS_BASE_PATH =
       'http://build.chromium.org/buildbot/layout_test_results/';
-  var PLATFORMS = {'MAC': 'MAC', 'LINUX': 'LINUX', 'WIN': 'WIN'};
+  var PLATFORMS = {
+    'MAC': 'MAC',
+    'LINUX': 'LINUX',
+    'WIN': 'WIN',
+    'WIN-XP': 'WIN-XP',
+    'WIN-VISTA': 'WIN-VISTA'
+  };
+  var PLATFORM_FALLBACKS = {
+    'WIN': 'ALL',
+    'WIN-XP': 'WIN',
+    'WIN-VISTA': 'WIN',
+    'LINUX': 'ALL',
+    'MAC': 'ALL'
+  };
   var BUILD_TYPES = {'DEBUG': 'DBG', 'RELEASE': 'RELEASE'};
   var BASE_TABLE_HEADERS = ['bugs', 'modifiers', 'expectations', 'missing',
       'extra', 'slowest run', 'flakiness (numbers are runtimes in seconds)'];
@@ -363,49 +377,19 @@
     }
   }
 
-  /**
-   * Returns whether the given string of modifiers applies to the platform and
-   * build type of the given builder.
-   */
-  function hasPlatformAndBuildType(builderName, modifiers) {
-    var platformAndBuildType = getPlatFormAndBuildType(builderName);
-    var hasThisPlatform = stringContains(modifiers,
-        platformAndBuildType.platform);
-    var hasThisBuildType = stringContains(modifiers,
-        platformAndBuildType.buildType);
-
-    var hasAnyPlatform = anyKeyInString(PLATFORMS, modifiers);
-    var hasAnyBuildType = anyKeyInString(BUILD_TYPES, modifiers);
-
-    return (!hasAnyBuildType || hasThisBuildType) &&
-        (!hasAnyPlatform || hasThisPlatform);
-  }
-
   function getPlatFormAndBuildType(builderName) {
     if (!perBuilderPlatformAndBuildType[builderName]) {
       // If the build name does not contain a platform
       // or build type, assume Windows Release.
       var currentBuildUppercase = builderName.toUpperCase();
       var platform = getMatchingElement(currentBuildUppercase, PLATFORMS) ||
-          'WIN';
+          'WIN-XP';
       var buildType = getMatchingElement(currentBuildUppercase, BUILD_TYPES) ||
           'RELEASE';
       perBuilderPlatformAndBuildType[builderName] = {platform: platform,
           buildType: buildType};
     }
     return perBuilderPlatformAndBuildType[builderName];
-  }
-
-  /**
-   * Returns whether any of the modifiers in the array have the correct
-   * platform and build type for the given builder.
-   */
-  function getModifierThatHasPlatformAndBuildType(builderName, modifiersArray) {
-    for (var i = 0; i < modifiersArray.length; i++) {
-      if (hasPlatformAndBuildType(builderName, modifiersArray[i].modifiers))
-        return modifiersArray[i];
-    }
-    return null;
   }
 
   /**
@@ -456,7 +440,8 @@
     if (!currentState.tests) {
       return [];
     }
-    var testList = currentState.tests.split(',');
+    var separator = stringContains(currentState.tests, ' ') ? ' ' : ',';
+    var testList = currentState.tests.split(separator);
     var tests = [];
     for (var i = 0; i < testList.length; i++) {
       var path = testList[i];
@@ -498,11 +483,7 @@
    * e.g. allTestsByPlatformAndBuildType['WIN']['DEBUG'] will have the union
    * of all tests run on the win-debug builders.
    */
-  function getAllTestsWithSamePlatformAndBuildType(builder) {
-    var buildInfo = getPlatFormAndBuildType(builder);
-    var platform = buildInfo.platform;
-    var buildType = buildInfo.buildType;
-
+  function getAllTestsWithSamePlatformAndBuildType(platform, buildType) {
     if (!allTestsByPlatformAndBuildType[platform][buildType]) {
       var tests = {};
       for (var thisBuilder in builders) {
@@ -516,38 +497,6 @@
     }
 
     return allTestsByPlatformAndBuildType[platform][buildType];
-  }
-
-  /**
-   * Adds the given test and path to the appropriate objects depending on
-   * whether the modifiers match the builders platform and buildType.
-   */
-  function addTestAndExpectations(test, prefixPath, builder, expectationsMap,
-      expectations, testPrefixes, skippedPaths) {
-    var modifiersForBuilder =
-        getModifierThatHasPlatformAndBuildType(builder, expectations);
-
-    if (!modifiersForBuilder)
-      return false;
-
-    if (getAllTestsWithSamePlatformAndBuildType(builder)[test]) {
-      expectationsMap[test] = expectations;
-      testPrefixes[test] = prefixPath;
-    } else if (!stringContains(modifiersForBuilder.modifiers, 'WONTFIX')) {
-
-      if (stringContains(modifiersForBuilder.modifiers, 'SKIP')) {
-        skippedPaths[prefixPath] = true;
-      } else if (!modifiersForBuilder.expectations.match(/^\s*PASS\s*$/)) {
-        // Don't include skip tests here as they'll look the same as a test
-        // that passes on all builders.
-        // Also don't include tests that are only expected to pass, e.g.
-        // SLOW : foo/bar/baz.html = PASS
-        // TODO(ojan): Should we also exclude WONTFIX tests here?
-        perBuilderWithExpectationsButNoFailures[builder].push(test);
-      }
-    }
-
-    return true;
   }
 
   function addHTMLToIndividualOptionsArray(array, html, isCurrentPlatform) {
@@ -568,6 +517,202 @@
         isCurrentPlatform);
   }
 
+  function getExpectations(test, platform, buildType) {
+    var testObject = allExpectations[test];
+    if (!testObject)
+      return null;
+
+    var platformObject;
+    while (platform && !(platformObject = testObject[platform])) {
+      platform = PLATFORM_FALLBACKS[platform];
+    }
+
+    if (platformObject) {
+      return platformObject[buildType] || platformObject[ALL];
+    }
+    return null;
+  }
+
+  function populateExpectationsData(resultsObj, platform, buildType, builder) {
+    var test = resultsObj.test;
+    var thisPlatformExpectations = getExpectations(test, platform, buildType);
+
+    var htmlArrays = {};
+    htmlArrays.expectations = [];
+    htmlArrays.modifiers = [];
+    htmlArrays.bugs = [];
+
+    var tests = resultsByBuilder[builder].tests;
+
+    var testObject = allExpectations[test];
+    var usedExpectations = {};
+
+    for (var platform in allExpectations[test]) {
+      var platformObject = testObject[platform];
+      for (var buildType in platformObject) {
+        var thisExpectations = platformObject[buildType];
+        var modifiers = thisExpectations.modifiers;
+
+        // A set of modifiers/expectations can apply to multiple platforms.
+        // Only add HTML for each entry once.
+        if (usedExpectations[modifiers])
+          continue;
+
+        usedExpectations[modifiers] = true;
+
+        var bugs = modifiers.match(/BUG\d+/g);
+        if (bugs) {
+          for (var j = 0; j < bugs.length; j++) {
+            modifiers = modifiers.replace(bugs[j], '');
+          }
+          modifiers = trimString(modifiers);
+          bugs = bugs.join(' ');
+        } else {
+          bugs = '';
+        }
+
+        var expectations = thisExpectations.expectations;
+        if (thisExpectations == thisPlatformExpectations) {
+          resultsObj.bugs = bugs;
+          resultsObj.expectations = expectations;
+          resultsObj.modifiers = modifiers;
+          resultsObj.isWontFix = stringContains(modifiers, 'WONTFIX');
+        } else {
+          addHtmlToOptionsArrays(htmlArrays, expectations, modifiers, bugs,
+              false);
+        }
+      }
+    }
+
+    if (resultsObj.expectations) {
+      addHtmlToOptionsArrays(htmlArrays, resultsObj.expectations,
+          resultsObj.modifiers, resultsObj.bugs, true);
+    }
+
+    resultsObj.bugsHTML += htmlArrays.bugs.join('<div class=separator></div>');
+    resultsObj.expectationsHTML +=
+        htmlArrays.expectations.join('<div class=separator></div>');
+    resultsObj.modifiersHTML +=
+        htmlArrays.modifiers.join('<div class=separator></div>');
+  }
+
+  function addFallbacks(addFn, candidates, validValues) {
+    var hasAnyValidValues = false;
+    for (var i = 0; i < candidates.length; i++) {
+      if (candidates[i] in validValues) {
+        hasAnyValidValues = true;
+        addFn(candidates[i]);
+      }
+    }
+    if (!hasAnyValidValues)
+      addFn(ALL);
+  }
+
+  function addTestToAllExpectations(test, expectations) {
+    if (!allExpectations[test])
+      allExpectations[test] = {};
+
+    var testHolder = allExpectations[test];
+
+    for (var j = 0; j < expectations.length; j++) {
+      var modifiers = expectations[j].modifiers.split(' ');
+      addFallbacks(function(platformKey) {
+        if (!testHolder[platformKey])
+          testHolder[platformKey] = {}
+
+        var platformHolder = testHolder[platformKey];
+        addFallbacks(function(buildTypeKey) {
+          platformHolder[buildTypeKey] = expectations[j];
+        }, modifiers, BUILD_TYPES);
+      }, modifiers, PLATFORMS);
+    }
+  }
+
+  /**
+   * Data structure to hold the processed expectations.
+   * allExpectations[testPath][platform][buildType] gets the object that has
+   * expectations and modifiers properties for this platform/buildType.
+   *
+   * platform and buildType both go through fallback sets of keys from most
+   * specific key to least specific. For example, on Windows Vista, we first
+   * check the platform WIN-VISTA, if there's no such object, we check WIN,
+   * then finally we check ALL. For build types, we check the current
+   * buildType, then ALL.
+   */
+  var allExpectations;
+
+  function processExpectations() {
+    if (allExpectations)
+      return allExpectations;
+
+    allExpectations = {};
+
+    var expectationsArray = [];
+    for (var path in expectationsByTest) {
+      expectationsArray.push(
+          {path: path, expectations: expectationsByTest[path]});
+    }
+
+    // Reverse sort the array to hit more specific paths last. More specific
+    // paths (e.g. foo/bar/baz.html) override entries for less-specific ones
+    // (e.g. foo/bar).
+    expectationsArray.sort(getAlphanumericCompare('path', true));
+
+    var allTests = getAllTests();
+    for (var i = 0; i < expectationsArray.length; i++) {
+      var path = expectationsArray[i].path;
+      var expectations = expectationsArray[i].expectations;
+
+      var pathMatchesAnyTest = false;
+      if (allTests[path]) {
+        pathMatchesAnyTest = true;
+        addTestToAllExpectations(path, expectations);
+      } else {
+        for (var test in allTests) {
+          if (stringContains(test, path)) {
+            pathMatchesAnyTest = true;
+            addTestToAllExpectations(test, expectations);
+          }
+        }
+      }
+
+      if (!pathMatchesAnyTest)
+        addTestToAllExpectations(path, expectations);
+    }
+  }
+
+  function processMissingTestsWithExpectations(builder, platform, buildType) {
+    var noFailures = [];
+    var skipped = [];
+
+    var allTestsForPlatformAndBuildType =
+        getAllTestsWithSamePlatformAndBuildType(platform, buildType);
+    for (var test in allExpectations) {
+      var expectations = getExpectations(test, platform, buildType);
+
+      if (!expectations)
+        continue;
+
+      // Test has expectations, but no result in the builders results.
+      // This means it's either SKIP or they pass on on builds.
+      if (!allTestsForPlatformAndBuildType[test] &&
+          !stringContains(expectations.modifiers, 'WONTFIX')) {
+        if (stringContains(expectations.modifiers, 'SKIP')) {
+          skipped.push(test);
+        } else if (!expectations.expectations.match(/^\s*PASS\s*$/)) {
+          // Don't show tests expected to always pass. This is used in ways like
+          // the following:
+          // LayoutTests/foo/bar = FAIL
+          // LayoutTests/foo/bar/baz.html = PASS
+          noFailures.push(test);
+        }
+      }
+    }
+
+    perBuilderSkippedPaths[builder] = skipped.sort();
+    perBuilderWithExpectationsButNoFailures[builder] = noFailures.sort();
+  }
+
   function processTestResultsForBuilderAsync(builder) {
     setTimeout(function() {
         processTestRunsForBuilder(builder);
@@ -579,97 +724,20 @@
       return;
 
     var start = Date.now();
+    processExpectations();
+
+    var buildInfo = getPlatFormAndBuildType(builderName);
+    var platform = buildInfo.platform;
+    var buildType = buildInfo.buildType;
+    processMissingTestsWithExpectations(builderName, platform, buildType);
 
     var failures = [];
-    var allTests = getAllTests();
-
-    var expectationsMap = {};
-    for (var test in allTests) {
-      if (expectationsByTest[test])
-        expectationsMap[test] = expectationsByTest[test];
-    }
-
-    var testPrefixes = {};
-    perBuilderWithExpectationsButNoFailures[builderName] = [];
-    var skippedPaths = {};
-    for (var path in expectationsByTest) {
-      var expectations = expectationsByTest[path];
-      if (!isDirectory(path) &&
-          addTestAndExpectations(path, path, builderName, expectationsMap,
-              expectations, testPrefixes, skippedPaths)) {
-        continue;
-      }
-      // Test path doesn't match a specific test, see if it prefix matches
-      // any test.
-      for (var test in allTests) {
-        if (stringContains(test, path) &&
-            (!testPrefixes[test] ||
-             !stringContains(testPrefixes[test], path))) {
-          addTestAndExpectations(test, path, builderName, expectationsMap,
-              expectations, testPrefixes, skippedPaths);
-        }
-      }
-    }
-
-    perBuilderSkippedPaths[builderName] = [];
-    for (var path in skippedPaths) {
-      perBuilderSkippedPaths[builderName].push(path);
-    }
-    perBuilderSkippedPaths[builderName].sort();
-    perBuilderWithExpectationsButNoFailures[builderName].sort();
-
     var allTestsForThisBuilder = resultsByBuilder[builderName].tests;
+
     for (var test in allTestsForThisBuilder) {
       var resultsForTest = createResultsObjectForTest(test);
-
-      if (expectationsMap[test] && expectationsMap[test].length) {
-        var expectationsArray = expectationsMap[test];
-        var htmlArrays = {};
-        htmlArrays.expectations = [];
-        htmlArrays.modifiers = [];
-        htmlArrays.bugs = [];
-
-        var thisBuilderExpectations;
-        var thisBuilderModifiers;
-        for (var i = 0; i < expectationsArray.length; i++) {
-          var modifiers = expectationsArray[i].modifiers;
-          var bugs = modifiers.match(/BUG\d+/g);
-          if (bugs) {
-            for (var j = 0; j < bugs.length; j++) {
-              modifiers = modifiers.replace(bugs[j], '');
-            }
-            modifiers = trimString(modifiers);
-            bugs = bugs.join(' ');
-          } else {
-            bugs = '';
-          }
-
-          var expectations = expectationsArray[i].expectations;
-          if (hasPlatformAndBuildType(builderName, modifiers)) {
-            resultsForTest.bugs = bugs;
-            resultsForTest.expectations = expectations;
-            resultsForTest.modifiers = modifiers;
-            // TODO(ojan): Also specially mark slow tests that should be marked
-            // as slow or should have the slow modifier removed.
-            resultsForTest.isWontFix = stringContains(modifiers, 'WONTFIX');
-          } else {
-            addHtmlToOptionsArrays(htmlArrays, expectations, modifiers, bugs,
-                false);
-          }
-        }
-
-        if (resultsForTest.expectations) {
-          addHtmlToOptionsArrays(htmlArrays, resultsForTest.expectations,
-              resultsForTest.modifiers, resultsForTest.bugs, true);
-        }
-
-        resultsForTest.bugsHTML +=
-            htmlArrays.bugs.join('<div class=separator></div>');
-        resultsForTest.expectationsHTML +=
-            htmlArrays.expectations.join('<div class=separator></div>');
-        resultsForTest.modifiersHTML +=
-            htmlArrays.modifiers.join('<div class=separator></div>');
-      }
+      populateExpectationsData(resultsForTest, platform, buildType,
+          builderName);
 
       var rawTest = resultsByBuilder[builderName].tests[test];
       resultsForTest.rawTimes = rawTest.times;
@@ -740,16 +808,6 @@
 
     perBuilderFailures[builderName] = failures;
     logTime('processTestRunsForBuilder: ' + builderName, start);
-  }
-
-  function hasExpectations(expectations, resultName) {
-    if (resultName == 'NO DATA')
-      return true;
-
-    if (!expectations)
-      return false;
-
-    return stringContains(expectations, resultName);
   }
 
   var bugUrlPrefix = '<a href="http://';
@@ -1125,8 +1183,15 @@
       }
       return getHTMLForTestTable(html);
     } else {
-      return '<div class="not-found">Test not found. Either it does not ' +
-          'exist or it passes on all platforms.</div>';
+      var html = '';
+      if (expectationsByTest[test]) {
+        for (var i = 0; i < expectationsByTest[test].length; i++) {
+          html += '<div>' + expectationsByTest[test][i].modifiers + ' | ' +
+              expectationsByTest[test][i].expectations + '</div>';
+        }
+      }
+      return html + '<div class="not-found">Test not found. Either it does ' +
+          'not exist, is skipped or passes on all platforms.</div>';
     }
   }
 
@@ -1152,8 +1217,10 @@
     html += '</div>' +
         '<form id=tests-form ' +
         'onsubmit="setState(\'tests\', tests.value);return false;">' +
-        '<div>Show tests on all platforms (slow): </div><input name=tests ' +
-        'placeholder="LayoutTests/foo/bar.html,LayoutTests/foo/baz" ' +
+        '<div>Show tests on all platforms: </div><input name=tests ' +
+        'placeholder="Comma or space-separated list of tests or partial ' +
+        'paths to show test results across all builders, e.g., ' +
+        'LayoutTests/foo/bar.html,LayoutTests/foo/baz,forms" ' +
         'id=tests-input></form>' +
         '<form id=max-results-form ' +
         'onsubmit="setState(\'maxResults\', maxResults.value);return false;"' +
@@ -1247,10 +1314,9 @@
    * pairs.
    */
   function setState(key, value) {
-    var keys = setQueryParameter.apply(null, arguments);
     var shouldRegeneratePage = true;
-    for (var i = 0; i < keys.length; i++) {
-      var key = keys[i];
+    for (var i = 0; i < arguments.length; i += 2) {
+      var key = arguments[i];
 
       if (key != 'tests' && key != 'maxResults') {
         delete currentState.tests;
@@ -1271,6 +1337,10 @@
         $('legend-toggle').innerHTML = getLinkHTMLToToggleLegendDisplay();
       }
     }
+
+    // Set all the custom state for this dashboard before calling
+    // setQueryParameter since setQueryParameter updates the location bar.
+    var keys = setQueryParameter.apply(null, arguments);
 
     if (shouldRegeneratePage)
       handleLocationChange();
