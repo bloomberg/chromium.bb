@@ -54,6 +54,7 @@
     'target_arch%': 'ia32',
 
     'linux2%': 0,
+    'mbits_flag%': '-m32',
 
     # By default we assume that we are building as part of Chrome
     'nacl_standalone%': 0,
@@ -74,12 +75,14 @@
           'NACL_TARGET_SUBARCH=32',
           'NACL_BUILD_SUBARCH=32',
         ],
+        'mbits_flag': '-m32',
       }],
       ['target_arch=="x64"', {
         'defines': [
           'NACL_TARGET_SUBARCH=64',
           'NACL_BUILD_SUBARCH=64',
         ],
+        'mbits_flag': '-m64',
       }],
       ['linux2==1', {
         'defines': ['LINUX2=1'],
@@ -366,17 +369,15 @@
             ],
           }, { # else: target_arch != "arm"
             'asflags': [
-              # Needed so that libs with .s files (e.g. libicudata.a)
-              # are compatible with the general 32-bit-ness.
-              '-m32',
+              '<(mbits_flag)',
             ],
             'cflags': [
-              '-m32',
+              '<(mbits_flag)',
               '-fno-exceptions',
               '-Wall',
             ],
             'ldflags': [
-              '-m32',
+              '<(mbits_flag)',
             ],
           }],
         ],
