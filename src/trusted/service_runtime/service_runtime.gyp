@@ -101,7 +101,7 @@
         }],
         ['target_arch == "x64"', {
           'dependencies': [
-            'arch/x86_32/service_runtime_x86_64.gyp:service_runtime_x86_64',
+            'arch/x86_64/service_runtime_x86_64.gyp:service_runtime_x86_64',
           ],
         }],
         # TODO(gregoryd): move arm-specific stuff into a separate gyp file.
