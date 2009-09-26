@@ -1841,10 +1841,6 @@ BUG10055 LINUX DEBUG : LayoutTests/svg/text/text-tselect-02-f.svg = FAIL PASS
 // to include window.showModalDialog, which we give as undefined.
 BUG10530 : LayoutTests/fast/dom/Window/window-function-frame-getter-precedence.html = FAIL
 
-// Need rebaselining for Linux, from WebKit merge 42580:42609
-// The content editable div is wider on linux than on windows.
-BUG11122 LINUX : LayoutTests/fast/forms/caret-rtl.html = FAIL
-
 // New tests from WebKit Merge 42609:42671
 BUG10760 LINUX : LayoutTests/fast/forms/input-text-scroll-left-on-blur.html = FAIL
 BUG10760 LINUX : LayoutTests/fast/inline/25277-2.html = FAIL
