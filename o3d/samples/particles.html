@@ -198,12 +198,12 @@ function onKeyPress(event) {
 
 function onKeyDown(event) {
   event = event || window.event;
-  g_keyDown[event.keyCode] = true;
+  g_keyDown[o3djs.event.getEventKeyChar(event)] = true;
 }
 
 function onKeyUp(event) {
   event = event || window.event;
-  g_keyDown[event.keyCode] = false;
+  g_keyDown[o3djs.event.getEventKeyChar(event)] = false;
 }
 
 function setupFlame() {
