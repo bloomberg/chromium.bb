@@ -30,6 +30,7 @@
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/user_data_manager.h"
 #include "chrome/browser/views/bookmark_menu_button.h"
+#include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/event_utils.h"
 #include "chrome/browser/views/go_button.h"
 #include "chrome/browser/views/location_bar_view.h"
@@ -153,6 +154,7 @@ ToolbarView::ToolbarView(Browser* browser)
       star_(NULL),
       location_bar_(NULL),
       go_(NULL),
+      browser_actions_(NULL),
       page_menu_(NULL),
       app_menu_(NULL),
       bookmark_menu_(NULL),
@@ -513,14 +515,15 @@ void ToolbarView::Layout() {
                    child_y, star_->GetPreferredSize().width(), child_height);
 
   int go_button_width = go_->GetPreferredSize().width();
+  int browser_actions_width = browser_actions_->GetPreferredSize().width();
   int page_menu_width = page_menu_->GetPreferredSize().width();
   int app_menu_width = app_menu_->GetPreferredSize().width();
   int bookmark_menu_width = bookmark_menu_ ?
       bookmark_menu_->GetPreferredSize().width() : 0;
   int location_x = star_->x() + star_->width();
   int available_width = width() - kPaddingRight - bookmark_menu_width -
-      app_menu_width - page_menu_width - kMenuButtonOffset - go_button_width -
-      location_x;
+      app_menu_width - page_menu_width - browser_actions_width -
+      kMenuButtonOffset - go_button_width - location_x;
   location_bar_->SetBounds(location_x, child_y, std::max(available_width, 0),
                            child_height);
 
@@ -534,6 +537,10 @@ void ToolbarView::Layout() {
                               child_height);
     next_menu_x += bookmark_menu_width;
   }
+
+  browser_actions_->SetBounds(
+      next_menu_x, child_y, browser_actions_width, child_height);
+  next_menu_x += browser_actions_width;
 
   page_menu_->SetBounds(next_menu_x, child_y, page_menu_width, child_height);
   next_menu_x += page_menu_width;
@@ -851,11 +858,12 @@ void ToolbarView::CreateCenterStack(Profile *profile) {
 }
 
 void ToolbarView::CreateRightSideControls(Profile* profile) {
+  browser_actions_ = new BrowserActionsContainer(profile, this);
+
   page_menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
   page_menu_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_PAGE));
   page_menu_->SetTooltipText(l10n_util::GetString(IDS_PAGEMENU_TOOLTIP));
   page_menu_->SetID(VIEW_ID_PAGE_MENU);
-
 
   app_menu_ = new views::MenuButton(NULL, std::wstring(), this, false);
   app_menu_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_APP));
@@ -872,6 +880,7 @@ void ToolbarView::CreateRightSideControls(Profile* profile) {
 
   LoadRightSideControlsImages();
 
+  AddChildView(browser_actions_);
   AddChildView(page_menu_);
   AddChildView(app_menu_);
 }

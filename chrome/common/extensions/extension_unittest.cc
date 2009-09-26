@@ -279,21 +279,28 @@ TEST(ExtensionTest, GetResourceURLAndPath) {
 TEST(ExtensionTest, LoadPageActionHelper) {
   Extension extension;
   std::string error_msg;
-  scoped_ptr<PageAction> page_action;
+  scoped_ptr<ContextualAction> action;
   DictionaryValue input;
 
   // First try with an empty dictionary. We should get nothing back.
-  ASSERT_EQ(NULL, extension.LoadPageActionHelper(&input, 0, &error_msg));
+  ASSERT_EQ(NULL, extension.LoadContextualActionHelper(
+      &input, 0, &error_msg, ContextualAction::PAGE_ACTION));
+  ASSERT_STRNE("", error_msg.c_str());
+  error_msg = "";
+
+  // Now try the same, but as a browser action. Ensure same results.
+  ASSERT_EQ(NULL, extension.LoadContextualActionHelper(
+      &input, 0, &error_msg, ContextualAction::BROWSER_ACTION));
   ASSERT_STRNE("", error_msg.c_str());
   error_msg = "";
 
   // Now setup some values to use in the page action.
-  const std::string id("MyPageActionId");
-  const std::string name("MyPageActionName");
+  const std::string id("MyContextualActionId");
+  const std::string name("MyContextualActionName");
   std::string img1("image1.png");
   std::string img2("image2.png");
 
-  // Add the page_actions dictionary.
+  // Add the dictionary for the contextual action.
   input.SetString(keys::kPageActionId, id);
   input.SetString(keys::kName, name);
   ListValue* icons = new ListValue;
@@ -301,31 +308,46 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   icons->Set(1, Value::CreateStringValue(img2));
   input.Set(keys::kPageActionIcons, icons);
 
-  // Parse the page action and read back the values from the object.
-  page_action.reset(extension.LoadPageActionHelper(&input, 0, &error_msg));
-  ASSERT_TRUE(NULL != page_action.get());
+  // Parse as page action and read back the values from the object.
+  action.reset(extension.LoadContextualActionHelper(
+      &input, 0, &error_msg, ContextualAction::PAGE_ACTION));
+  ASSERT_TRUE(NULL != action.get());
   ASSERT_STREQ("", error_msg.c_str());
-  ASSERT_STREQ(id.c_str(), page_action->id().c_str());
-  ASSERT_STREQ(name.c_str(), page_action->name().c_str());
-  ASSERT_EQ(2u, page_action->icon_paths().size());
-  ASSERT_STREQ(img1.c_str(), page_action->icon_paths()[0].c_str());
-  ASSERT_STREQ(img2.c_str(), page_action->icon_paths()[1].c_str());
-  // Type hasn't been set, but it defaults to PERMANENT.
-  ASSERT_EQ(PageAction::PERMANENT, page_action->type());
+  ASSERT_STREQ(id.c_str(), action->id().c_str());
+  ASSERT_STREQ(name.c_str(), action->name().c_str());
+  ASSERT_EQ(2u, action->icon_paths().size());
+  ASSERT_STREQ(img1.c_str(), action->icon_paths()[0].c_str());
+  ASSERT_STREQ(img2.c_str(), action->icon_paths()[1].c_str());
+  ASSERT_EQ(ContextualAction::PAGE_ACTION, action->type());
+
+  // Now try the same, but as a browser action.
+  action.reset(extension.LoadContextualActionHelper(
+      &input, 0, &error_msg, ContextualAction::BROWSER_ACTION));
+  ASSERT_TRUE(NULL != action.get());
+  ASSERT_STREQ("", error_msg.c_str());
+  // Browser actions don't have an id, page actions do.
+  ASSERT_STREQ("", action->id().c_str());
+  ASSERT_STREQ(name.c_str(), action->name().c_str());
+  ASSERT_EQ(2u, action->icon_paths().size());
+  ASSERT_STREQ(img1.c_str(), action->icon_paths()[0].c_str());
+  ASSERT_STREQ(img2.c_str(), action->icon_paths()[1].c_str());
+  ASSERT_EQ(ContextualAction::BROWSER_ACTION, action->type());
 
   // Explicitly set the same type and parse again.
-  input.SetString(keys::kType, values::kPageActionTypePermanent);
-  page_action.reset(extension.LoadPageActionHelper(&input, 0, &error_msg));
-  ASSERT_TRUE(NULL != page_action.get());
-  ASSERT_STREQ("", error_msg.c_str());
-  ASSERT_EQ(PageAction::PERMANENT, page_action->type());
-
-  // Explicitly set the TAB type and parse again.
   input.SetString(keys::kType, values::kPageActionTypeTab);
-  page_action.reset(extension.LoadPageActionHelper(&input, 0, &error_msg));
-  ASSERT_TRUE(NULL != page_action.get());
+  action.reset(extension.LoadContextualActionHelper(
+      &input, 0, &error_msg, ContextualAction::BROWSER_ACTION));
+  ASSERT_TRUE(NULL != action.get());
   ASSERT_STREQ("", error_msg.c_str());
-  ASSERT_EQ(PageAction::TAB, page_action->type());
+  ASSERT_EQ(ContextualAction::BROWSER_ACTION, action->type());
+
+  // Explicitly set the PAGE_ACTION type and parse again.
+  input.SetString(keys::kType, values::kPageActionTypePermanent);
+  action.reset(extension.LoadContextualActionHelper(
+      &input, 0, &error_msg, ContextualAction::PAGE_ACTION));
+  ASSERT_TRUE(NULL != action.get());
+  ASSERT_STREQ("", error_msg.c_str());
+  ASSERT_EQ(ContextualAction::PAGE_ACTION, action->type());
 
   // Make a deep copy of the input and remove one key at a time and see if we
   // get the right error.
@@ -334,34 +356,61 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   // First remove id key.
   copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
   copy->Remove(keys::kPageActionId, NULL);
-  page_action.reset(extension.LoadPageActionHelper(copy.get(), 0, &error_msg));
-  ASSERT_TRUE(NULL == page_action.get());
+  action.reset(extension.LoadContextualActionHelper(
+      copy.get(), 0, &error_msg, ContextualAction::PAGE_ACTION));
+  ASSERT_TRUE(NULL == action.get());
   ASSERT_TRUE(MatchPattern(error_msg.c_str(),
                            errors::kInvalidPageActionId));
+  error_msg = "";
+
+  // Same test (id key), but with browser action.
+  copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
+  copy->Remove(keys::kPageActionId, NULL);
+  action.reset(extension.LoadContextualActionHelper(
+      copy.get(), 0, &error_msg, ContextualAction::BROWSER_ACTION));
+  // Having no id is valid for browser actions.
+  ASSERT_TRUE(NULL != action.get());
+  ASSERT_STREQ("", error_msg.c_str());
+  error_msg = "";
 
   // Then remove the name key.
   copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
   copy->Remove(keys::kName, NULL);
-  page_action.reset(extension.LoadPageActionHelper(copy.get(), 0, &error_msg));
-  ASSERT_TRUE(NULL == page_action.get());
+  action.reset(extension.LoadContextualActionHelper(
+      copy.get(), 0, &error_msg, ContextualAction::PAGE_ACTION));
+  ASSERT_TRUE(NULL == action.get());
   ASSERT_TRUE(MatchPattern(error_msg.c_str(),
                            errors::kInvalidName));
+  error_msg = "";
+
+  // Same test (name key), but with browser action.
+  copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
+  copy->Remove(keys::kName, NULL);
+  action.reset(extension.LoadContextualActionHelper(
+      copy.get(), 0, &error_msg, ContextualAction::BROWSER_ACTION));
+  ASSERT_TRUE(NULL == action.get());
+  ASSERT_TRUE(MatchPattern(error_msg.c_str(),
+                           errors::kInvalidName));
+  error_msg = "";
 
   // Then remove the icon paths key.
   copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
   copy->Remove(keys::kPageActionIcons, NULL);
-  page_action.reset(extension.LoadPageActionHelper(copy.get(), 0, &error_msg));
-  ASSERT_TRUE(NULL == page_action.get());
+  action.reset(extension.LoadContextualActionHelper(
+      copy.get(), 0, &error_msg, ContextualAction::PAGE_ACTION));
+  ASSERT_TRUE(NULL == action.get());
   ASSERT_TRUE(MatchPattern(error_msg.c_str(),
                            errors::kInvalidPageActionIconPaths));
+  error_msg = "";
 
-  // Then set the type to something bogus.
+  // Same test (name key), but with browser action.
   copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
-  copy->SetString(keys::kType, "something_bogus");
-  page_action.reset(extension.LoadPageActionHelper(copy.get(), 0, &error_msg));
-  ASSERT_TRUE(NULL == page_action.get());
+  copy->Remove(keys::kPageActionIcons, NULL);
+  action.reset(extension.LoadContextualActionHelper(
+      copy.get(), 0, &error_msg, ContextualAction::BROWSER_ACTION));
+  ASSERT_TRUE(NULL == action.get());
   ASSERT_TRUE(MatchPattern(error_msg.c_str(),
-                           errors::kInvalidPageActionTypeValue));
+                           errors::kInvalidPageActionIconPaths));
 }
 
 TEST(ExtensionTest, IdIsValid) {

@@ -52,13 +52,17 @@ class ExtensionBrowserEventRouter : public TabStripModelObserver,
   void TabChangedAt(TabContents* contents, int index, bool loading_only);
   void TabStripEmpty();
 
-  // PageActions.
+  // Page Action execute event.
   void PageActionExecuted(Profile* profile,
                           const std::string& extension_id,
                           const std::string& page_action_id,
                           int tab_id,
                           const std::string& url,
                           int button);
+  // Browser Actions execute event.
+  void BrowserActionExecuted(Profile* profile,
+                             const std::string& extension_id,
+                             int window_id);
 
   // NotificationObserver.
   void Observe(NotificationType type,

@@ -1997,6 +1997,8 @@
         'browser/views/bookmark_menu_controller_views.h',
         'browser/views/bookmark_table_view.cc',
         'browser/views/bookmark_table_view.h',
+        'browser/views/browser_actions_container.cc',
+        'browser/views/browser_actions_container.h',
         'browser/views/browser_bubble.cc',
         'browser/views/browser_bubble.h',
         'browser/views/browser_bubble_gtk.cc',

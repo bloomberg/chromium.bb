@@ -261,14 +261,15 @@ class TabContents : public PageNavigator,
   // this tab. The parameter |title| (if not empty) can be used to override the
   // page action title for this tab and |icon_id| specifies an icon index
   // (defined in the manifest) to use instead of the first icon (for this tab).
-  void SetPageActionEnabled(const PageAction* page_action, bool enable,
+  void SetPageActionEnabled(const ContextualAction* page_action, bool enable,
                             const std::string& title, int icon_id);
 
   // Returns the page action state for this tab. The pair returns contains
   // the title (string) for the page action and the icon index to use (int).
   // If this function returns NULL it means the page action is not enabled for
   // this tab.
-  const PageActionState* GetPageActionState(const PageAction* page_action);
+  const ContextualActionState* GetPageActionState(
+      const ContextualAction* page_action);
 
   // Whether the tab is in the process of being destroyed.
   // Added as a tentative work-around for focus related bug #4633.  This allows
@@ -1106,7 +1107,7 @@ class TabContents : public PageNavigator,
   // that can be used to override the title and icon used for the page action).
   // This map is cleared every time the mainframe navigates and populated by the
   // PageAction extension API.
-  std::map< const PageAction*, linked_ptr<PageActionState> >
+  std::map< const ContextualAction*, linked_ptr<ContextualActionState> >
       enabled_page_actions_;
 
   // Data for misc internal state ----------------------------------------------

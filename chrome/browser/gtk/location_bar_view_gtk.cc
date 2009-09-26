@@ -401,14 +401,14 @@ void LocationBarViewGtk::FocusSearch() {
 }
 
 void LocationBarViewGtk::UpdatePageActions() {
-  std::vector<PageAction*> page_actions;
+  std::vector<ContextualAction*> page_actions;
   if (profile_->GetExtensionsService())
       page_actions = profile_->GetExtensionsService()->GetPageActions();
 
   // Initialize on the first call, or re-inialize if more extensions have been
   // loaded or added after startup.
   if (page_actions.size() != page_action_views_.size()) {
-    page_action_views_.reset(); // Delete the old views (if any).
+    page_action_views_.reset();  // Delete the old views (if any).
 
     for (size_t i = 0; i < page_actions.size(); ++i) {
       page_action_views_.push_back(
@@ -673,7 +673,8 @@ gboolean LocationBarViewGtk::OnSecurityIconPressed(
 // LocationBarViewGtk::PageActionViewGtk
 
 LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
-    LocationBarViewGtk* owner, Profile* profile, const PageAction* page_action)
+    LocationBarViewGtk* owner, Profile* profile,
+    const ContextualAction* page_action)
     : owner_(owner),
       profile_(profile),
       page_action_(page_action) {
@@ -705,7 +706,7 @@ LocationBarViewGtk::PageActionViewGtk::~PageActionViewGtk() {
     tracker_->StopTrackingImageLoad();
   image_.Destroy();
   event_box_.Destroy();
-  for (size_t i=0; i < pixbufs_.size(); ++i) {
+  for (size_t i = 0; i < pixbufs_.size(); ++i) {
     if (pixbufs_[i])
       g_object_unref(pixbufs_[i]);
   }
@@ -718,7 +719,8 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
   current_tab_id_ = ExtensionTabUtil::GetTabId(contents);
   current_url_ = url;
 
-  const PageActionState* state = contents->GetPageActionState(page_action_);
+  const ContextualActionState* state =
+      contents->GetPageActionState(page_action_);
   bool visible = state != NULL;
   if (visible) {
     // Set the tooltip.

@@ -4,9 +4,9 @@
 
 #include "chrome/common/page_action.h"
 
-PageAction::PageAction()
-  : type_(PERMANENT) {
+ContextualAction::ContextualAction()
+  : type_(PAGE_ACTION) {
 }
 
-PageAction::~PageAction() {
+ContextualAction::~ContextualAction() {
 }

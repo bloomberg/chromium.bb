@@ -586,7 +586,7 @@ void TabContents::SetIsCrashed(bool state) {
   NotifyNavigationStateChanged(INVALIDATE_TAB);
 }
 
-void TabContents::SetPageActionEnabled(const PageAction* page_action,
+void TabContents::SetPageActionEnabled(const ContextualAction* page_action,
                                        bool enable,
                                        const std::string& title,
                                        int icon_id) {
@@ -599,14 +599,14 @@ void TabContents::SetPageActionEnabled(const PageAction* page_action,
 
   if (enable) {
     enabled_page_actions_[page_action].reset(
-        new PageActionState(title, icon_id));
+        new ContextualActionState(title, icon_id));
   } else {
     enabled_page_actions_.erase(page_action);
   }
 }
 
-const PageActionState* TabContents::GetPageActionState(
-    const PageAction* page_action) {
+const ContextualActionState* TabContents::GetPageActionState(
+    const ContextualAction* page_action) {
   if (enabled_page_actions_.end() == enabled_page_actions_.find(page_action))
     return NULL;
 

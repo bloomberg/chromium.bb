@@ -144,20 +144,12 @@ void ExtensionsService::Init() {
   GarbageCollectExtensions();
 }
 
-std::vector<PageAction*> ExtensionsService::GetPageActions() const {
-  std::vector<PageAction*> result;
+std::vector<ContextualAction*> ExtensionsService::GetPageActions() const {
+  return GetContextualActions(ContextualAction::PAGE_ACTION);
+}
 
-  // TODO(finnur): Sort the page icons in some meaningful way.
-  for (ExtensionList::const_iterator iter = extensions_.begin();
-       iter != extensions_.end(); ++iter) {
-    const PageActionMap& page_actions = (*iter)->page_actions();
-    for (PageActionMap::const_iterator i(page_actions.begin());
-         i != page_actions.end(); ++i) {
-      result.push_back(i->second);
-    }
-  }
-
-  return result;
+std::vector<ContextualAction*> ExtensionsService::GetBrowserActions() const {
+  return GetContextualActions(ContextualAction::BROWSER_ACTION);
 }
 
 void ExtensionsService::InstallExtension(const FilePath& extension_path) {
@@ -330,6 +322,29 @@ void ExtensionsService::LoadInstalledExtension(
         &ExtensionsServiceBackend::CheckExternalUninstall,
         scoped_refptr<ExtensionsService>(this), id, location));
   }
+}
+
+std::vector<ContextualAction*> ExtensionsService::GetContextualActions(
+    ContextualAction::ContextualActionType action_type) const {
+  std::vector<ContextualAction*> result;
+
+  // TODO(finnur): Sort the icons in some meaningful way.
+  for (ExtensionList::const_iterator iter = extensions_.begin();
+       iter != extensions_.end(); ++iter) {
+    if (action_type == ContextualAction::PAGE_ACTION) {
+      const ContextualActionMap* page_actions = &(*iter)->page_actions();
+      for (ContextualActionMap::const_iterator i(page_actions->begin());
+           i != page_actions->end(); ++i) {
+        result.push_back(i->second);
+      }
+    } else {
+      ContextualAction* browser_action = (*iter)->browser_action();
+      if (browser_action)
+        result.push_back(browser_action);
+    }
+  }
+
+  return result;
 }
 
 void ExtensionsService::UpdateExtensionBlacklist(

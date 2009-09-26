@@ -22,6 +22,7 @@
 #include "views/view.h"
 
 class BackForwardMenuModelViews;
+class BrowserActionsContainer;
 class Browser;
 class Profile;
 class ToolbarStarToggle;
@@ -219,6 +220,7 @@ class ToolbarView : public views::View,
   ToolbarStarToggle* star_;
   LocationBarView* location_bar_;
   GoButton* go_;
+  BrowserActionsContainer* browser_actions_;
   views::MenuButton* page_menu_;
   views::MenuButton* app_menu_;
   // The bookmark menu button. This may be null.

@@ -7,6 +7,7 @@
 namespace extension_manifest_keys {
 
 const wchar_t* kBackground = L"background_page";
+const wchar_t* kBrowserAction = L"browser_action";
 const wchar_t* kChromeURLOverrides = L"chrome_url_overrides";
 const wchar_t* kContentScripts = L"content_scripts";
 const wchar_t* kCss = L"css";
@@ -53,6 +54,8 @@ const char* kPageActionTypePermanent = "permanent";
 // printf because we want to unit test them and scanf is hard to make
 // cross-platform.
 namespace extension_manifest_errors {
+const char* kInvalidBrowserAction =
+    "Invalid value for 'browser_action'.";
 const char* kInvalidChromeURLOverrides =
     "Invalid value for 'chrome_url_overrides'.";
 const char* kInvalidContentScript =

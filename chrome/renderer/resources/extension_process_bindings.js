@@ -193,6 +193,13 @@ var chrome = chrome || {};
     }
   }
 
+  // Browser action events send {windowpId}.
+  function setupBrowserActionEvent(extensionId) {
+    var eventName = "browserAction/" + extensionId;
+    chrome.browserAction = chrome.browserAction || {};
+    chrome.browserAction.onClicked = new chrome.Event(eventName);
+  }
+
   function setupToolstripEvents(renderViewId) {
     chrome.toolstrip = chrome.toolstrip || {};
     chrome.toolstrip.onExpanded =
@@ -317,6 +324,7 @@ var chrome = chrome || {};
     }
 
     setupPageActionEvents(extensionId);
+    setupBrowserActionEvent(extensionId);
     setupToolstripEvents(GetRenderViewId());
   });
 })();

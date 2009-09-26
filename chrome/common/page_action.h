@@ -11,21 +11,21 @@
 
 #include "base/basictypes.h"
 
-class PageAction {
+class ContextualAction {
  public:
-  PageAction();
-  virtual ~PageAction();
+  ContextualAction();
+  virtual ~ContextualAction();
 
   typedef enum {
-    PERMANENT = 0,
-    TAB = 1,
-  } PageActionType;
+    PAGE_ACTION = 0,
+    BROWSER_ACTION = 1,
+  } ContextualActionType;
 
   std::string id() const { return id_; }
   void set_id(const std::string& id) { id_ = id; }
 
-  PageActionType type() const { return type_; }
-  void set_type(PageActionType type) { type_ = type; }
+  ContextualActionType type() const { return type_; }
+  void set_type(ContextualActionType type) { type_ = type; }
 
   std::string extension_id() const { return extension_id_; }
   void set_extension_id(const std::string& extension_id) {
@@ -41,30 +41,31 @@ class PageAction {
   }
 
  private:
-  // The id for the PageAction, for example: "RssPageAction".
+  // The id for the ContextualAction, for example: "RssPageAction".
+  // For BrowserActions this is blank.
   std::string id_;
 
-  // The type of the PageAction.
-  PageActionType type_;
+  // The type of the ContextualAction, either PageAction or BrowserAction.
+  ContextualActionType type_;
 
-  // The id for the extension this PageAction belongs to (as defined in the
-  // extension manifest).
+  // The id for the extension this ContextualAction belongs to (as defined in
+  // the extension manifest).
   std::string extension_id_;
 
-  // The name of the PageAction.
+  // The name of the ContextualAction.
   std::string name_;
 
   // The paths to the icons that this PageIcon can show.
   std::vector<std::string> icon_paths_;
 };
 
-typedef std::map<std::string, PageAction*> PageActionMap;
+typedef std::map<std::string, ContextualAction*> ContextualActionMap;
 
 // This class keeps track of what values each tab uses to override the default
-// values of the PageAction.
-class PageActionState {
+// values of the ContextualAction.
+class ContextualActionState {
  public:
-  PageActionState(std::string title, int icon_index)
+  ContextualActionState(std::string title, int icon_index)
     : title_(title), icon_index_(icon_index) {
   }
 
@@ -78,7 +79,7 @@ class PageActionState {
   // The icon to use.
   int icon_index_;
 
-  DISALLOW_COPY_AND_ASSIGN(PageActionState);
+  DISALLOW_COPY_AND_ASSIGN(ContextualActionState);
 };
 
 #endif  // CHROME_COMMON_PAGE_ACTION_H_

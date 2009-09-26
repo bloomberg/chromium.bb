@@ -347,7 +347,7 @@ class LocationBarView : public LocationBar,
    public:
     PageActionImageView(LocationBarView* owner,
                         Profile* profile,
-                        const PageAction* page_action,
+                        const ContextualAction* page_action,
                         const BubblePositioner* bubble_positioner);
     virtual ~PageActionImageView();
 
@@ -374,7 +374,7 @@ class LocationBarView : public LocationBar,
 
     // The PageAction that this view represents. The PageAction is not owned by
     // us, it resides in the extension of this particular profile.
-    const PageAction* page_action_;
+    const ContextualAction* page_action_;
 
     // The icons representing different states for the page action.
     std::vector<SkBitmap> page_action_icons_;

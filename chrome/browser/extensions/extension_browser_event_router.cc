@@ -359,19 +359,29 @@ void ExtensionBrowserEventRouter::PageActionExecuted(
     const std::string& url,
     int button) {
   ListValue args;
-
   args.Append(Value::CreateStringValue(page_action_id));
 
   DictionaryValue* data = new DictionaryValue();
   data->Set(tab_keys::kTabIdKey, Value::CreateIntegerValue(tab_id));
   data->Set(tab_keys::kTabUrlKey, Value::CreateStringValue(url));
   data->Set(page_action_keys::kButtonKey, Value::CreateIntegerValue(button));
-
   args.Append(data);
 
   std::string json_args;
   JSONWriter::Write(&args, false, &json_args);
 
   std::string event_name = extension_id + std::string("/") + page_action_id;
+  DispatchEvent(profile, event_name.c_str(), json_args);
+}
+
+void ExtensionBrowserEventRouter::BrowserActionExecuted(
+    Profile* profile, const std::string& extension_id, int window_id) {
+  ListValue args;
+  args.Append(Value::CreateIntegerValue(window_id));
+
+  std::string json_args;
+  JSONWriter::Write(&args, false, &json_args);
+
+  std::string event_name = std::string("browserAction/") + extension_id;
   DispatchEvent(profile, event_name.c_str(), json_args);
 }

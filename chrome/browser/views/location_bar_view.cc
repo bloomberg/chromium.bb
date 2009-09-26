@@ -644,7 +644,7 @@ void LocationBarView::DeletePageActionViews() {
 }
 
 void LocationBarView::RefreshPageActionViews() {
-  std::vector<PageAction*> page_actions;
+  std::vector<ContextualAction*> page_actions;
   if (profile_->GetExtensionsService())
     page_actions = profile_->GetExtensionsService()->GetPageActions();
 
@@ -1183,7 +1183,7 @@ void LocationBarView::SecurityImageView::ShowInfoBubble() {
 LocationBarView::PageActionImageView::PageActionImageView(
     LocationBarView* owner,
     Profile* profile,
-    const PageAction* page_action,
+    const ContextualAction* page_action,
     const BubblePositioner* bubble_positioner)
     : LocationBarImageView(bubble_positioner),
       owner_(owner),
@@ -1250,7 +1250,8 @@ void LocationBarView::PageActionImageView::UpdateVisibility(
   current_tab_id_ = ExtensionTabUtil::GetTabId(contents);
   current_url_ = url;
 
-  const PageActionState* state = contents->GetPageActionState(page_action_);
+  const ContextualActionState* state =
+      contents->GetPageActionState(page_action_);
   bool visible = state != NULL;
   if (visible) {
     // Set the tooltip.

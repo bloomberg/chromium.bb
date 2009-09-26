@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/stl_util-inl.h"
 #include "base/third_party/nss/blapi.h"
 #include "base/third_party/nss/sha256.h"
 #include "chrome/common/chrome_constants.h"
@@ -106,9 +107,7 @@ const size_t Extension::kNumPermissions =
     arraysize(Extension::kPermissionNames);
 
 Extension::~Extension() {
-  for (PageActionMap::iterator i = page_actions_.begin();
-       i != page_actions_.end(); ++i)
-    delete i->second;
+  STLDeleteValues(&page_actions_);
 }
 
 const std::string Extension::VersionString() const {
@@ -150,12 +149,18 @@ GURL Extension::GetResourceURL(const GURL& extension_url,
   return ret_val;
 }
 
-const PageAction* Extension::GetPageAction(std::string id) const {
-  PageActionMap::const_iterator it = page_actions_.find(id);
-  if (it == page_actions_.end())
-    return NULL;
+const ContextualAction* Extension::GetContextualAction(
+    std::string id, ContextualAction::ContextualActionType action_type) const {
+  if (action_type == ContextualAction::BROWSER_ACTION) {
+    DCHECK(id.empty());  // Multiple browser actions are not allowed.
+    return browser_action_.get();
+  } else {
+    ContextualActionMap::const_iterator it = page_actions_.find(id);
+    if (it == page_actions_.end())
+      return NULL;
 
-  return it->second;
+    return it->second;
+  }
 }
 
 Extension::Location Extension::ExternalExtensionInstallType(
@@ -306,13 +311,14 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
   return true;
 }
 
-// Helper method that loads a PageAction object from a dictionary in the
-// page_action list of the manifest.
-PageAction* Extension::LoadPageActionHelper(
+// Helper method that loads a PageAction or BrowserAction object from a
+// dictionary in the page_actions list or browser_action key of the manifest.
+ContextualAction* Extension::LoadContextualActionHelper(
     const DictionaryValue* page_action, int definition_index,
-    std::string* error) {
-  scoped_ptr<PageAction> result(new PageAction());
+    std::string* error, ContextualAction::ContextualActionType action_type) {
+  scoped_ptr<ContextualAction> result(new ContextualAction());
   result->set_extension_id(id());
+  result->set_type(action_type);
 
   ListValue* icons;
   // Read the page action |icons|.
@@ -339,14 +345,18 @@ PageAction* Extension::LoadPageActionHelper(
     ++icon_count;
   }
 
-  // Read the page action |id|.
-  std::string id;
-  if (!page_action->GetString(keys::kPageActionId, &id)) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(
-        errors::kInvalidPageActionId, IntToString(definition_index));
-    return NULL;
+  if (action_type == ContextualAction::BROWSER_ACTION) {
+    result->set_id("");  // Not needed (only 1 browser action per extension).
+  } else {
+    // Read the page action |id|.
+    std::string id;
+    if (!page_action->GetString(keys::kPageActionId, &id)) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidPageActionId, IntToString(definition_index));
+      return NULL;
+    }
+    result->set_id(id);
   }
-  result->set_id(id);
 
   // Read the page action |name|.
   std::string name;
@@ -356,23 +366,6 @@ PageAction* Extension::LoadPageActionHelper(
     return NULL;
   }
   result->set_name(name);
-
-  // Read the page action |type|. It is optional and set to permanent if
-  // missing.
-  std::string type;
-  if (!page_action->GetString(keys::kType, &type)) {
-    result->set_type(PageAction::PERMANENT);
-  } else if (!LowerCaseEqualsASCII(type, values::kPageActionTypeTab) &&
-             !LowerCaseEqualsASCII(type, values::kPageActionTypePermanent)) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(
-        errors::kInvalidPageActionTypeValue, IntToString(definition_index));
-    return NULL;
-  } else {
-    if (LowerCaseEqualsASCII(type, values::kPageActionTypeTab))
-      result->set_type(PageAction::TAB);
-    else
-      result->set_type(PageAction::PERMANENT);
-  }
 
   return result.release();
 }
@@ -940,12 +933,28 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
         return false;
       }
 
-      PageAction* page_action =
-          LoadPageActionHelper(page_action_value, i, error);
-      if (!page_action)
+      ContextualAction* contextual_action =
+          LoadContextualActionHelper(page_action_value, i, error,
+                                     ContextualAction::PAGE_ACTION);
+      if (!contextual_action)
         return false;  // Failed to parse page action definition.
-      page_actions_[page_action->id()] = page_action;
+      page_actions_[contextual_action->id()] = contextual_action;
     }
+  }
+
+  if (source.HasKey(keys::kBrowserAction)) {
+    DictionaryValue* browser_action_value;
+    if (!source.GetDictionary(keys::kBrowserAction, &browser_action_value)) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidBrowserAction, "");
+      return false;
+    }
+
+    browser_action_.reset(
+        LoadContextualActionHelper(browser_action_value, 0, error,
+                                   ContextualAction::BROWSER_ACTION));
+    if (!browser_action_.get())
+      return false;  // Failed to parse browser action definition.
   }
 
   // Initialize the permissions (optional).
@@ -1051,7 +1060,7 @@ std::set<FilePath> Extension::GetBrowserImages() {
   }
 
   // page action icons
-  for (PageActionMap::const_iterator it = page_actions().begin();
+  for (ContextualActionMap::const_iterator it = page_actions().begin();
        it != page_actions().end(); ++it) {
     const std::vector<std::string>& icon_paths = it->second->icon_paths();
     for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
