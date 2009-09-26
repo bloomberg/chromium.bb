@@ -23,28 +23,11 @@
     # Linux-Mac cross compiler distcc farm.
     'chromium_mac_pch%': 1,
 
-    # Override branding to select the desired branding flavor.
-    'branding%': 'Chromium',
-
-    # Override buildtype to select the desired build flavor.
-    # Dev - everyday build for development/testing
-    # Official - release build (generally implies additional processing)
-    # TODO(mmoss) Once 'buildtype' is fully supported (e.g. Windows gyp
-    # conversion is done), some of the things which are now controlled by
-    # 'branding', such as symbol generation, will need to be refactored based
-    # on 'buildtype' (i.e. we don't care about saving symbols for non-Official
-    # builds).
-    'buildtype%': 'Dev',
-
     # Set to 1 to enable code coverage.  In addition to build changes
     # (e.g. extra CFLAGS), also creates a new target in the src/chrome
     # project file called "coverage".
     # Currently ignored on Windows.
     'coverage%': 0,
-
-    # Overridable specification for potential use of alternative
-    # JavaScript engines.
-    'javascript_engine%': 'v8',
 
     # To do a shared build on linux we need to be able to choose between type
     # static_library and shared_library. We default to doing a static build
@@ -70,14 +53,7 @@
     # The architecture that we're building for (x86, arm).
     'target_arch%': 'ia32',
 
-    # By default linux does not use views. To turn on views in Linux
-    # set the variable GYP_DEFINES to "toolkit_views=1", or modify
-    # ~/.gyp/include.gypi .
-    'toolkit_views%': 0,
-
     'linux2%': 0,
-
-    'chrome_personalization%': 0,
 
     # By default we assume that we are building as part of Chrome
     'nacl_standalone%': 0,
@@ -105,24 +81,8 @@
           'NACL_BUILD_SUBARCH=64',
         ],
       }],
-      ['branding=="Chrome"', {
-        'defines': ['GOOGLE_CHROME_BUILD'],
-        'conditions': [
-          ['OS=="linux"', {
-            'cflags': [ '-gstabs' ],
-          }],
-        ],
-      }, {  # else: branding!="Chrome"
-        'defines': ['CHROMIUM_BUILD'],
-      }],
-      ['toolkit_views==1', {
-        'defines': ['TOOLKIT_VIEWS=1'],
-      }],
       ['linux2==1', {
         'defines': ['LINUX2=1'],
-      }],
-      ['chrome_personalization==1', {
-        'defines': ['CHROME_PERSONALIZATION=1'],
       }],
       ['coverage!=0', {
         'conditions': [
@@ -372,7 +332,6 @@
           'Release': {
             'variables': {
               'release_optimize%': '2',
-              'release_extra_cflags%': '',
             },
             'cflags': [
               '-O<(release_optimize)',
@@ -383,7 +342,6 @@
               # can be removed at link time with --gc-sections.
               '-fdata-sections',
               '-ffunction-sections',
-              '<(release_extra_cflags)',
             ],
           },
         },
@@ -411,40 +369,6 @@
               # Needed so that libs with .s files (e.g. libicudata.a)
               # are compatible with the general 32-bit-ness.
               '-m32',
-            ],
-            # All floating-point computations on x87 happens in 80-bit
-            # precision.  Because the C and C++ language standards allow
-            # the compiler to keep the floating-point values in higher
-            # precision than what's specified in the source and doing so
-            # is more efficient than constantly rounding up to 64-bit or
-            # 32-bit precision as specified in the source, the compiler,
-            # especially in the optimized mode, tries very hard to keep
-            # values in x87 floating-point stack (in 80-bit precision)
-            # as long as possible. This has important side effects, that
-            # the real value used in computation may change depending on
-            # how the compiler did the optimization - that is, the value
-            # kept in 80-bit is different than the value rounded down to
-            # 64-bit or 32-bit. There are possible compiler options to make
-            # this behavior consistent (e.g. -ffloat-store would keep all
-            # floating-values in the memory, thus force them to be rounded
-            # to its original precision) but they have significant runtime
-            # performance penalty.
-            #
-            # -mfpmath=sse -msse2 makes the compiler use SSE instructions
-            # which keep floating-point values in SSE registers in its
-            # native precision (32-bit for single precision, and 64-bit for
-            # double precision values). This means the floating-point value
-            # used during computation does not change depending on how the
-            # compiler optimized the code, since the value is always kept
-            # in its specified precision.
-            'conditions': [
-              ['branding=="Chromium"', {
-                'cflags': [
-                  '-march=pentium4',
-                  '-msse2',
-                  '-mfpmath=sse',
-                ],
-              }],
             ],
             'cflags': [
               '-m32',
