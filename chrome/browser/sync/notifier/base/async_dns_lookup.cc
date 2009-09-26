@@ -15,11 +15,11 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "chrome/browser/sync/notifier/base/nethelpers.h"
 #include "chrome/browser/sync/notifier/gaia_auth/inet_aton.h"
 #include "talk/base/byteorder.h"
 #include "talk/base/common.h"
-#include "talk/base/logging.h"
 #include "talk/base/socketaddress.h"
 #include "talk/base/thread.h"
 
@@ -49,7 +49,7 @@ void AsyncDNSLookup::DoWork() {
     talk_base::CritScope scope(&cs_);
     ip_list_.push_back(talk_base::NetworkToHost32(addr.s_addr));
   } else {
-    LOG_F(LS_VERBOSE) << "(" << hostname << ")";
+    LOG(INFO) << "(" << hostname << ")";
     hostent ent;
     char buffer[8192];
     int errcode = 0;
@@ -68,8 +68,8 @@ void AsyncDNSLookup::DoWork() {
             break;
           }
           uint32 ip = talk_base::NetworkToHost32(*addr);
-          LOG_F(LS_VERBOSE) << "(" << hostname << ") resolved to: "
-                            << talk_base::SocketAddress::IPToString(ip);
+          LOG(INFO) << "(" << hostname << ") resolved to: "
+                    << talk_base::SocketAddress::IPToString(ip);
           ip_list_.push_back(ip);
         }
         // Maintain the invariant that either the list is not empty or the
@@ -88,7 +88,7 @@ void AsyncDNSLookup::DoWork() {
           error_ = errcode;
         }
       }
-      LOG_F(LS_ERROR) << "(" << hostname << ") error: " << error_;
+      LOG(ERROR) << "(" << hostname << ") error: " << error_;
     }
   }
 }

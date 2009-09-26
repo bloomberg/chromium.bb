@@ -6,6 +6,7 @@
 
 #include "chrome/browser/sync/notifier/communicator/single_login_attempt.h"
 
+#include "base/logging.h"
 #include "chrome/browser/sync/notifier/communicator/connection_options.h"
 #include "chrome/browser/sync/notifier/communicator/connection_settings.h"
 #include "chrome/browser/sync/notifier/communicator/const_communicator.h"
@@ -463,7 +464,7 @@ void SingleLoginAttempt::OnClientStateChangeClosed(
 
 void SingleLoginAttempt::HandleConnectionPasswordError(
     const buzz::CaptchaChallenge& captcha_challenge) {
-  LOG(LS_VERBOSE) << "SingleLoginAttempt::HandleConnectionPasswordError";
+  LOG(INFO) << "SingleLoginAttempt::HandleConnectionPasswordError";
 
   // Clear the auth cookie.
   std::string current_auth_cookie =
@@ -486,7 +487,7 @@ void SingleLoginAttempt::HandleConnectionError(
     int subcode,
     const buzz::XmlElement* stream_error,
     const buzz::CaptchaChallenge& captcha_challenge) {
-  LOG_F(LS_VERBOSE) << "(" << code << ", " << subcode << ")";
+  LOG(INFO) << "(" << code << ", " << subcode << ")";
 
   // Save off the error code information, so we can use it to tell the user
   // what went wrong if all else fails.

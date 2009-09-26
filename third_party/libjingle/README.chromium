@@ -35,3 +35,6 @@ Local Modifications:
   * Renamed "talk/xmpp/constants.*" to "talk/xmpp/xmppconstants.*" to get
     around an IncrediBuild link error.  Apparently IncrediBuild can become
     confused when two compilation units have the same filename.
+  * Added a #define guard to libjingle's base/logging.h to prevent the
+    LOG() macros from being redefined when included by users of the
+    library.  The #define guard is SAFE_TO_DEFINE_TALK_BASE_LOGGING_MACROS.

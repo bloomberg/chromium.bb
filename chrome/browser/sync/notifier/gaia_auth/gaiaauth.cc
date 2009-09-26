@@ -4,11 +4,11 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "chrome/browser/sync/notifier/gaia_auth/gaiaauth.h"
 #include "talk/base/asynchttprequest.h"
 #include "talk/base/firewallsocketserver.h"
 #include "talk/base/httpclient.h"
-#include "talk/base/logging.h"
 #include "talk/base/physicalsocketserver.h"
 #include "talk/base/signalthread.h"
 #include "talk/base/socketadapters.h"

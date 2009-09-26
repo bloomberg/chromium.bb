@@ -4,9 +4,10 @@
 //
 // Originally from libjingle. Minor alterations to compile it in Chrome.
 
-#include "talk/base/common.h"
-#include "talk/base/logging.h"
 #include "talk/base/win32window.h"
+
+#include "base/logging.h"
+#include "talk/base/common.h"
 
 namespace talk_base {
 
@@ -42,7 +43,7 @@ bool Win32Window::Create(HWND parent, const wchar_t* title, DWORD style,
     wcex.lpszClassName = kWindowBaseClassName;
     window_class_ = ::RegisterClassEx(&wcex);
     if (!window_class_) {
-      LOG_GLE(LS_ERROR) << "RegisterClassEx failed";
+      LOG(ERROR) << "RegisterClassEx failed: " << GetLastError();
       return false;
     }
   }
@@ -97,7 +98,7 @@ LRESULT Win32Window::WndProc(HWND hwnd, UINT uMsg,
     if (WM_DESTROY == uMsg) {
       for (HWND child = ::GetWindow(hwnd, GW_CHILD); child;
            child = ::GetWindow(child, GW_HWNDNEXT)) {
-        LOG(LS_INFO) << "Child window: " << static_cast<void*>(child);
+        LOG(INFO) << "Child window: " << static_cast<void*>(child);
       }
     }
     if (WM_NCDESTROY == uMsg) {

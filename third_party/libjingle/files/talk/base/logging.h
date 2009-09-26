@@ -65,9 +65,12 @@ class StreamInterface;
 //                 << ErrorName(err, LIBRARY_ERRORS);
 
 struct ConstantLabel { int value; const char * label; };
+
+#if defined(SAFE_TO_DEFINE_TALK_BASE_LOGGING_MACROS)
 #define KLABEL(x) { x, #x }
 #define TLABEL(x,y) { x, y }
 #define LASTLABEL { 0, 0 }
+#endif // defined(SAFE_TO_DEFINE_TALK_BASE_LOGGING_MACROS)
 
 const char * FindLabel(int value, const ConstantLabel entries[]);
 std::string ErrorName(int err, const ConstantLabel* err_table);
@@ -193,6 +196,7 @@ void LogMultiline(LoggingSeverity level, const char* label, bool input,
 //////////////////////////////////////////////////////////////////////
 
 // If LOGGING is not explicitly defined, default to enabled in debug mode
+#if defined(SAFE_TO_DEFINE_TALK_BASE_LOGGING_MACROS)
 #if !defined(LOGGING)
 #if defined(_DEBUG) && !defined(NDEBUG)
 #define LOGGING 1
@@ -288,6 +292,7 @@ inline bool LogCheckLevel(LoggingSeverity sev) {
 
 #endif  // !LOGGING
 #endif  // LOG
+#endif  // defined(SAFE_TO_DEFINE_TALK_BASE_LOGGING_MACROS)
 
 //////////////////////////////////////////////////////////////////////
 

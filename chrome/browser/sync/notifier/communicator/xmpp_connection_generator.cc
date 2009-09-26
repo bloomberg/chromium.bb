@@ -14,6 +14,7 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "chrome/browser/sync/notifier/base/async_dns_lookup.h"
 #include "chrome/browser/sync/notifier/base/signal_thread_task.h"
 #include "chrome/browser/sync/notifier/communicator/connection_options.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/sync/notifier/communicator/product_info.h"
 #include "talk/base/autodetectproxy.h"
 #include "talk/base/httpcommon.h"
-#include "talk/base/logging.h"
 #include "talk/base/task.h"
 #include "talk/base/thread.h"
 #include "talk/xmpp/prexmppauth.h"
@@ -55,7 +55,7 @@ XmppConnectionGenerator::XmppConnectionGenerator(
 }
 
 XmppConnectionGenerator::~XmppConnectionGenerator() {
-  LOG(LS_VERBOSE) << "XmppConnectionGenerator::~XmppConnectionGenerator";
+  LOG(INFO) << "XmppConnectionGenerator::~XmppConnectionGenerator";
 }
 
 const talk_base::ProxyInfo& XmppConnectionGenerator::proxy() const {
@@ -70,7 +70,7 @@ const talk_base::ProxyInfo& XmppConnectionGenerator::proxy() const {
 
 // Starts resolving proxy information.
 void XmppConnectionGenerator::StartGenerating() {
-  LOG(LS_VERBOSE) << "XmppConnectionGenerator::StartGenerating";
+  LOG(INFO) << "XmppConnectionGenerator::StartGenerating";
 
   talk_base::AutoDetectProxy* proxy_detect =
       new talk_base::AutoDetectProxy(GetUserAgentString());
@@ -102,7 +102,7 @@ void XmppConnectionGenerator::StartGenerating() {
 
 void XmppConnectionGenerator::OnProxyDetect(
     talk_base::AutoDetectProxy* proxy_detect) {
-  LOG(LS_VERBOSE) << "XmppConnectionGenerator::OnProxyDetect";
+  LOG(INFO) << "XmppConnectionGenerator::OnProxyDetect";
 
   ASSERT(settings_list_.get());
   ASSERT(proxy_detect);
@@ -144,10 +144,10 @@ void XmppConnectionGenerator::UseNextConnection() {
 
 void XmppConnectionGenerator::OnServerDNSResolved(
     AsyncDNSLookup* dns_lookup) {
-  LOG(LS_VERBOSE) << "XmppConnectionGenerator::OnServerDNSResolved";
+  LOG(INFO) << "XmppConnectionGenerator::OnServerDNSResolved";
 
   // Print logging info.
-  LOG(LS_VERBOSE) << "  server: " <<
+  LOG(INFO) << "  server: " <<
       server_list_[server_index_].server.ToString() <<
       "  error: " << dns_lookup->error();
   if (first_dns_error_ == 0 && dns_lookup->error() != 0) {
@@ -159,7 +159,7 @@ void XmppConnectionGenerator::OnServerDNSResolved(
   }
 
   for (int i = 0; i < static_cast<int>(dns_lookup->ip_list().size()); ++i) {
-    LOG(LS_VERBOSE)
+    LOG(INFO)
         << "  ip " << i << " : "
         << talk_base::SocketAddress::IPToString(dns_lookup->ip_list()[i]);
   }
@@ -187,23 +187,23 @@ static const char* ProtocolToString(cricket::ProtocolType proto) {
 }
 
 void XmppConnectionGenerator::UseCurrentConnection() {
-  LOG(LS_VERBOSE) << "XmppConnectionGenerator::UseCurrentConnection";
+  LOG(INFO) << "XmppConnectionGenerator::UseCurrentConnection";
 
   ConnectionSettings* settings = settings_list_->GetSettings(settings_index_);
-  LOG(LS_INFO) << "*** Attempting "
-               << ProtocolToString(settings->protocol()) << " connection to "
-               << settings->server().IPAsString() << ":"
-               << settings->server().port()
-               << " (via " << ProxyToString(settings->proxy().type)
-               << " proxy @ " << settings->proxy().address.IPAsString() << ":"
-               << settings->proxy().address.port() << ")";
+  LOG(INFO) << "*** Attempting "
+            << ProtocolToString(settings->protocol()) << " connection to "
+            << settings->server().IPAsString() << ":"
+            << settings->server().port()
+            << " (via " << ProxyToString(settings->proxy().type)
+            << " proxy @ " << settings->proxy().address.IPAsString() << ":"
+            << settings->proxy().address.port() << ")";
 
   SignalNewSettings(*settings);
 }
 
 void XmppConnectionGenerator::HandleExhaustedConnections() {
-  LOG_F(LS_VERBOSE) << "(" << buzz::XmppEngine::ERROR_SOCKET
-                    << ", " << first_dns_error_ << ")";
+  LOG(INFO) << "(" << buzz::XmppEngine::ERROR_SOCKET
+            << ", " << first_dns_error_ << ")";
   SignalExhaustedSettings(successfully_resolved_dns_, first_dns_error_);
 }
 

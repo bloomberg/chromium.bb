@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/notifier/gaia_auth/gaiahelper.h"
+#include "base/logging.h"
 #include "talk/base/common.h"
 #include "talk/base/cryptstring.h"
 #include "talk/base/httpclient.h"
@@ -147,9 +148,9 @@ GaiaResponse GaiaParseSidResponse(const talk_base::HttpClient& client,
     response.assign(stream->GetBuffer(), length);
   }
 
-  LOG(LS_INFO) << "GaiaAuth request to " << client.request().path;
-  LOG(LS_INFO) << "GaiaAuth Status Code: " << status_code;
-  LOG(LS_INFO) << response;
+  LOG(INFO) << "GaiaAuth request to " << client.request().path;
+  LOG(INFO) << "GaiaAuth Status Code: " << status_code;
+  LOG(INFO) << response;
 
   if (status_code == talk_base::HC_FORBIDDEN) {
     // The error URL may be the relative path to the captcha jpg.

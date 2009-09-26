@@ -11,6 +11,7 @@
       'FEATURE_ENABLE_SSL',
       'FEATURE_ENABLE_VOICEMAIL',  # TODO(ncarter): Do we really need this?
       '_USE_32BIT_TIME_T',
+      'SAFE_TO_DEFINE_TALK_BASE_LOGGING_MACROS',
     ],
     'include_dirs': [
       './overrides',
@@ -238,9 +239,9 @@
         'files/talk/xmpp/xmppstanzaparser.h',
         'files/talk/xmpp/xmpptask.cc',
         'files/talk/xmpp/xmpptask.h',
-        'overrides/base/basictypes.h',
-        'overrides/base/constructormagic.h',
-        'overrides/base/scoped_ptr.h',
+        'overrides/talk/base/basictypes.h',
+        'overrides/talk/base/constructormagic.h',
+        'overrides/talk/base/scoped_ptr.h',
         'overrides/config.h',
       ],
       'conditions': [
