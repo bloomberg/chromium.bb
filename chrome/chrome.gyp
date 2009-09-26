@@ -399,6 +399,11 @@
       'dependencies': [
         '../base/base.gyp:base',
       ],
+      'conditions': [
+        ['OS=="linux"', {
+          'dependencies': ['../build/linux/system.gyp:gtk'],
+        }],
+      ],
       'sources': [
         'common/chrome_constants.cc',
         'common/chrome_constants.h',
