@@ -100,7 +100,6 @@ class DownloadShelfContextMenuWin : public DownloadShelfContextMenu,
       context_menu->AppendMenuItem(TOGGLE_PAUSE, L"", views::Menu::NORMAL);
     context_menu->AppendMenuItem(SHOW_IN_FOLDER, L"", views::Menu::NORMAL);
     context_menu->AppendSeparator();
-    context_menu->AppendMenuItem(REMOVE_ITEM, L"", views::Menu::NORMAL);
     context_menu->AppendMenuItem(CANCEL, L"", views::Menu::NORMAL);
     context_menu->RunMenuAt(point.x(), point.y());
   }

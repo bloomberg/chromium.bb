@@ -1888,10 +1888,6 @@ each locale. aa1 -->
                desc="Download context menu cancel">
         &amp;Cancel
       </message>
-      <message name="IDS_DOWNLOAD_MENU_REMOVE_ITEM"
-               desc="Download context menu remove">
-        &amp;Remove from list
-      </message>
       <message name="IDS_DOWNLOAD_MENU_PAUSE_ITEM"
                desc="Download context menu pause download">
         &amp;Pause

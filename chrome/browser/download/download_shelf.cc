@@ -59,8 +59,6 @@ std::wstring DownloadShelfContextMenu::GetItemLabel(int id) const {
       return l10n_util::GetString(IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE);
     case CANCEL:
       return l10n_util::GetString(IDS_DOWNLOAD_MENU_CANCEL);
-    case REMOVE_ITEM:
-      return l10n_util::GetString(IDS_DOWNLOAD_MENU_REMOVE_ITEM);
     case TOGGLE_PAUSE: {
       if (download_->is_paused())
         return l10n_util::GetString(IDS_DOWNLOAD_MENU_RESUME_ITEM);
@@ -82,9 +80,6 @@ bool DownloadShelfContextMenu::IsItemCommandEnabled(int id) const {
       return download_util::CanOpenDownload(download_);
     case CANCEL:
       return download_->state() == DownloadItem::IN_PROGRESS;
-    case REMOVE_ITEM:
-      return download_->state() == DownloadItem::COMPLETE ||
-          download_->state() == DownloadItem::CANCELLED;
     case TOGGLE_PAUSE:
       return download_->state() == DownloadItem::IN_PROGRESS;
     default:
@@ -109,12 +104,6 @@ void DownloadShelfContextMenu::ExecuteItemCommand(int id) {
     }
     case CANCEL:
       model_->CancelTask();
-      break;
-    case REMOVE_ITEM:
-      download_->Remove(false);
-      // |download_| has been deleted now, prevent further access to it.
-      download_ = NULL;
-      model_ = NULL;
       break;
     case TOGGLE_PAUSE:
       // It is possible for the download to complete before the user clicks the

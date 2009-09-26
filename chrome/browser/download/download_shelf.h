@@ -57,7 +57,6 @@ class DownloadShelfContextMenu {
     OPEN_WHEN_COMPLETE,  // Open the download when it's finished.
     ALWAYS_OPEN_TYPE,    // Default this file extension to always open.
     CANCEL,              // Cancel the download.
-    REMOVE_ITEM,         // Removes the item from the download shelf.
     TOGGLE_PAUSE,        // Temporarily pause a download.
     MENU_LAST
   };
