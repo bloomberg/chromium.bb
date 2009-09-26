@@ -8,12 +8,10 @@
 // LayoutTests/fast/js/flaky.js = FAIL PASS
 // LayoutTests/fast/js/crash.js = CRASH TIMEOUT FAIL PASS
 //
-// To add other options:
-// SKIP : LayoutTests/fast/js/no-good.js = TIMEOUT PASS
-// DEBUG : LayoutTests/fast/js/no-good.js = TIMEOUT PASS
-// DEBUG SKIP : LayoutTests/fast/js/no-good.js = TIMEOUT PASS
-// LINUX DEBUG SKIP : LayoutTests/fast/js/no-good.js = TIMEOUT PASS
-// BUG1234 DEBUG MAC : LayoutTests/fast/js/no-good.js = TIMEOUT PASS
+// The format of a test line is as follows:
+// METADATA : relative/path/to/test.html = EXPECTATIONS
+//
+// Valid values for METADATA:
 //
 // BUG[0-9]+: See this bug for more information. Every test that isn't marked
 //            WONTFIX should have a BUG annotation.
@@ -22,15 +20,33 @@
 // WONTFIX: For tests that we never intend to pass on a given platform.
 // DEBUG: Expectations apply only to the debug build.
 // RELEASE: Expectations apply only to release build.
-// LINUX/WIN/MAC: Expectations apply only to these platforms.
+// LINUX/WIN/WIN-XP/WIN-VISTA/MAC: Expectations apply only to these platforms.
 //
-// The format of a test line is as follows:
-// METADATA : relative/path/to/test.html = EXPECTATIONS
+// Valid values for EXPECTATIONS:
+//
+// PASS: Test should pass
+// CRASH: Test should crash
+// TIMEOUT: Test should timeout
+// IMAGE: Test will produce an incorrect image dump
+// TEXT: Test will produce incorrect text output (either full or simplified)
+// IMAGE+TEXT: Test will produce both incorrect text and images
+// FAIL: Test will produce either incorrect text, images, or both
+//
+// If a line contains multiple expectations, it is considered "flakey",
+// because it means that we're not producing consistent, reliable results.
 //
 // For example,
 // LINUX : LayoutTests/media = PASS FAIL
 //
 // The above means that all the media tests are flaky, but only on Linux.
+//
+// Other examples:
+//
+// SKIP : LayoutTests/fast/js/no-good.js = TIMEOUT PASS
+// DEBUG : LayoutTests/fast/js/no-good.js = TIMEOUT PASS
+// DEBUG SKIP : LayoutTests/fast/js/no-good.js = TIMEOUT PASS
+// LINUX DEBUG SKIP : LayoutTests/fast/js/no-good.js = TIMEOUT PASS
+// BUG1234 DEBUG MAC : LayoutTests/fast/js/no-good.js = TIMEOUT PASS
 //
 // Notes:
 // -A test cannot be both SLOW and TIMEOUT
