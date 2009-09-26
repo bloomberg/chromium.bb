@@ -2521,6 +2521,8 @@
                 ['include', '^browser/views/bookmark_menu_button.cc'],
                 ['include', '^browser/views/bookmark_menu_button.h'],
                 ['include', '^browser/views/bookmark_menu_controller_views.cc'],
+                ['include', '^browser/views/browser_actions_container.cc'],
+                ['include', '^browser/views/browser_actions_container.h'],
                 ['include', '^browser/views/browser_bubble_gtk.cc'],
                 ['include', '^browser/views/browser_bubble.cc'],
                 ['include', '^browser/views/browser_bubble.h'],
