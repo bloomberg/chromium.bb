@@ -16,6 +16,17 @@
       '../../<(gtestdir)',
       '../../<(nacldir)',
     ],
+    # TODO(rlp): remove this after fixing signed / unsigned issues in
+    # command buffer code and tests.
+    'target_conditions': [
+      ['OS == "mac"',
+        {
+          'xcode_settings': {
+            'GCC_TREAT_WARNINGS_AS_ERRORS': 'NO'
+          },
+        },
+      ],
+    ],
   },
   'targets': [
     {
@@ -126,7 +137,7 @@
         ['OS == "mac"',
           {
             'xcode_settings': {
-              'GCC_PREFIX_HEADER': 'command_buffer/service/cross/precompile.h',
+              'GCC_PREFIX_HEADER': 'service/cross/precompile.h',
             },
           },
         ],

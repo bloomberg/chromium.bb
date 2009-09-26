@@ -34,6 +34,10 @@
       ['OS=="mac"', {
           'xcode_settings': {
             'MACOSX_DEPLOYMENT_TARGET': '10.4',
+            # TODO(maf): figure out proper fix for the following.
+            # There is only one place in plugin_mac.mm which attempts
+            # to use ObjC exception handling.
+            'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
           },
       }],
     ],

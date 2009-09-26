@@ -52,7 +52,7 @@
 #include <string>
 #include <vector>
 #include "base/scoped_ptr.h"
-#include "base/cross/std_hash.h"
+#include "base/hash_tables.h"
 #include "core/cross/display_mode.h"
 #include "core/cross/display_window.h"
 #include "core/cross/object_base.h"
@@ -74,6 +74,41 @@ namespace o3d {
 class Client;
 class Renderer;
 }
+
+// Hashes the NPClass and ObjectBase types so they can be used in a hash_map.
+#if defined(COMPILER_GCC)
+namespace __gnu_cxx {
+
+template<>
+struct hash<NPClass*> {
+  std::size_t operator()(NPClass* const& ptr) const {
+    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
+  }
+};
+
+template<>
+struct hash<const o3d::ObjectBase::Class*> {
+  std::size_t operator()(const o3d::ObjectBase::Class* const& ptr) const {
+    return hash<size_t>()(reinterpret_cast<size_t>(ptr));
+  }
+};
+
+}  // namespace __gnu_cxx
+#elif defined(COMPILER_MSVC)
+namespace stdext {
+
+template<>
+inline size_t hash_value(NPClass* const& ptr) {
+  return hash_value(reinterpret_cast<size_t>(ptr));
+}
+
+template<>
+inline size_t hash_value(const o3d::ObjectBase::Class* const& ptr) {
+  return hash_value(reinterpret_cast<size_t>(ptr));
+}
+
+}  // namespace stdext
+#endif  // COMPILER
 
 namespace glue {
 class StreamManager;
@@ -119,10 +154,10 @@ void InitializeGlue(NPP npp);
 typedef glue::namespace_o3d::class_Client::NPAPIObject ClientNPObject;
 
 class PluginObject: public NPObject {
-  typedef o3d::base::hash_map<Id, NPAPIObject *> ClientObjectMap;
-  typedef o3d::base::hash_map<const ObjectBase::Class *, NPClass *>
+  typedef ::base::hash_map<Id, NPAPIObject *> ClientObjectMap;
+  typedef ::base::hash_map<const ObjectBase::Class *, NPClass *>
       ClientToNPClassMap;
-  typedef o3d::base::hash_map<NPClass *, const ObjectBase::Class *>
+  typedef ::base::hash_map<NPClass *, const ObjectBase::Class *>
       NPToClientClassMap;
 
   NPP npp_;

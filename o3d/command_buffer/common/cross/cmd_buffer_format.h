@@ -67,6 +67,13 @@
 namespace o3d {
 namespace command_buffer {
 
+namespace cmd {
+  enum ArgFlags {
+    kFixed = 0x0,
+    kAtLeastN = 0x1,
+  };
+}  // namespace cmd
+
 // Computes the number of command buffer entries needed for a certain size. In
 // other words it rounds up to a multiple of entries.
 inline uint32 ComputeNumEntries(size_t size_in_bytes) {
@@ -456,11 +463,6 @@ void* NextImmediateCmdAddress(void* cmd, uint32 size_of_data_in_bytes) {
   return reinterpret_cast<char*>(cmd) + sizeof(T) +   // NOLINT
       RoundSizeToMultipleOfEntries(size_of_data_in_bytes);
 }
-
-enum ArgFlags {
-  kFixed = 0x0,
-  kAtLeastN = 0x1,
-};
 
 struct SharedMemory {
   void Init(uint32 _id, uint32 _offset) {

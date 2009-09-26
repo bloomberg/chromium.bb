@@ -39,7 +39,7 @@
 #include <npruntime.h>
 #include <map>
 
-#include "base/cross/std_hash.h"
+#include "base/hash_tables.h"
 #include "core/cross/error_status.h"
 #include "core/cross/service_dependency.h"
 #include "core/cross/types.h"
@@ -179,14 +179,32 @@ class NPObjectPtr {
   T* object_;
 };
 
+}  // namespace o3d
+
 // Hashes an NPObject so it can be used in a hash_map.
-template <typename T>
-class NPObjectPtrHash {
- public:
-  size_t operator() (const NPObjectPtr<T>& ptr) const {
-    return o3d::base::hash<size_t>()(reinterpret_cast<size_t>(ptr.Get()));
+#if defined(COMPILER_GCC)
+namespace __gnu_cxx {
+
+template<class T>
+struct hash<o3d::NPObjectPtr<T> > {
+  std::size_t operator()(const o3d::NPObjectPtr<T>& ptr) const {
+    return hash<size_t>()(reinterpret_cast<size_t>(ptr.Get()));
   }
 };
+
+}  // namespace __gnu_cxx
+#elif defined(COMPILER_MSVC)
+namespace stdext {
+
+template<class T>
+inline size_t hash_value(const o3d::NPObjectPtr<T>& ptr) {
+  return hash_value(reinterpret_cast<size_t>(ptr.Get()));
+}
+
+}  // namespace stdext
+#endif  // COMPILER
+
+namespace o3d {
 
 // A V8 handle that automatically disposes itself when it is destroyed. There
 // must be only one of these for each persistent handle, otherwise they might
@@ -369,9 +387,8 @@ class NPV8Bridge {
 
   NPObjectPtr<NPObject> GetNPConstructFunction(int arity);
 
-  typedef o3d::base::hash_map<NPObjectPtr<NPObject>,
-                              AutoV8Persistent<v8::Object>,
-                              NPObjectPtrHash<NPObject> > NPV8ObjectMap;
+  typedef ::base::hash_map<NPObjectPtr<NPObject>,
+                           AutoV8Persistent<v8::Object> > NPV8ObjectMap;
 
   typedef std::map<int, NPObjectPtr<NPObject> > NPConstructFunctionMap;
 

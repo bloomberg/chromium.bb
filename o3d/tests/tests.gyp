@@ -14,6 +14,17 @@
       '..',
       '../..',
     ],
+    # TODO(rlp): remove this after fixing signed / unsigned issues in
+    # command buffer code and tests.
+    'target_conditions': [
+      ['OS == "mac"',
+        {
+          'xcode_settings': {
+            'GCC_TREAT_WARNINGS_AS_ERRORS': 'NO'
+          },
+        },
+      ],
+    ],
   },
   'targets': [
     {
