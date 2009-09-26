@@ -90,7 +90,7 @@ BufferSyncInterface::ParseError GAPIDecoder::DoCommand(
     const CommandInfo& info = g_command_info[command];
   unsigned int info_arg_count = static_cast<unsigned int>(info.arg_count);
     if ((info.arg_flags == cmd::kFixed && arg_count == info_arg_count) ||
-        (info.arg_flags == cmd::kAtLeastN && arg_count > info_arg_count)) {
+        (info.arg_flags == cmd::kAtLeastN && arg_count >= info_arg_count)) {
       switch (command) {
         #define O3D_COMMAND_BUFFER_CMD_OP(name)                    \
           case cmd::name::kCmdId:                                  \
@@ -190,8 +190,12 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleDestroyVertexBuffer(
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetVertexBufferDataImmediate(
     uint32 arg_count,
     const cmd::SetVertexBufferDataImmediate& args) {
+  uint32 size = ImmediateDataSize(arg_count, args);
+  if (size == 0) {
+    return ParseError::kParseNoError;
+  }
   return gapi_->SetVertexBufferData(args.id, args.offset,
-                                    ImmediateDataSize(arg_count, args),
+                                    size,
                                     AddressAfterStruct(args));
 }
 
@@ -236,8 +240,11 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleDestroyIndexBuffer(
 BufferSyncInterface::ParseError GAPIDecoder::HandleSetIndexBufferDataImmediate(
     uint32 arg_count,
     const cmd::SetIndexBufferDataImmediate& args) {
-  return gapi_->SetIndexBufferData(args.id, args.offset,
-                                   ImmediateDataSize(arg_count, args),
+  uint32 size = ImmediateDataSize(arg_count, args);
+  if (size == 0) {
+    return ParseError::kParseNoError;
+  }
+  return gapi_->SetIndexBufferData(args.id, args.offset, size,
                                    AddressAfterStruct(args));
 }
 
@@ -354,6 +361,9 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleCreateEffectImmediate(
   uint32 data_size = ImmediateDataSize(arg_count, args);
   if (size > data_size)
     return BufferSyncInterface::kParseInvalidArguments;
+  if (data_size == 0) {
+    return ParseError::kParseNoError;
+  }
   return gapi_->CreateEffect(args.id, size, AddressAfterStruct(args));
 }
 
@@ -411,6 +421,9 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleCreateParamByNameImmediate(
   uint32 data_size = ImmediateDataSize(arg_count, args);
   if (size > data_size)
     return BufferSyncInterface::kParseInvalidArguments;
+  if (data_size == 0) {
+    return ParseError::kParseNoError;
+  }
   return gapi_->CreateParamByName(args.param_id, args.effect_id, size,
                                   AddressAfterStruct(args));
 }
@@ -443,6 +456,9 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleSetParamDataImmediate(
   uint32 data_size = ImmediateDataSize(arg_count, args);
   if (size > data_size)
     return BufferSyncInterface::kParseInvalidArguments;
+  if (data_size == 0) {
+    return ParseError::kParseNoError;
+  }
   return gapi_->SetParamData(args.id, size, AddressAfterStruct(args));
 }
 
@@ -613,6 +629,9 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleSetTextureDataImmediate(
   if (face >= 6 || unused != 0 ||
       size > data_size)
     return BufferSyncInterface::kParseInvalidArguments;
+  if (data_size == 0) {
+    return ParseError::kParseNoError;
+  }
   return gapi_->SetTextureData(
       args.texture_id, x, y, z, width, height, depth, level,
       static_cast<texture::Face>(face), args.row_pitch,
