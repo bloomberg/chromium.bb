@@ -83,6 +83,7 @@ extern int BrowserMain(const MainFunctionParams&);
 extern int RendererMain(const MainFunctionParams&);
 extern int PluginMain(const MainFunctionParams&);
 extern int WorkerMain(const MainFunctionParams&);
+extern int NaClMain(const MainFunctionParams&);
 extern int UtilityMain(const MainFunctionParams&);
 extern int ProfileImportMain(const MainFunctionParams&);
 extern int ZygoteMain(const MainFunctionParams&);
@@ -581,6 +582,8 @@ int ChromeMain(int argc, char** argv) {
 #endif
   } else if (process_type == switches::kWorkerProcess) {
     rv = WorkerMain(main_params);
+  } else if (process_type == switches::kNaClProcess) {
+    rv = NaClMain(main_params);
   } else if (process_type == switches::kZygoteProcess) {
 #if defined(OS_LINUX)
     if (ZygoteMain(main_params)) {
