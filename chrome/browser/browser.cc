@@ -2433,6 +2433,9 @@ void Browser::UpdateToolbar(bool should_restore_state) {
 
 void Browser::ScheduleUIUpdate(const TabContents* source,
                                unsigned changed_flags) {
+  if (!source)
+    return;
+
   // Do some synchronous updates.
   if (changed_flags & TabContents::INVALIDATE_URL &&
       source == GetSelectedTabContents()) {
@@ -2442,14 +2445,15 @@ void Browser::ScheduleUIUpdate(const TabContents* source,
     UpdateToolbar(false);
     changed_flags &= ~TabContents::INVALIDATE_URL;
   }
-  if (changed_flags & TabContents::INVALIDATE_LOAD && source) {
+  if (changed_flags & TabContents::INVALIDATE_LOAD) {
     // Update the loading state synchronously. This is so the throbber will
     // immediately start/stop, which gives a more snappy feel. We want to do
-    // this for any tab so they start & stop quickly, but the source can be
-    // NULL, so we have to check for that.
+    // this for any tab so they start & stop quickly.
     tabstrip_model_.UpdateTabContentsStateAt(
         tabstrip_model_.GetIndexOfController(&source->controller()), true);
-    changed_flags &= ~TabContents::INVALIDATE_LOAD;
+    // The status bubble needs to be updated during INVALIDATE_LOAD too, but
+    // we do that asynchronously by not stripping INVALIDATE_LOAD from
+    // changed_flags.
   }
 
   if (changed_flags & TabContents::INVALIDATE_BOOKMARK_BAR ||
@@ -2479,12 +2483,12 @@ void Browser::ProcessPendingUIUpdates() {
 #ifndef NDEBUG
   // Validate that all tabs we have pending updates for exist. This is scary
   // because the pending list must be kept in sync with any detached or
-  // deleted tabs. This code does not dereference any TabContents pointers.
+  // deleted tabs.
   for (UpdateMap::const_iterator i = scheduled_updates_.begin();
        i != scheduled_updates_.end(); ++i) {
     bool found = false;
     for (int tab = 0; tab < tab_count(); tab++) {
-      if (&GetTabContentsAt(tab)->controller() == &i->first->controller()) {
+      if (GetTabContentsAt(tab) == i->first) {
         found = true;
         break;
       }
@@ -2501,25 +2505,27 @@ void Browser::ProcessPendingUIUpdates() {
     const TabContents* contents = i->first;
     unsigned flags = i->second;
 
-    if (flags & TabContents::INVALIDATE_PAGE_ACTIONS)
-      window()->GetLocationBar()->UpdatePageActions();
+    if (contents == GetSelectedTabContents()) {
+      // Updates that only matter when the tab is selected go here.
 
-    // Updating the URL happens synchronously in ScheduleUIUpdate.
-    TabContents* selected_tab = GetSelectedTabContents();
-    if (selected_tab &&
-        flags & TabContents::INVALIDATE_LOAD && GetStatusBubble()) {
-      GetStatusBubble()->SetStatus(selected_tab->GetStatusText());
+      if (flags & TabContents::INVALIDATE_PAGE_ACTIONS)
+        window()->GetLocationBar()->UpdatePageActions();
+
+      // Updating the URL happens synchronously in ScheduleUIUpdate.
+      if (flags & TabContents::INVALIDATE_LOAD && GetStatusBubble())
+        GetStatusBubble()->SetStatus(contents->GetStatusText());
+
+      if (flags & TabContents::INVALIDATE_TAB) {
+        command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS,
+            !contents->GetFavIcon().isNull());
+        window_->UpdateTitleBar();
+      }
     }
 
+    // Updates that don't depend upon the selected state go here.
     if (flags & TabContents::INVALIDATE_TAB) {
       tabstrip_model_.UpdateTabContentsStateAt(
           tabstrip_model_.GetIndexOfTabContents(contents), false);
-      window_->UpdateTitleBar();
-
-      if (selected_tab && contents == selected_tab) {
-        command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS,
-            !selected_tab->GetFavIcon().isNull());
-      }
     }
 
     // We don't need to process INVALIDATE_STATE, since that's not visible.
