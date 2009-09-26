@@ -18,8 +18,8 @@ sys.path.append(path_utils.PathFromBase('third_party'))
 import simplejson
 
 # Test expectation and modifier constants.
-(PASS, FAIL, TIMEOUT, CRASH, SKIP, WONTFIX, DEFER, SLOW, REBASELINE, NONE) = \
-    range(10)
+(PASS, FAIL, TEXT, IMAGE, IMAGE_PLUS_TEXT, TIMEOUT, CRASH, SKIP, WONTFIX,
+ DEFER, SLOW, REBASELINE, NONE) = range(13)
 
 # Test expectation file update action constants
 (NO_CHANGE, REMOVE_TEST, REMOVE_PLATFORM, ADD_PLATFORMS_EXCEPT_THIS) = range(4)
@@ -195,6 +195,10 @@ class TestExpectationsFile:
   Notes:
     -A test cannot be both SLOW and TIMEOUT
     -A test cannot be both DEFER and WONTFIX
+    -A test should only be one of IMAGE, TEXT, IMAGE+TEXT, or FAIL. FAIL is
+     a migratory state that currently means either IMAGE, TEXT, or IMAGE+TEXT.
+     Once we have finished migrating the expectations, we will change FAIL
+     to have the meaning of IMAGE+TEXT and remove the IMAGE+TEXT identifier.
     -A test can be included twice, but not via the same path.
     -If a test is included twice, then the more precise path wins.
     -CRASH tests cannot be DEFER or WONTFIX
@@ -202,6 +206,9 @@ class TestExpectationsFile:
 
   EXPECTATIONS = { 'pass': PASS,
                    'fail': FAIL,
+                   'text': TEXT,
+                   'image': IMAGE,
+                   'image+text': IMAGE_PLUS_TEXT,
                    'timeout': TIMEOUT,
                    'crash': CRASH }
 

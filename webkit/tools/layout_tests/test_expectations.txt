@@ -543,8 +543,9 @@ BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint-2.html = 
 BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/backgrounds/solid-color-context-restore.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/dynamic/containing-block-change.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/forms/hidden-listbox.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/forms/listbox-clip.html = FAIL
+BUG8630 WIN LINUX : LayoutTests/fast/forms/hidden-listbox.html = IMAGE+TEXT
+BUG8630 WIN : LayoutTests/fast/forms/listbox-clip.html = IMAGE
+BUG8630 LINUX : LayoutTests/fast/forms/listbox-clip.html = IMAGE+TEXT
 BUG8630 WIN LINUX : LayoutTests/fast/overflow/hidden-scrollbar-resize.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/reflections/inline-crash.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/text/font-initial.html = FAIL
@@ -680,8 +681,8 @@ BUG19625 SKIP : LayoutTests/fast/eventsource = TIMEOUT
 BUG19625 SKIP : LayoutTests/http/tests/eventsource = TIMEOUT
 
 // Implement HTML5 datalist element.
-BUG20226 : LayoutTests/fast/forms/datalist-nonoption-child.html = FAIL
-BUG20226 : LayoutTests/fast/forms/datalist.html = FAIL
+BUG20226 : LayoutTests/fast/forms/datalist-nonoption-child.html = TEXT
+BUG20226 : LayoutTests/fast/forms/datalist.html = TEXT
 BUG20292 : LayoutTests/fast/forms/input-list.html = FAIL
 BUG20292 : LayoutTests/fast/forms/input-selectedoption.html = FAIL
 

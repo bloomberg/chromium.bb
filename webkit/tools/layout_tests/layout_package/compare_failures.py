@@ -2,9 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""A helper class for comparing the failures and crashes between layout test
-runs.  The results from the last test run are stored in expected-failures.txt
-and expected-crashes.txt in the layout test results directory."""
+"""A helper class for comparing the failures and crashes from a test run
+against what we expected to happen (as specified in test_expectations.txt)."""
 
 import errno
 import os
@@ -22,7 +21,7 @@ def PrintFilesFromSet(filenames, header_text, output, opt_expectations=None,
   filenames: a list of absolute filenames
   header_text: a string to display before the list of filenames
   output: file descriptor to write the results to.
-  opt_expectations: expecations that failed for this test
+  opt_expectations: expectations that failed for this test
   """
   if not len(filenames):
     return
@@ -44,6 +43,8 @@ class CompareFailures:
   # A list of which TestFailure classes count as a failure vs a crash.
   FAILURE_TYPES = (test_failures.FailureTextMismatch,
                    test_failures.FailureImageHashMismatch)
+  TEXT_FAILURE_TYPES = (test_failures.FailureTextMismatch,)
+  IMAGE_FAILURE_TYPES = (test_failures.FailureImageHashMismatch,)
   CRASH_TYPES = (test_failures.FailureCrash,)
   HANG_TYPES = (test_failures.FailureTimeout,)
   MISSING_TYPES = (test_failures.FailureMissingResult,
@@ -51,7 +52,7 @@ class CompareFailures:
 
 
   def __init__(self, test_files, test_failures, expectations):
-    """Read the past layout test run's failures from disk.
+    """Calculate the regressions in this test run.
 
     Args:
       test_files is a set of the filenames of all the test cases we ran
@@ -121,17 +122,21 @@ class CompareFailures:
     missing = set()
     failures = set()
 
-    for test, failure_types in self._test_failures.iteritems():
+    for test, failure_type_instances in self._test_failures.iteritems():
       # Although each test can have multiple test_failures, we only put them
       # into one list (either the crash list or the failure list).  We give
       # priority to a crash/timeout over others, and to missing results over
       # a text mismatch.
-      is_crash = [True for f in failure_types if type(f) in self.CRASH_TYPES]
-      is_hang = [True for f in failure_types if type(f) in self.HANG_TYPES]
-      is_missing = [True for f in failure_types
-                    if type(f) in self.MISSING_TYPES]
-      is_failure = [True for f in failure_types
-                    if type(f) in self.FAILURE_TYPES]
+      failure_types = [type(f) for f in failure_type_instances]
+      is_crash = [True for f in failure_types if f in self.CRASH_TYPES]
+      is_hang = [True for f in failure_types if f in self.HANG_TYPES]
+      is_missing = [True for f in failure_types if f in self.MISSING_TYPES]
+      is_failure = [True for f in failure_types if f in self.FAILURE_TYPES]
+      is_text_failure = [True for f in failure_types if f in
+         self.TEXT_FAILURE_TYPES]
+      is_image_failure = [True for f in failure_types if f in
+         self.IMAGE_FAILURE_TYPES]
+
       expectations = self._expectations.GetExpectations(test)
       if is_crash:
         if not test_expectations.CRASH in expectations: crashes.add(test)
@@ -141,8 +146,20 @@ class CompareFailures:
       # expected files.
       elif is_missing and not self._expectations.IsRebaselining(test):
         missing.add(test)
+      elif is_image_failure and is_text_failure:
+        if (not test_expectations.FAIL in expectations and
+            not test_expectations.IMAGE_PLUS_TEXT in expectations):
+            failures.add(test)
+      elif is_image_failure:
+        if (not test_expectations.FAIL in expectations and
+            not test_expectations.IMAGE in expectations):
+            failures.add(test)
+      elif is_text_failure:
+        if (not test_expectations.FAIL in expectations and
+            not test_expectations.TEXT in expectations):
+            failures.add(test)
       elif is_failure:
-        if not test_expectations.FAIL in expectations: failures.add(test)
+        raise ValueError('unexpected failure type:' + f)
       worklist.remove(test)
 
     for test in worklist:
@@ -155,7 +172,6 @@ class CompareFailures:
     self._regressed_hangs = hangs
     self._missing = missing
     self._regressed_failures = failures
-
 
   def GetRegressions(self):
     """Returns a set of regressions from the test expectations. This is
