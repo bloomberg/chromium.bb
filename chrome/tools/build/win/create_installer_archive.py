@@ -55,7 +55,7 @@ def BuildVersion(output_dir):
   minor = 0
   build = 0
   patch = 0
-  for line in open(os.path.join(output_dir, "..", VERSION_FILE), 'r'):
+  for line in open(os.path.join(output_dir, "..", "..", "chrome", VERSION_FILE), 'r'):
     line = line.rstrip()
     if line.startswith('MAJOR='):
       major = line[6:]
