@@ -1837,6 +1837,8 @@ BUG9798 LINUX : LayoutTests/transitions/transition-end-event-container.html = FA
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-set-none.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/interrupt-zero-duration.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/svg/custom/invisible-text-after-scrolling.xhtml = FAIL PASS
+BUG9798 LINUX : LayoutTests/transitions/transition-end-event-window.html = FAIL PASS
+BUG9798 LINUX : LayoutTests/transitions/transition-end-event-left.html = FAIL PASS
 
 // Failed in WebKit merge 42287:42324
 BUG9916 WIN LINUX : LayoutTests/css2.1/t0803-c5502-mrgn-r-02-c.html = FAIL
