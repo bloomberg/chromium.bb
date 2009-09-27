@@ -2355,3 +2355,6 @@ BUG_LEVIN : LayoutTests/platform/gtk/scrollbars/overflow-scrollbar-horizontal-wh
 // WebKit update 48747:48766
 BUG_LEVIN : LayoutTests/fast/dom/timer-clear-interval-in-handler-and-generate-error.html = FAIL
 BUG_LEVIN WIN LINUX : LayoutTests/editing/pasteboard/5478250.html = FAIL
+
+// WebKit update 48766:48796
+BUG_LEVIN : LayoutTests/fast/dom/Attr/access-after-element-destruction.html = FAIL
