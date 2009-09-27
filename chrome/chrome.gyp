@@ -6069,7 +6069,7 @@
           'type': 'executable',
           'msvs_guid': '89C1C190-A5D1-4EC4-BD6A-67FF2195C7CC',
           'dependencies': [
-            'common',
+            'common_constants',
             '../base/base.gyp:base',
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../breakpad/breakpad.gyp:breakpad_sender',
