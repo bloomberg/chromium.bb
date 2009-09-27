@@ -5,6 +5,7 @@
 #ifndef VIEWS_EXAMPLES_TABBED_PANE_EXAMPLE_H_
 #define VIEWS_EXAMPLES_TABBED_PANE_EXAMPLE_H_
 
+#include "base/compiler_specific.h"
 #include "base/string_util.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
@@ -20,10 +21,14 @@ class TabbedPaneExample : protected ExampleBase,
   TabbedPaneExample(views::TabbedPane* parent, views::Label* message)
       : ExampleBase(message),
         tabbed_pane_(new views::TabbedPane()),
-        add_(new views::TextButton(this, L"Add")),
-        add_at_(new views::TextButton(this, L"Add At 1")),
-        remove_at_(new views::TextButton(this, L"Remove At 1")),
-        select_at_(new views::TextButton(this, L"Select At 1")) {
+        ALLOW_THIS_IN_INITIALIZER_LIST(
+            add_(new views::TextButton(this, L"Add"))),
+        ALLOW_THIS_IN_INITIALIZER_LIST(
+            add_at_(new views::TextButton(this, L"Add At 1"))),
+        ALLOW_THIS_IN_INITIALIZER_LIST(
+            remove_at_(new views::TextButton(this, L"Remove At 1"))),
+        ALLOW_THIS_IN_INITIALIZER_LIST(
+            select_at_(new views::TextButton(this, L"Select At 1"))) {
     views::View* container = new views::View();
     parent->AddTab(L"Tabbed Pane", container);
 
