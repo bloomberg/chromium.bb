@@ -344,6 +344,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../skia/skia.gyp:skia',
+        'views',
       ],
       'include_dirs': [
         '..',
