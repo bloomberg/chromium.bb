@@ -1229,6 +1229,8 @@ void SyncManager::SyncInternal::Shutdown() {
   LOG_IF(ERROR, WAIT_TIMEOUT == wait_result) << "Thread exit timeout expired";
   CloseHandle(address_watch_params_.exit_flag);
 #endif
+
+  CommandLine::Terminate();
 }
 
 // Listen to model changes, filter out ones initiated by the sync API, and
