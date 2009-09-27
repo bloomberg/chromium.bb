@@ -410,7 +410,8 @@ WebViewImpl::WebViewImpl(WebViewDelegate* delegate)
                        &context_menu_client_impl_,
                        &editor_client_impl_,
                        &drag_client_impl_,
-                       &inspector_client_impl_));
+                       &inspector_client_impl_,
+                       NULL));
 
   page_->backForwardList()->setClient(&back_forward_list_client_impl_);
   page_->setGroupName(kPageGroupName);

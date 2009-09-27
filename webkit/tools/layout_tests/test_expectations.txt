@@ -2351,3 +2351,7 @@ BUG_DGLAZKOV : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-abort-readyS
 
 // WebKit update 48734:48747
 BUG_LEVIN : LayoutTests/platform/gtk/scrollbars/overflow-scrollbar-horizontal-wheel-scroll.html = TIMEOUT
+
+// WebKit update 48747:48766
+BUG_LEVIN : LayoutTests/fast/dom/timer-clear-interval-in-handler-and-generate-error.html = FAIL
+BUG_LEVIN WIN LINUX : LayoutTests/editing/pasteboard/5478250.html = FAIL
