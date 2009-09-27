@@ -276,7 +276,8 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
 
 // Test if ctrl-* accelerators are workable in omnibox.
 // See http://crbug.com/19193: omnibox blocks ctrl-* commands
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BrowserAccelerators) {
+// This test is disabled. See bug 23213.
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DISABLED_BrowserAccelerators) {
   browser()->FocusLocationBar();
   AutocompleteEditView* edit_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
@@ -405,7 +406,8 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DesiredTLD) {
   EXPECT_STREQ(kDesiredTLDHostname, url.host().c_str());
 }
 
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, AltEnter) {
+// This test is disabled. See bug 23213.
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DISABLED_AltEnter) {
   ASSERT_NO_FATAL_FAILURE(SetupHostResolver());
   browser()->FocusLocationBar();
 
