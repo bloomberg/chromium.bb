@@ -5,6 +5,7 @@
 #ifndef VIEWS_EXAMPLES_RADIO_BUTTON_EXAMPLE_H_
 #define VIEWS_EXAMPLES_RADIO_BUTTON_EXAMPLE_H_
 
+#include "base/compiler_specific.h"
 #include "base/string_util.h"
 #include "views/controls/button/radio_button.h"
 #include "views/controls/button/text_button.h"
@@ -18,8 +19,10 @@ class RadioButtonExample : protected ExampleBase,
  public:
   RadioButtonExample(views::TabbedPane* tabbed_pane, views::Label* message)
       : ExampleBase(message),
-        select_(new views::TextButton(this, L"Select")),
-        status_(new views::TextButton(this, L"Show Status")) {
+        ALLOW_THIS_IN_INITIALIZER_LIST(
+            select_(new views::TextButton(this, L"Select"))),
+        ALLOW_THIS_IN_INITIALIZER_LIST(
+            status_(new views::TextButton(this, L"Show Status"))) {
     int all = arraysize(radio_buttons_);
 
     // divide buttons into 2 groups

@@ -5,6 +5,7 @@
 #ifndef VIEWS_EXAMPLES_MESSAGE_BOX_EXAMPLE_H_
 #define VIEWS_EXAMPLES_MESSAGE_BOX_EXAMPLE_H_
 
+#include "base/compiler_specific.h"
 #include "base/string_util.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/message_box_view.h"
@@ -21,8 +22,10 @@ class MessageBoxExample : protected ExampleBase, private views::ButtonListener {
       : ExampleBase(message),
         message_box_view_(
             new MessageBoxView(0, L"Message Box Message", L"Default Prompt")),
-        status_(new views::TextButton(this, L"Show Status")),
-        toggle_(new views::TextButton(this, L"Toggle Checkbox")) {
+        ALLOW_THIS_IN_INITIALIZER_LIST(
+            status_(new views::TextButton(this, L"Show Status"))),
+        ALLOW_THIS_IN_INITIALIZER_LIST(
+            toggle_(new views::TextButton(this, L"Toggle Checkbox"))) {
     views::View* container = new views::View();
     tabbed_pane->AddTab(L"Message Box View", container);
 
