@@ -12,14 +12,19 @@
 // static
 void CreateApplicationShortcutsDialogGtk::Show(GtkWindow* parent,
                                                const GURL& url,
-                                               const string16& title) {
-  new CreateApplicationShortcutsDialogGtk(parent, url, title);
+                                               const string16& title,
+                                               const SkBitmap& favicon) {
+  new CreateApplicationShortcutsDialogGtk(parent, url, title, favicon);
 }
 
 CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
-    GtkWindow* parent, const GURL& url, const string16& title)
+    GtkWindow* parent,
+    const GURL& url,
+    const string16& title,
+    const SkBitmap& favicon)
     : url_(url),
-      title_(title) {
+      title_(title),
+      favicon_(favicon) {
   // Build the dialog.
   GtkWidget* dialog = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_CREATE_SHORTCUTS_TITLE).c_str(),
@@ -68,6 +73,7 @@ void CreateApplicationShortcutsDialogGtk::OnDialogResponse(GtkWidget* widget,
     ShellIntegration::ShortcutInfo shortcut_info;
     shortcut_info.url = url_;
     shortcut_info.title = title_;
+    shortcut_info.favicon = favicon_;
     shortcut_info.create_on_desktop =
         gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(desktop_checkbox_));
     shortcut_info.create_in_applications_menu =

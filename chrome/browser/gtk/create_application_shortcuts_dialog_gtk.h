@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
@@ -16,11 +17,16 @@ class CreateApplicationShortcutsDialogGtk {
  public:
   // Displays the dialog box to create application shortcuts for |url| with
   // |title|.
-  static void Show(GtkWindow* parent, const GURL& url, const string16& title);
+  static void Show(GtkWindow* parent,
+                   const GURL& url,
+                   const string16& title,
+                   const SkBitmap& favicon);
 
  private:
-  CreateApplicationShortcutsDialogGtk(GtkWindow* parent, const GURL& url,
-                                      const string16& title);
+  CreateApplicationShortcutsDialogGtk(GtkWindow* parent,
+                                      const GURL& url,
+                                      const string16& title,
+                                      const SkBitmap& favicon);
   ~CreateApplicationShortcutsDialogGtk() { }
 
   // Handler to respond to Ok and Cancel responses from the dialog.
@@ -40,6 +46,9 @@ class CreateApplicationShortcutsDialogGtk {
 
   // Visible title of the shortcut.
   string16 title_;
+
+  // The favicon of the tab contents, used to set the icon on the desktop.
+  SkBitmap favicon_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateApplicationShortcutsDialogGtk);
 };

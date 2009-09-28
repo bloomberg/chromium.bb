@@ -40,15 +40,17 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
   const struct {
     const char* url;
     const char* title;
+    const char* icon_name;
     const char* template_contents;
     const char* expected_output;
   } test_cases[] = {
     // Dumb case.
-    { "ignored", "ignored", "", "#!/usr/bin/env xdg-open\n" },
+    { "ignored", "ignored", "ignored", "", "#!/usr/bin/env xdg-open\n" },
 
     // Real-world case.
     { "http://gmail.com",
       "GMail",
+      "chrome-http__gmail.com",
 
       "[Desktop Entry]\n"
       "Version=1.0\n"
@@ -69,7 +71,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "Name=GMail\n"
       "Exec=/opt/google/chrome/google-chrome \"--app=http://gmail.com/\"\n"
       "Terminal=false\n"
-      "Icon=/opt/google/chrome/product_logo_48.png\n"
+      "Icon=chrome-http__gmail.com\n"
       "Type=Application\n"
       "Categories=Application;Network;WebBrowser;\n"
       "MimeType=text/html;text/xml;application/xhtml_xml;\n"
@@ -78,6 +80,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
     // Make sure we don't insert duplicate shebangs.
     { "http://gmail.com",
       "GMail",
+      "chrome-http__gmail.com",
 
       "#!/some/shebang\n"
       "Name=Google Chrome\n"
@@ -91,6 +94,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
     // Make sure i18n-ed comments are removed.
     { "http://gmail.com",
       "GMail",
+      "chrome-http__gmail.com",
 
       "Name=Google Chrome\n"
       "Exec=/opt/google/chrome/google-chrome %U\n"
@@ -101,9 +105,26 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
       "Exec=/opt/google/chrome/google-chrome \"--app=http://gmail.com/\"\n"
     },
 
+    // Make sure that empty icons are replaced by the chrome icon.
+    { "http://gmail.com",
+      "GMail",
+      "",
+
+      "Name=Google Chrome\n"
+      "Exec=/opt/google/chrome/google-chrome %U\n"
+      "Comment[pl]=Jakis komentarz.\n"
+      "Icon=/opt/google/chrome/product_logo_48.png\n",
+
+      "#!/usr/bin/env xdg-open\n"
+      "Name=GMail\n"
+      "Exec=/opt/google/chrome/google-chrome \"--app=http://gmail.com/\"\n"
+      "Icon=/opt/google/chrome/product_logo_48.png\n"
+    },
+
     // Now we're starting to be more evil...
     { "http://evil.com/evil --join-the-b0tnet",
       "Ownz0red\nExec=rm -rf /",
+      "chrome-http__evil.com_evil",
 
       "Name=Google Chrome\n"
       "Exec=/opt/google/chrome/google-chrome %U\n",
@@ -115,6 +136,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
     },
     { "http://evil.com/evil; rm -rf /; \"; rm -rf $HOME >ownz0red",
       "Innocent Title",
+      "chrome-http__evil.com_evil",
 
       "Name=Google Chrome\n"
       "Exec=/opt/google/chrome/google-chrome %U\n",
@@ -127,6 +149,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
     },
     { "http://evil.com/evil | cat `echo ownz0red` >/dev/null\\",
       "Innocent Title",
+      "chrome-http__evil.com_evil",
 
       "Name=Google Chrome\n"
       "Exec=/opt/google/chrome/google-chrome %U\n",
@@ -143,7 +166,8 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
               ShellIntegration::GetDesktopFileContents(
                   test_cases[i].template_contents,
                   GURL(test_cases[i].url),
-                  ASCIIToUTF16(test_cases[i].title)));
+                  ASCIIToUTF16(test_cases[i].title),
+                  test_cases[i].icon_name));
   }
 }
 #endif  // defined(OS_LINUX)

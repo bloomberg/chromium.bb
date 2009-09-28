@@ -221,6 +221,9 @@ class TabContents : public PageNavigator,
   // entry.
   SkBitmap GetFavIcon() const;
 
+  // Returns true if we are not using the default favicon.
+  bool FavIconIsValid() const;
+
   // Returns whether the favicon should be displayed. If this returns false, no
   // space is provided for the favicon, and the favicon is never displayed.
   virtual bool ShouldDisplayFavIcon();

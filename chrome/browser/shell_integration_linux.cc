@@ -17,6 +17,7 @@
 #include "base/eintr_wrapper.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/gfx/png_encoder.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -121,8 +122,11 @@ class CreateDesktopShortcutTask : public Task {
     FilePath shortcut_filename =
         ShellIntegration::GetDesktopShortcutFilename(shortcut_info_.url);
 
+    std::string icon_name = CreateIcon(shortcut_filename);
+
     std::string contents = ShellIntegration::GetDesktopFileContents(
-        template_contents, shortcut_info_.url, shortcut_info_.title);
+        template_contents, shortcut_info_.url, shortcut_info_.title,
+        icon_name);
 
     if (shortcut_info_.create_on_desktop)
       CreateOnDesktop(shortcut_filename, contents);
@@ -132,6 +136,45 @@ class CreateDesktopShortcutTask : public Task {
   }
 
  private:
+  std::string CreateIcon(const FilePath& shortcut_filename) {
+    if (shortcut_info_.favicon.isNull())
+      return std::string();
+
+    // TODO(phajdan.jr): Report errors from this function, possibly as infobars.
+    ScopedTempDir temp_dir;
+    if (!temp_dir.CreateUniqueTempDir())
+      return std::string();
+
+    FilePath temp_file_path = temp_dir.path().Append(
+        shortcut_filename.ReplaceExtension("png"));
+
+    std::vector<unsigned char> png_data;
+    PNGEncoder::EncodeBGRASkBitmap(shortcut_info_.favicon, false, &png_data);
+    int bytes_written = file_util::WriteFile(temp_file_path,
+        reinterpret_cast<char*>(png_data.data()), png_data.size());
+
+    if (bytes_written != static_cast<int>(png_data.size()))
+      return std::string();
+
+    std::vector<std::string> argv;
+    argv.push_back("xdg-icon-resource");
+    argv.push_back("install");
+
+    // Always install in user mode, even if someone runs the browser as root
+    // (people do that).
+    argv.push_back("--mode");
+    argv.push_back("user");
+
+    argv.push_back("--size");
+    argv.push_back(IntToString(shortcut_info_.favicon.width()));
+
+    argv.push_back(temp_file_path.value());
+    std::string icon_name = temp_file_path.BaseName().RemoveExtension().value();
+    argv.push_back(icon_name);
+    LaunchXdgUtility(argv);
+    return icon_name;
+  }
+
   void CreateOnDesktop(const FilePath& shortcut_filename,
                        const std::string& contents) {
     // TODO(phajdan.jr): Report errors from this function, possibly as infobars.
@@ -183,7 +226,7 @@ class CreateDesktopShortcutTask : public Task {
                                              contents.length());
 
     if (bytes_written != static_cast<int>(contents.length()))
-        return;
+      return;
 
     std::vector<std::string> argv;
     argv.push_back("xdg-desktop-menu");
@@ -261,15 +304,13 @@ FilePath ShellIntegration::GetDesktopShortcutFilename(const GURL& url) {
 
 std::string ShellIntegration::GetDesktopFileContents(
     const std::string& template_contents, const GURL& url,
-    const string16& title) {
+    const string16& title, const std::string& icon_name) {
   // See http://standards.freedesktop.org/desktop-entry-spec/latest/
   // Although not required by the spec, Nautilus on Ubuntu Karmic creates its
   // launchers with an xdg-open shebang. Follow that convention.
   std::string output_buffer("#!/usr/bin/env xdg-open\n");
   StringTokenizer tokenizer(template_contents, "\n");
   while (tokenizer.GetNext()) {
-    // TODO(phajdan.jr): Add the icon.
-
     if (tokenizer.token().substr(0, 5) == "Exec=") {
       std::string exec_path = tokenizer.token().substr(5);
       StringTokenizer exec_tokenizer(exec_path, " ");
@@ -294,13 +335,17 @@ std::string ShellIntegration::GetDesktopFileContents(
       // use the URL as a default when the title is empty.
       if (final_title.empty() ||
           final_title.find("\n") != std::string::npos ||
-          final_title.find("\r") != std::string::npos)
+          final_title.find("\r") != std::string::npos) {
         final_title = url.spec();
+      }
       output_buffer += StringPrintf("Name=%s\n", final_title.c_str());
     } else if (tokenizer.token().substr(0, 11) == "GenericName" ||
                tokenizer.token().substr(0, 7) == "Comment" ||
                tokenizer.token().substr(0, 1) == "#") {
       // Skip comment lines.
+    } else if (tokenizer.token().substr(0, 5) == "Icon=" &&
+               !icon_name.empty()) {
+      output_buffer += StringPrintf("Icon=%s\n", icon_name.c_str());
     } else {
       output_buffer += tokenizer.token() + "\n";
     }

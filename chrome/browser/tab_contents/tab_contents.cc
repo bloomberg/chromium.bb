@@ -534,6 +534,18 @@ SkBitmap TabContents::GetFavIcon() const {
   return SkBitmap();
 }
 
+bool TabContents::FavIconIsValid() const {
+  NavigationEntry* entry = controller_.GetTransientEntry();
+  if (entry)
+    return entry->favicon().is_valid();
+
+  entry = controller_.GetLastCommittedEntry();
+  if (entry)
+    return entry->favicon().is_valid();
+
+  return false;
+}
+
 bool TabContents::ShouldDisplayFavIcon() {
   // Always display a throbber during pending loads.
   if (controller_.GetLastCommittedEntry() && controller_.pending_entry())
@@ -766,8 +778,11 @@ void TabContents::CreateShortcut() {
     return;
 
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
+  SkBitmap bitmap;
+  if (FavIconIsValid())
+    bitmap = GetFavIcon();
   CreateApplicationShortcutsDialogGtk::Show(view()->GetTopLevelNativeWindow(),
-                                            GetURL(), GetTitle());
+                                            GetURL(), GetTitle(), bitmap);
 #else
   // We only allow one pending install request. By resetting the page id we
   // effectively cancel the pending install request.

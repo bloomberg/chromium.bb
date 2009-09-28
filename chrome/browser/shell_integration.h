@@ -12,6 +12,10 @@
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 
+#if defined(OS_LINUX)
+#include "third_party/skia/include/core/SkBitmap.h"
+#endif
+
 class FilePath;
 class MessageLoop;
 
@@ -50,11 +54,12 @@ class ShellIntegration {
   // used to launch Chrome.
   static std::string GetDesktopFileContents(
       const std::string& template_contents, const GURL& url,
-      const string16& title);
+      const string16& title, const std::string& icon_name);
 
   struct ShortcutInfo {
     GURL url;
     string16 title;
+    SkBitmap favicon;
 
     bool create_on_desktop;
     bool create_in_applications_menu;
