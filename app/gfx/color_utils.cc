@@ -9,6 +9,8 @@
 #include <windows.h>
 #endif
 
+#include <algorithm>
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "build/build_config.h"
@@ -97,7 +99,7 @@ void SkColorToHSL(SkColor c, HSL* hsl) {
       hsl->h = db - dg;
     else if (g == vmax)
       hsl->h = (1.0 / 3.0) + dr - db;
-    else if (b == vmax)
+    else  // (b == vmax)
       hsl->h = (2.0 / 3.0) + dg - dr;
 
     if (hsl->h < 0.0)
