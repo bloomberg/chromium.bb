@@ -195,7 +195,8 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
       ALLOW_THIS_IN_INITIALIZER_LIST(cached_dibs_cleaner_(
             base::TimeDelta::FromSeconds(5),
             this, &BrowserRenderProcessHost::ClearTransportDIBCache)),
-      zygote_child_(false) {
+      zygote_child_(false),
+      fast_shutdown_(false) {
   widget_helper_ = new RenderWidgetHelper();
 
   registrar_.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
@@ -442,6 +443,7 @@ bool BrowserRenderProcessHost::Init() {
       return false;
     }
     process_.set_handle(process);
+    fast_shutdown_ = false;
 
     // Log the launch time, separating out the first one (which will likely be
     // slower due to the rest of the browser initializing at the same time).
@@ -637,6 +639,8 @@ bool BrowserRenderProcessHost::FastShutdownIfPossible() {
   // Otherwise, we're allowed to just terminate the process. Using exit code 0
   // means that UMA won't treat this as a renderer crash.
   process_.Terminate(ResultCodes::NORMAL_EXIT);
+  process_.Close();
+  fast_shutdown_ = true;
   return true;
 }
 
@@ -763,7 +767,11 @@ void BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
 void BrowserRenderProcessHost::OnChannelConnected(int32 peer_pid) {
   // process_ is not NULL if we created the renderer process
   if (!process_.handle()) {
-    if (base::GetCurrentProcId() == peer_pid) {
+    if (fast_shutdown_) {
+      // We terminated the process, but the ChannelConnected task was still
+      // in the queue. We can safely ignore it.
+      return;
+    } else if (base::GetCurrentProcId() == peer_pid) {
       // We are in single-process mode. In theory we should have access to
       // ourself but it may happen that we don't.
       process_.set_handle(base::GetCurrentProcessHandle());
@@ -818,13 +826,15 @@ void BrowserRenderProcessHost::BadMessageTerminateProcess(
 void BrowserRenderProcessHost::OnChannelError() {
   // Our child process has died.  If we didn't expect it, it's a crash.
   // In any case, we need to let everyone know it's gone.
-
-  DCHECK(process_.handle());
   DCHECK(channel_.get());
 
   bool child_exited;
   bool did_crash;
-  if (zygote_child_) {
+  if (!process_.handle()) {
+    // The process has been terminated (likely FastShutdownIfPossible).
+    did_crash = false;
+    child_exited = true;
+  } else if (zygote_child_) {
 #if defined(OS_LINUX)
     did_crash = Singleton<ZygoteHost>()->DidProcessCrash(
         process_.handle(), &child_exited);

@@ -41,5 +41,5 @@ void ExtensionViewGtk::CreateWidgetHostView() {
   render_widget_host_view_ = new RenderWidgetHostViewGtk(render_view_host());
   render_widget_host_view_->InitAsChild();
 
-  extension_host_->CreateRenderView(render_widget_host_view_);
+  extension_host_->CreateRenderViewSoon(render_widget_host_view_);
 }
