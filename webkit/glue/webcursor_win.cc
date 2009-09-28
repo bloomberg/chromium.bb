@@ -158,9 +158,10 @@ HCURSOR WebCursor::GetCursor(HINSTANCE module_handle){
   HDC workingDC = CreateCompatibleDC(dc);
   HBITMAP bitmap_handle = CreateDIBSection(
       dc, &cursor_bitmap_info, DIB_RGB_COLORS, 0, 0, 0);
-  SetDIBits(
-      0, bitmap_handle, 0, custom_size_.height(), &custom_data_[0],
-      &cursor_bitmap_info, DIB_RGB_COLORS);
+  if (!custom_data_.empty())
+    SetDIBits(
+        0, bitmap_handle, 0, custom_size_.height(), &custom_data_[0],
+        &cursor_bitmap_info, DIB_RGB_COLORS);
 
   HBITMAP old_bitmap = reinterpret_cast<HBITMAP>(
       SelectObject(workingDC, bitmap_handle));

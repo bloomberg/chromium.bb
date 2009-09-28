@@ -88,6 +88,9 @@ bool WebCursor::Deserialize(const Pickle* pickle, void** iter) {
       size_y > kMaxCursorDimension)
     return false;
 
+  if (type == WebCursorInfo::TypeCustom && (size_x == 0 || size_y == 0))
+    return false;
+
   // The * 4 is because the expected format is an array of RGBA pixel values.
   if (size_x * size_y * 4 > data_len)
     return false;
@@ -168,7 +171,8 @@ void WebCursor::SetCustomData(const WebImage& image) {
   const SkBitmap& bitmap = image.getSkBitmap();
   SkAutoLockPixels bitmap_lock(bitmap);
   custom_data_.resize(bitmap.getSize());
-  memcpy(&custom_data_[0], bitmap.getPixels(), bitmap.getSize());
+  if (!custom_data_.empty())
+    memcpy(&custom_data_[0], bitmap.getPixels(), bitmap.getSize());
   custom_size_.set_width(bitmap.width());
   custom_size_.set_height(bitmap.height());
 }
