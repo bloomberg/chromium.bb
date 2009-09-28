@@ -68,7 +68,7 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
 
   // HtmlDialogUIDelegate implementation.
   virtual std::wstring GetDialogTitle() const {
-    return l10n_util::GetString(IDS_SYNC_LOGIN_DIALOG_TITLE);
+    return l10n_util::GetString(IDS_SYNC_MY_BOOKMARKS_LABEL);
   }
 
   // HtmlDialogUIDelegate implementation.

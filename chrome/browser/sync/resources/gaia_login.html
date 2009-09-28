@@ -1,4 +1,4 @@
-<html> 
+<html i18n-values="dir:textdirection;">
 <style type="text/css"><!--
   body,td,div,p,a,font,span {font-family: arial,sans-serif;}
   body { bgcolor:"#ffffff" } 
@@ -12,10 +12,18 @@
       .body { margin-left: 3em;
               margin-right: 5em;
               font-family: arial,sans-serif; }
+      .endaligned {
+        text-align: right;
+      }
+      html[dir='rtl'] .endaligned {
+        text-align: left;
+      }
+      #gaia_account_text { font-weight: bold; }
       div.errorbox-good {}
       div.errorbox-bad {} 
       div.errormsg { color: red; font-size: smaller;
-                     font-family: arial,sans-serif;}
+                     font-family: arial,sans-serif;
+                     display: none;}
       font.errormsg { color: red; font-size: smaller;
                       font-family: arial,sans-serif;}
       hr {
@@ -28,7 +36,8 @@
       }
     --></style> 
   </head> 
-  <body dir="ltr" bgcolor="#ffffff" vlink="#666666"
+  <body bgcolor="#ffffff" vlink="#666666"
+        i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize"
         style="margin-bottom: 0" onload="initForm();"> 
   <table width="100%" align="center" cellpadding="1" cellspacing="1"> 
   <tr> 
@@ -63,7 +72,6 @@
       if (f) {        
         f.Email.value = args.user; 
       }     
-      resetErrorVisibility();
       if (1 == args.error) {
         setElementDisplay("errormsg_1_Password", 'table-row');
         setBlurbError();
@@ -81,15 +89,29 @@
     }
     
     function showGaiaSuccessAndClose() {
-      document.getElementById("signIn").value = "Success!";
+      document.getElementById("signIn").value = templateData['success'];
       setTimeout(CloseDialog, 1600);
     }
     
     function showGaiaSuccessAndSettingUp() {
-      document.getElementById("signIn").value = "Setting up...";
+      document.getElementById("signIn").value = templateData['settingup'];
     }
 
     function initForm() {
+      var acct_text = document.getElementById("gaia_account_text");
+      var translated_text = acct_text.textContent;
+      var posGoogle = translated_text.indexOf('Google');
+      if (posGoogle != -1) {
+        var ltr = templateData['textdirection'] == 'ltr';
+        var googleIsAtEndOfSentence = posGoogle != 0;
+        if (googleIsAtEndOfSentence == ltr) {
+          // We're in ltr and in the translation the word 'Google' is AFTER the
+          // word 'Account' OR we're in rtl and 'Google' is BEFORE 'Account'.
+          var logo_td = document.getElementById('gaia_logo');
+          logo_td.parentNode.appendChild(logo_td);
+        }
+        acct_text.textContent = translated_text.replace('Google','');
+      }
       setInterval(advanceThrobber, 30);
       var args = JSON.parse(chrome.dialogArguments);
       showGaiaLogin(args);
@@ -178,17 +200,17 @@
                cellspacing="0"> 
           <tr> 
             <td colspan="2" align="center"> 
-              <font size="-1"><span i18n-content="signinwithyour"></span></font> 
+              <font size="-1"><span i18n-content="signinprefix"></span></font> 
               <table> 
                 <tr> 
-                  <td valign="top"> 
+                  <td valign="top" id="gaia_logo">
                     <img src="google_transparent.png" alt="Google">
                     </img> 
                   </td>  
                   <td valign="middle"> 
-                    <font size="+0"><b>
-                      <span i18n-content="accountlabel"></span>
-                    </b></font> 
+                    <font size="+0">
+                      <span id="gaia_account_text" i18n-content="signinsuffix"></span>
+                    </font> 
                   </td> 
                 </tr> 
               </table> 
@@ -209,9 +231,9 @@
           <tr> 
             <td colspan="2" align="center"> </td> 
           </tr>
-          <tr> 
-            <td nowrap="nowrap"> 
-              <div align="right"> 
+          <tr>
+            <td nowrap="nowrap">
+              <div class="endaligned">
                 <span class="gaia le lbl" i18n-content="emaillabel">
                 </span> 
               </div> 
@@ -223,18 +245,18 @@
           </tr>
           <tr> 
             <td></td> 
-            <td align="left"> 
+            <td>
               <div class="errormsg" id="errormsg_0_Email"
                    i18n-content="cannotbeblank">
               </div> 
             </td> 
           </tr>           
           <tr> 
-            <td></td> 
-            <td align="left"> </td> 
-          </tr> 
-          <tr> 
-            <td align="right"> 
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="endaligned">
               <span class="gaia le lbl" i18n-content="passwordlabel">
               </span> 
             </td> 
@@ -245,7 +267,7 @@
           </tr>
           <tr> 
             <td></td> 
-            <td align="left"> 
+            <td>
               <div class="errormsg" id="errormsg_0_Password"
                    i18n-content="cannotbeblank">
               </div> 
@@ -254,16 +276,16 @@
           <tr> 
             <td> 
             </td> 
-            <td align="left"> 
+            <td>
               <div class="errormsg" id="errormsg_1_Password">
               <span i18n-content="invalidcredentials"></span>[<a href="http://www.google.com/support/accounts/bin/answer.py?ctx=ch&answer=27444">?</a>]
               </div> 
             </td> 
           </tr> 
-          <tr> 
-            <td> 
-            </td> 
-            <td align="left"> 
+          <tr>
+            <td>
+            </td>
+            <td>
               <div class="errormsg" id="errormsg_0_Connection"
                    i18n-content="couldnotconnect">
               </div> 
@@ -271,14 +293,14 @@
           </tr>          
           <tr> 
             <td> 
-            </td> 
-            <td align="left"> 
-            </td> 
+            </td>
+            <td>
+            </td>
           </tr> 
           <tr> 
             <td> 
             </td> 
-            <td align="left"> 
+            <td>
               <table>
                 <tr>
                   <td>
@@ -290,7 +312,7 @@
                   </td>
                   <td>
                     <input id="signIn" type="button" class="gaia le button"
-                           name="signIn" value="Sign in"
+                           name="signIn" i18n-values="value:signin"
                            onclick="sendCredentialsAndClose();" />
                   </td>
                 </tr>
@@ -322,10 +344,9 @@
 </form> 
 </td> 
 </tr> 
- </table> 
-   <div align="right">
-     <input type="button" name="cancel" value="Cancel" onclick="CloseDialog();"/>
-   </div>
- </table>
+</table> 
+<div class="endaligned">
+  <input type="button" name="cancel" i18n-values="value:cancel" onclick="CloseDialog();"/>
+</div>
 </body> 
 </html>

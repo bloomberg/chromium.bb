@@ -52,50 +52,62 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
   if (path_raw == chrome::kSyncGaiaLoginPath) {
     DictionaryValue localized_strings;
     localized_strings.SetString(L"settingupsync",
-                                "Setting up Bookmarks Sync");
-    localized_strings.SetString(L"errorsigningin", "Error signing in");
+        l10n_util::GetString(IDS_SYNC_LOGIN_SETTING_UP_SYNC));
     localized_strings.SetString(L"introduction",
-        "Google Chrome can store your bookmark data with your Google account."
-        "Bookmarks that you create on this computer will instantly be made"
-        "available on all the computers synced to this account.");
-    localized_strings.SetString(L"signinwithyour", "Sign in with your");
-    localized_strings.SetString(L"accountlabel", "Account");
+        l10n_util::GetString(IDS_SYNC_LOGIN_INTRODUCTION));
+    localized_strings.SetString(L"signinprefix",
+        l10n_util::GetString(IDS_SYNC_LOGIN_SIGNIN_PREFIX));
+    localized_strings.SetString(L"signinsuffix",
+        l10n_util::GetString(IDS_SYNC_LOGIN_SIGNIN_SUFFIX));
     localized_strings.SetString(L"cannotbeblank",
-                                "Required field cannot be left blank");
-    localized_strings.SetString(L"passwordlabel", "Password:");
-    localized_strings.SetString(L"emaillabel", "Email:");
+        l10n_util::GetString(IDS_SYNC_CANNOT_BE_BLANK));
+    localized_strings.SetString(L"emaillabel",
+        l10n_util::GetString(IDS_SYNC_LOGIN_EMAIL));
+    localized_strings.SetString(L"passwordlabel",
+        l10n_util::GetString(IDS_SYNC_LOGIN_PASSWORD));
     localized_strings.SetString(L"invalidcredentials",
-                                "Username and password do not match.");
+        l10n_util::GetString(IDS_SYNC_INVALID_USER_CREDENTIALS));
+    localized_strings.SetString(L"signin",
+        l10n_util::GetString(IDS_SYNC_SIGNIN));
     localized_strings.SetString(L"couldnotconnect",
-                                "Could not connect to the server");
+        l10n_util::GetString(IDS_SYNC_LOGIN_COULD_NOT_CONNECT));
     localized_strings.SetString(L"cannotaccessaccount",
-                                "I cannot access my account");
+        l10n_util::GetString(IDS_SYNC_CANNOT_ACCESS_ACCOUNT));
     localized_strings.SetString(L"createaccount",
-                                "Create a Google Account");
-
+        l10n_util::GetString(IDS_SYNC_CREATE_ACCOUNT));
+    localized_strings.SetString(L"cancel",
+        l10n_util::GetString(IDS_CANCEL));
+    localized_strings.SetString(L"settingup",
+        l10n_util::GetString(IDS_SYNC_LOGIN_SETTING_UP));
+    localized_strings.SetString(L"success",
+        l10n_util::GetString(IDS_SYNC_LOGIN_SUCCESS));
+    localized_strings.SetString(L"errorsigningin",
+        l10n_util::GetString(IDS_SYNC_ERROR_SIGNING_IN));
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_GAIA_LOGIN_HTML));
-
+    SetFontAndTextDirection(&localized_strings);
     response = jstemplate_builder::GetI18nTemplateHtml(
         html, &localized_strings);
   } else if (path_raw == chrome::kSyncMergeAndSyncPath) {
     DictionaryValue localized_strings;
+    localized_strings.SetString(L"introduction",
+        l10n_util::GetString(IDS_SYNC_MERGE_INTRODUCTION));
+    localized_strings.SetString(L"mergeandsynclabel",
+        l10n_util::GetString(IDS_SYNC_MERGE_AND_SYNC_LABEL));
+    localized_strings.SetString(L"abortlabel",
+        l10n_util::GetString(IDS_ABORT));
+    localized_strings.SetString(L"closelabel",
+        l10n_util::GetString(IDS_CLOSE));
+    localized_strings.SetString(L"alldone",
+        l10n_util::GetString(IDS_SYNC_MERGE_ALL_DONE));
     localized_strings.SetString(L"mergeandsyncwarning",
-        "Your existing online bookmarks will be merged with the "
-        "bookmarks on this machine. You can use the Bookmark Manager to "
-        "organize your bookmarks after the merge.");
-    localized_strings.SetString(L"titlewarning",
-                                "Your bookmarks will be merged.");
-    localized_strings.SetString(L"mergeandsynclabel", "Merge and sync");
-    localized_strings.SetString(L"abortlabel", "Abort");
-    localized_strings.SetString(L"alldone", "All Done!");
-    localized_strings.SetString(L"closelabel", "Close");
+        l10n_util::GetString(IDS_SYNC_MERGE_WARNING));
     localized_strings.SetString(L"setuperror",
                                 l10n_util::GetString(IDS_SYNC_SETUP_ERROR));
 
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_MERGE_AND_SYNC_HTML));
-
+    SetFontAndTextDirection(&localized_strings);
     response = jstemplate_builder::GetI18nTemplateHtml(
         html, &localized_strings);
   } else if (path_raw == chrome::kSyncSetupFlowPath) {

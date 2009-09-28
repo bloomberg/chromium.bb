@@ -309,6 +309,9 @@ each locale. aa1 -->
       <message name="IDS_LEARN_MORE" desc="Learn more text">
         Learn more
       </message>
+      <message name="IDS_ABORT" desc="Abort operation">
+        Abort
+      </message>
 
       <!-- content area context menus -->
       <if expr="not pp_ifdef('use_titlecase')">
@@ -5128,14 +5131,66 @@ Keep your key file in a safe place. You will need it to create new versions of y
         View in Google Docs
       </message>
 
-      <!-- Sync menu item strings -->
-      <message name="IDS_SYNC_MENU_LABEL" desc="Text to show in the menu item for bookmark sync.">
-        Sync my bookmarks...
+      <!-- Login dialog strings -->
+      <message name="IDS_SYNC_MY_BOOKMARKS_LABEL" desc="Text to show for the sync login dialog.">
+        Sync my bookmarks
+      </message>
+      <message name="IDS_SYNC_LOGIN_INTRODUCTION" desc="The message to display at the top of the Login dialog">
+        Google Chrome can store your bookmark data with your Google account.
+        Bookmarks that you create on this computer will instantly be made
+        available on all the computers synced to this account.
+      </message>
+      <message name="IDS_SYNC_LOGIN_SIGNIN_PREFIX" desc="The first part of the sentence that is displayed after the login info">
+        Sign in with your
+      </message>
+      <message name="IDS_SYNC_LOGIN_SIGNIN_SUFFIX" desc="The second part of the sentence. Google will be replaced by the Google logo. The translation of 'Account' will be display in bold">
+        Google Account
+      </message>
+      <message name="IDS_SYNC_LOGIN_EMAIL" desc="The user Email address of the Google account">
+        Email:
+      </message>
+      <message name="IDS_SYNC_LOGIN_PASSWORD" desc="The user password of the Google account">
+        Password:
+      </message>
+      <message name="IDS_SYNC_SIGNIN" desc="The label of the button to log to your Google account">
+        Sign in
+      </message>
+      <message name="IDS_SYNC_CANNOT_ACCESS_ACCOUNT" desc="The text of a hyperlink">
+        I cannot access my account
+      </message>
+      <message name="IDS_SYNC_CREATE_ACCOUNT" desc="The text of a hyperlink to create a Google account">
+        Create a Google account
+      </message>
+      <message name="IDS_SYNC_CANNOT_BE_BLANK" desc="The input error message when the user hasn't entered a username or password">
+        Required field cannot be left blank
+      </message>
+      <message name="IDS_SYNC_LOGIN_COULD_NOT_CONNECT" desc="The connect error message">
+        Could not connect to the server
+      </message>
+      <message name="IDS_SYNC_LOGIN_SETTING_UP_SYNC" desc="For the connect error message">
+        Setting up Bookmarks Sync
+      </message>
+      <message name="IDS_SYNC_LOGIN_SETTING_UP" desc="A progress message">
+        Setting up...
+      </message>
+      <message name="IDS_SYNC_LOGIN_SUCCESS" desc="Operation successful">
+        Success!
       </message>
 
-      <!-- Login dialog strings -->
-      <message name="IDS_SYNC_LOGIN_DIALOG_TITLE" desc="The title of the sync login dialog.">
-        Sync my bookmarks
+      <!-- Merge and Sync dialog strings -->
+      <message name="IDS_SYNC_MERGE_INTRODUCTION" desc="The header at the top of the merge and sync dialog.">
+        Your bookmarks will be merged.
+      </message>
+      <message name="IDS_SYNC_MERGE_AND_SYNC_LABEL" desc="The label of the button to actually merge your profile">
+        Merge and sync
+      </message>
+      <message name="IDS_SYNC_MERGE_WARNING" desc="The footer at the bottom of the merge and sync dialog.">
+        Your existing online bookmarks will be merged with the
+        bookmarks on this machine. You can use the Bookmark Manager to organize
+        your bookmarks after the merge.
+      </message>
+      <message name="IDS_SYNC_MERGE_ALL_DONE" desc="Operation finished">
+        All done!
       </message>
 
       <!-- Bookmarks bar strings -->
