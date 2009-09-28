@@ -79,6 +79,7 @@ class ViewEventTestBase : public views::WindowDelegate,
   // Overriden to do nothing so that this class can be used in runnable tasks.
   void AddRef() {}
   void Release() {}
+  static bool ImplementsThreadSafeReferenceCounting() { return false; }
 
  protected:
   // Returns the view that is added to the window.

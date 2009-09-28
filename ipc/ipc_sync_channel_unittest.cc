@@ -66,6 +66,7 @@ class Worker : public Channel::Listener, public Message::Sender {
   }
   void AddRef() { }
   void Release() { }
+  static bool ImplementsThreadSafeReferenceCounting() { return true; }
   bool Send(Message* msg) { return channel_->Send(msg); }
   bool SendWithTimeout(Message* msg, int timeout_ms) {
     return channel_->SendWithTimeout(msg, timeout_ms);

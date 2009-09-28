@@ -98,7 +98,6 @@ class PrintJobWorker : public base::Thread {
 
 template <>
 struct RunnableMethodTraits<printing::PrintJobWorker> {
-  RunnableMethodTraits();
   void RetainCallee(printing::PrintJobWorker* obj);
   void ReleaseCallee(printing::PrintJobWorker* obj);
  private:

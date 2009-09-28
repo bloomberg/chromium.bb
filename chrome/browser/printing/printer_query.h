@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_PRINTING_PRINTER_QUERY_H_
 
 #include "base/scoped_ptr.h"
-#include "base/ref_counted.h"
 #include "chrome/browser/printing/print_job_worker_owner.h"
 
 class CancelableTask;
@@ -21,8 +20,7 @@ namespace printing {
 class PrintJobWorker;
 
 // Query the printer for settings.
-class PrinterQuery : public base::RefCountedThreadSafe<PrinterQuery>,
-                     public PrintJobWorkerOwner {
+class PrinterQuery : public PrintJobWorkerOwner {
  public:
   // GetSettings() UI parameter.
   enum GetSettingsAskParam {
@@ -34,12 +32,6 @@ class PrinterQuery : public base::RefCountedThreadSafe<PrinterQuery>,
   virtual ~PrinterQuery();
 
   // PrintJobWorkerOwner
-  virtual void AddRef() {
-    return base::RefCountedThreadSafe<PrinterQuery>::AddRef();
-  }
-  virtual void Release() {
-    return base::RefCountedThreadSafe<PrinterQuery>::Release();
-  }
   virtual void GetSettingsDone(const PrintSettings& new_settings,
                                PrintingContext::Result result);
   virtual PrintJobWorker* DetachWorker(PrintJobWorkerOwner* new_owner);
