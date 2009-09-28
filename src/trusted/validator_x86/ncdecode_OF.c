@@ -200,6 +200,34 @@ void Define0FOpcodes() {
   DefineOperand(G_Operand, OpFlag(OpSet));
   DefineOperand(Ew_Operand, OpFlag(OpUse));
 
+  DefineOpcode(0xbc, NACLi_386,
+               InstFlag(OpcodeUsesModRm) |
+               InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+               InstBsf);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpSet));
+
+  DefineOpcode(0xbc, NACLi_386,
+               InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) |
+               InstFlag(OperandSize_o) | InstFlag(OpcodeUsesRexW),
+               InstBsf);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpSet));
+
+  DefineOpcode(0xbd, NACLi_386,
+               InstFlag(OpcodeUsesModRm) |
+               InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+               InstBsr);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpSet));
+
+  DefineOpcode(0xbd, NACLi_386,
+               InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) |
+               InstFlag(OperandSize_o) | InstFlag(OpcodeUsesRexW),
+               InstBsr);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpSet));
+
   /* MOVSX */
   DefineOpcode(0xbe, NACLi_386,
                InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |
