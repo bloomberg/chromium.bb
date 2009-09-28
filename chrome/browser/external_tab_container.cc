@@ -12,7 +12,6 @@
 #include "base/win_util.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/profile.h"
@@ -157,10 +156,6 @@ bool ExternalTabContainer::Init(Profile* profile,
 }
 
 void ExternalTabContainer::Uninitialize() {
-  RenderViewHost* rvh = tab_contents_->render_view_host();
-  if (rvh) {
-    DevToolsManager::GetInstance()->UnregisterDevToolsClientHostFor(rvh);
-  }
   registrar_.RemoveAll();
   if (tab_contents_) {
     NotificationService::current()->Notify(
