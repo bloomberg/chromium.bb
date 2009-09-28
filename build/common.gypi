@@ -54,7 +54,6 @@
     'target_arch%': 'ia32',
 
     'linux2%': 0,
-    'mbits_flag%': '-m32',
 
     # By default we assume that we are building as part of Chrome
     'nacl_standalone%': 0,
@@ -75,14 +74,12 @@
           'NACL_TARGET_SUBARCH=32',
           'NACL_BUILD_SUBARCH=32',
         ],
-        'mbits_flag': '-m32',
       }],
       ['target_arch=="x64"', {
         'defines': [
           'NACL_TARGET_SUBARCH=64',
           'NACL_BUILD_SUBARCH=64',
         ],
-        'mbits_flag': '-m64',
       }],
       ['linux2==1', {
         'defines': ['LINUX2=1'],
@@ -368,6 +365,17 @@
               '-Wall',
             ],
           }, { # else: target_arch != "arm"
+            'conditions': [
+              ['target_arch=="x64"', {
+                'variables': {
+                  'mbits_flag': '-m64',
+                },
+              }, {
+                'variables': {
+                  'mbits_flag': '-m32',
+                }
+              },],
+            ],
             'asflags': [
               '<(mbits_flag)',
             ],
