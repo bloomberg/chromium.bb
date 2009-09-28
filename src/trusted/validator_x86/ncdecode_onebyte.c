@@ -414,14 +414,6 @@ static void DefineGroup2OpcodesInModRm() {
     DefineOperand(Opcode0 + i, OpFlag(OperandExtendsOpcode));
     DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
     DefineOperand(RegCL, OpFlag(OpUse));
-
-    DefineOpcode(0xd5, NACLi_ILLEGAL,
-                 InstFlag(Opcode32Only) | InstFlag(OpcodeHasImmed_b),
-                 InstAad);
-    DefineOperand(RegAX, OpFlag(OpSet) | OpFlag(OpImplicit));
-    DefineOperand(RegAL, OpFlag(OpSet) | OpFlag(OpImplicit));
-    DefineOperand(RegAH, OpFlag(OpSet) | OpFlag(OpImplicit));
-    DefineOperand(I_Operand, OpFlag(OpUse) | OpFlag(OpImplicit));
   }
 }
 
@@ -1321,8 +1313,33 @@ void DefineOneByteOpcodes() {
   DefineOperand(RegREIP, OpFlag(OpSet) | OpFlag(OpImplicit));
   DefineOperand(RegRESP, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(OpImplicit));
 
+  DefineOpcode(0xcc, NACLi_ILLEGAL, 0, InstInt3);
+
+  DefineOpcode(0xcd, NACLi_ILLEGAL,
+               InstFlag(OperandSize_b) | InstFlag(OpcodeHasImmed),
+               InstInt);
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xce, NACLi_ILLEGAL, InstFlag(Opcode32Only), InstInt0);
+
+  DefineOpcode(0xcf, NACLi_SYSTEM, 0, InstIret);
+
   /* Group 2 - 0xC0, 0xC1, 0xD0, 0XD1, 0xD2, 0xD3 */
   DefineGroup2OpcodesInModRm();
+
+  DefineOpcode(0xD4, NACLi_ILLEGAL,
+               InstFlag(Opcode32Only) | InstFlag(OpcodeHasImmed_b),
+               InstAam);
+  DefineOperand(RegAX, OpFlag(OpSet) | OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(I_Operand, OpFlag(OpUse) | OpFlag(OpImplicit));
+
+  DefineOpcode(0xd5, NACLi_ILLEGAL,
+               InstFlag(Opcode32Only) | InstFlag(OpcodeHasImmed_b),
+               InstAad);
+  DefineOperand(RegAX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegAL, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegAH, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(I_Operand, OpFlag(OpUse) | OpFlag(OpImplicit));
 
   /* Maps for escape instruction opcodes (x87 FP) when the ModR/M byte
    * is within the range of 00H-BFH. The maps are grouped by the first

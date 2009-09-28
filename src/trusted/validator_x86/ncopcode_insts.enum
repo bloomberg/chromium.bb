@@ -4,6 +4,7 @@
 Undefined  # Special marker for problems parsing instructions.
 Aaa
 Aad
+Aam
 Aas
 Adc
 Add
@@ -86,6 +87,10 @@ Inc
 Insb
 Insd
 Insw
+Int
+Int0
+Int3
+Iret
 Jb
 Jbe
 Jcxz
