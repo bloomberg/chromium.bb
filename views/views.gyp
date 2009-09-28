@@ -159,11 +159,9 @@
         'controls/scroll_view.h',
         'controls/scrollbar/bitmap_scroll_bar.cc',
         'controls/scrollbar/bitmap_scroll_bar.h',
-        'controls/scrollbar/native_scroll_bar_gtk.cc',
-        'controls/scrollbar/native_scroll_bar_gtk.h',
+        'controls/scrollbar/native_scroll_bar_wrapper.h',
         'controls/scrollbar/native_scroll_bar_win.cc',
         'controls/scrollbar/native_scroll_bar_win.h',
-        'controls/scrollbar/native_scroll_bar_wrapper.h',
         'controls/scrollbar/native_scroll_bar.cc',
         'controls/scrollbar/native_scroll_bar.h',
         'controls/scrollbar/scroll_bar.cc',
@@ -304,8 +302,10 @@
             'controls/scrollbar/bitmap_scroll_bar.cc',
             'controls/combo_box.cc',
             'controls/hwnd_view.cc',
+            'controls/scroll_view.cc',
             'controls/table/group_table_view.cc',
             'controls/native_control.cc',
+            'controls/scrollbar/native_scroll_bar.cc',
             'controls/separator.cc',
             'controls/table/table_model.cc',
             'controls/table/table_view.cc',
@@ -335,60 +335,52 @@
             # TODO(beng): move wtl to src/third_party
             '../chrome/third_party/wtl/include',
           ],
-         }],	
-       ],	
-     },	
-     {	
-       'target_name': 'view_examples',	
-       'type': 'executable',	
-       'dependencies': [	
-         '../base/base.gyp:base',	
-         '../skia/skia.gyp:skia',	
-         'views',	
-       ],	
-       'include_dirs': [	
-         '..',	
-       ],	
-       'sources': [	
-         'examples/button_example.h',	
-         'examples/combobox_example.h',	
-         'examples/example_base.cc',	
-         'examples/example_base.h',	
-         'examples/examples_main_base.cc',	
-         'examples/examples_main_base.h',	
-         'examples/examples_main_gtk.cc',	
-         'examples/message_box_example.h',	
-         'examples/radio_button_example.h',	
-         'examples/tabbed_pane_example.h',	
-       ],	
-       'conditions': [	
-         ['OS=="linux"', {	
-           'dependencies': [	
-             '../build/linux/system.gyp:gtk',	
-           ],	
-         },	
-         ],	
-         ['OS=="linux" and toolkit_views==1', {	
-           'dependencies': [	
-             'views',	
-           ],	
-         }],	
-         ['OS=="win"', {	
-           # TODO(oshima): support win
-           '!sources': [	
-             'examples/button_example.h',	
-             'examples/combobox_example.h',	
-             'examples/example_base.cc',	
-             'examples/example_base.h',	
-             'examples/examples_main_base.cc',	
-             'examples/examples_main_base.h',	
-             'examples/examples_main_gtk.cc',	
-             'examples/message_box_example.h',	
-             'examples/radio_button_example.h',	
-             'examples/tabbed_pane_example.h',	
-           ],	
         }],
       ],
     },
+  ],
+  'conditions': [
+    # TODO(oshima): support win
+    ['OS!="win"', {
+      'targets': [
+        {
+          'target_name': 'view_examples',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../skia/skia.gyp:skia',
+            'views',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'examples/button_example.h',
+            'examples/combobox_example.h',
+            'examples/example_base.cc',
+            'examples/example_base.h',
+            'examples/examples_main_base.cc',
+            'examples/examples_main_base.h',
+            'examples/examples_main_gtk.cc',
+            'examples/message_box_example.h',
+            'examples/radio_button_example.h',
+            'examples/tabbed_pane_example.h',
+          ],
+          'conditions': [
+            ['OS=="linux"', {
+              'dependencies': [
+                '../build/linux/system.gyp:gtk',
+              ],
+            },
+            ],
+            ['OS=="linux" and toolkit_views==1', {
+              'dependencies': [
+                'views',
+              ],
+            }],
+          ],
+        },
+      ],
+    }],
   ],
 }
