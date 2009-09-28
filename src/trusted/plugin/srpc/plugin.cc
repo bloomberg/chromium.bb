@@ -92,7 +92,7 @@ void Plugin::LoadMethods() {
       "videoUpdateMode", PROPERTY_SET, "i", "");
 }
 
-bool Plugin::HasMethodEx(int method_id, CallType call_type) {
+bool Plugin::HasMethodEx(uintptr_t method_id, CallType call_type) {
   // The requested method is not implemented by the Plugin,
   // maybe it is implemented by the NaCl module
   if (socket_) {
@@ -103,7 +103,9 @@ bool Plugin::HasMethodEx(int method_id, CallType call_type) {
   return PortableHandle::HasMethodEx(method_id, call_type);
 }
 
-bool Plugin::InvokeEx(int method_id, CallType call_type, SrpcParams *params) {
+bool Plugin::InvokeEx(uintptr_t method_id,
+                      CallType call_type,
+                      SrpcParams *params) {
   if (socket_) {
     ConnectedSocket* real_socket =
         static_cast<ConnectedSocket*>(socket_->get_handle());
@@ -113,7 +115,7 @@ bool Plugin::InvokeEx(int method_id, CallType call_type, SrpcParams *params) {
   return PortableHandle::InvokeEx(method_id, call_type, params);
 }
 
-bool Plugin::InitParamsEx(int method_id,
+bool Plugin::InitParamsEx(uintptr_t method_id,
                           CallType call_type,
                           SrpcParams *params) {
   if (socket_) {

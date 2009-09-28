@@ -108,8 +108,9 @@ void PortablePluginInterface::InitializeIdentifiers() {
 }
 
 
-int PortablePluginInterface::GetStrIdentifierCallback(const char *method_name) {
-  return reinterpret_cast<int>(NPN_GetStringIdentifier(method_name));
+uintptr_t PortablePluginInterface::GetStrIdentifierCallback(
+    const char *method_name) {
+  return reinterpret_cast<uintptr_t>(NPN_GetStringIdentifier(method_name));
 }
 
 
@@ -203,7 +204,7 @@ void PortablePluginInterface::BrowserRelease(void* ptr) {
 }
 
 
-const char* PortablePluginInterface::IdentToString(int ident) {
+const char* PortablePluginInterface::IdentToString(uintptr_t ident) {
   if (NPN_IdentifierIsString((NPIdentifier)ident)) {
     return reinterpret_cast<char*>(NPN_UTF8FromIdentifier((NPIdentifier)ident));
   } else {

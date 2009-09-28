@@ -185,8 +185,8 @@ class MethodMap {
  public:
   MethodMap() {}
   ~MethodMap();
-  MethodInfo* GetMethod(int method_id);
-  void AddMethod(int method_id, MethodInfo *info);
+  MethodInfo* GetMethod(uintptr_t method_id);
+  void AddMethod(uintptr_t method_id, MethodInfo *info);
 
  private:
   std::map<int, MethodInfo*> method_map_;

@@ -62,10 +62,10 @@ class SrpcClient {
   ~SrpcClient();
 
   //  Test whether the SRPC service has a given method.
-  bool HasMethod(int method_id);
+  bool HasMethod(uintptr_t method_id);
   //  Invoke an SRPC method.
-  bool Invoke(int method_id, SrpcParams* params);
-  bool InitParams(int method_id, SrpcParams* params);
+  bool Invoke(uintptr_t method_id, SrpcParams* params);
+  bool InitParams(uintptr_t method_id, SrpcParams* params);
 
   // Build the signature list object, for use in display, etc.
   NaClSrpcArg* GetSignatureObject();

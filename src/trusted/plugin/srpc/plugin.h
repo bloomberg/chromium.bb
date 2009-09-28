@@ -93,9 +93,11 @@ class Plugin : public PortableHandle {
   bool Init(struct PortableHandleInitializer* init_info);
   void LoadMethods();
   // overriding virtual methods
-  virtual bool InvokeEx(int method_id, CallType call_type, SrpcParams* params);
-  virtual bool HasMethodEx(int method_id, CallType call_type);
-  virtual bool InitParamsEx(int method_id,
+  virtual bool InvokeEx(uintptr_t method_id,
+                        CallType call_type,
+                        SrpcParams* params);
+  virtual bool HasMethodEx(uintptr_t method_id, CallType call_type);
+  virtual bool InitParamsEx(uintptr_t method_id,
                             CallType call_type,
                             SrpcParams* params);
   virtual Plugin* GetPlugin();

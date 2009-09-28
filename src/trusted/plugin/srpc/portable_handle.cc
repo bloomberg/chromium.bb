@@ -63,7 +63,8 @@ namespace nacl_srpc {
                                       CallType call_type,
                                       const char *ins,
                                       const char *outs) {
-    int method_id = PortablePluginInterface::GetStrIdentifierCallback(name);
+    uintptr_t method_id =
+        PortablePluginInterface::GetStrIdentifierCallback(name);
     MethodInfo* new_method = new(std::nothrow) MethodInfo(function_ptr,
                                                           name,
                                                           ins,
@@ -92,7 +93,7 @@ namespace nacl_srpc {
     return true;
   }
 
-  bool PortableHandle::InitParams(int method_id,
+  bool PortableHandle::InitParams(uintptr_t method_id,
                                   CallType call_type,
                                   SrpcParams *params) {
     MethodInfo *method_info = GetMethodInfo(method_id, call_type);
@@ -103,13 +104,14 @@ namespace nacl_srpc {
     }
   }
 
-  bool PortableHandle::InitParamsEx(int method_id,
+  bool PortableHandle::InitParamsEx(uintptr_t method_id,
                                     CallType call_type,
                                     SrpcParams *params) {
     return false;
   }
 
-  MethodInfo* PortableHandle::GetMethodInfo(int method_id, CallType call_type) {
+  MethodInfo* PortableHandle::GetMethodInfo(uintptr_t method_id,
+                                            CallType call_type) {
     MethodInfo *method_info = NULL;
     switch (call_type) {
       case METHOD_CALL:
@@ -129,7 +131,7 @@ namespace nacl_srpc {
     return method_info;
   }
 
-  bool PortableHandle::HasMethod(int method_id, CallType call_type) {
+  bool PortableHandle::HasMethod(uintptr_t method_id, CallType call_type) {
     if (GetMethodInfo(method_id, call_type)) {
       return true;
     }
@@ -140,7 +142,7 @@ namespace nacl_srpc {
 
   // TODO(gregoryd) - consider adding a function that will first initialize
   // params and then call Invoke
-  bool PortableHandle::Invoke(int method_id,
+  bool PortableHandle::Invoke(uintptr_t method_id,
                               CallType call_type,
                               SrpcParams* params) {
     MethodInfo *method_info = GetMethodInfo(method_id, call_type);
@@ -153,14 +155,14 @@ namespace nacl_srpc {
     }
   }
 
-  bool PortableHandle::InvokeEx(int method_id,
+  bool PortableHandle::InvokeEx(uintptr_t method_id,
                                 CallType call_type,
                                 SrpcParams *params) {
     params->SetExceptionInfo("Unrecognized method specified");
     return false;
   }
 
-  bool PortableHandle::HasMethodEx(int method_id, CallType call_type) {
+  bool PortableHandle::HasMethodEx(uintptr_t method_id, CallType call_type) {
     return false;
   }
 }

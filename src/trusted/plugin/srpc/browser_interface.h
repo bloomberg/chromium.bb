@@ -69,7 +69,7 @@ class PortablePluginInterface {
   // about the browser than is available using PluginIdentifier. In this case
   // these functions can be made virtual and implemented in the
   // browser-specific class, such as SRPC_Plugin
-  static int GetStrIdentifierCallback(const char *method_name);
+  static uintptr_t GetStrIdentifierCallback(const char *method_name);
   static bool Alert(nacl_srpc::PluginIdentifier plugin_identifier,
                     const char *text,
                     int length);
@@ -79,7 +79,7 @@ class PortablePluginInterface {
   static void BrowserRelease(void* ptr);
   static char *MemAllocStrdup(const char *str);
   // Convert an identifier to a string
-  static const char* IdentToString(int ident);
+  static const char* IdentToString(uintptr_t ident);
   static bool CheckExecutableVersion(nacl_srpc::PluginIdentifier instance,
                                      const char *filename);
 

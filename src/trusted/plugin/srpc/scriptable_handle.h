@@ -163,7 +163,7 @@ class ScriptableHandle: public ScriptableHandleBase {
       dprintf(("ScriptableHandle::Invoke(%p, %s, %d)\n",
                static_cast<void*>(obj),
                PortablePluginInterface::IdentToString(
-                   reinterpret_cast<int>(name)),
+                   reinterpret_cast<uintptr_t>(name)),
                arg_count));
 
       return unknown_handle->GenericInvoke(name,
@@ -180,11 +180,11 @@ class ScriptableHandle: public ScriptableHandleBase {
     dprintf(("ScriptableHandle::HasProperty(%p, %s)\n",
              static_cast<void*>(obj),
              PortablePluginInterface::IdentToString(
-                 reinterpret_cast<int>(name))));
+                 reinterpret_cast<uintptr_t>(name))));
 
     // If the property is supported,
     // the interface should include both set and get methods.
-    return unknown_handle->handle_->HasMethod(reinterpret_cast<int>(name),
+    return unknown_handle->handle_->HasMethod(reinterpret_cast<uintptr_t>(name),
                                               PROPERTY_GET);
   }
 
@@ -197,7 +197,7 @@ class ScriptableHandle: public ScriptableHandleBase {
     dprintf(("ScriptableHandle::GetProperty(%p, %s)\n",
              static_cast<void*>(obj),
              PortablePluginInterface::IdentToString(
-                 reinterpret_cast<int>(name))));
+                 reinterpret_cast<uintptr_t>(name))));
 
     return unknown_handle->GenericInvoke(name,
                                          PROPERTY_GET,
@@ -215,7 +215,7 @@ class ScriptableHandle: public ScriptableHandleBase {
     dprintf(("ScriptableHandle::SetProperty(%p, %s, %p)\n",
              static_cast<void*>(obj),
              PortablePluginInterface::IdentToString(
-                 reinterpret_cast<int>(name)),
+                 reinterpret_cast<uintptr_t>(name)),
              static_cast<void*>(const_cast<NPVariant*>(variant))));
 
     return unknown_handle->GenericInvoke(name,
@@ -272,8 +272,8 @@ class ScriptableHandle: public ScriptableHandleBase {
     dprintf(("ScriptableHandle::HasMethod(%p, %s)\n",
              static_cast<void*>(obj),
              PortablePluginInterface::IdentToString(
-                 reinterpret_cast<int>(name))));
-    return unknown_handle->handle_->HasMethod(reinterpret_cast<int>(name),
+                 reinterpret_cast<uintptr_t>(name))));
+    return unknown_handle->handle_->HasMethod(reinterpret_cast<uintptr_t>(name),
                                               METHOD_CALL);
   }
 
@@ -284,13 +284,15 @@ class ScriptableHandle: public ScriptableHandleBase {
                      NPVariant* result) {
     SrpcParams params;
     const char* str_name =
-        PortablePluginInterface::IdentToString(reinterpret_cast<int>(name));
+        PortablePluginInterface::IdentToString(
+            reinterpret_cast<uintptr_t>(name));
     dprintf(("ScriptableHandle::GenericInvoke: calling %s\n", str_name));
 
     if (NULL != result) {
       NULL_TO_NPVARIANT(*result);
     }
-    if (!handle_->InitParams(reinterpret_cast<int>(name), call_type, &params)) {
+    if (!handle_->InitParams(reinterpret_cast<uintptr_t>(name),
+                             call_type, &params)) {
       dprintf(("ScriptableHandle::GenericInvoke: InitParams failed\n"));
       return false;
     }
@@ -325,7 +327,9 @@ class ScriptableHandle: public ScriptableHandleBase {
       }
     }
 
-    if (!handle_->Invoke(reinterpret_cast<int>(name), call_type, &params)) {
+    if (!handle_->Invoke(reinterpret_cast<uintptr_t>(name),
+                         call_type,
+                         &params)) {
       // failure
       if (params.HasExceptionInfo()) {
         NPN_SetException(this, params.GetExceptionInfo());

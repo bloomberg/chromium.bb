@@ -81,12 +81,12 @@ class PortableHandle {
   }
 
   // generic NPAPI/IDispatch interface
-  bool Invoke(int method_id, CallType call_type, SrpcParams* params);
-  bool HasMethod(int method_id, CallType call_type);
+  bool Invoke(uintptr_t method_id, CallType call_type, SrpcParams* params);
+  bool HasMethod(uintptr_t method_id, CallType call_type);
 
   // get the method signature so ScritableHandle can marshal the inputs
-  bool InitParams(int method_id, CallType call_type, SrpcParams* params);
-  virtual bool InitParamsEx(int method_id,
+  bool InitParams(uintptr_t method_id, CallType call_type, SrpcParams* params);
+  virtual bool InitParamsEx(uintptr_t method_id,
                             CallType call_type,
                             SrpcParams* params);
   static int number_alive() { return number_alive_counter; }
@@ -106,13 +106,13 @@ class PortableHandle {
   // Every derived class should provide an implementation
   // for the next two functions to allow handling of method calls
   // that cannot be registered at build time.
-  virtual bool InvokeEx(int method_id,
+  virtual bool InvokeEx(uintptr_t method_id,
                         CallType call_type,
                         SrpcParams* params);
-  virtual bool HasMethodEx(int method_id, CallType call_type);
+  virtual bool HasMethodEx(uintptr_t method_id, CallType call_type);
   virtual Plugin* GetPlugin() = 0;
 private:
-  MethodInfo* GetMethodInfo(int method_id, CallType call_type);
+  MethodInfo* GetMethodInfo(uintptr_t method_id, CallType call_type);
 
  public:
   MethodMap methods_;

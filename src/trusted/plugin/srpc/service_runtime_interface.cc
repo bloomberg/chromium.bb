@@ -80,9 +80,9 @@ bool ServiceRuntimeInterface::InitCommunication(const void* buffer,
   // Channel5 was opened to communicate with the sel_ldr instance.
   // Get the first IMC message and create a socket address from it.
   NaClHandle channel5 = subprocess_->channel();
-  dprintf(("ServiceRuntimeInterface(%p): opened %p 0x%08x\n",
+  dprintf(("ServiceRuntimeInterface(%p): opened %p 0x%p\n",
            static_cast<void *>(this), static_cast<void *>(subprocess_),
-           reinterpret_cast<unsigned>(reinterpret_cast<void *>(channel5))));
+           reinterpret_cast<void *>(channel5)));
   // GetSocketAddress implicitly invokes Close(channel5).
   default_socket_address_ = GetSocketAddress(plugin_, channel5);
   dprintf(("ServiceRuntimeInterface::Start: "
@@ -350,24 +350,22 @@ ServiceRuntimeInterface::~ServiceRuntimeInterface() {
 
 ScriptableHandle<SocketAddress>*
     ServiceRuntimeInterface::default_socket_address() const {
-  dprintf(("ServiceRuntimeInterface::default_socket_address(%p) = %u\n",
+  dprintf(("ServiceRuntimeInterface::default_socket_address(%p) = %p\n",
            static_cast<void *>(
                const_cast<ServiceRuntimeInterface *>(this)),
-           reinterpret_cast<unsigned>(
-               const_cast<ScriptableHandle<SocketAddress>*>(
-                   default_socket_address_))));
+           static_cast<void *>(const_cast<ScriptableHandle<SocketAddress>*>(
+               default_socket_address_))));
 
   return default_socket_address_;
 }
 
 ScriptableHandle<ConnectedSocket>*
     ServiceRuntimeInterface::default_socket() const {
-  dprintf(("ServiceRuntimeInterface::default_socket(%p) = %u\n",
+  dprintf(("ServiceRuntimeInterface::default_socket(%p) = %p\n",
            static_cast<void *>(
                const_cast<ServiceRuntimeInterface *>(this)),
-           reinterpret_cast<unsigned>(
-               const_cast<ScriptableHandle<ConnectedSocket>*>(
-                   default_socket_))));
+           static_cast<void *>(const_cast<ScriptableHandle<ConnectedSocket>*>(
+               default_socket_))));
 
   return default_socket_;
 }
@@ -381,9 +379,9 @@ ScriptableHandle<SocketAddress>* ServiceRuntimeInterface::GetSocketAddress(
   NaClDesc*           descs[NACL_ABI_IMC_USER_DESC_MAX];
   NaClNrdXferEffector eff;
 
-  dprintf(("ServiceRuntimeInterface::GetSocketAddress(%p, %u)\n",
+  dprintf(("ServiceRuntimeInterface::GetSocketAddress(%p, %p)\n",
            static_cast<void *>(plugin),
-           reinterpret_cast<unsigned>(reinterpret_cast<void *>(channel))));
+           reinterpret_cast<void *>(channel)));
 
   ScriptableHandle<SocketAddress>* retval = NULL;
   // Create a NaClDesc to use for message passing over channel.
@@ -449,8 +447,8 @@ ScriptableHandle<SocketAddress>* ServiceRuntimeInterface::GetSocketAddress(
     NaClDescUnref(desc);
   }
   if (NACL_INVALID_HANDLE != channel) {
-    dprintf((" NaClClose(handle = %x\n",
-             reinterpret_cast<unsigned>(reinterpret_cast<void *>(channel))));
+    dprintf((" NaClClose(handle = %p\n",
+             reinterpret_cast<void *>(channel)));
     NaClClose(channel);
   }
   dprintf((" returning %p\n", static_cast<void *>(retval)));

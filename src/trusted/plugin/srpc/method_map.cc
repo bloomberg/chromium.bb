@@ -237,11 +237,11 @@ MethodMap::~MethodMap() {
   }
 }
 
-MethodInfo* MethodMap::GetMethod(int method_id) {
+MethodInfo* MethodMap::GetMethod(uintptr_t method_id) {
   return method_map_[method_id];
 }
 
-void MethodMap::AddMethod(int method_id, MethodInfo *info) {
+void MethodMap::AddMethod(uintptr_t method_id, MethodInfo *info) {
   if (method_map_.find(method_id) != method_map_.end()) {
     // the method already exists
     abort();

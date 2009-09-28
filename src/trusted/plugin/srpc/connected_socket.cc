@@ -54,7 +54,7 @@ PLUGIN_JMPBUF ConnectedSocket::socket_env;
 
 // ConnectedSocket implements a method for each method exported from
 // the NaCl service runtime
-bool ConnectedSocket::InvokeEx(int method_id,
+bool ConnectedSocket::InvokeEx(uintptr_t method_id,
                                CallType call_type,
                                SrpcParams *params) {
   // All ConnectedSocket does for dynamic calls
@@ -65,13 +65,13 @@ bool ConnectedSocket::InvokeEx(int method_id,
   return PortableHandle::InvokeEx(method_id, call_type, params);
 }
 
-bool ConnectedSocket::HasMethodEx(int method_id, CallType call_type) {
+bool ConnectedSocket::HasMethodEx(uintptr_t method_id, CallType call_type) {
   if (srpc_client_ && (METHOD_CALL == call_type))
     return srpc_client_->HasMethod(method_id);
   return PortableHandle::HasMethodEx(method_id, call_type);
 }
 
-bool ConnectedSocket::InitParamsEx(int method_id,
+bool ConnectedSocket::InitParamsEx(uintptr_t method_id,
                                    CallType call_type,
                                    SrpcParams *params) {
   if (srpc_client_) {

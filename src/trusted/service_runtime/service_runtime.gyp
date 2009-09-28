@@ -230,6 +230,28 @@
     {
       'target_name': 'tramp_gen',
       'type': 'executable',
+      'conditions': [
+        ['OS=="linux"', {
+          'asflags!': [
+            '-m64',
+          ],
+          'cflags!': [
+            '-m64',
+          ],
+          'ldflags!': [
+            '-m64',
+          ],
+          'asflags': [
+            '-m32',
+          ],
+          'cflags': [
+            '-m32',
+          ],
+          'ldflags': [
+            '-m32',
+          ],
+        }],
+      ],
       'sources': [
         'arch/x86_32/tramp.S',
         'arch/x86_32/tramp_gen.c',
@@ -238,6 +260,29 @@
     {
       'target_name': 'springboard_gen',
       'type': 'executable',
+      'conditions': [
+        ['OS=="linux"', {
+          'asflags!': [
+            '-m64',
+          ],
+          'cflags!': [
+            '-m64',
+          ],
+          'ldflags!': [
+            '-m64',
+          ],
+          'asflags': [
+            '-m32',
+          ],
+          'cflags': [
+            '-m32',
+          ],
+          'ldflags': [
+            '-m32',
+          ],
+        }],
+      ],
+
       'sources': [
         'arch/x86_32/springboard.S',
         'arch/x86_32/springboard_gen.c',

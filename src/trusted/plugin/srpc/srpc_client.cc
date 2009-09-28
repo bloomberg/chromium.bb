@@ -149,14 +149,14 @@ NaClSrpcArg* SrpcClient::GetSignatureObject() {
   return ret_array;
 }
 
-bool SrpcClient::HasMethod(int method_id) {
+bool SrpcClient::HasMethod(uintptr_t method_id) {
   dprintf(("SrpcClient::HasMethod(%p, %s)\n",
            static_cast<void *>(this),
            PortablePluginInterface::IdentToString(method_id)));
   return NULL != methods_[method_id];
 }
 
-bool SrpcClient::InitParams(int method_id,
+bool SrpcClient::InitParams(uintptr_t method_id,
                             SrpcParams *params) {
   MethodInfo *method_info = methods_[method_id];
 
@@ -166,7 +166,7 @@ bool SrpcClient::InitParams(int method_id,
   return false;
 }
 
-bool SrpcClient::Invoke(int method_id,
+bool SrpcClient::Invoke(uintptr_t method_id,
                         SrpcParams *params) {
   // It would be better if we could set the exception on each detailed failure
   // case.  However, there are calls to Invoke from within the plugin itself,
