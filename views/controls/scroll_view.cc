@@ -353,7 +353,7 @@ void ScrollView::ScrollToPosition(ScrollBar* source, int position) {
       else if (position > max_pos)
         position = max_pos;
       contents_->SetX(-position);
-      contents_->SchedulePaint(contents_->GetLocalBounds(true), true);
+      contents_->SchedulePaint(contents_->GetVisibleBounds(), true);
     }
   } else if (source == vert_sb_ && vert_sb_->IsVisible()) {
     int vh = viewport_->height();
@@ -366,7 +366,7 @@ void ScrollView::ScrollToPosition(ScrollBar* source, int position) {
       else if (position > max_pos)
         position = max_pos;
       contents_->SetY(-position);
-      contents_->SchedulePaint(contents_->GetLocalBounds(true), true);
+      contents_->SchedulePaint(contents_->GetVisibleBounds(), true);
     }
   }
 }
