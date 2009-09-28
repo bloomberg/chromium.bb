@@ -21,6 +21,7 @@
 #include "chrome/test/perf/mem_usage.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
@@ -270,9 +271,11 @@ class MemoryTest : public UITest {
   void PrintIOPerfInfo(const char* test_name) {
     printf("\n");
 
-    FilePath data_dir(user_data_dir());
-    int browser_process_pid = ChromeBrowserProcessId(data_dir);
-    ChromeProcessList chrome_processes(GetRunningChromeProcesses(data_dir));
+    int browser_process_pid = ChromeBrowserProcessId(user_data_dir_);
+    ASSERT_NE(browser_process_pid, -1);
+
+    ChromeProcessList chrome_processes(
+                          GetRunningChromeProcesses(user_data_dir_));
 
     ChromeProcessList::const_iterator it;
     for (it = chrome_processes.begin(); it != chrome_processes.end(); ++it) {
@@ -318,9 +321,11 @@ class MemoryTest : public UITest {
   void PrintMemoryUsageInfo(const char* test_name) {
     printf("\n");
 
-    FilePath data_dir(user_data_dir());
-    int browser_process_pid = ChromeBrowserProcessId(data_dir);
-    ChromeProcessList chrome_processes(GetRunningChromeProcesses(data_dir));
+    int browser_process_pid = ChromeBrowserProcessId(user_data_dir_);
+    ASSERT_NE(browser_process_pid, -1);
+
+    ChromeProcessList chrome_processes(
+                          GetRunningChromeProcesses(user_data_dir_));
 
     size_t browser_virtual_size = 0;
     size_t browser_working_set_size = 0;
