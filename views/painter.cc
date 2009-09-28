@@ -1,10 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "views/painter.h"
 
 #include "app/gfx/canvas.h"
+#include "app/gfx/insets.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -54,7 +55,77 @@ class GradientPainter : public Painter {
 };
 
 
-}
+class ImagePainter : public Painter {
+ public:
+  ImagePainter(const SkBitmap& image, const gfx::Insets& insets)
+      : image_(image),
+        insets_(insets) {
+    DCHECK(image.width() > insets.width() &&
+           image.height() > insets.height());
+  }
+
+  // Paints the images.
+  virtual void Paint(int w, int h, gfx::Canvas* canvas) {
+    if (w == image_.width() && h == image_.height()) {
+      // Early out if the size we're to render at equals the size of the image.
+      canvas->DrawBitmapInt(image_, 0, 0);
+      return;
+    }
+    // Upper left.
+    canvas->DrawBitmapInt(image_, 0, 0, insets_.left(), insets_.top(),
+                          0, 0, insets_.left(), insets_.top(), true);
+    // Top edge.
+    canvas->DrawBitmapInt(
+        image_,
+        insets_.left(), 0, image_.width() - insets_.width(), insets_.top(),
+        insets_.left(), 0, w - insets_.width(), insets_.top(), true);
+    // Upper right.
+    canvas->DrawBitmapInt(
+        image_,
+        image_.width() - insets_.right(), 0, insets_.right(), insets_.top(),
+        w - insets_.right(), 0, insets_.right(), insets_.top(), true);
+    // Right edge.
+    canvas->DrawBitmapInt(
+        image_,
+        image_.width() - insets_.right(), insets_.top(),
+        insets_.right(), image_.height() - insets_.height(),
+        w - insets_.right(), insets_.top(), insets_.right(),
+        h - insets_.height(), true);
+    // Bottom right.
+    canvas->DrawBitmapInt(
+        image_,
+        image_.width() - insets_.right(), image_.height() - insets_.bottom(),
+        insets_.right(), insets_.bottom(),
+        w - insets_.right(), h - insets_.bottom(), insets_.right(),
+        insets_.bottom(), true);
+    // Bottom edge.
+    canvas->DrawBitmapInt(
+        image_,
+        insets_.left(), image_.height() - insets_.bottom(),
+        image_.width() - insets_.width(), insets_.bottom(),
+        insets_.left(), h - insets_.bottom(), w - insets_.width(),
+        insets_.bottom(), true);
+    // Bottom left.
+    canvas->DrawBitmapInt(
+        image_,
+        0, image_.height() - insets_.bottom(), insets_.left(),
+        insets_.bottom(),
+        0, h - insets_.bottom(), insets_.left(), insets_.bottom(), true);
+    // Left.
+    canvas->DrawBitmapInt(
+        image_,
+        0, insets_.top(), insets_.left(), image_.height() - insets_.height(),
+        0, insets_.top(), insets_.left(), h - insets_.height(), true);
+  }
+
+ private:
+  const SkBitmap image_;
+  const gfx::Insets insets_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImagePainter);
+};
+
+}  // namespace
 
 // static
 void Painter::PaintPainterAt(int x, int y, int w, int h,
@@ -68,66 +139,6 @@ void Painter::PaintPainterAt(int x, int y, int w, int h,
   canvas->restore();
 }
 
-ImagePainter::ImagePainter(const int image_resource_names[],
-                           bool draw_center)
-    : draw_center_(draw_center) {
-  DCHECK(image_resource_names);
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  for (int i = 0, max = draw_center ? 9 : 8; i < max; ++i)
-    images_.push_back(rb.GetBitmapNamed(image_resource_names[i]));
-}
-
-void ImagePainter::Paint(int w, int h, gfx::Canvas* canvas) {
-  canvas->DrawBitmapInt(*images_[BORDER_TOP_LEFT], 0, 0);
-  canvas->TileImageInt(*images_[BORDER_TOP],
-                       images_[BORDER_TOP_LEFT]->width(),
-                       0,
-                       w - images_[BORDER_TOP_LEFT]->width() -
-                       images_[BORDER_TOP_RIGHT]->width(),
-                       images_[BORDER_TOP_LEFT]->height());
-  canvas->DrawBitmapInt(*images_[BORDER_TOP_RIGHT],
-                        w - images_[BORDER_TOP_RIGHT]->width(),
-                        0);
-  canvas->TileImageInt(*images_[BORDER_RIGHT],
-                       w - images_[BORDER_RIGHT]->width(),
-                       images_[BORDER_TOP_RIGHT]->height(),
-                       images_[BORDER_RIGHT]->width(),
-                       h - images_[BORDER_TOP_RIGHT]->height() -
-                       images_[BORDER_BOTTOM_RIGHT]->height());
-  canvas->DrawBitmapInt(*images_[BORDER_BOTTOM_RIGHT],
-                        w - images_[BORDER_BOTTOM_RIGHT]->width(),
-                        h - images_[BORDER_BOTTOM_RIGHT]->height());
-  canvas->TileImageInt(*images_[BORDER_BOTTOM],
-                       images_[BORDER_BOTTOM_LEFT]->width(),
-                       h - images_[BORDER_BOTTOM]->height(),
-                       w - images_[BORDER_BOTTOM_LEFT]->width() -
-                       images_[BORDER_BOTTOM_RIGHT]->width(),
-                       images_[BORDER_BOTTOM]->height());
-  canvas->DrawBitmapInt(*images_[BORDER_BOTTOM_LEFT],
-                        0,
-                        h - images_[BORDER_BOTTOM_LEFT]->height());
-  canvas->TileImageInt(*images_[BORDER_LEFT],
-                       0,
-                       images_[BORDER_TOP_LEFT]->height(),
-                       images_[BORDER_LEFT]->width(),
-                       h - images_[BORDER_TOP_LEFT]->height() -
-                       images_[BORDER_BOTTOM_LEFT]->height());
-  if (draw_center_) {
-    canvas->DrawBitmapInt(*images_[BORDER_CENTER],
-                          0,
-                          0,
-                          images_[BORDER_CENTER]->width(),
-                          images_[BORDER_CENTER]->height(),
-                          images_[BORDER_TOP_LEFT]->width(),
-                          images_[BORDER_TOP_LEFT]->height(),
-                          w - images_[BORDER_TOP_LEFT]->width() -
-                              images_[BORDER_TOP_RIGHT]->width(),
-                          h - images_[BORDER_TOP_LEFT]->height() -
-                              images_[BORDER_TOP_RIGHT]->height(),
-                          false);
-  }
-}
-
 // static
 Painter* Painter::CreateHorizontalGradient(SkColor c1, SkColor c2) {
   return new GradientPainter(true, c1, c2);
@@ -136,6 +147,12 @@ Painter* Painter::CreateHorizontalGradient(SkColor c1, SkColor c2) {
 // static
 Painter* Painter::CreateVerticalGradient(SkColor c1, SkColor c2) {
   return new GradientPainter(false, c1, c2);
+}
+
+// static
+Painter* Painter::CreateImagePainter(const SkBitmap& image,
+                                     const gfx::Insets& insets) {
+  return new ImagePainter(image, insets);
 }
 
 HorizontalPainter::HorizontalPainter(const int image_resource_names[]) {

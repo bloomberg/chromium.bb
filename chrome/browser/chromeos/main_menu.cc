@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/main_menu.h"
 
+#include "app/gfx/insets.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser.h"
@@ -17,13 +18,25 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "views/controls/image_view.h"
+#include "views/background.h"
+#include "views/painter.h"
+#include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
 
+// Initial size of the renderer. This is contained within a window whose size
+// is set to the size of the image IDR_MAIN_MENU_BUTTON_DROP_DOWN.
 static const int kRendererX = 0;
 static const int kRendererY = 25;
 static const int kRendererWidth = 250;
 static const int kRendererHeight = 400;
+
+// Insets defining the regions that are stretched and titled to create the
+// background of the popup. These constants are fed into
+// Painter::CreateImagePainter as the insets, see it for details.
+static const int kBackgroundImageTop = 27;
+static const int kBackgroundImageLeft = 85;
+static const int kBackgroundImageBottom = 10;
+static const int kBackgroundImageRight = 8;
 
 // URL of the page to load.
 static const char kMenuURL[] = "http://goto.ext.google.com/crux-menu";
@@ -50,8 +63,6 @@ MainMenu::MainMenu(Browser* browser)
 void MainMenu::ShowImpl() {
   SkBitmap* drop_down_image = ResourceBundle::GetSharedInstance().
       GetBitmapNamed(IDR_MAIN_MENU_BUTTON_DROP_DOWN);
-  views::ImageView* background_view = new views::ImageView();
-  background_view->SetImage(drop_down_image);
 
   views::WidgetGtk* menu_popup =
       new views::WidgetGtk(views::WidgetGtk::TYPE_POPUP);
@@ -61,7 +72,12 @@ void MainMenu::ShowImpl() {
   menu_popup->Init(NULL, gfx::Rect(0, 0, drop_down_image->width(),
                                    drop_down_image->height()));
 
-  menu_popup->SetContentsView(background_view);
+  views::Painter* painter = views::Painter::CreateImagePainter(
+      *drop_down_image,
+      gfx::Insets(kBackgroundImageTop, kBackgroundImageLeft,
+                  kBackgroundImageBottom, kBackgroundImageRight));
+  menu_popup->GetRootView()->set_background(
+      views::Background::CreateBackgroundPainter(true, painter));
 
   GURL menu_url(kMenuURL);
   site_instance_ = SiteInstance::CreateSiteInstanceForURL(browser_->profile(),
@@ -122,6 +138,22 @@ gboolean MainMenu::OnButtonPressEvent(GtkWidget* widget,
     Delete(true);
   }
   return FALSE;
+}
+
+void MainMenu::RequestMove(const gfx::Rect& new_bounds) {
+  SkBitmap* drop_down_image = ResourceBundle::GetSharedInstance().
+      GetBitmapNamed(IDR_MAIN_MENU_BUTTON_DROP_DOWN);
+  int new_w = drop_down_image->width() + (new_bounds.width() - kRendererWidth);
+  int new_h = drop_down_image->height() +
+              (new_bounds.height() - kRendererHeight);
+  // Invoking PositionChild results in a gtk signal that triggers attempting to
+  // to resize the window. We need to set the size request so that it resizes
+  // correctly when this happens.
+  gtk_widget_set_size_request(popup_->GetNativeView(), new_w, new_h);
+  popup_->PositionChild(rwhv_->GetNativeView(), kRendererX, kRendererY,
+                        new_bounds.width(), new_bounds.height());
+  popup_->SetBounds(gfx::Rect(0, 0, new_w, new_h));
+  rwhv_->SetSize(new_bounds.size());
 }
 
 void MainMenu::CreateNewWindow(int route_id,

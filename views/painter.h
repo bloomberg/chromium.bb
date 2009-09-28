@@ -1,17 +1,16 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef VIEWS_PAINTER_H_
 #define VIEWS_PAINTER_H_
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace gfx {
 class Canvas;
+class Insets;
 }
 class SkBitmap;
 
@@ -31,56 +30,19 @@ class Painter {
   static Painter* CreateHorizontalGradient(SkColor c1, SkColor c2);
   static Painter* CreateVerticalGradient(SkColor c1, SkColor c2);
 
+  // Creates a painter that divides |image| into nine regions. The four corners
+  // are rendered at the size specified in insets (for example, the upper
+  // left corners is rendered at 0x0 with a size of
+  // insets.left()xinsets.right()). The four edges are stretched to fill the
+  // destination size.
+  // Ownership is passed to the caller.
+  static Painter* CreateImagePainter(const SkBitmap& image,
+                                     const gfx::Insets& insets);
+
   virtual ~Painter() {}
 
   // Paints the painter in the specified region.
   virtual void Paint(int w, int h, gfx::Canvas* canvas) = 0;
-};
-
-// ImagePainter paints 8 (or 9) images into a box. The four corner
-// images are drawn at the size of the image, the top/left/bottom/right
-// images are tiled to fit the area, and the center (if rendered) is
-// stretched.
-class ImagePainter : public Painter {
- public:
-  enum BorderElements {
-    BORDER_TOP_LEFT = 0,
-    BORDER_TOP,
-    BORDER_TOP_RIGHT,
-    BORDER_RIGHT,
-    BORDER_BOTTOM_RIGHT,
-    BORDER_BOTTOM,
-    BORDER_BOTTOM_LEFT,
-    BORDER_LEFT,
-    BORDER_CENTER
-  };
-
-  // Constructs a new ImagePainter loading the specified image names.
-  // The images must be in the order defined by the BorderElements.
-  // If draw_center is false, there must be 8 image names, if draw_center
-  // is true, there must be 9 image names with the last giving the name
-  // of the center image.
-  ImagePainter(const int image_resource_names[],
-               bool draw_center);
-
-  virtual ~ImagePainter() {}
-
-  // Paints the images.
-  virtual void Paint(int w, int h, gfx::Canvas* canvas);
-
-  // Returns the specified image. The returned image should NOT be deleted.
-  SkBitmap* GetImage(BorderElements element) {
-    return images_[element];
-  }
-
- private:
-  bool tile_;
-  bool draw_center_;
-  bool tile_center_;
-  // NOTE: the images are owned by ResourceBundle. Don't free them.
-  std::vector<SkBitmap*> images_;
-
-  DISALLOW_EVIL_CONSTRUCTORS(ImagePainter);
 };
 
 // HorizontalPainter paints 3 images into a box: left, center and right. The
@@ -114,7 +76,7 @@ class HorizontalPainter : public Painter {
   // NOTE: the images are owned by ResourceBundle. Don't free them.
   SkBitmap* images_[3];
 
-  DISALLOW_EVIL_CONSTRUCTORS(HorizontalPainter);
+  DISALLOW_COPY_AND_ASSIGN(HorizontalPainter);
 };
 
 }  // namespace views

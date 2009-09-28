@@ -736,8 +736,8 @@ void LocationBarView::SetAccessibleName(const std::wstring& name) {
 
 // SelectedKeywordView -------------------------------------------------------
 
-// The background is drawn using ImagePainter3. This is the left/center/right
-// image names.
+// The background is drawn using HorizontalPainter. This is the
+// left/center/right image names.
 static const int kBorderImages[] = {
     IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L,
     IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C,

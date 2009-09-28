@@ -17,7 +17,7 @@ class RenderWidgetHostViewGtk;
 class SiteInstance;
 
 namespace views {
-class Widget;
+class WidgetGtk;
 }
 
 // MainMenu manages showing the main menu. The menu is currently an HTML page.
@@ -114,6 +114,7 @@ class MainMenu : public RenderViewHostDelegate,
   virtual RenderViewHostDelegate::View* GetViewDelegate() {
     return this;
   }
+  virtual void RequestMove(const gfx::Rect& new_bounds);
 
   // RenderViewHostDelegate::View overrides.
   virtual void CreateNewWindow(int route_id,
@@ -141,7 +142,7 @@ class MainMenu : public RenderViewHostDelegate,
   Browser* browser_;
 
   // The widget displaying the rwvh_.
-  views::Widget* popup_;
+  views::WidgetGtk* popup_;
 
   // SiteInstance for the RenderViewHosts we create.
   SiteInstance* site_instance_;
