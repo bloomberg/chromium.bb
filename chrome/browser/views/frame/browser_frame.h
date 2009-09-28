@@ -58,6 +58,11 @@ class BrowserFrame {
 
   // Returns the theme provider for this frame.
   virtual ThemeProvider* GetThemeProviderForFrame() const = 0;
+
+  // Returns true if the window should use the native frame view. This is true
+  // if there are no themes applied on Vista, or if there are themes applied and
+  // this browser window is an app or popup.
+  virtual bool AlwaysUseNativeFrame() const = 0;
 };
 
 #endif  // CHROME_BROWSER_VIEWS_FRAME_BROWSER_FRAME_H_

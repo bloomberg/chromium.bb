@@ -34,6 +34,8 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
   // separate to avoid recursive calling of the frame from its constructor.
   void Init();
 
+  BrowserView* browser_view() const { return browser_view_; }
+
   // BrowserFrame implementation.
   virtual views::Window* GetWindow();
   virtual void TabStripCreated(TabStripWrapper* tabstrip);
@@ -42,12 +44,7 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
   virtual void UpdateThrobber(bool running);
   virtual void ContinueDraggingDetachedTab();
   virtual ThemeProvider* GetThemeProviderForFrame() const;
-
-  // Overridden from views::Widget.
-  virtual ThemeProvider* GetThemeProvider() const;
-  virtual ThemeProvider* GetDefaultThemeProvider() const;
-
-  BrowserView* browser_view() const { return browser_view_; }
+  virtual bool AlwaysUseNativeFrame() const;
 
  protected:
   // Overridden from views::WidgetWin:
@@ -66,6 +63,8 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
   virtual LRESULT OnNCCalcSize(BOOL mode, LPARAM l_param);
   virtual LRESULT OnNCHitTest(const CPoint& pt);
   virtual void OnWindowPosChanged(WINDOWPOS* window_pos);
+  virtual ThemeProvider* GetThemeProvider() const;
+  virtual ThemeProvider* GetDefaultThemeProvider() const;
 
   // Overridden from views::Window:
   virtual int GetShowState() const;

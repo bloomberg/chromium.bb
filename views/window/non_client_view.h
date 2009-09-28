@@ -46,6 +46,11 @@ class NonClientFrameView : public View {
   // which is a child window and must always provide its own frame.
   virtual bool AlwaysUseCustomFrame() const { return false; }
 
+  // Like AlwaysUseCustomFrame, returns true if this FrameView should always use
+  // the native frame, regardless of theme settings. An example is popup/app
+  // windows, which we do not ever want to show themed.
+  virtual bool AlwaysUseNativeFrame() const { return false; }
+
   virtual gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const = 0;
   virtual gfx::Point GetSystemMenuPoint() const = 0;
@@ -198,10 +203,6 @@ class NonClientView : public View {
   virtual bool GetAccessibleName(std::wstring* name);
   virtual void SetAccessibleName(const std::wstring& name);
 
-  // Call if the nonclientview is in an app or popup and we are in Vista, to
-  // force usage of glass frame.
-  void ForceAeroGlassFrame();
-
  protected:
   // NonClientView, View overrides:
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
@@ -223,10 +224,6 @@ class NonClientView : public View {
 
   // The accessible name of this view.
   std::wstring accessible_name_;
-
-  // True if the nonclientview is in an app or popup and we are in Vista. Used
-  // to force usage of glass frame.
-  bool force_aero_glass_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(NonClientView);
 };

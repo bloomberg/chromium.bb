@@ -25,6 +25,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView {
 
   // Overridden from views::NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const;
+  virtual bool AlwaysUseNativeFrame() const;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const;
   virtual gfx::Point GetSystemMenuPoint() const;

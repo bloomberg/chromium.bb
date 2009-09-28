@@ -69,6 +69,10 @@ ThemeProvider* BrowserFrameGtk::GetThemeProviderForFrame() const {
   return GetThemeProvider();
 }
 
+bool BrowserFrameGtk::AlwaysUseNativeFrame() const {
+  return false;
+}
+
 ThemeProvider* BrowserFrameGtk::GetThemeProvider() const {
   return profile_->GetThemeProvider();
 }
@@ -87,5 +91,4 @@ void BrowserFrameGtk::IsActiveChanged() {
   browser_view_->ActivationChanged(IsActive());
   views::WindowGtk::IsActiveChanged();
 }
-
 
