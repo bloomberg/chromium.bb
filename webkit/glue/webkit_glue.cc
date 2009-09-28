@@ -35,6 +35,7 @@
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
+#include "net/base/escape.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/api/public/WebHistoryItem.h"
@@ -55,6 +56,19 @@ using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
 using WebKit::WebString;
 using WebKit::WebVector;
+
+namespace {
+
+static const char kLayoutTestsPattern[] = "/LayoutTests/";
+static const std::string::size_type kLayoutTestsPatternSize =
+    arraysize(kLayoutTestsPattern) - 1;
+static const char kFileUrlPattern[] = "file:/";
+static const char kDataUrlPattern[] = "data:";
+static const std::string::size_type kDataUrlPatternSize =
+    arraysize(kDataUrlPattern) - 1;
+static const char kFileTestPrefix[] = "(file test):";
+
+}
 
 //------------------------------------------------------------------------------
 // webkit_glue impl:
@@ -170,7 +184,19 @@ static std::wstring DumpHistoryItem(const WebHistoryItem& item,
     result.append(indent, L' ');
   }
 
-  result.append(UTF16ToWideHack(item.urlString()));
+  std::string url = item.urlString().utf8();
+  size_t pos;
+  if (url.find(kFileUrlPattern) == 0 &&
+      ((pos = url.find(kLayoutTestsPattern)) != std::string::npos)) {
+    // adjust file URLs to match upstream results.
+    url.replace(0, pos + kLayoutTestsPatternSize, kFileTestPrefix);
+  } else if (url.find(kDataUrlPattern) == 0) {
+    // URL-escape data URLs to match results upstream.
+    std::string path = EscapePath(url.substr(kDataUrlPatternSize));
+    url.replace(kDataUrlPatternSize, url.length(), path);
+  }
+
+  result.append(UTF8ToWide(url));
   if (!item.target().isEmpty())
     result.append(L" (in frame \"" + UTF16ToWide(item.target()) + L"\")");
   if (item.isTargetItem())
