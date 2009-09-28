@@ -746,11 +746,17 @@ class GClient(object):
         e_dir = os.path.join(self._root_dir, entry_fixed)
         # Use entry and not entry_fixed there.
         if entry not in entries and os.path.exists(e_dir):
-          file_list = []
-          scm = gclient_scm.CreateSCM(prev_entries[entry], self._root_dir,
-                                      entry_fixed)
-          scm.status(self._options, [], file_list)
-          if not self._options.delete_unversioned_trees or file_list:
+          modified_files = False
+          if isinstance(prev_entries,list):
+            # old .gclient_entries format was list, now dict
+            modified_files = gclient_scm.CaptureSVNStatus(e_dir)
+          else:
+            file_list = []
+            scm = gclient_scm.CreateSCM(prev_entries[entry], self._root_dir,
+                                        entry_fixed)
+            scm.status(self._options, [], file_list)
+            modified_files = file_list != []
+          if not self._options.delete_unversioned_trees or modified_files:
             # There are modified files in this entry. Keep warning until
             # removed.
             print(("\nWARNING: \"%s\" is no longer part of this client.  "
