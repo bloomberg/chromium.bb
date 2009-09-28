@@ -20,6 +20,7 @@
 #include "base/trace_event.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"
+#include "net/base/net_util.h"
 #include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/api/public/WebData.h"
 #include "webkit/api/public/WebFrameClient.h"
@@ -461,5 +462,23 @@ void WebKitClientImpl::widgetSetFocus(WebCore::Widget* widget) {
 WebCore::WorkerContextProxy* WebKitClientImpl::createWorkerContextProxy(
     WebCore::Worker* worker) {
   return WebWorkerClientImpl::createWorkerContextProxy(worker);
+}
+
+WebKit::WebString WebKitClientImpl::getAbsolutePath(
+    const WebKit::WebString& path) {
+  FilePath file_path(webkit_glue::WebStringToFilePathString(path));
+  file_util::AbsolutePath(&file_path);
+  return webkit_glue::FilePathStringToWebString(file_path.value());
+}
+
+bool WebKitClientImpl::isDirectory(const WebKit::WebString& path) {
+  FilePath file_path(webkit_glue::WebStringToFilePathString(path));
+  return file_util::DirectoryExists(file_path);
+}
+
+WebKit::WebURL WebKitClientImpl::filePathToURL(const WebKit::WebString& path) {
+  FilePath file_path(webkit_glue::WebStringToFilePathString(path));
+  GURL file_url = net::FilePathToFileURL(file_path);
+  return webkit_glue::KURLToWebURL(webkit_glue::GURLToKURL(file_url));
 }
 }  // namespace webkit_glue

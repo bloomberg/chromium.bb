@@ -195,6 +195,21 @@ bool ChromiumBridge::makeAllDirectories(const String& path)
   return webKitClient()->makeAllDirectories(path);
 }
 
+String ChromiumBridge::getAbsolutePath(const String& path)
+{
+    return webKitClient()->getAbsolutePath(path);
+}
+
+bool ChromiumBridge::isDirectory(const String& path)
+{
+    return webKitClient()->isDirectory(path);
+}
+
+KURL ChromiumBridge::filePathToURL(const String& path)
+{
+    return webKitClient()->filePathToURL(path);
+}
+
 // Font -----------------------------------------------------------------------
 
 #if PLATFORM(WIN_OS)

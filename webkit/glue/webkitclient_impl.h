@@ -58,6 +58,9 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   virtual WebKit::WebString pathByAppendingComponent(
       const WebKit::WebString& path, const WebKit::WebString& component);
   virtual bool makeAllDirectories(const WebKit::WebString& path);
+  virtual WebKit::WebString getAbsolutePath(const WebKit::WebString& path);
+  virtual bool isDirectory(const WebKit::WebString& path);
+  virtual WebKit::WebURL filePathToURL(const WebKit::WebString& path);
 
   virtual WebKit::WebApplicationCacheHost* createApplicationCacheHost(
       WebKit::WebApplicationCacheHostClient*);

@@ -104,6 +104,9 @@ namespace WebKit {
         virtual WebString directoryName(const WebString& path) = 0;
         virtual WebString pathByAppendingComponent(const WebString& path, const WebString& component) = 0;
         virtual bool makeAllDirectories(const WebString& path) = 0;
+        virtual WebString getAbsolutePath(const WebString& path) = 0;
+        virtual bool isDirectory(const WebString& path) = 0;
+        virtual WebURL filePathToURL(const WebString& path) = 0;
 
 
         // History -------------------------------------------------------------
