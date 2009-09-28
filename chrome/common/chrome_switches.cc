@@ -579,10 +579,6 @@ const wchar_t kDiagnostics[] = L"diagnostics";
 // Disables the custom JumpList on Windows 7.
 const wchar_t kDisableCustomJumpList[] = L"disable-custom-jumplist";
 
-// Enables full core dump reporting for Googlers only (Linux only).
-const wchar_t kGoogleInternalCrashReporting[] =
-    L"google-internal-crash-reporting";
-
 // Enables HTML5 DB support.
 const wchar_t kEnableDatabases[] = L"enable-databases";
 

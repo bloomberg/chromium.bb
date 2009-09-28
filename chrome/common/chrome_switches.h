@@ -228,8 +228,6 @@ extern const wchar_t kDiagnostics[];
 
 extern const wchar_t kDisableCustomJumpList[];
 
-extern const wchar_t kGoogleInternalCrashReporting[];
-
 extern const wchar_t kEnableDatabases[];
 
 extern const wchar_t kEnableApplicationCache[];

@@ -5,8 +5,6 @@
 #ifndef CHROME_APP_BREAKPAD_LINUX_H_
 #define CHROME_APP_BREAKPAD_LINUX_H_
 
-#include <string>
-
 extern void InitCrashReporter();
 
 static const size_t kMaxActiveURLSize = 1024;
@@ -27,20 +25,5 @@ struct BreakpadInfo {
 };
 
 extern int HandleCrashDump(const BreakpadInfo& info);
-
-#if defined(GOOGLE_CHROME_BUILD)
-// Checks that the kernel's core filename pattern is "core" and moves the
-// current working directory to a temp directory.
-// Returns true iff core dumping has been successfully enabled for the current
-// process.
-bool EnableCoreDumping(std::string* core_dump_directory);
-// Blocks until the given child has exited. If the kernel indicates that the
-// child dumped core, then the core is expected a file called "core" and is
-// uploaded to a collection server. The core file is deleted and the given
-// directory is removed.
-void MonitorForCoreDumpsAndReport(const std::string& core_dump_directory,
-                                  const pid_t child);
-
-#endif  // defined(GOOGLE_CHROME_BUILD)
 
 #endif  // CHROME_APP_BREAKPAD_LINUX_H_

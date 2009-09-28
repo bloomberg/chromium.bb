@@ -318,11 +318,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #if defined(USE_LINUX_BREAKPAD)
   // Needs to be called after we have chrome::DIR_USER_DATA and
   // g_browser_process.
-  if (!parsed_command_line.HasSwitch(switches::kGoogleInternalCrashReporting)) {
-    g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
-        new GetLinuxDistroTask());
-    InitCrashReporter();
-  }
+  g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
+      new GetLinuxDistroTask());
+  InitCrashReporter();
 #endif
 
 #if defined(OS_WIN)
