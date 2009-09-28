@@ -60,6 +60,9 @@ FlipFramer::~FlipFramer() {
   if (compressor_.get()) {
     deflateEnd(compressor_.get());
   }
+  if (decompressor_.get()) {
+    inflateEnd(decompressor_.get());
+  }
   delete [] current_frame_buffer_;
 }
 
