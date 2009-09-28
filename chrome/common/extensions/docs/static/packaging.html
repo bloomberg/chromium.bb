@@ -11,12 +11,12 @@ The private key is kept private
 and used to sign each version of the extension.
 </p>
 
-<!--
+<p class="comment">
 [PENDING: Perhaps mention that once the gallery is up,
 creating and updating a package will be much easier.
 Also refer to instructions on submitting an extension
 for inclusion in the gallery.]
--->
+</p>
 
 <h2>Creating a package</h2>
 
@@ -137,3 +137,18 @@ chrome.exe --pack-extension=c:\myext --pack-extension-key=c:\myext.pem
 To suppress the dialog,
 add <code>--no-message-box</code> to the command.
 </p>
+
+<h2 id="ruby">Packaging on the Mac</h2>
+
+<p>
+As of September 2009,
+Google Chrome for the Mac doesn't yet support creating packages.
+Until that support exists,
+you can use a Ruby script to create packages.
+See the following thread for details:
+</p>
+
+<blockquote>
+<a href="http://groups.google.com/group/chromium-extensions/browse_thread/thread/2e967e04d59fbacb">Chromium-extensions: extension packaging script</a>
+
+
