@@ -607,7 +607,8 @@ bool AutomatedUITest::ForceCrash() {
   return true;
 }
 
-bool AutomatedUITest::SimulateKeyPressInActiveWindow(wchar_t key, int flags) {
+bool AutomatedUITest::SimulateKeyPressInActiveWindow(base::KeyboardCode key,
+                                                     int flags) {
   scoped_refptr<WindowProxy> window(automation()->GetActiveWindow());
   if (window.get() == NULL) {
     AddErrorAttribute("active_window_not_found");

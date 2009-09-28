@@ -10,6 +10,7 @@
 #endif
 
 #include "app/l10n_util.h"
+#include "base/keyboard_codes.h"
 #include "base/logging.h"
 
 namespace views {
@@ -73,17 +74,12 @@ void NativeButton::SetLabel(const std::wstring& label) {
 }
 
 void NativeButton::SetIsDefault(bool is_default) {
-#if defined(OS_WIN)
-  int return_code = VK_RETURN;
-#else
-  int return_code = GDK_Return;
-#endif
   if (is_default == is_default_)
     return;
   if (is_default)
-    AddAccelerator(Accelerator(return_code, false, false, false));
+    AddAccelerator(Accelerator(base::VKEY_RETURN, false, false, false));
   else
-    RemoveAccelerator(Accelerator(return_code, false, false, false));
+    RemoveAccelerator(Accelerator(base::VKEY_RETURN, false, false, false));
   SetAppearsAsDefault(is_default);
 }
 

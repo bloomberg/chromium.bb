@@ -10,6 +10,8 @@
 
 #include <string>
 
+#include "base/keyboard_codes.h"
+
 namespace win_util {
 
 // NOTE: Keep these in order so callers can do things like
@@ -103,6 +105,10 @@ std::wstring FormatMessage(unsigned messageid);
 
 // Uses the last Win32 error to generate a human readable message string.
 std::wstring FormatLastWin32Error();
+
+// Methods to convert base::KeyboardCode/Windows virtual key type methods.
+WORD KeyboardCodeToWin(base::KeyboardCode keycode);
+base::KeyboardCode WinToKeyboardCode(WORD keycode);
 
 }  // namespace win_util
 

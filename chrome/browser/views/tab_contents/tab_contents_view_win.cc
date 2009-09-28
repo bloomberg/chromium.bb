@@ -9,7 +9,9 @@
 #include "app/gfx/canvas_paint.h"
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_win.h"
+#include "base/keyboard_codes.h"
 #include "base/time.h"
+#include "base/win_util.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/browser.h"  // TODO(beng): this dependency is awful.
 #include "chrome/browser/browser_process.h"
@@ -403,7 +405,8 @@ void TabContentsViewWin::HandleKeyboardEvent(
     // We may not have a focus_manager at this point (if the tab has been
     // switched by the time this message returned).
     if (focus_manager) {
-      views::Accelerator accelerator(event.windowsKeyCode,
+      views::Accelerator accelerator(
+          win_util::WinToKeyboardCode(event.windowsKeyCode),
           (event.modifiers & WebInputEvent::ShiftKey) ==
               WebInputEvent::ShiftKey,
           (event.modifiers & WebInputEvent::ControlKey) ==

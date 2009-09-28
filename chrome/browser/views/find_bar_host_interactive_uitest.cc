@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 
+#include "base/keyboard_codes.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
@@ -90,6 +91,6 @@ TEST_F(FindInPageTest, CrashEscHandlers) {
   EXPECT_EQ(VIEW_ID_LOCATION_BAR, focused_view_id);
 
   // This used to crash until bug 1303709 was fixed.
-  EXPECT_TRUE(window->SimulateOSKeyPress(VK_ESCAPE, 0));
+  EXPECT_TRUE(window->SimulateOSKeyPress(base::VKEY_ESCAPE, 0));
   ::Sleep(kActionDelayMs);
 }

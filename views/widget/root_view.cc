@@ -782,8 +782,8 @@ bool RootView::ProcessKeyEvent(const KeyEvent& event) {
   View* v = GetFocusedView();
   // Special case to handle right-click context menus triggered by the
   // keyboard.
-  if (v && v->IsEnabled() && ((event.GetCharacter() == base::VKEY_APPS) ||
-      (event.GetCharacter() == base::VKEY_F10 && event.IsShiftDown()))) {
+  if (v && v->IsEnabled() && ((event.GetKeyCode() == base::VKEY_APPS) ||
+     (event.GetKeyCode() == base::VKEY_F10 && event.IsShiftDown()))) {
     gfx::Point screen_loc = v->GetKeyboardContextMenuLocation();
     v->ShowContextMenu(screen_loc.x(), screen_loc.y(), false);
     return true;

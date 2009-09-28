@@ -24,7 +24,7 @@ class TableViewObserver {
   virtual void OnMiddleClick() {}
 
   // Optional method invoked when the user hits a key with the table in focus.
-  virtual void OnKeyDown(unsigned short virtual_keycode) {}
+  virtual void OnKeyDown(base::KeyboardCode virtual_keycode) {}
 
   // Invoked when the user presses the delete key.
   virtual void OnTableViewDelete(TableView* table_view) {}

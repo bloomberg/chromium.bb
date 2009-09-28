@@ -4,6 +4,8 @@
 
 #include "views/focus/accelerator_handler.h"
 
+#include "base/keyboard_codes.h"
+#include "base/win_util.h"
 #include "views/event.h"
 #include "views/focus/focus_manager.h"
 
@@ -23,7 +25,7 @@ bool AcceleratorHandler::Dispatch(const MSG& msg) {
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN: {
           KeyEvent event(Event::ET_KEY_PRESSED,
-                         msg.wParam,
+                         win_util::WinToKeyboardCode(msg.wParam),
                          msg.lParam & 0xFFFF,
                          (msg.lParam & 0xFFFF0000) >> 16);
           process_message = focus_manager->OnKeyEvent(event);

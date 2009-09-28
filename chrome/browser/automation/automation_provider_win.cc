@@ -4,6 +4,7 @@
 
 #include "chrome/browser/automation/automation_provider.h"
 
+#include "base/keyboard_codes.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/external_tab_container.h"
@@ -233,7 +234,7 @@ void AutomationProvider::WindowSimulateDrag(int handle,
 
     if (press_escape_en_route) {
       // Press Escape.
-      ui_controls::SendKeyPress(window, VK_ESCAPE,
+      ui_controls::SendKeyPress(window, base::VKEY_ESCAPE,
                                ((flags & views::Event::EF_CONTROL_DOWN)
                                 == views::Event::EF_CONTROL_DOWN),
                                ((flags & views::Event::EF_SHIFT_DOWN) ==

@@ -13,13 +13,14 @@
 
 #include <string>
 
+#include "base/keyboard_codes.h"
 #include "views/event.h"
 
 namespace views {
 
 class Accelerator {
  public:
-  Accelerator(int keycode,
+  Accelerator(base::KeyboardCode keycode,
               bool shift_pressed, bool ctrl_pressed, bool alt_pressed)
       : key_code_(keycode) {
     modifiers_ = 0;
@@ -74,7 +75,7 @@ class Accelerator {
     return (modifiers_ & Event::EF_ALT_DOWN) == Event::EF_ALT_DOWN;
   }
 
-  int GetKeyCode() const {
+  base::KeyboardCode GetKeyCode() const {
     return key_code_;
   }
 
@@ -83,7 +84,7 @@ class Accelerator {
 
  private:
   // The window keycode (VK_...).
-  int key_code_;
+  base::KeyboardCode key_code_;
 
   // The state of the Shift/Ctrl/Alt keys (see event.h).
   int modifiers_;

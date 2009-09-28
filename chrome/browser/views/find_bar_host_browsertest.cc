@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
@@ -590,7 +591,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, AcceleratorRestoring) {
       views::FocusManager::GetFocusManagerForNativeView(browser_view);
 
   // See where Escape is registered.
-  views::Accelerator escape(VK_ESCAPE, false, false, false);
+  views::Accelerator escape(base::VKEY_ESCAPE, false, false, false);
   views::AcceleratorTarget* old_target =
       focus_manager->GetCurrentTargetForAccelerator(escape);
   EXPECT_TRUE(old_target != NULL);

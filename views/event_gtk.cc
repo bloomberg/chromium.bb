@@ -18,7 +18,7 @@ KeyEvent::KeyEvent(GdkEventKey* event)
             Event::ET_KEY_PRESSED : Event::ET_KEY_RELEASED,
             GetFlagsFromGdkState(event->state)),
       // TODO(erg): All these values are iffy.
-      character_(base::WindowsKeyCodeForGdkKeyCode(event->keyval)),
+      key_code_(base::WindowsKeyCodeForGdkKeyCode(event->keyval)),
       repeat_count_(0),
       message_flags_(0) {
 }
