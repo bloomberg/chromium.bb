@@ -311,180 +311,358 @@ each locale. aa1 -->
       </message>
 
       <!-- content area context menus -->
-      <message name="IDS_CONTENT_CONTEXT_BACK" desc="The name of the Back command in the content area context menu">
-        &amp;Back
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_FORWARD" desc="The name of the Forward command in the content area context menu">
-        &amp;Forward
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_SAVEPAGEAS" desc="The name of the Save Page As command in the content area context menu">
-        Save &amp;as...
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_PRINT" desc="The name of the Print... command in the content area context menu. Brings a dialog to select the print options">
-        P&amp;rint...
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_VIEWPAGESOURCE" desc="The name of the View Page Source command in the content area context menu">
-        &amp;View page source
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_VIEWPAGEINFO" desc="The name of the View Page Info command in the content area context menu">
-        View page &amp;info
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_INSPECTELEMENT" desc="The name of the Inspect Element command in the content area context menu">
-        I&amp;nspect element
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_RELOAD" desc="The name of the Reload command in the content area context menu">
-        Re&amp;load
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_CONTENT_CONTEXT_BACK" desc="The name of the Back command in the content area context menu">
+          &amp;Back
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_FORWARD" desc="The name of the Forward command in the content area context menu">
+          &amp;Forward
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SAVEPAGEAS" desc="The name of the Save Page As command in the content area context menu">
+          Save &amp;as...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_PRINT" desc="The name of the Print... command in the content area context menu. Brings a dialog to select the print options">
+          P&amp;rint...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_VIEWPAGESOURCE" desc="The name of the View Page Source command in the content area context menu">
+          &amp;View page source
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_VIEWPAGEINFO" desc="The name of the View Page Info command in the content area context menu">
+          View page &amp;info
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_INSPECTELEMENT" desc="The name of the Inspect Element command in the content area context menu">
+          I&amp;nspect element
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_RELOAD" desc="The name of the Reload command in the content area context menu">
+          Re&amp;load
+        </message>
 
-      <message name="IDS_CONTENT_CONTEXT_OPENFRAMENEWWINDOW" desc="The name of the Open Frame in New Window command in the content area context menu">
-        Open frame in new &amp;window
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_OPENFRAMEOFFTHERECORD" desc="The name of the open frame in incognito window command">
-        Open frame in inco&amp;gnito window
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_OPENFRAMENEWTAB" desc="The name of the Open Frame in New Tab command in the content area context menu">
-        Open frame in new &amp;tab
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_SAVEFRAMEAS" desc="The name of the Save Frame As command in the content area context menu">
-        Save &amp;frame as...
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_PRINTFRAME" desc="The name of the Print Frame command in the content area context menu">
-        P&amp;rint frame...
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE" desc="The name of the View Frame Source command in the content area context menu">
-        &amp;View frame source
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_VIEWFRAMEINFO" desc="The name of the View Frame Info command in the content area context menu">
-        View frame &amp;info
-      </message>
+        <message name="IDS_CONTENT_CONTEXT_OPENFRAMENEWWINDOW" desc="The name of the Open Frame in New Window command in the content area context menu">
+          Open frame in new &amp;window
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_OPENFRAMEOFFTHERECORD" desc="The name of the open frame in incognito window command">
+          Open frame in inco&amp;gnito window
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_OPENFRAMENEWTAB" desc="The name of the Open Frame in New Tab command in the content area context menu">
+          Open frame in new &amp;tab
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SAVEFRAMEAS" desc="The name of the Save Frame As command in the content area context menu">
+          Save &amp;frame as...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_PRINTFRAME" desc="The name of the Print Frame command in the content area context menu">
+          P&amp;rint frame...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE" desc="The name of the View Frame Source command in the content area context menu">
+          &amp;View frame source
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_VIEWFRAMEINFO" desc="The name of the View Frame Info command in the content area context menu">
+          View frame &amp;info
+        </message>
 
-      <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWTAB" desc="The name of the Open Link in New Tab command in the content area context menu">
-        Open link in new &amp;tab
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW" desc="The name of the Open Link in New Window command in the content area context menu">
-        Open link in new &amp;window
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD" desc="The name of the open a link in incognito window command">
-        Open link in inco&amp;gnito window
-      </message>
+        <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWTAB" desc="The name of the Open Link in New Tab command in the content area context menu">
+          Open link in new &amp;tab
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW" desc="The name of the Open Link in New Window command in the content area context menu">
+          Open link in new &amp;window
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD" desc="The name of the open a link in incognito window command">
+          Open link in inco&amp;gnito window
+        </message>
 
-      <message name="IDS_CONTENT_CONTEXT_SAVELINKAS" desc="The name of the Save Link As command in the content area context menu">
-        Save lin&amp;k as...
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_COPYLINKLOCATION" desc="The name of the Copy Link Location command in the content area context menu">
-        Copy link addr&amp;ess
-      </message>
+        <message name="IDS_CONTENT_CONTEXT_SAVELINKAS" desc="The name of the Save Link As command in the content area context menu">
+          Save lin&amp;k as...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_COPYLINKLOCATION" desc="The name of the Copy Link Location command in the content area context menu">
+          Copy link addr&amp;ess
+        </message>
 
-      <message name="IDS_CONTENT_CONTEXT_COPYEMAILADDRESS" desc="The name of the Copy Email Address command in the content area context menu">
-        Copy &amp;email address
-      </message>
+        <message name="IDS_CONTENT_CONTEXT_COPYEMAILADDRESS" desc="The name of the Copy Email Address command in the content area context menu">
+          Copy &amp;email address
+        </message>
 
-      <message name="IDS_CONTENT_CONTEXT_SAVEIMAGEAS" desc="The name of the Save Image As command in the content area context menu">
-        Sa&amp;ve image as...
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_COPYIMAGELOCATION" desc="The name of the Copy Image Location command in the content area context menu">
-        C&amp;opy image URL
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_COPYIMAGE" desc="The name of the Copy Image command in the content area context menu">
-        Cop&amp;y image
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB" desc="The name of the Open Image in New Tab command in the content area context menu">
-        Open &amp;image in new tab
-      </message>
+        <message name="IDS_CONTENT_CONTEXT_SAVEIMAGEAS" desc="The name of the Save Image As command in the content area context menu">
+          Sa&amp;ve image as...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_COPYIMAGELOCATION" desc="The name of the Copy Image Location command in the content area context menu">
+          C&amp;opy image URL
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_COPYIMAGE" desc="The name of the Copy Image command in the content area context menu">
+          Cop&amp;y image
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB" desc="The name of the Open Image in New Tab command in the content area context menu">
+          Open &amp;image in new tab
+        </message>
 
-      <message name="IDS_CONTENT_CONTEXT_LOOP" desc="The name of the Loop command for audio and video playback in the content area context menu">
-        &amp;Loop
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_PLAY" desc="The name of the Play command for audio and video playback in the content area context menu">
-        &amp;Play
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_PAUSE" desc="The name of the Pause command for audio and video playback in the content area context menu">
-        &amp;Pause
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_MUTE" desc="The name of the Mute command for audio and video playback in the content area context menu">
-        &amp;Mute
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_UNMUTE" desc="The name of the Unmute command for audio and video playback in the content area context menu">
-        Un&amp;mute
-      </message>
+        <message name="IDS_CONTENT_CONTEXT_LOOP" desc="The name of the Loop command for audio and video playback in the content area context menu">
+          &amp;Loop
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_PLAY" desc="The name of the Play command for audio and video playback in the content area context menu">
+          &amp;Play
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_PAUSE" desc="The name of the Pause command for audio and video playback in the content area context menu">
+          &amp;Pause
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_MUTE" desc="The name of the Mute command for audio and video playback in the content area context menu">
+          &amp;Mute
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_UNMUTE" desc="The name of the Unmute command for audio and video playback in the content area context menu">
+          Un&amp;mute
+        </message>
 
-      <message name="IDS_CONTENT_CONTEXT_FULLSCREEN" desc="The name of the Fullscreen command for the video element in the content area context menu">
-        &amp;Fullscreen
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_SAVESCREENSHOTAS" desc="The name of the Copy Sceenshot As command the video element in the content area context menu">
-        Save &amp;Screenshot...
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_SAVEVIDEOAS" desc="The name of the Save Video As command in the content area context menu">
-        Sa&amp;ve video as...
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION" desc="The name of the Copy Video Location command in the content area context menu">
-        C&amp;opy video URL
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB" desc="The name of the Open Video in New Tab command in the content area context menu">
-        &amp;Open video in new tab
-      </message>
+        <message name="IDS_CONTENT_CONTEXT_FULLSCREEN" desc="The name of the Fullscreen command for the video element in the content area context menu">
+          &amp;Full Screen
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SAVESCREENSHOTAS" desc="The name of the Copy Sceenshot As command the video element in the content area context menu">
+          Save &amp;Screenshot...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SAVEVIDEOAS" desc="The name of the Save Video As command in the content area context menu">
+         Sa&amp;ve video as...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION" desc="The name of the Copy Video Location command in the content area context menu">
+          C&amp;opy video URL
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB" desc="The name of the Open Video in New Tab command in the content area context menu">
+          &amp;Open video in new tab
+        </message>
 
-      <message name="IDS_CONTENT_CONTEXT_SAVEAUDIOAS" desc="The name of the Save Audio As command in the content area context menu">
-        Sa&amp;ve audio as...
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION" desc="The name of the Copy Audio Location command in the content area context menu">
-        C&amp;opy audio URL
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB" desc="The name of the Open Audio in New Tab command in the content area context menu">
-        &amp;Open audio in new tab
-      </message>
+        <message name="IDS_CONTENT_CONTEXT_SAVEAUDIOAS" desc="The name of the Save Audio As command in the content area context menu">
+          Sa&amp;ve audio as...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION" desc="The name of the Copy Audio Location command in the content area context menu">
+          C&amp;opy audio URL
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB" desc="The name of the Open Audio in New Tab command in the content area context menu">
+          &amp;Open audio in new tab
+        </message>
 
-      <message name="IDS_CONTENT_CONTEXT_UNDO" desc="The name of the Undo command in the content area context menu">
-        &amp;Undo
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_REDO" desc="The name of the Redo command in the content area context menu">
-        &amp;Redo
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_CUT" desc="The name of the Cut command in the content area context menu">
-        Cu&amp;t
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_COPY" desc="The name of the Copy command in the content area context menu">
-        &amp;Copy
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_PASTE" desc="The name of the Paste command in the content area context menu">
-        &amp;Paste
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_DELETE" desc="The name of the Delete command in the content area context menu">
-        &amp;Delete
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY" desc="The name of the Add to dictionary command in the content area context menu">
-        &amp;Add to dictionary
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS" desc="The name of the No Spelling Suggestions display in the content area context menu">
-        &amp;No spelling suggestions
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="The name of the Spellcheck Options submenu in the content area context menu">
-        &amp;Spell-checker options
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="The name of the Language Settings command in the content area context menu">
-        &amp;Language settings...
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_OF_THIS_FIELD" desc="The name of the Check the spelling of this field command in the content area context menu">
-        &amp;Check the spelling of this field
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_SHOW_SPELLING_PANEL" desc="The name of the Show Spelling Panel command in the content area context menu">
-        &amp;Show Spelling Panel
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_HIDE_SPELLING_PANEL" desc="The name of the Hide Spelling Panel command in the content area context menu">
-        &amp;Hide Spelling Panel
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_SELECTALL" desc="The name of the Select All command in the content area context menu">
-        Select &amp;all
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFOR" desc="The name of the Search the Web for 'string' command in the content area context menu">
-        &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for '<ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>'
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_ADDSEARCHENGINE" desc="The name of the Add as Search Engine command in the content area context menu">
-        Add as search en&amp;gine...
-      </message>
+        <message name="IDS_CONTENT_CONTEXT_UNDO" desc="The name of the Undo command in the content area context menu">
+          &amp;Undo
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_REDO" desc="The name of the Redo command in the content area context menu">
+          &amp;Redo
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_CUT" desc="The name of the Cut command in the content area context menu">
+          Cu&amp;t
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_COPY" desc="The name of the Copy command in the content area context menu">
+          &amp;Copy
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_PASTE" desc="The name of the Paste command in the content area context menu">
+          &amp;Paste
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_DELETE" desc="The name of the Delete command in the content area context menu">
+          &amp;Delete
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY" desc="The name of the Add to dictionary command in the content area context menu">
+          &amp;Add to dictionary
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS" desc="The name of the No Spelling Suggestions display in the content area context menu">
+          &amp;No spelling suggestions
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="The name of the Spellcheck Options submenu in the content area context menu">
+          &amp;Spell-checker options
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="The name of the Language Settings command in the content area context menu">
+          &amp;Language settings...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_OF_THIS_FIELD" desc="The name of the Check the spelling of this field command in the content area context menu">
+          &amp;Check the spelling of this field
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SHOW_SPELLING_PANEL" desc="The name of the Show Spelling Panel command in the content area context menu">
+          &amp;Show spelling panel
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_HIDE_SPELLING_PANEL" desc="The name of the Hide Spelling Panel command in the content area context menu">
+          &amp;Hide spelling panel
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SELECTALL" desc="The name of the Select All command in the content area context menu">
+          Select &amp;all
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFOR" desc="The name of the Search the Web for 'string' command in the content area context menu">
+          &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for '<ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>'
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_ADDSEARCHENGINE" desc="The name of the Add as Search Engine command in the content area context menu">
+          Add as search en&amp;gine...
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_CONTENT_CONTEXT_BACK" desc="In Title Case: The name of the Back command in the content area context menu">
+          &amp;Back
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_FORWARD" desc="In Title Case: The name of the Forward command in the content area context menu">
+          &amp;Forward
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SAVEPAGEAS" desc="In Title Case: The name of the Save Page As command in the content area context menu">
+          Save &amp;As...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_PRINT" desc="In Title Case: The name of the Print... command in the content area context menu. Brings a dialog to select the print options">
+          P&amp;rint...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_VIEWPAGESOURCE" desc="In Title Case: The name of the View Page Source command in the content area context menu">
+          &amp;View Page Source
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_VIEWPAGEINFO" desc="In Title Case: The name of the View Page Info command in the content area context menu">
+          View Page &amp;Info
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_INSPECTELEMENT" desc="In Title Case: The name of the Inspect Element command in the content area context menu">
+          I&amp;nspect Element
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_RELOAD" desc="In Title Case: The name of the Reload command in the content area context menu">
+          Re&amp;load
+        </message>
+
+        <message name="IDS_CONTENT_CONTEXT_OPENFRAMENEWWINDOW" desc="In Title Case: The name of the Open Frame in New Window command in the content area context menu">
+          Open Frame in New &amp;Window
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_OPENFRAMEOFFTHERECORD" desc="In Title Case: The name of the open frame in incognito window command">
+          Open Frame in Inco&amp;gnito Window
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_OPENFRAMENEWTAB" desc="In Title Case: The name of the Open Frame in New Tab command in the content area context menu">
+          Open Frame in New &amp;Tab
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SAVEFRAMEAS" desc="In Title Case: The name of the Save Frame As command in the content area context menu">
+          Save &amp;Frame As...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_PRINTFRAME" desc="In Title Case: The name of the Print Frame command in the content area context menu">
+          P&amp;rint Frame...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE" desc="In Title Case: The name of the View Frame Source command in the content area context menu">
+          &amp;View Frame Source
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_VIEWFRAMEINFO" desc="In Title Case: The name of the View Frame Info command in the content area context menu">
+          View Frame &amp;Info
+        </message>
+
+        <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWTAB" desc="In Title Case: The name of the Open Link in New Tab command in the content area context menu">
+          Open Link in New &amp;Tab
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWWINDOW" desc="In Title Case: The name of the Open Link in New Window command in the content area context menu">
+          Open Link in New &amp;Window
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD" desc="In Title Case: The name of the open a link in incognito window command">
+          Open Link in Inco&amp;gnito Window
+        </message>
+
+        <message name="IDS_CONTENT_CONTEXT_SAVELINKAS" desc="In Title Case: The name of the Save Link As command in the content area context menu">
+          Save Lin&amp;k As...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_COPYLINKLOCATION" desc="In Title Case: The name of the Copy Link Location command in the content area context menu">
+          Copy Link Addr&amp;ess
+        </message>
+
+        <message name="IDS_CONTENT_CONTEXT_COPYEMAILADDRESS" desc="In Title Case: The name of the Copy Email Address command in the content area context menu">
+          Copy &amp;Email Address
+        </message>
+
+        <message name="IDS_CONTENT_CONTEXT_SAVEIMAGEAS" desc="In Title Case: The name of the Save Image As command in the content area context menu">
+          Sa&amp;ve Image As...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_COPYIMAGELOCATION" desc="In Title Case: The name of the Copy Image Location command in the content area context menu">
+          C&amp;opy Image URL
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_COPYIMAGE" desc="In Title Case: The name of the Copy Image command in the content area context menu">
+          Cop&amp;y Image
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB" desc="In Title Case: The name of the Open Image in New Tab command in the content area context menu">
+          Open &amp;Image in New Tab
+        </message>
+
+        <message name="IDS_CONTENT_CONTEXT_LOOP" desc="In Title Case: The name of the Loop command for audio and video playback in the content area context menu">
+          &amp;Loop
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_PLAY" desc="In Title Case: The name of the Play command for audio and video playback in the content area context menu">
+          &amp;Play
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_PAUSE" desc="In Title Case: The name of the Pause command for audio and video playback in the content area context menu">
+          &amp;Pause
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_MUTE" desc="In Title Case: The name of the Mute command for audio and video playback in the content area context menu">
+          &amp;Mute
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_UNMUTE" desc="In Title Case: The name of the Unmute command for audio and video playback in the content area context menu">
+          Un&amp;mute
+        </message>
+
+        <message name="IDS_CONTENT_CONTEXT_FULLSCREEN" desc="In Title Case: The name of the Fullscreen command for the video element in the content area context menu">
+          &amp;Full Screen
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SAVESCREENSHOTAS" desc="In Title Case: The name of the Copy Sceenshot As command the video element in the content area context menu">
+          Save &amp;Screenshot...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SAVEVIDEOAS" desc="In Title Case: The name of the Save Video As command in the content area context menu">
+         Sa&amp;ve Video As...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION" desc="In Title Case: The name of the Copy Video Location command in the content area context menu">
+          C&amp;opy Video URL
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB" desc="In Title Case: The name of the Open Video in New Tab command in the content area context menu">
+          &amp;Open Video in New Tab
+        </message>
+
+        <message name="IDS_CONTENT_CONTEXT_SAVEAUDIOAS" desc="In Title Case: The name of the Save Audio As command in the content area context menu">
+          Sa&amp;ve Audio As...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION" desc="In Title Case: The name of the Copy Audio Location command in the content area context menu">
+          C&amp;opy Audio URL
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB" desc="In Title Case: The name of the Open Audio in New Tab command in the content area context menu">
+          &amp;Open Audio in New Tab
+        </message>
+
+        <message name="IDS_CONTENT_CONTEXT_UNDO" desc="In Title Case: The name of the Undo command in the content area context menu">
+          &amp;Undo
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_REDO" desc="In Title Case: The name of the Redo command in the content area context menu">
+          &amp;Redo
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_CUT" desc="In Title Case: The name of the Cut command in the content area context menu">
+          Cu&amp;t
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_COPY" desc="In Title Case: The name of the Copy command in the content area context menu">
+          &amp;Copy
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_PASTE" desc="In Title Case: The name of the Paste command in the content area context menu">
+          &amp;Paste
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_DELETE" desc="In Title Case: The name of the Delete command in the content area context menu">
+          &amp;Delete
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY" desc="In Title Case: The name of the Add to dictionary command in the content area context menu">
+          &amp;Add to Dictionary
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS" desc="In Title Case: The name of the No Spelling Suggestions display in the content area context menu">
+          &amp;No Spelling Suggestions
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="In Title Case: The name of the Spellcheck Options submenu in the content area context menu">
+          &amp;Spell-checker Options
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="In Title Case: The name of the Language Settings command in the content area context menu">
+          &amp;Language Settings...
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_OF_THIS_FIELD" desc="In Title Case: The name of the Check the spelling of this field command in the content area context menu">
+          &amp;Check Spelling in This Field
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SHOW_SPELLING_PANEL" desc="In Title Case: The name of the Show Spelling Panel command in the content area context menu">
+          &amp;Show Spelling Panel
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_HIDE_SPELLING_PANEL" desc="In Title Case: The name of the Hide Spelling Panel command in the content area context menu">
+          &amp;Hide Spelling Panel
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SELECTALL" desc="In Title Case: The name of the Select All command in the content area context menu">
+          Select &amp;All
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFOR" desc="In Title Case: The name of the Search the Web for 'string' command in the content area context menu">
+          &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for '<ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>'
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_ADDSEARCHENGINE" desc="In Title Case: The name of the Add as Search Engine command in the content area context menu">
+          Add As Search En&amp;gine...
+        </message>
+      </if>
+
+      <!-- On quick look, I didn't find any uses of this, is it stale? -->
       <message name="IDS_MOST_VISITED_SUB_PAGE" desc="The link below every domain on the most visited view">
         Show pages
       </message>
+
       <!-- Page menu -->
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_NEW_TAB" desc="The text label of the New Tab menu item">
