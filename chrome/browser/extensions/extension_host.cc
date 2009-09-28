@@ -48,8 +48,7 @@ ExtensionHost::ExtensionHost(Extension* extension, SiteInstance* site_instance,
       document_element_available_(false),
       url_(url),
       extension_host_type_(host_type) {
-  render_view_host_ = new RenderViewHost(
-      site_instance, this, MSG_ROUTING_NONE, NULL);
+  render_view_host_ = new RenderViewHost(site_instance, this, MSG_ROUTING_NONE);
   render_view_host_->AllowBindings(BindingsPolicy::EXTENSION);
   if (enable_dom_automation_)
     render_view_host_->AllowBindings(BindingsPolicy::DOM_AUTOMATION);
@@ -289,10 +288,9 @@ RenderViewHostDelegate::View* ExtensionHost::GetViewDelegate() {
   return this;
 }
 
-void ExtensionHost::CreateNewWindow(int route_id,
-                                    base::WaitableEvent* modal_dialog_event) {
+void ExtensionHost::CreateNewWindow(int route_id) {
   delegate_view_helper_.CreateNewWindow(
-      route_id, modal_dialog_event, render_view_host()->process()->profile(),
+      route_id, render_view_host()->process()->profile(),
       site_instance(), DOMUIFactory::GetDOMUIType(url_), NULL);
 }
 

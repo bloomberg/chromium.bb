@@ -100,15 +100,13 @@ RenderViewHost* RenderViewHost::FromID(int render_process_id,
 
 RenderViewHost::RenderViewHost(SiteInstance* instance,
                                RenderViewHostDelegate* delegate,
-                               int routing_id,
-                               base::WaitableEvent* modal_dialog_event)
+                               int routing_id)
     : RenderWidgetHost(instance->GetProcess(), routing_id),
       instance_(instance),
       delegate_(delegate),
       waiting_for_drag_context_response_(false),
       enabled_bindings_(0),
       pending_request_id_(0),
-      modal_dialog_count_(0),
       navigations_suspended_(false),
       suspended_nav_message_(NULL),
       run_modal_reply_msg_(NULL),
@@ -119,10 +117,6 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       in_inspect_element_mode_(false) {
   DCHECK(instance_);
   DCHECK(delegate_);
-  if (modal_dialog_event == NULL)
-    modal_dialog_event = new base::WaitableEvent(true, false);
-
-  modal_dialog_event_.reset(modal_dialog_event);
 
   // TODO(mpcomplete): remove this notification (and registrar) when we figure
   // out why we're crashing on process()->Init().
@@ -189,28 +183,6 @@ bool RenderViewHost::CreateRenderView() {
 
   renderer_initialized_ = true;
 
-#if defined(OS_WIN)
-  HANDLE modal_dialog_event_handle;
-  HANDLE renderer_process_handle = process()->process().handle();
-  if (renderer_process_handle == NULL)
-    renderer_process_handle = GetCurrentProcess();
-
-  BOOL result = DuplicateHandle(GetCurrentProcess(),
-      modal_dialog_event_->handle(),
-      renderer_process_handle,
-      &modal_dialog_event_handle,
-      SYNCHRONIZE,
-      FALSE,
-      0);
-  DCHECK(result) <<
-      "Couldn't duplicate the modal dialog handle for the renderer.";
-#endif
-
-  ModalDialogEvent modal_dialog_event;
-#if defined(OS_WIN)
-  modal_dialog_event.event = modal_dialog_event_handle;
-#endif
-
   // Force local storage to be enabled for extensions. This is so that we can
   // enable extensions by default before databases, if necessary.
   // TODO(aa): This should be removed when local storage and databases are
@@ -222,7 +194,6 @@ bool RenderViewHost::CreateRenderView() {
   }
 
   Send(new ViewMsg_New(GetNativeViewId(),
-                       modal_dialog_event,
                        delegate_->GetRendererPrefs(),
                        webkit_prefs,
                        routing_id()));
@@ -612,16 +583,10 @@ void RenderViewHost::JavaScriptMessageBoxClosed(IPC::Message* reply_msg,
   Send(reply_msg);
 }
 
-void RenderViewHost::JavaScriptMessageBoxWindowDestroyed() {
-  ResetModalDialogEvent();
-}
-
 void RenderViewHost::ModalHTMLDialogClosed(IPC::Message* reply_msg,
                                            const std::string& json_retval) {
   if (is_waiting_for_unload_ack_)
     StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
-
-  ResetModalDialogEvent();
 
   ViewHostMsg_ShowModalHTMLDialog::WriteReplyParams(reply_msg, json_retval);
   Send(reply_msg);
@@ -734,6 +699,11 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
   // On Linux we can avoid this by avoiding sync messages from browser->plugin.
   // On Mac we avoid this by not supporting windowed plugins.
   if (msg.is_sync() && !msg.is_caller_pumping_messages()) {
+    // NOTE: IF YOU HIT THIS ASSERT, THE SOLUTION IS ALMOST NEVER TO RUN A
+    // NESTED MESSAGE LOOP IN THE RENDERER!!!
+    // That introduces reentrancy which causes hard to track bugs.  You should
+    // find a way to either turn this into an asynchronous message, or one
+    // that can be answered on the IO thread.
     NOTREACHED() << "Can't send sync messages to UI thread without pumping "
         "messages in the renderer or else deadlocks can occur if the page "
         "has windowed plugins! (message type " << msg.type() << ")";
@@ -869,26 +839,18 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
 void RenderViewHost::Shutdown() {
   // If we are being run modally (see RunModal), then we need to cleanup.
   if (run_modal_reply_msg_) {
-    ResetModalDialogEvent();
     Send(run_modal_reply_msg_);
     run_modal_reply_msg_ = NULL;
   }
   RenderWidgetHost::Shutdown();
 }
 
-void RenderViewHost::CreateNewWindow(int route_id,
-                                     ModalDialogEvent modal_dialog_event) {
+void RenderViewHost::CreateNewWindow(int route_id) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (!view)
     return;
 
-  base::WaitableEvent* waitable_event = new base::WaitableEvent(
-#if defined(OS_WIN)
-      modal_dialog_event.event);
-#else
-      true, false);
-#endif
-  view->CreateNewWindow(route_id, waitable_event);
+  view->CreateNewWindow(route_id);
 }
 
 void RenderViewHost::CreateNewWidget(int route_id, bool activatable) {
@@ -921,7 +883,6 @@ void RenderViewHost::OnMsgShowWidget(int route_id,
 
 void RenderViewHost::OnMsgRunModal(IPC::Message* reply_msg) {
   DCHECK(!run_modal_reply_msg_);
-  SignalModalDialogEvent();
   run_modal_reply_msg_ = reply_msg;
 
   // TODO(darin): Bug 1107929: Need to inform our delegate to show this view in
@@ -1328,7 +1289,6 @@ void RenderViewHost::OnMsgRunJavaScriptMessage(
   // process input events.
   process()->set_ignore_input_events(true);
   StopHangMonitorTimeout();
-  SignalModalDialogEvent();
   delegate_->RunJavaScriptMessage(message, default_prompt, frame_url, flags,
                                   reply_msg,
                                   &are_javascript_messages_suppressed_);
@@ -1341,7 +1301,6 @@ void RenderViewHost::OnMsgRunBeforeUnloadConfirm(const GURL& frame_url,
   // shouldn't process input events.
   process()->set_ignore_input_events(true);
   StopHangMonitorTimeout();
-  SignalModalDialogEvent();
   delegate_->RunBeforeUnloadConfirm(message, reply_msg);
 }
 
@@ -1349,7 +1308,6 @@ void RenderViewHost::OnMsgShowModalHTMLDialog(
     const GURL& url, int width, int height, const std::string& json_arguments,
     IPC::Message* reply_msg) {
   StopHangMonitorTimeout();
-  SignalModalDialogEvent();
   delegate_->ShowModalHTMLDialog(url, width, height, json_arguments, reply_msg);
 }
 
@@ -1708,16 +1666,6 @@ void RenderViewHost::OnAccessibilityFocusChange(int acc_obj_id) {
 
 void RenderViewHost::OnCSSInserted() {
   delegate_->DidInsertCSS();
-}
-
-void RenderViewHost::SignalModalDialogEvent() {
-  if (modal_dialog_count_++ == 0)
-    modal_dialog_event_->Signal();
-}
-
-void RenderViewHost::ResetModalDialogEvent() {
-  if (--modal_dialog_count_ == 0)
-    modal_dialog_event_->Reset();
 }
 
 void RenderViewHost::UpdateBrowserWindowId(int window_id) {

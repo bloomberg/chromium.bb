@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
-#include "chrome/common/modal_dialog_event.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/page_zoom.h"
@@ -33,10 +32,6 @@ struct ViewHostMsg_DidPrintPage_Params;
 struct ViewMsg_Navigate_Params;
 struct WebDropData;
 struct WebPreferences;
-
-namespace base {
-class WaitableEvent;
-}
 
 namespace gfx {
 class Point;
@@ -86,14 +81,10 @@ class RenderViewHost : public RenderWidgetHost,
   static RenderViewHost* FromID(int render_process_id, int render_view_id);
 
   // routing_id could be a valid route id, or it could be MSG_ROUTING_NONE, in
-  // which case RenderWidgetHost will create a new one.  modal_dialog_event is
-  // the event that's set when showing a modal dialog so that the renderer and
-  // plugin processes know to pump messages.  An existing event can be passed
-  // in, otherwise if it's NULL a new event will be created.
+  // which case RenderWidgetHost will create a new one.
   RenderViewHost(SiteInstance* instance,
                  RenderViewHostDelegate* delegate,
-                 int routing_id,
-                 base::WaitableEvent* modal_dialog_event);
+                 int routing_id);
   virtual ~RenderViewHost();
 
   SiteInstance* site_instance() const { return instance_; }
@@ -303,10 +294,6 @@ class RenderViewHost : public RenderWidgetHost,
                                   bool success,
                                   const std::wstring& prompt);
 
-  // This function is called when the JavaScript message box window has been
-  // destroyed.
-  void JavaScriptMessageBoxWindowDestroyed();
-
   // Notifies the RenderView that the modal html dialog has been closed.
   void ModalHTMLDialogClosed(IPC::Message* reply_msg,
                              const std::string& json_retval);
@@ -423,7 +410,7 @@ class RenderViewHost : public RenderWidgetHost,
   virtual gfx::Rect GetRootWindowResizerRect() const;
 
   // Creates a new RenderView with the given route id.
-  void CreateNewWindow(int route_id, ModalDialogEvent modal_dialog_event);
+  void CreateNewWindow(int route_id);
 
   // Creates a new RenderWidget with the given route id.
   void CreateNewWidget(int route_id, bool activatable);
@@ -439,9 +426,6 @@ class RenderViewHost : public RenderWidgetHost,
 
   // Notify the renderer that its view type has changed.
   void ViewTypeChanged(ViewType::Type type);
-
-  void SignalModalDialogEvent();
-  void ResetModalDialogEvent();
 
   // Tell renderer which browser window it is being attached to.
   void UpdateBrowserWindowId(int window_id);
@@ -624,15 +608,6 @@ class RenderViewHost : public RenderWidgetHost,
   // request once we have gotten the some data for the pending page
   // and thus started the unload process.
   int pending_request_id_;
-
-  // Handle to an event that's set when the page is showing a modal dialog box
-  // (or equivalent constrained window).  The renderer and plugin processes
-  // check this to know if they should pump messages/tasks then.
-  scoped_ptr<base::WaitableEvent> modal_dialog_event_;
-
-  // Multiple dialog boxes can be shown before the first one is finished,
-  // so we keep a counter to know when we can reset the modal dialog event.
-  int modal_dialog_count_;
 
   // Whether we should buffer outgoing Navigate messages rather than sending
   // them.  This will be true when a RenderViewHost is created for a cross-site

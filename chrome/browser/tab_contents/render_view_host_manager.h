@@ -73,8 +73,7 @@ class RenderViewHostManager
   // For arguments, see TabContents constructor.
   void Init(Profile* profile,
             SiteInstance* site_instance,
-            int routing_id,
-            base::WaitableEvent* modal_dialog_event);
+            int routing_id);
 
   // Returns the currently actuive RenderViewHost.
   //
@@ -139,9 +138,6 @@ class RenderViewHostManager
   void OnJavaScriptMessageBoxClosed(IPC::Message* reply_msg,
                                     bool success,
                                     const std::wstring& prompt);
-
-  // Forwards this message to the RenderViewHost.
-  void OnJavaScriptMessageBoxWindowDestroyed();
 
   // Sets the passed passed interstitial as the currently showing interstitial.
   // |interstitial_page| should be non NULL (use the remove_interstitial_page

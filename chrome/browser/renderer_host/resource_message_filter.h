@@ -24,7 +24,6 @@
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
-#include "chrome/common/modal_dialog_event.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/transport_dib.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -113,8 +112,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                        const NotificationDetails& details);
 
  private:
-  void OnMsgCreateWindow(int opener_id, bool user_gesture, int* route_id,
-                         ModalDialogEvent* modal_dialog_event);
+  void OnMsgCreateWindow(int opener_id, bool user_gesture, int* route_id);
   void OnMsgCreateWidget(int opener_id, bool activatable, int* route_id);
   void OnSetCookie(const GURL& url,
                    const GURL& first_party_for_cookies,

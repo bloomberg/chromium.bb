@@ -173,8 +173,7 @@ class TabContentsView : public RenderViewHostDelegate::View {
   // We implement these functions on RenderViewHostDelegate::View directly and
   // do some book-keeping associated with the request. The request is then
   // forwarded to *Internal which does platform-specific work.
-  virtual void CreateNewWindow(int route_id,
-                               base::WaitableEvent* modal_dialog_event);
+  virtual void CreateNewWindow(int route_id);
   virtual void CreateNewWidget(int route_id, bool activatable);
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,

@@ -22,7 +22,6 @@
 #include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/filter_policy.h"
-#include "chrome/common/modal_dialog_event.h"
 #include "chrome/common/navigation_gesture.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/renderer_preferences.h"
@@ -1723,29 +1722,6 @@ struct ParamTraits<WebDropData> {
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"<WebDropData>");
-  }
-};
-
-template<>
-struct ParamTraits<ModalDialogEvent> {
-  typedef ModalDialogEvent param_type;
-#if defined(OS_WIN)
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.event);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return ReadParam(m, iter, &p->event);
-  }
-#else
-  static void Write(Message* m, const param_type& p) {
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return true;
-  }
-#endif
-
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<ModalDialogEvent>");
   }
 };
 

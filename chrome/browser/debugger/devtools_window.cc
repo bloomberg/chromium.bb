@@ -51,8 +51,7 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       inspected_window_(NULL),
       docked_(docked) {
   // Create TabContents with devtools.
-  tab_contents_ = new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL,
-                                  NULL);
+  tab_contents_ = new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL);
   GURL url(std::string(chrome::kChromeUIDevToolsURL) + "devtools.html");
   tab_contents_->render_view_host()->AllowBindings(BindingsPolicy::DOM_UI);
   tab_contents_->controller().LoadURL(url, GURL(), PageTransition::START_PAGE);

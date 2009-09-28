@@ -13,9 +13,8 @@ using webkit_glue::PasswordForm;
 
 TestRenderViewHost::TestRenderViewHost(SiteInstance* instance,
                                        RenderViewHostDelegate* delegate,
-                                       int routing_id,
-                                       base::WaitableEvent* modal_dialog_event)
-    : RenderViewHost(instance, delegate, routing_id, modal_dialog_event),
+                                       int routing_id)
+    : RenderViewHost(instance, delegate, routing_id),
       render_view_created_(false),
       delete_counter_(NULL) {
   set_view(new TestRenderWidgetHostView(this));

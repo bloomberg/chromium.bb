@@ -117,8 +117,7 @@ class MainMenu : public RenderViewHostDelegate,
   virtual void RequestMove(const gfx::Rect& new_bounds);
 
   // RenderViewHostDelegate::View overrides.
-  virtual void CreateNewWindow(int route_id,
-                               base::WaitableEvent* modal_dialog_event);
+  virtual void CreateNewWindow(int route_id);
   virtual void CreateNewWidget(int route_id, bool activatable) {}
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,

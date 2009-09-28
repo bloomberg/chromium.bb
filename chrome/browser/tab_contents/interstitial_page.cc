@@ -78,8 +78,7 @@ class InterstitialPage::InterstitialPageRVHViewDelegate
   explicit InterstitialPageRVHViewDelegate(InterstitialPage* page);
 
   // RenderViewHostDelegate::View implementation:
-  virtual void CreateNewWindow(int route_id,
-                               base::WaitableEvent* modal_dialog_event);
+  virtual void CreateNewWindow(int route_id);
   virtual void CreateNewWidget(int route_id, bool activatable);
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,
@@ -378,7 +377,7 @@ void InterstitialPage::DomOperationResponse(const std::string& json_string,
 RenderViewHost* InterstitialPage::CreateRenderViewHost() {
   RenderViewHost* render_view_host = new RenderViewHost(
       SiteInstance::CreateSiteInstance(tab()->profile()),
-      this, MSG_ROUTING_NONE, NULL);
+      this, MSG_ROUTING_NONE);
   return render_view_host;
 }
 
@@ -528,7 +527,7 @@ InterstitialPage::InterstitialPageRVHViewDelegate::
 }
 
 void InterstitialPage::InterstitialPageRVHViewDelegate::CreateNewWindow(
-    int route_id, base::WaitableEvent* modal_dialog_event) {
+    int route_id) {
   NOTREACHED() << "InterstitialPage does not support showing popups yet.";
 }
 

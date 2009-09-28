@@ -128,8 +128,7 @@ TEST_F(RenderViewHostManagerTest, Init) {
   TestTabContents tab_contents(profile_.get(), instance);
   RenderViewHostManager manager(&tab_contents, &tab_contents);
 
-  manager.Init(profile_.get(), instance, MSG_ROUTING_NONE,
-               NULL /* modal_dialog_event */);
+  manager.Init(profile_.get(), instance, MSG_ROUTING_NONE);
 
   RenderViewHost* host = manager.current_host();
   ASSERT_TRUE(host);
@@ -153,8 +152,7 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   // Create.
   RenderViewHostManager manager(&tab_contents, &tab_contents);
 
-  manager.Init(profile_.get(), instance, MSG_ROUTING_NONE,
-               NULL /* modal_dialog_event */);
+  manager.Init(profile_.get(), instance, MSG_ROUTING_NONE);
 
   RenderViewHost* host;
 
@@ -227,8 +225,7 @@ TEST_F(RenderViewHostManagerTest, DOMUI) {
   TestTabContents tab_contents(profile_.get(), instance);
   RenderViewHostManager manager(&tab_contents, &tab_contents);
 
-  manager.Init(profile_.get(), instance, MSG_ROUTING_NONE,
-               NULL /* modal_dialog_event */);
+  manager.Init(profile_.get(), instance, MSG_ROUTING_NONE);
 
   GURL url("chrome://newtab");
   NavigationEntry entry(NULL /* instance */, -1 /* page_id */, url,

@@ -632,7 +632,7 @@ TabContents* Browser::AddRestoredTab(
     bool select,
     bool pin) {
   TabContents* new_tab = new TabContents(profile(), NULL,
-      MSG_ROUTING_NONE, NULL, tabstrip_model_.GetSelectedTabContents());
+      MSG_ROUTING_NONE, tabstrip_model_.GetSelectedTabContents());
   new_tab->controller().RestoreFromState(navigations, selected_navigation);
 
   bool really_pin =
@@ -654,7 +654,7 @@ void Browser::ReplaceRestoredTab(
     const std::vector<TabNavigation>& navigations,
     int selected_navigation) {
   TabContents* replacement = new TabContents(profile(), NULL,
-      MSG_ROUTING_NONE, NULL, tabstrip_model_.GetSelectedTabContents());
+      MSG_ROUTING_NONE, tabstrip_model_.GetSelectedTabContents());
   replacement->controller().RestoreFromState(navigations, selected_navigation);
 
   tabstrip_model_.ReplaceNavigationControllerAt(
@@ -1565,7 +1565,7 @@ TabContents* Browser::CreateTabContentsForURL(
     PageTransition::Type transition, bool defer_load,
     SiteInstance* instance) const {
   TabContents* contents = new TabContents(profile, instance,
-      MSG_ROUTING_NONE, NULL, tabstrip_model_.GetSelectedTabContents());
+      MSG_ROUTING_NONE, tabstrip_model_.GetSelectedTabContents());
 
   if (!defer_load) {
     // Load the initial URL before adding the new tab contents to the tab strip
@@ -2581,7 +2581,7 @@ TabContents* Browser::BuildRestoredTab(
     // Create a NavigationController. This constructor creates the appropriate
     // set of TabContents.
     TabContents* new_tab = new TabContents(profile_, NULL,
-        MSG_ROUTING_NONE, NULL, tabstrip_model_.GetSelectedTabContents());
+        MSG_ROUTING_NONE, tabstrip_model_.GetSelectedTabContents());
     new_tab->controller().RestoreFromState(navigations, selected_navigation);
     return new_tab;
   } else {

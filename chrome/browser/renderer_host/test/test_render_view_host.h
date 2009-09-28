@@ -101,8 +101,7 @@ class TestRenderViewHost : public RenderViewHost {
  public:
   TestRenderViewHost(SiteInstance* instance,
                      RenderViewHostDelegate* delegate,
-                     int routing_id,
-                     base::WaitableEvent* modal_dialog_event);
+                     int routing_id);
   virtual ~TestRenderViewHost();
 
   // Testing functions ---------------------------------------------------------
@@ -170,12 +169,10 @@ class TestRenderViewHostFactory : public RenderViewHostFactory {
   virtual RenderViewHost* CreateRenderViewHost(
       SiteInstance* instance,
       RenderViewHostDelegate* delegate,
-      int routing_id,
-      base::WaitableEvent* modal_dialog_event) {
+      int routing_id) {
     // See declaration of render_process_host_factory_ below.
     instance->set_render_process_host_factory(render_process_host_factory_);
-    return new TestRenderViewHost(instance, delegate, routing_id,
-                                  modal_dialog_event);
+    return new TestRenderViewHost(instance, delegate, routing_id);
   }
 
  private:

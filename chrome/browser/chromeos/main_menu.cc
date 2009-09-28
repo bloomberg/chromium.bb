@@ -82,7 +82,7 @@ void MainMenu::ShowImpl() {
   GURL menu_url(kMenuURL);
   site_instance_ = SiteInstance::CreateSiteInstanceForURL(browser_->profile(),
                                                           menu_url);
-  menu_rvh_ = new RenderViewHost(site_instance_, this, MSG_ROUTING_NONE, NULL);
+  menu_rvh_ = new RenderViewHost(site_instance_, this, MSG_ROUTING_NONE);
 
   rwhv_ = new RenderWidgetHostViewGtk(menu_rvh_);
   rwhv_->InitAsChild();
@@ -156,15 +156,13 @@ void MainMenu::RequestMove(const gfx::Rect& new_bounds) {
   rwhv_->SetSize(new_bounds.size());
 }
 
-void MainMenu::CreateNewWindow(int route_id,
-                               base::WaitableEvent* modal_dialog_event) {
+void MainMenu::CreateNewWindow(int route_id) {
   if (pending_contents_.get()) {
     NOTREACHED();
     return;
   }
 
-  helper_.CreateNewWindow(route_id, modal_dialog_event, browser_->profile(),
-                          site_instance_,
+  helper_.CreateNewWindow(route_id, browser_->profile(), site_instance_,
                           DOMUIFactory::GetDOMUIType(GURL(kMenuURL)), NULL);
   pending_contents_.reset(helper_.GetCreatedWindow(route_id));
   pending_contents_->set_delegate(&tab_contents_delegate_);

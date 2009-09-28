@@ -284,7 +284,7 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetL10nMessages,
                         OnExtensionSetL10nMessages)
 #if defined(IPC_MESSAGE_LOG_ENABLED)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetIPCLoggingEnabled, 
+    IPC_MESSAGE_HANDLER(ViewMsg_SetIPCLoggingEnabled,
                         OnSetIPCLoggingEnabled)
 #endif
   IPC_END_MESSAGE_MAP()
@@ -318,22 +318,14 @@ void RenderThread::OnSetCSSColors(
 }
 
 void RenderThread::OnCreateNewView(gfx::NativeViewId parent_hwnd,
-                                   ModalDialogEvent modal_dialog_event,
                                    const RendererPreferences& renderer_prefs,
                                    const WebPreferences& webkit_prefs,
                                    int32 view_id) {
   EnsureWebKitInitialized();
 
   // When bringing in render_view, also bring in webkit's glue and jsbindings.
-  base::WaitableEvent* waitable_event = new base::WaitableEvent(
-#if defined(OS_WIN)
-      modal_dialog_event.event);
-#else
-      true, false);
-#endif
-
   RenderView::Create(
-      this, parent_hwnd, waitable_event, MSG_ROUTING_NONE, renderer_prefs,
+      this, parent_hwnd, MSG_ROUTING_NONE, renderer_prefs,
       webkit_prefs, new SharedRenderViewCounter(0), view_id);
 }
 

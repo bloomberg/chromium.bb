@@ -114,17 +114,14 @@ class RenderView : public RenderWidget,
   };
 
   // Creates a new RenderView.  The parent_hwnd specifies a HWND to use as the
-  // parent of the WebView HWND that will be created.  The modal_dialog_event
-  // is set by the RenderView whenever a modal dialog alert is shown, so that
-  // the renderer and plugin processes know to pump window messages.  If this
-  // is a constrained popup or as a new tab, opener_id is the routing ID of the
-  // RenderView responsible for creating this RenderView (corresponding to the
-  // parent_hwnd). |counter| is either a currently initialized counter, or NULL
-  // (in which case we treat this RenderView as a top level window).
+  // parent of the WebView HWND that will be created.  If this is a constrained
+  // popup or as a new tab, opener_id is the routing ID of the RenderView
+  // responsible for creating this RenderView (corresponding to parent_hwnd).
+  // |counter| is either a currently initialized counter, or NULL (in which case
+  // we treat this RenderView as a top level window).
   static RenderView* Create(
       RenderThreadBase* render_thread,
       gfx::NativeViewId parent_hwnd,
-      base::WaitableEvent* modal_dialog_event,  // takes ownership
       int32 opener_id,
       const RendererPreferences& renderer_prefs,
       const WebPreferences& webkit_prefs,
@@ -430,6 +427,9 @@ class RenderView : public RenderWidget,
     return webkit_preferences_;
   }
 
+  // Sends a message and runs a nested message loop.
+  bool SendAndRunNestedMessageLoop(IPC::SyncMessage* message);
+
  protected:
   // RenderWidget override.
   virtual void OnResize(const gfx::Size& new_size,
@@ -460,7 +460,6 @@ class RenderView : public RenderWidget,
   // set to 'MSG_ROUTING_NONE' if the true ID is not yet known. In this case,
   // CompleteInit must be called later with the true ID.
   void Init(gfx::NativeViewId parent,
-            base::WaitableEvent* modal_dialog_event,  // takes ownership
             int32 opener_id,
             const RendererPreferences& renderer_prefs,
             SharedRenderViewCounter* counter,
@@ -824,6 +823,10 @@ class RenderView : public RenderWidget,
   // equivalent constrained window).  The renderer and any plugin processes
   // check this to know if they should pump messages/tasks then.
   scoped_ptr<base::WaitableEvent> modal_dialog_event_;
+
+  // Multiple dialog boxes can be shown before the first one is finished,
+  // so we keep a counter to know when we can reset the modal dialog event.
+  int modal_dialog_count_;
 
   // Provides access to this renderer from the remote Inspector UI.
   scoped_ptr<DevToolsAgent> devtools_agent_;

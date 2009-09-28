@@ -208,6 +208,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       last_indexed_page_id_(-1),
       opened_by_user_gesture_(true),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      modal_dialog_count_(0),
       devtools_agent_(NULL),
       devtools_client_(NULL),
       history_back_list_count_(0),
@@ -229,6 +230,8 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       document_tag_(0),
       webkit_preferences_(webkit_preferences) {
   Singleton<RenderViewSet>()->render_view_set_.insert(this);
+
+  modal_dialog_event_.reset(new base::WaitableEvent(true, false));
 }
 
 RenderView::~RenderView() {
@@ -249,7 +252,6 @@ RenderView::~RenderView() {
 RenderView* RenderView::Create(
     RenderThreadBase* render_thread,
     gfx::NativeViewId parent_hwnd,
-    base::WaitableEvent* modal_dialog_event,
     int32 opener_id,
     const RendererPreferences& renderer_prefs,
     const WebPreferences& webkit_prefs,
@@ -258,7 +260,6 @@ RenderView* RenderView::Create(
   DCHECK(routing_id != MSG_ROUTING_NONE);
   scoped_refptr<RenderView> view = new RenderView(render_thread, webkit_prefs);
   view->Init(parent_hwnd,
-             modal_dialog_event,
              opener_id,
              renderer_prefs,
              counter,
@@ -285,7 +286,6 @@ void RenderView::PluginCrashed(base::ProcessId pid,
 }
 
 void RenderView::Init(gfx::NativeViewId parent_hwnd,
-                      base::WaitableEvent* modal_dialog_event,
                       int32 opener_id,
                       const RendererPreferences& renderer_prefs,
                       SharedRenderViewCounter* counter,
@@ -331,7 +331,6 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
   }
 
   host_window_ = parent_hwnd;
-  modal_dialog_event_.reset(modal_dialog_event);
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDomAutomationController))
@@ -1197,12 +1196,9 @@ bool RenderView::RunJavaScriptMessage(int type,
   std::wstring result_temp;
   if (!result)
     result = &result_temp;
-  IPC::SyncMessage* msg = new ViewHostMsg_RunJavaScriptMessage(
-      routing_id_, message, default_value, frame_url, type, &success, result);
 
-  msg->set_pump_messages_event(modal_dialog_event_.get());
-  Send(msg);
-
+  SendAndRunNestedMessageLoop(new ViewHostMsg_RunJavaScriptMessage(
+      routing_id_, message, default_value, frame_url, type, &success, result));
   return success;
 }
 
@@ -1311,26 +1307,18 @@ WebView* RenderView::createView(WebFrame* creator) {
   int32 routing_id = MSG_ROUTING_NONE;
   bool user_gesture = creator->isProcessingUserGesture();
 
-  ModalDialogEvent modal_dialog_event;
   render_thread_->Send(
-      new ViewHostMsg_CreateWindow(routing_id_, user_gesture, &routing_id,
-                                   &modal_dialog_event));
-  if (routing_id == MSG_ROUTING_NONE) {
+      new ViewHostMsg_CreateWindow(routing_id_, user_gesture, &routing_id));
+  if (routing_id == MSG_ROUTING_NONE)
     return NULL;
-  }
 
-  // The WebView holds a reference to this new RenderView
-  base::WaitableEvent* waitable_event = new base::WaitableEvent(
-#if defined(OS_WIN)
-      modal_dialog_event.event);
-#else
-      true, false);
-#endif
   RenderView* view = RenderView::Create(render_thread_,
-                                        NULL, waitable_event, routing_id_,
+                                        NULL,
+                                        routing_id_,
                                         renderer_preferences_,
                                         webkit_preferences_,
-                                        shared_popup_counter_, routing_id);
+                                        shared_popup_counter_,
+                                        routing_id);
   view->opened_by_user_gesture_ = user_gesture;
 
   // Record the security origin of the creator.
@@ -1595,13 +1583,9 @@ bool RenderView::runModalBeforeUnloadDialog(
   // This is an ignored return value, but is included so we can accept the same
   // response as RunJavaScriptMessage.
   std::wstring ignored_result;
-  IPC::SyncMessage* msg = new ViewHostMsg_RunBeforeUnloadConfirm(
+  SendAndRunNestedMessageLoop(new ViewHostMsg_RunBeforeUnloadConfirm(
       routing_id_, frame->url(), UTF16ToWideHack(message), &success,
-      &ignored_result);
-
-  msg->set_pump_messages_event(modal_dialog_event_.get());
-  Send(msg);
-
+      &ignored_result));
   return success;
 }
 
@@ -1718,10 +1702,7 @@ void RenderView::closeWidgetSoon() {
 void RenderView::runModal() {
   DCHECK(did_show_) << "should already have shown the view";
 
-  IPC::SyncMessage* msg = new ViewHostMsg_RunModal(routing_id_);
-
-  msg->set_pump_messages_event(modal_dialog_event_.get());
-  Send(msg);
+  SendAndRunNestedMessageLoop(new ViewHostMsg_RunModal(routing_id_));
 }
 
 // WebKit::WebFrameClient -----------------------------------------------------
@@ -2404,12 +2385,9 @@ void RenderView::ShowModalHTMLDialogForPlugin(
     const gfx::Size& size,
     const std::string& json_arguments,
     std::string* json_retval) {
-  IPC::SyncMessage* msg = new ViewHostMsg_ShowModalHTMLDialog(
+  SendAndRunNestedMessageLoop(new ViewHostMsg_ShowModalHTMLDialog(
       routing_id_, url, size.width(), size.height(), json_arguments,
-      json_retval);
-
-  msg->set_pump_messages_event(modal_dialog_event_.get());
-  Send(msg);
+      json_retval));
 }
 
 void RenderView::SyncNavigationState() {
@@ -3586,4 +3564,17 @@ void RenderView::EnsureDocumentTag() {
     has_document_tag_ = true;
   }
 #endif
+}
+
+bool RenderView::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
+  if (modal_dialog_count_++ == 0)
+    modal_dialog_event_->Signal();
+
+  message->EnableMessagePumping();  // Runs a nested message loop.
+  bool rv = Send(message);
+
+  if (--modal_dialog_count_ == 0)
+    modal_dialog_event_->Reset();
+
+  return rv;
 }

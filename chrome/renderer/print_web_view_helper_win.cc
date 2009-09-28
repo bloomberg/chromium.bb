@@ -99,11 +99,8 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
       params.has_selection = frame->hasSelection();
       params.expected_pages_count = expected_pages_count;
 
-      msg = new ViewHostMsg_ScriptedPrint(params,
-                                          &print_settings);
-      msg->set_pump_messages_event(render_view_->modal_dialog_event());
-
-      if (Send(msg)) {
+      msg = new ViewHostMsg_ScriptedPrint(params, &print_settings);
+      if (render_view_->SendAndRunNestedMessageLoop(msg)) {
         msg = NULL;
 
         // If the settings are invalid, early quit.

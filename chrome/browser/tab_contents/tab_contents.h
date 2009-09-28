@@ -122,7 +122,6 @@ class TabContents : public PageNavigator,
   TabContents(Profile* profile,
               SiteInstance* site_instance,
               int routing_id,
-              base::WaitableEvent* modal_dialog_event,
               const TabContents* base_tab_contents);
   virtual ~TabContents();
 
@@ -548,9 +547,6 @@ class TabContents : public PageNavigator,
   void OnJavaScriptMessageBoxClosed(IPC::Message* reply_msg,
                                     bool success,
                                     const std::wstring& prompt);
-
-  // AppModalDialog calls this when the javascript dialog has been destroyed.
-  void OnJavaScriptMessageBoxWindowDestroyed();
 
   // Prepare for saving the current web page to disk.
   void OnSavePage();

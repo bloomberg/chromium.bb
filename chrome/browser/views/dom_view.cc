@@ -21,8 +21,8 @@ bool DOMView::Init(Profile* profile, SiteInstance* instance) {
     return true;
 
   initialized_ = true;
-  tab_contents_.reset(new TabContents(profile, instance,
-                                      MSG_ROUTING_NONE, NULL, NULL));
+  tab_contents_.reset(
+      new TabContents(profile, instance, MSG_ROUTING_NONE, NULL));
   views::NativeViewHost::Attach(tab_contents_->GetNativeView());
   return true;
 }

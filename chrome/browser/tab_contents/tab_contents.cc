@@ -214,7 +214,6 @@ class TabContents::GearsCreateShortcutCallbackFunctor {
 TabContents::TabContents(Profile* profile,
                          SiteInstance* site_instance,
                          int routing_id,
-                         base::WaitableEvent* modal_dialog_event,
                          const TabContents* base_tab_contents)
     : delegate_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(controller_(this, profile)),
@@ -276,7 +275,7 @@ TabContents::TabContents(Profile* profile,
     generator->StartThumbnailing();
 #endif
 
-  render_manager_.Init(profile, site_instance, routing_id, modal_dialog_event);
+  render_manager_.Init(profile, site_instance, routing_id);
 
   // We have the initial size of the view be based on the size of the passed in
   // tab contents (normally a tab from the same window).
@@ -756,7 +755,7 @@ TabContents* TabContents::Clone() {
   // processes for some reason.
   TabContents* tc = new TabContents(profile(),
                                     SiteInstance::CreateSiteInstance(profile()),
-                                    MSG_ROUTING_NONE, NULL, this);
+                                    MSG_ROUTING_NONE, this);
   tc->controller().CopyStateFrom(controller_);
   return tc;
 }
@@ -1099,10 +1098,6 @@ void TabContents::OnJavaScriptMessageBoxClosed(IPC::Message* reply_msg,
                                                const std::wstring& prompt) {
   last_javascript_message_dismissal_ = base::TimeTicks::Now();
   render_manager_.OnJavaScriptMessageBoxClosed(reply_msg, success, prompt);
-}
-
-void TabContents::OnJavaScriptMessageBoxWindowDestroyed() {
-  render_manager_.OnJavaScriptMessageBoxWindowDestroyed();
 }
 
 void TabContents::OnSavePage() {

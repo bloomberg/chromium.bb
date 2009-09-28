@@ -13,7 +13,6 @@
 #include "base/ref_counted.h"
 #include "base/lock.h"
 #include "base/waitable_event.h"
-#include "chrome/common/modal_dialog_event.h"
 #include "chrome/common/transport_dib.h"
 
 namespace IPC {
@@ -126,8 +125,7 @@ class RenderWidgetHelper :
   void CreateNewWindow(int opener_id,
                        bool user_gesture,
                        base::ProcessHandle render_process,
-                       int* route_id,
-                       ModalDialogEvent* modal_dialog_event);
+                       int* route_id);
   void CreateNewWidget(int opener_id, bool activatable, int* route_id);
 
 #if defined(OS_MACOSX)
@@ -137,12 +135,6 @@ class RenderWidgetHelper :
   // Called on the IO thread to handle the freeing of a transport DIB
   void FreeTransportDIB(TransportDIB::Id dib_id);
 #endif
-
-  // Helper functions to signal and reset the modal dialog event, used to
-  // signal the renderer that it needs to pump messages while waiting for
-  // sync calls to return. These functions proxy the request to the UI thread.
-  void SignalModalDialogEvent(int routing_id);
-  void ResetModalDialogEvent(int routing_id);
 
  private:
   // A class used to proxy a paint message.  PaintMsgProxy objects are created
@@ -161,8 +153,7 @@ class RenderWidgetHelper :
 
   // Called on the UI thread to finish creating a window.
   void OnCreateWindowOnUI(int opener_id,
-                          int route_id,
-                          ModalDialogEvent modal_dialog_event);
+                          int route_id);
 
   // Called on the IO thread after a window was created on the UI thread.
   void OnCreateWindowOnIO(int route_id);
@@ -185,9 +176,6 @@ class RenderWidgetHelper :
   Lock allocated_dibs_lock_;
   std::map<TransportDIB::Id, int> allocated_dibs_;
 #endif
-
-  void SignalModalDialogEventOnUI(int routing_id);
-  void ResetModalDialogEventOnUI(int routing_id);
 
   // A map of live paint messages.  Must hold pending_paints_lock_ to access.
   // The PaintMsgProxy objects are not owned by this map.  (See PaintMsgProxy

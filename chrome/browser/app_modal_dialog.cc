@@ -117,9 +117,5 @@ void AppModalDialog::OnAccept(const std::wstring& prompt_text,
 }
 
 void AppModalDialog::OnClose() {
-  if (tab_contents_) {
-    tab_contents_->OnJavaScriptMessageBoxWindowDestroyed();
-  }
-
   SendCloseNotification();
 }

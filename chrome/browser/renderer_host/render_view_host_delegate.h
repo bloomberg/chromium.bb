@@ -80,8 +80,7 @@ class RenderViewHostDelegate {
     // the Windows function which is actually a #define.
     //
     // NOTE: this takes ownership of @modal_dialog_event
-    virtual void CreateNewWindow(int route_id,
-                                 base::WaitableEvent* modal_dialog_event) = 0;
+    virtual void CreateNewWindow(int route_id) = 0;
 
     // The page is trying to open a new widget (e.g. a select popup). The
     // widget should be created associated with the given route, but it should

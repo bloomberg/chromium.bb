@@ -31,7 +31,6 @@ class RenderViewHostDelegateViewHelper {
   RenderViewHostDelegateViewHelper() {}
 
   virtual void CreateNewWindow(int route_id,
-                               base::WaitableEvent* modal_dialog_event,
                                Profile* profile,
                                SiteInstance* site,
                                DOMUITypeID domui_type,

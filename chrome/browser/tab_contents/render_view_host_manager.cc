@@ -48,15 +48,14 @@ RenderViewHostManager::~RenderViewHostManager() {
 
 void RenderViewHostManager::Init(Profile* profile,
                                  SiteInstance* site_instance,
-                                 int routing_id,
-                                 base::WaitableEvent* modal_dialog_event) {
+                                 int routing_id) {
   // Create a RenderViewHost, once we have an instance.  It is important to
   // immediately give this SiteInstance to a RenderViewHost so that it is
   // ref counted.
   if (!site_instance)
     site_instance = SiteInstance::CreateSiteInstance(profile);
   render_view_host_ = RenderViewHostFactory::Create(
-      site_instance, render_view_delegate_, routing_id, modal_dialog_event);
+      site_instance, render_view_delegate_, routing_id);
   NotificationService::current()->Notify(
       NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
       Source<RenderViewHostManager>(this),
@@ -211,10 +210,6 @@ void RenderViewHostManager::OnJavaScriptMessageBoxClosed(
     bool success,
     const std::wstring& prompt) {
   render_view_host_->JavaScriptMessageBoxClosed(reply_msg, success, prompt);
-}
-
-void RenderViewHostManager::OnJavaScriptMessageBoxWindowDestroyed() {
-  render_view_host_->JavaScriptMessageBoxWindowDestroyed();
 }
 
 void RenderViewHostManager::ShouldClosePage(bool for_cross_site_transition,
@@ -420,7 +415,7 @@ bool RenderViewHostManager::CreatePendingRenderView(SiteInstance* instance) {
   }
 
   pending_render_view_host_ = RenderViewHostFactory::Create(
-      instance, render_view_delegate_, MSG_ROUTING_NONE, NULL);
+      instance, render_view_delegate_, MSG_ROUTING_NONE);
   NotificationService::current()->Notify(
       NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
       Source<RenderViewHostManager>(this),

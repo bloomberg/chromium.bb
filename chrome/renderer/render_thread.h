@@ -29,7 +29,6 @@ class SkBitmap;
 class UserScriptSlave;
 class URLPattern;
 
-struct ModalDialogEvent;
 struct RendererPreferences;
 struct WebPreferences;
 
@@ -152,7 +151,6 @@ class RenderThread : public RenderThreadBase,
   void OnSetNextPageID(int32 next_page_id);
   void OnSetCSSColors(const std::vector<CSSColors::CSSColorMapping>& colors);
   void OnCreateNewView(gfx::NativeViewId parent_hwnd,
-                       ModalDialogEvent modal_dialog_event,
                        const RendererPreferences& renderer_prefs,
                        const WebPreferences& webkit_prefs,
                        int32 view_id);

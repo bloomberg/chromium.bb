@@ -14,13 +14,11 @@ RenderViewHostFactory* RenderViewHostFactory::factory_ = NULL;
 RenderViewHost* RenderViewHostFactory::Create(
     SiteInstance* instance,
     RenderViewHostDelegate* delegate,
-    int routing_id,
-    base::WaitableEvent* modal_dialog_event) {
+    int routing_id) {
   if (factory_) {
-    return factory_->CreateRenderViewHost(instance, delegate,
-                                          routing_id, modal_dialog_event);
+    return factory_->CreateRenderViewHost(instance, delegate, routing_id);
   }
-  return new RenderViewHost(instance, delegate, routing_id, modal_dialog_event);
+  return new RenderViewHost(instance, delegate, routing_id);
 }
 
 // static

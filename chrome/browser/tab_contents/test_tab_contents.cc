@@ -7,7 +7,7 @@
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 
 TestTabContents::TestTabContents(Profile* profile, SiteInstance* instance)
-    : TabContents(profile, instance, MSG_ROUTING_NONE, NULL, NULL),
+    : TabContents(profile, instance, MSG_ROUTING_NONE, NULL),
       transition_cross_site(false) {
 }
 

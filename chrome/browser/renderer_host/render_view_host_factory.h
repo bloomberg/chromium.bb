@@ -25,8 +25,7 @@ class RenderViewHostFactory {
   // pointer will be passed to the caller.
   static RenderViewHost* Create(SiteInstance* instance,
                                 RenderViewHostDelegate* delegate,
-                                int routing_id,
-                                base::WaitableEvent* modal_dialog_event);
+                                int routing_id);
 
   // Returns true if there is currently a globally-registered factory.
   static bool has_factory() {
@@ -42,8 +41,7 @@ class RenderViewHostFactory {
   virtual RenderViewHost* CreateRenderViewHost(
       SiteInstance* instance,
       RenderViewHostDelegate* delegate,
-      int routing_id,
-      base::WaitableEvent* modal_dialog_event) = 0;
+      int routing_id) = 0;
 
   // Registers your factory to be called when new RenderViewHosts are created.
   // We have only one global factory, so there must be no factory registered

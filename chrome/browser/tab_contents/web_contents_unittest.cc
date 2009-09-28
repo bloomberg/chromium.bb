@@ -151,7 +151,7 @@ class TestInterstitialPage : public InterstitialPage {
   virtual RenderViewHost* CreateRenderViewHost() {
     return new TestRenderViewHost(
         SiteInstance::CreateSiteInstance(tab()->profile()),
-        this, MSG_ROUTING_NONE, NULL);
+        this, MSG_ROUTING_NONE);
   }
 
   virtual TabContentsView* CreateTabContentsView() { return NULL; }

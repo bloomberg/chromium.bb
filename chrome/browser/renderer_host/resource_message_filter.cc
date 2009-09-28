@@ -433,13 +433,11 @@ URLRequestContext* ResourceMessageFilter::GetRequestContext(
 }
 
 void ResourceMessageFilter::OnMsgCreateWindow(
-    int opener_id, bool user_gesture, int* route_id,
-    ModalDialogEvent* modal_dialog_event) {
+    int opener_id, bool user_gesture, int* route_id) {
   render_widget_helper_->CreateNewWindow(opener_id,
                                          user_gesture,
                                          handle(),
-                                         route_id,
-                                         modal_dialog_event);
+                                         route_id);
 }
 
 void ResourceMessageFilter::OnMsgCreateWidget(int opener_id,
@@ -824,8 +822,6 @@ void ResourceMessageFilter::OnScriptedPrint(
   }
   DCHECK(host_window);
 
-  render_widget_helper_->SignalModalDialogEvent(params.routing_id);
-
   printer_query->GetSettings(printing::PrinterQuery::ASK_USER,
                              host_window,
                              params.expected_pages_count,
@@ -854,7 +850,6 @@ void ResourceMessageFilter::OnScriptedPrintReply(
   } else {
     printer_query->StopWorker();
   }
-  render_widget_helper_->ResetModalDialogEvent(routing_id);
 }
 
 #endif  // OS_WIN
