@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_message_bundle.h"
+#include "chrome/common/extensions/extension_message_bundle.h"
 
 #include <string>
 
@@ -246,9 +246,15 @@ bool ExtensionMessageBundle::IsValidName(const str& name) {
 
 std::string ExtensionMessageBundle::GetL10nMessage(
     const std::string& name) const {
+  return GetL10nMessage(name, dictionary_);
+}
+
+// static
+std::string ExtensionMessageBundle::GetL10nMessage(
+    const std::string& name, const SubstitutionMap& dictionary) {
   SubstitutionMap::const_iterator it =
-    dictionary_.find(StringToLowerASCII(name));
-  if (it != dictionary_.end()) {
+    dictionary.find(StringToLowerASCII(name));
+  if (it != dictionary.end()) {
     return it->second;
   }
 

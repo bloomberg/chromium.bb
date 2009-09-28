@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_MESSAGE_BUNDLE_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_MESSAGE_BUNDLE_H_
+#ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_MESSAGE_BUNDLE_H_
+#define CHROME_COMMON_EXTENSIONS_EXTENSION_MESSAGE_BUNDLE_H_
 
+#include <map>
 #include <string>
 
-#include "base/hash_tables.h"
 #include "base/values.h"
 
 // Contains localized extension messages for one locale. Any messages that the
 // locale does not provide are pulled from the default locale.
 class ExtensionMessageBundle {
  public:
-  typedef base::hash_map<std::string, std::string> SubstitutionMap;
+  typedef std::map<std::string, std::string> SubstitutionMap;
 
   // JSON keys of interest for messages file.
   static const wchar_t* kContentKey;
@@ -45,6 +45,10 @@ class ExtensionMessageBundle {
   // #define GetMessage GetMessageW override in Chrome code.
   std::string GetL10nMessage(const std::string& name) const;
 
+  // Get message from the given catalog with given key.
+  static std::string GetL10nMessage(const std::string& name,
+                                    const SubstitutionMap& dictionary);
+
   // Number of messages in the catalog.
   // Used for unittesting only.
   size_t size() const { return dictionary_.size(); }
@@ -70,6 +74,9 @@ class ExtensionMessageBundle {
   // Public for easier unittesting.
   template<typename str>
   static bool IsValidName(const str& name);
+
+  // Getter for dictionary_.
+  const SubstitutionMap* dictionary() const { return &dictionary_; }
 
  private:
   // Use Create to create ExtensionMessageBundle instance.
@@ -107,4 +114,4 @@ class ExtensionMessageBundle {
   SubstitutionMap dictionary_;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_MESSAGE_BUNDLE_H_
+#endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_MESSAGE_BUNDLE_H_

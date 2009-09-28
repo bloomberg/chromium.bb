@@ -5,6 +5,7 @@
 #include "chrome/renderer/render_thread.h"
 
 #include <algorithm>
+#include <map>
 #include <vector>
 
 #include "base/command_line.h"
@@ -238,6 +239,12 @@ void RenderThread::OnExtensionSetHostPermissions(
   ExtensionProcessBindings::SetHostPermissions(extension_url, permissions);
 }
 
+void RenderThread::OnExtensionSetL10nMessages(
+    const std::string& extension_id,
+    const std::map<std::string, std::string>& l10n_messages) {
+  ExtensionProcessBindings::SetL10nMessages(extension_id, l10n_messages);
+}
+
 void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
   // App cache messages are handled by a delegate.
   if (appcache_dispatcher_->OnMessageReceived(msg))
@@ -273,6 +280,8 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnExtensionSetAPIPermissions)
     IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetHostPermissions,
                         OnExtensionSetHostPermissions)
+    IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetL10nMessages,
+                        OnExtensionSetL10nMessages)
   IPC_END_MESSAGE_MAP()
 }
 

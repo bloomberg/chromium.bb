@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
+
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 
 #include "base/singleton.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -41,6 +47,13 @@ typedef std::map<std::string, bool> PermissionsMap;
 // A map of extension ID to permissions map.
 typedef std::map<std::string, PermissionsMap> ExtensionPermissionsMap;
 
+// A map of message name to message.
+typedef std::map<std::string, std::string> L10nMessagesMap;
+
+// A map of extension ID to l10n message map.
+typedef std::map<std::string, L10nMessagesMap >
+  ExtensionToL10nMessagesMap;
+
 const char kExtensionName[] = "chrome/ExtensionProcessBindings";
 const char* kExtensionDeps[] = {
   BaseJsV8Extension::kName,
@@ -54,6 +67,7 @@ struct SingletonData {
   std::set<std::string> function_names_;
   PageActionIdMap page_action_ids_;
   ExtensionPermissionsMap permissions_;
+  ExtensionToL10nMessagesMap extension_l10n_messages_map_;
 };
 
 static std::set<std::string>* GetFunctionNameSet() {
@@ -66,6 +80,20 @@ static PageActionIdMap* GetPageActionMap() {
 
 static PermissionsMap* GetPermissionsMap(const std::string& extension_id) {
   return &Singleton<SingletonData>()->permissions_[extension_id];
+}
+
+static ExtensionToL10nMessagesMap* GetExtensionToL10nMessagesMap() {
+  return &Singleton<SingletonData>()->extension_l10n_messages_map_;
+}
+
+static L10nMessagesMap* GetL10nMessagesMap(const std::string extension_id) {
+  ExtensionToL10nMessagesMap::iterator it =
+    Singleton<SingletonData>()->extension_l10n_messages_map_.find(extension_id);
+  if (it != Singleton<SingletonData>()->extension_l10n_messages_map_.end()) {
+    return &(it->second);
+  } else {
+    return NULL;
+  }
 }
 
 class ExtensionImpl : public ExtensionBase {
@@ -109,6 +137,8 @@ class ExtensionImpl : public ExtensionBase {
       return v8::FunctionTemplate::New(StartRequest);
     } else if (name->Equals(v8::String::New("GetRenderViewId"))) {
       return v8::FunctionTemplate::New(GetRenderViewId);
+    } else if (name->Equals(v8::String::New("GetL10nMessage"))) {
+      return v8::FunctionTemplate::New(GetL10nMessage);
     }
 
     return ExtensionBase::GetNativeFunction(name);
@@ -131,7 +161,7 @@ class ExtensionImpl : public ExtensionBase {
 
     // TODO(erikkay) for now, special case mole as a type of toolstrip.
     // Perhaps this isn't the right long-term thing to do.
-    if (match == ViewType::EXTENSION_TOOLSTRIP && 
+    if (match == ViewType::EXTENSION_TOOLSTRIP &&
         type == ViewType::EXTENSION_MOLE) {
       return true;
     }
@@ -255,6 +285,50 @@ class ExtensionImpl : public ExtensionBase {
     return page_action_vector;
   }
 
+  static v8::Handle<v8::Value> GetL10nMessage(const v8::Arguments& args) {
+    if (args.Length() != 2 || !args[0]->IsString()) {
+      NOTREACHED() << "Bad arguments";
+      return v8::Undefined();
+    }
+
+    L10nMessagesMap* l10n_messages =
+      GetL10nMessagesMap(ExtensionIdForCurrentContext());
+    if (!l10n_messages)
+      return v8::Undefined();
+
+    std::string message_name = *v8::String::AsciiValue(args[0]);
+    std::string message =
+      ExtensionMessageBundle::GetL10nMessage(message_name, *l10n_messages);
+
+    std::vector<string16> substitutions;
+    if (args[1]->IsNull() || args[1]->IsUndefined()) {
+      // chrome.i18n.getMessage("message_name");
+      // chrome.i18n.getMessage("message_name", null);
+      return v8::String::New(message.c_str());
+    } else if (args[1]->IsString()) {
+      // chrome.i18n.getMessage("message_name", "one param");
+      std::string substitute = *v8::String::Utf8Value(args[1]->ToString());
+      substitutions.push_back(UTF8ToUTF16(substitute));
+    } else if (args[1]->IsArray()) {
+      // chrome.i18n.getMessage("message_name", ["more", "params"]);
+      v8::Array* placeholders = static_cast<v8::Array*>(*args[1]);
+      uint32_t count = placeholders->Length();
+      DCHECK(count > 0 && count <= 9);
+      for (uint32_t i = 0; i < count; ++i) {
+        std::string substitute =
+          *v8::String::Utf8Value(
+              placeholders->Get(v8::Integer::New(i))->ToString());
+        substitutions.push_back(UTF8ToUTF16(substitute));
+      }
+    } else {
+      NOTREACHED() << "Couldn't parse second parameter.";
+      return v8::Undefined();
+    }
+
+    return v8::String::New(UTF16ToUTF8(ReplaceStringPlaceholders(
+        UTF8ToUTF16(message), substitutions, NULL)).c_str());
+  }
+
   // Starts an API request to the browser, with an optional callback.  The
   // callback will be dispatched to EventBindings::HandleResponse.
   static v8::Handle<v8::Value> StartRequest(const v8::Arguments& args) {
@@ -331,7 +405,7 @@ void ExtensionProcessBindings::HandleResponse(int request_id, bool success,
   argv[4] = v8::String::New(error.c_str());
   v8::Handle<v8::Value> retval = bindings_utils::CallFunctionInContext(
       request->second->context, "handleResponse", arraysize(argv), argv);
-  // In debug, the js will validate the callback parameters and return a 
+  // In debug, the js will validate the callback parameters and return a
   // string if a validation error has occured.
 #ifdef _DEBUG
   if (!retval.IsEmpty() && !retval->IsUndefined()) {
@@ -354,6 +428,15 @@ void ExtensionProcessBindings::SetPageActions(
     if (page_action_map.find(extension_id) != page_action_map.end())
       page_action_map.erase(extension_id);
   }
+}
+
+// static
+void ExtensionProcessBindings::SetL10nMessages(
+    const std::string& extension_id,
+    const std::map<std::string, std::string>& l10n_messages) {
+  ExtensionToL10nMessagesMap& l10n_messages_map =
+    *GetExtensionToL10nMessagesMap();
+  l10n_messages_map[extension_id] = l10n_messages;
 }
 
 // static

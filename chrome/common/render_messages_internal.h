@@ -6,6 +6,7 @@
 // header guard.
 // See ipc_message_macros.h for explanation of the macros and passes.
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -38,6 +39,11 @@
 
 // TODO(mpcomplete): rename ViewMsg and ViewHostMsg to something that makes
 // more sense with our current design.
+
+// IPC_MESSAGE macros choke on extra , in the std::map, when expanding. We need
+// to typedef it to avoid that.
+// Substitution map for l10n messages.
+typedef std::map<std::string, std::string> SubstitutionMap;
 
 //-----------------------------------------------------------------------------
 // RenderView messages
@@ -652,6 +658,12 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_CONTROL2(ViewMsg_Extension_UpdatePageActions,
                        std::string /* extension_id */,
                        std::vector<std::string> /* page_action_ids */)
+
+  // Tell the renderer process all known localized messages for a particular
+  // extension.
+  IPC_MESSAGE_CONTROL2(ViewMsg_Extension_SetL10nMessages,
+                       std::string /* extension_id */,
+                       SubstitutionMap /* l10n messages */)
 
   // Changes the text direction of the currently selected input field (if any).
   IPC_MESSAGE_ROUTED1(ViewMsg_SetTextDirection,

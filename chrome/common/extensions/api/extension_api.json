@@ -1114,10 +1114,37 @@
             ]
           }
         ]
+      },
+      {
+        "name": "getMessage",
+        "type": "function",
+        "description": "Get a message from the extension language catalog, for a current locale.",
+        "parameters": [
+          { "type": "string",
+            "name": "message_name",
+            "description": "Message name from the extension catalog."
+          },
+          {
+            "choices": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1,
+                "maxItems": 9
+              }
+            ],
+            "optional": true,
+            "description": "1 - 9 substitution parameters, if the message requires any."
+          }
+        ],
+        "returns": {
+          "type": "string",
+          "description": "Message localized for current locale."
+        }
       }
     ],
-    "events": [
-    ]
+    "events": []
   },
   {
     "namespace": "devtools",

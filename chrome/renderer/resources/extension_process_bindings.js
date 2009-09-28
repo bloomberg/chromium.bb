@@ -20,6 +20,7 @@ var chrome = chrome || {};
   native function GetNextRequestId();
   native function OpenChannelToTab();
   native function GetRenderViewId();
+  native function GetL10nMessage();
 
   if (!chrome)
     chrome = {};
@@ -321,6 +322,11 @@ var chrome = chrome || {};
         tabIdProxy[name] = new chrome.Event("devtools." + tabId + "." + name);
       });
       return tabIdProxy;
+    }
+
+    apiFunctions["i18n.getMessage"].handleRequest =
+        function(message_name, placeholders) {
+      return GetL10nMessage(message_name, placeholders);
     }
 
     setupPageActionEvents(extensionId);

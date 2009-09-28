@@ -605,3 +605,21 @@ TEST_F(ExtensionAPIClientTest, GetAcceptLanguages) {
   ExpectJsPass("chrome.i18n.getAcceptLanguages(function(){})",
                "i18n.getAcceptLanguages", "null");
 }
+
+TEST_F(ExtensionAPIClientTest, GetL10nMessage) {
+  ExpectJsFail("chrome.i18n.getMessage()",
+               "Uncaught Error: Parameter 0 is required.");
+
+  ExpectJsFail("chrome.i18n.getMessage(1)",
+               "Uncaught Error: Invalid value for argument 0. "
+               "Expected 'string' but got 'integer'.");
+
+  ExpectJsFail("chrome.i18n.getMessage('name', [])",
+               "Uncaught Error: Invalid value for argument 1. Value does not "
+               "match any valid type choices.");
+
+  ExpectJsFail("chrome.i18n.getMessage('name', ['p1', 'p2', 'p3', 'p4', 'p5', "
+               "'p6', 'p7', 'p8', 'p9', 'p10'])",
+               "Uncaught Error: Invalid value for argument 1. Value does not "
+               "match any valid type choices.");
+}

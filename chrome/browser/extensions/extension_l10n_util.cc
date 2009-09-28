@@ -12,9 +12,9 @@
 #include "base/file_util.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/json_value_serializer.h"
 
 namespace errors = extension_manifest_errors;

@@ -7,17 +7,23 @@ LICENSE file.
 <html>
   <head>
     <script>
+      function init() {
+        document.getElementById("languageSpan").innerHTML =
+          chrome.i18n.getMessage("click_here");
+      }
+
       function getAcceptLanguages() {
         chrome.i18n.getAcceptLanguages(function(languageList) {
           var languages = languageList.join(",");
-          document.getElementById("languageSpan").innerHTML = languages;
+          document.getElementById("languageSpan").innerHTML =
+            chrome.i18n.getMessage("chrome_accept_languages", languages);
         })
       }
     </script>
   </head>
-  <body>
+  <body onload="init()">
     <div class="toolstrip-button" onclick="getAcceptLanguages();">
-    <span id="languageSpan">GetAcceptLanguage</span>
+    <span id="languageSpan"></span>
     </div>
   </body>
 </html>

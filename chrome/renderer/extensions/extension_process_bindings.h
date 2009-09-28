@@ -40,6 +40,11 @@ class ExtensionProcessBindings {
   static void SetHostPermissions(const GURL& extension_url,
                                  const std::vector<URLPattern>& permissions);
 
+  // Set l10n messages for a particular extension.
+  static void SetL10nMessages(
+      const std::string& extension_id,
+      const std::map<std::string, std::string>& l10n_messages);
+
   // Check if the extension in the currently running context has permission to
   // access the given extension function. Must be called with a valid V8
   // context in scope.
