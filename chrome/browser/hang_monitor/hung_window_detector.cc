@@ -19,6 +19,7 @@ const wchar_t HungWindowDetector::kHungChildWindowTimeout[] =
 HungWindowDetector::HungWindowDetector(HungWindowNotification* notification)
     : notification_(notification),
       top_level_window_(NULL),
+      message_response_timeout_(0),
       enumerating_(false) {
   DCHECK(NULL != notification_);
 }
