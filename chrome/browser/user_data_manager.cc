@@ -258,7 +258,8 @@ bool UserDataManager::CreateDesktopShortcutForProfile(
 }
 
 GetProfilesHelper::GetProfilesHelper(Delegate* delegate)
-    : delegate_(delegate) {
+    : delegate_(delegate),
+      message_loop_(NULL) {
 }
 
 void GetProfilesHelper::GetProfiles(MessageLoop* target_loop) {
