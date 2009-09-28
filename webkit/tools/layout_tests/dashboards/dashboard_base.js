@@ -129,11 +129,13 @@ function validateParameter(state, key, value, validateFn) {
 }
 
 /**
- * Parses a string (e.g. window.location.hash) and calls
- * validValueHandler(key, value) for each key-value pair in the string.
+ * Parses window.location.hash and set the currentState values appropriately.
  */
-function parseParameters(parameterStr, validValueHandler) {
-  var params = parameterStr.split('&');
+function parseParameters(parameterStr) {
+  saveStoredWindowLocation();
+  currentState = {};
+
+  var params = window.location.hash.substring(1).split('&');
   var invalidKeys = [];
   for (var i = 0; i < params.length; i++) {
     var thisParam = params[i].split('=');
@@ -144,12 +146,15 @@ function parseParameters(parameterStr, validValueHandler) {
 
     var key = thisParam[0];
     var value = decodeURIComponent(thisParam[1]);
-    if (!validValueHandler(key, value))
+    if (!handleValidHashParameterWrapper(key, value))
       invalidKeys.push(key + '=' + value);
   }
 
   if (invalidKeys.length)
     console.log("Invalid query parameters: " + invalidKeys.join(','));
+
+  fillMissingValues(currentState, defaultCrossDashboardStateValues);
+  fillMissingValues(currentState, defaultStateValues);
 }
 
 
@@ -158,14 +163,6 @@ function fillMissingValues(to, from) {
     if (!(state in to))
       to[state] = from[state];
   }
-}
-
-function parseAllParameters() {
-  saveStoredWindowLocation();
-  parseParameters(window.location.hash.substring(1),
-      handleValidHashParameterWrapper);
-  fillMissingValues(currentState, defaultCrossDashboardStateValues);
-  fillMissingValues(currentState, defaultStateValues);
 }
 
 // Keep the location around for detecting changes to hash arguments
@@ -182,10 +179,10 @@ function appendScript(path) {
 }
 
 // Permalinkable state of the page.
-var currentState = {};
+var currentState;
 
 // Parse cross-dashboard parameters before using them.
-parseAllParameters();
+parseParameters();
 
 if (currentState.debug) {
   // In debug mode point to the results.json and expectations.json in the
@@ -238,7 +235,7 @@ function ADD_EXPECTATIONS(expectations) {
 }
 
 function appendJSONScriptElements() {
-  parseAllParameters();
+  parseParameters();
 
   for (var builderName in builders) {
     appendScript(getPathToBuilderResultsFile(builderName) + 'results.json');
@@ -257,7 +254,7 @@ function handleLocationChange() {
   setLoadingUIDisplayStyle('block');
   setTimeout(function() {
     saveStoredWindowLocation();
-    parseAllParameters();
+    parseParameters();
 
     if (!expectationsLoaded)
       return;
