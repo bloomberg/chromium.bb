@@ -41,6 +41,7 @@ class HtmlDialogView
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
+  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
 
   // Overridden from views::WindowDelegate:
   virtual bool CanResize() const;

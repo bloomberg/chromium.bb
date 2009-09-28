@@ -4,6 +4,7 @@
 
 #include "chrome/browser/views/html_dialog_view.h"
 
+#include "base/keyboard_codes.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "views/widget/root_view.h"
@@ -46,6 +47,13 @@ gfx::Size HtmlDialogView::GetPreferredSize() {
   if (delegate_)
     delegate_->GetDialogSize(&out);
   return out;
+}
+
+bool HtmlDialogView::AcceleratorPressed(const views::Accelerator& accelerator) {
+  // Pressing ESC closes the dialog.
+  DCHECK_EQ(base::VKEY_ESCAPE, accelerator.GetKeyCode());
+  OnDialogClosed(std::string());
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -215,6 +223,9 @@ void HtmlDialogView::InitDialog() {
   // the comment above HtmlDialogUI in its header file for why.
   HtmlDialogUI::GetPropertyAccessor().SetProperty(tab_contents_->property_bag(),
                                                   this);
+
+  // Pressing the ESC key will close the dialog.
+  AddAccelerator(views::Accelerator(base::VKEY_ESCAPE, false, false, false));
 
   DOMView::LoadURL(delegate_->GetDialogContentURL());
 }
