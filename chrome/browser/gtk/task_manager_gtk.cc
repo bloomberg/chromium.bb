@@ -49,6 +49,9 @@ enum TaskManagerColumn {
   kTaskManagerCPU,
   kTaskManagerNetwork,
   kTaskManagerProcessID,
+  kTaskManagerWebCoreImageCache,
+  kTaskManagerWebCoreScriptsCache,
+  kTaskManagerWebCoreCssCache,
   kTaskManagerGoatsTeleported,
   kTaskManagerColumnCount,
 };
@@ -69,6 +72,12 @@ TaskManagerColumn TaskManagerResourceIDToColumnID(int id) {
       return kTaskManagerNetwork;
     case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
       return kTaskManagerProcessID;
+    case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
+      return kTaskManagerWebCoreImageCache;
+    case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
+      return kTaskManagerWebCoreScriptsCache;
+    case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
+      return kTaskManagerWebCoreCssCache;
     case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN:
       return kTaskManagerGoatsTeleported;
     default:
@@ -93,6 +102,12 @@ int TaskManagerColumnIDToResourceID(int id) {
       return IDS_TASK_MANAGER_NET_COLUMN;
     case kTaskManagerProcessID:
       return IDS_TASK_MANAGER_PROCESS_ID_COLUMN;
+    case kTaskManagerWebCoreImageCache:
+      return IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN;
+    case kTaskManagerWebCoreScriptsCache:
+      return IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN;
+    case kTaskManagerWebCoreCssCache:
+      return IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN;
     case kTaskManagerGoatsTeleported:
       return IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN;
     default:
@@ -449,7 +464,7 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
   process_list_ = gtk_list_store_new(kTaskManagerColumnCount,
       GDK_TYPE_PIXBUF, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
       G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-      G_TYPE_STRING);
+      G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
   // Support sorting on all columns.
   process_list_sort_ = gtk_tree_model_sort_new_with_model(
@@ -488,12 +503,19 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_CPU_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_NET_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_PROCESS_ID_COLUMN);
+  TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN);
+  TreeViewInsertColumn(treeview_,
+                       IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN);
+  TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN);
 
   // Hide some columns by default.
   TreeViewColumnSetVisible(treeview_, kTaskManagerSharedMem, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerPrivateMem, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerProcessID, false);
+  TreeViewColumnSetVisible(treeview_, kTaskManagerWebCoreImageCache, false);
+  TreeViewColumnSetVisible(treeview_, kTaskManagerWebCoreScriptsCache, false);
+  TreeViewColumnSetVisible(treeview_, kTaskManagerWebCoreCssCache, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerGoatsTeleported, false);
 
   g_object_unref(process_list_);
@@ -533,6 +555,15 @@ std::string TaskManagerGtk::GetModelText(int row, int col_id) {
         return std::string();
       return WideToUTF8(model_->GetResourceProcessId(row));
 
+    case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
+      return WideToUTF8(model_->GetResourceWebCoreImageCacheSize(row));
+
+    case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
+      return WideToUTF8(model_->GetResourceWebCoreScriptsCacheSize(row));
+
+    case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
+      return WideToUTF8(model_->GetResourceWebCoreCSSCacheSize(row));
+
     case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN:  // Goats Teleported!
       return WideToUTF8(model_->GetResourceGoatsTeleported(row));
 
@@ -564,6 +595,22 @@ void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {
   std::string cpu = GetModelText(row, IDS_TASK_MANAGER_CPU_COLUMN);
   std::string net = GetModelText(row, IDS_TASK_MANAGER_NET_COLUMN);
   std::string procid = GetModelText(row, IDS_TASK_MANAGER_PROCESS_ID_COLUMN);
+
+  // Querying the WebCore metrics is slow as it has to do IPC, so only do it
+  // when the columns are visible.
+  std::string wk_img_cache;
+  if (TreeViewColumnIsVisible(treeview_, kTaskManagerWebCoreImageCache))
+    wk_img_cache = GetModelText(
+        row, IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN);
+  std::string wk_scripts_cache;
+  if (TreeViewColumnIsVisible(treeview_, kTaskManagerWebCoreScriptsCache))
+    wk_scripts_cache = GetModelText(
+        row, IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN);
+  std::string wk_css_cache;
+  if (TreeViewColumnIsVisible(treeview_, kTaskManagerWebCoreCssCache))
+    wk_css_cache = GetModelText(
+        row, IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN);
+
   std::string goats = GetModelText(
       row, IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN);
   gtk_list_store_set(process_list_, iter,
@@ -575,6 +622,9 @@ void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {
                      kTaskManagerCPU, cpu.c_str(),
                      kTaskManagerNetwork, net.c_str(),
                      kTaskManagerProcessID, procid.c_str(),
+                     kTaskManagerWebCoreImageCache, wk_img_cache.c_str(),
+                     kTaskManagerWebCoreScriptsCache, wk_scripts_cache.c_str(),
+                     kTaskManagerWebCoreCssCache, wk_css_cache.c_str(),
                      kTaskManagerGoatsTeleported, goats.c_str(),
                      -1);
   g_object_unref(icon);
