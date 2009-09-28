@@ -6,7 +6,6 @@
 
 #include "app/gfx/skbitmap_operations.h"
 #include "base/file_util.h"
-#include "base/string_util.h"
 #include "base/gfx/png_decoder.h"
 #include "base/gfx/png_encoder.h"
 #include "base/string_util.h"
@@ -231,7 +230,9 @@ bool BrowserThemeProvider::WriteImagesToDisk() {
 }
 
 BrowserThemeProvider::BrowserThemeProvider()
-    : rb_(ResourceBundle::GetSharedInstance()) {
+    : rb_(ResourceBundle::GetSharedInstance()),
+      profile_(NULL),
+      process_images_(false) {
   static bool initialized = false;
   if (!initialized) {
     for (size_t i = 0; i < arraysize(kToolbarButtonIDs); ++i) {

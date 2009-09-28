@@ -146,7 +146,7 @@ class BrowserThemeProvider : public NonThreadSafe,
   } AlignmentMasks;
 
   // Background tiling choices.
-  enum {
+  typedef enum {
     NO_REPEAT = 0,
     REPEAT_X = 1,
     REPEAT_Y = 2,
