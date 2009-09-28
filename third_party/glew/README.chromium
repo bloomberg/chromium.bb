@@ -1,0 +1,7 @@
+This is Chrome's local copy of the GLEW library, which is currently
+used to interface to OpenGL and extensions to implement the WebGL
+specification. It is currently unmodified from the original
+distribution.
+
+Originally obtained from http://glew.sourceforge.net/ . The
+LICENSE.txt from that distribution has been preserved here.

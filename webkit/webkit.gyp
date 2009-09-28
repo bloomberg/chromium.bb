@@ -4,6 +4,7 @@
 
 {
   'includes': [
+    '../third_party/WebKit/WebKit/chromium/features.gypi',
     '../third_party/WebKit/WebCore/WebCore.gypi',
   ],
   'variables': {
@@ -236,6 +237,28 @@
           ],
         }, { # else: OS!="win"
           'sources/': [['exclude', '/win/']],
+        }],
+        ['"ENABLE_3D_CANVAS=1" in feature_defines', {
+          # Conditionally compile in GLEW and our GraphicsContext3D implementation.
+          'sources+': [
+            'api/src/GraphicsContext3D.cpp',
+            '../third_party/glew/src/glew.c'
+          ],
+          'include_dirs+': [
+            '../third_party/glew/include'
+          ],
+          'defines+': [
+            'GLEW_STATIC=1',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'link_settings': {
+                'libraries': [
+                  '-lopengl32.lib',
+                ]
+              },
+            }],
+          ],
         }],
       ],
     },
