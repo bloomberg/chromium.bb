@@ -149,13 +149,13 @@ GURL Extension::GetResourceURL(const GURL& extension_url,
   return ret_val;
 }
 
-const ContextualAction* Extension::GetContextualAction(
-    std::string id, ContextualAction::ContextualActionType action_type) const {
-  if (action_type == ContextualAction::BROWSER_ACTION) {
+const ExtensionAction* Extension::GetExtensionAction(
+    std::string id, ExtensionAction::ExtensionActionType action_type) const {
+  if (action_type == ExtensionAction::BROWSER_ACTION) {
     DCHECK(id.empty());  // Multiple browser actions are not allowed.
     return browser_action_.get();
   } else {
-    ContextualActionMap::const_iterator it = page_actions_.find(id);
+    ExtensionActionMap::const_iterator it = page_actions_.find(id);
     if (it == page_actions_.end())
       return NULL;
 
@@ -313,10 +313,10 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
 
 // Helper method that loads a PageAction or BrowserAction object from a
 // dictionary in the page_actions list or browser_action key of the manifest.
-ContextualAction* Extension::LoadContextualActionHelper(
+ExtensionAction* Extension::LoadExtensionActionHelper(
     const DictionaryValue* page_action, int definition_index,
-    std::string* error, ContextualAction::ContextualActionType action_type) {
-  scoped_ptr<ContextualAction> result(new ContextualAction());
+    std::string* error, ExtensionAction::ExtensionActionType action_type) {
+  scoped_ptr<ExtensionAction> result(new ExtensionAction());
   result->set_extension_id(id());
   result->set_type(action_type);
 
@@ -345,7 +345,7 @@ ContextualAction* Extension::LoadContextualActionHelper(
     ++icon_count;
   }
 
-  if (action_type == ContextualAction::BROWSER_ACTION) {
+  if (action_type == ExtensionAction::BROWSER_ACTION) {
     result->set_id("");  // Not needed (only 1 browser action per extension).
   } else {
     // Read the page action |id|.
@@ -933,9 +933,9 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
         return false;
       }
 
-      ContextualAction* contextual_action =
-          LoadContextualActionHelper(page_action_value, i, error,
-                                     ContextualAction::PAGE_ACTION);
+      ExtensionAction* contextual_action =
+          LoadExtensionActionHelper(page_action_value, i, error,
+                                    ExtensionAction::PAGE_ACTION);
       if (!contextual_action)
         return false;  // Failed to parse page action definition.
       page_actions_[contextual_action->id()] = contextual_action;
@@ -951,8 +951,8 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     }
 
     browser_action_.reset(
-        LoadContextualActionHelper(browser_action_value, 0, error,
-                                   ContextualAction::BROWSER_ACTION));
+        LoadExtensionActionHelper(browser_action_value, 0, error,
+                                  ExtensionAction::BROWSER_ACTION));
     if (!browser_action_.get())
       return false;  // Failed to parse browser action definition.
   }
@@ -1060,7 +1060,7 @@ std::set<FilePath> Extension::GetBrowserImages() {
   }
 
   // page action icons
-  for (ContextualActionMap::const_iterator it = page_actions().begin();
+  for (ExtensionActionMap::const_iterator it = page_actions().begin();
        it != page_actions().end(); ++it) {
     const std::vector<std::string>& icon_paths = it->second->icon_paths();
     for (std::vector<std::string>::const_iterator iter = icon_paths.begin();

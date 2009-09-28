@@ -212,10 +212,10 @@ bool ValidateExtension(Extension* extension, std::string* error) {
   }
 
   // Validate icon location for page actions.
-  const ContextualActionMap& page_actions = extension->page_actions();
-  for (ContextualActionMap::const_iterator i(page_actions.begin());
+  const ExtensionActionMap& page_actions = extension->page_actions();
+  for (ExtensionActionMap::const_iterator i(page_actions.begin());
        i != page_actions.end(); ++i) {
-    ContextualAction* page_action = i->second;
+    ExtensionAction* page_action = i->second;
     const std::vector<std::string>& icon_paths = page_action->icon_paths();
     for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
          iter != icon_paths.end(); ++iter) {
@@ -228,7 +228,7 @@ bool ValidateExtension(Extension* extension, std::string* error) {
   }
 
   // Validate icon location for browser actions.
-  const ContextualAction* browser_action = extension->browser_action();
+  const ExtensionAction* browser_action = extension->browser_action();
   if (browser_action) {
     const std::vector<std::string>& icon_paths = browser_action->icon_paths();
     for (std::vector<std::string>::const_iterator iter = icon_paths.begin();

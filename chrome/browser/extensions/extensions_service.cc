@@ -144,12 +144,12 @@ void ExtensionsService::Init() {
   GarbageCollectExtensions();
 }
 
-std::vector<ContextualAction*> ExtensionsService::GetPageActions() const {
-  return GetContextualActions(ContextualAction::PAGE_ACTION);
+std::vector<ExtensionAction*> ExtensionsService::GetPageActions() const {
+  return GetExtensionActions(ExtensionAction::PAGE_ACTION);
 }
 
-std::vector<ContextualAction*> ExtensionsService::GetBrowserActions() const {
-  return GetContextualActions(ContextualAction::BROWSER_ACTION);
+std::vector<ExtensionAction*> ExtensionsService::GetBrowserActions() const {
+  return GetExtensionActions(ExtensionAction::BROWSER_ACTION);
 }
 
 void ExtensionsService::InstallExtension(const FilePath& extension_path) {
@@ -324,21 +324,21 @@ void ExtensionsService::LoadInstalledExtension(
   }
 }
 
-std::vector<ContextualAction*> ExtensionsService::GetContextualActions(
-    ContextualAction::ContextualActionType action_type) const {
-  std::vector<ContextualAction*> result;
+std::vector<ExtensionAction*> ExtensionsService::GetExtensionActions(
+    ExtensionAction::ExtensionActionType action_type) const {
+  std::vector<ExtensionAction*> result;
 
   // TODO(finnur): Sort the icons in some meaningful way.
   for (ExtensionList::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
-    if (action_type == ContextualAction::PAGE_ACTION) {
-      const ContextualActionMap* page_actions = &(*iter)->page_actions();
-      for (ContextualActionMap::const_iterator i(page_actions->begin());
+    if (action_type == ExtensionAction::PAGE_ACTION) {
+      const ExtensionActionMap* page_actions = &(*iter)->page_actions();
+      for (ExtensionActionMap::const_iterator i(page_actions->begin());
            i != page_actions->end(); ++i) {
         result.push_back(i->second);
       }
     } else {
-      ContextualAction* browser_action = (*iter)->browser_action();
+      ExtensionAction* browser_action = (*iter)->browser_action();
       if (browser_action)
         result.push_back(browser_action);
     }

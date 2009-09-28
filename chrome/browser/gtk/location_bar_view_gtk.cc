@@ -401,7 +401,7 @@ void LocationBarViewGtk::FocusSearch() {
 }
 
 void LocationBarViewGtk::UpdatePageActions() {
-  std::vector<ContextualAction*> page_actions;
+  std::vector<ExtensionAction*> page_actions;
   if (profile_->GetExtensionsService())
       page_actions = profile_->GetExtensionsService()->GetPageActions();
 
@@ -674,7 +674,7 @@ gboolean LocationBarViewGtk::OnSecurityIconPressed(
 
 LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
     LocationBarViewGtk* owner, Profile* profile,
-    const ContextualAction* page_action)
+    const ExtensionAction* page_action)
     : owner_(owner),
       profile_(profile),
       page_action_(page_action) {
@@ -719,7 +719,7 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
   current_tab_id_ = ExtensionTabUtil::GetTabId(contents);
   current_url_ = url;
 
-  const ContextualActionState* state =
+  const ExtensionActionState* state =
       contents->GetPageActionState(page_action_);
   bool visible = state != NULL;
   if (visible) {

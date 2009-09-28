@@ -104,11 +104,11 @@ class ExtensionsService
 
   // Retrieves a vector of all page actions, irrespective of which extension
   // they belong to.
-  std::vector<ContextualAction*> GetPageActions() const;
+  std::vector<ExtensionAction*> GetPageActions() const;
 
   // Retrieves a vector of all browser actions, irrespective of which extension
   // they belong to.
-  std::vector<ContextualAction*> GetBrowserActions() const;
+  std::vector<ExtensionAction*> GetBrowserActions() const;
 
   // Install the extension file at |extension_path|.  Will install as an
   // update if an older version is already installed.
@@ -238,8 +238,8 @@ class ExtensionsService
 
   // Retrieves a vector of all page actions or browser actions, irrespective of
   // which extension they belong to.
-  std::vector<ContextualAction*> GetContextualActions(
-      ContextualAction::ContextualActionType action_type) const;
+  std::vector<ExtensionAction*> GetExtensionActions(
+      ExtensionAction::ExtensionActionType action_type) const;
 
   // The profile this ExtensionsService is part of.
   Profile* profile_;

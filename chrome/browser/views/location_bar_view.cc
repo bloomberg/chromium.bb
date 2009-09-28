@@ -35,8 +35,8 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/info_bubble.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/page_action.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/focus/focus_manager.h"
@@ -644,7 +644,7 @@ void LocationBarView::DeletePageActionViews() {
 }
 
 void LocationBarView::RefreshPageActionViews() {
-  std::vector<ContextualAction*> page_actions;
+  std::vector<ExtensionAction*> page_actions;
   if (profile_->GetExtensionsService())
     page_actions = profile_->GetExtensionsService()->GetPageActions();
 
@@ -1183,7 +1183,7 @@ void LocationBarView::SecurityImageView::ShowInfoBubble() {
 LocationBarView::PageActionImageView::PageActionImageView(
     LocationBarView* owner,
     Profile* profile,
-    const ContextualAction* page_action,
+    const ExtensionAction* page_action,
     const BubblePositioner* bubble_positioner)
     : LocationBarImageView(bubble_positioner),
       owner_(owner),
@@ -1250,7 +1250,7 @@ void LocationBarView::PageActionImageView::UpdateVisibility(
   current_tab_id_ = ExtensionTabUtil::GetTabId(contents);
   current_url_ = url;
 
-  const ContextualActionState* state =
+  const ExtensionActionState* state =
       contents->GetPageActionState(page_action_);
   bool visible = state != NULL;
   if (visible) {

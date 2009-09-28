@@ -70,9 +70,9 @@ bool PageActionFunction::SetPageActionEnabled(bool enable) {
     return false;
   }
 
-  const ContextualAction* page_action =
-      extension->GetContextualAction(page_action_id,
-                                     ContextualAction::PAGE_ACTION);
+  const ExtensionAction* page_action =
+      extension->GetExtensionAction(page_action_id,
+                                    ExtensionAction::PAGE_ACTION);
   if (!page_action) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kNoPageActionError,
                                                      page_action_id);

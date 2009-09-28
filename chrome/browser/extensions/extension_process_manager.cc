@@ -107,7 +107,7 @@ void ExtensionProcessManager::RegisterExtensionProcess(
 
   std::vector<std::string> page_action_ids;
   Extension* extension = extension_service->GetExtensionById(extension_id);
-  for (ContextualActionMap::const_iterator i =
+  for (ExtensionActionMap::const_iterator i =
            extension->page_actions().begin();
        i != extension->page_actions().end(); ++i) {
     page_action_ids.push_back(i->first);

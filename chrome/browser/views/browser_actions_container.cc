@@ -11,9 +11,9 @@
 #include "chrome/browser/image_loading_tracker.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/toolbar_view.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
-#include "chrome/common/page_action.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/controls/button/image_button.h"
 
@@ -27,13 +27,13 @@ static const int kIconHorizontalPadding = 10;
 // BrowserActionImageView
 
 // The BrowserActionImageView is a specialization of the ImageButton class.
-// It acts on a ContextualAction, in this case a BrowserAction and handles
+// It acts on a ExtensionAction, in this case a BrowserAction and handles
 // loading the image for the button asynchronously on the file thread to
 class BrowserActionImageView : public views::ImageButton,
                                public views::ButtonListener,
                                public ImageLoadingTracker::Observer {
  public:
-  BrowserActionImageView(ContextualAction* browser_action,
+  BrowserActionImageView(ExtensionAction* browser_action,
                          Extension* extension,
                          BrowserActionsContainer* panel);
   ~BrowserActionImageView();
@@ -45,9 +45,9 @@ class BrowserActionImageView : public views::ImageButton,
   virtual void OnImageLoaded(SkBitmap* image, size_t index);
 
  private:
-  // The browser action this view represents. The ContextualAction is not owned
+  // The browser action this view represents. The ExtensionAction is not owned
   // by this class.
-  ContextualAction* browser_action_;
+  ExtensionAction* browser_action_;
 
   // The icons representing different states for the browser action.
   std::vector<SkBitmap> browser_action_icons_;
@@ -64,7 +64,7 @@ class BrowserActionImageView : public views::ImageButton,
 };
 
 BrowserActionImageView::BrowserActionImageView(
-    ContextualAction* browser_action, Extension* extension,
+    ExtensionAction* browser_action, Extension* extension,
     BrowserActionsContainer* panel)
     : ImageButton(this),
       browser_action_(browser_action),
@@ -137,7 +137,7 @@ void BrowserActionsContainer::RefreshBrowserActionViews() {
   if (!extension_service)  // The |extension_service| can be NULL in Incognito.
     return;
 
-  std::vector<ContextualAction*> browser_actions;
+  std::vector<ExtensionAction*> browser_actions;
   browser_actions = extension_service->GetBrowserActions();
 
   if (browser_action_views_.size() != browser_actions.size()) {
@@ -171,7 +171,7 @@ void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
 }
 
 void BrowserActionsContainer::OnBrowserActionExecuted(
-    const ContextualAction& browser_action) {
+    const ExtensionAction& browser_action) {
   int window_id = ExtensionTabUtil::GetWindowId(toolbar_->browser());
   ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
       profile_, browser_action.extension_id(), window_id);

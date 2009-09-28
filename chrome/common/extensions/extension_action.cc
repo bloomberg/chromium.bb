@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/page_action.h"
+#include "chrome/common/extensions/extension_action.h"
 
-ContextualAction::ContextualAction()
+ExtensionAction::ExtensionAction()
   : type_(PAGE_ACTION) {
 }
 
-ContextualAction::~ContextualAction() {
+ExtensionAction::~ExtensionAction() {
 }

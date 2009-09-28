@@ -11,7 +11,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "views/view.h"
 
-class ContextualAction;
+class ExtensionAction;
 class Profile;
 class ToolbarView;
 namespace views {
@@ -41,7 +41,7 @@ class BrowserActionsContainer : public views::View,
   void OnBrowserActionVisibilityChanged();
 
   // Called when the user clicks on the browser action icon.
-  void OnBrowserActionExecuted(const ContextualAction& browser_action);
+  void OnBrowserActionExecuted(const ExtensionAction& browser_action);
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();

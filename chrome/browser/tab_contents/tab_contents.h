@@ -30,10 +30,10 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/tab_contents/render_view_host_manager.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/gears_api.h"
 #include "chrome/common/navigation_types.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/page_action.h"
 #include "chrome/common/property_bag.h"
 #include "chrome/common/renderer_preferences.h"
 #include "net/base/load_states.h"
@@ -261,15 +261,15 @@ class TabContents : public PageNavigator,
   // this tab. The parameter |title| (if not empty) can be used to override the
   // page action title for this tab and |icon_id| specifies an icon index
   // (defined in the manifest) to use instead of the first icon (for this tab).
-  void SetPageActionEnabled(const ContextualAction* page_action, bool enable,
+  void SetPageActionEnabled(const ExtensionAction* page_action, bool enable,
                             const std::string& title, int icon_id);
 
   // Returns the page action state for this tab. The pair returns contains
   // the title (string) for the page action and the icon index to use (int).
   // If this function returns NULL it means the page action is not enabled for
   // this tab.
-  const ContextualActionState* GetPageActionState(
-      const ContextualAction* page_action);
+  const ExtensionActionState* GetPageActionState(
+      const ExtensionAction* page_action);
 
   // Whether the tab is in the process of being destroyed.
   // Added as a tentative work-around for focus related bug #4633.  This allows
@@ -1106,7 +1106,7 @@ class TabContents : public PageNavigator,
   // that can be used to override the title and icon used for the page action).
   // This map is cleared every time the mainframe navigates and populated by the
   // PageAction extension API.
-  std::map< const ContextualAction*, linked_ptr<ContextualActionState> >
+  std::map< const ExtensionAction*, linked_ptr<ExtensionActionState> >
       enabled_page_actions_;
 
   // Data for misc internal state ----------------------------------------------

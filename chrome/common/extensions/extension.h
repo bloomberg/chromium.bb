@@ -15,10 +15,10 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/user_script_master.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
-#include "chrome/common/page_action.h"
 #include "googleurl/src/gurl.h"
 
 // Represents a Chrome extension.
@@ -194,8 +194,8 @@ class Extension {
   const std::string& public_key() const { return public_key_; }
   const std::string& description() const { return description_; }
   const UserScriptList& content_scripts() const { return content_scripts_; }
-  const ContextualActionMap& page_actions() const { return page_actions_; }
-  ContextualAction* browser_action() const { return browser_action_.get(); }
+  const ExtensionActionMap& page_actions() const { return page_actions_; }
+  ExtensionAction* browser_action() const { return browser_action_.get(); }
   const std::vector<PrivacyBlacklistInfo>& privacy_blacklists() const {
     return privacy_blacklists_;
   }
@@ -227,8 +227,8 @@ class Extension {
   const std::map<int, std::string>& icons() { return icons_; }
 
   // Retrieves a page action or browser action by |id|.
-  const ContextualAction* GetContextualAction(
-    std::string id, ContextualAction::ContextualActionType action_type) const;
+  const ExtensionAction* GetExtensionAction(
+    std::string id, ExtensionAction::ExtensionActionType action_type) const;
 
   // Returns the origin of this extension. This function takes a |registry_path|
   // so that the registry location can be overwritten during testing.
@@ -293,13 +293,13 @@ class Extension {
                             std::string* error,
                             UserScript* result);
 
-  // Helper method that loads a ContextualAction object from a
+  // Helper method that loads a ExtensionAction object from a
   // dictionary in the page_action or browser_action section of the manifest.
-  ContextualAction* LoadContextualActionHelper(
+  ExtensionAction* LoadExtensionActionHelper(
       const DictionaryValue* contextual_action,
       int definition_index,
       std::string* error,
-      ContextualAction::ContextualActionType action_type);
+      ExtensionAction::ExtensionActionType action_type);
 
   // Figures out if a source contains keys not associated with themes - we
   // don't want to allow scripts and such to be bundled with themes.
@@ -335,10 +335,10 @@ class Extension {
   UserScriptList content_scripts_;
 
   // A list of page actions.
-  ContextualActionMap page_actions_;
+  ExtensionActionMap page_actions_;
 
   // The extension's browser action, if any.
-  scoped_ptr<ContextualAction> browser_action_;
+  scoped_ptr<ExtensionAction> browser_action_;
 
   // Optional list of privacy blacklistrom.
   std::vector<PrivacyBlacklistInfo> privacy_blacklists_;

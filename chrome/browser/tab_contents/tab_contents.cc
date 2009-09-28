@@ -51,8 +51,8 @@
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/page_action.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/render_messages.h"
@@ -586,7 +586,7 @@ void TabContents::SetIsCrashed(bool state) {
   NotifyNavigationStateChanged(INVALIDATE_TAB);
 }
 
-void TabContents::SetPageActionEnabled(const ContextualAction* page_action,
+void TabContents::SetPageActionEnabled(const ExtensionAction* page_action,
                                        bool enable,
                                        const std::string& title,
                                        int icon_id) {
@@ -599,14 +599,14 @@ void TabContents::SetPageActionEnabled(const ContextualAction* page_action,
 
   if (enable) {
     enabled_page_actions_[page_action].reset(
-        new ContextualActionState(title, icon_id));
+        new ExtensionActionState(title, icon_id));
   } else {
     enabled_page_actions_.erase(page_action);
   }
 }
 
-const ContextualActionState* TabContents::GetPageActionState(
-    const ContextualAction* page_action) {
+const ExtensionActionState* TabContents::GetPageActionState(
+    const ExtensionAction* page_action) {
   if (enabled_page_actions_.end() == enabled_page_actions_.find(page_action))
     return NULL;
 
