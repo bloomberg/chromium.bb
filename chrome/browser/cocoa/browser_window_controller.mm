@@ -1155,8 +1155,11 @@ willPositionSheet:(NSWindow*)sheet
 - (NSRect)window:(NSWindow*)window
 willPositionSheet:(NSWindow*)sheet
        usingRect:(NSRect)defaultSheetRect {
-  NSRect windowFrame = [window frame];
-  defaultSheetRect.origin.y = windowFrame.size.height - 10;
+  // Any sheet should come from right above the visible content area.
+  NSRect toolbarFrame = [[toolbarController_ view] frame];
+  NSRect infobarFrame = [[infoBarContainerController_ view] frame];
+  defaultSheetRect.origin.y = toolbarFrame.origin.y - infobarFrame.size.height;
+
   return defaultSheetRect;
 }
 
