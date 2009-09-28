@@ -144,7 +144,9 @@ class CompareFailures:
         if not test_expectations.TIMEOUT in expectations: hangs.add(test)
       # Do not add to the missing list if a test is rebaselining and missing
       # expected files.
-      elif is_missing and not self._expectations.IsRebaselining(test):
+      elif (is_missing and
+            not self._expectations.IsRebaselining(test) and
+            not self._expectations.IsIgnored(test)):
         missing.add(test)
       elif is_image_failure and is_text_failure:
         if (not test_expectations.FAIL in expectations and

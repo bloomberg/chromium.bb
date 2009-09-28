@@ -863,10 +863,13 @@ class TestRunner:
     """
     failed = result_summary.fixable_count
     total = result_summary.all_fixable_count
+    passed = 0
+    if total > 0:
+      passed = float(total - failed) * 100 / total
     output.write(
         "\nTest summary: %.1f%% Passed | %s Failures | %s Tests to pass for "
         "this release\n" % (
-        float(total - failed) * 100 / total, failed, total))
+        passed, failed, total))
 
     self._PrintResultSummaryEntry(
         "Tests to be fixed for the current release",
