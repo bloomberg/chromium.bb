@@ -8,6 +8,7 @@ import re
 import subprocess
 import sys
 import time
+import urllib2
 import xml.dom.minidom
 
 from layout_package import path_utils
@@ -43,19 +44,24 @@ class JSONResultsGenerator:
   ALL_FIXABLE_COUNT = "allFixableCount"
   FIXABLE_COUNT = "fixableCount"
   FAILURE_CHARS = ("C", "T", "I", "S", "F", "O")
+  BUILDER_BASE_URL = "http://build.chromium.org/buildbot/layout_test_results/"
+  RESULTS_FILENAME = "results.json"
 
-  def __init__(self, failures, individual_test_timings, builder_name,
-      build_number, results_file_path, all_tests, result_summary):
-    """
-    failures: Map of test name to list of failures.
-    individual_test_times: Map of test name to a tuple containing the
-        test_run-time.
-    builder_name: The name of the builder the tests are being run on.
-    build_number: The build number for this run.
-    results_file_path: Absolute path to the results json file.
-    all_tests: List of all the tests that were run.
-    result_summary: ResultsSummary object containing failure counts for
-        different groups of tests.
+  def __init__(self, options, failures, individual_test_timings,
+      results_file_base_path, all_tests, result_summary):
+    """Modifies the results.json file. Grabs it off the archive directory if it
+    is not found locally.
+
+    Args
+      options: a dictionary of command line options
+      failures: Map of test name to list of failures.
+      individual_test_times: Map of test name to a tuple containing the
+          test_run-time.
+      results_file_base_path: Absolute path to the directory containing the
+          results json file.
+      all_tests: List of all the tests that were run.
+      result_summary: ResultsSummary object containing failure counts for
+          different groups of tests.
     """
     # Make sure all test paths are relative to the layout test root directory.
     self._failures = {}
@@ -73,9 +79,15 @@ class JSONResultsGenerator:
       test_path = self._GetPathRelativeToLayoutTestRoot(test_tuple.filename)
       self._test_timings[test_path] = test_tuple.test_run_time
 
-    self._builder_name = builder_name
-    self._build_number = build_number
-    self._results_file_path = results_file_path
+    self._options = options
+    self._results_file_path = os.path.join(results_file_base_path,
+        self.RESULTS_FILENAME)
+
+    json = self._GetJSON()
+    if json:
+      results_file = open(self._results_file_path, "w")
+      results_file.write(json)
+      results_file.close()
 
   def _GetSVNRevision(self, in_directory=None):
     """Returns the svn revision for the given directory.
@@ -119,7 +131,7 @@ class JSONResultsGenerator:
     # Make sure all paths are unix-style.
     return relativePath.replace('\\', '/')
 
-  def GetJSON(self):
+  def _GetJSON(self):
     """Gets the results for the results.json file."""
     failures_for_json = {}
     for test in self._failures:
@@ -138,6 +150,35 @@ class JSONResultsGenerator:
     if os.path.exists(self._results_file_path):
       old_results_file = open(self._results_file_path, "r")
       old_results = old_results_file.read()
+    else:
+      results_file_url = (self.BUILDER_BASE_URL + self._options.build_name +
+          "/" + self.RESULTS_FILENAME)
+      logging.error("Local results.json file does not exist. Grabbing it off "
+          "the archive at " + results_file_url)
+
+      error = None
+      old_results = None
+      try:
+        results_file = urllib2.urlopen(results_file_url)
+        info = results_file.info()
+        old_results = results_file.read()
+      except urllib2.HTTPError, http_error:
+        # A non-4xx status code means the bot is hosed for some reason and we
+        # can't grab the results.json file off of it.
+        if (http_error.code < 400 and http_error.code >= 500):
+          error = http_error
+      except urllib2.URLError, url_error:
+        error = url_error
+
+      if error:
+        # If there was a URL/HTTPError don't write a results.json
+        # file at all as it would lose all the information on the bot.
+        logging.error("Archive directory is inaccessible. Not modifying or "
+            "clobbering the results.json file: " + str(error))
+        return None
+
+    builder_name = self._options.builder_name
+    if old_results:
       # Strip the prefix and suffix so we can get the actual JSON object.
       old_results = old_results[
           len(self.JSON_PREFIX) : len(old_results) - len(self.JSON_SUFFIX)]
@@ -145,31 +186,28 @@ class JSONResultsGenerator:
       try:
         results_json = simplejson.loads(old_results)
       except:
-        logging.error("Results file on disk was not valid JSON. Clobbering.")
+        logging.error("results.json was not valid JSON. Clobbering.")
         # The JSON file is not valid JSON. Just clobber the results.
         results_json = {}
 
-      if self._builder_name not in results_json:
+      if builder_name not in results_json:
         logging.error("Builder name (%s) is not in the results.json file." %
-            self._builder_name);
+            builder_name);
     else:
-      # TODO(ojan): If the build output directory gets clobbered, we should
-      # grab this file off wherever it's archived to. Maybe we should always
-      # just grab it from wherever it's archived to.
       results_json = {}
 
     self._ConvertJSONToCurrentVersion(results_json)
 
-    if self._builder_name not in results_json:
-      results_json[self._builder_name] = self._CreateResultsForBuilderJSON()
+    if builder_name not in results_json:
+      results_json[builder_name] = self._CreateResultsForBuilderJSON()
 
-    results_for_builder = results_json[self._builder_name]
+    results_for_builder = results_json[builder_name]
     tests = results_for_builder[self.TESTS]
     all_failing_tests = set(self._failures.iterkeys())
     all_failing_tests.update(tests.iterkeys())
 
-    self._InsertItemIntoRawList(results_for_builder, self._build_number,
-        self.BUILD_NUMBERS)
+    self._InsertItemIntoRawList(results_for_builder,
+        self._options.build_number, self.BUILD_NUMBERS)
 
     path_to_webkit = path_utils.PathFromBase('third_party', 'WebKit', 'WebCore')
     self._InsertItemIntoRawList(results_for_builder,

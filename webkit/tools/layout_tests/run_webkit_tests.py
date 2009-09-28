@@ -642,18 +642,9 @@ class TestRunner:
     expectations_file.write(("ADD_EXPECTATIONS(" + expectations_json + ");"))
     expectations_file.close()
 
-    results_file_path = os.path.join(self._options.results_directory,
-        "results.json")
-    builder_name = self._options.builder_name # "WebKitBuilder"
-    build_number = self._options.build_number # "12346"
-    json_generator = json_results_generator.JSONResultsGenerator(failures,
-        individual_test_timings, builder_name, build_number,
-        results_file_path, self._test_files_list, result_summary)
-    results_json = json_generator.GetJSON()
-
-    results_file = open(results_file_path, "w")
-    results_file.write(results_json)
-    results_file.close()
+    json_results_generator.JSONResultsGenerator(self._options, failures,
+        individual_test_timings, self._options.results_directory,
+        self._test_files_list, result_summary)
 
     logging.debug("Finished writing JSON files.")
 
@@ -1249,7 +1240,12 @@ if '__main__' == __name__:
                                  "n tests, the test shell is relaunched."))
   option_parser.add_option("", "--builder-name",
                            default="DUMMY_BUILDER_NAME",
-                           help="The name of the builder running this script.")
+                           help=("The name of the builder shown on the "
+                                 "waterfall running this script e.g. WebKit."))
+  option_parser.add_option("", "--build-name",
+                           default="DUMMY_BUILD_NAME",
+                           help=("The name of the builder used in it's path, "
+                                 "e.g. webkit-rel."))
   option_parser.add_option("", "--build-number",
                            default="DUMMY_BUILD_NUMBER",
                            help=("The build number of the builder running"
