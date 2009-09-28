@@ -6,6 +6,11 @@ obj:*/ld-2*
 obj:*/libpthread-*
 obj:*/libfreetype*
 
+# we ignore the whole NSS library for now since
+# its instrumentation is very slow.
+# TODO(timurrrr): investigate whether we need to instrument it
+obj:*/libnss*
+
 # ignore this standard stuff
 fun:clone
 fun:fork
