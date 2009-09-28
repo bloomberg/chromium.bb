@@ -108,26 +108,7 @@
       '../views/grid_layout_unittest.cc',
     ],
     'conditions': [
-      ['OS=="win"', {
-        'nacl_defines': [
-          'NACL_WINDOWS=1',
-          'NACL_LINUX=0',
-          'NACL_OSX=0',
-        ],
-      },],
-      ['OS=="linux"', {
-        'nacl_defines': [
-          'NACL_WINDOWS=0',
-          'NACL_LINUX=1',
-          'NACL_OSX=0',
-        ],
-      },],
       ['OS=="mac"', {
-        'nacl_defines': [
-          'NACL_WINDOWS=0',
-          'NACL_LINUX=0',
-          'NACL_OSX=1',
-        ],
         'conditions': [
           ['branding=="Chrome"', {
             'mac_bundle_id': 'com.google.Chrome',
@@ -147,20 +128,6 @@
         'chrome_personalization%': 0,
         'use_syncapi_stub%': 1,
       }],  # OS=="win"
-      ['target_arch=="ia32"', {
-        'nacl_defines': [
-          # TODO(gregoryd): consider getting this from NaCl's common.gypi
-          'NACL_TARGET_SUBARCH=32',
-          'NACL_BUILD_SUBARCH=32',
-        ],
-      }],
-      ['target_arch=="x64"', {
-        'nacl_defines': [
-          # TODO(gregoryd): consider getting this from NaCl's common.gypi
-          'NACL_TARGET_SUBARCH=64',
-          'NACL_BUILD_SUBARCH=64',
-        ],
-      }],
     ],  # conditions
   },  # variables
   'target_defaults': {
@@ -630,8 +597,6 @@
         'common/sandbox_init_wrapper.h',
         'common/security_filter_peer.cc',
         'common/security_filter_peer.h',
-        'common/nacl_messages.h',
-        'common/nacl_messages_internal.h',
         'common/sqlite_compiled_statement.cc',
         'common/sqlite_compiled_statement.h',
         'common/sqlite_utils.cc',
@@ -745,9 +710,6 @@
       'include_dirs': [
         '..',
         '<(INTERMEDIATE_DIR)',
-      ],
-      'defines': [
-        '<@(nacl_defines)',
       ],
       'sources': [
         # All .cc, .h, .m, and .mm files under browser except for tests and
@@ -1871,8 +1833,6 @@
         'browser/search_engines/template_url_prepopulate_data.h',
         'browser/search_engines/template_url_table_model.cc',
         'browser/search_engines/template_url_table_model.h',
-        'browser/nacl_process_host.cc',
-        'browser/nacl_process_host.h',
         'browser/session_startup_pref.cc',
         'browser/session_startup_pref.h',
         'browser/sessions/base_session_service.cc',
@@ -2915,57 +2875,11 @@
       ],
     },
     {
-      'target_name': 'nacl',
-      'type': '<(library)',
-      'msvs_guid': '83E86DAF-5763-4711-AD34-5FDAE395560C',
-      'dependencies': [
-        'common',
-        'chrome_resources',
-        'chrome_strings',
-        '../third_party/npapi/npapi.gyp:npapi',
-        '../webkit/webkit.gyp:glue',
-        '../native_client/src/trusted/plugin/plugin_chrome.gyp:npGoogleNaClPluginChrome',
-        '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel',
-        '../native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate',
-        '../native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
-      ],
-      'include_dirs': [
-        '<(INTERMEDIATE_DIR)',
-      ],
-      'defines': [
-        'NACL_BLOCK_SHIFT=5',
-        'NACL_BLOCK_SIZE=32',
-        '<@(nacl_defines)',
-      ],
-      'sources': [
-        # All .cc, .h, .m, and .mm files under nacl except for tests and
-        # mocks.
-        'nacl/sel_main.cc',
-        'nacl/nacl_main.cc',
-        'nacl/nacl_thread.cc',
-        'nacl/nacl_thread.h',
-      ],
-      # TODO(gregoryd): consider switching NaCl to use Chrome OS defines
-      'conditions': [
-        ['OS=="win"', {
-          'defines': [
-            '__STD_C',
-            '_CRT_SECURE_NO_DEPRECATE',
-            '_SCL_SECURE_NO_DEPRECATE',
-          ],
-          'include_dirs': [
-            'third_party/wtl/include',
-          ],
-        },],
-      ],
-    },
-    {
       'target_name': 'renderer',
       'type': '<(library)',
       'msvs_guid': '9301A569-5D2B-4D11-9332-B1E30AEACB8D',
       'dependencies': [
         'common',
-        'nacl',
         'plugin',
         'chrome_resources',
         'chrome_strings',
@@ -2979,9 +2893,6 @@
       ],
       'include_dirs': [
         '..',
-      ],
-      'defines': [
-        '<@(nacl_defines)',
       ],
       'sources': [
         # TODO(jrg): to link ipc_tests, these files need to be in renderer.a.
@@ -3460,8 +3371,6 @@
             'infoplist_strings_tool',
             # Bring in pdfsqueeze and run it on all pdfs
             '../build/temp_gyp/pdfsqueeze.gyp:pdfsqueeze',
-            # This library provides the real implementation for NaClSyscallSeg
-            '../native_client/src/trusted/service_runtime/arch/x86_32/service_runtime_x86_32.gyp:service_runtime_x86_32_chrome'
           ],
           'rules': [
             {

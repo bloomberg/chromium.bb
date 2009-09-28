@@ -71,9 +71,6 @@ const wchar_t kPluginProcess[]                 = L"plugin";
 // Causes the process to run as a worker subprocess.
 const wchar_t kWorkerProcess[]                 = L"worker";
 
-// Causes the process to run as a NativeClient's sel_ldr subprocess.
-const wchar_t kNaClProcess[]                   = L"nacl";
-
 // Causes the process to run as a utility subprocess.
 const wchar_t kUtilityProcess[]                = L"utility";
 
@@ -369,9 +366,6 @@ const wchar_t kEnableRemoteFonts[]                 = L"enable-remote-fonts";
 
 // Use the low fragmentation heap for the CRT.
 const wchar_t kUseLowFragHeapCrt[]             = L"use-lf-heap";
-
-// Runs the Native Client inside the renderer process.
-const wchar_t kInternalNaCl[]                  = L"internal-nacl";
 
 #ifndef NDEBUG
 // Debug only switch to specify which gears plugin dll to load.
