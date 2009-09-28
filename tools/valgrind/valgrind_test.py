@@ -398,9 +398,20 @@ class ThreadSanitizer(ValgrindTool):
     raise RuntimeError, "Can't parse flag value (%s)" % flag_value
 
   def ToolSpecificFlags(self):
-    ret = ["--ignore=%s" % \
-           os.path.join(self._source_dir,
-                        "tools", "valgrind", "tsan", "ignores.txt")]
+    ret = []
+
+    ignore_files = ["ignores.txt"]
+    platform_suffix = {
+      'darwin': 'mac',
+      'linux2': 'linux'
+    }[sys.platform]
+    ignore_files.append("ignores_%s.txt" % platform_suffix)
+    for ignore_file in ignore_files:
+      fullname =  os.path.join(self._source_dir,
+          "tools", "valgrind", "tsan", ignore_file)
+      if os.path.exists(fullname):
+        ret += ["--ignore=%s" % fullname]
+
     ret += ["--file-prefix-to-cut=%s/" % self._source_dir]
 
     if self.EvalBoolFlag(self._options.pure_happens_before):

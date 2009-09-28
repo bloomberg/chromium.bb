@@ -1,0 +1,9 @@
+# This file lists the functions, object files and source files
+# which should be ignored (i.e. not instrumented) by ThreadSanitizer on Mac OS.
+# At the moment the Chromium binaries' debug info is not available to
+# ThreadSanitizer, so we have to define fun:* rules for Mac OS complementing
+# the src:* rules defined for Linux.
+
+# Don't instrument code dealing with atomics (base::subtle)
+fun:*base*subtle*NoBarrier_Load*
+fun:*base*subtle*Release_Store*
