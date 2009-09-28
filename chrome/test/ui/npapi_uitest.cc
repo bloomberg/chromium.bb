@@ -16,7 +16,6 @@
 #include <ostream>
 
 #include "base/file_util.h"
-#include "base/keyboard_codes.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -139,7 +138,7 @@ TEST_F(NPAPITester, DISABLED_SelfDeletePluginInvokeAlert) {
   automation()->WaitForAppModalDialog(5000);
   scoped_refptr<WindowProxy> window(automation()->GetActiveWindow());
   ASSERT_TRUE(window.get());
-  ASSERT_TRUE(window->SimulateOSKeyPress(base::VKEY_ESCAPE, 0));
+  ASSERT_TRUE(window->SimulateOSKeyPress(VK_ESCAPE, 0));
 
   WaitForFinish("self_delete_plugin_invoke_alert", "1", url,
                 kTestCompleteCookie, kTestCompleteSuccess,

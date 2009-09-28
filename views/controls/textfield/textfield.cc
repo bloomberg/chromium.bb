@@ -14,7 +14,6 @@
 #include "base/win_util.h"
 #endif
 
-#include "base/keyboard_codes.h"
 #include "base/string_util.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #include "views/widget/widget.h"
@@ -222,14 +221,14 @@ bool Textfield::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
 #if defined(OS_WIN)
   // TODO(hamaji): Figure out which keyboard combinations we need to add here,
   //               similar to LocationBarView::SkipDefaultKeyEventProcessing.
-  base::KeyboardCode key = e.GetKeyCode();
-  if (key == base::VKEY_BACK)
+  const int c = e.GetCharacter();
+  if (c == VK_BACK)
     return true;  // We'll handle BackSpace ourselves.
 
   // We don't translate accelerators for ALT + NumPad digit, they are used for
   // entering special characters.  We do translate alt-home.
-  if (e.IsAltDown() && (key != base::VKEY_HOME) &&
-      win_util::IsNumPadDigit(key, e.IsExtendedKey()))
+  if (e.IsAltDown() && (c != VK_HOME) &&
+      win_util::IsNumPadDigit(c, e.IsExtendedKey()))
     return true;
 #endif
   return false;

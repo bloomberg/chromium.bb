@@ -334,8 +334,7 @@ void TaskManagerView::Init() {
   SetContextMenuController(this);
   kill_button_ = new views::NativeButton(
       this, l10n_util::GetString(IDS_TASK_MANAGER_KILL));
-  kill_button_->AddAccelerator(views::Accelerator(base::VKEY_E,
-                                                  false, false, false));
+  kill_button_->AddAccelerator(views::Accelerator('E', false, false, false));
   kill_button_->SetAccessibleKeyboardShortcut(L"E");
   about_memory_link_ = new views::Link(
       l10n_util::GetString(IDS_TASK_MANAGER_ABOUT_MEMORY_LINK));
@@ -536,7 +535,7 @@ void TaskManagerView::OnDoubleClick() {
 }
 
 void TaskManagerView::OnKeyDown(unsigned short virtual_keycode) {
-  if (virtual_keycode == base::VKEY_RETURN)
+  if (virtual_keycode == VK_RETURN)
     ActivateFocusedTab();
 }
 

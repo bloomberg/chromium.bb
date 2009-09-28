@@ -416,13 +416,13 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
   // TODO(cpu) Bug 1109102. Query WebKit land for the actual bindings.
   switch (command_id) {
     case IDC_CUT:
-      *accelerator = views::Accelerator(base::VKEY_X, false, true, false);
+      *accelerator = views::Accelerator(L'X', false, true, false);
       return true;
     case IDC_COPY:
-      *accelerator = views::Accelerator(base::VKEY_C, false, true, false);
+      *accelerator = views::Accelerator(L'C', false, true, false);
       return true;
     case IDC_PASTE:
-      *accelerator = views::Accelerator(base::VKEY_V, false, true, false);
+      *accelerator = views::Accelerator(L'V', false, true, false);
       return true;
   }
   // Else, we retrieve the accelerator information from the frame.
@@ -639,7 +639,7 @@ bool ToolbarView::OnKeyPressed(const views::KeyEvent& e) {
   int focused_view = GetChildIndex(acc_focused_view_);
   int next_view = focused_view;
 
-  switch (e.GetKeyCode()) {
+  switch (e.GetCharacter()) {
     case base::VKEY_LEFT:
       next_view = GetNextAccessibleViewIndex(focused_view, true);
       break;

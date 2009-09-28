@@ -415,10 +415,10 @@ IPC_BEGIN_MESSAGES(Automation)
   // This message requests that a key press be performed.
   // Request:
   //   int - the handle of the window that's the context for this click
-  //   int - the base::KeyboardCode of the key that was pressed.
+  //   wchar_t - char of the key that was pressed.
   //   int - the flags which identify the modifiers (shift, ctrl, alt)
   //         associated for, as defined in chrome/views/event.h
-  IPC_MESSAGE_ROUTED3(AutomationMsg_WindowKeyPress, int, int, int)
+  IPC_MESSAGE_ROUTED3(AutomationMsg_WindowKeyPress, int, wchar_t, int)
 
   // This message notifies the AutomationProvider to create a tab which is
   // hosted by an external process.

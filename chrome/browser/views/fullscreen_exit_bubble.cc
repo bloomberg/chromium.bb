@@ -8,7 +8,6 @@
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
-#include "base/keyboard_codes.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "grit/generated_resources.h"
 #include "views/widget/root_view.h"
@@ -134,7 +133,7 @@ FullscreenExitBubble::FullscreenExitBubble(
   size_animation_->Reset(1);
 
   // Create the contents view.
-  views::Accelerator accelerator(base::VKEY_UNKNOWN, false, false, false);
+  views::Accelerator accelerator(0, false, false, false);
   bool got_accelerator = frame->GetAccelerator(IDC_FULLSCREEN, &accelerator);
   DCHECK(got_accelerator);
   view_ = new FullscreenExitView(this, popup_, accelerator.GetShortcutText());

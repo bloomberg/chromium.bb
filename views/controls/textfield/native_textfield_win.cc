@@ -9,7 +9,6 @@
 #include "app/win_util.h"
 #include "base/clipboard.h"
 #include "base/gfx/native_theme.h"
-#include "base/keyboard_codes.h"
 #include "base/scoped_clipboard_writer.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
@@ -253,13 +252,13 @@ bool NativeTextfieldWin::GetAcceleratorForCommandId(int command_id,
   // anywhere so we need to check for them explicitly here.
   switch (command_id) {
     case IDS_APP_CUT:
-      *accelerator = views::Accelerator(base::VKEY_X, false, true, false);
+      *accelerator = views::Accelerator(L'X', false, true, false);
       return true;
     case IDS_APP_COPY:
-      *accelerator = views::Accelerator(base::VKEY_C, false, true, false);
+      *accelerator = views::Accelerator(L'C', false, true, false);
       return true;
     case IDS_APP_PASTE:
-      *accelerator = views::Accelerator(base::VKEY_V, false, true, false);
+      *accelerator = views::Accelerator(L'V', false, true, false);
       return true;
   }
   return container_view_->GetWidget()->GetAccelerator(command_id, accelerator);

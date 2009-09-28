@@ -214,8 +214,7 @@ void MenuButton::OnMouseReleased(const MouseEvent& e,
 // When the space bar or the enter key is pressed we need to show the menu.
 bool MenuButton::OnKeyReleased(const KeyEvent& e) {
 #if defined(OS_WIN)
-  if ((e.GetKeyCode() == base::VKEY_SPACE) ||
-      (e.GetKeyCode() == base::VKEY_RETURN)) {
+  if ((e.GetCharacter() == VK_SPACE) || (e.GetCharacter() == VK_RETURN)) {
     return Activate();
   }
 #else

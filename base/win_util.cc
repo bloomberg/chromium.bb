@@ -373,14 +373,6 @@ std::wstring FormatLastWin32Error() {
   return FormatMessage(GetLastError());
 }
 
-WORD KeyboardCodeToWin(base::KeyboardCode keycode) {
-  return static_cast<WORD>(keycode);
-}
-
-base::KeyboardCode WinToKeyboardCode(WORD keycode) {
-  return static_cast<base::KeyboardCode>(keycode);
-}
-
 }  // namespace win_util
 
 #ifdef _MSC_VER

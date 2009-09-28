@@ -8,7 +8,6 @@
 #include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
-#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -459,7 +458,7 @@ void NativeMenuWin::UpdateMenuItemInfoForString(
   Menu2Model::ItemType type = model_->GetTypeAt(model_index);
   if (type != Menu2Model::TYPE_SUBMENU) {
     // Add accelerator details to the label if provided.
-    views::Accelerator accelerator(base::VKEY_UNKNOWN, false, false, false);
+    views::Accelerator accelerator(0, false, false, false);
     if (model_->GetAcceleratorAt(model_index, &accelerator)) {
       formatted += L"\t";
       formatted += accelerator.GetShortcutText();

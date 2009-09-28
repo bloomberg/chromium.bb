@@ -10,7 +10,6 @@
 #include "app/message_box_flags.h"
 #include "base/file_version_info.h"
 #include "base/json_reader.h"
-#include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/stl_util-inl.h"
@@ -829,14 +828,14 @@ void AutomationProvider::WindowSimulateClick(const IPC::Message& message,
 
 void AutomationProvider::WindowSimulateKeyPress(const IPC::Message& message,
                                                 int handle,
-                                                int key,
+                                                wchar_t key,
                                                 int flags) {
   if (!window_tracker_->ContainsHandle(handle))
     return;
 
   gfx::NativeWindow window = window_tracker_->GetResource(handle);
   // The key event is sent to whatever window is active.
-  ui_controls::SendKeyPress(window, static_cast<base::KeyboardCode>(key),
+  ui_controls::SendKeyPress(window, key,
                            ((flags & views::Event::EF_CONTROL_DOWN) ==
                               views::Event::EF_CONTROL_DOWN),
                             ((flags & views::Event::EF_SHIFT_DOWN) ==

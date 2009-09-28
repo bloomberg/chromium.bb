@@ -10,7 +10,6 @@
 #include "app/os_exchange_data.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
-#include "base/keyboard_codes.h"
 #include "base/time.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -586,13 +585,13 @@ bool BrowserView::GetAccelerator(int cmd_id, views::Accelerator* accelerator) {
   // anywhere so we need to check for them explicitly here.
   switch (cmd_id) {
     case IDC_CUT:
-      *accelerator = views::Accelerator(base::VKEY_X, false, true, false);
+      *accelerator = views::Accelerator(L'X', false, true, false);
       return true;
     case IDC_COPY:
-      *accelerator = views::Accelerator(base::VKEY_C, false, true, false);
+      *accelerator = views::Accelerator(L'C', false, true, false);
       return true;
     case IDC_PASTE:
-      *accelerator = views::Accelerator(base::VKEY_V, false, true, false);
+      *accelerator = views::Accelerator(L'V', false, true, false);
       return true;
   }
   // Else, we retrieve the accelerator information from the accelerator table.
@@ -1994,9 +1993,8 @@ void BrowserView::LoadAccelerators() {
     bool alt_down = (accelerators[i].fVirt & FALT) == FALT;
     bool ctrl_down = (accelerators[i].fVirt & FCONTROL) == FCONTROL;
     bool shift_down = (accelerators[i].fVirt & FSHIFT) == FSHIFT;
-    views::Accelerator accelerator(
-        static_cast<base::KeyboardCode>(accelerators[i].key),
-        shift_down, ctrl_down, alt_down);
+    views::Accelerator accelerator(accelerators[i].key, shift_down, ctrl_down,
+                                   alt_down);
     accelerator_table_[accelerator] = accelerators[i].cmd;
 
     // Also register with the focus manager.

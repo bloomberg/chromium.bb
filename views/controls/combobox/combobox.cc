@@ -69,10 +69,10 @@ void Combobox::SetEnabled(bool flag) {
     native_wrapper_->UpdateEnabled();
 }
 
-// VKEY_ESCAPE should be handled by this view when the drop down list is active.
+// VK_ESCAPE should be handled by this view when the drop down list is active.
 // In other words, the list should be closed instead of the dialog.
 bool Combobox::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
-  if (e.GetKeyCode() != base::VKEY_ESCAPE ||
+  if (e.GetCharacter() != base::VKEY_ESCAPE ||
       e.IsShiftDown() || e.IsControlDown() || e.IsAltDown()) {
     return false;
   }

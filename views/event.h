@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/gfx/point.h"
-#include "base/keyboard_codes.h"
 
 #if defined(OS_LINUX)
 typedef struct _GdkEventKey GdkEventKey;
@@ -243,10 +242,7 @@ class KeyEvent : public Event {
  public:
 #if defined(OS_WIN)
   // Create a new key event
-  KeyEvent(EventType type,
-           base::KeyboardCode key_code,
-           int repeat_count,
-           int message_flags);
+  KeyEvent(EventType type, int ch, int repeat_count, int message_flags);
 #elif defined(OS_LINUX)
   explicit KeyEvent(GdkEventKey* event);
 #endif
@@ -255,8 +251,8 @@ class KeyEvent : public Event {
   // the Windows value.
   // On GTK, you can use the methods in keyboard_code_conversion_gtk.cc to
   // convert this value back to a GDK value if needed.
-  base::KeyboardCode GetKeyCode() const {
-    return key_code_;
+  int GetCharacter() const {
+    return character_;
   }
 
 #if defined(OS_WIN)
@@ -272,7 +268,7 @@ class KeyEvent : public Event {
   int GetKeyStateFlags() const;
 #endif
 
-  base::KeyboardCode key_code_;
+  int character_;
   int repeat_count_;
   int message_flags_;
 

@@ -7,7 +7,6 @@
 #include "app/gfx/canvas.h"
 #include "app/gfx/color_utils.h"
 #include "app/gfx/path.h"
-#include "base/keyboard_codes.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/notification_service.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -279,7 +278,7 @@ void InfoBubble::Init(views::Window* parent,
 #if defined(OS_WIN)
   // Register the Escape accelerator for closing.
   GetFocusManager()->RegisterAccelerator(
-      views::Accelerator(base::VKEY_ESCAPE, false, false, false), this);
+      views::Accelerator(VK_ESCAPE, false, false, false), this);
 #endif
 
   // Done creating the bubble.

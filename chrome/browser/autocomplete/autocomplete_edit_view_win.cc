@@ -17,7 +17,6 @@
 #include "base/basictypes.h"
 #include "base/clipboard.h"
 #include "base/iat_patch.h"
-#include "base/keyboard_codes.h"
 #include "base/lazy_instance.h"
 #include "base/ref_counted.h"
 #include "base/scoped_clipboard_writer.h"
@@ -877,11 +876,11 @@ void AutocompleteEditViewWin::PasteAndGo(const std::wstring& text) {
 
 bool AutocompleteEditViewWin::SkipDefaultKeyEventProcessing(
     const views::KeyEvent& e) {
-  base::KeyboardCode key = e.GetKeyCode();
+  int c = e.GetCharacter();
   // We don't process ALT + numpad digit as accelerators, they are used for
   // entering special characters.  We do translate alt-home.
-  if (e.IsAltDown() && (key != base::VKEY_HOME) &&
-      win_util::IsNumPadDigit(key, e.IsExtendedKey()))
+  if (e.IsAltDown() && (c != VK_HOME) &&
+      win_util::IsNumPadDigit(c, e.IsExtendedKey()))
     return true;
 
   // Skip accelerators for key combinations omnibox wants to crack. This list
@@ -891,29 +890,30 @@ bool AutocompleteEditViewWin::SkipDefaultKeyEventProcessing(
   // We cannot return true for all keys because we still need to handle some
   // accelerators (e.g., F5 for reload the page should work even when the
   // Omnibox gets focused).
-  switch (key) {
-    case base::VKEY_ESCAPE: {
+  switch (c) {
+    case VK_ESCAPE: {
       ScopedFreeze freeze(this, GetTextObjectModel());
       return model_->OnEscapeKeyPressed();
     }
 
-    case base::VKEY_RETURN:
+    case VK_RETURN:
       return true;
 
-    case base::VKEY_UP:
-    case base::VKEY_DOWN:
+    case VK_UP:
+    case VK_DOWN:
       return !e.IsAltDown();
 
-    case base::VKEY_DELETE:
-    case base::VKEY_INSERT:
+    case VK_DELETE:
+    case VK_INSERT:
       return !e.IsAltDown() && e.IsShiftDown() && !e.IsControlDown();
 
-    case base::VKEY_X:
-    case base::VKEY_V:
+    case 'X':
+    case 'V':
       return !e.IsAltDown() && e.IsControlDown();
 
-    case base::VKEY_BACK:
-    case base::VKEY_OEM_PLUS:
+    case VK_BACK:
+    case 0xbb:  // We don't use VK_OEM_PLUS in case the macro isn't defined.
+                // (e.g., we don't have this symbol in embeded environment).
       return true;
 
     default:

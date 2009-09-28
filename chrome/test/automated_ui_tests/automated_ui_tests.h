@@ -102,7 +102,6 @@
 
 #include <string>
 
-#include "base/keyboard_codes.h"
 #include "chrome/test/automated_ui_tests/automated_ui_test_base.h"
 #include "chrome/test/ui/ui_test.h"
 
@@ -294,7 +293,7 @@ class AutomatedUITest : public AutomatedUITestBase {
   // Calls SimulateOSKeyPress on the active window. Simulates a key press at
   // the OS level. |key| is the key pressed  and |flags| specifies which
   // modifiers keys are also pressed (as defined in chrome/views/event.h).
-  bool SimulateKeyPressInActiveWindow(base::KeyboardCode key, int flags);
+  bool SimulateKeyPressInActiveWindow(wchar_t key, int flags);
 
   // Opens init file, reads it into the reader, and closes the file.
   // Returns false if there are any errors.

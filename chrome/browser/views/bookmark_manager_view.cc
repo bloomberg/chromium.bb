@@ -9,7 +9,6 @@
 #include "app/gfx/canvas.h"
 #include "app/gfx/color_utils.h"
 #include "app/l10n_util.h"
-#include "base/keyboard_codes.h"
 #include "base/thread.h"
 #include "chrome/browser/bookmarks/bookmark_folder_tree_model.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
@@ -226,7 +225,7 @@ BookmarkManagerView::BookmarkManagerView(Profile* profile)
   layout->AddView(split_view_);
 
   // Press Ctrl-W to close bookmark manager window.
-  AddAccelerator(views::Accelerator(base::VKEY_W, false, true, false));
+  AddAccelerator(views::Accelerator('W', false, true, false));
 
   BookmarkModel* bookmark_model = profile_->GetBookmarkModel();
   if (!bookmark_model->IsLoaded())

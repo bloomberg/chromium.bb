@@ -11,7 +11,6 @@
 #include <atlmisc.h>
 
 #include "app/l10n_util_win.h"
-#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/win_util.h"
 #include "views/background.h"
@@ -364,8 +363,8 @@ LRESULT CALLBACK NativeControl::NativeControlWndProc(HWND window, UINT message,
   DCHECK(native_control);
 
   if (message == WM_KEYDOWN &&
-      native_control->OnKeyDown(win_util::WinToKeyboardCode(w_param))) {
-    return 0;
+      native_control->OnKeyDown(static_cast<int>(w_param))) {
+      return 0;
   } else if (message == WM_SETFOCUS) {
     // Let the focus manager know that the focus changed.
     FocusManager* focus_manager = native_control->GetFocusManager();

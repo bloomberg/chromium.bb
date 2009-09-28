@@ -150,7 +150,7 @@ void FakeAMouseMotionEvent(gint x, gint y) {
 namespace ui_controls {
 
 bool SendKeyPress(gfx::NativeWindow window,
-                  base::KeyboardCode key, bool control, bool shift, bool alt) {
+                  wchar_t key, bool control, bool shift, bool alt) {
   GdkWindow* event_window = NULL;
   GtkWidget* grab_widget = gtk_grab_get_current();
   if (grab_widget) {
@@ -197,9 +197,9 @@ bool SendKeyPress(gfx::NativeWindow window,
                 (shift ? GDK_SHIFT_MASK : 0) |
                 (alt ? GDK_MOD1_MASK : 0);
 
-  guint gdk_key = base::GdkKeyCodeForWindowsKeyCode(key);
-  rv = rv && SendKeyEvent(event_window, true, gdk_key, state);
-  rv = rv && SendKeyEvent(event_window, false, gdk_key, state);
+  key = base::GdkKeyCodeForWindowsKeyCode(key);
+  rv = rv && SendKeyEvent(event_window, true, key, state);
+  rv = rv && SendKeyEvent(event_window, false, key, state);
 
   if (alt) {
     guint state = (control ? GDK_CONTROL_MASK : 0) |
@@ -218,10 +218,9 @@ bool SendKeyPress(gfx::NativeWindow window,
   return rv;
 }
 
-bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
-                                base::KeyboardCode key,
-                                bool control, bool shift, bool alt,
-                                Task* task) {
+bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window, wchar_t key,
+                                bool control, bool shift,
+                                bool alt, Task* task) {
   int release_count = 1;
   if (control)
     release_count++;

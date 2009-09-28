@@ -12,7 +12,6 @@
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/point.h"
-#include "base/keyboard_codes.h"
 #include "base/stl_util-inl.h"
 #include "base/win_util.h"
 #include "grit/app_resources.h"
@@ -460,7 +459,7 @@ LRESULT TreeView::OnNotify(int w_param, LPNMHDR l_param) {
   return 0;
 }
 
-bool TreeView::OnKeyDown(base::KeyboardCode virtual_key_code) {
+bool TreeView::OnKeyDown(int virtual_key_code) {
   if (virtual_key_code == VK_F2) {
     if (!GetEditingNode()) {
       TreeModelNode* selected_node = GetSelectedNode();
@@ -468,10 +467,10 @@ bool TreeView::OnKeyDown(base::KeyboardCode virtual_key_code) {
         StartEditing(selected_node);
     }
     return true;
-  } else if (virtual_key_code == base::VKEY_RETURN && !process_enter_) {
+  } else if (virtual_key_code == VK_RETURN && !process_enter_) {
     Widget* widget = GetWidget();
     DCHECK(widget);
-    Accelerator accelerator(Accelerator(virtual_key_code,
+    Accelerator accelerator(Accelerator(static_cast<int>(virtual_key_code),
                                         win_util::IsShiftPressed(),
                                         win_util::IsCtrlPressed(),
                                         win_util::IsAltPressed()));

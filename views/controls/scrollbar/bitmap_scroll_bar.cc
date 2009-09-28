@@ -11,7 +11,6 @@
 #include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "base/compiler_specific.h"
-#include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "grit/app_strings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -495,33 +494,33 @@ bool BitmapScrollBar::OnMouseWheel(const MouseWheelEvent& event) {
 
 bool BitmapScrollBar::OnKeyPressed(const KeyEvent& event) {
   ScrollAmount amount = SCROLL_NONE;
-  switch (event.GetKeyCode()) {
-    case base::VKEY_UP:
+  switch (event.GetCharacter()) {
+    case VK_UP:
       if (!IsHorizontal())
         amount = SCROLL_PREV_LINE;
       break;
-    case base::VKEY_DOWN:
+    case VK_DOWN:
       if (!IsHorizontal())
         amount = SCROLL_NEXT_LINE;
       break;
-    case base::VKEY_LEFT:
+    case VK_LEFT:
       if (IsHorizontal())
         amount = SCROLL_PREV_LINE;
       break;
-    case base::VKEY_RIGHT:
+    case VK_RIGHT:
       if (IsHorizontal())
         amount = SCROLL_NEXT_LINE;
       break;
-    case base::VKEY_PRIOR:
+    case VK_PRIOR:
       amount = SCROLL_PREV_PAGE;
       break;
-    case base::VKEY_NEXT:
+    case VK_NEXT:
       amount = SCROLL_NEXT_PAGE;
       break;
-    case base::VKEY_HOME:
+    case VK_HOME:
       amount = SCROLL_START;
       break;
-    case base::VKEY_END:
+    case VK_END:
       amount = SCROLL_END;
       break;
   }

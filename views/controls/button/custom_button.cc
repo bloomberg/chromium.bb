@@ -175,10 +175,10 @@ bool CustomButton::OnKeyPressed(const KeyEvent& e) {
     // Space sets button state to pushed. Enter clicks the button. This matches
     // the Windows native behavior of buttons, where Space clicks the button
     // on KeyRelease and Enter clicks the button on KeyPressed.
-    if (e.GetKeyCode() == base::VKEY_SPACE) {
+    if (e.GetCharacter() == base::VKEY_SPACE) {
       SetState(BS_PUSHED);
       return true;
-    } else if  (e.GetKeyCode() == base::VKEY_RETURN) {
+    } else if  (e.GetCharacter() == base::VKEY_RETURN) {
       SetState(BS_NORMAL);
       NotifyClick(e);
       return true;
@@ -189,7 +189,7 @@ bool CustomButton::OnKeyPressed(const KeyEvent& e) {
 
 bool CustomButton::OnKeyReleased(const KeyEvent& e) {
   if (state_ != BS_DISABLED) {
-    if (e.GetKeyCode() == base::VKEY_SPACE) {
+    if (e.GetCharacter() == base::VKEY_SPACE) {
       SetState(BS_NORMAL);
       NotifyClick(e);
       return true;

@@ -15,7 +15,6 @@
 
 #include "base/gfx/native_widget_types.h"
 #include "base/gfx/point.h"
-#include "base/keyboard_codes.h"
 
 #if defined(TOOLKIT_VIEWS)
 namespace views {
@@ -43,17 +42,12 @@ namespace ui_controls {
 // these functions, so passing NULL is ok.
 
 // Send a key press with/without modifier keys.
-bool SendKeyPress(gfx::NativeWindow window,
-                  base::KeyboardCode key,
-                  bool control,
-                  bool shift,
-                  bool alt);
-bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
-                                base::KeyboardCode key,
-                                bool control,
-                                bool shift,
-                                bool alt,
-                                Task* task);
+// |key| should be a VKEY code as defined in base/keyboard_codes.h
+bool SendKeyPress(gfx::NativeWindow window, wchar_t key, bool control,
+                  bool shift, bool alt);
+bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window, wchar_t key,
+                                bool control, bool shift,
+                                bool alt, Task* task);
 
 // Simulate a mouse move. (x,y) are absolute screen coordinates.
 bool SendMouseMove(long x, long y);
