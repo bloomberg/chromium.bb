@@ -4,8 +4,8 @@
 //
 // Download creation struct used for querying the history service.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_TYPES_H_
-#define CHROME_BROWSER_DOWNLOAD_TYPES_H_
+#ifndef CHROME_BROWSER_HISTORY_DOWNLOAD_TYPES_H_
+#define CHROME_BROWSER_HISTORY_DOWNLOAD_TYPES_H_
 
 #include <string>
 
@@ -42,7 +42,19 @@ struct DownloadCreateInfo {
         is_dangerous(false) {
   }
 
-  DownloadCreateInfo() : download_id(-1) {}
+  DownloadCreateInfo()
+      : path_uniquifier(0),
+        received_bytes(0),
+        total_bytes(0),
+        state(-1),
+        download_id(-1),
+        child_id(-1),
+        render_view_id(-1),
+        request_id(-1),
+        db_handle(0),
+        save_as(false),
+        is_dangerous(false) {
+  }
 
   // DownloadItem fields
   FilePath path;
@@ -73,4 +85,4 @@ struct DownloadCreateInfo {
   std::string referrer_charset;
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_TYPES_H_
+#endif  // CHROME_BROWSER_HISTORY_DOWNLOAD_TYPES_H_
