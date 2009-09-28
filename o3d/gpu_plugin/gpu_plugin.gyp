@@ -15,8 +15,20 @@
       ],
       'include_dirs': [
         '../..',
-        '../../third_party/npapi',
+        
+        # Chrome NPAPI header dir appears before the O3D one so it takes
+        # priority. TODO(apatrick): one set of NPAPI headers.
+        '../../third_party/npapi/bindings',
+        '../../third_party/npapi/include',
       ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          # Chrome NPAPI header dir appears before the O3D one so it takes
+          # priority. TODO(apatrick): one set of NPAPI headers.
+          '../../third_party/npapi/bindings',
+          '../../third_party/npapi/include',
+        ],
+      },  # 'direct_dependent_settings'
       'sources': [
         'np_utils/default_np_object.h',
         'np_utils/dynamic_np_object.cc',
@@ -30,6 +42,7 @@
         'np_utils/np_dispatcher.cc',
         'np_utils/np_dispatcher.h',
         'np_utils/np_dispatcher_specializations.h',
+        'np_utils/np_headers.h',
         'np_utils/np_object_mock.h',
         'np_utils/np_object_pointer.h',
         'np_utils/np_plugin_object.h',

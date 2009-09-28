@@ -8,8 +8,7 @@
 #include <string>
 
 #include "o3d/gpu_plugin/np_utils/np_utils.h"
-#include "third_party/npapi/bindings/npapi.h"
-#include "third_party/npapi/bindings/npruntime.h"
+#include "o3d/gpu_plugin/np_utils/np_headers.h"
 
 // Dispatchers make regular member functions available as NPObject methods.
 // Usage:

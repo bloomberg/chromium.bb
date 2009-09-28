@@ -9,8 +9,6 @@
 #include <string>
 
 #include "o3d/gpu_plugin/np_utils/np_browser.h"
-#include "third_party/npapi/bindings/npapi.h"
-#include "third_party/npapi/bindings/npruntime.h"
 
 namespace o3d {
 namespace gpu_plugin {

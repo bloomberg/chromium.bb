@@ -43,6 +43,13 @@
     ],
   },
   'conditions' : [
+    ['o3d_in_chrome == 1',
+      {
+        'defined': [
+          'O3D_IN_CHROME',
+        ],
+      },
+    ],
     ['OS == "win"',
       {
         'variables': {

@@ -10,8 +10,7 @@
 #include "o3d/gpu_plugin/np_utils/np_browser.h"
 #include "o3d/gpu_plugin/np_utils/np_class.h"
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
-#include "third_party/npapi/bindings/npapi.h"
-#include "third_party/npapi/bindings/npruntime.h"
+#include "o3d/gpu_plugin/np_utils/np_headers.h"
 
 namespace o3d {
 namespace gpu_plugin {

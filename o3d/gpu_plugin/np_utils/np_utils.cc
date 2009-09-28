@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "o3d/gpu_plugin/np_utils/np_utils.h"
-#include "third_party/npapi/bindings/npapi.h"
-#include "third_party/npapi/bindings/npruntime.h"
 
 namespace o3d {
 namespace gpu_plugin {

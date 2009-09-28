@@ -4,7 +4,6 @@
 
 #include "o3d/gpu_plugin/np_utils/np_browser.h"
 #include "base/logging.h"
-#include "webkit/glue/plugins/nphostapi.h"
 
 namespace o3d {
 namespace gpu_plugin {

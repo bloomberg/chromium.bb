@@ -6,8 +6,7 @@
 #define O3D_GPU_PLUGIN_NP_UTILS_NP_CLASS_H_
 
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
-#include "third_party/npapi/bindings/npapi.h"
-#include "third_party/npapi/bindings/npruntime.h"
+#include "o3d/gpu_plugin/np_utils/np_headers.h"
 
 // This file implements NPGetClass<T>. This function returns an NPClass
 // that can be used to instantiate an NPObject subclass T. The NPClass

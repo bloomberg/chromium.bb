@@ -9,7 +9,9 @@
 // mapped. Each process needs to separately map the object. It is safe to
 // map an already mapped object.
 
-#include "third_party/npapi/bindings/npruntime.h"
+// Deliberately not including a directory name because Chromium and O3D put
+// these headers in different directories.
+#include "npruntime.h"
 
 #if defined(__cplusplus)
 
