@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DOWNLOAD_SAVE_TYPES_H__
-#define CHROME_BROWSER_DOWNLOAD_SAVE_TYPES_H__
+#ifndef CHROME_BROWSER_DOWNLOAD_SAVE_TYPES_H_
+#define CHROME_BROWSER_DOWNLOAD_SAVE_TYPES_H_
 
-#include <vector>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
@@ -19,14 +20,15 @@ typedef std::vector<int> SaveIDList;
 // when processing each save item job.
 struct SaveFileCreateInfo {
   enum SaveFileSource {
-    // This type indicates the save item that need to be retrieved
-    // from the network.
+    // This type indicates the source is not set.
+    SAVE_FILE_FROM_UNKNOWN = -1,
+    // This type indicates the save item needs to be retrieved from the network.
     SAVE_FILE_FROM_NET = 0,
-    // This type indicates the save item that need to be retrieved
-    // from serializing DOM.
+    // This type indicates the save item needs to be retrieved from serializing
+    // DOM.
     SAVE_FILE_FROM_DOM,
-    // This type indicates the save item that need to be retrieved
-    // through local file system.
+    // This type indicates the save item needs to be retrieved from local file
+    // system.
     SAVE_FILE_FROM_FILE
   };
 
@@ -44,7 +46,14 @@ struct SaveFileCreateInfo {
         save_source(save_source) {
   }
 
-  SaveFileCreateInfo() : save_id(-1) {}
+  SaveFileCreateInfo()
+      : save_id(-1),
+        render_process_id(-1),
+        render_view_id(-1),
+        request_id(-1),
+        total_bytes(0),
+        save_source(SAVE_FILE_FROM_UNKNOWN) {
+  }
 
   // SaveItem fields.
   // The local file path of saved file.
@@ -69,4 +78,4 @@ struct SaveFileCreateInfo {
   SaveFileSource save_source;
 };
 
-#endif  // CHROME_BROWSER_DOWNLOAD_SAVE_TYPES_H__
+#endif  // CHROME_BROWSER_DOWNLOAD_SAVE_TYPES_H_
