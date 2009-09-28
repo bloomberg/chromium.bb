@@ -19,70 +19,6 @@ typedef pthread_t thread_handle;
 // the caller must CloseHandle().
 thread_handle CreatePThread(void* (*start)(void* payload), void* parameter);
 
-class PThreadRWLock {
- public:
-  inline PThreadRWLock() {
-    int result = pthread_rwlock_init(&rwlock_, 0);
-    DCHECK_EQ(0, result);
-  }
-  ~PThreadRWLock() {
-    int result = pthread_rwlock_destroy(&rwlock_);
-    DCHECK_EQ(0, result);
-  }
-  pthread_rwlock_t rwlock_;
-
-  DISALLOW_COPY_AND_ASSIGN(PThreadRWLock);
-};
-
-// ScopedReadLock attempts to acquire a write lock in its constructor and then
-// releases it in its destructor.
-class ScopedWriteLock {
- public:
-  explicit ScopedWriteLock(pthread_rwlock_t* rwlock) : rwlock_(rwlock) {
-    int result = pthread_rwlock_wrlock(rwlock_);
-    DCHECK_EQ(0, result);
-  }
-
-  explicit ScopedWriteLock(PThreadRWLock* rwlock) : rwlock_(&rwlock->rwlock_) {
-    int result = pthread_rwlock_wrlock(rwlock_);
-    DCHECK_EQ(0, result);
-  }
-
-  ~ScopedWriteLock() {
-    int result = pthread_rwlock_unlock(rwlock_);
-    DCHECK_EQ(0, result);
-  }
-
- protected:
-  pthread_rwlock_t* rwlock_;
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedWriteLock);
-};
-
-// ScopedReadLock attempts to acquire a read lock in its constructor and then
-// releases it in its destructor.
-class ScopedReadLock {
- public:
-  explicit ScopedReadLock(pthread_rwlock_t* rwlock) : rwlock_(rwlock) {
-    int result = pthread_rwlock_rdlock(rwlock_);
-    DCHECK_EQ(0, result);
-  }
-
-  explicit ScopedReadLock(PThreadRWLock* rwlock) : rwlock_(&rwlock->rwlock_) {
-    int result = pthread_rwlock_rdlock(rwlock_);
-    DCHECK_EQ(0, result);
-  }
-
-  ~ScopedReadLock() {
-    int result = pthread_rwlock_unlock(rwlock_);
-    DCHECK_EQ(0, result);
-  }
- protected:
-  pthread_rwlock_t* rwlock_;
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedReadLock);
-};
-
 template <typename LockType>
 class PThreadScopedLock {
  public:
@@ -162,46 +98,6 @@ class PThreadMutex {
   DISALLOW_COPY_AND_ASSIGN(PThreadMutex);
 };
 
-class PThreadMutexAttr {
- public:
-  pthread_mutexattr_t attr;
-  inline PThreadMutexAttr(int type) {
-    pthread_mutexattr_init(&attr);
-    pthread_mutexattr_settype(&attr, type);
-  }
-  inline ~PThreadMutexAttr() {
-    pthread_mutexattr_destroy(&attr);
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(PThreadMutexAttr);
-};
-
-class PThreadRecursiveMutex : public PThreadMutex {
- public:
-  inline PThreadRecursiveMutex() : PThreadMutex(recursive_attr()) {}
- private:
-  static inline pthread_mutexattr_t* recursive_attr() {
-    static PThreadMutexAttr recursive(PTHREAD_MUTEX_RECURSIVE);
-    return &recursive.attr;
-  }
-  DISALLOW_COPY_AND_ASSIGN(PThreadRecursiveMutex);
-};
-
-
-class PThreadScopedDisabledCancellation {
- public:
-  inline PThreadScopedDisabledCancellation() {
-    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_cancel_state_);
-  }
-  inline ~PThreadScopedDisabledCancellation() {
-    pthread_setcancelstate(old_cancel_state_, NULL);
-  }
- private:
-  int old_cancel_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(PThreadScopedDisabledCancellation);
-};
-
 class PThreadCondVar {
  public:
   inline PThreadCondVar() {
@@ -224,29 +120,6 @@ class PThreadCondVar {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PThreadCondVar);
-};
-
-template <typename ValueType>
-class PThreadThreadVar {
- public:
-  PThreadThreadVar(void (*destructor)(void* payload)) {
-    int result = pthread_key_create(&thread_key_, destructor);
-    DCHECK_EQ(0, result);
-  }
-  ~PThreadThreadVar() {
-    int result = pthread_key_delete(thread_key_);
-    DCHECK_EQ(0, result);
-  }
-  void SetValue(ValueType value) {
-    int result = pthread_setspecific(thread_key_, static_cast<void*>(value));
-    DCHECK_EQ(0, result);
-  }
-  ValueType GetValue() {
-    return static_cast<ValueType>(pthread_getspecific(thread_key_));
-  }
- private:
-  pthread_key_t thread_key_;
-  DISALLOW_COPY_AND_ASSIGN(PThreadThreadVar);
 };
 
 // Returns the absolute time ms milliseconds from now. Useful for passing
