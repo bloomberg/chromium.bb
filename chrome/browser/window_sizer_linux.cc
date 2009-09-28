@@ -11,10 +11,11 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 
-// How much horizontal and vertical offset there is between newly
-// opened windows. We don't care on Linux since the window manager generally
-// does a good job of window placement.
-const int WindowSizer::kWindowTilePixels = 0;
+// Used to pad the default new window size.  On Windows, this is also used for
+// positioning new windows (each window is offset from the previous one). 
+// Since we don't position windows, it's only used for the default new window
+// size.
+const int WindowSizer::kWindowTilePixels = 10;
 
 // An implementation of WindowSizer::MonitorInfoProvider that gets the actual
 // monitor information from X via GDK.
@@ -78,7 +79,7 @@ class DefaultMonitorInfoProvider : public WindowSizer::MonitorInfoProvider {
     if (!ok)
       return false;
 
-    // We expect to get four longs back: x1, y1, x2, y2.
+    // We expect to get four longs back: x, y, width, height.
     if (data_len < static_cast<gint>(4 * sizeof(glong))) {
       NOTREACHED();
       g_free(raw_data);
@@ -88,8 +89,8 @@ class DefaultMonitorInfoProvider : public WindowSizer::MonitorInfoProvider {
     glong* data = reinterpret_cast<glong*>(raw_data);
     gint x = data[0];
     gint y = data[1];
-    gint width = data[0] + data[2];
-    gint height = data[1] + data[3];
+    gint width = data[2];
+    gint height = data[3];
     g_free(raw_data);
 
     out_rect->SetRect(x, y, width, height);
