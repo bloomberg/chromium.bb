@@ -72,6 +72,7 @@ import errno
 import logging
 import optparse
 import os
+import pprint
 import re
 import stat
 import sys
@@ -374,12 +375,9 @@ class GClient(object):
     Args:
       entries: A sequence of solution names.
     """
-    text = "entries = [\n"
-    for entry in entries:
-      text += "  \"%s\",\n" % entry
-    text += "]\n"
-    FileWrite(os.path.join(self._root_dir, self._options.entries_filename),
-              text)
+    text = "entries = \\\n" + pprint.pformat(entries, 2) + '\n'
+    file_path = os.path.join(self._root_dir, self._options.entries_filename)
+    FileWrite(file_path, text)
 
   def _ReadEntries(self):
     """Read the .gclient_entries file for the given client.
@@ -748,11 +746,13 @@ class GClient(object):
         e_dir = os.path.join(self._root_dir, entry_fixed)
         # Use entry and not entry_fixed there.
         if entry not in entries and os.path.exists(e_dir):
-          if not self._options.delete_unversioned_trees or \
-             gclient_scm.CaptureSVNStatus(e_dir):
+          file_list = []
+          scm = gclient_scm.CreateSCM(prev_entries[entry], self._root_dir,
+                                      entry_fixed)
+          scm.status(self._options, [], file_list)
+          if not self._options.delete_unversioned_trees or file_list:
             # There are modified files in this entry. Keep warning until
             # removed.
-            entries[entry] = None
             print(("\nWARNING: \"%s\" is no longer part of this client.  "
                    "It is recommended that you manually remove it.\n") %
                       entry_fixed)
