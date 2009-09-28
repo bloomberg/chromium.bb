@@ -122,7 +122,7 @@ class MockExtensionProvider : public ExternalExtensionProvider {
 
 class MockProviderVisitor : public ExternalExtensionProvider::Visitor {
  public:
-  MockProviderVisitor() {
+  MockProviderVisitor() : ids_found_(0) {
   }
 
   int Visit(const std::string& json_data,
