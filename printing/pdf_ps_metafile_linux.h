@@ -68,10 +68,6 @@ class PdfPsMetafile {
   // Closes resulting PDF/PS file. No further rendering is allowed.
   void Close();
 
-  // Selects the font associated with |font_id| in |context|.
-  // Return true on success.
-  static bool SelectFontById(cairo_t* context, uint32_t font_id);
-
   // Returns size of PDF/PS contents stored in buffer |all_pages_|.
   // This function should ONLY be called after PDF/PS file is closed.
   unsigned int GetDataSize() const;

@@ -7,63 +7,15 @@
 #include <stdio.h>
 
 #include <cairo.h>
-#include <cairo-ft.h>
 #include <cairo-pdf.h>
 #include <cairo-ps.h>
-
-#include <ft2build.h>
-#include FT_FREETYPE_H
-
-#include <map>
 
 #include "base/eintr_wrapper.h"
 #include "base/file_descriptor_posix.h"
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/singleton.h"
-#include "third_party/skia/include/core/SkFontHost.h"
-#include "third_party/skia/include/core/SkStream.h"
-#include "third_party/skia/include/core/SkTypeface.h"
 
 namespace {
-
-FT_Library g_ft_library = NULL;  // handle to FreeType library.
-
-struct FontInfo {
-  SkStream* font_stream;
-  FT_Face ft_face;
-  cairo_font_face_t* cairo_face;
-  cairo_user_data_key_t data_key;
-};
-
-typedef std::map<uint32_t, FontInfo> MapFontId2FontInfo;
-
-// NOTE: Only call this function when no further rendering will be performed,
-// and/or the metafile is closed.
-void CleanUpFonts() {
-  MapFontId2FontInfo* g_font_cache = Singleton<MapFontId2FontInfo>::get();
-  DCHECK(g_font_cache);
-
-  for (MapFontId2FontInfo::iterator it = g_font_cache->begin();
-       it !=g_font_cache->end();
-       ++it) {
-    DCHECK(it->second.cairo_face);
-    DCHECK(it->second.font_stream);
-
-    cairo_font_face_destroy(it->second.cairo_face);
-    // |it->second.ft_face| is handled by Cairo.
-    it->second.font_stream->unref();
-  }
-  g_font_cache->clear();
-}
-
-void CleanUpFreeType() {
-  if (g_ft_library) {
-    FT_Error ft_error = FT_Done_FreeType(g_ft_library);
-    g_ft_library = NULL;
-    DCHECK_EQ(ft_error, 0);
-  }
-}
 
 // Tests if |surface| is valid.
 bool IsSurfaceValid(cairo_surface_t* surface) {
@@ -127,15 +79,6 @@ bool PdfPsMetafile::Init() {
   // page_surface_, and page_context_ are NULL, and current_page_ is empty.
   DCHECK(!context_);
   DCHECK(all_pages_.empty());
-  DCHECK(!g_ft_library);
-
-  // Initializes FreeType library.
-  FT_Error ft_error = FT_Init_FreeType(&g_ft_library);
-  if (ft_error) {
-    DLOG(ERROR) << "Cannot initialize FreeType library for PdfPsMetafile.";
-    g_ft_library = NULL;
-    return false;
-  }
 
   // Creates an 1 by 1 Cairo surface for entire PDF/PS file.
   // The size for each page will be overwritten later in StartPage().
@@ -162,7 +105,6 @@ bool PdfPsMetafile::Init() {
   if (!IsSurfaceValid(surface_)) {
     DLOG(ERROR) << "Cannot create Cairo surface for PdfPsMetafile!";
     CleanUpSurface(&surface_);
-    CleanUpFreeType();
     return false;
   }
 
@@ -172,7 +114,6 @@ bool PdfPsMetafile::Init() {
     DLOG(ERROR) << "Cannot create Cairo context for PdfPsMetafile!";
     CleanUpContext(&context_);
     CleanUpSurface(&surface_);
-    CleanUpFreeType();
     return false;
   }
 
@@ -363,83 +304,6 @@ void PdfPsMetafile::Close() {
 
   CleanUpContext(&context_);
   CleanUpSurface(&surface_);
-  CleanUpFonts();
-  CleanUpFreeType();
-}
-
-// static
-bool PdfPsMetafile::SelectFontById(cairo_t* context, uint32_t font_id) {
-  DCHECK(IsContextValid(context));
-  DCHECK(SkFontHost::ValidFontID(font_id));
-  DCHECK(g_ft_library);
-
-  // Checks if we have a cache hit.
-  MapFontId2FontInfo* g_font_cache = Singleton<MapFontId2FontInfo>::get();
-  DCHECK(g_font_cache);
-
-  MapFontId2FontInfo::iterator it = g_font_cache->find(font_id);
-  if (it != g_font_cache->end()) {
-    cairo_set_font_face(context, it->second.cairo_face);
-    if (IsContextValid(context)) {
-      return true;
-    } else {
-      NOTREACHED() << "Cannot set font face in Cairo!";
-      return false;
-    }
-  }
-
-  // Cache missed. We need to load and create the font.
-  FontInfo new_font_info = {0};
-  new_font_info.font_stream = SkFontHost::OpenStream(font_id);
-  DCHECK(new_font_info.font_stream);
-  size_t stream_size = new_font_info.font_stream->getLength();
-  DCHECK(stream_size) << "The Font stream has nothing!";
-
-  FT_Error ft_error = FT_New_Memory_Face(
-      g_ft_library,
-      static_cast<FT_Byte*>(
-          const_cast<void*>(new_font_info.font_stream->getMemoryBase())),
-      stream_size,
-      0,
-      &new_font_info.ft_face);
-
-  if (ft_error) {
-    new_font_info.font_stream->unref();
-    DLOG(ERROR) << "Cannot create FT_Face!";
-    SkASSERT(false);
-    return false;
-  }
-
-  new_font_info.cairo_face = cairo_ft_font_face_create_for_ft_face(
-      new_font_info.ft_face, 0);
-  DCHECK(new_font_info.cairo_face) << "Cannot create font in Cairo!";
-
-  // Manage |new_font_info.ft_face|'s life by Cairo.
-  cairo_status_t status = cairo_font_face_set_user_data(
-      new_font_info.cairo_face,
-      &new_font_info.data_key,
-      new_font_info.ft_face,
-      reinterpret_cast<cairo_destroy_func_t>(FT_Done_Face));
-
-  if (status != CAIRO_STATUS_SUCCESS) {
-    DLOG(ERROR) << "Cannot set font's user data in Cairo!";
-    cairo_font_face_destroy(new_font_info.cairo_face);
-    FT_Done_Face(new_font_info.ft_face);
-    new_font_info.font_stream->unref();
-    SkASSERT(false);
-    return false;
-  }
-
-  // Inserts |new_font_info| info |g_font_cache|.
-  (*g_font_cache)[font_id] = new_font_info;
-
-  cairo_set_font_face(context, new_font_info.cairo_face);
-  if (IsContextValid(context)) {
-    return true;
-  }
-
-  DLOG(ERROR) << "Connot set font face in Cairo!";
-  return false;
 }
 
 unsigned int PdfPsMetafile::GetDataSize() const {
@@ -505,8 +369,6 @@ void PdfPsMetafile::CleanUpAll() {
   CleanUpSurface(&page_surface_);
   current_page_.clear();
   all_pages_.clear();
-  CleanUpFonts();
-  CleanUpFreeType();
 }
 
 }  // namespace printing

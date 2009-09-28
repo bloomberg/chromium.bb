@@ -89,6 +89,10 @@ class VectorPlatformDevice : public PlatformDevice {
   // Use matrix to set up context's transformation.
   void LoadTransformToContext(const SkMatrix& matrix);
 
+  // Selects the font associated with |font_id| in |context|.
+  // Return true on success.
+  bool SelectFontById(PlatformSurface context, uint32_t font_id);
+
   // Transformation assigned to the context.
   SkMatrix transform_;
 
@@ -106,4 +110,3 @@ class VectorPlatformDevice : public PlatformDevice {
 }  // namespace skia
 
 #endif  // SKIA_EXT_VECTOR_PLATFORM_DEVICE_LINUX_H_
-

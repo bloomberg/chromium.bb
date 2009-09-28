@@ -5,9 +5,66 @@
 #include "skia/ext/vector_platform_device.h"
 
 #include <cairo.h>
+#include <cairo-ft.h>
 
-#include "printing/pdf_ps_metafile_linux.h"
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+#include <map>
+
+#include "third_party/skia/include/core/SkFontHost.h"
+#include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+
+#include "base/logging.h"
+#include "base/singleton.h"
+
+namespace {
+
+FT_Library g_ft_library = NULL;  // handle to FreeType library.
+
+struct FontInfo {
+  SkStream* font_stream;
+  FT_Face ft_face;
+  cairo_font_face_t* cairo_face;
+  cairo_user_data_key_t data_key;
+};
+
+typedef std::map<uint32_t, FontInfo> MapFontId2FontInfo;
+
+// NOTE: Only call this function when no further rendering will be performed,
+// and/or the metafile is closed.
+void CleanUpFonts() {
+  MapFontId2FontInfo* g_font_cache = Singleton<MapFontId2FontInfo>::get();
+  DCHECK(g_font_cache);
+
+  for (MapFontId2FontInfo::iterator it = g_font_cache->begin();
+       it !=g_font_cache->end();
+       ++it) {
+    DCHECK(it->second.cairo_face);
+    DCHECK(it->second.font_stream);
+
+    cairo_font_face_destroy(it->second.cairo_face);
+    // |it->second.ft_face| is handled by Cairo.
+    it->second.font_stream->unref();
+  }
+  g_font_cache->clear();
+}
+
+void CleanUpFreeType() {
+  if (g_ft_library) {
+    FT_Error ft_error = FT_Done_FreeType(g_ft_library);
+    g_ft_library = NULL;
+    DCHECK_EQ(ft_error, 0);
+  }
+}
+
+// Verify cairo surface after creation/modification.
+bool IsContextValid(cairo_t* context) {
+  return cairo_status(context) == CAIRO_STATUS_SUCCESS;
+}
+
+}  // namespace
 
 namespace skia {
 
@@ -40,6 +97,8 @@ VectorPlatformDevice::VectorPlatformDevice(PlatformSurface context,
 VectorPlatformDevice::~VectorPlatformDevice() {
   // Un-ref |context_| since we referenced it in the constructor.
   cairo_destroy(context_);
+  CleanUpFonts();
+  CleanUpFreeType();
 }
 
 void VectorPlatformDevice::drawBitmap(const SkDraw& draw,
@@ -280,7 +339,7 @@ void VectorPlatformDevice::drawPosText(const SkDraw& draw,
     }
   } else {  // kFill_Style.
     // Selects correct font.
-    if (!printing::PdfPsMetafile::SelectFontById(
+    if (!SelectFontById(
             context_, paint.getTypeface()->uniqueID())) {
       SkASSERT(false);
       return;
@@ -509,5 +568,89 @@ void VectorPlatformDevice::LoadTransformToContext(const SkMatrix& matrix) {
   cairo_set_matrix(context_, &m);
 }
 
-}  // namespace skia
+bool VectorPlatformDevice::SelectFontById(PlatformSurface context,
+                                          uint32_t font_id) {
+  DCHECK(IsContextValid(context));
+  DCHECK(SkFontHost::ValidFontID(font_id));
 
+  if (!g_ft_library) {
+    // Initializes FreeType library.
+    FT_Error ft_error = FT_Init_FreeType(&g_ft_library);
+    if (ft_error) {
+      DLOG(ERROR) << "Cannot initialize FreeType library for " \
+                  << "VectorPlatformDevice.";
+      g_ft_library = NULL;
+      return false;
+    }
+  }
+
+  // Checks if we have a cache hit.
+  MapFontId2FontInfo* g_font_cache = Singleton<MapFontId2FontInfo>::get();
+  DCHECK(g_font_cache);
+
+  MapFontId2FontInfo::iterator it = g_font_cache->find(font_id);
+  if (it != g_font_cache->end()) {
+    cairo_set_font_face(context, it->second.cairo_face);
+    if (IsContextValid(context)) {
+      return true;
+    } else {
+      NOTREACHED() << "Cannot set font face in Cairo!";
+      return false;
+    }
+  }
+
+  // Cache missed. We need to load and create the font.
+  FontInfo new_font_info = {0};
+  new_font_info.font_stream = SkFontHost::OpenStream(font_id);
+  DCHECK(new_font_info.font_stream);
+  size_t stream_size = new_font_info.font_stream->getLength();
+  DCHECK(stream_size) << "The Font stream has nothing!";
+
+  FT_Error ft_error = FT_New_Memory_Face(
+      g_ft_library,
+      static_cast<FT_Byte*>(
+          const_cast<void*>(new_font_info.font_stream->getMemoryBase())),
+      stream_size,
+      0,
+      &new_font_info.ft_face);
+
+  if (ft_error) {
+    new_font_info.font_stream->unref();
+    DLOG(ERROR) << "Cannot create FT_Face!";
+    SkASSERT(false);
+    return false;
+  }
+
+  new_font_info.cairo_face = cairo_ft_font_face_create_for_ft_face(
+      new_font_info.ft_face, 0);
+  DCHECK(new_font_info.cairo_face) << "Cannot create font in Cairo!";
+
+  // Manage |new_font_info.ft_face|'s life by Cairo.
+  cairo_status_t status = cairo_font_face_set_user_data(
+      new_font_info.cairo_face,
+      &new_font_info.data_key,
+      new_font_info.ft_face,
+      reinterpret_cast<cairo_destroy_func_t>(FT_Done_Face));
+
+  if (status != CAIRO_STATUS_SUCCESS) {
+    DLOG(ERROR) << "Cannot set font's user data in Cairo!";
+    cairo_font_face_destroy(new_font_info.cairo_face);
+    FT_Done_Face(new_font_info.ft_face);
+    new_font_info.font_stream->unref();
+    SkASSERT(false);
+    return false;
+  }
+
+  // Inserts |new_font_info| info |g_font_cache|.
+  (*g_font_cache)[font_id] = new_font_info;
+
+  cairo_set_font_face(context, new_font_info.cairo_face);
+  if (IsContextValid(context)) {
+    return true;
+  }
+
+  DLOG(ERROR) << "Connot set font face in Cairo!";
+  return false;
+}
+
+}  // namespace skia
