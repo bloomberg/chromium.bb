@@ -28,6 +28,7 @@ exists_desktop_file() {
 # Generate a desktop file that will run this script
 generate_desktop_file() {
     apps="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
+    mkdir -p "$apps"
     cat > "$apps/$DESKTOP.desktop" << EOF
 [Desktop Entry]
 Version=1.0
