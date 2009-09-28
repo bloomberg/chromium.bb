@@ -5,6 +5,8 @@
 #ifndef CHROME_APP_BREAKPAD_LINUX_H_
 #define CHROME_APP_BREAKPAD_LINUX_H_
 
+#include <stdlib.h>
+
 extern void InitCrashReporter();
 
 static const size_t kMaxActiveURLSize = 1024;
