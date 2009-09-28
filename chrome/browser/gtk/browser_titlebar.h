@@ -12,6 +12,7 @@
 
 #include <gtk/gtk.h>
 
+#include "app/active_window_watcher_x.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/common/notification_observer.h"
@@ -24,10 +25,11 @@ class TabContents;
 class TabStripGtk;
 
 class BrowserTitlebar : public MenuGtk::Delegate,
-                        public NotificationObserver {
+                        public NotificationObserver,
+                        public ActiveWindowWatcherX::Observer {
  public:
   BrowserTitlebar(BrowserWindowGtk* browser_window, GtkWindow* window);
-  virtual ~BrowserTitlebar() { }
+  virtual ~BrowserTitlebar();
 
   GtkWidget* widget() {
     return container_;
@@ -117,6 +119,9 @@ class BrowserTitlebar : public MenuGtk::Delegate,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // Overriden from ActiveWindowWatcher::Observer.
+  virtual void ActiveWindowChanged(GdkWindow* active_window);
 
   // Pointers to the browser window that owns us and it's GtkWindow.
   BrowserWindowGtk* browser_window_;

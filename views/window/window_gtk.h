@@ -5,6 +5,7 @@
 #ifndef VIEWS_WINDOW_WINDOW_GTK_H_
 #define VIEWS_WINDOW_WINDOW_GTK_H_
 
+#include "app/active_window_watcher_x.h"
 #include "base/basictypes.h"
 #include "views/widget/widget_gtk.h"
 #include "views/window/window.h"
@@ -20,7 +21,9 @@ class Client;
 class WindowDelegate;
 
 // Window implementation for GTK.
-class WindowGtk : public WidgetGtk, public Window {
+class WindowGtk : public WidgetGtk,
+                  public Window,
+                  public ActiveWindowWatcherX::Observer {
  public:
   virtual ~WindowGtk();
 
@@ -68,7 +71,11 @@ class WindowGtk : public WidgetGtk, public Window {
   virtual gboolean OnWindowStateEvent(GtkWidget* widget,
                                       GdkEventWindowState* event);
 
+  // Overriden from ActiveWindowWatcherX::Observer.
+  virtual void ActiveWindowChanged(GdkWindow* active_window);
+
   // WindowGtk specific.
+  // Invoked when the active status changes.
   virtual void IsActiveChanged();
 
  protected:
@@ -85,9 +92,6 @@ class WindowGtk : public WidgetGtk, public Window {
   static gboolean CallConfigureEvent(GtkWidget* widget,
                                      GdkEventConfigure* event,
                                      WindowGtk* window_gtk);
-  static void CallIsActiveChanged(GtkWidget* widget,
-                                  GParamSpec* pspec,
-                                  WindowGtk* window_gtk);
   static gboolean CallWindowStateEvent(GtkWidget* widget,
                                        GdkEventWindowState* event,
                                        WindowGtk* window_gtk);
@@ -118,9 +122,8 @@ class WindowGtk : public WidgetGtk, public Window {
   // Set to true if the window is in the process of closing.
   bool window_closed_;
 
-  // If true, IsActive returns true. This is set by DisableInactiveRendering
-  // to force the window to be treated as active even though it isn't.
-  bool force_active_;
+  // Are we active?
+  bool is_active_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowGtk);
 };

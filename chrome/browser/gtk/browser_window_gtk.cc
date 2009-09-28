@@ -17,7 +17,6 @@
 #include "base/command_line.h"
 #include "base/gfx/gtk_util.h"
 #include "base/gfx/rect.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -37,7 +36,6 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/gtk/about_chrome_dialog.h"
-#include "chrome/browser/gtk/active_window_watcher.h"
 #include "chrome/browser/gtk/bookmark_bar_gtk.h"
 #include "chrome/browser/gtk/bookmark_manager_gtk.h"
 #include "chrome/browser/gtk/browser_titlebar.h"
@@ -124,9 +122,6 @@ const int kCustomFrameBackgroundVerticalOffset = 15;
 // The timeout in milliseconds before we'll get the true window position with
 // gtk_window_get_position() after the last GTK configure-event signal.
 const int kDebounceTimeoutMilliseconds = 100;
-
-base::LazyInstance<ActiveWindowWatcher>
-    g_active_window_watcher(base::LINKER_INITIALIZED);
 
 gboolean MainWindowConfigured(GtkWindow* window, GdkEventConfigure* event,
                               BrowserWindowGtk* browser_win) {
@@ -568,13 +563,13 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
 
   registrar_.Add(this, NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
                  NotificationService::AllSources());
-  registrar_.Add(this, NotificationType::ACTIVE_WINDOW_CHANGED,
-                 NotificationService::AllSources());
-  // Make sure the ActiveWindowWatcher instance exists (it's a lazy instance).
-  g_active_window_watcher.Get();
+
+  ActiveWindowWatcherX::AddObserver(this);
 }
 
 BrowserWindowGtk::~BrowserWindowGtk() {
+  ActiveWindowWatcherX::RemoveObserver(this);
+
   browser_->tabstrip_model()->RemoveObserver(this);
 
   if (frame_cursor_) {
@@ -1180,43 +1175,6 @@ void BrowserWindowGtk::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::ACTIVE_WINDOW_CHANGED: {
-      // Do nothing if we're in the process of closing the browser window.
-      if (!window_)
-        break;
-
-      // If we lose focus to an info bubble, we don't want to seem inactive.
-      // However we can only control this when we are painting a custom
-      // frame. So if we lose focus BUT it's to one of our info bubbles AND we
-      // are painting a custom frame, then paint as if we are active.
-      const GdkWindow* active_window = Details<const GdkWindow>(details).ptr();
-      const GtkWindow* info_bubble_toplevel =
-          InfoBubbleGtk::GetToplevelForInfoBubble(active_window);
-      bool is_active = (GTK_WIDGET(window_)->window == active_window ||
-                       (window_ == info_bubble_toplevel && UseCustomFrame()));
-      bool changed = (is_active != is_active_);
-
-      if (is_active && changed) {
-        // If there's an app modal dialog (e.g., JS alert), try to redirect
-        // the user's attention to the window owning the dialog.
-        if (Singleton<AppModalDialogQueue>()->HasActiveDialog()) {
-          Singleton<AppModalDialogQueue>()->ActivateModalDialog();
-          break;
-        }
-      }
-
-      is_active_ = is_active;
-      if (changed) {
-        SetBackgroundColor();
-        gdk_window_invalidate_rect(GTK_WIDGET(window_)->window,
-                                   &GTK_WIDGET(window_)->allocation, TRUE);
-        // For some reason, the above two calls cause the window shape to be
-        // lost so reset it.
-        UpdateWindowShape(bounds_.width(), bounds_.height());
-      }
-      break;
-    }
-
     default:
       NOTREACHED() << "Got a notification we didn't register for!";
   }
@@ -1265,6 +1223,41 @@ void BrowserWindowGtk::TabSelectedAt(TabContents* old_contents,
 
 void BrowserWindowGtk::TabStripEmpty() {
   UpdateUIForContents(NULL);
+}
+
+void BrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
+  // Do nothing if we're in the process of closing the browser window.
+  if (!window_)
+    return;
+
+  // If we lose focus to an info bubble, we don't want to seem inactive.
+  // However we can only control this when we are painting a custom
+  // frame. So if we lose focus BUT it's to one of our info bubbles AND we
+  // are painting a custom frame, then paint as if we are active.
+  const GtkWindow* info_bubble_toplevel =
+      InfoBubbleGtk::GetToplevelForInfoBubble(active_window);
+  bool is_active = (GTK_WIDGET(window_)->window == active_window ||
+                    (window_ == info_bubble_toplevel && UseCustomFrame()));
+  bool changed = (is_active != is_active_);
+
+  if (is_active && changed) {
+    // If there's an app modal dialog (e.g., JS alert), try to redirect
+    // the user's attention to the window owning the dialog.
+    if (Singleton<AppModalDialogQueue>()->HasActiveDialog()) {
+      Singleton<AppModalDialogQueue>()->ActivateModalDialog();
+      return;
+    }
+  }
+
+  is_active_ = is_active;
+  if (changed) {
+    SetBackgroundColor();
+    gdk_window_invalidate_rect(GTK_WIDGET(window_)->window,
+                               &GTK_WIDGET(window_)->allocation, TRUE);
+    // For some reason, the above two calls cause the window shape to be
+    // lost so reset it.
+    UpdateWindowShape(bounds_.width(), bounds_.height());
+  }
 }
 
 void BrowserWindowGtk::MaybeShowBookmarkBar(TabContents* contents,

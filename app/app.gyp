@@ -59,6 +59,8 @@
         # All .cc, .h, and .mm files under app/ except for tests.
         'animation.cc',
         'animation.h',
+        'active_window_watcher_x.cc',
+        'active_window_watcher_x.h',
         'app_paths.h',
         'app_paths.cc',
         'app_switches.h',

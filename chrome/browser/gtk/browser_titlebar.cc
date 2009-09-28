@@ -273,8 +273,11 @@ void BrowserTitlebar::Init() {
 
   gtk_widget_show_all(container_);
 
-  registrar_.Add(this, NotificationType::ACTIVE_WINDOW_CHANGED,
-                 NotificationService::AllSources());
+  ActiveWindowWatcherX::AddObserver(this);
+}
+
+BrowserTitlebar::~BrowserTitlebar() {
+  ActiveWindowWatcherX::RemoveObserver(this);
 }
 
 CustomDrawButton* BrowserTitlebar::BuildTitlebarButton(int image,
@@ -553,20 +556,20 @@ void BrowserTitlebar::Observe(NotificationType type,
     case NotificationType::BROWSER_THEME_CHANGED:
       UpdateTextColor();
       break;
-    case NotificationType::ACTIVE_WINDOW_CHANGED: {
-      // Can be called during shutdown; BrowserWindowGtk will set our |window_|
-      // to NULL during that time.
-      if (!window_)
-        return;
 
-      const GdkWindow* active_window = Details<const GdkWindow>(details).ptr();
-      window_has_focus_ = GTK_WIDGET(window_)->window == active_window;
-      UpdateTextColor();
-      break;
-    }
     default:
       NOTREACHED();
   }
+}
+
+void BrowserTitlebar::ActiveWindowChanged(GdkWindow* active_window) {
+  // Can be called during shutdown; BrowserWindowGtk will set our |window_|
+  // to NULL during that time.
+  if (!window_)
+    return;
+
+  window_has_focus_ = GTK_WIDGET(window_)->window == active_window;
+  UpdateTextColor();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

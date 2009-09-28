@@ -9,6 +9,7 @@
 
 #include <map>
 
+#include "app/active_window_watcher_x.h"
 #include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
@@ -48,7 +49,8 @@ class PanelController;
 
 class BrowserWindowGtk : public BrowserWindow,
                          public NotificationObserver,
-                         public TabStripModelObserver {
+                         public TabStripModelObserver,
+                         public ActiveWindowWatcherX::Observer {
  public:
   explicit BrowserWindowGtk(Browser* browser);
   virtual ~BrowserWindowGtk();
@@ -132,6 +134,9 @@ class BrowserWindowGtk : public BrowserWindow,
                              int index,
                              bool user_gesture);
   virtual void TabStripEmpty();
+
+  // Overriden from ActiveWindowWatcher::Observer.
+  virtual void ActiveWindowChanged(GdkWindow* active_window);
 
   // Accessor for the tab strip.
   TabStripGtk* tabstrip() const { return tabstrip_.get(); }

@@ -223,10 +223,6 @@ class NotificationType {
     // The user has changed the browser theme.
     BROWSER_THEME_CHANGED,
 
-    // Fired when the active window changes.  This is currently only used on
-    // Linux.
-    ACTIVE_WINDOW_CHANGED,
-
     // Sent when the renderer returns focus to the browser, as part of focus
     // traversal. The source is the browser, there are no details.
     FOCUS_RETURNED_TO_BROWSER,

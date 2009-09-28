@@ -68,7 +68,7 @@ GdkCursorType HitTestCodeToGdkCursorType(int hittest_code) {
       break;
   }
   // Default to something defaultish.
-  return GDK_ARROW;
+  return GDK_LEFT_PTR;
 }
 
 }  // namespace
@@ -76,6 +76,7 @@ GdkCursorType HitTestCodeToGdkCursorType(int hittest_code) {
 namespace views {
 
 WindowGtk::~WindowGtk() {
+  ActiveWindowWatcherX::RemoveObserver(this);
 }
 
 // static
@@ -158,7 +159,7 @@ void WindowGtk::Restore() {
 }
 
 bool WindowGtk::IsActive() const {
-  return force_active_ || WidgetGtk::IsActive();
+  return is_active_;
 }
 
 bool WindowGtk::IsVisible() const {
@@ -189,7 +190,8 @@ void WindowGtk::EnableClose(bool enable) {
 }
 
 void WindowGtk::DisableInactiveRendering() {
-  force_active_ = true;
+  // TODO(sky): this doesn't make sense as bubbles are popups, which don't
+  // trigger a change in active status.
 }
 
 void WindowGtk::UpdateWindowTitle() {
@@ -336,9 +338,17 @@ gboolean WindowGtk::OnWindowStateEvent(GtkWidget* widget,
   return FALSE;
 }
 
+void WindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
+  if (!GetNativeWindow())
+    return;
+
+  bool was_active = IsActive();
+  is_active_ = (active_window == GTK_WIDGET(GetNativeWindow())->window);
+  if (was_active != IsActive())
+    IsActiveChanged();
+}
+
 void WindowGtk::IsActiveChanged() {
-  if (force_active_ && WidgetGtk::IsActive())
-    force_active_ = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -351,9 +361,11 @@ WindowGtk::WindowGtk(WindowDelegate* window_delegate)
       non_client_view_(new NonClientView(this)),
       window_state_(GDK_WINDOW_STATE_WITHDRAWN),
       window_closed_(false),
-      force_active_(false) {
+      is_active_(false) {
   is_window_ = true;
   window_delegate_->window_.reset(this);
+
+  ActiveWindowWatcherX::AddObserver(this);
 }
 
 void WindowGtk::Init(GtkWindow* parent, const gfx::Rect& bounds) {
@@ -369,8 +381,6 @@ void WindowGtk::Init(GtkWindow* parent, const gfx::Rect& bounds) {
 
   g_signal_connect(G_OBJECT(GetNativeWindow()), "configure-event",
                    G_CALLBACK(CallConfigureEvent), this);
-  g_signal_connect(G_OBJECT(GetNativeWindow()), "notify::is-active",
-                   G_CALLBACK(CallIsActiveChanged), this);
   g_signal_connect(G_OBJECT(GetNativeWindow()), "window-state-event",
                    G_CALLBACK(CallWindowStateEvent), this);
 
@@ -400,13 +410,6 @@ gboolean WindowGtk::CallConfigureEvent(GtkWidget* widget,
                                        GdkEventConfigure* event,
                                        WindowGtk* window_gtk) {
   return window_gtk->OnConfigureEvent(widget, event);
-}
-
-// static
-void WindowGtk::CallIsActiveChanged(GtkWidget* widget,
-                                    GParamSpec* pspec,
-                                    WindowGtk* window_gtk) {
-  return window_gtk->IsActiveChanged();
 }
 
 // static
