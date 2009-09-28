@@ -21,8 +21,8 @@
 // This is okay since the ExtensionErrorReporter is a singleton that lives until
 // the end of the process.
 template <> struct RunnableMethodTraits<ExtensionErrorReporter> {
-  void RetainCallee(ExtensionErrorReporter*) {}
-  void ReleaseCallee(ExtensionErrorReporter*) {}
+  static void RetainCallee(ExtensionErrorReporter*) {}
+  static void ReleaseCallee(ExtensionErrorReporter*) {}
 };
 
 ExtensionErrorReporter* ExtensionErrorReporter::instance_ = NULL;

@@ -57,8 +57,8 @@ class HistoryTest;
 // the HistoryTest object.
 template <>
 struct RunnableMethodTraits<history::HistoryTest> {
-  void RetainCallee(history::HistoryTest* obj) { }
-  void ReleaseCallee(history::HistoryTest* obj) { }
+  static void RetainCallee(history::HistoryTest* obj) { }
+  static void ReleaseCallee(history::HistoryTest* obj) { }
 };
 
 namespace history {

@@ -275,6 +275,9 @@ void PrintJobWorker::OnFailure() {
 
 }  // namespace printing
 
+RunnableMethodTraits<printing::PrintJobWorker>::RunnableMethodTraits() {
+}
+
 void RunnableMethodTraits<printing::PrintJobWorker>::RetainCallee(
     printing::PrintJobWorker* obj) {
   DCHECK(!owner_.get());

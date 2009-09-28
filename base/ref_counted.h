@@ -14,8 +14,6 @@ namespace subtle {
 
 class RefCountedBase {
  public:
-  static bool ImplementsThreadSafeReferenceCounting() { return false; }
-
   bool HasOneRef() const { return ref_count_ == 1; }
 
  protected:
@@ -40,8 +38,6 @@ class RefCountedBase {
 
 class RefCountedThreadSafeBase {
  public:
-  static bool ImplementsThreadSafeReferenceCounting() { return true; }
-
   bool HasOneRef() const;
 
  protected:

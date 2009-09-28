@@ -33,6 +33,12 @@ class TestPrintJobWorker : public printing::PrintJobWorker {
 
 class TestOwner : public printing::PrintJobWorkerOwner {
  public:
+  virtual void AddRef() {
+    EXPECT_FALSE(true);
+  }
+  virtual void Release() {
+    EXPECT_FALSE(true);
+  }
   virtual void GetSettingsDone(const printing::PrintSettings& new_settings,
                                printing::PrintingContext::Result result) {
     EXPECT_FALSE(true);
@@ -98,9 +104,9 @@ TEST(PrintJobTest, SimplePrint) {
   volatile bool check = false;
   scoped_refptr<printing::PrintJob> job(new TestPrintJob(&check));
   EXPECT_EQ(MessageLoop::current(), job->message_loop());
-  scoped_refptr<TestOwner> owner(new TestOwner);
+  TestOwner owner;
   TestSource source;
-  job->Initialize(owner, &source);
+  job->Initialize(&owner, &source);
   job->Stop();
   job = NULL;
   EXPECT_TRUE(check);

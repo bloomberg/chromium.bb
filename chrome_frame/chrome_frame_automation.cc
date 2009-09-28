@@ -144,8 +144,8 @@ ProxyFactory::ProxyCacheEntry::ProxyCacheEntry(const std::wstring& profile)
 }
 
 template <> struct RunnableMethodTraits<ProxyFactory> {
-  void RetainCallee(ProxyFactory* obj) {}
-  void ReleaseCallee(ProxyFactory* obj) {}
+  static void RetainCallee(ProxyFactory* obj) {}
+  static void ReleaseCallee(ProxyFactory* obj) {}
 };
 
 ProxyFactory::ProxyFactory()

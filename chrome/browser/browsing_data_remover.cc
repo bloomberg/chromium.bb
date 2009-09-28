@@ -22,13 +22,16 @@
 #include "net/url_request/url_request_context.h"
 #include "webkit/glue/password_form.h"
 
-// Done so that we can use PostTask on BrowsingDataRemovers and not have
+// Done so that we can use invokeLater on BrowsingDataRemovers and not have
 // BrowsingDataRemover implement RefCounted.
-template <>
-struct RunnableMethodTraits<BrowsingDataRemover> {
-  void RetainCallee(BrowsingDataRemover*) {}
-  void ReleaseCallee(BrowsingDataRemover*) {}
-};
+template<>
+void RunnableMethodTraits<BrowsingDataRemover>::RetainCallee(
+    BrowsingDataRemover* remover) {
+}
+template<>
+void RunnableMethodTraits<BrowsingDataRemover>::ReleaseCallee(
+    BrowsingDataRemover* remover) {
+}
 
 bool BrowsingDataRemover::removing_ = false;
 

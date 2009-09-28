@@ -153,8 +153,8 @@ private:
 // Since we have a single global ChromeURLDataManager, we don't need to
 // grab a reference to it when creating Tasks involving it.
 template <> struct RunnableMethodTraits<ChromeURLDataManager> {
-  void RetainCallee(ChromeURLDataManager*) {}
-  void ReleaseCallee(ChromeURLDataManager*) {}
+  static void RetainCallee(ChromeURLDataManager*) {}
+  static void ReleaseCallee(ChromeURLDataManager*) {}
 };
 
 // The single global instance of ChromeURLDataManager.

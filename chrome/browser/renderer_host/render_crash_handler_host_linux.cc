@@ -151,8 +151,8 @@ static bool FindProcessHoldingSocket(pid_t* pid_out, uint64_t socket_inode) {
 // end of the processes lifetime, which is greater in span then the lifetime of
 // the IO message loop.
 template<> struct RunnableMethodTraits<RenderCrashHandlerHostLinux> {
-  void RetainCallee(RenderCrashHandlerHostLinux*) { }
-  void ReleaseCallee(RenderCrashHandlerHostLinux*) { }
+  static void RetainCallee(RenderCrashHandlerHostLinux*) { }
+  static void ReleaseCallee(RenderCrashHandlerHostLinux*) { }
 };
 
 RenderCrashHandlerHostLinux::RenderCrashHandlerHostLinux()

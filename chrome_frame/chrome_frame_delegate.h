@@ -37,8 +37,11 @@ class ChromeFrameDelegate {
 
 // Template specialization
 template <> struct RunnableMethodTraits<ChromeFrameDelegate> {
-  void RetainCallee(ChromeFrameDelegate* obj) {}
-  void ReleaseCallee(ChromeFrameDelegate* obj) {}
+  static void RetainCallee(ChromeFrameDelegate* obj) {
+  }
+
+  static void ReleaseCallee(ChromeFrameDelegate* obj) {
+  }
 };
 
 extern UINT kAutomationServerReady;
