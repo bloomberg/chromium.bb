@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "base/logging.h"
 #include "chrome_frame/urlmon_upload_data_stream.h"
+#include "ie_alt_tab/utils.h"
 #include "net/http/http_util.h"
 #include "net/http/http_response_headers.h"
 
@@ -337,19 +338,19 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
   std::string raw_headers = WideToUTF8(response_headers);
 
   // Security check for frame busting headers. We don't honor the headers
-  // as-such, but instead simply kill requests which we've been asked to 
-  // look for. This puts the onus on the user of the UrlRequest to specify 
-  // whether or not requests should be inspected. For ActiveDocuments, the 
-  // answer is "no", since WebKit's detection/handling is sufficient and since 
-  // ActiveDocuments cannot be hosted as iframes. For NPAPI and ActiveX 
-  // documents, the Initialize() function of the PluginUrlRequest object 
-  // allows them to specify how they'd like requests handled. Both should 
+  // as-such, but instead simply kill requests which we've been asked to
+  // look for. This puts the onus on the user of the UrlRequest to specify
+  // whether or not requests should be inspected. For ActiveDocuments, the
+  // answer is "no", since WebKit's detection/handling is sufficient and since
+  // ActiveDocuments cannot be hosted as iframes. For NPAPI and ActiveX
+  // documents, the Initialize() function of the PluginUrlRequest object
+  // allows them to specify how they'd like requests handled. Both should
   // set enable_frame_busting_ to true to avoid CSRF attacks.
-  // Should WebKit's handling of this ever change, we will need to re-visit 
-  // how and when frames are killed to better mirror a policy which may 
+  // Should WebKit's handling of this ever change, we will need to re-visit
+  // how and when frames are killed to better mirror a policy which may
   // do something other than kill the sub-document outright.
 
-  // NOTE(slightlyoff): We don't use net::HttpResponseHeaders here because 
+  // NOTE(slightlyoff): We don't use net::HttpResponseHeaders here because
   //    of lingering ICU/base_noicu issues.
   if (frame_busting_enabled_ &&
       net::HttpUtil::HasHeader(raw_headers, kXFrameOptionsHeader)) {
@@ -452,6 +453,13 @@ STDMETHODIMP UrlmonUrlRequest::OnSecurityProblem(DWORD problem) {
   // interface and replicating the checks performed by Urlmon. This
   // causes Urlmon to display a dialog box on the same lines as IE6.
   DLOG(INFO) << __FUNCTION__ << " Security problem : " << problem;
+
+  // On IE6 the default IBindStatusCallback interface does not implement the
+  // IHttpSecurity interface and thus causes IE to put up a certificate error
+  // dialog box. We need to emulate this behavior for sites with mismatched
+  // certificates to work.
+  if (GetIEVersion() == IE_6)
+    return S_FALSE;
 
   HRESULT hr = E_ABORT;
 
