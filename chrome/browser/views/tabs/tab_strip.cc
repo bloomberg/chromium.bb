@@ -1716,12 +1716,12 @@ TabStrip::DropInfo::DropInfo(int drop_index, bool drop_before, bool point_down)
 
 #if defined(OS_WIN)
   arrow_window = new views::WidgetWin;
-  arrow_window->Init(
-      NULL,
-      gfx::Rect(0, 0, drop_indicator_width, drop_indicator_height));
   arrow_window->set_window_style(WS_POPUP);
   arrow_window->set_window_ex_style(WS_EX_TOPMOST | WS_EX_NOACTIVATE |
                                     WS_EX_LAYERED | WS_EX_TRANSPARENT);
+  arrow_window->Init(
+      NULL,
+      gfx::Rect(0, 0, drop_indicator_width, drop_indicator_height));
 #else
   arrow_window = new views::WidgetGtk(views::WidgetGtk::TYPE_POPUP);
   arrow_window->MakeTransparent();
