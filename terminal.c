@@ -35,6 +35,7 @@
 #include <linux/input.h>
 #include <cairo-drm.h>
 
+#include "wayland-util.h"
 #include "wayland-client.h"
 #include "wayland-glib.h"
 
@@ -65,6 +66,7 @@ struct terminal {
 	int margin;
 	int fullscreen;
 	int focused;
+	struct color_scheme *color_scheme;
 };
 
 static char *
@@ -122,6 +124,10 @@ terminal_resize(struct terminal *terminal, int width, int height)
 	terminal->start = 0;
 }
 
+struct color_scheme { struct { double r, g, b, a; } fg, bg; }
+	matrix_colors = { { 0, 0.7, 0, 1 }, { 0, 0, 0, 0.9 } },
+	jbarnes_colors = { { 1, 1, 1, 1 }, { 0, 0, 0, 1 } };
+
 static void
 terminal_draw_contents(struct terminal *terminal)
 {
@@ -137,10 +143,18 @@ terminal_draw_contents(struct terminal *terminal)
 		window_create_surface(terminal->window, &rectangle);
 	cr = cairo_create(terminal->surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-	cairo_set_source_rgba(cr, 0, 0, 0, 0.9);
+	cairo_set_source_rgba(cr,
+			      terminal->color_scheme->bg.r,
+			      terminal->color_scheme->bg.g,
+			      terminal->color_scheme->bg.b,
+			      terminal->color_scheme->bg.a);
 	cairo_paint(cr);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-	cairo_set_source_rgba(cr, 0, 0.7, 0, 1);
+	cairo_set_source_rgba(cr,
+			      terminal->color_scheme->fg.r,
+			      terminal->color_scheme->fg.g,
+			      terminal->color_scheme->fg.b,
+			      terminal->color_scheme->fg.a);
 
 	cairo_select_font_face (cr, "mono",
 				CAIRO_FONT_SLANT_NORMAL,
@@ -476,6 +490,7 @@ terminal_create(struct display *display, int fullscreen)
 
 	memset(terminal, 0, sizeof *terminal);
 	terminal->fullscreen = fullscreen;
+	terminal->color_scheme = &jbarnes_colors;
 	terminal->window = window_create(display, "Wayland Terminal",
 					 500, 100, 500, 400);
 	terminal->display = display;
