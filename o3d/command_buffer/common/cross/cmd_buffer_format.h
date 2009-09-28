@@ -179,8 +179,8 @@ struct CommandHeader {
   Uint32 command:24;
 
   void Init(uint32 _command, uint32 _size) {
-    DCHECK_LT(_size, 256);
-    DCHECK_LT(_command, static_cast<int>(kNumCommands));
+    DCHECK_LT(_size, 256u);
+    DCHECK_LT(_command, static_cast<unsigned int>(kNumCommands));
     command = _command;
     size = _size;
   }
