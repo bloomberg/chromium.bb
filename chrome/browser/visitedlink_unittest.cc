@@ -544,9 +544,6 @@ class VisitRelayingRenderProcessHost : public BrowserRenderProcessHost {
   }
 
  private:
-  int add_relay_count_;
-  int reset_relay_count_;
-
   DISALLOW_COPY_AND_ASSIGN(VisitRelayingRenderProcessHost);
 };
 
