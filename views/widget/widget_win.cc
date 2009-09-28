@@ -423,8 +423,34 @@ void WidgetWin::SetFocusTraversableParentView(View* parent_view) {
   root_view_->SetFocusTraversableParentView(parent_view);
 }
 
+bool WidgetWin::AcceleratorPressed(const Accelerator& accelerator) {
+  return false;
+}
+
+bool WidgetWin::GetAccelerator(int cmd_id, Accelerator* accelerator) {
+  return false;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Message handlers
+
+void WidgetWin::OnActivate(UINT action, BOOL minimized, HWND window) {
+  SetMsgHandled(FALSE);
+}
+
+void WidgetWin::OnActivateApp(BOOL active, DWORD thread_id) {
+  SetMsgHandled(FALSE);
+}
+
+LRESULT WidgetWin::OnAppCommand(HWND window, short app_command, WORD device,
+                                int keystate) {
+  SetMsgHandled(FALSE);
+  return 0;
+}
+
+void WidgetWin::OnCancelMode() {
+}
 
 void WidgetWin::OnCaptureChanged(HWND hwnd) {
   if (has_capture_) {
@@ -439,6 +465,14 @@ void WidgetWin::OnClose() {
   Close();
 }
 
+void WidgetWin::OnCommand(UINT notification_code, int command_id, HWND window) {
+  SetMsgHandled(FALSE);
+}
+
+LRESULT WidgetWin::OnCreate(CREATESTRUCT* create_struct) {
+  return 0;
+}
+
 void WidgetWin::OnDestroy() {
   if (drop_target_.get()) {
     RevokeDragDrop(hwnd());
@@ -448,9 +482,32 @@ void WidgetWin::OnDestroy() {
   RemoveProp(hwnd(), kRootViewWindowProperty);
 }
 
+LRESULT WidgetWin::OnDwmCompositionChanged(UINT msg,
+                                           WPARAM w_param,
+                                           LPARAM l_param) {
+  SetMsgHandled(FALSE);
+  return 0;
+}
+
+void WidgetWin::OnEndSession(BOOL ending, UINT logoff) {
+  SetMsgHandled(FALSE);
+}
+
+void WidgetWin::OnEnterSizeMove() {
+  SetMsgHandled(FALSE);
+}
+
 LRESULT WidgetWin::OnEraseBkgnd(HDC dc) {
   // This is needed for magical win32 flicker ju-ju
   return 1;
+}
+
+void WidgetWin::OnExitMenuLoop(BOOL is_track_popup_menu) {
+  SetMsgHandled(FALSE);
+}
+
+void WidgetWin::OnExitSizeMove() {
+  SetMsgHandled(FALSE);
 }
 
 LRESULT WidgetWin::OnGetObject(UINT uMsg, WPARAM w_param, LPARAM l_param) {
@@ -493,6 +550,24 @@ LRESULT WidgetWin::OnGetObject(UINT uMsg, WPARAM w_param, LPARAM l_param) {
         static_cast<IAccessible*>(accessibility_root_));
   }
   return reference_result;
+}
+
+void WidgetWin::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
+  SetMsgHandled(FALSE);
+}
+
+void WidgetWin::OnHScroll(int scroll_type, short position, HWND scrollbar) {
+  SetMsgHandled(FALSE);
+}
+
+void WidgetWin::OnInitMenu(HMENU menu) {
+  SetMsgHandled(FALSE);
+}
+
+void WidgetWin::OnInitMenuPopup(HMENU menu,
+                                UINT position,
+                                BOOL is_system_menu) {
+  SetMsgHandled(FALSE);
 }
 
 void WidgetWin::OnKeyDown(TCHAR c, UINT rep_cnt, UINT flags) {
@@ -567,8 +642,30 @@ LRESULT WidgetWin::OnMouseWheel(UINT message, WPARAM w_param, LPARAM l_param) {
   return root_view_->ProcessMouseWheelEvent(e) ? 0 : 1;
 }
 
+void WidgetWin::OnMove(const CPoint& point) {
+  SetMsgHandled(FALSE);
+}
+
+void WidgetWin::OnMoving(UINT param, const LPRECT new_bounds) {
+}
+
 LRESULT WidgetWin::OnMouseRange(UINT msg, WPARAM w_param, LPARAM l_param) {
   tooltip_manager_->OnMouse(msg, w_param, l_param);
+  SetMsgHandled(FALSE);
+  return 0;
+}
+
+LRESULT WidgetWin::OnNCActivate(BOOL active) {
+  SetMsgHandled(FALSE);
+  return 0;
+}
+
+LRESULT WidgetWin::OnNCCalcSize(BOOL w_param, LPARAM l_param) {
+  SetMsgHandled(FALSE);
+  return 0;
+}
+
+LRESULT WidgetWin::OnNCHitTest(const CPoint& pt) {
   SetMsgHandled(FALSE);
   return 0;
 }
@@ -614,6 +711,10 @@ LRESULT WidgetWin::OnNCMouseMove(UINT flags, const CPoint& point) {
   return 0;
 }
 
+void WidgetWin::OnNCPaint(HRGN rgn) {
+  SetMsgHandled(FALSE);
+}
+
 void WidgetWin::OnNCRButtonDblClk(UINT flags, const CPoint& point) {
   SetMsgHandled(ProcessMousePressed(point, flags | MK_RBUTTON, true, true));
 }
@@ -624,6 +725,18 @@ void WidgetWin::OnNCRButtonDown(UINT flags, const CPoint& point) {
 
 void WidgetWin::OnNCRButtonUp(UINT flags, const CPoint& point) {
   SetMsgHandled(FALSE);
+}
+
+LRESULT WidgetWin::OnNCUAHDrawCaption(UINT msg,
+                                      WPARAM w_param,
+                                      LPARAM l_param) {
+  SetMsgHandled(FALSE);
+  return 0;
+}
+
+LRESULT WidgetWin::OnNCUAHDrawFrame(UINT msg, WPARAM w_param, LPARAM l_param) {
+  SetMsgHandled(FALSE);
+  return 0;
 }
 
 LRESULT WidgetWin::OnNotify(int w_param, NMHDR* l_param) {
@@ -644,6 +757,14 @@ void WidgetWin::OnPaint(HDC dc) {
   root_view_->OnPaint(hwnd());
 }
 
+LRESULT WidgetWin::OnPowerBroadcast(DWORD power_event, DWORD data) {
+  base::SystemMonitor* monitor = base::SystemMonitor::Get();
+  if (monitor)
+    monitor->ProcessWmPowerBroadcastMessage(power_event);
+  SetMsgHandled(FALSE);
+  return 0;
+}
+
 void WidgetWin::OnRButtonDown(UINT flags, const CPoint& point) {
   ProcessMousePressed(point, flags | MK_RBUTTON, false, false);
 }
@@ -656,8 +777,36 @@ void WidgetWin::OnRButtonDblClk(UINT flags, const CPoint& point) {
   ProcessMousePressed(point, flags | MK_RBUTTON, true, false);
 }
 
+LRESULT WidgetWin::OnReflectedMessage(UINT msg,
+                                      WPARAM w_param,
+                                      LPARAM l_param) {
+  SetMsgHandled(FALSE);
+  return 0;
+}
+
+void WidgetWin::OnSetFocus(HWND focused_window) {
+  SetMsgHandled(FALSE);
+}
+
+LRESULT WidgetWin::OnSetIcon(UINT size_type, HICON new_icon) {
+  SetMsgHandled(FALSE);
+  return 0;
+}
+
+LRESULT WidgetWin::OnSetText(const wchar_t* text) {
+  SetMsgHandled(FALSE);
+  return 0;
+}
+
+void WidgetWin::OnSettingChange(UINT flags, const wchar_t* section) {
+  SetMsgHandled(FALSE);
+}
+
 void WidgetWin::OnSize(UINT param, const CSize& size) {
   ChangeSize(param, size);
+}
+
+void WidgetWin::OnSysCommand(UINT notification_code, CPoint click) {
 }
 
 void WidgetWin::OnThemeChanged() {
@@ -668,6 +817,18 @@ void WidgetWin::OnThemeChanged() {
 void WidgetWin::OnFinalMessage(HWND window) {
   if (delete_on_destroy_)
     delete this;
+}
+
+void WidgetWin::OnVScroll(int scroll_type, short position, HWND scrollbar) {
+  SetMsgHandled(FALSE);
+}
+
+void WidgetWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
+  SetMsgHandled(FALSE);
+}
+
+void WidgetWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
+  SetMsgHandled(FALSE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -801,6 +962,10 @@ void WidgetWin::ChangeSize(UINT size_param, const CSize& size) {
 
   if (use_layered_buffer_)
     PaintNow(gfx::Rect(rect));
+}
+
+bool WidgetWin::ReleaseCaptureOnMouseReleased() {
+  return true;
 }
 
 RootView* WidgetWin::CreateRootView() {

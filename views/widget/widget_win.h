@@ -220,17 +220,13 @@ class WidgetWin : public base::WindowImpl,
   virtual FocusTraversable* GetFocusTraversableParent();
   virtual View* GetFocusTraversableParentView();
 
-  // Overridden from AcceleratorTarget:
-  virtual bool AcceleratorPressed(const Accelerator& accelerator) {
-    return false;
-  }
-
   void SetFocusTraversableParent(FocusTraversable* parent);
   void SetFocusTraversableParentView(View* parent_view);
 
-  virtual bool GetAccelerator(int cmd_id, Accelerator* accelerator) {
-    return false;
-  }
+  // Overridden from AcceleratorTarget:
+  virtual bool AcceleratorPressed(const Accelerator& accelerator);
+
+  virtual bool GetAccelerator(int cmd_id, Accelerator* accelerator);
 
   BOOL IsWindow() const {
     return ::IsWindow(GetNativeView());
@@ -315,51 +311,31 @@ class WidgetWin : public base::WindowImpl,
   //       handling to the appropriate Process* function. This is so that
   //       subclasses can easily override these methods to do different things
   //       and have a convenient function to call to get the default behavior.
-  virtual void OnActivate(UINT action, BOOL minimized, HWND window) {
-    SetMsgHandled(FALSE);
-  }
-  virtual void OnActivateApp(BOOL active, DWORD thread_id) {
-    SetMsgHandled(FALSE);
-  }
+  virtual void OnActivate(UINT action, BOOL minimized, HWND window);
+  virtual void OnActivateApp(BOOL active, DWORD thread_id);
   virtual LRESULT OnAppCommand(HWND window, short app_command, WORD device,
-                               int keystate) {
-    SetMsgHandled(FALSE);
-    return 0;
-  }
-  virtual void OnCancelMode() {}
+                               int keystate);
+  virtual void OnCancelMode();
   virtual void OnCaptureChanged(HWND hwnd);
   virtual void OnClose();
-  virtual void OnCommand(UINT notification_code, int command_id, HWND window) {
-    SetMsgHandled(FALSE);
-  }
-  virtual LRESULT OnCreate(LPCREATESTRUCT create_struct) { return 0; }
+  virtual void OnCommand(UINT notification_code, int command_id, HWND window);
+  virtual LRESULT OnCreate(CREATESTRUCT* create_struct);
   // WARNING: If you override this be sure and invoke super, otherwise we'll
   // leak a few things.
   virtual void OnDestroy();
   virtual LRESULT OnDwmCompositionChanged(UINT msg,
                                           WPARAM w_param,
-                                          LPARAM l_param) {
-    SetMsgHandled(FALSE);
-    return 0;
-  }
-  virtual void OnEndSession(BOOL ending, UINT logoff) { SetMsgHandled(FALSE); }
-  virtual void OnEnterSizeMove() { SetMsgHandled(FALSE); }
+                                          LPARAM l_param);
+  virtual void OnEndSession(BOOL ending, UINT logoff);
+  virtual void OnEnterSizeMove();
   virtual LRESULT OnEraseBkgnd(HDC dc);
-  virtual void OnExitMenuLoop(BOOL is_track_popup_menu) {
-    SetMsgHandled(FALSE);
-  }
-  virtual void OnExitSizeMove() { SetMsgHandled(FALSE); }
+  virtual void OnExitMenuLoop(BOOL is_track_popup_menu);
+  virtual void OnExitSizeMove();
   virtual LRESULT OnGetObject(UINT uMsg, WPARAM w_param, LPARAM l_param);
-  virtual void OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
-    SetMsgHandled(FALSE);
-  }
-  virtual void OnHScroll(int scroll_type, short position, HWND scrollbar) {
-    SetMsgHandled(FALSE);
-  }
-  virtual void OnInitMenu(HMENU menu) { SetMsgHandled(FALSE); }
-  virtual void OnInitMenuPopup(HMENU menu, UINT position, BOOL is_system_menu) {
-    SetMsgHandled(FALSE);
-  }
+  virtual void OnGetMinMaxInfo(MINMAXINFO* minmax_info);
+  virtual void OnHScroll(int scroll_type, short position, HWND scrollbar);
+  virtual void OnInitMenu(HMENU menu);
+  virtual void OnInitMenuPopup(HMENU menu, UINT position, BOOL is_system_menu);
   virtual void OnKeyDown(TCHAR c, UINT rep_cnt, UINT flags);
   virtual void OnKeyUp(TCHAR c, UINT rep_cnt, UINT flags);
   virtual void OnLButtonDblClk(UINT flags, const CPoint& point);
@@ -372,18 +348,12 @@ class WidgetWin : public base::WindowImpl,
   virtual void OnMouseMove(UINT flags, const CPoint& point);
   virtual LRESULT OnMouseLeave(UINT message, WPARAM w_param, LPARAM l_param);
   virtual LRESULT OnMouseWheel(UINT message, WPARAM w_param, LPARAM l_param);
-  virtual void OnMove(const CPoint& point) { SetMsgHandled(FALSE); }
-  virtual void OnMoving(UINT param, LPRECT new_bounds) { }
+  virtual void OnMove(const CPoint& point);
+  virtual void OnMoving(UINT param, LPRECT new_bounds);
   virtual LRESULT OnMouseRange(UINT msg, WPARAM w_param, LPARAM l_param);
-  virtual LRESULT OnNCActivate(BOOL active) { SetMsgHandled(FALSE); return 0; }
-  virtual LRESULT OnNCCalcSize(BOOL w_param, LPARAM l_param) {
-    SetMsgHandled(FALSE);
-    return 0;
-  }
-  virtual LRESULT OnNCHitTest(const CPoint& pt) {
-    SetMsgHandled(FALSE);
-    return 0;
-  }
+  virtual LRESULT OnNCActivate(BOOL active);
+  virtual LRESULT OnNCCalcSize(BOOL w_param, LPARAM l_param);
+  virtual LRESULT OnNCHitTest(const CPoint& pt);
   virtual void OnNCLButtonDblClk(UINT flags, const CPoint& point);
   virtual void OnNCLButtonDown(UINT flags, const CPoint& point);
   virtual void OnNCLButtonUp(UINT flags, const CPoint& point);
@@ -392,62 +362,31 @@ class WidgetWin : public base::WindowImpl,
   virtual void OnNCMButtonUp(UINT flags, const CPoint& point);
   virtual LRESULT OnNCMouseLeave(UINT uMsg, WPARAM w_param, LPARAM l_param);
   virtual LRESULT OnNCMouseMove(UINT flags, const CPoint& point);
-  virtual void OnNCPaint(HRGN rgn) { SetMsgHandled(FALSE); }
+  virtual void OnNCPaint(HRGN rgn);
   virtual void OnNCRButtonDblClk(UINT flags, const CPoint& point);
   virtual void OnNCRButtonDown(UINT flags, const CPoint& point);
   virtual void OnNCRButtonUp(UINT flags, const CPoint& point);
   virtual LRESULT OnNCUAHDrawCaption(UINT msg,
                                      WPARAM w_param,
-                                     LPARAM l_param) {
-    SetMsgHandled(FALSE);
-    return 0;
-  }
-  virtual LRESULT OnNCUAHDrawFrame(UINT msg, WPARAM w_param, LPARAM l_param) {
-    SetMsgHandled(FALSE);
-    return 0;
-  }
+                                     LPARAM l_param);
+  virtual LRESULT OnNCUAHDrawFrame(UINT msg, WPARAM w_param, LPARAM l_param);
   virtual LRESULT OnNotify(int w_param, NMHDR* l_param);
   virtual void OnPaint(HDC dc);
-  virtual LRESULT OnPowerBroadcast(DWORD power_event, DWORD data) {
-    base::SystemMonitor* monitor = base::SystemMonitor::Get();
-    if (monitor)
-      monitor->ProcessWmPowerBroadcastMessage(power_event);
-    SetMsgHandled(FALSE);
-    return 0;
-  }
+  virtual LRESULT OnPowerBroadcast(DWORD power_event, DWORD data);
   virtual void OnRButtonDblClk(UINT flags, const CPoint& point);
   virtual void OnRButtonDown(UINT flags, const CPoint& point);
   virtual void OnRButtonUp(UINT flags, const CPoint& point);
-  virtual LRESULT OnReflectedMessage(UINT msg, WPARAM w_param, LPARAM l_param) {
-    SetMsgHandled(FALSE);
-    return 0;
-  }
-  virtual void OnSetFocus(HWND focused_window) {
-    SetMsgHandled(FALSE);
-  }
-  virtual LRESULT OnSetIcon(UINT size_type, HICON new_icon) {
-    SetMsgHandled(FALSE);
-    return 0;
-  }
-  virtual LRESULT OnSetText(const wchar_t* text) {
-    SetMsgHandled(FALSE);
-    return 0;
-  }
-  virtual void OnSettingChange(UINT flags, const wchar_t* section) {
-    SetMsgHandled(FALSE);
-  }
+  virtual LRESULT OnReflectedMessage(UINT msg, WPARAM w_param, LPARAM l_param);
+  virtual void OnSetFocus(HWND focused_window);
+  virtual LRESULT OnSetIcon(UINT size_type, HICON new_icon);
+  virtual LRESULT OnSetText(const wchar_t* text);
+  virtual void OnSettingChange(UINT flags, const wchar_t* section);
   virtual void OnSize(UINT param, const CSize& size);
-  virtual void OnSysCommand(UINT notification_code, CPoint click) { }
+  virtual void OnSysCommand(UINT notification_code, CPoint click);
   virtual void OnThemeChanged();
-  virtual void OnVScroll(int scroll_type, short position, HWND scrollbar) {
-    SetMsgHandled(FALSE);
-  }
-  virtual void OnWindowPosChanging(WINDOWPOS* window_pos) {
-    SetMsgHandled(FALSE);
-  }
-  virtual void OnWindowPosChanged(WINDOWPOS* window_pos) {
-    SetMsgHandled(FALSE);
-  }
+  virtual void OnVScroll(int scroll_type, short position, HWND scrollbar);
+  virtual void OnWindowPosChanging(WINDOWPOS* window_pos);
+  virtual void OnWindowPosChanged(WINDOWPOS* window_pos);
 
   // deletes this window as it is destroyed, override to provide different
   // behavior.
@@ -474,7 +413,7 @@ class WidgetWin : public base::WindowImpl,
 
   // Returns whether capture should be released on mouse release. The default
   // is true.
-  virtual bool ReleaseCaptureOnMouseReleased() { return true; }
+  virtual bool ReleaseCaptureOnMouseReleased();
 
   // Creates the RootView to be used within this Widget. Can be overridden to
   // create specialized RootView implementations.
