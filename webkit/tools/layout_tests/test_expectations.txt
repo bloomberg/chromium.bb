@@ -2312,10 +2312,6 @@ BUG22014 LINUX MAC : LayoutTests/transitions/hang-with-bad-transition-list.html 
 // WK roll 48423:48468 (dglazkov for ukai)
 BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/css/font-smoothing.html = FAIL
 
-// 48468:48483 (avi for dglazkov for ukai)
-BUG22170 : LayoutTests/http/tests/security/isolatedWorld/window-setTimeout-function.html = FAIL
-BUG22170 : LayoutTests/http/tests/security/isolatedWorld/window-setTimeout-string.html = FAIL
-
 // WebKit merge 48500:48585, newly implemented Object.defineProperty.
 BUG22526 : LayoutTests/fast/js/Object-create.html = FAIL
 BUG22526 : LayoutTests/fast/js/Object-defineProperties.html = FAIL
