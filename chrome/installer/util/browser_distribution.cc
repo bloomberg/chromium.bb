@@ -11,16 +11,13 @@
 
 #include "base/registry.h"
 #include "chrome/installer/util/google_chrome_distribution.h"
-
-#if defined(CHROME_EXP_BUILD)
-#include "chrome/installer/util/exp/experimental_browser_distribution.h"
-#endif
+#include "chrome/installer/util/chrome_frame_distribution.h"
 
 BrowserDistribution* BrowserDistribution::GetDistribution() {
   static BrowserDistribution* dist = NULL;
   if (dist == NULL) {
-#if defined(CHROME_EXP_BUILD)
-    dist = new ExperimentalBrowserDistribution();
+#if defined(CHROME_FRAME_BUILD)
+    dist = new ChromeFrameDistribution();
 #elif defined(GOOGLE_CHROME_BUILD)
     dist = new GoogleChromeDistribution();
 #else

@@ -17,8 +17,8 @@
 {
   'variables': {
     'google_update_appid': '{8BA986DA-5100-405E-AA35-86F34A02ACBF}',
-    'extra_installer_util_sources': 1,
+    'extra_installer_util_sources': 0,
     'branding': 'Chrome',
-    'experimental_build_define': 1,
+    'chrome_frame_define': 1,
   },
 } 

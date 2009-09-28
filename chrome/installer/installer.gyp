@@ -31,6 +31,8 @@
           'sources': [
             'util/browser_distribution.cc',
             'util/browser_distribution.h',
+            'util/chrome_frame_distribution.cc',
+            'util/chrome_frame_distribution.h',
             'util/compat_checks.cc',
             'util/compat_checks.h',
             'util/copy_tree_work_item.cc',
@@ -79,18 +81,6 @@
             'util/work_item.h',
             'util/work_item_list.cc',
             'util/work_item_list.h',
-          ],
-          'variables': {
-            'extra_installer_util_sources%': 0,
-          },
-          'conditions': [
-            ['extra_installer_util_sources', {
-                'sources': [
-                  'util/exp/experimental_browser_distribution.cc',
-                  'util/exp/experimental_browser_distribution.h',
-                ],
-              },
-            ],
           ],
         },
         {
