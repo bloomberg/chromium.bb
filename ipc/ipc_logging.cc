@@ -4,16 +4,15 @@
 
 #include "ipc/ipc_logging.h"
 
-#if defined(OS_POSIX)
 #ifdef IPC_MESSAGE_LOG_ENABLED
 // This will cause render_messages.h etc to define ViewMsgLog and friends.
 #define IPC_MESSAGE_MACROS_LOG_ENABLED
-#endif
 #endif
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/time.h"
@@ -24,7 +23,6 @@
 #include "ipc/ipc_message_utils.h"
 
 #if defined(OS_POSIX)
-#include "base/string_util.h"
 #include <unistd.h>
 #endif
 
@@ -42,7 +40,6 @@ struct RunnableMethodTraits<IPC::Logging> {
 
 namespace IPC {
 
-const wchar_t kLoggingEventName[] = L"ChromeIPCLog.%d";
 const int kLogSendDelayMs = 100;
 
 // We use a pointer to the function table to avoid any linker dependencies on
@@ -50,48 +47,16 @@ const int kLogSendDelayMs = 100;
 Logging::LogFunction *Logging::log_function_mapping_;
 
 Logging::Logging()
-    : logging_event_on_(NULL),
-      logging_event_off_(NULL),
-      enabled_(false),
+    : enabled_(false),
+      enabled_on_stderr_(false),
       queue_invoke_later_pending_(false),
       sender_(NULL),
       main_thread_(MessageLoop::current()),
       consumer_(NULL) {
-  // Create an event for this browser instance that's set when logging is
-  // enabled, so child processes can know when logging is enabled.
-
-#if defined(OS_WIN)
-  // On Windows we have a couple of named events which switch logging on and
-  // off.
-  int browser_pid;
-  const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  std::wstring process_type =
-    parsed_command_line.GetSwitchValue(switches::kProcessType);
-  if (process_type.empty()) {
-    browser_pid = GetCurrentProcessId();
-  } else {
-    std::wstring channel_name =
-        parsed_command_line.GetSwitchValue(switches::kProcessChannelID);
-
-    browser_pid = _wtoi(channel_name.c_str());
-    DCHECK(browser_pid != 0);
-  }
-
-  std::wstring event_name = GetEventName(browser_pid, true);
-  logging_event_on_.reset(new base::WaitableEvent(
-      CreateEvent(NULL, TRUE, FALSE, event_name.c_str())));
-
-  event_name = GetEventName(browser_pid, false);
-  logging_event_off_.reset(new base::WaitableEvent(
-      CreateEvent(NULL, TRUE, FALSE, event_name.c_str())));
-
-  RegisterWaitForEvent(true);
-#elif defined(OS_POSIX)
-  if (getenv("CHROME_IPC_LOGGING"))
+  if (getenv("CHROME_IPC_LOGGING")) {
     enabled_ = true;
-#endif
-
-  MessageLoop::current()->AddDestructionObserver(this);
+    enabled_on_stderr_ = true;
+  }
 }
 
 Logging::~Logging() {
@@ -101,35 +66,8 @@ Logging* Logging::current() {
   return Singleton<Logging>::get();
 }
 
-void Logging::RegisterWaitForEvent(bool enabled) {
-  watcher_.StopWatching();
-  watcher_.StartWatching(
-      enabled ? logging_event_on_.get() : logging_event_off_.get(), this);
-}
-
-void Logging::OnWaitableEventSignaled(base::WaitableEvent* event) {
-  enabled_ = event == logging_event_on_.get();
-  RegisterWaitForEvent(!enabled_);
-}
-
-void Logging::WillDestroyCurrentMessageLoop() {
-  watcher_.StopWatching();
-}
-
 void Logging::SetLoggerFunctions(LogFunction *functions) {
   log_function_mapping_ = functions;
-}
-
-#if defined(OS_WIN)
-std::wstring Logging::GetEventName(bool enabled) {
-  return current()->GetEventName(GetCurrentProcessId(), enabled);
-}
-#endif
-
-std::wstring Logging::GetEventName(int browser_pid, bool enabled) {
-  std::wstring result = StringPrintf(kLoggingEventName, browser_pid);
-  result += enabled ? L"on" : L"off";
-  return result;
 }
 
 void Logging::SetConsumer(Consumer* consumer) {
@@ -137,13 +75,11 @@ void Logging::SetConsumer(Consumer* consumer) {
 }
 
 void Logging::Enable() {
-  logging_event_off_->Reset();
-  logging_event_on_->Signal();
+  enabled_ = true;
 }
 
 void Logging::Disable() {
-  logging_event_on_->Reset();
-  logging_event_off_->Signal();
+  enabled_ = false;
 }
 
 void Logging::OnSendLogs() {
@@ -205,9 +141,8 @@ void Logging::OnPreDispatchMessage(const Message& message) {
 void Logging::OnPostDispatchMessage(const Message& message,
                                     const std::string& channel_id) {
   if (!Enabled() ||
-#if defined(OS_WIN)
       !message.sent_time() ||
-#endif
+      !message.received_time() ||
       message.dont_log())
     return;
 
@@ -238,7 +173,6 @@ void Logging::GetMessageText(uint16 type, std::wstring* name,
 }
 
 void Logging::Log(const LogData& data) {
-#if defined(OS_WIN)
   if (consumer_) {
     // We're in the browser process.
     consumer_->Log(data);
@@ -253,22 +187,20 @@ void Logging::Log(const LogData& data) {
       }
     }
   }
-#elif defined(OS_POSIX)
-  std::string message_name;
-  if (data.message_name.empty()) {
-    message_name = StringPrintf("[unknown type %d]", data.type);
-  } else {
-    message_name = WideToASCII(data.message_name);
+  if (enabled_on_stderr_) {
+    std::string message_name;
+    if (data.message_name.empty()) {
+      message_name = StringPrintf("[unknown type %d]", data.type);
+    } else {
+      message_name = WideToASCII(data.message_name);
+    }
+    fprintf(stderr, "ipc %s %d %s %s %s\n",
+            data.channel.c_str(),
+            data.routing_id,
+            WideToASCII(data.flags).c_str(),
+            message_name.c_str(),
+            WideToUTF8(data.params).c_str());
   }
-
-  // On POSIX, for now, we just dump the log to stderr
-  fprintf(stderr, "ipc %s %d %s %s %s\n",
-          data.channel.c_str(),
-          data.routing_id,
-          WideToASCII(data.flags).c_str(),
-          message_name.c_str(),
-          WideToUTF8(data.params).c_str());
-#endif
 }
 
 void GenerateLogData(const std::string& channel, const Message& message,

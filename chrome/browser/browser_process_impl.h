@@ -19,6 +19,7 @@
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
+#include "ipc/ipc_message.h"
 
 #if defined(OS_WIN)
 #include "sandbox/src/sandbox.h"
@@ -197,6 +198,10 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
     return have_inspector_files_;
   }
 
+#if defined(IPC_MESSAGE_LOG_ENABLED)
+  virtual void SetIPCLoggingEnabled(bool enable);
+#endif
+
  private:
   void CreateResourceDispatcherHost();
   void CreatePrefService();
@@ -221,6 +226,10 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
 #if defined(OS_WIN)
   void InitBrokerServices(sandbox::BrokerServices* broker_services);
 #endif  // defined(OS_WIN)
+
+#if defined(IPC_MESSAGE_LOG_ENABLED)
+  void SetIPCLoggingEnabledForChildProcesses(bool enabled);
+#endif
 
   bool created_resource_dispatcher_host_;
   scoped_ptr<ResourceDispatcherHost> resource_dispatcher_host_;

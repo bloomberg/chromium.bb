@@ -10,6 +10,7 @@
 #include "chrome/common/message_router.h"
 #include "chrome/common/resource_dispatcher.h"
 #include "ipc/ipc_sync_channel.h"
+#include "ipc/ipc_message.h"
 
 class NotificationService;
 
@@ -46,6 +47,12 @@ class ChildThread : public IPC::Channel::Listener,
   void OnProcessFinalRelease();
 
   virtual void OnControlMessageReceived(const IPC::Message& msg) { }
+  virtual void OnAskBeforeShutdown();
+  virtual void OnShutdown();
+
+#ifdef IPC_MESSAGE_LOG_ENABLED
+  virtual void OnSetIPCLoggingEnabled(bool enable);
+#endif
 
   IPC::SyncChannel* channel() { return channel_.get(); }
 

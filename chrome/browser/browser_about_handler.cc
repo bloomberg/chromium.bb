@@ -50,6 +50,8 @@
 #include "chrome/browser/views/about_network_dialog.h"
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/chromeos_version_loader.h"
+#elif defined(OS_MACOSX)
+#include "chrome/browser/cocoa/about_ipc_dialog.h"
 #endif
 
 #if defined(USE_TCMALLOC)
@@ -845,14 +847,17 @@ bool WillHandleBrowserAboutURL(GURL* url, Profile* profile) {
 bool HandleNonNavigationAboutURL(const GURL& url) {
   // About:network and IPC and currently buggy, so we disable it for official
   // builds.
-#if defined(OS_WIN) && !defined(OFFICIAL_BUILD)
+#if !defined(OFFICIAL_BUILD)
+
+#if defined(OS_WIN)
   if (LowerCaseEqualsASCII(url.spec(), chrome::kChromeUINetworkURL)) {
     // Run the dialog. This will re-use the existing one if it's already up.
     AboutNetworkDialog::RunDialog();
     return true;
   }
+#endif
 
-#ifdef IPC_MESSAGE_LOG_ENABLED
+#if !defined(OS_LINUX) && defined(IPC_MESSAGE_LOG_ENABLED)
   if (LowerCaseEqualsASCII(url.spec(), chrome::kChromeUIIPCURL)) {
     // Run the dialog. This will re-use the existing one if it's already up.
     AboutIPCDialog::RunDialog();
@@ -860,8 +865,7 @@ bool HandleNonNavigationAboutURL(const GURL& url) {
   }
 #endif
 
-#else
-  // TODO(port) Implement this.
-#endif
+#endif  // OFFICIAL_BUILD
+
   return false;
 }

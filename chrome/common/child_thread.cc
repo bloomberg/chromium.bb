@@ -11,6 +11,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/plugin_messages.h"
 #include "ipc/ipc_logging.h"
+#include "ipc/ipc_message.h"
 #include "ipc/ipc_switches.h"
 #include "webkit/glue/webkit_glue.h"
 
@@ -98,15 +99,19 @@ void ChildThread::OnMessageReceived(const IPC::Message& msg) {
   if (resource_dispatcher_->OnMessageReceived(msg))
     return;
 
-  if (msg.type() == PluginProcessMsg_AskBeforeShutdown::ID) {
-    check_with_browser_before_shutdown_ = true;
-    return;
-  }
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(ChildThread, msg)
+    IPC_MESSAGE_HANDLER(PluginProcessMsg_AskBeforeShutdown, OnAskBeforeShutdown)
+    IPC_MESSAGE_HANDLER(PluginProcessMsg_Shutdown, OnShutdown)
+#if defined(IPC_MESSAGE_LOG_ENABLED)
+    IPC_MESSAGE_HANDLER(PluginProcessMsg_SetIPCLoggingEnabled,
+                        OnSetIPCLoggingEnabled)
+#endif  // IPC_MESSAGE_HANDLER
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
 
-  if (msg.type() == PluginProcessMsg_Shutdown::ID) {
-    MessageLoop::current()->Quit();
+  if (handled)
     return;
-  }
 
   if (msg.routing_id() == MSG_ROUTING_CONTROL) {
     OnControlMessageReceived(msg);
@@ -114,6 +119,23 @@ void ChildThread::OnMessageReceived(const IPC::Message& msg) {
     router_.OnMessageReceived(msg);
   }
 }
+
+void ChildThread::OnAskBeforeShutdown() {
+  check_with_browser_before_shutdown_ = true;
+}
+
+void ChildThread::OnShutdown() {
+  MessageLoop::current()->Quit();
+}
+
+#if defined(IPC_MESSAGE_LOG_ENABLED)
+void ChildThread::OnSetIPCLoggingEnabled(bool enable) {
+  if (enable)
+    IPC::Logging::current()->Enable();
+  else
+    IPC::Logging::current()->Disable();
+}
+#endif  //  IPC_MESSAGE_LOG_ENABLED
 
 ChildThread* ChildThread::current() {
   return ChildProcess::current()->main_thread();

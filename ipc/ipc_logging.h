@@ -23,8 +23,7 @@ class Message;
 // One instance per process.  Needs to be created on the main thread (the UI
 // thread in the browser) but OnPreDispatchMessage/OnPostDispatchMessage
 // can be called on other threads.
-class Logging : public base::WaitableEventWatcher::Delegate,
-                public MessageLoop::DestructionObserver {
+class Logging {
  public:
   // Implemented by consumers of log messages.
   class Consumer {
@@ -37,6 +36,10 @@ class Logging : public base::WaitableEventWatcher::Delegate,
   ~Logging();
   static Logging* current();
 
+  // Enable and Disable are NOT cross-process; they only affect the
+  // current thread/process.  If you want to modify the value for all
+  // processes, perhaps your intent is to call
+  // g_browser_process->SetIPCLoggingEnabled().
   void Enable();
   void Disable();
   bool Enabled() const { return enabled_; }
@@ -65,12 +68,6 @@ class Logging : public base::WaitableEventWatcher::Delegate,
   static void GetMessageText(uint16 type, std::wstring* name,
                              const Message* message, std::wstring* params);
 
-  // WaitableEventWatcher::Delegate implementation
-  void OnWaitableEventSignaled(base::WaitableEvent* event);
-
-  // MessageLoop::DestructionObserver implementation
-  void WillDestroyCurrentMessageLoop();
-
   typedef void (*LogFunction)(uint16 type,
                              std::wstring* name,
                              const Message* msg,
@@ -82,17 +79,11 @@ class Logging : public base::WaitableEventWatcher::Delegate,
   friend struct DefaultSingletonTraits<Logging>;
   Logging();
 
-  std::wstring GetEventName(int browser_pid, bool enabled);
   void OnSendLogs();
   void Log(const LogData& data);
 
-  void RegisterWaitForEvent(bool enabled);
-
-  base::WaitableEventWatcher watcher_;
-
-  scoped_ptr<base::WaitableEvent> logging_event_on_;
-  scoped_ptr<base::WaitableEvent> logging_event_off_;
   bool enabled_;
+  bool enabled_on_stderr_;  // only used on POSIX for now
 
   std::vector<LogData> queued_logs_;
   bool queue_invoke_later_pending_;

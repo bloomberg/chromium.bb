@@ -437,11 +437,11 @@ void AboutIPCDialog::ButtonPressed(
     if (tracking_) {
       track_toggle_->SetText(kStartTrackingLabel);
       tracking_ = false;
-      IPC::Logging::current()->Disable();
+      g_browser_process->SetIPCLoggingEnabled(false);
     } else {
       track_toggle_->SetText(kStopTrackingLabel);
       tracking_ = true;
-      IPC::Logging::current()->Enable();
+      g_browser_process->SetIPCLoggingEnabled(true);
     }
     track_toggle_->SchedulePaint();
   } else if (button == clear_button_) {

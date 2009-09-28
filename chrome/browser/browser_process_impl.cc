@@ -32,6 +32,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
+#include "ipc/ipc_logging.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/automation/automation_provider_list.h"
@@ -40,6 +41,11 @@
 #elif defined(OS_POSIX)
 // TODO(port): Remove the temporary scaffolding as we port the above headers.
 #include "chrome/common/temp_scaffolding_stubs.h"
+#endif
+
+#if defined(IPC_MESSAGE_LOG_ENABLED)
+#include "chrome/common/plugin_messages.h"
+#include "chrome/common/render_messages.h"
 #endif
 
 namespace {
@@ -451,6 +457,47 @@ void BrowserProcessImpl::CheckForInspectorFiles() {
       (FROM_HERE,
        NewRunnableMethod(this, &BrowserProcessImpl::DoInspectorFilesCheck));
 }
+
+#if defined(IPC_MESSAGE_LOG_ENABLED)
+
+void BrowserProcessImpl::SetIPCLoggingEnabled(bool enable) {
+  // First enable myself.
+  if (enable)
+    IPC::Logging::current()->Enable();
+  else
+    IPC::Logging::current()->Disable();
+
+  // Now tell subprocesses.  Messages to ChildProcess-derived
+  // processes must be done on the IO thread.
+  io_thread()->message_loop()->PostTask
+      (FROM_HERE,
+       NewRunnableMethod(
+           this,
+           &BrowserProcessImpl::SetIPCLoggingEnabledForChildProcesses,
+           enable));
+
+  // Finally, tell the renderers which don't derive from ChildProcess.
+  // Messages to the renderers must be done on the UI (main) thread.
+  RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+  for (RenderProcessHost* host = i.GetCurrentValue();
+       !i.IsAtEnd();
+       i.Advance()) {
+    host->Send(new ViewMsg_SetIPCLoggingEnabled(enable));
+  }
+}
+
+// Helper for SetIPCLoggingEnabled.
+void BrowserProcessImpl::SetIPCLoggingEnabledForChildProcesses(bool enabled) {
+  DCHECK(MessageLoop::current() ==
+         ChromeThread::GetMessageLoop(ChromeThread::IO));
+
+  ChildProcessHost::Iterator i;  // default constr references a singleton
+  for (ChildProcessHost* host = *i; !i.Done(); ++i) {
+    host->Send(new PluginProcessMsg_SetIPCLoggingEnabled(enabled));
+  }
+}
+
+#endif  // IPC_MESSAGE_LOG_ENABLED
 
 void BrowserProcessImpl::DoInspectorFilesCheck() {
   // Runs on FILE thread.

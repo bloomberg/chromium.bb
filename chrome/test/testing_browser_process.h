@@ -144,6 +144,9 @@ class TestingBrowserProcess : public BrowserProcess {
 
   virtual void CheckForInspectorFiles() {}
   virtual bool have_inspector_files() const { return true; }
+#if defined(IPC_MESSAGE_LOG_ENABLED)
+  virtual void SetIPCLoggingEnabled(bool enable) {}
+#endif
 
  private:
   NotificationService notification_service_;

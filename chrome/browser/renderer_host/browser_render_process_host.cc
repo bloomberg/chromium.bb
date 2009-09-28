@@ -51,6 +51,8 @@
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
 #include "grit/generated_resources.h"
+#include "ipc/ipc_logging.h"
+#include "ipc/ipc_message.h"
 #include "ipc/ipc_switches.h"
 
 #if defined(OS_WIN)
@@ -793,6 +795,12 @@ void BrowserRenderProcessHost::OnChannelConnected(int32 peer_pid) {
 #endif
     }
   }
+
+#if defined(IPC_MESSAGE_LOG_ENABLED)
+  bool enabled = IPC::Logging::current()->Enabled();
+  Send(new ViewMsg_SetIPCLoggingEnabled(enabled));
+#endif
+
 }
 
 // Static. This function can be called from any thread.

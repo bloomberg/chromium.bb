@@ -26,6 +26,7 @@
 #include "chrome/common/transport_dib.h"
 #include "chrome/common/view_types.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/appcache/appcache_interfaces.h"
@@ -732,6 +733,12 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_CONTROL2(ViewMsg_DatabaseGetFileSizeResponse,
                        int32 /* the ID of the message we're replying to */,
                        int64 /* the size of the given DB file */)
+
+#if defined(IPC_MESSAGE_LOG_ENABLED)
+  // Tell the renderer process to begin or end IPC message logging.
+  IPC_MESSAGE_CONTROL1(ViewMsg_SetIPCLoggingEnabled,
+                       bool /* on or off */)
+#endif
 
   //---------------------------------------------------------------------------
   // Utility process messages:

@@ -41,6 +41,7 @@
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/renderer_webkitclient_impl.h"
 #include "chrome/renderer/user_script_slave.h"
+#include "ipc/ipc_message.h"
 #include "webkit/api/public/WebColor.h"
 #include "webkit/api/public/WebCache.h"
 #include "webkit/api/public/WebKit.h"
@@ -282,6 +283,10 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnExtensionSetHostPermissions)
     IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetL10nMessages,
                         OnExtensionSetL10nMessages)
+#if defined(IPC_MESSAGE_LOG_ENABLED)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetIPCLoggingEnabled, 
+                        OnSetIPCLoggingEnabled)
+#endif
   IPC_END_MESSAGE_MAP()
 }
 

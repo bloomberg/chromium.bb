@@ -8,6 +8,9 @@
 #include <list>
 #include <string>
 
+// Must be included early (e.g. before chrome/common/plugin_messages.h)
+#include "ipc/ipc_logging.h"
+
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"

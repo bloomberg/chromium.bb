@@ -21,7 +21,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/debug_flags.h"
 #include "chrome/common/notification_service.h"
-#include "ipc/ipc_logging.h"
 #include "sandbox/src/sandbox.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
@@ -179,21 +178,6 @@ bool AddGenericPolicy(sandbox::TargetPolicy* policy) {
                            L"\\??\\pipe\\chrome.*");
   if (result != sandbox::SBOX_ALL_OK)
     return false;
-
-#ifdef IPC_MESSAGE_LOG_ENABLED
-  // Add the policy for the IPC logging events.
-  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_SYNC,
-                           sandbox::TargetPolicy::EVENTS_ALLOW_ANY,
-                           IPC::Logging::GetEventName(true).c_str());
-  if (result != sandbox::SBOX_ALL_OK)
-    return false;
-
-  result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_SYNC,
-                           sandbox::TargetPolicy::EVENTS_ALLOW_ANY,
-                           IPC::Logging::GetEventName(false).c_str());
-  if (result != sandbox::SBOX_ALL_OK)
-    return false;
-#endif
 
   // Add the policy for debug message only in debug
 #ifndef NDEBUG

@@ -898,6 +898,12 @@
         'browser/chromeos/status_area_view.h',
         'browser/chromeos/touchpad.cc',
         'browser/chromeos/touchpad.h',
+        'browser/cocoa/about_ipc_bridge.h',
+        'browser/cocoa/about_ipc_bridge.mm',
+        'browser/cocoa/about_ipc_controller.h',
+        'browser/cocoa/about_ipc_controller.mm',
+        'browser/cocoa/about_ipc_dialog.h',
+        'browser/cocoa/about_ipc_dialog.mm',
         'browser/cocoa/about_window_controller.h',
         'browser/cocoa/about_window_controller.mm',
         'browser/cocoa/autocomplete_text_field.h',
@@ -3102,6 +3108,7 @@
         # put any pdfs down in the sources block below so pdfsqueeze runs on
         # them.
         'app/nibs/About.xib',
+        'app/nibs/AboutIPC.xib',
         'app/nibs/BookmarkBar.xib',
         'app/nibs/BookmarkBubble.xib',
         'app/nibs/BookmarkEditor.xib',
@@ -4107,6 +4114,7 @@
         # It is safe to list */cocoa/* files in the "common" file list
         # without an explicit exclusion since gyp is smart enough to
         # exclude them from non-Mac builds.
+        'browser/cocoa/about_ipc_controller_unittest.mm',
         'browser/cocoa/about_window_controller_unittest.mm',
         'browser/cocoa/autocomplete_text_field_cell_unittest.mm',
         'browser/cocoa/autocomplete_text_field_editor_unittest.mm',

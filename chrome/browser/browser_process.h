@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "ipc/ipc_message.h"
 
 class AutomationProviderList;
 class Clipboard;
@@ -152,6 +153,13 @@ class BrowserProcess {
   // call this function before we have a definite answer from the disk. In that
   // case, we default to returning true.
   virtual bool have_inspector_files() const = 0;
+
+#if defined(IPC_MESSAGE_LOG_ENABLED)
+  // Enable or disable IPC logging for the browser, all processes
+  // derived from ChildProcess (plugin etc), and all
+  // renderers.
+  virtual void SetIPCLoggingEnabled(bool enable) = 0;
+#endif
 
  private:
   // User-data-dir based profiles.

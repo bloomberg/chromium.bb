@@ -22,7 +22,6 @@
 #include "chrome/common/process_watcher.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "ipc/ipc_logging.h"
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
@@ -256,6 +255,12 @@ void ChildProcessHost::ListenerHook::OnMessageReceived(
 void ChildProcessHost::ListenerHook::OnChannelConnected(int32 peer_pid) {
   host_->opening_channel_ = false;
   host_->OnChannelConnected(peer_pid);
+
+#if defined(IPC_MESSAGE_LOG_ENABLED)
+  bool enabled = IPC::Logging::current()->Enabled();
+  host_->Send(new PluginProcessMsg_SetIPCLoggingEnabled(enabled));
+#endif
+
   host_->Send(new PluginProcessMsg_AskBeforeShutdown());
 
   // Notify in the main loop of the connection.

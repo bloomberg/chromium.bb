@@ -40,6 +40,13 @@ IPC_BEGIN_MESSAGES(PluginProcess)
   // process that it's safe to shutdown.
   IPC_MESSAGE_CONTROL0(PluginProcessMsg_Shutdown)
 
+#if defined(IPC_MESSAGE_LOG_ENABLED)
+  // Tell the child process to begin or end IPC message logging.
+  // Like above, this is used by all ChildProcesses.
+  IPC_MESSAGE_CONTROL1(PluginProcessMsg_SetIPCLoggingEnabled,
+                       bool /* on or off */)
+#endif
+
 IPC_END_MESSAGES(PluginProcess)
 
 
