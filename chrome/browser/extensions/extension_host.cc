@@ -135,9 +135,14 @@ void ExtensionHost::NavigateToURL(const GURL& url) {
 void ExtensionHost::Observe(NotificationType type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
-  DCHECK(type == NotificationType::EXTENSION_BACKGROUND_PAGE_READY);
-  DCHECK(extension_->GetBackgroundPageReady());
-  NavigateToURL(url_);
+  if (type == NotificationType::EXTENSION_BACKGROUND_PAGE_READY) {
+    DCHECK(extension_->GetBackgroundPageReady());
+    NavigateToURL(url_);
+  } else if (type == NotificationType::BROWSER_THEME_CHANGED) {
+    InsertThemeCSS();
+  } else {
+    NOTREACHED();
+  }
 }
 
 void ExtensionHost::UpdatePreferredWidth(int pref_width) {
@@ -241,10 +246,15 @@ void ExtensionHost::DidStopLoading(RenderViewHost* render_view_host) {
 
 void ExtensionHost::DocumentAvailableInMainFrame(RenderViewHost* rvh) {
   document_element_available_ = true;
-  if (is_background_page())
+  if (is_background_page()) {
     extension_->SetBackgroundPageReady();
-  else
+  } else {
     InsertThemeCSS();
+
+    // Listen for browser changes so we can resend the CSS.
+    registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                   NotificationService::AllSources());
+  }
 }
 
 void ExtensionHost::RunJavaScriptMessage(const std::wstring& message,

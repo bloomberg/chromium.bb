@@ -15,9 +15,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
-// Background color of the shelf.
-static const GdkColor kBackgroundColor = GDK_COLOR_RGB(230, 237, 244);
-
 // Border color (the top pixel of the shelf).
 const GdkColor kBorderColor = GDK_COLOR_RGB(214, 214, 214);
 
@@ -168,6 +165,18 @@ void ExtensionShelfGtk::Observe(NotificationType type,
   } else {
     gtk_widget_modify_bg(top_border_, GTK_STATE_NORMAL, &kBorderColor);
   }
+
+  GdkColor color = theme_provider_->GetGdkColor(
+      BrowserThemeProvider::COLOR_TOOLBAR);
+  gtk_widget_modify_bg(event_box_.get(), GTK_STATE_NORMAL, &color);
+
+  // Reset the background images on all the individual toolstrips
+  background_.reset();
+  InitBackground();
+  for (std::set<Toolstrip*>::iterator it = toolstrips_.begin();
+       it != toolstrips_.end(); ++it) {
+    (*it)->SetBackground(*background_.get());
+  }
 }
 
 void ExtensionShelfGtk::Init(Profile* profile) {
@@ -178,7 +187,6 @@ void ExtensionShelfGtk::Init(Profile* profile) {
   // widget.
   event_box_.Own(gtk_event_box_new());
   ViewIDUtil::SetID(event_box_.get(), VIEW_ID_DEV_EXTENSION_SHELF);
-  gtk_widget_modify_bg(event_box_.get(), GTK_STATE_NORMAL, &kBackgroundColor);
 
   shelf_hbox_ = gtk_hbox_new(FALSE, 0);
 
@@ -199,12 +207,16 @@ void ExtensionShelfGtk::Init(Profile* profile) {
 void ExtensionShelfGtk::InitBackground() {
   if (background_.get())
     return;
+
+  GdkColor color =
+      theme_provider_->GetGdkColor(BrowserThemeProvider::COLOR_TOOLBAR);
+
   background_.reset(new SkBitmap);
   background_->setConfig(SkBitmap::kARGB_8888_Config, 3, 3);
   background_->allocPixels();
-  background_->eraseRGB(kBackgroundColor.red >> 8,
-                        kBackgroundColor.green >> 8,
-                        kBackgroundColor.blue >> 8);
+  background_->eraseRGB(color.red >> 8,
+                        color.green >> 8,
+                        color.blue >> 8);
 }
 
 void ExtensionShelfGtk::AdjustHeight() {
