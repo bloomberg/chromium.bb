@@ -338,45 +338,49 @@
         }],
       ],
     },
-    {
-      'target_name': 'view_examples',
-      'type': 'executable',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../skia/skia.gyp:skia',
-        'views',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'examples/button_example.h',
-        'examples/combobox_example.h',
-        'examples/example_base.cc',
-        'examples/example_base.h',
-        'examples/examples_main_base.cc',
-        'examples/examples_main_base.h',
-        'examples/examples_main_gtk.cc',
-        'examples/message_box_example.h',
-        'examples/radio_button_example.h',
-        'examples/tabbed_pane_example.h',
-      ],
-      'conditions': [
-        ['OS=="linux"', {
+  ],
+  'conditions': [
+    # TODO(oshima): support win
+    ['OS!="win"', {
+      'targets': [
+        {
+          'target_name': 'view_examples',
+          'type': 'executable',
           'dependencies': [
-            '../build/linux/system.gyp:gtk',
-          ],
-        },
-        ],
-        ['OS=="linux" and toolkit_views==1', {
-          'dependencies': [
+            '../base/base.gyp:base',
+            '../skia/skia.gyp:skia',
             'views',
           ],
-        }],
-        ['OS=="win"', {
-	  # TODO(oshima): support win
-        }],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'examples/button_example.h',
+            'examples/combobox_example.h',
+            'examples/example_base.cc',
+            'examples/example_base.h',
+            'examples/examples_main_base.cc',
+            'examples/examples_main_base.h',
+            'examples/examples_main_gtk.cc',
+            'examples/message_box_example.h',
+            'examples/radio_button_example.h',
+            'examples/tabbed_pane_example.h',
+          ],
+          'conditions': [
+            ['OS=="linux"', {
+              'dependencies': [
+                '../build/linux/system.gyp:gtk',
+              ],
+            },
+            ],
+            ['OS=="linux" and toolkit_views==1', {
+              'dependencies': [
+                'views',
+              ],
+            }],
+          ],
+        },
       ],
-    },
+    }],
   ],
 }
