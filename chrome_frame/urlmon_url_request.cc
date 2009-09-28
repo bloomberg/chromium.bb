@@ -10,7 +10,7 @@
 #include "base/string_util.h"
 #include "base/logging.h"
 #include "chrome_frame/urlmon_upload_data_stream.h"
-#include "ie_alt_tab/utils.h"
+#include "chrome_frame/utils.h"
 #include "net/http/http_util.h"
 #include "net/http/http_response_headers.h"
 
