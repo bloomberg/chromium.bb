@@ -532,8 +532,13 @@ void FindBarGtk::Observe(NotificationType type,
 
 bool FindBarGtk::GetFindBarWindowInfo(gfx::Point* position,
                                       bool* fully_visible) {
-  NOTIMPLEMENTED();
-  return false;
+  if (position)
+    NOTIMPLEMENTED();
+  if (fully_visible) {
+    *fully_visible = !slide_widget_->IsAnimating() &&
+                     slide_widget_->IsShowing();
+  }
+  return true;
 }
 
 void FindBarGtk::FindEntryTextInContents(bool forward_search) {

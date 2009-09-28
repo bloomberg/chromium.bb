@@ -1117,13 +1117,12 @@ void AutomationProvider::HandleOpenFindInPageRequest(
 }
 
 void AutomationProvider::GetFindWindowVisibility(int handle, bool* visible) {
-  gfx::Point position;
   *visible = false;
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
+  Browser* browser = browser_tracker_->GetResource(handle);
+  if (browser) {
     FindBarTesting* find_bar =
         browser->find_bar()->find_bar()->GetFindBarTesting();
-    find_bar->GetFindBarWindowInfo(&position, visible);
+    find_bar->GetFindBarWindowInfo(NULL, visible);
   }
 }
 

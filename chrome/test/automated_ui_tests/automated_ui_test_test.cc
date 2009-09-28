@@ -36,11 +36,16 @@
 // Automation pieces are not implemented for these on platforms other than
 // Windows.
 #if defined(OS_WIN)
-#define MAYBE_FindInPage FindInPage
 #define MAYBE_ShowBookmarkBar ShowBookmarkBar
 #else
-#define MAYBE_FindInPage DISABLED_FindInPage
 #define MAYBE_ShowBookmarkBar DISABLED_ShowBookmarkBar
+#endif
+
+// FindBarTesting not implemented on mac.
+#if defined(OS_MACOSX)
+#define MAYBE_FindInPage DISABLED_FindInPage
+#else
+#define MAYBE_FindInPage FindInPage
 #endif
 
 TEST_F(AutomatedUITestBase, MAYBE_FindInPage) {

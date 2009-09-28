@@ -242,15 +242,19 @@ bool FindBarHost::GetFindBarWindowInfo(gfx::Point* position,
       false) {
       // TODO(sky): figure out linux side.
 #endif
-    *position = gfx::Point();
-    *fully_visible = false;
+    if (position)
+      *position = gfx::Point();
+    if (fully_visible)
+      *fully_visible = false;
     return false;
   }
 
   gfx::Rect window_rect;
   host_->GetBounds(&window_rect, true);
-  *position = window_rect.origin();
-  *fully_visible = host_->IsVisible() && !IsAnimating();
+  if (position)
+    *position = window_rect.origin();
+  if (fully_visible)
+    *fully_visible = host_->IsVisible() && !IsAnimating();
   return true;
 }
 
