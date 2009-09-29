@@ -4,9 +4,11 @@
 
 #import "chrome/browser/cocoa/first_run_dialog.h"
 
+#include "app/l10n_util_mac.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
 #import "base/scoped_nsobject.h"
+#include "grit/locale_settings.h"
 
 @implementation FirstRunDialogController
 
@@ -19,7 +21,10 @@
 @synthesize browserImportListHidden = browser_import_list_hidden_;
 
 - (id)init {
-  self = [super initWithWindowNibName:@"FirstRunDialog"];
+  NSString* nibpath =
+      [mac_util::MainAppBundle() pathForResource:@"FirstRunDialog"
+                                          ofType:@"nib"];
+  self = [super initWithWindowNibPath:nibpath owner:self];
   if (self != nil) {
     // Bound to the dialog checkbox, default to true.
     stats_enabled_ = YES;
@@ -67,10 +72,8 @@
 }
 
 - (IBAction)learnMore:(id)sender {
-  // TODO(jeremy): Rather than always using English, set the language that
-  // Chrome is running in.
-  NSURL* learnMoreUrl = [NSURL URLWithString:@"http://www.google.com/support/"
-                            "chrome/bin/answer.py?answer=96817&hl=en"];
+  NSString* urlStr = l10n_util::GetNSString(IDS_LEARN_MORE_REPORTING_URL);
+  NSURL* learnMoreUrl = [NSURL URLWithString:urlStr];
   [[NSWorkspace sharedWorkspace] openURL:learnMoreUrl];
 }
 
