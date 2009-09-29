@@ -482,7 +482,7 @@ void SkinEval::UpdateOutputs() {
           << " is not a ParamMatrix4";
       return;
     }
-    bones_[ii] = param->value() * inverse_base * inverse_bind_pose_array[ii];
+    bones_[ii] = inverse_base * param->value() * inverse_bind_pose_array[ii];
   }
 
   DoSkinning(the_skin);

@@ -344,13 +344,15 @@ class Collada {
   // instance. If the Shape does not exist, Builds one.
   Shape* GetSkinnedShape(FCDocument* doc,
                          FCDControllerInstance* instance,
-                         NodeInstance *parent_node_instance);
+                         NodeInstance *parent_node_instance,
+                         Transform* parent);
 
   // Builds O3D skinned shape corresponding to a given FCollada controller
   // instance.
   Shape* BuildSkinnedShape(FCDocument* doc,
                            FCDControllerInstance* instance,
-                           NodeInstance *parent_node_instance);
+                           NodeInstance *parent_node_instance,
+                           Transform* parent);
 
   // Builds an O3D texture corresponding to a given FCollada surface
   // parameter.

@@ -887,7 +887,8 @@ bool Collada::ImportTreeInstances(FCDocument* doc,
           if (controller->IsSkin()) {
             Shape* shape = GetSkinnedShape(doc,
                                            controller_instance,
-                                           node_instance);
+                                           node_instance,
+                                           transform);
             if (shape) {
               transform->AddShape(shape);
             } else {
@@ -1108,7 +1109,8 @@ Shape* Collada::GetShape(FCDocument* doc,
 
 Shape* Collada::GetSkinnedShape(FCDocument* doc,
                                 FCDControllerInstance* instance,
-                                NodeInstance *parent_node_instance) {
+                                NodeInstance *parent_node_instance,
+                                Transform* parent) {
   Shape* shape = NULL;
   FCDController* controller =
       static_cast<FCDController*>(instance->GetEntity());
@@ -1116,7 +1118,7 @@ Shape* Collada::GetSkinnedShape(FCDocument* doc,
     fm::string id = controller->GetDaeId();
     shape = skinned_shapes_[id.c_str()];
     if (!shape) {
-      shape = BuildSkinnedShape(doc, instance, parent_node_instance);
+      shape = BuildSkinnedShape(doc, instance, parent_node_instance, parent);
       if (!shape)
         return NULL;
       skinned_shapes_[id.c_str()] = shape;
@@ -1127,9 +1129,6 @@ Shape* Collada::GetSkinnedShape(FCDocument* doc,
 
 // Builds an O3D shape node corresponding to a given FCollada geometry
 // instance.
-// Parameters:
-//   doc:                The FCollada document from which to import nodes.
-//   geom_instance:      The FCollada geometry node to be converted.
 Shape* Collada::BuildShape(FCDocument* doc,
                            FCDGeometryInstance* geom_instance,
                            FCDGeometry* geom,
@@ -1312,8 +1311,11 @@ Shape* Collada::BuildShape(FCDocument* doc,
 
 Shape* Collada::BuildSkinnedShape(FCDocument* doc,
                                   FCDControllerInstance* instance,
-                                  NodeInstance *parent_node_instance) {
+                                  NodeInstance *parent_node_instance,
+                                  Transform* parent) {
   // TODO(o3d): Handle chained controllers. Morph->Skin->...
+  // TODO(gman): Change this to correctly create the skin, separate from
+  //     ParamArray and SkinEval so that we can support instanced skins.
   Shape* shape = NULL;
   LOG_ASSERT(doc && instance);
   FCDController* controller =
@@ -1392,6 +1394,8 @@ Shape* Collada::BuildSkinnedShape(FCDocument* doc,
 
     skin_eval->set_skin(skin);
     skin_eval->set_matrices(matrices);
+    skin_eval->GetParam<ParamMatrix4>(SkinEval::kBaseParamName)->Bind(
+        parent->GetParam<ParamMatrix4>(Transform::kWorldMatrixParamName));
 
     // Bind bones to matrices
     size_t num_bones = instance->GetJointCount();
