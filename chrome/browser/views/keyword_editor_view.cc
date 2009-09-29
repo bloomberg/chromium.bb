@@ -112,6 +112,10 @@ std::wstring KeywordEditorView::GetWindowTitle() const {
   return l10n_util::GetString(IDS_SEARCH_ENGINES_EDITOR_WINDOW_TITLE);
 }
 
+std::wstring KeywordEditorView::GetWindowName() const {
+  return prefs::kKeywordEditorWindowPlacement;
+}
+
 int KeywordEditorView::GetDialogButtons() const {
   return MessageBoxFlags::DIALOGBUTTON_CANCEL;
 }
