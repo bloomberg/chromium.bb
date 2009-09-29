@@ -1,6 +1,6 @@
 deps = {
   "tools/gyp":
-    "http://gyp.googlecode.com/svn/trunk@636",
+    "http://gyp.googlecode.com/svn/trunk@671",
   "build":
     "http://src.chromium.org/svn/trunk/src/build",
   "site_scons":
