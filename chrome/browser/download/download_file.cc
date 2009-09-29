@@ -28,7 +28,7 @@
 #include "app/win_util.h"
 #include "chrome/common/win_safe_util.h"
 #elif defined(OS_MACOSX)
-#include "chrome/common/quarantine_mac.h"
+#include "chrome/browser/cocoa/file_metadata.h"
 #endif
 
 // Throttle updates to the UI thread so that a fast moving download doesn't
@@ -148,8 +148,10 @@ void DownloadFile::AnnotateWithSourceInformation() {
   // We ignore the return value because a failure is not fatal.
   win_util::SetInternetZoneIdentifier(full_path_);
 #elif defined(OS_MACOSX)
-  quarantine_mac::AddQuarantineMetadataToFile(full_path_, source_url_,
-                                              referrer_url_);
+  file_metadata::AddQuarantineMetadataToFile(full_path_, source_url_,
+                                             referrer_url_);
+  file_metadata::AddOriginMetadataToFile(full_path_, source_url_,
+                                         referrer_url_);
 #endif
 }
 
