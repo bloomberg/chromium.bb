@@ -82,7 +82,7 @@ class TaskManager {
   // notifications to the task manager.
   // Note: ResourceProviders have to be ref counted as they are used in
   // MessageLoop::InvokeLater().
-  class ResourceProvider : public base::RefCounted<ResourceProvider> {
+  class ResourceProvider : public base::RefCountedThreadSafe<ResourceProvider> {
    public:
     virtual ~ResourceProvider() {}
 
@@ -160,7 +160,7 @@ class TaskManagerModelObserver {
 
 // The model that the TaskManager is using.
 class TaskManagerModel : public URLRequestJobTracker::JobObserver,
-                         public base::RefCounted<TaskManagerModel> {
+                         public base::RefCountedThreadSafe<TaskManagerModel> {
  public:
   explicit TaskManagerModel(TaskManager* task_manager);
   ~TaskManagerModel();
