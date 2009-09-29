@@ -421,7 +421,7 @@ each locale. -->
         <message name="IDS_CONTENT_CONTEXT_FULLSCREEN" desc="The name of the Fullscreen command for the video element in the content area context menu">
           &amp;Full Screen
         </message>
-        <message name="IDS_CONTENT_CONTEXT_SAVESCREENSHOTAS" desc="The name of the Copy Sceenshot As command the video element in the content area context menu">
+        <message name="IDS_CONTENT_CONTEXT_SAVESCREENSHOTAS" desc="The name of the Copy Screenshot As command the video element in the content area context menu">
           Save &amp;Screenshot...
         </message>
         <message name="IDS_CONTENT_CONTEXT_SAVEVIDEOAS" desc="The name of the Save Video As command in the content area context menu">
@@ -594,7 +594,7 @@ each locale. -->
         <message name="IDS_CONTENT_CONTEXT_FULLSCREEN" desc="In Title Case: The name of the Fullscreen command for the video element in the content area context menu">
           &amp;Full Screen
         </message>
-        <message name="IDS_CONTENT_CONTEXT_SAVESCREENSHOTAS" desc="In Title Case: The name of the Copy Sceenshot As command the video element in the content area context menu">
+        <message name="IDS_CONTENT_CONTEXT_SAVESCREENSHOTAS" desc="In Title Case: The name of the Copy Screenshot As command the video element in the content area context menu">
           Save &amp;Screenshot...
         </message>
         <message name="IDS_CONTENT_CONTEXT_SAVEVIDEOAS" desc="In Title Case: The name of the Save Video As command in the content area context menu">
@@ -731,7 +731,7 @@ each locale. -->
         <message name="IDS_ENCODING_MENU" desc="The text label of the Encoding submenu">
           &amp;Encoding
         </message>
-        <message name="IDS_ENCODING_AUTO_DETECT" desc="The text label of the Auto Dectect submenu">
+        <message name="IDS_ENCODING_AUTO_DETECT" desc="The text label of the Auto Detect submenu">
           Auto detect
         </message>
       </if>
@@ -793,7 +793,7 @@ each locale. -->
         <message name="IDS_ENCODING_MENU" desc="In Title Case: The text label of the Encoding submenu">
           &amp;Encoding
         </message>
-        <message name="IDS_ENCODING_AUTO_DETECT" desc="In Title Case: The text label of the Auto Dectect submenu">
+        <message name="IDS_ENCODING_AUTO_DETECT" desc="In Title Case: The text label of the Auto Detect submenu">
           Auto Detect
         </message>
       </if>
@@ -809,7 +809,7 @@ each locale. -->
       <message name="IDS_ENCODING_SIMP_CHINESE" desc="The text label of Simplified Chinese encodings">
         Chinese Simplified
       </message>
-      <message name="IDS_ENCODING_TRAD_CHINESE" desc="The text label of Tradtional Chinese encodings">
+      <message name="IDS_ENCODING_TRAD_CHINESE" desc="The text label of Traditional Chinese encodings">
         Chinese Traditional
       </message>
       <message name="IDS_ENCODING_KOREAN" desc="The text label of Korean encoding">
@@ -818,7 +818,7 @@ each locale. -->
       <message name="IDS_ENCODING_JAPANESE" desc="The text label of Japanese encodings">
         Japanese
       </message>
-      <message name="IDS_ENCODING_THAI" desc="The text label of encoding thai lanuage">
+      <message name="IDS_ENCODING_THAI" desc="The text label of encoding thai language">
         Thai
       </message>
       <message name="IDS_ENCODING_CENTRAL_EUROPEAN" desc="The text label of encoding Central European">
@@ -1089,7 +1089,7 @@ each locale. -->
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
       <message name="IDS_TIME_SEC_SINGULAR"
-               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazillian Portugese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Servian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
+               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> sec
       </message>
       </if>
@@ -1160,7 +1160,7 @@ each locale. -->
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
       <message name="IDS_TIME_MIN_SINGULAR"
-               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazillian Portugese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Servian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
+               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> min
       </message>
       </if>
@@ -1231,7 +1231,7 @@ each locale. -->
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
       <message name="IDS_TIME_HOUR_SINGULAR"
-               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazillian Portugese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Servian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
+               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> hour
       </message>
       </if>
@@ -1302,7 +1302,7 @@ each locale. -->
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
       <message name="IDS_TIME_DAY_SINGULAR"
-               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazillian Portugese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Servian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
+               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> day
       </message>
       </if>
@@ -1373,7 +1373,7 @@ each locale. -->
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
       <message name="IDS_TIME_REMAINING_SEC_SINGULAR"
-               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazillian Portugese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Servian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
+               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> sec left
       </message>
       </if>
@@ -1444,7 +1444,7 @@ each locale. -->
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
       <message name="IDS_TIME_REMAINING_MIN_SINGULAR"
-               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazillian Portugese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Servian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
+               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> min left
       </message>
       </if>
@@ -1515,7 +1515,7 @@ each locale. -->
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
       <message name="IDS_TIME_REMAINING_HOUR_SINGULAR"
-               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazillian Portugese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Servian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
+               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> hour left
       </message>
       </if>
@@ -1586,7 +1586,7 @@ each locale. -->
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
       <message name="IDS_TIME_REMAINING_DAY_SINGULAR"
-               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazillian Portugese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Servian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
+               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> day left
       </message>
       </if>
@@ -1657,7 +1657,7 @@ each locale. -->
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
       <message name="IDS_TIME_ELAPSED_SEC_SINGULAR"
-               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazillian Portugese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Servian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
+               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> sec ago
       </message>
       </if>
@@ -1728,7 +1728,7 @@ each locale. -->
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
       <message name="IDS_TIME_ELAPSED_MIN_SINGULAR"
-               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazillian Portugese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Servian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
+               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> min ago
       </message>
       </if>
@@ -1799,7 +1799,7 @@ each locale. -->
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
       <message name="IDS_TIME_ELAPSED_HOUR_SINGULAR"
-               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazillian Portugese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Servian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
+               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> hour ago
       </message>
       </if>
@@ -1870,7 +1870,7 @@ each locale. -->
 
       <if expr="lang not in ['zh-CN', 'zh-TW', 'ko', 'ja', 'vi', 'tr', 'kn']">
       <message name="IDS_TIME_ELAPSED_DAY_SINGULAR"
-               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazillian Portugese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Servian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
+               desc="NUMBER_ONE is one or one-like numbers : 1 (many European and most Indian languages), 1 and 0 (French, Brazilian Portuguese and Hindi), 1,21,31, .. (Russian, Ukrainian, Croatian, Serbian, Latvian, Lithuanian), or 1, 101, 201, .. (Slovenian). Do NOT translate this for CJK, Vietnamese, Turkish and Kannada">
         <ph name="NUMBER_ONE"><ex>1</ex>#</ph> day ago
       </message>
       </if>
@@ -3292,10 +3292,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BOOMARK_BUBBLE_REMOVE_BOOKMARK" desc="Link for removing the bookmark">
         Remove
       </message>
-      <message name="IDS_BOOMARK_BUBBLE_TITLE_TEXT" desc="Text preceeding the title of the page that was bookmarked">
+      <message name="IDS_BOOMARK_BUBBLE_TITLE_TEXT" desc="Text preceding the title of the page that was bookmarked">
         Name:
       </message>
-      <message name="IDS_BOOMARK_BUBBLE_FOLDER_TEXT" desc="Text preceeding the folder selector">
+      <message name="IDS_BOOMARK_BUBBLE_FOLDER_TEXT" desc="Text preceding the folder selector">
         Folder:
       </message>
       <message name="IDS_BOOMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER" desc="Text in the combobox allowing the user to choose another folder (by bringing up th editor).">
@@ -3337,7 +3337,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Bookmarks
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOMARK_BAR_OPEN_INCOGNITO" desc="Menu description for openning bookmark in incognito window">
+        <message name="IDS_BOOMARK_BAR_OPEN_INCOGNITO" desc="Menu description for opening bookmark in incognito window">
           Open in incognito window
         </message>
         <message name="IDS_BOOMARK_BAR_OPEN_IN_NEW_TAB" desc="Menu description for loading bookmark in a new tab">
@@ -3358,7 +3358,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW" desc="Menu title for opening all urls in a bookmark folder in a new window">
           Open all bookmarks in new window
         </message>
-        <message name="IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO" desc="Menu description for openning all urls in a bookmark folder in an incognito window">
+        <message name="IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO" desc="Menu description for opening all urls in a bookmark folder in an incognito window">
           Open all bookmarks in incognito window
         </message>
         <message name="IDS_BOOKMARK_BAR_REMOVE" desc="Menu title for removing/unstarring a bookmark">
@@ -3366,7 +3366,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_BOOMARK_BAR_OPEN_INCOGNITO" desc="In Title Case: Menu description for openning bookmark in incognito window">
+        <message name="IDS_BOOMARK_BAR_OPEN_INCOGNITO" desc="In Title Case: Menu description for opening bookmark in incognito window">
           Open in Incognito Window
         </message>
         <message name="IDS_BOOMARK_BAR_OPEN_IN_NEW_TAB" desc="In Title Case: Menu description for loading bookmark in a new tab">
@@ -3387,7 +3387,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW" desc="In Title Case: Menu title for opening all urls in a bookmark folder in a new window">
           Open All Bookmarks in New Window
         </message>
-        <message name="IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO" desc="In Title Case: Menu description for openning all urls in a bookmark folder in an incognito window">
+        <message name="IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO" desc="In Title Case: Menu description for opening all urls in a bookmark folder in an incognito window">
           Open All Bookmarks in Incognito Window
         </message>
         <message name="IDS_BOOKMARK_BAR_REMOVE" desc="In Title Case: Menu title for removing/unstarring a bookmark">
@@ -4115,7 +4115,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_WEBKIT_IMAGE_LOAD_AUTOMATIC_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables automatic image loading.">
         Load images automatically
       </message>
-      <message name="IDS_NETWORK_DNS_PREFETCH_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables DNS prefetching.  DNS prefetching involves scanning pages and user text entries, guessing what domain the user may next navigate to, and obtaining the damain's DNS information for that URL in advance. ">
+      <message name="IDS_NETWORK_DNS_PREFETCH_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables DNS prefetching.  DNS prefetching involves scanning pages and user text entries, guessing what domain the user may next navigate to, and obtaining the domain's DNS information for that URL in advance. ">
         Use DNS pre-fetching to improve page load performance
       </message>
 
@@ -5096,7 +5096,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_LOGIN_INFO_OUT_OF_DATE" desc="The login information for the user is out of date - for example, the user changed their password and therefore a re-login is required.">
         Login details are out of date.
       </message>
-      <message name="IDS_SYNC_SERVER_IS_UNREACHABLE" desc="The message to disaplay in the New Tab Page sync section when the server is unreachable.">
+      <message name="IDS_SYNC_SERVER_IS_UNREACHABLE" desc="The message to display in the New Tab Page sync section when the server is unreachable.">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex> could not sync your bookmarks because it could not connect to the sync server. Retrying...</ph>
       </message>
       <message name="IDS_SYNC_RELOGIN_LINK_LABEL" desc="The text to display on in the hyperlink when the user needs to relogin to use sync.">
