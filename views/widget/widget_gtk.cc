@@ -490,43 +490,6 @@ void WidgetGtk::DidProcessEvent(GdkEvent* event) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// FocusTraversable
-
-View* WidgetGtk::FindNextFocusableView(
-    View* starting_view, bool reverse, Direction direction,
-    bool check_starting_view, FocusTraversable** focus_traversable,
-    View** focus_traversable_view) {
-  return root_view_->FindNextFocusableView(starting_view,
-                                           reverse,
-                                           direction,
-                                           check_starting_view,
-                                           focus_traversable,
-                                           focus_traversable_view);
-}
-
-FocusTraversable* WidgetGtk::GetFocusTraversableParent() {
-  // We are a proxy to the root view, so we should be bypassed when traversing
-  // up and as a result this should not be called.
-  NOTREACHED();
-  return NULL;
-}
-
-void WidgetGtk::SetFocusTraversableParent(FocusTraversable* parent) {
-  root_view_->SetFocusTraversableParent(parent);
-}
-
-View* WidgetGtk::GetFocusTraversableParentView() {
-  // We are a proxy to the root view, so we should be bypassed when traversing
-  // up and as a result this should not be called.
-  NOTREACHED();
-  return NULL;
-}
-
-void WidgetGtk::SetFocusTraversableParentView(View* parent_view) {
-  root_view_->SetFocusTraversableParentView(parent_view);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // TODO(beng): organize into sections:
 
 void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
@@ -580,7 +543,6 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
     if (transparent_)
       ConfigureWidgetForTransparentBackground();
   }
-
   // The widget needs to be realized before handlers like size-allocate can
   // function properly.
   gtk_widget_realize(widget_);

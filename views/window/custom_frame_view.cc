@@ -86,13 +86,6 @@ CustomFrameView::CustomFrameView(Window* frame)
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
-  // The frame's buttons should not be focusable.
-  close_button_->SetFocusable(false);
-  restore_button_->SetFocusable(false);
-  maximize_button_->SetFocusable(false);
-  minimize_button_->SetFocusable(false);
-  system_menu_button_->SetFocusable(false);
-
   // Close button images will be set in LayoutWindowControls().
   AddChildView(close_button_);
 

@@ -277,11 +277,11 @@ bool View::HasFocus() {
 }
 
 void View::Focus() {
-  // By default, we clear the native focus. This ensures that no visible native
-  // view as the focus and that we still receive keyboard inputs.
+  // Set the native focus to the root view window so it receives the keyboard
+  // messages.
   FocusManager* focus_manager = GetFocusManager();
   if (focus_manager)
-    focus_manager->ClearNativeFocus();
+    focus_manager->FocusNativeView(GetRootView()->GetWidget()->GetNativeView());
 }
 
 void View::SetHotTracked(bool flag) {

@@ -8,20 +8,11 @@
 
 #include "base/logging.h"
 #include "views/widget/widget_gtk.h"
-#include "views/window/window_gtk.h"
 
 namespace views {
 
 void FocusManager::ClearNativeFocus() {
-  GtkWidget* gtk_widget = widget_->GetNativeView();
-  if (!gtk_widget) {
-    NOTREACHED();
-    return;
-  }
-
-  // Since only top-level WidgetGtk have a focus manager, the native view is
-  // expected to be a GtkWindow.
-  gtk_window_set_focus(GTK_WINDOW(gtk_widget), NULL);
+  gtk_widget_grab_focus(widget_->GetNativeView());
 }
 
 void FocusManager::FocusNativeView(gfx::NativeView native_view) {
