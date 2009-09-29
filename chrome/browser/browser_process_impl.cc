@@ -492,8 +492,9 @@ void BrowserProcessImpl::SetIPCLoggingEnabledForChildProcesses(bool enabled) {
          ChromeThread::GetMessageLoop(ChromeThread::IO));
 
   ChildProcessHost::Iterator i;  // default constr references a singleton
-  for (ChildProcessHost* host = *i; !i.Done(); ++i) {
-    host->Send(new PluginProcessMsg_SetIPCLoggingEnabled(enabled));
+  while (!i.Done()) {
+    i->Send(new PluginProcessMsg_SetIPCLoggingEnabled(enabled));
+    ++i;
   }
 }
 
