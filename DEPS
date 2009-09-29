@@ -34,13 +34,13 @@ deps = {
     "http://protobuf.googlecode.com/svn/trunk@219",
 
   "src/tools/gyp":
-    "http://gyp.googlecode.com/svn/trunk@668",
+    "http://gyp.googlecode.com/svn/trunk@671",
 
   "src/v8":
     "http://v8.googlecode.com/svn/trunk@2966",
 
   "src/native_client":
-    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@799",
+    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@801",
 
   "src/third_party/skia":
     "http://skia.googlecode.com/svn/trunk@341",
