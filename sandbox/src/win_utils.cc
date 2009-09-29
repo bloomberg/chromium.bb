@@ -197,12 +197,16 @@ bool GetPathFromHandle(HANDLE handle, std::wstring* path) {
 
 };  // namespace sandbox
 
-// TODO(cpu): Revert this change to use a map to speed up the function once
-// this has been deployed in the dev channel for a week. See bug 11789.
+// TODO(cpu): This is not the final code we want here but we are yet
+// to understand what is going on. See bug 11789.
 void ResolveNTFunctionPtr(const char* name, void* ptr) {
   static HMODULE ntdll = ::GetModuleHandle(sandbox::kNtdllName);
 
   FARPROC* function_ptr = reinterpret_cast<FARPROC*>(ptr);
   *function_ptr = ::GetProcAddress(ntdll, name);
-  CHECK(*function_ptr) << "Failed to resolve NTDLL function";
+  if (*function_ptr)
+    return;
+  // We have data that re-trying helps.
+  *function_ptr = ::GetProcAddress(ntdll, name);
+  CHECK(*function_ptr);
 }
