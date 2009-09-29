@@ -44,7 +44,8 @@ void CollapseDuplicateSpaces(std::string* str) {
 
 }  // namespace
 
-AffReader::AffReader(const std::string& filename) {
+AffReader::AffReader(const std::string& filename)
+    : has_indexed_affixes_(false) {
   file_ = file_util::OpenFile(filename, "r");
 
   // Default to Latin1 in case the file doesn't specify it.
