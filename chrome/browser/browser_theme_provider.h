@@ -13,14 +13,12 @@
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "base/basictypes.h"
-#include "base/lock.h"
 #include "base/non_thread_safe.h"
 #include "base/ref_counted.h"
 
 class Extension;
 class Profile;
 class DictionaryValue;
-class PrefService;
 
 class BrowserThemeProvider : public NonThreadSafe,
                              public ThemeProvider {
@@ -205,20 +203,6 @@ class BrowserThemeProvider : public NonThreadSafe,
   // Parse tiling values from something like "no-repeat" into a Tiling value.
   static int StringToTiling(const std::string &tiling);
 
-  // Lock on write to themed_image_cache_ in UI thread; lock on all cache
-  // access in File thread. This allows the File thread and UI thread to
-  // both read themed images at the same time, while preventing simultaneous
-  // File thread read and UI thread write.
-  static Lock themed_image_cache_lock_;
-
-  // Save the images to be written to disk, mapping file path to id.
-  typedef std::map<FilePath, int> ImagesDiskCache;
-
-  // Cached images. We cache all retrieved and generated bitmaps and keep
-  // track of the pointers. We own these and will delete them when we're done
-  // using them.
-  typedef std::map<int, SkBitmap*> ImageCache;
-
  protected:
   // Sets an individual color value.
   void SetColor(const char* id, const SkColor& color);
@@ -313,7 +297,7 @@ class BrowserThemeProvider : public NonThreadSafe,
   void SetDisplayPropertyData(DictionaryValue* display_properties);
 
   // Create any images that aren't pregenerated (e.g. background tab images).
-  SkBitmap* GenerateTabBackgroundBitmap(int id);
+  SkBitmap* GenerateBitmap(int id);
 
   // Save our data - when saving images we need the original dictionary
   // from the extension because it contains the text ids that we want to save.
@@ -332,7 +316,7 @@ class BrowserThemeProvider : public NonThreadSafe,
   void ClearCaches();
 
   // Encode image at image_cache_[id] as PNG and write to disk.
-  void WriteImagesToDisk();
+  bool WriteImagesToDisk();
 
   // Do we have a custom frame image or custom tints?
   bool ShouldTintFrames();
@@ -342,14 +326,11 @@ class BrowserThemeProvider : public NonThreadSafe,
   GdkPixbuf* GetPixbufImpl(int id, bool rtl_enabled);
 #endif
 
+  // Cached images. We cache all retrieved and generated bitmaps and keep
+  // track of the pointers. We own these and will delete them when we're done
+  // using them.
+  typedef std::map<int, SkBitmap*> ImageCache;
   ImageCache image_cache_;
-
-  // Keep images generated for theme cache in their own place, so we can lock
-  // them on WRITE from UI thread and READ from file thread.  Read from UI
-  // thread will be allowed unlocked, because no other thread has write
-  // access to the cache.
-  ImageCache themed_image_cache_;
-
 #if defined(OS_LINUX)
   typedef std::map<int, GdkPixbuf*> GdkPixbufMap;
   GdkPixbufMap gdk_pixbufs_;
@@ -360,6 +341,8 @@ class BrowserThemeProvider : public NonThreadSafe,
   NSColorMap nscolor_cache_;
 #endif
 
+  // Save the images to be written to disk, mapping file path to id.
+  typedef std::map<FilePath, int> ImagesDiskCache;
   ImagesDiskCache images_disk_cache_;
 
   ResourceBundle& rb_;
