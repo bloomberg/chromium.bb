@@ -4523,6 +4523,7 @@
            # exist on disk so it can pull from it.
           'dependencies': [
             'chrome',
+            '../third_party/ocmock/ocmock.gyp:ocmock',
           ],
           'include_dirs': [
             '../third_party/GTM',
