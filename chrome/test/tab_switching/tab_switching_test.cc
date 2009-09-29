@@ -132,11 +132,10 @@ class TabSwitchingUITest : public UITest {
   }
 
   FilePath path_prefix_;
-  int number_of_tabs_to_open_;
   scoped_refptr<BrowserProxy> browser_proxy_;
 
  private:
-  DISALLOW_EVIL_CONSTRUCTORS(TabSwitchingUITest);
+  DISALLOW_COPY_AND_ASSIGN(TabSwitchingUITest);
 };
 
 TEST_F(TabSwitchingUITest, GenerateTabSwitchStats) {
