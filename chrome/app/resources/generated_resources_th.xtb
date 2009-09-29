@@ -12,7 +12,6 @@
 <translation id="4610656722473172270">Google Toolbar</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="2972581237482394796">&amp;ทำซ้ำ</translation>
-<translation id="5895138241574237353">ปิดแล้วเปิดอีกครั้ง</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="1723824996674794290">&amp;หน้าต่างใหม่</translation>
@@ -84,7 +83,6 @@
 <translation id="5600613131076600482">โปรดระวัง ส่วนขยายสามารถเข้าถึงคอมพิวเตอร์และข้อมูลส่วนบุคคลของคุณได้ โดยสามารถโพสต์ภาพที่ไม่น่าดูไว้บนกระดานข้อความของคุณได้</translation>
 <translation id="1644574205037202324">ประวัติการเข้าชม</translation>
 <translation id="2518917559152314023">เ&amp;พิ่ม...</translation>
-<translation id="8217250408786235522">&amp;ปกติ (1.0 เท่า)</translation>
 <translation id="4510290974676570902">ประเภท MIME</translation>
 <translation id="5565725983873655007">เมื่อมีเนื้อหาผสมในหน้าที่มีการรักษาความปลอดภัย (SSL):</translation>
 <translation id="4419098590196511435">บางอย่างหายไป</translation>
@@ -154,7 +152,6 @@
 <translation id="1635247229519770914">ดำเนินการติดตั้งต่อไป</translation>
 <translation id="8945419807169257367">ไม่สามารถตรวจสอบใบรับรองของเซิร์ฟเวอร์ได้</translation>
 <translation id="1464570622807304272">ลองใช้ด้วยการพิมพ์คำว่า &quot;กล้วยไม้&quot; และกด Enter</translation>
-<translation id="5872213955895293073">ดีบัก JavaScript</translation>
 <translation id="1965338962645102116">ในการนำเข้าบุ๊คมาร์ค Toolbar ลงใน Chrome คุณต้องลงชื่อเข้าใช้บัญชี Google ของคุณ โปรดลงชื่อเข้าใช้และลองนำเข้าอีกครั้ง</translation>
 <translation id="5903264686717710770">ชื่อ:</translation>
 <translation id="8899851313684471736">เปิดลิงก์ใน&amp;หน้าต่างใหม่</translation>
@@ -162,7 +159,6 @@
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> ชั่วโมง</translation>
 <translation id="3990502903496589789">ขอบขวา</translation>
 <translation id="2790948358747073186">เพิ่มเติม</translation>
-<translation id="5303890401939113396">ดีบักเกอร์ JavaScript - หยุดพัก</translation>
 <translation id="2423578206845792524">&amp;บันทึกรูปภาพเป็น...</translation>
 <translation id="1095038624419434542">เกิดข้อผิดพลาดขณะกำลังโหลดทรัพยากรโปรแกรม โปรดลองติดตั้งอีกครั้ง</translation>
 <translation id="9068931793451030927">เส้นทาง:</translation>
@@ -215,7 +211,6 @@
 <translation id="1087119889335281750">ไม่&amp;มีข้อเสนอแนะการสะกดคำ</translation>
 <translation id="5076340679995252485">&amp;วาง</translation>
 <translation id="14171126816530869">ข้อมูลประจำตัวของ <ph name="ORGANIZATION"/> ใน <ph name="LOCALITY"/> ได้รับการยืนยันโดย <ph name="ISSUER"/></translation>
-<translation id="1587275751631642843">คอนโซล &amp;JavaScript</translation>
 <translation id="5821894118254011366">ป้องกันคุกกี้ของบุคคลที่สามอย่างสมบูรณ์</translation>
 <translation id="1134009406053225289">เปิดในหน้าต่างที่ไม่ระบุตัวตน</translation>
 <translation id="3473105180351527598">เปิดใช้งานการป้องกันฟิชชิ่งและมัลแวร์</translation>
@@ -271,17 +266,14 @@
 <translation id="2794293857160098038">ตัวเลือกการค้นหาเริ่มต้น</translation>
 <translation id="5935630983280450497">เหลือ <ph name="NUMBER_ONE"/> นาที</translation>
 <translation id="5496587651328244253">จัดระเบียบ</translation>
-<translation id="2074760228690987725">เ&amp;ร็ว (1.25 เท่า)</translation>
 <translation id="2592884116796016067">บางส่วนของหน้าเว็บนี้ (HTML WebWorker) ขัดข้อง ดังนั้นจึงอาจทำงานได้ไม่ถูกต้อง</translation>
 <translation id="5568069709869097550">ไม่สามารถลงชื่อเข้าใช้</translation>
-<translation id="8585326996912141705">เร็&amp;วขึ้น (1.5 เท่า)</translation>
 <translation id="4181898366589410653">ไม่พบกระบวนการเพิกถอนในใบรับรองของเซิร์ฟเวอร์</translation>
 <translation id="6364916375976753737">เลื่อนทางซ้าย</translation>
 <translation id="1665770420914915777">ใช้หน้าในแท็บใหม่</translation>
 <translation id="2629089419211541119"><ph name="NUMBER_ONE"/> ชั่วโมงที่ผ่านมา</translation>
 <translation id="7789175495288668515">เปลี่ยนตัวเลือกการติดตั้งเริ่มต้น</translation>
 <translation id="347250956943431997">ใบรับรองของเซิร์ฟเวอร์ถูกเพิกถอนแล้ว</translation>
-<translation id="9087164549070846958">อย่างไรก็ตาม หากคุณทำงานอยู่ในองค์กรที่สร้างใบรับรองขึ้นเอง และคุณพยายามที่จะเชื่อมต่อกับเว็บไซต์ภายในขององค์กรนั้นโดยใช้ใบรับรองดังกล่าว คุณอาจจะสามารถแก้ปัญหานี้ได้อย่างปลอดภัย คุณสามารถนำเข้าใบรับรองรากขององค์กรเป็น &quot;ใบรับรองราก&quot; จากนั้น ใบรับรองที่ออกให้หรือตรวจสอบโดยองค์กรของคุณจะมีความน่าเชื่อถือ และคุณจะไม่เห็นข้อผิดพลาดนี้ในครั้งต่อไปที่คุณพยายามเชื่อมต่อกับเว็บไซต์ภายใน ติดต่อเจ้าหน้าที่ให้ความช่วยเหลือขององค์กรเืพื่อขอความช่่วยเหลือในการเพิ่มใบรับรองรากใหม่ใน Windows</translation>
 <translation id="6982279413068714821"><ph name="NUMBER_DEFAULT"/> นาทีที่ผ่านมา</translation>
 <translation id="7977590112176369853">&lt;ป้อนคำค้นหา&gt;</translation>
 <translation id="994771890067000105">ข้อมูลเพิ่มเติมที่แสดง</translation>
@@ -303,7 +295,6 @@
 <translation id="3513979718339724672">แสดงรูปภาพขนาดย่อ</translation>
 <translation id="7300965843904003671">แสดงป๊อปอัปจาก <ph name="URL"/> เสมอ</translation>
 <translation id="8211437954284917092">ป้อนข้อความค้นหาลงในฟิลด์ข้อความด้านบนเพื่อค้นหาบุ๊คมาร์คของคุณ</translation>
-<translation id="2950143609136989144">โปรดระวัง ส่วนขยายสามารถเข้าถึงคอมพิวเตอร์และข้อมูลส่วนบุคคลของคุณได้ ซึ่งหมายความว่าอีเมลของคุณทั้งหมดอาจถูกส่งต่อไปยังสามีหรือภรรยาของคุณได้</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> ไฟล์</translation>
 <translation id="1291121346508216435">แก้ไขการสะกดคำโดยอัตโนมัติ:</translation>
 <translation id="6805291412499505360">จำกัดวิธีการใช้งานคุกกี้ของบุคคลที่สาม</translation>
@@ -326,7 +317,6 @@
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> นาที</translation>
 <translation id="8210608804940886430">เลื่อนหน้าลง</translation>
 <translation id="5015344424288992913">กำลังแปลงพร็อกซี...</translation>
-<translation id="2398703750948514961">ุูุถูกยกเลิก</translation>
 <translation id="3675321783533846350">ตั้งค่าพร็อกซีเพื่อเชื่อมต่อกับเครือข่าย</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> วัน</translation>
 <translation id="8453184121293348016">ไม่พบกระบวนการเพิกถอน</translation>
@@ -368,7 +358,6 @@
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> วินาที</translation>
 <translation id="3345886924813989455">ไม่พบเบราว์เซอร์ที่สนับสนุน</translation>
 <translation id="3712897371525859903">บันทึกหน้าเว็บ&amp;เป็น...</translation>
-<translation id="3433151241941574321">เพิ่มหน้าเว็บ</translation>
 <translation id="7910768399700579500">โ&amp;ฟลเดอร์ใหม่</translation>
 <translation id="6883611015375728278">ป้องกันคุกกี้ทั้งหมด</translation>
 <translation id="3819791248093819058">ไม่พบหน้าเว็บสำหรับที่อยู่เว็บ: &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt;</translation>
@@ -387,7 +376,6 @@
 <translation id="6447842834002726250">คุกกี้</translation>
 <translation id="5170568018924773124">แสดงในโฟลเดอร์</translation>
 <translation id="2674170444375937751">คุณแน่ใจหรือไม่ว่าต้องการลบหน้าเหล่านี้ออกจากประวัติการเข้าชมของคุณ</translation>
-<translation id="7334704644505105275">ดีบักเกอร์ JavaScript - ไม่ว่าง</translation>
 <translation id="7629827748548208700">แท็บ: <ph name="TAB_NAME"/></translation>
 <translation id="8028993641010258682">ขนาด</translation>
 <translation id="1383876407941801731">ค้นหา</translation>
@@ -406,7 +394,6 @@
 <translation id="3867260226944967367">ไม่พบหน้าเว็บนี้</translation>
 <translation id="6507969014813375884">จีน (ตัวย่อ)</translation>
 <translation id="1767991048059195456">ส่งรายงาน</translation>
-<translation id="4612149584835516432">คุณมีการดาวน์โหลดหนึ่งรายการอยู่ในระหว่างดำเนินการ หากคุณปิด Google Chrome ตอนนี้ การดาวน์โหลดเหล่านี้จะถูกยกเลิก</translation>
 <translation id="5646376287012673985">ตำแหน่ง</translation>
 <translation id="1110155001042129815">รอ</translation>
 <translation id="7071586181848220801">ปลั๊กอินที่ไม่รู้จัก</translation>
@@ -460,7 +447,6 @@
 <translation id="3889424535448813030">ลูกศรขวา</translation>
 <translation id="5435666907653217300">ปัญหาอื่นๆ</translation>
 <translation id="1264974993859112054">กีฬา</translation>
-<translation id="3066577394310386876">&amp;ช้า (0.5 เท่า)</translation>
 <translation id="5167270755190684957">แกลเลอรีธีมของ Google Chrome</translation>
 <translation id="8382913212082956454">คัดลอก&amp;ที่อยู่อีเมล</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> วินาทีที่ผ่านมา</translation>
@@ -486,7 +472,6 @@
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (ค่าเริ่มต้น)</translation>
 <translation id="111844081046043029">คุณแน่ใจหรือไม่ว่าต้องการออกจากหน้านี้</translation>
 <translation id="4497415007571823067">คุณพยายามเข้าถึง &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; แต่คุณกลับเข้าถึงเซิร์ฟเวอร์ที่ระบุว่าตนเองเป็น &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; แทน ซึ่งอาจเกิดจากการกำหนดค่าที่ไม่ถูกต้องในเซิร์ฟเวอร์หรือสาเหตุอื่นที่ร้ายแรงกว่า ผู้โจมตีในเครือข่ายของคุณอาจพยายามที่จะให้คุณเข้าชม &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt; รุ่นปลอมแปลง (และอาจก่อให้เกิดอันตราย) คุณไม่ควรดำเนินการต่อ</translation>
-<translation id="957864810768974481">เต็&amp;มจอ</translation>
 <translation id="3202578601642193415">ใหม่ที่สุด</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> ชั่วโมง</translation>
 <translation id="8739589585766515812">ลบประวัติการเข้าชมในวันนี้</translation>
@@ -625,7 +610,6 @@
 <translation id="5538307496474303926">กำลังลบ...</translation>
 <translation id="1285631718404404702">แสดงกิจกรรมล่าสุด</translation>
 <translation id="6783679543387074885">รายงานข้อบกพร่องหรือเว็บไซต์ที่ใช้งานไม่ได้</translation>
-<translation id="2022952840834921450">โปรดระวัง ส่วนขยายสามารถเข้าถึงคอมพิวเตอร์และข้อมูลส่วนบุคคลของคุณได้ โดยสามารถโพสต์ข้อความในทวิตเตอร์หรือส่งอีเมลแทนตัวคุณได้</translation>
 <translation id="3413103074007669042">หน้าเว็บนี้มีเนื้อหาที่ไม่ปลอดภัยบางอย่าง</translation>
 <translation id="4887833561977827087">ยังไม่มีรายการจะแสดงที่นี่
         <ph name="BEGIN_LINK"/>กำหนดค่า<ph name="END_LINK"/>
@@ -653,9 +637,8 @@
 <translation id="7397054681783221164">ลบรายการต่อไปนี้:</translation>
 <translation id="4891251785049117953">ลบข้อมูลฟอร์มที่บันทึกไว้</translation>
 <translation id="1531836666020185856">แสดงคุณลักษณะ</translation>
-<translation id="777885533320815847">&amp;สองเท่า (2.0 เท่า)</translation>
+<translation id="5230516054153933099">หน้าต่าง</translation>
 <translation id="7554791636758816595">แท็บใหม่</translation>
-<translation id="6231471673669497681">อั&amp;ตราการเล่น</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">ใช้การดึงข้อมูล DNS ล่วงหน้าเพื่อเพิ่มประสิทธิภาพการโหลดหน้าเว็บ</translation>
 <translation id="1086613338090581534">สำหรับใบรับรองที่ยังไม่หมดอายุ ผู้ออกใบรับรองฉบับนั้นมีหน้าที่รับผิดชอบในการรักษาสิ่งที่เรียกว่า &quot;รายการเพิกถอน&quot; หากไม่ได้ปฏิบัติตามเงื่อนไขใบรับรอง ผู้ออกใบรับรองสามารถเพิกถอนใบรับรองได้โดยการเพิ่มเข้าไปในรายการเพิกถอน จากนั้น ใบรับรองฉบับดังกล่าวก็จะไม่เป็นที่น่าเชื่อถือแก่เบราว์เซอร์ของคุณอีกต่อไป สถานะการเพิกถอนไม่จำเป็นจะต้องถูกรักษาไว้สำหรับใบรับรองที่หมดอายุแล้ว ดังนั้น แม้ว่าใบรับรองนี้เคยใช้ได้กับเว็บไซต์ที่คุณกำลังเข้าชม เราไม่สามารถพิจารณาได้ในขณะนี้ว่า ไม่ได้ปฏิบัติตามเงื่อนไขของใบรับรองซึ่งทำให้ถูกเพิกถอนในเวลาต่อมา หรือใบรับรองยังคงใช้ได้อยู่หรือไม่ ในกรณีดังกล่าวเราจึงไม่สามารถบอกได้ว่าคุณกำลังสื่อสารอยู่กับเว็บไซต์ที่ถูกต้อง หรือไม่ได้ปฏิบัติตามเงื่อนไขใบรับรอง และถูกครอบงำโดยผู้โจมตีที่คุณกำลังสื่อสารอยู่ด้วยอยู่ในขณะนี้ คุณไม่ควรดำเนินการผ่านจุดนี้ไป</translation>
@@ -722,7 +705,6 @@
 <translation id="3009731429620355204">เซสชัน</translation>
 <translation id="3473034187222004855">คัดลอกเ&amp;ส้นทางไฟล์</translation>
 <translation id="6325525973963619867">ล้มเหลว</translation>
-<translation id="2120291134670287161">ไม่พบเครื่องพิมพ์ โปรดติดตั้งเครื่องพิมพ์</translation>
 <translation id="1676388805288306495">เปลี่ยนแบบอักษรและภาษาเริ่มต้นสำหรับหน้าเว็บ</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;ดูรหัสต้นฉบับของเฟรม</translation>
@@ -823,7 +805,6 @@
 <translation id="6227291405321948850">รูปภาพเว็บที่ไม่ระบุชื่อ</translation>
 <translation id="1684248949164455892">ในกรณีนี้ ใบรับรองไม่ได้รับการยืนยันจากบุคคลที่สามซึ่งคอมพิวเตอร์ของคุณเชื่อถือ สาเหตุที่ต้องมีการยืนยันจากบุคคลที่สามที่เชื่อถือได้ เนื่องจากทุกคนสามารถสร้างใบรับรองที่อ้างว่าเป็นเว็บไซต์ที่เลือกได้ หากไม่มีการยืนยันดังกล่าว ข้อมูลประจำตัวในใบรับรองก็ไม่มีความหมาย ดังนั้น จึงไม่สามารถที่จะยืนยันได้ว่าคุณกำลังสื่อสารอยู่กับ &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; แทนที่จะเป็นผู้โจมตีที่สร้างใบรับรองของตนเองขึ้นมาเพื่ออ้างว่าเป็น &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; คุณไม่ควรดำเนินการผ่านจุดนี้ไป</translation>
 <translation id="8045462269890919536">โรมาเนีย</translation>
-<translation id="3927097095400773697"><ph name="DOWNLOAD_SIZE"/> ถูกยกเลิก</translation>
 <translation id="2927657246008729253">เปลี่ยน...</translation>
 <translation id="3478477629095836699">การตั้งค่าคุกกี้:</translation>
 <translation id="2108475813351458355">การเชื่อมต่อที่ปลอดภัยไปยัง <ph name="DOMAIN"/></translation>
@@ -874,7 +855,6 @@
 <translation id="9141716082071217089">ไม่สามารถตรวจสอบได้ว่าใบรับรองของเซิร์ฟเวอร์ถูกเพิกถอนหรือไม่</translation>
 <translation id="4304224509867189079">เข้าสู่ระบบ</translation>
 <translation id="4492190037599258964">ผลการค้นหาคำว่า &quot;<ph name="SEARCH_STRING"/>&quot;</translation>
-<translation id="8540666473246803645">Google Chrome</translation>
 <translation id="988159990683914416">รุ่นนักพัฒนา</translation>
 <translation id="6790650291892352751">ค้นหาตามหัวข้อหรือ URL:</translation>
 <translation id="3705722231355495246">-</translation>
@@ -893,7 +873,6 @@
 <translation id="6264485186158353794">กลับสู่ความปลอดภัย</translation>
 <translation id="3807747707162121253">&amp;ยกเลิก</translation>
 <translation id="2850243184678184884">เช่น ฮ็อกกี้, BBC, http://engadget.com/rss.xml</translation>
-<translation id="6422698515595625913">คุณมีการดาวน์โหลด <ph name="DOWNLOAD_COUNT"/> รายการอยู่ในระหว่างดำเนินการ หากคุณปิด Google Chrome ตอนนี้ การดาวน์โหลดเหล่านี้จะถูกยกเลิก</translation>
 <translation id="77999321721642562">พื้นที่ด้านล่างนี้จะแสดงเว็บไซต์แปดเว็บล่าสุดที่คุณเข้าชมบ่อยๆ</translation>
 <translation id="7447718177945067973">ไม่พบเซิร์ฟเวอร์</translation>
 <translation id="715468010956678290">เปิดเฟรมในหน้าต่าง&amp;ที่ไม่เก็บในประวัติ</translation>
@@ -950,5 +929,4 @@
 <translation id="8328145009876646418">ขอบซ้าย</translation>
 <translation id="8203365863660628138">ยืนยันการติดตั้ง</translation>
 <translation id="406259880812417922">(คำหลัก: <ph name="KEYWORD"/>)</translation>
-<translation id="2437750561138919253">ดีบักเกอร์ JavaScript - กำลังทำงาน</translation>
 </translationbundle>

@@ -31,7 +31,6 @@
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="1195935957447623558">Google Chrome se ni pravilno zaustavil. Če želite ponovno odpreti strani, ki ste jih že odprli, kliknite »Obnovi«.</translation>
 <translation id="2499193704281978000">Google Chrome se ne odziva. Ponovno zaženem?</translation>
-<translation id="1163677799412376314">Pomoč za Google Chrome</translation>
 <translation id="7747138024166251722">Namestitvenemu programu ni uspelo ustvariti začasnega imenika. Preverite, ali je na disku dovolj prostora in ali imate dovoljenje za namestitev programske opreme.</translation>
 <translation id="6009537148180854585">Poskušali ste priti do &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, vendar pa certifikat, ki ga je predložil strežnik, vsebuje napake. Google Chrome ne more uporabiti certifikata z napakami in ne more preveriti identitete spletnega mesta, s katerim ste se poskušali povezati. Vaša povezava ni varna, zato vam priporočamo, da ne nadaljujete.</translation>
 <translation id="3324235665723428530">Vašega profila ni mogoče uporabiti, ker je iz novejše različice brskalnika Google Chrome.\n\nNekatere funkcije morda ne bodo na voljo. Prosimo vas, da navedete drug imenik profila ali pa uporabite novejšo različico brskalnika Chrome.</translation>
@@ -45,6 +44,7 @@
 <translation id="6921913858457830952">Google Chrome je pripravljen, da dokonča namestitev.</translation>
 <translation id="7100330187273168372">Google Chrome ne more prebrati ali pisati v imenik s podatki:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="2290095356545025170">Ali ste prepričani, da želite odstraniti Google Chrome?</translation>
+<translation id="7626032353295482388">Dobrodošli v brskalniku Chrome</translation>
 <translation id="5941830788786076944">Nastavi Google Chrome kot privzeti brskalnik</translation>
 <translation id="4127951844153999091">V tem primeru se naslov, ki je naveden na certifikatu, ne ujema z naslovom spletnega mesta, na katero je poskušal priti vaš brskalnik. Eden od možnih razlogov za to je, da je vašo komunikacijo prestregel napadalec, ki je predložil certifikat za drugo spletno mesto, zaradi česar je prišlo do neskladja. Drugi razlog je lahko ta, da je strežnik nastavljen tako, da vrne isti certifikat za več različnih spletnih mest, vključno s tem, ki ga želite obiskati, čeprav certifikat za vsa ta spletna mesta ni veljaven. Google Chrome lahko potrdi, da ste prišli na &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, vendar pa ne more preveriti, ali gre za isto spletno mesto kot &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, na katero ste želeli priti. Če nadaljujete, Chrome ne bo preveril nadaljnjih neskladij glede imen. Na splošno vam priporočamo, da ne nadaljujete.</translation>
 <translation id="2712549016134575851">Zaznan je bil spor z drugim nameščenim programom.</translation>
@@ -53,7 +53,6 @@
 <translation id="5046764976540625289">Izhod iz brskalnika Chrome</translation>
 <translation id="8865765905101981392">Internetni brskalnik</translation>
 <translation id="582763753075639530">Za uveljavitev spremembe vas prosimo, da zaprete vsa okna Chrome in ponovno zaženete Chrome.</translation>
-<translation id="6525535905286676482">Zapri Google Chrome</translation>
 <translation id="8776515774046280928">Google Chrome je že nameščen in na voljo vsem uporabnikom tega računalnika. Če želite namestiti Google Chrome na uporabniški ravni, morate najprej odstraniti sistemsko različico, ki jo je namestil skrbnik.</translation>
 <translation id="2769762047821873045">Google Chrome ni privzeti brskalnik.</translation>
 <translation id="7825851276765848807">Namestitev ni uspela zaradi nenavedene napake. Znova prenesite Google Chrome.</translation>
@@ -61,7 +60,6 @@
 <translation id="473183893665420670">Ko ponastavite možnosti brskalnika Google Chrome, se vse možnosti nastavijo na privzete vrednosti. Ali želite ponastaviti možnosti brskalnika?</translation>
 <translation id="3636771339108070045">V tem računalniku je že nameščena novejša različica programa Google Chrome. Če programska oprema ne deluje, odstranite program Google Chrome in ga ponovno prenesite.</translation>
 <translation id="3396666154568987767">Google Chrome za <ph name="PROFILE_NAME"/></translation>
-<translation id="3290853340290073363">Skrij Google Chrome</translation>
 <translation id="1964682833763362793">Prosimo vas, da zaprete vsa okna za Chrome in poskusite ponovno.</translation>
 <translation id="1001534784610492198">Arhiv namestitvenega programa je poškodovan ali neveljaven. Ponovno prenesite program Google Chrome.</translation>
 <translation id="6626317981028933585">Žal vaše nastavitve brskalnika Mozilla Firefox niso na voljo, medtem ko se izvaja ta brskalnik. Če želite te nastavitve uvoziti v Google Chrome, shranite svoje delo in zaprite vsa okna Firefox. Nato kliknite »Naprej«.</translation>

@@ -12,7 +12,6 @@
 <translation id="4610656722473172270">Google Toolbar</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="2972581237482394796">&amp;Opnieuw</translation>
-<translation id="5895138241574237353">Opnieuw starten</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="1723824996674794290">&amp;Nieuw venster</translation>
@@ -84,7 +83,6 @@
 <translation id="5600613131076600482">Extensies hebben toegang tot uw computer en privégegevens. Ze zouden genante foto's van u op Facebook kunnen plaatsen.</translation>
 <translation id="1644574205037202324">Geschiedenis</translation>
 <translation id="2518917559152314023">&amp;Toevoegen...</translation>
-<translation id="8217250408786235522">&amp;Gemiddeld (1 x)</translation>
 <translation id="4510290974676570902">MIME -type</translation>
 <translation id="5565725983873655007">Wanneer er gemengde inhoud op beveiligde pagina's (SSL) staat:</translation>
 <translation id="4419098590196511435">Er ontbreekt iets</translation>
@@ -154,7 +152,6 @@
 <translation id="1635247229519770914">Doorgaan met installeren</translation>
 <translation id="8945419807169257367">Het servercertificaat kan niet worden gecontroleerd</translation>
 <translation id="1464570622807304272">Probeer het eens: typ 'tulpen' en druk op Enter.</translation>
-<translation id="5872213955895293073">JavaScript-fouten opsporen</translation>
 <translation id="1965338962645102116">Voordat u bladwijzers van Google Toolbar in Google Chrome kunt importeren, moet u zijn aangemeld bij uw Google-account. Meld u opnieuw aan en probeer nogmaals uw bladwijzers te importeren.</translation>
 <translation id="5903264686717710770">Titel:</translation>
 <translation id="8899851313684471736">Link openen in nieu&amp;w venster</translation>
@@ -162,7 +159,6 @@
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> uur</translation>
 <translation id="3990502903496589789">Rechterzijde</translation>
 <translation id="2790948358747073186">Nog meer</translation>
-<translation id="5303890401939113396">Foutopsporing voor JavaScript: onderbreking</translation>
 <translation id="2423578206845792524">Af&amp;beelding opslaan als...</translation>
 <translation id="1095038624419434542">Er is een fout opgetreden tijdens het laden van een programma. Probeer de installatie opnieuw uit te voeren.</translation>
 <translation id="9068931793451030927">Pad:</translation>
@@ -215,7 +211,6 @@
 <translation id="1087119889335281750">Gee&amp;n spellingsuggesties</translation>
 <translation id="5076340679995252485">&amp;Plakken</translation>
 <translation id="14171126816530869">De identiteit van <ph name="ORGANIZATION"/> op <ph name="LOCALITY"/> is geverifieerd door <ph name="ISSUER"/>.</translation>
-<translation id="1587275751631642843">&amp;JavaScript-console</translation>
 <translation id="5821894118254011366">Cookies van derden volledig blokkeren</translation>
 <translation id="1134009406053225289">Openen in incognitovenster</translation>
 <translation id="3473105180351527598">Bescherming tegen phishing en malware inschakelen</translation>
@@ -271,17 +266,14 @@
 <translation id="2794293857160098038">Standaard zoekopties</translation>
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> minuut resterend</translation>
 <translation id="5496587651328244253">Organiseren</translation>
-<translation id="2074760228690987725">&amp;Snel (1,25 x)</translation>
 <translation id="2592884116796016067">Een onderdeel van deze pagina (HTML WebWorker) is vastgelopen en functioneert mogelijk niet correct.</translation>
 <translation id="5568069709869097550">Kan niet aanmelden</translation>
-<translation id="8585326996912141705">S&amp;neller (1,5 x)</translation>
 <translation id="4181898366589410653">Er is geen intrekkingsmechanisme gevonden in het servercertificaat.</translation>
 <translation id="6364916375976753737">Naar links bladeren</translation>
 <translation id="1665770420914915777">Gebruik de pagina 'Nieuwe tab'</translation>
 <translation id="2629089419211541119"><ph name="NUMBER_ONE"/> uur geleden</translation>
 <translation id="7789175495288668515">Wijzig de standaard installatie-opties.</translation>
 <translation id="347250956943431997">Het servercertificaat is ingetrokken</translation>
-<translation id="9087164549070846958">Als u echter voor een organisatie werkt die zelf certificaten maakt en u probeert verbinding te maken met een interne website van deze organisatie met een dergelijk certificaat, kunt u het probleem mogelijk veilig oplossen. U kunt het basiscertificaat van uw organisatie importeren als basiscertificaat. Certificaten die zijn uitgegeven of geverifieerd door uw organisatie, worden nu vertrouwd, zodat deze foutmelding niet meer wordt weergegeven wanneer u verbinding probeert te maken met een interne website. Neem contact op met het ondersteuningsteam van uw organisatie voor hulp bij het toevoegen van een nieuw basiscertificaat aan Windows.</translation>
 <translation id="6982279413068714821"><ph name="NUMBER_DEFAULT"/> minuten geleden</translation>
 <translation id="7977590112176369853">&lt;geef hier uw zoekopdracht op&gt;</translation>
 <translation id="994771890067000105">Aanbevolen tip</translation>
@@ -303,7 +295,6 @@
 <translation id="3513979718339724672">Miniaturen weergeven</translation>
 <translation id="7300965843904003671">Pop-ups van <ph name="URL"/> altijd weergeven</translation>
 <translation id="8211437954284917092">Geef een zoekopdracht op in het bovenstaande tekstveld om uw bladwijzers te doorzoeken.</translation>
-<translation id="2950143609136989144">Extensies hebben toegang tot uw computer en privégegevens. Ze zouden al uw e-mail naar uw partner kunnen doorsturen.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> van <ph name="TOTAL_FILES"/> bestanden</translation>
 <translation id="1291121346508216435">Spelling automatisch corrigeren:</translation>
 <translation id="6805291412499505360">Het gebruik van cookies van derden beperken</translation>
@@ -326,7 +317,6 @@
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> minuut</translation>
 <translation id="8210608804940886430">Page Down</translation>
 <translation id="5015344424288992913">Proxy laden...</translation>
-<translation id="2398703750948514961">Geannuleerd</translation>
 <translation id="3675321783533846350">Stel een proxy in om verbinding te maken met het netwerk.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> dagen</translation>
 <translation id="8453184121293348016">Geen intrekkingsmechanisme gevonden</translation>
@@ -368,7 +358,6 @@
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> seconden</translation>
 <translation id="3345886924813989455">Er is geen ondersteunde browser gevonden</translation>
 <translation id="3712897371525859903">Pagina opslaan &amp;als...</translation>
-<translation id="3433151241941574321">Pagina toevoegen</translation>
 <translation id="7910768399700579500">&amp;Nieuwe map</translation>
 <translation id="6883611015375728278">Alle cookies blokkeren</translation>
 <translation id="3819791248093819058">Er is geen webpagina gevonden voor het webadres: &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt;</translation>
@@ -390,7 +379,6 @@
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="5170568018924773124">Weergeven in map</translation>
 <translation id="2674170444375937751">Weet u zeker dat u deze pagina's uit uw geschiedenis wilt verwijderen?</translation>
-<translation id="7334704644505105275">Foutopsporing voor JavaScript: bezet</translation>
 <translation id="7629827748548208700">Tabblad: <ph name="TAB_NAME"/></translation>
 <translation id="8028993641010258682">Grootte</translation>
 <translation id="1383876407941801731">Zoeken</translation>
@@ -409,7 +397,6 @@
 <translation id="3867260226944967367">Deze webpagina is niet gevonden.</translation>
 <translation id="6507969014813375884">Chinees (vereenvoudigd)</translation>
 <translation id="1767991048059195456">Melding verzenden</translation>
-<translation id="4612149584835516432">U heeft één actieve download. Als u Google Chrome nu sluit, wordt het downloaden geannuleerd.</translation>
 <translation id="5646376287012673985">Locatie</translation>
 <translation id="1110155001042129815">Wachten</translation>
 <translation id="7071586181848220801">Onbekende plug-in</translation>
@@ -463,7 +450,6 @@
 <translation id="3889424535448813030">Pijl-rechts</translation>
 <translation id="5435666907653217300">Ander probleem</translation>
 <translation id="1264974993859112054">Sport</translation>
-<translation id="3066577394310386876">&amp;Langzaam (0,5 x)</translation>
 <translation id="5167270755190684957">Galerij met thema's voor Google Chrome</translation>
 <translation id="8382913212082956454">&amp;E-mailadres kopiëren</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> seconde geleden</translation>
@@ -489,7 +475,6 @@
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (standaard)</translation>
 <translation id="111844081046043029">Weet u zeker dat u deze pagina wilt verlaten?</translation>
 <translation id="4497415007571823067">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar u heeft een server bereikt die zich identificeert als &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Dit kan worden veroorzaakt door een verkeerde configuratie op de server, of door iets ernstigers. Een hacker op uw netwerk wil u misschien een nepversie laten bezoeken van &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt;, die mogelijk schadelijk is. U kunt beter niet verder gaan.</translation>
-<translation id="957864810768974481">&amp;Volledig scherm</translation>
 <translation id="3202578601642193415">Nieuwste</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> uur</translation>
 <translation id="8739589585766515812">Geschiedenis wissen voor deze dag</translation>
@@ -628,7 +613,6 @@
 <translation id="5538307496474303926">Wissen...</translation>
 <translation id="1285631718404404702">Recente activiteiten weergeven</translation>
 <translation id="6783679543387074885">Fout of niet-bereikbare website melden</translation>
-<translation id="2022952840834921450">Extensies hebben toegang tot uw computer en privégegevens. Ze zouden namens u tweets of e-mail kunnen verzenden.</translation>
 <translation id="3413103074007669042">Deze pagina bevat bepaalde onveilige inhoud</translation>
 <translation id="4887833561977827087">Er worden hier nog geen items weergegeven.
         <ph name="BEGIN_LINK"/>Pas uw webclips aan<ph name="END_LINK"/>
@@ -656,9 +640,8 @@
 <translation id="7397054681783221164">Verwijder de volgende items:</translation>
 <translation id="4891251785049117953">Opgeslagen formuliergegevens wissen</translation>
 <translation id="1531836666020185856">Aanbevolen</translation>
-<translation id="777885533320815847">T&amp;weemaal zo snel (2 x)</translation>
+<translation id="5230516054153933099">Venster</translation>
 <translation id="7554791636758816595">Nieuw tabblad</translation>
-<translation id="6231471673669497681">Afs&amp;peelsnelheid</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">DNS-prefetching gebruiken om pagina's sneller te laden</translation>
 <translation id="1086613338090581534">Voor niet-verlopen certificaten is de uitgever van een certificaat verantwoordelijk voor het onderhouden van iets dat een intrekkingslijst heet. Als een certificaat geen garanties meer kan bieden, kan de uitgever het intrekken door het aan de intrekkingslijst toe te voegen. Vervolgens wordt dit certificaat niet langer vertrouwd door uw browser. De intrekkingsstatus hoeft niet bijgehouden te worden voor verlopen certificaten. Hoewel dit certificaat eerder geldig was voor de website die u bezoekt, is het op dit moment niet mogelijk te bepalen of het certificaat is geschonden en daarom ingetrokken, of dat het nog veilig is. We kunnen daarom niet aangeven of u met een echte website communiceert of dat het certificaat geschonden is en in bezit is van een hacker, waarmee u nu communiceert. U kunt hier beter niet verder gaan.</translation>
@@ -725,7 +708,6 @@
 <translation id="3009731429620355204">Sessies</translation>
 <translation id="3473034187222004855">Bestand en &amp;pad kopiëren</translation>
 <translation id="6325525973963619867">Mislukt</translation>
-<translation id="2120291134670287161">Geen printer gevonden. Installeer een printer.</translation>
 <translation id="1676388805288306495">Wijzig standaardlettertype en -taal voor webpagina's.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Framebron weergeven</translation>
@@ -826,7 +808,6 @@
 <translation id="6227291405321948850">Naamloze webafbeelding</translation>
 <translation id="1684248949164455892">In dit geval is het certificaat niet geverifieerd door een derde partij die uw computer vertrouwt. Iedereen kan een certificaat maken voor een website. Daarom is het belangrijk dat certificaten geverifieerd woorden door een betrouwbare derde partij. Zonder die verificatie hebben de identiteitsgegevens in het certificaat geen waarde. Het is daarom niet mogelijk te verifiëren of u communiceert met &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; in plaats van met een hacker die een eigen certificaat heeft gemaakt waarin hij claimt &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; te zijn. U kunt hier beter niet verder gaan.</translation>
 <translation id="8045462269890919536">Roemeens</translation>
-<translation id="3927097095400773697"><ph name="DOWNLOAD_SIZE"/>, geannuleerd</translation>
 <translation id="2927657246008729253">Wijzigen...</translation>
 <translation id="3478477629095836699">Cookie-instellingen:</translation>
 <translation id="2108475813351458355">Beveiligde verbinding met <ph name="DOMAIN"/></translation>
@@ -877,7 +858,6 @@
 <translation id="9141716082071217089">Kan niet controleren of het servercertificaat is ingetrokken.</translation>
 <translation id="4304224509867189079">Aanmelden</translation>
 <translation id="4492190037599258964">Zoekresultaten voor '<ph name="SEARCH_STRING"/>'</translation>
-<translation id="8540666473246803645">Google Chrome</translation>
 <translation id="988159990683914416">Ontwikkelaarsbuild</translation>
 <translation id="6790650291892352751">Zoeken op onderwerp of URL:</translation>
 <translation id="3705722231355495246">-</translation>
@@ -896,7 +876,6 @@
 <translation id="6264485186158353794">Terug naar de veiligheid</translation>
 <translation id="3807747707162121253">A&amp;nnuleren</translation>
 <translation id="2850243184678184884">bijvoorbeeld hockey, BBC, http://engadget.com/rss.xml</translation>
-<translation id="6422698515595625913">U heeft <ph name="DOWNLOAD_COUNT"/> actieve downloads. Als u Google Chrome nu sluit, wordt het downloaden geannuleerd.</translation>
 <translation id="77999321721642562">Uiteindelijk worden in het gedeelte hieronder uw acht vaakst bezochte sites weergegeven.</translation>
 <translation id="7447718177945067973">De server is niet gevonden.</translation>
 <translation id="715468010956678290">Frame openen in inco&amp;gnitovenster</translation>
@@ -953,5 +932,4 @@
 <translation id="8328145009876646418">Linkerzijde</translation>
 <translation id="8203365863660628138">Installatie bevestigen</translation>
 <translation id="406259880812417922">(Zoekwoord: <ph name="KEYWORD"/>)</translation>
-<translation id="2437750561138919253">Foutopsporing voor JavaScript: actief</translation>
 </translationbundle>

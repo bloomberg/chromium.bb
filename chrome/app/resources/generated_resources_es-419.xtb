@@ -12,7 +12,6 @@
 <translation id="4610656722473172270">Barra Google</translation>
 <translation id="1871244248791675517">Insert</translation>
 <translation id="2972581237482394796">&amp;Rehacer</translation>
-<translation id="5895138241574237353">Reiniciar</translation>
 <translation id="6135826906199951471">Supr</translation>
 <translation id="528468243742722775">Fin</translation>
 <translation id="1723824996674794290">&amp;Nueva ventana</translation>
@@ -84,7 +83,6 @@
 <translation id="5600613131076600482">Las extensiones tienen acceso a tu computadora y a tu información personal. Pueden publicar fotos poco atractivas en tu Muro.</translation>
 <translation id="1644574205037202324">Historial</translation>
 <translation id="2518917559152314023">Aña&amp;dir...</translation>
-<translation id="8217250408786235522">&amp;Normal (1.0x)</translation>
 <translation id="4510290974676570902">Tipo de MIME</translation>
 <translation id="5565725983873655007">Cuando hay contenido mixto en páginas seguras (SSL):</translation>
 <translation id="4419098590196511435">Falta algo</translation>
@@ -154,7 +152,6 @@
 <translation id="1635247229519770914">Continuar con la instalación</translation>
 <translation id="8945419807169257367">No se puede comprobar el certificado del servidor</translation>
 <translation id="1464570622807304272">Inténtalo. Escribe &quot;orquídeas&quot; y presiona &quot;Intro&quot;.</translation>
-<translation id="5872213955895293073">Depurar JavaScript</translation>
 <translation id="1965338962645102116">Para poder importar los favoritos de la barra de herramientas a Chrome, primero debes haber accedido a tu cuenta de Google. Accede e intenta importarlos nuevamente.</translation>
 <translation id="5903264686717710770">Título:</translation>
 <translation id="8899851313684471736">Abrir enlace en una &amp;ventana nueva</translation>
@@ -162,7 +159,6 @@
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> horas</translation>
 <translation id="3990502903496589789">Borde derecho</translation>
 <translation id="2790948358747073186">Todavía más</translation>
-<translation id="5303890401939113396">Depurador de JavaScript - Desconexión</translation>
 <translation id="2423578206845792524">Guar&amp;dar imagen como...</translation>
 <translation id="1095038624419434542">Se encontró un error al cargar un recurso del programa. Intenta reinstalarlo.</translation>
 <translation id="9068931793451030927">Ruta:</translation>
@@ -215,7 +211,6 @@
 <translation id="1087119889335281750">&amp;Sin sugerencias de ortografía</translation>
 <translation id="5076340679995252485">&amp;Pegar</translation>
 <translation id="14171126816530869">La identidad de <ph name="ORGANIZATION"/> en <ph name="LOCALITY"/> ha sido verificada por <ph name="ISSUER"/>.</translation>
-<translation id="1587275751631642843">Consola &amp;JavaScript</translation>
 <translation id="5821894118254011366">Bloquear por completo cookies de terceros</translation>
 <translation id="1134009406053225289">Abrir en una ventana de incógnito</translation>
 <translation id="3473105180351527598">Habilitar protección contra phishing y software malintencionado</translation>
@@ -271,17 +266,14 @@
 <translation id="2794293857160098038">Opciones de búsqueda predeterminadas</translation>
 <translation id="5935630983280450497">Falta <ph name="NUMBER_ONE"/> minuto</translation>
 <translation id="5496587651328244253">Organizar</translation>
-<translation id="2074760228690987725">Rápido (1.25x)</translation>
 <translation id="2592884116796016067">Una parte de esta página (HTML WebWorker) se ha bloqueado, tal vez no funcione correctamente.</translation>
 <translation id="5568069709869097550">No puedo acceder</translation>
-<translation id="8585326996912141705">Más rápido (1.5x)</translation>
 <translation id="4181898366589410653">No se ha encontrado ningún mecanismo de revocación en el certificado del servidor.</translation>
 <translation id="6364916375976753737">Desplazar hacia la izquierda</translation>
 <translation id="1665770420914915777">Utilice la página Nueva pestaña</translation>
 <translation id="2629089419211541119">Hace <ph name="NUMBER_ONE"/> hora</translation>
 <translation id="7789175495288668515">Cambia las opciones de instalación predeterminadas.</translation>
 <translation id="347250956943431997">El certificado del servidor ha sido revocado</translation>
-<translation id="9087164549070846958">Sin embargo, si trabajas en una organización que genera sus propios certificados e intentas conectarte a un sitio web interno de la empresa utilizando uno de estos certificados, podrás solucionar este problema de forma segura. Puedes importar el certificado raíz de tu organización como &quot;certificado raíz&quot; y, a continuación, los certificados emitidos o verificados por tu empresa se considerarán fiables y no volverás a ver este error la próxima vez que te conectes a un sitio web interno. Ponte en contacto con el equipo de asistencia de tu empresa para que te proporcionen ayuda al agregar un nuevo certificado raíz en Windows.</translation>
 <translation id="6982279413068714821">Hace <ph name="NUMBER_DEFAULT"/> minutos</translation>
 <translation id="7977590112176369853">&lt;escribir consulta&gt;</translation>
 <translation id="994771890067000105">Adicional destacado</translation>
@@ -303,7 +295,6 @@
 <translation id="3513979718339724672">Mostrar miniaturas</translation>
 <translation id="7300965843904003671">Siempre mostrar ventanas emergentes de <ph name="URL"/></translation>
 <translation id="8211437954284917092">Ingresa una consulta en el campo de texto de arriba para buscar tus favoritos.</translation>
-<translation id="2950143609136989144">Las extensiones tienen acceso a tu computadora y a tu información personal. Esto significa que pueden reenviar todo tu correo electrónico a tu cónyuge.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> archivos</translation>
 <translation id="1291121346508216435">Corregir ortografía automáticamente:</translation>
 <translation id="6805291412499505360">Restringir el modo en que pueden utilizarse las cookies de terceros</translation>
@@ -326,7 +317,6 @@
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> min</translation>
 <translation id="8210608804940886430">Avanzar página</translation>
 <translation id="5015344424288992913">Resolviendo proxy...</translation>
-<translation id="2398703750948514961">Cancelado</translation>
 <translation id="3675321783533846350">Establece un proxy para la conexión a la red.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> días</translation>
 <translation id="8453184121293348016">No se ha encontrado ningún mecanismo de revocación.</translation>
@@ -368,7 +358,6 @@
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> seg.</translation>
 <translation id="3345886924813989455">No se ha encontrado el navegador compatible</translation>
 <translation id="3712897371525859903">Gu&amp;ardar página como...</translation>
-<translation id="3433151241941574321">Agregar página</translation>
 <translation id="7910768399700579500">&amp;Nueva carpeta</translation>
 <translation id="6883611015375728278">Bloquear todas las cookies</translation>
 <translation id="3819791248093819058">No se ha encontrado ninguna página web para la dirección: &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt;</translation>
@@ -390,7 +379,6 @@
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="5170568018924773124">Mostrar en carpeta</translation>
 <translation id="2674170444375937751">¿Estás seguro de que deseas eliminar estas páginas del historial?</translation>
-<translation id="7334704644505105275">Depurador de JavaScript: ocupado</translation>
 <translation id="7629827748548208700">Pestaña: <ph name="TAB_NAME"/></translation>
 <translation id="8028993641010258682">Tamaño</translation>
 <translation id="1383876407941801731">Buscar</translation>
@@ -409,7 +397,6 @@
 <translation id="3867260226944967367">No se ha encontrado esta página web.</translation>
 <translation id="6507969014813375884">Chino simplificado</translation>
 <translation id="1767991048059195456">Enviar informe</translation>
-<translation id="4612149584835516432">Tienes una descarga en curso. Si cierras Google Chrome ahora, esta descarga se cancelará.</translation>
 <translation id="5646376287012673985">Ubicación</translation>
 <translation id="1110155001042129815">Esperar</translation>
 <translation id="7071586181848220801">Plug-in desconocido</translation>
@@ -463,7 +450,6 @@
 <translation id="3889424535448813030">Flecha derecha</translation>
 <translation id="5435666907653217300">Otro problema</translation>
 <translation id="1264974993859112054">Deportes</translation>
-<translation id="3066577394310386876">Lento (0.5x)</translation>
 <translation id="5167270755190684957">Galería de temas de Google Chrome</translation>
 <translation id="8382913212082956454">Copiar dir&amp;ección de correo electrónico</translation>
 <translation id="4229495110203539533">Hace <ph name="NUMBER_ONE"/> segundo</translation>
@@ -489,7 +475,6 @@
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (predeterminado)</translation>
 <translation id="111844081046043029">¿Estás seguro de que deseas abandonar esta página?</translation>
 <translation id="4497415007571823067">Has intentado acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero en su lugar has llegado a un servidor que se identifica como &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Esto puede deberse a un error de configuración del servidor o a algún otro motivo más grave. Es posible que un atacante esté intentando obligarte a visitar una versión falsa (y potencialmente peligrosa) de &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt;. No deberías seguir adelante.</translation>
-<translation id="957864810768974481">Pantalla completa</translation>
 <translation id="3202578601642193415">Más reciente</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> horas</translation>
 <translation id="8739589585766515812">Eliminar historial de este día</translation>
@@ -628,7 +613,6 @@
 <translation id="5538307496474303926">Eliminando...</translation>
 <translation id="1285631718404404702">Mostrar actividades recientes</translation>
 <translation id="6783679543387074885">Comunicar error o sitio web defectuoso</translation>
-<translation id="2022952840834921450">Las extensiones tienen acceso a tu computadora y a tu información personal. Pueden enviar tweets o correo electrónico de tu parte.</translation>
 <translation id="3413103074007669042">Esta página tiene algunos contenidos inseguros.</translation>
 <translation id="4887833561977827087">Aún no hay más elementos para mostrar aquí.
         <ph name="BEGIN_LINK"/>Personaliza<ph name="END_LINK"/>
@@ -656,9 +640,8 @@
 <translation id="7397054681783221164">Eliminar los siguientes elementos:</translation>
 <translation id="4891251785049117953">Eliminar información almacenada en formularios</translation>
 <translation id="1531836666020185856">Destacados</translation>
-<translation id="777885533320815847">Horas extras (2.0x)</translation>
+<translation id="5230516054153933099">Ventana</translation>
 <translation id="7554791636758816595">Nueva pestaña</translation>
-<translation id="6231471673669497681">Calificación de reproducción</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">Utilizar la precarga de DNS para mejorar el rendimiento de carga de páginas</translation>
 <translation id="1086613338090581534">Si el certificado no ha caducado, el emisor será responsable de mantener lo que se conoce con el nombre de &quot;lista de revocaciones&quot;. Si la integridad de un certificado resulta vulnerada, el emisor puede revocarlo. Para ello, debe agregarlo a la lista de revocaciones. Una vez hecho esto, el certificado deja de ser de confianza para tu navegador. En el caso de los certificados caducados, no es necesario mantener el estado de revocación. Por tanto, aunque este certificado solía ser válido para el sitio web que visitas, en este momento no es posible determinar si el certificado ha sido vulnerado y posteriormente revocado o si sigue siendo seguro. Así pues, es imposible decir si te estás comunicando con el sitio web legítimo o si el certificado ha sido vulnerado y está ahora en manos de un atacante con quien te estás comunicando. A partir de este momento no debes proceder en modo alguno.</translation>
@@ -725,7 +708,6 @@
 <translation id="3009731429620355204">Sesiones</translation>
 <translation id="3473034187222004855">Co&amp;piar ruta del archivo</translation>
 <translation id="6325525973963619867">Se ha producido un error.</translation>
-<translation id="2120291134670287161">No se encontró ninguna impresora. Instale una impresora.</translation>
 <translation id="1676388805288306495">Cambia la fuente y el idioma predeterminados para las páginas web.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Ver fuente de marco</translation>
@@ -826,7 +808,6 @@
 <translation id="6227291405321948850">Imagen web sin título</translation>
 <translation id="1684248949164455892">En este caso, el certificado no ha sido verificado por un tercero de confianza para tu equipo. Cualquier usuario puede crear un certificado que afirma ser un sitio web determinado, motivo por el cual debe ser verificado por un tercero de confianza. Sin esta verificación, la información de identidad del certificado no tiene ningún sentido. Por tanto, no es posible verificar que te comunicas con &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; en lugar de comunicarte con un atacante que ha generado su propio certificado que afirma ser &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. A partir de este momento no debes proceder en modo alguno.</translation>
 <translation id="8045462269890919536">Rumano</translation>
-<translation id="3927097095400773697"><ph name="DOWNLOAD_SIZE"/>, cancelado</translation>
 <translation id="2927657246008729253">Cambiar...</translation>
 <translation id="3478477629095836699">Configuración de cookies:</translation>
 <translation id="2108475813351458355">Conexión segura a <ph name="DOMAIN"/></translation>
@@ -877,7 +858,6 @@
 <translation id="9141716082071217089">No ha sido posible comprobar si el certificado del servidor ha sido revocado.</translation>
 <translation id="4304224509867189079">Acceder</translation>
 <translation id="4492190037599258964">Resultados de búsqueda de '<ph name="SEARCH_STRING"/>'</translation>
-<translation id="8540666473246803645">Google Chrome</translation>
 <translation id="988159990683914416">Build para desarrolladores</translation>
 <translation id="6790650291892352751">Buscar por tema o URL:</translation>
 <translation id="3705722231355495246">-</translation>
@@ -896,7 +876,6 @@
 <translation id="6264485186158353794">Volver a seguridad</translation>
 <translation id="3807747707162121253">&amp;Cancelar</translation>
 <translation id="2850243184678184884">p. ej.: hockey, BBC, http://engadget.com/rss.xml</translation>
-<translation id="6422698515595625913">Tienes <ph name="DOWNLOAD_COUNT"/> descargas en curso. Si cierras Google Chrome ahora, estas descargas se cancelarán.</translation>
 <translation id="77999321721642562">Con el tiempo el área a continuación mostrará tus ocho sitios más visitados.</translation>
 <translation id="7447718177945067973">No se ha encontrado el servidor.</translation>
 <translation id="715468010956678290">Abrir marco en una ventana de navegación de incó&amp;gnito</translation>
@@ -953,5 +932,4 @@
 <translation id="8328145009876646418">Borde izquierdo</translation>
 <translation id="8203365863660628138">Confirmar instalación</translation>
 <translation id="406259880812417922">(Palabra clave: <ph name="KEYWORD"/>)</translation>
-<translation id="2437750561138919253">Depurador de JavaScript - En ejecución</translation>
 </translationbundle>

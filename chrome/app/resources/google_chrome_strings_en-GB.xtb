@@ -31,7 +31,6 @@
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="1195935957447623558">Google Chrome didn't shut down correctly. To reopen the pages that you had open, click Restore.</translation>
 <translation id="2499193704281978000">Google Chrome is unresponsive. Restart now?</translation>
-<translation id="1163677799412376314">Google Chrome Help</translation>
 <translation id="7747138024166251722">The installer couldn't create a temporary directory. Please check for free disk space and permission to install software.</translation>
 <translation id="6009537148180854585">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the certificate that the server presented contains errors. Google Chrome cannot use a certificate with errors and cannot validate the identity of the site that you have attempted to connect to. Your connection is not secure and you should not proceed.</translation>
 <translation id="3324235665723428530">Your profile cannot be used because it is from a newer version of Google Chrome.\n\nSome features may be unavailable. Please specify a different profile directory or use a newer version of Chrome.</translation>
@@ -45,6 +44,7 @@
 <translation id="6921913858457830952">Google Chrome is ready to complete your installation.</translation>
 <translation id="7100330187273168372">Google Chrome cannot read and write to its data directory:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="2290095356545025170">Are you sure you want to uninstall Google Chrome?</translation>
+<translation id="7626032353295482388">Welcome to Chrome</translation>
 <translation id="5941830788786076944">Make Google Chrome the default browser</translation>
 <translation id="4127951844153999091">In this case, the address listed in the certificate does not match the address of the website that your browser tried to go to. One possible reason for this is that your communications are being intercepted by an attacker who is presenting a certificate for a different website, which would cause a mismatch. Another possible reason is that the server is set up to return the same certificate for multiple websites, including the one that you are attempting to visit, even though that certificate is not valid for all of those websites. Google Chrome can say for sure that you reached &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, but cannot verify that it is the same site as &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; which you intended to reach. If you proceed, Chrome will not check for any further name mismatches. In general, it is best not to proceed past this point.</translation>
 <translation id="2712549016134575851">A conflict with another installed application has been detected.</translation>
@@ -53,7 +53,6 @@
 <translation id="5046764976540625289">Exit Chrome</translation>
 <translation id="8865765905101981392">Internet Browser</translation>
 <translation id="582763753075639530">Please close all Chrome windows and restart Chrome for this change to take effect.</translation>
-<translation id="6525535905286676482">Quit Google Chrome</translation>
 <translation id="8776515774046280928">Google Chrome is already installed and available to all users of this computer. If you want to install Google Chrome at user level, you must first uninstall the system-level version installed by an administrator.</translation>
 <translation id="2769762047821873045">Google Chrome isn't your default browser.</translation>
 <translation id="7825851276765848807">Installation failed due to unspecified error. Please download Google Chrome again.</translation>
@@ -61,7 +60,6 @@
 <translation id="473183893665420670">When you reset Google Chrome options, any changes that you've made will revert to the default settings. Do you want to reset Chrome options?</translation>
 <translation id="3636771339108070045">This computer already has a more recent version of Google Chrome. If the software is not working, please uninstall Google Chrome and download it again.</translation>
 <translation id="3396666154568987767">Google Chrome for <ph name="PROFILE_NAME"/></translation>
-<translation id="3290853340290073363">Hide Google Chrome</translation>
 <translation id="1964682833763362793">Please close all Chrome windows and try again.</translation>
 <translation id="1001534784610492198">The installer archive is corrupted or invalid. Please download Google Chrome again.</translation>
 <translation id="6626317981028933585">Sadly, your Mozilla Firefox settings are not available while that browser is running. To import those settings to Google Chrome, save your work and close all Firefox windows. Then click Continue.</translation>

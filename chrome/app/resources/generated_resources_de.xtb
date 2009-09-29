@@ -12,7 +12,6 @@
 <translation id="4610656722473172270">Google Toolbar</translation>
 <translation id="1871244248791675517">Einfg</translation>
 <translation id="2972581237482394796">&amp;Wiederholen</translation>
-<translation id="5895138241574237353">Neu starten</translation>
 <translation id="6135826906199951471">Entf</translation>
 <translation id="528468243742722775">Ende</translation>
 <translation id="1723824996674794290">&amp;Neues Fenster</translation>
@@ -84,7 +83,6 @@
 <translation id="5600613131076600482">Erweiterungen können auf Ihren Computer und Ihre privaten Daten zugreifen. Sie könnten unangemessene Bilder auf Ihrer Pinnwand posten.</translation>
 <translation id="1644574205037202324">Verlauf</translation>
 <translation id="2518917559152314023">Hinz&amp;ufügen...</translation>
-<translation id="8217250408786235522">&amp;Normal (1,0 x)</translation>
 <translation id="4510290974676570902">MIME-Typ</translation>
 <translation id="5565725983873655007">Bei gemischtem Content auf sicheren (SSL) Seiten:</translation>
 <translation id="4419098590196511435">Etwas fehlt</translation>
@@ -154,7 +152,6 @@
 <translation id="1635247229519770914">Installation fortsetzen</translation>
 <translation id="8945419807169257367">Serverzertifikat kann nicht überprüft werden</translation>
 <translation id="1464570622807304272">Versuchen Sie es - geben Sie &quot;Orchideen&quot; ein und drücken Sie die Eingabetaste.</translation>
-<translation id="5872213955895293073">JavaScript-Fehlersuche</translation>
 <translation id="1965338962645102116">Für den Import von Google Toolbar-Lesezeichen in Google Chrome müssen Sie in Ihrem Google-Konto angemeldet sein. Melden Sie sich an und versuchen Sie es erneut.</translation>
 <translation id="5903264686717710770">Titel:</translation>
 <translation id="8899851313684471736">Link in neuem &amp;Fenster öffnen</translation>
@@ -162,7 +159,6 @@
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> Stunden</translation>
 <translation id="3990502903496589789">Rechter Rand</translation>
 <translation id="2790948358747073186">Und noch mehr</translation>
-<translation id="5303890401939113396">JavaScript-Debugger - Abbruch</translation>
 <translation id="2423578206845792524">Bi&amp;ld speichern unter...</translation>
 <translation id="1095038624419434542">Beim Laden der Programmressource ist ein Fehler aufgetreten. Versuchen Sie eine Neuinstallation.</translation>
 <translation id="9068931793451030927">Pfad:</translation>
@@ -215,7 +211,6 @@
 <translation id="1087119889335281750">&amp;Keine Rechtschreibvorschläge</translation>
 <translation id="5076340679995252485">&amp;Einfügen</translation>
 <translation id="14171126816530869">Die Identität von <ph name="ORGANIZATION"/> bei <ph name="LOCALITY"/> wurde von <ph name="ISSUER"/> bestätigt.</translation>
-<translation id="1587275751631642843">&amp;JavaScript-Konsole</translation>
 <translation id="5821894118254011366">Drittanbieter-Cookies blockieren</translation>
 <translation id="1134009406053225289">In Inkognito-Fenster öffnen</translation>
 <translation id="3473105180351527598">Phishing- und Malware-Schutz aktivieren</translation>
@@ -271,17 +266,14 @@
 <translation id="2794293857160098038">Standardsuchoptionen</translation>
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> Minute übrig</translation>
 <translation id="5496587651328244253">Organisieren</translation>
-<translation id="2074760228690987725">Schne&amp;ll (1,25 x)</translation>
 <translation id="2592884116796016067">Ein Teil dieser Seite (HTML WebWorker) ist abgestürzt und funktioniert möglicherweise nicht richtig.</translation>
 <translation id="5568069709869097550">Anmeldung nicht möglich</translation>
-<translation id="8585326996912141705">Schn&amp;eller (1,5 x)</translation>
 <translation id="4181898366589410653">Kein Sperrmechanismus im Serverzertifikat gefunden.</translation>
 <translation id="6364916375976753737">Nach links blättern</translation>
 <translation id="1665770420914915777">Seite &quot;Neuer Tab&quot; verwenden</translation>
 <translation id="2629089419211541119">Vor <ph name="NUMBER_ONE"/> Stunde</translation>
 <translation id="7789175495288668515">Ändern Sie die Standardinstallationsoptionen.</translation>
 <translation id="347250956943431997">Serverzertifikat wurde widerrufen</translation>
-<translation id="9087164549070846958">Falls Sie jedoch in einem Unternehmen arbeiten, das eigene Zertifikate erzeugt, und Sie versuchen, mithilfe eines solchen Zertifikats eine Verbindung zu einer internen Website dieses Unternehmens herzustellen, können Sie das Problem auf sichere Weise lösen. Sie können das Stammzertifikat des Unternehmens als &quot;Stammzertifikat&quot; importieren. In diesem Fall werden Zertifikate, die von Ihrem Unternehmen ausgestellt oder bestätigt wurden, als vertrauenswürdig eingestuft und Sie erhalten diesen Fehler nicht, wenn Sie das nächste Mal versuchen, eine Verbindung zu einer internen Website herzustellen. Wenden Sie sich an die Supportmitarbeiter in Ihrem Unternehmen, wenn Sie zum Hinzufügen eines neuen Stammzertifikats in Windows Hilfe benötigen.</translation>
 <translation id="6982279413068714821">Vor <ph name="NUMBER_DEFAULT"/> Minuten</translation>
 <translation id="7977590112176369853">&lt;Suchanfrage eingeben&gt;</translation>
 <translation id="994771890067000105">Vorgestelltes Extra</translation>
@@ -303,7 +295,6 @@
 <translation id="3513979718339724672">Miniaturbilder anzeigen</translation>
 <translation id="7300965843904003671">Pop-ups von <ph name="URL"/> immer anzeigen</translation>
 <translation id="8211437954284917092">Geben Sie in das obige Textfeld eine Suchanfrage ein, um Lesezeichen zu suchen.</translation>
-<translation id="2950143609136989144">Erweiterungen können auf Ihren Computer und Ihre privaten Daten zugreifen. Dies bedeutet, dass sie all Ihre E-Mails zu Ihrem Ehepartner weiterleiten könnten.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> Dateien</translation>
 <translation id="1291121346508216435">Rechtschreibung automatisch korrigieren:</translation>
 <translation id="6805291412499505360">Verwendung von Cookies von Drittanbietern beschränken</translation>
@@ -326,7 +317,6 @@
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> Minute</translation>
 <translation id="8210608804940886430">Bild ab</translation>
 <translation id="5015344424288992913">Proxy auflösen...</translation>
-<translation id="2398703750948514961">Abgebrochen</translation>
 <translation id="3675321783533846350">Richten Sie einen Proxy ein, um eine Verbindung zum Netzwerk herzustellen.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> Tage</translation>
 <translation id="8453184121293348016">Kein Sperrmechanismus gefunden</translation>
@@ -368,7 +358,6 @@
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> Sekunden</translation>
 <translation id="3345886924813989455">Keine unterstützten Browser gefunden</translation>
 <translation id="3712897371525859903">Seite speichern &amp;unter...</translation>
-<translation id="3433151241941574321">Seite hinzufügen</translation>
 <translation id="7910768399700579500">&amp;Neuer Ordner</translation>
 <translation id="6883611015375728278">Alle Cookies blockieren</translation>
 <translation id="3819791248093819058">Für die Webadresse wurde keine Webseite gefunden: &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt;</translation>
@@ -387,7 +376,6 @@
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="5170568018924773124">In Ordner anzeigen</translation>
 <translation id="2674170444375937751">Möchten Sie diese Seiten wirklich aus dem Verlauf löschen?</translation>
-<translation id="7334704644505105275">JavaScript-Debugger - Ausgelastet</translation>
 <translation id="7629827748548208700">Tab: <ph name="TAB_NAME"/></translation>
 <translation id="8028993641010258682">Größe</translation>
 <translation id="1383876407941801731">Suche</translation>
@@ -406,7 +394,6 @@
 <translation id="3867260226944967367">Diese Webseite wurde nicht gefunden.</translation>
 <translation id="6507969014813375884">Chinesisch (vereinfacht)</translation>
 <translation id="1767991048059195456">Bericht senden</translation>
-<translation id="4612149584835516432">Es ist ein Download in Bearbeitung. Wenn Sie Google Chrome jetzt schließen, wird dieser Download abgebrochen.</translation>
 <translation id="5646376287012673985">Standort</translation>
 <translation id="1110155001042129815">Warten</translation>
 <translation id="7071586181848220801">Unbekanntes Plug-in</translation>
@@ -460,7 +447,6 @@
 <translation id="3889424535448813030">Rechtspfeil</translation>
 <translation id="5435666907653217300">Anderes Problem</translation>
 <translation id="1264974993859112054">Sport</translation>
-<translation id="3066577394310386876">Lang&amp;sam (0,5 x)</translation>
 <translation id="5167270755190684957">Google Chrome-Designgalerie</translation>
 <translation id="8382913212082956454">E-Mail-Adr&amp;esse kopieren</translation>
 <translation id="4229495110203539533">Vor <ph name="NUMBER_ONE"/> Sekunde</translation>
@@ -486,7 +472,6 @@
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (Standardeinstellung)</translation>
 <translation id="111844081046043029">Möchten Sie diese Seite wirklich verlassen?</translation>
 <translation id="4497415007571823067">Sie haben versucht, auf &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; zuzugreifen, stattdessen jedoch einen Server erreicht, der sich selbst als &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ausgegeben hat. Dies wurde möglicherweise durch eine fehlerhafte Konfiguration auf dem Server oder etwas noch schwerwiegenderes verursacht. Ein Hacker in Ihrem Netzwerk könnte versuchen, Sie dazu zu bringen, eine gefälschte (und möglicherweise schädliche) Version von &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt; aufzurufen. Fahren Sie nicht fort.</translation>
-<translation id="957864810768974481">&amp;Vollbild</translation>
 <translation id="3202578601642193415">Neueste</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> Stunden</translation>
 <translation id="8739589585766515812">Tagesverlauf löschen</translation>
@@ -625,7 +610,6 @@
 <translation id="5538307496474303926">Wird gelöscht...</translation>
 <translation id="1285631718404404702">&quot;Letzte Aktivitäten&quot; anzeigen</translation>
 <translation id="6783679543387074885">Fehler oder defekte Website melden</translation>
-<translation id="2022952840834921450">Erweiterungen können auf Ihren Computer und Ihre privaten Daten zugreifen. Sie könnten Tweets oder E-Mails in Ihrem Namen senden.</translation>
 <translation id="3413103074007669042">Diese Seite enthält unsicheren Content.</translation>
 <translation id="4887833561977827087">Es sind noch keine Elemente vorhanden.
 Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> und weitere Quellen hinzufügen.</translation>
@@ -652,9 +636,8 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="7397054681783221164">Löschen Sie die folgenden Elemente:</translation>
 <translation id="4891251785049117953">Gespeicherte Formulardaten löschen</translation>
 <translation id="1531836666020185856">Vorgestellt</translation>
-<translation id="777885533320815847">D&amp;oppelt (2,0 )</translation>
+<translation id="5230516054153933099">Fenster</translation>
 <translation id="7554791636758816595">Neuer Tab</translation>
-<translation id="6231471673669497681">&amp;Wiedergabegeschwindigkeit</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">DNS-Vorabruf zur Verbesserung der Seitenladeleistung verwenden</translation>
 <translation id="1086613338090581534">Der Aussteller eines Zertifikats, das nicht abgelaufen ist, ist für das Führen einer so genannten &quot;Sperrliste&quot; verantwortlich. Falls ein Zertifikat in den Besitz eines anderen gelangt, kann der Aussteller es widerrufen, indem er es der Sperrliste hinzufügt. In diesem Fall vertraut Ihr Browser dem Zertifikat nicht mehr. Für abgelaufene Zertifikate ist kein Widerrufstatus erforderlich. Während der Gültigkeit dieses Zertifikats für die besuchte Website kann daher nicht ermittelt werden, ob das Zertifikat in den Besitz eines anderen gelangt ist und später widerrufen wurde oder ob es weiterhin sicher ist. Daher kann nicht ermittelt werden, ob Sie mit der rechtmäßigen Website kommunizieren oder ob sich das Zertifikat nun im Besitz eines Hackers befindet und Sie jetzt mit diesem kommunizieren. In diesem Fall sollten Sie nicht fortfahren.</translation>
@@ -721,7 +704,6 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="3009731429620355204">Sitzungen</translation>
 <translation id="3473034187222004855">Datei&amp;pfad kopieren</translation>
 <translation id="6325525973963619867">Fehlgeschlagen</translation>
-<translation id="2120291134670287161">Kein Drucker gefunden. Installieren Sie einen Drucker.</translation>
 <translation id="1676388805288306495">Standardschriftart/-sprache für Webseiten ändern</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">Frame-Quelle &amp;anzeigen</translation>
@@ -822,7 +804,6 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="6227291405321948850">Unbenanntes Webbild</translation>
 <translation id="1684248949164455892">In diesem Fall wurde das Zertifikat von einem Drittanbieter, dem Ihr Computer vertraut, nicht bestätigt. Jeder Anwender kann ein Zertifikat erstellen und sich für eine beliebige Website ausgeben. Deshalb muss er von einem vertrauenswürdigen Drittanbieter bestätigt werden. Ohne diese Bestätigung sind die Identitätsinformationen im Zertifikat ohne Bedeutung. Daher ist keine Überprüfung möglich, ob Sie mit &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; oder einem Hacker kommunizieren, der sein eigenes Zertifikat erstellt hat und behauptet, dass er &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; sei. In diesem Fall sollten Sie nicht fortfahren.</translation>
 <translation id="8045462269890919536">Rumänisch</translation>
-<translation id="3927097095400773697"><ph name="DOWNLOAD_SIZE"/>, abgebrochen</translation>
 <translation id="2927657246008729253">Ändern...</translation>
 <translation id="3478477629095836699">Cookie-Einstellungen:</translation>
 <translation id="2108475813351458355">Sichere Verbindung zu <ph name="DOMAIN"/></translation>
@@ -873,7 +854,6 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="9141716082071217089">Prüfung, ob das Serverzertifikat widerrufen wurde, nicht möglich.</translation>
 <translation id="4304224509867189079">Anmelden</translation>
 <translation id="4492190037599258964">Suchergebnisse für &quot;<ph name="SEARCH_STRING"/>&quot;</translation>
-<translation id="8540666473246803645">Google Chrome</translation>
 <translation id="988159990683914416">Entwickler-Build</translation>
 <translation id="6790650291892352751">Suche nach Thema oder URL:</translation>
 <translation id="3705722231355495246">-</translation>
@@ -892,7 +872,6 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="6264485186158353794">Zurück zu sicherer Website</translation>
 <translation id="3807747707162121253">Abbre&amp;chen</translation>
 <translation id="2850243184678184884">z. B. Hockey, BBC, http://engadget.com/rss.xml</translation>
-<translation id="6422698515595625913">Es sind <ph name="DOWNLOAD_COUNT"/> Downloads in Bearbeitung. Wenn Sie Google Chrome jetzt schließen, werden diese Downloads abgebrochen.</translation>
 <translation id="77999321721642562">Später werden hier Ihre acht meistbesuchten Websites angezeigt.</translation>
 <translation id="7447718177945067973">Der Server wurde nicht gefunden.</translation>
 <translation id="715468010956678290">Frame in Inko&amp;gnito-Fenster öffnen</translation>
@@ -948,5 +927,4 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="8328145009876646418">Linker Rand</translation>
 <translation id="8203365863660628138">Installation bestätigen</translation>
 <translation id="406259880812417922">(Suchkürzel: <ph name="KEYWORD"/>)</translation>
-<translation id="2437750561138919253">JavaScript-Debugger - Wird ausgeführt</translation>
 </translationbundle>

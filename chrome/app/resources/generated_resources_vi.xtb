@@ -12,7 +12,6 @@
 <translation id="4610656722473172270">Thanh công cụ của Google</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="2972581237482394796">&amp;Làm lại</translation>
-<translation id="5895138241574237353">Khởi động lại</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="1723824996674794290">Cửa sổ &amp;Mới</translation>
@@ -84,7 +83,6 @@
 <translation id="5600613131076600482">Phần mở rộng có thể truy cập vào máy tính và dữ liệu cá nhân của bạn. Chúng có thể đăng ảnh chân thực lên Tường của bạn.</translation>
 <translation id="1644574205037202324">Lịch sử</translation>
 <translation id="2518917559152314023">Thê&amp;m...</translation>
-<translation id="8217250408786235522">&amp;Bình thường (1.0x)</translation>
 <translation id="4510290974676570902">Loại MIME</translation>
 <translation id="5565725983873655007">Khi có nội dung tổng hợp trên các trang an toàn (SSL):</translation>
 <translation id="4419098590196511435">Thiếu thông tin nào đó</translation>
@@ -154,7 +152,6 @@
 <translation id="1635247229519770914">Tiếp tục Cài đặt</translation>
 <translation id="8945419807169257367">Không thể kiểm tra chứng chỉ máy chủ</translation>
 <translation id="1464570622807304272">Hãy dùng thử - nhập &quot;phong lan&quot; và nhấn Enter.</translation>
-<translation id="5872213955895293073">Gỡ lỗi JavaScript</translation>
 <translation id="1965338962645102116">Để nhập dấu trang của Thanh công cụ vào Chrome, bạn phải đăng nhập vào tài khoản Google. Vui lòng đăng nhập và thử nhập lại.</translation>
 <translation id="5903264686717710770">Tiêu đề:</translation>
 <translation id="8899851313684471736">Mở liên kết bằng cửa sổ &amp;mới</translation>
@@ -162,7 +159,6 @@
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> giờ</translation>
 <translation id="3990502903496589789">Cạnh bên Phải</translation>
 <translation id="2790948358747073186">Các mục khác</translation>
-<translation id="5303890401939113396">Trình gỡ lỗi JavaScript - Dừng</translation>
 <translation id="2423578206845792524">Lưu &amp;hình ảnh thành...</translation>
 <translation id="1095038624419434542">Đã xảy ra lỗi khi tải tài nguyên chương trình. Hãy thử cài đặt lại.</translation>
 <translation id="9068931793451030927">Đường dẫn:</translation>
@@ -214,7 +210,6 @@
 <translation id="1087119889335281750">&amp;Không có đề xuất về chính tả nào</translation>
 <translation id="5076340679995252485">&amp;Dán</translation>
 <translation id="14171126816530869">Nhận dạng <ph name="ORGANIZATION"/> tại <ph name="LOCALITY"/> đã được xác minh bởi <ph name="ISSUER"/>.</translation>
-<translation id="1587275751631642843">Bảng điều khiển &amp;JavaScript</translation>
 <translation id="5821894118254011366">Chặn toàn bộ cookie của bên thứ ba</translation>
 <translation id="1134009406053225289">Mở trong cửa sổ ẩn danh</translation>
 <translation id="3473105180351527598">Kích hoạt chức năng bảo vệ chống lừa đảo trực tuyến và malware</translation>
@@ -270,17 +265,14 @@
 <translation id="2794293857160098038">Tuỳ chọn tìm kiếm mặc định</translation>
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> phút còn lại</translation>
 <translation id="5496587651328244253">Tổ chức</translation>
-<translation id="2074760228690987725">&amp;Nhanh (1.25x)</translation>
 <translation id="2592884116796016067">Một phần của trang này (HTML WebWorker) bị lỗi, vì vậy trang này có thể không hoạt động đúng.</translation>
 <translation id="5568069709869097550">Không thể đăng nhập</translation>
-<translation id="8585326996912141705">N&amp;hanh hơn (1.5x)</translation>
 <translation id="4181898366589410653">Không tìm thấy cơ chế thu hồi trong chứng chỉ của máy chủ.</translation>
 <translation id="6364916375976753737">Cuộn qua Trái</translation>
 <translation id="1665770420914915777">Sử dụng trang Tab Mới</translation>
 <translation id="2629089419211541119"><ph name="NUMBER_ONE"/> hour ago</translation>
 <translation id="7789175495288668515">Thay đổi tuỳ chọn cài đặt mặc định.</translation>
 <translation id="347250956943431997">Chứng chỉ của máy chủ đã bị thu hồi</translation>
-<translation id="9087164549070846958">Tuy nhiên, nếu làm việc trong một tổ chức tự tạo chứng chỉ riêng và đang cố kết nối với trang web nội bộ của tổ chức đó bằng cách sử dụng chứng chỉ, bạn có thể giải quyết vấn đề này một cách an toàn. Bạn có thể nhập chứng chỉ gốc của tổ chức làm &quot;chứng chỉ gốc&quot;, khi đó chứng chỉ do tổ chức của bạn cung cấp và xác minh sẽ đáng tin cậy, và bạn sẽ không thấy lỗi này vào lần kế tiếp khi truy cập trang web nội bộ nữa. Liên hệ với nhóm trợ giúp của tổ chức để hỗ trợ việc thêm chứng chỉ gốc vào Windows.</translation>
 <translation id="6982279413068714821"><ph name="NUMBER_DEFAULT"/> phút trước</translation>
 <translation id="7977590112176369853">&lt;nhập truy vấn&gt;</translation>
 <translation id="994771890067000105">Nội dung nổi bật khác</translation>
@@ -302,7 +294,6 @@
 <translation id="3513979718339724672">Hiển thị hình thu nhỏ</translation>
 <translation id="7300965843904003671">Luôn hiển thị cửa sổ bật lên từ <ph name="URL"/></translation>
 <translation id="8211437954284917092">Nhập truy vấn vào trường văn bản ở trên để tìm dấu trang của bạn.</translation>
-<translation id="2950143609136989144">Phần mở rộng có thể truy cập vào máy tính và dữ liệu cá nhân của bạn. Điều này có nghĩa là chúng có thể chuyển tiếp tất cả email đến chồng hoặc vợ của bạn.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/>/<ph name="TOTAL_FILES"/> tệp</translation>
 <translation id="1291121346508216435">Tự động sửa lỗi chính tả:</translation>
 <translation id="6805291412499505360">Hạn chế cách bên thứ ba có thể sử dụng cookie</translation>
@@ -325,7 +316,6 @@
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> phút</translation>
 <translation id="8210608804940886430">Trang Dưới</translation>
 <translation id="5015344424288992913">Đang phân giải proxy…</translation>
-<translation id="2398703750948514961">Huỷ</translation>
 <translation id="3675321783533846350">Thiết lập proxy để kết nối đến mạng.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> ngày</translation>
 <translation id="8453184121293348016">Không tìm thấy cơ chế thu hồi nào</translation>
@@ -367,7 +357,6 @@
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> giây</translation>
 <translation id="3345886924813989455">Không tìm thấy trình duyệt được hỗ trợ</translation>
 <translation id="3712897371525859903">Lưu trang &amp;thành...</translation>
-<translation id="3433151241941574321">Thêm trang</translation>
 <translation id="7910768399700579500">&amp;Thư mục mới</translation>
 <translation id="6883611015375728278">Chặn tất cả cookie</translation>
 <translation id="3819791248093819058">Không tìm thấy trang web nào ứng với địa chỉ web: &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt;</translation>
@@ -389,7 +378,6 @@
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="5170568018924773124">Hiển thị trong thư mục</translation>
 <translation id="2674170444375937751">Bạn có chắc chắn muốn xoá những trang này khỏi lịch sử duyệt web của mình không?</translation>
-<translation id="7334704644505105275">Gỡ lỗi JavaScript - Bận</translation>
 <translation id="7629827748548208700">Tab: <ph name="TAB_NAME"/></translation>
 <translation id="8028993641010258682">Kích thước</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
@@ -408,7 +396,6 @@
 <translation id="3867260226944967367">Không tìm thấy trang web này.</translation>
 <translation id="6507969014813375884">Chinese Simplified</translation>
 <translation id="1767991048059195456">Gửi báo cáo</translation>
-<translation id="4612149584835516432">Bạn có một bản tải xuống đang tiến hành. Nếu bạn đóng Google Chrome bây giờ, bản tải xuống này sẽ bị huỷ.</translation>
 <translation id="5646376287012673985">Vị trí</translation>
 <translation id="1110155001042129815">Chờ</translation>
 <translation id="7071586181848220801">Plug-in chưa biết</translation>
@@ -462,7 +449,6 @@
 <translation id="3889424535448813030">Phím mũi tên Phải</translation>
 <translation id="5435666907653217300">Sự cố khác</translation>
 <translation id="1264974993859112054">Thể thao</translation>
-<translation id="3066577394310386876">&amp;Chậm (0.5x)</translation>
 <translation id="5167270755190684957">Thư viện Chủ đề của Google Chrome</translation>
 <translation id="8382913212082956454">Sao chép địa chỉ &amp;email</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> sec ago</translation>
@@ -488,7 +474,6 @@
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (Mặc định)</translation>
 <translation id="111844081046043029">Bạn có chắc chắn muốn thoát khỏi trang này không?</translation>
 <translation id="4497415007571823067">Bạn đã cố truy cập &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, nhưng thực ra bạn đã truy cập vào máy chủ tự nhận dạng là &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Điều này có thể gây ra bởi lỗi về cấu hình trên máy chủ hay bởi các lỗi nghiêm trọng khác. Kẻ tấn công trên mạng của bạn có thể cố mời bạn truy cập phiên bản &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt; giả mạo (và tiềm ẩn mối nguy hại). Bạn không nên tiếp tục.</translation>
-<translation id="957864810768974481">&amp;Toàn màn hình</translation>
 <translation id="3202578601642193415">Mới nhất</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> giờ</translation>
 <translation id="8739589585766515812">Xoá lịch sử của ngày này</translation>
@@ -627,7 +612,6 @@
 <translation id="5538307496474303926">Đang xoá...</translation>
 <translation id="1285631718404404702">Hiển thị hoạt động gần đây</translation>
 <translation id="6783679543387074885">Báo cáo Lỗi hoặc Trang Web không Truy cập được</translation>
-<translation id="2022952840834921450">Phần mở rộng có quyền truy cập vào máy tính và dữ liệu cá nhân của bạn. Chúng có thể gửi bài đăng hoặc email thay cho bạn.</translation>
 <translation id="3413103074007669042">Trang này chứa một số nội dung không an toàn</translation>
 <translation id="4887833561977827087">Chưa có mục nào để hiển thị tại đây.
         <ph name="BEGIN_LINK"/>Tuỳ chỉnh<ph name="END_LINK"/>
@@ -655,9 +639,8 @@
 <translation id="7397054681783221164">Xoá sạch các mục sau:</translation>
 <translation id="4891251785049117953">Xoá dữ liệu mẫu đã lưu</translation>
 <translation id="1531836666020185856">Nổi bật</translation>
-<translation id="777885533320815847">Nhanh &amp;Gấp đôi (2.0x)</translation>
+<translation id="5230516054153933099">Cửa sổ</translation>
 <translation id="7554791636758816595">Tab Mới</translation>
-<translation id="6231471673669497681">&amp;Tốc độ Phát lại</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">Sử dụng tìm nạp nội dung DNS để cải thiện hiệu suất tải trang</translation>
 <translation id="1086613338090581534">Đối với chứng chỉ chưa hết hạn, người cấp chứng chỉ phải chịu trách nhiệm duy trì &quot;danh sách thu hồi&quot;. Nếu chứng chỉ bị sửa đổi, người cấp có thể thu hồi bằng cách thêm chứng chỉ vào danh sách thu hồi và khi đó chứng chỉ này sẽ không còn được trình duyệt của bạn tin cậy nữa. Trạng thái thu hồi không bắt buộc phải được duy trì đối với chứng chỉ hết hạn. Mặc dù chứng chỉ này có hiệu lực đối với trang web bạn đang truy cập, nhưng tại thời điểm này, chúng tôi không thể xác định liệu chứng chỉ đã bị sửa đổi, rồi bị thu hồi hay chứng chỉ vẫn đó vẫn còn an toàn. Chúng tôi cũng không thể biết được liệu bạn có đang giao tiếp với trang web hợp pháp hay không hoặc liệu chứng chỉ đã bị sửa đổi và hiện bạn đang giao tiếp với trang web bị kẻ tấn công khống chế hay không. Bạn không nên tiếp tục duyệt trang web.</translation>
@@ -724,7 +707,6 @@
 <translation id="3009731429620355204">Phiên</translation>
 <translation id="3473034187222004855">Sao chép đường &amp;dẫn tệp</translation>
 <translation id="6325525973963619867">Lỗi</translation>
-<translation id="2120291134670287161">Không tìm thấy máy in. Vui lòng cài đặt máy in.</translation>
 <translation id="1676388805288306495">Thay đổi phông chữ và ngôn ngữ mặc định cho trang web.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Xem nguồn khung</translation>
@@ -825,7 +807,6 @@
 <translation id="6227291405321948850">Hình ảnh Web không Tên</translation>
 <translation id="1684248949164455892">Trong trường hợp này, chứng chỉ không được xác minh bởi bên thứ ba mà máy tính của bạn tin cậy. Bất kỳ ai tạo được chứng chỉ đều có thể giả danh bất kỳ trang web nào họ chọn và đó là lý do tại sao chứng chỉ phải được bên thứ ba đáng tin cậy xác minh. Không có sự xác minh này, thông tin nhận dạng trong chứng chỉ sẽ vô nghĩa. Do đó không thể xác minh rằng bạn đang liên lạc với &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; thay vì một kẻ tấn công tự tạo chứng chỉ riêng và mạo nhận là &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Bạn không nên tiếp tục duyệt trang web.</translation>
 <translation id="8045462269890919536">Romanian</translation>
-<translation id="3927097095400773697"><ph name="DOWNLOAD_SIZE"/>, Huỷ</translation>
 <translation id="2927657246008729253">Thay đổi...</translation>
 <translation id="3478477629095836699">Cài đặt cookie:</translation>
 <translation id="2108475813351458355">Kết nối an toàn tới <ph name="DOMAIN"/></translation>
@@ -876,7 +857,6 @@
 <translation id="9141716082071217089">Không thể kiểm tra chứng chỉ của máy chủ đã bị thu hồi hay chưa.</translation>
 <translation id="4304224509867189079">Đăng nhập</translation>
 <translation id="4492190037599258964">Kết quả tìm kiếm cho '<ph name="SEARCH_STRING"/>'</translation>
-<translation id="8540666473246803645">Google Chrome</translation>
 <translation id="988159990683914416">Phiên bản dành cho Nhà phát triển</translation>
 <translation id="6790650291892352751">Tìm kiếm theo chủ đề hoặc URL:</translation>
 <translation id="3705722231355495246">-</translation>
@@ -895,7 +875,6 @@
 <translation id="6264485186158353794">Quay lại an toàn</translation>
 <translation id="3807747707162121253">&amp;Huỷ</translation>
 <translation id="2850243184678184884">ví dụ: khúc côn cầu, BBC, http://engadget.com/rss.xml</translation>
-<translation id="6422698515595625913">Bạn có <ph name="DOWNLOAD_COUNT"/> bản tải xuống đang tiến hành. Nếu bạn đóng Google Chrome bây giờ, những bản tải xuống này sẽ bị huỷ.</translation>
 <translation id="77999321721642562">Theo thời gian, khu vực dưới đây sẽ hiển thị tám trang web bạn đã truy cập nhiều nhất.</translation>
 <translation id="7447718177945067973">Không thể tìm thấy máy chủ.</translation>
 <translation id="715468010956678290">Mở khung bằn&amp;g cửa sổ ẩn danh</translation>
@@ -952,5 +931,4 @@
 <translation id="8328145009876646418">Cạnh Bên trái</translation>
 <translation id="8203365863660628138">Xác nhận Cài đặt</translation>
 <translation id="406259880812417922">(Từ khoá: <ph name="KEYWORD"/>)</translation>
-<translation id="2437750561138919253">Gỡ lỗi JavaScript - Đang chạy</translation>
 </translationbundle>

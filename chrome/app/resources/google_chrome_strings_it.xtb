@@ -31,7 +31,6 @@
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="1195935957447623558">La sessione di Google Chrome è stata terminata in modo non corretto. Per riaprire le pagine che stavi visualizzando, fai clic su Ripristina.</translation>
 <translation id="2499193704281978000">Google Chrome non risponde. Riavviare?</translation>
-<translation id="1163677799412376314">Guida di Google Chrome</translation>
 <translation id="7747138024166251722">Il programma di installazione non ha creato una directory temporanea. Verifica di disporre di spazio libero sul disco e dell'autorizzazione per l'installazione del software.</translation>
 <translation id="6009537148180854585">Hai tentato di accedere a strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ma il certificato presentato dal server contiene degli errori. Google Chrome non può utilizzare un certificato in cui sono presenti errori e non è in grado di convalidare l'identità del sito a cui hai tentato di accedere. La connessione non è protetta, ti consigliamo di non procedere.</translation>
 <translation id="3324235665723428530">Non è possibile utilizzare il tuo profilo, poiché è associato a una versione di Google Chrome più recente.\n\Alcune funzioni potrebbero non essere disponibili. Specifica una directory di profilo diversa o utilizza una versione di Chrome più recente.</translation>
@@ -45,6 +44,7 @@
 <translation id="6921913858457830952">Google Chrome è pronto a completare l'installazione.</translation>
 <translation id="7100330187273168372">Chrome non è in grado di leggere e scrivere nella directory dei dati:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="2290095356545025170">Sei sicuro di voler disinstallare Google Chrome?</translation>
+<translation id="7626032353295482388">Benvenuto in Chrome</translation>
 <translation id="5941830788786076944">Imposta Google Chrome come browser predefinito</translation>
 <translation id="4127951844153999091">In questo caso l'indirizzo indicato nel certificato non corrisponde all'indirizzo del sito web al quale il tuo browser ha tentato di accedere. Questa mancata corrispondenza può essere dovuta al tentativo da parte di un hacker di presentare un certificato relativo a un altro sito web. È anche possibile che il server sia impostato in modo da restituire lo stesso certificato per più siti web, incluso quello che stai cercando di visitare, malgrado tale certificato non sia valido per tutti i siti. Siamo in grado di garantire che stai comunicando con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ma non è possibile verificare che questo sito corrisponda a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. Se decidi di procedere, Google Chrome non verificherà eventuali altre mancate corrispondenze. In generale, tuttavia, ti consigliamo di non procedere oltre questo punto.</translation>
 <translation id="2712549016134575851">È stato rilevato un conflitto con un'altra applicazione installata.</translation>
@@ -53,7 +53,6 @@
 <translation id="5046764976540625289">Esci da Chrome</translation>
 <translation id="8865765905101981392">Browser Internet</translation>
 <translation id="582763753075639530">Chiudi tutte le finestre di Chrome e riavvia il programma per rendere effettiva la modifica.</translation>
-<translation id="6525535905286676482">Esci da Google Chrome</translation>
 <translation id="8776515774046280928">Google Chrome è già installato ed è disponibile per tutti gli utenti di questo computer. Se desideri installare Google Chrome a livello di utente, innanzitutto devi disinstallare la versione a livello di sistema installata da un amministratore.</translation>
 <translation id="2769762047821873045">Google Chrome non è il tuo browser predefinito.</translation>
 <translation id="7825851276765848807">Installazione non riuscita a causa di un errore non specificato. Scarica nuovamente Google Chrome.</translation>
@@ -61,7 +60,6 @@
 <translation id="473183893665420670">Quando reimposti le opzioni di Google Chrome, tutte le modifiche apportate verranno ignorate e verranno ripristinate le impostazioni predefinite. Reimpostare le opzioni di Chrome?</translation>
 <translation id="3636771339108070045">In questo computer è già installata una versione più recente di Google Chrome. Se il software non funziona, disinstalla Google Chrome e scaricalo nuovamente.</translation>
 <translation id="3396666154568987767">Google Chrome per <ph name="PROFILE_NAME"/></translation>
-<translation id="3290853340290073363">Nascondi Google Chrome</translation>
 <translation id="1964682833763362793">Chiudi tutte le finestre di Chrome e riprova.</translation>
 <translation id="1001534784610492198">Il file del programma di installazione è danneggiato oppure non è valido. Scarica nuovamente Google Chrome.</translation>
 <translation id="6626317981028933585">Le impostazioni di Mozilla Firefox non sono disponibili finché il browser è in esecuzione. Per importare queste impostazioni in Google Chrome, salva i tuoi file e chiudi tutte le finestre di Firefox, quindi fai clic su Continua.</translation>

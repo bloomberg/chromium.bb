@@ -12,7 +12,6 @@
 <translation id="4610656722473172270">Google ଉପକରଣ ଦଣ୍ଡିକା</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="2972581237482394796">&amp;ପୁନଃବତ୍</translation>
-<translation id="5895138241574237353">ପୁନଃଆରମ୍ଭ</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="1723824996674794290">&amp;ନୂତନ ୱିଣ୍ଡୋ</translation>
@@ -82,7 +81,6 @@
 <translation id="8703575177326907206"><ph name="DOMAIN"/> ସହ ଆପଣଙ୍କର ସଂଯୋଜନା ଏନକ୍ରିପ୍ଟ ହୋଇ ନାହିଁ ।</translation>
 <translation id="1644574205037202324">ଇତିବୃତ୍ତି</translation>
 <translation id="2518917559152314023">ଯୋଡନ୍ତୁ&amp;...</translation>
-<translation id="8217250408786235522">&amp;ସାଧାରଣ (1.0x)</translation>
 <translation id="4510290974676570902">MIME ପ୍ରକାର</translation>
 <translation id="5565725983873655007">ନିରାପତ୍ତା (SSL) ପୃଷ୍ଠାଗୁଡିକରେ ମିଶ୍ରିତ ବିଷୟବସ୍ତୁ ଥିବାବେଳେ:</translation>
 <translation id="4419098590196511435">କିଛିଗୁଡିଏ ନିରୁଦ୍ଧିଷ୍ଟ ହେଉଛି</translation>
@@ -151,7 +149,6 @@
 <translation id="1635247229519770914">ସଂସ୍ଥାପନା କାର୍ଯ୍ୟ ଜାରି ରଖନ୍ତୁ</translation>
 <translation id="8945419807169257367">ସର୍ଭରର ପ୍ରମାଣପତ୍ର ଯାଞ୍ଚ ହୋଇପାରିବ ନାହିଁ</translation>
 <translation id="1464570622807304272">ଏହା ଚେଷ୍ଟା କରି ଦେଖନ୍ତୁ – “ଓରକିଡସ୍” ଟାଇପ୍ କରନ୍ତୁ ଏବଂ ପ୍ରବେଶ ଦବାନ୍ତୁ ।</translation>
-<translation id="5872213955895293073">JavaScript ଡିବଗ୍ କରନ୍ତୁ</translation>
 <translation id="1965338962645102116">Chrome ମଧ୍ୟକୁ ଉପକରଣଦଣ୍ଡିକା ବୁକମାର୍କଗୁଡିକୁ ଆମଦାନୀ କରିବା କ୍ରମାଙ୍କରେ, ଆପଣ ନିଶ୍ଚିତଭାବରେ ଆପଣଙ୍କର Google ଖାତା ମଧ୍ୟକୁ ଲଗ୍ ହୋଇଥିବେ ।  ଦୟାକରି ଲଗ୍ ଇନ୍ କରନ୍ତୁ ଏବଂ ପୁନଃ ଆମଦାନୀ କରିବାକୁ ଚେଷ୍ଟା କରନ୍ତୁ ।</translation>
 <translation id="5903264686717710770">ଆଖ୍ୟା:</translation>
 <translation id="8899851313684471736">ନୂତନ ୱିଣ୍ଡୋରେ ଲିଙ୍କଗୁଡିକ ଖୋଲନ୍ତୁ</translation>
@@ -159,7 +156,6 @@
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> ଘଣ୍ଟା</translation>
 <translation id="3990502903496589789">ଠିକ୍ ଧାର</translation>
 <translation id="2790948358747073186">ଅହୁରି ଅଧିକ</translation>
-<translation id="5303890401939113396">JavaScript ଡିବଗର – ବିରତ</translation>
 <translation id="2423578206845792524">&amp;ପ୍ରତିଛବି ଏହି ଭାବେ ସଞ୍ଚୟ କରନ୍ତୁ...</translation>
 <translation id="1095038624419434542">ଏକ ପ୍ରୋଗ୍ରାମ୍ ଉତ୍ସ ଲୋଡ କରିବାବେଳେ ଏକ ତ୍ରୁଟି ଘଟିଲା । ପୁନଃ ସଂସ୍ଥାପନ କରିବାକୁ ଚେଷ୍ଟା କରନ୍ତୁ ।</translation>
 <translation id="9068931793451030927">ପାଥ୍:</translation>
@@ -212,7 +208,6 @@
 <translation id="1087119889335281750">&amp;କୌଣସି ବନାନ ମତାମତଗୁଡିକ ନାହିଁ</translation>
 <translation id="5076340679995252485">&amp;ଲେପନ</translation>
 <translation id="14171126816530869"><ph name="ISSUER"/> ଦ୍ଵାରା <ph name="LOCALITY"/> ରେ <ph name="ORGANIZATION"/> ର ପରିଚୟ ପରୀକ୍ଷା-ନିରୀକ୍ଷା କରାଯାଇଅଛି ।</translation>
-<translation id="1587275751631642843">&amp;JavaScript କନସୋଲେ</translation>
 <translation id="5821894118254011366">ତୃତୀୟ-ପକ୍ଷ କୁକୀଗୁଡିକୁ ସମ୍ପୂର୍ଣ୍ଣରୂପେ ଅବରୋଧ କରନ୍ତୁ</translation>
 <translation id="1134009406053225289">ଗୁପ୍ତ ୱ୍ଵିଣ୍ଡୋରେ ଖୋଲିଛି</translation>
 <translation id="3473105180351527598">ଫିସିଙ୍ଗ୍ ଓ ନକଲି ରକ୍ଷାରକ୍ଷଣ ସକ୍ଷମ କରନ୍ତୁ</translation>
@@ -268,17 +263,14 @@
 <translation id="2794293857160098038">ଡିଫଲ୍ଟ ସନ୍ଧାନ ବିକଳ୍ପସମୂହ</translation>
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> ଅବଶିଷ୍ଟ ମିନଟ</translation>
 <translation id="5496587651328244253">ଆୟୋଜିତ</translation>
-<translation id="2074760228690987725">&amp;ଦ୍ରୁତ (1.25x)</translation>
 <translation id="2592884116796016067">ଏହି ପୃଷ୍ଠାର ଏକ ଅଂଶ (HTML ୱେବୱାର୍କର୍) କ୍ରାସ୍ ହୋଇଛି, ତେଣୁ ଏହା ସଠିକ ଭାବରେ କାର୍ଯ୍ୟ କରିନପାରେ ।</translation>
 <translation id="5568069709869097550">ସାଇନ୍ ଇନ୍ କରିପାରିବ ନାହିଁ</translation>
-<translation id="8585326996912141705">&amp;ଦ୍ରୁତତର (1.5x)</translation>
 <translation id="4181898366589410653">ସର୍ଭରର ସାର୍ଟିଫିକେଟରେ କୌଣସି ବାତିଲଯୋଗ୍ୟ ଯାନ୍ତ୍ରିକତା ଖୋଜି ପାଇଲା ନାହିଁ ।</translation>
 <translation id="6364916375976753737">ବାମକୁ ସ୍କ୍ରୋଲ୍ କରନ୍ତୁ</translation>
 <translation id="1665770420914915777">ନୂତନ ଟ୍ୟାବ୍ ପୃଷ୍ଠାଟି ଉପଯୋଗ କରନ୍ତୁ</translation>
 <translation id="2629089419211541119"><ph name="NUMBER_ONE"/> hour ago</translation>
 <translation id="7789175495288668515">ଡିଫଲ୍ଟ ସଂସ୍ଥାପନା ବିକଳ୍ପଗୁଡିକ ପରିବର୍ତ୍ତନ କରନ୍ତୁ ।</translation>
 <translation id="347250956943431997">ସର୍ଭରର ସାର୍ଟିଫିକେଟଟି ପ୍ରତ୍ୟାହର କରିନିଆଯାଇଛି</translation>
-<translation id="9087164549070846958">ଯଦି, ଯେପରିଭାବେ ହେଉ, ଏକ ସଂସ୍ଥାରେ ଆପଣ କାର୍ଯ୍ୟରତ ତାହା ଏହା ନିଜର ସାର୍ଟିଫିକେଟ୍ ଉତ୍ପନ୍ନକରେ ଏବଂ ଏହିପରି ସାର୍ଟିଫିକେଟ୍ ଉପଯୋଗକରି ସେହି ସଂସ୍ଥାର ଏକ ଆଭ୍ୟନ୍ତରୀଣ ୱେବସାଇଟ୍ ସହ ଆପଣ ସଂଯୋଗ ହେବାକୁ ପ୍ରୟାସ କରନ୍ତି, ଏହି ସମସ୍ୟାଟିକୁ ନିରାପତ୍ତା ସହକାରେ ସମାଧାନ କରିବା ଲାଗି ଆପଣ ସକ୍ଷମ ହୋଇ ପାରନ୍ତି । ଆପଣଙ୍କର ସଂସ୍ଥାର ରୁଟ୍ ସାର୍ଟିଫିକେଟ୍ ଗୋଟିକୁ ଆପଣ “ରୁଟ୍ ସାର୍ଟିଫିକେଟ୍” ଭାବରେ ଆମଦାନି କରି ପାରିବେ ଏବଂ ତା’ପରେ ଆପଣଙ୍କର ସଂସ୍ଥା ଦ୍ଵାରା ପ୍ରଦତ୍ତ କିମ୍ବା ପରୀକ୍ଷିତ ସାର୍ଟିଫିକେଟ୍ ଗୁଡିକ ବିଶ୍ଵାସଯୋଗ୍ୟ ହେବ ତଥା ପର ମୁହୂର୍ତ୍ତରେ ଆପଣ ଏକ ଆଭ୍ୟନ୍ତରୀଣ ୱେବସାଇଟ୍ ସହ ସଂଯୋଗ ହେବାକୁ ଚେଷ୍ଟା କରିବାବେଳେ ଏହି ତ୍ରୁଟି ଆପଣ ଦେଖିବେ ନାହିଁ । ୱିଣ୍ଡୋଗୁଡିକୁ ଏକ ନୂତନ ରୁଟ୍ ସାର୍ଟିଫିକେଟ୍ ଯୋଡିକରି ସହାୟତା ନିମନ୍ତେ ଆପଣଙ୍କ ସଂସ୍ଥାର ସହାୟତା କର୍ମଚାରୀଙ୍କ ସହ ସମ୍ପର୍କ କରନ୍ତୁ ।</translation>
 <translation id="6982279413068714821"><ph name="NUMBER_DEFAULT"/> mins ago</translation>
 <translation id="7977590112176369853">&lt;ଜିଜ୍ଞାସା ପ୍ରବେଶ କରନ୍ତୁ&gt;</translation>
 <translation id="994771890067000105">ଅତିରିକ୍ତ ବୈଶିଷ୍ଟ୍ୟ</translation>
@@ -331,7 +323,6 @@
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> ମିନିଟ୍</translation>
 <translation id="8210608804940886430">ତଳ ପୃଷ୍ଠା</translation>
 <translation id="5015344424288992913">ପ୍ରକ୍ସି ନିର୍ଦ୍ଦିଷ୍ଟକରଣ...</translation>
-<translation id="2398703750948514961">ବାତିଲହେଲା</translation>
 <translation id="3675321783533846350">ନେଟୱାର୍କକୁ ସଂଯୋଗ କରିବାକୁ ଏକ ପ୍ରୋକ୍ସି ସେଟ୍ ଅପ୍ କରନ୍ତୁ ।</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> ଦିନ</translation>
 <translation id="8453184121293348016">କୌଣସି ପ୍ରତ୍ୟାହାରଯୋଗ୍ୟ ଯାନ୍ତ୍ରିକତା ଦେଖିବାକୁ ମିଳିଲା ନାହିଁ</translation>
@@ -373,7 +364,6 @@
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> ସେକେଣ୍ଡ୍</translation>
 <translation id="3345886924813989455">କୌଣସି ସମର୍ଥିତ ବ୍ରାଉଜର୍ ମିଳିଲା ନାହିଁ</translation>
 <translation id="3712897371525859903">&amp;ଏହି ଭାବେ ପୃଷ୍ଠା ସଞ୍ଚୟ କରନ୍ତୁ...</translation>
-<translation id="3433151241941574321">ପୃଷ୍ଠା ଯୋଡନ୍ତୁ</translation>
 <translation id="7910768399700579500">&amp;ନୂତନ ଫୋଲ୍ଡର</translation>
 <translation id="6883611015375728278">ସମସ୍ତ କୁକୀଗୁଡିକୁ ଅବରୋଧ କରନ୍ତୁ</translation>
 <translation id="3819791248093819058">ୱେବ ଠିକଣାଟି ଲାଗି କୌଣସି ୱେବପୃଷ୍ଠା ଖୋଜି ପାଇଲା ନାହିଁ: &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt;</translation>
@@ -392,7 +382,6 @@
 <translation id="6447842834002726250">କୁକୀଗୁଡିକ</translation>
 <translation id="5170568018924773124">ଫୋଲ୍ଡରରେ ଦେଖାନ୍ତୁ</translation>
 <translation id="2674170444375937751">ଆପଣଙ୍କ ଇତିବୃତ୍ତିରୁ ଏହି ପୃଷ୍ଠାଗୁଡିକ ଆପଣ ବିଲୋପ କରିବାକୁ ଚାହୁଁଥିବାର ନିଶ୍ଚିତ କି?</translation>
-<translation id="7334704644505105275">JavaScript ଡିବଗର – ବ୍ୟସ୍ତ ଅଛି</translation>
 <translation id="7629827748548208700">ଟ୍ୟାବ୍: <ph name="TAB_NAME"/></translation>
 <translation id="8028993641010258682">ଆକାର</translation>
 <translation id="1383876407941801731">ସନ୍ଧାନ</translation>
@@ -411,7 +400,6 @@
 <translation id="3867260226944967367">ଏହି ୱେବପୃଷ୍ଠାଟି ଖୋଜି ପାଇଲା ନାହିଁ ।</translation>
 <translation id="6507969014813375884">ଚିନୀୟ ସରଳିକୃତ</translation>
 <translation id="1767991048059195456">ରିପୋର୍ଟ ପଠାନ୍ତୁ</translation>
-<translation id="4612149584835516432">ଆପଣଙ୍କର ଗୋଟିଏ ଡାଉନଲୋଡ୍ ପ୍ରଗତିରେ ଅଛି । ଯଦି ଆପଣ ବର୍ତ୍ତମାନ Google Chrome ବନ୍ଦ କରନ୍ତି, ଏହି ଡାଉନଲୋଡଟି ବାତିଲ ହୋଇଯିବ ।</translation>
 <translation id="5646376287012673985">ଅବସ୍ଥାନ</translation>
 <translation id="1110155001042129815">ଅପେକ୍ଷା କରନ୍ତୁ</translation>
 <translation id="7071586181848220801">ଅଜ୍ଞାତ ପ୍ଲଗ୍-ଇନ୍</translation>
@@ -464,7 +452,6 @@
 <translation id="3889424535448813030">Right Arrow</translation>
 <translation id="5435666907653217300">ଅନ୍ୟାନ୍ୟ ସମସ୍ୟା</translation>
 <translation id="1264974993859112054">ଖେଳଗୁଡିକ</translation>
-<translation id="3066577394310386876">&amp;ଧିର (0.5x)</translation>
 <translation id="5167270755190684957">Google Chrome ଥିମ୍ ଗ୍ୟାଲେରୀ</translation>
 <translation id="8382913212082956454">ଇମେଲ୍ ଠିକଣା କପି କରନ୍ତୁ</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> sec ago</translation>
@@ -489,7 +476,6 @@
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (ଡିଫଲ୍ଟ)</translation>
 <translation id="111844081046043029">ଆପଣ ଏହି ପୃଷ୍ଠାଟି ପରିତ୍ୟାଗ କରିବାକୁ ଆପଣ ଚାହିଁବା ନିଶ୍ଚିତ କି?</translation>
 <translation id="4497415007571823067">ଆପଣ &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ଏଠି ପହୁଁଚିବା ଲାଗି ଉଦ୍ୟମ କଲେ, କିନ୍ତୁ ଏହା ପରିବର୍ତ୍ତେ ବାସ୍ତବରେ ଆପଣ ସେହି ଏକ ସର୍ଭର ପାଖରେ ପହଁଚିଲେ ଯାହା ନିଜକୁ ନିଜେ ଏକ ସର୍ଭର ଯାହା &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ଭାବେ ପରିଚୟ କରାଏ । ସର୍ଭର୍ ଉପରେ ଭୁଲସଂସ୍ଥାପନା କିମ୍ବା କିଛିଗୁଡିଏ ଅତ୍ୟନ୍ତ ଆପଦପୂର୍ଣ୍ଣ ଦ୍ଵାରା ଏହା ଘଟିଥାଇ ପାରେ । ଆପଣଙ୍କର ନେଟୱାର୍କରେ ଜଣେ ଆକ୍ରମଣକାରୀ &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt; ର ଏକ ଅଦରକାରୀ (ତଥା ନିଶ୍ଚିତଭାବରେ ହାନୀକାରକ) ସଂସ୍କରଣ ଆପଣଙ୍କୁ ପରିଦର୍ଶନ କରାଇବା ଲାଗି ପ୍ରୟାସ କରୁଥାଇ ପାରେ । ଆପଣ ଅଗ୍ରଗତି କରିପାରିବେ ନାହିଁ ।</translation>
-<translation id="957864810768974481">&amp;ପୂର୍ଣ୍ଣପରଦା</translation>
 <translation id="3202578601642193415">ନୂତନତ୍ତମ</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> ଘଣ୍ଟା</translation>
 <translation id="8739589585766515812">ଏହି ଦିନଟିର ଇତିବୃତ୍ତି ବିଲୋପ କରନ୍ତୁ</translation>
@@ -652,9 +638,8 @@
 <translation id="7397054681783221164">ନିମ୍ନୋକ୍ତ ଆଇଟମଗୁଡିକୁ ନିଶ୍ଚିହ୍ନ କରିବା:</translation>
 <translation id="4891251785049117953">ଡାଟା ଠାରୁ ସଞ୍ଚୟଗୁଡିକୁ ଖାଲି କରନ୍ତୁ</translation>
 <translation id="1531836666020185856">ବୈଶିଷ୍ଟ୍ୟଗୁଡିକ</translation>
-<translation id="777885533320815847">&amp;ଦ୍ଵିଗୁଣ ସମୟ (2.0x)</translation>
+<translation id="5230516054153933099">ୱିଣ୍ଡୋ</translation>
 <translation id="7554791636758816595">ନୂତନ ଟ୍ୟାବ୍</translation>
-<translation id="6231471673669497681">&amp;ପ୍ଲେବେକ୍ ହାର</translation>
 <translation id="4400697530699263877">ପୃଷ୍ଠା ଲୋଡ୍ କାର୍ଯ୍ୟଦକ୍ଷତା ବୃଦ୍ଧି କରିବା ଲାଗି DNS ପୂର୍ବ-କୌଶଳ ଉପଯୋଗ କରନ୍ତୁ</translation>
 <translation id="1086613338090581534">ନିର୍ବାପିତ ହୋଇ ନ ଥିବା ଏକ ପ୍ରମାଣପତ୍ର ପାଇଁ, &quot;ପ୍ରତ୍ୟାହାରଯୋଗ୍ୟ ତାଲିକା&quot; ନାମିତ ସେହି କିଛିର ପରିପୋଷଣ ପାଇଁ ସେହି ପ୍ରମାଣପତ୍ରଟିର ପ୍ରଦାୟକ ଦାୟୀ ଅଟନ୍ତି । ଯଦି ଏକ ପ୍ରମାଣପତ୍ର ସବୁଦିନ ଲାଗି ଆପୋଷନିଷ୍ପତ୍ତି ହୋଇଥାଏ, ତେବେ ପ୍ରଦାୟକ ଜଣକ ଏହା ସହିତ ପ୍ରତ୍ୟାହାରଯୋଗ୍ୟ ତାଲିକାଟିକୁ ଯୋଡିକରି ଏହାକୁ ପ୍ରତ୍ୟାହାର କରି ପାରିବେ ଏବଂ ତା'ପରେ ଆପଣଙ୍କ ବ୍ରାଉଜର ଦ୍ଵାରା ଏହି ପ୍ରମାଣ ପତ୍ରଟି ଆଉ ଅଧିକକାଳ ପର୍ଯ୍ୟନ୍ତ ଆସ୍ଥାଭାଜିତ ହେବ ନାହିଁ । ନିର୍ବାପିତ ପ୍ରମାଣପତ୍ରଗୁଡିକ ପାଇଁ ହେବାକୁ ଥିବା ପରିପୋଷଣ ଲାଗି ପ୍ରତ୍ୟାହାରଯୋଗ୍ୟ ସ୍ଥିତିର ଅବଶ୍ୟକତା ନାହିଁ, ଯେହେତୁ ସେତିକିବେଳେ ଆପଣ ପରିଦର୍ଶନ କରୁଥିବା ୱେବସାଇଟ୍ ଗୋଟିକ ଲାଗି ବୈଧ ହେବା ସକାଶେ ଏହି ପ୍ରମାଣପତ୍ରଟି ବ୍ୟବହୃତ, ଏହି ପରିପ୍ରେକ୍ଷୀରେ ପ୍ରମାଣପତ୍ରଟି ଆପୋଷନିଷ୍ପତ୍ତି ହୋଇଛି କି ନାହିଁ ଏବଂ ପରେ ପରେ ପ୍ରତ୍ୟାହୃତ, ଅଥବା ଏହା ନିରାପତ୍ତା ଅଛି କି ନାହିଁ ଏହା ନିର୍ଦ୍ଧାରଣ କରିବା ସମ୍ଭବ ନୁହେଁ । ଏହି ପରି ଆପଣ ଯୁକ୍ତି ସଙ୍ଗତ ୱେବସାଇଟ୍ ସହିତ ଯୋଗାଯୋଗ କରୁଛନ୍ତି କି ନାହିଁ, କିମ୍ବା ପ୍ରମାଣପତ୍ରଟି ଆପୋଷନିଷ୍ପତ୍ତି ହୋଇଥିଲା କି ନାହିଁ ତଥା ଆପଣ ଯାହାଙ୍କ ସହିତ ବର୍ତ୍ତମାନ ଯୋଗାଯୋଗ କରୁଛନ୍ତି ସେହି ଏକ ଆକ୍ରମଣକାରୀଙ୍କ ଅଧିକାରରେ ରହିଛି କି ନାହିଁ ଏହା କହିବା ଅସମ୍ଭବ ଅଟେ । ଆପଣ ଏହି ବିଷୟଟି ପ୍ରତି ପଛଘୂଞ୍ଚା ଦେବା ଉଚିତ ନୁହେଁ ।</translation>
 <translation id="3157931365184549694">ପୁନଃସଂରକ୍ଷଣ କରନ୍ତୁ</translation>
@@ -720,7 +705,6 @@
 <translation id="3009731429620355204">ଅଧିବେଶନସମୂହ</translation>
 <translation id="3473034187222004855">ଫାଇଲ୍ &amp;ପାଥ୍ କପି କରନ୍ତୁ</translation>
 <translation id="6325525973963619867">ବିଫଳ ହୋଇଛି</translation>
-<translation id="2120291134670287161">କୌଣସି ପ୍ରିଣ୍ଟର ମିଳିଲା ନାହିଁ, ଦୟାକରି ଏକ ପ୍ରିଣ୍ଟର୍ ସଂସ୍ଥାପନ କରନ୍ତୁ ।</translation>
 <translation id="1676388805288306495">ୱେବପୃଷ୍ଠାଗୁଡିକ ନିମନ୍ତେ ଡିଫଲ୍ଟ ଫଣ୍ଟ ଓ ଭାଷା ପରିବର୍ତ୍ତନ କରନ୍ତୁ ।</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;ଫ୍ରେମ୍ ଉତ୍ସ ଦର୍ଶନ କରନ୍ତୁ</translation>
@@ -820,7 +804,6 @@
 <translation id="6227291405321948850">ଆଖ୍ୟାବିହୀନ ୱେବ୍ ପ୍ରତିଛବି</translation>
 <translation id="1684248949164455892">ଏହି କ୍ଷେତ୍ରରେ, ଆପଣଙ୍କ କମ୍ପ୍ୟୁଟର୍ ଯାହାକୁ ବିଶ୍ଵାସକରେ ସେହି ତୃତୀୟ ପକ୍ଷଙ୍କ ଦ୍ଵାରା ପ୍ରମାଣପତ୍ରଟି ପରୀକ୍ଷା-ନିରୀକ୍ଷା କରାଯାଇ ନାହିଁ । ଯେକେହି ଯେକୌଣସି ପ୍ରକାର ୱେବସାଇଟ୍ ପସନ୍ଦକରି ହେବାକୁ ଥିବା ପ୍ରମାଣପତ୍ର ଦାବୀକରଣ ଯେକେହିଜଣେ ସୃଷ୍ଟି କରିପାରିବେ, ଯେଉଁଥିପାଇଁ କି ଏକ ବିଶ୍ଵସ୍ଥ ତୃତୀୟ ପକ୍ଷଙ୍କ ଦ୍ଵାରା ନିଶ୍ଚିତରୂପେ କାହିଁକି ପରୀକ୍ଷା-ନିରୀକ୍ଷା କରାଯାଇଥାଏ । ସେହି ପରୀକ୍ଷଣ ବ୍ୟତୀତ, ପ୍ରମାଣପତ୍ରରେ ଥିବା ପରିଚୟ ସୂଚନା ଅର୍ଥହୀନ ଅଟେ । ପରୀକ୍ଷା-ନିରୀକ୍ଷା କରିବାକୁ ଏହା ସମ୍ଭବ ନୁହେଁ ଯେହେତୁ ଏକ ଆକ୍ରମଣକାରୀ ଯିଏ କି ନିଜର &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;ହେବାକୁ ଥିବା ପ୍ରମାଣପତ୍ର ଦାବୀକରଣ ସୃଷ୍ଟି କରିଥା'ନ୍ତି ତାଙ୍କ ପରିବର୍ତ୍ତରେ ଆପଣ &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ସହିତ ଯୋଗାଯୋଗ କରୁଛନ୍ତି । ଆପଣ ଏହି ବିଷୟଟି ପ୍ରତି ପଛଘୂଞ୍ଚା ଦେବା ଉଚିତ ନୁହେଁ ।</translation>
 <translation id="8045462269890919536">ରୋମାନିୟ</translation>
-<translation id="3927097095400773697"><ph name="DOWNLOAD_SIZE"/>, ବାତିଲ ହେଲା</translation>
 <translation id="2927657246008729253">ପରିବର୍ତ୍ତନ...</translation>
 <translation id="3478477629095836699">କୁକୀ ସେଟିଂସମୂହ:</translation>
 <translation id="2108475813351458355"><ph name="DOMAIN"/> ସହ ନିରାପଦ ସଂଯୋଜନା</translation>
@@ -870,7 +853,6 @@
 <translation id="9141716082071217089">ସର୍ଭରର ସାର୍ଟିଫିକେଟ ହାସଲ ହେଲା କି ନାହିଁ ଯାଞ୍ଚ କରିବାରେ ଅସମର୍ଥ ।</translation>
 <translation id="4304224509867189079">ଲଗ୍ ଇନ୍</translation>
 <translation id="4492190037599258964">'<ph name="SEARCH_STRING"/>' ପାଇଁ ସନ୍ଧାନ ଫଳାଫଳସମୂହ</translation>
-<translation id="8540666473246803645">Google Chrome</translation>
 <translation id="988159990683914416">ଡେଭେଲପର୍ ବିଲ୍ଡ</translation>
 <translation id="6790650291892352751">ବିଷୟ କିମ୍ଵା URL ଦ୍ଵାରା ସନ୍ଧାନ କରନ୍ତୁ:</translation>
 <translation id="3705722231355495246">-</translation>
@@ -889,7 +871,6 @@
 <translation id="6264485186158353794">ନିରାପତ୍ତାକୁ ଫେରନ୍ତୁ</translation>
 <translation id="3807747707162121253">&amp;ବାତିଲ୍</translation>
 <translation id="2850243184678184884">ଯଥା hockey, BBC, http://engadget.com/rss.xml</translation>
-<translation id="6422698515595625913">ଆପଣଙ୍କର <ph name="DOWNLOAD_COUNT"/> ଟି ଡାଉନଲୋଡ୍ ପ୍ରଗତିରେ ଅଛି । ଯଦି ଆପଣ ବର୍ତ୍ତମାନ Google Chrome ବନ୍ଦ କରନ୍ତି, ଏହି ଡାଉନଲୋଡଗୁଡିକ ବାତିଲ ହୋଇଯିବ ।</translation>
 <translation id="77999321721642562">ସମୟ ଅନୁଯାଇ, ନିମ୍ନୋକ୍ତ କ୍ଷେତ୍ରରେ ଆପଣଙ୍କର ଆଠଟି ସର୍ବାଧିକ ଭ୍ରମଣ ହୋଇଥିବା ସାଇଟଗୁଡିକୁ ଦେଖାଇବ ।</translation>
 <translation id="7447718177945067973">ସର୍ଭର୍ ଗୋଟିକ ଖୋଜି ପାଇ ପାରିଲା ନାହିଁ ।</translation>
 <translation id="715468010956678290">ଗୁପ୍ତ ୱିଣ୍ଡୋରେ ଫ୍ରେମ୍ ଖୋଲନ୍ତୁ</translation>
@@ -943,5 +924,4 @@
 <translation id="8080048886850452639">ଅଡିଓ URL &amp;କପି କରନ୍ତୁ</translation>
 <translation id="8328145009876646418">ବାମ ଧାର</translation>
 <translation id="406259880812417922">(କୀ ଶବ୍ଦ: <ph name="KEYWORD"/>)</translation>
-<translation id="2437750561138919253">JavaScript ଡିବଗର – ଚାଲୁ ଅଛି</translation>
 </translationbundle>

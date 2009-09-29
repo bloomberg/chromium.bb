@@ -12,7 +12,6 @@
 <translation id="4610656722473172270">Google Alatna traka</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="2972581237482394796">&amp;Vrati poništeno</translation>
-<translation id="5895138241574237353">Ponovno pokreni</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="1723824996674794290">&amp;Novi prozor</translation>
@@ -84,7 +83,6 @@
 <translation id="5600613131076600482">Proširenja imaju pristup vašem računalu i osobnim podacima. Na vaš zid mogu postavljati kojekakve slike.</translation>
 <translation id="1644574205037202324">Povijest</translation>
 <translation id="2518917559152314023">Do&amp;daj...</translation>
-<translation id="8217250408786235522">&amp;Uobičajeno (1,0x)</translation>
 <translation id="4510290974676570902">MIME vrsta</translation>
 <translation id="5565725983873655007">Ako postoji miješani sadržaj na sigurnim (SSL) stranicama:</translation>
 <translation id="4419098590196511435">Nešto nedostaje</translation>
@@ -154,7 +152,6 @@
 <translation id="1635247229519770914">Nastavi s instaliranjem</translation>
 <translation id="8945419807169257367">Potvrdu poslužitelja nije moguće provjeriti</translation>
 <translation id="1464570622807304272">Isprobajte - upišite &quot;orhideje&quot;, a zatim pritisnite Enter.</translation>
-<translation id="5872213955895293073">Ukloni pogrešku JavaScripta</translation>
 <translation id="1965338962645102116">Da biste uvezli oznake Google Alatne trake u Chrome, morate biti prijavljeni na Google račun. Prijavite se i pokušajte ponoviti uvoz.</translation>
 <translation id="5903264686717710770">Naslov:</translation>
 <translation id="8899851313684471736">Otvori vezu u novom &amp;prozoru</translation>
@@ -162,7 +159,6 @@
 <translation id="5608669887400696928">Broj sati: <ph name="NUMBER_DEFAULT"/></translation>
 <translation id="3990502903496589789">Desni rub</translation>
 <translation id="2790948358747073186">Još više</translation>
-<translation id="5303890401939113396">Program za ispravljanje pogrešaka JavaScripta - prekid</translation>
 <translation id="2423578206845792524">Sp&amp;remi sliku kao...</translation>
 <translation id="1095038624419434542">Tijekom učitavanja programskog resursa došlo je do pogreške. Pokušajte instalirati ponovo.</translation>
 <translation id="9068931793451030927">Put:</translation>
@@ -215,7 +211,6 @@
 <translation id="1087119889335281750">&amp;Nema pravopisnih prijedloga</translation>
 <translation id="5076340679995252485">&amp;Zalijepi</translation>
 <translation id="14171126816530869">Identitet za <ph name="ORGANIZATION"/>na <ph name="LOCALITY"/> ovjerio je <ph name="ISSUER"/>.</translation>
-<translation id="1587275751631642843">&amp;JavaScript konzola</translation>
 <translation id="5821894118254011366">Potpuno blokiraj kolačiće trećih strana</translation>
 <translation id="1134009406053225289">Otvori u prozoru inkognito</translation>
 <translation id="3473105180351527598">Omogući zaštitu od krađe identiteta i zlonamjernog softvera</translation>
@@ -271,17 +266,14 @@
 <translation id="2794293857160098038">Zadane opcije pretraživanja</translation>
 <translation id="5935630983280450497">Preostalo minuta: <ph name="NUMBER_ONE"/></translation>
 <translation id="5496587651328244253">Organizacija</translation>
-<translation id="2074760228690987725">&amp;Brzo (1,25x)</translation>
 <translation id="2592884116796016067">Dio ove stranice (HTML WebWorker) ne radi pa stoga ona možda neće uspješno funkcionirati.</translation>
 <translation id="5568069709869097550">Ne mogu se prijaviti</translation>
-<translation id="8585326996912141705">B&amp;rže (1,5x)</translation>
 <translation id="4181898366589410653">U potvrdi poslužitelja nije pronađen mehanizam za opoziv.</translation>
 <translation id="6364916375976753737">Pomakni se lijevo</translation>
 <translation id="1665770420914915777">Upotrijebi stranicu &quot;Nova kartica&quot;</translation>
 <translation id="2629089419211541119">Prije <ph name="NUMBER_ONE"/> sat</translation>
 <translation id="7789175495288668515">Promijenite zadane opcije instalacije.</translation>
 <translation id="347250956943431997">Potvrda poslužitelja je opozvana</translation>
-<translation id="9087164549070846958">No, ako radite u tvrtki koja stvara vlastite potvrde, a pokušate se povezati s internom web lokacijom te tvrtke pomoću takve potvrde, možda ćete moći na siguran način riješiti taj problem. Možete uvesti ishodišnu potvrdu Vaše organizacije kao &quot;ishodišnu potvrdu&quot;. Nakon toga će se vjerovati potvrdama koje je izdala ili ovjerila Vaša tvrtka, a prilikom sljedećeg povezivanja s internom web lokacijom neće se pojaviti ova pogreška. Obratite se službi za pomoć Vaše tvrtke kako bi Vam pomogli u dodavanju nove ishodišne potvrde u sustav Windows.</translation>
 <translation id="6982279413068714821">Prije <ph name="NUMBER_DEFAULT"/> minuta</translation>
 <translation id="7977590112176369853">&lt;unesite upit&gt;</translation>
 <translation id="994771890067000105">Istaknuti dodatni sadržaj</translation>
@@ -303,7 +295,6 @@
 <translation id="3513979718339724672">Prikaži minijature</translation>
 <translation id="7300965843904003671">Uvijek prikaži skočne prozore s web-lokacije <ph name="URL"/></translation>
 <translation id="8211437954284917092">Unesite upit u gornje polje teksta da biste pretražili oznake.</translation>
-<translation id="2950143609136989144">Proširenja imaju pristup vašem računalu i osobnim podacima. Dakle, vašem partneru mogu prosljeđivati sve vaše poruke e-pošte.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> datoteka</translation>
 <translation id="1291121346508216435">Automatski ispravi pravopis:</translation>
 <translation id="6805291412499505360">Ograničite korištenje kolačića trećih strana</translation>
@@ -326,7 +317,6 @@
 <translation id="2953767478223974804">Broj minuta: <ph name="NUMBER_ONE"/></translation>
 <translation id="8210608804940886430">Stranica prema dolje</translation>
 <translation id="5015344424288992913">Traženje proxyja...</translation>
-<translation id="2398703750948514961">Poništeno</translation>
 <translation id="3675321783533846350">Postavite proxy za povezivanje s mrežom.</translation>
 <translation id="1572103024875503863">Broj dana: <ph name="NUMBER_MANY"/></translation>
 <translation id="8453184121293348016">Nije pronađen mehanizam za opoziv</translation>
@@ -368,7 +358,6 @@
 <translation id="8088823334188264070">Sekundi: <ph name="NUMBER_MANY"/></translation>
 <translation id="3345886924813989455">Nije pronađen podržani preglednik</translation>
 <translation id="3712897371525859903">Spremi stranicu &amp;kao...</translation>
-<translation id="3433151241941574321">Dodaj stranicu</translation>
 <translation id="7910768399700579500">&amp;Nova mapa</translation>
 <translation id="6883611015375728278">Blokiraj sve kolačiće</translation>
 <translation id="3819791248093819058">Za web adresu nije pronađena web stranica: &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt;</translation>
@@ -390,7 +379,6 @@
 <translation id="6447842834002726250">Kolačići</translation>
 <translation id="5170568018924773124">Pokaži u mapi</translation>
 <translation id="2674170444375937751">Jeste li sigurni da te stranice želite izbrisati iz Vaše povijesti?</translation>
-<translation id="7334704644505105275">Program za ispravljanje pogrešaka JavaScripta - zauzet je</translation>
 <translation id="7629827748548208700">Kartica: <ph name="TAB_NAME"/></translation>
 <translation id="8028993641010258682">Veličina</translation>
 <translation id="1383876407941801731">Pretraživanje</translation>
@@ -409,7 +397,6 @@
 <translation id="3867260226944967367">Ta web stranica nije pronađena</translation>
 <translation id="6507969014813375884">kineski pojednostavljeni</translation>
 <translation id="1767991048059195456">Pošalji izvješće</translation>
-<translation id="4612149584835516432">Imate jedno preuzimanje u tijeku. Ako sada zatvorite Google Chrome, ovo preuzimanje će se prekinuti.</translation>
 <translation id="5646376287012673985">Lokacija</translation>
 <translation id="1110155001042129815">Čekaj</translation>
 <translation id="7071586181848220801">Nepoznati dodatak</translation>
@@ -463,7 +450,6 @@
 <translation id="3889424535448813030">Strelica desno</translation>
 <translation id="5435666907653217300">Drugi problem</translation>
 <translation id="1264974993859112054">Sport</translation>
-<translation id="3066577394310386876">&amp;Sporo (0,5x)</translation>
 <translation id="5167270755190684957">Galerija tema za Google Chrome</translation>
 <translation id="8382913212082956454">Kopiraj &amp;adresu e-pošte</translation>
 <translation id="4229495110203539533">Prije <ph name="NUMBER_ONE"/> sekundu</translation>
@@ -489,7 +475,6 @@
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (zadano)</translation>
 <translation id="111844081046043029">Jeste li sigurni da želite zatvoriti ovu stranicu?</translation>
 <translation id="4497415007571823067">Pokušali ste pristupiti domeni &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ali ste umjesto toga pristupili poslužitelju koji se identificira kao &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Uzrok tome je možda pogrešna konfiguracija na poslužitelju ili nešto ozbiljnije. Napadač na Vašu mrežu možda Vas pokušava navesti da posjetite lažnu (i potencijalno štetnu) verziju domene &lt;strong&gt;<ph name="DOMAIN3"/>&lt;strong&gt;. Ne biste trebali nastaviti.</translation>
-<translation id="957864810768974481">&amp;Puni zaslon</translation>
 <translation id="3202578601642193415">Najnovije</translation>
 <translation id="8112886015144590373">Broj sati: <ph name="NUMBER_FEW"/></translation>
 <translation id="8739589585766515812">Obriši povijest za ovaj dan</translation>
@@ -628,7 +613,6 @@
 <translation id="5538307496474303926">Brisanje...</translation>
 <translation id="1285631718404404702">Prikaži nedavne aktivnosti</translation>
 <translation id="6783679543387074885">Prijava pogreške ili neispravne web lokacije</translation>
-<translation id="2022952840834921450">Proširenja imaju pristup vašem računalu i osobnim podacima. Umjesto vas mogu slati poruke o statusu ili e-poštu.</translation>
 <translation id="3413103074007669042">Ova stranica sadrži nesigurni sadržaj</translation>
 <translation id="4887833561977827087">Ovdje još nema stavki za prikaz.
         <ph name="BEGIN_LINK"/>Prilagodite<ph name="END_LINK"/>
@@ -656,9 +640,8 @@
 <translation id="7397054681783221164">Odstrani sljedeće stavke:</translation>
 <translation id="4891251785049117953">Obriši spremljene podatke za obrasce</translation>
 <translation id="1531836666020185856">Istaknuto</translation>
-<translation id="777885533320815847">Dv&amp;ostruko vrijeme (2,0x)</translation>
+<translation id="5230516054153933099">Prozor</translation>
 <translation id="7554791636758816595">Nova kartica</translation>
-<translation id="6231471673669497681">Brzina &amp;reprodukcije</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">Pomoću DNS pretpreuzimanja poboljšajte učitavanje stranice</translation>
 <translation id="1086613338090581534">Izdavatelj potvrde koja nije istekla odgovoran je održavanje nečeg što se naziva &quot;popisom opoziva&quot;. U slučaju da potvrda bude ugrožena, izdavatelj je može opozvati dodavanjem na popis opoziva, a nakon toga Vaš preglednik više neće vjerovati toj potvrdi. Nije potrebno održavati status opoziva za istekle potvrde. Stoga iako je ova potvrda bila valjana za web lokaciju koju posjećujete, u ovom trenutku nije moguće utvrditi je li potvrda ugrožena i naknadno opozvana ili je i dalje sigurna. Prema tome nije moguće utvrditi komunicirate li s legitimnom web lokacijom ili da je potvrda ugrožena te da je sad u vlasništvu napadača s kojim komunicirate. Nikako ne biste trebali nastaviti dalje.</translation>
@@ -725,7 +708,6 @@
 <translation id="3009731429620355204">Sesije</translation>
 <translation id="3473034187222004855">Kopiraj put &amp;datoteke</translation>
 <translation id="6325525973963619867">Nije uspjelo</translation>
-<translation id="2120291134670287161">Nije pronađen pisač, instalirajte ga.</translation>
 <translation id="1676388805288306495">Promijenite zadani font i jezik web stranica.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Pogledaj izvor okvira</translation>
@@ -826,7 +808,6 @@
 <translation id="6227291405321948850">Neimenovana web slika</translation>
 <translation id="1684248949164455892">U ovom slučaju potvrdu nije ovjerila treća strana kojoj vjeruje Vaše računalo. Svatko može izraditi potvrdu tvrdeći da su bilo koja web lokacija koju odaberu i zato potvrdu mora ovjeriti pouzdana treća strana. Bez te ovjere podaci o identitetu u potvrdi nemaju značenje. Stoga nije moguće potvrditi da komunicirate s &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; umjesto s napadačem koji je napravio vlastitu potvrdu tvrdeći da je &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Nikako ne biste trebali nastaviti dalje.</translation>
 <translation id="8045462269890919536">rumunjski</translation>
-<translation id="3927097095400773697"><ph name="DOWNLOAD_SIZE"/>, poništeno</translation>
 <translation id="2927657246008729253">Promijeni...</translation>
 <translation id="3478477629095836699">Postavke kolačića:</translation>
 <translation id="2108475813351458355">Sigurna veza na <ph name="DOMAIN"/></translation>
@@ -877,7 +858,6 @@
 <translation id="9141716082071217089">Nije moguće provjeriti je li potvrda poslužitelja opozvana.</translation>
 <translation id="4304224509867189079">Prijavi se</translation>
 <translation id="4492190037599258964">Rezultati pretraživanja za upit '<ph name="SEARCH_STRING"/>'</translation>
-<translation id="8540666473246803645">Google Chrome</translation>
 <translation id="988159990683914416">Sastavak razvojnog programera</translation>
 <translation id="6790650291892352751">Pretraživanje po temi ili URL-u:</translation>
 <translation id="3705722231355495246">-</translation>
@@ -896,7 +876,6 @@
 <translation id="6264485186158353794">Natrag u sigurnost</translation>
 <translation id="3807747707162121253">&amp;Odustani</translation>
 <translation id="2850243184678184884">npr. hokej, BBC, http://engadget.com/rss.xml</translation>
-<translation id="6422698515595625913">Broj preuzimanja u tijeku: <ph name="DOWNLOAD_COUNT"/>. Ako sada zatvorite Google Chrome, ova preuzimanja će se prekinuti.</translation>
 <translation id="77999321721642562">Nakon nekog vremena u donjem prostoru prikazat će se osam vaših najposjećenijih web-lokacija.</translation>
 <translation id="7447718177945067973">Poslužitelj nije bilo moguće naći</translation>
 <translation id="715468010956678290">Otvori okvir u prozoru inko&amp;gnito</translation>
@@ -953,5 +932,4 @@
 <translation id="8328145009876646418">Lijevi rub</translation>
 <translation id="8203365863660628138">Potvrda instalacije</translation>
 <translation id="406259880812417922">(Ključna riječ: <ph name="KEYWORD"/>)</translation>
-<translation id="2437750561138919253">Program za ispravljanje pogrešaka JavaScripta - izvodi se</translation>
 </translationbundle>

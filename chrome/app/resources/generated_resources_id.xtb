@@ -12,7 +12,6 @@
 <translation id="4610656722473172270">Toolbar Google</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="2972581237482394796">&amp;Ulang</translation>
-<translation id="5895138241574237353">Hidupkan Ulang</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">Berakhir</translation>
 <translation id="1723824996674794290">&amp;Jendela baru</translation>
@@ -84,7 +83,6 @@
 <translation id="5600613131076600482">Ekstensi telah mengakses komputer dan data pribadi Anda. Mereka dapat memublikasikan gambar tidak pantas di Dinding Anda.</translation>
 <translation id="1644574205037202324">Riwayat</translation>
 <translation id="2518917559152314023">T&amp;ambah...</translation>
-<translation id="8217250408786235522">&amp;Normal (1,0x)</translation>
 <translation id="4510290974676570902">Jenis MIME</translation>
 <translation id="5565725983873655007">Bila terdapat konten gabungan pada laman aman (SSL):</translation>
 <translation id="4419098590196511435">Ada yang hilang</translation>
@@ -154,7 +152,6 @@
 <translation id="1635247229519770914">Lanjutkan Penginstalan</translation>
 <translation id="8945419807169257367">Sertifikat server tidak dapat diperiksa</translation>
 <translation id="1464570622807304272">Cobalah - ketik &quot;anggrek&quot; dan tekan Enter.</translation>
-<translation id="5872213955895293073">Javascript Debug</translation>
 <translation id="1965338962645102116">Untuk mengimpor bookmark Toolbar ke Chrome, Anda harus masuk ke Akun Google. Harap masuk dan coba mengimpor lagi.</translation>
 <translation id="5903264686717710770">Judul:</translation>
 <translation id="8899851313684471736">Buka tautan di &amp;jendela baru</translation>
@@ -162,7 +159,6 @@
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> jam</translation>
 <translation id="3990502903496589789">Tepi Kanan</translation>
 <translation id="2790948358747073186">Masih banyak lagi</translation>
-<translation id="5303890401939113396">Debugger Javascript - Jeda</translation>
 <translation id="2423578206845792524">Sim&amp;pan gambar sebagai...</translation>
 <translation id="1095038624419434542">Terjadi galat saat memuat sumber daya program. Coba menginstal ulang.</translation>
 <translation id="9068931793451030927">Jalur:</translation>
@@ -215,7 +211,6 @@
 <translation id="1087119889335281750">&amp;Tidak ada saran ejaan</translation>
 <translation id="5076340679995252485">Tem&amp;pel</translation>
 <translation id="14171126816530869">Identitas <ph name="ORGANIZATION"/> di <ph name="LOCALITY"/> telah diverifikasi oleh <ph name="ISSUER"/>.</translation>
-<translation id="1587275751631642843">Konsol &amp;JavaScript</translation>
 <translation id="5821894118254011366">Blokir seluruh cookie pihak ketiga</translation>
 <translation id="1134009406053225289">Buka di jendela penyamaran</translation>
 <translation id="3473105180351527598">Aktifkan perlindungan phishing dan malware</translation>
@@ -271,17 +266,14 @@
 <translation id="2794293857160098038">Opsi penelusuran default</translation>
 <translation id="5935630983280450497">Tersisa <ph name="NUMBER_ONE"/> menit</translation>
 <translation id="5496587651328244253">Atur</translation>
-<translation id="2074760228690987725">&amp;Percepat (1.25x)</translation>
 <translation id="2592884116796016067">Sebagian dari laman ini (WebWorker HTML) telah ngadat, sehingga mungkin tidak berfungsi dengan benar.</translation>
 <translation id="5568069709869097550">Tidak dapat sign in</translation>
-<translation id="8585326996912141705">Percep&amp;at (1,5x)</translation>
 <translation id="4181898366589410653">Tidak ditemukan mekanisme pembatalan dalam sertifikat server.</translation>
 <translation id="6364916375976753737">Gulir ke Kiri</translation>
 <translation id="1665770420914915777">Gunakan halaman Tab Baru</translation>
 <translation id="2629089419211541119"><ph name="NUMBER_ONE"/> jam yang lalu</translation>
 <translation id="7789175495288668515">Ubah pilihan penginstalan default.</translation>
 <translation id="347250956943431997">Sertifikat server telah dibatalkan</translation>
-<translation id="9087164549070846958">Namun, jika Anda bekerja di perusahaan yang membuat sertifikat sendiri dan berupaya tersambung ke situs Web internal perusahaan menggunakan sertifikat tersebut, maka Anda mungkin dapat mengatasi masalah ini secara aman. Anda dapat mengimpor sertifikat akar sebagai &quot;sertifikat akar&quot;, kemudian sertifikat yang diterbitkan atau diverifikasi oleh perusahaan akan dipercaya dan galat tidak akan terlihat pada saat berikutnya Anda mencoba tersambung ke situs Web internal. Untuk bantuan dalam menambahkan sertifikat akar baru ke Windows, hubungi staf bantuan perusahaan Anda.</translation>
 <translation id="6982279413068714821"><ph name="NUMBER_DEFAULT"/> mnt. yang lalu</translation>
 <translation id="7977590112176369853">&lt;masukkan permintaan&gt;</translation>
 <translation id="994771890067000105">Ekstra unggulan</translation>
@@ -303,7 +295,6 @@
 <translation id="3513979718339724672">Tampilkan thumbnails</translation>
 <translation id="7300965843904003671">Selalu tampilkan munculan dari <ph name="URL"/></translation>
 <translation id="8211437954284917092">Masukkan kueri dalam bidang teks di atas untuk menelusuri bookmark.</translation>
-<translation id="2950143609136989144">Ekstensi telah mengakses komputer dan data pribadi Anda. Artinya mereka dapat meneruskan semua email Anda ke pasangan Anda.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> dari <ph name="TOTAL_FILES"/> berkas</translation>
 <translation id="1291121346508216435">Perbaiki ejaan secara otomatis:</translation>
 <translation id="6805291412499505360">Batasi cara penggunaan cookie pihak ketiga</translation>
@@ -326,7 +317,6 @@
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> menit</translation>
 <translation id="8210608804940886430">Page Down</translation>
 <translation id="5015344424288992913">Mengontak proxy...</translation>
-<translation id="2398703750948514961">Dibatalkan</translation>
 <translation id="3675321783533846350">Konfigurasikan proxy untuk tersambung ke jaringan.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> hari</translation>
 <translation id="8453184121293348016">Tidak ditemukan mekanisme pembatalan</translation>
@@ -368,7 +358,6 @@
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> detik</translation>
 <translation id="3345886924813989455">Tidak ditemukan peramban yang didukung</translation>
 <translation id="3712897371525859903">Simp&amp;an laman sebagai...</translation>
-<translation id="3433151241941574321">Tambah laman</translation>
 <translation id="7910768399700579500">&amp;Map baru</translation>
 <translation id="6883611015375728278">Blokir semua cookie</translation>
 <translation id="3819791248093819058">Tidak ada laman Web yang ditemukan untuk alamat Web: &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt;</translation>
@@ -390,7 +379,6 @@
 <translation id="6447842834002726250">Kuki (Cookie)</translation>
 <translation id="5170568018924773124">Tampilkan dalam map</translation>
 <translation id="2674170444375937751">Yakin ingin menghapus laman ini dari riwayat?</translation>
-<translation id="7334704644505105275">Debugger Javascript - Sibuk</translation>
 <translation id="7629827748548208700">Tab: <ph name="TAB_NAME"/></translation>
 <translation id="8028993641010258682">Ukuran</translation>
 <translation id="1383876407941801731">Penelusuran</translation>
@@ -409,7 +397,6 @@
 <translation id="3867260226944967367">Laman Web ini tidak ditemukan.</translation>
 <translation id="6507969014813375884">Cina Modern</translation>
 <translation id="1767991048059195456">Kirim laporan</translation>
-<translation id="4612149584835516432">Satu unduhan sedang dalam proses. Jika Anda menutup Google Chrome sekarang, unduhan ini akan dibatalkan.</translation>
 <translation id="5646376287012673985">Lokasi</translation>
 <translation id="1110155001042129815">Tunggu</translation>
 <translation id="7071586181848220801">Plug-in tidak diketahui</translation>
@@ -463,7 +450,6 @@
 <translation id="3889424535448813030">Panah Kanan</translation>
 <translation id="5435666907653217300">Masalah lainnya</translation>
 <translation id="1264974993859112054">Olahraga</translation>
-<translation id="3066577394310386876">&amp;Perlambat (0,5x)</translation>
 <translation id="5167270755190684957">Galeri Tema Google Chrome</translation>
 <translation id="8382913212082956454">Salin alamat &amp;email</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> dtk. yang lalu</translation>
@@ -489,7 +475,6 @@
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (Default)</translation>
 <translation id="111844081046043029">Yakin ingin meninggalkan laman ini?</translation>
 <translation id="4497415007571823067">Anda berupaya membuka &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun sebenarnya membuka server yang diidentifikasi sebagai &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Hal ini mungkin disebabkan oleh kesalahan konfigurasi pada server atau penyebab lain yang lebih serius. Pengganggu di jaringan mungkin berupaya membuat Anda mengunjungi versi palsu &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt; (yang berpotensi membahayakan). Anda tidak boleh melanjutkan.</translation>
-<translation id="957864810768974481">&amp;Layar Penuh</translation>
 <translation id="3202578601642193415">Teranyar</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> jam</translation>
 <translation id="8739589585766515812">Hapus riwayat hari ini</translation>
@@ -628,7 +613,6 @@
 <translation id="5538307496474303926">Menghapus...</translation>
 <translation id="1285631718404404702">Tampilkan aktivitas terkini</translation>
 <translation id="6783679543387074885">Laporkan Bug atau Situs Web Rusak</translation>
-<translation id="2022952840834921450">Ekstensi telah mengakses komputer dan data pribadi Anda. Mereka dapat mengirimkan tweet dan email atas nama Anda.</translation>
 <translation id="3413103074007669042">Laman ini berisi beberapa konten tidak aman</translation>
 <translation id="4887833561977827087">Belum ada item untuk ditampilkan.
         <ph name="BEGIN_LINK"/>Ubahsuai<ph name="END_LINK"/>
@@ -656,9 +640,8 @@
 <translation id="7397054681783221164">Hapus item berikut:</translation>
 <translation id="4891251785049117953">Hapus data formulir tersimpan</translation>
 <translation id="1531836666020185856">Unggulan</translation>
-<translation id="777885533320815847">D&amp;ua Kali Lipat (2,0x)</translation>
+<translation id="5230516054153933099">Jendela</translation>
 <translation id="7554791636758816595">Tab Baru</translation>
-<translation id="6231471673669497681">&amp;Tingkat Mulai Ulang</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">Gunakan pra-pengambilan DNS untuk meningkatkan kinerja pembukaan laman</translation>
 <translation id="1086613338090581534">Untuk sertifikat yang belum kedaluwarsa, penerbit sertifikat bertanggung jawab untuk menyimpan &quot;daftar pembatalan&quot;. Jika sertifikat rusak, penerbit dapat membatalkan dengan menambahkannya ke daftar pembatalan, sehingga sertifikat tersebut tidak akan dipercaya lagi oleh browser. Status pembatalan tidak perlu disimpan untuk sertifikat yang telah kedaluwarsa, sehingga sertifikat yang biasanya valid untuk situs Web yang dikunjungi saat ini tidak dapat menentukan apakah sertifikat rusak, telah dibatalkan, atau tetap aman. Tidak dapat ditentukan juga apakah Anda berkomunikasi dengan situs Web sah atau apakah sertifikat rusak dan kini dimiliki oleh pengganggu yang Anda ajak berkomunikasi. Anda tidak boleh melanjutkan.</translation>
@@ -725,7 +708,6 @@
 <translation id="3009731429620355204">Sesi</translation>
 <translation id="3473034187222004855">Salin &amp;jalur berkas</translation>
 <translation id="6325525973963619867">Gagal</translation>
-<translation id="2120291134670287161">Pencetak tidak ditemukan, Silakan instal pencetak.</translation>
 <translation id="1676388805288306495">Ubah font dan bahasa default untuk laman Web.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Lihat sumber bingkai</translation>
@@ -826,7 +808,6 @@
 <translation id="6227291405321948850">Gambar Web Tanpa Judul</translation>
 <translation id="1684248949164455892">Dalam hal ini, sertifikat belum diverifikasi oleh pihak ketiga yang dipercaya komputer. Siapapun dapat membuat sertifikat situs Web yang diinginkan, sehingga sertifikat tersebut harus diverifikasi oleh pihak ketiga yang terpercaya. Tanpa verifikasi, informasi identitas dalam sertifikat tidak berarti. Karenanya, tidak dapat dilakukan verifikasi bahwa Anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, bukan pengganggu yang membuat sertifikat sendiri dan mengaku sebagai &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Anda tidak boleh melanjutkan.</translation>
 <translation id="8045462269890919536">Rumania</translation>
-<translation id="3927097095400773697"><ph name="DOWNLOAD_SIZE"/>, Dibatalkan</translation>
 <translation id="2927657246008729253">Ubah...</translation>
 <translation id="3478477629095836699">Setelan cookie:</translation>
 <translation id="2108475813351458355">Sambungan aman ke <ph name="DOMAIN"/></translation>
@@ -842,7 +823,7 @@
 <translation id="668171684555832681">Lainnya...</translation>
 <translation id="3108416241300843963">Permintaan gagal karena sertifikat server tidak valid.</translation>
 <translation id="7887455386323777409">Tutup plug-in</translation>
-<translation id="3761000923495507277">Tampilkan tombol Halaman Muka di toolbar</translation>
+<translation id="3761000923495507277">Tampilkan tombol Beranda di bilah alat</translation>
 <translation id="8709969075297564489">Periksa pembatalan sertifikat server</translation>
 <translation id="8698171900303917290">Masalah penginstalan?</translation>
 <translation id="4861833787540810454">&amp;Mulai</translation>
@@ -877,7 +858,6 @@
 <translation id="9141716082071217089">Tidak dapat memeriksa apakah sertifikat server dibatalkan.</translation>
 <translation id="4304224509867189079">Log In</translation>
 <translation id="4492190037599258964">Telusuri hasil untuk '<ph name="SEARCH_STRING"/>'</translation>
-<translation id="8540666473246803645">Google Chrome</translation>
 <translation id="988159990683914416">Buatan Pengembang</translation>
 <translation id="6790650291892352751">Telusur berdasarkan topik atau URL:</translation>
 <translation id="3705722231355495246">-</translation>
@@ -896,7 +876,6 @@
 <translation id="6264485186158353794">Kembali ke keamanan</translation>
 <translation id="3807747707162121253">&amp;Batal</translation>
 <translation id="2850243184678184884">Mis. hoki, BBC, http://engadget.com/rss.xml</translation>
-<translation id="6422698515595625913"><ph name="DOWNLOAD_COUNT"/> unduhan sedang dalam proses. Jika Anda menutup Google Chrome sekarang, unduhan ini akan dibatalkan.</translation>
 <translation id="77999321721642562">Seiring waktu, area di bawah akan menampilkan delapan laman yang paling sering Anda kunjungi.</translation>
 <translation id="7447718177945067973">Server tidak dapat ditemukan.</translation>
 <translation id="715468010956678290">Buka bingkai di jendela penya&amp;maran</translation>
@@ -953,5 +932,4 @@
 <translation id="8328145009876646418">Tepi Kiri</translation>
 <translation id="8203365863660628138">Konfirmasi Instalasi</translation>
 <translation id="406259880812417922">(Kata kunci: <ph name="KEYWORD"/>)</translation>
-<translation id="2437750561138919253">Debugger Javascript - Berjalan</translation>
 </translationbundle>

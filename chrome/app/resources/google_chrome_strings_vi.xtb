@@ -31,7 +31,6 @@
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="1195935957447623558">GoogleChrome không tắt đúng cách. Để mở lại trang bạn đã mở, hãy nhấp vào Khôi phục.</translation>
 <translation id="2499193704281978000">Google Chrome không hồi đáp. Khởi động lại ngay bây giờ?</translation>
-<translation id="1163677799412376314">Trợ giúp Google Chrome</translation>
 <translation id="7747138024166251722">Trình cài đặt không thể tạo thư mục tạm thời. Vui lòng kiểm tra dung lượng ổ đĩa còn trống và quyền cài đặt phần mềm.</translation>
 <translation id="6009537148180854585">Bạn đã cố truy cập &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, nhưng chứng chỉ mà máy chủ xuất trình có lỗi. Google Chrome không thể sử dụng chứng chỉ có lỗi và không thể xác nhận nhận diện của trang web mà bạn đã cố kết nối. Kết nối không an toàn và bạn không nên tiếp tục.</translation>
 <translation id="3324235665723428530">Không thể sử dụng hồ sơ của bạn vì hồ sơ được tạo từ phiên bản Google Chrome mới.\n\nMột số tính năng có thể không có sẵn. Vui lòng xác định thư mục hồ sơ khác hoặc sử dụng phiên bản Google Chrome mới.</translation>
@@ -45,6 +44,7 @@
 <translation id="6921913858457830952">Google Chrome sẵn sàng hoàn tất việc cài đặt của bạn.</translation>
 <translation id="7100330187273168372">Google Chrome không thể đọc và ghi lên thư mục dữ liệu:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="2290095356545025170">Bạn có chắc chắn muốn gỡ cài đặt Google Chrome không?</translation>
+<translation id="7626032353295482388">Chào mừng bạn đến với Chrome</translation>
 <translation id="5941830788786076944">Chọn Google Chrome làm trình duyệt mặc định</translation>
 <translation id="4127951844153999091">Trong trường hợp này, địa chỉ được liệt kê trong chứng chỉ không phù hợp với địa chỉ của trang web mà trình duyệt của bạn cố truy cập. Một nguyên nhân có thể xảy ra là giao tiếp của bạn đang bị kẻ tấn công, người đang xuất trình chứng chỉ cho trang web khác, chặn lại và gây ra lỗi không khớp. Một nguyên nhân khác có thể là do máy chủ được thiết lập để trả về cùng một chứng chỉ cho nhiều trang web, kể cả trang web mà bạn cố truy cập, mặc dù chứng chỉ đó không có giá trị cho tất cả trang web đó. Google Chrome có thể chắc chắn rằng bạn đã truy cập &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, nhưng không thể xác minh đó là trang web tương tự như &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; mà bạn dự định truy cập. Nếu bạn tiếp tục, Chrome sẽ không kiểm tra thêm bất kỳ sự không phù hợp về tên nào nữa. Nói chung, bạn không nên tiếp tục truy cập trang web.</translation>
 <translation id="2712549016134575851">Đã phát hiện thấy xung đột với một ứng dụng đã cài đặt khác.</translation>
@@ -53,7 +53,6 @@
 <translation id="5046764976540625289">Thoát khỏi Chrome</translation>
 <translation id="8865765905101981392">Trình duyệt Internet</translation>
 <translation id="582763753075639530">Hãy đóng tất cả cửa sổ Chrome và khởi động lại Chrome để thay đổi này có tác dụng.</translation>
-<translation id="6525535905286676482">Thoát Google Chrome</translation>
 <translation id="8776515774046280928">Google Chrome đã được cài đặt và khả dụng cho tất cả người dùng máy tính này. Nếu bạn muốn cài đặt Google Chrome ở cấp độ người dùng, trước tiên bạn phải gỡ cài đặt phiên bản cấp hệ thống đã được quản trị viên cài đặt.</translation>
 <translation id="2769762047821873045">Google Chrome không phải là trình duyệt mặc định của bạn.</translation>
 <translation id="7825851276765848807">Không thể cài đặt do lỗi không xác định. Hãy tải xuống lại Google Chrome.</translation>
@@ -61,7 +60,6 @@
 <translation id="473183893665420670">Khi bạn đặt lại các tuỳ chọn Google Chrome, tất cả các thay đổi mà bạn đã tạo sẽ được chuyển về cài đặt mặc định. Bạn có muốn đặt lại các tuỳ chọn của Chrome không?</translation>
 <translation id="3636771339108070045">Máy tính này đã cài phiên bản Google Chrome mới hơn. Nếu phần mềm không hoạt động, vui lòng gỡ cài đặt Google Chrome và tải xuống lại phần mềm.</translation>
 <translation id="3396666154568987767">Google Chrome dành cho <ph name="PROFILE_NAME"/></translation>
-<translation id="3290853340290073363">Ẩn Google Chrome</translation>
 <translation id="1964682833763362793">Hãy đóng tất cả cửa sổ Chrome và thử lại.</translation>
 <translation id="1001534784610492198">Lưu trữ trình cài đặt bị lỗi hoặc không hợp lệ. Vui lòng tải xuống lại Google Chrome.</translation>
 <translation id="6626317981028933585">Thật đáng tiếc, cài đặt Mozilla Firefox của bạn không có sẵn khi trình duyệt đang chạy. Để nhập những cài đặt đó vào Google Chrome, hãy lưu công việc của bạn và đóng tất cả cửa sổ Firefox. Sau đó, nhấp Tiếp tục.</translation>

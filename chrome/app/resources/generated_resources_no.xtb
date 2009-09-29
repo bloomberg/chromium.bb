@@ -12,7 +12,6 @@
 <translation id="4610656722473172270">Google-verktøylinjen</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="2972581237482394796">Gjø&amp;r om</translation>
-<translation id="5895138241574237353">Start på nytt</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="1723824996674794290">&amp;Nytt vindu</translation>
@@ -84,7 +83,6 @@
 <translation id="5600613131076600482">Utvidelsene kan få tilgang til din datamaskin og dine private data. De kan legge ut uheldige bilder på oppslagstavla.</translation>
 <translation id="1644574205037202324">Logg</translation>
 <translation id="2518917559152314023">&amp;Legg til...</translation>
-<translation id="8217250408786235522">&amp;Normal (1,0x)</translation>
 <translation id="4510290974676570902">MIME-type</translation>
 <translation id="5565725983873655007">Når det er blandet innhold på sikre sider (SSL):</translation>
 <translation id="4419098590196511435">Noe mangler</translation>
@@ -154,7 +152,6 @@
 <translation id="1635247229519770914">Fortsett å installere</translation>
 <translation id="8945419807169257367">Tjenerens sertifikat kan ikke kontrolleres</translation>
 <translation id="1464570622807304272">Prøv det – skriv inn «orkideer» og trykk på Enter.</translation>
-<translation id="5872213955895293073">Feilsøk JavaScript</translation>
 <translation id="1965338962645102116">Du må være logget på Google-kontoen din for å importere bokmerker for verktøylinjen til Chrome. Logg deg på og prøv å importere på nytt.</translation>
 <translation id="5903264686717710770">Tittel:</translation>
 <translation id="8899851313684471736">&amp;Åpne kobling i nytt vindu</translation>
@@ -162,7 +159,6 @@
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> timer</translation>
 <translation id="3990502903496589789">Høyre kant</translation>
 <translation id="2790948358747073186">Enda mer</translation>
-<translation id="5303890401939113396">Feilsøkingsprogram for JavaScript – Stopp</translation>
 <translation id="2423578206845792524">Lagre &amp;bilde som...</translation>
 <translation id="1095038624419434542">Det oppstod en feil under innlastingen av en programressurs. Prøv å installere på nytt.</translation>
 <translation id="9068931793451030927">Bane:</translation>
@@ -215,7 +211,6 @@
 <translation id="1087119889335281750">&amp;Ingen forslag til stavemåte</translation>
 <translation id="5076340679995252485">&amp;Lim inn</translation>
 <translation id="14171126816530869">Identiteten til <ph name="ORGANIZATION"/> på <ph name="LOCALITY"/> er verifisert av <ph name="ISSUER"/>.</translation>
-<translation id="1587275751631642843">&amp;JavaScript-konsoll</translation>
 <translation id="5821894118254011366">Blokker informasjonskapsler fra tredjeparter fullstendig</translation>
 <translation id="1134009406053225289">Åpne i inkognitovindu</translation>
 <translation id="3473105180351527598">Aktiver beskyttelse mot nettfisking og skadelig programvare</translation>
@@ -271,17 +266,14 @@
 <translation id="2794293857160098038">Standard søkealternativer</translation>
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> minutt igjen</translation>
 <translation id="5496587651328244253">Organiser</translation>
-<translation id="2074760228690987725">&amp;Raskt (1,25x)</translation>
 <translation id="2592884116796016067">En del av denne siden (HTML WebWorker) har fått programstopp, så det kan hende den ikke fungerer ordentlig.</translation>
 <translation id="5568069709869097550">Kan ikke logge på</translation>
-<translation id="8585326996912141705">R&amp;askere (1,5x)</translation>
 <translation id="4181898366589410653">Finner ingen tilbakekallingsmekanisme i tjenerens sertifikat.</translation>
 <translation id="6364916375976753737">Rull mot venstre</translation>
 <translation id="1665770420914915777">Bruk siden Ny fane</translation>
 <translation id="2629089419211541119">For <ph name="NUMBER_ONE"/> time siden</translation>
 <translation id="7789175495288668515">Endre alternativene for standardinstallasjon.</translation>
 <translation id="347250956943431997">Tjenerens sertifikat er tilbakekalt</translation>
-<translation id="9087164549070846958">Hvis du imidlertid arbeider for en organisasjon som genererer sine egne sertifikater, og du prøver å koble deg til et internt nettsted i organisasjonen som bruker et slikt sertifikat, kan det være mulig å løse dette problemet på en sikker måte. Du kan importere organisasjonens rotsertifikat. Deretter vil sertifikater som er utstedt eller verifisert av organisasjonen, være klarert, og du får ikke denne feilmeldingen neste gang du prøver å koble deg til et internt nettsted. Kontakt organisasjonens brukerstøtte for å få hjelp til å legge til et nytt rotsertifikat i Windows.</translation>
 <translation id="6982279413068714821">For <ph name="NUMBER_DEFAULT"/> minutter siden</translation>
 <translation id="7977590112176369853">&lt;skriv inn søk&gt;</translation>
 <translation id="994771890067000105">Aktuelt ekstra</translation>
@@ -303,7 +295,6 @@
 <translation id="3513979718339724672">Vis miniatyrbilder</translation>
 <translation id="7300965843904003671">Vis alltid forgrunnsvinduer fra <ph name="URL"/></translation>
 <translation id="8211437954284917092">Skriv inn et søk i tekstfeltet ovenfor for å søke i bokmerkene dine.</translation>
-<translation id="2950143609136989144">Utvidelsene har tilgang til din datamaskin og dine private data. Det betyr at de kan videresende alle e-postene dine til kjæresten din.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> filer</translation>
 <translation id="1291121346508216435">Korriger staving automatisk:</translation>
 <translation id="6805291412499505360">Begrens hvordan informasjonskapsler fra tredjeparter kan brukes</translation>
@@ -326,7 +317,6 @@
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> minutt</translation>
 <translation id="8210608804940886430">Side ned</translation>
 <translation id="5015344424288992913">Løser proxy:</translation>
-<translation id="2398703750948514961">Avbrutt</translation>
 <translation id="3675321783533846350">Konfigurer en proxy for å koble til nettverket.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> dager</translation>
 <translation id="8453184121293348016">Finner ingen tilbakekallingsmekanisme</translation>
@@ -368,7 +358,6 @@
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> sekunder</translation>
 <translation id="3345886924813989455">Ingen støttede nettlesere funnet</translation>
 <translation id="3712897371525859903">L&amp;agre side som...</translation>
-<translation id="3433151241941574321">Legg til side</translation>
 <translation id="7910768399700579500">&amp;Ny mappe</translation>
 <translation id="6883611015375728278">Blokker alle informasjonskapsler</translation>
 <translation id="3819791248093819058">Finner ingen nettside for denne nettadressen: &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt;</translation>
@@ -388,7 +377,6 @@
 <translation id="6447842834002726250">Informasjonskapsler</translation>
 <translation id="5170568018924773124">Vis i mappe</translation>
 <translation id="2674170444375937751">Er du sikker på at du vil slette disse sidene fra loggen?</translation>
-<translation id="7334704644505105275">Feilsøkingsprogram for JavaScript – Opptatt</translation>
 <translation id="7629827748548208700">Fane: <ph name="TAB_NAME"/></translation>
 <translation id="8028993641010258682">Størrelse</translation>
 <translation id="1383876407941801731">Søk</translation>
@@ -407,7 +395,6 @@
 <translation id="3867260226944967367">Finner ikke denne nettsiden.</translation>
 <translation id="6507969014813375884">Kinesisk, forenklet</translation>
 <translation id="1767991048059195456">Send rapport</translation>
-<translation id="4612149584835516432">Du har én pågående nedlasting. Hvis du lukker Google Chrome nå, avbrytes denne nedlastingen.</translation>
 <translation id="5646376287012673985">Sted</translation>
 <translation id="1110155001042129815">Vent</translation>
 <translation id="7071586181848220801">Ukjent programtillegg</translation>
@@ -461,7 +448,6 @@
 <translation id="3889424535448813030">Pil høyre</translation>
 <translation id="5435666907653217300">Annet problem</translation>
 <translation id="1264974993859112054">Sport</translation>
-<translation id="3066577394310386876">&amp;Langsomt (0,5x)</translation>
 <translation id="5167270755190684957">Galleri med Google Chromes temaer</translation>
 <translation id="8382913212082956454">Kopier &amp;e-postadresse</translation>
 <translation id="4229495110203539533">For <ph name="NUMBER_ONE"/> sekund siden</translation>
@@ -487,7 +473,6 @@
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (Standard)</translation>
 <translation id="111844081046043029">Er du sikker på at du vil forlate denne siden?</translation>
 <translation id="4497415007571823067">Du forsøkte å bruke &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men kom i stedet til en tjener som kaller seg &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Dette kan skyldes en feilkonfigurasjon på tjeneren, eller noe mer alvorlig. Det kan hende at en angriper i nettverket ditt prøver å lokke deg til en falsk (og potensielt skadelig) versjon av &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt;. Du bør ikke fortsette.</translation>
-<translation id="957864810768974481">&amp;Fullskjerm</translation>
 <translation id="3202578601642193415">Nyeste</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> timer</translation>
 <translation id="8739589585766515812">Slett loggen for denne dagen</translation>
@@ -626,7 +611,6 @@
 <translation id="5538307496474303926">Tømmer...</translation>
 <translation id="1285631718404404702">Vis nylige handlinger</translation>
 <translation id="6783679543387074885">Rapporter feil eller ødelagt nettsted</translation>
-<translation id="2022952840834921450">Utvidelsene har tilgang til din datamaskin og dine private data. De kan sende e-post og Tweeter-meldinger på dine vegne.</translation>
 <translation id="3413103074007669042">Noe av innholdet på denne siden er upålitelig</translation>
 <translation id="4887833561977827087">Det finnes ingen elementer å vise her ennå.
         <ph name="BEGIN_LINK"/>Tilpass<ph name="END_LINK"/>
@@ -654,9 +638,8 @@
 <translation id="7397054681783221164">Slett følgende elementer:</translation>
 <translation id="4891251785049117953">Fjern lagrede skjemadata</translation>
 <translation id="1531836666020185856">Aktuelt</translation>
-<translation id="777885533320815847">D&amp;obbel hastighet (2,0x)</translation>
+<translation id="5230516054153933099">Vindu</translation>
 <translation id="7554791636758816595">Ny fane</translation>
-<translation id="6231471673669497681">&amp;Avspillingshastighet</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">Bruk DNS-forhåndshenting for å forbedre sideinnlastingsytelsen</translation>
 <translation id="1086613338090581534">Utstederen av et sertifikat som ikke er utløpt, er ansvarlig for opprette en såkalt «tilbakekallingsliste». Hvis et sertifikat blir skadet, kan utstederen tilbakekalle det ved å legge det til i tilbakekallingslisten, slik at det ikke lenger regnes som pålitelig av nettleseren. Tilbakekallingsstatusen blir ikke oppdatert for utløpte sertifikater. Selv om dette sertifikatet var gyldig for nettstedet du besøker, er det ikke lenger mulig å finne ut om sertifikatet ble skadet og dermed tilbakekalt, eller om det fortsatt er sikkert. Derfor er det umulig å si om du kommuniserer med det ekte nettstedet, eller om sertifikatet ble skadet og nå er i hendene på en angriper som du kommuniserer med. Du bør ikke fortsette videre.</translation>
@@ -723,7 +706,6 @@
 <translation id="3009731429620355204">Økter</translation>
 <translation id="3473034187222004855">&amp;Kopier filbane</translation>
 <translation id="6325525973963619867">Mislykket</translation>
-<translation id="2120291134670287161">Finner ingen skriver. Installer en skriver.</translation>
 <translation id="1676388805288306495">Endre standard skrift- og språkinnstillinger for nettsider.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Vis rammekilde</translation>
@@ -828,7 +810,6 @@ Midlertidig stanset</translation>
 <translation id="6227291405321948850">Nettbilde uten tittel</translation>
 <translation id="1684248949164455892">I dette tilfellet har ikke sertifikatet blitt verifisert av en tredjepart som datamaskinen stoler på. Alle kan lage et sertifikat som hevder å være fra et hvilket som helst nettsted. Derfor må det verifiseres av en pålitelig tredjepart. Uten denne verifiseringen er det ikke noe poeng med identitetsinformasjonen i sertifikatet. Derfor er det ikke mulig å verifisere at du kommuniserer med &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, og ikke en angriper som har generert sitt eget sertifikat og utgir seg for å være &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Du bør ikke fortsette videre.</translation>
 <translation id="8045462269890919536">Rumensk</translation>
-<translation id="3927097095400773697"><ph name="DOWNLOAD_SIZE"/>, avbrutt</translation>
 <translation id="2927657246008729253">Endre...</translation>
 <translation id="3478477629095836699">Informasjonskapselinnstillinger:</translation>
 <translation id="2108475813351458355">Sikker tilkobling til <ph name="DOMAIN"/></translation>
@@ -879,7 +860,6 @@ Midlertidig stanset</translation>
 <translation id="9141716082071217089">Kan ikke kontrollere om tjenerens sertifikat er tilbakekalt.</translation>
 <translation id="4304224509867189079">Logg på</translation>
 <translation id="4492190037599258964">Søkeresultater for <ph name="SEARCH_STRING"/></translation>
-<translation id="8540666473246803645">Google Chrome</translation>
 <translation id="988159990683914416">Utviklerversjon</translation>
 <translation id="6790650291892352751">Søk etter emne eller nettadresse:</translation>
 <translation id="3705722231355495246">-</translation>
@@ -898,7 +878,6 @@ Midlertidig stanset</translation>
 <translation id="6264485186158353794">Tilbake til sikkerhet</translation>
 <translation id="3807747707162121253">&amp;Avbryt</translation>
 <translation id="2850243184678184884">f.eks. fotball, NRK, http://engadget.com/rss.xml</translation>
-<translation id="6422698515595625913">Du har <ph name="DOWNLOAD_COUNT"/> pågående nedlastinger. Hvis du lukker Google Chrome nå, avbrytes alle nedlastinger.</translation>
 <translation id="77999321721642562">Etter hvert vil området nedenfor vise de åtte mest besøkte nettstedene.</translation>
 <translation id="7447718177945067973">Tjeneren ble ikke funnet.</translation>
 <translation id="715468010956678290">Åpne ramme i inko&amp;gnitovindu</translation>
@@ -955,5 +934,4 @@ Midlertidig stanset</translation>
 <translation id="8328145009876646418">Venstre kant</translation>
 <translation id="8203365863660628138">Bekreft installasjon</translation>
 <translation id="406259880812417922">(Søkeord: <ph name="KEYWORD"/>)</translation>
-<translation id="2437750561138919253">Feilsøkingsprogram for JavaScript – Kjører</translation>
 </translationbundle>

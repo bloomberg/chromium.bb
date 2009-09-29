@@ -31,7 +31,6 @@
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="1195935957447623558">Google Chrome nu s-a închis corect. Pentru a redeschide paginile pe care le-aţi avut deschise, faceţi clic pe Restabiliţi.</translation>
 <translation id="2499193704281978000">Google Chrome este inactiv. Reporniţi acum?</translation>
-<translation id="1163677799412376314">Ajutor Google Chrome</translation>
 <translation id="7747138024166251722">Programul de instalare nu a putut crea un director temporar. Verificaţi dacă există suficient spaţiu liber şi dacă aveţi drepturile necesare pentru a instala software-ul.</translation>
 <translation id="6009537148180854585">Aţi încercat să accesaţi &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar certificatul prezentat de server conţine erori. Google Chrome nu poate utiliza un certificat cu erori şi nu poate valida identitatea site-ului la care aţi încercat să vă conectaţi. Conexiunea dvs. nu este sigură şi nu trebuie să mergeţi mai departe.</translation>
 <translation id="3324235665723428530">Profilul dvs. nu poate fi utilizat, deoarece provine de la o versiune Google Chrome mai recentă.\n\nEste posibil ca unele funcţii să nu fie disponibile. Specificaţi un director de profil diferit sau utilizaţi o versiune Chrome mai nouă.</translation>
@@ -45,6 +44,7 @@
 <translation id="6921913858457830952">Google Chrome este gata să finalizeze instalarea.</translation>
 <translation id="7100330187273168372">Google Chrome nu poate citi sau scrie în directorul propriu de date:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="2290095356545025170">Sunteţi sigur că doriţi să dezinstalaţi Google Chrome?</translation>
+<translation id="7626032353295482388">Bun venit la Chrome</translation>
 <translation id="5941830788786076944">Setaţi Google Chrome ca browser prestabilit</translation>
 <translation id="4127951844153999091">În acest caz, adresa afişată în certificat nu se potriveşte cu adresa site-ului la care a încercat să ajungă browser-ul dvs. Un motiv posibil pentru aceasta este interceptarea comunicaţiilor dvs. de către un atacator, care prezintă un certificat pentru un alt site Web, ceea ce ar provoca o nepotrivire. Un alt motiv posibil este că serverul este setat să returneze acelaşi certificat pentru mai multe site-uri Web, inclusiv cel pe care încercaţi să-l accesaţi, chiar dacă acel certificat nu este valabil pentru toate acele site-uri. Google Chrome poate confirma că aţi accesat &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, dar nu poate verifica dacă este acelaşi site ca şi &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; pe care aţi intenţionat să-l accesaţi. Dacă mergeţi mai departe, Chrome nu va mai verifica nicio altă nepotrivire de nume. În general, cel mai bine este să nu mergeţi mai departe.</translation>
 <translation id="2712549016134575851">S-a detectat un conflict cu o altă aplicaţie instalată.</translation>
@@ -53,7 +53,6 @@
 <translation id="5046764976540625289">Ieşiţi din Chrome</translation>
 <translation id="8865765905101981392">Browser de Internet</translation>
 <translation id="582763753075639530">Închideţi toate ferestrele Chrome şi reporniţi Chrome pentru ca această modificare să aibă efect.</translation>
-<translation id="6525535905286676482">Părăsiţi Google Chrome</translation>
 <translation id="8776515774046280928">Google Chrome este deja instalat şi disponibil tuturor utilizatorilor de pe acest computer. Dacă doriţi să instalaţi Google Chrome la nivel de utilizator, trebuie să dezinstalaţi mai întâi versiunea disponibilă la nivel de sistem instalată de un administrator.</translation>
 <translation id="2769762047821873045">Google Chrome nu este browserul dvs. prestabilit.</translation>
 <translation id="7825851276765848807">Instalarea nu a reuşit din cauza unei erori neprecizate. Descărcaţi Google Chrome din nou.</translation>
@@ -61,7 +60,6 @@
 <translation id="473183893665420670">Când resetaţi opţiunile pentru Google Chrome, toate modificările efectuate vor fi anulate, revenind la setările prestabilite. Doriţi să resetaţi opţiunile Chrome?</translation>
 <translation id="3636771339108070045">Acest computer are deja o versiune mai recentă de Google Chrome. Dacă programul nu funcţionează, vă rugăm să dezinstalaţi Google Chrome şi să-l descărcaţi din nou.</translation>
 <translation id="3396666154568987767">Google Chrome pentru <ph name="PROFILE_NAME"/></translation>
-<translation id="3290853340290073363">Ascundeţi Google Chrome</translation>
 <translation id="1964682833763362793">Închideţi toate ferestrele Chrome şi încercaţi din nou.</translation>
 <translation id="1001534784610492198">Arhiva programului de instalare este deteriorată sau nevalidă. Descărcaţi din nou Google Chrome.</translation>
 <translation id="6626317981028933585">Din păcate, setările dvs. Mozilla Firefox nu sunt disponibile în timp ce browser-ul respectiv rulează. Pentru a importa aceste setări în Google Chrome, salvaţi ceea ce lucraţi şi închideţi toate ferestrele Firefox. Apoi faceţi clic pe Continuaţi.</translation>

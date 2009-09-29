@@ -12,7 +12,6 @@
 <translation id="4610656722473172270">Bara de instrumente Google</translation>
 <translation id="1871244248791675517">Ins (Inseraţi)</translation>
 <translation id="2972581237482394796">&amp;Refaceţi</translation>
-<translation id="5895138241574237353">Reporniţi</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End (La sfârşit)</translation>
 <translation id="1723824996674794290">&amp;Fereastră nouă</translation>
@@ -84,7 +83,6 @@
 <translation id="5600613131076600482">Extensiile au acces la computer şi la datele personale. Ele pot posta poze neplăcute pe Peretele dvs. din Facebook.</translation>
 <translation id="1644574205037202324">Istoric</translation>
 <translation id="2518917559152314023">A&amp;dăugaţi...</translation>
-<translation id="8217250408786235522">&amp;Normal (1,0x)</translation>
 <translation id="4510290974676570902">Tip MIME</translation>
 <translation id="5565725983873655007">Când există conţinut mixt pe paginile sigure (SSL):</translation>
 <translation id="4419098590196511435">Lipseşte ceva</translation>
@@ -154,7 +152,6 @@
 <translation id="1635247229519770914">Continuaţi instalarea</translation>
 <translation id="8945419807169257367">Certificatul serverului nu poate fi verificat</translation>
 <translation id="1464570622807304272">Încercaţi! Introduceţi termenul „orhidee”, apoi apăsaţi pe Enter.</translation>
-<translation id="5872213955895293073">Depanaţi JavaScript</translation>
 <translation id="1965338962645102116">Pentru a importa marcajele din Bara de instrumente Google în Chrome, trebuie să fiţi conectat la Contul dvs. Google. Conectaţi-vă, apoi încercaţi din nou să importaţi.</translation>
 <translation id="5903264686717710770">Titlul:</translation>
 <translation id="8899851313684471736">Deschideţi linkul într-o &amp;fereastră nouă</translation>
@@ -162,7 +159,6 @@
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> ore</translation>
 <translation id="3990502903496589789">Marginea dreaptă</translation>
 <translation id="2790948358747073186">Chiar mai mult</translation>
-<translation id="5303890401939113396">Depanator JavaScript - Oprit (Break)</translation>
 <translation id="2423578206845792524">Sal&amp;vaţi imaginea ca...</translation>
 <translation id="1095038624419434542">A apărut o eroare la încărcarea unei resurse a programului. Încercaţi să reinstalaţi.</translation>
 <translation id="9068931793451030927">Calea:</translation>
@@ -215,7 +211,6 @@
 <translation id="1087119889335281750">&amp;Fără sugestii de ortografie</translation>
 <translation id="5076340679995252485">&amp;Inseraţi</translation>
 <translation id="14171126816530869">Identitatea <ph name="ORGANIZATION"/> din <ph name="LOCALITY"/> a fost verificată de către <ph name="ISSUER"/>.</translation>
-<translation id="1587275751631642843">Consolă pentru &amp;JavaScript</translation>
 <translation id="5821894118254011366">Blocaţi complet cookie-urile de la terţe părţi</translation>
 <translation id="1134009406053225289">Deschideţi în fereastră incognito</translation>
 <translation id="3473105180351527598">Activaţi protecţia pentru phishing şi malware</translation>
@@ -271,17 +266,14 @@
 <translation id="2794293857160098038">Opţiuni de căutare prestabilită</translation>
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> minut rămas</translation>
 <translation id="5496587651328244253">Organizaţi</translation>
-<translation id="2074760228690987725">&amp;Rapid (1,25x)</translation>
 <translation id="2592884116796016067">O parte a acestei pagini (HTML WebWorker) a generat erori şi este posibil să nu funcţioneze corespunzător.</translation>
 <translation id="5568069709869097550">Nu se poate conecta</translation>
-<translation id="8585326996912141705">M&amp;ai rapid (1,5x)</translation>
 <translation id="4181898366589410653">Nu a fost găsit niciun mecanism de revocare în certificatul serverului.</translation>
 <translation id="6364916375976753737">Derulaţi spre stânga</translation>
 <translation id="1665770420914915777">Utilizaţi pagina Filă nouă</translation>
 <translation id="2629089419211541119">Cu <ph name="NUMBER_ONE"/> oră în urmă</translation>
 <translation id="7789175495288668515">Modificaţi opţiunile de instalare prestabilite.</translation>
 <translation id="347250956943431997">Certificatul serverului a fost revocat</translation>
-<translation id="9087164549070846958">Dacă totuşi lucraţi într-o organizaţie care îşi generează propriile certificate şi încercaţi să vă conectaţi la un site intern al acelei organizaţii, care utilizează un astfel de certificat, puteţi rezolva această problemă în siguranţă. Puteţi să importaţi certificatul rădăcină al organizaţiei ca „certificat rădăcină”, iar apoi certificatele emise sau confirmate de organizaţia dvs. vor fi de încredere şi nu veţi mai vedea această eroare la următoarea încercare de a vă conecta la un site intern. Contactaţi personalul de ajutor al organizaţiei pentru a vă asista în adăugarea unui nou certificat rădăcină la Windows.</translation>
 <translation id="6982279413068714821">Cu <ph name="NUMBER_DEFAULT"/> (de) minute în urmă</translation>
 <translation id="7977590112176369853">&lt;introduceţi interogarea&gt;</translation>
 <translation id="994771890067000105">Modul special</translation>
@@ -303,7 +295,6 @@
 <translation id="3513979718339724672">Afişaţi miniaturi</translation>
 <translation id="7300965843904003671">Afişaţi întotdeauna ferestre pop-up de la <ph name="URL"/></translation>
 <translation id="8211437954284917092">Introduceţi o interogare în câmpul text de mai sus pentru a căuta în marcajele proprii.</translation>
-<translation id="2950143609136989144">Extensiile au acces la computer şi la datele personale. Aceasta înseamnă că, dacă le prindeţi într-o zi proastă, ar putea redirecţiona toate mesajele dvs. de e-mail către soţul/soţia dvs.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> fişiere</translation>
 <translation id="1291121346508216435">Corectaţi automat erorile de scriere:</translation>
 <translation id="6805291412499505360">Restricţionaţi modul de utilizare a cookie-urilor de la terţe părţi</translation>
@@ -326,7 +317,6 @@
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> minut</translation>
 <translation id="8210608804940886430">Page Down (o pagină mai jos)</translation>
 <translation id="5015344424288992913">Se rezolvă proxy-ul...</translation>
-<translation id="2398703750948514961">Anulat</translation>
 <translation id="3675321783533846350">Setaţi un proxy pentru conectarea la reţea.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> zile</translation>
 <translation id="8453184121293348016">Nu a fost găsit niciun mecanism de revocare</translation>
@@ -368,7 +358,6 @@
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> secunde</translation>
 <translation id="3345886924813989455">Nu s-a găsit niciun browser acceptat</translation>
 <translation id="3712897371525859903">Salvaţi pagina c&amp;a...</translation>
-<translation id="3433151241941574321">Adăugaţi pagină</translation>
 <translation id="7910768399700579500">Dosar &amp;nou</translation>
 <translation id="6883611015375728278">Blocaţi toate cookie-urile</translation>
 <translation id="3819791248093819058">Nu a fost găsită nicio pagină Web pentru adresa: &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt;</translation>
@@ -390,7 +379,6 @@
 <translation id="6447842834002726250">Cookie-uri</translation>
 <translation id="5170568018924773124">Afişaţi în dosar</translation>
 <translation id="2674170444375937751">Sigur doriţi să ştergeţi aceste pagini din istoric?</translation>
-<translation id="7334704644505105275">Depanator JavaScript - Ocupat</translation>
 <translation id="7629827748548208700">Fila: <ph name="TAB_NAME"/></translation>
 <translation id="8028993641010258682">Dimensiune</translation>
 <translation id="1383876407941801731">Căutaţi</translation>
@@ -409,7 +397,6 @@
 <translation id="3867260226944967367">Această pagină Web nu este găsită.</translation>
 <translation id="6507969014813375884">Chineză simplificată</translation>
 <translation id="1767991048059195456">Trimiteţi raportul</translation>
-<translation id="4612149584835516432">În acest moment se descarcă un fişier. Dacă închideţi Google Chrome acum, această descărcare va fi anulată.</translation>
 <translation id="5646376287012673985">Locaţia</translation>
 <translation id="1110155001042129815">Aşteptaţi</translation>
 <translation id="7071586181848220801">Plug-in necunoscut</translation>
@@ -463,7 +450,6 @@
 <translation id="3889424535448813030">Săgeata spre dreapta</translation>
 <translation id="5435666907653217300">Altă problemă</translation>
 <translation id="1264974993859112054">Sport</translation>
-<translation id="3066577394310386876">&amp;Încet (0,5x)</translation>
 <translation id="5167270755190684957">Galeria de teme Google Chrome</translation>
 <translation id="8382913212082956454">Copiaţi adresa &amp;e-mail</translation>
 <translation id="4229495110203539533">Cu <ph name="NUMBER_ONE"/> secundă în urmă</translation>
@@ -489,7 +475,6 @@
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (Prestabilit)</translation>
 <translation id="111844081046043029">Sigur doriţi să părăsiţi această pagină?</translation>
 <translation id="4497415007571823067">Aţi încercat să accesaţi &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar aţi accesat de fapt un server autoidentificat ca &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Motivul ar putea fi o configurare greşită pe server sau ceva mai grav. Un atacator de pe reţeaua dvs. ar putea încerca să vă determine să accesaţi o versiune falsă (şi posibil rău-intenţionată) de &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt;. Nu trebuie să mergeţi mai departe.</translation>
-<translation id="957864810768974481">&amp;Ecran complet</translation>
 <translation id="3202578601642193415">Cele mai noi</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> ore</translation>
 <translation id="8739589585766515812">Ştergeţi istoricul pentru această zi</translation>
@@ -628,7 +613,6 @@
 <translation id="5538307496474303926">În curs de ştergere...</translation>
 <translation id="1285631718404404702">Afişaţi activităţile recente</translation>
 <translation id="6783679543387074885">Raportaţi o eroare sau un site Web defect</translation>
-<translation id="2022952840834921450">Extensiile au acces la computer şi la datele personale. Ele pot trimite mesaje pe Twitter sau e-mailuri în numele dvs.</translation>
 <translation id="3413103074007669042">Această pagină include conţinut nesecurizat</translation>
 <translation id="4887833561977827087">În acest moment nu există elemente de afişat în această zonă.
         <ph name="BEGIN_LINK"/>Personalizaţi<ph name="END_LINK"/>
@@ -656,9 +640,8 @@
 <translation id="7397054681783221164">Eliminaţi elementele următoare:</translation>
 <translation id="4891251785049117953">Goliţi datele din formular salvate anterior</translation>
 <translation id="1531836666020185856">Speciale</translation>
-<translation id="777885533320815847">T&amp;imp dublu (2,0x)</translation>
+<translation id="5230516054153933099">Fereastră</translation>
 <translation id="7554791636758816595">Filă nouă</translation>
-<translation id="6231471673669497681">&amp;Rată de redare</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> minute rămase</translation>
 <translation id="4400697530699263877">Utilizaţi preluarea în avans a datelor DNS pentru a îmbunătăţi performanţele de încărcare a paginii</translation>
 <translation id="1086613338090581534">Pentru un certificat care nu a expirat, emitentul acelui certificat este responsabil de păstrarea unei „liste de revocări”. Dacă un certificat este vreodată compromis, emitentul îl poate revoca adăugându-l la lista de revocări, apoi acest certificat nu va mai fi de încredere pentru browser-ul dvs. Starea de revocare nu este necesar să fie menţinută pentru certificatele expirate, deci, deşi acest certificat a fost valabil pentru site-ul Web pe care îl accesaţi, în acest moment nu se poate determina dacă certificatul a fost compromis şi apoi revocat, sau este încă sigur. Astfel, este imposibil de spus dacă dvs. comunicaţi cu site-ul Web legitim sau certificatul a fost compromis şi acum este în posesia unui atacator, cu care comunicaţi. Nu trebuie să mergeţi mai departe.</translation>
@@ -725,7 +708,6 @@
 <translation id="3009731429620355204">Sesiuni</translation>
 <translation id="3473034187222004855">Co&amp;piaţi calea fişierului</translation>
 <translation id="6325525973963619867">Eşuat</translation>
-<translation id="2120291134670287161">Nu s-a găsit nicio imprimantă. Instalaţi o imprimantă.</translation>
 <translation id="1676388805288306495">Schimbaţi fonturile şi limba prestabilite pentru paginile Web.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Vedeţi sursa cadrului</translation>
@@ -826,7 +808,6 @@
 <translation id="6227291405321948850">Imagine Web fără titlu</translation>
 <translation id="1684248949164455892">În acest caz, certificatul nu a fost verificat de o terţă parte de încredere pentru computerul dvs. Oricine poate crea un certificat, declarând că este orice site Web doreşte, de aceea trebuie verificat de o terţă parte de încredere. Fără acea verificare, informaţiile despre identitate din certificat nu au valoare. De aceea, nu este posibil să verificaţi că dvs. comunicaţi cu &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; şi nu cu un atacator care şi-a generat propriul său certificat, declarând că este &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Nu trebuie să mergeţi mai departe.</translation>
 <translation id="8045462269890919536">Română</translation>
-<translation id="3927097095400773697"><ph name="DOWNLOAD_SIZE"/>, anulat</translation>
 <translation id="2927657246008729253">Modificaţi...</translation>
 <translation id="3478477629095836699">Setări cookie-uri:</translation>
 <translation id="2108475813351458355">Conexiune sigură spre <ph name="DOMAIN"/></translation>
@@ -877,7 +858,6 @@
 <translation id="9141716082071217089">Nu se poate verifica dacă certificatul serverului a fost revocat.</translation>
 <translation id="4304224509867189079">Conectaţi-vă</translation>
 <translation id="4492190037599258964">Rezultatele căutării pentru „<ph name="SEARCH_STRING"/>”</translation>
-<translation id="8540666473246803645">Google Chrome</translation>
 <translation id="988159990683914416">Versiune de programare</translation>
 <translation id="6790650291892352751">Căutaţi după subiect sau adresă URL:</translation>
 <translation id="3705722231355495246">-</translation>
@@ -896,7 +876,6 @@
 <translation id="6264485186158353794">Înapoi la zona sigură</translation>
 <translation id="3807747707162121253">&amp;Anulaţi</translation>
 <translation id="2850243184678184884">de ex., hochei, BBC, http://engadget.com/rss.xml</translation>
-<translation id="6422698515595625913">În acest moment se descarcă <ph name="DOWNLOAD_COUNT"/> fişiere. Dacă închideţi Google Chrome acum, aceste descărcări vor fi anulate.</translation>
 <translation id="77999321721642562">În timp, zona de dedesubt va afişa cele mai vizitate 8 site-uri.</translation>
 <translation id="7447718177945067973">Serverul nu a putut fi găsit.</translation>
 <translation id="715468010956678290">Deschideţi cadrul într-o fereastră inco&amp;gnito</translation>
@@ -953,5 +932,4 @@
 <translation id="8328145009876646418">Marginea stângă</translation>
 <translation id="8203365863660628138">Confirmaţi instalarea</translation>
 <translation id="406259880812417922">(Cuvânt cheie: <ph name="KEYWORD"/>)</translation>
-<translation id="2437750561138919253">Depanator JavaScript - În curs de executare</translation>
 </translationbundle>

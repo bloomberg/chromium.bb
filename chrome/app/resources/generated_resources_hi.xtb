@@ -12,7 +12,6 @@
 <translation id="4610656722473172270">Google Toolbar</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="2972581237482394796">&amp;पुन: करें</translation>
-<translation id="5895138241574237353">पुन: प्रारंभ करें</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">समाप्त करें</translation>
 <translation id="1723824996674794290">&amp;नई विंडो</translation>
@@ -84,7 +83,6 @@
 <translation id="5600613131076600482">विस्तार आपके कंप्यूटर और निजी डेटा तक पहुंच सकते हैं. वे आपके वॉल पर चापलूसीरहित चित्र प्रेषित कर सकते हैं.</translation>
 <translation id="1644574205037202324">इतिहास</translation>
 <translation id="2518917559152314023">&amp;जोड़ें ...</translation>
-<translation id="8217250408786235522">&amp;सामान्य (1.0x)</translation>
 <translation id="4510290974676570902">MIME प्रकार</translation>
 <translation id="5565725983873655007">सुरक्षित (SSL) पृष्ठों पर मिश्रित सामग्री होने मौजूद पर :</translation>
 <translation id="4419098590196511435">कुछ कमी है</translation>
@@ -154,7 +152,6 @@
 <translation id="1635247229519770914">स्थापना जारी रखें</translation>
 <translation id="8945419807169257367">सर्वर प्रमाणपत्र की जाँच नहीं की जा सकती</translation>
 <translation id="1464570622807304272">इसे आजमाएं - &quot;orchids&quot; लिखें और Enter दबाएं.</translation>
-<translation id="5872213955895293073">JavaScript डीबग करें</translation>
 <translation id="1965338962645102116">Toolbar बुकमार्क को Chrome में आयात करने के लिए, आपको अपने Google खाते में लॉग इन करना होगा. कृपया लॉग इन करें और फिर से आयात करने का प्रयास करें.</translation>
 <translation id="5903264686717710770">शीर्षक :</translation>
 <translation id="8899851313684471736">नई &amp;विंडो में लिंक खोलें</translation>
@@ -162,7 +159,6 @@
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> घंटे</translation>
 <translation id="3990502903496589789">दायाँ कोना</translation>
 <translation id="2790948358747073186">और भी अधिक</translation>
-<translation id="5303890401939113396">JavaScript डीबगर - ब्रेक</translation>
 <translation id="2423578206845792524">के रूप में चित्र &amp;सहेजें ...</translation>
 <translation id="1095038624419434542">किसी प्रोग्राम संसाधन को लोड करने के दौरान किसी त्रुटि का पता चला था. पुनर्स्थापित करने का प्रयास करें.</translation>
 <translation id="9068931793451030927">पथ:</translation>
@@ -215,7 +211,6 @@
 <translation id="1087119889335281750">&amp;स्पैलिंग संबंधी कोई सुझाव नहीं</translation>
 <translation id="5076340679995252485">&amp;चिपकाएँ</translation>
 <translation id="14171126816530869"><ph name="ORGANIZATION"/>की पहचान<ph name="LOCALITY"/>पर <ph name="ISSUER"/>्द्वारा सत्यापित की गई है.</translation>
-<translation id="1587275751631642843">&amp;JavaScript कंसोल</translation>
 <translation id="5821894118254011366">तीसरे पक्ष के कुकीज़ पूर्णत: ब्लॉक करें</translation>
 <translation id="1134009406053225289">गुप्त विंडो में खोलें</translation>
 <translation id="3473105180351527598">फ़िशिंग और मालवेयर सुरक्षा सक्षम करें</translation>
@@ -271,17 +266,14 @@
 <translation id="2794293857160098038">डिफ़ॉल्ट खोज विकल्‍प</translation>
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> मिनट शेष</translation>
 <translation id="5496587651328244253">व्यवस्थित करें</translation>
-<translation id="2074760228690987725">&amp;तेज़ (1.25x)</translation>
 <translation id="2592884116796016067">इस पृष्ठ का एक भाग (HTML WebWorker) क्रैश हो गया है, इसलिए यह सही तरीके से कार्य नहीं भी कर सकता है.</translation>
 <translation id="5568069709869097550">साइन इन नहीं कर सकता</translation>
-<translation id="8585326996912141705">अधिक ते&amp;ज़ (1.5x)</translation>
 <translation id="4181898366589410653">सर्वर प्रमाणपत्र में कोई निरस्तीकरण विधि नहीं मिली.</translation>
 <translation id="6364916375976753737">बाएँ स्क्रॉल करें</translation>
 <translation id="1665770420914915777">नया टैब पृष्ठ इस्तेमाल करें</translation>
 <translation id="2629089419211541119"><ph name="NUMBER_ONE"/> घंटा पहले</translation>
 <translation id="7789175495288668515">डिफ़ॉल्ट स्थापना विकल्प बदलें.</translation>
 <translation id="347250956943431997">सर्वर प्रमाणपत्र की निरस्त कर दिया गया है</translation>
-<translation id="9087164549070846958">हालाँकि, यदि आप किसी ऐसे संगठन में कार्य करते हैं जो स्वयं अपने प्रमाणपत्र उत्पन्न करता है, और ऐसे किसी प्रमाणपत्र का उपयोग करके आप उस संगठन की किसी आंतरिक वेबसाइट से कनेक्ट करने का प्रयास कर रहे हैं, तो आप संभवत: सुरक्षित ढंग से इस समस्या का समाधान कर सकेंगे. आप ''मूल प्रमाणपत्र'' के रूप में अपने संगठन का मूल प्रमाणपत्र आयात कर सकते हैं, और फ़िर आपके संगठन द्वारा जारी या सत्यापित किए गए प्रमाणपत्र विश्वस्नीय होंगे और आपके द्वारा अगली बार किसी आंतरिक वेबसाइट से कनेक्ट करने का प्रयास करने पर आपको यह त्रुटि दिखाई नहीं देगी. विंडोज़ में नया मूल प्रमाणपत्र जोड़ने में सहायता करने के लिए अपने संगठन के सहायक स्टाफ़ से संपर्क करें.</translation>
 <translation id="6982279413068714821"><ph name="NUMBER_DEFAULT"/> मिनट पहले</translation>
 <translation id="7977590112176369853">&lt;क्वेरी प्रविष्ट करें&gt;</translation>
 <translation id="994771890067000105">फ़ीचर किया गया अतिरिक्त</translation>
@@ -303,7 +295,6 @@
 <translation id="3513979718339724672">थंबनेल दिखाएं</translation>
 <translation id="7300965843904003671"><ph name="URL"/> से हमेशा पॉप-अप दिखाएं</translation>
 <translation id="8211437954284917092">अपने बुकमार्क खोजने के लिए उपरोक्त पाठ फ़ील्ड में कोई क्वेरी दर्ज करें.</translation>
-<translation id="2950143609136989144">विस्तारों के पास आपके कंप्यूटर और निजी डेटा तक की पहुंच होती है. इसका मतलब यह हुआ कि वे आपके सभी ईमेल आपके जीवनसाथी को अग्रेषित कर सकते हैं.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/><ph name="TOTAL_FILES"/> फ़ाइलें</translation>
 <translation id="1291121346508216435">स्वचालित रूप से वर्तनी सुधारें:</translation>
 <translation id="6805291412499505360">तीसरे पक्ष के कुकीज़ के उपयोग का तरीका सीमित करें</translation>
@@ -326,7 +317,6 @@
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> मिनट</translation>
 <translation id="8210608804940886430">पृष्ठ नीचे</translation>
 <translation id="5015344424288992913">प्रॉक्सी हल हो रहा है...</translation>
-<translation id="2398703750948514961">रद्द किया गया</translation>
 <translation id="3675321783533846350">नेटवर्क से कनेक्ट करने के लिए प्रॉक्सी सेट करें.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> दिन</translation>
 <translation id="8453184121293348016">कोई निरस्तीकरण प्रक्रिया प्राप्त नहीं हुई</translation>
@@ -368,7 +358,6 @@
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> सेकंड</translation>
 <translation id="3345886924813989455">कोई समर्थित ब्राउज़र नहीं मिला</translation>
 <translation id="3712897371525859903">&amp;के रूप में पृष्ठ सहेजें ...</translation>
-<translation id="3433151241941574321">पृष्ठ जोड़ें</translation>
 <translation id="7910768399700579500">&amp;नया फ़ोल्डर</translation>
 <translation id="6883611015375728278">सभी कुकीज़ ब्लॉक करें</translation>
 <translation id="3819791248093819058">इस वेब पते के लिए कोई वेबपेज नहीं मिला : &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt;</translation>
@@ -389,7 +378,6 @@
 <translation id="6447842834002726250">कुकीज़</translation>
 <translation id="5170568018924773124">फ़ोल्डर में दिखाएँ</translation>
 <translation id="2674170444375937751">क्या आप वाकई अपने इतिहास से इन पृष्ठों को मिटाना चाहते हैं ?</translation>
-<translation id="7334704644505105275">JavaScript डीबगर - व्यस्त है</translation>
 <translation id="7629827748548208700">टैब : <ph name="TAB_NAME"/></translation>
 <translation id="8028993641010258682">आकार</translation>
 <translation id="1383876407941801731">खोज</translation>
@@ -408,7 +396,6 @@
 <translation id="3867260226944967367">वेबपेज नहीं ढूँढा जा सका.</translation>
 <translation id="6507969014813375884">चीनी सरलीकृत</translation>
 <translation id="1767991048059195456">रिपोर्ट भेजें</translation>
-<translation id="4612149584835516432">आपका एक डाउनलोड प्रगति पर है. अगर आप Google Chrome अभी बंद करते हैं, तो यह डाउनलोड रद्द कर दिया जाएगा.</translation>
 <translation id="5646376287012673985">स्थान</translation>
 <translation id="1110155001042129815">प्रतीक्षा करें</translation>
 <translation id="7071586181848220801">अज्ञात प्लग-इन</translation>
@@ -462,7 +449,6 @@
 <translation id="3889424535448813030">दायाँ तीर</translation>
 <translation id="5435666907653217300">अन्य समस्या</translation>
 <translation id="1264974993859112054">खेल-कूद</translation>
-<translation id="3066577394310386876">&amp;धीमा (0.5x)</translation>
 <translation id="5167270755190684957">Google Chrome थीम गैलरी</translation>
 <translation id="8382913212082956454">ईमेल पते की प्रतिलिपि बनाएँ</translation>
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> सेकंड पहले</translation>
@@ -488,7 +474,6 @@
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (डिफ़ॉल्ट)</translation>
 <translation id="111844081046043029">क्या आप वाकई इस पृष्ठ को छोड़ना चाहते हैं ?</translation>
 <translation id="4497415007571823067">आपने &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; पर पहुँचने का प्रयास किया, परन्तु उसके बजाए वास्तव में आप &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; के रूप में अपनी पहचान करने वाले सर्वर पर पहुँच गए. ऐसा संभवत: सर्वर पर किसी संरूपण त्रुटि या किसी अन्य गंभीर चीज़ के कारण हो सकता है. आपके नेटवर्क में संभवत: कोई आक्रमणकारी आपको &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt; के किसी नकली (और संभवत: हानिकारक) संस्करण पर ने जाने का प्रयास कर रहा है. आपको आगे नहीं जाना चाहिए.</translation>
-<translation id="957864810768974481">&amp;संपूर्ण स्क्रीन</translation>
 <translation id="3202578601642193415">नवीनतम</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/>घंटे</translation>
 <translation id="8739589585766515812">निम्न दिन के लिए इतिहास हटाएँ</translation>
@@ -627,7 +612,6 @@
 <translation id="5538307496474303926">साफ़ कर रहा है ...</translation>
 <translation id="1285631718404404702">हाल की गतिविधियां दिखाएं</translation>
 <translation id="6783679543387074885">बग या टूटी हुई वेबसाइट की जानकारी दें</translation>
-<translation id="2022952840834921450">विस्तारों के पास आपके कंप्यूटर और निजी डेटा तक की पहुंच होती है. वे आपकी ओर से ट्वीट या ईमेल भेज सकते हैं.</translation>
 <translation id="3413103074007669042">इस पृष्ठ में कुछ असुरक्षित सामग्री है</translation>
 <translation id="4887833561977827087">अभी भी यहां दिखाने के लिए कोई आइटम नहीं हैं.
         अपनी वेब क्लिप <ph name="BEGIN_LINK"/>परिष्कृत करें<ph name="END_LINK"/>
@@ -655,9 +639,8 @@
 <translation id="7397054681783221164">निम्न शब्द मिटाएँ :</translation>
 <translation id="4891251785049117953">सहेजे गए पासवर्ड मिटाएं</translation>
 <translation id="1531836666020185856">फ़ीचर किया गया</translation>
-<translation id="777885533320815847">दो&amp;गुना समय (2.0x)</translation>
+<translation id="5230516054153933099">विंडो</translation>
 <translation id="7554791636758816595">नया टैब</translation>
-<translation id="6231471673669497681">&amp;प्लेबैक दर</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">पृष्ठ लोड कार्यक्षमता में सुधार करने के लिए DNS पूर्व-फ़ेचिंग का उपयोग करें</translation>
 <translation id="1086613338090581534">किसी ऐसे प्रमाणपत्र के लिए जिसकी समय-सीमा समाप्त न हुई हो, प्रमाणपत्र जारीकर्ता ''रद्दीकरण सूची'' नामक चीज़ कायम रखने के लिए ज़िम्मेदार होगा. यदि कभी किसी प्रमाणपत्र से समझौता किया जाता है, तो जारीकर्ता उसे निरस्तीकरण सूची में डालकर उसे निरस्त कर सकता है, और फ़िर यह प्रमाणपत्र आपके ब्राउज़र के लिए विश्वस्नीय नहीं रहेगा. जिन प्रमाणपत्रों की समय-सीमा समाप्त हो चुकी हो उनके लिए निरस्तीकरण स्थिति की आवश्यकता नहीं होती, इसलिए यद्यपि आपके द्वारा देखी जा रही वेबसाइट के लिए मान्य के रूप में इस प्रमाणपत्र का उपयोग किया जाता है, इस स्थिति में यह निर्धारित करना संभव नहीं है कि क्या इस प्रमाणपत्र से समझौता और उसके परिणामस्वरूप इसे निरस्त किया गया था, या क्या यह सुरक्षित रहता है. सामान्यत: यह बता पाना असंभव है कि क्या आप किसी विधि संगत वेबसाइट के साथ संचार कर रहे हैं, या क्या प्रमाणपत्र से समझौता किया गया था और अब वह किसी आक्रमणकारी के अधीन है जिससे आप संचार कर रहे हैं. आपको इस स्थान से आगे नहीं जाना चाहिए.</translation>
@@ -724,7 +707,6 @@
 <translation id="3009731429620355204">सत्र</translation>
 <translation id="3473034187222004855">फ़ाइल &amp;पथ की प्रतिलिपि बनाएँ</translation>
 <translation id="6325525973963619867">असफ़ल रहा</translation>
-<translation id="2120291134670287161">कोई प्रिंटर नहीं मिला, कृपया कोई प्रिंटर स्थापित करें.</translation>
 <translation id="1676388805288306495">वेबपेजों का डिफ़ॉल्ट फ़ॉन्ट और भाषा बदलें.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">फ़्रेम का स्रोत &amp;देखें</translation>
@@ -825,7 +807,6 @@
 <translation id="6227291405321948850">शीर्षक रहित चित्र</translation>
 <translation id="1684248949164455892">इस स्थिति में, आपके कंप्यूटर के विश्वस्नीय तीसरे पक्ष द्वारा यह प्रमाणपत्र सत्यापित नहीं किया गया है. कोई भी किसी भी वेबसाइट का दावा करते हुए प्रमाणपत्र बना सकता है, जिसके कारण किसी विश्वस्नीय तीसरे पक्ष द्वारा उसका सत्यापन किया जाना चाहिए उस सत्यापन के बिना, प्रमाणपत्र की पहचान संबंधी जानकारी का कोई अर्थ नहीं है. इसलिए यह सत्यापित करना संभव नहीं है कि आप &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; के साथ संचार कर रहे हैं बजाए किसी आक्रमणकारी के जिसने &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; होने का दावा करते हुए अपना प्रमाणपत्र बनाया था. आपको इस स्थान से आगे नहीं जाना चाहिए.</translation>
 <translation id="8045462269890919536">रोमानियाई</translation>
-<translation id="3927097095400773697"><ph name="DOWNLOAD_SIZE"/>, रद्द किया गया</translation>
 <translation id="2927657246008729253">परिवर्तित कर रहा है ...</translation>
 <translation id="3478477629095836699">कुकी सेटिंग्स :</translation>
 <translation id="2108475813351458355"><ph name="DOMAIN"/> से सुरक्षित कनेक्शन</translation>
@@ -876,7 +857,6 @@
 <translation id="9141716082071217089">यह जाँचने में असमर्थ कि सर्वर का सुरक्षा प्रमाणपत्र निरस्त किया गया है या नहीं!</translation>
 <translation id="4304224509867189079">लॉगिन करें</translation>
 <translation id="4492190037599258964">’<ph name="SEARCH_STRING"/>' के लिए खोज परिणाम</translation>
-<translation id="8540666473246803645">Google क्रोम</translation>
 <translation id="988159990683914416">डेवलपर बिल्ड</translation>
 <translation id="6790650291892352751">विषय या URL द्वारा खोजें:</translation>
 <translation id="3705722231355495246">-</translation>
@@ -895,7 +875,6 @@
 <translation id="6264485186158353794">सुरक्षा पर वापस</translation>
 <translation id="3807747707162121253">&amp;रद्द करें</translation>
 <translation id="2850243184678184884">उदा. हॉकी, BBC, http://engadget.com/rss.xml</translation>
-<translation id="6422698515595625913">आपके <ph name="DOWNLOAD_COUNT"/> डाउनलोड प्रगति पर हैं. अगर आप Google Chrome अभी बंद करते हैं, तो ये डाउनलोड रद्द कर दिए जाएंगे.</translation>
 <translation id="77999321721642562">समय के साथ, नीचे का क्षेत्र आपके द्वारा सबसे अधिक देखी गई आठ साइट दिखाएगा.</translation>
 <translation id="7447718177945067973">सर्वर खोजा नहीं जा सका.</translation>
 <translation id="715468010956678290">&amp;गुप्त विंडो में फ़्रेम खोलें</translation>
@@ -951,5 +930,4 @@
 <translation id="8328145009876646418">बायाँ कोना</translation>
 <translation id="8203365863660628138">स्थापना की पुष्टि करें</translation>
 <translation id="406259880812417922">कुंजीशब्द : <ph name="KEYWORD"/>)</translation>
-<translation id="2437750561138919253">JavaScript डीबगर - चल रहा है</translation>
 </translationbundle>

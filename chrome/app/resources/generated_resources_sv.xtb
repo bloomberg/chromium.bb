@@ -12,7 +12,6 @@
 <translation id="4610656722473172270">Google Verktygsfält</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="2972581237482394796">&amp;Upprepa</translation>
-<translation id="5895138241574237353">Starta om</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="1723824996674794290">&amp;Nytt fönster</translation>
@@ -84,7 +83,6 @@
 <translation id="5600613131076600482">Tilläggen får åtkomst till din dator och dina privata data. Det innebär att de kan lägga upp pinsamma bilder på din vägg.</translation>
 <translation id="1644574205037202324">Historik</translation>
 <translation id="2518917559152314023">L&amp;ägg till...</translation>
-<translation id="8217250408786235522">&amp;Normal (1.0x)</translation>
 <translation id="4510290974676570902">MIME-typ</translation>
 <translation id="5565725983873655007">När det finns blandat innehåll på säkra sidor (SSL):</translation>
 <translation id="4419098590196511435">Något saknas</translation>
@@ -154,7 +152,6 @@
 <translation id="1635247229519770914">Fortsätt installationen</translation>
 <translation id="8945419807169257367">Servercertifikatet kan inte kontrolleras</translation>
 <translation id="1464570622807304272">Testa själv – skriv pelargon och tryck på Retur.</translation>
-<translation id="5872213955895293073">Felsökning för JavaScript</translation>
 <translation id="1965338962645102116">Du måste logga in på ditt Google-konto om du ska kunna importera bokmärken från Verktygsfält till Chrome. Logga in och försök importera igen.</translation>
 <translation id="5903264686717710770">Namn:</translation>
 <translation id="8899851313684471736">Öppna länk i nytt f&amp;önster</translation>
@@ -162,7 +159,6 @@
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> timmar</translation>
 <translation id="3990502903496589789">Högerkant</translation>
 <translation id="2790948358747073186">Ännu mer</translation>
-<translation id="5303890401939113396">Felsökning för JavaScript - avbryt</translation>
 <translation id="2423578206845792524">S&amp;para bild som...</translation>
 <translation id="1095038624419434542">Vi upptäckte ett fel när vi läste in programresursen. Försök att installera om.</translation>
 <translation id="9068931793451030927">Sökväg:</translation>
@@ -215,7 +211,6 @@
 <translation id="1087119889335281750">&amp;Inga stavningsförslag</translation>
 <translation id="5076340679995252485">K&amp;listra in</translation>
 <translation id="14171126816530869">Identiteten hos <ph name="ORGANIZATION"/> på <ph name="LOCALITY"/> har verifierats av <ph name="ISSUER"/>.</translation>
-<translation id="1587275751631642843">&amp;JavaScript-konsol</translation>
 <translation id="5821894118254011366">Blockera cookies från tredje part helt</translation>
 <translation id="1134009406053225289">Öppna i inkognitofönster</translation>
 <translation id="3473105180351527598">Aktivera skydd mot lösenordsfiske och skadlig programvara</translation>
@@ -271,17 +266,14 @@
 <translation id="2794293857160098038">Standardsökalternativ</translation>
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> minut kvar</translation>
 <translation id="5496587651328244253">Ordna</translation>
-<translation id="2074760228690987725">&amp;Snabb (1,25x)</translation>
 <translation id="2592884116796016067">En del av sidan (HTML WebWorker) har kraschat så den kanske inte fungerar som den ska.</translation>
 <translation id="5568069709869097550">Kan inte logga in</translation>
-<translation id="8585326996912141705">S&amp;nabbare (1,5x)</translation>
 <translation id="4181898366589410653">Ingen återkallningsmekanism hittades i servercertifikatet.</translation>
 <translation id="6364916375976753737">Rulla åt vänster</translation>
 <translation id="1665770420914915777">Använd sidan Ny flik</translation>
 <translation id="2629089419211541119">För <ph name="NUMBER_ONE"/> timme sedan</translation>
 <translation id="7789175495288668515">Ändra standardinställda installationsalternativ.</translation>
 <translation id="347250956943431997">Servercertifikatet har återkallats</translation>
-<translation id="9087164549070846958">Om du arbetar på ett företag som genererar egna certifikat och försöker ansluta till en intern webbplats via ett sådant certifikat, kanske problemet kan åtgärdas med bibehållen säkerhet. Du kan importera företagets rotcertifikat och ange det som &quot;rotcertifikat&quot;. Certifikat som utfärdas eller verifieras av ditt företag tolkas som tillförlitliga och felet visas inte nästa gång du försöker ansluta till en intern webbplats. Kontakta företagets supportpersonal om du behöver hjälp med att lägga till ett nytt rotcertifikat i Windows.</translation>
 <translation id="6982279413068714821">För <ph name="NUMBER_DEFAULT"/> minuter sedan</translation>
 <translation id="7977590112176369853">&lt;skriv fråga&gt;</translation>
 <translation id="994771890067000105">Extra utvalda</translation>
@@ -303,7 +295,6 @@
 <translation id="3513979718339724672">Visa miniatyrer</translation>
 <translation id="7300965843904003671">Visa alltid popup-fönster från <ph name="URL"/></translation>
 <translation id="8211437954284917092">Sök i dina bokmärken genom att ange en sökfråga i textfältet ovan.</translation>
-<translation id="2950143609136989144">Tilläggen har åtkomst till din dator och dina privata data. Det betyder att de skulle kunna vidarebefordra all din e-post till din äkta hälft.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> filer</translation>
 <translation id="1291121346508216435">Rätta stavning automatiskt:</translation>
 <translation id="6805291412499505360">Begränsa hur cookies från tredje part kan användas</translation>
@@ -326,7 +317,6 @@
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> minut</translation>
 <translation id="8210608804940886430">Page Down</translation>
 <translation id="5015344424288992913">Tolkar proxy...</translation>
-<translation id="2398703750948514961">Har avbrutits</translation>
 <translation id="3675321783533846350">Ange en proxy vid anslutning till nätverket.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> dagar</translation>
 <translation id="8453184121293348016">Ingen återkallningsmekanism har hittats</translation>
@@ -368,7 +358,6 @@
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> sekunder</translation>
 <translation id="3345886924813989455">Det gick inte att hitta någon webbläsare som stöds</translation>
 <translation id="3712897371525859903">Spara &amp;sida som...</translation>
-<translation id="3433151241941574321">Lägg till sida</translation>
 <translation id="7910768399700579500">&amp;Ny mapp</translation>
 <translation id="6883611015375728278">Blockera alla cookies</translation>
 <translation id="3819791248093819058">Det fanns ingen webbsida på webbadressen: &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt;</translation>
@@ -390,7 +379,6 @@
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="5170568018924773124">Visa i mapp</translation>
 <translation id="2674170444375937751">Vill du ta bort de här sidorna från historiken?</translation>
-<translation id="7334704644505105275">Felsökning för JavaScript - upptagen</translation>
 <translation id="7629827748548208700">Flik: <ph name="TAB_NAME"/></translation>
 <translation id="8028993641010258682">Storlek</translation>
 <translation id="1383876407941801731">Sökning</translation>
@@ -409,7 +397,6 @@
 <translation id="3867260226944967367">Webbsidan kan inte hittas.</translation>
 <translation id="6507969014813375884">Kinesiskt, förenklat</translation>
 <translation id="1767991048059195456">Skicka rapport</translation>
-<translation id="4612149584835516432">En hämtning pågår. Om du stänger Google Chrome nu avbryts hämtningen.</translation>
 <translation id="5646376287012673985">Plats</translation>
 <translation id="1110155001042129815">Vänta</translation>
 <translation id="7071586181848220801">Okänt plugin-program</translation>
@@ -463,7 +450,6 @@
 <translation id="3889424535448813030">Högerpil</translation>
 <translation id="5435666907653217300">Annat problem</translation>
 <translation id="1264974993859112054">Sport</translation>
-<translation id="3066577394310386876">&amp;Sakta (0,5x)</translation>
 <translation id="5167270755190684957">Google Chromes temagalleri</translation>
 <translation id="8382913212082956454">Kopiera &amp;e-postadress</translation>
 <translation id="4229495110203539533">För <ph name="NUMBER_ONE"/> sekund sedan</translation>
@@ -489,7 +475,6 @@
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (Standard)</translation>
 <translation id="111844081046043029">Vill du lämna den här sidan?</translation>
 <translation id="4497415007571823067">Du försökte nå &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; men du nådde en server som utger sig för att vara &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Det här kan bero på en felaktig serverkonfiguration eller på en allvarligare orsak. En bedragare i nätverket kan försöka locka dig att besöka en falsk (och eventuellt skadlig) version av &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt;. Du bör inte fortsätta.</translation>
-<translation id="957864810768974481">&amp;Helskärm</translation>
 <translation id="3202578601642193415">Senaste</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> timmar</translation>
 <translation id="8739589585766515812">Ta bort historik för denna dag</translation>
@@ -628,7 +613,6 @@
 <translation id="5538307496474303926">Rensar...</translation>
 <translation id="1285631718404404702">Visa aktiviteter som inträffat nyligen</translation>
 <translation id="6783679543387074885">Rapportera fel eller trasig webbplats</translation>
-<translation id="2022952840834921450">Tilläggen har åtkomst till din dator och dina privata data. Därmed skulle de kunna lägga upp meddelanden på Twitter eller skicka e-post i ditt namn.</translation>
 <translation id="3413103074007669042">På den här sidan finns innehåll som inte är säkert</translation>
 <translation id="4887833561977827087">Det finns inga objekt att visa här än.
         <ph name="BEGIN_LINK"/>Anpassa<ph name="END_LINK"/>
@@ -656,9 +640,8 @@
 <translation id="7397054681783221164">Ta bort följande objekt:</translation>
 <translation id="4891251785049117953">Rensa sparad formulärinformation</translation>
 <translation id="1531836666020185856">Utvalda</translation>
-<translation id="777885533320815847">D&amp;ubbel hastighet (2.0x)</translation>
+<translation id="5230516054153933099">Fönster</translation>
 <translation id="7554791636758816595">Ny flik</translation>
-<translation id="6231471673669497681">&amp;Uppspelningsfrekvens</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">Använd förhandshämtning av DNS för att förbättra laddningen av sidan</translation>
 <translation id="1086613338090581534">För icke utgångna certifikat är utfärdaren ansvarig för att upprätthålla en &quot;återkallningslista&quot;. Om ett certifikat äventyras kan utfärdaren återkalla det genom att lägga till det i återkallningslistan. Certifikatet är då inte längre tillförlitligt. Utgångna certifikats återkallningsstatus behöver inte uppdateras. Det här certifikatet användes tidigare för den aktuella webbplatsen men det går inte längre att avgöra om certifikatet har äventyrats och återkallats eller om det fortfarande är säkert. Det är därför inte möjligt att avgöra om du kommunicerar med den äkta webbplatsen eller med en bedragare som har tagit över certifikatet. Du bör inte fortsätta med åtgärden.</translation>
@@ -725,7 +708,6 @@
 <translation id="3009731429620355204">Sessioner</translation>
 <translation id="3473034187222004855">Kopiera s&amp;ökväg</translation>
 <translation id="6325525973963619867">Misslyckades</translation>
-<translation id="2120291134670287161">Ingen skrivare hittades. Installera en skrivare.</translation>
 <translation id="1676388805288306495">Byt standardinställt teckensnitt och språk på webbsidor.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Visa ramkälla</translation>
@@ -826,7 +808,6 @@
 <translation id="6227291405321948850">Namnlös webb-bild</translation>
 <translation id="1684248949164455892">I det här fallet har certifikatet inte verifierats av en tillförlitlig tredje part. Vem som helst kan skapa ett certifikat och utge sig för att vara en viss webbplats. Certifikatet måste därför verifieras av en tillförlitlig tredje part. Utan verifiering är identitetsuppgifterna i certifikatet meningslösa. Det är därför inte möjligt att bekräfta att du kommunicerar med &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; och inte med en bedragare som har skapat ett eget certifikat och utger sig för att vara &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Du bör inte fortsätta med åtgärden.</translation>
 <translation id="8045462269890919536">Rumänska</translation>
-<translation id="3927097095400773697"><ph name="DOWNLOAD_SIZE"/>, har avbrutits</translation>
 <translation id="2927657246008729253">Ändra...</translation>
 <translation id="3478477629095836699">Cookie-inställningar:</translation>
 <translation id="2108475813351458355">Säker anslutning till <ph name="DOMAIN"/></translation>
@@ -877,7 +858,6 @@
 <translation id="9141716082071217089">Kan inte kontrollera om servercertifikatet har återkallats.</translation>
 <translation id="4304224509867189079">Logga in</translation>
 <translation id="4492190037599258964">Sökresultat för &quot;<ph name="SEARCH_STRING"/>&quot;</translation>
-<translation id="8540666473246803645">Google Chrome</translation>
 <translation id="988159990683914416">Utvecklarversion</translation>
 <translation id="6790650291892352751">Sök efter ämne eller webbadress:</translation>
 <translation id="3705722231355495246">-</translation>
@@ -896,7 +876,6 @@
 <translation id="6264485186158353794">Tillbaka till säker webbplats</translation>
 <translation id="3807747707162121253">&amp;Avbryt</translation>
 <translation id="2850243184678184884">t.ex. hockey, BBC, http://engadget.com/rss.xml</translation>
-<translation id="6422698515595625913"><ph name="DOWNLOAD_COUNT"/> hämtningar pågår. Om du stänger Google Chrome nu avbryts hämtningarna.</translation>
 <translation id="77999321721642562">Med tiden kommer de åtta webbplatser som besökts oftast att visas i fältet nedan.</translation>
 <translation id="7447718177945067973">Det gick inte att hitta servern.</translation>
 <translation id="715468010956678290">Öppna ram i inko&amp;gnitofönster</translation>
@@ -953,5 +932,4 @@
 <translation id="8328145009876646418">Vänsterkant</translation>
 <translation id="8203365863660628138">Bekräfta installationen</translation>
 <translation id="406259880812417922">(Sökord: <ph name="KEYWORD"/>)</translation>
-<translation id="2437750561138919253">Felsökning för JavaScript - aktiverad</translation>
 </translationbundle>

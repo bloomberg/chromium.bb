@@ -31,7 +31,6 @@
 <translation id="4561681684759837226"><ph name="PAGE_TITLE"/></translation>
 <translation id="1195935957447623558">O Google Chrome não foi encerrado corretamente. Para reabrir as páginas que você tinha aberto, clique em &quot;Restaurar&quot;.</translation>
 <translation id="2499193704281978000">O Google Chrome não responde. Deseja reiniciá-lo agora?</translation>
-<translation id="1163677799412376314">Ajuda do Google Chrome</translation>
 <translation id="7747138024166251722">O instalador não conseguiu criar um diretório temporário. Verifique se há espaço livre em disco e se há permissão para a instalação de software.</translation>
 <translation id="6009537148180854585">Você tentou acessar &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o certificado apresentado pelo servidor contém erros. O Google Chrome não pode usar um certificado com erros e não pode validar a identidade do site ao qual você tentou se conectar. Sua conexão não é segura e você não deve continuar.</translation>
 <translation id="3324235665723428530">O seu perfil não pode ser usado, pois ele é de uma versão mais recente do Google Chrome.\n\nAlguns recursos podem estar indisponíveis. Especifique um diretório de perfil diferente ou use uma versão mais recente do Chrome.</translation>
@@ -45,6 +44,7 @@
 <translation id="6921913858457830952">O Google Chrome está pronto para concluir a instalação.</translation>
 <translation id="7100330187273168372">O Google Chrome não pode ler nem gravar em seu diretório de dados:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="2290095356545025170">Tem certeza de que deseja desinstalar o Google Chrome?</translation>
+<translation id="7626032353295482388">Bem-vindo ao Google Chrome</translation>
 <translation id="5941830788786076944">Fazer do Google Chrome o navegador padrão</translation>
 <translation id="4127951844153999091">Nesse caso, o endereço listado no certificado não corresponde ao endereço do site que seu navegador tentou acessar. Um possível motivo para isso é o fato de suas comunicações serem interceptadas por um invasor que está apresentando um certificado para um site diferente, o que poderia causar uma correspondência incorreta. Outro possível motivo é o fato de o servidor estar configurado para retornar o mesmo certificado para vários sites, incluindo o que você está tentando visitar, mesmo que esse certificado não seja válido para todos os sites. O Google Chrome pode afirmar com certeza que você acessou &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, mas não pode confirmar que este é o mesmo site que &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, que você pretendia acessar.
 Se continuar, o Chrome não procurará nenhuma outra correspondência incorreta de nomes. Em geral, é melhor não continuar além deste ponto.</translation>
@@ -54,7 +54,6 @@ Se continuar, o Chrome não procurará nenhuma outra correspondência incorreta 
 <translation id="5046764976540625289">Sair do Chrome</translation>
 <translation id="8865765905101981392">Navegador da internet</translation>
 <translation id="582763753075639530">Feche todas as janelas do Chrome e reinicie o Chrome para que essa alteração entre em vigor.</translation>
-<translation id="6525535905286676482">Sair do Google Chrome</translation>
 <translation id="8776515774046280928">O Google Chrome já está instalado e disponível para todos os usuários deste computador. Se você desejar instalar o Google Chrome para um usuário específico, primeiro desinstale a versão para sistema instalada pelo administrador.</translation>
 <translation id="2769762047821873045">O Google Chrome não é o seu navegador padrão.</translation>
 <translation id="7825851276765848807">Houve uma falha na instalação devido a um erro não-especificado. Faça o download do Google Chrome novamente.</translation>
@@ -62,7 +61,6 @@ Se continuar, o Chrome não procurará nenhuma outra correspondência incorreta 
 <translation id="473183893665420670">Ao redefinir as opções do Google Chrome, todas as alterações feitas serão revertidas para as configurações padrão. Deseja redefinir as opções do Chrome?</translation>
 <translation id="3636771339108070045">Este computador já tem uma versão mais recente do Google Chrome. Se o software não estiver funcionando, desinstale o Google Chrome e baixe-o novamente.</translation>
 <translation id="3396666154568987767">Google Chrome para <ph name="PROFILE_NAME"/></translation>
-<translation id="3290853340290073363">Ocultar o Google Chrome</translation>
 <translation id="1964682833763362793">Feche todas as janelas do Chrome e tente novamente.</translation>
 <translation id="1001534784610492198">O arquivo do instalador está corrompido ou é inválido. Baixe o Google Chrome novamente.</translation>
 <translation id="6626317981028933585">Infelizmente, suas configurações do Mozilla Firefox não ficarão disponíveis enquanto esse navegador estiver sendo executado. Para importar essas configurações para o Google Chrome, salve o seu trabalho e feche todas as janelas do Firefox. Em seguida, clique em &quot;Continuar&quot;.</translation>

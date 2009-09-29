@@ -12,7 +12,6 @@
 <translation id="4610656722473172270">Barra Google</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="2972581237482394796">&amp;Refés</translation>
-<translation id="5895138241574237353">Reinicia</translation>
 <translation id="6135826906199951471">Supr</translation>
 <translation id="528468243742722775">Fi</translation>
 <translation id="1723824996674794290">&amp;Finestra nova</translation>
@@ -84,7 +83,6 @@
 <translation id="5600613131076600482">Les extensions tenen accés a l'equip i a les dades privades. Per tant, tingueu en compte que podrien publicar fotos poc adients al vostre mur.</translation>
 <translation id="1644574205037202324">Historial</translation>
 <translation id="2518917559152314023">A&amp;fegeix...</translation>
-<translation id="8217250408786235522">&amp;Normal (1.0x)</translation>
 <translation id="4510290974676570902">Tipus de MIME</translation>
 <translation id="5565725983873655007">Quan hi ha contingut mixt a pàgines segures (SSL):</translation>
 <translation id="4419098590196511435">Falta alguna cosa</translation>
@@ -154,7 +152,6 @@
 <translation id="1635247229519770914">Continua instal·lant</translation>
 <translation id="8945419807169257367">No es pot comprovar el certificat del servidor</translation>
 <translation id="1464570622807304272">Proveu-ho. Escriviu &quot;orquídies&quot; i premeu la tecla de retorn.</translation>
-<translation id="5872213955895293073">Depura JavaScript</translation>
 <translation id="1965338962645102116">Per tal d'importar els preferits de la Barra Google a Google Chrome, cal que tingueu la sessió iniciada al vostre compte de Google. Inicieu la sessió i torneu a provar d'importar-los.</translation>
 <translation id="5903264686717710770">Títol:</translation>
 <translation id="8899851313684471736">Obre l'enllaç en una &amp;finestra nova</translation>
@@ -162,7 +159,6 @@
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> hores</translation>
 <translation id="3990502903496589789">Extrem dret</translation>
 <translation id="2790948358747073186">I molt més</translation>
-<translation id="5303890401939113396">Depurador de JavaScript  - Ruptura</translation>
 <translation id="2423578206845792524">De&amp;sa la imatge com a...</translation>
 <translation id="1095038624419434542">S'ha produït un error en carregar el recurs d'un programa. Intenteu instal·lar-lo de nou.</translation>
 <translation id="9068931793451030927">Camí:</translation>
@@ -215,7 +211,6 @@
 <translation id="1087119889335281750">&amp;Sense suggeriments d'escriptura</translation>
 <translation id="5076340679995252485">Engan&amp;xa</translation>
 <translation id="14171126816530869">La identitat de <ph name="ORGANIZATION"/> a <ph name="LOCALITY"/> ha estat verificada per <ph name="ISSUER"/>.</translation>
-<translation id="1587275751631642843">&amp;Consola de JavaScript</translation>
 <translation id="5821894118254011366">Bloqueja totalment les galetes de tercers</translation>
 <translation id="1134009406053225289">Obre-ho en una finestra d'incògnit</translation>
 <translation id="3473105180351527598">Habilita la protecció contra pesca i programari maliciós</translation>
@@ -271,17 +266,14 @@
 <translation id="2794293857160098038">Opcions de cerca predeterminades</translation>
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> minut restant</translation>
 <translation id="5496587651328244253">Organitza</translation>
-<translation id="2074760228690987725">Rà&amp;pid (1.25x)</translation>
 <translation id="2592884116796016067">Alguna part d'aquesta pàgina (HTML WebWorker) ha fallat. Per tant, pot ser que no funcioni correctament.</translation>
 <translation id="5568069709869097550">No puc accedir</translation>
-<translation id="8585326996912141705">Més &amp;ràpid (1.5x)</translation>
 <translation id="4181898366589410653">No s'ha trobat cap mecanisme de revocació al certificat del servidor.</translation>
 <translation id="6364916375976753737">Desplaçament a l'esquerra</translation>
 <translation id="1665770420914915777">Utilitzeu la pàgina &quot;Pestanya nova&quot;.</translation>
 <translation id="2629089419211541119">Fa <ph name="NUMBER_ONE"/> hora</translation>
 <translation id="7789175495288668515">Canvia les opcions d'instal·lació predeterminades.</translation>
 <translation id="347250956943431997">El certificat del servidor s'ha revocat</translation>
-<translation id="9087164549070846958">Tanmateix, si treballes en una organització que genera els seus propis certificats i intentes connectar-te a un lloc web intern de l'organització en qüestió, mitjançant un certificat d'aquest tipus, podràs solucionar aquest problema amb seguretat. Pots importar el certificat arrel de la teva organització com a &quot;certificat arrel&quot; i, a continuació, es consideraran de confiança els certificats emesos o verificats per la teva organització i no veuràs aquest error la propera vegada que et connectis a un lloc web intern. Posa't en contacte amb l'equip d'assistència de la teva organització per sol·licitar ajuda per afegir un nou certificat a Windows.</translation>
 <translation id="6982279413068714821">Fa <ph name="NUMBER_DEFAULT"/> minuts</translation>
 <translation id="7977590112176369853">&lt;introdueix la consulta&gt;</translation>
 <translation id="994771890067000105">Molt destacats</translation>
@@ -303,7 +295,6 @@
 <translation id="3513979718339724672">Mostra'n les miniatures</translation>
 <translation id="7300965843904003671">Mostra sempre les finestres emergents de <ph name="URL"/></translation>
 <translation id="8211437954284917092">Introduïu una consulta al camp de text anterior per cercar els preferits.</translation>
-<translation id="2950143609136989144">Les extensions tenen accés a l'equip i a les dades privades. Per tant, tingueu en compte que podrien reenviar tots els vostres correus electrònics fins i tot a aquell amb qui us vau creuar pel carrer.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> fitxers</translation>
 <translation id="1291121346508216435">Corregeix l'ortografia automàticament:</translation>
 <translation id="6805291412499505360">Restringeix el mode en què es poden utilitzar les galetes de tercers</translation>
@@ -326,7 +317,6 @@
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> minut</translation>
 <translation id="8210608804940886430">Av Pàg</translation>
 <translation id="5015344424288992913">Resolent el servidor intermediari...</translation>
-<translation id="2398703750948514961">Cancel·lat</translation>
 <translation id="3675321783533846350">Estableix un servidor intermediari per connectar-te a la xarxa.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> dies</translation>
 <translation id="8453184121293348016">No s'ha trobat cap mecanisme de revocació</translation>
@@ -368,7 +358,6 @@
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> segons</translation>
 <translation id="3345886924813989455">No s'ha trobat cap navegador compatible</translation>
 <translation id="3712897371525859903">Desa la pàgina &amp;com a...</translation>
-<translation id="3433151241941574321">Afegeix una pàgina</translation>
 <translation id="7910768399700579500">Carpeta &amp;nova</translation>
 <translation id="6883611015375728278">Bloqueja totes les galetes</translation>
 <translation id="3819791248093819058">No s'ha trobat cap pàgina web per a l'adreça: &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt;</translation>
@@ -387,7 +376,6 @@
 <translation id="6447842834002726250">Galetes</translation>
 <translation id="5170568018924773124">Mostra a la carpeta</translation>
 <translation id="2674170444375937751">Estàs segur que vols suprimir aquestes pàgines de l'historial?</translation>
-<translation id="7334704644505105275">Depurador de JavaScript  - Ocupat</translation>
 <translation id="7629827748548208700">Pestanya: <ph name="TAB_NAME"/></translation>
 <translation id="8028993641010258682">Mida</translation>
 <translation id="1383876407941801731">Cerca</translation>
@@ -406,7 +394,6 @@
 <translation id="3867260226944967367">No s'ha trobat aquesta pàgina web.</translation>
 <translation id="6507969014813375884">Xinès simplificat</translation>
 <translation id="1767991048059195456">Envia informe</translation>
-<translation id="4612149584835516432">Teniu una baixada en curs. Si tanqueu Google Chrome ara, aquesta baixada es cancel·larà.</translation>
 <translation id="5646376287012673985">Ubicació</translation>
 <translation id="1110155001042129815">Espera</translation>
 <translation id="7071586181848220801">Complement desconegut</translation>
@@ -460,7 +447,6 @@
 <translation id="3889424535448813030">Fletxa dreta</translation>
 <translation id="5435666907653217300">Un altre problema</translation>
 <translation id="1264974993859112054">Esports</translation>
-<translation id="3066577394310386876">&amp;Lent (0.5x)</translation>
 <translation id="5167270755190684957">Galeria de temes de Google Chrome</translation>
 <translation id="8382913212082956454">Copia l'&amp;adreça electrònica</translation>
 <translation id="4229495110203539533">Fa <ph name="NUMBER_ONE"/> segon</translation>
@@ -486,7 +472,6 @@
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (Predeterminada)</translation>
 <translation id="111844081046043029">Estàs segur que vols marxar d'aquesta pàgina?</translation>
 <translation id="4497415007571823067">Has intentat accedir a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, però en canvi has arribat a un servidor que s'identifica com a &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Això pot ser a causa d'un error de configuració del servidor o d'algun altre motiu més greu. És possible que un atacant estigui intentant forçar-te a visitar una versió falsa (i potencialment perillosa) de &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt;. No hauries de continuar.</translation>
-<translation id="957864810768974481">Panta&amp;lla completa</translation>
 <translation id="3202578601642193415">El més nou</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> hores</translation>
 <translation id="8739589585766515812">Elimina l'historial del dia</translation>
@@ -625,7 +610,6 @@
 <translation id="5538307496474303926">S'està netejant...</translation>
 <translation id="1285631718404404702">Mostra les activitats recents</translation>
 <translation id="6783679543387074885">Informa d'un error o d'un lloc web no vàlid</translation>
-<translation id="2022952840834921450">Les extensions tenen accés a l'equip i a les dades privades. Per tant, tingueu en compte que podrien enviar tweets o bé correus electrònics en nom vostre.</translation>
 <translation id="3413103074007669042">En aquesta pàgina hi ha algun contingut no segur.</translation>
 <translation id="4887833561977827087">Encara no hi ha cap element per mostrar.
         <ph name="BEGIN_LINK"/>Personalitzeu<ph name="END_LINK"/>
@@ -653,9 +637,8 @@
 <translation id="7397054681783221164">Elimina els elements següents:</translation>
 <translation id="4891251785049117953">Esborra les dades del formulari que s'han desat</translation>
 <translation id="1531836666020185856">Destacats</translation>
-<translation id="777885533320815847">T&amp;emps doble (2.0x)</translation>
+<translation id="5230516054153933099">Finestra</translation>
 <translation id="7554791636758816595">Pestanya nova</translation>
-<translation id="6231471673669497681">Í&amp;ndex de reproducció</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">Utilitza la recollida prèvia de DNS per millorar el rendiment de càrrega de la pàgina</translation>
 <translation id="1086613338090581534">Per a un certificat que no ha caducat, l'emissor és el responsable de mantenir el que s'anomena &quot;llista de revocació&quot;. Si un certificat es posa en perill, l'emissor el pot revocar afegint-lo a la llista de revocació i, llavors, el certificat ja no serà de confiança per al teu navegador. No és necessari mantenir l'estat de revocació dels certificats caducats, de manera que, encara que aquest certificat era vàlid per al lloc web que estàs visitant, ara ja no és possible determinar si el certificat es va posar en perill i, per tant, es va revocar, o si encara és segur. Conseqüentment, és impossible saber si t'estàs comunicant amb el lloc web legítim o si el certificat es va posar en perill i ara està en possessió d'un atacant amb el qual et comuniques. No hauries de continuar més enllà d'aquest punt.</translation>
@@ -722,7 +705,6 @@
 <translation id="3009731429620355204">Sessions</translation>
 <translation id="3473034187222004855">Copia el &amp;camí del fitxer</translation>
 <translation id="6325525973963619867">Error</translation>
-<translation id="2120291134670287161">No s'ha trobat cap impressora. Instal·leu-ne una.</translation>
 <translation id="1676388805288306495">Canvia el tipus de lletra i l'idioma predeterminats per a les pàgines web.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;Visualitza l'origen del marc</translation>
@@ -823,7 +805,6 @@
 <translation id="6227291405321948850">Imatge web sense títol</translation>
 <translation id="1684248949164455892">En aquest cas, el certificat no ha estat verificat per un tercer en el qual confiï el teu equip. Qualsevol persona pot crear un certificat declarant que és qualsevol lloc web que triï; per això ha d'estar verificat per un tercer de confiança. Sense aquesta verificació, la informació d'identitat del certificat no té cap sentit. Com a conseqüència, no és possible verificar que t'estàs comunicant amb &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; en comptes de amb un atacant que ha generat el seu propi certificat afirmant que és &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. No hauries de continuar més enllà d'aquest punt.</translation>
 <translation id="8045462269890919536">Romanès</translation>
-<translation id="3927097095400773697"><ph name="DOWNLOAD_SIZE"/>, Cancel·lat</translation>
 <translation id="2927657246008729253">Canvia...</translation>
 <translation id="3478477629095836699">Configuració de galetes:</translation>
 <translation id="2108475813351458355">Connexió segura a <ph name="DOMAIN"/></translation>
@@ -874,7 +855,6 @@
 <translation id="9141716082071217089">No s'ha pogut comprovar si el certificat del servidor s'ha revocat.</translation>
 <translation id="4304224509867189079">Accedeix</translation>
 <translation id="4492190037599258964">Resultats de la cerca per a &quot;<ph name="SEARCH_STRING"/>&quot;</translation>
-<translation id="8540666473246803645">Google Chrome</translation>
 <translation id="988159990683914416">Muntatge del desenvolupador</translation>
 <translation id="6790650291892352751">Cerca per tema o per URL:</translation>
 <translation id="3705722231355495246">-</translation>
@@ -893,7 +873,6 @@
 <translation id="6264485186158353794">Torna a seguretat</translation>
 <translation id="3807747707162121253">&amp;Cancel·la</translation>
 <translation id="2850243184678184884">p. ex. hoquei, TV3, http://engadget.com/rss.xml</translation>
-<translation id="6422698515595625913">Teniu <ph name="DOWNLOAD_COUNT"/> baixades en curs. Si tanqueu Google Chrome ara, aquestes baixades es cancel·laran.</translation>
 <translation id="77999321721642562">Amb el temps, l'àrea anterior mostrarà els 8 llocs que visiteu amb més freqüència.</translation>
 <translation id="7447718177945067973">No s'ha trobat el servidor.</translation>
 <translation id="715468010956678290">Obre el marc en una finestra d'inco&amp;gnito</translation>
@@ -950,5 +929,4 @@
 <translation id="8328145009876646418">Extrem esquerre</translation>
 <translation id="8203365863660628138">Confirma la instal·lació</translation>
 <translation id="406259880812417922">(Paraula clau: <ph name="KEYWORD"/>)</translation>
-<translation id="2437750561138919253">Depurador de JavaScript  - En execució</translation>
 </translationbundle>

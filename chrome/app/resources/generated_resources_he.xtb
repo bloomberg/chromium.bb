@@ -12,7 +12,6 @@
 <translation id="4610656722473172270">סרגל הכלים של Google</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="2972581237482394796">&amp;בצע שנית</translation>
-<translation id="5895138241574237353">הפעל מחדש</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="1723824996674794290">&amp;חלון חדש</translation>
@@ -75,6 +74,7 @@
 <translation id="4422347585044846479">ערוך סימניה עבור דף זה</translation>
 <translation id="7367545749698325833">תוכל לייבא את הסימניות ואת ההגדרות שלך מדפדפנים אחרים או לנקות את נתוני הגלישה שלך ממחשב זה.</translation>
 <translation id="51285338152176012">הסתר כרטיסיות שנסגרו לאחרונה</translation>
+<translation id="3873139305050062481">בדוק מרכיב</translation>
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
 <translation id="8820817407110198400">סימניות</translation>
 <translation id="2994458892329442723">הפעל תוספים</translation>
@@ -84,7 +84,6 @@
 <translation id="5600613131076600482">להרחבות יש גישה למחשב שלך ולמידע הפרטי. הן יכולות לפרסם תמונות לא מחמיאות על גבי הקיר שלך.</translation>
 <translation id="1644574205037202324">היסטוריה</translation>
 <translation id="2518917559152314023">ה&amp;וסף...</translation>
-<translation id="8217250408786235522">&amp;רגיל (1.0x)</translation>
 <translation id="4510290974676570902">סוג MIME</translation>
 <translation id="5565725983873655007">כאשר יש עירוב של תוכן בדפים מאובטחים (SSL):</translation>
 <translation id="4419098590196511435">משהו חסר</translation>
@@ -96,6 +95,7 @@
 <translation id="4120898696391891645">הדף לא נטען</translation>
 <translation id="5584537427775243893">מייבא</translation>
 <translation id="4181841719683918333">שפות</translation>
+<translation id="5910363049092958439">שמור תמונה בשם...</translation>
 <translation id="6451650035642342749">הסר הגדרות לפתיחה אוטומטית</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> שניות</translation>
 <translation id="5098629044894065541">עברית</translation>
@@ -135,6 +135,7 @@
 <translation id="4813345808229079766">התקשרות</translation>
 <translation id="411666854932687641">זיכרון פרטי</translation>
 <translation id="119944043368869598">נקה הכל</translation>
+<translation id="1336254985736398701">צפה בפרטי דף</translation>
 <translation id="1652965563555864525">ה&amp;שתק</translation>
 <translation id="4200983522494130825">&amp;כרטיסייה חדשה</translation>
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH"/> מתוך <ph name="TOTAL_MATCHCOUNT"/></translation>
@@ -149,20 +150,20 @@
 <translation id="68541483639528434">סגור כרטיסיות אחרות</translation>
 <translation id="2897878306272793870">האם אתה בטוח שברצונך לפתוח כרטיסיות <ph name="TAB_COUNT"/>?</translation>
 <translation id="362276910939193118">הצג את כל ההיסטוריה</translation>
+<translation id="1073286447082909762">פתח מסגרת בחלון  חדש</translation>
 <translation id="692135145298539227">מחק</translation>
 <translation id="2663762871503078613">ייבא:</translation>
 <translation id="1635247229519770914">המשך בהתקנה</translation>
 <translation id="8945419807169257367">לא ניתן לבדוק את אישור השרת</translation>
 <translation id="1464570622807304272">נסה זאת - הקלד &quot;orchids&quot; והקש Enter.</translation>
-<translation id="5872213955895293073">Debug JavaScript</translation>
 <translation id="1965338962645102116">כדי לייבא סימניות סרגל כלים ל-Chrome, עליך להיות מחובר לחשבון Google. התחבר ונסה לייבא שוב.</translation>
 <translation id="5903264686717710770">כותרת:</translation>
 <translation id="8899851313684471736">פתח קישור &amp;בחלון חדש</translation>
+<translation id="7421925624202799674">הצג מקור דף</translation>
 <translation id="6686490380836145850">סגור את הכרטיסיות משמאל</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> שעות</translation>
 <translation id="3990502903496589789">קצה ימני</translation>
 <translation id="2790948358747073186">ועוד</translation>
-<translation id="5303890401939113396">JavaScript Debugger - נקטע</translation>
 <translation id="2423578206845792524">שמ&amp;ור תמונה בשם...</translation>
 <translation id="1095038624419434542">אירעה שגיאה בעת טעינת משאב תוכנית. נסה להתקין מחדש.</translation>
 <translation id="9068931793451030927">נתיב:</translation>
@@ -215,7 +216,6 @@
 <translation id="1087119889335281750">&amp;אין הצעות לאיות</translation>
 <translation id="5076340679995252485">&amp;הדבק</translation>
 <translation id="14171126816530869">זהות <ph name="ORGANIZATION"/> ב-<ph name="LOCALITY"/>  אומתה על ידי <ph name="ISSUER"/>.</translation>
-<translation id="1587275751631642843">קונסולת JavaScript&amp;</translation>
 <translation id="5821894118254011366">חסום לגמרי קבצי cookie של צד שלישי</translation>
 <translation id="1134009406053225289">פתח בחלון גלישה בסתר</translation>
 <translation id="3473105180351527598">הפעל הגנה נגד התחזות ותוכנות זדוניות</translation>
@@ -232,10 +232,13 @@
 <translation id="5605623530403479164">מנועי חיפוש אחרים</translation>
 <translation id="5710435578057952990">הזהות של אתר זה לא אומתה.</translation>
 <translation id="5287240709317226393">הצג קבצי cookie</translation>
+<translation id="5451646087589576080">הצג פרטי מסגרת</translation>
 <translation id="8486154204771389705">שמור בדף זה</translation>
+<translation id="6824564591481349393">העתק כתובת דוא&quot;ל</translation>
 <translation id="333371639341676808">מנע מדף זה ליצור דיאלוגים נוספים.</translation>
 <translation id="5844183150118566785"><ph name="PRODUCT_NAME"/> מעודכן (<ph name="VERSION"/>)</translation>
 <translation id="7791543448312431591">הוסף</translation>
+<translation id="48838266408104654">מנהל משימות</translation>
 <translation id="6178664161104547336">בחר אישור</translation>
 <translation id="772440777491435074">פרטי אישור...</translation>
 <translation id="2869459179306435079">ייבא הגדרות מ:</translation>
@@ -248,6 +251,7 @@
 <translation id="2266011376676382776">הדפים אינם מגיבים</translation>
 <translation id="1805966933547717780">http://www.google.com/chrome/help/</translation>
 <translation id="5782620817391526544">סרגל סימניות</translation>
+<translation id="1319824869167805246">פתח סימניות בחלון חדש</translation>
 <translation id="3493653833301553455">מילוי אוטומטי של טופס:</translation>
 <translation id="3895288786311724904">נוסף</translation>
 <translation id="644038709730536388">מידע נוסף על האופן שבו תגן על עצמך באופן מקוון מפני תוכנה מזיקה.</translation>
@@ -271,23 +275,21 @@
 <translation id="2794293857160098038">אפשרויות חיפוש ברירת מחדל</translation>
 <translation id="5935630983280450497">נותרה <ph name="NUMBER_ONE"/> דקה</translation>
 <translation id="5496587651328244253">ארגון</translation>
-<translation id="2074760228690987725">&amp;מהיר (1.25x)</translation>
 <translation id="2592884116796016067">חלק מדף זה (HTML WebWorker) קרס וייתכן שלא יפעל כראוי.</translation>
 <translation id="5568069709869097550">אי אפשר להיכנס</translation>
-<translation id="8585326996912141705">מ&amp;הר יותר (1.5x)</translation>
 <translation id="4181898366589410653">לא נמצא מנגנון ביטול באישור השרת.</translation>
 <translation id="6364916375976753737">גלול שמאלה</translation>
 <translation id="1665770420914915777">השתמש בדף 'כרטיסיות חדשות'</translation>
 <translation id="2629089419211541119">לפני <ph name="NUMBER_ONE"/> שעה</translation>
 <translation id="7789175495288668515">שנה את אפשרויות ברירת המחדל של ההתקנה.</translation>
 <translation id="347250956943431997">אישור השרת נשלל</translation>
-<translation id="9087164549070846958">יחד עם זאת, אם אתה עובד בארגון היוצר אישורים משלו ואתה מנסה להתחבר לאתר פנימי של הארגון באמצעות אישור כזה, יתכן שתוכל לפתור בעיה זו בביטחה. אתה יכול לייבא את האישור הבסיסי של הארגון שלך, הידוע בשם &quot;אישור בסיסי&quot;, ולאחר מכן האישורים שהונפקו או שאומתו על ידי הארגון שלך יהיו אמינים ולא תראה שגיאה זו בפעם הבאה שתנסה להתחבר לאתר פנימי. צור קשר עם צוות התמיכה של הארגון שלך לקבלת סיוע בהוספת אישור בסיסי חדש ב-Windows.</translation>
 <translation id="6982279413068714821">לפני <ph name="NUMBER_DEFAULT"/> דקות</translation>
 <translation id="7977590112176369853">&lt;הזן שאילתה&gt;</translation>
 <translation id="994771890067000105">תוספת מוצגת</translation>
 <translation id="5155632014218747366">למידע מפורט על הבעיות באתר זה, בקר ב-<ph name="DIAGNOSTIC_PAGE"/> של Google עבור <ph name="DOMAIN"/>.</translation>
 <translation id="1120026268649657149">מילת המפתח חייבת להיות ריקה או ייחודית</translation>
 <translation id="5317780077021120954">שמור</translation>
+<translation id="9027459031423301635">פתח קישור בכרטיסייה חדשה</translation>
 <translation id="358344266898797651">קלטית</translation>
 <translation id="5055518462594137986">זכור את הבחירה שלי עבור כל הקישורים מסוג זה.</translation>
 <translation id="2870560284913253234">אתר</translation>
@@ -303,7 +305,6 @@
 <translation id="3513979718339724672">הצג תמונות ממוזערות</translation>
 <translation id="7300965843904003671">הצג תמיד רכיבים מוקפצים מ-<ph name="URL"/></translation>
 <translation id="8211437954284917092">הזן שאילתה בשדה הטקסט שלמעלה, כדי לחפש את הסימניות שלך.</translation>
-<translation id="2950143609136989144">להרחבות יש גישה למחשב שלך ולמידע הפרטי. כלומר הן יכולות להעביר את כל הודעות הדוא&quot;ל שלך לבן או בת הזוג.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / קבצי <ph name="TOTAL_FILES"/></translation>
 <translation id="1291121346508216435">תקן איות באופן אוטומטי:</translation>
 <translation id="6805291412499505360">הגבל שימוש צד-שלישי בקבצי cookie</translation>
@@ -326,7 +327,6 @@
 <translation id="2953767478223974804">דקה <ph name="NUMBER_ONE"/></translation>
 <translation id="8210608804940886430">דף למטה</translation>
 <translation id="5015344424288992913">פותר פרוקסי...</translation>
-<translation id="2398703750948514961">בוטל</translation>
 <translation id="3675321783533846350">הגדר פרוקסי כדי להתחבר לרשת.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> ימים</translation>
 <translation id="8453184121293348016">לא נמצא מנגנון ביטול</translation>
@@ -366,9 +366,9 @@
 <translation id="1521442365706402292">נהל אישורים</translation>
 <translation id="7887998671651498201">התוסף הבא אינו מגיב: <ph name="PLUGIN_NAME"/> האם תרצה להפסיקו?</translation>
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> שניות</translation>
+<translation id="3551320343578183772">סגור כרטיסייה</translation>
 <translation id="3345886924813989455">לא נמצא דפדפן נתמך</translation>
 <translation id="3712897371525859903">שמור דף &amp;בשם...</translation>
-<translation id="3433151241941574321">הוסף דף</translation>
 <translation id="7910768399700579500">&amp;תיקייה חדשה</translation>
 <translation id="6883611015375728278">חסום את כל קבצי ה-cookie</translation>
 <translation id="3819791248093819058">לא נמצא דף אינטרנט עבור כתובת האינטרנט: &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt;</translation>
@@ -380,6 +380,7 @@
 במחשב שלך.</translation>
 <translation id="5528368756083817449">מנהל הסימניות</translation>
 <translation id="7275974018215686543">לפני <ph name="NUMBER_MANY"/> שניות</translation>
+<translation id="7849264908733290972">פתח תמונה בכרטיסייה חדשה</translation>
 <translation id="1560991001553749272">הסימנייה נוספה!</translation>
 <translation id="3966072572894326936">בחר תיקייה אחרת...</translation>
 <translation id="7781829728241885113">אתמול</translation>
@@ -389,7 +390,6 @@
 <translation id="6447842834002726250">קבצי cookie</translation>
 <translation id="5170568018924773124">הצג בתיקייה</translation>
 <translation id="2674170444375937751">האם אתה בטוח שברצונך להסיר דפים אלו מההיסטוריה שלך?</translation>
-<translation id="7334704644505105275">JavaScript Debugger - תפוס</translation>
 <translation id="7629827748548208700">כרטיסייה: <ph name="TAB_NAME"/></translation>
 <translation id="8028993641010258682">גודל</translation>
 <translation id="1383876407941801731">חיפוש</translation>
@@ -408,7 +408,6 @@
 <translation id="3867260226944967367">דף אינטרנט זה לא נמצא.</translation>
 <translation id="6507969014813375884">סינית פשוטה</translation>
 <translation id="1767991048059195456">שלח דוח</translation>
-<translation id="4612149584835516432">הורדה אחת מתבצעת כעת. אם תסגור את Google Chrome כעת, הורדה זו תתבטל.</translation>
 <translation id="5646376287012673985">מיקום</translation>
 <translation id="1110155001042129815">המתן</translation>
 <translation id="7071586181848220801">תוסף לא ידוע</translation>
@@ -420,6 +419,7 @@
 <translation id="1181037720776840403">הסר</translation>
 <translation id="59174027418879706">מופעל</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
+<translation id="6550769511678490130">פתח את כל הסימניות</translation>
 <translation id="2534091581909016888"><ph name="SITE"/></translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="5316814419223884568">התחל לחפש מכאן:</translation>
@@ -433,6 +433,7 @@
 <translation id="5552632479093547648">התגלו תוכנה זדונית והתחזות!</translation>
 <translation id="4988273303304146523">לפני <ph name="NUMBER_DEFAULT"/> ימים</translation>
 <translation id="5087864757604726239">הקודם</translation>
+<translation id="4316305410440790958">פתח מסגרת בכרטיסייה חדשה</translation>
 <translation id="9118804773997839291">בהמשך מופיעה רשימה של כל האלמנטים הלא בטוחים עבור הדף. למידע נוסף לגבי תהליך שיוביל אותך לאלמנט מסוים, לחץ על הקישור 'ניתוח'.</translation>
 <translation id="3664021239099029884">הצג את כל ההורדות</translation>
 <translation id="2207746515960750386">לפני <ph name="MINUTE"/> דקה/דקות</translation>
@@ -462,7 +463,6 @@
 <translation id="3889424535448813030">חץ לימין</translation>
 <translation id="5435666907653217300">בעיה אחרת</translation>
 <translation id="1264974993859112054">ספורט</translation>
-<translation id="3066577394310386876">&amp;לאט (0.5x)</translation>
 <translation id="5167270755190684957">גלריית הנושאים של Google Chrome</translation>
 <translation id="8382913212082956454">העתק &amp;כתובת דוא&quot;ל</translation>
 <translation id="4229495110203539533">לפני <ph name="NUMBER_ONE"/> שניות</translation>
@@ -473,6 +473,7 @@
 <translation id="2454247629720664989">מילת מפתח</translation>
 <translation id="1628736721748648976">קידוד</translation>
 <translation id="6521850982405273806">דווח על שגיאה</translation>
+<translation id="1769104665586091481">פתח קישור בחלון חדש</translation>
 <translation id="8503813439785031346">שם משתמש</translation>
 <translation id="290555789621781773"><ph name="NUMBER_TWO"/> דקות</translation>
 <translation id="7073704676847768330">כנראה שזה לא האתר שאתה מחפש!</translation>
@@ -488,7 +489,6 @@
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (ברירת מחדל)</translation>
 <translation id="111844081046043029">האם אתה בטוח שברצונך לצאת מדף זה?</translation>
 <translation id="4497415007571823067">ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך במקום זאת הגעת לשרת שמציג עצמו כ-&lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. יתכן שהדבר נגרם בשל בעיית תצורה בשרת, או בשל בעיה רצינית יותר. גורם פוגע ברשת שלך עלול לנסות לגרום לך לבקר בגרסה מזויפת (ואולי אף מזיקה) של &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt;. מומלץ לא להמשיך.</translation>
-<translation id="957864810768974481">&amp;מסך מלא</translation>
 <translation id="3202578601642193415">החדש ביותר</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> שעות</translation>
 <translation id="8739589585766515812">מחק היסטוריה עבור יום זה</translation>
@@ -556,6 +556,7 @@
 <translation id="1768211415369530011">היישום הבא יופעל אם תאשר בקשה זו:\n\n <ph name="APPLICATION"/></translation>
 <translation id="4552416320897244156">דף למטה</translation>
 <translation id="8986267729801483565">מקום ההורדה:</translation>
+<translation id="4322394346347055525">סגור כרטיסיות אחרות</translation>
 <translation id="8318945219881683434">בדיקת הביטול נכשלה.</translation>
 <translation id="5086103144359029476">נושאים מוצגים</translation>
 <translation id="994289308992179865">הפעל ב&amp;רצף</translation>
@@ -563,6 +564,7 @@
 <translation id="3745810751851099214">שלח עבור:</translation>
 <translation id="8877448029301136595">[ספריית אב]</translation>
 <translation id="1963227389609234879">הסר הכל</translation>
+<translation id="8027581147000338959">פתח בחלון חדש</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="2496180316473517155">היסטוריית גלישה</translation>
 <translation id="602251597322198729">אתר זה מנסה להוריד קבצים מרובים. האם אתה מעוניין לאשר זאת?</translation>
@@ -571,12 +573,14 @@
 <translation id="6273480802234137933">Gears:</translation>
 <translation id="7736284018483078792">שנה את השפה של מילון בדיקת האיות.</translation>
 <translation id="2148716181193084225">היום</translation>
+<translation id="1002064594444093641">הדפס מסגרת...</translation>
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="4756388243121344051">&amp;היסטוריה</translation>
 <translation id="3789841737615482174">התקן</translation>
 <translation id="4789872672210757069">אודות &amp;<ph name="PRODUCT_NAME"/></translation>
 <translation id="4056561919922437609"><ph name="TAB_COUNT"/> כרטיסיות</translation>
 <translation id="4373894838514502496">לפני <ph name="NUMBER_FEW"/> דקות</translation>
+<translation id="6264365405983206840">בחר הכל</translation>
 <translation id="2533050964672183510">הקודם</translation>
 <translation id="1017280919048282932">&amp;הוסף למילון</translation>
 <translation id="1829244130665387512">חפש בדף</translation>
@@ -609,6 +613,7 @@
 <translation id="2979639724566107830">פתח בחלון חדש</translation>
 <translation id="2822854841007275488">ערבית</translation>
 <translation id="2815448242176260024">אל תשמור סיסמאות לעולם</translation>
+<translation id="2989805286512600854">פתח בכרטיסייה חדשה</translation>
 <translation id="2666092431469916601">למעלה</translation>
 <translation id="4047498523333824092">שחזר את הדפים האחרונים שנפתחו</translation>
 <translation id="6503077044568424649">הכי פופולריים</translation>
@@ -628,12 +633,13 @@
 <translation id="5538307496474303926">מסיר...</translation>
 <translation id="1285631718404404702">הצג פעילויות אחרונות</translation>
 <translation id="6783679543387074885">דווח על תקלה או על אתר פגום</translation>
-<translation id="2022952840834921450">להרחבות יש גישה למחשב שלך ולמידע הפרטי. הן יכולות לשלוח טוויטים או הודעות דוא&quot;ל בשמך.</translation>
+<translation id="3494444535872870968">שמור מסגרת בשם...</translation>
 <translation id="3413103074007669042">דף זה מכיל תוכן לא מאובטח</translation>
 <translation id="4887833561977827087">אין כאן עדיין פריטים להצגה.
       <ph name="BEGIN_LINK"/>התאם אישית<ph name="END_LINK"/>
       את קטעי האינטרנט והוסף עוד מקורות.</translation>
 <translation id="5285267187067365830">התקן תוסף...</translation>
+<translation id="1166212789817575481">סגור כרטיסיות לימין</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
 <translation id="8015746205953933323">דף אינטרנט זה אינו זמין.</translation>
 <translation id="8520668773617044689">Firefox</translation>
@@ -647,6 +653,7 @@
 <translation id="4980691186726139495">אל תשמור בדף זה</translation>
 <translation id="703748601351783580">פתח את כל הסימניות בחלון חדש</translation>
 <translation id="1293699935367580298">Esc</translation>
+<translation id="4478664379124702289">שמור קישור כ...</translation>
 <translation id="8502249598105294518">התאם אישית ונהל את <ph name="PRODUCT_NAME"/></translation>
 <translation id="2797524280730715045">לפני <ph name="NUMBER_DEFAULT"/> שעות</translation>
 <translation id="815598010540052116">גלול למטה</translation>
@@ -656,9 +663,8 @@
 <translation id="7397054681783221164">מחק את הפריטים הבאים:</translation>
 <translation id="4891251785049117953">הסר נתוני טופס שמורים</translation>
 <translation id="1531836666020185856">מוצג</translation>
-<translation id="777885533320815847">זמן כפול (2.0x)</translation>
+<translation id="5230516054153933099">חלון</translation>
 <translation id="7554791636758816595">כרטיסייה חדשה</translation>
-<translation id="6231471673669497681">&amp;קצב הפעלה</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
 <translation id="4400697530699263877">השתמש באיתור מוקדם של DNS לשיפור ביצועי הטעינה של הדף</translation>
 <translation id="1086613338090581534">עבור אישור שתוקפו לא פג, מנפיק האישור חייב לנהל &quot;רשימת ביטולים&quot;. אם האישור נפגע בכל צורה שהיא, מנפיק האישור רשאי לבטלו על ידי הוספתו לרשימת הביטולים. לאחר מכן, האישור לא יופיע ברשימת האישורים האמינים של הדפדפן שלך. אין צורך לנהל מצבי ביטול לאישורים שפג תוקפם, לכן כל עוד האישור של האתר שבו אתה מבקר נמצא בתוקף, לא ניתן בשלב זה לקבוע האם האישור נפגע ולפיכך בוטל, או שהוא ממשיך להיות מאובטח. מכיוון שכך, לא ניתן לדעת אם אתה מתקשר עם האתר הלגיטימי, או שמא האישור נפגע ונמצא כעת ברשותו של גורם פוגע שאיתו אתה מתקשר. מומלץ לא להמשיך מעבר לנקודה זו.</translation>
@@ -725,7 +731,6 @@
 <translation id="3009731429620355204">הפעלות</translation>
 <translation id="3473034187222004855">העתק קובץ &amp;ונתיב</translation>
 <translation id="6325525973963619867">נכשל</translation>
-<translation id="2120291134670287161">לא נמצאה מדפסת, התקן מדפסת.</translation>
 <translation id="1676388805288306495">שנה את הגופן ואת שפת ברירת המחדל עבור דפי אינטרנט.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
 <translation id="1163931534039071049">&amp;צפה במקור המסגרת</translation>
@@ -822,6 +827,7 @@
 <translation id="7587108133605326224">בלטית</translation>
 <translation id="8598751847679122414">דף אינטרנט זה מכיל טבעת הפניה-מחדש.</translation>
 <translation id="6389701355360299052">דף אינטרנט, HTML בלבד</translation>
+<translation id="3021678814754966447">הצג מקור מסגרת</translation>
 <translation id="5271549068863921519">שמור סיסמה</translation>
 <translation id="2987775926667433828">סינית מסורתית</translation>
 <translation id="3954582159466790312">בטל הש&amp;תקה</translation>
@@ -830,7 +836,6 @@
 <translation id="1684248949164455892">במקרה זה, האישור לא אומת על ידי צד שלישי שבו המחשב שלך נותן אמון. כל אחד יכול ליצור אישור שבו יטען כי הוא אתר כלשהו, ולכן יש לוודא את אימות האישור בידי צד שלישי אמין. ללא אימות זה אין כל משמעות לפרטי הזהות המופיעים באישור. לפיכך, לא ניתן לאמת שאתה מתקשר דווקא עם &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ולא עם גורם פוגע שיצר 
 לעצמו אישור הטוען לבעלות על &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. מומלץ שלא להמשיך מעבר לנקודה זו.</translation>
 <translation id="8045462269890919536">רומנית</translation>
-<translation id="3927097095400773697"><ph name="DOWNLOAD_SIZE"/>, בוטל</translation>
 <translation id="2927657246008729253">שנה...</translation>
 <translation id="3478477629095836699">הגדרות קבצי cookie:</translation>
 <translation id="2108475813351458355">התחברות בטוחה אל <ph name="DOMAIN"/></translation>
@@ -862,6 +867,7 @@ Del</translation>
 <translation id="6886871292305414135">פתח קישור &amp;בכרטיסייה חדשה</translation>
 <translation id="6308937455967653460">שמור קישור&amp; בשם...</translation>
 <translation id="5421136146218899937">נקה נתוני גלישה...</translation>
+<translation id="3285322247471302225">כרטיסייה חדשה</translation>
 <translation id="3943582379552582368">&amp;אחורה</translation>
 <translation id="7607002721634913082">מושהה</translation>
 <translation id="480990236307250886">פתח את דף הבית</translation>
@@ -871,10 +877,12 @@ Del</translation>
 <translation id="5040262127954254034">פרטיות</translation>
 <translation id="1908748899139377733">צפה במסגרת &amp;ובפרטים</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="6206311232642889873">העתק תמונה</translation>
 <translation id="3366404380928138336">בקשת פרוטוקול חיצוני</translation>
 <translation id="566920818739465183">ביקרת באתר זה בפעם הראשונה בתאריך <ph name="VISIT_DATE"/>.</translation>
 <translation id="2961695502793809356">לחץ כדי לעבור קדימה, לחץ והחזק כדי לראות את ההיסטוריה</translation>
 <translation id="8421864404045570940"><ph name="NUMBER_DEFAULT"/> שניות</translation>
+<translation id="176587472219019965">חלון חדש</translation>
 <translation id="8689341121182997459">בתוקף עד:</translation>
 <translation id="1857842694030005096">מידע נוסף על שגיאה זו</translation>
 <translation id="4880827082731008257">חפש בהיסטוריה</translation>
@@ -885,7 +893,6 @@ Del</translation>
 <translation id="9141716082071217089">לא ניתן לבדוק אם אישור השרת בוטל.</translation>
 <translation id="4304224509867189079">היכנס</translation>
 <translation id="4492190037599258964">תוצאות החיפוש עבור '<ph name="SEARCH_STRING"/>'</translation>
-<translation id="8540666473246803645">Google Chrome</translation>
 <translation id="988159990683914416">גירסת מפתחים</translation>
 <translation id="6790650291892352751">חפש לפי נושא או כתובת אתר:</translation>
 <translation id="3705722231355495246">-</translation>
@@ -896,6 +903,7 @@ Del</translation>
 <translation id="4084682180776658562">סימנייה</translation>
 <translation id="4381091992796011497">שם משתמש:</translation>
 <translation id="7669151579173473971">חלון פרופיל חדש</translation>
+<translation id="5830720307094128296">שמור דף בשם...</translation>
 <translation id="5822838715583768518">הפעל את היישום</translation>
 <translation id="6756161853376828318">הפוך את <ph name="PRODUCT_NAME"/> לדפדפן ברירת המחדל שלי</translation>
 <translation id="2640524951934795733">מה נשים כאן?</translation>
@@ -904,7 +912,6 @@ Del</translation>
 <translation id="6264485186158353794">חזרה לחוף מבטחים</translation>
 <translation id="3807747707162121253">&amp;ביטול</translation>
 <translation id="2850243184678184884">למשל, הוקי, BBC,‏ http://engadget.com/rss.xml</translation>
-<translation id="6422698515595625913"><ph name="DOWNLOAD_COUNT"/> הורדות מתבצעות כעת. אם תסגור את Google Chrome כעת, הורדות אלה יבוטלו.</translation>
 <translation id="77999321721642562">במהלך הזמן, האזור הבא יציג את שמונת האתרים שבהם ביקרת בתדירות הגבוהה ביותר.</translation>
 <translation id="7447718177945067973">לא ניתן למצוא את השרת.</translation>
 <translation id="715468010956678290">פתח מסגרת בחלון inco&amp;gnito</translation>
@@ -961,5 +968,4 @@ Del</translation>
 <translation id="8328145009876646418">קצה שמאלי</translation>
 <translation id="8203365863660628138">אשר את ההתקנה</translation>
 <translation id="406259880812417922">(מילת מפתח: <ph name="KEYWORD"/>)</translation>
-<translation id="2437750561138919253">JavaScript Debugger - פועל</translation>
 </translationbundle>
