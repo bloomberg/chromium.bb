@@ -5,6 +5,7 @@ Google Chrome Developer Tools. -->
 <grit base_dir="." latest_public_release="0" current_release="1"
       source_lang_id="en" enc_check="möl">
   <outputs>
+    <output filename="devtoolsStrings_am.js" type="js_map_format" lang="am" />
     <output filename="devtoolsStrings_ar.js" type="js_map_format" lang="ar" />
     <output filename="devtoolsStrings_bg.js" type="js_map_format" lang="bg" />
     <output filename="devtoolsStrings_bn.js" type="js_map_format" lang="bn" />
@@ -49,6 +50,7 @@ Google Chrome Developer Tools. -->
     <output filename="devtoolsStrings_sl.js" type="js_map_format" lang="sl" />
     <output filename="devtoolsStrings_sr.js" type="js_map_format" lang="sr" />
     <output filename="devtoolsStrings_sv.js" type="js_map_format" lang="sv" />
+    <output filename="devtoolsStrings_sw.js" type="js_map_format" lang="sw" />
     <output filename="devtoolsStrings_ta.js" type="js_map_format" lang="ta" />
     <output filename="devtoolsStrings_te.js" type="js_map_format" lang="te" />
     <output filename="devtoolsStrings_th.js" type="js_map_format" lang="th" />

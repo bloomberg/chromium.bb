@@ -45,6 +45,7 @@ below:
     <output filename="grit/webkit_strings.h" type="rc_header">
       <emit emit_type='prepend'></emit>
     </output>
+    <output filename="webkit_strings_am.rc" type="rc_all" lang="am" />
     <output filename="webkit_strings_ar.rc" type="rc_all" lang="ar" />
     <output filename="webkit_strings_bg.rc" type="rc_all" lang="bg" />
     <output filename="webkit_strings_bn.rc" type="rc_all" lang="bn" />
@@ -89,6 +90,7 @@ below:
     <output filename="webkit_strings_sl.rc" type="rc_all" lang="sl" />
     <output filename="webkit_strings_sr.rc" type="rc_all" lang="sr" />
     <output filename="webkit_strings_sv.rc" type="rc_all" lang="sv" />
+    <output filename="webkit_strings_sw.rc" type="rc_all" lang="sw" />
     <output filename="webkit_strings_ta.rc" type="rc_all" lang="ta" />
     <output filename="webkit_strings_te.rc" type="rc_all" lang="te" />
     <output filename="webkit_strings_th.rc" type="rc_all" lang="th" />
@@ -98,6 +100,7 @@ below:
     <output filename="webkit_strings_zh-CN.rc" type="rc_all" lang="zh-CN" />
     <output filename="webkit_strings_zh-TW.rc" type="rc_all" lang="zh-TW" />
 
+    <output filename="webkit_strings_am.pak" type="data_package" lang="am" />
     <output filename="webkit_strings_ar.pak" type="data_package" lang="ar" />
     <output filename="webkit_strings_bg.pak" type="data_package" lang="bg" />
     <output filename="webkit_strings_bn.pak" type="data_package" lang="bn" />
@@ -142,6 +145,7 @@ below:
     <output filename="webkit_strings_sl.pak" type="data_package" lang="sl" />
     <output filename="webkit_strings_sr.pak" type="data_package" lang="sr" />
     <output filename="webkit_strings_sv.pak" type="data_package" lang="sv" />
+    <output filename="webkit_strings_sw.pak" type="data_package" lang="sw" />
     <output filename="webkit_strings_ta.pak" type="data_package" lang="ta" />
     <output filename="webkit_strings_te.pak" type="data_package" lang="te" />
     <output filename="webkit_strings_th.pak" type="data_package" lang="th" />
@@ -152,6 +156,7 @@ below:
     <output filename="webkit_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
   </outputs>
   <translations>
+    <file path="resources/webkit_strings_am.xtb" lang="am" />
     <file path="resources/webkit_strings_ar.xtb" lang="ar" />
     <file path="resources/webkit_strings_bg.xtb" lang="bg" />
     <file path="resources/webkit_strings_bn.xtb" lang="bn" />
@@ -193,6 +198,7 @@ below:
     <file path="resources/webkit_strings_sl.xtb" lang="sl" />
     <file path="resources/webkit_strings_sr.xtb" lang="sr" />
     <file path="resources/webkit_strings_sv.xtb" lang="sv" />
+    <file path="resources/webkit_strings_sw.xtb" lang="sw" />
     <file path="resources/webkit_strings_ta.xtb" lang="ta" />
     <file path="resources/webkit_strings_te.xtb" lang="te" />
     <file path="resources/webkit_strings_th.xtb" lang="th" />

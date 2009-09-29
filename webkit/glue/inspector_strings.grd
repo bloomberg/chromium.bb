@@ -41,6 +41,7 @@ so we include the original license below:
 <grit base_dir="." latest_public_release="0" current_release="1"
       source_lang_id="en" enc_check="möl">
   <outputs>
+    <output filename="inspectorStrings_am.js" type="js_map_format" lang="am" />
     <output filename="inspectorStrings_ar.js" type="js_map_format" lang="ar" />
     <output filename="inspectorStrings_bg.js" type="js_map_format" lang="bg" />
     <output filename="inspectorStrings_bn.js" type="js_map_format" lang="bn" />
@@ -85,6 +86,7 @@ so we include the original license below:
     <output filename="inspectorStrings_sl.js" type="js_map_format" lang="sl" />
     <output filename="inspectorStrings_sr.js" type="js_map_format" lang="sr" />
     <output filename="inspectorStrings_sv.js" type="js_map_format" lang="sv" />
+    <output filename="inspectorStrings_sw.js" type="js_map_format" lang="sw" />
     <output filename="inspectorStrings_ta.js" type="js_map_format" lang="ta" />
     <output filename="inspectorStrings_te.js" type="js_map_format" lang="te" />
     <output filename="inspectorStrings_th.js" type="js_map_format" lang="th" />

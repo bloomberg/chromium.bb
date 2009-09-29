@@ -11,6 +11,7 @@ Chrome supports. -->
     </output>
     <!-- We use different filenames here so we can include the file easily in
          vcproj files using the $(CHROMIUM_BUILD). -->
+    <output filename="strings_google_chrome_am.rc" type="rc_all" lang="am" />
     <output filename="strings_google_chrome_ar.rc" type="rc_all" lang="ar" />
     <output filename="strings_google_chrome_bg.rc" type="rc_all" lang="bg" />
     <output filename="strings_google_chrome_bn.rc" type="rc_all" lang="bn" />
@@ -54,6 +55,7 @@ Chrome supports. -->
     <output filename="strings_google_chrome_sl.rc" type="rc_all" lang="sl" />
     <output filename="strings_google_chrome_sr.rc" type="rc_all" lang="sr" />
     <output filename="strings_google_chrome_sv.rc" type="rc_all" lang="sv" />
+    <output filename="strings_google_chrome_sw.rc" type="rc_all" lang="sw" />
     <output filename="strings_google_chrome_ta.rc" type="rc_all" lang="ta" />
     <output filename="strings_google_chrome_te.rc" type="rc_all" lang="te" />
     <output filename="strings_google_chrome_th.rc" type="rc_all" lang="th" />
@@ -63,6 +65,7 @@ Chrome supports. -->
     <output filename="strings_google_chrome_zh-CN.rc" type="rc_all" lang="zh-CN" />
     <output filename="strings_google_chrome_zh-TW.rc" type="rc_all" lang="zh-TW" />
 
+    <output filename="google_chrome_strings_am.pak" type="data_package" lang="am" />
     <output filename="google_chrome_strings_ar.pak" type="data_package" lang="ar" />
     <output filename="google_chrome_strings_bg.pak" type="data_package" lang="bg" />
     <output filename="google_chrome_strings_bn.pak" type="data_package" lang="bn" />
@@ -106,6 +109,7 @@ Chrome supports. -->
     <output filename="google_chrome_strings_sl.pak" type="data_package" lang="sl" />
     <output filename="google_chrome_strings_sr.pak" type="data_package" lang="sr" />
     <output filename="google_chrome_strings_sv.pak" type="data_package" lang="sv" />
+    <output filename="google_chrome_strings_sw.pak" type="data_package" lang="sw" />
     <output filename="google_chrome_strings_ta.pak" type="data_package" lang="ta" />
     <output filename="google_chrome_strings_te.pak" type="data_package" lang="te" />
     <output filename="google_chrome_strings_th.pak" type="data_package" lang="th" />
@@ -116,6 +120,7 @@ Chrome supports. -->
     <output filename="google_chrome_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
   </outputs>
   <translations>
+    <file path="resources/google_chrome_strings_am.xtb" lang="am" />
     <file path="resources/google_chrome_strings_ar.xtb" lang="ar" />
     <file path="resources/google_chrome_strings_bg.xtb" lang="bg" />
     <file path="resources/google_chrome_strings_bn.xtb" lang="bn" />
@@ -157,6 +162,7 @@ Chrome supports. -->
     <file path="resources/google_chrome_strings_sl.xtb" lang="sl" />
     <file path="resources/google_chrome_strings_sr.xtb" lang="sr" />
     <file path="resources/google_chrome_strings_sv.xtb" lang="sv" />
+    <file path="resources/google_chrome_strings_sw.xtb" lang="sw" />
     <file path="resources/google_chrome_strings_ta.xtb" lang="ta" />
     <file path="resources/google_chrome_strings_te.xtb" lang="te" />
     <file path="resources/google_chrome_strings_th.xtb" lang="th" />
