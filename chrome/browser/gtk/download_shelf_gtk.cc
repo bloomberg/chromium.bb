@@ -39,9 +39,6 @@ const int kLeftPadding = 2;
 // Padding between the right side of the shelf and the close button.
 const int kRightPadding = 10;
 
-// Border color (the top pixel of the shelf).
-const GdkColor kBorderColor = GDK_COLOR_RGB(214, 214, 214);
-
 // Speed of the shelf show/hide animation.
 const int kShelfAnimationDurationMs = 120;
 
@@ -194,12 +191,8 @@ void DownloadShelfGtk::Observe(NotificationType type,
         BrowserThemeProvider::COLOR_TOOLBAR);
     gtk_widget_modify_bg(padding_bg_, GTK_STATE_NORMAL, &color);
 
-    if (theme_provider_->UseGtkTheme()) {
-      GdkColor color = theme_provider_->GetBorderColor();
-      gtk_widget_modify_bg(top_border_, GTK_STATE_NORMAL, &color);
-    } else {
-      gtk_widget_modify_bg(top_border_, GTK_STATE_NORMAL, &kBorderColor);
-    }
+    color = theme_provider_->GetBorderColor();
+    gtk_widget_modify_bg(top_border_, GTK_STATE_NORMAL, &color);
   }
 }
 

@@ -15,9 +15,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
-// Border color (the top pixel of the shelf).
-const GdkColor kBorderColor = GDK_COLOR_RGB(214, 214, 214);
-
 // Preferred height of the ExtensionShelfGtk.
 static const int kShelfHeight = 29;
 
@@ -155,15 +152,10 @@ void ExtensionShelfGtk::Observe(NotificationType type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
   DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
-  if (theme_provider_->UseGtkTheme()) {
-    GdkColor color = theme_provider_->GetBorderColor();
-    gtk_widget_modify_bg(top_border_, GTK_STATE_NORMAL, &color);
-  } else {
-    gtk_widget_modify_bg(top_border_, GTK_STATE_NORMAL, &kBorderColor);
-  }
+  GdkColor color = theme_provider_->GetBorderColor();
+  gtk_widget_modify_bg(top_border_, GTK_STATE_NORMAL, &color);
 
-  GdkColor color = theme_provider_->GetGdkColor(
-      BrowserThemeProvider::COLOR_TOOLBAR);
+  color = theme_provider_->GetGdkColor(BrowserThemeProvider::COLOR_TOOLBAR);
   gtk_widget_modify_bg(event_box_.get(), GTK_STATE_NORMAL, &color);
 
   // Reset the background images on all the individual toolstrips

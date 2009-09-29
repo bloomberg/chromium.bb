@@ -156,19 +156,23 @@ GdkColor GtkThemeProvider::GetGdkColor(int id) {
 GdkColor GtkThemeProvider::GetBorderColor() {
   GtkStyle* style = gtk_rc_get_style(fake_window_);
 
+  GdkColor text;
+  GdkColor bg;
+  if (use_gtk_) {
+    text = style->text[GTK_STATE_NORMAL];
+    bg = style->bg[GTK_STATE_NORMAL];
+  } else {
+    text = GetGdkColor(COLOR_BOOKMARK_TEXT);
+    bg = GetGdkColor(COLOR_TOOLBAR);
+  }
+
   // Creates a weighted average between the text and base color where
   // the base color counts more than once.
   GdkColor color;
   color.pixel = 0;
-  color.red = (style->text[GTK_STATE_NORMAL].red +
-               (style->bg[GTK_STATE_NORMAL].red * kBgWeight)) /
-              (1 + kBgWeight);
-  color.green = (style->text[GTK_STATE_NORMAL].green +
-                 (style->bg[GTK_STATE_NORMAL].green * kBgWeight)) /
-                (1 + kBgWeight);
-  color.blue = (style->text[GTK_STATE_NORMAL].blue +
-                (style->bg[GTK_STATE_NORMAL].blue * kBgWeight)) /
-               (1 + kBgWeight);
+  color.red = (text.red + (bg.red * kBgWeight)) / (1 + kBgWeight);
+  color.green = (text.green + (bg.green * kBgWeight)) / (1 + kBgWeight);
+  color.blue = (text.blue + (bg.blue * kBgWeight)) / (1 + kBgWeight);
 
   return color;
 }

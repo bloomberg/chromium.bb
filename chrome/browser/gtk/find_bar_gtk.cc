@@ -29,7 +29,6 @@
 
 namespace {
 
-const GdkColor kFrameBorderColor = GDK_COLOR_RGB(0xbe, 0xc8, 0xd4);
 const GdkColor kTextBorderColor = GDK_COLOR_RGB(0xa6, 0xaf, 0xba);
 const GdkColor kTextBorderColorAA = GDK_COLOR_RGB(0xee, 0xf4, 0xfb);
 // Used as the color of the text in the entry box and the text for the results
@@ -470,10 +469,10 @@ void FindBarGtk::Observe(NotificationType type,
   container_height_ = -1;
   current_fixed_width_ = -1;
 
-  if (theme_provider_->UseGtkTheme()) {
-    GdkColor color = theme_provider_->GetBorderColor();
-    gtk_widget_modify_bg(border_, GTK_STATE_NORMAL, &color);
+  GdkColor color = theme_provider_->GetBorderColor();
+  gtk_widget_modify_bg(border_, GTK_STATE_NORMAL, &color);
 
+  if (theme_provider_->UseGtkTheme()) {
     gtk_widget_modify_base(text_entry_, GTK_STATE_NORMAL, NULL);
     gtk_widget_modify_text(text_entry_, GTK_STATE_NORMAL, NULL);
 
@@ -500,8 +499,6 @@ void FindBarGtk::Observe(NotificationType type,
 
     gtk_misc_set_alignment(GTK_MISC(match_count_label_), 0.5, 0.5);
   } else {
-    gtk_widget_modify_bg(border_, GTK_STATE_NORMAL, &kFrameBorderColor);
-
     gtk_widget_modify_base(text_entry_, GTK_STATE_NORMAL,
                            &kEntryBackgroundColor);
     gtk_widget_modify_text(text_entry_, GTK_STATE_NORMAL,

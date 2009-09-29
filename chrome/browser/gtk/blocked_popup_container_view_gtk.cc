@@ -20,11 +20,9 @@
 #include "grit/theme_resources.h"
 
 namespace {
+
 // The minimal border around the edge of the notification.
 const int kSmallPadding = 2;
-
-// Color of the border.
-const GdkColor kBorderColor = GDK_COLOR_RGB(190, 205, 223);
 
 // Color of the gradient in the background.
 const double kBackgroundColorTop[] = { 246.0 / 255, 250.0 / 255, 1.0 };
@@ -109,14 +107,14 @@ void BlockedPopupContainerViewGtk::Observe(NotificationType type,
   GtkWidget* label = gtk_bin_get_child(GTK_BIN(menu_button_));
   if (theme_provider_->UseGtkTheme()) {
     gtk_util::SetLabelColor(label, NULL);
-    GdkColor color = theme_provider_->GetBorderColor();
-    gtk_util::SetRoundedWindowBorderColor(container_.get(), color);
   } else {
     GdkColor color = theme_provider_->GetGdkColor(
         BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
     gtk_util::SetLabelColor(label, &color);
-    gtk_util::SetRoundedWindowBorderColor(container_.get(), kBorderColor);
   }
+
+  GdkColor color = theme_provider_->GetBorderColor();
+  gtk_util::SetRoundedWindowBorderColor(container_.get(), color);
 }
 
 bool BlockedPopupContainerViewGtk::IsCommandEnabled(int command_id) const {
@@ -179,7 +177,7 @@ void BlockedPopupContainerViewGtk::Init() {
   g_signal_connect(container_.get(), "expose-event",
                    G_CALLBACK(OnRoundedExposeCallback), this);
   gtk_util::ActAsRoundedWindow(
-      container_.get(), kBorderColor, kCornerSize,
+      container_.get(), gfx::kGdkBlack, kCornerSize,
       gtk_util::ROUNDED_TOP_LEFT | gtk_util::ROUNDED_TOP_RIGHT,
       gtk_util::BORDER_LEFT | gtk_util::BORDER_TOP | gtk_util::BORDER_RIGHT);
 
