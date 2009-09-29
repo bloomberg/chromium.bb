@@ -72,6 +72,9 @@ SUBSTRING : spellchecker::dictionarydownloadcontroller::onurlfetchcomplete
 # 18793
 SUBSTRING : webcore::renderlayer::paintlayer___webcore::renderlayer::paintlayer___webcore::renderlayer::paintlayer___webcore::renderlayer::paint___webcore::frameview::paintcontents
 
+#10791
+SUBSTRING : webplugindelegateimpl::destroyinstance___webplugindelegateimpl::~webplugindelegateimpl
+
 # 18799
 PREFIX : webplugindelegatestub::onmessagereceived___webplugindelegateimpl::nativewndproc___base::messagepumpforui::dorunloop___base::messagepumpwin::run___messageloop::runinternal___messageloop::runhandler___messageloop::run___pluginmain___chromemain___wwinmain_____tmaincrtstartup
 
@@ -109,9 +112,7 @@ PREFIX : npn_invalidaterect___webplugindelegateimpl
 PREFIX : runnablemethod<ipc::channelproxy::context,void (__thiscall ipc::channelproxy::context::*)(ipc::message const &),tuple1<ipc::message> >::run___base::messagepumpforui::dorunloop
 
 # 21054
-PREFIX : deletetask<safebrowsingdatabase>::run
-PREFIX : deletetask<browsingdataremover>::run
-PREFIX : deletetask<webplugindelegateproxy>::run
+REGEX : ^deletetask.*::run___messageloop::runtask___messageloop::dowork
 PREFIX : messageloop::dowork
 
 # 21295
@@ -122,25 +123,15 @@ PREFIX : renderviewhost::setnavigationssuspended___renderviewhostmanager::should
 
 # bug 21520 from [25874:25879]
 PREFIX : renderviewhost::executejavascriptinwebframe___domui::calljavascriptfunction___downloadsdomhandler::sendcurrentdownloads
-PREFIX : deletetask<urlfetcher>::run
 
 # 21862
 PREFIX : urlrequesthttpjob::factory___urlrequestjobmanager::createjob___urlrequest::start
-
-# 21978
-PREFIX : deletetask<webplugindelegateimpl>::run
-
-# 22106
-PREFIX : deletetask<webkit_glue::webpluginimpl>::run___messageloop::runtask
 
 # 23043
 PREFIX : v8::internal::invoke___v8::internal::execution::call___v8::function::call___webcore::dateextension::setallowsleep___webcore::v8abstracteventlistener::invokeeventhandler___webcore::v8abstracteventlistener::handleevent___webcore::eventtarget::fireeventlisteners___webcore::domwindow::dispatchevent
 
 # 23138
 PREFIX : tabrestoreservice::save___tabrestoreservice::~tabrestoreservice___tabrestoreservice::`scalar deleting destructor'
-
-# 23139
-PREFIX : deletetask<webkit_glue::imageresourcefetcher>::run
 
 # 23140
 PREFIX : ^hunspell_create_key
