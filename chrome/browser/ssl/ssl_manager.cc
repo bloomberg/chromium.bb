@@ -10,7 +10,6 @@
 #include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/renderer_host/resource_request_details.h"
 #include "chrome/browser/ssl/ssl_cert_error_handler.h"
-#include "chrome/browser/ssl/ssl_mixed_content_handler.h"
 #include "chrome/browser/ssl/ssl_policy.h"
 #include "chrome/browser/ssl/ssl_request_info.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
@@ -92,36 +91,8 @@ void SSLManager::DidDisplayInsecureContent() {
 }
 
 void SSLManager::DidRunInsecureContent(const std::string& security_origin) {
-  policy()->DidRunInsecureContent(security_origin);
-}
-
-// static
-bool SSLManager::ShouldStartRequest(ResourceDispatcherHost* rdh,
-                                    URLRequest* request,
-                                    MessageLoop* ui_loop) {
-  ResourceDispatcherHostRequestInfo* info =
-      ResourceDispatcherHost::InfoForRequest(request);
-  DCHECK(info);
-
-  // We cheat here and talk to the SSLPolicy on the IO thread because we need
-  // to respond synchronously to avoid delaying all network requests...
-  if (!SSLPolicy::IsMixedContent(request->url(),
-                                 info->resource_type(),
-                                 info->filter_policy(),
-                                 info->frame_origin()))
-    return true;
-
-
-  ui_loop->PostTask(FROM_HERE,
-      NewRunnableMethod(new SSLMixedContentHandler(rdh,
-                                                   request,
-                                                   info->resource_type(),
-                                                   info->frame_origin(),
-                                                   info->main_frame_origin(),
-                                                   info->child_id(),
-                                                   ui_loop),
-                        &SSLMixedContentHandler::Dispatch));
-  return false;
+  policy()->DidRunInsecureContent(controller_->GetActiveEntry(),
+                                  security_origin);
 }
 
 void SSLManager::Observe(NotificationType type,

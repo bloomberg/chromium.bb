@@ -1925,8 +1925,6 @@
         'browser/ssl/ssl_host_state.h',
         'browser/ssl/ssl_manager.cc',
         'browser/ssl/ssl_manager.h',
-        'browser/ssl/ssl_mixed_content_handler.cc',
-        'browser/ssl/ssl_mixed_content_handler.h',
         'browser/ssl/ssl_policy.cc',
         'browser/ssl/ssl_policy.h',
         'browser/ssl/ssl_policy_backend.cc',

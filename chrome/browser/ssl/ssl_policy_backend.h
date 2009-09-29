@@ -39,19 +39,6 @@ class SSLPolicyBackend {
   // Returns whether the specified host was marked as broken.
   bool DidMarkHostAsBroken(const std::string& host, int pid) const;
 
-  // Sets the maximum security style for the page.  If the current security
-  // style is lower than |style|, this will not have an effect on the security
-  // indicators.
-  //
-  // It will return true if the navigation entry was updated or false if
-  // nothing changed. The caller is responsible for broadcasting
-  // NOTIFY_SSL_STATE_CHANGED if it returns true.
-  bool SetMaxSecurityStyle(SecurityStyle style);
-
-  // Logs a message to the console of the page.
-  void AddMessageToConsole(const string16& message,
-                           const WebKit::WebConsoleMessage::Level&);
-
   // Records that |cert| is permitted to be used for |host| in the future.
   void DenyCertForHost(net::X509Certificate* cert, const std::string& host);
 
@@ -61,15 +48,6 @@ class SSLPolicyBackend {
   // Queries whether |cert| is allowed or denied for |host|.
   net::X509Certificate::Policy::Judgment QueryPolicy(
       net::X509Certificate* cert, const std::string& host);
-
-  // Allow mixed content to be visible (non filtered).
-  void AllowMixedContentForHost(const std::string& host);
-
-  // Returns whether the specified host is allowed to show mixed content.
-  bool DidAllowMixedContentForHost(const std::string& host) const;
-
-  // Reloads the tab.
-  void Reload();
 
   // Shows the pending messages (in info-bars) if any.
   void ShowPendingMessages();

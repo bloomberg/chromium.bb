@@ -1269,12 +1269,6 @@ void ResourceDispatcherHost::BeginRequestInternal(URLRequest* request) {
 
   GlobalRequestID global_id(info->child_id(), info->request_id());
   pending_requests_[global_id] = request;
-  if (!SSLManager::ShouldStartRequest(this, request, ui_loop_)) {
-    // The SSLManager has told us that we shouldn't start the request yet.  The
-    // SSLManager will potentially change the request (potentially to indicate
-    // its content should be filtered) and start it itself.
-    return;
-  }
   if (!user_script_listener_->ShouldStartRequest(request)) {
     // This request depends on some user scripts that haven't loaded yet.  The
     // UserScriptListener will resume the request when they're ready.

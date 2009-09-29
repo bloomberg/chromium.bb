@@ -16,7 +16,6 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/ssl/ssl_cert_error_handler.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
-#include "chrome/browser/ssl/ssl_mixed_content_handler.h"
 #include "chrome/browser/ssl/ssl_request_info.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -34,35 +33,6 @@
 #include "webkit/glue/resource_type.h"
 
 using WebKit::WebConsoleMessage;
-
-class SSLPolicy::ShowMixedContentTask : public Task {
- public:
-  ShowMixedContentTask(SSLPolicy* policy, SSLMixedContentHandler* handler);
-  virtual ~ShowMixedContentTask();
-
-  virtual void Run();
-
- private:
-  SSLPolicy* policy_;
-  scoped_refptr<SSLMixedContentHandler> handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShowMixedContentTask);
-};
-
-SSLPolicy::ShowMixedContentTask::ShowMixedContentTask(SSLPolicy* policy,
-                                           SSLMixedContentHandler* handler)
-    : policy_(policy),
-      handler_(handler) {
-}
-
-SSLPolicy::ShowMixedContentTask::~ShowMixedContentTask() {
-}
-
-void SSLPolicy::ShowMixedContentTask::Run() {
-  policy_->AllowMixedContentForOrigin(handler_->frame_origin());
-  policy_->AllowMixedContentForOrigin(handler_->main_frame_origin());
-  policy_->backend()->Reload();
-}
 
 SSLPolicy::SSLPolicy(SSLPolicyBackend* backend)
     : backend_(backend) {
@@ -113,48 +83,28 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
   }
 }
 
-void SSLPolicy::OnMixedContent(SSLMixedContentHandler* handler) {
-  FilterPolicy::Type filter_policy = FilterPolicy::DONT_FILTER;
-
-  // If the user has added an exception, doctor the |filter_policy|.
-  std::string host = GURL(handler->main_frame_origin()).host();
-  if (backend_->DidAllowMixedContentForHost(host) ||
-             backend_->DidMarkHostAsBroken(host, handler->pid())) {
-    // Let the mixed content through.
-    filter_policy = FilterPolicy::DONT_FILTER;
-  } else if (filter_policy != FilterPolicy::DONT_FILTER) {
-    backend_->ShowMessageWithLink(
-        l10n_util::GetString(IDS_SSL_INFO_BAR_FILTERED_CONTENT),
-        l10n_util::GetString(IDS_SSL_INFO_BAR_SHOW_CONTENT),
-        new ShowMixedContentTask(this, handler));
-  }
-
-  handler->StartRequest(filter_policy);
-  AddMixedContentWarningToConsole(handler);
+void SSLPolicy::DidDisplayInsecureContent(NavigationEntry* entry) {
+  // TODO(abarth): We don't actually need to break the whole origin here,
+  //               but we can handle that in a later patch.
+  DidRunInsecureContent(entry, entry->url().spec());
 }
 
-void SSLPolicy::DidDisplayInsecureContent(NavigationEntry* entry) {
+void SSLPolicy::DidRunInsecureContent(NavigationEntry* entry,
+                                      const std::string& security_origin) {
   if (!entry)
     return;
 
-  // TODO(abarth): We don't actually need to break the whole origin here,
-  //               but we can handle that in a later patch.
-  AllowMixedContentForOrigin(entry->url().spec());
-}
+  SiteInstance* site_instance = entry->site_instance();
+  if (!site_instance)
+      return;
 
-void SSLPolicy::DidRunInsecureContent(const std::string& security_origin) {
-  AllowMixedContentForOrigin(security_origin);
+  backend_->MarkHostAsBroken(GURL(security_origin).host(),
+                             site_instance->GetProcess()->id());
 }
 
 void SSLPolicy::OnRequestStarted(SSLRequestInfo* info) {
   if (net::IsCertStatusError(info->ssl_cert_status()))
     UpdateStateForUnsafeContent(info);
-
-  if (IsMixedContent(info->url(),
-                     info->resource_type(),
-                     info->filter_policy(),
-                     info->frame_origin()))
-    UpdateStateForMixedContent(info);
 }
 
 void SSLPolicy::UpdateEntry(NavigationEntry* entry) {
@@ -186,36 +136,6 @@ void SSLPolicy::UpdateEntry(NavigationEntry* entry) {
       backend_->DidMarkHostAsBroken(entry->url().host(),
                                     site_instance->GetProcess()->id()))
     entry->ssl().set_has_mixed_content();
-}
-
-// static
-bool SSLPolicy::IsMixedContent(const GURL& url,
-                               ResourceType::Type resource_type,
-                               FilterPolicy::Type filter_policy,
-                               const std::string& frame_origin) {
-  ////////////////////////////////////////////////////////////////////////////
-  // WARNING: This function is called from both the IO and UI threads.  Do  //
-  //          not touch any non-thread-safe objects!  You have been warned. //
-  ////////////////////////////////////////////////////////////////////////////
-
-  // We can't possibly have mixed content when loading the main frame.
-  if (resource_type == ResourceType::MAIN_FRAME)
-    return false;
-
-  // If we've filtered the resource, then it's no longer dangerous.
-  if (filter_policy != FilterPolicy::DONT_FILTER)
-    return false;
-
-  // If the frame doing the loading is already insecure, then we must have
-  // already dealt with whatever mixed content might be going on.
-  if (!GURL(frame_origin).SchemeIsSecure())
-    return false;
-
-  // We aren't worried about mixed content if we're loading an HTTPS URL.
-  if (url.SchemeIsSecure())
-    return false;
-
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -326,16 +246,6 @@ void SSLPolicy::ShowErrorPage(SSLCertErrorHandler* handler) {
   // along with the security_info.
 }
 
-void SSLPolicy::AddMixedContentWarningToConsole(
-    SSLMixedContentHandler* handler) {
-  const std::wstring& text = l10n_util::GetStringF(
-      IDS_MIXED_CONTENT_LOG_MESSAGE,
-      UTF8ToWide(handler->frame_origin()),
-      UTF8ToWide(handler->request_url().spec()));
-  backend_->AddMessageToConsole(
-      WideToUTF16Hack(text), WebConsoleMessage::LevelWarning);
-}
-
 void SSLPolicy::InitializeEntryIfNeeded(NavigationEntry* entry) {
   if (entry->ssl().security_style() != SECURITY_STYLE_UNKNOWN)
     return;
@@ -352,15 +262,10 @@ void SSLPolicy::MarkOriginAsBroken(const std::string& origin, int pid) {
   backend_->MarkHostAsBroken(parsed_origin.host(), pid);
 }
 
-void SSLPolicy::AllowMixedContentForOrigin(const std::string& origin) {
-  GURL parsed_origin(origin);
-  if (!parsed_origin.SchemeIsSecure())
-    return;
-
-  backend_->AllowMixedContentForHost(parsed_origin.host());
-}
-
 void SSLPolicy::UpdateStateForMixedContent(SSLRequestInfo* info) {
+  // TODO(abarth): This function isn't right because we need to remove
+  //               info->main_frame_origin().
+
   if (info->resource_type() != ResourceType::MAIN_FRAME ||
       info->resource_type() != ResourceType::SUB_FRAME) {
     // The frame's origin now contains mixed content and therefore is broken.

@@ -46,12 +46,6 @@ class SSLHostState : public NonThreadSafe {
   net::X509Certificate::Policy::Judgment QueryPolicy(
       net::X509Certificate* cert, const std::string& host);
 
-  // Allows mixed content to be visible (non filtered).
-  void AllowMixedContentForHost(const std::string& host);
-
-  // Returns whether the specified host is allowed to show mixed content.
-  bool DidAllowMixedContentForHost(const std::string& host);
-
  private:
   // A BrokenHostEntry is a pair of (host, process_id) that indicates the host
   // contains insecure content in that renderer process.
@@ -64,9 +58,6 @@ class SSLHostState : public NonThreadSafe {
 
   // Certificate policies for each host.
   std::map<std::string, net::X509Certificate::Policy> cert_policy_for_host_;
-
-  // Hosts for which we are allowed to show mixed content.
-  std::set<std::string> allow_mixed_content_for_host_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLHostState);
 };

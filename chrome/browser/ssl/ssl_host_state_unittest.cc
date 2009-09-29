@@ -152,23 +152,3 @@ TEST_F(SSLHostStateTest, QueryPolicy) {
   EXPECT_EQ(state.QueryPolicy(google_cert.get(), "example.com"),
             net::X509Certificate::Policy::DENIED);
 }
-
-TEST_F(SSLHostStateTest, AllowMixedContentForHost) {
-  SSLHostState state;
-
-  EXPECT_FALSE(state.DidAllowMixedContentForHost("www.google.com"));
-  EXPECT_FALSE(state.DidAllowMixedContentForHost("google.com"));
-  EXPECT_FALSE(state.DidAllowMixedContentForHost("example.com"));
-
-  state.AllowMixedContentForHost("www.google.com");
-
-  EXPECT_TRUE(state.DidAllowMixedContentForHost("www.google.com"));
-  EXPECT_FALSE(state.DidAllowMixedContentForHost("google.com"));
-  EXPECT_FALSE(state.DidAllowMixedContentForHost("example.com"));
-
-  state.AllowMixedContentForHost("example.com");
-
-  EXPECT_TRUE(state.DidAllowMixedContentForHost("www.google.com"));
-  EXPECT_FALSE(state.DidAllowMixedContentForHost("google.com"));
-  EXPECT_TRUE(state.DidAllowMixedContentForHost("example.com"));
-}

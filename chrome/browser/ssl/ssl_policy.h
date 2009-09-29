@@ -13,7 +13,6 @@
 
 class NavigationEntry;
 class SSLCertErrorHandler;
-class SSLMixedContentHandler;
 class SSLPolicyBackend;
 class SSLRequestInfo;
 
@@ -30,28 +29,15 @@ class SSLPolicy : public SSLBlockingPage::Delegate {
   // An error occurred with the certificate in an SSL connection.
   void OnCertError(SSLCertErrorHandler* handler);
 
-  // TODO(abarth) Remove this API once the new mixed content path is done.
-  //
-  // A request for a mixed-content resource was made.  Note that the resource
-  // request was not started yet and the delegate is responsible for starting
-  // it.
-  void OnMixedContent(SSLMixedContentHandler* handler);
-
   void DidDisplayInsecureContent(NavigationEntry* entry);
-  void DidRunInsecureContent(const std::string& security_origin);
+  void DidRunInsecureContent(NavigationEntry* entry,
+                             const std::string& security_origin);
 
   // We have started a resource request with the given info.
   void OnRequestStarted(SSLRequestInfo* info);
 
   // Update the SSL information in |entry| to match the current state.
   void UpdateEntry(NavigationEntry* entry);
-
-  // This method is static because it is called from both the UI and the IO
-  // threads.
-  static bool IsMixedContent(const GURL& url,
-                             ResourceType::Type resource_type,
-                             FilterPolicy::Type filter_policy,
-                             const std::string& frame_origin);
 
   SSLPolicyBackend* backend() const { return backend_; }
 
@@ -61,8 +47,6 @@ class SSLPolicy : public SSLBlockingPage::Delegate {
   virtual void OnAllowCertificate(SSLCertErrorHandler* handler);
 
  private:
-  class ShowMixedContentTask;
-
   // Helper method for derived classes handling certificate errors that can be
   // overridden by the user.
   // Show a blocking page and let the user continue or cancel the request.
@@ -76,20 +60,12 @@ class SSLPolicy : public SSLBlockingPage::Delegate {
   // give the user the opportunity to ingore the error.
   void ShowErrorPage(SSLCertErrorHandler* handler);
 
-  // Add a warning about mixed content to the JavaScript console.  This warning
-  // helps web developers track down and eliminate mixed content on their site.
-  void AddMixedContentWarningToConsole(SSLMixedContentHandler* handler);
-
   // If the security style of |entry| has not been initialized, then initialize
   // it with the default style for its URL.
   void InitializeEntryIfNeeded(NavigationEntry* entry);
 
   // Mark |origin| as containing insecure content in the process with ID |pid|.
   void MarkOriginAsBroken(const std::string& origin, int pid);
-
-  // Allow |origin| to include mixed content.  This stops us from showing an
-  // infobar warning after the user as approved mixed content.
-  void AllowMixedContentForOrigin(const std::string& origin);
 
   // Called after we've decided that |info| represents a request for mixed
   // content.  Updates our internal state to reflect that we've loaded |info|.

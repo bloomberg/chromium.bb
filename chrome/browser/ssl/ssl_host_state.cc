@@ -45,7 +45,6 @@ void SSLHostState::DenyCertForHost(net::X509Certificate* cert,
                                    const std::string& host) {
   DCHECK(CalledOnValidThread());
 
-  // Remember that we don't like this cert for this host.
   cert_policy_for_host_[host].Deny(cert);
 }
 
@@ -53,7 +52,6 @@ void SSLHostState::AllowCertForHost(net::X509Certificate* cert,
                                     const std::string& host) {
   DCHECK(CalledOnValidThread());
 
-  // Remember that we do like this cert for this host.
   cert_policy_for_host_[host].Allow(cert);
 }
 
@@ -62,17 +60,4 @@ net::X509Certificate::Policy::Judgment SSLHostState::QueryPolicy(
   DCHECK(CalledOnValidThread());
 
   return cert_policy_for_host_[host].Check(cert);
-}
-
-void SSLHostState::AllowMixedContentForHost(const std::string& host) {
-  DCHECK(CalledOnValidThread());
-
-  allow_mixed_content_for_host_.insert(host);
-}
-
-bool SSLHostState::DidAllowMixedContentForHost(const std::string& host) {
-  DCHECK(CalledOnValidThread());
-
-  return (allow_mixed_content_for_host_.find(host) !=
-      allow_mixed_content_for_host_.end());
 }
