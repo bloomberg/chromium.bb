@@ -1093,3 +1093,22 @@
    fun:ChromeMain
    fun:main
 }
+{
+   bug_23310
+   Memcheck:Leak
+   fun:_Znwj
+   fun:_ZN7history14HistoryBackend12SetPageTitleERK4GURLRKSbIwSt11char_traitsIwESaIwEE
+   fun:_Z16DispatchToMethodIN7history14HistoryBackendEMS1_FvRK4GURLRKSbIwSt11char_traitsIwESaIwEEES2_S8_EvPT_T0_RK6Tuple2IT1_T2_E
+   fun:_ZN14RunnableMethodIN7history14HistoryBackendEMS1_FvRK4GURLRKSbIwSt11char_traitsIwESaIwEEE6Tuple2IS2_S8_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+}
+{
+   bug_23313
+   Memcheck:Leak
+   fun:_Znwj
+   ...
+   fun:_ZNSt6vectorIN4skia19ConvolutionFilter1D14FilterInstanceESaIS2_EE9push_backERKS2_
+   fun:_ZN4skia19ConvolutionFilter1D9AddFilterEiPKsi
+   ...
+   fun:_ZN4skia15ImageOperations6ResizeERK8SkBitmapNS0_12ResizeMethodEiiRK7SkIRect
+}
