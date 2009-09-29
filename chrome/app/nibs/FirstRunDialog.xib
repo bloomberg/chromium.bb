@@ -293,30 +293,6 @@
 								<int key="NSPeriodicInterval">25</int>
 							</object>
 						</object>
-						<object class="NSButton" id="575991284">
-							<reference key="NSNextResponder" ref="1006"/>
-							<int key="NSvFlags">268</int>
-							<string key="NSFrame">{{40, 76}, {114, 19}}</string>
-							<reference key="NSSuperview" ref="1006"/>
-							<bool key="NSEnabled">YES</bool>
-							<object class="NSButtonCell" key="NSCell" id="955346791">
-								<int key="NSCellFlags">-2080244224</int>
-								<int key="NSCellFlags2">134217728</int>
-								<string key="NSContents">^IDS_LEARN_MORE</string>
-								<object class="NSFont" key="NSSupport">
-									<string key="NSName">LucidaGrande</string>
-									<double key="NSSize">1.200000e+01</double>
-									<int key="NSfFlags">16</int>
-								</object>
-								<reference key="NSControlView" ref="575991284"/>
-								<int key="NSButtonFlags">-2046541569</int>
-								<int key="NSButtonFlags2">164</int>
-								<string key="NSAlternateContents"/>
-								<string key="NSKeyEquivalent"/>
-								<int key="NSPeriodicDelay">400</int>
-								<int key="NSPeriodicInterval">75</int>
-							</object>
-						</object>
 						<object class="NSCustomView" id="913870182">
 							<reference key="NSNextResponder" ref="1006"/>
 							<int key="NSvFlags">289</int>
@@ -456,6 +432,35 @@
 								</object>
 							</object>
 							<string key="NSFrame">{{27, 158}, {425, 33}}</string>
+							<reference key="NSSuperview" ref="1006"/>
+							<string key="NSClassName">GTMWidthBasedTweaker</string>
+						</object>
+						<object class="NSCustomView" id="197246289">
+							<reference key="NSNextResponder" ref="1006"/>
+							<int key="NSvFlags">292</int>
+							<object class="NSMutableArray" key="NSSubviews">
+								<bool key="EncodedWithXMLCoder">YES</bool>
+								<object class="NSButton" id="575991284">
+									<reference key="NSNextResponder" ref="197246289"/>
+									<int key="NSvFlags">268</int>
+									<string key="NSFrame">{{20, 5}, {126, 19}}</string>
+									<reference key="NSSuperview" ref="197246289"/>
+									<bool key="NSEnabled">YES</bool>
+									<object class="NSButtonCell" key="NSCell" id="955346791">
+										<int key="NSCellFlags">-2080244224</int>
+										<int key="NSCellFlags2">134217728</int>
+										<string key="NSContents">^IDS_LEARN_MORE</string>
+										<reference key="NSControlView" ref="575991284"/>
+										<int key="NSButtonFlags">-2046541569</int>
+										<int key="NSButtonFlags2">164</int>
+										<string key="NSAlternateContents"/>
+										<string key="NSKeyEquivalent"/>
+										<int key="NSPeriodicDelay">400</int>
+										<int key="NSPeriodicInterval">75</int>
+									</object>
+								</object>
+							</object>
+							<string key="NSFrame">{{44, 69}, {166, 29}}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<string key="NSClassName">GTMWidthBasedTweaker</string>
 						</object>
@@ -752,10 +757,10 @@
 							<reference ref="328877840"/>
 							<reference ref="208570836"/>
 							<reference ref="772316250"/>
-							<reference ref="575991284"/>
 							<reference ref="533962116"/>
 							<reference ref="913870182"/>
 							<reference ref="581221161"/>
+							<reference ref="197246289"/>
 						</object>
 						<reference key="parent" ref="1005"/>
 					</object>
@@ -862,20 +867,6 @@
 						<int key="objectID">33</int>
 						<reference key="object" ref="180945224"/>
 						<reference key="parent" ref="772316250"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">36</int>
-						<reference key="object" ref="575991284"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="955346791"/>
-						</object>
-						<reference key="parent" ref="1006"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">37</int>
-						<reference key="object" ref="955346791"/>
-						<reference key="parent" ref="575991284"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">91</int>
@@ -987,6 +978,29 @@
 						<reference key="object" ref="737825762"/>
 						<reference key="parent" ref="799908898"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">102</int>
+						<reference key="object" ref="197246289"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="575991284"/>
+						</object>
+						<reference key="parent" ref="1006"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">36</int>
+						<reference key="object" ref="575991284"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="955346791"/>
+						</object>
+						<reference key="parent" ref="197246289"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">37</int>
+						<reference key="object" ref="955346791"/>
+						<reference key="parent" ref="575991284"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -1028,6 +1042,7 @@
 					<string>32.IBPluginDependency</string>
 					<string>33.IBPluginDependency</string>
 					<string>36.IBPluginDependency</string>
+					<string>37.CustomClassName</string>
 					<string>37.IBPluginDependency</string>
 					<string>4.IBPluginDependency</string>
 					<string>91.IBPluginDependency</string>
@@ -1070,6 +1085,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>HyperlinkButtonCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1096,7 +1112,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">101</int>
+			<int key="maxID">102</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1197,6 +1213,14 @@
 						</object>
 					</object>
 					<reference key="sourceIdentifier" ref="1031264906"/>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">HyperlinkButtonCell</string>
+					<string key="superclassName">NSButtonCell</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/hyperlink_button_cell.h</string>
+					</object>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">NSObject</string>
