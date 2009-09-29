@@ -2,9 +2,9 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#include <gtk/gtk.h>
-
 #include "views/controls/combobox/native_combobox_gtk.h"
+
+#include <gtk/gtk.h>
 
 #include "app/combobox_model.h"
 #include "base/logging.h"
