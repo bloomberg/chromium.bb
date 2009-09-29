@@ -1439,7 +1439,7 @@ BUG10381 LINUX : LayoutTests/svg/W3C-SVG-1.1/animate-elem-03-t.svg = FAIL PASS
 
 // These may be similar timing issue as above.
 BUG10382 MAC RELEASE : LayoutTests/transitions/change-values-during-transition.html = FAIL PASS
-BUG10382 MAC WIN : LayoutTests/transitions/shorthand-border-transitions.html = FAIL PASS
+BUG10382 MAC : LayoutTests/transitions/shorthand-border-transitions.html = FAIL PASS
 
 // The following are flaky in that some times the timeout or crash, but we think
 // it is because of bugs in other parts of the code and not specific to what
