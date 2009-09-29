@@ -9,8 +9,10 @@
 #include "base/gfx/png_decoder.h"
 #include "base/gfx/png_encoder.h"
 #include "base/string_util.h"
+#include "base/thread.h"
 #include "base/values.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
@@ -198,35 +200,60 @@ static std::map<const int, bool> themeable_images_;
 // A map of frame image IDs to the tints for those ids.
 static std::map<const int, int> frame_tints_;
 
-// TODO(mirandac): move this to a different thread.
-bool BrowserThemeProvider::WriteImagesToDisk() {
-  BrowserThemeProvider::ImagesDiskCache::iterator iter;
-  for (iter = images_disk_cache_.begin();
-       iter != images_disk_cache_.end();
-       iter++) {
-    FilePath image_path = (*iter).first;
-    ImageCache::const_iterator found = image_cache_.find((*iter).second);
-    if (found != image_cache_.end()) {
-      SkBitmap* bitmap = found->second;
-      std::vector<unsigned char> image_data;
-      if (!PNGEncoder::EncodeBGRASkBitmap(*bitmap, false, &image_data)) {
-        NOTREACHED() << "Image file could not be encoded.";
-        return false;
+Lock BrowserThemeProvider::themed_image_cache_lock_;
+
+namespace {
+
+class WriteImagesToDiskTask : public Task {
+ public:
+  WriteImagesToDiskTask(
+      const BrowserThemeProvider::ImagesDiskCache& images_disk_cache,
+      const BrowserThemeProvider::ImageCache& themed_image_cache) :
+    images_disk_cache_(images_disk_cache),
+    themed_image_cache_(themed_image_cache) {
+  }
+
+  virtual void Run() {
+    AutoLock lock(BrowserThemeProvider::themed_image_cache_lock_);
+    BrowserThemeProvider::ImagesDiskCache::const_iterator iter;
+    for (iter = images_disk_cache_.begin();
+         iter != images_disk_cache_.end();
+         iter++) {
+      FilePath image_path = (*iter).first;
+      BrowserThemeProvider::ImageCache::const_iterator found =
+          themed_image_cache_.find((*iter).second);
+      if (found != themed_image_cache_.end()) {
+        SkBitmap* bitmap = found->second;
+        std::vector<unsigned char> image_data;
+        if (!PNGEncoder::EncodeBGRASkBitmap(*bitmap, false, &image_data)) {
+          NOTREACHED() << "Image file could not be encoded.";
+          return;
+        }
+        const char* image_data_ptr =
+            reinterpret_cast<const char*>(&image_data[0]);
+        if (!file_util::WriteFile(image_path,
+            image_data_ptr, image_data.size())) {
+          NOTREACHED() << "Image file could not be written to disk.";
+          return;
+        }
+      } else {
+        NOTREACHED() << "Themed image missing from cache.";
+        return;
       }
-      const char* image_data_ptr =
-          reinterpret_cast<const char*>(&image_data[0]);
-      if (!file_util::WriteFile(image_path,
-                                image_data_ptr, image_data.size())) {
-        NOTREACHED() << "Image file could not be written to disk.";
-        return false;
-      }
-    } else {
-      NOTREACHED();
-      return false;
     }
   }
-  // Save is only successful if we made it through the entire cache.
-  return true;
+
+ private:
+  // References to data held in the BrowserThemeProvider.
+  const BrowserThemeProvider::ImagesDiskCache& images_disk_cache_;
+  const BrowserThemeProvider::ImageCache& themed_image_cache_;
+};
+}
+
+void BrowserThemeProvider::WriteImagesToDisk() {
+  g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
+      new WriteImagesToDiskTask(images_disk_cache_, themed_image_cache_));
+  SaveCachedImageData();
 }
 
 BrowserThemeProvider::BrowserThemeProvider()
@@ -288,7 +315,14 @@ void BrowserThemeProvider::Init(Profile* profile) {
 SkBitmap* BrowserThemeProvider::GetBitmapNamed(int id) {
   DCHECK(CalledOnValidThread());
 
-  // Check to see if we already have the Skia image in the cache.
+  // First check to see if the Skia image is in the themed cache. The themed
+  // cache is not changed in this method, so it can remain unlocked.
+  ImageCache::const_iterator t_found = themed_image_cache_.find(id);
+  if (t_found != themed_image_cache_.end())
+    return t_found->second;
+
+  // If Skia image is not in themed cache, check regular cache, and possibly
+  // generate and store.
   ImageCache::const_iterator found = image_cache_.find(id);
   if (found != image_cache_.end())
     return found->second;
@@ -301,7 +335,7 @@ SkBitmap* BrowserThemeProvider::GetBitmapNamed(int id) {
   // If the extension doesn't provide the requested image, but has provided
   // a custom frame, then we may be able to generate the image required.
   if (!result.get())
-    result.reset(GenerateBitmap(id));
+    result.reset(GenerateTabBackgroundBitmap(id));
 
   // If we still don't have an image, load it from resourcebundle.
   if (!result.get())
@@ -553,12 +587,12 @@ void BrowserThemeProvider::SetTheme(Extension* extension) {
 
   GenerateFrameColors();
   if (ShouldTintFrames()) {
+    AutoLock lock(themed_image_cache_lock_);
     GenerateFrameImages();
     GenerateTabImages();
-    if (WriteImagesToDisk())
-      SaveCachedImageData();
   }
 
+  WriteImagesToDisk();
   NotifyThemeChanged();
   UserMetrics::RecordAction(L"Themes_Installed", profile_);
 }
@@ -637,7 +671,7 @@ SkBitmap* BrowserThemeProvider::LoadThemeBitmap(int id) {
 void BrowserThemeProvider::SaveThemeBitmap(
     std::string resource_name, int id) {
   DCHECK(CalledOnValidThread());
-  if (!image_cache_[id]) {
+  if (!themed_image_cache_[id]) {
     NOTREACHED();
     return;
   }
@@ -660,8 +694,6 @@ void BrowserThemeProvider::SaveThemeBitmap(
 
   images_disk_cache_[image_path] = id;
 }
-
-
 
 const std::string BrowserThemeProvider::GetTintKey(int id) {
   switch (id) {
@@ -953,25 +985,21 @@ void BrowserThemeProvider::GenerateFrameImages() {
     if (!process_images_) {
       frame.reset(LoadThemeBitmap(id));
       if (frame.get())
-        image_cache_[id] = new SkBitmap(*frame.get());
+        themed_image_cache_[id] = new SkBitmap(*frame.get());
     } else {
+      resource_name = resource_names_[id];
       if (id == IDR_THEME_FRAME_INCOGNITO_INACTIVE) {
-        resource_name = "theme_frame_incognito_inactive";
         base_id = HasCustomImage(IDR_THEME_FRAME_INCOGNITO) ?
             IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
       } else if (id == IDR_THEME_FRAME_OVERLAY_INACTIVE) {
         base_id = IDR_THEME_FRAME_OVERLAY;
-        resource_name = "theme_frame_overlay_inactive";
       } else if (id == IDR_THEME_FRAME_INACTIVE) {
         base_id = IDR_THEME_FRAME;
-        resource_name = "theme_frame_inactive";
       } else if (id == IDR_THEME_FRAME_INCOGNITO &&
                  !HasCustomImage(IDR_THEME_FRAME_INCOGNITO)) {
         base_id = IDR_THEME_FRAME;
-        resource_name = "theme_frame_incognito";
       } else {
         base_id = id;
-        resource_name = resource_names_[id];
       }
 
       if (HasCustomImage(id)) {
@@ -992,7 +1020,7 @@ void BrowserThemeProvider::GenerateFrameImages() {
 
       if (frame.get()) {
         SkBitmap* tinted = new SkBitmap(TintBitmap(*frame, iter->second));
-        image_cache_[id] = tinted;
+        themed_image_cache_[id] = tinted;
         SaveThemeBitmap(resource_name, id);
       }
     }
@@ -1010,8 +1038,8 @@ bool BrowserThemeProvider::ShouldTintFrames() {
 }
 
 void BrowserThemeProvider::GenerateTabImages() {
-  GenerateBitmap(IDR_THEME_TAB_BACKGROUND);
-  GenerateBitmap(IDR_THEME_TAB_BACKGROUND_INCOGNITO);
+  GenerateTabBackgroundBitmap(IDR_THEME_TAB_BACKGROUND);
+  GenerateTabBackgroundBitmap(IDR_THEME_TAB_BACKGROUND_INCOGNITO);
 }
 
 void BrowserThemeProvider::ClearAllThemeData() {
@@ -1031,7 +1059,7 @@ void BrowserThemeProvider::ClearAllThemeData() {
   SaveThemeID(kDefaultThemeID);
 }
 
-SkBitmap* BrowserThemeProvider::GenerateBitmap(int id) {
+SkBitmap* BrowserThemeProvider::GenerateTabBackgroundBitmap(int id) {
   if (id == IDR_THEME_TAB_BACKGROUND ||
       id == IDR_THEME_TAB_BACKGROUND_INCOGNITO) {
     // The requested image is a background tab. Get a frame to create the
@@ -1042,7 +1070,7 @@ SkBitmap* BrowserThemeProvider::GenerateBitmap(int id) {
       scoped_ptr<SkBitmap> frame;
       frame.reset(LoadThemeBitmap(id));
       if (frame.get())
-        image_cache_[id] = new SkBitmap(*frame.get());
+        themed_image_cache_[id] = new SkBitmap(*frame.get());
     } else {
       int base_id;
       std::string resource_name;
@@ -1053,8 +1081,8 @@ SkBitmap* BrowserThemeProvider::GenerateBitmap(int id) {
         base_id = IDR_THEME_FRAME_INCOGNITO;
         resource_name = "theme_tab_background_incognito";
       }
-      std::map<int, SkBitmap*>::iterator it = image_cache_.find(base_id);
-      if (it != image_cache_.end()) {
+      std::map<int, SkBitmap*>::iterator it = themed_image_cache_.find(base_id);
+      if (it != themed_image_cache_.end()) {
         SkBitmap bg_tint = TintBitmap(*(it->second), TINT_BACKGROUND_TAB);
         int vertical_offset = HasCustomImage(id) ?
             kRestoredTabVerticalOffset : 0;
@@ -1071,7 +1099,7 @@ SkBitmap* BrowserThemeProvider::GenerateBitmap(int id) {
           }
         }
 
-        image_cache_[id] = bg_tab;
+        themed_image_cache_[id] = bg_tab;
         SaveThemeBitmap(resource_name, id);
         return bg_tab;
       }
@@ -1228,10 +1256,15 @@ void BrowserThemeProvider::LoadThemePrefs() {
     }
 
     GenerateFrameColors();
-    GenerateFrameImages();
-    GenerateTabImages();
-    if (process_images_ && WriteImagesToDisk()) {
-      SaveCachedImageData();
+    // Scope for AutoLock on themed_image_cache.
+    {
+      AutoLock lock(themed_image_cache_lock_);
+      GenerateFrameImages();
+      GenerateTabImages();
+    }
+
+    if (process_images_) {
+      WriteImagesToDisk();
       UserMetrics::RecordAction(L"Migrated noncached to cached theme.",
                                 profile_);
     }
@@ -1242,8 +1275,18 @@ void BrowserThemeProvider::LoadThemePrefs() {
 void BrowserThemeProvider::ClearCaches() {
   FreePlatformCaches();
   for (ImageCache::iterator i = image_cache_.begin();
-       i != image_cache_.end(); i++) {
-    delete i->second;
+    i != image_cache_.end(); i++) {
+      delete i->second;
+  }
+
+  // Scope for AutoLock on themed_image_cache.
+  {
+    AutoLock lock(themed_image_cache_lock_);
+    for (ImageCache::iterator i = themed_image_cache_.begin();
+         i != themed_image_cache_.end(); i++) {
+      delete i->second;
+    }
+    themed_image_cache_.clear();
   }
   image_cache_.clear();
   images_disk_cache_.clear();
