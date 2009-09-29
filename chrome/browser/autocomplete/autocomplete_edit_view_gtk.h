@@ -110,6 +110,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   virtual void OnBeforePossibleChange();
   virtual bool OnAfterPossibleChange();
   virtual gfx::NativeView GetNativeView() const;
+  virtual gfx::NativeView GetFocusNativeView() const;
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

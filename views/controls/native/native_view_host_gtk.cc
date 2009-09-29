@@ -48,7 +48,7 @@ void NativeViewHostGtk::NativeViewAttached() {
   }
 
   if (!focus_signal_id_) {
-    focus_signal_id_ = g_signal_connect(G_OBJECT(host_->native_view()),
+    focus_signal_id_ = g_signal_connect(G_OBJECT(host_->focus_native_view()),
                                         "focus-in-event",
                                         G_CALLBACK(CallFocusIn), this);
   }
@@ -70,7 +70,7 @@ void NativeViewHostGtk::NativeViewDetaching() {
                               destroy_signal_id_);
   destroy_signal_id_ = 0;
 
-  g_signal_handler_disconnect(G_OBJECT(host_->native_view()),
+  g_signal_handler_disconnect(G_OBJECT(host_->focus_native_view()),
                               focus_signal_id_);
   focus_signal_id_ = 0;
 
@@ -165,11 +165,6 @@ void NativeViewHostGtk::HideWidget() {
   gtk_widget_hide(fixed_);
 }
 
-void NativeViewHostGtk::SetFocus() {
-  DCHECK(host_->native_view());
-  gtk_widget_grab_focus(host_->native_view());
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // NativeViewHostGtk, private:
 
@@ -216,19 +211,11 @@ void NativeViewHostGtk::CallDestroy(GtkObject* object,
 }
 
 // static
-void NativeViewHostGtk::CallFocusIn(GtkWidget* widget,
-                                    GdkEventFocus* event,
-                                    NativeViewHostGtk* host) {
-  FocusManager* focus_manager =
-      FocusManager::GetFocusManagerForNativeView(widget);
-  if (!focus_manager) {
-    // TODO(jcampan): http://crbug.com/21378 Reenable this NOTREACHED() when the
-    // options page is only based on views.
-    // NOTREACHED();
-    NOTIMPLEMENTED();
-    return;
-  }
-  focus_manager->SetFocusedView(host->host_->focus_view());
+gboolean NativeViewHostGtk::CallFocusIn(GtkWidget* widget,
+                                        GdkEventFocus* event,
+                                        NativeViewHostGtk* host) {
+  host->host_->GotNativeFocus();
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -73,26 +73,6 @@ void NativeControlGtk::NativeControlCreated(GtkWidget* native_control) {
 
   // Update the newly created GtkWdigetwith any resident enabled state.
   gtk_widget_set_sensitive(native_view(), IsEnabled());
-
-  // Listen for focus change event to update the FocusManager focused view.
-  g_signal_connect(G_OBJECT(native_control), "focus-in-event",
-                   G_CALLBACK(CallFocusIn), this);
-}
-
-// static
-void NativeControlGtk::CallFocusIn(GtkWidget* widget,
-                                   GdkEventFocus* event,
-                                   NativeControlGtk* control) {
-  FocusManager* focus_manager =
-      FocusManager::GetFocusManagerForNativeView(widget);
-  if (!focus_manager) {
-    // TODO(jcampan): http://crbug.com/21378 Reenable this NOTREACHED() when the
-    // options page is only based on views.
-    // NOTREACHED();
-    NOTIMPLEMENTED();
-    return;
-  }
-  focus_manager->SetFocusedView(control->focus_view());
 }
 
 }  // namespace views

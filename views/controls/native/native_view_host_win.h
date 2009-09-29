@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_HWND_VIEW_H_
-#define VIEWS_CONTROLS_HWND_VIEW_H_
+#ifndef VIEWS_CONTROL_NATIVE_NATIVE_VIEW_HOST_WIN_H_
+#define VIEWS_CONTROL_NATIVE_NATIVE_VIEW_HOST_WIN_H_
+
+#include "windows.h"
 
 #include "base/logging.h"
 #include "views/controls/native/native_view_host_wrapper.h"
@@ -28,9 +30,14 @@ class NativeViewHostWin : public NativeViewHostWrapper {
   virtual void UninstallClip();
   virtual void ShowWidget(int x, int y, int w, int h);
   virtual void HideWidget();
-  virtual void SetFocus();
 
  private:
+  // Our subclass window procedure.
+  static LRESULT CALLBACK NativeViewHostWndProc(HWND window,
+                                                UINT message,
+                                                WPARAM w_param,
+                                                LPARAM l_param);
+
   // Our associated NativeViewHost.
   NativeViewHost* host_;
 
@@ -38,9 +45,12 @@ class NativeViewHostWin : public NativeViewHostWrapper {
   // visible portion of the gfx::NativeView ?
   bool installed_clip_;
 
+  // The window procedure before we subclassed.
+  WNDPROC original_wndproc_;
+
   DISALLOW_COPY_AND_ASSIGN(NativeViewHostWin);
 };
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_HWND_VIEW_H_
+#endif  // VIEWS_CONTROL_NATIVE_NATIVE_VIEW_HOST_WIN_H_

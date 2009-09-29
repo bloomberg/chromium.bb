@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "app/gfx/canvas.h"
 #include "views/controls/native/native_view_host_wrapper.h"
+#include "views/focus/focus_manager.h"
 #include "views/widget/widget.h"
 
 namespace views {
@@ -20,7 +21,10 @@ const char NativeViewHost::kViewClassName[] = "views/NativeViewHost";
 NativeViewHost::NativeViewHost()
     : native_view_(NULL),
       fast_resize_(false),
-      focus_view_(NULL) {
+      focus_native_view_(NULL) {
+  // By default we make this view the one that should be set as the focused view
+  // when the native view gets the focus.
+  focus_view_ = this;
   // The native widget is placed relative to the root. As such, we need to
   // know when the position of any ancestor changes, or our visibility relative
   // to other views changed as it'll effect our position relative to the root.
@@ -33,10 +37,12 @@ NativeViewHost::~NativeViewHost() {
 void NativeViewHost::Attach(gfx::NativeView native_view) {
   DCHECK(!native_view_);
   native_view_ = native_view;
-  // If set_focus_view() has not been invoked, this view is the one that should
-  // be seen as focused when the native view receives focus.
-  if (!focus_view_)
-    focus_view_ = this;
+  // If this NativeViewHost is the focus view, than it should obviously be
+  // focusable.  If it is not, then it acts as a container and we don't want it
+  // to get focus through tab-traversal, so we make it not focusable.
+  SetFocusable(focus_view_ == this);
+  if (!focus_native_view_)
+    focus_native_view_ = native_view;
   native_wrapper_->NativeViewAttached();
 }
 
@@ -44,6 +50,7 @@ void NativeViewHost::Detach() {
   DCHECK(native_view_);
   native_wrapper_->NativeViewDetaching();
   native_view_ = NULL;
+  focus_native_view_ = NULL;
 }
 
 void NativeViewHost::SetPreferredSize(const gfx::Size& size) {
@@ -55,6 +62,22 @@ void NativeViewHost::NativeViewDestroyed() {
   // TODO(beng): figure out if this should/could call Detach instead since as it
   //             stands right now this object is left in an inconsistent state.
   native_view_ = NULL;
+}
+
+void NativeViewHost::GotNativeFocus() {
+  // Some NativeViewHost may not have an associated focus view.  This is the
+  // case for containers for example.  They might still get the native focus,
+  // if one non native view they contain gets focused.  In that case, we should
+  // not change the focused view.
+  if (!focus_view_ || !focus_view_->IsFocusable())
+    return;
+
+  FocusManager* focus_manager = GetFocusManager();
+  if (!focus_manager) {
+    NOTREACHED();
+    return;
+  }
+  focus_manager->SetFocusedView(focus_view_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -134,7 +157,12 @@ std::string NativeViewHost::GetClassName() const {
 }
 
 void NativeViewHost::Focus() {
-  native_wrapper_->SetFocus();
+  FocusManager* focus_manager = GetFocusManager();
+  if (!focus_manager) {
+    NOTREACHED();
+    return;
+  }
+  focus_manager->FocusNativeView(focus_native_view_);
 }
 
 }  // namespace views

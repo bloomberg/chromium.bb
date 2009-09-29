@@ -36,7 +36,6 @@ class NativeViewHostGtk : public NativeViewHostWrapper {
   virtual void UninstallClip();
   virtual void ShowWidget(int x, int y, int w, int h);
   virtual void HideWidget();
-  virtual void SetFocus();
 
  private:
   // Create and Destroy the GtkFixed that performs clipping on our hosted
@@ -55,9 +54,9 @@ class NativeViewHostGtk : public NativeViewHostWrapper {
   static void CallDestroy(GtkObject* object, NativeViewHostGtk* host);
 
   // Invoked from the 'focus-in-event' signal.
-  static void CallFocusIn(GtkWidget* widget,
-                          GdkEventFocus* event,
-                          NativeViewHostGtk* button);
+  static gboolean CallFocusIn(GtkWidget* widget,
+                              GdkEventFocus* event,
+                              NativeViewHostGtk* button);
 
   // Our associated NativeViewHost.
   NativeViewHost* host_;
@@ -86,4 +85,3 @@ class NativeViewHostGtk : public NativeViewHostWrapper {
 }  // namespace views
 
 #endif  // VIEWS_CONTROLS_NATIVE_HOST_VIEW_GTK_H_
-
