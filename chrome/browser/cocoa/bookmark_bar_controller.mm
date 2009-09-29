@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
+#include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 
 // Specialization of NSButton that responds to middle-clicks. By default,
@@ -263,9 +265,9 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 
 // Empty menus are odd; if empty, add something to look at.
 // Matches windows behavior.
-// TODO(jrg): localize.
 - (void)tagEmptyMenu:(NSMenu*)menu {
-  [menu addItem:[[[NSMenuItem alloc] initWithTitle:@"(empty)"
+  NSString* empty_menu_title = l10n_util::GetNSString(IDS_MENU_EMPTY_SUBMENU);
+  [menu addItem:[[[NSMenuItem alloc] initWithTitle:empty_menu_title
                                             action:NULL
                                      keyEquivalent:@""] autorelease]];
 }
