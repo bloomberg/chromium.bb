@@ -10,6 +10,7 @@ obj:*/libfreetype*
 # its instrumentation is very slow.
 # TODO(timurrrr): investigate whether we need to instrument it
 obj:*/libnss*
+obj:*/nss/*
 
 # ignore this standard stuff
 fun:clone
