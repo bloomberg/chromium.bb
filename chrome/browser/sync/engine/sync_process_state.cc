@@ -131,6 +131,21 @@ SyncProcessState& SyncProcessState::operator=(const SyncProcessState& counts) {
   return *this;
 }
 
+void SyncProcessState::set_num_sync_cycles(const int val) {
+  UpdateDirty(val != num_sync_cycles_);
+  num_sync_cycles_ = val;
+}
+
+void SyncProcessState::increment_num_sync_cycles() {
+  UpdateDirty(true);
+  ++num_sync_cycles_;
+}
+
+void SyncProcessState::set_silenced_until(const time_t val) {
+  UpdateDirty(val != silenced_until_);
+  silenced_until_ = val;
+}
+
 // Status maintenance functions.
 void SyncProcessState::set_invalid_store(const bool val) {
   UpdateDirty(val != invalid_store_);

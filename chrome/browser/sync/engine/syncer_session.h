@@ -124,11 +124,11 @@ class SyncerSession {
   }
 
   time_t silenced_until() const {
-    return sync_process_state_->silenced_until_;
+    return sync_process_state_->silenced_until();
   }
 
   void set_silenced_until(time_t silenced_until) const {
-    sync_process_state_->silenced_until_ = silenced_until;
+    sync_process_state_->set_silenced_until(silenced_until);
   }
 
   const std::vector<int64>& unsynced_handles() const {

@@ -180,11 +180,12 @@ class SyncProcessState {
   // Assorted other state info.
   int conflicting_updates() const { return conflicting_item_ids_.size(); }
 
-  // TODO(sync): make these two members private and add getters/setters.
-  int num_sync_cycles_;
+  int num_sync_cycles() const { return num_sync_cycles_; }
+  void set_num_sync_cycles(const int val);
+  void increment_num_sync_cycles();
 
-  // When we're over bandwidth quota, we don't update until past this time.
-  time_t silenced_until_;
+  time_t silenced_until() const { return silenced_until_; }
+  void set_silenced_until(const time_t val);
 
   // Info that is tracked purely for status reporting.
 
@@ -330,6 +331,11 @@ class SyncProcessState {
   std::set<syncable::Id> blocked_item_ids_;
   std::map<syncable::Id, ConflictSet*> id_to_conflict_set_;
   std::set<ConflictSet*> conflict_sets_;
+
+  int num_sync_cycles_;
+
+  // When we're over bandwidth quota, we don't update until past this time.
+  time_t silenced_until_;
 
   // Status information, as opposed to state info that may also be exposed for
   // status reporting purposes.

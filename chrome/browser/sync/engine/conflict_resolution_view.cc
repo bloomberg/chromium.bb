@@ -33,15 +33,15 @@ void ConflictResolutionView::set_conflicting_commits(const int val) {
 }
 
 int ConflictResolutionView::num_sync_cycles() const {
-  return process_state_->num_sync_cycles_;
+  return process_state_->num_sync_cycles();
 }
 
 void ConflictResolutionView::increment_num_sync_cycles() {
-  ++(process_state_->num_sync_cycles_);
+  process_state_->increment_num_sync_cycles();
 }
 
 void ConflictResolutionView::zero_num_sync_cycles() {
-  process_state_->num_sync_cycles_ = 0;
+  process_state_->set_num_sync_cycles(0);
 }
 
 int64 ConflictResolutionView::current_sync_timestamp() const {
