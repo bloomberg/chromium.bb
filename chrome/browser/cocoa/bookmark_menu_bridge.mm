@@ -94,14 +94,14 @@ void BookmarkMenuBridge::BookmarkNodeChanged(BookmarkModel* model,
                                              const BookmarkNode* node) {
   NSMenuItem* item = MenuItemForNode(node);
   if (item)
-    ConfigureMenuItem(node, item);
+    ConfigureMenuItem(node, item, true);
 }
 
 void BookmarkMenuBridge::BookmarkNodeFavIconLoaded(BookmarkModel* model,
                                                    const BookmarkNode* node) {
   NSMenuItem* item = MenuItemForNode(node);
   if (item)
-    ConfigureMenuItem(node, item);
+    ConfigureMenuItem(node, item, false);
 }
 
 void BookmarkMenuBridge::BookmarkNodeChildrenReordered(
@@ -180,13 +180,18 @@ void BookmarkMenuBridge::AddNodeToMenu(const BookmarkNode* node, NSMenu* menu) {
       [menu setSubmenu:submenu forItem:item];
       AddNodeToMenu(child, submenu);  // recursive call
     } else {
-      ConfigureMenuItem(child, item);
+      ConfigureMenuItem(child, item, false);
     }
   }
 }
 
 void BookmarkMenuBridge::ConfigureMenuItem(const BookmarkNode* node,
-                                           NSMenuItem* item) {
+                                           NSMenuItem* item,
+                                           bool set_title) {
+  if (set_title) {
+    NSString* title = [BookmarkMenuCocoaController menuTitleForNode:node];
+    [item setTitle:title];
+  }
   [item setTarget:controller_];
   [item setAction:@selector(openBookmarkMenuItem:)];
   [item setTag:node->id()];

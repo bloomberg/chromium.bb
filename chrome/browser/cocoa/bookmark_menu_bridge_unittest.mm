@@ -231,3 +231,24 @@ TEST_F(BookmarkMenuBridgeTest, TestFavIconLoading) {
   bridge_->BookmarkNodeFavIconLoaded(model, node);
   EXPECT_TRUE([item image]);
 }
+
+TEST_F(BookmarkMenuBridgeTest, TestChangeTitle) {
+  NSMenu* menu = bridge_->menu_;
+  BookmarkModel* model = bridge_->GetBookmarkModel();
+  const BookmarkNode* root = model->GetBookmarkBarNode();
+  EXPECT_TRUE(model && root);
+
+  const BookmarkNode* node =
+      model->AddURL(root, 0, L"Test Item",
+                    GURL("http://title-test"));
+  NSMenuItem* item = [menu itemWithTitle:@"Test Item"];
+  EXPECT_TRUE([item image]);
+
+  model->SetTitle(node, L"New Title");
+
+  item = [menu itemWithTitle:@"Test Item"];
+  EXPECT_FALSE(item);
+  item = [menu itemWithTitle:@"New Title"];
+  EXPECT_TRUE(item);
+}
+

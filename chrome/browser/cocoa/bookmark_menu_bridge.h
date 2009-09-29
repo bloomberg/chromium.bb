@@ -78,7 +78,11 @@ class BookmarkMenuBridge : public BookmarkModelObserver {
   // This configures an NSMenuItem with all the data from a BookmarkNode. This
   // is used to update existing menu items, as well as to configure newly
   // created ones, like in AddNodeToMenu().
-  void ConfigureMenuItem(const BookmarkNode* node, NSMenuItem* item);
+  // |set_title| is optional since it is only needed when we get a
+  // node changed notification.  On initial build of the menu we set
+  // the title as part of alloc/init.
+  void ConfigureMenuItem(const BookmarkNode* node, NSMenuItem* item,
+                         bool set_title);
 
   // Returns the NSMenuItem for a given BookmarkNode.
   NSMenuItem* MenuItemForNode(const BookmarkNode* node);
