@@ -74,6 +74,7 @@ std::wstring GetNewTabUIURLString() {
 - (void)setSafeBrowsing:(BOOL)value;
 - (void)setMetricsRecording:(BOOL)value;
 - (void)setCookieBehavior:(NSInteger)value;
+- (void)setAskForSaveLocation:(BOOL)value;
 @end
 
 // A C++ class registered for changes in preferences. Bridges the
@@ -201,6 +202,9 @@ class PrefObserverBridge : public NotificationObserver {
   metricsRecording_.Init(prefs::kMetricsReportingEnabled,
                          local, observer_.get());
   cookieBehavior_.Init(prefs::kCookieBehavior, prefs_, observer_.get());
+  defaultDownloadLocation_.Init(prefs::kDownloadDefaultDirectory, prefs_,
+                                observer_.get());
+  askForSaveLocation_.Init(prefs::kPromptForDownload, prefs_, observer_.get());
 }
 
 // Clean up what was registered in -registerPrefObservers. We only have to
@@ -727,6 +731,38 @@ const int kDisabledIndex = 1;
   else if (*prefName == prefs::kCookieBehavior) {
     [self setCookieBehavior:cookieBehavior_.GetValue()];
   }
+  else if (*prefName == prefs::kPromptForDownload) {
+    [self setAskForSaveLocation:askForSaveLocation_.GetValue() ? YES : NO];
+  }
+}
+
+// Set the new download path and notify the UI via KVO.
+- (void)downloadPathPanelDidEnd:(NSOpenPanel*)panel
+                           code:(NSInteger)returnCode
+                        context:(void*)context {
+  if (returnCode == NSOKButton) {
+    [self recordUserAction:L"Options_SetDownloadDirectory"];
+    NSURL* path = [[panel URLs] lastObject];  // We only allow 1 item.
+    [self willChangeValueForKey:@"defaultDownloadLocation"];
+    defaultDownloadLocation_.SetValue(base::SysNSStringToWide([path path]));
+    [self didChangeValueForKey:@"defaultDownloadLocation"];
+  }
+}
+
+// Bring up an open panel to allow the user to set a new downloads location.
+- (void)browseDownloadLocation:(id)sender {
+  NSOpenPanel* panel = [NSOpenPanel openPanel];
+  [panel setAllowsMultipleSelection:NO];
+  [panel setCanChooseFiles:NO];
+  [panel setCanChooseDirectories:YES];
+  NSString* path = base::SysWideToNSString(defaultDownloadLocation_.GetValue());
+  [panel beginSheetForDirectory:path
+                           file:nil
+                          types:nil
+                 modalForWindow:[self window]
+                  modalDelegate:self
+                 didEndSelector:@selector(downloadPathPanelDidEnd:code:context:)
+                    contextInfo:NULL];
 }
 
 // Returns whether the alternate error page checkbox should be checked based
@@ -858,6 +894,25 @@ const int kDisabledIndex = 1;
   DCHECK(policy >= 0 && (unsigned int)policy < arraysize(kUserMetrics));
   [self recordUserAction:kUserMetrics[policy]];
   cookieBehavior_.SetValue(policy);
+}
+
+- (NSURL*)defaultDownloadLocation {
+  NSString* pathString =
+      base::SysWideToNSString(defaultDownloadLocation_.GetValue());
+  return [NSURL fileURLWithPath:pathString];
+}
+
+- (BOOL)askForSaveLocation {
+  return askForSaveLocation_.GetValue();
+}
+
+- (void)setAskForSaveLocation:(BOOL)value {
+  if (value) {
+    [self recordUserAction:L"Options_AskForSaveLocation_Enable"];
+  } else {
+    [self recordUserAction:L"Options_AskForSaveLocation_Disable"];
+  }
+  askForSaveLocation_.SetValue(value);
 }
 
 //-------------------------------------------------------------------------

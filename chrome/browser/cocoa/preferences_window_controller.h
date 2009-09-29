@@ -60,6 +60,9 @@ class Profile;
   BooleanPrefMember safeBrowsing_;
   BooleanPrefMember metricsRecording_;
   IntegerPrefMember cookieBehavior_;
+  IBOutlet NSPathControl* downloadLocationControl_;
+  StringPrefMember defaultDownloadLocation_;
+  BooleanPrefMember askForSaveLocation_;
 }
 
 // Designated initializer. |profile| should not be NULL.
@@ -83,6 +86,9 @@ class Profile;
 - (IBAction)clearData:(id)sender;
 - (IBAction)resetThemeToDefault:(id)sender;
 - (IBAction)themesGallery:(id)sender;
+
+// Under the hood
+- (IBAction)browseDownloadLocation:(id)sender;
 
 // Usable from cocoa bindings to hook up the custom home pages table.
 @property(readonly) CustomHomePagesModel* customPagesSource;
