@@ -150,7 +150,7 @@ TEST_F(WorkerTest, WorkerXhrHttpLayoutTests) {
   StopHttpServer();
 }
 
-TEST_F(WorkerTest, MessagePorts) {
+TEST_F(WorkerTest, DISABLED_MessagePorts) {
   static const char* kLayoutTestFiles[] = {
     "message-channel-gc.html",
     "message-channel-gc-2.html",
