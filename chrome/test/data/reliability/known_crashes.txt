@@ -147,10 +147,10 @@ PREFIX : ^hunspell_create_key
 PREFIX : hunspell_suggest___hunspell_suggest___hunspell_suggest
 
 # 23278
-PREFIX : webcore::towebcorestring___webcore::reportexception___webcore::v8abstracteventlistener::invokeeventhandler___webcore::v8abstracteventlistener::handleevent___webcore::eventtarget::fireeventlisteners___webcore::eventtarget::dispatchevent___webcore::xmlhttprequest::callreadystatechangelistener
+SUBSTRING : webcore::xmlhttprequest::callreadystatechangelistener___webcore::xmlhttprequest::networkerror
 
 # 23280
-PREFIX : webkit::webcstring::assign___webkit::webdatasourceimpl::endofredirectchain___webframeloaderclient::dispatchdidchangelocationwithinpage___webcore::frameloader::continuefragmentscrollafternavigationpolicy___webcore::frameloader::callcontinuefragmentscrollafternavigationpolicy___webcore::policycheck::call
+SUBSTRING : webframeloaderclient::dispatchdidchangelocationwithinpage___webcore::frameloader::continuefragmentscrollafternavigationpolicy___webcore::frameloader::callcontinuefragmentscrollafternavigationpolicy___webcore::policycheck::call
 
 # 23281
-PREFIX : renderwidgethost::send___renderwidgethost::washidden___tabcontents::washidden___tabcontentscontainer::changetabcontents___browserview::tabdetachedat___tabstripmodel::detachtabcontentsat___tabstripmodel::observe___notificationservice::notify___tabcontents::~tabcontents___tabcontents::`scalar deleting destructor'
+REGEX : tabcontents::washidden___.*___tabcontents::~tabcontents
