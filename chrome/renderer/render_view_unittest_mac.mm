@@ -13,7 +13,7 @@
 
 NSEvent* CmdDeadKeyEvent(NSEventType type, unsigned short code) {
 
-  UniChar uniChar;
+  UniChar uniChar = 0;
   switch(code) {
   case kVK_UpArrow: uniChar = NSUpArrowFunctionKey; break;
   case kVK_DownArrow: uniChar = NSDownArrowFunctionKey; break;
