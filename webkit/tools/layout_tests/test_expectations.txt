@@ -1366,7 +1366,7 @@ BUG10360 MAC : LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
 BUG10361 : LayoutTests/http/tests/misc/single-character-pi-stylesheet.xhtml = FAIL
 
 // Windows is missing the green box.
-BUG8729 WIN LINUX : LayoutTests/http/tests/multipart/invalid-image-data.html = FAIL
+BUG8729 WIN : LayoutTests/http/tests/multipart/invalid-image-data.html = FAIL
 
 // -----------------------------------------------------------------
 // MAC PORT TESTS
@@ -1672,7 +1672,6 @@ BUG10465 LINUX : LayoutTests/fast/clip/overflow-border-radius-clip.html = FAIL
 
 // Needs rebaseline. See WebKit 41948
 BUG10468 MAC : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
-BUG10468 WIN : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
 
 // Mac flaky failures.
 BUG10472 MAC : LayoutTests/svg/css/glyph-orientation-rounding-test.xhtml = FAIL PASS
@@ -1780,6 +1779,9 @@ BUG9798 LINUX : LayoutTests/transitions/transition-end-event-all-properties.html
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-attributes.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/extra-transition.html = TIMEOUT PASS
 
+// Regression from WebKit merge 43242:43321.
+BUG9798 LINUX : LayoutTests/transitions/mask-transitions.html = FAIL PASS
+
 // Failed in WebKit merge 42287:42324
 BUG9916 WIN LINUX : LayoutTests/css2.1/t0803-c5502-mrgn-r-02-c.html = FAIL
 
@@ -1867,9 +1869,6 @@ BUG_DARIN LINUX : LayoutTests/fast/forms/select-dirty-parent-pref-widths.html = 
 BUG_DARIN LINUX : LayoutTests/svg/transforms/animated-path-inside-transformed-html.xhtml = FAIL
 BUG_DARIN LINUX : LayoutTests/svg/transforms/text-with-pattern-inside-transformed-html.xhtml = FAIL
 BUG_DARIN LINUX : LayoutTests/svg/transforms/text-with-pattern-with-svg-transform.svg = FAIL
-
-// Regressions from WebKit merge 43242:43321.
-BUG_DARIN LINUX DEBUG : LayoutTests/transitions/mask-transitions.html = FAIL PASS
 
 // TODO(erg): Attempted to rebaseline these tests as part of the above
 // 43346:43361 rebaseling from http://trac.webkit.org/changeset/43355. Turned
