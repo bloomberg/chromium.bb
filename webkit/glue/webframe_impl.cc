@@ -121,6 +121,7 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
 #include "ScrollbarTheme.h"
+#include "ScrollTypes.h"
 #include "SelectionController.h"
 #include "Settings.h"
 #include "SkiaUtils.h"
@@ -1011,8 +1012,22 @@ bool WebFrameImpl::executeCommand(const WebString& name) {
 bool WebFrameImpl::executeCommand(const WebString& name,
                                   const WebString& value) {
   ASSERT(frame());
-  return frame()->editor()->command(webkit_glue::WebStringToString(name)).
-      execute(webkit_glue::WebStringToString(value));
+  WebCore::String web_name = webkit_glue::WebStringToString(name);
+
+  // moveToBeginningOfDocument and moveToEndfDocument are only handled by WebKit
+  // for editable nodes.
+  if (!frame()->editor()->canEdit() &&
+      web_name == "moveToBeginningOfDocument") {
+    return GetWebViewImpl()->PropagateScroll(WebCore::ScrollUp,
+                                             WebCore::ScrollByDocument);
+  } else if (!frame()->editor()->canEdit() &&
+      web_name == "moveToEndOfDocument") {
+    return GetWebViewImpl()->PropagateScroll(WebCore::ScrollDown,
+                                             WebCore::ScrollByDocument);
+  } else {
+    return frame()->editor()->command(web_name).
+        execute(webkit_glue::WebStringToString(value));
+  }
 }
 
 bool WebFrameImpl::isCommandEnabled(const WebString& name) const {

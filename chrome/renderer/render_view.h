@@ -448,6 +448,9 @@ class RenderView : public RenderWidget,
   FRIEND_TEST(RenderViewTest, PrintLayoutTest);
   FRIEND_TEST(RenderViewTest, OnHandleKeyboardEvent);
   FRIEND_TEST(RenderViewTest, InsertCharacters);
+#if defined(OS_MACOSX)
+  FRIEND_TEST(RenderViewTest, MacTestCmdUp);
+#endif
 
   explicit RenderView(RenderThreadBase* render_thread,
                       const WebPreferences& webkit_preferences);

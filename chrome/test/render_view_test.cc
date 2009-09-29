@@ -158,26 +158,25 @@ int RenderViewTest::SendKeyEvent(MockKeyboard::Layout layout,
   // WM_KEYDOWN and WM_KEYUP sends virtual-key codes. On the other hand,
   // WM_CHAR sends a composed Unicode character.
   NativeWebKeyboardEvent keydown_event(NULL, WM_KEYDOWN, key_code, 0);
-  scoped_ptr<IPC::Message> keydown_message(new ViewMsg_HandleInputEvent(0));
-  keydown_message->WriteData(reinterpret_cast<const char*>(&keydown_event),
-                             sizeof(WebKit::WebKeyboardEvent));
-  view_->OnHandleInputEvent(*keydown_message);
+  SendNativeKeyEvent(keydown_event);
 
   NativeWebKeyboardEvent char_event(NULL, WM_CHAR, (*output)[0], 0);
-  scoped_ptr<IPC::Message> char_message(new ViewMsg_HandleInputEvent(0));
-  char_message->WriteData(reinterpret_cast<const char*>(&char_event),
-                          sizeof(WebKit::WebKeyboardEvent));
-  view_->OnHandleInputEvent(*char_message);
+  SendNativeKeyEvent(char_event);
 
   NativeWebKeyboardEvent keyup_event(NULL, WM_KEYUP, key_code, 0);
-  scoped_ptr<IPC::Message> keyup_message(new ViewMsg_HandleInputEvent(0));
-  keyup_message->WriteData(reinterpret_cast<const char*>(&keyup_event),
-                           sizeof(WebKit::WebKeyboardEvent));
-  view_->OnHandleInputEvent(*keyup_message);
+  SendNativeKeyEvent(keyup_event);
 
   return length;
 #else
   NOTIMPLEMENTED();
   return L'\0';
 #endif
+}
+
+void RenderViewTest::SendNativeKeyEvent(
+    const NativeWebKeyboardEvent& key_event) {
+  scoped_ptr<IPC::Message> input_message(new ViewMsg_HandleInputEvent(0));
+  input_message->WriteData(reinterpret_cast<const char*>(&key_event),
+                           sizeof(WebKit::WebKeyboardEvent));
+  view_->OnHandleInputEvent(*input_message);
 }

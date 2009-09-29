@@ -11,6 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/sandbox_init_wrapper.h"
+#include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/renderer/mock_keyboard.h"
 #include "chrome/renderer/mock_render_process.h"
 #include "chrome/renderer/mock_render_thread.h"
@@ -44,6 +45,9 @@ class RenderViewTest : public testing::Test {
                    int key_code,
                    MockKeyboard::Modifiers key_modifiers,
                    std::wstring* output);
+
+  // Sends one native key event over IPC.
+  void SendNativeKeyEvent(const NativeWebKeyboardEvent& key_event);
 
   // testing::Test
   virtual void SetUp();

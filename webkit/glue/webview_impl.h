@@ -256,6 +256,11 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   WebKit::NotificationPresenterImpl* GetNotificationPresenter();
 #endif
 
+  // Tries to scroll a frame or any parent of a frame. Returns true if the view
+  // was scrolled.
+  bool PropagateScroll(WebCore::ScrollDirection scroll_direction,
+                       WebCore::ScrollGranularity scroll_granularity);
+
  protected:
   friend class WebView;  // So WebView::Create can call our constructor
   friend class base::RefCounted<WebViewImpl>;

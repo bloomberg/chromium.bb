@@ -862,10 +862,6 @@ bool WebViewImpl::KeyEventDefault(const WebKeyboardEvent& event) {
 }
 
 bool WebViewImpl::ScrollViewWithKeyboard(int key_code, int modifiers) {
-  Frame* frame = GetFocusedWebCoreFrame();
-  if (!frame)
-    return false;
-
   ScrollDirection scroll_direction;
   ScrollGranularity scroll_granularity;
 
@@ -880,29 +876,11 @@ bool WebViewImpl::ScrollViewWithKeyboard(int key_code, int modifiers) {
       break;
     case VKEY_UP:
       scroll_direction = ScrollUp;
-#if defined(OS_MACOSX)
-      // Many Mac applications (such as TextEdit, Safari, Firefox, etc.) scroll
-      // to the beginning of a page when typing command+up keys. It is better
-      // for Mac Chrome to emulate this behavior to improve compatibility with
-      // these applications.
-      scroll_granularity = (modifiers == WebInputEvent::MetaKey) ?
-          ScrollByDocument : ScrollByLine;
-#else
       scroll_granularity = ScrollByLine;
-#endif
       break;
     case VKEY_DOWN:
       scroll_direction = ScrollDown;
-#if defined(OS_MACOSX)
-      // Many Mac applications (such as TextEdit, Safari, Firefox, etc.) scroll
-      // to the end of a page when typing command+down keys. It is better
-      // for Mac Chrome to emulate this behavior to improve compatibility with
-      // these applications.
-      scroll_granularity = (modifiers == WebInputEvent::MetaKey) ?
-          ScrollByDocument : ScrollByLine;
-#else
       scroll_granularity = ScrollByLine;
-#endif
       break;
     case VKEY_HOME:
       scroll_direction = ScrollUp;
@@ -923,6 +901,17 @@ bool WebViewImpl::ScrollViewWithKeyboard(int key_code, int modifiers) {
     default:
       return false;
   }
+
+  return PropagateScroll(scroll_direction, scroll_granularity);
+}
+
+bool WebViewImpl::PropagateScroll(
+    WebCore::ScrollDirection scroll_direction,
+    WebCore::ScrollGranularity scroll_granularity) {
+
+  Frame* frame = GetFocusedWebCoreFrame();
+  if (!frame)
+    return false;
 
   bool scroll_handled =
       frame->eventHandler()->scrollOverflow(scroll_direction,

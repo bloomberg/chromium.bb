@@ -1511,13 +1511,18 @@ bool RenderView::handleCurrentKeyboardEvent() {
   EditCommands::iterator it = edit_commands_.begin();
   EditCommands::iterator end = edit_commands_.end();
 
+  bool did_execute_command = false;
   for (; it != end; ++it) {
+    // In gtk, it's possible to bind multiple edit commands to one key (but it's
+    // the exception). Once one edit command is not executed, it seems safest to
+    // not execute the rest.
     if (!frame->executeCommand(WebString::fromUTF8(it->name),
                                WebString::fromUTF8(it->value)))
       break;
+    did_execute_command = true;
   }
 
-  return true;
+  return did_execute_command;
 }
 
 void RenderView::spellCheck(

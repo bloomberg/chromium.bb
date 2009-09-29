@@ -496,6 +496,48 @@ TEST_F(RenderViewTest, PrintLayoutTest) {
 #endif
 }
 
+// Print page as bitmap test.
+TEST_F(RenderViewTest, OnPrintPageAsBitmap) {
+#if defined(OS_WIN)
+  // Lets simulate a print pages with Hello world.
+  LoadHTML("<body><p>Hello world!</p></body>");
+
+  // Grab the printer settings from the printer.
+  ViewMsg_Print_Params print_settings;
+  MockPrinter* printer(render_thread_.printer());
+  printer->GetDefaultPrintSettings(&print_settings);
+  ViewMsg_PrintPage_Params page_params = ViewMsg_PrintPage_Params();
+  page_params.params = print_settings;
+  page_params.page_number = 0;
+
+  // Fetch the image data from the web frame.
+  std::vector<unsigned char> data;
+  view_->print_helper()->PrintPageAsJPEG(page_params,
+                                         view_->webview()->GetMainFrame(),
+                                         1.0f,
+                                         &data);
+  std::vector<unsigned char> decoded;
+  int w, h;
+  EXPECT_TRUE(JPEGCodec::Decode(&data[0], data.size(), JPEGCodec::FORMAT_RGBA,
+                                &decoded, &w, &h));
+
+  // Check if its not 100% white.
+  bool is_white = true;
+  for (int y = 0; y < h; y++) {
+    for (int x = 0; x < w; x++) {
+      unsigned char* px = &decoded[(y * w + x) * 4];
+      if (px[0] != 0xFF && px[1] != 0xFF && px[2] != 0xFF) {
+        is_white = false;
+        break;
+      }
+    }
+  }
+  ASSERT_TRUE(!is_white);
+#else
+  NOTIMPLEMENTED();
+#endif
+}
+
 // Test that we can receive correct DOM events when we send input events
 // through the RenderWidget::OnHandleInputEvent() function.
 TEST_F(RenderViewTest, OnHandleKeyboardEvent) {
@@ -867,46 +909,4 @@ TEST_F(RenderViewTest, DidFailProvisionalLoadWithErrorForCancellation) {
   view_->didFailProvisionalLoad(web_frame, error);
   // Frame should stay in view-source mode.
   EXPECT_TRUE(web_frame->isViewSourceModeEnabled());
-}
-
-// Print page as bitmap test.
-TEST_F(RenderViewTest, OnPrintPageAsBitmap) {
-#if defined(OS_WIN)
-  // Lets simulate a print pages with Hello world.
-  LoadHTML("<body><p>Hello world!</p></body>");
-
-  // Grab the printer settings from the printer.
-  ViewMsg_Print_Params print_settings;
-  MockPrinter* printer(render_thread_.printer());
-  printer->GetDefaultPrintSettings(&print_settings);
-  ViewMsg_PrintPage_Params page_params = ViewMsg_PrintPage_Params();
-  page_params.params = print_settings;
-  page_params.page_number = 0;
-
-  // Fetch the image data from the web frame.
-  std::vector<unsigned char> data;
-  view_->print_helper()->PrintPageAsJPEG(page_params,
-                                         view_->webview()->GetMainFrame(),
-                                         1.0f,
-                                         &data);
-  std::vector<unsigned char> decoded;
-  int w, h;
-  EXPECT_TRUE(JPEGCodec::Decode(&data[0], data.size(), JPEGCodec::FORMAT_RGBA,
-                                &decoded, &w, &h));
-
-  // Check if its not 100% white.
-  bool is_white = true;
-  for (int y = 0; y < h; y++) {
-    for (int x = 0; x < w; x++) {
-      unsigned char* px = &decoded[(y * w + x) * 4];
-      if (px[0] != 0xFF && px[1] != 0xFF && px[2] != 0xFF) {
-        is_white = false;
-        break;
-      }
-    }
-  }
-  ASSERT_TRUE(!is_white);
-#else
-  NOTIMPLEMENTED();
-#endif
 }

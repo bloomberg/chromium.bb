@@ -166,7 +166,7 @@
   'target_defaults': {
     'sources/': [
       ['exclude', '/(cocoa|gtk|win)/'],
-      ['exclude', '_(cocoa|gtk|linux|mac|posix|skia|win|views|x)(_unittest)?\\.(cc|mm?)$'],
+      ['exclude', '_(cocoa|gtk|linux|mac|posix|skia|win|views|x)(_unittest)?(_mac)?\\.(cc|mm?)$'],
       ['exclude', '/(gtk|win|x11)_[^/]*\\.cc$'],
     ],
     'conditions': [
@@ -177,7 +177,7 @@
       ]}],
       ['OS=="mac"', {'sources/': [
         ['include', '/cocoa/'],
-        ['include', '_(cocoa|mac|posix)(_unittest)?\\.(cc|mm?)$'],
+        ['include', '_(cocoa|mac|posix)(_unittest)?(_mac)?\\.(cc|mm?)$'],
       ]}, { # else: OS != "mac"
         'sources/': [
           ['exclude', '\\.mm?$'],
@@ -4434,6 +4434,7 @@
         'renderer/render_process_unittest.cc',
         'renderer/render_thread_unittest.cc',
         'renderer/render_view_unittest.cc',
+        'renderer/render_view_unittest_mac.mm',
         'renderer/render_widget_unittest.cc',
         'renderer/renderer_main_unittest.cc',
         'test/browser_with_test_window_test.cc',
