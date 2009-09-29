@@ -780,7 +780,7 @@ TEST_F(BookmarkModelTestWithProfile2, MigrateFromDBToFileTest) {
   file_util::CreateDirectory(new_history_path);
   FilePath new_history_file = new_history_path.Append(
       chrome::kHistoryFilename);
-  file_util::CopyFile(old_history_path, new_history_file);
+  ASSERT_TRUE(file_util::CopyFile(old_history_path, new_history_file));
 
   // Create the history service making sure it doesn't blow away the file we
   // just copied.
