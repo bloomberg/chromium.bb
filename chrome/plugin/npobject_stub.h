@@ -10,13 +10,10 @@
 
 #include <vector>
 
+#include "base/gfx/native_widget_types.h"
 #include "base/ref_counted.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
-
-namespace base {
-class WaitableEvent;
-}
 
 class PluginChannelBase;
 class WebPluginDelegateProxy;
@@ -33,7 +30,7 @@ class NPObjectStub : public IPC::Channel::Listener,
   NPObjectStub(NPObject* npobject,
                PluginChannelBase* channel,
                int route_id,
-               base::WaitableEvent* modal_dialog_event,
+               gfx::NativeViewId containing_window,
                const GURL& page_url);
   ~NPObjectStub();
 
@@ -91,7 +88,7 @@ class NPObjectStub : public IPC::Channel::Listener,
   bool valid_;
   WebPluginDelegateProxy* web_plugin_delegate_proxy_;
 
-  base::WaitableEvent* modal_dialog_event_;
+  gfx::NativeViewId containing_window_;
 
   // The url of the main frame hosting the plugin.
   GURL page_url_;

@@ -140,10 +140,6 @@ class RenderView : public RenderWidget,
     return host_window_;
   }
 
-  base::WaitableEvent* modal_dialog_event() {
-    return modal_dialog_event_.get();
-  }
-
   int browser_window_id() {
     return browser_window_id_;
   }
@@ -818,15 +814,6 @@ class RenderView : public RenderWidget,
   // to it, then we need to queue up the message (keeping only the most
   // recent message if new ones come in).
   scoped_ptr<IPC::Message> queued_find_reply_message_;
-
-  // Handle to an event that's set when the page is showing a modal dialog (or
-  // equivalent constrained window).  The renderer and any plugin processes
-  // check this to know if they should pump messages/tasks then.
-  scoped_ptr<base::WaitableEvent> modal_dialog_event_;
-
-  // Multiple dialog boxes can be shown before the first one is finished,
-  // so we keep a counter to know when we can reset the modal dialog event.
-  int modal_dialog_count_;
 
   // Provides access to this renderer from the remote Inspector UI.
   scoped_ptr<DevToolsAgent> devtools_agent_;

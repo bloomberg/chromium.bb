@@ -47,6 +47,7 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
   virtual bool Send(IPC::Message* msg);
 
   int instance_id() { return instance_id_; }
+  WebPluginProxy* webplugin() { return webplugin_; }
 
  private:
   // Message handlers for the WebPluginDelegate calls that are proxied from the

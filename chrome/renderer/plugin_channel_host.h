@@ -33,6 +33,10 @@ class PluginChannelHost : public PluginChannelBase {
 
   static bool IsListening();
 
+  static void Broadcast(IPC::Message* message) {
+    PluginChannelBase::Broadcast(message);
+  }
+
  private:
   // Called on the render thread
   PluginChannelHost();

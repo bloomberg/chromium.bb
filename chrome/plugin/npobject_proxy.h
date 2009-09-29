@@ -8,6 +8,7 @@
 #ifndef CHROME_PLUGIN_NPOBJECT_PROXY_H_
 #define CHROME_PLUGIN_NPOBJECT_PROXY_H_
 
+#include "base/gfx/native_widget_types.h"
 #include "base/ref_counted.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
@@ -15,10 +16,6 @@
 
 class PluginChannelBase;
 struct NPObject;
-
-namespace base {
-class WaitableEvent;
-}
 
 // When running a plugin in a different process from the renderer, we need to
 // proxy calls to NPObjects across process boundaries.  This happens both ways,
@@ -33,11 +30,10 @@ class NPObjectProxy : public IPC::Channel::Listener,
  public:
   ~NPObjectProxy();
 
-  // modal_dialog_event_ is must be valid for the lifetime of the NPObjectProxy.
   static NPObject* Create(PluginChannelBase* channel,
                           int route_id,
                           intptr_t npobject_ptr,
-                          base::WaitableEvent* modal_dialog_event,
+                          gfx::NativeViewId containing_window,
                           const GURL& page_url);
 
   // IPC::Message::Sender implementation:
@@ -103,7 +99,7 @@ class NPObjectProxy : public IPC::Channel::Listener,
   NPObjectProxy(PluginChannelBase* channel,
                 int route_id,
                 intptr_t npobject_ptr,
-                base::WaitableEvent* modal_dialog_event,
+                gfx::NativeViewId containing_window,
                 const GURL& page_url);
 
   // IPC::Channel::Listener implementation:
@@ -120,7 +116,7 @@ class NPObjectProxy : public IPC::Channel::Listener,
   scoped_refptr<PluginChannelBase> channel_;
   int route_id_;
   intptr_t npobject_ptr_;
-  base::WaitableEvent* modal_dialog_event_;
+  gfx::NativeViewId containing_window_;
 
   // The url of the main frame hosting the plugin.
   GURL page_url_;

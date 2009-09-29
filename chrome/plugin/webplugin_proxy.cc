@@ -17,7 +17,6 @@
 #include "base/scoped_handle.h"
 #include "base/shared_memory.h"
 #include "base/singleton.h"
-#include "base/waitable_event.h"
 #include "build/build_config.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/plugin_messages.h"
@@ -46,7 +45,8 @@ static ContextMap& GetContextMap() {
 WebPluginProxy::WebPluginProxy(
     PluginChannel* channel,
     int route_id,
-    const GURL& page_url)
+    const GURL& page_url,
+    gfx::NativeViewId containing_window)
     : channel_(channel),
       route_id_(route_id),
       cp_browsing_context_(0),
@@ -54,9 +54,9 @@ WebPluginProxy::WebPluginProxy(
       plugin_element_(NULL),
       delegate_(NULL),
       waiting_for_paint_(false),
+      containing_window_(containing_window),
       page_url_(page_url),
-      ALLOW_THIS_IN_INITIALIZER_LIST(runnable_method_factory_(this))
-{
+      ALLOW_THIS_IN_INITIALIZER_LIST(runnable_method_factory_(this)) {
 }
 
 WebPluginProxy::~WebPluginProxy() {
@@ -94,27 +94,6 @@ void WebPluginProxy::SetWindowlessPumpEvent(HANDLE pump_messages_event) {
   DCHECK(pump_messages_event_for_renderer != NULL);
   Send(new PluginHostMsg_SetWindowlessPumpEvent(
       route_id_, pump_messages_event_for_renderer));
-}
-
-bool WebPluginProxy::SetModalDialogEvent(HANDLE modal_dialog_event) {
-  // TODO(port): figure out how this will be set in the browser process, or
-  // come up with a different mechanism.
-  HANDLE event = NULL;
-  BOOL result = DuplicateHandle(channel_->renderer_handle(),
-      modal_dialog_event,
-      GetCurrentProcess(),
-      &event,
-      SYNCHRONIZE,
-      FALSE,
-      0);
-  DCHECK(result) <<
-      "Couldn't duplicate the modal dialog handle for the plugin." \
-      "handle: " << channel_->renderer_handle() << ". err: " << GetLastError();
-  if (!event)
-    return false;
-
-  modal_dialog_event_.reset(new base::WaitableEvent(event));
-  return true;
 }
 #endif
 
@@ -180,8 +159,7 @@ NPObject* WebPluginProxy::GetWindowScriptNPObject() {
     return NULL;
 
   window_npobject_ = NPObjectProxy::Create(
-      channel_, npobject_route_id, npobject_ptr, modal_dialog_event_.get(),
-      page_url_);
+      channel_, npobject_route_id, npobject_ptr, containing_window_, page_url_);
 
   return window_npobject_;
 }
@@ -199,8 +177,7 @@ NPObject* WebPluginProxy::GetPluginElement() {
     return NULL;
 
   plugin_element_ = NPObjectProxy::Create(
-      channel_, npobject_route_id, npobject_ptr, modal_dialog_event_.get(),
-      page_url_);
+      channel_, npobject_route_id, npobject_ptr, containing_window_, page_url_);
 
   return plugin_element_;
 }
@@ -226,13 +203,9 @@ void WebPluginProxy::ShowModalHTMLDialog(const GURL& url, int width, int height,
       new PluginHostMsg_ShowModalHTMLDialog(
           route_id_, url, width, height, json_arguments, json_retval);
 
-  // Create a new event and set it.  This forces us to pump messages while
-  // waiting for a response (which won't come until the dialog is closed).  This
-  // avoids a deadlock.
-  scoped_ptr<base::WaitableEvent> event(
-      new base::WaitableEvent(false, true));
-  msg->set_pump_messages_event(event.get());
-
+  // Pump messages while waiting for a response (which won't come until the
+  // dialog is closed).  This avoids a deadlock.
+  msg->EnableMessagePumping();
   Send(msg);
 }
 

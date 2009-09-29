@@ -271,9 +271,6 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
     }
   }
   params.load_manually = load_manually;
-#if defined(OS_WIN)
-  params.modal_dialog_event = render_view_->modal_dialog_event()->handle();
-#endif
 
   plugin_ = plugin;
 
@@ -746,8 +743,7 @@ NPObject* WebPluginDelegateProxy::GetPluginScriptableObject() {
     return NULL;
 
   npobject_ = NPObjectProxy::Create(
-      channel_host_.get(), route_id, npobject_ptr,
-      render_view_->modal_dialog_event(), page_url_);
+      channel_host_.get(), route_id, npobject_ptr, 0, page_url_);
 
   return WebBindings::retainObject(npobject_);
 }
@@ -833,8 +829,7 @@ void WebPluginDelegateProxy::OnGetWindowScriptNPObject(
   // The stub will delete itself when the proxy tells it that it's released, or
   // otherwise when the channel is closed.
   NPObjectStub* stub = new NPObjectStub(
-      npobject, channel_host_.get(), route_id,
-      render_view_->modal_dialog_event(), page_url_);
+      npobject, channel_host_.get(), route_id, 0, page_url_);
   window_script_object_ = stub;
   window_script_object_->set_proxy(this);
   *success = true;
@@ -853,8 +848,7 @@ void WebPluginDelegateProxy::OnGetPluginElement(
   // The stub will delete itself when the proxy tells it that it's released, or
   // otherwise when the channel is closed.
   new NPObjectStub(
-      npobject, channel_host_.get(), route_id,
-      render_view_->modal_dialog_event(), page_url_);
+      npobject, channel_host_.get(), route_id, 0, page_url_);
   *success = true;
   *npobject_ptr = reinterpret_cast<intptr_t>(npobject);
 }

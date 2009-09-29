@@ -29,6 +29,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/page_zoom.h"
+#include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/thumbnail_score.h"
@@ -44,6 +45,7 @@
 #include "chrome/renderer/localized_error.h"
 #include "chrome/renderer/media/audio_renderer_impl.h"
 #include "chrome/renderer/navigation_state.h"
+#include "chrome/renderer/plugin_channel_host.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/user_script_slave.h"
@@ -208,7 +210,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       last_indexed_page_id_(-1),
       opened_by_user_gesture_(true),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-      modal_dialog_count_(0),
       devtools_agent_(NULL),
       devtools_client_(NULL),
       history_back_list_count_(0),
@@ -230,8 +231,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       document_tag_(0),
       webkit_preferences_(webkit_preferences) {
   Singleton<RenderViewSet>()->render_view_set_.insert(this);
-
-  modal_dialog_event_.reset(new base::WaitableEvent(true, false));
 }
 
 RenderView::~RenderView() {
@@ -3573,14 +3572,14 @@ void RenderView::EnsureDocumentTag() {
 }
 
 bool RenderView::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
-  if (modal_dialog_count_++ == 0)
-    modal_dialog_event_->Signal();
+  PluginChannelHost::Broadcast(
+      new PluginMsg_SignalModalDialogEvent(host_window_));
 
   message->EnableMessagePumping();  // Runs a nested message loop.
   bool rv = Send(message);
 
-  if (--modal_dialog_count_ == 0)
-    modal_dialog_event_->Reset();
+  PluginChannelHost::Broadcast(
+      new PluginMsg_ResetModalDialogEvent(host_window_));
 
   return rv;
 }

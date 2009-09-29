@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/gfx/native_widget_types.h"
 #include "base/hash_tables.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
@@ -64,6 +65,9 @@ class PluginChannelBase : public IPC::Channel::Listener,
       PluginChannelFactory factory, MessageLoop* ipc_message_loop,
       bool create_pipe_now);
 
+  // Sends a message to all instances.
+  static void Broadcast(IPC::Message* message);
+
   // Called on the worker thread
   PluginChannelBase();
 
@@ -86,7 +90,6 @@ class PluginChannelBase : public IPC::Channel::Listener,
   scoped_ptr<IPC::SyncChannel> channel_;
 
  private:
-
   IPC::Channel::Mode mode_;
   std::string channel_name_;
   int plugin_count_;

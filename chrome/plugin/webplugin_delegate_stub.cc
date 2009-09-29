@@ -148,12 +148,8 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
   //    params.containing_window, &parent));
 #endif
 
-  webplugin_ = new WebPluginProxy(channel_, instance_id_, page_url_);
-#if defined(OS_WIN)
-  if (!webplugin_->SetModalDialogEvent(params.modal_dialog_event))
-    return;
-#endif
-
+  webplugin_ = new WebPluginProxy(
+      channel_, instance_id_, page_url_, params.containing_window);
   delegate_ = WebPluginDelegateImpl::Create(path, mime_type_, parent);
   if (delegate_) {
     webplugin_->set_delegate(delegate_);
@@ -289,7 +285,7 @@ void WebPluginDelegateStub::OnGetPluginScriptableObject(int* route_id,
   // The stub will delete itself when the proxy tells it that it's released, or
   // otherwise when the channel is closed.
   new NPObjectStub(
-      object, channel_.get(), *route_id, webplugin_->modal_dialog_event(),
+      object, channel_.get(), *route_id, webplugin_->containing_window(),
       page_url_);
 
   // Release ref added by GetPluginScriptableObject (our stub holds its own).

@@ -227,6 +227,12 @@ IPC_BEGIN_MESSAGES(Plugin)
 
   IPC_SYNC_MESSAGE_ROUTED1_0(PluginMsg_HandleURLRequestReply,
                              PluginMsg_URLRequestReply_Params)
+
+  IPC_MESSAGE_CONTROL1(PluginMsg_SignalModalDialogEvent,
+                       gfx::NativeViewId /* containing_window */)
+
+  IPC_MESSAGE_CONTROL1(PluginMsg_ResetModalDialogEvent,
+                       gfx::NativeViewId /* containing_window */)
 IPC_END_MESSAGES(Plugin)
 
 

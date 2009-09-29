@@ -4,10 +4,9 @@
 
 #include "chrome/plugin/npobject_proxy.h"
 
-#include "base/waitable_event.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/plugin/npobject_util.h"
-#include "chrome/plugin/plugin_channel_base.h"
+#include "chrome/plugin/plugin_channel.h"
 #include "webkit/api/public/WebBindings.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/plugins/plugin_instance.h"
@@ -51,12 +50,12 @@ NPObjectProxy::NPObjectProxy(
     PluginChannelBase* channel,
     int route_id,
     intptr_t npobject_ptr,
-    base::WaitableEvent* modal_dialog_event,
+    gfx::NativeViewId containing_window,
     const GURL& page_url)
     : channel_(channel),
       route_id_(route_id),
       npobject_ptr_(npobject_ptr),
-      modal_dialog_event_(modal_dialog_event),
+      containing_window_(containing_window),
       page_url_(page_url) {
   channel_->AddRoute(route_id, this, true);
 }
@@ -72,12 +71,12 @@ NPObjectProxy::~NPObjectProxy() {
 NPObject* NPObjectProxy::Create(PluginChannelBase* channel,
                                 int route_id,
                                 intptr_t npobject_ptr,
-                                base::WaitableEvent* modal_dialog_event,
+                                gfx::NativeViewId containing_window,
                                 const GURL& page_url) {
   NPObjectWrapper* obj = reinterpret_cast<NPObjectWrapper*>(
       WebBindings::createObject(0, &npclass_proxy_));
   obj->proxy = new NPObjectProxy(
-      channel, route_id, npobject_ptr, modal_dialog_event, page_url);
+      channel, route_id, npobject_ptr, containing_window, page_url);
 
   return reinterpret_cast<NPObject*>(obj);
 }
@@ -161,6 +160,7 @@ bool NPObjectProxy::NPInvokePrivate(NPP npp,
   }
 
   bool result = false;
+  gfx::NativeViewId containing_window = proxy->containing_window_;
   NPIdentifier_Param name_param;
   if (is_default) {
     // The data won't actually get used, but set it so we don't send random
@@ -177,7 +177,7 @@ bool NPObjectProxy::NPInvokePrivate(NPP npp,
   for (unsigned int i = 0; i < arg_count; ++i) {
     NPVariant_Param param;
     CreateNPVariantParam(
-        args[i], channel_copy, &param, false, proxy->modal_dialog_event_,
+        args[i], channel_copy, &param, false, containing_window,
         proxy->page_url_);
     args_param.push_back(param);
   }
@@ -192,9 +192,13 @@ bool NPObjectProxy::NPInvokePrivate(NPP npp,
   // queue while waiting for a reply.  We need to do this to simulate what
   // happens when everything runs in-process (while calling MessageBox window
   // messages are pumped).
-  msg->set_pump_messages_event(proxy->modal_dialog_event_);
-
-  base::WaitableEvent* modal_dialog_event_handle = proxy->modal_dialog_event_;
+  if (IsPluginProcess()) {
+    PluginChannel* channel = static_cast<PluginChannel*>(proxy->channel_.get());
+    if (channel) {
+      msg->set_pump_messages_event(
+          channel->GetModalDialogEvent(containing_window));
+    }
+  }
 
   GURL page_url = proxy->page_url_;
   proxy->Send(msg);
@@ -206,8 +210,7 @@ bool NPObjectProxy::NPInvokePrivate(NPP npp,
     return false;
 
   CreateNPVariant(
-      param_result, channel_copy, np_result, modal_dialog_event_handle,
-      page_url);
+      param_result, channel_copy, np_result, containing_window, page_url);
   return true;
 }
 
@@ -248,17 +251,17 @@ bool NPObjectProxy::NPGetProperty(NPObject *obj,
   if (obj == NULL)
     return false;
 
-  bool result = false;
   NPObjectProxy* proxy = GetProxy(obj);
   if (!proxy) {
     return obj->_class->getProperty(obj, name, np_result);
   }
 
+  bool result = false;
+  gfx::NativeViewId containing_window = proxy->containing_window_;
   NPIdentifier_Param name_param;
   CreateNPIdentifierParam(name, &name_param);
 
   NPVariant_Param param;
-  base::WaitableEvent* modal_dialog_event_handle = proxy->modal_dialog_event_;
   scoped_refptr<PluginChannelBase> channel(proxy->channel_);
 
   GURL page_url = proxy->page_url_;
@@ -270,7 +273,7 @@ bool NPObjectProxy::NPGetProperty(NPObject *obj,
     return false;
 
   CreateNPVariant(
-      param, channel.get(), np_result, modal_dialog_event_handle, page_url);
+      param, channel.get(), np_result, containing_window, page_url);
 
   return true;
 }
@@ -281,19 +284,20 @@ bool NPObjectProxy::NPSetProperty(NPObject *obj,
   if (obj == NULL)
     return false;
 
-  bool result = false;
   NPObjectProxy* proxy = GetProxy(obj);
   if (!proxy) {
     return obj->_class->setProperty(obj, name, value);
   }
 
+  bool result = false;
+  gfx::NativeViewId containing_window = proxy->containing_window_;
   NPIdentifier_Param name_param;
   CreateNPIdentifierParam(name, &name_param);
 
   NPVariant_Param value_param;
   CreateNPVariantParam(
       *value, proxy->channel(), &value_param, false,
-      proxy->modal_dialog_event_, proxy->page_url_);
+      containing_window, proxy->page_url_);
 
   proxy->Send(new NPObjectMsg_SetProperty(
       proxy->route_id(), name_param, value_param, &result));
@@ -384,6 +388,7 @@ bool NPObjectProxy::NPNConstruct(NPObject *obj,
   }
 
   bool result = false;
+  gfx::NativeViewId containing_window = proxy->containing_window_;
 
   // Note: This instance can get destroyed in the context of
   // Send so addref the channel in this scope.
@@ -392,7 +397,7 @@ bool NPObjectProxy::NPNConstruct(NPObject *obj,
   for (unsigned int i = 0; i < arg_count; ++i) {
     NPVariant_Param param;
     CreateNPVariantParam(
-        args[i], channel_copy, &param, false, proxy->modal_dialog_event_,
+        args[i], channel_copy, &param, false, containing_window,
         proxy->page_url_);
     args_param.push_back(param);
   }
@@ -402,9 +407,13 @@ bool NPObjectProxy::NPNConstruct(NPObject *obj,
       proxy->route_id_, args_param, &param_result, &result);
 
   // See comment in NPObjectProxy::NPInvokePrivate.
-  msg->set_pump_messages_event(proxy->modal_dialog_event_);
-
-  base::WaitableEvent* modal_dialog_event_handle = proxy->modal_dialog_event_;
+  if (IsPluginProcess()) {
+    PluginChannel* channel = static_cast<PluginChannel*>(proxy->channel_.get());
+    if (channel) {
+      msg->set_pump_messages_event(
+          channel->GetModalDialogEvent(proxy->containing_window_));
+    }
+  }
 
   GURL page_url = proxy->page_url_;
   proxy->Send(msg);
@@ -416,8 +425,7 @@ bool NPObjectProxy::NPNConstruct(NPObject *obj,
     return false;
 
   CreateNPVariant(
-      param_result, channel_copy, np_result, modal_dialog_event_handle,
-      page_url);
+      param_result, channel_copy, np_result, containing_window, page_url);
   return true;
 }
 
@@ -425,12 +433,13 @@ bool NPObjectProxy::NPNEvaluate(NPP npp,
                                 NPObject *obj,
                                 NPString *script,
                                 NPVariant *result_var) {
-  bool result = false;
   NPObjectProxy* proxy = GetProxy(obj);
   if (!proxy) {
     return false;
   }
 
+  bool result = false;
+  gfx::NativeViewId containing_window = proxy->containing_window_;
   bool popups_allowed = false;
 
   if (npp) {
@@ -450,11 +459,15 @@ bool NPObjectProxy::NPNEvaluate(NPP npp,
                                                        &result_param,
                                                        &result);
 
-  // Please refer to the comments in NPObjectProxy::NPInvokePrivate for
-  // the reasoning behind setting the pump messages event in the sync message.
-  msg->set_pump_messages_event(proxy->modal_dialog_event_);
+  // See comment in NPObjectProxy::NPInvokePrivate.
+  if (IsPluginProcess()) {
+    PluginChannel* channel = static_cast<PluginChannel*>(proxy->channel_.get());
+    if (channel) {
+      msg->set_pump_messages_event(
+          channel->GetModalDialogEvent(proxy->containing_window_));
+    }
+  }
   scoped_refptr<PluginChannelBase> channel(proxy->channel_);
-  base::WaitableEvent* modal_dialog_event_handle = proxy->modal_dialog_event_;
 
   GURL page_url = proxy->page_url_;
   proxy->Send(msg);
@@ -464,8 +477,7 @@ bool NPObjectProxy::NPNEvaluate(NPP npp,
     return false;
 
   CreateNPVariant(
-      result_param, channel.get(), result_var, modal_dialog_event_handle,
-      page_url);
+      result_param, channel.get(), result_var, containing_window, page_url);
   return true;
 }
 

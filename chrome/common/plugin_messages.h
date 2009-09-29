@@ -37,9 +37,6 @@ struct PluginMsg_Init_Params {
   GURL page_url;
   std::vector<std::string> arg_names;
   std::vector<std::string> arg_values;
-#if defined(OS_WIN)
-  HANDLE modal_dialog_event;
-#endif
   bool load_manually;
 };
 
@@ -123,9 +120,6 @@ struct ParamTraits<PluginMsg_Init_Params> {
     DCHECK(p.arg_names.size() == p.arg_values.size());
     WriteParam(m, p.arg_names);
     WriteParam(m, p.arg_values);
-#if defined(OS_WIN)
-    WriteParam(m, p.modal_dialog_event);
-#endif
     WriteParam(m, p.load_manually);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
@@ -134,9 +128,6 @@ struct ParamTraits<PluginMsg_Init_Params> {
            ReadParam(m, iter, &p->page_url) &&
            ReadParam(m, iter, &p->arg_names) &&
            ReadParam(m, iter, &p->arg_values) &&
-#if defined(OS_WIN)
-           ReadParam(m, iter, &p->modal_dialog_event) &&
-#endif
            ReadParam(m, iter, &p->load_manually);
   }
   static void Log(const param_type& p, std::wstring* l) {
@@ -151,10 +142,6 @@ struct ParamTraits<PluginMsg_Init_Params> {
     l->append(L", ");
     LogParam(p.arg_values, l);
     l->append(L", ");
-#if defined(OS_WIN)
-    LogParam(p.modal_dialog_event, l);
-    l->append(L", ");
-#endif
     LogParam(p.load_manually, l);
     l->append(L")");
   }

@@ -23,11 +23,6 @@
 #include "webkit/glue/webplugin.h"
 
 class PluginChannel;
-
-namespace base {
-class WaitableEvent;
-}
-
 class WebPluginDelegateImpl;
 
 // This is an implementation of WebPlugin that proxies all calls to the
@@ -38,7 +33,8 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
   // marshalled WebPlugin calls.
   WebPluginProxy(PluginChannel* channel,
                  int route_id,
-                 const GURL& page_url);
+                 const GURL& page_url,
+                 gfx::NativeViewId containing_window);
   ~WebPluginProxy();
 
   void set_delegate(WebPluginDelegateImpl* d) { delegate_ = d; }
@@ -48,9 +44,8 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
   void WillDestroyWindow(gfx::PluginWindowHandle window);
 #if defined(OS_WIN)
   void SetWindowlessPumpEvent(HANDLE pump_messages_event);
-  // Returns true on success.
-  bool SetModalDialogEvent(HANDLE modal_dialog_event);
 #endif
+
   void CancelResource(int id);
   void Invalidate();
   void InvalidateRect(const gfx::Rect& rect);
@@ -127,9 +122,7 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
   void ResourceClientDeleted(
       webkit_glue::WebPluginResourceClient* resource_client);
 
-  base::WaitableEvent* modal_dialog_event() {
-    return modal_dialog_event_.get();
-  }
+  gfx::NativeViewId containing_window() { return containing_window_; }
 
  private:
   bool Send(IPC::Message* msg);
@@ -166,7 +159,7 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
   WebPluginDelegateImpl* delegate_;
   gfx::Rect damaged_rect_;
   bool waiting_for_paint_;
-  scoped_ptr<base::WaitableEvent> modal_dialog_event_;
+  gfx::NativeViewId containing_window_;
   // The url of the main frame hosting the plugin.
   GURL page_url_;
 

@@ -26,10 +26,6 @@ struct NPVariant_Param;
 typedef _NPVariant NPVariant;
 typedef void *NPIdentifier;
 
-namespace base {
-class WaitableEvent;
-}
-
 // Needs to be called early in the plugin process lifetime, before any
 // plugin instances are initialized.
 void PatchNPNFunctions();
@@ -53,14 +49,14 @@ void CreateNPVariantParam(const NPVariant& variant,
                           PluginChannelBase* channel,
                           NPVariant_Param* param,
                           bool release,
-                          base::WaitableEvent* modal_dialog_event,
+                          gfx::NativeViewId containing_window,
                           const GURL& page_url);
 
 // Creates an NPVariant from the marshalled object.
 void CreateNPVariant(const NPVariant_Param& param,
                      PluginChannelBase* channel,
                      NPVariant* result,
-                     base::WaitableEvent* modal_dialog_event,
+                     gfx::NativeViewId containing_window,
                      const GURL& page_url);
 
 #if defined(OS_WIN)

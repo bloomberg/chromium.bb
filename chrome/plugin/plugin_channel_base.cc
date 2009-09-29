@@ -46,6 +46,15 @@ PluginChannelBase* PluginChannelBase::GetChannel(
   return channel;
 }
 
+void PluginChannelBase::Broadcast(IPC::Message* message) {
+  for (PluginChannelMap::iterator iter = g_plugin_channels_.begin();
+       iter != g_plugin_channels_.end();
+       ++iter) {
+    iter->second->Send(new IPC::Message(*message));
+  }
+  delete message;
+}
+
 PluginChannelBase::PluginChannelBase()
     : plugin_count_(0),
       peer_pid_(0),

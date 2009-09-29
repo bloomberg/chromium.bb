@@ -6,10 +6,15 @@
 #define CHROME_PLUGIN_PLUGIN_CHANNEL_H_
 
 #include <vector>
+#include "base/ref_counted.h"
 #include "base/scoped_handle.h"
 #include "build/build_config.h"
 #include "chrome/plugin/plugin_channel_base.h"
 #include "chrome/plugin/webplugin_delegate_stub.h"
+
+namespace base {
+class WaitableEvent;
+}
 
 // Encapsulates an IPC channel between the plugin process and one renderer
 // process.  On the renderer side there's a corresponding PluginChannelHost.
@@ -33,6 +38,10 @@ class PluginChannel : public PluginChannelBase {
   int renderer_id() { return renderer_id_; }
 
   int GenerateRouteID();
+
+  // Returns the event that's set when a call to the renderer causes a modal
+  // dialog to come up.
+  base::WaitableEvent* GetModalDialogEvent(gfx::NativeViewId containing_window);
 
 #if defined(OS_POSIX)
   // When first created, the PluginChannel gets assigned the file descriptor
@@ -62,6 +71,8 @@ class PluginChannel : public PluginChannelBase {
   virtual bool Init(MessageLoop* ipc_message_loop, bool create_pipe_now);
 
  private:
+  class MessageFilter;
+
   // Called on the plugin thread
   PluginChannel();
 
@@ -90,6 +101,7 @@ class PluginChannel : public PluginChannelBase {
   int in_send_;  // Tracks if we're in a Send call.
   bool log_messages_;  // True if we should log sent and received messages.
   bool off_the_record_; // True if the renderer is in off the record mode.
+  scoped_refptr<MessageFilter> filter_;  // Handles the modal dialog events.
 
   DISALLOW_EVIL_CONSTRUCTORS(PluginChannel);
 };
