@@ -419,7 +419,7 @@ WebInspector.ResourcesPanel.prototype._createResourceView = function(
   if (resource.type == undefined && resource.url) {
     if (resource.url.search('\.js$') != -1) {
       resource.type = WebInspector.Resource.Type.Script;
-    } else if (scriptOrResource.url.search('\.html$') != -1) {
+    } else if (resource.url.search('\.html$') != -1) {
       resource.type = WebInspector.Resource.Type.Document;
     }
   }
