@@ -578,6 +578,22 @@
    fun:g_object_new_valist
 }
 {
+   bug_16584
+   Memcheck:Leak
+   fun:_Znwj
+   ...
+   fun:_ZN7WebCore10CSSRuleSet12addToRuleSetEPNS_16AtomicStringImplERN3WTF7HashMapIS2_PNS_15CSSRuleDataListENS3_7PtrHashIS2_EENS3_10HashTraitsIS2_EENS9_IS6_EEEEPNS_12CSSStyleRuleEPNS_11CSSSelectorE
+   fun:_ZN7WebCore10CSSRuleSet7addRuleEPNS_12CSSStyleRuleEPNS_11CSSSelectorE
+   fun:_ZN7WebCore10CSSRuleSet17addRulesFromSheetEPNS_13CSSStyleSheetERKNS_19MediaQueryEvaluatorEPNS_16CSSStyleSelectorE
+   ...
+   fun:_ZN7WebCore16CSSStyleSelectorC1EPNS_8DocumentERKNS_6StringEPNS_14StyleSheetListEPNS_13CSSStyleSheetEbb
+   fun:_ZN7WebCore8Document6attachEv
+   fun:_ZN7WebCore5Frame11setDocumentEN3WTF10PassRefPtrINS_8DocumentEEE
+   fun:_ZN7WebCore11FrameLoader5beginERKNS_4KURLEbPNS_14SecurityOriginE
+   fun:_ZN7WebCore11FrameLoader4initEv
+   fun:_ZN7WebCore5Frame4initEv
+}
+{
    bug_17113
    Memcheck:Leak
    fun:_Znw*
