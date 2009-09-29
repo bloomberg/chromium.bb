@@ -30,6 +30,7 @@ class ChromePluginTest : public testing::Test, public URLRequest::Delegate {
         plugin_(NULL),
         expected_payload_(NULL),
         request_context_(new TestURLRequestContext()) {
+    test_funcs_.test_make_request = NULL;
   }
 
   // Loads/unloads the chrome test plugin.
