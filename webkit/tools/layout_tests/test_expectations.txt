@@ -663,7 +663,7 @@ BUG4360 : LayoutTests/storage/domstorage/sessionstorage/string-conversion.html =
 // Depends on SessionStorage.  I'm not sure if this is working yet, but I don't think we need to SKIP it.
 BUG4360 : LayoutTests/http/tests/loading/deleted-host-in-resource-load-delegate-callback.html = TIMEOUT
 
-// Database
+// HTML5 databases are not supported in test_shell yet
 BUG4359 SKIP : LayoutTests/storage/close-during-stress-test.html = PASS
 BUG4359 SKIP : LayoutTests/storage/database-lock-after-reload.html = PASS
 BUG4359 SKIP : LayoutTests/storage/empty-statement.html = PASS
@@ -680,9 +680,11 @@ BUG4359 SKIP : LayoutTests/storage/success-callback.html = PASS
 BUG4359 SKIP : LayoutTests/storage/transaction-callback-exception-crash.html = PASS
 BUG4359 SKIP : LayoutTests/storage/transaction-error-callback.html = PASS
 BUG4359 SKIP : LayoutTests/fast/js/exceptions-thrown-in-callbacks.html = PASS
-BUG4359 : LayoutTests/storage/test-authorizer.html = TIMEOUT PASS
-BUG4359 : LayoutTests/storage/read-and-write-transactions-dont-run-together.html = TIMEOUT
-BUG4359 : LayoutTests/storage/read-transactions-running-concurrently.html = TIMEOUT
+BUG4359 SKIP : LayoutTests/storage/test-authorizer.html = PASS
+BUG4359 SKIP : LayoutTests/storage/open-database-while-transaction-in-progress.html = PASS
+BUG4359 SKIP : LayoutTests/storage/read-and-write-transactions-dont-run-together.html = PASS
+BUG4359 SKIP : LayoutTests/storage/read-transactions-running-concurrently.html = PASS
+BUG4359 SKIP : LayoutTests/storage/multiple-transactions-on-different-handles.html = PASS
 
 // Implement HTML5 Geolocation API.
 BUG11246 : LayoutTests/fast/dom/Geolocation = FAIL
