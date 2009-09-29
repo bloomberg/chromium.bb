@@ -1969,9 +1969,6 @@ BUG15217 MAC : LayoutTests/fast/js/switch-behaviour.html = FAIL
 // WebKit 45086:45111
 BUG15270 : LayoutTests/fast/js/excessive-comma-usage.html = FAIL
 
-// WebKit 45247:45270
-BUG15478 : LayoutTests/fast/frames/viewsource-on-image-file.html = FAIL
-
 // WebKit 45270:45287
 BUG15490 LINUX : LayoutTests/editing/deleting/25322-1.html = PASS FAIL CRASH
 
