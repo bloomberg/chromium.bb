@@ -9,13 +9,14 @@
 
   // The feed URL is the first component and always present.
   var feedUrl = decodeURIComponent(queryString[0]);
-  
+
   // We allow synchronous requests for testing. This component is only present
   // if true.
   var synchronousRequest = queryString[1] == "synchronous";
-  
+
   // The XMLHttpRequest object that tries to load and parse the feed.
   var req;
+  var reqStylesheet;
 
   // What to show when we cannot parse the feed name.
   var unknownName = "Unknown feed name";
@@ -26,14 +27,27 @@
   // The maximum number of characters to show in the feed item title.
   var maxTitleCount = 64;
 
-  // The maximum number of characters to show for the feed item description.
-  var maxDescCount = 1024;
+  // The style sheet we use for both the subscribe page and the IFRAME.
+  var style_sheet = "";  // Populated later using a XMLHttpRequest.
 
   // Navigates to the reader of the user's choice (for subscribing to the feed).
   function navigate() {
     var select = document.getElementById('readers');
     var url = select.options[select.selectedIndex].value + feedUrl;
     document.location = url;
+  }
+
+  function loadStylesheet() {
+    reqStylesheet = new XMLHttpRequest();
+    reqStylesheet.onload = handleCssLoaded;
+    reqStylesheet.onerror = loadFeed;  // I ain't got no style, lets do without.
+    reqStylesheet.open("GET", "style.css", true);
+    reqStylesheet.send(null);
+  }
+
+  function handleCssLoaded() {
+    style_sheet = reqStylesheet.responseText;
+    loadFeed();
   }
 
   // Parses the feed specified. We will either end up in handleResponse or
@@ -62,29 +76,27 @@
   function handleFeedParsingFailed(error) {
     setFeedTitle(unknownName);
 
-    // First part of the error message.
-    var spanErrorPrefix = document.createElement('span');
-    spanErrorPrefix.setAttribute('class', 'item_desc');
-    spanErrorPrefix.appendChild(
-        document.createTextNode("Unable to show feed preview ("));
+    // The tests always expect an IFRAME, so add an one showing the error.
+    var html = "<html><body><span id=\"error\" class=\"item_desc\">" + error +
+               "</span></html>";
 
-    // The actual error.
-    var spanError = document.createElement('span');
-    spanError.id = 'error';
-    spanError.setAttribute('class', 'item_desc');
-    spanError.appendChild(document.createTextNode(error));
+    embedAsIframe(html);
+  }
 
-    // Closing braces, etc.
-    var spanErrorSuffix = document.createElement('span');
-    spanErrorSuffix.setAttribute('class', 'item_desc');
-    spanErrorSuffix.appendChild(
-        document.createTextNode(")."));
-
-    // Add the error message.
+  function embedAsIframe(html) {
     var itemsTag = document.getElementById('items');
-    itemsTag.appendChild(spanErrorPrefix);
-    itemsTag.appendChild(spanError);
-    itemsTag.appendChild(spanErrorSuffix);
+    html = html.replace(/"/g, "%22");
+
+    iframe = document.createElement('iframe');
+    iframe.src = "data:text/html;charset=utf-8," + html;
+    iframe.id = "rss";
+    iframe.height = "100%";
+    iframe.width = "100%";
+    iframe.scrolling = "auto";
+    iframe.frameBorder = "0";
+    iframe.marginWidth = "0";
+    iframe.noResize = "noresize";
+    itemsTag.appendChild(iframe);
   }
 
   // Handles parsing the feed data we got back from XMLHttpRequest.
@@ -107,6 +119,21 @@
       setFeedTitle(title.textContent);
     else
       setFeedTitle(unknownName);
+
+    // Obtain the base url so that we can show images using relative path.
+    var base_url = "";
+    var slash = feedUrl.lastIndexOf("/");
+    if (slash > -1)
+      base_url = feedUrl.substring(0, slash + 1);
+    else
+      base_url = feedUrl;
+    base_url = "<base href=\"" + base_url + "\" />";
+
+    // Start building the part we render inside an IFRAME. We use a table to
+    // ensure that items are separated vertically from each other.
+    var items_html = "<html><head>" + base_url +
+                     "<style>" + style_sheet + "</style>" + "</head>" +
+                     "<body><table>";
 
     // Now parse the rest. Some use <entry> for each feed item, others use
     // <channel><item>.
@@ -132,15 +159,13 @@
       var itemDesc = item.getElementsByTagName('description')[0];
       if (!itemDesc)
         itemDesc = item.getElementsByTagName('summary')[0];
+      if (!itemDesc)
+        itemDesc = item.getElementsByTagName('content')[0];
 
       if (itemDesc)
         itemDesc = itemDesc.textContent;
       else
         itemDesc = "";
-
-      // Ensure max length for description.
-      if (itemDesc.length > maxDescCount)
-        itemDesc = itemDesc.substring(0, maxDescCount) + "...";
 
       // Grab the link URL.
       var itemLink = item.getElementsByTagName('link');
@@ -150,62 +175,27 @@
       else
         link = itemLink[0].getAttribute('href');
 
-      // Create an anchor node for showing the title.
-      var anchorTitle = document.createElement('a');
-      anchorTitle.id = 'anchor_' + String(i);
-      anchorTitle.setAttribute('class', 'item_title');
-      anchorTitle.setAttribute('href', link);
-      anchorTitle.setAttribute('target', '_blank');
-      anchorTitle.appendChild(document.createTextNode(itemTitle));
+      items_html = items_html +
+          "<tr><td>" +
+          "<a id=\"anchor_" + String(i) + "\" href=\"" + link + "\" " +
+          "class=\"item_title\">" +
+          itemTitle + "</a><br>";
 
-      // Create a description node.
-      var spanDesc = document.createElement('span');
-      spanDesc.id = 'desc_' + String(i);
-      spanDesc.setAttribute('class', 'item_desc');
-      spanDesc.appendChild(document.createTextNode(itemDesc));
-
-      // Add this to the document.
-      itemsTag.appendChild(anchorTitle);
-      itemsTag.appendChild(document.createElement('br'));
-      itemsTag.appendChild(spanDesc);
-      itemsTag.appendChild(document.createElement('br'));
-      itemsTag.appendChild(document.createElement('br'));
+      items_html = items_html + "<span class=\"item_desc\" " +
+                                "id=\"desc_" + String(i) + "\">" +
+                                itemDesc + "<br><br>" +
+                                "</td></tr>";
     }
+    items_html = items_html + "</table></body></html>";
+
+    // Add an IFRAME with the html contents.
+    embedAsIframe(items_html);
   }
 </script>
-
-<style>
-body {
-  font-family: arial, sans-serif;
-  font-size: 11px;
-}
-a {
-  color: #2244D2;
-  font-weight:bold;
-  text-decoration: none;
-}
-a:hover {
-  font-weight:bold;
-  text-decoration: underline;
-}
-
-.splitter {
-  padding: 2px 8px 2px 5px;
-  border-top: solid 1px #9CC2EF;
-  background: #EBEFF9;
-  font-size: 13px;
-  font-weight:bold;
-}
-.item_title {
-  font-size: 12px;
-}
-.item_desc {
-  font-size: 12px;
-}
-</style>
+  <link rel="stylesheet" href="style.css" type="text/css" />
 </head>
 
-<body onload="loadFeed();">
+<body onload="loadStylesheet();">
   <table>
   <tr>
     <td width="75">

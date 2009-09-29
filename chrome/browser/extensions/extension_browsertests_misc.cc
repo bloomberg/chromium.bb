@@ -295,16 +295,20 @@ void GetParsedFeedData(Browser* browser, std::string* feed_title,
                        std::string* item_title, std::string* item_desc,
                        std::string* error) {
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      browser->GetSelectedTabContents()->render_view_host(), L"",
+      browser->GetSelectedTabContents()->render_view_host(),
+      L"",  // Title is on the main page, all the rest is in the IFRAME.
       jscript_feed_title, feed_title));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      browser->GetSelectedTabContents()->render_view_host(), L"",
+      browser->GetSelectedTabContents()->render_view_host(),
+      L"//html/body/div/iframe[1]",
       jscript_anchor, item_title));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      browser->GetSelectedTabContents()->render_view_host(), L"",
+      browser->GetSelectedTabContents()->render_view_host(),
+      L"//html/body/div/iframe[1]",
       jscript_desc, item_desc));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      browser->GetSelectedTabContents()->render_view_host(), L"",
+      browser->GetSelectedTabContents()->render_view_host(),
+      L"//html/body/div/iframe[1]",
       jscript_error, error));
 }
 
@@ -327,6 +331,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeed) {
   EXPECT_STREQ("Feed for 'MyFeed2'", feed_title.c_str());
   EXPECT_STREQ("My item title1", item_title.c_str());
   EXPECT_STREQ("This is a summary.", item_desc.c_str());
+  EXPECT_STREQ("No error", error.c_str());
+
+  ui_test_utils::NavigateToURL(browser(), GetFeedUrl("feed3.xml"));
+  GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
+  EXPECT_STREQ("Feed for 'Google Code buglist rss feed'", feed_title.c_str());
+  EXPECT_STREQ("My dear title", item_title.c_str());
+  EXPECT_STREQ("My dear content", item_desc.c_str());
   EXPECT_STREQ("No error", error.c_str());
 
   // Try a feed that doesn't exist.
@@ -352,6 +363,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeed) {
   EXPECT_STREQ("element 'anchor_0' not found", item_title.c_str());
   EXPECT_STREQ("element 'desc_0' not found", item_desc.c_str());
   EXPECT_STREQ("Not a valid feed", error.c_str());
+
+  // Try a feed with a link with an onclick handler (before r27440 this would
+  // trigger a NOTREACHED).
+  ui_test_utils::NavigateToURL(browser(), GetFeedUrl("feed_script.xml"));
+  GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
+  EXPECT_STREQ("Feed for 'MyFeedTitle'", feed_title.c_str());
+  EXPECT_STREQ("Title 1", item_title.c_str());
+  EXPECT_STREQ("Desc VIDEO", item_desc.c_str());
+  EXPECT_STREQ("No error", error.c_str());
 }
 
 #if defined(OS_WIN)  // TODO(port) - enable.
