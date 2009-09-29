@@ -124,7 +124,18 @@ devtools.InspectorControllerImpl.prototype.addResourceSourceToFrame =
   if (!resource) {
     return;
   }
-  DevToolsHost.addResourceSourceToFrame(identifier, resource.mimeType, element);
+
+  // Temporary fix for http://crbug/23260.
+  var mimeType = resource.mimeType;
+  if (!mimeType && resource.url) {
+    if (resource.url.search('\.js$') != -1) {
+      mimeType = 'application/x-javascript';
+    } else if (resource.url.search('\.html$') != -1) {
+      mimeType = 'text/html';
+    }
+  }
+
+  DevToolsHost.addResourceSourceToFrame(identifier, mimeType, element);
 };
 
 

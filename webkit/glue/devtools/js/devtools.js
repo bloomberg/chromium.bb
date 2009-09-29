@@ -410,3 +410,20 @@ WebInspector.ConsoleMessage.prototype.setMessageBody = function(args) {
   orig.call(this, args);
 };
 })();
+
+// Temporary fix for http://crbug/23260.
+(function() {
+var orig = WebInspector.ResourcesPanel.prototype._createResourceView;
+WebInspector.ResourcesPanel.prototype._createResourceView = function(
+    resource) {
+  if (resource.type == undefined && resource.url) {
+    if (resource.url.search('\.js$') != -1) {
+      resource.type = WebInspector.Resource.Type.Script;
+    } else if (scriptOrResource.url.search('\.html$') != -1) {
+      resource.type = WebInspector.Resource.Type.Document;
+    }
+  }
+
+  return orig.apply(this, arguments);
+};
+})();
