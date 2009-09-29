@@ -63,9 +63,10 @@ def UpdateCurrentCheckoutIfAppropriate():
   """Reset the current gclient branch if that's what we have checked out."""
   branch = RunGit(['symbolic-ref', '-q', 'HEAD'])
   if branch != MAGIC_GCLIENT_BRANCH:
-    print ("third_party/WebKit has some other branch ('%s') checked out." %
-           branch)
-    print "Run 'git checkout gclient' to put this under control of gclient."
+    print "We have now updated the 'gclient' branch, but third_party/WebKit"
+    print "has some other branch ('%s') checked out." % branch
+    print "Run 'git checkout gclient' under third_party/WebKit if you want"
+    print "to switch it to the version requested by DEPS."
     return
 
   if subprocess.call(['git', 'diff-index', '--exit-code', '--shortstat',
