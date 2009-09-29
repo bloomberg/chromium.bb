@@ -1640,7 +1640,8 @@ void BrowserWindowGtk::InitWidgets() {
   if (IsExtensionShelfSupported()) {
     extension_shelf_.reset(new ExtensionShelfGtk(browser()->profile(),
                                                  browser_.get()));
-    extension_shelf_->AddShelfToBox(window_vbox_);
+    gtk_box_pack_end(GTK_BOX(window_vbox_), extension_shelf_->widget(),
+                     FALSE, FALSE, 0);
   }
 
   // This vbox surrounds the render area: find bar, info bars and render view.

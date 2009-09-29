@@ -27,9 +27,6 @@ class ExtensionShelfGtk : public ExtensionShelfModelObserver,
   ExtensionShelfGtk(Profile* profile, Browser* browser);
   virtual ~ExtensionShelfGtk();
 
-  // Adds this GTK shelf into a sizing box.
-  void AddShelfToBox(GtkWidget* box);
-
   // Change the visibility of the bookmarks bar. (Starts out hidden, per GTK's
   // default behaviour).
   void Show();
@@ -50,6 +47,10 @@ class ExtensionShelfGtk : public ExtensionShelfModelObserver,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  GtkWidget* widget() {
+    return event_box_.get();
+  }
 
  private:
   class Toolstrip;

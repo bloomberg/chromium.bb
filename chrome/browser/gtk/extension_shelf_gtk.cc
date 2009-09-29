@@ -81,10 +81,6 @@ ExtensionShelfGtk::~ExtensionShelfGtk() {
   event_box_.Destroy();
 }
 
-void ExtensionShelfGtk::AddShelfToBox(GtkWidget* box) {
-  gtk_box_pack_end(GTK_BOX(box), event_box_.get(), FALSE, FALSE, 0);
-}
-
 void ExtensionShelfGtk::Show() {
   gtk_widget_show_all(event_box_.get());
 }
