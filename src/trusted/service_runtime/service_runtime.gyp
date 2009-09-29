@@ -170,11 +170,11 @@
               'msvs_cygwin_shell': 0,
               'msvs_quote_cmd': 0,
             }],
-            ['OS=="mac"', {
+            ['OS=="mac" or OS=="linux"', {
               # TODO(gregoryd): replace by a Python script
               # that does not use redirection.
               'action' :
-                ['bash', '-c', 'python nacl_syscall_handlers_gen3.py -c -f "Video|Audio|Multimedia" < <@(syscall_handler) > <@(_outputs)'],
+                ['bash', 'nacl_syscall_handlers_gen3.sh', '<@(syscall_handler)', '<@(_outputs)']
             }, { # OS != mac
               'action':
                 # TODO(gregoryd): find out how to generate a file

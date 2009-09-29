@@ -60,11 +60,11 @@
               'msvs_cygwin_shell': 0,
               'msvs_quote_cmd': 0,
             }],
-            ['OS=="mac"', {
+            ['OS=="mac" or OS=="linux"', {
               # TODO(gregoryd): replace with a python script that
               # does not use redirection.
               'action':
-                ['bash', '-c', '<@(_inputs) > <@(_outputs)'],
+                ['bash', 'output-wrapper.sh', '<@(_inputs)', '<@(_outputs)'],
             }, {
               'action':
                 ['<@(_inputs)', '>', '<@(_outputs)'],
@@ -86,9 +86,9 @@
               'msvs_cygwin_shell': 0,
               'msvs_quote_cmd': 0,
             }],
-            ['OS=="mac"', {
+            ['OS=="mac" or OS=="linux"', {
               'action':
-                ['bash', '-c', '<@(_inputs) > <@(_outputs)'],
+                ['bash', 'output-wrapper.sh', '<@(_inputs)', '<@(_outputs)'],
             }, {
               'action':
                 ['<@(_inputs)', '>', '<@(_outputs)'],
