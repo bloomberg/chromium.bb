@@ -803,6 +803,9 @@ BUG14885 : LayoutTests/fast/js/JSON-stringify-replacer.html = FAIL
 // and would need to be proxied through the browser
 BUG1042838 : LayoutTests/http/tests/security/local-user-CSS-from-remote.html = FAIL
 
+// Implement CSS -webkit-font-smoothing property support.
+BUG23270 WIN LINUX : LayoutTests/fast/css/font-smoothing.html = FAIL
+
 // Extra space at end of test results.  Since this is a crash test, a
 // FAIL here is just as good as running the test normally.
 // FAIL results from an extra newline at the top of the results
@@ -836,7 +839,6 @@ BUG10433 : LayoutTests/fast/dom/Window/webkitConvertPoint.html = FAIL
 BUG9071 MAC WIN DEBUG SLOW : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL PASS
 BUG9071 LINUX : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL
 BUG10436 WIN LINUX : LayoutTests/fast/block/float/nested-clearance.html = FAIL
-
 
 // -----------------------------------------------------------------
 // SVG TESTS
@@ -2249,9 +2251,6 @@ BUG21958 WIN MAC LINUX DEBUG : LayoutTests/svg/hixie/error/012.xml = FAIL PASS
 // WK roll 48399:48423 (brettw)
 BUG22014 : LayoutTests/http/tests/loading/redirect-with-no-location-crash.html = FAIL
 BUG22014 LINUX MAC : LayoutTests/transitions/hang-with-bad-transition-list.html = PASS FAIL
-
-// WK roll 48423:48468 (dglazkov for ukai)
-BUG_DGLAZKOV WIN LINUX : LayoutTests/fast/css/font-smoothing.html = FAIL
 
 // WebKit merge 48500:48585, newly implemented Object.defineProperty.
 BUG22526 : LayoutTests/fast/js/Object-create.html = FAIL
