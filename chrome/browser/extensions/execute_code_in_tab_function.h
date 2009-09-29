@@ -19,7 +19,7 @@ class MessageLoop;
 class ExecuteCodeInTabFunction : public AsyncExtensionFunction,
                                  public NotificationObserver {
  public:
-  ExecuteCodeInTabFunction() : execute_tab_id_(-1), ui_loop_(NULL) {}
+  ExecuteCodeInTabFunction() : execute_tab_id_(-1) {}
 
  private:
   virtual bool RunImpl();
@@ -28,25 +28,20 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Load contents from file whose path is specified in JSON arguments. Run
-  // in file thread.
-  void LoadFile();
+  // Called when contents from the file whose path is specified in JSON
+  // arguments has been loaded.
+  void DidLoadFile(bool success, const std::string& data);
 
-  // Run in UI thread.
-  void Execute();
+  // Run in UI thread.  Code string contains the code to be executed.
+  void Execute(const std::string& code_string);
 
   NotificationRegistrar registrar_;
 
   // Id of tab which executes code.
   int execute_tab_id_;
 
-  MessageLoop* ui_loop_;
-
   // Contain path of file which is specified in JSON arguments.
   FilePath file_path_;
-
-  // Contain code to be executed.
-  std::string code_string_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXECUTE_CODE_IN_TAB_FUNCTION_H__

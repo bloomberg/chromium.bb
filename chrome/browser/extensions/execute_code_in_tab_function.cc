@@ -4,12 +4,10 @@
 
 #include "chrome/browser/extensions/execute_code_in_tab_function.h"
 
-#include "base/thread.h"
-#include "base/file_util.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
+#include "chrome/browser/net/file_reader.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -67,13 +65,14 @@ bool ExecuteCodeInTabFunction::RunImpl() {
     return false;
   }
 
+  std::string code_string;
   if (script_info->HasKey(kCodeKey)) {
-    if (!script_info->GetString(kCodeKey, &code_string_))
+    if (!script_info->GetString(kCodeKey, &code_string))
       return false;
   }
 
-  if (!code_string_.empty()) {
-    Execute();
+  if (!code_string.empty()) {
+    Execute(code_string);
     return true;
   }
 
@@ -88,19 +87,19 @@ bool ExecuteCodeInTabFunction::RunImpl() {
     return false;
   }
 
-  ui_loop_ = MessageLoop::current();
-  MessageLoop* work_loop = g_browser_process->file_thread()->message_loop();
-  work_loop->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &ExecuteCodeInTabFunction::LoadFile));
+  scoped_refptr<FileReader> file_reader(new FileReader(
+      file_path_, NewCallback(this, &ExecuteCodeInTabFunction::DidLoadFile)));
+  file_reader->Start();
+  AddRef();  // Keep us alive until DidLoadFile is called.
 
   return true;
 }
 
-void ExecuteCodeInTabFunction::LoadFile() {
-  DCHECK(ui_loop_);
-  std::string content;
-  if (!file_util::ReadFileToString(file_path_, &content)) {
-
+void ExecuteCodeInTabFunction::DidLoadFile(bool success,
+                                           const std::string& data) {
+  if (success) {
+    Execute(data);
+  } else {
 #if defined(OS_POSIX)
     error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kLoadFileError,
         file_path_.value());
@@ -108,20 +107,12 @@ void ExecuteCodeInTabFunction::LoadFile() {
     error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kLoadFileError,
         WideToUTF8(file_path_.value()));
 #endif  // OS_WIN
-
-    ui_loop_->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &ExecuteCodeInTabFunction::SendResponse,
-                          false));
-  } else {
-    code_string_ = content;
-    ui_loop_->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &ExecuteCodeInTabFunction::Execute));
+    SendResponse(false);
   }
-
-  return;
+  Release();  // Balance the AddRef taken in RunImpl
 }
 
-void ExecuteCodeInTabFunction::Execute() {
+void ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
   TabContents* contents = NULL;
   Browser* browser = NULL;
   if (!ExtensionTabUtil::GetTabById(execute_tab_id_, profile(), &browser, NULL,
@@ -141,7 +132,7 @@ void ExecuteCodeInTabFunction::Execute() {
                  NotificationService::AllSources());
   AddRef();  // balanced in Observe()
   contents->ExecuteCode(request_id(), extension_id(), is_js_code,
-                        code_string_);
+                        code_string);
 }
 
 void ExecuteCodeInTabFunction::Observe(NotificationType type,
