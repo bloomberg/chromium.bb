@@ -174,7 +174,7 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                            int flags);
   void WindowSimulateKeyPress(const IPC::Message& message,
                               int handle,
-                              wchar_t key,
+                              int key,
                               int flags);
   void GetWindowBounds(int handle, gfx::Rect* bounds, bool* result);
   void SetWindowBounds(int handle, const gfx::Rect& bounds, bool* result);

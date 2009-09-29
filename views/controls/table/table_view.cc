@@ -1057,15 +1057,6 @@ LRESULT TableView::OnNotify(int w_param, LPNMHDR hdr) {
       OnDoubleClick();
       break;
 
-    // If we see a key down message, we need to invoke the OnKeyDown handler
-    // in order to give our class (or any subclass) and opportunity to perform
-    // a key down triggered action, if such action is necessary.
-    case LVN_KEYDOWN: {
-      NMLVKEYDOWN* key_down_message = reinterpret_cast<NMLVKEYDOWN*>(hdr);
-      OnKeyDown(key_down_message->wVKey);
-      break;
-    }
-
     case LVN_COLUMNCLICK: {
       const TableColumn& column = GetColumnAtPosition(
           reinterpret_cast<NMLISTVIEW*>(hdr)->iSubItem);
@@ -1459,10 +1450,11 @@ void TableView::OnSelectedStateChanged() {
   }
 }
 
-void TableView::OnKeyDown(unsigned short virtual_keycode) {
+bool TableView::OnKeyDown(base::KeyboardCode virtual_keycode) {
   if (!ignore_listview_change_ && table_view_observer_) {
     table_view_observer_->OnKeyDown(virtual_keycode);
   }
+  return false;  // Let the key event be processed as ususal.
 }
 
 void TableView::OnCheckedStateChanged(int model_row, bool is_checked) {

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/gfx/gtk_util.h"
+#include "base/keyboard_codes.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -162,7 +163,7 @@ void NativeMenuGtk::AddMenuItemAt(int index,
                               submenu->GetNativeMenu());
   }
 
-  views::Accelerator accelerator(0, false, false, false);
+  views::Accelerator accelerator(base::VKEY_UNKNOWN, false, false, false);
   if (model_->GetAcceleratorAt(index, &accelerator)) {
     // TODO(beng): accelerators w/gtk_widget_add_accelerator.
   }

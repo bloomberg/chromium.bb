@@ -4,8 +4,10 @@
 
 #include "chrome/browser/automation/ui_controls.h"
 
+#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/win_util.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "views/view.h"
@@ -133,18 +135,18 @@ void InputDispatcher::NotifyTask() {
 
 // Populate the INPUT structure with the appropriate keyboard event
 // parameters required by SendInput
-bool FillKeyboardInput(wchar_t key, INPUT* input, bool key_up) {
+bool FillKeyboardInput(base::KeyboardCode key, INPUT* input, bool key_up) {
   memset(input, 0, sizeof(INPUT));
   input->type = INPUT_KEYBOARD;
-  input->ki.wVk = static_cast<WORD>(key);
+  input->ki.wVk = win_util::KeyboardCodeToWin(key);
   input->ki.dwFlags = key_up ? KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP :
-    KEYEVENTF_EXTENDEDKEY;
+                               KEYEVENTF_EXTENDEDKEY;
 
   return true;
 }
 
 // Send a key event (up/down)
-bool SendKeyEvent(wchar_t key, bool up) {
+bool SendKeyEvent(base::KeyboardCode key, bool up) {
   INPUT input = { 0 };
 
   if (!FillKeyboardInput(key, &input, up))
@@ -156,7 +158,8 @@ bool SendKeyEvent(wchar_t key, bool up) {
   return true;
 }
 
-bool SendKeyPressImpl(wchar_t key, bool control, bool shift, bool alt,
+bool SendKeyPressImpl(base::KeyboardCode key,
+                      bool control, bool shift, bool alt,
                       Task* task) {
   scoped_refptr<InputDispatcher> dispatcher(
       task ? new InputDispatcher(task, WM_KEYUP) : NULL);
@@ -165,19 +168,19 @@ bool SendKeyPressImpl(wchar_t key, bool control, bool shift, bool alt,
 
   int i = 0;
   if (control) {
-    if (!FillKeyboardInput(VK_CONTROL, &input[i], false))
+    if (!FillKeyboardInput(base::VKEY_CONTROL, &input[i], false))
       return false;
     i++;
   }
 
   if (shift) {
-    if (!FillKeyboardInput(VK_SHIFT, &input[i], false))
+    if (!FillKeyboardInput(base::VKEY_SHIFT, &input[i], false))
       return false;
     i++;
   }
 
   if (alt) {
-    if (!FillKeyboardInput(VK_MENU, &input[i], false))
+    if (!FillKeyboardInput(base::VKEY_MENU, &input[i], false))
       return false;
     i++;
   }
@@ -191,19 +194,19 @@ bool SendKeyPressImpl(wchar_t key, bool control, bool shift, bool alt,
   i++;
 
   if (alt) {
-    if (!FillKeyboardInput(VK_MENU, &input[i], true))
+    if (!FillKeyboardInput(base::VKEY_MENU, &input[i], true))
       return false;
     i++;
   }
 
   if (shift) {
-    if (!FillKeyboardInput(VK_SHIFT, &input[i], true))
+    if (!FillKeyboardInput(base::VKEY_SHIFT, &input[i], true))
       return false;
     i++;
   }
 
   if (control) {
-    if (!FillKeyboardInput(VK_CONTROL, &input[i], true))
+    if (!FillKeyboardInput(base::VKEY_CONTROL, &input[i], true))
       return false;
     i++;
   }
@@ -304,14 +307,15 @@ bool SendMouseEventsImpl(MouseButton type, int state, Task* task) {
 
 // public functions -----------------------------------------------------------
 
-bool SendKeyPress(gfx::NativeWindow window, wchar_t key, bool control,
-                  bool shift, bool alt) {
+bool SendKeyPress(gfx::NativeWindow window, base::KeyboardCode key,
+                  bool control, bool shift, bool alt) {
   return SendKeyPressImpl(key, control, shift, alt, NULL);
 }
 
-bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window, wchar_t key,
-                                bool control, bool shift,
-                                bool alt, Task* task) {
+bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
+                                base::KeyboardCode key,
+                                bool control, bool shift, bool alt,
+                                Task* task) {
   return SendKeyPressImpl(key, control, shift, alt, task);
 }
 

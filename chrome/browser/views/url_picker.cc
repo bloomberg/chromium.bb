@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "app/table_model.h"
 #include "app/table_model_observer.h"
+#include "base/keyboard_codes.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -130,7 +131,7 @@ UrlPicker::UrlPicker(UrlPickerDelegate* delegate,
 
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
-  AddAccelerator(views::Accelerator(VK_RETURN, false, false, false));
+  AddAccelerator(views::Accelerator(base::VKEY_RETURN, false, false, false));
 }
 
 UrlPicker::~UrlPicker() {

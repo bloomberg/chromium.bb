@@ -40,9 +40,9 @@
 
 namespace base {
 
-int WindowsKeyCodeForGdkKeyCode(int keycode);
+base::KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode);
 
-int GdkKeyCodeForWindowsKeyCode(int keycode);
+int GdkKeyCodeForWindowsKeyCode(base::KeyboardCode keycode);
 
 } // namespace
 

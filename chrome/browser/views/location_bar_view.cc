@@ -966,7 +966,7 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
   // it can be shared between Windows and Linux.
   // For now, we just override back-space as it is the accelerator for back
   // navigation.
-  if (e.GetCharacter() == base::VKEY_BACK)
+  if (e.GetKeyCode() == base::VKEY_BACK)
     return true;
   return false;
 #endif

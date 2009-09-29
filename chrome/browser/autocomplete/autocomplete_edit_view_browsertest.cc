@@ -121,7 +121,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(*edit_view);
   }
 
-  void SendKey(wchar_t key, bool control, bool shift, bool alt) {
+  void SendKey(base::KeyboardCode key, bool control, bool shift, bool alt) {
     gfx::NativeWindow window = NULL;
     ASSERT_NO_FATAL_FAILURE(GetNativeWindow(&window));
     ui_controls::SendKeyPressNotifyWhenDone(window, key, control, shift, alt,
@@ -131,7 +131,8 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
 
   void SendKeySequence(const wchar_t* keys) {
     for (; *keys; ++keys)
-      ASSERT_NO_FATAL_FAILURE(SendKey(*keys, false, false, false));
+      ASSERT_NO_FATAL_FAILURE(SendKey(static_cast<base::KeyboardCode>(*keys),
+                                      false, false, false));
   }
 
   void WaitForTabOpenOrClose(int expected_tab_count) {
@@ -144,7 +145,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
                   (tab_count < expected_tab_count ?
                    NotificationType::TAB_PARENTED :
                    NotificationType::TAB_CLOSED),
-                  NotificationService::AllSources());
+                   NotificationService::AllSources());
 
     while (!HasFailure() && browser()->tab_count() != expected_tab_count)
       ui_test_utils::RunMessageLoop();

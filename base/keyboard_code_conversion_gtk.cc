@@ -44,7 +44,7 @@
 
 namespace base {
 
-int WindowsKeyCodeForGdkKeyCode(int keycode) {
+base::KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode) {
   switch (keycode) {
     case GDK_KP_0:
       return VKEY_NUMPAD0;  // (60) Numeric keypad 0 key
@@ -404,14 +404,14 @@ int WindowsKeyCodeForGdkKeyCode(int keycode) {
     case GDK_F22:
     case GDK_F23:
     case GDK_F24:
-      return VKEY_F1 + (keycode - GDK_F1);
+      return static_cast<base::KeyboardCode>(VKEY_F1 + (keycode - GDK_F1));
     default:
-      return 0;
+      return VKEY_UNKNOWN;
     }
 }
 
 // TODO(jcampan): this method might be incomplete.
-int GdkKeyCodeForWindowsKeyCode(int keycode) {
+int GdkKeyCodeForWindowsKeyCode(base::KeyboardCode keycode) {
   switch (keycode) {
     case VKEY_NUMPAD0:
       return GDK_KP_0;

@@ -310,10 +310,9 @@ void TabContentsViewGtk::HandleKeyboardEvent(
   bool alt_pressed = (event.modifiers & WebInputEvent::AltKey) ==
                      WebInputEvent::AltKey;
 
-  focus_manager->ProcessAccelerator(views::Accelerator(event.windowsKeyCode,
-                                                       shift_pressed,
-                                                       ctrl_pressed,
-                                                       alt_pressed));
+  focus_manager->ProcessAccelerator(
+      views::Accelerator(static_cast<base::KeyboardCode>(event.windowsKeyCode),
+                         shift_pressed, ctrl_pressed, alt_pressed));
   // DANGER: |this| could be deleted now!
 
   // Note that we do not handle Gtk mnemonics/accelerators or binding set here

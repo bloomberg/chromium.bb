@@ -6,6 +6,7 @@
 
 #include "app/gfx/canvas.h"
 #include "app/resource_bundle.h"
+#include "base/keyboard_codes.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "grit/theme_resources.h"
 
@@ -63,7 +64,8 @@ void StarToggle::OnMouseReleased(const views::MouseEvent& e,
 }
 
 bool StarToggle::OnKeyPressed(const views::KeyEvent& e) {
-  if ((e.GetCharacter() == VK_SPACE) || (e.GetCharacter() == VK_RETURN)) {
+  if ((e.GetKeyCode() == base::VKEY_SPACE) ||
+      (e.GetKeyCode() == base::VKEY_RETURN)) {
     SwitchState();
     return true;
   }

@@ -10,6 +10,7 @@
 
 #include "app/gfx/color_utils.h"
 #include "app/gfx/font.h"
+#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "views/event.h"
 
@@ -123,8 +124,8 @@ void Link::OnMouseReleased(const MouseEvent& e, bool canceled) {
 
 bool Link::OnKeyPressed(const KeyEvent& e) {
 #if defined(OS_WIN)
-  bool activate = ((e.GetCharacter() == VK_SPACE) ||
-                   (e.GetCharacter() == VK_RETURN));
+  bool activate = ((e.GetKeyCode() == base::VKEY_SPACE) ||
+                   (e.GetKeyCode() == base::VKEY_RETURN));
 #else
   bool activate = false;
   NOTIMPLEMENTED();
@@ -146,7 +147,8 @@ bool Link::OnKeyPressed(const KeyEvent& e) {
 bool Link::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
 #if defined(OS_WIN)
   // Make sure we don't process space or enter as accelerators.
-  return (e.GetCharacter() == VK_SPACE) || (e.GetCharacter() == VK_RETURN);
+  return (e.GetKeyCode() == base::VKEY_SPACE) ||
+      (e.GetKeyCode() == base::VKEY_RETURN);
 #else
   NOTIMPLEMENTED();
   return false;

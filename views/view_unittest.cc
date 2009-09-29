@@ -817,7 +817,7 @@ bool TestView::AcceleratorPressed(const Accelerator& accelerator) {
 #if defined(OS_WIN)
 TEST_F(ViewTest, ActivateAccelerator) {
   // Register a keyboard accelerator before the view is added to a window.
-  views::Accelerator return_accelerator(VK_RETURN, false, false, false);
+  views::Accelerator return_accelerator(base::VKEY_RETURN, false, false, false);
   TestView* view = new TestView();
   view->Reset();
   view->AddAccelerator(return_accelerator);
@@ -841,7 +841,7 @@ TEST_F(ViewTest, ActivateAccelerator) {
   EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 1);
 
   // Hit the escape key. Nothing should happen.
-  views::Accelerator escape_accelerator(VK_ESCAPE, false, false, false);
+  views::Accelerator escape_accelerator(base::VKEY_ESCAPE, false, false, false);
   EXPECT_FALSE(focus_manager->ProcessAccelerator(escape_accelerator));
   EXPECT_EQ(view->accelerator_count_map_[return_accelerator], 1);
   EXPECT_EQ(view->accelerator_count_map_[escape_accelerator], 0);
@@ -1097,7 +1097,7 @@ class DefaultButtonTest : public ViewTest {
 
   void SimularePressingEnterAndCheckDefaultButton(ButtonID button_id) {
 #if defined(OS_WIN)
-    KeyEvent event(Event::ET_KEY_PRESSED, VK_RETURN, 0, 0);
+    KeyEvent event(Event::ET_KEY_PRESSED, base::VKEY_RETURN, 0, 0);
     focus_manager_->OnKeyEvent(event);
 #else
     // TODO(platform)

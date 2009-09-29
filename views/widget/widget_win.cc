@@ -571,12 +571,14 @@ void WidgetWin::OnInitMenuPopup(HMENU menu,
 }
 
 void WidgetWin::OnKeyDown(TCHAR c, UINT rep_cnt, UINT flags) {
-  KeyEvent event(Event::ET_KEY_PRESSED, c, rep_cnt, flags);
+  KeyEvent event(Event::ET_KEY_PRESSED,
+                 win_util::WinToKeyboardCode(c), rep_cnt, flags);
   SetMsgHandled(root_view_->ProcessKeyEvent(event));
 }
 
 void WidgetWin::OnKeyUp(TCHAR c, UINT rep_cnt, UINT flags) {
-  KeyEvent event(Event::ET_KEY_RELEASED, c, rep_cnt, flags);
+  KeyEvent event(Event::ET_KEY_RELEASED,
+                 win_util::WinToKeyboardCode(c), rep_cnt, flags);
   SetMsgHandled(root_view_->ProcessKeyEvent(event));
 }
 
