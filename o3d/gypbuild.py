@@ -1,4 +1,4 @@
-#!/usr/bin/python2.4
+#! /usr/bin/env python
 # Copyright 2009 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,6 +27,7 @@ import os
 import os.path
 import sys
 import subprocess
+import platform
 
 
 def Execute(args):
@@ -39,14 +40,16 @@ def Execute(args):
 
 
 def main(args):
+  os.chdir('build')
   if os.name == 'nt':
-    os.chdir('build')
     Execute(['msbuild',
              os.path.abspath('all.sln')] + args[1:])
-  elif os.name == 'mac':
-    print "Error: Need code for mac"
-  elif os.name == 'posix':
-    print "Error: Need code for posix"
+  elif platform.system() == 'Darwin':
+    Execute(['xcodebuild',
+             '-project', 'all.xcodeproj'])
+  elif platform.system() == 'Linux':
+    Execute(['hammer',
+             '-f', 'all_main.scons'])
   else:
     print "Error: Unknown platform", os.name
 
