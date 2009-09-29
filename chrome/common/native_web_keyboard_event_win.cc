@@ -10,6 +10,7 @@ using WebKit::WebInputEventFactory;
 using WebKit::WebKeyboardEvent;
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent() {
+  memset(&os_event, 0, sizeof(os_event));
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(
