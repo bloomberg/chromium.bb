@@ -276,7 +276,8 @@ void ChildProcessHost::ListenerHook::OnChannelError() {
 }
 
 
-ChildProcessHost::Iterator::Iterator() : all_(true) {
+ChildProcessHost::Iterator::Iterator()
+    : all_(true), type_(UNKNOWN_PROCESS) {
   DCHECK(MessageLoop::current() ==
       ChromeThread::GetMessageLoop(ChromeThread::IO)) <<
           "ChildProcessInfo::Iterator must be used on the IO thread.";
