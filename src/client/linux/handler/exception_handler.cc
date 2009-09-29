@@ -88,6 +88,7 @@
 // A wrapper for the tgkill syscall: send a signal to a specific thread.
 static int tgkill(pid_t tgid, pid_t tid, int sig) {
   syscall(__NR_tgkill, tgid, tid, sig);
+  return 0;
 }
 
 namespace google_breakpad {
@@ -171,6 +172,7 @@ bool ExceptionHandler::InstallHandlers() {
       return false;
     old_handlers_.push_back(std::make_pair(kExceptionSignals[i], old));
   }
+  return true;
 }
 
 // Runs before crashing: normal context.
