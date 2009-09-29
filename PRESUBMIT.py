@@ -143,3 +143,7 @@ def CheckTreeIsOpen(input_api, output_api, url, closed, url_text):
   except IOError:
     pass
   return []
+
+
+def GetPreferredTrySlaves():
+  return ['win', 'linux', 'mac']
