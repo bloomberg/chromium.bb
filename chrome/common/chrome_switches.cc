@@ -381,8 +381,8 @@ const wchar_t kGearsPluginPathOverride[]       = L"gears-plugin-path";
 // Enable the fastback page cache.
 const wchar_t kEnableFastback[]                = L"enable-fastback";
 
-// Enable syncing bookmarks to a Google Account.
-const wchar_t kEnableSync[]                   = L"enable-sync";
+// Disable syncing bookmarks to a Google Account.
+const wchar_t kDisableSync[]                   = L"disable-sync";
 
 // Use the SyncerThread implementation that matches up with the old pthread
 // impl semantics, but using Chrome synchronization primitives.  The only

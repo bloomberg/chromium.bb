@@ -1369,7 +1369,7 @@ void ProfileImpl::StopCreateSessionServiceTimer() {
 
 ProfileSyncService* ProfileImpl::GetProfileSyncService() {
 #ifdef CHROME_PERSONALIZATION
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableSync)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync)) {
     if (!sync_service_.get())
       InitSyncService();
     return sync_service_.get();

@@ -222,6 +222,10 @@ TEST_F(TabContentsTest, NTPViewSource) {
   const GURL kGURL(kUrl);
 
   process()->sink().ClearMessages();
+
+  // The sync service must be created to host the sync NTP advertisement.
+  profile_->CreateProfileSyncService();
+
   controller().LoadURL(kGURL, GURL(), PageTransition::TYPED);
   rvh()->delegate()->RenderViewCreated(rvh());
   // Did we get the expected message?

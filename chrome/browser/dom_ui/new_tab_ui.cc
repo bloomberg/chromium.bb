@@ -1671,7 +1671,7 @@ NewTabUI::NewTabUI(TabContents* contents)
     }
 
 #ifdef CHROME_PERSONALIZATION
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableSync)) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync)) {
       AddMessageHandler((new NewTabPageSyncHandler())->Attach(this));
     }
 #endif

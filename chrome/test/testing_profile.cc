@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/history/history_backend.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_constants.h"
 
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
@@ -198,4 +199,20 @@ void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
   CancelableRequestConsumer consumer;
   history_service_->ScheduleDBTask(new QuittingHistoryDBTask(), &consumer);
   MessageLoop::current()->Run();
+}
+
+void TestingProfile::CreateProfileSyncService() {
+#ifdef CHROME_PERSONALIZATION
+  if (!profile_sync_service_.get()) {
+    profile_sync_service_.reset(new ProfileSyncService(this));
+    profile_sync_service_->Initialize();
+  }
+#endif
+}
+
+ProfileSyncService* TestingProfile::GetProfileSyncService() {
+#ifdef CHROME_PERSONALIZATION
+  return profile_sync_service_.get();
+#endif
+  return NULL;
 }

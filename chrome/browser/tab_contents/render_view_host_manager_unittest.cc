@@ -15,6 +15,10 @@
 class RenderViewHostManagerTest : public RenderViewHostTestHarness {
  public:
   void NavigateActiveAndCommit(const GURL& url) {
+    // Navigating to an empty URL opens the NTP.  The sync service must be
+    // created to host the sync advertisement.
+    profile_->CreateProfileSyncService();
+
     // Note: we navigate the active RenderViewHost because previous navigations
     // won't have committed yet, so NavigateAndCommit does the wrong thing
     // for us.
@@ -33,6 +37,9 @@ class RenderViewHostManagerTest : public RenderViewHostTestHarness {
 TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   GURL ntp(chrome::kChromeUINewTabURL);
   GURL dest("http://www.google.com/");
+
+  // The sync service must be created to host the sync NTP advertisement.
+  profile_->CreateProfileSyncService();
 
   // Navigate our first tab to the new tab page and then to the destination.
   NavigateActiveAndCommit(ntp);
@@ -87,6 +94,8 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
   NavigateActiveAndCommit(kNtpUrl);
 
   // Navigate.
+  // The sync service must be available to show the NTP sync advertisement.
+  profile_->CreateProfileSyncService();
   controller().LoadURL(kUrl, GURL() /* referer */, PageTransition::TYPED);
   // Simulate response from RenderView for FirePageBeforeUnload.
   rvh()->TestOnMessageReceived(
@@ -227,6 +236,8 @@ TEST_F(RenderViewHostManagerTest, DOMUI) {
 
   manager.Init(profile_.get(), instance, MSG_ROUTING_NONE);
 
+  // The sync service must be created to host the sync advertisement on the NTP.
+  profile_->CreateProfileSyncService();
   GURL url("chrome://newtab");
   NavigationEntry entry(NULL /* instance */, -1 /* page_id */, url,
                         GURL() /* referrer */, string16() /* title */,

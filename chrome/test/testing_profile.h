@@ -241,9 +241,9 @@ class TestingProfile : public Profile {
   // history service processes all pending requests.
   void BlockUntilHistoryProcessesPendingRequests();
 
-  virtual ProfileSyncService* GetProfileSyncService() {
-    return NULL;
-  }
+  // Creates and initializes a profile sync service if the tests require one.
+  void CreateProfileSyncService();
+  virtual ProfileSyncService* GetProfileSyncService();
 
  protected:
   // The path of the profile; the various database and other files are relative
@@ -262,6 +262,11 @@ class TestingProfile : public Profile {
 
   // The BookmarkModel. Only created if CreateBookmarkModel is invoked.
   scoped_ptr<BookmarkModel> bookmark_bar_model_;
+
+  // The ProfileSyncService.  Created by CreateProfileSyncService.
+#ifdef CHROME_PERSONALIZATION
+  scoped_ptr<ProfileSyncService> profile_sync_service_;
+#endif
 
   // The TemplateURLFetcher. Only created if CreateTemplateURLModel is invoked.
   scoped_ptr<TemplateURLModel> template_url_model_;

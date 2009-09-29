@@ -82,6 +82,9 @@ class DOMUITest : public RenderViewHostTestHarness {
 // TabContents when we first navigate to a DOM UI page, then to a standard
 // non-DOM-UI page.
 TEST_F(DOMUITest, DOMUIToStandard) {
+  // The sync service must be created to host the sync NTP advertisement.
+  profile_->CreateProfileSyncService();
+
   DoNavigationTest(contents(), 1);
 
   // Test the case where we're not doing the initial navigation. This is
@@ -94,6 +97,9 @@ TEST_F(DOMUITest, DOMUIToStandard) {
 }
 
 TEST_F(DOMUITest, DOMUIToDOMUI) {
+  // The sync service must be created to host the sync NTP advertisement.
+  profile_->CreateProfileSyncService();
+
   // Do a load (this state is tested above).
   GURL new_tab_url(chrome::kChromeUINewTabURL);
   controller().LoadURL(new_tab_url, GURL(), PageTransition::LINK);
@@ -113,6 +119,7 @@ TEST_F(DOMUITest, DOMUIToDOMUI) {
 TEST_F(DOMUITest, StandardToDOMUI) {
   // Start a pending navigation to a regular page.
   GURL std_url("http://google.com/");
+
   controller().LoadURL(std_url, GURL(), PageTransition::LINK);
 
   // The state should now reflect the default.
@@ -127,6 +134,9 @@ TEST_F(DOMUITest, StandardToDOMUI) {
   EXPECT_TRUE(contents()->ShouldDisplayFavIcon());
   EXPECT_FALSE(contents()->IsBookmarkBarAlwaysVisible());
   EXPECT_FALSE(contents()->FocusLocationBarByDefault());
+
+  // The sync service must be created to host the sync NTP advertisement.
+  profile_->CreateProfileSyncService();
 
   // Start a pending load for a DOMUI.
   GURL new_tab_url(chrome::kChromeUINewTabURL);
