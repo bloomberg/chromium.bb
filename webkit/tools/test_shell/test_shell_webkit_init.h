@@ -66,7 +66,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
 
 #if defined(OS_WIN)
     // Ensure we pick up the default theme engine.
-    setThemeEngine(NULL);
+    SetThemeEngine(NULL);
 #endif
   }
 
@@ -195,7 +195,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   }
 
 #if defined(OS_WIN)
-  void setThemeEngine(WebKit::WebThemeEngine* engine) {
+  void SetThemeEngine(WebKit::WebThemeEngine* engine) {
     active_theme_engine_ = engine ? engine : WebKitClientImpl::themeEngine();
   }
 

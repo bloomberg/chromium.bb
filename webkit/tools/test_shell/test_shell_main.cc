@@ -171,7 +171,7 @@ int main(int argc, char* argv[]) {
     platform.SelectUnifiedTheme();
 #if defined(OS_WIN)
   if (generic_theme)
-    test_shell_webkit_init.setThemeEngine(&engine);
+    test_shell_webkit_init.SetThemeEngine(&engine);
 #endif
 
   if (parsed_command_line.HasSwitch(test_shell::kTestShellTimeOut)) {
