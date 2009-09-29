@@ -1019,10 +1019,12 @@ void ToolbarView::CreatePageMenu() {
   page_menu_contents_->AddSeparator();
   page_menu_contents_->AddSubMenuWithStringId(
       IDS_DEVELOPER_MENU, devtools_menu_contents_.get());
-#endif
 
   page_menu_contents_->AddSeparator();
   page_menu_contents_->AddItemWithStringId(IDC_REPORT_BUG, IDS_REPORT_BUG);
+#else
+  NOTIMPLEMENTED();
+#endif
 
   page_menu_menu_.reset(new views::Menu2(page_menu_contents_.get()));
 }

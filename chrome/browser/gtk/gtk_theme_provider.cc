@@ -23,7 +23,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "grit/app_resources.h"
-//#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
 namespace {

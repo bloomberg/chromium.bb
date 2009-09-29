@@ -1110,7 +1110,7 @@ bool ProfileImpl::HasCreatedDownloadManager() const {
 
 void ProfileImpl::InitThemes() {
   if (!created_theme_provider_) {
-#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
+#if defined(OS_LINUX)
     theme_provider_.reset(new GtkThemeProvider);
 #else
     theme_provider_.reset(new BrowserThemeProvider);

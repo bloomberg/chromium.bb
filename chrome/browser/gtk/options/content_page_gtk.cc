@@ -52,8 +52,10 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
                               profile->GetPrefs(), this);
   ask_to_save_form_autofill_.Init(prefs::kFormAutofillEnabled,
                                   profile->GetPrefs(), this);
-  use_custom_chrome_frame_.Init(prefs::kUseCustomChromeFrame,
-                                profile->GetPrefs(), this);
+  if (browser_defaults::kCanToggleSystemTitleBar) {
+    use_custom_chrome_frame_.Init(prefs::kUseCustomChromeFrame,
+                                  profile->GetPrefs(), this);
+  }
 
   // Load initial values
   NotifyPrefChanged(NULL);

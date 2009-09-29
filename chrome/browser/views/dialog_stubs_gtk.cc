@@ -5,84 +5,91 @@
 // This file contains stub implementations of the functions declared in
 // browser_dialogs.h that are currently unimplemented in GTK-views.
 
+#include <gtk/gtk.h>
+
 #include "base/logging.h"
+#include "chrome/browser/gtk/about_chrome_dialog.h"
 #include "chrome/browser/fonts_languages_window.h"
+#include "chrome/browser/gtk/bookmark_manager_gtk.h"
+#include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
+#include "chrome/browser/gtk/edit_search_engine_dialog.h"
+#include "chrome/browser/gtk/keyword_editor_view.h"
+#include "chrome/browser/gtk/options/passwords_exceptions_window_gtk.h"
+#include "chrome/browser/gtk/repost_form_warning_gtk.h"
+#include "chrome/browser/gtk/task_manager_gtk.h"
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/views/browser_dialogs.h"
+#include "views/widget/widget.h"
 
 namespace browser {
 
 void ShowBugReportView(views::Widget* parent,
                        Profile* profile,
                        TabContents* tab) {
+  // Bug report view hasn't been implemented on gtk yet.
   NOTIMPLEMENTED();
 }
 
 void ShowClearBrowsingDataView(views::Widget* parent,
                                Profile* profile) {
-  NOTIMPLEMENTED();
+  ClearBrowsingDataDialogGtk::Show(GTK_WINDOW(parent->GetNativeView()),
+                                   profile);
 }
 
 void ShowSelectProfileDialog() {
+  // Only matters if we're going to support profile switching
+  // (switches::kEnableUserDataDirProfiles).
   NOTIMPLEMENTED();
 }
 
-void ShowImporterView(views::Widget* parent,
-                      Profile* profile) {
+void ShowImporterView(views::Widget* parent, Profile* profile) {
+  // Import currently doesn't matter.
   NOTIMPLEMENTED();
 }
 
 void ShowBookmarkManagerView(Profile* profile) {
-  NOTIMPLEMENTED();
+  BookmarkManagerGtk::Show(profile);
 }
 
 void ShowAboutChromeView(views::Widget* parent,
                          Profile* profile) {
-  NOTIMPLEMENTED();
+  ShowAboutDialogForProfile(GTK_WINDOW(parent->GetNativeView()), profile);
 }
 
 void ShowHtmlDialogView(gfx::NativeWindow parent, Browser* browser,
                         HtmlDialogUIDelegate* delegate) {
+  // Hasn't been implemented yet on linux.
   NOTIMPLEMENTED();
 }
 
 void ShowPasswordsExceptionsWindowView(Profile* profile) {
-  NOTIMPLEMENTED();
+  ShowPasswordsExceptionsWindow(profile);
 }
 
 void ShowKeywordEditorView(Profile* profile) {
-  NOTIMPLEMENTED();
+  KeywordEditorView::Show(profile);
 }
 
 void ShowNewProfileDialog() {
+  // Hasn't been implemented yet on linux.
   NOTIMPLEMENTED();
 }
 
 void ShowTaskManager() {
-  NOTIMPLEMENTED();
+  TaskManagerGtk::Show();
 }
 
 void EditSearchEngine(gfx::NativeWindow parent,
                       const TemplateURL* template_url,
                       EditSearchEngineControllerDelegate* delegate,
                       Profile* profile) {
-  NOTIMPLEMENTED();
+  new EditSearchEngineDialog(GTK_WINDOW(parent), template_url, NULL, profile);
 }
 
 void ShowRepostFormWarningDialog(gfx::NativeWindow parent_window,
                                  TabContents* tab_contents) {
-  NOTIMPLEMENTED();
+  new RepostFormWarningGtk(GTK_WINDOW(parent_window),
+                           &tab_contents->controller());
 }
 
 }  // namespace browser
-
-void ShowOptionsWindow(OptionsPage page,
-                       OptionsGroup highlight_group,
-                       Profile* profile) {
-  NOTIMPLEMENTED();
-}
-void ShowFontsLanguagesWindow(gfx::NativeWindow window,
-                              FontsLanguagesPage page,
-                              Profile* profile) {
-  NOTIMPLEMENTED();
-}

@@ -1249,7 +1249,7 @@ void BrowserThemeProvider::ClearCaches() {
   images_disk_cache_.clear();
 }
 
-#if defined(TOOLKIT_VIEWS)
+#if defined(OS_WIN)
 void BrowserThemeProvider::FreePlatformCaches() {
   // Views (Skia) has no platform image cache to clear.
 }

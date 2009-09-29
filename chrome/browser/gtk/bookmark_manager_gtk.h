@@ -327,7 +327,9 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   // The Organize menu item.
   GtkWidget* organize_;
   // The submenu the item pops up.
+#if defined(TOOLKIT_GTK)
   scoped_ptr<BookmarkContextMenu> organize_menu_;
+#endif
   // Whether the menu refers to the left selection.
   bool organize_is_for_left_;
 

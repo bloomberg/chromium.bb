@@ -30,7 +30,11 @@ const double kAutocompleteEditFontPixelSizeInPopup =
 
 const int kAutocompletePopupFontSize = 10;
 
+#if defined(TOOLKIT_VIEWS)
+const bool kCanToggleSystemTitleBar = false;
+#else
 const bool kCanToggleSystemTitleBar = true;
+#endif
 
 #endif
 

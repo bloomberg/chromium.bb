@@ -600,6 +600,7 @@ void BookmarkManagerGtk::ResetOrganizeMenu(bool left) {
   else if (parent)
     nodes.push_back(parent);
 
+#if defined(TOOLKIT_GTK)
   // We DeleteSoon on the old one to give any reference holders (e.g.
   // the event that caused this reset) a chance to release their refs.
   BookmarkContextMenu* old_menu = organize_menu_.release();
@@ -609,7 +610,6 @@ void BookmarkManagerGtk::ResetOrganizeMenu(bool left) {
   organize_menu_.reset(new BookmarkContextMenu(window_, profile_, NULL, NULL,
       parent, nodes, BookmarkContextMenu::BOOKMARK_MANAGER_ORGANIZE_MENU,
       NULL));
-#if defined(TOOLKIT_GTK)
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(organize_), organize_menu_->menu());
 #else
   // GTK+Views should implement this somehow.
@@ -1306,11 +1306,15 @@ gboolean BookmarkManagerGtk::OnTreeViewKeyPress(
   if (command == -1)
     return FALSE;
 
+#if defined(TOOLKIT_GTK)
   if (bm->organize_menu_.get() &&
       bm->organize_menu_->IsCommandEnabled(command)) {
     bm->organize_menu_->ExecuteCommand(command);
     return TRUE;
   }
+#else
+  NOTIMPLEMENTED();
+#endif
 
   return FALSE;
 }

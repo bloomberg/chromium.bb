@@ -268,10 +268,5 @@ void BookmarkEditor::Show(gfx::NativeView parent_window,
   NOTIMPLEMENTED();
 }
 
-void BookmarkManager::SelectInTree(Profile* profile, const BookmarkNode* node) {
-}
-void BookmarkManager::Show(Profile* profile) {
-}
-
 #endif
 

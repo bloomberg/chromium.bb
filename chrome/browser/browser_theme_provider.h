@@ -161,7 +161,7 @@ class BrowserThemeProvider : public NonThreadSafe,
   virtual bool ShouldUseNativeFrame();
   virtual bool HasCustomImage(int id);
   virtual bool GetRawData(int id, std::vector<unsigned char>* raw_data);
-#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
+#if defined(OS_LINUX)
   virtual GdkPixbuf* GetPixbufNamed(int id);
   virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id);
 #elif defined(OS_MACOSX)
@@ -321,7 +321,7 @@ class BrowserThemeProvider : public NonThreadSafe,
   // Do we have a custom frame image or custom tints?
   bool ShouldTintFrames();
 
-#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
+#if defined(OS_LINUX)
   // Loads an image and flips it horizontally if |rtl_enabled| is true.
   GdkPixbuf* GetPixbufImpl(int id, bool rtl_enabled);
 #endif
@@ -331,7 +331,7 @@ class BrowserThemeProvider : public NonThreadSafe,
   // using them.
   typedef std::map<int, SkBitmap*> ImageCache;
   ImageCache image_cache_;
-#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
+#if defined(OS_LINUX)
   typedef std::map<int, GdkPixbuf*> GdkPixbufMap;
   GdkPixbufMap gdk_pixbufs_;
 #elif defined(OS_MACOSX)
