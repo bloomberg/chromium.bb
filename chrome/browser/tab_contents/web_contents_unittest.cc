@@ -583,7 +583,12 @@ TEST_F(TabContentsTest, WebKitPrefs) {
   EXPECT_EQ(true, webkit_prefs.uses_universal_detector);
 
   // These should still be the default values.
-  EXPECT_EQ(L"Times New Roman", webkit_prefs.standard_font_family);
+#if defined(OS_MACOSX)
+  const wchar_t kDefaultFont[] = L"Times";
+#else
+  const wchar_t kDefaultFont[] = L"Times New Roman";
+#endif
+  EXPECT_EQ(kDefaultFont, webkit_prefs.standard_font_family);
   EXPECT_EQ(true, webkit_prefs.javascript_enabled);
 }
 
