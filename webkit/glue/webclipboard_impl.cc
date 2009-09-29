@@ -156,11 +156,8 @@ void WebClipboardImpl::writeImage(
     scw.WriteBitmapFromPixels(bitmap.getPixels(), image.size());
   }
 
-  if (!url.isEmpty()) {
-    scw.WriteBookmark(title, url.spec());
-    scw.WriteHTML(UTF8ToUTF16(URLToImageMarkup(url, title)), "");
-    scw.WriteText(UTF8ToUTF16(url.spec()));
-  }
+  // We intentionally only write the image.  If the user wants the URL, they
+  // can get that from the context menu.
 }
 
 bool WebClipboardImpl::ConvertBufferType(Buffer buffer,
