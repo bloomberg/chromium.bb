@@ -6,6 +6,7 @@
 
 #include "app/l10n_util_mac.h"
 #include "base/logging.h"
+#include "base/mac_util.h"
 #include "base/message_loop.h"
 #import "base/scoped_nsobject.h"
 #include "base/string_util.h"
@@ -54,7 +55,10 @@ NSString* keyForImportItem(ImportItem item) {
                browserName:(string16)browserName
                   observer:(ImportObserver*)observer
               itemsEnabled:(int16)items; {
-  self = [super initWithWindowNibName:@"ImportProgressDialog"];
+  NSString* nib_path =
+      [mac_util::MainAppBundle() pathForResource:@"ImportProgressDialog"
+                                          ofType:@"nib"];
+  self = [super initWithWindowNibPath:nib_path owner:self];
   if (self != nil) {
     importer_host_ = host;
     observer_ = observer;
@@ -69,9 +73,11 @@ NSString* keyForImportItem(ImportItem item) {
     [self setExplanatoryText:explanatory_text];
 
     progress_text_ =
-        [l10n_util::GetNSString(IDS_IMPORT_IMPORTING_PROGRESS_TEXT_MAC) retain];
+        [l10n_util::GetNSStringWithFixup(IDS_IMPORT_IMPORTING_PROGRESS_TEXT_MAC)
+        retain];
     done_text_ =
-        [l10n_util::GetNSString(IDS_IMPORT_IMPORTING_DONE_TEXT_MAC) retain];
+        [l10n_util::GetNSStringWithFixup(IDS_IMPORT_IMPORTING_DONE_TEXT_MAC)
+         retain];
 
     // Enable/disable item titles.
     NSColor* disabled = [NSColor disabledControlTextColor];
@@ -160,10 +166,7 @@ void StartImportingWithUI(gfx::NativeWindow parent_window,
 
   // Retrieve name of browser we're importing from and do a little dance to
   // convert wstring -> string16.
-  using base::SysCFStringRefToUTF16;
-  using base::SysWideToCFStringRef;
-  string16 import_browser_name =
-      SysCFStringRefToUTF16(SysWideToCFStringRef(source_profile.description));
+  string16 import_browser_name = WideToUTF16Hack(source_profile.description);
 
   // progress_dialog_ is responsible for deleting itself.
   ImportProgressDialogController* progress_dialog_ =
@@ -183,7 +186,7 @@ void StartImportingWithUI(gfx::NativeWindow parent_window,
   NSWindow* progress_window = [progress_dialog_ window];
   NSModalSession session = [NSApp beginModalSessionForWindow:progress_window];
   [progress_dialog_ showWindow:nil];
-  while(1) {
+  while (true) {
     if ([NSApp runModalSession:session] != NSRunContinuesResponse)
         break;
     MessageLoop::current()->RunAllPending();
