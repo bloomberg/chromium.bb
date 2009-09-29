@@ -109,7 +109,12 @@ class BackendDelegate : public HistoryBackend::Delegate {
 // HistoryBackend to work.
 class HistoryTest : public testing::Test {
  public:
-  HistoryTest() : history_service_(NULL), db_(NULL) {
+  HistoryTest()
+      : history_service_(NULL),
+        got_thumbnail_callback_(false),
+        redirect_query_success_(false),
+        query_url_success_(false),
+        db_(NULL) {
   }
   ~HistoryTest() {
   }
@@ -751,7 +756,7 @@ TEST(HistoryProfileTest, TypicalProfileVersion) {
 namespace {
 
 // Use this dummy value to scope the page IDs we give history.
-static const void* kAddArgsScope = (void*)0x12345678;
+static const void* kAddArgsScope = reinterpret_cast<void*>(0x12345678);
 
 // Creates a new HistoryAddPageArgs object for sending to the history database
 // with reasonable defaults and the given NULL-terminated URL string. The
