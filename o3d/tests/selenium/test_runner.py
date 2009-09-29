@@ -74,10 +74,10 @@ class TestResult(unittest.TestResult):
   """A specialized class that prints formatted text results to a stream.
 
   """
-  separator1 = "=" * 70
-  separator2 = "-" * 70
+  separator1 = "=" * 30
+  separator2 = "-" * 30
 
-  def __init__(self, stream, browser):
+  def __init__(self, stream, browser, verbose):
     unittest.TestResult.__init__(self)
     self.stream = stream
     # Dictionary of start times
@@ -85,6 +85,7 @@ class TestResult(unittest.TestResult):
     # Dictionary of results
     self.results = {}
     self.browser = browser
+    self.verbose = verbose
 
   def getDescription(self, test):
     """Gets description of test."""
@@ -97,10 +98,11 @@ class TestResult(unittest.TestResult):
     # Default testresult if success not called
     self.results[test] = "FAIL"
     unittest.TestResult.startTest(self, test)
-    self.stream.writeln()
-    self.stream.writeln(self.separator2)
-    self.stream.write(self.getDescription(test))
-    self.stream.writeln(" ... ")
+    if self.verbose:
+      self.stream.writeln()
+      self.stream.writeln(self.separator2)
+      self.stream.write(self.getDescription(test))
+      self.stream.writeln(" ... ")
 
   def stopTest(self, test):
     """Called when test is ended."""
@@ -108,6 +110,7 @@ class TestResult(unittest.TestResult):
     result = self.results[test]
     self.stream.writeln("SELENIUMRESULT %s <%s> [%.3fs]: %s"
                         % (test, self.browser, time_taken, result))
+    self.printErrors()
 
   def addSuccess(self, test):
     """Adds success result to TestResult."""
@@ -130,19 +133,21 @@ class TestResult(unittest.TestResult):
     self.testsRun += 1
     self.errors.append("No response from test")
 
-    self.stream.writeln()
-    self.stream.writeln(self.separator2)
-    self.stream.write(self.getDescription(test))
-    self.stream.writeln(" ... ")
-    self.stream.writeln("SELENIUMRESULT %s <%s> [?s]: FAIL (HUNG?)"
+    if self.verbose:
+      self.stream.writeln()
+      self.stream.writeln(self.separator2)
+      self.stream.write(self.getDescription(test))
+      self.stream.writeln(" ... ")
+    self.stream.writeln("SELENIUMRESULT %s <%s> [0s]: FAIL"
                         % (test, self.browser))
-    self.stream.writeln()
+    self.stream.writeln("Test was aborted due to timeout")
 
   def printErrors(self):
     """Prints all errors and failures."""
-    self.stream.writeln()
-    self.printErrorList("ERROR", self.errors)
-    self.printErrorList("FAIL", self.failures)
+    if self.errors:
+      self.printErrorList("ERROR", self.errors)
+    if self.failures:
+      self.printErrorList("FAIL", self.failures)
 
   def printErrorList(self, flavour, errors):
     """Prints a given list of errors."""
@@ -175,14 +180,15 @@ class TestRunnerThread(threading.Thread):
     test: the currently running test.
     browser: selenium_name of browser that will be tested.
   """
-  def __init__(self):
+  def __init__(self, verbose):
     threading.Thread.__init__(self)
     # This thread is a daemon so that the program can exit even if the
     # thread has not finished.
     self.setDaemon(True)
     self.completely_done_event = threading.Event()
-    self.test_copy = None
+    self.test = None
     self.browser = "default_browser"
+    self.verbose = verbose
 
   def IsCompletelyDone(self):
     """Returns true if this test runner is completely done."""
@@ -206,15 +212,14 @@ class TestRunnerThread(threading.Thread):
     self.test = test
 
     stream = StringBuffer()
-    result = TestResult(stream, self.browser)
+    result = TestResult(stream, self.browser, self.verbose)
     startTime = time.time()
     test(result)
     stopTime = time.time()
     timeTaken = stopTime - startTime
-    result.printErrors()
+    if self.verbose:
+      result.printErrors()
     run = result.testsRun
-    stream.writeln("Took %.2fs" % timeTaken)
-    stream.writeln()
     return result
   
 
@@ -229,8 +234,8 @@ class PDiffTestRunner(TestRunnerThread):
     end_testing_event: event that occurs when we are guaranteed no more tests
       will be added to the queue.
   """
-  def __init__(self, pdiff_queue, result_queue, browser):
-    TestRunnerThread.__init__(self)
+  def __init__(self, pdiff_queue, result_queue, browser, verbose):
+    TestRunnerThread.__init__(self, verbose)
     self.pdiff_queue = pdiff_queue
     self.result_queue = result_queue
     self.browser = browser
@@ -278,8 +283,8 @@ class SeleniumTestRunner(TestRunnerThread):
       diff test to the queue when the related selenium test passes.
     deadline: absolute time of when the test should be done.
   """
-  def __init__(self, sel_builder, browser, test_queue, pdiff_queue):
-    TestRunnerThread.__init__(self)
+  def __init__(self, sel_builder, browser, test_queue, pdiff_queue, verbose):
+    TestRunnerThread.__init__(self, verbose)
 
     # Synchronization.
     self.testing_event = threading.Event()

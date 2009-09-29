@@ -63,34 +63,28 @@ class PDiffTest(unittest.TestCase):
     # Loop over number of screenshots.
     for screenshot_no in range(self.num_screenshots):
       # Find reference image.
+      shotname = self.screenshot_name + str(screenshot_no + 1)
       J = os.path.join
       platform_img_path = J(self.ref_dir,
                             selenium_constants.PLATFORM_SCREENSHOT_DIR,
-                            self.screenshot_name + str(screenshot_no + 1) +
-                            '_reference.png')
+                            shotname + '_reference.png')
       reg_img_path = J(self.ref_dir,
                        selenium_constants.DEFAULT_SCREENSHOT_DIR,
-                       self.screenshot_name + str(screenshot_no + 1) +
-                       '_reference.png')
+                       shotname + '_reference.png')
 
       if os.path.exists(platform_img_path):
         ref_img_path = platform_img_path
       elif os.path.exists(reg_img_path):
         ref_img_path = reg_img_path
       else:
-        self.fail('Reference image for ' + self.screenshot_name + ' not found.'
-                  + '\nNeither file exists %s NOR %s' %
-                  (reg_img_path, platform_img_path))
+        self.fail('Reference image for ' + shotname + ' not found.')
   
       # Find generated image.
-      gen_img_path = J(self.gen_dir, self.screenshot_name +
-                       str(screenshot_no + 1) + '.png')
-      diff_img_path = J(self.gen_dir, 'cmp_' + self.screenshot_name +
-                        str(screenshot_no + 1) + '.png')
+      gen_img_path = J(self.gen_dir, shotname + '.png')
+      diff_img_path = J(self.gen_dir, 'cmp_' + shotname + '.png')
        
       self.assertTrue(os.path.exists(gen_img_path),
-                      'Generated screenshot for ' + self.screenshot_name +
-                      ' not found.\nFile does not exist: %s' % gen_img_path)
+                      'Generated screenshot for ' + shotname + ' not found.\n')
 
       # Run perceptual diff
       arguments = [self.pdiff_path,
@@ -126,14 +120,13 @@ class PDiffTest(unittest.TestCase):
       if pixel_match:
         different_pixels = pixel_match.group(1)
 
-      results += [(gen_img_path, int(different_pixels))]
+      results += [(shotname, int(different_pixels))]
 
     all_tests_passed = True
-    msg = "Pixel Threshold is %s. Failing screenshots:\n" % pixel_threshold
-    for path, pixels in results:
+    msg = "Pixel threshold is %s. Failing screenshots:\n" % pixel_threshold
+    for name, pixels in results:
       if pixels >= pixel_threshold:
         all_tests_passed = False
-        msg += "     %s, differing by %s\n" % (path, str(pixels))
+        msg += "     %s, differing by %s\n" % (name, str(pixels))
 
-    if not all_tests_passed:
-      self.assertTrue(all_tests_passed, msg)
+    self.assertTrue(all_tests_passed, msg)

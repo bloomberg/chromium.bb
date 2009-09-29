@@ -384,7 +384,7 @@ class SeleniumSessionBuilder:
     return new_session
 
 
-def TestBrowser(session_builder, browser, test_list):
+def TestBrowser(session_builder, browser, test_list, verbose):
   """Runs Selenium tests for a specific browser.
 
   Args:
@@ -397,7 +397,8 @@ def TestBrowser(session_builder, browser, test_list):
   """
   print "Testing %s..." % browser
   
-  summary_result = test_runner.TestResult(test_runner.StringBuffer(), browser)
+  summary_result = test_runner.TestResult(test_runner.StringBuffer(), browser,
+                                          verbose)
   
   # Fill up the selenium test queue.
   test_queue = Queue.Queue()
@@ -415,12 +416,13 @@ def TestBrowser(session_builder, browser, test_list):
     pdiff_result_queue = Queue.Queue()
     pdiff_worker = test_runner.PDiffTestRunner(pdiff_queue,
                                                pdiff_result_queue,
-                                               browser)
+                                               browser, verbose)
     pdiff_worker.start()
     
   # Start initial selenium test runner.
   worker = test_runner.SeleniumTestRunner(session_builder, browser,
-                                          test_queue, pdiff_queue)
+                                          test_queue, pdiff_queue,
+                                          verbose)
   worker.start()
 
   # Run through all selenium tests.
@@ -434,6 +436,12 @@ def TestBrowser(session_builder, browser, test_list):
       result = worker.Continue()
       result.printAll(sys.stdout)
       summary_result.merge(result)
+    
+    # Sleep here for a brief time.  This thread is polling the worker thread.
+    # We cannot wait for a message from the worker thread because the worker
+    # may hang on a bad test. We also do not want to sleep till the test's
+    # deadline because the test may finish before then.
+    time.sleep(.1)
 
   if FLAGS.screenshots:
     # Finish screenshot comparisons.
@@ -506,16 +514,22 @@ def _GetTestsFromFile(filename, prefix, test_prefix_filter, test_suffixes,
     options = arguments[2:]
 
     # TODO: Add filter based on test_type
+    test_skipped = False
     if test_path.startswith("Test"):
       name = test_path
     else:
       # Need to make a name.
       name = ("Test" + prefix + re.sub("\W", "_", test_path) +
               test_type.capitalize())
-
+      # Only test suffixes for generic tests. That is how it has always worked.
+      if test_suffixes and not MatchesSuffix(name, test_suffixes):
+        test_skipped = True
+    
+    if test_prefix_filter and not name.startswith(test_prefix_filter):
+      test_skipped = True
+      
     # Only execute this test if the current browser is not in the list
     # of skipped browsers.
-    test_skipped = False
     screenshot_count = 0
     for option in options:
       if option.startswith("except"):
@@ -528,10 +542,6 @@ def _GetTestsFromFile(filename, prefix, test_prefix_filter, test_suffixes,
         screenshot_count += int(selenium_utilities.GetArgument(option))
       elif option.startswith("screenshot"):
         screenshot_count += 1
-
-    if (test_prefix_filter and not name.startswith(test_prefix_filter) or
-        test_suffixes and not MatchesSuffix(name, test_suffixes)):
-      test_skipped = True
 
     if not test_skipped:
       # Add a test method with this name if it doesn't exist.
@@ -654,7 +664,7 @@ def main(unused_argv):
       test_list = GetTestsForBrowser(browser, FLAGS.testprefix,
                                      FLAGS.testsuffixes)
 
-      result = TestBrowser(session_builder, browser, test_list)
+      result = TestBrowser(session_builder, browser, test_list, FLAGS.verbose)
 
       if not result.wasSuccessful():
         all_tests_passed = False
