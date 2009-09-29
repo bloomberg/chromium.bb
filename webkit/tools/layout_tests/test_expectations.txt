@@ -2281,3 +2281,13 @@ BUG_LEVIN WIN LINUX : LayoutTests/fast/dom/Range/getClientRects.html = FAIL
 BUG_DGLAZKOV : LayoutTests/fast/dom/HTMLInputElement/size-attribute.html = FAIL
 
 BUG23306 WIN DEBUG : LayoutTests/transitions/repeated-firing-background-color.html = TIMEOUT FAIL
+
+// WebKit update 48883:48904
+BUG_SENORBLANCO : LayoutTests/fast/events/attribute-listener-cloned-from-frameless-doc-context-2.html = FAIL
+BUG_SENORBLANCO : LayoutTests/fast/events/attribute-listener-cloned-from-frameless-doc-context.html = FAIL
+BUG_SENORBLANCO : LayoutTests/fast/events/attribute-listener-cloned-from-frameless-doc.xhtml = FAIL
+BUG_SENORBLANCO : LayoutTests/fast/events/attribute-listener-extracted-from-frameless-doc-context-2.html = FAIL
+BUG_SENORBLANCO : LayoutTests/fast/events/attribute-listener-extracted-from-frameless-doc-context.html = FAIL
+BUG_SENORBLANCO : LayoutTests/fast/events/node-event-anchor-lock.html = FAIL
+BUG_SENORBLANCO WIN LINUX : LayoutTests/fast/forms/selected-index-assert.html = FAIL
+BUG_SENORBLANCO WIN LINUX : LayoutTests/svg/filters/feComposite.svg = FAIL
