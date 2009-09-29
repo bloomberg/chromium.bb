@@ -59,6 +59,7 @@
 #endif
 #include "chrome/app/scoped_ole_initializer.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_counters.h"
 #include "chrome/common/chrome_descriptors.h"
@@ -584,6 +585,9 @@ int ChromeMain(int argc, char** argv) {
 #endif
   } else if (process_type.empty()) {
 #if defined(OS_LINUX)
+    // Tickle the sandbox host so it forks now.
+    Singleton<RenderSandboxHostLinux>().get();
+
     // We want to be sure to init NSPR on the main thread.
     base::EnsureNSPRInit();
 
