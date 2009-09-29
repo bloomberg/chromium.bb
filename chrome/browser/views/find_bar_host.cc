@@ -69,6 +69,8 @@ FindBarHost::FindBarHost(BrowserView* browser_view)
 }
 
 FindBarHost::~FindBarHost() {
+  focus_manager_->RemoveFocusChangeListener(this);
+  focus_tracker_.reset(NULL);
 }
 
 void FindBarHost::Show() {
@@ -130,20 +132,6 @@ void FindBarHost::MoveWindowIfNecessary(const gfx::Rect& selection_rect,
   // May need to redraw our frame to accommodate bookmark bar styles.
   view_->SchedulePaint();
 }
-
-void FindBarHost::OnFinalMessage() {
-  // TODO(beng): Destroy the RootView before destroying the Focus Manager will
-  //             allow us to remove this method.
-
-  // We are exiting, so we no longer need to monitor focus changes.
-  focus_manager_->RemoveFocusChangeListener(this);
-
-  // Destroy the focus tracker now, otherwise by the time we're destroyed the
-  // focus manager the focus tracker is referencing may have already been
-  // destroyed resulting in the focus tracker trying to reference a deleted
-  // focus manager.
-  focus_tracker_.reset(NULL);
-};
 
 bool FindBarHost::IsVisible() {
   return host_->IsVisible();
@@ -392,5 +380,3 @@ bool FindBarHost::MaybeForwardKeystrokeToWebpage(
   render_view_host->ForwardKeyboardEvent(event);
   return true;
 }
-
-

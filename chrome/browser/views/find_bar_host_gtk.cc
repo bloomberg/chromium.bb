@@ -12,26 +12,6 @@
 #include "chrome/browser/views/frame/browser_view.h"
 #include "views/widget/widget_gtk.h"
 
-class FindBarHostWidget : public views::WidgetGtk {
- public:
-  explicit FindBarHostWidget(FindBarHost* find_bar)
-      : WidgetGtk(TYPE_CHILD),
-        find_bar_(find_bar) {
-    // Don't let WidgetGtk manage our lifetime. We want our lifetime to
-    // coincide with TabContents.
-    set_delete_on_destroy(false);
-  }
-
-  void OnDestroy(GtkWidget* widget) {
-    find_bar_->OnFinalMessage();
-  }
-
- private:
-  FindBarHost* find_bar_;
-
-  DISALLOW_COPY_AND_ASSIGN(FindBarHostWidget);
-};
-
 void FindBarHost::UpdateWindowEdges(const gfx::Rect& new_pos) {
   // TODO(davemoore) move the windows implementation to CustomFrameWindow so we
   // don't have to implement it for gtk
@@ -44,7 +24,7 @@ void FindBarHost::AudibleAlert() {
 }
 
 views::Widget* FindBarHost::CreateHost() {
-  return new FindBarHostWidget(this);
+  return new views::WidgetGtk(views::WidgetGtk::TYPE_CHILD);
 }
 
 void FindBarHost::SetDialogPositionNative(const gfx::Rect& new_pos,
@@ -75,4 +55,3 @@ bool FindBarHost::ShouldForwardKeystrokeToWebpageNative(
   const views::Textfield::Keystroke& key_stroke) {
     return true;
 }
-

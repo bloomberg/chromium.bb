@@ -62,8 +62,6 @@ class FindBarHost : public views::AcceleratorTarget,
   bool MaybeForwardKeystrokeToWebpage(
       const views::Textfield::Keystroke& key_stroke);
 
-  void OnFinalMessage();
-
   bool IsVisible();
 
   // FindBar implementation:
@@ -193,4 +191,3 @@ class FindBarHost : public views::AcceleratorTarget,
 };
 
 #endif  // CHROME_BROWSER_VIEWS_FIND_BAR_HOST_H_
-

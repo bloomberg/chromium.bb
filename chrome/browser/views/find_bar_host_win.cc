@@ -12,26 +12,6 @@
 #include "views/controls/scrollbar/native_scroll_bar.h"
 #include "views/widget/widget_win.h"
 
-class FindBarHostWidget : public views::WidgetWin {
- public:
-  explicit FindBarHostWidget(FindBarHost* find_bar) : find_bar_(find_bar) {
-    // Don't let WidgetWin manage our lifetime. We want our lifetime to
-    // coincide with TabContents.
-    set_delete_on_destroy(false);
-    set_window_style(WS_CHILD | WS_CLIPCHILDREN);
-    set_window_ex_style(WS_EX_TOPMOST);
-  }
-
-  void OnFinalMessage(HWND window) {
-    find_bar_->OnFinalMessage();
-  }
-
- private:
-  FindBarHost* find_bar_;
-
-  DISALLOW_COPY_AND_ASSIGN(FindBarHostWidget);
-};
-
 // TODO(brettw) this should not be so complicated. The view should really be in
 // charge of these regions. CustomFrameWindow will do this for us. It will also
 // let us set a path for the window region which will avoid some logic here.
@@ -156,7 +136,14 @@ void FindBarHost::AudibleAlert() {
 }
 
 views::Widget* FindBarHost::CreateHost() {
-  return new FindBarHostWidget(this);
+  views::WidgetWin* widget = new views::WidgetWin();
+  // Don't let WidgetWin manage our lifetime. We want our lifetime to
+  // coincide with TabContents.
+  widget->set_delete_on_destroy(false);
+  widget->set_window_style(WS_CHILD | WS_CLIPCHILDREN);
+  widget->set_window_ex_style(WS_EX_TOPMOST);
+
+  return widget;
 }
 
 void FindBarHost::SetDialogPositionNative(const gfx::Rect& new_pos,
@@ -194,4 +181,3 @@ bool FindBarHost::ShouldForwardKeystrokeToWebpageNative(
   // We specifically ignore WM_CHAR. See http://crbug.com/10509.
   return key_stroke.message() == WM_KEYDOWN || key_stroke.message() == WM_KEYUP;
 }
-
