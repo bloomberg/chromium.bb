@@ -36,11 +36,18 @@ class NativeTabbedPaneGtk : public NativeControlGtk,
   // NativeControlGtk overrides.
   virtual void CreateNativeControl();
 
+  // View override:
+  virtual FocusTraversable* GetFocusTraversable();
+
  private:
   void DoAddTabAtIndex(int index,
                        const std::wstring& title,
                        View* contents,
                        bool select_if_first_tab);
+
+  // Returns the WidgetGtk containing the tab contents at |index|.
+  WidgetGtk* GetWidgetAt(int index);
+
   View* GetTabViewAt(int index);
   void OnSwitchPage(int selected_tab_index);
 

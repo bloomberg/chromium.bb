@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 
 #include "base/message_loop.h"
+#include "views/focus/focus_manager.h"
 #include "views/widget/widget.h"
 
 class OSExchangeData;
@@ -26,7 +27,10 @@ class View;
 class WindowGtk;
 
 // Widget implementation for GTK.
-class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
+class WidgetGtk
+    : public Widget,
+      public MessageLoopForUI::Observer,
+      public FocusTraversable {
  public:
   // Type of widget.
   enum Type {
@@ -111,6 +115,20 @@ class WidgetGtk : public Widget, public MessageLoopForUI::Observer {
   // MessageLoopForUI::Observer.
   virtual void WillProcessEvent(GdkEvent* event);
   virtual void DidProcessEvent(GdkEvent* event);
+
+  // FocusTraversable implementation:
+  virtual View* FindNextFocusableView(View* starting_view,
+                                      bool reverse,
+                                      Direction direction,
+                                      bool check_starting_view,
+                                      FocusTraversable** focus_traversable,
+                                      View** focus_traversable_view);
+  virtual FocusTraversable* GetFocusTraversableParent();
+  virtual View* GetFocusTraversableParentView();
+
+  // Sets the focus traversable parents.
+  void SetFocusTraversableParent(FocusTraversable* parent);
+  void SetFocusTraversableParentView(View* parent_view);
 
   // Retrieves the WidgetGtk associated with |widget|.
   static WidgetGtk* GetViewForNative(GtkWidget* widget);
