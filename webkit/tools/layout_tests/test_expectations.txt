@@ -2225,7 +2225,7 @@ BUG21767 : LayoutTests/fast/js/Object-keys.html = FAIL
 
 // WK roll to 48371
 BUG21841 MAC : LayoutTests/plugins/destroy-during-npp-new.html = FAIL
-BUG21841 WIN LINUX : LayoutTests/plugins/destroy-during-npp-new.html = FAIL PASS
+BUG21841 WIN LINUX : LayoutTests/plugins/destroy-during-npp-new.html = CRASH PASS
 
 // missing upstream baseline from 48368
 BUG21842 SKIP WIN LINUX : LayoutTests/platform/win/accessibility/scroll-to-anchor.html = FAIL
@@ -2292,3 +2292,5 @@ BUG_LEVIN WIN LINUX : LayoutTests/fast/dom/Element/getBoundingClientRect.html = 
 BUG_LEVIN WIN LINUX : LayoutTests/fast/dom/Range/getBoundingClientRect.html = FAIL
 BUG_LEVIN WIN LINUX : LayoutTests/fast/dom/Range/getClientRects.html = FAIL
 BUG_DGLAZKOV : LayoutTests/fast/dom/HTMLInputElement/size-attribute.html = FAIL
+
+BUG23306 WIN : LayoutTests/transitions/repeated-firing-background-color.html = TIMEOUT
