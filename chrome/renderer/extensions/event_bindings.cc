@@ -220,12 +220,11 @@ void EventBindings::HandleContextCreated(WebFrame* frame, bool content_script) {
   DCHECK(!context.IsEmpty());
   DCHECK(bindings_utils::FindContext(context) == contexts.end());
 
-  // Figure out the URL for the toplevel frame.  If the top frame is loading,
-  // use its provisional URL, since we get this notification before commit.
-  WebFrame* main_frame = frame->view()->GetMainFrame();
-  WebKit::WebDataSource* ds = main_frame->provisionalDataSource();
+  // Figure out the frame's URL.  If the frame is loading, use its provisional
+  // URL, since we get this notification before commit.
+  WebKit::WebDataSource* ds = frame->provisionalDataSource();
   if (!ds)
-    ds = main_frame->dataSource();
+    ds = frame->dataSource();
   GURL url = ds->request().url();
   std::string extension_id;
   if (url.SchemeIs(chrome::kExtensionScheme)) {
