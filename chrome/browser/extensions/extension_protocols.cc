@@ -21,8 +21,10 @@ static URLRequestJob* CreateExtensionURLRequestJob(URLRequest* request,
 
   // chrome-extension://extension-id/resource/path.js
   FilePath directory_path = context->GetPathForExtension(request->url().host());
-  if (directory_path.value().empty())
+  if (directory_path.value().empty()) {
+    LOG(WARNING) << "Failed to GetPathForExtension: " << request->url().host();
     return NULL;
+  }
 
   std::string resource = request->url().path();
   FilePath path = Extension::GetResourcePath(directory_path, resource);
