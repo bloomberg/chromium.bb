@@ -94,6 +94,7 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
       profile_(profile),
       page_navigator_(navigator),
       parent_window_(window),
+      model_(profile->GetBookmarkModel()),
       node_(node),
       ignore_button_release_(false),
       triggering_widget_(NULL) {
