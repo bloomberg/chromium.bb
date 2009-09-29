@@ -394,10 +394,9 @@ class GClientClassTestCase(GclientTestCase):
     ) % (solution_name, self.url)
 
     entries_content = (
-      'entries = [\n'
-      '  "%s",\n'
-      ']\n'
-    ) % solution_name
+      "entries = \\\n"
+      "{ '%s': '%s'}\n"
+    ) % (solution_name, self.url)
 
     options = self.Options()
 
@@ -445,11 +444,10 @@ class GClientClassTestCase(GclientTestCase):
       "}\n")
 
     entries_content = (
-      'entries = [\n'
-      '  "%s",\n'
-      '  "%s",\n'
-      ']\n'
-    ) % (os.path.join(solution_name, 'src', 't'), solution_name)
+      "entries = \\\n"
+      "{ '%s': '%s',\n"
+      "  '%s': 'svn://scm.t/trunk'}\n"
+    ) % (solution_name, self.url, os.path.join(solution_name, 'src', 't'))
 
     scm_wrapper_sol = self.mox.CreateMockAnything()
     scm_wrapper_t = self.mox.CreateMockAnything()
@@ -515,12 +513,11 @@ class GClientClassTestCase(GclientTestCase):
     )
 
     entries_content = (
-      'entries = [\n'
-      '  "%s",\n'
-      '  "src/n",\n'
-      '  "src/t",\n'
-      ']\n'
-    ) % solution_name
+      "entries = \\\n"
+      "{ 'src/n': 'svn://custom.n/trunk',\n"
+      "  'src/t': 'svn://custom.t/trunk',\n"
+      "  '%s': '%s'}\n"
+    ) % (solution_name, self.url)
 
     scm_wrapper_sol = self.mox.CreateMockAnything()
     scm_wrapper_t = self.mox.CreateMockAnything()
@@ -603,10 +600,11 @@ class GClientClassTestCase(GclientTestCase):
     "}\n")
 
     entries_content = (
-      'entries = [\n  "%s",\n'
-      '  "%s",\n'
-      '  "src/t",\n'
-      ']\n') % (name_a, name_b)
+      "entries = \\\n"
+      "{ 'src/t': 'http://svn.t/trunk',\n"
+      "  '%s': '%s',\n"
+      "  '%s': '%s'}\n"
+    ) % (name_a, url_a, name_b, url_b)
 
     scm_wrapper_a = self.mox.CreateMockAnything()
     scm_wrapper_b = self.mox.CreateMockAnything()
@@ -667,6 +665,11 @@ class GClientClassTestCase(GclientTestCase):
   'custom_deps': {},
 }, ]""" % (name, self.url)
 
+    entries_content = (
+      "entries = \\\n"
+      "{ '%s': '%s'}\n"
+    ) % (name, self.url)
+
     options = self.Options()
     gclient.os.path.exists(os.path.join(self.root_dir, name, '.git')
         ).AndReturn(False)
@@ -678,7 +681,7 @@ class GClientClassTestCase(GclientTestCase):
     gclient.FileRead(os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn("Boo = 'a'")
     gclient.FileWrite(os.path.join(self.root_dir, options.entries_filename),
-                      'entries = [\n  "%s",\n]\n' % name)
+                      entries_content)
 
     self.mox.ReplayAll()
     client = self._gclient_gclient(self.root_dir, options)
@@ -721,15 +724,20 @@ deps_os = {
     'src/third_party/python_24': 'svn://random_server:123/trunk/python_24@5580',
   },
 }"""
-    entries_content = (
-      'entries = [\n  "src",\n'
-      '  "foo/third_party/WebKit",\n'
-      '  "src/third_party/cygwin",\n'
-      '  "src/third_party/python_24",\n'
-      '  "src/breakpad/bar",\n'
-      ']\n')
+
     cygwin_path = 'dummy path cygwin'
     webkit_path = 'dummy path webkit'
+
+    entries_content = (
+      "entries = \\\n"
+      "{ 'foo/third_party/WebKit': '%s',\n"
+      "  'src': '%s',\n"
+      "  'src/breakpad/bar':"
+      " 'http://google-breakpad.googlecode.com/svn/trunk/src@285',\n"
+      "  'src/third_party/cygwin': '%s',\n"
+      "  'src/third_party/python_24':"
+      " 'svn://random_server:123/trunk/python_24@5580'}\n"
+    ) % (webkit_path, self.url, cygwin_path)
 
     scm_wrapper_bleh = self.mox.CreateMockAnything()
     scm_wrapper_src = self.mox.CreateMockAnything()
@@ -850,11 +858,14 @@ deps_os = {
 deps = {
   'foo/third_party/WebKit': Var('webkit') + 'WebKit',
 }"""
-    entries_content = (
-      'entries = [\n  "foo/third_party/WebKit",\n'
-      '  "%s",\n'
-      ']\n') % name
+
     webkit_path = 'dummy path webkit'
+
+    entries_content = (
+      "entries = \\\n"
+      "{ 'foo/third_party/WebKit': '%s',\n"
+      "  '%s': '%s'}\n"
+    ) % (webkit_path, name, self.url)
 
     scm_wrapper_webkit = self.mox.CreateMockAnything()
     scm_wrapper_src = self.mox.CreateMockAnything()
@@ -905,11 +916,14 @@ deps = {
 deps = {
   'foo/third_party/WebKit': Var('webkit') + 'WebKit',
 }"""
-    entries_content = (
-      'entries = [\n  "foo/third_party/WebKit",\n'
-      '  "%s",\n'
-      ']\n') % name
+
     webkit_path = 'dummy path webkit'
+
+    entries_content = (
+      "entries = \\\n"
+      "{ 'foo/third_party/WebKit': '%s',\n"
+      "  '%s': '%s'}\n"
+    ) % (webkit_path, name, self.url)
 
     scm_wrapper_webkit = self.mox.CreateMockAnything()
     scm_wrapper_src = self.mox.CreateMockAnything()
