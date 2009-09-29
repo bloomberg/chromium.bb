@@ -175,8 +175,11 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   static const char form_data_msg[] = "Content-Disposition: form-data; name=\"";
   static const char prod_msg[] = "prod";
   static const char quote_msg[] = {'"'};
-  static const char chrome_linux_msg[] = "Chrome_Linux";
-  static const char chrome_chromeos_msg[] = "Chrome_ChromeOS";
+#if defined(OS_CHROMEOS)
+  static const char chrome_product_msg[] = "Chrome_ChromeOS";
+#else  // OS_LINUX
+  static const char chrome_product_msg[] = "Chrome_Linux";
+#endif
   static const char ver_msg[] = "ver";
   static const char guid_msg[] = "guid";
   static const char dashdash_msg[] = {'-', '-'};
@@ -204,13 +207,8 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   iov[6].iov_base = const_cast<char*>(rn);
   iov[6].iov_len = sizeof(rn);
 
-#if defined(OS_CHROMEOS)
-  iov[7].iov_base = const_cast<char*>(chrome_chromeos_msg);
-  iov[7].iov_len = sizeof(chrome_chromeos_msg) - 1;
-#else  // OS_LINUX
-  iov[7].iov_base = const_cast<char*>(chrome_linux_msg);
-  iov[7].iov_len = sizeof(chrome_linux_msg) - 1;
-#endif
+  iov[7].iov_base = const_cast<char*>(chrome_product_msg);
+  iov[7].iov_len = sizeof(chrome_product_msg) - 1;
   iov[8].iov_base = const_cast<char*>(rn);
   iov[8].iov_len = sizeof(rn);
 
