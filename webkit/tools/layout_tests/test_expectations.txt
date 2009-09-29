@@ -680,6 +680,7 @@ BUG4359 SKIP : LayoutTests/storage/success-callback.html = PASS
 BUG4359 SKIP : LayoutTests/storage/transaction-callback-exception-crash.html = PASS
 BUG4359 SKIP : LayoutTests/storage/transaction-error-callback.html = PASS
 BUG4359 SKIP : LayoutTests/fast/js/exceptions-thrown-in-callbacks.html = PASS
+BUG4359 : LayoutTests/storage/test-authorizer.html = TIMEOUT PASS
 BUG4359 : LayoutTests/storage/read-and-write-transactions-dont-run-together.html = TIMEOUT
 BUG4359 : LayoutTests/storage/read-transactions-running-concurrently.html = TIMEOUT
 
@@ -1524,9 +1525,11 @@ BUG10417 LINUX : LayoutTests/svg/W3C-SVG-1.1/text-fonts-02-t.svg = FAIL
 BUG10417 LINUX : LayoutTests/svg/text/text-fonts-02-t.svg = FAIL
 
 // New test. We should fix it, but it doesn't need to block the current release
+BUG10418 WIN LINUX : LayoutTests/transitions/zero-duration-with-non-zero-delay-start.html = FAIL PASS
 BUG10418 WIN LINUX : LayoutTests/transitions/zero-duration-with-non-zero-delay-end.html = FAIL PASS
 BUG10418 SLOW MAC : LayoutTests/fast/events/click-count.html = PASS
 BUG10418 WIN LINUX : LayoutTests/animations/change-keyframes.html = FAIL PASS
+BUG10418 WIN LINUX : LayoutTests/animations/change-keyframes-name.html = FAIL PASS
 
 // TODO(dsh): These started to fail after r9202.
 BUG10419 LINUX : LayoutTests/svg/W3C-SVG-1.1/text-path-01-b.svg = FAIL
@@ -1762,6 +1765,7 @@ BUG9797 LINUX DEBUG : LayoutTests/svg/carto.net/colourpicker.svg = FAIL
 BUG9797 WIN DEBUG : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
 BUG9797 WIN LINUX MAC : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
 BUG9797 BUG9798 WIN : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = CRASH TIMEOUT PASS
+BUG9798 LINUX : LayoutTests/transitions/transition-end-event-multiple-01.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-multiple-02.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-multiple-04.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-container.html = FAIL PASS
@@ -1772,6 +1776,7 @@ BUG9798 LINUX : LayoutTests/transitions/transition-end-event-window.html = FAIL 
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-left.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-all-properties.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-attributes.html = FAIL PASS
+BUG9798 LINUX : LayoutTests/transitions/extra-transition.html = TIMEOUT PASS
 
 // Failed in WebKit merge 42287:42324
 BUG9916 WIN LINUX : LayoutTests/css2.1/t0803-c5502-mrgn-r-02-c.html = FAIL
@@ -2276,6 +2281,8 @@ BUG_LEVIN WIN LINUX : LayoutTests/fast/dom/Element/getBoundingClientRect.html = 
 BUG_LEVIN WIN LINUX : LayoutTests/fast/dom/Range/getBoundingClientRect.html = FAIL
 BUG_LEVIN WIN LINUX : LayoutTests/fast/dom/Range/getClientRects.html = FAIL
 BUG_DGLAZKOV : LayoutTests/fast/dom/HTMLInputElement/size-attribute.html = FAIL
+
+BUG23306 WIN : LayoutTests/transitions/repeated-firing-background-color.html = TIMEOUT FAIL
 
 // WebKit update 48821:48841
 BUG_JAPHET : LayoutTests/fast/dom/Window/atob-btoa.html = FAIL
