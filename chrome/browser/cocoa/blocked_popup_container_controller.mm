@@ -4,7 +4,7 @@
 
 #import "chrome/browser/cocoa/blocked_popup_container_controller.h"
 
-#include "app/l10n_util.h"
+#include "app/l10n_util_mac.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/bubble_view.h"
 #include "chrome/browser/cocoa/nsimage_cache.h"
@@ -178,32 +178,32 @@ class BlockedPopupContainerViewBridge : public BlockedPopupContainerView {
 // Resize the view based on the new label contents. The autoresize mask will
 // take care of resizing everything else.
 - (void)resizeWithLabel:(NSString*)label {
-// TODO(pinkerton): fix this so that it measures the text so that it can
-// be localized.
-#if 0
+  // It would be nice to teach BubbleView to honor -sizeToFit, but it can't
+  // really handle the subviews that get added.  So just measure the string
+  // and pad for the views.
   NSDictionary* attributes =
       [NSDictionary dictionaryWithObjectsAndKeys:
-        NSFontAttributeName, [NSFont systemFontOfSize:25],
+        NSFontAttributeName, [view_ font],
         nil];
   NSSize stringSize = [label sizeWithAttributes:attributes];
+  // Keep the right edge in the same place.
   NSRect frame = [view_ frame];
-  float originalWidth = frame.size.width;
-  frame.size.width = stringSize.width + 16 + 5;
+  CGFloat originalWidth = frame.size.width;
+  frame.size.width =
+      stringSize.width + [closeButton_ frame].size.width +
+      [popupButton_ frame].origin.x + kBubbleViewTextPositionX;
   frame.origin.x -= frame.size.width - originalWidth;
   [view_ setFrame:frame];
-#endif
 }
 
 - (void)update {
   size_t blockedPopups = container_->GetBlockedPopupCount();
   NSString* label = nil;
   if (blockedPopups) {
-    label = base::SysUTF16ToNSString(
-        l10n_util::GetStringFUTF16(IDS_POPUPS_BLOCKED_COUNT,
-                                   UintToString16(blockedPopups)));
+    label = l10n_util::GetNSStringF(IDS_POPUPS_BLOCKED_COUNT,
+                                    UintToString16(blockedPopups));
   } else {
-    label = base::SysUTF16ToNSString(
-        l10n_util::GetStringUTF16(IDS_POPUPS_UNBLOCKED));
+    label = l10n_util::GetNSString(IDS_POPUPS_UNBLOCKED);
   }
   [self resizeWithLabel:label];
   [view_ setContent:label];
@@ -263,8 +263,8 @@ void GetURLAndTitleForPopup(
   for (size_t i = 0; i < count; ++i) {
     string16 url, title;
     GetURLAndTitleForPopup(container_, i, &url, &title);
-    NSString* titleStr = base::SysUTF16ToNSString(
-        l10n_util::GetStringFUTF16(IDS_POPUP_TITLE_FORMAT, url, title));
+    NSString* titleStr =
+        l10n_util::GetNSStringF(IDS_POPUP_TITLE_FORMAT, url, title);
     scoped_nsobject<NSMenuItem> item(
         [[NSMenuItem alloc] initWithTitle:titleStr
                                    action:@selector(menuAction:)
@@ -281,9 +281,9 @@ void GetURLAndTitleForPopup(
   if (!hosts.empty() && count)
     [menu addItem:[NSMenuItem separatorItem]];
   for (size_t i = 0; i < hosts.size(); ++i) {
-    NSString* titleStr = base::SysUTF8ToNSString(
-        l10n_util::GetStringFUTF8(IDS_POPUP_HOST_FORMAT,
-                                  UTF8ToUTF16(hosts[i])));
+    NSString* titleStr =
+        l10n_util::GetNSStringF(IDS_POPUP_HOST_FORMAT,
+                                UTF8ToUTF16(hosts[i]));
     scoped_nsobject<NSMenuItem> item(
         [[NSMenuItem alloc] initWithTitle:titleStr
                                    action:@selector(menuAction:)
