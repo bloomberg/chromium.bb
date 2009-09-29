@@ -141,7 +141,9 @@
             '<@(idl_files)',
           ],
           'outputs': [
-            '<(idl_out_path)/hash',
+            # TODO(bradnelson): fix gyp to be able to handle outputs without
+            # and extension on linux.
+            #'<(idl_out_path)/hash',
             '<(idl_out_path)/globals_glue.cc',
             '<(idl_out_path)/globals_glue.h',
             '<!@(python idl_filenames.py \'<(idl_out_path)\' <@(idl_files))',
