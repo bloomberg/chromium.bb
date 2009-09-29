@@ -389,7 +389,7 @@ void StatusAreaView::LoadPowerLibrary() {
   if (PathService::Get(chrome::FILE_CHROMEOS_API, &path)) {
     power_library_ = dlopen(path.value().c_str(), RTLD_NOW);
     if (power_library_) {
-      chromeos::LoadPower(power_library_);
+      chromeos::LoadCros(power_library_);
     } else {
       power_library_error_ = true;
       char* error = dlerror();

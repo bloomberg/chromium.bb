@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_AREA_VIEW_H_
 
 #include "base/basictypes.h"
-#include "third_party/chromeos_power/chromeos_power.h"
+#include "third_party/cros/chromeos_power.h"
 #include "views/controls/menu/simple_menu_model.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"

@@ -2745,7 +2745,7 @@
               'dependencies': [
                   '../third_party/protobuf2/protobuf.gyp:protobuf',
                   '../third_party/protobuf2/protobuf.gyp:protoc',
-                  '../third_party/chromeos_power/cros_api.gyp:cros_api',
+                  '../third_party/cros/cros_api.gyp:cros_api',
                ],
               'actions': [
                 {
