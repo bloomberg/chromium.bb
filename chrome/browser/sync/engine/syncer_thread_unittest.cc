@@ -364,7 +364,8 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
   }
 }
 
-TEST_F(SyncerThreadWithSyncerTest, Polling) {
+// This test is disabled. see bug 23336.
+TEST_F(SyncerThreadWithSyncerTest, DISABLED_Polling) {
   SyncShareIntercept interceptor;
   connection()->SetMidCommitObserver(&interceptor);
 
