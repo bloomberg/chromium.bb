@@ -27,3 +27,5 @@ layer at (217,169) size 58x20
 layer at (45,169) size 165x24
   RenderSlider {INPUT} at (6,6) size 165x18 [color=#328CDF] [bgcolor=#FFFFFF14] [border: (1px solid #FFFFFF33)]
     RenderBlock {DIV} at (3,-5) size 9x29
+layer at (275,163) size 34x32
+  RenderButton {INPUT} at (266,0) size 34x32
