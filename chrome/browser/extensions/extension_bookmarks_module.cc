@@ -52,7 +52,7 @@ class ExtensionBookmarks {
                     floor(node->date_added().ToDoubleT() * 1000));
     }
 
-    if (recurse) {
+    if (recurse && node->is_folder()) {
       int childCount = node->GetChildCount();
       ListValue* children = new ListValue();
       for (int i = 0; i < childCount; ++i) {
@@ -60,8 +60,7 @@ class ExtensionBookmarks {
         DictionaryValue* dict = GetNodeDictionary(child, true);
         children->Append(dict);
       }
-      if (node->is_folder())
-        dict->Set(keys::kChildrenKey, children);
+      dict->Set(keys::kChildrenKey, children);
     }
     return dict;
   }
