@@ -633,6 +633,11 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
                           backing_store->size().width(),
                           backing_store->size().height());
 
+    // Specify the proper y offset to ensure that the view is rooted to the
+    // upper left corner.  This can be negative, if the window was resized
+    // smaller and the renderer hasn't yet repainted.
+    int yOffset = NSHeight(view_bounds) - backing_store->size().height();
+
     gfx::Rect paint_rect = bitmap_rect.Intersect(damaged_rect);
     if (!paint_rect.IsEmpty()) {
       // if we have a CGLayer, draw that into the window
@@ -641,7 +646,7 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
             [[NSGraphicsContext currentContext] graphicsPort]);
 
         // TODO: add clipping to dirtyRect if it improves drawing performance.
-        CGContextDrawLayerAtPoint(context, CGPointMake(0.0, 0.0),
+        CGContextDrawLayerAtPoint(context, CGPointMake(0.0, yOffset),
                                   backing_store->cg_layer());
       } else {
         // if we haven't created a layer yet, draw the cached bitmap into
@@ -651,7 +656,9 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
             [[NSGraphicsContext currentContext] graphicsPort]);
         scoped_cftyperef<CGImageRef> image(
             CGBitmapContextCreateImage(backing_store->cg_bitmap()));
-        CGContextDrawImage(context, bitmap_rect.ToCGRect(), image);
+        CGRect imageRect = bitmap_rect.ToCGRect();
+        imageRect.origin.y = yOffset;
+        CGContextDrawImage(context, imageRect, image);
       }
     }
 
