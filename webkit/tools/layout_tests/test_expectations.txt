@@ -680,13 +680,8 @@ BUG4359 SKIP : LayoutTests/storage/success-callback.html = PASS
 BUG4359 SKIP : LayoutTests/storage/transaction-callback-exception-crash.html = PASS
 BUG4359 SKIP : LayoutTests/storage/transaction-error-callback.html = PASS
 BUG4359 SKIP : LayoutTests/fast/js/exceptions-thrown-in-callbacks.html = PASS
-BUG4359 MAC LINUX : LayoutTests/storage/test-authorizer.html = CRASH
-BUG4359 MAC LINUX : LayoutTests/storage/open-database-while-transaction-in-progress.html = CRASH
-BUG4359 WIN : LayoutTests/storage/read-and-write-transactions-dont-run-together.html = TIMEOUT
-BUG4359 WIN : LayoutTests/storage/read-transactions-running-concurrently.html = TIMEOUT
-BUG4359 MAC LINUX : LayoutTests/storage/read-and-write-transactions-dont-run-together.html = CRASH
-BUG4359 MAC LINUX : LayoutTests/storage/read-transactions-running-concurrently.html = CRASH
-BUG22296 LINUX MAC : LayoutTests/storage/multiple-transactions-on-different-handles.html = TIMEOUT CRASH
+BUG4359 : LayoutTests/storage/read-and-write-transactions-dont-run-together.html = TIMEOUT
+BUG4359 : LayoutTests/storage/read-transactions-running-concurrently.html = TIMEOUT
 
 // Implement HTML5 Geolocation API.
 BUG11246 : LayoutTests/fast/dom/Geolocation = FAIL
@@ -745,7 +740,6 @@ BUG13907 WIN MAC LINUX : LayoutTests/fast/layers/video-layer.html = FAIL
 BUG13907 WIN : LayoutTests/media/event-attributes.html = TIMEOUT
 BUG13907 WIN : LayoutTests/media/controls-styling.html = FAIL
 BUG13907 WIN : LayoutTests/media/video-seek-past-end-playing.html = FAIL
-BUG13907 WIN : LayoutTests/media/video-error-abort.html = FAIL
 
 // Very flakey after r24022. Not sure if because of that change though.
 BUG20004 WIN : LayoutTests/media/video-play-pause-events.html = TIMEOUT PASS
@@ -756,9 +750,6 @@ BUG16779 WONTFIX SKIP : LayoutTests/media/video-document-types.html = FAIL TIMEO
 BUG16779 WONTFIX SKIP : LayoutTests/media/audio-mpeg-supported.html = FAIL TIMEOUT
 BUG16779 WONTFIX SKIP : LayoutTests/media/audio-data-url.html = FAIL TIMEOUT
 BUG16779 WONTFIX SKIP : LayoutTests/media/video-size-intrinsic-scale.html = FAIL TIMEOUT
-
-// Crash on Mac and Linux. Need investigation.
-BUG_JIANLI MAC LINUX : LayoutTests/fast/events/drag-to-navigate.html = TIMEOUT CRASH
 
 // Function arguments object is copied for each access.
 BUG941049 : LayoutTests/fast/js/kde/function_arguments.html = FAIL
@@ -834,7 +825,7 @@ BUG10401 : LayoutTests/plugins/npruntime.html = TIMEOUT FAIL
 BUG6735 : LayoutTests/plugins/netscape-throw-exception.html = FAIL
 
 BUG10432 WIN LINUX : LayoutTests/fast/overflow/004.html = FAIL
-BUG10433 : LayoutTests/fast/dom/Window/webkitConvertPoint.html = FAIL
+BUG10433 WIN LINUX : LayoutTests/fast/dom/Window/webkitConvertPoint.html = FAIL
 
 BUG9071 MAC WIN DEBUG SLOW : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL PASS
 BUG9071 LINUX : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL
@@ -1372,7 +1363,7 @@ BUG10360 MAC : LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
 BUG10361 : LayoutTests/http/tests/misc/single-character-pi-stylesheet.xhtml = FAIL
 
 // Windows is missing the green box.
-BUG8729 WIN : LayoutTests/http/tests/multipart/invalid-image-data.html = FAIL
+BUG8729 WIN LINUX : LayoutTests/http/tests/multipart/invalid-image-data.html = FAIL
 
 // -----------------------------------------------------------------
 // MAC PORT TESTS
@@ -1391,8 +1382,6 @@ BUG8729 WIN : LayoutTests/http/tests/multipart/invalid-image-data.html = FAIL
 // text fields wrong width
 BUG10363 MAC : LayoutTests/tables/mozilla/bugs/bug53690-1.html = FAIL
 BUG10363 MAC : LayoutTests/tables/mozilla/bugs/bug9024.html = FAIL
-BUG10670 MAC : LayoutTests/fast/forms/basic-buttons.html = FAIL
-BUG10670 MAC : LayoutTests/fast/forms/basic-inputs.html = FAIL
 BUG10670 MAC : chrome/fast/forms/basic-selects.html = FAIL
 
 // we're waiting on upstreaming a change to how textarea padding works. rather
@@ -1899,6 +1888,7 @@ BUG11796 LINUX : LayoutTests/fast/forms/search-styled.html = FAIL
 // Flaky Windows/Linux Tests
 BUG11898 LINUX MAC DEBUG : LayoutTests/svg/dom/SVGScriptElement/script-set-href.svg = FAIL PASS
 BUG11898 WIN DEBUG : LayoutTests/http/tests/misc/submit-get-in-utf16be.html = TIMEOUT PASS
+BUG11898 WIN DEBUG : LayoutTests/http/tests/misc/submit-get-in-utf16le.html = TIMEOUT PASS
 BUG18772 WIN DEBUG : LayoutTests/http/tests/navigation/post-goback-same-url.html = TIMEOUT PASS
 
 // Need LINUX/Mac rebaselines after WebKit Update 437150:43770
@@ -1956,7 +1946,6 @@ BUG14751 LINUX DEBUG: LayoutTests/css2.1/atrule_longest_match.html = CRASH PASS
 BUG14767 LINUX : LayoutTests/dom/html/level1/core/documentgetdoctypenodtd.html = CRASH FAIL PASS
 
 BUG14832 : LayoutTests/editing/selection/user-drag-element-and-user-select-none.html = FAIL
-BUG14831 : LayoutTests/fast/events/event-trace.html = FAIL
 
 // WebKit 44928:44943
 BUG14946 : LayoutTests/fast/js/date-toisostring.html = FAIL
@@ -2263,17 +2252,11 @@ BUG22549 WIN LINUX : LayoutTests/fast/overflow/position-fixed-transform-clipping
 
 // WebKit merge 48500:48585, likely due to a video reload crash fix.
 
-// WebKit merge 48500:48585, likely due to a fix for file select drag.
-BUG22552 MAC LINUX : LayoutTests/fast/events/drag-in-frames.html = CRASH
-
 // WebKit merge 48500:48585, due to newly added support for MathML.
 BUG22554 SKIP : LayoutTests/mathml = FAIL
 
 // WebKit merge 48610:48642
 BUG_PAUL LINUX DEBUG : LayoutTests/fast/backgrounds/size/contain-and-cover.html = PASS FAIL
-
-// WebKit update 48684:48700
-BUG_DGLAZKOV : LayoutTests/fast/forms/textarea-maxlength.html = FAIL
 
 // WebKit update 48700:48721
 BUG_DGLAZKOV : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-abort-readyState-shouldDispatchEvent.html = FAIL
@@ -2293,8 +2276,6 @@ BUG_LEVIN WIN LINUX : LayoutTests/fast/dom/Element/getBoundingClientRect.html = 
 BUG_LEVIN WIN LINUX : LayoutTests/fast/dom/Range/getBoundingClientRect.html = FAIL
 BUG_LEVIN WIN LINUX : LayoutTests/fast/dom/Range/getClientRects.html = FAIL
 BUG_DGLAZKOV : LayoutTests/fast/dom/HTMLInputElement/size-attribute.html = FAIL
-
-BUG23306 WIN : LayoutTests/transitions/repeated-firing-background-color.html = TIMEOUT
 
 // WebKit update 48821:48841
 BUG_JAPHET : LayoutTests/fast/dom/Window/atob-btoa.html = FAIL
