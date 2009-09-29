@@ -745,6 +745,7 @@ BUG13907 WIN MAC LINUX : LayoutTests/fast/layers/video-layer.html = FAIL
 BUG13907 WIN : LayoutTests/media/event-attributes.html = TIMEOUT
 BUG13907 WIN : LayoutTests/media/controls-styling.html = FAIL
 BUG13907 WIN : LayoutTests/media/video-seek-past-end-playing.html = FAIL
+BUG13907 WIN : LayoutTests/media/video-error-abort.html = FAIL
 
 // Very flakey after r24022. Not sure if because of that change though.
 BUG20004 WIN : LayoutTests/media/video-play-pause-events.html = TIMEOUT PASS
