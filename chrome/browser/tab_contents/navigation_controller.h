@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_TAB_CONTENTS_NAVIGATION_CONTROLLER_H_
 
 #include <map>
+#include <string>
+#include <vector>
 
 #include "build/build_config.h"
 
@@ -55,10 +57,14 @@ class NavigationController {
     // navigation.
     LoadCommittedDetails()
         : entry(NULL),
+          type(NavigationType::UNKNOWN),
+          previous_entry_index(-1),
           is_auto(false),
           did_replace_entry(false),
           is_in_page(false),
-          is_main_frame(true) {
+          is_main_frame(true),
+          is_content_filtered(false),
+          http_status_code(0) {
     }
 
     // The committed entry. This will be the active entry in the controller.

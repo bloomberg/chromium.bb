@@ -12,6 +12,9 @@
 class NavigationType {
  public:
   enum Type {
+    // Unknown type.
+    UNKNOWN,
+
     // A new page was navigated in the main frame.
     NEW_PAGE,
 
