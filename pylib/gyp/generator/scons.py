@@ -656,6 +656,8 @@ non_compilable_suffixes = {
         '.fragment',
         '.gperf',
         '.h',
+        '.hh',
+        '.hpp',
         '.html',
         '.hxx',
         '.idl',
@@ -669,6 +671,8 @@ non_compilable_suffixes = {
     ]),
     'WINDOWS' : set([
         '.h',
+        '.hh',
+        '.hpp',
         '.dat',
         '.idl',
         '.in',

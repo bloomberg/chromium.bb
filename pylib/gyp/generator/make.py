@@ -207,6 +207,9 @@ $(obj)/%.o: %.c FORCE_DO_CMD
 $(obj)/%.o: %.s FORCE_DO_CMD
 	@$(call do_cmd,cc)
 
+$(obj)/%.o: %.S FORCE_DO_CMD
+	@$(call do_cmd,cc)
+
 $(obj)/%.o: %.cpp FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 $(obj)/%.o: %.cc FORCE_DO_CMD
@@ -215,6 +218,8 @@ $(obj)/%.o: %.cxx FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 
 # Try building from generated source, too.
+$(obj)/%.o: $(obj)/%.c FORCE_DO_CMD
+	@$(call do_cmd,cc,1)
 $(obj)/%.o: $(obj)/%.cc FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 $(obj)/%.o: $(obj)/%.cpp FORCE_DO_CMD
@@ -260,7 +265,8 @@ header = """\
 
 def Compilable(filename):
   """Return true if the file is compilable (should be in OBJS)."""
-  return any(filename.endswith(e) for e in ['.c', '.cc', '.cpp', '.cxx', '.s'])
+  return any(filename.endswith(e) for e
+             in ['.c', '.cc', '.cpp', '.cxx', '.s', '.S'])
 
 
 def Target(filename):
