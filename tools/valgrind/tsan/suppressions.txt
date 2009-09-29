@@ -36,6 +36,12 @@
   fun:*CancelableRequest*
 }
 
+{
+  bug_23245
+  ThreadSanitizer:Race
+  fun:*base*Thread*ThreadMain*
+}
+
 ############################
 # Data races in tests
 
