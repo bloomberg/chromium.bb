@@ -172,7 +172,11 @@ namespace WebKit {
         // http://msdn.microsoft.com/en-us/library/ms646286(VS.85).aspx for
         // details).  Other platforms don't have this concept, but it's just
         // easier to leave it always false than ifdef.
-        bool isSystemKey;
+        // int is used instead of bool to ensure the size of this structure is
+        // strictly aligned to a factor of 4 bytes, otherwise memory check tools
+        // like valgrind may complain about uninitialized memory usage when
+        // transfering it over the wire.
+        int isSystemKey;
 
         WebKeyboardEvent(unsigned sizeParam = sizeof(WebKeyboardEvent))
             : WebInputEvent(sizeParam)
@@ -233,7 +237,12 @@ namespace WebKit {
         float deltaY;
         float wheelTicksX;
         float wheelTicksY;
-        bool scrollByPage;
+
+        // int is used instead of bool to ensure the size of this structure is
+        // strictly aligned to a factor of 4 bytes, otherwise memory check tools
+        // like valgrind may complain about uninitialized memory usage when
+        // transfering it over the wire.
+        int scrollByPage;
 
         WebMouseWheelEvent(unsigned sizeParam = sizeof(WebMouseWheelEvent))
             : WebMouseEvent(sizeParam)
