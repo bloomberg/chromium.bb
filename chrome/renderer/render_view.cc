@@ -105,6 +105,7 @@ using base::Time;
 using base::TimeDelta;
 using webkit_glue::AltErrorPageResourceFetcher;
 using webkit_glue::AutofillForm;
+using webkit_glue::ImageResourceFetcher;
 using webkit_glue::PasswordForm;
 using webkit_glue::PasswordFormDomManager;
 using webkit_glue::SearchableFormData;
@@ -237,6 +238,12 @@ RenderView::~RenderView() {
   Singleton<RenderViewSet>()->render_view_set_.erase(this);
   if (decrement_shared_popup_at_destruction_)
     shared_popup_counter_->data--;
+
+  // Dispose of un-disposed image fetchers.
+  for (ImageResourceFetcherSet::iterator i = image_fetchers_.begin();
+       i != image_fetchers_.end(); ++i) {
+    delete *i;
+  }
 
 #if defined(OS_MACOSX)
   // Tell the spellchecker that the document is closed.
@@ -2446,12 +2453,31 @@ void RenderView::ShowContextMenu(WebView* webview,
   Send(new ViewHostMsg_ContextMenu(routing_id_, params));
 }
 
-void RenderView::DidDownloadImage(int id,
-                                  const GURL& image_url,
-                                  bool errored,
+bool RenderView::DownloadImage(int id, const GURL& image_url, int image_size) {
+  // Make sure webview was not shut down.
+  if (!webview())
+    return false;
+  // Create an image resource fetcher and assign it with a call back object.
+  image_fetchers_.insert(new ImageResourceFetcher(
+      image_url, webview()->GetMainFrame(), id, image_size,
+      NewCallback(this, &RenderView::DidDownloadImage)));
+  return true;
+}
+
+void RenderView::DidDownloadImage(ImageResourceFetcher* fetcher,
                                   const SkBitmap& image) {
-  Send(new ViewHostMsg_DidDownloadFavIcon(routing_id_, id, image_url, errored,
-                                          image));
+  // Notify requester of image download status.
+   Send(new ViewHostMsg_DidDownloadFavIcon(routing_id_,
+                                           fetcher->id(),
+                                           fetcher->image_url(),
+                                           image.isNull(),
+                                           image));
+  // Dispose of the image fetcher.
+  DCHECK(image_fetchers_.find(fetcher) != image_fetchers_.end());
+  image_fetchers_.erase(fetcher);
+  // We're in the callback from the ImageResourceFetcher, best to delay
+  // deletion.
+  MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
 }
 
 void RenderView::OnDownloadFavIcon(int id,
@@ -2468,7 +2494,7 @@ void RenderView::OnDownloadFavIcon(int id,
   }
 
   if (data_image_failed ||
-      !webview()->DownloadImage(id, image_url, image_size)) {
+      !DownloadImage(id, image_url, image_size)) {
     Send(new ViewHostMsg_DidDownloadFavIcon(routing_id_, id, image_url, true,
                                             SkBitmap()));
   }

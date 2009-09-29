@@ -37,6 +37,7 @@
 #include "webkit/api/public/WebTextDirection.h"
 #include "webkit/glue/dom_serializer_delegate.h"
 #include "webkit/glue/form_data.h"
+#include "webkit/glue/image_resource_fetcher.h"
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/webaccessibilitymanager.h"
 #include "webkit/glue/webplugin_page_delegate.h"
@@ -177,10 +178,6 @@ class RenderView : public RenderWidget,
   virtual void OnMissingPluginStatus(
       WebPluginDelegateProxy* delegate,
       int status);
-  virtual void DidDownloadImage(int id,
-                                const GURL& image_url,
-                                bool errored,
-                                const SkBitmap& image);
   virtual void ShowContextMenu(WebView* webview,
                                ContextNodeType node_type,
                                int x,
@@ -686,6 +683,19 @@ class RenderView : public RenderWidget,
   // Locates a sub frame with given xpath
   WebKit::WebFrame* GetChildFrame(const std::wstring& frame_xpath) const;
 
+  // Requests to download an image. When done, the RenderView is
+  // notified by way of DidDownloadImage. Returns true if the request was
+  // successfully started, false otherwise. id is used to uniquely identify the
+  // request and passed back to the DidDownloadImage method. If the image has
+  // multiple frames, the frame whose size is image_size is returned. If the
+  // image doesn't have a frame at the specified size, the first is returned.
+  bool DownloadImage(int id, const GURL& image_url, int image_size);
+
+  // This callback is triggered when DownloadImage completes, either
+  // succesfully or with a failure. See DownloadImage for more details.
+  void DidDownloadImage(webkit_glue::ImageResourceFetcher* fetcher,
+                        const SkBitmap& image);
+
   enum ErrorPageType {
     DNS_ERROR,
     HTTP_404,
@@ -953,6 +963,11 @@ class RenderView : public RenderWidget,
   // Stores edit commands associated to the next key event.
   // Shall be cleared as soon as the next key event is processed.
   EditCommands edit_commands_;
+
+  // ImageResourceFetchers schedule via DownloadImage.
+  typedef std::set<webkit_glue::ImageResourceFetcher*> ImageResourceFetcherSet;
+  ImageResourceFetcherSet image_fetchers_;
+
 
   DISALLOW_COPY_AND_ASSIGN(RenderView);
 };

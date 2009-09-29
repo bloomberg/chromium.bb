@@ -419,10 +419,6 @@ WebViewImpl::WebViewImpl(WebViewDelegate* delegate)
 
 WebViewImpl::~WebViewImpl() {
   DCHECK(page_ == NULL);
-  for (std::set<ImageResourceFetcher*>::iterator i = image_fetchers_.begin();
-       i != image_fetchers_.end(); ++i) {
-    delete *i;
-  }
 }
 
 RenderTheme* WebViewImpl::theme() const {
@@ -1376,16 +1372,6 @@ void WebViewImpl::SetInitialFocus(bool reverse) {
   }
 }
 
-bool WebViewImpl::DownloadImage(int id, const GURL& image_url,
-                                int image_size) {
-  if (!page_.get())
-    return false;
-  image_fetchers_.insert(new ImageResourceFetcher(
-      image_url, main_frame(), id, image_size,
-      NewCallback(this, &WebViewImpl::OnImageFetchComplete)));
-  return true;
-}
-
 WebSettings* WebViewImpl::GetSettings() {
   if (!web_settings_.get())
     web_settings_.reset(new WebSettingsImpl(page_->settings()));
@@ -1810,15 +1796,6 @@ void WebViewImpl::StartDragging(const WebPoint& event_pos,
   client()->startDragging(event_pos, drag_data, mask);
 }
 
-void WebViewImpl::OnImageFetchComplete(ImageResourceFetcher* fetcher,
-                                       const SkBitmap& image) {
-  if (delegate_) {
-    delegate_->DidDownloadImage(fetcher->id(), fetcher->image_url(),
-                                image.isNull(), image);
-  }
-  DeleteImageResourceFetcher(fetcher);
-}
-
 void WebViewImpl::SetCurrentHistoryItem(WebCore::HistoryItem* item) {
   back_forward_list_client_impl_.SetCurrentHistoryItem(item);
 }
@@ -1832,15 +1809,6 @@ void WebViewImpl::ObserveNewNavigation() {
 #ifndef NDEBUG
   new_navigation_loader_ = page_->mainFrame()->loader()->documentLoader();
 #endif
-}
-
-void WebViewImpl::DeleteImageResourceFetcher(ImageResourceFetcher* fetcher) {
-  DCHECK(image_fetchers_.find(fetcher) != image_fetchers_.end());
-  image_fetchers_.erase(fetcher);
-
-  // We're in the callback from the ImageResourceFetcher, best to delay
-  // deletion.
-  MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
 }
 
 void WebViewImpl::HideAutoCompletePopup() {

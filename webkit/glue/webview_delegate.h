@@ -183,19 +183,6 @@ class WebViewDelegate : public WebKit::WebViewClient {
                                const std::string& frame_charset) {
   }
 
-  // -------------------------------------------------------------------------
-
-  // Notification that a request to download an image has completed. |errored|
-  // indicates if there was a network error. The image is empty if there was
-  // a network error, the contents of the page couldn't by converted to an
-  // image, or the response from the host was not 200.
-  // NOTE: image is empty if the response didn't contain image data.
-  virtual void DidDownloadImage(int id,
-                                const GURL& image_url,
-                                bool errored,
-                                const SkBitmap& image) {
-  }
-
   // InspectorClient ---------------------------------------------------------
 
   virtual void UpdateInspectorSettings(const std::wstring& raw_settings) { }

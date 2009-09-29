@@ -98,7 +98,6 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual void StopLoading();
   virtual void SetBackForwardListSize(int size);
   virtual void SetInitialFocus(bool reverse);
-  virtual bool DownloadImage(int id, const GURL& image_url, int image_size);
   virtual WebKit::WebSettings* GetSettings();
   virtual const std::wstring& GetInspectorSettings() const;
   virtual void SetInspectorSettings(const std::wstring& settings);
@@ -265,10 +264,6 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   friend class WebView;  // So WebView::Create can call our constructor
   friend class base::RefCounted<WebViewImpl>;
 
-  // ImageResourceFetcher::Callback.
-  void OnImageFetchComplete(webkit_glue::ImageResourceFetcher* fetcher,
-                            const SkBitmap& bitmap);
-
   WebViewImpl(WebViewDelegate* delegate);
   ~WebViewImpl();
 
@@ -325,17 +320,10 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   // Returns true if the view was scrolled.
   bool ScrollViewWithKeyboard(int key_code, int modifiers);
 
-  // Removes fetcher from the set of pending image fetchers and deletes it.
-  // This is invoked after the download is completed (or fails).
-  void DeleteImageResourceFetcher(webkit_glue::ImageResourceFetcher* fetcher);
-
   // Converts |pos| from window coordinates to contents coordinates and gets
   // the HitTestResult for it.
   WebCore::HitTestResult HitTestResultForWindowPos(
       const WebCore::IntPoint& pos);
-
-  // ImageResourceFetchers schedule via DownloadImage.
-  std::set<webkit_glue::ImageResourceFetcher*> image_fetchers_;
 
   // The point relative to the client area where the mouse was last pressed
   // down. This is used by the drag client to determine what was under the

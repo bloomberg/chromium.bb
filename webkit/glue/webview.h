@@ -137,14 +137,6 @@ class WebView : public WebKit::WebWidget {
   // ensure that a text field on the page is not eating keystrokes we send it.
   virtual void ClearFocusedNode() = 0;
 
-  // Requests the webview to download an image. When done, the delegate is
-  // notified by way of DidDownloadImage. Returns true if the request was
-  // successfully started, false otherwise. id is used to uniquely identify the
-  // request and passed back to the DidDownloadImage method. If the image has
-  // multiple frames, the frame whose size is image_size is returned. If the
-  // image doesn't have a frame at the specified size, the first is returned.
-  virtual bool DownloadImage(int id, const GURL& image_url, int image_size) = 0;
-
   // Gets a WebSettings object that can be used to modify the behavior of this
   // WebView.  The object is deleted by this class on destruction, so you must
   // not use it beyond WebView's lifetime.
