@@ -67,8 +67,9 @@ void BookmarkEditor::Show(gfx::NativeView parent_hwnd,
   [nameField_ setStringValue:initialName_];
   [urlField_ setStringValue:initialUrl_];
 
-  // Get a ping when the URL text changes;
+  // Get a ping when the URL or name text fields change;
   // trigger an initial ping to set things up.
+  [nameField_ setDelegate:self];
   [urlField_ setDelegate:self];
   [self controlTextDidChange:nil];
 
@@ -136,7 +137,17 @@ void BookmarkEditor::Show(gfx::NativeView parent_hwnd,
 // the notification.)
 - (void)controlTextDidChange:(NSNotification *)aNotification {
   GURL newURL = [self GURLFromUrlField];
-  if (newURL.is_valid()) {
+  NSString* name = [nameField_ stringValue];
+
+  // if empty or only whitespace, name is not valid.
+  bool name_valid = true;
+  if (([name length] == 0) ||
+      ([[name stringByTrimmingCharactersInSet:[NSCharacterSet
+              whitespaceAndNewlineCharacterSet]] length] == 0)) {
+    name_valid = false;
+  }
+
+  if (newURL.is_valid() && name_valid) {
     [okButton_ setEnabled:YES];
   } else {
     [okButton_ setEnabled:NO];
@@ -182,6 +193,7 @@ void BookmarkEditor::Show(gfx::NativeView parent_hwnd,
   // This is probably unnecessary but it feels cleaner since the
   // delegate of a text field can be automatically registered for
   // notifications.
+  [nameField_ setDelegate:nil];
   [urlField_ setDelegate:nil];
 
   [[self window] orderOut:self];
@@ -202,6 +214,7 @@ void BookmarkEditor::Show(gfx::NativeView parent_hwnd,
 
 - (void)setDisplayName:(NSString*)name {
   [nameField_ setStringValue:name];
+  [self controlTextDidChange:nil];
 }
 
 - (void)setDisplayURL:(NSString*)name {

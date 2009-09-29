@@ -106,10 +106,21 @@ TEST_F(BookmarkEditorControllerTest, UserEditsStuff) {
   child = parent->GetChild(0);
   EXPECT_TRUE(child->GetURL().is_valid());
 
-  // Confirm OK button enabled/disabled as appropriate.
+  // Confirm OK button enabled/disabled as appropriate:
+  // First test the URL.
   EXPECT_TRUE([controller okButtonEnabled]);
   [controller setDisplayURL:@""];
   EXPECT_FALSE([controller okButtonEnabled]);
   [controller setDisplayURL:@"http://www.cnn.com"];
   EXPECT_TRUE([controller okButtonEnabled]);
+  // Then test the name.
+  [controller setDisplayName:@""];
+  EXPECT_FALSE([controller okButtonEnabled]);
+  [controller setDisplayName:@"                   "];
+  EXPECT_FALSE([controller okButtonEnabled]);
+  // Then little mix of both.
+  [controller setDisplayName:@"name"];
+  EXPECT_TRUE([controller okButtonEnabled]);
+  [controller setDisplayURL:@""];
+  EXPECT_FALSE([controller okButtonEnabled]);
 }
