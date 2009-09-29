@@ -32,7 +32,14 @@ class ATL_NO_VTABLE BrowserAccessibility
     COM_INTERFACE_ENTRY(IAccessible)
   END_COM_MAP()
 
-  BrowserAccessibility() {}
+  BrowserAccessibility()
+      : iaccessible_id_(-1),
+        routing_id_(-1),
+        process_id_(-1),
+        parent_hwnd_(NULL),
+        instance_active_(false) {
+  }
+
   ~BrowserAccessibility() {}
 
   HRESULT Initialize(int iaccessible_id,
