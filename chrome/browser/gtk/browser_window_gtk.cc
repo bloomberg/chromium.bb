@@ -1975,6 +1975,11 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
       browser->last_click_position_ = gfx::Point(static_cast<int>(event->x),
                                                  static_cast<int>(event->y));
 
+      // Raise the window after a click on either the titlebar or the border to
+      // match the behavior of most window managers.
+      if (has_hit_titlebar || has_hit_edge)
+        gdk_window_raise(GTK_WIDGET(browser->window_)->window);
+
       if (has_hit_titlebar) {
         // We want to start a move when the user single clicks, but not start a
         // move when the user double clicks.  However, a double click sends the
