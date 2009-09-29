@@ -3,4 +3,4 @@ Test for toString on event.view. This test simulates a click when run via DumpRe
 event.view :
 document: [object HTMLDocument]
 proto: [object Object]
-Success getting [object global]
+Success getting [object DOMWindow]

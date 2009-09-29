@@ -328,16 +328,16 @@ PASS 'function XSLTProcessor() { [native code] }' is 'function XSLTProcessor() {
 PASS 'function XSLTProcessor() { [native code] }' is 'function XSLTProcessor() { [native code] }'
 PASS win['onload'] is null
 PASS win['onload'] is null
-PASS win['frames'] == '[object global]' is true
-PASS win['frames'] == '[object global]' is true
-PASS win['parent'] == '[object global]' is true
-PASS win['parent'] == '[object global]' is true
-PASS win['self'] == '[object global]' is true
-PASS win['self'] == '[object global]' is true
-PASS win['top'] == '[object global]' is true
-PASS win['top'] == '[object global]' is true
-PASS win['window'] == '[object global]' is true
-PASS win['window'] == '[object global]' is true
+PASS win['frames'] == '[object DOMWindow]' is true
+PASS win['frames'] == '[object DOMWindow]' is true
+PASS win['parent'] == '[object DOMWindow]' is true
+PASS win['parent'] == '[object DOMWindow]' is true
+PASS win['self'] == '[object DOMWindow]' is true
+PASS win['self'] == '[object DOMWindow]' is true
+PASS win['top'] == '[object DOMWindow]' is true
+PASS win['top'] == '[object DOMWindow]' is true
+PASS win['window'] == '[object DOMWindow]' is true
+PASS win['window'] == '[object DOMWindow]' is true
 PASS win['locationbar'] == '[object BarInfo]' is true
 PASS win['locationbar'] == '[object BarInfo]' is true
 PASS win['menubar'] == '[object BarInfo]' is true
@@ -459,4 +459,3 @@ PASS win['offscreenBuffering'] is true
 PASS successfullyParsed is true
 
 TEST COMPLETE
-
