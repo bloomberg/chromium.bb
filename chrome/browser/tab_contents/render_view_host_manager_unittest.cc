@@ -15,10 +15,6 @@
 class RenderViewHostManagerTest : public RenderViewHostTestHarness {
  public:
   void NavigateActiveAndCommit(const GURL& url) {
-    // Navigating to an empty URL opens the NTP.  The sync service must be
-    // created to host the sync advertisement.
-    profile_->CreateProfileSyncService();
-
     // Note: we navigate the active RenderViewHost because previous navigations
     // won't have committed yet, so NavigateAndCommit does the wrong thing
     // for us.
@@ -84,6 +80,9 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
 TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
   const GURL kNtpUrl(chrome::kChromeUINewTabURL);
   const GURL kUrl("view-source:http://foo");
+
+  // The sync service must be created to host the sync NTP advertisement.
+  profile_->CreateProfileSyncService();
 
   // We have to navigate to some page at first since without this, the first
   // navigation will reuse the SiteInstance created by Init(), and the second
