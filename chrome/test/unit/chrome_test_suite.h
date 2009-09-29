@@ -5,9 +5,9 @@
 #ifndef CHROME_TEST_UNIT_CHROME_TEST_SUITE_H_
 #define CHROME_TEST_UNIT_CHROME_TEST_SUITE_H_
 
-#include "build/build_config.h"
-
 #include <string>
+
+#include "build/build_config.h"
 
 #include "app/app_paths.h"
 #include "app/resource_bundle.h"
@@ -63,7 +63,9 @@ class WarningHostResolverProc : public net::HostResolverProc {
 
 class ChromeTestSuite : public TestSuite {
  public:
-  ChromeTestSuite(int argc, char** argv) : TestSuite(argc, argv) {
+  ChromeTestSuite(int argc, char** argv)
+      : TestSuite(argc, argv),
+        stats_table_(NULL) {
   }
 
  protected:
