@@ -152,7 +152,7 @@ void MainMenu::RequestMove(const gfx::Rect& new_bounds) {
   gtk_widget_set_size_request(popup_->GetNativeView(), new_w, new_h);
   popup_->PositionChild(rwhv_->GetNativeView(), kRendererX, kRendererY,
                         new_bounds.width(), new_bounds.height());
-  popup_->SetBounds(gfx::Rect(0, 0, new_w, new_h));
+  popup_->SetBounds(gfx::Rect(new_bounds.x(), new_bounds.y(), new_w, new_h));
   rwhv_->SetSize(new_bounds.size());
 }
 
