@@ -51,7 +51,7 @@ void BrowserWindowCocoa::SetBounds(const gfx::Rect& bounds) {
 
 // Callers assume that this doesn't immediately delete the Browser object.
 // The controller implementing the window delegate methods called from
-// |-performClose:| must take precautiions to ensure that.
+// |-performClose:| must take precautions to ensure that.
 void BrowserWindowCocoa::Close() {
   [window_ orderOut:controller_];
   [window_ performClose:controller_];
