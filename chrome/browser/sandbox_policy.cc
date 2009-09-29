@@ -343,6 +343,8 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     type = ChildProcessInfo::PLUGIN_PROCESS;
   } else if (type_str == switches::kWorkerProcess) {
     type = ChildProcessInfo::WORKER_PROCESS;
+  } else if (type_str == switches::kNaClProcess) {
+    type = ChildProcessInfo::NACL_PROCESS;
   } else if (type_str == switches::kUtilityProcess) {
     type = ChildProcessInfo::UTILITY_PROCESS;
   } else {
@@ -355,8 +357,10 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
       (type != ChildProcessInfo::PLUGIN_PROCESS ||
        browser_command_line.HasSwitch(switches::kSafePlugins));
 #if !defined (GOOGLE_CHROME_BUILD)
-  if (browser_command_line.HasSwitch(switches::kInProcessPlugins)) {
+  if (browser_command_line.HasSwitch(switches::kInProcessPlugins) ||
+      browser_command_line.HasSwitch(switches::kInternalNaCl)) {
     // In process plugins won't work if the sandbox is enabled.
+    // The internal NaCl plugin doesn't work in the sandbox for now.
     in_sandbox = false;
   }
 #endif
@@ -378,6 +382,8 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   sandbox::TargetPolicy* policy = broker_service->CreatePolicy();
 
   bool on_sandbox_desktop = false;
+  // TODO(gregoryd): try locked-down policy for sel_ldr after we fix IMC.
+  // TODO(gregoryd): do we need a new desktop for sel_ldr?
   if (type == ChildProcessInfo::PLUGIN_PROCESS) {
     if (!AddPolicyForPlugin(cmd_line, policy))
       return 0;

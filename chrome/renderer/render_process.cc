@@ -25,11 +25,13 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/nacl_types.h"
 #include "chrome/common/transport_dib.h"
 #include "chrome/renderer/render_view.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message_utils.h"
 #include "media/base/media.h"
+#include "native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "webkit/glue/webkit_glue.h"
 
 //-----------------------------------------------------------------------------
@@ -80,6 +82,9 @@ RenderProcess::RenderProcess()
     StatisticsRecorder::set_dump_on_exit(true);
   }
 
+  if (command_line.HasSwitch(switches::kInternalNaCl))
+    RegisterInternalNaClPlugin(RenderProcess::LaunchNaClProcess);
+
   FilePath module_path;
   initialized_media_library_ =
       PathService::Get(base::DIR_MODULE, &module_path) &&
@@ -110,6 +115,19 @@ bool RenderProcess::InProcessPlugins() {
   return command_line.HasSwitch(switches::kInProcessPlugins) ||
          command_line.HasSwitch(switches::kSingleProcess);
 #endif
+}
+
+bool RenderProcess::LaunchNaClProcess(int imc_fd,
+                                      nacl::Handle* handle) {
+  // TODO(gregoryd): nacl::FileDescriptor will be soon merged with
+  // base::FileDescriptor
+  nacl::FileDescriptor descriptor;
+  if (!RenderThread::current()->Send(
+      new ViewHostMsg_LaunchNaCl(imc_fd, &descriptor))) {
+    return false;
+  }
+  *handle = NATIVE_HANDLE(descriptor);
+  return true;
 }
 
 // -----------------------------------------------------------------------------
