@@ -17,7 +17,7 @@
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::Time;
+using base::TimeTicks;
 using base::TimeDelta;
 
 namespace browser_sync {
@@ -62,18 +62,18 @@ class SyncShareIntercept : public MockConnectionManager::MidCommitObserver {
   SyncShareIntercept() : sync_occured_(false, false) {}
   virtual ~SyncShareIntercept() {}
   virtual void Observe() {
-    times_sync_occured_.push_back(Time::NowFromSystemTime());
+    times_sync_occured_.push_back(TimeTicks::Now());
     sync_occured_.Signal();
   }
   void WaitForSyncShare(int at_least_this_many, TimeDelta max_wait) {
     while (at_least_this_many-- > 0)
       sync_occured_.TimedWait(max_wait);
   }
-  std::vector<Time> times_sync_occured() const {
+  std::vector<TimeTicks> times_sync_occured() const {
     return times_sync_occured_;
   }
  private:
-  std::vector<Time> times_sync_occured_;
+  std::vector<TimeTicks> times_sync_occured_;
   base::WaitableEvent sync_occured_;
   DISALLOW_COPY_AND_ASSIGN(SyncShareIntercept);
 };
@@ -364,8 +364,6 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
   }
 }
 
-// This test is disabled. see bug 23336.
-#if 0
 TEST_F(SyncerThreadWithSyncerTest, Polling) {
   SyncShareIntercept interceptor;
   connection()->SetMidCommitObserver(&interceptor);
@@ -388,24 +386,18 @@ TEST_F(SyncerThreadWithSyncerTest, Polling) {
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 
   // Now analyze the run.
-  std::vector<Time> data = interceptor.times_sync_occured();
+  std::vector<TimeTicks> data = interceptor.times_sync_occured();
 
   EXPECT_GE(data.size(), static_cast<unsigned int>(3));
   for (unsigned int i = 0; i < data.size() - 1; i++) {
-    Time optimal_next_sync = data[i] + poll_interval;
-    // The pthreads impl uses a different time impl and is slightly (~900usecs)
-    // off, so this expectation can fail with --syncer-thread-pthreads.
-    EXPECT_TRUE(data[i + 1] >= optimal_next_sync)
-        << "difference is "
-        << (data[i + 1] - optimal_next_sync).InMicroseconds() << " usecs. "
-        << "~900usec delta is OK with --syncer-thread-pthreads";
+    TimeTicks optimal_next_sync = data[i] + poll_interval;
+    EXPECT_TRUE(data[i + 1] >= optimal_next_sync);
     // This should be reliable, as there are no blocking or I/O operations
     // except the explicit 2 second wait, so if it takes longer than this
     // there is a problem.
     EXPECT_TRUE(data[i + 1] < optimal_next_sync + poll_interval);
   }
 }
-#endif
 
 TEST_F(SyncerThreadWithSyncerTest, Nudge) {
   SyncShareIntercept interceptor;
