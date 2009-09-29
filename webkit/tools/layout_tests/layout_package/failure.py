@@ -22,6 +22,7 @@ CHROMIUM_SRC_HOME = "http://src.chromium.org/viewvc/chrome/trunk/src/webkit/"
 CHROMIUM_TRAC_HOME = CHROMIUM_SRC_HOME + "data/layout_tests/"
 WEBKIT_TRAC_HOME = "http://trac.webkit.org/browser/trunk/"
 WEBKIT_SVN_HOSTNAME = "svn.webkit.org"
+THIRD_PARTY = "third_party"
 
 WEBKIT_PLATFORM_URL_BASE = WEBKIT_TRAC_HOME + "LayoutTests/platform"
 WEBKIT_LAYOUT_TEST_BASE_URL = "http://svn.webkit.org/repository/webkit/trunk/"
@@ -138,7 +139,8 @@ class Failure(object):
     return UNKNOWN
 
   def _IsFileInWebKit(self, file):
-    return file != None and file.find(WEBKIT_SVN_HOSTNAME) > -1
+    return file != None and (file.find(WEBKIT_SVN_HOSTNAME) > -1 or
+                             file.find(THIRD_PARTY) > -1)
 
   def IsImageBaselineInChromium(self):
     return not self.IsImageBaselineInWebkit()

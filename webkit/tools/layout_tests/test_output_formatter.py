@@ -36,6 +36,7 @@ def main(options, args):
                                         options.archive_log,
                                         options.zip_file,
                                         options.expectations_file)
+  finder.use_local_baselines = options.local
   failure_list = finder.GetFailures()
 
   if not failure_list:
@@ -94,6 +95,10 @@ if __name__ == "__main__":
                            default = None,
                            help = ("Use the local test output zip file "
                                    "instead of scraping the buildbots"))
+  option_parser.add_option("-l", "--local", action = "store_true",
+                           default = False,
+                           help = ("Use local baselines instead of scraping "
+                                   "baselines from source websites"))
 
   options, args = option_parser.parse_args()
   main(options, args)

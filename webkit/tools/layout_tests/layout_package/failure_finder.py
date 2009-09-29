@@ -6,6 +6,7 @@
 #                2.  Change text_expectations parsing to existing
 #                    logic in layout_pagckage.test_expectations.
 
+import chromium_utils
 import difflib
 import errno
 import os
@@ -22,8 +23,6 @@ WEBKIT_TRAC_HOSTNAME = "trac.webkit.org"
 WEBKIT_LAYOUT_TEST_BASE_URL = "http://svn.webkit.org/repository/webkit/trunk/"
 WEBKIT_PLATFORM_BASELINE_URL = (WEBKIT_LAYOUT_TEST_BASE_URL +
                                 "LayoutTests/platform/%s/")
-WEBKIT_PLATFORM_DIRS = ["gtk", "mac", "mac-leopard", "mac-snowleopard",
-                        "mac-tiger", "qt", "win" ]
 
 BUILDBOT_BASE = "http://build.chromium.org/buildbot/"
 WEBKIT_BUILDER_BASE = BUILDBOT_BASE + "waterfall/builders/%s"
@@ -50,8 +49,22 @@ TEST_TIMED_OUT = "Test timed out"
 TEST_SHELL_CRASHED = "Test shell crashed"
 
 CHROMIUM_WIN = "chromium-win"
+CHROMIUM_WIN_XP = "chromium-win-xp"
+CHROMIUM_WIN_VISTA = "chromium-win-vista"
 CHROMIUM_MAC = "chromium-mac"
 CHROMIUM_LINUX = "chromium-linux"
+PLATFORM = "platform"
+LAYOUTTESTS = "LayoutTests"
+
+# These platform dirs must be in order of their precedence.
+# TODO(gwilson): This is not the same fallback order as test_shell.  This list
+# should be reversed, and we need to add detection for the type of OS that
+# the given builder is running.
+WEBKIT_MAC_PLATFORM_DIRS = ["mac-leopard", "mac-snowleopard", "mac"]
+WEBKIT_WIN_PLATFORM_DIRS = ["win", "mac"]
+CHROMIUM_MAC_PLATFORM_DIRS = [CHROMIUM_MAC]
+CHROMIUM_WIN_PLATFORM_DIRS = [CHROMIUM_WIN, CHROMIUM_WIN_XP, CHROMIUM_WIN_VISTA]
+CHROMIUM_LINUX_PLATFORM_DIRS = [CHROMIUM_LINUX, CHROMIUM_WIN]
 
 ARCHIVE_URL_REGEX = "last.*change: (\d+)"
 BUILD_NAME_REGEX = "build name: ([^\s]*)"
@@ -66,10 +79,12 @@ FAILED_REGEX = ("ERROR (" + TEST_PATH_REGEX + ") failed:\s*"
 FAILED_UNEXPECTED_REGEX = "  [^\s]+(?: = .*?)?\n"
 LAST_BUILD_REGEX = ("<h2>Recent Builds:</h2>"
                     "[\s\S]*?<a href=\"../builders/.*?/builds/(\d+)\">")
-SUMMARY_REGEX = "-{78}(.*?)-{78}" # -{78} --> 78 dashes in a row.
+# Sometimes the lines of hyphens gets interrupted with multiple processes
+# outputting to stdio, so don't rely on them being contiguous.
+SUMMARY_REGEX = "-{78}(.*?)Test summary" # -{78} --> 78 dashes in a row.
 SUMMARY_REGRESSIONS = "Regressions:.*?\n((?:  [^\s]+(?: = .*?)?\n)+)"
-TEST_EXPECTATIONS_PLATFORM_REGEX = "((WONTFIX|BUG.*).* %s.* : %s = [^\n]*)"
-TEST_EXPECTATIONS_NO_PLATFORM_REGEX = ("((WONTFIX|BUG.*).*"
+TEST_EXPECTATIONS_PLATFORM_REGEX = "((WONTFIX |BUG.* )+.* %s.* : %s = [^\n]*)"
+TEST_EXPECTATIONS_NO_PLATFORM_REGEX = ("((WONTFIX |BUG.* )+.*"
                                        "(?!WIN)(?!LINUX)(?!MAC).* :"
                                        " %s = [^\n]*)")
 
@@ -77,9 +92,21 @@ WEBKIT_FILE_AGE_REGEX = ('<a class="file" title="View File" href="%s">.*?</a>.'
                          '*?<td class="age" .*?>\s*'
                          '<a class="timeline" href=".*?" title=".*?">(.*?)</a>')
 
+LOCAL_BASELINE_REGEXES = [
+  ".*/third_party/Webkit/LayoutTests/platform/.*?(/.*)",
+  ".*/third_party/Webkit/LayoutTests(/.*)",
+  ".*/webkit/data/layout_tests/platform/.*?/LayoutTests(/.*)",
+  ".*/webkit/data/layout_tests/platform/.*?(/.*)",
+  ".*/webkit/data/layout_tests(/.*)",
+  "LayoutTests(/.*)"
+]
+
 UPSTREAM_IMAGE_FILE_ENDING = "-upstream.png"
 
 TEST_EXPECTATIONS_WONTFIX = "WONTFIX"
+
+TEMP_ZIP_DIR = "temp-zip-dir"
+
 
 def GetURLBase(use_fyi):
   if use_fyi:
@@ -114,10 +141,8 @@ def CreateDirectory(dir):
   Method that creates the directory structure given.
   This will create directories recursively until the given dir exists.
   """
-  if not os.path.isdir(dir):
-    if not os.path.isdir(dir[0:dir.rfind("/")]):
-      CreateDirectory(dir[0:dir.rfind("/")])
-    os.mkdir(dir)
+  if not os.path.exists(dir):
+    os.makedirs(dir)
 
 def ExtractFirstValue(string, regex):
   m = re.search(regex, string)
@@ -216,6 +241,10 @@ class FailureFinder(object):
     self.zip_file = zip_file
     self.test_expectations_file = test_expectations_file
     self.delete_zip_file = True
+    # Determines if the script should scrape the baselines from webkit.org
+    # and chromium.org, or if it should use local baselines in the current
+    # checkout.
+    self.use_local_baselines = False
 
   def SetPlatform(self, platform):
     self.platform = platform.replace(" ", "%20")
@@ -242,6 +271,8 @@ class FailureFinder(object):
     if self.verbose:
       print "Using build number %s" % self.build
 
+    if self.use_local_baselines:
+      self._BuildBaselineIndexes()
     self.failures = self._GetFailuresFromBuilder()
     if (self.failures and
         (self._DownloadResultResources() or self.dont_download)):
@@ -360,6 +391,7 @@ class FailureFinder(object):
     zip_url = GetZipFileURL(revision, build_name)
     if self.zip_file:
       filename = self.zip_file
+      self.delete_zip_file = False
     else:
       if self.verbose:
         print "Downloading zip file from %s to %s" % (zip_url, target_zip)
@@ -375,6 +407,7 @@ class FailureFinder(object):
         print 'Extracting files...'
       directory = "%s/layout-test-results-%s" % (self.output_dir, self.build)
       CreateDirectory(directory)
+      self._UnzipZipfile(zip, TEMP_ZIP_DIR)
 
       for failure in self.failures:
         failure.test_expectations_line = (
@@ -386,19 +419,36 @@ class FailureFinder(object):
           self._PopulateTextFailure(failure, directory, zip)
         if failure.image_mismatch:
           self._PopulateImageFailure(failure, directory, zip)
-        failure.test_age = self._GetFileAge(failure.GetTestHome())
+        if not self.use_local_baselines:
+          failure.test_age = self._GetFileAge(failure.GetTestHome())
         failure.flakiness = self._GetFlakiness(failure.test_path, self.platform)
       zip.close()
       if self.verbose:
         print "Files extracted."
       if self.delete_zip_file:
-        print "Deleting zip file..."
-        os.remove(filename)
+        if self.verbose:
+          print "Cleaning up zip file..."
+        chromium_utils.RemoveDirectory(TEMP_ZIP_DIR)
+        chromium_utils.RemoveFile(filename)
       return True
     else:
       if self.verbose:
         print "Downloaded file '%s' doesn't look like a zip file." % filename
       return False
+
+  def _UnzipZipfile(self, zip, base_dir):
+    for i, name in enumerate(zip.namelist()):
+      if not name.endswith('/'):
+        extracted_file_path = os.path.join(base_dir, name)
+        try:
+          (path, filename) = os.path.split(extracted_file_path)
+          os.makedirs(path)
+        except:
+          pass
+        outfile = open(extracted_file_path, 'wb')
+        outfile.write(zip.read(name))
+        outfile.flush()
+        outfile.close()
 
   def _GetRevisionAndBuildFromArchiveStep(self):
     if self.archive_step_log_file:
@@ -420,11 +470,9 @@ class FailureFinder(object):
       self._GetFileAge(failure.GetTextBaselineTracHome()))
     failure.text_actual_local = "%s/%s" % (directory,
                                            failure.GetActualTextFilename())
-    if (baseline and baseline.IsValid() and
-        not self.dont_download and
-        self._ExtractFileFromZip(zip,
-                                 failure.GetTextResultLocationInZipFile(),
-                                 failure.text_actual_local)):
+    if (baseline and baseline.IsValid() and not self.dont_download):
+      self._CopyFileFromZipDir(failure.GetTextResultLocationInZipFile(),
+                               failure.text_actual_local)
       GenerateTextDiff(failure.text_baseline_local,
                        failure.text_actual_local,
                        directory + "/" + failure.GetTextDiffFilename())
@@ -438,8 +486,7 @@ class FailureFinder(object):
         self._GetFileAge(failure.GetImageBaselineTracHome()))
       failure.image_actual_local = "%s/%s" % (directory,
                                    failure.GetActualImageFilename())
-      self._ExtractFileFromZip(zip,
-                               failure.GetImageResultLocationInZipFile(),
+      self._CopyFileFromZipDir(failure.GetImageResultLocationInZipFile(),
                                failure.image_actual_local)
       if (not GeneratePNGDiff(failure.image_baseline_local,
                               failure.image_actual_local,
@@ -447,7 +494,7 @@ class FailureFinder(object):
                              (directory, failure.GetImageDiffFilename()))
           and self.verbose):
         print "Could not generate PNG diff for %s" % failure.test_path
-      if failure.IsImageBaselineInChromium():
+      if failure.IsImageBaselineInChromium() or self.use_local_baselines:
         upstream_baseline = (
           self._GetUpstreamBaseline(failure.GetExpectedImageFilename(),
                                     directory))
@@ -458,11 +505,12 @@ class FailureFinder(object):
     """ Search and download the baseline for the given test (put it in the
     directory given.)"""
 
-    local_filename = "%s/%s" % (directory, filename)
+    local_filename = os.path.join(directory, filename)
+    local_directory = local_filename[:local_filename.rfind("/")]
     if upstream_only:
       last_index = local_filename.rfind(".")
       if last_index > -1:
-        local_filename = (local_filename[0:last_index] +
+        local_filename = (local_filename[:last_index] +
                           UPSTREAM_IMAGE_FILE_ENDING)
 
     download_file_modifiers = ""
@@ -470,31 +518,141 @@ class FailureFinder(object):
       download_file_modifiers = "b"  # binary file
 
     if not self.dont_download:
-      CreateDirectory(local_filename[0:local_filename.rfind("/")])
-
-    possible_files = self._GetPossibleFileList(filename, upstream_only)
+      CreateDirectory(local_directory)
 
     local_baseline = None
     url_of_baseline = None
-    index = 0
-    while local_baseline == None and index < len(possible_files):
-      local_baseline = self._DownloadFile(possible_files[index],
-                                           local_filename,
-                                           download_file_modifiers,
-                                           True)
-      if local_baseline:
-        url_of_baseline = possible_files[index]
-      index += 1
+
+    if self.use_local_baselines:
+      test_path_key = self._NormalizeBaselineIdentifier(filename)
+      dict = self.baseline_dict
+      if upstream_only:
+        dict = self.webkit_baseline_dict
+      if test_path_key in dict:
+        local_baseline = dict[test_path_key]
+        url_of_baseline = local_baseline
+        chromium_utils.CopyFileToDir(local_baseline, local_directory)
+      elif self.verbose:
+        print "Baseline %s does not exist in the index." % test_path_key
+    else:
+      index = 0
+      possible_files = self._GetPossibleFileList(filename, upstream_only)
+      # Download the baselines from the webkit.org site.
+      while local_baseline == None and index < len(possible_files):
+        local_baseline = self._DownloadFile(possible_files[index],
+                                            local_filename,
+                                            download_file_modifiers,
+                                            True)
+        if local_baseline:
+          url_of_baseline = possible_files[index]
+        index += 1
 
     if not local_baseline:
-      print "Could not find any baseline for %s" % filename
+      if self.verbose:
+        print "Could not find any baseline for %s" % filename
+    else:
+      local_baseline = os.path.normpath(local_baseline)
     if local_baseline and self.verbose:
       print "Found baseline: %s" % url_of_baseline
 
     return BaselineCandidate(local_baseline, url_of_baseline)
 
-  # TODO(gwilson): Refactor this with path_utils' candidate directory
-  # generation.
+  def _AddBaselinePaths(self, list, base_path, directories):
+    for dir in directories:
+      list.append(os.path.join(base_path, dir))
+
+  # TODO(gwilson): Refactor this method to use
+  # platform_utils_*.BaselineSearchPath instead of custom logic.
+  def _BuildBaselineIndexes(self):
+    """ Builds an index of all the known local baselines in both chromium and
+    webkit.  Two baselines are created, a webkit-specific (no chromium baseline)
+    dictionary and an overall (both) dictionary.  Each one has a structure like:
+    "/fast/dom/one-expected.txt" -> "C:\\path\\to\\fast\\dom\\one-expected.txt"
+    """
+    if self.verbose:
+      print "Building index of all local baselines..."
+
+    self.baseline_dict = {}
+    self.webkit_baseline_dict = {}
+
+    base = os.path.abspath(os.path.curdir)
+    webkit_base = chromium_utils.FindUpward(base, 'third_party', 'Webkit',
+                                            'LayoutTests')
+    chromium_base = chromium_utils.FindUpward(base, 'data', 'layout_tests')
+    chromium_base_platform = os.path.join(chromium_base, PLATFORM)
+    webkit_base_platform = os.path.join(webkit_base, PLATFORM)
+
+    possible_chromium_files = []
+    possible_webkit_files = []
+
+    if IsMacPlatform(self.platform):
+      self._AddBaselinePaths(possible_chromium_files, chromium_base_platform,
+                             CHROMIUM_MAC_PLATFORM_DIRS)
+      self._AddBaselinePaths(possible_chromium_files, webkit_base_platform,
+                             WEBKIT_MAC_PLATFORM_DIRS)
+      self._AddBaselinePaths(possible_webkit_files, webkit_base_platform,
+                             WEBKIT_MAC_PLATFORM_DIRS)
+    elif IsLinuxPlatform(self.platform):
+      self._AddBaselinePaths(possible_chromium_files, chromium_base_platform,
+                             CHROMIUM_LINUX_PLATFORM_DIRS)
+    else:
+      self._AddBaselinePaths(possible_chromium_files, chromium_base_platform,
+                             CHROMIUM_WIN_PLATFORM_DIRS)
+
+    if not IsMacPlatform(self.platform):
+      self._AddBaselinePaths(possible_webkit_files, webkit_base_platform,
+                             WEBKIT_WIN_PLATFORM_DIRS)
+
+    possible_webkit_files.append(webkit_base)
+
+    self._PopulateBaselineDict(possible_webkit_files, self.webkit_baseline_dict)
+    self._PopulateBaselineDict(possible_chromium_files, self.baseline_dict)
+    for key in self.webkit_baseline_dict.keys():
+      if not key in self.baseline_dict:
+        self.baseline_dict[key] = self.webkit_baseline_dict[key]
+
+    return True
+
+  def _PopulateBaselineDict(self, directories, dictionary):
+    for dir in directories:
+      os.path.walk(dir, self._VisitBaselineDir, dictionary)
+
+  def _VisitBaselineDir(self, dict, dirname, names):
+    """ Method intended to be called by os.path.walk to build up an index
+    of where all the test baselines exist. """
+    # Exclude .svn from the walk, since we don't care what is in these dirs.
+    if '.svn' in names:
+      names.remove('.svn')
+    for name in names:
+      if name.find("-expected.") > -1:
+        test_path_key = os.path.join(dirname, name)
+        # Fix path separators to match the separators used on the buildbots.
+        test_path_key = test_path_key.replace("\\", "/")
+        test_path_key = self._NormalizeBaselineIdentifier(test_path_key)
+        if not test_path_key in dict:
+          dict[test_path_key] = os.path.join(dirname, name)
+
+  # TODO(gwilson): Simplify identifier creation to not rely so heavily on
+  # directory and path names.
+  def _NormalizeBaselineIdentifier(self, test_path):
+    """ Given either a baseline path (i.e. /LayoutTests/platform/mac/...) or a
+    test path (i.e. /LayoutTests/fast/dom/....) will normalize to a unique
+    identifier. This is basically a hashing function for layout test paths."""
+
+    for regex in LOCAL_BASELINE_REGEXES:
+      value = ExtractFirstValue(test_path, regex)
+      if value:
+        return value
+    return test_path
+
+  def _AddBaselineURLs(self, list, base_url, platforms):
+    for platform in platforms:
+      list.append(base_url % platform)
+
+  # TODO(gwilson): Refactor this method to use
+  # platform_utils_*.BaselineSearchPath instead of custom logic.  This may
+  # require some kind of wrapper since this method looks for URLs instead of
+  # local paths.
   def _GetPossibleFileList(self, filename, only_webkit):
     """ Returns a list of possible filename locations for the given file.
     Uses the platform of the class to determine the order.
@@ -503,44 +661,29 @@ class FailureFinder(object):
     possible_chromium_files = []
     possible_webkit_files = []
 
-    webkit_mac_location = (
-      self._MangleWebkitPixelTestLocation(WEBKIT_PLATFORM_BASELINE_URL % "mac",
-                                           filename))
-    webkit_win_location = (
-      self._MangleWebkitPixelTestLocation(WEBKIT_PLATFORM_BASELINE_URL % "win",
-                                           filename))
+    reduced_filename = filename.replace("LayoutTests/", "")
+    chromium_platform_url = LAYOUT_TEST_REPO_BASE_URL
+    if not filename.startswith("chrome") and not filename.startswith("pending"):
+      chromium_platform_url += "platform/%s/"
+    chromium_platform_url += filename
+
+    webkit_platform_url = WEBKIT_PLATFORM_BASELINE_URL + reduced_filename
 
     if IsMacPlatform(self.platform):
-      possible_chromium_files.append(self._GetBaselineURL(filename,
-                                                          CHROMIUM_MAC))
-      possible_chromium_files.append(self._GetBaselineURL(filename,
-                                                          CHROMIUM_WIN))
-      possible_webkit_files.append(
-        self._MangleWebkitPixelTestLocation(WEBKIT_PLATFORM_BASELINE_URL %
-                                            self.platform, filename))
-      possible_webkit_files.append(
-        self._MangleWebkitPixelTestLocation(WEBKIT_PLATFORM_BASELINE_URL %
-                                            "mac-snowleopard", filename))
-      possible_webkit_files.append(
-        self._MangleWebkitPixelTestLocation(WEBKIT_PLATFORM_BASELINE_URL %
-                                            "mac-leopard", filename))
-      possible_webkit_files.append(
-        self._MangleWebkitPixelTestLocation(WEBKIT_PLATFORM_BASELINE_URL %
-                                            "mac-tiger", filename))
-      possible_webkit_files.append(webkit_mac_location)
-      possible_webkit_files.append(webkit_win_location)
+      self._AddBaselineURLs(possible_chromium_files, chromium_platform_url,
+                            CHROMIUM_MAC_PLATFORM_DIRS)
+      self._AddBaselineURLs(possible_webkit_files, webkit_platform_url,
+                            WEBKIT_MAC_PLATFORM_DIRS)
     elif IsLinuxPlatform(self.platform):
-      possible_chromium_files.append(self._GetBaselineURL(filename,
-                                                          CHROMIUM_LINUX))
-      possible_chromium_files.append(self._GetBaselineURL(filename,
-                                                          CHROMIUM_WIN))
-      possible_webkit_files.append(webkit_win_location)
-      possible_webkit_files.append(webkit_mac_location)
+      self._AddBaselineURLs(possible_chromium_files, chromium_platform_url,
+                            CHROMIUM_LINUX_PLATFORM_DIRS)
     else:
-      possible_chromium_files.append(self._GetBaselineURL(filename,
-                                                          CHROMIUM_WIN))
-      possible_webkit_files.append(webkit_win_location)
-      possible_webkit_files.append(webkit_mac_location)
+      self._AddBaselineURLs(possible_chromium_files, chromium_platform_url,
+                            CHROMIUM_WIN_PLATFORM_DIRS)
+
+    if not IsMacPlatform(self.platform):
+      self._AddBaselineURLs(possible_webkit_files, webkit_platform_url,
+                            WEBKIT_WIN_PLATFORM_DIRS)
     possible_webkit_files.append(WEBKIT_LAYOUT_TEST_BASE_URL + filename)
 
     if only_webkit:
@@ -552,21 +695,10 @@ class FailureFinder(object):
   def _GetUpstreamBaseline(self, filename, directory):
     return self._GetBaseline(filename, directory, upstream_only = True)
 
-  def _MangleWebkitPixelTestLocation(self, webkit_base_url, filename):
-    # Clip the /LayoutTests/ off the front of the filename.
-    # TODO(gwilson): find a more elegant way of doing this.
-    return webkit_base_url + filename[12:]
-
-  # TODO(gwilson): move this into Failure class.
-  def _GetBaselineURL(self, filename, target_platform):
-    if filename.startswith("chrome") or filename.startswith("pending"):
-      # No need to append the platform.  These are platform-agnostic.
-      return LAYOUT_TEST_REPO_BASE_URL + filename
-    # Prepend the platform to the url.
-    return "%splatform/%s/%s" % (LAYOUT_TEST_REPO_BASE_URL,
-                                 target_platform, filename)
-
   def _GetFileAge(self, url):
+    # Check if the given URL is really a local file path.
+    if not url or not url.startswith("http"):
+      return None
     try:
       if url.find(WEBKIT_TRAC_HOSTNAME) > -1:
         return ExtractSingleRegexAtURL(url[:url.rfind("/")],
@@ -624,6 +756,14 @@ class FailureFinder(object):
 
     return None
 
+  def _CopyFileFromZipDir(self, file_in_zip, file_to_create):
+    modifiers = ""
+    if file_to_create.endswith(".png"):
+      modifiers = "b"
+    dir = os.path.join(os.path.split(file_to_create)[0:-1])[0]
+    CreateDirectory(dir)
+    file = os.path.normpath(os.path.join(TEMP_ZIP_DIR, file_in_zip))
+    chromium_utils.CopyFileToDir(file, dir)
 
   def _ExtractFileFromZip(self, zip, file_in_zip, file_to_create):
     modifiers = ""
