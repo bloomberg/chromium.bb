@@ -444,7 +444,7 @@ class UITest : public testing::Test {
   void StopHttpServer();
 
   // Profile theme type choices.
-  enum {
+  typedef enum {
     DEFAULT_THEME = 0,
     COMPLEX_THEME = 1,
     NATIVE_THEME = 2,
