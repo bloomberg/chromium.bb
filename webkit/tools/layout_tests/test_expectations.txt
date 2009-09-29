@@ -2283,7 +2283,7 @@ BUG_LEVIN WIN LINUX : LayoutTests/fast/dom/Range/getBoundingClientRect.html = FA
 BUG_LEVIN WIN LINUX : LayoutTests/fast/dom/Range/getClientRects.html = FAIL
 BUG_DGLAZKOV : LayoutTests/fast/dom/HTMLInputElement/size-attribute.html = FAIL
 
-BUG23306 WIN : LayoutTests/transitions/repeated-firing-background-color.html = TIMEOUT FAIL
+BUG23306 WIN DEBUG : LayoutTests/transitions/repeated-firing-background-color.html = TIMEOUT FAIL
 
 // WebKit update 48821:48841
 BUG_JAPHET : LayoutTests/fast/dom/Window/atob-btoa.html = FAIL
