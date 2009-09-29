@@ -283,14 +283,14 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   DictionaryValue input;
 
   // First try with an empty dictionary. We should get nothing back.
-  ASSERT_EQ(NULL, extension.LoadExtensionActionHelper(
-      &input, 0, &error_msg, ExtensionAction::PAGE_ACTION));
+  ASSERT_TRUE(extension.LoadExtensionActionHelper(
+      &input, 0, &error_msg, ExtensionAction::PAGE_ACTION) == NULL);
   ASSERT_STRNE("", error_msg.c_str());
   error_msg = "";
 
   // Now try the same, but as a browser action. Ensure same results.
-  ASSERT_EQ(NULL, extension.LoadExtensionActionHelper(
-      &input, 0, &error_msg, ExtensionAction::BROWSER_ACTION));
+  ASSERT_TRUE(extension.LoadExtensionActionHelper(
+      &input, 0, &error_msg, ExtensionAction::BROWSER_ACTION) == NULL);
   ASSERT_STRNE("", error_msg.c_str());
   error_msg = "";
 

@@ -160,8 +160,8 @@ TEST_F(FieldTrialTest, Save) {
 }
 
 TEST_F(FieldTrialTest, Restore) {
-  EXPECT_EQ(NULL, FieldTrialList::Find("Some_name"));
-  EXPECT_EQ(NULL, FieldTrialList::Find("xxx"));
+  EXPECT_TRUE(FieldTrialList::Find("Some_name") == NULL);
+  EXPECT_TRUE(FieldTrialList::Find("xxx") == NULL);
 
   FieldTrialList::StringAugmentsState("Some_name/Winner/xxx/yyyy/");
 

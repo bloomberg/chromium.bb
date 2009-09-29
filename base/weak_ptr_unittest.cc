@@ -54,13 +54,13 @@ TEST(WeakPtrTest, Comparison) {
 
 TEST(WeakPtrTest, OutOfScope) {
   WeakPtr<int> ptr;
-  EXPECT_EQ(NULL, ptr.get());
+  EXPECT_TRUE(ptr.get() == NULL);
   {
     int data;
     WeakPtrFactory<int> factory(&data);
     ptr = factory.GetWeakPtr();
   }
-  EXPECT_EQ(NULL, ptr.get());
+  EXPECT_TRUE(ptr.get() == NULL);
 }
 
 TEST(WeakPtrTest, Multiple) {
@@ -73,8 +73,8 @@ TEST(WeakPtrTest, Multiple) {
     EXPECT_EQ(&data, a.get());
     EXPECT_EQ(&data, b.get());
   }
-  EXPECT_EQ(NULL, a.get());
-  EXPECT_EQ(NULL, b.get());
+  EXPECT_TRUE(a.get() == NULL);
+  EXPECT_TRUE(b.get() == NULL);
 }
 
 TEST(WeakPtrTest, UpCast) {
@@ -98,7 +98,7 @@ TEST(WeakPtrTest, InvalidateWeakPtrs) {
   EXPECT_EQ(&data, ptr.get());
   EXPECT_TRUE(factory.HasWeakPtrs());
   factory.InvalidateWeakPtrs();
-  EXPECT_EQ(NULL, ptr.get());
+  EXPECT_TRUE(ptr.get() == NULL);
   EXPECT_FALSE(factory.HasWeakPtrs());
 }
 

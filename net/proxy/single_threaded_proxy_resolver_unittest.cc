@@ -36,8 +36,8 @@ class MockProxyResolver : public ProxyResolver {
 
     CheckIsOnWorkerThread();
 
-    EXPECT_EQ(NULL, callback);
-    EXPECT_EQ(NULL, request);
+    EXPECT_TRUE(callback == NULL);
+    EXPECT_TRUE(request == NULL);
 
     // Write something into |load_log| (doesn't really have any meaning.)
     LoadLog::BeginEvent(load_log, LoadLog::TYPE_PROXY_RESOLVER_V8_DNS_RESOLVE);
