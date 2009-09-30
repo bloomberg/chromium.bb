@@ -596,7 +596,6 @@
         'bho.cc',
         'bho.h',
         'bho.rgs',
-        'chrome_active_document.bmp',
         'chrome_active_document.cc',
         'chrome_active_document.h',
         'chrome_active_document.rgs',
