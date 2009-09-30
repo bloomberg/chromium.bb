@@ -175,12 +175,12 @@
               # that does not use redirection.
               'action' :
                 ['bash', 'nacl_syscall_handlers_gen3.sh', '<@(syscall_handler)', '<@(_outputs)']
-            }, { # OS != mac
+            }, { # OS == win
               'action':
                 # TODO(gregoryd): find out how to generate a file
                 # in such a location that can be found in both
                 # NaCl and Chrome builds.
-                ['python', 'nacl_syscall_handlers_gen3.py', '-c', '-f', '"Video|Audio|Multimedia"', '<', '<@(syscall_handler)', '>', '<@(_outputs)'],
+                ['<@(python_exe)', 'nacl_syscall_handlers_gen3.py', '-c', '-f', '"Video|Audio|Multimedia"', '<', '<@(syscall_handler)', '>', '<@(_outputs)'],
             }],
           ],
           'outputs': [

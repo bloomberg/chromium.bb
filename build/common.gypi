@@ -194,6 +194,11 @@
   },
   'conditions': [
     ['OS=="linux"', {
+      'variables': {
+        # This variable is overriden below for Windows
+        # and should never be used on other platforms.
+        'python_exe': ['python'],
+      },
       'target_defaults': {
         # Enable -Werror by default, but put it in a variable so it can
         # be disabled in ~/.gyp/include.gypi on the valgrind builders.
@@ -392,6 +397,11 @@
       },
     }],
     ['OS=="mac"', {
+      'variables': {
+        # This variable is overriden below for Windows
+        # and should never be used on other platforms.
+        'python_exe': ['python'],
+      },
       'target_defaults': {
         'variables': {
           # This should be 'mac_real_dsym%', but there seems to be a bug
@@ -496,6 +506,11 @@
       },
     }],
     ['OS=="win"', {
+      'variables': {
+        'python_exe': [
+          '<(DEPTH)\\third_party\\python_24\\setup_env.bat && python',
+        ],
+      },
       'target_defaults': {
         'rules': [
         {

@@ -11,6 +11,13 @@ deps = {
     "http://nativeclient.googlecode.com/svn/trunk/src/third_party",
 }
 
+deps_os = {
+  "win": {
+    "third_party/python_24":
+      "http://src.chromium.org/svn/trunk/deps/third_party/python_24@22967",
+  },
+}
+
 hooks = [
   {
     "pattern": "\\.gypi?$|[/\\\]tools[/\\\]gyp[/\\\]",

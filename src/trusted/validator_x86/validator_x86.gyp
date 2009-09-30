@@ -98,7 +98,7 @@
             '<(validate_gen_out)/ncopcode_prefix_impl.h',
           ],
           'action':
-          ['python', 'enum_gen.py',
+          ['<@(python_exe)', 'enum_gen.py',
            '--header=<(validate_gen_out)/ncopcode_prefix.h',
            '--source=<(validate_gen_out)/ncopcode_prefix_impl.h',
            '--path_prefix=<(SHARED_INTERMEDIATE_DIR)',
@@ -117,7 +117,7 @@
             '<(validate_gen_out)/ncopcode_insts_impl.h',
           ],
           'action':
-          ['python', 'enum_gen.py',
+          ['<@(python_exe)', 'enum_gen.py',
            '--header=<(validate_gen_out)/ncopcode_insts.h',
            '--source=<(validate_gen_out)/ncopcode_insts_impl.h',
            '--path_prefix=<(SHARED_INTERMEDIATE_DIR)',
@@ -138,7 +138,7 @@
             '<(validate_gen_out)/ncopcode_opcode_flags_impl.h',
           ],
           'action':
-          ['python', 'enum_gen.py',
+          ['<@(python_exe)', 'enum_gen.py',
            '--header=<(validate_gen_out)/ncopcode_opcode_flags.h',
            '--source=<(validate_gen_out)/ncopcode_opcode_flags_impl.h',
            '--path_prefix=<(SHARED_INTERMEDIATE_DIR)',
@@ -157,7 +157,7 @@
             '<(validate_gen_out)/ncopcode_operand_kind_impl.h',
           ],
           'action':
-          ['python', 'enum_gen.py',
+          ['<@(python_exe)', 'enum_gen.py',
            '--header=<(validate_gen_out)/ncopcode_operand_kind.h',
            '--source=<(validate_gen_out)/ncopcode_operand_kind_impl.h',
            '--path_prefix=<(SHARED_INTERMEDIATE_DIR)',
@@ -176,7 +176,7 @@
             '<(validate_gen_out)/ncopcode_operand_flag_impl.h',
           ],
           'action':
-          ['python', 'enum_gen.py',
+          ['<@(python_exe)', 'enum_gen.py',
            '--header=<(validate_gen_out)/ncopcode_operand_flag.h',
            '--source=<(validate_gen_out)/ncopcode_operand_flag_impl.h',
            '--path_prefix=<(SHARED_INTERMEDIATE_DIR)',
@@ -298,7 +298,7 @@
             '<(validate_gen_out)/ncop_expr_node_flag_impl.h',
           ],
           'action':
-          ['python', 'enum_gen.py',
+          ['<@(python_exe)', 'enum_gen.py',
            '--header=<(validate_gen_out)/ncop_expr_node_flag.h',
            '--source=<(validate_gen_out)/ncop_expr_node_flag_impl.h',
            '--path_prefix=<(SHARED_INTERMEDIATE_DIR)',
@@ -317,7 +317,7 @@
             '<(validate_gen_out)/ncop_expr_node_kind_impl.h',
           ],
           'action':
-          ['python', 'enum_gen.py',
+          ['<@(python_exe)', 'enum_gen.py',
            '--header=<(validate_gen_out)/ncop_expr_node_kind.h',
            '--source=<(validate_gen_out)/ncop_expr_node_kind_impl.h',
            '--path_prefix=<(SHARED_INTERMEDIATE_DIR)',
