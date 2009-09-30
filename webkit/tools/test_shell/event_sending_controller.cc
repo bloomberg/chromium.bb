@@ -233,7 +233,7 @@ void EventSendingController::DoDragDrop(const WebKit::WebPoint &event_pos,
   WebPoint screen_point(event.globalX, event.globalY);
   current_drag_data = drag_data;
   current_drag_effects_allowed = mask;
-  current_drag_effect = webview()->DragTargetDragEnter(
+  current_drag_effect = webview()->dragTargetDragEnter(
       drag_data, 0, client_point, screen_point, current_drag_effects_allowed);
 
   // Finish processing events.
@@ -334,17 +334,16 @@ void EventSendingController::mouseUp(
     WebPoint client_point(e.x, e.y);
     WebPoint screen_point(e.globalX, e.globalY);
 
-    webview()->DragSourceMovedTo(client_point, screen_point);
-    current_drag_effect = webview()->DragTargetDragOver(client_point,
-                                                  screen_point,
-                                                  current_drag_effects_allowed);
+    webview()->dragSourceMovedTo(client_point, screen_point);
+    current_drag_effect = webview()->dragTargetDragOver(
+        client_point, screen_point, current_drag_effects_allowed);
     if (current_drag_effect) {
-      webview()->DragTargetDrop(client_point, screen_point);
+      webview()->dragTargetDrop(client_point, screen_point);
     } else {
-      webview()->DragTargetDragLeave();
+      webview()->dragTargetDragLeave();
     }
-    webview()->DragSourceEndedAt(client_point, screen_point,
-                                 current_drag_effect);
+    webview()->dragSourceEndedAt(
+        client_point, screen_point, current_drag_effect);
 
     current_drag_data.reset();
   }
@@ -380,10 +379,9 @@ void EventSendingController::DoMouseMove(const WebMouseEvent& e) {
     WebPoint client_point(e.x, e.y);
     WebPoint screen_point(e.globalX, e.globalY);
 
-    webview()->DragSourceMovedTo(client_point, screen_point);
-    current_drag_effect = webview()->DragTargetDragOver(
-                                  client_point, screen_point,
-                                  current_drag_effects_allowed);
+    webview()->dragSourceMovedTo(client_point, screen_point);
+    current_drag_effect = webview()->dragTargetDragOver(
+        client_point, screen_point, current_drag_effects_allowed);
   }
 }
 
@@ -541,25 +539,25 @@ void EventSendingController::leapForward(
 // WebKit/WebView/WebView.mm)
 void EventSendingController::textZoomIn(
     const CppArgumentList& args, CppVariant* result) {
-  webview()->ZoomIn(true);
+  webview()->zoomIn(true);
   result->SetNull();
 }
 
 void EventSendingController::textZoomOut(
     const CppArgumentList& args, CppVariant* result) {
-  webview()->ZoomOut(true);
+  webview()->zoomOut(true);
   result->SetNull();
 }
 
 void EventSendingController::zoomPageIn(
     const CppArgumentList& args, CppVariant* result) {
-  webview()->ZoomIn(false);
+  webview()->zoomIn(false);
   result->SetNull();
 }
 
 void EventSendingController::zoomPageOut(
     const CppArgumentList& args, CppVariant* result) {
-  webview()->ZoomOut(false);
+  webview()->zoomOut(false);
   result->SetNull();
 }
 
@@ -638,9 +636,9 @@ void EventSendingController::beginDragWithFiles(
   // Provide a drag source.
   WebPoint client_point(last_mouse_pos_.x(), last_mouse_pos_.y());
   WebPoint screen_point(last_mouse_pos_.x(), last_mouse_pos_.y());
-  webview()->DragTargetDragEnter(current_drag_data, 0,
-                                 client_point, screen_point,
-                                 current_drag_effects_allowed);
+  webview()->dragTargetDragEnter(
+      current_drag_data, 0, client_point, screen_point,
+      current_drag_effects_allowed);
 
   // dragMode saves events and then replays them later. We don't need/want that.
   dragMode.Set(false);

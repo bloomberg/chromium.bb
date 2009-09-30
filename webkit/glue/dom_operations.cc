@@ -256,7 +256,7 @@ static bool FillFormToUploadFileImpl(WebCore::HTMLFormElement* fe,
 }
 
 bool FillFormToUploadFile(WebView* view, const FileUploadData& data) {
-  WebFrame* main_frame = view->GetMainFrame();
+  WebFrame* main_frame = view->mainFrame();
   if (!main_frame)
     return false;
   WebFrameImpl* main_frame_impl = static_cast<WebFrameImpl*>(main_frame);
@@ -354,7 +354,7 @@ static void FindFormElements(WebView* view,
                              FormElementsList* results) {
   DCHECK(view);
   DCHECK(results);
-  WebFrame* main_frame = view->GetMainFrame();
+  WebFrame* main_frame = view->mainFrame();
   if (!main_frame)
     return;
 
@@ -587,7 +587,7 @@ bool ElementHasLegalLinkAttribute(const WebCore::Element* element,
 
 WebFrameImpl* GetWebFrameImplFromWebViewForSpecificURL(WebView* view,
                                                        const GURL& page_url) {
-  WebFrame* main_frame = view->GetMainFrame();
+  WebFrame* main_frame = view->mainFrame();
   if (!main_frame)
     return NULL;
   WebFrameImpl* main_frame_impl = static_cast<WebFrameImpl*>(main_frame);
@@ -629,7 +629,7 @@ WebFrameImpl* GetWebFrameImplFromWebViewForSpecificURL(WebView* view,
 // frame and sub-frame
 bool GetAllSavableResourceLinksForCurrentPage(WebView* view,
     const GURL& page_url, SavableResourcesResult* result) {
-  WebFrame* main_frame = view->GetMainFrame();
+  WebFrame* main_frame = view->mainFrame();
   if (!main_frame)
     return false;
   WebFrameImpl* main_frame_impl = static_cast<WebFrameImpl*>(main_frame);
@@ -753,7 +753,7 @@ static void AddInstallIcon(WebCore::HTMLLinkElement* link,
 }
 
 void GetApplicationInfo(WebView* view, WebApplicationInfo* app_info) {
-  WebFrame* main_frame = view->GetMainFrame();
+  WebFrame* main_frame = view->mainFrame();
   if (!main_frame)
     return;
   WebFrameImpl* main_frame_impl = static_cast<WebFrameImpl*>(main_frame);
@@ -799,7 +799,7 @@ bool PauseAnimationAtTimeOnElementWithId(WebView* view,
                                          const std::string& animation_name,
                                          double time,
                                          const std::string& element_id) {
-  WebFrame* web_frame = view->GetMainFrame();
+  WebFrame* web_frame = view->mainFrame();
   if (!web_frame)
     return false;
 
@@ -822,7 +822,7 @@ bool PauseTransitionAtTimeOnElementWithId(WebView* view,
                                           const std::string& property_name,
                                           double time,
                                           const std::string& element_id) {
-  WebFrame* web_frame = view->GetMainFrame();
+  WebFrame* web_frame = view->mainFrame();
   if (!web_frame)
     return false;
 
@@ -843,7 +843,7 @@ bool PauseTransitionAtTimeOnElementWithId(WebView* view,
 
 bool ElementDoesAutoCompleteForElementWithId(WebView* view,
                                              const std::string& element_id) {
-  WebFrame* web_frame = view->GetMainFrame();
+  WebFrame* web_frame = view->mainFrame();
   if (!web_frame)
     return false;
 
@@ -859,7 +859,7 @@ bool ElementDoesAutoCompleteForElementWithId(WebView* view,
 }
 
 int NumberOfActiveAnimations(WebView* view) {
-  WebFrame* web_frame = view->GetMainFrame();
+  WebFrame* web_frame = view->mainFrame();
   if (!web_frame)
     return -1;
 

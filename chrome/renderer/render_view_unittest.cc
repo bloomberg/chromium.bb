@@ -387,11 +387,11 @@ TEST_F(RenderViewTest, PrintWithIframe) {
   // Find the frame and set it as the focused one.  This should mean that that
   // the printout should only contain the contents of that frame.
   WebFrame* sub1_frame =
-      view_->webview()->GetFrameWithName(WebString::fromUTF8("sub1"));
+      view_->webview()->findFrameByName(WebString::fromUTF8("sub1"));
   ASSERT_TRUE(sub1_frame);
-  view_->webview()->SetFocusedFrame(sub1_frame);
-  ASSERT_NE(view_->webview()->GetFocusedFrame(),
-            view_->webview()->GetMainFrame());
+  view_->webview()->setFocusedFrame(sub1_frame);
+  ASSERT_NE(view_->webview()->focusedFrame(),
+            view_->webview()->mainFrame());
 
   // Initiate printing.
   view_->OnPrintPages();
@@ -513,7 +513,7 @@ TEST_F(RenderViewTest, OnPrintPageAsBitmap) {
   // Fetch the image data from the web frame.
   std::vector<unsigned char> data;
   view_->print_helper()->PrintPageAsJPEG(page_params,
-                                         view_->webview()->GetMainFrame(),
+                                         view_->webview()->mainFrame(),
                                          1.0f,
                                          &data);
   std::vector<unsigned char> decoded;

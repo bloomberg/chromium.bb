@@ -169,7 +169,7 @@ WebPluginDelegateProxy::WebPluginDelegateProxy(
       sad_plugin_(NULL),
       invalidate_pending_(false),
       transparent_(false),
-      page_url_(render_view_->webview()->GetMainFrame()->url()) {
+      page_url_(render_view_->webview()->mainFrame()->url()) {
 }
 
 WebPluginDelegateProxy::~WebPluginDelegateProxy() {
@@ -929,7 +929,7 @@ void WebPluginDelegateProxy::OnGetDragData(const NPVariant_Param& object,
   int event_id;
   WebDragData data;
   NPObject* event = reinterpret_cast<NPObject*>(object.npobject_pointer);
-  const int32 drag_id = webview->GetDragIdentity();
+  const int32 drag_id = webview->dragIdentity();
   if (!drag_id || !WebBindings::getDragData(event, &event_id, &data))
     return;
 
@@ -960,7 +960,7 @@ void WebPluginDelegateProxy::OnSetDropEffect(const NPVariant_Param& object,
     return;
 
   NPObject* event = reinterpret_cast<NPObject*>(object.npobject_pointer);
-  const int32 drag_id = webview->GetDragIdentity();
+  const int32 drag_id = webview->dragIdentity();
   if (!drag_id || !WebBindings::isDragEvent(event))
     return;
 

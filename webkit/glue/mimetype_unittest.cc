@@ -30,7 +30,7 @@ class MimeTypeTests : public TestShellTest {
     std::string path("contenttype?");
     GURL url = server_->TestServerPage(path + mimetype);
     LoadURL(url);
-    WebFrame* frame = test_shell_->webView()->GetMainFrame();
+    WebFrame* frame = test_shell_->webView()->mainFrame();
     EXPECT_EQ(expected, webkit_glue::DumpDocumentText(frame));
   }
 

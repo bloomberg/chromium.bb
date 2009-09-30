@@ -100,22 +100,22 @@ TEST_F(PluginTest, Refresh) {
   // test plugin from a previous test.
   DeleteTestPlugin();
   ASSERT_FALSE(file_util::PathExists(plugin_file_path_));
-  test_shell_->webView()->GetMainFrame()->executeScript(refresh);
+  test_shell_->webView()->mainFrame()->executeScript(refresh);
 
-  test_shell_->webView()->GetMainFrame()->loadHTMLString(
+  test_shell_->webView()->mainFrame()->loadHTMLString(
       html, GURL("about:blank"));
   test_shell_->WaitTestFinished();
 
   std::string text;
-  test_shell_->webView()->GetMainFrame()->executeScript(call_check);
-  text = test_shell_->webView()->GetMainFrame()->contentAsText(10000).utf8();
+  test_shell_->webView()->mainFrame()->executeScript(call_check);
+  text = test_shell_->webView()->mainFrame()->contentAsText(10000).utf8();
   ASSERT_EQ(text, "FAIL");
 
   CopyTestPlugin();
 
-  test_shell_->webView()->GetMainFrame()->executeScript(refresh);
-  test_shell_->webView()->GetMainFrame()->executeScript(call_check);
-  text = test_shell_->webView()->GetMainFrame()->contentAsText(10000).utf8();
+  test_shell_->webView()->mainFrame()->executeScript(refresh);
+  test_shell_->webView()->mainFrame()->executeScript(call_check);
+  text = test_shell_->webView()->mainFrame()->contentAsText(10000).utf8();
   ASSERT_EQ(text, "DONE");
 }
 
@@ -139,12 +139,12 @@ TEST_F(PluginTest, DefaultPluginLoadTest) {
       </DIV>\
       ";
 
-  test_shell_->webView()->GetMainFrame()->loadHTMLString(
+  test_shell_->webView()->mainFrame()->loadHTMLString(
       html, GURL("about:blank"));
   test_shell_->WaitTestFinished();
 
   std::string text =
-      test_shell_->webView()->GetMainFrame()->contentAsText(10000).utf8();
+      test_shell_->webView()->mainFrame()->contentAsText(10000).utf8();
   ASSERT_EQ(true, StartsWithASCII(text, "DONE", true));
 }
 #endif
@@ -188,7 +188,7 @@ TEST_F(PluginTest, PluginVisibilty) {
   test_shell_->LoadFile(test_html);
   test_shell_->WaitTestFinished();
 
-  WebFrame* main_frame = test_shell_->webView()->GetMainFrame();
+  WebFrame* main_frame = test_shell_->webView()->mainFrame();
   HWND frame_hwnd = test_shell_->webViewWnd();
   HWND plugin_hwnd = NULL;
   EnumChildWindows(frame_hwnd, EnumChildProc,

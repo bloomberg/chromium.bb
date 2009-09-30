@@ -828,11 +828,11 @@ bool WebViewImpl::KeyEventDefault(const WebKeyboardEvent& event) {
       if (event.modifiers == WebInputEvent::ControlKey) {
         switch (event.windowsKeyCode) {
           case 'A':
-            GetFocusedFrame()->executeCommand(WebString::fromUTF8("SelectAll"));
+            focusedFrame()->executeCommand(WebString::fromUTF8("SelectAll"));
             return true;
           case VKEY_INSERT:
           case 'C':
-            GetFocusedFrame()->executeCommand(WebString::fromUTF8("Copy"));
+            focusedFrame()->executeCommand(WebString::fromUTF8("Copy"));
             return true;
           // Match FF behavior in the sense that Ctrl+home/end are the only Ctrl
           // key combinations which affect scrolling. Safari is buggy in the
@@ -1248,7 +1248,34 @@ void WebViewImpl::setTextDirection(WebTextDirection direction) {
 
 // WebView --------------------------------------------------------------------
 
-bool WebViewImpl::ShouldClose() {
+WebSettings* WebViewImpl::settings() {
+  if (!web_settings_.get())
+    web_settings_.reset(new WebSettingsImpl(page_->settings()));
+  DCHECK(web_settings_.get());
+  return web_settings_.get();
+}
+
+WebString WebViewImpl::pageEncoding() const {
+  if (!page_.get())
+    return WebString();
+
+  String encoding_name = page_->mainFrame()->loader()->encoding();
+  return webkit_glue::StringToWebString(encoding_name);
+}
+
+void WebViewImpl::setPageEncoding(const WebString& encoding_name) {
+  if (!page_.get())
+    return;
+
+  // Only change override encoding, don't change default encoding.
+  // Note that the new encoding must be NULL if it isn't supposed to be set.
+  String new_encoding_name;
+  if (!encoding_name.isEmpty())
+    new_encoding_name = webkit_glue::WebStringToString(encoding_name);
+  page_->mainFrame()->loader()->reloadWithOverrideEncoding(new_encoding_name);
+}
+
+bool WebViewImpl::dispatchBeforeUnloadEvent() {
   // TODO(creis): This should really cause a recursive depth-first walk of all
   // frames in the tree, calling each frame's onbeforeunload.  At the moment,
   // we're consistent with Safari 3.1, not IE/FF.
@@ -1259,25 +1286,27 @@ bool WebViewImpl::ShouldClose() {
   return frame->shouldClose();
 }
 
-void WebViewImpl::ClosePage() {
+void WebViewImpl::dispatchUnloadEvent() {
   // Run unload handlers.
   page_->mainFrame()->loader()->closeURL();
 }
 
-WebViewDelegate* WebViewImpl::GetDelegate() {
-  return delegate_;
-}
-
-WebFrame* WebViewImpl::GetMainFrame() {
+WebFrame* WebViewImpl::mainFrame() {
   return main_frame();
 }
 
-WebFrame* WebViewImpl::GetFocusedFrame() {
+WebFrame* WebViewImpl::findFrameByName(const WebString& name) {
+  String name_str = webkit_glue::WebStringToString(name);
+  Frame* frame = page_->mainFrame()->tree()->find(name_str);
+  return frame ? WebFrameImpl::FromFrame(frame) : NULL;
+}
+
+WebFrame* WebViewImpl::focusedFrame() {
   Frame* frame = GetFocusedWebCoreFrame();
   return frame ? WebFrameImpl::FromFrame(frame) : NULL;
 }
 
-void WebViewImpl::SetFocusedFrame(WebFrame* frame) {
+void WebViewImpl::setFocusedFrame(WebFrame* frame) {
   if (!frame) {
     // Clears the focused frame if any.
     Frame* frame = GetFocusedWebCoreFrame();
@@ -1290,37 +1319,28 @@ void WebViewImpl::SetFocusedFrame(WebFrame* frame) {
   webcore_frame->page()->focusController()->setFocusedFrame(webcore_frame);
 }
 
-WebFrame* WebViewImpl::GetFrameWithName(const WebString& name) {
-  String name_str = webkit_glue::WebStringToString(name);
-  Frame* frame = page_->mainFrame()->tree()->find(name_str);
-  return frame ? WebFrameImpl::FromFrame(frame) : NULL;
+void WebViewImpl::setInitialFocus(bool reverse) {
+  if (!page_.get())
+    return;
+
+  // Since we don't have a keyboard event, we'll create one.
+  WebKeyboardEvent keyboard_event;
+  keyboard_event.type = WebInputEvent::RawKeyDown;
+  if (reverse)
+    keyboard_event.modifiers = WebInputEvent::ShiftKey;
+
+  // VK_TAB which is only defined on Windows.
+  keyboard_event.windowsKeyCode = 0x09;
+  PlatformKeyboardEventBuilder platform_event(keyboard_event);
+  RefPtr<KeyboardEvent> webkit_event =
+      KeyboardEvent::create(platform_event, NULL);
+  page()->focusController()->setInitialFocus(
+      reverse ? WebCore::FocusDirectionBackward :
+                WebCore::FocusDirectionForward,
+      webkit_event.get());
 }
 
-WebFrame* WebViewImpl::GetPreviousFrameBefore(WebFrame* frame, bool wrap) {
-  WebFrameImpl* frame_impl = static_cast<WebFrameImpl*>(frame);
-  WebCore::Frame* previous =
-      frame_impl->frame()->tree()->traversePreviousWithWrap(wrap);
-  return previous ? WebFrameImpl::FromFrame(previous) : NULL;
-}
-
-WebFrame* WebViewImpl::GetNextFrameAfter(WebFrame* frame, bool wrap) {
-  WebFrameImpl* frame_impl = static_cast<WebFrameImpl*>(frame);
-  WebCore::Frame* next =
-      frame_impl->frame()->tree()->traverseNextWithWrap(wrap);
-  return next ? WebFrameImpl::FromFrame(next) : NULL;
-}
-
-// TODO(darin): these navigation methods should be killed
-
-void WebViewImpl::StopLoading() {
-  main_frame()->stopLoading();
-}
-
-void WebViewImpl::SetBackForwardListSize(int size) {
-  page_->backForwardList()->setCapacity(size);
-}
-
-void WebViewImpl::ClearFocusedNode() {
+void WebViewImpl::clearFocusedNode() {
   if (!page_.get())
     return;
 
@@ -1353,64 +1373,7 @@ void WebViewImpl::ClearFocusedNode() {
   }
 }
 
-void WebViewImpl::SetInitialFocus(bool reverse) {
-  if (page_.get()) {
-    // Since we don't have a keyboard event, we'll create one.
-    WebKeyboardEvent keyboard_event;
-    keyboard_event.type = WebInputEvent::RawKeyDown;
-    if (reverse)
-      keyboard_event.modifiers = WebInputEvent::ShiftKey;
-    // VK_TAB which is only defined on Windows.
-    keyboard_event.windowsKeyCode = 0x09;
-    PlatformKeyboardEventBuilder platform_event(keyboard_event);
-    RefPtr<KeyboardEvent> webkit_event =
-        KeyboardEvent::create(platform_event, NULL);
-    page()->focusController()->setInitialFocus(
-        reverse ? WebCore::FocusDirectionBackward :
-                  WebCore::FocusDirectionForward,
-        webkit_event.get());
-  }
-}
-
-WebSettings* WebViewImpl::GetSettings() {
-  if (!web_settings_.get())
-    web_settings_.reset(new WebSettingsImpl(page_->settings()));
-  DCHECK(web_settings_.get());
-  return web_settings_.get();
-}
-
-const std::wstring& WebViewImpl::GetInspectorSettings() const {
-  return inspector_settings_;
-}
-
-void WebViewImpl::SetInspectorSettings(const std::wstring& settings) {
-  inspector_settings_ = settings;
-}
-
-// Set the encoding of the current main frame to the one selected by
-// a user in the encoding menu.
-void WebViewImpl::SetPageEncoding(const std::string& encoding_name) {
-  if (!page_.get())
-    return;
-
-  // Only change override encoding, don't change default encoding.
-  // Note that the new encoding must be NULL if it isn't supposed to be set.
-  String new_encoding_name;
-  if (!encoding_name.empty())
-    new_encoding_name = webkit_glue::StdStringToString(encoding_name);
-  page_->mainFrame()->loader()->reloadWithOverrideEncoding(new_encoding_name);
-}
-
-// Return the canonical encoding name of current main webframe in webview.
-std::string WebViewImpl::GetMainFrameEncodingName() {
-  if (!page_.get())
-    return std::string();
-
-  String encoding_name = page_->mainFrame()->loader()->encoding();
-  return webkit_glue::StringToStdString(encoding_name);
-}
-
-void WebViewImpl::ZoomIn(bool text_only) {
+void WebViewImpl::zoomIn(bool text_only) {
   Frame* frame = main_frame()->frame();
   double multiplier = std::min(std::pow(kTextSizeMultiplierRatio,
                                         zoom_level_ + 1),
@@ -1422,7 +1385,7 @@ void WebViewImpl::ZoomIn(bool text_only) {
   }
 }
 
-void WebViewImpl::ZoomOut(bool text_only) {
+void WebViewImpl::zoomOut(bool text_only) {
   Frame* frame = main_frame()->frame();
   double multiplier = std::max(std::pow(kTextSizeMultiplierRatio,
                                         zoom_level_ - 1),
@@ -1434,7 +1397,7 @@ void WebViewImpl::ZoomOut(bool text_only) {
   }
 }
 
-void WebViewImpl::ResetZoom() {
+void WebViewImpl::zoomDefault() {
   // We don't change the zoom mode (text only vs. full page) here. We just want
   // to reset whatever is already set.
   zoom_level_ = 0;
@@ -1443,11 +1406,12 @@ void WebViewImpl::ResetZoom() {
       main_frame()->frame()->isZoomFactorTextOnly());
 }
 
-void WebViewImpl::CopyImageAt(int x, int y) {
+void WebViewImpl::copyImageAt(const WebPoint& point) {
   if (!page_.get())
     return;
 
-  HitTestResult result = HitTestResultForWindowPos(IntPoint(x, y));
+  HitTestResult result =
+      HitTestResultForWindowPos(webkit_glue::WebPointToIntPoint(point));
 
   if (result.absoluteImageURL().isEmpty()) {
     // There isn't actually an image at these coordinates.  Might be because
@@ -1463,27 +1427,7 @@ void WebViewImpl::CopyImageAt(int x, int y) {
   page_->mainFrame()->editor()->copyImage(result);
 }
 
-void WebViewImpl::InspectElement(int x, int y) {
-  if (!page_.get())
-    return;
-
-  if (x == -1 || y == -1) {
-    page_->inspectorController()->inspect(NULL);
-  } else {
-    HitTestResult result = HitTestResultForWindowPos(IntPoint(x, y));
-
-    if (!result.innerNonSharedNode())
-      return;
-
-    page_->inspectorController()->inspect(result.innerNonSharedNode());
-  }
-}
-
-void WebViewImpl::ShowJavaScriptConsole() {
-  page_->inspectorController()->showPanel(InspectorController::ConsolePanel);
-}
-
-void WebViewImpl::DragSourceEndedAt(
+void WebViewImpl::dragSourceEndedAt(
     const WebPoint& client_point,
     const WebPoint& screen_point,
     WebDragOperation operation) {
@@ -1495,7 +1439,7 @@ void WebViewImpl::DragSourceEndedAt(
       static_cast<WebCore::DragOperation>(operation));
 }
 
-void WebViewImpl::DragSourceMovedTo(
+void WebViewImpl::dragSourceMovedTo(
     const WebPoint& client_point,
     const WebPoint& screen_point) {
   PlatformMouseEvent pme(webkit_glue::WebPointToIntPoint(client_point),
@@ -1505,7 +1449,7 @@ void WebViewImpl::DragSourceMovedTo(
   page_->mainFrame()->eventHandler()->dragSourceMovedTo(pme);
 }
 
-void WebViewImpl::DragSourceSystemDragEnded() {
+void WebViewImpl::dragSourceSystemDragEnded() {
   // It's possible for us to get this callback while not doing a drag if
   // it's from a previous page that got unloaded.
   if (doing_drag_and_drop_) {
@@ -1514,12 +1458,11 @@ void WebViewImpl::DragSourceSystemDragEnded() {
   }
 }
 
-WebDragOperation WebViewImpl::DragTargetDragEnter(
-    const WebDragData& web_drag_data,
-    int identity,
+WebDragOperation WebViewImpl::dragTargetDragEnter(
+    const WebDragData& web_drag_data, int identity,
     const WebPoint& client_point,
     const WebPoint& screen_point,
-    WebDragOperation operations_allowed) {
+    WebDragOperationsMask operations_allowed) {
   DCHECK(!current_drag_data_.get());
 
   current_drag_data_ =
@@ -1550,10 +1493,10 @@ WebDragOperation WebViewImpl::DragTargetDragEnter(
   return drag_operation_;
 }
 
-WebDragOperation WebViewImpl::DragTargetDragOver(
+WebDragOperation WebViewImpl::dragTargetDragOver(
     const WebPoint& client_point,
     const WebPoint& screen_point,
-    WebDragOperation operations_allowed) {
+    WebDragOperationsMask operations_allowed) {
   DCHECK(current_drag_data_.get());
 
   operations_allowed_ = operations_allowed;
@@ -1580,7 +1523,7 @@ WebDragOperation WebViewImpl::DragTargetDragOver(
   return drag_operation_;
 }
 
-void WebViewImpl::DragTargetDragLeave() {
+void WebViewImpl::dragTargetDragLeave() {
   DCHECK(current_drag_data_.get());
 
   DragData drag_data(
@@ -1599,9 +1542,8 @@ void WebViewImpl::DragTargetDragLeave() {
   drag_identity_ = 0;
 }
 
-void WebViewImpl::DragTargetDrop(
-    const WebPoint& client_point,
-    const WebPoint& screen_point) {
+void WebViewImpl::dragTargetDrop(const WebPoint& client_point,
+                                 const WebPoint& screen_point) {
   DCHECK(current_drag_data_.get());
 
   // If this webview transitions from the "drop accepting" state to the "not
@@ -1612,7 +1554,7 @@ void WebViewImpl::DragTargetDrop(
   // proceed if our webview drag_operation_ state is not DragOperationNone.
 
   if (drag_operation_ == WebDragOperationNone) {  // IPC RACE CONDITION: do not allow this drop.
-    DragTargetDragLeave();
+    dragTargetDragLeave();
     return;
   }
 
@@ -1632,10 +1574,69 @@ void WebViewImpl::DragTargetDrop(
   drag_identity_ = 0;
 }
 
-int32 WebViewImpl::GetDragIdentity() {
+int WebViewImpl::dragIdentity() {
   if (drag_target_dispatch_)
     return drag_identity_;
   return 0;
+}
+
+void WebViewImpl::inspectElementAt(const WebPoint& point) {
+  if (!page_.get())
+    return;
+
+  if (point.x == -1 || point.y == -1) {
+    page_->inspectorController()->inspect(NULL);
+  } else {
+    HitTestResult result =
+        HitTestResultForWindowPos(webkit_glue::WebPointToIntPoint(point));
+
+    if (!result.innerNonSharedNode())
+      return;
+
+    page_->inspectorController()->inspect(result.innerNonSharedNode());
+  }
+}
+
+// WebView --------------------------------------------------------------------
+
+WebViewDelegate* WebViewImpl::GetDelegate() {
+  return delegate_;
+}
+
+WebFrame* WebViewImpl::GetPreviousFrameBefore(WebFrame* frame, bool wrap) {
+  WebFrameImpl* frame_impl = static_cast<WebFrameImpl*>(frame);
+  WebCore::Frame* previous =
+      frame_impl->frame()->tree()->traversePreviousWithWrap(wrap);
+  return previous ? WebFrameImpl::FromFrame(previous) : NULL;
+}
+
+WebFrame* WebViewImpl::GetNextFrameAfter(WebFrame* frame, bool wrap) {
+  WebFrameImpl* frame_impl = static_cast<WebFrameImpl*>(frame);
+  WebCore::Frame* next =
+      frame_impl->frame()->tree()->traverseNextWithWrap(wrap);
+  return next ? WebFrameImpl::FromFrame(next) : NULL;
+}
+
+// TODO(darin): these navigation methods should be killed
+
+void WebViewImpl::StopLoading() {
+  main_frame()->stopLoading();
+}
+
+void WebViewImpl::SetBackForwardListSize(int size) {
+  page_->backForwardList()->setCapacity(size);
+}
+
+const std::wstring& WebViewImpl::GetInspectorSettings() const {
+  return inspector_settings_;
+}
+
+void WebViewImpl::SetInspectorSettings(const std::wstring& settings) {
+  inspector_settings_ = settings;
+}
+
+void WebViewImpl::ShowJavaScriptConsole() {
+  page_->inspectorController()->showPanel(InspectorController::ConsolePanel);
 }
 
 bool WebViewImpl::SetDropEffect(bool accept) {

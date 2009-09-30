@@ -115,7 +115,7 @@ class ExtensionImpl : public ExtensionBase {
   static std::string ExtensionIdForCurrentContext() {
     RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
     DCHECK(renderview);
-    GURL url = renderview->webview()->GetMainFrame()->url();
+    GURL url = renderview->webview()->mainFrame()->url();
     if (url.SchemeIs(chrome::kExtensionScheme))
       return url.host();
     return std::string();
@@ -209,7 +209,7 @@ class ExtensionImpl : public ExtensionBase {
       if (!ViewTypeMatches((*it)->view_type(), view_type))
         continue;
 
-      GURL url = (*it)->webview()->GetMainFrame()->url();
+      GURL url = (*it)->webview()->mainFrame()->url();
       if (!url.SchemeIs(chrome::kExtensionScheme))
         continue;
       std::string extension_id = url.host();
@@ -222,7 +222,7 @@ class ExtensionImpl : public ExtensionBase {
       }
 
       v8::Local<v8::Context> context =
-          (*it)->webview()->GetMainFrame()->mainWorldScriptContext();
+          (*it)->webview()->mainFrame()->mainWorldScriptContext();
       if (!context.IsEmpty()) {
         v8::Local<v8::Value> window = context->Global();
         DCHECK(!window.IsEmpty());
@@ -516,7 +516,7 @@ void ExtensionProcessBindings::SetViewType(WebView* view,
     return;
 
   v8::HandleScope handle_scope;
-  WebFrame* frame = view->GetMainFrame();
+  WebFrame* frame = view->mainFrame();
   v8::Local<v8::Context> context = frame->mainWorldScriptContext();
   v8::Handle<v8::Value> argv[1];
   argv[0] = v8::String::New(type_str);

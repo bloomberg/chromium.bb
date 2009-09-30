@@ -156,7 +156,7 @@ TEST_F(ResourceFetcherTests, ResourceFetcherDownload) {
       UnittestTestServer::CreateServer();
   ASSERT_TRUE(NULL != server.get());
 
-  WebFrame* frame = test_shell_->webView()->GetMainFrame();
+  WebFrame* frame = test_shell_->webView()->mainFrame();
 
   GURL url = server->TestServerPage("files/test_shell/index.html");
   scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
@@ -187,7 +187,7 @@ TEST_F(ResourceFetcherTests, ResourceFetcherDidFail) {
       UnittestTestServer::CreateServer();
   ASSERT_TRUE(NULL != server.get());
 
-  WebFrame* frame = test_shell_->webView()->GetMainFrame();
+  WebFrame* frame = test_shell_->webView()->mainFrame();
 
   // Try to fetch a page on a site that doesn't exist.
   GURL url("http://localhost:1339/doesnotexist");
@@ -210,7 +210,7 @@ TEST_F(ResourceFetcherTests, ResourceFetcherTimeout) {
       UnittestTestServer::CreateServer();
   ASSERT_TRUE(NULL != server.get());
 
-  WebFrame* frame = test_shell_->webView()->GetMainFrame();
+  WebFrame* frame = test_shell_->webView()->mainFrame();
 
   // Grab a page that takes at least 1 sec to respond, but set the fetcher to
   // timeout in 0 sec.

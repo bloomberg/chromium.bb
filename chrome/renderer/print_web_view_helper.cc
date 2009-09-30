@@ -75,7 +75,7 @@ void PrintWebViewHelper::DidFinishPrinting(bool success) {
 
     // TODO: Create an async alert (http://crbug.com/14918).
     render_view_->runModalAlertDialog(
-        web_view->GetMainFrame(),
+        web_view->mainFrame(),
         WideToUTF16Hack(
             l10n_util::GetString(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT)));
   }
@@ -110,7 +110,7 @@ bool PrintWebViewHelper::CopyAndPrint(const ViewMsg_PrintPages_Params& params,
 
   // When loading is done this will call DidStopLoading that will do the
   // actual printing.
-  print_web_view_->GetMainFrame()->loadRequest(WebURLRequest(url));
+  print_web_view_->mainFrame()->loadRequest(WebURLRequest(url));
 
   return true;
 }
@@ -160,7 +160,7 @@ int32 PrintWebViewHelper::routing_id() {
 
 void PrintWebViewHelper::didStopLoading() {
   DCHECK(print_pages_params_.get() != NULL);
-  PrintPages(*print_pages_params_.get(), print_web_view_->GetMainFrame());
+  PrintPages(*print_pages_params_.get(), print_web_view_->mainFrame());
 }
 
 WebString PrintWebViewHelper::autoCorrectWord(const WebString& word) {

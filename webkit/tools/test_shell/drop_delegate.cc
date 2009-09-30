@@ -24,7 +24,7 @@ DWORD TestDropDelegate::OnDragEnter(IDataObject* data_object,
 
   POINT client_pt = cursor_position;
   ScreenToClient(GetHWND(), &client_pt);
-  WebDragOperation op = webview_->DragTargetDragEnter(
+  WebDragOperation op = webview_->dragTargetDragEnter(
       drop_data.ToDragData(), drop_data.identity,
       WebPoint(client_pt.x, client_pt.y),
       WebPoint(cursor_position.x, cursor_position.y),
@@ -40,7 +40,7 @@ DWORD TestDropDelegate::OnDragOver(IDataObject* data_object,
                                    DWORD effect) {
   POINT client_pt = cursor_position;
   ScreenToClient(GetHWND(), &client_pt);
-  WebDragOperation op = webview_->DragTargetDragOver(
+  WebDragOperation op = webview_->dragTargetDragOver(
       WebPoint(client_pt.x, client_pt.y),
       WebPoint(cursor_position.x, cursor_position.y),
       WebDragOperationCopy);
@@ -50,7 +50,7 @@ DWORD TestDropDelegate::OnDragOver(IDataObject* data_object,
 }
 
 void TestDropDelegate::OnDragLeave(IDataObject* data_object) {
-  webview_->DragTargetDragLeave();
+  webview_->dragTargetDragLeave();
 }
 
 DWORD TestDropDelegate::OnDrop(IDataObject* data_object,
@@ -59,7 +59,7 @@ DWORD TestDropDelegate::OnDrop(IDataObject* data_object,
                                DWORD effect) {
   POINT client_pt = cursor_position;
   ScreenToClient(GetHWND(), &client_pt);
-  webview_->DragTargetDrop(
+  webview_->dragTargetDrop(
       WebPoint(client_pt.x, client_pt.y),
       WebPoint(cursor_position.x, cursor_position.y));
 

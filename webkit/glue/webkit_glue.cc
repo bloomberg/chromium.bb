@@ -227,7 +227,7 @@ std::wstring DumpHistoryState(const std::string& history_state, int indent,
 }
 
 void ResetBeforeTestRun(WebView* view) {
-  WebFrameImpl* webframe = static_cast<WebFrameImpl*>(view->GetMainFrame());
+  WebFrameImpl* webframe = static_cast<WebFrameImpl*>(view->mainFrame());
   WebCore::Frame* frame = webframe->frame();
 
   // Reset the main frame name since tests always expect it to be empty.  It

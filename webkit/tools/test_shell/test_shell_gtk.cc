@@ -23,6 +23,7 @@
 #include "grit/webkit_resources.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
+#include "webkit/api/public/WebPoint.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/webkit_glue.h"
@@ -31,6 +32,7 @@
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_webview_delegate.h"
 
+using WebKit::WebPoint;
 using WebKit::WebWidget;
 
 namespace {
@@ -114,7 +116,7 @@ gboolean DumpRenderTreeActivated(GtkWidget* widget, TestShell* shell) {
 
 // Callback for Debug > Show web inspector... menu item.
 gboolean ShowWebInspectorActivated(GtkWidget* widget, TestShell* shell) {
-  shell->webView()->InspectElement(0, 0);
+  shell->webView()->inspectElementAt(WebPoint());
   return FALSE;  // Don't stop this message.
 }
 

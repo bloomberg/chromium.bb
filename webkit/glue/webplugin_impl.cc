@@ -497,7 +497,7 @@ WebPluginImpl::RoutingStatus WebPluginImpl::RouteToFrame(
 
   // Take special action for JavaScript URLs
   if (is_javascript_url) {
-    WebFrame* target_frame = webframe_->view()->GetFrameWithName(target_str);
+    WebFrame* target_frame = webframe_->view()->findFrameByName(target_str);
     // For security reasons, do not allow JavaScript on frames
     // other than this frame.
     if (target_frame != webframe_) {

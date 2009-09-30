@@ -517,7 +517,7 @@ void TestWebViewDelegate::startDragging(
     //                         ok_effect, &effect);
     //DCHECK(DRAGDROP_S_DROP == res || DRAGDROP_S_CANCEL == res);
   }
-  shell_->webView()->DragSourceSystemDragEnded();
+  shell_->webView()->dragSourceSystemDragEnded();
 }
 
 void TestWebViewDelegate::navigateBackForwardSoon(int offset) {
@@ -965,16 +965,16 @@ void TestWebViewDelegate::WaitForPolicyDelegate() {
 // Private methods -----------------------------------------------------------
 
 void TestWebViewDelegate::UpdateAddressBar(WebView* webView) {
-  WebFrame* mainFrame = webView->GetMainFrame();
+  WebFrame* main_frame = webView->mainFrame();
 
-  WebDataSource* dataSource = mainFrame->dataSource();
-  if (!dataSource)
-    dataSource = mainFrame->provisionalDataSource();
-  if (!dataSource)
+  WebDataSource* data_source = main_frame->dataSource();
+  if (!data_source)
+    data_source = main_frame->provisionalDataSource();
+  if (!data_source)
     return;
 
   // TODO(abarth): This is wrong!
-  SetAddressBarURL(dataSource->request().firstPartyForCookies());
+  SetAddressBarURL(data_source->request().firstPartyForCookies());
 }
 
 void TestWebViewDelegate::LocationChangeDone(WebFrame* frame) {
@@ -1058,7 +1058,7 @@ void TestWebViewDelegate::UpdateSessionHistory(WebFrame* frame) {
     return;
 
   const WebHistoryItem& history_item =
-      shell_->webView()->GetMainFrame()->previousHistoryItem();
+      shell_->webView()->mainFrame()->previousHistoryItem();
   if (history_item.isNull())
     return;
 
@@ -1068,7 +1068,7 @@ void TestWebViewDelegate::UpdateSessionHistory(WebFrame* frame) {
 std::wstring TestWebViewDelegate::GetFrameDescription(WebFrame* webframe) {
   std::wstring name = UTF16ToWideHack(webframe->name());
 
-  if (webframe == shell_->webView()->GetMainFrame()) {
+  if (webframe == shell_->webView()->mainFrame()) {
     if (name.length())
       return L"main frame \"" + name + L"\"";
     else

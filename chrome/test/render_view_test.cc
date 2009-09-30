@@ -38,7 +38,7 @@ void RenderViewTest::ProcessPendingMessages() {
 }
 
 WebFrame* RenderViewTest::GetMainFrame() {
-  return view_->webview()->GetMainFrame();
+  return view_->webview()->mainFrame();
 }
 
 void RenderViewTest::ExecuteJavaScript(const char* js) {

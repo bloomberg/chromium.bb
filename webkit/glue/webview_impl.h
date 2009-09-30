@@ -81,56 +81,58 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual void setTextDirection(WebKit::WebTextDirection direction);
 
   // WebView methods:
-  virtual void InitializeMainFrame(WebKit::WebFrameClient* frame_client);
-  virtual bool ShouldClose();
-  virtual void ClosePage();
-  virtual WebViewDelegate* GetDelegate();
-  virtual void SetTabKeyCyclesThroughElements(bool value);
-  virtual WebKit::WebFrame* GetMainFrame();
-  virtual WebKit::WebFrame* GetFocusedFrame();
-  virtual void SetFocusedFrame(WebKit::WebFrame* frame);
-  virtual WebKit::WebFrame* GetFrameWithName(const WebKit::WebString& name);
-  virtual WebKit::WebFrame* GetPreviousFrameBefore(WebKit::WebFrame* frame,
-                                                   bool wrap);
-  virtual WebKit::WebFrame* GetNextFrameAfter(WebKit::WebFrame* frame,
-                                              bool wrap);
-  virtual void ClearFocusedNode();
-  virtual void StopLoading();
-  virtual void SetBackForwardListSize(int size);
-  virtual void SetInitialFocus(bool reverse);
-  virtual WebKit::WebSettings* GetSettings();
-  virtual const std::wstring& GetInspectorSettings() const;
-  virtual void SetInspectorSettings(const std::wstring& settings);
-  virtual void SetPageEncoding(const std::string& encoding_name);
-  virtual std::string GetMainFrameEncodingName();
-  virtual void ZoomIn(bool text_only);
-  virtual void ZoomOut(bool text_only);
-  virtual void ResetZoom();
-  virtual void CopyImageAt(int x, int y);
-  virtual void InspectElement(int x, int y);
-  virtual void ShowJavaScriptConsole();
-  virtual void DragSourceEndedAt(
+  virtual WebKit::WebSettings* settings();
+  virtual WebKit::WebString pageEncoding() const;
+  virtual void setPageEncoding(const WebKit::WebString& encoding);
+  virtual bool dispatchBeforeUnloadEvent();
+  virtual void dispatchUnloadEvent();
+  virtual WebKit::WebFrame* mainFrame();
+  virtual WebKit::WebFrame* findFrameByName(const WebKit::WebString& name);
+  virtual WebKit::WebFrame* focusedFrame();
+  virtual void setFocusedFrame(WebKit::WebFrame* frame);
+  virtual void setInitialFocus(bool reverse);
+  virtual void clearFocusedNode();
+  virtual void zoomIn(bool text_only);
+  virtual void zoomOut(bool text_only);
+  virtual void zoomDefault();
+  virtual void copyImageAt(const WebKit::WebPoint& point);
+  virtual void dragSourceEndedAt(
       const WebKit::WebPoint& client_point,
       const WebKit::WebPoint& screen_point,
       WebKit::WebDragOperation operation);
-  virtual void DragSourceMovedTo(
+  virtual void dragSourceMovedTo(
       const WebKit::WebPoint& client_point,
       const WebKit::WebPoint& screen_point);
-  virtual void DragSourceSystemDragEnded();
-  virtual WebKit::WebDragOperation DragTargetDragEnter(
+  virtual void dragSourceSystemDragEnded();
+  virtual WebKit::WebDragOperation dragTargetDragEnter(
       const WebKit::WebDragData& drag_data, int identity,
       const WebKit::WebPoint& client_point,
       const WebKit::WebPoint& screen_point,
       WebKit::WebDragOperationsMask operations_allowed);
-  virtual WebKit::WebDragOperation DragTargetDragOver(
+  virtual WebKit::WebDragOperation dragTargetDragOver(
       const WebKit::WebPoint& client_point,
       const WebKit::WebPoint& screen_point,
       WebKit::WebDragOperationsMask operations_allowed);
-  virtual void DragTargetDragLeave();
-  virtual void DragTargetDrop(
+  virtual void dragTargetDragLeave();
+  virtual void dragTargetDrop(
       const WebKit::WebPoint& client_point,
       const WebKit::WebPoint& screen_point);
-  virtual int32 GetDragIdentity();
+  virtual int dragIdentity();
+  virtual void inspectElementAt(const WebKit::WebPoint& point);
+
+  // WebView methods:
+  virtual void InitializeMainFrame(WebKit::WebFrameClient* frame_client);
+  virtual WebViewDelegate* GetDelegate();
+  virtual void SetTabKeyCyclesThroughElements(bool value);
+  virtual WebKit::WebFrame* GetPreviousFrameBefore(WebKit::WebFrame* frame,
+                                                   bool wrap);
+  virtual WebKit::WebFrame* GetNextFrameAfter(WebKit::WebFrame* frame,
+                                              bool wrap);
+  virtual void StopLoading();
+  virtual void SetBackForwardListSize(int size);
+  virtual const std::wstring& GetInspectorSettings() const;
+  virtual void SetInspectorSettings(const std::wstring& settings);
+  virtual void ShowJavaScriptConsole();
   virtual bool SetDropEffect(bool accept);
   virtual void AutofillSuggestionsForNode(
       int64 node_id,

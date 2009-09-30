@@ -41,7 +41,7 @@ TextInputController::TextInputController(TestShell* shell) {
 
 // static
 WebFrame* TextInputController::GetMainFrame() {
-  return shell_->webView()->GetMainFrame();
+  return shell_->webView()->mainFrame();
 }
 
 void TextInputController::insertText(

@@ -347,7 +347,7 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
 }
 
 void RenderView::OnMessageReceived(const IPC::Message& message) {
-  WebFrame* main_frame = webview() ? webview()->GetMainFrame() : NULL;
+  WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
   child_process_logging::ScopedActiveURLSetter url_setter(
       main_frame ? main_frame->url() : WebURL());
 
@@ -463,7 +463,7 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
 }
 
 void RenderView::SendThumbnail() {
-  WebFrame* main_frame = webview()->GetMainFrame();
+  WebFrame* main_frame = webview()->mainFrame();
   if (!main_frame)
     return;
 
@@ -490,10 +490,10 @@ void RenderView::OnPrintPages() {
   if (webview()) {
     // If the user has selected text in the currently focused frame we print
     // only that frame (this makes print selection work for multiple frames).
-    if (webview()->GetFocusedFrame()->hasSelection())
-      Print(webview()->GetFocusedFrame(), false);
+    if (webview()->focusedFrame()->hasSelection())
+      Print(webview()->focusedFrame(), false);
     else
-      Print(webview()->GetMainFrame(), false);
+      Print(webview()->mainFrame(), false);
   }
 }
 
@@ -515,7 +515,7 @@ void RenderView::CapturePageInfo(int load_id, bool preliminary_capture) {
   if (!webview())
     return;
 
-  WebFrame* main_frame = webview()->GetMainFrame();
+  WebFrame* main_frame = webview()->mainFrame();
   if (!main_frame)
     return;
 
@@ -648,7 +648,7 @@ bool RenderView::CaptureThumbnail(WebView* view,
     }
   }
 
-  score->at_top = (view->GetMainFrame()->scrollOffset().height == 0);
+  score->at_top = (view->mainFrame()->scrollOffset().height == 0);
 
   SkBitmap subset;
   device.accessBitmap(false).extractSubset(&subset, src_rect);
@@ -690,7 +690,7 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
 
   bool is_reload = params.reload;
 
-  WebFrame* main_frame = webview()->GetMainFrame();
+  WebFrame* main_frame = webview()->mainFrame();
   if (is_reload && main_frame->currentHistoryItem().isNull()) {
     // We cannot reload if we do not have any history state.  This happens, for
     // example, when recovering from a crash.  Our workaround here is a bit of
@@ -757,24 +757,22 @@ void RenderView::OnLoadAlternateHTMLText(const std::string& html,
       new_navigation ? -1 : page_id_, PageTransition::LINK, Time::Now()));
   pending_navigation_state_->set_security_info(security_info);
 
-  webview()->GetMainFrame()->loadHTMLString(html,
-                                            GURL(kUnreachableWebDataURL),
-                                            display_url,
-                                            !new_navigation);
+  webview()->mainFrame()->loadHTMLString(
+      html, GURL(kUnreachableWebDataURL), display_url, !new_navigation);
 
   pending_navigation_state_.reset();
 }
 
 void RenderView::OnCopyImageAt(int x, int y) {
-  webview()->CopyImageAt(x, y);
+  webview()->copyImageAt(WebPoint(x, y));
 }
 
 void RenderView::OnExecuteEditCommand(const std::string& name,
     const std::string& value) {
-  if (!webview() || !webview()->GetFocusedFrame())
+  if (!webview() || !webview()->focusedFrame())
     return;
 
-  webview()->GetFocusedFrame()->executeCommand(
+  webview()->focusedFrame()->executeCommand(
       WebString::fromUTF8(name), WebString::fromUTF8(value));
 }
 
@@ -789,9 +787,9 @@ void RenderView::OnStopFinding(bool clear_selection) {
     return;
 
   if (clear_selection)
-    view->GetFocusedFrame()->executeCommand(WebString::fromUTF8("Unselect"));
+    view->focusedFrame()->executeCommand(WebString::fromUTF8("Unselect"));
 
-  WebFrame* frame = view->GetMainFrame();
+  WebFrame* frame = view->mainFrame();
   while (frame) {
     frame->stopFinding(clear_selection);
     frame = view->GetNextFrameAfter(frame, false);
@@ -821,7 +819,7 @@ void RenderView::OnUndo() {
   if (!webview())
     return;
 
-  webview()->GetFocusedFrame()->executeCommand(WebString::fromUTF8("Undo"));
+  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Undo"));
   UserMetricsRecordAction(L"Undo");
 }
 
@@ -829,7 +827,7 @@ void RenderView::OnRedo() {
   if (!webview())
     return;
 
-  webview()->GetFocusedFrame()->executeCommand(WebString::fromUTF8("Redo"));
+  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Redo"));
   UserMetricsRecordAction(L"Redo");
 }
 
@@ -837,7 +835,7 @@ void RenderView::OnCut() {
   if (!webview())
     return;
 
-  webview()->GetFocusedFrame()->executeCommand(WebString::fromUTF8("Cut"));
+  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Cut"));
   UserMetricsRecordAction(L"Cut");
 }
 
@@ -845,7 +843,7 @@ void RenderView::OnCopy() {
   if (!webview())
     return;
 
-  webview()->GetFocusedFrame()->executeCommand(WebString::fromUTF8("Copy"));
+  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Copy"));
   UserMetricsRecordAction(L"Copy");
 }
 
@@ -856,7 +854,7 @@ void RenderView::OnCopyToFindPboard() {
 
   // Since the find pasteboard supports only plain text, this can be simpler
   // than the |OnCopy()| case.
-  WebFrame* frame = webview()->GetFocusedFrame();
+  WebFrame* frame = webview()->focusedFrame();
   if (frame->hasSelection()) {
     string16 selection = frame->selectionAsText();
     RenderThread::current()->Send(
@@ -871,7 +869,7 @@ void RenderView::OnPaste() {
   if (!webview())
     return;
 
-  webview()->GetFocusedFrame()->executeCommand(WebString::fromUTF8("Paste"));
+  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Paste"));
   UserMetricsRecordAction(L"Paste");
 }
 
@@ -879,13 +877,13 @@ void RenderView::OnReplace(const std::wstring& text) {
   if (!webview())
     return;
 
-  webview()->GetFocusedFrame()->replaceSelection(WideToUTF16Hack(text));
+  webview()->focusedFrame()->replaceSelection(WideToUTF16Hack(text));
 }
 
 void RenderView::OnAdvanceToNextMisspelling() {
   if (!webview())
     return;
-  webview()->GetFocusedFrame()->executeCommand(
+  webview()->focusedFrame()->executeCommand(
       WebString::fromUTF8("AdvanceToNextMisspelling"));
 }
 
@@ -895,7 +893,7 @@ void RenderView::OnToggleSpellPanel(bool is_currently_visible) {
   // We need to tell the webView whether the spelling panel is visible or not so
   // that it won't need to make ipc calls later.
   webview()->SetSpellingPanelVisibility(is_currently_visible);
-  webview()->GetFocusedFrame()->executeCommand(
+  webview()->focusedFrame()->executeCommand(
       WebString::fromUTF8("ToggleSpellPanel"));
 }
 
@@ -903,7 +901,7 @@ void RenderView::OnToggleSpellCheck() {
   if (!webview())
     return;
 
-  WebFrame* frame = webview()->GetFocusedFrame();
+  WebFrame* frame = webview()->focusedFrame();
   frame->enableContinuousSpellChecking(
       !frame->isContinuousSpellCheckingEnabled());
 }
@@ -912,7 +910,7 @@ void RenderView::OnDelete() {
   if (!webview())
     return;
 
-  webview()->GetFocusedFrame()->executeCommand(WebString::fromUTF8("Delete"));
+  webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Delete"));
   UserMetricsRecordAction(L"DeleteSelection");
 }
 
@@ -920,7 +918,7 @@ void RenderView::OnSelectAll() {
   if (!webview())
     return;
 
-  webview()->GetFocusedFrame()->executeCommand(
+  webview()->focusedFrame()->executeCommand(
       WebString::fromUTF8("SelectAll"));
   UserMetricsRecordAction(L"SelectAll");
 }
@@ -928,7 +926,7 @@ void RenderView::OnSelectAll() {
 void RenderView::OnSetInitialFocus(bool reverse) {
   if (!webview())
     return;
-  webview()->SetInitialFocus(reverse);
+  webview()->setInitialFocus(reverse);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1080,7 +1078,7 @@ void RenderView::UpdateTitle(WebFrame* frame, const string16& title) {
 void RenderView::UpdateEncoding(WebFrame* frame,
                                 const std::string& encoding_name) {
   // Only update main frame's encoding_name.
-  if (webview()->GetMainFrame() == frame &&
+  if (webview()->mainFrame() == frame &&
       last_encoding_name_ != encoding_name) {
     // Save the encoding name for later comparing.
     last_encoding_name_ = encoding_name;
@@ -1100,7 +1098,7 @@ void RenderView::UpdateSessionHistory(WebFrame* frame) {
     return;
 
   const WebHistoryItem& item =
-      webview()->GetMainFrame()->previousHistoryItem();
+      webview()->mainFrame()->previousHistoryItem();
   if (item.isNull())
     return;
 
@@ -1117,7 +1115,7 @@ void RenderView::OpenURL(
 // WebViewDelegate ------------------------------------------------------------
 
 void RenderView::DidPaint() {
-  WebFrame* main_frame = webview()->GetMainFrame();
+  WebFrame* main_frame = webview()->mainFrame();
 
   if (main_frame->provisionalDataSource()) {
     // If we have a provisional frame we are between the start
@@ -1396,11 +1394,11 @@ void RenderView::didStopLoading() {
   // displayed when done loading. Ideally we would send notification when
   // finished parsing the head, but webkit doesn't support that yet.
   // The feed discovery code would also benefit from access to the head.
-  GURL favicon_url(webview()->GetMainFrame()->favIconURL());
+  GURL favicon_url(webview()->mainFrame()->favIconURL());
   if (!favicon_url.is_empty())
     Send(new ViewHostMsg_UpdateFavIconURL(routing_id_, page_id_, favicon_url));
 
-  AddGURLSearchProvider(webview()->GetMainFrame()->openSearchDescriptionURL(),
+  AddGURLSearchProvider(webview()->mainFrame()->openSearchDescriptionURL(),
                         true);  // autodetected
 
   Send(new ViewHostMsg_DidStopLoading(routing_id_));
@@ -1485,7 +1483,7 @@ void RenderView::didChangeSelection(bool is_empty_selection) {
     // the selection hasn't actually changed. We don't want to report these
     // because it will cause us to continually claim the X clipboard.
     const std::string& this_selection =
-        webview()->GetFocusedFrame()->selectionAsText().utf8();
+        webview()->focusedFrame()->selectionAsText().utf8();
     if (this_selection == last_selection_)
       return;
 
@@ -1511,7 +1509,7 @@ bool RenderView::handleCurrentKeyboardEvent() {
   if (edit_commands_.empty())
     return false;
 
-  WebFrame* frame = webview()->GetFocusedFrame();
+  WebFrame* frame = webview()->focusedFrame();
   if (!frame)
     return false;
 
@@ -1664,7 +1662,7 @@ int RenderView::historyForwardListCount() {
 void RenderView::didAddHistoryItem() {
   // We don't want to update the history length for the start page
   // navigation.
-  WebFrame* main_frame = webview()->GetMainFrame();
+  WebFrame* main_frame = webview()->mainFrame();
   DCHECK(main_frame != NULL);
 
   WebDataSource* ds = main_frame->dataSource();
@@ -2099,7 +2097,7 @@ void RenderView::didCommitProvisionalLoad(
   completed_client_redirect_src_ = GURL();
 
   // Check whether we have new encoding name.
-  UpdateEncoding(frame, frame->view()->GetMainFrameEncodingName());
+  UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
 }
 
 void RenderView::didClearWindowObject(WebFrame* frame) {
@@ -2139,7 +2137,7 @@ void RenderView::didCreateDocumentElement(WebFrame* frame) {
   // Notify the browser about non-blank documents loading in the top frame.
   GURL url = frame->url();
   if (url.is_valid() && url.spec() != chrome::kAboutBlankURL) {
-    if (frame == webview()->GetMainFrame())
+    if (frame == webview()->mainFrame())
       Send(new ViewHostMsg_DocumentAvailableInMainFrame(routing_id_));
   }
 }
@@ -2148,7 +2146,7 @@ void RenderView::didReceiveTitle(WebFrame* frame, const WebString& title) {
   UpdateTitle(frame, title);
 
   // Also check whether we have new encoding name.
-  UpdateEncoding(frame, frame->view()->GetMainFrameEncodingName());
+  UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
 }
 
 void RenderView::didFinishDocumentLoad(WebFrame* frame) {
@@ -2164,7 +2162,7 @@ void RenderView::didFinishDocumentLoad(WebFrame* frame) {
   SendPasswordForms(frame);
 
   // Check whether we have new encoding name.
-  UpdateEncoding(frame, frame->view()->GetMainFrameEncodingName());
+  UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
 
   if (RenderThread::current()) {  // Will be NULL during unit tests.
     RenderThread::current()->user_script_slave()->InjectScripts(
@@ -2200,7 +2198,7 @@ void RenderView::didChangeLocationWithinPage(
 
   didCommitProvisionalLoad(frame, is_new_navigation);
 
-  UpdateTitle(frame, frame->view()->GetMainFrame()->dataSource()->pageTitle());
+  UpdateTitle(frame, frame->view()->mainFrame()->dataSource()->pageTitle());
 }
 
 void RenderView::didUpdateCurrentHistoryItem(WebFrame* frame) {
@@ -2315,7 +2313,7 @@ void RenderView::didChangeContentsSize(WebFrame* frame, const WebSize& size) {
     // WebCore likes to tell us things have changed even when they haven't, so
     // cache the width and only send the IPC message when we're sure the
     // width is different.
-    int width = webview()->GetMainFrame()->contentsPreferredWidth();
+    int width = webview()->mainFrame()->contentsPreferredWidth();
     if (width != preferred_width_) {
       Send(new ViewHostMsg_DidContentsPreferredWidthChange(routing_id_, width));
       preferred_width_ = width;
@@ -2333,7 +2331,7 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
     return NULL;
 
   GURL policy_url;
-  WebFrame* main_frame = webview()->GetMainFrame();
+  WebFrame* main_frame = webview()->mainFrame();
   if (main_frame)
     policy_url = main_frame->url();
 
@@ -2411,7 +2409,7 @@ void RenderView::SyncNavigationState() {
   if (!webview())
     return;
 
-  const WebHistoryItem& item = webview()->GetMainFrame()->currentHistoryItem();
+  const WebHistoryItem& item = webview()->mainFrame()->currentHistoryItem();
   if (item.isNull())
     return;
 
@@ -2446,7 +2444,7 @@ void RenderView::ShowContextMenu(WebView* webview,
   params.selection_text = selection_text;
   params.misspelled_word = misspelled_word;
   params.spellcheck_enabled =
-      webview->GetFocusedFrame()->isContinuousSpellCheckingEnabled();
+      webview->focusedFrame()->isContinuousSpellCheckingEnabled();
   params.edit_flags = edit_flags;
   params.security_info = security_info;
   params.frame_charset = frame_charset;
@@ -2459,7 +2457,7 @@ bool RenderView::DownloadImage(int id, const GURL& image_url, int image_size) {
     return false;
   // Create an image resource fetcher and assign it with a call back object.
   image_fetchers_.insert(new ImageResourceFetcher(
-      image_url, webview()->GetMainFrame(), id, image_size,
+      image_url, webview()->mainFrame(), id, image_size,
       NewCallback(this, &RenderView::DidDownloadImage)));
   return true;
 }
@@ -2588,9 +2586,9 @@ GURL RenderView::GetAlternateErrorPageURL(const GURL& failed_url,
 void RenderView::OnFind(int request_id,
                         const string16& search_text,
                         const WebKit::WebFindOptions& options) {
-  WebFrame* main_frame = webview()->GetMainFrame();
+  WebFrame* main_frame = webview()->mainFrame();
   WebFrame* frame_after_main = webview()->GetNextFrameAfter(main_frame, true);
-  WebFrame* focused_frame = webview()->GetFocusedFrame();
+  WebFrame* focused_frame = webview()->focusedFrame();
   WebFrame* search_frame = focused_frame;  // start searching focused frame.
 
   bool multi_frame = (frame_after_main != main_frame);
@@ -2635,7 +2633,7 @@ void RenderView::OnFind(int request_id,
       }
     }
 
-    webview()->SetFocusedFrame(search_frame);
+    webview()->setFocusedFrame(search_frame);
   } while (!result && search_frame != focused_frame);
 
   if (options.findNext) {
@@ -2691,7 +2689,7 @@ void RenderView::OnDeterminePageText() {
   if (!is_loading_) {
     if (!webview())
       return;
-    WebFrame* main_frame = webview()->GetMainFrame();
+    WebFrame* main_frame = webview()->mainFrame();
     std::wstring contents;
     CaptureText(main_frame, &contents);
     Send(new ViewMsg_DeterminePageText_Reply(routing_id_, contents));
@@ -2754,13 +2752,13 @@ void RenderView::OnZoom(int function) {
   static const bool kZoomIsTextOnly = false;
   switch (function) {
     case PageZoom::SMALLER:
-      webview()->ZoomOut(kZoomIsTextOnly);
+      webview()->zoomOut(kZoomIsTextOnly);
       break;
     case PageZoom::STANDARD:
-      webview()->ResetZoom();
+      webview()->zoomDefault();
       break;
     case PageZoom::LARGER:
-      webview()->ZoomIn(kZoomIsTextOnly);
+      webview()->zoomIn(kZoomIsTextOnly);
       break;
     default:
       NOTREACHED();
@@ -2768,12 +2766,12 @@ void RenderView::OnZoom(int function) {
 }
 
 void RenderView::OnSetPageEncoding(const std::string& encoding_name) {
-  webview()->SetPageEncoding(encoding_name);
+  webview()->setPageEncoding(WebString::fromUTF8(encoding_name));
 }
 
 void RenderView::OnResetPageEncodingToDefault() {
-  std::string no_encoding;
-  webview()->SetPageEncoding(no_encoding);
+  WebString no_encoding;
+  webview()->setPageEncoding(no_encoding);
 }
 
 void RenderView::UpdateInspectorSettings(const std::wstring& raw_settings) {
@@ -2786,7 +2784,7 @@ WebDevToolsAgentDelegate* RenderView::GetWebDevToolsAgentDelegate() {
 
 WebFrame* RenderView::GetChildFrame(const std::wstring& xpath) const {
   if (xpath.empty())
-    return webview()->GetMainFrame();
+    return webview()->mainFrame();
 
   // xpath string can represent a frame deep down the tree (across multiple
   // frame DOMs).
@@ -2794,7 +2792,7 @@ WebFrame* RenderView::GetChildFrame(const std::wstring& xpath) const {
   // should break into 2 xpaths
   // /html/body/table/tbody/tr/td/iframe & /frameset/frame[0]
 
-  WebFrame* frame = webview()->GetMainFrame();
+  WebFrame* frame = webview()->mainFrame();
 
   std::wstring xpath_remaining = xpath;
   while (!xpath_remaining.empty()) {
@@ -2873,14 +2871,14 @@ void RenderView::OnDragSourceEndedOrMoved(const gfx::Point& client_point,
                                           bool ended,
                                           WebDragOperation op) {
   if (ended) {
-    webview()->DragSourceEndedAt(client_point, screen_point, op);
+    webview()->dragSourceEndedAt(client_point, screen_point, op);
   } else {
-    webview()->DragSourceMovedTo(client_point, screen_point);
+    webview()->dragSourceMovedTo(client_point, screen_point);
   }
 }
 
 void RenderView::OnDragSourceSystemDragEnded() {
-  webview()->DragSourceSystemDragEnded();
+  webview()->dragSourceSystemDragEnded();
 }
 
 void RenderView::OnUploadFileRequest(const ViewMsg_UploadFile_Params& p) {
@@ -2932,7 +2930,7 @@ void RenderView::OnDragTargetDragEnter(const WebDropData& drop_data,
                                        const gfx::Point& client_point,
                                        const gfx::Point& screen_point,
                                        WebDragOperationsMask ops) {
-  WebDragOperation operation = webview()->DragTargetDragEnter(
+  WebDragOperation operation = webview()->dragTargetDragEnter(
       drop_data.ToDragData(),
       drop_data.identity,
       client_point,
@@ -2945,7 +2943,7 @@ void RenderView::OnDragTargetDragEnter(const WebDropData& drop_data,
 void RenderView::OnDragTargetDragOver(const gfx::Point& client_point,
                                       const gfx::Point& screen_point,
                                       WebDragOperationsMask ops) {
-  WebDragOperation operation = webview()->DragTargetDragOver(
+  WebDragOperation operation = webview()->dragTargetDragOver(
       client_point,
       screen_point,
       ops);
@@ -2954,12 +2952,12 @@ void RenderView::OnDragTargetDragOver(const gfx::Point& client_point,
 }
 
 void RenderView::OnDragTargetDragLeave() {
-  webview()->DragTargetDragLeave();
+  webview()->dragTargetDragLeave();
 }
 
 void RenderView::OnDragTargetDrop(const gfx::Point& client_point,
                                   const gfx::Point& screen_point) {
-  webview()->DragTargetDrop(client_point, screen_point);
+  webview()->dragTargetDrop(client_point, screen_point);
 }
 
 void RenderView::OnUpdateWebPreferences(const WebPreferences& prefs) {
@@ -2991,7 +2989,7 @@ void RenderView::OnFileChooserResponse(
 void RenderView::OnEnableViewSourceMode() {
   if (!webview())
     return;
-  WebFrame* main_frame = webview()->GetMainFrame();
+  WebFrame* main_frame = webview()->mainFrame();
   if (!main_frame)
     return;
 
@@ -3109,7 +3107,7 @@ void RenderView::OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
     const std::vector<GURL>& links,
     const std::vector<FilePath>& local_paths,
     const FilePath& local_directory_name) {
-  webkit_glue::DomSerializer dom_serializer(webview()->GetMainFrame(),
+  webkit_glue::DomSerializer dom_serializer(webview()->mainFrame(),
                                             true,
                                             this,
                                             links,
@@ -3125,7 +3123,7 @@ void RenderView::DidSerializeDataForFrame(const GURL& frame_url,
 }
 
 void RenderView::OnMsgShouldClose() {
-  bool should_close = webview()->ShouldClose();
+  bool should_close = webview()->dispatchBeforeUnloadEvent();
   Send(new ViewHostMsg_ShouldClose_ACK(routing_id_, should_close));
 }
 
@@ -3137,7 +3135,7 @@ void RenderView::OnClosePage(const ViewMsg_ClosePage_Params& params) {
   // revisited to avoid having two ways to close a page.  Having a single way
   // to close that can run onunload is also useful for fixing
   // http://b/issue?id=753080.
-  WebFrame* main_frame = webview()->GetMainFrame();
+  WebFrame* main_frame = webview()->mainFrame();
   if (main_frame) {
     const GURL& url = main_frame->url();
     // TODO(davemoore) this code should be removed once willClose() gets
@@ -3147,7 +3145,7 @@ void RenderView::OnClosePage(const ViewMsg_ClosePage_Params& params) {
         url.SchemeIs(chrome::kHttpsScheme))
       DumpLoadHistograms();
   }
-  webview()->ClosePage();
+  webview()->dispatchUnloadEvent();
 
   // Just echo back the params in the ACK.
   Send(new ViewHostMsg_ClosePage_ACK(routing_id_, params));
@@ -3274,7 +3272,7 @@ void RenderView::OnResize(const gfx::Size& new_size,
 
 void RenderView::OnClearFocusedNode() {
   if (webview())
-    webview()->ClearFocusedNode();
+    webview()->clearFocusedNode();
 }
 
 void RenderView::OnSetBackground(const SkBitmap& background) {
@@ -3354,7 +3352,7 @@ void RenderView::OnExtensionMessageInvoke(const std::string& function_name,
 // Also, it's possible to load a page without ever laying it out
 // so first_paint and first_paint_after_load can be 0.
 void RenderView::DumpLoadHistograms() const {
-  WebFrame* main_frame = webview()->GetMainFrame();
+  WebFrame* main_frame = webview()->mainFrame();
   NavigationState* navigation_state =
       NavigationState::FromDataSource(main_frame->dataSource());
   Time finish = navigation_state->finish_load_time();
@@ -3576,7 +3574,7 @@ void RenderView::OnExecuteCode(int request_id, const std::string& extension_id,
     pending_code_execution_queue_.push(info);
     return;
   }
-  WebFrame* main_frame = webview() ? webview()->GetMainFrame() : NULL;
+  WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
   if (!main_frame) {
     Send(new ViewMsg_ExecuteCodeFinished(routing_id_, request_id, false));
     return;

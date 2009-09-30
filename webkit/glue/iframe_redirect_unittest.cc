@@ -41,7 +41,7 @@ TEST_F(IFrameRedirectTest, Test) {
   test_shell_->WaitTestFinished();
 
   WebFrame* iframe =
-      test_shell_->webView()->GetFrameWithName(WebString::fromUTF8("ifr"));
+      test_shell_->webView()->findFrameByName(WebString::fromUTF8("ifr"));
   ASSERT_TRUE(iframe != NULL);
   WebDataSource* iframe_ds = iframe->dataSource();
   ASSERT_TRUE(iframe_ds != NULL);

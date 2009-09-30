@@ -20,7 +20,7 @@ class WebFrameTest : public TestShellTest {
 
 TEST_F(WebFrameTest, GetContentAsPlainText) {
   WebView* view = test_shell_->webView();
-  WebFrame* frame = view->GetMainFrame();
+  WebFrame* frame = view->mainFrame();
 
   // Generate a simple test case.
   const char simple_source[] = "<div>Foo bar</div><div></div>baz";
@@ -61,7 +61,7 @@ TEST_F(WebFrameTest, GetContentAsPlainText) {
 
 TEST_F(WebFrameTest, GetFullHtmlOfPage) {
   WebView* view = test_shell_->webView();
-  WebFrame* frame = view->GetMainFrame();
+  WebFrame* frame = view->mainFrame();
 
   // Generate a simple test case.
   const char simple_source[] = "<p>Hello</p><p>World</p>";

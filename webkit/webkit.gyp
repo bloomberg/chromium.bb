@@ -118,6 +118,7 @@
         'api/public/WebURLRequest.h',
         'api/public/WebURLResponse.h',
         'api/public/WebVector.h',
+        'api/public/WebView.h',
         'api/public/WebViewClient.h',
         'api/public/WebWidget.h',
         'api/public/WebWidgetClient.h',

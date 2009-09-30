@@ -16,7 +16,7 @@ using WebKit::WebSettings;
 using WebKit::WebURL;
 
 void WebPreferences::Apply(WebView* web_view) const {
-  WebSettings* settings = web_view->GetSettings();
+  WebSettings* settings = web_view->settings();
   settings->setStandardFontFamily(WideToUTF16Hack(standard_font_family));
   settings->setFixedFontFamily(WideToUTF16Hack(fixed_font_family));
   settings->setSerifFontFamily(WideToUTF16Hack(serif_font_family));

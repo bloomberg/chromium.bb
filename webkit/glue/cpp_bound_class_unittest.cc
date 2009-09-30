@@ -88,7 +88,7 @@ class CppBoundClassTest : public TestShellTest {
      if (rv) {
        test_shell_ = host;
        TestShell::windowList()->push_back(host->mainWnd());
-       webframe_ = test_shell_->webView()->GetMainFrame();
+       webframe_ = test_shell_->webView()->mainFrame();
        ASSERT_TRUE(webframe_ != NULL);
      } else {
        delete host;

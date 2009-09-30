@@ -292,8 +292,7 @@ bool ChromeClientImpl::statusbarVisible() {
 
 void ChromeClientImpl::setScrollbarsVisible(bool value) {
   scrollbars_visible_ = value;
-  WebFrameImpl* web_frame =
-      static_cast<WebFrameImpl*>(webview_->GetMainFrame());
+  WebFrameImpl* web_frame = static_cast<WebFrameImpl*>(webview_->mainFrame());
   if (web_frame)
     web_frame->SetAllowsScrolling(value);
 }

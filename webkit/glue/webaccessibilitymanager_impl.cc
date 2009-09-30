@@ -198,7 +198,7 @@ bool WebAccessibilityManagerImpl::InitAccObjRoot(WebView* view) {
   // Enable accessibility and retrieve Document.
   WebCore::AXObjectCache::enableAccessibility();
   WebFrameImpl* main_frame_impl =
-      static_cast<WebFrameImpl*>(view->GetMainFrame());
+      static_cast<WebFrameImpl*>(view->mainFrame());
   if (!main_frame_impl || !main_frame_impl->frame())
     return false;
 

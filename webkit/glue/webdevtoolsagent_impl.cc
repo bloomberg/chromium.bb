@@ -142,7 +142,7 @@ void WebDevToolsAgentImpl::DidCommitLoadForFrame(
   GURL url = ds->hasUnreachableURL() ?
       ds->unreachableURL() :
       request.url();
-  if (webview->GetMainFrame() == frame) {
+  if (webview->mainFrame() == frame) {
     ResetInspectorFrontendProxy();
     tools_agent_delegate_stub_->FrameNavigate(
         url.possibly_invalid_spec());

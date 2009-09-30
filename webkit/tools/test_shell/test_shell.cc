@@ -196,7 +196,7 @@ void TestShell::Dump(TestShell* shell) {
   printf("#URL:%s\n", params->test_url.c_str());
 
   // Dump the requested representation.
-  WebFrame* frame = shell->webView()->GetMainFrame();
+  WebFrame* frame = shell->webView()->mainFrame();
   if (frame) {
     bool should_dump_as_text =
         shell->layout_test_controller_->ShouldDumpAsText();
@@ -486,7 +486,7 @@ void TestShell::DumpBackForwardList(std::wstring* result) {
 }
 
 void TestShell::CallJSGC() {
-  webView()->GetMainFrame()->collectGarbage();
+  webView()->mainFrame()->collectGarbage();
 }
 
 WebView* TestShell::CreateWebView() {
@@ -530,9 +530,9 @@ void TestShell::LoadURL(const GURL& url) {
 
 bool TestShell::Navigate(const TestNavigationEntry& entry, bool reload) {
   // Get the right target frame for the entry.
-  WebFrame* frame = webView()->GetMainFrame();
+  WebFrame* frame = webView()->mainFrame();
   if (!entry.GetTargetFrame().empty()) {
-      frame = webView()->GetFrameWithName(
+      frame = webView()->findFrameByName(
           WideToUTF16Hack(entry.GetTargetFrame()));
   }
   // TODO(mpcomplete): should we clear the target frame, or should
@@ -567,7 +567,7 @@ bool TestShell::Navigate(const TestNavigationEntry& entry, bool reload) {
   // iframe would keep focus when the SetFocus called immediately after
   // LoadRequest, thus making some tests fail (see http://b/issue?id=845337
   // for more details).
-  webView()->SetFocusedFrame(frame);
+  webView()->setFocusedFrame(frame);
   SetFocus(webViewHost(), true);
 
   return true;
@@ -583,7 +583,7 @@ void TestShell::DumpDocumentText() {
       return;
 
   const std::string data =
-      WideToUTF8(webkit_glue::DumpDocumentText(webView()->GetMainFrame()));
+      WideToUTF8(webkit_glue::DumpDocumentText(webView()->mainFrame()));
   file_util::WriteFile(file_path, data.c_str(), data.length());
 }
 
@@ -593,12 +593,12 @@ void TestShell::DumpRenderTree() {
     return;
 
   const std::string data =
-      WideToUTF8(webkit_glue::DumpRenderer(webView()->GetMainFrame()));
+      WideToUTF8(webkit_glue::DumpRenderer(webView()->mainFrame()));
   file_util::WriteFile(file_path, data.c_str(), data.length());
 }
 
 std::wstring TestShell::GetDocumentText() {
-  return webkit_glue::DumpDocumentText(webView()->GetMainFrame());
+  return webkit_glue::DumpDocumentText(webView()->mainFrame());
 }
 
 void TestShell::Reload() {

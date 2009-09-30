@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "webkit/api/public/WebDragOperation.h"
-#include "webkit/api/public/WebWidget.h"
+#include "webkit/api/public/WebView.h"
 
 namespace WebKit {
 class WebDragData;
@@ -45,7 +45,7 @@ struct MediaPlayerAction;
 //  user interface elements in those windows, monitoring the progress of loads,
 //  monitoring URL changes, and making determinations about how content of
 //  certain types should be handled.
-class WebView : public WebKit::WebWidget {
+class WebView : public WebKit::WebView {
  public:
   WebView() {}
   virtual ~WebView() {}
@@ -78,37 +78,6 @@ class WebView : public WebKit::WebWidget {
   // or inserts a '\t' char in text area
   virtual void SetTabKeyCyclesThroughElements(bool value) = 0;
 
-  // Returns whether the current view can be closed, after running any
-  // onbeforeunload event handlers.
-  virtual bool ShouldClose() = 0;
-
-  // Tells the current page to close, running the onunload handler.
-  // TODO(creis): We'd rather use WebWidget::Close(), but that sets its
-  // delegate_ to NULL, preventing any JavaScript dialogs in the onunload
-  // handler from appearing.  This lets us shortcut that for now, but we should
-  // refactor close messages so that this isn't necessary.
-  // TODO(darin): This comment is out-of-date, and we should be able to use
-  // WebWidget::Close now.
-  virtual void ClosePage() = 0;
-
-  //
-  //  @method mainFrame
-  //  @abstract Return the top level frame.
-  //  @discussion Note that even document that are not framesets will have a
-  //  mainFrame.
-  //  @result The main frame.
-  //  - (WebFrame *)mainFrame;
-  virtual WebKit::WebFrame* GetMainFrame() = 0;
-
-  // Returns the currently focused frame.
-  virtual WebKit::WebFrame* GetFocusedFrame() = 0;
-
-  // Sets focus to the frame passed in.
-  virtual void SetFocusedFrame(WebKit::WebFrame* frame) = 0;
-
-  // Returns the frame with the given name, or NULL if not found.
-  virtual WebKit::WebFrame* GetFrameWithName(const WebKit::WebString& name) = 0;
-
   // Returns the frame previous to the specified frame, by traversing the frame
   // tree, wrapping around if necessary.
   virtual WebKit::WebFrame* GetPreviousFrameBefore(WebKit::WebFrame* frame, bool wrap) = 0;
@@ -130,88 +99,12 @@ class WebView : public WebKit::WebWidget {
 
   // ---- TODO(darin): remove to here ----
 
-  // Focus the first (last if reverse is true) focusable node.
-  virtual void SetInitialFocus(bool reverse) = 0;
-
-  // Clears the focused node (and selection if a text field is focused) to
-  // ensure that a text field on the page is not eating keystrokes we send it.
-  virtual void ClearFocusedNode() = 0;
-
-  // Gets a WebSettings object that can be used to modify the behavior of this
-  // WebView.  The object is deleted by this class on destruction, so you must
-  // not use it beyond WebView's lifetime.
-  virtual WebKit::WebSettings* GetSettings() = 0;
-
   // Settings used by inspector.
   virtual const std::wstring& GetInspectorSettings() const = 0;
   virtual void SetInspectorSettings(const std::wstring& settings) = 0;
 
-  // Set the encoding of the current main frame. The value comes from
-  // the encoding menu. WebKit uses the function named
-  // SetCustomTextEncodingName to do override encoding job.
-  virtual void SetPageEncoding(const std::string& encoding_name) = 0;
-
-  // Return the canonical encoding name of current main webframe in webview.
-  virtual std::string GetMainFrameEncodingName() = 0;
-
-  // Change the text zoom level. It will make the zoom level 20% larger or
-  // smaller. If text_only is set, the text size will be changed. When unset,
-  // the entire page's zoom factor will be changed.
-  //
-  // You can only have either text zoom or full page zoom at one time. Changing
-  // the mode will change things in weird ways. Generally the app should only
-  // support text zoom or full page zoom, and not both.
-  //
-  // ResetZoom will reset both full page and text zoom.
-  virtual void ZoomIn(bool text_only) = 0;
-  virtual void ZoomOut(bool text_only) = 0;
-  virtual void ResetZoom() = 0;
-
-  // Copy to the clipboard the image located at a particular point in the
-  // WebView (if there is such an image)
-  virtual void CopyImageAt(int x, int y) = 0;
-
-  // Inspect a particular point in the WebView. (x = -1 || y = -1) is a special
-  // case which means inspect the current page and not a specific point.
-  virtual void InspectElement(int x, int y) = 0;
-
   // Show the JavaScript console.
   virtual void ShowJavaScriptConsole() = 0;
-
-  // Notifies the webview that a drag has ended (with a drop or a cancel).
-  virtual void DragSourceEndedAt(
-      const WebKit::WebPoint& client_point,
-      const WebKit::WebPoint& screen_point,
-      WebKit::WebDragOperation operation) = 0;
-
-  // Notifies the webview that a drag and drop operation is in progress, with
-  // dropable items over the view.
-  virtual void DragSourceMovedTo(
-      const WebKit::WebPoint& client_point,
-      const WebKit::WebPoint& screen_point) = 0;
-
-  // Notfies the webview that the system drag and drop operation has ended.
-  virtual void DragSourceSystemDragEnded() = 0;
-
-  // Callback methods when a drag and drop operation is trying to drop data
-  // on this webview.
-  virtual WebKit::WebDragOperation DragTargetDragEnter(
-      const WebKit::WebDragData& drag_data, int identity,
-      const WebKit::WebPoint& client_point,
-      const WebKit::WebPoint& screen_point,
-      WebKit::WebDragOperationsMask operations_allowed) = 0;
-  virtual WebKit::WebDragOperation DragTargetDragOver(
-      const WebKit::WebPoint& client_point,
-      const WebKit::WebPoint& screen_point,
-      WebKit::WebDragOperationsMask operations_allowed) = 0;
-  virtual void DragTargetDragLeave() = 0;
-  virtual void DragTargetDrop(
-      const WebKit::WebPoint& client_point,
-      const WebKit::WebPoint& screen_point) = 0;
-
-  // Helper method for drag and drop target operations: return the drag data
-  // identity.
-  virtual int32 GetDragIdentity() = 0;
 
   // Helper method for drag and drop target operations: override the default
   // drop effect with either a "copy" (accept true) or "none" (accept false)

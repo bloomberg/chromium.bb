@@ -31,13 +31,13 @@
 #ifndef WebView_h
 #define WebView_h
 
-#error "This header file is still a work in progress; do not include!"
-
-#include "WebCommon.h"
+#include "WebDragOperation.h"
 #include "WebWidget.h"
 
 namespace WebKit {
-    class WebPreferences;
+    class WebDragData;
+    class WebFrame;
+    class WebSettings;
     class WebString;
     class WebViewClient;
     struct WebPoint;
@@ -47,9 +47,10 @@ namespace WebKit {
         WEBKIT_API WebView* create(WebViewClient*);
 
 
-        // Preferences ---------------------------------------------------------
+        // Options -------------------------------------------------------------
 
-        virtual WebPreferences* preferences() = 0;
+        // The returned pointer is valid for the lifetime of the WebView.
+        virtual WebSettings* settings() = 0;
 
         // Corresponds to the encoding of the main frame.  Setting the page
         // encoding may cause the main frame to reload.
@@ -59,9 +60,11 @@ namespace WebKit {
 
         // Closing -------------------------------------------------------------
 
-        // Returns false if any handler suppressed unloading.
+        // Runs beforeunload handlers for the current page, returning false if
+        // any handler suppressed unloading.
         virtual bool dispatchBeforeUnloadEvent() = 0;
 
+        // Runs unload handlers for the current page.
         virtual void dispatchUnloadEvent() = 0;
 
 
@@ -81,12 +84,6 @@ namespace WebKit {
         virtual WebFrame* focusedFrame() = 0;
         virtual void setFocusedFrame(WebFrame*) = 0;
 
-        // Restores focus to the previously focused frame and element.  This
-        // method is invoked when the WebView is shown after being hidden, and
-        // focus is to be restored.  When a WebView loses focus, it remembers
-        // the frame and element that had focus.
-        virtual void restoreFocus() = 0;
-
         // Focus the first (last if reverse is true) focusable node.
         virtual void setInitialFocus(bool reverse) = 0;
 
@@ -94,19 +91,6 @@ namespace WebKit {
         // to ensure that a text field on the page is not eating keystrokes we
         // send it.
         virtual void clearFocusedNode() = 0;
-
-
-        // Capture -------------------------------------------------------------
-
-        // Fills the contents of this WebView's frames into the given string.
-        // If the text is longer than maxCharacters, it will be clipped to that
-        // length.  Warning: this function may be slow depending on the number
-        // of characters retrieved and page complexity.  For a typically sized
-        // page, expect it to take on the order of milliseconds.
-        //
-        // If there is room, subframe text will be recursively appended.  Each
-        // frame will be separated by an empty line.
-        virtual WebString captureAsText(unsigned maxCharacters) = 0;
 
 
         // Zoom ----------------------------------------------------------------
@@ -132,34 +116,35 @@ namespace WebKit {
         virtual void copyImageAt(const WebPoint&) = 0;
 
         // Notifies the WebView that a drag has terminated.
-        virtual void dragSourceEndedAt(const WebPoint& clientPoint,
-                                       const WebPoint& screenPoint) = 0;
+        virtual void dragSourceEndedAt(
+            const WebPoint& clientPoint, const WebPoint& screenPoint,
+            WebDragOperation operation) = 0;
 
         // Notifies the WebView that a drag and drop operation is in progress, with
         // dropable items over the view.
-        virtual void dragSourceMovedTo(const WebPoint& clientPoint,
-                                       const WebPoint& screenPoint) = 0;
+        virtual void dragSourceMovedTo(
+            const WebPoint& clientPoint, const WebPoint& screenPoint) = 0;
 
         // Notfies the WebView that the system drag and drop operation has ended.
         virtual void dragSourceSystemDragEnded() = 0;
 
         // Callback methods when a drag-and-drop operation is trying to drop
         // something on the WebView.
-        virtual bool dragTargetDragEnter(const WebDragData&, int identity,
-                                         const WebPoint& clientPoint,
-                                         const WebPoint& screenPoint) = 0;
-        virtual bool dragTargetDragOver(const WebPoint& clientPoint,
-                                        const WebPoint& screenPoint) = 0;
+        virtual WebDragOperation dragTargetDragEnter(
+            const WebDragData&, int identity,
+            const WebPoint& clientPoint, const WebPoint& screenPoint,
+            WebDragOperationsMask operationsAllowed) = 0;
+        virtual WebDragOperation dragTargetDragOver(
+            const WebPoint& clientPoint, const WebPoint& screenPoint,
+            WebDragOperationsMask operationsAllowed) = 0;
         virtual void dragTargetDragLeave() = 0;
-        virtual void dragTargetDrop(const WebPoint& clientPoint,
-                                    const WebPoint& screenPoint) = 0;
+        virtual void dragTargetDrop(
+            const WebPoint& clientPoint, const WebPoint& screenPoint) = 0;
 
         virtual int dragIdentity() = 0;
 
 
         // Developer tools -----------------------------------------------------
-
-        virtual WebDevToolsAgent* devToolsAgent() = 0;
 
         // Inspect a particular point in the WebView.  (x = -1 || y = -1) is a
         // special case, meaning inspect the current page and not a specific
@@ -174,6 +159,11 @@ namespace WebKit {
         // InsertText -> should move to WebTextInput
         // AutofillSuggestionsForNode
         // HideAutofillPopup
+
+    protected:
+        ~WebView() {}
     };
 
 } // namespace WebKit
+
+#endif

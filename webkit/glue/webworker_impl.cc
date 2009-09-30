@@ -143,8 +143,7 @@ void WebWorkerImpl::startWorkerContext(const WebURL& script_url,
   WebPreferences().Apply(web_view_);
   web_view_->InitializeMainFrame(WorkerWebFrameClient::GetSharedInstance());
 
-  WebFrameImpl* web_frame =
-      static_cast<WebFrameImpl*>(web_view_->GetMainFrame());
+  WebFrameImpl* web_frame = static_cast<WebFrameImpl*>(web_view_->mainFrame());
 
   // Construct substitute data source for the 'shadow page'. We only need it
   // to have same origin as the worker so the loading checks work correctly.

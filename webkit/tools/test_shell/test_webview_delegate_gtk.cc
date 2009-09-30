@@ -59,9 +59,9 @@ void SelectionClipboardGetContents(GtkClipboard* clipboard,
     return;
 
   WebView* webview = static_cast<WebView*>(data);
-  WebFrame* frame = webview->GetFocusedFrame();
+  WebFrame* frame = webview->focusedFrame();
   if (!frame)
-    frame = webview->GetMainFrame();
+    frame = webview->mainFrame();
   DCHECK(frame);
 
   std::string selection;
