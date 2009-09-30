@@ -707,6 +707,10 @@ willPositionSheet:(NSWindow*)sheet
     int index = [dragBWC->tabStripController_ indexForTabView:view];
     TabContents* contents =
         dragBWC->browser_->tabstrip_model()->GetTabContentsAt(index);
+    // The tab contents may have gone away if given a window.close() while it
+    // is being dragged. If so, bail, we've got nothing to drop.
+    if (!contents)
+      return;
 
     // Now that we have enough information about the tab, we can remove it from
     // the dragging window. We need to do this *before* we add it to the new

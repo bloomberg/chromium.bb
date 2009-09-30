@@ -42,8 +42,11 @@
 
 - (void)removeOverlay {
   [self setUseOverlay:NO];
+  if (closeDeferred_)
+    [[self window] performClose:self];  // Autoreleases the controller.
 }
 
+// TODO(pinkerton): Nobody calls this, can we remove it?
 - (void)removeOverlayAfterDelay:(NSTimeInterval)delay {
   [NSObject cancelPreviousPerformRequestsWithTarget:self
                                            selector:@selector(removeOverlay)
@@ -197,6 +200,13 @@
     [lockedTabs_ removeObject:tabView];
   else
     [lockedTabs_ addObject:tabView];
+}
+
+// Tell the window that it needs to call performClose: as soon as the current
+// drag is complete. This prevents a window (and its overlay) from going away
+// during a drag.
+- (void)deferPerformClose {
+  closeDeferred_ = YES;
 }
 
 @end

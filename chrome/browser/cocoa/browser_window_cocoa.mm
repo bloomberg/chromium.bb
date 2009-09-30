@@ -53,8 +53,13 @@ void BrowserWindowCocoa::SetBounds(const gfx::Rect& bounds) {
 // The controller implementing the window delegate methods called from
 // |-performClose:| must take precautions to ensure that.
 void BrowserWindowCocoa::Close() {
-  [window_ orderOut:controller_];
-  [window_ performClose:controller_];
+  // If there is an overlay window, we contain a tab being dragged between
+  // windows. Don't hide the window as it makes the UI extra confused. We can
+  // still close the window, as that will happen when the drag completes.
+  if ([controller_ overlayWindow])
+    [controller_ deferPerformClose];
+  else
+    [window_ performClose:controller_];
 }
 
 void BrowserWindowCocoa::Activate() {

@@ -35,12 +35,14 @@
                                // view is the proper content area in the overlay
                                // (weak)
   scoped_nsobject<NSMutableSet> lockedTabs_;
+  BOOL closeDeferred_;  // If YES, call performClose: in removeOverlay:.
 }
 @property(readonly, nonatomic) TabStripView* tabStripView;
 @property(readonly, nonatomic) NSView* tabContentArea;
 
 // Used during tab dragging to turn on/off the overlay window when a tab
-// is torn off.
+// is torn off. If -deferPerformClose (below) is used, -removeOverlay will
+// cause the controller to be autoreleased before returning.
 - (void)showOverlay;
 - (void)removeOverlay;
 - (void)removeOverlayAfterDelay:(NSTimeInterval)delay;
@@ -109,8 +111,14 @@
 // default implementation returns YES.
 - (BOOL)isNormalWindow;
 
+// Get/set whether a particular tab is draggable between windows.
 - (BOOL)isTabDraggable:(NSView*)tabView;
 - (void)setTab:(NSView*)tabView isDraggable:(BOOL)draggable;
+
+// Tell the window that it needs to call performClose: as soon as the current
+// drag is complete. This prevents a window (and its overlay) from going away
+// during a drag.
+- (void)deferPerformClose;
 
 @end
 

@@ -491,12 +491,14 @@ static const CGFloat kRapidCloseDist = 2.5;
     [targetController_ showWindow:nil];
   } else {
     // Tab dragging did move window only.
-    [dragWindow_ setAlphaValue:1.0];
-    [dragOverlay_ setHasShadow:NO];
-    [dragWindow_ setHasShadow:YES];
     [draggedController_ removeOverlay];
-    [dragWindow_ makeKeyAndOrderFront:nil];
-
+    // Don't want to re-show the window if it was closed during the drag.
+    if ([dragWindow_ isVisible]) {
+      [dragWindow_ setAlphaValue:1.0];
+      [dragOverlay_ setHasShadow:NO];
+      [dragWindow_ setHasShadow:YES];
+      [dragWindow_ makeKeyAndOrderFront:nil];
+    }
     [[draggedController_ window] setLevel:NSNormalWindowLevel];
     [draggedController_ removePlaceholder];
   }
