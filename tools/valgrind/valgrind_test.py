@@ -412,6 +412,9 @@ class ThreadSanitizer(ValgrindTool):
       if os.path.exists(fullname):
         ret += ["--ignore=%s" % fullname]
 
+    # The -v flag is needed for printing the list of used suppressions.
+    ret += ["-v"]
+
     ret += ["--file-prefix-to-cut=%s/" % self._source_dir]
 
     if self.EvalBoolFlag(self._options.pure_happens_before):

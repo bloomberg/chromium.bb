@@ -28,36 +28,62 @@ class TsanAnalyze:
     '''
 
     self.races = []
+    self.used_suppressions = {}
     for file in files:
-      self.races = self.races + self.GetReportFrom(file)
+      self.ParseReportFile(file)
 
-  def GetReportFrom(self, filename):
-    ret = []
+  def ParseReportFile(self, filename):
     f = open(filename, 'r')
     while True:
+      # Read race reports.
       line = f.readline()
       if (line == ''):
         break
+
+      if re.search("ERROR SUMMARY", line):
+        # TSAN has finished working. The remaining reports are duplicates.
+        break
+
       tmp = ""
-      while (re.match(".*INFO: T.* " +
-             "(has been created by T.* at this point|is program's main thread)"
-             ".*", line)):
+      while (re.search("INFO: T.* "
+             "(has been created by T.* at this point"
+             "|is program's main thread)", line)):
         tmp = tmp + line
-        while not re.match(".*}}}.*", line):
+        while not re.search("}}}", line):
           line = f.readline()
           tmp = tmp + line
         line = f.readline()
 
-      if (re.match(".*Possible data race.*", line)):
+      if (re.search("Possible data race", line)):
         tmp = tmp + line
-        while not re.match(".*}}}.*", line):
+        while not re.search("}}}", line):
           line = f.readline()
           tmp = tmp + line
-        ret.append(tmp.strip())
+        self.races.append(tmp.strip())
+
+    while True:
+      # Read the list of used suppressions.
+      line = f.readline()
+      if (line == ''):
+        break
+      match = re.search(" used_suppression:\s+([0-9]+)\s(.*)", line)
+      if match:
+        count, supp_name = match.groups()
+        if supp_name in self.used_suppressions:
+          self.used_suppressions[supp_name] += count
+        else:
+          self.used_suppressions[supp_name] = count
     f.close()
-    return ret
 
   def Report(self):
+    print "-----------------------------------------------------"
+    print "Suppressions used:"
+    print "  count name"
+    for item in sorted(self.used_suppressions.items(), key=lambda (k,v): (v,k)):
+      print "%7s %s" % (item[1], item[0])
+    print "-----------------------------------------------------"
+    sys.stdout.flush()
+
     if len(self.races) > 0:
       logging.error("Found %i race reports" % len(self.races))
       for report in self.races:
