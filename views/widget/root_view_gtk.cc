@@ -13,26 +13,33 @@
 namespace views {
 
 void RootView::OnPaint(GdkEventExpose* event) {
-  gfx::Rect original_dirty_region = GetScheduledPaintRectConstrainedToSize();
-  if (!original_dirty_region.IsEmpty()) {
-    // Between the the time the paint was scheduled and the time we end
-    // up painting more SchedulePaints may have been invoked. Expand the
-    // region Gdk wants us to paint to include the region we want to paint
-    // to make sure everything is painted. Otherwise we may not paint
-    // everything we need to.
-    gfx::Rect complete_area =
-        original_dirty_region.Union(gfx::Rect(event->area));
-    event->area = complete_area.ToGdkRectangle();
-  }
-
+  gfx::Rect scheduled_dirty_rect = GetScheduledPaintRectConstrainedToSize();
+  gfx::Rect expose_rect = gfx::Rect(event->area);
   gfx::CanvasPaint canvas(event);
+  bool invoked_process_paint = false;
   if (!canvas.is_empty()) {
     canvas.set_composite_alpha(
         static_cast<WidgetGtk*>(GetWidget())->is_transparent());
     SchedulePaint(gfx::Rect(canvas.rectangle()), false);
     if (NeedsPainting(false)) {
       ProcessPaint(&canvas);
+      invoked_process_paint = true;
     }
+  }
+
+  if (invoked_process_paint && !scheduled_dirty_rect.IsEmpty() &&
+      !expose_rect.Contains(scheduled_dirty_rect)) {
+    // The region Views needs to paint (scheduled_dirty_rect) isn't contained
+    // within the region GTK wants us to paint. ProccessPaint clears out the
+    // dirty region, so that at this point views thinks everything has painted
+    // correctly, but we haven't. Invoke schedule paint again to make sure we
+    // paint everything we need to.
+    //
+    // NOTE: We don't expand the region to paint to include
+    // scheduled_dirty_rect as that results in us drawing on top of any GTK
+    // widgets that don't have a window. We have to schedule the paint through
+    // GTK so that such widgets are painted.
+    SchedulePaint(scheduled_dirty_rect, false);
   }
 }
 
