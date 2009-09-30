@@ -715,7 +715,8 @@
 {
    bug_19371
    Memcheck:Leak
-   fun:_Znwj
+   fun:_Znw*
+   ...
    fun:_ZN4base13WaitableEvent7EnqueueEPNS0_6WaiterE
    fun:_ZN4base13WaitableEvent9TimedWaitERKNS_9TimeDeltaE
    fun:_ZN4base13WaitableEvent4WaitEv
