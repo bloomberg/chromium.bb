@@ -321,7 +321,7 @@ int main(int argc, char* argv[]) {
       } else {
         // TODO(ojan): Provide a way for run-singly tests to pass
         // in a hash and then set params.pixel_hash here.
-        params.test_url = starting_url.spec();
+        params.test_url = WideToUTF8(loose_values[0]);
         TestShell::RunFileTest(params);
       }
 
