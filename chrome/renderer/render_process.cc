@@ -85,6 +85,10 @@ RenderProcess::RenderProcess()
   if (command_line.HasSwitch(switches::kInternalNaCl))
     RegisterInternalNaClPlugin(RenderProcess::LaunchNaClProcess);
 
+  if (command_line.HasSwitch(switches::kEnableByteRangeSupport)) {
+    webkit_glue::SetMediaCacheEnabled(true);
+  }
+
   FilePath module_path;
   initialized_media_library_ =
       PathService::Get(base::DIR_MODULE, &module_path) &&

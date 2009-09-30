@@ -331,6 +331,7 @@ bool BrowserRenderProcessHost::Init() {
     switches::kEnableBenchmarking,
     switches::kInternalNaCl,
     switches::kEnableDatabases,
+    switches::kEnableByteRangeSupport,
   };
 
   for (size_t i = 0; i < arraysize(switch_names); ++i) {

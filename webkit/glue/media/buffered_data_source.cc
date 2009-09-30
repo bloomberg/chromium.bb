@@ -57,6 +57,11 @@ const int kReadTrials = 3;
 // of FFmpeg.
 const int kInitialReadBufferSize = 32768;
 
+// Returns true if |url| operates on HTTP protocol.
+bool IsHttpProtocol(const GURL& url) {
+  return url.SchemeIs(kHttpScheme) || url.SchemeIs(kHttpsScheme);
+}
+
 }  // namespace
 
 namespace webkit_glue {
@@ -72,6 +77,7 @@ BufferedResourceLoader::BufferedResourceLoader(
       deferred_(false),
       completed_(false),
       range_requested_(false),
+      partial_response_(false),
       bridge_factory_(bridge_factory),
       url_(url),
       first_byte_position_(first_byte_position),
@@ -109,10 +115,12 @@ void BufferedResourceLoader::Start(net::CompletionCallback* start_callback) {
 
   // Creates the bridge on render thread since we can only access
   // ResourceDispatcher on this thread.
-  bridge_.reset(bridge_factory_->CreateBridge(url_,
-                                              net::LOAD_BYPASS_CACHE,
-                                              first_byte_position_,
-                                              last_byte_position_));
+  bridge_.reset(
+      bridge_factory_->CreateBridge(
+          url_,
+          IsMediaCacheEnabled() ? net::LOAD_NORMAL : net::LOAD_BYPASS_CACHE,
+          first_byte_position_,
+          last_byte_position_));
 
   // Increment the reference count right before we start the request. This
   // reference will be release when this request has ended.
@@ -229,20 +237,25 @@ void BufferedResourceLoader::OnReceivedResponse(
   // received a response from HTTP/HTTPS protocol or the request was
   // successful (in particular range request). So we only verify the partial
   // response for HTTP and HTTPS protocol.
-  if (url_.SchemeIs(kHttpScheme) || url_.SchemeIs(kHttpsScheme)) {
+  if (IsHttpProtocol(url_)) {
     int error = net::OK;
     if (!info.headers) {
       // We expect to receive headers because this is a HTTP or HTTPS protocol,
       // if not report failure.
       error = net::ERR_INVALID_RESPONSE;
-    } else if (range_requested_) {
-      // If we have verified the partial response and it is correct, we will
-      // return net::OK.
-      if (!VerifyPartialResponse(info))
-        error = net::ERR_REQUEST_RANGE_NOT_SATISFIABLE;
-    } else if (info.headers->response_code() != kHttpOK) {
-      // We didn't request a range but server didn't reply with "200 OK".
-      error = net::ERR_FAILED;
+    } else {
+      if (info.headers->response_code() == kHttpPartialContent)
+        partial_response_ = true;
+
+      if (range_requested_ && partial_response_) {
+        // If we have verified the partial response and it is correct, we will
+        // return net::OK.
+        if (!VerifyPartialResponse(info))
+          error = net::ERR_INVALID_RESPONSE;
+      } else if (info.headers->response_code() != kHttpOK) {
+        // We didn't request a range but server didn't reply with "200 OK".
+        error = net::ERR_FAILED;
+      }
     }
 
     if (error != net::OK) {
@@ -250,6 +263,10 @@ void BufferedResourceLoader::OnReceivedResponse(
       Stop();
       return;
     }
+  } else {
+    // For any protocol other than HTTP and HTTPS, assume range request is
+    // always fulfilled.
+    partial_response_ = range_requested_;
   }
 
   // |info.content_length| can be -1, in that case |content_length_| is
@@ -258,7 +275,7 @@ void BufferedResourceLoader::OnReceivedResponse(
 
   // If we have not requested a range, then the size of the instance is equal
   // to the content length.
-  if (!range_requested_)
+  if (!partial_response_)
     instance_size_ = content_length_;
 
   // Calls with a successful response.
@@ -418,9 +435,6 @@ void BufferedResourceLoader::DoneStart(int error) {
 
 bool BufferedResourceLoader::VerifyPartialResponse(
     const ResourceLoaderBridge::ResponseInfo& info) {
-  if (info.headers->response_code() != kHttpPartialContent)
-    return false;
-
   int64 first_byte_position, last_byte_position, instance_size;
   if (!info.headers->GetContentRange(&first_byte_position,
                                      &last_byte_position,
@@ -455,8 +469,6 @@ BufferedDataSource::BufferedDataSource(
       read_position_(0),
       read_size_(0),
       read_buffer_(NULL),
-      initial_response_received_(false),
-      probe_response_received_(false),
       intermediate_read_buffer_(new uint8[kInitialReadBufferSize]),
       intermediate_read_buffer_size_(kInitialReadBufferSize),
       render_loop_(render_loop),
@@ -551,7 +563,6 @@ bool BufferedDataSource::IsStreaming() {
 void BufferedDataSource::InitializeTask() {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(!loader_.get());
-  DCHECK(!probe_loader_.get());
 
   // Kick starts the watch dog task that will handle connection timeout.
   // We run the watch dog 2 times faster the actual timeout so as to catch
@@ -561,18 +572,25 @@ void BufferedDataSource::InitializeTask() {
       this,
       &BufferedDataSource::WatchDogTask);
 
-  // Creates a new resource loader with the full range and a probe resource
-  // loader. Creates a probe resource loader to make sure the server supports
-  // partial range request.
-  // TODO(hclam): Only request 1 byte for this probe request, it may be useful
-  // that we perform a suffix range request and fetch the index. That way we
-  // can minimize the number of requests made.
-  loader_ = CreateLoader(-1, -1);
-  probe_loader_ = CreateLoader(1, 1);
-
-  loader_->Start(NewCallback(this, &BufferedDataSource::InitialStartCallback));
-  probe_loader_->Start(
-      NewCallback(this, &BufferedDataSource::ProbeStartCallback));
+  if (IsHttpProtocol(url_)) {
+    // Fetch only first 1024 bytes as this usually covers the header portion
+    // of a media file that gives enough information about the codecs, etc.
+    // This also serve as a probe to determine server capability to serve
+    // range request.
+    // TODO(hclam): Do some experiments for the best approach.
+    loader_ = CreateLoader(0, 1024);
+    loader_->Start(
+        NewCallback(this,
+                    &BufferedDataSource::HttpInitialStartCallback));
+  } else {
+    // For all other protocols, assume they support range request. We fetch
+    // the full range of the resource to obtain the instance size because
+    // we won't be served HTTP headers.
+    loader_ = CreateLoader(-1, -1);
+    loader_->Start(
+        NewCallback(this,
+                    &BufferedDataSource::NonHttpInitialStartCallback));
+  }
 }
 
 void BufferedDataSource::ReadTask(
@@ -611,10 +629,6 @@ void BufferedDataSource::StopTask() {
   // We just need to stop the loader, so it stops activity.
   if (loader_.get())
     loader_->Stop();
-
-  // If the probe request is still active, stop it too.
-  if (probe_loader_.get())
-    probe_loader_->Stop();
 
   // Reset the parameters of the current read request.
   read_callback_.reset();
@@ -712,7 +726,7 @@ void BufferedDataSource::DoneInitialization() {
 // BufferedDataSource, callback methods.
 // These methods are called on the render thread for the events reported by
 // BufferedResourceLoader.
-void BufferedDataSource::InitialStartCallback(int error) {
+void BufferedDataSource::HttpInitialStartCallback(int error) {
   DCHECK(MessageLoop::current() == render_loop_);
 
   // We need to prevent calling to filter host and running the callback if
@@ -731,35 +745,32 @@ void BufferedDataSource::InitialStartCallback(int error) {
     // TODO(hclam): In case of failure, we can retry several times.
     host()->SetError(media::PIPELINE_ERROR_NETWORK);
     DCHECK(loader_.get());
-    DCHECK(probe_loader_.get());
     loader_->Stop();
-    probe_loader_->Stop();
     DoneInitialization();
     return;
   }
 
+  // TODO(hclam): Needs more thinking about supporting servers without range
+  // request or their partial response is not complete.
   total_bytes_ = loader_->instance_size();
-  if (total_bytes_ >= 0) {
+  if (total_bytes_ >= 0 && loader_->partial_response()) {
     // This value governs the range that we can seek to.
     // TODO(hclam): Report the correct value of buffered bytes.
     host()->SetTotalBytes(total_bytes_);
     host()->SetBufferedBytes(total_bytes_);
   } else {
-    // If the server didn't reply with a content length, it is likely this
+    // If the server didn't reply with an instance size, it is likely this
     // is a streaming response.
     streaming_ = true;
     host()->SetStreaming(true);
   }
 
   // Currently, only files can be used reliably w/o a network.
-  host()->SetLoaded(url_.SchemeIsFile());
-
-  initial_response_received_ = true;
-  if (probe_response_received_)
-    DoneInitialization();
+  host()->SetLoaded(false);
+  DoneInitialization();
 }
 
-void BufferedDataSource::ProbeStartCallback(int error) {
+void BufferedDataSource::NonHttpInitialStartCallback(int error) {
   DCHECK(MessageLoop::current() == render_loop_);
 
   // We need to prevent calling to filter host and running the callback if
@@ -774,24 +785,31 @@ void BufferedDataSource::ProbeStartCallback(int error) {
   if (stopped_)
     return;
 
-  if (error != net::OK) {
-    streaming_ = true;
-    host()->SetStreaming(true);
+  DCHECK(loader_.get());
+
+  if (error != net::OK || loader_->instance_size() == kPositionNotSpecified) {
+    host()->SetError(media::PIPELINE_ERROR_NETWORK);
+    loader_->Stop();
+    DoneInitialization();
+    return;
   }
 
-  DCHECK(probe_loader_.get());
-  probe_loader_->Stop();
-  probe_response_received_ = true;
-  if (initial_response_received_)
-    DoneInitialization();
+  total_bytes_ = loader_->instance_size();
+  host()->SetTotalBytes(total_bytes_);
+  host()->SetBufferedBytes(total_bytes_);
+  host()->SetLoaded(true);
+  DoneInitialization();
 }
 
 void BufferedDataSource::PartialReadStartCallback(int error) {
   DCHECK(MessageLoop::current() == render_loop_);
   DCHECK(loader_.get());
 
-  if (error == net::OK) {
-    // Once the range request has start successfully, we can proceed with
+  // This callback method is invoked after we have verified the server has
+  // range request capability, so as a safety guard verify again the response
+  // is partial.
+  if (error == net::OK && loader_->partial_response()) {
+    // Once the range request has started successfully, we can proceed with
     // reading from it.
     ReadInternal();
   } else {
