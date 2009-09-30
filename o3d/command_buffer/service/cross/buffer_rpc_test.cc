@@ -79,7 +79,7 @@ TEST_F(BufferRPCImplTest, TestRegisterSharedMemory) {
   EXPECT_CALL(buffer_sync_mock(), RegisterSharedMemory(shm, size))
       .WillOnce(Return(1234));
   RPCHandle handles[1] = {shm};
-  EXPECT_EQ(1234, buffer_rpc_impl()->DoCall(
+  EXPECT_EQ(1234u, buffer_rpc_impl()->DoCall(
       BufferRPCImpl::REGISTER_SHARED_MEMORY, &size, sizeof(size), handles, 1));
 }
 
@@ -115,7 +115,7 @@ TEST_F(BufferRPCImplTest, TestPut) {
 // properly forwarded.
 TEST_F(BufferRPCImplTest, TestGet) {
   EXPECT_CALL(buffer_sync_mock(), Get()).WillOnce(Return(9375));
-  EXPECT_EQ(9375, buffer_rpc_impl()->DoCall(BufferRPCImpl::GET, NULL, 0, NULL,
+  EXPECT_EQ(9375u, buffer_rpc_impl()->DoCall(BufferRPCImpl::GET, NULL, 0, NULL,
                                             0));
 }
 
@@ -123,7 +123,7 @@ TEST_F(BufferRPCImplTest, TestGet) {
 // properly forwarded.
 TEST_F(BufferRPCImplTest, TestGetToken) {
   EXPECT_CALL(buffer_sync_mock(), GetToken()).WillOnce(Return(1618));
-  EXPECT_EQ(1618, buffer_rpc_impl()->DoCall(BufferRPCImpl::GET_TOKEN, NULL, 0,
+  EXPECT_EQ(1618u, buffer_rpc_impl()->DoCall(BufferRPCImpl::GET_TOKEN, NULL, 0,
                                             NULL, 0));
 }
 
@@ -133,7 +133,7 @@ TEST_F(BufferRPCImplTest, TestWaitGetChanges) {
   CommandBufferOffset value = 339;
   EXPECT_CALL(buffer_sync_mock(), WaitGetChanges(value))
       .WillOnce(Return(16180));
-  EXPECT_EQ(16180, buffer_rpc_impl()->DoCall(BufferRPCImpl::WAIT_GET_CHANGES,
+  EXPECT_EQ(16180u, buffer_rpc_impl()->DoCall(BufferRPCImpl::WAIT_GET_CHANGES,
                                              &value, sizeof(value), NULL, 0));
 }
 
@@ -152,7 +152,8 @@ TEST_F(BufferRPCImplTest, TestSignalGetChanges) {
 TEST_F(BufferRPCImplTest, TestGetStatus) {
   EXPECT_CALL(buffer_sync_mock(), GetStatus())
       .WillOnce(Return(BufferSyncInterface::kParseError));
-  EXPECT_EQ(BufferSyncInterface::kParseError,
+  EXPECT_EQ(static_cast<BufferRPCImpl::ReturnValue>(
+      BufferSyncInterface::kParseError),
             buffer_rpc_impl()->DoCall(BufferRPCImpl::GET_STATUS, NULL, 0, NULL,
                                       0));
 }
@@ -162,7 +163,8 @@ TEST_F(BufferRPCImplTest, TestGetStatus) {
 TEST_F(BufferRPCImplTest, TestGetParseError) {
   EXPECT_CALL(buffer_sync_mock(), GetParseError())
       .WillOnce(Return(BufferSyncInterface::kParseOutOfBounds));
-  EXPECT_EQ(BufferSyncInterface::kParseOutOfBounds,
+  EXPECT_EQ(static_cast<BufferRPCImpl::ReturnValue>(
+      BufferSyncInterface::kParseOutOfBounds),
             buffer_rpc_impl()->DoCall(BufferRPCImpl::GET_PARSE_ERROR, NULL, 0,
                                       NULL, 0));
 }

@@ -84,7 +84,7 @@ TEST_F(IdAllocatorTest, TestAdvanced) {
   // Allocate a significant number of resources.
   const unsigned int kNumResources = 100;
   ResourceId ids[kNumResources];
-  for (int i = 0; i < kNumResources; ++i) {
+  for (unsigned int i = 0; i < kNumResources; ++i) {
     ids[i] = allocator->AllocateID();
     EXPECT_TRUE(allocator->InUse(ids[i]));
   }
@@ -92,12 +92,12 @@ TEST_F(IdAllocatorTest, TestAdvanced) {
   // Check that the allocation is conservative with resource IDs, that is that
   // the resource IDs don't go over kNumResources - so that the service doesn't
   // have to allocate too many internal structures when the resources are used.
-  for (int i = 0; i < kNumResources; ++i) {
+  for (unsigned int i = 0; i < kNumResources; ++i) {
     EXPECT_GT(kNumResources, ids[i]);
   }
 
   // Check that the next resources are still free.
-  for (int i = 0; i < kNumResources; ++i) {
+  for (unsigned int i = 0; i < kNumResources; ++i) {
     EXPECT_FALSE(allocator->InUse(kNumResources + i));
   }
 

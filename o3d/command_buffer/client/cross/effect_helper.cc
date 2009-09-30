@@ -235,7 +235,6 @@ bool EffectHelper::GetEffectStreams(ResourceId effect_id,
   for (unsigned int i = 0; i < stream_count; i += max_stream_per_batch) {
     unsigned int count = std::min(stream_count - i, max_stream_per_batch);
     for (unsigned int j = 0 ; j < count; ++j) {
-      EffectStreamDesc *desc = &((*descs)[i + j]);
       Desc *raw_desc = raw_descs + j;
       helper_->GetStreamDesc(effect_id, i + j, sizeof(*raw_desc),
                              shm_id_,

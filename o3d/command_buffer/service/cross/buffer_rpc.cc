@@ -49,33 +49,33 @@ BufferRPCImpl::ReturnValue BufferRPCImpl::DoCall(int message_id,
                                                  size_t handle_count) {
   switch (message_id) {
     case INIT_CONNECTION: {
-      DCHECK_EQ(0, size);
-      DCHECK_EQ(0, handle_count);
+      DCHECK_EQ(0u, size);
+      DCHECK_EQ(0u, handle_count);
       handler_->InitConnection();
       return 0;
     }
     case CLOSE_CONNECTION:
-      DCHECK_EQ(0, size);
-      DCHECK_EQ(0, handle_count);
+      DCHECK_EQ(0u, size);
+      DCHECK_EQ(0u, handle_count);
       handler_->CloseConnection();
       return 0;
     case REGISTER_SHARED_MEMORY: {
       DCHECK_EQ(sizeof(size_t), size);  // NOLINT
-      DCHECK_EQ(1, handle_count);
+      DCHECK_EQ(1u, handle_count);
       RPCShmHandle buffer = static_cast<RPCShmHandle>(handles[0]);
       return handler_->RegisterSharedMemory(buffer,
                                             *static_cast<const size_t *>(data));
     }
     case UNREGISTER_SHARED_MEMORY: {
       DCHECK_EQ(sizeof(unsigned int), size); // NOLINT
-      DCHECK_EQ(0, handle_count);
+      DCHECK_EQ(0u, handle_count);
       unsigned int shm_id = *(static_cast<const unsigned int *>(data));
       handler_->UnregisterSharedMemory(shm_id);
       return 0;
     }
     case SET_COMMAND_BUFFER: {
       DCHECK_EQ(sizeof(SetCommandBufferStruct), size);
-      DCHECK_EQ(0, handle_count);
+      DCHECK_EQ(0u, handle_count);
       const SetCommandBufferStruct *params =
           static_cast<const SetCommandBufferStruct *>(data);
       handler_->SetCommandBuffer(params->shm_id,
@@ -86,30 +86,30 @@ BufferRPCImpl::ReturnValue BufferRPCImpl::DoCall(int message_id,
     }
     case PUT: {
       DCHECK_EQ(sizeof(CommandBufferOffset), size);
-      DCHECK_EQ(0, handle_count);
+      DCHECK_EQ(0u, handle_count);
       CommandBufferOffset offset =
           *(static_cast<const CommandBufferOffset *>(data));
       handler_->Put(offset);
       return 0;
     }
     case GET:
-      DCHECK_EQ(0, size);
-      DCHECK_EQ(0, handle_count);
+      DCHECK_EQ(0u, size);
+      DCHECK_EQ(0u, handle_count);
       return handler_->Get();
     case GET_TOKEN:
-      DCHECK_EQ(0, size);
-      DCHECK_EQ(0, handle_count);
+      DCHECK_EQ(0u, size);
+      DCHECK_EQ(0u, handle_count);
       return handler_->GetToken();
     case WAIT_GET_CHANGES: {
       DCHECK_EQ(sizeof(CommandBufferOffset), size);
-      DCHECK_EQ(0, handle_count);
+      DCHECK_EQ(0u, handle_count);
       CommandBufferOffset current_value =
           *(static_cast<const CommandBufferOffset *>(data));
       return handler_->WaitGetChanges(current_value);
     }
     case SIGNAL_GET_CHANGES: {
       DCHECK_EQ(sizeof(SignalGetChangesStruct), size);
-      DCHECK_EQ(0, handle_count);
+      DCHECK_EQ(0u, handle_count);
       const SignalGetChangesStruct *params =
           static_cast<const SignalGetChangesStruct *>(data);
       handler_->SignalGetChanges(params->current_value,
@@ -117,13 +117,13 @@ BufferRPCImpl::ReturnValue BufferRPCImpl::DoCall(int message_id,
       return 0;
     }
     case GET_STATUS: {
-      DCHECK_EQ(0, size);
-      DCHECK_EQ(0, handle_count);
+      DCHECK_EQ(0u, size);
+      DCHECK_EQ(0u, handle_count);
       return handler_->GetStatus();
     }
     case GET_PARSE_ERROR: {
-      DCHECK_EQ(0, size);
-      DCHECK_EQ(0, handle_count);
+      DCHECK_EQ(0u, size);
+      DCHECK_EQ(0u, handle_count);
       return handler_->GetParseError();
     }
     default:

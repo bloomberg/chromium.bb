@@ -1,16 +1,16 @@
 vars = {
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "nixysa_rev": "54",
-  "chromium_rev": "26475",
+  "chromium_rev": "27534",
   "o3d_code_rev": "149",
   "skia_rev": "341",
-  "gyp_rev": "651",
+  "gyp_rev": "671",
   "gtest_rev": "267",
   "gflags_rev": "30",
   "breakpad_rev": "391",
   "v8_rev": "2901",
   "icu_rev": "25717",
-  "nacl_rev": "730",
+  "nacl_rev": "797",
 }
 
 deps = {
@@ -145,6 +145,9 @@ deps_os = {
       Var("chromium_trunk") + "/src/tools/grit@" + Var("chromium_rev"),
     "tools/data_pack":
       Var("chromium_trunk") + "/src/tools/data_pack@" + Var("chromium_rev"),
+    "tools/xdisplaycheck":
+      Var("chromium_trunk") + "/src/tools/xdisplaycheck@" + Var("chromium_rev"),
+
   },
 }
 

@@ -214,7 +214,7 @@ TEST_F(FencedAllocatorTest, TestGetLargestFreeSize) {
 
   FencedAllocator::Offset offset = allocator()->Alloc(kBufferSize);
   ASSERT_NE(FencedAllocator::kInvalidOffset, offset);
-  EXPECT_EQ(0, allocator()->GetLargestFreeSize());
+  EXPECT_EQ(0u, allocator()->GetLargestFreeSize());
   allocator()->Free(offset);
   EXPECT_EQ(kBufferSize, allocator()->GetLargestFreeSize());
 
@@ -243,7 +243,7 @@ TEST_F(FencedAllocatorTest, TestGetLargestFreeSize) {
 
   offset1 = allocator()->Alloc(2 * kSize);
   ASSERT_NE(FencedAllocator::kInvalidOffset, offset1);
-  EXPECT_EQ(0, allocator()->GetLargestFreeSize());
+  EXPECT_EQ(0u, allocator()->GetLargestFreeSize());
 
   allocator()->Free(offset);
   allocator()->Free(offset1);
@@ -257,7 +257,7 @@ TEST_F(FencedAllocatorTest, TestGetLargestFreeOrPendingSize) {
 
   FencedAllocator::Offset offset = allocator()->Alloc(kBufferSize);
   ASSERT_NE(FencedAllocator::kInvalidOffset, offset);
-  EXPECT_EQ(0, allocator()->GetLargestFreeOrPendingSize());
+  EXPECT_EQ(0u, allocator()->GetLargestFreeOrPendingSize());
   allocator()->Free(offset);
   EXPECT_EQ(kBufferSize, allocator()->GetLargestFreeOrPendingSize());
 

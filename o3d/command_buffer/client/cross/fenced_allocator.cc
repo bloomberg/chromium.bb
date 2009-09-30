@@ -50,7 +50,7 @@ FencedAllocator::~FencedAllocator() {
       i = WaitForTokenAndFreeBlock(i);
     }
   }
-  DCHECK_EQ(blocks_.size(), 1);
+  DCHECK_EQ(blocks_.size(), 1u);
   DCHECK_EQ(blocks_[0].state, FREE);
 }
 

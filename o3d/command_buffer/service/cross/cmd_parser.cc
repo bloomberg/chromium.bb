@@ -49,7 +49,7 @@ CommandParser::CommandParser(void *shm_address,
   // check proper alignments.
   DCHECK_EQ(0, (reinterpret_cast<intptr_t>(shm_address)) % 4);
   DCHECK_EQ(0, offset % 4);
-  DCHECK_EQ(0, size % 4);
+  DCHECK_EQ(0u, size % 4);
   // check that the command buffer fits into the memory buffer.
   DCHECK_GE(shm_size, offset + size);
   char * buffer_begin = static_cast<char *>(shm_address) + offset;

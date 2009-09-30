@@ -199,7 +199,7 @@ unsigned int GetBlockSizeY(Format format);
 // Gets the dimension of a mipmap level given the dimension of the base
 // level. Every mipmap level is half the size of the previous level, rounding
 // down.
-static unsigned int GetMipMapDimension(unsigned int base,
+inline unsigned int GetMipMapDimension(unsigned int base,
                                        unsigned int level) {
   DCHECK_GT(base, 0U);
   return std::max(1U, base >> level);

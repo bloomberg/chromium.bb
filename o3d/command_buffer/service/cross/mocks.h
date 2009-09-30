@@ -90,8 +90,8 @@ class AsyncAPIMock : public AsyncAPIInterface {
                 unsigned int arg_count,
                 const void* _args) {
     DCHECK(engine_);
-    DCHECK_EQ(1, command);
-    DCHECK_EQ(1, arg_count);
+    DCHECK_EQ(1u, command);
+    DCHECK_EQ(1u, arg_count);
     const CommandBufferEntry* args =
         static_cast<const CommandBufferEntry*>(_args);
     engine_->set_token(args[0].value_uint32);
@@ -133,6 +133,7 @@ class RPCProcessMock : public RPCProcessInterface {
 
   bool AddMessage() {
     ++message_count_;
+    return true;
   }
 
   bool would_have_blocked() { return would_have_blocked_; }

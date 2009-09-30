@@ -128,7 +128,7 @@ TEST_F(CommandBufferHelperTest, TestCommandProcessing) {
   EXPECT_TRUE(engine()->parser() != NULL);
   EXPECT_EQ(BufferSyncInterface::kParsing, engine()->GetStatus());
   EXPECT_EQ(BufferSyncInterface::kParseNoError, engine()->GetParseError());
-  EXPECT_EQ(0, engine()->Get());
+  EXPECT_EQ(0u, engine()->Get());
 
   // Add 3 commands through the helper
   AddCommandWithExpect(BufferSyncInterface::kParseNoError, 1, 0, NULL);

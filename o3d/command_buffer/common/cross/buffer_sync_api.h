@@ -42,6 +42,7 @@ namespace command_buffer {
 
 // Command buffer type.
 typedef size_t CommandBufferOffset;
+const CommandBufferOffset kInvalidCommandBufferOffset = ~0u;
 
 // Interface class for the Command Buffer Synchronous API.
 // This is the part of the command buffer API that is accessible through the

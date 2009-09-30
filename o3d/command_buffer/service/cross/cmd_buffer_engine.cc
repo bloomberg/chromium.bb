@@ -129,12 +129,13 @@ void CommandBufferEngine::Put(CommandBufferOffset offset) {
   }
 }
 
-// Retrieves the get value. This returns -1 if there is no current parser.
+// Retrieves the get value. This returns kInvalidCommandBufferOffset
+// if there is no current parser.
 CommandBufferOffset CommandBufferEngine::Get() {
   if (parser_.get()) {
     return parser_->get();
   } else {
-    return -1;
+    return kInvalidCommandBufferOffset;
   }
 }
 
@@ -143,9 +144,10 @@ unsigned int CommandBufferEngine::GetToken() {
   return token_;
 }
 
-// Executes commands until get is different from the value passed in. It will
-// return immediately if the get value is already different, or if the engine
-// is not in the kParsing status, or if the buffer is empty. It will return -1
+// Executes commands until get is different from the value passed
+// in. It will return immediately if the get value is already
+// different, or if the engine is not in the kParsing status, or if
+// the buffer is empty. It will return kInvalidCommandBufferOffset
 // if there is no current buffer.
 CommandBufferOffset CommandBufferEngine::WaitGetChanges(
     CommandBufferOffset current_value) {
@@ -157,7 +159,7 @@ CommandBufferOffset CommandBufferEngine::WaitGetChanges(
     }
     return parser_->get();
   } else {
-    return -1;
+    return kInvalidCommandBufferOffset;
   }
 }
 
@@ -279,10 +281,11 @@ bool CommandBufferEngine::DoWork() {
 }
 
 // Signals that get has changed, sending a RPC message back to the client. It
-// will send -1 if there is no current buffer.
+// will send kInvalidCommandBufferOffset if there is no current buffer.
 void CommandBufferEngine::DoSignalChangedGet(int rpc_message_id) {
   DCHECK(client_rpc_);
-  CommandBufferOffset get = parser_.get() ? parser_->get() : -1;
+  CommandBufferOffset get = parser_.get() ? parser_->get() :
+                            kInvalidCommandBufferOffset;
   client_rpc_->SendCall(rpc_message_id, &get, sizeof(get), NULL, 0);
 }
 

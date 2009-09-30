@@ -105,7 +105,7 @@ TEST_F(BufferSyncProxyTest, TestRegisterSharedMemory) {
   expect.handle_count = 1;
   server_mock()->AddSendCallExpect(expect);
 
-  EXPECT_EQ(123, proxy()->RegisterSharedMemory(shm, size));
+  EXPECT_EQ(123u, proxy()->RegisterSharedMemory(shm, size));
 }
 
 // Tests the implementation of UnregisterSharedMemory, checking that it sends
@@ -172,7 +172,7 @@ TEST_F(BufferSyncProxyTest, TestGet) {
   expect.handle_count = 0;
   server_mock()->AddSendCallExpect(expect);
 
-  EXPECT_EQ(72, proxy()->Get());
+  EXPECT_EQ(72u, proxy()->Get());
 }
 
 // Tests the implementation of GetToken, checking that it sends the correct
@@ -187,7 +187,7 @@ TEST_F(BufferSyncProxyTest, TestGetToken) {
   expect.handle_count = 0;
   server_mock()->AddSendCallExpect(expect);
 
-  EXPECT_EQ(38, proxy()->GetToken());
+  EXPECT_EQ(38u, proxy()->GetToken());
 }
 
 // Tests the implementation of WaitGetChanges, checking that it sends the
@@ -203,7 +203,7 @@ TEST_F(BufferSyncProxyTest, TestWaitGetChanges) {
   expect.handle_count = 0;
   server_mock()->AddSendCallExpect(expect);
 
-  EXPECT_EQ(53, proxy()->WaitGetChanges(101));
+  EXPECT_EQ(53u, proxy()->WaitGetChanges(101));
 }
 
 // Tests the implementation of SignalGetChanges, checking that it sends the

@@ -96,8 +96,8 @@ class CommandParserTest : public testing::Test {
 // Tests initialization conditions.
 TEST_F(CommandParserTest, TestInit) {
   scoped_ptr<CommandParser> parser(MakeParser(10));
-  EXPECT_EQ(0, parser->get());
-  EXPECT_EQ(0, parser->put());
+  EXPECT_EQ(0u, parser->get());
+  EXPECT_EQ(0u, parser->put());
   EXPECT_TRUE(parser->IsEmpty());
 }
 
@@ -227,7 +227,7 @@ TEST_F(CommandParserTest, TestWrap) {
   param.value_int32 = 5;
   AddDoCommandExpect(BufferSyncInterface::kParseNoError, 3, 1, &param);
 
-  DCHECK_EQ(5, put);
+  DCHECK_EQ(5u, put);
   put = 0;
   parser->set_put(put);
   EXPECT_EQ(put, parser->put());

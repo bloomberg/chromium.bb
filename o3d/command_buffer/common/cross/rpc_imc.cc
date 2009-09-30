@@ -127,7 +127,7 @@ RPCImplInterface::ReturnValue IMCSender::SendCall(
 
   RPCImplInterface::ReturnValue ret;
   result = NaclReceiveData(handle_, &ret, sizeof(ret), 0);
-  DCHECK_EQ(sizeof(ret), result);
+  DCHECK_EQ(sizeof(ret), static_cast<size_t>(result));
   return ret;
 }
 

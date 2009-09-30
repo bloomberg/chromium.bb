@@ -125,8 +125,8 @@ void CommandBufferHelper::WaitForToken(unsigned int token) {
 // check for an error.
 void CommandBufferHelper::WaitForGetChange() {
   CommandBufferOffset new_get = interface_->WaitGetChanges(get_);
-  if (new_get == get_ || new_get == -1) {
-    // If get_ didn't change or is invalid (-1), it means an error may have
+  if (new_get == get_ || new_get == kInvalidCommandBufferOffset) {
+    // If get_ didn't change or is invalid, it means an error may have
     // occured. Check that.
     BufferSyncInterface::ParserStatus status = interface_->GetStatus();
     if (status != BufferSyncInterface::kParsing) {
