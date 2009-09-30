@@ -145,6 +145,28 @@ class TaskManagerGtk : public TaskManagerModelObserver {
         CompareImpl(model, a, b, IDS_TASK_MANAGER_PROCESS_ID_COLUMN);
   }
 
+  // WebCore Image Cache sorting callback.
+  static gint CompareWebCoreImageCache(GtkTreeModel* model, GtkTreeIter* a,
+                                       GtkTreeIter* b, gpointer task_manager) {
+    return reinterpret_cast<TaskManagerGtk*>(task_manager)->
+        CompareImpl(model, a, b, IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN);
+  }
+
+  // WebCore Scripts Cache sorting callback.
+  static gint CompareWebCoreScriptsCache(GtkTreeModel* model, GtkTreeIter* a,
+                                         GtkTreeIter* b,
+                                         gpointer task_manager) {
+    return reinterpret_cast<TaskManagerGtk*>(task_manager)->
+        CompareImpl(model, a, b, IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN);
+  }
+
+  // WebCore CSS Cache sorting callback.
+  static gint CompareWebCoreCssCache(GtkTreeModel* model, GtkTreeIter* a,
+                                     GtkTreeIter* b, gpointer task_manager) {
+    return reinterpret_cast<TaskManagerGtk*>(task_manager)->
+        CompareImpl(model, a, b, IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN);
+  }
+
   // Goats Teleported sorting callback.
   static gint CompareGoatsTeleported(GtkTreeModel* model, GtkTreeIter* a,
                                      GtkTreeIter* b, gpointer task_manager) {

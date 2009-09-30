@@ -491,6 +491,15 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
                                   kTaskManagerProcessID,
                                   CompareProcessID, this, NULL);
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
+                                  kTaskManagerWebCoreImageCache,
+                                  CompareWebCoreImageCache, this, NULL);
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
+                                  kTaskManagerWebCoreScriptsCache,
+                                  CompareWebCoreScriptsCache, this, NULL);
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
+                                  kTaskManagerWebCoreCssCache,
+                                  CompareWebCoreCssCache, this, NULL);
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
                                   kTaskManagerGoatsTeleported,
                                   CompareGoatsTeleported, this, NULL);
   treeview_ = gtk_tree_view_new_with_model(process_list_sort_);
@@ -556,12 +565,18 @@ std::string TaskManagerGtk::GetModelText(int row, int col_id) {
       return WideToUTF8(model_->GetResourceProcessId(row));
 
     case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
+      if (!model_->IsResourceFirstInGroup(row))
+        return std::string();
       return WideToUTF8(model_->GetResourceWebCoreImageCacheSize(row));
 
     case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
+      if (!model_->IsResourceFirstInGroup(row))
+        return std::string();
       return WideToUTF8(model_->GetResourceWebCoreScriptsCacheSize(row));
 
     case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
+      if (!model_->IsResourceFirstInGroup(row))
+        return std::string();
       return WideToUTF8(model_->GetResourceWebCoreCSSCacheSize(row));
 
     case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN:  // Goats Teleported!

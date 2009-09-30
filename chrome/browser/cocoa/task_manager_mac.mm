@@ -62,7 +62,7 @@
       initWithIdentifier:[NSNumber numberWithInt:columnId]]);
 
   NSTextAlignment textAlignment = columnId == IDS_TASK_MANAGER_PAGE_COLUMN ?
-      NSLeftTextAlignment : NSRightTextAlignment; 
+      NSLeftTextAlignment : NSRightTextAlignment;
 
   [[column.get() headerCell]
       setStringValue:l10n_util::GetNSStringWithFixup(columnId)];
@@ -125,7 +125,7 @@
   [column setHidden:newState == NSOffState];
   [item setState:newState];
   [tableView_ sizeToFit];
-  [tableView_ setNeedsDisplay];  
+  [tableView_ setNeedsDisplay];
 }
 
 @end
@@ -171,14 +171,20 @@
       return base::SysWideToNSString(model_->GetResourceProcessId(row));
 
     case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:  // WebCore image cache
+      if (!model_->IsResourceFirstInGroup(row))
+        return @"";
       return base::SysWideToNSString(
           model_->GetResourceWebCoreImageCacheSize(row));
 
     case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:  // WebCore script cache
+      if (!model_->IsResourceFirstInGroup(row))
+        return @"";
       return base::SysWideToNSString(
           model_->GetResourceWebCoreScriptsCacheSize(row));
 
     case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:  // WebCore CSS cache
+      if (!model_->IsResourceFirstInGroup(row))
+        return @"";
       return base::SysWideToNSString(
           model_->GetResourceWebCoreCSSCacheSize(row));
 
