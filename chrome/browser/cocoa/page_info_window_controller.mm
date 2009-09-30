@@ -4,6 +4,7 @@
 
 #import "chrome/browser/cocoa/page_info_window_controller.h"
 
+#include "app/resource_bundle.h"
 #include "base/mac_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -31,13 +32,9 @@
   NSString* nibpath = [bundle pathForResource:@"PageInfo" ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     // Load the image refs.
-    NSImage* img = [[NSImage alloc] initByReferencingFile:
-                    [bundle pathForResource:@"pageinfo_good" ofType:@"png"]];
-    goodImg_.reset(img);
-
-    img = [[NSImage alloc] initByReferencingFile:
-           [bundle pathForResource:@"pageinfo_bad" ofType:@"png"]];
-    badImg_.reset(img);
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    goodImg_.reset([rb.GetNSImageNamed(IDR_PAGEINFO_GOOD) retain]);
+    badImg_.reset([rb.GetNSImageNamed(IDR_PAGEINFO_BAD) retain]);
   }
   return self;
 }
