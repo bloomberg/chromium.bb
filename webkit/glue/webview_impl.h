@@ -87,7 +87,8 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual bool dispatchBeforeUnloadEvent();
   virtual void dispatchUnloadEvent();
   virtual WebKit::WebFrame* mainFrame();
-  virtual WebKit::WebFrame* findFrameByName(const WebKit::WebString& name);
+  virtual WebKit::WebFrame* findFrameByName(
+      const WebKit::WebString& name, WebKit::WebFrame* relative_to_frame);
   virtual WebKit::WebFrame* focusedFrame();
   virtual void setFocusedFrame(WebKit::WebFrame* frame);
   virtual void setInitialFocus(bool reverse);

@@ -540,6 +540,8 @@
             '../../glue/plugins/test/plugin_delete_plugin_in_stream_test.h',
             '../../glue/plugins/test/plugin_get_javascript_url_test.cc',
             '../../glue/plugins/test/plugin_get_javascript_url_test.h',
+            '../../glue/plugins/test/plugin_get_javascript_url2_test.cc',
+            '../../glue/plugins/test/plugin_get_javascript_url2_test.h',
             '../../glue/plugins/test/plugin_geturl_test.cc',
             '../../glue/plugins/test/plugin_geturl_test.h',
             '../../glue/plugins/test/plugin_javascript_open_popup.cc',

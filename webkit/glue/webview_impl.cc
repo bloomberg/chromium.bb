@@ -1295,9 +1295,13 @@ WebFrame* WebViewImpl::mainFrame() {
   return main_frame();
 }
 
-WebFrame* WebViewImpl::findFrameByName(const WebString& name) {
+WebFrame* WebViewImpl::findFrameByName(
+    const WebString& name, WebFrame* relative_to_frame) {
   String name_str = webkit_glue::WebStringToString(name);
-  Frame* frame = page_->mainFrame()->tree()->find(name_str);
+  if (!relative_to_frame)
+    relative_to_frame = mainFrame();
+  Frame* frame = static_cast<WebFrameImpl*>(relative_to_frame)->frame();
+  frame = frame->tree()->find(name_str);
   return frame ? WebFrameImpl::FromFrame(frame) : NULL;
 }
 

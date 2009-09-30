@@ -95,6 +95,16 @@ TEST_F(NPAPITester, GetJavaScriptURL) {
                 kTestCompleteSuccess, kShortWaitTimeout);
 }
 
+// Test that calling GetURL with a javascript URL and target=_self
+// works properly when the plugin is embedded in a subframe.
+TEST_F(NPAPITester, GetJavaScriptURL2) {
+  std::wstring test_case = L"get_javascript_url2.html";
+  GURL url = GetTestUrl(L"npapi", test_case);
+  NavigateToURL(url);
+  WaitForFinish("getjavascripturl2", "1", url, kTestCompleteCookie,
+                kTestCompleteSuccess, kShortWaitTimeout);
+}
+
 // Tests that if an NPObject is proxies back to its original process, the
 // original pointer is returned and not a proxy.  If this fails the plugin
 // will crash.

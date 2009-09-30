@@ -7,6 +7,7 @@
 #include "webkit/glue/plugins/test/plugin_arguments_test.h"
 #include "webkit/glue/plugins/test/plugin_delete_plugin_in_stream_test.h"
 #include "webkit/glue/plugins/test/plugin_get_javascript_url_test.h"
+#include "webkit/glue/plugins/test/plugin_get_javascript_url2_test.h"
 #include "webkit/glue/plugins/test/plugin_geturl_test.h"
 #include "webkit/glue/plugins/test/plugin_javascript_open_popup.h"
 #include "webkit/glue/plugins/test/plugin_new_fails_test.h"
@@ -118,6 +119,9 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode,
 #endif
   } else if (test_name == "getjavascripturl") {
     new_test = new NPAPIClient::ExecuteGetJavascriptUrlTest(instance,
+      NPAPIClient::PluginClient::HostFunctions());
+  } else if (test_name == "getjavascripturl2") {
+    new_test = new NPAPIClient::ExecuteGetJavascriptUrl2Test(instance,
       NPAPIClient::PluginClient::HostFunctions());
 #if defined(OS_WIN)
   // TODO(port): plugin_window_size_test.*.
