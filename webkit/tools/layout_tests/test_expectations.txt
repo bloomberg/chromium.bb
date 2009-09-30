@@ -452,10 +452,6 @@ BUG18978 : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-pref
 BUG18978 WIN LINUX : LayoutTests/http/tests/xmlhttprequest/methods.html = FAIL
 BUG18978 MAC RELEASE: LayoutTests/http/tests/xmlhttprequest/methods.html = FAIL TIMEOUT
 BUG18978 MAC DEBUG: LayoutTests/http/tests/xmlhttprequest/methods.html = FAIL
-// This passes when run in Chrome. It appears to be because of a difference
-// in how lighttpd serves up the svn resource image (or the image
-// contained in the svg image).
-BUG18978 : LayoutTests/http/tests/security/canvas-remote-read-svg-image.html = FAIL
 // Another lighttpd quirk.
 BUG8941 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/web-apps/013.html = FAIL
 BUG8941 MAC : LayoutTests/http/tests/xmlhttprequest/web-apps/013.html = FAIL TIMEOUT
@@ -818,10 +814,8 @@ BUG8696 WIN LINUX : LayoutTests/fast/gradients/simple-gradients.html = FAIL
 BUG8696 WIN LINUX : LayoutTests/fast/gradients/crash-on-zero-radius.html = FAIL
 
 BUG10385 : LayoutTests/fast/dom/dom-constructors.html = FAIL
-BUG10387 SKIP : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-image-not-loaded-svg.svg = FAIL
 
 BUG10412 WIN LINUX : LayoutTests/fast/table/vertical-align-baseline.html = FAIL
-BUG20505 : LayoutTests/http/tests/misc/SVGFont-delayed-load.html = FAIL
 BUG20507 : LayoutTests/http/tests/uri/resolve-encoding-relative.html = FAIL
 
 BUG10401 : LayoutTests/plugins/npruntime.html = TIMEOUT FAIL
