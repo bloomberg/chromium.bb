@@ -168,6 +168,17 @@ static void CheckIfEOperandRepeated(int index) {
   }
 }
 
+/* Called if operand is a G_Operand. Checks that the opcode doesn't specify
+ * that the REG field of modrm is an opcode, since G_Operand doesn't make
+ * sense in such cases.
+ */
+static void CheckIfOpcodeInModRm(int index) {
+  if (current_opcode->flags & InstFlag(OpcodeInModRm)) {
+    FatalOperand(index,
+                 "Can't use G_Operand, bits being used for opcode in modrm");
+  }
+}
+
 /* Check if an G_Operand operand has been repeated, since it should
  * never appear for more than one argument. If repeated, generate an
  * appropriate error message and terminate.
@@ -177,6 +188,8 @@ static void CheckIfGOperandRepeated(int index) {
   for (i = 0; i < index; ++i) {
     Operand* operand = &current_opcode->operands[i];
     switch (operand->kind) {
+      case Mmx_G_Operand:
+      case Xmm_G_Operand:
       case G_Operand:
       case Gb_Operand:
       case Gw_Operand:
@@ -295,6 +308,7 @@ static void ApplySanityChecksToOperand(int index) {
       break;
     case G_Operand:
       CheckIfGOperandRepeated(index);
+      CheckIfOpcodeInModRm(index);
       break;
     case Gb_Operand:
       if (current_opcode->flags & InstFlag(OperandSize_b)) {
@@ -302,6 +316,7 @@ static void ApplySanityChecksToOperand(int index) {
                      "Size implied by OperandSize_b, use G_Operand instead");
       }
       CheckIfGOperandRepeated(index);
+      CheckIfOpcodeInModRm(index);
       break;
     case Gw_Operand:
       if (current_opcode->flags & InstFlag(OperandSize_w)) {
@@ -309,6 +324,7 @@ static void ApplySanityChecksToOperand(int index) {
                      "Size implied by OperandSize_w, use G_Operand instead");
       }
       CheckIfGOperandRepeated(index);
+      CheckIfOpcodeInModRm(index);
       break;
     case Gv_Operand:
       if (current_opcode->flags & InstFlag(OperandSize_v)) {
@@ -316,6 +332,7 @@ static void ApplySanityChecksToOperand(int index) {
                      "Size implied by OperandSize_v, use G_Operand instead");
       }
       CheckIfGOperandRepeated(index);
+      CheckIfOpcodeInModRm(index);
       break;
     case Go_Operand:
       if (current_opcode->flags & InstFlag(OperandSize_o)) {
@@ -323,6 +340,12 @@ static void ApplySanityChecksToOperand(int index) {
                      "Size implied by OperandSize_o, use G_Operand instead");
       }
       CheckIfGOperandRepeated(index);
+      CheckIfOpcodeInModRm(index);
+      break;
+    case Mmx_G_Operand:
+    case Xmm_G_Operand:
+      CheckIfGOperandRepeated(index);
+      CheckIfOpcodeInModRm(index);
       break;
     case I_Operand:
       CheckIfIOperandRepeated(index);
@@ -451,10 +474,6 @@ static Bool OpcodeFlagsMatchesRunMode(OpcodeFlags flags) {
 
 /* Check that the flags defined for an opcode make sense. */
 static void ApplySanityChecksToOpcode() {
-  if ((current_opcode->flags & InstFlag(OpcodeHasRexR)) &&
-      (current_opcode->flags & InstFlag(OpcodeHasNoRexR))) {
-    FatalOpcode("Can't define OpcodeHasRexR and OpcodeHasnoRexR");
-  }
   if ((current_opcode->flags & InstFlag(OpcodeInModRm)) &&
       (current_opcode->flags & InstFlag(OpcodeUsesModRm))) {
     FatalOpcode("OpcodeInModRm automatically implies OpcodeUsesModRm");

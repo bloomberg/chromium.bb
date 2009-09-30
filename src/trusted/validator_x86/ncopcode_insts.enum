@@ -18,6 +18,7 @@ Arpl
 Bound
 Bsf
 Bsr
+Bswap
 Call
 Cbw
 Cdq
@@ -42,6 +43,7 @@ Cmovnle
 Cmp
 Cmpsb
 Cmpsd
+Cmpsd_xmm
 Cmpsq
 Cmpsw
 Cpuid
@@ -62,6 +64,7 @@ Dec
 Div
 Divsd
 Divss
+Emms
 Enter
 Fadd
 Fcom
@@ -125,6 +128,10 @@ Minss
 Mov
 Movapd
 Movaps
+Movd
+Movntq
+Movq
+Movdqu
 Movsb
 Movsd
 Movsq
@@ -307,6 +314,7 @@ Setnle
 Shl
 Shr
 Sqrtsd
+Sqrtss
 Stosb
 Stosd
 Stosq

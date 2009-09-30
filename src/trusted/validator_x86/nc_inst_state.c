@@ -91,7 +91,7 @@ static int ExtractOperandSize(NcInstState* state) {
     }
   }
   if (state->prefix_mask & kPrefixDATA16) {
-    return 2;
+    return (state->opcode->flags & InstFlag(OperandSizeIgnore66)) ? 4 : 2;
   }
   if (NACL_TARGET_SUBARCH == 64 &&
       (state->opcode->flags & InstFlag(OperandSizeDefaultIs64))) {

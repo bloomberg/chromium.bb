@@ -704,7 +704,7 @@ static ExprNode* AppendEsOperandRegister(
  * of a register, update it to a 4-bit specification, based on the REX.R bit.
  */
 static int GetRexRRegister(NcInstState* state, int reg) {
-  DEBUG(printf("Get GenRexRRegister\n"));
+  DEBUG(printf("Get GenRexRRegister %d\n", reg));
   if (NACL_TARGET_SUBARCH == 64 && (state->rexprefix & 0x4)) {
     reg += 8;
   }

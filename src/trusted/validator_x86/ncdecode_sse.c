@@ -58,6 +58,12 @@ static OpcodePrefix g_prefix0F_pair[2] = {
   Prefix660F
 };
 
+/* Define prefix array that covers opcodes with 0F prefices. */
+static OpcodePrefix g_prefix0F_only[2] = {
+  Prefix0F,
+  OpcodePrefixEnumSize
+};
+
 /* Define prefix array that covers opcodes with 0F38 and 660F38 preficies. */
 static OpcodePrefix g_prefix0F38_pair[2] = {
   Prefix0F38,
@@ -96,6 +102,14 @@ static OpcodePrefix g_prefixF30F_only[2] = {
   OpcodePrefixEnumSize
 };
 
+/* Define an operand kind pair that use the E_Operand value for
+ * prefix opcodes, independent of the appearance of prefix 66.
+ */
+static OperandKind g_E_Operand[2] = {
+  E_Operand,
+  E_Operand
+};
+
 /* Define an operand kind pair that uses the G_Operand value for
  * prefix opcodes, independent of the appearance of prefix 66.
  */
@@ -132,6 +146,16 @@ static OperandKind g_Xmm_G_Operand[2] = {
 static OperandKind g_Xmm_E_Operand[2] = {
   Xmm_E_Operand,
   Xmm_E_Operand
+};
+
+static OperandKind g_Mmx_G_Operand[2] = {
+  Mmx_G_Operand,
+  Mmx_G_Operand,
+};
+
+static OperandKind g_Mmx_E_Operand[2] = {
+  Mmx_E_Operand,
+  Mmx_E_Operand,
 };
 
 /* Define the NaCL instruction type as NACLi_SSE for both kinds of opcode
@@ -183,6 +207,14 @@ static NaClInstType g_MMX_or_SSE2[2] = {
   NACLi_SSE2
 };
 
+/* Define the NaCl instruction type as NACLi_MMX for both kinds of opcode
+ * prefices.
+ */
+static NaClInstType g_MMX[2] = {
+  NACLi_MMX,
+  NACLi_MMX,
+};
+
 /* Define the NaCl instruction type as NACLi_SSE for opcode prefices not
  * containing the 66 prefix, and NACLi_SSE2 for the opcode prefices containing
  * th e66 prefix.
@@ -203,15 +235,19 @@ static OpcodeFlags g_no_flags[2] = {
 /* Define an additional (opcode) flag OperandSize_v for all opcode prefices. */
 static OpcodeFlags g_OperandSize_v[2] = {
   InstFlag(OperandSize_v),
-  InstFlag(OperandSize_v)
+  InstFlag(OperandSize_v) | InstFlag(OperandSizeIgnore66)
 };
+
+#define InstFlags_OperandSize_o \
+  (InstFlag(Opcode64Only) | InstFlag(OperandSize_o) | \
+   InstFlag(OpcodeUsesRexW))
 
 /* Define additional (opcode) flags OperandSize_o and OpcodeUseRexW for all
  * opcode prefices.
  */
 static OpcodeFlags g_OperandSize_o[2] = {
-  InstFlag(OperandSize_o) | InstFlag(OpcodeUsesRexW),
-  InstFlag(OperandSize_o) | InstFlag(OpcodeUsesRexW)
+  InstFlags_OperandSize_o,
+  InstFlags_OperandSize_o,
 };
 
 /* Define a structure containing information on the SSE instructions it is
@@ -243,6 +279,10 @@ typedef struct {
  * from thier second operand, to thier first operand.
  */
 static InstOpcodeMnemonic g_MoveOps[] = {
+  /* TODO(karl) - Check what other instructions should be using g_OperandSize_v
+   * and g_OpreandSize_o to check sizes (using new flag OperandSizeIgnore66 to
+   * help differentiate sizes).
+   */
   {g_prefix0F38_pair, 0xC1, InstPabsb, g_Mm_G_Operand, g_Mm_E_Operand,
    g_SSSE3, g_no_flags},
   {g_prefix0F38_pair, 0x1D, InstPabsw, g_Mm_G_Operand, g_Mm_E_Operand,
@@ -259,6 +299,28 @@ static InstOpcodeMnemonic g_MoveOps[] = {
    g_SSE, g_no_flags},
   {g_prefixF30F_only, 0x11, InstMovss, g_Xmm_E_Operand, g_Xmm_G_Operand,
    g_SSE, g_no_flags},
+  {g_prefix0F_pair, 0x6e, InstMovd, g_Mm_G_Operand, g_E_Operand,
+   g_MMX_or_SSE2, g_OperandSize_v},
+  {g_prefix0F_pair, 0x6e, InstMovq, g_Mm_G_Operand, g_E_Operand,
+   g_MMX_or_SSE2, g_OperandSize_o},
+  {g_prefix0F_pair, 0x7e, InstMovd, g_E_Operand, g_Mm_G_Operand,
+   g_MMX_or_SSE2, g_OperandSize_v},
+  {g_prefix0F_pair, 0x7e, InstMovd, g_E_Operand, g_Mm_G_Operand,
+   g_MMX_or_SSE2, g_OperandSize_o},
+  {g_prefix0F_only, 0x6f, InstMovq, g_Mmx_G_Operand, g_Mmx_E_Operand,
+   g_MMX, g_no_flags},
+  {g_prefix0F_only, 0x7f, InstMovq, g_Mmx_E_Operand, g_Mmx_G_Operand,
+   g_MMX, g_no_flags},
+  {g_prefixF30F_only, 0x7e, InstMovq, g_Xmm_G_Operand, g_Xmm_E_Operand,
+   g_SSE2, g_no_flags},
+  {g_prefix660F_only, 0xD6, InstMovq, g_Xmm_E_Operand, g_Xmm_G_Operand,
+   g_SSE2, g_no_flags},
+  {g_prefixF30F_only, 0x6F, InstMovdqu, g_Xmm_G_Operand, g_Xmm_E_Operand,
+   g_SSE2, g_no_flags},
+  {g_prefixF30F_only, 0x7F, InstMovdqu, g_Xmm_E_Operand, g_Xmm_G_Operand,
+   g_SSE2, g_no_flags},
+  {g_prefix0F_only, 0xE7, InstMovntq, g_E_Operand, g_Mmx_G_Operand,
+   g_SSE, g_no_flags},
 };
 
 /* Specify binary instructions that apply a binary operation to both
@@ -266,6 +328,10 @@ static InstOpcodeMnemonic g_MoveOps[] = {
  * argument.
  */
 static InstOpcodeMnemonic g_BinaryOps[] = {
+  /* TODO(karl) - Check what other instructions should be using g_OperandSize_v
+   * and g_OpreandSize_o to check sizes (using new flag OperandSizeIgnore66 to
+   * help differentiate sizes).
+   */
   {g_prefix0F_pair, 0x63, InstPacksswb, g_Mm_G_Operand, g_Mm_E_Operand,
    g_MMX_or_SSE2, g_no_flags},
   {g_prefix0F_pair, 0x6B, InstPackssdw, g_Mm_G_Operand, g_Mm_E_Operand,
@@ -465,6 +531,10 @@ static InstOpcodeMnemonic g_BinaryOps[] = {
    g_SSE2, g_no_flags},
   {g_prefix0F_pair, 0xEF, InstPxor, g_Mm_G_Operand, g_Mm_E_Operand,
    g_MMX_or_SSE2, g_no_flags},
+  {g_prefixF20F_only, 0x5F, InstMaxsd, g_Xmm_G_Operand, g_Xmm_E_Operand,
+   g_SSE2, g_no_flags},
+  {g_prefixF30F_only, 0x51, InstSqrtss, g_Xmm_G_Operand, g_Xmm_E_Operand,
+   g_SSE, g_no_flags},
 };
 
 void DefineSseOpcodes() {
@@ -499,6 +569,11 @@ void DefineSseOpcodes() {
       }
     }
   }
+
+  /* TODO(karl) - Check what other instructions should be using g_OperandSize_v
+   * and g_OpreandSize_o to check sizes (using new flag OperandSizeIgnore66 to
+   * help differentiate sizes).
+   */
 
   /* Define other forms of MMX and XMM operations. */
 
@@ -727,22 +802,19 @@ void DefineSseOpcodes() {
   DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
-  DefineOpcodePrefix(Prefix660F);
-  DefineOpcode(0x73,
-               NACLi_SSE2x,
-               InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b),
-               InstPslldq);
-  DefineOperand(Opcode7, OpFlag(OperandExtendsOpcode));
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet) | OpFlag(OpUse));
-  DefineOperand(I_Operand, OpFlag(OpUse));
-
+  /* Note: The Intel manual claims that the first operand is an
+   * Mmx_G_Operand. However, this is not possible, since Opcode 6
+   * is in the same corresponding bits of the ModRm byte. Test runs
+   * of xed and objdump appear to match that the field should be
+   * the effective address (Mmx_E_Operand) instead. -- Karl
+   */
   DefineOpcodePrefix(Prefix0F);
   DefineOpcode(0x71,
                NACLi_MMX,
                InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b),
                InstPsllw);
   DefineOperand(Opcode6, OpFlag(OperandExtendsOpcode));
-  DefineOperand(Mmx_G_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+  DefineOperand(Mmx_E_Operand, OpFlag(OpSet) | OpFlag(OpUse)); /* G? */
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcodePrefix(Prefix660F);
@@ -751,16 +823,22 @@ void DefineSseOpcodes() {
                InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b),
                InstPsllw);
   DefineOperand(Opcode6, OpFlag(OperandExtendsOpcode));
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpSet) | OpFlag(OpUse)); /* G? */
   DefineOperand(I_Operand, OpFlag(OpUse));
 
+  /* Note: The Intel manual claims that the first operand is an
+   * Mmx_G_Operand. However, this is not possible, since Opcode 6
+   * is in the same corresponding bits of the ModRm byte. Test runs
+   * of xed and objdump appear to match that the field should be
+   * the effective address (Mmx_E_Operand) instead. -- Karl
+   */
   DefineOpcodePrefix(Prefix0F);
   DefineOpcode(0x72,
                NACLi_MMX,
                InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b),
                InstPslld);
   DefineOperand(Opcode6, OpFlag(OperandExtendsOpcode));
-  DefineOperand(Mmx_G_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+  DefineOperand(Mmx_E_Operand, OpFlag(OpSet) | OpFlag(OpUse)); /* G? */
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcodePrefix(Prefix660F);
@@ -769,16 +847,22 @@ void DefineSseOpcodes() {
                InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b),
                InstPslld);
   DefineOperand(Opcode6, OpFlag(OperandExtendsOpcode));
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpSet) | OpFlag(OpUse)); /* G? */
   DefineOperand(I_Operand, OpFlag(OpUse));
 
+  /* Note: The Intel manual claims that the first operand is an
+   * Mmx_G_Operand. However, this is not possible, since Opcode 6
+   * is in the same corresponding bits of the ModRm byte. Test runs
+   * of xed and objdump appear to match that the field should be
+   * the effective address (Mmx_E_Operand) instead. -- Karl
+   */
   DefineOpcodePrefix(Prefix0F);
   DefineOpcode(0x73,
                NACLi_MMX,
                InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b),
                InstPsllq);
   DefineOperand(Opcode6, OpFlag(OperandExtendsOpcode));
-  DefineOperand(Mmx_G_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+  DefineOperand(Mmx_E_Operand, OpFlag(OpSet) | OpFlag(OpUse)); /* G? */
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcodePrefix(Prefix660F);
@@ -787,16 +871,37 @@ void DefineSseOpcodes() {
                InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b),
                InstPsllq);
   DefineOperand(Opcode6, OpFlag(OperandExtendsOpcode));
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
+  /* Note: The Intel manual claims that the first operand is an
+   * Mmx_G_Operand. However, this is not possible, since Opcode 7
+   * is in the same corresponding bits of the ModRm byte. Test runs
+   * of xed and objdump appear to match that the field should be
+   * the effective address (Mmx_E_Operand) instead. -- Karl
+   */
+  DefineOpcodePrefix(Prefix660F);
+  DefineOpcode(0x73,
+               NACLi_SSE2x,
+               InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b),
+               InstPslldq);
+  DefineOperand(Opcode7, OpFlag(OperandExtendsOpcode));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpSet) | OpFlag(OpUse)); /* G? */
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
+  /* Note: The Intel manual claims that the first operand is an
+   * Mmx_G_Operand. However, this is not possible, since Opcode 4
+   * is in the same corresponding bits of the ModRm byte. Test runs
+   * of xed and objdump appear to match that the field should be
+   * the effective address (Mmx_E_Operand) instead. -- Karl
+   */
   DefineOpcodePrefix(Prefix0F);
   DefineOpcode(0x71,
                NACLi_MMX,
                InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b),
                InstPsraw);
   DefineOperand(Opcode4, OpFlag(OperandExtendsOpcode));
-  DefineOperand(Mmx_G_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(Mmx_E_Operand, OpFlag(OpUse) | OpFlag(OpSet)); /* G? */
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcodePrefix(Prefix660F);
@@ -805,16 +910,22 @@ void DefineSseOpcodes() {
                InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b),
                InstPsraw);
   DefineOperand(Opcode4, OpFlag(OperandExtendsOpcode));
-  DefineOperand(Xmm_G_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse) | OpFlag(OpSet)); /* G? */
   DefineOperand(I_Operand, OpFlag(OpUse));
 
+  /* Note: The Intel manual claims that the first operand is an
+   * Mmx_G_Operand. However, this is not possible, since Opcode 4
+   * is in the same corresponding bits of the ModRm byte. Test runs
+   * of xed and objdump appear to match that the field should be
+   * the effective address (Mmx_E_Operand) instead. -- Karl
+   */
   DefineOpcodePrefix(Prefix0F);
   DefineOpcode(0x72,
                NACLi_MMX,
                InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b),
                InstPsrad);
   DefineOperand(Opcode4, OpFlag(OperandExtendsOpcode));
-  DefineOperand(Mmx_G_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(Mmx_E_Operand, OpFlag(OpUse) | OpFlag(OpSet)); /* G? */
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcodePrefix(Prefix660F);
@@ -823,25 +934,37 @@ void DefineSseOpcodes() {
                InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b),
                InstPsrad);
   DefineOperand(Opcode4, OpFlag(OperandExtendsOpcode));
-  DefineOperand(Xmm_G_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse) | OpFlag(OpSet)); /* G? */
   DefineOperand(I_Operand, OpFlag(OpUse));
 
+  /* Note: The Intel manual claims that the first operand is an
+   * Mmx_G_Operand. However, this is not possible, since Opcode 3
+   * is in the same corresponding bits of the ModRm byte. Test runs
+   * of xed and objdump appear to match that the field should be
+   * the effective address (Mmx_E_Operand) instead. -- Karl
+   */
   DefineOpcodePrefix(Prefix660F);
   DefineOpcode(0x73,
                NACLi_SSE2x,
                InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b),
                InstPsrldq);
   DefineOperand(Opcode3, OpFlag(OperandExtendsOpcode));
-  DefineOperand(Xmm_G_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse) | OpFlag(OpSet)); /* G? */
   DefineOperand(I_Operand, OpFlag(OpUse));
 
+  /* Note: The Intel manual claims that the first operand is an
+   * Mmx_G_Operand. However, this is not possible, since Opcode 3
+   * is in the same corresponding bits of the ModRm byte. Test runs
+   * of xed and objdump appear to match that the field should be
+   * the effective address (Mmx_E_Operand) instead. -- Karl
+   */
   DefineOpcodePrefix(Prefix0F);
   DefineOpcode(0x71,
                NACLi_MMX,
                InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b),
                InstPsrlw);
   DefineOperand(Opcode2, OpFlag(OperandExtendsOpcode));
-  DefineOperand(Mmx_G_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(Mmx_E_Operand, OpFlag(OpUse) | OpFlag(OpSet));  /* G? */
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcodePrefix(Prefix660F);
@@ -850,16 +973,22 @@ void DefineSseOpcodes() {
                InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b),
                InstPsrlw);
   DefineOperand(Opcode2, OpFlag(OperandExtendsOpcode));
-  DefineOperand(Xmm_G_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse) | OpFlag(OpSet)); /* G? */
   DefineOperand(I_Operand, OpFlag(OpUse));
 
+  /* Note: The Intel manual claims that the first operand is an
+   * Mmx_G_Operand. However, this is not possible, since Opcode 2
+   * is in the same corresponding bits of the ModRm byte. Test runs
+   * of xed and objdump appear to match that the field should be
+   * the effective address (Mmx_E_Operand) instead. -- Karl
+   */
   DefineOpcodePrefix(Prefix0F);
   DefineOpcode(0x72,
                NACLi_MMX,
                InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b),
                InstPsrld);
   DefineOperand(Opcode2, OpFlag(OperandExtendsOpcode));
-  DefineOperand(Mmx_G_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(Mmx_E_Operand, OpFlag(OpUse) | OpFlag(OpSet)); /* G? */
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcodePrefix(Prefix660F);
@@ -868,16 +997,23 @@ void DefineSseOpcodes() {
                InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b),
                InstPsrld);
   DefineOperand(Opcode2, OpFlag(OperandExtendsOpcode));
-  DefineOperand(Xmm_G_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse) | OpFlag(OpSet)); /* G? */
   DefineOperand(I_Operand, OpFlag(OpUse));
 
+
+  /* Note: The Intel manual claims that the first operand is an
+   * Mmx_G_Operand. However, this is not possible, since Opcode 2
+   * is in the same corresponding bits of the ModRm byte. Test runs
+   * of xed and objdump appear to match that the field should be
+   * the effective address (Mmx_E_Operand) instead. -- Karl
+   */
   DefineOpcodePrefix(Prefix0F);
   DefineOpcode(0x73,
                NACLi_MMX,
                InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b),
                InstPsrlq);
   DefineOperand(Opcode2, OpFlag(OperandExtendsOpcode));
-  DefineOperand(Mmx_G_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(Mmx_E_Operand, OpFlag(OpUse) | OpFlag(OpSet)); /* G? */
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcodePrefix(Prefix660F);
@@ -886,7 +1022,7 @@ void DefineSseOpcodes() {
                InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b),
                InstPsrlq);
   DefineOperand(Opcode2, OpFlag(OperandExtendsOpcode));
-  DefineOperand(Xmm_G_Operand, OpFlag(OpUse) | OpFlag(OpSet));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpUse) | OpFlag(OpSet)); /* G? */
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcodePrefix(Prefix660F38);
@@ -1001,10 +1137,11 @@ void DefineSseOpcodes() {
   DefineOpcodePrefix(PrefixF20F);
   DefineOpcode(0xc2,
                NACLi_SSE2,
-               InstFlag(OpcodeUsesModRm),
-               InstCmpsd);
+               InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeHasImmed_b),
+               InstCmpsd_xmm);
   DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
   DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+  DefineOperand(I_Operand, OpFlag(OpUse));
 
   /* f2 0f 5a /r  cvtsd2ss xmm1, xmm2/m64  SSE2 */
   DefineOpcodePrefix(PrefixF20F);
@@ -1120,8 +1257,8 @@ void DefineSseOpcodes() {
                NACLi_SSE2,
                InstFlag(OpcodeUsesModRm),
                InstMovapd);
-  DefineOperand(Xmm_G_Operand, OpFlag(OpSet));
-  DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
+  DefineOperand(Xmm_E_Operand, OpFlag(OpSet));
+  DefineOperand(Xmm_G_Operand, OpFlag(OpUse));
 
   /* 0f 28 /r  movaps xmm1, xmm2/m128  SSE RexR */
   DefineOpcodePrefix(Prefix0F);

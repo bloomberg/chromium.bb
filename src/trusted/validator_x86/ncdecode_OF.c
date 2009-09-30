@@ -80,6 +80,24 @@ static void DefineCmovCC(uint8_t opcode, InstMnemonic name) {
   DefineOperand(E_Operand, OpFlag(OpUse));
 }
 
+static void DefineBswap() {
+  uint8_t i;
+  for (i = 0; i < 8; ++i) {
+    DefineOpcode(0xC8 + i, NACLi_386,
+                 InstFlag(OperandSize_v) | InstFlag(OpcodePlusR),
+                 InstBswap);
+    DefineOperand(OpcodeBaseMinus0 + i, OpFlag(OperandExtendsOpcode));
+    DefineOperand(G_OpcodeBase, OpFlag(OpSet) | OpFlag(OpUse));
+
+    DefineOpcode(0xC8 + i, NACLi_386,
+                 InstFlag(Opcode64Only) | InstFlag(OperandSize_o) |
+                 InstFlag(OpcodePlusR),
+                 InstBswap);
+    DefineOperand(OpcodeBaseMinus0 + i, OpFlag(OperandExtendsOpcode));
+    DefineOperand(G_OpcodeBase, OpFlag(OpSet) | OpFlag(OpUse));
+  }
+}
+
 void Define0FOpcodes() {
   DefineOpcodePrefix(Prefix0F);
 
@@ -114,6 +132,8 @@ void Define0FOpcodes() {
   DefineCmovCC(0x4d, InstCmovnl);
   DefineCmovCC(0x4e, InstCmovle);
   DefineCmovCC(0x4f, InstCmovnle);
+
+  DefineOpcode(0x77, NACLi_MMX, 0, InstEmms);
 
   /* JMPcc */
   DefineJmp0FPair(0x80, InstJo);
@@ -256,4 +276,6 @@ void Define0FOpcodes() {
                InstMovsx);
   DefineOperand(G_Operand, OpFlag(OpSet));
   DefineOperand(Ew_Operand, OpFlag(OpUse));
+
+  DefineBswap();
 }
