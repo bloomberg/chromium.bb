@@ -25,6 +25,7 @@
 // Implementations are below.
 - (NSView*)infoBarContainerView;
 - (NSView*)toolbarView;
+- (NSView*)extensionShelfView;
 @end
 
 @implementation BrowserWindowController (ExposedForTesting)
@@ -34,6 +35,10 @@
 
 - (NSView*)toolbarView {
   return [toolbarController_ view];
+}
+
+- (NSView*)extensionShelfView {
+  return [extensionShelfController_ view];
 }
 @end
 
@@ -166,12 +171,25 @@ TEST_F(BrowserWindowControllerTest, TestIncognitoWidthSpace) {
 }
 #endif
 
-@interface BrowserWindowControllerResizePong : BrowserWindowController {
-}
-@end
+namespace {
+// Verifies that the toolbar, infobar, tab content area, download shelf, and
+// extension shelf completely fill their window's contentView.
+void CheckViewPositions(BrowserWindowController* controller) {
+  NSRect contentView = [[[controller window] contentView] bounds];
+  NSRect toolbar = [[controller toolbarView] frame];
+  NSRect infobar = [[controller infoBarContainerView] frame];
+  NSRect contentArea = [[controller tabContentArea] frame];
+  NSRect download = [[[controller downloadShelf] view] frame];
+  NSRect extension = [[controller extensionShelfView] frame];
 
-@implementation BrowserWindowControllerResizePong
-@end
+  EXPECT_EQ(NSMinY(contentView), NSMinY(extension));
+  EXPECT_EQ(NSMaxY(extension), NSMinY(download));
+  EXPECT_EQ(NSMaxY(download), NSMinY(contentArea));
+  EXPECT_EQ(NSMaxY(contentArea), NSMinY(infobar));
+  EXPECT_EQ(NSMaxY(infobar), NSMinY(toolbar));
+  EXPECT_EQ(NSMaxY(contentView), NSMaxY(toolbar));
+}
+}  // end namespace
 
 // Test to make sure resizing and relaying-out subviews works correctly.
 TEST_F(BrowserWindowControllerTest, TestResizeViews) {
@@ -179,6 +197,7 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
   NSView* contentView = [[tabstrip window] contentView];
   NSView* toolbar = [controller_ toolbarView];
   NSView* infobar = [controller_ infoBarContainerView];
+  NSView* extensionShelf = [controller_ extensionShelfView];
 
   // We need to muck with the views a bit to put us in a consistent state before
   // we start resizing.  In particular, we need to move the tab strip to be
@@ -190,76 +209,35 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
   tabstripFrame.origin.y = NSMaxY([contentView frame]);
   [tabstrip setFrame:tabstripFrame];
 
-  // Make sure each view is as tall as we expect.
-  ASSERT_EQ(36, NSHeight([toolbar frame]));
-  ASSERT_EQ(0, NSHeight([infobar frame]));
-
-
-  // TODO(rohitrao):rewrite and reenable
-#if 0
-  NSView* contentArea = [controller_ tabContentArea];
+  // The download shelf is created lazily.  Force-create it and set its initial
+  // height to 0.
+  NSView* download = [[controller_ downloadShelf] view];
+  [controller_ resizeView:download newHeight:0];
 
   // Force a layout and check each view's frame.
-  // contentView should be at 0,0 800x600
-  // contentArea should be at 0,0 800x561
-  // infobar should be at 0,561 800x0
-  // toolbar should be at 0,561 800x39
   [controller_ layoutSubviews];
-  EXPECT_TRUE(NSEqualRects([contentView frame], NSMakeRect(0, 0, 800, 600)));
-  EXPECT_TRUE(NSEqualRects([contentArea frame], NSMakeRect(0, 0, 800, 561)));
-  EXPECT_TRUE(NSEqualRects([infobar frame], NSMakeRect(0, 561, 800, 0)));
-  EXPECT_TRUE(NSEqualRects([toolbar frame], NSMakeRect(0, 561, 800, 39)));
+  CheckViewPositions(controller_);
+
+  // Add an extension shelf and recheck.
+  [controller_ resizeView:extensionShelf newHeight:40];
+  CheckViewPositions(controller_);
 
   // Expand the infobar to 60px and recheck
-  // contentView should be at 0,0 800x600
-  // contentArea should be at 0,0 800x501
-  // infobar should be at 0,501 800x60
-  // toolbar should be at 0,561 800x39
   [controller_ resizeView:infobar newHeight:60];
-  EXPECT_TRUE(NSEqualRects([contentView frame], NSMakeRect(0, 0, 800, 600)));
-  EXPECT_TRUE(NSEqualRects([contentArea frame], NSMakeRect(0, 0, 800, 501)));
-  EXPECT_TRUE(NSEqualRects([infobar frame], NSMakeRect(0, 501, 800, 60)));
-  EXPECT_TRUE(NSEqualRects([toolbar frame], NSMakeRect(0, 561, 800, 39)));
+  CheckViewPositions(controller_);
 
   // Expand the toolbar to 64px and recheck
-  // contentView should be at 0,0 800x600
-  // contentArea should be at 0,0 800x476
-  // infobar should be at 0,476 800x60
-  // toolbar should be at 0,536 800x64
   [controller_ resizeView:toolbar newHeight:64];
-  EXPECT_TRUE(NSEqualRects([contentView frame], NSMakeRect(0, 0, 800, 600)));
-  EXPECT_TRUE(NSEqualRects([contentArea frame], NSMakeRect(0, 0, 800, 476)));
-  EXPECT_TRUE(NSEqualRects([infobar frame], NSMakeRect(0, 476, 800, 60)));
-  EXPECT_TRUE(NSEqualRects([toolbar frame], NSMakeRect(0, 536, 800, 64)));
+  CheckViewPositions(controller_);
 
   // Add a 30px download shelf and recheck
-  // contentView should be at 0,0 800x600
-  // download should be at 0,0 800x30
-  // contentArea should be at 0,30 800x446
-  // infobar should be at 0,476 800x60
-  // toolbar should be at 0,536 800x64
-  NSView* download = [[controller_ downloadShelf] view];
   [controller_ resizeView:download newHeight:30];
-  EXPECT_TRUE(NSEqualRects([contentView frame], NSMakeRect(0, 0, 800, 600)));
-  EXPECT_TRUE(NSEqualRects([download frame], NSMakeRect(0, 0, 800, 30)));
-  EXPECT_TRUE(NSEqualRects([contentArea frame], NSMakeRect(0, 30, 800, 446)));
-  EXPECT_TRUE(NSEqualRects([infobar frame], NSMakeRect(0, 476, 800, 60)));
-  EXPECT_TRUE(NSEqualRects([toolbar frame], NSMakeRect(0, 536, 800, 64)));
+  CheckViewPositions(controller_);
 
   // Shrink the infobar to 0px and toolbar to 39px and recheck
-  // contentView should be at 0,0 800x600
-  // download should be at 0,0 800x30
-  // contentArea should be at 0,30 800x531
-  // infobar should be at 0,561 800x0
-  // toolbar should be at 0,561 800x39
   [controller_ resizeView:infobar newHeight:0];
   [controller_ resizeView:toolbar newHeight:39];
-  EXPECT_TRUE(NSEqualRects([contentView frame], NSMakeRect(0, 0, 800, 600)));
-  EXPECT_TRUE(NSEqualRects([download frame], NSMakeRect(0, 0, 800, 30)));
-  EXPECT_TRUE(NSEqualRects([contentArea frame], NSMakeRect(0, 30, 800, 531)));
-  EXPECT_TRUE(NSEqualRects([infobar frame], NSMakeRect(0, 561, 800, 0)));
-  EXPECT_TRUE(NSEqualRects([toolbar frame], NSMakeRect(0, 561, 800, 39)));
-#endif
+  CheckViewPositions(controller_);
 }
 
 TEST_F(BrowserWindowControllerTest, TestTopLeftForBubble) {
