@@ -1282,10 +1282,13 @@ void Browser::ShowControlPanel() {
 
 // static
 void Browser::SetNewHomePagePrefs(PrefService* prefs) {
-  prefs->SetString(prefs::kHomePage,
-      ASCIIToWide(GoogleURLTracker::kDefaultGoogleHomepage));
-  prefs->SetBoolean(prefs::kHomePageIsNewTabPage, false);
-  prefs->SetBoolean(prefs::kShowHomeButton, true);
+  if (!prefs->HasPrefPath(prefs::kHomePage))
+    prefs->SetString(prefs::kHomePage,
+        ASCIIToWide(GoogleURLTracker::kDefaultGoogleHomepage));
+  if (!prefs->HasPrefPath(prefs::kHomePageIsNewTabPage))
+    prefs->SetBoolean(prefs::kHomePageIsNewTabPage, false);
+  if (!prefs->HasPrefPath(prefs::kShowHomeButton))
+    prefs->SetBoolean(prefs::kShowHomeButton, true);
 }
 
 // static
