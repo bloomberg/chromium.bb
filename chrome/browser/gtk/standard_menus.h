@@ -49,8 +49,8 @@ struct MenuCreateMaterial {
   // toolbar_view.cc::GetAcceleratorInfo().
   bool only_show;
 
-  // If non-NULL, specifies a custom submenu to be used.
-  // The menu lifetime must at least match this menu's lifetime.
+  // If non-NULL, specifies a custom submenu to be used. MenuGtk will take
+  // ownership of this submenu.
   MenuGtk* custom_submenu;
 };
 

@@ -107,7 +107,6 @@ struct MenuCreateMaterial standard_app_menu_materials[] = {
 
 }  // namespace
 
-
 const MenuCreateMaterial* GetStandardPageMenu(Profile* profile,
                                               MenuGtk::Delegate* delegate) {
   EncodingMenuController controller;

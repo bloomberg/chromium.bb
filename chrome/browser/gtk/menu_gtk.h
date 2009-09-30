@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 
 #include <string>
+#include <vector>
 
 #include "base/task.h"
 #include "chrome/common/owned_widget_gtk.h"
@@ -149,6 +150,9 @@ class MenuGtk {
   // menu items from getting activated when we are setting up the
   // menu.
   static bool block_activation_;
+
+  // We must free these at shutdown.
+  std::vector<MenuGtk*> submenus_we_own_;
 
   ScopedRunnableMethodFactory<MenuGtk> factory_;
 };

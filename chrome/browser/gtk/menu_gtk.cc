@@ -41,6 +41,7 @@ MenuGtk::MenuGtk(MenuGtk::Delegate* delegate, bool load)
 
 MenuGtk::~MenuGtk() {
   menu_.Destroy();
+  STLDeleteContainerPointers(submenus_we_own_.begin(), submenus_we_own_.end());
   if (dummy_accel_group_)
     g_object_unref(dummy_accel_group_);
 }
@@ -173,6 +174,7 @@ void MenuGtk::BuildMenuIn(GtkWidget* menu,
     } else if (menu_data->custom_submenu) {
       gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item),
                                 menu_data->custom_submenu->menu_.get());
+      submenus_we_own_.push_back(menu_data->custom_submenu);
     }
 
     if ((menu_data->only_show || accel_group) && menu_data->accel_key) {
