@@ -203,7 +203,7 @@ class TestRunnerThread(threading.Thread):
 
   def GetNoResponseResult(self):
     """Returns a generic no response result for last test."""
-    result = TestResult(StringBuffer(), self.browser)
+    result = TestResult(StringBuffer(), self.browser, self.verbose)
     result.noResponse(self.test)
     return result
 
