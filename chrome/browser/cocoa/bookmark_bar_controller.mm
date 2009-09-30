@@ -25,6 +25,7 @@
 #include "chrome/common/pref_service.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
+#import "third_party/mozilla/include/NSPasteboard+Utils.h"
 
 // Specialization of NSButton that responds to middle-clicks. By default,
 // NSButton ignores them.
@@ -386,6 +387,17 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
                        node,
                        BookmarkEditor::SHOW_TREE,
                        nil);
+}
+
+- (IBAction)copyBookmark:(id)sender {
+  BookmarkNode* node = [self nodeFromMenuItem:sender];
+  const std::string spec = node->GetURL().spec();
+  NSString* url = base::SysUTF8ToNSString(spec);
+  NSString* title = base::SysWideToNSString(node->GetTitle());
+  NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
+  [pasteboard declareURLPasteboardWithAdditionalTypes:[NSArray array]
+                                                owner:nil];
+  [pasteboard setDataForURL:url title:title];
 }
 
 - (IBAction)deleteBookmark:(id)sender {

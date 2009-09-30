@@ -104,6 +104,7 @@ class PrefService;
 - (IBAction)openBookmarkInNewWindow:(id)sender;
 - (IBAction)openBookmarkInIncognitoWindow:(id)sender;
 - (IBAction)editBookmark:(id)sender;
+- (IBAction)copyBookmark:(id)sender;
 - (IBAction)deleteBookmark:(id)sender;
 // From a context menu over the bar, ...
 - (IBAction)openAllBookmarks:(id)sender;
