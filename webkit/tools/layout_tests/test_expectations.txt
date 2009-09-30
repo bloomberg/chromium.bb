@@ -166,8 +166,7 @@ WONTFIX SKIP : LayoutTests/webarchive/adopt-inline-styled-node-webarchive.html =
 // between a key event and a search event.  You cannot count on this
 // always being exactly the same, so we allow this to either PASS or FAIL
 // but not CRASH or TIMEOUT.
-WONTFIX DEBUG SLOW WIN LINUX : LayoutTests/fast/forms/search-event-delay.html = FAIL PASS
-WONTFIX DEBUG SLOW MAC : LayoutTests/fast/forms/search-event-delay.html = FAIL
+WONTFIX DEBUG SLOW WIN MAC LINUX : LayoutTests/fast/forms/search-event-delay.html = FAIL PASS
 
 // Chrome uses different keyboard accelerators from those used by Safari, so
 // these tests will always fail.
@@ -2283,4 +2282,6 @@ BUG_SENORBLANCO : LayoutTests/fast/js/toString-stack-overflow.html = FAIL
 BUG_SENORBLANCO WIN : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
 BUG_SENORBLANCO : LayoutTests/http/tests/globalhistory/history-delegate-basic-302-redirect.html = FAIL
 BUG_SENORBLANCO : LayoutTests/http/tests/globalhistory/history-delegate-basic-refresh-redirect.html = FAIL
-BUG_SENORBLANCO LINUX : LayoutTests/svg/custom/circular-marker-reference-3.svg = FAIL
+
+// WebKit update 48937:48947
+BUG_SENORBLANCO WIN LINUX : LayoutTests/fast/repaint/transform-absolute-in-positioned-container.html = FAIL
