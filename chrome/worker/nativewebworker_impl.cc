@@ -109,7 +109,12 @@ WebKit::WebWorker* NativeWebWorkerImpl::create(
 }
 
 NativeWebWorkerImpl::NativeWebWorkerImpl(WebKit::WebWorkerClient* client)
-    : client_(client) {
+    : client_(client),
+      nap_(NULL),
+      channel_(NULL),
+      upcall_thread_(NULL) {
+  descs_[0] = NULL;
+  descs_[1] = NULL;
 }
 
 NativeWebWorkerImpl::~NativeWebWorkerImpl() {
