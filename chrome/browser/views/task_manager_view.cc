@@ -113,12 +113,18 @@ std::wstring TaskManagerTableModel::GetText(int row, int col_id) {
       return model_->GetResourceGoatsTeleported(row);
 
     case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
+      if (!model_->IsResourceFirstInGroup(row))
+        return std::wstring();
       return model_->GetResourceWebCoreImageCacheSize(row);
 
     case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
+      if (!model_->IsResourceFirstInGroup(row))
+        return std::wstring();
       return model_->GetResourceWebCoreScriptsCacheSize(row);
 
     case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
+      if (!model_->IsResourceFirstInGroup(row))
+        return std::wstring();
       return model_->GetResourceWebCoreCSSCacheSize(row);
 
     default:

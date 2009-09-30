@@ -32,9 +32,8 @@ class TaskManagerTabContentsResource : public TaskManager::Resource {
   base::ProcessHandle GetProcess() const;
   TabContents* GetTabContents() const;
 
-  virtual std::wstring GetWebCoreImageCacheSize();
-  virtual std::wstring GetWebCoreScriptsCacheSize();
-  virtual std::wstring GetWebCoreCSSCacheSize();
+  virtual bool ReportsCacheStats() const { return true; }
+  virtual WebKit::WebCache::ResourceTypeStats GetWebCoreCacheStats() const;
 
   // TabContents always provide the network usage.
   bool SupportNetworkUsage() const { return true; }
@@ -44,8 +43,6 @@ class TaskManagerTabContentsResource : public TaskManager::Resource {
       const WebKit::WebCache::ResourceTypeStats& stats);
 
  private:
-  void UpdateResourceStats();
-
   TabContents* tab_contents_;
   base::ProcessHandle process_;
   int pid_;
@@ -55,7 +52,7 @@ class TaskManagerTabContentsResource : public TaskManager::Resource {
   // for an update unless a query is already outstanding.
   WebKit::WebCache::ResourceTypeStats stats_;
   // This flag is true if we are waiting for the renderer to report its stats.
-  bool pending_stats_update_;
+  mutable bool pending_stats_update_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerTabContentsResource);
 };

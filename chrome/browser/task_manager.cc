@@ -25,11 +25,13 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 
+namespace {
+
 // The delay between updates of the information (in ms).
-static const int kUpdateTimeMs = 1000;
+const int kUpdateTimeMs = 1000;
 
 template <class T>
-static int ValueCompare(T value1, T value2) {
+int ValueCompare(T value1, T value2) {
   if (value1 < value2)
     return -1;
   if (value1 == value2)
@@ -37,18 +39,12 @@ static int ValueCompare(T value1, T value2) {
   return 1;
 }
 
-// TaskManager::Resource default impls.
-
-std::wstring TaskManager::Resource::GetWebCoreImageCacheSize() {
-  return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
+std::wstring FormatStatsSize(const WebKit::WebCache::ResourceTypeStat& stat) {
+  return l10n_util::GetStringF(IDS_TASK_MANAGER_CACHE_SIZE_CELL_TEXT,
+      FormatBytes(stat.size, DATA_UNITS_KILOBYTE, false),
+      FormatBytes(stat.liveSize, DATA_UNITS_KILOBYTE, false));
 }
 
-std::wstring TaskManager::Resource::GetWebCoreScriptsCacheSize() {
-  return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
-}
-
-std::wstring TaskManager::Resource::GetWebCoreCSSCacheSize() {
-  return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -176,19 +172,31 @@ std::wstring TaskManagerModel::GetResourceGoatsTeleported(int index) const {
 std::wstring TaskManagerModel::GetResourceWebCoreImageCacheSize(
     int index) const {
   DCHECK(index < ResourceCount());
-  return resources_[index]->GetWebCoreImageCacheSize();
+  if (!resources_[index]->ReportsCacheStats())
+    return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
+  const WebKit::WebCache::ResourceTypeStats stats(
+      resources_[index]->GetWebCoreCacheStats());
+  return FormatStatsSize(stats.images);
 }
 
 std::wstring TaskManagerModel::GetResourceWebCoreScriptsCacheSize(
     int index) const {
   DCHECK(index < ResourceCount());
-  return resources_[index]->GetWebCoreScriptsCacheSize();
+  if (!resources_[index]->ReportsCacheStats())
+    return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
+  const WebKit::WebCache::ResourceTypeStats stats(
+      resources_[index]->GetWebCoreCacheStats());
+  return FormatStatsSize(stats.scripts);
 }
 
 std::wstring TaskManagerModel::GetResourceWebCoreCSSCacheSize(
     int index) const {
   DCHECK(index < ResourceCount());
-  return resources_[index]->GetWebCoreCSSCacheSize();
+  if (!resources_[index]->ReportsCacheStats())
+    return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
+  const WebKit::WebCache::ResourceTypeStats stats(
+      resources_[index]->GetWebCoreCacheStats());
+  return FormatStatsSize(stats.cssStyleSheets);
 }
 
 
@@ -266,29 +274,19 @@ int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
       return ValueCompare<int>(GetCPUUsage(resources_[row1]),
                                GetCPUUsage(resources_[row2]));
 
-    case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN: {
-      base::ProcessMetrics* pm1;
-      base::ProcessMetrics* pm2;
-      if (!GetProcessMetricsForRows(row1, row2, &pm1, &pm2))
-        return 0;
-      return ValueCompare<size_t>(GetPrivateMemory(pm1),
-                                  GetPrivateMemory(pm2));
-    }
-
-    case IDS_TASK_MANAGER_SHARED_MEM_COLUMN: {
-      base::ProcessMetrics* pm1;
-      base::ProcessMetrics* pm2;
-      if (!GetProcessMetricsForRows(row1, row2, &pm1, &pm2))
-        return 0;
-      return ValueCompare<size_t>(GetSharedMemory(pm1),
-                                  GetSharedMemory(pm2));
-    }
-
+    case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:
+    case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:
     case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN: {
       base::ProcessMetrics* pm1;
       base::ProcessMetrics* pm2;
       if (!GetProcessMetricsForRows(row1, row2, &pm1, &pm2))
         return 0;
+      if (col_id == IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN) {
+        return ValueCompare<size_t>(GetPrivateMemory(pm1),
+                                    GetPrivateMemory(pm2));
+      }
+      if (col_id == IDS_TASK_MANAGER_SHARED_MEM_COLUMN)
+        return ValueCompare<size_t>(GetSharedMemory(pm1), GetSharedMemory(pm2));
       return ValueCompare<size_t>(GetPhysicalMemory(pm1),
                                   GetPhysicalMemory(pm2));
     }
@@ -297,6 +295,23 @@ int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
       int proc1_id = base::GetProcId(resources_[row1]->GetProcess());
       int proc2_id = base::GetProcId(resources_[row2]->GetProcess());
       return ValueCompare<int>(proc1_id, proc2_id);
+    }
+
+    case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
+    case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
+    case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN: {
+      WebKit::WebCache::ResourceTypeStats stats1 = { { 0 } };
+      WebKit::WebCache::ResourceTypeStats stats2 = { { 0 } };
+      if (resources_[row1]->ReportsCacheStats())
+        stats1 = resources_[row1]->GetWebCoreCacheStats();
+      if (resources_[row2]->ReportsCacheStats())
+        stats2 = resources_[row2]->GetWebCoreCacheStats();
+      if (col_id == IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN)
+        return ValueCompare<size_t>(stats1.images.size, stats2.images.size);
+      if (col_id == IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN)
+        return ValueCompare<size_t>(stats1.scripts.size, stats2.scripts.size);
+      return ValueCompare<size_t>(stats1.cssStyleSheets.size,
+                                  stats2.cssStyleSheets.size);
     }
 
     default:

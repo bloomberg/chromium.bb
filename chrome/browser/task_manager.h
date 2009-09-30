@@ -47,13 +47,14 @@ class TaskManager {
     virtual SkBitmap GetIcon() const = 0;
     virtual base::ProcessHandle GetProcess() const = 0;
 
-    virtual std::wstring GetWebCoreImageCacheSize();
-    virtual std::wstring GetWebCoreScriptsCacheSize();
-    virtual std::wstring GetWebCoreCSSCacheSize();
+    virtual bool ReportsCacheStats() const { return false; }
+    virtual WebKit::WebCache::ResourceTypeStats GetWebCoreCacheStats() const {
+      return WebKit::WebCache::ResourceTypeStats();
+    }
 
     // A helper function for ActivateFocusedTab.  Returns NULL by default
     // because not all resources have an assoiciated tab.
-    virtual TabContents* GetTabContents() const {return NULL;}
+    virtual TabContents* GetTabContents() const { return NULL; }
 
     // Whether this resource does report the network usage accurately.
     // This controls whether 0 or N/A is displayed when no bytes have been
