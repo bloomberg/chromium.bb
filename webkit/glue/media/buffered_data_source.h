@@ -51,6 +51,8 @@ class BufferedResourceLoader :
   // |callback| is called with the following values:
   // - net::OK
   //   The request has started successfully.
+  // - net::ERR_REQUEST_RANGE_NOT_SATISFIABLE
+  //   A range request was made to the server but the server doesn't support it.
   // - net::ERR_FAILED
   //   The request has failed because of an error with the network.
   // - net::ERR_INVALID_RESPONSE
@@ -82,10 +84,6 @@ class BufferedResourceLoader :
   // Gets the original size of the file requested. If this value is -1, then
   // the size is unknown.
   virtual int64 instance_size() { return instance_size_; }
-
-  // Returns true if the response for this loader is a partial response.
-  // It means a 206 response in HTTP/HTTPS protocol.
-  virtual bool partial_response() { return partial_response_; }
 
   /////////////////////////////////////////////////////////////////////////////
   // webkit_glue::ResourceLoaderBridge::Peer implementations.
@@ -139,17 +137,9 @@ class BufferedResourceLoader :
   // A sliding window of buffer.
   scoped_ptr<media::SeekableBuffer> buffer_;
 
-  // True if resource loading was deferred.
   bool deferred_;
-
-  // True if resource loading has completed.
   bool completed_;
-
-  // True if a range request was made.
   bool range_requested_;
-
-  // True if response data received is a partial range.
-  bool partial_response_;
 
   webkit_glue::MediaResourceLoaderBridgeFactory* bridge_factory_;
   GURL url_;
@@ -267,6 +257,10 @@ class BufferedDataSource : public media::DataSource {
   // initial request is received.
   void InitialStartCallback(int error);
 
+  // Callback method for |probe_loader_|. This method is called when the
+  // response for probe request is received.
+  void ProbeStartCallback(int error);
+
   // Callback method to be passed to BufferedResourceLoader during range
   // request. Once a resource request has started, this method will be called
   // with the error code. This method will be executed on the thread
@@ -299,6 +293,9 @@ class BufferedDataSource : public media::DataSource {
   // A resource loader for the media resource.
   scoped_refptr<BufferedResourceLoader> loader_;
 
+  // A resource loader that probes the server's ability to serve range requests.
+  scoped_refptr<BufferedResourceLoader> probe_loader_;
+
   // Callback method from the pipeline for initialization.
   scoped_ptr<media::FilterCallback> initialize_callback_;
 
@@ -309,6 +306,12 @@ class BufferedDataSource : public media::DataSource {
   uint8* read_buffer_;
   base::Time read_submitted_time_;
   int read_attempts_;
+
+  // This flag is set to true if the initial request has started.
+  bool initial_response_received_;
+
+  // This flag is set to true if the probe request has started.
+  bool probe_response_received_;
 
   // This buffer is intermediate, we use it for BufferedResourceLoader to write
   // to. And when read in BufferedResourceLoader is done, we copy data from
