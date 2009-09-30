@@ -20,7 +20,7 @@
 #include "chrome/test/test_browser_window.h"
 
 static const char* kTestUser = "chrome.p13n.test@gmail.com";
-static const char* kTestPassword = "g00gl3g00gl3";
+static const char* kTestPassword = "passwd";
 
 // A PSS subtype to inject.
 class ProfileSyncServiceForWizardTest : public ProfileSyncService {
