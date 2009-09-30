@@ -222,10 +222,8 @@ static void PrintModules(const CodeModules *modules) {
   }
 }
 
-//=============================================================================
-static void Start(Options *options) {
-  string minidump_file([options->minidumpPath fileSystemRepresentation]);
-
+static void ProcessSingleReport(Options *options, NSString *file_path) {
+  string minidump_file([file_path fileSystemRepresentation]);  
   BasicSourceLineResolver resolver;
   string search_dir = options->searchDir ?
     [options->searchDir fileSystemRepresentation] : "";
@@ -304,9 +302,34 @@ static void Start(Options *options) {
     printf("\nThread %d:", requesting_thread);
     PrintRegisters(process_state.threads()->at(requesting_thread), cpu);
   }
-        
+
   // Print information about modules
   PrintModules(process_state.modules());
+}
+
+//=============================================================================
+static void Start(Options *options) {
+  NSFileManager *manager = [NSFileManager defaultManager];
+  NSString *minidump_path = options->minidumpPath;
+  BOOL is_dir = NO;
+  BOOL file_exists = [manager fileExistsAtPath:minidump_path
+                                   isDirectory:&is_dir];
+  if (file_exists && is_dir) {
+    NSDirectoryEnumerator *enumerator =
+      [manager enumeratorAtPath:minidump_path];
+    NSString *current_file = nil;
+    while ((current_file = [enumerator nextObject])) {
+      if ([[current_file pathExtension] isEqualTo:@"dmp"]) {
+        printf("Attempting to process report: %s\n",
+               [current_file cStringUsingEncoding:NSASCIIStringEncoding]);
+        NSString *full_path =
+          [minidump_path stringByAppendingPathComponent:current_file];
+        ProcessSingleReport(options, full_path);
+      }
+    }
+  } else if (file_exists) {
+    ProcessSingleReport(options, minidump_path);
+  }
 }
 
 //=============================================================================
