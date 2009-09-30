@@ -110,6 +110,7 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       navigations_suspended_(false),
       suspended_nav_message_(NULL),
       run_modal_reply_msg_(NULL),
+      is_showing_before_unload_dialog_(false),
       is_waiting_for_unload_ack_(false),
       unload_ack_is_for_cross_site_transition_(false),
       are_javascript_messages_suppressed_(false),
@@ -577,6 +578,13 @@ void RenderViewHost::JavaScriptMessageBoxClosed(IPC::Message* reply_msg,
 
     StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
   }
+
+  if (is_showing_before_unload_dialog_ && !success) {
+    // If a beforeunload dialog is canceled, we need to stop the throbber from
+    // spinning, since we forced it to start spinning in Navigate.
+    delegate_->DidStopLoading(this);
+  }
+  is_showing_before_unload_dialog_ = false;
 
   ViewHostMsg_RunJavaScriptMessage::WriteReplyParams(reply_msg,
                                                      success, prompt);
@@ -1301,6 +1309,7 @@ void RenderViewHost::OnMsgRunBeforeUnloadConfirm(const GURL& frame_url,
   // shouldn't process input events.
   process()->set_ignore_input_events(true);
   StopHangMonitorTimeout();
+  is_showing_before_unload_dialog_ = true;
   delegate_->RunBeforeUnloadConfirm(message, reply_msg);
 }
 

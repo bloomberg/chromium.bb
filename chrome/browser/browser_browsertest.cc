@@ -18,6 +18,11 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
+const std::string BEFORE_UNLOAD_HTML =
+    "<html><head><title>beforeunload</title></head><body>"
+    "<script>window.onbeforeunload=function(e){return 'foo'}</script>"
+    "</body></html>";
+
 namespace {
 
 // Given a page title, returns the expected window caption string.
@@ -137,4 +142,22 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ThirtyFourTabs) {
   } else {
     EXPECT_LE(CountRenderProcessHosts(), 23);
   }
+}
+
+// Test for crbug.com/22004.  Reloading a page with a before unload handler and
+// then canceling the dialog should not leave the throbber spinning.
+IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
+  GURL url("data:text/html," + BEFORE_UNLOAD_HTML);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Navigate to another page, but click cancel in the dialog.  Make sure that
+  // the throbber stops spinning.
+  browser()->Reload();
+  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  alert->CloseModalDialog();
+  EXPECT_FALSE(browser()->GetSelectedTabContents()->is_loading());
+
+  // Clear the beforeunload handler so the test can easily exit.
+  browser()->GetSelectedTabContents()->render_view_host()->
+      ExecuteJavascriptInWebFrame(L"", L"onbeforeunload=null;");
 }
