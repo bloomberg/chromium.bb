@@ -27,9 +27,7 @@ void MetaTableHelper::PrimeCache(const std::string& db_name, sqlite3* db) {
   if (dummy.step() != SQLITE_ROW)
     return;
 
-  // TODO(jar): Temporary removal of the following optimization... be sure to
-  // put it back in RSN (if we verify that it was not causing crashes).
-  // sqlite3Preload(db);
+  sqlite3Preload(db);
 }
 
 MetaTableHelper::MetaTableHelper() : db_(NULL) {
