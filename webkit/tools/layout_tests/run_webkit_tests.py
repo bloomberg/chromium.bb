@@ -42,6 +42,7 @@ from layout_package import json_results_generator
 from layout_package import path_utils
 from layout_package import test_failures
 from layout_package import test_shell_thread
+from layout_package import test_files
 from test_types import fuzzy_image_diff
 from test_types import image_diff
 from test_types import test_type_base
@@ -111,15 +112,6 @@ class TestRunner:
   """A class for managing running a series of tests on a series of test
   files."""
 
-  # When collecting test cases, we include any file with these extensions.
-  _supported_file_extensions = set(['.html', '.shtml', '.xml', '.xhtml', '.pl',
-                                    '.php', '.svg'])
-  # When collecting test cases, skip these directories
-  _skipped_directories = set(['.svn', '_svn', 'resources', 'script-tests'])
-
-  # Top-level directories to shard when running tests.
-  _shardable_directories = set(['chrome', 'LayoutTests', 'pending'])
-
   HTTP_SUBDIR = os.sep.join(['', 'http', ''])
 
   # The per-test timeout in milliseconds, if no --time-out-ms option was given
@@ -127,12 +119,11 @@ class TestRunner:
   # test_shell.exe.
   DEFAULT_TEST_TIMEOUT_MS = 10 * 1000
 
-  def __init__(self, options, paths):
-    """Collect a list of files to test.
+  def __init__(self, options):
+    """Initialize test runner data structures.
 
     Args:
       options: a dictionary of command line options
-      paths: a list of paths to crawl looking for test files
     """
     self._options = options
 
@@ -145,18 +136,6 @@ class TestRunner:
     self._test_files_list = None
     self._file_dir = path_utils.GetAbsolutePath(os.path.dirname(sys.argv[0]))
 
-    if options.lint_test_files:
-      # Creating the expecations for each platform/target pair does all the
-      # test list parsing and ensures it's correct syntax (e.g. no dupes).
-      for platform in test_expectations.TestExpectationsFile.PLATFORMS:
-        self._ParseExpectations(platform, is_debug_mode=True)
-        self._ParseExpectations(platform, is_debug_mode=False)
-    else:
-      self._GatherTestFiles(paths)
-      self._expectations = self._ParseExpectations(options.platform,
-          options.target == 'Debug')
-      self._PrepareListsAndPrintOutput()
-
   def __del__(self):
     logging.info("flushing stdout")
     sys.stdout.flush()
@@ -166,47 +145,15 @@ class TestRunner:
     # Stop the http server.
     self._http_server.Stop()
 
-  def _GatherTestFiles(self, paths):
-    """Generate a set of test files and place them in self._test_files
+  def GatherFilePaths(self, paths):
+    """Find all the files to test.
 
-    Args:
-      paths: a list of command line paths relative to the webkit/tests
-             directory.  glob patterns are ok.
-    """
-    paths_to_walk = set()
-    # if paths is empty, provide a pre-defined list.
-    if not paths:
-        paths = TestRunner._shardable_directories
-    for path in paths:
-      # If there's an * in the name, assume it's a glob pattern.
-      path = os.path.join(path_utils.LayoutTestsDir(path), path)
-      if path.find('*') > -1:
-        filenames = glob.glob(path)
-        paths_to_walk.update(filenames)
-      else:
-        paths_to_walk.add(path)
-
-    # Now walk all the paths passed in on the command line and get filenames
-    for path in paths_to_walk:
-      if os.path.isfile(path) and self._HasSupportedExtension(path):
-        self._test_files.add(os.path.normpath(path))
-        continue
-
-      for root, dirs, files in os.walk(path):
-        # don't walk skipped directories and sub directories
-        if os.path.basename(root) in TestRunner._skipped_directories:
-          del dirs[:]
-          continue
-
-        for filename in files:
-          if self._HasSupportedExtension(filename):
-            filename = os.path.join(root, filename)
-            filename = os.path.normpath(filename)
-            self._test_files.add(filename)
-
+    args:
+      paths: a list of globs to use instead of the defaults."""
+    self._test_files = test_files.GatherTestFiles(paths)
     logging.info('Found: %d tests' % len(self._test_files))
 
-  def _ParseExpectations(self, platform, is_debug_mode):
+  def ParseExpectations(self, platform, is_debug_mode):
     """Parse the expectations from the test_list files and return a data
     structure holding them. Throws an error if the test_list files have invalid
     syntax.
@@ -217,17 +164,16 @@ class TestRunner:
       test_files = self._test_files
 
     try:
-      return test_expectations.TestExpectations(test_files,
-                                                self._file_dir,
-                                                platform,
-                                                is_debug_mode)
+      self._expectations = test_expectations.TestExpectations(test_files,
+          self._file_dir, platform, is_debug_mode)
+      return self._expectations
     except Exception, err:
       if self._options.lint_test_files:
         print str(err)
       else:
         raise err
 
-  def _PrepareListsAndPrintOutput(self):
+  def PrepareListsAndPrintOutput(self):
     """Create appropriate subsets of test lists and print test counts.
 
     Create appropriate subsets of self._tests_files in
@@ -329,7 +275,7 @@ class TestRunner:
       tests_run_file.close()
 
       # update expectations so that the stats are calculated correctly
-      self._expectations = self._ParseExpectations(
+      self._expectations = self.ParseExpectations(
           path_utils.PlatformName(), options.target == 'Debug')
     else:
       logging.info('Run: %d tests' % len(self._test_files))
@@ -351,12 +297,6 @@ class TestRunner:
                   len(self._expectations.GetDeferredTimeouts())))
     logging.info('Expected crashes: %d fixable tests' %
                  len(self._expectations.GetFixableCrashes()))
-
-  def _HasSupportedExtension(self, filename):
-    """Return true if filename is one of the file extensions we want to run a
-    test on."""
-    extension = os.path.splitext(filename)[1]
-    return extension in TestRunner._supported_file_extensions
 
   def AddTestType(self, test_type):
     """Add a TestType to the TestRunner."""
@@ -389,7 +329,7 @@ class TestRunner:
     test_file = test_file_parts[1]
 
     return_value = directory
-    while directory in TestRunner._shardable_directories:
+    while directory in test_files.SHARDABLE_DIRECTORIES:
       test_file_parts = test_file.split(os.sep, 1)
       directory = test_file_parts[0]
       return_value = os.path.join(return_value, directory)
@@ -1083,13 +1023,21 @@ def main(options, args):
   # Create the output directory if it doesn't already exist.
   path_utils.MaybeMakeDirectory(options.results_directory)
 
-  test_runner = TestRunner(options, paths)
+  test_runner = TestRunner(options)
+  test_runner.GatherFilePaths(paths)
 
   if options.lint_test_files:
-    # Just creating the TestRunner checks the syntax of the test lists.
+    # Creating the expecations for each platform/target pair does all the
+    # test list parsing and ensures it's correct syntax (e.g. no dupes).
+    for platform in test_expectations.TestExpectationsFile.PLATFORMS:
+      test_runner.ParseExpectations(platform, is_debug_mode=True)
+      test_runner.ParseExpectations(platform, is_debug_mode=False)
     print ("If there are no fail messages, errors or exceptions, then the "
         "lint succeeded.")
     return
+  else:
+    test_runner.ParseExpectations(options.platform, options.target == 'Debug')
+    test_runner.PrepareListsAndPrintOutput()
 
   if options.find_baselines:
     # Record where we found each baseline, then exit.
