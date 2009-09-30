@@ -858,3 +858,13 @@
    fun:_ZN3net22MacTrustedCertificates27CopyTrustedCertificateArrayEv
    fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
 }
+{
+   bug_23416
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN11webkit_glue16WebURLLoaderImplC2Ev
+   ...
+   fun:_ZN11webkit_glue20ImageResourceFetcherC1ERK4GURLPN6WebKit8WebFrameEiiP14CallbackRunnerI6Tuple2IPS0_RK8SkBitmapEE
+   fun:_ZN10RenderView13DownloadImageEiRK4GURLi
+}
+
