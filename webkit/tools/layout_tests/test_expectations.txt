@@ -2252,9 +2252,6 @@ BUG22554 SKIP : LayoutTests/mathml = FAIL
 // WebKit merge 48610:48642
 BUG_PAUL LINUX DEBUG : LayoutTests/fast/backgrounds/size/contain-and-cover.html = PASS FAIL
 
-// WebKit update 48700:48721
-BUG_DGLAZKOV : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-abort-readyState-shouldDispatchEvent.html = FAIL
-
 // WebKit update 48734:48747
 BUG_LEVIN : LayoutTests/platform/gtk/scrollbars/overflow-scrollbar-horizontal-wheel-scroll.html = TIMEOUT
 
