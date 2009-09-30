@@ -455,7 +455,14 @@ void ExtensionShelf::Toolstrip::LayoutWindow() {
   // level widget, we need to do some coordinate conversion to get this right.
   gfx::Point origin(-kToolstripPadding, 0);
   if (expanded_ || mole_animation_->IsAnimating()) {
-    origin.set_y(GetShelfView()->height() - window_size.height());
+    if (shelf_->IsOnTop()) {
+      if (handle_visible_)
+        origin.set_y(-GetHandlePreferredSize().height());
+      else
+        origin.set_y(0);
+    } else {
+      origin.set_y(GetShelfView()->height() - window_size.height());
+    }
     views::View::ConvertPointToView(GetShelfView(), shelf_->GetRootView(),
                                     &origin);
   } else {
@@ -763,10 +770,6 @@ gfx::Size ExtensionShelf::GetPreferredSize() {
 }
 
 void ExtensionShelf::ChildPreferredSizeChanged(View* child) {
-  Toolstrip *toolstrip = ToolstripForView(static_cast<ExtensionView*>(child));
-  if (!toolstrip)
-    return;
-
   PreferredSizeChanged();
 }
 
