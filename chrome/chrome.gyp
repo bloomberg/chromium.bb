@@ -6352,6 +6352,13 @@
                 },
               },
             },
+            'Release': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkTimeCodeGeneration': '1',
+                },
+              },
+            }
           },
         },
       ]},  # 'targets'
