@@ -47,29 +47,48 @@ bool GetGLFormatType(texture::Format format,
                      GLenum *gl_format,
                      GLenum *gl_type) {
   switch (format) {
-    case texture::kXRGB8:
+    case texture::kXRGB8: {
       *internal_format = GL_RGB;
       *gl_format = GL_BGRA;
       *gl_type = GL_UNSIGNED_BYTE;
-      return true;
-    case texture::kARGB8:
+      break;
+    }
+    case texture::kARGB8: {
       *internal_format = GL_RGBA;
       *gl_format = GL_BGRA;
       *gl_type = GL_UNSIGNED_BYTE;
-      return true;
-    case texture::kABGR16F:
+      break;
+    }
+    case texture::kABGR16F: {
       *internal_format = GL_RGBA16F_ARB;
       *gl_format = GL_RGBA;
       *gl_type = GL_HALF_FLOAT_ARB;
-      return true;
-    case texture::kDXT1:
+      break;
+    }
+    case texture::kR32F: {
+      *internal_format = GL_LUMINANCE32F_ARB;
+      *gl_format = GL_LUMINANCE;
+      *gl_type = GL_FLOAT;
+      break;
+    }
+    case texture::kABGR32F: {
+      *internal_format = GL_RGBA32F_ARB;
+      *gl_format = GL_BGRA;
+      *gl_type = GL_FLOAT;
+      break;
+    }
+    case texture::kDXT1: {
       *internal_format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
       *gl_format = 0;
       *gl_type = 0;
-      return true;
+      break;
+    }
+    // TODO(petersont): Add DXT3/5 support.
     default:
       return false;
   }
+
+  return true;
 }
 
 // Helper class used to prepare image data to match the layout that

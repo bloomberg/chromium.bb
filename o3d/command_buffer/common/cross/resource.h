@@ -162,11 +162,13 @@ enum Flags {
 
 // Texel formats.
 enum Format {
+  kUnknown,
   kXRGB8,
   kARGB8,
   kABGR16F,
-  kDXT1,
-  kNumFormats
+  kR32F,
+  kABGR32F,
+  kDXT1
 };
 
 // Texture type.

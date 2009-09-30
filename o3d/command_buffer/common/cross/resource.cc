@@ -44,12 +44,16 @@ unsigned int GetBytesPerBlock(Format format) {
   switch (format) {
     case kXRGB8:
     case kARGB8:
+    case kR32F:
       return 4;
     case kABGR16F:
       return 8;
+    case kABGR32F:
+      return 16;
     case kDXT1:
       return 8;
     default:
+      // TODO(petersont): Add DXT3/5 support.
       LOG(FATAL) << "Invalid format";
       return 1;
   }
@@ -61,10 +65,13 @@ unsigned int GetBlockSizeX(Format format) {
     case kXRGB8:
     case kARGB8:
     case kABGR16F:
+    case kR32F:
+    case kABGR32F:
       return 1;
     case kDXT1:
       return 4;
     default:
+      // TODO(petersont): Add DXT3/5 support.
       LOG(FATAL) << "Invalid format";
       return 1;
   }

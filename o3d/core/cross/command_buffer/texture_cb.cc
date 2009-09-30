@@ -65,6 +65,10 @@ texture::Format CBFormatFromO3DFormat(Texture::Format format) {
       return texture::kARGB8;
     case Texture::ABGR16F:
       return texture::kABGR16F;
+    case Texture::R32F:
+      return texture::kR32F;
+    case Texture::ABGR32F:
+      return texture::kABGR32F;
     case Texture::DXT1:
       return texture::kDXT1;
       // TODO: DXT3/5. It's not yet supported by the command buffer
@@ -74,7 +78,7 @@ texture::Format CBFormatFromO3DFormat(Texture::Format format) {
   }
   // failed to find a matching format
   LOG(ERROR) << "Unrecognized Texture format type.";
-  return texture::kNumFormats;
+  return texture::kUnknown;
 }
 
 // Checks that enums match in value, so that they can be directly used in
@@ -267,7 +271,7 @@ Texture2DCB* Texture2DCB::Create(ServiceLocator* service_locator,
   RendererCB *renderer = static_cast<RendererCB *>(
       service_locator->GetService<Renderer>());
   texture::Format cb_format = CBFormatFromO3DFormat(format);
-  if (cb_format == texture::kNumFormats) {
+  if (cb_format == texture::kUnknown) {
     O3D_ERROR(service_locator)
         << "Unsupported format in Texture2DCB::Create.";
     return NULL;
@@ -482,7 +486,7 @@ TextureCUBECB* TextureCUBECB::Create(ServiceLocator* service_locator,
   RendererCB *renderer = static_cast<RendererCB *>(
       service_locator->GetService<Renderer>());
   texture::Format cb_format = CBFormatFromO3DFormat(format);
-  if (cb_format == texture::kNumFormats) {
+  if (cb_format == texture::kUnknown) {
     O3D_ERROR(service_locator)
         << "Unsupported format in Texture2DCB::Create.";
     return NULL;

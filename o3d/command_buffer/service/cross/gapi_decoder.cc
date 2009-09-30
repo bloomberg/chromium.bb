@@ -531,7 +531,7 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleCreateTexture2d(
   unsigned int max_levels =
       1 + base::bits::Log2Ceiling(std::max(width, height));
   if ((width == 0) || (height == 0) || (levels > max_levels) ||
-      (unused != 0) || (format >= texture::kNumFormats) || (levels == 0))
+      (unused != 0) || (format == texture::kUnknown) || (levels == 0))
     return BufferSyncInterface::kParseInvalidArguments;
   bool enable_render_surfaces = !!flags;
   return gapi_->CreateTexture2D(args.texture_id, width, height, levels,
@@ -558,7 +558,7 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleCreateTexture3d(
       1 + base::bits::Log2Ceiling(std::max(depth, std::max(width, height)));
   if ((width == 0) || (height == 0) || (depth == 0) ||
       (levels > max_levels) || (unused1 != 0) || (unused2 != 0) ||
-      (format >= texture::kNumFormats) || (levels == 0))
+      (format == texture::kUnknown) || (levels == 0))
     return BufferSyncInterface::kParseInvalidArguments;
   bool enable_render_surfaces = !!flags;
   return gapi_->CreateTexture3D(args.texture_id, width, height, depth, levels,
@@ -582,7 +582,7 @@ BufferSyncInterface::ParseError GAPIDecoder::HandleCreateTextureCube(
   unsigned int flags = cmd::CreateTextureCube::Flags::Get(levels_format_flags);
   unsigned int max_levels = 1 + base::bits::Log2Ceiling(side);
   if ((side == 0) || (levels > max_levels) || (unused1 != 0) ||
-      (unused2 != 0) || (format >= texture::kNumFormats) || (levels == 0))
+      (unused2 != 0) || (format == texture::kUnknown) || (levels == 0))
     return BufferSyncInterface::kParseInvalidArguments;
   bool enable_render_surfaces = !!flags;
   return gapi_->CreateTextureCube(args.texture_id, side, levels,
