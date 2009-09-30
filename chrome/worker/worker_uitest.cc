@@ -41,7 +41,9 @@ TEST_F(WorkerTest, MultipleWorkers) {
 #define WorkerFastLayoutTests DISABLED_WorkerFastLayoutTests
 #endif
 
-TEST_F(WorkerTest, WorkerFastLayoutTests) {
+// WorkerFastLayoutTests failed on all platforms since r27553.
+// http://crbug.com/23391
+TEST_F(WorkerTest, DISABLED_WorkerFastLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "stress-js-execution.html",
 #if defined(OS_WIN)
