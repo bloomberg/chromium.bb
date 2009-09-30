@@ -89,8 +89,7 @@ PREFIX :
 npapi::plugininstance::npp_newstream___npapi::pluginstream::open___npapi::pluginstreamurl::didreceiveresponse___webplugindelegatestub::ondidreceiveresponse___ipc::messagewithtuple<tuple1<pluginmsg_didreceiveresponseparams> >::dispatch<webplugindelegatestub,void (__thiscall webplugindelegatestub::*)(pluginmsg_didreceiveresponseparams const &)>
 
 # 20200
-PREFIX : `anonymous namespace'::purecall___realloc___wtf::fastrealloc___webcore::htmltokenizer::enlargescriptbuffer___webcore::htmltokenizer::parsecomment___webcore::htmltokenizer::parsetag
-PREFIX : `anonymous namespace'::invalidparameter___realloc___wtf::fastrealloc___webcore::htmltokenizer::enlargescriptbuffer___webcore::htmltokenizer::parsecomment___webcore::htmltokenizer::parsetag
+SUBSTRING : wtf::fastrealloc___webcore::htmltokenizer::enlargescriptbuffer___webcore::htmltokenizer::parsecomment___webcore::htmltokenizer::parsetag
 
 # 20291
 PREFIX : webplugindelegateimpl::flashwindowlesswndproc___webplugindelegateimpl::nativewndproc___base::messagepumpforui::dorunloop___base::messagepumpwin::run
@@ -139,8 +138,8 @@ PREFIX : v8::internal::invoke___v8::internal::execution::call___v8::function::ca
 PREFIX : tabrestoreservice::save___tabrestoreservice::~tabrestoreservice___tabrestoreservice::`scalar deleting destructor'
 
 # 23140
-PREFIX : ^hunspell_create_key
-PREFIX : hunspell_suggest___hunspell_suggest___hunspell_suggest
+PREFIX : hunspell_create_key
+SUBSTRING : hunspell_suggest___hunspell_suggest___hunspell_suggest
 
 # 23278
 SUBSTRING : webcore::xmlhttprequest::callreadystatechangelistener___webcore::xmlhttprequest::networkerror
