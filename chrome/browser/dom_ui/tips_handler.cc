@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -50,7 +52,7 @@ void TipsHandler::HandleGetTips(const Value* content) {
     }
   }
 
-  if (tips_cache_ != NULL && tips_cache_->GetSize() >= 0) {
+  if (tips_cache_ != NULL && tips_cache_->GetSize() != 0) {
     if (tips_cache_->GetInteger(
         WebResourceService::kCurrentTipPrefName, &current_tip_index) &&
         tips_cache_->GetList(
