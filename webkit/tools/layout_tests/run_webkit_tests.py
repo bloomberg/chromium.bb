@@ -337,6 +337,17 @@ class TestRunner:
 
     return return_value
 
+  def _GetTestInfoForFile(self, test_file):
+    """Returns the appropriate TestInfo object for the file. Mostly this
+    means that we look up the timeout value (in ms) to use for the given
+    test file. By default we use TestRunner.DEFAULT_TEST_TIMEOUT_MS
+    (currently 10 secs), but that can be overridden with the
+    --timeout-ms command line argument. Tests marked SLOW are allowed to
+    be up to ten times slower than the normal timeout value."""
+    if self._expectations.HasModifier(test_file, test_expectations.SLOW):
+      return TestInfo(test_file, str(10 * int(options.time_out_ms)))
+    return TestInfo(test_file, self._options.time_out_ms)
+
   def _GetTestFileQueue(self, test_files):
     """Create the thread safe queue of lists of (test filenames, test URIs)
     tuples. Each TestShellThread pulls a list from this queue and runs those
@@ -349,18 +360,18 @@ class TestRunner:
     Return:
       The Queue of lists of TestInfo objects.
     """
+    if self._options.experimental_fully_parallel:
+      filename_queue = Queue.Queue()
+      for test_file in test_files:
+       filename_queue.put(('.', [self._GetTestInfoForFile(test_file)]))
+      return filename_queue
+
     tests_by_dir = {}
     for test_file in test_files:
       directory = self._GetDirForTestFile(test_file)
       if directory not in tests_by_dir:
         tests_by_dir[directory] = []
-
-      if self._expectations.HasModifier(test_file, test_expectations.SLOW):
-        timeout = str(10 * int(options.time_out_ms))
-      else:
-        timeout = self._options.time_out_ms
-
-      tests_by_dir[directory].append(TestInfo(test_file, timeout))
+      tests_by_dir[directory].append(self._GetTestInfoForFile(test_file))
 
     # Sort by the number of tests in the dir so that the ones with the most
     # tests get run first in order to maximize parallelization. Number of tests
@@ -432,7 +443,8 @@ class TestRunner:
     filename_queue = self._GetTestFileQueue(test_files)
 
     # If we have http tests, the first one will be an http test.
-    if test_files and test_files[0].find(self.HTTP_SUBDIR) >= 0:
+    if ((test_files and test_files[0].find(self.HTTP_SUBDIR) >= 0)
+        or self._options.randomize_order):
       self._http_server.Start()
 
     # Instantiate TestShellThreads and start them.
@@ -509,6 +521,7 @@ class TestRunner:
     failures = {}
     test_timings = {}
     individual_test_timings = []
+    thread_timings = []
     try:
       for thread in threads:
         while thread.isAlive():
@@ -518,6 +531,9 @@ class TestRunner:
           # be interruptible by KeyboardInterrupt.
           thread.join(1.0)
         failures.update(thread.GetFailures())
+        thread_timings.append({ 'name': thread.getName(),
+                                'num_tests': thread.GetNumTests(),
+                                'total_time': thread.GetTotalTime()});
         test_timings.update(thread.GetDirectoryTimingStats())
         individual_test_timings.extend(thread.GetIndividualTestStats())
     except KeyboardInterrupt:
@@ -537,7 +553,18 @@ class TestRunner:
 
     print
     end_time = time.time()
-    logging.info("%f total testing time" % (end_time - start_time))
+
+    logging.info("%6.2f total testing time" % (end_time - start_time))
+    cuml_time = 0
+    logging.debug("Thread timing:")
+    for t in thread_timings:
+      logging.debug("    %10s: %5d tests, %6.2f secs" %
+                    (t['name'], t['num_tests'], t['total_time']))
+      cuml_time += t['total_time']
+    logging.debug("")
+
+    logging.debug("   %6.2f cumulative, %6.2f optimal" %
+                  (cuml_time, cuml_time / int(self._options.num_test_shells)))
 
     print
     self._PrintTimingStatistics(test_timings, individual_test_timings, failures)
@@ -1205,5 +1232,8 @@ if '__main__' == __name__:
                            default=False,
                            help="Prints a table mapping tests to their "
                                 "expected results")
+  option_parser.add_option("", "--experimental-fully-parallel",
+                           action="store_true", default=False,
+                           help="run all tests in parallel")
   options, args = option_parser.parse_args()
   main(options, args)

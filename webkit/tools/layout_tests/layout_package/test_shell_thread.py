@@ -189,6 +189,9 @@ class TestShellThread(threading.Thread):
     self._exception_info = None
     self._directory_timing_stats = {}
     self._test_stats = []
+    self._num_tests = 0
+    self._start_time = 0
+    self._stop_time = 0
 
     # Current directory of tests we're running.
     self._current_dir = None
@@ -223,16 +226,31 @@ class TestShellThread(threading.Thread):
     joining this thread."""
     return self._exception_info
 
+  def GetTotalTime(self):
+    return max(self._stop_time - self._start_time, 0.0)
+
+  def GetNumTests(self):
+    return self._num_tests
+
   def run(self):
     """Delegate main work to a helper method and watch for uncaught
     exceptions."""
+    self._start_time = time.time()
+    self._num_tests = 0
     try:
+      logging.debug('thread %s starting' % (self.getName()))
       self._Run()
+      logging.debug('thread %s done (%d tests)' % (self.getName(),
+                    self.GetNumTests()))
     except:
       # Save the exception for our caller to see.
       self._exception_info = sys.exc_info()
+      self._stop_time = time.time()
       # Re-raise it and die.
+      logging.error('thread %s dying: %s' % (self.getName(),
+                    self._exception_info))
       raise
+    self._stop_time = time.time()
 
   def _Run(self):
     """Main work entry point of the thread. Basically we pull urls from the
@@ -280,6 +298,7 @@ class TestShellThread(threading.Thread):
 
       # We have a url, run tests.
       batch_count += 1
+      self._num_tests += 1
       if self._options.run_singly:
         failures = self._RunTestSingly(test_info)
       else:
@@ -306,7 +325,6 @@ class TestShellThread(threading.Thread):
         # Bounce the shell and reset count.
         self._KillTestShell()
         batch_count = 0
-
 
   def _RunTestSingly(self, test_info):
     """Run a test in a separate thread, enforcing a hard time limit.
