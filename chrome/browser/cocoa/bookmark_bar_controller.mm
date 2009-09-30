@@ -484,11 +484,12 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 }
 
 // Return an appropriate width for the given bookmark button cell.
-// The "+1" is needed because, sometimes, Cocoa is off by one.
+// The "+2" is needed because, sometimes, Cocoa is off by a tad.
 // Example: for a bookmark named "Moma" or "SFGate", it is one pixel
-// too small.  For a bookmark named "SFGateFooWoo", it is just fine.
+// too small.  For "FBL" it is 2 pixels too small.
+// For a bookmark named "SFGateFooWoo", it is just fine.
 - (CGFloat)widthForBookmarkButtonCell:(NSCell*)cell {
-  CGFloat desired = [cell cellSize].width + 1;
+  CGFloat desired = [cell cellSize].width + 2;
   return std::min(desired, kDefaultBookmarkWidth);
 }
 
