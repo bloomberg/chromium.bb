@@ -42,12 +42,12 @@ namespace command_buffer {
 // Converts a texture format to a D3D texture format.
 D3DFORMAT TextureD3D9::D3DFormat(texture::Format format) {
   switch (format) {
-    case texture::XRGB8:  return D3DFMT_X8R8G8B8;
-    case texture::ARGB8:  return D3DFMT_A8R8G8B8;
-    case texture::ABGR16F:  return D3DFMT_A16B16G16R16F;
-    case texture::R32F:  return D3DFMT_R32F;
-    case texture::ABGR32F:  return D3DFMT_A32B32G32R32F;
-    case texture::DXT1:  return D3DFMT_DXT1;
+    case texture::kXRGB8:  return D3DFMT_X8R8G8B8;
+    case texture::kARGB8:  return D3DFMT_A8R8G8B8;
+    case texture::kABGR16F:  return D3DFMT_A16B16G16R16F;
+    case texture::kR32F:  return D3DFMT_R32F;
+    case texture::kABGR32F:  return D3DFMT_A32B32G32R32F;
+    case texture::kDXT1:  return D3DFMT_DXT1;
     // TODO(petersont): Add DXT3/5 support.
     default:  return D3DFMT_UNKNOWN;
   };
