@@ -27,6 +27,7 @@
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_disabled_infobar_delegate.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/google_url_tracker.h"
@@ -2326,6 +2327,17 @@ void Browser::InitCommandState() {
 #if defined(OS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(IDC_CONTROL_PANEL, true);
 #endif
+
+  // Set up any browser action commands that are installed.
+  ExtensionsService* service = profile()->GetExtensionsService();
+  if (service) {
+    std::vector<ExtensionAction*> browser_actions =
+        service->GetBrowserActions();
+    for (size_t i = 0; i < browser_actions.size(); ++i) {
+      command_updater_.UpdateCommandEnabled(browser_actions[i]->command_id(),
+                                            true);
+    }
+  }
 
   // Initialize other commands based on the window type.
   {
