@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_GTK_STANDARD_MENUS_H_
 #define CHROME_BROWSER_GTK_STANDARD_MENUS_H_
 
+#include "chrome/browser/gtk/menu_gtk.h"
+
 class Menu;
-class MenuGtk;
 class Profile;
 
 enum MenuItemType {
@@ -54,7 +55,9 @@ struct MenuCreateMaterial {
 };
 
 // Returns the menu construction data structure for the page menu.
-const MenuCreateMaterial* GetStandardPageMenu(MenuGtk* encodings_menu);
+// The parameters are used to construct the encodings menu.
+const MenuCreateMaterial* GetStandardPageMenu(Profile* profile,
+                                              MenuGtk::Delegate* delegate);
 
 // Returns the menu construction data structure for the app menu.
 const MenuCreateMaterial* GetStandardAppMenu();

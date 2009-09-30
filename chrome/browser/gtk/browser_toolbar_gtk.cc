@@ -103,33 +103,6 @@ BrowserToolbarGtk::~BrowserToolbarGtk() {
   g_object_unref(accel_group_);
 }
 
-// Construct an "encodings" menu based on profile settings.
-static MenuGtk* BuildEncodingsMenu(Profile* profile,
-                                   MenuGtk::Delegate* delegate) {
-  EncodingMenuController controller;
-  EncodingMenuController::EncodingMenuItemList items;
-  controller.GetEncodingMenuItems(profile, &items);
-
-  MenuGtk* menu = new MenuGtk(delegate, false);
-  GSList* radio_group = NULL;
-  for (EncodingMenuController::EncodingMenuItemList::const_iterator i =
-           items.begin();
-       i != items.end(); ++i) {
-    if (i == items.begin()) {
-      menu->AppendCheckMenuItemWithLabel(i->first, UTF16ToUTF8(i->second));
-    } else if (i->first == 0) {
-      menu->AppendSeparator();
-    } else {
-      GtkWidget* item =
-          gtk_radio_menu_item_new_with_label(radio_group,
-                                             UTF16ToUTF8(i->second).c_str());
-      radio_group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(item));
-      menu->AppendMenuItem(i->first, item);
-    }
-  }
-  return menu;
-}
-
 void BrowserToolbarGtk::Init(Profile* profile,
                              GtkWindow* top_level_window) {
   // Make sure to tell the location bar the profile before calling its Init.
@@ -222,8 +195,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
       theme_provider_->GetRTLEnabledPixbufNamed(IDR_MENU_PAGE));
   gtk_container_add(GTK_CONTAINER(page_menu), page_menu_image_);
 
-  encodings_menu_.reset(BuildEncodingsMenu(profile, this));
-  page_menu_.reset(new MenuGtk(this, GetStandardPageMenu(encodings_menu_.get()),
+  page_menu_.reset(new MenuGtk(this, GetStandardPageMenu(profile_, this),
                                accel_group_));
   gtk_box_pack_start(GTK_BOX(menus_hbox_), page_menu, FALSE, FALSE, 0);
 

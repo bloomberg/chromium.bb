@@ -189,7 +189,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   scoped_ptr<MenuGtk> page_menu_;
   scoped_ptr<MenuGtk> app_menu_;
-  scoped_ptr<MenuGtk> encodings_menu_;
 
   Browser* browser_;
   BrowserWindowGtk* window_;

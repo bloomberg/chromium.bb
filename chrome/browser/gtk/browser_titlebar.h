@@ -95,6 +95,9 @@ class BrowserTitlebar : public MenuGtk::Delegate,
   // change in the window.
   void UpdateTextColor();
 
+  // Show the menu that the user gets from left-clicking the favicon.
+  void ShowFaviconMenu(GdkEventButton* event);
+
   // Callback for changes to window state.  This includes
   // maximizing/restoring/minimizing the window.
   static gboolean OnWindowStateChanged(GtkWindow* window,
@@ -107,6 +110,10 @@ class BrowserTitlebar : public MenuGtk::Delegate,
 
   // Callback for min/max/close buttons.
   static void OnButtonClicked(GtkWidget* button, BrowserTitlebar* window);
+
+  // Callback for favicon.
+  static gboolean OnButtonPressed(GtkWidget* widget, GdkEventButton* event,
+                                  BrowserTitlebar* titlebar);
 
   // -- Context Menu -----------------------------------------------------------
 
@@ -165,6 +172,9 @@ class BrowserTitlebar : public MenuGtk::Delegate,
 
   // The context menu.
   scoped_ptr<MenuGtk> context_menu_;
+
+  // The favicon menu.
+  scoped_ptr<MenuGtk> favicon_menu_;
 
   // The throbber used when the window is in app mode or popup window mode.
   Throbber throbber_;

@@ -12,6 +12,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/encoding_menu_controller.h"
+#include "chrome/browser/profile.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
@@ -107,7 +108,31 @@ struct MenuCreateMaterial standard_app_menu_materials[] = {
 }  // namespace
 
 
-const MenuCreateMaterial* GetStandardPageMenu(MenuGtk* encodings_menu) {
+const MenuCreateMaterial* GetStandardPageMenu(Profile* profile,
+                                              MenuGtk::Delegate* delegate) {
+  EncodingMenuController controller;
+  EncodingMenuController::EncodingMenuItemList items;
+  controller.GetEncodingMenuItems(profile, &items);
+
+  MenuGtk* encodings_menu = new MenuGtk(delegate, false);
+  GSList* radio_group = NULL;
+  for (EncodingMenuController::EncodingMenuItemList::const_iterator i =
+           items.begin();
+       i != items.end(); ++i) {
+    if (i == items.begin()) {
+      encodings_menu->AppendCheckMenuItemWithLabel(i->first,
+                                                   UTF16ToUTF8(i->second));
+    } else if (i->first == 0) {
+      encodings_menu->AppendSeparator();
+    } else {
+      GtkWidget* item =
+          gtk_radio_menu_item_new_with_label(radio_group,
+                                             UTF16ToUTF8(i->second).c_str());
+      radio_group = gtk_radio_menu_item_get_group(GTK_RADIO_MENU_ITEM(item));
+      encodings_menu->AppendMenuItem(i->first, item);
+    }
+  }
+
   // Find the encoding menu and attach this menu.
   for (MenuCreateMaterial* entry = standard_page_menu_materials;
        entry->type != MENU_END; ++entry) {
