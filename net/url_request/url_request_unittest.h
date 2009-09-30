@@ -244,6 +244,8 @@ class BaseTestServer : public base::RefCounted<BaseTestServer> {
       : launcher_(connection_attempts, connection_timeout) { }
 
  public:
+  virtual ~BaseTestServer() { }
+
   void set_forking(bool forking) {
     launcher_.set_forking(forking);
   }
