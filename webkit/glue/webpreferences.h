@@ -57,6 +57,8 @@ struct WebPreferences {
 
   bool allow_universal_access_from_file_urls;
 
+  bool experimental_webgl_enabled;
+
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
   // the embedder to use the same default value.
@@ -94,7 +96,8 @@ struct WebPreferences {
         application_cache_enabled(false),
         tabs_to_links(true),
         user_style_sheet_enabled(false),
-        allow_universal_access_from_file_urls(false) {
+        allow_universal_access_from_file_urls(false),
+        experimental_webgl_enabled(false) {
   }
 
   void Apply(WebView* web_view) const;

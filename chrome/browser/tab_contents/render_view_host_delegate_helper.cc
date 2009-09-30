@@ -184,6 +184,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
       command_line.HasSwitch(switches::kEnableDatabases);
     web_prefs.session_storage_enabled =
       command_line.HasSwitch(switches::kEnableSessionStorage);
+    web_prefs.experimental_webgl_enabled =
+      command_line.HasSwitch(switches::kEnableExperimentalWebGL);
   }
 
   web_prefs.uses_universal_detector =

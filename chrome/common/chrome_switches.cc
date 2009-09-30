@@ -615,4 +615,7 @@ const wchar_t kExplicitlyAllowedPorts[] = L"explicitly-allowed-ports";
 // is launched on the command line (e.g. by Selenium).  Only needed on Mac.
 const wchar_t kActivateOnLaunch[] = L"activate-on-launch";
 
+// Enable experimental WebGL support.
+const wchar_t kEnableExperimentalWebGL[] = L"enable-webgl";
+
 }  // namespace switches

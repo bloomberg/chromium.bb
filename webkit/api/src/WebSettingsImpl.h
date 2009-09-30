@@ -81,6 +81,7 @@ namespace WebKit {
         virtual void setAllowUniversalAccessFromFileURLs(bool);
         virtual void setTextDirectionSubmenuInclusionBehaviorNeverIncluded();
         virtual void setOfflineWebApplicationCacheEnabled(bool);
+        virtual void setExperimentalWebGLEnabled(bool);
 
     private:
         WebCore::Settings* m_settings;

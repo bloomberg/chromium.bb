@@ -248,6 +248,8 @@ extern const wchar_t kExplicitlyAllowedPorts[];
 
 extern const wchar_t kActivateOnLaunch[];
 
+extern const wchar_t kEnableExperimentalWebGL[];
+
 }  // namespace switches
 
 #endif  // CHROME_COMMON_CHROME_SWITCHES_H_

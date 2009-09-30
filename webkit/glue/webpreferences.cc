@@ -75,6 +75,10 @@ void WebPreferences::Apply(WebView* web_view) const {
   // but also because it cause a possible crash in Editor::hasBidiSelection().
   settings->setTextDirectionSubmenuInclusionBehaviorNeverIncluded();
 
+  // Enable experimental WebGL support if requested on command line
+  // and support is compiled in.
+  settings->setExperimentalWebGLEnabled(experimental_webgl_enabled);
+
   // Web inspector settings need to be passed in differently.
   web_view->SetInspectorSettings(inspector_settings);
 
