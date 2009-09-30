@@ -104,7 +104,7 @@ BrowsingHistoryHandler::BrowsingHistoryHandler()
 
 BrowsingHistoryHandler::~BrowsingHistoryHandler() {
   cancelable_consumer_.CancelAllRequests();
-  if (remover_.get())
+  if (remover_)
     remover_->RemoveObserver(this);
 }
 
@@ -204,9 +204,9 @@ void BrowsingHistoryHandler::HandleDeleteDay(const Value* value) {
   base::Time begin_time = time.LocalMidnight();
   base::Time end_time = begin_time + base::TimeDelta::FromDays(1);
 
-  remover_.reset(new BrowsingDataRemover(dom_ui_->GetProfile(),
-                                         begin_time,
-                                         end_time));
+  remover_ = new BrowsingDataRemover(dom_ui_->GetProfile(),
+                                     begin_time,
+                                     end_time);
   remover_->AddObserver(this);
   remover_->Remove(BrowsingDataRemover::REMOVE_HISTORY |
                    BrowsingDataRemover::REMOVE_COOKIES |
@@ -215,8 +215,9 @@ void BrowsingHistoryHandler::HandleDeleteDay(const Value* value) {
 
 void BrowsingHistoryHandler::OnBrowsingDataRemoverDone() {
   dom_ui_->CallJavascriptFunction(L"deleteComplete");
-  remover_->RemoveObserver(this);
-  remover_.release();
+  // No need to remove ourselves as an observer as BrowsingDataRemover deletes
+  // itself after we return.
+  remover_ = NULL;
 }
 
 void BrowsingHistoryHandler::QueryComplete(

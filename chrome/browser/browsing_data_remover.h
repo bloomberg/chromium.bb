@@ -52,7 +52,6 @@ class BrowsingDataRemover : public NotificationObserver {
   // profile in the specified time range.
   BrowsingDataRemover(Profile* profile, TimePeriod time_period,
                       base::Time delete_end);
-  ~BrowsingDataRemover();
 
   // Removes the specified items related to browsing.
   void Remove(int remove_mask);
@@ -66,6 +65,12 @@ class BrowsingDataRemover : public NotificationObserver {
   static bool is_removing() { return removing_; }
 
  private:
+  // BrowsingDataRemover deletes itself (using DeleteTask) and is not supposed
+  // to be deleted by other objects so make destructor private and DeleteTask
+  // a friend.
+  friend class DeleteTask<BrowsingDataRemover>;
+  ~BrowsingDataRemover();
+
   // NotificationObserver method. Callback when TemplateURLModel has finished
   // loading. Deletes the entries from the model, and if we're not waiting on
   // anything else notifies observers and deletes this BrowsingDataRemover.
