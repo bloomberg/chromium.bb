@@ -43,21 +43,25 @@ for path in sys.argv[1:]:
     continue
   output_files = [node.GetOutputFilename() for node in root.GetOutputFiles()]
   output_headers = [file for file in output_files if file.endswith('.h')]
-  for build_type in ('Debug', 'Release'):
-    build_path = os.path.join(_SRC_PATH, 'chrome', build_type)
+  # Build output can be in any subdirectory of src.
+  paths = [d for d in os.listdir(_SRC_PATH) if
+           os.path.isdir(os.path.join(_SRC_PATH, d))]
+  for out_dir in paths:
+    for build_type in ('Debug', 'Release'):
+      build_path = os.path.join(_SRC_PATH, out_dir, build_type)
 
-    # We guess target file output based on path of the grd file (the first
-    # path component after 'src').
-    intermediate_path = os.path.join(build_path, 'obj',
-                                     'global_intermediate', path_components[1])
+      # We guess target file output based on path of the grd file (the first
+      # path component after 'src').
+      intermediate_path = os.path.join(build_path, 'obj',
+          'global_intermediate', path_components[1])
 
-    for header in output_headers:
-      full_path = os.path.normpath(os.path.join(intermediate_path, header))
-      if os.path.exists(full_path):
-        try:
-          os.remove(full_path)
-        except OSError, e:
+      for header in output_headers:
+        full_path = os.path.normpath(os.path.join(intermediate_path, header))
+        if os.path.exists(full_path):
+          try:
+            os.remove(full_path)
+          except OSError, e:
             fmt = 'Could not remove %s:  %s.  Continuing.\n'
             sys.stderr.write(fmt % (full_path, e))
-        else:
-          print 'Clobbered ' + full_path
+          else:
+            print 'Clobbered ' + full_path
