@@ -847,15 +847,46 @@ void PluginObject::AsyncTick() {
 
   ++pending_ticks_;
 
-  // Invoke Tick asynchronously if NPN_PluginThreadAsyncCall is supported.
-  // Otherwise invoke it synchronously.
-  int plugin_major, plugin_minor, browser_major, browser_minor;
-  NPN_Version(&plugin_major, &plugin_minor, &browser_major, &browser_minor);
-  if (browser_major > 0 ||
-      browser_minor >= NPVERS_HAS_PLUGIN_THREAD_ASYNC_CALL) {
-    NPN_PluginThreadAsyncCall(npp_, TickPluginObject, this);
+  // In Chrome NPN_PluginThreadAsyncCall doesn't seem to function properly.
+  // We resort to loading a data: url with zero bytes to get a tick callback
+  // asynchronously.
+  // TODO(vangelis): Remove this special path when Chrome's
+  // NPN_PluginThreadAsyncCall is fixed.
+  if (IsChrome()) {
+    class TickCallback : public StreamManager::FinishedCallback {
+     public:
+      explicit TickCallback(PluginObject* plugin_object)
+          : plugin_object_(plugin_object) {
+      }
+
+      virtual void Run(DownloadStream*,
+                       bool,
+                       const std::string&,
+                       const std::string&) {
+        plugin_object_->Tick();
+      }
+
+     private:
+      PluginObject* plugin_object_;
+    };
+
+    if (!stream_manager_->LoadURL("data:,", NULL, NULL, NULL,
+                                  new TickCallback(this), NP_NORMAL)) {
+      DLOG(ERROR) << "Chrome failed to access data url";
+      // If the async call fails then tick synchronously.
+      Tick();
+    }
   } else {
-    Tick();
+    // Invoke Tick asynchronously if NPN_PluginThreadAsyncCall is supported.
+    // Otherwise invoke it synchronously.
+    int plugin_major, plugin_minor, browser_major, browser_minor;
+    NPN_Version(&plugin_major, &plugin_minor, &browser_major, &browser_minor);
+    if (browser_major > 0 ||
+        browser_minor >= NPVERS_HAS_PLUGIN_THREAD_ASYNC_CALL) {
+      NPN_PluginThreadAsyncCall(npp_, TickPluginObject, this);
+    } else {
+      Tick();
+    }
   }
 }
 
