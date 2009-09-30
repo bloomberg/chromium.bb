@@ -15,7 +15,7 @@ class ExtensionAction;
 class Profile;
 class ToolbarView;
 namespace views {
-class ImageButton;
+class TextButton;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ class BrowserActionsContainer : public views::View,
 
  private:
   // The vector of browser actions (icons/image buttons for each action).
-  std::vector<views::ImageButton*> browser_action_views_;
+  std::vector<views::TextButton*> browser_action_views_;
 
   NotificationRegistrar registrar_;
 

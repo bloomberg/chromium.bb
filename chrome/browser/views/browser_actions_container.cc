@@ -15,21 +15,21 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "views/controls/button/image_button.h"
+#include "views/controls/button/text_button.h"
 
 // The size of the icon for page actions.
-static const int kIconSize = 16;
+static const int kIconSize = 30;
 
-// The padding between icons (pixels between each icon).
-static const int kIconHorizontalPadding = 10;
+// The padding between the browser actions and the omnibox/page menu.
+static const int kHorizontalPadding = 4;
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionImageView
 
-// The BrowserActionImageView is a specialization of the ImageButton class.
+// The BrowserActionImageView is a specialization of the TextButton class.
 // It acts on a ExtensionAction, in this case a BrowserAction and handles
 // loading the image for the button asynchronously on the file thread to
-class BrowserActionImageView : public views::ImageButton,
+class BrowserActionImageView : public views::TextButton,
                                public views::ButtonListener,
                                public ImageLoadingTracker::Observer {
  public:
@@ -66,10 +66,12 @@ class BrowserActionImageView : public views::ImageButton,
 BrowserActionImageView::BrowserActionImageView(
     ExtensionAction* browser_action, Extension* extension,
     BrowserActionsContainer* panel)
-    : ImageButton(this),
+    : TextButton(this, L""),
       browser_action_(browser_action),
       tracker_(NULL),
       panel_(panel) {
+  set_alignment(TextButton::ALIGN_CENTER);
+
   // Load the images this view needs asynchronously on the file thread. We'll
   // get a call back into OnImageLoaded if the image loads successfully. If not,
   // the ImageView will have no image and will not appear in the browser chrome.
@@ -100,9 +102,7 @@ void BrowserActionImageView::OnImageLoaded(SkBitmap* image, size_t index) {
   DCHECK(index < browser_action_icons_.size());
   browser_action_icons_[index] = *image;
   if (index == 0) {
-    SetImage(views::CustomButton::BS_NORMAL, image);
-    SetImage(views::CustomButton::BS_HOT, image);
-    SetImage(views::CustomButton::BS_PUSHED, image);
+    SetIcon(*image);
     SetTooltipText(ASCIIToWide(browser_action_->name()));
     panel_->OnBrowserActionVisibilityChanged();
   }
@@ -180,17 +180,16 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
 gfx::Size BrowserActionsContainer::GetPreferredSize() {
   if (browser_action_views_.empty())
     return gfx::Size(0, 0);
-  int width = kIconHorizontalPadding + browser_action_views_.size() *
-      (kIconSize + kIconHorizontalPadding);
+  int width = kHorizontalPadding * 2 +
+      browser_action_views_.size() * kIconSize;
   return gfx::Size(width, kIconSize);
 }
 
 void BrowserActionsContainer::Layout() {
   for (size_t i = 0; i < browser_action_views_.size(); ++i) {
-    views::ImageButton* view = browser_action_views_[i];
-    gfx::Size sz = view->GetPreferredSize();
-    int x = kIconHorizontalPadding + i * (kIconSize + kIconHorizontalPadding);
-    view->SetBounds(x, (height() - sz.height()) / 2, sz.width(), sz.height());
+    views::TextButton* view = browser_action_views_[i];
+    int x = kHorizontalPadding + i * kIconSize;
+    view->SetBounds(x, (height() - kIconSize) / 2, kIconSize, kIconSize);
   }
 }
 
