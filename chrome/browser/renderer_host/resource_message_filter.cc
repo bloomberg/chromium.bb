@@ -310,7 +310,6 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
                           OnDocumentWithTagClosed)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetAutoCorrectWord,
                                       OnGetAutoCorrectWord)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_ShowSpellingPanel, OnShowSpellingPanel)
       IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateSpellingPanelWithMisspelledWord,
                           OnUpdateSpellingPanelWithMisspelledWord)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DnsPrefetch, OnDnsPrefetch)
@@ -923,10 +922,6 @@ void ResourceMessageFilter::OnGetAutoCorrectWord(const std::wstring& word,
                                                    autocorrect_word);
   Send(reply_msg);
   return;
-}
-
-void ResourceMessageFilter::OnShowSpellingPanel(bool show) {
-  SpellCheckerPlatform::ShowSpellingPanel(show);
 }
 
 void ResourceMessageFilter::OnUpdateSpellingPanelWithMisspelledWord(
