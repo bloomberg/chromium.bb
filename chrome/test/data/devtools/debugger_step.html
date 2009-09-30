@@ -1,0 +1,25 @@
+<html>
+
+<script src='debugger_step.js'></script>
+<script>
+
+function a() {
+  var result = d(true);
+  printResult(result);
+}
+
+function printResult(r) {
+  var e = document.getElementById('result');
+  e.appendChild(document.createTextNode(r));
+}
+
+</script>
+
+<body >
+<p onclick="a()">
+Calculate
+</p>
+<div id='result'>Result = </div>
+
+</body>
+</html>

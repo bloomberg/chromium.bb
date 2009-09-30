@@ -50,6 +50,8 @@ const wchar_t kResourceTestPage[] = L"files/devtools/resource_test_page.html";
 const wchar_t kSimplePage[] = L"files/devtools/simple_page.html";
 const wchar_t kSyntaxErrorTestPage[] =
     L"files/devtools/script_syntax_error.html";
+const wchar_t kDebuggerStepTestPage[] =
+    L"files/devtools/debugger_step.html";
 
 
 class DevToolsSanityTest : public InProcessBrowserTest {
@@ -171,6 +173,21 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSetBreakpoint) {
 // Tests eval on call frame.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalOnCallFrame) {
   RunTest("testEvalOnCallFrame", kDebuggerTestPage);
+}
+
+// Tests step over functionality in the debugger.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepOver) {
+  RunTest("testStepOver", kDebuggerStepTestPage);
+}
+
+// Tests step out functionality in the debugger.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepOut) {
+  RunTest("testStepOut", kDebuggerStepTestPage);
+}
+
+// Tests step in functionality in the debugger.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepIn) {
+  RunTest("testStepIn", kDebuggerStepTestPage);
 }
 
 // Tests that execution continues automatically when there is a syntax error in

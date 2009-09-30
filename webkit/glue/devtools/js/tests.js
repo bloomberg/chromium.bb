@@ -729,6 +729,265 @@ TestSuite.prototype.testAutoContinueOnSyntaxError = function() {
 
 
 /**
+ * Checks current execution line against expectations.
+ * @param {WebInspector.SourceFrame} sourceFrame
+ * @param {number} lineNumber Expected line number
+ * @param {string} lineContent Expected line text
+ */
+TestSuite.prototype._checkExecutionLine = function(sourceFrame, lineNumber,
+                                                   lineContent) {
+  var sourceRow = sourceFrame.sourceRow(lineNumber);
+
+  var line = sourceRow.getElementsByClassName('webkit-line-content')[0];
+  this.assertEquals(lineNumber, sourceFrame.executionLine,
+                    'Unexpected execution line number.');
+  this.assertEquals(lineContent, line.textContent,
+                    'Unexpected execution line text.');
+
+  this.assertTrue(!!sourceRow, 'Execution line not found');
+  this.assertTrue(sourceRow.hasStyleClass('webkit-execution-line'),
+      'Execution line ' + lineNumber + ' is not highlighted. Class: ' +
+          sourceRow.className);
+}
+
+
+/**
+ * Checks that all expected scripts are present in the scripts list
+ * in the Scripts panel.
+ * @param {Array.<string>} expected Regular expressions describing
+ *     expected script names.
+ * @return {boolean} Whether all the scripts are in 'scripts-files' select
+ *     box
+ */
+TestSuite.prototype._scriptsAreParsed = function(expected) {
+  var scriptSelect = document.getElementById('scripts-files');
+  var options = scriptSelect.options;
+
+  // Check that at least all the expected scripts are present.
+  var missing = expected.slice(0);
+  for (var i = 0 ; i < options.length; i++) {
+    for (var j = 0; j < missing.length; j++) {
+      if (options[i].text.search(missing[j]) != -1) {
+        missing.splice(j, 1);
+        break;
+      }
+    }
+  }
+  return missing.length == 0;
+};
+
+
+/**
+ * Waits for script pause, checks expectations, and invokes the callback.
+ * @param {Object} expectations  Dictionary of expectations
+ * @param {function():void} callback
+ */
+TestSuite.prototype._waitForScriptPause = function(expectations, callback) {
+  var test = this;
+  // Wait until script is paused.
+  test.addSniffer(
+      WebInspector,
+      'pausedScript',
+      function(callFrames) {
+        test.assertEquals(expectations.functionsOnStack.length,
+                          callFrames.length,
+                          'Unexpected stack depth');
+
+        var functionsOnStack = [];
+        for (var i = 0; i < callFrames.length; i++) {
+          functionsOnStack.push(callFrames[i].functionName);
+        }
+        test.assertEquals(
+            expectations.functionsOnStack.join(','),
+            functionsOnStack.join(','), 'Unexpected stack.');
+
+        checkSourceFrameWhenLoaded();
+      });
+
+  // Check that execution line where the script is paused is expected one.
+  function checkSourceFrameWhenLoaded() {
+    var frame = WebInspector.currentPanel.visibleView.sourceFrame;
+    if (frame._isContentLoaded()) {
+      checkExecLine();
+    } else {
+      frame.addEventListener('content loaded', checkExecLine);
+    }
+    function checkExecLine() {
+      test._checkExecutionLine(frame, expectations.lineNumber,
+                               expectations.lineText);
+      // Make sure we don't listen anymore.
+      frame.removeEventListener('content loaded', checkExecLine);
+      callback();
+    }
+  }
+};
+
+
+/**
+ * Performs sequence of steps.
+ * @param {Array.<Object|Function>} Array [expectations1,action1,expectations2,
+ *     action2,...,actionN].
+ */
+TestSuite.prototype._performSteps = function(actions) {
+  var test = this;
+  var i = 0;
+  function doNextAction() {
+    if (i > 0) {
+      actions[i++]();
+    }
+    if (i < actions.length - 1) {
+      test._waitForScriptPause(actions[i++], doNextAction);
+    }
+  }
+  doNextAction();
+};
+
+
+/**
+ * Waits for 'scripts' response and executes 'a()' in the inspected
+ * page.
+ */
+TestSuite.prototype._executeFunctionForStepTest = function() {
+  var test = this;
+
+  var expectedScripts = ['debugger_step.html$', 'debugger_step.js$'];
+
+  function waitForAllScripts() {
+    if (test._scriptsAreParsed(expectedScripts)) {
+      executeFunctionInInspectedPage();
+    } else {
+      test.addSniffer(WebInspector, 'parsedScriptSource', waitForAllScripts);
+    }
+  }
+
+  function executeFunctionInInspectedPage() {
+    // Since breakpoints are ignored in evals' calculate() function is
+    // execute after zero-timeout so that the breakpoint is hit.
+    test.evaluateInConsole_(
+        'setTimeout("a()" , 0)',
+        function(resultText) {
+          test.assertTrue(!isNaN(resultText),
+                          'Failed to get timer id: ' + resultText);
+        });
+  }
+
+  waitForAllScripts();
+};
+
+
+/**
+ * Tests step over in the debugger.
+ */
+TestSuite.prototype.testStepOver = function() {
+  this.showPanel('scripts');
+  var test = this;
+
+  this._executeFunctionForStepTest();
+
+  this._performSteps([
+      {
+        functionsOnStack: ['d','a','(anonymous function)'],
+        lineNumber: 3,
+        lineText: '    debugger;'
+      },
+      function() {
+        document.getElementById('scripts-step-over').click();
+      },
+      {
+        functionsOnStack: ['d','a','(anonymous function)'],
+        lineNumber: 5,
+        lineText: '  var y = fact(10);'
+      },
+      function() {
+        document.getElementById('scripts-step-over').click();
+      },
+      {
+        functionsOnStack: ['d','a','(anonymous function)'],
+        lineNumber: 6,
+        lineText: '  return y;'
+      },
+      function() {
+        test.releaseControl();
+      }
+  ]);
+
+  test.takeControl();
+};
+
+
+/**
+ * Tests step out in the debugger.
+ */
+TestSuite.prototype.testStepOut = function() {
+  this.showPanel('scripts');
+  var test = this;
+
+  this._executeFunctionForStepTest();
+
+  this._performSteps([
+      {
+        functionsOnStack: ['d','a','(anonymous function)'],
+        lineNumber: 3,
+        lineText: '    debugger;'
+      },
+      function() {
+        document.getElementById('scripts-step-out').click();
+      },
+      {
+        functionsOnStack: ['a','(anonymous function)'],
+        lineNumber: 8,
+        lineText: '  printResult(result);'
+      },
+      function() {
+        test.releaseControl();
+      }
+  ]);
+
+  test.takeControl();
+};
+
+
+/**
+ * Tests step in in the debugger.
+ */
+TestSuite.prototype.testStepIn = function() {
+  this.showPanel('scripts');
+  var test = this;
+
+  this._executeFunctionForStepTest();
+
+  this._performSteps([
+      {
+        functionsOnStack: ['d','a','(anonymous function)'],
+        lineNumber: 3,
+        lineText: '    debugger;'
+      },
+      function() {
+        document.getElementById('scripts-step-over').click();
+      },
+      {
+        functionsOnStack: ['d','a','(anonymous function)'],
+        lineNumber: 5,
+        lineText: '  var y = fact(10);'
+      },
+      function() {
+        document.getElementById('scripts-step-into').click();
+      },
+      {
+        functionsOnStack: ['fact','d','a','(anonymous function)'],
+        lineNumber: 15,
+        lineText: '  return r;'
+      },
+      function() {
+        test.releaseControl();
+      }
+  ]);
+
+  test.takeControl();
+};
+
+
+/**
  * Tests 'Pause' button will pause debugger when a snippet is evaluated.
  */
 TestSuite.prototype.testPauseInEval = function() {
