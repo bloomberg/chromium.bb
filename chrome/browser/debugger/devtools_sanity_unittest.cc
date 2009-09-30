@@ -181,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepOver) {
 }
 
 // Tests step out functionality in the debugger.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepOut) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestStepOut) {
   RunTest("testStepOut", kDebuggerStepTestPage);
 }
 
