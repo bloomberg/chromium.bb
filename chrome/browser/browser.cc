@@ -7,7 +7,6 @@
 #include "app/animation.h"
 #include "app/l10n_util.h"
 #include "base/command_line.h"
-#include "base/idle_timer.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/string_util.h"
