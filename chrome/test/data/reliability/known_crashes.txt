@@ -124,6 +124,10 @@ PREFIX : renderviewhost::setnavigationssuspended___renderviewhostmanager::should
 # bug 21520 from [25874:25879]
 PREFIX : renderviewhost::executejavascriptinwebframe___domui::calljavascriptfunction___downloadsdomhandler::sendcurrentdownloads
 
+# bug 23411
+PREFIX : renderviewhost::setnavigationssuspended___renderviewhostmanager::shouldclosepage___renderviewhost::onmsgshouldcloseack
+SUBSTRING : renderwidgethost::~renderwidgethost___renderviewhost::`scalar deleting destructor'___renderwidgethost::destroy___renderwidgethost::shutdown___renderviewhostmanager::cancelpending
+
 # 21862
 PREFIX : urlrequesthttpjob::factory___urlrequestjobmanager::createjob___urlrequest::start
 
