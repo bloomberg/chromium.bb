@@ -150,8 +150,15 @@ class FocusManagerTest : public testing::Test, public WindowDelegate {
 #if defined(OS_WIN)
   ::SendMessage(native_view, WM_SETFOCUS, NULL, NULL);
 #else
-    gtk_widget_grab_focus(native_view);
-    message_loop()->RunAllPending();
+    gint return_val;
+    GdkEventFocus event;
+    event.type = GDK_FOCUS_CHANGE;
+    event.window =
+        gtk_widget_get_root_window(GTK_WIDGET(window_->GetNativeWindow()));
+    event.send_event = TRUE;
+    event.in = TRUE;
+    gtk_signal_emit_by_name(GTK_OBJECT(native_view), "focus-in-event",
+                            &event, &return_val);
 #endif
   }
 
@@ -871,17 +878,11 @@ class NoNativeFocusView : public View {
 
 // Tests that the NativeViewHost class sets the focus View appropriately on the
 // FocusManager.
-#if defined(OS_WIN)
 TEST_F(FocusManagerTest, FocusNativeViewHost) {
-#else
-// TODO(jcampan): http::/crbug.com/23394 Disabled as it fails following the
-// NativeViewHost refactoring.
-TEST_F(FocusManagerTest, DISABLED_FocusNativeViewHost) {
-#endif
   {
     // Test wrapping a simple native view.
-    gfx::NativeView native_view =
-        CreateChildNativeView(content_view_->GetWidget()->GetNativeView());
+    gfx::NativeView top_native_view  = CreateContainerNativeView();
+    gfx::NativeView native_view = CreateChildNativeView(top_native_view);
     NativeViewHost* native_view_host = new NativeViewHost();
     content_view_->AddChildView(native_view_host);
     native_view_host->Attach(native_view);
@@ -911,8 +912,8 @@ TEST_F(FocusManagerTest, DISABLED_FocusNativeViewHost) {
 
   {
     // Now also make sure set_focused_view() works.
-    gfx::NativeView native_view =
-        CreateChildNativeView(content_view_->GetWidget()->GetNativeView());
+    gfx::NativeView top_native_view  = CreateContainerNativeView();
+    gfx::NativeView native_view = CreateChildNativeView(top_native_view);
     NativeViewHost* native_view_host = new NativeViewHost();
     NoNativeFocusView* container_view = new NoNativeFocusView();
     container_view->AddChildView(native_view_host);
