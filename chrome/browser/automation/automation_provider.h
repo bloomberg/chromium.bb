@@ -271,8 +271,7 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                                    int y,
                                    IPC::Message* reply_message);
 
-  void GetDownloadDirectory(int handle,
-                            std::wstring* download_directory);
+  void GetDownloadDirectory(int handle, FilePath* download_directory);
 
   // Retrieves a Browser from a Window and vice-versa.
   void GetWindowForBrowser(int window_handle, bool* success, int* handle);

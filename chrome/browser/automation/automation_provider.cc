@@ -1246,13 +1246,13 @@ void AutomationProvider::SetProxyConfig(const std::string& new_proxy_config) {
 }
 
 void AutomationProvider::GetDownloadDirectory(
-    int handle, std::wstring* download_directory) {
+    int handle, FilePath* download_directory) {
   DLOG(INFO) << "Handling download directory request";
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
     DownloadManager* dlm = tab->profile()->GetDownloadManager();
     DCHECK(dlm);
-    *download_directory = dlm->download_path().ToWStringHack();
+    *download_directory = dlm->download_path();
   }
 }
 

@@ -88,7 +88,7 @@ class DownloadTest : public UITest {
 
   virtual void SetUp() {
     UITest::SetUp();
-    download_prefix_ = FilePath::FromWStringHack(GetDownloadDirectory());
+    download_prefix_ = GetDownloadDirectory();
   }
 
  protected:

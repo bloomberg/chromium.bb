@@ -733,13 +733,13 @@ void UITest::WaitUntilTabCount(int tab_count) {
   EXPECT_EQ(tab_count, GetTabCount());
 }
 
-std::wstring UITest::GetDownloadDirectory() {
+FilePath UITest::GetDownloadDirectory() {
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
   EXPECT_TRUE(tab_proxy.get());
   if (!tab_proxy.get())
-    return std::wstring();
+    return FilePath();
 
-  std::wstring download_directory;
+  FilePath download_directory;
   EXPECT_TRUE(tab_proxy->GetDownloadDirectory(&download_directory));
   return download_directory;
 }

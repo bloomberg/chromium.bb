@@ -46,7 +46,7 @@ class SavePageTest : public UITest {
     EXPECT_TRUE(file_util::CreateNewTempDirectory(FILE_PATH_LITERAL(""),
                                                   &save_dir_));
 
-    download_dir_ = FilePath::FromWStringHack(GetDownloadDirectory());
+    download_dir_ = GetDownloadDirectory();
   }
 
   virtual void TearDown() {

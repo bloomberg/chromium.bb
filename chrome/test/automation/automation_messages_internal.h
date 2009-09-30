@@ -338,7 +338,7 @@ IPC_BEGIN_MESSAGES(Automation)
   // Gets the directory that downloads will occur in for the active profile.
   IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_DownloadDirectory,
                              int /* tab_handle */,
-                             std::wstring /* directory */)
+                             FilePath /* directory */)
 
   // This message requests the id of the view that has the focus in the
   // specified window. If no view is focused, -1 is returned.  Note that the

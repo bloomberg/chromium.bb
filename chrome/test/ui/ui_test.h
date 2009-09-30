@@ -269,7 +269,7 @@ class UITest : public testing::Test {
                        bool important);
 
   // Gets the directory for the currently active profile in the browser.
-  std::wstring GetDownloadDirectory();
+  FilePath GetDownloadDirectory();
 
   // Get the handle of browser process connected to the automation. This
   // function only retruns a reference to the handle so the caller does not

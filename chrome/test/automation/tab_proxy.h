@@ -223,7 +223,7 @@ class TabProxy : public AutomationResourceProxy {
   // |target_count|.
   bool WaitForBlockedPopupCountToChangeTo(int target_count, int wait_timeout);
 
-  bool GetDownloadDirectory(std::wstring* download_directory);
+  bool GetDownloadDirectory(FilePath* download_directory);
 
   // Shows an interstitial page.  Blocks until the interstitial page
   // has been loaded. Return false if a failure happens.3

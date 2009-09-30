@@ -451,7 +451,7 @@ int TabProxy::InspectElement(int x, int y) {
   return ret;
 }
 
-bool TabProxy::GetDownloadDirectory(std::wstring* directory) {
+bool TabProxy::GetDownloadDirectory(FilePath* directory) {
   DCHECK(directory);
   if (!is_valid())
     return false;
