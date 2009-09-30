@@ -148,6 +148,7 @@
         'api/src/ResourceHandle.cpp',
         'api/src/StorageAreaProxy.cpp',
         'api/src/StorageAreaProxy.h',
+        'api/src/StorageEventDispatcherChromium.cpp',
         'api/src/StorageNamespaceProxy.cpp',
         'api/src/StorageNamespaceProxy.h',
         'api/src/TemporaryGlue.h',
