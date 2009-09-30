@@ -128,7 +128,7 @@ class PageTransition {
 
   static bool ValidType(int32 type) {
     Type t = StripQualifier(static_cast<Type>(type));
-    return (t >= 0 && t <= LAST_CORE);
+    return (t <= LAST_CORE);
   }
 
   static Type FromInt(int32 type) {
