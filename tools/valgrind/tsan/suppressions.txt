@@ -37,9 +37,22 @@
 }
 
 {
+  bug_23244
+  ThreadSanitizer:Race
+  fun:event_*
+  fun:event_*
+}
+
+{
   bug_23245
   ThreadSanitizer:Race
   fun:*base*Thread*ThreadMain*
+}
+
+{
+  bug_23423
+  ThreadSanitizer:Race
+  fun:*IPC*SyncMessage*SyncMessage*
 }
 
 ############################
