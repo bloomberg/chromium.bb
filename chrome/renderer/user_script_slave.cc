@@ -123,7 +123,8 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
     return true;
 
   PerfTimer timer;
-  int num_matched = 0;
+  int num_css = 0;
+  int num_scripts = 0;
 
   for (size_t i = 0; i < scripts_.size(); ++i) {
     std::vector<WebScriptSource> sources;
@@ -131,9 +132,9 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
     if (!script->MatchesUrl(frame->url()))
       continue;  // This frame doesn't match the script url pattern, skip it.
 
-    ++num_matched;
     // CSS files are always injected on document start before js scripts.
     if (location == UserScript::DOCUMENT_START) {
+      num_css += script->css_scripts().size();
       for (size_t j = 0; j < script->css_scripts().size(); ++j) {
         UserScript::File& file = script->css_scripts()[j];
         frame->insertStyleText(
@@ -141,6 +142,7 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
       }
     }
     if (script->run_location() == location) {
+      num_scripts += script->js_scripts().size();
       for (size_t j = 0; j < script->js_scripts().size(); ++j) {
         UserScript::File &file = script->js_scripts()[j];
         std::string content = file.GetContent().as_string();
@@ -174,14 +176,15 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
 
   // Log debug info.
   if (location == UserScript::DOCUMENT_START) {
-    HISTOGRAM_COUNTS_100("UserScripts:DocStart:Count", num_matched);
-    HISTOGRAM_TIMES("UserScripts:DocStart:Time", timer.Elapsed());
+    UMA_HISTOGRAM_COUNTS_100("Extensions.InjectStart_CssCount", num_css);
+    UMA_HISTOGRAM_COUNTS_100("Extensions.InjectStart_ScriptCount", num_scripts);
+    UMA_HISTOGRAM_TIMES("Extensions.InjectStart_Time", timer.Elapsed());
   } else {
-    HISTOGRAM_COUNTS_100("UserScripts:DocEnd:Count", num_matched);
-    HISTOGRAM_TIMES("UserScripts:DocEnd:Time", timer.Elapsed());
+    UMA_HISTOGRAM_COUNTS_100("Extensions.InjectEnd_ScriptCount", num_scripts);
+    UMA_HISTOGRAM_TIMES("Extensions.InjectEnd_Time", timer.Elapsed());
   }
 
-  LOG(INFO) << "Injected " << num_matched << " user scripts into " <<
-      frame->url().spec().data();
+  LOG(INFO) << "Injected " << num_scripts << " scripts and " << num_css <<
+      "css files into " << frame->url().spec().data();
   return true;
 }
