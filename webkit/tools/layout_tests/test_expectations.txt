@@ -815,7 +815,6 @@ BUG8696 WIN LINUX : LayoutTests/fast/gradients/crash-on-zero-radius.html = FAIL
 
 BUG10385 : LayoutTests/fast/dom/dom-constructors.html = FAIL
 
-BUG10412 WIN LINUX : LayoutTests/fast/table/vertical-align-baseline.html = FAIL
 BUG20507 : LayoutTests/http/tests/uri/resolve-encoding-relative.html = FAIL
 
 BUG10401 : LayoutTests/plugins/npruntime.html = TIMEOUT FAIL
