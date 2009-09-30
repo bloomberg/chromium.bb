@@ -2284,3 +2284,10 @@ BUG_SENORBLANCO : LayoutTests/fast/events/attribute-listener-extracted-from-fram
 BUG_SENORBLANCO : LayoutTests/fast/events/node-event-anchor-lock.html = FAIL
 BUG_SENORBLANCO WIN LINUX : LayoutTests/fast/forms/selected-index-assert.html = FAIL
 BUG_SENORBLANCO WIN LINUX : LayoutTests/svg/filters/feComposite.svg = FAIL
+
+// WebKit update 48904:48927
+BUG_SENORBLANCO : LayoutTests/fast/js/toString-stack-overflow.html = FAIL
+BUG_SENORBLANCO WIN : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
+BUG_SENORBLANCO : LayoutTests/http/tests/globalhistory/history-delegate-basic-302-redirect.html = FAIL
+BUG_SENORBLANCO : LayoutTests/http/tests/globalhistory/history-delegate-basic-refresh-redirect.html = FAIL
+BUG_SENORBLANCO LINUX : LayoutTests/svg/custom/circular-marker-reference-3.svg = FAIL
