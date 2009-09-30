@@ -13,6 +13,8 @@
 //  1. Drag out an NSButton.
 //  2. Double click on the button so you have the cell component selected.
 //  3. In the Identity panel of the inspector, set the custom class to this.
+//  4. In the Attributes panel, change the Bezel to Square.
+//  5. In the Size panel, set the Height to 16.
 @interface HyperlinkButtonCell : NSButtonCell {
   scoped_nsobject<NSColor> textColor_;
 }
