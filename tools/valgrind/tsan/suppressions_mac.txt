@@ -46,10 +46,17 @@
 # media_unittests depend on the Darwin libraries which have many reports in
 # them.
 {
-  Warnings in the CoreAudio framework
+  Warnings in the CoreAudio component
   ThreadSanitizer:Race
   ...
   obj:/System/Library/Components/CoreAudio.component*
+}
+
+{
+  Warnings in the CoreAudio framework
+  ThreadSanitizer:Race
+  ...
+  obj:/System/Library/Frameworks/CoreAudio.framework*
 }
 
 {
