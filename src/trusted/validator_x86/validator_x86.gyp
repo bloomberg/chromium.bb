@@ -257,6 +257,9 @@
         ]
       },
       'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
+      # When ncvalidate is a dependency, it needs to be a hard dependency
+      # because dependents may rely on ncvalidate to create header files below.
+      'hard_dependency': 1,
       'actions': [
         {
           'action_name': 'ncdecode_table',
