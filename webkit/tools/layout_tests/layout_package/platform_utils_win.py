@@ -22,7 +22,7 @@ def PlatformVersion():
   winver = sys.getwindowsversion()
   if winver[0] == 6 and (winver[1] == 0):
     return '-vista'
-  elif winver[0] == 5 and (winver[1] == 1 or winver[1] == 2):
+  if winver[0] == 5 and (winver[1] == 1 or winver[1] == 2):
     return '-xp'
   return ''
 
