@@ -141,11 +141,8 @@
       ['OS=="win"', {
         # Whether or not browser sync code is built in.
         'chrome_personalization%': 1,
-        # Used to build a stub (no-op) syncapi engine.
-        'use_syncapi_stub%': 0,
       }, {
         'chrome_personalization%': 0,
-        'use_syncapi_stub%': 1,
       }],  # OS=="win"
       ['target_arch=="ia32"', {
         'nacl_defines': [
@@ -4636,7 +4633,7 @@
             'test/browser_with_test_window_test.h',
           ],
         }],
-        ['use_syncapi_stub==1', {  # These tests require a non-stub sync impl.
+        ['chrome_personalization==1', {
           'sources!': [
             'browser/sync/profile_sync_service_unittest.cc',
           ]
@@ -4691,24 +4688,8 @@
         ['chrome_personalization==0', {
           # Empty target.
           'type': 'none',
-        }],
-        ['chrome_personalization==1 and use_syncapi_stub==1', {
-          # Build a stub library.
-          'type': 'shared_library',
-          'defines': [
-            'COMPILING_SYNCAPI_LIBRARY',
-          ],
-          'sources': [
-            'browser/sync/engine/syncapi_stub.cc',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'dependencies': [
-            '../base/base.gyp:base',
-          ],
-        }],
-        ['chrome_personalization==1 and use_syncapi_stub==0', {
+        }, {
+          # Build sync.
           'type': 'shared_library',
           'sources': [
             'browser/sync/engine/syncapi.cc',
@@ -4752,6 +4733,15 @@
               'dependencies': [
                 '../third_party/pthreads-win32/pthreads.gyp:pthreads',
               ],
+              'direct_dependent_settings': {
+                'msvs_settings': {
+                  'VCLinkerTool': {
+                    'DelayLoadDLLs': [
+                      'syncapi.dll',
+                    ],
+                  },
+                },
+              },
             }],
             ['OS=="linux"', {
               'defines': [
@@ -4760,18 +4750,7 @@
             }],
           ],
         }],
-        ['chrome_personalization==1 and OS=="win"', {
-          'direct_dependent_settings': {  # Shared by stub and non-stub.
-            'msvs_settings': {
-              'VCLinkerTool': {
-                'DelayLoadDLLs': [
-                  'syncapi.dll',
-                ],
-              },
-            },
-          },
-        }],
-      ],  # chrome_personalization / use_syncapi_stub condition chain.
+      ],
     },
     {
       'target_name': 'page_cycler_tests',
@@ -6421,7 +6400,7 @@
         },
       ]
     }],
-    ['chrome_personalization==1 and use_syncapi_stub==0', {
+    ['chrome_personalization==1', {
       # These targets get built only where sync is supported.
       'targets': [
         {
@@ -6807,7 +6786,7 @@
             }],
           ],
         },
-      ],  # targets when chrome_personalization==1 and use_syncapi_stub==0
+      ],  # targets when chrome_personalization==1
     }],
   ],  # 'conditions'
 }
