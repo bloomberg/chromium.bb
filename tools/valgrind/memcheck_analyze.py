@@ -251,7 +251,28 @@ class ValgrindError:
 
     if (self._suppression != None):
       output += "Suppression:"
-      output += self._suppression
+      # Widen suppression slightly to make portable between mac and linux
+      supp = self._suppression;
+      supp = supp.replace("fun:_Znwj", "fun:_Znw*")
+      supp = supp.replace("fun:_Znwm", "fun:_Znw*")
+      # Split into lines so we can enforce length limits
+      supplines = supp.split("\n")
+
+      # Truncate at line 26 (VG_MAX_SUPP_CALLERS plus 2 for name and type)
+      # or at the first 'boring' caller.
+      # (https://bugs.kde.org/show_bug.cgi?id=199468 proposes raising
+      # VG_MAX_SUPP_CALLERS, but we're probably fine with it as is.)
+      # TODO(dkegel): add more boring callers
+      newlen = 26;
+      try:
+        newlen = min(newlen, supplines.index("   fun:_ZN11MessageLoop3RunEv"))
+      except ValueError:
+        pass
+      if (len(supplines) > newlen):
+        supplines = supplines[0:newlen]
+        supplines.append("}")
+
+      output += "\n".join(supplines) + "\n"
 
     return output
 
