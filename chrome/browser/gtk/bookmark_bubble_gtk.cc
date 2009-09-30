@@ -85,7 +85,7 @@ std::vector<const BookmarkNode*> PopulateFolderCombo(BookmarkModel* model,
 }  // namespace
 
 // static
-void BookmarkBubbleGtk::Show(GtkWindow* transient_toplevel,
+void BookmarkBubbleGtk::Show(GtkWindow* toplevel_window,
                              const gfx::Rect& rect,
                              Profile* profile,
                              const GURL& url,
@@ -96,7 +96,7 @@ void BookmarkBubbleGtk::Show(GtkWindow* transient_toplevel,
   // think that closing the previous bubble and opening the new one would make
   // more sense, but I guess then you would commit the bubble's changes.
   DCHECK(!g_bubble);
-  g_bubble = new BookmarkBubbleGtk(transient_toplevel, rect, profile,
+  g_bubble = new BookmarkBubbleGtk(toplevel_window, rect, profile,
                                    url, newly_bookmarked);
 }
 
@@ -135,7 +135,7 @@ void BookmarkBubbleGtk::Observe(NotificationType type,
   }
 }
 
-BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* transient_toplevel,
+BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* toplevel_window,
                                      const gfx::Rect& rect,
                                      Profile* profile,
                                      const GURL& url,
@@ -143,7 +143,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* transient_toplevel,
     : url_(url),
       profile_(profile),
       theme_provider_(GtkThemeProvider::GetFrom(profile_)),
-      transient_toplevel_(transient_toplevel),
+      toplevel_window_(toplevel_window),
       content_(NULL),
       name_entry_(NULL),
       folder_combo_(NULL),
@@ -163,7 +163,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* transient_toplevel,
   GtkWidget* close_button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_CLOSE).c_str());
 
-  // Our content is arrange in 3 rows.  |top| contains a left justified
+  // Our content is arranged in 3 rows.  |top| contains a left justified
   // message, and a right justified remove link button.  |table| is the middle
   // portion with the name entry and the folder combo.  |bottom| is the final
   // row with a spacer, and the edit... and close buttons on the right.
@@ -213,8 +213,11 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* transient_toplevel,
   // We want the focus to start on the entry, not on the remove button.
   gtk_container_set_focus_child(GTK_CONTAINER(content), table);
 
-  bubble_ = InfoBubbleGtk::Show(transient_toplevel_,
-                                rect, content, theme_provider_, this);
+  bubble_ = InfoBubbleGtk::Show(toplevel_window_,
+                                rect,
+                                content,
+                                theme_provider_,
+                                this);  // delegate
   if (!bubble_) {
     NOTREACHED();
     return;
@@ -347,7 +350,7 @@ void BookmarkBubbleGtk::ShowEditor() {
 
   // Closing might delete us, so we'll cache what we want we need on the stack.
   Profile* profile = profile_;
-  GtkWidget* toplevel = GTK_WIDGET(transient_toplevel_);
+  GtkWidget* toplevel = GTK_WIDGET(toplevel_window_);
 
   // Close the bubble, deleting the C++ objects, etc.
   bubble_->Close();

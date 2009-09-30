@@ -37,8 +37,6 @@ const int kRightMargin = kCornerSize + 6;
 const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xff, 0xff, 0xff);
 const GdkColor kFrameColor = GDK_COLOR_RGB(0x63, 0x63, 0x63);
 
-const gchar* kInfoBubbleToplevelKey = "__INFO_BUBBLE_TOPLEVEL__";
-
 enum FrameType {
   FRAME_MASK,
   FRAME_STROKE,
@@ -123,13 +121,13 @@ gboolean HandleExpose(GtkWidget* widget,
 }  // namespace
 
 // static
-InfoBubbleGtk* InfoBubbleGtk::Show(GtkWindow* transient_toplevel,
+InfoBubbleGtk* InfoBubbleGtk::Show(GtkWindow* toplevel_window,
                                    const gfx::Rect& rect,
                                    GtkWidget* content,
                                    GtkThemeProvider* provider,
                                    InfoBubbleGtkDelegate* delegate) {
   InfoBubbleGtk* bubble = new InfoBubbleGtk(provider);
-  bubble->Init(transient_toplevel, rect, content);
+  bubble->Init(toplevel_window, rect, content);
   bubble->set_delegate(delegate);
   return bubble;
 }
@@ -140,29 +138,28 @@ InfoBubbleGtk::InfoBubbleGtk(GtkThemeProvider* provider)
       theme_provider_(provider),
       accel_group_(gtk_accel_group_new()),
       screen_x_(0),
-      screen_y_(0) {
+      screen_y_(0),
+      mask_region_(NULL) {
 }
 
 InfoBubbleGtk::~InfoBubbleGtk() {
   g_object_unref(accel_group_);
+  if (mask_region_) {
+    gdk_region_destroy(mask_region_);
+    mask_region_ = NULL;
+  }
 }
 
-void InfoBubbleGtk::Init(GtkWindow* transient_toplevel,
+void InfoBubbleGtk::Init(GtkWindow* toplevel_window,
                          const gfx::Rect& rect,
                          GtkWidget* content) {
   DCHECK(!window_);
   rect_ = rect;
 
-  window_ = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_transient_for(GTK_WINDOW(window_), transient_toplevel);
-  gtk_window_set_skip_taskbar_hint(GTK_WINDOW(window_), TRUE);
-  gtk_window_set_decorated(GTK_WINDOW(window_), FALSE);
-  gtk_window_set_resizable(GTK_WINDOW(window_), FALSE);
+  window_ = gtk_window_new(GTK_WINDOW_POPUP);
   gtk_widget_set_app_paintable(window_, TRUE);
   // Have GTK double buffer around the expose signal.
   gtk_widget_set_double_buffered(window_, TRUE);
-  // Make sure that our window can be focused.
-  GTK_WIDGET_SET_FLAGS(window_, GTK_CAN_FOCUS);
 
   // Attach our accelerator group to the window with an escape accelerator.
   gtk_accel_group_connect(accel_group_, GDK_Escape,
@@ -198,35 +195,74 @@ void InfoBubbleGtk::Init(GtkWindow* transient_toplevel,
                    G_CALLBACK(HandleExpose), NULL);
   g_signal_connect(window_, "size-allocate",
                    G_CALLBACK(HandleSizeAllocateThunk), this);
-  g_signal_connect(window_, "configure-event",
-                   G_CALLBACK(&HandleConfigureThunk), this);
   g_signal_connect(window_, "button-press-event",
                    G_CALLBACK(&HandleButtonPressThunk), this);
   g_signal_connect(window_, "destroy",
                    G_CALLBACK(&HandleDestroyThunk), this);
 
-  // Set some data which helps the browser know whether it should appear
-  // active.
-  g_object_set_data(G_OBJECT(window_->window), kInfoBubbleToplevelKey,
-                    transient_toplevel);
-
   gtk_widget_show_all(window_);
-  // Make sure our window has focus, is brought to the top, etc.
-  gtk_window_present(GTK_WINDOW(window_));
-  // We add a GTK (application level) grab.  This means we will get all
-  // keyboard and mouse events for our application, even if they were delivered
-  // on another window.  This allows us to close when the user clicks outside
-  // of the info bubble.  We don't use an X grab since that would steal
-  // keystrokes from your window manager, prevent you from interacting with
-  // other applications, etc.
+
+  // Stack our window directly above the toplevel window.  Our window is a
+  // direct child of the root window, so we need to find a similar ancestor
+  // for the toplevel window (which might have been reparented by a window
+  // manager).
+  XID toplevel_window_base = x11_util::GetHighestAncestorWindow(
+      x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(toplevel_window)),
+      x11_util::GetX11RootWindow());
+  if (toplevel_window_base) {
+    XID window_xid = x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(window_));
+    XID window_parent = x11_util::GetParentWindow(window_xid);
+    if (window_parent == x11_util::GetX11RootWindow()) {
+      x11_util::RestackWindow(window_xid, toplevel_window_base, true);
+    } else {
+      // The window manager shouldn't reparent override-redirect windows.
+      DLOG(ERROR) << "override-redirect window " << window_xid
+                  << "'s parent is " << window_parent
+                  << ", rather than root window "
+                  << x11_util::GetX11RootWindow();
+    }
+  }
+
+  // We add a GTK (application-level) grab.  This means we will get all
+  // mouse events for our application, even if they were delivered on another
+  // window.  We don't need this to get button presses outside of the bubble's
+  // window so we'll know to close it (the pointer grab takes care of that), but
+  // it prevents other widgets from getting highlighted when the pointer moves
+  // over them.
   //
-  // Before adding the grab, we need to ensure that the bubble is added
-  // to the window group of the top level window. This ensures that the
-  // grab only affects the current browser window, and not all the open
-  // browser windows in the application.
-  gtk_window_group_add_window(gtk_window_get_group(transient_toplevel),
+  // (Ideally we wouldn't add the window to a group and it would just get all
+  // the mouse events, but gtk_grab_add() doesn't appear to do anything in that
+  // case.  Adding it to the toplevel window's group first appears to block
+  // enter/leave events for that window and its subwindows, although other
+  // browser windows still receive them).
+  gtk_window_group_add_window(gtk_window_get_group(toplevel_window),
                               GTK_WINDOW(window_));
   gtk_grab_add(window_);
+
+  // Do X pointer and keyboard grabs to make sure that we have the focus and get
+  // all mouse and keyboard events until we're closed.
+  GdkGrabStatus pointer_grab_status =
+      gdk_pointer_grab(window_->window,
+                       TRUE,                   // owner_events
+                       GDK_BUTTON_PRESS_MASK,  // event_mask
+                       NULL,                   // confine_to
+                       NULL,                   // cursor
+                       GDK_CURRENT_TIME);
+  if (pointer_grab_status != GDK_GRAB_SUCCESS) {
+    // This will fail if someone else already has the pointer grabbed, but
+    // there's not really anything we can do about that.
+    DLOG(ERROR) << "Unable to grab pointer for info bubble (status="
+                << pointer_grab_status << ")";
+  }
+  GdkGrabStatus keyboard_grab_status =
+      gdk_keyboard_grab(window_->window,
+                        FALSE,  // owner_events
+                        GDK_CURRENT_TIME);
+  if (keyboard_grab_status != GDK_GRAB_SUCCESS) {
+    DLOG(ERROR) << "Unable to grab keyboard for info bubble (status="
+                << keyboard_grab_status << ")";
+  }
+
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
   theme_provider_->InitThemesFor(this);
@@ -254,21 +290,14 @@ void InfoBubbleGtk::Observe(NotificationType type,
   }
 }
 
-// static
-GtkWindow* InfoBubbleGtk::GetToplevelForInfoBubble(
-    const GdkWindow* bubble_window) {
-  if (!bubble_window)
-    return NULL;
-
-  return reinterpret_cast<GtkWindow*>(
-      g_object_get_data(G_OBJECT(bubble_window), kInfoBubbleToplevelKey));
-}
-
 void InfoBubbleGtk::Close(bool closed_by_escape) {
   // Notify the delegate that we're about to close.  This gives the chance
   // to save state / etc from the hosted widget before it's destroyed.
   if (delegate_)
     delegate_->InfoBubbleClosing(this, closed_by_escape);
+
+  // We don't need to ungrab the pointer or keyboard here; the X server will
+  // automatically do that when we destroy our window.
 
   DCHECK(window_);
   gtk_widget_destroy(window_);
@@ -289,29 +318,27 @@ void InfoBubbleGtk::HandleSizeAllocate() {
   }
 
   DCHECK(window_->allocation.x == 0 && window_->allocation.y == 0);
+  if (mask_region_) {
+    gdk_region_destroy(mask_region_);
+    mask_region_ = NULL;
+  }
   std::vector<GdkPoint> points = MakeFramePolygonPoints(
       window_->allocation.width, window_->allocation.height, FRAME_MASK);
-  GdkRegion* mask_region = gdk_region_polygon(&points[0],
-                                              points.size(),
-                                              GDK_EVEN_ODD_RULE);
-  gdk_window_shape_combine_region(window_->window, mask_region, 0, 0);
-  gdk_region_destroy(mask_region);
-}
-
-gboolean InfoBubbleGtk::HandleConfigure(GdkEventConfigure* event) {
-  // If the window is moved someplace besides where we want it, move it back.
-  // TODO(deanm): In the end, I will probably remove this code and just let
-  // the user move around the bubble like a normal dialog.  I want to try
-  // this for now and see if it causes problems when any window managers.
-  if (event->x != screen_x_ || event->y != screen_y_)
-    gtk_window_move(GTK_WINDOW(window_), screen_x_, screen_y_);
-  return FALSE;
+  mask_region_ = gdk_region_polygon(&points[0],
+                                    points.size(),
+                                    GDK_EVEN_ODD_RULE);
+  gdk_window_shape_combine_region(window_->window, mask_region_, 0, 0);
 }
 
 gboolean InfoBubbleGtk::HandleButtonPress(GdkEventButton* event) {
-  // If we got a click in our own window, that's ok.
-  if (event->window == window_->window)
+  // If we got a click in our own window, that's okay (we need to additionally
+  // check that it falls within our bounds, since we've grabbed the pointer and
+  // some events that actually occurred in other windows will be reported with
+  // respect to our window).
+  if (event->window == window_->window &&
+      (mask_region_ && gdk_region_point_in(mask_region_, event->x, event->y))) {
     return FALSE;  // Propagate.
+  }
 
   // Otherwise we had a click outside of our window, close ourself.
   Close();

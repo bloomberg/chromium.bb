@@ -263,6 +263,28 @@ bool GetStringProperty(
   return true;
 }
 
+XID GetParentWindow(XID window) {
+  XID root = None;
+  XID parent = None;
+  XID* children = NULL;
+  unsigned int num_children = 0;
+  XQueryTree(GetXDisplay(), window, &root, &parent, &children, &num_children);
+  if (children)
+    XFree(children);
+  return parent;
+}
+
+XID GetHighestAncestorWindow(XID window, XID root) {
+  while (true) {
+    XID parent = x11_util::GetParentWindow(window);
+    if (parent == None)
+      return None;
+    if (parent == root)
+      return window;
+    window = parent;
+  }
+}
+
 // Returns true if |window| is a named window.
 bool IsWindowNamed(XID window) {
   XTextProperty prop;
@@ -356,6 +378,13 @@ bool GetXWindowStack(std::vector<XID>* windows) {
     XFree(data);
 
   return result;
+}
+
+void RestackWindow(XID window, XID sibling, bool above) {
+  XWindowChanges changes;
+  changes.sibling = sibling;
+  changes.stack_mode = above ? Above : Below;
+  XConfigureWindow(GetXDisplay(), window, CWSibling | CWStackMode, &changes);
 }
 
 XRenderPictFormat* GetRenderVisualFormat(Display* dpy, Visual* visual) {

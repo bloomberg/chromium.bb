@@ -70,6 +70,12 @@ bool GetIntProperty(XID window, const std::string& property_name, int* value);
 bool GetStringProperty(
     XID window, const std::string& property_name, std::string* value);
 
+// Get |window|'s parent window, or None if |window| is the root window.
+XID GetParentWindow(XID window);
+
+// Walk up |window|'s hierarchy until we find a direct child of |root|.
+XID GetHighestAncestorWindow(XID window, XID root);
+
 // Implementers of this interface receive a notification for every X window of
 // the main display.
 class EnumerateWindowsDelegate {
@@ -85,6 +91,12 @@ bool EnumerateAllWindows(EnumerateWindowsDelegate* delegate, int max_depth);
 
 // Returns a list of top-level windows in top-to-bottom stacking order.
 bool GetXWindowStack(std::vector<XID>* windows);
+
+// Restack a window in relation to one of its siblings.  If |above| is true,
+// |window| will be stacked directly above |sibling|; otherwise it will stacked
+// directly below it.  Both windows must be immediate children of the same
+// window.
+void RestackWindow(XID window, XID sibling, bool above);
 
 // Return a handle to a server side pixmap. |shared_memory_key| is a SysV
 // IPC key. The shared memory region must contain 32-bit pixels.

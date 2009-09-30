@@ -16,6 +16,7 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
+#include "base/gfx/point.h"
 #include "base/gfx/rect.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -39,10 +40,13 @@ class InfoBubbleGtkDelegate {
 class InfoBubbleGtk : public NotificationObserver {
  public:
   // Show an InfoBubble, pointing at the area |rect| (in screen coordinates).
-  // An infobubble will try to fit on the screen, so it can point to any edge
-  // of |rect|.  The bubble will host the |content| widget.  The |delegate|
-  // will be notified when things like closing are happening.
-  static InfoBubbleGtk* Show(GtkWindow* transient_toplevel,
+  // An info bubble will try to fit on the screen, so it can point to any edge
+  // of |rect|.  The bubble will host the |content| widget.  The |delegate| will
+  // be notified when the bubble is closed.  The bubble will perform an X grab
+  // of the pointer and keyboard, and will close itself if a click is received
+  // outside of the bubble.
+  // TODO(derat): This implementation doesn't try to position itself onscreen.
+  static InfoBubbleGtk* Show(GtkWindow* toplevel_window,
                              const gfx::Rect& rect,
                              GtkWidget* content,
                              GtkThemeProvider* provider,
@@ -57,17 +61,12 @@ class InfoBubbleGtk : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // This returns the toplevel GtkWindow that is the transient parent of
-  // |bubble_window|, or NULL if |bubble_window| isn't the GdkWindow
-  // for an InfoBubbleGtk.
-  static GtkWindow* GetToplevelForInfoBubble(const GdkWindow* bubble_window);
-
  private:
   explicit InfoBubbleGtk(GtkThemeProvider* provider);
   virtual ~InfoBubbleGtk();
 
   // Creates the InfoBubble.
-  void Init(GtkWindow* transient_toplevel,
+  void Init(GtkWindow* toplevel_window,
             const gfx::Rect& rect,
             GtkWidget* content);
 
@@ -96,13 +95,6 @@ class InfoBubbleGtk : public NotificationObserver {
     reinterpret_cast<InfoBubbleGtk*>(user_data)->HandleSizeAllocate();
   }
   void HandleSizeAllocate();
-
-  static gboolean HandleConfigureThunk(GtkWidget* widget,
-                                       GdkEventConfigure* event,
-                                       gpointer user_data) {
-    return reinterpret_cast<InfoBubbleGtk*>(user_data)->HandleConfigure(event);
-  }
-  gboolean HandleConfigure(GdkEventConfigure* event);
 
   static gboolean HandleButtonPressThunk(GtkWidget* widget,
                                          GdkEventButton* event,
@@ -146,6 +138,10 @@ class InfoBubbleGtk : public NotificationObserver {
   // Where we want our window to be positioned on the screen.
   int screen_x_;
   int screen_y_;
+
+  // The current shape of |window_| (used to test whether clicks fall in it or
+  // not).
+  GdkRegion* mask_region_;
 
   NotificationRegistrar registrar_;
 
