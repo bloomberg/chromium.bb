@@ -12,8 +12,11 @@ void SystemMonitor::ProcessWmPowerBroadcastMessage(int event_id) {
     case PBT_APMPOWERSTATUSCHANGE:  // The power status changed.
       power_event = POWER_STATE_EVENT;
       break;
-    case PBT_APMRESUMEAUTOMATIC:  // Non-user initiated resume from suspend.
-    case PBT_APMRESUMESUSPEND:    // User initiated resume from suspend.
+    case PBT_APMRESUMEAUTOMATIC:  // Resume from suspend.
+    //case PBT_APMRESUMESUSPEND:  // User-initiated resume from suspend.
+                                  // We don't notify for this latter event
+                                  // because if it occurs it is always sent as a
+                                  // second event after PBT_APMRESUMEAUTOMATIC.
       power_event = RESUME_EVENT;
       break;
     case PBT_APMSUSPEND:  // System has been suspended.
