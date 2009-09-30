@@ -110,12 +110,10 @@ void BufferedResourceLoader::Start(net::CompletionCallback* start_callback) {
 
   // Creates the bridge on render thread since we can only access
   // ResourceDispatcher on this thread.
-  bridge_.reset(
-      bridge_factory_->CreateBridge(
-          url_,
-          IsMediaCacheEnabled() ? net::LOAD_NORMAL : net::LOAD_BYPASS_CACHE,
-          first_byte_position_,
-          last_byte_position_));
+  bridge_.reset(bridge_factory_->CreateBridge(url_,
+                                              net::LOAD_BYPASS_CACHE,
+                                              first_byte_position_,
+                                              last_byte_position_));
 
   // Increment the reference count right before we start the request. This
   // reference will be release when this request has ended.

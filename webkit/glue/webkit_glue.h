@@ -122,11 +122,6 @@ WebKit::WebCanvas* ToWebCanvas(skia::PlatformCanvas*);
 // used to get memory usage statistics.
 int GetGlyphPageCount();
 
-// Methods to query and enable media cache.
-// TODO(hclam): Remove these methods when the cache is stable enough.
-bool IsMediaCacheEnabled();
-void SetMediaCacheEnabled(bool enabled);
-
 //---- END FUNCTIONS IMPLEMENTED BY WEBKIT/GLUE -------------------------------
 
 

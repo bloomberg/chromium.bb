@@ -479,14 +479,4 @@ int GetGlyphPageCount() {
   return WebCore::GlyphPageTreeNode::treeGlyphPageCount();
 }
 
-bool g_enable_media_cache = false;
-
-bool IsMediaCacheEnabled() {
-  return g_enable_media_cache;
-}
-
-void SetMediaCacheEnabled(bool enabled) {
-  g_enable_media_cache = enabled;
-}
-
 } // namespace webkit_glue
