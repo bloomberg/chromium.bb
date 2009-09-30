@@ -102,58 +102,6 @@ using base::TimeDelta;
 // How long we wait before updating the browser chrome while loading a page.
 static const int kUIUpdateCoalescingTimeMS = 200;
 
-// Idle time before helping prune memory consumption.
-static const int kBrowserReleaseMemoryInterval = 30;  // In seconds.
-
-///////////////////////////////////////////////////////////////////////////////
-
-// A task to reduce the working set of the child processes that live on the IO
-// thread (i.e. plugins, workers).
-class ReduceChildProcessesWorkingSetTask : public Task {
- public:
-  virtual void Run() {
-#if defined(OS_WIN)
-    for (ChildProcessHost::Iterator iter; !iter.Done(); ++iter)
-      iter->ReduceWorkingSet();
-#endif
-  }
-};
-
-// A browser task to run when the user is not using the browser.
-// In our case, we're trying to be nice to the operating system and release
-// memory not in use.
-class BrowserIdleTimer : public base::IdleTimer {
- public:
-  BrowserIdleTimer()
-      : base::IdleTimer(TimeDelta::FromSeconds(kBrowserReleaseMemoryInterval),
-                        false) {
-  }
-
-  virtual void OnIdle() {
-#if defined(OS_WIN)
-    // We're idle.  Release browser and renderer unused pages.
-
-    // Handle the Browser.
-    base::Process process(GetCurrentProcess());
-    process.ReduceWorkingSet();
-
-    // Handle the Renderer(s).
-    RenderProcessHost::iterator renderer_iter(
-        RenderProcessHost::AllHostsIterator());
-    while (!renderer_iter.IsAtEnd()) {
-      base::Process process = renderer_iter.GetCurrentValue()->process();
-      process.ReduceWorkingSet();
-      renderer_iter.Advance();
-    }
-
-    // Handle the child processe.  We need to iterate through them on the IO
-    // thread because that thread manages the child process collection.
-    g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-        new ReduceChildProcessesWorkingSetTask());
-#endif
-  }
-};
-
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace {
@@ -181,8 +129,7 @@ Browser::Browser(Type type, Profile* profile)
       is_attempting_to_close_browser_(false),
       cancel_download_confirmation_state_(NOT_PROMPTED),
       maximized_state_(MAXIMIZED_STATE_DEFAULT),
-      method_factory_(this),
-      idle_task_(new BrowserIdleTimer) {
+      method_factory_(this) {
   tabstrip_model_.AddObserver(this);
 
   registrar_.Add(this, NotificationType::SSL_VISIBLE_STATE_CHANGED,
@@ -209,10 +156,6 @@ Browser::Browser(Type type, Profile* profile)
 
   encoding_auto_detect_.Init(prefs::kWebKitUsesUniversalDetector,
                              profile_->GetPrefs(), NULL);
-
-  // Trim browser memory on idle for low & medium memory models.
-  if (g_browser_process->memory_model() < BrowserProcess::HIGH_MEMORY_MODEL)
-    idle_task_->Start();
 }
 
 Browser::~Browser() {

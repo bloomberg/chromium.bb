@@ -16,7 +16,7 @@ class BrowserTrial {
  public:
 
   // The following is a sample line for what should be listed in this file.
-  // static const wchar_t* kMemoryModelFieldTrial;
+  // static const wchar_t* kPruningAlgorithmFieldTrial;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserTrial);

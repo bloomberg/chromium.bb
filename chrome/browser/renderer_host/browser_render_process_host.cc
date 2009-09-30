@@ -923,21 +923,6 @@ void BrowserRenderProcessHost::SetBackgrounded(bool backgrounded) {
         return;
       }
     }
-
-    // Now tune the memory footprint of the renderer.
-    // If the OS needs to page, we'd rather it page idle renderers.
-    BrowserProcess::MemoryModel model = g_browser_process->memory_model();
-    if (model < BrowserProcess::HIGH_MEMORY_MODEL) {
-      if (backgrounded) {
-        if (model == BrowserProcess::LOW_MEMORY_MODEL)
-          process_.EmptyWorkingSet();
-        else if (model == BrowserProcess::MEDIUM_MEMORY_MODEL)
-          process_.ReduceWorkingSet();
-      } else {
-        if (model == BrowserProcess::MEDIUM_MEMORY_MODEL)
-          process_.UnReduceWorkingSet();
-      }
-    }
   }
 
   // Note: we always set the backgrounded_ value.  If the process is NULL

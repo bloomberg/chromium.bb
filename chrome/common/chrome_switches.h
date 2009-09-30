@@ -100,7 +100,6 @@ extern const wchar_t kEnableExtensionTimelineApi[];
 extern const wchar_t kTabCountToLoadOnSessionRestore[];
 
 extern const wchar_t kMemoryProfiling[];
-extern const wchar_t kMemoryModel[];
 
 extern const wchar_t kEnableFileCookies[];
 

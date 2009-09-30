@@ -6,5 +6,6 @@
 
 // The following is a sample of the lines that should be listed here.
 
-// // A test to determine the impact of using HIGH vs MEDIUM memory models.
-// const wchar_t* BrowserTrial::kMemoryModelFieldTrial = L"memory_model";
+// // A test to determine the impact of kCase1 vs kCase2 pruning algorithms.
+// const wchar_t* BrowserTrial::kPruningAlgorithmFieldTrial =
+//     L"pruning_algorithm";

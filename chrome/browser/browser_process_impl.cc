@@ -146,7 +146,6 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       created_debugger_wrapper_(false),
       created_devtools_manager_(false),
       module_ref_count_(0),
-      memory_model_(HIGH_MEMORY_MODEL),
       checked_for_new_frames_(false),
       using_new_frames_(false),
       have_inspector_files_(true) {
@@ -157,18 +156,6 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
   // Must be created after the NotificationService.
   print_job_manager_.reset(new printing::PrintJobManager);
 
-  // Configure the browser memory model.
-  if (command_line.HasSwitch(switches::kMemoryModel)) {
-    std::wstring model = command_line.GetSwitchValue(switches::kMemoryModel);
-    if (!model.empty()) {
-      if (model == L"high")
-        memory_model_ = HIGH_MEMORY_MODEL;
-      else if (model == L"low")
-        memory_model_ = LOW_MEMORY_MODEL;
-      else if (model == L"medium")
-        memory_model_ = MEDIUM_MEMORY_MODEL;
-    }
-  }
   shutdown_event_.reset(new base::WaitableEvent(true, false));
 }
 

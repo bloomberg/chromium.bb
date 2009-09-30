@@ -183,11 +183,6 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
 
   virtual const std::string& GetApplicationLocale();
 
-  virtual MemoryModel memory_model() {
-    DCHECK(CalledOnValidThread());
-    return memory_model_;
-  }
-
   virtual base::WaitableEvent* shutdown_event() {
     return shutdown_event_.get();
   }
@@ -284,8 +279,6 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   scoped_ptr<printing::PrintJobManager> print_job_manager_;
 
   std::string locale_;
-
-  MemoryModel memory_model_;
 
   bool checked_for_new_frames_;
   bool using_new_frames_;

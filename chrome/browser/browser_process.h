@@ -53,21 +53,6 @@ class BrowserProcess {
   BrowserProcess() {}
   virtual ~BrowserProcess() {}
 
-  // The browser has 3 memory model configurations.  These models have to
-  // do with how aggressively we release Renderer memory to the OS.
-  // Low memory releases memory the fastest, High memory releases it the
-  // slowest.  Geek out!
-  enum MemoryModel {
-    // Will release as much memory as it can after each tab switch, and also
-    // after user idle.
-    LOW_MEMORY_MODEL,
-    // Will release a little memory after each tab switch and also after
-    // user idle.
-    MEDIUM_MEMORY_MODEL,
-    // Hangs onto every last byte.
-    HIGH_MEMORY_MODEL
-  };
-
   // Invoked when the user is logging out/shutting down. When logging off we may
   // not have enough time to do a normal shutdown. This method is invoked prior
   // to normal shutdown and saves any state that must be saved before we are
@@ -132,8 +117,6 @@ class BrowserProcess {
 
   // Returns the locale used by the application.
   virtual const std::string& GetApplicationLocale() = 0;
-
-  virtual MemoryModel memory_model() = 0;
 
   DownloadRequestManager* download_request_manager();
 

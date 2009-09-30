@@ -46,7 +46,6 @@ class ChildProcessInfo {
   int id() const { return id_; }
 
   void SetProcessBackgrounded() const { process_.SetProcessBackgrounded(true); }
-  void ReduceWorkingSet() const { process_.ReduceWorkingSet(); }
 
   // Returns an English name of the process type, should only be used for non
   // user-visible strings, or debugging pages like about:memory.

@@ -25,7 +25,6 @@
 #include "chrome/common/pref_member.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
-class BrowserIdleTimer;
 class BrowserWindow;
 class DebuggerWindow;
 class FindBarController;
@@ -794,9 +793,6 @@ class Browser : public TabStripModelDelegate,
 
   // Dialog box used for opening and saving files.
   scoped_refptr<SelectFileDialog> select_file_dialog_;
-
-  // The browser idle task helps cleanup unused memory resources when idle.
-  scoped_ptr<BrowserIdleTimer> idle_task_;
 
   // Keep track of the encoding auto detect pref.
   BooleanPrefMember encoding_auto_detect_;

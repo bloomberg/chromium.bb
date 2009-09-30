@@ -292,12 +292,6 @@ const wchar_t kTabCountToLoadOnSessionRestore[] =
 // all memory allocations during the run.
 const wchar_t kMemoryProfiling[]               = L"memory-profile";
 
-// Configure Chrome's memory model.
-// Does chrome really need multiple memory models?  No.  But we get a lot
-// of concerns from individuals about how the changes work on *their*
-// system, and we need to be able to experiment with a few choices.
-const wchar_t kMemoryModel[]                   = L"memory-model";
-
 // By default, cookies are not allowed on file://. They are needed in for
 // testing, for example page cycler and layout tests.  See bug 1157243.
 const wchar_t kEnableFileCookies[]             = L"enable-file-cookies";
