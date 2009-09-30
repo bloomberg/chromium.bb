@@ -45,6 +45,7 @@ class InProcessBrowserTest : public testing::Test {
   // We do this so we can be used in a Task.
   void AddRef() {}
   void Release() {}
+  static bool ImplementsThreadSafeReferenceCounting() { return false; }
 
   // Configures everything for an in process browser test, then invokes
   // BrowserMain. BrowserMain ends up invoking RunTestOnMainThreadLoop.

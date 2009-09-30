@@ -34,8 +34,8 @@ using base::Time;
 // special retention program.
 template <>
 struct RunnableMethodTraits<IPC::Logging> {
-  static void RetainCallee(IPC::Logging*) {}
-  static void ReleaseCallee(IPC::Logging*) {}
+  void RetainCallee(IPC::Logging*) {}
+  void ReleaseCallee(IPC::Logging*) {}
 };
 
 namespace IPC {

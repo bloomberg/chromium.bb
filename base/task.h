@@ -205,12 +205,33 @@ class ReleaseTask : public CancelableTask {
 
 template <class T>
 struct RunnableMethodTraits {
-  static void RetainCallee(T* obj) {
+  RunnableMethodTraits() {
+#ifndef NDEBUG
+    origin_thread_id_ = PlatformThread::CurrentId();
+#endif
+  }
+
+  ~RunnableMethodTraits() {
+#ifndef NDEBUG
+    // If destroyed on a separate thread, then we had better have been using
+    // thread-safe reference counting!
+    if (origin_thread_id_ != PlatformThread::CurrentId())
+      DCHECK(T::ImplementsThreadSafeReferenceCounting());
+#endif
+  }
+
+  void RetainCallee(T* obj) {
     obj->AddRef();
   }
-  static void ReleaseCallee(T* obj) {
+
+  void ReleaseCallee(T* obj) {
     obj->Release();
   }
+
+ private:
+#ifndef NDEBUG
+  PlatformThreadId origin_thread_id_;
+#endif
 };
 
 // RunnableMethod and RunnableFunction -----------------------------------------
@@ -240,13 +261,13 @@ struct RunnableMethodTraits {
 // RunnableMethod and NewRunnableMethod implementation -------------------------
 
 template <class T, class Method, class Params>
-class RunnableMethod : public CancelableTask,
-                       public RunnableMethodTraits<T> {
+class RunnableMethod : public CancelableTask {
  public:
   RunnableMethod(T* obj, Method meth, const Params& params)
       : obj_(obj), meth_(meth), params_(params) {
-    RetainCallee(obj_);
+    traits_.RetainCallee(obj_);
   }
+
   ~RunnableMethod() {
     ReleaseCallee();
   }
@@ -263,7 +284,7 @@ class RunnableMethod : public CancelableTask,
  private:
   void ReleaseCallee() {
     if (obj_) {
-      RunnableMethodTraits<T>::ReleaseCallee(obj_);
+      traits_.ReleaseCallee(obj_);
       obj_ = NULL;
     }
   }
@@ -271,6 +292,7 @@ class RunnableMethod : public CancelableTask,
   T* obj_;
   Method meth_;
   Params params_;
+  RunnableMethodTraits<T> traits_;
 };
 
 template <class T, class Method>

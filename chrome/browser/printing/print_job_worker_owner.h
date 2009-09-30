@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_OWNER_H__
 #define CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_OWNER_H__
 
+#include "base/ref_counted.h"
 #include "printing/printing_context.h"
 
 class MessageLoop;
@@ -14,12 +15,11 @@ namespace printing {
 class PrintJobWorker;
 class PrintSettings;
 
-class PrintJobWorkerOwner {
+class PrintJobWorkerOwner :
+    public base::RefCountedThreadSafe<PrintJobWorkerOwner> {
  public:
   virtual ~PrintJobWorkerOwner() {
   }
-  virtual void AddRef() = 0;
-  virtual void Release() = 0;
 
   // Finishes the initialization began by PrintJobWorker::Init(). Creates a
   // new PrintedDocument if necessary. Solely meant to be called by

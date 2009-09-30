@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/gfx/native_widget_types.h"
 #include "base/message_loop.h"
-#include "base/ref_counted.h"
 #include "chrome/browser/printing/print_job_worker_owner.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -32,9 +31,8 @@ class PrinterQuery;
 // any state change. While printing, the PrintJobManager instance keeps a
 // reference to the job to be sure it is kept alive. All the code in this class
 // runs in the UI thread.
-class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
+class PrintJob : public PrintJobWorkerOwner,
                  public NotificationObserver,
-                 public PrintJobWorkerOwner,
                  public MessageLoop::DestructionObserver {
  public:
   // Create a empty PrintJob. When initializing with this constructor,
@@ -52,13 +50,6 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob>,
                        const NotificationDetails& details);
 
   // PrintJobWorkerOwner
-  virtual void AddRef() {
-    return base::RefCountedThreadSafe<PrintJob>::AddRef();
-  }
-  virtual void Release() {
-    return base::RefCountedThreadSafe<PrintJob>::Release();
-  }
-
   virtual void GetSettingsDone(const PrintSettings& new_settings,
                                PrintingContext::Result result);
   virtual PrintJobWorker* DetachWorker(PrintJobWorkerOwner* new_owner);

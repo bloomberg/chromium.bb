@@ -19,14 +19,11 @@
 
 // Allows InvokeLater without adding refcounting.  The object is only deleted
 // when its last InvokeLater is run anyway.
-template<>
-void RunnableMethodTraits<Touchpad>::RetainCallee(
-    Touchpad* remover) {
-}
-template<>
-void RunnableMethodTraits<Touchpad>::ReleaseCallee(
-    Touchpad* remover) {
-}
+template <>
+struct RunnableMethodTraits<Touchpad> {
+  void RetainCallee(Touchpad*) {}
+  void ReleaseCallee(Touchpad*) {}
+};
 
 // static
 void Touchpad::RegisterUserPrefs(PrefService* prefs) {

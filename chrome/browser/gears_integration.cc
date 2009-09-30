@@ -225,14 +225,11 @@ class CreateShortcutCommand : public CPCommandInterface {
 
 // Allows InvokeLater without adding refcounting.  The object is only deleted
 // when its last InvokeLater is run anyway.
-template<>
-void RunnableMethodTraits<CreateShortcutCommand>::RetainCallee(
-    CreateShortcutCommand* remover) {
-}
-template<>
-void RunnableMethodTraits<CreateShortcutCommand>::ReleaseCallee(
-    CreateShortcutCommand* remover) {
-}
+template <>
+struct RunnableMethodTraits<CreateShortcutCommand> {
+  void RetainCallee(CreateShortcutCommand*) {}
+  void ReleaseCallee(CreateShortcutCommand*) {}
+};
 
 void GearsCreateShortcut(
     const webkit_glue::WebApplicationInfo& app_info,
@@ -299,14 +296,11 @@ class QueryShortcutsCommand : public CPCommandInterface {
 
 // Allows InvokeLater without adding refcounting.  The object is only deleted
 // when its last InvokeLater is run anyway.
-template<>
-void RunnableMethodTraits<QueryShortcutsCommand>::RetainCallee(
-    QueryShortcutsCommand* remover) {
-}
-template<>
-void RunnableMethodTraits<QueryShortcutsCommand>::ReleaseCallee(
-    QueryShortcutsCommand* remover) {
-}
+template <>
+struct RunnableMethodTraits<QueryShortcutsCommand> {
+  void RetainCallee(QueryShortcutsCommand*) {}
+  void ReleaseCallee(QueryShortcutsCommand*) {}
+};
 
 void GearsQueryShortcuts(GearsQueryShortcutsCallback* callback) {
   CPHandleCommand(GEARSPLUGINCOMMAND_GET_SHORTCUT_LIST,

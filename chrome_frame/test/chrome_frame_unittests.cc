@@ -797,7 +797,7 @@ class ChromeFrameTestEnvironment: public testing::Environment {
   public:
     ~ChromeFrameTestEnvironment() {
     }
-    
+
     void SetUp() {
       ScopedChromeFrameRegistrar::RegisterDefaults();
     }
@@ -988,18 +988,18 @@ struct MockAutomationMessageSender : public AutomationMessageSender {
 };
 
 template <> struct RunnableMethodTraits<ProxyFactory::LaunchDelegate> {
-  static void RetainCallee(ProxyFactory::LaunchDelegate* obj) {}
-  static void ReleaseCallee(ProxyFactory::LaunchDelegate* obj) {}
+  void RetainCallee(ProxyFactory::LaunchDelegate* obj) {}
+  void ReleaseCallee(ProxyFactory::LaunchDelegate* obj) {}
 };
 
 template <> struct RunnableMethodTraits<MockProxyFactory> {
-  static void RetainCallee(MockProxyFactory* obj) {}
-  static void ReleaseCallee(MockProxyFactory* obj) {}
+  void RetainCallee(MockProxyFactory* obj) {}
+  void ReleaseCallee(MockProxyFactory* obj) {}
 };
 
 template <> struct RunnableMethodTraits<ChromeFrameAutomationClient> {
-  static void RetainCallee(ChromeFrameAutomationClient* obj) {}
-  static void ReleaseCallee(ChromeFrameAutomationClient* obj) {}
+  void RetainCallee(ChromeFrameAutomationClient* obj) {}
+  void ReleaseCallee(ChromeFrameAutomationClient* obj) {}
 };
 
 // MessageLoopForUI wrapper that runs only for a limited time.
@@ -1019,8 +1019,8 @@ struct TimedMsgLoop {
 };
 
 template <> struct RunnableMethodTraits<TimedMsgLoop> {
-  static void RetainCallee(TimedMsgLoop* obj) {}
-  static void ReleaseCallee(TimedMsgLoop* obj) {}
+  void RetainCallee(TimedMsgLoop* obj) {}
+  void ReleaseCallee(TimedMsgLoop* obj) {}
 };
 
 // Saves typing. It's somewhat hard to create a wrapper around
