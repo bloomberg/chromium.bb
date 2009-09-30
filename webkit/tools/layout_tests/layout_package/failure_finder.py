@@ -646,6 +646,11 @@ class FailureFinder(object):
     return test_path
 
   def _AddBaselineURLs(self, list, base_url, platforms):
+    # If the base URL doesn't contain any platform in its path, only add the
+    # base URL to the list.  This happens with the chrome/ and pending/ dirs.
+    if base_url.find("%s") == -1:
+      list.append(base_url)
+      return
     for platform in platforms:
       list.append(base_url % platform)
 
