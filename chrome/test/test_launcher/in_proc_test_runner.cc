@@ -31,12 +31,17 @@ class InProcTestRunner : public tests::TestRunner {
   explicit InProcTestRunner(const std::wstring& lib_name)
       : lib_name_(lib_name),
         dynamic_lib_(NULL),
-        run_test_proc_(NULL) {
+        run_test_proc_(NULL),
+        uninitialize_proc_(NULL) {
   }
 
   ~InProcTestRunner() {
     if (!dynamic_lib_)
       return;
+    if (uninitialize_proc_ && (uninitialize_proc_)()) {
+      LOG(ERROR) << "Uninitialization of " <<
+          base::GetNativeLibraryName(lib_name_) << " failed.";
+    }
     base::UnloadNativeLibrary(dynamic_lib_);
     LOG(INFO) << "Unloaded " << base::GetNativeLibraryName(lib_name_);
   }
@@ -62,6 +67,10 @@ class InProcTestRunner : public tests::TestRunner {
       return false;
     }
 
+    uninitialize_proc_ = reinterpret_cast<UninitializeProc>(
+        base::GetFunctionPointerFromNativeLibrary(dynamic_lib_,
+                                                  "UninitializeTest"));
+
     return true;
   }
 
@@ -85,10 +94,15 @@ class InProcTestRunner : public tests::TestRunner {
 
  private:
   typedef int (CDECL *RunTestProc)(int, char**);
+  typedef int (CDECL *UninitializeProc)();
 
   std::wstring lib_name_;
   base::NativeLibrary dynamic_lib_;
   RunTestProc run_test_proc_;
+
+  // An optional UnitializeTest method called before the library containing the
+  // test is unloaded.
+  UninitializeProc uninitialize_proc_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcTestRunner);
 };
