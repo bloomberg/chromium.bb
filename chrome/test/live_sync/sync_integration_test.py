@@ -370,8 +370,14 @@ if '__main__' == __name__:
       '', '--sync-test-password', help='Password for the test account')
   options, args = option_parser.parse_args()
   if not options.sync_test_password:
+    # Check along side this script under src/ first, and then check in
+    # the user profile dir.
     password_file_path = os.path.join(
         os.path.dirname(__file__),'sync_password')
+    if (not os.path.exists(password_file_path)):
+      password_file_path = os.path.join(
+          os.environ['USERPROFILE'], 'sync_password')
+
     if os.path.exists(password_file_path):
       fs = open(password_file_path, 'r')
       lines = fs.readlines()
