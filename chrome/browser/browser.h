@@ -397,6 +397,7 @@ class Browser : public TabStripModelDelegate,
   void OpenImportSettingsDialog();
   void OpenAboutChromeDialog();
   void OpenHelpTab();
+  void OpenExtensionsTab();
 #if defined(OS_CHROMEOS)
   void ShowControlPanel();
 #endif

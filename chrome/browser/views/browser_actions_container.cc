@@ -140,14 +140,14 @@ void BrowserActionsContainer::RefreshBrowserActionViews() {
   std::vector<ExtensionAction*> browser_actions;
   browser_actions = extension_service->GetBrowserActions();
 
-  if (browser_action_views_.size() != browser_actions.size()) {
-    DeleteBrowserActionViews();
+  DeleteBrowserActionViews();
+  for (size_t i = 0; i < browser_actions.size(); ++i) {
+    Extension* extension = extension_service->GetExtensionById(
+        browser_actions[i]->extension_id());
+    DCHECK(extension);
 
-    for (size_t i = 0; i < browser_actions.size(); ++i) {
-      Extension* extension = extension_service->GetExtensionById(
-          browser_actions[i]->extension_id());
-      DCHECK(extension);
-
+    // Only show browser actions that have an icon.
+    if (browser_actions[i]->icon_paths().size() > 0) {
       BrowserActionImageView* view =
           new BrowserActionImageView(browser_actions[i], extension, this);
       browser_action_views_.push_back(view);

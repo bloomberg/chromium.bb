@@ -64,6 +64,7 @@
       'browser/extensions/extension_toolstrip_apitest.cc',
     ],
     'browser_tests_sources_win_specific': [
+      'browser/extensions/browser_action_test.cc',
       'browser/extensions/extension_devtools_browsertest.cc',
       'browser/extensions/extension_devtools_browsertest.h',
       'browser/extensions/extension_devtools_browsertests.cc',

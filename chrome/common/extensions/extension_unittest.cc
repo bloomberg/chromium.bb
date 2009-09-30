@@ -403,14 +403,13 @@ TEST(ExtensionTest, LoadPageActionHelper) {
                            errors::kInvalidPageActionIconPaths));
   error_msg = "";
 
-  // Same test (name key), but with browser action.
+  // Same test (name key), but with browser action (icons are not required for
+  // browser actions).
   copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
   copy->Remove(keys::kPageActionIcons, NULL);
   action.reset(extension.LoadExtensionActionHelper(
       copy.get(), 0, &error_msg, ExtensionAction::BROWSER_ACTION));
-  ASSERT_TRUE(NULL == action.get());
-  ASSERT_TRUE(MatchPattern(error_msg.c_str(),
-                           errors::kInvalidPageActionIconPaths));
+  ASSERT_TRUE(NULL != action.get());
 }
 
 TEST(ExtensionTest, IdIsValid) {

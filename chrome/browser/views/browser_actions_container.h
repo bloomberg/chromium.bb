@@ -31,6 +31,8 @@ class BrowserActionsContainer : public views::View,
   BrowserActionsContainer(Profile* profile, ToolbarView* toolbar);
   virtual ~BrowserActionsContainer();
 
+  int num_browser_actions() { return browser_action_views_.size(); }
+
   // Update the views to reflect the state of the browser action icons.
   void RefreshBrowserActionViews();
 

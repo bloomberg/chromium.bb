@@ -25,7 +25,9 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_started_animation.h"
 #include "chrome/browser/extensions/crashed_extension_infobar.h"
+#include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_disabled_infobar_delegate.h"
+#include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/google_url_tracker.h"
@@ -186,6 +188,8 @@ Browser::Browser(Type type, Profile* profile)
   registrar_.Add(this, NotificationType::SSL_VISIBLE_STATE_CHANGED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
+                 NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  NotificationService::AllSources());
@@ -1261,6 +1265,11 @@ void Browser::OpenHelpTab() {
                 false, NULL);
 }
 
+void Browser::OpenExtensionsTab() {
+  AddTabWithURL(GURL(chrome::kChromeUIExtensionsURL), GURL(),
+      PageTransition::AUTO_BOOKMARK, true, -1, false, NULL);
+}
+
 #if defined(OS_CHROMEOS)
 void Browser::ShowControlPanel() {
   GURL url("http://localhost:8080");
@@ -1492,6 +1501,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_IMPORT_SETTINGS:       OpenImportSettingsDialog();    break;
     case IDC_ABOUT:                 OpenAboutChromeDialog();       break;
     case IDC_HELP_PAGE:             OpenHelpTab();                 break;
+    case IDC_MANAGE_EXTENSIONS:     OpenExtensionsTab();           break;
 #if defined(OS_CHROMEOS)
     case IDC_CONTROL_PANEL:         ShowControlPanel();            break;
 #endif
@@ -1506,6 +1516,28 @@ void Browser::ExecuteCommandWithDisposition(
 // Browser, CommandUpdater::CommandUpdaterDelegate implementation:
 
 void Browser::ExecuteCommand(int id) {
+  if (id >= IDC_BROWSER_ACTION_FIRST && id <= IDC_BROWSER_ACTION_LAST) {
+    ExtensionsService* service = profile_->GetExtensionsService();
+    DCHECK(service);  // No browser action command should have been created
+                      // in this window.
+
+    // Go find the browser action in question.
+    std::vector<ExtensionAction*> browser_actions =
+        service->GetBrowserActions();
+    for (size_t i = 0; i < browser_actions.size(); ++i) {
+      if (browser_actions[i]->command_id() == id) {
+        int window_id = ExtensionTabUtil::GetWindowId(this);
+        ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
+            profile_, browser_actions[i]->extension_id(), window_id);
+        return;
+      }
+    }
+
+    // Could not find the command in question. Perhaps it went away while the
+    // menu was open? More likely, it is a bug.
+    LOG(WARNING) << "Unknown browser action executed: " << id;
+  }
+
   ExecuteCommandWithDisposition(id, CURRENT_TAB);
 }
 
@@ -2164,6 +2196,16 @@ void Browser::Observe(NotificationType type,
       break;
     }
 
+    case NotificationType::EXTENSION_LOADED: {
+      // Enable the browser action for the extension, if it has one.
+      Extension* extension = Details<Extension>(details).ptr();
+      if (extension->browser_action()) {
+        command_updater_.UpdateCommandEnabled(
+            extension->browser_action()->command_id(), true);
+      }
+      break;
+    }
+
     case NotificationType::EXTENSION_UNLOADED: {
       window()->GetLocationBar()->InvalidatePageActions();
 
@@ -2177,6 +2219,13 @@ void Browser::Observe(NotificationType type,
           return;
         }
       }
+
+      // Disable the browser action for the extension, if it has one.
+      if (extension->browser_action()) {
+        command_updater_.UpdateCommandEnabled(
+            extension->browser_action()->command_id(), false);
+      }
+
       break;
     }
 
@@ -2328,6 +2377,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_SHOW_EXTENSION_SHELF, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
   command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE, true);
+  command_updater_.UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS, true);
 #if defined(OS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(IDC_CONTROL_PANEL, true);
 #endif

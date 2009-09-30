@@ -103,6 +103,7 @@ class ToolbarView : public views::View,
 
   // Accessors...
   Browser* browser() const { return browser_; }
+  BrowserActionsContainer* browser_actions() const { return browser_actions_; }
   ToolbarStarToggle* star_button() const { return star_; }
   GoButton* go_button() const { return go_; }
   LocationBarView* location_bar() const { return location_bar_; }
@@ -246,6 +247,7 @@ class ToolbarView : public views::View,
   scoped_ptr<EncodingMenuModel> encoding_menu_contents_;
   scoped_ptr<views::SimpleMenuModel> devtools_menu_contents_;
   scoped_ptr<views::SimpleMenuModel> app_menu_contents_;
+  scoped_ptr<views::SimpleMenuModel> extension_menu_contents_;
 
   // TODO(beng): build these into MenuButton.
   scoped_ptr<views::Menu2> page_menu_menu_;

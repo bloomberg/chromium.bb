@@ -1044,8 +1044,8 @@ void ToolbarView::CreateDevToolsMenuContents() {
 #endif
 
 void ToolbarView::CreateAppMenu() {
-  if (app_menu_contents_.get())
-    return;
+  // We always rebuild the app menu so that we can get the current state of the
+  // extension system.
 
   app_menu_contents_.reset(new views::SimpleMenuModel(this));
   app_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
@@ -1056,7 +1056,8 @@ void ToolbarView::CreateAppMenu() {
   // We will create the child menu items for this once the asynchronous call is
   // done.  See OnGetProfilesDone().
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableUserDataDirProfiles)) {
+  if (command_line.HasSwitch(switches::kEnableUserDataDirProfiles) &&
+      !profiles_menu_contents_.get()) {
     profiles_helper_->GetProfiles(NULL);
     profiles_menu_contents_.reset(new views::SimpleMenuModel(this));
     app_menu_contents_->AddSubMenuWithStringId(IDS_PROFILE_MENU,
@@ -1073,6 +1074,39 @@ void ToolbarView::CreateAppMenu() {
                                           IDS_BOOKMARK_MANAGER);
   app_menu_contents_->AddItemWithStringId(IDC_SHOW_DOWNLOADS,
                                           IDS_SHOW_DOWNLOADS);
+
+  // Create the extensions item or submenu.
+  // If there are any browser actions, we create an "Extensions" submenu, of
+  // which "Manage extensions" is the first entry. If there are no browser
+  // actions, we just create an "Extensions" menu item which does the same thing
+  // as "Manage extensions".
+  ExtensionsService* extensions_service =
+      browser_->profile()->GetExtensionsService();
+  if (extensions_service && extensions_service->extensions_enabled()) {
+    std::vector<ExtensionAction*> browser_actions =
+        browser_->profile()->GetExtensionsService()->GetBrowserActions();
+    if (browser_actions.size() == 0) {
+      app_menu_contents_->AddItemWithStringId(IDC_MANAGE_EXTENSIONS,
+                                              IDS_SHOW_EXTENSIONS);
+    } else {
+      extension_menu_contents_.reset(new views::SimpleMenuModel(this));
+      app_menu_contents_->AddSubMenuWithStringId(
+          IDS_SHOW_EXTENSIONS, extension_menu_contents_.get());
+
+      extension_menu_contents_->AddItemWithStringId(IDC_MANAGE_EXTENSIONS,
+                                                    IDS_MANAGE_EXTENSIONS);
+      for (size_t i = 0; i < browser_actions.size(); ++i) {
+        if (browser_actions[i]->command_id() > IDC_BROWSER_ACTION_LAST) {
+          NOTREACHED() << "Too many browser actions.";
+        } else {
+          extension_menu_contents_->AddItem(
+              browser_actions[i]->command_id(),
+              UTF8ToUTF16(browser_actions[i]->name()));
+        }
+      }
+    }
+  }
+
   app_menu_contents_->AddSeparator();
 #ifdef CHROME_PERSONALIZATION
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync)) {

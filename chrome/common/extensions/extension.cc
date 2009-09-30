@@ -320,29 +320,34 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
   result->set_extension_id(id());
   result->set_type(action_type);
 
-  ListValue* icons;
+  ListValue* icons = NULL;
   // Read the page action |icons|.
   if (!page_action->HasKey(keys::kPageActionIcons) ||
       !page_action->GetList(keys::kPageActionIcons, &icons) ||
       icons->GetSize() == 0) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(
-        errors::kInvalidPageActionIconPaths, IntToString(definition_index));
-    return NULL;
+    // Icons are only required for page actions.
+    if (action_type == ExtensionAction::PAGE_ACTION) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidPageActionIconPaths, IntToString(definition_index));
+      return NULL;
+    }
   }
 
   int icon_count = 0;
-  for (ListValue::const_iterator iter = icons->begin();
-       iter != icons->end(); ++iter) {
-    std::string path;
-    if (!(*iter)->GetAsString(&path) || path.empty()) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidPageActionIconPath,
-          IntToString(definition_index), IntToString(icon_count));
-      return NULL;
-    }
+  if (icons) {
+    for (ListValue::const_iterator iter = icons->begin();
+         iter != icons->end(); ++iter) {
+      std::string path;
+      if (!(*iter)->GetAsString(&path) || path.empty()) {
+        *error = ExtensionErrorUtils::FormatErrorMessage(
+            errors::kInvalidPageActionIconPath,
+            IntToString(definition_index), IntToString(icon_count));
+        return NULL;
+      }
 
-    result->AddIconPath(path);
-    ++icon_count;
+      result->AddIconPath(path);
+      ++icon_count;
+    }
   }
 
   if (action_type == ExtensionAction::BROWSER_ACTION) {
