@@ -4,6 +4,7 @@
 
 #include "app/l10n_util.h"
 
+#include <cstdlib>
 #include "app/app_paths.h"
 #include "app/app_switches.h"
 #include "app/gfx/canvas.h"
@@ -376,6 +377,43 @@ std::string GetSystemLocale() {
   return ret;
 }
 
+#if defined(OS_LINUX)
+// Split and normalize the language list specified by LANGUAGE environment.
+// LANGUAGE environment specifies a priority list of user prefered locales for
+// application UI messages. Locales are separated by ':' character. The format
+// of a locale is: language[_territory[.codeset]][@modifier]
+//
+// This function splits the language list and normalizes each locale into
+// language[-territory] format, eg. fr, zh-CN, etc.
+void SplitAndNormalizeLanguageList(const std::string& env_language,
+                                   std::vector<std::string>* result) {
+  std::vector<std::string> langs;
+  SplitString(env_language, ':', &langs);
+  std::vector<std::string>::iterator i = langs.begin();
+  for (; i != langs.end(); ++i) {
+    size_t end_pos = i->find_first_of(".@");
+    // Erase encoding and modifier part.
+    if (end_pos != std::string::npos)
+      i->erase(end_pos);
+
+    if (!i->empty()) {
+      std::string locale;
+      size_t sep = i->find_first_of("_-");
+      if (sep != std::string::npos) {
+        // language part is always in lower case.
+        locale = StringToLowerASCII(i->substr(0, sep));
+        locale.append("-");
+        // territory part is always in upper case.
+        locale.append(StringToUpperASCII(i->substr(sep + 1)));
+      } else {
+        locale = StringToLowerASCII(*i);
+      }
+      result->push_back(locale);
+    }
+  }
+}
+#endif
+
 }  // namespace
 
 namespace l10n_util {
@@ -392,6 +430,8 @@ std::string GetApplicationLocale(const std::wstring& pref_locale) {
   FilePath locale_path;
   PathService::Get(app::DIR_LOCALES, &locale_path);
   std::string resolved_locale;
+  std::vector<std::string> candidates;
+  const std::string system_locale = GetSystemLocale();
 
   // We only use --lang and the app pref on Windows.  On Linux/Mac, we only
   // look at the LC_*/LANG environment variables.  We do, however, pass --lang
@@ -402,23 +442,35 @@ std::string GetApplicationLocale(const std::wstring& pref_locale) {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   const std::string& lang_arg = WideToASCII(
       parsed_command_line.GetSwitchValue(switches::kLang));
-  if (!lang_arg.empty()) {
-    if (CheckAndResolveLocale(lang_arg, locale_path, &resolved_locale))
-      return resolved_locale;
-  }
+  if (!lang_arg.empty())
+    candidates.push_back(lang_arg);
 
   // Second, try user prefs.
-  if (!pref_locale.empty()) {
-    if (CheckAndResolveLocale(WideToASCII(pref_locale),
-                              locale_path, &resolved_locale))
-      return resolved_locale;
-  }
-#endif
+  if (!pref_locale.empty())
+    candidates.push_back(WideToASCII(pref_locale));
 
   // Next, try the system locale.
-  const std::string system_locale = GetSystemLocale();
-  if (CheckAndResolveLocale(system_locale, locale_path, &resolved_locale))
-    return resolved_locale;
+  candidates.push_back(system_locale);
+#elif defined(OS_LINUX)
+  // On Linux, we also check LANGUAGE environment variable, which is supported
+  // by gettext to specify a priority list of prefered languages.
+  const char* env_language = ::getenv("LANGUAGE");
+  if (env_language)
+    SplitAndNormalizeLanguageList(env_language, &candidates);
+
+  // Only fallback to the system locale if LANGUAGE is not specified.
+  // We emulate gettext's behavior here, which ignores LANG/LC_MESSAGES/LC_ALL
+  // when LANGUAGE is specified. If no language specified in LANGUAGE is valid,
+  // then just fallback to the default language, which is en-US for us.
+  if (candidates.empty())
+    candidates.push_back(system_locale);
+#endif
+
+  std::vector<std::string>::const_iterator i = candidates.begin();
+  for (; i != candidates.end(); ++i) {
+    if (CheckAndResolveLocale(*i, locale_path, &resolved_locale))
+      return resolved_locale;
+  }
 
   // Fallback on en-US.
   const std::string fallback_locale("en-US");

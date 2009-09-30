@@ -4,6 +4,10 @@
 
 #include "build/build_config.h"
 
+#if defined(OS_LINUX)
+#include <cstdlib>
+#endif
+
 #include "app/app_paths.h"
 #include "app/l10n_util.h"
 #if !defined(OS_MACOSX)
@@ -135,6 +139,33 @@ TEST_F(L10nUtilTest, GetAppLocale) {
 
   // Keep a copy of ICU's default locale before we overwrite it.
   icu::Locale locale = icu::Locale::getDefault();
+
+#if defined(OS_LINUX)
+  // Test the support of LANGUAGE environment variable.
+  SetICUDefaultLocale("en-US");
+  ::setenv("LANGUAGE", "xx:fr_CA", 1);
+  EXPECT_EQ("fr", l10n_util::GetApplicationLocale(L""));
+
+  ::setenv("LANGUAGE", "xx:yy:en_gb.utf-8@quot", 1);
+  EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(L""));
+
+  ::setenv("LANGUAGE", "xx:zh-hk", 1);
+  EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(L""));
+
+  // We emulate gettext's behavior here, which ignores LANG/LC_MESSAGES/LC_ALL
+  // when LANGUAGE is specified. If no language specified in LANGUAGE is valid,
+  // then just fallback to the default language, which is en-US for us.
+  SetICUDefaultLocale("fr-FR");
+  ::setenv("LANGUAGE", "xx:yy", 1);
+  EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(L""));
+
+  ::setenv("LANGUAGE", "/fr:zh_CN", 1);
+  EXPECT_EQ("zh-CN", l10n_util::GetApplicationLocale(L""));
+
+  // Make sure the follow tests won't be affected by LANGUAGE environment
+  // variable.
+  ::unsetenv("LANGUAGE");
+#endif
 
   SetICUDefaultLocale("en-US");
   EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(L""));
@@ -479,4 +510,3 @@ TEST_F(L10nUtilTest, UpperLower) {
   result = l10n_util::ToUpper(mixed);
   EXPECT_EQ(result, expected_upper);
 }
-
