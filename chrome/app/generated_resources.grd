@@ -4028,8 +4028,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_COOKIES_ACCEPT_ALL_COOKIES" desc="The label of the 'Accept all cookies' dropdown list item">
         Allow all cookies
       </message>
-      <message name="IDS_OPTIONS_COOKIES_RESTRICT_THIRD_PARTY_COOKIES" desc="The label of the 'Restrict third-party cookies' dropdown list item. This option accepts third-party cookies, but limits how they can be used on subsequent requests.">
-        Restrict how third-party cookies can be used
+      <message name="IDS_OPTIONS_COOKIES_RESTRICT_THIRD_PARTY_COOKIES" desc="The label of the 'Restrict third-party cookies' dropdown list item. This option accepts third-party cookies only from visited sites.">
+        Accept cookies only from sites I visit
       </message>
       <message name="IDS_OPTIONS_COOKIES_BLOCK_THIRD_PARTY_COOKIES" desc="The label of the 'Block third-party cookies' dropdown list item. This option does not accept or send any third-party cookies.">
         Completely block third-party cookies

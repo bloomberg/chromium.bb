@@ -2115,7 +2115,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 									<reference ref="549082417"/>
 									<object class="NSMenuItem" id="139625100">
 										<reference key="NSMenu" ref="12577397"/>
-										<string key="NSTitle">Restrict how third-party cookies can be used</string>
+										<string key="NSTitle">Accept cookies only from sites I visit</string>
 										<string key="NSKeyEquiv"/>
 										<int key="NSKeyEquivModMask">1048576</int>
 										<int key="NSMnemonicLoc">2147483647</int>
