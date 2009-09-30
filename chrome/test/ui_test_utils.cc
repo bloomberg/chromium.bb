@@ -4,6 +4,8 @@
 
 #include "chrome/test/ui_test_utils.h"
 
+#include <vector>
+
 #include "base/json_reader.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -198,7 +200,7 @@ class DownloadsCompleteObserver : public DownloadManager::Observer,
 // Used to block until an application modal dialog is shown.
 class AppModalDialogObserver : public NotificationObserver {
  public:
-  AppModalDialogObserver() {}
+  AppModalDialogObserver() : dialog_(NULL) {}
 
   AppModalDialog* WaitForAppModalDialog() {
     registrar_.Add(this, NotificationType::APP_MODAL_DIALOG_SHOWN,
