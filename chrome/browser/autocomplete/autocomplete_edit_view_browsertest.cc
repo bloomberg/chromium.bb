@@ -243,6 +243,12 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
       host_resolver()->AddSimulatedFailure(kBlockedHostnames[i]);
   }
 
+  void SetupComponents() {
+    ASSERT_NO_FATAL_FAILURE(SetupHostResolver());
+    ASSERT_NO_FATAL_FAILURE(SetupSearchEngine());
+    ASSERT_NO_FATAL_FAILURE(SetupHistory());
+  }
+
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
@@ -278,7 +284,8 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
 // Test if ctrl-* accelerators are workable in omnibox.
 // See http://crbug.com/19193: omnibox blocks ctrl-* commands
 // This test is disabled. See bug 23213.
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DISABLED_BrowserAccelerators) {
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BrowserAccelerators) {
+  ASSERT_NO_FATAL_FAILURE(SetupComponents());
   browser()->FocusLocationBar();
   AutocompleteEditView* edit_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetAutocompleteEditView(&edit_view));
@@ -313,8 +320,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DISABLED_BrowserAccelerators) {
 }
 
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BackspaceInKeywordMode) {
-  ASSERT_NO_FATAL_FAILURE(SetupHostResolver());
-  ASSERT_NO_FATAL_FAILURE(SetupSearchEngine());
+  ASSERT_NO_FATAL_FAILURE(SetupComponents());
   browser()->FocusLocationBar();
 
   AutocompleteEditView* edit_view = NULL;
@@ -366,6 +372,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, BackspaceInKeywordMode) {
 }
 
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, Escape) {
+  ASSERT_NO_FATAL_FAILURE(SetupComponents());
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIHistoryURL));
   browser()->FocusLocationBar();
 
@@ -387,8 +394,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, Escape) {
 }
 
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DesiredTLD) {
-  ASSERT_NO_FATAL_FAILURE(SetupHostResolver());
-  ASSERT_NO_FATAL_FAILURE(SetupSearchEngine());
+  ASSERT_NO_FATAL_FAILURE(SetupComponents());
   browser()->FocusLocationBar();
 
   AutocompleteEditView* edit_view = NULL;
@@ -408,8 +414,8 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DesiredTLD) {
 }
 
 // This test is disabled. See bug 23213.
-IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, DISABLED_AltEnter) {
-  ASSERT_NO_FATAL_FAILURE(SetupHostResolver());
+IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, AltEnter) {
+  ASSERT_NO_FATAL_FAILURE(SetupComponents());
   browser()->FocusLocationBar();
 
   AutocompleteEditView* edit_view = NULL;
@@ -467,10 +473,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, EnterToSearch) {
 // See http://crbug.com/20934: Omnibox keyboard behavior wrong for
 // "See recent pages in history"
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, EnterToOpenHistoryPage) {
-  ASSERT_NO_FATAL_FAILURE(SetupHostResolver());
-  ASSERT_NO_FATAL_FAILURE(SetupSearchEngine());
-  ASSERT_NO_FATAL_FAILURE(SetupHistory());
-
+  ASSERT_NO_FATAL_FAILURE(SetupComponents());
   browser()->FocusLocationBar();
 
   AutocompleteEditView* edit_view = NULL;
@@ -507,9 +510,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, EnterToOpenHistoryPage) {
 }
 
 IN_PROC_BROWSER_TEST_F(AutocompleteEditViewTest, EscapeToDefaultMatch) {
-  ASSERT_NO_FATAL_FAILURE(SetupHostResolver());
-  ASSERT_NO_FATAL_FAILURE(SetupSearchEngine());
-  ASSERT_NO_FATAL_FAILURE(SetupHistory());
+  ASSERT_NO_FATAL_FAILURE(SetupComponents());
   browser()->FocusLocationBar();
 
   AutocompleteEditView* edit_view = NULL;
