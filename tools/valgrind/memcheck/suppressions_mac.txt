@@ -37,7 +37,7 @@
    # Mac system library leak?  Only suppress in tests for now.
    mac_init_appleevents_leak
    Memcheck:Leak
-   fun:_Znwm
+   fun:_Znw*
    fun:sendSimpleEventToSelf
    fun:aeInitializeFromHIToolbox
    fun:INIT_AppleEvents
@@ -75,7 +75,7 @@
    # CoreAudio leak.  See http://crbug.com/9351
    bug_9351
    Memcheck:Leak
-   fun:_Znwm
+   fun:_Znw*
    fun:_ZN12HALCADClient19AddPropertyListenerEmPK26AudioObjectPropertyAddressPFlmmS2_PvES3_
    fun:_ZN16HALDefaultDevice22InstallServerListenersEv
    fun:_ZN16HALDefaultDevice10InitializeEv
@@ -543,7 +543,7 @@
 {
    bug_20582
    Memcheck:Leak
-   fun:_Znwm
+   fun:_Znw*
    fun:_ZN4base19MessagePumpLibevent19WatchFileDescriptorEibNS0_4ModeEPNS0_21FileDescriptorWatcherEPNS0_7WatcherE
    fun:_ZN16MessageLoopForIO19WatchFileDescriptorEibNS_4ModeEPN4base19MessagePumpLibevent21FileDescriptorWatcherEPNS2_7WatcherE
    fun:_ZN3IPC7Channel11ChannelImpl23ProcessOutgoingMessagesEv
@@ -592,7 +592,7 @@
 {
    bug_20814_b
    Memcheck:Leak
-   fun:_Znwm
+   fun:_Znw*
    fun:_Z26getAllCarbonLazyValues2000v
    fun:CLVVisitValuesForKey
    fun:INIT_ResourceManager
@@ -861,7 +861,7 @@
 {
    bug_23416
    Memcheck:Leak
-   fun:_Znwm
+   fun:_Znw*
    fun:_ZN11webkit_glue16WebURLLoaderImplC2Ev
    ...
    fun:_ZN11webkit_glue20ImageResourceFetcherC1ERK4GURLPN6WebKit8WebFrameEiiP14CallbackRunnerI6Tuple2IPS0_RK8SkBitmapEE
