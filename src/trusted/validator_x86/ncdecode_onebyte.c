@@ -1603,7 +1603,47 @@ void DefineOneByteOpcodes() {
 
   DefineOpcode(0xFC, NACLi_386, 0, InstCld);
 
+  DefineOpcode(0xFE, NACLi_386L,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_b),
+               InstInc);
+  DefineOperand(Opcode0, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+
+  DefineOpcode(0xFE, NACLi_386L,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_b),
+               InstDec);
+  DefineOperand(Opcode1, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+
   /* Group5 opcode. */
+  DefineOpcode(0xff, NACLi_386L,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v),
+               InstInc);
+  DefineOperand(Opcode0, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+
+  DefineOpcode(0xff, NACLi_386L,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_o) |
+               InstFlag(Opcode64Only) | InstFlag(OpcodeUsesRexW),
+               InstInc);
+  DefineOperand(Opcode0, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+
+  DefineOpcode(0xff, NACLi_386L,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v),
+               InstDec);
+  DefineOperand(Opcode1, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+
+  DefineOpcode(0xff, NACLi_386L,
+               InstFlag(OpcodeInModRm) | InstFlag(OperandSize_o) |
+               InstFlag(Opcode64Only) | InstFlag(OpcodeUsesRexW),
+               InstDec);
+  DefineOperand(Opcode1, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+
   DefineOpcode(0xff, NACLi_INDIRECT,
                InstFlag(OpcodeInModRm) | InstFlag(Opcode32Only) |
                InstFlag(OperandSize_w),

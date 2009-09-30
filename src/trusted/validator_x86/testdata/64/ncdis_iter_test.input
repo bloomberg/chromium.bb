@@ -185,3 +185,17 @@
 -i=0FE70E                                #0000000000000000: 0f e7 0e                                     movntq [%rsi], %mmx1
 -i=660F290C24                            #0000000000000000: 66 0f 29 0c 24                               movapd [%rsp], %xmm1
 -i=F30F51D0                              #0000000000000000: f3 0f 51 d0                                  sqrtss %xmm2, %xmm0
+-i=48FFC0                                #0000000000000000: 48 ff c0                                     inc %rax
+-i=FF05A4763900                          #0000000000000000: ff 05 a4 76 39 00                            inc [%rip+0x3976a4]
+-i=FFC0                                  #0000000000000000: ff c0                                        inc %eax
+-i=41FFC5                                #0000000000000000: 41 ff c5                                     inc %r13d
+-i=FEC0                                  #0000000000000000: fe c0                                        inc %al
+-i=FEC4                                  #0000000000000000: fe c4                                        inc %ah
+-i=41FEC0                                #0000000000000000: 41 fe c0                                     inc %r8b
+-i=FFCA                                  #0000000000000000: ff ca                                        dec %edx
+-i=FF0D8F763900                          #0000000000000000: ff 0d 8f 76 39 00                            dec [%rip+0x39768f]
+-i=48FFC8                                #0000000000000000: 48 ff c8                                     dec %rax
+-i=49FFCC                                #0000000000000000: 49 ff cc                                     dec %r12
+-i=FEC8                                  #0000000000000000: fe c8                                        dec %al
+-i=FECC                                  #0000000000000000: fe cc                                        dec %ah
+-i=41FEC8                                #0000000000000000: 41 fe c8                                     dec %r8b
