@@ -535,6 +535,9 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
       }
     }
   }
+  // We may have just crossed a threshold to enable the off-the-side
+  // button.
+  [self checkHideOffTheSideButton];
 }
 
 - (IBAction)openBookmarkMenuItem:(id)sender {
