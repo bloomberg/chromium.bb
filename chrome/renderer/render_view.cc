@@ -1520,9 +1520,9 @@ bool RenderView::handleCurrentKeyboardEvent() {
 
   bool did_execute_command = false;
   for (; it != end; ++it) {
-    // In gtk, it's possible to bind multiple edit commands to one key (but it's
-    // the exception). Once one edit command is not executed, it seems safest to
-    // not execute the rest.
+    // In gtk and cocoa, it's possible to bind multiple edit commands to one
+    // key (but it's the exception). Once one edit command is not executed, it
+    // seems safest to not execute the rest.
     if (!frame->executeCommand(WebString::fromUTF8(it->name),
                                WebString::fromUTF8(it->value)))
       break;

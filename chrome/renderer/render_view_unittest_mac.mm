@@ -12,12 +12,16 @@
 #include <Carbon/Carbon.h>  // for the kVK_* constants.
 
 NSEvent* CmdDeadKeyEvent(NSEventType type, unsigned short code) {
-
   UniChar uniChar = 0;
   switch(code) {
-  case kVK_UpArrow: uniChar = NSUpArrowFunctionKey; break;
-  case kVK_DownArrow: uniChar = NSDownArrowFunctionKey; break;
-  default: CHECK(false);
+    case kVK_UpArrow:
+      uniChar = NSUpArrowFunctionKey;
+      break;
+    case kVK_DownArrow:
+      uniChar = NSDownArrowFunctionKey;
+      break;
+    default:
+      CHECK(false);
   }
   NSString* s = [NSString stringWithFormat:@"%C", uniChar];
 
@@ -36,7 +40,6 @@ NSEvent* CmdDeadKeyEvent(NSEventType type, unsigned short code) {
 // Test that cmd-up/down scrolls the page exactly if it is not intercepted by
 // javascript.
 TEST_F(RenderViewTest, MacTestCmdUp) {
-
   // Some preprocessor trickery so that we can have literal html in our source,
   // makes it easier to copy html to and from an html file for testing (the
   // preprocessor will remove the newlines at the line ends, turning this into
