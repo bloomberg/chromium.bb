@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "chrome/common/child_thread.h"
 #include "chrome/common/css_colors.h"
-#include "chrome/common/dom_storage_type.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "chrome/renderer/visitedlink_slave.h"
 
@@ -23,7 +22,6 @@ class DBMessageFilter;
 class DevToolsAgentFilter;
 class FilePath;
 class ListValue;
-class NullableString16;
 class RenderDnsMaster;
 class RendererHistogram;
 class RendererWebKitClientImpl;
@@ -33,10 +31,6 @@ class URLPattern;
 
 struct RendererPreferences;
 struct WebPreferences;
-
-namespace WebKit {
-class WebStorageEventDispatcher;
-}
 
 // The RenderThreadBase is the minimal interface that a RenderView/Widget
 // expects from a render thread. The interface basically abstracts a way to send
@@ -144,10 +138,7 @@ class RenderThread : public RenderThreadBase,
   void OnUpdateUserScripts(base::SharedMemoryHandle table);
   void OnSetExtensionFunctionNames(const std::vector<std::string>& names);
   void OnPageActionsUpdated(const std::string& extension_id,
-      const std::vector<std::string>& page_actions);
-  void OnDOMStorageEvent(const string16& key, const NullableString16& old_value,
-      const NullableString16& new_value, const string16& origin,
-      DOMStorageType dom_storage_type);
+                            const std::vector<std::string>& page_actions);
   void OnExtensionSetAPIPermissions(
       const std::string& extension_id,
       const std::vector<std::string>& permissions);
@@ -196,7 +187,6 @@ class RenderThread : public RenderThreadBase,
   scoped_refptr<DevToolsAgentFilter> devtools_agent_filter_;
   scoped_ptr<RendererHistogramSnapshots> histogram_snapshots_;
   scoped_ptr<RendererWebKitClientImpl> webkit_client_;
-  scoped_ptr<WebKit::WebStorageEventDispatcher> dom_storage_event_dispatcher_;
 
   scoped_refptr<DBMessageFilter> db_message_filter_;
 

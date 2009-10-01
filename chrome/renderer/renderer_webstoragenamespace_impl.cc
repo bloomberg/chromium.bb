@@ -8,10 +8,6 @@
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/renderer_webstoragearea_impl.h"
 
-using WebKit::WebStorageArea;
-using WebKit::WebStorageNamespace;
-using WebKit::WebString;
-
 RendererWebStorageNamespaceImpl::RendererWebStorageNamespaceImpl(
     DOMStorageType storage_type)
     : storage_type_(storage_type),
@@ -28,8 +24,8 @@ RendererWebStorageNamespaceImpl::RendererWebStorageNamespaceImpl(
 RendererWebStorageNamespaceImpl::~RendererWebStorageNamespaceImpl() {
 }
 
-WebStorageArea* RendererWebStorageNamespaceImpl::createStorageArea(
-    const WebString& origin) {
+WebKit::WebStorageArea* RendererWebStorageNamespaceImpl::createStorageArea(
+    const WebKit::WebString& origin) {
   // This could be done async in the background (started when this class is
   // first instantiated) rather than lazily on first use, but it's unclear
   // whether it's worth the complexity.
@@ -46,12 +42,12 @@ WebStorageArea* RendererWebStorageNamespaceImpl::createStorageArea(
   return new RendererWebStorageAreaImpl(namespace_id_, origin);
 }
 
-WebStorageNamespace* RendererWebStorageNamespaceImpl::copy() {
+WebKit::WebStorageNamespace* RendererWebStorageNamespaceImpl::copy() {
   // If we haven't been used yet, we might as well start out fresh (and lazy).
   if (namespace_id_ == kUninitializedNamespaceId)
     return new RendererWebStorageNamespaceImpl(storage_type_);
 
-  // This cannot easily be deferred because we need a snapshot in time.
+  // This cannot easily be differed because we need a snapshot in time.
   int64 new_namespace_id;
   RenderThread::current()->Send(
       new ViewHostMsg_DOMStorageCloneNamespaceId(namespace_id_,

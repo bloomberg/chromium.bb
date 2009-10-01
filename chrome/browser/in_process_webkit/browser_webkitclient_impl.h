@@ -32,9 +32,6 @@ class BrowserWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
       const WebKit::WebString& path);
   virtual WebKit::WebStorageNamespace* createSessionStorageNamespace();
-  virtual void dispatchStorageEvent(const WebKit::WebString& key,
-      const WebKit::WebString& oldValue, const WebKit::WebString& newValue,
-      const WebKit::WebString& origin, bool isLocalStorage);
 };
 
 #endif  // CHROME_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_CLIENT_IMPL_H_

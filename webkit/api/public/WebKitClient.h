@@ -85,15 +85,11 @@ namespace WebKit {
 
         // Return a LocalStorage namespace that corresponds to the following
         // path.
-        virtual WebStorageNamespace* createLocalStorageNamespace(const WebString& path) = 0;
+        virtual WebStorageNamespace* createLocalStorageNamespace(
+            const WebString& path) = 0;
 
         // Return a new SessionStorage namespace.
         virtual WebStorageNamespace* createSessionStorageNamespace() = 0;
-
-        // Called when storage events fire.
-        virtual void dispatchStorageEvent(const WebString& key, const WebString& oldValue,
-                                          const WebString& newValue, const WebString& origin,
-                                          bool isLocalStorage) = 0;
 
 
         // File ----------------------------------------------------------------

@@ -29,21 +29,13 @@ class DOMStorageDispatcherHost :
   // Only call from ResourceMessageFilter on the IO thread.
   void Init(base::ProcessHandle process_handle);
 
-  // Only call from ResourceMessageFilter on the IO thread.  Calls self on the
-  // WebKit thread in some cases.
-  void Shutdown();
-
   // Only call from ResourceMessageFilter on the IO thread.
+  void Shutdown();
   bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
 
   // Send a message to the renderer process associated with our
   // message_sender_ via the IO thread.  May be called from any thread.
   void Send(IPC::Message* message);
-
-  // Only call on the WebKit thread.
-  static void DispatchStorageEvent(const string16& key,
-      const NullableString16& old_value, const NullableString16& new_value,
-      const string16& origin, bool is_local_storage);
 
  private:
   friend class base::RefCountedThreadSafe<DOMStorageDispatcherHost>;
@@ -63,26 +55,11 @@ class DOMStorageDispatcherHost :
   void OnRemoveItem(int64 storage_area_id, const string16& key);
   void OnClear(int64 storage_area_id);
 
-  // Only call on the IO thread.
-  void OnStorageEvent(const string16& key, const NullableString16& old_value,
-      const NullableString16& new_value, const string16& origin,
-      bool is_local_storage);
-
   // A shortcut for accessing our context.
   DOMStorageContext* Context() {
     DCHECK(!shutdown_);
-    return webkit_context_->dom_storage_context();
+    return webkit_context_->GetDOMStorageContext();
   }
-
-  // Use whenever there's a chance OnStorageEvent will be called.
-  class AutoSetCurrentDispatcherHost {
-   public:
-    AutoSetCurrentDispatcherHost(DOMStorageDispatcherHost* dispatcher_host);
-    ~AutoSetCurrentDispatcherHost();
-  };
-
-  // Only access on the WebKit thread!  Used for storage events.
-  static DOMStorageDispatcherHost* current_;
 
   // Data shared between renderer processes with the same profile.
   scoped_refptr<WebKitContext> webkit_context_;
@@ -109,18 +86,5 @@ class DOMStorageDispatcherHost :
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageDispatcherHost);
 };
-
-#if defined(COMPILER_GCC)
-namespace __gnu_cxx {
-
-template<>
-struct hash<DOMStorageDispatcherHost*> {
-  std::size_t operator()(DOMStorageDispatcherHost* const& p) const {
-    return reinterpret_cast<std::size_t>(p);
-  }
-};
-
-}  // namespace __gnu_cxx
-#endif
 
 #endif  // CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_DISPATCHER_HOST_H_

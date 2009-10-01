@@ -14,18 +14,11 @@ DOMStorageContext::DOMStorageContext(WebKitContext* webkit_context)
     : last_storage_area_id_(kFirstStorageAreaId),
       last_storage_namespace_id_(kFirstStorageNamespaceId),
       webkit_context_(webkit_context) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
 }
 
 DOMStorageContext::~DOMStorageContext() {
-  // This should not go away until all DOM Storage Dispatcher hosts have gone
-  // away.  And they remove themselves from this list.
-  DCHECK(dispatcher_host_set_.empty());
-
-  // If we don't have any work to do on the WebKit thread, bail.
-  if (storage_namespace_map_.empty())
-    return;
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-
   // The storage namespace destructor unregisters the storage namespace, so
   // our iterator becomes invalid.  Thus we just keep deleting the first item
   // until there are none left.
@@ -34,7 +27,6 @@ DOMStorageContext::~DOMStorageContext() {
 }
 
 StorageNamespace* DOMStorageContext::LocalStorage() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   StorageNamespace* storage_namespace = GetStorageNamespace(
       kLocalStorageNamespaceId);
   if (storage_namespace)
@@ -48,26 +40,22 @@ StorageNamespace* DOMStorageContext::LocalStorage() {
 }
 
 StorageNamespace* DOMStorageContext::NewSessionStorage() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   return StorageNamespace::CreateSessionStorageNamespace(this);
 }
 
 void DOMStorageContext::RegisterStorageArea(StorageArea* storage_area) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   int64 id = storage_area->id();
   DCHECK(!GetStorageArea(id));
   storage_area_map_[id] = storage_area;
 }
 
 void DOMStorageContext::UnregisterStorageArea(StorageArea* storage_area) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   int64 id = storage_area->id();
   DCHECK(GetStorageArea(id));
   storage_area_map_.erase(id);
 }
 
 StorageArea* DOMStorageContext::GetStorageArea(int64 id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   StorageAreaMap::iterator iter = storage_area_map_.find(id);
   if (iter == storage_area_map_.end())
     return NULL;
@@ -76,7 +64,6 @@ StorageArea* DOMStorageContext::GetStorageArea(int64 id) {
 
 void DOMStorageContext::RegisterStorageNamespace(
     StorageNamespace* storage_namespace) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   int64 id = storage_namespace->id();
   DCHECK(!GetStorageNamespace(id));
   storage_namespace_map_[id] = storage_namespace;
@@ -84,38 +71,14 @@ void DOMStorageContext::RegisterStorageNamespace(
 
 void DOMStorageContext::UnregisterStorageNamespace(
     StorageNamespace* storage_namespace) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   int64 id = storage_namespace->id();
   DCHECK(GetStorageNamespace(id));
   storage_namespace_map_.erase(id);
 }
 
 StorageNamespace* DOMStorageContext::GetStorageNamespace(int64 id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   StorageNamespaceMap::iterator iter = storage_namespace_map_.find(id);
   if (iter == storage_namespace_map_.end())
     return NULL;
   return iter->second;
-}
-
-void DOMStorageContext::RegisterDispatcherHost(
-    DOMStorageDispatcherHost* dispatcher_host) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  DCHECK(dispatcher_host_set_.find(dispatcher_host) ==
-         dispatcher_host_set_.end());
-  dispatcher_host_set_.insert(dispatcher_host);
-}
-
-void DOMStorageContext::UnregisterDispatcherHost(
-    DOMStorageDispatcherHost* dispatcher_host) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  DCHECK(dispatcher_host_set_.find(dispatcher_host) !=
-         dispatcher_host_set_.end());
-  dispatcher_host_set_.erase(dispatcher_host);
-}
-
-const DOMStorageContext::DispatcherHostSet*
-DOMStorageContext::GetDispatcherHostSet() const {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  return &dispatcher_host_set_;
 }

@@ -39,9 +39,6 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   virtual void stopSharedTimer();
   virtual void callOnMainThread(void (*func)());
   virtual void suddenTerminationChanged(bool enabled) { }
-  virtual void dispatchStorageEvent(const WebKit::WebString& key,
-      const WebKit::WebString& oldValue, const WebKit::WebString& newValue,
-      const WebKit::WebString& origin, bool isLocalStorage);
 
   virtual base::PlatformFile databaseOpenFile(
       const WebKit::WebString& file_name, int desired_flags,

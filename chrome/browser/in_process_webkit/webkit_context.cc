@@ -9,17 +9,24 @@
 
 WebKitContext::WebKitContext(const FilePath& data_path, bool is_incognito)
     : data_path_(data_path),
-      is_incognito_(is_incognito),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          dom_storage_context_(new DOMStorageContext(this))) {
+      is_incognito_(is_incognito) {
 }
 
 WebKitContext::~WebKitContext() {
-  // If the WebKit thread was ever spun up, delete the object there.  If we're
-  // on the IO thread, this is safe because the WebKit thread goes away after
-  // the IO.  If we're on the UI thread, we're safe because the UI thread kills
-  // the WebKit thread.
-  MessageLoop* webkit_loop = ChromeThread::GetMessageLoop(ChromeThread::WEBKIT);
-  if (webkit_loop)
-    webkit_loop->DeleteSoon(FROM_HERE, dom_storage_context_.release());
+  // If a dom storage context was ever created, we need to destroy it on the
+  // WebKit thread.  Luckily we're guaranteed that the WebKit thread is still
+  // alive since the ResourceDispatcherHost (which owns the WebKit thread) goes
+  // away after all the ResourceMessageFilters and the profiles (i.e. all the
+  // objects with a reference to us).
+  if (dom_storage_context_.get()) {
+    MessageLoop* loop = ChromeThread::GetMessageLoop(ChromeThread::WEBKIT);
+    loop->DeleteSoon(FROM_HERE, dom_storage_context_.release());
+  }
+}
+
+DOMStorageContext* WebKitContext::GetDOMStorageContext() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  if (!dom_storage_context_.get())
+    dom_storage_context_.reset(new DOMStorageContext(this));
+  return dom_storage_context_.get();
 }

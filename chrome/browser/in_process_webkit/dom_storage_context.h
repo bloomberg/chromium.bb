@@ -7,7 +7,6 @@
 
 #include "base/file_path.h"
 #include "base/hash_tables.h"
-#include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
 
 class StorageArea;
 class StorageNamespace;
@@ -16,8 +15,7 @@ class WebKitContext;
 // This is owned by WebKitContext and is all the dom storage information that's
 // shared by all the ResourceMessageFilter/DOMStorageDispatcherHosts that share
 // the same profile.  The specifics of responsibilities are fairly well
-// documented here and in StorageNamespace and StorageArea.  Everything is only
-// to be accessed on the WebKit thread unless noted otherwise.
+// documented here and in StorageNamespace and StorageArea.
 class DOMStorageContext {
  public:
   explicit DOMStorageContext(WebKitContext* webkit_context);
@@ -46,13 +44,6 @@ class DOMStorageContext {
   void UnregisterStorageNamespace(StorageNamespace* storage_namespace);
   StorageNamespace* GetStorageNamespace(int64 id);
 
-  // Sometimes an event from one DOM storage dispatcher host requires
-  // communication to all of them.
-  typedef base::hash_set<DOMStorageDispatcherHost*> DispatcherHostSet;
-  void RegisterDispatcherHost(DOMStorageDispatcherHost* dispatcher_host);
-  void UnregisterDispatcherHost(DOMStorageDispatcherHost* dispatcher_host);
-  const DispatcherHostSet* GetDispatcherHostSet() const;
-
   // The special ID used for local storage.
   static const int64 kLocalStorageNamespaceId = 0;
 
@@ -65,10 +56,6 @@ class DOMStorageContext {
 
   // We're owned by this WebKit context.  Used while instantiating LocalStorage.
   WebKitContext* webkit_context_;
-
-  // All the DOMStorageDispatcherHosts that are attached to us. ONLY USE ON THE
-  // IO THREAD!
-  DispatcherHostSet dispatcher_host_set_;
 
   // Maps ids to StorageAreas.  We do NOT own these objects.  StorageNamespace
   // (which does own them) will notify us when we should remove the entries.

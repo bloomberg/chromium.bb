@@ -31,11 +31,7 @@ class StorageNamespace {
   StorageNamespace* Copy();
   void Close();
 
-  const DOMStorageContext* dom_storage_context() const {
-    return dom_storage_context_;
-  }
   int64 id() const { return id_; }
-  DOMStorageType dom_storage_type() const { return dom_storage_type_; }
 
  private:
   // Called by the static factory methods above.
@@ -57,7 +53,7 @@ class StorageNamespace {
   int64 id_;
 
   // SessionStorage vs. LocalStorage.
-  const DOMStorageType dom_storage_type_;
+  const DOMStorageType storage_type_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(StorageNamespace);
 };

@@ -131,9 +131,7 @@ static const double kMaxTextSizeMultiplier = 3.0;
 // for some programs that use HTML views to display things that don't seem like
 // web pages to the user (so shouldn't have visited link coloring).  We only use
 // one page group.
-// FIXME: This needs to go into the WebKit API implementation and be hidden
-//         from the API's users.
-const char* pageGroupName = "default";
+static const char* kPageGroupName = "default";
 
 // Ensure that the WebKit::WebDragOperation enum values stay in sync with
 // the original WebCore::DragOperation constants.
@@ -363,13 +361,13 @@ void WebViewImpl::InitializeMainFrame(WebFrameClient* frame_client) {
 // static
 void WebView::UpdateVisitedLinkState(uint64 link_hash) {
   WebCore::Page::visitedStateChanged(
-      WebCore::PageGroup::pageGroup(pageGroupName), link_hash);
+      WebCore::PageGroup::pageGroup(kPageGroupName), link_hash);
 }
 
 // static
 void WebView::ResetVisitedLinkState() {
   WebCore::Page::allVisitedStateChanged(
-      WebCore::PageGroup::pageGroup(pageGroupName));
+      WebCore::PageGroup::pageGroup(kPageGroupName));
 }
 
 
@@ -416,7 +414,7 @@ WebViewImpl::WebViewImpl(WebViewDelegate* delegate)
                        NULL));
 
   page_->backForwardList()->setClient(&back_forward_list_client_impl_);
-  page_->setGroupName(pageGroupName);
+  page_->setGroupName(kPageGroupName);
 }
 
 WebViewImpl::~WebViewImpl() {

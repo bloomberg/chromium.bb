@@ -11,10 +11,8 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/nullable_string16.h"
 #include "base/shared_memory.h"
 #include "base/stats_table.h"
-#include "base/string_util.h"
 #include "base/thread_local.h"
 #include "chrome/common/appcache/appcache_dispatcher.h"
 #include "chrome/common/chrome_switches.h"
@@ -47,7 +45,6 @@
 #include "webkit/api/public/WebColor.h"
 #include "webkit/api/public/WebCache.h"
 #include "webkit/api/public/WebKit.h"
-#include "webkit/api/public/WebStorageEventDispatcher.h"
 #include "webkit/api/public/WebString.h"
 #include "webkit/extensions/v8/benchmarking_extension.h"
 #include "webkit/extensions/v8/gears_extension.h"
@@ -62,7 +59,6 @@
 
 using WebKit::WebCache;
 using WebKit::WebString;
-using WebKit::WebStorageEventDispatcher;
 
 namespace {
 static const unsigned int kCacheStatsDelayMS = 2000 /* milliseconds */;
@@ -244,16 +240,6 @@ void RenderThread::OnExtensionSetHostPermissions(
   ExtensionProcessBindings::SetHostPermissions(extension_url, permissions);
 }
 
-void RenderThread::OnDOMStorageEvent(const string16& key,
-    const NullableString16& old_value, const NullableString16& new_value,
-    const string16& origin, DOMStorageType dom_storage_type) {
-  if (!dom_storage_event_dispatcher_.get()) {
-    dom_storage_event_dispatcher_.reset(WebStorageEventDispatcher::create());
-  }
-  dom_storage_event_dispatcher_->dispatchStorageEvent(key, old_value, new_value,
-      origin, dom_storage_type == DOM_STORAGE_LOCAL);
-}
-
 void RenderThread::OnExtensionSetL10nMessages(
     const std::string& extension_id,
     const std::map<std::string, std::string>& l10n_messages) {
@@ -295,8 +281,6 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnExtensionSetAPIPermissions)
     IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetHostPermissions,
                         OnExtensionSetHostPermissions)
-    IPC_MESSAGE_HANDLER(ViewMsg_DOMStorageEvent,
-                        OnDOMStorageEvent)
     IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetL10nMessages,
                         OnExtensionSetL10nMessages)
 #if defined(IPC_MESSAGE_LOG_ENABLED)
