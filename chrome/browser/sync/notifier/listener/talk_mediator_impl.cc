@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/notifier/listener/talk_mediator_impl.h"
 
 #include "base/logging.h"
+#include "base/singleton.h"
 #include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/engine/syncer_thread.h"
 #include "chrome/browser/sync/notifier/listener/mediator_thread_impl.h"
@@ -27,30 +28,18 @@ class SslInitializationSingleton {
   void RegisterClient() {}
 
   static SslInitializationSingleton* GetInstance() {
-    MutexLock lock(&mutex_);
-    if (!instance_.get()) {
-      instance_.reset(new SslInitializationSingleton());
-    }
-    return instance_.get();
+    return Singleton<SslInitializationSingleton>::get();
   }
 
  private:
-  typedef PThreadScopedLock<PThreadMutex> MutexLock;
+  friend struct DefaultSingletonTraits<SslInitializationSingleton>;
 
   SslInitializationSingleton() {
     talk_base::InitializeSSL();
   };
 
-  // The single instance of this class.
-  static PThreadMutex mutex_;
-  static scoped_ptr<SslInitializationSingleton> instance_;
-
   DISALLOW_COPY_AND_ASSIGN(SslInitializationSingleton);
 };
-
-// Declaration of class scoped static variables.
-PThreadMutex SslInitializationSingleton::mutex_;
-scoped_ptr<SslInitializationSingleton> SslInitializationSingleton::instance_;
 
 TalkMediatorImpl::TalkMediatorImpl()
     : mediator_thread_(new MediatorThreadImpl()) {
