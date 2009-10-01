@@ -1902,7 +1902,6 @@ BUG12310 SKIP : LayoutTests/fast/wcss/marquee-style.xhtml = FAIL
 
 // Details for all of these are in the bugs.
 BUG12341 DEBUG WIN : LayoutTests/editing/selection/4975120.html = PASS FAIL
-BUG12354 : LayoutTests/plugins/netscape-invoke-browserfuncs.html = FAIL
 BUG12361 : LayoutTests/http/tests/cookies/double-quoted-value-with-semi-colon.html = FAIL
 
 // webkit 44010+44027 introducted new tests
