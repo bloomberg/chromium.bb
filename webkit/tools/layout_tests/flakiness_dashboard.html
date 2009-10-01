@@ -229,6 +229,7 @@
   var BUILD_TYPES = {'DEBUG': 'DBG', 'RELEASE': 'RELEASE'};
   var BASE_TABLE_HEADERS = ['bugs', 'modifiers', 'expectations', 'missing',
       'extra', 'slowest run', 'flakiness (numbers are runtimes in seconds)'];
+  var MIN_SECONDS_FOR_SLOW_TEST = 2;
 
   //////////////////////////////////////////////////////////////////////////////
   // Methods and objects from dashboard_base.js to override.
@@ -785,12 +786,21 @@
             times[i][1]);
       }
 
-      if (resultsForTest.slowestTime && !resultsMap['TIMEOUT'] &&
+      // Only highlight tests that take > 2 seconds as needing to be marked as
+      // slow. There are too many tests that take ~2 seconds every couple
+      // hundred runs. It's not worth the manual maintenance effort.
+      // Also, if a test times out, then it should not be marked as slow.
+      if (resultsForTest.slowestTime > MIN_SECONDS_FOR_SLOW_TEST &&
+          !resultsMap['TIMEOUT'] &&
           (!resultsForTest.expectations ||
            !stringContains(resultsForTest.expectations, 'TIMEOUT')) &&
           (!resultsForTest.modifiers ||
            !stringContains(resultsForTest.modifiers, 'SLOW'))) {
         missingExpectations.push('SLOW');
+      } else if (resultsForTest.slowestTime <= MIN_SECONDS_FOR_SLOW_TEST &&
+                 resultsForTest.modifiers &&
+                 stringContains(resultsForTest.modifiers, 'SLOW')) {
+        extraExpectations.push('SLOW');
       }
 
       resultsForTest.meetsExpectations =
