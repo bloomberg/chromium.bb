@@ -11,7 +11,9 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/memory_purger.h"
 #include "chrome/browser/views/browser_dialogs.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/url_constants.h"
@@ -242,6 +244,8 @@ class TaskManagerView : public views::View,
   // Restores saved always on top state from a previous session.
   bool GetSavedAlwaysOnTopState(bool* always_on_top) const;
 
+  views::NativeButton* purge_memory_button_;
+  bool purge_memory_button_in_purge_mode_;
   views::NativeButton* kill_button_;
   views::Link* about_memory_link_;
   views::GroupTableView* tab_table_;
@@ -273,7 +277,9 @@ TaskManagerView* TaskManagerView::instance_ = NULL;
 
 
 TaskManagerView::TaskManagerView()
-    : task_manager_(TaskManager::GetInstance()),
+    : purge_memory_button_(NULL),
+      purge_memory_button_in_purge_mode_(true),
+      task_manager_(TaskManager::GetInstance()),
       model_(TaskManager::GetInstance()->model()),
       is_always_on_top_(false) {
   Init();
@@ -338,6 +344,10 @@ void TaskManagerView::Init() {
   UpdateStatsCounters();
   tab_table_->SetObserver(this);
   SetContextMenuController(this);
+  // If we're running with --purge-memory-button, add a "Purge memory" button.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kPurgeMemoryButton))
+    purge_memory_button_ = new views::NativeButton(this, L"Purge memory");
   kill_button_ = new views::NativeButton(
       this, l10n_util::GetString(IDS_TASK_MANAGER_KILL));
   kill_button_->AddAccelerator(views::Accelerator(base::VKEY_E,
@@ -384,10 +394,14 @@ void TaskManagerView::ViewHierarchyChanged(bool is_add,
   if (child == this) {
     if (is_add) {
       parent->AddChildView(about_memory_link_);
+      if (purge_memory_button_)
+        parent->AddChildView(purge_memory_button_);
       parent->AddChildView(kill_button_);
       AddChildView(tab_table_);
     } else {
       parent->RemoveChildView(kill_button_);
+      if (purge_memory_button_)
+        parent->RemoveChildView(purge_memory_button_);
       parent->RemoveChildView(about_memory_link_);
     }
   }
@@ -414,6 +428,13 @@ void TaskManagerView::Layout() {
                           y_buttons,
                           prefered_width,
                           prefered_height);
+
+  if (purge_memory_button_) {
+    size = purge_memory_button_->GetPreferredSize();
+    purge_memory_button_->SetBounds(
+        kill_button_->x() - size.width() - kUnrelatedControlHorizontalSpacing,
+        y_buttons, size.width(), size.height());
+  }
 
   size = about_memory_link_->GetPreferredSize();
   int link_prefered_width = size.width();
@@ -449,10 +470,20 @@ void TaskManagerView::Show() {
 // ButtonListener implementation.
 void TaskManagerView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
-  DCHECK(sender == kill_button_);
-  for (views::TableSelectionIterator iter  = tab_table_->SelectionBegin();
-       iter != tab_table_->SelectionEnd(); ++iter) {
-    task_manager_->KillProcess(*iter);
+  if (purge_memory_button_ && (sender == purge_memory_button_)) {
+    if (purge_memory_button_in_purge_mode_) {
+      MemoryPurger::GetSingleton()->OnSuspend();
+      purge_memory_button_->SetLabel(L"Reset purger");
+    } else {
+      MemoryPurger::GetSingleton()->OnResume();
+      purge_memory_button_->SetLabel(L"Purge Memory");
+    }
+    purge_memory_button_in_purge_mode_ = !purge_memory_button_in_purge_mode_;
+  } else {
+    DCHECK_EQ(sender, kill_button_);
+    for (views::TableSelectionIterator iter  = tab_table_->SelectionBegin();
+         iter != tab_table_->SelectionEnd(); ++iter)
+      task_manager_->KillProcess(*iter);
   }
 }
 

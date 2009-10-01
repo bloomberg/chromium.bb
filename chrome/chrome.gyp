@@ -1627,6 +1627,8 @@
         'browser/memory_details_linux.cc',
         'browser/memory_details_win.cc',
         'browser/memory_details.h',
+        'browser/memory_purger.cc',
+        'browser/memory_purger.h',
         'browser/meta_table_helper.cc',
         'browser/meta_table_helper.h',
         'browser/metrics/metrics_log.cc',

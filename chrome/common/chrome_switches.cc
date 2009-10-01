@@ -292,6 +292,13 @@ const wchar_t kTabCountToLoadOnSessionRestore[]=
 // all memory allocations during the run.
 const wchar_t kMemoryProfiling[]               = L"memory-profile";
 
+// Adds a "Purge memory" button to the Task Manager, which tries to dump as much
+// memory as possible.  This is mostly useful for testing how well the
+// MemoryPurger functionality (which is normally triggered on Suspend) works.
+//
+// NOTE: This is only implemented for Views.
+const wchar_t kPurgeMemoryButton[]             = L"purge-memory-button";
+
 // By default, cookies are not allowed on file://. They are needed in for
 // testing, for example page cycler and layout tests.  See bug 1157243.
 const wchar_t kEnableFileCookies[]             = L"enable-file-cookies";
