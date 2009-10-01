@@ -776,7 +776,7 @@ BUG10278 LINUX : LayoutTests/fast/css/font-face-unicode-range.html = FAIL
 // what the resolution was.
 // window-property-shadowing-name.html has also been affected by
 // r8532 and now fails.
-BUG10279 : LayoutTests/fast/dom/Window/window-property-shadowing-name.html = TIMEOUT FAIL
+BUG10279 : LayoutTests/fast/dom/Window/window-property-shadowing-name.html = TIMEOUT
 BUG10279 : LayoutTests/fast/js/var-declarations-shadowing.html = FAIL
 
 // Implement full JSON support in V8
@@ -952,7 +952,8 @@ BUG992321 LINUX WIN : LayoutTests/svg/custom/path-textPath-simulation.svg = FAIL
 // well. The specification isn't very specific on which behavior is correct,
 // but I feel like ours makes more sense.
 // The crash started occuring after the WebKit merge 43242:43321
-BUG992321 : LayoutTests/svg/custom/stroke-width-click.svg = FAIL CRASH
+BUG992321 RELEASE : LayoutTests/svg/custom/stroke-width-click.svg = FAIL
+BUG992321 DEBUG : LayoutTests/svg/custom/stroke-width-click.svg = CRASH
 
 // The red marker is not drawing the same way as the mac.
 BUG992321 LINUX WIN : LayoutTests/svg/custom/marker-changes.svg = PASS FAIL
@@ -1142,7 +1143,58 @@ BUG13809 WIN LINUX : LayoutTests/fast/canvas/canvas-empty-image-pattern.html = F
 // Need to implement window.accessibilityController for these to work.
 BUG10322 : LayoutTests/accessibility = FAIL PASS
 BUG10322 : LayoutTests/accessibility/non-native-image-crash.html = PASS
-BUG10322 : LayoutTests/accessibility/input-slider.html = TIMEOUT CRASH
+BUG10322 : LayoutTests/accessibility/aria-describedby-on-input.html = FAIL
+BUG10322 : LayoutTests/accessibility/aria-disabled.html = FAIL
+BUG10322 : LayoutTests/accessibility/aria-hidden.html = FAIL
+BUG10322 : LayoutTests/accessibility/aria-label.html = FAIL
+BUG10322 : LayoutTests/accessibility/aria-labelledby-on-input.html = FAIL
+BUG10322 : LayoutTests/accessibility/aria-labelledby-stay-within.html = FAIL
+BUG10322 : LayoutTests/accessibility/aria-link-supports-press.html = FAIL
+BUG10322 : LayoutTests/accessibility/aria-readonly.html = FAIL
+BUG10322 : LayoutTests/accessibility/aria-roles.html = FAIL
+BUG10322 : LayoutTests/accessibility/aria-tables.html = FAIL
+BUG10322 : LayoutTests/accessibility/button-press-action.html = FAIL
+BUG10322 : LayoutTests/accessibility/canvas.html = FAIL
+BUG10322 : LayoutTests/accessibility/editable-webarea-context-menu-point.html = FAIL
+BUG10322 : LayoutTests/accessibility/iframe-bastardization.html = FAIL
+BUG10322 : LayoutTests/accessibility/ignore-spacer-elements.html = FAIL
+BUG10322 : LayoutTests/accessibility/image-map1.html = FAIL
+BUG10322 : LayoutTests/accessibility/image-map2.html = FAIL
+BUG10322 : LayoutTests/accessibility/img-aria-button-alt-tag.html = FAIL
+BUG10322 : LayoutTests/accessibility/input-image-alt.html = FAIL
+BUG10322 : LayoutTests/accessibility/internal-link-anchors2.html = FAIL
+BUG10322 : LayoutTests/accessibility/label-for-control-hittest.html = FAIL
+BUG10322 : LayoutTests/accessibility/language-attribute.html = FAIL
+BUG10322 : LayoutTests/accessibility/legend.html = FAIL
+BUG10322 : LayoutTests/accessibility/lists.html = FAIL
+BUG10322 : LayoutTests/accessibility/nested-layout-crash.html = FAIL
+BUG10322 : LayoutTests/accessibility/nochildren-elements.html = FAIL
+BUG10322 : LayoutTests/accessibility/non-data-table-cell-title-ui-element.html = FAIL
+BUG10322 : LayoutTests/accessibility/onclick-handlers.html = FAIL
+BUG10322 : LayoutTests/accessibility/placeholder.html = FAIL
+BUG10322 BUG10351 : LayoutTests/accessibility/plugin.html = FAIL
+BUG10322 : LayoutTests/accessibility/radio-button-checkbox-size.html = FAIL
+BUG10322 : LayoutTests/accessibility/radio-button-group-members.html = FAIL
+BUG10322 : LayoutTests/accessibility/radio-button-title-label.html = FAIL
+BUG10322 : LayoutTests/accessibility/secure-textfield-title-ui.html = FAIL
+BUG10322 : LayoutTests/accessibility/table-attributes.html = FAIL
+BUG10322 : LayoutTests/accessibility/table-cell-spans.html = FAIL
+BUG10322 : LayoutTests/accessibility/table-cells.html = FAIL
+BUG10322 : LayoutTests/accessibility/table-detection.html = FAIL
+BUG10322 : LayoutTests/accessibility/table-modification-crash.html = FAIL
+BUG10322 : LayoutTests/accessibility/table-nofirstbody.html = FAIL
+BUG10322 : LayoutTests/accessibility/table-notbody.html = FAIL
+BUG10322 : LayoutTests/accessibility/table-one-cell.html = FAIL
+BUG10322 : LayoutTests/accessibility/table-sections.html = FAIL
+BUG10322 : LayoutTests/accessibility/table-with-aria-role.html = FAIL
+BUG10322 : LayoutTests/accessibility/table-with-rules.html = FAIL
+BUG10322 : LayoutTests/accessibility/textarea-insertion-point-line-number.html = FAIL
+BUG10322 : LayoutTests/accessibility/textarea-line-for-index.html = FAIL
+BUG10322 : LayoutTests/accessibility/textarea-selected-text-range.html = FAIL
+BUG10322 : LayoutTests/accessibility/th-as-title-ui.html = FAIL
+BUG10322 : LayoutTests/accessibility/transformed-element.html = FAIL
+BUG10322 : LayoutTests/accessibility/visible-elements.html = FAIL
+BUG10322 : LayoutTests/accessibility/input-slider.html = TIMEOUT
 BUG10322 : LayoutTests/platform/mac/accessibility = FAIL
 BUG10322 : LayoutTests/platform/mac-snowleopard/accessibility = FAIL
 BUG10322 : LayoutTests/platform/win/accessibility = FAIL
@@ -1256,7 +1308,6 @@ BUG15797 LINUX : LayoutTests/fast/dom/object-embed-plugin-scripting.html = FAIL
 BUG15797 LINUX : LayoutTests/plugins/embed-attributes-setting.html = FAIL
 
 // Depends on plugin support.
-BUG10351 MAC : LayoutTests/accessibility/plugin.html = FAIL
 BUG10351 MAC : LayoutTests/fast/dom/object-embed-plugin-scripting.html = FAIL
 
 BUG10351 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug8499.html = FAIL
@@ -1279,7 +1330,7 @@ BUG10351 MAC : LayoutTests/plugins/netscape-get-property-return-value.html = FAI
 BUG10351 MAC : LayoutTests/plugins/netscape-identifier-conversion.html = FAIL
 BUG10351 MAC : LayoutTests/plugins/netscape-invoke-browserfuncs.html = FAIL
 BUG10351 MAC : LayoutTests/plugins/netscape-invoke-default.html = FAIL
-BUG10351 MAC : LayoutTests/plugins/npruntime.html = FAIL TIMEOUT
+BUG10351 MAC : LayoutTests/plugins/npruntime.html = TIMEOUT
 BUG10351 MAC : LayoutTests/plugins/plugin-remove-subframe.html = FAIL
 BUG10351 MAC : LayoutTests/plugins/return-error-from-new-stream-doesnt-invoke-destroy-stream.html = TIMEOUT
 BUG10351 MAC : LayoutTests/plugins/netscape-plugin-map-data-to-src.html = FAIL
@@ -1317,8 +1368,10 @@ BUG10353 WIN LINUX : LayoutTests/fast/forms/textarea-rows-cols.html = FAIL
 // Form control scrollbars seem to be drawn incorrectly.
 BUG10353 LINUX : LayoutTests/fast/replaced/width100percent-textarea.html = FAIL
 BUG10668 : chrome/fast/dom/xss-DENIED-javascript-variations.html = FAIL
+
 // This test sometimes fails indefinitely, other times it takes 1-2 seconds.
-BUG14009 WIN MAC LINUX : LayoutTests/http/tests/misc/dns-prefetch-control.html = TIMEOUT PASS FAIL
+BUG14009 LINUX : LayoutTests/http/tests/misc/dns-prefetch-control.html = TIMEOUT PASS FAIL
+BUG14009 WIN MAC : LayoutTests/http/tests/misc/dns-prefetch-control.html = TIMEOUT PASS
 
 // NEW FOR MERGE 37604:38097
 // This is a Safari specific test used to document the set of global
@@ -1332,7 +1385,7 @@ BUG10354 MAC : LayoutTests/plugins/netscape-construct.html = FAIL
 // MERGE 38389:38450
 // WebKit regression: https://bugs.webkit.org/show_bug.cgi?id=20342
 // Fails upstream, deferring for now.
-BUG10357 : LayoutTests/fast/dom/cssTarget-crash.html = TIMEOUT CRASH
+BUG10357 : LayoutTests/fast/dom/cssTarget-crash.html = TIMEOUT
 
 // MERGE 38500:39550: New tests
 // Missing expected results
@@ -1527,7 +1580,8 @@ BUG10419 LINUX : LayoutTests/svg/text/text-path-01-b.svg = FAIL
 
 // We could fix this test for us and upstream it if the test shell user agent
 // would let us differentiate test_shell and WebKit DumpTreeNode.
-BUG7482 : LayoutTests/http/tests/misc/timer-vs-loading.html = FAIL PASS TIMEOUT
+BUG7482 LINUX MAC : LayoutTests/http/tests/misc/timer-vs-loading.html = TIMEOUT
+BUG7482 WIN : LayoutTests/http/tests/misc/timer-vs-loading.html = PASS TIMEOUT
 
 // Regressions from WebKit merge 40722:40785
 //
@@ -1799,7 +1853,7 @@ BUG10861 MAC : LayoutTests/http/tests/plugins/post-url-file.html = TIMEOUT
 // DumpRenderTree now dumps additional info on the element that was
 // passed to the policy delegate. So the dump changes.
 // We need to reflect the change in test shell.
-BUG11000 : LayoutTests/fast/encoding/mailto-always-utf-8.html = FAIL CRASH
+BUG11000 : LayoutTests/fast/encoding/mailto-always-utf-8.html = FAIL
 BUG11000 : LayoutTests/fast/loader/policy-delegate-action-hit-test-zoomed.html = FAIL
 BUG11000 : LayoutTests/http/tests/misc/policy-delegate-called-twice.html = FAIL
 BUG11000 : LayoutTests/http/tests/misc/redirect-to-external-url.html = FAIL
@@ -2261,7 +2315,7 @@ BUG_SENORBLANCO : LayoutTests/fast/events/attribute-listener-cloned-from-framele
 BUG_SENORBLANCO : LayoutTests/fast/events/attribute-listener-cloned-from-frameless-doc.xhtml = FAIL
 BUG_SENORBLANCO : LayoutTests/fast/events/attribute-listener-extracted-from-frameless-doc-context-2.html = FAIL
 BUG_SENORBLANCO : LayoutTests/fast/events/attribute-listener-extracted-from-frameless-doc-context.html = FAIL
-BUG_SENORBLANCO : LayoutTests/fast/events/node-event-anchor-lock.html = FAIL
+BUG_SENORBLANCO LINUX MAC : LayoutTests/fast/events/node-event-anchor-lock.html = FAIL
 BUG_SENORBLANCO WIN LINUX : LayoutTests/fast/forms/selected-index-assert.html = FAIL
 BUG_SENORBLANCO WIN LINUX : LayoutTests/svg/filters/feComposite.svg = FAIL
 
