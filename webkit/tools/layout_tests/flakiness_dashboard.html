@@ -99,7 +99,7 @@
     }
     .test-table .wrong-expectations,
     .wrong-expectations {
-      background-color: #afdaff;
+      background-color: #pink;
     }
     .P {
       background-color: #8fdf5f;
@@ -126,7 +126,7 @@
       background-color: #69f;
     }
     .merge {
-      background-color: green;
+      background-color: grey;
     }
     :not(#legend-contents) > .merge {
       width: 1px;
@@ -653,10 +653,10 @@
           {path: path, expectations: expectationsByTest[path]});
     }
 
-    // Reverse sort the array to hit more specific paths last. More specific
+    // Sort the array to hit more specific paths last. More specific
     // paths (e.g. foo/bar/baz.html) override entries for less-specific ones
     // (e.g. foo/bar).
-    expectationsArray.sort(getAlphanumericCompare('path', true));
+    expectationsArray.sort();
 
     var allTests = getAllTests();
     for (var i = 0; i < expectationsArray.length; i++) {
@@ -944,11 +944,13 @@
           buildInfo.buildType + ':</h2>';
     }
 
+    var open = '<div onclick="selectContents(this)">';
+
     if (tests.length) {
       html +=  '<h3>Have not failed in last ' +
           resultsByBuilder[builder].buildNumbers.length +
-          ' runs.</h3><div id="passing-tests"><div>' +
-          tests.join('</div><div>') + '</div></div>';
+          ' runs.</h3><div id="passing-tests">' + open +
+          tests.join('</div>' + open) + '</div></div>';
     }
 
     if (skippedPaths.length) {
@@ -958,8 +960,8 @@
           '</h3>';
 
       if (currentState.showSkipped) {
-        html += '<div id="passing-tests"><div>' +
-          skippedPaths.join('</div><div>') + '</div></div>';
+        html += '<div id="passing-tests">' + open +
+          skippedPaths.join('</div>' + open) + '</div></div>';
       }
     }
     return html;
@@ -1037,6 +1039,13 @@
     return !currentState.showFlaky && isTestFlaky(testResult);
   }
 
+  /**
+   * Sets the browser's selection to the element's contents.
+   */
+  function selectContents(element) {
+    window.getSelection().selectAllChildren(element);
+  }
+
   function getHTMLForSingleTestRow(test, builder, opt_isCrossBuilderView) {
     if (shouldHideTest(test)) {
       // The innerHTML call is considerably faster if we exclude the rows for
@@ -1049,7 +1058,7 @@
     // instead of test paths.
     var testCellHTML = opt_isCrossBuilderView ? builder :
       '<span class="link" onclick="showPopupForTest(event, \'' + test.test +
-      '\');return false;">' + test.test + '</span>';
+      '\');selectContents(this);return false;">' + test.test + '</span>';
 
     return '<tr class="' +
       (test.meetsExpectations ? '' : 'wrong-expectations') +
