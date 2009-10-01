@@ -842,8 +842,7 @@ const bool MostVisitedHandler::GetPinnedURLAtIndex(const int index,
 
       int dict_index;
       DictionaryValue* dict = static_cast<DictionaryValue*>(value);
-      dict->GetInteger(L"index", &dict_index);
-      if (dict_index == index) {
+      if (dict->GetInteger(L"index", &dict_index) && dict_index == index) {
         // The favicon and thumbnail URLs may be empty.
         std::string tmp_string;
         if (dict->GetString(L"faviconUrl", &tmp_string))
