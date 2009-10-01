@@ -29,6 +29,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_plugin_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "googleurl/src/gurl.h"
 
@@ -121,6 +122,8 @@ class CreateDesktopShortcutTask : public Task {
 
     FilePath shortcut_filename =
         ShellIntegration::GetDesktopShortcutFilename(shortcut_info_.url);
+    if (shortcut_filename.empty())
+      return;
 
     std::string icon_name = CreateIcon(shortcut_filename);
 
@@ -293,13 +296,28 @@ bool ShellIntegration::IsFirefoxDefaultBrowser() {
 
 FilePath ShellIntegration::GetDesktopShortcutFilename(const GURL& url) {
   // Use a prefix, because xdg-desktop-menu requires it.
-  std::wstring filename = std::wstring(chrome::kBrowserProcessExecutableName) +
-      L"-" + UTF8ToWide(url.spec()) + L".desktop";
-  file_util::ReplaceIllegalCharacters(&filename, '_');
+  std::wstring filename_wide =
+      std::wstring(chrome::kBrowserProcessExecutableName) + L"-" +
+      UTF8ToWide(url.spec());
+  file_util::ReplaceIllegalCharacters(&filename_wide, '_');
 
-  // Return BaseName to be absolutely sure we're not vulnerable to a directory
-  // traversal attack.
-  return FilePath::FromWStringHack(filename).BaseName();
+  FilePath desktop_path;
+  if (!PathService::Get(chrome::DIR_USER_DESKTOP, &desktop_path))
+    return FilePath();
+
+  FilePath filepath = desktop_path.Append(
+      FilePath::FromWStringHack(filename_wide));
+  FilePath alternative_filepath(filepath.value() + ".desktop");
+  for (size_t i = 1; i < 100; ++i) {
+    if (file_util::PathExists(FilePath(alternative_filepath))) {
+      alternative_filepath = FilePath(filepath.value() + "_" + IntToString(i) +
+                                      ".desktop");
+    } else {
+      return FilePath(alternative_filepath).BaseName();
+    }
+  }
+
+  return FilePath();
 }
 
 std::string ShellIntegration::GetDesktopFileContents(
@@ -319,15 +337,9 @@ std::string ShellIntegration::GetDesktopFileContents(
         if (exec_tokenizer.token() != "%U")
           final_path += exec_tokenizer.token() + " ";
       }
-      std::wstring app_switch_wide(switches::kApp);
-      std::string app_switch(StringPrintf("\"--%s=%s\"",
-                                          WideToUTF8(app_switch_wide).c_str(),
-                                          url.spec().c_str()));
-      // Sanitize the command line string.
-      ReplaceSubstringsAfterOffset(&app_switch, 0, "%", "%%");
-      ReplaceSubstringsAfterOffset(&app_switch, 0, ";", "");
-      ReplaceSubstringsAfterOffset(&app_switch, 0, "$", "");
-      output_buffer += std::string("Exec=") + final_path + app_switch + "\n";
+      std::string switches;
+      CPB_GetCommandLineArgumentsCommon(url.spec().c_str(), &switches);
+      output_buffer += std::string("Exec=") + final_path + switches + "\n";
     } else if (tokenizer.token().substr(0, 5) == "Name=") {
       std::string final_title = UTF16ToUTF8(title);
       // Make sure no endline characters can slip in and possibly introduce
