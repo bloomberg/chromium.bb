@@ -236,7 +236,32 @@ static inline bool CurrentEventShouldCauseBackgroundTab(
 
   const WebMouseEvent* mouse_event =
       static_cast<const WebMouseEvent*>(input_event);
-  return (mouse_event->button == WebMouseEvent::ButtonMiddle);
+
+  WebNavigationPolicy policy;
+  unsigned short button_number;
+  switch (mouse_event->button) {
+    case WebMouseEvent::ButtonLeft:
+      button_number = 0;
+      break;
+    case WebMouseEvent::ButtonMiddle:
+      button_number = 1;
+      break;
+    case WebMouseEvent::ButtonRight:
+      button_number = 2;
+      break;
+    default:
+      return false;
+  }
+  bool ctrl = mouse_event->modifiers & WebMouseEvent::ControlKey;
+  bool shift = mouse_event->modifiers & WebMouseEvent::ShiftKey;
+  bool alt = mouse_event->modifiers & WebMouseEvent::AltKey;
+  bool meta = mouse_event->modifiers & WebMouseEvent::MetaKey;
+
+  if (!WebViewImpl::NavigationPolicyFromMouseEvent(button_number, ctrl,
+      shift, alt, meta, &policy))
+    return false;
+
+  return policy == WebKit::WebNavigationPolicyNewBackgroundTab;
 }
 
 void ChromeClientImpl::show() {
@@ -257,7 +282,8 @@ void ChromeClientImpl::show() {
     WebNavigationPolicy policy = WebKit::WebNavigationPolicyNewForegroundTab;
     if (as_popup)
       policy = WebKit::WebNavigationPolicyNewPopup;
-    if (CurrentEventShouldCauseBackgroundTab(WebViewImpl::current_input_event()))
+    if (CurrentEventShouldCauseBackgroundTab(
+          WebViewImpl::current_input_event()))
       policy = WebKit::WebNavigationPolicyNewBackgroundTab;
 
     delegate->show(policy);

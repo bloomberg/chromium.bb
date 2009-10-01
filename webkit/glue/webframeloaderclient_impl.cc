@@ -1298,31 +1298,9 @@ bool WebFrameLoaderClient::ActionSpecifiesNavigationPolicy(
     return false;
 
   const MouseEvent* event = static_cast<const MouseEvent*>(action.event());
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_FREEBSD)
-  const bool new_tab_modifier = (event->button() == 1) || event->ctrlKey();
-#elif defined(OS_MACOSX)
-  const bool new_tab_modifier = (event->button() == 1) || event->metaKey();
-#endif
-  const bool shift = event->shiftKey();
-  const bool alt = event->altKey();
-  if (!new_tab_modifier && !shift && !alt)
-    return false;
-
-  DCHECK(policy);
-  if (new_tab_modifier) {
-    if (shift) {
-      *policy = WebKit::WebNavigationPolicyNewForegroundTab;
-    } else {
-      *policy = WebKit::WebNavigationPolicyNewBackgroundTab;
-    }
-  } else {
-    if (shift) {
-      *policy = WebKit::WebNavigationPolicyNewWindow;
-    } else {
-      *policy = WebKit::WebNavigationPolicyDownload;
-    }
-  }
-  return true;
+  return WebViewImpl::NavigationPolicyFromMouseEvent(event->button(),
+      event->ctrlKey(), event->shiftKey(), event->altKey(), event->metaKey(),
+      policy);
 }
 
 void WebFrameLoaderClient::HandleBackForwardNavigation(const GURL& url) {

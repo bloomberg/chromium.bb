@@ -233,6 +233,16 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
     return initial_navigation_policy_;
   }
 
+  // Determines whether a page should e.g. be opened in a background tab.
+  // Returns false if it has no opinion, in which case it doesn't set *policy.
+  static bool NavigationPolicyFromMouseEvent(
+      unsigned short button,
+      bool ctrl,
+      bool shift,
+      bool alt,
+      bool meta,
+      WebKit::WebNavigationPolicy* policy);
+
   // Start a system drag and drop operation.
   void StartDragging(
       const WebKit::WebPoint& event_pos,

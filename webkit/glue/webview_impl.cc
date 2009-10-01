@@ -105,6 +105,7 @@ using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
+using WebKit::WebNavigationPolicy;
 using WebKit::WebPoint;
 using WebKit::WebRect;
 using WebKit::WebSettings;
@@ -1789,6 +1790,36 @@ void WebViewImpl::DidCommitLoad(bool* is_new_navigation) {
   new_navigation_loader_ = NULL;
 #endif
   observed_new_navigation_ = false;
+}
+
+// static
+bool WebViewImpl::NavigationPolicyFromMouseEvent(unsigned short button,
+                                                 bool ctrl, bool shift,
+                                                 bool alt, bool meta,
+                                                 WebNavigationPolicy* policy) {
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_FREEBSD)
+  const bool new_tab_modifier = (button == 1) || ctrl;
+#elif defined(OS_MACOSX)
+  const bool new_tab_modifier = (button == 1) || meta;
+#endif
+  if (!new_tab_modifier && !shift && !alt)
+    return false;
+
+  DCHECK(policy);
+  if (new_tab_modifier) {
+    if (shift) {
+      *policy = WebKit::WebNavigationPolicyNewForegroundTab;
+    } else {
+      *policy = WebKit::WebNavigationPolicyNewBackgroundTab;
+    }
+  } else {
+    if (shift) {
+      *policy = WebKit::WebNavigationPolicyNewWindow;
+    } else {
+      *policy = WebKit::WebNavigationPolicyDownload;
+    }
+  }
+  return true;
 }
 
 void WebViewImpl::StartDragging(const WebPoint& event_pos,
