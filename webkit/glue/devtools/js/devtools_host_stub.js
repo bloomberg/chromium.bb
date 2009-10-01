@@ -45,14 +45,8 @@ RemoteDebuggerAgentStub.prototype.StartProfiling = function(modules) {
           'heap-sample-item,STRING_TYPE,100,1000\n' +
           'heap-sample-item,CODE_TYPE,10,200\n' +
           'heap-sample-item,MAP_TYPE,20,350\n';
-      var sample = RemoteDebuggerAgentStub.HeapSamples[this.heapProfSample_];
-      if (++this.heapProfSample_ == RemoteDebuggerAgentStub.HeapSamples.length)
-          this.heapProfSample_ = 0;
-      for (var obj in sample) {
-        this.heapProfLog_ +=
-            'heap-js-cons-item,"' + obj + '",' + sample[obj][0] +
-            ',' + sample[obj][1] + '\n';
-      }
+      this.heapProfLog_ += RemoteDebuggerAgentStub.HeapSamples[this.heapProfSample_++];
+      this.heapProfSample_ %= RemoteDebuggerAgentStub.HeapSamples.length;
       this.heapProfLog_ +=
           'heap-sample-end,"Heap","allocated"\n';
     }
@@ -127,12 +121,47 @@ RemoteDebuggerAgentStub.ProfilerLogBuffer =
 
 
 RemoteDebuggerAgentStub.HeapSamples = [
-    {foo: [1, 100], bar: [20, 2000]},
-    {foo: [2000, 200000], bar: [10, 1000]},
-    {foo: [15, 1500], bar: [15, 1500]},
-    {bar: [20, 2000]},
-    {foo: [15, 1500], bar: [15, 1500]},
-    {bar: [20, 2000], baz: [15, 1500]}
+  'heap-js-cons-item,foo,1,100\n' +
+  'heap-js-cons-item,bar,20,2000\n' +
+  'heap-js-cons-item,Object,5,100\n' +
+  'heap-js-ret-item,foo,bar;3\n' +
+  'heap-js-ret-item,bar,foo;5\n' +
+  'heap-js-ret-item,Object:0x1234,(roots);1\n',
+
+  'heap-js-cons-item,foo,2000,200000\n' +
+  'heap-js-cons-item,bar,10,1000\n' +
+  'heap-js-cons-item,Object,6,120\n' +
+  'heap-js-ret-item,foo,bar;7,Object:0x1234;10\n' +
+  'heap-js-ret-item,bar,foo;10,Object:0x1234;10\n' +
+  'heap-js-ret-item,Object:0x1234,(roots);1\n',
+
+  'heap-js-cons-item,foo,15,1500\n' +
+  'heap-js-cons-item,bar,15,1500\n' +
+  'heap-js-cons-item,Object,5,100\n' +
+  'heap-js-cons-item,Array,3,1000\n' +
+  'heap-js-ret-item,foo,bar;3,Array:0x5678;1\n' +
+  'heap-js-ret-item,bar,foo;5,Object:0x1234;8,Object:0x5678;2\n' +
+  'heap-js-ret-item,Object:0x1234,(roots);1,Object:0x5678;2\n' +
+  'heap-js-ret-item,Object:0x5678,(global property);3,Object:0x1234;5\n' +
+  'heap-js-ret-item,Array:0x5678,(global property);3,Array:0x5678;2\n',
+
+  'heap-js-cons-item,bar,20,2000\n' +
+  'heap-js-cons-item,Object,6,120\n' +
+  'heap-js-ret-item,bar,foo;5,Object:0x1234;1,Object:0x1235;3\n' +
+  'heap-js-ret-item,Object:0x1234,(global property);3\n' +
+  'heap-js-ret-item,Object:0x1235,(global property);5\n',
+
+  'heap-js-cons-item,foo,15,1500\n' +
+  'heap-js-cons-item,bar,15,1500\n' +
+  'heap-js-cons-item,Array,10,1000\n' +
+  'heap-js-ret-item,foo,bar;1,Array:0x5678;1\n' +
+  'heap-js-ret-item,bar,foo;5\n' +
+  'heap-js-ret-item,Array:0x5678,(roots);3\n',
+
+  'heap-js-cons-item,bar,20,2000\n' +
+  'heap-js-cons-item,baz,15,1500\n' +
+  'heap-js-ret-item,bar,baz;3\n' +
+  'heap-js-ret-item,baz,bar;3\n'
 ];
 
 

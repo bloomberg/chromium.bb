@@ -172,11 +172,12 @@ devtools.profiler.Processor = function() {
           processor: this.processHeapSampleItem_ },
       'heap-js-cons-item': { parsers: [null, parseInt, parseInt],
           processor: this.processHeapJsConsItem_ },
+      'heap-js-ret-item': { parsers: [null, 'var-args'],
+          processor: this.processHeapJsRetItem_ },
       'heap-sample-end': { parsers: [null, null],
           processor: this.processHeapSampleEnd_ },
       // Not used in DevTools Profiler.
       'shared-library': null,
-      'heap-js-ret-item': null,
       // Obsolete row types.
       'code-allocate': null,
       'begin-code-region': null,
@@ -381,6 +382,7 @@ devtools.profiler.Processor.prototype.processHeapSampleBegin_ = function(
   this.currentHeapSnapshot_ = {
       number: this.heapSnapshotId_++,
       entries: {},
+      clusters: {},
       lowlevels: {},
       ticks: ticks
   };
@@ -408,8 +410,44 @@ devtools.profiler.Processor.prototype.processHeapJsConsItem_ = function(
     item, number, size) {
   if (!this.currentHeapSnapshot_) return;
   this.currentHeapSnapshot_.entries[item] = {
-    cons: item, count: number, size: size
+    cons: item, count: number, size: size, retainers: {}
   };
+};
+
+
+devtools.profiler.Processor.prototype.processHeapJsRetItem_ = function(
+    item, retainersArray) {
+  if (!this.currentHeapSnapshot_) return;
+  var rawRetainers = {};
+  for (var i = 0, n = retainersArray.length; i < n; ++i) {
+    var entry = retainersArray[i].split(';');
+    rawRetainers[entry[0]] = parseInt(entry[1], 10);
+  }
+
+  function mergeRetainers(entry) {
+    for (var rawRetainer in rawRetainers) {
+      var consName = rawRetainer.indexOf(':') != -1 ?
+          rawRetainer.split(':')[0] : rawRetainer;
+      if (!(consName in entry.retainers))
+        entry.retainers[consName] = { cons: consName, count: 0, clusters: {} };
+      var retainer = entry.retainers[consName];
+      retainer.count += rawRetainers[rawRetainer];
+      if (consName != rawRetainer)
+        retainer.clusters[rawRetainer] = true;
+    }
+  }
+
+  if (item.indexOf(':') != -1) {
+    // Array, Function, or Object instances cluster case.
+    if (!(item in this.currentHeapSnapshot_.clusters)) {
+      this.currentHeapSnapshot_.clusters[item] = {
+        cons: item, retainers: {}
+      };
+    }
+    mergeRetainers(this.currentHeapSnapshot_.clusters[item]);
+    item = item.split(':')[0];
+  }
+  mergeRetainers(this.currentHeapSnapshot_.entries[item]);
 };
 
 
