@@ -154,7 +154,7 @@ def RegenerateFlags(options):
     if action == 'append':
       flags.extend(RegenerateAppendFlag(opt, value, value_predicate,
                                         env_name, options))
-    elif action in ('store', None):  # None is a synonym for 'store'.
+    elif action in ('store', 'store_true', 'store_false', None):  # None is a synonym for 'store'.
       if value:
         flags.append(opt + value_predicate(value))
       elif options.use_environment and env_name and os.environ.get(env_name):
