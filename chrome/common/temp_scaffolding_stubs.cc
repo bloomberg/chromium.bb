@@ -175,12 +175,12 @@ MemoryDetails::MemoryDetails() {
 
 void MemoryDetails::StartFetch() {
   NOTIMPLEMENTED();
-  OnDetailsAvailable();
 
-  // When we get the real implementation this can be removed. The Release that
-  // ends up deleting this object is done as the result of the PostTask in
-  // CollectProcessData.
-  Release();
+  // Other implementations implicitly own the object by passing it to
+  // IO and UI tasks.  This code is called from AboutMemoryHandler's
+  // constructor, so there is no reference to Release(), yet.
+  MessageLoop::current()->PostTask(
+      FROM_HERE, NewRunnableMethod(this, &MemoryDetails::OnDetailsAvailable));
 }
 #endif
 
@@ -269,4 +269,3 @@ void BookmarkEditor::Show(gfx::NativeView parent_window,
 }
 
 #endif
-
