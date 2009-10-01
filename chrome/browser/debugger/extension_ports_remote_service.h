@@ -34,7 +34,7 @@ class ExtensionPortsRemoteService : public DevToolsRemoteListener,
   // dispatches messages to this service.
   // The ownership of |delegate| is NOT transferred to this class.
   explicit ExtensionPortsRemoteService(DevToolsProtocolHandler* delegate);
-  virtual ~ExtensionPortsRemoteService() {}
+  virtual ~ExtensionPortsRemoteService();
 
   // DevToolsRemoteListener methods:
 

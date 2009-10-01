@@ -234,6 +234,11 @@ BrowserRenderProcessHost::~BrowserRenderProcessHost() {
   }
 
   ClearTransportDIBCache();
+
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_PORT_DELETED_DEBUG,
+      Source<IPC::Message::Sender>(this),
+      NotificationService::NoDetails());
 }
 
 bool BrowserRenderProcessHost::Init() {

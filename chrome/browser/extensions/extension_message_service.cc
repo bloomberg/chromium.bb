@@ -37,10 +37,15 @@
 struct ExtensionMessageService::MessagePort {
   IPC::Message::Sender* sender;
   int routing_id;
+  // TODO(mpcomplete): remove this when I track down the crasher. Hopefully
+  // this guy will show up in some stack traces and potentially give some
+  // insight.
+  // http://code.google.com/p/chromium/issues/detail?id=21201
+  int debug_info;
 
   MessagePort(IPC::Message::Sender* sender = NULL,
               int routing_id = MSG_ROUTING_CONTROL) :
-     sender(sender), routing_id(routing_id) {}
+     sender(sender), routing_id(routing_id), debug_info(0) {}
 };
 
 struct ExtensionMessageService::MessageChannel {
@@ -242,6 +247,7 @@ void ExtensionMessageService::OpenChannelToExtensionOnUIThread(
   MessagePort receiver(
       profile_->GetExtensionProcessManager()->GetExtensionProcess(extension_id),
       MSG_ROUTING_CONTROL);
+  receiver.debug_info = 1;
   TabContents* source_contents = tab_util::GetTabContentsByID(
       source_process_id, source_routing_id);
   OpenChannelOnUIThreadImpl(source, source_contents,
@@ -256,10 +262,12 @@ void ExtensionMessageService::OpenChannelToTabOnUIThread(
   RenderProcessHost* source = RenderProcessHost::FromID(source_process_id);
   TabContents* contents;
   MessagePort receiver;
+  receiver.debug_info = 2;
   if (ExtensionTabUtil::GetTabById(tab_id, source->profile(),
                                    NULL, NULL, &contents, NULL)) {
     receiver.sender = contents->render_view_host();
     receiver.routing_id = contents->render_view_host()->routing_id();
+    receiver.debug_info = 3;
   }
   TabContents* source_contents = tab_util::GetTabContentsByID(
       source_process_id, source_routing_id);
@@ -332,6 +340,7 @@ int ExtensionMessageService::OpenSpecialChannelToExtension(
       profile_->GetExtensionProcessManager()->
       GetExtensionProcess(extension_id),
       MSG_ROUTING_CONTROL);
+  receiver.debug_info = 4;
   if (!OpenChannelOnUIThreadImpl(
       source, NULL, receiver, port2_id, extension_id, channel_name))
     return -1;
@@ -353,6 +362,7 @@ int ExtensionMessageService::OpenSpecialChannelToTab(
   MessagePort receiver(
       target_tab_contents->render_view_host(),
       target_tab_contents->render_view_host()->routing_id());
+  receiver.debug_info = 5;
   if (!OpenChannelOnUIThreadImpl(source, NULL,
                                  receiver, port2_id,
                                  extension_id, channel_name))
@@ -445,6 +455,26 @@ void ExtensionMessageService::Observe(NotificationType type,
     case NotificationType::RENDER_VIEW_HOST_DELETED:
       OnSenderClosed(Details<RenderViewHost>(details).ptr());
       break;
+
+    // We should already have removed this guy from our channel map by this
+    // point.
+    case NotificationType::EXTENSION_PORT_DELETED_DEBUG: {
+      IPC::Message::Sender* sender =
+          Details<IPC::Message::Sender>(details).ptr();
+      for (MessageChannelMap::iterator it = channels_.begin();
+           it != channels_.end(); ) {
+        MessageChannelMap::iterator current = it++;
+        int debug_info = current->second->receiver.debug_info;
+        if (current->second->opener.sender == sender) {
+          CHECK(false) << "Shouldn't happen:" << debug_info;
+        } else if (current->second->receiver.sender == sender) {
+          CHECK(false) << "Shouldn't happen either: " << debug_info;
+        }
+      }
+      OnSenderClosed(sender);
+      break;
+    }
+
     default:
       NOTREACHED();
       return;
@@ -459,8 +489,12 @@ void ExtensionMessageService::OnSenderClosed(IPC::Message::Sender* sender) {
     MessageChannelMap::iterator current = it++;
     // If both sides are the same renderer, and it is closing, there is no
     // "other" port, so there's no need to notify it.
+    int debug_info = current->second->receiver.debug_info;
+    bool debug_check = debug_info == 4 || debug_info == 5;
     bool notify_other_port =
-        current->second->opener.sender != current->second->receiver.sender;
+        current->second->opener.sender != current->second->receiver.sender ||
+        debug_check;
+
     if (current->second->opener.sender == sender) {
       CloseChannelImpl(current, GET_CHANNEL_OPENER_ID(current->first),
                        notify_other_port);

@@ -136,6 +136,11 @@ RenderViewHost::~RenderViewHost() {
   // Be sure to clean up any leftover state from cross-site requests.
   Singleton<CrossSiteRequestManager>()->SetHasPendingCrossSiteRequest(
       process()->id(), routing_id(), false);
+
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_PORT_DELETED_DEBUG,
+      Source<IPC::Message::Sender>(this),
+      NotificationService::NoDetails());
 }
 
 void RenderViewHost::Observe(NotificationType type,

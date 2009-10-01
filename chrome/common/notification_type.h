@@ -696,6 +696,10 @@ class NotificationType {
 
     // Debugging ---------------------------------------------------------------
 
+    // TODO(mpcomplete): Sent to diagnose a bug. Remove when fixed.
+    // http://code.google.com/p/chromium/issues/detail?id=21201
+    EXTENSION_PORT_DELETED_DEBUG,
+
     // Count (must be last) ----------------------------------------------------
     // Used to determine the number of notification types.  Not valid as
     // a type parameter when registering for or posting notifications.

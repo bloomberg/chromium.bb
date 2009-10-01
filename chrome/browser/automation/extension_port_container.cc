@@ -8,13 +8,14 @@
 #include "base/json_reader.h"
 #include "base/json_writer.h"
 #include "base/values.h"
-#include "chrome/common/render_messages.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/extension_automation_constants.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/test/automation/automation_messages.h"
 
 // TODO(siggi): Find a more structured way to read and write JSON messages.
@@ -34,6 +35,11 @@ ExtensionPortContainer::~ExtensionPortContainer() {
 
   if (port_id_ != -1)
     service_->CloseChannel(port_id_);
+
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_PORT_DELETED_DEBUG,
+      Source<IPC::Message::Sender>(this),
+      NotificationService::NoDetails());
 }
 
 bool ExtensionPortContainer::PostResponseToExternalPort(

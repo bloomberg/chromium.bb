@@ -23,6 +23,7 @@
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/devtools_messages.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 
 namespace {
@@ -133,6 +134,13 @@ ExtensionPortsRemoteService::ExtensionPortsRemoteService(
   }
   if (!service_)
     LOG(WARNING) << "No usable profile for ExtensionPortsRemoteService";
+}
+
+ExtensionPortsRemoteService::~ExtensionPortsRemoteService() {
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_PORT_DELETED_DEBUG,
+      Source<IPC::Message::Sender>(this),
+      NotificationService::NoDetails());
 }
 
 void ExtensionPortsRemoteService::HandleMessage(
