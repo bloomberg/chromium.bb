@@ -680,6 +680,10 @@ class NotificationType {
     // Sent when a background page is ready so other components can load.
     EXTENSION_BACKGROUND_PAGE_READY,
 
+    // Sent when a browser action's state has changed. The source is the
+    // ExtensionAction* that changed. The details are an ExtensionActionState*.
+    EXTENSION_BROWSER_ACTION_UPDATED,
+
     // Sent by an extension to notify the browser about the results of a unit
     // test.
     EXTENSION_TEST_PASSED,

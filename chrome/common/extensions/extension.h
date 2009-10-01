@@ -196,6 +196,9 @@ class Extension {
   const UserScriptList& content_scripts() const { return content_scripts_; }
   const ExtensionActionMap& page_actions() const { return page_actions_; }
   ExtensionAction* browser_action() const { return browser_action_.get(); }
+  ExtensionActionState* browser_action_state() {
+    return browser_action_state_.get();
+  }
   const std::vector<PrivacyBlacklistInfo>& privacy_blacklists() const {
     return privacy_blacklists_;
   }
@@ -339,6 +342,9 @@ class Extension {
 
   // The extension's browser action, if any.
   scoped_ptr<ExtensionAction> browser_action_;
+
+  // The state of the browser action. Valid iff browser_action_ is non-NULL.
+  scoped_ptr<ExtensionActionState> browser_action_state_;
 
   // Optional list of privacy blacklistrom.
   std::vector<PrivacyBlacklistInfo> privacy_blacklists_;

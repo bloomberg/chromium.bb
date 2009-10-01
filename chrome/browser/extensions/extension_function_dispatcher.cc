@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/execute_code_in_tab_function.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
+#include "chrome/browser/extensions/extension_browser_actions_api.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_i18n_api.h"
 #include "chrome/browser/extensions/extension_message_service.h"
@@ -73,6 +74,7 @@ void FactoryRegistry::ResetFunctions() {
   namespace bookmarks = extension_bookmarks_module_constants;
   namespace i18n = extension_i18n_api_functions;
   namespace page_actions = extension_page_actions_module_constants;
+  namespace browser_actions = extension_browser_actions_api_constants;
   namespace tabs = extension_tabs_module_constants;
   namespace test = extension_test_api_functions;
   namespace toolstrip = extension_toolstrip_api_functions;
@@ -122,6 +124,12 @@ void FactoryRegistry::ResetFunctions() {
       &NewExtensionFunction<EnablePageActionFunction>;
   factories_[page_actions::kDisablePageActionFunction] =
       &NewExtensionFunction<DisablePageActionFunction>;
+
+  // Browser Actions.
+  factories_[browser_actions::kSetNameFunction] =
+      &NewExtensionFunction<BrowserActionSetNameFunction>;
+  factories_[browser_actions::kSetIconFunction] =
+      &NewExtensionFunction<BrowserActionSetIconFunction>;
 
   // Bookmarks.
   factories_[bookmarks::kGetBookmarksFunction] =

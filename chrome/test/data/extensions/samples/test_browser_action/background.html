@@ -1,0 +1,13 @@
+<html>
+<head>
+<script>
+  // Called when the user clicks on the browser action.
+  var i = 1;
+  chrome.browserAction.onClicked.addListener(function(windowId) {
+    chrome.browserAction.setName("Ouch" + i); i++;
+    chrome.browserAction.setIcon(i % 2);
+  });
+</script>
+</head>
+</html>
+

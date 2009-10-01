@@ -960,6 +960,9 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
                                   ExtensionAction::BROWSER_ACTION));
     if (!browser_action_.get())
       return false;  // Failed to parse browser action definition.
+
+    browser_action_state_.reset(
+        new ExtensionActionState(browser_action_->name(), 0));
   }
 
   // Initialize the permissions (optional).

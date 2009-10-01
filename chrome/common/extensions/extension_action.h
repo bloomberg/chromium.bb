@@ -78,7 +78,10 @@ class ExtensionActionState {
   }
 
   std::string title() const { return title_; }
+  void set_title(const std::string& title) { title_ = title; }
+
   int icon_index() const { return icon_index_; }
+  void set_icon_index(int icon_index) { icon_index_ = icon_index; }
 
  private:
   // The title to use.

@@ -1211,6 +1211,8 @@
         'browser/extensions/extension_bookmarks_module.h',
         'browser/extensions/extension_bookmarks_module_constants.cc',
         'browser/extensions/extension_bookmarks_module_constants.h',
+        'browser/extensions/extension_browser_actions_api.cc',
+        'browser/extensions/extension_browser_actions_api.h',
         'browser/extensions/extension_creator.cc',
         'browser/extensions/extension_creator.h',
         'browser/extensions/extension_disabled_infobar_delegate.cc',

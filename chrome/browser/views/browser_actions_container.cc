@@ -31,7 +31,8 @@ static const int kHorizontalPadding = 4;
 // loading the image for the button asynchronously on the file thread to
 class BrowserActionImageView : public views::TextButton,
                                public views::ButtonListener,
-                               public ImageLoadingTracker::Observer {
+                               public ImageLoadingTracker::Observer,
+                               public NotificationObserver {
  public:
   BrowserActionImageView(ExtensionAction* browser_action,
                          Extension* extension,
@@ -44,10 +45,21 @@ class BrowserActionImageView : public views::TextButton,
   // Overridden from ImageLoadingTracker.
   virtual void OnImageLoaded(SkBitmap* image, size_t index);
 
+  // Overridden from NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
+  // Called to update the display to match the browser action's state.
+  void OnStateUpdated();
+
   // The browser action this view represents. The ExtensionAction is not owned
   // by this class.
   ExtensionAction* browser_action_;
+
+  // The state of our browser action. Not owned by this class.
+  ExtensionActionState* browser_action_state_;
 
   // The icons representing different states for the browser action.
   std::vector<SkBitmap> browser_action_icons_;
@@ -60,6 +72,8 @@ class BrowserActionImageView : public views::TextButton,
   // The browser action shelf.
   BrowserActionsContainer* panel_;
 
+  NotificationRegistrar registrar_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserActionImageView);
 };
 
@@ -68,6 +82,7 @@ BrowserActionImageView::BrowserActionImageView(
     BrowserActionsContainer* panel)
     : TextButton(this, L""),
       browser_action_(browser_action),
+      browser_action_state_(extension->browser_action_state()),
       tracker_(NULL),
       panel_(panel) {
   set_alignment(TextButton::ALIGN_CENTER);
@@ -84,6 +99,9 @@ BrowserActionImageView::BrowserActionImageView(
     FilePath path = extension->GetResourcePath(*iter);
     tracker_->PostLoadImageTask(path);
   }
+
+  registrar_.Add(this, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
+                 Source<ExtensionAction>(browser_action_));
 }
 
 BrowserActionImageView::~BrowserActionImageView() {
@@ -101,14 +119,27 @@ void BrowserActionImageView::ButtonPressed(
 void BrowserActionImageView::OnImageLoaded(SkBitmap* image, size_t index) {
   DCHECK(index < browser_action_icons_.size());
   browser_action_icons_[index] = *image;
-  if (index == 0) {
-    SetIcon(*image);
-    SetTooltipText(ASCIIToWide(browser_action_->name()));
-    panel_->OnBrowserActionVisibilityChanged();
-  }
-
-  if (index == browser_action_icons_.size() - 1)
+  if (index == browser_action_icons_.size() - 1) {
+    OnStateUpdated();
     tracker_ = NULL;  // The tracker object will delete itself when we return.
+  }
+}
+
+void BrowserActionImageView::OnStateUpdated() {
+  SkBitmap* image = &browser_action_icons_[browser_action_state_->icon_index()];
+  SetIcon(*image);
+  SetTooltipText(ASCIIToWide(browser_action_state_->title()));
+  panel_->OnBrowserActionVisibilityChanged();
+}
+
+void BrowserActionImageView::Observe(NotificationType type,
+                                     const NotificationSource& source,
+                                     const NotificationDetails& details) {
+  if (type == NotificationType::EXTENSION_BROWSER_ACTION_UPDATED) {
+    OnStateUpdated();
+  } else {
+    NOTREACHED() << L"Received unexpected notification";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

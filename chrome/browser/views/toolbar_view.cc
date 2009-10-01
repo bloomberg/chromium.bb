@@ -1083,8 +1083,10 @@ void ToolbarView::CreateAppMenu() {
   ExtensionsService* extensions_service =
       browser_->profile()->GetExtensionsService();
   if (extensions_service && extensions_service->extensions_enabled()) {
+    const ExtensionList* extensions = extensions_service->extensions();
     std::vector<ExtensionAction*> browser_actions =
         browser_->profile()->GetExtensionsService()->GetBrowserActions();
+
     if (browser_actions.size() == 0) {
       app_menu_contents_->AddItemWithStringId(IDC_MANAGE_EXTENSIONS,
                                               IDS_SHOW_EXTENSIONS);
@@ -1095,13 +1097,17 @@ void ToolbarView::CreateAppMenu() {
 
       extension_menu_contents_->AddItemWithStringId(IDC_MANAGE_EXTENSIONS,
                                                     IDS_MANAGE_EXTENSIONS);
-      for (size_t i = 0; i < browser_actions.size(); ++i) {
-        if (browser_actions[i]->command_id() > IDC_BROWSER_ACTION_LAST) {
+      for (size_t i = 0; i < extensions->size(); ++i) {
+        Extension* extension = extensions->at(i);
+        if (!extension->browser_action()) {
+          continue;
+        } else if (extension->browser_action()->command_id() >
+                   IDC_BROWSER_ACTION_LAST) {
           NOTREACHED() << "Too many browser actions.";
         } else {
           extension_menu_contents_->AddItem(
-              browser_actions[i]->command_id(),
-              UTF8ToUTF16(browser_actions[i]->name()));
+              extension->browser_action()->command_id(),
+              UTF8ToUTF16(extension->browser_action_state()->title()));
         }
       }
     }
