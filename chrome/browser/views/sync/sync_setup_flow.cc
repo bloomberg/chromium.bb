@@ -4,6 +4,8 @@
 
 #ifdef CHROME_PERSONALIZATION
 
+#include "chrome/browser/views/sync/sync_setup_flow.h"
+
 #include "base/histogram.h"
 #include "base/json_reader.h"
 #include "base/json_writer.h"
@@ -15,7 +17,6 @@
 #include "chrome/browser/sync/auth_error_state.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/views/sync/sync_setup_flow.h"
 #include "grit/locale_settings.h"
 #include "views/window/window.h"
 
@@ -151,7 +152,7 @@ void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
   switch (current_state_) {
     case SyncSetupWizard::GAIA_LOGIN:
       ProfileSyncService::SyncEvent(
-          ProfileSyncService::CANCEL_FROM_SIGNON_WIHTOUT_AUTH);
+          ProfileSyncService::CANCEL_FROM_SIGNON_WITHOUT_AUTH);
       break;
     case SyncSetupWizard::GAIA_SUCCESS:
       ProfileSyncService::SyncEvent(

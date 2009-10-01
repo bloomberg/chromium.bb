@@ -77,7 +77,7 @@ class ProfileSyncService : public NotificationObserver,
     START_FROM_OPTIONS = 3,  // Sync was started from Wrench->Options.
 
     // Events regarding cancelation of the signon process of sync.
-    CANCEL_FROM_SIGNON_WIHTOUT_AUTH = 10,   // Cancelled before submitting
+    CANCEL_FROM_SIGNON_WITHOUT_AUTH = 10,   // Cancelled before submitting
                                             // username and password.
     CANCEL_DURING_SIGNON = 11,              // Cancelled after auth.
     CANCEL_DURING_SIGNON_AFTER_MERGE = 12,  // Cancelled during merge.

@@ -13,8 +13,10 @@
 #include "app/l10n_util.h"
 #include "base/time.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/views/sync/sync_setup_wizard.h"
 #include "grit/generated_resources.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class FlowHandler;
 class SyncSetupFlowContainer;
