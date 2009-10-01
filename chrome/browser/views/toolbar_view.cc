@@ -539,7 +539,7 @@ void ToolbarView::Layout() {
   }
 
   browser_actions_->SetBounds(
-      next_menu_x, 0, browser_actions_width, height());
+      next_menu_x, child_y, browser_actions_width, child_height);
   next_menu_x += browser_actions_width;
 
   page_menu_->SetBounds(next_menu_x, child_y, page_menu_width, child_height);

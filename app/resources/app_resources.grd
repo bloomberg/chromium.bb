@@ -111,11 +111,6 @@
       <include name="IDR_MENU_DROPARROW" file="menu_droparrow.png" type="BINDATA" />
       <include name="IDR_MENU_CHECK" file="menu_check.png" type="BINDATA" />
       <include name="IDR_MENU_ARROW" file="menu_arrow.png" type="BINDATA" />
-      
-      <!-- Extension browser action badge -->
-      <include name="IDR_BROWSER_ACTION_BADGE_LEFT" file="browser_action_badge_left.png" type="BINDATA" />
-      <include name="IDR_BROWSER_ACTION_BADGE_RIGHT" file="browser_action_badge_right.png" type="BINDATA" />
-      <include name="IDR_BROWSER_ACTION_BADGE_CENTER" file="browser_action_badge_center.png" type="BINDATA" />
 
       <include name="IDR_GLEN" file="linux_close_glen.png" type="BINDATA" />
     </includes>

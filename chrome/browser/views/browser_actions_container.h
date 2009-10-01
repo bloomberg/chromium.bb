@@ -55,14 +55,6 @@ class BrowserActionsContainer : public views::View,
                        const NotificationDetails& details);
 
  private:
-  // We override PaintChildren so that we can paint the badges on top of them.
-  virtual void PaintChildren(gfx::Canvas* canvas);
-
-  // Paints an individual badge.
-  virtual void PaintBadge(gfx::Canvas* canvas, views::TextButton* button,
-                          const SkColor& badge_color,
-                          const std::string& text);
-
   // The vector of browser actions (icons/image buttons for each action).
   std::vector<views::TextButton*> browser_action_views_;
 
