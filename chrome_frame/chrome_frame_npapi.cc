@@ -409,7 +409,7 @@ bool ChromeFrameNPAPI::Initialize(NPMIMEType mime_type, NPP instance,
   // part of LaunchSettings
   /*
   if (!src_.empty())
-    automation_client_->InitiateNavigation(src_);
+    automation_client_->InitiateNavigation(src_, is_privileged_);
 
   std::string proxy_settings;
   bool has_prefs = pref_service_->Initialize(instance_,
@@ -1041,7 +1041,7 @@ void ChromeFrameNPAPI::OnAutomationServerReady() {
   }
 
   if (!src_.empty()) {
-    if (!automation_client_->InitiateNavigation(src_)) {
+    if (!automation_client_->InitiateNavigation(src_, is_privileged_)) {
       DLOG(ERROR) << "Failed to navigate to: " << src_;
       src_.clear();
     }
@@ -1309,7 +1309,7 @@ bool ChromeFrameNPAPI::NavigateToURL(const NPVariant* args, uint32_t arg_count,
   src_ = full_url;
   // Navigate only if we completed initialization i.e. proxy is set etc.
   if (ready_state_ == READYSTATE_COMPLETE) {
-    if (!automation_client_->InitiateNavigation(full_url)) {
+    if (!automation_client_->InitiateNavigation(full_url, is_privileged_)) {
       // TODO(tommi): call NPN_SetException.
       src_.clear();
       return false;

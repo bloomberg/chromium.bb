@@ -677,7 +677,7 @@ bool ChromeActiveDocument::ParseUrl(const std::wstring& url,
         !StartsWith(initial_url, kChromeAttachExternalTabPrefix, false);
   }
 
-  if (!IsValidUrlScheme(initial_url)) {
+  if (!IsValidUrlScheme(initial_url, is_privileged_)) {
     DLOG(WARNING) << __FUNCTION__ << " Disallowing navigation to url: "
                   << url;
     return false;
@@ -721,7 +721,7 @@ bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
       if (url_.Length()) {
         std::string utf8_url;
         WideToUTF8(url_, url_.Length(), &utf8_url);
-        if (!automation_client_->InitiateNavigation(utf8_url)) {
+        if (!automation_client_->InitiateNavigation(utf8_url, is_privileged_)) {
           DLOG(ERROR) << "Invalid URL: " << url;
           Error(L"Invalid URL");
           url_.Reset();

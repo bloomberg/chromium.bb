@@ -601,7 +601,7 @@ HRESULT GetUrlFromMoniker(IMoniker* moniker, IBindCtx* bind_context,
   return hr;
 }
 
-bool IsValidUrlScheme(const std::wstring& url) {
+bool IsValidUrlScheme(const std::wstring& url, bool is_privileged) {
   if (url.empty())
     return false;
 
@@ -609,6 +609,9 @@ bool IsValidUrlScheme(const std::wstring& url) {
 
   if (crack_url.SchemeIs("http") || crack_url.SchemeIs("https") ||
       crack_url.SchemeIs("about") || crack_url.SchemeIs("view-source"))
+    return true;
+
+  if (is_privileged && crack_url.SchemeIs("chrome-extension"))
     return true;
 
   if (StartsWith(url, kChromeAttachExternalTabPrefix, false))

@@ -88,7 +88,7 @@ STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
 
     std::wstring current_url;
     bool is_chrome_protocol = false;
-    if (is_top_level && IsValidUrlScheme(url->bstrVal)) {
+    if (is_top_level && IsValidUrlScheme(url->bstrVal, false)) {
       current_url.assign(url->bstrVal, SysStringLen(url->bstrVal));
       is_chrome_protocol = StartsWith(current_url, kChromeProtocolPrefix,
                                       false);

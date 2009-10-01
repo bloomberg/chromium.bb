@@ -10,7 +10,7 @@
 #include <atlctl.h>
 
 // Copied min/max defs from windows headers to appease atlimage.h.
-// TODO(slightlyoff): Figure out of more recent platform SDK's (> 6.1) 
+// TODO(slightlyoff): Figure out of more recent platform SDK's (> 6.1)
 //   undo the janky "#define NOMINMAX" train wreck. See:
 // http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=100703
 #ifndef max
@@ -282,13 +282,13 @@ END_MSG_MAP()
     return false;
   }
 
-  // Should connections initiated by this class try to block 
-  // responses served with the X-Frame-Options header? 
-  // ActiveX controls genereally will want to do this, 
-  // returning true, while true top-level documents 
-  // (ActiveDocument servers) will not. Your specialization 
-  // of this template should implement this method based on how 
-  // it "feels" from a security perspective. If it's hosted in another 
+  // Should connections initiated by this class try to block
+  // responses served with the X-Frame-Options header?
+  // ActiveX controls genereally will want to do this,
+  // returning true, while true top-level documents
+  // (ActiveDocument servers) will not. Your specialization
+  // of this template should implement this method based on how
+  // it "feels" from a security perspective. If it's hosted in another
   // scriptable document, return true, else false.
   virtual bool is_frame_busting_enabled() const {
     return true;
@@ -509,7 +509,7 @@ END_MSG_MAP()
     // We can initiate navigation here even if ready_state is not complete.
     // We do not have to set proxy, and AutomationClient will take care
     // of navigation just after CreateExternalTab is done.
-    if (!automation_client_->InitiateNavigation(full_url)) {
+    if (!automation_client_->InitiateNavigation(full_url, is_privileged_)) {
       // TODO(robertshield): Make InitiateNavigation return more useful
       // error information.
       return E_INVALIDARG;

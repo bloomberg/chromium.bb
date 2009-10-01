@@ -189,7 +189,7 @@ class ChromeFrameAutomationClient
                           bool incognito);
   void Uninitialize();
 
-  virtual bool InitiateNavigation(const std::string& url);
+  virtual bool InitiateNavigation(const std::string& url, bool is_privileged);
   virtual bool NavigateToIndex(int index);
   bool ForwardMessageFromExternalHost(const std::string& message,
                                       const std::string& origin,

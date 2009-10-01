@@ -118,3 +118,36 @@ TEST(UtilTests, HaveSameOrigin) {
     EXPECT_EQ(test.same_origin, HaveSameOrigin(test.a, test.b));
   }
 }
+
+TEST(UtilTests, IsValidUrlScheme) {
+  struct Cases {
+    const wchar_t* url;
+    bool is_privileged;
+    bool expected;
+  } test_cases[] = {
+    // non-privileged test cases
+    { L"http://www.google.ca", false, true },
+    { L"https://www.google.ca", false, true },
+    { L"about:config", false, true },
+    { L"view-source:http://www.google.ca", false, true },
+    { L"chrome-extension://aaaaaaaaaaaaaaaaaaa/toolstrip.html", false, false },
+    { L"ftp://www.google.ca", false, false },
+    { L"file://www.google.ca", false, false },
+    { L"file://C:\boot.ini", false, false },
+
+    // privileged test cases
+    { L"http://www.google.ca", true, true },
+    { L"https://www.google.ca", true, true },
+    { L"about:config", true, true },
+    { L"view-source:http://www.google.ca", true, true },
+    { L"chrome-extension://aaaaaaaaaaaaaaaaaaa/toolstrip.html", true, true },
+    { L"ftp://www.google.ca", true, false },
+    { L"file://www.google.ca", true, false },
+    { L"file://C:\boot.ini", true, false },
+  };
+
+  for (int i = 0; i < arraysize(test_cases); ++i) {
+    const Cases& test = test_cases[i];
+    EXPECT_EQ(test.expected, IsValidUrlScheme(test.url, test.is_privileged));
+  }
+}

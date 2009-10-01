@@ -219,7 +219,8 @@ HRESULT GetUrlFromMoniker(IMoniker* moniker, IBindCtx* bind_context,
 
 // Returns true if the URL passed in is something which can be handled by
 // Chrome. If this function returns false then we should fail the navigation.
-bool IsValidUrlScheme(const std::wstring& url);
+// When is_privileged is true, chrome extension URLs will be considered valid.
+bool IsValidUrlScheme(const std::wstring& url, bool is_privileged);
 
 // This returns the base directory in which to store user profiles.
 bool GetUserProfileBaseDirectory(std::wstring* path);

@@ -477,15 +477,17 @@ void ChromeFrameAutomationClient::Uninitialize() {
   init_state_ = UNINITIALIZED;
 }
 
-bool ChromeFrameAutomationClient::InitiateNavigation(const std::string& url) {
+bool ChromeFrameAutomationClient::InitiateNavigation(const std::string& url,
+                                                     bool is_privileged) {
   if (url.empty())
     return false;
 
   url_ = GURL(url);
 
   // Catch invalid URLs early.
-  if (!url_.is_valid() || !IsValidUrlScheme(UTF8ToWide(url))) {
-    DLOG(ERROR) << "Invalid URL passed to InitiateNavigation: " << url;
+  if (!url_.is_valid() || !IsValidUrlScheme(UTF8ToWide(url), is_privileged)) {
+    DLOG(ERROR) << "Invalid URL passed to InitiateNavigation: " << url
+                << " is_privileged=" << is_privileged;
     return false;
   }
 

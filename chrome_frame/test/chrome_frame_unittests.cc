@@ -1101,7 +1101,7 @@ TEST(CFACWithChrome, NavigateOk) {
   EXPECT_CALL(cfd, OnAutomationServerReady())
       .WillOnce(testing::InvokeWithoutArgs(TaskHolder(NewRunnableMethod(
           client.get(), &ChromeFrameAutomationClient::InitiateNavigation,
-          url))));
+          url, false))));
 
 //  cfd.SetOnNavigationStateChanged();
   EXPECT_CALL(cfd,
@@ -1141,7 +1141,7 @@ TEST(CFACWithChrome, DISABLED_NavigateFailed) {
   EXPECT_CALL(cfd, OnAutomationServerReady())
       .WillOnce(testing::InvokeWithoutArgs(TaskHolder(NewRunnableMethod(
           client.get(), &ChromeFrameAutomationClient::InitiateNavigation,
-          url))));
+          url, false))));
 
   EXPECT_CALL(cfd,
     OnNavigationStateChanged(testing::_, testing::_))
@@ -1199,7 +1199,7 @@ TEST(CFACWithChrome, UseHostNetworkStack) {
   EXPECT_CALL(cfd, OnAutomationServerReady())
       .WillOnce(testing::InvokeWithoutArgs(TaskHolder(NewRunnableMethod(
           client.get(), &ChromeFrameAutomationClient::InitiateNavigation,
-          url))));
+          url, false))));
 
   EXPECT_CALL(cfd, OnNavigationStateChanged(testing::_, testing::_))
       .Times(testing::AnyNumber());
