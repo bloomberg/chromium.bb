@@ -423,11 +423,17 @@ class ThreadSanitizer(ValgrindTool):
     if self.EvalBoolFlag(self._options.announce_threads):
       ret += ["--announce-threads"]
 
+    # --show-pc flag is needed for parsing the error logs on Darwin.
+    if platform_suffix == 'mac':
+      ret += ["--show-pc=yes"]
+
     return ret
 
   def Analyze(self):
     filenames = glob.glob(self.TMP_DIR + "/tsan.*")
-    analyzer = tsan_analyze.TsanAnalyze(self._source_dir, filenames)
+    use_gdb = (sys.platform == 'darwin')
+    analyzer = tsan_analyze.TsanAnalyze(self._source_dir, filenames,
+                                        use_gdb=use_gdb)
     return analyzer.Report()
 
 

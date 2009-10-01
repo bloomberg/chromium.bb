@@ -7,6 +7,8 @@
 
 ''' Given a ThreadSanitizer output file, parses errors and uniques them.'''
 
+import gdb_helper
+
 import logging
 import optparse
 import os
@@ -15,11 +17,37 @@ import subprocess
 import sys
 import time
 
+# Global symbol table (ugh)
+TheAddressTable = None
+
+class _StackTraceLine(object):
+  def __init__(self, line, address, binary):
+    self.raw_line_ = line
+    self.address = address
+    self.binary = binary
+  def __str__(self):
+    global TheAddressTable
+    file, line = TheAddressTable.GetFileLine(self.binary, self.address)
+    if (file is None) or (line is None):
+      return self.raw_line_
+    else:
+      return self.raw_line_.replace(self.binary, '%s:%s' % (file, line))
+
 class TsanAnalyze:
   ''' Given a set of ThreadSanitizer output files, parse all the errors out of
   them, unique them and output the results.'''
 
-  def __init__(self, source_dir, files):
+  LOAD_LIB_RE = re.compile('--[0-9]+-- ([^(:]*) \((0x[0-9a-f]+)\)')
+  TSAN_LINE_RE = re.compile('==[0-9]+==\s*[#0-9]+\s*'
+                            '([0-9A-Fa-fx]+):'
+                            '(?:[^ ]* )*'
+                            '([^ :\n]+)'
+                            '')
+
+  THREAD_CREATION_STR = ("INFO: T.* "
+      "(has been created by T.* at this point|is program's main thread)")
+
+  def __init__(self, source_dir, files, use_gdb=False):
     '''Reads in a set of files.
 
     Args:
@@ -27,53 +55,79 @@ class TsanAnalyze:
       files: A list of filenames.
     '''
 
+    self.use_gdb = use_gdb
+    if use_gdb:
+      global TheAddressTable
+      TheAddressTable = gdb_helper.AddressTable()
     self.races = []
     self.used_suppressions = {}
     for file in files:
       self.ParseReportFile(file)
+    if self.use_gdb:
+      TheAddressTable.ResolveAll()
+
+  def ReadLine(self):
+    self.line_ = self.cur_fd_.readline()
+    self.stack_trace_line_ = None
+    if not self.use_gdb:
+      return
+    global TheAddressTable
+    match = TsanAnalyze.LOAD_LIB_RE.match(self.line_)
+    if match:
+      binary, ip = match.groups()
+      TheAddressTable.AddBinaryAt(binary, ip)
+      return
+    match = TsanAnalyze.TSAN_LINE_RE.match(self.line_)
+    if match:
+      address, binary_name = match.groups()
+      stack_trace_line = _StackTraceLine(self.line_, address, binary_name)
+      TheAddressTable.Add(stack_trace_line.binary, stack_trace_line.address)
+      self.stack_trace_line_ = stack_trace_line
+
+  def ReadSection(self):
+    result = [self.line_]
+    while not re.search('}}}', self.line_):
+      self.ReadLine()
+      if self.stack_trace_line_ is None:
+        result.append(self.line_)
+      else:
+        result.append(self.stack_trace_line_)
+    return result
 
   def ParseReportFile(self, filename):
-    f = open(filename, 'r')
+    self.cur_fd_ = open(filename, 'r')
+
     while True:
       # Read race reports.
-      line = f.readline()
-      if (line == ''):
+      self.ReadLine()
+      if (self.line_ == ''):
         break
 
-      if re.search("ERROR SUMMARY", line):
+      if re.search("ERROR SUMMARY", self.line_):
         # TSAN has finished working. The remaining reports are duplicates.
         break
 
-      tmp = ""
-      while (re.search("INFO: T.* "
-             "(has been created by T.* at this point"
-             "|is program's main thread)", line)):
-        tmp = tmp + line
-        while not re.search("}}}", line):
-          line = f.readline()
-          tmp = tmp + line
-        line = f.readline()
-
-      if (re.search("Possible data race", line)):
-        tmp = tmp + line
-        while not re.search("}}}", line):
-          line = f.readline()
-          tmp = tmp + line
-        self.races.append(tmp.strip())
+      tmp = []
+      while re.search(TsanAnalyze.THREAD_CREATION_STR, self.line_):
+        tmp.extend(self.ReadSection())
+        self.ReadLine()
+      if re.search("Possible data race", self.line_):
+        tmp.extend(self.ReadSection())
+        self.races.append(tmp)
 
     while True:
       # Read the list of used suppressions.
-      line = f.readline()
-      if (line == ''):
+      self.ReadLine()
+      if (self.line_ == ''):
         break
-      match = re.search(" used_suppression:\s+([0-9]+)\s(.*)", line)
+      match = re.search(" used_suppression:\s+([0-9]+)\s(.*)", self.line_)
       if match:
         count, supp_name = match.groups()
         if supp_name in self.used_suppressions:
           self.used_suppressions[supp_name] += count
         else:
           self.used_suppressions[supp_name] = count
-    f.close()
+    self.cur_fd_.close()
 
   def Report(self):
     print "-----------------------------------------------------"
@@ -86,8 +140,11 @@ class TsanAnalyze:
 
     if len(self.races) > 0:
       logging.error("Found %i race reports" % len(self.races))
-      for report in self.races:
-        logging.error("\n" + report)
+      for report_list in self.races:
+        report = ''
+        for line in report_list:
+          report += str(line)
+        logging.error('\n' + report)
       return -1
     logging.info("PASS: No race reports found")
     return 0
@@ -105,7 +162,7 @@ if __name__ == '__main__':
     parser.error("no filename specified")
   filenames = args
 
-  analyzer = TsanAnalyze(options.source_dir, filenames)
+  analyzer = TsanAnalyze(options.source_dir, filenames, use_gdb=True)
   retcode = analyzer.Report()
 
   sys.exit(retcode)
