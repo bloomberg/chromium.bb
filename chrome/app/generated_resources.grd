@@ -2027,10 +2027,18 @@ each locale. -->
                desc="In the download view, 'Cancel' link text">
         Cancel
       </message>
-      <message name="IDS_DOWNLOAD_LINK_SHOW"
-               desc="In the download view, 'Show in folder' link text">
-        Show in folder
-      </message>
+      <if expr="os != 'darwin'">
+        <message name="IDS_DOWNLOAD_LINK_SHOW"
+                 desc="In the download view, 'Show in folder' link text">
+          Show in folder
+        </message>
+      </if>
+      <if expr="os == 'darwin'">
+        <message name="IDS_DOWNLOAD_LINK_SHOW"
+                 desc="Mac: In the download view, 'Show in Finder' link text">
+          Show in Finder
+        </message>
+      </if>
       <message name="IDS_DOWNLOAD_TAB_CANCELED"
                desc="Cancel link text">
         Canceled
@@ -2057,42 +2065,112 @@ each locale. -->
       </message>
 
       <!-- Download Context Menu Items -->
-      <message name="IDS_DOWNLOAD_MENU_COPY_PATH"
-                     desc="Download context menu copy file path to clipboard">
-        Copy file &amp;path
-      </message>
-      <message name="IDS_DOWNLOAD_MENU_COPY_FILE"
-                     desc="Download context menu copy file to clipboard">
-        Copy &amp;file
-      </message>
-      <message name="IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE"
-               desc="Download context menu open when download is finished">
-        Open when &amp;done
-      </message>
-      <message name="IDS_DOWNLOAD_MENU_OPEN"
-               desc="Download context menu open download">
-        &amp;Open
-      </message>
-      <message name="IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE"
-               desc="Download context menu open when download is finished">
-        &amp;Always open files of this type
-      </message>
-      <message name="IDS_DOWNLOAD_MENU_CANCEL"
-               desc="Download context menu cancel">
-        &amp;Cancel
-      </message>
-      <message name="IDS_DOWNLOAD_MENU_SHOW"
-               desc="Show the file in file explorer, 'Show in folder' item">
-        &amp;Show in folder
-      </message>
-      <message name="IDS_DOWNLOAD_MENU_PAUSE_ITEM"
-               desc="Download context menu pause download">
-        &amp;Pause
-      </message>
-      <message name="IDS_DOWNLOAD_MENU_RESUME_ITEM"
-               desc="Download context menu resume download">
-        &amp;Resume
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_DOWNLOAD_MENU_COPY_PATH"
+                       desc="Download context menu copy file path to clipboard">
+          Copy file &amp;path
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_COPY_FILE"
+                       desc="Download context menu copy file to clipboard">
+          Copy &amp;file
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE"
+                 desc="Download context menu open when download is finished">
+          Open when &amp;done
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_OPEN"
+                 desc="Download context menu open download">
+          &amp;Open
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE"
+                 desc="Download context menu open when download is finished">
+          &amp;Always open files of this type
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_CANCEL"
+                 desc="Download context menu cancel">
+          &amp;Cancel
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_PAUSE_ITEM"
+                 desc="Download context menu pause download">
+          &amp;Pause
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_RESUME_ITEM"
+                 desc="Download context menu resume download">
+          &amp;Resume
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_DOWNLOAD_MENU_COPY_PATH"
+                       desc="In Title Case: Download context menu copy file path to clipboard">
+          Copy File &amp;Path
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_COPY_FILE"
+                       desc="In Title Case: Download context menu copy file to clipboard">
+          Copy &amp;File
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE"
+                 desc="In Title Case: Download context menu open when download is finished">
+          Open When &amp;Done
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_OPEN"
+                 desc="In Title Case: Download context menu open download">
+          &amp;Open
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE"
+                 desc="In Title Case: Download context menu open when download is finished">
+          &amp;Always Open Files of This Type
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_CANCEL"
+                 desc="In Title Case: Download context menu cancel">
+          &amp;Cancel
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_PAUSE_ITEM"
+                 desc="In Title Case: Download context menu pause download">
+          &amp;Pause
+        </message>
+        <message name="IDS_DOWNLOAD_MENU_RESUME_ITEM"
+                 desc="In Title Case: Download context menu resume download">
+          &amp;Resume
+        </message>
+      </if>
+      <!-- GRIT doesn't support nesting <if>...</if> blocks, so these can't -->
+      <!-- go within the above titlecase checks, instead markup must use    -->
+      <!-- combined tests for all cases.                                    -->
+      <!-- NOTE: the last two (darwin cases) are the same English values,   -->
+      <!--       but two strings are needed in case some other language     -->
+      <!--       needs a difference for Title Case support.                 -->
+      <if expr="os != 'darwin' and not pp_ifdef('use_titlecase')">
+        <!-- !Mac & Sentence case -->
+        <message name="IDS_DOWNLOAD_MENU_SHOW"
+                 desc="Show the file in file explorer, 'Show in folder' item"
+              meaning="'show in folder' on non Mac in Sentence case">
+          &amp;Show in folder
+        </message>
+      </if>
+      <if expr="os != 'darwin' and pp_ifdef('use_titlecase')">
+        <!-- !Mac & Title Case -->
+        <message name="IDS_DOWNLOAD_MENU_SHOW"
+                 desc="In Title Case: Show the file in file explorer, 'Show in folder' item"
+              meaning="'show in folder' on non Mac in Title Case">
+          &amp;Show in Folder
+        </message>
+      </if>
+      <if expr="os == 'darwin' and not pp_ifdef('use_titlecase')">
+        <!-- Mac & Sentence case -->
+        <message name="IDS_DOWNLOAD_MENU_SHOW"
+                 desc="Mac: Show the file in the Finder, 'Show in Finder' item"
+              meaning="'show in Finder' on Mac in Sentence case">
+          &amp;Show in Finder
+        </message>
+      </if>
+      <if expr="os == 'darwin' and pp_ifdef('use_titlecase')">
+        <!-- Mac & Title Case -->
+        <message name="IDS_DOWNLOAD_MENU_SHOW"
+                 desc="In Title Case: Mac: Show the file in the Finder, 'Show in Finder' item"
+              meaning="'show in Finder' on Mac in Title Case">
+          &amp;Show in Finder
+        </message>
+      </if>
 
       <!-- Remove in-progress downloads confirmation dialog -->
       <message name="IDS_SINGLE_DOWNLOAD_REMOVE_CONFIRM_WARNING" desc="Title of the dialog asking for user confirmation to close the browser when one download is in-progress.">
