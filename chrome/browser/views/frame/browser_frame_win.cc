@@ -7,6 +7,8 @@
 #include <dwmapi.h>
 #include <shellapi.h>
 
+#include <set>
+
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "app/win_util.h"
@@ -119,8 +121,9 @@ bool BrowserFrameWin::AlwaysUseNativeFrame() const {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrame, views::WidgetWin overrides:
 
-bool BrowserFrameWin::AcceleratorPressed(views::Accelerator* accelerator) {
-  return browser_view_->AcceleratorPressed(*accelerator);
+bool BrowserFrameWin::AcceleratorPressed(
+    const views::Accelerator& accelerator) {
+  return browser_view_->AcceleratorPressed(accelerator);
 }
 
 bool BrowserFrameWin::GetAccelerator(int cmd_id,

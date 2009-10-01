@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_FRAME_BROWSER_FRAME_WIN_
-#define CHROME_BROWSER_VIEWS_FRAME_BROWSER_FRAME_WIN_
+#ifndef CHROME_BROWSER_VIEWS_FRAME_BROWSER_FRAME_WIN_H_
+#define CHROME_BROWSER_VIEWS_FRAME_BROWSER_FRAME_WIN_H_
 
 #include "base/basictypes.h"
 #include "chrome/browser/views/frame/browser_frame.h"
@@ -48,7 +48,7 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
 
  protected:
   // Overridden from views::WidgetWin:
-  virtual bool AcceleratorPressed(views::Accelerator* accelerator);
+  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
   virtual bool GetAccelerator(int cmd_id, views::Accelerator* accelerator);
   virtual void OnEndSession(BOOL ending, UINT logoff);
   virtual void OnEnterSizeMove();
@@ -112,4 +112,4 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
   DISALLOW_COPY_AND_ASSIGN(BrowserFrameWin);
 };
 
-#endif  // #ifndef CHROME_BROWSER_VIEWS_FRAME_BROWSER_FRAME_WIN_
+#endif  // CHROME_BROWSER_VIEWS_FRAME_BROWSER_FRAME_WIN_H_
