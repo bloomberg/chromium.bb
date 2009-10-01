@@ -25,6 +25,7 @@
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/browser/gtk/rounded_window.h"
 #include "chrome/browser/gtk/tabstrip_origin_provider.h"
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/gtk/view_id_util.h"
@@ -43,6 +44,17 @@ namespace {
 
 // The showing height of the bar.
 const int kBookmarkBarHeight = 29;
+
+// Padding for when the bookmark bar is floating.
+const int kTopBottomNTPPadding = 12;
+const int kLeftRightNTPPadding = 8;
+
+// Padding around the bar's content area when the bookmark bar is floating.
+const int kNTPPadding = 2;
+
+// The number of pixels of rounding on the corners of the bookmark bar content
+// area when in floating mode.
+const int kNTPRoundedness = 3;
 
 // The height of the bar when it is "hidden". It is usually not completely
 // hidden because even when it is closed it forms the bottom few pixels of
@@ -93,11 +105,15 @@ void SetToolBarStyle() {
 
 }  // namespace
 
-BookmarkBarGtk::BookmarkBarGtk(Profile* profile, Browser* browser,
+const int BookmarkBarGtk::kBookmarkBarNTPHeight = 57;
+
+BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
+                               Profile* profile, Browser* browser,
                                TabstripOriginProvider* tabstrip_origin_provider)
     : profile_(NULL),
       page_navigator_(NULL),
       browser_(browser),
+      window_(window),
       tabstrip_origin_provider_(tabstrip_origin_provider),
       model_(NULL),
       instructions_(NULL),
@@ -105,9 +121,13 @@ BookmarkBarGtk::BookmarkBarGtk(Profile* profile, Browser* browser,
       toolbar_drop_item_(NULL),
       theme_provider_(GtkThemeProvider::GetFrom(profile)),
       show_instructions_(true),
-      menu_bar_helper_(this) {
+      menu_bar_helper_(this),
+      floating_(false) {
   Init(profile);
   SetProfile(profile);
+  // Force an update by simulating being in the wrong state.
+  floating_ = !ShouldBeFloating();
+  UpdateFloatingState();
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
@@ -151,14 +171,22 @@ void BookmarkBarGtk::SetPageNavigator(PageNavigator* navigator) {
 
 void BookmarkBarGtk::Init(Profile* profile) {
   event_box_.Own(gtk_event_box_new());
-  // Make the event box transparent so themes can use transparent backgrounds.
-  if (!theme_provider_->UseGtkTheme())
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()), FALSE);
   g_signal_connect(event_box_.get(), "button-press-event",
                    G_CALLBACK(&OnButtonPressed), this);
 
+  ntp_padding_box_ = gtk_alignment_new(0, 0, 1, 1);
+  gtk_container_add(GTK_CONTAINER(event_box_.get()), ntp_padding_box_);
+
+  paint_box_ = gtk_event_box_new();
+  gtk_container_add(GTK_CONTAINER(ntp_padding_box_), paint_box_);
+  GdkColor paint_box_color =
+      theme_provider_->GetGdkColor(BrowserThemeProvider::COLOR_TOOLBAR);
+  gtk_widget_modify_bg(paint_box_, GTK_STATE_NORMAL, &paint_box_color);
+  gtk_widget_add_events(paint_box_, GDK_POINTER_MOTION_MASK |
+                                    GDK_BUTTON_PRESS_MASK);
+
   bookmark_hbox_ = gtk_hbox_new(FALSE, 0);
-  gtk_container_add(GTK_CONTAINER(event_box_.get()), bookmark_hbox_);
+  gtk_container_add(GTK_CONTAINER(paint_box_), bookmark_hbox_);
 
   instructions_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(instructions_), 0, 0,
@@ -180,10 +208,9 @@ void BookmarkBarGtk::Init(Profile* profile) {
   g_signal_connect(instructions_, "drag-data-received",
                    G_CALLBACK(&OnDragReceived), this);
 
-  // Only paint in chrome theme mode.
-  gtk_widget_set_app_paintable(widget(), !theme_provider_->UseGtkTheme());
-  g_signal_connect(G_OBJECT(widget()), "expose-event",
+  g_signal_connect(G_OBJECT(event_box_.get()), "expose-event",
                    G_CALLBACK(&OnEventBoxExpose), this);
+  UpdateEventBoxPaintability();
 
   bookmark_toolbar_.Own(gtk_toolbar_new());
   SetToolBarStyle();
@@ -236,11 +263,26 @@ void BookmarkBarGtk::Init(Profile* profile) {
 
 void BookmarkBarGtk::Show(bool animate) {
   gtk_widget_show_all(widget());
+  bool old_floating = floating_;
+  UpdateFloatingState();
+  // TODO(estade): animate the transition between floating and non.
+  animate = animate && (old_floating == floating_);
   if (animate) {
     slide_animation_->Show();
   } else {
     slide_animation_->Reset(1);
     AnimationProgressed(slide_animation_.get());
+  }
+
+  if (floating_) {
+    // Hide out behind the findbar.
+    if (GTK_WIDGET_REALIZED(paint_box_)) {
+      // We toggle the above_child property so that the event window will
+      // get lowered after we lower the window of |paint_box_|.
+      gtk_event_box_set_above_child(GTK_EVENT_BOX(event_box_.get()), TRUE);
+      gdk_window_lower(paint_box_->window);
+      gtk_event_box_set_above_child(GTK_EVENT_BOX(event_box_.get()), FALSE);
+    }
   }
 
   // Maybe show the instructions
@@ -252,6 +294,8 @@ void BookmarkBarGtk::Show(bool animate) {
 }
 
 void BookmarkBarGtk::Hide(bool animate) {
+  UpdateFloatingState();
+
   // After coming out of fullscreen, the browser window sets the bookmark bar
   // to the "hidden" state, which means we need to show our minimum height.
   gtk_widget_show(widget());
@@ -267,7 +311,9 @@ void BookmarkBarGtk::Hide(bool animate) {
 }
 
 void BookmarkBarGtk::EnterFullscreen() {
-  gtk_widget_hide(widget());
+  UpdateFloatingState();
+  if (!floating_)
+    gtk_widget_hide(widget());
 }
 
 int BookmarkBarGtk::GetHeight() {
@@ -494,6 +540,53 @@ int BookmarkBarGtk::GetFirstHiddenBookmark(
   return rv;
 }
 
+bool BookmarkBarGtk::ShouldBeFloating() {
+  return (!IsAlwaysShown() || (window_ && window_->IsFullscreen())) &&
+         browser_ && browser_->GetSelectedTabContents() &&
+         browser_->GetSelectedTabContents()->IsBookmarkBarAlwaysVisible();
+}
+
+void BookmarkBarGtk::UpdateFloatingState() {
+  bool old_floating = floating_;
+  floating_ = ShouldBeFloating();
+  if (floating_ == old_floating)
+    return;
+
+  if (floating_) {
+    gtk_event_box_set_visible_window(GTK_EVENT_BOX(paint_box_), TRUE);
+    GdkColor stroke_color = theme_provider_->UseGtkTheme() ?
+        theme_provider_->GetBorderColor() :
+        theme_provider_->GetGdkColor(BrowserThemeProvider::COLOR_NTP_HEADER);
+    gtk_util::ActAsRoundedWindow(paint_box_, stroke_color, kNTPRoundedness,
+                                 gtk_util::ROUNDED_ALL, gtk_util::BORDER_ALL);
+
+    gtk_alignment_set_padding(GTK_ALIGNMENT(ntp_padding_box_),
+        kTopBottomNTPPadding, kTopBottomNTPPadding,
+        kLeftRightNTPPadding, kLeftRightNTPPadding);
+    gtk_container_set_border_width(GTK_CONTAINER(bookmark_hbox_), kNTPPadding);
+  } else {
+    gtk_util::StopActingAsRoundedWindow(paint_box_);
+    gtk_event_box_set_visible_window(GTK_EVENT_BOX(paint_box_), FALSE);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(ntp_padding_box_), 0, 0, 0, 0);
+    gtk_container_set_border_width(GTK_CONTAINER(bookmark_hbox_), 0);
+  }
+
+  UpdateEventBoxPaintability();
+  // |window_| can be NULL during testing.
+  if (window_)
+    window_->BookmarkBarIsFloating(floating_);
+}
+
+void BookmarkBarGtk::UpdateEventBoxPaintability() {
+  gtk_widget_set_app_paintable(event_box_.get(),
+                               !theme_provider_->UseGtkTheme() || floating_);
+  // When using the GTK+ theme, we need to have the event box be visible so
+  // buttons don't get a halo color from the background.  When using Chromium
+  // themes, we want to let the background show through the toolbar.
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()),
+                                   theme_provider_->UseGtkTheme());
+}
+
 bool BookmarkBarGtk::IsAlwaysShown() {
   return profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
 }
@@ -501,9 +594,11 @@ bool BookmarkBarGtk::IsAlwaysShown() {
 void BookmarkBarGtk::AnimationProgressed(const Animation* animation) {
   DCHECK_EQ(animation, slide_animation_.get());
 
+  int max_height = ShouldBeFloating() ?
+                   kBookmarkBarNTPHeight : kBookmarkBarHeight;
   gint height =
       static_cast<gint>(animation->GetCurrentValue() *
-                        (kBookmarkBarHeight - kBookmarkBarMinimumHeight)) +
+                        (max_height - kBookmarkBarMinimumHeight)) +
       kBookmarkBarMinimumHeight;
   gtk_widget_set_size_request(event_box_.get(), -1, height);
 }
@@ -529,14 +624,18 @@ void BookmarkBarGtk::Observe(NotificationType type,
                   << "don't have a BookmarkModel. Taking no action.";
     }
 
-    // When using the GTK+ theme, let GTK optimize the background drawing.
-    gtk_widget_set_app_paintable(widget(), !theme_provider_->UseGtkTheme());
+    UpdateEventBoxPaintability();
 
-    // When using the GTK+ theme, we need to have the event box be visible so
-    // buttons don't get a halo color from the background.  When using Chromium
-    // themes, we want to let the background show through the toolbar.
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()),
-                                     theme_provider_->UseGtkTheme());
+    GdkColor paint_box_color =
+        theme_provider_->GetGdkColor(BrowserThemeProvider::COLOR_TOOLBAR);
+    gtk_widget_modify_bg(paint_box_, GTK_STATE_NORMAL, &paint_box_color);
+
+    if (floating_) {
+      GdkColor stroke_color = theme_provider_->UseGtkTheme() ?
+          theme_provider_->GetBorderColor() :
+          theme_provider_->GetGdkColor(BrowserThemeProvider::COLOR_NTP_HEADER);
+      gtk_util::SetRoundedWindowBorderColor(paint_box_, stroke_color);
+    }
 
     SetOverflowButtonAppearance();
   }
@@ -597,9 +696,6 @@ void BookmarkBarGtk::ConnectFolderButtonEvents(GtkWidget* widget) {
   g_signal_connect(widget, "drag-data-received",
                    G_CALLBACK(&OnDragReceived), this);
 
-  // Connect to 'button-release-event' instead of 'clicked' because we need
-  // access to the modifier keys and we do different things on each
-  // button.
   g_signal_connect(G_OBJECT(widget), "button-press-event",
                    G_CALLBACK(OnButtonPressed), this);
   g_signal_connect(G_OBJECT(widget), "clicked",
@@ -914,30 +1010,66 @@ void BookmarkBarGtk::OnDragReceived(GtkWidget* widget,
 gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
                                           GdkEventExpose* event,
                                           BookmarkBarGtk* bar) {
-  // We don't need to render the toolbar image in GTK mode.
-  if (bar->theme_provider_->UseGtkTheme())
+  GtkThemeProvider* theme_provider = bar->theme_provider_;
+
+  // We don't need to render the toolbar image in GTK mode, except when
+  // detached.
+  if (theme_provider->UseGtkTheme() && !bar->floating_)
     return FALSE;
 
-  // Paint the background theme image.
   cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
   cairo_rectangle(cr, event->area.x, event->area.y,
                   event->area.width, event->area.height);
   cairo_clip(cr);
-  gfx::Point tabstrip_origin =
-      bar->tabstrip_origin_provider_->GetTabStripOriginForWidget(widget);
 
-  GtkThemeProvider* theme_provider = bar->theme_provider_;
-  CairoCachedSurface* background = theme_provider->GetSurfaceNamed(
-      IDR_THEME_TOOLBAR, widget);
-  background->SetSource(cr, tabstrip_origin.x(), tabstrip_origin.y());
-  // We tile the toolbar background in both directions.
-  cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
-  cairo_rectangle(cr,
-      tabstrip_origin.x(),
-      tabstrip_origin.y(),
-      event->area.x + event->area.width - tabstrip_origin.x(),
-      event->area.y + event->area.height - tabstrip_origin.y());
-  cairo_fill(cr);
+  if (!bar->floating_) {
+    // Paint the background theme image.
+    gfx::Point tabstrip_origin =
+        bar->tabstrip_origin_provider_->GetTabStripOriginForWidget(widget);
+
+    CairoCachedSurface* background = theme_provider->GetSurfaceNamed(
+        IDR_THEME_TOOLBAR, widget);
+    background->SetSource(cr, tabstrip_origin.x(), tabstrip_origin.y());
+    // We tile the toolbar background in both directions.
+    cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+    cairo_rectangle(cr,
+        tabstrip_origin.x(),
+        tabstrip_origin.y(),
+        event->area.x + event->area.width - tabstrip_origin.x(),
+        event->area.y + event->area.height - tabstrip_origin.y());
+    cairo_fill(cr);
+  } else {
+    // Paint the NTP background. First set the background color.
+    GdkColor bg_color = theme_provider->UseGtkTheme() ? gfx::kGdkWhite :
+        theme_provider->GetGdkColor(BrowserThemeProvider::COLOR_NTP_BACKGROUND);
+    double bg_color_rgb[] = {
+        static_cast<double>(bg_color.red / 257) / 255.0,
+        static_cast<double>(bg_color.green / 257) / 255.0,
+        static_cast<double>(bg_color.blue / 257) / 255.0, };
+    cairo_set_source_rgb(cr, bg_color_rgb[0], bg_color_rgb[1], bg_color_rgb[2]);
+    cairo_rectangle(cr,
+        event->area.x,
+        event->area.y,
+        event->area.width,
+        event->area.height);
+    cairo_fill(cr);
+
+    // Now paint the image, if it exists.
+    // TODO(estade): handle different alignments.
+    if (theme_provider->HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
+      CairoCachedSurface* background = theme_provider->GetSurfaceNamed(
+          IDR_THEME_NTP_BACKGROUND, widget);
+      background->SetSource(cr, widget->allocation.x, widget->allocation.y);
+      cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
+      cairo_rectangle(cr,
+          event->area.x,
+          event->area.y,
+          event->area.width,
+          event->area.height);
+      cairo_fill(cr);
+    }
+  }
+
   cairo_destroy(cr);
 
   return FALSE;  // Propagate expose to children.

@@ -158,7 +158,7 @@ gboolean OnRoundedWindowExpose(GtkWidget* widget,
     // If we want to have borders everywhere, we need to draw a polygon instead
     // of a set of lines.
     gdk_draw_polygon(drawable, gc, FALSE, &points[0], points.size());
-  } else {
+  } else if (points.size() > 0) {
     gdk_draw_lines(drawable, gc, &points[0], points.size());
   }
 
@@ -181,7 +181,7 @@ void OnStyleSet(GtkWidget* widget, GtkStyle* previous_style) {
 }  // namespace
 
 void ActAsRoundedWindow(
-    GtkWidget* widget, GdkColor color, int corner_size,
+    GtkWidget* widget, const GdkColor& color, int corner_size,
     int rounded_edges, int drawn_borders) {
   DCHECK(widget);
   gtk_widget_set_app_paintable(widget, TRUE);
@@ -201,6 +201,16 @@ void ActAsRoundedWindow(
 
   g_object_set_data_full(G_OBJECT(widget), kRoundedData,
                          data, FreeRoundedWindowData);
+}
+
+void StopActingAsRoundedWindow(GtkWidget* widget) {
+  g_signal_handlers_disconnect_by_func(widget,
+      reinterpret_cast<gpointer>(OnRoundedWindowExpose), NULL);
+  g_signal_handlers_disconnect_by_func(widget,
+      reinterpret_cast<gpointer>(OnStyleSet), NULL);
+
+  if (GTK_WIDGET_REALIZED(widget))
+    gdk_window_shape_combine_mask(widget->window, NULL, 0, 0);
 }
 
 void SetRoundedWindowBorderColor(GtkWidget* widget, GdkColor color) {

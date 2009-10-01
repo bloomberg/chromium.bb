@@ -38,7 +38,8 @@ class BookmarkBarGtk : public AnimationDelegate,
   FRIEND_TEST(BookmarkBarGtkUnittest, HidesHelpMessageWithBookmark);
   FRIEND_TEST(BookmarkBarGtkUnittest, BuildsButtons);
  public:
-  explicit BookmarkBarGtk(Profile* profile, Browser* browser,
+  explicit BookmarkBarGtk(BrowserWindowGtk* window,
+                          Profile* profile, Browser* browser,
                           TabstripOriginProvider* tabstrip_origin_provider);
   virtual ~BookmarkBarGtk();
 
@@ -96,6 +97,9 @@ class BookmarkBarGtk : public AnimationDelegate,
   virtual void PopupForButtonNextTo(GtkWidget* button,
                                     GtkMenuDirectionType dir);
 
+  // The NTP needs to have access to this.
+  static const int kBookmarkBarNTPHeight;
+
  private:
   // Helper function which generates GtkToolItems for |bookmark_toolbar_|.
   void CreateAllBookmarkButtons();
@@ -128,6 +132,16 @@ class BookmarkBarGtk : public AnimationDelegate,
   // showing on the bar.
   int GetFirstHiddenBookmark(int extra_space,
                              std::vector<GtkWidget*>* showing_folders);
+
+  // Returns true if the bookmark bar should be floating on the page (for
+  // NTP).
+  bool ShouldBeFloating();
+  // Update the floating state (either enable or disable it, or do nothing).
+  void UpdateFloatingState();
+
+  // Turns on or off the app_paintable flag on |event_box_|, depending on our
+  // state.
+  void UpdateEventBoxPaintability();
 
   // Overridden from BookmarkModelObserver:
 
@@ -236,6 +250,7 @@ class BookmarkBarGtk : public AnimationDelegate,
   PageNavigator* page_navigator_;
 
   Browser* browser_;
+  BrowserWindowGtk* window_;
 
   // Provides us with the offset into the background theme image.
   TabstripOriginProvider* tabstrip_origin_provider_;
@@ -247,6 +262,12 @@ class BookmarkBarGtk : public AnimationDelegate,
   // Contains |bookmark_hbox_|. Event box exists to prevent leakage of
   // background color from the toplevel application window's GDK window.
   OwnedWidgetGtk event_box_;
+
+  // Used to float the bookmark bar when on the NTP.
+  GtkWidget* ntp_padding_box_;
+
+  // Used to paint the background of the bookmark bar when in floating mode.
+  GtkWidget* paint_box_;
 
   // Used to position all children.
   GtkWidget* bookmark_hbox_;
@@ -288,6 +309,11 @@ class BookmarkBarGtk : public AnimationDelegate,
   scoped_ptr<BookmarkMenuController> current_menu_;
 
   scoped_ptr<SlideAnimation> slide_animation_;
+
+  // Whether we are currently configured as floating (detached from the
+  // toolbar). This reflects our actual state, and can be out of sync with
+  // what ShouldShowFloating() returns.
+  bool floating_;
 
   NotificationRegistrar registrar_;
 };

@@ -65,6 +65,10 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   GoButtonGtk* GetGoButton() { return go_.get(); }
 
+  // We have to show padding on the bottom of the toolbar when the bookmark
+  // is in floating mode. Otherwise the bookmark bar will paint it for us.
+  void UpdateForBookmarkBarVisibility(bool show_bottom_padding);
+
   // Overridden from CommandUpdater::CommandObserver:
   virtual void EnabledStateChangedForCommand(int id, bool enabled);
 
@@ -158,6 +162,9 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // parent GdkWindow will leak through with some theme engines (such as
   // Clearlooks).
   GtkWidget* event_box_;
+
+  // This widget handles padding around the outside of the toolbar.
+  GtkWidget* alignment_;
 
   // Gtk widgets. The toolbar is an hbox with each of the other pieces of the
   // toolbar placed side by side.

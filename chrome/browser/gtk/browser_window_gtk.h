@@ -199,6 +199,10 @@ class BrowserWindowGtk : public BrowserWindow,
 
   gfx::Rect bounds() const { return bounds_; }
 
+  // Make changes necessary when the floating state of the bookmark bar changes.
+  // This should only be called by the bookmark bar itself.
+  void BookmarkBarIsFloating(bool is_floating);
+
   static void RegisterUserPrefs(PrefService* prefs);
 
  protected:
@@ -322,6 +326,9 @@ class BrowserWindowGtk : public BrowserWindow,
 
   // Returns |true| if we should use the custom frame.
   bool UseCustomFrame();
+
+  // Put the bookmark bar where it belongs.
+  void PlaceBookmarkBar(bool is_floating);
 
   // Determine whether we use should default to native decorations or the custom
   // frame based on the currently-running window manager.

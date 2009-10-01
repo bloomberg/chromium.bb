@@ -11,6 +11,7 @@ namespace gtk_util {
 
 // Symbolic names for arguments to |rounded_edges| in ActAsRoundedWindow().
 enum RoundedBorders {
+  ROUNDED_NONE = 0,
   ROUNDED_BOTTOM_LEFT = 1 << 0,
   ROUNDED_TOP_LEFT = 1 << 1,
   ROUNDED_TOP_RIGHT = 1 << 2,
@@ -20,6 +21,7 @@ enum RoundedBorders {
 
 // Symbolic names for arguments to |drawn_borders| in ActAsRoundedWindow().
 enum BorderEdge {
+  BORDER_NONE = 0,
   BORDER_LEFT = 1 << 0,
   BORDER_TOP = 1 << 1,
   BORDER_RIGHT = 1 << 2,
@@ -34,8 +36,11 @@ enum BorderEdge {
 // control which corners are rounded. |drawn_borders| border control which
 // sides have a visible border drawn in |color|.
 void ActAsRoundedWindow(
-    GtkWidget* widget, GdkColor color, int corner_size,
+    GtkWidget* widget, const GdkColor& color, int corner_size,
     int rounded_edges, int drawn_borders);
+
+// Undo most of the actions of ActAsRoundedWindow.
+void StopActingAsRoundedWindow(GtkWidget* widget);
 
 // Sets the color of the border on a widget that was returned from
 // ActAsRoundedWindow().

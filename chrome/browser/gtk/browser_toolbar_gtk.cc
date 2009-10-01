@@ -120,14 +120,12 @@ void BrowserToolbarGtk::Init(Profile* profile,
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_), FALSE);
 
   toolbar_ = gtk_hbox_new(FALSE, kToolbarWidgetSpacing);
-  GtkWidget* alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment),
-      ShouldOnlyShowLocation() ? 0 : kTopPadding, 0,
-      kLeftRightPadding, kLeftRightPadding);
-  g_signal_connect(alignment, "expose-event",
+  alignment_ = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+  UpdateForBookmarkBarVisibility(false);
+  g_signal_connect(alignment_, "expose-event",
                    G_CALLBACK(&OnAlignmentExpose), this);
-  gtk_container_add(GTK_CONTAINER(event_box_), alignment);
-  gtk_container_add(GTK_CONTAINER(alignment), toolbar_);
+  gtk_container_add(GTK_CONTAINER(event_box_), alignment_);
+  gtk_container_add(GTK_CONTAINER(alignment_), toolbar_);
   // Force the height of the toolbar so we get the right amount of padding
   // above and below the location bar. -1 for width means "let GTK do its
   // normal sizing".
@@ -228,7 +226,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
 
   if (ShouldOnlyShowLocation()) {
     gtk_widget_show(event_box_);
-    gtk_widget_show(alignment);
+    gtk_widget_show(alignment_);
     gtk_widget_show(toolbar_);
     gtk_widget_show_all(location_hbox);
     gtk_widget_hide(star_->widget());
@@ -269,6 +267,14 @@ void BrowserToolbarGtk::Hide() {
 
 LocationBar* BrowserToolbarGtk::GetLocationBar() const {
   return location_bar_.get();
+}
+
+void BrowserToolbarGtk::UpdateForBookmarkBarVisibility(
+    bool show_bottom_padding) {
+  gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_),
+      ShouldOnlyShowLocation() ? 0 : kTopPadding,
+      !show_bottom_padding || ShouldOnlyShowLocation() ? 0 : kTopPadding,
+      kLeftRightPadding, kLeftRightPadding);
 }
 
 // CommandUpdater::CommandObserver ---------------------------------------------

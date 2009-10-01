@@ -23,6 +23,8 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/views/bookmark_bar_view.h"
+#elif defined(OS_LINUX)
+#include "chrome/browser/gtk/bookmark_bar_gtk.h"
 #endif
 
 // Path for the New Tab CSS. When we get more than a few of these, we should
@@ -275,6 +277,8 @@ std::string DOMUIThemeSource::GetNewTabBackgroundCSS(bool bar_attached) {
   // if it's a top-aligned bar.
 #if defined(OS_WIN)
   int offset = BookmarkBarView::kNewtabBarHeight;
+#elif defined(OS_LINUX)
+  int offset = BookmarkBarGtk::kBookmarkBarNTPHeight;
 #else
   int offset = 0;
 #endif

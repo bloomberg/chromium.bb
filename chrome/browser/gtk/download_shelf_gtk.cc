@@ -127,6 +127,8 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
   // Stick ourselves at the bottom of the parent browser.
   gtk_box_pack_end(GTK_BOX(parent), slide_widget_->widget(),
                    FALSE, FALSE, 0);
+  // Make sure we are at the very end.
+  gtk_box_reorder_child(GTK_BOX(parent), slide_widget_->widget(), 0);
   slide_widget_->Open();
 }
 

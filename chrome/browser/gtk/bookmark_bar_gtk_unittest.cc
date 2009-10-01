@@ -27,7 +27,7 @@ class BookmarkBarGtkUnittest : public ::testing::Test {
     browser_.reset(new Browser(Browser::TYPE_NORMAL, profile_.get()));
 
     origin_provider_.reset(new EmptyTabstripOriginProvider);
-    bookmark_bar_.reset(new BookmarkBarGtk(profile_.get(), browser_.get(),
+    bookmark_bar_.reset(new BookmarkBarGtk(NULL, profile_.get(), browser_.get(),
                                            origin_provider_.get()));
   }
 

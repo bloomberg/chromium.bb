@@ -1255,9 +1255,7 @@ void BrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
 
 void BrowserWindowGtk::MaybeShowBookmarkBar(TabContents* contents,
                                             bool animate) {
-  // Don't change the visibility state when the browser is full screen or if
-  // the bookmark bar isn't supported.
-  if (IsFullscreen() || !IsBookmarkBarSupported())
+  if (!IsBookmarkBarSupported())
     return;
 
   bool show_bar = false;
@@ -1268,13 +1266,15 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(TabContents* contents,
     show_bar = true;
   }
 
-  if (show_bar && !contents->IsBookmarkBarAlwaysVisible()) {
+  if (show_bar && contents && !contents->IsBookmarkBarAlwaysVisible()) {
     PrefService* prefs = contents->profile()->GetPrefs();
-    show_bar = prefs->GetBoolean(prefs::kShowBookmarkBar);
+    show_bar = prefs->GetBoolean(prefs::kShowBookmarkBar) && !IsFullscreen();
   }
 
   if (show_bar) {
     bookmark_bar_->Show(animate);
+  } else if (IsFullscreen()) {
+    bookmark_bar_->EnterFullscreen();
   } else {
     bookmark_bar_->Hide(animate);
   }
@@ -1474,6 +1474,14 @@ void BrowserWindowGtk::RegisterUserPrefs(PrefService* prefs) {
       prefs::kUseCustomChromeFrame, custom_frame_default);
 }
 
+void BrowserWindowGtk::BookmarkBarIsFloating(bool is_floating) {
+  toolbar_->UpdateForBookmarkBarVisibility(is_floating);
+
+  // This can be NULL during initialization of the bookmark bar.
+  if (bookmark_bar_.get())
+    PlaceBookmarkBar(is_floating);
+}
+
 void BrowserWindowGtk::SetGeometryHints() {
   // Allow the user to resize us arbitrarily small.
   GdkGeometry geometry;
@@ -1621,15 +1629,6 @@ void BrowserWindowGtk::InitWidgets() {
                      G_CALLBACK(&OnCompactNavSpacerExpose), this);
   }
 #endif
-
-  if (IsBookmarkBarSupported()) {
-    bookmark_bar_.reset(new BookmarkBarGtk(browser_->profile(), browser_.get(),
-                                           tabstrip_.get()));
-    gtk_box_pack_start(GTK_BOX(window_vbox_), bookmark_bar_->widget(),
-                       FALSE, FALSE, 0);
-    gtk_widget_show(bookmark_bar_->widget());
-  }
-
   if (IsExtensionShelfSupported()) {
     extension_shelf_.reset(new ExtensionShelfGtk(browser()->profile(),
                                                  browser_.get()));
@@ -1659,8 +1658,7 @@ void BrowserWindowGtk::InitWidgets() {
                   TRUE, TRUE);
   gtk_paned_pack2(GTK_PANED(contents_split_), devtools_container_->widget(),
                   FALSE, TRUE);
-  gtk_box_pack_start(GTK_BOX(render_area_vbox_), contents_split_, TRUE, TRUE,
-                     0);
+  gtk_box_pack_end(GTK_BOX(render_area_vbox_), contents_split_, TRUE, TRUE, 0);
   // Restore split offset.
   int split_offset = g_browser_process->local_state()->GetInteger(
       prefs::kDevToolsSplitLocation);
@@ -1672,6 +1670,20 @@ void BrowserWindowGtk::InitWidgets() {
   }
   gtk_widget_show_all(render_area_vbox_);
   gtk_widget_hide(devtools_container_->widget());
+  render_area_event_box_ = gtk_event_box_new();
+  gtk_container_add(GTK_CONTAINER(render_area_event_box_), render_area_vbox_);
+  gtk_widget_show(render_area_event_box_);
+  gtk_box_pack_end(GTK_BOX(window_vbox_), render_area_event_box_,
+                   TRUE, TRUE, 0);
+
+  if (IsBookmarkBarSupported()) {
+    bookmark_bar_.reset(new BookmarkBarGtk(this,
+                                           browser_->profile(),
+                                           browser_.get(),
+                                           tabstrip_.get()));
+    PlaceBookmarkBar(false);
+    gtk_widget_show(bookmark_bar_->widget());
+  }
 
 #if defined(OS_CHROMEOS)
   if (browser_->type() & Browser::TYPE_POPUP) {
@@ -1689,10 +1701,6 @@ void BrowserWindowGtk::InitWidgets() {
   // proper control layout.
   UpdateCustomFrame();
 
-  render_area_event_box_ = gtk_event_box_new();
-  gtk_container_add(GTK_CONTAINER(render_area_event_box_), render_area_vbox_);
-  gtk_widget_show(render_area_event_box_);
-  gtk_container_add(GTK_CONTAINER(window_vbox_), render_area_event_box_);
   gtk_container_add(GTK_CONTAINER(window_), window_container_);
   gtk_widget_show(window_container_);
   browser_->tabstrip_model()->AddObserver(this);
@@ -2181,6 +2189,26 @@ bool BrowserWindowGtk::UseCustomFrame() {
   // We don't use the custom frame for app mode windows.
   return use_custom_frame_pref_.GetValue() &&
       (browser_->type() != Browser::TYPE_APP);
+}
+
+void BrowserWindowGtk::PlaceBookmarkBar(bool is_floating) {
+  GtkWidget* parent = gtk_widget_get_parent(bookmark_bar_->widget());
+  if (parent)
+    gtk_container_remove(GTK_CONTAINER(parent), bookmark_bar_->widget());
+
+  if (!is_floating) {
+    // Place the bookmark bar at the end of |window_vbox_|; this happens after
+    // we have placed the extension shelf and render area at the end of
+    // |window_vbox_| so we will be above the render area.
+    gtk_box_pack_end(GTK_BOX(window_vbox_), bookmark_bar_->widget(),
+                     FALSE, FALSE, 0);
+  } else {
+    // Place the bookmark bar at the end of the render area; this happens after
+    // the tab contents container has been placed there so we will be
+    // above the webpage.
+    gtk_box_pack_end(GTK_BOX(render_area_vbox_), bookmark_bar_->widget(),
+                     FALSE, FALSE, 0);
+  }
 }
 
 // static
