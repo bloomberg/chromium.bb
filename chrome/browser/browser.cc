@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
+#include "base/scoped_clipboard_writer.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -856,6 +857,22 @@ void Browser::RestoreTab() {
   service->RestoreMostRecentEntry(this);
 }
 
+void Browser::WriteCurrentURLToClipboard() {
+  // TODO(ericu): There isn't currently a metric for this.  Should there be?
+  // We don't appear to track the action when it comes from the
+  // RenderContextViewMenu.
+  // UserMetrics::RecordAction(L"$Metric_Name_Goes_Here$", profile_);
+
+  TabContents* contents = GetSelectedTabContents();
+  if (!contents->ShouldDisplayURL())
+    return;
+
+  net::WriteURLToClipboard(
+      contents->GetURL(),
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
+      g_browser_process->clipboard());
+}
+
 void Browser::ConvertPopupToTabbedBrowser() {
   UserMetrics::RecordAction(L"ShowAsTab", profile_);
   int tab_strip_index = tabstrip_model_.selected_index();
@@ -1347,6 +1364,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_SELECT_LAST_TAB:       SelectLastTab();               break;
     case IDC_DUPLICATE_TAB:         DuplicateTab();                break;
     case IDC_RESTORE_TAB:           RestoreTab();                  break;
+    case IDC_COPY_URL:              WriteCurrentURLToClipboard();  break;
     case IDC_SHOW_AS_TAB:           ConvertPopupToTabbedBrowser(); break;
     case IDC_FULLSCREEN:            ToggleFullscreenMode();        break;
     case IDC_EXIT:                  Exit();                        break;
@@ -2300,6 +2318,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_CUT, true);
   command_updater_.UpdateCommandEnabled(IDC_COPY, true);
   command_updater_.UpdateCommandEnabled(IDC_PASTE, true);
+  command_updater_.UpdateCommandEnabled(IDC_COPY_URL, true);
 
   // Find-in-page
   command_updater_.UpdateCommandEnabled(IDC_FIND, true);
@@ -2366,9 +2385,6 @@ void Browser::InitCommandState() {
 
     // Page-related commands
     command_updater_.UpdateCommandEnabled(IDC_STAR, normal_window);
-
-    // Clipboard commands
-    command_updater_.UpdateCommandEnabled(IDC_COPY_URL, normal_window);
 
     // Show various bits of UI
     command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA,

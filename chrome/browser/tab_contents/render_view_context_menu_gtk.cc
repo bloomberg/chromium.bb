@@ -94,15 +94,6 @@ void RenderViewContextMenuGtk::FinishSubMenu() {
   making_submenu_ = false;
 }
 
-// When a URL is copied from a render view context menu (via "copy link
-// location", for example), we additionally stick it in the X clipboard. This
-// matches other linux browsers.
-void RenderViewContextMenuGtk::DidWriteURLToClipboard(
-    const std::string& url) {
-  GtkClipboard* x_clipboard = gtk_clipboard_get(GDK_SELECTION_PRIMARY);
-  gtk_clipboard_set_text(x_clipboard, url.c_str(), url.length());
-}
-
 void RenderViewContextMenuGtk::AppendItem(
     int id, const string16& label, MenuItemType type) {
   MenuCreateMaterial menu_create_material = {

@@ -325,6 +325,7 @@ class Browser : public TabStripModelDelegate,
   void SelectLastTab();
   void DuplicateTab();
   void RestoreTab();
+  void WriteCurrentURLToClipboard();
   void ConvertPopupToTabbedBrowser();
   void ToggleFullscreenMode();
   void Exit();

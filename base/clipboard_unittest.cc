@@ -227,6 +227,36 @@ TEST_F(ClipboardTest, MultipleFilesTest) {
 }
 #endif  // !defined(OS_LINUX)
 
+TEST_F(ClipboardTest, URLTest) {
+  Clipboard clipboard;
+
+  string16 url(ASCIIToUTF16("http://www.google.com/"));
+
+  {
+    ScopedClipboardWriter clipboard_writer(&clipboard);
+    clipboard_writer.WriteURL(url);
+  }
+
+  EXPECT_TRUE(clipboard.IsFormatAvailable(
+      Clipboard::GetPlainTextWFormatType(), Clipboard::BUFFER_STANDARD));
+  EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetPlainTextFormatType(),
+                                          Clipboard::BUFFER_STANDARD));
+  string16 text_result;
+  clipboard.ReadText(Clipboard::BUFFER_STANDARD, &text_result);
+
+  EXPECT_EQ(text_result, url);
+
+  std::string ascii_text;
+  clipboard.ReadAsciiText(Clipboard::BUFFER_STANDARD, &ascii_text);
+  EXPECT_EQ(UTF16ToUTF8(url), ascii_text);
+
+#if defined(OS_LINUX)
+  ascii_text.clear();
+  clipboard.ReadAsciiText(Clipboard::BUFFER_SELECTION, &ascii_text);
+  EXPECT_EQ(UTF16ToUTF8(url), ascii_text);
+#endif  // defined(OS_LINUX)
+}
+
 #if defined(OS_WIN) || defined(OS_LINUX)
 TEST_F(ClipboardTest, DataTest) {
   Clipboard clipboard;

@@ -801,28 +801,11 @@ void RenderViewContextMenu::Inspect(int x, int y) {
       source_tab_contents_->render_view_host(), x, y);
 }
 
-void RenderViewContextMenu::WriteTextToClipboard(const string16& text) {
-  Clipboard* clipboard = g_browser_process->clipboard();
-
-  if (!clipboard)
-    return;
-
-  ScopedClipboardWriter scw(clipboard);
-  scw.WriteText(text);
-}
-
 void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
-  std::string utf8_text = url.SchemeIs(chrome::kMailToScheme) ? url.path() :
-      // Unescaping path and query is not a good idea because other
-      // applications may not enocode non-ASCII characters in UTF-8.
-      // So the 4th parameter of net::FormatUrl() should be false.
-      // See crbug.com/2820.
-      WideToUTF8(net::FormatUrl(
-                 url, profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
-                 false, UnescapeRule::NONE, NULL, NULL));
-
-  WriteTextToClipboard(UTF8ToUTF16(utf8_text));
-  DidWriteURLToClipboard(utf8_text);
+  net::WriteURLToClipboard(
+      url,
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
+      g_browser_process->clipboard());
 }
 
 void RenderViewContextMenu::MediaPlayerActionAt(

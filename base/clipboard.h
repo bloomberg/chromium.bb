@@ -116,6 +116,14 @@ class Clipboard {
   // can use.
   void WriteObjects(const ObjectMap& objects, base::ProcessHandle process);
 
+  // On Linux, we need to know when the clipboard is set to a URL.  Most
+  // platforms don't care.
+#if !defined(OS_LINUX)
+  void DidWriteURL(const std::string& utf8_text) {}
+#else  // !defined(OS_LINUX)
+  void DidWriteURL(const std::string& utf8_text);
+#endif
+
   // Tests whether the clipboard contains a certain format
   bool IsFormatAvailable(const FormatType& format, Buffer buffer) const;
 
@@ -190,6 +198,7 @@ class Clipboard {
   void WriteFiles(const char* file_data, size_t file_len);
 
   void WriteBitmap(const char* pixel_data, const char* size_data);
+
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_FREEBSD)
   // |format_name| is an ASCII string and should be NULL-terminated.
   // TODO(estade): port to mac.

@@ -119,6 +119,14 @@ void Clipboard::WriteObjects(const ObjectMap& objects) {
   SetGtkClipboard();
 }
 
+// When a URL is copied from a render view context menu (via "copy link
+// location", for example), we additionally stick it in the X clipboard. This
+// matches other linux browsers.
+void Clipboard::DidWriteURL(const std::string& utf8_text) {
+  gtk_clipboard_set_text(primary_selection_, utf8_text.c_str(),
+                         utf8_text.length());
+}
+
 // Take ownership of the GTK clipboard and inform it of the targets we support.
 void Clipboard::SetGtkClipboard() {
   scoped_array<GtkTargetEntry> targets(

@@ -58,10 +58,6 @@ class RenderViewContextMenu {
   // Finish creating the submenu and attach it to the main menu.
   virtual void FinishSubMenu() = 0;
 
-  // For Linux, we want to know when we have written a URL to the clipboard.
-  // Most platforms won't care.
-  virtual void DidWriteURLToClipboard(const std::string& url) { }
-
   // Delegate functions --------------------------------------------------------
 
   bool IsItemCommandEnabled(int id) const;
@@ -99,7 +95,6 @@ class RenderViewContextMenu {
   void Inspect(int x, int y);
 
   // Writes the specified text/url to the system clipboard
-  void WriteTextToClipboard(const string16& text);
   void WriteURLToClipboard(const GURL& url);
 
   void MediaPlayerActionAt(int x, int y, const MediaPlayerAction& action);

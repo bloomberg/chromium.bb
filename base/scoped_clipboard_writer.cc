@@ -18,20 +18,19 @@ ScopedClipboardWriter::ScopedClipboardWriter(Clipboard* clipboard)
 }
 
 ScopedClipboardWriter::~ScopedClipboardWriter() {
-  if (!objects_.empty() && clipboard_)
+  if (!objects_.empty() && clipboard_) {
     clipboard_->WriteObjects(objects_);
+    if (url_text_.length())
+      clipboard_->DidWriteURL(url_text_);
+  }
 }
 
 void ScopedClipboardWriter::WriteText(const string16& text) {
-  if (text.empty())
-    return;
+  WriteTextOrURL(text, false);
+}
 
-  std::string utf8_text = UTF16ToUTF8(text);
-
-  Clipboard::ObjectMapParams parameters;
-  parameters.push_back(Clipboard::ObjectMapParam(utf8_text.begin(),
-                                                 utf8_text.end()));
-  objects_[Clipboard::CBF_TEXT] = parameters;
+void ScopedClipboardWriter::WriteURL(const string16& text) {
+  WriteTextOrURL(text, true);
 }
 
 void ScopedClipboardWriter::WriteHTML(const string16& markup,
@@ -156,3 +155,22 @@ void ScopedClipboardWriter::WritePickledData(const Pickle& pickle,
   parameters.push_back(data_parameter);
   objects_[Clipboard::CBF_DATA] = parameters;
 }
+
+void ScopedClipboardWriter::WriteTextOrURL(const string16& text, bool is_url) {
+  if (text.empty())
+    return;
+
+  std::string utf8_text = UTF16ToUTF8(text);
+
+  Clipboard::ObjectMapParams parameters;
+  parameters.push_back(Clipboard::ObjectMapParam(utf8_text.begin(),
+                                                 utf8_text.end()));
+  objects_[Clipboard::CBF_TEXT] = parameters;
+
+  if (is_url) {
+    url_text_ = utf8_text;
+  } else {
+    url_text_.clear();
+  }
+}
+
