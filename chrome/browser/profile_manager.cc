@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,15 +41,13 @@ void ProfileManager::ShutdownSessionServices() {
 }
 
 ProfileManager::ProfileManager() {
-  base::SystemMonitor* monitor = base::SystemMonitor::Get();
-  if (monitor)
-    monitor->AddObserver(this);
+  base::SystemMonitor::Get()->AddObserver(this);
 }
 
 ProfileManager::~ProfileManager() {
-  base::SystemMonitor* monitor = base::SystemMonitor::Get();
-  if (monitor)
-    monitor->RemoveObserver(this);
+  base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
+  if (system_monitor)
+    system_monitor->RemoveObserver(this);
 
   // Destroy all profiles that we're keeping track of.
   for (ProfileVector::const_iterator iter = profiles_.begin();
@@ -227,7 +225,7 @@ Profile* ProfileManager::GetProfileByID(const std::wstring& id) const {
   return NULL;
 }
 
-void ProfileManager::OnSuspend(base::SystemMonitor* monitor) {
+void ProfileManager::OnSuspend() {
   DCHECK(CalledOnValidThread());
 
   ProfileManager::const_iterator it = begin();
@@ -238,7 +236,7 @@ void ProfileManager::OnSuspend(base::SystemMonitor* monitor) {
   }
 }
 
-void ProfileManager::OnResume(base::SystemMonitor* monitor) {
+void ProfileManager::OnResume() {
   DCHECK(CalledOnValidThread());
   ProfileManager::const_iterator it = begin();
   while (it != end()) {

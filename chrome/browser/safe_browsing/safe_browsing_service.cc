@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -38,16 +38,13 @@ SafeBrowsingService::SafeBrowsingService()
       resetting_(false),
       database_loaded_(false),
       update_in_progress_(false) {
-  base::SystemMonitor* monitor = base::SystemMonitor::Get();
-  DCHECK(monitor);
-  if (monitor)
-    monitor->AddObserver(this);
+  base::SystemMonitor::Get()->AddObserver(this);
 }
 
 SafeBrowsingService::~SafeBrowsingService() {
-  base::SystemMonitor* monitor = base::SystemMonitor::Get();
-  if (monitor)
-    monitor->RemoveObserver(this);
+  base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
+  if (system_monitor)
+    system_monitor->RemoveObserver(this);
 }
 
 // Only called on the UI thread.
@@ -663,14 +660,11 @@ void SafeBrowsingService::CacheHashResults(
   GetDatabase()->CacheHashResults(prefixes, full_hashes);
 }
 
-void SafeBrowsingService::OnSuspend(base::SystemMonitor*) {
-}
-
 // Tell the SafeBrowsing database not to do expensive disk operations for a few
 // minutes after waking up. It's quite likely that the act of resuming from a
 // low power state will involve much disk activity, which we don't want to
 // exacerbate.
-void SafeBrowsingService::OnResume(base::SystemMonitor*) {
+void SafeBrowsingService::OnResume() {
   if (enabled_) {
     safe_browsing_thread_->message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(this, &SafeBrowsingService::HandleResume));
