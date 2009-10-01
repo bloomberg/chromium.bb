@@ -20,8 +20,6 @@
 
 namespace {
 
-const GdkColor kFrameBorderColor = GDK_COLOR_RGB(0xbe, 0xc8, 0xd4);
-
 // Inner padding between the border and the text label.
 const int kInternalTopBottomPadding = 1;
 const int kInternalLeftRightPadding = 2;
@@ -39,6 +37,7 @@ StatusBubbleGtk::StatusBubbleGtk(Profile* profile)
       timer_factory_(this) {
   InitWidgets();
 
+  theme_provider_->InitThemesFor(this);
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
 }
@@ -144,7 +143,7 @@ void StatusBubbleGtk::InitWidgets() {
 
   container_.Own(gtk_event_box_new());
   gtk_util::ActAsRoundedWindow(
-      container_.get(), kFrameBorderColor, kCornerSize,
+      container_.get(), gfx::kGdkWhite, kCornerSize,
       gtk_util::ROUNDED_TOP_RIGHT,
       gtk_util::BORDER_TOP | gtk_util::BORDER_RIGHT);
   gtk_widget_set_name(container_.get(), "status-bubble");
@@ -157,9 +156,6 @@ void StatusBubbleGtk::UserChangedTheme() {
   if (theme_provider_->UseGtkTheme()) {
     gtk_widget_modify_fg(label_, GTK_STATE_NORMAL, NULL);
     gtk_widget_modify_bg(container_.get(), GTK_STATE_NORMAL, NULL);
-
-    gtk_util::SetRoundedWindowBorderColor(container_.get(),
-                                          theme_provider_->GetBorderColor());
   } else {
     // TODO(erg): This is the closest to "text that will look good on a
     // toolbar" that I can find. Maybe in later iterations of the theme system,
@@ -171,7 +167,8 @@ void StatusBubbleGtk::UserChangedTheme() {
     GdkColor toolbar_color =
         theme_provider_->GetGdkColor(BrowserThemeProvider::COLOR_TOOLBAR);
     gtk_widget_modify_bg(container_.get(), GTK_STATE_NORMAL, &toolbar_color);
-
-    gtk_util::SetRoundedWindowBorderColor(container_.get(), kFrameBorderColor);
   }
+
+  gtk_util::SetRoundedWindowBorderColor(container_.get(),
+                                        theme_provider_->GetBorderColor());
 }
