@@ -272,19 +272,13 @@ function handleLocationChange() {
 
 /**
  * Sets the page state. Takes varargs of key, value pairs.
- *
- * @return list of keys modified
  */
-function setQueryParameter(key, value) {
-  var keys = [];
+function setQueryParameter(var_args) {
   for (var i = 0; i < arguments.length; i += 2) {
-    var key = arguments[i];
-    keys.push(key);
-    currentState[key] = arguments[i + 1];
+    currentState[arguments[i]] = arguments[i + 1];
   }
   window.location.replace(getPermaLinkURL());
   saveStoredWindowLocation();
-  return keys;
 }
 
 function getPermaLinkURL() {

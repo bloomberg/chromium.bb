@@ -1313,7 +1313,7 @@
    * Sets the page state and regenerates the page. Takes varargs of key, value
    * pairs.
    */
-  function setState(key, value) {
+  function setState(var_args) {
     var shouldRegeneratePage = true;
     for (var i = 0; i < arguments.length; i += 2) {
       var key = arguments[i];
@@ -1340,7 +1340,7 @@
 
     // Set all the custom state for this dashboard before calling
     // setQueryParameter since setQueryParameter updates the location bar.
-    var keys = setQueryParameter.apply(null, arguments);
+    setQueryParameter.apply(null, arguments);
 
     if (shouldRegeneratePage)
       handleLocationChange();
