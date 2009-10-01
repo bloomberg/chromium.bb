@@ -78,6 +78,14 @@ class RendererGL : public Renderer {
     return fullscreen_;
   }
 
+  // Get a vector of the available fullscreen display modes.
+  // Clears *modes on error.
+  virtual void GetDisplayModes(std::vector<DisplayMode> *modes);
+
+  // Get a single fullscreen display mode by id.
+  // Returns true on success, false on error.
+  virtual bool GetDisplayMode(int id, DisplayMode *mode);
+
   // Resizes the viewport in OpenGL.
   virtual void Resize(int width, int height);
 

@@ -1214,14 +1214,66 @@ void RendererGL::Resize(int width, int height) {
 
 bool RendererGL::GoFullscreen(const DisplayWindow& display,
                               int mode_id) {
+#ifdef OS_LINUX
+  // This actually just switches the GLX context to the new window. The real
+  // work is in main_linux.cc.
+  const DisplayWindowLinux &display_platform =
+      static_cast<const DisplayWindowLinux&>(display);
+  display_ = display_platform.display();
+  window_ = display_platform.window();
+  if (!MakeCurrent()) {
+    return false;
+  }
+#endif
   fullscreen_ = true;
   return true;
 }
 
 bool RendererGL::CancelFullscreen(const DisplayWindow& display,
                                   int width, int height) {
+#ifdef OS_LINUX
+  // This actually just switches the GLX context to the old window. The real
+  // work is in main_linux.cc.
+  const DisplayWindowLinux &display_platform =
+      static_cast<const DisplayWindowLinux&>(display);
+  display_ = display_platform.display();
+  window_ = display_platform.window();
+  if (!MakeCurrent()) {
+    return false;
+  }
+#endif
   fullscreen_ = false;
   return true;
+}
+
+void RendererGL::GetDisplayModes(std::vector<DisplayMode> *modes) {
+#ifdef OS_MACOSX
+  // Mac is supposed to call a different function in plugin_mac.mm instead.
+  DLOG(FATAL) << "Not supposed to be called";
+#endif
+  // On all other platforms this is unimplemented. Linux only supports
+  // DISPLAY_MODE_DEFAULT for now.
+  modes->clear();
+}
+
+bool RendererGL::GetDisplayMode(int id, DisplayMode *mode) {
+#ifdef OS_MACOSX
+  // Mac is supposed to call a different function in plugin_mac.mm instead.
+  DLOG(FATAL) << "Not supposed to be called";
+  return false;
+#elif defined(OS_LINUX)
+  if (id == DISPLAY_MODE_DEFAULT) {
+    // Don't need to know any of this on Linux.
+    mode->Set(0, 0, 0, id);
+    return true;
+  } else {
+    // There are no other valid ids until we implement GetDisplayModes() and
+    // mode switching.
+    return false;
+  }
+#else
+  return false;
+#endif
 }
 
 bool RendererGL::PlatformSpecificStartRendering() {

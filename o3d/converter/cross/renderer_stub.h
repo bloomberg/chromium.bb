@@ -71,6 +71,13 @@ class RendererStub : public Renderer {
                                    int height,
                                    float min_z,
                                    float max_z);
+  virtual bool GoFullscreen(const DisplayWindow& display,
+                            int mode_id);
+  virtual bool CancelFullscreen(const DisplayWindow& display,
+                                int width, int height);
+  virtual bool fullscreen() const;
+  virtual void GetDisplayModes(std::vector<DisplayMode> *modes);
+  virtual bool GetDisplayMode(int id, DisplayMode *mode);
 
   // Overridden from Renderer.
   virtual const int* GetRGBAUByteNSwizzleTable();

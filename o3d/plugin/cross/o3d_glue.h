@@ -218,8 +218,13 @@ class PluginObject: public NPObject {
   }
   bool got_dblclick() const { return got_dblclick_; }
   void set_got_dblclick(bool got_dblclick) { got_dblclick_ = got_dblclick; }
-#endif
-#ifdef OS_MACOSX
+#elif defined(OS_LINUX)
+  void SetGtkEventSource(GtkWidget *widget);
+  gboolean OnGtkConfigure(GtkWidget *widget,
+                          GdkEventConfigure *configure_event);
+  gboolean OnGtkDelete(GtkWidget *widget,
+                       GdkEvent *configure);
+#elif defined(OS_MACOSX)
   void SetFullscreenOverlayMacWindow(WindowRef window) {
     mac_fullscreen_overlay_window_ = window;
   }
@@ -284,9 +289,14 @@ class PluginObject: public NPObject {
   Time last_click_time_;
 
   // XEmbed mode
+  Window drawable_;
   GtkWidget *gtk_container_;
+  GtkWidget *gtk_fullscreen_container_;
+  GtkWidget *gtk_event_source_;
+  gulong event_handler_id_;
   bool got_double_click_[3];
   guint timeout_id_;
+  bool fullscreen_pending_;
 
   bool draw_;
   bool in_plugin_;
@@ -348,9 +358,9 @@ class PluginObject: public NPObject {
 
   // Make a region of the plugin area that will invoke fullscreen mode if
   // clicked.  The app developer is responsible for communicating this to the
-  // user, as this region has no visible marker.  The user is also responsible
-  // for updating this region if the plugin gets resized, as we don't know
-  // whether or how to scale it.
+  // user, as this region has no visible marker.  The developer is also
+  // responsible for updating this region if the plugin gets resized, as we
+  // don't know whether or how to scale it.
   // Fails if the mode_id supplied isn't valid.  Returns true on success.
   bool SetFullscreenClickRegion(int x, int y, int width, int height,
       int mode_id);

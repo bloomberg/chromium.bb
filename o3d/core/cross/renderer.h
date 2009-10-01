@@ -218,11 +218,8 @@ class Renderer {
   //  display: a platform-specific display identifier
   //  mode_id: a mode returned by GetDisplayModes
   // Returns true on success, false on failure.
-  // TODO(o3d): Make this pure virtual once it's implemented everywhere.
   virtual bool GoFullscreen(const DisplayWindow& display,
-                            int mode_id) {
-    return false;
-  }
+                            int mode_id) = 0;
 
   // Cancels fullscreen display. Restores rendering to windowed mode
   // with the given width and height.
@@ -231,27 +228,19 @@ class Renderer {
   //  width: the width to which to restore windowed rendering
   //  height: the height to which to restore windowed rendering
   // Returns true on success, false on failure.
-  // TODO(o3d): Make this pure virtual once it's implemented everywhere.
   virtual bool CancelFullscreen(const DisplayWindow& display,
-                                int width, int height) {
-    return false;
-  }
+                                int width, int height) = 0;
 
   // Tells whether we're currently displayed fullscreen or not.
-  virtual bool fullscreen() const { return false; }
+  virtual bool fullscreen() const = 0;
 
   // Get a vector of the available fullscreen display modes.
   // Clears *modes on error.
-  // TODO: Make this pure virtual once it's implemented everywhere.
-  virtual void GetDisplayModes(std::vector<DisplayMode> *modes) {
-    modes->clear();
-  }
+  virtual void GetDisplayModes(std::vector<DisplayMode> *modes) = 0;
+
   // Get a single fullscreen display mode by id.
   // Returns true on success, false on error.
-  // TODO: Make this pure virtual once it's implemented everywhere.
-  virtual bool GetDisplayMode(int id, DisplayMode *mode) {
-    return false;
-  }
+  virtual bool GetDisplayMode(int id, DisplayMode *mode) = 0;
 
   // Gets the viewport.
   void GetViewport(Float4* rectangle, Float2* depth_range);

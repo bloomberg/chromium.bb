@@ -140,8 +140,13 @@ PluginObject::PluginObject(NPP npp)
       xt_app_context_(NULL),
       xt_interval_(0),
       last_click_time_(0),
+      drawable_(0),
       gtk_container_(NULL),
+      gtk_fullscreen_container_(NULL),
+      gtk_event_source_(NULL),
+      event_handler_id_(0),
       timeout_id_(0),
+      fullscreen_pending_(false),
       draw_(true),
       in_plugin_(false),
 #endif
