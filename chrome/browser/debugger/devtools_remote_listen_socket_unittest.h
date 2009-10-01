@@ -82,10 +82,13 @@ class DevToolsRemoteListenSocketTester :
     public DevToolsRemoteListener {
  public:
   DevToolsRemoteListenSocketTester()
-      : thread_(NULL),
+      : semaphore_(NULL),
+        thread_(NULL),
         loop_(NULL),
         server_(NULL),
-        connection_(NULL) {
+        connection_(NULL),
+        test_socket_(INVALID_SOCKET) {
+    memset(&lock_, 0, sizeof(lock_));
   }
 
   virtual ~DevToolsRemoteListenSocketTester() {
