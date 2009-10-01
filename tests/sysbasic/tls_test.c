@@ -29,9 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
-__thread int tls_initialized_var = 69;
+/* make sure these variables get placed in tls_data */
+__thread int tls_initialized_var1 = 67;
+__thread int tls_initialized_var2 = 1;
+__thread int tls_initialized_var3 = 1;
 
 int main() {
-  return tls_initialized_var;
+  return tls_initialized_var1 + tls_initialized_var2 + tls_initialized_var3;
 }
