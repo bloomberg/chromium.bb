@@ -1739,6 +1739,7 @@
         'browser/plugin_installer.h',
         'browser/plugin_process_host.cc',
         'browser/plugin_process_host.h',
+        'browser/plugin_process_host_mac.cc',
         'browser/plugin_service.cc',
         'browser/plugin_service.h',
         'browser/possible_url_model.cc',

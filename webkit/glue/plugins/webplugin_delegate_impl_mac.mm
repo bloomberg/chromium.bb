@@ -563,6 +563,21 @@ WebPluginResourceClient* WebPluginDelegateImpl::CreateResourceClient(
 }
 
 void WebPluginDelegateImpl::OnNullEvent() {
+  if (!webkit_glue::IsPluginRunningInRendererProcess()) {
+    // If the plugin is running in a subprocess, drain any pending system
+    // events so that the plugin's event handlers will get called on any
+    // windows it has created.  Filter out activate/deactivate events on
+    // the fake browser window, but pass everything else through.
+    EventRecord event;
+    while (GetNextEvent(everyEvent, &event)) {
+      if (event.what == activateEvt && cg_context_.window &&
+          reinterpret_cast<void *>(event.message) != cg_context_.window)
+        continue;
+      instance()->NPP_HandleEvent(&event);
+    }
+  }
+
+  // Send an idle event so that the plugin can do background work
   NPEvent np_event = {0};
   np_event.what = nullEvent;
   np_event.when = TickCount();

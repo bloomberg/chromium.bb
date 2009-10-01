@@ -123,6 +123,34 @@ IPC_BEGIN_MESSAGES(PluginProcessHost)
                              gfx::PluginWindowHandle /* output: X window id */)
 #endif
 
+#if defined(OS_MACOSX)
+  // On Mac OS X, we need the browser to keep track of plugin windows so
+  // that it can add and remove them from stacking groups, hide and show the
+  // menu bar, etc.  We pass the window rect for convenience so that the
+  // browser can easily tell if the window is fullscreen.
+
+  // Notifies the browser that the plugin has selected a window (i.e., brought
+  // it to the front and wants it to have keyboard focus).
+  IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginSelectWindow,
+                       uint32 /* window ID */,
+                       gfx::Rect /* window rect */)
+
+  // Notifies the browser that the plugin has shown a window.
+  IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginShowWindow,
+                       uint32 /* window ID */,
+                       gfx::Rect /* window rect */)
+
+  // Notifies the browser that the plugin has hidden a window.
+  IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginHideWindow,
+                       uint32 /* window ID */,
+                       gfx::Rect /* window rect */)
+
+  // Notifies the browser that the plugin has disposed of a window.
+  IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginDisposeWindow,
+                       uint32 /* window ID */,
+                       gfx::Rect /* window rect */)
+#endif
+
 IPC_END_MESSAGES(PluginProcessHost)
 
 

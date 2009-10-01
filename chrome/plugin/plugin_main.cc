@@ -67,7 +67,17 @@ static void TrimInterposeEnvironment() {
 // main() routine for running as the plugin process.
 int PluginMain(const MainFunctionParams& parameters) {
   // The main thread of the plugin services UI.
+#if defined(OS_MACOSX)
+  // For Mac NPAPI plugins, we don't want a MessageLoop::TYPE_UI because
+  // that will cause events to be dispatched via the Cocoa responder chain.
+  // If the plugin creates its own windows with Carbon APIs (for example,
+  // full screen mode in Flash), those windows would not receive events.
+  // Instead, WebPluginDelegateImpl::OnNullEvent will dispatch any pending
+  // system events directly to the plugin.
+  MessageLoop main_message_loop(MessageLoop::TYPE_DEFAULT);
+#else
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
+#endif
   std::wstring app_name = chrome::kBrowserAppName;
   PlatformThread::SetName(WideToASCII(app_name + L"_PluginMain").c_str());
 

@@ -27,7 +27,10 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/chrome_plugin_browsing_context.h"
 #include "chrome/browser/chrome_thread.h"
@@ -325,6 +328,13 @@ PluginProcessHost::~PluginProcessHost() {
        window_index++) {
     PostMessage(*window_index, WM_CLOSE, 0, 0);
   }
+#elif defined(OS_MACOSX)
+  // If the plugin process crashed but had windows open at the time, make
+  // sure that the menu bar is visible if the browser window is not also in
+  // fullscreen mode.
+  if (!plugin_visible_windows_set_.empty()) {
+    SetSystemUIMode(kUIModeNormal, 0);
+  }
 #endif
 }
 
@@ -476,6 +486,16 @@ void PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
 #if defined(OS_LINUX)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_MapNativeViewId,
                         OnMapNativeViewId)
+#endif
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginSelectWindow,
+                        OnPluginSelectWindow)
+    IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginShowWindow,
+                        OnPluginShowWindow)
+    IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginHideWindow,
+                        OnPluginHideWindow)
+    IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginDisposeWindow,
+                        OnPluginDisposeWindow)
 #endif
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()

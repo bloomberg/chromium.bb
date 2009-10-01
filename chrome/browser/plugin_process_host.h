@@ -112,6 +112,13 @@ class PluginProcessHost : public ChildProcessHost,
   void OnMapNativeViewId(gfx::NativeViewId id, gfx::PluginWindowHandle* output);
 #endif
 
+#if defined(OS_MACOSX)
+  void OnPluginSelectWindow(uint32 window_id, gfx::Rect window_rect);
+  void OnPluginShowWindow(uint32 window_id, gfx::Rect window_rect);
+  void OnPluginHideWindow(uint32 window_id, gfx::Rect window_rect);
+  void OnPluginDisposeWindow(uint32 window_id, gfx::Rect window_rect);
+#endif
+
   virtual bool CanShutdown() { return sent_requests_.empty(); }
 
   struct ChannelRequest {
@@ -142,6 +149,10 @@ class PluginProcessHost : public ChildProcessHost,
 #if defined(OS_WIN)
   // Tracks plugin parent windows created on the UI thread.
   std::set<HWND> plugin_parent_windows_set_;
+#endif
+#if defined(OS_MACOSX)
+  // Tracks plugin windows currently visible
+  std::set<uint32> plugin_visible_windows_set_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PluginProcessHost);

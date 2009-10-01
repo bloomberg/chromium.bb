@@ -12,7 +12,7 @@
 
 class WebPluginDelegateImpl;
 
-// Serves as a bridge between password delegate instances and the Carbon
+// Serves as a bridge between plugin delegate instances and the Carbon
 // interposing library. The Carbon functions we interpose work in terms of
 // WindowRefs, and we need to be able to map from those back to the plugin
 // delegates that know what we should claim about the state of the world.

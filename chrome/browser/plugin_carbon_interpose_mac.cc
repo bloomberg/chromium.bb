@@ -4,7 +4,17 @@
 
 #include <Carbon/Carbon.h>
 
+#include "base/gfx/rect.h"
 #include "webkit/glue/plugins/fake_plugin_window_tracker_mac.h"
+
+namespace webkit_glue {
+
+void NotifyBrowserOfPluginSelectWindow(uint32 window_id, CGRect bounds);
+void NotifyBrowserOfPluginShowWindow(uint32 window_id, CGRect bounds);
+void NotifyBrowserOfPluginHideWindow(uint32 window_id, CGRect bounds);
+void NotifyBrowserOfPluginDisposeWindow(uint32 window_id, CGRect bounds);
+
+}
 
 // The process that was frontmost when a plugin created a new window; generally
 // we expect this to be the browser UI process.
@@ -64,23 +74,38 @@ static Boolean ChromePluginIsWindowHilited(WindowRef window) {
   return isHilited;
 }
 
+static CGRect CGRectForWindow(WindowRef window) {
+  CGRect bounds = { { 0, 0 }, { 0, 0 } };
+  HIWindowGetBounds(window, kWindowContentRgn, kHICoordSpace72DPIGlobal,
+                    &bounds);
+  return bounds;
+}
+
 static void ChromePluginSelectWindow(WindowRef window) {
   SwitchToPluginProcess();
   SelectWindow(window);
+  webkit_glue::NotifyBrowserOfPluginSelectWindow(HIWindowGetCGWindowID(window),
+                                                 CGRectForWindow(window));
 }
 
 static void ChromePluginShowWindow(WindowRef window) {
   SwitchToPluginProcess();
   ShowWindow(window);
+  webkit_glue::NotifyBrowserOfPluginShowWindow(HIWindowGetCGWindowID(window),
+                                               CGRectForWindow(window));
 }
 
 static void ChromePluginDisposeWindow(WindowRef window) {
   SwitchToSavedProcess();
+  webkit_glue::NotifyBrowserOfPluginDisposeWindow(HIWindowGetCGWindowID(window),
+                                                  CGRectForWindow(window));
   DisposeWindow(window);
 }
 
 static void ChromePluginHideWindow(WindowRef window) {
   SwitchToSavedProcess();
+  webkit_glue::NotifyBrowserOfPluginHideWindow(HIWindowGetCGWindowID(window),
+                                               CGRectForWindow(window));
   HideWindow(window);
 }
 
