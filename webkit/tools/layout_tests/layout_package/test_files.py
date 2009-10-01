@@ -10,6 +10,7 @@ list of test files is constrained to those found under the paths passed in,
 i.e. calling GatherTestFiles(["LayoutTests/fast"]) will only return files
 under that directory."""
 
+import glob
 import os
 import path_utils
 
