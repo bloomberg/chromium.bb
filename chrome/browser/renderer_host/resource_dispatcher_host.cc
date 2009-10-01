@@ -29,7 +29,6 @@
 #include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
-#include "chrome/browser/privacy_blacklist/blocked_response.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/async_resource_handler.h"
 #include "chrome/browser/renderer_host/buffered_resource_handler.h"
@@ -425,6 +424,7 @@ void ResourceDispatcherHost::BeginRequest(
     }
     return;
   }
+  std::string url = request_data.url.spec();
 
   // Note that context can still be NULL here when running unit tests.
   Blacklist::Match* match = context && context->blacklist() ?
@@ -438,7 +438,8 @@ void ResourceDispatcherHost::BeginRequest(
     URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
     std::string data =
         request_data.resource_type != ResourceType::SUB_RESOURCE ?
-        BlockedResponse::GetHTML(match) : BlockedResponse::GetImage(match);
+        blocked_.GetHTML(url, match) : blocked_.GetImage(match);
+    std::string headers = blocked_.GetHeaders(url);
 
     if (sync_result) {
       SyncLoadResult result;
@@ -460,6 +461,7 @@ void ResourceDispatcherHost::BeginRequest(
             header.mime_type = "text/html";
             header.content_length = -1;
             header.status = status;
+            header.headers = new net::HttpResponseHeaders(headers);
             receiver_->Send(new ViewMsg_Resource_ReceivedResponse(
                 route_id, request_id, header));
             receiver_->Send(new ViewMsg_Resource_DataReceived(
@@ -482,6 +484,10 @@ void ResourceDispatcherHost::BeginRequest(
     return;
   }
 
+  // To fetch a blocked resource, convert the unblock URL to the original one.
+  GURL gurl = request_data.url.scheme() != chrome::kUnblockScheme ?
+      request_data.url : GURL(blocked_.GetOriginalURL(url));
+
   // Ensure the Chrome plugins are loaded, as they may intercept network
   // requests.  Does nothing if they are already loaded.
   // TODO(mpcomplete): This takes 200 ms!  Investigate parallelizing this by
@@ -491,24 +497,24 @@ void ResourceDispatcherHost::BeginRequest(
   // Construct the event handler.
   scoped_refptr<ResourceHandler> handler;
   if (sync_result) {
-    handler = new SyncResourceHandler(receiver_, request_data.url, sync_result);
+    handler = new SyncResourceHandler(receiver_, gurl, sync_result);
   } else {
     handler = new AsyncResourceHandler(receiver_,
                                        child_id,
                                        route_id,
                                        receiver_->handle(),
-                                       request_data.url,
+                                       gurl,
                                        this);
   }
 
   if (HandleExternalProtocol(request_id, child_id, route_id,
-                             request_data.url, request_data.resource_type,
+                             gurl, request_data.resource_type,
                              handler)) {
     return;
   }
 
   // Construct the request.
-  URLRequest* request = new URLRequest(request_data.url, this);
+  URLRequest* request = new URLRequest(gurl, this);
   if (match) {
     request->SetUserData(&Blacklist::kRequestDataKey, match);
   }
@@ -550,8 +556,10 @@ void ResourceDispatcherHost::BeginRequest(
 
   // Install a CrossSiteResourceHandler if this request is coming from a
   // RenderViewHost with a pending cross-site request.  We only check this for
-  // MAIN_FRAME requests.
-  if (request_data.resource_type == ResourceType::MAIN_FRAME &&
+  // MAIN_FRAME requests. Unblock requests only come from a blocked page, do
+  // not count as cross-site, otherwise it gets blocked indefinitely.
+  if (request_data.url.scheme() != chrome::kUnblockScheme &&
+      request_data.resource_type == ResourceType::MAIN_FRAME &&
       process_type == ChildProcessInfo::RENDER_PROCESS &&
       Singleton<CrossSiteRequestManager>::get()->
           HasPendingCrossSiteRequest(child_id, route_id)) {
@@ -564,11 +572,11 @@ void ResourceDispatcherHost::BeginRequest(
   }
 
   if (safe_browsing_->enabled() &&
-      safe_browsing_->CanCheckUrl(request_data.url)) {
+      safe_browsing_->CanCheckUrl(gurl)) {
     handler = new SafeBrowsingResourceHandler(handler,
                                               child_id,
                                               route_id,
-                                              request_data.url,
+                                              gurl,
                                               request_data.resource_type,
                                               safe_browsing_,
                                               this,

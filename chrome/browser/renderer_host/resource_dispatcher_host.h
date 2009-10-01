@@ -23,6 +23,7 @@
 #include "base/timer.h"
 #include "chrome/browser/renderer_host/resource_handler.h"
 #include "chrome/common/child_process_info.h"
+#include "chrome/browser/privacy_blacklist/blocked_response.h"
 #include "ipc/ipc_message.h"
 #include "net/url_request/url_request.h"
 #include "webkit/glue/resource_type.h"
@@ -476,6 +477,9 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   // Used during IPC message dispatching so that the handlers can get a pointer
   // to the source of the message.
   Receiver* receiver_;
+
+  // Keeps track of elements blocked by the Privacy Blacklist.
+  chrome::BlockedResponse blocked_;
 
   static bool g_is_http_prioritization_enabled;
 
