@@ -13,14 +13,14 @@ TEST_F(WebViewTest, GetContentAsPlainText) {
   WebView* view = test_shell_->webView();
   ASSERT_TRUE(view != 0);
 
-  view->setIsActive(true);
-  EXPECT_TRUE(view->isActive());
+  view->SetActive(true);
+  EXPECT_TRUE(view->IsActive());
 
-  view->setIsActive(false);
-  EXPECT_FALSE(view->isActive());
+  view->SetActive(false);
+  EXPECT_FALSE(view->IsActive());
 
-  view->setIsActive(true);
-  EXPECT_TRUE(view->isActive());
+  view->SetActive(true);
+  EXPECT_TRUE(view->IsActive());
 }
 
 // TODO(viettrungluu): add more tests

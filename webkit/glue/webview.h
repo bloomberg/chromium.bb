@@ -56,6 +56,11 @@ class WebView : public WebKit::WebView {
   // notifications.
   static WebView* Create(WebViewDelegate* delegate);
 
+  // After creating a WebView, you should immediately call this function.  You
+  // can optionally modify the settings (via GetSettings()) in between.  The
+  // frame_client will receive events for the main frame and any child frames.
+  virtual void InitializeMainFrame(WebKit::WebFrameClient* frame_client) = 0;
+
   // Tells all Page instances of this view to update the visited link state for
   // the specified hash.
   static void UpdateVisitedLinkState(uint64 link_hash);
@@ -69,9 +74,42 @@ class WebView : public WebKit::WebView {
   // using it, it will be NULL during closing of the view.
   virtual WebViewDelegate* GetDelegate() = 0;
 
+  // Method that controls whether pressing Tab key cycles through page elements
+  // or inserts a '\t' char in text area
+  virtual void SetTabKeyCyclesThroughElements(bool value) = 0;
+
+  // Returns the frame previous to the specified frame, by traversing the frame
+  // tree, wrapping around if necessary.
+  virtual WebKit::WebFrame* GetPreviousFrameBefore(WebKit::WebFrame* frame, bool wrap) = 0;
+
+  // Returns the frame after to the specified frame, by traversing the frame
+  // tree, wrapping around if necessary.
+  virtual WebKit::WebFrame* GetNextFrameAfter(WebKit::WebFrame* frame, bool wrap) = 0;
+
+  // ---- TODO(darin): remove from here ----
+
+  //
+  //  - (IBAction)stopLoading:(id)sender;
+  virtual void StopLoading() = 0;
+
+  // Sets the maximum size to allow WebCore's internal B/F list to grow to.
+  // If not called, the list will have the default capacity specified in
+  // BackForwardList.cpp.
+  virtual void SetBackForwardListSize(int size) = 0;
+
+  // ---- TODO(darin): remove to here ----
+
   // Settings used by inspector.
   virtual const std::wstring& GetInspectorSettings() const = 0;
   virtual void SetInspectorSettings(const std::wstring& settings) = 0;
+
+  // Show the JavaScript console.
+  virtual void ShowJavaScriptConsole() = 0;
+
+  // Helper method for drag and drop target operations: override the default
+  // drop effect with either a "copy" (accept true) or "none" (accept false)
+  // effect.  Return true on success.
+  virtual bool SetDropEffect(bool accept) = 0;
 
   // Notifies the webview that autofill suggestions are available for a node.
   virtual void AutofillSuggestionsForNode(
@@ -85,14 +123,28 @@ class WebView : public WebKit::WebView {
   // Returns development tools agent instance belonging to this view.
   virtual WebDevToolsAgent* GetWebDevToolsAgent() = 0;
 
+  // Makes the webview transparent. Useful if you want to have some custom
+  // background behind it.
+  virtual void SetIsTransparent(bool is_transparent) = 0;
+  virtual bool GetIsTransparent() const = 0;
+
   virtual void SetSpellingPanelVisibility(bool is_visible) = 0;
   virtual bool GetSpellingPanelVisibility() = 0;
+
+  virtual void SetTabsToLinks(bool enable) = 0;
+  virtual bool GetTabsToLinks() const = 0;
 
   // Performs an action from a context menu for the node at the given
   // location.
   virtual void MediaPlayerActionAt(int x,
                                    int y,
                                    const MediaPlayerAction& action) = 0;
+
+  // Updates the WebView's active state (i.e., control tints).
+  virtual void SetActive(bool active) = 0;
+
+  // Gets the WebView's active state (i.e., state of control tints).
+  virtual bool IsActive() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebView);

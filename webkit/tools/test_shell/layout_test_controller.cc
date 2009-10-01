@@ -414,7 +414,7 @@ void LayoutTestController::objCIdentityIsEqual(
 void LayoutTestController::Reset() {
   if (shell_) {
     shell_->webView()->zoomDefault();
-    shell_->webView()->setTabKeyCyclesThroughElements(true);
+    shell_->webView()->SetTabKeyCyclesThroughElements(true);
   }
   dump_as_text_ = false;
   dump_editing_callbacks_ = false;
@@ -486,7 +486,7 @@ void LayoutTestController::setCanOpenWindows(
 void LayoutTestController::setTabKeyCyclesThroughElements(
     const CppArgumentList& args, CppVariant* result) {
   if (args.size() > 0 && args[0].isBool()) {
-    shell_->webView()->setTabKeyCyclesThroughElements(args[0].ToBoolean());
+    shell_->webView()->SetTabKeyCyclesThroughElements(args[0].ToBoolean());
   }
   result->SetNull();
 }

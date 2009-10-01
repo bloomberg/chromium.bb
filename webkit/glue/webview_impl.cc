@@ -338,7 +338,7 @@ WebView* WebView::Create(WebViewDelegate* delegate) {
   return instance;
 }
 
-void WebViewImpl::initializeMainFrame(WebFrameClient* frame_client) {
+void WebViewImpl::InitializeMainFrame(WebFrameClient* frame_client) {
   // NOTE: The WebFrameImpl takes a reference to itself within InitMainFrame
   // and releases that reference once the corresponding Frame is destroyed.
   scoped_refptr<WebFrameImpl> main_frame = new WebFrameImpl(frame_client);
@@ -369,6 +369,7 @@ void WebView::ResetVisitedLinkState() {
   WebCore::Page::allVisitedStateChanged(
       WebCore::PageGroup::pageGroup(kPageGroupName));
 }
+
 
 WebViewImpl::WebViewImpl(WebViewDelegate* delegate)
     : delegate_(delegate),
@@ -424,12 +425,7 @@ RenderTheme* WebViewImpl::theme() const {
   return page_.get() ? page_->theme() : RenderTheme::defaultTheme().get();
 }
 
-bool WebViewImpl::tabKeyCyclesThroughElements() const {
-  ASSERT(page_.get());
-  return page_->tabKeyCyclesThroughElements();
-}
-
-void WebViewImpl::setTabKeyCyclesThroughElements(bool value) {
+void WebViewImpl::SetTabKeyCyclesThroughElements(bool value) {
   if (page_ != NULL) {
     page_->setTabKeyCyclesThroughElements(value);
   }
@@ -1611,6 +1607,30 @@ WebViewDelegate* WebViewImpl::GetDelegate() {
   return delegate_;
 }
 
+WebFrame* WebViewImpl::GetPreviousFrameBefore(WebFrame* frame, bool wrap) {
+  WebFrameImpl* frame_impl = static_cast<WebFrameImpl*>(frame);
+  WebCore::Frame* previous =
+      frame_impl->frame()->tree()->traversePreviousWithWrap(wrap);
+  return previous ? WebFrameImpl::FromFrame(previous) : NULL;
+}
+
+WebFrame* WebViewImpl::GetNextFrameAfter(WebFrame* frame, bool wrap) {
+  WebFrameImpl* frame_impl = static_cast<WebFrameImpl*>(frame);
+  WebCore::Frame* next =
+      frame_impl->frame()->tree()->traverseNextWithWrap(wrap);
+  return next ? WebFrameImpl::FromFrame(next) : NULL;
+}
+
+// TODO(darin): these navigation methods should be killed
+
+void WebViewImpl::StopLoading() {
+  main_frame()->stopLoading();
+}
+
+void WebViewImpl::SetBackForwardListSize(int size) {
+  page_->backForwardList()->setCapacity(size);
+}
+
 const std::wstring& WebViewImpl::GetInspectorSettings() const {
   return inspector_settings_;
 }
@@ -1619,7 +1639,11 @@ void WebViewImpl::SetInspectorSettings(const std::wstring& settings) {
   inspector_settings_ = settings;
 }
 
-bool WebViewImpl::setDropEffect(bool accept) {
+void WebViewImpl::ShowJavaScriptConsole() {
+  page_->inspectorController()->showPanel(InspectorController::ConsolePanel);
+}
+
+bool WebViewImpl::SetDropEffect(bool accept) {
   if (drag_target_dispatch_) {
     drop_effect_ = accept ? DROP_EFFECT_COPY : DROP_EFFECT_NONE;
     return true;
@@ -1697,7 +1721,7 @@ WebDevToolsAgentImpl* WebViewImpl::GetWebDevToolsAgentImpl() {
   return devtools_agent_.get();
 }
 
-void WebViewImpl::setIsTransparent(bool is_transparent) {
+void WebViewImpl::SetIsTransparent(bool is_transparent) {
   // Set any existing frames to be transparent.
   WebCore::Frame* frame = page_->mainFrame();
   while (frame) {
@@ -1709,7 +1733,7 @@ void WebViewImpl::setIsTransparent(bool is_transparent) {
   is_transparent_ = is_transparent;
 }
 
-bool WebViewImpl::isTransparent() const {
+bool WebViewImpl::GetIsTransparent() const {
   return is_transparent_;
 }
 
@@ -1744,12 +1768,12 @@ void WebViewImpl::MediaPlayerActionAt(int x,
   }
 }
 
-void WebViewImpl::setIsActive(bool active) {
+void WebViewImpl::SetActive(bool active) {
   if (page() && page()->focusController())
     page()->focusController()->setActive(active);
 }
 
-bool WebViewImpl::isActive() const {
+bool WebViewImpl::IsActive() {
   return (page() && page()->focusController())
       ? page()->focusController()->isActive()
       : false;
@@ -1873,10 +1897,10 @@ bool WebViewImpl::GetSpellingPanelVisibility() {
   return spelling_panel_is_visible_;
 }
 
-void WebViewImpl::setTabsToLinks(bool enable) {
+void WebViewImpl::SetTabsToLinks(bool enable) {
   tabs_to_links_ = enable;
 }
 
-bool WebViewImpl::tabsToLinks() const {
+bool WebViewImpl::GetTabsToLinks() const {
   return tabs_to_links_;
 }

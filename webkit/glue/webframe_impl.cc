@@ -1643,7 +1643,7 @@ void WebFrameImpl::CreateFrameView() {
 
   frame_->setView(view);
 
-  if (web_view->isTransparent())
+  if (web_view->GetIsTransparent())
     view->setTransparent(true);
 
   // TODO(darin): The Mac code has a comment about this possibly being
@@ -1827,12 +1827,14 @@ void WebFrameImpl::SetMarkerActive(WebCore::Range* range, bool active) {
 
 int WebFrameImpl::OrdinalOfFirstMatchForFrame(WebFrameImpl* frame) const {
   int ordinal = 0;
-  WebFrameImpl* main_frame_impl = GetWebViewImpl()->main_frame();
+  WebViewImpl* web_view = GetWebViewImpl();
+  WebFrameImpl* const main_frame_impl = GetWebViewImpl()->main_frame();
   // Iterate from the main frame up to (but not including) |frame| and
   // add up the number of matches found so far.
   for (WebFrameImpl* it = main_frame_impl;
        it != frame;
-       it = static_cast<WebFrameImpl*>(it->traverseNext(true))) {
+       it = static_cast<WebFrameImpl*>(
+           web_view->GetNextFrameAfter(it, true))) {
     if (it->last_match_count_ > 0)
       ordinal += it->last_match_count_;
   }

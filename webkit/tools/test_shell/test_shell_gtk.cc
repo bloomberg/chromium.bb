@@ -88,7 +88,7 @@ void ForwardButtonClicked(GtkButton* button, TestShell* shell) {
 
 // Callback for when you click the stop button.
 void StopButtonClicked(GtkButton* button, TestShell* shell) {
-  shell->webView()->mainFrame()->stopLoading();
+  shell->webView()->StopLoading();
 }
 
 // Callback for when you click the reload button.
@@ -534,7 +534,7 @@ void TestShell::ResizeSubViews() {
   shell->m_focusedWidgetHost = NULL;
 
   // Make sure the previous load is stopped.
-  shell->webView()->mainFrame()->stopLoading();
+  shell->webView()->StopLoading();
   shell->navigation_controller()->Reset();
 
   // Clean up state between test runs.

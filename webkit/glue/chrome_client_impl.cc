@@ -348,7 +348,7 @@ void ChromeClientImpl::closeWindowSoon() {
   webview_->page()->setGroupName(WebCore::String());
 
   // Make sure that all loading is stopped.  Ensures that JS stops executing!
-  webview_->mainFrame()->stopLoading();
+  webview_->StopLoading();
 
   if (webview_->client())
     webview_->client()->closeWidgetSoon();
@@ -413,7 +413,7 @@ bool ChromeClientImpl::shouldInterruptJavaScript() {
 }
 
 bool ChromeClientImpl::tabsToLinks() const {
-  return webview_->tabsToLinks();
+  return webview_->GetTabsToLinks();
 }
 
 WebCore::IntRect ChromeClientImpl::windowResizerRect() const {
