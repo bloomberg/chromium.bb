@@ -1564,8 +1564,6 @@ BUG10430 LINUX : LayoutTests/svg/text/text-intro-05-t.svg = FAIL
 // New tests from merge 41181:41217
 
 // Regressions from merge 41217:41268
-// Other failures
-BUG10434 LINUX : LayoutTests/css1/text_properties/vertical_align.html = FAIL
 // SVG Mask-related tests. Most likely result of http://trac.webkit.org/changeset/41266.
 BUG10434 LINUX : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = FAIL
 
