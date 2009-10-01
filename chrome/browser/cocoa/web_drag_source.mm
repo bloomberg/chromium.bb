@@ -29,9 +29,10 @@ using net::FileStream;
 namespace {
 
 // Make a drag image from the drop data.
-// TODO(viettrungluu@gmail.com): Move this somewhere more sensible.
+// TODO(viettrungluu): Move this somewhere more sensible.
 NSImage* MakeDragImage(const WebDropData* drop_data) {
-  // TODO(viettrungluu@gmail.com): Just a stub for now. Make it do something.
+  // TODO(viettrungluu): Just a stub for now. Make it do something (see, e.g.,
+  // WebKit/WebKit/mac/Misc/WebNSViewExtras.m: |-_web_DragImageForElement:...|).
 
   // Default to returning a generic image.
   return nsimage_cache::ImageNamed(@"nav.pdf");
@@ -39,7 +40,7 @@ NSImage* MakeDragImage(const WebDropData* drop_data) {
 
 // Returns a filename appropriate for the drop data (of form "FILENAME-seq.EXT"
 // if seq > 0).
-// TODO(viettrungluu@gmail.com): Refactor to make it common across platforms,
+// TODO(viettrungluu): Refactor to make it common across platforms,
 // and move it somewhere sensible.
 FilePath GetFileNameFromDragData(
     const WebDropData& drop_data, unsigned seq) {
@@ -171,7 +172,7 @@ void PromiseWriterTask::Run() {
   } else if ([type isEqualToString:NSFileContentsPboardType] ||
       [type isEqualToString:NSCreateFileContentsPboardType(
               SysUTF16ToNSString(dropData_->file_extension))]) {
-    // TODO(viettrungluu@gmail.com): find something which is known to accept
+    // TODO(viettrungluu: find something which is known to accept
     // NSFileContentsPboardType to check that this actually works!
     scoped_nsobject<NSFileWrapper> file_wrapper(
         [[NSFileWrapper alloc] initRegularFileWithContents:[NSData
@@ -183,10 +184,9 @@ void PromiseWriterTask::Run() {
 
   // TIFF.
   } else if ([type isEqualToString:NSTIFFPboardType]) {
-    // FIXME(viettrungluu@gmail.com): This is a bit odd since we rely on Cocoa
-    // to render our image into a TIFF. This is also suboptimal since this is
-    // all done synchronously. I'm not sure there's much we can easily do about
-    // it.
+    // TODO(viettrungluu): This is a bit odd since we rely on Cocoa to render
+    // our image into a TIFF. This is also suboptimal since this is all done
+    // synchronously. I'm not sure there's much we can easily do about it.
     scoped_nsobject<NSImage> image(
         [[NSImage alloc] initWithData:[NSData
                 dataWithBytes:dropData_->file_contents.data()
@@ -333,20 +333,23 @@ void PromiseWriterTask::Run() {
 
   // File.
   if (!dropData_->file_contents.empty()) {
-    NSString* file_ext = SysUTF16ToNSString(dropData_->file_extension);
+    // |dropData_->file_extension| comes with the '.', which we must strip.
+    NSString* fileExtension =
+        (dropData_->file_extension.length() > 0) ?
+        SysUTF16ToNSString(dropData_->file_extension.substr(1)) : @"";
 
     // File contents (with and without specific type), file (HFS) promise, TIFF.
-    // TODO(viettrungluu@gmail.com): others?
+    // TODO(viettrungluu): others?
     [pasteboard_ addTypes:[NSArray arrayWithObjects:
                                   NSFileContentsPboardType,
-                                  NSCreateFileContentsPboardType(file_ext),
+                                  NSCreateFileContentsPboardType(fileExtension),
                                   NSFilesPromisePboardType,
                                   NSTIFFPboardType,
                                   nil]
                     owner:contentsView_];
 
     // For the file promise, we need to specify the extension.
-    [pasteboard_ setPropertyList:[NSArray arrayWithObject:file_ext]
+    [pasteboard_ setPropertyList:[NSArray arrayWithObject:fileExtension]
                          forType:NSFilesPromisePboardType];
   }
 
