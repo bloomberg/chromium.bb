@@ -58,12 +58,18 @@ src:*base/thread_local_storage_posix*
 # This function is heavy in net_unittests
 fun:*disk_cache*BackendImpl*CheckAllEntries*
 
-# V8 hot-spot. Lots of tiny functions there...
+# V8 is a hot-spot under ThreadSanitizer.
+# Lots of tiny functions there...
 # TODO(timurrrr): Should we use coarser segment granularity for this file?
-src:*v8/src/objects-inl.h
+# Can we miss data races on V8 objects due to non thread-safe API calls
+# if we don't instrument v8::internals?
+fun:*v8*internal*
 
 # TODO(timurrrr): SKIA - needs separate testing?
 # SKIA unittest is single-threaded...
 # SKIA uses un-annotated atomic refcount and other sync stuff
 # some functions are HEAVY like png, jpeg decoding
 src:*third_party/skia*
+
+# WebKit hotspot
+fun:*png_write*
