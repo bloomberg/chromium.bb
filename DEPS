@@ -187,11 +187,15 @@ hooks = [
   {
     # A change to a .gyp, .gypi, or to GYP itself should run the generator.
     "pattern": ".",
-    "action": ["python", "src/build/gyp_chromium"],
+    "action": ["python",
+               "src/build/gyp_chromium",
+               "-Isrc/build/features_override.gypi"],
   },
   {
     # Workaround IncrediBuild problem. http://crbug.com/17706.
     "pattern": "\\.grd$",
-    "action": ["python", "src/build/win/clobber_generated_headers.py", "$matching_files"],
+    "action": ["python",
+               "src/build/win/clobber_generated_headers.py",
+               "$matching_files"],
   },
 ]
