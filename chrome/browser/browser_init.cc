@@ -563,8 +563,7 @@ Browser* BrowserInit::LaunchWithProfile::OpenURLsInBrowser(
         urls[i], GURL(), PageTransition::START_PAGE, (i == 0), -1, false, NULL);
     if (i < static_cast<size_t>(pin_count))
       browser->tabstrip_model()->SetTabPinned(browser->tab_count() - 1, true);
-    if (profile_ && i == 0 &&
-        process_startup && !browser_defaults::kSuppressCrashInfoBar)
+    if (profile_ && i == 0 && process_startup)
       AddCrashedInfoBarIfNecessary(tab);
   }
   browser->window()->Show();

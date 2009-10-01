@@ -31,9 +31,6 @@ extern const bool kCanToggleSystemTitleBar;
 // The default value for session startup.
 extern const SessionStartupPref::Type kDefaultSessionStartupType;
 
-// On launching Chrome should we show the crash info bar if Chrome crashed?
-extern const bool kSuppressCrashInfoBar;
-
 // Width of pinned tabs.
 extern const int kPinnedTabWidth;
 
