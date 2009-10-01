@@ -83,6 +83,12 @@ class ChromeURLRequestContext : public URLRequestContext,
   // Gets the Privacy Blacklist, if any for this context.
   const Blacklist* blacklist() const { return blacklist_; }
 
+  // Callback for when new extensions are loaded.
+  void OnNewExtensions(const std::string& id, const FilePath& path);
+
+  // Callback for when an extension is unloaded.
+  void OnUnloadedExtension(const std::string& id);
+
  protected:
   // Private constructors, use the static factory methods instead. This is
   // expected to be called on the UI thread.
@@ -110,12 +116,6 @@ class ChromeURLRequestContext : public URLRequestContext,
 
   // Callback for when the default charset changes.
   void OnDefaultCharsetChange(const std::string& default_charset);
-
-  // Callback for when new extensions are loaded.
-  void OnNewExtensions(ExtensionPaths* new_paths);
-
-  // Callback for when an extension is unloaded.
-  void OnUnloadedExtension(const std::string& id);
 
   // Destructor.
   virtual ~ChromeURLRequestContext();

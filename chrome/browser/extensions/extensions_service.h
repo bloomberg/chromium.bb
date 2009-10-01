@@ -236,6 +236,12 @@ class ExtensionsService
       DictionaryValue* manifest, const std::string& id,
       const FilePath& path, Extension::Location location);
 
+  // Handles sending notification that |extension| was loaded.
+  void NotifyExtensionLoaded(Extension* extension);
+
+  // Handles sending notification that |extension| was unloaded.
+  void NotifyExtensionUnloaded(Extension* extension);
+
   // Retrieves a vector of all page actions or browser actions, irrespective of
   // which extension they belong to.
   std::vector<ExtensionAction*> GetExtensionActions(

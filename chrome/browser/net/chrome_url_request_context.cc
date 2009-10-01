@@ -367,13 +367,6 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   prefs_->AddPrefObserver(prefs::kCookieBehavior, this);
   prefs_->AddPrefObserver(prefs::kDefaultCharset, this);
 
-  if (!is_off_the_record_) {
-    registrar_.Add(this, NotificationType::EXTENSION_LOADED,
-                   NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
-                   NotificationService::AllSources());
-  }
-
   ssl_config_service_ = profile->GetSSLConfigService();
 }
 
@@ -432,20 +425,6 @@ void ChromeURLRequestContext::Observe(NotificationType type,
                             &ChromeURLRequestContext::OnDefaultCharsetChange,
                             default_charset));
     }
-  } else if (NotificationType::EXTENSION_LOADED == type) {
-    ExtensionPaths* new_paths = new ExtensionPaths;
-    Extension* extension = Details<Extension>(details).ptr();
-    DCHECK(extension);
-    new_paths->insert(ExtensionPaths::value_type(extension->id(),
-                                                 extension->path()));
-    g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &ChromeURLRequestContext::OnNewExtensions,
-                          new_paths));
-  } else if (NotificationType::EXTENSION_UNLOADED == type) {
-    Extension* extension = Details<Extension>(details).ptr();
-    g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &ChromeURLRequestContext::OnUnloadedExtension,
-                          extension->id()));
   } else {
     NOTREACHED();
   }
@@ -539,14 +518,17 @@ void ChromeURLRequestContext::OnDefaultCharsetChange(
       net::HttpUtil::GenerateAcceptCharsetHeader(default_charset);
 }
 
-void ChromeURLRequestContext::OnNewExtensions(ExtensionPaths* new_paths) {
-  extension_paths_.insert(new_paths->begin(), new_paths->end());
-  delete new_paths;
+void ChromeURLRequestContext::OnNewExtensions(const std::string& id,
+                                              const FilePath& path) {
+  if (!is_off_the_record_) {
+    extension_paths_[id] = path;
+  }
 }
 
-void ChromeURLRequestContext::OnUnloadedExtension(
-    const std::string& extension_id) {
-  ExtensionPaths::iterator iter = extension_paths_.find(extension_id);
+void ChromeURLRequestContext::OnUnloadedExtension(const std::string& id) {
+  if (is_off_the_record_)
+    return;
+  ExtensionPaths::iterator iter = extension_paths_.find(id);
   DCHECK(iter != extension_paths_.end());
   extension_paths_.erase(iter);
 }

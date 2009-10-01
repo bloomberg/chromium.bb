@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/external_extension_provider.h"
 #include "chrome/browser/extensions/external_pref_extension_provider.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
@@ -242,10 +243,7 @@ void ExtensionsService::EnableExtension(const std::string& extension_id) {
   ExtensionDOMUI::RegisterChromeURLOverrides(profile_,
       extension->GetChromeURLOverrides());
 
-  NotificationService::current()->Notify(
-      NotificationType::EXTENSION_LOADED,
-      Source<ExtensionsService>(this),
-      Details<Extension>(extension));
+  NotifyExtensionLoaded(extension);
 }
 
 void ExtensionsService::DisableExtension(const std::string& extension_id) {
@@ -269,10 +267,7 @@ void ExtensionsService::DisableExtension(const std::string& extension_id) {
   ExtensionDOMUI::UnregisterChromeURLOverrides(profile_,
       extension->GetChromeURLOverrides());
 
-  NotificationService::current()->Notify(
-      NotificationType::EXTENSION_UNLOADED,
-      Source<ExtensionsService>(this),
-      Details<Extension>(extension));
+  NotifyExtensionUnloaded(extension);
 }
 
 void ExtensionsService::LoadExtension(const FilePath& extension_path) {
@@ -321,6 +316,51 @@ void ExtensionsService::LoadInstalledExtension(
     backend_loop_->PostTask(FROM_HERE, NewRunnableMethod(backend_.get(),
         &ExtensionsServiceBackend::CheckExternalUninstall,
         scoped_refptr<ExtensionsService>(this), id, location));
+  }
+}
+
+void ExtensionsService::NotifyExtensionLoaded(Extension* extension) {
+  LOG(INFO) << "Sending EXTENSION_LOADED";
+
+  // The ChromeURLRequestContext needs to be first to know that the extension
+  // was loaded, otherwise a race can arise where a renderer that is created
+  // for the extension may try to load an extension URL with an extension id
+  // that the request context doesn't yet know about.
+  if (profile_ && !profile_->IsOffTheRecord()) {
+    ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
+        profile_->GetRequestContext());
+    if (context) {
+      g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
+          NewRunnableMethod(context,
+                            &ChromeURLRequestContext::OnNewExtensions,
+                            extension->id(),
+                            extension->path()));
+    }
+  }
+
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_LOADED,
+      Source<ExtensionsService>(this),
+      Details<Extension>(extension));
+}
+
+void ExtensionsService::NotifyExtensionUnloaded(Extension* extension) {
+  LOG(INFO) << "Sending EXTENSION_UNLOADED";
+
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_UNLOADED,
+      Source<ExtensionsService>(this),
+      Details<Extension>(extension));
+
+  if (profile_ && !profile_->IsOffTheRecord()) {
+    ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
+        profile_->GetRequestContext());
+    if (context) {
+      g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
+          NewRunnableMethod(context,
+                            &ChromeURLRequestContext::OnUnloadedExtension,
+                            extension->id()));
+    }
   }
 }
 
@@ -413,10 +453,7 @@ void ExtensionsService::UnloadExtension(const std::string& extension_id) {
   // Remove the extension from our list.
   extensions_.erase(iter);
 
-  // Tell other services the extension is gone.
-  NotificationService::current()->Notify(NotificationType::EXTENSION_UNLOADED,
-                                         Source<ExtensionsService>(this),
-                                         Details<Extension>(extension.get()));
+  NotifyExtensionUnloaded(extension.get());
 }
 
 void ExtensionsService::UnloadAllExtensions() {
@@ -498,11 +535,7 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
         if (extension->location() != Extension::LOAD)
           extension_prefs_->MigrateToPrefs(extension);
 
-        LOG(INFO) << "Sending EXTENSION_LOADED";
-        NotificationService::current()->Notify(
-            NotificationType::EXTENSION_LOADED,
-            Source<ExtensionsService>(this),
-            Details<Extension>(extension));
+        NotifyExtensionLoaded(extension);
 
         if (extension->IsTheme() && extension->location() == Extension::LOAD) {
           NotificationService::current()->Notify(
