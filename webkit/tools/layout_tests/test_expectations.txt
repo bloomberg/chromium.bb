@@ -1117,12 +1117,11 @@ BUG10319 WIN LINUX : LayoutTests/fast/borders/inline-mask-overlay-image.html = F
 // CSS animations should not block our next release.
 BUG10320 SKIP : LayoutTests/transitions/opacity-transition-zindex.html = PASS
 
-// Issue 3273: TextInputController::firstRectForCharacterRange not implemented
-// http://code.google.com/p/chromium/issues/detail?id=3273
-BUG10321 : LayoutTests/editing/selection/move-left-right.html = FAIL
-BUG10321 MAC : LayoutTests/platform/mac/editing/input/caret-primary-bidi.html = FAIL
-BUG10321 MAC : LayoutTests/platform/mac/editing/input/firstrectforcharacterrange-plain.html = FAIL
-BUG10321 MAC : LayoutTests/platform/mac/editing/input/range-for-empty-document.html = FAIL
+// Issue 3273: TextInputController::firstRectForCharacterRange not implemented.
+BUG3273 : LayoutTests/editing/selection/move-left-right.html = FAIL
+BUG3273 MAC : LayoutTests/platform/mac/editing/input/caret-primary-bidi.html = FAIL
+BUG3273 MAC : LayoutTests/platform/mac/editing/input/firstrectforcharacterrange-plain.html = FAIL
+BUG3273 MAC : LayoutTests/platform/mac/editing/input/range-for-empty-document.html = FAIL
 
 // Regression from the 41362:41402 merge.
 BUG8402 MAC : LayoutTests/fast/forms/drag-out-of-textarea.html = FAIL PASS
