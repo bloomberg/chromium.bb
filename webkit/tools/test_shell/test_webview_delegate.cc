@@ -122,6 +122,23 @@ std::string UrlSuitableForTestResult(const std::string& url) {
   return filename;
 }
 
+// Used to write a platform neutral file:/// URL by taking the
+// filename and its directory. (e.g., converts
+// "file:///tmp/foo/bar.txt" to just "bar.txt").
+std::string DescriptionSuitableForTestResult(const std::string& url) {
+  if (url.empty() || std::string::npos == url.find("file://"))
+    return url;
+
+  size_t pos = url.rfind('/');
+  if (pos == std::string::npos || pos == 0)
+    return "ERROR:" + url;
+  pos = url.rfind('/', pos - 1);
+  if (pos == std::string::npos)
+    return "ERROR:" + url;
+
+  return url.substr(pos + 1);
+}
+
 // Adds a file called "DRTFakeFile" to |data_object| (CF_HDROP).  Use to fake
 // dragging a file.
 void AddDRTFakeFileToDataObject(WebDragData* drag_data) {
@@ -158,9 +175,10 @@ std::string GetResponseDescription(const WebURLResponse& response) {
   if (response.isNull())
     return "(null)";
 
+  const std::string url = GURL(response.url()).possibly_invalid_spec();
   return StringPrintf("<NSURLResponse %s, http status code %d>",
-      GURL(response.url()).possibly_invalid_spec().c_str(),
-      response.httpStatusCode());
+                      DescriptionSuitableForTestResult(url).c_str(),
+                      response.httpStatusCode());
 }
 
 std::string GetErrorDescription(const WebURLError& error) {
@@ -801,8 +819,10 @@ void TestWebViewDelegate::didChangeLocationWithinPage(
 
 void TestWebViewDelegate::assignIdentifierToRequest(
     WebFrame* frame, unsigned identifier, const WebURLRequest& request) {
-  if (shell_->ShouldDumpResourceLoadCallbacks())
-    resource_identifier_map_[identifier] = request.url().spec();
+  if (shell_->ShouldDumpResourceLoadCallbacks()) {
+    resource_identifier_map_[identifier] =
+        DescriptionSuitableForTestResult(request.url().spec());
+  }
 }
 
 void TestWebViewDelegate::willSendRequest(
@@ -816,7 +836,7 @@ void TestWebViewDelegate::willSendRequest(
     printf("%s - willSendRequest <NSURLRequest URL %s, main document URL %s,"
            " http method %s> redirectResponse %s\n",
            GetResourceDescription(identifier).c_str(),
-           request_url.c_str(),
+           DescriptionSuitableForTestResult(request_url).c_str(),
            GetURLDescription(main_document_url).c_str(),
            request.httpMethod().utf8().data(),
            GetResponseDescription(redirect_response).c_str());

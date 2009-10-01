@@ -1126,11 +1126,6 @@ BUG3273 MAC : LayoutTests/platform/mac/editing/input/range-for-empty-document.ht
 // Regression from the 41362:41402 merge.
 BUG8402 MAC : LayoutTests/fast/forms/drag-out-of-textarea.html = FAIL PASS
 
-// This test fails because (in Chromium) it includes the full path to the
-// subframe URL.  Need to teach dumpResourceLoadCallbacks() about relative
-// URLs.
-BUG8407 : LayoutTests/fast/loader/main-document-url-for-non-http-loads.html = FAIL
-
 // These tests are flaky as of 2009/06/09. Need to investigate.
 
 // <body><canvas height=100></canvas></body> is 1 px taller than upstream.
