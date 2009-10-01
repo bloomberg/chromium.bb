@@ -98,8 +98,7 @@ class FlipNetworkTransactionTest : public PlatformTest {
 
     SessionDependencies session_deps;
     scoped_ptr<FlipNetworkTransaction> trans(
-        new FlipNetworkTransaction(
-            CreateSession(&session_deps)));
+        new FlipNetworkTransaction(CreateSession(&session_deps)));
 
     HttpRequestInfo request;
     request.method = "GET";

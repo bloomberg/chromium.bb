@@ -81,7 +81,7 @@ void FlipSessionPool::RemoveSessionList(std::string domain) {
 
 // static
 void FlipSessionPool::CloseAllSessions() {
-  while (sessions_->size()) {
+  while (sessions_.get() && sessions_->size()) {
     FlipSessionList* list = sessions_->begin()->second;
     DCHECK(list);
     sessions_->erase(sessions_->begin()->first);

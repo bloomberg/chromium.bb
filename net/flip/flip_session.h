@@ -15,6 +15,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
+#include "net/base/ssl_config_service.h"
 #include "net/base/upload_data_stream.h"
 #include "net/flip/flip_framer.h"
 #include "net/flip/flip_protocol.h"
@@ -141,7 +142,8 @@ class FlipSession : public base::RefCounted<FlipSession>,
   void OnFin(const flip::FlipFinStreamControlFrame* frame);
 
   // IO Callbacks
-  void OnSocketConnect(int result);
+  void OnTCPConnect(int result);
+  void OnSSLConnect(int result);
   void OnReadComplete(int result);
   void OnWriteComplete(int result);
 
@@ -166,17 +168,21 @@ class FlipSession : public base::RefCounted<FlipSession>,
 
   // Callbacks for the Flip session.
   CompletionCallbackImpl<FlipSession> connect_callback_;
+  CompletionCallbackImpl<FlipSession> ssl_connect_callback_;
   CompletionCallbackImpl<FlipSession> read_callback_;
   CompletionCallbackImpl<FlipSession> write_callback_;
 
   // The domain this session is connected to.
   std::string domain_;
 
+  SSLConfig ssl_config_;
+
   scoped_refptr<HttpNetworkSession> session_;
 
   // The socket handle for this session.
   ClientSocketHandle connection_;
-  bool connection_started_;
+  bool connection_started_;  // Is the connect process started.
+  bool connection_ready_;  // Is the connection ready for use.
 
   // The read buffer used to read data from the socket.
   enum { kReadBufferSize = (4 * 1024) };
@@ -190,6 +196,9 @@ class FlipSession : public base::RefCounted<FlipSession>,
   ActiveStreamMap active_streams_;
 
   ActiveStreamList pushed_streams_;
+  // List of streams declared in X-Associated-Content headers.
+  // The key is a string representing the path of the URI being pushed.
+  std::map<std::string, FlipDelegate*> pending_streams_;
 
   // As we gather data to be sent, we put it into the output queue.
   typedef std::priority_queue<PrioritizedIOBuffer> OutputQueue;

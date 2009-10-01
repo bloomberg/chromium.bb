@@ -17,7 +17,16 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "net/socket/client_socket_factory.h"
+#include "net/socket/ssl_client_socket.h"
 #include "net/tools/dump_cache/url_to_filename_encoder.h"
+
+namespace {
+
+// True if FLIP should run over SSL.
+static bool use_ssl_flip = true;
+
+}  // namespace
 
 namespace net {
 
@@ -77,7 +86,7 @@ class FlipStreamImpl {
 };
 
 FlipSession* FlipSession::GetFlipSession(
-    const net::HostResolver::RequestInfo& info,
+    const HostResolver::RequestInfo& info,
     HttpNetworkSession* session) {
   if (!session_pool_.get())
     session_pool_.reset(new FlipSessionPool());
@@ -86,7 +95,9 @@ FlipSession* FlipSession::GetFlipSession(
 
 FlipSession::FlipSession(std::string host, HttpNetworkSession* session)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
-          connect_callback_(this, &FlipSession::OnSocketConnect)),
+          connect_callback_(this, &FlipSession::OnTCPConnect)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          ssl_connect_callback_(this, &FlipSession::OnSSLConnect)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           read_callback_(this, &FlipSession::OnReadComplete)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -94,6 +105,7 @@ FlipSession::FlipSession(std::string host, HttpNetworkSession* session)
       domain_(host),
       session_(session),
       connection_started_(false),
+      connection_ready_(false),
       delayed_write_pending_(false),
       write_pending_(false),
       read_buffer_(new IOBuffer(kReadBufferSize)),
@@ -104,6 +116,8 @@ FlipSession::FlipSession(std::string host, HttpNetworkSession* session)
   stream_hi_water_mark_ = 1;
 
   flip_framer_.set_visitor(this);
+
+  session_->ssl_config_service()->GetSSLConfig(&ssl_config_);
 }
 
 FlipSession::~FlipSession() {
@@ -212,6 +226,16 @@ int FlipSession::CreateStream(FlipDelegate* delegate) {
     }
   }
 
+  // Check if we have a pending push stream for this url.
+  std::string url_path = delegate->request()->url.PathForRequest();
+  std::map<std::string, FlipDelegate*>::iterator it;
+  it = pending_streams_.find(url_path);
+  if (it != pending_streams_.end()) {
+    DCHECK(it->second == NULL);
+    it->second = delegate;
+    return 0;  // TODO(mbelshe): this is overloaded with the fail case.
+  }
+
   // If we still don't have a stream, activate one now.
   stream = ActivateStream(stream_id, delegate);
   if (!stream)
@@ -288,7 +312,7 @@ LoadState FlipSession::GetLoadState() const {
   return LOAD_STATE_CONNECTING;
 }
 
-void FlipSession::OnSocketConnect(int result) {
+void FlipSession::OnTCPConnect(int result) {
   LOG(INFO) << "Flip socket connected (result=" << result << ")";
 
   if (result != net::OK) {
@@ -306,6 +330,35 @@ void FlipSession::OnSocketConnect(int result) {
   const int kSocketBufferSize = 512 * 1024;
   connection_.socket()->SetReceiveBufferSize(kSocketBufferSize);
   connection_.socket()->SetSendBufferSize(kSocketBufferSize);
+
+  if (use_ssl_flip) {
+    // Add a SSL socket on top of our existing transport socket.
+    ClientSocket* socket = connection_.release_socket();
+    // TODO(mbelshe): Fix the hostname.  This is BROKEN without having
+    //                a real hostname.
+    socket = session_->socket_factory()->CreateSSLClientSocket(
+        socket, "" /* request_->url.HostNoBrackets() */ , ssl_config_);
+    connection_.set_socket(socket);
+    int status = connection_.socket()->Connect(&ssl_connect_callback_);
+    CHECK(status == net::ERR_IO_PENDING);
+  } else {
+    connection_ready_ = true;
+
+    // Make sure we get any pending data sent.
+    WriteSocketLater();
+    // Start reading
+    ReadSocket();
+  }
+}
+
+void FlipSession::OnSSLConnect(int result) {
+  // TODO(mbelshe): We need to replicate the functionality of
+  //   HttpNetworkTransaction::DoSSLConnectComplete here, where it calls
+  //   HandleCertificateError() and such.
+  if (IsCertificateError(result))
+    result = OK;   // TODO(mbelshe): pretend we're happy anyway.
+
+  connection_ready_ = true;
 
   // After we've connected, send any data to the server, and then issue
   // our read.
@@ -391,7 +444,7 @@ void FlipSession::WriteSocketLater() {
 
   delayed_write_pending_ = true;
   MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &net::FlipSession::WriteSocket));
+      this, &FlipSession::WriteSocket));
 }
 
 void FlipSession::WriteSocket() {
@@ -401,7 +454,7 @@ void FlipSession::WriteSocket() {
 
   // If the socket isn't connected yet, just wait; we'll get called
   // again when the socket connection completes.
-  if (!connection_.is_initialized())
+  if (!connection_ready_)
     return;
 
   if (write_pending_)   // Another write is in progress still.
@@ -465,6 +518,7 @@ void FlipSession::CloseAllStreams(net::Error code) {
 
     // Issue the aborts.
     for (--index; index >= 0; index--) {
+      LOG(ERROR) << "ABANDONED: " << list[index]->path();
       list[index]->OnAbort();
       delete list[index];
     }
@@ -535,7 +589,7 @@ FlipStreamImpl* FlipSession::GetPushStream(std::string path) {
 void FlipSession::OnError(flip::FlipFramer* framer) {
   LOG(ERROR) << "FlipSession error!";
   CloseAllStreams(net::ERR_UNEXPECTED);
-  this->Release();
+  Release();
 }
 
 void FlipSession::OnStreamFrameData(flip::FlipStreamId stream_id,
@@ -562,17 +616,20 @@ void FlipSession::OnSyn(const flip::FlipSynStreamControlFrame* frame,
 
   // Server-initiated streams should have odd sequence numbers.
   if ((stream_id & 0x1) != 0) {
-    LOG(WARNING) << "Received invalid OnSyn stream id " << stream_id;
+    LOG(ERROR) << "Received invalid OnSyn stream id " << stream_id;
     return;
   }
 
   if (IsStreamActive(stream_id)) {
-    LOG(WARNING) << "Received OnSyn for active stream " << stream_id;
+    LOG(ERROR) << "Received OnSyn for active stream " << stream_id;
     return;
   }
 
+  // Activate a stream and parse the headers.
   FlipStreamImpl* stream = ActivateStream(stream_id, NULL);
   stream->OnReply(headers);
+
+  // TODO(mbelshe): DCHECK that this is a GET method?
 
   // Verify that the response had a URL for us.
   DCHECK(stream->path().length() != 0);
@@ -582,7 +639,20 @@ void FlipSession::OnSyn(const flip::FlipSynStreamControlFrame* frame,
     delete stream;
     return;
   }
-  pushed_streams_.push_back(stream);
+
+  // Check if we already have a delegate awaiting this stream.
+  std::map<std::string,  FlipDelegate*>::iterator it;
+  it = pending_streams_.find(stream->path());
+  if (it != pending_streams_.end()) {
+    FlipDelegate* delegate = it->second;
+    pending_streams_.erase(it);
+    if (delegate)
+      stream->AttachDelegate(delegate);
+    else
+      pushed_streams_.push_back(stream);
+  } else {
+    pushed_streams_.push_back(stream);
+  }
 
   LOG(INFO) << "Got pushed stream for " << stream->path();
 
@@ -598,6 +668,30 @@ void FlipSession::OnSynReply(const flip::FlipSynReplyControlFrame* frame,
   if (!valid_stream) {
     LOG(WARNING) << "Received SYN_REPLY for invalid stream" << stream_id;
     return;
+  }
+
+  // We record content declared as being pushed so that we don't
+  // request a duplicate stream which is already scheduled to be
+  // sent to us.
+  flip::FlipHeaderBlock::const_iterator it;
+  it = headers->find("X-Associated-Content");
+  if (it != headers->end()) {
+    const std::string& content = it->second;
+    std::string::size_type start = 0;
+    std::string::size_type end = 0;
+    do {
+      end = content.find("||", start);
+      if (end == -1)
+        end = content.length();
+      std::string url = content.substr(start, end - start);
+      std::string::size_type pos = url.find("??");
+      if (pos == -1)
+        break;
+      url = url.substr(pos+2);
+      GURL gurl(url);
+      pending_streams_[gurl.PathForRequest()] = NULL;
+      start = end + 2;
+    } while (end < content.length());
   }
 
   FlipStreamImpl* stream = active_streams_[stream_id];
