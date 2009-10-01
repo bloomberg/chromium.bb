@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_AREA_VIEW_H_
 
 #include "base/basictypes.h"
+#include "third_party/cros/chromeos_cros_api.h"
 #include "third_party/cros/chromeos_power.h"
 #include "views/controls/menu/simple_menu_model.h"
 #include "views/controls/menu/view_menu_delegate.h"
@@ -60,7 +61,7 @@ class StatusAreaView : public views::View,
   // Called whenever the battery status changes.
   void PowerStatusChanged(const chromeos::PowerStatus& status);
 
-  static void LoadPowerLibrary();
+  static void LoadCrosLibrary();
   // Called whenever the battery status changes. Dispatches to
   // PowerStatusChanged() instance method.
   static void PowerStatusChangedHandler(
@@ -81,10 +82,10 @@ class StatusAreaView : public views::View,
   chromeos::PowerStatusConnection power_status_connection_;
 
   static OpenTabsMode open_tabs_mode_;
-  // Handle to result of dlopen() of the power shared object.
-  static void* power_library_;
-  // True if there was an error loading the power shared object.
-  static bool power_library_error_;
+  // True if the library was loaded.
+  static bool cros_library_loaded_;
+  // True if there was an error loading the cros shared object.
+  static bool cros_library_error_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaView);
 };

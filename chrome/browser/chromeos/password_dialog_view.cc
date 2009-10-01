@@ -11,8 +11,10 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/window/window.h"
 
-PasswordDialogView::PasswordDialogView(PasswordDialogDelegate* delegate)
+PasswordDialogView::PasswordDialogView(PasswordDialogDelegate* delegate,
+                                       const std::string& ssid)
     : delegate_(delegate),
+      ssid_(ssid),
       password_textfield_(NULL) {
 }
 
@@ -27,7 +29,7 @@ bool PasswordDialogView::Cancel() {
 bool PasswordDialogView::Accept() {
   // TODO(chocobo): We should not need to call SyncText ourself here.
   password_textfield_->SyncText();
-  return delegate_->OnPasswordDialogAccept(password_textfield_->text());
+  return delegate_->OnPasswordDialogAccept(ssid_, password_textfield_->text());
 }
 
 static const int kDialogPadding = 7;

@@ -4,9 +4,12 @@
 
 #include "chrome/browser/chromeos/network_menu_button.h"
 
+#include <algorithm>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "grit/generated_resources.h"
@@ -22,12 +25,17 @@ const int NetworkMenuButton::kNumWifiImages = 8;
 SkBitmap* NetworkMenuButton::wifi_images_[kNumWifiImages];
 SkBitmap* NetworkMenuButton::wired_image_ = NULL;
 SkBitmap* NetworkMenuButton::disconnected_image_ = NULL;
+const int NetworkMenuButton::kAnimationDelayMillis = 100;
 
-NetworkMenuButton::NetworkMenuButton(Browser* browser)
+NetworkMenuButton::NetworkMenuButton(Browser* browser, bool cros_library_loaded)
     : MenuButton(NULL, std::wstring(), this, false),
+      cros_library_loaded_(cros_library_loaded),
       refreshing_menu_(false),
+      ethernet_connected_(false),
       network_menu_(this),
-      browser_(browser) {
+      browser_(browser),
+      icon_animation_index_(0),
+      icon_animation_increasing_(true) {
   static bool initialized = false;
   if (!initialized) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -38,7 +46,7 @@ NetworkMenuButton::NetworkMenuButton(Browser* browser)
     disconnected_image_ = rb.GetBitmapNamed(IDR_STATUSBAR_DISCONNECTED);
     initialized = true;
   }
-  SetIcon(*disconnected_image_);
+  RefreshNetworks();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -47,29 +55,30 @@ NetworkMenuButton::NetworkMenuButton(Browser* browser)
 int NetworkMenuButton::GetItemCount() const {
   // The menu contains the available wifi networks. If there are none, then it
   // only has one item with a message that no networks are available.
-  return wifi_networks_.empty() ? 1 : static_cast<int>(wifi_networks_.size());
+  return wifi_networks_in_menu_.empty() ? 1 :
+      static_cast<int>(wifi_networks_in_menu_.size());
 }
 
 views::Menu2Model::ItemType NetworkMenuButton::GetTypeAt(int index) const {
-  return views::Menu2Model::TYPE_CHECK;
-}
-
-int NetworkMenuButton::GetCommandIdAt(int index) const {
-  return index;
+  return wifi_networks_in_menu_.empty() ? views::Menu2Model::TYPE_COMMAND :
+      views::Menu2Model::TYPE_CHECK;
 }
 
 string16 NetworkMenuButton::GetLabelAt(int index) const {
-  return wifi_networks_.empty() ?
-         l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE) :
-         wifi_networks_[index].ssid;
+  return wifi_networks_in_menu_.empty() ?
+      l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE) :
+      ASCIIToUTF16(wifi_networks_in_menu_[index].ssid);
 }
 
 bool NetworkMenuButton::IsItemCheckedAt(int index) const {
-  return GetLabelAt(index) == current_ssid_;
+  // Network that we are connected to (or currently connecting to) is checked.
+  return wifi_networks_in_menu_.empty() ? false :
+      wifi_networks_in_menu_[index].ssid == current_ssid_ ||
+      wifi_networks_in_menu_[index].ssid == connecting_ssid_;
 }
 
 bool NetworkMenuButton::IsEnabledAt(int index) const {
-  return !wifi_networks_.empty();
+  return !wifi_networks_in_menu_.empty();
 }
 
 void NetworkMenuButton::ActivatedAt(int index) {
@@ -77,13 +86,21 @@ void NetworkMenuButton::ActivatedAt(int index) {
   if (refreshing_menu_)
     return;
 
-  connecting_ssid_ = wifi_networks_[index].ssid;
-  if (wifi_networks_[index].encryption.empty()) {
-    ConnectToWifiNetwork(connecting_ssid_, string16());
+  // We need to look up the ssid in ssids_in_menu_.
+  std::string ssid = wifi_networks_in_menu_[index].ssid;
+
+  // If clicked on a network that we are already connected to or we are
+  // currently trying to connect to, then do nothing.
+  if (ssid == current_ssid_ || ssid == connecting_ssid_)
+    return;
+
+  // If wifi network is not encrypted, then directly connect.
+  // Otherwise, we open password dialog window.
+  if (!wifi_networks_in_menu_[index].encrypted) {
+    ConnectToWifiNetwork(ssid, string16());
   } else {
-    // If network requires password, we open a password dialog window.
     gfx::NativeWindow parent = browser_->window()->GetNativeHandle();
-    PasswordDialogView* dialog = new PasswordDialogView(this);
+    PasswordDialogView* dialog = new PasswordDialogView(this, ssid);
     views::Window* window = views::Window::CreateChromeWindow(
         parent, gfx::Rect(), dialog);
     // Draw the password dialog right below this button and right aligned.
@@ -99,13 +116,9 @@ void NetworkMenuButton::ActivatedAt(int index) {
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuButton, PasswordDialogDelegate implementation:
 
-bool NetworkMenuButton::OnPasswordDialogCancel() {
-  connecting_ssid_.clear();
-  return true;
-}
-
-bool NetworkMenuButton::OnPasswordDialogAccept(const string16& password) {
-  return ConnectToWifiNetwork(connecting_ssid_, password);
+bool NetworkMenuButton::OnPasswordDialogAccept(const std::string& ssid,
+                                               const string16& password) {
+  return ConnectToWifiNetwork(ssid, password);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -113,7 +126,9 @@ bool NetworkMenuButton::OnPasswordDialogAccept(const string16& password) {
 
 void NetworkMenuButton::RunMenu(views::View* source, const gfx::Point& pt,
                                 gfx::NativeView hwnd) {
-  RefreshWifiNetworks();
+  RefreshNetworks();
+  // Make a copy of the wifi networks that we are showing because it may change.
+  wifi_networks_in_menu_ = wifi_networks_;
   refreshing_menu_ = true;
   network_menu_.Rebuild();
   network_menu_.UpdateStates();
@@ -121,52 +136,189 @@ void NetworkMenuButton::RunMenu(views::View* source, const gfx::Point& pt,
   network_menu_.RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 }
 
-void NetworkMenuButton::AddWifiNetwork(const string16& ssid,
-                                       const string16& encryption,
-                                       int strength) {
-  wifi_networks_.push_back(WifiNetwork(ssid, encryption, strength));
+bool NetworkMenuButton::GetWifiNetwork(const WifiNetworkVector& networks,
+                                       const std::string& ssid,
+                                       WifiNetwork* network) {
+  WifiNetworkVector::const_iterator it;
+  for (it = networks.begin(); it != networks.end(); ++it) {
+    if (it->ssid == ssid) {
+      *network = *it;
+      return true;
+    }
+  }
+  return false;
 }
 
-void NetworkMenuButton::RefreshWifiNetworks() {
-  // TODO(chocobo): Refresh wifi model here.
+void NetworkMenuButton::AddWifiNetwork(const std::string& ssid,
+                                       bool encrypted,
+                                       chromeos::EncryptionType encryption,
+                                       int strength) {
+  wifi_networks_.push_back(
+      WifiNetwork(ssid, encrypted, encryption, strength));
+}
+
+void NetworkMenuButton::RefreshNetworks() {
+  std::string current;
+  std::string connecting;
   wifi_networks_.clear();
-  AddWifiNetwork(ASCIIToUTF16("Wifi 12"), string16(), 12);
-  AddWifiNetwork(ASCIIToUTF16("Wifi 28"), string16(), 28);
-  AddWifiNetwork(ASCIIToUTF16("Wifi 70"), string16(), 70);
-  AddWifiNetwork(ASCIIToUTF16("Wifi 99"), ASCIIToUTF16("WPA-PSK"), 99);
+  ethernet_connected_ = false;
 
-  // TODO(chocobo): Handle the case where current_ssid_ or connecting_ssid_ are
-  // no longer found in the list of wifi networks.
-
-  // Refresh the menu button image.
-  if (current_ssid_.empty()) {
-    SetIcon(*disconnected_image_);
+  if (cros_library_loaded_) {
+    chromeos::ServiceStatus* service_status = chromeos::GetAvailableNetworks();
+    for (int i = 0; i < service_status->size; i++) {
+      chromeos::ServiceInfo service = service_status->services[i];
+      std::string ssid = service.ssid;
+      DLOG(WARNING) << "Found network type=" << service.type <<
+                       " ssid=" << service.ssid <<
+                       " state=" << service.state <<
+                       " needs_passphrase=" << service.needs_passphrase <<
+                       " encryption=" << service.encryption <<
+                       " signal_strength=" << service.signal_strength;
+      if (service.type == chromeos::TYPE_WIFI) {
+        AddWifiNetwork(ssid, service.needs_passphrase, service.encryption,
+                       service.signal_strength);
+        // Check connection state.
+        switch (service.state) {
+          case chromeos::STATE_ASSOCIATION:  // connecting to access point
+          case chromeos::STATE_CONFIGURATION:  // optaining ip address
+            connecting = ssid;
+            break;
+          case chromeos::STATE_READY:  // connected and has ip
+            current = ssid;
+            break;
+          case chromeos::STATE_FAILURE:  // failed to connect
+            // TODO(chocobo): Handle failure. Show it to user.
+            DLOG(WARNING) << "Wifi network failed to connect: " << ssid;
+            break;
+          case chromeos::STATE_IDLE:  //  no connection
+          case chromeos::STATE_DISCONNECT:  // disconnected
+          case chromeos::STATE_CARRIER:  //  not used
+          case chromeos::STATE_UNKNOWN:  //  unknown
+          default:
+            break;
+        }
+      } else if (service.type == chromeos::TYPE_ETHERNET) {
+        if (service.state == chromeos::STATE_READY)
+          ethernet_connected_ = true;
+      }
+    }
+    chromeos::FreeServiceStatus(service_status);
   } else {
-    int size = static_cast<int>(wifi_networks_.size());
-    for (int i = 0; i < size; i++) {
-      if (wifi_networks_[i].ssid == current_ssid_) {
-        SetIcon(GetWifiImage(wifi_networks_[i]));
+    // Use test data if ChromeOS shared library is not loaded.
+    AddWifiNetwork("Wifi (12)", false, chromeos::NONE, 12);
+    AddWifiNetwork("Wifi RSN (70)", true, chromeos::RSN, 70);
+    AddWifiNetwork("Wifi (28)", false, chromeos::NONE, 28);
+    AddWifiNetwork("Wifi WEP (99)", true, chromeos::WEP, 99);
+    current = connecting_ssid_.empty() ? current_ssid_ : connecting_ssid_;
+    ethernet_connected_ = true;
+  }
+
+  // Sort the list of wifi networks by ssid.
+  std::sort(wifi_networks_.begin(), wifi_networks_.end());
+
+  connecting_ssid_ = connecting;
+  current_ssid_ = current;
+
+  if (connecting_ssid_.empty()) {
+    StopConnectingAnimation();
+    UpdateIcon();
+  } else {
+    StartConnectingAnimation();
+  }
+}
+
+static const char* GetEncryptionString(chromeos::EncryptionType encryption) {
+  switch (encryption) {
+    case chromeos::NONE:
+      return "none";
+    case chromeos::RSN:
+      return "rsn";
+    case chromeos::WEP:
+      return "wep";
+    case chromeos::WPA:
+      return "wpa";
+  }
+  return "none";
+}
+
+bool NetworkMenuButton::ConnectToWifiNetwork(const std::string& ssid,
+                                             const string16& password) {
+  bool ok = true;
+  if (cros_library_loaded_) {
+    chromeos::EncryptionType encryption = chromeos::NONE;
+    WifiNetwork network;
+    if (GetWifiNetwork(wifi_networks_in_menu_, ssid, &network))
+      encryption = network.encryption;
+    ok = chromeos::ConnectToWifiNetwork(ssid.c_str(),
+        password.empty() ? NULL : UTF16ToUTF8(password).c_str(),
+        GetEncryptionString(encryption));
+  }
+  if (ok) {
+    connecting_ssid_ = ssid;
+    StartConnectingAnimation();
+  }
+  return true;
+}
+
+void NetworkMenuButton::StartConnectingAnimation() {
+  if (!timer_.IsRunning()) {
+    icon_animation_index_ = 0;
+    icon_animation_increasing_ = true;
+    timer_.Start(base::TimeDelta::FromMilliseconds(kAnimationDelayMillis), this,
+                 &NetworkMenuButton::UpdateIcon);
+  }
+}
+
+void NetworkMenuButton::StopConnectingAnimation() {
+  if (timer_.IsRunning()) {
+    timer_.Stop();
+  }
+}
+
+void NetworkMenuButton::UpdateIcon() {
+  if (!connecting_ssid_.empty()) {
+    // Get the next frame. Reverse direction if necessary.
+    if (icon_animation_increasing_) {
+      icon_animation_index_++;
+      if (icon_animation_index_ >= kNumWifiImages) {
+        icon_animation_index_ = kNumWifiImages - 1;
+        icon_animation_increasing_ = false;
+      }
+    } else {
+      icon_animation_index_--;
+      if (icon_animation_index_ < 0) {
+        icon_animation_index_ = 0;
+        icon_animation_increasing_ = true;
+      }
+    }
+    SetIcon(*wifi_images_[icon_animation_index_]);
+
+    // Refresh wifi networks every full animation.
+    // And see if we need to stop the animation.
+    if (icon_animation_index_ == 0)
+      RefreshNetworks();
+  } else {
+    if (current_ssid_.empty()) {
+      if (ethernet_connected_)
+        SetIcon(*wired_image_);
+      else
+        SetIcon(*disconnected_image_);
+    } else {
+      WifiNetwork network;
+      if (GetWifiNetwork(wifi_networks_, current_ssid_, &network)) {
+        // Gets the wifi image of 1-8 bars depending on signal strength. Signal
+        // strength is from 0 to 100, so we need to convert that to 0 to 7.
+        int index = floor(network.strength / (100.0 / kNumWifiImages));
+        // This can happen if the signal strength is 100.
+        if (index == kNumWifiImages)
+          index--;
+        SetIcon(*wifi_images_[index]);
+      } else {
+        // We no longer find the current network in the list of networks.
+        // So just set the icon to the disconnected image.
+        SetIcon(*disconnected_image_);
       }
     }
   }
   SchedulePaint();
-}
-
-bool NetworkMenuButton::ConnectToWifiNetwork(const string16& ssid,
-                                             const string16& password) {
-  // TODO(chocobo): Connect to wifi here.
-  current_ssid_ = ssid;
-  connecting_ssid_.clear();
-  RefreshWifiNetworks();
-  return true;
-}
-
-SkBitmap NetworkMenuButton::GetWifiImage(WifiNetwork wifi_network) const {
-  // Returns the wifi image of 1-8 bars depending on signal strength.
-  // Since signal strenght is from 0 to 100, we need to convert that to 0 to 7.
-  int index = floor(wifi_network.strength / (100.0 / kNumWifiImages));
-  // This can happen if the signal strength is 100.
-  if (index == kNumWifiImages)
-    index--;
-  return *wifi_images_[index];
 }

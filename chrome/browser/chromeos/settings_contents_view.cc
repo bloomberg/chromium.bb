@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/settings_contents_view.h"
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "app/combobox_model.h"
@@ -45,23 +46,23 @@ class WifiSSIDComboModel : public ComboboxModel {
     string16 encryption;
     int strength;
   };
-  typedef std::map<string16, NetworkData> NetworkDataMap;
+  typedef std::map<std::string, NetworkData> NetworkDataMap;
 
   WifiSSIDComboModel();
 
   virtual int GetItemCount();
   virtual std::wstring GetItemAt(int index);
 
-  const string16& GetSSIDAt(int index);
-  bool RequiresPassword(const string16& ssid);
+  const std::string& GetSSIDAt(int index);
+  bool RequiresPassword(const std::string& ssid);
 
  private:
-  std::vector<string16> ssids_;
+  std::vector<std::string> ssids_;
 
   // A map of some extra data (NetworkData) keyed off the ssids.
   NetworkDataMap ssids_map_;
 
-  void AddWifiNetwork(const string16& ssid,
+  void AddWifiNetwork(const std::string& ssid,
                       const string16& encryption,
                       int strength);
 
@@ -71,10 +72,10 @@ class WifiSSIDComboModel : public ComboboxModel {
 WifiSSIDComboModel::WifiSSIDComboModel() {
   // TODO(chocobo): Load wifi info from conman.
   // This is just temporary data until we hook this up to real data.
-  AddWifiNetwork(ASCIIToUTF16("Wifi Combobox Mock"), string16(), 80);
-  AddWifiNetwork(ASCIIToUTF16("Wifi WPA-PSK Password is chronos"),
+  AddWifiNetwork("Wifi Combobox Mock", string16(), 80);
+  AddWifiNetwork("Wifi WPA-PSK Password is chronos",
                  ASCIIToUTF16("WPA-PSK"), 60);
-  AddWifiNetwork(ASCIIToUTF16("Wifi No Encryption"), string16(), 90);
+  AddWifiNetwork("Wifi No Encryption", string16(), 90);
 }
 
 int WifiSSIDComboModel::GetItemCount() {
@@ -89,7 +90,7 @@ std::wstring WifiSSIDComboModel::GetItemAt(int index) {
 
   // TODO(chocobo): Finalize UI, then put strings in resource file.
   std::vector<string16> subst;
-  subst.push_back(it->first);  // $1
+  subst.push_back(ASCIIToUTF16(it->first));  // $1
   // The "None" string is just temporary for now. Have not finalized the UI yet.
   if (it->second.encryption.empty())
     subst.push_back(ASCIIToUTF16("None"));  // $2
@@ -101,18 +102,18 @@ std::wstring WifiSSIDComboModel::GetItemAt(int index) {
       ReplaceStringPlaceholders(ASCIIToUTF16("$1 ($2, $3)"), subst, NULL));
 }
 
-const string16& WifiSSIDComboModel::GetSSIDAt(int index) {
+const std::string& WifiSSIDComboModel::GetSSIDAt(int index) {
   DCHECK(static_cast<int>(ssids_.size()) > index);
   return ssids_[index];
 }
 
-bool WifiSSIDComboModel::RequiresPassword(const string16& ssid) {
+bool WifiSSIDComboModel::RequiresPassword(const std::string& ssid) {
   NetworkDataMap::const_iterator it = ssids_map_.find(ssid);
   DCHECK(it != ssids_map_.end());
   return !it->second.encryption.empty();
 }
 
-void WifiSSIDComboModel::AddWifiNetwork(const string16& ssid,
+void WifiSSIDComboModel::AddWifiNetwork(const std::string& ssid,
                                         const string16& encryption,
                                         int strength) {
   ssids_.push_back(ssid);
@@ -137,9 +138,10 @@ class NetworkSection : public OptionsPageView,
 
   // PasswordDialogDelegate implementation.
   virtual bool OnPasswordDialogCancel();
-  virtual bool OnPasswordDialogAccept(const string16& password);
+  virtual bool OnPasswordDialogAccept(const std::string& ssid,
+                                      const string16& password);
 
-  bool ConnectToWifi(const string16& ssid, const string16& password);
+  bool ConnectToWifi(const std::string& ssid, const string16& password);
 
  protected:
   // OptionsPageView overrides:
@@ -179,13 +181,13 @@ void NetworkSection::ItemChanged(views::Combobox* sender,
     return;
   if (sender == wifi_ssid_combobox_) {
     last_selected_wifi_ssid_index_ = prev_index;
-    string16 ssid = wifi_ssid_model_.GetSSIDAt(new_index);
+    std::string ssid = wifi_ssid_model_.GetSSIDAt(new_index);
     // Connect to wifi here. Open password page if appropriate
     if (wifi_ssid_model_.RequiresPassword(ssid)) {
       views::Window* window = views::Window::CreateChromeWindow(
           NULL,
           gfx::Rect(),
-          new PasswordDialogView(this));
+          new PasswordDialogView(this, ssid));
       window->SetIsAlwaysOnTop(true);
       window->Show();
     } else {
@@ -200,13 +202,13 @@ bool NetworkSection::OnPasswordDialogCancel() {
   return true;
 }
 
-bool NetworkSection::OnPasswordDialogAccept(const string16& password) {
+bool NetworkSection::OnPasswordDialogAccept(const std::string& ssid,
+                                            const string16& password) {
   // Try connecting to wifi
-  return ConnectToWifi(wifi_ssid_model_.GetSSIDAt(
-                           wifi_ssid_combobox_->selected_item()), password);
+  return ConnectToWifi(ssid, password);
 }
 
-bool NetworkSection::ConnectToWifi(const string16& ssid,
+bool NetworkSection::ConnectToWifi(const std::string& ssid,
                                    const string16& password) {
   // TODO(chocobo): Connect to wifi
   return password == ASCIIToUTF16("chronos");
@@ -472,9 +474,10 @@ void SettingsContentsView::InitControlLayout() {
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(new NetworkSection(profile()));
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  // TODO(chocobo): Add NetworkSection back in when we finalized the UI.
+//  layout->StartRow(0, single_column_view_set_id);
+//  layout->AddView(new NetworkSection(profile()));
+//  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(new TouchpadSection(profile()));
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);

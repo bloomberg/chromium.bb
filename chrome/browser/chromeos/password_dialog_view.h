@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PASSWORD_DIALOG_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_PASSWORD_DIALOG_VIEW_H_
 
+#include <string>
+
 #include "base/string16.h"
 #include "views/window/dialog_delegate.h"
 
@@ -24,14 +26,16 @@ class PasswordDialogDelegate {
 
   // Called when user clicks on ok with a password.
   // Return whether or not to allow password dialog to close.
-  virtual bool OnPasswordDialogAccept(const string16& password) = 0;
+  virtual bool OnPasswordDialogAccept(const std::string& ssid,
+                                      const string16& password) = 0;
 };
 
 // A dialog box for showing a password textfield.
 class PasswordDialogView : public views::View,
                            public views::DialogDelegate {
  public:
-  explicit PasswordDialogView(PasswordDialogDelegate* delegate);
+  explicit PasswordDialogView(PasswordDialogDelegate* delegate,
+                              const std::string& ssid);
   virtual ~PasswordDialogView() {}
 
   // views::DialogDelegate methods.
@@ -56,6 +60,9 @@ class PasswordDialogView : public views::View,
 
   // Used for call back to delegate that password has been entered.
   PasswordDialogDelegate* delegate_;
+
+  // The ssid we are requesting the password for.
+  std::string ssid_;
 
   // Combobox and its corresponding model.
   views::Textfield* password_textfield_;

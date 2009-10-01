@@ -201,8 +201,8 @@ StatusAreaView::OpenTabsMode StatusAreaView::open_tabs_mode_ =
     StatusAreaView::OPEN_TABS_ON_LEFT;
 
 // static
-void* StatusAreaView::power_library_ = NULL;
-bool StatusAreaView::power_library_error_ = false;
+bool StatusAreaView::cros_library_loaded_ = false;
+bool StatusAreaView::cros_library_error_ = false;
 
 StatusAreaView::StatusAreaView(Browser* browser)
     : browser_(browser),
@@ -218,14 +218,14 @@ StatusAreaView::~StatusAreaView() {
 }
 
 void StatusAreaView::Init() {
-  LoadPowerLibrary();
+  LoadCrosLibrary();
   ThemeProvider* theme = browser_->profile()->GetThemeProvider();
 
   // Clock.
   AddChildView(new ClockView);
 
   // Network.
-  network_view_ = new NetworkMenuButton(browser_);
+  network_view_ = new NetworkMenuButton(browser_, cros_library_loaded_);
   AddChildView(network_view_);
 
   // Battery.
@@ -238,7 +238,7 @@ void StatusAreaView::Init() {
   menu_view_->SetIcon(*theme->GetBitmapNamed(IDR_STATUSBAR_MENU));
   AddChildView(menu_view_);
 
-  if (power_library_) {
+  if (cros_library_loaded_) {
     power_status_connection_ = chromeos::MonitorPowerStatus(
         StatusAreaView::PowerStatusChangedHandler,
         this);
@@ -374,24 +374,22 @@ void StatusAreaView::RunMenu(views::View* source, const gfx::Point& pt,
 }
 
 // static
-void StatusAreaView::LoadPowerLibrary() {
-  if (power_library_) {
+void StatusAreaView::LoadCrosLibrary() {
+  if (cros_library_loaded_) {
     // Already loaded.
     return;
   }
 
-  if (power_library_error_) {
+  if (cros_library_error_) {
     // Error in previous load attempt.
     return;
   }
 
   FilePath path;
   if (PathService::Get(chrome::FILE_CHROMEOS_API, &path)) {
-    power_library_ = dlopen(path.value().c_str(), RTLD_NOW);
-    if (power_library_) {
-      chromeos::LoadCros(power_library_);
-    } else {
-      power_library_error_ = true;
+    cros_library_loaded_ = chromeos::LoadCros(path.value().c_str());
+    if (!cros_library_loaded_) {
+      cros_library_error_ = true;
       char* error = dlerror();
       if (error) {
         LOG(ERROR) << "Problem loading chromeos shared object: " << error;

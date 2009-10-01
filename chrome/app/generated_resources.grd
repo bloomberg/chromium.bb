@@ -5614,7 +5614,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Speed Sensitivity:
       </message>
       <message name="IDS_STATUSBAR_NO_NETWORKS_MESSAGE" desc="No networks are available">
-        Speed Sensitivity:
+        No networks are available
       </message>
     </if>
 

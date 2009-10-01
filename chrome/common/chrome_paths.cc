@@ -179,7 +179,7 @@ bool PathProvider(int key, FilePath* result) {
       if (!PathService::Get(base::DIR_MODULE, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("chromeos"));
-      cur = cur.Append(FILE_PATH_LITERAL("libchromeos-power.so"));
+      cur = cur.Append(FILE_PATH_LITERAL("libcros.so"));
       break;
 #endif
     // The following are only valid in the development environment, and
