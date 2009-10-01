@@ -505,11 +505,12 @@ class TestExpectationsFile:
       expectations_string = None
 
       if line.find(':') is -1:
-        test_and_expectations = line
-      else:
-        parts = line.split(':')
-        test_and_expectations = parts[1]
-        options_string = parts[0]
+        self._AddError(lineno, 'Must have some modifier (e.g. bug number).', line)
+        continue
+
+      parts = line.split(':')
+      test_and_expectations = parts[1]
+      options_string = parts[0]
 
       tests_and_expecation_parts = test_and_expectations.split('=')
       if (len(tests_and_expecation_parts) is not 2):
