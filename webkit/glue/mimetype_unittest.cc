@@ -83,7 +83,7 @@ TEST_F(MimeTypeTests, MimeTypeTests) {
   };
   for (size_t i = 0; i < arraysize(not_text); ++i) {
     CheckMimeType(not_text[i], L"");
-    test_shell_->webView()->StopLoading();
+    test_shell_->webView()->mainFrame()->stopLoading();
   }
 
   // TODO(tc): make sure other mime types properly go to download (e.g.,

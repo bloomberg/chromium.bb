@@ -76,7 +76,7 @@
 
 - (IBAction)stopLoading:(id)sender {
   if (shell_ && shell_->webView())
-    shell_->webView()->StopLoading();
+    shell_->webView()->mainFrame()->stopLoading();
 }
 
 - (IBAction)takeURLStringValueFrom:(NSTextField *)sender {

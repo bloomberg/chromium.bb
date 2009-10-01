@@ -26,7 +26,7 @@ WebViewHost* WebViewHost::Create(GtkWidget* parent_view,
 
   host->webwidget_ = WebView::Create(delegate);
   prefs.Apply(host->webview());
-  host->webview()->InitializeMainFrame(delegate);
+  host->webview()->initializeMainFrame(delegate);
   host->webwidget_->layout();
 
   return host;

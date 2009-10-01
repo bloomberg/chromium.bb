@@ -37,6 +37,7 @@
 namespace WebKit {
     class WebDragData;
     class WebFrame;
+    class WebFrameClient;
     class WebSettings;
     class WebString;
     class WebViewClient;
@@ -44,7 +45,16 @@ namespace WebKit {
 
     class WebView : public WebWidget {
     public:
-        WEBKIT_API WebView* create(WebViewClient*);
+        // Initialization ------------------------------------------------------
+
+        // FIXME enable this once WebViewDelegate has been eliminated.
+        //WEBKIT_API WebView* create(WebViewClient*);
+
+        // After creating a WebView, you should immediately call this method.
+        // You can optionally modify the settings before calling this method.
+        // The WebFrameClient will receive events for the main frame and any
+        // child frames.
+        virtual void initializeMainFrame(WebFrameClient*) = 0;
 
 
         // Options -------------------------------------------------------------
@@ -56,6 +66,25 @@ namespace WebKit {
         // encoding may cause the main frame to reload.
         virtual WebString pageEncoding() const = 0;
         virtual void setPageEncoding(const WebString&) = 0;
+
+        // Makes the WebView transparent.  This is useful if you want to have
+        // some custom background rendered behind it.
+        virtual bool isTransparent() const = 0;
+        virtual void setIsTransparent(bool) = 0;
+
+        // Controls whether pressing Tab key advances focus to links.
+        virtual bool tabsToLinks() const = 0;
+        virtual void setTabsToLinks(bool) = 0;
+
+        // Method that controls whether pressing Tab key cycles through page
+        // elements or inserts a '\t' char in the focused text area.
+        virtual bool tabKeyCyclesThroughElements() const = 0;
+        virtual void setTabKeyCyclesThroughElements(bool) = 0;
+
+        // Controls the WebView's active state, which may affect the rendering
+        // of elements on the page (i.e., tinting of input elements).
+        virtual bool isActive() const = 0;
+        virtual void setIsActive(bool) = 0;
 
 
         // Closing -------------------------------------------------------------
@@ -145,6 +174,11 @@ namespace WebKit {
             const WebPoint& clientPoint, const WebPoint& screenPoint) = 0;
 
         virtual int dragIdentity() = 0;
+
+        // Helper method for drag and drop target operations: override the
+        // default drop effect with either a "copy" (accept true) or "none"
+        // (accept false) effect.  Return true on success.
+        virtual bool setDropEffect(bool accept) = 0;
 
 
         // Developer tools -----------------------------------------------------

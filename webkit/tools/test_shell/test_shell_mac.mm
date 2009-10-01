@@ -514,7 +514,7 @@ void TestShell::ResizeSubViews() {
   shell->m_focusedWidgetHost = NULL;
 
   // Make sure the previous load is stopped.
-  shell->webView()->StopLoading();
+  shell->webView()->mainFrame()->stopLoading();
   shell->navigation_controller()->Reset();
 
   // Clean up state between test runs.

@@ -81,9 +81,18 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual void setTextDirection(WebKit::WebTextDirection direction);
 
   // WebView methods:
+  virtual void initializeMainFrame(WebKit::WebFrameClient*);
   virtual WebKit::WebSettings* settings();
   virtual WebKit::WebString pageEncoding() const;
   virtual void setPageEncoding(const WebKit::WebString& encoding);
+  virtual bool isTransparent() const;
+  virtual void setIsTransparent(bool value);
+  virtual bool tabsToLinks() const;
+  virtual void setTabsToLinks(bool value);
+  virtual bool tabKeyCyclesThroughElements() const;
+  virtual void setTabKeyCyclesThroughElements(bool value);
+  virtual bool isActive() const;
+  virtual void setIsActive(bool value);
   virtual bool dispatchBeforeUnloadEvent();
   virtual void dispatchUnloadEvent();
   virtual WebKit::WebFrame* mainFrame();
@@ -119,41 +128,24 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
       const WebKit::WebPoint& client_point,
       const WebKit::WebPoint& screen_point);
   virtual int dragIdentity();
+  virtual bool setDropEffect(bool accept);
   virtual void inspectElementAt(const WebKit::WebPoint& point);
 
   // WebView methods:
-  virtual void InitializeMainFrame(WebKit::WebFrameClient* frame_client);
   virtual WebViewDelegate* GetDelegate();
-  virtual void SetTabKeyCyclesThroughElements(bool value);
-  virtual WebKit::WebFrame* GetPreviousFrameBefore(WebKit::WebFrame* frame,
-                                                   bool wrap);
-  virtual WebKit::WebFrame* GetNextFrameAfter(WebKit::WebFrame* frame,
-                                              bool wrap);
-  virtual void StopLoading();
-  virtual void SetBackForwardListSize(int size);
   virtual const std::wstring& GetInspectorSettings() const;
   virtual void SetInspectorSettings(const std::wstring& settings);
-  virtual void ShowJavaScriptConsole();
-  virtual bool SetDropEffect(bool accept);
   virtual void AutofillSuggestionsForNode(
       int64 node_id,
       const std::vector<std::wstring>& suggestions,
       int default_suggestion_index);
   virtual void HideAutofillPopup();
   virtual void SetIgnoreInputEvents(bool new_value);
-
   virtual WebDevToolsAgent* GetWebDevToolsAgent();
   WebDevToolsAgentImpl* GetWebDevToolsAgentImpl();
-
-  virtual void SetIsTransparent(bool is_transparent);
-  virtual bool GetIsTransparent() const;
-
   virtual void MediaPlayerActionAt(int x,
                                    int y,
                                    const MediaPlayerAction& action);
-
-  virtual void SetActive(bool active);
-  virtual bool IsActive();
 
   // WebViewImpl
 
@@ -249,9 +241,6 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
 
   virtual void SetSpellingPanelVisibility(bool is_visible);
   virtual bool GetSpellingPanelVisibility();
-
-  virtual void SetTabsToLinks(bool enable);
-  virtual bool GetTabsToLinks() const;
 
 #if ENABLE(NOTIFICATIONS)
   // Returns the provider of desktop notifications.
