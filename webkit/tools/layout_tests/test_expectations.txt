@@ -2285,3 +2285,4 @@ BUG_SENORBLANCO : LayoutTests/http/tests/globalhistory/history-delegate-basic-re
 
 // WebKit update 48937:48947
 BUG_SENORBLANCO WIN LINUX : LayoutTests/fast/repaint/transform-absolute-in-positioned-container.html = FAIL
+BUG_SENORBLANCO WIN LINUX : LayoutTests/fast/inline/relative-positioned-overflow.html = CRASH
