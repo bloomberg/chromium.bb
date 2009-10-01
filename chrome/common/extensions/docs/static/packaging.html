@@ -2,11 +2,17 @@
 <div id="pageData-showTOC" class="pageData">true</div>
 
 <p>
-Extensions are packaged as signed zip files
-with the file extension "crx"
-(for example, <code>myextension.crx</code>).
-Each extension has its own unique key pair.
-The public key is used as the unique identifier for the extension.
+This page describes how to package your extension.
+As the <a href="overview.html">Overview</a> explains,
+extensions are packaged as signed ZIP files
+with the file extension "crx" &mdash;
+for example, <code>myextension.crx</code>.
+</p>
+
+<p>
+When you package an extension,
+the extension is assigned a unique key pair.
+The public key is used as the identifier for the extension.
 The private key is kept private
 and used to sign each version of the extension.
 </p>
@@ -141,7 +147,6 @@ add <code>--no-message-box</code> to the command.
 <h2 id="ruby">Packaging on the Mac</h2>
 
 <p>
-As of September 2009,
 Google Chrome for the Mac doesn't yet support creating packages.
 Until that support exists,
 you can use a Ruby script to create packages.
