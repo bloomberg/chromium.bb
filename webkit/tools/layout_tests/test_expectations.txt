@@ -816,7 +816,6 @@ BUG10385 : LayoutTests/fast/dom/dom-constructors.html = FAIL
 
 BUG20507 : LayoutTests/http/tests/uri/resolve-encoding-relative.html = FAIL
 
-BUG10401 : LayoutTests/plugins/npruntime.html = TIMEOUT FAIL
 BUG6735 : LayoutTests/plugins/netscape-throw-exception.html = FAIL
 
 BUG10432 WIN LINUX : LayoutTests/fast/overflow/004.html = FAIL

@@ -159,6 +159,8 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc, ch
                 obj->onURLNotify = strdup(argv[i]);
             else if (strcasecmp(argn[i], "logfirstsetwindow") == 0)
                 obj->logSetWindow = TRUE;
+            else if (strcasecmp(argn[i], "testnpruntime") == 0)
+                testNPRuntime(instance);
             else if (strcasecmp(argn[i], "logSrc") == 0) {
                 for (int i = 0; i < argc; i++) {
                     if (strcasecmp(argn[i], "src") == 0) {
