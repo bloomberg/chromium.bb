@@ -86,7 +86,7 @@ class WebWidgetHostGtkWidget {
     g_signal_connect(widget, "expose-event",
                      G_CALLBACK(&HandleExpose), host);
     g_signal_connect(widget, "destroy",
-                     G_CALLBACK(&HandleDestroy), NULL);
+                     G_CALLBACK(&HandleDestroy), host);
     g_signal_connect(widget, "key-press-event",
                      G_CALLBACK(&HandleKeyPress), host);
     g_signal_connect(widget, "key-release-event",
@@ -315,7 +315,11 @@ WebWidgetHost::WebWidgetHost()
 }
 
 WebWidgetHost::~WebWidgetHost() {
+  // We may be deleted before the view_. Clear out the signals so that we don't
+  // attempt to invoke something on a deleted object.
   g_object_set_data(G_OBJECT(view_), kWebWidgetHostKey, NULL);
+  g_signal_handlers_disconnect_matched(view_,
+      G_SIGNAL_MATCH_DATA, 0, NULL, NULL, NULL, this);
   webwidget_->close();
 }
 
