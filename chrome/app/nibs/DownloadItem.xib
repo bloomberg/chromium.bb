@@ -278,7 +278,7 @@
 					</object>
 					<object class="NSMenuItem" id="191249624">
 						<reference key="NSMenu" ref="571207526"/>
-						<string key="NSTitle">^IDS_DOWNLOAD_LINK_SHOW</string>
+						<string key="NSTitle">^IDS_DOWNLOAD_MENU_SHOW</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSKeyEquivModMask">1048576</int>
 						<int key="NSMnemonicLoc">2147483647</int>
@@ -344,7 +344,7 @@
 					</object>
 					<object class="NSMenuItem" id="434679781">
 						<reference key="NSMenu" ref="231354576"/>
-						<string key="NSTitle">^IDS_DOWNLOAD_LINK_SHOW</string>
+						<string key="NSTitle">^IDS_DOWNLOAD_MENU_SHOW</string>
 						<string key="NSKeyEquiv"/>
 						<int key="NSKeyEquivModMask">1048576</int>
 						<int key="NSMnemonicLoc">2147483647</int>
