@@ -60,8 +60,9 @@ def CheckChangeOnCommit(input_api, output_api):
       input_api, output_api, sources))
   results.extend(input_api.canned_checks.CheckSvnForCommonMimeTypes(
       input_api, output_api))
-  results.extend(input_api.canned_checks.CheckSvnModifiedDirectories(
-      input_api, output_api, sources))
+  # TODO(thestig) temporarily disabled, doesn't work in third_party/
+  #results.extend(input_api.canned_checks.CheckSvnModifiedDirectories(
+  #    input_api, output_api, sources))
   # Make sure the tree is 'open'.
   # TODO(maruel): Run it in a separate thread to parallelize checks?
   results.extend(CheckTreeIsOpen(
