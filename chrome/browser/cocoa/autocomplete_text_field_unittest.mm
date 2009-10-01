@@ -27,6 +27,33 @@ using ::testing::InSequence;
 
 namespace {
 
+// Mock up an incrementing event number.
+NSUInteger eventNumber = 0;
+
+// Create an event of the indicated |type| at |point| within |view|.
+// TODO(shess): Would be nice to have a MockApplication which provided
+// nifty accessors to create these things and inject them.  It could
+// even provide functions for "Click and drag mouse from point A to
+// point B".
+NSEvent* Event(NSView* view, const NSPoint point, const NSEventType type,
+               const NSUInteger clickCount) {
+  NSWindow* window([view window]);
+  const NSPoint locationInWindow([view convertPoint:point toView:nil]);
+  const NSPoint location([window convertBaseToScreen:locationInWindow]);
+  return [NSEvent mouseEventWithType:type
+                            location:location
+                       modifierFlags:0
+                           timestamp:0
+                        windowNumber:[window windowNumber]
+                             context:nil
+                         eventNumber:eventNumber++
+                          clickCount:clickCount
+                            pressure:0.0];
+}
+NSEvent* Event(NSView* view, const NSPoint point, const NSEventType type) {
+  return Event(view, point, type, 1);
+}
+
 class AutocompleteTextFieldTest : public PlatformTest {
  public:
   AutocompleteTextFieldTest() {
@@ -34,7 +61,7 @@ class AutocompleteTextFieldTest : public PlatformTest {
     // decorations.
     NSRect frame = NSMakeRect(0, 0, 300, 30);
     field_.reset([[AutocompleteTextField alloc] initWithFrame:frame]);
-    [field_ setStringValue:@"Testing"];
+    [field_ setStringValue:@"Test test"];
     [field_ setObserver:&field_observer_];
     [cocoa_helper_.contentView() addSubview:field_.get()];
 
@@ -330,6 +357,74 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBlocksEndEditing) {
     EXPECT_FALSE([delegate receivedControlTextDidBeginEditing]);
     [field_ setDelegate:nil];
   }
+}
+
+// Clicking in the search hint should put the caret in the rightmost
+// position.
+TEST_F(AutocompleteTextFieldTest, ClickSearchHintPutsCaretRightmost) {
+  // Set the decoration before becoming responder.
+  EXPECT_FALSE([field_ currentEditor]);
+  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+  [cell setSearchHintString:@"Type to search"];
+
+  // Can't rely on the window machinery to make us first responder,
+  // here.
+  cocoa_helper_.makeFirstResponder(field_);
+  EXPECT_TRUE([field_ currentEditor]);
+
+  const NSPoint point(NSMakePoint(300.0 - 20.0, 5.0));
+  NSEvent* downEvent(Event(field_, point, NSLeftMouseDown));
+  NSEvent* upEvent(Event(field_, point, NSLeftMouseUp));
+  [NSApp postEvent:upEvent atStart:YES];
+  [field_ mouseDown:downEvent];
+  const NSRange selectedRange([[field_ currentEditor] selectedRange]);
+  EXPECT_EQ(selectedRange.location, [[field_ stringValue] length]);
+  EXPECT_EQ(selectedRange.length, 0U);
+}
+
+// Clicking in the keyword-search should put the caret in the
+// leftmost position.
+TEST_F(AutocompleteTextFieldTest, ClickKeywordPutsCaretLeftmost) {
+  // Set the decoration before becoming responder.
+  EXPECT_FALSE([field_ currentEditor]);
+  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+  [cell setKeywordString:@"Search Engine:"];
+
+  // Can't rely on the window machinery to make us first responder,
+  // here.
+  cocoa_helper_.makeFirstResponder(field_);
+  EXPECT_TRUE([field_ currentEditor]);
+
+  const NSPoint point(NSMakePoint(20.0, 5.0));
+  NSEvent* downEvent(Event(field_, point, NSLeftMouseDown));
+  NSEvent* upEvent(Event(field_, point, NSLeftMouseUp));
+  [NSApp postEvent:upEvent atStart:YES];
+  [field_ mouseDown:downEvent];
+  const NSRange selectedRange([[field_ currentEditor] selectedRange]);
+  EXPECT_EQ(selectedRange.location, 0U);
+  EXPECT_EQ(selectedRange.length, 0U);
+}
+
+// Clicks not in the text area or the cell's decorations fall through
+// to the editor.
+TEST_F(AutocompleteTextFieldTest, ClickBorderSelectsAll) {
+  // Can't rely on the window machinery to make us first responder,
+  // here.
+  cocoa_helper_.makeFirstResponder(field_);
+  EXPECT_TRUE([field_ currentEditor]);
+
+  const NSPoint point(NSMakePoint(20.0, 1.0));
+  NSEvent* downEvent(Event(field_, point, NSLeftMouseDown));
+  NSEvent* upEvent(Event(field_, point, NSLeftMouseUp));
+  [NSApp postEvent:upEvent atStart:YES];
+  [field_ mouseDown:downEvent];
+
+  // Clicking in the narrow border area around a Cocoa NSTextField
+  // does a select-all.  Regardless of whether this is a good call, it
+  // works as a test that things get passed down to the editor.
+  const NSRange selectedRange([[field_ currentEditor] selectedRange]);
+  EXPECT_EQ(selectedRange.location, 0U);
+  EXPECT_EQ(selectedRange.length, [[field_ stringValue] length]);
 }
 
 }  // namespace
