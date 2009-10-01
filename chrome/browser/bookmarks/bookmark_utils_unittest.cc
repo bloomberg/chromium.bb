@@ -4,6 +4,10 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/message_loop.h"
+#include "base/scoped_clipboard_writer.h"
+#include "base/string_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 
@@ -74,4 +78,34 @@ TEST_F(BookmarkUtilsTest, DoesBookmarkContainText) {
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
       node, L"qcka1pmc", L"ja"));
 }
+
+#if !defined(OS_MACOSX)
+TEST_F(BookmarkUtilsTest, CopyPaste) {
+  // Clipboard requires a message loop.
+  MessageLoopForUI loop;
+
+  BookmarkModel model(NULL);
+  const BookmarkNode* node = model.AddURL(model.other_node(), 0, L"foo bar",
+                                          GURL("http://www.google.com"));
+
+  // Copy a node to the clipboard.
+  std::vector<const BookmarkNode*> nodes;
+  nodes.push_back(node);
+  bookmark_utils::CopyToClipboard(&model, nodes, false);
+
+  // And make sure we can paste a bookmark from the clipboard.
+  EXPECT_TRUE(
+      bookmark_utils::CanPasteFromClipboard(model.GetBookmarkBarNode()));
+
+  // Write some text to the clipboard.
+  {
+    ScopedClipboardWriter clipboard_writer(g_browser_process->clipboard());
+    clipboard_writer.WriteText(ASCIIToUTF16("foo"));
+  }
+
+  // Now we shouldn't be able to paste from the clipboard.
+  EXPECT_FALSE(
+      bookmark_utils::CanPasteFromClipboard(model.GetBookmarkBarNode()));
+}
+#endif
 

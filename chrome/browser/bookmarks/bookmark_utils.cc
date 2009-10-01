@@ -391,8 +391,13 @@ bool CanPasteFromClipboard(const BookmarkNode* node) {
   if (!node)
     return false;
 
-  return g_browser_process->clipboard()->IsFormatAvailable(
+#if defined(OS_MACOSX)
+  NOTIMPLEMENTED();
+  return false;
+#else
+  return g_browser_process->clipboard()->IsFormatAvailableByString(
       BookmarkDragData::kClipboardFormatString, Clipboard::BUFFER_STANDARD);
+#endif
 }
 
 std::string GetNameForURL(const GURL& url) {
