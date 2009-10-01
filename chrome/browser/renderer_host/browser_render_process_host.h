@@ -118,6 +118,26 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // Sends the renderer process a new set of user scripts.
   void SendUserScriptsUpdate(base::SharedMemory* shared_memory);
 
+  // Generates a command line to be used to spawn a renderer and appends the
+  // results to |*command_line|. |*has_cmd_prefix| will be set if the renderer
+  // command line specifies a prefix which is another program that will actually
+  // execute the renderer (like gdb).
+  void AppendRendererCommandLine(CommandLine* command_line,
+                                 bool* has_cmd_prefix) const;
+
+  // Copies applicable command line switches from the given |browser_cmd| line
+  // flags to the output |renderer_cmd| line flags. Not all switches will be
+  // copied over.
+  void PropogateBrowserCommandLineToRenderer(const CommandLine& browser_cmd,
+                                             CommandLine* renderer_cmd) const;
+
+  // Spawns the renderer process, returning the new handle on success, or 0 on
+  // failure. The renderer command line is given in the first argument, and
+  // whether a command prefix was used when generating the command line is
+  // speficied in the second.
+  base::ProcessHandle ExecuteRenderer(CommandLine* cmd_line,
+                                      bool has_cmd_prefix);
+
   // Gets a handle to the renderer process, normalizing the case where we were
   // started with --single-process.
   base::ProcessHandle GetRendererProcessHandle();

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -259,9 +259,13 @@ bool BrowserRenderProcessHost::Init() {
                                 widget_helper_,
                                 profile()->GetSpellChecker());
 
-  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  // Find the renderer before creating the channel so if this fails early we
+  // return without creating the channel.
+  std::wstring renderer_path = ChildProcessHost::GetChildPath();
+  if (renderer_path.empty())
+    return false;
 
-  // setup IPC channel
+  // Setup the IPC channel.
   const std::string channel_id =
       ChildProcessInfo::GenerateRandomChannelID(this);
   channel_.reset(
@@ -276,106 +280,11 @@ bool BrowserRenderProcessHost::Init() {
 
   // Build command line for renderer, we have to quote the executable name to
   // deal with spaces.
-  std::wstring renderer_path = ChildProcessHost::GetChildPath();
-  if (renderer_path.empty()) {
-    // Need to reset the channel we created above or others might think the
-    // connection is live.
-    channel_.reset();
-    return false;
-  }
   CommandLine cmd_line(renderer_path);
-  if (logging::DialogsAreSuppressed())
-    cmd_line.AppendSwitch(switches::kNoErrorDialogs);
-
-  // Pass the process type first, so it shows first in process listings.
-  cmd_line.AppendSwitchWithValue(switches::kProcessType,
-                                 switches::kRendererProcess);
-
-  // Propagate the following switches to the renderer command line (along
-  // with any associated values) if present in the browser command line.
-  static const wchar_t* const switch_names[] = {
-    switches::kRendererAssertTest,
-    switches::kRendererCrashTest,
-    switches::kRendererStartupDialog,
-    switches::kNoSandbox,
-    switches::kTestSandbox,
-    switches::kEnableSeccompSandbox,
-#if !defined (GOOGLE_CHROME_BUILD)
-    // This is an unsupported and not fully tested mode, so don't enable it for
-    // official Chrome builds.
-    switches::kInProcessPlugins,
-#endif
-    switches::kDomAutomationController,
-    switches::kUserAgent,
-    switches::kJavaScriptFlags,
-    switches::kRecordMode,
-    switches::kPlaybackMode,
-    switches::kNoJsRandomness,
-    switches::kDisableBreakpad,
-    switches::kFullMemoryCrashReport,
-    switches::kEnableLogging,
-    switches::kDumpHistogramsOnExit,
-    switches::kDisableLogging,
-    switches::kLoggingLevel,
-    switches::kDebugPrint,
-    switches::kMemoryProfiling,
-    switches::kEnableWatchdog,
-    switches::kMessageLoopHistogrammer,
-    switches::kEnableDCHECK,
-    switches::kSilentDumpOnDCHECK,
-    switches::kUseLowFragHeapCrt,
-    switches::kEnableStatsTable,
-    switches::kAutoSpellCorrect,
-    switches::kDisableAudio,
-    switches::kSimpleDataSource,
-    switches::kEnableBenchmarking,
-    switches::kInternalNaCl,
-    switches::kEnableDatabases,
-    switches::kEnableByteRangeSupport,
-  };
-
-  for (size_t i = 0; i < arraysize(switch_names); ++i) {
-    if (browser_command_line.HasSwitch(switch_names[i])) {
-      cmd_line.AppendSwitchWithValue(switch_names[i],
-          browser_command_line.GetSwitchValue(switch_names[i]));
-    }
-  }
-
-  // Pass on the browser locale.
-  const std::string locale = g_browser_process->GetApplicationLocale();
-  cmd_line.AppendSwitchWithValue(switches::kLang, ASCIIToWide(locale));
-
-  // If we run FieldTrials, we want to pass to their state to the renderer so
-  // that it can act in accordance with each state, or record histograms
-  // relating to the FieldTrial states.
-  std::string field_trial_states;
-  FieldTrialList::StatesToString(&field_trial_states);
-  if (!field_trial_states.empty()) {
-    cmd_line.AppendSwitchWithValue(switches::kForceFieldTestNameAndValue,
-        ASCIIToWide(field_trial_states));
-  }
-
-#if defined(OS_POSIX)
-  const bool has_cmd_prefix =
-      browser_command_line.HasSwitch(switches::kRendererCmdPrefix);
-  if (has_cmd_prefix) {
-    // launch the renderer child with some prefix (usually "gdb --args")
-    const std::wstring prefix =
-        browser_command_line.GetSwitchValue(switches::kRendererCmdPrefix);
-    cmd_line.PrependWrapper(prefix);
-  }
-#endif  // OS_POSIX
-
   cmd_line.AppendSwitchWithValue(switches::kProcessChannelID,
                                  ASCIIToWide(channel_id));
-
-  ChildProcessHost::SetCrashReporterCommandLine(&cmd_line);
-
-  const std::wstring& profile_path =
-      browser_command_line.GetSwitchValue(switches::kUserDataDir);
-  if (!profile_path.empty())
-    cmd_line.AppendSwitchWithValue(switches::kUserDataDir,
-                                   profile_path);
+  bool has_cmd_prefix;
+  AppendRendererCommandLine(&cmd_line, &has_cmd_prefix);
 
   if (run_renderer_in_process()) {
     // Crank up a thread and run the initialization there.  With the way that
@@ -398,48 +307,9 @@ bool BrowserRenderProcessHost::Init() {
     in_process_renderer_->StartWithOptions(options);
   } else {
     base::TimeTicks begin_launch_time = base::TimeTicks::Now();
-    base::ProcessHandle process = 0;
-#if defined(OS_WIN)
-    process = sandbox::StartProcess(&cmd_line);
-#elif defined(OS_POSIX)
-#if defined(OS_LINUX)
-    if (!has_cmd_prefix) {
-      base::GlobalDescriptors::Mapping mapping;
-      const int ipcfd = channel_->GetClientFileDescriptor();
-      mapping.push_back(std::pair<uint32_t, int>(kPrimaryIPCChannel, ipcfd));
-      const int crash_signal_fd =
-          Singleton<RenderCrashHandlerHostLinux>()->GetDeathSignalSocket();
-      if (crash_signal_fd >= 0) {
-        mapping.push_back(std::pair<uint32_t, int>(kCrashDumpSignal,
-                                                   crash_signal_fd));
-      }
-      process = Singleton<ZygoteHost>()->ForkRenderer(cmd_line.argv(), mapping);
-      zygote_child_ = true;
-    } else {
-#endif  // defined(OS_LINUX)
-      // NOTE: This code is duplicated with plugin_process_host.cc, but
-      // there's not a good place to de-duplicate it.
-      base::file_handle_mapping_vector fds_to_map;
-      const int ipcfd = channel_->GetClientFileDescriptor();
-      fds_to_map.push_back(std::make_pair(ipcfd, kPrimaryIPCChannel + 3));
-#if defined(OS_LINUX)
-      const int crash_signal_fd =
-          Singleton<RenderCrashHandlerHostLinux>()->GetDeathSignalSocket();
-      if (crash_signal_fd >= 0) {
-        fds_to_map.push_back(std::make_pair(crash_signal_fd,
-                                            kCrashDumpSignal + 3));
-      }
-      const int sandbox_fd =
-          Singleton<RenderSandboxHostLinux>()->GetRendererSocket();
-      fds_to_map.push_back(std::make_pair(sandbox_fd, kSandboxIPCChannel + 3));
-#endif  // defined(OS_LINUX)
-      base::LaunchApp(cmd_line.argv(), fds_to_map, false, &process);
-      zygote_child_ = false;
-#if defined(OS_LINUX)
-    }
-#endif  // defined(OS_LINUX)
-#endif  // defined(OS_POSIX)
 
+    // Actually spawn the child process.
+    base::ProcessHandle process = ExecuteRenderer(&cmd_line, has_cmd_prefix);
     if (!process) {
       channel_.reset();
       return false;
@@ -548,6 +418,173 @@ void BrowserRenderProcessHost::ResetVisitedLinks() {
 
   visited_link_updater_->Update(this);
 }
+
+void BrowserRenderProcessHost::AppendRendererCommandLine(
+    CommandLine* command_line,
+    bool* has_cmd_prefix) const {
+  if (logging::DialogsAreSuppressed())
+    command_line->AppendSwitch(switches::kNoErrorDialogs);
+
+  // Pass the process type first, so it shows first in process listings.
+  command_line->AppendSwitchWithValue(switches::kProcessType,
+                                      switches::kRendererProcess);
+
+  // Now send any options from our own command line we want to propogate.
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  PropogateBrowserCommandLineToRenderer(browser_command_line, command_line);
+
+  // Pass on the browser locale.
+  const std::string locale = g_browser_process->GetApplicationLocale();
+  command_line->AppendSwitchWithValue(switches::kLang, ASCIIToWide(locale));
+
+  // If we run FieldTrials, we want to pass to their state to the renderer so
+  // that it can act in accordance with each state, or record histograms
+  // relating to the FieldTrial states.
+  std::string field_trial_states;
+  FieldTrialList::StatesToString(&field_trial_states);
+  if (!field_trial_states.empty()) {
+    command_line->AppendSwitchWithValue(switches::kForceFieldTestNameAndValue,
+        ASCIIToWide(field_trial_states));
+  }
+
+  // A command prefix is something prepended to the command line of the spawned
+  // process. It is supported only on POSIX systems.
+#if defined(OS_POSIX)
+  *has_cmd_prefix =
+      browser_command_line.HasSwitch(switches::kRendererCmdPrefix);
+  if (*has_cmd_prefix) {
+    // launch the renderer child with some prefix (usually "gdb --args")
+    const std::wstring prefix =
+        browser_command_line.GetSwitchValue(switches::kRendererCmdPrefix);
+    command_line->PrependWrapper(prefix);
+  }
+#else
+  *has_cmd_prefix = false;
+#endif  // defined(OS_POSIX)
+
+  ChildProcessHost::SetCrashReporterCommandLine(command_line);
+
+  const std::wstring& profile_path =
+      browser_command_line.GetSwitchValue(switches::kUserDataDir);
+  if (!profile_path.empty())
+    command_line->AppendSwitchWithValue(switches::kUserDataDir, profile_path);
+}
+
+void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
+    const CommandLine& browser_cmd,
+    CommandLine* renderer_cmd) const {
+  // Propagate the following switches to the renderer command line (along
+  // with any associated values) if present in the browser command line.
+  static const wchar_t* const switch_names[] = {
+    switches::kRendererAssertTest,
+    switches::kRendererCrashTest,
+    switches::kRendererStartupDialog,
+    switches::kNoSandbox,
+    switches::kTestSandbox,
+    switches::kEnableSeccompSandbox,
+#if !defined (GOOGLE_CHROME_BUILD)
+    // This is an unsupported and not fully tested mode, so don't enable it for
+    // official Chrome builds.
+    switches::kInProcessPlugins,
+#endif
+    switches::kDomAutomationController,
+    switches::kUserAgent,
+    switches::kJavaScriptFlags,
+    switches::kRecordMode,
+    switches::kPlaybackMode,
+    switches::kNoJsRandomness,
+    switches::kDisableBreakpad,
+    switches::kFullMemoryCrashReport,
+    switches::kEnableLogging,
+    switches::kDumpHistogramsOnExit,
+    switches::kDisableLogging,
+    switches::kLoggingLevel,
+    switches::kDebugPrint,
+    switches::kMemoryProfiling,
+    switches::kEnableWatchdog,
+    switches::kMessageLoopHistogrammer,
+    switches::kEnableDCHECK,
+    switches::kSilentDumpOnDCHECK,
+    switches::kUseLowFragHeapCrt,
+    switches::kEnableStatsTable,
+    switches::kAutoSpellCorrect,
+    switches::kDisableAudio,
+    switches::kSimpleDataSource,
+    switches::kEnableBenchmarking,
+    switches::kInternalNaCl,
+    switches::kEnableDatabases,
+    switches::kEnableByteRangeSupport,
+  };
+
+  for (size_t i = 0; i < arraysize(switch_names); ++i) {
+    if (browser_cmd.HasSwitch(switch_names[i])) {
+      renderer_cmd->AppendSwitchWithValue(switch_names[i],
+          browser_cmd.GetSwitchValue(switch_names[i]));
+    }
+  }
+}
+
+#if defined(OS_WIN)
+
+base::ProcessHandle BrowserRenderProcessHost::ExecuteRenderer(
+    CommandLine* cmd_line,
+    bool has_cmd_prefix) {
+  return sandbox::StartProcess(cmd_line);
+}
+
+#elif defined(OS_POSIX)
+
+base::ProcessHandle BrowserRenderProcessHost::ExecuteRenderer(
+    CommandLine* cmd_line,
+    bool has_cmd_prefix) {
+#if defined(OS_LINUX)
+  // On Linux, normally spawn processes with zygotes. We can't do this when
+  // we're spawning child processes through an external program (i.e. there is a
+  // command prefix) like GDB so fall through to the POSIX case then.
+  if (!has_cmd_prefix) {
+    base::GlobalDescriptors::Mapping mapping;
+    const int ipcfd = channel_->GetClientFileDescriptor();
+    mapping.push_back(std::pair<uint32_t, int>(kPrimaryIPCChannel, ipcfd));
+    const int crash_signal_fd =
+        Singleton<RenderCrashHandlerHostLinux>()->GetDeathSignalSocket();
+    if (crash_signal_fd >= 0) {
+      mapping.push_back(std::pair<uint32_t, int>(kCrashDumpSignal,
+                                                 crash_signal_fd));
+    }
+    zygote_child_ = true;
+    return Singleton<ZygoteHost>()->ForkRenderer(cmd_line->argv(), mapping);
+  }
+#endif  // defined(OS_LINUX)
+
+  // NOTE: This code is duplicated with plugin_process_host.cc, but
+  // there's not a good place to de-duplicate it.
+  base::file_handle_mapping_vector fds_to_map;
+  const int ipcfd = channel_->GetClientFileDescriptor();
+  fds_to_map.push_back(std::make_pair(ipcfd, kPrimaryIPCChannel + 3));
+
+#if defined(OS_LINUX)
+  // On Linux, we need to add some extra file descriptors for crash handling and
+  // the sandbox.
+  const int crash_signal_fd =
+      Singleton<RenderCrashHandlerHostLinux>()->GetDeathSignalSocket();
+  if (crash_signal_fd >= 0) {
+    fds_to_map.push_back(std::make_pair(crash_signal_fd,
+                                        kCrashDumpSignal + 3));
+  }
+  const int sandbox_fd =
+      Singleton<RenderSandboxHostLinux>()->GetRendererSocket();
+  fds_to_map.push_back(std::make_pair(sandbox_fd, kSandboxIPCChannel + 3));
+#endif  // defined(OS_LINUX)
+
+  // Actually launch the app.
+  zygote_child_ = false;
+  base::ProcessHandle process_handle;
+  if (!base::LaunchApp(cmd_line->argv(), fds_to_map, false, &process_handle))
+    return 0;
+  return process_handle;
+}
+
+#endif  // defined(OS_POSIX)
 
 base::ProcessHandle BrowserRenderProcessHost::GetRendererProcessHandle() {
   if (run_renderer_in_process())
