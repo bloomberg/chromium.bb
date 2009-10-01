@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -102,7 +102,7 @@ const wchar_t kInProcessPlugins[]              = L"in-process-plugins";
 const wchar_t kNoSandbox[]                     = L"no-sandbox";
 
 // Disables the alternate window station for the renderer.
-const wchar_t kDisableAltWinstation[]         = L"disable-winsta";
+const wchar_t kDisableAltWinstation[]          = L"disable-winsta";
 
 // Runs the plugin processes inside the sandbox.
 const wchar_t kSafePlugins[]                   = L"safe-plugins";
@@ -127,10 +127,10 @@ const wchar_t kPluginDataDir[]                 = L"plugin-data-dir";
 const wchar_t kDiskCacheDir[]                  = L"disk-cache-dir";
 
 // Forces the maximum disk space to be used by the disk cache, in bytes.
-const wchar_t kDiskCacheSize[]                  = L"disk-cache-size";
+const wchar_t kDiskCacheSize[]                 = L"disk-cache-size";
 
 // Forces the maximum disk space to be used by the media cache, in bytes.
-const wchar_t kMediaCacheSize[]                  = L"media-cache-size";
+const wchar_t kMediaCacheSize[]                = L"media-cache-size";
 
 // Whether the multiple profiles feature based on the user-data-dir flag is
 // enabled or not.
@@ -224,7 +224,7 @@ const wchar_t kNoEvents[]                      = L"no-events";
 // to return consistent values, such that subsequent loads of the same
 // page will result in consistent js-generated data and XHR requests.
 // Pages may still be able to generate inconsistent data from plugins.
-const wchar_t kNoJsRandomness[]              = L"no-js-randomness";
+const wchar_t kNoJsRandomness[]                = L"no-js-randomness";
 
 // Make Windows happy by allowing it to show "Enable access to this program"
 // checkbox in Add/Remove Programs->Set Program Access and Defaults. This
@@ -249,13 +249,13 @@ const wchar_t kNoProxyServer[]                 = L"no-proxy-server";
 // connections. Ignored if --proxy-auto-detect or --no-proxy-server are
 // also specified.
 // TODO(robertshield): Specify host format.
-const wchar_t kProxyBypassList[]         = L"proxy-bypass-list";
+const wchar_t kProxyBypassList[]               = L"proxy-bypass-list";
 
 // Force proxy auto-detection.
-const wchar_t kProxyAutoDetect[]         = L"proxy-auto-detect";
+const wchar_t kProxyAutoDetect[]               = L"proxy-auto-detect";
 
 // Use the pac script at the given URL
-const wchar_t kProxyPacUrl[]             = L"proxy-pac-url";
+const wchar_t kProxyPacUrl[]                   = L"proxy-pac-url";
 
 // Use WinHTTP to fetch and evaluate PAC scripts. Otherwise the default is
 // to use Chromium's network stack to fetch, and V8 to evaluate.
@@ -285,7 +285,7 @@ const wchar_t kEnableExtensionTimelineApi[]    =
 
 // Used to set the value of SessionRestore::num_tabs_to_load_. See
 // session_restore.h for details.
-const wchar_t kTabCountToLoadOnSessionRestore[] =
+const wchar_t kTabCountToLoadOnSessionRestore[]=
     L"tab-count-to-load-on-session-restore";
 
 // Enable dynamic loading of the Memory Profiler DLL, which will trace
@@ -359,7 +359,7 @@ const wchar_t kDisableImages[]                 = L"disable-images";
 
 // Enable remote web font support. SVG font should always work whether
 // this option is specified or not.
-const wchar_t kEnableRemoteFonts[]                 = L"enable-remote-fonts";
+const wchar_t kEnableRemoteFonts[]             = L"enable-remote-fonts";
 
 // Use the low fragmentation heap for the CRT.
 const wchar_t kUseLowFragHeapCrt[]             = L"use-lf-heap";
@@ -382,11 +382,11 @@ const wchar_t kDisableSync[]                   = L"disable-sync";
 // impl semantics, but using Chrome synchronization primitives.  The only
 // difference between this and the default is that we now have no timeout on
 // Stop().  Should only use if you experience problems with the default.
-const wchar_t kSyncerThreadTimedStop[] = L"syncer-thread-timed-stop";
+const wchar_t kSyncerThreadTimedStop[]         = L"syncer-thread-timed-stop";
 
 // Use the old pthreads SyncerThread implementation.
 // Should only use if you experience problems with the default.
-const wchar_t kSyncerThreadPthreads[] = L"syncer-thread-pthreads";
+const wchar_t kSyncerThreadPthreads[]          = L"syncer-thread-pthreads";
 
 // Enable support for SDCH filtering (dictionary based expansion of content).
 // Optional argument is *the* only domain name that will have SDCH suppport.
@@ -402,19 +402,19 @@ const wchar_t kEnableUserScripts[]             = L"enable-user-scripts";
 const wchar_t kDisableExtensions[]             = L"disable-extensions";
 
 // Frequency in seconds for Extensions auto-update.
-const wchar_t kExtensionsUpdateFrequency[] = L"extensions-update-frequency";
+const wchar_t kExtensionsUpdateFrequency[]     = L"extensions-update-frequency";
 
 // Load an extension from the specified directory.
 const wchar_t kLoadExtension[]                 = L"load-extension";
 
 // Package an extension to a .crx installable file from a given directory.
-const wchar_t kPackExtension[]              = L"pack-extension";
+const wchar_t kPackExtension[]                 = L"pack-extension";
 
 // Optional PEM private key is to use in signing packaged .crx.
-const wchar_t kPackExtensionKey[]           = L"pack-extension-key";
+const wchar_t kPackExtensionKey[]              = L"pack-extension-key";
 
 // Show extensions on top with toolbar.
-const wchar_t kShowExtensionsOnTop[]        = L"show-extensions-on-top";
+const wchar_t kShowExtensionsOnTop[]           = L"show-extensions-on-top";
 
 // Load an NPAPI plugin from the specified path.
 const wchar_t kLoadPlugin[]                    = L"load-plugin";
@@ -427,7 +427,8 @@ const wchar_t kIncognito[]                     = L"incognito";
 
 // Turns on the accessibility in the renderer.  Off by default until
 // http://b/issue?id=1432077 is fixed.
-const wchar_t kEnableRendererAccessibility[] = L"enable-renderer-accessibility";
+const wchar_t kEnableRendererAccessibility[]   =
+    L"enable-renderer-accessibility";
 
 // Pass the name of the current running automated test to Chrome.
 const wchar_t kTestName[]                      = L"test-name";
@@ -458,7 +459,7 @@ const wchar_t kWebWorkerShareProcesses[]       = L"web-worker-share-processes";
 const wchar_t kBookmarkMenu[]                  = L"bookmark-menu";
 
 // Enables auto spell correction.
-const wchar_t kAutoSpellCorrect[] = L"auto-spell-correct";
+const wchar_t kAutoSpellCorrect[]              = L"auto-spell-correct";
 
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const wchar_t kEnableStatsTable[]              = L"enable-stats-table";
@@ -488,128 +489,128 @@ const wchar_t kSimpleDataSource[]              = L"simple-data-source";
 // persistent representation generated by field_trial.cc and later decoded, is a
 // list of name and value pairs, separated by slashes. See field trial.cc for
 // current details.
-const wchar_t kForceFieldTestNameAndValue[] = L"force-fieldtest";
+const wchar_t kForceFieldTestNameAndValue[]    = L"force-fieldtest";
 
 // Allows the new tab page resource to be loaded from a local HTML file. This
 // should be a path to the HTML file that you want to use for the new tab page.
 // It is used for manually testing new versions of the new tab page only,
 // performance will be poor.
-const wchar_t kNewTabPage[] = L"new-tab-page";
+const wchar_t kNewTabPage[]                    = L"new-tab-page";
 
 // Switches back to the old new tab page.
-const wchar_t kOldNewTabPage[] = L"old-new-tab-page";
+const wchar_t kOldNewTabPage[]                 = L"old-new-tab-page";
 
 // Enables the backend service for web resources, used in the new tab page for
 // loading tips and recommendations from a JSON feed.
-const wchar_t kDisableWebResources[] = L"disable-web-resources";
+const wchar_t kDisableWebResources[]           = L"disable-web-resources";
 
 // Whether we should prevent the new tab page from showing the first run
 // notification.
-const wchar_t kDisableNewTabFirstRun[] = L"disable-new-tab-first-run";
+const wchar_t kDisableNewTabFirstRun[]         = L"disable-new-tab-first-run";
 
 // Disables the default browser check. Useful for UI/browser tests where we want
 // to avoid having the default browser info-bar displayed.
-const wchar_t kNoDefaultBrowserCheck[] = L"no-default-browser-check";
+const wchar_t kNoDefaultBrowserCheck[]         = L"no-default-browser-check";
 
 // Enables the Privacy Blacklist with the specified data file.
 // The file contains data from all imported blacklists.
-const wchar_t kPrivacyBlacklist[] = L"privacy-blacklist";
+const wchar_t kPrivacyBlacklist[]              = L"privacy-blacklist";
 
 // Enables the benchmarking extensions.
-const wchar_t kEnableBenchmarking[] = L"enable-benchmarking";
+const wchar_t kEnableBenchmarking[]            = L"enable-benchmarking";
 
 // The prefix used when starting the zygote process. (i.e. 'gdb --args')
-const wchar_t kZygoteCmdPrefix[] = L"zygote-cmd-prefix";
+const wchar_t kZygoteCmdPrefix[]               = L"zygote-cmd-prefix";
 
 // Enables using ThumbnailStore instead of ThumbnailDatabase for setting and
 // getting thumbnails for the new tab page.
-const wchar_t kThumbnailStore[] = L"thumbnail-store";
+const wchar_t kThumbnailStore[]                = L"thumbnail-store";
 
 // Experimental. Shows a dialog asking the user to try chrome. This flag
 // is to be used only by the upgrade process.
-const wchar_t kTryChromeAgain[] = L"try-chrome-again";
+const wchar_t kTryChromeAgain[]                = L"try-chrome-again";
 
 // The file descriptor limit is set to the value of this switch, subject to the
 // OS hard limits. Useful for testing that file descriptor exhaustion is handled
 // gracefully.
-const wchar_t kFileDescriptorLimit[] = L"file-descriptor-limit";
+const wchar_t kFileDescriptorLimit[]           = L"file-descriptor-limit";
 
 // On Windows, converts the page to the currently-installed monitor profile.
 // This does NOT enable color management for images. The source is still assumed
 // to be sRGB.
-const wchar_t kEnableMonitorProfile[] = L"enable-monitor-profile";
+const wchar_t kEnableMonitorProfile[]          = L"enable-monitor-profile";
 
 // Disable WebKit's XSSAuditor.  The XSSAuditor mitigates reflective XSS.
-const wchar_t kDisableXSSAuditor[] = L"disable-xss-auditor";
+const wchar_t kDisableXSSAuditor[]             = L"disable-xss-auditor";
 
 #if defined(OS_POSIX)
 // A flag, generated internally by Chrome for renderer and other helper process
 // command lines on Linux and Mac.  It tells the helper process to enable crash
 // dumping and reporting, because helpers cannot access the profile or other
 // files needed to make this decision.
-const wchar_t kEnableCrashReporter[] = L"enable-crash-reporter";
+const wchar_t kEnableCrashReporter[]           = L"enable-crash-reporter";
 #endif
 
 // Enables the new Tabstrip on Windows.
-const wchar_t kEnableTabtastic2[] = L"enable-tabtastic2";
+const wchar_t kEnableTabtastic2[]              = L"enable-tabtastic2";
 
 // Number of tabs to pin on startup. This is not use if session restore is
 // enabled.
-const wchar_t kPinnedTabCount[] = L"pinned-tab-count";
+const wchar_t kPinnedTabCount[]                = L"pinned-tab-count";
 
 // Enables the showing of an info-bar instructing user they can search directly
 // from the omnibox.
-const wchar_t kSearchInOmniboxHint[] = L"search-in-omnibox-hint";
+const wchar_t kSearchInOmniboxHint[]           = L"search-in-omnibox-hint";
 
 // Enable local storage.  Still buggy.
-const wchar_t kEnableLocalStorage[] = L"enable-local-storage";
+const wchar_t kEnableLocalStorage[]            = L"enable-local-storage";
 
 // Enable session storage.  Still buggy.
-const wchar_t kEnableSessionStorage[] = L"enable-session-storage";
+const wchar_t kEnableSessionStorage[]          = L"enable-session-storage";
 
 // Allows debugging of sandboxed processes (see zygote_main_linux.cc).
-const wchar_t kAllowSandboxDebugging[] = L"allow-sandbox-debugging";
+const wchar_t kAllowSandboxDebugging[]         = L"allow-sandbox-debugging";
 
 // Enable the seccomp sandbox (Linux only)
-const wchar_t kEnableSeccompSandbox[] = L"enable-seccomp-sandbox";
+const wchar_t kEnableSeccompSandbox[]          = L"enable-seccomp-sandbox";
 
 // Triggers a pletora of diagnostic modes.
-const wchar_t kDiagnostics[] = L"diagnostics";
+const wchar_t kDiagnostics[]                   = L"diagnostics";
 
 // Disables the custom JumpList on Windows 7.
-const wchar_t kDisableCustomJumpList[] = L"disable-custom-jumplist";
+const wchar_t kDisableCustomJumpList[]         = L"disable-custom-jumplist";
 
 // Enables HTML5 DB support.
-const wchar_t kEnableDatabases[] = L"enable-databases";
+const wchar_t kEnableDatabases[]               = L"enable-databases";
 
 // Enable ApplicationCache. Still mostly not there.
-const wchar_t kEnableApplicationCache[] = L"enable-application-cache";
+const wchar_t kEnableApplicationCache[]        = L"enable-application-cache";
 
 // Override the default server used for profile sync.
-const wchar_t kSyncServiceURL[]  = L"sync-url";
+const wchar_t kSyncServiceURL[]                = L"sync-url";
 
 #if defined(OS_CHROMEOS)
 // The name of the pipe over which the Chrome OS login manager will send
 // single-sign-on cookies.
-const wchar_t kCookiePipe[] = L"cookie-pipe";
+const wchar_t kCookiePipe[]                    = L"cookie-pipe";
 
 // Enable the redirection of viewable document requests to the Google
 // Document Viewer.
-const wchar_t kEnableGView[] = L"enable-gview";
+const wchar_t kEnableGView[]                   = L"enable-gview";
 #endif
 
 // Enable experimental support for cached byte-ranges.
-const wchar_t kEnableByteRangeSupport[] = L"enable-byte-range-support";
+const wchar_t kEnableByteRangeSupport[]        = L"enable-byte-range-support";
 
 // Explicitly allow additional ports using a comma separated list of port
 // numbers.
-const wchar_t kExplicitlyAllowedPorts[] = L"explicitly-allowed-ports";
+const wchar_t kExplicitlyAllowedPorts[]        = L"explicitly-allowed-ports";
 
 // Activate (make foreground) myself on launch.  Helpful when Chrome
 // is launched on the command line (e.g. by Selenium).  Only needed on Mac.
-const wchar_t kActivateOnLaunch[] = L"activate-on-launch";
+const wchar_t kActivateOnLaunch[]              = L"activate-on-launch";
 
 // Enable experimental WebGL support.
-const wchar_t kEnableExperimentalWebGL[] = L"enable-webgl";
+const wchar_t kEnableExperimentalWebGL[]       = L"enable-webgl";
 
 }  // namespace switches
