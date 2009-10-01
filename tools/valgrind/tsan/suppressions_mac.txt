@@ -44,7 +44,7 @@
 }
 
 # media_unittests depend on the Darwin libraries which have many reports in
-# them.
+# them. A related OpenRadar bug is at http://openradar.appspot.com/7223948
 {
   Warnings in the CoreAudio component
   ThreadSanitizer:Race
@@ -87,6 +87,14 @@
   ThreadSanitizer:Race
   ...
   fun:AudioHardwareGetProperty
+}
+
+{
+  A warning inside AudioQueueStop
+  ThreadSanitizer:Race
+  fun:*CAMutex*Lock*
+  ...
+  fun:*AudioQueueStop*
 }
 
 #-----------------------------------------------------------------------
