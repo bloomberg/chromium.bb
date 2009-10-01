@@ -29,7 +29,7 @@ string CgiEscapeString(const char* src) {
 }
 
 string CgiEscapeString(const string& src) {
-  return EscapeUrl(src);
+  return EscapeUrlEncodedData(src);
 }
 
 // This method appends the query string to the sync server path.
