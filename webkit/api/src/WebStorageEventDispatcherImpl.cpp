@@ -29,27 +29,36 @@
  */
 
 #include "config.h"
-#include "StorageEventDispatcher.h"
+#include "WebStorageEventDispatcherImpl.h"
 
 #if ENABLE(DOM_STORAGE)
 
 #include "SecurityOrigin.h"
-#include "StorageArea.h"
 
-#include "WebKit.h"
-#include "WebKitClient.h"
-#include "WebString.h"
+extern const char* pageGroupName;
 
-namespace WebCore {
+namespace WebKit {
 
-void StorageEventDispatcher::dispatch(const String& key, const String& oldValue,
-                                      const String& newValue, StorageType storageType,
-                                      SecurityOrigin* origin, Frame* sourceFrame)
+WebStorageEventDispatcher* WebStorageEventDispatcher::create()
 {
-    ASSERT(!sourceFrame);  // Sad, but true.
-    WebKit::webKitClient()->dispatchStorageEvent(key, oldValue, newValue, origin->toString(), storageType == LocalStorage);
+    return new WebStorageEventDispatcherImpl();
 }
 
-} // namespace WebCore
+WebStorageEventDispatcherImpl::WebStorageEventDispatcherImpl()
+    : m_eventDispatcher(new WebCore::StorageEventDispatcherImpl(pageGroupName))
+{
+    ASSERT(m_eventDispatcher);
+}
+
+void WebStorageEventDispatcherImpl::dispatchStorageEvent(const WebString& key, const WebString& oldValue,
+                                                         const WebString& newValue, const WebString& origin,
+                                                         bool isLocalStorage)
+{
+    WebCore::StorageType storageType = isLocalStorage ? WebCore::LocalStorage : WebCore::SessionStorage;
+    RefPtr<WebCore::SecurityOrigin> securityOrigin = WebCore::SecurityOrigin::createFromString(origin);
+    m_eventDispatcher->dispatchStorageEvent(key, oldValue, newValue, storageType, securityOrigin.get());
+}
+
+} // namespace WebKit
 
 #endif // ENABLE(DOM_STORAGE)

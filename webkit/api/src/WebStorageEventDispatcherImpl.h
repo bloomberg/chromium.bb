@@ -28,28 +28,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "StorageEventDispatcher.h"
+#ifndef WebStorageEventDispatcherImpl_h
+#define WebStorageEventDispatcherImpl_h
 
 #if ENABLE(DOM_STORAGE)
 
-#include "SecurityOrigin.h"
-#include "StorageArea.h"
+#include "StorageEventDispatcherImpl.h"
+#include <wtf/OwnPtr.h>
 
-#include "WebKit.h"
-#include "WebKitClient.h"
-#include "WebString.h"
+#include "WebStorageEventDispatcher.h"
 
-namespace WebCore {
+namespace WebKit {
 
-void StorageEventDispatcher::dispatch(const String& key, const String& oldValue,
-                                      const String& newValue, StorageType storageType,
-                                      SecurityOrigin* origin, Frame* sourceFrame)
-{
-    ASSERT(!sourceFrame);  // Sad, but true.
-    WebKit::webKitClient()->dispatchStorageEvent(key, oldValue, newValue, origin->toString(), storageType == LocalStorage);
-}
+    class WebStorageEventDispatcherImpl : public WebStorageEventDispatcher {
+    public:
+        WebStorageEventDispatcherImpl();
 
-} // namespace WebCore
+        virtual void dispatchStorageEvent(const WebString& key, const WebString& oldValue,
+                                          const WebString& newValue, const WebString& origin,
+                                          bool isLocalStorage);
+
+    private:
+        OwnPtr<WebCore::StorageEventDispatcherImpl> m_eventDispatcher;
+    };
+
+} // namespace WebKit
 
 #endif // ENABLE(DOM_STORAGE)
+
+#endif // WebStorageEventDispatcherImpl_h

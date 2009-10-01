@@ -283,6 +283,12 @@ void WebKitClientImpl::callOnMainThread(void (*func)()) {
   main_loop_->PostTask(FROM_HERE, NewRunnableFunction(func));
 }
 
+void WebKitClientImpl::dispatchStorageEvent(const WebString& key,
+    const WebString& oldValue, const WebString& newValue,
+    const WebString& origin, bool isLocalStorage) {
+  NOTREACHED();
+}
+
 base::PlatformFile WebKitClientImpl::databaseOpenFile(
     const WebKit::WebString& file_name, int desired_flags,
     base::PlatformFile* dir_handle) {

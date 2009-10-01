@@ -28,28 +28,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "StorageEventDispatcher.h"
+#ifndef StorageEventDispatcherImpl_h
+#define StorageEventDispatcherImpl_h
 
 #if ENABLE(DOM_STORAGE)
 
-#include "SecurityOrigin.h"
+#include "PlatformString.h"
 #include "StorageArea.h"
-
-#include "WebKit.h"
-#include "WebKitClient.h"
-#include "WebString.h"
 
 namespace WebCore {
 
-void StorageEventDispatcher::dispatch(const String& key, const String& oldValue,
-                                      const String& newValue, StorageType storageType,
-                                      SecurityOrigin* origin, Frame* sourceFrame)
-{
-    ASSERT(!sourceFrame);  // Sad, but true.
-    WebKit::webKitClient()->dispatchStorageEvent(key, oldValue, newValue, origin->toString(), storageType == LocalStorage);
-}
+    class PageGroup;
+    class SecurityOrigin;
+
+    class StorageEventDispatcherImpl {
+    public:
+        StorageEventDispatcherImpl(const String& groupName);
+
+        void dispatchStorageEvent(const String& key, const String& oldValue,
+                                  const String& newValue, StorageType,
+                                  SecurityOrigin*);
+
+    private:
+        PageGroup* m_pageGroup;
+    };
 
 } // namespace WebCore
 
 #endif // ENABLE(DOM_STORAGE)
+
+#endif // StorageEventDispatcherImpl_h
