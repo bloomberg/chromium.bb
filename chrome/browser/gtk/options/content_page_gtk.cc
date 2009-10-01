@@ -43,7 +43,7 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
       l10n_util::GetStringUTF8(IDS_OPTIONS_BROWSING_DATA_GROUP_NAME),
       InitBrowsingDataGroup(), false);
   options_builder.AddOptionGroup(
-      l10n_util::GetStringUTF8(IDS_THEMES_GROUP_NAME),
+      l10n_util::GetStringUTF8(IDS_APPEARANCE_GROUP_NAME),
       InitThemesGroup(), false);
   page_ = options_builder.get_page_widget();
 

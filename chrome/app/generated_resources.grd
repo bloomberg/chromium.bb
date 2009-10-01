@@ -4083,12 +4083,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_THEMES_GROUP_NAME" desc="The title of the themes group">
         Themes:
       </message>
-      <message name="IDS_THEMES_GTK_BUTTON" desc="The button to choose GTK colors and icons as the current theme.">
-        Set to GTK+ theme
-      </message>
-      <message name="IDS_THEMES_SET_CLASSIC" desc="The button to choose the classic windows theme in GTK">
-	    Set to Classic theme
-      </message>
+      <if expr="os == 'linux2'">
+        <message name="IDS_APPEARANCE_GROUP_NAME" desc="The title of the themes group">
+          Appearance:
+        </message>
+        <message name="IDS_THEMES_GTK_BUTTON" desc="The button to choose GTK colors and icons as the current theme.">
+          Use GTK+ theme
+        </message>
+        <message name="IDS_THEMES_SET_CLASSIC" desc="The button to choose the classic windows theme in GTK">
+          Use Classic theme
+        </message>
+      </if>
       <message name="IDS_THEMES_RESET_BUTTON" desc="The button to reset your theme">
         Reset to default theme
       </message>
