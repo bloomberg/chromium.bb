@@ -141,7 +141,7 @@ void WebWorkerImpl::startWorkerContext(const WebURL& script_url,
   DCHECK(!web_view_);
   web_view_ = WebView::Create(NULL);
   WebPreferences().Apply(web_view_);
-  web_view_->InitializeMainFrame(WorkerWebFrameClient::GetSharedInstance());
+  web_view_->initializeMainFrame(WorkerWebFrameClient::GetSharedInstance());
 
   WebFrameImpl* web_frame = static_cast<WebFrameImpl*>(web_view_->mainFrame());
 

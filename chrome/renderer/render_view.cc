@@ -314,14 +314,9 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
 
   webwidget_ = WebView::Create(this);
   webkit_preferences_.Apply(webview());
-  webview()->InitializeMainFrame(this);
+  webview()->initializeMainFrame(this);
 
   OnSetRendererPrefs(renderer_prefs);
-
-  // Don't let WebCore keep a B/F list - we have our own.
-  // We let it keep 1 entry because FrameLoader::goToItem expects an item in the
-  // backForwardList, which is used only in ASSERTs.
-  webview()->SetBackForwardListSize(1);
 
   routing_id_ = routing_id;
   render_thread_->AddRoute(routing_id_, this);
@@ -743,7 +738,7 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
 // Stop loading the current page
 void RenderView::OnStop() {
   if (webview())
-    webview()->StopLoading();
+    webview()->mainFrame()->stopLoading();
 }
 
 void RenderView::OnLoadAlternateHTMLText(const std::string& html,
@@ -792,7 +787,7 @@ void RenderView::OnStopFinding(bool clear_selection) {
   WebFrame* frame = view->mainFrame();
   while (frame) {
     frame->stopFinding(clear_selection);
-    frame = view->GetNextFrameAfter(frame, false);
+    frame = frame->traverseNext(false);
   }
 }
 
@@ -2587,7 +2582,7 @@ void RenderView::OnFind(int request_id,
                         const string16& search_text,
                         const WebKit::WebFindOptions& options) {
   WebFrame* main_frame = webview()->mainFrame();
-  WebFrame* frame_after_main = webview()->GetNextFrameAfter(main_frame, true);
+  WebFrame* frame_after_main = main_frame->traverseNext(true);
   WebFrame* focused_frame = webview()->focusedFrame();
   WebFrame* search_frame = focused_frame;  // start searching focused frame.
 
@@ -2613,8 +2608,8 @@ void RenderView::OnFind(int request_id,
         // What is the next frame to search? (we might be going backwards). Note
         // that we specify wrap=true so that search_frame never becomes NULL.
         search_frame = options.forward ?
-            webview()->GetNextFrameAfter(search_frame, true) :
-            webview()->GetPreviousFrameBefore(search_frame, true);
+            search_frame->traverseNext(true) :
+            search_frame->traversePrevious(true);
       } while (!search_frame->hasVisibleContent() &&
                search_frame != focused_frame);
 
@@ -2680,7 +2675,7 @@ void RenderView::OnFind(int request_id,
 
       // Iterate to the next frame. The frame will not necessarily scope, for
       // example if it is not visible.
-      search_frame = webview()->GetNextFrameAfter(search_frame, true);
+      search_frame = search_frame->traverseNext(true);
     } while (search_frame != main_frame);
   }
 }
@@ -3277,14 +3272,14 @@ void RenderView::OnClearFocusedNode() {
 
 void RenderView::OnSetBackground(const SkBitmap& background) {
   if (webview())
-    webview()->SetIsTransparent(!background.empty());
+    webview()->setIsTransparent(!background.empty());
 
   SetBackground(background);
 }
 
 void RenderView::OnSetActive(bool active) {
   if (webview())
-    webview()->SetActive(active);
+    webview()->setIsActive(active);
 }
 
 void RenderView::SendExtensionRequest(const std::string& name,

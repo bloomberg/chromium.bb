@@ -375,20 +375,14 @@ static WebDataSource* DataSourceForDocLoader(DocumentLoader* loader) {
 WebFrame* WebFrame::frameForEnteredContext() {
   Frame* frame =
       WebCore::ScriptController::retrieveFrameForEnteredContext();
-  if (frame)
-    return WebFrameImpl::FromFrame(frame);
-  else
-    return NULL;
+  return WebFrameImpl::FromFrame(frame);
 }
 
 // static
 WebFrame* WebFrame::frameForCurrentContext() {
   Frame* frame =
       WebCore::ScriptController::retrieveFrameForCurrentContext();
-  if (frame)
-    return WebFrameImpl::FromFrame(frame);
-  else
-    return NULL;
+  return WebFrameImpl::FromFrame(frame);
 }
 
 WebString WebFrameImpl::name() const {
@@ -468,21 +462,17 @@ WebView* WebFrameImpl::view() const {
 }
 
 WebFrame* WebFrameImpl::opener() const {
-  if (frame_) {
-    Frame* opener = frame_->loader()->opener();
-    if (opener)
-      return FromFrame(opener);
-  }
-  return NULL;
+  Frame* opener = NULL;
+  if (frame_)
+    opener = frame_->loader()->opener();
+  return FromFrame(opener);
 }
 
 WebFrame* WebFrameImpl::parent() const {
-  if (frame_) {
-    Frame *parent = frame_->tree()->parent();
-    if (parent)
-      return FromFrame(parent);
-  }
-  return NULL;
+  Frame *parent = NULL;
+  if (frame_)
+    parent = frame_->tree()->parent();
+  return FromFrame(parent);
 }
 
 WebFrame* WebFrameImpl::top() const {
@@ -1643,7 +1633,7 @@ void WebFrameImpl::CreateFrameView() {
 
   frame_->setView(view);
 
-  if (web_view->GetIsTransparent())
+  if (web_view->isTransparent())
     view->setTransparent(true);
 
   // TODO(darin): The Mac code has a comment about this possibly being
@@ -1662,6 +1652,8 @@ void WebFrameImpl::CreateFrameView() {
 
 // static
 WebFrameImpl* WebFrameImpl::FromFrame(WebCore::Frame* frame) {
+  if (!frame)
+    return NULL;
   return static_cast<WebFrameLoaderClient*>(
       frame->loader()->client())->webframe();
 }
@@ -1827,14 +1819,12 @@ void WebFrameImpl::SetMarkerActive(WebCore::Range* range, bool active) {
 
 int WebFrameImpl::OrdinalOfFirstMatchForFrame(WebFrameImpl* frame) const {
   int ordinal = 0;
-  WebViewImpl* web_view = GetWebViewImpl();
-  WebFrameImpl* const main_frame_impl = GetWebViewImpl()->main_frame();
+  WebFrameImpl* main_frame_impl = GetWebViewImpl()->main_frame();
   // Iterate from the main frame up to (but not including) |frame| and
   // add up the number of matches found so far.
   for (WebFrameImpl* it = main_frame_impl;
        it != frame;
-       it = static_cast<WebFrameImpl*>(
-           web_view->GetNextFrameAfter(it, true))) {
+       it = static_cast<WebFrameImpl*>(it->traverseNext(true))) {
     if (it->last_match_count_ > 0)
       ordinal += it->last_match_count_;
   }

@@ -84,5 +84,5 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   // Tabs to link is not part of the settings. WebCore calls
   // ChromeClient::tabsToLinks which is part of the glue code.
-  web_view->SetTabsToLinks(tabs_to_links);
+  web_view->setTabsToLinks(tabs_to_links);
 }

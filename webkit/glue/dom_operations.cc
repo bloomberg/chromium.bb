@@ -481,7 +481,7 @@ WebFrameImpl* GetWebFrameImplFromElement(WebCore::Element* element,
       WebCore::HTMLFrameOwnerElement* frame_element =
           static_cast<WebCore::HTMLFrameOwnerElement*>(element);
       WebCore::Frame* content_frame = frame_element->contentFrame();
-      return content_frame ? WebFrameImpl::FromFrame(content_frame) : NULL;
+      return WebFrameImpl::FromFrame(content_frame);
     }
   }
   return NULL;

@@ -964,7 +964,7 @@ void WebPluginDelegateProxy::OnSetDropEffect(const NPVariant_Param& object,
   if (!drag_id || !WebBindings::isDragEvent(event))
     return;
 
-  *success = webview->SetDropEffect(effect != 0);
+  *success = webview->setDropEffect(effect != 0);
 }
 
 void WebPluginDelegateProxy::OnMissingPluginStatus(int status) {

@@ -238,7 +238,7 @@ bool TestShell::RunFileTest(const TestParams& params) {
   shell->m_focusedWidgetHost = NULL;
 
   // Make sure the previous load is stopped.
-  shell->webView()->StopLoading();
+  shell->webView()->mainFrame()->stopLoading();
   shell->navigation_controller()->Reset();
 
   // StopLoading may update state maintained in the test controller (for
@@ -547,7 +547,7 @@ LRESULT CALLBACK TestShell::WndProc(HWND hwnd, UINT message, WPARAM wParam,
           if (wmId == IDC_NAV_RELOAD) {
             shell->Reload();
           } else {
-            shell->webView()->StopLoading();
+            shell->webView()->mainFrame()->stopLoading();
           }
         }
         break;
