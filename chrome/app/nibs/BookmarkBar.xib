@@ -2,9 +2,9 @@
 <archive type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="7.10">
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
-		<string key="IBDocument.SystemVersion">10A432</string>
+		<string key="IBDocument.SystemVersion">10B504</string>
 		<string key="IBDocument.InterfaceBuilderVersion">732</string>
-		<string key="IBDocument.AppKitVersion">1038</string>
+		<string key="IBDocument.AppKitVersion">1038.2</string>
 		<string key="IBDocument.HIToolboxVersion">437.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -12,10 +12,10 @@
 		</object>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="18"/>
-			<integer value="1"/>
 			<integer value="4"/>
 			<integer value="75"/>
+			<integer value="62"/>
+			<integer value="18"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -74,17 +74,17 @@
 							<object class="NSTextField" id="1013234954">
 								<reference key="NSNextResponder" ref="610146462"/>
 								<int key="NSvFlags">-2147483382</int>
-								<string key="NSFrame">{{5, 122}, {582, 17}}</string>
+								<string key="NSFrame">{{5, 123}, {579, 14}}</string>
 								<reference key="NSSuperview" ref="610146462"/>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSTextFieldCell" key="NSCell" id="458754719">
 									<int key="NSCellFlags">68288064</int>
-									<int key="NSCellFlags2">272630784</int>
+									<int key="NSCellFlags2">272761856</int>
 									<string key="NSContents">^IDS_BOOKMARKS_NO_ITEMS</string>
 									<object class="NSFont" key="NSSupport">
 										<string key="NSName">LucidaGrande</string>
-										<double key="NSSize">13</double>
-										<int key="NSfFlags">1044</int>
+										<double key="NSSize">11</double>
+										<int key="NSfFlags">3100</int>
 									</object>
 									<reference key="NSControlView" ref="1013234954"/>
 									<object class="NSColor" key="NSBackgroundColor">
