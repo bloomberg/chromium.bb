@@ -150,10 +150,6 @@ class TabStripModelObserverBridge;
 // for the per-tab sheets.
 - (GTMWindowSheetController*)sheetController;
 
-// Checks if there are any tabs with sheets open, and if so, raises one of
-// the tabs with a sheet and returns NO.
-- (BOOL)shouldCloseWithOpenPerTabSheets;
-
 - (void)attachConstrainedWindow:(ConstrainedWindowMac*)window;
 - (void)removeConstrainedWindow:(ConstrainedWindowMac*)window;
 

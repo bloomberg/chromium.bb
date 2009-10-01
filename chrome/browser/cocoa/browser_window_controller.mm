@@ -267,20 +267,6 @@ willPositionSheet:(NSWindow*)sheet
              afterDelay:0];
 }
 
-// Checks if there are any tabs with sheets open, and if so, raises one of
-// the tabs with a sheet and returns NO.
-- (BOOL)shouldCloseWithOpenPerTabSheets {
-  // This is O(n_open_sheets * n_tabs), i.e. O(n**2). Since people probably
-  // won't have 100 tabs open, and not every tab will have a sheet, this is ok.
-  for (NSView* view in
-      [[tabStripController_ sheetController] viewsWithAttachedSheets]) {
-    [tabStripController_ gtm_systemRequestsVisibilityForView:view];
-    return NO;
-  }
-
-  return YES;
-}
-
 - (void)attachConstrainedWindow:(ConstrainedWindowMac*)window {
   [tabStripController_ attachConstrainedWindow:window];
 }
@@ -296,11 +282,6 @@ willPositionSheet:(NSWindow*)sheet
 // required to get us to the closing state and (by watching for all the tabs
 // going away) will again call to close the window when it's finally ready.
 - (BOOL)windowShouldClose:(id)sender {
-  // Do not close a window with open sheets, as required by
-  // GTMWindowSheetController.
-  if (![self shouldCloseWithOpenPerTabSheets])
-    return NO;
-
   // Disable updates while closing all tabs to avoid flickering.
   base::ScopedNSDisableScreenUpdates disabler;
   // Give beforeunload handlers the chance to cancel the close before we hide

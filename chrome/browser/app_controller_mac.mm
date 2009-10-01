@@ -125,34 +125,8 @@
   }
 }
 
-// Checks if there are any tabs with sheets open, and if so, raises one of
-// the tabs with a sheet and returns NO.
-- (BOOL)shouldQuitWithOpenPerTabSheets {
-  BrowserList::const_iterator it = BrowserList::begin();
-  for (; it != BrowserList::end(); ++it) {
-    Browser* browser = *it;
-    BrowserWindowCocoa* window =
-        static_cast<BrowserWindowCocoa*>(browser->window());
-
-    // Could do this more nicely with a method e.g. on BWC. If I decide for
-    // keeping it this way, at least add a DCHECK().
-    BrowserWindowController* controller =
-        (BrowserWindowController*)[window->GetNativeHandle() windowController];
-
-    if (![controller shouldCloseWithOpenPerTabSheets])
-      return NO;
-  }
-
-  return YES;
-}
-
 - (NSApplicationTerminateReply)applicationShouldTerminate:
     (NSApplication *)sender {
-  // Do not quit if any per-tab sheets are open, as required by
-  // GTMWindowSheetController.
-  if (![self shouldQuitWithOpenPerTabSheets])
-      return NSTerminateCancel;
-
   // Check for in-progress downloads, and prompt the user if they really want to
   // quit (and thus cancel the downloads).
   if (![self shouldQuitWithInProgressDownloads])
