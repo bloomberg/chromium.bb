@@ -50,7 +50,7 @@ bool DownloadShelfContextMenu::ItemIsDefault(int id) const {
 std::wstring DownloadShelfContextMenu::GetItemLabel(int id) const {
   switch (id) {
     case SHOW_IN_FOLDER:
-      return l10n_util::GetString(IDS_DOWNLOAD_LINK_SHOW);
+      return l10n_util::GetString(IDS_DOWNLOAD_MENU_SHOW);
     case OPEN_WHEN_COMPLETE:
       if (download_->state() == DownloadItem::IN_PROGRESS)
         return l10n_util::GetString(IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE);
