@@ -467,7 +467,11 @@ class WidgetWin : public base::WindowImpl,
 
   // Invoked from WM_DESTROY. Does appropriate cleanup and invokes OnDestroy
   // so that subclasses can do any cleanup they need to.
-  void OnDestroyImpl();
+  // void OnDestroyImpl();
+
+  // Returns the RootView that contains the focused view, or NULL if there is no
+  // focused view.
+  RootView* GetFocusedViewRootView();
 
   // Called after the WM_ACTIVATE message has been processed by the default
   // windows procedure.

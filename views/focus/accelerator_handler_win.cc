@@ -29,6 +29,9 @@ bool AcceleratorHandler::Dispatch(const MSG& msg) {
                          msg.lParam & 0xFFFF,
                          (msg.lParam & 0xFFFF0000) >> 16);
           process_message = focus_manager->OnKeyEvent(event);
+          // TODO(jcampan): http://crbug.com/23383 We should not translate and
+          //                dispatch the associated WM_KEYUP if process_message
+          //                is true.
           break;
         }
       }

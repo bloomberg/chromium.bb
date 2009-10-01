@@ -330,6 +330,7 @@ void TextButton::SetEnabled(bool enabled) {
 }
 
 bool TextButton::OnMousePressed(const MouseEvent& e) {
+  RequestFocus();
   return true;
 }
 

@@ -573,13 +573,21 @@ void WidgetWin::OnInitMenuPopup(HMENU menu,
 void WidgetWin::OnKeyDown(TCHAR c, UINT rep_cnt, UINT flags) {
   KeyEvent event(Event::ET_KEY_PRESSED,
                  win_util::WinToKeyboardCode(c), rep_cnt, flags);
-  SetMsgHandled(root_view_->ProcessKeyEvent(event));
+  RootView* root_view = GetFocusedViewRootView();
+  if (!root_view)
+    root_view = root_view_.get();
+
+  SetMsgHandled(root_view->ProcessKeyEvent(event));
 }
 
 void WidgetWin::OnKeyUp(TCHAR c, UINT rep_cnt, UINT flags) {
   KeyEvent event(Event::ET_KEY_RELEASED,
                  win_util::WinToKeyboardCode(c), rep_cnt, flags);
-  SetMsgHandled(root_view_->ProcessKeyEvent(event));
+  RootView* root_view = GetFocusedViewRootView();
+  if (!root_view)
+    root_view = root_view_.get();
+
+  SetMsgHandled(root_view->ProcessKeyEvent(event));
 }
 
 // TODO(pkasting): ORing the pressed/released button into the flags is _wrong_.
@@ -1026,6 +1034,18 @@ void WidgetWin::UpdateWindowFromContents(HDC dib_dc) {
         hwnd(), NULL, &window_position, &size, dib_dc, &zero_origin,
         RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
   }
+}
+
+RootView* WidgetWin::GetFocusedViewRootView() {
+  FocusManager* focus_manager = GetFocusManager();
+  if (!focus_manager) {
+    NOTREACHED();
+    return NULL;
+  }
+  View* focused_view = focus_manager->GetFocusedView();
+  if (!focused_view)
+    return NULL;
+  return focused_view->GetRootView();
 }
 
 // Get the source HWND of the specified message. Depending on the message, the

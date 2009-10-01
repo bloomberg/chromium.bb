@@ -119,6 +119,13 @@ void NativeTabbedPaneGtk::CreateNativeControl() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// NativeTabbedPaneGtk, View override:
+
+FocusTraversable* NativeTabbedPaneGtk::GetFocusTraversable() {
+  return GetWidgetAt(GetSelectedTabIndex());
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NativeTabbedPaneGtk, private:
 void NativeTabbedPaneGtk::DoAddTabAtIndex(int index, const std::wstring& title,
                                           View* contents,
@@ -159,11 +166,17 @@ void NativeTabbedPaneGtk::DoAddTabAtIndex(int index, const std::wstring& title,
     gtk_notebook_set_current_page(GTK_NOTEBOOK(native_view()), 0);
 }
 
-View* NativeTabbedPaneGtk::GetTabViewAt(int index) {
+WidgetGtk* NativeTabbedPaneGtk::GetWidgetAt(int index) {
   DCHECK(index <= GetTabCount());
   GtkWidget* page = gtk_notebook_get_nth_page(GTK_NOTEBOOK(native_view()),
                                               index);
   WidgetGtk* widget = WidgetGtk::GetViewForNative(page);
+  DCHECK(widget);
+  return widget;
+}
+
+View* NativeTabbedPaneGtk::GetTabViewAt(int index) {
+  WidgetGtk* widget = GetWidgetAt(index);
   DCHECK(widget && widget->GetRootView()->GetChildViewCount() == 1);
   return widget->GetRootView()->GetChildViewAt(0);
 }
