@@ -8,12 +8,12 @@
 #ifndef APP_L10N_UTIL_H_
 #define APP_L10N_UTIL_H_
 
-#include "build/build_config.h"
-
 #include <algorithm>
 #include <functional>
 #include <string>
 #include <vector>
+
+#include "build/build_config.h"
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -327,12 +327,12 @@ void SortStringsUsingMethod(const std::wstring& locale,
   scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(loc, error));
   if (U_FAILURE(error)) {
     sort(elements->begin(), elements->end(),
-         StringMethodComparator<T,Method>(method));
+         StringMethodComparator<T, Method>(method));
     return;
   }
 
   std::sort(elements->begin(), elements->end(),
-      StringMethodComparatorWithCollator<T,Method>(collator.get(), method));
+      StringMethodComparatorWithCollator<T, Method>(collator.get(), method));
 }
 
 // Compares two elements' string keys and returns true if the first element's
@@ -377,7 +377,7 @@ void SortVectorWithStringKey(const std::string& locale,
                              unsigned int begin_index,
                              unsigned int end_index,
                              bool needs_stable_sort) {
-  DCHECK(begin_index >= 0 && begin_index < end_index &&
+  DCHECK(begin_index < end_index &&
          end_index <= static_cast<unsigned int>(elements->size()));
   UErrorCode error = U_ZERO_ERROR;
   icu::Locale loc(locale.c_str());
