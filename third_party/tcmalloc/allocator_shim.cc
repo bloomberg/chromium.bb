@@ -35,7 +35,7 @@ typedef enum {
 } Allocator;
 
 // This is the default allocator.
-static Allocator allocator = TCMALLOC;
+static Allocator allocator = JEMALLOC;
 
 // We include tcmalloc and the win_allocator to get as much inlining as
 // possible.
@@ -257,4 +257,4 @@ extern "C" void* _crtheap = reinterpret_cast<void*>(1);
 
 #include "generic_allocators.cc"
 
-}  // extern C  
+}  // extern C
