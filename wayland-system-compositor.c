@@ -1355,10 +1355,16 @@ static void on_enter_vt(int signal_number, void *data)
 	struct wlsc_output *output;
 	int ret, fd;
 
+	fd = eglGetDisplayFD(ec->display);
+	ret = drmSetMaster(fd);
+	if (ret) {
+		fprintf(stderr, "failed to set drm master\n");
+		return;
+	}
+
 	ioctl(ec->tty_fd, VT_RELDISP, VT_ACKACQ);
 	ec->vt_active = TRUE;
 
-	fd = eglGetDisplayFD(ec->display);
 	output = container_of(ec->output_list.next, struct wlsc_output, link);
 	while (&output->link != &ec->output_list) {
 		ret = drmModeSetCrtc(fd, output->crtc_id,
@@ -1376,6 +1382,14 @@ static void on_enter_vt(int signal_number, void *data)
 static void on_leave_vt(int signal_number, void *data)
 {
 	struct wlsc_compositor *ec = data;
+	int ret, fd;
+
+	fd = eglGetDisplayFD(ec->display);
+	ret = drmDropMaster(fd);
+	if (ret) {
+		fprintf(stderr, "failed to drop drm master\n");
+		return;
+	}
 
 	ioctl (ec->tty_fd, VT_RELDISP, 1);
 	ec->vt_active = FALSE;
