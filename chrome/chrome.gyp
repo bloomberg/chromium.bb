@@ -3328,34 +3328,6 @@
               'message': 'Generating manpage'
             },
           ],
-
-          'conditions': [
-            # All Chrome builds have breakpad symbols, but only process the
-            # symbols from official builds.
-            # TODO(mmoss) dump_syms segfaults on x64. Enable once dump_syms and
-            # crash server handle 64-bit symbols.
-            ['branding=="Chrome" and buildtype=="Official" and'
-                ' target_arch=="ia32"', {
-              'actions': [
-                {
-                  'action_name': 'dump_symbols',
-                  'inputs': [
-                    '<(DEPTH)/build/linux/dump_app_syms',
-                    '<(DEPTH)/build/linux/dump_signature.py',
-                    '<(PRODUCT_DIR)/dump_syms',
-                    '<(PRODUCT_DIR)/chrome',
-                  ],
-                  'outputs': [
-                    '<(PRODUCT_DIR)/chrome.breakpad.<(target_arch)',
-                  ],
-                  'action': ['<(DEPTH)/build/linux/dump_app_syms',
-                             '<(PRODUCT_DIR)/dump_syms',
-                             '<(PRODUCT_DIR)/chrome', '<@(_outputs)'],
-                  'message': 'Dumping breakpad symbols to <(_outputs)'
-                },
-              ],
-            }],
-          ],
           'dependencies': [
             # On Linux, link the dependencies (libraries) that make up actual
             # Chromium functionality directly into the executable.
@@ -5637,6 +5609,36 @@
             'test/reliability/page_load_test.h',
           ],
         },
+        {
+          'target_name': 'linux_symbols',
+          'type': 'none',
+          'conditions': [
+            ['linux_dump_symbols==1', {
+              'actions': [
+                {
+                  'action_name': 'dump_symbols',
+                  'inputs': [
+                    '<(DEPTH)/build/linux/dump_app_syms',
+                    '<(DEPTH)/build/linux/dump_signature.py',
+                    '<(PRODUCT_DIR)/dump_syms',
+                    '<(PRODUCT_DIR)/chrome',
+                  ],
+                  'outputs': [
+                    '<(PRODUCT_DIR)/chrome.breakpad.<(target_arch)',
+                  ],
+                  'action': ['<(DEPTH)/build/linux/dump_app_syms',
+                             '<(PRODUCT_DIR)/dump_syms',
+                             '<(PRODUCT_DIR)/chrome', '<@(_outputs)'],
+                  'message': 'Dumping breakpad symbols to <(_outputs)'
+                },
+              ],
+              'dependencies': [
+                'chrome',
+                '../breakpad/breakpad.gyp:dump_syms',
+              ],
+            }],
+          ],
+        }
       ],
     },],  # OS=="linux"
     ['OS!="win"',
