@@ -48,7 +48,6 @@
 # include <google/stacktrace.h>
 #endif
 
-
 namespace tcmalloc {
 
 // -------------------------------------------------------------------------
@@ -146,9 +145,6 @@ class PageHeap {
   }
   void CacheSizeClass(PageID p, size_t cl) const { pagemap_cache_.Put(p, cl); }
 
-  // Attempt to free some free pages currently not used.
-  void Scavenge();
-
  private:
   // Allocates a big block of memory for the pagemap once we reach more than
   // 128MB
@@ -214,41 +210,15 @@ class PageHeap {
   // span of exactly the specified length.  Else, returns NULL.
   Span* AllocLarge(Length n);
 
-  // Commits the span.
+  // Commit the span.
   void CommitSpan(Span* span);
 
-#if DEFER_DECOMMIT
-  // Number of free committed pages that we want to keep around.
-  static const size_t kMinimumFreeCommittedPageCount = 512;  // 2M (2 ** 21) for 4K pages
-
-  // During a scavenge, we'll release up to a fraction of the free committed pages.
-#ifdef _WIN32
-  // We are slightly less aggressive in releasing memory on Windows due to performance reasons.
-  static const int kMaxScavengeAmountFactor = 3;
-#else
-  static const int kMaxScavengeAmountFactor = 2;
-#endif
-
-  // Decommits some parts from SpanList.
-  uint64_t DecommitFromSpanList(SpanList* span_list, uint64_t to_decommit);
-
-  // Decommits some parts from SpanList.
-  Length DecommitLastSpan(SpanList* span_list, Span* span);
-
-  // Number of pages kept in free lists that are still committed a.k.a. total
-  // number of pages in "normal" lists.
-  uint64_t free_committed_pages_;
-
-  // Number of pages that we commited in the last scavenge wait interval.
-  uint64_t pages_committed_since_last_scavenge_;
-#else
   // Incrementally release some memory to the system.
   // IncrementalScavenge(n) is called whenever n pages are freed.
   void IncrementalScavenge(Length n);
 
   // Number of pages to deallocate before doing more scavenging
   int64_t scavenge_counter_;
-#endif
 
   // Index of last free list we scavenged
   int scavenge_index_;

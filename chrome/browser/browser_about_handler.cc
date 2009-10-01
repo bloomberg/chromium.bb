@@ -55,7 +55,7 @@
 #endif
 
 #if defined(USE_TCMALLOC)
-#include "third_party/tcmalloc/google/malloc_extension.h"
+#include "third_party/tcmalloc/tcmalloc/src/google/malloc_extension.h"
 #endif
 
 #ifdef CHROME_PERSONALIZATION

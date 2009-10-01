@@ -50,7 +50,7 @@
 #include "webkit/extensions/v8/gears_extension.h"
 #include "webkit/extensions/v8/interval_extension.h"
 #include "webkit/extensions/v8/playback_extension.h"
-#include "third_party/tcmalloc/google/malloc_extension.h"
+#include "third_party/tcmalloc/tcmalloc/src/google/malloc_extension.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -467,7 +467,7 @@ void RenderThread::IdleHandler() {
     return;
 
 #if defined(OS_WIN)
-  MallocExtension::instance()->Scavenge();
+  MallocExtension::instance()->ReleaseFreeMemory();
 #endif
 
   if (!v8::V8::IsDead()) {

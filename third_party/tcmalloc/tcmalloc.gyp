@@ -76,6 +76,8 @@
         'tcmalloc/src/linked_list.h',
         'tcmalloc/src/malloc_hook.cc',
         'tcmalloc/src/malloc_hook-inl.h',
+        'tcmalloc/src/malloc_extension.cc',
+        'tcmalloc/src/google/malloc_extension.h',
         'tcmalloc/src/page_heap.cc',
         'tcmalloc/src/page_heap.h',
         'tcmalloc/src/port.h',
@@ -123,8 +125,6 @@
         # tcmalloc forked files
         'allocator_shim.cc',
         'generic_allocators.cc',
-        'malloc_extension.cc',
-        'google/malloc_extension.h',
         'page_heap.cc',
         'page_heap.h',
         'port.cc',
@@ -146,8 +146,6 @@
         'generic_allocators.cc',
         'tcmalloc.cc',
         'win_allocator.cc',
-        'tcmalloc/src/malloc_extension.cc',
-        'tcmalloc/src/google/malloc_extension.h',
       ],
       'msvs_settings': {
         # TODO(sgk):  merge this with build/common.gypi settings

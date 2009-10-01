@@ -51,12 +51,7 @@ PageHeap::PageHeap()
       pagemap_cache_(0),
       free_pages_(0),
       system_bytes_(0),
-#if DEFER_DECOMMIT
-      free_committed_pages_(0),
-      pages_committed_since_last_scavenge_(0),
-#else
       scavenge_counter_(0),
-#endif
       // Start scavenging at kMaxPages list
       scavenge_index_(kMaxPages-1) {
   COMPILE_ASSERT(kNumClasses <= (1 << PageMapCache::kValuebits), valuebits);
@@ -160,9 +155,6 @@ void PageHeap::CommitSpan(Span* span) {
       reinterpret_cast<void*>(span->start << kPageShift),
       static_cast<size_t>(span->length << kPageShift)
   );
-#if DEFER_DECOMMIT
-  pages_committed_since_last_scavenge_ += span->length;
-#endif
 }
 
 Span* PageHeap::Carve(Span* span, Length n) {
@@ -193,13 +185,6 @@ Span* PageHeap::Carve(Span* span, Length n) {
   if (old_location == Span::ON_RETURNED_FREELIST) {
     // We need to recommit this address space.
     CommitSpan(span);
-  } else {
-#if DEFER_DECOMMIT
-    // The newly allocated memory is from a span that's already committed.
-    // Update the free_committed_pages_ count.
-    ASSERT(free_committed_pages_ >= n);
-    free_committed_pages_ -= n;
-#endif
   }
   ASSERT(span->location == Span::IN_USE);
   ASSERT(span->length == n);
@@ -235,9 +220,6 @@ void PageHeap::Delete(Span* span) {
     const Length len = prev->length;
     if (prev->location == Span::ON_RETURNED_FREELIST) {
       CommitSpan(prev);
-#if DEFER_DECOMMIT
-      free_committed_pages_ += len;
-#endif
     }
     DLL_Remove(prev);
     DeleteSpan(prev);
@@ -253,9 +235,6 @@ void PageHeap::Delete(Span* span) {
     const Length len = next->length;
     if (next->location == Span::ON_RETURNED_FREELIST) {
       CommitSpan(next);
-#if DEFER_DECOMMIT
-      free_committed_pages_ += len;
-#endif
     }
     DLL_Remove(next);
     DeleteSpan(next);
@@ -266,91 +245,16 @@ void PageHeap::Delete(Span* span) {
 
   Event(span, 'D', span->length);
   span->location = Span::ON_NORMAL_FREELIST;
-  if (span->length < kMaxPages)
+  if (span->length < kMaxPages) {
     DLL_Prepend(&free_[span->length].normal, span);
-  else
+  } else {
     DLL_Prepend(&large_.normal, span);
+  }
   free_pages_ += n;
-#if DEFER_DECOMMIT
-  free_committed_pages_ += n;
-#endif
 
-#if DEFER_DECOMMIT
-  // TODO(antonm): notify that could start scavenging
-#else
   IncrementalScavenge(n);
-#endif
   ASSERT(Check());
 }
-
-
-void PageHeap::Scavenge() {
-#if DEFER_DECOMMIT
-  // If we have to commit memory since the last scavenge, it means we don't
-  // have enough free committed pages of necessary size for the amount of
-  // allocations that we do.  So hold off on releasing memory back to the system.
-  if (pages_committed_since_last_scavenge_ > 0) {
-    pages_committed_since_last_scavenge_ = 0;
-    return;
-  }
-
-  if (free_committed_pages_ <= kMinimumFreeCommittedPageCount) {
-    return;
-  }
-
-  uint64_t to_decommit = std::min(
-      free_committed_pages_ - kMinimumFreeCommittedPageCount,
-      free_committed_pages_ / kMaxScavengeAmountFactor);
-  to_decommit = DecommitFromSpanList(&large_, to_decommit);
-  for (int i = kMaxPages - 1; i >= 0; i--) {
-    to_decommit = DecommitFromSpanList(&free_[i], to_decommit);
-  }
-
-  // Force at least one decommit from large list, otherwise big sized blocks
-  // sitting might block as from releasing smaller blocks behind.
-  if (to_decommit > 0) {
-    if (!DLL_IsEmpty(&large_.normal)) {
-      DecommitLastSpan(&large_, large_.normal.prev);
-    }
-  }
-#endif
-}
-
-#if DEFER_DECOMMIT
-Length PageHeap::DecommitLastSpan(SpanList* span_list, Span* span) {
-  ASSERT(!DLL_IsEmpty(&span_list->normal));
-  ASSERT(span_list->normal.prev == span);
-
-  Length length = span->length;
-
-  DLL_Remove(span);
-
-  TCMalloc_SystemRelease(reinterpret_cast<void*>(span->start << kPageShift), span->length << kPageShift);
-  span->location = Span::ON_RETURNED_FREELIST;
-  ASSERT(free_committed_pages_ >= length);
-  free_committed_pages_ -= length;
-
-  DLL_Prepend(&span_list->returned, span);
-
-  return length;
-}
-
-uint64_t PageHeap::DecommitFromSpanList(SpanList* span_list, uint64_t to_decommit) {
-  while (!DLL_IsEmpty(&span_list->normal)) {
-    // Release the last span on the normal portion of this list.
-    Span* span = span_list->normal.prev;
-
-    if (span->length > to_decommit) {
-      return to_decommit;
-    }
-
-    to_decommit -= DecommitLastSpan(span_list, span);
-  }
-
-  return to_decommit;
-}
-
-#else
 
 void PageHeap::IncrementalScavenge(Length n) {
   // Fast path; not yet time to release memory
@@ -411,7 +315,6 @@ void PageHeap::IncrementalScavenge(Length n) {
   // Nothing to scavenge, delay for a while
   scavenge_counter_ = kDefaultReleaseDelay;
 }
-#endif
 
 void PageHeap::RegisterSizeClass(Span* span, size_t sc) {
   // Associate span object with all interior pages as well
@@ -513,9 +416,6 @@ bool PageHeap::GrowHeap(Length n) {
     if (ptr == NULL) return false;
   }
   ask = actual_size >> kPageShift;
-#if DEFER_DECOMMIT
-  pages_committed_since_last_scavenge_ += ask;
-#endif
   RecordGrowth(ask << kPageShift);
 
   uint64_t old_system_bytes = system_bytes_;
@@ -601,9 +501,6 @@ void PageHeap::ReleaseFreePages() {
   }
   ReleaseFreeList(&large_.normal, &large_.returned);
   ASSERT(Check());
-#if DEFER_DECOMMIT
-  free_committed_pages_ = 0;
-#endif
 }
 
 }  // namespace tcmalloc
