@@ -4,6 +4,9 @@
 
 #include "app/gfx/font.h"
 
+#include <gdk/gdk.h>
+#include <pango/pango.h>
+
 #include "app/gfx/canvas.h"
 #include "base/logging.h"
 #include "base/string_piece.h"
@@ -17,6 +20,27 @@ namespace {
 // GNOME/KDE is a non-scalable one. The name should be listed in the
 // IsFallbackFontAllowed function in skia/ext/SkFontHost_fontconfig_direct.cpp.
 const char* kFallbackFontFamilyName = "sans";
+
+// Pango scales font sizes. This returns the scale factor. See
+// pango_cairo_context_set_resolution for details.
+// NOTE: this isn't entirely accurate, in that Pango also consults the
+// FC_PIXEL_SIZE first (see get_font_size in pangocairo-fcfont), but this
+// seems to give us the same sizes as used by Pango for all our fonts in both
+// English and Thia.
+static double GetPangoScaleFactor() {
+  static float scale_factor = 0;
+  static bool determined_scale = false;
+  if (!determined_scale) {
+    PangoContext* context = gdk_pango_context_get();
+    scale_factor = pango_cairo_context_get_resolution(context);
+    g_object_unref(context);
+    if (scale_factor <= 0)
+      scale_factor = 1;
+    else
+      scale_factor /= 72.0;
+  }
+  return scale_factor;
+}
 
 }  // namespace
 
@@ -49,18 +73,8 @@ void Font::calculateMetrics() {
   PaintSetup(&paint);
   paint.getFontMetrics(&metrics);
 
-  // NOTE: we don't use the ascent/descent as it doesn't match with how pango
-  // ends up drawing the text, in particular if we clip to the ascent/descent
-  // the text is clipped. This algorithm doesn't give us an exact match with
-  // the numbers returned from pango (we are off by 1 in some cases), but it
-  // is close enough that you won't notice clipping.
-  //
-  // NOTE2: I tried converting this to use Pango exclusively for measuring the
-  // text but it causes a startup regression. The best I could get it was
-  // ~10% slow down. Slow down appeared to be entirely in libfontconfig.
-  ascent_ = SkScalarCeil(-metrics.fTop);
-  height_ = SkScalarCeil(-metrics.fTop) + SkScalarCeil(metrics.fBottom) +
-            SkScalarCeil(metrics.fLeading);
+  ascent_ = SkScalarCeil(-metrics.fAscent);
+  height_ = ascent_ + SkScalarCeil(metrics.fDescent);
 
   if (metrics.fAvgCharWidth) {
     avg_width_ = SkScalarRound(metrics.fAvgCharWidth);
@@ -148,7 +162,7 @@ Font Font::DeriveFont(int size_delta, int style) const {
 void Font::PaintSetup(SkPaint* paint) const {
   paint->setAntiAlias(false);
   paint->setSubpixelText(false);
-  paint->setTextSize(SkFloatToScalar(font_size_));
+  paint->setTextSize(SkFloatToScalar(font_size_ * GetPangoScaleFactor()));
   paint->setTypeface(typeface_);
   paint->setFakeBoldText((BOLD & style_) && !typeface_->isBold());
   paint->setTextSkewX((ITALIC & style_) && !typeface_->isItalic() ?
