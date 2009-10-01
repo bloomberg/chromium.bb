@@ -156,15 +156,15 @@ function initStep2(clientElements) {
       g_client.root,
       g_client.renderGraphRoot);
 
-  // Set up an orthographic projection.
+  // Set up an perspective projection.
   var proj_matrix = g_math.matrix4.perspective(
-      g_math.degToRad(45),
+      g_math.degToRad(90),
       g_client.width / g_client.height,
       0.1,
       100);
 
   // Create the view matrix which tells the camera which way to point to.
-  g_eye = [0, 4, 0];
+  g_eye = [0, 1.5, 0];
   g_target = [0, 0, 0];
   g_up = [0, 0, -1];
   var view_matrix = g_math.matrix4.lookAt(g_eye, g_target, g_up);
@@ -178,37 +178,49 @@ function initStep2(clientElements) {
   loadBitmap(loader, 'hi.jpg');
   loader.finish();
 
-  // Start a request for loading the tar.gz archive containing a bunch of
-  // image files.  We'll then make textures from each one...
+  // Callback that happens when loader.finish() is called and all of
+  // our textures have finished loading.
   function callback() {
-    var bitmap1 = g_bitmaps['shaving_cream_300x300.jpg'];
-    bitmap1.flipVertically();
-    var bitmap2 = g_bitmaps['four_pixel.png'];
-    bitmap2.flipVertically();
-    var bitmapHi = g_bitmaps['hi.jpg'];
-    bitmapHi.flipVertically();
+    // Because bitmaps have their origin at the upper left, and in
+    // this sample our plane is oriented with the texture coordinate
+    // origin on the lower left, we need to flip all the bitmaps
+    // vertically to match coordinate systems.
+    var kids = g_bitmaps['shaving_cream_300x300.jpg'];
+    kids.flipVertically();
+    var four_square = g_bitmaps['four_pixel.png'];
+    four_square.flipVertically();
+    var label = g_bitmaps['hi.jpg'];
+    label.flipVertically();
 
     var texture = g_pack.createTexture2D(300, 300, g_o3d.Texture.XRGB8, 0,
                                          false);
-    // draw image on bitmap.
-    // scale down on top left corner.
-    texture.drawImage(bitmap1, 0, 0, 0, 300, 300, 0, 0, 0, 150, 150);
+    // Draw bitmaps on the texture.
+    // Scale down entire image into on lower left corner.
+    texture.drawImage(kids, 0, 0, 0, 300, 300, 0, 0, 0, 150, 150);
 
-    // scale up on top right corner.
-    texture.drawImage(bitmap1, 0, 0, 156, 100, 100, 0, 150, 0, 150, 150);
+    // Crop and scale up into the lower right corner.
+    texture.drawImage(kids, 0, 0, 156, 100, 100, 0, 150, 0, 150, 150);
 
-    // flip and draw part of the img on bottom left.
-    texture.drawImage(bitmap1, 0, 150, 100, 150, 150, 0, 149, 299, -150, -150);
+    // Flip and draw part of the image in the top left corner (and
+    // texture coords are not inclusive -- they go from 0-299 for a
+    // 300 pixel texture).
+    texture.drawImage(kids, 0, 150, 150, 150, 150, 0, 149, 299, -150, -150);
 
-    // draw out of boundary.
-    texture.drawImage(bitmap1, 0, 0, 135, 300, 300, 0, 150, 150, 300, 300);
+    // Crop and draw cropped area in upper right corner, but we're
+    // using a width and height that go beyond the edges of the image.
+    texture.drawImage(kids, 0, 150, 150, 400, 400, 0, 150, 150, 400, 400);
 
-    // draw o3d.
-    texture.drawImage(bitmapHi, 0, 0, 0, 100, 50, 0, 100, 125, 100, 50);
+    // Draw "O3D" label.
+    texture.drawImage(label, 0, 0, 0, 100, 50, 0, 100, 125, 100, 50);
 
-    // draw image on different mip-maps.
-    texture.drawImage(bitmap1, 0, 0, 0, 300, 300, 1, 0, 0, 150, 150);
-    texture.drawImage(bitmap2, 0, 0, 0, 2, 2, 2, 0, 0, 75, 75);
+    // Fill in different mip-map levels with images that show at
+    // different distances.  (Scroll the mouse wheel to see).
+
+    // Fill in medium level with whole image.
+    texture.drawImage(kids, 0, 0, 0, 300, 300, 1, 0, 0, 150, 150);
+
+    // Fill in smaller level with four pixel image.
+    texture.drawImage(four_square, 0, 0, 0, 2, 2, 2, 0, 0, 75, 75);
 
     makeShape(texture);
   }
