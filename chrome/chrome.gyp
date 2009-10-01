@@ -5629,7 +5629,9 @@
                   ],
                   'action': ['<(DEPTH)/build/linux/dump_app_syms',
                              '<(PRODUCT_DIR)/dump_syms',
-                             '<(PRODUCT_DIR)/chrome', '<@(_outputs)'],
+                             '<(linux_strip_binary)',
+                             '<(PRODUCT_DIR)/chrome',
+                             '<@(_outputs)'],
                   'message': 'Dumping breakpad symbols to <(_outputs)'
                 },
               ],
