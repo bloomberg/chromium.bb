@@ -3068,6 +3068,9 @@ BUG_ATWILSON : LayoutTests/fast/css/text-rendering.html = FAIL
 BUG_ATWILSON WIN LINUX: LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
 // This was happening previously - might be a flakey test?
 BUG_ATWILSON LINUX : LayoutTests/editing/selection/extend-selection.html = TIMEOUT PASS
-// Just temporary - this will get fixed when we roll webkit r49000
-BUG_ATWILSON MAC : LayoutTests/svg/W3C-SVG-1.1/filters-conv-01-f.svg = FAIL
 BUG_ATWILSON MAC LINUX : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL
+
+// WebKit update: 48994:49006
+BUG_ATWILSON LINUX : LayoutTests/animations/transform-origin-vs-functions.html = FAIL
+BUG_ATWILSON WIN LINUX : LayoutTests/fast/box-shadow/inset.html = FAIL
+

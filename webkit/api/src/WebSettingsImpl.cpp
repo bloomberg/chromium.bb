@@ -246,7 +246,7 @@ void WebSettingsImpl::setOfflineWebApplicationCacheEnabled(bool enabled)
 
 void WebSettingsImpl::setExperimentalWebGLEnabled(bool enabled)
 {
-    m_settings->setExperimentalWebGLEnabled(enabled);
+    m_settings->setWebGLEnabled(enabled);
 }
 
 } // namespace WebKit
