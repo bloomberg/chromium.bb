@@ -13,13 +13,19 @@
 #include "chrome/test/automation/window_proxy.h"
 #include "views/event.h"
 
+#if defined(OS_WIN)
+#define MAYBE_SlowTermination DISABLED_SlowTermination
+#else
+#define MAYBE_SlowTermination SlowTermination
+#endif
+
 class FastShutdown : public UITest {
 };
 
 // This tests for a previous error where uninstalling an onbeforeunload
 // handler would enable fast shutdown even if an onUnload handler still
 // existed.
-TEST_F(FastShutdown, SlowTermination) {
+TEST_F(FastShutdown, MAYBE_SlowTermination) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
   scoped_refptr<WindowProxy> window(browser->GetWindow());
