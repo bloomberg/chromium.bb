@@ -2601,7 +2601,7 @@ BUG11123 LINUX : LayoutTests/fast/forms/textarea-scrollbar.html = FAIL
 BUG11123 LINUX : LayoutTests/fast/forms/textarea-scrolled-type.html = FAIL
 
 // Regressions from WebKit Merge 42932:42994
-BUG11239 MAC DEBUG : LayoutTests/svg/custom/js-late-marker-and-object-creation.svg = FAIL PASS
+BUG11239 MAC : LayoutTests/svg/custom/js-late-marker-and-object-creation.svg = FAIL PASS
 
 // Regressions from WebKit Merge 42932:42994 due to text metric changes.
 BUG11251 WIN : LayoutTests/fast/forms/textarea-width.html = FAIL
@@ -2996,7 +2996,8 @@ BUG21859 WIN : LayoutTests/tables/mozilla/bugs/bug96343.html = FAIL
 BUG21919 WIN : LayoutTests/http/tests/security/mixedContent/insecure-css-in-main-frame.html = FAIL PASS
 
 // Flaky. The width of containing RenderBlocks sometimes becomes larger
-BUG21958 WIN MAC LINUX DEBUG : LayoutTests/svg/hixie/error/012.xml = FAIL PASS
+BUG21958 WIN LINUX DEBUG : LayoutTests/svg/hixie/error/012.xml = FAIL PASS
+BUG21958 MAC : LayoutTests/svg/hixie/error/012.xml = FAIL PASS
 
 // WK roll 48399:48423 (brettw)
 BUG22014 : LayoutTests/http/tests/loading/redirect-with-no-location-crash.html = FAIL
