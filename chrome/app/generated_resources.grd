@@ -4771,7 +4771,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Problems installing?
       </message>
       <message name="IDS_PLUGIN_CRASHED_PROMPT" desc="Info Bar message to notify about a crashed plugin">
-        The following plug-in has crashed : <ph name="PLUGIN_NAME">$1<ex>Shockwave</ex></ph>
+        The following plug-in has crashed: <ph name="PLUGIN_NAME">$1<ex>Shockwave</ex></ph>
       </message>
       <message name="IDS_WEBWORKER_CRASHED_PROMPT" desc="Info Bar message to notify about a crashed WebWorker">
         A part of this page (HTML WebWorker) has crashed, so it might not function correctly.

@@ -386,7 +386,7 @@
 <translation id="290414493736480793">Acknowledgements</translation>
 <translation id="6261915643960475695">Business</translation>
 <translation id="6449085810994685586">&amp;Check the spelling of this field</translation>
-<translation id="8789544147407756448">The following extension has crashed : <ph name="EXTENSION_NAME"/></translation>
+<translation id="8789544147407756448">The following extension has crashed: <ph name="EXTENSION_NAME"/></translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> mins left</translation>
 <translation id="5966654788342289517">Personal Stuff</translation>
 <translation id="2576802705154232609">Web Clips</translation>
@@ -772,7 +772,7 @@
 <translation id="436869212180315161">Press</translation>
 <translation id="8241707690549784388">The page that you're looking for used information that you entered. Returning to that page might cause any action that you took to be repeated. Do you want to continue?</translation>
 <translation id="486595306984036763">Open phishing report</translation>
-<translation id="1568162916422682473">The following plug-in has crashed : <ph name="PLUGIN_NAME"/></translation>
+<translation id="1568162916422682473">The following plug-in has crashed: <ph name="PLUGIN_NAME"/></translation>
 <translation id="4860787810836767172"><ph name="NUMBER_FEW"/> secs ago</translation>
 <translation id="7335974883498105858">Featured extras</translation>
 <translation id="1248790313843954917">No feeds matched your search query.</translation>
