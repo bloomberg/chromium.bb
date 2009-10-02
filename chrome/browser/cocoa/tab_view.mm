@@ -49,6 +49,8 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
 }
 
 - (void)dealloc {
+  // Cancel any delayed requests that may still be pending (drags or hover).
+  [NSObject cancelPreviousPerformRequestsWithTarget:self];
   // [self gtm_unregisterForThemeNotifications];
   [closeButton_ removeTrackingArea:closeTrackingArea_.get()];
   [super dealloc];
@@ -164,6 +166,16 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   return targets;
 }
 
+// Call to clear out transient weak references we hold during drags.
+- (void)resetDragControllers {
+  draggedController_ = nil;
+  dragWindow_ = nil;
+  dragOverlay_ = nil;
+  sourceController_ = nil;
+  sourceWindow_ = nil;
+  targetController_ = nil;
+}
+
 // Handle clicks and drags in this button. We get here because we have
 // overridden acceptsFirstMouse: and the click is within our bounds.
 // TODO(pinkerton/alcor): This routine needs *a lot* of work to marry Cole's
@@ -198,6 +210,8 @@ static const CGFloat kRapidCloseDist = 2.5;
     [[controller_ target] performSelector:[controller_ action]
                                withObject:self];
 
+  [self resetDragControllers];
+
   // Resolve overlay back to original window.
   sourceWindow_ = [self window];
   if ([sourceWindow_ isKindOfClass:[NSPanel class]]) {
@@ -207,10 +221,6 @@ static const CGFloat kRapidCloseDist = 2.5;
   sourceWindowFrame_ = [sourceWindow_ frame];
   sourceTabFrame_ = [self frame];
   sourceController_ = [sourceWindow_ windowController];
-  draggedController_ = nil;
-  dragWindow_ = nil;
-  dragOverlay_ = nil;
-  targetController_ = nil;
   tabWasDragged_ = NO;
   tearTime_ = 0.0;
   draggingWithinTabStrip_ = YES;
@@ -378,8 +388,18 @@ static const CGFloat kRapidCloseDist = 2.5;
     tearOrigin_ = sourceWindowFrame_.origin;
   }
 
+  DCHECK(draggedController_);
+  DCHECK(sourceController_);
+
+  // When the user first tears off the window, we want slide the window to
+  // the current mouse location (to reduce the jarring appearance). We do this
+  // by calling ourselves back with additional mouseDragged calls (not actual
+  // events). |tearProgress| is a normalized measure of how far through this
+  // tear "animation" (of length kTearDuration) we are and has values [0..1].
+  // We use sqrt() so the animation is non-linear (slow down near the end
+  // point).
   float tearProgress = [NSDate timeIntervalSinceReferenceDate] - tearTime_;
-  tearProgress /= kTearDuration;
+  tearProgress /= kTearDuration;  // Normalize.
   tearProgress = sqrtf(MAX(MIN(tearProgress, 1.0), 0.0));
 
   // Move the dragged window to the right place on the screen.
@@ -389,13 +409,16 @@ static const CGFloat kRapidCloseDist = 2.5;
 
   if (tearProgress < 1) {
     // If the tear animation is not complete, call back to ourself with the
-    // same event to animate even if the mouse isn't moving.
+    // same event to animate even if the mouse isn't moving. We need to make
+    // sure these get cancelled in mouseUp:.
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
     [self performSelector:@selector(mouseDragged:)
                withObject:theEvent
                afterDelay:1.0f/30.0f];
 
-    origin.x = (1 - tearProgress) *  tearOrigin_.x + tearProgress * origin.x;
+    // Set the current window origin based on how far we've progressed through
+    // the tear animation.
+    origin.x = (1 - tearProgress) * tearOrigin_.x + tearProgress * origin.x;
     origin.y = (1 - tearProgress) * tearOrigin_.y + tearProgress * origin.y;
   }
 
@@ -443,18 +466,19 @@ static const CGFloat kRapidCloseDist = 2.5;
   BOOL chromeShouldBeVisible = targetController_ == nil;
 
   if (chromeIsVisible_ != chromeShouldBeVisible) {
+    // TODO(pinkerton): There appears to be a race-condition in CoreAnimation
+    // where if we use animators to set the alpha values, we can't guarantee
+    // that we cancel them. This has the side effect of sometimes leaving
+    // the dragged window translucent or invisible. We should re-visit this,
+    // but for now, don't animate the alpha change.
     [dragWindow_ setHasShadow:YES];
+    [[draggedController_ overlayWindow] setAlphaValue:1.0];
     if (targetController_) {
-      [NSAnimationContext beginGrouping];
-      [[NSAnimationContext currentContext] setDuration:0.00001];
-      [[dragWindow_ animator] setAlphaValue:0.0];
-      [NSAnimationContext endGrouping];
+      [dragWindow_ setAlphaValue:0.0];
       [[draggedController_ overlayWindow] setHasShadow:YES];
-      [[[draggedController_ overlayWindow] animator] setAlphaValue:1.0];
     } else {
-      [[draggedController_ overlayWindow] setAlphaValue:1.0];
+      [dragWindow_ setAlphaValue:0.5];
       [[draggedController_ overlayWindow] setHasShadow:NO];
-      [[dragWindow_ animator] setAlphaValue:0.5];
     }
     chromeIsVisible_ = chromeShouldBeVisible;
   }
@@ -467,6 +491,9 @@ static const CGFloat kRapidCloseDist = 2.5;
   // Special-case this to keep the logic below simpler.
   if (moveWindowOnDrag_)
     return;
+
+  // Cancel any delayed -mouseDragged: requests that may still be pending.
+  [NSObject cancelPreviousPerformRequestsWithTarget:self];
 
   // We are now free to re-display the new tab button in the window we're
   // dragging. It will show when the next call to -layoutTabs (which happens
@@ -490,7 +517,8 @@ static const CGFloat kRapidCloseDist = 2.5;
                     fromController:draggedController_];
     [targetController_ showWindow:nil];
   } else {
-    // Tab dragging did move window only.
+    // Only move the window around on screen. Make sure it's set back to
+    // normal state (fully opaque, has shadow, has key, etc).
     [draggedController_ removeOverlay];
     // Don't want to re-show the window if it was closed during the drag.
     if ([dragWindow_ isVisible]) {
@@ -504,6 +532,8 @@ static const CGFloat kRapidCloseDist = 2.5;
   }
   [sourceController_ removePlaceholder];
   chromeIsVisible_ = YES;
+
+  [self resetDragControllers];
 }
 
 - (void)otherMouseUp:(NSEvent*)theEvent {
