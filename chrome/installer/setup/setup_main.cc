@@ -5,7 +5,6 @@
 #include <string>
 #include <windows.h>
 #include <msi.h>
-#include <shellapi.h>
 #include <shlobj.h>
 
 #include "base/at_exit.h"
@@ -14,7 +13,6 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/registry.h"
-#include "base/scoped_handle_win.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
 #include "chrome/installer/setup/install.h"
@@ -415,7 +413,7 @@ bool HandleNonInstallCmdLineOptions(const CommandLine& cmd_line,
     exit_code = ShowEULADialog(inner_frame);
     if (installer_util::EULA_REJECTED != exit_code)
       GoogleUpdateSettings::SetEULAConsent(true);
-    return true;
+    return true;;
   } else if (cmd_line.HasSwitch(
       installer_util::switches::kRegisterChromeBrowser)) {
     // If --register-chrome-browser option is specified, register all
@@ -464,40 +462,6 @@ bool HandleNonInstallCmdLineOptions(const CommandLine& cmd_line,
     return true;
   }
   return false;
-}
-
-bool ShowRebootDialog() {
-  // Get a token for this process.
-  HANDLE token;
-  if (!OpenProcessToken(GetCurrentProcess(),
-                        TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
-                        &token)) {
-    LOG(ERROR) << "Failed to open token.";
-    return false;
-  }
-
-  // Use a ScopedHandle to keep track of and eventually close our handle.
-  // TODO(robertshield): Add a Receive() method to base's ScopedHandle.
-  ScopedHandle scoped_handle(token);
-
-  // Get the LUID for the shutdown privilege.
-  TOKEN_PRIVILEGES tkp = {0};
-  LookupPrivilegeValue(NULL, SE_SHUTDOWN_NAME, &tkp.Privileges[0].Luid);
-  tkp.PrivilegeCount = 1;
-  tkp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-
-  // Get the shutdown privilege for this process.
-  AdjustTokenPrivileges(token, FALSE, &tkp, 0,
-                        reinterpret_cast<PTOKEN_PRIVILEGES>(NULL), 0);
-  if (GetLastError() != ERROR_SUCCESS) {
-    LOG(ERROR) << "Unable to get shutdown privileges.";
-    return false;
-  }
-
-  // Popup a dialog that will prompt to reboot using the default system message.
-  // TODO(robertshield): Add a localized, more specific string to the prompt.
-  RestartDialog(NULL, NULL, EWX_REBOOT | EWX_FORCEIFHUNG);
-  return true;
 }
 
 }  // namespace
@@ -586,15 +550,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
                                    prefs.get());
   }
 
-  if (install_status == installer_util::UNINSTALL_REQUIRES_REBOOT) {
-    install_status = installer_util::UNINSTALL_SUCCESSFUL;
-#if defined(CHROME_FRAME_BUILD)
-    ShowRebootDialog();
-#endif
-  }
-
   CoUninitialize();
-
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   return dist->GetInstallReturnCode(install_status);
 }

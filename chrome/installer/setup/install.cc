@@ -15,7 +15,6 @@
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
-#include "chrome/installer/util/delete_after_reboot_helper.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
@@ -96,7 +95,7 @@ void AddUninstallShortcutWorkItems(HKEY reg_root,
   uninstall_cmd.append(L"\" --");
   uninstall_cmd.append(installer_util::switches::kUninstall);
 
-#if defined(CHROME_FRAME_BUILD)
+#ifdef CHROME_FRAME_BUILD
   uninstall_cmd.append(L" --");
   uninstall_cmd.append(installer_util::switches::kForceUninstall);
   uninstall_cmd.append(L" --");
@@ -247,7 +246,7 @@ bool CreateOrUpdateChromeShortcuts(const std::wstring& exe_path,
     std::wstring arguments(L" --");
     arguments.append(installer_util::switches::kUninstall);
 
-#if defined(CHROME_FRAME_BUILD)
+#ifdef CHROME_FRAME_BUILD
     arguments.append(L" --");
     arguments.append(installer_util::switches::kForceUninstall);
     arguments.append(L" --");
@@ -459,13 +458,6 @@ bool InstallNewVersion(const std::wstring& exe_path,
                        std::wstring* current_version) {
   if (reg_root != HKEY_LOCAL_MACHINE && reg_root != HKEY_CURRENT_USER)
     return false;
-
-#if defined(CHROME_FRAME_BUILD)
-  // Make sure that we don't end up deleting installed files on next reboot.
-  if (!RemoveFromMovesPendingReboot(install_path.c_str())) {
-    LOG(ERROR) << "Error accessing pending moves value.";
-  }
-#endif
 
   scoped_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
   // A temp directory that work items need and the actual install directory.
