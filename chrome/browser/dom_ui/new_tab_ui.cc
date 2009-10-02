@@ -1679,11 +1679,7 @@ NewTabUI::NewTabUI(TabContents* contents)
 
     // In testing mode there may not be an I/O thread.
     if (g_browser_process->io_thread()) {
-      g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-          NewRunnableMethod(&chrome_url_data_manager,
-              &ChromeURLDataManager::AddDataSource,
-              new DOMUIThemeSource(GetProfile())));
-
+      InitializeCSSCaches();
       NewTabHTMLSource* html_source = new NewTabHTMLSource(GetProfile());
       g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
           NewRunnableMethod(&chrome_url_data_manager,
@@ -1707,12 +1703,23 @@ void NewTabUI::Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
   if (NotificationType::BROWSER_THEME_CHANGED == type) {
+    InitializeCSSCaches();
     CallJavascriptFunction(L"themeChanged");
   } else if (NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED) {
     if (GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))
       CallJavascriptFunction(L"bookmarkBarAttached");
     else
       CallJavascriptFunction(L"bookmarkBarDetached");
+  }
+}
+
+void NewTabUI::InitializeCSSCaches() {
+  // In testing mode there may not be an I/O thread.
+  if (g_browser_process->io_thread()) {
+    g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(&chrome_url_data_manager,
+                          &ChromeURLDataManager::AddDataSource,
+                          new DOMUIThemeSource(GetProfile())));
   }
 }
 

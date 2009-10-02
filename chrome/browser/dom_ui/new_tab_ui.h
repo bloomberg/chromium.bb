@@ -40,6 +40,9 @@ private:
                const NotificationSource& source,
                const NotificationDetails& details);
 
+  // Reset the CSS caches.
+  void InitializeCSSCaches();
+
   NotificationRegistrar registrar_;
 
   // The message id that should be displayed in this NewTabUIContents
