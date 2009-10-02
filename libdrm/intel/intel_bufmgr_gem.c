@@ -514,6 +514,9 @@ drm_intel_gem_bo_free(drm_intel_bo *bo)
     if (bo_gem->gtt_virtual)
 	munmap (bo_gem->gtt_virtual, bo_gem->bo.size);
 
+    free(bo_gem->reloc_target_bo);
+    free(bo_gem->relocs);
+
     /* Close this object */
     memset(&close, 0, sizeof(close));
     close.handle = bo_gem->gem_handle;
@@ -566,8 +569,6 @@ drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo)
 	    /* Unreference all the target buffers */
 	    for (i = 0; i < bo_gem->reloc_count; i++)
 		 drm_intel_gem_bo_unreference_locked(bo_gem->reloc_target_bo[i]);
-	    free(bo_gem->reloc_target_bo);
-	    free(bo_gem->relocs);
 	}
 
 	DBG("bo_unreference final: %d (%s)\n",
@@ -586,8 +587,6 @@ drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo)
 
 	    bo_gem->name = NULL;
 	    bo_gem->validate_index = -1;
-	    bo_gem->relocs = NULL;
-	    bo_gem->reloc_target_bo = NULL;
 	    bo_gem->reloc_count = 0;
 
 	    DRMLISTADDTAIL(&bo_gem->head, &bucket->head);
