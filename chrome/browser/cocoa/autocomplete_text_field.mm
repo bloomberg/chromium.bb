@@ -111,6 +111,24 @@
   if (NSMouseInRect(location, textFrame, [self isFlipped]) ||
       !NSMouseInRect(location, fullFrame, [self isFlipped])) {
     [super mouseDown:theEvent];
+
+    // After the event has been handled, if the current event is a
+    // mouse up and no selection was created (the mouse didn't move),
+    // select the entire field.
+    // NOTE(shess): This does not interfere with single-clicking to
+    // place caret after a selection is made.  An NSTextField only has
+    // a selection when it has a field editor.  The field editor is an
+    // NSText subview, which will receive the -mouseDown: in that
+    // case, and this code will never fire.
+    NSText* editor = [self currentEditor];
+    if (editor) {
+      NSEvent* currentEvent = [NSApp currentEvent];
+      if ([currentEvent type] == NSLeftMouseUp &&
+          ![editor selectedRange].length) {
+        [editor selectAll:nil];
+      }
+    }
+
     return;
   }
 

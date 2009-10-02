@@ -427,6 +427,96 @@ TEST_F(AutocompleteTextFieldTest, ClickBorderSelectsAll) {
   EXPECT_EQ(selectedRange.length, [[field_ stringValue] length]);
 }
 
+// Single-click with no drag should setup a field editor and
+// select all.
+TEST_F(AutocompleteTextFieldTest, ClickSelectsAll) {
+  EXPECT_FALSE([field_ currentEditor]);
+
+  const NSPoint point(NSMakePoint(20.0, 5.0));
+  NSEvent* downEvent(Event(field_, point, NSLeftMouseDown));
+  NSEvent* upEvent(Event(field_, point, NSLeftMouseUp));
+  [NSApp postEvent:upEvent atStart:YES];
+  [field_ mouseDown:downEvent];
+  EXPECT_TRUE([field_ currentEditor]);
+  const NSRange selectedRange([[field_ currentEditor] selectedRange]);
+  EXPECT_EQ(selectedRange.location, 0U);
+  EXPECT_EQ(selectedRange.length, [[field_ stringValue] length]);
+}
+
+// Click-drag selects text, not select all.
+TEST_F(AutocompleteTextFieldTest, ClickDragSelectsText) {
+  EXPECT_FALSE([field_ currentEditor]);
+
+  NSEvent* downEvent(Event(field_, NSMakePoint(20.0, 5.0), NSLeftMouseDown));
+  NSEvent* upEvent(Event(field_, NSMakePoint(0.0, 5.0), NSLeftMouseUp));
+  [NSApp postEvent:upEvent atStart:YES];
+  [field_ mouseDown:downEvent];
+  EXPECT_TRUE([field_ currentEditor]);
+
+  // Expect this to have selected a prefix of the content.  Mostly
+  // just don't want the select-all behavior.
+  const NSRange selectedRange([[field_ currentEditor] selectedRange]);
+  EXPECT_EQ(selectedRange.location, 0U);
+  EXPECT_LT(selectedRange.length, [[field_ stringValue] length]);
+}
+
+// TODO(shess): Test that click/pause/click allows cursor placement.
+// In this case the first click goes to the field, but the second
+// click goes to the field editor, so the current testing pattern
+// can't work.  What really needs to happen is to push through the
+// NSWindow event machinery so that we can say "two independent clicks
+// at the same location have the right effect".  Once that is done, it
+// might make sense to revise the other tests to use the same
+// machinery.
+
+// Double-click selects word, not select all.
+TEST_F(AutocompleteTextFieldTest, DoubleClickSelectsWord) {
+  EXPECT_FALSE([field_ currentEditor]);
+
+  const NSPoint point(NSMakePoint(20.0, 5.0));
+  NSEvent* downEvent(Event(field_, point, NSLeftMouseDown, 1));
+  NSEvent* upEvent(Event(field_, point, NSLeftMouseUp, 1));
+  NSEvent* downEvent2(Event(field_, point, NSLeftMouseDown, 2));
+  NSEvent* upEvent2(Event(field_, point, NSLeftMouseUp, 2));
+  [NSApp postEvent:upEvent atStart:YES];
+  [field_ mouseDown:downEvent];
+  [NSApp postEvent:upEvent2 atStart:YES];
+  [field_ mouseDown:downEvent2];
+  EXPECT_TRUE([field_ currentEditor]);
+
+  // Selected the first word.
+  const NSRange selectedRange([[field_ currentEditor] selectedRange]);
+  const NSRange spaceRange([[field_ stringValue] rangeOfString:@" "]);
+  EXPECT_GT(spaceRange.location, 0U);
+  EXPECT_LT(spaceRange.length, [[field_ stringValue] length]);
+  EXPECT_EQ(selectedRange.location, 0U);
+  EXPECT_EQ(selectedRange.length, spaceRange.location);
+}
+
+TEST_F(AutocompleteTextFieldTest, TripleClickSelectsAll) {
+  EXPECT_FALSE([field_ currentEditor]);
+
+  const NSPoint point(NSMakePoint(20.0, 5.0));
+  NSEvent* downEvent(Event(field_, point, NSLeftMouseDown, 1));
+  NSEvent* upEvent(Event(field_, point, NSLeftMouseUp, 1));
+  NSEvent* downEvent2(Event(field_, point, NSLeftMouseDown, 2));
+  NSEvent* upEvent2(Event(field_, point, NSLeftMouseUp, 2));
+  NSEvent* downEvent3(Event(field_, point, NSLeftMouseDown, 3));
+  NSEvent* upEvent3(Event(field_, point, NSLeftMouseUp, 3));
+  [NSApp postEvent:upEvent atStart:YES];
+  [field_ mouseDown:downEvent];
+  [NSApp postEvent:upEvent2 atStart:YES];
+  [field_ mouseDown:downEvent2];
+  [NSApp postEvent:upEvent3 atStart:YES];
+  [field_ mouseDown:downEvent3];
+  EXPECT_TRUE([field_ currentEditor]);
+
+  // Selected the first word.
+  const NSRange selectedRange([[field_ currentEditor] selectedRange]);
+  EXPECT_EQ(selectedRange.location, 0U);
+  EXPECT_EQ(selectedRange.length, [[field_ stringValue] length]);
+}
+
 }  // namespace
 
 @implementation AutocompleteTextFieldTestDelegate
