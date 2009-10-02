@@ -344,6 +344,44 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
   }
 }
 
+// Tabs remember focus with find-in-page box.
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocusFindInPage) {
+  HTTPTestServer* server = StartHTTPServer();
+
+  // First we navigate to our test page.
+  GURL url = server->TestServerPageW(kSimplePage);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  browser()->Find();
+  ui_test_utils::FindInPage(browser()->GetSelectedTabContents(),
+                            ASCIIToUTF16("a"), true, false, NULL);
+  CheckViewHasFocus(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
+
+  // Focus the location bar.
+  browser()->FocusLocationBar();
+
+  // Create a 2nd tab.
+  browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, true, -1,
+                           false, NULL);
+
+  // Focus should be on the recently opened tab page.
+  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+
+  // Select 1st tab, focus should still be on the location-bar.
+  // (bug http://crbug.com/23296)
+  browser()->SelectTabContentsAt(0, true);
+  CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
+
+  // Now open the find box again, switch to another tab and come back, the focus
+  // should return to the find box.
+  browser()->Find();
+  CheckViewHasFocus(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
+  browser()->SelectTabContentsAt(1, true);
+  CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
+  browser()->SelectTabContentsAt(0, true);
+  CheckViewHasFocus(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
+}
+
 // Background window does not steal focus.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BackgroundBrowserDontStealFocus) {
   HTTPTestServer* server = StartHTTPServer();

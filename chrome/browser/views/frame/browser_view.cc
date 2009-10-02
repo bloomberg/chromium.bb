@@ -1226,8 +1226,6 @@ void BrowserView::TabSelectedAt(TabContents* old_contents,
     // We only restore focus if our window is visible, to avoid invoking blur
     // handlers when we are eventually shown.
     new_contents->view()->RestoreFocus();
-    if (new_contents->find_ui_active())
-      browser_->find_bar()->find_bar()->SetFocusAndSelection();
   }
 
   // Update all the UI bits.
