@@ -82,8 +82,10 @@ RenderProcess::RenderProcess()
     StatisticsRecorder::set_dump_on_exit(true);
   }
 
+#ifndef DISABLE_NACL
   if (command_line.HasSwitch(switches::kInternalNaCl))
     RegisterInternalNaClPlugin(RenderProcess::LaunchNaClProcess);
+#endif
 
   if (command_line.HasSwitch(switches::kEnableByteRangeSupport)) {
     webkit_glue::SetMediaCacheEnabled(true);

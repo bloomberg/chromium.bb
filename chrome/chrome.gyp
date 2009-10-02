@@ -2999,7 +2999,6 @@
       'msvs_guid': '9301A569-5D2B-4D11-9332-B1E30AEACB8D',
       'dependencies': [
         'common',
-        'nacl',
         'plugin',
         'chrome_resources',
         'chrome_strings',
@@ -3115,6 +3114,11 @@
         ],
       },
       'conditions': [
+        ['disable_nacl!=1', {
+          'dependencies': [
+            'nacl',
+          ],
+        }],
         # Linux-specific rules.
         ['OS=="linux"', {
           'dependencies': [

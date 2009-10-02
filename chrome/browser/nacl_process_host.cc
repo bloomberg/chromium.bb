@@ -39,6 +39,10 @@ NaClProcessHost::NaClProcessHost(
 bool NaClProcessHost::Launch(ResourceMessageFilter* renderer_msg_filter,
                              const int descriptor,
                              nacl::FileDescriptor* handle) {
+#ifdef DISABLE_NACL
+  NOTIMPLEMENTED() << "Native Client disabled at build time";
+  return false;
+#else
   nacl::Handle pair[2];
   bool success = false;
   // Create a connected socket
@@ -80,6 +84,7 @@ bool NaClProcessHost::Launch(ResourceMessageFilter* renderer_msg_filter,
 #endif
 
   return true;
+#endif  // DISABLE_NACL
 }
 
 bool NaClProcessHost::LaunchSelLdr(ResourceMessageFilter* renderer_msg_filter,
@@ -184,4 +189,3 @@ URLRequestContext* NaClProcessHost::GetRequestContext(
     const ViewHostMsg_Resource_Request& request_data) {
   return NULL;
 }
-

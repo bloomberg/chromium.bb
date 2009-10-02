@@ -564,8 +564,10 @@ int ChromeMain(int argc, char** argv) {
 #endif
   } else if (process_type == switches::kWorkerProcess) {
     rv = WorkerMain(main_params);
+#ifndef DISABLE_NACL
   } else if (process_type == switches::kNaClProcess) {
     rv = NaClMain(main_params);
+#endif
   } else if (process_type == switches::kZygoteProcess) {
 #if defined(OS_LINUX)
     if (ZygoteMain(main_params)) {
