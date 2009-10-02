@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,42 +64,22 @@ class TestingProfile : public Profile {
   void set_off_the_record(bool off_the_record) {
     off_the_record_ = off_the_record;
   }
-  virtual bool IsOffTheRecord() {
-    return off_the_record_;
-  }
-  virtual Profile* GetOffTheRecordProfile() {
-    return NULL;
-  }
+  virtual bool IsOffTheRecord() { return off_the_record_; }
+  virtual Profile* GetOffTheRecordProfile() { return NULL; }
 
   virtual void DestroyOffTheRecordProfile() {}
 
-  virtual Profile* GetOriginalProfile() {
-    return this;
-  }
-  virtual ChromeAppCacheService* GetAppCacheService() {
-    return NULL;
-  }
-  virtual VisitedLinkMaster* GetVisitedLinkMaster() {
-    return NULL;
-  }
-  virtual ExtensionsService* GetExtensionsService() {
-    return NULL;
-  }
-  virtual UserScriptMaster* GetUserScriptMaster() {
-    return NULL;
-  }
+  virtual Profile* GetOriginalProfile() { return this; }
+  virtual ChromeAppCacheService* GetAppCacheService() { return NULL; }
+  virtual VisitedLinkMaster* GetVisitedLinkMaster() { return NULL; }
+  virtual ExtensionsService* GetExtensionsService() { return NULL; }
+  virtual UserScriptMaster* GetUserScriptMaster() { return NULL; }
   virtual ExtensionDevToolsManager* GetExtensionDevToolsManager() {
     return NULL;
   }
-  virtual ExtensionProcessManager* GetExtensionProcessManager() {
-    return NULL;
-  }
-  virtual ExtensionMessageService* GetExtensionMessageService() {
-    return NULL;
-  }
-  virtual SSLHostState* GetSSLHostState() {
-    return NULL;
-  }
+  virtual ExtensionProcessManager* GetExtensionProcessManager() { return NULL; }
+  virtual ExtensionMessageService* GetExtensionMessageService() { return NULL; }
+  virtual SSLHostState* GetSSLHostState() { return NULL; }
   virtual net::StrictTransportSecurityState* GetStrictTransportSecurityState() {
     return NULL;
   }
@@ -131,66 +111,36 @@ class TestingProfile : public Profile {
   virtual TemplateURLModel* GetTemplateURLModel() {
     return template_url_model_.get();
   }
-  virtual TemplateURLFetcher* GetTemplateURLFetcher() {
-    return NULL;
-  }
-  virtual ThumbnailStore* GetThumbnailStore() {
-    return NULL;
-  }
-  virtual DownloadManager* GetDownloadManager() {
-    return NULL;
-  }
-  virtual bool HasCreatedDownloadManager() const {
-    return false;
-  }
+  virtual TemplateURLFetcher* GetTemplateURLFetcher() { return NULL; }
+  virtual ThumbnailStore* GetThumbnailStore() { return NULL; }
+  virtual DownloadManager* GetDownloadManager() { return NULL; }
+  virtual bool HasCreatedDownloadManager() const { return false; }
   virtual void InitThemes();
-  virtual void SetTheme(Extension* extension) { }
-  virtual void SetNativeTheme() { }
-  virtual void ClearTheme() { }
-  virtual Extension* GetTheme() {
-    return NULL;
-  }
+  virtual void SetTheme(Extension* extension) {}
+  virtual void SetNativeTheme() {}
+  virtual void ClearTheme() {}
+  virtual Extension* GetTheme() { return NULL; }
   virtual ThemeProvider* GetThemeProvider() {
     InitThemes();
     return theme_provider_.get();
   }
-  virtual URLRequestContext* GetRequestContext() {
-    return NULL;
-  }
-  virtual URLRequestContext* GetRequestContextForMedia() {
-    return NULL;
-  }
-  virtual URLRequestContext* GetRequestContextForExtensions() {
-    return NULL;
-  }
-  virtual net::SSLConfigService* GetSSLConfigService() {
-    return NULL;
-  }
-  virtual Blacklist* GetBlacklist() {
-    return NULL;
-  }
+  virtual URLRequestContext* GetRequestContext() { return NULL; }
+  virtual URLRequestContext* GetRequestContextForMedia() { return NULL; }
+  virtual URLRequestContext* GetRequestContextForExtensions() { return NULL; }
+  virtual net::SSLConfigService* GetSSLConfigService() { return NULL; }
+  virtual Blacklist* GetBlacklist() { return NULL; }
   void set_session_service(SessionService* session_service) {
     session_service_ = session_service;
   }
-  virtual SessionService* GetSessionService() {
-    return session_service_.get();
-  }
-  virtual void ShutdownSessionService() {
-  }
+  virtual SessionService* GetSessionService() { return session_service_.get(); }
+  virtual void ShutdownSessionService() {}
   virtual bool HasSessionService() const {
     return (session_service_.get() != NULL);
   }
-  virtual std::wstring GetName() {
-    return std::wstring();
-  }
-  virtual void SetName(const std::wstring& name) {
-  }
-  virtual std::wstring GetID() {
-    return id_;
-  }
-  virtual void SetID(const std::wstring& id) {
-    id_ = id;
-  }
+  virtual std::wstring GetName() { return std::wstring(); }
+  virtual void SetName(const std::wstring& name) {}
+  virtual std::wstring GetID() { return id_; }
+  virtual void SetID(const std::wstring& id) { id_ = id; }
   void set_last_session_exited_cleanly(bool value) {
     last_session_exited_cleanly_ = value;
   }
@@ -198,43 +148,23 @@ class TestingProfile : public Profile {
     return last_session_exited_cleanly_;
   }
   virtual void MergeResourceString(int message_id,
-                                   std::wstring* output_string) {
-  }
-  virtual void MergeResourceInteger(int message_id, int* output_value) {
-  }
-  virtual void MergeResourceBoolean(int message_id, bool* output_value) {
-  }
+                                   std::wstring* output_string) {}
+  virtual void MergeResourceInteger(int message_id, int* output_value) {}
+  virtual void MergeResourceBoolean(int message_id, bool* output_value) {}
   virtual BookmarkModel* GetBookmarkModel() {
     return bookmark_bar_model_.get();
   }
-  virtual bool IsSameProfile(Profile *p) {
-    return this == p;
-  }
-  virtual base::Time GetStartTime() const {
-    return start_time_;
-  }
-  virtual TabRestoreService* GetTabRestoreService() {
-    return NULL;
-  }
-  virtual void ResetTabRestoreService() {
-  }
-  virtual void ReinitializeSpellChecker() {
-  }
-  virtual SpellChecker* GetSpellChecker() {
-    return NULL;
-  }
-  virtual WebKitContext* GetWebKitContext() {
-    return NULL;
-  }
-  virtual WebKitContext* GetOffTheRecordWebKitContext() {
-    return NULL;
-  }
-  virtual void MarkAsCleanShutdown() {
-  }
-  virtual void InitExtensions() {
-  }
-  virtual void InitWebResources() {
-  }
+  virtual bool IsSameProfile(Profile *p) { return this == p; }
+  virtual base::Time GetStartTime() const { return start_time_; }
+  virtual TabRestoreService* GetTabRestoreService() { return NULL; }
+  virtual void ResetTabRestoreService() {}
+  virtual void ReinitializeSpellChecker() {}
+  virtual SpellChecker* GetSpellChecker() { return NULL; }
+  virtual WebKitContext* GetWebKitContext() { return NULL; }
+  virtual WebKitContext* GetOffTheRecordWebKitContext() { return NULL; }
+  virtual void MarkAsCleanShutdown() {}
+  virtual void InitExtensions() {}
+  virtual void InitWebResources() {}
 
   // Schedules a task on the history backend and runs a nested loop until the
   // task is processed.  This has the effect of blocking the caller until the
