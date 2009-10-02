@@ -12,7 +12,6 @@
 #include "base/task.h"
 #include "o3d/gpu_plugin/np_utils/default_np_object.h"
 #include "o3d/gpu_plugin/np_utils/np_dispatcher.h"
-#include "o3d/gpu_plugin/system_services/shared_memory_public.h"
 
 namespace o3d {
 namespace gpu_plugin {
@@ -28,7 +27,7 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
   virtual bool Initialize(int32 size);
 
   // Gets the shared memory ring buffer object for the command buffer.
-  virtual NPObjectPointer<CHRSharedMemory> GetRingBuffer();
+  virtual NPObjectPointer<NPObject> GetRingBuffer();
 
   virtual int32 GetSize();
 
@@ -108,7 +107,7 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
 
   NP_UTILS_BEGIN_DISPATCHER_CHAIN(CommandBuffer, DefaultNPObject<NPObject>)
     NP_UTILS_DISPATCHER(Initialize, bool(int32 size))
-    NP_UTILS_DISPATCHER(GetRingBuffer, NPObjectPointer<CHRSharedMemory>())
+    NP_UTILS_DISPATCHER(GetRingBuffer, NPObjectPointer<NPObject>())
     NP_UTILS_DISPATCHER(GetSize, int32())
     NP_UTILS_DISPATCHER(SyncOffsets, int32(int32 get_offset))
     NP_UTILS_DISPATCHER(GetGetOffset, int32());
@@ -124,7 +123,7 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
 
  private:
   NPP npp_;
-  NPObjectPointer<CHRSharedMemory> shared_memory_;
+  NPObjectPointer<NPObject> ring_buffer_;
   int32 size_;
   int32 get_offset_;
   int32 put_offset_;

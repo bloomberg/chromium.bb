@@ -5,6 +5,8 @@
 #ifndef O3D_GPU_PLUGIN_GPU_PROCESSOR_H_
 #define O3D_GPU_PLUGIN_GPU_PROCESSOR_H_
 
+#include "base/scoped_ptr.h"
+#include "base/shared_memory.h"
 #include "o3d/command_buffer/service/cross/cmd_buffer_engine.h"
 #include "o3d/command_buffer/service/cross/cmd_parser.h"
 #include "o3d/command_buffer/service/cross/gapi_decoder.h"
@@ -64,6 +66,7 @@ class GPUProcessor : public base::RefCountedThreadSafe<GPUProcessor>,
  private:
   NPP npp_;
   NPObjectPointer<CommandBuffer> command_buffer_;
+  scoped_ptr<base::SharedMemory> mapped_ring_buffer_;
   int commands_per_update_;
 
 #if defined(OS_WIN)

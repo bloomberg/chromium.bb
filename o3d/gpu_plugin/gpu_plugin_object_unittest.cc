@@ -9,7 +9,12 @@
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+#if defined(O3D_IN_CHROME)
 #include "webkit/glue/plugins/nphostapi.h"
+#else
+#include "npupp.h"
+#endif
 
 using testing::_;
 using testing::DoAll;
@@ -111,7 +116,8 @@ TEST_F(GPUPluginObjectTest, OpenCommandBufferReturnsInitializedCommandBuffer) {
       NPGetClass<CommandBuffer>()))
     .WillOnce(Return(command_buffer.ToReturned()));
 
-  EXPECT_CALL(*command_buffer.Get(), Initialize(1024))
+  EXPECT_CALL(*command_buffer.Get(),
+      Initialize(GPUPluginObject::kCommandBufferSize))
     .WillOnce(Return(true));
 
   EXPECT_CALL(*command_buffer.Get(), SetPutOffsetChangeCallback(NotNull()));
@@ -140,7 +146,8 @@ TEST_F(GPUPluginObjectTest, OpenCommandBufferReturnsNullIfCannotInitialize) {
       NPGetClass<CommandBuffer>()))
     .WillOnce(Return(command_buffer.ToReturned()));
 
-  EXPECT_CALL(*command_buffer.Get(), Initialize(1024))
+  EXPECT_CALL(*command_buffer.Get(),
+      Initialize(GPUPluginObject::kCommandBufferSize))
     .WillOnce(Return(false));
 
   EXPECT_EQ(NPERR_NO_ERROR, plugin_object_->New("application/foo",

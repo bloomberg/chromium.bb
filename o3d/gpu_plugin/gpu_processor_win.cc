@@ -15,23 +15,8 @@ GPUProcessor::GPUProcessor(NPP npp,
       command_buffer_(command_buffer),
       commands_per_update_(100) {
   gapi_.reset(new command_buffer::GAPID3D9);
-
   decoder_.reset(new command_buffer::GAPIDecoder(gapi_.get()));
-
-  NPObjectPointer<CHRSharedMemory> ring_buffer =
-      command_buffer->GetRingBuffer();
-
-  if (ring_buffer.Get()) {
-    parser_.reset(new command_buffer::CommandParser(ring_buffer->ptr,
-                                                    ring_buffer->size,
-                                                    0,
-                                                    ring_buffer->size,
-                                                    0,
-                                                    decoder_.get()));
-  } else {
-    parser_.reset(new command_buffer::CommandParser(NULL, 0, 0, 0, 0,
-                                                    decoder_.get()));
-  }
+  decoder_->set_engine(this);
 }
 
 GPUProcessor::GPUProcessor(NPP npp,
@@ -51,6 +36,26 @@ GPUProcessor::GPUProcessor(NPP npp,
 bool GPUProcessor::Initialize(HWND handle) {
   // Cannot reinitialize.
   DCHECK(gapi_->hwnd() == NULL);
+
+  // Map the ring buffer and create the parser.
+  NPObjectPointer<NPObject> ring_buffer =
+      command_buffer_->GetRingBuffer();
+
+  if (ring_buffer.Get()) {
+    size_t size;
+    void* ptr = NPBrowser::get()->MapMemory(npp_,
+                                            ring_buffer.Get(),
+                                            &size);
+    if (ptr == NULL) {
+      return false;
+    }
+
+    parser_.reset(new command_buffer::CommandParser(ptr, size, 0, size, 0,
+                                                    decoder_.get()));
+  } else {
+    parser_.reset(new command_buffer::CommandParser(NULL, 0, 0, 0, 0,
+                                                    decoder_.get()));
+  }
 
   // Initialize GAPI immediately if the window handle is valid.
   if (handle) {

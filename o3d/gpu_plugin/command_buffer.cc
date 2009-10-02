@@ -29,7 +29,7 @@ bool CommandBuffer::Initialize(int32 size) {
   if (num_bytes / sizeof(int32) != size)
     return false;
 
-  if (shared_memory_.Get())
+  if (ring_buffer_.Get())
     return false;
 
   NPObjectPointer<NPObject> window = NPObjectPointer<NPObject>::FromReturned(
@@ -47,22 +47,12 @@ bool CommandBuffer::Initialize(int32 size) {
     return false;
   }
 
-  NPObjectPointer<NPObject> result;
   if (!NPInvoke(npp_, system, "createSharedMemory", num_bytes,
-                &result)) {
+                &ring_buffer_)) {
     return false;
   }
 
-  // TODO(spatrick): validate NPClass before assuming a CHRSharedMemory is
-  //    returned.
-  shared_memory_ = NPObjectPointer<CHRSharedMemory>(
-      static_cast<CHRSharedMemory*>(result.Get()));
-  if (!shared_memory_.Get())
-    return false;
-
-  bool mapped;
-  if (!NPInvoke(npp_, shared_memory_, "map", &mapped) || !mapped) {
-    shared_memory_ = NPObjectPointer<CHRSharedMemory>();
+  if (!ring_buffer_.Get()) {
     return false;
   }
 
@@ -70,8 +60,8 @@ bool CommandBuffer::Initialize(int32 size) {
   return true;
 }
 
-NPObjectPointer<CHRSharedMemory> CommandBuffer::GetRingBuffer() {
-  return shared_memory_;
+NPObjectPointer<NPObject> CommandBuffer::GetRingBuffer() {
+  return ring_buffer_;
 }
 
 int32 CommandBuffer::GetSize() {

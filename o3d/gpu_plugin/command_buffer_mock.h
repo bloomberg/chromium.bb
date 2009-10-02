@@ -17,13 +17,13 @@ class MockCommandBuffer : public CommandBuffer {
  public:
   explicit MockCommandBuffer(NPP npp) : CommandBuffer(npp) {
     ON_CALL(*this, GetRingBuffer())
-      .WillByDefault(testing::Return(NPObjectPointer<CHRSharedMemory>()));
+      .WillByDefault(testing::Return(NPObjectPointer<NPObject>()));
     ON_CALL(*this, GetRegisteredObject(testing::_))
       .WillByDefault(testing::Return(NPObjectPointer<NPObject>()));
   }
 
   MOCK_METHOD1(Initialize, bool(int32 size));
-  MOCK_METHOD0(GetRingBuffer, NPObjectPointer<CHRSharedMemory>());
+  MOCK_METHOD0(GetRingBuffer, NPObjectPointer<NPObject>());
   MOCK_METHOD0(GetSize, int32());
   MOCK_METHOD1(SyncOffsets, int32(int32 put_offset));
   MOCK_METHOD0(GetGetOffset, int32());

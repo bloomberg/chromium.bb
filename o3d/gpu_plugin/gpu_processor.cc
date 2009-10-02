@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "o3d/gpu_plugin/gpu_processor.h"
-#include "o3d/gpu_plugin/system_services/shared_memory_public.h"
 
 namespace o3d {
 namespace gpu_plugin {
@@ -48,29 +47,23 @@ void GPUProcessor::ProcessCommands() {
 }
 
 void *GPUProcessor::GetSharedMemoryAddress(unsigned int shm_id) {
-  // TODO(apatrick): Verify that the NPClass is in fact shared memory before
-  //    accessing the members.
-  NPObjectPointer<CHRSharedMemory> shared_memory(static_cast<CHRSharedMemory*>(
-      command_buffer_->GetRegisteredObject(static_cast<int32>(shm_id)).Get()));
+  NPObjectPointer<NPObject> shared_memory =
+      command_buffer_->GetRegisteredObject(static_cast<int32>(shm_id));
 
-  // Return address if shared memory is already mapped to this process.
-  if (shared_memory->ptr)
-    return shared_memory->ptr;
-
-  // If the call fails or returns false then ptr will still be NULL.
-  bool result;
-  NPInvoke(npp_, shared_memory, "map", &result);
-
-  return shared_memory->ptr;
+  size_t size;
+  return NPBrowser::get()->MapMemory(npp_, shared_memory.Get(), &size);
 }
 
+// TODO(apatrick): Consolidate this with the above and return both the address
+// and size.
 size_t GPUProcessor::GetSharedMemorySize(unsigned int shm_id) {
-  // TODO(apatrick): Verify that the NPClass is in fact shared memory before
-  //    accessing the members.
-  NPObjectPointer<CHRSharedMemory> shared_memory(static_cast<CHRSharedMemory*>(
-      command_buffer_->GetRegisteredObject(static_cast<int32>(shm_id)).Get()));
+  NPObjectPointer<NPObject> shared_memory =
+      command_buffer_->GetRegisteredObject(static_cast<int32>(shm_id));
 
-  return shared_memory->size;
+  size_t size;
+  NPBrowser::get()->MapMemory(npp_, shared_memory.Get(), &size);
+
+  return size;
 }
 
 void GPUProcessor::set_token(unsigned int token) {

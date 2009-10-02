@@ -29,10 +29,17 @@ class MockNPBrowser : public StubNPBrowser {
                                      &MockNPBrowser::ConcreteCreateObject));
   }
 
+  void ConcretePluginThreadAsyncCall(NPP npp,
+                                     PluginThreadAsyncCallProc callback,
+                                     void* data) {
+    return StubNPBrowser::PluginThreadAsyncCall(npp, callback, data);
+  }
+
   MOCK_METHOD2(CreateObject, NPObject*(NPP npp, const NPClass* cl));
   MOCK_METHOD1(GetWindowNPObject, NPObject*(NPP cpp));
   MOCK_METHOD3(PluginThreadAsyncCall,
                void(NPP npp, PluginThreadAsyncCallProc callback, void* data));
+  MOCK_METHOD3(MapMemory, void*(NPP npp, NPObject* object, size_t* size));
 };
 
 }  // namespace gpu_plugin

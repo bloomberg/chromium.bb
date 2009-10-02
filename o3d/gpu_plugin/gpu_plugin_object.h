@@ -12,10 +12,9 @@
 #include "o3d/gpu_plugin/command_buffer.h"
 #include "o3d/gpu_plugin/np_utils/default_np_object.h"
 #include "o3d/gpu_plugin/np_utils/np_dispatcher.h"
+#include "o3d/gpu_plugin/np_utils/np_headers.h"
 #include "o3d/gpu_plugin/np_utils/np_plugin_object.h"
 #include "o3d/gpu_plugin/np_utils/np_utils.h"
-#include "third_party/npapi/bindings/npapi.h"
-#include "third_party/npapi/bindings/npruntime.h"
 
 namespace o3d {
 namespace gpu_plugin {
@@ -26,6 +25,8 @@ class GPUProcessor;
 class GPUPluginObject : public DefaultNPObject<NPObject>,
                         public PluginObject {
  public:
+  static const int32 kCommandBufferSize = 1024 * 1024;
+
   static const NPUTF8 kPluginType[];
 
   explicit GPUPluginObject(NPP npp);

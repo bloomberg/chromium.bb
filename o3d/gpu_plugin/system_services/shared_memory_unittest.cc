@@ -27,33 +27,34 @@ class SharedMemoryTest : public testing::Test {
   NPObjectPointer<SharedMemory> shared_memory_;
 };
 
-TEST_F(SharedMemoryTest, MemoryIsNotMappedBeforeInitialization) {
-  EXPECT_TRUE(NULL == shared_memory_->handle);
-  EXPECT_TRUE(NULL == shared_memory_->ptr);
-  EXPECT_EQ(0, shared_memory_->size);
+TEST_F(SharedMemoryTest, SizeIsaZeroBeforeInitialization) {
   EXPECT_EQ(0, shared_memory_->GetSize());
 }
 
 TEST_F(SharedMemoryTest, InitializesAndReturnsMappedMemory) {
   EXPECT_TRUE(shared_memory_->Initialize(65536));
-  EXPECT_TRUE(NULL != shared_memory_->handle);
-  EXPECT_TRUE(NULL == shared_memory_->ptr);
-  EXPECT_EQ(65536, shared_memory_->size);
   EXPECT_EQ(65536, shared_memory_->GetSize());
 
-  EXPECT_TRUE(shared_memory_->Map());
-  ASSERT_TRUE(NULL != shared_memory_->ptr);
-  EXPECT_EQ(65536, shared_memory_->size);
+  size_t size;
+  int8* ptr = static_cast<int8*>(NPN_MapMemory(NULL,
+                                               shared_memory_.Get(),
+                                               &size));
+  ASSERT_TRUE(NULL != ptr);
+  EXPECT_EQ(65536, size);
 
   // Test that memory can be written to.
-  int8* ptr = static_cast<int8*>(shared_memory_->ptr);
   for (int i = 0; i < 65536; ++i) {
     ptr[i] = 7;
   }
 }
 
 TEST_F(SharedMemoryTest, MapFailsBeforeInitialization) {
-  EXPECT_FALSE(shared_memory_->Map());
+  size_t size = 7;
+  int8* ptr = static_cast<int8*>(NPN_MapMemory(NULL,
+                                               shared_memory_.Get(),
+                                               &size));
+  EXPECT_TRUE(NULL == ptr);
+  EXPECT_EQ(0, size);
 }
 
 TEST_F(SharedMemoryTest, InitializeFailsForNegativeSize) {
@@ -65,14 +66,18 @@ TEST_F(SharedMemoryTest, SecondCallToInitializeFails) {
   EXPECT_FALSE(shared_memory_->Initialize(65536));
 }
 
-TEST_F(SharedMemoryTest, InitializeRoundsUpToPageSizeButReportsRequestedSize) {
+TEST_F(SharedMemoryTest, InitializeRoundsUpToPageSize) {
   EXPECT_TRUE(shared_memory_->Initialize(7));
+  EXPECT_EQ(7, shared_memory_->GetSize());
 
-  EXPECT_TRUE(shared_memory_->Map());
-  EXPECT_EQ(7, shared_memory_->size);
+  size_t size;
+  int8* ptr = static_cast<int8*>(NPN_MapMemory(NULL,
+                                               shared_memory_.Get(),
+                                               &size));
+  ASSERT_TRUE(NULL != ptr);
+  EXPECT_EQ(7, size);
 
   // Test that memory can be written to.
-  int8* ptr = static_cast<int8*>(shared_memory_->ptr);
   for (int i = 0; i < 7; ++i) {
     ptr[i] = 7;
   }
@@ -81,99 +86,19 @@ TEST_F(SharedMemoryTest, InitializeRoundsUpToPageSizeButReportsRequestedSize) {
 TEST_F(SharedMemoryTest, SecondMapDoesNothing) {
   EXPECT_TRUE(shared_memory_->Initialize(65536));
 
-  EXPECT_TRUE(shared_memory_->Map());
-  ASSERT_TRUE(NULL != shared_memory_->handle);
-  ASSERT_TRUE(NULL != shared_memory_->ptr);
-  EXPECT_EQ(65536, shared_memory_->size);
+  size_t size1;
+  int8* ptr1 = static_cast<int8*>(NPN_MapMemory(NULL,
+                                               shared_memory_.Get(),
+                                               &size1));
 
-  void* handle = shared_memory_->handle;
-  void* ptr = shared_memory_->ptr;
-  EXPECT_TRUE(shared_memory_->Map());
-  ASSERT_EQ(ptr, shared_memory_->ptr);
-  EXPECT_EQ(65536, shared_memory_->size);
-}
+  size_t size2;
+  int8* ptr2 = static_cast<int8*>(NPN_MapMemory(NULL,
+                                               shared_memory_.Get(),
+                                               &size2));
 
-TEST_F(SharedMemoryTest, CanInitializeWithHandle) {
-  base::SharedMemory* temp_shared_memory = new base::SharedMemory;
-  EXPECT_TRUE(temp_shared_memory->Create(std::wstring(), false, false, 65536));
-
-  shared_memory_->Initialize(temp_shared_memory, 65536);
-  EXPECT_TRUE(NULL != shared_memory_->handle);
-  EXPECT_TRUE(NULL == shared_memory_->ptr);
-  EXPECT_EQ(65536, shared_memory_->size);
-
-  EXPECT_TRUE(shared_memory_->Map());
-  EXPECT_TRUE(NULL != shared_memory_->handle);
-  EXPECT_TRUE(NULL != shared_memory_->ptr);
-  EXPECT_EQ(65536, shared_memory_->size);
-}
-
-TEST_F(SharedMemoryTest, CanSetInt32) {
-  base::SharedMemory* temp_shared_memory = new base::SharedMemory;
-  EXPECT_TRUE(temp_shared_memory->Create(std::wstring(), false, false, 65536));
-
-  shared_memory_->Initialize(temp_shared_memory, 65536);
-  EXPECT_TRUE(shared_memory_->Map());
-
-  EXPECT_TRUE(shared_memory_->SetInt32(1, 7));
-  EXPECT_EQ(7, static_cast<int32*>(shared_memory_->ptr)[1]);
-
-  EXPECT_TRUE(shared_memory_->SetInt32(1, 8));
-  EXPECT_EQ(8, static_cast<int32*>(shared_memory_->ptr)[1]);
-}
-
-TEST_F(SharedMemoryTest, FailsIfSetInt32CalledBeforeMap) {
-  base::SharedMemory* temp_shared_memory = new base::SharedMemory;
-  EXPECT_TRUE(temp_shared_memory->Create(std::wstring(), false, false, 65536));
-
-  shared_memory_->Initialize(temp_shared_memory, 65536);
-
-  EXPECT_FALSE(shared_memory_->SetInt32(1, 7));
-}
-
-TEST_F(SharedMemoryTest, FailsIfSetInt32OffsetIsOutOfRange) {
-  base::SharedMemory* temp_shared_memory = new base::SharedMemory;
-  EXPECT_TRUE(temp_shared_memory->Create(std::wstring(), false, false, 65536));
-
-  shared_memory_->Initialize(temp_shared_memory, 65536);
-  EXPECT_TRUE(shared_memory_->Map());
-
-  EXPECT_FALSE(shared_memory_->SetInt32(-1, 7));
-  EXPECT_FALSE(shared_memory_->SetInt32(16384, 7));
-}
-
-TEST_F(SharedMemoryTest, CanSetFloat) {
-  base::SharedMemory* temp_shared_memory = new base::SharedMemory;
-  EXPECT_TRUE(temp_shared_memory->Create(std::wstring(), false, false, 65536));
-
-  shared_memory_->Initialize(temp_shared_memory, 65536);
-  EXPECT_TRUE(shared_memory_->Map());
-
-  EXPECT_TRUE(shared_memory_->SetFloat(1, 7));
-  EXPECT_EQ(7, static_cast<float*>(shared_memory_->ptr)[1]);
-
-  EXPECT_TRUE(shared_memory_->SetFloat(1, 8));
-  EXPECT_EQ(8, static_cast<float*>(shared_memory_->ptr)[1]);
-}
-
-TEST_F(SharedMemoryTest, FailsIfSetFloatCalledBeforeMap) {
-  base::SharedMemory* temp_shared_memory = new base::SharedMemory;
-  EXPECT_TRUE(temp_shared_memory->Create(std::wstring(), false, false, 65536));
-
-  shared_memory_->Initialize(temp_shared_memory, 65536);
-
-  EXPECT_FALSE(shared_memory_->SetFloat(1, 7));
-}
-
-TEST_F(SharedMemoryTest, FailsIfSetFloatOffsetIsOutOfRange) {
-  base::SharedMemory* temp_shared_memory = new base::SharedMemory;
-  EXPECT_TRUE(temp_shared_memory->Create(std::wstring(), false, false, 65536));
-
-  shared_memory_->Initialize(temp_shared_memory, 65536);
-  EXPECT_TRUE(shared_memory_->Map());
-
-  EXPECT_FALSE(shared_memory_->SetFloat(-1, 7));
-  EXPECT_FALSE(shared_memory_->SetFloat(16384, 7));
+  EXPECT_EQ(ptr1, ptr2);
+  EXPECT_EQ(65536, size1);
+  EXPECT_EQ(65536, size2);
 }
 
 }  // namespace gpu_plugin

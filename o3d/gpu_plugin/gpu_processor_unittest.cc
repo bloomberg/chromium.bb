@@ -8,7 +8,7 @@
 #include "o3d/command_buffer/service/cross/mocks.h"
 #include "o3d/gpu_plugin/command_buffer_mock.h"
 #include "o3d/gpu_plugin/gpu_processor.h"
-#include "o3d/gpu_plugin/np_utils/np_browser_stub.h"
+#include "o3d/gpu_plugin/np_utils/np_browser_mock.h"
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
 #include "o3d/gpu_plugin/system_services/shared_memory_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,6 +16,7 @@
 
 using testing::_;
 using testing::DoAll;
+using testing::Invoke;
 using testing::NiceMock;
 using testing::Return;
 using testing::SetArgumentPointee;
@@ -28,9 +29,16 @@ class GPUProcessorTest : public testing::Test {
  protected:
   virtual void SetUp() {
     shared_memory_ = NPCreateObject<NiceMock<MockSharedMemory> >(NULL);
-    shared_memory_->ptr = buffer_;
-    shared_memory_->size = sizeof(buffer_);
     memset(buffer_, 0, sizeof(buffer_));
+
+    ON_CALL(mock_browser_, MapMemory(NULL, shared_memory_.Get(), _))
+      .WillByDefault(DoAll(SetArgumentPointee<2>(sizeof(buffer_)),
+                           Return(buffer_)));
+
+    // Don't mock PluginThreadAsyncCall. Have it schedule the task.
+    ON_CALL(mock_browser_, PluginThreadAsyncCall(_, _, _))
+      .WillByDefault(Invoke(&mock_browser_,
+                            &MockNPBrowser::ConcretePluginThreadAsyncCall));
 
     command_buffer_ = NPCreateObject<MockCommandBuffer>(NULL);
     ON_CALL(*command_buffer_.Get(), GetRingBuffer())
@@ -69,7 +77,7 @@ class GPUProcessorTest : public testing::Test {
 
   base::AtExitManager at_exit_manager;
   MessageLoop message_loop;
-  StubNPBrowser stub_browser_;
+  MockNPBrowser mock_browser_;
   NPObjectPointer<MockCommandBuffer> command_buffer_;
   NPObjectPointer<NiceMock<MockSharedMemory> > shared_memory_;
   int32 buffer_[1024 / sizeof(int32)];
@@ -281,11 +289,9 @@ TEST_F(GPUProcessorTest, GetAddressOfSharedMemoryMapsMemoryIfUnmapped) {
   EXPECT_CALL(*command_buffer_.Get(), GetRegisteredObject(7))
     .WillOnce(Return(shared_memory_));
 
-  shared_memory_->ptr = NULL;
-
-  EXPECT_CALL(*shared_memory_.Get(), Map())
-    .WillOnce(DoAll(SetPointee(&shared_memory_->ptr, &buffer_[0]),
-                    Return(true)));
+  EXPECT_CALL(mock_browser_, MapMemory(NULL, shared_memory_.Get(), _))
+    .WillOnce(DoAll(SetArgumentPointee<2>(sizeof(buffer_)),
+                    Return(buffer_)));
 
   EXPECT_EQ(&buffer_[0], processor_->GetSharedMemoryAddress(7));
 }

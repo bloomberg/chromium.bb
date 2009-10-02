@@ -16,10 +16,4 @@
 #undef utf8characters
 #undef utf8length
 
-#if defined(O3D_IN_CHROME)
-#include "webkit/glue/plugins/nphostapi.h"
-#else
-#include "npupp.h"
-#endif
-
 #endif  // O3D_GPU_PLUGIN_NP_UTILS_NP_HEADERS_H_

@@ -99,7 +99,14 @@ class WebKitBrowser : public NPBrowser {
   }
 
   virtual NPObject* GetWindowNPObject(NPP npp) {
-    return NULL;
+    NPObject* window;
+    if (NPERR_NO_ERROR == NPN_GetValue(npp,
+                                       NPNVWindowNPObject,
+                                       &window)) {
+      return window;
+    } else {
+      return NULL;
+    }
   }
 
  private:

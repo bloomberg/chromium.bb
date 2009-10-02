@@ -2683,7 +2683,7 @@ struct SetPointLineRaster {
             float _point_size) {
     SetHeader();
     enables =
-        LineSmoothEnable::MakeValue( _line_smooth_enable ? 1 : 0) |
+        LineSmoothEnable::MakeValue(_line_smooth_enable ? 1 : 0) |
         PointSpriteEnable::MakeValue(_point_sprite_enable ? 1 : 0);
     point_size = _point_size;
   }

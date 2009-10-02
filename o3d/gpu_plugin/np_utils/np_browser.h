@@ -76,6 +76,10 @@ class NPBrowser {
                                      PluginThreadAsyncCallProc callback,
                                      void* data);
 
+  virtual void* MapMemory(NPP npp,
+                          NPObject* object,
+                          size_t* size);
+
  private:
   static NPBrowser* browser_;
   NPBrowser* previous_browser_;

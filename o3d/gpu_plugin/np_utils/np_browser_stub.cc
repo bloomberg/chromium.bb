@@ -112,5 +112,13 @@ void StubNPBrowser::PluginThreadAsyncCall(
   MessageLoop::current()->PostTask(FROM_HERE,
                                    NewRunnableFunction(callback, data));
 }
+
+void* StubNPBrowser::MapMemory(NPP npp,
+                               NPObject* object,
+                               size_t* size) {
+  *size = 0;
+  return NULL;
+}
+
 }  // namespace gpu_plugin
 }  // namespace o3d

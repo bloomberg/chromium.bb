@@ -5,8 +5,7 @@
 #ifndef O3D_GPU_PLUGIN_GPU_PLUGIN_H_
 #define O3D_GPU_PLUGIN_GPU_PLUGIN_H_
 
-#include "third_party/npapi/bindings/npapi.h"
-#include "third_party/npapi/bindings/npruntime.h"
+#include "o3d/gpu_plugin/np_utils/np_headers.h"
 
 typedef struct _NPPluginFuncs NPPluginFuncs;
 typedef struct _NPNetscapeFuncs NPNetscapeFuncs;

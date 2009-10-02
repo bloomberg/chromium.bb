@@ -16,9 +16,8 @@ class MockSharedMemory : public SharedMemory {
   explicit MockSharedMemory(NPP npp) : SharedMemory(npp) {
   }
 
-  MOCK_METHOD1(Initialize, bool(int32));
+  MOCK_METHOD1(Initialize, bool(int32 size));
   MOCK_METHOD0(GetSize, int32());
-  MOCK_METHOD0(Map, bool());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSharedMemory);

@@ -5,6 +5,12 @@
 #include "o3d/gpu_plugin/np_utils/np_browser.h"
 #include "base/logging.h"
 
+#if defined(O3D_IN_CHROME)
+#include "webkit/glue/plugins/nphostapi.h"
+#else
+#include "npupp.h"
+#endif
+
 namespace o3d {
 namespace gpu_plugin {
 
@@ -107,6 +113,12 @@ void NPBrowser::PluginThreadAsyncCall(NPP npp,
                                       PluginThreadAsyncCallProc callback,
                                       void* data) {
   netscape_funcs_->pluginthreadasynccall(npp, callback, data);
+}
+
+void* NPBrowser::MapMemory(NPP npp,
+                           NPObject* object,
+                           size_t* size) {
+  return netscape_funcs_->mapmemory(npp, object, size);
 }
 
 }  // namespace gpu_plugin

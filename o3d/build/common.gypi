@@ -40,16 +40,16 @@
             'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
           },
       }],
+      ['o3d_in_chrome == 1',
+        {
+          'defines': [
+            'O3D_IN_CHROME',
+          ],
+        },
+      ],
     ],
   },
   'conditions' : [
-    ['o3d_in_chrome == 1',
-      {
-        'defined': [
-          'O3D_IN_CHROME',
-        ],
-      },
-    ],
     ['OS == "win"',
       {
         'variables': {

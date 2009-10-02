@@ -12,10 +12,6 @@
 namespace o3d {
 namespace gpu_plugin {
 
-namespace {
-const int32 kCommandBufferSize = 1024;
-}  // namespace anonymous
-
 const NPUTF8 GPUPluginObject::kPluginType[] =
     "application/vnd.google.chrome.gpu-plugin";
 

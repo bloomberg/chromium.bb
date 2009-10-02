@@ -15,7 +15,8 @@
       ],
       'include_dirs': [
         '../..',
-        
+        '../../third_party/npapi',
+
         # Chrome NPAPI header dir appears before the O3D one so it takes
         # priority. TODO(apatrick): one set of NPAPI headers.
         '../../third_party/npapi/bindings',
@@ -23,6 +24,8 @@
       ],
       'direct_dependent_settings': {
         'include_dirs': [
+          '../../third_party/npapi',
+
           # Chrome NPAPI header dir appears before the O3D one so it takes
           # priority. TODO(apatrick): one set of NPAPI headers.
           '../../third_party/npapi/bindings',
@@ -62,7 +65,7 @@
       'target_name': 'np_utils_unittests',
       'type': 'executable',
       'dependencies': [
-        'gpu_plugin',
+        'np_utils',
         '../../testing/gmock.gyp:gmock',
         '../../testing/gmock.gyp:gmockmain',
         '../../testing/gtest.gyp:gtest',
@@ -90,7 +93,22 @@
       'include_dirs': [
         '../..',
         '../../third_party/npapi',
+
+        # Chrome NPAPI header dir appears before the O3D one so it takes
+        # priority. TODO(apatrick): one set of NPAPI headers.
+        '../../third_party/npapi/bindings',
+        '../../third_party/npapi/include',
       ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '../../third_party/npapi',
+
+          # Chrome NPAPI header dir appears before the O3D one so it takes
+          # priority. TODO(apatrick): one set of NPAPI headers.
+          '../../third_party/npapi/bindings',
+          '../../third_party/npapi/include',
+        ],
+      },
       'sources': [
         'system_services/shared_memory.cc',
         'system_services/shared_memory.h',

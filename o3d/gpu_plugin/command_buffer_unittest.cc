@@ -73,9 +73,6 @@ TEST_F(CommandBufferTest, InitializesCommandBuffer) {
   EXPECT_CALL(*system_object_.Get(), CreateSharedMemory(1024))
     .WillOnce(Return(expected_shared_memory));
 
-  EXPECT_CALL(*expected_shared_memory.Get(), Map())
-    .WillOnce(Return(true));
-
   EXPECT_TRUE(command_buffer_->Initialize(256));
   EXPECT_EQ(expected_shared_memory, command_buffer_->GetRingBuffer());
 
@@ -94,24 +91,6 @@ TEST_F(CommandBufferTest, InitializeFailsIfCannotCreateSharedMemory) {
 
   EXPECT_CALL(*system_object_.Get(), CreateSharedMemory(1024))
     .WillOnce(Return(NPObjectPointer<NPObject>()));
-
-  EXPECT_FALSE(command_buffer_->Initialize(256));
-  EXPECT_EQ(NPObjectPointer<NPObject>(),
-            command_buffer_->GetRingBuffer());
-}
-
-TEST_F(CommandBufferTest, InitializeFailsIfCannotMapSharedMemory) {
-  EXPECT_CALL(mock_browser_, GetWindowNPObject(NULL))
-    .WillOnce(Return(window_object_.ToReturned()));
-
-  NPObjectPointer<MockSharedMemory> expected_shared_memory =
-      NPCreateObject<StrictMock<MockSharedMemory> >(NULL);
-
-  EXPECT_CALL(*system_object_.Get(), CreateSharedMemory(1024))
-    .WillOnce(Return(expected_shared_memory));
-
-  EXPECT_CALL(*expected_shared_memory.Get(), Map())
-    .WillOnce(Return(false));
 
   EXPECT_FALSE(command_buffer_->Initialize(256));
   EXPECT_EQ(NPObjectPointer<NPObject>(),
@@ -137,9 +116,6 @@ TEST_F(CommandBufferTest, CanSyncGetAndPutOffset) {
 
   EXPECT_CALL(*system_object_.Get(), CreateSharedMemory(1024))
     .WillOnce(Return(expected_shared_memory));
-
-  EXPECT_CALL(*expected_shared_memory.Get(), Map())
-    .WillOnce(Return(true));
 
   EXPECT_TRUE(command_buffer_->Initialize(256));
 
