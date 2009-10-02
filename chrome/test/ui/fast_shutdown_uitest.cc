@@ -39,7 +39,7 @@ TEST_F(FastShutdown, MAYBE_SlowTermination) {
   // This click will launch a popup which has a before unload handler.
   ASSERT_TRUE(window->SimulateOSClick(bounds.CenterPoint(),
                                       views::Event::EF_LEFT_BUTTON_DOWN));
-  ASSERT_TRUE(browser->WaitForTabCountToBecome(2, action_timeout_ms()));
+  ASSERT_TRUE(browser->WaitForTabCountToBecome(2, action_max_timeout_ms()));
   // Close the tab, removing the one and only before unload handler.
   scoped_refptr<TabProxy> tab(browser->GetTab(1));
   ASSERT_TRUE(tab->Close(true));
@@ -47,6 +47,6 @@ TEST_F(FastShutdown, MAYBE_SlowTermination) {
   // Close the browser. We should launch the unload handler, which is an
   // alert().
   ASSERT_TRUE(browser->ApplyAccelerator(IDC_CLOSE_WINDOW));
-  ASSERT_TRUE(automation()->WaitForAppModalDialog(action_timeout_ms()));
+  ASSERT_TRUE(automation()->WaitForAppModalDialog(action_max_timeout_ms()));
   automation()->ClickAppModalDialogButton(MessageBoxFlags::DIALOGBUTTON_OK);
 }
