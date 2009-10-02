@@ -147,6 +147,7 @@
         'api/src/PlatformMessagePortChannel.cpp',
         'api/src/PlatformMessagePortChannel.h',
         'api/src/ResourceHandle.cpp',
+        'api/src/SocketStreamHandle.cpp',
         'api/src/StorageAreaProxy.cpp',
         'api/src/StorageAreaProxy.h',
         'api/src/StorageEventDispatcherChromium.cpp',
