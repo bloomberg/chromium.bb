@@ -477,6 +477,10 @@ class OffTheRecordProfileImpl : public Profile,
     return profile_->GetSpellChecker();
   }
 
+  virtual void DeleteSpellChecker() {
+    profile_->DeleteSpellChecker();
+  }
+
   virtual WebKitContext* GetWebKitContext() {
   if (!webkit_context_.get())
     webkit_context_ = new WebKitContext(GetPath(), true);
@@ -754,17 +758,7 @@ ProfileImpl::~ProfileImpl() {
   if (history_service_.get())
     history_service_->Cleanup();
 
-  // The I/O thread may be NULL during testing.
-  base::Thread* io_thread = g_browser_process->io_thread();
-
-  if (spellchecker_) {
-    // The spellchecker must be deleted on the I/O thread. During testing, we
-    // don't have an I/O thread.
-    if (io_thread)
-      io_thread->message_loop()->ReleaseSoon(FROM_HERE, spellchecker_);
-    else
-      spellchecker_->Release();
-  }
+  DeleteSpellCheckerImpl(false);
 
   if (default_request_context_ == request_context_) {
 #if defined(OS_LINUX)
@@ -1256,25 +1250,12 @@ class NotifySpellcheckerChangeTask : public Task {
   SpellcheckerReinitializedDetails spellchecker_;
 };
 
-void ProfileImpl::InitializeSpellChecker(bool need_to_broadcast) {
-  // The I/O thread may be NULL during testing.
-  base::Thread* io_thread = g_browser_process->io_thread();
-  if (spellchecker_) {
-    // The spellchecker must be deleted on the I/O thread.
-    // A dummy variable to aid in logical clarity.
-    SpellChecker* last_spellchecker = spellchecker_;
-
-    if (io_thread)
-      io_thread->message_loop()->ReleaseSoon(FROM_HERE, last_spellchecker);
-    else  //  during testing, we don't have an I/O thread
-      last_spellchecker->Release();
-  }
-
-  // Retrieve the (perhaps updated recently) dictionary name from preferences.
+void ProfileImpl::ReinitializeSpellChecker() {
   PrefService* prefs = GetPrefs();
-  bool enable_spellcheck = prefs->GetBoolean(prefs::kEnableSpellCheck);
+  if (prefs->GetBoolean(prefs::kEnableSpellCheck)) {
+    DeleteSpellCheckerImpl(false);
 
-  if (enable_spellcheck) {
+    // Retrieve the (perhaps updated recently) dictionary name from preferences.
     FilePath dict_dir;
     PathService::Get(chrome::DIR_APP_DICTIONARIES, &dict_dir);
     // Note that, as the object pointed to by previously by spellchecker_
@@ -1285,29 +1266,43 @@ void ProfileImpl::InitializeSpellChecker(bool need_to_broadcast) {
         GetRequestContext(),
         FilePath());
     spellchecker_->AddRef();  // Manual refcounting.
-  } else {
-    spellchecker_ = NULL;
-  }
 
-  // Set auto spell correct status for spellchecker.
-  if (spellchecker_) {
+    // Set auto spell correct status for spellchecker.
     spellchecker_->EnableAutoSpellCorrect(
         prefs->GetBoolean(prefs::kEnableAutoSpellCorrect));
-  }
 
-  if (need_to_broadcast && io_thread) {  // Notify resource message filters.
-    SpellcheckerReinitializedDetails scoped_spellchecker;
-    scoped_spellchecker.spellchecker = spellchecker_;
-    if (io_thread) {
-      io_thread->message_loop()->PostTask(
-          FROM_HERE,
-          new NotifySpellcheckerChangeTask(this, scoped_spellchecker));
-    }
+    NotifySpellCheckerChanged();
+  } else {
+    DeleteSpellCheckerImpl(true);
   }
 }
 
-void ProfileImpl::ReinitializeSpellChecker() {
-  InitializeSpellChecker(true);
+void ProfileImpl::NotifySpellCheckerChanged() {
+  // The I/O thread may be NULL during testing.
+  base::Thread* io_thread = g_browser_process->io_thread();
+  if (io_thread) {  // Notify resource message filters.
+    SpellcheckerReinitializedDetails scoped_spellchecker;
+    scoped_spellchecker.spellchecker = spellchecker_;
+    io_thread->message_loop()->PostTask(FROM_HERE,
+        new NotifySpellcheckerChangeTask(this, scoped_spellchecker));
+  }
+}
+
+void ProfileImpl::DeleteSpellCheckerImpl(bool notify) {
+  if (spellchecker_) {
+    // The spellchecker must be deleted on the I/O thread.
+    // The I/O thread may be NULL during testing.
+    base::Thread* io_thread = g_browser_process->io_thread();
+    if (io_thread)
+      io_thread->message_loop()->ReleaseSoon(FROM_HERE, spellchecker_);
+    else  //  during testing, we don't have an I/O thread
+      spellchecker_->Release();
+
+    spellchecker_ = NULL;
+
+    if (notify)
+      NotifySpellCheckerChanged();
+  }
 }
 
 SpellChecker* ProfileImpl::GetSpellChecker() {
@@ -1317,7 +1312,7 @@ SpellChecker* ProfileImpl::GetSpellChecker() {
     // it is *used* in the io thread.
     // TODO(sidchat): One day, change everything so that spellchecker gets
     // initialized in the IO thread itself.
-    InitializeSpellChecker(false);
+    ReinitializeSpellChecker();
   }
 
   return spellchecker_;
@@ -1351,7 +1346,7 @@ void ProfileImpl::Observe(NotificationType type,
     if (*pref_name_in == prefs::kSpellCheckDictionary ||
         *pref_name_in == prefs::kEnableSpellCheck ||
         *pref_name_in == prefs::kEnableAutoSpellCorrect) {
-      InitializeSpellChecker(true);
+      ReinitializeSpellChecker();
     }
   } else if (NotificationType::THEME_INSTALLED == type) {
     Extension* extension = Details<Extension>(details).ptr();

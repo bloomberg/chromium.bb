@@ -160,6 +160,7 @@ class TestingProfile : public Profile {
   virtual void ResetTabRestoreService() {}
   virtual void ReinitializeSpellChecker() {}
   virtual SpellChecker* GetSpellChecker() { return NULL; }
+  virtual void DeleteSpellChecker() {}
   virtual WebKitContext* GetWebKitContext() { return NULL; }
   virtual WebKitContext* GetOffTheRecordWebKitContext() { return NULL; }
   virtual void MarkAsCleanShutdown() {}

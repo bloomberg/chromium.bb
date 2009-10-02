@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -313,13 +313,18 @@ class Profile {
   virtual void ResetTabRestoreService() = 0;
 
   // This reinitializes the spellchecker according to the current dictionary
-  // language, and enable spell check option, in the prefs.
+  // language, and enable spell check option, in the prefs.  Then a
+  // SPELLCHECKER_REINITIALIZED notification is sent on the IO thread.
   virtual void ReinitializeSpellChecker() = 0;
 
   // Returns the spell checker object for this profile. THIS OBJECT MUST ONLY
   // BE USED ON THE I/O THREAD! This pointer is retrieved from the profile and
   // sent to the I/O thread where it is actually used.
   virtual SpellChecker* GetSpellChecker() = 0;
+
+  // Deletes the spellchecker.  This is only really useful when we need to purge
+  // memory.
+  virtual void DeleteSpellChecker() = 0;
 
   // Returns the WebKitContext assigned to this profile.
   virtual WebKitContext* GetWebKitContext() = 0;
@@ -416,6 +421,7 @@ class ProfileImpl : public Profile,
   virtual void ResetTabRestoreService();
   virtual void ReinitializeSpellChecker();
   virtual SpellChecker* GetSpellChecker();
+  virtual void DeleteSpellChecker() { DeleteSpellCheckerImpl(true); }
   virtual WebKitContext* GetWebKitContext();
   virtual void MarkAsCleanShutdown();
   virtual void InitExtensions();
@@ -448,14 +454,8 @@ class ProfileImpl : public Profile,
     GetSessionService();
   }
 
-  // Initializes the spellchecker. If the spellchecker already exsts, then
-  // it is released, and initialized again. This model makes sure that
-  // spellchecker language can be changed without restarting the browser.
-  // NOTE: This is being currently called in the UI thread, which is OK as long
-  // as the spellchecker object is USED in the IO thread.
-  // The |need_to_broadcast| parameter tells it whether to broadcast the new
-  // spellchecker to the resource message filters.
-  void InitializeSpellChecker(bool need_to_broadcast);
+  void NotifySpellCheckerChanged();
+  void DeleteSpellCheckerImpl(bool notify);
 
   NotificationRegistrar registrar_;
 
@@ -551,8 +551,8 @@ struct hash<Profile*> {
 #endif
 
 // This struct is used to pass the spellchecker object through the notification
-// NOTIFY_SPELLCHECKER_REINITIALIZED. This is used as the details for the
-// notification service.
+// SPELLCHECKER_REINITIALIZED. This is used as the details for the notification
+// service.
 struct SpellcheckerReinitializedDetails {
   scoped_refptr<SpellChecker> spellchecker;
 };
