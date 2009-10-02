@@ -587,7 +587,7 @@ void ExtensionShelf::Toolstrip::ShowWindow() {
 
   LayoutWindow();
   if (!window_visible())
-    window_->Show();
+    window_->Show(false);  // |false| means show, but don't activate.
 }
 
 void ExtensionShelf::Toolstrip::DoHideShelfHandle() {
@@ -611,7 +611,6 @@ void ExtensionShelf::Toolstrip::Expand(int height, const GURL& url) {
   DCHECK(!expanded_);
 
   expanded_ = true;
-  view()->set_is_toolstrip(!expanded_);
   ShowWindow();
 
   bool navigate = (!url.is_empty() && url != host_->GetURL());
@@ -638,7 +637,6 @@ void ExtensionShelf::Toolstrip::Expand(int height, const GURL& url) {
 void ExtensionShelf::Toolstrip::Collapse(const GURL& url) {
   DCHECK(expanded_);
   expanded_ = false;
-  view()->set_is_toolstrip(!expanded_);
 
   if (window_visible())
     mole_animation_->Hide();
@@ -1076,7 +1074,7 @@ gfx::Size ExtensionShelf::LayoutItems(bool compute_bounds_only) {
       if (clipped)
         pref.set_width(std::max(0, max_x - x));
       if (view == toolstrip->view())
-        toolstrip->view()->set_is_clipped(clipped);
+        toolstrip->view()->SetIsClipped(clipped);
       view->SetBounds(x, y, pref.width(), content_height);
       view->Layout();
       if (toolstrip->window_visible())

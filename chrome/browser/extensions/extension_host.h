@@ -70,6 +70,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   bool document_element_available() const {
     return document_element_available_;
   }
+  Profile* profile() const { return profile_; }
 
   // Sets the the ViewType of this host (e.g. mole, toolstrip).
   void SetRenderViewType(ViewType::Type type);

@@ -37,9 +37,7 @@ class ExtensionView : public views::NativeViewHost {
   Extension* extension() const;
   RenderViewHost* render_view_host() const;
   void DidStopLoading();
-  void set_is_clipped(bool is_clipped) { is_clipped_ = is_clipped; }
-  bool is_toolstrip() const { return is_toolstrip_; }
-  void set_is_toolstrip(bool is) { is_toolstrip_ = is; }
+  void SetIsClipped(bool is_clipped);
 
   // Notification from ExtensionHost.
   void UpdatePreferredWidth(int pref_width);
@@ -94,14 +92,8 @@ class ExtensionView : public views::NativeViewHost {
   // Note: the view does not own its container.
   ExtensionContainer* container_;
 
-  // Whether the RenderView has finished loading.
-  bool did_stop_loading_;
-
   // Whether this extension view is clipped.
   bool is_clipped_;
-
-  // Whether this view is currently displaying in toolstrip mode.
-  bool is_toolstrip_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionView);
 };

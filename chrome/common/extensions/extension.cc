@@ -372,6 +372,37 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
   }
   result->set_name(name);
 
+  // Read the action's |popup| (optional).
+  DictionaryValue* popup = NULL;
+  if (page_action->HasKey(keys::kPageActionPopup) &&
+     !page_action->GetDictionary(keys::kPageActionPopup, &popup)) {
+    *error = errors::kInvalidPageActionPopup;
+    return NULL;
+  }
+  if (popup) {
+    std::string url_str;
+    if (!popup->GetString(keys::kPageActionPopupPath, &url_str)) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidPageActionPopupPath, "<missing>");
+      return NULL;
+    }
+    GURL url = GetResourceURL(url_str);
+    if (!url.is_valid()) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidPageActionPopupPath, url_str);
+      return NULL;
+    }
+    result->set_popup_url(url);
+
+    int height;
+    if (!popup->GetInteger(keys::kPageActionPopupHeight, &height)) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidPageActionPopupHeight, "<missing>");
+      return NULL;
+    }
+    result->set_popup_height(height);
+  }
+
   return result.release();
 }
 

@@ -10,12 +10,13 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/image_loading_tracker.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/views/extensions/extension_popup.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "views/controls/button/text_button.h"
+#include "views/controls/button/menu_button.h"
 
 // The size of the icon for page actions.
 static const int kIconSize = 30;
@@ -29,7 +30,7 @@ static const int kHorizontalPadding = 4;
 // The BrowserActionImageView is a specialization of the TextButton class.
 // It acts on a ExtensionAction, in this case a BrowserAction and handles
 // loading the image for the button asynchronously on the file thread to
-class BrowserActionImageView : public views::TextButton,
+class BrowserActionImageView : public views::MenuButton,
                                public views::ButtonListener,
                                public ImageLoadingTracker::Observer,
                                public NotificationObserver {
@@ -49,6 +50,26 @@ class BrowserActionImageView : public views::TextButton,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // MenuButton behavior overrides.  These methods all default to TextButton
+  // behavior unless this button is a popup.  In that case, it uses MenuButton
+  // behavior.  MenuButton has the notion of a child popup being shown where the
+  // button will stay in the pushed state until the "menu" (a popup in this
+  // case) is dismissed.
+  virtual bool Activate();
+  virtual bool OnMousePressed(const views::MouseEvent& e);
+  virtual void OnMouseReleased(const views::MouseEvent& e, bool canceled);
+  virtual bool OnKeyReleased(const views::KeyEvent& e);
+  virtual void OnMouseExited(const views::MouseEvent& event);
+
+  // Does this button's action have a popup?
+  virtual bool IsPopup();
+
+  // Notifications when the popup is hidden or shown by the container.
+  virtual void PopupDidShow();
+  virtual void PopupDidHide();
+
+  const ExtensionAction& browser_action() const { return *browser_action_; }
 
  private:
   // Called to update the display to match the browser action's state.
@@ -80,7 +101,7 @@ class BrowserActionImageView : public views::TextButton,
 BrowserActionImageView::BrowserActionImageView(
     ExtensionAction* browser_action, Extension* extension,
     BrowserActionsContainer* panel)
-    : TextButton(this, L""),
+    : MenuButton(this, L"", NULL, false),
       browser_action_(browser_action),
       browser_action_state_(extension->browser_action_state()),
       tracker_(NULL),
@@ -113,7 +134,7 @@ BrowserActionImageView::~BrowserActionImageView() {
 
 void BrowserActionImageView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
-  panel_->OnBrowserActionExecuted(*browser_action_);
+  panel_->OnBrowserActionExecuted(this);
 }
 
 void BrowserActionImageView::OnImageLoaded(SkBitmap* image, size_t index) {
@@ -142,12 +163,76 @@ void BrowserActionImageView::Observe(NotificationType type,
   }
 }
 
+bool BrowserActionImageView::IsPopup() {
+  return (browser_action_ && !browser_action_->popup_url().is_empty());
+}
+
+bool BrowserActionImageView::Activate() {
+  if (IsPopup()) {
+    panel_->OnBrowserActionExecuted(this);
+
+    // TODO(erikkay): Run a nested modal loop while the mouse is down to
+    // enable menu-like drag-select behavior.
+
+    // The return value of this method is returned via OnMousePressed.
+    // We need to return false here since we're handing off focus to another
+    // widget/view, and true will grab it right back and try to send events
+    // to us.
+    return false;
+  }
+  return true;
+}
+
+bool BrowserActionImageView::OnMousePressed(const views::MouseEvent& e) {
+  if (IsPopup())
+    return MenuButton::OnMousePressed(e);
+  return TextButton::OnMousePressed(e);
+}
+
+void BrowserActionImageView::OnMouseReleased(const views::MouseEvent& e,
+                                             bool canceled) {
+  if (IsPopup()) {
+    // TODO(erikkay) this never actually gets called (probably because of the
+    // loss of focus).
+    MenuButton::OnMouseReleased(e, canceled);
+  } else {
+    TextButton::OnMouseReleased(e, canceled);
+  }
+}
+
+bool BrowserActionImageView::OnKeyReleased(const views::KeyEvent& e) {
+  if (IsPopup())
+    return MenuButton::OnKeyReleased(e);
+  return TextButton::OnKeyReleased(e);
+}
+
+void BrowserActionImageView::OnMouseExited(const views::MouseEvent& e) {
+  if (IsPopup())
+    MenuButton::OnMouseExited(e);
+  else
+    TextButton::OnMouseExited(e);
+}
+
+void BrowserActionImageView::PopupDidShow() {
+  SetState(views::CustomButton::BS_PUSHED);
+  menu_visible_ = true;
+}
+
+void BrowserActionImageView::PopupDidHide() {
+  SetState(views::CustomButton::BS_NORMAL);
+  menu_visible_ = false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionsContainer
 
 BrowserActionsContainer::BrowserActionsContainer(
     Profile* profile, ToolbarView* toolbar)
-    : profile_(profile), toolbar_(toolbar) {
+    : profile_(profile),
+      toolbar_(toolbar),
+      popup_(NULL),
+      popup_button_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
   ExtensionsService* extension_service = profile->GetExtensionsService();
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
                  Source<ExtensionsService>(extension_service));
@@ -160,6 +245,7 @@ BrowserActionsContainer::BrowserActionsContainer(
 }
 
 BrowserActionsContainer::~BrowserActionsContainer() {
+  HidePopup();
   DeleteBrowserActionViews();
 }
 
@@ -201,8 +287,51 @@ void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
   toolbar_->Layout();
 }
 
+void BrowserActionsContainer::HidePopup() {
+  if (popup_) {
+    popup_->Hide();
+    popup_->DetachFromBrowser();
+    delete popup_;
+    popup_ = NULL;
+    popup_button_->PopupDidHide();
+    popup_button_ = NULL;
+    return;
+  }
+}
+
 void BrowserActionsContainer::OnBrowserActionExecuted(
-    const ExtensionAction& browser_action) {
+    BrowserActionImageView* button) {
+  const ExtensionAction& browser_action = button->browser_action();
+
+  // Popups just display.  No notification to the extension.
+  // TODO(erikkay): should there be?
+  if (button->IsPopup()) {
+    // If we're showing the same popup, just hide it and return.
+    bool same_showing = popup_ && button == popup_button_;
+
+    // Always hide the current popup, even if it's not the same.
+    // Only one popup should be visible at a time.
+    HidePopup();
+
+    if (same_showing)
+      return;
+
+    gfx::Point origin;
+    View::ConvertPointToWidget(button, &origin);
+    gfx::Rect rect = bounds();
+    rect.set_x(origin.x());
+    rect.set_y(origin.y());
+    popup_ = ExtensionPopup::Show(browser_action.popup_url(),
+                                  toolbar_->browser(),
+                                  rect,
+                                  browser_action.popup_height());
+    popup_->set_delegate(this);
+    popup_button_ = button;
+    popup_button_->PopupDidShow();
+    return;
+  }
+
+  // Otherwise, we send the action to the extension.
   int window_id = ExtensionTabUtil::GetWindowId(toolbar_->browser());
   ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
       profile_, browser_action.extension_id(), window_id);
@@ -234,4 +363,24 @@ void BrowserActionsContainer::Observe(NotificationType type,
   } else {
     NOTREACHED() << L"Received unexpected notification";
   }
+}
+
+void BrowserActionsContainer::BubbleBrowserWindowMoved(BrowserBubble* bubble) {
+}
+
+void BrowserActionsContainer::BubbleBrowserWindowClosing(
+    BrowserBubble* bubble) {
+  HidePopup();
+}
+
+void BrowserActionsContainer::BubbleGotFocus(BrowserBubble* bubble) {
+}
+
+void BrowserActionsContainer::BubbleLostFocus(BrowserBubble* bubble) {
+  // This is a bit annoying.  If you click on the button that generated the
+  // current popup, then we first get this lost focus message, and then
+  // we get the click action.  This results in the popup being immediately
+  // shown again.  To workaround this, we put in a delay.
+  MessageLoop::current()->PostTask(FROM_HERE,
+      task_factory_.NewRunnableMethod(&BrowserActionsContainer::HidePopup));
 }

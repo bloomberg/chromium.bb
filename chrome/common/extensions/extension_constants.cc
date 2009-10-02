@@ -20,6 +20,9 @@ const wchar_t* kName = L"name";
 const wchar_t* kPageActionId = L"id";
 const wchar_t* kPageActions = L"page_actions";
 const wchar_t* kPageActionIcons = L"icons";
+const wchar_t* kPageActionPopup = L"popup";
+const wchar_t* kPageActionPopupHeight = L"height";
+const wchar_t* kPageActionPopupPath = L"path";
 const wchar_t* kPermissions = L"permissions";
 const wchar_t* kPlugins = L"plugins";
 const wchar_t* kPluginsPath = L"path";
@@ -99,6 +102,12 @@ const char* kInvalidPageActionIconPaths =
     "Required value 'page_actions[*].icons' is missing or invalid.";
 const char* kInvalidPageActionId =
     "Required value 'id' is missing or invalid.";
+const char* kInvalidPageActionPopup =
+    "Invalid type for page action popup.";
+const char* kInvalidPageActionPopupHeight =
+    "Invalid value for page action popup height [*].";
+const char* kInvalidPageActionPopupPath =
+    "Invalid value for page action popup path [*].";
 const char* kInvalidPageActionTypeValue =
     "Invalid value for 'page_actions[*].type', expected 'tab' or 'permanent'.";
 const char* kInvalidPermissions =

@@ -21,6 +21,9 @@ namespace extension_manifest_keys {
   extern const wchar_t* kPageActionId;
   extern const wchar_t* kPageActions;
   extern const wchar_t* kPageActionIcons;
+  extern const wchar_t* kPageActionPopup;
+  extern const wchar_t* kPageActionPopupHeight;
+  extern const wchar_t* kPageActionPopupPath;
   extern const wchar_t* kPermissions;
   extern const wchar_t* kPlugins;
   extern const wchar_t* kPluginsPath;
@@ -87,6 +90,9 @@ namespace extension_manifest_errors {
   extern const char* kInvalidPageActionIconPath;
   extern const char* kInvalidPageActionIconPaths;
   extern const char* kInvalidPageActionId;
+  extern const char* kInvalidPageActionPopup;
+  extern const char* kInvalidPageActionPopupHeight;
+  extern const char* kInvalidPageActionPopupPath;
   extern const char* kInvalidPageActionTypeValue;
   extern const char* kInvalidPermissions;
   extern const char* kInvalidPermission;

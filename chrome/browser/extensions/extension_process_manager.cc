@@ -57,28 +57,51 @@ ExtensionProcessManager::~ExtensionProcessManager() {
 
 ExtensionHost* ExtensionProcessManager::CreateView(Extension* extension,
                                                    const GURL& url,
-                                                   Browser* browser) {
+                                                   Browser* browser,
+                                                   ViewType::Type view_type) {
   DCHECK(extension);
   DCHECK(browser);
   ExtensionHost* host =
-      new ExtensionHost(extension, GetSiteInstanceForURL(url), url,
-                        ViewType::EXTENSION_TOOLSTRIP);
+      new ExtensionHost(extension, GetSiteInstanceForURL(url), url, view_type);
   host->CreateView(browser);
   OnExtensionHostCreated(host, false);
   return host;
 }
 
 ExtensionHost* ExtensionProcessManager::CreateView(const GURL& url,
-                                                   Browser* browser) {
+                                                   Browser* browser,
+                                                   ViewType::Type view_type) {
   DCHECK(browser);
   ExtensionsService* service =
     browsing_instance_->profile()->GetExtensionsService();
   if (service) {
     Extension* extension = service->GetExtensionByURL(url);
     if (extension)
-      return CreateView(extension, url, browser);
+      return CreateView(extension, url, browser, view_type);
   }
   return NULL;
+}
+
+ExtensionHost* ExtensionProcessManager::CreateToolstrip(Extension* extension,
+                                                        const GURL& url,
+                                                        Browser* browser) {
+  return CreateView(extension, url, browser, ViewType::EXTENSION_TOOLSTRIP);
+}
+
+ExtensionHost* ExtensionProcessManager::CreateToolstrip(const GURL& url,
+                                                        Browser* browser) {
+  return CreateView(url, browser, ViewType::EXTENSION_TOOLSTRIP);
+}
+
+ExtensionHost* ExtensionProcessManager::CreatePopup(Extension* extension,
+                                                    const GURL& url,
+                                                    Browser* browser) {
+  return CreateView(extension, url, browser, ViewType::EXTENSION_POPUP);
+}
+
+ExtensionHost* ExtensionProcessManager::CreatePopup(const GURL& url,
+                                                    Browser* browser) {
+  return CreateView(url, browser, ViewType::EXTENSION_POPUP);
 }
 
 ExtensionHost* ExtensionProcessManager::CreateBackgroundHost(

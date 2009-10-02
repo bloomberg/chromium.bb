@@ -6,12 +6,53 @@
 
 #include "app/l10n_util_win.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#include "views/widget/root_view.h"
 #include "views/widget/widget_win.h"
 #include "views/window/window.h"
 
+class BubbleWidget : public views::WidgetWin
+{
+public:
+  BubbleWidget(BrowserBubble* bubble) : bubble_(bubble), closed_(false) {
+  }
+
+  void Show(bool activate) {
+    if (activate)
+      ShowWindow(SW_SHOW);
+    else
+      views::WidgetWin::Show();
+  }
+
+  void Close() {
+    if (closed_)
+      return;
+    closed_ = true;
+    views::WidgetWin::Close();
+  }
+
+  void OnActivate(UINT action, BOOL minimized, HWND window) {
+    BrowserBubble::Delegate* delegate = bubble_->delegate();
+    if (!delegate)
+      return;
+
+    if (action == WA_INACTIVE && !closed_) {
+      delegate->BubbleLostFocus(bubble_);
+    } else if (action == WA_ACTIVE) {
+      delegate->BubbleGotFocus(bubble_);
+    }
+  }
+
+private:
+  bool closed_;
+  BrowserBubble* bubble_;
+};
+
 void BrowserBubble::InitPopup() {
   gfx::NativeWindow native_window = frame_->GetWindow()->GetNativeWindow();
-  views::WidgetWin* pop = new views::WidgetWin();
+
+  // popup_ is a Widget, but we need to do some WidgetWin stuff first, then
+  // we'll assign it into popup_.
+  views::WidgetWin* pop = new BubbleWidget(this);
   pop->set_window_style(WS_POPUP);
 
 #if 0
@@ -38,11 +79,11 @@ void BrowserBubble::MovePopup(int x, int y, int w, int h) {
   pop->MoveWindow(x, y, w, h);
 }
 
-void BrowserBubble::Show() {
+void BrowserBubble::Show(bool activate) {
   if (visible_)
     return;
-  views::WidgetWin* pop = static_cast<views::WidgetWin*>(popup_);
-  pop->Show();
+  BubbleWidget* pop = static_cast<BubbleWidget*>(popup_);
+  pop->Show(activate);
   visible_ = true;
 }
 

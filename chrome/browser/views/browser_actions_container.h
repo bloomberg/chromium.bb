@@ -7,15 +7,19 @@
 
 #include <vector>
 
+#include "base/task.h"
+#include "chrome/browser/views/browser_bubble.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "views/view.h"
 
+class BrowserActionImageView;
 class ExtensionAction;
+class ExtensionPopup;
 class Profile;
 class ToolbarView;
 namespace views {
-class TextButton;
+class MenuButton;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -26,7 +30,8 @@ class TextButton;
 //
 ////////////////////////////////////////////////////////////////////////////////
 class BrowserActionsContainer : public views::View,
-                                public NotificationObserver {
+                                public NotificationObserver,
+                                public BrowserBubble::Delegate {
  public:
   BrowserActionsContainer(Profile* profile, ToolbarView* toolbar);
   virtual ~BrowserActionsContainer();
@@ -43,7 +48,7 @@ class BrowserActionsContainer : public views::View,
   void OnBrowserActionVisibilityChanged();
 
   // Called when the user clicks on the browser action icon.
-  void OnBrowserActionExecuted(const ExtensionAction& browser_action);
+  void OnBrowserActionExecuted(BrowserActionImageView* button);
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
@@ -54,9 +59,18 @@ class BrowserActionsContainer : public views::View,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // BrowserBubble::Delegate methods.
+  virtual void BubbleBrowserWindowMoved(BrowserBubble* bubble);
+  virtual void BubbleBrowserWindowClosing(BrowserBubble* bubble);
+  virtual void BubbleGotFocus(BrowserBubble* bubble);
+  virtual void BubbleLostFocus(BrowserBubble* bubble);
+
  private:
+  // Hide the current popup.
+  void HidePopup();
+
   // The vector of browser actions (icons/image buttons for each action).
-  std::vector<views::TextButton*> browser_action_views_;
+  std::vector<views::MenuButton*> browser_action_views_;
 
   NotificationRegistrar registrar_;
 
@@ -64,6 +78,15 @@ class BrowserActionsContainer : public views::View,
 
   // The toolbar that owns us.
   ToolbarView* toolbar_;
+
+  // The current popup and the button it came from.  NULL if no popup.
+  ExtensionPopup* popup_;
+
+  // The button that triggered the current popup (just a reference to a button
+  // from browser_action_views_).
+  BrowserActionImageView* popup_button_;
+
+  ScopedRunnableMethodFactory<BrowserActionsContainer> task_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainer);
 };

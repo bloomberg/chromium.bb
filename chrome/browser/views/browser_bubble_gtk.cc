@@ -30,9 +30,10 @@ void BrowserBubble::MovePopup(int x, int y, int w, int h) {
   pop->SetBounds(gfx::Rect(x, y, w, h));
 }
 
-void BrowserBubble::Show() {
+void BrowserBubble::Show(bool activate) {
   if (visible_)
     return;
+  // TODO(port) respect activate flag.
   views::WidgetGtk* pop = static_cast<views::WidgetGtk*>(popup_);
   pop->Show();
   visible_ = true;

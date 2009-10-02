@@ -198,7 +198,7 @@ void ExtensionShelfModel::AddExtension(Extension* extension) {
        toolstrip != extension->toolstrips().end(); ++toolstrip) {
     GURL url = toolstrip->toolstrip;
     ToolstripItem item;
-    item.host = manager->CreateView(extension, url, browser_);
+    item.host = manager->CreateToolstrip(extension, url, browser_);
     item.info = *toolstrip;
     item.data = NULL;
     item.height = 0;

@@ -24,6 +24,12 @@ class BrowserBubble {
     // Called with the Browser Window that this bubble is attached to is
     // about to close.
     virtual void BubbleBrowserWindowClosing(BrowserBubble* bubble) = 0;
+
+    // Called when the bubble became active / got focus.
+    virtual void BubbleGotFocus(BrowserBubble* bubble) {}
+
+    // Called when the bubble became inactive / lost focus.
+    virtual void BubbleLostFocus(BrowserBubble* bubble) {}
   };
 
   // Note that the bubble will size itself to the preferred size of |view|.
@@ -54,8 +60,8 @@ class BrowserBubble {
   virtual void BrowserWindowClosing();
 
   // Show or hide the bubble.
-  void Show();
-  void Hide();
+  virtual void Show(bool activate);
+  virtual void Hide();
   bool visible() const { return visible_; }
 
   // The contained view.

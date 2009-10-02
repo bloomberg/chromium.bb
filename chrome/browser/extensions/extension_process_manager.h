@@ -11,6 +11,7 @@
 
 #include "base/ref_counted.h"
 #include "chrome/common/notification_registrar.h"
+#include "chrome/common/view_types.h"
 
 class Browser;
 class BrowsingInstance;
@@ -36,8 +37,19 @@ class ExtensionProcessManager : public NotificationObserver {
   // profile.
   ExtensionHost* CreateView(Extension* extension,
                             const GURL& url,
-                            Browser* browser);
-  ExtensionHost* CreateView(const GURL& url, Browser* browser);
+                            Browser* browser,
+                            ViewType::Type view_type);
+  ExtensionHost* CreateView(const GURL& url,
+                            Browser* browser,
+                            ViewType::Type view_type);
+  ExtensionHost* CreateToolstrip(Extension* extension,
+                                 const GURL& url,
+                                 Browser* browser);
+  ExtensionHost* CreateToolstrip(const GURL& url, Browser* browser);
+  ExtensionHost* CreatePopup(Extension* extension,
+                             const GURL& url,
+                             Browser* browser);
+  ExtensionHost* CreatePopup(const GURL& url, Browser* browser);
 
   // Creates a new UI-less extension instance.  Like CreateView, but not
   // displayed anywhere.

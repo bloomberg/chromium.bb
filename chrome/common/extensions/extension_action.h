@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "googleurl/src/gurl.h"
 
 class ExtensionAction {
  public:
@@ -42,6 +43,12 @@ class ExtensionAction {
     icon_paths_.push_back(icon_path);
   }
 
+  const GURL& popup_url() const { return popup_url_; }
+  void set_popup_url(const GURL& url) { popup_url_ = url; }
+
+  const int popup_height() const { return popup_height_; }
+  void set_popup_height(int height) { popup_height_ = height; }
+
  private:
   static int next_command_id_;
 
@@ -65,6 +72,10 @@ class ExtensionAction {
   // An integer for use with the browser's command system. These should always
   // be in the range [IDC_BROWSER_ACTION_FIRST, IDC_BROWSER_ACTION_LAST].
   int command_id_;
+
+  // If the action has a popup, it has a URL and a height.
+  GURL popup_url_;
+  int popup_height_;
 };
 
 typedef std::map<std::string, ExtensionAction*> ExtensionActionMap;

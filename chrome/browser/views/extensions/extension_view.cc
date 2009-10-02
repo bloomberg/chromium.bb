@@ -15,7 +15,7 @@
 ExtensionView::ExtensionView(ExtensionHost* host, Browser* browser)
     : host_(host), browser_(browser),
       initialized_(false), pending_preferred_width_(0), container_(NULL),
-      did_stop_loading_(false), is_clipped_(false), is_toolstrip_(true) {
+      is_clipped_(false) {
   host_->set_view(this);
 }
 
@@ -35,8 +35,15 @@ RenderViewHost* ExtensionView::render_view_host() const {
 }
 
 void ExtensionView::DidStopLoading() {
-  did_stop_loading_ = true;
   ShowIfCompletelyLoaded();
+}
+
+void ExtensionView::SetIsClipped(bool is_clipped) {
+  if (is_clipped_ != is_clipped) {
+    is_clipped_ = is_clipped;
+    if (IsVisible())
+      ShowIfCompletelyLoaded();
+  }
 }
 
 void ExtensionView::SetVisible(bool is_visible) {
@@ -96,12 +103,17 @@ void ExtensionView::CreateWidgetHostView() {
 }
 
 void ExtensionView::ShowIfCompletelyLoaded() {
-  // We wait to show the ExtensionView until it has loaded, our parent has
-  // given us a background and css has been inserted into page. These can happen
-  // in different orders.
-  if (!IsVisible() && host_->did_stop_loading() && render_view_host()->view() &&
-      !is_clipped_ && did_stop_loading_ &&
-      !render_view_host()->view()->background().empty()) {
+  if (IsVisible() || is_clipped_)
+    return;
+
+  // We wait to show the ExtensionView until it has loaded, and the view has
+  // actually been created. These can happen in different orders.
+  if (host_->did_stop_loading() && initialized_) {
+    // For toolstrips, also wait until our parent has given us a background.
+    if (host_->GetRenderViewType() == ViewType::EXTENSION_TOOLSTRIP &&
+        render_view_host()->view()->background().empty()) {
+      return;
+    }
     SetVisible(true);
     UpdatePreferredWidth(pending_preferred_width_);
   }

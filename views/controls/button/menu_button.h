@@ -47,7 +47,7 @@ class MenuButton : public TextButton {
   // These methods are overriden to implement a simple push button
   // behavior
   virtual bool OnMousePressed(const MouseEvent& e);
-  void OnMouseReleased(const MouseEvent& e, bool canceled);
+  virtual void OnMouseReleased(const MouseEvent& e, bool canceled);
   virtual bool OnKeyReleased(const KeyEvent& e);
   virtual void OnMouseExited(const MouseEvent& event);
 

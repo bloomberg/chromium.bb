@@ -295,20 +295,22 @@ void ExtensionHost::InsertThemeCSS() {
 }
 
 void ExtensionHost::DidStopLoading(RenderViewHost* render_view_host) {
-  if (!did_stop_loading_) {
-    did_stop_loading_ = true;
+  bool notify = !did_stop_loading_;
+  did_stop_loading_ = true;
+  if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP ||
+      extension_host_type_ == ViewType::EXTENSION_MOLE ||
+      extension_host_type_ == ViewType::EXTENSION_POPUP) {
+#if defined(TOOLKIT_VIEWS)
+    if (view_.get())
+      view_->DidStopLoading();
+#endif
+  }
+  if (notify) {
     LOG(INFO) << "Sending EXTENSION_HOST_DID_STOP_LOADING";
     NotificationService::current()->Notify(
         NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
         Source<Profile>(profile_),
         Details<ExtensionHost>(this));
-  }
-  if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP ||
-      extension_host_type_ == ViewType::EXTENSION_MOLE) {
-#if defined(TOOLKIT_VIEWS)
-    if (view_.get())
-      view_->DidStopLoading();
-#endif
   }
 }
 
@@ -488,7 +490,9 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
 
 int ExtensionHost::GetBrowserWindowID() const {
   int window_id = -1;
-  if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP) {
+  if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP ||
+      extension_host_type_ == ViewType::EXTENSION_MOLE ||
+      extension_host_type_ == ViewType::EXTENSION_POPUP) {
     window_id = ExtensionTabUtil::GetWindowId(
         const_cast<ExtensionHost* >(this)->GetBrowser());
   } else if (extension_host_type_ == ViewType::EXTENSION_BACKGROUND_PAGE) {
