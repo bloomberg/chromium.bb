@@ -1904,7 +1904,7 @@ void WebFrameImpl::LoadJavaScriptURL(const KURL& url) {
 
   SecurityOrigin* security_origin = frame_->document()->securityOrigin();
 
-  if (!frame_->loader()->isScheduledLocationChangePending()) {
+  if (!frame_->redirectScheduler()->locationChangePending()) {
     frame_->loader()->stopAllLoaders();
     frame_->loader()->begin(frame_->loader()->url(), true, security_origin);
     frame_->loader()->write(script_result);

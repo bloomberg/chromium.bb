@@ -126,7 +126,7 @@ void ApplicationCacheHost::selectCacheWithManifest(const KURL& manifestURL)
             // see WebCore::ApplicationCacheGroup::selectCache()
             const KURL& docURL = m_documentLoader->frame()->document()->url();
             String referrer = m_documentLoader->frameLoader()->referrer();
-            m_documentLoader->frameLoader()->scheduleLocationChange(docURL, referrer);
+            m_documentLoader->frame()->redirectScheduler()->scheduleLocationChange(docURL, referrer);
         }
     }
 }
