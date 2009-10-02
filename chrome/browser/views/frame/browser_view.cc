@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/keyboard_codes.h"
 #include "base/time.h"
-#include "base/win_util.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/app_modal_dialog_queue.h"
@@ -1131,7 +1130,7 @@ void BrowserView::ShowAppMenu() {
 
 int BrowserView::GetCommandId(const NativeWebKeyboardEvent& event) {
   views::Accelerator accelerator(
-      win_util::WinToKeyboardCode(event.windowsKeyCode),
+      static_cast<base::KeyboardCode>(event.windowsKeyCode),
       (event.modifiers & NativeWebKeyboardEvent::ShiftKey) ==
           NativeWebKeyboardEvent::ShiftKey,
       (event.modifiers & NativeWebKeyboardEvent::ControlKey) ==
