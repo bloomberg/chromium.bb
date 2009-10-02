@@ -1636,7 +1636,6 @@ BUG23498 MAC : LayoutTests/fast/css/first-child-pseudo-class.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/css/first-of-type-pseudo-class.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/css/hsl-color.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/css/last-child-pseudo-class.html = IMAGE
-BUG23498 MAC : LayoutTests/fast/css/last-of-type-pseudo-class.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/css/line-height-overflow.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/css/nested-floating-relative-position-percentages.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/css/only-child-pseudo-class.html = IMAGE
@@ -3071,4 +3070,4 @@ BUG_ATWILSON WIN LINUX: LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
 BUG_ATWILSON LINUX : LayoutTests/editing/selection/extend-selection.html = TIMEOUT PASS
 // Just temporary - this will get fixed when we roll webkit r49000
 BUG_ATWILSON MAC : LayoutTests/svg/W3C-SVG-1.1/filters-conv-01-f.svg = FAIL
-
+BUG_ATWILSON MAC LINUX : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL
