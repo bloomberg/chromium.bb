@@ -821,6 +821,50 @@ END_MSG_MAP()
     return hr;
   }
 
+  virtual void OnAcceleratorPressed(int tab_handle, const MSG& accel_message) {
+    DCHECK(m_spInPlaceSite != NULL);
+    // Allow our host a chance to handle the accelerator.
+    // This catches things like Ctrl+F, Ctrl+O etc, but not browser
+    // accelerators such as F11, Ctrl+T etc.
+    // (see AllowFrameToTranslateAccelerator for those).
+    HRESULT hr = TranslateAccelerator(const_cast<MSG*>(&accel_message));
+    if (hr != S_OK)
+      hr = AllowFrameToTranslateAccelerator(accel_message);
+
+    DLOG(INFO) << __FUNCTION__ << " browser response: "
+               << StringPrintf("0x%08x", hr);
+
+    if (hr != S_OK) {
+      // The WM_SYSCHAR message is not processed by the IOleControlSite
+      // implementation and the IBrowserService2::v_MayTranslateAccelerator
+      // implementation. We need to understand this better. That is for
+      // another day. For now we just post the WM_SYSCHAR message back to our
+      // parent which forwards it off to the frame. This should not cause major
+      // grief for Chrome as it does not need to handle WM_SYSCHAR accelerators
+      // when running in ChromeFrame mode.
+      // TODO(iyengar)
+      // Understand and fix WM_SYSCHAR handling
+      // We should probably unify the accelerator handling for the active
+      // document and the activex.
+      if (accel_message.message == WM_SYSCHAR) {
+        ::PostMessage(GetParent(), WM_SYSCHAR, accel_message.wParam,
+                      accel_message.lParam);
+        return;
+      }
+    }
+
+    // Last chance to handle the keystroke is to pass it to chromium.
+    // We do this last partially because there's no way for us to tell if
+    // chromium actually handled the keystroke, but also since the browser
+    // should have first dibs anyway.
+    if (hr != S_OK && automation_client_.get()) {
+      TabProxy* tab = automation_client_->tab();
+      if (tab) {
+        tab->ProcessUnhandledAccelerator(accel_message);
+      }
+    }
+  }
+
  protected:
   ScopedBstr url_;
   ScopedComPtr<IOleDocumentSite> doc_site_;

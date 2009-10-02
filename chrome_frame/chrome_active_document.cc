@@ -399,12 +399,8 @@ void ChromeActiveDocument::OnAcceleratorPressed(int tab_handle,
     if (IsFindAccelerator(accel_message)) {
       // Handle the showing of the find dialog explicitly.
       OnFindInPage();
-    } else if (AllowFrameToTranslateAccelerator(accel_message) != S_OK) {
-      DLOG(INFO) << "IE DID NOT handle accel key " << accel_message.wParam;
-      TabProxy* tab = GetTabProxy();
-      if (tab) {
-        tab->ProcessUnhandledAccelerator(accel_message);
-      }
+    } else {
+      Base::OnAcceleratorPressed(tab_handle, accel_message);
     }
   } else {
     DLOG(INFO) << "IE handled accel key " << accel_message.wParam;

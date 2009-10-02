@@ -80,7 +80,6 @@ END_MSG_MAP()
   STDMETHOD(put_src)(BSTR src);
 
  protected:
-  virtual void OnAcceleratorPressed(int tab_handle, const MSG& accel_message);
   virtual void OnLoad(int tab_handle, const GURL& url);
   virtual void OnMessageFromChromeFrame(int tab_handle,
                                         const std::string& message,

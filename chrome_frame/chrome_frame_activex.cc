@@ -51,32 +51,6 @@ LRESULT ChromeFrameActivex::OnCreate(UINT message, WPARAM wparam, LPARAM lparam,
   return 0;
 }
 
-void ChromeFrameActivex::OnAcceleratorPressed(int tab_handle,
-                                              const MSG& accel_message) {
-  DCHECK(m_spInPlaceSite != NULL);
-  // Allow our host a chance to handle the accelerator.
-  // This catches things like Ctrl+F, Ctrl+O etc, but not browser
-  // accelerators such as F11, Ctrl+T etc.
-  // (see AllowFrameToTranslateAccelerator for those).
-  HRESULT hr = TranslateAccelerator(const_cast<MSG*>(&accel_message));
-  if (hr != S_OK)
-    hr = AllowFrameToTranslateAccelerator(accel_message);
-
-  DLOG(INFO) << __FUNCTION__ << " browser response: "
-             << StringPrintf("0x%08x", hr);
-
-  // Last chance to handle the keystroke is to pass it to chromium.
-  // We do this last partially because there's no way for us to tell if
-  // chromium actually handled the keystroke, but also since the browser
-  // should have first dibs anyway.
-  if (hr != S_OK && automation_client_.get()) {
-    TabProxy* tab = automation_client_->tab();
-    if (tab) {
-      tab->ProcessUnhandledAccelerator(accel_message);
-    }
-  }
-}
-
 HRESULT ChromeFrameActivex::GetContainingDocument(IHTMLDocument2** doc) {
   ScopedComPtr<IOleContainer> container;
   HRESULT hr = m_spClientSite->GetContainer(container.Receive());
@@ -280,7 +254,7 @@ STDMETHODIMP ChromeFrameActivex::Load(IPropertyBag* bag, IErrorLog* error_log) {
 const wchar_t g_activex_mixed_content_error[] = {
     L"data:text/html,<html><body><b>ChromeFrame Security Error<br><br>"
     L"Cannot navigate to HTTP url when document URL is HTTPS</body></html>"};
-    
+
 STDMETHODIMP ChromeFrameActivex::put_src(BSTR src) {
   GURL document_url(GetDocumentUrl());
   if (document_url.SchemeIsSecure()) {
