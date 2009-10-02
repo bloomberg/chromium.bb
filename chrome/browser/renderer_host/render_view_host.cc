@@ -1435,8 +1435,16 @@ bool RenderViewHost::ShouldSendToRenderer(const NativeWebKeyboardEvent& event) {
 void RenderViewHost::UnhandledKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
-  if (view)
-    view->HandleKeyboardEvent(event);
+  if (view) {
+    // TODO(brettw) why do we have to filter these types of events here. Can't
+    // the renderer just send us the ones we care abount, or maybe the view
+    // should be able to decide which ones it wants or not?
+    if ((event.type == WebInputEvent::RawKeyDown) ||
+        (event.type == WebInputEvent::KeyDown) ||
+        (event.type == WebInputEvent::Char)) {
+      view->HandleKeyboardEvent(event);
+    }
+  }
 }
 
 void RenderViewHost::OnUserGesture() {
