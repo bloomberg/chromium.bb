@@ -75,11 +75,8 @@ void OnShutdownStarting(ShutdownType type) {
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     ++shutdown_num_processes_;
-    if (!i.GetCurrentValue()->FastShutdownIfPossible()) {
-      shutdown_num_processes_slow_++;
-    }
-
-    hosts.Advance();
+    if (!i.GetCurrentValue()->FastShutdownIfPossible())
+      ++shutdown_num_processes_slow_;
   }
 }
 
