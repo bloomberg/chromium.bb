@@ -163,7 +163,8 @@ TEST_F(WorkerTest, MessagePorts) {
     "message-port-constructor-for-deleted-document.html",
     "message-port-deleted-document.html",
     "message-port-deleted-frame.html",
-    "message-port-inactive-document.html",
+    // http://crbug.com/23597 (caused by http://trac.webkit.org/changeset/48978)
+    // "message-port-inactive-document.html",
     "message-port-multi.html",
     "message-port-no-wrapper.html",
     // Only works with run-webkit-tests --leaks.

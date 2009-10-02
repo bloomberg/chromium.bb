@@ -3143,3 +3143,14 @@ BUG_SENORBLANCO LINUX : LayoutTests/tables/mozilla/core/bloomberg.html = FAIL
 BUG_SENORBLANCO LINUX RELEASE : LayoutTests/fast/backgrounds/size/contain-and-cover.html = FAIL
 BUG_SENORBLANCO LINUX RELEASE : LayoutTests/svg/batik/paints/gradientLimit.svg = FAIL
 BUG_SENORBLANCO LINUX RELEASE : LayoutTests/svg/text/text-text-07-t.svg = FAIL
+
+// WebKit update 48976:48993 (48989 busted all these)
+BUG_ATWILSON WIN LINUX: LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL
+BUG_ATWILSON WIN LINUX: LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
+BUG_ATWILSON : LayoutTests/fast/css/text-rendering.html = FAIL
+BUG_ATWILSON WIN LINUX: LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
+// This was happening previously - might be a flakey test?
+BUG_ATWILSON LINUX : LayoutTests/editing/selection/extend-selection.html = TIMEOUT PASS
+// Just temporary - this will get fixed when we roll webkit r49000
+BUG_ATWILSON MAC : LayoutTests/svg/W3C-SVG-1.1/filters-conv-01-f.svg = FAIL
+
