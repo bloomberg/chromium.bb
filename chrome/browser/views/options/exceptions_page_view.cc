@@ -97,7 +97,6 @@ void ExceptionsPageView::ButtonPressed(
   // select only).
   views::TableSelectionIterator iter = table_view_->SelectionBegin();
   int row = *iter;
-  PasswordForm* selected = table_model_.GetPasswordFormAt(row);
   DCHECK(++iter == table_view_->SelectionEnd());
 
   if (sender == &remove_button_) {
