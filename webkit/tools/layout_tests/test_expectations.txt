@@ -2372,6 +2372,7 @@ BUG_SENORBLANCO WIN : LayoutTests/tables/mozilla/core/bloomberg.html = FAIL
 BUG_SENORBLANCO WIN : LayoutTests/tables/mozilla_expected_failures/bugs/bug85016.html = FAIL
 BUG_SENORBLANCO WIN : LayoutTests/media/video-layer-crash.html = FAIL
 BUG_SENORBLANCO WIN : LayoutTests/media/video-transformed.html = FAIL
+BUG_SENORBLANCO WIN RELEASE : LayoutTests/svg/batik/paints/gradientLimit.svg = FAIL
 
 BUG_SENORBLANCO LINUX : LayoutTests/fast/backgrounds/repeat/negative-offset-repeat-transformed.html = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/fast/borders/border-image-rotate-transform.html = FAIL
