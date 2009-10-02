@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,6 +57,9 @@ class BackingStoreManager {
 
   // Removes the backing store for the host.
   static void RemoveBackingStore(RenderWidgetHost* host);
+
+  // Removes all backing stores.
+  static void RemoveAllBackingStores();
 
   // Expires the given backing store. This emulates something getting evicted
   // from the cache for the purpose of testing. Returns true if the host was

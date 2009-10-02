@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -369,7 +369,7 @@ void TextDatabaseManager::DeleteAll() {
   InitDBList();
 
   // Close all open databases.
-  db_cache_.ShrinkToSize(0);
+  db_cache_.Clear();
 
   // Now go through and delete all the files.
   for (DBIdentSet::iterator i = present_databases_.begin();

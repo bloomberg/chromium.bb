@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -214,6 +214,14 @@ void BackingStoreManager::RemoveBackingStore(RenderWidgetHost* host) {
       return;
   }
   cache->Erase(it);
+}
+
+// static
+void BackingStoreManager::RemoveAllBackingStores() {
+  if (large_cache) {
+    large_cache->Clear();
+    small_cache->Clear();
+  }
 }
 
 // static

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -103,6 +103,13 @@ TEST(MRUCacheTest, Basic) {
     cache.Erase(cache.begin());
     EXPECT_EQ(0U, cache.size());
   }
+
+  // Check that Clear() works properly.
+  cache.Put(kItem1Key, item1);
+  cache.Put(kItem2Key, item2);
+  EXPECT_EQ(2U, cache.size());
+  cache.Clear();
+  EXPECT_EQ(0U, cache.size());
 }
 
 TEST(MRUCacheTest, GetVsPeek) {
@@ -209,6 +216,16 @@ TEST(MRUCacheTest, Owning) {
 
   // There should be no objects leaked.
   EXPECT_EQ(initial_count, cached_item_live_count);
+
+  // Check that Clear() also frees things correctly.
+  {
+    Cache cache2(Cache::NO_AUTO_EVICT);
+    cache2.Put(1, new CachedItem(20));
+    cache2.Put(2, new CachedItem(20));
+    EXPECT_EQ(initial_count + 2, cached_item_live_count);
+    cache2.Clear();
+    EXPECT_EQ(initial_count, cached_item_live_count);
+  }
 }
 
 TEST(MRUCacheTest, AutoEvict) {

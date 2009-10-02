@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -135,6 +135,15 @@ class MRUCacheBase {
   void ShrinkToSize(size_type new_size) {
     for (size_type i = size(); i > new_size; i--)
       Erase(rbegin());
+  }
+
+  // Deletes everything from the cache.
+  void Clear() {
+    for (typename PayloadList::iterator i(ordering_.begin());
+         i != ordering_.end(); ++i)
+      deletor_(i->second);
+    index_.clear();
+    ordering_.clear();
   }
 
   // Returns the number of elements in the cache.
