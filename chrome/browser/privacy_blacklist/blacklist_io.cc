@@ -19,6 +19,7 @@ const char header[] = "[Chromium::PrivacyBlacklist]";
 const char name_tag[] = "Name:";
 const char url_tag[] = "URL:";
 const char arrow_tag[] = "=>";
+const char eol[] = "\n\r";
 
 class IsWhiteSpace {
  public:
@@ -121,11 +122,11 @@ bool BlacklistIO::Read(const FilePath& file) {
     scoped_ptr<Blacklist::Entry> entry(new Blacklist::Entry(pattern, provider));
 
     cur = std::find_if(cur+arraysize(arrow_tag), end, IsNotWhiteSpace());
-    skip = std::find(cur, end, '\n');
+    skip = std::find_first_of(cur, end, eol, eol+2);
     std::string buf(cur, skip);
     cur = skip + 1;
 
-    StringTokenizer tokenier(buf, " (),");
+    StringTokenizer tokenier(buf, " (),\n\r");
     tokenier.set_options(StringTokenizer::RETURN_DELIMS);
 
     bool in_attribute = false;
