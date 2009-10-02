@@ -1385,8 +1385,8 @@ BUG10354 WIN LINUX : LayoutTests/fast/layers/opacity-transforms.html = FAIL
 BUG10354 MAC : LayoutTests/plugins/netscape-construct.html = FAIL
 
 // MERGE 38389:38450
-// WebKit regression: https://bugs.webkit.org/show_bug.cgi?id=20342
-// Fails upstream, deferring for now.
+// Form submit causes invalid page reload/navigation when action is a named
+// anchor
 BUG10357 : LayoutTests/fast/dom/cssTarget-crash.html = TIMEOUT
 
 // MERGE 38500:39550: New tests
