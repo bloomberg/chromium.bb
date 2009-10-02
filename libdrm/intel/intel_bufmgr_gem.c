@@ -53,6 +53,7 @@
 
 #include "errno.h"
 #include "libdrm_lists.h"
+#include "intel_atomic.h"
 #include "intel_bufmgr.h"
 #include "intel_bufmgr_priv.h"
 #include "intel_chipset.h"
@@ -102,7 +103,7 @@ typedef struct _drm_intel_bufmgr_gem {
 struct _drm_intel_bo_gem {
     drm_intel_bo bo;
 
-    int refcount;
+    atomic_t refcount;
     /** Boolean whether the mmap ioctl has been called for this buffer yet. */
     uint32_t gem_handle;
     const char *name;
@@ -172,8 +173,6 @@ struct _drm_intel_bo_gem {
     int reloc_tree_fences;
 };
 
-static void drm_intel_gem_bo_reference_locked(drm_intel_bo *bo);
-
 static unsigned int
 drm_intel_gem_estimate_batch_space(drm_intel_bo **bo_array, int count);
 
@@ -187,6 +186,9 @@ drm_intel_gem_bo_get_tiling(drm_intel_bo *bo, uint32_t *tiling_mode,
 static int
 drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t *tiling_mode,
 			    uint32_t stride);
+
+static void
+drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo);
 
 static void
 drm_intel_gem_bo_unreference(drm_intel_bo *bo);
@@ -237,6 +239,15 @@ static void drm_intel_gem_dump_validation_list(drm_intel_bufmgr_gem *bufmgr_gem)
     }
 }
 
+static void
+drm_intel_gem_bo_reference(drm_intel_bo *bo)
+{
+    drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
+
+    assert(atomic_read(&bo_gem->refcount) > 0);
+    atomic_inc(&bo_gem->refcount);
+}
+
 /**
  * Adds the given buffer to the list of buffers to be validated (moved into the
  * appropriate memory type) with the next batch submission.
@@ -280,7 +291,7 @@ drm_intel_add_validate_buffer(drm_intel_bo *bo)
     bufmgr_gem->exec_objects[index].alignment = 0;
     bufmgr_gem->exec_objects[index].offset = 0;
     bufmgr_gem->exec_bos[index] = bo;
-    drm_intel_gem_bo_reference_locked(bo);
+    drm_intel_gem_bo_reference(bo);
     bufmgr_gem->exec_count++;
 }
 
@@ -436,7 +447,7 @@ retry:
     }
 
     bo_gem->name = name;
-    bo_gem->refcount = 1;
+    atomic_set(&bo_gem->refcount, 1);
     bo_gem->validate_index = -1;
     bo_gem->reloc_tree_size = bo_gem->bo.size;
     bo_gem->reloc_tree_fences = 0;
@@ -499,7 +510,7 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr, const char *name,
     bo_gem->bo.virtual = NULL;
     bo_gem->bo.bufmgr = bufmgr;
     bo_gem->name = name;
-    bo_gem->refcount = 1;
+    atomic_set (&bo_gem->refcount, 1);
     bo_gem->validate_index = -1;
     bo_gem->gem_handle = open_arg.handle;
     bo_gem->global_name = handle;
@@ -522,27 +533,6 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr, const char *name,
     DBG("bo_create_from_handle: %d (%s)\n", handle, bo_gem->name);
 
     return &bo_gem->bo;
-}
-
-static void
-drm_intel_gem_bo_reference(drm_intel_bo *bo)
-{
-    drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
-    drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
-
-    assert(bo_gem->refcount > 0);
-    pthread_mutex_lock(&bufmgr_gem->lock);
-    bo_gem->refcount++;
-    pthread_mutex_unlock(&bufmgr_gem->lock);
-}
-
-static void
-drm_intel_gem_bo_reference_locked(drm_intel_bo *bo)
-{
-    drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
-
-    assert(bo_gem->refcount > 0);
-    bo_gem->refcount++;
 }
 
 static void
@@ -597,60 +587,70 @@ drm_intel_gem_cleanup_bo_cache(drm_intel_bufmgr_gem *bufmgr_gem, time_t time)
 }
 
 static void
-drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo)
+drm_intel_gem_bo_unreference_final(drm_intel_bo *bo)
 {
     drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
     drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
+    struct drm_intel_gem_bo_bucket *bucket;
+    uint32_t tiling_mode;
 
-    assert(bo_gem->refcount > 0);
-    if (--bo_gem->refcount == 0) {
-	struct drm_intel_gem_bo_bucket *bucket;
-	uint32_t tiling_mode;
+    if (bo_gem->relocs != NULL) {
+	int i;
 
-	if (bo_gem->relocs != NULL) {
-	    int i;
-
-	    /* Unreference all the target buffers */
-	    for (i = 0; i < bo_gem->reloc_count; i++)
-		 drm_intel_gem_bo_unreference_locked(bo_gem->reloc_target_bo[i]);
-	}
-
-	DBG("bo_unreference final: %d (%s)\n",
-	    bo_gem->gem_handle, bo_gem->name);
-
-	bucket = drm_intel_gem_bo_bucket_for_size(bufmgr_gem, bo->size);
-	/* Put the buffer into our internal cache for reuse if we can. */
-	tiling_mode = I915_TILING_NONE;
-	if (bufmgr_gem->bo_reuse && bo_gem->reusable && bucket != NULL &&
-	    drm_intel_gem_bo_set_tiling(bo, &tiling_mode, 0) == 0)
-	{
-	    struct timespec time;
-
-	    clock_gettime(CLOCK_MONOTONIC, &time);
-	    bo_gem->free_time = time.tv_sec;
-
-	    bo_gem->name = NULL;
-	    bo_gem->validate_index = -1;
-	    bo_gem->reloc_count = 0;
-
-	    DRMLISTADDTAIL(&bo_gem->head, &bucket->head);
-
-	    drm_intel_gem_bo_madvise(bufmgr_gem, bo_gem, I915_MADV_DONTNEED);
-	    drm_intel_gem_cleanup_bo_cache(bufmgr_gem, time.tv_sec);
-	} else {
-	    drm_intel_gem_bo_free(bo);
-	}
+	/* Unreference all the target buffers */
+	for (i = 0; i < bo_gem->reloc_count; i++)
+	    drm_intel_gem_bo_unreference_locked(bo_gem->reloc_target_bo[i]);
     }
+
+    DBG("bo_unreference final: %d (%s)\n",
+	bo_gem->gem_handle, bo_gem->name);
+
+    bucket = drm_intel_gem_bo_bucket_for_size(bufmgr_gem, bo->size);
+    /* Put the buffer into our internal cache for reuse if we can. */
+    tiling_mode = I915_TILING_NONE;
+    if (bufmgr_gem->bo_reuse && bo_gem->reusable && bucket != NULL &&
+	drm_intel_gem_bo_set_tiling(bo, &tiling_mode, 0) == 0)
+    {
+	struct timespec time;
+
+	clock_gettime(CLOCK_MONOTONIC, &time);
+	bo_gem->free_time = time.tv_sec;
+
+	bo_gem->name = NULL;
+	bo_gem->validate_index = -1;
+	bo_gem->reloc_count = 0;
+
+	DRMLISTADDTAIL(&bo_gem->head, &bucket->head);
+
+	drm_intel_gem_bo_madvise(bufmgr_gem, bo_gem, I915_MADV_DONTNEED);
+	drm_intel_gem_cleanup_bo_cache(bufmgr_gem, time.tv_sec);
+    } else {
+	drm_intel_gem_bo_free(bo);
+    }
+}
+
+static void
+drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo)
+{
+    drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
+
+    assert(atomic_read(&bo_gem->refcount) > 0);
+    if (atomic_dec_and_test (&bo_gem->refcount))
+	drm_intel_gem_bo_unreference_final(bo);
 }
 
 static void
 drm_intel_gem_bo_unreference(drm_intel_bo *bo)
 {
-    drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
+    drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
 
-    pthread_mutex_lock(&bufmgr_gem->lock);
-    drm_intel_gem_bo_unreference_locked(bo);
-    pthread_mutex_unlock(&bufmgr_gem->lock);
+    assert(atomic_read(&bo_gem->refcount) > 0);
+    if (atomic_dec_and_test (&bo_gem->refcount)) {
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
+	pthread_mutex_lock(&bufmgr_gem->lock);
+	drm_intel_gem_bo_unreference_final(bo);
+	pthread_mutex_unlock(&bufmgr_gem->lock);
+    }
 }
 
 static int
@@ -1017,7 +1017,7 @@ drm_intel_gem_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
     bo_gem->relocs[bo_gem->reloc_count].presumed_offset = target_bo->offset;
 
     bo_gem->reloc_target_bo[bo_gem->reloc_count] = target_bo;
-    drm_intel_gem_bo_reference_locked(target_bo);
+    drm_intel_gem_bo_reference(target_bo);
 
     bo_gem->reloc_count++;
 

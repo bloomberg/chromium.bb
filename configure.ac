@@ -146,6 +146,23 @@ if test "x$HAVE_LIBUDEV" = xyes; then
 fi
 AM_CONDITIONAL(HAVE_LIBUDEV, [test "x$HAVE_LIBUDEV" = xyes])
 
+# Check for atomic intrinsics
+AC_CACHE_CHECK([for native atomic primitives], drm_cv_atomic_primitives,
+[
+	drm_cv_atomic_primitives="none"
+
+	AC_TRY_LINK([
+int atomic_add(int i) { return __sync_fetch_and_add (&i, 1); }
+int atomic_cmpxchg(int i, int j, int k) { return __sync_val_compare_and_swap (&i, j, k); }
+], [],
+	  drm_cv_atomic_primitives="Intel"
+	  )
+])
+if test "x$drm_cv_atomic_primitives" = xIntel; then
+	AC_DEFINE(HAVE_INTEL_ATOMIC_PRIMITIVES, 1,
+		  [Enable if your compiler supports the Intel __sync_* atomic primitives])
+fi
+
 AC_SUBST(WARN_CFLAGS)
 AC_OUTPUT([
 	Makefile
