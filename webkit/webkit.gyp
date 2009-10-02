@@ -258,7 +258,14 @@
               'link_settings': {
                 'libraries': [
                   '-lopengl32.lib',
-                ]
+                ],
+              },
+            }],
+            ['OS=="mac"', {
+              'link_settings': {
+                'libraries': [
+                  '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
+                ],
               },
             }],
           ],

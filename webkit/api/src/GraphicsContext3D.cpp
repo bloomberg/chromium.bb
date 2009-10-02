@@ -63,7 +63,23 @@
 
 #include "GL/glew.h"
 
+#if PLATFORM(CG)
+#include "GraphicsContext.h"
+#include <CoreGraphics/CGContext.h>
+#include <CoreGraphics/CGBitmapContext.h>
+#include <CoreGraphics/CGImage.h>
+#include <OpenGL/OpenGL.h>
+#else
+#define FLIP_FRAMEBUFFER_VERTICALLY
+#endif
+
+#if PLATFORM(SKIA)
 #include "NativeImageSkia.h"
+#endif
+
+#if PLATFORM(DARWIN)
+#define USE_TEXTURE_RECTANGLE_FOR_FRAMEBUFFER
+#endif
 
 using namespace std;
 
@@ -100,13 +116,8 @@ public:
     void bindTexture(unsigned long target,
                      CanvasTexture* texture);
     void bufferDataImpl(unsigned long target, int size, const void* data, unsigned long usage);
-    void colorMask(bool red, bool green, bool blue, bool alpha);
-    void depthMask(bool flag);
-    void disable(unsigned long cap);
     void disableVertexAttribArray(unsigned long index);
-    void enable(unsigned long cap);
     void enableVertexAttribArray(unsigned long index);
-    void useProgram(CanvasProgram* program);
     void vertexAttribPointer(unsigned long indx, int size, int type, bool normalized,
                              unsigned long stride, unsigned long offset);
     void viewportImpl(long x, long y, unsigned long width, unsigned long height);
@@ -115,20 +126,18 @@ private:
     unsigned int m_texture;
     unsigned int m_fbo;
     unsigned int m_depthBuffer;
+    unsigned int m_cachedWidth, m_cachedHeight;
 
-    // Objects for flipping the render output vertically
-    unsigned int m_altTexture;
-    unsigned int m_quadVBO;
-    unsigned int m_quadProgram;
-    unsigned int m_quadTexLocation;
+#ifdef FLIP_FRAMEBUFFER_VERTICALLY
+    unsigned char* m_scanline;
+    void flipVertically(unsigned char* framebuffer,
+                        unsigned int width,
+                        unsigned int height);
+#endif
 
-    // Storage for saving/restoring buffer, vertex attribute,
-    // blending, and program state when drawing flipped quad
-    unsigned int m_currentProgram;
-    bool m_blendEnabled;
-    bool m_depthTestEnabled;
-    bool m_depthMaskEnabled;
-    bool m_colorMask[4];
+    // Note: we aren't currently using this information, but we will
+    // need to in order to verify that all enabled vertex arrays have
+    // a valid buffer bound -- to avoid crashes on certain cards.
     unsigned int m_boundArrayBuffer;
     class VertexAttribPointerState {
     public:
@@ -143,22 +152,21 @@ private:
         unsigned long stride;
         unsigned long offset;
     };
-    VertexAttribPointerState m_vertexAttribPointerState[1];
-    unsigned int m_activeTextureUnit;
-    class TextureUnitState {
-    public:
-        TextureUnitState();
 
-        unsigned long target;
-        unsigned int texture;
+    enum {
+        NumTrackedPointerStates = 2
     };
-    TextureUnitState m_textureUnitState[1];
-    int m_viewport[4];
+    VertexAttribPointerState m_vertexAttribPointerState[NumTrackedPointerStates];
 
 #if PLATFORM(WIN_OS)
     HWND  m_canvasWindow;
     HDC   m_canvasDC;
     HGLRC m_contextObj;
+#elif PLATFORM(CG)
+    CGLPBufferObj m_pbuffer;
+    CGLContextObj m_contextObj;
+    unsigned char* m_renderOutput;
+    CGContextRef m_cgContext;
 #else
     #error Must port GraphicsContext3D to your platform
 #endif
@@ -176,38 +184,27 @@ GraphicsContext3DInternal::VertexAttribPointerState::VertexAttribPointerState()
 {
 }
 
-GraphicsContext3DInternal::TextureUnitState::TextureUnitState()
-    : target(0)
-    , texture(0)
-{
-}
-
 GraphicsContext3DInternal::GraphicsContext3DInternal()
     : m_texture(0)
     , m_fbo(0)
     , m_depthBuffer(0)
-    , m_altTexture(0)
-    , m_quadVBO(0)
-    , m_quadProgram(0)
-    , m_quadTexLocation(0)
-    , m_currentProgram(0)
-    , m_blendEnabled(false)
-    , m_depthTestEnabled(false)
-    , m_depthMaskEnabled(true)
+#ifdef FLIP_FRAMEBUFFER_VERTICALLY
+    , m_scanline(NULL)
+#endif
     , m_boundArrayBuffer(0)
-    , m_activeTextureUnit(0)
 #if PLATFORM(WIN_OS)
     , m_canvasWindow(NULL)
     , m_canvasDC(NULL)
     , m_contextObj(NULL)
+#elif PLATFORM(CG)
+    , m_pbuffer(NULL)
+    , m_contextObj(NULL)
+    , m_renderOutput(NULL)
+    , m_cgContext(NULL)
 #else
 #error Must port to your platform
 #endif
 {
-    for (int i = 0; i < 4; i++) {
-        m_viewport[i] = 0;
-        m_colorMask[i] = true;
-    }
 #if PLATFORM(WIN_OS)
     WNDCLASS wc;
     if (!GetClassInfo(GetModuleHandle(NULL), L"CANVASGL", &wc)) {
@@ -277,12 +274,59 @@ GraphicsContext3DInternal::GraphicsContext3DInternal()
         setSwapInterval(1);
 #endif // RENDER_TO_DEBUGGING_WINDOW
 
+#elif PLATFORM(CG)
+    // Create a 1x1 pbuffer and associated context to bootstrap things
+    CGLPixelFormatAttribute attribs[] = {
+        (CGLPixelFormatAttribute) kCGLPFAPBuffer,
+        (CGLPixelFormatAttribute) 0
+    };
+    CGLPixelFormatObj pixelFormat;
+    GLint numPixelFormats;
+    if (CGLChoosePixelFormat(attribs, &pixelFormat, &numPixelFormats) != kCGLNoError) {
+        printf("GraphicsContext3D: error choosing pixel format\n");
+        return;
+    }
+    if (pixelFormat == NULL) {
+        printf("GraphicsContext3D: no pixel format selected\n");
+        return;
+    }
+    CGLContextObj context;
+    CGLError res = CGLCreateContext(pixelFormat, NULL, &context);
+    CGLDestroyPixelFormat(pixelFormat);
+    if (res != kCGLNoError) {
+        printf("GraphicsContext3D: error creating context\n");
+        return;
+    }
+    CGLPBufferObj pbuffer;
+    if (CGLCreatePBuffer(1, 1, GL_TEXTURE_2D, GL_RGBA, 0, &pbuffer) != kCGLNoError) {
+        CGLDestroyContext(context);
+        printf("GraphicsContext3D: error creating pbuffer\n");
+        return;
+    }
+    if (CGLSetPBuffer(context, pbuffer, 0, 0, 0) != kCGLNoError) {
+        CGLDestroyContext(context);
+        CGLDestroyPBuffer(pbuffer);
+        printf("GraphicsContext3D: error attaching pbuffer to context\n");
+        return;
+    }
+    if (CGLSetCurrentContext(context) != kCGLNoError) {
+        CGLDestroyContext(context);
+        CGLDestroyPBuffer(pbuffer);
+        printf("GraphicsContext3D: error making context current\n");
+        return;
+    }
+    m_pbuffer = pbuffer;
+    m_contextObj = context;
 #else
 #error Must port to your platform
 #endif
 
     // Initialize GLEW and check for GL 2.0 support by the drivers.
     GLenum glewInitResult = glewInit();
+    if (glewInitResult != GLEW_OK) {
+        printf("GraphicsContext3D: GLEW initialization failed\n");
+        return;
+    }
     if (!glewIsSupported("GL_VERSION_2_0")) {
         printf("GraphicsContext3D: OpenGL 2.0 not supported\n");
         return;
@@ -295,7 +339,10 @@ GraphicsContext3DInternal::~GraphicsContext3DInternal()
 #ifndef RENDER_TO_DEBUGGING_WINDOW
     glDeleteRenderbuffersEXT(1, &m_depthBuffer);
     glDeleteTextures(1, &m_texture);
-    glDeleteTextures(1, &m_altTexture);
+#ifdef FLIP_FRAMEBUFFER_VERTICALLY
+    if (m_scanline != NULL)
+        delete[] m_scanline;
+#endif
     glDeleteFramebuffersEXT(1, &m_fbo);
 #endif // !RENDER_TO_DEBUGGING_WINDOW
 #if PLATFORM(WIN_OS)
@@ -303,6 +350,14 @@ GraphicsContext3DInternal::~GraphicsContext3DInternal()
     wglDeleteContext(m_contextObj);
     ReleaseDC(m_canvasWindow, m_canvasDC);
     DestroyWindow(m_canvasWindow);
+#elif PLATFORM(CG)
+    CGLSetCurrentContext(NULL);
+    CGLDestroyContext(m_contextObj);
+    CGLDestroyPBuffer(m_pbuffer);
+    if (m_cgContext != NULL)
+        CGContextRelease(m_cgContext);
+    if (m_renderOutput != NULL)
+        delete[] m_renderOutput;
 #else
 #error Must port to your platform
 #endif
@@ -315,7 +370,7 @@ void GraphicsContext3DInternal::checkError() const
     // will need to throw an exception on error.
     GLenum error = glGetError();
     if (error != GL_NO_ERROR) {
-        printf("GL Error : %x\n", error);
+        printf("GraphicsContext3DInternal: GL Error : %x\n", error);
         notImplemented();
     }
 }
@@ -325,6 +380,10 @@ bool GraphicsContext3DInternal::makeContextCurrent()
 #if PLATFORM(WIN_OS)
     if (wglGetCurrentContext() != m_contextObj)
         if (wglMakeCurrent(m_canvasDC, m_contextObj))
+            return true;
+#elif PLATFORM(CG)
+    if (CGLGetCurrentContext() != m_contextObj)
+        if (CGLSetCurrentContext(m_contextObj) == kCGLNoError)
             return true;
 #else
 #error Must port to your platform
@@ -342,13 +401,13 @@ Platform3DObject GraphicsContext3DInternal::platformTexture() const
     return m_texture;
 }
 
-static int createTextureObject()
+static int createTextureObject(GLenum target)
 {
     GLuint texture = 0;
     glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(target, texture);
+    glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     return texture;
 }
 
@@ -360,36 +419,38 @@ void GraphicsContext3DInternal::reshape(int width, int height)
     ShowWindow(m_canvasWindow, SW_SHOW);
 #endif
 
+    m_cachedWidth = width;
+    m_cachedHeight = height;
     makeContextCurrent();
 
 #ifndef RENDER_TO_DEBUGGING_WINDOW
+#ifdef USE_TEXTURE_RECTANGLE_FOR_FRAMEBUFFER
+    // GL_TEXTURE_RECTANGLE_ARB is the best supported render target on Mac OS X
+    GLenum target = GL_TEXTURE_RECTANGLE_ARB;
+#else
+    GLenum target = GL_TEXTURE_2D;
+#endif
     if (m_texture == 0) {
-        // Generate the texture objects
-        m_texture = createTextureObject();
-        m_altTexture = createTextureObject();
-
+        // Generate the texture object
+        m_texture = createTextureObject(target);
         // Generate the framebuffer object
         glGenFramebuffersEXT(1, &m_fbo);
-
         // Generate the depth buffer
         glGenRenderbuffersEXT(1, &m_depthBuffer);
-
         checkError();
     }
 
     // Reallocate the color and depth buffers
-    glBindTexture(GL_TEXTURE_2D, m_texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-    glBindTexture(GL_TEXTURE_2D, m_altTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(target, m_texture);
+    glTexImage2D(target, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    glBindTexture(target, 0);
 
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_fbo);
     glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, m_depthBuffer);
     glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, width, height);
     glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
 
-    glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, m_texture, 0);
+    glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, target, m_texture, 0);
     glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, m_depthBuffer);
     GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
     if (status != GL_FRAMEBUFFER_COMPLETE_EXT) {
@@ -398,11 +459,62 @@ void GraphicsContext3DInternal::reshape(int width, int height)
         // FIXME: cleanup.
         notImplemented();
     }
-#endif // RENDER_TO_DEBUGGING_WINDOW
+#endif  // RENDER_TO_DEBUGGING_WINDOW
+
+#ifdef FLIP_FRAMEBUFFER_VERTICALLY
+    if (m_scanline != NULL) {
+        delete[] m_scanline;
+        m_scanline = NULL;
+    }
+    m_scanline = new unsigned char[width * 4];
+#endif  // FLIP_FRAMEBUFFER_VERTICALLY
 
     glClear(GL_COLOR_BUFFER_BIT);
     viewportImpl(0, 0, width, height);
+
+#if PLATFORM(CG)
+    // Need to reallocate the client-side backing store.
+    // FIXME: make this more efficient.
+    if (m_cgContext != NULL) {
+        CGContextRelease(m_cgContext);
+        m_cgContext = NULL;
+    }
+    if (m_renderOutput != NULL) {
+        delete[] m_renderOutput;
+        m_renderOutput = NULL;
+    }
+    int rowBytes = width * 4;
+    m_renderOutput = new unsigned char[height * rowBytes];
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+    m_cgContext = CGBitmapContextCreate(m_renderOutput, width, height, 8, rowBytes,
+                                        colorSpace, kCGImageAlphaPremultipliedLast);
+    CGColorSpaceRelease(colorSpace);
+#endif  // PLATFORM(CG)
 }
+
+#ifdef FLIP_FRAMEBUFFER_VERTICALLY
+void GraphicsContext3DInternal::flipVertically(unsigned char* framebuffer,
+                                               unsigned int width,
+                                               unsigned int height)
+{
+    unsigned char* scanline = m_scanline;
+    if (scanline == NULL)
+        return;
+    unsigned int rowBytes = width * 4;
+    unsigned int count = height / 2;
+    for (unsigned int i = 0; i < count; i++) {
+        unsigned char* rowA = framebuffer + i * rowBytes;
+        unsigned char* rowB = framebuffer + (height - i - 1) * rowBytes;
+        // FIXME: this is where the multiplication of the alpha
+        // channel into the color buffer will need to occur if the
+        // user specifies the "premultiplyAlpha" flag in the context
+        // creation attributes.
+        memcpy(scanline, rowB, rowBytes);
+        memcpy(rowB, rowA, rowBytes);
+        memcpy(rowA, scanline, rowBytes);
+    }
+}
+#endif
 
 void GraphicsContext3DInternal::beginPaint(CanvasRenderingContext3D* context)
 {
@@ -411,124 +523,61 @@ void GraphicsContext3DInternal::beginPaint(CanvasRenderingContext3D* context)
 #ifdef RENDER_TO_DEBUGGING_WINDOW
     SwapBuffers(m_canvasDC);
 #else
-    if (m_quadVBO == 0) {
-        // Prepare necessary objects for rendering.
-        glGenBuffers(1, &m_quadVBO);
-        GLfloat vertices[] = {-1.0f, -1.0f,
-                               1.0f, -1.0f,
-                               1.0f,  1.0f,
-                              -1.0f, -1.0f,
-                               1.0f,  1.0f,
-                              -1.0f,  1.0f};
-        glBindBuffer(GL_ARRAY_BUFFER, m_quadVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        // Vertex shader does vertical flip.
-        const GLchar* vertexShaderSrc =
-            "attribute vec2 g_Position;\n"
-            "varying vec2 texCoord;\n"
-            "void main()\n"
-            "{\n"
-            "  texCoord = vec2((g_Position.x + 1.0) * 0.5,\n"
-            "                  (1.0 - g_Position.y) * 0.5);\n"
-            "  gl_Position = vec4(g_Position, 0.0, 1.0);\n"
-            "}\n";
-        // Fragment shader does optional premultiplication of alpha
-        // into color channels.
-        const GLchar* fragmentShaderNoPremultSrc =
-            "varying vec2 texCoord;\n"
-            "uniform sampler2D texSampler;\n"
-            "void main()\n"
-            "{\n"
-            "  gl_FragColor = texture2D(texSampler, texCoord);\n"
-            "}\n";
-        const GLchar* fragmentShaderPremultSrc =
-            "varying vec2 texCoord;\n"
-            "uniform sampler2D texSampler;\n"
-            "void main()\n"
-            "{\n"
-            "  vec4 color = texture2D(texSampler, texCoord);\n"
-            "  gl_FragColor = vec4(color.r * color.a,\n"
-            "                      color.g * color.a,\n"
-            "                      color.b * color.a,\n"
-            "                      color.a);\n"
-            "}\n";
-        GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertexShader, 1, &vertexShaderSrc, NULL);
-        checkError();
-        GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        // FIXME: hook up fragmentShaderPremultSrc based on canvas
-        // context attributes.
-        glShaderSource(fragmentShader, 1, &fragmentShaderNoPremultSrc, NULL);
-        checkError();
-        m_quadProgram = glCreateProgram();
-        glAttachShader(m_quadProgram, vertexShader);
-        glAttachShader(m_quadProgram, fragmentShader);
-        glBindAttribLocation(m_quadProgram, 0, "g_Position");
-        glLinkProgram(m_quadProgram);
-        checkError();
-        glDeleteShader(vertexShader);
-        glDeleteShader(fragmentShader);
-        m_quadTexLocation = glGetUniformLocation(m_quadProgram, "texSampler");
-        checkError();
-    }
-
-    // We've just rendered a frame into m_texture. Bind m_altTexture
-    // as the framebuffer texture, and draw m_texture on to a quad,
-    // flipping it vertically and performing alpha premultiplication
-    // and color channel swizzling. Then read back the FBO.
-    glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, m_altTexture, 0);
-    glUseProgram(m_quadProgram);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_texture);
-    glUniform1i(m_quadTexLocation, 0);
-    glBindBuffer(GL_ARRAY_BUFFER, m_quadVBO);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(0);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_BLEND);
-    glDepthMask(false);
-    glColorMask(true, true, true, true);
+    // Earlier versions of this code used the GPU to flip the
+    // framebuffer vertically before reading it back for compositing
+    // via software. This code was quite complicated, used a lot of
+    // GPU memory, and didn't provide an obvious speedup. Since this
+    // vertical flip is only a temporary solution anyway until Chrome
+    // is fully GPU composited, it wasn't worth the complexity.
 
     HTMLCanvasElement* canvas = context->canvas();
     ImageBuffer* imageBuffer = canvas->buffer();
+    unsigned char* pixels = NULL;
+#if PLATFORM(SKIA)
     const SkBitmap& bitmap = *imageBuffer->context()->platformContext()->bitmap();
     ASSERT(bitmap.config() == SkBitmap::kARGB_8888_Config);
-    glViewport(0, 0, bitmap.width(), bitmap.height());
-
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    ASSERT(bitmap.width() == m_cachedWidth);
+    ASSERT(bitmap.height() == m_cachedHeight);
 
     // Read back the frame buffer.
     SkAutoLockPixels bitmapLock(bitmap);
-    glReadPixels(0, 0, bitmap.width(), bitmap.height(), GL_BGRA, GL_UNSIGNED_BYTE, bitmap.getPixels());
-
-    // Restore the previous FBO state.
-    glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, m_texture, 0);
-
-    // Restore the user's OpenGL state.
-    glUseProgram(m_currentProgram);
-    const VertexAttribPointerState& state = m_vertexAttribPointerState[0];
-    if (state.buffer) {
-        glBindBuffer(GL_ARRAY_BUFFER, state.buffer);
-        glVertexAttribPointer(state.indx, state.size, state.type, state.normalized,
-                              state.stride, reinterpret_cast<void*>(static_cast<intptr_t>(state.offset)));
+    pixels = static_cast<unsigned char*>(bitmap.getPixels());
+    glReadPixels(0, 0, m_cachedWidth, m_cachedHeight, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
+#elif PLATFORM(CG)
+    if (m_renderOutput != NULL) {
+        ASSERT(CGBitmapContextGetWidth(m_cgContext) == m_cachedWidth);
+        ASSERT(CGBitmapContextGetHeight(m_cgContext) == m_cachedHeight);
+        pixels = m_renderOutput;
+        glReadPixels(0, 0, m_cachedWidth, m_cachedHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     }
-    glBindBuffer(GL_ARRAY_BUFFER, m_boundArrayBuffer);
-    if (state.enabled)
-        glEnableVertexAttribArray(0);
-    else
-        glDisableVertexAttribArray(0);
-    const TextureUnitState& texState = m_textureUnitState[0];
-    glBindTexture(texState.target, texState.texture);
-    glActiveTexture(m_activeTextureUnit);
-    if (m_blendEnabled)
-        glEnable(GL_BLEND);
-    if (m_depthTestEnabled)
-        glEnable(GL_DEPTH_TEST);
-    glDepthMask(m_depthMaskEnabled);
-    glColorMask(m_colorMask[0], m_colorMask[1], m_colorMask[2], m_colorMask[3]);
-    glViewport(m_viewport[0], m_viewport[1],
-               m_viewport[2], m_viewport[3]);
-#endif // RENDER_TO_DEBUGGING_WINDOW
+#else
+#error Must port to your platform
+#endif
+
+#ifdef FLIP_FRAMEBUFFER_VERTICALLY
+    if (pixels != NULL)
+        flipVertically(pixels, m_cachedWidth, m_cachedHeight);
+#endif
+
+#if PLATFORM(SKIA)
+    // No further work necessary
+#elif PLATFORM(CG)
+    if (m_renderOutput != NULL) {
+        CGImageRef cgImage = CGBitmapContextCreateImage(m_cgContext);
+        CGRect rect = CGRectMake(0, 0, m_cachedWidth, m_cachedHeight);
+        // We want to completely overwrite the previous frame's
+        // rendering results.
+        CGContextSetBlendMode(imageBuffer->context()->platformContext(),
+                              kCGBlendModeCopy);
+        CGContextDrawImage(imageBuffer->context()->platformContext(),
+                           rect, cgImage);
+        CGImageRelease(cgImage);
+    }
+#else
+#error Must port to your platform
+#endif
+
+#endif  // RENDER_TO_DEBUGGING_WINDOW
 }
 
 bool GraphicsContext3DInternal::validateTextureTarget(int target)
@@ -553,7 +602,6 @@ void GraphicsContext3DInternal::activeTexture(unsigned long texture)
         return;
 
     makeContextCurrent();
-    m_activeTextureUnit = texture;
     glActiveTexture(texture);
 }
 
@@ -575,12 +623,6 @@ void GraphicsContext3DInternal::bindTexture(unsigned long target,
 {
     makeContextCurrent();
     unsigned int textureObject = EXTRACT(texture);
-
-    if (m_activeTextureUnit == 0) {
-        TextureUnitState& state = m_textureUnitState[m_activeTextureUnit];
-        state.target = target;
-        state.texture = textureObject;
-    }
 
     glBindTexture(target, textureObject);
 
@@ -620,73 +662,21 @@ void GraphicsContext3DInternal::bufferDataImpl(unsigned long target, int size, c
                    usage);
 }
 
-void GraphicsContext3DInternal::colorMask(bool red, bool green, bool blue, bool alpha)
-{
-    makeContextCurrent();
-    m_colorMask[0] = red;
-    m_colorMask[1] = green;
-    m_colorMask[2] = blue;
-    m_colorMask[3] = alpha;
-    glColorMask(red, green, blue, alpha);
-}
-
-void GraphicsContext3DInternal::depthMask(bool flag)
-{
-    makeContextCurrent();
-    m_depthMaskEnabled = flag;
-    glDepthMask(flag);
-}
-
-void GraphicsContext3DInternal::disable(unsigned long cap)
-{
-    makeContextCurrent();
-    switch (cap) {
-        case GL_BLEND:
-            m_blendEnabled = false;
-        case GL_DEPTH_TEST:
-            m_depthTestEnabled = false;
-        default:
-            break;
-    }
-    glDisable(cap);
-}
-
 void GraphicsContext3DInternal::disableVertexAttribArray(unsigned long index)
 {
     makeContextCurrent();
-    if (index == 0) {
-        m_vertexAttribPointerState[0].enabled = false;
+    if (index < NumTrackedPointerStates) {
+        m_vertexAttribPointerState[index].enabled = false;
     }
     glDisableVertexAttribArray(index);
-}
-
-void GraphicsContext3DInternal::enable(unsigned long cap)
-{
-    makeContextCurrent();
-    switch (cap) {
-        case GL_BLEND:
-            m_blendEnabled = true;
-        case GL_DEPTH_TEST:
-            m_depthTestEnabled = true;
-        default:
-            break;
-    }
-    glEnable(cap);
 }
 
 void GraphicsContext3DInternal::enableVertexAttribArray(unsigned long index)
 {
     makeContextCurrent();
-    if (index == 0)
-        m_vertexAttribPointerState[0].enabled = true;
+    if (index < NumTrackedPointerStates)
+        m_vertexAttribPointerState[index].enabled = true;
     glEnableVertexAttribArray(index);
-}
-
-void GraphicsContext3DInternal::useProgram(CanvasProgram* program)
-{
-    makeContextCurrent();
-    m_currentProgram = EXTRACT(program);
-    glUseProgram(m_currentProgram);
 }
 
 void GraphicsContext3DInternal::vertexAttribPointer(unsigned long indx, int size, int type, bool normalized,
@@ -700,8 +690,8 @@ void GraphicsContext3DInternal::vertexAttribPointer(unsigned long indx, int size
         return;
     }
 
-    if (indx == 0) {
-        VertexAttribPointerState& state = m_vertexAttribPointerState[0];
+    if (indx < NumTrackedPointerStates) {
+        VertexAttribPointerState& state = m_vertexAttribPointerState[indx];
         state.buffer = m_boundArrayBuffer;
         state.indx = indx;
         state.size = size;
@@ -717,16 +707,10 @@ void GraphicsContext3DInternal::vertexAttribPointer(unsigned long indx, int size
 
 void GraphicsContext3DInternal::viewportImpl(long x, long y, unsigned long width, unsigned long height)
 {
-    m_viewport[0] = x;
-    m_viewport[1] = y;
-    m_viewport[2] = width;
-    m_viewport[3] = height;
     glViewport(x, y, width, height);
 }
 
 // GraphicsContext3D -----------------------------------------------------
-
-#define GRAPHICS_CONTEXT_NAME GraphicsContext3D
 
 /* Helper macros for when we're just wrapping a gl method, so that
  * we can avoid having to type this 500 times.  Note that these MUST
@@ -734,91 +718,91 @@ void GraphicsContext3DInternal::viewportImpl(long x, long y, unsigned long width
  */
 
 #define GL_SAME_METHOD_0(glname, name)                                         \
-void GRAPHICS_CONTEXT_NAME::##name()                                           \
+void GraphicsContext3D::name()                                                 \
 {                                                                              \
     makeContextCurrent(); gl##glname();                                        \
 }
 
 #define GL_SAME_METHOD_1(glname, name, t1)                                     \
-void GRAPHICS_CONTEXT_NAME::##name(t1 a1)                                      \
+void GraphicsContext3D::name(t1 a1)                                            \
 {                                                                              \
     makeContextCurrent(); gl##glname(a1);                                      \
 }
 
 #define GL_SAME_METHOD_1_X(glname, name, t1)                                   \
-void GRAPHICS_CONTEXT_NAME::##name(t1 a1)                                      \
+void GraphicsContext3D::name(t1 a1)                                            \
 {                                                                              \
     makeContextCurrent(); gl##glname(EXTRACT(a1));                             \
 }
 
 #define GL_SAME_METHOD_2(glname, name, t1, t2)                                 \
-void GRAPHICS_CONTEXT_NAME::##name(t1 a1, t2 a2)                               \
+void GraphicsContext3D::name(t1 a1, t2 a2)                                     \
 {                                                                              \
     makeContextCurrent(); gl##glname(a1,a2);                                   \
 }
 
 #define GL_SAME_METHOD_2_X12(glname, name, t1, t2)                             \
-void GRAPHICS_CONTEXT_NAME::##name(t1 a1, t2 a2)                               \
+void GraphicsContext3D::name(t1 a1, t2 a2)                                     \
 {                                                                              \
     makeContextCurrent(); gl##glname(EXTRACT(a1),EXTRACT(a2));                 \
 }
 
 #define GL_SAME_METHOD_2_X2(glname, name, t1, t2)                              \
-void GRAPHICS_CONTEXT_NAME::##name(t1 a1, t2 a2)                               \
+void GraphicsContext3D::name(t1 a1, t2 a2)                                     \
 {                                                                              \
     makeContextCurrent(); gl##glname(a1,EXTRACT(a2));                          \
 }
 
 #define GL_SAME_METHOD_3(glname, name, t1, t2, t3)                             \
-void GRAPHICS_CONTEXT_NAME::##name(t1 a1, t2 a2, t3 a3)                        \
+void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3)                              \
 {                                                                              \
     makeContextCurrent(); gl##glname(a1,a2,a3);                                \
 }
 
 #define GL_SAME_METHOD_3_X12(glname, name, t1, t2, t3)                         \
-void GRAPHICS_CONTEXT_NAME::##name(t1 a1, t2 a2, t3 a3)                        \
+void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3)                              \
 {                                                                              \
     makeContextCurrent(); gl##glname(EXTRACT(a1),EXTRACT(a2),a3);              \
 }
 
 #define GL_SAME_METHOD_3_X2(glname, name, t1, t2, t3)                          \
-void GRAPHICS_CONTEXT_NAME::##name(t1 a1, t2 a2, t3 a3)                        \
+void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3)                              \
 {                                                                              \
     makeContextCurrent(); gl##glname(a1,EXTRACT(a2),a3);                       \
 }
 
 #define GL_SAME_METHOD_4(glname, name, t1, t2, t3, t4)                         \
-void GRAPHICS_CONTEXT_NAME::##name(t1 a1, t2 a2, t3 a3, t4 a4)                 \
+void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4)                       \
 {                                                                              \
     makeContextCurrent(); gl##glname(a1,a2,a3,a4);                             \
 }
 
 #define GL_SAME_METHOD_4_X4(glname, name, t1, t2, t3, t4)                      \
-void GRAPHICS_CONTEXT_NAME::##name(t1 a1, t2 a2, t3 a3, t4 a4)                 \
+void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4)                       \
 {                                                                              \
     makeContextCurrent(); gl##glname(a1,a2,a3,EXTRACT(a4));                    \
 }
 
 #define GL_SAME_METHOD_5(glname, name, t1, t2, t3, t4, t5)                     \
-void GRAPHICS_CONTEXT_NAME::##name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5)          \
+void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5)                \
 {                                                                              \
     makeContextCurrent(); gl##glname(a1,a2,a3,a4,a5);                          \
 }
 
 #define GL_SAME_METHOD_5_X4(glname, name, t1, t2, t3, t4, t5)                  \
-void GRAPHICS_CONTEXT_NAME::##name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5)          \
+void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5)                \
 {                                                                              \
     makeContextCurrent(); gl##glname(a1,a2,a3,EXTRACT(a4),a5);                 \
 }
 
 #define GL_SAME_METHOD_6(glname, name, t1, t2, t3, t4, t5, t6)                 \
-void GRAPHICS_CONTEXT_NAME::##name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6)   \
+void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6)         \
 {                                                                              \
     makeContextCurrent(); gl##glname(a1,a2,a3,a4,a5,a6);                       \
 }
 
 #define GL_SAME_METHOD_8(glname, name, t1, t2, t3, t4, t5, t6, t7, t8)                       \
-void GRAPHICS_CONTEXT_NAME::##name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7, t8 a8)   \
+void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7, t8 a8)   \
 {                                                                                            \
     makeContextCurrent(); gl##glname(a1,a2,a3,a4,a5,a6,a7,a8);                               \
 }
@@ -1066,10 +1050,7 @@ GL_SAME_METHOD_1(ClearDepth, clearDepth, double)
 
 GL_SAME_METHOD_1(ClearStencil, clearStencil, long)
 
-void GraphicsContext3D::colorMask(bool red, bool green, bool blue, bool alpha)
-{
-    m_internal->colorMask(red, green, blue, alpha);
-}
+GL_SAME_METHOD_4(ColorMask, colorMask, bool, bool, bool, bool)
 
 GL_SAME_METHOD_1_X(CompileShader, compileShader, CanvasShader*)
 
@@ -1081,10 +1062,7 @@ GL_SAME_METHOD_1(CullFace, cullFace, unsigned long)
 
 GL_SAME_METHOD_1(DepthFunc, depthFunc, unsigned long)
 
-void GraphicsContext3D::depthMask(bool flag)
-{
-    m_internal->depthMask(flag);
-}
+GL_SAME_METHOD_1(DepthMask, depthMask, bool)
 
 GL_SAME_METHOD_2(DepthRange, depthRange, double, double)
 
@@ -1097,10 +1075,7 @@ void GraphicsContext3D::detachShader(CanvasProgram* program, CanvasShader* shade
     glDetachShader(EXTRACT(program), EXTRACT(shader));
 }
 
-void GraphicsContext3D::disable(unsigned long cap)
-{
-    m_internal->disable(cap);
-}
+GL_SAME_METHOD_1(Disable, disable, unsigned long)
 
 void GraphicsContext3D::disableVertexAttribArray(unsigned long index)
 {
@@ -1156,10 +1131,7 @@ void GraphicsContext3D::drawElements(unsigned long mode, unsigned long count, un
                    reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
 }
 
-void GraphicsContext3D::enable(unsigned long cap)
-{
-    m_internal->enable(cap);
-}
+GL_SAME_METHOD_1(Enable, enable, unsigned long)
 
 void GraphicsContext3D::enableVertexAttribArray(unsigned long index)
 {
@@ -1680,45 +1652,35 @@ static void unmultiplyAlpha(unsigned char* rgbaData, int numPixels)
     }
 }
 
-int GraphicsContext3D::texImage2D(unsigned target, unsigned level, HTMLImageElement* image,
-                                  bool flipY, bool premultiplyAlpha)
+// FIXME: this must be changed to refer to the original image data
+// rather than unmultiplying the alpha channel.
+static int texImage2DHelper(unsigned target, unsigned level,
+                            int width, int height,
+                            int rowBytes,
+                            bool flipY,
+                            bool premultiplyAlpha,
+                            GLenum format,
+                            bool skipAlpha,
+                            unsigned char* pixels)
 {
-    CachedImage* cachedImage = image->cachedImage();
-    if (cachedImage == NULL) {
-        ASSERT_NOT_REACHED();
-        return -1;
+    ASSERT(format == GL_RGBA || format == GL_BGRA);
+    GLint internalFormat = GL_RGBA8;
+    if (skipAlpha) {
+        internalFormat = GL_RGB8;
+        // Ignore the alpha channel
+        premultiplyAlpha = true;
     }
-    Image* img = cachedImage->image();
-    NativeImageSkia* skiaImage = img->nativeImageForCurrentFrame();
-    if (skiaImage == NULL) {
-        ASSERT_NOT_REACHED();
-        return -1;
-    }
-    SkBitmap::Config skiaConfig = skiaImage->config();
-    // FIXME: must support more image configurations.
-    if (skiaConfig != SkBitmap::kARGB_8888_Config) {
-        ASSERT_NOT_REACHED();
-        return -1;
-    }
-    SkBitmap& skiaImageRef = *skiaImage;
-    SkAutoLockPixels lock(skiaImageRef);
-    int width = skiaImage->width();
-    int height = skiaImage->height();
     if (flipY) {
         // Need to flip images vertically. To avoid making a copy of
         // the entire image, we perform a ton of glTexSubImage2D
         // calls. FIXME: should rethink this strategy for efficiency.
-        glTexImage2D(target, level, GL_RGBA8,
+        glTexImage2D(target, level, internalFormat,
                      width,
                      height,
                      0,
-                     GL_BGRA,
+                     format,
                      GL_UNSIGNED_BYTE,
                      NULL);
-        unsigned char* pixels =
-            reinterpret_cast<unsigned char*>(skiaImage->getPixels());
-        int rowBytes = skiaImage->rowBytes();
-
         unsigned char* row = NULL;
         bool allocatedRow = false;
         if (!premultiplyAlpha) {
@@ -1734,7 +1696,7 @@ int GraphicsContext3D::texImage2D(unsigned target, unsigned level, HTMLImageElem
             }
             glTexSubImage2D(target, level, 0, height - i - 1,
                             width, 1,
-                            GL_BGRA,
+                            format,
                             GL_UNSIGNED_BYTE,
                             row);
         }
@@ -1745,31 +1707,28 @@ int GraphicsContext3D::texImage2D(unsigned target, unsigned level, HTMLImageElem
         // scanline ordering, unlike GL_TEXTURE_2D, so when uploading
         // these, the above vertical flip is the wrong thing to do.
         if (premultiplyAlpha)
-            glTexImage2D(target, level, GL_RGBA8,
+            glTexImage2D(target, level, internalFormat,
                          width,
                          height,
                          0,
-                         GL_BGRA,
+                         format,
                          GL_UNSIGNED_BYTE,
-                         skiaImage->getPixels());
+                         pixels);
         else {
-            glTexImage2D(target, level, GL_RGBA8,
+            glTexImage2D(target, level, internalFormat,
                          width,
                          height,
                          0,
-                         GL_BGRA,
+                         format,
                          GL_UNSIGNED_BYTE,
                          NULL);
-            unsigned char* pixels =
-                reinterpret_cast<unsigned char*>(skiaImage->getPixels());
-            int rowBytes = skiaImage->rowBytes();
             unsigned char* row = new unsigned char[rowBytes];
             for (int i = 0; i < height; i++) {
                 memcpy(row, pixels + (rowBytes * i), rowBytes);
                 unmultiplyAlpha(row, width);
                 glTexSubImage2D(target, level, 0, i,
                                 width, 1,
-                                GL_BGRA,
+                                format,
                                 GL_UNSIGNED_BYTE,
                                 row);
             }
@@ -1777,6 +1736,74 @@ int GraphicsContext3D::texImage2D(unsigned target, unsigned level, HTMLImageElem
         }
     }
     return 0;
+}
+
+int GraphicsContext3D::texImage2D(unsigned target, unsigned level, HTMLImageElement* image,
+                                  bool flipY, bool premultiplyAlpha)
+{
+    CachedImage* cachedImage = image->cachedImage();
+    if (cachedImage == NULL) {
+        ASSERT_NOT_REACHED();
+        return -1;
+    }
+    Image* img = cachedImage->image();
+    int res = -1;
+#if PLATFORM(SKIA)
+    NativeImageSkia* skiaImage = img->nativeImageForCurrentFrame();
+    if (skiaImage == NULL) {
+        ASSERT_NOT_REACHED();
+        return -1;
+    }
+    SkBitmap::Config skiaConfig = skiaImage->config();
+    // FIXME: must support more image configurations.
+    if (skiaConfig != SkBitmap::kARGB_8888_Config) {
+        ASSERT_NOT_REACHED();
+        return -1;
+    }
+    SkBitmap& skiaImageRef = *skiaImage;
+    SkAutoLockPixels lock(skiaImageRef);
+    int width = skiaImage->width();
+    int height = skiaImage->height();
+    unsigned char* pixels =
+        reinterpret_cast<unsigned char*>(skiaImage->getPixels());
+    int rowBytes = skiaImage->rowBytes();
+    res = texImage2DHelper(target, level,
+                           width, height,
+                           rowBytes,
+                           flipY, premultiplyAlpha,
+                           GL_BGRA,
+                           false,
+                           pixels);
+#elif PLATFORM(CG)
+    CGImageRef cgImage = img->nativeImageForCurrentFrame();
+    if (cgImage == NULL) {
+        ASSERT_NOT_REACHED();
+        return -1;
+    }
+    int width = CGImageGetWidth(cgImage);
+    int height = CGImageGetHeight(cgImage);
+    int rowBytes = width * 4;
+    CGImageAlphaInfo info = CGImageGetAlphaInfo(cgImage);
+    bool skipAlpha = (info == kCGImageAlphaNone ||
+                      info == kCGImageAlphaNoneSkipLast ||
+                      info == kCGImageAlphaNoneSkipFirst);
+    unsigned char* imageData = new unsigned char[height * rowBytes];
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+    CGContextRef tmpContext = CGBitmapContextCreate(imageData, width, height, 8, rowBytes,
+                                                    colorSpace,
+                                                    kCGImageAlphaPremultipliedLast);
+    CGColorSpaceRelease(colorSpace);
+    CGContextDrawImage(tmpContext,
+                       CGRectMake(0, 0, static_cast<CGFloat>(width), static_cast<CGFloat>(height)),
+                       cgImage);
+    CGContextRelease(tmpContext);
+    res = texImage2DHelper(target, level, width, height, rowBytes,
+                           flipY, premultiplyAlpha, GL_RGBA, skipAlpha, imageData);
+    delete[] imageData;
+#else
+#error Must port to your platform
+#endif
+    return res;
 }
 
 int GraphicsContext3D::texImage2D(unsigned target, unsigned level, HTMLCanvasElement* canvas,
@@ -1956,10 +1983,7 @@ void GraphicsContext3D::uniformMatrix4fv(long location, bool transpose, float* v
     glUniformMatrix4fv(location, size, transpose, value);
 }
 
-void GraphicsContext3D::useProgram(CanvasProgram* program)
-{
-    m_internal->useProgram(program);
-}
+GL_SAME_METHOD_1_X(UseProgram, useProgram, CanvasProgram*)
 
 GL_SAME_METHOD_1_X(ValidateProgram, validateProgram, CanvasProgram*)
 
