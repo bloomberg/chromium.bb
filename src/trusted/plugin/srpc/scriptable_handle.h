@@ -35,12 +35,12 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_SCRIPTABLE_HANDLE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_SCRIPTABLE_HANDLE_H_
 
-#include "native_client/src/include/portability.h"
-
 #include <stdio.h>
 #include <string.h>
 
 #include <set>
+
+#include "native_client/src/include/portability.h"
 
 #include "native_client/src/trusted/plugin/srpc/npapi_native.h"
 #include "native_client/src/trusted/plugin/srpc/ret_array.h"
@@ -114,6 +114,9 @@ class ScriptableHandle: public ScriptableHandleBase {
                                              HasProperty,
                                              GetProperty,
                                              SetProperty,
+                                             0,  // RemoveProperty,
+                                             0,  // Enumerate,
+                                             0,  // Construct,
     };
 
     dprintf(("ScriptableHandle::New\n"));
@@ -227,6 +230,8 @@ class ScriptableHandle: public ScriptableHandleBase {
 
   // Allocation and deallocation.
   static NPObject* Allocate(NPP npp, NPClass* theClass) {
+    UNREFERENCED_PARAMETER(npp);
+    UNREFERENCED_PARAMETER(theClass);
     dprintf(("ScriptableHandle::Allocate(%d)\n", HandleType::number_alive()));
     return new(std::nothrow) ScriptableHandle<HandleType>();
   }
@@ -305,8 +310,7 @@ class ScriptableHandle: public ScriptableHandleBase {
     if (METHOD_CALL == call_type) {
       const uint32_t kSignatureLength = SignatureLength(params.ins,
                                                         params.outs);
-      if ((0 > arg_count) ||
-          (kSignatureLength != static_cast<uint32_t>(arg_count))) {
+      if (kSignatureLength != static_cast<uint32_t>(arg_count)) {
         dprintf(("ScriptableHandle::Invoke: signature length incorrect %u %d\n",
                 kSignatureLength,
                 arg_count));
@@ -359,6 +363,8 @@ class ScriptableHandle: public ScriptableHandleBase {
                       NaClSrpcArg* outputs[]) {
     int i;
     int inputs_length;
+    UNREFERENCED_PARAMETER(argc);
+    // TODO(gregoryd): we should be checking argc also.
     for (i = 0; (i < NACL_SRPC_MAX_ARGS) && (NULL != inputs[i]); ++i) {
       switch (inputs[i]->tag) {
         case NACL_SRPC_ARG_TYPE_BOOL:
@@ -442,6 +448,8 @@ class ScriptableHandle: public ScriptableHandleBase {
           }
           break;
 
+        case NACL_SRPC_ARG_TYPE_INVALID:
+        case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
         default:
           return false;
       }
@@ -479,6 +487,9 @@ class ScriptableHandle: public ScriptableHandleBase {
         case NACL_SRPC_ARG_TYPE_INT:
         case NACL_SRPC_ARG_TYPE_STRING:
           break;
+        case NACL_SRPC_ARG_TYPE_OBJECT:
+        case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
+        case NACL_SRPC_ARG_TYPE_INVALID:
         default:
           return false;
       }
@@ -496,7 +507,7 @@ class ScriptableHandle: public ScriptableHandleBase {
     NPVariant* retvalue = NULL;
 
     RetArray*  retarray = NULL;
-    if ((0 > length) || (NACL_SRPC_MAX_ARGS <= length)) {
+    if (NACL_SRPC_MAX_ARGS <= length) {
       // Something went badly wrong.  Recover as gracefully as possible.
       return false;
     } else if (0 == length) {
@@ -616,6 +627,8 @@ class ScriptableHandle: public ScriptableHandleBase {
           ScalarToNPVariant(tmpstr, retvalue);
         }
         break;
+      case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
+      case NACL_SRPC_ARG_TYPE_INVALID:
       default:
         break;
       }
@@ -632,11 +645,11 @@ class ScriptableHandle: public ScriptableHandleBase {
   // outputs.
   static uint32_t SignatureLength(NaClSrpcArg* in_index[],
                                   NaClSrpcArg* out_index[]) {
-    uint32_t ins;
+    uint32_t ins = ArgsLength(const_cast<const NaClSrpcArg**>(in_index));
+    uint32_t outs = ArgsLength(const_cast<const NaClSrpcArg**>(out_index));
     uint32_t array_outs = 0;
 
-    for (ins = 0; (ins < NACL_SRPC_MAX_ARGS) && (NULL != in_index[ins]); ++ins);
-    for (int i = 0; (i < NACL_SRPC_MAX_ARGS) && (NULL != out_index[i]); ++i) {
+    for (uint32_t i = 0; i < outs; ++i) {
       switch (out_index[i]->tag) {
      case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
      case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
@@ -647,6 +660,10 @@ class ScriptableHandle: public ScriptableHandleBase {
      case NACL_SRPC_ARG_TYPE_BOOL:
      case NACL_SRPC_ARG_TYPE_DOUBLE:
      case NACL_SRPC_ARG_TYPE_INT:
+     case NACL_SRPC_ARG_TYPE_HANDLE:
+     case NACL_SRPC_ARG_TYPE_INVALID:
+     case NACL_SRPC_ARG_TYPE_OBJECT:
+     case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
      default:
        break;
       }
@@ -657,7 +674,9 @@ class ScriptableHandle: public ScriptableHandleBase {
   static uint32_t ArgsLength(const NaClSrpcArg* index[]) {
     uint32_t i;
 
-    for (i = 0; NULL != index[i]; ++i);
+    for (i = 0; (i < NACL_SRPC_MAX_ARGS) && NULL != index[i]; ++i) {
+      // Empty body.  Avoids warning.
+    }
     return i;
   }
 

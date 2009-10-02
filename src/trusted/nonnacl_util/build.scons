@@ -54,10 +54,6 @@ if env.Bit('mac'):
         ],
     )
 
-# TODO(sehr): remove need for the next line
-env.FilterOut(CCFLAGS=['-Wextra'])
-
-
 if env.Bit('windows'):
     env.Append(
         CCFLAGS = ['/EHsc'],

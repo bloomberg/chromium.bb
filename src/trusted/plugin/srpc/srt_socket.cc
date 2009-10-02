@@ -52,6 +52,7 @@ void SrtSocket::InitializeIdentifiers(
     PortablePluginInterface* plugin_interface) {
   static bool initialized = false;
 
+  UNREFERENCED_PARAMETER(plugin_interface);
   if (!initialized) {  // branch likely
     kHardShutdownIdent =
         PortablePluginInterface::GetStrIdentifierCallback("hard_shutdown");

@@ -30,7 +30,7 @@
  */
 
 
-#include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/plugin/srpc/srpc.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -38,13 +38,14 @@
 #include <string>
 #include <set>
 
+#include "native_client/src/include/portability.h"
+
 #include "native_client/src/trusted/plugin/origin.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/closure.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/npinstance.h"
-#include "native_client/src/trusted/plugin/srpc/srpc.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
@@ -55,12 +56,12 @@ std::set<const nacl_srpc::ScriptableHandleBase*>*
 
 namespace nacl {
 
-static int32_t stringToInt32(char *src) {
+static int32_t stringToInt32(char* src) {
   char buf[32];
 
   strncpy(buf, src, sizeof buf);
   buf[sizeof buf - 1] = '\0';
-  return strtol(buf, static_cast<char **>(NULL), 10);
+  return strtol(buf, static_cast<char**>(NULL), 10);
 }
 
 StreamBuffer::StreamBuffer(NPStream* stream): buffer_(NULL),
@@ -73,7 +74,7 @@ StreamBuffer::StreamBuffer(NPStream* stream): buffer_(NULL),
   }
 }
 
-int32_t StreamBuffer::write(int32_t offset, int32_t len, void *buf) {
+int32_t StreamBuffer::write(int32_t offset, int32_t len, void* buf) {
   if (INT_MAX - offset < len) {
     return 0;
   }
@@ -95,7 +96,7 @@ SRPC_Plugin::SRPC_Plugin(NPP npp, int argc, char* argn[], char* argv[])
     : npp_(npp),
       plugin_(NULL) {
   dprintf(("SRPC_Plugin::SRPC_Plugin(%p, %d)\n",
-           static_cast<void *>(this), argc));
+           static_cast<void*>(this), argc));
   InitializeIdentifiers();
   // SRPC_Plugin initially gets exclusive ownership of plugin_.
   nacl_srpc::PortableHandleInitializer init_info(this);
@@ -138,26 +139,26 @@ SRPC_Plugin::SRPC_Plugin(NPP npp, int argc, char* argn[], char* argv[])
     plugin_ = NULL;
   }
   dprintf(("SRPC_Plugin::SRPC_Plugin: done, plugin_ %p, video_ %p\n",
-           static_cast<void *>(plugin_),
-           static_cast<void *>(video_)));
+           static_cast<void*>(plugin_),
+           static_cast<void*>(video_)));
 }
 
 SRPC_Plugin::~SRPC_Plugin() {
-  nacl_srpc::ScriptableHandle<nacl_srpc::Plugin> *plugin = plugin_;
+  nacl_srpc::ScriptableHandle<nacl_srpc::Plugin>* plugin = plugin_;
   // TODO(nfullagar): please explain why plugin is needed here.  why
   // does plugin_ need to be set to NULL -- but the object not
   // Unref'd, while holding the video global lock?
   dprintf(("SRPC_Plugin::~SRPC_Plugin plugin_ is %p\n",
-           static_cast<void *>(plugin_)));
+           static_cast<void* >(plugin_)));
   if (NULL != plugin_) {
     dprintf(("SRPC_Plugin::~SRPC_Plugin plugin_->get_handle() is %p\n",
-             static_cast<void *>(plugin_->get_handle())));
+             static_cast<void* >(plugin_->get_handle())));
   }
   // TODO(nfullagar): is it possible for video_ to be non-NULL while
   // plugin_ is NULL?  could these three blocks be fused?
   /* SCOPE */ {
     VideoScopedGlobalLock video_lock;
-    dprintf(("SRPC_Plugin::~SRPC_Plugin(%p)\n", static_cast<void *>(this)));
+    dprintf(("SRPC_Plugin::~SRPC_Plugin(%p)\n", static_cast<void*>(this)));
     plugin_ = NULL;
     dprintf(("SRPC_Plugin::~SPRC_Plugin deleting video_\n"));
     if (NULL != video_) {
@@ -172,9 +173,9 @@ SRPC_Plugin::~SRPC_Plugin() {
   }
 }
 
-NPError SRPC_Plugin::Destroy(NPSavedData **save) {
-  dprintf(("SRPC_Plugin::Destroy(%p, %p)\n", static_cast<void *>(this),
-           static_cast<void *>(save)));
+NPError SRPC_Plugin::Destroy(NPSavedData** save) {
+  dprintf(("SRPC_Plugin::Destroy(%p, %p)\n", static_cast<void*>(this),
+           static_cast<void*>(save)));
   delete this;
   return NPERR_NO_ERROR;
 }
@@ -183,20 +184,20 @@ NPError SRPC_Plugin::Destroy(NPSavedData **save) {
 // setting up a plugin that has the ability to draw into a window.  It is
 // passed a semi-custom window descriptor (some is platform-neutral, some not)
 // as documented in the NPAPI documentation.
-NPError SRPC_Plugin::SetWindow(NPWindow *window) {
+NPError SRPC_Plugin::SetWindow(NPWindow* window) {
   NPError ret = NPERR_GENERIC_ERROR;
-  dprintf(("SRPC_Plugin::SetWindow(%p, %p)\n", static_cast<void *>(this),
-           static_cast<void *>(window)));
+  dprintf(("SRPC_Plugin::SetWindow(%p, %p)\n", static_cast<void* >(this),
+           static_cast<void*>(window)));
   if (video_ && video_->SetWindow(window)) {
       ret = NPERR_NO_ERROR;
   }
   return ret;
 }
 
-NPError SRPC_Plugin::GetValue(NPPVariable variable, void *value) {
+NPError SRPC_Plugin::GetValue(NPPVariable variable, void* value) {
   const char** stringp = static_cast<const char**>(value);
 
-  dprintf(("SRPC_Plugin::GetValue(%p, %d)\n", static_cast<void *>(this),
+  dprintf(("SRPC_Plugin::GetValue(%p, %d)\n", static_cast<void*>(this),
            variable));
 
   switch (variable) {
@@ -209,15 +210,35 @@ NPError SRPC_Plugin::GetValue(NPPVariable variable, void *value) {
     case NPPVpluginScriptableNPObject:
       *(static_cast<NPObject**>(value)) = GetScriptableInstance();
       return NPERR_NO_ERROR;
+    case NPPVpluginWindowBool:
+    case NPPVpluginTransparentBool:
+    case NPPVjavaClass:
+    case NPPVpluginWindowSize:
+    case NPPVpluginTimerInterval:
+    case NPPVpluginScriptableInstance:
+    case NPPVpluginScriptableIID:
+    case NPPVjavascriptPushCallerBool:
+    case NPPVpluginKeepLibraryInMemory:
+    case NPPVpluginNeedsXEmbed:
+    case NPPVformValue:
+    case NPPVpluginUrlRequestsDisplayedBool:
+    case NPPVpluginWantsAllNetworkStreams:
+#ifdef XP_MACOSX
+    // Mac has several drawing, event, etc. models in NPAPI that are unique.
+    case NPPVpluginDrawingModel:
+    case NPPVpluginEventModel:
+    case NPPVpluginTextInputFuncs:
+    case NPPVpluginCoreAnimationLayer:
+#endif  // XP_MACOSX
     default:
       return NPERR_INVALID_PARAM;
   }
 }
 
-int16_t SRPC_Plugin::HandleEvent(void *param) {
+int16_t SRPC_Plugin::HandleEvent(void* param) {
   int16_t ret;
-  dprintf(("SRPC_Plugin::HandleEvent(%p, %p)\n", static_cast<void *>(this),
-           static_cast<void *>(param)));
+  dprintf(("SRPC_Plugin::HandleEvent(%p, %p)\n", static_cast<void*>(this),
+           static_cast<void*>(param)));
   if (video_) {
     ret = video_->HandleEvent(param);
   } else {
@@ -228,7 +249,7 @@ int16_t SRPC_Plugin::HandleEvent(void *param) {
 
 NPObject* SRPC_Plugin::GetScriptableInstance() {
   dprintf(("SRPC_Plugin::GetScriptableInstance(%p)\n",
-           static_cast<void *>(this)));
+           static_cast<void*>(this)));
 
   // Anyone requesting access to the scriptable instance is given shared
   // ownership of plugin_.
@@ -236,11 +257,11 @@ NPObject* SRPC_Plugin::GetScriptableInstance() {
 }
 
 NPError SRPC_Plugin::NewStream(NPMIMEType type,
-                               NPStream *stream,
+                               NPStream* stream,
                                NPBool seekable,
-                               uint16_t *stype) {
+                               uint16_t* stype) {
   dprintf(("SRPC_Plugin::NewStream(%p, %s, %p, %d)\n",
-           static_cast<void *>(this), type, static_cast<void *>(stream),
+           static_cast<void*>(this), type, static_cast<void*>(stream),
            seekable));
 #ifdef NACL_STANDALONE
   *stype = NP_ASFILEONLY;
@@ -253,6 +274,7 @@ NPError SRPC_Plugin::NewStream(NPMIMEType type,
 }
 
 int32_t SRPC_Plugin::WriteReady(NPStream* stream) {
+  UNREFERENCED_PARAMETER(stream);
   return 32 * 1024;
 }
 
@@ -260,7 +282,7 @@ int32_t SRPC_Plugin::Write(NPStream* stream,
                            int32_t offset,
                            int32_t len,
                            void* buf) {
-  StreamBuffer *stream_buffer;
+  StreamBuffer* stream_buffer;
   if (NULL == stream->pdata) {
     stream_buffer = new StreamBuffer(stream);
     stream->pdata = reinterpret_cast<void*>(stream_buffer);
@@ -276,7 +298,7 @@ int32_t SRPC_Plugin::Write(NPStream* stream,
     if (static_cast<int32_t>(stream->end) == offset + len) {
       // Stream downloaded - go ahead
       dprintf(("default run\n"));
-      nacl_srpc::Plugin *real_plugin =
+      nacl_srpc::Plugin* real_plugin =
         static_cast<nacl_srpc::Plugin*>(plugin_->get_handle());
       real_plugin->set_nacl_module_origin(nacl::UrlToOrigin(stream->url));
       real_plugin->Load(stream_buffer->get_buffer(), stream_buffer->size());
@@ -285,8 +307,8 @@ int32_t SRPC_Plugin::Write(NPStream* stream,
       stream->pdata = NULL;
     }
   } else {
-    nacl_srpc::Closure *closure
-      = static_cast<nacl_srpc::Closure *>(stream->notifyData);
+    nacl_srpc::Closure* closure
+      = static_cast<nacl_srpc::Closure*>(stream->notifyData);
     // NPStream is deleted before URLNotify is called, so we need to keep
     // the buffer
     closure->set_buffer(stream_buffer);
@@ -295,19 +317,19 @@ int32_t SRPC_Plugin::Write(NPStream* stream,
   return written;
 }
 
-void SRPC_Plugin::StreamAsFile(NPStream *stream,
-                               const char *fname) {
+void SRPC_Plugin::StreamAsFile(NPStream* stream,
+                               const char* fname) {
   dprintf(("SRPC_Plugin::StreamAsFile(%p, %p, %s)\n",
-           static_cast<void *>(this), static_cast<void *>(stream), fname));
-  nacl_srpc::Closure *closure
-      = static_cast<nacl_srpc::Closure *>(stream->notifyData);
+           static_cast<void*>(this), static_cast<void*>(stream), fname));
+  nacl_srpc::Closure* closure
+      = static_cast<nacl_srpc::Closure*>(stream->notifyData);
 
   if (NULL != closure) {
     closure->Run(stream, fname);
   } else {
     // default, src=... statically obtained
     dprintf(("default run\n"));
-    nacl_srpc::Plugin *real_plugin =
+    nacl_srpc::Plugin* real_plugin =
         static_cast<nacl_srpc::Plugin*>(plugin_->get_handle());
     real_plugin->set_nacl_module_origin(nacl::UrlToOrigin(stream->url));
     real_plugin->set_local_url(fname);
@@ -315,27 +337,27 @@ void SRPC_Plugin::StreamAsFile(NPStream *stream,
   }
 }
 
-NPError SRPC_Plugin::DestroyStream(NPStream *stream,
+NPError SRPC_Plugin::DestroyStream(NPStream* stream,
                                    NPReason reason) {
   dprintf(("SRPC_Plugin::DestroyStream(%p, %p, %d)\n",
-           static_cast<void *>(this), static_cast<void *>(stream), reason));
+           static_cast<void*>(this), static_cast<void*>(stream), reason));
 
   return NPERR_NO_ERROR;
 }
 
-void SRPC_Plugin::URLNotify(const char *url,
+void SRPC_Plugin::URLNotify(const char* url,
                             NPReason reason,
-                            void *notifyData) {
+                            void* notifyData) {
   dprintf(("SRPC_Plugin::URLNotify(%p, %s, %d, %p)\n",
-           static_cast<void *>(this), url, reason, notifyData));
+           static_cast<void*>(this), url, reason, notifyData));
 
   // TODO(sehr): use autoptr to avoid delete.
-  nacl_srpc::Closure *closure
-      = static_cast<nacl_srpc::Closure *>(notifyData);
+  nacl_srpc::Closure* closure
+      = static_cast<nacl_srpc::Closure*>(notifyData);
 
   if (NPRES_DONE == reason) {
     dprintf(("URLNotify: '%s', rsn NPRES_DONE (%d)\n", url, reason));
-    StreamBuffer *stream_buffer = closure->buffer();
+    StreamBuffer* stream_buffer = closure->buffer();
     if (stream_buffer) {
       // NPStream is not valid here since DestroyStream was called earlier
       closure->Run(url,

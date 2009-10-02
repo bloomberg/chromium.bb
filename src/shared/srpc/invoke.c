@@ -52,10 +52,10 @@
 /*
  * Utility method for type checking argument lists.
  */
-static int TypeCheckArgs(char const* arg_types, NaClSrpcArg** alist) {
-  char const* p;
+static int TypeCheckArgs(const char* arg_types, NaClSrpcArg** alist) {
+  const char* p;
 
-  for (p = arg_types; *p != '\0' && *p != ':'; ++p, ++alist) {
+  for (p = arg_types; '\0' != *p && ':' != *p; ++p, ++alist) {
     if (NULL == *alist) {
       /* Too few arguments */
       return 0;
@@ -70,18 +70,15 @@ static int TypeCheckArgs(char const* arg_types, NaClSrpcArg** alist) {
       case NACL_SRPC_ARG_TYPE_INT_ARRAY:
       case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
       case NACL_SRPC_ARG_TYPE_HANDLE:
-        if ((*alist)->tag != *p) {
+        if ((*alist)->tag != (enum NaClSrpcArgType) *p) {
           return 0;
         }
         break;
-      /*
-       * The two cases below are added to avoid warnings, they are only used
-       * in the plugin code
-       */
+      /* These cases are added to avoid warnings.  */
       case NACL_SRPC_ARG_TYPE_OBJECT:
       case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
+      case NACL_SRPC_ARG_TYPE_INVALID:
       default:
-        /* We shouldn't see these types in invocations. */
         return 0;
     }
   }

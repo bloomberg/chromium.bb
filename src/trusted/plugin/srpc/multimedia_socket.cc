@@ -29,10 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "native_client/src/include/portability_io.h"
+#include "native_client/src/trusted/plugin/srpc/multimedia_socket.h"
 
 #include <string.h>
 
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
@@ -40,7 +41,6 @@
 
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 
-#include "native_client/src/trusted/plugin/srpc/multimedia_socket.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
 #include "native_client/src/trusted/plugin/srpc/service_runtime_interface.h"
 #include "native_client/src/trusted/plugin/srpc/shared_memory.h"
@@ -57,6 +57,7 @@ void MultimediaSocket::InitializeIdentifiers(
     PortablePluginInterface *plugin_interface) {
   static bool identifiers_initialized = false;
 
+  UNREFERENCED_PARAMETER(plugin_interface);
   if (!identifiers_initialized) {
     kNaClMultimediaBridgeIdent =
         PortablePluginInterface::GetStrIdentifierCallback(
@@ -143,6 +144,9 @@ static NaClSrpcError handleUpcall(NaClSrpcChannel* channel,
                                   NaClSrpcArg** ins,
                                   NaClSrpcArg** outs) {
   NaClSrpcError ret;
+
+  UNREFERENCED_PARAMETER(ins);
+  UNREFERENCED_PARAMETER(outs);
   ret = NACL_SRPC_RESULT_BREAK;
   if (channel) {
     nacl::VideoScopedGlobalLock video_lock;

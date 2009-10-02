@@ -103,10 +103,10 @@ void __NaClSrpcImcBufferCtor(NaClSrpcImcBuffer* buffer, int is_write_buf) {
  * target from buffer.  It returns the number of elements read if successful,
  * and -1 otherwise.
  */
-int __NaClSrpcImcRead(NaClSrpcImcBuffer* buffer,
-                      size_t elt_size,
-                      size_t n_elt,
-                      void* target) {
+size_t __NaClSrpcImcRead(NaClSrpcImcBuffer* buffer,
+                         size_t elt_size,
+                         size_t n_elt,
+                         void* target) {
   size_t request_bytes;
   size_t avail_bytes = buffer->last_byte - buffer->next_byte;
 
@@ -157,10 +157,10 @@ void __NaClSrpcImcRefill(NaClSrpcImcBuffer* buffer) {
  * sourc to the specified buffer.  It returns the number of elements it
  * wrote if successful, and -1 otherwise.
  */
-int __NaClSrpcImcWrite(const void* source,
-                       size_t elt_size,
-                       size_t n_elt,
-                       NaClSrpcImcBuffer* buffer) {
+size_t __NaClSrpcImcWrite(const void* source,
+                          size_t elt_size,
+                          size_t n_elt,
+                          NaClSrpcImcBuffer* buffer) {
   size_t request_bytes;
   /*
    * What follows works on the assumption that buffer->bytes is an array,

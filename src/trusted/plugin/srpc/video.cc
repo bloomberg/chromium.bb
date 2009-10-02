@@ -214,6 +214,9 @@ void VideoMap::XEventHandler(Widget widget,
                              XEvent* xevent,
                              Boolean* b) {
   VideoScopedGlobalLock video_lock;
+
+  UNREFERENCED_PARAMETER(widget);
+  UNREFERENCED_PARAMETER(b);
   if ((NULL == video) || (NULL == video->window_) ||
       (NULL == video->untrusted_video_share_))
     return;

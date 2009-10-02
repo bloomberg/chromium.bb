@@ -74,6 +74,7 @@ bool ConnectedSocket::HasMethodEx(uintptr_t method_id, CallType call_type) {
 bool ConnectedSocket::InitParamsEx(uintptr_t method_id,
                                    CallType call_type,
                                    SrpcParams *params) {
+  UNREFERENCED_PARAMETER(call_type);
   if (srpc_client_) {
     return srpc_client_->InitParams(method_id, params);
   }
@@ -96,6 +97,8 @@ NaClSrpcArg* ConnectedSocket::GetSignatureObject() {
 
 bool ConnectedSocket::SignaturesGetProperty(void *obj, SrpcParams *params) {
   // TODO(gregoryd): is this still required?
+  UNREFERENCED_PARAMETER(obj);
+  UNREFERENCED_PARAMETER(params);
   return true;
 }
 

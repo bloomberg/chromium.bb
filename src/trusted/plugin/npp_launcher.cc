@@ -78,11 +78,11 @@ const char kPluginDescription[] = "Native Client Plugin was built on "
 
 static void DebugPrintf(const char *fmt, ...) {
   va_list argptr;
-  fprintf (stderr, "@@@ NPAPI PLUGIN ");
+  fprintf(stderr, "@@@ NPAPI PLUGIN ");
 
-  va_start (argptr, fmt);
-  vfprintf (stderr, fmt, argptr);
-  va_end (argptr);
+  va_start(argptr, fmt);
+  vfprintf(stderr, fmt, argptr);
+  va_end(argptr);
   fflush(stderr);
 }
 
@@ -115,6 +115,8 @@ NPError NPP_New(NPMIMEType plugin_type,
                 char* argn[],
                 char* argv[],
                 NPSavedData* saved) {
+  UNREFERENCED_PARAMETER(mode);
+  UNREFERENCED_PARAMETER(saved);
   DebugPrintf("NPP_New '%s'\n", plugin_type);
 
   for (int i = 0; i < argc; ++i) {
@@ -249,6 +251,76 @@ int32_t NPP_Write(NPP instance, NPStream* stream, int32_t offset, int32_t len,
   return module->Write(stream, offset, len, buffer);
 }
 
+#if NACL_OSX
+static void OpenMacFile(NPStream* stream,
+                        const char* filename,
+                        nacl::NPInstance* module) {
+  // This ugliness is necessary due to the fact that Safari on Mac returns
+  // a pathname in "Mac" format, rather than a unix pathname.  To use the
+  // resulting name requires conversion, which is done by a couple of Mac
+  // library routines.
+  // TODO(sehr): pull this code out into a separate file.
+  if (filename && filename[0] != '/') {
+    // The filename we were given is a "classic" pathname, which needs
+    // to be converted to a posix pathname.
+    printf("Pathname to be converted\n");
+    Boolean got_posix_name = FALSE;
+    CFStringRef cf_hfs_filename =
+      CFStringCreateWithCString(NULL, filename, kCFStringEncodingMacRoman);
+    if (cf_hfs_filename) {
+      printf("Pathname after hfs\n");
+      CFURLRef cf_url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
+                                                      cf_hfs_filename,
+                                                      kCFURLHFSPathStyle,
+                                                      false);
+      if (cf_url) {
+        CFStringRef cf_posix_filename =
+          CFURLCopyFileSystemPath(cf_url, kCFURLPOSIXPathStyle);
+        if (cf_posix_filename) {
+          CFIndex len
+             = CFStringGetMaximumSizeOfFileSystemRepresentation(
+                 cf_posix_filename);
+          if (len > 0) {
+            char *posix_filename =
+              static_cast<char*>(malloc(sizeof(posix_filename[0]) * len));
+            if (posix_filename) {
+              got_posix_name =
+                CFStringGetFileSystemRepresentation(cf_posix_filename,
+                                                    posix_filename,
+                                                    len);
+              if (got_posix_name) {
+                module->StreamAsFile(stream, posix_filename);
+                // Safari on OS X apparently wants the NPP_StreamAsFile
+                // call to delete the file object after processing.
+                // This was discovered in investigations by Shiki.
+                FSRef ref;
+                Boolean is_dir;
+                if (FSPathMakeRef(reinterpret_cast<UInt8*>(posix_filename),
+                                  &ref,
+                                  &is_dir) == noErr) {
+                  FSDeleteObject(&ref);
+                }
+              }
+              free(posix_filename);
+            }
+          }
+          CFRelease(cf_posix_filename);
+        }
+        CFRelease(cf_url);
+      }
+      CFRelease(cf_hfs_filename);
+    }
+    if (got_posix_name) {
+      // If got_posix_name was true than we succesfully created
+      // our posix path and called StreamAsFile above, so we
+      // can exit without falling through to the case below.
+      return;
+    }
+    filename =  NULL;
+  }
+}
+#endif  // NACL_OSX
+
 void NPP_StreamAsFile(NPP instance, NPStream* stream, const char* filename) {
   DebugPrintf("NPP_StreamAsFile: %s\n", filename);
   if (instance == NULL) {
@@ -257,44 +329,10 @@ void NPP_StreamAsFile(NPP instance, NPStream* stream, const char* filename) {
   nacl::NPInstance* module = static_cast<nacl::NPInstance*>(instance->pdata);
   if (module != NULL) {
 #if NACL_OSX
-    // This ugliness is necessary due to the fact that Safari on Mac returns
-    // a pathname in "Mac" format, rather than a unix pathname.  To use the
-    // resulting name requires conversion, which is done by a couple of Mac
-    // library routines.
-    // TODO(sehr): pull this code out into a separate file.
-    if (filename && filename[0] != '/') {
-      // The filename we were given is a "classic" pathname, which needs
-      // to be converted to a posix pathname.
-      size_t len = strlen(filename);
-
-      // Pascal strings are limited to no more than 255 bytes.
-      if (len < 256) {
-        FSSpec spec;
-        unsigned char pascal_pathname[256];
-
-        // Make a pascal string out of a C string.
-        memmove(pascal_pathname + 1, filename, len);
-        pascal_pathname[0] = static_cast<unsigned char>(len);
-        if (FSMakeFSSpec(0, 0, pascal_pathname, &spec) == noErr) {
-          FSRef ref;
-          if (FSpMakeFSRef(&spec, &ref) == noErr) {
-            static unsigned char posix_path[1024];
-
-            if (FSRefMakePath(&ref, posix_path, sizeof(posix_path)) == noErr) {
-              filename = reinterpret_cast<char*>(posix_path);
-            } else {
-              filename = NULL;
-            }
-            module->StreamAsFile(stream, filename);
-            FSDeleteObject(&ref);
-            return;
-          }
-        }
-      }
-      filename = NULL;
-    }
-#endif  // NACL_OSX
+    OpenMacFile(stream, filename, module);
+#else
     module->StreamAsFile(stream, filename);
+#endif  // NACL_OSX
   }
 }
 

@@ -60,53 +60,49 @@ MethodInfo::~MethodInfo() {
     free(reinterpret_cast<void*>(outs_));
   }
 
-/*const*/ char* MethodInfo::TypeName(NaClSrpcArgType type) {
+char* MethodInfo::TypeName(NaClSrpcArgType type) {
   const char* str;
-  char* retstr;
 
   str = "BAD_TYPE";
   switch (type) {
-   case NACL_SRPC_ARG_TYPE_INVALID:
-    str = "INVALID";
-    break;
-   case NACL_SRPC_ARG_TYPE_DOUBLE:
-    str = "double";
-    break;
-   case NACL_SRPC_ARG_TYPE_INT:
-    str = "int";
-    break;
-   case NACL_SRPC_ARG_TYPE_STRING:
-    str = "string";
-    break;
-   case NACL_SRPC_ARG_TYPE_HANDLE:
-    str = "handle";
-    break;
-   case NACL_SRPC_ARG_TYPE_BOOL:
-    str = "bool";
-    break;
-   case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-    str = "char[]";
-    break;
-   case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-    str = "int[]";
-    break;
-   case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-    str = "double[]";
-    break;
-   case NACL_SRPC_ARG_TYPE_OBJECT:
-     str = "object";
-     break;
-   case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
-     str = "variant[]";
-     break;
-#if NACL_WINDOWS
-   default:
-    str = "BAD TYPE";
-    break;
-#endif  // NACL_WINDOWS
+    case NACL_SRPC_ARG_TYPE_INVALID:
+      str = "INVALID";
+      break;
+    case NACL_SRPC_ARG_TYPE_DOUBLE:
+      str = "double";
+      break;
+    case NACL_SRPC_ARG_TYPE_INT:
+      str = "int";
+      break;
+    case NACL_SRPC_ARG_TYPE_STRING:
+      str = "string";
+      break;
+    case NACL_SRPC_ARG_TYPE_HANDLE:
+      str = "handle";
+      break;
+    case NACL_SRPC_ARG_TYPE_BOOL:
+      str = "bool";
+      break;
+    case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
+      str = "char[]";
+      break;
+    case NACL_SRPC_ARG_TYPE_INT_ARRAY:
+      str = "int[]";
+      break;
+    case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
+      str = "double[]";
+      break;
+    case NACL_SRPC_ARG_TYPE_OBJECT:
+      str = "object";
+      break;
+    case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
+      str = "variant[]";
+      break;
+    default:
+      str = "BAD TYPE";
+      break;
   }
-  retstr = PortablePluginInterface::MemAllocStrdup(str);
-  return retstr;
+  return PortablePluginInterface::MemAllocStrdup(str);
 }
 
 bool InitSrpcArgArray(NaClSrpcArg* arr, int size) {
@@ -153,13 +149,13 @@ void FreeSrpcArg(NaClSrpcArg* arg) {
     case NACL_SRPC_ARG_TYPE_BOOL:
     case NACL_SRPC_ARG_TYPE_DOUBLE:
     case NACL_SRPC_ARG_TYPE_INT:
+    case NACL_SRPC_ARG_TYPE_INVALID:
     default:
       break;
   }
 }
 
 bool MethodInfo::Signature(NaClSrpcArg* toplevel) {
-
   InitSrpcArgArray(toplevel, 3);
 
   dprintf(("Signature: %p->[0] = %p (%s)\n",
@@ -226,7 +222,8 @@ bool MethodInfo::Signature(NaClSrpcArg* toplevel) {
 }
 
 void MethodInfo::PrintType(Plugin* plugin, NaClSrpcArgType type) {
-  //plugin->Print(TypeName(type));
+  UNREFERENCED_PARAMETER(plugin);
+  UNREFERENCED_PARAMETER(type);
 }
 
 MethodMap::~MethodMap() {

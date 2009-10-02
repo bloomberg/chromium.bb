@@ -452,6 +452,7 @@ NaClSrpcMethod NaClSrpcServiceMethod(const NaClSrpcService* service,
 static NaClSrpcError ServiceDiscovery(NaClSrpcChannel* channel,
                                       NaClSrpcArg** in_args,
                                       NaClSrpcArg** out_args) {
+  UNREFERENCED_PARAMETER(in_args);
   if (NULL == channel->server) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
@@ -473,6 +474,7 @@ static NaClSrpcError ServiceDiscovery(NaClSrpcChannel* channel,
 static NaClSrpcError GetTimes(NaClSrpcChannel* channel,
                               NaClSrpcArg** in_args,
                               NaClSrpcArg** out_args) {
+  UNREFERENCED_PARAMETER(in_args);
   NaClSrpcGetTimes(channel,
                    &out_args[0]->u.dval,
                    &out_args[1]->u.dval,
@@ -484,6 +486,7 @@ static NaClSrpcError GetTimes(NaClSrpcChannel* channel,
 static NaClSrpcError SetTimingEnabled(NaClSrpcChannel* channel,
                                       NaClSrpcArg** in_args,
                                       NaClSrpcArg** out_args) {
+  UNREFERENCED_PARAMETER(out_args);
   NaClSrpcToggleChannelTiming(channel, in_args[0]->u.ival);
   return NACL_SRPC_RESULT_OK;
 }

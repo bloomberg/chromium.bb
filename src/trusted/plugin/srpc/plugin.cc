@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "native_client/src/include/portability_string.h"
+#include "native_client/src/trusted/plugin/srpc/plugin.h"
 
 #include <assert.h>
 #include <fcntl.h>
@@ -43,6 +43,8 @@
 
 #include <string>
 
+#include "native_client/src/include/portability_string.h"
+
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
@@ -54,7 +56,6 @@
 #include "native_client/src/trusted/plugin/srpc/video.h"
 #include "native_client/src/trusted/plugin/origin.h"
 
-#include "native_client/src/trusted/plugin/srpc/plugin.h"
 #include "native_client/src/trusted/plugin/srpc/connected_socket.h"
 #include "native_client/src/trusted/plugin/srpc/service_runtime_interface.h"
 #include "native_client/src/trusted/plugin/srpc/shared_memory.h"
@@ -162,6 +163,7 @@ bool Plugin::DefaultSocketAddress(void *obj, SrpcParams *params) {
 // A method to test the cost of invoking a method in a plugin without
 // making an RPC to the service runtime.  Used for performance evaluation.
 bool Plugin::NullPluginMethod(void *obj, SrpcParams *params) {
+  UNREFERENCED_PARAMETER(obj);
   params->Output(0)->tag = NACL_SRPC_ARG_TYPE_INT;
   params->Output(0)->u.ival = 0;
   return true;
@@ -273,8 +275,8 @@ bool Plugin::GetModuleReadyProperty(void *obj, SrpcParams *params) {
 }
 
 bool Plugin::SetModuleReadyProperty(void *obj, SrpcParams *params) {
+  UNREFERENCED_PARAMETER(obj);
   params->SetExceptionInfo("__moduleReady is a read-only property");
-
   return false;
 }
 

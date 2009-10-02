@@ -39,6 +39,7 @@
 //
 // Main plugin entry point implementation
 //
+
 #include "native_client/src/third_party/npapi/files/include/npapi.h"
 #include "native_client/src/third_party/npapi/files/include/npupp.h"
 
@@ -130,6 +131,13 @@ NP_Initialize(NPNetscapeFuncs* pFuncs
 #endif  // XP_UNIX
               )
 {
+// TODO(sehr): This code could stand some ifdef refactoring.
+#if defined(XP_UNIX) && defined(XP_MACOSX)
+#  if !defined(UNREFERENCED_PARAMETER)
+#    define UNREFERENCED_PARAMETER(P) do { (void) P; } while (0)
+#  endif  // UNREFERENCED_PARAMETER
+  UNREFERENCED_PARAMETER(pluginFuncs);
+#endif  // defined(XP_UNIX) && defined(XP_MACOSX)
   if(pFuncs == NULL)
     return NPERR_INVALID_FUNCTABLE_ERROR;
 

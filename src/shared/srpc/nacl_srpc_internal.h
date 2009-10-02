@@ -88,6 +88,17 @@ extern int __NaClSrpcDebugPrintCheckEnv();
 #endif
 
 /*
+ * We have to do this for now, because portability.h doesn't work for
+ * Native Client compilations.
+ * TODO(sehr): make portability.h work for Native Client compilations.
+ */
+#if NACL_WINDOWS
+# define UNREFERENCED_PARAMETER(P) (P)
+#else
+# define UNREFERENCED_PARAMETER(P) do { (void) P; } while (0)
+#endif
+
+/*
  * Wrappers for accesses to read and write via the IMC layer.
  */
 extern void __NaClSrpcImcBufferCtor(NaClSrpcImcBuffer* buffer,
@@ -95,14 +106,14 @@ extern void __NaClSrpcImcBufferCtor(NaClSrpcImcBuffer* buffer,
 
 extern NaClSrpcImcBuffer* __NaClSrpcImcFillbuf(NaClSrpcChannel* channel);
 
-extern int __NaClSrpcImcRead(NaClSrpcImcBuffer* buffer,
+extern size_t __NaClSrpcImcRead(NaClSrpcImcBuffer* buffer,
                              size_t elt_size,
                              size_t n_elt,
                              void* target);
 
 extern void __NaClSrpcImcRefill(NaClSrpcImcBuffer* buffer);
 
-extern int __NaClSrpcImcWrite(const void* source,
+extern size_t __NaClSrpcImcWrite(const void* source,
                               size_t elt_size,
                               size_t n_elt,
                               NaClSrpcImcBuffer* buffer);

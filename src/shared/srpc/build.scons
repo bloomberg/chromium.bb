@@ -43,7 +43,4 @@ trusted_untrusted_shared = [
     'utility.c',
 ]
 
-# TODO(sehr): remove necessity of the next line
-env.FilterOut(CCFLAGS=['-Wextra', '-Wsign-compare'])
-
 env.ComponentLibrary('nonnacl_srpc', trusted_untrusted_shared)

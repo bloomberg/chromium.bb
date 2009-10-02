@@ -107,6 +107,9 @@ namespace nacl_srpc {
   bool PortableHandle::InitParamsEx(uintptr_t method_id,
                                     CallType call_type,
                                     SrpcParams *params) {
+    UNREFERENCED_PARAMETER(method_id);
+    UNREFERENCED_PARAMETER(call_type);
+    UNREFERENCED_PARAMETER(params);
     return false;
   }
 
@@ -158,11 +161,15 @@ namespace nacl_srpc {
   bool PortableHandle::InvokeEx(uintptr_t method_id,
                                 CallType call_type,
                                 SrpcParams *params) {
+    UNREFERENCED_PARAMETER(method_id);
+    UNREFERENCED_PARAMETER(call_type);
     params->SetExceptionInfo("Unrecognized method specified");
     return false;
   }
 
   bool PortableHandle::HasMethodEx(uintptr_t method_id, CallType call_type) {
+    UNREFERENCED_PARAMETER(method_id);
+    UNREFERENCED_PARAMETER(call_type);
     return false;
   }
 }

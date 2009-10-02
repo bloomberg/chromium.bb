@@ -31,9 +31,6 @@
 
 Import('env')
 
-# TODO(sehr): remove the need for the next line
-env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum'])
-
 if env['TARGET_SUBARCH'] != '32':
   Return()
 
@@ -87,7 +84,7 @@ if env.Bit('linux'):
 if env.Bit('mac'):
     env.Append(
         CCFLAGS=['-Wno-long-long',
-                 # warning: 'FSMakeFSSpec' is deprecated
+                 # warning: Basically all of our 2d Mac stuff is deprecated.
                  '-Wno-deprecated',
                  '-Wno-deprecated-declarations'],
         CPPDEFINES = [

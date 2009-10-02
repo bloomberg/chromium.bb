@@ -292,6 +292,7 @@ static int name##Get(NaClSrpcImcBuffer* buffer,                 \
                      int allocate_memory,                       \
                      int read_value,                            \
                      NaClSrpcArg* arg) {                        \
+  UNREFERENCED_PARAMETER(allocate_memory);                      \
   if (read_value &&                                             \
       1 != __NaClSrpcImcRead(buffer,                            \
                              sizeof(impl_type),                 \
@@ -321,6 +322,7 @@ static void name##Print(const NaClSrpcArg* arg) {               \
 static uint32_t name##Length(const NaClSrpcArg* arg,            \
                              int write_value,                   \
                              int* handles) {                    \
+  UNREFERENCED_PARAMETER(arg);                                  \
   *handles = 0;                                                 \
   if (write_value) {                                            \
     return sizeof(impl_type);                                   \
@@ -330,6 +332,7 @@ static uint32_t name##Length(const NaClSrpcArg* arg,            \
 }                                                               \
                                                                 \
 static void name##Free(NaClSrpcArg* arg) {                      \
+  UNREFERENCED_PARAMETER(arg);                                  \
 }                                                               \
                                                                 \
 static const ArgEltInterface k##name##IoInterface = {           \
@@ -436,6 +439,7 @@ static int HandleGet(NaClSrpcImcBuffer* buffer,
                      int allocate_memory,
                      int read_value,
                      NaClSrpcArg* arg) {
+  UNREFERENCED_PARAMETER(allocate_memory);
   if (read_value) {
     arg->u.hval = __NaClSrpcImcReadDesc(buffer);
   }
@@ -455,6 +459,7 @@ static void HandlePrint(const NaClSrpcArg* arg) {
 #ifdef __native_client__
   dprintf(("%d", arg->u.hval));
 #else
+  UNREFERENCED_PARAMETER(arg);
   dprintf(("handle"));
 #endif  /* __native_client__ */
 }
@@ -462,6 +467,7 @@ static void HandlePrint(const NaClSrpcArg* arg) {
 static uint32_t HandleLength(const NaClSrpcArg* arg,
                              int write_value,
                              int* handles) {
+  UNREFERENCED_PARAMETER(arg);
   if (write_value) {
     *handles = 1;
   } else {
@@ -471,6 +477,7 @@ static uint32_t HandleLength(const NaClSrpcArg* arg,
 }
 
 static void HandleFree(NaClSrpcArg* arg) {
+  UNREFERENCED_PARAMETER(arg);
 }
 
 static const ArgEltInterface kHandleIoInterface = {
@@ -487,6 +494,8 @@ static int StringGet(NaClSrpcImcBuffer* buffer,
   uint32_t dimdim;
   size_t dim;
 
+  UNREFERENCED_PARAMETER(allocate_memory);
+  UNREFERENCED_PARAMETER(arg);
   if (read_value) {
     if (1 != __NaClSrpcImcRead(buffer, sizeof(dim), 1, &dimdim)) {
       return 0;
@@ -556,27 +565,38 @@ static int InvalidGet(NaClSrpcImcBuffer* buffer,
                       int allocate_memory,
                       int read_value,
                       NaClSrpcArg* arg) {
+  UNREFERENCED_PARAMETER(buffer);
+  UNREFERENCED_PARAMETER(allocate_memory);
+  UNREFERENCED_PARAMETER(read_value);
+  UNREFERENCED_PARAMETER(arg);
   return 0;
 }
 
 static int InvalidPut(const NaClSrpcArg* arg,
                       int write_value,
                       NaClSrpcImcBuffer* buffer) {
+  UNREFERENCED_PARAMETER(arg);
+  UNREFERENCED_PARAMETER(write_value);
+  UNREFERENCED_PARAMETER(buffer);
   return 0;
 }
 
 static void InvalidPrint(const NaClSrpcArg* arg) {
+  UNREFERENCED_PARAMETER(arg);
   dprintf(("INVALID"));
 }
 
 static uint32_t InvalidLength(const NaClSrpcArg* arg,
                               int write_value,
                               int* handles) {
+  UNREFERENCED_PARAMETER(arg);
+  UNREFERENCED_PARAMETER(write_value);
   *handles = 0;
   return 0;
 }
 
 static void InvalidFree(NaClSrpcArg* arg) {
+  UNREFERENCED_PARAMETER(arg);
 }
 
 static const ArgEltInterface kInvalidIoInterface = {
@@ -640,10 +660,10 @@ static int ArgsGet(const ArgsIoInterface* argsdesc,
     char read_type;
     const ArgEltInterface* desc;
 
-    if (1 != __NaClSrpcImcRead(buffer, sizeof(char), 1, &read_type)) {
+    if (1 != __NaClSrpcImcRead(buffer, sizeof(read_type), 1, &read_type)) {
       goto error;
     }
-    if (args[i].tag != read_type) {
+    if (args[i].tag != (enum NaClSrpcArgType) read_type) {
       goto error;
     }
     /* Set the index pointer to point to the element to be read into */
@@ -771,6 +791,7 @@ static const struct ArgsIoInterface kArgsIoInterface = {
 
 static const ArgsIoInterface* GetArgsInterface(uint32_t protocol_version) {
   /* Future versioning of the argument vector I/O goes here. */
+  UNREFERENCED_PARAMETER(protocol_version);
   return &kArgsIoInterface;
 }
 
@@ -831,9 +852,7 @@ int NaClSrpcRpcGet(NaClSrpcImcBuffer* buffer,
  * RpcWrite writes an RPC header to the specified buffer.  We can only
  * send the current protocol version.
  */
-static int RpcWrite(const ArgsIoInterface* desc,
-                    NaClSrpcImcBuffer* buffer,
-                    NaClSrpcRpc* rpc) {
+static int RpcWrite(NaClSrpcImcBuffer* buffer, NaClSrpcRpc* rpc) {
   dprintf((SIDE "RpcWrite(%"PRIx32", %s, %"PRIu32", %s)\n",
            rpc->protocol_version,
            rpc->is_request ? "request" : "response",
@@ -881,10 +900,7 @@ static int RpcWrite(const ArgsIoInterface* desc,
   return 1;
 }
 
-static void RpcLength(const ArgsIoInterface* desc,
-                      int is_request,
-                      uint32_t* bytes,
-                      uint32_t* handles) {
+static void RpcLength(int is_request, uint32_t* bytes, uint32_t* handles) {
   *bytes =
       sizeof(uint32_t) +  /* protocol_version */
       sizeof(uint64_t) +  /* request_id */
@@ -938,7 +954,7 @@ static int RequestPut(const ArgsIoInterface* desc,
   /* Set up and send rpc */
   rpc->is_request = 1;
   rpc->app_error = NACL_SRPC_RESULT_OK;
-  if (!RpcWrite(desc, buffer, rpc)) {
+  if (!RpcWrite(buffer, rpc)) {
     return 0;
   }
   /* Then send the args */
@@ -965,7 +981,7 @@ static int RequestLength(const ArgsIoInterface* desc,
   uint32_t tmp_bytes;
   uint32_t tmp_hdl;
 
-  RpcLength(desc, 1, &tmp_bytes, &tmp_hdl);
+  RpcLength(1, &tmp_bytes, &tmp_hdl);
   *bytes += tmp_bytes;
   *handles += tmp_hdl;
   if (!desc->length(desc, args, 1, &tmp_bytes, &tmp_hdl)) {
@@ -1044,7 +1060,7 @@ static int ResponsePut(const ArgsIoInterface* desc,
   dprintf((SIDE "ResponsePut(%p, %"PRIu32")\n",
            (void*) buffer, rpc->rpc_number));
   rpc->is_request = 0;
-  if (!RpcWrite(desc, buffer, rpc)) {
+  if (!RpcWrite(buffer, rpc)) {
     return 0;
   }
   if (!desc->put(desc, buffer, 1, rets)) {
@@ -1064,7 +1080,7 @@ static int ResponseLength(const ArgsIoInterface* desc,
   uint32_t tmp_bytes;
   uint32_t tmp_hdl;
 
-  RpcLength(desc, 0, &tmp_bytes, &tmp_hdl);
+  RpcLength(0, &tmp_bytes, &tmp_hdl);
   *bytes += tmp_bytes;
   *handles += tmp_hdl;
   if (!desc->length(desc, rets, 1, &tmp_bytes, &tmp_hdl)) {
@@ -1113,7 +1129,7 @@ int NaClSrpcResponseWrite(NaClSrpcChannel* channel,
     dprintf(("ResponseWrite: flush failed -- sending internal error\n"));
     rpc->app_error = NACL_SRPC_RESULT_INTERNAL;
     rpc->is_request = 0;
-    if (!RpcWrite(desc, buffer, rpc)) {
+    if (!RpcWrite(buffer, rpc)) {
       dprintf(("ResponseWrite: flush failed twice -- giving up\n"));
       return 0;
     }

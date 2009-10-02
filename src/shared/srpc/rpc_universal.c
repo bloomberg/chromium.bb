@@ -38,6 +38,7 @@
 #include <string.h>
 #include <ctype.h>
 #if !NACL_WINDOWS
+/* Windows doesn't have the following header files. */
 # include <unistd.h>
 # include <sys/types.h>
 # include <sys/time.h>
@@ -601,6 +602,8 @@ static void PrintHelp() {
 static NaClSrpcError UpcallString(NaClSrpcChannel* channel,
                                   NaClSrpcArg** ins,
                                   NaClSrpcArg** outs) {
+  UNREFERENCED_PARAMETER(channel);
+  UNREFERENCED_PARAMETER(outs);
   printf("UpcallString: called with '%s'\n", ins[0]->u.sval);
   return NACL_SRPC_RESULT_OK;
 }

@@ -44,18 +44,10 @@
         '<@(common_sources)',
         'srpc/video.cc',
       ],
-      # TODO(sehr): remove the need for the removals of -Wextra and
-      #  -Wswitch-enum
-      'cflags!': [
-        '-Wextra',
-        '-Wswitch-enum'
-      ],
       'xcode_settings': {
         'WARNING_CFLAGS!': [
           # TODO(bradnelson): remove -pedantic when --std=c++98 in common.gypi
           '-pedantic',
-          '-Wextra',
-          '-Wswitch-enum'
         ],
         'WARNING_CFLAGS': [
           '-Wno-deprecated',
