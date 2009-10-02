@@ -89,6 +89,8 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
 namespace {
 const wchar_t* const kO3DWindowClassName = L"O3DWindowClass";
 
+void CleanupAllWindows(PluginObject *obj);
+
 // We would normally make this a stack variable in main(), but in a
 // plugin, that's not possible, so we make it a global. When the DLL is loaded
 // this it gets constructed and when it is unlooaded it is destructed. Note
@@ -582,13 +584,19 @@ LRESULT CALLBACK PluginWindowInterposer(HWND hWnd,
                                         UINT Msg,
                                         WPARAM wParam,
                                         LPARAM lParam) {
+  PluginObject *obj = PluginObject::GetPluginProperty(hWnd);
+
+  // Need to get the original window proc before potentially calling
+  // CleanupAllWindows which will clear it.
+  WNDPROC proc = static_cast<WNDPROC>(GetProp(hWnd, kOrigWndProcName));
+  DCHECK(proc != NULL);
+
   switch (Msg) {
     case WM_PAINT: {
       // For nicer startup appearance, allow the browser to paint the
       // plugin window until we start to draw 3D content. Forbid the
       // browser from painting once we have started to draw to prevent
       // a flash in Firefox upon our receiving focus the first time.
-      PluginObject *obj = PluginObject::GetPluginProperty(hWnd);
       if (obj != NULL && obj->renderer() != NULL) {
         if (obj->renderer()->presented_once()) {
           // Tell Windows we painted the window region.
@@ -601,12 +609,16 @@ LRESULT CALLBACK PluginWindowInterposer(HWND hWnd,
       break;
     }
 
+    case WM_DESTROY:
+      if (obj != NULL) {
+        CleanupAllWindows(obj);
+      }
+      break;
+
     default:
       break;
   }
 
-  WNDPROC proc = static_cast<WNDPROC>(GetProp(hWnd, kOrigWndProcName));
-  DCHECK(proc != NULL);
   return CallWindowProc(proc, hWnd, Msg, wParam, lParam);
 }
 
@@ -654,24 +666,27 @@ NPError InitializePlugin() {
 }
 
 void CleanupAllWindows(PluginObject *obj) {
-  DCHECK(obj->GetContentHWnd());
-  DCHECK(obj->GetPluginHWnd());
-  ::KillTimer(obj->GetContentHWnd(), 0);
+  if (obj->GetContentHWnd()) {
+    ::KillTimer(obj->GetContentHWnd(), 0);
+    PluginObject::ClearPluginProperty(obj->GetContentHWnd());
+    ::DestroyWindow(obj->GetContentHWnd());
+    obj->SetContentHWnd(NULL);
+  }
 
-  // Restore the original WNDPROC on the plugin window so that we
-  // don't attempt to call into the O3D DLL after it's been unloaded.
-  LONG_PTR origWndProc = reinterpret_cast<LONG_PTR>(
-      GetProp(obj->GetPluginHWnd(),
-              kOrigWndProcName));
-  DCHECK(origWndProc != NULL);
-  RemoveProp(obj->GetPluginHWnd(), kOrigWndProcName);
-  SetWindowLongPtr(obj->GetPluginHWnd(), GWLP_WNDPROC, origWndProc);
+  if (obj->GetPluginHWnd()) {
+    // Restore the original WNDPROC on the plugin window so that we
+    // don't attempt to call into the O3D DLL after it's been unloaded.
+    LONG_PTR origWndProc = reinterpret_cast<LONG_PTR>(
+        GetProp(obj->GetPluginHWnd(),
+                kOrigWndProcName));
+    DCHECK(origWndProc != NULL);
+    RemoveProp(obj->GetPluginHWnd(), kOrigWndProcName);
+    SetWindowLongPtr(obj->GetPluginHWnd(), GWLP_WNDPROC, origWndProc);
 
-  PluginObject::ClearPluginProperty(obj->GetContentHWnd());
-  PluginObject::ClearPluginProperty(obj->GetPluginHWnd());
-  ::DestroyWindow(obj->GetContentHWnd());
-  obj->SetContentHWnd(NULL);
-  obj->SetPluginHWnd(NULL);
+    PluginObject::ClearPluginProperty(obj->GetPluginHWnd());
+    obj->SetPluginHWnd(NULL);
+  }
+
   obj->SetHWnd(NULL);
 }
 
