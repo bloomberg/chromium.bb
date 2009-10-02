@@ -39,6 +39,7 @@
 
 using WebKit::WebApplicationCacheHost;
 using WebKit::WebApplicationCacheHostClient;
+using WebKit::WebKitClient;
 using WebKit::WebStorageArea;
 using WebKit::WebStorageNamespace;
 using WebKit::WebString;
@@ -248,9 +249,9 @@ WebString RendererWebKitClientImpl::SandboxSupport::getFontFamilyForCharacters(
 
 //------------------------------------------------------------------------------
 
-base::PlatformFile RendererWebKitClientImpl::databaseOpenFile(
+WebKitClient::FileHandle RendererWebKitClientImpl::databaseOpenFile(
   const WebString& file_name, int desired_flags,
-  base::PlatformFile* dir_handle) {
+  WebKitClient::FileHandle* dir_handle) {
   DBMessageFilter* db_message_filter = DBMessageFilter::GetInstance();
   int message_id = db_message_filter->GetUniqueID();
 

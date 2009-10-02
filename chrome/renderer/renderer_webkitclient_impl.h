@@ -45,9 +45,9 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
       const WebKit::WebString& path);
   virtual WebKit::WebStorageNamespace* createSessionStorageNamespace();
 
-  virtual base::PlatformFile databaseOpenFile(
+  virtual WebKit::WebKitClient::FileHandle databaseOpenFile(
       const WebKit::WebString& file_name, int desired_flags,
-      base::PlatformFile* dir_handle);
+      WebKit::WebKitClient::FileHandle* dir_handle);
   virtual int databaseDeleteFile(const WebKit::WebString& file_name,
       bool sync_dir);
   virtual long databaseGetFileAttributes(const WebKit::WebString& file_name);

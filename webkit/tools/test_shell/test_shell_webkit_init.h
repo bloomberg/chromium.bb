@@ -96,9 +96,9 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     return true;
   }
 
-  virtual base::PlatformFile databaseOpenFile(
+  virtual WebKit::WebKitClient::FileHandle databaseOpenFile(
       const WebKit::WebString& file_name, int desired_flags,
-      base::PlatformFile* dir_handle) {
+      WebKit::WebKitClient::FileHandle* dir_handle) {
     return SimpleDatabaseSystem::GetInstance()->OpenFile(
         webkit_glue::WebStringToFilePath(file_name),
         desired_flags, dir_handle);
