@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/gfx/rect.h"
+#include "base/keyboard_codes.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/automation/automation_constants.h"
@@ -249,3 +250,39 @@ TEST_F(BlockedPopupContainerInteractiveTest, DontBreakOnBlur) {
   // We popup shouldn't be closed by the onblur handler.
   ASSERT_FALSE(automation()->WaitForWindowCountToBecome(1, 1500));
 }
+
+#if !defined(OS_MACOSX)  // see BrowserWindowCocoa::GetCommandId
+// Tests that tab related keyboard accelerators are reserved by the app.
+
+class BrowserInteractiveTest : public UITest {
+};
+
+TEST_F(BrowserInteractiveTest, ReserveKeyboardAccelerators) {
+  const std::string kBadPage =
+      "<html><script>"
+      "document.onkeydown = function() {"
+      "  event.preventDefault();"
+      "  return false;"
+      "}"
+      "</script></html>";
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  browser->AppendTab(GURL("data:text/html," + kBadPage));
+  int tab_count = 0;
+  ASSERT_TRUE(browser->GetTabCount(&tab_count));
+  ASSERT_EQ(tab_count, 2);
+
+  int active_tab = 0;
+  ASSERT_TRUE(browser->GetActiveTabIndex(&active_tab));
+  ASSERT_EQ(active_tab, 1);
+
+  scoped_refptr<WindowProxy> window(browser->GetWindow());
+  ASSERT_TRUE(window->SimulateOSKeyPress(
+      base::VKEY_TAB, views::Event::EF_CONTROL_DOWN));
+  ASSERT_TRUE(browser->WaitForTabToBecomeActive(0, action_max_timeout_ms()));
+
+  ASSERT_TRUE(browser->ActivateTab(1));
+  ASSERT_TRUE(window->SimulateOSKeyPress(
+      base::VKEY_W, views::Event::EF_CONTROL_DOWN));
+  ASSERT_TRUE(browser->WaitForTabCountToBecome(1, action_max_timeout_ms()));
+}
+#endif
