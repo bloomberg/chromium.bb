@@ -829,23 +829,26 @@ BUG9071 LINUX : LayoutTests/editing/selection/drag-to-contenteditable-iframe.htm
 
 // These are regressions from 1.0, but deemed DEFERable for 2.0.
 BUG8635 LINUX WIN : LayoutTests/svg/custom/pattern-y-offset.svg = FAIL
-BUG8635 LINUX WIN : LayoutTests/svg/batik/paints/patternRegions.svg = FAIL
+BUG8635 WIN MAC : LayoutTests/svg/batik/paints/patternRegions.svg = IMAGE
+BUG8635 LINUX : LayoutTests/svg/batik/paints/patternRegions.svg = IMAGE+TEXT
 BUG8635 LINUX WIN : LayoutTests/svg/custom/pattern-cycle-detection.svg = FAIL
-
-// Shows garbage instead of an image
-BUG8635 LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/struct-use-01-t.svg = FAIL
 
 BUG19559 LINUX WIN : LayoutTests/svg/batik/text/textEffect.svg = FAIL
 BUG19559 LINUX WIN : LayoutTests/svg/batik/text/textEffect3.svg = FAIL
 
-BUG8763 LINUX WIN : LayoutTests/svg/custom/use-on-g-containing-foreignObject-and-image.svg = FAIL
+BUG8763 LINUX WIN MAC : LayoutTests/svg/custom/use-on-g-containing-foreignObject-and-image.svg = IMAGE
 
 // smiley.png should be shown with xml:base and xml:base on parent.
-BUG10281 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-image-07-t.svg = FAIL
+BUG10281 MAC : LayoutTests/svg/W3C-SVG-1.1/struct-image-07-t.svg = IMAGE
+BUG10281 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-image-07-t.svg = IMAGE+TEXT
 
-// Not showing images when they should be
-BUG10281 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-image-02-b.svg = FAIL
-BUG10281 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-symbol-01-b.svg = FAIL
+// We show reduced version of the entire SVN image rather than an image
+BUG23463 MAC : LayoutTests/svg/W3C-SVG-1.1/struct-image-02-b.svg = IMAGE
+BUG23463 MAC : LayoutTests/svg/W3C-SVG-1.1/struct-symbol-01-b.svg = IMAGE
+BUG23463 MAC : LayoutTests/svg/W3C-SVG-1.1/struct-use-01-t.svg = IMAGE
+BUG23463 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-image-02-b.svg = IMAGE+TEXT
+BUG23463 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-symbol-01-b.svg = IMAGE+TEXT
+BUG23463 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-use-01-t.svg = IMAGE+TEXT
 
 // Radial gradients with offset focal points are not implemented in Skia.
 // See comment in WebCore/platform/graphics/skia/GradientSkia.cpp
@@ -1006,7 +1009,6 @@ BUG10304 LINUX : LayoutTests/svg/W3C-SVG-1.1/fonts-desc-02-t.svg = FAIL
 BUG10304 LINUX : LayoutTests/svg/W3C-SVG-1.1/interact-zoom-01-t.svg = FAIL
 BUG10304 LINUX : LayoutTests/svg/W3C-SVG-1.1/text-spacing-01-b.svg = FAIL
 BUG10304 LINUX : LayoutTests/svg/W3C-SVG-1.1/text-text-01-b.svg = FAIL
-BUG10304 LINUX : LayoutTests/svg/batik/text/textPosition.svg = FAIL
 BUG10304 LINUX : LayoutTests/svg/carto.net/slider.svg = FAIL
 BUG10304 LINUX : LayoutTests/svg/carto.net/textbox.svg = FAIL
 BUG10304 LINUX : LayoutTests/svg/carto.net/window.svg = FAIL
@@ -1217,7 +1219,7 @@ BUG4360 SKIP : LayoutTests/security/autocomplete-cleared-on-back.html = TIMEOUT
 // Linux pixeltest failure: caret is in the wrong place
 // Upstream WebKit also skips this test and Safari with latest WebKit shows
 // same behavior as Chromium. Not required for beta so marking as deferred.
-BUG10324 WIN LINUX : LayoutTests/editing/selection/caret-rtl-2.html = FAIL
+BUG10324 WIN LINUX MAC : LayoutTests/editing/selection/caret-rtl-2.html = IMAGE
 
 // This test assumes we're using unix paths and looks for a file:///test
 // path.  We correctly return file:///C:/test on Windows.  We should fix
@@ -1481,6 +1483,735 @@ BUG10384 MAC : LayoutTests/fast/dom/Window/new-window-opener.html = CRASH TIMEOU
 BUG10384 MAC : LayoutTests/fast/forms/focus2.html = CRASH FAIL
 
 BUG10399 MAC : LayoutTests/fast/encoding/char-encoding-mac.html = FAIL
+
+// Broken pixel tests
+
+// Rebaselining needed because of scrollbars
+BUG23498 MAC : LayoutTests/css1/basic/comments.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/basic/containment.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/basic/id_as_selector.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/basic/inheritance.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/border.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/border_bottom.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/border_bottom_width.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/border_left.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/border_left_width.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/border_right_inline.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/border_right_width.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/border_style.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/border_top.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/border_top_width.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/border_width.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/clear.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/clear_float.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/float_elements_in_series.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/float_margin.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/float_on_text_elements.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/height.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/margin.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/margin_bottom.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/margin_inline.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/margin_left.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/margin_right.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/margin_top.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/padding.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/padding_bottom.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/padding_inline.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/padding_left.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/padding_right.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/padding_top.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/box_properties/width.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/cascade/cascade_order.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/classification/display.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/classification/list_style.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/classification/list_style_type.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/classification/white_space.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/color_and_background = IMAGE
+BUG23498 MAC : LayoutTests/css1/color_and_background/background_attachment.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/color_and_background/background_position.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/color_and_background/background_repeat.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/conformance/forward_compatible_parsing.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/font_properties/font.html = IMAGE
+// BUG23498 MAC : LayoutTests/css1/font_properties/font_family.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/font_properties/font_size.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/font_properties/font_weight.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/formatting_model/floating_elements.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/formatting_model/height_of_lines.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/formatting_model/horizontal_formatting.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/formatting_model/inline_elements.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/formatting_model/replaced_elements.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/formatting_model/vertical_formatting.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/pseudo/anchor.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/pseudo/firstletter.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/pseudo/firstline.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/pseudo/multiple_pseudo_elements.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/text_properties/letter_spacing.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/text_properties/line_height.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/text_properties/text_decoration.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/text_properties/text_indent.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/text_properties/text_transform.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/text_properties/vertical_align.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/text_properties/word_spacing.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/units/color_units.html = IMAGE
+BUG23498 MAC : LayoutTests/css1/units/length_units.html = IMAGE
+BUG23498 MAC : LayoutTests/css2.1/t0803-c5502-mrgn-r-02-c.html = IMAGE
+BUG23498 MAC : LayoutTests/css2.1/t0803-c5505-mrgn-02-c.html = IMAGE
+BUG23498 MAC : LayoutTests/css2.1/t080301-c411-vt-mrgn-00-b.html = IMAGE
+BUG23498 MAC : LayoutTests/css2.1/t0905-c5525-fltclr-00-c-ag.html = IMAGE
+BUG23498 MAC : LayoutTests/css2.1/t0905-c5525-fltmrgn-00-c-ag.html = IMAGE
+BUG23498 MAC : LayoutTests/css2.1/t0905-c5525-fltwidth-00-c-g.html = IMAGE
+BUG23498 MAC : LayoutTests/css2.1/t0905-c5526-fltclr-00-c-ag.html = IMAGE
+BUG23498 MAC : LayoutTests/css2.1/t1002-c5523-width-02-b-g.html = IMAGE
+BUG23498 MAC : LayoutTests/css2.1/t1202-counters-08-b.html = IMAGE
+BUG23498 MAC : LayoutTests/css2.1/t1202-counters-09-b.html = IMAGE
+BUG23498 MAC : LayoutTests/css2.1/t140201-c535-bg-fixd-00-b-g.html = IMAGE
+BUG23498 MAC : LayoutTests/css2.1/t140201-c537-bgfxps-00-c-ag.html = IMAGE
+BUG23498 MAC : LayoutTests/css2.1/t1508-c527-font-07-b.html = IMAGE
+BUG23498 MAC : LayoutTests/editing/deleting/delete-after-span-ws-001.html = IMAGE
+BUG23498 MAC : LayoutTests/editing/deleting/delete-after-span-ws-002.html = IMAGE
+BUG23498 MAC : LayoutTests/editing/deleting/delete-after-span-ws-003.html = IMAGE
+BUG23498 MAC : LayoutTests/editing/deleting/delete-line-end-ws-001.html = IMAGE
+BUG23498 MAC : LayoutTests/editing/deleting/delete-line-end-ws-002.html = IMAGE
+BUG23498 MAC : LayoutTests/editing/inserting/insert-div-023.html = IMAGE
+BUG23498 MAC : LayoutTests/editing/selection/focus_editable_html.html = IMAGE
+BUG23498 MAC : LayoutTests/editing/selection/iframe.html = IMAGE
+BUG23498 MAC : LayoutTests/editing/selection/select-all-001.html = IMAGE
+BUG23498 MAC : LayoutTests/editing/selection/select-all-002.html = IMAGE
+BUG23498 MAC : LayoutTests/editing/selection/select-all-003.html = IMAGE
+BUG23498 MAC : LayoutTests/editing/selection/select-all-004.html = IMAGE
+BUG23498 MAC : LayoutTests/editing/selection/unrendered-001.html = IMAGE
+// BUG23498 MAC : LayoutTests/editing/selection/unrendered-002.html = IMAGE
+BUG23498 MAC : LayoutTests/editing/selection/unrendered-003.html = IMAGE
+BUG23498 MAC : LayoutTests/editing/selection/unrendered-004.html = IMAGE
+BUG23498 MAC : LayoutTests/editing/selection/unrendered-005.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/backgrounds/background-inherit-color-bug.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/backgrounds/repeat/negative-offset-repeat-transformed.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/basic/016.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/basic/fieldset-stretch-to-legend.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/float/008.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/float/013.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/float/019.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/float/021.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/float/025.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/float/026.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/float/027.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/float/028.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/float/032.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/float/033.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/float/035.html = IMAGE
+// BUG23498 MAC : LayoutTests/fast/block/float/avoidance-percent-width-strict.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/float/br-with-clear-2.html = IMAGE
+// BUG23498 MAC : LayoutTests/fast/block/float/float-avoidance.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/float/nested-clearance.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/float/relative-painted-twice.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/margin-collapse/103.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/margin-collapse/104.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/margin-collapse/empty-clear-blocks.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/positioning/047.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/positioning/051.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/positioning/055.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/positioning/auto/007.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/positioning/complex-percentage-height.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/positioning/fixed-positioning-scrollbar-bug.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/positioning/negative-rel-position.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/positioning/relative-overflow-block.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/positioning/relative-overflow-replaced-float.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/block/positioning/relative-overflow-replaced.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/body-propagation/overflow/001-xhtml.xhtml = IMAGE
+BUG23498 MAC : LayoutTests/fast/body-propagation/overflow/001.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/body-propagation/overflow/005-declarative.xhtml = IMAGE
+BUG23498 MAC : LayoutTests/fast/body-propagation/overflow/005-xhtml.xhtml = IMAGE
+BUG23498 MAC : LayoutTests/fast/body-propagation/overflow/005.html = IMAGE
+// BUG23498 MAC : LayoutTests/fast/borders/inline-mask-overlay-image.html = IMAGE
+// BUG23498 MAC : LayoutTests/fast/box-shadow/basic-shadows.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/box-sizing/box-sizing.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/canvas/canvas-bg.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/canvas/canvas-text-alignment.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/canvas/image-object-in-canvas.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/css/005.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/css/MarqueeLayoutTest.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/css/border-height.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/css/empty-pseudo-class.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/css/first-child-pseudo-class.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/css/first-of-type-pseudo-class.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/css/hsl-color.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/css/last-child-pseudo-class.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/css/last-of-type-pseudo-class.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/css/line-height-overflow.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/css/nested-floating-relative-position-percentages.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/css/only-child-pseudo-class.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/css/only-of-type-pseudo-class.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/css/percentage-non-integer.html = IMAGE
+// BUG23498 MAC : LayoutTests/fast/css/shadow-multiple.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/css/text-overflow-ellipsis-strict.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/css/text-overflow-ellipsis.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/css/word-space-extra.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/css-generated-content/014.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/dom/focus-contenteditable.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/dom/stripNullFromTextNodes.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/dynamic/008.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/dynamic/anchor-lock.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/dynamic/insert-before-table-part-in-continuation.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/encoding/utf-16-big-endian.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/encoding/utf-16-little-endian.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/events/autoscroll.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/events/pointer-events-2.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/events/reveal-link-when-focused.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/flexbox/016.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/flexbox/flex-hang.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/forms/fieldset-align.html = IMAGE
+// BUG23498 MAC : LayoutTests/fast/forms/form-element-geometry.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/forms/form-hides-table.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/forms/input-table.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/forms/textAreaLineHeight.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/forms/textarea-rows-cols.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/frames/frame-scrolling-attribute.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/frames/iframe-scrolling-attribute.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/frames/invalid.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/frames/onlyCommentInIFrame.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/frames/valid.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/gradients/background-clipped.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/images/pdf-as-image-landscape.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/inline/inline-borders-with-bidi-override.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/inline/inline-continuation-borders.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/inline/long-wrapped-line.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/inline-block/inline-block-vertical-align.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/layers/scroll-rect-to-visible.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/lists/001.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/lists/008.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/lists/alpha-list-wrap.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/lists/li-br.html = IMAGE
+// BUG23498 MAC : LayoutTests/fast/lists/ol-start-parsing.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/lists/olstart.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/lists/w3-list-styles.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/multicol/column-rules-stacking.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/multicol/columns-shorthand-parsing.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/multicol/float-multicol.html = IMAGE
+// BUG23498 MAC : LayoutTests/fast/multicol/positioned-with-constrained-height.html = IMAGE
+// BUG23498 MAC : LayoutTests/fast/overflow/004.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/overflow/006.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/overflow/clip-rects-fixed-ancestor.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/overflow/overflow-auto-table.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/overflow/overflow-stacking.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/overflow/overflow-x-y.html = IMAGE
+// BUG23498 MAC : LayoutTests/fast/overflow/position-fixed-transform-clipping.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/overflow/scrollRevealButton.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/reflections/reflection-direction.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/replaced/005.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/replaced/width100percent-image.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/selectors/166.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/table/023.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/table/034.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/table/040.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/table/border-collapsing/004.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/table/empty-cells.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/table/frame-and-rules.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/table/height-percent-test.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/table/overflowHidden.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/table/prepend-in-anonymous-table.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/table/wide-colspan.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/table/wide-column.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/text/capitalize-boundaries.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/text/international/bidi-neutral-run.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/text/international/thai-line-breaks.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/text/large-text-composed-char.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/text/softHyphen.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/text/wbr.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/text/whitespace/024.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/text/whitespace/pre-wrap-spaces-after-newline.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/text/word-break.html = IMAGE
+BUG23498 MAC : LayoutTests/fonts/cursive.html = IMAGE
+BUG23498 MAC : LayoutTests/fonts/default.html = IMAGE
+BUG23498 MAC : LayoutTests/fonts/fantasy.html = IMAGE
+BUG23498 MAC : LayoutTests/fonts/monospace.html = IMAGE
+BUG23498 MAC : LayoutTests/fonts/sans-serif.html = IMAGE
+BUG23498 MAC : LayoutTests/fonts/serif.html = IMAGE
+BUG23498 MAC : LayoutTests/http/tests/navigation/anchor-frames.html = IMAGE
+BUG23498 MAC : LayoutTests/http/tests/navigation/error404-frames.html = IMAGE
+BUG23498 MAC : LayoutTests/http/tests/navigation/error404-subframeload.html = IMAGE
+// BUG23498 MAC : LayoutTests/http/tests/navigation/javascriptlink-frames.html = IMAGE
+BUG23498 MAC : LayoutTests/http/tests/navigation/post-frames.html = IMAGE
+BUG23498 MAC : LayoutTests/http/tests/navigation/postredirect-frames.html = IMAGE
+BUG23498 MAC : LayoutTests/svg/custom/altglyph.svg = IMAGE
+// BUG23498 MAC : LayoutTests/svg/custom/junk-data.svg = IMAGE
+// BUG23498 MAC : LayoutTests/svg/custom/missing-xlink.svg = IMAGE
+BUG23498 MAC : LayoutTests/svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html = IMAGE
+BUG23498 MAC : LayoutTests/svg/hixie/links/003-broken.xml = IMAGE
+BUG23498 MAC : LayoutTests/svg/text/kerning.svg = IMAGE
+BUG23498 MAC : LayoutTests/svg/text/multichar-glyph.svg = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug101674.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug10269-2.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug10296-1.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug1055-1.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug113235-1.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug113235-3.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug11944.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug120364.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug1302.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug131020.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug131020_iframe.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug137388-2.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug22019.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug23151.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug2479-1.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug2479-3.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug2479-4.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug27038-2.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug29314.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug2947.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug32205-2.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug38916.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug3977.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug43039.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug43854-1.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug44505.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug46480-1.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug46480-2.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug50695-1.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug56405.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug5797.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug5835.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug625.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug650.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug67915-1.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug7112-1.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug7112-2.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug73321.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug92143.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug96334.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/bugs/bug96343.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/collapsing_borders/bug41262-3.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/core/bloomberg.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/core/captions.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/core/cell_heights.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/core/col_widths_auto_fix.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/core/col_widths_fix_fixPer.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/core/nested1.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/core/one_row.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/core/row_span.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/backgr_index.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/backgr_layers-opacity.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/backgr_position-table.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/backgr_simple-table-cell.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/backgr_simple-table-column-group.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/backgr_simple-table-column.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/backgr_simple-table-row-group.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/backgr_simple-table-row.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/backgr_simple-table.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/x_table_bgcolor_name.xml = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/x_table_bgcolor_rgb.xml = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/x_td_bgcolor_name.xml = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/x_td_bgcolor_rgb.xml = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/x_td_height.xml = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/x_td_nowrap.xml = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/x_th_bgcolor_name.xml = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/x_th_bgcolor_rgb.xml = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/x_th_height.xml = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/x_th_nowrap.xml = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/x_tr_bgcolor_name.xml = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/marvin/x_tr_bgcolor_rgb.xml = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/other/cell_widths.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/other/nestedTables.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/other/test3.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/other/test6.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/other/wa_table_thtd_rowspan.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla/other/wa_table_tr_align.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug10140.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug101759.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug10216.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug1055-2.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug106966.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug131020-3.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug14007-1.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug14007-2.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug19526.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug220653.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug22122.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug2479-5.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug32205-1.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug67915-2.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug80762-2.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug85016.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug89315.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug91057.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/core/backgrounds.html = IMAGE
+// BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/core/captions1.html = IMAGE
+// BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/core/captions2.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/core/captions3.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/core/col_span2.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/core/columns.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/core/conflicts.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/core/standards1.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table-cell.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table-column-group.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table-column.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table-quirks.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table-row-group.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table-row.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_border-table.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_fixed-bg.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_layers-hide.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_layers-show.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_position-table-cell.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_position-table-column-group.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_position-table-column.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_position-table-row-group.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/marvin/backgr_position-table-row.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/marvin/table_overflow_dirty_reflow_row.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/marvin/table_overflow_dirty_reflow_tbody.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/marvin/table_overflow_style_reflow_row_sibling.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/marvin/table_overflow_style_reflow_tbody_sibling.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/other/empty_cells.html = IMAGE
+BUG23498 MAC : LayoutTests/tables/mozilla_expected_failures/other/test4.html = IMAGE
+BUG23498 MAC : LayoutTests/webarchive/test-duplicate-resources.html = IMAGE
+
+// Missing "misspelled-word" dotted underline
+BUG23497 MAC : LayoutTests/editing/deleting/delete-3928305-fix.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/deleting/delete-3959464-fix.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/deleting/delete-and-undo.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/deleting/delete-block-contents-003.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/deleting/delete-contiguous-ws-001.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/deleting/delete-tab-002.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/deleting/delete-tab-003.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/deleting/delete-to-select-table.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/deleting/delete-trailing-ws-002.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/deleting/delete-ws-fixup-001.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/deleting/delete-ws-fixup-002.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/execCommand/5569741.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/execCommand/insert-list-and-stitch.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/execCommand/insertHorizontalRule.html = IMAGE
+// BUG23497 MAC : LayoutTests/editing/inserting/5418891.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/editing-empty-divs.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-3659587-fix.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-br-004.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-br-005.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-br-007.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-div-007.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-div-012.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-div-013.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-div-014.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-div-015.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-div-016.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-div-017.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-div-018.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-div-019.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-div-020.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-div-021.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-div-022.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-div-025.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-div-027.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-paragraph-02.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-paragraph-03.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-tab-002.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-tab-003.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/insert-text-with-newlines.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/paragraph-separator-01.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/paragraph-separator-02.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/paragraph-separator-03.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/return-key-with-selection-001.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/return-key-with-selection-002.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/return-key-with-selection-003.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/typing-002.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/inserting/typing-around-br-001.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/pasteboard/8145-2.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/pasteboard/cut-text-001.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/pasteboard/merge-end-blockquote.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/pasteboard/paste-blockquote-3.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/pasteboard/paste-text-019.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/pasteboard/paste-xml.xhtml = IMAGE
+BUG23497 MAC : LayoutTests/editing/pasteboard/undoable-fragment-removes.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/selection/13804.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/selection/5076323-1.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/selection/5234383-1.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/selection/5234383-2.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/selection/extend-by-word-001.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/selection/move-backwords-by-word-001.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/selection/move-by-character-001.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/selection/move-by-line-001.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/selection/move-by-word-001.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/selection/select-from-textfield-outwards.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/selection/unrendered-002.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/spelling/inline_spelling_markers.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/spelling/spellcheck-attribute.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/spelling/spelling-linebreak.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/spelling/spelling.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/style/5046875-2.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/style/block-styles-007.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/style/create-block-for-style-002.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/style/create-block-for-style-003.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/style/create-block-for-style-004.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/style/create-block-for-style-006.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/style/create-block-for-style-008.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/style/create-block-for-style-009.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/style/create-block-for-style-011.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/style/create-block-for-style-012.html = IMAGE
+BUG23497 MAC : LayoutTests/editing/style/create-block-for-style-013.html = IMAGE
+BUG23497 MAC : LayoutTests/fast/dom/blur-contenteditable.html = IMAGE
+
+// Widget location is just slightly off
+BUG23496 MAC : LayoutTests/css1/box_properties/acid_test.html = IMAGE
+BUG23496 MAC : LayoutTests/css2.1/t09-c5526c-display-00-e.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/block/basic/011.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/forms/001.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/forms/basic-inputs.html = IMAGE
+// BUG23496 MAC : LayoutTests/fast/forms/box-shadow-override.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/forms/checkbox-radio-onchange.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/forms/file-input-disabled.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/forms/form-element-geometry.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/forms/formmove.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/forms/formmove2.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/forms/indeterminate.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/forms/input-appearance-height.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/forms/input-value.html = IMAGE
+// BUG23496 MAC : LayoutTests/fast/forms/menulist-narrow-width.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/forms/menulist-no-overflow.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/forms/radio-attr-order.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/forms/radio-nested-labels.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/forms/radio_checked.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/forms/radio_checked_dynamic.html = IMAGE
+// BUG23496 MAC : LayoutTests/fast/forms/search-vertical-alignment.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/forms/search-zoomed.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/inline/positionedLifetime.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/parser/bad-xml-slash.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/replaced/replaced-breaking.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/replaced/width100percent-checkbox.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/replaced/width100percent-radio.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/text/textIteratorNilRenderer.html = IMAGE
+BUG23496 MAC : LayoutTests/fast/text/whitespace/normal-after-nowrap-breaking.html = IMAGE
+BUG23496 MAC : LayoutTests/http/tests/navigation/javascriptlink-frames.html = IMAGE
+BUG23496 MAC : LayoutTests/tables/mozilla/bugs/bug1318.html = IMAGE
+BUG23496 MAC : LayoutTests/tables/mozilla/bugs/bug4527.html = IMAGE
+BUG23496 MAC : LayoutTests/tables/mozilla_expected_failures/core/captions1.html = IMAGE
+BUG23496 MAC : LayoutTests/tables/mozilla_expected_failures/core/captions2.html = IMAGE
+
+// Big button widgets are broken
+BUG23495 MAC : LayoutTests/fast/forms/basic-buttons.html = IMAGE
+BUG23495 MAC : LayoutTests/fast/forms/box-shadow-override.html = IMAGE
+BUG23495 MAC : LayoutTests/fast/forms/button-sizes.html = IMAGE
+
+// Text declared as "monospace" with no size is bigger in Chromium
+BUG23494 MAC : LayoutTests/css1/font_properties/font_family.html = IMAGE
+BUG23494 MAC : LayoutTests/css2.1/t1503-c522-font-family-00-b.html = IMAGE
+BUG23494 MAC : LayoutTests/fast/text/monospace-width-cache.html = IMAGE
+
+// Broken upstream? In "expected" image, "this line should be green" is red (ours is green)
+BUG23493 MAC : LayoutTests/css2.1/t040304-c64-uri-00-a-g.html = IMAGE
+
+// Broken upstream? Layout test should write a "PASS" or "FAIL" line; upstream has neither (ours is "PASS")
+BUG23492 MAC : LayoutTests/fast/frames/frame-src-attribute.html = IMAGE
+
+// Font glyph issues?
+BUG23491 MAC : LayoutTests/css2.1/t0905-c5525-flthw-00-c-g.html = IMAGE
+BUG23491 MAC : LayoutTests/css2.1/t0905-c5526-flthw-00-c-g.html = IMAGE
+
+// Missing special UI for "deletionUI"
+BUG23490 MAC : LayoutTests/editing/deleting/deletionUI-single-instance.html = IMAGE
+
+// Actual is just slightly off in color than expected
+BUG23488 MAC : LayoutTests/editing/deleting/type-delete-after-quote.html = IMAGE
+BUG23488 MAC : LayoutTests/editing/inserting/5418891.html = IMAGE
+BUG23488 MAC : LayoutTests/editing/selection/extend-by-word-002.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/backgrounds/background-clip-text.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/backgrounds/repeat/mask-negative-offset-repeat.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/backgrounds/size/backgroundSize15.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/backgrounds/size/contain-and-cover.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/backgrounds/svg-as-background-3.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/block/float/avoidance-percent-width-compat.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/block/float/avoidance-percent-width-strict.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/block/float/float-avoidance.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/borders/border-image-rotate-transform.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/borders/inline-mask-overlay-image.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/box-shadow/basic-shadows.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/box-shadow/inset.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/box-shadow/transform-fringing.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/canvas/canvas-incremental-repaint-2.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/css/pseudo-cache-stale.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/css/shadow-multiple.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/forms/search-vertical-alignment.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/frames/content-opacity-1.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/frames/content-opacity-2.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/frames/viewsource-attribute.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/layers/add-layer-with-nested-stacking.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/layers/inline-dirty-z-order-lists.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/layers/layer-content-visibility-change.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/layers/remove-layer-with-nested-stacking.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/lists/ol-start-parsing.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/multicol/positioned-with-constrained-height.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/overflow/004.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/overflow/position-fixed-transform-clipping.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/reflections/abs-position-in-reflection.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/table/fixed-table-with-percent-inside-percent-table.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/table/fixed-table-with-percent-width-inside-auto-table.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/table/fixed-table-with-percent-width-inside-div.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/table/fixed-table-with-percent-width-inside-extra-large-div.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/table/fixed-table-with-percent-width-inside-fixed-width-table.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/table/fixed-table-with-small-percent-width.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/text/shadow-no-blur.html = IMAGE
+BUG23488 MAC : LayoutTests/fast/text/shadow-translucent-fill.html = IMAGE
+BUG23488 MAC : LayoutTests/svg/batik/masking/maskRegions.svg = IMAGE
+// BUG23488 MAC : LayoutTests/svg/batik/paints/patternRegions.svg = IMAGE
+// BUG23488 MAC : LayoutTests/svg/batik/text/textEffect3.svg = IMAGE
+BUG23488 MAC : LayoutTests/svg/batik/text/verticalText.svg = IMAGE
+BUG23488 MAC : LayoutTests/svg/batik/text/verticalTextOnPath.svg = IMAGE
+BUG23488 MAC : LayoutTests/svg/custom/circular-marker-reference-2.svg = IMAGE
+// BUG23488 MAC : LayoutTests/svg/custom/dominant-baseline-hanging.svg = IMAGE
+BUG23488 MAC : LayoutTests/svg/custom/gradient-rotated-bbox.svg = IMAGE
+BUG23488 MAC : LayoutTests/svg/custom/gradient-stop-corner-cases.svg = IMAGE
+BUG23488 MAC : LayoutTests/svg/custom/gradient-stroke-width.svg = IMAGE
+BUG23488 MAC : LayoutTests/svg/custom/js-late-marker-creation.svg = IMAGE
+BUG23488 MAC : LayoutTests/svg/custom/linking-a-03-b-all.svg = IMAGE
+BUG23488 MAC : LayoutTests/svg/custom/linking-a-03-b-viewBox-transform.svg = IMAGE
+BUG23488 MAC : LayoutTests/svg/custom/non-circular-marker-reference.svg = IMAGE
+BUG23488 MAC : LayoutTests/svg/custom/pattern-rotate.svg = IMAGE
+BUG23488 MAC : LayoutTests/svg/custom/pointer-events-path.svg = IMAGE
+// BUG23488 MAC : LayoutTests/svg/custom/svg-fonts-in-html.html = IMAGE
+// BUG23488 MAC : LayoutTests/svg/custom/use-css-no-effect-on-shadow-tree.svg = IMAGE
+BUG23488 MAC : LayoutTests/svg/transforms/animated-path-inside-transformed-html.xhtml = IMAGE
+BUG23488 MAC : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-06-b.svg = IMAGE
+BUG23488 MAC : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-08-b.svg = IMAGE
+BUG23488 MAC : LayoutTests/svg/W3C-SVG-1.1/struct-frag-02-t.svg = IMAGE
+BUG23488 MAC : LayoutTests/tables/mozilla/bugs/bug106158-1.html = IMAGE
+BUG23488 MAC : LayoutTests/tables/mozilla/bugs/bug106158-2.html = IMAGE
+BUG23488 MAC : LayoutTests/tables/mozilla/bugs/bug34176.html = IMAGE
+BUG23488 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug178855.xml = IMAGE
+
+// Looks the same to me... huh. Variation of above?
+BUG23489 MAC : LayoutTests/fast/css/line-height-font-order.html = IMAGE
+BUG23489 MAC : LayoutTests/fast/forms/menulist-clip.html = IMAGE
+BUG23489 MAC : LayoutTests/fast/forms/menulist-narrow-width.html = IMAGE
+BUG23489 MAC : LayoutTests/fast/forms/menulist-option-wrap.html = IMAGE
+BUG23489 MAC : LayoutTests/fast/forms/menulist-restrict-line-height.html = IMAGE
+BUG23489 MAC : LayoutTests/fast/forms/select-baseline.html = IMAGE
+BUG23489 MAC : LayoutTests/fast/table/empty-section-crash.html = IMAGE
+BUG23489 MAC : LayoutTests/svg/batik/text/textOnPath.svg = IMAGE
+BUG23489 MAC : LayoutTests/svg/carto.net/window.svg = IMAGE
+BUG23489 MAC : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-17-b.svg = IMAGE
+
+// Uses the wrong bullets for the bulleted list
+BUG23487 MAC : LayoutTests/editing/execCommand/indent-selection.html = IMAGE
+
+// Selection glow gets clipped
+BUG23486 MAC : LayoutTests/editing/inserting/12882.html = IMAGE
+
+// Selection glow is thinner than expected
+BUG23485 MAC : LayoutTests/editing/inserting/4960120-1.html = IMAGE
+BUG23485 MAC : LayoutTests/editing/style/apply-through-end-of-document.html = IMAGE
+BUG23485 MAC : LayoutTests/fast/forms/textarea-scrollbar.html = IMAGE
+BUG23485 MAC : LayoutTests/fast/forms/textarea-scrolled-type.html = IMAGE
+
+// Extra space at the end of the table cell
+BUG23484 MAC : LayoutTests/editing/pasteboard/5387578.html = IMAGE
+
+// When finding, the reference image has a "found rectangle" and we do not
+BUG23481 MAC : LayoutTests/editing/selection/4402375.html = IMAGE
+BUG23481 MAC : LayoutTests/editing/selection/image-before-linebreak.html = IMAGE
+BUG23481 MAC : LayoutTests/editing/selection/replaced-boundaries-1.html = IMAGE
+BUG23481 MAC : LayoutTests/editing/selection/replaced-boundaries-2.html = IMAGE
+BUG23481 MAC : LayoutTests/editing/selection/replaced-boundaries-3.html = IMAGE
+
+// SVG expected images have what looks like a "found rectangle" around them; variation of above?
+BUG23482 MAC : LayoutTests/svg/text/text-align-01-b.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-align-02-b.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-align-03-b.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-align-04-b.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-align-05-b.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-align-06-b.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-altglyph-01-b.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-deco-01-b.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-fonts-01-t.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-fonts-02-t.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-intro-05-t.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-path-01-b.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-spacing-01-b.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-text-01-b.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-text-03-b.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-text-04-t.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-text-05-t.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-text-06-t.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-text-07-t.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-text-08-b.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-tref-01-b.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-tselect-01-b.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-tselect-02-f.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-tspan-01-b.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-ws-01-t.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/text-ws-02-t.svg = IMAGE
+BUG23482 MAC : LayoutTests/svg/text/textPathBoundsBug.svg = IMAGE
+
+// Upstream expected image is totally wrong for the html that supposedly generates it
+BUG23479 MAC : LayoutTests/fast/box-shadow/border-radius-big.html = IMAGE
+
+// Various drawing tests that are broken
+BUG23477 MAC : LayoutTests/fast/backgrounds/bgCompositeCopy.html = IMAGE
+BUG23477 MAC : LayoutTests/fast/canvas/canvas-as-image-incremental-repaint.html = IMAGE
+BUG23477 MAC : LayoutTests/fast/canvas/canvas-incremental-repaint.html = IMAGE
+BUG23477 MAC : LayoutTests/fast/canvas/fill-stroke-clip-reset-path.html = IMAGE
+BUG23477 MAC : LayoutTests/fast/dynamic/containing-block-change.html = IMAGE
+
+// Unexpected gray
+BUG23476 MAC : LayoutTests/fast/forms/hidden-listbox.html = IMAGE
+BUG23476 MAC : LayoutTests/fast/forms/listbox-clip.html = IMAGE
+BUG23476 MAC : LayoutTests/fast/frames/inline-object-inside-frameset.html = IMAGE
+BUG23476 MAC : LayoutTests/fast/overflow/hidden-scrollbar-resize.html = IMAGE
+BUG23476 MAC : LayoutTests/fast/replaced/width100percent-textarea.html = IMAGE
+BUG23476 MAC : LayoutTests/fast/text/font-initial.html = IMAGE
+
+// Missing corner resize image
+BUG22777 MAC : LayoutTests/fast/css/resize-corner-tracking-transformed.html = IMAGE+TEXT
+BUG22777 MAC : LayoutTests/fast/overflow/hit-test-overflow-controls.html = IMAGE+TEXT
+
+// Disagreeing XML parsing error messages
+BUG23475 MAC : LayoutTests/fast/invalid/missing-end-tag.xhtml = IMAGE
+BUG23475 MAC : LayoutTests/fast/parser/xhtml-alternate-entities.xml = IMAGE
+BUG23475 MAC : LayoutTests/fast/xsl/xslt-extra-content-at-end.xml = IMAGE
+BUG23475 MAC : LayoutTests/svg/custom/junk-data.svg = IMAGE
+BUG23475 MAC : LayoutTests/svg/custom/missing-xlink.svg = IMAGE
+
+// 116/136 of the repaint tests fail due to invalidation that doesn't match; further triage necessary
+BUG23473 MAC : LayoutTests/fast/repaint = IMAGE
+BUG23473 MAC : pending/fast/repaint/bugzilla-6473.html = IMAGE
+
+// Table vertical alignment issue
+BUG23472 MAC : LayoutTests/fast/table/vertical-align-baseline.html = IMAGE
+
+// Thicker shadow than expected
+BUG23471 MAC : LayoutTests/fast/text/stroking.html = IMAGE
+
+// Thin lines not drawing right
+BUG23470 MAC : LayoutTests/fast/transforms/shadows.html = IMAGE
+
+// SVG edges are slightly different
+BUG23469 MAC : LayoutTests/svg/batik/text/textEffect3.svg = IMAGE
+BUG23469 MAC : LayoutTests/svg/custom/use-css-no-effect-on-shadow-tree.svg = IMAGE
+BUG23469 MAC : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = IMAGE
+
+// SVG hanging text has lines on left and top
+BUG23467 MAC : LayoutTests/svg/custom/dominant-baseline-hanging.svg = IMAGE
+
+// SVG foreign object skew off by a lot
+BUG23466 MAC : LayoutTests/svg/custom/foreign-object-skew.svg = IMAGE
+
+// SVG marker changes
+BUG23465 MAC : LayoutTests/svg/custom/marker-changes.svg = IMAGE
+BUG23465 MAC : LayoutTests/svg/custom/marker-child-changes.svg = IMAGE
+
+// SVG expected doesn't have rounded corner like actual does
+BUG23464 MAC : LayoutTests/svg/custom/svg-fonts-in-html.html = IMAGE
+
+// SVG failure to use the same fonts
+BUG23462 MAC : LayoutTests/svg/W3C-SVG-1.1/text-fonts-01-t.svg = IMAGE
+
+// Catches a different frame of a GIF animation
+BUG23460 MAC : LayoutTests/tables/mozilla/bugs/bug28341.html = IMAGE
+
+// Plugin drawing off
+BUG23459 MAC : LayoutTests/plugins/embed-attributes-style.html = IMAGE
+
+// Missing baselines
+BUG23557 MAC : LayoutTests/fast/text/text-letter-spacing.html = IMAGE
+
+// Failing on the buildbot but not locally; needs investigation
+BUG23560 MAC : LayoutTests/fast/overflow/003.xml = IMAGE
 
 // -----------------------------------------------------------------
 // END MAC PORT TESTS
@@ -2181,10 +2912,13 @@ BUG_MBELSHE : LayoutTests/fast/js/Array-isArray.html = FAIL
 BUG19519 WIN DEBUG : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL PASS
 
 // WebKit roll r47417:47528
-BUG19766 WIN : LayoutTests/svg/batik/text/textPosition.svg = FAIL
-BUG19766 WIN LINUX : LayoutTests/svg/batik/text/xmlSpace.svg = FAIL
 BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug83786.html = FAIL
 BUG19766 LINUX : LayoutTests/fast/replaced/width100percent-menulist.html = FAIL
+
+// SVG empty trailing tspan causes text to not show up
+BUG23468 WIN MAC : LayoutTests/svg/batik/text/textPosition.svg = IMAGE
+BUG23468 LINUX : LayoutTests/svg/batik/text/textPosition.svg = IMAGE+TEXT
+BUG23468 WIN LINUX MAC : LayoutTests/svg/batik/text/xmlSpace.svg = IMAGE
 
 // Fails due to textInputController.setInputMethod not implemented for Mac.
 BUG19665 MAC : LayoutTests/platform/mac/editing/input/hangul-enter-confirms-and-sends-keypress.html = FAIL
@@ -2254,7 +2988,7 @@ BUG21841 MAC DEBUG SLOW : LayoutTests/plugins/destroy-during-npp-new.html = FAIL
 BUG21841 WIN DEBUG : LayoutTests/plugins/destroy-during-npp-new.html = CRASH PASS
 
 // missing upstream baseline from 48368
-BUG21842 SKIP WIN LINUX : LayoutTests/platform/win/accessibility/scroll-to-anchor.html = FAIL
+BUG21842 SKIP WIN LINUX MAC : LayoutTests/platform/win/accessibility/scroll-to-anchor.html = FAIL
 
 BUG21859 WIN-VISTA : LayoutTests/fast/css/css2-system-fonts.html = FAIL
 BUG21859 WIN : LayoutTests/fast/forms/search-styled.html = FAIL
