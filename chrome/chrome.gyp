@@ -3389,7 +3389,7 @@
                   'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/MacOS',
                   # TODO(ajwong): This, and the parallel chromium stanza below
                   # really should find a way to share file paths with
-                  # ffmpeg.gyp so they don't diverge.
+                  # ffmpeg.gyp so they don't diverge. (BUG=23602)
                   'files': [
                     '../third_party/ffmpeg/binaries/chrome/mac/ia32/libavcodec.52.dylib',
                     '../third_party/ffmpeg/binaries/chrome/mac/ia32/libavformat.52.dylib',

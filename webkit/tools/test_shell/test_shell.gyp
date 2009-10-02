@@ -298,6 +298,7 @@
               'variables': {
                 'pak_inputs': [
                   '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
                 ],
               },
               'inputs': [
@@ -316,6 +317,17 @@
               'destination': '<(PRODUCT_DIR)/TestShell.app/Contents/PlugIns/',
               'files': [
                 '<(PRODUCT_DIR)/TestNetscapePlugIn.plugin/',
+              ],
+            },
+            # TODO(ajwong): This, and the parallel chromium stanza below
+            # really should find a way to share file paths with
+            # ffmpeg.gyp so they don't diverge. (BUG=23602)
+            {
+              'destination': '<(PRODUCT_DIR)/TestShell.app/Contents/MacOS/',
+              'files': [
+                '../../../third_party/ffmpeg/binaries/chromium/mac/ia32/libavcodec.52.dylib',
+                '../../../third_party/ffmpeg/binaries/chromium/mac/ia32/libavformat.52.dylib',
+                '../../../third_party/ffmpeg/binaries/chromium/mac/ia32/libavutil.50.dylib',
               ],
             },
           ],

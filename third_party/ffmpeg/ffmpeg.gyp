@@ -224,6 +224,10 @@
             }],
           ]},
         ], ['OS=="mac"', {
+              # TODO(ajwong): These files are also copied in:
+              # webkit/tools/test_shell/test_shell.gyp and
+              # chrome/chrome.gyp
+              # Need to consolidate the copies in one place. (BUG=23602)
               'variables': {
                 'source_files': [
                   'binaries/<(ffmpeg_bin_dir)/libavcodec.52.dylib',
