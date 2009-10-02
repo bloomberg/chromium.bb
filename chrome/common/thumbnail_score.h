@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,9 @@
 
 // A set of metadata about a Thumbnail.
 struct ThumbnailScore {
-  // Initializes the ThumbnailScore to the absolute worst possible
-  // values except for time, which is set to Now().
+  // Initializes the ThumbnailScore to the absolute worst possible values
+  // except for time, which is set to Now(), and redirect_hops_from_dest which
+  // is set to 0.
   ThumbnailScore();
 
   // Builds a ThumbnailScore with the passed in values, and sets the
@@ -47,6 +48,20 @@ struct ThumbnailScore {
   // Record the time when a thumbnail was taken. This is used to make
   // sure thumbnails are kept fresh.
   base::Time time_at_snapshot;
+
+  // The number of hops from the final destination page that this thumbnail was
+  // taken at. When a thumbnail is taken, this will always be the redirect
+  // destination (value of 0).
+  //
+  // For the most visited view, we'll sometimes get thumbnails for URLs in the
+  // middle of a redirect chain. In this case, the top sites component will set
+  // this value so the distance from the destination can be taken into account
+  // by the comparison function.
+  //
+  // If "http://google.com/" redirected to "http://www.google.com/", then
+  // a thumbnail for the first would have a redirect hop of 1, and the second
+  // would have a redirect hop of 0.
+  int redirect_hops_from_dest;
 
   // How bad a thumbnail needs to be before we completely ignore it.
   static const double kThumbnailMaximumBoringness;

@@ -518,6 +518,17 @@ struct KeywordSearchTermVisit {
   std::wstring term;
 };
 
+// MostVisitedURL --------------------------------------------------------------
+
+// Holds the per-URL information of the most visited query.
+struct MostVisitedURL {
+  GURL url;
+  GURL favicon_url;
+  std::wstring title;
+
+  RedirectList redirects;
+};
+
 }  // history
 
 #endif  // CHROME_BROWSER_HISTORY_HISTORY_TYPES_H__

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,14 +35,16 @@ ThumbnailScore::ThumbnailScore()
     : boring_score(1.0),
       good_clipping(false),
       at_top(false),
-      time_at_snapshot(Time::Now()) {
+      time_at_snapshot(Time::Now()),
+      redirect_hops_from_dest(0) {
 }
 
 ThumbnailScore::ThumbnailScore(double score, bool clipping, bool top)
     : boring_score(score),
       good_clipping(clipping),
       at_top(top),
-      time_at_snapshot(Time::Now()) {
+      time_at_snapshot(Time::Now()),
+      redirect_hops_from_dest(0) {
 }
 
 ThumbnailScore::ThumbnailScore(double score, bool clipping, bool top,
@@ -50,7 +52,8 @@ ThumbnailScore::ThumbnailScore(double score, bool clipping, bool top,
     : boring_score(score),
       good_clipping(clipping),
       at_top(top),
-      time_at_snapshot(time) {
+      time_at_snapshot(time),
+      redirect_hops_from_dest(0) {
 }
 
 ThumbnailScore::~ThumbnailScore() {
@@ -63,7 +66,8 @@ bool ThumbnailScore::Equals(const ThumbnailScore& rhs) const {
   return boring_score == rhs.boring_score &&
       good_clipping == rhs.good_clipping &&
       at_top == rhs.at_top &&
-      time_at_snapshot.ToTimeT() == rhs.time_at_snapshot.ToTimeT();
+      time_at_snapshot.ToTimeT() == rhs.time_at_snapshot.ToTimeT() &&
+      redirect_hops_from_dest == rhs.redirect_hops_from_dest;
 }
 
 bool ShouldReplaceThumbnailWith(const ThumbnailScore& current,
@@ -77,22 +81,32 @@ bool ShouldReplaceThumbnailWith(const ThumbnailScore& current,
     return replacement.boring_score <
         ThumbnailScore::kThumbnailMaximumBoringness;
   } else if (replacement_type == current_type) {
-    if (replacement.boring_score < current.boring_score) {
-      // If we have a thumbnail that's straight up less boring, use it.
-      return true;
-    }
+    // It's much easier to do the scaling below when we're dealing with "higher
+    // is better." Then we can decrease the score by dividing by a fraction.
+    const double kThumbnailMinimumInterestingness =
+        1.0 - ThumbnailScore::kThumbnailMaximumBoringness;
+    double current_interesting_score = 1.0 - current.boring_score;
+    double replacement_interesting_score = 1.0 - replacement.boring_score;
 
-    // Slowly degrade the boring score of the current thumbnail
-    // so we take thumbnails which are slightly less good:
-    TimeDelta since_last_thumbnail =
+    // Degrade the score of each thumbnail to account for how many redirects
+    // they are away from the destination. 1/(x+1) gives a scaling factor of
+    // one for x = 0, and asymptotically approaches 0 for larger values of x.
+    current_interesting_score *=
+        1.0 / (current.redirect_hops_from_dest + 1);
+    replacement_interesting_score *=
+        1.0 / (replacement.redirect_hops_from_dest + 1);
+
+    // Degrade the score and prefer the newer one based on how long apart the
+    // two thumbnails were taken. This means we'll eventually replace an old
+    // good one with a new worse one assuming enough time has passed.
+    TimeDelta time_between_thumbnails =
         replacement.time_at_snapshot - current.time_at_snapshot;
-    double degraded_boring_score = current.boring_score +
-        (since_last_thumbnail.InHours() *
-         ThumbnailScore::kThumbnailDegradePerHour);
+    current_interesting_score -= time_between_thumbnails.InHours() *
+         ThumbnailScore::kThumbnailDegradePerHour;
 
-    if (degraded_boring_score > ThumbnailScore::kThumbnailMaximumBoringness)
-      degraded_boring_score = ThumbnailScore::kThumbnailMaximumBoringness;
-    if (replacement.boring_score < degraded_boring_score)
+    if (current_interesting_score < kThumbnailMinimumInterestingness)
+      current_interesting_score = kThumbnailMinimumInterestingness;
+    if (replacement_interesting_score > current_interesting_score)
       return true;
   }
 
