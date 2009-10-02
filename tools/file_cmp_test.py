@@ -48,7 +48,7 @@ def main(argv):
     command_tester.Print(command_tester.SuccessMessage())
     return 0
   else:
-    command_tester.Print(command_tester.SuccessMessage())
+    command_tester.Print(command_tester.FailureMessage())
     return -1
 
 if __name__ == '__main__':
