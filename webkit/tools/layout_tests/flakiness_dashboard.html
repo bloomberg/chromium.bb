@@ -657,7 +657,7 @@
     // Sort the array to hit more specific paths last. More specific
     // paths (e.g. foo/bar/baz.html) override entries for less-specific ones
     // (e.g. foo/bar).
-    expectationsArray.sort();
+    expectationsArray.sort(getAlphanumericCompare('path'));
 
     var allTests = getAllTests();
     for (var i = 0; i < expectationsArray.length; i++) {
