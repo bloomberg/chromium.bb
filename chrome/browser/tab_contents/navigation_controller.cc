@@ -711,10 +711,6 @@ void NavigationController::RendererDidNavigateNewSubframe(
     // This is not user-initiated. Ignore.
     return;
   }
-  if (IsRedirect(params)) {
-    // This is redirect. Ignore.
-    return;
-  }
 
   // Manual subframe navigations just get the current entry cloned so the user
   // can go back or forward to it. The actual subframe information will be
