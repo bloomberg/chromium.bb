@@ -357,6 +357,12 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // This is used for various IPC messages, including plugins.
   gfx::NativeViewId GetNativeViewId();
 
+  // Called when an InputEvent is received to check if the event should be sent
+  // to the renderer or not.
+  virtual bool ShouldSendToRenderer(const NativeWebKeyboardEvent& event) {
+    return true;
+  }
+
   // Called when we an InputEvent was not processed by the renderer. This is
   // overridden by RenderView to send upwards to its delegate.
   virtual void UnhandledKeyboardEvent(const NativeWebKeyboardEvent& event) {}

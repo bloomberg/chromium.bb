@@ -198,6 +198,10 @@ const struct AcceleratorMapping {
   { GDK_Page_Up, IDC_MOVE_TAB_PREVIOUS,
     GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
   { GDK_Page_Up, IDC_SELECT_PREVIOUS_TAB, GDK_CONTROL_MASK },
+  { GDK_t, IDC_NEW_TAB, GDK_CONTROL_MASK },
+  { GDK_n, IDC_NEW_WINDOW, GDK_CONTROL_MASK },
+  { GDK_n, IDC_NEW_INCOGNITO_WINDOW,
+    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
   { GDK_w, IDC_CLOSE_TAB, GDK_CONTROL_MASK },
   { GDK_t, IDC_RESTORE_TAB,
     GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
@@ -361,18 +365,15 @@ int GetCommandId(guint accel_key, GdkModifierType modifier) {
         kAcceleratorMap[i].modifier_type == modifier)
       return kAcceleratorMap[i].command_id;
   }
-  NOTREACHED();
-  return 0;
+
+  return -1;
 }
 
-// An event handler for key press events.  We need to special case key
-// combinations that are not valid gtk accelerators.  This function returns
-// TRUE if it can handle the key press.
-gboolean HandleCustomAccelerator(guint keyval, GdkModifierType modifier,
-                                 Browser* browser) {
+int GetCustomCommandId(guint keyval, GdkModifierType modifier) {
   // Filter modifier to only include accelerator modifiers.
   modifier = static_cast<GdkModifierType>(
       modifier & gtk_accelerator_get_default_mod_mask());
+
   switch (keyval) {
     // Gtk doesn't allow GDK_Tab or GDK_ISO_Left_Tab to be an accelerator (see
     // gtk_accelerator_valid), so we need to handle these accelerators
@@ -384,18 +385,29 @@ gboolean HandleCustomAccelerator(guint keyval, GdkModifierType modifier,
     case GDK_ISO_Left_Tab:
     case GDK_KP_Tab:
       if (GDK_CONTROL_MASK == modifier) {
-        browser->ExecuteCommand(IDC_SELECT_NEXT_TAB);
-        return TRUE;
+        return IDC_SELECT_NEXT_TAB;
       } else if ((GDK_CONTROL_MASK | GDK_SHIFT_MASK) == modifier) {
-        browser->ExecuteCommand(IDC_SELECT_PREVIOUS_TAB);
-        return TRUE;
+        return IDC_SELECT_PREVIOUS_TAB;
       }
       break;
 
     default:
       break;
   }
-  return FALSE;
+  return -1;
+}
+
+// An event handler for key press events.  We need to special case key
+// combinations that are not valid gtk accelerators.  This function returns
+// TRUE if it can handle the key press.
+gboolean HandleCustomAccelerator(guint keyval, GdkModifierType modifier,
+                                 Browser* browser) {
+  int command = GetCustomCommandId(keyval, modifier);
+  if (command == -1)
+    return FALSE;
+
+  browser->ExecuteCommand(command);
+  return TRUE;
 }
 
 // Handle accelerators that we don't want the native widget to be able to
@@ -1153,6 +1165,18 @@ void BrowserWindowGtk::ShowPageMenu() {
 void BrowserWindowGtk::ShowAppMenu() {
 }
 
+int BrowserWindowGtk::GetCommandId(const NativeWebKeyboardEvent& event) {
+  if (!event.os_event)
+    return -1;
+
+  guint keyval = event.os_event->keyval;
+  GdkModifierType modifier = GdkModifierType(event.os_event->state);
+  int command = ::GetCommandId(keyval, modifier);
+  if (command == -1)
+    command = GetCustomCommandId(keyval, modifier);
+  return command;
+}
+
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {
   new DownloadInProgressDialogGtk(browser());
 }
@@ -1881,7 +1905,8 @@ gboolean BrowserWindowGtk::OnGtkAccelerator(GtkAccelGroup* accel_group,
                                             guint keyval,
                                             GdkModifierType modifier,
                                             BrowserWindowGtk* browser_window) {
-  int command_id = GetCommandId(keyval, modifier);
+  int command_id = ::GetCommandId(keyval, modifier);
+  DCHECK(command_id != -1);
   browser_window->ExecuteBrowserCommand(command_id);
 
   return TRUE;

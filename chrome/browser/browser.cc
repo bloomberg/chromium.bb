@@ -2108,6 +2108,28 @@ void Browser::ShowPageInfo(Profile* profile,
   window()->ShowPageInfo(profile, url, ssl, show_history);
 }
 
+bool Browser::IsReservedAccelerator(const NativeWebKeyboardEvent& event) {
+  // Other platforms don't send close-app keyboard shortcuts to apps first.
+#if defined(OS_WIN)
+  if ((event.modifiers & NativeWebKeyboardEvent::AltKey) &&
+      event.windowsKeyCode == VK_F4) {
+    return true;
+  }
+#endif
+
+  int command_id = window()->GetCommandId(event);
+  return command_id == IDC_CLOSE_TAB ||
+         command_id == IDC_CLOSE_POPUPS ||
+         command_id == IDC_CLOSE_WINDOW ||
+         command_id == IDC_NEW_INCOGNITO_WINDOW ||
+         command_id == IDC_NEW_TAB ||
+         command_id == IDC_NEW_WINDOW ||
+         command_id == IDC_RESTORE_TAB ||
+         command_id == IDC_SELECT_NEXT_TAB ||
+         command_id == IDC_SELECT_PREVIOUS_TAB ||
+         command_id == IDC_TASK_MANAGER;
+}
+
 void Browser::ShowRepostFormWarningDialog(TabContents *tab_contents) {
   window()->ShowRepostFormWarningDialog(tab_contents);
 }

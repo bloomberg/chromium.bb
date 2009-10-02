@@ -400,6 +400,13 @@ void RenderWidgetHost::ForwardKeyboardEvent(
     if (!process_->HasConnection())
       return;
 
+    // Tab switching/closing accelerators aren't sent to the renderer to avoid a
+    // hung/malicious renderer from interfering.
+    if (!ShouldSendToRenderer(key_event)) {
+      UnhandledKeyboardEvent(key_event);
+      return;
+    }
+
     // Put all WebKeyboardEvent objects in a queue since we can't trust the
     // renderer and we need to give something to the UnhandledInputEvent
     // handler.
@@ -754,7 +761,7 @@ void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
       if (!message.ReadBool(&iter, &processed))
         process()->ReceivedBadMessage(message.type());
 
-      KeyQueue::value_type front_item = key_queue_.front();
+      NativeWebKeyboardEvent front_item = key_queue_.front();
       key_queue_.pop();
 
       if (!processed) {

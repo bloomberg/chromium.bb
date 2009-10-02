@@ -320,6 +320,12 @@ void BrowserWindowCocoa::ShowAppMenu() {
   // No-op. Mac doesn't support showing the menus via alt keys.
 }
 
+int BrowserWindowCocoa::GetCommandId(const NativeWebKeyboardEvent& event) {
+  // TODO(port): return the command id if this is a keyboard accelerator.
+  // CommandForKeyboardShortcut() doesn't have the full list.
+  return -1;
+}
+
 void BrowserWindowCocoa::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {

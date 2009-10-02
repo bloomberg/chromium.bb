@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/keyboard_codes.h"
 #include "base/time.h"
+#include "base/win_util.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/app_modal_dialog_queue.h"
@@ -48,6 +49,7 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/native_window_notification_source.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -1125,6 +1127,24 @@ void BrowserView::ShowPageMenu() {
 
 void BrowserView::ShowAppMenu() {
   toolbar_->app_menu()->Activate();
+}
+
+int BrowserView::GetCommandId(const NativeWebKeyboardEvent& event) {
+  views::Accelerator accelerator(
+      win_util::WinToKeyboardCode(event.windowsKeyCode),
+      (event.modifiers & NativeWebKeyboardEvent::ShiftKey) ==
+          NativeWebKeyboardEvent::ShiftKey,
+      (event.modifiers & NativeWebKeyboardEvent::ControlKey) ==
+          NativeWebKeyboardEvent::ControlKey,
+      (event.modifiers & NativeWebKeyboardEvent::AltKey) ==
+          NativeWebKeyboardEvent::AltKey);
+
+  std::map<views::Accelerator, int>::const_iterator iter =
+      accelerator_table_.find(accelerator);
+  if (iter == accelerator_table_.end())
+    return -1;
+
+  return iter->second;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -20,11 +20,6 @@ class RenderViewHost;
 class RenderWidgetHost;
 class RenderWidgetHostView;
 class TabContents;
-class WebKeyboardEvent;
-
-namespace base {
-class WaitableEvent;
-}
 
 // The TabContentsView is an interface that is implemented by the platform-
 // dependent web contents views. The TabContents uses this interface to talk to
@@ -181,6 +176,7 @@ class TabContentsView : public RenderViewHostDelegate::View {
                                  bool user_gesture,
                                  const GURL& creator_url);
   virtual void ShowCreatedWidget(int route_id, const gfx::Rect& initial_pos);
+  virtual bool IsReservedAccelerator(const NativeWebKeyboardEvent& event);
 
   // The TabContents whose contents we display.
   TabContents* tab_contents_;

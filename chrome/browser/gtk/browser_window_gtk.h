@@ -121,6 +121,7 @@ class BrowserWindowGtk : public BrowserWindow,
                             bool show_history);
   virtual void ShowPageMenu();
   virtual void ShowAppMenu();
+  virtual int GetCommandId(const NativeWebKeyboardEvent& event);
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

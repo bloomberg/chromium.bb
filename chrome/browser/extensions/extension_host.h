@@ -128,6 +128,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual void UpdateDragCursor(WebKit::WebDragOperation operation);
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);
+  virtual bool IsReservedAccelerator(const NativeWebKeyboardEvent& event);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
   virtual void HandleMouseEvent();
   virtual void HandleMouseLeave();

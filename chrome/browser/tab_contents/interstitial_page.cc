@@ -93,6 +93,7 @@ class InterstitialPage::InterstitialPageRVHViewDelegate
   virtual void UpdateDragCursor(WebDragOperation operation);
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);
+  virtual bool IsReservedAccelerator(const NativeWebKeyboardEvent& event);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
   virtual void HandleMouseEvent();
   virtual void HandleMouseLeave();
@@ -573,6 +574,11 @@ void InterstitialPage::InterstitialPageRVHViewDelegate::TakeFocus(
     bool reverse) {
   if (interstitial_page_->tab() && interstitial_page_->tab()->GetViewDelegate())
     interstitial_page_->tab()->GetViewDelegate()->TakeFocus(reverse);
+}
+
+bool InterstitialPage::InterstitialPageRVHViewDelegate::IsReservedAccelerator(
+    const NativeWebKeyboardEvent& event) {
+  return false;
 }
 
 void InterstitialPage::InterstitialPageRVHViewDelegate::HandleKeyboardEvent(

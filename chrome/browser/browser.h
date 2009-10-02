@@ -539,6 +539,7 @@ class Browser : public TabStripModelDelegate,
                             const GURL& url,
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history);
+  virtual bool IsReservedAccelerator(const NativeWebKeyboardEvent& event);
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);
 
   // Overridden from SelectFileDialog::Listener:

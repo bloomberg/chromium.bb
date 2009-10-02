@@ -15,8 +15,13 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/test/automation/browser_proxy.h"
+#include "chrome/test/automation/tab_proxy.h"
+#include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/in_process_browser_test.h"
+#include "chrome/test/ui/ui_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "views/event.h"
 #include "views/focus/focus_manager.h"
 #include "views/view.h"
 #include "views/window/window.h"
@@ -737,3 +742,38 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReloadCrashedTab) {
   browser()->ShowDownloadsTab();
   CheckViewHasFocus(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW);
 }
+
+#if !defined(OS_MACOSX)  // see BrowserWindowCocoa::GetCommandId
+// Tests that tab related keyboard accelerators are reserved by the app.
+
+class BrowserInteractiveTest : public UITest {
+};
+
+TEST_F(BrowserInteractiveTest, ReserveKeyboardAccelerators) {
+  const std::string kBadPage =
+      "<html><script>"
+      "document.onkeydown = function() {"
+      "  event.preventDefault();"
+      "  return false;"
+      "}"
+      "</script></html>";
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  browser->AppendTab(GURL("data:text/html," + kBadPage));
+  int tab_count = 0;
+  ASSERT_TRUE(browser->GetTabCount(&tab_count));
+  ASSERT_EQ(tab_count, 2);
+
+  int active_tab = 0;
+  ASSERT_TRUE(browser->GetActiveTabIndex(&active_tab));
+  ASSERT_EQ(active_tab, 1);
+
+  scoped_refptr<WindowProxy> window(browser->GetWindow());
+  ASSERT_TRUE(window->SimulateOSKeyPress(
+      base::VKEY_TAB, views::Event::EF_CONTROL_DOWN));
+  ASSERT_TRUE(browser->WaitForTabToBecomeActive(0, action_max_timeout_ms()));
+
+  ASSERT_TRUE(window->SimulateOSKeyPress(
+      base::VKEY_F4, views::Event::EF_CONTROL_DOWN));
+  ASSERT_TRUE(browser->WaitForTabCountToBecome(1, action_max_timeout_ms()));
+}
+#endif

@@ -21,6 +21,7 @@ class TabContents;
 class TabContentsContainer;
 class TemplateURL;
 class ToolbarView;
+struct NativeWebKeyboardEvent;
 
 namespace gfx {
 class Rect;
@@ -254,6 +255,10 @@ class BrowserWindow {
 
   // Shows the app menu (for accessibility).
   virtual void ShowAppMenu() = 0;
+
+  // Returns the id of the keyboard accelerator associated with the given
+  // keyboard event if one exists, otherwise -1.
+  virtual int GetCommandId(const NativeWebKeyboardEvent& event) = 0;
 
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(Browser* browser);

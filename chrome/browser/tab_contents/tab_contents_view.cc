@@ -56,6 +56,12 @@ void TabContentsView::ShowCreatedWidget(int route_id,
   ShowCreatedWidgetInternal(widget_host_view, initial_pos);
 }
 
+bool TabContentsView::IsReservedAccelerator(
+    const NativeWebKeyboardEvent& event) {
+  return tab_contents()->delegate() &&
+         tab_contents()->delegate()->IsReservedAccelerator(event);
+}
+
 RenderWidgetHostView* TabContentsView::CreateNewWidgetInternal(
     int route_id, bool activatable) {
   return delegate_view_helper_.CreateNewWidget(route_id, activatable,

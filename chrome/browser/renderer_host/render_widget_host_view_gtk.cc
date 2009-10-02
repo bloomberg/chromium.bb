@@ -519,6 +519,9 @@ void RenderWidgetHostViewGtk::Destroy() {
   // See http://www.crbug.com/11847 for details.
   gtk_widget_destroy(view_.get());
 
+  // The RenderWidgetHost's destruction led here, so don't call it.
+  host_ = NULL;
+
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
@@ -643,6 +646,9 @@ void RenderWidgetHostViewGtk::DestroyPluginContainer(
 
 void RenderWidgetHostViewGtk::ForwardKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
+  if (!host_)
+    return;
+
   EditCommands edit_commands;
   if (key_bindings_handler_->Match(event, &edit_commands)) {
     host_->ForwardEditCommandsForNextKeyEvent(edit_commands);

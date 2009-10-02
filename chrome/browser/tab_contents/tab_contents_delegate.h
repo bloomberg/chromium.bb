@@ -214,6 +214,12 @@ class TabContentsDelegate {
                             bool show_history) {
   }
 
+  // Returns whether the event is a reserved keyboard shortcut that should not
+  // be sent to the renderer.
+  virtual bool IsReservedAccelerator(const NativeWebKeyboardEvent& event) {
+    return false;
+  }
+
   // Allows delegates to handle unhandled keyboard messages coming back from
   // the renderer.
   // Returns true if the keyboard message was handled.

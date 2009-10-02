@@ -125,6 +125,10 @@ class RenderViewHostDelegate {
     // true, it means the focus was retrieved by doing a Shift-Tab.
     virtual void TakeFocus(bool reverse) = 0;
 
+    // Returns whether the event is a reserved keyboard shortcut that should not
+    // be sent to the renderer.
+    virtual bool IsReservedAccelerator(const NativeWebKeyboardEvent& event) = 0;
+
     // Callback to inform the browser that the renderer did not process the
     // specified events. This gives an opportunity to the browser to process the
     // event (used for keyboard shortcuts).

@@ -415,6 +415,10 @@ void ExtensionHost::GotFocus() {
 void ExtensionHost::TakeFocus(bool reverse) {
 }
 
+bool ExtensionHost::IsReservedAccelerator(const NativeWebKeyboardEvent& event) {
+  return false;
+}
+
 void ExtensionHost::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 }
 

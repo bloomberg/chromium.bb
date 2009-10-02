@@ -261,6 +261,7 @@ class BrowserView : public BrowserWindow,
                             bool show_history);
   virtual void ShowAppMenu();
   virtual void ShowPageMenu();
+  virtual int GetCommandId(const NativeWebKeyboardEvent& event);
 
   // Overridden from BrowserWindowTesting:
   virtual BookmarkBarView* GetBookmarkBarView() const;

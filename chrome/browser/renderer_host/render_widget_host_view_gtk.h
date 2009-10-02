@@ -90,7 +90,7 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   void ShowCurrentCursor();
 
   // The model object.
-  RenderWidgetHost* const host_;
+  RenderWidgetHost* host_;
 
   // The native UI widget.
   OwnedWidgetGtk view_;
