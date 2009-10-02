@@ -235,7 +235,9 @@ void VideoMap::XEventHandler(Widget widget,
     case Expose:
       // Exposure events come in multiples, one per rectangle uncovered.
       // We just look at one and redraw the whole region.
-      while (XCheckTypedWindowEvent(dpy, xwin, Expose, xevent));
+      while (XCheckTypedWindowEvent(dpy, xwin, Expose, xevent)) {
+        /* Empty body to avoid warning */
+      }
       video->Redraw();
       break;
     case KeyPress:
