@@ -702,40 +702,38 @@ BUG1124568 : LayoutTests/fast/dom/Window/window-function-name-getter-precedence.
 // These tests are disabled until <audio> and <video> tags are supported.
 // Disable <video> and <audio> tests for mac and linux until there is
 // proper support.
-BUG4363 MAC SKIP : LayoutTests/media = TIMEOUT
 BUG4363 LINUX MAC SKIP : LayoutTests/fast/media = PASS FAIL
 BUG4363 LINUX MAC SKIP : LayoutTests/http/tests/media = FAIL
 BUG4363 LINUX MAC SKIP : LayoutTests/http/tests/security/local-video-poster-from-remote.html = FAIL TIMEOUT
 BUG4363 LINUX MAC SKIP : LayoutTests/http/tests/security/local-video-src-from-remote.html = PASS FAIL
-BUG16779 SKIP : LayoutTests/accessibility/media-element.html = TIMEOUT
-
+BUG13907 SKIP : LayoutTests/accessibility/media-element.html = TIMEOUT
 BUG13907 SKIP : LayoutTests/http/tests/security/local-video-source-from-remote.html = FAIL
-BUG13907 WIN LINUX : LayoutTests/http/tests/media/remove-while-loading.html = FAIL
-BUG13907 WIN LINUX : LayoutTests/http/tests/media/video-play-stall-seek.html = FAIL
-BUG13907 WIN LINUX : LayoutTests/http/tests/media/video-play-stall.html = FAIL
-BUG13907 WIN LINUX : LayoutTests/http/tests/media/video-seekable-stall.html = FAIL
-BUG13907 WIN LINUX : LayoutTests/media/audio-constructor-autobuffer.html = FAIL
-BUG13907 WIN LINUX : LayoutTests/media/audio-delete-while-step-button-clicked.html = FAIL
-BUG13907 WIN LINUX : LayoutTests/media/video-canvas-source.html = FAIL
-BUG13907 WIN LINUX : LayoutTests/media/video-controls-transformed.html = FAIL
-BUG13907 WIN LINUX : LayoutTests/media/video-currentTime-set.html = FAIL
-BUG13907 WIN LINUX : LayoutTests/media/video-loop.html = FAIL
-BUG13907 WIN LINUX : LayoutTests/media/video-played-collapse.html = FAIL
-BUG13907 WIN LINUX : LayoutTests/media/video-played-ranges-1.html = FAIL
-BUG13907 WIN LINUX : LayoutTests/media/video-played-reset.html = FAIL
-BUG13907 WIN LINUX : LayoutTests/media/video-zoom-controls.html = FAIL
-BUG13907 WIN LINUX : LayoutTests/media/audio-constructor-src.html = TIMEOUT
-BUG13907 WIN LINUX : LayoutTests/media/audio-play-event.html = TIMEOUT
-BUG13907 WIN LINUX : LayoutTests/media/controls-drag-timebar.html = TIMEOUT
-BUG13907 WIN LINUX : LayoutTests/media/video-no-audio.html = TIMEOUT
-BUG13907 WIN LINUX : LayoutTests/media/video-source-add-src.html = TIMEOUT
-BUG13907 WIN LINUX : LayoutTests/media/audio-delete-while-slider-thumb-clicked.html = PASS FAIL CRASH
-BUG13907 WIN LINUX MAC LINUX : LayoutTests/fast/layers/video-layer.html = FAIL
-BUG13907 WIN LINUX : LayoutTests/media/event-attributes.html = TIMEOUT
-BUG13907 WIN LINUX : LayoutTests/media/controls-styling.html = FAIL
-BUG13907 WIN LINUX : LayoutTests/media/video-seek-past-end-playing.html = FAIL
-BUG13907 WIN LINUX : LayoutTests/media/video-error-abort.html = FAIL
-BUG13907 WIN LINUX : LayoutTests/media/video-play-pause-events.html = TIMEOUT PASS
+BUG13907 : LayoutTests/http/tests/media/remove-while-loading.html = FAIL
+BUG13907 : LayoutTests/http/tests/media/video-play-stall-seek.html = FAIL
+BUG13907 : LayoutTests/http/tests/media/video-play-stall.html = FAIL
+BUG13907 : LayoutTests/http/tests/media/video-seekable-stall.html = FAIL
+BUG13907 : LayoutTests/media/audio-constructor-autobuffer.html = FAIL
+BUG13907 : LayoutTests/media/audio-delete-while-step-button-clicked.html = FAIL
+BUG13907 : LayoutTests/media/video-canvas-source.html = FAIL
+BUG13907 : LayoutTests/media/video-controls-transformed.html = FAIL
+BUG13907 : LayoutTests/media/video-currentTime-set.html = FAIL
+BUG13907 : LayoutTests/media/video-loop.html = FAIL
+BUG13907 : LayoutTests/media/video-played-collapse.html = FAIL
+BUG13907 : LayoutTests/media/video-played-ranges-1.html = FAIL
+BUG13907 : LayoutTests/media/video-played-reset.html = FAIL
+BUG13907 : LayoutTests/media/video-play-pause-events.html = TIMEOUT PASS
+BUG13907 : LayoutTests/media/video-zoom-controls.html = FAIL
+BUG13907 : LayoutTests/media/audio-constructor-src.html = TIMEOUT
+BUG13907 : LayoutTests/media/audio-play-event.html = TIMEOUT
+BUG13907 : LayoutTests/media/controls-drag-timebar.html = TIMEOUT
+BUG13907 : LayoutTests/media/video-no-audio.html = TIMEOUT
+BUG13907 : LayoutTests/media/video-source-add-src.html = TIMEOUT
+BUG13907 : LayoutTests/media/audio-delete-while-slider-thumb-clicked.html = PASS FAIL CRASH
+BUG13907 : LayoutTests/fast/layers/video-layer.html = FAIL
+BUG13907 : LayoutTests/media/event-attributes.html = TIMEOUT
+BUG13907 : LayoutTests/media/controls-styling.html = FAIL
+BUG13907 : LayoutTests/media/video-seek-past-end-playing.html = FAIL
+BUG13907 : LayoutTests/media/video-error-abort.html = FAIL
 
 // These tests are WONTFIX because they uess codecs chromium doesn't support.
 BUG16779 WONTFIX SKIP : LayoutTests/media/video-can-play-type.html = FAIL TIMEOUT
