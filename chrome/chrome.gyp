@@ -2754,10 +2754,10 @@
             }],
             ['chromeos==1',{
               'dependencies': [
-                '../third_party/protobuf2/protobuf.gyp:protobuf',
-                '../third_party/protobuf2/protobuf.gyp:protoc',
-                '../third_party/cros/cros_api.gyp:cros_api',
-              ],
+                  '../third_party/protobuf2/protobuf.gyp:protobuf',
+                  '../third_party/protobuf2/protobuf.gyp:protoc',
+                  '../third_party/cros/cros_api.gyp:cros_api',
+               ],
               'actions': [
                 {
                   'action_name': 'my_proto',
@@ -4699,11 +4699,11 @@
             '../net/net.gyp:net',
             '../third_party/icu/icu.gyp:icuuc',
             '../third_party/libjingle/libjingle.gyp:libjingle',
+            '../third_party/protobuf2/protobuf.gyp:protobuf',
             '../third_party/sqlite/sqlite.gyp:sqlite',
             'common',
             'notifier',
             'sync',
-            'sync_proto',
           ],
           'conditions': [
             ['OS=="win"', {
@@ -6438,10 +6438,27 @@
           'type': 'none',
           'actions': [
             {
+              # TODO(chron): Remove this preprocessing step.
+              'action_name': 'preprocessing sync.proto',
+              'inputs': [
+                'browser/sync/protocol/proto2_to_oproto.py',
+                'browser/sync/protocol/sync.proto',
+              ],
+              'outputs': [
+                '<(protoc_out_dir)/chrome/browser/sync/protocol/sync.proto',
+              ],
+              'action': [
+                'python',
+                'browser/sync/protocol/proto2_to_oproto.py',
+                'browser/sync/protocol/sync.proto',
+                '<(protoc_out_dir)/chrome/browser/sync/protocol/sync.proto',
+              ],
+            },
+            {
               'action_name': 'compiling sync.proto',
               'inputs': [
                 '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-                'browser/sync/protocol/sync.proto',
+                '<(protoc_out_dir)/chrome/browser/sync/protocol/sync.proto',
               ],
               'outputs': [
                 '<(protoc_out_dir)/chrome/browser/sync/protocol/sync.pb.cc',
@@ -6449,18 +6466,15 @@
               ],
               'action': [
                 '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
-                '--proto_path=browser/sync/protocol',
-                'browser/sync/protocol/sync.proto',
+                '--proto_path=<(protoc_out_dir)/chrome/browser/sync/protocol',
+                '<(protoc_out_dir)/chrome/browser/sync/protocol/sync.proto',
                 '--cpp_out=<(protoc_out_dir)/chrome/browser/sync/protocol',
               ],
             },
           ],
           'dependencies': [
-            '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
+            '../third_party/protobuf2/protobuf.gyp:protobuf',
             '../third_party/protobuf2/protobuf.gyp:protoc',
-          ],
-          'export_dependent_settings': [
-            '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
           ],
         },
         {
@@ -6551,6 +6565,7 @@
           'dependencies': [
             '../third_party/expat/expat.gyp:expat',
             '../third_party/libjingle/libjingle.gyp:libjingle',
+            '../third_party/protobuf2/protobuf.gyp:protobuf',
             'sync_proto',
           ],
           'conditions': [
@@ -6611,10 +6626,10 @@
           'dependencies': [
             '../testing/gtest.gyp:gtest',
             '../third_party/libjingle/libjingle.gyp:libjingle',
+            '../third_party/protobuf2/protobuf.gyp:protobuf',
             '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
             'notifier',
             'sync',
-            'sync_proto',
             'test_support_unit',
           ],
           'conditions': [
@@ -6779,6 +6794,7 @@
           ],
           'dependencies': [
             '../third_party/libjingle/libjingle.gyp:libjingle',
+            '../third_party/protobuf2/protobuf.gyp:protobuf',
             'sync_proto',
           ],
           'conditions': [

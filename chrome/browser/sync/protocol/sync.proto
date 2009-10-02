@@ -6,7 +6,10 @@
 
 syntax = "proto2";
 
-option optimize_for = LITE_RUNTIME;
+option java_api_version = 1;
+option cc_api_version = 1;
+option py_api_version = 1;
+option java_java5_enums = false;
 
 package sync_pb;
 
