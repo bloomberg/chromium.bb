@@ -681,7 +681,7 @@ drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
     if (bo_gem->gtt_virtual == NULL) {
 	struct drm_i915_gem_mmap_gtt mmap_arg;
 
-	DBG("bo_map_gtt: %d (%s)\n", bo_gem->gem_handle, bo_gem->name);
+	DBG("bo_map_gtt: mmap %d (%s)\n", bo_gem->gem_handle, bo_gem->name);
 
 	memset(&mmap_arg, 0, sizeof(mmap_arg));
 	mmap_arg.handle = bo_gem->gem_handle;
@@ -715,7 +715,7 @@ drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 
     bo->virtual = bo_gem->gtt_virtual;
 
-    DBG("bo_map: %d (%s) -> %p\n", bo_gem->gem_handle, bo_gem->name,
+    DBG("bo_map_gtt: %d (%s) -> %p\n", bo_gem->gem_handle, bo_gem->name,
 	bo_gem->gtt_virtual);
 
     /* Now move it to the GTT domain so that the CPU caches are flushed */
@@ -1390,6 +1390,29 @@ drm_intel_gem_bo_disable_reuse(drm_intel_bo *bo)
 }
 
 /**
+ * Clear the flag set by drm_intel_gem_bo_get_aperture_space() so we're ready
+ * for the next drm_intel_bufmgr_check_aperture_space() call.
+ */
+static int
+drm_intel_gem_bo_references(drm_intel_bo *bo, drm_intel_bo *target_bo)
+{
+    drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
+    int i;
+
+    if (bo == NULL || target_bo == NULL)
+	return 0;
+
+    for (i = 0; i < bo_gem->reloc_count; i++) {
+	if (bo_gem->reloc_target_bo[i] == target_bo)
+	    return 1;
+	if (drm_intel_gem_bo_references(bo_gem->reloc_target_bo[i], target_bo))
+	    return 1;
+    }
+
+    return 0;
+}
+
+/**
  * Initializes the GEM buffer manager, which uses the kernel to allocate, map,
  * and manage map buffer objections.
  *
@@ -1474,6 +1497,8 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
     bufmgr_gem->bufmgr.check_aperture_space = drm_intel_gem_check_aperture_space;
     bufmgr_gem->bufmgr.bo_disable_reuse = drm_intel_gem_bo_disable_reuse;
     bufmgr_gem->bufmgr.get_pipe_from_crtc_id = drm_intel_gem_get_pipe_from_crtc_id;
+    bufmgr_gem->bufmgr.bo_references = drm_intel_gem_bo_references;
+
     /* Initialize the linked lists for BO reuse cache. */
     for (i = 0, size = 4096; i < DRM_INTEL_GEM_BO_BUCKETS; i++, size *= 2) {
 	DRMINITLISTHEAD(&bufmgr_gem->cache_bucket[i].head);

@@ -228,6 +228,12 @@ int drm_intel_bo_busy(drm_intel_bo *bo)
 }
 
 int
+drm_intel_bo_references(drm_intel_bo *bo, drm_intel_bo *target_bo)
+{
+	return bo->bufmgr->bo_references(bo, target_bo);
+}
+
+int
 drm_intel_get_pipe_from_crtc_id (drm_intel_bufmgr *bufmgr, int crtc_id)
 {
 	if (bufmgr->get_pipe_from_crtc_id)

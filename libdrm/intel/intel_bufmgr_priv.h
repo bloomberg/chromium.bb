@@ -207,6 +207,9 @@ struct _drm_intel_bufmgr {
      */
     int (*get_pipe_from_crtc_id)(drm_intel_bufmgr *bufmgr, int crtc_id);
 
+   /** Returns true if target_bo is in the relocation tree rooted at bo. */
+    int (*bo_references)(drm_intel_bo *bo, drm_intel_bo *target_bo);
+
     int debug; /**< Enables verbose debugging printouts */
 };
 

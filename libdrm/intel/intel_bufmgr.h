@@ -110,6 +110,7 @@ int drm_intel_bo_flink(drm_intel_bo *bo, uint32_t *name);
 int drm_intel_bo_busy(drm_intel_bo *bo);
 
 int drm_intel_bo_disable_reuse(drm_intel_bo *bo);
+int drm_intel_bo_references(drm_intel_bo *bo, drm_intel_bo *target_bo);
 
 /* drm_intel_bufmgr_gem.c */
 drm_intel_bufmgr *drm_intel_bufmgr_gem_init(int fd, int batch_size);
