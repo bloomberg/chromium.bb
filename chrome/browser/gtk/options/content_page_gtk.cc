@@ -28,7 +28,6 @@
 
 ContentPageGtk::ContentPageGtk(Profile* profile)
     : OptionsPageBase(profile),
-      system_title_bar_checkbox_(NULL),
       initializing_(true) {
 
   // Prepare the group options layout.
@@ -89,9 +88,13 @@ void ContentPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
   }
   if (browser_defaults::kCanToggleSystemTitleBar &&
       (!pref_name || *pref_name == prefs::kUseCustomChromeFrame)) {
-    gtk_toggle_button_set_active(
-        GTK_TOGGLE_BUTTON(system_title_bar_checkbox_),
-        !use_custom_chrome_frame_.GetValue());
+    if (use_custom_chrome_frame_.GetValue()) {
+      gtk_toggle_button_set_active(
+          GTK_TOGGLE_BUTTON(system_title_bar_hide_radio_), TRUE);
+    } else {
+      gtk_toggle_button_set_active(
+          GTK_TOGGLE_BUTTON(system_title_bar_show_radio_), TRUE);
+    }
   }
   initializing_ = false;
 }
@@ -191,16 +194,6 @@ GtkWidget* ContentPageGtk::InitThemesGroup() {
   GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   GtkWidget* hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
 
-  // "Use system title bar and borders" checkbox.
-  if (browser_defaults::kCanToggleSystemTitleBar) {
-    system_title_bar_checkbox_ = gtk_check_button_new_with_label(
-        l10n_util::GetStringUTF8(IDS_SHOW_WINDOW_DECORATIONS).c_str());
-    g_signal_connect(G_OBJECT(system_title_bar_checkbox_), "clicked",
-                     G_CALLBACK(OnSystemTitleBarCheckboxClicked), this);
-    gtk_box_pack_start(GTK_BOX(vbox), system_title_bar_checkbox_,
-                       FALSE, FALSE, 0);
-  }
-
 #if defined(TOOLKIT_GTK)
   // GTK theme button.
   GtkWidget* gtk_theme_button = gtk_button_new_with_label(
@@ -225,6 +218,26 @@ GtkWidget* ContentPageGtk::InitThemesGroup() {
   gtk_box_pack_start(GTK_BOX(hbox), themes_gallery_button, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+
+  // "Use system title bar and borders" radio buttons.
+  if (browser_defaults::kCanToggleSystemTitleBar) {
+    // Use system title bar and borders
+    system_title_bar_show_radio_ = gtk_radio_button_new_with_label(NULL,
+        l10n_util::GetStringUTF8(IDS_SHOW_WINDOW_DECORATIONS_RADIO).c_str());
+    g_signal_connect(G_OBJECT(system_title_bar_show_radio_), "toggled",
+                     G_CALLBACK(OnSystemTitleBarRadioToggled), this);
+    gtk_box_pack_start(GTK_BOX(vbox), system_title_bar_show_radio_, FALSE,
+                       FALSE, 0);
+
+    // Hide system title bar and use custom borders
+    system_title_bar_hide_radio_ = gtk_radio_button_new_with_label_from_widget(
+        GTK_RADIO_BUTTON(system_title_bar_show_radio_),
+        l10n_util::GetStringUTF8(IDS_HIDE_WINDOW_DECORATIONS_RADIO).c_str());
+    g_signal_connect(G_OBJECT(system_title_bar_hide_radio_), "toggled",
+                     G_CALLBACK(OnSystemTitleBarRadioToggled), this);
+    gtk_box_pack_start(GTK_BOX(vbox), system_title_bar_hide_radio_, FALSE,
+                       FALSE, 0);
+  }
 
   return vbox;
 }
@@ -272,10 +285,28 @@ void ContentPageGtk::OnGetThemesButtonClicked(GtkButton* widget,
 }
 
 // static
-void ContentPageGtk::OnSystemTitleBarCheckboxClicked(GtkButton* widget,
-                                                     ContentPageGtk* page) {
+void ContentPageGtk::OnSystemTitleBarRadioToggled(GtkToggleButton* widget,
+                                                  ContentPageGtk* page) {
   DCHECK(browser_defaults::kCanToggleSystemTitleBar);
-  bool use_custom = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  if (page->initializing_)
+    return;
+
+  // We get two signals when selecting a radio button, one for the old radio
+  // being toggled off and one for the new one being toggled on. Ignore the
+  // signal for the toggling off the old button.
+  if (!gtk_toggle_button_get_active(widget))
+    return;
+
+  bool use_custom = gtk_toggle_button_get_active(
+      GTK_TOGGLE_BUTTON(page->system_title_bar_hide_radio_));
+  if (use_custom) {
+    page->UserMetricsRecordAction(L"Options_CustomFrame_Enable",
+                                  page->profile()->GetPrefs());
+  } else {
+    page->UserMetricsRecordAction(L"Options_CustomFrame_Disable",
+                                  page->profile()->GetPrefs());
+  }
+
   page->use_custom_chrome_frame_.SetValue(use_custom);
 }
 

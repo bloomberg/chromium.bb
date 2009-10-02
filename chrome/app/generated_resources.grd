@@ -4093,6 +4093,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_THEMES_SET_CLASSIC" desc="The button to choose the classic windows theme in GTK">
           Use Classic theme
         </message>
+        <message name="IDS_SHOW_WINDOW_DECORATIONS_RADIO" desc="A radio button in the options dialog for using the system title bar and borders.">
+          Use system title bar and borders
+        </message>
+        <message name="IDS_HIDE_WINDOW_DECORATIONS_RADIO" desc="A radio button in the options dialog for using the chrome custom frame and hiding the system title bar.">
+          Hide system title bar and use compact borders
+        </message>
       </if>
       <message name="IDS_THEMES_RESET_BUTTON" desc="The button to reset your theme">
         Reset to default theme
@@ -5134,9 +5140,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Don't ask again
       </message>
 
-      <message name="IDS_SHOW_WINDOW_DECORATIONS" desc="The menu entry text in the tab strip context menu.  This toggles the system title bar and window borders (window decorations) on linux.">
-        Use system title bar and borders
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_SHOW_WINDOW_DECORATIONS_MENU" desc="The menu entry text in the tab strip context menu.  This toggles the system title bar and window borders (window decorations) on linux.">
+          Use system title bar and borders
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_SHOW_WINDOW_DECORATIONS_MENU" desc="In Title Case: The menu entry text in the tab strip context menu.  This toggles the system title bar and window borders (window decorations) on linux.">
+          Use System Title Bar and Borders
+        </message>
+      </if>
 
       <message name="IDS_RGBA_CSS_FORMAT_STRING" translateable="false" desc="The format string to use when converting colors to CSS rgba().">
         rgba($1, $2, $3, $4)

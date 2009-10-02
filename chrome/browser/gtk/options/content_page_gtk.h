@@ -49,9 +49,9 @@ class ContentPageGtk : public OptionsPageBase {
   static void OnGetThemesButtonClicked(GtkButton* widget,
                                        ContentPageGtk* page);
 
-  // Callback for system title bar checkbox.
-  static void OnSystemTitleBarCheckboxClicked(GtkButton* widget,
-                                              ContentPageGtk* page);
+  // Callback for system title bar radio buttons.
+  static void OnSystemTitleBarRadioToggled(GtkToggleButton* widget,
+                                           ContentPageGtk* page);
 
   // Callback for passwords exceptions button.
   static void OnPasswordsExceptionsButtonClicked(GtkButton* widget,
@@ -73,8 +73,9 @@ class ContentPageGtk : public OptionsPageBase {
   GtkWidget* form_autofill_asktosave_radio_;
   GtkWidget* form_autofill_neversave_radio_;
 
-  // Widgets for the Themes group.
-  GtkWidget* system_title_bar_checkbox_;
+  // Widgets for the Appearance group.
+  GtkWidget* system_title_bar_show_radio_;
+  GtkWidget* system_title_bar_hide_radio_;
 
   // The parent GtkTable widget
   GtkWidget* page_;

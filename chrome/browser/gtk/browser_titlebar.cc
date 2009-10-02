@@ -573,7 +573,7 @@ void BrowserTitlebar::ShowContextMenu() {
 #if !defined(OS_CHROMEOS)
         { MENU_SEPARATOR },
         { MENU_CHECKBOX, kShowWindowDecorationsCommand,
-            IDS_SHOW_WINDOW_DECORATIONS },
+            IDS_SHOW_WINDOW_DECORATIONS_MENU },
 #endif
         { MENU_END },
     };
