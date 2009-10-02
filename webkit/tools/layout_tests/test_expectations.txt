@@ -2204,6 +2204,8 @@ BUG23557 MAC : LayoutTests/fast/text/text-letter-spacing.html = IMAGE
 
 // Failing on the buildbot but not locally; needs investigation
 BUG23560 MAC : LayoutTests/fast/overflow/003.xml = IMAGE
+BUG23560 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-conv-01-f.svg = FAIL
+
 
 // -----------------------------------------------------------------
 // END MAC PORT TESTS
