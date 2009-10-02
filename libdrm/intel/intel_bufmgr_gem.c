@@ -191,6 +191,9 @@ drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t *tiling_mode,
 static void
 drm_intel_gem_bo_unreference(drm_intel_bo *bo);
 
+static void
+drm_intel_gem_bo_free(drm_intel_bo *bo);
+
 static struct drm_intel_gem_bo_bucket *
 drm_intel_gem_bo_bucket_for_size(drm_intel_bufmgr_gem *bufmgr_gem,
 				 unsigned long size)
@@ -315,6 +318,38 @@ drm_intel_gem_bo_busy(drm_intel_bo *bo)
     return (ret == 0 && busy.busy);
 }
 
+static int
+drm_intel_gem_bo_madvise(drm_intel_bufmgr_gem *bufmgr_gem,
+			 drm_intel_bo_gem *bo_gem,
+			 int state)
+{
+    struct drm_i915_gem_madvise madv;
+
+    madv.handle = bo_gem->gem_handle;
+    madv.madv = state;
+    madv.retained = 1;
+    ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_MADVISE, &madv);
+
+    return madv.retained;
+}
+
+/* drop the oldest entries that have been purged by the kernel */
+static void
+drm_intel_gem_bo_cache_purge_bucket(drm_intel_bufmgr_gem *bufmgr_gem,
+				    struct drm_intel_gem_bo_bucket *bucket)
+{
+    while (!DRMLISTEMPTY(&bucket->head)) {
+	drm_intel_bo_gem *bo_gem;
+
+	bo_gem = DRMLISTENTRY(drm_intel_bo_gem, bucket->head.next, head);
+	if (drm_intel_gem_bo_madvise (bufmgr_gem, bo_gem, I915_MADV_DONTNEED))
+	    break;
+
+	DRMLISTDEL(&bo_gem->head);
+	drm_intel_gem_bo_free(&bo_gem->bo);
+    }
+}
+
 static drm_intel_bo *
 drm_intel_gem_bo_alloc_internal(drm_intel_bufmgr *bufmgr, const char *name,
 				unsigned long size, unsigned int alignment,
@@ -325,7 +360,7 @@ drm_intel_gem_bo_alloc_internal(drm_intel_bufmgr *bufmgr, const char *name,
     unsigned int page_size = getpagesize();
     int ret;
     struct drm_intel_gem_bo_bucket *bucket;
-    int alloc_from_cache = 0;
+    int alloc_from_cache;
     unsigned long bo_size;
 
     /* Round the allocated size up to a power of two number of pages. */
@@ -344,6 +379,8 @@ drm_intel_gem_bo_alloc_internal(drm_intel_bufmgr *bufmgr, const char *name,
 
     pthread_mutex_lock(&bufmgr_gem->lock);
     /* Get a buffer out of the cache if available */
+retry:
+    alloc_from_cache = 0;
     if (bucket != NULL && !DRMLISTEMPTY(&bucket->head)) {
 	if (for_render) {
 	    /* Allocate new render-target BOs from the tail (MRU)
@@ -361,10 +398,17 @@ drm_intel_gem_bo_alloc_internal(drm_intel_bufmgr *bufmgr, const char *name,
 	     * waiting for the GPU to finish.
 	     */
 	    bo_gem = DRMLISTENTRY(drm_intel_bo_gem, bucket->head.next, head);
-
 	    if (!drm_intel_gem_bo_busy(&bo_gem->bo)) {
 		alloc_from_cache = 1;
 		DRMLISTDEL(&bo_gem->head);
+	    }
+	}
+
+	if (alloc_from_cache) {
+	    if(!drm_intel_gem_bo_madvise(bufmgr_gem, bo_gem, I915_MADV_WILLNEED)) {
+		drm_intel_gem_bo_free(&bo_gem->bo);
+		drm_intel_gem_bo_cache_purge_bucket(bufmgr_gem, bucket);
+		goto retry;
 	    }
 	}
     }
@@ -591,6 +635,7 @@ drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo)
 
 	    DRMLISTADDTAIL(&bo_gem->head, &bucket->head);
 
+	    drm_intel_gem_bo_madvise(bufmgr_gem, bo_gem, I915_MADV_DONTNEED);
 	    drm_intel_gem_cleanup_bo_cache(bufmgr_gem, time.tv_sec);
 	} else {
 	    drm_intel_gem_bo_free(bo);

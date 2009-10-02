@@ -206,6 +206,7 @@ typedef struct drm_i915_sarea {
 #define DRM_I915_GEM_GET_APERTURE 0x23
 #define DRM_I915_GEM_MMAP_GTT	0x24
 #define DRM_I915_GET_PIPE_FROM_CRTC_ID	0x25
+#define DRM_I915_GEM_MADVISE	0x26
 
 #define DRM_IOCTL_I915_INIT		DRM_IOW( DRM_COMMAND_BASE + DRM_I915_INIT, drm_i915_init_t)
 #define DRM_IOCTL_I915_FLUSH		DRM_IO ( DRM_COMMAND_BASE + DRM_I915_FLUSH)
@@ -244,6 +245,7 @@ typedef struct drm_i915_sarea {
 #define DRM_IOCTL_I915_GEM_GET_TILING	DRM_IOWR (DRM_COMMAND_BASE + DRM_I915_GEM_GET_TILING, struct drm_i915_gem_get_tiling)
 #define DRM_IOCTL_I915_GEM_GET_APERTURE	DRM_IOR  (DRM_COMMAND_BASE + DRM_I915_GEM_GET_APERTURE, struct drm_i915_gem_get_aperture)
 #define DRM_IOCTL_I915_GET_PIPE_FROM_CRTC_ID DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_GET_PIPE_FROM_CRTC_ID, struct drm_i915_get_pipe_from_crtc_id)
+#define DRM_IOCTL_I915_GEM_MADVISE	DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_GEM_MADVISE, struct drm_i915_gem_madvise)
 
 /* Asynchronous page flipping:
  */
@@ -725,6 +727,20 @@ struct drm_i915_get_pipe_from_crtc_id {
 
 	/** pipe of requested CRTC **/
 	uint32_t pipe;
+};
+
+#define I915_MADV_WILLNEED	0
+#define I915_MADV_DONTNEED	1
+
+struct drm_i915_gem_madvise {
+	/** Handle of the buffer to change the backing store advice. */
+	uint32_t handle;
+
+	/** Advice. */
+	uint32_t madv;
+
+	/** Whether or not the backing store still exists */
+	uint32_t retained;
 };
 
 #endif				/* _I915_DRM_H_ */
