@@ -15,6 +15,7 @@
 
 #include "base/atomicops.h"
 #include "base/basictypes.h"
+#include "base/lock.h"
 #include "base/time.h"
 #include "chrome/browser/sync/syncable/blob.h"
 #include "chrome/browser/sync/syncable/dir_open_result.h"
@@ -652,7 +653,9 @@ class MutableEntry : public Entry {
   MutableEntry(WriteTransaction* trans, GetByParentIdAndDBName,
     const Id& parentid, const PathString& name);
 
-  WriteTransaction* trans() const;
+  inline WriteTransaction* write_transaction() const {
+    return write_transaction_;
+  }
 
   // Field Accessors.  Some of them trigger the re-indexing of the entry.
   // Return true on success, return false on failure, which means
@@ -725,6 +728,11 @@ class MutableEntry : public Entry {
   // Adjusts the successor and predecessor entries so that they no longer
   // refer to this entry.
   void UnlinkFromOrder();
+
+  // Kind of redundant. We should reduce the number of pointers
+  // floating around if at all possible. Could we store this in Directory?
+  // Scope: Set on construction, never changed after that.
+  WriteTransaction* const write_transaction_;
 
  protected:
   MutableEntry();
@@ -801,59 +809,6 @@ struct ExtendedAttributeValue {
 
 typedef std::map<ExtendedAttributeKey, ExtendedAttributeValue>
     ExtendedAttributes;
-
-// Used to maintain our per-thread transaction state and to enforce
-// our transaction invariants (e.g. no recursive transactions).
-// Each time a thread enters a transaction by constructing a Read or a
-// WriteTransaction object, a ThreadNode object is pulled from thread
-// local storage, or created and stored in thread-local storage if it
-// doesn't yet exist.
-struct ThreadNode {
-  const char* file;
-  int line;
-  base::TimeTicks wait_started;
-  ThreadId id;
-  ThreadNode* next;
-  ThreadNode* prev;
-
-  // True when this node is in a linked list.  Only accessed from owner thread
-  // so no locking necessary.
-  bool in_list;
-  WriteTransaction* current_write_trans;
-  PThreadCondVar condvar;  // Mutex is the kernel's transaction mutex.
-  bool wake_up;  // flag for condvar.
-  int tclass;  // Really a BaseTransaction::TClass, but no forward enums.
-
-  // Linked list operations.
-  inline ThreadNode() : in_list(false), current_write_trans(NULL),
-       wake_up(false) {
-    next = prev = this;
-  }
-  inline ThreadNode* Remove() {
-    in_list = false;
-    prev->next = next;
-    next->prev = prev;
-    return next = prev = this;
-  }
-  inline void Insert(ThreadNode* node) {
-    in_list = true;
-    prev = node->prev;
-    next = node;
-    next->prev = prev->next = this;
-  }
-};
-
-struct ThreadCounts {
-  int waiting;
-  int active;
-  // Also keep a linked list of thread information.
-  ThreadNode waiting_headtail;
-  ThreadNode active_headtail;
-
-  ThreadCounts() : waiting(0), active(0) { }
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadCounts);
-};
 
 typedef PThreadScopedLock<PThreadMutex> ScopedTransactionLock;
 typedef std::set<int64> MetahandleSet;
@@ -1159,10 +1114,8 @@ class Directory {
     void AddRef();  // For convenience.
     void Release();
 
-    // Next 3 members implement the reader/writer lock.
-    PThreadMutex transaction_mutex;  // Protects next member.
-    ThreadCounts thread_counts;
-    pthread_key_t thread_node_key;
+    // Implements ReadTransaction / WriteTransaction using a simple lock.
+    Lock transaction_mutex;
 
     // The name of this directory, used as a key into open_files_;
     PathString const name_;
@@ -1174,7 +1127,7 @@ class Directory {
     //
     // Never hold the mutex and do anything with the database or any
     // other buffered IO.  Violating this rule will result in deadlock.
-    pthread_mutex_t mutex;
+    pthread_mutex_t mutex;  // TODO(chron): Swap this out for Chrome Lock
     MetahandlesIndex* metahandles_index;  // Entries indexed by metahandle
     IdsIndex* ids_index;  // Entries indexed by id
     ParentIdAndNamesIndex* parent_id_and_names_index;
@@ -1251,25 +1204,15 @@ class ScopedKernelUnlock {
 class BaseTransaction {
   friend class Entry;
  public:
-  enum TransactionClass { READ, WRITE };
-
- protected:
-  BaseTransaction(Directory* directory, const char* name,
-                  const char* source_file, int line);
-
-  // The members below are optionally called by descendants.
-  void Lock(ThreadCounts* const thread_counts, ThreadNode* thread_node,
-            TransactionClass tclass);
-  void AfterLock(ThreadNode* thread_node);
-  void UnlockAndLog(ThreadCounts* const thread_counts, OriginalEntries*);
-  void Init(ThreadCounts* const thread_counts, TransactionClass tclass);
-  ThreadNode* MakeThreadNode();
-
- public:
   inline Directory* directory() const { return directory_; }
   inline Id root_id() const { return Id(); }
 
  protected:
+  BaseTransaction(Directory* directory, const char* name,
+                  const char* source_file, int line, WriterTag writer);
+
+  void UnlockAndLog(OriginalEntries* entries);
+
   Directory* const directory_;
   Directory::Kernel* const dirkernel_;  // for brevity
   const char* const name_;
@@ -1277,6 +1220,9 @@ class BaseTransaction {
   const char* const source_file_;
   const int line_;
   WriterTag writer_;
+
+ private:
+  void Lock();
 
   DISALLOW_COPY_AND_ASSIGN(BaseTransaction);
 };
@@ -1312,17 +1258,6 @@ class WriteTransaction : public BaseTransaction {
   void SaveOriginal(EntryKernel* entry);
 
  protected:
-  // If I had had the foresight to create a BaseWriteTransactionClass,
-  // I would not have needed this pass-through constructor and the
-  // skip_destructor flag.
-  explicit WriteTransaction(Directory* directory,
-                            const char* name, WriterTag writer,
-                            const char* source_file,
-                            int line, bool skip_destructor,
-                            OriginalEntries* originals);
-
-  const bool skip_destructor_;
-
   // Before an entry gets modified, we copy the original into a list
   // so that we can issue change notifications when the transaction
   // is done.
@@ -1410,7 +1345,5 @@ std::ostream& operator <<(std::ostream&, const syncable::Blob&);
 
 browser_sync::FastDump& operator <<
   (browser_sync::FastDump&, const syncable::Blob&);
-
-std::ostream& operator <<(std::ostream&, const syncable::ThreadNode&);
 
 #endif  // CHROME_BROWSER_SYNC_SYNCABLE_SYNCABLE_H_

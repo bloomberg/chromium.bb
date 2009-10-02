@@ -370,7 +370,7 @@ void SyncerUtil::UpdateServerFieldsFromUpdate(
 void SyncerUtil::ApplyExtendedAttributes(
     syncable::MutableEntry* local_entry,
     const SyncEntity& server_entry) {
-  local_entry->DeleteAllExtendedAttributes(local_entry->trans());
+  local_entry->DeleteAllExtendedAttributes(local_entry->write_transaction());
   if (server_entry.has_extended_attributes()) {
     const sync_pb::ExtendedAttributes & extended_attributes =
       server_entry.extended_attributes();
@@ -379,7 +379,7 @@ void SyncerUtil::ApplyExtendedAttributes(
       AppendUTF8ToPathString(
           extended_attributes.extendedattribute(i).key(), &pathstring_key);
       ExtendedAttributeKey key(local_entry->Get(META_HANDLE), pathstring_key);
-      MutableExtendedAttribute local_attribute(local_entry->trans(),
+      MutableExtendedAttribute local_attribute(local_entry->write_transaction(),
           CREATE, key);
       SyncerProtoUtil::CopyProtoBytesIntoBlob(
           extended_attributes.extendedattribute(i).value(),

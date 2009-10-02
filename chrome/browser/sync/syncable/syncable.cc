@@ -181,13 +181,6 @@ Name Name::FromEntryKernel(EntryKernel* kernel) {
 static const DirectoryChangeEvent kShutdownChangesEvent =
     { DirectoryChangeEvent::SHUTDOWN, 0, 0 };
 
-void DestroyThreadNodeKey(void* vnode) {
-  ThreadNode* const node = reinterpret_cast<ThreadNode*>(vnode);
-  CHECK(!node->in_list)
-    << "\nThread exited while holding the transaction mutex!\n" << *node;
-  delete node;
-}
-
 Directory::Kernel::Kernel(const PathString& db_path,
                           const PathString& name,
                           const KernelLoadInfo& info)
@@ -210,7 +203,6 @@ Directory::Kernel::Kernel(const PathString& db_path,
   next_id(info.kernel_info.next_id) {
   info_status_ = Directory::KERNEL_SHARE_INFO_VALID;
   CHECK(0 == pthread_mutex_init(&mutex, NULL));
-  CHECK(0 == pthread_key_create(&thread_node_key, &DestroyThreadNodeKey));
 }
 
 inline void DeleteEntry(EntryKernel* kernel) {
@@ -231,7 +223,6 @@ Directory::Kernel::~Kernel() {
   delete channel;
   delete changes_channel;
   CHECK(0 == pthread_mutex_destroy(&mutex));
-  pthread_key_delete(thread_node_key);
   delete unsynced_metahandles;
   delete unapplied_update_metahandles;
   delete extended_attributes;
@@ -1139,68 +1130,13 @@ static const bool kLoggingInfo = true;
 static const bool kLoggingInfo = false;
 #endif
 
-ThreadNode* BaseTransaction::MakeThreadNode() {
-  ThreadNode* node = reinterpret_cast<ThreadNode*>
-    (pthread_getspecific(dirkernel_->thread_node_key));
-  if (NULL == node) {
-    node = new ThreadNode;
-    node->id = GetCurrentThreadId();
-    pthread_setspecific(dirkernel_->thread_node_key, node);
-  } else if (node->in_list) {
-    logging::LogMessage(source_file_, line_, logging::LOG_FATAL).stream()
-      << " Recursive Lock attempt by thread id " << node->id << "." << std::endl
-      << "Already entered transaction at " << node->file << ":" << node->line;
-  }
-  node->file = source_file_;
-  node->line = line_;
-  node->wait_started = base::TimeTicks::Now();
-  return node;
-}
+void BaseTransaction::Lock() {
+  base::TimeTicks start_time = base::TimeTicks::Now();
 
-void BaseTransaction::Lock(ThreadCounts* const thread_counts,
-                           ThreadNode* node, TransactionClass tclass) {
-  ScopedTransactionLock lock(&dirkernel_->transaction_mutex);
-  // Increment the waiters count.
-  node->tclass = tclass;
-  thread_counts->waiting += 1;
-  node->Insert(&thread_counts->waiting_headtail);
+  dirkernel_->transaction_mutex.Acquire();
 
-  // Block until we can own the reader/writer lock
-  bool ready = 1 == thread_counts->waiting;
-  while (true) {
-    if (ready) {
-      if (0 == thread_counts->active) {
-        // We can take the lock because there is no contention.
-        break;
-      } else if (READ == tclass
-                 && READ == thread_counts->active_headtail.next->tclass) {
-        // We can take the lock because reads can run simultaneously.
-        break;
-      }
-    }
-    // Wait to be woken up and check again.
-    node->wake_up = false;
-    do {
-      CHECK(0 == pthread_cond_wait(&node->condvar.condvar_,
-                                   &dirkernel_->transaction_mutex.mutex_));
-    } while (!node->wake_up);
-    ready = true;
-  }
-
-  // Move from the list of waiters to the list of active.
-  thread_counts->waiting -= 1;
-  thread_counts->active += 1;
-  CHECK(WRITE != tclass || 1 == thread_counts->active);
-  node->Remove();
-  node->Insert(&thread_counts->active_headtail);
-  if (WRITE == tclass)
-    node->current_write_trans = static_cast<WriteTransaction*>(this);
-}
-
-void BaseTransaction::AfterLock(ThreadNode* node) {
   time_acquired_ = base::TimeTicks::Now();
-
-  const base::TimeDelta elapsed = time_acquired_ - node->wait_started;
+  const base::TimeDelta elapsed = time_acquired_ - start_time;
   if (kLoggingInfo && elapsed.InMilliseconds() > 200) {
     logging::LogMessage(source_file_, line_, logging::LOG_INFO).stream()
       << name_ << " transaction waited "
@@ -1208,21 +1144,16 @@ void BaseTransaction::AfterLock(ThreadNode* node) {
   }
 }
 
-void BaseTransaction::Init(ThreadCounts* const thread_counts,
-                           TransactionClass tclass) {
-  ThreadNode* const node = MakeThreadNode();
-  Lock(thread_counts, node, tclass);
-  AfterLock(node);
-}
-
 BaseTransaction::BaseTransaction(Directory* directory, const char* name,
-                 const char* source_file, int line)
+                 const char* source_file, int line, WriterTag writer)
   : directory_(directory), dirkernel_(directory->kernel_), name_(name),
-    source_file_(source_file), line_(line) {
+    source_file_(source_file), line_(line), writer_(writer) {
+  Lock();
 }
 
-void BaseTransaction::UnlockAndLog(ThreadCounts* const thread_counts,
-                                   OriginalEntries* originals_arg) {
+void BaseTransaction::UnlockAndLog(OriginalEntries* originals_arg) {
+  dirkernel_->transaction_mutex.AssertAcquired();
+
   scoped_ptr<OriginalEntries> originals(originals_arg);
   const base::TimeDelta elapsed = base::TimeTicks::Now() - time_acquired_;
   if (kLoggingInfo && elapsed.InMilliseconds() > 50) {
@@ -1231,91 +1162,50 @@ void BaseTransaction::UnlockAndLog(ThreadCounts* const thread_counts,
         << " seconds.";
   }
 
-  {
-    ScopedTransactionLock lock(&dirkernel_->transaction_mutex);
-    // Let go of the reader/writer lock
-    thread_counts->active -= 1;
-    ThreadNode* const node = reinterpret_cast<ThreadNode*>
-      (pthread_getspecific(dirkernel_->thread_node_key));
-    CHECK(node != NULL);
-    node->Remove();
-    node->current_write_trans = NULL;
-    if (0 == thread_counts->active) {
-      // Wake up a waiting thread, FIFO
-      if (dirkernel_->thread_counts.waiting > 0) {
-        ThreadNode* const headtail =
-          &dirkernel_->thread_counts.waiting_headtail;
-        ThreadNode* node = headtail->next;
-        node->wake_up = true;
-        CHECK(0 == pthread_cond_signal(&node->condvar.condvar_));
-        if (READ == node->tclass) do {
-          // Wake up all consecutive readers.
-          node = node->next;
-          if (node == headtail)
-            break;
-          if (READ != node->tclass)
-            break;
-          node->wake_up = true;
-          CHECK(0 == pthread_cond_signal(&node->condvar.condvar_));
-        } while (true);
-      }
-    }
-    if (NULL == originals.get() || originals->empty())
-      return;
-    dirkernel_->changes_channel_mutex.Lock();
-    // Tell listeners to calculate changes while we still have the mutex.
-    DirectoryChangeEvent event = { DirectoryChangeEvent::CALCULATE_CHANGES,
-                                   originals.get(), this, writer_ };
-    dirkernel_->changes_channel->NotifyListeners(event);
+  if (NULL == originals.get() || originals->empty()) {
+    dirkernel_->transaction_mutex.Release();
+    return;
   }
-  DirectoryChangeEvent event = { DirectoryChangeEvent::TRANSACTION_COMPLETE,
-                                 NULL, NULL, INVALID };
+
+  dirkernel_->changes_channel_mutex.Lock();
+  // Tell listeners to calculate changes while we still have the mutex.
+  DirectoryChangeEvent event = { DirectoryChangeEvent::CALCULATE_CHANGES,
+                                 originals.get(), this, writer_ };
   dirkernel_->changes_channel->NotifyListeners(event);
+
+  dirkernel_->transaction_mutex.Release();
+
+  DirectoryChangeEvent complete_event =
+      { DirectoryChangeEvent::TRANSACTION_COMPLETE,
+        NULL, NULL, INVALID };
+  dirkernel_->changes_channel->NotifyListeners(complete_event);
   dirkernel_->changes_channel_mutex.Unlock();
 }
 
 ReadTransaction::ReadTransaction(Directory* directory, const char* file,
                                  int line)
-  : BaseTransaction(directory, "Read", file, line) {
-  Init(&dirkernel_->thread_counts, READ);
-  writer_ = INVALID;
+  : BaseTransaction(directory, "Read", file, line, INVALID) {
 }
 
 ReadTransaction::ReadTransaction(const ScopedDirLookup& scoped_dir,
                                  const char* file, int line)
-  : BaseTransaction(scoped_dir.operator -> (), "Read", file, line) {
-  Init(&dirkernel_->thread_counts, READ);
-  writer_ = INVALID;
+  : BaseTransaction(scoped_dir.operator -> (), "Read", file, line, INVALID) {
 }
 
 ReadTransaction::~ReadTransaction() {
-  UnlockAndLog(&dirkernel_->thread_counts, NULL);
+  UnlockAndLog(NULL);
 }
 
 WriteTransaction::WriteTransaction(Directory* directory, WriterTag writer,
                                    const char* file, int line)
-  : BaseTransaction(directory, "Write", file, line), skip_destructor_(false),
+  : BaseTransaction(directory, "Write", file, line, writer),
     originals_(new OriginalEntries) {
-  Init(&dirkernel_->thread_counts, WRITE);
-  writer_ = writer;
 }
 
 WriteTransaction::WriteTransaction(const ScopedDirLookup& scoped_dir,
                                    WriterTag writer, const char* file, int line)
-  : BaseTransaction(scoped_dir.operator -> (), "Write", file, line),
-    skip_destructor_(false), originals_(new OriginalEntries) {
-  Init(&dirkernel_->thread_counts, WRITE);
-  writer_ = writer;
-}
-
-WriteTransaction::WriteTransaction(Directory* directory, const char* name,
-                                   WriterTag writer,
-                                   const char* file, int line,
-                                   bool skip_destructor,
-                                   OriginalEntries* originals)
-  : BaseTransaction(directory, name, file, line),
-    skip_destructor_(skip_destructor), originals_(originals) {
-  writer_ = writer;
+  : BaseTransaction(scoped_dir.operator -> (), "Write", file, line, writer),
+    originals_(new OriginalEntries) {
 }
 
 void WriteTransaction::SaveOriginal(EntryKernel* entry) {
@@ -1329,8 +1219,6 @@ void WriteTransaction::SaveOriginal(EntryKernel* entry) {
 }
 
 WriteTransaction::~WriteTransaction() {
-  if (skip_destructor_)
-    return;
   if (OFF != kInvariantCheckLevel) {
     const bool full_scan = (FULL_DB_VERIFICATION == kInvariantCheckLevel);
     if (full_scan)
@@ -1338,7 +1226,7 @@ WriteTransaction::~WriteTransaction() {
     else
       directory()->CheckTreeInvariants(this, originals_);
   }
-  UnlockAndLog(&dirkernel_->thread_counts, originals_);
+  UnlockAndLog(originals_);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -1405,7 +1293,7 @@ void Entry::DeleteAllExtendedAttributes(WriteTransaction *trans) {
 
 MutableEntry::MutableEntry(WriteTransaction* trans, Create,
                            const Id& parent_id, const PathString& name)
-  : Entry(trans) {
+  : Entry(trans), write_transaction_(trans) {
   if (NULL != trans->directory()->GetChildWithName(parent_id, name)) {
     kernel_ = NULL;  // would have duplicated an existing entry.
     return;
@@ -1445,7 +1333,7 @@ void MutableEntry::Init(WriteTransaction* trans, const Id& parent_id,
 
 MutableEntry::MutableEntry(WriteTransaction* trans, CreateNewUpdateItem,
                            const Id& id)
-  : Entry(trans) {
+  : Entry(trans), write_transaction_(trans) {
   Entry same_id(trans, GET_BY_ID, id);
   if (same_id.good()) {
     kernel_ = NULL;  // already have an item with this ID.
@@ -1467,31 +1355,33 @@ MutableEntry::MutableEntry(WriteTransaction* trans, CreateNewUpdateItem,
 }
 
 MutableEntry::MutableEntry(WriteTransaction* trans, GetById, const Id& id)
-  : Entry(trans, GET_BY_ID, id) {
+  : Entry(trans, GET_BY_ID, id), write_transaction_(trans) {
   trans->SaveOriginal(kernel_);
 }
 
 MutableEntry::MutableEntry(WriteTransaction* trans, GetByHandle,
                            int64 metahandle)
-  : Entry(trans, GET_BY_HANDLE, metahandle) {
+  : Entry(trans, GET_BY_HANDLE, metahandle), write_transaction_(trans) {
   trans->SaveOriginal(kernel_);
 }
 
 MutableEntry::MutableEntry(WriteTransaction* trans, GetByPath,
                            const PathString& path)
-  : Entry(trans, GET_BY_PATH, path) {
+  : Entry(trans, GET_BY_PATH, path), write_transaction_(trans) {
   trans->SaveOriginal(kernel_);
 }
 
 MutableEntry::MutableEntry(WriteTransaction* trans, GetByParentIdAndName,
                            const Id& parentid, const PathString& name)
-  : Entry(trans, GET_BY_PARENTID_AND_NAME, parentid, name) {
+  : Entry(trans, GET_BY_PARENTID_AND_NAME, parentid, name),
+    write_transaction_(trans) {
   trans->SaveOriginal(kernel_);
 }
 
 MutableEntry::MutableEntry(WriteTransaction* trans, GetByParentIdAndDBName,
                            const Id& parentid, const PathString& name)
-  : Entry(trans, GET_BY_PARENTID_AND_DBNAME, parentid, name) {
+  : Entry(trans, GET_BY_PARENTID_AND_DBNAME, parentid, name),
+    write_transaction_(trans) {
   trans->SaveOriginal(kernel_);
 }
 
@@ -1536,14 +1426,6 @@ bool MutableEntry::Put(IdField field, const Id& value) {
     kernel_->dirty[static_cast<int>(field)] = true;
   }
   return true;
-}
-
-WriteTransaction* MutableEntry::trans() const {
-  // We are in a mutable entry, so we must be in a write transaction.
-  // Maybe we could keep a pointer to the transaction in MutableEntry.
-  ThreadNode* node = reinterpret_cast<ThreadNode*>
-    (pthread_getspecific(dir()->kernel_->thread_node_key));
-  return node->current_write_trans;
 }
 
 bool MutableEntry::Put(BaseVersion field, int64 value) {
@@ -1635,13 +1517,13 @@ void MutableEntry::UnlinkFromOrder() {
       CHECK((old_next == Get(ID)) || !old_next.ServerKnows());
       return;  // Done if we were already self-looped (hence unlinked).
     }
-    MutableEntry previous_entry(trans(), GET_BY_ID, old_previous);
+    MutableEntry previous_entry(write_transaction(), GET_BY_ID, old_previous);
     CHECK(previous_entry.good());
     previous_entry.Put(NEXT_ID, old_next);
   }
 
   if (!old_next.IsRoot()) {
-    MutableEntry next_entry(trans(), GET_BY_ID, old_next);
+    MutableEntry next_entry(write_transaction(), GET_BY_ID, old_next);
     CHECK(next_entry.good());
     next_entry.Put(PREV_ID, old_previous);
   }
@@ -1662,7 +1544,7 @@ bool MutableEntry::PutPredecessor(const Id& predecessor_id) {
   // job interview.  An "IsRoot" Id signifies the head or tail.
   Id successor_id;
   if (!predecessor_id.IsRoot()) {
-    MutableEntry predecessor(trans(), GET_BY_ID, predecessor_id);
+    MutableEntry predecessor(write_transaction(), GET_BY_ID, predecessor_id);
     CHECK(predecessor.good());
     if (predecessor.Get(PARENT_ID) != Get(PARENT_ID))
       return false;
@@ -1673,7 +1555,7 @@ bool MutableEntry::PutPredecessor(const Id& predecessor_id) {
     successor_id = dir->GetFirstChildId(trans(), Get(PARENT_ID));
   }
   if (!successor_id.IsRoot()) {
-    MutableEntry successor(trans(), GET_BY_ID, successor_id);
+    MutableEntry successor(write_transaction(), GET_BY_ID, successor_id);
     CHECK(successor.good());
     if (successor.Get(PARENT_ID) != Get(PARENT_ID))
       return false;
@@ -1988,12 +1870,4 @@ FastDump& operator<<(FastDump& dump, const syncable::Blob& blob) {
   string buffer(HexEncode(&blob[0], blob.size()));
   dump.out_->sputn(buffer.c_str(), buffer.size());
   return dump;
-}
-
-std::ostream& operator<<(std::ostream& s, const syncable::ThreadNode& node) {
-  s << "thread id: " << std::hex << node.id << "\n"
-    << "file: " << node.file << "\n"
-    << "line: " << std::dec << node.line << "\n"
-    << "wait_started: " << node.wait_started.ToInternalValue();
-  return s;
 }
