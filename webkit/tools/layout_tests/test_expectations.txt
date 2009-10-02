@@ -703,15 +703,11 @@ BUG1124568 : LayoutTests/fast/dom/Window/window-function-name-getter-precedence.
 // Disable <video> and <audio> tests for mac and linux until there is
 // proper support.
 BUG4363 LINUX MAC SKIP : LayoutTests/fast/media = PASS FAIL
-BUG4363 LINUX MAC SKIP : LayoutTests/http/tests/media = FAIL
 BUG4363 LINUX MAC SKIP : LayoutTests/http/tests/security/local-video-poster-from-remote.html = FAIL TIMEOUT
 BUG4363 LINUX MAC SKIP : LayoutTests/http/tests/security/local-video-src-from-remote.html = PASS FAIL
 BUG13907 SKIP : LayoutTests/accessibility/media-element.html = TIMEOUT
 BUG13907 SKIP : LayoutTests/http/tests/security/local-video-source-from-remote.html = FAIL
-BUG13907 : LayoutTests/http/tests/media/remove-while-loading.html = FAIL
-BUG13907 : LayoutTests/http/tests/media/video-play-stall-seek.html = FAIL
-BUG13907 : LayoutTests/http/tests/media/video-play-stall.html = FAIL
-BUG13907 : LayoutTests/http/tests/media/video-seekable-stall.html = FAIL
+BUG13907 SKIP : LayoutTests/http/tests/media = FAIL
 BUG13907 : LayoutTests/media/audio-constructor-autobuffer.html = FAIL
 BUG13907 : LayoutTests/media/audio-delete-while-step-button-clicked.html = FAIL
 BUG13907 : LayoutTests/media/video-canvas-source.html = FAIL
