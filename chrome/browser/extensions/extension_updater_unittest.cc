@@ -352,9 +352,9 @@ class ExtensionUpdaterTest : public testing::Test {
     ServiceForDownloadTests service;
     MessageLoop ui_loop;
     base::Thread file_thread("File Thread");
-    file_thread.Start();
+    ASSERT_TRUE(file_thread.Start());
     base::Thread io_thread("IO Thread");
-    io_thread.Start();
+    ASSERT_TRUE(io_thread.Start());
     ScopedTempPrefService prefs;
     scoped_refptr<ExtensionUpdater> updater =
       new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs,
@@ -408,7 +408,7 @@ class ExtensionUpdaterTest : public testing::Test {
   static void TestSingleExtensionDownloading() {
     MessageLoop ui_loop;
     base::Thread file_thread("File Thread");
-    file_thread.Start();
+    ASSERT_TRUE(file_thread.Start());
 
     TestURLFetcherFactory factory;
     TestURLFetcher* fetcher = NULL;
