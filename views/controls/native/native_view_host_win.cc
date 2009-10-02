@@ -94,7 +94,7 @@ void NativeViewHostWin::InstallClip(int x, int y, int w, int h) {
   HRGN clip_region = CreateRectRgn(x, y, x + w, y + h);
   // NOTE: SetWindowRgn owns the region (as well as the deleting the
   // current region), as such we don't delete the old region.
-  SetWindowRgn(host_->native_view(), clip_region, FALSE);
+  SetWindowRgn(host_->native_view(), clip_region, TRUE);
   installed_clip_ = true;
 }
 
@@ -103,7 +103,7 @@ bool NativeViewHostWin::HasInstalledClip() {
 }
 
 void NativeViewHostWin::UninstallClip() {
-  SetWindowRgn(host_->native_view(), 0, FALSE);
+  SetWindowRgn(host_->native_view(), 0, TRUE);
   installed_clip_ = false;
 }
 
