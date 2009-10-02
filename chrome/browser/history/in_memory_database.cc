@@ -1,50 +1,46 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/history/in_memory_database.h"
 
+#include "base/file_path.h"
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "build/build_config.h"
 
 namespace history {
 
-InMemoryDatabase::InMemoryDatabase()
-    : URLDatabase(),
-      db_(NULL),
-      statement_cache_(NULL) {
+InMemoryDatabase::InMemoryDatabase() : URLDatabase() {
 }
 
 InMemoryDatabase::~InMemoryDatabase() {
 }
 
 bool InMemoryDatabase::InitDB() {
-  DCHECK(!db_) << "Already initialized!";
-  if (sqlite3_open(":memory:", &db_) != SQLITE_OK) {
-    NOTREACHED() << "Cannot open memory database";
+  // Set the database page size to 4K for better performance.
+  db_.set_page_size(4096);
+
+  if (!db_.OpenInMemory()) {
+    NOTREACHED() << "Cannot open databse " << GetDB().GetErrorMessage();
     return false;
   }
-  statement_cache_ = new SqliteStatementCache(db_);
-  DBCloseScoper scoper(&db_, &statement_cache_);  // closes the DB on error
 
   // No reason to leave data behind in memory when rows are removed.
-  sqlite3_exec(db_, "PRAGMA auto_vacuum=1", NULL, NULL, NULL);
-  // Set the database page size to 4K for better performance.
-  sqlite3_exec(db_, "PRAGMA page_size=4096", NULL, NULL, NULL);
+  db_.Execute("PRAGMA auto_vacuum=1");
+
   // Ensure this is really an in-memory-only cache.
-  sqlite3_exec(db_, "PRAGMA temp_store=MEMORY", NULL, NULL, NULL);
+  db_.Execute("PRAGMA temp_store=MEMORY");
 
   // Create the URL table, but leave it empty for now.
   if (!CreateURLTable(false)) {
     NOTREACHED() << "Unable to create table";
+    db_.Close();
     return false;
   }
 
-  // Succeeded, keep the DB open.
-  scoper.Detach();
-  db_closer_.Attach(&db_, &statement_cache_);
   return true;
 }
 
@@ -58,38 +54,41 @@ bool InMemoryDatabase::InitFromScratch() {
   return true;
 }
 
-bool InMemoryDatabase::InitFromDisk(const std::wstring& history_name) {
+bool InMemoryDatabase::InitFromDisk(const FilePath& history_name) {
   if (!InitDB())
     return false;
 
   // Attach to the history database on disk.  (We can't ATTACH in the middle of
   // a transaction.)
-  SQLStatement attach;
-  if (attach.prepare(db_, "ATTACH ? AS history") != SQLITE_OK) {
+  sql::Statement attach(GetDB().GetUniqueStatement("ATTACH ? AS history"));
+  if (!attach) {
     NOTREACHED() << "Unable to attach to history database.";
     return false;
   }
-  attach.bind_string(0, WideToUTF8(history_name));
-  if (attach.step() != SQLITE_DONE) {
-    NOTREACHED() << "Unable to bind";
+#if defined(OS_POSIX)
+  attach.BindString(0, history_name.value());
+#else
+  attach.BindString(0, WideToUTF8(history_name.value()));
+#endif
+  if (!attach.Run()) {
+    NOTREACHED() << GetDB().GetErrorMessage();
     return false;
   }
 
   // Copy URL data to memory.
   base::TimeTicks begin_load = base::TimeTicks::Now();
-  if (sqlite3_exec(db_,
-      "INSERT INTO urls SELECT * FROM history.urls WHERE typed_count > 0",
-      NULL, NULL, NULL) != SQLITE_OK) {
+  if (!db_.Execute(
+      "INSERT INTO urls SELECT * FROM history.urls WHERE typed_count > 0")) {
     // Unable to get data from the history database. This is OK, the file may
     // just not exist yet.
   }
   base::TimeTicks end_load = base::TimeTicks::Now();
   UMA_HISTOGRAM_MEDIUM_TIMES("History.InMemoryDBPopulate",
                              end_load - begin_load);
-  UMA_HISTOGRAM_COUNTS("History.InMemoryDBItemCount", sqlite3_changes(db_));
+  UMA_HISTOGRAM_COUNTS("History.InMemoryDBItemCount", db_.GetLastChangeCount());
 
   // Detach from the history database on disk.
-  if (sqlite3_exec(db_, "DETACH history", NULL, NULL, NULL) != SQLITE_OK) {
+  if (!db_.Execute("DETACH history")) {
     NOTREACHED() << "Unable to detach from history database.";
     return false;
   }
@@ -101,12 +100,8 @@ bool InMemoryDatabase::InitFromDisk(const std::wstring& history_name) {
   return true;
 }
 
-sqlite3* InMemoryDatabase::GetDB() {
+sql::Connection& InMemoryDatabase::GetDB() {
   return db_;
-}
-
-SqliteStatementCache& InMemoryDatabase::GetStatementCache() {
-  return *statement_cache_;
 }
 
 }  // namespace history

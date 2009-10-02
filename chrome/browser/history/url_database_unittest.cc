@@ -1,14 +1,13 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/sql/connection.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/browser/history/url_database.h"
-#include "chrome/common/sqlite_compiled_statement.h"
-#include "chrome/common/sqlite_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -35,7 +34,7 @@ bool IsURLRowEqual(const URLRow& a,
 class URLDatabaseTest : public testing::Test,
                         public URLDatabase {
  public:
-  URLDatabaseTest() : db_(NULL), statement_cache_(NULL) {
+  URLDatabaseTest() {
   }
 
  private:
@@ -45,8 +44,7 @@ class URLDatabaseTest : public testing::Test,
     PathService::Get(base::DIR_TEMP, &temp_dir);
     db_file_ = temp_dir.AppendASCII("URLTest.db");
 
-    EXPECT_EQ(SQLITE_OK, OpenSqliteDb(db_file_, &db_));
-    statement_cache_ = new SqliteStatementCache(db_);
+    EXPECT_TRUE(db_.Open(db_file_));
 
     // Initialize the tables for this test.
     CreateURLTable(false);
@@ -55,22 +53,17 @@ class URLDatabaseTest : public testing::Test,
     InitKeywordSearchTermsTable();
   }
   void TearDown() {
-    delete statement_cache_;
-    sqlite3_close(db_);
+    db_.Close();
     file_util::Delete(db_file_, false);
   }
 
   // Provided for URL/VisitDatabase.
-  virtual sqlite3* GetDB() {
+  virtual sql::Connection& GetDB() {
     return db_;
-  }
-  virtual SqliteStatementCache& GetStatementCache() {
-    return *statement_cache_;
   }
 
   FilePath db_file_;
-  sqlite3* db_;
-  SqliteStatementCache* statement_cache_;
+  sql::Connection db_;
 };
 
 // Test add and query for the URL table in the HistoryDatabase

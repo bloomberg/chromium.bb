@@ -1,10 +1,12 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_HISTORY_HISTORY_DATABASE_H_
 #define CHROME_BROWSER_HISTORY_HISTORY_DATABASE_H_
 
+#include "app/sql/connection.h"
+#include "app/sql/meta_table.h"
 #include "build/build_config.h"
 #include "chrome/browser/history/download_database.h"
 #include "chrome/browser/history/history_types.h"
@@ -12,9 +14,6 @@
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/history/visit_database.h"
 #include "chrome/browser/history/visitsegment_database.h"
-#include "chrome/browser/meta_table_helper.h"
-
-struct sqlite3;
 
 class FilePath;
 
@@ -85,7 +84,7 @@ class HistoryDatabase : public DownloadDatabase,
   void BeginTransaction();
   void CommitTransaction();
   int transaction_nesting() const {  // for debugging and assertion purposes
-    return transaction_nesting_;
+    return db_.transaction_nesting();
   }
 
   // Drops all tables except the URL, and download tables, and recreates them
@@ -142,8 +141,7 @@ class HistoryDatabase : public DownloadDatabase,
 
  private:
   // Implemented for URLDatabase.
-  virtual sqlite3* GetDB();
-  virtual SqliteStatementCache& GetStatementCache();
+  virtual sql::Connection& GetDB();
 
   // Migration -----------------------------------------------------------------
 
@@ -164,20 +162,9 @@ class HistoryDatabase : public DownloadDatabase,
 
   // ---------------------------------------------------------------------------
 
-  // How many nested transactions are pending? When this gets to 0, we commit.
-  int transaction_nesting_;
+  sql::Connection db_;
+  sql::MetaTable meta_table_;
 
-  // The database. The closer automatically closes the deletes the db and the
-  // statement cache. These must be done in a specific order, so we don't want
-  // to rely on C++'s implicit destructors for the individual objects.
-  //
-  // The close scoper will free the database and delete the statement cache in
-  // the correct order automatically when we are destroyed.
-  DBCloseScoper db_closer_;
-  sqlite3* db_;
-  SqliteStatementCache* statement_cache_;
-
-  MetaTableHelper meta_table_;
   base::Time cached_early_expiration_threshold_;
 
   // See the getter above.

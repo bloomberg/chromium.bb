@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,14 +6,12 @@
 
 #include <math.h>
 
+#include "app/sql/connection.h"
+#include "app/sql/statement.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "chrome/browser/history/page_usage_data.h"
-#include "chrome/common/sqlite_compiled_statement.h"
-#include "chrome/common/sqlite_utils.h"
-
-using base::Time;
 
 // The following tables are used to store url segment information.
 //
@@ -40,19 +38,17 @@ VisitSegmentDatabase::~VisitSegmentDatabase() {
 
 bool VisitSegmentDatabase::InitSegmentTables() {
   // Segments table.
-  if (!DoesSqliteTableExist(GetDB(), "segments")) {
-    if (sqlite3_exec(GetDB(), "CREATE TABLE segments ("
-                     "id INTEGER PRIMARY KEY,"
-                     "name VARCHAR,"
-                     "url_id INTEGER NON NULL,"
-                     "pres_index INTEGER DEFAULT -1 NOT NULL)",
-                     NULL, NULL, NULL) != SQLITE_OK) {
+  if (!GetDB().DoesTableExist("segments")) {
+    if (!GetDB().Execute("CREATE TABLE segments ("
+        "id INTEGER PRIMARY KEY,"
+        "name VARCHAR,"
+        "url_id INTEGER NON NULL,"
+        "pres_index INTEGER DEFAULT -1 NOT NULL)")) {
       NOTREACHED();
       return false;
     }
 
-    if (sqlite3_exec(GetDB(), "CREATE INDEX segments_name ON segments(name)",
-                     NULL, NULL, NULL) != SQLITE_OK) {
+    if (!GetDB().Execute("CREATE INDEX segments_name ON segments(name)")) {
       NOTREACHED();
       return false;
     }
@@ -60,33 +56,29 @@ bool VisitSegmentDatabase::InitSegmentTables() {
 
   // This was added later, so we need to try to create it even if the table
   // already exists.
-  sqlite3_exec(GetDB(), "CREATE INDEX segments_url_id ON segments(url_id)",
-               NULL, NULL, NULL);
+  GetDB().Execute("CREATE INDEX segments_url_id ON segments(url_id)");
 
   // Segment usage table.
-  if (!DoesSqliteTableExist(GetDB(), "segment_usage")) {
-    if (sqlite3_exec(GetDB(), "CREATE TABLE segment_usage ("
-                     "id INTEGER PRIMARY KEY,"
-                     "segment_id INTEGER NOT NULL,"
-                     "time_slot INTEGER NOT NULL,"
-                     "visit_count INTEGER DEFAULT 0 NOT NULL)",
-                     NULL, NULL, NULL) != SQLITE_OK) {
+  if (!GetDB().DoesTableExist("segment_usage")) {
+    if (!GetDB().Execute("CREATE TABLE segment_usage ("
+        "id INTEGER PRIMARY KEY,"
+        "segment_id INTEGER NOT NULL,"
+        "time_slot INTEGER NOT NULL,"
+        "visit_count INTEGER DEFAULT 0 NOT NULL)")) {
       NOTREACHED();
       return false;
     }
-    if (sqlite3_exec(GetDB(),
-                     "CREATE INDEX segment_usage_time_slot_segment_id ON "
-                     "segment_usage(time_slot, segment_id)",
-                     NULL, NULL, NULL) != SQLITE_OK) {
+    if (!GetDB().Execute(
+        "CREATE INDEX segment_usage_time_slot_segment_id ON "
+        "segment_usage(time_slot, segment_id)")) {
       NOTREACHED();
       return false;
     }
   }
 
   // Added in a later version, so we always need to try to creat this index.
-  sqlite3_exec(GetDB(), "CREATE INDEX segments_usage_seg_id "
-                        "ON segment_usage(segment_id)",
-               NULL, NULL, NULL);
+  GetDB().Execute("CREATE INDEX segments_usage_seg_id "
+                  "ON segment_usage(segment_id)");
 
   // Presentation index table.
   //
@@ -95,11 +87,10 @@ bool VisitSegmentDatabase::InitSegmentTables() {
   // If you need to add more columns, keep in mind that rows are currently
   // deleted when the presentation index is changed to -1.
   // See SetPagePresentationIndex() in this file
-  if (!DoesSqliteTableExist(GetDB(), "presentation")) {
-    if (sqlite3_exec(GetDB(), "CREATE TABLE presentation("
-                     "url_id INTEGER PRIMARY KEY,"
-                     "pres_index INTEGER NOT NULL)",
-                     NULL, NULL, NULL) != SQLITE_OK)
+  if (!GetDB().DoesTableExist("presentation")) {
+    if (!GetDB().Execute("CREATE TABLE presentation("
+        "url_id INTEGER PRIMARY KEY,"
+        "pres_index INTEGER NOT NULL)"))
       return false;
   }
   return true;
@@ -107,11 +98,8 @@ bool VisitSegmentDatabase::InitSegmentTables() {
 
 bool VisitSegmentDatabase::DropSegmentTables() {
   // Dropping the tables will implicitly delete the indices.
-  return
-      sqlite3_exec(GetDB(), "DROP TABLE segments", NULL, NULL, NULL) ==
-          SQLITE_OK &&
-      sqlite3_exec(GetDB(), "DROP TABLE segment_usage", NULL, NULL, NULL) ==
-          SQLITE_OK;
+  return GetDB().Execute("DROP TABLE segments") &&
+         GetDB().Execute("DROP TABLE segment_usage");
 }
 
 // Note: the segment name is derived from the URL but is not a URL. It is
@@ -147,94 +135,94 @@ std::string VisitSegmentDatabase::ComputeSegmentName(const GURL& url) {
 
 SegmentID VisitSegmentDatabase::GetSegmentNamed(
     const std::string& segment_name) {
-  SQLITE_UNIQUE_STATEMENT(statement, GetStatementCache(),
-      "SELECT id FROM segments WHERE name = ?");
-  if (!statement.is_valid())
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "SELECT id FROM segments WHERE name = ?"));
+  if (!statement)
     return 0;
 
-  statement->bind_string(0, segment_name);
-  if (statement->step() == SQLITE_ROW)
-    return statement->column_int64(0);
+  statement.BindString(0, segment_name);
+  if (statement.Step())
+    return statement.ColumnInt64(0);
   return 0;
 }
 
 bool VisitSegmentDatabase::UpdateSegmentRepresentationURL(SegmentID segment_id,
                                                           URLID url_id) {
-  SQLITE_UNIQUE_STATEMENT(statement, GetStatementCache(),
-      "UPDATE segments SET url_id = ? WHERE id = ?");
-  if (!statement.is_valid())
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "UPDATE segments SET url_id = ? WHERE id = ?"));
+  if (!statement)
     return false;
 
-  statement->bind_int64(0, url_id);
-  statement->bind_int64(1, segment_id);
-  return statement->step() == SQLITE_DONE;
+  statement.BindInt64(0, url_id);
+  statement.BindInt64(1, segment_id);
+  return statement.Run();
 }
 
 URLID VisitSegmentDatabase::GetSegmentRepresentationURL(SegmentID segment_id) {
-  SQLITE_UNIQUE_STATEMENT(statement, GetStatementCache(),
-      "SELECT url_id FROM segments WHERE id = ?");
-  if (!statement.is_valid())
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "SELECT url_id FROM segments WHERE id = ?"));
+  if (!statement)
     return 0;
 
-  statement->bind_int64(0, segment_id);
-  if (statement->step() == SQLITE_ROW)
-    return statement->column_int64(0);
+  statement.BindInt64(0, segment_id);
+  if (statement.Step())
+    return statement.ColumnInt64(0);
   return 0;
 }
 
 SegmentID VisitSegmentDatabase::CreateSegment(URLID url_id,
                                               const std::string& segment_name) {
-  SQLITE_UNIQUE_STATEMENT(statement, GetStatementCache(),
-      "INSERT INTO segments (name, url_id) VALUES (?,?)");
-  if (!statement.is_valid())
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "INSERT INTO segments (name, url_id) VALUES (?,?)"));
+  if (!statement)
     return false;
 
-  statement->bind_string(0, segment_name);
-  statement->bind_int64(1, url_id);
-  if (statement->step() == SQLITE_DONE)
-    return sqlite3_last_insert_rowid(GetDB());
+  statement.BindString(0, segment_name);
+  statement.BindInt64(1, url_id);
+  if (statement.Run())
+    return GetDB().GetLastInsertRowId();
   return false;
 }
 
 bool VisitSegmentDatabase::IncreaseSegmentVisitCount(SegmentID segment_id,
-                                                     const Time& ts,
+                                                     base::Time ts,
                                                      int amount) {
-  Time t = ts.LocalMidnight();
+  base::Time t = ts.LocalMidnight();
 
-  SQLITE_UNIQUE_STATEMENT(select, GetStatementCache(),
+  sql::Statement select(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT id, visit_count FROM segment_usage "
-      "WHERE time_slot = ? AND segment_id = ?");
-  if (!select.is_valid())
+      "WHERE time_slot = ? AND segment_id = ?"));
+  if (!select)
     return false;
 
-  select->bind_int64(0, t.ToInternalValue());
-  select->bind_int64(1, segment_id);
-  if (select->step() == SQLITE_ROW) {
-    SQLITE_UNIQUE_STATEMENT(update, GetStatementCache(),
-        "UPDATE segment_usage SET visit_count = ? WHERE id = ?");
-    if (!update.is_valid())
+  select.BindInt64(0, t.ToInternalValue());
+  select.BindInt64(1, segment_id);
+  if (select.Step()) {
+    sql::Statement update(GetDB().GetCachedStatement(SQL_FROM_HERE,
+        "UPDATE segment_usage SET visit_count = ? WHERE id = ?"));
+    if (!update)
       return false;
 
-    update->bind_int64(0, select->column_int64(1) + static_cast<int64>(amount));
-    update->bind_int64(1, select->column_int64(0));
-    return update->step() == SQLITE_DONE;
+    update.BindInt64(0, select.ColumnInt64(1) + static_cast<int64>(amount));
+    update.BindInt64(1, select.ColumnInt64(0));
+    return update.Run();
 
   } else {
-    SQLITE_UNIQUE_STATEMENT(insert, GetStatementCache(),
+    sql::Statement insert(GetDB().GetCachedStatement(SQL_FROM_HERE,
         "INSERT INTO segment_usage "
-        "(segment_id, time_slot, visit_count) VALUES (?, ?, ?)");
-    if (!insert.is_valid())
+        "(segment_id, time_slot, visit_count) VALUES (?, ?, ?)"));
+    if (!insert)
       return false;
 
-    insert->bind_int64(0, segment_id);
-    insert->bind_int64(1, t.ToInternalValue());
-    insert->bind_int64(2, static_cast<int64>(amount));
-    return insert->step() == SQLITE_DONE;
+    insert.BindInt64(0, segment_id);
+    insert.BindInt64(1, t.ToInternalValue());
+    insert.BindInt64(2, static_cast<int64>(amount));
+    return insert.Run();
   }
 }
 
 void VisitSegmentDatabase::QuerySegmentUsage(
-    const Time& from_time,
+    base::Time from_time,
     int max_result_count,
     std::vector<PageUsageData*>* results) {
   // This function gathers the highest-ranked segments in two queries.
@@ -245,25 +233,25 @@ void VisitSegmentDatabase::QuerySegmentUsage(
   // used to lock results into position.  But the rest of our code currently
   // does as well.
 
-  // Gather all the segment scores:
-  SQLITE_UNIQUE_STATEMENT(statement, GetStatementCache(),
+  // Gather all the segment scores.
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT segment_id, time_slot, visit_count "
       "FROM segment_usage WHERE time_slot >= ? "
-      "ORDER BY segment_id");
-  if (!statement.is_valid()) {
-    NOTREACHED();
+      "ORDER BY segment_id"));
+  if (!statement) {
+    NOTREACHED() << GetDB().GetErrorMessage();
     return;
   }
 
-  Time ts = from_time.LocalMidnight();
-  statement->bind_int64(0, ts.ToInternalValue());
+  base::Time ts = from_time.LocalMidnight();
+  statement.BindInt64(0, ts.ToInternalValue());
 
-  const Time now = Time::Now();
+  base::Time now = base::Time::Now();
   SegmentID last_segment_id = 0;
   PageUsageData* pud = NULL;
   float score = 0;
-  while (statement->step() == SQLITE_ROW) {
-    SegmentID segment_id = statement->column_int64(0);
+  while (statement.Step()) {
+    SegmentID segment_id = statement.ColumnInt64(0);
     if (segment_id != last_segment_id) {
       if (last_segment_id != 0) {
         pud->SetScore(score);
@@ -275,8 +263,9 @@ void VisitSegmentDatabase::QuerySegmentUsage(
       last_segment_id = segment_id;
     }
 
-    const Time timeslot = Time::FromInternalValue(statement->column_int64(1));
-    const int visit_count = statement->column_int(2);
+    base::Time timeslot =
+        base::Time::FromInternalValue(statement.ColumnInt64(1));
+    int visit_count = statement.ColumnInt(2);
     int days_ago = (now - timeslot).InDays();
 
     // Score for this day in isolation.
@@ -304,89 +293,87 @@ void VisitSegmentDatabase::QuerySegmentUsage(
   }
 
   // Now fetch the details about the entries we care about.
-  SQLITE_UNIQUE_STATEMENT(statement2, GetStatementCache(),
+  sql::Statement statement2(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT urls.url, urls.title FROM urls "
       "JOIN segments ON segments.url_id = urls.id "
-      "WHERE segments.id = ?");
-  if (!statement2.is_valid()) {
-    NOTREACHED();
+      "WHERE segments.id = ?"));
+  if (!statement2) {
+    NOTREACHED() << GetDB().GetErrorMessage();
     return;
   }
   for (size_t i = 0; i < results->size(); ++i) {
     PageUsageData* pud = (*results)[i];
-    statement2->bind_int64(0, pud->GetID());
-    if (statement2->step() == SQLITE_ROW) {
-      std::string url;
-      std::wstring title;
-      statement2->column_string(0, &url);
-      statement2->column_wstring(1, &title);
-      pud->SetURL(GURL(url));
-      pud->SetTitle(WideToUTF16(title));
+    statement2.BindInt64(0, pud->GetID());
+    if (statement2.Step()) {
+      pud->SetURL(GURL(statement2.ColumnString(0)));
+      pud->SetTitle(UTF8ToUTF16(statement2.ColumnString(1)));
     }
-    statement2->reset();
+    statement2.Reset();
   }
 }
 
-void VisitSegmentDatabase::DeleteSegmentData(const Time& older_than) {
-  SQLITE_UNIQUE_STATEMENT(statement, GetStatementCache(),
-      "DELETE FROM segment_usage WHERE time_slot < ?");
-  if (!statement.is_valid())
+void VisitSegmentDatabase::DeleteSegmentData(base::Time older_than) {
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "DELETE FROM segment_usage WHERE time_slot < ?"));
+  if (!statement)
     return;
 
-  statement->bind_int64(0, older_than.LocalMidnight().ToInternalValue());
-  if (statement->step() != SQLITE_DONE)
+  statement.BindInt64(0, older_than.LocalMidnight().ToInternalValue());
+  if (!statement.Run())
     NOTREACHED();
 }
 
 void VisitSegmentDatabase::SetSegmentPresentationIndex(SegmentID segment_id,
                                                        int index) {
-  SQLITE_UNIQUE_STATEMENT(statement, GetStatementCache(),
-      "UPDATE segments SET pres_index = ? WHERE id = ?");
-  if (!statement.is_valid())
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "UPDATE segments SET pres_index = ? WHERE id = ?"));
+  if (!statement)
     return;
 
-  statement->bind_int(0, index);
-  statement->bind_int64(1, segment_id);
-  if (statement->step() != SQLITE_DONE)
+  statement.BindInt(0, index);
+  statement.BindInt64(1, segment_id);
+  if (!statement.Run())
     NOTREACHED();
+  else
+    DCHECK(GetDB().GetLastChangeCount() == 1);
 }
 
 bool VisitSegmentDatabase::DeleteSegmentForURL(URLID url_id) {
-  SQLITE_UNIQUE_STATEMENT(select, GetStatementCache(),
-      "SELECT id FROM segments WHERE url_id = ?");
-  if (!select.is_valid())
+  sql::Statement select(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "SELECT id FROM segments WHERE url_id = ?"));
+  if (!select)
     return false;
 
-  SQLITE_UNIQUE_STATEMENT(delete_seg, GetStatementCache(),
-      "DELETE FROM segments WHERE id = ?");
-  if (!delete_seg.is_valid())
+  sql::Statement delete_seg(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "DELETE FROM segments WHERE id = ?"));
+  if (!delete_seg)
     return false;
 
-  SQLITE_UNIQUE_STATEMENT(delete_usage, GetStatementCache(),
-      "DELETE FROM segment_usage WHERE segment_id = ?");
-  if (!delete_usage.is_valid())
+  sql::Statement delete_usage(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "DELETE FROM segment_usage WHERE segment_id = ?"));
+  if (!delete_usage)
     return false;
 
   bool r = true;
-  select->bind_int64(0, url_id);
+  select.BindInt64(0, url_id);
   // In theory there could not be more than one segment using that URL but we
   // loop anyway to cleanup any inconsistency.
-  while (select->step() == SQLITE_ROW) {
-    SegmentID segment_id = select->column_int64(0);
+  while (select.Step()) {
+    SegmentID segment_id = select.ColumnInt64(0);
 
-    delete_usage->bind_int64(0, segment_id);
-    if (delete_usage->step() != SQLITE_DONE) {
+    delete_usage.BindInt64(0, segment_id);
+    if (!delete_usage.Run()) {
       NOTREACHED();
       r = false;
     }
 
-    delete_seg->bind_int64(0, segment_id);
-    if (delete_seg->step() != SQLITE_DONE) {
+    delete_seg.BindInt64(0, segment_id);
+    if (!delete_seg.Run()) {
       NOTREACHED();
       r = false;
     }
-    delete_usage->reset();
-    delete_seg->reset();
+    delete_usage.Reset();
+    delete_seg.Reset();
   }
   return r;
 }

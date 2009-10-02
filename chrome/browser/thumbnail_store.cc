@@ -7,6 +7,8 @@
 #include <string.h>
 #include <algorithm>
 
+#include "app/sql/statement.h"
+#include "app/sql/transaction.h"
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/gfx/jpeg_codec.h"
@@ -17,15 +19,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_service.h"
-#include "chrome/common/sqlite_utils.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 
 ThumbnailStore::ThumbnailStore()
     : cache_(NULL),
-      db_(NULL),
-      statement_cache_(NULL),
       hs_(NULL),
       url_blacklist_(NULL),
       disk_data_loaded_(false) {
@@ -294,24 +293,27 @@ void ThumbnailStore::CleanCacheData() {
 
 void ThumbnailStore::CommitCacheToDB(
     scoped_refptr<RefCountedVector<GURL> > urls_to_delete,
-    Cache* data) const {
+    Cache* data) {
   scoped_ptr<Cache> data_to_save(data);
-  if (!db_)
+  if (!db_.is_open())
     return;
 
   base::TimeTicks db_start = base::TimeTicks::Now();
 
-  int rv = sqlite3_exec(db_, "BEGIN TRANSACTION", NULL, NULL, NULL);
-  DCHECK(rv == SQLITE_OK) << "Failed to begin transaction";
+  sql::Transaction transaction(&db_);
+  if (!transaction.Begin())
+    return;
 
   // Delete old thumbnails.
   if (urls_to_delete.get()) {
     for (std::vector<GURL>::iterator it = urls_to_delete->data.begin();
         it != urls_to_delete->data.end(); ++it) {
-      SQLITE_UNIQUE_STATEMENT(statement, *statement_cache_,
-          "DELETE FROM thumbnails WHERE url=?");
-      statement->bind_string(0, it->spec());
-      if (statement->step() != SQLITE_DONE)
+      sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
+          "DELETE FROM thumbnails WHERE url=?"));
+      if (!statement)
+        return;
+      statement.BindString(0, it->spec());
+      if (!statement.Run())
         NOTREACHED();
     }
   }
@@ -320,26 +322,25 @@ void ThumbnailStore::CommitCacheToDB(
   if (data_to_save.get()) {
     for (Cache::iterator it = data_to_save->begin();
          it != data_to_save->end(); ++it) {
-      SQLITE_UNIQUE_STATEMENT(statement, *statement_cache_,
+      sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
           "INSERT OR REPLACE INTO thumbnails "
           "(url, boring_score, good_clipping, "
           "at_top, time_taken, data) "
-          "VALUES (?,?,?,?,?,?)");
-      statement->bind_string(0, it->first.spec());
-      statement->bind_double(1, it->second.score_.boring_score);
-      statement->bind_bool(2, it->second.score_.good_clipping);
-      statement->bind_bool(3, it->second.score_.at_top);
-      statement->bind_int64(4, it->second.score_.time_at_snapshot.
-                                  ToInternalValue());
-      statement->bind_blob(5, &it->second.data_->data[0],
-                           static_cast<int>(it->second.data_->data.size()));
-      if (statement->step() != SQLITE_DONE)
+          "VALUES (?,?,?,?,?,?)"));
+      statement.BindString(0, it->first.spec());
+      statement.BindDouble(1, it->second.score_.boring_score);
+      statement.BindBool(2, it->second.score_.good_clipping);
+      statement.BindBool(3, it->second.score_.at_top);
+      statement.BindInt64(4,
+          it->second.score_.time_at_snapshot.ToInternalValue());
+      statement.BindBlob(5, &it->second.data_->data[0],
+                          static_cast<int>(it->second.data_->data.size()));
+      if (!statement.Run())
         DLOG(WARNING) << "Unable to insert thumbnail for URL";
     }
   }
 
-  rv = sqlite3_exec(db_, "COMMIT", NULL, NULL, NULL);
-  DCHECK(rv == SQLITE_OK) << "Failed to commit transaction";
+  transaction.Commit();
 
   base::TimeDelta delta = base::TimeTicks::Now() - db_start;
   HISTOGRAM_TIMES("ThumbnailStore.WriteDBToDisk", delta);
@@ -347,38 +348,22 @@ void ThumbnailStore::CommitCacheToDB(
 
 void ThumbnailStore::InitializeFromDB(const FilePath& db_name,
                                       MessageLoop* cb_loop) {
-  if (OpenSqliteDb(db_name, &db_) != SQLITE_OK)
+  db_.set_page_size(4096);
+  db_.set_cache_size(64);
+  db_.set_exclusive_locking();
+  if (!db_.Open(db_name))
     return;
 
-  // Use a large page size since the thumbnails we are storing are typically
-  // large, a small cache size since we cache in memory and don't go to disk
-  // often, and take exclusive access since nobody else uses this db.
-  sqlite3_exec(db_, "PRAGMA page_size=4096 "
-                    "PRAGMA cache_size=64 "
-                    "PRAGMA locking_mode=EXCLUSIVE", NULL, NULL, NULL);
-
-  statement_cache_ = new SqliteStatementCache;
-
-  // Use local DBCloseScoper so that if we cannot create the table and
-  // need to return, the |db_| and |statement_cache_| are closed properly.
-  history::DBCloseScoper scoper(&db_, &statement_cache_);
-
-  if (!DoesSqliteTableExist(db_, "thumbnails")) {
-    if (sqlite3_exec(db_, "CREATE TABLE thumbnails ("
+  if (!db_.DoesTableExist("thumbnails")) {
+    if (!db_.Execute("CREATE TABLE thumbnails ("
           "url LONGVARCHAR PRIMARY KEY,"
           "boring_score DOUBLE DEFAULT 1.0,"
           "good_clipping INTEGER DEFAULT 0,"
           "at_top INTEGER DEFAULT 0,"
           "time_taken INTEGER DEFAULT 0,"
-          "data BLOB)", NULL, NULL, NULL) != SQLITE_OK)
+          "data BLOB)"))
       return;
   }
-
-  statement_cache_->set_db(db_);
-
-  // Now we can use a DBCloseScoper at the object scope.
-  scoper.Detach();
-  close_scoper_.Attach(&db_, &statement_cache_);
 
   if (cb_loop)
     GetAllThumbnailsFromDisk(cb_loop);
@@ -387,24 +372,26 @@ void ThumbnailStore::InitializeFromDB(const FilePath& db_name,
 void ThumbnailStore::GetAllThumbnailsFromDisk(MessageLoop* cb_loop) {
   Cache* cache = new Cache;
 
-  SQLITE_UNIQUE_STATEMENT(statement, *statement_cache_,
-      "SELECT * FROM thumbnails");
+  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
+      "SELECT * FROM thumbnails"));
+  if (!statement)
+    return;
 
-  while (statement->step() == SQLITE_ROW) {
+  while (statement.Step()) {
     // The URL
-    GURL url(statement->column_string(0));
+    GURL url(statement.ColumnString(0));
 
     // The score.
-    ThumbnailScore score(statement->column_double(1),      // Boring score
-                         statement->column_bool(2),        // Good clipping
-                         statement->column_bool(3),        // At top
+    ThumbnailScore score(statement.ColumnDouble(1),      // Boring score
+                         statement.ColumnBool(2),        // Good clipping
+                         statement.ColumnBool(3),        // At top
                          base::Time::FromInternalValue(
-                            statement->column_int64(4)));  // Time taken
+                            statement.ColumnInt64(4)));  // Time taken
 
     // The image.
     scoped_refptr<RefCountedBytes> data = new RefCountedBytes;
-    if (statement->column_blob_as_vector(5, &data->data))
-      (*cache)[url] = CacheEntry(data, score, false);
+    statement.ColumnBlobAsVector(5, &data->data);
+    (*cache)[url] = CacheEntry(data, score, false);
   }
 
   cb_loop->PostTask(FROM_HERE,

@@ -1,9 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/history/starred_url_database.h"
 
+#include "app/sql/connection.h"
+#include "app/sql/statement.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/json_writer.h"
@@ -16,10 +18,6 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/query_parser.h"
 #include "chrome/browser/meta_table_helper.h"
-#include "chrome/common/sqlite_compiled_statement.h"
-#include "chrome/common/sqlite_utils.h"
-
-using base::Time;
 
 // The following table is used to store star (aka bookmark) information. This
 // class derives from URLDatabase, which has its own schema.
@@ -53,13 +51,13 @@ namespace {
     "starred.group_id, starred.date_modified "
 const char kHistoryStarFields[] = STAR_FIELDS;
 
-void FillInStarredEntry(SQLStatement* s, StarredEntry* entry) {
+void FillInStarredEntry(const sql::Statement& s, StarredEntry* entry) {
   DCHECK(entry);
-  entry->id = s->column_int64(0);
-  switch (s->column_int(1)) {
+  entry->id = s.ColumnInt64(0);
+  switch (s.ColumnInt(1)) {
     case 0:
       entry->type = history::StarredEntry::URL;
-      entry->url = GURL(WideToUTF8(s->column_wstring(6)));
+      entry->url = GURL(s.ColumnString(6));
       break;
     case 1:
       entry->type = history::StarredEntry::BOOKMARK_BAR;
@@ -74,13 +72,13 @@ void FillInStarredEntry(SQLStatement* s, StarredEntry* entry) {
       NOTREACHED();
       break;
   }
-  entry->title = s->column_wstring(2);
-  entry->date_added = Time::FromInternalValue(s->column_int64(3));
-  entry->visual_order = s->column_int(4);
-  entry->parent_group_id = s->column_int64(5);
-  entry->url_id = s->column_int64(7);
-  entry->group_id = s->column_int64(8);
-  entry->date_group_modified = Time::FromInternalValue(s->column_int64(9));
+  entry->title = UTF8ToWide(s.ColumnString(2));
+  entry->date_added = base::Time::FromInternalValue(s.ColumnInt64(3));
+  entry->visual_order = s.ColumnInt(4);
+  entry->parent_group_id = s.ColumnInt64(5);
+  entry->url_id = s.ColumnInt64(7);
+  entry->group_id = s.ColumnInt64(8);
+  entry->date_group_modified = base::Time::FromInternalValue(s.ColumnInt64(9));
 }
 
 }  // namespace
@@ -92,7 +90,7 @@ StarredURLDatabase::~StarredURLDatabase() {
 }
 
 bool StarredURLDatabase::MigrateBookmarksToFile(const FilePath& path) {
-  if (!DoesSqliteTableExist(GetDB(), "starred"))
+  if (!GetDB().DoesTableExist("starred"))
     return true;
 
   if (EnsureStarredIntegrity() && !MigrateBookmarksToFileImpl(path)) {
@@ -100,8 +98,7 @@ bool StarredURLDatabase::MigrateBookmarksToFile(const FilePath& path) {
     return false;
   }
 
-  if (sqlite3_exec(GetDB(), "DROP TABLE starred", NULL, NULL,
-                   NULL) != SQLITE_OK) {
+  if (!GetDB().Execute("DROP TABLE starred")) {
     NOTREACHED() << "Unable to drop starred table";
     return false;
   }
@@ -116,15 +113,15 @@ bool StarredURLDatabase::GetAllStarredEntries(
   sql.append("FROM starred LEFT JOIN urls ON starred.url_id = urls.id ");
   sql += "ORDER BY parent_id, visual_order";
 
-  SQLStatement s;
-  if (s.prepare(GetDB(), sql.c_str()) != SQLITE_OK) {
+  sql::Statement s(GetDB().GetUniqueStatement(sql.c_str()));
+  if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
   }
 
   history::StarredEntry entry;
-  while (s.step() == SQLITE_ROW) {
-    FillInStarredEntry(&s, &entry);
+  while (s.Step()) {
+    FillInStarredEntry(s, &entry);
     // Reset the url for non-url types. This is needed as we're reusing the
     // same entry for the loop.
     if (entry.type != history::StarredEntry::URL)
@@ -157,104 +154,104 @@ bool StarredURLDatabase::UpdateStarredEntryRow(StarID star_id,
                                                const std::wstring& title,
                                                UIStarID parent_group_id,
                                                int visual_order,
-                                               Time date_modified) {
+                                               base::Time date_modified) {
   DCHECK(star_id && visual_order >= 0);
-  SQLITE_UNIQUE_STATEMENT(statement, GetStatementCache(),
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE starred SET title=?, parent_id=?, visual_order=?, "
-      "date_modified=? WHERE id=?");
-  if (!statement.is_valid())
+      "date_modified=? WHERE id=?"));
+  if (!statement)
     return 0;
 
-  statement->bind_wstring(0, title);
-  statement->bind_int64(1, parent_group_id);
-  statement->bind_int(2, visual_order);
-  statement->bind_int64(3, date_modified.ToInternalValue());
-  statement->bind_int64(4, star_id);
-  return statement->step() == SQLITE_DONE;
+  statement.BindString(0, WideToUTF8(title));
+  statement.BindInt64(1, parent_group_id);
+  statement.BindInt(2, visual_order);
+  statement.BindInt64(3, date_modified.ToInternalValue());
+  statement.BindInt64(4, star_id);
+  return statement.Run();
 }
 
 bool StarredURLDatabase::AdjustStarredVisualOrder(UIStarID parent_group_id,
                                                   int start_visual_order,
                                                   int delta) {
   DCHECK(parent_group_id && start_visual_order >= 0);
-  SQLITE_UNIQUE_STATEMENT(statement, GetStatementCache(),
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE starred SET visual_order=visual_order+? "
-      "WHERE parent_id=? AND visual_order >= ?");
-  if (!statement.is_valid())
+      "WHERE parent_id=? AND visual_order >= ?"));
+  if (!statement)
     return false;
 
-  statement->bind_int(0, delta);
-  statement->bind_int64(1, parent_group_id);
-  statement->bind_int(2, start_visual_order);
-  return statement->step() == SQLITE_DONE;
+  statement.BindInt(0, delta);
+  statement.BindInt64(1, parent_group_id);
+  statement.BindInt(2, start_visual_order);
+  return statement.Run();
 }
 
 StarID StarredURLDatabase::CreateStarredEntryRow(URLID url_id,
                                                  UIStarID group_id,
                                                  UIStarID parent_group_id,
                                                  const std::wstring& title,
-                                                 const Time& date_added,
+                                                 const base::Time& date_added,
                                                  int visual_order,
                                                  StarredEntry::Type type) {
   DCHECK(visual_order >= 0 &&
          (type != history::StarredEntry::URL || url_id));
-  SQLITE_UNIQUE_STATEMENT(statement, GetStatementCache(),
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO starred "
       "(type, url_id, group_id, title, date_added, visual_order, parent_id, "
-      "date_modified) VALUES (?,?,?,?,?,?,?,?)");
-  if (!statement.is_valid())
+      "date_modified) VALUES (?,?,?,?,?,?,?,?)"));
+  if (!statement)
     return 0;
 
   switch (type) {
     case history::StarredEntry::URL:
-      statement->bind_int(0, 0);
+      statement.BindInt(0, 0);
       break;
     case history::StarredEntry::BOOKMARK_BAR:
-      statement->bind_int(0, 1);
+      statement.BindInt(0, 1);
       break;
     case history::StarredEntry::USER_GROUP:
-      statement->bind_int(0, 2);
+      statement.BindInt(0, 2);
       break;
     case history::StarredEntry::OTHER:
-      statement->bind_int(0, 3);
+      statement.BindInt(0, 3);
       break;
     default:
       NOTREACHED();
   }
-  statement->bind_int64(1, url_id);
-  statement->bind_int64(2, group_id);
-  statement->bind_wstring(3, title);
-  statement->bind_int64(4, date_added.ToInternalValue());
-  statement->bind_int(5, visual_order);
-  statement->bind_int64(6, parent_group_id);
-  statement->bind_int64(7, Time().ToInternalValue());
-  if (statement->step() == SQLITE_DONE)
-    return sqlite3_last_insert_rowid(GetDB());
+  statement.BindInt64(1, url_id);
+  statement.BindInt64(2, group_id);
+  statement.BindString(3, WideToUTF8(title));
+  statement.BindInt64(4, date_added.ToInternalValue());
+  statement.BindInt(5, visual_order);
+  statement.BindInt64(6, parent_group_id);
+  statement.BindInt64(7, base::Time().ToInternalValue());
+  if (statement.Run())
+    return GetDB().GetLastInsertRowId();
   return 0;
 }
 
 bool StarredURLDatabase::DeleteStarredEntryRow(StarID star_id) {
-  SQLITE_UNIQUE_STATEMENT(statement, GetStatementCache(),
-                          "DELETE FROM starred WHERE id=?");
-  if (!statement.is_valid())
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "DELETE FROM starred WHERE id=?"));
+  if (!statement)
     return false;
 
-  statement->bind_int64(0, star_id);
-  return statement->step() == SQLITE_DONE;
+  statement.BindInt64(0, star_id);
+  return statement.Run();
 }
 
 bool StarredURLDatabase::GetStarredEntry(StarID star_id, StarredEntry* entry) {
   DCHECK(entry && star_id);
-  SQLITE_UNIQUE_STATEMENT(s, GetStatementCache(),
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT" STAR_FIELDS "FROM starred LEFT JOIN urls ON "
-      "starred.url_id = urls.id WHERE starred.id=?");
-  if (!s.is_valid())
+      "starred.url_id = urls.id WHERE starred.id=?"));
+  if (!statement)
     return false;
 
-  s->bind_int64(0, star_id);
+  statement.BindInt64(0, star_id);
 
-  if (s->step() == SQLITE_ROW) {
-    FillInStarredEntry(s.statement(), entry);
+  if (statement.Step()) {
+    FillInStarredEntry(statement, entry);
     return true;
   }
   return false;
@@ -306,17 +303,17 @@ StarID StarredURLDatabase::CreateStarredEntry(StarredEntry* entry) {
 }
 
 UIStarID StarredURLDatabase::GetMaxGroupID() {
-  SQLStatement max_group_id_statement;
-  if (max_group_id_statement.prepare(GetDB(),
-      "SELECT MAX(group_id) FROM starred") != SQLITE_OK) {
-    NOTREACHED();
+  sql::Statement max_group_id_statement(GetDB().GetUniqueStatement(
+      "SELECT MAX(group_id) FROM starred"));
+  if (!max_group_id_statement) {
+    NOTREACHED() << GetDB().GetErrorMessage();
     return 0;
   }
-  if (max_group_id_statement.step() != SQLITE_ROW) {
-    NOTREACHED();
+  if (!max_group_id_statement.Step()) {
+    NOTREACHED() << GetDB().GetErrorMessage();
     return 0;
   }
-  return max_group_id_statement.column_int64(0);
+  return max_group_id_statement.ColumnInt64(0);
 }
 
 bool StarredURLDatabase::BuildStarNodes(
@@ -451,7 +448,7 @@ bool StarredURLDatabase::EnsureStarredIntegrityImpl(
       return false;
     }
     entry.id = CreateStarredEntryRow(
-        0, entry.group_id, 0, L"other", Time::Now(), 0,
+        0, entry.group_id, 0, L"other", base::Time::Now(), 0,
         history::StarredEntry::OTHER);
     if (!entry.id) {
       NOTREACHED() << "Unable to create other bookmarks folder";

@@ -20,6 +20,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
+class FilePath;
 class HistoryDatabase;
 class Profile;
 
@@ -35,7 +36,7 @@ class InMemoryHistoryBackend : public NotificationObserver {
   ~InMemoryHistoryBackend();
 
   // Initializes with data from the given history database.
-  bool Init(const std::wstring& history_filename);
+  bool Init(const FilePath& history_filename);
 
   // Does initialization work when this object is attached to the history
   // system on the main thread. The argument is the profile with which the

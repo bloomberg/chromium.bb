@@ -72,7 +72,6 @@ TextDatabaseManager::TextDatabaseManager(const FilePath& dir,
                                          URLDatabase* url_database,
                                          VisitDatabase* visit_database)
     : dir_(dir),
-      db_(NULL),
       url_database_(url_database),
       visit_database_(visit_database),
       recent_changes_(RecentChangeList::NO_AUTO_EVICT),

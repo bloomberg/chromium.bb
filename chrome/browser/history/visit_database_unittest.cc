@@ -1,15 +1,14 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/sql/connection.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/history/visit_database.h"
-#include "chrome/common/sqlite_compiled_statement.h"
-#include "chrome/common/sqlite_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -36,7 +35,7 @@ class VisitDatabaseTest : public PlatformTest,
                           public URLDatabase,
                           public VisitDatabase {
  public:
-  VisitDatabaseTest() : db_(NULL), statement_cache_(NULL) {
+  VisitDatabaseTest() {
   }
 
  private:
@@ -48,8 +47,7 @@ class VisitDatabaseTest : public PlatformTest,
     db_file_ = temp_dir.AppendASCII("VisitTest.db");
     file_util::Delete(db_file_, false);
 
-    EXPECT_EQ(SQLITE_OK, OpenSqliteDb(db_file_, &db_));
-    statement_cache_ = new SqliteStatementCache(db_);
+    EXPECT_TRUE(db_.Open(db_file_));
 
     // Initialize the tables for this test.
     CreateURLTable(false);
@@ -58,23 +56,18 @@ class VisitDatabaseTest : public PlatformTest,
     InitVisitTable();
   }
   void TearDown() {
-    delete statement_cache_;
-    sqlite3_close(db_);
+    db_.Close();
     file_util::Delete(db_file_, false);
     PlatformTest::TearDown();
   }
 
   // Provided for URL/VisitDatabase.
-  virtual sqlite3* GetDB() {
+  virtual sql::Connection& GetDB() {
     return db_;
-  }
-  virtual SqliteStatementCache& GetStatementCache() {
-    return *statement_cache_;
   }
 
   FilePath db_file_;
-  sqlite3* db_;
-  SqliteStatementCache* statement_cache_;
+  sql::Connection db_;
 };
 
 TEST_F(VisitDatabaseTest, Add) {

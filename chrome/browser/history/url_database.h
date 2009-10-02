@@ -1,77 +1,24 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_URL_DATABASE_H__
-#define CHROME_BROWSER_HISTORY_URL_DATABASE_H__
+#ifndef CHROME_BROWSER_HISTORY_URL_DATABASE_H_
+#define CHROME_BROWSER_HISTORY_URL_DATABASE_H_
 
+#include "app/sql/statement.h"
 #include "base/basictypes.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/common/sqlite_utils.h"
-
-// Temporary until DBCloseScoper moves elsewhere.
-#include "chrome/common/sqlite_compiled_statement.h"
 
 class GURL;
-struct sqlite3;
-class SqliteStatementCache;
+
+namespace sql {
+class Connection;
+}
 
 namespace history {
 
 class VisitDatabase;  // For friend statement.
-
-// This class is here temporarily.
-// TODO(brettw) Figure out a better place for this or obsolete it.
-//
-// Helper class that closes the DB, deletes the statement cache, and zeros out
-// the pointer when it goes out of scope, does nothing once success is called.
-//
-// Can either be used by the owner of the DB to automatically close it, or
-// during initialization so that it is automatically closed on failure.
-//
-// properly maintained by Init() on failure. If |statement_cache| is non NULL,
-// it is assumed to be bound with |db| and will be cleaned up before the
-// database is closed.
-class DBCloseScoper {
- public:
-  DBCloseScoper() : db_(NULL), statement_cache_(NULL) {
-  }
-
-  // The statement cache must be allocated on the heap. The DB must be
-  // allocated by sqlite.
-  DBCloseScoper(sqlite3** db, SqliteStatementCache** statement_cache)
-      : db_(db),
-        statement_cache_(statement_cache) {
-  }
-
-  ~DBCloseScoper() {
-    if (db_) {
-      if (*statement_cache_) {
-        delete *statement_cache_;
-        *statement_cache_ = NULL;
-      }
-
-      sqlite3_close(*db_);
-      *db_ = NULL;
-    }
-  }
-
-  void Attach(sqlite3** db, SqliteStatementCache** statement_cache) {
-    DCHECK(db_ == NULL && statement_cache_ == NULL);
-    db_ = db;
-    statement_cache_ = statement_cache;
-  }
-
-  void Detach() {
-    db_ = NULL;
-    statement_cache_ = NULL;
-  }
-
- private:
-  sqlite3** db_;
-  SqliteStatementCache** statement_cache_;
-};
 
 // Encapsulates an SQL database that holds URL info.  This is a subset of the
 // full history data.  We split this class' functionality out from the larger
@@ -172,7 +119,7 @@ class URLDatabase {
     friend class URLDatabase;
 
     bool initialized_;
-    SQLStatement statement_;
+    sql::Statement statement_;
   };
 
   // Initializes the given enumerator to enumerator all URLs in the database
@@ -277,20 +224,18 @@ class URLDatabase {
 
   // Convenience to fill a history::URLRow. Must be in sync with the fields in
   // kHistoryURLRowFields.
-  static void FillURLRow(SQLStatement& s, URLRow* i);
+  static void FillURLRow(sql::Statement& s, URLRow* i);
 
-  // Returns the database and statement cache for the functions in this
-  // interface. The decendent of this class implements these functions to
-  // return its objects.
-  virtual sqlite3* GetDB() = 0;
-  virtual SqliteStatementCache& GetStatementCache() = 0;
+  // Returns the database for the functions in this interface. The decendent of
+  // this class implements these functions to return its objects.
+  virtual sql::Connection& GetDB() = 0;
 
  private:
   // True if InitKeywordSearchTermsTable() has been invoked. Not all subclasses
   // have keyword search terms.
   bool has_keyword_search_terms_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(URLDatabase);
+  DISALLOW_COPY_AND_ASSIGN(URLDatabase);
 };
 
 // The fields and order expected by FillURLRow(). ID is guaranteed to be first
@@ -306,4 +251,4 @@ class URLDatabase {
 
 }  // history
 
-#endif  // CHROME_BROWSER_HISTORY_URL_DATABASE_H__
+#endif  // CHROME_BROWSER_HISTORY_URL_DATABASE_H_

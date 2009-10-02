@@ -1,13 +1,14 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <algorithm>
 #include <string>
 
+#include "app/sql/statement.h"
+#include "app/sql/transaction.h"
 #include "base/string_util.h"
 #include "chrome/browser/history/archived_database.h"
-#include "chrome/common/sqlite_utils.h"
 
 namespace history {
 
@@ -18,86 +19,69 @@ static const int kCompatibleVersionNumber = 2;
 
 }  // namespace
 
-ArchivedDatabase::ArchivedDatabase()
-    : db_(NULL),
-      statement_cache_(NULL),
-      transaction_nesting_(0) {
+ArchivedDatabase::ArchivedDatabase() {
 }
 
 ArchivedDatabase::~ArchivedDatabase() {
 }
 
 bool ArchivedDatabase::Init(const FilePath& file_name) {
-  // OpenSqliteDb uses the narrow version of open, indicating to sqlite that we
-  // want the database to be in UTF-8 if it doesn't already exist.
-  DCHECK(!db_) << "Already initialized!";
-  if (OpenSqliteDb(file_name, &db_) != SQLITE_OK)
-    return false;
-  statement_cache_ = new SqliteStatementCache(db_);
-  DBCloseScoper scoper(&db_, &statement_cache_);
-
   // Set the database page size to something a little larger to give us
   // better performance (we're typically seek rather than bandwidth limited).
   // This only has an effect before any tables have been created, otherwise
   // this is a NOP. Must be a power of 2 and a max of 8192.
-  sqlite3_exec(db_, "PRAGMA page_size=4096", NULL, NULL, NULL);
+  db_.set_page_size(4096);
 
   // Don't use very much memory caching this database. We seldom use it for
   // anything important.
-  sqlite3_exec(db_, "PRAGMA cache_size=64", NULL, NULL, NULL);
+  db_.set_cache_size(64);
 
   // Run the database in exclusive mode. Nobody else should be accessing the
   // database while we're running, and this will give somewhat improved perf.
-  sqlite3_exec(db_, "PRAGMA locking_mode=EXCLUSIVE", NULL, NULL, NULL);
+  db_.set_exclusive_locking();
 
-  BeginTransaction();
+  if (!db_.Open(file_name))
+    return false;
+
+  sql::Transaction transaction(&db_);
+  if (!transaction.Begin()) {
+    db_.Close();
+    return false;
+  }
 
   // Version check.
-  if (!meta_table_.Init(std::string(), kCurrentVersionNumber,
-                        kCompatibleVersionNumber, db_))
+  if (!meta_table_.Init(&db_, kCurrentVersionNumber,
+                        kCompatibleVersionNumber)) {
+    db_.Close();
     return false;
+  }
 
   // Create the tables.
   if (!CreateURLTable(false) || !InitVisitTable() ||
-      !InitKeywordSearchTermsTable())
+      !InitKeywordSearchTermsTable()) {
+    db_.Close();
     return false;
+  }
   CreateMainURLIndex();
 
-  if (EnsureCurrentVersion() != INIT_OK)
+  if (EnsureCurrentVersion() != INIT_OK) {
+    db_.Close();
     return false;
+  }
 
-  // Succeeded: keep the DB open by detaching the auto-closer.
-  scoper.Detach();
-  db_closer_.Attach(&db_, &statement_cache_);
-  CommitTransaction();
-  return true;
+  return transaction.Commit();
 }
 
 void ArchivedDatabase::BeginTransaction() {
-  DCHECK(db_);
-  if (transaction_nesting_ == 0) {
-    int rv = sqlite3_exec(db_, "BEGIN TRANSACTION", NULL, NULL, NULL);
-    DCHECK(rv == SQLITE_OK) << "Failed to begin transaction";
-  }
-  transaction_nesting_++;
+  db_.BeginTransaction();
 }
 
 void ArchivedDatabase::CommitTransaction() {
-  DCHECK(db_);
-  DCHECK_GT(transaction_nesting_, 0) << "Committing too many transactions";
-  transaction_nesting_--;
-  if (transaction_nesting_ == 0) {
-    int rv = sqlite3_exec(db_, "COMMIT", NULL, NULL, NULL);
-    DCHECK(rv == SQLITE_OK) << "Failed to commit transaction";
-  }
+  db_.CommitTransaction();
 }
 
-sqlite3* ArchivedDatabase::GetDB() {
+sql::Connection& ArchivedDatabase::GetDB() {
   return db_;
-}
-
-SqliteStatementCache& ArchivedDatabase::GetStatementCache() {
-  return *statement_cache_;
 }
 
 // Migration -------------------------------------------------------------------

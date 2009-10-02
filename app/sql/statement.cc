@@ -70,6 +70,10 @@ bool Statement::BindNull(int col) {
   return false;
 }
 
+bool Statement::BindBool(int col, bool val) {
+  return BindInt(col, val ? 1 : 0);
+}
+
 bool Statement::BindInt(int col, int val) {
   if (is_valid()) {
     int err = CheckError(sqlite3_bind_int(ref_->stmt(), col + 1, val));
@@ -127,6 +131,21 @@ int Statement::ColumnCount() const {
     return 0;
   }
   return sqlite3_column_count(ref_->stmt());
+}
+
+ColType Statement::ColumnType(int col) const {
+  // Verify that our enum matches sqlite's values.
+  COMPILE_ASSERT(COLUMN_TYPE_INTEGER == SQLITE_INTEGER, integer_no_match);
+  COMPILE_ASSERT(COLUMN_TYPE_FLOAT == SQLITE_FLOAT, float_no_match);
+  COMPILE_ASSERT(COLUMN_TYPE_TEXT == SQLITE_TEXT, integer_no_match);
+  COMPILE_ASSERT(COLUMN_TYPE_BLOB == SQLITE_BLOB, blob_no_match);
+  COMPILE_ASSERT(COLUMN_TYPE_NULL == SQLITE_NULL, null_no_match);
+
+  return static_cast<ColType>(sqlite3_column_type(ref_->stmt(), col));
+}
+
+bool Statement::ColumnBool(int col) const {
+  return !!ColumnInt(col);
 }
 
 int Statement::ColumnInt(int col) const {

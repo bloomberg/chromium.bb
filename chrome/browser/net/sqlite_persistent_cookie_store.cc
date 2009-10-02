@@ -330,7 +330,7 @@ bool InitTable(sql::Connection* db) {
 bool SQLitePersistentCookieStore::Load(
     std::vector<net::CookieMonster::KeyedCanonicalCookie>* cookies) {
   scoped_ptr<sql::Connection> db(new sql::Connection);
-  if (!db->Init(path_)) {
+  if (!db->Open(path_)) {
     NOTREACHED() << "Unable to open cookie DB.";
     return false;
   }

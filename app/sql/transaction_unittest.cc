@@ -19,7 +19,7 @@ class SQLTransactionTest : public testing::Test {
     ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &path_));
     path_ = path_.AppendASCII("SQLStatementTest.db");
     file_util::Delete(path_, false);
-    ASSERT_TRUE(db_.Init(path_));
+    ASSERT_TRUE(db_.Open(path_));
 
     ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
   }

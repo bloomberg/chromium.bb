@@ -8,13 +8,11 @@
 #include <set>
 #include <string>
 
+#include "app/sql/transaction.h"
 #include "base/file_util.h"
 #include "base/histogram.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
-#include "chrome/common/sqlite_utils.h"
-
-using base::Time;
 
 namespace history {
 
@@ -27,7 +25,8 @@ static const int kCurrentVersionNumber = 17;
 static const int kCompatibleVersionNumber = 16;
 static const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
 
-void ComputeDatabaseMetrics(const FilePath& history_name, sqlite3* db) {
+void ComputeDatabaseMetrics(const FilePath& history_name,
+                            sql::Connection& db) {
   if (base::RandInt(1, 100) != 50)
     return;  // Only do this computation sometimes since it can be expensive.
 
@@ -37,26 +36,22 @@ void ComputeDatabaseMetrics(const FilePath& history_name, sqlite3* db) {
   int file_mb = static_cast<int>(file_size / (1024 * 1024));
   UMA_HISTOGRAM_MEMORY_MB("History.DatabaseFileMB", file_mb);
 
-  SQLStatement url_count;
-  if (url_count.prepare(db, "SELECT count(*) FROM urls") != SQLITE_OK ||
-      url_count.step() != SQLITE_ROW)
+  sql::Statement url_count(db.GetUniqueStatement("SELECT count(*) FROM urls"));
+  if (!url_count || !url_count.Step())
     return;
-  UMA_HISTOGRAM_COUNTS("History.URLTableCount", url_count.column_int(0));
+  UMA_HISTOGRAM_COUNTS("History.URLTableCount", url_count.ColumnInt(0));
 
-  SQLStatement visit_count;
-  if (visit_count.prepare(db, "SELECT count(*) FROM visits") != SQLITE_OK ||
-      visit_count.step() != SQLITE_ROW)
+  sql::Statement visit_count(db.GetUniqueStatement(
+      "SELECT count(*) FROM visits"));
+  if (!visit_count || !visit_count.Step())
     return;
-  UMA_HISTOGRAM_COUNTS("History.VisitTableCount", visit_count.column_int(0));
+  UMA_HISTOGRAM_COUNTS("History.VisitTableCount", visit_count.ColumnInt(0));
 }
 
 }  // namespace
 
 HistoryDatabase::HistoryDatabase()
-    : transaction_nesting_(0),
-      db_(NULL),
-      statement_cache_(NULL),
-      needs_version_17_migration_(false) {
+    : needs_version_17_migration_(false) {
 }
 
 HistoryDatabase::~HistoryDatabase() {
@@ -64,41 +59,38 @@ HistoryDatabase::~HistoryDatabase() {
 
 InitStatus HistoryDatabase::Init(const FilePath& history_name,
                                  const FilePath& bookmarks_path) {
-  // OpenSqliteDb uses the narrow version of open, indicating to sqlite that we
-  // want the database to be in UTF-8 if it doesn't already exist.
-  DCHECK(!db_) << "Already initialized!";
-  if (OpenSqliteDb(history_name, &db_) != SQLITE_OK)
-    return INIT_FAILURE;
-  statement_cache_ = new SqliteStatementCache;
-  DBCloseScoper scoper(&db_, &statement_cache_);
-
   // Set the database page size to something a little larger to give us
   // better performance (we're typically seek rather than bandwidth limited).
   // This only has an effect before any tables have been created, otherwise
   // this is a NOP. Must be a power of 2 and a max of 8192.
-  sqlite3_exec(db_, "PRAGMA page_size=4096", NULL, NULL, NULL);
+  db_.set_page_size(4096);
 
   // Increase the cache size. The page size, plus a little extra, times this
   // value, tells us how much memory the cache will use maximum.
   // 6000 * 4MB = 24MB
   // TODO(brettw) scale this value to the amount of available memory.
-  sqlite3_exec(db_, "PRAGMA cache_size=6000", NULL, NULL, NULL);
+  db_.set_cache_size(6000);
+
+  // Note that we don't set exclusive locking here. That's done by
+  // BeginExclusiveMode below which is called later (we have to be in shared
+  // mode to start out for the in-memory backend to read the data).
+
+  if (!db_.Open(history_name))
+    return INIT_FAILURE;
 
   // Wrap the rest of init in a tranaction. This will prevent the database from
   // getting corrupted if we crash in the middle of initialization or migration.
-  TransactionScoper transaction(this);
-
-  // Make sure the statement cache is properly initialized.
-  statement_cache_->set_db(db_);
+  sql::Transaction committer(&db_);
+  if (!committer.Begin())
+    return INIT_FAILURE;
 
   // Prime the cache.
-  MetaTableHelper::PrimeCache(std::string(), db_);
+  db_.Preload();
 
   // Create the tables and indices.
   // NOTE: If you add something here, also add it to
   //       RecreateAllButStarAndURLTables.
-  if (!meta_table_.Init(std::string(), kCurrentVersionNumber,
-                        kCompatibleVersionNumber, db_))
+  if (!meta_table_.Init(&db_, kCurrentVersionNumber, kCompatibleVersionNumber))
     return INIT_FAILURE;
   if (!CreateURLTable(false) || !InitVisitTable() ||
       !InitKeywordSearchTermsTable() || !InitDownloadTable() ||
@@ -112,15 +104,14 @@ InitStatus HistoryDatabase::Init(const FilePath& history_name,
   if (version_status != INIT_OK)
     return version_status;
 
-  // Succeeded: keep the DB open by detaching the auto-closer.
-  scoper.Detach();
-  db_closer_.Attach(&db_, &statement_cache_);
   ComputeDatabaseMetrics(history_name, db_);
-  return INIT_OK;
+  return committer.Commit() ? INIT_OK : INIT_FAILURE;
 }
 
 void HistoryDatabase::BeginExclusiveMode() {
-  sqlite3_exec(db_, "PRAGMA locking_mode=EXCLUSIVE", NULL, NULL, NULL);
+  // We can't use set_exclusive_locking() since that only has an effect before
+  // the DB is opened.
+  db_.Execute("PRAGMA locking_mode=EXCLUSIVE");
 }
 
 // static
@@ -129,22 +120,11 @@ int HistoryDatabase::GetCurrentVersion() {
 }
 
 void HistoryDatabase::BeginTransaction() {
-  DCHECK(db_);
-  if (transaction_nesting_ == 0) {
-    int rv = sqlite3_exec(db_, "BEGIN TRANSACTION", NULL, NULL, NULL);
-    DCHECK(rv == SQLITE_OK) << "Failed to begin transaction";
-  }
-  transaction_nesting_++;
+  db_.BeginTransaction();
 }
 
 void HistoryDatabase::CommitTransaction() {
-  DCHECK(db_);
-  DCHECK_GT(transaction_nesting_, 0) << "Committing too many transactions";
-  transaction_nesting_--;
-  if (transaction_nesting_ == 0) {
-    int rv = sqlite3_exec(db_, "COMMIT", NULL, NULL, NULL);
-    DCHECK(rv == SQLITE_OK) << "Failed to commit transaction";
-  }
+  db_.CommitTransaction();
 }
 
 bool HistoryDatabase::RecreateAllTablesButURL() {
@@ -171,42 +151,43 @@ bool HistoryDatabase::RecreateAllTablesButURL() {
 }
 
 void HistoryDatabase::Vacuum() {
-  DCHECK_EQ(0, transaction_nesting_) <<
+  DCHECK_EQ(0, db_.transaction_nesting()) <<
       "Can not have a transaction when vacuuming.";
-  sqlite3_exec(db_, "VACUUM", NULL, NULL, NULL);
+  db_.Execute("VACUUM");
 }
 
 bool HistoryDatabase::SetSegmentID(VisitID visit_id, SegmentID segment_id) {
-  SQLStatement s;
-  if (s.prepare(db_, "UPDATE visits SET segment_id = ? WHERE id = ?") !=
-      SQLITE_OK) {
-    NOTREACHED();
+  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
+      "UPDATE visits SET segment_id = ? WHERE id = ?"));
+  if (!s) {
+    NOTREACHED() << db_.GetErrorMessage();
     return false;
   }
-  s.bind_int64(0, segment_id);
-  s.bind_int64(1, visit_id);
-  return s.step() == SQLITE_DONE;
+  s.BindInt64(0, segment_id);
+  s.BindInt64(1, visit_id);
+  DCHECK(db_.GetLastChangeCount() == 1);
+  return s.Run();
 }
 
 SegmentID HistoryDatabase::GetSegmentID(VisitID visit_id) {
-  SQLStatement s;
-  if (s.prepare(db_, "SELECT segment_id FROM visits WHERE id = ?")
-      != SQLITE_OK) {
-    NOTREACHED();
+  sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
+      "SELECT segment_id FROM visits WHERE id = ?"));
+  if (!s) {
+    NOTREACHED() << db_.GetErrorMessage();
     return 0;
   }
 
-  s.bind_int64(0, visit_id);
-  if (s.step() == SQLITE_ROW) {
-    if (s.column_type(0) == SQLITE_NULL)
+  s.BindInt64(0, visit_id);
+  if (s.Step()) {
+    if (s.ColumnType(0) == sql::COLUMN_TYPE_NULL)
       return 0;
     else
-      return s.column_int64(0);
+      return s.ColumnInt64(0);
   }
   return 0;
 }
 
-Time HistoryDatabase::GetEarlyExpirationThreshold() {
+base::Time HistoryDatabase::GetEarlyExpirationThreshold() {
   if (!cached_early_expiration_threshold_.is_null())
     return cached_early_expiration_threshold_;
 
@@ -217,22 +198,18 @@ Time HistoryDatabase::GetEarlyExpirationThreshold() {
     threshold = 1L;
   }
 
-  cached_early_expiration_threshold_ = Time::FromInternalValue(threshold);
+  cached_early_expiration_threshold_ = base::Time::FromInternalValue(threshold);
   return cached_early_expiration_threshold_;
 }
 
-void HistoryDatabase::UpdateEarlyExpirationThreshold(Time threshold) {
+void HistoryDatabase::UpdateEarlyExpirationThreshold(base::Time threshold) {
   meta_table_.SetValue(kEarlyExpirationThresholdKey,
                        threshold.ToInternalValue());
   cached_early_expiration_threshold_ = threshold;
 }
 
-sqlite3* HistoryDatabase::GetDB() {
+sql::Connection& HistoryDatabase::GetDB() {
   return db_;
-}
-
-SqliteStatementCache& HistoryDatabase::GetStatementCache() {
-  return *statement_cache_;
 }
 
 // Migration -------------------------------------------------------------------
@@ -294,21 +271,18 @@ void HistoryDatabase::MigrateTimeEpoch() {
   // Update all the times in the URLs and visits table in the main database.
   // For visits, clear the indexed flag since we'll delete the FTS databases in
   // the next step.
-  sqlite3_exec(GetDB(),
+  db_.Execute(
       "UPDATE urls "
       "SET last_visit_time = last_visit_time + 11644473600000000 "
-      "WHERE id IN (SELECT id FROM urls WHERE last_visit_time > 0);",
-      NULL, NULL, NULL);
-  sqlite3_exec(GetDB(),
+      "WHERE id IN (SELECT id FROM urls WHERE last_visit_time > 0);");
+  db_.Execute(
       "UPDATE visits "
       "SET visit_time = visit_time + 11644473600000000, is_indexed = 0 "
-      "WHERE id IN (SELECT id FROM visits WHERE visit_time > 0);",
-      NULL, NULL, NULL);
-  sqlite3_exec(GetDB(),
+      "WHERE id IN (SELECT id FROM visits WHERE visit_time > 0);");
+  db_.Execute(
       "UPDATE segment_usage "
       "SET time_slot = time_slot + 11644473600000000 "
-      "WHERE id IN (SELECT id FROM segment_usage WHERE time_slot > 0);",
-      NULL, NULL, NULL);
+      "WHERE id IN (SELECT id FROM segment_usage WHERE time_slot > 0);");
 
   // Erase all the full text index files. These will take a while to update and
   // are less important, so we just blow them away. Same with the archived

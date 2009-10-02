@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,9 +13,11 @@
 #include "chrome/browser/history/url_database.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
-struct sqlite3;
 class FilePath;
-class SqliteStatementCache;
+
+namespace sql {
+class Connection;
+}
 
 namespace history {
 
@@ -38,11 +40,8 @@ class StarredURLDatabase : public URLDatabase {
   // Writes bookmarks to the specified file.
   bool MigrateBookmarksToFile(const FilePath& path);
 
-  // Returns the database and statement cache for the functions in this
-  // interface. The decendent of this class implements these functions to
-  // return its objects.
-  virtual sqlite3* GetDB() = 0;
-  virtual SqliteStatementCache& GetStatementCache() = 0;
+  // Returns the database for the functions in this interface.
+  virtual sql::Connection& GetDB() = 0;
 
  private:
   // Makes sure the starred table is in a sane state. This does the following:

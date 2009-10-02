@@ -79,8 +79,12 @@ class ErrorDelegate : public base::RefCounted<ErrorDelegate> {
   virtual ~ErrorDelegate() {}
   // |error| is an sqlite result code as seen in sqlite\preprocessed\sqlite3.h
   // |connection| is db connection where the error happened and |stmt| is
-  // our best guess at the statement that triggered the error. Do not store
+  // our best guess at the statement that triggered the error.  Do not store
   // these pointers.
+  //
+  // |stmt| MAY BE NULL if there is no statement causing the problem (i.e. on
+  // initialization).
+  //
   // If the error condition has been fixed an the original statement succesfuly
   // re-tried then returning SQLITE_OK is appropiate; otherwise is recomended
   // that you return the original |error| or the appropiae error code.
@@ -92,14 +96,14 @@ class Connection {
   class StatementRef;  // Forward declaration, see real one below.
 
  public:
-  // The database is opened by calling Init(). Any uncommitted transactions
-  // will be rolled back when this object is deleted.
+  // The database is opened by calling Open[InMemory](). Any uncommitted
+  // transactions will be rolled back when this object is deleted.
   Connection();
   ~Connection();
 
   // Pre-init configuration ----------------------------------------------------
 
-  // Sets the page size that will be used when creating a new adtabase. This
+  // Sets the page size that will be used when creating a new database. This
   // must be called before Init(), and will only have an effect on new
   // databases.
   //
@@ -110,7 +114,7 @@ class Connection {
 
   // Sets the number of pages that will be cached in memory by sqlite. The
   // total cache size in bytes will be page_size * cache_size. This must be
-  // called before Init() to have an effect.
+  // called before Open() to have an effect.
   void set_cache_size(int cache_size) { cache_size_ = cache_size; }
 
   // Call to put the database in exclusive locking mode. There is no "back to
@@ -122,11 +126,11 @@ class Connection {
   // transaction, which means there may be less time spent initializing the
   // next transaction because it doesn't have to re-aquire locks.
   //
-  // This must be called before Init() to have an effect.
+  // This must be called before Open() to have an effect.
   void set_exclusive_locking() { exclusive_locking_ = true; }
 
   // Sets the object that will handle errors. Recomended that it should be set
-  // before calling Init(). If not set, the default is to ignore errors on
+  // before calling Open(). If not set, the default is to ignore errors on
   // release and assert on debug builds.
   void set_error_delegate(ErrorDelegate* delegate) {
     error_delegate_ = delegate;
@@ -135,8 +139,16 @@ class Connection {
   // Initialization ------------------------------------------------------------
 
   // Initializes the SQL connection for the given file, returning true if the
-  // file could be opened.
-  bool Init(const FilePath& path);
+  // file could be opened. You can call this or InitInMemory to initialize.
+  bool Open(const FilePath& path);
+
+  // Initializes the SQL connection for a temporary in-memory database. There
+  // will be no associated file on disk, and the initial database will be
+  // empty. You must call this or Init to open the database.
+  bool OpenInMemory();
+
+  // Returns trie if the database has been successfully opened.
+  bool is_open() const { return !!db_; }
 
   // Closes the database. This is automatically performed on destruction for
   // you, but this allows you to close the database early. You must not call
@@ -225,7 +237,7 @@ class Connection {
   // Info querying -------------------------------------------------------------
 
   // Returns true if the given table exists.
-  bool DoesTableExist( const char* table_name) const;
+  bool DoesTableExist(const char* table_name) const;
 
   // Returns true if a column with the given name exists in the given table.
   bool DoesColumnExist(const char* table_name, const char* column_name) const;
@@ -252,6 +264,11 @@ class Connection {
   // Statement access StatementRef which we don't want to expose to erverybody
   // (they should go through Statement).
   friend class Statement;
+
+  // Internal initialize function used by both Init and InitInMemory. The file
+  // name is always 8 bits since we want to use the 8-bit version of
+  // sqlite3_open. The string can also be sqlite's special ":memory:" string.
+  bool OpenInternal(const std::string& file_name);
 
   // A StatementRef is a refcounted wrapper around a sqlite statement pointer.
   // Refcounting allows us to give these statements out to sql::Statement

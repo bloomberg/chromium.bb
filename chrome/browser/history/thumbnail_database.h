@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,17 +7,18 @@
 
 #include <vector>
 
+#include "app/sql/connection.h"
+#include "app/sql/meta_table.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/url_database.h"  // For DBCloseScoper.
 #include "chrome/browser/meta_table_helper.h"
 
-struct sqlite3;
 class FilePath;
 struct ThumbnailScore;
 class SkBitmap;
-class SqliteStatementCache;
+
 namespace base {
-  class Time;
+class Time;
 }
 
 namespace history {
@@ -46,7 +47,7 @@ class ThumbnailDatabase {
   void BeginTransaction();
   void CommitTransaction();
   int transaction_nesting() const {
-    return transaction_nesting_;
+    return db_.transaction_nesting();
   }
 
   // Vacuums the database. This will cause sqlite to defragment and collect
@@ -62,7 +63,7 @@ class ThumbnailDatabase {
                         URLID id,
                         const SkBitmap& thumbnail,
                         const ThumbnailScore& score,
-                        const base::Time& time);
+                        base::Time time);
 
   // Retrieves thumbnail data for the given URL, returning true on success,
   // false if there is no such thumbnail or there was some other error.
@@ -90,7 +91,7 @@ class ThumbnailDatabase {
                   base::Time time);
 
   // Sets the time the favicon was last updated.
-  bool SetFavIconLastUpdateTime(FavIconID icon_id, const base::Time& time);
+  bool SetFavIconLastUpdateTime(FavIconID icon_id, base::Time time);
 
   // Returns the id of the entry in the favicon database with the specified url.
   // Returns 0 if no entry exists for the specified url.
@@ -154,17 +155,8 @@ class ThumbnailDatabase {
   // newly-renamed favicons table (formerly the temporary table with no index).
   void InitFavIconsIndex();
 
-  // Ensures that db_ and statement_cache_ are destroyed in the proper order.
-  DBCloseScoper close_scoper_;
-
-  // The database connection and the statement cache: MAY BE NULL if database
-  // init failed. These are cleaned up by the close_scoper_.
-  sqlite3* db_;
-  SqliteStatementCache* statement_cache_;
-
-  int transaction_nesting_;
-
-  MetaTableHelper meta_table_;
+  sql::Connection db_;
+  sql::MetaTable meta_table_;
 
   // This object is created and managed by the history backend. We maintain an
   // opaque pointer to the object for our use.

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,12 +7,12 @@
 #include <limits>
 #include <vector>
 
+#include "app/sql/connection.h"
+#include "app/sql/statement.h"
+#include "base/string_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/history/download_types.h"
-#include "chrome/common/sqlite_utils.h"
-#include "chrome/common/sqlite_compiled_statement.h"
-
-using base::Time;
 
 // Download schema:
 //
@@ -28,6 +28,32 @@ using base::Time;
 
 namespace history {
 
+namespace {
+
+#if defined(OS_POSIX)
+
+// Binds/reads the given file path to the given column of the given statement.
+void BindFilePath(sql::Statement& statement, const FilePath& path, int col) {
+  statement.BindString(col, path.value());
+}
+FilePath ColumnFilePath(sql::Statement& statement, int col) {
+  return FilePath(statement.ColumnString(col));
+}
+
+#else
+
+// See above.
+void BindFilePath(sql::Statement& statement, const FilePath& path, int col) {
+  statement.BindString(col, UTF16ToUTF8(path.value()));
+}
+FilePath ColumnFilePath(sql::Statement& statement, int col) {
+  return FilePath(UTF8ToUTF16(statement.ColumnString(col)));
+}
+
+#endif
+
+}  // namespace
+
 DownloadDatabase::DownloadDatabase() {
 }
 
@@ -35,51 +61,47 @@ DownloadDatabase::~DownloadDatabase() {
 }
 
 bool DownloadDatabase::InitDownloadTable() {
-  if (!DoesSqliteTableExist(GetDB(), "downloads")) {
-    if (sqlite3_exec(GetDB(),
-                     "CREATE TABLE downloads ("
-                     "id INTEGER PRIMARY KEY,"
-                     "full_path LONGVARCHAR NOT NULL,"
-                     "url LONGVARCHAR NOT NULL,"
-                     "start_time INTEGER NOT NULL,"
-                     "received_bytes INTEGER NOT NULL,"
-                     "total_bytes INTEGER NOT NULL,"
-                     "state INTEGER NOT NULL)", NULL, NULL, NULL) != SQLITE_OK)
+  if (!GetDB().DoesTableExist("downloads")) {
+    if (!GetDB().Execute(
+        "CREATE TABLE downloads ("
+        "id INTEGER PRIMARY KEY,"
+        "full_path LONGVARCHAR NOT NULL,"
+        "url LONGVARCHAR NOT NULL,"
+        "start_time INTEGER NOT NULL,"
+        "received_bytes INTEGER NOT NULL,"
+        "total_bytes INTEGER NOT NULL,"
+        "state INTEGER NOT NULL)"))
       return false;
   }
   return true;
 }
 
 bool DownloadDatabase::DropDownloadTable() {
-  return sqlite3_exec(GetDB(), "DROP TABLE downloads", NULL, NULL, NULL) ==
-      SQLITE_OK;
+  return GetDB().Execute("DROP TABLE downloads");
 }
 
 void DownloadDatabase::QueryDownloads(
     std::vector<DownloadCreateInfo>* results) {
   results->clear();
 
-  SQLITE_UNIQUE_STATEMENT(statement, GetStatementCache(),
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT id, full_path, url, start_time, received_bytes, "
         "total_bytes, state "
       "FROM downloads "
-      "ORDER BY start_time");
-  if (!statement.is_valid())
+      "ORDER BY start_time"));
+  if (!statement)
     return;
 
-  while (statement->step() == SQLITE_ROW) {
+  while (statement.Step()) {
     DownloadCreateInfo info;
-    info.db_handle = statement->column_int64(0);
-    std::wstring path_str;
-    statement->column_wstring(1, &path_str);
-    info.path = FilePath::FromWStringHack(path_str);
-    std::wstring url_str;
-    statement->column_wstring(2, &url_str);
-    info.url = GURL(WideToUTF8(url_str));
-    info.start_time = Time::FromTimeT(statement->column_int64(3));
-    info.received_bytes = statement->column_int64(4);
-    info.total_bytes = statement->column_int64(5);
-    info.state = statement->column_int(6);
+    info.db_handle = statement.ColumnInt64(0);
+
+    info.path = ColumnFilePath(statement, 1);
+    info.url = GURL(statement.ColumnString(2));
+    info.start_time = base::Time::FromTimeT(statement.ColumnInt64(3));
+    info.received_bytes = statement.ColumnInt64(4);
+    info.total_bytes = statement.ColumnInt64(5);
+    info.state = statement.ColumnInt(6);
     results->push_back(info);
   }
 }
@@ -88,99 +110,98 @@ bool DownloadDatabase::UpdateDownload(int64 received_bytes,
                                       int32 state,
                                       DownloadID db_handle) {
   DCHECK(db_handle > 0);
-  SQLITE_UNIQUE_STATEMENT(statement, GetStatementCache(),
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "UPDATE downloads "
-      "SET received_bytes=?, state=? WHERE id=?");
-  if (!statement.is_valid())
+      "SET received_bytes=?, state=? WHERE id=?"));
+  if (!statement)
     return false;
 
-  statement->bind_int64(0, received_bytes);
-  statement->bind_int(1, state);
-  statement->bind_int64(2, db_handle);
-  return statement->step() == SQLITE_DONE;
+  statement.BindInt64(0, received_bytes);
+  statement.BindInt(1, state);
+  statement.BindInt64(2, db_handle);
+  return statement.Run();
 }
 
 bool DownloadDatabase::UpdateDownloadPath(const std::wstring& path,
                                           DownloadID db_handle) {
   DCHECK(db_handle > 0);
-  SQLITE_UNIQUE_STATEMENT(statement, GetStatementCache(),
-      "UPDATE downloads "
-      "SET full_path=? WHERE id=?");
-  if (!statement.is_valid())
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "UPDATE downloads SET full_path=? WHERE id=?"));
+  if (!statement)
     return false;
 
-  statement->bind_wstring(0, path);
-  statement->bind_int64(1, db_handle);
-  return statement->step() == SQLITE_DONE;
+  statement.BindString(0, WideToUTF8(path));
+  statement.BindInt64(1, db_handle);
+  return statement.Run();
 }
 
 int64 DownloadDatabase::CreateDownload(const DownloadCreateInfo& info) {
-  SQLITE_UNIQUE_STATEMENT(statement, GetStatementCache(),
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO downloads "
       "(full_path, url, start_time, received_bytes, total_bytes, state) "
-      "VALUES (?, ?, ?, ?, ?, ?)");
-  if (!statement.is_valid())
+      "VALUES (?, ?, ?, ?, ?, ?)"));
+  if (!statement)
     return 0;
 
-  statement->bind_wstring(0, info.path.ToWStringHack());
-  statement->bind_wstring(1, UTF8ToWide(info.url.spec()));
-  statement->bind_int64(2, info.start_time.ToTimeT());
-  statement->bind_int64(3, info.received_bytes);
-  statement->bind_int64(4, info.total_bytes);
-  statement->bind_int(5, info.state);
-  if (statement->step() == SQLITE_DONE)
-    return sqlite3_last_insert_rowid(GetDB());
+  BindFilePath(statement, info.path, 0);
+  statement.BindString(1, info.url.spec());
+  statement.BindInt64(2, info.start_time.ToTimeT());
+  statement.BindInt64(3, info.received_bytes);
+  statement.BindInt64(4, info.total_bytes);
+  statement.BindInt(5, info.state);
 
+  if (statement.Run())
+    return GetDB().GetLastInsertRowId();
   return 0;
 }
 
 void DownloadDatabase::RemoveDownload(DownloadID db_handle) {
-  SQLITE_UNIQUE_STATEMENT(statement, GetStatementCache(),
-      "DELETE FROM downloads WHERE id=?");
-  if (!statement.is_valid())
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+      "DELETE FROM downloads WHERE id=?"));
+  if (!statement)
     return;
 
-  statement->bind_int64(0, db_handle);
-  statement->step();
+  statement.BindInt64(0, db_handle);
+  statement.Run();
 }
 
-void DownloadDatabase::RemoveDownloadsBetween(Time delete_begin,
-                                              Time delete_end) {
+void DownloadDatabase::RemoveDownloadsBetween(base::Time delete_begin,
+                                              base::Time delete_end) {
   // This does not use an index. We currently aren't likely to have enough
   // downloads where an index by time will give us a lot of benefit.
-  SQLITE_UNIQUE_STATEMENT(statement, GetStatementCache(),
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM downloads WHERE start_time >= ? AND start_time < ? "
-      "AND (State = ? OR State = ?)");
-  if (!statement.is_valid())
+      "AND (State = ? OR State = ?)"));
+  if (!statement)
     return;
 
   time_t start_time = delete_begin.ToTimeT();
   time_t end_time = delete_end.ToTimeT();
-  statement->bind_int64(0, start_time);
-  statement->bind_int64(
+  statement.BindInt64(0, start_time);
+  statement.BindInt64(
       1,
       end_time ? end_time : std::numeric_limits<int64>::max());
-  statement->bind_int(2, DownloadItem::COMPLETE);
-  statement->bind_int(3, DownloadItem::CANCELLED);
-  statement->step();
+  statement.BindInt(2, DownloadItem::COMPLETE);
+  statement.BindInt(3, DownloadItem::CANCELLED);
+  statement.Run();
 }
 
 void DownloadDatabase::SearchDownloads(std::vector<int64>* results,
                                        const std::wstring& search_text) {
-  SQLITE_UNIQUE_STATEMENT(statement, GetStatementCache(),
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT id FROM downloads WHERE url LIKE ? "
-      "OR full_path LIKE ? ORDER BY id");
-  if (!statement.is_valid())
+      "OR full_path LIKE ? ORDER BY id"));
+  if (!statement)
     return;
 
-  std::wstring text(L"%");
-  text.append(search_text);
-  text.append(L"%");
-  statement->bind_wstring(0, text);
-  statement->bind_wstring(1, text);
+  std::string text("%");
+  text.append(WideToUTF8(search_text));
+  text.push_back('%');
+  statement.BindString(0, text);
+  statement.BindString(1, text);
 
-  while (statement->step() == SQLITE_ROW)
-    results->push_back(statement->column_int64(0));
+  while (statement.Step())
+    results->push_back(statement.ColumnInt64(0));
 }
 
 }  // namespace history

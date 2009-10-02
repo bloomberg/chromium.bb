@@ -1,18 +1,17 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_HISTORY_MEMORY_DB_H__
-#define CHROME_BROWSER_HISTORY_HISTORY_MEMORY_DB_H__
+#ifndef CHROME_BROWSER_HISTORY_HISTORY_MEMORY_DB_H_
+#define CHROME_BROWSER_HISTORY_HISTORY_MEMORY_DB_H_
 
 #include <string>
 
+#include "app/sql/connection.h"
 #include "base/basictypes.h"
 #include "chrome/browser/history/url_database.h"
 
-struct sqlite3;
-
-class SqliteStatementCache;
+class FilePath;
 
 namespace history {
 
@@ -31,27 +30,22 @@ class InMemoryDatabase : public URLDatabase {
   // file. Conceptually, the InMemoryHistoryBackend should do the populating
   // after this object does some common initialization, but that would be
   // much slower.
-  bool InitFromDisk(const std::wstring& history_name);
+  bool InitFromDisk(const FilePath& history_name);
 
  protected:
   // Implemented for URLDatabase.
-  virtual sqlite3* GetDB();
-  virtual SqliteStatementCache& GetStatementCache();
+  virtual sql::Connection& GetDB();
 
  private:
   // Initializes the database connection, this is the shared code between
   // InitFromScratch() and InitFromDisk() above. Returns true on success.
   bool InitDB();
 
-  // The close scoper will free the database and delete the statement cache in
-  // the correct order automatically when we are destroyed.
-  DBCloseScoper db_closer_;
-  sqlite3* db_;
-  SqliteStatementCache* statement_cache_;
+  sql::Connection db_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(InMemoryDatabase);
+  DISALLOW_COPY_AND_ASSIGN(InMemoryDatabase);
 };
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_HISTORY_MEMORY_DB_H__
+#endif  // CHROME_BROWSER_HISTORY_HISTORY_MEMORY_DB_H_

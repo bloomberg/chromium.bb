@@ -1,16 +1,15 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_HISTORY_ARCHIVED_DATABASE_H_
 #define CHROME_BROWSER_HISTORY_ARCHIVED_DATABASE_H_
 
+#include "app/sql/connection.h"
+#include "app/sql/meta_table.h"
 #include "base/basictypes.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/history/visit_database.h"
-#include "chrome/browser/meta_table_helper.h"
-
-struct sqlite3;
 
 class FilePath;
 
@@ -40,8 +39,7 @@ class ArchivedDatabase : public URLDatabase,
 
  private:
   // Implemented for the specialized databases.
-  virtual sqlite3* GetDB();
-  virtual SqliteStatementCache& GetStatementCache();
+  virtual sql::Connection& GetDB();
 
   // Makes sure the version is up-to-date, updating if necessary. If the
   // database is too old to migrate, the user will be notified. In this case, or
@@ -53,17 +51,8 @@ class ArchivedDatabase : public URLDatabase,
   InitStatus EnsureCurrentVersion();
 
   // The database.
-  //
-  // The close scoper will free the database and delete the statement cache in
-  // the correct order automatically when we are destroyed.
-  DBCloseScoper db_closer_;
-  sqlite3* db_;
-  SqliteStatementCache* statement_cache_;
-
-  // The number of nested transactions currently in progress.
-  int transaction_nesting_;
-
-  MetaTableHelper meta_table_;
+  sql::Connection db_;
+  sql::MetaTable meta_table_;
 
   DISALLOW_COPY_AND_ASSIGN(ArchivedDatabase);
 };

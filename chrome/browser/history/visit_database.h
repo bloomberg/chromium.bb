@@ -1,15 +1,16 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_VISIT_DATABASE_H__
-#define CHROME_BROWSER_HISTORY_VISIT_DATABASE_H__
+#ifndef CHROME_BROWSER_HISTORY_VISIT_DATABASE_H_
+#define CHROME_BROWSER_HISTORY_VISIT_DATABASE_H_
 
 #include "chrome/browser/history/history_types.h"
 
-struct sqlite3;
-class SqliteStatementCache;
-class SQLStatement;
+namespace sql {
+class Connection;
+class Statement;
+}
 
 namespace history {
 
@@ -144,11 +145,8 @@ class VisitDatabase {
   bool GetStartDate(base::Time* first_visit);
 
  protected:
-  // Returns the database and statement cache for the functions in this
-  // interface. The decendent of this class implements these functions to
-  // return its objects.
-  virtual sqlite3* GetDB() = 0;
-  virtual SqliteStatementCache& GetStatementCache() = 0;
+  // Returns the database for the functions in this interface.
+  virtual sql::Connection& GetDB() = 0;
 
   // Called by the derived classes on initialization to make sure the tables
   // and indices are properly set up. Must be called before anything else.
@@ -156,16 +154,16 @@ class VisitDatabase {
 
   // Convenience to fill a VisitRow. Assumes the visit values are bound starting
   // at index 0.
-  static void FillVisitRow(SQLStatement& statement, VisitRow* visit);
+  static void FillVisitRow(sql::Statement& statement, VisitRow* visit);
 
   // Convenience to fill a VisitVector. Assumes that statement.step()
   // hasn't happened yet.
-  static void FillVisitVector(SQLStatement& statement, VisitVector* visits);
+  static void FillVisitVector(sql::Statement& statement, VisitVector* visits);
 
  private:
-  DISALLOW_EVIL_CONSTRUCTORS(VisitDatabase);
+  DISALLOW_COPY_AND_ASSIGN(VisitDatabase);
 };
 
 }  // history
 
-#endif  // CHROME_BROWSER_HISTORY_VISIT_DATABASE_H__
+#endif  // CHROME_BROWSER_HISTORY_VISIT_DATABASE_H_

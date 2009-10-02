@@ -244,10 +244,6 @@ class TextDatabaseManager {
   // Directory holding our index files.
   const FilePath dir_;
 
-  // The database connection.
-  sqlite3* db_;
-  DBCloseScoper db_close_scoper_;
-
   // Non-owning pointers to the recent history databases for URLs and visits.
   URLDatabase* url_database_;
   VisitDatabase* visit_database_;

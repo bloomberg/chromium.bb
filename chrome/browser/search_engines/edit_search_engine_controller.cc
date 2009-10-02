@@ -4,11 +4,13 @@
 
 #include "chrome/browser/search_engines/edit_search_engine_controller.h"
 
+#include "base/string_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "googleurl/src/gurl.h"
 
 EditSearchEngineController::EditSearchEngineController(
     const TemplateURL* template_url,

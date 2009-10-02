@@ -19,7 +19,7 @@ class StatementErrorHandler : public sql::ErrorDelegate {
   virtual int OnError(int error, sql::Connection* connection,
                       sql::Statement* stmt) {
     error_ = error;
-    const char* sql_txt = stmt->GetSQLStatement();
+    const char* sql_txt = stmt ? stmt->GetSQLStatement() : NULL;
     sql_text_ = sql_txt ? sql_txt : "no statement available";
     return error;
   }
@@ -46,7 +46,7 @@ class SQLStatementTest : public testing::Test {
     ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &path_));
     path_ = path_.AppendASCII("SQLStatementTest.db");
     file_util::Delete(path_, false);
-    ASSERT_TRUE(db_.Init(path_));
+    ASSERT_TRUE(db_.Open(path_));
     // The |error_handler_| will be called if any sqlite statement operation
     // returns an error code.
     db_.set_error_delegate(error_handler_);

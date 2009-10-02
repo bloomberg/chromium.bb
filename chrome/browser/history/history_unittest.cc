@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,8 @@
 #include <time.h>
 #include <algorithm>
 
+#include "app/sql/connection.h"
+#include "app/sql/statement.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -39,7 +41,6 @@
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/sqlite_utils.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -738,19 +739,16 @@ TEST(HistoryProfileTest, TypicalProfileVersion) {
 
   int cur_version = HistoryDatabase::GetCurrentVersion();
 
-  sqlite3* db;
-  ASSERT_EQ(SQLITE_OK, OpenSqliteDb(file, &db));
+  sql::Connection db;
+  ASSERT_TRUE(db.Open(file));
 
   {
-    SQLStatement s;
-    ASSERT_EQ(SQLITE_OK, s.prepare(db,
+    sql::Statement s(db.GetUniqueStatement(
         "SELECT value FROM meta WHERE key = 'version'"));
-    EXPECT_EQ(SQLITE_ROW, s.step());
-    int file_version = s.column_int(0);
+    EXPECT_TRUE(s.Step());
+    int file_version = s.ColumnInt(0);
     EXPECT_EQ(cur_version, file_version);
   }
-
-  ASSERT_EQ(SQLITE_OK, sqlite3_close(db));
 }
 
 namespace {

@@ -147,7 +147,7 @@ bool WebDatabase::Init(const FilePath& db_name) {
   // database while we're running, and this will give somewhat improved perf.
   db_.set_exclusive_locking();
 
-  if (!db_.Init(db_name))
+  if (!db_.Open(db_name))
     return false;
 
   // Initialize various tables

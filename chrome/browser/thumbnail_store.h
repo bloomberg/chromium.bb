@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "app/sql/connection.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
@@ -19,7 +20,6 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/ref_counted_util.h"
-#include "chrome/common/sqlite_compiled_statement.h"
 #include "chrome/common/thumbnail_score.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
@@ -154,7 +154,7 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore>,
   // cache entries to the DB.
   void CommitCacheToDB(
       scoped_refptr<RefCountedVector<GURL> > urls_to_delete,
-      Cache* data) const;
+      Cache* data);
 
   // Decide whether to store data ---------------------------------------------
 
@@ -175,9 +175,7 @@ class ThumbnailStore : public base::RefCountedThreadSafe<ThumbnailStore>,
   scoped_ptr<Cache> cache_;
 
   // The database holding the thumbnails on disk.
-  sqlite3* db_;
-  SqliteStatementCache* statement_cache_;
-  history::DBCloseScoper close_scoper_;
+  sql::Connection db_;
 
   // We hold a reference to the history service to query for most visited URLs
   // and redirect information.

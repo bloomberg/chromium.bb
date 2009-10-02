@@ -1,7 +1,8 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/sql/connection.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -43,26 +44,19 @@ const wchar_t* kBody5 = L"FOO page one.";
 class InMemDB : public URLDatabase, public VisitDatabase {
  public:
   InMemDB() {
-    sqlite3_open(":memory:", &db_);
-    statement_cache_ = new SqliteStatementCache(db_);
+    EXPECT_TRUE(db_.OpenInMemory());
     CreateURLTable(false);
     InitVisitTable();
   }
   ~InMemDB() {
-    delete statement_cache_;
-    sqlite3_close(db_);
   }
 
  private:
-  virtual sqlite3* GetDB() { return db_; }
-  virtual SqliteStatementCache& GetStatementCache() {
-    return *statement_cache_;
-  }
+  virtual sql::Connection& GetDB() { return db_; }
 
-  sqlite3* db_;
-  SqliteStatementCache* statement_cache_;
+  sql::Connection db_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(InMemDB);
+  DISALLOW_COPY_AND_ASSIGN(InMemDB);
 };
 
 // Adds all the pages once, and the first page once more in the next month.

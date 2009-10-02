@@ -14,6 +14,16 @@
 
 namespace sql {
 
+// Possible return values from ColumnType in a statement. These should match
+// the values in sqlite3.h.
+enum ColType {
+  COLUMN_TYPE_INTEGER = 1,
+  COLUMN_TYPE_FLOAT = 2,
+  COLUMN_TYPE_TEXT = 3,
+  COLUMN_TYPE_BLOB = 4,
+  COLUMN_TYPE_NULL = 5,
+};
+
 // Normal usage:
 //   sql::Statement s = connection_.GetUniqueStatement(...);
 //   if (!s)  // You should check for errors before using the statement.
@@ -88,6 +98,7 @@ class Statement {
   // The main thing you may want to check is when binding large blobs or
   // strings there may be out of memory.
   bool BindNull(int col);
+  bool BindBool(int col, bool val);
   bool BindInt(int col, int val);
   bool BindInt64(int col, int64 val);
   bool BindDouble(int col, double val);
@@ -100,7 +111,16 @@ class Statement {
   // Returns the number of output columns in the result.
   int ColumnCount() const;
 
+  // Returns the type associated with the given column.
+  //
+  // Watch out: the type may be undefined if you've done something to cause a
+  // "type conversion." This means requesting the value of a column of a type
+  // where that type is not the native type. For safety, call ColumnType only
+  // on a column before getting the value out in any way.
+  ColType ColumnType(int col) const;
+
   // These all take a 0-based argument index.
+  bool ColumnBool(int col) const;
   int ColumnInt(int col) const;
   int64 ColumnInt64(int col) const;
   double ColumnDouble(int col) const;

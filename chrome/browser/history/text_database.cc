@@ -35,8 +35,6 @@
 // an FTS table that is indexed like a normal table, and the index over it is
 // free since sqlite always indexes the internal rowid.
 
-using base::Time;
-
 namespace history {
 
 namespace {
@@ -158,7 +156,7 @@ bool TextDatabase::Init() {
   db_.set_exclusive_locking();
 
   // Attach the database to our index file.
-  if (!db_.Init(file_name_))
+  if (!db_.Open(file_name_))
     return false;
 
   // Meta table tracking version information.
@@ -215,7 +213,7 @@ bool TextDatabase::CreateTables() {
   return true;
 }
 
-bool TextDatabase::AddPageData(Time time,
+bool TextDatabase::AddPageData(base::Time time,
                                const std::string& url,
                                const std::string& title,
                                const std::string& contents) {
@@ -257,7 +255,7 @@ bool TextDatabase::AddPageData(Time time,
   return committer.Commit();
 }
 
-void TextDatabase::DeletePageData(Time time, const std::string& url) {
+void TextDatabase::DeletePageData(base::Time time, const std::string& url) {
   // First get all rows that match. Selecing on time (which has an index) allows
   // us to avoid brute-force searches on the full-text-index table (there will
   // generally be only one match per time).
@@ -316,7 +314,7 @@ void TextDatabase::GetTextMatches(const std::string& query,
                                   const QueryOptions& options,
                                   std::vector<Match>* results,
                                   URLSet* found_urls,
-                                  Time* first_time_searched) {
+                                  base::Time* first_time_searched) {
   *first_time_searched = options.begin_time;
 
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
@@ -360,7 +358,7 @@ void TextDatabase::GetTextMatches(const std::string& query,
     match.url.Swap(&url);
 
     match.title = UTF8ToWide(statement.ColumnString(1));
-    match.time = Time::FromInternalValue(statement.ColumnInt64(2));
+    match.time = base::Time::FromInternalValue(statement.ColumnInt64(2));
 
     // Extract any matches in the title.
     std::string offsets_str = statement.ColumnString(3);

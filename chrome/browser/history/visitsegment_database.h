@@ -1,16 +1,18 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_VISITSEGMENT_DATABASE_H__
-#define CHROME_BROWSER_HISTORY_VISITSEGMENT_DATABASE_H__
+#ifndef CHROME_BROWSER_HISTORY_VISITSEGMENT_DATABASE_H_
+#define CHROME_BROWSER_HISTORY_VISITSEGMENT_DATABASE_H_
 
 #include "base/basictypes.h"
 #include "chrome/browser/history/history_types.h"
 
 class PageUsageData;
-struct sqlite3;
-class SqliteStatementCache;
+
+namespace sql {
+class Connection;
+}
 
 namespace history {
 
@@ -45,19 +47,19 @@ class VisitSegmentDatabase {
 
   // Increase the segment visit count by the provided amount. Return true on
   // success.
-  bool IncreaseSegmentVisitCount(SegmentID segment_id, const base::Time& ts,
+  bool IncreaseSegmentVisitCount(SegmentID segment_id, base::Time ts,
                                  int amount);
 
   // Compute the segment usage since |from_time| using the provided aggregator.
   // A PageUsageData is added in |result| for the highest-scored segments up to
   // |max_result_count|.
-  void QuerySegmentUsage(const base::Time& from_time,
+  void QuerySegmentUsage(base::Time from_time,
                          int max_result_count,
                          std::vector<PageUsageData*>* result);
 
   // Delete all the segment usage data which is older than the provided time
   // stamp.
-  void DeleteSegmentData(const base::Time& older_than);
+  void DeleteSegmentData(base::Time older_than);
 
   // Change the presentation id for the segment identified by |segment_id|
   void SetSegmentPresentationIndex(SegmentID segment_id, int index);
@@ -67,11 +69,8 @@ class VisitSegmentDatabase {
   bool DeleteSegmentForURL(URLID url_id);
 
  protected:
-  // Returns the database and statement cache for the functions in this
-  // interface. The decendent of this class implements these functions to
-  // return its objects.
-  virtual sqlite3* GetDB() = 0;
-  virtual SqliteStatementCache& GetStatementCache() = 0;
+  // Returns the database for the functions in this interface.
+  virtual sql::Connection& GetDB() = 0;
 
   // Creates the tables used by this class if necessary. Returns true on
   // success.
@@ -81,9 +80,9 @@ class VisitSegmentDatabase {
   bool DropSegmentTables();
 
  private:
-  DISALLOW_EVIL_CONSTRUCTORS(VisitSegmentDatabase);
+  DISALLOW_COPY_AND_ASSIGN(VisitSegmentDatabase);
 };
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_VISITSEGMENT_DATABASE_H__
+#endif  // CHROME_BROWSER_HISTORY_VISITSEGMENT_DATABASE_H_

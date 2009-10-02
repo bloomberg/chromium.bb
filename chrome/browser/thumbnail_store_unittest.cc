@@ -9,6 +9,8 @@
 
 #include "chrome/browser/thumbnail_store.h"
 
+#include "app/sql/connection.h"
+#include "app/sql/statement.h"
 #include "base/time.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -18,8 +20,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/ref_counted_util.h"
 #include "chrome/common/thumbnail_score.h"
-#include "chrome/common/sqlite_compiled_statement.h"
-#include "chrome/common/sqlite_utils.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -186,17 +186,17 @@ TEST_F(ThumbnailStoreTest, RetrieveFromDisk) {
   store_->cache_->clear();  // Clear it from the cache.
 
   // Read from the DB.
-  SQLITE_UNIQUE_STATEMENT(statement, *store_->statement_cache_,
-      "SELECT * FROM thumbnails");
-  EXPECT_TRUE(statement->step() == SQLITE_ROW);
-  GURL url(statement->column_string(0));
-  ThumbnailScore score(statement->column_double(1),
-                       statement->column_bool(2),
-                       statement->column_bool(3),
+  sql::Statement statement(store_->db_.GetUniqueStatement(
+      "SELECT * FROM thumbnails"));
+  EXPECT_TRUE(statement.Step());
+  GURL url(statement.ColumnString(0));
+  ThumbnailScore score(statement.ColumnDouble(1),
+                       statement.ColumnBool(2),
+                       statement.ColumnBool(3),
                        base::Time::FromInternalValue(
-                          statement->column_int64(4)));
+                          statement.ColumnInt64(4)));
   scoped_refptr<RefCountedBytes> data = new RefCountedBytes;
-  EXPECT_TRUE(statement->column_blob_as_vector(5, &data->data));
+  statement.ColumnBlobAsVector(5, &data->data);
 
   EXPECT_TRUE(url == url_);
   EXPECT_TRUE(score.Equals(score_));

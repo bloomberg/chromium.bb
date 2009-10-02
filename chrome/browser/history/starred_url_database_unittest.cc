@@ -18,7 +18,7 @@ namespace history {
 class StarredURLDatabaseTest : public testing::Test,
                                public StarredURLDatabase {
  public:
-  StarredURLDatabaseTest() : db_(NULL), statement_cache_(NULL) {
+  StarredURLDatabaseTest() {
   }
 
   void AddPage(const GURL& url) {
@@ -44,7 +44,7 @@ class StarredURLDatabaseTest : public testing::Test,
   }
 
   int GetStarredEntryCount() {
-    DCHECK(db_);
+    DCHECK(db_.is_open());
     std::vector<StarredEntry> entries;
     GetAllStarredEntries(&entries);
     return static_cast<int>(entries.size());
@@ -77,8 +77,7 @@ class StarredURLDatabaseTest : public testing::Test,
         FILE_PATH_LITERAL("History_with_empty_starred"));
     file_util::CopyFile(old_history_path, db_file_);
 
-    EXPECT_EQ(SQLITE_OK, OpenSqliteDb(db_file_, &db_));
-    statement_cache_ = new SqliteStatementCache(db_);
+    EXPECT_TRUE(db_.Open(db_file_));
 
     // Initialize the tables for this test.
     CreateURLTable(false);
@@ -86,22 +85,17 @@ class StarredURLDatabaseTest : public testing::Test,
     EnsureStarredIntegrity();
   }
   void TearDown() {
-    delete statement_cache_;
-    sqlite3_close(db_);
+    db_.Close();
     file_util::Delete(db_file_, false);
   }
 
   // Provided for URL/StarredURLDatabase.
-  virtual sqlite3* GetDB() {
+  virtual sql::Connection& GetDB() {
     return db_;
-  }
-  virtual SqliteStatementCache& GetStatementCache() {
-    return *statement_cache_;
   }
 
   FilePath db_file_;
-  sqlite3* db_;
-  SqliteStatementCache* statement_cache_;
+  sql::Connection db_;
 };
 
 //-----------------------------------------------------------------------------

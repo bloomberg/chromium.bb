@@ -59,36 +59,16 @@ Connection::~Connection() {
   Close();
 }
 
-bool Connection::Init(const FilePath& path) {
+bool Connection::Open(const FilePath& path) {
 #if defined(OS_WIN)
-  // We want the default encoding to always be UTF-8, so we use the
-  // 8-bit version of open().
-  int err = sqlite3_open(WideToUTF8(path.value()).c_str(), &db_);
+  return OpenInternal(WideToUTF8(path.value()));
 #elif defined(OS_POSIX)
-  int err = sqlite3_open(path.value().c_str(), &db_);
+  return OpenInternal(path.value());
 #endif
+}
 
-  if (err != SQLITE_OK) {
-    db_ = NULL;
-    return false;
-  }
-
-  if (page_size_ != 0) {
-    if (!Execute(StringPrintf("PRAGMA page_size=%d", page_size_).c_str()))
-      NOTREACHED() << "Could not set page size";
-  }
-
-  if (cache_size_ != 0) {
-    if (!Execute(StringPrintf("PRAGMA cache_size=%d", cache_size_).c_str()))
-      NOTREACHED() << "Could not set page size";
-  }
-
-  if (exclusive_locking_) {
-    if (!Execute("PRAGMA locking_mode=EXCLUSIVE"))
-      NOTREACHED() << "Could not set locking mode.";
-  }
-
-  return true;
+bool Connection::OpenInMemory() {
+  return OpenInternal(":memory:");
 }
 
 void Connection::Close() {
@@ -281,6 +261,32 @@ const char* Connection::GetErrorMessage() const {
   if (!db_)
     return "sql::Connection has no connection.";
   return sqlite3_errmsg(db_);
+}
+
+bool Connection::OpenInternal(const std::string& file_name) {
+  int err = sqlite3_open(file_name.c_str(), &db_);
+  if (err != SQLITE_OK) {
+    OnSqliteError(err, NULL);
+    db_ = NULL;
+    return false;
+  }
+
+  if (page_size_ != 0) {
+    if (!Execute(StringPrintf("PRAGMA page_size=%d", page_size_).c_str()))
+      NOTREACHED() << "Could not set page size";
+  }
+
+  if (cache_size_ != 0) {
+    if (!Execute(StringPrintf("PRAGMA cache_size=%d", cache_size_).c_str()))
+      NOTREACHED() << "Could not set page size";
+  }
+
+  if (exclusive_locking_) {
+    if (!Execute("PRAGMA locking_mode=EXCLUSIVE"))
+      NOTREACHED() << "Could not set locking mode.";
+  }
+
+  return true;
 }
 
 void Connection::DoRollback() {
