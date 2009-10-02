@@ -11,7 +11,6 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/system_monitor.h"
-#include "build/build_config.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -151,6 +150,8 @@ int PluginMain(const MainFunctionParams& parameters) {
         if (!result)
           __debugbreak();
       }
+
+      FreeLibrary(sandbox_test_module);
     }
 #endif
 
