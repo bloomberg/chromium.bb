@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/thread.h"
 #include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -206,10 +207,8 @@ TEST_F(WorkerTest, LimitPerPage) {
 }
 #endif
 
-// Disable LimitTotal on Linux and Mac.
 // http://code.google.com/p/chromium/issues/detail?id=22608
-#if defined(OS_WIN)
-TEST_F(WorkerTest, LimitTotal) {
+TEST_F(WorkerTest, DISABLED_LimitTotal) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   int total_workers = WorkerService::kMaxWorkersWhenSeparate;
 
@@ -229,10 +228,10 @@ TEST_F(WorkerTest, LimitTotal) {
             UITest::GetBrowserProcessCount());
 
   // Now close the first tab and check that the queued workers were started.
-  tab->Close(true);
-  tab->NavigateToURL(GetTestUrl(L"google", L"google.html"));
+  ASSERT_TRUE(tab->Close(true));
+  // Give the tab process time to shut down.
+  PlatformThread::Sleep(sleep_timeout_ms());
 
   EXPECT_EQ(total_workers + 1 + (UITest::in_process_renderer() ? 0 : tab_count),
             UITest::GetBrowserProcessCount());
 }
-#endif
