@@ -37,8 +37,15 @@
 #include "native_client/src/trusted/service_runtime/springboard.h"
 #include "native_client/src/trusted/service_runtime/tramp.h"
 #include "native_client/src/trusted/service_runtime/arch/x86/sel_ldr_x86.h"
+#if NACL_BUILD_SUBARCH == 32
+/* These files are generated during the build. */
 #include "gen/native_client/src/trusted/service_runtime/arch/x86/tramp_data.h"
 #include "gen/native_client/src/trusted/service_runtime/arch/x86/springboard_data.h"
+#else
+/* These files are checked in. */
+#include "native_client/src/trusted/service_runtime/arch/x86_64/tramp_data.h"
+#include "native_client/src/trusted/service_runtime/arch/x86_64/springboard_data.h"
+#endif
 
 /*
  * Install a syscall trampoline at target_addr.  NB: Thread-safe.

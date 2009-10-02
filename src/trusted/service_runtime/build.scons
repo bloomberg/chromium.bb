@@ -671,3 +671,25 @@ if env['TARGET_ARCHITECTURE'] == env['BUILD_ARCHITECTURE']:
   # TODO(tuduce): Make it work on windows.
   if not env.Bit('windows'):
     env.AddNodeToTestSuite(node, ['medium_tests'], 'run_ichi')
+
+# ------------------------------------------------------------------------
+# Generated files test - verify that the checked in version is up to date.
+# ------------------------------------------------------------------------
+
+if env['BUILD_SUBARCH'] == '32':
+  cmp_script = '${SCONSTRUCT_DIR}/tools/file_cmp_test.py'
+  checkedin_file = '${SCONSTRUCT_DIR}/src/trusted/service_runtime/arch/x86_64/tramp_data.h'
+  generated_file = tramp_data_header[0]
+
+  command = ['${PYTHON}', cmp_script, checkedin_file, generated_file]
+  node = env.Command(target = None,
+    source = [checkedin_file, cmp_script],
+    action = ' '.join(command))
+  env.AddNodeToTestSuite(node, ['small_tests'], 'tramp_data')
+
+  checkedin_file = '${SCONSTRUCT_DIR}/src/trusted/service_runtime/arch/x86_64/springboard_data.h'
+  generated_file = springboard_data_header[0]
+  node = env.Command(target = None,
+    source = [checkedin_file, cmp_script],
+    action = ' '.join(command))
+  env.AddNodeToTestSuite(node, ['small_tests'], 'springboard_data')

@@ -45,64 +45,68 @@
         'sel_addrspace_x86.c',
         'sel_validate_image.c',
       ],
-      'dependencies': [
-        '../../service_runtime.gyp:tramp_gen',
-        '../../service_runtime.gyp:springboard_gen',
-      ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
       ],
-      'actions': [
-        {
-          'action_name': 'header_gen',
-          'conditions': [
-            ['OS=="win"', {
-              'msvs_cygwin_shell': 0,
-              'msvs_quote_cmd': 0,
-            }],
-            ['OS=="mac" or OS=="linux"', {
-              # TODO(gregoryd): replace with a python script that
-              # does not use redirection.
-              'action':
-                ['bash', 'output-wrapper.sh', '<@(_inputs)', '<@(_outputs)'],
-            }, {
-              'action':
-                ['<@(_inputs)', '>', '<@(_outputs)'],
-            }],
+      'conditions': [
+        ['target_arch=="ia32"', {
+          'dependencies': [
+            '../../service_runtime.gyp:tramp_gen',
+            '../../service_runtime.gyp:springboard_gen',
           ],
-          'inputs': [
-            '<(PRODUCT_DIR)/tramp_gen',
+          'actions': [
+            {
+              'action_name': 'header_gen',
+              'conditions': [
+                ['OS=="win"', {
+                  'msvs_cygwin_shell': 0,
+                  'msvs_quote_cmd': 0,
+                }],
+                ['OS=="mac" or OS=="linux"', {
+                  # TODO(gregoryd): replace with a python script that
+                  # does not use redirection.
+                  'action':
+                    ['bash', 'output-wrapper.sh', '<@(_inputs)', '<@(_outputs)'],
+                }, {
+                  'action':
+                    ['<@(_inputs)', '>', '<@(_outputs)'],
+                }],
+              ],
+              'inputs': [
+                '<(PRODUCT_DIR)/tramp_gen',
+              ],
+              'outputs': [
+                '<(INTERMEDIATE_DIR)/gen/native_client/src/trusted/service_runtime/arch/x86/tramp_data.h',
+              ],
+              'process_outputs_as_sources': 1,
+              'message': 'Creating tramp_data.h',
+            },
+            {
+              'action_name': 'sheader_gen',
+              'conditions': [
+                ['OS=="win"', {
+                  'msvs_cygwin_shell': 0,
+                  'msvs_quote_cmd': 0,
+                }],
+                ['OS=="mac" or OS=="linux"', {
+                  'action':
+                    ['bash', 'output-wrapper.sh', '<@(_inputs)', '<@(_outputs)'],
+                }, {
+                  'action':
+                    ['<@(_inputs)', '>', '<@(_outputs)'],
+                }],
+              ],
+              'inputs': [
+                '<(PRODUCT_DIR)/springboard_gen',
+              ],
+              'outputs': [
+                '<(INTERMEDIATE_DIR)/gen/native_client/src/trusted/service_runtime/arch/x86/springboard_data.h',
+              ],
+              'process_outputs_as_sources': 1,
+              'message': 'Creating springboard_data.h',
+            },
           ],
-          'outputs': [
-            '<(INTERMEDIATE_DIR)/gen/native_client/src/trusted/service_runtime/arch/x86/tramp_data.h',
-          ],
-          'process_outputs_as_sources': 1,
-          'message': 'Creating tramp_data.h',
-        },
-        {
-          'action_name': 'sheader_gen',
-          'conditions': [
-            ['OS=="win"', {
-              'msvs_cygwin_shell': 0,
-              'msvs_quote_cmd': 0,
-            }],
-            ['OS=="mac" or OS=="linux"', {
-              'action':
-                ['bash', 'output-wrapper.sh', '<@(_inputs)', '<@(_outputs)'],
-            }, {
-              'action':
-                ['<@(_inputs)', '>', '<@(_outputs)'],
-            }],
-          ],
-          'inputs': [
-            '<(PRODUCT_DIR)/springboard_gen',
-          ],
-          'outputs': [
-            '<(INTERMEDIATE_DIR)/gen/native_client/src/trusted/service_runtime/arch/x86/springboard_data.h',
-          ],
-          'process_outputs_as_sources': 1,
-          'message': 'Creating springboard_data.h',
-        },
+        }],
       ],
     },
   ],
