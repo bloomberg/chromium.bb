@@ -43,12 +43,9 @@ std::wstring WindowCaptionFromPageTitle(std::wstring page_title) {
 // Returns the number of active RenderProcessHosts.
 int CountRenderProcessHosts() {
   int result = 0;
-  RenderProcessHost::iterator renderer_iter(
-      RenderProcessHost::AllHostsIterator());
-  while (!renderer_iter.IsAtEnd()) {
-    result++;
-    renderer_iter.Advance();
-  }
+  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance())
+    ++result;
   return result;
 }
 

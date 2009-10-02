@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,10 +72,10 @@ void OnShutdownStarting(ShutdownType type) {
   // shutdown path for the ones that didn't exit here.
   shutdown_num_processes_ = 0;
   shutdown_num_processes_slow_ = 0;
-  RenderProcessHost::iterator hosts(RenderProcessHost::AllHostsIterator());
-  while (!hosts.IsAtEnd()) {
-    shutdown_num_processes_++;
-    if (!hosts.GetCurrentValue()->FastShutdownIfPossible()) {
+  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    ++shutdown_num_processes_;
+    if (!i.GetCurrentValue()->FastShutdownIfPossible()) {
       shutdown_num_processes_slow_++;
     }
 

@@ -87,12 +87,12 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
     // check if it's a diagnostics-related process.  We skip all diagnostics
     // pages (e.g. "about:xxx" URLs).  Iterate the RenderProcessHosts to find
     // the tab contents.
-    RenderProcessHost::iterator renderer_iter(
-        RenderProcessHost::AllHostsIterator());
     ProcessMemoryInformation& process =
         chrome_browser->processes[index];
 
-    for (; !renderer_iter.IsAtEnd(); renderer_iter.Advance()) {
+    for (RenderProcessHost::iterator renderer_iter(
+         RenderProcessHost::AllHostsIterator()); !renderer_iter.IsAtEnd();
+         renderer_iter.Advance()) {
       DCHECK(renderer_iter.GetCurrentValue());
       if (process.pid != renderer_iter.GetCurrentValue()->process().pid())
         continue;

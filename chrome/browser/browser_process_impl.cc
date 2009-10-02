@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -465,12 +465,9 @@ void BrowserProcessImpl::SetIPCLoggingEnabled(bool enable) {
 
   // Finally, tell the renderers which don't derive from ChildProcess.
   // Messages to the renderers must be done on the UI (main) thread.
-  RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
-  for (RenderProcessHost* host = i.GetCurrentValue();
-       !i.IsAtEnd();
-       i.Advance()) {
-    host->Send(new ViewMsg_SetIPCLoggingEnabled(enable));
-  }
+  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance())
+    i.GetCurrentValue()->Send(new ViewMsg_SetIPCLoggingEnabled(enable));
 }
 
 // Helper for SetIPCLoggingEnabled.

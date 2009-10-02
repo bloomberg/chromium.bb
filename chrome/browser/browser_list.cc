@@ -48,11 +48,9 @@ class BrowserActivityObserver : public NotificationObserver {
   // Counts the number of active RenderProcessHosts and logs them.
   void LogRenderProcessHostCount() const {
     int hosts_count = 0;
-    RenderProcessHost::iterator iter(RenderProcessHost::AllHostsIterator());
-    while (!iter.IsAtEnd()) {
-      hosts_count++;
-      iter.Advance();
-    }
+    for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+         !i.IsAtEnd(); i.Advance())
+      ++hosts_count;
     UMA_HISTOGRAM_CUSTOM_COUNTS("MPArch.RPHCountPerLoad", hosts_count,
                                 1, 50, 50);
   }

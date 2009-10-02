@@ -189,7 +189,7 @@ void ExtensionDOMUI::UnregisterAndReplaceOverride(const std::string& page,
   if (index == 0) {
     // This is the active override, so we need to find all existing
     // tabs for this override and get them to reload the original URL.
-    for (TabContentsIterator iterator; !iterator.done(); iterator++) {
+    for (TabContentsIterator iterator; !iterator.done(); ++iterator) {
       TabContents* tab = *iterator;
       if (tab->profile() != profile)
         continue;

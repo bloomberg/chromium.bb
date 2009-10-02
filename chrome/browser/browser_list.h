@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -139,7 +139,7 @@ class TabContents;
 // browser windows or tabs while iterating may cause incorrect behavior.
 //
 // Example:
-//   for (TabContentsIterator iterator; !iterator.done(); iterator++) {
+//   for (TabContentsIterator iterator; !iterator.done(); ++iterator) {
 //     TabContents* cur = *iterator;
 //     -or-
 //     iterator->operationOnTabContents();
