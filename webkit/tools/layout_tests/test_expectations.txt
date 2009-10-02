@@ -2184,8 +2184,8 @@ BUG23467 MAC : LayoutTests/svg/custom/dominant-baseline-hanging.svg = IMAGE
 BUG23466 MAC : LayoutTests/svg/custom/foreign-object-skew.svg = IMAGE
 
 // SVG marker changes
-BUG23465 MAC : LayoutTests/svg/custom/marker-changes.svg = IMAGE
-BUG23465 MAC : LayoutTests/svg/custom/marker-child-changes.svg = IMAGE
+BUG23465 MAC : LayoutTests/svg/custom/marker-changes.svg = FAIL
+BUG23465 MAC : LayoutTests/svg/custom/marker-child-changes.svg = FAIL
 
 // SVG expected doesn't have rounded corner like actual does
 BUG23464 MAC : LayoutTests/svg/custom/svg-fonts-in-html.html = IMAGE
@@ -2380,7 +2380,8 @@ BUG10675 MAC : chrome/fast/forms/basic-textareas-quirks.html = FAIL
 BUG10675 MAC : chrome/fast/forms/basic-textareas.html = FAIL
 
 // Started failing 3/12/09. Unclear which CL caused it though.
-BUG10448 MAC : LayoutTests/fast/overflow/image-selection-highlight.html = FAIL
+// Been passing lately (9/09). If it keeps passing, drop it from the list.
+BUG10448 MAC : LayoutTests/fast/overflow/image-selection-highlight.html = FAIL PASS
 
 // Newly added tests with merge 41588:41613.
 // They pass on windows given a new baseline and likely only need to be given
