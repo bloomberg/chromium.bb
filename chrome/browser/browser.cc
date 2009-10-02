@@ -509,7 +509,6 @@ void Browser::InProgressDownloadResponse(bool cancel_downloads) {
   ShowDownloadsTab();
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // Browser, Tab adding/showing functions:
 

@@ -23,10 +23,11 @@
 class TabStripDummyDelegate : public TabStripModelDelegate {
  public:
   explicit TabStripDummyDelegate(TabContents* dummy)
-      : dummy_contents_(dummy), can_close_(true) {}
+      : dummy_contents_(dummy), can_close_(true), run_unload_(false) {}
   virtual ~TabStripDummyDelegate() {}
 
   void set_can_close(bool value) { can_close_ = value; }
+  void set_run_unload_listener(bool value) { run_unload_ = value; }
 
   // Overridden from TabStripModelDelegate:
   virtual TabContents* AddBlankTab(bool foreground) { return NULL; }
@@ -59,7 +60,7 @@ class TabStripDummyDelegate : public TabStripModelDelegate {
   virtual void CloseFrameAfterDragSession() {}
   virtual void CreateHistoricalTab(TabContents* contents) {}
   virtual bool RunUnloadListenerBeforeClosing(TabContents* contents) {
-    return false;
+    return run_unload_;
   }
   virtual bool CanRestoreTab() { return false; }
   virtual void RestoreTab() {}
@@ -73,13 +74,24 @@ class TabStripDummyDelegate : public TabStripModelDelegate {
   // Whether tabs can be closed.
   bool can_close_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(TabStripDummyDelegate);
+  // Whether to report that we need to run an unload listener before closing.
+  bool run_unload_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabStripDummyDelegate);
 };
 
 class TabStripModelTest : public RenderViewHostTestHarness {
  public:
   TabContents* CreateTabContents() {
     return new TabContents(profile(), NULL, 0, NULL);
+  }
+
+  TabContents* CreateTabContentsWithSharedRPH(TabContents* tab_contents) {
+    TabContents* retval = new TabContents(profile(),
+        tab_contents->render_view_host()->site_instance(), MSG_ROUTING_NONE,
+        NULL);
+    EXPECT_EQ(retval->process(), tab_contents->process());
+    return retval;
   }
 
   // Forwards a URL "load" request through to our dummy TabContents
@@ -1463,4 +1475,61 @@ TEST_F(TabStripModelTest, Pinning) {
   }
 
   tabstrip.CloseAllTabs();
+}
+
+// Tests that fast shutdown is attempted appropriately.
+TEST_F(TabStripModelTest, FastShutdown) {
+  TabStripDummyDelegate delegate(NULL);
+  TabStripModel tabstrip(&delegate, profile());
+  MockTabStripModelObserver observer;
+  tabstrip.AddObserver(&observer);
+
+  EXPECT_TRUE(tabstrip.empty());
+
+  // Make sure fast shutdown is attempted when tabs that share a RPH are shut
+  // down.
+  {
+    TabContents* contents1 = CreateTabContents();
+    TabContents* contents2 = CreateTabContentsWithSharedRPH(contents1);
+
+    SetID(contents1, 1);
+    SetID(contents2, 2);
+
+    tabstrip.AppendTabContents(contents1, true);
+    tabstrip.AppendTabContents(contents2, true);
+
+    // Turn on the fake unload listener so the tabs don't actually get shut
+    // down when we call CloseAllTabs()---we need to be able to check that
+    // fast shutdown was attempted.
+    delegate.set_run_unload_listener(true);
+    tabstrip.CloseAllTabs();
+    // On a mock RPH this checks whether we *attempted* fast shutdown.
+    // A real RPH would reject our attempt since there is an unload handler.
+    EXPECT_TRUE(contents1->process()->fast_shutdown_started());
+    EXPECT_EQ(2, tabstrip.count());
+
+    delegate.set_run_unload_listener(false);
+    tabstrip.CloseAllTabs();
+    EXPECT_TRUE(tabstrip.empty());
+  }
+
+  // Make sure fast shutdown is not attempted when only some tabs that share a
+  // RPH are shut down.
+  {
+    TabContents* contents1 = CreateTabContents();
+    TabContents* contents2 = CreateTabContentsWithSharedRPH(contents1);
+
+    SetID(contents1, 1);
+    SetID(contents2, 2);
+
+    tabstrip.AppendTabContents(contents1, true);
+    tabstrip.AppendTabContents(contents2, true);
+
+    tabstrip.CloseTabContentsAt(1);
+    EXPECT_FALSE(contents1->process()->fast_shutdown_started());
+    EXPECT_EQ(1, tabstrip.count());
+
+    tabstrip.CloseAllTabs();
+    EXPECT_TRUE(tabstrip.empty());
+  }
 }

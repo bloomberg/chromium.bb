@@ -78,6 +78,7 @@ bool RenderProcessHost::run_renderer_in_process_ = false;
 
 RenderProcessHost::RenderProcessHost(Profile* profile)
     : max_page_id_(-1),
+      fast_shutdown_started_(false),
       id_(ChildProcessInfo::GenerateChildProcessUniqueId()),
       profile_(profile),
       sudden_termination_allowed_(true),
@@ -118,6 +119,12 @@ void RenderProcessHost::ReportExpectingClose(int32 listener_id) {
 void RenderProcessHost::UpdateMaxPageID(int32 page_id) {
   if (page_id > max_page_id_)
     max_page_id_ = page_id;
+}
+
+bool RenderProcessHost::FastShutdownForPageCount(size_t count) {
+  if (listeners_.size() == count)
+    return FastShutdownIfPossible();
+  return false;
 }
 
 // static

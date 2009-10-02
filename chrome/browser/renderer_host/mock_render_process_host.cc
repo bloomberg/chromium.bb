@@ -60,7 +60,10 @@ void MockRenderProcessHost::ResetVisitedLinks() {
 }
 
 bool MockRenderProcessHost::FastShutdownIfPossible() {
-  return false;
+  // We aren't actually going to do anything, but set |fast_shutdown_started_|
+  // to true so that tests know we've been called.
+  fast_shutdown_started_ = true;
+  return true;
 }
 
 bool MockRenderProcessHost::SendWithTimeout(IPC::Message* msg, int timeout_ms) {

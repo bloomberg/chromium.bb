@@ -30,6 +30,9 @@ void RegisterPrefs(PrefService* local_state);
 // time.
 void OnShutdownStarting(ShutdownType type);
 
+// Get the current shutdown type.
+ShutdownType GetShutdownType();
+
 // Invoked in two ways:
 // . When the last browser has been deleted and the message loop has finished
 //   running.

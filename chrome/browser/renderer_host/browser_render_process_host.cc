@@ -195,8 +195,7 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
       ALLOW_THIS_IN_INITIALIZER_LIST(cached_dibs_cleaner_(
             base::TimeDelta::FromSeconds(5),
             this, &BrowserRenderProcessHost::ClearTransportDIBCache)),
-      zygote_child_(false),
-      fast_shutdown_(false) {
+      zygote_child_(false) {
   widget_helper_ = new RenderWidgetHelper();
 
   registrar_.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
@@ -320,7 +319,7 @@ bool BrowserRenderProcessHost::Init() {
       return false;
     }
     process_.set_handle(process);
-    fast_shutdown_ = false;
+    fast_shutdown_started_ = false;
 
     // Log the launch time, separating out the first one (which will likely be
     // slower due to the rest of the browser initializing at the same time).
@@ -653,7 +652,7 @@ bool BrowserRenderProcessHost::FastShutdownIfPossible() {
   if (!process_.handle())
     return false;  // Render process is probably crashed.
   if (BrowserRenderProcessHost::run_renderer_in_process())
-    return false;  // Since process mode can't do fast shutdown.
+    return false;  // Single process mode can't do fast shutdown.
 
   // Test if there's an unload listener.
   // NOTE: It's possible that an onunload listener may be installed
@@ -665,7 +664,7 @@ bool BrowserRenderProcessHost::FastShutdownIfPossible() {
 
   // Check for any external tab containers, since they may still be running even
   // though this window closed.
-  BrowserRenderProcessHost::listeners_iterator iter(ListenersIterator());
+  listeners_iterator iter(ListenersIterator());
   while (!iter.IsAtEnd()) {
     // NOTE: This is a bit dangerous.  We know that for now, listeners are
     // always RenderWidgetHosts.  But in theory, they don't have to be.
@@ -685,7 +684,7 @@ bool BrowserRenderProcessHost::FastShutdownIfPossible() {
   // means that UMA won't treat this as a renderer crash.
   process_.Terminate(ResultCodes::NORMAL_EXIT);
   process_.Close();
-  fast_shutdown_ = true;
+  fast_shutdown_started_ = true;
   return true;
 }
 
@@ -812,7 +811,7 @@ void BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
 void BrowserRenderProcessHost::OnChannelConnected(int32 peer_pid) {
   // process_ is not NULL if we created the renderer process
   if (!process_.handle()) {
-    if (fast_shutdown_) {
+    if (fast_shutdown_started_) {
       // We terminated the process, but the ChannelConnected task was still
       // in the queue. We can safely ignore it.
       return;

@@ -315,7 +315,7 @@ TabContents::TabContents(Profile* profile,
 TabContents::~TabContents() {
   is_being_destroyed_ = true;
 
-  // We don't want any notifications while we're runnign our destructor.
+  // We don't want any notifications while we're running our destructor.
   registrar_.RemoveAll();
 
   // Unregister the notifications of all observed prefs change.

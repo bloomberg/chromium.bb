@@ -108,6 +108,15 @@ class RenderProcessHost : public IPC::Channel::Sender,
     return ignore_input_events_;
   }
 
+  // Try to shutdown the associated render process as fast as possible, but
+  // only if |count| matches the number of render widgets that this process
+  // controls.
+  bool FastShutdownForPageCount(size_t count);
+
+  bool fast_shutdown_started() {
+    return fast_shutdown_started_;
+  }
+
   // Virtual interface ---------------------------------------------------------
 
   // Initialize the new renderer process, returning true on success. This must
@@ -220,12 +229,15 @@ class RenderProcessHost : public IPC::Channel::Sender,
   // browser_process.h)
   scoped_ptr<IPC::SyncChannel> channel_;
 
-  // the registered listeners. When this list is empty or all NULL, we should
+  // The registered listeners. When this list is empty or all NULL, we should
   // delete ourselves
   IDMap<IPC::Channel::Listener> listeners_;
 
   // The maximum page ID we've ever seen from the renderer process.
   int32 max_page_id_;
+
+  // True if fast shutdown has been performed on this RPH.
+  bool fast_shutdown_started_;
 
  private:
   // The globally-uniqe identifier for this RPH.

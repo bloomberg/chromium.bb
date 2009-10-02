@@ -30,7 +30,6 @@ struct NavigationInfo;
 // An external tab is a Chrome tab that is meant to displayed in an
 // external process. This class provides the FocusManger needed by the
 // TabContents as well as an implementation of TabContentsDelagate.
-// TODO(beng): Should override WidgetWin instead of Widget.
 class ExternalTabContainer : public TabContentsDelegate,
                              public NotificationObserver,
                              public views::WidgetWin,

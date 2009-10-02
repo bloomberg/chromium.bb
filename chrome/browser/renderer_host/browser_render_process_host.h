@@ -186,9 +186,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // True iff the renderer is a child of a zygote process.
   bool zygote_child_;
 
-  // True if FastShutdownIfPossible was called and was successful.
-  bool fast_shutdown_;
-
   DISALLOW_COPY_AND_ASSIGN(BrowserRenderProcessHost);
 };
 

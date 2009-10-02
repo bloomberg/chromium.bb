@@ -10,6 +10,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -122,7 +123,9 @@ void TabStripModel::ReplaceNavigationControllerAt(
   // occurs between the call to add an aditional tab and one to close
   // the previous tab.
   InsertTabContentsAt(index + 1, controller->tab_contents(), true, true);
-  InternalCloseTabContentsAt(index, false);
+  std::vector<int> closing_tabs;
+  closing_tabs.push_back(index);
+  InternalCloseTabs(closing_tabs, false);
 }
 
 TabContents* TabStripModel::DetachTabContentsAt(int index) {
@@ -209,8 +212,16 @@ void TabStripModel::CloseAllTabs() {
   // specific condition when CloseTabContentsAt causes a flurry of
   // Close/Detach/Select notifications to be sent.
   closing_all_ = true;
+  std::vector<int> closing_tabs;
   for (int i = count() - 1; i >= 0; --i)
-    CloseTabContentsAt(i);
+    closing_tabs.push_back(i);
+  InternalCloseTabs(closing_tabs, true);
+}
+
+bool TabStripModel::CloseTabContentsAt(int index) {
+  std::vector<int> closing_tabs;
+  closing_tabs.push_back(index);
+  return InternalCloseTabs(closing_tabs, true);
 }
 
 bool TabStripModel::TabsAreLoading() const {
@@ -504,28 +515,27 @@ void TabStripModel::ExecuteContextMenuCommand(
     case CommandCloseOtherTabs: {
       UserMetrics::RecordAction(L"TabContextMenu_CloseOtherTabs", profile_);
       TabContents* contents = GetTabContentsAt(context_index);
+      std::vector<int> closing_tabs;
       for (int i = count() - 1; i >= 0; --i) {
         if (GetTabContentsAt(i) != contents)
-          CloseTabContentsAt(i);
+          closing_tabs.push_back(i);
       }
+      InternalCloseTabs(closing_tabs, true);
       break;
     }
     case CommandCloseTabsToRight: {
       UserMetrics::RecordAction(L"TabContextMenu_CloseTabsToRight", profile_);
-      for (int i = count() - 1; i > context_index; --i)
-        CloseTabContentsAt(i);
+      std::vector<int> closing_tabs;
+      for (int i = count() - 1; i > context_index; --i) {
+        closing_tabs.push_back(i);
+      }
+      InternalCloseTabs(closing_tabs, true);
       break;
     }
     case CommandCloseTabsOpenedBy: {
       UserMetrics::RecordAction(L"TabContextMenu_CloseTabsOpenedBy", profile_);
-      NavigationController* opener =
-          &GetTabContentsAt(context_index)->controller();
-
-      for (int i = count() - 1; i >= 0; --i) {
-        if (OpenerMatches(contents_data_.at(i), opener, true))
-          CloseTabContentsAt(i);
-      }
-
+      std::vector<int> closing_tabs = GetIndexesOpenedBy(context_index);
+      InternalCloseTabs(closing_tabs, true);
       break;
     }
     case CommandRestoreTab: {
@@ -583,34 +593,68 @@ bool TabStripModel::IsNewTabAtEndOfTabStrip(TabContents* contents) const {
       contents->controller().entry_count() == 1;
 }
 
-bool TabStripModel::InternalCloseTabContentsAt(int index,
-                                               bool create_historical_tab) {
-  if (!delegate_->CanCloseContentsAt(index))
-    return false;
+bool TabStripModel::InternalCloseTabs(std::vector<int> indices,
+                                      bool create_historical_tabs) {
+  bool retval = true;
 
-  TabContents* detached_contents = GetContentsAt(index);
+  // We only try the fast shutdown path if the whole browser process is *not*
+  // shutting down. Fast shutdown during browser termination is handled in
+  // BrowserShutdown.
+  if (browser_shutdown::GetShutdownType() == browser_shutdown::NOT_VALID) {
+    // Construct a map of processes to the number of associated tabs that are
+    // closing.
+    std::map<RenderProcessHost*, size_t> processes;
+    for (size_t i = 0; i < indices.size(); ++i) {
+      if (!delegate_->CanCloseContentsAt(indices[i])) {
+        retval = false;
+        continue;
+      }
 
-  if (delegate_->RunUnloadListenerBeforeClosing(detached_contents))
-    return false;
+      TabContents* detached_contents = GetContentsAt(indices[i]);
+      RenderProcessHost* process = detached_contents->process();
+      std::map<RenderProcessHost*, size_t>::iterator iter =
+          processes.find(process);
+      if (iter == processes.end()) {
+        processes[process] = 1;
+      } else {
+        iter->second++;
+      }
+    }
 
-  // TODO: Now that we know the tab has no unload/beforeunload listeners,
-  // we should be able to do a fast shutdown of the RenderViewProcess.
-  // Make sure that we actually do.
-
-  FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-      TabClosingAt(detached_contents, index));
-
-  if (detached_contents) {
-    // Ask the delegate to save an entry for this tab in the historical tab
-    // database if applicable.
-    if (create_historical_tab)
-      delegate_->CreateHistoricalTab(detached_contents);
-
-    // Deleting the TabContents will call back to us via NotificationObserver
-    // and detach it.
-    delete detached_contents;
+    // Try to fast shutdown the tabs that can close.
+    for (std::map<RenderProcessHost*, size_t>::iterator iter =
+            processes.begin();
+        iter != processes.end(); ++iter) {
+      iter->first->FastShutdownForPageCount(iter->second);
+    }
   }
-  return true;
+
+  // We now return to our regularly scheduled shutdown procedure.
+  for (size_t i = 0; i < indices.size(); ++i) {
+    TabContents* detached_contents = GetContentsAt(indices[i]);
+
+    if (!delegate_->CanCloseContentsAt(indices[i]) ||
+        delegate_->RunUnloadListenerBeforeClosing(detached_contents)) {
+      retval = false;
+      continue;
+    }
+
+    FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
+        TabClosingAt(detached_contents, indices[i]));
+
+    if (detached_contents) {
+      // Ask the delegate to save an entry for this tab in the historical tab
+      // database if applicable.
+      if (create_historical_tabs)
+        delegate_->CreateHistoricalTab(detached_contents);
+
+      // Deleting the TabContents will call back to us via NotificationObserver
+      // and detach it.
+      delete detached_contents;
+    }
+  }
+
+  return retval;
 }
 
 void TabStripModel::MoveTabContentsAtImpl(int index, int to_position,

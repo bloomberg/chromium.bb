@@ -52,34 +52,34 @@ void RegisterPrefs(PrefService* local_state) {
   local_state->RegisterIntegerPref(prefs::kShutdownNumProcessesSlow, 0);
 }
 
+ShutdownType GetShutdownType() {
+  return shutdown_type_;
+}
+
 void OnShutdownStarting(ShutdownType type) {
-  // TODO(erikkay): http://b/753080 when onbeforeunload is supported at
-  // shutdown, fix this to allow these variables to be reset.
-  if (shutdown_type_ == NOT_VALID) {
-    shutdown_type_ = type;
-    // For now, we're only counting the number of renderer processes
-    // since we can't safely count the number of plugin processes from this
-    // thread, and we'd really like to avoid anything which might add further
-    // delays to shutdown time.
-    shutdown_started_ = Time::Now();
+  if (shutdown_type_ != NOT_VALID)
+    return;
 
-    // Call FastShutdown on all of the RenderProcessHosts.  This will be
-    // a no-op in some cases, so we still need to go through the normal
-    // shutdown path for the ones that didn't exit here.
-    shutdown_num_processes_ = 0;
-    shutdown_num_processes_slow_ = 0;
-    RenderProcessHost::iterator hosts(RenderProcessHost::AllHostsIterator());
-    while (!hosts.IsAtEnd()) {
-      shutdown_num_processes_++;
-      if (!hosts.GetCurrentValue()->FastShutdownIfPossible()) {
-        // TODO(ojan): I think now that we deal with beforeunload/unload
-        // higher up, it's not possible to get here. Confirm this and change
-        // FastShutdownIfPossible to just be FastShutdown.
-        shutdown_num_processes_slow_++;
-      }
+  shutdown_type_ = type;
+  // For now, we're only counting the number of renderer processes
+  // since we can't safely count the number of plugin processes from this
+  // thread, and we'd really like to avoid anything which might add further
+  // delays to shutdown time.
+  shutdown_started_ = Time::Now();
 
-      hosts.Advance();
+  // Call FastShutdown on all of the RenderProcessHosts.  This will be
+  // a no-op in some cases, so we still need to go through the normal
+  // shutdown path for the ones that didn't exit here.
+  shutdown_num_processes_ = 0;
+  shutdown_num_processes_slow_ = 0;
+  RenderProcessHost::iterator hosts(RenderProcessHost::AllHostsIterator());
+  while (!hosts.IsAtEnd()) {
+    shutdown_num_processes_++;
+    if (!hosts.GetCurrentValue()->FastShutdownIfPossible()) {
+      shutdown_num_processes_slow_++;
     }
+
+    hosts.Advance();
   }
 }
 
