@@ -676,7 +676,7 @@ if env['TARGET_ARCHITECTURE'] == env['BUILD_ARCHITECTURE']:
 # Generated files test - verify that the checked in version is up to date.
 # ------------------------------------------------------------------------
 
-if env['BUILD_SUBARCH'] == '32':
+if not env.Bit('windows') and env['BUILD_SUBARCH'] == '32':
   cmp_script = '${SCONSTRUCT_DIR}/tools/file_cmp_test.py'
   checkedin_file = '${SCONSTRUCT_DIR}/src/trusted/service_runtime/arch/x86_64/tramp_data.h'
   generated_file = tramp_data_header[0]
