@@ -111,9 +111,11 @@ _start:
 __aeabi_read_tp:
     mov r0, r9, lsr #NACL_PAGESHIFT
     lsl r0, #NACL_PAGESHIFT
-    /* NOTE: it seems that on arm everything is shifted by 8 */
-    /* TODO(robertm): check whether this is really or a bug */
-    sub r0, r0, #8
+    /* NOTE: for gcc generated code there is an implicit offset of 8 */
+    /* NOTE: for llvm generated code there is an implicit offset of 16 */
+    /* TODO(robertm): find some flags to control/unify this */
+    /* sub r0, r0, #8 */
+    sub r0, r0, #16
     /* This has to wait until new lib is properly sfi compiled */
 /* TODO(robertm): fix this */
 /*

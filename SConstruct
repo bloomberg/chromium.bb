@@ -1062,6 +1062,13 @@ if ARGUMENTS.get('sdl', 'hermetic') != 'none':
   nacl_extra_sdk_env.Append(
       BUILD_SCONSCRIPTS = ['src/untrusted/av/nacl.scons',])
 
+# TODO(robertm): remove this ASAP, we currently have llvm issue with c++
+if nacl_extra_sdk_env['TARGET_ARCHITECTURE'] == 'arm':
+  nacl_extra_sdk_env.FilterOut(
+      CCFLAGS = ['-Werror',])
+  nacl_extra_sdk_env.Append(
+      CFLAGS = ['-Werror',])
+
 environment_list.append(nacl_extra_sdk_env)
 
 # ----------------------------------------------------------
