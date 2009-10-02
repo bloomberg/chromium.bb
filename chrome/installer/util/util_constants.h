@@ -39,7 +39,8 @@ enum InstallStatus {
   EULA_REJECTED,         // EULA dialog was not accepted by user.
   EULA_ACCEPTED,         // EULA dialog was accepted by user.
   EULA_ACCEPTED_OPT_IN,  // EULA accepted wtih the crash optin selected.
-  INSTALL_DIR_IN_USE     // Installation directory is in use by another process
+  INSTALL_DIR_IN_USE,    // Installation directory is in use by another process
+  UNINSTALL_REQUIRES_REBOOT // Uninstallation required a reboot.
 };
 
 namespace switches {
