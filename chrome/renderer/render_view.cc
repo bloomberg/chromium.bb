@@ -1544,6 +1544,10 @@ WebString RenderView::autoCorrectWord(const WebKit::WebString& word) {
   return WideToUTF16Hack(autocorrect_word);
 }
 
+void RenderView::showSpellingUI(bool show) {
+  Send(new ViewHostMsg_ShowSpellingPanel(routing_id_, show));
+}
+
 void RenderView::updateSpellingUIWithMisspelledWord(const WebString& word) {
   Send(new ViewHostMsg_UpdateSpellingPanelWithMisspelledWord(
       routing_id_, UTF16ToWideHack(word)));

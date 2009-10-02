@@ -888,7 +888,8 @@ void EditorClientImpl::updateSpellingUIWithMisspelledWord(
 }
 
 void EditorClientImpl::showSpellingUI(bool show) {
-  ASSERT_NOT_REACHED();
+  if (webview_->client())
+    webview_->client()->showSpellingUI(show);
 }
 
 bool EditorClientImpl::spellingUIIsShowing() {

@@ -1012,6 +1012,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_DocumentWithTagClosed,
                       int /* the tag */)
 
+  // Tells the browser to display or not display the SpellingPanel
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowSpellingPanel,
+                      bool /* if true, then show it, otherwise hide it*/)
+
   // Tells the browser to update the spelling panel with the given word.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateSpellingPanelWithMisspelledWord,
                       std::wstring /* the word to update the panel with */)

@@ -122,6 +122,7 @@ class TestWebViewDelegate : public WebViewDelegate,
       const WebKit::WebString& text, int& offset, int& length) {}
   virtual WebKit::WebString autoCorrectWord(
       const WebKit::WebString& misspelled_word);
+  virtual void showSpellingUI(bool show) {}
   virtual void updateSpellingUIWithMisspelledWord(
       const WebKit::WebString& word) {}
   virtual void runModalAlertDialog(

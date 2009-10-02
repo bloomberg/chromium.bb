@@ -141,6 +141,9 @@ namespace WebKit {
         // replacement is found, then an empty string is returned.
         virtual WebString autoCorrectWord(const WebString& misspelledWord) = 0;
 
+        // Show or hide the spelling UI.
+        virtual void showSpellingUI(bool show) = 0;
+
         // Update the spelling UI with the given word.
         virtual void updateSpellingUIWithMisspelledWord(const WebString& word) = 0;
 
