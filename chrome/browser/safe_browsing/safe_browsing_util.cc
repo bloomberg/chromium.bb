@@ -21,7 +21,7 @@ static const int kSafeBrowsingMacDigestSize = 20;
 static const char kContinueUrlFormat[] =
   "http://www.google.com/tools/firefox/toolbar/FT2/intl/%s/submit_success.html";
 
-static const char kReportParams[] = "?tpl=generic&continue=%s&url=%s";
+static const char kReportParams[] = "?tpl=chrome&continue=%s&url=%s";
 
 namespace safe_browsing_util {
 
