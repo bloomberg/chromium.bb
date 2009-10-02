@@ -53,11 +53,6 @@ FindBarHost::FindBarHost(BrowserView* browser_view)
       views::FocusManager::GetFocusManagerForNativeView(host_->GetNativeView());
   if (focus_manager_) {
     focus_manager_->AddFocusChangeListener(this);
-
-    // Stores the currently focused view, and tracks focus changes so that we
-    // can restore focus when the find box is closed.
-    focus_tracker_.reset(new views::ExternalFocusTracker(view_,
-                                                         focus_manager_));
   } else {
     // In some cases (see bug http://crbug.com/17056) it seems we may not have
     // a focus manager.  Please reopen the bug if you hit this.
@@ -74,6 +69,10 @@ FindBarHost::~FindBarHost() {
 }
 
 void FindBarHost::Show() {
+  // Stores the currently focused view, and tracks focus changes so that we can
+  // restore focus when the find box is closed.
+  focus_tracker_.reset(new views::ExternalFocusTracker(view_, focus_manager_));
+
   if (disable_animations_during_testing_) {
     animation_->Reset(1);
     MoveWindowIfNecessary(gfx::Rect(), true);

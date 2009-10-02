@@ -253,6 +253,57 @@ class SimpleNotificationObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(SimpleNotificationObserver);
 };
 
+class FindInPageNotificationObserver : public NotificationObserver {
+ public:
+  explicit FindInPageNotificationObserver(TabContents* parent_tab)
+      : parent_tab_(parent_tab),
+        active_match_ordinal_(-1),
+        number_of_matches_(0) {
+    current_find_request_id_ = parent_tab->current_find_request_id();
+    registrar_.Add(this, NotificationType::FIND_RESULT_AVAILABLE,
+                   Source<TabContents>(parent_tab_));
+    ui_test_utils::RunMessageLoop();
+  }
+
+  int active_match_ordinal() const { return active_match_ordinal_; }
+
+  int number_of_matches() const { return number_of_matches_; }
+
+  virtual void Observe(NotificationType type, const NotificationSource& source,
+                       const NotificationDetails& details) {
+    if (type == NotificationType::FIND_RESULT_AVAILABLE) {
+      Details<FindNotificationDetails> find_details(details);
+      if (find_details->request_id() == current_find_request_id_) {
+        // We get multiple responses and one of those will contain the ordinal.
+        // This message comes to us before the final update is sent.
+        if (find_details->active_match_ordinal() > -1)
+          active_match_ordinal_ = find_details->active_match_ordinal();
+        if (find_details->final_update()) {
+          number_of_matches_ = find_details->number_of_matches();
+          MessageLoopForUI::current()->Quit();
+        } else {
+          DLOG(INFO) << "Ignoring, since we only care about the final message";
+        }
+      }
+    } else {
+      NOTREACHED();
+    }
+  }
+
+ private:
+  NotificationRegistrar registrar_;
+  TabContents* parent_tab_;
+  // We will at some point (before final update) be notified of the ordinal and
+  // we need to preserve it so we can send it later.
+  int active_match_ordinal_;
+  int number_of_matches_;
+  // The id of the current find request, obtained from TabContents. Allows us
+  // to monitor when the search completes.
+  int current_find_request_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(FindInPageNotificationObserver);
+};
+
 }  // namespace
 
 void RunMessageLoop() {
@@ -430,6 +481,15 @@ void WaitForFocusInBrowser(Browser* browser) {
   SimpleNotificationObserver<Browser>
       focus_observer(NotificationType::FOCUS_RETURNED_TO_BROWSER,
       browser);
+}
+
+int FindInPage(TabContents* tab_contents, const string16& search_string,
+               bool forward, bool match_case, int* ordinal) {
+  tab_contents->StartFinding(search_string, forward, match_case);
+  FindInPageNotificationObserver observer(tab_contents);
+  if (ordinal)
+    *ordinal = observer.active_match_ordinal();
+  return observer.number_of_matches();
 }
 
 }  // namespace ui_test_utils

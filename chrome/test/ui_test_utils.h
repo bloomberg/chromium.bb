@@ -111,6 +111,15 @@ void WaitForFocusChange(RenderViewHost* rvh);
 // Waits for the renderer to return focus to the browser (happens through tab
 // traversal).
 void WaitForFocusInBrowser(Browser* browser);
+
+// Performs a find in the page of the specified tab. Returns the number of
+// matches found.  |ordinal| is an optional parameter which is set to the index
+// of the current match.
+int FindInPage(TabContents* tab,
+               const string16& search_string,
+               bool forward,
+               bool case_sensitive,
+               int* ordinal);
 }
 
 #endif  // CHROME_TEST_UI_TEST_UTILS_H_
