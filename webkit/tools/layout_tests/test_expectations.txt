@@ -2405,3 +2405,6 @@ BUG_SENORBLANCO LINUX : LayoutTests/tables/mozilla/bugs/bug4523.html = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/svg/batik/text/textOnPath.svg = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/tables/mozilla/bugs/bug137388-2.html = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/tables/mozilla/core/bloomberg.html = FAIL
+BUG_SENORBLANCO LINUX RELEASE : LayoutTests/fast/backgrounds/size/contain-and-cover.html = FAIL
+BUG_SENORBLANCO LINUX RELEASE : LayoutTests/svg/batik/paints/gradientLimit.svg = FAIL
+BUG_SENORBLANCO LINUX RELEASE : LayoutTests/svg/text/text-text-07-t.svg = FAIL
