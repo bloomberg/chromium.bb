@@ -30,6 +30,17 @@
 // ID assigned to the first unpacked extension loaded by LoadExtension().
 #define kDefaultExtensionID "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
+const std::wstring kSubscribePage =
+    L"files/extensions/samples/subscribe_page_action/subscribe.html";
+const std::wstring kValidFeed0 = L"files/feeds/feed_script.xml";
+const std::wstring kValidFeed1 = L"files/feeds/feed1.xml";
+const std::wstring kValidFeed2 = L"files/feeds/feed2.xml";
+const std::wstring kValidFeed3 = L"files/feeds/feed3.xml";
+const std::wstring kValidFeed4 = L"files/feeds/feed4.xml";
+const std::wstring kValidFeed5 = L"files/feeds/feed5.xml";
+const std::wstring kInvalidFeed1 = L"files/feeds/feed_invalid1.xml";
+const std::wstring kInvalidFeed2 = L"files/feeds/feed_invalid2.xml";
+
 // Looks for an ExtensionHost whose URL has the given path component (including
 // leading slash).  Also verifies that the expected number of hosts are loaded.
 static ExtensionHost* FindHostWithPath(ExtensionProcessManager* manager,
@@ -246,24 +257,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
 }
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
-GURL GetFeedUrl(const std::string& feed_page) {
-  FilePath test_dir;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
-
-  FilePath subscribe;
-  subscribe = test_dir.AppendASCII("extensions")
-                      .AppendASCII("samples")
-                      .AppendASCII("subscribe_page_action")
-                      .AppendASCII("subscribe.html");
-  subscribe = subscribe.StripTrailingSeparators();
-
-  FilePath feed_dir = test_dir.AppendASCII("feeds")
-                              .AppendASCII(feed_page.c_str());
-
-  return GURL(net::FilePathToFileURL(subscribe).spec() +
-              std::string("?") +
-              net::FilePathToFileURL(feed_dir).spec() +
-              "&synchronous");  // synchronous XHR for easier testing.
+GURL GetFeedUrl(HTTPTestServer* server, const std::wstring& feed_page) {
+  static GURL base_url = server->TestServerPageW(kSubscribePage);
+  GURL feed_url = server->TestServerPageW(feed_page);
+  return GURL(base_url.spec() + std::string("?") + feed_url.spec() +
+         std::string("&synchronous"));
 }
 
 static const wchar_t* jscript_feed_title =
@@ -314,64 +312,82 @@ void GetParsedFeedData(Browser* browser, std::string* feed_title,
 
 // Tests that we can parse feeds.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeed) {
+  HTTPTestServer* server = StartHTTPServer();
+
   std::string feed_title;
   std::string item_title;
   std::string item_desc;
   std::string error;
 
-  ui_test_utils::NavigateToURL(browser(), GetFeedUrl("feed1.xml"));
+  ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kValidFeed1));
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
   EXPECT_STREQ("Feed for 'MyFeedTitle'", feed_title.c_str());
   EXPECT_STREQ("Title 1", item_title.c_str());
   EXPECT_STREQ("Desc", item_desc.c_str());
   EXPECT_STREQ("No error", error.c_str());
 
-  ui_test_utils::NavigateToURL(browser(), GetFeedUrl("feed2.xml"));
+  ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kValidFeed2));
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
   EXPECT_STREQ("Feed for 'MyFeed2'", feed_title.c_str());
   EXPECT_STREQ("My item title1", item_title.c_str());
   EXPECT_STREQ("This is a summary.", item_desc.c_str());
   EXPECT_STREQ("No error", error.c_str());
 
-  ui_test_utils::NavigateToURL(browser(), GetFeedUrl("feed3.xml"));
+  ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kValidFeed3));
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
   EXPECT_STREQ("Feed for 'Google Code buglist rss feed'", feed_title.c_str());
   EXPECT_STREQ("My dear title", item_title.c_str());
   EXPECT_STREQ("My dear content", item_desc.c_str());
   EXPECT_STREQ("No error", error.c_str());
 
+  // Feed with weird characters in title.
+  ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kValidFeed4));
+  GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
+  EXPECT_STREQ("Feed for 'Title chars <script> %23 stop'", feed_title.c_str());
+  EXPECT_STREQ("Title chars <script> %23 stop", item_title.c_str());
+  EXPECT_STREQ("My dear content", item_desc.c_str());
+  EXPECT_STREQ("No error", error.c_str());
+
   // Try a feed that doesn't exist.
-  ui_test_utils::NavigateToURL(browser(), GetFeedUrl("feed_nonexistant.xml"));
+  ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, L"foo.xml"));
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
   EXPECT_STREQ("Feed for 'Unknown feed name'", feed_title.c_str());
   EXPECT_STREQ("element 'anchor_0' not found", item_title.c_str());
   EXPECT_STREQ("element 'desc_0' not found", item_desc.c_str());
-  EXPECT_STREQ("Not a valid feed", error.c_str());
+  EXPECT_STREQ("Not a valid feed.", error.c_str());
 
   // Try an empty feed.
-  ui_test_utils::NavigateToURL(browser(), GetFeedUrl("feed_invalid1.xml"));
+  ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kInvalidFeed1));
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
   EXPECT_STREQ("Feed for 'Unknown feed name'", feed_title.c_str());
   EXPECT_STREQ("element 'anchor_0' not found", item_title.c_str());
   EXPECT_STREQ("element 'desc_0' not found", item_desc.c_str());
-  EXPECT_STREQ("Not a valid feed", error.c_str());
+  EXPECT_STREQ("Not a valid feed.", error.c_str());
 
   // Try a garbage feed.
-  ui_test_utils::NavigateToURL(browser(), GetFeedUrl("feed_invalid2.xml"));
+  ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kInvalidFeed2));
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
   EXPECT_STREQ("Feed for 'Unknown feed name'", feed_title.c_str());
   EXPECT_STREQ("element 'anchor_0' not found", item_title.c_str());
   EXPECT_STREQ("element 'desc_0' not found", item_desc.c_str());
-  EXPECT_STREQ("Not a valid feed", error.c_str());
+  EXPECT_STREQ("Not a valid feed.", error.c_str());
 
   // Try a feed with a link with an onclick handler (before r27440 this would
   // trigger a NOTREACHED).
-  ui_test_utils::NavigateToURL(browser(), GetFeedUrl("feed_script.xml"));
+  ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kValidFeed0));
   GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
   EXPECT_STREQ("Feed for 'MyFeedTitle'", feed_title.c_str());
   EXPECT_STREQ("Title 1", item_title.c_str());
   EXPECT_STREQ("Desc VIDEO", item_desc.c_str());
   EXPECT_STREQ("No error", error.c_str());
+
+  // Feed with valid but mostly empty xml.
+  ui_test_utils::NavigateToURL(browser(), GetFeedUrl(server, kValidFeed5));
+  GetParsedFeedData(browser(), &feed_title, &item_title, &item_desc, &error);
+  EXPECT_STREQ("Feed for 'Unknown feed name'", feed_title.c_str());
+  EXPECT_STREQ("element 'anchor_0' not found", item_title.c_str());
+  EXPECT_STREQ("element 'desc_0' not found", item_desc.c_str());
+  EXPECT_STREQ("This feed contains no entries.", error.c_str());
 }
 
 #if defined(OS_WIN)  // TODO(port) - enable.

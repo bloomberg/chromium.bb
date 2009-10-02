@@ -1,3 +1,6 @@
+/**
+ * Styles that are shared between the iframe and the parent document.
+ */
 body {
   font-family: arial, sans-serif;
   font-size: 11px;
@@ -10,13 +13,6 @@ a {
 a:hover {
   font-weight:bold;
   text-decoration: underline;
-}
-.splitter {
-  padding: 2px 8px 2px 5px;
-  border-top: solid 1px #9CC2EF;
-  background: #EBEFF9;
-  font-size: 13px;
-  font-weight:bold;
 }
 .item_title {
   font-size: 12px;

@@ -14,21 +14,22 @@
   // if true.
   var synchronousRequest = queryString[1] == "synchronous";
 
-  // The XMLHttpRequest object that tries to load and parse the feed.
+  // The XMLHttpRequest object that tries to load and parse the feed, and (if
+  // testing) also the style sheet and the frame js.
   var req;
-  var reqStylesheet;
+
+  // Depending on whether this is run from a test or from the extension, this
+  // will either be a link to the css file within the extension or contain the
+  // contents of the style sheet, fetched through XmlHttpRequest.
+  var styleSheet = "";
+
+  // Depending on whether this is run from a test or from the extension, this
+  // will either be a link to the js file within the extension or contain the
+  // contents of the style sheet, fetched through XmlHttpRequest.
+  var frameScript = "";
 
   // What to show when we cannot parse the feed name.
   var unknownName = "Unknown feed name";
-
-  // The maximum number of feed items to show in the preview.
-  var maxFeedItems = 10;
-
-  // The maximum number of characters to show in the feed item title.
-  var maxTitleCount = 64;
-
-  // The style sheet we use for both the subscribe page and the IFRAME.
-  var style_sheet = "";  // Populated later using a XMLHttpRequest.
 
   // Navigates to the reader of the user's choice (for subscribing to the feed).
   function navigate() {
@@ -37,24 +38,31 @@
     document.location = url;
   }
 
-  function loadStylesheet() {
-    reqStylesheet = new XMLHttpRequest();
-    reqStylesheet.onload = handleCssLoaded;
-    reqStylesheet.onerror = loadFeed;  // I ain't got no style, lets do without.
-    reqStylesheet.open("GET", "style.css", true);
-    reqStylesheet.send(null);
-  }
-
-  function handleCssLoaded() {
-    style_sheet = reqStylesheet.responseText;
-    loadFeed();
-  }
-
-  // Parses the feed specified. We will either end up in handleResponse or
-  // handleError from here.
-  function loadFeed() {
-    feedUrl = decodeURIComponent(feedUrl);
+  function main() {
     req = new XMLHttpRequest();
+    if (synchronousRequest) {
+      // Tests that load the html page directly through a file:// url don't have
+      // access to the js and css from the frame so we must load them first and
+      // inject them into the src for the iframe.
+      req.open("GET", "style.css", false);
+      req.send(null);
+
+      styleSheet = "<style>" + req.responseText + "</style>";
+
+      req.open("GET", "iframe.js", false);
+      req.send(null);
+
+      frameScript = "<script>" + req.responseText +
+                    "<" + "/script>";
+    } else {
+      // Normal loading just requires links to the css and the js file.
+      styleSheet = "<link rel='stylesheet' type='text/css' href='" +
+                    chrome.extension.getURL("style.css") + "'>";
+      frameScript = "<script src='" + chrome.extension.getURL("iframe.js") +
+                    "'></" + "script>";
+    }
+
+    feedUrl = decodeURIComponent(feedUrl);
     req.onload = handleResponse;
     req.onerror = handleError;
     req.open("GET", feedUrl, !synchronousRequest);
@@ -76,40 +84,57 @@
   function handleFeedParsingFailed(error) {
     setFeedTitle(unknownName);
 
-    // The tests always expect an IFRAME, so add an one showing the error.
-    var html = "<html><body><span id=\"error\" class=\"item_desc\">" + error +
-               "</span></html>";
+    // The tests always expect an IFRAME, so add one showing the error.
+    var html = "<body><span id=\"error\" class=\"item_desc\">" + error +
+               "</span></body>";
 
-    embedAsIframe(html);
+    var error_frame = createFrame('error', html);
+    var itemsTag = document.getElementById('items');
+    itemsTag.appendChild(error_frame);
   }
 
-  function embedAsIframe(html) {
-    var itemsTag = document.getElementById('items');
-    html = html.replace(/"/g, "%22");
+  function createFrame(frame_id, html) {
+    frame = document.createElement('iframe');
+    frame.id = frame_id;
+    frame.src = "data:text/html;charset=utf-8,<html>" + styleSheet + html +
+                "</html>";
+    frame.scrolling = "auto";
+    frame.frameBorder = "0";
+    frame.marginWidth = "0";
+    return frame;
+  }
 
-    iframe = document.createElement('iframe');
-    iframe.src = "data:text/html;charset=utf-8," + html;
-    iframe.id = "rss";
-    iframe.height = "100%";
-    iframe.width = "100%";
-    iframe.scrolling = "auto";
-    iframe.frameBorder = "0";
-    iframe.marginWidth = "0";
-    iframe.noResize = "noresize";
+  function embedAsIframe(rssText) {
+    var itemsTag = document.getElementById('items');
+
+    // TODO(aa): Add base URL tag
+    iframe = createFrame('rss', styleSheet + frameScript);
     itemsTag.appendChild(iframe);
+
+    iframe.onload = function() {
+      iframe.contentWindow.postMessage(rssText, "*");
+    }
   }
 
   // Handles parsing the feed data we got back from XMLHttpRequest.
   function handleResponse() {
-    var itemsTag = document.getElementById('items');
-
-    // Uncomment these two lines to see what the feed data looks like.
+    // Uncomment these three lines to see what the feed data looks like.
+    // var itemsTag = document.getElementById('items');
     // itemsTag.textContent = req.responseText;
     // return;
 
     var doc = req.responseXML;
     if (!doc) {
-      handleFeedParsingFailed("Not a valid feed");
+      handleFeedParsingFailed("Not a valid feed.");
+      return;
+    }
+
+    // We must find at least one 'entry' or 'item' element before proceeding.
+    var entries = doc.getElementsByTagName('entry');
+    if (entries.length == 0)
+      entries = doc.getElementsByTagName('item');
+    if (entries.length == 0) {
+      handleFeedParsingFailed("This feed contains no entries.")
       return;
     }
 
@@ -120,82 +145,39 @@
     else
       setFeedTitle(unknownName);
 
-    // Obtain the base url so that we can show images using relative path.
-    var base_url = "";
-    var slash = feedUrl.lastIndexOf("/");
-    if (slash > -1)
-      base_url = feedUrl.substring(0, slash + 1);
-    else
-      base_url = feedUrl;
-    base_url = "<base href=\"" + base_url + "\" />";
-
-    // Start building the part we render inside an IFRAME. We use a table to
-    // ensure that items are separated vertically from each other.
-    var items_html = "<html><head>" + base_url +
-                     "<style>" + style_sheet + "</style>" + "</head>" +
-                     "<body><table>";
-
-    // Now parse the rest. Some use <entry> for each feed item, others use
-    // <channel><item>.
-    var entries = doc.getElementsByTagName('entry');
-    if (entries.length == 0)
-      entries = doc.getElementsByTagName('item');
-
-    for (i = 0; i < entries.length && i < maxFeedItems; ++i) {
-      item = entries.item(i);
-
-      // Grab the title for the feed item.
-      var itemTitle = item.getElementsByTagName('title')[0];
-      if (itemTitle)
-        itemTitle = itemTitle.textContent;
-      else
-        itemTitle = "Unknown title";
-
-      // Ensure max length for title.
-      if (itemTitle.length > maxTitleCount)
-        itemTitle = itemTitle.substring(0, maxTitleCount) + "...";
-
-      // Grab the description.
-      var itemDesc = item.getElementsByTagName('description')[0];
-      if (!itemDesc)
-        itemDesc = item.getElementsByTagName('summary')[0];
-      if (!itemDesc)
-        itemDesc = item.getElementsByTagName('content')[0];
-
-      if (itemDesc)
-        itemDesc = itemDesc.textContent;
-      else
-        itemDesc = "";
-
-      // Grab the link URL.
-      var itemLink = item.getElementsByTagName('link');
-      var link = itemLink[0].childNodes[0];
-      if (link)
-        link = itemLink[0].childNodes[0].nodeValue;
-      else
-        link = itemLink[0].getAttribute('href');
-
-      items_html = items_html +
-          "<tr><td>" +
-          "<a id=\"anchor_" + String(i) + "\" href=\"" + link + "\" " +
-          "class=\"item_title\">" +
-          itemTitle + "</a><br>";
-
-      items_html = items_html + "<span class=\"item_desc\" " +
-                                "id=\"desc_" + String(i) + "\">" +
-                                itemDesc + "<br><br>" +
-                                "</td></tr>";
-    }
-    items_html = items_html + "</table></body></html>";
-
     // Add an IFRAME with the html contents.
-    embedAsIframe(items_html);
+    embedAsIframe(req.responseText);
   }
 </script>
-  <link rel="stylesheet" href="style.css" type="text/css" />
+<link rel="stylesheet" href="style.css" type="text/css" />
+<style>
+body {
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+}
+body>* {
+  display:-webkit-box;
+}
+#items {
+  -webkit-box-flex:1;
+  -webkit-box-orient:vertical;
+  -webkit-box-align:stretch;
+}
+iframe {
+  display:-webkit-box;
+  -webkit-box-flex:1;
+}
+.splitter {
+  padding: 2px 8px 2px 5px;
+  border-top: solid 1px #9CC2EF;
+  background: #EBEFF9;
+  font-size: 13px;
+  font-weight:bold;
+}
+</style>
 </head>
 
-<body onload="loadStylesheet();">
+<body onload="main();">
   <table>
   <tr>
     <td width="75">
