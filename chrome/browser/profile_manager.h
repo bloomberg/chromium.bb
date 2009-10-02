@@ -117,8 +117,10 @@ class ProfileManager : public NonThreadSafe,
   typedef ProfileVector::iterator iterator;
   typedef ProfileVector::const_iterator const_iterator;
 
-  const_iterator begin() { return profiles_.begin(); }
-  const_iterator end() { return profiles_.end(); }
+  iterator begin() { return profiles_.begin(); }
+  const_iterator begin() const { return profiles_.begin(); }
+  iterator end() { return profiles_.end(); }
+  const_iterator end() const { return profiles_.end(); }
 
   typedef std::vector<AvailableProfile*> AvailableProfileVector;
   const AvailableProfileVector& available_profiles() const {

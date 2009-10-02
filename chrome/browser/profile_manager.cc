@@ -50,18 +50,14 @@ ProfileManager::~ProfileManager() {
     system_monitor->RemoveObserver(this);
 
   // Destroy all profiles that we're keeping track of.
-  for (ProfileVector::const_iterator iter = profiles_.begin();
-       iter != profiles_.end(); ++iter) {
-    delete *iter;
-  }
+  for (const_iterator i(begin()); i != end(); ++i)
+    delete *i;
   profiles_.clear();
 
   // Get rid of available profile list
-  for (AvailableProfileVector::const_iterator iter =
-           available_profiles_.begin();
-       iter != available_profiles_.end(); ++iter) {
-    delete *iter;
-  }
+  for (AvailableProfileVector::const_iterator i(available_profiles_.begin());
+       i != available_profiles_.end(); ++i)
+    delete *i;
   available_profiles_.clear();
 }
 
@@ -151,11 +147,10 @@ Profile* ProfileManager::AddProfileByID(const std::wstring& id) {
 
 AvailableProfile* ProfileManager::GetAvailableProfileByID(
     const std::wstring& id) {
-  AvailableProfileVector::const_iterator iter = available_profiles_.begin();
-  for (; iter != available_profiles_.end(); ++iter) {
-    if ((*iter)->id() == id) {
-      return *iter;
-    }
+  for (AvailableProfileVector::const_iterator i(available_profiles_.begin());
+       i != available_profiles_.end(); ++i) {
+    if ((*i)->id() == id)
+      return *i;
   }
 
   return NULL;
@@ -183,21 +178,19 @@ bool ProfileManager::AddProfile(Profile* profile) {
 }
 
 void ProfileManager::RemoveProfile(Profile* profile) {
-  for (ProfileVector::iterator iter = profiles_.begin();
-       iter != profiles_.end(); ++iter) {
-    if ((*iter) == profile) {
-      profiles_.erase(iter);
+  for (iterator i(begin()); i != end(); ++i) {
+    if ((*i) == profile) {
+      profiles_.erase(i);
       return;
     }
   }
 }
 
 void ProfileManager::RemoveProfileByPath(const FilePath& path) {
-  for (ProfileVector::iterator iter = profiles_.begin();
-       iter != profiles_.end(); ++iter) {
-    if ((*iter)->GetPath() == path) {
-      delete *iter;
-      profiles_.erase(iter);
+  for (iterator i(begin()); i != end(); ++i) {
+    if ((*i)->GetPath() == path) {
+      delete *i;
+      profiles_.erase(i);
       return;
     }
   }
@@ -206,20 +199,18 @@ void ProfileManager::RemoveProfileByPath(const FilePath& path) {
 }
 
 Profile* ProfileManager::GetProfileByPath(const FilePath& path) const {
-  for (ProfileVector::const_iterator iter = profiles_.begin();
-       iter != profiles_.end(); ++iter) {
-    if ((*iter)->GetPath() == path)
-      return *iter;
+  for (const_iterator i(begin()); i != end(); ++i) {
+    if ((*i)->GetPath() == path)
+      return *i;
   }
 
   return NULL;
 }
 
 Profile* ProfileManager::GetProfileByID(const std::wstring& id) const {
-  for (ProfileVector::const_iterator iter = profiles_.begin();
-    iter != profiles_.end(); ++iter) {
-      if ((*iter)->GetID() == id)
-        return *iter;
+  for (const_iterator i(begin()); i != end(); ++i) {
+    if ((*i)->GetID() == id)
+      return *i;
   }
 
   return NULL;
@@ -228,21 +219,17 @@ Profile* ProfileManager::GetProfileByID(const std::wstring& id) const {
 void ProfileManager::OnSuspend() {
   DCHECK(CalledOnValidThread());
 
-  ProfileManager::const_iterator it = begin();
-  while(it != end()) {
+  for (const_iterator i(begin()); i != end(); ++i) {
      g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-       NewRunnableFunction(&ProfileManager::SuspendProfile, *it));
-     it++;
+       NewRunnableFunction(&ProfileManager::SuspendProfile, *i));
   }
 }
 
 void ProfileManager::OnResume() {
   DCHECK(CalledOnValidThread());
-  ProfileManager::const_iterator it = begin();
-  while (it != end()) {
+  for (const_iterator i(begin()); i != end(); ++i) {
     g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-      NewRunnableFunction(&ProfileManager::ResumeProfile, *it));
-    it++;
+      NewRunnableFunction(&ProfileManager::ResumeProfile, *i));
   }
 }
 
@@ -251,9 +238,9 @@ void ProfileManager::SuspendProfile(Profile* profile) {
   DCHECK(MessageLoop::current() ==
     ChromeThread::GetMessageLoop(ChromeThread::IO));
 
-  URLRequestJobTracker::JobIterator it = g_url_request_job_tracker.begin();
-  for (;it != g_url_request_job_tracker.end(); ++it)
-    (*it)->Kill();
+  for (URLRequestJobTracker::JobIterator i = g_url_request_job_tracker.begin();
+       i != g_url_request_job_tracker.end(); ++i)
+    (*i)->Kill();
 
   profile->GetRequestContext()->http_transaction_factory()->Suspend(true);
 }
