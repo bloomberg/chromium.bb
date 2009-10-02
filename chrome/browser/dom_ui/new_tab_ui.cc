@@ -1546,6 +1546,9 @@ class MetricsHandler : public DOMMessageHandler {
   // Callback which records a user action.
   void HandleMetrics(const Value* content);
 
+  // Callback for the "logEventTime" message.
+  void HandleLogEventTime(const Value* content);
+
  private:
 
   DISALLOW_COPY_AND_ASSIGN(MetricsHandler);
@@ -1554,6 +1557,9 @@ class MetricsHandler : public DOMMessageHandler {
 void MetricsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("metrics",
       NewCallback(this, &MetricsHandler::HandleMetrics));
+
+  dom_ui_->RegisterMessageCallback("logEventTime",
+      NewCallback(this, &MetricsHandler::HandleLogEventTime));
 }
 
 void MetricsHandler::HandleMetrics(const Value* content) {
@@ -1567,6 +1573,20 @@ void MetricsHandler::HandleMetrics(const Value* content) {
       std::wstring wstring_value;
       if (string_value->GetAsString(&wstring_value)) {
         UserMetrics::RecordComputedAction(wstring_value, dom_ui_->GetProfile());
+      }
+    }
+  }
+}
+
+void MetricsHandler::HandleLogEventTime(const Value* content) {
+  if (content && content->GetType() == Value::TYPE_LIST) {
+    const ListValue* list_value = static_cast<const ListValue*>(content);
+    Value* list_member;
+    if (list_value->Get(0, &list_member) &&
+        list_member->GetType() == Value::TYPE_STRING) {
+      std::string event_name;
+      if (list_member->GetAsString(&event_name)) {
+        dom_ui_->tab_contents()->LogNewTabTime(event_name);
       }
     }
   }

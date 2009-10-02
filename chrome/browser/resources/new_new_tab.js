@@ -1328,11 +1328,12 @@ $('list-checkbox').addEventListener('change',
 $('list-checkbox').addEventListener('keydown',
                                     getCheckboxHandler(Section.LIST));
 
-window.addEventListener('load', bind(logEvent, global, 'onload fired'));
+window.addEventListener('load', bind(logEvent, global, 'NewTab.Onload', true));
 window.addEventListener('load', onDataLoaded);
+
 window.addEventListener('resize', handleWindowResize);
-document.addEventListener('DOMContentLoaded', bind(logEvent, global,
-                                                   'domcontentloaded fired'));
+document.addEventListener('DOMContentLoaded',
+    bind(logEvent, global, 'NewTab.DOMContentLoaded', true));
 
 // Whether or not we should send the initial 'GetSyncMessage' to the backend
 // depends on the value of the attribue 'syncispresent' which the backend sets

@@ -13,9 +13,13 @@
 <script>
 // Logging info for benchmarking purposes.
 var log = [];
-function logEvent(name) {
+function logEvent(name, shouldLogTime) {
+  if (shouldLogTime) {
+    chrome.send('logEventTime', [name]);
+  }
   log.push([name, Date.now()]);
 }
+logEvent('NewTab.ScriptStart', true);
 
 var global = this;
 
@@ -49,8 +53,6 @@ registerCallback('mostVisitedPages');
 registerCallback('recentlyClosedTabs');
 registerCallback('syncMessageChanged');
 registerCallback('tips');
-
-logEvent('log start');
 
 </script>
 <link rel="stylesheet" href="new_new_tab.css">

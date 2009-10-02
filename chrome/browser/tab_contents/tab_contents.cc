@@ -1170,6 +1170,24 @@ bool TabContents::IsActiveEntry(int32 page_id) {
           active_entry->page_id() == page_id);
 }
 
+void TabContents::LogNewTabTime(const std::string& event_name) {
+  // Not all new tab pages get timed.  In those cases, we don't have a
+  // new_tab_start_time_.
+  if (new_tab_start_time_.is_null())
+    return;
+
+  base::TimeDelta duration = base::TimeTicks::Now() - new_tab_start_time_;
+  if (event_name == "NewTab.ScriptStart") {
+    UMA_HISTOGRAM_TIMES("NewTab.ScriptStart", duration);
+  } else if (event_name == "NewTab.DOMContentLoaded") {
+    UMA_HISTOGRAM_TIMES("NewTab.DOMContentLoaded", duration);
+  } else if (event_name == "NewTab.Onload") {
+    UMA_HISTOGRAM_TIMES("NewTab.Onload", duration);
+    // The new tab page has finished loading; reset it.
+    new_tab_start_time_ = base::TimeTicks();
+  }
+}
+
 // Notifies the RenderWidgetHost instance about the fact that the page is
 // loading, or done loading and calls the base implementation.
 void TabContents::SetIsLoading(bool is_loading,

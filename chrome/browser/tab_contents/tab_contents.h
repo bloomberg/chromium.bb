@@ -617,6 +617,16 @@ class TabContents : public PageNavigator,
     opener_dom_ui_type_ = opener_dom_ui_type;
   }
 
+  // We want to time how long it takes to create a new tab page.  This method
+  // gets called as parts of the new tab page have loaded.
+  void LogNewTabTime(const std::string& event_name);
+
+  // Set the time when we started to create the new tab page.  This time is
+  // from before we created this TabContents.
+  void set_new_tab_start_time(const base::TimeTicks& time) {
+    new_tab_start_time_ = time;
+  }
+
  private:
   friend class NavigationController;
   // Used to access the child_windows_ (ConstrainedWindowList) for testing
@@ -1150,6 +1160,9 @@ class TabContents : public PageNavigator,
   // If this tab was created from a renderer using window.open, this will be
   // non-NULL and represent the DOMUI of the opening renderer.
   DOMUITypeID opener_dom_ui_type_;
+
+  // The time that we started to create the new tab page.
+  base::TimeTicks new_tab_start_time_;
 
   // ---------------------------------------------------------------------------
 
