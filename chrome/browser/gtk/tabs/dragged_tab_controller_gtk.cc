@@ -552,7 +552,7 @@ void DraggedTabControllerGtk::Detach() {
 
   // If we've removed the last tab from the tabstrip, hide the frame now.
   if (attached_model->empty())
-    HideFrame();
+    HideWindow();
 
   // Update the dragged tab. This NULL check is necessary apparently in some
   // conditions during automation where the view_ is destroyed inside a
@@ -736,8 +736,8 @@ bool DraggedTabControllerGtk::EndDragImpl(EndDragType type) {
 }
 
 void DraggedTabControllerGtk::RevertDrag() {
-  // TODO(jhawkins): Restore the window frame.
   // We save this here because code below will modify |attached_tabstrip_|.
+  bool restore_window = attached_tabstrip_ != source_tabstrip_;
   if (attached_tabstrip_) {
     int index = attached_tabstrip_->model()->GetIndexOfTabContents(
         dragged_contents_);
@@ -767,6 +767,12 @@ void DraggedTabControllerGtk::RevertDrag() {
         dragged_contents_, true, false);
   }
   source_tabstrip_->model()->SetTabPinned(source_model_index_, was_pinned_);
+
+  // If we're not attached to any tab strip, or attached to some other tab
+  // strip, we need to restore the bounds of the original tab strip's frame, in
+  // case it has been hidden.
+  if (restore_window)
+    ShowWindow();
 
   source_tab_->SetVisible(true);
 }
@@ -835,10 +841,16 @@ gfx::Rect DraggedTabControllerGtk::GetTabScreenBounds(TabGtk* tab) {
   return gfx::Rect(bounds.x(), bounds.y(), bounds.width(), bounds.height());
 }
 
-void DraggedTabControllerGtk::HideFrame() {
+void DraggedTabControllerGtk::HideWindow() {
   GtkWidget* tabstrip = source_tabstrip_->widget();
   GtkWindow* window = platform_util::GetTopLevel(tabstrip);
   gtk_widget_hide(GTK_WIDGET(window));
+}
+
+void DraggedTabControllerGtk::ShowWindow() {
+  GtkWidget* tabstrip = source_tabstrip_->widget();
+  GtkWindow* window = platform_util::GetTopLevel(tabstrip);
+  gtk_window_present(window);
 }
 
 void DraggedTabControllerGtk::CleanUpHiddenFrame() {
