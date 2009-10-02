@@ -21,6 +21,8 @@
 
 class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
  public:
+  RendererWebKitClientImpl() : sudden_termination_disables_(0) {}
+
   // WebKitClient methods:
   virtual WebKit::WebClipboard* clipboard();
   virtual WebKit::WebMimeRegistry* mimeRegistry();
@@ -89,6 +91,12 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
 #if defined(OS_WIN) || defined(OS_LINUX)
   SandboxSupport sandbox_support_;
 #endif
+
+  // This counter keeps track of the number of times sudden termination is
+  // enabled or disabled. It starts at 0 (enabled) and for every disable
+  // increments by 1, for every enable decrements by 1. When it reaches 0,
+  // we tell the browser to enable fast termination.
+  int sudden_termination_disables_;
 };
 
 #endif  // CHROME_RENDERER_WEBKIT_CLIENT_IMPL_H_
