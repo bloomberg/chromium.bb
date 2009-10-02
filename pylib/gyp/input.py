@@ -124,7 +124,7 @@ def CheckedEval(file_contents):
 
   Note that this is slower than eval() is.
   """
-  
+
   ast = compiler.parse(file_contents)
   assert isinstance(ast, Module)
   c1 = ast.getChildren()
@@ -223,6 +223,9 @@ def LoadBuildFileIncludesIntoDict(subdict, subdict_path, data, aux_data,
     if not 'included' in aux_data[subdict_path]:
       aux_data[subdict_path]['included'] = []
     aux_data[subdict_path]['included'].append(include)
+
+    gyp.DebugOutput(gyp.DEBUG_INCLUDES, "Loading Included File: '%s'" % include)
+
     MergeDicts(subdict,
                LoadOneBuildFile(include, data, aux_data, variables, None,
                                 False, check),
@@ -273,6 +276,9 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
   if build_file_path in data:
     # Already loaded.
     return
+
+  gyp.DebugOutput(gyp.DEBUG_INCLUDES,
+                  "Loading Target Build File '%s'" % build_file_path)
 
   build_file_data = LoadOneBuildFile(build_file_path, data, aux_data, variables,
                                      includes, True, check)
@@ -484,8 +490,8 @@ def ExpandVariables(input, is_late, variables, build_file):
           use_shell = False
 
         gyp.DebugOutput(gyp.DEBUG_VARIABLES,
-                        "Executing command '%s'" % contents)
-
+                        "Executing command '%s' in directory '%s'" %
+                        (contents,build_file_dir))
 
         p = subprocess.Popen(contents, shell=use_shell,
                              stdout=subprocess.PIPE,
@@ -614,7 +620,7 @@ def ProcessConditionsInDict(the_dict, is_late, variables, build_file):
     if not isinstance(condition, list):
       raise TypeError, conditions_key + ' must be a list'
     if len(condition) != 2 and len(condition) != 3:
-      # It's possible that condition[0] won't work in which case this won't
+      # It's possible that condition[0] won't work in which case this
       # attempt will raise its own IndexError.  That's probably fine.
       raise IndexError, conditions_key + ' ' + condition[0] + \
                         ' must be length 2 or 3, not ' + len(condition)
@@ -1177,10 +1183,15 @@ def BuildDependencyList(targets):
     else:
       dependencies = spec['dependencies']
       for index in xrange(0, len(dependencies)):
-        dependency = dependencies[index]
-        dependency_node = dependency_nodes[dependency]
-        target_node.dependencies.append(dependency_node)
-        dependency_node.dependents.append(target_node)
+        try:
+          dependency = dependencies[index]
+          dependency_node = dependency_nodes[dependency]
+          target_node.dependencies.append(dependency_node)
+          dependency_node.dependents.append(target_node)
+        except KeyError, e:
+          gyp.common.ExceptionAppend(e,
+                                     'while trying to load target %s' % target)
+          raise
 
   flat_list = root_node.FlattenToList()
 

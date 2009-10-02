@@ -14,6 +14,7 @@ debug = {}
 # List of "official" debug modes, but you can use anything you like.
 DEBUG_GENERAL = 'general'
 DEBUG_VARIABLES = 'variables'
+DEBUG_INCLUDES = 'includes'
 
 def DebugOutput(mode, message):
   if mode in gyp.debug.keys():
