@@ -46,7 +46,8 @@ TEST_F(FirefoxProfileLockTest, LockTest) {
 // use.
 TEST_F(FirefoxProfileLockTest, ProfileLock) {
   std::wstring test_path;
-  file_util::CreateNewTempDirectory(L"firefox_profile", &test_path);
+  ASSERT_TRUE(file_util::CreateNewTempDirectory(L"firefox_profile",
+                                                &test_path));
   FilePath lock_file_path = FilePath::FromWStringHack(test_path);
   FileAutoDeleter deleter(lock_file_path);
   lock_file_path = lock_file_path.Append(FirefoxProfileLock::kLockFileName);
@@ -81,8 +82,8 @@ TEST_F(FirefoxProfileLockTest, ProfileLock) {
 // should still be able to lock it, at least in the Windows implementation.
 TEST_F(FirefoxProfileLockTest, ProfileLockOrphaned) {
   FilePath test_path;
-  file_util::CreateNewTempDirectory(FILE_PATH_LITERAL("firefox_profile"),
-                                    &test_path);
+  ASSERT_TRUE(file_util::CreateNewTempDirectory(
+      FILE_PATH_LITERAL("firefox_profile"), &test_path));
   FilePath lock_file_path = test_path;
   FileAutoDeleter deleter(lock_file_path);
   lock_file_path = lock_file_path.Append(FirefoxProfileLock::kLockFileName);
@@ -107,7 +108,8 @@ TEST_F(FirefoxProfileLockTest, ProfileLockOrphaned) {
 // Tests two locks contending for the same lock file.
 TEST_F(FirefoxProfileLockTest, ProfileLockContention) {
   std::wstring test_path;
-  file_util::CreateNewTempDirectory(L"firefox_profile", &test_path);
+  ASSERT_TRUE(file_util::CreateNewTempDirectory(L"firefox_profile",
+                                                &test_path));
   FileAutoDeleter deleter(FilePath::FromWStringHack(test_path));
 
   scoped_ptr<FirefoxProfileLock> lock1;
