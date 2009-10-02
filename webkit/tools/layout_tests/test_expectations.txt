@@ -807,8 +807,6 @@ BUG8696 WIN LINUX : LayoutTests/fast/gradients/generated-gradients.html = FAIL
 BUG8696 WIN LINUX : LayoutTests/fast/gradients/simple-gradients.html = FAIL
 BUG8696 WIN LINUX : LayoutTests/fast/gradients/crash-on-zero-radius.html = FAIL
 
-BUG10385 : LayoutTests/fast/dom/dom-constructors.html = FAIL
-
 BUG20507 : LayoutTests/http/tests/uri/resolve-encoding-relative.html = FAIL
 
 BUG6735 : LayoutTests/plugins/netscape-throw-exception.html = FAIL
