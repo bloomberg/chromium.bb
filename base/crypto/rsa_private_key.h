@@ -11,7 +11,7 @@
 #include <cryptoht.h>
 #include <keythi.h>
 #elif defined(OS_MACOSX)
-// TODO(port);
+#include <Security/cssm.h>
 #elif defined(OS_WIN)
 #include <windows.h>
 #include <wincrypt.h>
@@ -43,6 +43,9 @@ class RSAPrivateKey {
 #elif defined(OS_WIN)
   HCRYPTPROV provider() { return provider_; }
   HCRYPTKEY key() { return key_; }
+#elif defined(OS_MACOSX)
+  CSSM_CSP_HANDLE csp_handle() { return csp_handle_; }
+  CSSM_KEY_PTR key() { return &key_; }
 #endif
 
   // Exports the private key to a PKCS #1 PrivateKey block.
@@ -64,6 +67,9 @@ private:
 
   HCRYPTPROV provider_;
   HCRYPTKEY key_;
+#elif defined(OS_MACOSX)
+  CSSM_KEY key_;
+  CSSM_CSP_HANDLE csp_handle_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(RSAPrivateKey);
