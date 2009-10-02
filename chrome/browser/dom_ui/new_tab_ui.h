@@ -23,6 +23,11 @@ class NewTabUI : public DOMUI,
   explicit NewTabUI(TabContents* manager);
   ~NewTabUI();
 
+  // Override DOMUI methods so we can hook up the paint timer to the render
+  // view host.
+  virtual void RenderViewCreated(RenderViewHost* render_view_host);
+  virtual void RenderViewReused(RenderViewHost* render_view_host);
+
   static void RegisterUserPrefs(PrefService* prefs);
 
   // Whether we should use the old new tab page.

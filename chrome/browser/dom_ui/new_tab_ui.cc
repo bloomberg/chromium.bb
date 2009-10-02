@@ -132,8 +132,7 @@ void SetURLTitleAndDirection(DictionaryValue* dictionary,
 // messages and wait for the page to stop repainting.
 class PaintTimer : public RenderWidgetHost::PaintObserver {
  public:
-  PaintTimer()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+  PaintTimer() {
     Start();
   }
 
@@ -141,8 +140,9 @@ class PaintTimer : public RenderWidgetHost::PaintObserver {
   void Start() {
     start_ = base::TimeTicks::Now();
     last_paint_ = start_;
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(&PaintTimer::Timeout), kTimeoutMs);
+
+    timer_.Start(base::TimeDelta::FromMilliseconds(kTimeoutMs), this,
+                 &PaintTimer::Timeout);
   }
 
   // A callback that is invoked whenever our RenderWidgetHost paints.
@@ -167,8 +167,8 @@ class PaintTimer : public RenderWidgetHost::PaintObserver {
       // Not enough quiet time has elapsed.
       // Some more paints must've occurred since we set the timeout.
       // Wait some more.
-      MessageLoop::current()->PostDelayedTask(FROM_HERE,
-          method_factory_.NewRunnableMethod(&PaintTimer::Timeout), kTimeoutMs);
+      timer_.Start(base::TimeDelta::FromMilliseconds(kTimeoutMs), this,
+                   &PaintTimer::Timeout);
     }
   }
 
@@ -181,7 +181,7 @@ class PaintTimer : public RenderWidgetHost::PaintObserver {
   // The last time we got a paint notification.
   base::TimeTicks last_paint_;
   // Scoping so we can be sure our timeouts don't outlive us.
-  ScopedRunnableMethodFactory<PaintTimer> method_factory_;
+  base::OneShotTimer<PaintTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintTimer);
 };
@@ -1643,8 +1643,6 @@ NewTabUI::NewTabUI(TabContents* contents)
   if (NewTabUI::FirstRunDisabled())
     NewTabHTMLSource::set_first_run(false);
 
-  tab_contents()->render_view_host()->set_paint_observer(new PaintTimer);
-
   if (GetProfile()->IsOffTheRecord()) {
     incognito_ = true;
 
@@ -1697,6 +1695,14 @@ NewTabUI::NewTabUI(TabContents* contents)
 }
 
 NewTabUI::~NewTabUI() {
+}
+
+void NewTabUI::RenderViewCreated(RenderViewHost* render_view_host) {
+  render_view_host->set_paint_observer(new PaintTimer);
+}
+
+void NewTabUI::RenderViewReused(RenderViewHost* render_view_host) {
+  render_view_host->set_paint_observer(new PaintTimer);
 }
 
 void NewTabUI::Observe(NotificationType type,
