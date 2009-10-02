@@ -60,7 +60,7 @@ TestSuite.prototype.assertEquals = function(expected, actual, opt_message) {
  * @param {string} opt_message User message to print if the test fails.
  */
 TestSuite.prototype.assertTrue = function(value, opt_message) {
-  this.assertEquals(true, value, opt_message);
+  this.assertEquals(true, !!value, opt_message);
 };
 
 
@@ -844,13 +844,12 @@ TestSuite.prototype._performSteps = function(actions) {
 
 
 /**
- * Waits for 'scripts' response and executes 'a()' in the inspected
- * page.
+ * Waits until all the scripts are parsed and asynchronously executes the code
+ * in the inspected page.
  */
-TestSuite.prototype._executeFunctionForStepTest = function() {
+TestSuite.prototype._executeCodeWhenScriptsAreParsed = function(
+    code, expectedScripts) {
   var test = this;
-
-  var expectedScripts = ['debugger_step.html$', 'debugger_step.js$'];
 
   function waitForAllScripts() {
     if (test._scriptsAreParsed(expectedScripts)) {
@@ -864,7 +863,7 @@ TestSuite.prototype._executeFunctionForStepTest = function() {
     // Since breakpoints are ignored in evals' calculate() function is
     // execute after zero-timeout so that the breakpoint is hit.
     test.evaluateInConsole_(
-        'setTimeout("a()" , 0)',
+        'setTimeout("' + code + '" , 0)',
         function(resultText) {
           test.assertTrue(!isNaN(resultText),
                           'Failed to get timer id: ' + resultText);
@@ -872,6 +871,17 @@ TestSuite.prototype._executeFunctionForStepTest = function() {
   }
 
   waitForAllScripts();
+};
+
+
+/**
+ * Waits until all debugger scripts are parsed and executes 'a()' in the
+ * inspected page.
+ */
+TestSuite.prototype._executeFunctionForStepTest = function() {
+  this._executeCodeWhenScriptsAreParsed(
+      'a()',
+      ['debugger_step.html$', 'debugger_step.js$']);
 };
 
 
@@ -982,6 +992,204 @@ TestSuite.prototype.testStepIn = function() {
         test.releaseControl();
       }
   ]);
+
+  test.takeControl();
+};
+
+
+/**
+ * Gets a XPathResult matching given xpath.
+ * @param {string} xpath
+ * @param {number} resultType
+ * @param {Node} opt_ancestor Context node. If not specified documentElement
+ *     will be used
+ * @return {XPathResult} Type of returned value is determined by 'resultType' parameter
+ */
+
+TestSuite.prototype._evaluateXpath = function(
+    xpath, resultType, opt_ancestor) {
+  if (!opt_ancestor) {
+    opt_ancestor = document.documentElement;
+  }
+  try {
+    return document.evaluate(xpath, opt_ancestor, null, resultType, null);
+  } catch(e) {
+    this.fail('Error in expression: "' + xpath + '".' + e);
+  }
+};
+
+
+/**
+ * Gets first Node matching given xpath.
+ * @param {string} xpath
+ * @param {Node} opt_ancestor Context node. If not specified documentElement
+ *     will be used
+ * @return {?Node}
+ */
+TestSuite.prototype._findNode = function(xpath, opt_ancestor) {
+  var result = this._evaluateXpath(xpath, XPathResult.FIRST_ORDERED_NODE_TYPE,
+      opt_ancestor).singleNodeValue;
+  this.assertTrue(!!result, 'Cannot find node on path: ' + xpath);
+  return result;
+};
+
+
+/**
+ * Gets a text matching given xpath.
+ * @param {string} xpath
+ * @param {Node} opt_ancestor Context node. If not specified documentElement
+ *     will be used
+ * @return {?string}
+ */
+TestSuite.prototype._findText = function(xpath, opt_ancestor) {
+  var result = this._evaluateXpath(xpath, XPathResult.STRING_TYPE,
+      opt_ancestor).stringValue;
+  this.assertTrue(!!result, 'Cannot find text on path: ' + xpath);
+  return result;
+};
+
+
+/**
+ * Gets an iterator over nodes matching given xpath.
+ * @param {string} xpath
+ * @param {Node} opt_ancestor Context node. If not specified, documentElement
+ *     will be used
+ * @return {XPathResult} Iterator over the nodes
+ */
+TestSuite.prototype._nodeIterator = function(xpath, opt_ancestor) {
+  return this._evaluateXpath(xpath, XPathResult.ORDERED_NODE_ITERATOR_TYPE,
+      opt_ancestor);
+};
+
+
+/**
+ * Checks the scopeSectionDiv against the expectations.
+ * @param {Node} scopeSectionDiv The section div
+ * @param {Object} expectations Expectations dictionary
+ */
+TestSuite.prototype._checkScopeSectionDiv = function(
+    scopeSectionDiv, expectations) {
+  var scopeTitle = this._findText(
+      './div[@class="header"]/div[@class="title"]/text()', scopeSectionDiv);
+  this.assertEquals(expectations.title, scopeTitle,
+      'Unexpected scope section title.');
+  if (!expectations.properties) {
+    return;
+  }
+  this.assertTrue(scopeSectionDiv.hasStyleClass('expanded'), 'Section "' +
+      scopeTitle + '" is collapsed.');
+
+  var propertyIt = this._nodeIterator('./ol[@class="properties"]/li',
+                                      scopeSectionDiv);
+  var propertyLi;
+  var foundProps = [];
+  while (propertyLi = propertyIt.iterateNext()) {
+    var name = this._findText('./span[@class="name"]/text()', propertyLi);
+    var value = this._findText('./span[@class="value"]/text()', propertyLi);
+    this.assertTrue(!!name, 'Invalid variable name: "' + name + '"');
+    this.assertTrue(name in expectations.properties,
+                    'Unexpected property: ' + name);
+    this.assertEquals(expectations.properties[name], value,
+                      'Unexpected "' + name + '" property value.');
+    delete expectations.properties[name];
+    foundProps.push(name + ' = ' + value);
+  }
+
+  // Check that all expected properties were found.
+  for (var p in expectations.properties) {
+    this.fail('Property "' + p + '" was not found in scope "' + scopeTitle +
+        '". Found properties: "' + foundProps.join(',') + '"');
+  }
+};
+
+
+/**
+ * Tests that scopes can be expanded and contain expected data.
+ */
+TestSuite.prototype.testExpandScope = function() {
+  this.showPanel('scripts');
+  var test = this;
+
+  this._executeCodeWhenScriptsAreParsed(
+      'handleClick()',
+      ['debugger_closure.html$']);
+
+  this._waitForScriptPause(
+      {
+        functionsOnStack: ['innerFunction', 'handleClick',
+                           '(anonymous function)'],
+        lineNumber: 8,
+        lineText: '    debugger;'
+      },
+      expandAllSectionsExceptGlobal);
+
+  // Expanding Global scope takes for too long so we skeep it.
+  function expandAllSectionsExceptGlobal() {
+    var sections = WebInspector.currentPanel.sidebarPanes.scopechain.sections;
+
+    var toBeUpdatedCount = 0;
+    function updateListener() {
+      --toBeUpdatedCount;
+      if (toBeUpdatedCount == 0) {
+        // When all scopes are expanded and populated check them.
+        examineScopes();
+      }
+    }
+
+    // Global scope is always the last one.
+    for (var i = 0; i < sections.length - 1; i++) {
+      var section = sections[i];
+      test.addSniffer(section, 'updateProperties', updateListener);
+      ++toBeUpdatedCount;
+      var populated = section.populated;
+      section.expand();
+      if (populated) {
+        // Make sure 'updateProperties' callback will be called at least once
+        // after it was overridden.
+        section.update();
+      }
+    }
+  }
+
+  // Check scope sections contents.
+  function examineScopes() {
+    var scopeVariablesSection = test._findNode('//div[@id="scripts-sidebar"]/' +
+        'div[div[@class="title"]/text()="Scope Variables"]');
+    var expectedScopes = [
+      {
+        title: 'Local',
+        properties: {
+          x:2009,
+          innerFunctionLocalVar:2011,
+          'this': 'global',
+        }
+      },
+      {
+        title: 'Closure',
+        properties: {
+          n:'TextParam',
+          makeClosureLocalVar:'local.TextParam',
+        }
+      },
+      {
+        title: 'Global',
+      },
+    ];
+    var it = test._nodeIterator('./div[@class="body"]/div',
+                                scopeVariablesSection);
+    var scopeIndex = 0;
+    var scopeDiv;
+    while (scopeDiv = it.iterateNext()) {
+       test.assertTrue(scopeIndex < expectedScopes.length,
+                       'Too many scopes.');
+       test._checkScopeSectionDiv(scopeDiv, expectedScopes[scopeIndex]);
+       ++scopeIndex;
+    }
+    test.assertEquals(expectedScopes.length, scopeIndex,
+                      'Unexpected number of scopes.');
+
+    test.releaseControl();
+  }
 
   test.takeControl();
 };
