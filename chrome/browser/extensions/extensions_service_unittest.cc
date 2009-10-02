@@ -397,7 +397,7 @@ class ExtensionsServiceTest
     ASSERT_TRUE(dict->GetDictionary(ASCIIToWide(extension_id), &pref)) << msg;
     EXPECT_TRUE(pref != NULL) << msg;
     bool val;
-    pref->GetBoolean(pref_path, &val);
+    ASSERT_TRUE(pref->GetBoolean(pref_path, &val)) << msg;
     EXPECT_EQ(must_equal, val) << msg;
   }
 
@@ -437,7 +437,7 @@ class ExtensionsServiceTest
     ASSERT_TRUE(dict->GetDictionary(ASCIIToWide(extension_id), &pref)) << msg;
     EXPECT_TRUE(pref != NULL) << msg;
     int val;
-    pref->GetInteger(pref_path, &val);
+    ASSERT_TRUE(pref->GetInteger(pref_path, &val)) << msg;
     EXPECT_EQ(must_equal, val) << msg;
   }
 
