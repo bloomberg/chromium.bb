@@ -57,6 +57,9 @@ inline long WINAPI UnitTestExceptionFilter(EXCEPTION_POINTERS* info) {
 }
 #endif  // OS_WIN
 
+// Match function used by the GetTestCount method.
+typedef bool (*TestMatch)(const testing::TestInfo&);
+
 class TestSuite {
  public:
   TestSuite(int argc, char** argv) {
@@ -75,6 +78,38 @@ class TestSuite {
     CommandLine::Terminate();
   }
 
+  // Returns true if a string starts with FLAKY_.
+  static bool IsFlaky(const char* name) {
+    return strncmp(name, "FLAKY_", 6) == 0;
+  }
+
+  // Returns true if the test is marked as flaky.
+  static bool FlakyTest(const testing::TestInfo& test) {
+    return IsFlaky(test.name()) || IsFlaky(test.test_case_name());
+  }
+
+  // Returns true if the test failed and is not marked as flaky.
+  static bool NonFlakyFailures(const testing::TestInfo& test) {
+    return test.should_run() && test.result()->Failed() && !FlakyTest(test);
+  }
+
+  // Returns the number of tests where the match function returns true.
+  int GetTestCount(TestMatch test_match) {
+    testing::UnitTest* instance = testing::UnitTest::GetInstance();
+    int count = 0;
+
+    for (int i = 0; i < instance->total_test_case_count(); ++i) {
+      const testing::TestCase& test_case = *instance->GetTestCase(i);
+      for (int j = 0; j < test_case.total_test_count(); ++j) {
+        if (test_match(*test_case.GetTestInfo(j))) {
+          count++;
+        }
+      }
+    }
+
+    return count;
+  }
+
   // Don't add additional code to this method.  Instead add it to
   // Initialize().  See bug 6436.
   int Run() {
@@ -91,6 +126,16 @@ class TestSuite {
       return multi_process_function_list::InvokeChildProcessTest(func_name);
     }
     int result = RUN_ALL_TESTS();
+
+    // Reset the result code if only flaky test failed.
+    if (result != 0 && GetTestCount(&TestSuite::NonFlakyFailures) == 0) {
+      result = 0;
+    }
+
+    // Display the number of flaky tests.
+    int flaky_count = GetTestCount(&TestSuite::FlakyTest);
+    printf("  YOU HAVE %d FLAKY %s\n\n", flaky_count,
+           flaky_count == 1 ? "TEST" : "TESTS");
 
     // This MUST happen before Shutdown() since Shutdown() tears down
     // objects (such as NotificationService::current()) that Cocoa
