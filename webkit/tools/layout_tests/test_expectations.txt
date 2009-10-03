@@ -2520,6 +2520,7 @@ BUG9798 LINUX : LayoutTests/storage/change-version.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/fast/replaced/border-radius-clip.html = FAIL PASS
 BUG9798 : LayoutTests/media/video-seeking.html = FAIL PASS
 BUG9798 : LayoutTests/media/video-layer-crash.html = FAIL PASS
+BUG9798 : LayoutTests/media/video-src-invalid-remove.html = FAIL PASS
 
 // Regression from WebKit merge 43242:43321.
 BUG9798 LINUX : LayoutTests/transitions/mask-transitions.html = FAIL PASS
