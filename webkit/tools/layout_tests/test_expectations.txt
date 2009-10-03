@@ -639,18 +639,13 @@ BUG21118 WIN LINUX : LayoutTests/fast/forms/box-shadow-override.html = FAIL
 BUG849072 SKIP : chrome/http/mime = PASS
 
 // These tests all depend on DOM Storage events which are not yet supported.
-BUG4360 : LayoutTests/storage/domstorage/window-attributes-exist.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/localstorage/iframe-events.html = TIMEOUT
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/iframe-events.html = TIMEOUT
 BUG4360 : LayoutTests/storage/domstorage/localstorage/simple-events.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/simple-events.html = FAIL
-BUG4360 : LayoutTests/storage/domstorage/localstorage/index-get-and-set.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/index-get-and-set.html = FAIL
-BUG4360 : LayoutTests/storage/domstorage/localstorage/onstorage-attribute-markup.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/onstorage-attribute-markup.html = FAIL
-BUG4360 : LayoutTests/storage/domstorage/localstorage/onstorage-attribute-setattribute.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/onstorage-attribute-setattribute.html = FAIL
-BUG4360 : LayoutTests/storage/domstorage/localstorage/onstorage-attribute-setwindow.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/onstorage-attribute-setwindow.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/localstorage/string-conversion.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/string-conversion.html = FAIL
