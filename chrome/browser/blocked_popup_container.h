@@ -114,12 +114,13 @@ class BlockedPopupContainer : public TabContentsDelegate,
   // Returns the number of blocked notices, popups don't count.
   size_t GetBlockedNoticeCount() const;
 
-  // Returns true if host |index| is whitelisted.  Returns false if |index| is
-  // invalid.
+  // Returns true if host |index| is whitelisted.
+  // NOTE: Does not sanity-check; do not pass an invalid index!
   bool IsHostWhitelisted(size_t index) const;
 
   // If host |index| is currently whitelisted, un-whitelists it.  Otherwise,
   // whitelists it and opens all blocked popups from it.
+  // NOTE: Does not sanity-check; do not pass an invalid index!
   void ToggleWhitelistingForHost(size_t index);
 
   // Deletes all popups and hides the interface parts.

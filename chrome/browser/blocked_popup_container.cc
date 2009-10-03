@@ -58,7 +58,7 @@ void BlockedPopupContainer::AddTabContents(TabContents* tab_contents,
 
     unblocked_popups_[tab_contents] = host;
   } else {
-    if (blocked_popups_.size() >= kImpossibleNumberOfPopups) {
+    if (blocked_popups_.size() == (kImpossibleNumberOfPopups - 1)) {
       delete tab_contents;
       LOG(INFO) << "Warning: Renderer is sending more popups to us than should "
           "be possible. Renderer compromised?";
@@ -125,8 +125,9 @@ void BlockedPopupContainer::AddBlockedNotice(const GURL& url,
   owner_->PopupNotificationVisibilityChanged(true);
 }
 
-void BlockedPopupContainer::GetHostAndReasonForNotice(
-    size_t index, std::string* host, string16* reason) const {
+void BlockedPopupContainer::GetHostAndReasonForNotice(size_t index,
+                                                      std::string* host,
+                                                      string16* reason) const {
   DCHECK(host);
   DCHECK(reason);
   *host = blocked_notices_[index].url_.host();
@@ -142,8 +143,7 @@ size_t BlockedPopupContainer::GetBlockedNoticeCount() const {
 }
 
 bool BlockedPopupContainer::IsHostWhitelisted(size_t index) const {
-  PopupHosts::const_iterator i(ConvertHostIndexToIterator(index));
-  return (i == popup_hosts_.end()) ? false : i->second;
+  return ConvertHostIndexToIterator(index)->second;
 }
 
 void BlockedPopupContainer::ToggleWhitelistingForHost(size_t index) {

@@ -96,6 +96,6 @@ TEST_F(BlockedPopupContainerTest, BasicCase) {
 
   EXPECT_EQ(container_->GetBlockedPopupCount(), static_cast<size_t>(1));
   EXPECT_EQ(container_->GetTabContentsAt(0), popup);
+  ASSERT_THAT(container_->GetHosts(), testing::Contains(host1));
   EXPECT_FALSE(container_->IsHostWhitelisted(0));
-  EXPECT_THAT(container_->GetHosts(), testing::Contains(host1));
 }

@@ -197,13 +197,17 @@ class BlockedPopupContainerViewBridge : public BlockedPopupContainerView {
 }
 
 - (void)update {
-  size_t blockedPopups = container_->GetBlockedPopupCount();
+  size_t blockedNotices = container_->GetBlockedNoticeCount();
+  size_t blockedItems = container_->GetBlockedPopupCount() + blockedNotices;
   NSString* label = nil;
-  if (blockedPopups) {
-    label = l10n_util::GetNSStringF(IDS_POPUPS_BLOCKED_COUNT,
-                                    UintToString16(blockedPopups));
-  } else {
+  if (!blockedItems) {
     label = l10n_util::GetNSString(IDS_POPUPS_UNBLOCKED);
+  } else if (!blockedNotices) {
+    label = l10n_util::GetNSStringF(IDS_POPUPS_BLOCKED_COUNT,
+                                    UintToString16(blockedItems));
+  } else {
+    label = l10n_util::GetNSStringF(IDS_BLOCKED_NOTICE_COUNT,
+                                    UintToString16(blockedItems));
   }
   [self resizeWithLabel:label];
   [view_ setContent:label];
@@ -211,17 +215,31 @@ class BlockedPopupContainerViewBridge : public BlockedPopupContainerView {
 
 // Called when the user selects an item from the popup menu. The tag, if below
 // |kImpossibleNumberOfPopups| will be the index into the container's popup
-// array. In that case, we should display the popup. If >=
-// |kImpossibleNumberOfPopups|, it represents a host that we should whitelist.
+// array. In that case, we should display the popup. Otherwise, the tag is
+// either a host we should toggle whitelisting on or a notice (for which we do
+// nothing as yet).
 // |sender| is the NSMenuItem that was chosen.
 - (void)menuAction:(id)sender {
   size_t tag = static_cast<size_t>([sender tag]);
+
+  // Is this a click on a popup?
   if (tag < BlockedPopupContainer::kImpossibleNumberOfPopups) {
     container_->LaunchPopupAtIndex(tag);
-  } else {
-    size_t hostIndex = tag - BlockedPopupContainer::kImpossibleNumberOfPopups;
-    container_->ToggleWhitelistingForHost(hostIndex);
+    return;
   }
+
+  tag -= BlockedPopupContainer::kImpossibleNumberOfPopups;
+
+  // Is this a click on a host?
+  size_t hostCount = container_->GetPopupHostCount();
+  if (tag < hostCount) {
+    container_->ToggleWhitelistingForHost(tag);
+    return;
+  }
+
+  tag -= hostCount;
+
+  // Nothing to do for now for notices.
 }
 
 namespace {
@@ -280,17 +298,38 @@ void GetURLAndTitleForPopup(
   std::vector<std::string> hosts(container_->GetHosts());
   if (!hosts.empty() && count)
     [menu addItem:[NSMenuItem separatorItem]];
+  size_t first_host = BlockedPopupContainer::kImpossibleNumberOfPopups;
   for (size_t i = 0; i < hosts.size(); ++i) {
     NSString* titleStr =
-        l10n_util::GetNSStringF(IDS_POPUP_HOST_FORMAT,
-                                UTF8ToUTF16(hosts[i]));
+        l10n_util::GetNSStringF(IDS_POPUP_HOST_FORMAT, UTF8ToUTF16(hosts[i]));
     scoped_nsobject<NSMenuItem> item(
         [[NSMenuItem alloc] initWithTitle:titleStr
                                    action:@selector(menuAction:)
                             keyEquivalent:@""]);
     if (container_->IsHostWhitelisted(i))
       [item setState:NSOnState];
-    [item setTag:BlockedPopupContainer::kImpossibleNumberOfPopups + i];
+    [item setTag:first_host + i];
+    [item setTarget:self];
+    [menu addItem:item.get()];
+  }
+
+  // Add the list of notices. We begin tagging these at
+  // |kImpossibleNumberOfPopups + hosts.size()|.
+  size_t notice_count = container_->GetBlockedNoticeCount();
+  if (notice_count && (!hosts.empty() || count))
+    [menu addItem:[NSMenuItem separatorItem]];
+  size_t first_notice = first_host + hosts.size();
+  for (size_t i = 0; i < notice_count; ++i) {
+    std::string host;
+    string16 reason;
+    container_->GetHostAndReasonForNotice(i, &host, &reason);
+    NSString* titleStr =
+        l10n_util::GetNSStringF(IDS_NOTICE_TITLE_FORMAT, UTF8ToUTF16(host));
+    scoped_nsobject<NSMenuItem> item(
+        [[NSMenuItem alloc] initWithTitle:titleStr
+                                   action:@selector(menuAction:)
+                            keyEquivalent:@""]);
+    [item setTag:first_notice + i];
     [item setTarget:self];
     [menu addItem:item.get()];
   }

@@ -45,17 +45,8 @@ class BlockedPopupContainerViewWin : public BlockedPopupContainerView,
                               std::wstring* url,
                               std::wstring* title) const;
 
-  // Returns the names of hosts showing popups.
-  std::vector<std::wstring> GetHosts() const;
-
-  // Returns the number of blocked popups from the model
-  size_t GetBlockedPopupCount() const;
-
-  // Returns the number of blocked notices from the model
-  size_t GetBlockedNoticeCount() const;
-
   // Returns the model that owns us.
-  BlockedPopupContainer* GetModel() const { return container_model_; }
+  BlockedPopupContainer* model() const { return model_; }
 
   // Overridden from AnimationDelegate:
   virtual void AnimationStarted(const Animation* animation);
@@ -82,7 +73,7 @@ class BlockedPopupContainerViewWin : public BlockedPopupContainerView,
   virtual void OnSize(UINT param, const CSize& size);
 
   // Our model; calling the shots.
-  BlockedPopupContainer* container_model_;
+  BlockedPopupContainer* model_;
 
   // Our associated view object.
   BlockedPopupContainerInternalView* container_view_;

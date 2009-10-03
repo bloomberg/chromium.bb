@@ -27,11 +27,6 @@ namespace {
 // The minimal border around the edge of the notification.
 const int kSmallPadding = 2;
 
-// The offset needed for blocked notices not to clash with anything else.
-// Basically 2 separators (one between popups and hosts, one between hosts
-// and notices).
-const int kNoticeMenuOffset = 2;
-
 // The background color of the blocked popup notification.
 const SkColor kBackgroundColorTop = SkColorSetRGB(255, 242, 183);
 const SkColor kBackgroundColorBottom = SkColorSetRGB(250, 230, 145);
@@ -157,13 +152,14 @@ BlockedPopupContainerInternalView::~BlockedPopupContainerInternalView() {
 }
 
 void BlockedPopupContainerInternalView::UpdateLabel() {
-  size_t blocked_items =
-      container_->GetBlockedPopupCount() + container_->GetBlockedNoticeCount();
+  size_t blocked_notices = container_->model()->GetBlockedNoticeCount();
+  size_t blocked_items = container_->model()->GetBlockedPopupCount() +
+      blocked_notices;
 
   std::wstring label;
   if (blocked_items == 0) {
     label = l10n_util::GetString(IDS_POPUPS_UNBLOCKED);
-  } else if (container_->GetBlockedNoticeCount() == 0) {
+  } else if (blocked_notices == 0) {
     label = l10n_util::GetStringF(IDS_POPUPS_BLOCKED_COUNT,
                                   UintToWString(blocked_items));
   } else {
@@ -230,82 +226,105 @@ gfx::Size BlockedPopupContainerInternalView::GetPreferredSize() {
 
 void BlockedPopupContainerInternalView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
-  if (sender == popup_count_label_) {
-    launch_menu_.reset(views::Menu::Create(this, views::Menu::TOPLEFT,
-                                           container_->GetNativeView()));
-
-    // Set items 1 .. popup_count as individual popups.
-    size_t popup_count = container_->GetBlockedPopupCount();
-    for (size_t i = 0; i < popup_count; ++i) {
-      std::wstring url, title;
-      container_->GetURLAndTitleForPopup(i, &url, &title);
-      // We can't just use the index into container_ here because Menu reserves
-      // the value 0 as the nop command.
-      launch_menu_->AppendMenuItem(i + 1,
-          l10n_util::GetStringF(IDS_POPUP_TITLE_FORMAT, url, title),
-          views::Menu::NORMAL);
-    }
-
-    // Set items (kImpossibleNumberOfPopups + 1) ..
-    // (kImpossibleNumberOfPopups + 1 + hosts.size()) as hosts.
-    std::vector<std::wstring> hosts(container_->GetHosts());
-    if (!hosts.empty() && (popup_count > 0))
-      launch_menu_->AppendSeparator();
-    for (size_t i = 0; i < hosts.size(); ++i) {
-      launch_menu_->AppendMenuItem(
-          BlockedPopupContainer::kImpossibleNumberOfPopups + i + 1,
-          l10n_util::GetStringF(IDS_POPUP_HOST_FORMAT, hosts[i]),
-          views::Menu::NORMAL);
-    }
-
-    size_t notice_count = container_->GetBlockedNoticeCount();
-    if (notice_count)
-      launch_menu_->AppendSeparator();
-
-    for (size_t i = 0; i < notice_count; ++i) {
-      std::string host;
-      string16 reason;
-      container_->GetModel()->GetHostAndReasonForNotice(i, &host, &reason);
-      launch_menu_->AppendMenuItem(
-          BlockedPopupContainer::kImpossibleNumberOfPopups +
-              hosts.size() + i + kNoticeMenuOffset + 1,
-          l10n_util::GetStringF(IDS_NOTICE_TITLE_FORMAT,
-                                ASCIIToWide(host), reason),
-          views::Menu::NORMAL);
-    }
-
-    CPoint cursor_position;
-    ::GetCursorPos(&cursor_position);
-    launch_menu_->RunMenuAt(cursor_position.x, cursor_position.y);
-  } else if (sender == close_button_) {
-    container_->GetModel()->set_dismissed();
-    container_->GetModel()->CloseAll();
+  if (sender == close_button_) {
+    container_->model()->set_dismissed();
+    container_->model()->CloseAll();
   }
+
+  if (sender != popup_count_label_)
+    return;
+
+  launch_menu_.reset(views::Menu::Create(this, views::Menu::TOPLEFT,
+                                         container_->GetNativeView()));
+
+  // Set items 1 .. popup_count as individual popups.
+  size_t popup_count = container_->model()->GetBlockedPopupCount();
+  for (size_t i = 0; i < popup_count; ++i) {
+    std::wstring url, title;
+    container_->GetURLAndTitleForPopup(i, &url, &title);
+    // We can't just use the index into container_ here because Menu reserves
+    // the value 0 as the nop command.
+    launch_menu_->AppendMenuItem(i + 1,
+        l10n_util::GetStringF(IDS_POPUP_TITLE_FORMAT, url, title),
+        views::Menu::NORMAL);
+  }
+
+  // Set items (kImpossibleNumberOfPopups + 1) ..
+  // (kImpossibleNumberOfPopups + hosts.size()) as hosts.
+  std::vector<std::string> hosts(container_->model()->GetHosts());
+  if (!hosts.empty() && (popup_count > 0))
+    launch_menu_->AppendSeparator();
+  size_t first_host = BlockedPopupContainer::kImpossibleNumberOfPopups + 1;
+  for (size_t i = 0; i < hosts.size(); ++i) {
+    launch_menu_->AppendMenuItem(first_host + i,
+        l10n_util::GetStringF(IDS_POPUP_HOST_FORMAT, UTF8ToWide(hosts[i])),
+        views::Menu::NORMAL);
+  }
+
+  // Set items (kImpossibleNumberOfPopups + hosts.size() + 2) ..
+  // (kImpossibleNumberOfPopups + hosts.size() + 1 + notice_count) as notices.
+  size_t notice_count = container_->model()->GetBlockedNoticeCount();
+  if (notice_count && (!hosts.empty() || (popup_count > 0)))
+    launch_menu_->AppendSeparator();
+  size_t first_notice = first_host + hosts.size() + 1;
+  for (size_t i = 0; i < notice_count; ++i) {
+    std::string host;
+    string16 reason;
+    container_->model()->GetHostAndReasonForNotice(i, &host, &reason);
+    launch_menu_->AppendMenuItem(first_notice + i,
+        l10n_util::GetStringF(IDS_NOTICE_TITLE_FORMAT, ASCIIToWide(host),
+                              reason),
+        views::Menu::NORMAL);
+  }
+
+  CPoint cursor_position;
+  GetCursorPos(&cursor_position);
+  launch_menu_->RunMenuAt(cursor_position.x, cursor_position.y);
 }
 
 bool BlockedPopupContainerInternalView::IsItemChecked(int id) const {
-  if (id > BlockedPopupContainer::kImpossibleNumberOfPopups) {
-    return container_->GetModel()->IsHostWhitelisted(static_cast<size_t>(
-        id - BlockedPopupContainer::kImpossibleNumberOfPopups - 1));
+  // |id| should be > 0 since all index based commands have 1 added to them.
+  DCHECK_GT(id, 0);
+  size_t id_size_t = static_cast<size_t>(id);
+
+  if (id_size_t > BlockedPopupContainer::kImpossibleNumberOfPopups) {
+    id_size_t -= BlockedPopupContainer::kImpossibleNumberOfPopups + 1;
+    if (id_size_t < container_->model()->GetPopupHostCount())
+      return container_->model()->IsHostWhitelisted(id_size_t);
   }
 
   return false;
 }
 
 void BlockedPopupContainerInternalView::ExecuteCommand(int id) {
+  // |id| should be > 0 since all index based commands have 1 added to them.
   DCHECK_GT(id, 0);
   size_t id_size_t = static_cast<size_t>(id);
-  if (id_size_t > BlockedPopupContainer::kImpossibleNumberOfPopups +
-    container_->GetModel()->GetPopupHostCount() + kNoticeMenuOffset) {
-    // Nothing to do for now for notices.
-  } else if (id_size_t > BlockedPopupContainer::kImpossibleNumberOfPopups) {
-    // Decrement id since all index based commands have 1 added to them. (See
-    // ButtonPressed() for detail).
-    container_->GetModel()->ToggleWhitelistingForHost(
-        id_size_t - BlockedPopupContainer::kImpossibleNumberOfPopups - 1);
-  } else {
-    container_->GetModel()->LaunchPopupAtIndex(id_size_t - 1);
+
+  // Is this a click on a popup?
+  if (id_size_t < BlockedPopupContainer::kImpossibleNumberOfPopups) {
+    container_->model()->LaunchPopupAtIndex(id_size_t - 1);
+    return;
   }
+
+  // |id| shouldn't be == kImpossibleNumberOfPopups since the popups end before
+  // this and the hosts start after it.  (If it is used, it is as a separator.)
+  DCHECK_NE(id_size_t, BlockedPopupContainer::kImpossibleNumberOfPopups);
+  id_size_t -= BlockedPopupContainer::kImpossibleNumberOfPopups + 1;
+
+  // Is this a click on a host?
+  size_t host_count = container_->model()->GetPopupHostCount();
+  if (id_size_t < host_count) {
+    container_->model()->ToggleWhitelistingForHost(id_size_t);
+    return;
+  }
+
+  // |id shouldn't be == host_count since this is the separator between hosts
+  // and notices.
+  DCHECK_NE(id_size_t, host_count);
+  id_size_t -= host_count + 1;
+
+  // Nothing to do for now for notices.
 }
 
 
@@ -323,28 +342,10 @@ void BlockedPopupContainerViewWin::GetURLAndTitleForPopup(
     size_t index, std::wstring* url, std::wstring* title) const {
   DCHECK(url);
   DCHECK(title);
-  TabContents* tab_contents = GetModel()->GetTabContentsAt(index);
+  TabContents* tab_contents = model()->GetTabContentsAt(index);
   const GURL& tab_contents_url = tab_contents->GetURL().GetOrigin();
   *url = UTF8ToWide(tab_contents_url.possibly_invalid_spec());
   *title = UTF16ToWideHack(tab_contents->GetTitle());
-}
-
-std::vector<std::wstring> BlockedPopupContainerViewWin::GetHosts() const {
-  std::vector<std::string> utf8_hosts(GetModel()->GetHosts());
-
-  std::vector<std::wstring> hosts;
-  for (std::vector<std::string>::const_iterator it = utf8_hosts.begin();
-       it != utf8_hosts.end(); ++it)
-    hosts.push_back(UTF8ToWide(*it));
-  return hosts;
-}
-
-size_t BlockedPopupContainerViewWin::GetBlockedPopupCount() const {
-  return container_model_->GetBlockedPopupCount();
-}
-
-size_t BlockedPopupContainerViewWin::GetBlockedNoticeCount() const {
-  return container_model_->GetBlockedNoticeCount();
 }
 
 // Overridden from AnimationDelegate:
@@ -432,13 +433,13 @@ void BlockedPopupContainerViewWin::Destroy() {
 BlockedPopupContainerViewWin::BlockedPopupContainerViewWin(
     BlockedPopupContainer* container)
     : slide_animation_(new SlideAnimation(this)),
-      container_model_(container),
+      model_(container),
       container_view_(NULL) {
   container_view_ = new BlockedPopupContainerInternalView(this);
   container_view_->SetVisible(true);
 
   set_window_style(WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-  WidgetWin::Init(GetModel()->GetConstrainingContents(NULL)->GetNativeView(),
+  WidgetWin::Init(model_->GetConstrainingContents(NULL)->GetNativeView(),
                   gfx::Rect());
   SetContentsView(container_view_);
   SetPosition();

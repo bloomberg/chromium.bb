@@ -69,7 +69,8 @@ void BlockedPopupContainerViewGtk::ShowView() {
 }
 
 void BlockedPopupContainerViewGtk::UpdateLabel() {
-  size_t blocked_popups = model_->GetBlockedPopupCount();
+  size_t blocked_notices = model_->GetBlockedNoticeCount();
+  size_t blocked_items = model_->GetBlockedPopupCount() + blocked_notices;
 
   GtkWidget* label = gtk_bin_get_child(GTK_BIN(menu_button_));
   if (!label) {
@@ -77,12 +78,17 @@ void BlockedPopupContainerViewGtk::UpdateLabel() {
     gtk_container_add(GTK_CONTAINER(menu_button_), label);
   }
 
-  gtk_label_set_text(
-      GTK_LABEL(label),
-      (blocked_popups > 0) ?
-      l10n_util::GetStringFUTF8(IDS_POPUPS_BLOCKED_COUNT,
-                                UintToString16(blocked_popups)).c_str() :
-      l10n_util::GetStringUTF8(IDS_POPUPS_UNBLOCKED).c_str());
+  std::string label_text;
+  if (blocked_items == 0) {
+    label_text = l10n_util::GetStringUTF8(IDS_POPUPS_UNBLOCKED);
+  } else if (blocked_notices == 0) {
+    label_text = l10n_util::GetStringFUTF8(IDS_POPUPS_BLOCKED_COUNT,
+                                           UintToString16(blocked_items));
+  } else {
+    label_text = l10n_util::GetStringFUTF8(IDS_BLOCKED_NOTICE_COUNT,
+                                           UintToString16(blocked_items));
+  }
+  gtk_label_set_text(GTK_LABEL(label), label_text.c_str());
 }
 
 void BlockedPopupContainerViewGtk::HideView() {
@@ -122,11 +128,14 @@ bool BlockedPopupContainerViewGtk::IsCommandEnabled(int command_id) const {
 }
 
 bool BlockedPopupContainerViewGtk::IsItemChecked(int id) const {
+  // |id| should be > 0 since all index based commands have 1 added to them.
   DCHECK_GT(id, 0);
   size_t id_size_t = static_cast<size_t>(id);
+
   if (id_size_t > BlockedPopupContainer::kImpossibleNumberOfPopups) {
-    return model_->IsHostWhitelisted(
-        id_size_t - BlockedPopupContainer::kImpossibleNumberOfPopups - 1);
+    id_size_t -= BlockedPopupContainer::kImpossibleNumberOfPopups + 1;
+    if (id_size_t < model_->GetPopupHostCount())
+      return model_->IsHostWhitelisted(id_size_t);
   }
 
   return false;
@@ -135,14 +144,31 @@ bool BlockedPopupContainerViewGtk::IsItemChecked(int id) const {
 void BlockedPopupContainerViewGtk::ExecuteCommand(int id) {
   DCHECK_GT(id, 0);
   size_t id_size_t = static_cast<size_t>(id);
-  if (id_size_t > BlockedPopupContainer::kImpossibleNumberOfPopups) {
-    // Decrement id since all index based commands have 1 added to them. (See
-    // ButtonPressed() for detail).
-    model_->ToggleWhitelistingForHost(
-        id_size_t - BlockedPopupContainer::kImpossibleNumberOfPopups - 1);
-  } else {
+
+  // Is this a click on a popup?
+  if (id_size_t < BlockedPopupContainer::kImpossibleNumberOfPopups) {
     model_->LaunchPopupAtIndex(id_size_t - 1);
+    return;
   }
+
+  // |id| shouldn't be == kImpossibleNumberOfPopups since the popups end before
+  // this and the hosts start after it.  (If it is used, it is as a separator.)
+  DCHECK_NE(id_size_t, BlockedPopupContainer::kImpossibleNumberOfPopups);
+  id_size_t -= BlockedPopupContainer::kImpossibleNumberOfPopups + 1;
+
+  // Is this a click on a host?
+  size_t host_count = model_->GetPopupHostCount();
+  if (id_size_t < host_count) {
+    model_->ToggleWhitelistingForHost(id_size_t);
+    return;
+  }
+
+  // |id shouldn't be == host_count since this is the separator between hosts
+  // and notices.
+  DCHECK_NE(id_size_t, host_count);
+  id_size_t -= host_count + 1;
+
+  // Nothing to do for now for notices.
 }
 
 BlockedPopupContainerViewGtk::BlockedPopupContainerViewGtk(
@@ -200,15 +226,30 @@ void BlockedPopupContainerViewGtk::OnMenuButtonClicked(
   }
 
   // Set items (kImpossibleNumberOfPopups + 1) ..
-  // (kImpossibleNumberOfPopups + 1 + hosts.size()) as hosts.
+  // (kImpossibleNumberOfPopups + hosts.size()) as hosts.
   std::vector<std::string> hosts(container->model_->GetHosts());
   if (!hosts.empty() && (popup_count > 0))
     container->launch_menu_->AppendSeparator();
+  size_t first_host = BlockedPopupContainer::kImpossibleNumberOfPopups + 1;
   for (size_t i = 0; i < hosts.size(); ++i) {
-    container->launch_menu_->AppendCheckMenuItemWithLabel(
-        BlockedPopupContainer::kImpossibleNumberOfPopups + i + 1,
+    container->launch_menu_->AppendCheckMenuItemWithLabel(first_host + i,
         l10n_util::GetStringFUTF8(IDS_POPUP_HOST_FORMAT,
                                   UTF8ToUTF16(hosts[i])));
+  }
+
+  // Set items (kImpossibleNumberOfPopups + hosts.size() + 2) ..
+  // (kImpossibleNumberOfPopups + hosts.size() + 1 + notice_count) as notices.
+  size_t notice_count = container->model_->GetBlockedNoticeCount();
+  if (notice_count && (!hosts.empty() || (popup_count > 0)))
+    container->launch_menu_->AppendSeparator();
+  size_t first_notice = first_host + hosts.size() + 1;
+  for (size_t i = 0; i < notice_count; ++i) {
+    std::string host;
+    string16 reason;
+    container->model_->GetHostAndReasonForNotice(i, &host, &reason);
+    container->launch_menu_->AppendMenuItemWithLabel(first_notice + i,
+        l10n_util::GetStringFUTF8(IDS_NOTICE_TITLE_FORMAT, UTF8ToUTF16(host),
+                                  reason));
   }
 
   container->launch_menu_->PopupAsContext(gtk_get_current_event_time());

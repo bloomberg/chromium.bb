@@ -73,8 +73,9 @@ TEST_F(BlockedPopupContainerControllerTest, BasicPopupBlock) {
   popup->controller().LoadURL(GetTestCase("error"), GURL(),
                               PageTransition::LINK);
   container_->AddTabContents(popup, gfx::Rect(), host1);
-  EXPECT_EQ(container_->GetBlockedPopupCount(), static_cast<size_t>(1));
-  EXPECT_EQ(container_->GetTabContentsAt(0), popup);
+  EXPECT_EQ(1U, container_->GetBlockedPopupCount());
+  EXPECT_EQ(popup, container_->GetTabContentsAt(0));
+  ASSERT_EQ(1U, container_->GetPopupHostCount());
   EXPECT_FALSE(container_->IsHostWhitelisted(0));
 
   // Ensure the view has been displayed. If it has a superview, then ShowView()
@@ -82,20 +83,20 @@ TEST_F(BlockedPopupContainerControllerTest, BasicPopupBlock) {
   // UpdateLabel() has been called.
   EXPECT_TRUE([cocoa_controller_ view]);
   EXPECT_TRUE([[cocoa_controller_ view] superview]);
-  EXPECT_TRUE([[[cocoa_controller_ view] content] length] > 0);
+  EXPECT_GT([[[cocoa_controller_ view] content] length], 0U);
 
   // Validate the menu. It should have 4 items (the dummy title item, 1 poupup,
   // a separator, 1 host).
   NSMenu* menu = [cocoa_controller_ buildMenu];
   EXPECT_TRUE(menu);
-  EXPECT_EQ([menu numberOfItems], 4);
+  EXPECT_EQ(4, [menu numberOfItems]);
 
   // Change the whitelisting and make sure the host is checked.
   container_->ToggleWhitelistingForHost(0);
   menu = [cocoa_controller_ buildMenu];
   EXPECT_TRUE(menu);
-  EXPECT_EQ([menu numberOfItems], 2);
-  EXPECT_EQ([[menu itemAtIndex:1] state], NSOnState);
+  EXPECT_EQ(2, [menu numberOfItems]);
+  EXPECT_EQ(NSOnState, [[menu itemAtIndex:1] state]);
 
   // Close the popup and verify it's no longer in the view hierarchy. This
   // means HideView() has been called.
