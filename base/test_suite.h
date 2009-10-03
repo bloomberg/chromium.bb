@@ -134,8 +134,10 @@ class TestSuite {
 
     // Display the number of flaky tests.
     int flaky_count = GetTestCount(&TestSuite::FlakyTest);
-    printf("  YOU HAVE %d FLAKY %s\n\n", flaky_count,
-           flaky_count == 1 ? "TEST" : "TESTS");
+    if (flaky_count) {
+      printf("  YOU HAVE %d FLAKY %s\n\n", flaky_count,
+             flaky_count == 1 ? "TEST" : "TESTS");
+    }
 
     // This MUST happen before Shutdown() since Shutdown() tears down
     // objects (such as NotificationService::current()) that Cocoa
