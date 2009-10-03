@@ -426,7 +426,7 @@
           'GCC_TREAT_WARNINGS_AS_ERRORS': 'YES',    # -Werror
           'GCC_VERSION': '4.2',
           'GCC_WARN_ABOUT_MISSING_NEWLINE': 'YES',  # -Wnewline-eof
-          'MACOSX_DEPLOYMENT_TARGET': '10.5',       # -mmacosx-version-min=10.5
+          'MACOSX_DEPLOYMENT_TARGET': '10.4',       # -mmacosx-version-min=10.4
           'PREBINDING': 'NO',                       # No -Wl,-prebind
           'SDKROOT': 'macosx10.5',                  # -isysroot
           'USE_HEADERMAP': 'NO',
