@@ -40,7 +40,7 @@ deps = {
     "http://v8.googlecode.com/svn/trunk@2997",
 
   "src/native_client":
-    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@804",
+    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@819",
 
   "src/third_party/skia":
     "http://skia.googlecode.com/svn/trunk@364",
@@ -197,5 +197,12 @@ hooks = [
     "action": ["python",
                "src/build/win/clobber_generated_headers.py",
                "$matching_files"],
+  },
+  {
+    # Workaround XCode dependecies problem.
+    # TODO(bradnelson): remove this when fixed.
+    "pattern": ".",
+    "action": ["python",
+               "src/build/mac/clobber_generated_headers.py"],
   },
 ]
