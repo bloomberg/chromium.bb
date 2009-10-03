@@ -571,7 +571,10 @@ void TabContentsViewGtk::HandleKeyboardEvent(
   // |event.os_event| values are dummy values (or NULL.)
   // We should filter out these pseudo key events to prevent unexpected
   // behaviors caused by them.
-  if (event.type == WebKit::WebInputEvent::Char)
+  // We should also filter out the KeyUp event as it should not be processed
+  // as an accelerator.
+  if (event.type == WebKit::WebInputEvent::Char ||
+      event.type == WebKit::WebInputEvent::KeyUp)
     return;
 
   BrowserWindowGtk* browser_window =
