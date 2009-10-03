@@ -12,11 +12,11 @@
 #include <string>
 #include <vector>
 
+#include "app/gfx/codec/png_codec.h"
 #include "app/gfx/icon_util.h"
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/gfx/png_decoder.h"
 #include "base/path_service.h"
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
@@ -496,7 +496,7 @@ void JumpListUpdateTask::Run() {
        item != most_visited_pages_.end(); ++item) {
     SkBitmap icon_bitmap;
     if ((*item)->data().get() &&
-        PNGDecoder::Decode(&(*item)->data()->data, &icon_bitmap)) {
+        gfx::PNGCodec::Decode(&(*item)->data()->data, &icon_bitmap)) {
       std::wstring icon_path;
       if (CreateIconFile(icon_bitmap, icon_dir_, &icon_path))
         (*item)->SetIcon(icon_path, 0, true);
@@ -509,7 +509,7 @@ void JumpListUpdateTask::Run() {
        item != recently_closed_pages_.end(); ++item) {
     SkBitmap icon_bitmap;
     if ((*item)->data().get() &&
-        PNGDecoder::Decode(&(*item)->data()->data, &icon_bitmap)) {
+        gfx::PNGCodec::Decode(&(*item)->data()->data, &icon_bitmap)) {
       std::wstring icon_path;
       if (CreateIconFile(icon_bitmap, icon_dir_, &icon_path))
         (*item)->SetIcon(icon_path, 0, true);
