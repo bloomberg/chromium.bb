@@ -2538,6 +2538,7 @@ BUG9798 LINUX : LayoutTests/transitions/transition-end-event-all-properties.html
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-attributes.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/extra-transition.html = TIMEOUT PASS
 BUG9798 LINUX : LayoutTests/storage/change-version.html = TIMEOUT PASS
+BUG9798 WIN : LayoutTests/fast/replaced/border-radius-clip.html = FAIL PASS
 
 // Regression from WebKit merge 43242:43321.
 BUG9798 LINUX : LayoutTests/transitions/mask-transitions.html = FAIL PASS
