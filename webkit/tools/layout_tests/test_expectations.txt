@@ -166,7 +166,7 @@ WONTFIX SKIP : LayoutTests/webarchive/adopt-inline-styled-node-webarchive.html =
 // between a key event and a search event.  You cannot count on this
 // always being exactly the same, so we allow this to either PASS or FAIL
 // but not CRASH or TIMEOUT.
-WONTFIX DEBUG SLOW WIN MAC LINUX : LayoutTests/fast/forms/search-event-delay.html = FAIL PASS
+WONTFIX SLOW WIN MAC LINUX : LayoutTests/fast/forms/search-event-delay.html = FAIL PASS
 
 // Chrome uses different keyboard accelerators from those used by Safari, so
 // these tests will always fail.
@@ -1256,7 +1256,7 @@ BUG10343 LINUX : LayoutTests/fast/text/atsui-small-caps-punctuation-size.html = 
 BUG10343 LINUX : LayoutTests/fast/text/cg-vs-atsui.html = FAIL
 
 // Started timing out with agl's complext text change.  Page is verrry slow.
-BUG10343 LINUX : LayoutTests/fast/text/large-text-composed-char.html = TIMEOUT FAIL
+BUG10343 SKIP LINUX : LayoutTests/fast/text/large-text-composed-char.html = TIMEOUT FAIL
 
 // Missing text -- slow font path unimplemented?
 BUG10344 LINUX : LayoutTests/fast/text/should-use-atsui.html = FAIL
@@ -2518,7 +2518,8 @@ BUG9798 LINUX : LayoutTests/transitions/transition-end-event-attributes.html = F
 BUG9798 LINUX : LayoutTests/transitions/extra-transition.html = TIMEOUT PASS
 BUG9798 LINUX : LayoutTests/storage/change-version.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/fast/replaced/border-radius-clip.html = FAIL PASS
-BUG9798 LINUX : LayoutTests/media/video-seeking.html = FAIL PASS
+BUG9798 : LayoutTests/media/video-seeking.html = FAIL PASS
+BUG9798 : LayoutTests/media/video-layer-crash.html = FAIL PASS
 
 // Regression from WebKit merge 43242:43321.
 BUG9798 LINUX : LayoutTests/transitions/mask-transitions.html = FAIL PASS
