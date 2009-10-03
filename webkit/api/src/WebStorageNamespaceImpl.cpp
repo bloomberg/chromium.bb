@@ -34,6 +34,7 @@
 #if ENABLE(DOM_STORAGE)
 
 #include "SecurityOrigin.h"
+#include "StorageMap.h"
 
 #include "WebStorageAreaImpl.h"
 #include "WebString.h"
@@ -42,7 +43,7 @@ namespace WebKit {
 
 WebStorageNamespace* WebStorageNamespace::createLocalStorageNamespace(const WebString& path)
 {
-    return new WebStorageNamespaceImpl(WebCore::StorageNamespaceImpl::localStorageNamespace(path));
+    return new WebStorageNamespaceImpl(WebCore::StorageNamespaceImpl::localStorageNamespace(path, WebCore::StorageMap::noQuota));
 }
 
 WebStorageNamespace* WebStorageNamespace::createSessionStorageNamespace()

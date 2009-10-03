@@ -638,6 +638,9 @@ BUG21118 WIN LINUX : LayoutTests/fast/forms/box-shadow-override.html = FAIL
 // I'm marking them as deferred for now, but we should do something with them.
 BUG849072 SKIP : chrome/http/mime = PASS
 
+// Disable quota test for now.
+BUG16876 : LayoutTests/storage/domstorage/localstorage/quota.html = FAIL
+
 // These tests all depend on DOM Storage events which are not yet supported.
 BUG4360 : LayoutTests/storage/domstorage/window-attributes-exist.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/localstorage/iframe-events.html = TIMEOUT
