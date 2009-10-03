@@ -39,7 +39,7 @@ namespace WebCore {
 
 PassRefPtr<StorageNamespace> StorageNamespace::localStorageNamespace(const String& path, unsigned quota)
 {
-    return new StorageNamespaceProxy(WebKit::webKitClient()->createLocalStorageNamespace(path));
+    return new StorageNamespaceProxy(WebKit::webKitClient()->createLocalStorageNamespace(path, quota));
 }
 
 PassRefPtr<StorageNamespace> StorageNamespace::sessionStorageNamespace()

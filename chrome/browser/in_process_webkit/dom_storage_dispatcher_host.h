@@ -51,7 +51,7 @@ class DOMStorageDispatcherHost :
   void OnGetItem(int64 storage_area_id, const string16& key,
                  IPC::Message* reply_msg);
   void OnSetItem(int64 storage_area_id, const string16& key,
-                 const string16& value);
+                 const string16& value, IPC::Message* reply_msg);
   void OnRemoveItem(int64 storage_area_id, const string16& key);
   void OnClear(int64 storage_area_id);
 

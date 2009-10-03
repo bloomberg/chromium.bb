@@ -181,8 +181,9 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   }
 
   virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
-      const WebKit::WebString& path) {
-    return WebKit::WebStorageNamespace::createLocalStorageNamespace(path);
+      const WebKit::WebString& path, unsigned quota) {
+    return WebKit::WebStorageNamespace::createLocalStorageNamespace(path,
+                                                                    quota);
   }
 
   virtual WebKit::WebStorageNamespace* createSessionStorageNamespace() {

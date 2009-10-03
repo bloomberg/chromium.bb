@@ -42,6 +42,7 @@ using WebKit::WebCursorInfo;
 using WebKit::WebData;
 using WebKit::WebLocalizedString;
 using WebKit::WebPluginListBuilder;
+using WebKit::WebStorageNamespace;
 using WebKit::WebString;
 using WebKit::WebThemeEngine;
 using WebKit::WebURLLoader;
@@ -464,6 +465,17 @@ WebCore::WorkerContextProxy* WebKitClientImpl::createWorkerContextProxy(
   return WebWorkerClientImpl::createWorkerContextProxy(worker);
 }
 
+WebStorageNamespace* WebKitClientImpl::createLocalStorageNamespace(
+    const WebString& path, unsigned quota) {
+  NOTREACHED();
+  return 0;
+}
+
+WebStorageNamespace* WebKitClientImpl::createSessionStorageNamespace() {
+  NOTREACHED();
+  return 0;
+}
+
 WebKit::WebString WebKitClientImpl::getAbsolutePath(
     const WebKit::WebString& path) {
   FilePath file_path(webkit_glue::WebStringToFilePathString(path));
@@ -481,4 +493,5 @@ WebKit::WebURL WebKitClientImpl::filePathToURL(const WebKit::WebString& path) {
   GURL file_url = net::FilePathToFileURL(file_path);
   return webkit_glue::KURLToWebURL(webkit_glue::GURLToKURL(file_url));
 }
+
 }  // namespace webkit_glue

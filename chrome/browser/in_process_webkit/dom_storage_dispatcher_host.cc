@@ -79,7 +79,7 @@ bool DOMStorageDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_DOMStorageLength, OnLength)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_DOMStorageKey, OnKey)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_DOMStorageGetItem, OnGetItem)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DOMStorageSetItem, OnSetItem)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_DOMStorageSetItem, OnSetItem)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DOMStorageRemoveItem, OnRemoveItem)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DOMStorageClear, OnClear)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -254,13 +254,13 @@ void DOMStorageDispatcherHost::OnGetItem(int64 storage_area_id,
 }
 
 void DOMStorageDispatcherHost::OnSetItem(int64 storage_area_id,
-                                         const string16& key,
-                                         const string16& value) {
+    const string16& key, const string16& value, IPC::Message* reply_msg) {
   DCHECK(!shutdown_);
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
     MessageLoop* webkit_loop = webkit_thread_->GetMessageLoop();
     webkit_loop->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &DOMStorageDispatcherHost::OnSetItem, storage_area_id, key, value));
+        &DOMStorageDispatcherHost::OnSetItem, storage_area_id, key, value,
+        reply_msg));
     return;
   }
 
@@ -273,7 +273,8 @@ void DOMStorageDispatcherHost::OnSetItem(int64 storage_area_id,
     return;
   }
   storage_area->SetItem(key, value, &quota_exception);
-  DCHECK(!quota_exception);  // This is tracked by the renderer.
+  ViewHostMsg_DOMStorageSetItem::WriteReplyParams(reply_msg, quota_exception);
+  Send(reply_msg);
 }
 
 void DOMStorageDispatcherHost::OnRemoveItem(int64 storage_area_id,

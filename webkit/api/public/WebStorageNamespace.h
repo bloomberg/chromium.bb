@@ -46,8 +46,10 @@ namespace WebKit {
         // where the SQLite databases that make LocalStorage data persistent are located.
         // If path is empty, data will not persist. You should call delete on the returned
         // object when you're finished.
-        WEBKIT_API static WebStorageNamespace* createLocalStorageNamespace(const WebString& backingDirectoryPath);
+        WEBKIT_API static WebStorageNamespace* createLocalStorageNamespace(const WebString& backingDirectoryPath, unsigned quota);
         WEBKIT_API static WebStorageNamespace* createSessionStorageNamespace();
+
+        static const unsigned noQuota = UINT_MAX;
 
         virtual ~WebStorageNamespace() { }
 

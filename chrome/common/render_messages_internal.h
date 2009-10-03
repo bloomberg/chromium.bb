@@ -1707,10 +1707,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               NullableString16 /* value */)
 
   // Set a value that's associated with a key in a storage area.
-  IPC_MESSAGE_CONTROL3(ViewHostMsg_DOMStorageSetItem,
-                       int64 /* storage_area_id */,
-                       string16 /* key */,
-                       string16 /* value */)
+  IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_DOMStorageSetItem,
+                              int64 /* storage_area_id */,
+                              string16 /* key */,
+                              string16 /* value */,
+                              bool /* quota_exception */)
 
   // Remove the value associated with a key in a storage area.
   IPC_MESSAGE_CONTROL2(ViewHostMsg_DOMStorageRemoveItem,

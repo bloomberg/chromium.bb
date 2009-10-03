@@ -83,10 +83,8 @@ namespace WebKit {
 
         // DOM Storage --------------------------------------------------
 
-        // Return a LocalStorage namespace that corresponds to the following
-        // path.
-        virtual WebStorageNamespace* createLocalStorageNamespace(
-            const WebString& path) = 0;
+        // Return a LocalStorage namespace that corresponds to the following path.
+        virtual WebStorageNamespace* createLocalStorageNamespace(const WebString& path, unsigned quota) = 0;
 
         // Return a new SessionStorage namespace.
         virtual WebStorageNamespace* createSessionStorageNamespace() = 0;

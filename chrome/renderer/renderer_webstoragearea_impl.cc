@@ -44,7 +44,8 @@ void RendererWebStorageAreaImpl::setItem(const WebString& key,
                                          const WebString& value,
                                          bool& quota_exception) {
   RenderThread::current()->Send(
-      new ViewHostMsg_DOMStorageSetItem(storage_area_id_, key, value));
+      new ViewHostMsg_DOMStorageSetItem(storage_area_id_, key, value,
+                                        &quota_exception));
 }
 
 void RendererWebStorageAreaImpl::removeItem(const WebString& key) {

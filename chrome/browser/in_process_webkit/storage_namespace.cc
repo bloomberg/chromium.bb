@@ -24,7 +24,8 @@ StorageNamespace* StorageNamespace::CreateLocalStorageNamespace(
   DCHECK(!dom_storage_context->GetStorageNamespace(id));
   WebString path = webkit_glue::FilePathToWebString(dir_path);
   WebStorageNamespace* web_storage_namespace =
-      WebStorageNamespace::createLocalStorageNamespace(path);
+      WebStorageNamespace::createLocalStorageNamespace(path,
+                                                       kLocalStorageQuota);
   return new StorageNamespace(dom_storage_context, web_storage_namespace, id,
                               DOM_STORAGE_LOCAL);
 }

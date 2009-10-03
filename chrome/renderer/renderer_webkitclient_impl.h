@@ -42,7 +42,7 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebString defaultLocale();
   virtual void suddenTerminationChanged(bool enabled);
   virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
-      const WebKit::WebString& path);
+      const WebKit::WebString& path, unsigned quota);
   virtual WebKit::WebStorageNamespace* createSessionStorageNamespace();
 
   virtual WebKit::WebKitClient::FileHandle databaseOpenFile(

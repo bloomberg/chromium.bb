@@ -152,10 +152,9 @@ void RendererWebKitClientImpl::suddenTerminationChanged(bool enabled) {
 }
 
 WebStorageNamespace* RendererWebKitClientImpl::createLocalStorageNamespace(
-    const WebString& path) {
+    const WebString& path, unsigned quota) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
-    return WebStorageNamespace::createLocalStorageNamespace(path);
-  // The browser process decides the path, so ignore that param.
+    return WebStorageNamespace::createLocalStorageNamespace(path, quota);
   return new RendererWebStorageNamespaceImpl(DOM_STORAGE_LOCAL);
 }
 

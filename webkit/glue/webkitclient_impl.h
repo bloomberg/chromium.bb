@@ -70,7 +70,8 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   // these methods will be deleted.
   virtual WebKit::WebMediaPlayer* createWebMediaPlayer(
       WebKit::WebMediaPlayerClient*, WebCore::Frame*);
-  virtual void setCursorForPlugin(const WebKit::WebCursorInfo&, WebCore::Frame*);
+  virtual void setCursorForPlugin(
+      const WebKit::WebCursorInfo&, WebCore::Frame*);
   virtual WebCore::String uiResourceProtocol();
   virtual void notifyJSOutOfMemory(WebCore::Frame*);
   virtual int screenDepth(WebCore::Widget*);
@@ -81,7 +82,11 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   virtual bool popupsAllowed(NPP);
   virtual void widgetSetCursor(WebCore::Widget*, const WebCore::Cursor&);
   virtual void widgetSetFocus(WebCore::Widget*);
-  virtual WebCore::WorkerContextProxy* createWorkerContextProxy(WebCore::Worker* worker);
+  virtual WebCore::WorkerContextProxy* createWorkerContextProxy(
+      WebCore::Worker* worker);
+  virtual WebKit::WebStorageNamespace* createLocalStorageNamespace(
+      const WebKit::WebString& path, unsigned quota);
+  virtual WebKit::WebStorageNamespace* createSessionStorageNamespace();
 
  private:
   void DoTimeout() {
