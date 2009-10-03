@@ -25,8 +25,4 @@
 		Name="VCLinkerTool"
 		LinkTimeCodeGeneration="2"
 	/>
-	<Tool
-		Name="VCPreBuildEventTool"
-		CommandLine="xcopy /D /Y &quot;$(DevEnvDir)..\..\VC\bin\pgort80.dll&quot; &quot;$(OutDir)&quot;"
-	/>
 </VisualStudioPropertySheet>
