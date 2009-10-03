@@ -14,7 +14,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>Developer's Guide</title></head><body>  <div id="container">
+  <title>Hosting</title></head><body>  <div id="container">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
@@ -86,7 +86,7 @@
         <script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&amp;lang=en"></script>
       </div>
       <div id="pageTitle">
-        <h1>Developer's Guide</h1>
+        <h1>Hosting</h1>
       </div>
     </div> <!-- /pageHeader -->
 
@@ -97,7 +97,7 @@
           <li> <a href="index.html">Home</a></li>
           <li> <a href="getstarted.html">Getting Started</a></li>
           <li> <a href="overview.html">Overview</a></li>
-          <li><div class="leftNavSelected">Developer's Guide</div> 
+          <li> <a href="devguide.html"><div>Developer's Guide</div></a>
             <ul>
               <li><a href="toolstrip.html">Toolstrips</a></li>
               <li><a href="pageActions.html">Page Actions</a></li>
@@ -193,48 +193,67 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-title" class="pageData">Developer's Guide</div>
+        <div id="static"><div id="pageData-title" class="pageData">Hosting</div>
 
 <p>
-We're still building this guide,
-but here's what we have, so far:
+If your extension is hosted in the Google Chrome extension gallery,
+<em>ignore this page</em>.
+You don't need to worry about HTTP headers
+because the gallery handles them for you.
+</p>
+
+<p>
+If you intend to use another server,
+make sure it serves appropriate HTTP headers,
+so that users can install your extension
+by clicking a link to it.
+</p>
+
+<p>
+Google Chrome considers a file to be an extension
+if <b>either</b> of the following is true:
 </p>
 
 <ul>
-  <li> Changing the Google Chrome chrome
-    <ul>
-      <li><a href="pageActions.html">Page Actions</a></li>
-      <li><a href="themes.html">Themes</a></li>
-      <li><a href="toolstrip.html">Toolstrips</a></li>
-    </ul>
+  <li>
+    The file has the content type
+    <code>application/x-chrome-extension</code>
   </li>
-  <li> Interacting with Google Chrome in other ways
+  <li>
+    The file suffix is <code>.crx</code>
+    and <b>both</b> of the following are true:
     <ul>
-      <li><a href="bookmarks.html">Bookmarks</a></li>
-      <li><a href="events.html">Events</a></li>
-      <li><a href="i18n.html">I18n</a></li>
-      <li><a href="tabs.html">Tabs</a></li>
-      <li><a href="windows.html">Windows</a></li>
-    </ul>
-  </li>
-  <li> Implementing the innards of your extension
-    <ul>
-      <li><a href="background_pages.html">Background Pages</a></li>
-      <li><a href="content_scripts.html">Content Scripts</a></li>
-      <li><a href="xhr.html">Cross-Origin XMLHttpRequest</a></li>
-      <li><a href="npapi.html">NPAPI Plugins</a></li>
-    </ul>
-  </li>
-  <li> Finishing and distributing your extension
-    <ul>
-      <li><a href="packaging.html">Packaging</a></li>
-      <li><a href="autoupdate.html">Autoupdating</a></li>
-      <li><a href="hosting.html">Hosting</a></li>
+      <li>
+        The file <b>is not</b> served with
+        the HTTP header <code>X-Content-Type-Options: nosniff</code>
+      </li>
+      <li>
+        The file <b>is</b> served
+        with one of the following content types:
+        <ul>
+          <li> empty string </li>
+          <li> "text/plain" </li>
+          <li> "application/octet-stream" </li>
+          <li> "unknown/unknown" </li>
+          <li> "application/unknown" </li>
+          <li> "*/*" </li>
+        </ul>
+      </li>
     </ul>
   </li>
 </ul>
 
-
+<p>
+The most common reason for failing to recognize an extension
+is that the server sends the header
+<code>X-Content-Type-Options: no sniff</code>.
+The second most common reason
+is that the server sends an unknown content type —
+one that isn't in the previous list.
+To fix an HTTP header issue,
+either change the configuration of the server
+or try hosting the extension at another server.
+</p>
 </div>
 
         <!-- API PAGE -->

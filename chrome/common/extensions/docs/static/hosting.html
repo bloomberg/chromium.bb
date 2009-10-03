@@ -1,0 +1,61 @@
+<div id="pageData-title" class="pageData">Hosting</div>
+
+<p>
+If your extension is hosted in the Google Chrome extension gallery,
+<em>ignore this page</em>.
+You don't need to worry about HTTP headers
+because the gallery handles them for you.
+</p>
+
+<p>
+If you intend to use another server,
+make sure it serves appropriate HTTP headers,
+so that users can install your extension
+by clicking a link to it.
+</p>
+
+<p>
+Google Chrome considers a file to be an extension
+if <b>either</b> of the following is true:
+</p>
+
+<ul>
+  <li>
+    The file has the content type
+    <code>application/x-chrome-extension</code>
+  </li>
+  <li>
+    The file suffix is <code>.crx</code>
+    and <b>both</b> of the following are true:
+    <ul>
+      <li>
+        The file <b>is not</b> served with
+        the HTTP header <code>X-Content-Type-Options: nosniff</code>
+      </li>
+      <li>
+        The file <b>is</b> served
+        with one of the following content types:
+        <ul>
+          <li> empty string </li>
+          <li> "text/plain" </li>
+          <li> "application/octet-stream" </li>
+          <li> "unknown/unknown" </li>
+          <li> "application/unknown" </li>
+          <li> "*/*" </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<p>
+The most common reason for failing to recognize an extension
+is that the server sends the header
+<code>X-Content-Type-Options: no sniff</code>.
+The second most common reason
+is that the server sends an unknown content type &mdash;
+one that isn't in the previous list.
+To fix an HTTP header issue,
+either change the configuration of the server
+or try hosting the extension at another server.
+</p>
