@@ -6,6 +6,7 @@
 #ifndef APP_ANIMATION_H_
 #define APP_ANIMATION_H_
 
+#include "base/time.h"
 #include "base/timer.h"
 
 class Animation;
@@ -99,19 +100,19 @@ class Animation {
   virtual void Step();
 
   // Calculates the timer interval from the constructor list.
-  int CalculateInterval(int frame_rate);
+  base::TimeDelta CalculateInterval(int frame_rate);
 
   // Whether or not we are currently animating.
   bool animating_;
 
   int frame_rate_;
-  int timer_interval_;
-  int duration_;
+  base::TimeDelta timer_interval_;
+  base::TimeDelta duration_;
 
-  // For determining state.
-  int iteration_count_;
-  int current_iteration_;
+  // Current state, on a scale from 0.0 to 1.0.
   double state_;
+
+  base::Time start_time_;
 
   AnimationDelegate* delegate_;
 
