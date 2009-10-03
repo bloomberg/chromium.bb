@@ -4,8 +4,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "app/clipboard/scoped_clipboard_writer.h"
 #include "base/message_loop.h"
-#include "base/scoped_clipboard_writer.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"

@@ -5,10 +5,11 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 
 #include <Carbon/Carbon.h>  // kVK_Return
+
+#include "app/clipboard/clipboard.h"
 #include "app/gfx/font.h"
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
-#include "base/clipboard.h"
 #import "base/cocoa_protocols_mac.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"

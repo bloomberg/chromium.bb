@@ -4,9 +4,9 @@
 
 #import "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 
-#include "base/clipboard.h"
+#include "app/clipboard/clipboard.h"
+#include "app/clipboard/scoped_clipboard_writer.h"
 #include "base/gfx/size.h"
-#include "base/scoped_clipboard_writer.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"

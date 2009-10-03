@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#include "base/clipboard.h"
+#include "app/clipboard/clipboard.h"
 #include "base/file_path.h"
 #include "base/string16.h"
 #include "webkit/api/public/WebCanvas.h"

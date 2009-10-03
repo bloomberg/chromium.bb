@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,8 @@
 #include <fcntl.h>
 #include <map>
 
+#include "app/clipboard/clipboard.h"
 #include "app/l10n_util.h"
-#include "base/clipboard.h"
 #include "base/file_util.h"
 #include "base/gfx/gtk_native_view_id_manager.h"
 #include "base/path_service.h"

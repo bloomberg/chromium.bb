@@ -1,20 +1,21 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 
+#include "app/clipboard/clipboard.h"
+#include "app/clipboard/scoped_clipboard_writer.h"
 #include "app/l10n_util.h"
-#include "base/clipboard.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/scoped_clipboard_writer.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -28,7 +29,6 @@
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
-#include "net/base/net_util.h"
 #include "webkit/glue/media_player_action.h"
 
 namespace {
@@ -802,7 +802,7 @@ void RenderViewContextMenu::Inspect(int x, int y) {
 }
 
 void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
-  net::WriteURLToClipboard(
+  chrome_browser_net::WriteURLToClipboard(
       url,
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
       g_browser_process->clipboard());

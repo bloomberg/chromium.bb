@@ -7,13 +7,14 @@
 // Upon deletion the class atomically writes all data to |clipboard_|,
 // avoiding any potential race condition with other processes that are also
 // writing to the system clipboard.
-#ifndef BASE_SCOPED_CLIPBOARD_WRITER_H_
-#define BASE_SCOPED_CLIPBOARD_WRITER_H_
+
+#ifndef APP_CLIPBOARD_SCOPED_CLIPBOARD_WRITER_H_
+#define APP_CLIPBOARD_SCOPED_CLIPBOARD_WRITER_H_
 
 #include <string>
 #include <vector>
 
-#include "base/clipboard.h"
+#include "app/clipboard/clipboard.h"
 #include "base/file_path.h"
 #include "base/string16.h"
 
@@ -81,4 +82,4 @@ class ScopedClipboardWriter {
   DISALLOW_COPY_AND_ASSIGN(ScopedClipboardWriter);
 };
 
-#endif  // BASE_SCOPED_CLIPBOARD_WRITER_H_
+#endif  // APP_CLIPBOARD_SCOPED_CLIPBOARD_WRITER_H_

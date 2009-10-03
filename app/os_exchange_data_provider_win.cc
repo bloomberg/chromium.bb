@@ -4,8 +4,8 @@
 
 #include "app/os_exchange_data_provider_win.h"
 
+#include "app/clipboard/clipboard_util_win.h"
 #include "app/l10n_util.h"
-#include "base/clipboard_util.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/pickle.h"

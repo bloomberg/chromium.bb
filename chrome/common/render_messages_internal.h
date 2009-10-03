@@ -12,7 +12,7 @@
 
 #include "build/build_config.h"
 
-#include "base/clipboard.h"
+#include "app/clipboard/clipboard.h"
 #include "base/file_path.h"
 #include "base/nullable_string16.h"
 #include "base/platform_file.h"

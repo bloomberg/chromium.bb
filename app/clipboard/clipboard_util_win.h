@@ -1,11 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
 // Some helper functions for working with the clipboard and IDataObjects.
 
-#ifndef BASE_CLIPBOARD_UTIL_H_
-#define BASE_CLIPBOARD_UTIL_H_
+#ifndef APP_CLIPBOARD_CLIPBOARD_UTIL_WIN_H_
+#define APP_CLIPBOARD_CLIPBOARD_UTIL_WIN_H_
 
 #include <shlobj.h>
 #include <string>
@@ -62,4 +62,4 @@ class ClipboardUtil {
                            std::string* base_url);
 };
 
-#endif  // BASE_CLIPBOARD_UTIL_H_
+#endif  // APP_CLIPBOARD_CLIPBOARD_UTIL_WIN_H_

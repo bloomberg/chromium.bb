@@ -1,16 +1,16 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Many of these functions are based on those found in
 // webkit/port/platform/PasteboardWin.cpp
 
-#include "base/clipboard.h"
+#include "app/clipboard/clipboard.h"
 
 #include <shlobj.h>
 #include <shellapi.h>
 
-#include "base/clipboard_util.h"
+#include "app/clipboard/clipboard_util_win.h"
 #include "base/file_path.h"
 #include "base/gfx/size.h"
 #include "base/lock.h"

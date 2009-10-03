@@ -1,8 +1,8 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/clipboard_util.h"
+#include "app/clipboard/clipboard_util_win.h"
 
 #include <shellapi.h>
 #include <shlwapi.h>
@@ -378,7 +378,7 @@ bool ClipboardUtil::GetFileContents(IDataObject* data_object,
                                      &description))) {
     ScopedHGlobal<FILEGROUPDESCRIPTOR> fgd(description.hGlobal);
     // We expect there to be at least one file in here.
-    DCHECK_GE(fgd->cItems, 1);
+    DCHECK_GE(fgd->cItems, 1u);
     filename->assign(fgd->fgd[0].cFileName);
     ReleaseStgMedium(&description);
   }

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/views/chrome_views_delegate.h"
 
-#include "base/clipboard.h"
+#include "app/clipboard/clipboard.h"
 #include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
 #include "chrome/app/chrome_dll_resource.h"

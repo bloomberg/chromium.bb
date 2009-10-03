@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,9 @@
 
 #include "chrome/browser/tab_contents/web_drop_target.h"
 
+#include "app/clipboard/clipboard_util_win.h"
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_win.h"
-#include "base/clipboard_util.h"
 #include "base/gfx/point.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"

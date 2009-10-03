@@ -4,12 +4,12 @@
 
 #include <string>
 
+#include "app/clipboard/clipboard.h"
+#include "app/clipboard/scoped_clipboard_writer.h"
 #include "base/basictypes.h"
-#include "base/clipboard.h"
 #include "base/gfx/size.h"
 #include "base/message_loop.h"
 #include "base/pickle.h"
-#include "base/scoped_clipboard_writer.h"
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

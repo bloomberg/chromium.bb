@@ -5,7 +5,7 @@
 #ifndef WEBCLIPBOARD_IMPL_H_
 #define WEBCLIPBOARD_IMPL_H_
 
-#include "base/clipboard.h"
+#include "app/clipboard/clipboard.h"
 #include "webkit/api/public/WebClipboard.h"
 
 #include <string>

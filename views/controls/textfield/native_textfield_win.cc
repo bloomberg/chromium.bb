@@ -4,13 +4,13 @@
 
 #include <algorithm>
 
+#include "app/clipboard/clipboard.h"
+#include "app/clipboard/scoped_clipboard_writer.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/win_util.h"
-#include "base/clipboard.h"
 #include "base/gfx/native_theme.h"
 #include "base/keyboard_codes.h"
-#include "base/scoped_clipboard_writer.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
 #include "grit/app_strings.h"

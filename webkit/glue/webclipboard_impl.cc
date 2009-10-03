@@ -4,7 +4,7 @@
 
 #include "webkit/glue/webclipboard_impl.h"
 
-#include "base/clipboard.h"
+#include "app/clipboard/clipboard.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "googleurl/src/gurl.h"

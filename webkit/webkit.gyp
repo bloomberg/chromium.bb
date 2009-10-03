@@ -399,6 +399,7 @@
       'type': '<(library)',
       'msvs_guid': 'C66B126D-0ECE-4CA2-B6DC-FA780AFBBF09',
       'dependencies': [
+        '../app/app.gyp:app_base',
         '../net/net.gyp:net',
         'inspector_resources',
         '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',

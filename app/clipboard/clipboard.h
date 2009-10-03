@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_CLIPBOARD_H_
-#define BASE_CLIPBOARD_H_
+#ifndef APP_CLIPBOARD_CLIPBOARD_H_
+#define APP_CLIPBOARD_CLIPBOARD_H_
 
 #include <map>
 #include <string>
@@ -256,4 +256,4 @@ class Clipboard {
   DISALLOW_COPY_AND_ASSIGN(Clipboard);
 };
 
-#endif  // BASE_CLIPBOARD_H_
+#endif  // APP_CLIPBOARD_CLIPBOARD_H_

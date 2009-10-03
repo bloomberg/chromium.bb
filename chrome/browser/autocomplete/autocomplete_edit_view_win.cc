@@ -6,6 +6,8 @@
 
 #include <locale>
 
+#include "app/clipboard/clipboard.h"
+#include "app/clipboard/scoped_clipboard_writer.h"
 #include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
@@ -15,12 +17,10 @@
 #include "base/base_drag_source.h"
 #include "base/base_drop_target.h"
 #include "base/basictypes.h"
-#include "base/clipboard.h"
 #include "base/iat_patch.h"
 #include "base/keyboard_codes.h"
 #include "base/lazy_instance.h"
 #include "base/ref_counted.h"
-#include "base/scoped_clipboard_writer.h"
 #include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_accessibility.h"

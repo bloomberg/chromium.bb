@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
-#include "base/scoped_clipboard_writer.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -34,6 +33,7 @@
 #include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/net/browser_url_util.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/profile.h"
@@ -866,7 +866,7 @@ void Browser::WriteCurrentURLToClipboard() {
   if (!contents->ShouldDisplayURL())
     return;
 
-  net::WriteURLToClipboard(
+  chrome_browser_net::WriteURLToClipboard(
       contents->GetURL(),
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
       g_browser_process->clipboard());

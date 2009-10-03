@@ -4,8 +4,8 @@
 
 #include "chrome/browser/browser_process_impl.h"
 
+#include "app/clipboard/clipboard.h"
 #include "app/l10n_util.h"
-#include "base/clipboard.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"

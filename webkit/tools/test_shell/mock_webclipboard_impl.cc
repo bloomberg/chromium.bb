@@ -4,7 +4,7 @@
 
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
 
-#include "base/clipboard.h"
+#include "app/clipboard/clipboard.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "net/base/escape.h"
