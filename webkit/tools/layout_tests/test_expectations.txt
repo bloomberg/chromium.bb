@@ -793,11 +793,6 @@ BUG1126050 : LayoutTests/http/tests/navigation/changing-frame-hierarchy-in-onloa
 // Depending upon when the snapshot is taken we get different results.
 BUG10280 WIN LINUX : LayoutTests/fast/inline/dirtyLinesForInline.html = FAIL PASS
 
-// Radial gradients don't have offset focal point
-BUG8696 WIN LINUX : LayoutTests/fast/gradients/generated-gradients.html = FAIL
-BUG8696 WIN LINUX : LayoutTests/fast/gradients/simple-gradients.html = FAIL
-BUG8696 WIN LINUX : LayoutTests/fast/gradients/crash-on-zero-radius.html = FAIL
-
 BUG20507 : LayoutTests/http/tests/uri/resolve-encoding-relative.html = FAIL
 
 BUG6735 : LayoutTests/plugins/netscape-throw-exception.html = FAIL
@@ -833,10 +828,6 @@ BUG23463 MAC : LayoutTests/svg/W3C-SVG-1.1/struct-use-01-t.svg = IMAGE
 BUG23463 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-image-02-b.svg = IMAGE+TEXT
 BUG23463 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-symbol-01-b.svg = IMAGE+TEXT
 BUG23463 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-use-01-t.svg = IMAGE+TEXT
-
-// Radial gradients with offset focal points are not implemented in Skia.
-// See comment in WebCore/platform/graphics/skia/GradientSkia.cpp
-BUG8696 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-13-b.svg = FAIL
 
 // Merge 39744:39829 - regression
 BUG10284 RELEASE : LayoutTests/svg/custom/path-bad-data.svg = FAIL
@@ -1032,10 +1023,6 @@ BUG10307 WIN : LayoutTests/svg/W3C-SVG-1.1/filters-example-01-b.svg = FAIL
 // Linux pixeltest failure: slightly different shade of composited
 // alpha in bottom group.
 BUG10310 LINUX : LayoutTests/svg/W3C-SVG-1.1/masking-opacity-01-b.svg = FAIL
-
-// Fixed upstream, see https://bugs.webkit.org/show_bug.cgi?id=21910.
-// However, we need to support focal point for radial gradients.
-BUG8696 LINUX WIN : LayoutTests/fast/backgrounds/svg-as-background-3.html = FAIL
 
 //
 // -----------------------------------------------------------------
