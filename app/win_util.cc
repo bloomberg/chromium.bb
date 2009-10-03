@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,13 +12,13 @@
 
 #include <algorithm>
 
+#include "app/gfx/codec/png_codec.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/gfx/gdi_util.h"
-#include "base/gfx/png_encoder.h"
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "base/registry.h"
@@ -745,9 +745,9 @@ void GrabWindowSnapshot(HWND window_handle,
   // We now have a copy of the window contents in a DIB, so
   // encode it into a useful format for posting to the bug report
   // server.
-  PNGEncoder::Encode(bit_ptr, PNGEncoder::FORMAT_BGRA,
-                     width, height, width * 4, true,
-                     png_representation);
+  gfx::PNGCodec::Encode(bit_ptr, gfx::PNGCodec::FORMAT_BGRA,
+                        width, height, width * 4, true,
+                        png_representation);
 
   ReleaseDC(window_handle, window_hdc);
 }
