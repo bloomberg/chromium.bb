@@ -733,8 +733,8 @@ BUG13907 : LayoutTests/media/event-attributes.html = TIMEOUT
 BUG13907 : LayoutTests/media/controls-styling.html = FAIL
 BUG13907 : LayoutTests/media/video-seek-past-end-playing.html = FAIL
 BUG13907 : LayoutTests/media/video-error-abort.html = FAIL
-// Image mismatch on mac debug.
-BUG13907 MAC DEBUG : LayoutTests/media/video-transformed.html = FAIL
+// Image mismatch on mac only. This test appears to be flaky.
+BUG13907 MAC : LayoutTests/media/video-transformed.html = FAIL PASS
 
 // These tests are WONTFIX because they uess codecs chromium doesn't support.
 BUG16779 WONTFIX SKIP : LayoutTests/media/video-can-play-type.html = FAIL TIMEOUT
