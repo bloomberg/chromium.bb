@@ -705,7 +705,7 @@ TEST(PrintStlContainerTest, HashMultiSet) {
   std::vector<int> numbers;
   for (size_t i = 0; i != result.length(); i++) {
     if (expected_pattern[i] == 'd') {
-      ASSERT_TRUE(isdigit(result[i]));
+      ASSERT_TRUE(isdigit(result[i]) != 0);
       numbers.push_back(result[i] - '0');
     } else {
       EXPECT_EQ(expected_pattern[i], result[i]) << " where result is "
@@ -790,14 +790,14 @@ TEST(PrintStlContainerTest, NestedContainer) {
 }
 
 TEST(PrintStlContainerTest, OneDimensionalNativeArray) {
-  const int a[] = { 1, 2, 3 };
-  NativeArray<int> b(a, kReference);
+  const int a[3] = { 1, 2, 3 };
+  NativeArray<int> b(a, 3, kReference);
   EXPECT_EQ("{ 1, 2, 3 }", Print(b));
 }
 
 TEST(PrintStlContainerTest, TwoDimensionalNativeArray) {
-  const int a[][3] = { { 1, 2, 3 }, { 4, 5, 6 } };
-  NativeArray<int[3]> b(a, kReference);
+  const int a[2][3] = { { 1, 2, 3 }, { 4, 5, 6 } };
+  NativeArray<int[3]> b(a, 2, kReference);
   EXPECT_EQ("{ { 1, 2, 3 }, { 4, 5, 6 } }", Print(b));
 }
 
@@ -840,16 +840,16 @@ TEST(PrintTupleTest, VariousSizes) {
   const char* const str = "8";
   tuple<bool, char, short, testing::internal::Int32,  // NOLINT
       testing::internal::Int64, float, double, const char*, void*, string>
-      t10(false, 'a', 3, 4, 5, 6.5F, 7.5, str, NULL, "10");
-  EXPECT_EQ("(false, 'a' (97), 3, 4, 5, 6.5, 7.5, " + PrintPointer(str) +
+      t10(false, 'a', 3, 4, 5, 1.5F, -2.5, str, NULL, "10");
+  EXPECT_EQ("(false, 'a' (97), 3, 4, 5, 1.5, -2.5, " + PrintPointer(str) +
             " pointing to \"8\", NULL, \"10\")",
             Print(t10));
 }
 
 // Nested tuples.
 TEST(PrintTupleTest, NestedTuple) {
-  tuple<tuple<int, double>, char> nested(make_tuple(5, 9.5), 'a');
-  EXPECT_EQ("((5, 9.5), 'a' (97))", Print(nested));
+  tuple<tuple<int, bool>, char> nested(make_tuple(5, true), 'a');
+  EXPECT_EQ("((5, true), 'a' (97))", Print(nested));
 }
 
 // Tests printing user-defined unprintable types.
@@ -919,12 +919,31 @@ TEST(PrintProtocolMessageTest, PrintsShortDebugString) {
   EXPECT_EQ("<member:\"yes\">", Print(msg));
 }
 
-// Tests printing a proto2 message.
-TEST(PrintProto2MessageTest, PrintsShortDebugString) {
+// Tests printing a short proto2 message.
+TEST(PrintProto2MessageTest, PrintsShortDebugStringWhenItIsShort) {
   testing::internal::FooMessage msg;
   msg.set_int_field(2);
+  msg.set_string_field("hello");
   EXPECT_PRED2(RE::FullMatch, Print(msg),
-               "<int_field:\\s*2\\s*>");
+               "<int_field:\\s*2\\s+string_field:\\s*\"hello\">");
+}
+
+// Tests printing a long proto2 message.
+TEST(PrintProto2MessageTest, PrintsDebugStringWhenItIsLong) {
+  testing::internal::FooMessage msg;
+  msg.set_int_field(2);
+  msg.set_string_field("hello");
+  msg.add_names("peter");
+  msg.add_names("paul");
+  msg.add_names("mary");
+  EXPECT_PRED2(RE::FullMatch, Print(msg),
+               "<\n"
+               "int_field:\\s*2\n"
+               "string_field:\\s*\"hello\"\n"
+               "names:\\s*\"peter\"\n"
+               "names:\\s*\"paul\"\n"
+               "names:\\s*\"mary\"\n"
+               ">");
 }
 
 #endif  // GMOCK_HAS_PROTOBUF_

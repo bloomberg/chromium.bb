@@ -55,11 +55,13 @@ namespace {
 
 using ::std::ostream;
 
-#ifdef _WIN32_WCE
+#if GTEST_OS_WINDOWS_MOBILE  // Windows CE does not define _snprintf_s.
 #define snprintf _snprintf
-#elif GTEST_OS_WINDOWS
+#elif _MSC_VER >= 1400  // VC 8.0 and later deprecate snprintf and _snprintf.
 #define snprintf _snprintf_s
-#endif
+#elif _MSC_VER
+#define snprintf _snprintf
+#endif  // GTEST_OS_WINDOWS_MOBILE
 
 // Prints a segment of bytes in the given object.
 void PrintByteSegmentInObjectTo(const unsigned char* obj_bytes, size_t start,

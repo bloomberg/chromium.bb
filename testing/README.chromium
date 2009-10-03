@@ -1,7 +1,7 @@
 We include a snapshot of gmock from http://googlemock.googlecode.com/svn/trunk
 with chromium.patch applied.
 
-Current revision: 173
+Current revision: 222
 
 
 -- HOW TO USE --
