@@ -137,6 +137,9 @@ static struct radeon_bo *bo_unref(struct radeon_bo *bo)
         munmap(bo_gem->priv_ptr, bo->size);
     }
 
+    /* Zero out args to make valgrind happy */
+    memset(&args, 0, sizeof(args));
+
     /* close object */
     args.handle = bo->handle;
     ioctl(bo->bom->fd, DRM_IOCTL_GEM_CLOSE, &args);
@@ -160,6 +163,9 @@ static int bo_map(struct radeon_bo *bo, int write)
     }
 
     bo->ptr = NULL;
+
+    /* Zero out args to make valgrind happy */
+    memset(&args, 0, sizeof(args));
     args.handle = bo->handle;
     args.offset = 0;
     args.size = (uint64_t)bo->size;
@@ -201,6 +207,8 @@ static int bo_wait(struct radeon_bo *bo)
     struct drm_radeon_gem_wait_idle args;
     int ret;
 
+    /* Zero out args to make valgrind happy */
+    memset(&args, 0, sizeof(args));
     args.handle = bo->handle;
     do {
         ret = drmCommandWriteRead(bo->bom->fd, DRM_RADEON_GEM_WAIT_IDLE,
