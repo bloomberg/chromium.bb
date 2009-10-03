@@ -1,0 +1,5 @@
+include_rules = [
+  "+skia",
+  "+third_party/libjpeg",
+  "+third_party/libpng",
+]

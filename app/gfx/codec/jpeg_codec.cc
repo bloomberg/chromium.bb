@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/gfx/jpeg_codec.h"
+#include "app/gfx/codec/jpeg_codec.h"
 
 #include <setjmp.h>
 
@@ -17,6 +17,8 @@ extern "C" {
 #include "third_party/libjpeg/jpeglib.h"
 #endif
 }
+
+namespace gfx {
 
 // Encoder/decoder shared stuff ------------------------------------------------
 
@@ -525,3 +527,5 @@ SkBitmap* JPEGCodec::Decode(const unsigned char* input, size_t input_size) {
 
   return bitmap;
 }
+
+}  // namespace gfx

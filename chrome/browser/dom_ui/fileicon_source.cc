@@ -1,10 +1,10 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/dom_ui/fileicon_source.h"
 
-#include "base/gfx/png_encoder.h"
+#include "app/gfx/codec/png_codec.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/time_format.h"
@@ -40,7 +40,7 @@ void FileIconSource::StartDataRequest(const std::string& path,
 
   if (icon) {
     std::vector<unsigned char> png_bytes;
-    PNGEncoder::EncodeBGRASkBitmap(*icon, false, &png_bytes);
+    gfx::PNGCodec::EncodeBGRASkBitmap(*icon, false, &png_bytes);
 
     scoped_refptr<RefCountedBytes> icon_data = new RefCountedBytes(png_bytes);
     SendResponse(request_id, icon_data);
@@ -63,7 +63,7 @@ void FileIconSource::OnFileIconDataAvailable(IconManager::Handle handle,
 
   if (icon) {
     std::vector<unsigned char> png_bytes;
-    PNGEncoder::EncodeBGRASkBitmap(*icon, false, &png_bytes);
+    gfx::PNGCodec::EncodeBGRASkBitmap(*icon, false, &png_bytes);
 
     scoped_refptr<RefCountedBytes> icon_data = new RefCountedBytes(png_bytes);
     SendResponse(request_id, icon_data);

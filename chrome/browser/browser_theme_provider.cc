@@ -4,10 +4,9 @@
 
 #include "chrome/browser/browser_theme_provider.h"
 
+#include "app/gfx/codec/png_codec.h"
 #include "app/gfx/skbitmap_operations.h"
 #include "base/file_util.h"
-#include "base/gfx/png_decoder.h"
-#include "base/gfx/png_encoder.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/values.h"
@@ -225,7 +224,7 @@ class WriteImagesToDiskTask : public Task {
       if (found != themed_image_cache_.end()) {
         SkBitmap* bitmap = found->second;
         std::vector<unsigned char> image_data;
-        if (!PNGEncoder::EncodeBGRASkBitmap(*bitmap, false, &image_data)) {
+        if (!gfx::PNGCodec::EncodeBGRASkBitmap(*bitmap, false, &image_data)) {
           NOTREACHED() << "Image file could not be encoded.";
           return;
         }
@@ -650,16 +649,16 @@ SkBitmap* BrowserThemeProvider::LoadThemeBitmap(int id) {
     int image_width = 0;
     int image_height = 0;
 
-    if (!PNGDecoder::Decode(&raw_data.front(), raw_data.size(),
-        PNGDecoder::FORMAT_BGRA, &png_data,
+    if (!gfx::PNGCodec::Decode(&raw_data.front(), raw_data.size(),
+        gfx::PNGCodec::FORMAT_BGRA, &png_data,
         &image_width, &image_height)) {
       NOTREACHED() << "Unable to decode theme image resource " << id;
       return NULL;
     }
 
-    return PNGDecoder::CreateSkBitmapFromBGRAFormat(png_data,
-                                                    image_width,
-                                                    image_height);
+    return gfx::PNGCodec::CreateSkBitmapFromBGRAFormat(png_data,
+                                                       image_width,
+                                                       image_height);
   } else {
     // TODO(glen): File no-longer exists, we're out of date. We should
     // clear the theme (or maybe just the pref that points to this

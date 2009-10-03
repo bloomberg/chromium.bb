@@ -1,12 +1,12 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/common/security_filter_peer.h"
 
+#include "app/gfx/codec/png_codec.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/gfx/png_encoder.h"
 #include "base/gfx/size.h"
 #include "base/string_util.h"
 #include "grit/generated_resources.h"
@@ -310,8 +310,8 @@ bool ImageFilterPeer::DataReady() {
 
   // Now encode it to a PNG.
   std::vector<unsigned char> output;
-  if (!PNGEncoder::EncodeBGRASkBitmap(canvas.getDevice()->accessBitmap(false),
-                                      false, &output)) {
+  if (!gfx::PNGCodec::EncodeBGRASkBitmap(
+          canvas.getDevice()->accessBitmap(false), false, &output)) {
     return false;
   }
 

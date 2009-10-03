@@ -4,10 +4,10 @@
 
 #include "chrome/browser/search_engines/template_url_table_model.h"
 
+#include "app/gfx/codec/png_codec.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/table_model_observer.h"
-#include "base/gfx/png_decoder.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -100,7 +100,7 @@ class ModelEntry {
       GURL icon_url) {
     load_state_ = LOADED;
     if (know_favicon && data.get() &&
-        PNGDecoder::Decode(&data->data, &fav_icon_)) {
+        gfx::PNGCodec::Decode(&data->data, &fav_icon_)) {
       model_->FavIconAvailable(this);
     }
   }

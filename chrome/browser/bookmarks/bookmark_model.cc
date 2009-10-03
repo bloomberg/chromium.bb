@@ -1,11 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/bookmarks/bookmark_model.h"
 
+#include "app/gfx/codec/png_codec.h"
 #include "app/l10n_util.h"
-#include "base/gfx/png_decoder.h"
 #include "base/scoped_vector.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_index.h"
@@ -644,7 +644,7 @@ void BookmarkModel::OnFavIconDataAvailable(
   DCHECK(node);
   node->set_favicon_load_handle(0);
   if (know_favicon && data.get() &&
-      PNGDecoder::Decode(&data->data, &fav_icon)) {
+      gfx::PNGCodec::Decode(&data->data, &fav_icon)) {
     node->set_favicon(fav_icon);
     FavIconLoaded(node);
   }

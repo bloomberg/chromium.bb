@@ -8,9 +8,9 @@
 #include <set>
 
 #include "app/gfx/favicon_size.h"
+#include "app/gfx/codec/png_codec.h"
 #include "app/l10n_util.h"
 #include "base/file_util.h"
-#include "base/gfx/png_encoder.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -425,7 +425,7 @@ bool Importer::ReencodeFavicon(const unsigned char* src_data, size_t src_len,
   }
 
   // Encode our bitmap as a PNG.
-  PNGEncoder::EncodeBGRASkBitmap(decoded, false, png_data);
+  gfx::PNGCodec::EncodeBGRASkBitmap(decoded, false, png_data);
   return true;
 }
 

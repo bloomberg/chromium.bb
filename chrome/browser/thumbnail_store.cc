@@ -7,11 +7,11 @@
 #include <string.h>
 #include <algorithm>
 
+#include "app/gfx/codec/jpeg_codec.h"
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
 #include "base/basictypes.h"
 #include "base/file_util.h"
-#include "base/gfx/jpeg_codec.h"
 #include "base/md5.h"
 #include "base/string_util.h"
 #include "base/thread.h"
@@ -77,9 +77,9 @@ bool ThumbnailStore::SetPageThumbnail(const GURL& url,
   // Encode the SkBitmap to jpeg.
   scoped_refptr<RefCountedBytes> jpeg_data = new RefCountedBytes;
   SkAutoLockPixels thumbnail_lock(thumbnail);
-  bool encoded = JPEGCodec::Encode(
+  bool encoded = gfx::JPEGCodec::Encode(
       reinterpret_cast<unsigned char*>(thumbnail.getAddr32(0, 0)),
-      JPEGCodec::FORMAT_BGRA, thumbnail.width(),
+      gfx::JPEGCodec::FORMAT_BGRA, thumbnail.width(),
       thumbnail.height(),
       static_cast<int>(thumbnail.rowBytes()), 90,
       &jpeg_data->data);

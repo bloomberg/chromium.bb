@@ -8,8 +8,8 @@
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 
+#include "app/gfx/codec/png_codec.h"
 #include "base/file_util.h"
-#include "base/gfx/png_decoder.h"
 #include "base/logging.h"
 #include "base/linux_util.h"
 #include "base/message_loop.h"
@@ -65,8 +65,8 @@ void IconLoader::ParseIcon() {
       pixel_vector.resize(height * stride);
       memcpy(const_cast<unsigned char*>(pixel_vector.data()), BGRA_pixels,
              height * stride);
-      bitmap_ = PNGDecoder::CreateSkBitmapFromBGRAFormat(pixel_vector,
-                                                         width, height);
+      bitmap_ = gfx::PNGCodec::CreateSkBitmapFromBGRAFormat(pixel_vector,
+                                                            width, height);
       free(BGRA_pixels);
     }
   } else {

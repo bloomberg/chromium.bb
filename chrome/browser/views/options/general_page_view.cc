@@ -5,9 +5,9 @@
 #include "chrome/browser/views/options/general_page_view.h"
 
 #include "app/combobox_model.h"
+#include "app/gfx/codec/png_codec.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/gfx/png_decoder.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
@@ -239,9 +239,10 @@ void CustomHomePagesTableModel::OnGotFavIcon(
   if (know_fav_icon && image_data.get() && !image_data->data.empty()) {
     int width, height;
     std::vector<unsigned char> decoded_data;
-    if (PNGDecoder::Decode(&image_data->data.front(), image_data->data.size(),
-                           PNGDecoder::FORMAT_BGRA, &decoded_data, &width,
-                           &height)) {
+    if (gfx::PNGCodec::Decode(&image_data->data.front(),
+                              image_data->data.size(),
+                              gfx::PNGCodec::FORMAT_BGRA, &decoded_data,
+                              &width, &height)) {
       entry->icon.setConfig(SkBitmap::kARGB_8888_Config, width, height);
       entry->icon.allocPixels();
       memcpy(entry->icon.getPixels(), &decoded_data.front(),

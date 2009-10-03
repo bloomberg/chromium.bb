@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_tabs_module.h"
 
-#include "base/gfx/jpeg_codec.h"
+#include "app/gfx/codec/jpeg_codec.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -785,9 +785,9 @@ bool CaptureVisibleTabFunction::RunImpl() {
 #endif
   scoped_refptr<RefCountedBytes> jpeg_data(new RefCountedBytes);
   SkAutoLockPixels screen_capture_lock(screen_capture);
-  bool encoded = JPEGCodec::Encode(
+  bool encoded = gfx::JPEGCodec::Encode(
       reinterpret_cast<unsigned char*>(screen_capture.getAddr32(0, 0)),
-      JPEGCodec::FORMAT_BGRA, screen_capture.width(),
+      gfx::JPEGCodec::FORMAT_BGRA, screen_capture.width(),
       screen_capture.height(),
       static_cast<int>(screen_capture.rowBytes()), 90,
       &jpeg_data->data);

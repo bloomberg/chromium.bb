@@ -4,10 +4,10 @@
 
 #include "chrome/browser/history/thumbnail_database.h"
 
+#include "app/gfx/codec/jpeg_codec.h"
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
 #include "base/file_util.h"
-#include "base/gfx/jpeg_codec.h"
 #include "base/time.h"
 #include "base/string_util.h"
 #include "chrome/browser/history/history_publisher.h"
@@ -229,9 +229,9 @@ void ThumbnailDatabase::SetPageThumbnail(
       // highly detailed images.
       std::vector<unsigned char> jpeg_data;
       SkAutoLockPixels thumbnail_lock(thumbnail);
-      bool encoded = JPEGCodec::Encode(
+      bool encoded = gfx::JPEGCodec::Encode(
           reinterpret_cast<unsigned char*>(thumbnail.getAddr32(0, 0)),
-          JPEGCodec::FORMAT_BGRA, thumbnail.width(),
+          gfx::JPEGCodec::FORMAT_BGRA, thumbnail.width(),
           thumbnail.height(),
           static_cast<int>(thumbnail.rowBytes()), 90,
           &jpeg_data);

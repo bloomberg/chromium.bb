@@ -12,10 +12,10 @@
 
 #include "PNGImageDecoder.h"
 
+#include "app/gfx/codec/png_codec.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/gfx/gdi_util.h"
-#include "base/gfx/png_encoder.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "skia/ext/vector_canvas.h"
@@ -116,13 +116,13 @@ class Image {
   // Save the image to a png file. Used to create the initial test files.
   void SaveToFile(const std::wstring& filename) {
     std::vector<unsigned char> compressed;
-    ASSERT_TRUE(PNGEncoder::Encode(&*data_.begin(),
-                                   PNGEncoder::FORMAT_BGRA,
-                                   width_,
-                                   height_,
-                                   row_length_,
-                                   true,
-                                   &compressed));
+    ASSERT_TRUE(gfx::PNGCodec::Encode(&*data_.begin(),
+                                      gfx::PNGCodec::FORMAT_BGRA,
+                                      width_,
+                                      height_,
+                                      row_length_,
+                                      true,
+                                      &compressed));
     ASSERT_TRUE(compressed.size());
     FILE* f = file_util::OpenFile(filename, "wb");
     ASSERT_TRUE(f);

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,8 @@
 
 #include "build/build_config.h"
 
+#include "app/gfx/codec/png_codec.h"
 #include "app/gfx/favicon_size.h"
-#include "base/gfx/png_decoder.h"
-#include "base/gfx/png_encoder.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
@@ -65,7 +64,7 @@ void FavIconHelper::SetFavIcon(
 
   if (GetFaviconService() && !profile()->IsOffTheRecord()) {
     std::vector<unsigned char> image_data;
-    PNGEncoder::EncodeBGRASkBitmap(sized_image, false, &image_data);
+    gfx::PNGCodec::EncodeBGRASkBitmap(sized_image, false, &image_data);
     GetFaviconService()->SetFavicon(i->second.url, i->second.fav_icon_url,
                                     image_data);
   }
@@ -88,7 +87,7 @@ void FavIconHelper::FavIconDownloadFailed(int download_id) {
 void FavIconHelper::UpdateFavIcon(NavigationEntry* entry,
                                   const std::vector<unsigned char>& data) {
   SkBitmap image;
-  PNGDecoder::Decode(&data, &image);
+  gfx::PNGCodec::Decode(&data, &image);
   UpdateFavIcon(entry, image);
 }
 

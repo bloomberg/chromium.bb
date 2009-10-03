@@ -26,6 +26,7 @@
       'target_name': 'test_shell_common',
       'type': '<(library)',
       'dependencies': [
+        '../../../app/app.gyp:app_base',
         '../../../base/base.gyp:base',
         '../../../base/base.gyp:base_gfx',
         '../../../media/media.gyp:media',

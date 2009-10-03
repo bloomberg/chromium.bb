@@ -4,10 +4,10 @@
 
 #include "chrome/browser/possible_url_model.h"
 
+#include "app/gfx/codec/png_codec.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/table_model_observer.h"
-#include "base/gfx/png_decoder.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/profile.h"
@@ -176,7 +176,7 @@ void PossibleURLModel::OnFavIconAvailable(
     size_t index = consumer_.GetClientData(favicon_service, h);
     if (fav_icon_available) {
       // The decoder will leave our bitmap empty on error.
-      PNGDecoder::Decode(&data->data, &(fav_icon_map_[index]));
+      gfx::PNGCodec::Decode(&data->data, &(fav_icon_map_[index]));
 
       // Notify the observer.
       if (!fav_icon_map_[index].isNull() && observer_)

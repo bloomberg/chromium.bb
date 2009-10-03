@@ -4,10 +4,11 @@
 
 #include <math.h>
 
-#include "base/gfx/png_encoder.h"
-#include "base/gfx/png_decoder.h"
+#include "app/gfx/codec/png_codec.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+namespace gfx {
 
 static void MakeRGBImage(int w, int h, std::vector<unsigned char>* dat) {
   dat->resize(w * h * 3);
@@ -70,14 +71,14 @@ TEST(PNGCodec, EncodeDecodeRGB) {
 
   // encode
   std::vector<unsigned char> encoded;
-  EXPECT_TRUE(PNGEncoder::Encode(&original[0], PNGEncoder::FORMAT_RGB, w, h,
+  EXPECT_TRUE(PNGCodec::Encode(&original[0], PNGCodec::FORMAT_RGB, w, h,
                                w * 3, false, &encoded));
 
   // decode, it should have the same size as the original
   std::vector<unsigned char> decoded;
   int outw, outh;
-  EXPECT_TRUE(PNGDecoder::Decode(&encoded[0], encoded.size(),
-                               PNGDecoder::FORMAT_RGB, &decoded,
+  EXPECT_TRUE(PNGCodec::Decode(&encoded[0], encoded.size(),
+                               PNGCodec::FORMAT_RGB, &decoded,
                                &outw, &outh));
   ASSERT_EQ(w, outw);
   ASSERT_EQ(h, outh);
@@ -97,14 +98,14 @@ TEST(PNGCodec, EncodeDecodeRGBA) {
 
   // encode
   std::vector<unsigned char> encoded;
-  EXPECT_TRUE(PNGEncoder::Encode(&original[0], PNGEncoder::FORMAT_RGBA, w, h,
+  EXPECT_TRUE(PNGCodec::Encode(&original[0], PNGCodec::FORMAT_RGBA, w, h,
                                w * 4, false, &encoded));
 
   // decode, it should have the same size as the original
   std::vector<unsigned char> decoded;
   int outw, outh;
-  EXPECT_TRUE(PNGDecoder::Decode(&encoded[0], encoded.size(),
-                               PNGDecoder::FORMAT_RGBA, &decoded,
+  EXPECT_TRUE(PNGCodec::Decode(&encoded[0], encoded.size(),
+                               PNGCodec::FORMAT_RGBA, &decoded,
                                &outw, &outh));
   ASSERT_EQ(w, outw);
   ASSERT_EQ(h, outh);
@@ -125,25 +126,25 @@ TEST(PNGCodec, DecodeCorrupted) {
   // It should fail when given non-JPEG compressed data.
   std::vector<unsigned char> output;
   int outw, outh;
-  EXPECT_FALSE(PNGDecoder::Decode(&original[0], original.size(),
-                                PNGDecoder::FORMAT_RGB, &output,
+  EXPECT_FALSE(PNGCodec::Decode(&original[0], original.size(),
+                                PNGCodec::FORMAT_RGB, &output,
                                 &outw, &outh));
 
   // Make some compressed data.
   std::vector<unsigned char> compressed;
-  EXPECT_TRUE(PNGEncoder::Encode(&original[0], PNGEncoder::FORMAT_RGB, w, h,
+  EXPECT_TRUE(PNGCodec::Encode(&original[0], PNGCodec::FORMAT_RGB, w, h,
                                w * 3, false, &compressed));
 
   // Try decompressing a truncated version.
-  EXPECT_FALSE(PNGDecoder::Decode(&compressed[0], compressed.size() / 2,
-                                PNGDecoder::FORMAT_RGB, &output,
+  EXPECT_FALSE(PNGCodec::Decode(&compressed[0], compressed.size() / 2,
+                                PNGCodec::FORMAT_RGB, &output,
                                 &outw, &outh));
 
   // Corrupt it and try decompressing that.
   for (int i = 10; i < 30; i++)
     compressed[i] = i;
-  EXPECT_FALSE(PNGDecoder::Decode(&compressed[0], compressed.size(),
-                                PNGDecoder::FORMAT_RGB, &output,
+  EXPECT_FALSE(PNGCodec::Decode(&compressed[0], compressed.size(),
+                                PNGCodec::FORMAT_RGB, &output,
                                 &outw, &outh));
 }
 
@@ -157,14 +158,14 @@ TEST(PNGCodec, EncodeDecodeBGRA) {
 
   // Encode.
   std::vector<unsigned char> encoded;
-  EXPECT_TRUE(PNGEncoder::Encode(&original[0], PNGEncoder::FORMAT_BGRA, w, h,
+  EXPECT_TRUE(PNGCodec::Encode(&original[0], PNGCodec::FORMAT_BGRA, w, h,
                                w * 4, false, &encoded));
 
   // Decode, it should have the same size as the original.
   std::vector<unsigned char> decoded;
   int outw, outh;
-  EXPECT_TRUE(PNGDecoder::Decode(&encoded[0], encoded.size(),
-                               PNGDecoder::FORMAT_BGRA, &decoded,
+  EXPECT_TRUE(PNGCodec::Decode(&encoded[0], encoded.size(),
+                               PNGCodec::FORMAT_BGRA, &decoded,
                                &outw, &outh));
   ASSERT_EQ(w, outw);
   ASSERT_EQ(h, outh);
@@ -185,16 +186,16 @@ TEST(PNGCodec, StripAddAlpha) {
 
   // Encode RGBA data as RGB.
   std::vector<unsigned char> encoded;
-  EXPECT_TRUE(PNGEncoder::Encode(&original_rgba[0],
-                                 PNGEncoder::FORMAT_RGBA,
-                                 w, h,
-                                 w * 4, true, &encoded));
+  EXPECT_TRUE(PNGCodec::Encode(&original_rgba[0],
+                               PNGCodec::FORMAT_RGBA,
+                               w, h,
+                               w * 4, true, &encoded));
 
   // Decode the RGB to RGBA.
   std::vector<unsigned char> decoded;
   int outw, outh;
-  EXPECT_TRUE(PNGDecoder::Decode(&encoded[0], encoded.size(),
-                               PNGDecoder::FORMAT_RGBA, &decoded,
+  EXPECT_TRUE(PNGCodec::Decode(&encoded[0], encoded.size(),
+                               PNGCodec::FORMAT_RGBA, &decoded,
                                &outw, &outh));
 
   // Decoded and reference should be the same (opaque alpha).
@@ -204,14 +205,14 @@ TEST(PNGCodec, StripAddAlpha) {
   ASSERT_TRUE(original_rgba == decoded);
 
   // Encode RGBA to RGBA.
-  EXPECT_TRUE(PNGEncoder::Encode(&original_rgba[0],
-                                 PNGEncoder::FORMAT_RGBA,
-                                 w, h,
-                                 w * 4, false, &encoded));
+  EXPECT_TRUE(PNGCodec::Encode(&original_rgba[0],
+                               PNGCodec::FORMAT_RGBA,
+                               w, h,
+                               w * 4, false, &encoded));
 
   // Decode the RGBA to RGB.
-  EXPECT_TRUE(PNGDecoder::Decode(&encoded[0], encoded.size(),
-                               PNGDecoder::FORMAT_RGB, &decoded,
+  EXPECT_TRUE(PNGCodec::Decode(&encoded[0], encoded.size(),
+                               PNGCodec::FORMAT_RGB, &decoded,
                                &outw, &outh));
 
   // It should be the same as our non-alpha-channel reference.
@@ -229,11 +230,11 @@ TEST(PNGCodec, EncodeBGRASkBitmap) {
 
   // Encode the bitmap.
   std::vector<unsigned char> encoded;
-  PNGEncoder::EncodeBGRASkBitmap(original_bitmap, false, &encoded);
+  PNGCodec::EncodeBGRASkBitmap(original_bitmap, false, &encoded);
 
   // Decode the encoded string.
   SkBitmap decoded_bitmap;
-  EXPECT_TRUE(PNGDecoder::Decode(&encoded, &decoded_bitmap));
+  EXPECT_TRUE(PNGCodec::Decode(&encoded, &decoded_bitmap));
 
   // Compare the original bitmap and the output bitmap. We use ColorsClose
   // as SkBitmaps are considered to be pre-multiplied, the unpremultiplication
@@ -247,3 +248,4 @@ TEST(PNGCodec, EncodeBGRASkBitmap) {
   }
 }
 
+}  // namespace gfx

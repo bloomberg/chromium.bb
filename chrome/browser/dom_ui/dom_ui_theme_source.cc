@@ -7,7 +7,6 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
-#include "base/gfx/png_encoder.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/time.h"

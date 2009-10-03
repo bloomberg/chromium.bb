@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/gfx/png_encoder.h"
 #include "base/histogram.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"

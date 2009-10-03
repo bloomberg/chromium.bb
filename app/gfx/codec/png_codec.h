@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_GFX_PNG_ENCODER_H_
-#define BASE_GFX_PNG_ENCODER_H_
+#ifndef APP_GFX_CODEC_PNG_CODEC_H_
+#define APP_GFX_CODEC_PNG_CODEC_H_
 
 #include <vector>
 
@@ -11,13 +11,15 @@
 
 class SkBitmap;
 
-// Interface for encoding PNG data. This is a wrapper around libpng,
-// which has an inconvenient interface for callers. This is currently designed
-// for use in tests only (where we control the files), so the handling isn't as
-// robust as would be required for a browser (see Decode() for more).  WebKit
-// has its own more complicated PNG decoder which handles, among other things,
-// partially downloaded data.
-class PNGEncoder {
+namespace gfx {
+
+// Interface for encoding and decoding PNG data. This is a wrapper around
+// libpng, which has an inconvenient interface for callers. This is currently
+// designed for use in tests only (where we control the files), so the handling
+// isn't as robust as would be required for a browser (see Decode() for more).
+// WebKit has its own more complicated PNG decoder which handles, among other
+// things, partially downloaded data.
+class PNGCodec {
  public:
   enum ColorFormat {
     // 3 bytes per pixel (packed), in RGB order regardless of endianness.
@@ -53,7 +55,7 @@ class PNGEncoder {
                      bool discard_transparency,
                      std::vector<unsigned char>* output);
 
-  // Call PNGEncoder::Encode on the supplied SkBitmap |input|, which is assumed
+  // Call PNGCodec::Encode on the supplied SkBitmap |input|, which is assumed
   // to be BGRA, 32 bits per pixel. The params |discard_transparency| and
   // |output| are passed directly to Encode; refer to Encode for more
   // information. During the call, an SkAutoLockPixels lock is held on |input|.
@@ -61,8 +63,34 @@ class PNGEncoder {
                                  bool discard_transparency,
                                  std::vector<unsigned char>* output);
 
+  // Decodes the PNG data contained in input of length input_size. The
+  // decoded data will be placed in *output with the dimensions in *w and *h
+  // on success (returns true). This data will be written in the 'format'
+  // format. On failure, the values of these output variables are undefined.
+  //
+  // This function may not support all PNG types, and it hasn't been tested
+  // with a large number of images, so assume a new format may not work. It's
+  // really designed to be able to read in something written by Encode() above.
+  static bool Decode(const unsigned char* input, size_t input_size,
+                     ColorFormat format, std::vector<unsigned char>* output,
+                     int* w, int* h);
+
+  // A convenience function for decoding PNGs as previously encoded by the PNG
+  // encoder. Chrome encodes png in the format PNGCodec::FORMAT_BGRA.
+  //
+  // Returns true if data is non-null and can be decoded as a png, false
+  // otherwise.
+  static bool Decode(const std::vector<unsigned char>* data, SkBitmap* icon);
+
+  // Create a SkBitmap from a decoded BGRA DIB. The caller owns the returned
+  // SkBitmap.
+  static SkBitmap* CreateSkBitmapFromBGRAFormat(
+      std::vector<unsigned char>& bgra, int width, int height);
+
  private:
-  DISALLOW_COPY_AND_ASSIGN(PNGEncoder);
+  DISALLOW_COPY_AND_ASSIGN(PNGCodec);
 };
 
-#endif  // BASE_GFX_PNG_ENCODER_H_
+}  // namespace gfx
+
+#endif  // APP_GFX_CODEC_PNG_CODEC_H_

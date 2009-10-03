@@ -8,11 +8,10 @@
 #include <limits>
 #include <vector>
 
+#include "app/gfx/codec/png_codec.h"
 #include "app/l10n_util.h"
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
-#include "base/gfx/png_decoder.h"
-#include "base/gfx/png_encoder.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/history/history_database.h"
@@ -187,7 +186,7 @@ bool WebDatabase::SetWebAppImage(const GURL& url, const SkBitmap& image) {
     return false;
 
   std::vector<unsigned char> image_data;
-  PNGEncoder::EncodeBGRASkBitmap(image, false, &image_data);
+  gfx::PNGCodec::EncodeBGRASkBitmap(image, false, &image_data);
 
   s.BindString(0, history::HistoryDatabase::GURLToDatabaseURL(url));
   s.BindInt(1, image.width());
@@ -212,7 +211,7 @@ bool WebDatabase::GetWebAppImages(const GURL& url,
     if (col_bytes > 0) {
       image_data.resize(col_bytes);
       memcpy(&image_data[0], s.ColumnBlob(0), col_bytes);
-      if (PNGDecoder::Decode(&image_data, &image)) {
+      if (gfx::PNGCodec::Decode(&image_data, &image)) {
         images->push_back(image);
       } else {
         // Should only have valid image data in the db.

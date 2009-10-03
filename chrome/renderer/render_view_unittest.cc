@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/gfx/codec/jpeg_codec.h"
 #include "base/file_util.h"
-#include "base/gfx/jpeg_codec.h"
 #include "base/shared_memory.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"
@@ -518,8 +518,9 @@ TEST_F(RenderViewTest, OnPrintPageAsBitmap) {
                                          &data);
   std::vector<unsigned char> decoded;
   int w, h;
-  EXPECT_TRUE(JPEGCodec::Decode(&data[0], data.size(), JPEGCodec::FORMAT_RGBA,
-                                &decoded, &w, &h));
+  EXPECT_TRUE(gfx::JPEGCodec::Decode(&data[0], data.size(),
+                                     gfx::JPEGCodec::FORMAT_RGBA,
+                                     &decoded, &w, &h));
 
   // Check if its not 100% white.
   bool is_white = true;

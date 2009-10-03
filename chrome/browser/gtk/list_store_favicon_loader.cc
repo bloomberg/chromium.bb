@@ -6,8 +6,8 @@
 
 #include <vector>
 
+#include "app/gfx/codec/png_codec.h"
 #include "base/gfx/gtk_util.h"
-#include "base/gfx/png_decoder.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/profile.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -71,9 +71,10 @@ void ListStoreFavIconLoader::OnGotFavIcon(
   if (know_fav_icon && image_data.get() && !image_data->data.empty()) {
     int width, height;
     std::vector<unsigned char> decoded_data;
-    if (PNGDecoder::Decode(&image_data->data.front(), image_data->data.size(),
-                           PNGDecoder::FORMAT_BGRA, &decoded_data, &width,
-                           &height)) {
+    if (gfx::PNGCodec::Decode(&image_data->data.front(),
+                              image_data->data.size(),
+                              gfx::PNGCodec::FORMAT_BGRA, &decoded_data,
+                              &width, &height)) {
       SkBitmap icon;
       icon.setConfig(SkBitmap::kARGB_8888_Config, width, height);
       icon.allocPixels();

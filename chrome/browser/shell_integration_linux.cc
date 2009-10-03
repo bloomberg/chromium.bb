@@ -13,11 +13,11 @@
 #include <string>
 #include <vector>
 
+#include "app/gfx/codec/png_codec.h"
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/gfx/png_encoder.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -152,7 +152,7 @@ class CreateDesktopShortcutTask : public Task {
         shortcut_filename.ReplaceExtension("png"));
 
     std::vector<unsigned char> png_data;
-    PNGEncoder::EncodeBGRASkBitmap(shortcut_info_.favicon, false, &png_data);
+    gfx::PNGCodec::EncodeBGRASkBitmap(shortcut_info_.favicon, false, &png_data);
     int bytes_written = file_util::WriteFile(temp_file_path,
         reinterpret_cast<char*>(png_data.data()), png_data.size());
 

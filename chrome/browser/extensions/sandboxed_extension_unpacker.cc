@@ -6,9 +6,9 @@
 
 #include <set>
 
+#include "app/gfx/codec/png_codec.h"
 #include "base/crypto/signature_verifier.h"
 #include "base/file_util.h"
-#include "base/gfx/png_encoder.h"
 #include "base/message_loop.h"
 #include "base/scoped_handle.h"
 #include "base/task.h"
@@ -171,7 +171,7 @@ void SandboxedExtensionUnpacker::OnUnpackExtensionSucceeded(
     // TODO(mpcomplete): It's lame that we're encoding all images as PNG, even
     // though they may originally be .jpg, etc.  Figure something out.
     // http://code.google.com/p/chromium/issues/detail?id=12459
-    if (!PNGEncoder::EncodeBGRASkBitmap(image, false, &image_data)) {
+    if (!gfx::PNGCodec::EncodeBGRASkBitmap(image, false, &image_data)) {
       ReportFailure("Error re-encoding theme image.");
       return;
     }

@@ -9,12 +9,12 @@
 
 #include "chrome/browser/thumbnail_store.h"
 
+#include "app/gfx/codec/jpeg_codec.h"
 #include "app/sql/connection.h"
 #include "app/sql/statement.h"
 #include "base/time.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/gfx/jpeg_codec.h"
 #include "base/path_service.h"
 #include "base/ref_counted.h"
 #include "chrome/common/chrome_paths.h"
@@ -70,23 +70,25 @@ void ThumbnailStoreTest::SetUp() {
   db_name_ = db_name_.AppendASCII("ThumbnailDB");
   file_util::Delete(db_name_, false);
 
-  google_.reset(JPEGCodec::Decode(kGoogleThumbnail, sizeof(kGoogleThumbnail)));
-  weewar_.reset(JPEGCodec::Decode(kWeewarThumbnail, sizeof(kWeewarThumbnail)));
+  google_.reset(gfx::JPEGCodec::Decode(kGoogleThumbnail,
+                                       sizeof(kGoogleThumbnail)));
+  weewar_.reset(gfx::JPEGCodec::Decode(kWeewarThumbnail,
+                                       sizeof(kWeewarThumbnail)));
 
   SkAutoLockPixels lock1(*google_);
   jpeg_google_ = new RefCountedBytes;
-  JPEGCodec::Encode(
+  gfx::JPEGCodec::Encode(
       reinterpret_cast<unsigned char*>(google_->getAddr32(0, 0)),
-      JPEGCodec::FORMAT_BGRA, google_->width(),
+      gfx::JPEGCodec::FORMAT_BGRA, google_->width(),
       google_->height(),
       static_cast<int>(google_->rowBytes()), 90,
       &(jpeg_google_->data));
 
   SkAutoLockPixels lock2(*weewar_);
   jpeg_weewar_ = new RefCountedBytes;
-  JPEGCodec::Encode(
+  gfx::JPEGCodec::Encode(
       reinterpret_cast<unsigned char*>(weewar_->getAddr32(0,0)),
-      JPEGCodec::FORMAT_BGRA, weewar_->width(),
+      gfx::JPEGCodec::FORMAT_BGRA, weewar_->width(),
       weewar_->height(),
       static_cast<int>(weewar_->rowBytes()), 90,
       &(jpeg_weewar_->data));

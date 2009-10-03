@@ -4,8 +4,8 @@
 
 #include "chrome/renderer/print_web_view_helper.h"
 
+#include "app/gfx/codec/jpeg_codec.h"
 #include "app/l10n_util.h"
-#include "base/gfx/jpeg_codec.h"
 #include "base/logging.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_view.h"
@@ -139,9 +139,9 @@ void PrintWebViewHelper::PrintPageAsJPEG(
 
   // Encode the SkBitmap to jpeg.
   SkAutoLockPixels image_lock(bitmap);
-  bool encoded = JPEGCodec::Encode(
+  bool encoded = gfx::JPEGCodec::Encode(
       reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
-      JPEGCodec::FORMAT_BGRA,
+      gfx::JPEGCodec::FORMAT_BGRA,
       static_cast<int>(bitmap.width() * zoom_factor),
       static_cast<int>(bitmap.height() * zoom_factor),
       static_cast<int>(bitmap.rowBytes()),

@@ -20,12 +20,12 @@
 #include <time.h>
 #include <algorithm>
 
+#include "app/gfx/codec/jpeg_codec.h"
 #include "app/sql/connection.h"
 #include "app/sql/statement.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/gfx/jpeg_codec.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/scoped_vector.h"
@@ -668,7 +668,7 @@ TEST_F(HistoryTest, Thumbnails) {
   ASSERT_TRUE(history->Init(history_dir_, NULL));
 
   scoped_ptr<SkBitmap> thumbnail(
-      JPEGCodec::Decode(kGoogleThumbnail, sizeof(kGoogleThumbnail)));
+      gfx::JPEGCodec::Decode(kGoogleThumbnail, sizeof(kGoogleThumbnail)));
   static const double boringness = 0.25;
 
   const GURL url("http://www.google.com/thumbnail_test/");
@@ -687,7 +687,7 @@ TEST_F(HistoryTest, Thumbnails) {
   // compression and we don't have a similarity measure.
   EXPECT_TRUE(thumbnail_data_.size());
   scoped_ptr<SkBitmap> decoded_thumbnail(
-      JPEGCodec::Decode(&thumbnail_data_[0], thumbnail_data_.size()));
+      gfx::JPEGCodec::Decode(&thumbnail_data_[0], thumbnail_data_.size()));
   EXPECT_TRUE(decoded_thumbnail.get());
 
   // Request a nonexistent thumbnail and make sure we get

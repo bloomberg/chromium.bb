@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,9 @@
 
 #include "chrome/tools/profiles/thumbnail-inl.h"
 
+#include "app/gfx/codec/jpeg_codec.h"
 #include "base/at_exit.h"
 #include "base/file_path.h"
-#include "base/gfx/jpeg_codec.h"
 #include "base/icu_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -159,11 +159,11 @@ void InsertURLBatch(const std::wstring& profile_dir, int page_id,
       history_service->SetPageContents(url, ConstructRandomPage());
       if (RandomInt(0, 2) == 0) {
         scoped_ptr<SkBitmap> bitmap(
-            JPEGCodec::Decode(kGoogleThumbnail, sizeof(kGoogleThumbnail)));
+            gfx::JPEGCodec::Decode(kGoogleThumbnail, sizeof(kGoogleThumbnail)));
         history_service->SetPageThumbnail(url, *bitmap, score);
       } else {
         scoped_ptr<SkBitmap> bitmap(
-            JPEGCodec::Decode(kWeewarThumbnail, sizeof(kWeewarThumbnail)));
+            gfx::JPEGCodec::Decode(kWeewarThumbnail, sizeof(kWeewarThumbnail)));
         history_service->SetPageThumbnail(url, *bitmap, score);
       }
     }

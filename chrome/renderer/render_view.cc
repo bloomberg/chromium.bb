@@ -16,7 +16,6 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/field_trial.h"
-#include "base/gfx/png_encoder.h"
 #include "base/gfx/native_widget_types.h"
 #include "base/process_util.h"
 #include "base/singleton.h"

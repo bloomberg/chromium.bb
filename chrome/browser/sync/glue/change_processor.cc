@@ -6,7 +6,7 @@
 
 #include "chrome/browser/sync/glue/change_processor.h"
 
-#include "base/gfx/png_encoder.h"
+#include "app/gfx/codec/png_codec.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/favicon_service.h"
@@ -65,7 +65,7 @@ void ChangeProcessor::EncodeFavicon(const BookmarkNode* src,
 
   // Re-encode the BookmarkNode's favicon as a PNG, and pass the data to the
   // sync subsystem.
-  if (!PNGEncoder::EncodeBGRASkBitmap(favicon, false, dst))
+  if (!gfx::PNGCodec::EncodeBGRASkBitmap(favicon, false, dst))
     return;
 }
 

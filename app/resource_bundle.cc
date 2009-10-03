@@ -4,8 +4,8 @@
 
 #include "app/resource_bundle.h"
 
+#include "app/gfx/codec/png_codec.h"
 #include "app/gfx/font.h"
-#include "base/gfx/png_decoder.h"
 #include "base/logging.h"
 #include "base/string_piece.h"
 #include "net/base/file_stream.h"
@@ -80,16 +80,16 @@ SkBitmap* ResourceBundle::LoadBitmap(DataHandle data_handle, int resource_id) {
   // Decode the PNG.
   int image_width;
   int image_height;
-  if (!PNGDecoder::Decode(&raw_data.front(), raw_data.size(),
-                          PNGDecoder::FORMAT_BGRA,
-                          &png_data, &image_width, &image_height)) {
+  if (!gfx::PNGCodec::Decode(&raw_data.front(), raw_data.size(),
+                             gfx::PNGCodec::FORMAT_BGRA,
+                             &png_data, &image_width, &image_height)) {
     NOTREACHED() << "Unable to decode image resource " << resource_id;
     return NULL;
   }
 
-  return PNGDecoder::CreateSkBitmapFromBGRAFormat(png_data,
-                                                  image_width,
-                                                  image_height);
+  return gfx::PNGCodec::CreateSkBitmapFromBGRAFormat(png_data,
+                                                     image_width,
+                                                     image_height);
 }
 
 std::string ResourceBundle::GetDataResource(int resource_id) {

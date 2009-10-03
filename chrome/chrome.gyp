@@ -4143,6 +4143,7 @@
         'syncapi',
         'test_support_unit',
         'utility',
+        '../app/app.gyp:app_base',
         '../app/app.gyp:app_resources',
         '../ipc/ipc.gyp:ipc',
         '../net/net.gyp:net_resources',

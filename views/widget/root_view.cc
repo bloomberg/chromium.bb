@@ -54,26 +54,26 @@ const char RootView::kViewClassName[] = "views/RootView";
 /////////////////////////////////////////////////////////////////////////////
 
 RootView::RootView(Widget* widget)
-  : mouse_pressed_handler_(NULL),
-    mouse_move_handler_(NULL),
-    last_click_handler_(NULL),
-    widget_(widget),
-    invalid_rect_urgent_(false),
-    pending_paint_task_(NULL),
-    paint_task_needed_(false),
-    explicit_mouse_handler_(false),
+    : mouse_pressed_handler_(NULL),
+      mouse_move_handler_(NULL),
+      last_click_handler_(NULL),
+      widget_(widget),
+      invalid_rect_urgent_(false),
+      pending_paint_task_(NULL),
+      paint_task_needed_(false),
+      explicit_mouse_handler_(false),
 #if defined(OS_WIN)
-    previous_cursor_(NULL),
+      previous_cursor_(NULL),
 #endif
-    default_keyboard_handler_(NULL),
-    focus_on_mouse_pressed_(false),
-    ignore_set_focus_calls_(false),
-    focus_traversable_parent_(NULL),
-    focus_traversable_parent_view_(NULL),
-    drag_view_(NULL)
+      default_keyboard_handler_(NULL),
+      focus_on_mouse_pressed_(false),
+      ignore_set_focus_calls_(false),
+      focus_traversable_parent_(NULL),
+      focus_traversable_parent_view_(NULL),
+      drag_view_(NULL)
 #ifndef NDEBUG
-    ,
-    is_processing_paint_(false)
+      ,
+      is_processing_paint_(false)
 #endif
 {
 }

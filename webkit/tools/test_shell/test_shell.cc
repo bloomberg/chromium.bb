@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,12 +6,12 @@
 
 #include "webkit/tools/test_shell/test_shell.h"
 
+#include "app/gfx/codec/png_codec.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/debug_on_start.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/gfx/png_encoder.h"
 #include "base/gfx/size.h"
 #include "base/icu_util.h"
 #if defined(OS_MACOSX)
@@ -265,7 +265,7 @@ std::string TestShell::DumpImage(skia::PlatformCanvas* canvas,
   // Encode image.
   std::vector<unsigned char> png;
   SkAutoLockPixels src_bmp_lock(src_bmp);
-  PNGEncoder::ColorFormat color_format = PNGEncoder::FORMAT_BGRA;
+  gfx::PNGCodec::ColorFormat color_format = gfx::PNGCodec::FORMAT_BGRA;
 
   // Fix the alpha. The expected PNGs on Mac have an alpha channel, so we want
   // to keep it. On Windows, the alpha channel is wrong since text/form control
@@ -297,7 +297,7 @@ std::string TestShell::DumpImage(skia::PlatformCanvas* canvas,
   // Only encode and dump the png if the hashes don't match. Encoding the image
   // is really expensive.
   if (md5hash.compare(pixel_hash) != 0) {
-    PNGEncoder::Encode(
+    gfx::PNGCodec::Encode(
         reinterpret_cast<const unsigned char*>(src_bmp.getPixels()),
         color_format, src_bmp.width(), src_bmp.height(),
         static_cast<int>(src_bmp.rowBytes()), discard_transparency, &png);

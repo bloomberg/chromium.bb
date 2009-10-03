@@ -4,9 +4,9 @@
 
 #include "chrome/browser/dom_ui/dom_ui_thumbnail_source.h"
 
+#include "app/gfx/codec/jpeg_codec.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
-#include "base/gfx/jpeg_codec.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/thumbnail_store.h"
 #include "chrome/common/chrome_switches.h"

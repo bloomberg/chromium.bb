@@ -4,7 +4,7 @@
 
 #include "chrome/browser/history/top_sites.h"
 
-#include "base/gfx/jpeg_codec.h"
+#include "app/gfx/codec/jpeg_codec.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -45,9 +45,9 @@ bool TopSites::SetPageThumbnail(const GURL& url,
 
   image.thumbnail = new RefCountedBytes;
   SkAutoLockPixels thumbnail_lock(thumbnail);
-  bool encoded = JPEGCodec::Encode(
+  bool encoded = gfx::JPEGCodec::Encode(
       reinterpret_cast<unsigned char*>(thumbnail.getAddr32(0, 0)),
-      JPEGCodec::FORMAT_BGRA, thumbnail.width(),
+      gfx::JPEGCodec::FORMAT_BGRA, thumbnail.width(),
       thumbnail.height(),
       static_cast<int>(thumbnail.rowBytes()), 90,
       &image.thumbnail->data);

@@ -1,13 +1,15 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_GFX_JPEG_CODEC_H_
-#define BASE_GFX_JPEG_CODEC_H_
+#ifndef APP_GFX_CODEC_JPEG_CODEC_H_
+#define APP_GFX_CODEC_JPEG_CODEC_H_
 
 #include <vector>
 
 class SkBitmap;
+
+namespace gfx {
 
 // Interface for encoding/decoding JPEG data. This is a wrapper around libjpeg,
 // which has an inconvenient interface for callers. This is only used for UI
@@ -56,4 +58,6 @@ class JPEGCodec {
   static SkBitmap* Decode(const unsigned char* input, size_t input_size);
 };
 
-#endif  // BASE_GFX_JPEG_CODEC_H_
+}  // namespace gfx
+
+#endif  // APP_GFX_CODEC_JPEG_CODEC_H_
