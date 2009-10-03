@@ -7,3 +7,9 @@
 # Don't instrument code dealing with atomics (base::subtle)
 fun:*base*subtle*NoBarrier_Load*
 fun:*base*subtle*Release_Store*
+
+# we ignore the Security libraries for now since
+# their instrumentation is very slow.
+# TODO(timurrrr): investigate whether we need to instrument them
+obj:*/Security*
+obj:*/libcrypto*
