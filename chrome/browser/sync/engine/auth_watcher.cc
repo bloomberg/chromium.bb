@@ -236,6 +236,13 @@ void AuthWatcher::ProcessGaiaAuthFailure() {
 
 void* AuthWatcher::AuthenticationThreadMain(ThreadParams* args) {
   NameCurrentThreadForDebugging("SyncEngine_AuthWatcherThread");
+  // TODO(timsteele):  Remove this; this is temporary to satisfy code that
+  // compares MessageLoop pointers until AuthWatcher uses a base::Thread.
+  // We allocate a message_loop from the AuthWatcherThread so that
+  // GaiaAuth and EventChannel get a valid opaque pointer to the current
+  // message loop used for comparison. It gets stored in TLS as the 'current'
+  // loop for this thread.
+  MessageLoop message_loop;
   {
     // This short lock ensures our launching function (StartNewAuthAttempt) is
     // done.
@@ -248,36 +255,47 @@ void* AuthWatcher::AuthenticationThreadMain(ThreadParams* args) {
   SignIn const signin = user_settings_->
     RecallSigninType(args->email, GMAIL_SIGNIN);
 
-  if (!args->password.empty()) while (true) {
-    bool authenticated;
-    if (!args->captcha_token.empty() && !args->captcha_value.empty())
-      authenticated = gaia_->Authenticate(args->email, args->password,
-                                          save, true, args->captcha_token,
-                                          args->captcha_value, signin);
-    else
-      authenticated = gaia_->Authenticate(args->email, args->password,
-                                          save, true, signin);
-    if (authenticated) {
-      if (!ProcessGaiaAuthSuccess()) {
-        if (3 != ++attempt)
-          continue;
-        AuthWatcherEvent event =
-            { AuthWatcherEvent::SERVICE_CONNECTION_FAILED, 0 };
-        NotifyListeners(&event);
+  gaia_->set_message_loop(&message_loop);
+
+  if (!args->password.empty()) {
+    // TODO(timsteele): Split this mess up into functions.
+    while (true) {
+      bool authenticated;
+      if (!args->captcha_token.empty() && !args->captcha_value.empty()) {
+        authenticated = gaia_->Authenticate(args->email, args->password,
+                                            save, args->captcha_token,
+                                            args->captcha_value, signin);
+      } else {
+        authenticated = gaia_->Authenticate(args->email, args->password,
+                                            save, signin);
       }
-    } else {
-      ProcessGaiaAuthFailure();
+      if (authenticated) {
+        if (!ProcessGaiaAuthSuccess()) {
+            if (3 != ++attempt) {
+              continue;
+            }
+          AuthWatcherEvent event =
+              { AuthWatcherEvent::SERVICE_CONNECTION_FAILED, 0 };
+          NotifyListeners(&event);
+        }
+      } else {
+        ProcessGaiaAuthFailure();
+      }
+      break;  // We are done trying to authenticate.
     }
-    break;
   } else if (!args->auth_token.empty()) {
     AuthenticateWithToken(args->email, args->auth_token);
   } else {
     LOG(ERROR) << "Attempt to authenticate with no credentials.";
   }
+
+  // We're done trying to authenticate.  Set state and terminate the thread.
   {
     MutexLock lock(&mutex_);
     authenticating_now_ = false;
   }
+  // TODO(timsteele): Remove this; nothing ever gets posted to this loop.
+  gaia_->set_message_loop(NULL);
   delete args;
   return 0;
 }

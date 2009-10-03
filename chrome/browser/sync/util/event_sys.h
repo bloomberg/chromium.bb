@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_UTIL_EVENT_SYS_H_
 #define CHROME_BROWSER_SYNC_UTIL_EVENT_SYS_H_
 
-#include "chrome/browser/sync/util/pthread_helpers_fwd.h"
+class AutoLock;
+class Lock;
 
 // An abstract base class for listening to events.
 //
@@ -19,8 +20,8 @@ class EventListener {
 
 // See the -inl.h for details about the following.
 
-template <typename EventTraits, typename NotifyLock = PThreadNoLock,
-          typename ScopedNotifyLocker = PThreadScopedLock<NotifyLock> >
+template <typename EventTraits, typename NotifyLock = Lock,
+          typename ScopedNotifyLocker = AutoLock>
 class EventChannel;
 
 class EventListenerHookup;

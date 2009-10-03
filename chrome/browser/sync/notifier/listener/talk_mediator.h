@@ -46,7 +46,7 @@ struct TalkMediatorEvent {
   WhatHappened what_happened;
 };
 
-typedef EventChannel<TalkMediatorEvent, PThreadMutex> TalkMediatorChannel;
+typedef EventChannel<TalkMediatorEvent, Lock> TalkMediatorChannel;
 
 class TalkMediator {
  public:

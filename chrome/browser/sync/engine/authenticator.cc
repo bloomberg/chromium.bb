@@ -35,10 +35,11 @@ Authenticator::AuthenticationResult Authenticator::Authenticate(
   // than the test code.
   GaiaAuthenticator auth_service("ChromiumBrowser", "chromiumsync",
       "https://www.google.com:443/accounts/ClientLogin");
+  auth_service.set_message_loop(MessageLoop::current());
   const SignIn signin_type =
       settings_->RecallSigninType(username, GMAIL_SIGNIN);
   if (!auth_service.Authenticate(username, password, SAVE_IN_MEMORY_ONLY,
-                                 true, signin_type)) {
+                                 signin_type)) {
     return UNSPECIFIC_ERROR_RETURN;
   }
   CHECK(!auth_service.auth_token().empty());

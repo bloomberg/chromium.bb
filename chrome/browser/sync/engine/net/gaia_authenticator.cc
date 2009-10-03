@@ -104,29 +104,6 @@ GaiaAuthenticator::~GaiaAuthenticator() {
   delete channel_;
 }
 
-bool GaiaAuthenticator::LaunchAuthenticate(const AuthParams& params,
-                                           bool synchronous) {
-  if (synchronous)
-    return AuthenticateImpl(params);
-  AuthParams* copy = new AuthParams;
-  *copy = params;
-  pthread_t thread_id;
-  int result = pthread_create(&thread_id, 0, &GaiaAuthenticator::ThreadMain,
-                              copy);
-  if (result)
-    return false;
-  return true;
-}
-
-
-void* GaiaAuthenticator::ThreadMain(void* arg) {
-  NameCurrentThreadForDebugging("SyncEngine_GaiaAuthenticatorThread");
-  AuthParams* const params = reinterpret_cast<AuthParams*>(arg);
-  params->authenticator->AuthenticateImpl(*params);
-  delete params;
-  return 0;
-}
-
 // mutex_ must be entered before calling this function.
 GaiaAuthenticator::AuthParams GaiaAuthenticator::MakeParams(
     const string& user_name,
@@ -150,31 +127,27 @@ GaiaAuthenticator::AuthParams GaiaAuthenticator::MakeParams(
 bool GaiaAuthenticator::Authenticate(const string& user_name,
                                      const string& password,
                                      SaveCredentials should_save_credentials,
-                                     bool synchronous,
                                      const string& captcha_token,
                                      const string& captcha_value,
                                      SignIn try_first) {
-  mutex_.Lock();
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+
   AuthParams const params =
     MakeParams(user_name, password, should_save_credentials, captcha_token,
                captcha_value, try_first);
-  mutex_.Unlock();
-  return LaunchAuthenticate(params, synchronous);
+  return AuthenticateImpl(params);
 }
 
 bool GaiaAuthenticator::AuthenticateImpl(const AuthParams& params) {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   AuthResults results;
   const bool succeeded = AuthenticateImpl(params, &results);
-  mutex_.Lock();
   if (params.request_id == request_count_) {
     auth_results_ = results;
     GaiaAuthEvent event = { succeeded ? GaiaAuthEvent::GAIA_AUTH_SUCCEEDED
                                       : GaiaAuthEvent::GAIA_AUTH_FAILED,
                                       results.auth_error, this };
-    mutex_.Unlock();
     channel_->NotifyListeners(event);
-  } else {
-    mutex_.Unlock();
   }
   return succeeded;
 }
@@ -189,6 +162,7 @@ bool GaiaAuthenticator::AuthenticateImpl(const AuthParams& params) {
 // method preserves the saved credentials.
 bool GaiaAuthenticator::AuthenticateImpl(const AuthParams& params,
                                          AuthResults* results) {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   results->credentials_saved = params.should_save_credentials;
   results->auth_error = ConnectionUnavailable;
   // Save credentials if so requested.
@@ -226,6 +200,7 @@ bool GaiaAuthenticator::AuthenticateImpl(const AuthParams& params,
 
 bool GaiaAuthenticator::PerformGaiaRequest(const AuthParams& params,
                                            AuthResults* results) {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   GURL gaia_auth_url(gaia_url_);
 
   string post_body;
@@ -272,6 +247,7 @@ bool GaiaAuthenticator::PerformGaiaRequest(const AuthParams& params,
 }
 
 bool GaiaAuthenticator::LookupEmail(AuthResults* results) {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   // Use the provided Gaia server, but change the path to what V1 expects.
   GURL url(gaia_url_);  // Gaia server.
   GURL::Replacements repl;
@@ -318,6 +294,7 @@ bool GaiaAuthenticator::LookupEmail(AuthResults* results) {
 bool GaiaAuthenticator::IssueAuthToken(AuthResults* results,
                                        const string& service_id,
                                        bool long_lived) {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   // Use the provided Gaia server, but change the path to what V1 expects.
   GURL url(gaia_url_);  // Gaia server.
   GURL::Replacements repl;
@@ -358,28 +335,6 @@ bool GaiaAuthenticator::IssueAuthToken(AuthResults* results,
     return true;
   }
   return false;
-}
-
-// TOOD(sync): This passing around of AuthResults makes it really unclear who
-// actually owns the authentication state and when it is valid, but this is
-// endemic to this implementation. We should fix this.
-bool GaiaAuthenticator::AuthenticateService(const string& service_id,
-                                            const string& sid,
-                                            const string& lsid,
-                                            string* other_service_cookie) {
-  // Copy the AuthResults structure and overload the auth_token field
-  // in the copy, local_results, to mean the auth_token for service_id.
-  AuthResults local_results;
-  local_results.sid = sid;
-  local_results.lsid = lsid;
-
-  if (!IssueAuthToken(&local_results, service_id, true)) {
-    LOG(ERROR) << "[AUTH] Failed to obtain cookie for " << service_id;
-    return false;
-  }
-
-  swap(*other_service_cookie, local_results.auth_token);
-  return true;
 }
 
 // Helper method that extracts tokens from a successful reply, and saves them
@@ -445,26 +400,26 @@ void GaiaAuthenticator::ExtractAuthErrorFrom(const string& response,
 // Reset all stored credentials, perhaps in preparation for letting a different
 // user sign in.
 void GaiaAuthenticator::ResetCredentials() {
-  PThreadScopedLock<PThreadMutex> enter(&mutex_);
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   AuthResults blank;
   auth_results_ = blank;
 }
 
 void GaiaAuthenticator::SetUsernamePassword(const string& username,
                                             const string& password) {
-  PThreadScopedLock<PThreadMutex> enter(&mutex_);
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   auth_results_.password = password;
   auth_results_.email = username;
 }
 
 void GaiaAuthenticator::SetUsername(const string& username) {
-  PThreadScopedLock<PThreadMutex> enter(&mutex_);
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   auth_results_.email = username;
 }
 
 void GaiaAuthenticator::SetAuthToken(const string& auth_token,
                                      SaveCredentials save) {
-  PThreadScopedLock<PThreadMutex> enter(&mutex_);
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   auth_results_.auth_token = auth_token;
   auth_results_.credentials_saved = save;
 }
@@ -472,10 +427,11 @@ void GaiaAuthenticator::SetAuthToken(const string& auth_token,
 bool GaiaAuthenticator::Authenticate(const string& user_name,
                                      const string& password,
                                      SaveCredentials should_save_credentials,
-                                     bool synchronous, SignIn try_first) {
+                                     SignIn try_first) {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
   const string empty;
-  return Authenticate(user_name, password, should_save_credentials, synchronous,
-                      empty, empty, try_first);
+  return Authenticate(user_name, password, should_save_credentials, empty,
+                      empty, try_first);
 }
 
 }  // namespace browser_sync

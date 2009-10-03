@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 //
 // Use this class to authenticate users with Gaia and access cookies sent
-// by the Gaia servers.
+// by the Gaia servers.  This class lives on the SyncEngine_AuthWatcherThread.
 //
 // Sample usage:
 // GaiaAuthenticator gaia_auth("User-Agent", SYNC_SERVICE_NAME,
@@ -13,14 +13,6 @@
 //   // Do something with: gaia_auth.auth_token(), or gaia_auth.sid(),
 //   // or gaia_auth.lsid()
 // }
-//
-// Sample asynchonous usage:
-// GaiaAuthenticator gaia_auth("User-Agent", SYNC_SERVICE_NAME,
-//     browser_sync::kExternalGaiaUrl);
-// EventListenerHookup* hookup = NewListenerHookup(gaia_auth.channel(),
-//                                                 this, &OnAuthenticate);
-// gaia_auth.Authenticate("email", "passwd", true, false);
-// // OnAuthenticate() will get called with result;
 //
 // Credentials can also be preserved for subsequent requests, though these are
 // saved in plain-text in memory, and not very secure on client systems. The
@@ -33,9 +25,9 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/message_loop.h"
 #include "chrome/browser/sync/engine/net/http_return.h"
 #include "chrome/browser/sync/util/event_sys.h"
-#include "chrome/browser/sync/util/pthread_helpers.h"
 #include "chrome/browser/sync/util/signin.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
@@ -111,24 +103,25 @@ class GaiaAuthenticator {
 
   virtual ~GaiaAuthenticator();
 
+  // This object should only be invoked from the AuthWatcherThread message
+  // loop, which is injected here.
+  void set_message_loop(MessageLoop* loop) {
+    message_loop_ = loop;
+  }
+
   // Pass credentials to authenticate with, or use saved credentials via an
   // overload. If authentication succeeds, you can retrieve the authentication
   // token via the respective accessors. Returns a boolean indicating whether
   // authentication succeeded or not.
   bool Authenticate(const std::string& user_name, const std::string& password,
-                    SaveCredentials should_save_credentials, bool synchronous,
+                    SaveCredentials should_save_credentials,
                     const std::string& captcha_token,
                     const std::string& captcha_value,
                     SignIn try_first);
 
   bool Authenticate(const std::string& user_name, const std::string& password,
-                    SaveCredentials should_save_credentials, bool synchronous,
+                    SaveCredentials should_save_credentials,
                     SignIn try_first);
-
-  bool AuthenticateService(const std::string& service_id,
-                           const std::string& sid,
-                           const std::string& lsid,
-                           std::string* other_service_cookie);
 
   // Resets all stored cookies to their default values.
   void ResetCredentials();
@@ -189,8 +182,6 @@ class GaiaAuthenticator {
   bool AuthenticateImpl(const AuthParams& params);
   bool AuthenticateImpl(const AuthParams& params, AuthResults* results);
   bool PerformGaiaRequest(const AuthParams& params, AuthResults* results);
-  bool LaunchAuthenticate(const AuthParams& params, bool synchronous);
-  static void *ThreadMain(void *arg);
 
   // virtual for testing purposes.
   virtual bool Post(const GURL& url, const std::string& post_body,
@@ -205,61 +196,61 @@ class GaiaAuthenticator {
  public:
   // Retrieve email.
   inline std::string email() const {
-    PThreadScopedLock<PThreadMutex> enter(&mutex_);
+    DCHECK_EQ(MessageLoop::current(), message_loop_);
     return auth_results_.email;
   }
 
   // Retrieve password.
   inline std::string password() const {
-    PThreadScopedLock<PThreadMutex> enter(&mutex_);
+    DCHECK_EQ(MessageLoop::current(), message_loop_);
     return auth_results_.password;
   }
 
   // Retrieve AuthToken, if previously authenticated; otherwise returns "".
   inline std::string auth_token() const {
-    PThreadScopedLock<PThreadMutex> enter(&mutex_);
+    DCHECK_EQ(MessageLoop::current(), message_loop_);
     return auth_results_.auth_token;
   }
 
   // Retrieve SID cookie. For details, see the Google Accounts documentation.
   inline std::string sid() const {
-    PThreadScopedLock<PThreadMutex> enter(&mutex_);
+    DCHECK_EQ(MessageLoop::current(), message_loop_);
     return auth_results_.sid;
   }
 
   // Retrieve LSID cookie. For details, see the Google Accounts documentation.
   inline std::string lsid() const {
-    PThreadScopedLock<PThreadMutex> enter(&mutex_);
+    DCHECK_EQ(MessageLoop::current(), message_loop_);
     return auth_results_.lsid;
   }
 
   // Get last authentication error.
   inline enum AuthenticationError auth_error() const {
-    PThreadScopedLock<PThreadMutex> enter(&mutex_);
+    DCHECK_EQ(MessageLoop::current(), message_loop_);
     return auth_results_.auth_error;
   }
 
   inline std::string auth_error_url() const {
-    PThreadScopedLock<PThreadMutex> enter(&mutex_);
+    DCHECK_EQ(MessageLoop::current(), message_loop_);
     return auth_results_.auth_error_url;
   }
 
   inline std::string captcha_token() const {
-    PThreadScopedLock<PThreadMutex> enter(&mutex_);
+    DCHECK_EQ(MessageLoop::current(), message_loop_);
     return auth_results_.captcha_token;
   }
 
   inline std::string captcha_url() const {
-    PThreadScopedLock<PThreadMutex> enter(&mutex_);
+    DCHECK_EQ(MessageLoop::current(), message_loop_);
     return auth_results_.captcha_url;
   }
 
   inline AuthResults results() const {
-    PThreadScopedLock<PThreadMutex> enter(&mutex_);
+    DCHECK_EQ(MessageLoop::current(), message_loop_);
     return auth_results_;
   }
 
-  typedef EventChannel<GaiaAuthEvent, PThreadMutex> Channel;
+  typedef EventChannel<GaiaAuthEvent, Lock> Channel;
 
   inline Channel* channel() const {
     return channel_;
@@ -295,8 +286,9 @@ class GaiaAuthenticator {
   time_t next_allowed_auth_attempt_time_;
   int early_auth_attempt_count_;
 
-  // Protects auth_results_, and request_count_.
-  mutable PThreadMutex mutex_;
+  // The message loop all our methods are invoked on.  Generally this is the
+  // SyncEngine_AuthWatcherThread's message loop.
+  MessageLoop* message_loop_;
 };
 
 }  // namespace browser_sync

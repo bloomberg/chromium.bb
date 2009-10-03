@@ -977,8 +977,8 @@ class Directory {
     }
   };
  public:
-  typedef EventChannel<DirectoryEventTraits, PThreadMutex> Channel;
-  typedef EventChannel<DirectoryChangeEvent, PThreadMutex> ChangesChannel;
+  typedef EventChannel<DirectoryEventTraits, Lock> Channel;
+  typedef EventChannel<DirectoryChangeEvent, Lock> ChangesChannel;
   typedef std::vector<int64> ChildHandles;
 
   // Returns the child meta handles for given parent id.

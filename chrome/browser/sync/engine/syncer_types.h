@@ -131,9 +131,9 @@ struct SyncerShutdownEvent {
   }
 };
 
-typedef EventChannel<SyncerEvent, PThreadMutex> SyncerEventChannel;
+typedef EventChannel<SyncerEvent, Lock> SyncerEventChannel;
 
-typedef EventChannel<SyncerShutdownEvent, PThreadMutex> ShutdownChannel;
+typedef EventChannel<SyncerShutdownEvent, Lock> ShutdownChannel;
 
 // This struct is passed between parts of the syncer during the processing of
 // one sync loop. It lives on the stack. We don't expose the number of

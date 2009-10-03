@@ -23,7 +23,7 @@ struct ClientCommandChannelTraits {
   }
 };
 
-typedef EventChannel<ClientCommandChannelTraits, PThreadMutex>
+typedef EventChannel<ClientCommandChannelTraits, Lock>
     ClientCommandChannel;
 
 }  // namespace browser_sync

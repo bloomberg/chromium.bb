@@ -87,7 +87,7 @@ class AuthWatcher {
   // server (initial sync complete).
   bool LoadDirectoryListAndOpen(const PathString& login);
 
-  typedef EventChannel<AuthWatcherEvent, PThreadMutex> Channel;
+  typedef EventChannel<AuthWatcherEvent, Lock> Channel;
 
   inline Channel* channel() const {
     return channel_.get();
@@ -180,7 +180,7 @@ class AuthWatcher {
   AllStatus* const allstatus_;
   // TODO(chron): It is incorrect to make assignments to AtomicWord.
   volatile base::subtle::AtomicWord status_;
-  UserSettings* user_settings_;
+  UserSettings* const user_settings_;
   TalkMediator* talk_mediator_;  // Interface to the notifications engine.
   scoped_ptr<Channel> channel_;
 

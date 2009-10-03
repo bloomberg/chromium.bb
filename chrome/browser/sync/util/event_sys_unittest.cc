@@ -9,9 +9,11 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/port.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
+#include "chrome/browser/sync/util/pthread_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::endl;
@@ -196,6 +198,12 @@ class ThreadTester : public EventListener<TestEvent> {
   }
 
   static void* ThreadMain(void* arg) {
+    // Make sure each thread gets a current MessageLoop in TLS.
+    // This test should use chrome threads for testing, but I'll leave it like
+    // this for the moment since it requires a big chunk of rewriting and I
+    // want the test passing while I checkpoint my CL.  Technically speaking,
+    // there should be no functional difference.
+    MessageLoop message_loop;
     ThreadArgs args = *reinterpret_cast<ThreadArgs*>(arg);
     pthread_mutex_lock(args.thread_running_mutex);
     *args.thread_running = true;

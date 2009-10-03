@@ -35,7 +35,7 @@ struct TalkMediatorEvent;
 class AllStatus {
   friend class ScopedStatusLockWithNotify;
  public:
-  typedef EventChannel<AllStatusEvent, PThreadMutex> Channel;
+  typedef EventChannel<AllStatusEvent, Lock> Channel;
 
   // Status of the entire sync process distilled into a single enum.
   enum SyncStatus {

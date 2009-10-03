@@ -116,7 +116,7 @@ class ServerConnectionManager {
   friend class Post;
   friend struct WatchServerStatus;
  public:
-  typedef EventChannel<ServerConnectionEvent, PThreadMutex> Channel;
+  typedef EventChannel<ServerConnectionEvent, Lock> Channel;
 
   // The lifetime of the GaiaAuthenticator must be longer than the instance
   // of the ServerConnectionManager that you're creating.

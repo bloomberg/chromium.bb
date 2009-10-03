@@ -9,11 +9,12 @@
 
 #include "base/atomicops.h"
 #include "base/basictypes.h"
+#include "base/condition_variable.h"
+#include "base/lock.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/port.h"
-#include "chrome/browser/sync/util/compat_pthread.h"
 #include "chrome/browser/sync/util/event_sys.h"
-#include "chrome/browser/sync/util/pthread_helpers.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
 // How to use Channels:
@@ -58,18 +59,20 @@
 // No reason why CallbackWaiters has to be templatized.
 class CallbackWaiters {
  public:
-  CallbackWaiters() : waiter_count_(0), callback_done_(false) {
+  CallbackWaiters() : waiter_count_(0),
+                      callback_done_(false),
+                      condvar_(&mutex_) {
   }
   ~CallbackWaiters() {
     DCHECK_EQ(0, waiter_count_);
   }
-  void WaitForCallbackToComplete(PThreadMutex* listeners_mutex) {
+  void WaitForCallbackToComplete(Lock* listeners_mutex) {
     {
-      PThreadScopedLock<PThreadMutex> lock(&mutex_);
+      AutoLock lock(mutex_);
       waiter_count_ += 1;
-      listeners_mutex->Unlock();
+      listeners_mutex->Release();
       while (!callback_done_)
-        pthread_cond_wait(&condvar_.condvar_, &mutex_.mutex_);
+        condvar_.Wait();
       waiter_count_ -= 1;
       if (0 != waiter_count_)
         return;
@@ -78,16 +81,16 @@ class CallbackWaiters {
   }
 
   void Signal() {
-    PThreadScopedLock<PThreadMutex> lock(&mutex_);
+    AutoLock lock(mutex_);
     callback_done_ = true;
-    pthread_cond_broadcast(&condvar_.condvar_);
+    condvar_.Broadcast();
   }
 
  protected:
   int waiter_count_;
   bool callback_done_;
-  PThreadMutex mutex_;
-  PThreadCondVar condvar_;
+  Lock mutex_;
+  ConditionVariable condvar_;
 };
 
 template <typename EventTraitsType, typename NotifyLock,
@@ -100,7 +103,6 @@ class EventChannel {
 
  protected:
   typedef std::map<Listener*, bool> Listeners;
-  typedef PThreadScopedLock<PThreadMutex> ScopedListenersLock;
 
  public:
   // The shutdown event gets send in the EventChannel's destructor.
@@ -117,7 +119,7 @@ class EventChannel {
     // Make sure all the listeners have been disconnected. Otherwise, they
     // will try to call RemoveListener() at a later date.
 #ifdef DEBUG
-    ScopedListenersLock lock(&listeners_mutex_);
+    AutoLock lock(listeners_mutex_);
     for (typename Listeners::iterator i = listeners_.begin();
          i != listeners_.end(); ++i) {
       DCHECK(i->second) << "Listener not disconnected";
@@ -129,7 +131,7 @@ class EventChannel {
   //
   // Thread safe.
   void AddListener(Listener* listener) {
-    ScopedListenersLock lock(&listeners_mutex_);
+    AutoLock lock(listeners_mutex_);
     typename Listeners::iterator found = listeners_.find(listener);
     if (found == listeners_.end()) {
       listeners_.insert(std::make_pair(listener,
@@ -146,16 +148,15 @@ class EventChannel {
   // Thread safe.
   void RemoveListener(Listener* listener) {
     bool wait = false;
-    listeners_mutex_.Lock();
+    listeners_mutex_.Acquire();
     typename Listeners::iterator found = listeners_.find(listener);
     if (found != listeners_.end()) {
       found->second = true;  // Mark as dead.
       wait = (found->first == current_listener_callback_ &&
-              (!pthread_equal(current_listener_callback_thread_id_,
-                              pthread_self())));
+          (MessageLoop::current() != current_listener_callback_message_loop_));
     }
     if (!wait) {
-      listeners_mutex_.Unlock();
+      listeners_mutex_.Release();
       return;
     }
     if (NULL == callback_waiters_)
@@ -167,10 +168,10 @@ class EventChannel {
   //
   // NOT thread safe.  Must only be called by one thread at a time.
   void NotifyListeners(const EventType& event) {
-    ScopedNotifyLocker lock_notify(&notify_lock_);
-    listeners_mutex_.Lock();
+    ScopedNotifyLocker lock_notify(notify_lock_);
+    listeners_mutex_.Acquire();
     DCHECK(NULL == current_listener_callback_);
-    current_listener_callback_thread_id_ = pthread_self();
+    current_listener_callback_message_loop_ = MessageLoop::current();
     typename Listeners::iterator i = listeners_.begin();
     while (i != listeners_.end()) {
       if (i->second) {  // Clean out dead listeners
@@ -178,11 +179,11 @@ class EventChannel {
         continue;
       }
       current_listener_callback_ = i->first;
-      listeners_mutex_.Unlock();
+      listeners_mutex_.Release();
 
       i->first->HandleEvent(event);
 
-      listeners_mutex_.Lock();
+      listeners_mutex_.Acquire();
       current_listener_callback_ = NULL;
       if (NULL != callback_waiters_) {
         callback_waiters_->Signal();
@@ -191,7 +192,7 @@ class EventChannel {
 
       ++i;
     }
-    listeners_mutex_.Unlock();
+    listeners_mutex_.Release();
   }
 
   // A map iterator remains valid until the element it points to gets removed
@@ -203,12 +204,12 @@ class EventChannel {
   Listener* current_listener_callback_;
   // Only valid when current_listener is not NULL.
   // The thread on which the callback is executing.
-  pthread_t current_listener_callback_thread_id_;
+  MessageLoop* current_listener_callback_message_loop_;
   // Win32 Event that is usually NULL. Only created when another thread calls
   // Remove while in callback. Owned and closed by the thread calling Remove().
   CallbackWaiters* callback_waiters_;
 
-  PThreadMutex listeners_mutex_;  // Protects all members above.
+  Lock listeners_mutex_;  // Protects all members above.
   const EventType shutdown_event_;
   NotifyLock notify_lock_;
 
