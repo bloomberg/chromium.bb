@@ -4,9 +4,9 @@
 
 #include <map>
 
+#include "app/clipboard/clipboard.h"
 #include "app/gfx/canvas.h"
 #include "app/gfx/path.h"
-#include "base/clipboard.h"
 #include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
