@@ -43,11 +43,11 @@ StorageNamespace* StorageNamespace::CreateSessionStorageNamespace(
 
 StorageNamespace::StorageNamespace(DOMStorageContext* dom_storage_context,
                                    WebStorageNamespace* storage_namespace,
-                                   int64 id, DOMStorageType storage_type)
+                                   int64 id, DOMStorageType dom_storage_type)
     : dom_storage_context_(dom_storage_context),
       storage_namespace_(storage_namespace),
       id_(id),
-      storage_type_(storage_type) {
+      dom_storage_type_(dom_storage_type) {
   DCHECK(dom_storage_context_);
   DCHECK(storage_namespace_);
   dom_storage_context_->RegisterStorageNamespace(this);
@@ -83,12 +83,12 @@ StorageArea* StorageNamespace::GetStorageArea(const string16& origin) {
 }
 
 StorageNamespace* StorageNamespace::Copy() {
-  DCHECK(storage_type_ == DOM_STORAGE_SESSION);
+  DCHECK(dom_storage_type_ == DOM_STORAGE_SESSION);
   int64 id = dom_storage_context_->AllocateStorageNamespaceId();
   DCHECK(!dom_storage_context_->GetStorageNamespace(id));
   WebStorageNamespace* new_storage_namespace = storage_namespace_->copy();
   return new StorageNamespace(dom_storage_context_, new_storage_namespace, id,
-                              storage_type_);
+                              dom_storage_type_);
 }
 
 void StorageNamespace::Close() {

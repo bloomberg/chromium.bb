@@ -28,28 +28,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "StorageEventDispatcher.h"
+#ifndef WebStorageEventDispatcher_h
+#define WebStorageEventDispatcher_h
 
-#if ENABLE(DOM_STORAGE)
-
-#include "SecurityOrigin.h"
-#include "StorageArea.h"
-
-#include "WebKit.h"
-#include "WebKitClient.h"
 #include "WebString.h"
 
-namespace WebCore {
+namespace WebKit {
 
-void StorageEventDispatcher::dispatch(const String& key, const String& oldValue,
-                                      const String& newValue, StorageType storageType,
-                                      SecurityOrigin* origin, Frame* sourceFrame)
-{
-    ASSERT(!sourceFrame);  // Sad, but true.
-    WebKit::webKitClient()->dispatchStorageEvent(key, oldValue, newValue, origin->toString(), storageType == LocalStorage);
-}
+    // This is used to dispatch storage events to all pages.
+    // FIXME: Make this (or something) work for SessionStorage!
+    class WebStorageEventDispatcher {
+    public:
+        static WebStorageEventDispatcher* create();
 
-} // namespace WebCore
+        virtual ~WebStorageEventDispatcher() { }
 
-#endif // ENABLE(DOM_STORAGE)
+        // Dispatch the actual event.  Doesn't yet work for SessionStorage.
+        virtual void dispatchStorageEvent(const WebString& key, const WebString& oldValue,
+                                          const WebString& newValue, const WebString& origin,
+                                          bool isLocalStorage) = 0;
+    };
+
+} // namespace WebKit
+
+#endif // WebStorageEventDispatcher_h

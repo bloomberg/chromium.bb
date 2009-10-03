@@ -89,6 +89,11 @@ namespace WebKit {
         // Return a new SessionStorage namespace.
         virtual WebStorageNamespace* createSessionStorageNamespace() = 0;
 
+        // Called when storage events fire.
+        virtual void dispatchStorageEvent(const WebString& key, const WebString& oldValue,
+                                          const WebString& newValue, const WebString& origin,
+                                          bool isLocalStorage) = 0;
+
 
         // File ----------------------------------------------------------------
 
