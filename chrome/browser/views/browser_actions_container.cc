@@ -51,6 +51,8 @@ class BrowserActionImageView : public views::MenuButton,
                          BrowserActionsContainer* panel);
   ~BrowserActionImageView();
 
+  ExtensionActionState* browser_action_state() { return browser_action_state_; }
+
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
@@ -162,6 +164,7 @@ void BrowserActionImageView::OnStateUpdated() {
   SetIcon(*image);
   SetTooltipText(ASCIIToWide(browser_action_state_->title()));
   panel_->OnBrowserActionVisibilityChanged();
+  SchedulePaint();
 }
 
 void BrowserActionImageView::Observe(NotificationType type,
@@ -358,7 +361,7 @@ gfx::Size BrowserActionsContainer::GetPreferredSize() {
 
 void BrowserActionsContainer::Layout() {
   for (size_t i = 0; i < browser_action_views_.size(); ++i) {
-    views::TextButton* view = browser_action_views_[i];
+    BrowserActionImageView* view = browser_action_views_[i];
     int x = kHorizontalPadding + i * kIconSize;
     view->SetBounds(x, kControlVertOffset, kIconSize,
         height() - (2 * kControlVertOffset));
@@ -400,20 +403,18 @@ void BrowserActionsContainer::BubbleLostFocus(BrowserBubble* bubble) {
 void BrowserActionsContainer::PaintChildren(gfx::Canvas* canvas) {
   View::PaintChildren(canvas);
 
-  // TODO(aa): Hook this up to the API to feed the badge color and text
-  // dynamically.
-  std::string text;
   for (size_t i = 0; i < browser_action_views_.size(); ++i) {
-    if (i > 0) {
-      text += IntToString(i);
-      PaintBadge(canvas, browser_action_views_[i],
-                 SkColorSetARGB(255, 218, 0, 24), text);
-    }
+    BrowserActionImageView* view = browser_action_views_[i];
+    const std::string& text = view->browser_action_state()->badge_text();
+    SkColor* color = view->browser_action_state()->badge_background_color();
+
+    if (!text.empty())
+      PaintBadge(canvas, browser_action_views_[i], *color, text);
   }
 }
 
 void BrowserActionsContainer::PaintBadge(gfx::Canvas* canvas, 
-                                         views::TextButton* view,
+                                         BrowserActionImageView* view,
                                          const SkColor& badge_color,
                                          const std::string& text) {
   const int kTextSize = 8;

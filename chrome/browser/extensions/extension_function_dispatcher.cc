@@ -130,6 +130,10 @@ void FactoryRegistry::ResetFunctions() {
       &NewExtensionFunction<BrowserActionSetNameFunction>;
   factories_[browser_actions::kSetIconFunction] =
       &NewExtensionFunction<BrowserActionSetIconFunction>;
+  factories_[browser_actions::kSetBadgeTextFunction] =
+      &NewExtensionFunction<BrowserActionSetBadgeTextFunction>;
+  factories_[browser_actions::kSetBadgeBackgroundColorFunction] =
+      &NewExtensionFunction<BrowserActionSetBadgeBackgroundColorFunction>;
 
   // Bookmarks.
   factories_[bookmarks::kGetBookmarksFunction] =

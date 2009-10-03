@@ -18,10 +18,6 @@ class ExtensionAction;
 class ExtensionPopup;
 class Profile;
 class ToolbarView;
-namespace views {
-class MenuButton;
-class TextButton;
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -75,12 +71,12 @@ class BrowserActionsContainer : public views::View,
   virtual void PaintChildren(gfx::Canvas* canvas);
 
   // Paints an individual badge.
-  virtual void PaintBadge(gfx::Canvas* canvas, views::TextButton* button,
+  virtual void PaintBadge(gfx::Canvas* canvas, BrowserActionImageView* button,
                           const SkColor& badge_color,
                           const std::string& text);
 
   // The vector of browser actions (icons/image buttons for each action).
-  std::vector<views::MenuButton*> browser_action_views_;
+  std::vector<BrowserActionImageView*> browser_action_views_;
 
   NotificationRegistrar registrar_;
 

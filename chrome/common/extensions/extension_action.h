@@ -10,7 +10,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 class ExtensionAction {
  public:
@@ -85,11 +87,24 @@ typedef std::map<std::string, ExtensionAction*> ExtensionActionMap;
 class ExtensionActionState {
  public:
   ExtensionActionState(std::string title, int icon_index)
-    : title_(title), icon_index_(icon_index) {
+    : title_(title), icon_index_(icon_index),
+      badge_background_color_(new SkColor(SkColorSetARGB(255, 218, 0, 24))) {
   }
 
-  std::string title() const { return title_; }
+  const std::string& title() const { return title_; }
   void set_title(const std::string& title) { title_ = title; }
+
+  const std::string& badge_text() const { return badge_text_; }
+  void set_badge_text(const std::string& badge_text) {
+    badge_text_ = badge_text;
+  }
+
+  SkColor* badge_background_color() const {
+    return badge_background_color_.get();
+  }
+  void set_badge_background_color(const SkColor& badge_background_color) {
+    badge_background_color_.reset(new SkColor(badge_background_color));
+  }
 
   int icon_index() const { return icon_index_; }
   void set_icon_index(int icon_index) { icon_index_ = icon_index; }
@@ -100,6 +115,12 @@ class ExtensionActionState {
 
   // The icon to use.
   int icon_index_;
+
+  // The badge text.
+  std::string badge_text_;
+
+  // The background color for the badge.
+  scoped_ptr<SkColor> badge_background_color_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionState);
 };

@@ -809,7 +809,7 @@
       {
         "name": "setName",
         "type": "function",
-        "description": "Sets the extension's browser action name.",
+        "description": "Sets the text for the browser action. Shows up in the tooltip if the browser action is visible, and in the menu item.",
         "parameters": [
           {"type": "string", "name": "name", "description": "The string the browser action should display when moused over.", optional: false}
         ]
@@ -817,9 +817,36 @@
       {
         "name": "setIcon",
         "type": "function",
-        "description": "Sets icon",
+        "description": "Sets the icon for the browser action. Can be up to about 22px square.",
         "parameters": [
           {"type": "integer", "name": "iconId", "minimum": 0, "optional": true, "description": "A zero-based index into the |icons| vector specified in the manifest. This id is useful to represent different browser action states.  Example: A GMail checker could have a 'new email' icon and a 'no unread email' icon."}
+        ]
+      },
+      {
+        "name": "setBadgeText",
+        "type": "function",
+        "description": "Sets the badge text for the browser action. This is printed on top of the icon.",
+        "parameters": [
+          {"type": "string", "name": "text", "description": "Any number of characters can be passed, but only about four can fit in the space."}
+        ]
+      },
+      {
+        "name": "setBadgeBackgroundColor",
+        "type": "function",
+        "description": "Sets the background color for the badge.",
+        "parameters": [
+          {
+            "type": "array",
+            "name": "color",
+            "description": "An array of four integers in the range [0,255] that make up the ARGB color for the bakground of the badge.",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "minItems": 4,
+            "maxItems": 4
+          }
         ]
       }
     ],

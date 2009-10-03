@@ -15,11 +15,22 @@ class BrowserActionSetIconFunction : public SyncExtensionFunction {
   virtual bool RunImpl();
 };
 
+class BrowserActionSetBadgeTextFunction : public SyncExtensionFunction {
+  virtual bool RunImpl();
+};
+
+class BrowserActionSetBadgeBackgroundColorFunction
+    : public SyncExtensionFunction {
+  virtual bool RunImpl();
+};
+
 namespace extension_browser_actions_api_constants {
 
 // Function names.
 extern const char kSetNameFunction[];
 extern const char kSetIconFunction[];
+extern const char kSetBadgeTextFunction[];
+extern const char kSetBadgeBackgroundColorFunction[];
 
 };  // namespace extension_browser_actions_api_constants
 
