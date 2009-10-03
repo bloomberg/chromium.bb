@@ -20,6 +20,7 @@ class Profile;
 class ToolbarView;
 namespace views {
 class MenuButton;
+class TextButton;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -66,8 +67,17 @@ class BrowserActionsContainer : public views::View,
   virtual void BubbleLostFocus(BrowserBubble* bubble);
 
  private:
+
   // Hide the current popup.
   void HidePopup();
+
+  // We override PaintChildren so that we can paint the badges on top of them.
+  virtual void PaintChildren(gfx::Canvas* canvas);
+
+  // Paints an individual badge.
+  virtual void PaintBadge(gfx::Canvas* canvas, views::TextButton* button,
+                          const SkColor& badge_color,
+                          const std::string& text);
 
   // The vector of browser actions (icons/image buttons for each action).
   std::vector<views::MenuButton*> browser_action_views_;
