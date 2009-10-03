@@ -153,7 +153,7 @@ void BlockedPopupContainerViewGtk::ExecuteCommand(int id) {
 
   // |id| shouldn't be == kImpossibleNumberOfPopups since the popups end before
   // this and the hosts start after it.  (If it is used, it is as a separator.)
-  DCHECK_NE(id_size_t, BlockedPopupContainer::kImpossibleNumberOfPopups);
+  //DCHECK_NE(id_size_t, BlockedPopupContainer::kImpossibleNumberOfPopups);
   id_size_t -= BlockedPopupContainer::kImpossibleNumberOfPopups + 1;
 
   // Is this a click on a host?
