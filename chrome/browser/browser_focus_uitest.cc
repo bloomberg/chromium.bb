@@ -397,8 +397,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BackgroundBrowserDontStealFocus) {
   browser2->tabstrip_model()->delegate()->AddBlankTab(true);
   browser2->window()->Show();
 
-  Browser* focused_browser;
-  Browser* unfocused_browser;
+  Browser* focused_browser = NULL;
+  Browser* unfocused_browser = NULL;
 #if defined(OS_LINUX)
   // On Linux, calling Activate() is not guaranteed to move focus, so we have
   // to figure out which browser does have focus.
