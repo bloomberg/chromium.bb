@@ -28,8 +28,7 @@ SlideAnimatorGtk::SlideAnimatorGtk(GtkWidget* child,
                                    Delegate* delegate)
     : child_(child),
       direction_(direction),
-      delegate_(delegate),
-      fixed_needs_resize_(false) {
+      delegate_(delegate) {
   widget_.Own(gtk_fixed_new());
   gtk_fixed_put(GTK_FIXED(widget_.get()), child, 0, 0);
   gtk_widget_set_size_request(widget_.get(), -1, 0);
@@ -71,16 +70,7 @@ void SlideAnimatorGtk::Open() {
 void SlideAnimatorGtk::OpenWithoutAnimation() {
   animation_->Reset(1.0);
   Open();
-
-  // This checks to see if |child_| has been allocated yet. If it has been
-  // allocated already, we can go ahead and reposition everything by calling
-  // AnimationProgressed(). If it has not been allocated, we have to delay
-  // this call until it has been allocated (see OnChildSizeAllocate).
-  if (child_->allocation.x != -1) {
-    AnimationProgressed(animation_.get());
-  } else {
-    fixed_needs_resize_ = true;
-  }
+  AnimationProgressed(animation_.get());
 }
 
 void SlideAnimatorGtk::Close() {
@@ -111,7 +101,10 @@ bool SlideAnimatorGtk::IsAnimating() {
 }
 
 void SlideAnimatorGtk::AnimationProgressed(const Animation* animation) {
-  int showing_height = static_cast<int>(child_->allocation.height *
+  GtkRequisition req;
+  gtk_widget_size_request(child_, &req);
+
+  int showing_height = static_cast<int>(req.height *
                                         animation_->GetCurrentValue());
   if (direction_ == DOWN) {
     gtk_fixed_move(GTK_FIXED(widget_.get()), child_, 0,
@@ -135,10 +128,5 @@ void SlideAnimatorGtk::OnChildSizeAllocate(GtkWidget* child,
   if (slider->child_needs_move_) {
     gtk_fixed_move(GTK_FIXED(slider->widget()), child, 0, -allocation->height);
     slider->child_needs_move_ = false;
-  }
-
-  if (slider->fixed_needs_resize_) {
-    slider->AnimationProgressed(slider->animation_.get());
-    slider->fixed_needs_resize_ = false;
   }
 }
