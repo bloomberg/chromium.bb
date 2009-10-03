@@ -1,3 +1,5 @@
+NULL:=#
+
 AM_CPPFLAGS = \
 	-I $(top_srcdir)/shared-core \
 	-I $(top_srcdir)/libdrm
@@ -8,9 +10,10 @@ noinst_PROGRAMS = \
 	dristat \
 	drmstat
 
-SUBDIRS = \
-	modeprint \
-	modetest
+SUBDIRS =
+
+if HAVE_INTEL
+endif
 
 if HAVE_LIBUDEV
 
@@ -37,14 +40,24 @@ TESTS =						\
 	getstats				\
 	setversion				\
 	updatedraw				\
+	$(NULL)
+
+if HAVE_INTEL
+SUBDIRS += \
+	modeprint				\
+	modetest				\
+	$(NULL)
+
+TESTS +=					\
 	gem_basic				\
 	gem_flink				\
 	gem_readwrite				\
-	gem_mmap
+	gem_mmap				\
+	$(NULL)
+endif
 
 EXTRA_PROGRAMS = $(TESTS)
 
 endif
 
 CLEANFILES = $(EXTRA_PROGRAMS) $(EXTRA_LTLIBRARIES)
-
