@@ -161,7 +161,8 @@ TEST_F(WorkerTest, MessagePorts) {
     "message-channel-gc-4.html",
     "message-port.html",
     "message-port-clone.html",
-    "message-port-constructor-for-deleted-document.html",
+    // http://code.google.com/p/chromium/issues/detail?id=23709
+    // "message-port-constructor-for-deleted-document.html",
     "message-port-deleted-document.html",
     "message-port-deleted-frame.html",
     // http://crbug.com/23597 (caused by http://trac.webkit.org/changeset/48978)
