@@ -9,24 +9,38 @@
 
 #include "base/basictypes.h"
 #include "base/gfx/native_widget_types.h"
-#include "base/message_loop.h"
+#include "views/controls/label.h"
 #include "views/window/dialog_delegate.h"
 
-class MessageBoxView;
+// An interface the confirm dialog uses to notify its clients (observers) when
+// the user makes a decision to confirm or cancel.  Only one method will be
+// invoked per use (i.e per invocation of ConfirmMessageBoxDialog::Run).
+class ConfirmMessageBoxObserver {
+ public:
+  // The user explicitly confirmed by clicking "OK".
+  virtual void OnConfirmMessageAccept() = 0;
+  // The user chose not to confirm either by clicking "Cancel" or by closing
+  // the dialog.
+  virtual void OnConfirmMessageCancel() {}
+};
 
 class ConfirmMessageBoxDialog : public views::DialogDelegate,
-                                public MessageLoopForUI::Dispatcher {
+                                public views::View {
  public:
-  // The method blocks while the dialog is showing, and returns the the value
-  // of the user choice, if the user click in Yes button it returns true,
-  // otherwise false
-  static bool Run(gfx::NativeWindow parent,
+  // The method presents a modal confirmation dialog to the user with the title
+  // |window_title| and message |message_text|. |observer| will be notified
+  // when the user makes a decision or closes the dialog. Note that this class
+  // guarantees it will call one of the observer's methods, so it is the
+  // caller's responsibility to ensure |observer| lives until one of the
+  // methods is invoked; it can be deleted thereafter from this class' point
+  // of view. |parent| specifies where to insert the view into the hierarchy
+  // and effectively assumes ownership of the dialog.
+  static void Run(gfx::NativeWindow parent,
+                  ConfirmMessageBoxObserver* observer,
                   const std::wstring& message_text,
                   const std::wstring& window_title);
 
-  virtual ~ConfirmMessageBoxDialog();
-
-  bool accepted() const { return accepted_; }
+  virtual ~ConfirmMessageBoxDialog() {}
 
   // views::DialogDelegate implementation.
   virtual int GetDialogButtons() const;
@@ -38,31 +52,25 @@ class ConfirmMessageBoxDialog : public views::DialogDelegate,
 
   // views::WindowDelegate  implementation.
   virtual bool IsModal() const { return true; }
-  virtual views::View* GetContentsView();
-  virtual void DeleteDelegate();
+  virtual views::View* GetContentsView() { return this; }
 
-  // MessageLoop::Dispatcher implementation.
-  virtual bool Dispatch(const MSG& msg);
+  // views::View implementation.
+  virtual void Layout();
+  virtual gfx::Size GetPreferredSize();
 
  private:
-  ConfirmMessageBoxDialog(gfx::NativeWindow parent,
+  ConfirmMessageBoxDialog(ConfirmMessageBoxObserver* observer,
                           const std::wstring& message_text,
                           const std::wstring& window_title);
 
   // The message which will be shown to user.
-  std::wstring message_text_;
+  views::Label* message_label_;
 
   // This is the Title bar text.
   std::wstring window_title_;
 
-  MessageBoxView* message_box_view_;
-
-  // Returns true if the user clicks in Yes button, otherwise false
-  bool accepted_;
-
-  // Used to keep track of whether or not to block the message loop (still
-  // waiting for the user to dismiss the dialog).
-  bool is_blocking_;
+  // The observer to notify of acceptance or cancellation.
+  ConfirmMessageBoxObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfirmMessageBoxDialog);
 };

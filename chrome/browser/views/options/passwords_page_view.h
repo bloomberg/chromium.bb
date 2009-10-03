@@ -11,8 +11,9 @@
 #include "app/table_model.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
-#include "chrome/browser/views/options/options_page_view.h"
 #include "chrome/browser/password_manager/password_store.h"
+#include "chrome/browser/views/confirm_message_box_dialog.h"
+#include "chrome/browser/views/options/options_page_view.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/controls/table/table_view.h"
@@ -145,7 +146,8 @@ class PasswordsTableModel : public TableModel,
 class PasswordsPageView : public OptionsPageView,
                           public views::TableViewObserver,
                           public views::ButtonListener,
-                          public PasswordsTableModelObserver {
+                          public PasswordsTableModelObserver,
+                          public ConfirmMessageBoxObserver {
  public:
   explicit PasswordsPageView(Profile* profile);
 
@@ -157,6 +159,9 @@ class PasswordsPageView : public OptionsPageView,
 
   // PasswordsTableModelObserver implementation.
   virtual void OnRowCountChanged(size_t rows);
+
+  // ConfirmMessageBoxObserver implementation.
+  virtual void OnConfirmMessageAccept();
 
  protected:
   virtual void InitControlLayout();

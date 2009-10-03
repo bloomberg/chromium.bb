@@ -6,39 +6,45 @@
 
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
-#include "base/message_loop.h"
 #include "grit/generated_resources.h"
-#include "views/controls/message_box_view.h"
+#include "grit/locale_settings.h"
+#include "views/standard_layout.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 
 // static
-bool ConfirmMessageBoxDialog::Run(gfx::NativeWindow parent,
+void ConfirmMessageBoxDialog::Run(gfx::NativeWindow parent,
+                                  ConfirmMessageBoxObserver* observer,
                                   const std::wstring& message_text,
                                   const std::wstring& window_title) {
-  ConfirmMessageBoxDialog* dialog = new ConfirmMessageBoxDialog(parent,
-    message_text, window_title);
-  MessageLoopForUI::current()->Run(dialog);
-  return dialog->accepted();
+  DCHECK(observer);
+  ConfirmMessageBoxDialog* dialog = new ConfirmMessageBoxDialog(observer,
+      message_text, window_title);
+  views::Window* window = views::Window::CreateChromeWindow(
+      parent, gfx::Rect(), dialog);
+  window->Show();
 }
 
-ConfirmMessageBoxDialog::ConfirmMessageBoxDialog(gfx::NativeWindow parent,
-    const std::wstring& message_text,
+ConfirmMessageBoxDialog::ConfirmMessageBoxDialog(
+    ConfirmMessageBoxObserver* observer, const std::wstring& message_text,
     const std::wstring& window_title)
-    : message_text_(message_text),
-      window_title_(window_title),
-      accepted_(false),
-      is_blocking_(true) {
-  message_box_view_ = new MessageBoxView(MessageBoxFlags::kIsConfirmMessageBox,
-                                         message_text_, window_title_);
-  views::Window::CreateChromeWindow(parent, gfx::Rect(), this)->Show();
-}
-
-ConfirmMessageBoxDialog::~ConfirmMessageBoxDialog() {
-}
-
-void ConfirmMessageBoxDialog::DeleteDelegate() {
-  delete this;
+    : observer_(observer),
+      window_title_(window_title) {
+  message_label_ = new views::Label(message_text);
+  message_label_->SetMultiLine(true);
+  l10n_util::TextDirection direction =
+      l10n_util::GetFirstStrongCharacterDirection(message_label_->GetText());
+  views::Label::Alignment alignment;
+  if (direction == l10n_util::RIGHT_TO_LEFT)
+    alignment = views::Label::ALIGN_RIGHT;
+  else
+    alignment = views::Label::ALIGN_LEFT;
+  // In addition, we should set the RTL alignment mode as
+  // AUTO_DETECT_ALIGNMENT so that the alignment will not be flipped around
+  // in RTL locales.
+  message_label_->SetRTLAlignmentMode(views::Label::AUTO_DETECT_ALIGNMENT);
+  message_label_->SetHorizontalAlignment(alignment);
+  AddChildView(message_label_);
 }
 
 int ConfirmMessageBoxDialog::GetDialogButtons() const {
@@ -60,24 +66,25 @@ std::wstring ConfirmMessageBoxDialog::GetDialogButtonLabel(
   return DialogDelegate::GetDialogButtonLabel(button);
 }
 
-views::View* ConfirmMessageBoxDialog::GetContentsView() {
-  return message_box_view_;
-}
-
 bool ConfirmMessageBoxDialog::Accept() {
-  is_blocking_ = false;
-  accepted_ = true;
-  return true;
+  observer_->OnConfirmMessageAccept();
+  return true;  // Dialog may now be closed.
 }
 
 bool ConfirmMessageBoxDialog::Cancel() {
-  is_blocking_ = false;
-  accepted_ = false;
-  return true;
+  observer_->OnConfirmMessageCancel();
+  return true;  // Dialog may now be closed.
 }
 
-bool ConfirmMessageBoxDialog::Dispatch(const MSG& msg) {
-  TranslateMessage(&msg);
-  DispatchMessage(&msg);
-  return is_blocking_;
+void ConfirmMessageBoxDialog::Layout() {
+  gfx::Size sz = message_label_->GetPreferredSize();
+  message_label_->SetBounds(kPanelHorizMargin, kPanelVertMargin,
+                            width() - 2 * kPanelHorizMargin,
+                            sz.height());
+}
+
+gfx::Size ConfirmMessageBoxDialog::GetPreferredSize() {
+  return gfx::Size(views::Window::GetLocalizedContentsSize(
+      IDS_CONFIRM_MESSAGE_BOX_DEFAULT_WIDTH_CHARS,
+      IDS_CONFIRM_MESSAGE_BOX_DEFAULT_HEIGHT_LINES));
 }

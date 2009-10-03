@@ -659,6 +659,13 @@
       <message name="IDS_SYNC_SETUP_WIZARD_HEIGHT_LINES" use_name_for_id="true">
         25
       </message>
+
+      <message name="IDS_CONFIRM_MESSAGE_BOX_DEFAULT_WIDTH_CHARS" use_name_for_id="true">
+        50
+      </message>
+      <message name="IDS_CONFIRM_MESSAGE_BOX_DEFAULT_HEIGHT_LINES" use_name_for_id="true">
+        5
+      </message>
       
     </messages>
   </release>

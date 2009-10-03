@@ -8,7 +8,6 @@
 #include "base/string_util.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/views/confirm_message_box_dialog.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "grit/generated_resources.h"
@@ -215,16 +214,12 @@ void PasswordsPageView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   // Close will result in our destruction.
   if (sender == &remove_all_button_) {
-    bool accepted = ConfirmMessageBoxDialog::Run(
+    ConfirmMessageBoxDialog::Run(
         GetWindow()->GetNativeWindow(),
+        this,
         l10n_util::GetString(IDS_PASSWORDS_PAGE_VIEW_TEXT_DELETE_ALL_PASSWORDS),
         l10n_util::GetString(
             IDS_PASSWORDS_PAGE_VIEW_CAPTION_DELETE_ALL_PASSWORDS));
-
-    if (accepted) {
-      // Delete all the Passwords shown.
-      table_model_.ForgetAndRemoveAllSignons();
-    }
     return;
   }
 
@@ -254,6 +249,10 @@ void PasswordsPageView::ButtonPressed(
 
 void PasswordsPageView::OnRowCountChanged(size_t rows) {
   remove_all_button_.SetEnabled(rows > 0);
+}
+
+void PasswordsPageView::OnConfirmMessageAccept() {
+  table_model_.ForgetAndRemoveAllSignons();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
