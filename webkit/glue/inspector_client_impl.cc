@@ -157,8 +157,8 @@ void InspectorClientImpl::LoadSettings() {
     return;
 
   settings_.set(new SettingsMap);
-  String data = webkit_glue::StdWStringToString(
-      inspected_web_view_->GetInspectorSettings());
+  String data = webkit_glue::WebStringToString(
+      inspected_web_view_->inspectorSettings());
   if (data.isEmpty())
     return;
 
@@ -232,6 +232,8 @@ void InspectorClientImpl::SaveSettings() {
     data.append(entry);
     data.append("\n");
   }
-  inspected_web_view_->delegate()->UpdateInspectorSettings(
-      webkit_glue::StringToStdWString(data));
+  inspected_web_view_->setInspectorSettings(
+      webkit_glue::StringToWebString(data));
+  if (inspected_web_view_->client())
+    inspected_web_view_->client()->didUpdateInspectorSettings();
 }

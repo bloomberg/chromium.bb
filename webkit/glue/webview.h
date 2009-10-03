@@ -69,10 +69,6 @@ class WebView : public WebKit::WebView {
   // using it, it will be NULL during closing of the view.
   virtual WebViewDelegate* GetDelegate() = 0;
 
-  // Settings used by inspector.
-  virtual const std::wstring& GetInspectorSettings() const = 0;
-  virtual void SetInspectorSettings(const std::wstring& settings) = 0;
-
   // Notifies the webview that autofill suggestions are available for a node.
   virtual void AutofillSuggestionsForNode(
       int64 node_id,
@@ -84,9 +80,6 @@ class WebView : public WebKit::WebView {
 
   // Returns development tools agent instance belonging to this view.
   virtual WebDevToolsAgent* GetWebDevToolsAgent() = 0;
-
-  virtual void SetSpellingPanelVisibility(bool is_visible) = 0;
-  virtual bool GetSpellingPanelVisibility() = 0;
 
   // Performs an action from a context menu for the node at the given
   // location.

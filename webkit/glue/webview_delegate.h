@@ -70,24 +70,6 @@ class WebViewDelegate : public WebKit::WebViewClient {
  public:
   // WebView additions -------------------------------------------------------
 
-  // Notifies how many matches have been found so far, for a given request_id.
-  // |final_update| specifies whether this is the last update (all frames have
-  // completed scoping).
-  virtual void ReportFindInPageMatchCount(int count, int request_id,
-                                          bool final_update) {
-  }
-
-  // Notifies the browser what tick-mark rect is currently selected. Parameter
-  // |request_id| lets the recipient know which request this message belongs to,
-  // so that it can choose to ignore the message if it has moved on to other
-  // things. |selection_rect| is expected to have coordinates relative to the
-  // top left corner of the web page area and represent where on the screen the
-  // selection rect is currently located.
-  virtual void ReportFindInPageSelection(int request_id,
-                                         int active_match_ordinal,
-                                         const WebKit::WebRect& selection) {
-  }
-
   // Returns whether this WebView was opened by a user gesture.
   virtual bool WasOpenedByUserGesture() const {
     return true;
@@ -183,9 +165,6 @@ class WebViewDelegate : public WebKit::WebViewClient {
                                const std::string& frame_charset) {
   }
 
-  // InspectorClient ---------------------------------------------------------
-
-  virtual void UpdateInspectorSettings(const std::wstring& raw_settings) { }
 
   // DevTools ----------------------------------------------------------------
 

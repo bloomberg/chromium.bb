@@ -434,7 +434,7 @@ class RenderViewHostDelegate {
                                const ThumbnailScore& score) {}
 
   // Inspector settings were changes and should be persisted.
-  virtual void UpdateInspectorSettings(const std::wstring& raw_settings) {}
+  virtual void UpdateInspectorSettings(const std::string& raw_settings) {}
 
   // The page is trying to close the RenderView's representation in the client.
   virtual void Close(RenderViewHost* render_view_host) {}

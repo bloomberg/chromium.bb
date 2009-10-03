@@ -144,6 +144,9 @@ namespace WebKit {
         // Show or hide the spelling UI.
         virtual void showSpellingUI(bool show) = 0;
 
+        // Returns true if the spelling UI is showing.
+        virtual bool isShowingSpellingUI() = 0;
+
         // Update the spelling UI with the given word.
         virtual void updateSpellingUIWithMisspelledWord(const WebString& word) = 0;
 
@@ -215,7 +218,7 @@ namespace WebKit {
         virtual void focusPrevious() = 0;
 
 
-        // Session History -----------------------------------------------------
+        // Session history -----------------------------------------------------
 
         // Tells the embedder to navigate back or forward in session history by
         // the given offset (relative to the current position in session
@@ -229,6 +232,13 @@ namespace WebKit {
 
         // Called to notify the embedder when a new history item is added.
         virtual void didAddHistoryItem() = 0;
+
+
+        // Developer tools -----------------------------------------------------
+
+        // Called to notify the client that the inspector's settings were
+        // changed and should be saved.  See WebView::inspectorSettings.
+        virtual void didUpdateInspectorSettings() = 0;
 
 
         // FIXME need to something for:

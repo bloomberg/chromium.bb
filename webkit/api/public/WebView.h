@@ -188,12 +188,13 @@ namespace WebKit {
         // point.
         virtual void inspectElementAt(const WebPoint&) = 0;
 
+        // Settings used by the inspector.
+        virtual WebString inspectorSettings() const = 0;
+        virtual void setInspectorSettings(const WebString&) = 0;
+
 
         // FIXME what about:
-        // StoreFocusForFrame
-        // DownloadImage
-        // Get/SetDelegate
-        // InsertText -> should move to WebTextInput
+        // GetDelegate
         // AutofillSuggestionsForNode
         // HideAutofillPopup
 

@@ -539,7 +539,7 @@ class RenderViewHost : public RenderWidgetHost,
                              int32 line_no,
                              const std::wstring& source_id);
 
-  void OnUpdateInspectorSettings(const std::wstring& raw_settings);
+  void OnUpdateInspectorSettings(const std::string& raw_settings);
   void OnForwardToDevToolsAgent(const IPC::Message& message);
   void OnForwardToDevToolsClient(const IPC::Message& message);
   void OnActivateDevToolsWindow();

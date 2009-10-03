@@ -166,6 +166,7 @@ class PrintWebViewHelper : public WebViewDelegate {
   virtual WebKit::WebString autoCorrectWord(
       const WebKit::WebString& misspelled_word);
   virtual void showSpellingUI(bool show) {}
+  virtual bool isShowingSpellingUI() { return false; }
   virtual void updateSpellingUIWithMisspelledWord(
       const WebKit::WebString& word) {}
   virtual void runModalAlertDialog(
@@ -196,6 +197,7 @@ class PrintWebViewHelper : public WebViewDelegate {
   virtual int historyBackListCount() { return 0; }
   virtual int historyForwardListCount() { return 0; }
   virtual void didAddHistoryItem() {}
+  virtual void didUpdateInspectorSettings() {}
 
   // WebKit::WebWidgetClient
   virtual void didInvalidateRect(const WebKit::WebRect&) {}

@@ -35,7 +35,7 @@ struct WebPreferences {
   bool plugins_enabled;
   bool dom_paste_enabled;
   bool developer_extras_enabled;
-  std::wstring inspector_settings;
+  std::string inspector_settings;
   bool shrinks_standalone_images_to_fit;
   bool uses_universal_detector;
   bool text_areas_are_resizable;
@@ -81,7 +81,6 @@ struct WebPreferences {
         plugins_enabled(true),
         dom_paste_enabled(false),  // enables execCommand("paste")
         developer_extras_enabled(false),  // Requires extra work by embedder
-        inspector_settings(L""),
         shrinks_standalone_images_to_fit(true),
         uses_universal_detector(false),  // Disabled: page cycler regression
         text_areas_are_resizable(true),

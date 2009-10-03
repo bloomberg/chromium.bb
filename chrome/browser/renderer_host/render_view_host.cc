@@ -990,7 +990,7 @@ void RenderViewHost::OnMsgThumbnail(const GURL& url,
 }
 
 void RenderViewHost::OnUpdateInspectorSettings(
-    const std::wstring& raw_settings) {
+    const std::string& raw_settings) {
   delegate_->UpdateInspectorSettings(raw_settings);
 }
 

@@ -192,13 +192,7 @@ class RenderView : public RenderWidget,
                                int edit_flags,
                                const std::string& security_info,
                                const std::string& frame_charset);
-  virtual void UpdateInspectorSettings(const std::wstring& raw_settings);
   virtual WebDevToolsAgentDelegate* GetWebDevToolsAgentDelegate();
-  virtual void ReportFindInPageMatchCount(int count, int request_id,
-                                          bool final_update);
-  virtual void ReportFindInPageSelection(int request_id,
-                                         int active_match_ordinal,
-                                         const WebKit::WebRect& selection);
   virtual bool WasOpenedByUserGesture() const;
   virtual void FocusAccessibilityObject(WebCore::AccessibilityObject* acc_obj);
   virtual void UserMetricsRecordAction(const std::wstring& action);
@@ -246,6 +240,7 @@ class RenderView : public RenderWidget,
   virtual WebKit::WebString autoCorrectWord(
       const WebKit::WebString& misspelled_word);
   virtual void showSpellingUI(bool show);
+  virtual bool isShowingSpellingUI();
   virtual void updateSpellingUIWithMisspelledWord(
       const WebKit::WebString& word);
   virtual void runModalAlertDialog(
@@ -271,6 +266,7 @@ class RenderView : public RenderWidget,
   virtual int historyBackListCount();
   virtual int historyForwardListCount();
   virtual void didAddHistoryItem();
+  virtual void didUpdateInspectorSettings();
 
   // WebKit::WebWidgetClient
   // Most methods are handled by RenderWidget.
@@ -349,6 +345,10 @@ class RenderView : public RenderWidget,
   virtual void didExhaustMemoryAvailableForScript(WebKit::WebFrame* frame);
   virtual void didChangeContentsSize(
       WebKit::WebFrame* frame, const WebKit::WebSize& size);
+  virtual void reportFindInPageMatchCount(
+      int request_id, int count, bool final_update);
+  virtual void reportFindInPageSelection(
+      int request_id, int active_match_ordinal, const WebKit::WebRect& sel);
 
   // webkit_glue::WebPluginPageDelegate
   virtual webkit_glue::WebPluginDelegate* CreatePluginDelegate(
@@ -877,6 +877,9 @@ class RenderView : public RenderWidget,
   // this RenderView, that it is going to be blocked until we get a message
   // from the Browser process telling us otherwise.
   bool popup_notification_visible_;
+
+  // True if the browser is showing the spelling panel for us.
+  bool spelling_panel_visible_;
 
   // Time in seconds of the delay between syncing page state such as form
   // elements and scroll position. This timeout allows us to avoid spamming the

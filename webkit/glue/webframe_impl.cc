@@ -1434,23 +1434,19 @@ void WebFrameImpl::increaseMatchCount(int count, int request_id) {
   total_matchcount_ += count;
 
   // Update the UI with the latest findings.
-  WebViewDelegate* webview_delegate = GetWebViewImpl()->delegate();
-  DCHECK(webview_delegate);
-  if (webview_delegate)
-    webview_delegate->ReportFindInPageMatchCount(total_matchcount_, request_id,
-                                                 frames_scoping_count_ == 0);
+  if (client_) {
+    client_->reportFindInPageMatchCount(
+        request_id, total_matchcount_, frames_scoping_count_ == 0);
+  }
 }
 
 void WebFrameImpl::ReportFindInPageSelection(const WebRect& selection_rect,
                                              int active_match_ordinal,
                                              int request_id) {
   // Update the UI with the latest selection rect.
-  WebViewDelegate* webview_delegate = GetWebViewImpl()->delegate();
-  DCHECK(webview_delegate);
-  if (webview_delegate) {
-    webview_delegate->ReportFindInPageSelection(
-        request_id,
-        OrdinalOfFirstMatchForFrame(this) + active_match_ordinal,
+  if (client_) {
+    client_->reportFindInPageSelection(
+        request_id, OrdinalOfFirstMatchForFrame(this) + active_match_ordinal,
         selection_rect);
   }
 }

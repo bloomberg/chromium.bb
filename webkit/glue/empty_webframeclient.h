@@ -86,6 +86,10 @@ class EmptyWebFrameClient : public WebKit::WebFrameClient {
   virtual void didExhaustMemoryAvailableForScript(WebKit::WebFrame* frame) {}
   virtual void didChangeContentsSize(
       WebKit::WebFrame* frame, const WebKit::WebSize& size) {}
+  virtual void reportFindInPageMatchCount(
+      int identifier, int count, bool final_update) {}
+  virtual void reportFindInPageSelection(
+      int identifier, int ordinal, const WebKit::WebRect& selection) {}
 };
 
 }  // namespace webkit_glue

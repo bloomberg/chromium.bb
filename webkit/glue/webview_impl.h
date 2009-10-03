@@ -16,6 +16,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "webkit/api/public/WebPoint.h"
 #include "webkit/api/public/WebSize.h"
+#include "webkit/api/public/WebString.h"
 #include "webkit/api/src/NotificationPresenterImpl.h"
 #include "webkit/glue/back_forward_list_client_impl.h"
 #include "webkit/glue/chrome_client_impl.h"
@@ -130,11 +131,11 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual int dragIdentity();
   virtual bool setDropEffect(bool accept);
   virtual void inspectElementAt(const WebKit::WebPoint& point);
+  virtual WebKit::WebString inspectorSettings() const;
+  virtual void setInspectorSettings(const WebKit::WebString& settings);
 
   // WebView methods:
   virtual WebViewDelegate* GetDelegate();
-  virtual const std::wstring& GetInspectorSettings() const;
-  virtual void SetInspectorSettings(const std::wstring& settings);
   virtual void AutofillSuggestionsForNode(
       int64 node_id,
       const std::vector<std::wstring>& suggestions,
@@ -248,9 +249,6 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   // Converts |x|, |y| from window coordinates to contents coordinates and gets
   // the underlying Node for them.
   WebCore::Node* GetNodeForWindowPos(int x, int y);
-
-  virtual void SetSpellingPanelVisibility(bool is_visible);
-  virtual bool GetSpellingPanelVisibility();
 
 #if ENABLE(NOTIFICATIONS)
   // Returns the provider of desktop notifications.
@@ -397,14 +395,11 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   // Whether the webview is rendering transparently.
   bool is_transparent_;
 
-  // Whether the spelling panel is currently being displayed or not.
-  bool spelling_panel_is_visible_;
-
   // Whether the user can press tab to focus links.
   bool tabs_to_links_;
 
   // Inspector settings.
-  std::wstring inspector_settings_;
+  WebKit::WebString inspector_settings_;
 
 #if ENABLE(NOTIFICATIONS)
   // The provider of desktop notifications;

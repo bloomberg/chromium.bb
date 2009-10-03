@@ -123,6 +123,7 @@ class TestWebViewDelegate : public WebViewDelegate,
   virtual WebKit::WebString autoCorrectWord(
       const WebKit::WebString& misspelled_word);
   virtual void showSpellingUI(bool show) {}
+  virtual bool isShowingSpellingUI() { return false; }
   virtual void updateSpellingUIWithMisspelledWord(
       const WebKit::WebString& word) {}
   virtual void runModalAlertDialog(
@@ -148,6 +149,7 @@ class TestWebViewDelegate : public WebViewDelegate,
   virtual int historyBackListCount();
   virtual int historyForwardListCount();
   virtual void didAddHistoryItem() {}
+  virtual void didUpdateInspectorSettings() {}
 
   // WebKit::WebWidgetClient
   virtual void didInvalidateRect(const WebKit::WebRect& rect);
@@ -230,6 +232,10 @@ class TestWebViewDelegate : public WebViewDelegate,
   virtual void didExhaustMemoryAvailableForScript(WebKit::WebFrame*) {}
   virtual void didChangeContentsSize(
       WebKit::WebFrame*, const WebKit::WebSize&) {}
+  virtual void reportFindInPageMatchCount(
+      int identifier, int count, bool final_update) {}
+  virtual void reportFindInPageSelection(
+      int identifier, int ordinal, const WebKit::WebRect& selection) {}
 
   // webkit_glue::WebPluginPageDelegate
   virtual webkit_glue::WebPluginDelegate* CreatePluginDelegate(

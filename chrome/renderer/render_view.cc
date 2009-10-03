@@ -218,6 +218,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       decrement_shared_popup_at_destruction_(false),
       form_field_autofill_request_id_(0),
       popup_notification_visible_(false),
+      spelling_panel_visible_(false),
       delay_seconds_for_form_state_sync_(kDefaultDelaySecondsForFormStateSync),
       preferred_width_(0),
       send_preferred_width_changes_(false),
@@ -886,7 +887,7 @@ void RenderView::OnToggleSpellPanel(bool is_currently_visible) {
     return;
   // We need to tell the webView whether the spelling panel is visible or not so
   // that it won't need to make ipc calls later.
-  webview()->SetSpellingPanelVisibility(is_currently_visible);
+  spelling_panel_visible_ = is_currently_visible;
   webview()->focusedFrame()->executeCommand(
       WebString::fromUTF8("ToggleSpellPanel"));
 }
@@ -1547,6 +1548,10 @@ void RenderView::showSpellingUI(bool show) {
   Send(new ViewHostMsg_ShowSpellingPanel(routing_id_, show));
 }
 
+bool RenderView::isShowingSpellingUI() {
+  return spelling_panel_visible_;
+}
+
 void RenderView::updateSpellingUIWithMisspelledWord(const WebString& word) {
   Send(new ViewHostMsg_UpdateSpellingPanelWithMisspelledWord(
       routing_id_, UTF16ToWideHack(word)));
@@ -1673,6 +1678,11 @@ void RenderView::didAddHistoryItem() {
 
   history_back_list_count_++;
   history_forward_list_count_ = 0;
+}
+
+void RenderView::didUpdateInspectorSettings() {
+  Send(new ViewHostMsg_UpdateInspectorSettings(
+      routing_id_, webview()->inspectorSettings().utf8()));
 }
 
 // WebKit::WebWidgetClient ----------------------------------------------------
@@ -2319,6 +2329,44 @@ void RenderView::didChangeContentsSize(WebFrame* frame, const WebSize& size) {
   }
 }
 
+void RenderView::reportFindInPageMatchCount(int request_id, int count,
+                                            bool final_update) {
+  // If we have a message that has been queued up, then we should just replace
+  // it. The ACK from the browser will make sure it gets sent when the browser
+  // wants it.
+  if (queued_find_reply_message_.get()) {
+    IPC::Message* msg = new ViewHostMsg_Find_Reply(
+        routing_id_,
+        request_id,
+        count,
+        gfx::Rect(),
+        -1,  // Don't update active match ordinal.
+        final_update);
+    queued_find_reply_message_.reset(msg);
+  } else {
+    // Send the search result over to the browser process.
+    Send(new ViewHostMsg_Find_Reply(
+        routing_id_,
+        request_id,
+        count,
+        gfx::Rect(),
+        -1,  // // Don't update active match ordinal.
+        final_update));
+  }
+}
+
+void RenderView::reportFindInPageSelection(int request_id,
+                                           int active_match_ordinal,
+                                           const WebRect& selection_rect) {
+  // Send the search result over to the browser process.
+  Send(new ViewHostMsg_Find_Reply(routing_id_,
+                                  request_id,
+                                  -1,
+                                  selection_rect,
+                                  active_match_ordinal,
+                                  false));
+}
+
 // webkit_glue::WebPluginPageDelegate -----------------------------------------
 
 webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
@@ -2700,44 +2748,6 @@ void RenderView::OnDeterminePageText() {
   determine_page_text_after_loading_stops_ = true;
 }
 
-void RenderView::ReportFindInPageMatchCount(int count, int request_id,
-                                            bool final_update) {
-  // If we have a message that has been queued up, then we should just replace
-  // it. The ACK from the browser will make sure it gets sent when the browser
-  // wants it.
-  if (queued_find_reply_message_.get()) {
-    IPC::Message* msg = new ViewHostMsg_Find_Reply(
-        routing_id_,
-        request_id,
-        count,
-        gfx::Rect(),
-        -1,  // Don't update active match ordinal.
-        final_update);
-    queued_find_reply_message_.reset(msg);
-  } else {
-    // Send the search result over to the browser process.
-    Send(new ViewHostMsg_Find_Reply(
-        routing_id_,
-        request_id,
-        count,
-        gfx::Rect(),
-        -1,  // // Don't update active match ordinal.
-        final_update));
-  }
-}
-
-void RenderView::ReportFindInPageSelection(int request_id,
-                                           int active_match_ordinal,
-                                           const WebRect& selection_rect) {
-  // Send the search result over to the browser process.
-  Send(new ViewHostMsg_Find_Reply(routing_id_,
-                                  request_id,
-                                  -1,
-                                  selection_rect,
-                                  active_match_ordinal,
-                                  false));
-}
-
 bool RenderView::WasOpenedByUserGesture() const {
   return opened_by_user_gesture_;
 }
@@ -2770,10 +2780,6 @@ void RenderView::OnSetPageEncoding(const std::string& encoding_name) {
 void RenderView::OnResetPageEncodingToDefault() {
   WebString no_encoding;
   webview()->setPageEncoding(no_encoding);
-}
-
-void RenderView::UpdateInspectorSettings(const std::wstring& raw_settings) {
-  Send(new ViewHostMsg_UpdateInspectorSettings(routing_id_, raw_settings));
 }
 
 WebDevToolsAgentDelegate* RenderView::GetWebDevToolsAgentDelegate() {

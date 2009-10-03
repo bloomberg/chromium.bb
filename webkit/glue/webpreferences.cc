@@ -13,6 +13,7 @@
 #include "webkit/glue/webview.h"
 
 using WebKit::WebSettings;
+using WebKit::WebString;
 using WebKit::WebURL;
 
 void WebPreferences::Apply(WebView* web_view) const {
@@ -80,7 +81,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setExperimentalWebGLEnabled(experimental_webgl_enabled);
 
   // Web inspector settings need to be passed in differently.
-  web_view->SetInspectorSettings(inspector_settings);
+  web_view->setInspectorSettings(WebString::fromUTF8(inspector_settings));
 
   // Tabs to link is not part of the settings. WebCore calls
   // ChromeClient::tabsToLinks which is part of the glue code.

@@ -50,6 +50,7 @@ namespace WebKit {
     class WebWorker;
     class WebWorkerClient;
     struct WebPluginParams;
+    struct WebRect;
     struct WebSize;
     struct WebURLError;
 
@@ -221,8 +222,22 @@ namespace WebKit {
         virtual void didChangeContentsSize(WebFrame*, const WebSize&) = 0;
 
 
-        // FIXME need to add:
-        // find-in-page
+        // Find-in-page notifications ------------------------------------------
+
+        // Notifies how many matches have been found so far, for a given
+        // identifier.  |finalUpdate| specifies whether this is the last update
+        // (all frames have completed scoping).
+        virtual void reportFindInPageMatchCount(
+            int identifier, int count, bool finalUpdate) = 0;
+
+        // Notifies what tick-mark rect is currently selected.   The given
+        // identifier lets the client know which request this message belongs
+        // to, so that it can choose to ignore the message if it has moved on
+        // to other things.  The selection rect is expected to have coordinates
+        // relative to the top left corner of the web page area and represent
+        // where on the screen the selection rect is currently located.
+        virtual void reportFindInPageSelection(
+            int identifier, int activeMatchOrdinal, const WebRect& selection) = 0;
 
     protected:
         ~WebFrameClient() { }

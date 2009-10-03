@@ -893,11 +893,9 @@ void EditorClientImpl::showSpellingUI(bool show) {
 }
 
 bool EditorClientImpl::spellingUIIsShowing() {
-  // SpellingPanel visibility is stored in the webview_ every time a toggle
-  // message is sent from the browser. If we were to send a message to the
-  // browser and ask for the visibility, then we run into problems accessing
-  // cocoa methods on the UI thread.
-  return webview_->GetSpellingPanelVisibility();
+  if (webview_->client())
+    return webview_->client()->isShowingSpellingUI();
+  return false;
 }
 
 void EditorClientImpl::getGuessesForWord(const WebCore::String&,

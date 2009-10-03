@@ -1605,18 +1605,18 @@ void WebViewImpl::inspectElementAt(const WebPoint& point) {
   }
 }
 
+WebString WebViewImpl::inspectorSettings() const {
+  return inspector_settings_;
+}
+
+void WebViewImpl::setInspectorSettings(const WebString& settings) {
+  inspector_settings_ = settings;
+}
+
 // WebView --------------------------------------------------------------------
 
 WebViewDelegate* WebViewImpl::GetDelegate() {
   return delegate_;
-}
-
-const std::wstring& WebViewImpl::GetInspectorSettings() const {
-  return inspector_settings_;
-}
-
-void WebViewImpl::SetInspectorSettings(const std::wstring& settings) {
-  inspector_settings_ = settings;
 }
 
 bool WebViewImpl::setDropEffect(bool accept) {
@@ -1893,14 +1893,6 @@ HitTestResult WebViewImpl::HitTestResultForWindowPos(const IntPoint& pos) {
       page_->mainFrame()->view()->windowToContents(pos));
   return page_->mainFrame()->eventHandler()->
       hitTestResultAtPoint(doc_point, false);
-}
-
-void WebViewImpl::SetSpellingPanelVisibility(bool is_visible) {
-  spelling_panel_is_visible_ = is_visible;
-}
-
-bool WebViewImpl::GetSpellingPanelVisibility() {
-  return spelling_panel_is_visible_;
 }
 
 void WebViewImpl::setTabsToLinks(bool enable) {
