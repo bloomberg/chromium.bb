@@ -17,6 +17,7 @@
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/delete_after_reboot_helper.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/logging_installer.h"
@@ -137,18 +138,27 @@ bool DeleteEmptyParentDir(const std::wstring& path) {
   return ret;
 }
 
-// Deletes all installed files of Chromium and Folders. Before deleting it
+enum DeleteResult {
+  DELETE_SUCCEEDED,
+  DELETE_FAILED,
+  DELETE_REQUIRES_REBOOT
+};
+
+// Deletes all installed files of Chromium and Folders or schedules them for
+// deletion on reboot if they are in use. Before deleting it
 // needs to move setup.exe in a temp folder because the current process
-// is using that file. It returns false when it can not get the path to
-// installation folder, in all other cases it returns true even in case
-// of error (only logs the error).
-bool DeleteFilesAndFolders(const std::wstring& exe_path, bool system_uninstall,
-    const installer::Version& installed_version,
+// is using that file.
+// Returns DELETE_SUCCEEDED if all files were successfully delete.
+// Returns DELETE_FAILED if it could not get the path to the install dir.
+// Returns DELETE_REQUIRES_REBOOT if the files were in use and so were
+// scheduled for deletion on next reboot.
+DeleteResult DeleteFilesAndFolders(const std::wstring& exe_path,
+    bool system_uninstall, const installer::Version& installed_version,
     std::wstring* local_state_path, bool delete_profile) {
   std::wstring install_path(installer::GetChromeInstallPath(system_uninstall));
   if (install_path.empty()) {
     LOG(ERROR) << "Could not get installation destination path.";
-    return false;  // Nothing else we can do for uninstall, so we return.
+    return DELETE_FAILED;  // Nothing else we can do to uninstall, so we return.
   } else {
     LOG(INFO) << "install destination path: " << install_path;
   }
@@ -179,27 +189,46 @@ bool DeleteFilesAndFolders(const std::wstring& exe_path, bool system_uninstall,
       file_util::CopyFile(user_local_file, path);
   }
 
+  DeleteResult result = DELETE_SUCCEEDED;
+
   LOG(INFO) << "Deleting install path " << install_path;
   if (!file_util::Delete(install_path, true)) {
     LOG(ERROR) << "Failed to delete folder (1st try): " << install_path;
+#if defined(CHROME_FRAME_BUILD)
+    // We don't try killing Chrome processes for Chrome Frame builds since
+    // that is unlikely to help. Instead, schedule files for deletion and
+    // return a value that will trigger a reboot prompt.
+    ScheduleDirectoryForDeletion(install_path.c_str());
+    result = DELETE_REQUIRES_REBOOT;
+#else
     // Try closing any running chrome processes and deleting files once again.
     CloseAllChromeProcesses();
-    if (!file_util::Delete(install_path, true))
+    if (!file_util::Delete(install_path, true)) {
       LOG(ERROR) << "Failed to delete folder (2nd try): " << install_path;
+      result = DELETE_FAILED;
+    }
+#endif
   }
 
   if (delete_profile) {
     LOG(INFO) << "Deleting user profile" << user_local_state.value();
-    if (!file_util::Delete(user_local_state, true))
-      LOG(ERROR) << "Failed to delete user profle dir: "
+    if (!file_util::Delete(user_local_state, true)) {
+      LOG(ERROR) << "Failed to delete user profile dir: "
                  << user_local_state.value();
+#if defined(CHROME_FRAME_BUILD)
+      ScheduleDirectoryForDeletion(user_local_state.value().c_str());
+      result = DELETE_REQUIRES_REBOOT;
+#else
+      result = DELETE_FAILED;
+#endif
+    }
     DeleteEmptyParentDir(user_local_state.value());
   }
 
   // Now check and delete if the parent directories are empty
   // For example Google\Chrome or Chromium
   DeleteEmptyParentDir(install_path);
-  return true;
+  return result;
 }
 
 // This method tries to delete a registry key and logs an error message
@@ -368,7 +397,9 @@ installer_util::InstallStatus installer_setup::UninstallChrome(
   if (force_uninstall) {
     // Since --force-uninstall command line option is used, we are going to
     // do silent uninstall. Try to close all running Chrome instances.
+#if !defined(CHROME_FRAME_BUILD)
     CloseAllChromeProcesses();
+#endif
   } else {  // no --force-uninstall so lets show some UI dialog boxes.
     status = IsChromeActiveOrUserCancelled(system_uninstall);
     if (status != installer_util::UNINSTALL_CONFIRMED &&
@@ -469,9 +500,14 @@ installer_util::InstallStatus installer_setup::UninstallChrome(
       (cmd_line.HasSwitch(installer_util::switches::kDeleteProfile));
   std::wstring local_state_path;
   ret = installer_util::UNINSTALL_SUCCESSFUL;
-  if (!DeleteFilesAndFolders(exe_path, system_uninstall, *installed_version,
-                             &local_state_path, delete_profile))
+
+  DeleteResult delete_result = DeleteFilesAndFolders(exe_path,
+      system_uninstall, *installed_version, &local_state_path, delete_profile);
+  if (delete_result == DELETE_FAILED) {
     ret = installer_util::UNINSTALL_FAILED;
+  } else if (delete_result == DELETE_REQUIRES_REBOOT) {
+    ret = installer_util::UNINSTALL_REQUIRES_REBOOT;
+  }
 
   if (!force_uninstall) {
     LOG(INFO) << "Uninstallation complete. Launching Uninstall survey.";
