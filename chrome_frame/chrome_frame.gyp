@@ -132,6 +132,17 @@
       '<(xul_sdk_dir)/include/zipwriter',
       '<(xul_sdk_dir)/include/zlib',
       '<(xul_sdk_dir)/sdk/include',
+    ],  
+    'conditions': [
+      ['OS=="win"', {
+        'python': [
+          '<(DEPTH)\\third_party\\python_24\\setup_env.bat && python'
+        ],
+      }, { # OS != win
+        'python': [
+          'python'
+        ],
+      }],
     ],
   },
   'includes': [
@@ -203,7 +214,7 @@
             '<(PRODUCT_DIR)/lib/base_noicu.lib',
           ],
           'action': [
-            'python',
+            '<@(python)',
             'combine_libs.py',
             '-o <(_outputs)',
             '-r (icu_|_icu.obj)',
