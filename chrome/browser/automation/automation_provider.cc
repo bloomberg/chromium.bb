@@ -1346,6 +1346,7 @@ void AutomationProvider::CloseTab(int tab_handle,
   }
 
   AutomationMsg_CloseTab::WriteReplyParams(reply_message, false);
+  Send(reply_message);
 }
 
 void AutomationProvider::CloseBrowser(int browser_handle,
@@ -1747,6 +1748,12 @@ void AutomationProvider::ClickSSLInfoBarLink(int handle,
       }
     }
   }
+
+  // This "!wait_for_navigation || !success condition" logic looks suspicious.
+  // It will send a failure message when success is true but
+  // |wait_for_navigation| is false.
+  // TODO(phajdan.jr): investgate whether the reply param (currently
+  // AUTOMATION_MSG_NAVIGATION_ERROR) should depend on success.
   if (!wait_for_navigation || !success)
     AutomationMsg_ClickSSLInfoBarLink::WriteReplyParams(
         reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
@@ -1768,6 +1775,7 @@ void AutomationProvider::WaitForNavigation(int handle,
     AutomationMsg_WaitForNavigation::WriteReplyParams(reply_message,
         controller == NULL ? AUTOMATION_MSG_NAVIGATION_ERROR :
                              AUTOMATION_MSG_NAVIGATION_SUCCESS);
+    Send(reply_message);
     return;
   }
 

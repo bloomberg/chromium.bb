@@ -115,7 +115,7 @@ TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
 // We are disabling this test on MacOS and Linux because on those platforms
 // AutomationProvider::OverrideEncoding is not implemented yet.
 // TODO(port): Enable when encoding-related parts of Browser are ported.
-TEST_F(BrowserEncodingTest, DISABLED_TestOverrideEncoding) {
+TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
   const char* const kTestFileName = "gb18030_with_iso88591_meta.html";
   const char* const kExpectedFileName =
       "expected_gb18030_saved_from_iso88591_meta.html";
