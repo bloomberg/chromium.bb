@@ -94,6 +94,16 @@ def GetTryServerSettings():
   settings['http_host'] = gcl.GetCodeReviewSetting('TRYSERVER_HTTP_HOST')
   settings['svn_repo'] = gcl.GetCodeReviewSetting('TRYSERVER_SVN_URL')
   settings['default_project'] = gcl.GetCodeReviewSetting('TRYSERVER_PROJECT')
+  settings['default_root'] = gcl.GetCodeReviewSetting('TRYSERVER_ROOT')
+
+  # Pick a patchlevel, default to 0.
+  default_patchlevel = gcl.GetCodeReviewSetting('TRYSERVER_PATCHLEVEL')
+  if default_patchlevel:
+    default_patchlevel = int(default_patchlevel)
+  else:
+    default_patchlevel = 0
+  settings['default_patchlevel'] = default_patchlevel
+
   # Use http is the http_host name resolve, fallback to svn otherwise.
   if (settings['http_port'] and settings['http_host'] and
       _SafeResolve(settings['http_host'])):
@@ -462,9 +472,11 @@ def TryChange(argv,
                    help="Url where to grab a patch")
   group.add_option("--root",
                    help="Root to use for the patch; base subdirectory for "
-                        "patch created in a subdirectory")
+                        "patch created in a subdirectory",
+                   default=default_settings["default_root"])
   group.add_option("--patchlevel", type='int', metavar="LEVEL",
-                   help="Used as -pN parameter to patch")
+                   help="Used as -pN parameter to patch",
+                   default=default_settings["default_patchlevel"])
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, "Access the try server by HTTP")
