@@ -84,6 +84,10 @@ class WidgetGtk
   // Starts a drag on this widget. This blocks until the drag is done.
   void DoDrag(const OSExchangeData& data, int operation);
 
+  // Are we in PaintNow? See use in root_view_gtk for details on what this is
+  // used for.
+  bool in_paint_now() const { return in_paint_now_; }
+
   // Overridden from Widget:
   virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
   virtual void SetContentsView(View* view);
@@ -376,6 +380,9 @@ class WidgetGtk
   // This is non-null during the life of DoDrag and contains the actual data
   // for the drag.
   const OSExchangeDataProviderGtk* drag_data_;
+
+  // See description above getter for details.
+  bool in_paint_now_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetGtk);
 };

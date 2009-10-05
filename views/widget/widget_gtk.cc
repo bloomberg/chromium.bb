@@ -107,7 +107,8 @@ WidgetGtk::WidgetGtk(Type type)
       transparent_(false),
       ignore_drag_leave_(false),
       opacity_(255),
-      drag_data_(NULL) {
+      drag_data_(NULL),
+      in_paint_now_(false) {
   static bool installed_message_loop_observer = false;
   if (!installed_message_loop_observer) {
     installed_message_loop_observer = true;
@@ -394,7 +395,9 @@ void WidgetGtk::PaintNow(const gfx::Rect& update_rect) {
     gtk_widget_queue_draw_area(widget_, update_rect.x(), update_rect.y(),
                                update_rect.width(), update_rect.height());
     // Force the paint to occur now.
+    in_paint_now_ = true;
     gdk_window_process_updates(widget_->window, true);
+    in_paint_now_ = false;
   }
 }
 
