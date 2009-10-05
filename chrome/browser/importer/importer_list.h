@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_IMPORTER_IMPORTER_LIST_H_
 #define CHROME_BROWSER_IMPORTER_IMPORTER_LIST_H_
 
+#include <string>
 #include <vector>
 
 #include "build/build_config.h"
