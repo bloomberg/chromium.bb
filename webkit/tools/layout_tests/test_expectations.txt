@@ -366,6 +366,11 @@ WONTFIX : LayoutTests/storage/domstorage/sessionstorage/private-browsing-affects
 WONTFIX BUG21840 : LayoutTests/http/tests/loading/basic-auth-resend-wrong-credentials.html = FAIL
 WONTFIX BUG21840 : LayoutTests/http/tests/loading/basic-credentials-sent-automatically.html = FAIL
 
+// This checks the IDN behavior of WebKit/WebKit on Mac, not WebKit/WebCore or
+// WebKit/JavaScriptCore. Chrome doesn't use WebKit/WebKit, and Chrome's IDN
+// security model is different from it.
+BUG21814 WONTFIX SKIP: LayoutTests/fast/encoding/idn-security.html = FAIL
+
 // -----------------------------------------------------------------
 // CHROME REWRITTEN TESTS
 // -----------------------------------------------------------------
@@ -515,9 +520,6 @@ BUG20566 : LayoutTests/fast/invalid/residual-style.html = FAIL
 // -----------------------------------------------------------------
 // Tests requiring features not currently in test_shell.
 // -----------------------------------------------------------------
-
-// requires support for layoutTestController.encodeHostName()
-BUG21814 : LayoutTests/fast/encoding/idn-security.html = FAIL
 
 // These layout tests to see if link colors change after visiting a page. They
 // does this by using layoutTestController.keepWebHistory() to turn on a
