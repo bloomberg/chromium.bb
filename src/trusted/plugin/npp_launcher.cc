@@ -87,9 +87,8 @@ static void DebugPrintf(const char *fmt, ...) {
 }
 
 char* NPP_GetMIMEDescription() {
-  return const_cast<char*>("application/x-nacl-srpc:nexe,nacl:NativeClient"
+  return const_cast<char*>("application/x-nacl-srpc:nexe:NativeClient"
                            " Simple RPC module;");
-      // ";application/x-nacl-webidl:nexe,nacl:NativeClient Web IDL module"
 }
 
 // Invoked from NP_Initialize()
@@ -263,7 +262,6 @@ static void OpenMacFile(NPStream* stream,
   if (filename && filename[0] != '/') {
     // The filename we were given is a "classic" pathname, which needs
     // to be converted to a posix pathname.
-    printf("Pathname to be converted\n");
     Boolean got_posix_name = FALSE;
     CFStringRef cf_hfs_filename =
       CFStringCreateWithCString(NULL, filename, kCFStringEncodingMacRoman);
@@ -318,6 +316,7 @@ static void OpenMacFile(NPStream* stream,
     }
     filename =  NULL;
   }
+  module->StreamAsFile(stream, filename);
 }
 #endif  // NACL_OSX
 
