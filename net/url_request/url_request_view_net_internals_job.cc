@@ -417,12 +417,13 @@ bool URLRequestViewNetInternalsJob::GetData(std::string* mime_type,
     return true;
   }
 
-  data->append("<html><head><title>Network internals</title>"
+  data->append("<!DOCTYPE HTML>"
+               "<html><head><title>Network internals</title>"
                "<style>"
-               "body { font-family: sans-serif; }\n"
+               "body { font-family: sans-serif; font-size: 0.8em; }\n"
+               "tt, code, pre { font-family: WebKitHack, monospace; }\n"
                ".subsection_body { margin: 10px 0 10px 2em; }\n"
                ".subsection_title { font-weight: bold; }\n"
-               ".subsection_name { font-size: 80%; }\n"
                "</style>"
                "</head><body>"
                "<p><a href='http://dev.chromium.org/"
