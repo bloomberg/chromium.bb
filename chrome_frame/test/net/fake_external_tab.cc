@@ -329,7 +329,7 @@ void CFUrlRequestUnittestRunner::InitializeLogging() {
 }
 
 void FilterDisabledTests() {
-  if (::testing::FLAGS_gtest_filter.GetLength() &&
+  if (::testing::FLAGS_gtest_filter.length() &&
       ::testing::FLAGS_gtest_filter.Compare("*") != 0) {
     // Don't override user specified filters.
     return;
