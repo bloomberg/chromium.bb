@@ -272,7 +272,10 @@ class DelayedInitTask : public Task {
         profile->GetTemplateURLModel()->GetDefaultSearchProvider();
     if (!url_template)
       return false;
-    return url_template->url()->HasGoogleBaseURLs();
+    const TemplateURLRef* urlref = url_template->url();
+    if (!urlref)
+      return false;
+    return urlref->HasGoogleBaseURLs();
   }
 
   int directory_key_;
