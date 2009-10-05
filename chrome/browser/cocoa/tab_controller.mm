@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/mac_util.h"
-#include "chrome/browser/cocoa/nsimage_cache.h"
 #import "chrome/browser/cocoa/tab_controller.h"
 #import "chrome/browser/cocoa/tab_controller_target.h"
 #import "chrome/browser/cocoa/tab_view.h"

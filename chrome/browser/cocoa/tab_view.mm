@@ -5,7 +5,7 @@
 #import "chrome/browser/cocoa/tab_view.h"
 
 #include "base/logging.h"
-#include "chrome/browser/cocoa/nsimage_cache.h"
+#include "base/nsimage_cache_mac.h"
 #import "chrome/browser/cocoa/tab_controller.h"
 #import "chrome/browser/cocoa/tab_window_controller.h"
 

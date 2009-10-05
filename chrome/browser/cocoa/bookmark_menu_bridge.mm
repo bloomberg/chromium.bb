@@ -5,6 +5,7 @@
 #import <AppKit/AppKit.h>
 
 #include "app/l10n_util.h"
+#include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"  // IDC_BOOKMARK_MENU
 #import "chrome/browser/app_controller_mac.h"
@@ -13,7 +14,6 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/cocoa/bookmark_menu_bridge.h"
 #import "chrome/browser/cocoa/bookmark_menu_cocoa_controller.h"
-#import "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "grit/generated_resources.h"

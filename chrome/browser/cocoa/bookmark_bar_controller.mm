@@ -4,6 +4,7 @@
 
 #include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
+#include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -19,7 +20,6 @@
 #import "chrome/browser/cocoa/event_utils.h"
 #import "chrome/browser/cocoa/menu_button.h"
 #import "chrome/browser/cocoa/view_resizer.h"
-#include "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"

@@ -5,6 +5,7 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_view_mac.h"
 
 #include "app/gfx/text_elider.h"
+#include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
 #include "base/gfx/rect.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
@@ -12,7 +13,6 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/cocoa/event_utils.h"
-#include "chrome/browser/cocoa/nsimage_cache.h"
 
 namespace {
 

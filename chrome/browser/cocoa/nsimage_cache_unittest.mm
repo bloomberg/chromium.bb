@@ -6,11 +6,14 @@
 
 #include "base/file_path.h"
 #include "base/mac_util.h"
+#include "base/nsimage_cache_mac.h"
 #include "base/path_service.h"
-#include "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/common/mac_app_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+// This tests nsimage_cache, which lives in base/.  The unit test is in
+// chrome/ because it depends on having a built-up Chrome present.
 
 namespace {
 

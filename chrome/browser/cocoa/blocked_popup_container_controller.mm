@@ -5,9 +5,9 @@
 #import "chrome/browser/cocoa/blocked_popup_container_controller.h"
 
 #include "app/l10n_util_mac.h"
+#include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/bubble_view.h"
-#include "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "grit/generated_resources.h"

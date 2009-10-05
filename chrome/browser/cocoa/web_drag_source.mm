@@ -5,12 +5,12 @@
 #import "chrome/browser/cocoa/web_drag_source.h"
 
 #include "base/file_util.h"
+#include "base/nsimage_cache_mac.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/task.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"

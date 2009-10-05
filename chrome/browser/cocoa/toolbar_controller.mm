@@ -6,6 +6,7 @@
 
 #include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
+#include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
 #include "base/gfx/rect.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -18,7 +19,6 @@
 #import "chrome/browser/cocoa/gradient_button_cell.h"
 #import "chrome/browser/cocoa/location_bar_view_mac.h"
 #import "chrome/browser/cocoa/menu_button.h"
-#include "chrome/browser/cocoa/nsimage_cache.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/toolbar_model.h"

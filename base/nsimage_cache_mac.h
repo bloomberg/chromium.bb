@@ -2,10 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COCOA_NSIMAGE_CACHE_H_
-#define CHROME_BROWSER_COCOA_NSIMAGE_CACHE_H_
+#ifndef BASE_NSIMAGE_CACHE_MAC_H_
+#define BASE_NSIMAGE_CACHE_MAC_H_
 
-#import <Cocoa/Cocoa.h>
+#ifdef __OBJC__
+@class NSImage;
+@class NSString;
+#else
+class NSImage;
+class NSString;
+#endif
 
 namespace nsimage_cache {
 
@@ -16,11 +22,11 @@ namespace nsimage_cache {
 //   - This should only be called on the main thread.
 //   - The caller should retain the image if they want to keep it around, as
 //     the cache could have limit on size/lifetime, etc.
-NSImage *ImageNamed(NSString* name);
+NSImage* ImageNamed(NSString* name);
 
 // Clears the cache.
 void Clear(void);
 
 }  // namespace nsimage_cache
 
-#endif  // CHROME_BROWSER_COCOA_NSIMAGE_CACHE_H_
+#endif  // BASE_NSIMAGE_CACHE_MAC_H_
