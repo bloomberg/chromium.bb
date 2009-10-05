@@ -127,7 +127,7 @@ class DevToolsSanityTest : public InProcessBrowserTest {
 };
 
 // WebInspector opens.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestHostIsPresent) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestHostIsPresent) {
   RunTest("testHostIsPresent", kSimplePage);
 }
 
