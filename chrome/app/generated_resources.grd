@@ -5541,10 +5541,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Bring All to Front
         </message>
         <!-- Help menu -->
+        <message name="IDS_REPORT_BUG_MAC" desc="The Mac menu item to report a bug in the Help menu.">
+          Report Bug or Broken Website...
+        </message>
         <message name="IDS_HELP_MAC" desc="The Mac menu item to show help in the Help menu.">
           <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Help
-        </message> <!-- os == 'darwin' -->
-      </if>
+        </message>
+      </if> <!-- os == 'darwin' -->
 
     <!-- File chooser dialog default titles (only used on Linux) -->
     <message name="IDS_SELECT_FOLDER_DIALOG_TITLE" desc="The default title for the Select Folder file chooser dialog.">
