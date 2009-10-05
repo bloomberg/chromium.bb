@@ -105,6 +105,11 @@ def ShlexEnv(env_name):
     flags = shlex.split(flags)
   return flags
 
+def FormatOpt(opt, value):
+  if opt.startswith('--'):
+    return '%s=%s' % (opt, value)
+  return opt + value
+
 def RegenerateAppendFlag(flag, values, predicate, env_name, options):
   """Regenerate a list of command line flags, for an option of action='append'.
 
@@ -118,10 +123,10 @@ def RegenerateAppendFlag(flag, values, predicate, env_name, options):
   flags = []
   if options.use_environment and env_name:
     for flag_value in ShlexEnv(env_name):
-      flags.append(flag + predicate(flag_value))
+      flags.append(FormatOpt(flag, predicate(flag_value)))
   if values:
     for flag_value in values:
-      flags.append(flag + predicate(flag_value))
+      flags.append(FormatOpt(flag, predicate(flag_value)))
   return flags
 
 def RegenerateFlags(options):
@@ -155,14 +160,22 @@ def RegenerateFlags(options):
     if action == 'append':
       flags.extend(RegenerateAppendFlag(opt, value, value_predicate,
                                         env_name, options))
-    elif action in ('store', 'store_true', 'store_false', None):  # None is a synonym for 'store'.
+    elif action in ('store', None):  # None is a synonym for 'store'.
       if value:
-        flags.append(opt + value_predicate(value))
+        flags.append(FormatOpt(opt, value_predicate(value)))
       elif options.use_environment and env_name and os.environ.get(env_name):
-        flags.append(opt + value_predicate(os.environ.get(env_name)))
+        flags.append(FormatOpt(opt, value_predicate(os.environ.get(env_name))))
+    elif action in ('store_true', 'store_false'):
+      if ((action == 'store_true' and value) or
+          (action == 'store_false' and not value)):
+        flags.append(opt)
+      elif options.use_environment and env_name:
+        print >>sys.stderr, ('Warning: environment regeneration unimplemented '
+                             'for %s flag %r env_name %r' % (action, opt,
+                                                             env_name))
     else:
-      print >>sys.stderr, ("regeneration unimplemented for action", action,
-                           "flag", opt)
+      print >>sys.stderr, ('Warning: regeneration unimplemented for action %r '
+                           'flag %r' % (action, opt))
 
   return flags
 
@@ -183,7 +196,7 @@ class RegeneratableOptionParser(optparse.OptionParser):
       type: adds type='path', to tell the regenerator that the values of
             this option need to be made relative to options.depth
     """
-    env_name = kw.pop('env_name', None),
+    env_name = kw.pop('env_name', None)
     if 'dest' in kw and kw.pop('regenerate', True):
       dest = kw['dest']
 
@@ -193,15 +206,11 @@ class RegeneratableOptionParser(optparse.OptionParser):
       if type == 'path':
         kw['type'] = 'string'
 
-      if args[0].startswith('--'):
-        opt = args[0] + '='
-      else:
-        opt = args[0]
       self.__regeneratable_options[dest] = {
           'action': kw.get('action'),
           'type': type,
           'env_name': env_name,
-          'opt': opt,
+          'opt': args[0],
         }
 
     optparse.OptionParser.add_option(self, *args, **kw)
