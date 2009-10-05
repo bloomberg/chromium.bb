@@ -30,12 +30,13 @@
 
 Import('env')
 
-
 # NOTE: there are some "string too long" warnings
+# TODO(bsy): the tests contain some common code which should be factored.
 env.FilterOut(CCFLAGS=['-pedantic'])
 
-env.ComponentProgram('nrd_xfer_test.nexe', 'nrd_xfer_test.c',
-                     EXTRA_LIBS=['pthread'])
+
+nrd_xfer_test = env.ComponentProgram('nrd_xfer_test.nexe', 'nrd_xfer_test.c',
+                                     EXTRA_LIBS=['pthread'])
 
 env.ComponentProgram('nrd_xfer_test2.nexe', 'nrd_xfer_test2.c',
                      EXTRA_LIBS=['pthread'])
@@ -43,4 +44,21 @@ env.ComponentProgram('nrd_xfer_test2.nexe', 'nrd_xfer_test2.c',
 env.ComponentProgram('nrd_xfer_perf.nexe', 'nrd_xfer_perf.c',
                      EXTRA_LIBS=['pthread'])
 
-# TODO: add tests
+# TODO(bsy): add more tests
+# NOTE: "env" is an untrusted  nacl env but we can only run this shell script
+#       in a trusted linux build env
+trusted = env.get('TRUSTED_ENV', None)
+if trusted and trusted.Bit('linux'):
+  # TODO(robertm): factor this hack
+  sel_ldr = trusted.File('${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
+  # NOTE: ARM is not quite ready yet without -d
+  extra = ''
+  if trusted['TARGET_ARCHITECTURE'] == 'arm':
+     extra = '-d'
+  # end of hack
+  node = env.CommandTestAgainstGoldenOutput(
+      'sel_ldr_nrd_xfer_test.out',
+      [env.File('nrd_xfer_test.sh'), sel_ldr, nrd_xfer_test[0], extra],
+      direct_emulation=False,
+      )
+  env.AddNodeToTestSuite(node, ['medium_tests'], 'run_sel_ldr_nrd_xfer_test')

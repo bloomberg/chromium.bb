@@ -88,6 +88,8 @@ int main(int ac, char **av) {
   unsigned long               loop_iter = 1;
   unsigned int                sleep_seconds = 0;
 
+  /* NOTE: sel_ldr will emit the capability before launching this module */
+
   printf("Hello world\n");
 
   printf("Learning to walk... (parsing command line)\n");
