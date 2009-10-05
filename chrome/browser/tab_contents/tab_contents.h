@@ -72,7 +72,6 @@ class Message;
 class AutofillManager;
 class BlockedPopupContainer;
 class DOMUI;
-class DOMUIContents;
 class DownloadItem;
 class LoadNotificationDetails;
 class OmniboxSearchHint;
@@ -134,9 +133,6 @@ class TabContents : public PageNavigator,
   // rather than a reference since the PropertyAccessors expect this.
   const PropertyBag* property_bag() const { return &property_bag_; }
   PropertyBag* property_bag() { return &property_bag_; }
-
-  // Returns this object as a DOMUIContents if it is one, and NULL otherwise.
-  virtual DOMUIContents* AsDOMUIContents() { return NULL; }
 
   TabContentsDelegate* delegate() const { return delegate_; }
   void set_delegate(TabContentsDelegate* d) { delegate_ = d; }

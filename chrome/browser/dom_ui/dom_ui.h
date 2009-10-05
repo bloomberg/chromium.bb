@@ -39,7 +39,7 @@ class DOMUI {
   // page.
   virtual void RenderViewReused(RenderViewHost* render_view_host) {}
 
-  // Called from DOMUIContents.
+  // Called from TabContents.
   virtual void ProcessDOMUIMessage(const std::string& message,
                                    const std::string& content,
                                    int request_id,

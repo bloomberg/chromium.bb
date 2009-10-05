@@ -12,7 +12,7 @@ namespace chrome {
 // Canonical schemes you can use as input to GURL.SchemeIs().
 extern const char kAboutScheme[];
 extern const char kChromeInternalScheme[];
-extern const char kChromeUIScheme[];  // The scheme used for DOMUIContentses.
+extern const char kChromeUIScheme[];  // The scheme used for DOMUIs.
 extern const char kDataScheme[];
 extern const char kExtensionScheme[];
 extern const char kFileScheme[];
