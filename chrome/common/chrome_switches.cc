@@ -465,8 +465,15 @@ const wchar_t kWebWorkerShareProcesses[]       = L"web-worker-share-processes";
 // Enables the bookmark menu.
 const wchar_t kBookmarkMenu[]                  = L"bookmark-menu";
 
-// Enables auto spell correction.
-const wchar_t kAutoSpellCorrect[]              = L"auto-spell-correct";
+// Enables experimental features for Spellchecker. Right now, the first
+// experimental feature is auto spell correct, which corrects words which are
+// misppelled by typing the word with two consecutive letters swapped. The
+// features that will be added next are:
+// 1 - Allow multiple spellcheckers to work simultaneously.
+// 2 - Allow automatic detection of spell check language.
+// TODO(sidchat): Implement the above fetaures to work under this flag.
+const wchar_t kExperimentalSpellcheckerFeatures[] =
+    L"experimental-spellchecker-features";
 
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const wchar_t kEnableStatsTable[]              = L"enable-stats-table";

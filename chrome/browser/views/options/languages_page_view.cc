@@ -340,7 +340,7 @@ void LanguagesPageView::InitControlLayout() {
   enable_spellchecking_checkbox_ = new views::Checkbox(
       l10n_util::GetString(IDS_OPTIONS_ENABLE_SPELLCHECK));
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kAutoSpellCorrect)) {
+  if (command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures)) {
     enable_autospellcorrect_checkbox_ = new views::Checkbox(
         l10n_util::GetString(IDS_OPTIONS_ENABLE_AUTO_SPELL_CORRECTION));
     enable_autospellcorrect_checkbox_->set_listener(this);
@@ -361,7 +361,7 @@ void LanguagesPageView::InitControlLayout() {
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(enable_spellchecking_checkbox_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  if (command_line.HasSwitch(switches::kAutoSpellCorrect)) {
+  if (command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures)) {
     layout->StartRow(0, single_column_view_set_id);
     layout->AddView(enable_autospellcorrect_checkbox_);
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
@@ -446,7 +446,7 @@ void LanguagesPageView::NotifyPrefChanged(const std::wstring* pref_name) {
   }
   if (!pref_name || *pref_name == prefs::kEnableAutoSpellCorrect) {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    if (command_line.HasSwitch(switches::kAutoSpellCorrect)) {
+    if (command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures)) {
       enable_autospellcorrect_checkbox_->SetChecked(
           enable_autospellcorrect_.GetValue());
     }

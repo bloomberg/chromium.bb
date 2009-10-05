@@ -235,7 +235,7 @@ void LanguagesPageGtk::Init() {
                      FALSE, FALSE, 0);
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kAutoSpellCorrect)) {
+  if (command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures)) {
     enable_autospellcorrect_checkbox_ = gtk_check_button_new_with_label(
         l10n_util::GetStringUTF8(
             IDS_OPTIONS_ENABLE_AUTO_SPELL_CORRECTION).c_str());

@@ -1541,7 +1541,7 @@ void RenderView::spellCheck(
 WebString RenderView::autoCorrectWord(const WebKit::WebString& word) {
   std::wstring autocorrect_word;
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kAutoSpellCorrect)) {
+  if (command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures)) {
     EnsureDocumentTag();
     Send(new ViewHostMsg_GetAutoCorrectWord(
         routing_id_, UTF16ToWideHack(word), document_tag_, &autocorrect_word));
