@@ -116,23 +116,3 @@ TEST_F(RendererCrashTest, Crash) {
     expected_crashes_ = 1;
   }
 }
-
-// Tests whether we correctly fail on browser crashes during UI Tests.
-class BrowserCrashTest : public UITest {
- protected:
- BrowserCrashTest() : UITest()
-  {
-    // Initial loads will never complete due to crash.
-    wait_for_initial_loads_ = false;
-
-    launch_arguments_.AppendSwitch(switches::kBrowserCrashTest);
-  }
-};
-
-// Launch the app in browser crash test mode.
-// This test is disabled. See bug 6910.
-TEST_F(BrowserCrashTest, DISABLED_Crash) {
-  // Wait while the process is writing the crash dump.
-  PlatformThread::Sleep(5000);
-  expected_crashes_ = 1;
-}
