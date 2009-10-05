@@ -23,7 +23,7 @@ class CanvasPaintT : public T {
   explicit CanvasPaintT(GdkEventExpose* event)
       : context_(NULL),
         window_(event->window),
-        rectangle_(event->area),
+        region_(gdk_region_copy(event->region)),
         composite_alpha_(false) {
     init(true);
   }
@@ -31,7 +31,7 @@ class CanvasPaintT : public T {
   CanvasPaintT(GdkEventExpose* event, bool opaque)
       : context_(NULL),
         window_(event->window),
-        rectangle_(event->area),
+        region_(gdk_region_copy(event->region)),
         composite_alpha_(false) {
     init(opaque);
   }
@@ -45,12 +45,14 @@ class CanvasPaintT : public T {
       if (composite_alpha_)
         cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
       cairo_surface_t* source_surface = cairo_get_target(context_);
-      cairo_set_source_surface(cr, source_surface, rectangle_.x, rectangle_.y);
-      cairo_rectangle(cr, rectangle_.x, rectangle_.y,
-                      rectangle_.width, rectangle_.height);
+      GdkRectangle bounds = rectangle();
+      cairo_set_source_surface(cr, source_surface, bounds.x, bounds.y);
+      gdk_cairo_region(cr, region_);
       cairo_fill(cr);
       cairo_destroy(cr);
     }
+
+    gdk_region_destroy(region_);
   }
 
   // Sets whether the bitmap is composited in such a way that the alpha channel
@@ -63,30 +65,33 @@ class CanvasPaintT : public T {
   // Returns true if the invalid region is empty. The caller should call this
   // function to determine if anything needs painting.
   bool is_empty() const {
-    return rectangle_.width == 0 || rectangle_.height == 0;
+    return gdk_region_empty(region_);
   }
 
-  const GdkRectangle& rectangle() const {
-    return rectangle_;
+  GdkRectangle rectangle() const {
+    GdkRectangle bounds;
+    gdk_region_get_clipbox(region_, &bounds);
+    return bounds;
   }
 
  private:
   void init(bool opaque) {
-    if (!T::initialize(rectangle_.width, rectangle_.height, opaque, NULL)) {
+    GdkRectangle bounds = rectangle();
+    if (!T::initialize(bounds.width, bounds.height, opaque, NULL)) {
       // Cause a deliberate crash;
       *(char*) 0 = 0;
     }
 
     // Need to translate so that the dirty region appears at the origin of the
     // surface.
-    T::translate(-SkIntToScalar(rectangle_.x), -SkIntToScalar(rectangle_.y));
+    T::translate(-SkIntToScalar(bounds.x), -SkIntToScalar(bounds.y));
 
     context_ = T::getTopPlatformDevice().beginPlatformPaint();
   }
 
   cairo_t* context_;
   GdkWindow* window_;
-  GdkRectangle rectangle_;
+  GdkRegion* region_;
   // See description above setter.
   bool composite_alpha_;
 
