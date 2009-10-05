@@ -2482,6 +2482,7 @@ BUG9797 WIN DEBUG : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
 BUG9797 WIN LINUX MAC : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/referer.html = TIMEOUT PASS
 BUG9797 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = TIMEOUT PASS
+BUG9798 LINUX DEBUG : LayoutTests/transitions/multiple-background-transitions.html = FAIL PASS
 BUG9798 LINUX DEBUG : LayoutTests/transitions/multiple-shadow-transitions.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-multiple-01.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-multiple-02.html = FAIL PASS
