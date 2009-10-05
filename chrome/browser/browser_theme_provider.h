@@ -261,6 +261,11 @@ class BrowserThemeProvider : public NonThreadSafe,
   // from ClearCaches().
   virtual void FreePlatformCaches();
 
+  // The implementation of GenerateTabBackgroundBitmap(). That function also
+  // must be locked and touches caches; this function only deals with image
+  // generation.
+  SkBitmap* GenerateTabBackgroundBitmapImpl(int id);
+
   Profile* profile() { return profile_; }
 
   // Subclasses may need us to not use the on-disk image cache. The GTK

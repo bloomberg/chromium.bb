@@ -331,11 +331,6 @@ SkBitmap* BrowserThemeProvider::GetBitmapNamed(int id) {
   // Try to load the image from the extension.
   result.reset(LoadThemeBitmap(id));
 
-  // If the extension doesn't provide the requested image, but has provided
-  // a custom frame, then we may be able to generate the image required.
-  if (!result.get())
-    result.reset(GenerateTabBackgroundBitmap(id));
-
   // If we still don't have an image, load it from resourcebundle.
   if (!result.get())
     result.reset(new SkBitmap(*rb_.GetBitmapNamed(id)));
@@ -1071,31 +1066,14 @@ SkBitmap* BrowserThemeProvider::GenerateTabBackgroundBitmap(int id) {
       if (frame.get())
         themed_image_cache_[id] = new SkBitmap(*frame.get());
     } else {
-      int base_id;
-      std::string resource_name;
-      if (id == IDR_THEME_TAB_BACKGROUND) {
-        base_id = IDR_THEME_FRAME;
-        resource_name = "theme_tab_background";
-      } else {
-        base_id = IDR_THEME_FRAME_INCOGNITO;
-        resource_name = "theme_tab_background_incognito";
-      }
-      std::map<int, SkBitmap*>::iterator it = themed_image_cache_.find(base_id);
-      if (it != themed_image_cache_.end()) {
-        SkBitmap bg_tint = TintBitmap(*(it->second), TINT_BACKGROUND_TAB);
-        int vertical_offset = HasCustomImage(id) ?
-            kRestoredTabVerticalOffset : 0;
-        SkBitmap* bg_tab = new SkBitmap(SkBitmapOperations::CreateTiledBitmap(
-            bg_tint, 0, vertical_offset, bg_tint.width(), bg_tint.height()));
+      SkBitmap* bg_tab = GenerateTabBackgroundBitmapImpl(id);
 
-        // If they've provided a custom image, overlay it.
-        if (HasCustomImage(id)) {
-          SkBitmap* overlay = LoadThemeBitmap(id);
-          if (overlay) {
-            SkCanvas canvas(*bg_tab);
-            for (int x = 0; x < bg_tab->width(); x += overlay->width())
-              canvas.drawBitmap(*overlay, static_cast<SkScalar>(x), 0, NULL);
-          }
+      if (bg_tab) {
+        std::string resource_name;
+        if (id == IDR_THEME_TAB_BACKGROUND) {
+          resource_name = "theme_tab_background";
+        } else {
+          resource_name = "theme_tab_background_incognito";
         }
 
         themed_image_cache_[id] = bg_tab;
@@ -1104,6 +1082,40 @@ SkBitmap* BrowserThemeProvider::GenerateTabBackgroundBitmap(int id) {
       }
     }
   }
+  return NULL;
+}
+
+SkBitmap* BrowserThemeProvider::GenerateTabBackgroundBitmapImpl(int id) {
+  int base_id;
+  if (id == IDR_THEME_TAB_BACKGROUND) {
+    base_id = IDR_THEME_FRAME;
+  } else {
+    base_id = IDR_THEME_FRAME_INCOGNITO;
+  }
+  // According to Miranda, it is safe to read from the themed-image_cache_ here
+  // because we only lock to write on the UI thread, and we only lock to read
+  // on the cache writing thread.
+  std::map<int, SkBitmap*>::iterator it = themed_image_cache_.find(base_id);
+  if (it != themed_image_cache_.end()) {
+    SkBitmap bg_tint = TintBitmap(*(it->second), TINT_BACKGROUND_TAB);
+    int vertical_offset = HasCustomImage(id) ?
+                          kRestoredTabVerticalOffset : 0;
+    SkBitmap* bg_tab = new SkBitmap(SkBitmapOperations::CreateTiledBitmap(
+        bg_tint, 0, vertical_offset, bg_tint.width(), bg_tint.height()));
+
+    // If they've provided a custom image, overlay it.
+    if (HasCustomImage(id)) {
+      SkBitmap* overlay = LoadThemeBitmap(id);
+      if (overlay) {
+        SkCanvas canvas(*bg_tab);
+        for (int x = 0; x < bg_tab->width(); x += overlay->width())
+          canvas.drawBitmap(*overlay, static_cast<SkScalar>(x), 0, NULL);
+      }
+    }
+
+    return bg_tab;
+  }
+
   return NULL;
 }
 

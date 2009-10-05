@@ -258,18 +258,23 @@ void GtkThemeProvider::NotifyThemeChanged() {
 }
 
 SkBitmap* GtkThemeProvider::LoadThemeBitmap(int id) {
-  if (id == IDR_THEME_TOOLBAR && use_gtk_) {
-    GtkStyle* style = gtk_rc_get_style(fake_window_);
-    GdkColor* color = &style->bg[GTK_STATE_NORMAL];
-    SkBitmap* bitmap = new SkBitmap;
-    bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                      kToolbarImageWidth, kToolbarImageHeight);
-    bitmap->allocPixels();
-    bitmap->eraseRGB(color->red >> 8, color->green >> 8, color->blue >> 8);
-    return bitmap;
-  } else {
-    return BrowserThemeProvider::LoadThemeBitmap(id);
+  if (use_gtk_) {
+    if (id == IDR_THEME_TOOLBAR) {
+      GtkStyle* style = gtk_rc_get_style(fake_window_);
+      GdkColor* color = &style->bg[GTK_STATE_NORMAL];
+      SkBitmap* bitmap = new SkBitmap;
+      bitmap->setConfig(SkBitmap::kARGB_8888_Config,
+                        kToolbarImageWidth, kToolbarImageHeight);
+      bitmap->allocPixels();
+      bitmap->eraseRGB(color->red >> 8, color->green >> 8, color->blue >> 8);
+      return bitmap;
+    } else if ((id == IDR_THEME_TAB_BACKGROUND ||
+                id == IDR_THEME_TAB_BACKGROUND_INCOGNITO)) {
+      return GenerateTabBackgroundBitmapImpl(id);
+    }
   }
+
+  return BrowserThemeProvider::LoadThemeBitmap(id);
 }
 
 void GtkThemeProvider::SaveThemeBitmap(const std::string resource_name,
@@ -434,6 +439,7 @@ void GtkThemeProvider::LoadGtkValues() {
 
   force_process_images();
   GenerateFrameColors();
+  AutoLock lock(themed_image_cache_lock_);
   GenerateFrameImages();
 }
 
