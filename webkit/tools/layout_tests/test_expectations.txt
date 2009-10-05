@@ -2722,7 +2722,6 @@ BUG11613 LINUX : LayoutTests/fast/overflow/scrollRevealButton.html = FAIL
 
 // WebKit 45473:45487
 BUG15873 WIN LINUX : LayoutTests/fast/box-shadow/transform-fringing.html = FAIL
-BUG15873 WIN LINUX : LayoutTests/fast/transforms/shadows.html = FAIL
 
 // Webkit 45555:45558
 // This was removed from test_expectations when it was passing after the Webkit merge 45495:45535.
