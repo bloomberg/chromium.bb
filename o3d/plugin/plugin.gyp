@@ -36,7 +36,6 @@
         '../core/core.gyp:o3dCore',
         '../core/core.gyp:o3dCorePlatform',
         '../import/archive.gyp:o3dArchive',
-        '../serializer/serializer.gyp:o3dSerializer',
         '../utils/utils.gyp:o3dUtils',
         '../../native_client/src/shared/imc/imc.gyp:google_nacl_imc',
         'idl/idl.gyp:o3dPluginIdl',
@@ -76,6 +75,7 @@
         ['renderer == "gl"',
           {
             'dependencies': [
+              '../build/libs.gyp:gl_libs',
               '../build/libs.gyp:cg_libs',
             ],
           },
@@ -237,7 +237,7 @@
     },
   ],
   'conditions': [
-    ['o3d_in_chrome != 0',
+    ['o3d_in_chrome == "True"',
       {
         'variables': {
           'o3d_main_lib_type': 'static_library',

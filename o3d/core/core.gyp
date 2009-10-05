@@ -359,6 +359,9 @@
               'cross/gl/utils_gl.cc',
               'cross/gl/utils_gl.h',
             ],
+            'dependencies': [
+              '../build/libs.gyp:gl_libs',
+            ],
           },
         ],
         ['renderer == "d3d9" and OS == "win"',

@@ -48,6 +48,16 @@
             },
           },
         ],
+        [ 'OS=="win"',
+          {
+            'direct_dependent_settings': {
+              'libraries': [
+                '-lOpenGL32.lib',
+                '../../<(glewdir)/lib/glew32.lib',
+              ],
+            },
+          },
+        ],
       ],
     },
     {
