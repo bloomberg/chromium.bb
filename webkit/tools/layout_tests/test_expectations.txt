@@ -2450,6 +2450,7 @@ BUG10479 MAC : LayoutTests/svg/hixie/perf/001.xml = FAIL
 BUG10479 MAC : LayoutTests/svg/hixie/perf/002.xml = FAIL
 
 BUG9798 WIN DEBUG : LayoutTests/fast/encoding/char-encoding.html = FAIL PASS
+BUG9798 WIN DEBUG : LayoutTests/fast/lists/inlineBoxWrapperNullCheck.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/redirect-with-quotes.php = TIMEOUT PASS
 BUG9798 MAC : LayoutTests/http/tests/xmlhttprequest/basic-auth.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/editing/execCommand/paste-2.html = FAIL PASS
