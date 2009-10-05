@@ -447,10 +447,9 @@ void KeywordEditorView::OnAddButtonClicked(GtkButton* button,
 void KeywordEditorView::OnEditButtonClicked(GtkButton* button,
                                             KeywordEditorView* editor) {
   int model_row = editor->GetSelectedModelRow();
-  if (model_row == -1) {
-    NOTREACHED();
+  if (model_row == -1)
     return;
-  }
+
   new EditSearchEngineDialog(
       GTK_WINDOW(gtk_widget_get_toplevel(editor->dialog_)),
       editor->controller_->GetTemplateURL(model_row),
