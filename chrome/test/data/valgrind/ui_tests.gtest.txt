@@ -12,3 +12,4 @@ DownloadTest.UnknownSize
 ErrorPageTest.DNSError_GoBack2AndForward
 # Flaky timeout on Linux; see http://crbug.com/22927
 UnloadTest.BrowserCloseInfiniteBeforeUnload
+UnloadTest.BrowserCloseInfiniteBeforeUnloadAlert
