@@ -1,2 +1,0 @@
-# Hangs sometimes; see http://crbug.com/23580
-RenderViewTest.ImeComposition

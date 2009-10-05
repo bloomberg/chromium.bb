@@ -1,4 +1,6 @@
-# Hangs sometimes; see http://crbugs.com/22146
+# Hangs sometimes; see http://crbug.com/22146
 VisitedLinkEventsTest.Coalescense
-# Hangs sometimes; see http://crbugs.com/22160
+# Hangs sometimes; see http://crbug.com/22160
 VisitedLinkRelayTest.Basics
+# Hangs (or takes forever?) reliably on bots; see http://crbug.com/23580
+RenderViewTest.ImeComposition
