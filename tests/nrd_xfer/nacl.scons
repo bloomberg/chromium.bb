@@ -44,11 +44,11 @@ env.ComponentProgram('nrd_xfer_test2.nexe', 'nrd_xfer_test2.c',
 env.ComponentProgram('nrd_xfer_perf.nexe', 'nrd_xfer_perf.c',
                      EXTRA_LIBS=['pthread'])
 
-# TODO(bsy): add more tests
+# TODO(bsy): add more tests and investigate 64 bit issue
 # NOTE: "env" is an untrusted  nacl env but we can only run this shell script
 #       in a trusted linux build env
 trusted = env.get('TRUSTED_ENV', None)
-if trusted and trusted.Bit('linux'):
+if trusted and trusted.Bit('linux') and trusted['BUILD_SUBARCH'] == '32':
   # TODO(robertm): factor this hack
   sel_ldr = trusted.File('${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
   # NOTE: ARM is not quite ready yet without -d
@@ -56,6 +56,7 @@ if trusted and trusted.Bit('linux'):
   if trusted['TARGET_ARCHITECTURE'] == 'arm':
      extra = '-d'
   # end of hack
+
   node = env.CommandTestAgainstGoldenOutput(
       'sel_ldr_nrd_xfer_test.out',
       [env.File('nrd_xfer_test.sh'), sel_ldr, nrd_xfer_test[0], extra],
