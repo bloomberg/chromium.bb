@@ -726,7 +726,6 @@ BUG13907 : LayoutTests/fast/layers/video-layer.html = FAIL
 BUG13907 : LayoutTests/media/event-attributes.html = TIMEOUT
 BUG13907 : LayoutTests/media/controls-styling.html = FAIL
 BUG13907 : LayoutTests/media/video-seek-past-end-playing.html = FAIL
-BUG13907 : LayoutTests/media/video-error-abort.html = FAIL
 // Image mismatch on mac only. This test appears to be flaky.
 BUG13907 MAC : LayoutTests/media/video-transformed.html = FAIL PASS
 
@@ -2637,7 +2636,7 @@ BUG11795 MAC : LayoutTests/http/tests/misc/favicon-as-image.html = FAIL CRASH
 BUG11796 LINUX : LayoutTests/fast/forms/search-styled.html = FAIL
 
 // Flaky Windows/Linux Tests
-BUG11898 LINUX MAC DEBUG : LayoutTests/svg/dom/SVGScriptElement/script-set-href.svg = FAIL PASS
+BUG11898 : LayoutTests/svg/dom/SVGScriptElement/script-set-href.svg = FAIL PASS
 BUG11898 WIN DEBUG : LayoutTests/http/tests/misc/submit-get-in-utf16be.html = TIMEOUT PASS
 BUG11898 WIN DEBUG : LayoutTests/http/tests/misc/submit-get-in-utf16le.html = TIMEOUT PASS
 BUG18772 WIN DEBUG : LayoutTests/http/tests/navigation/post-goback-same-url.html = TIMEOUT PASS
@@ -3022,8 +3021,6 @@ BUG_LEVIN WIN LINUX : LayoutTests/fast/dom/Range/getBoundingClientRect.html = FA
 BUG_LEVIN WIN LINUX : LayoutTests/fast/dom/Range/getClientRects.html = FAIL
 BUG_DGLAZKOV : LayoutTests/fast/dom/HTMLInputElement/size-attribute.html = FAIL
 
-BUG23306 WIN DEBUG : LayoutTests/transitions/repeated-firing-background-color.html = TIMEOUT FAIL
-
 // WebKit update 48883:48904
 BUG23740 : LayoutTests/fast/events/attribute-listener-cloned-from-frameless-doc-context-2.html = FAIL
 BUG23740 : LayoutTests/fast/events/attribute-listener-cloned-from-frameless-doc-context.html = FAIL
@@ -3043,12 +3040,11 @@ BUG23751 WIN LINUX DEBUG : LayoutTests/fast/inline/relative-positioned-overflow.
 // WebKit update 48976:48993 (48989 busted all these)
 BUG_ATWILSON WIN LINUX: LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL
 BUG_ATWILSON WIN LINUX: LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
-BUG_ATWILSON : LayoutTests/fast/css/text-rendering.html = FAIL
+BUG_ATWILSON WIN LINUX : LayoutTests/fast/css/text-rendering.html = FAIL
 BUG_ATWILSON WIN LINUX: LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
 // This was happening previously - might be a flakey test?
 BUG_ATWILSON LINUX : LayoutTests/editing/selection/extend-selection.html = TIMEOUT PASS
 BUG_ATWILSON MAC LINUX : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL
 
 // WebKit update: 48994:49006
-BUG_ATWILSON LINUX : LayoutTests/animations/transform-origin-vs-functions.html = FAIL
 BUG_ATWILSON WIN LINUX : LayoutTests/fast/box-shadow/inset.html = FAIL
