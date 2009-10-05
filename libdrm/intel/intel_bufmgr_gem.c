@@ -304,10 +304,14 @@ drm_intel_setup_reloc_list(drm_intel_bo *bo)
 {
     drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
     drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
+    unsigned int max_relocs = bufmgr_gem->max_relocs;
 
-    bo_gem->relocs = malloc(bufmgr_gem->max_relocs *
+    if (bo->size / 4 < max_relocs)
+	    max_relocs = bo->size / 4;
+
+    bo_gem->relocs = malloc(max_relocs *
 			    sizeof(struct drm_i915_gem_relocation_entry));
-    bo_gem->reloc_target_bo = malloc(bufmgr_gem->max_relocs *
+    bo_gem->reloc_target_bo = malloc(max_relocs *
 				     sizeof(drm_intel_bo *));
 
     return 0;
