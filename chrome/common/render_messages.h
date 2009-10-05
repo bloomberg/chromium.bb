@@ -1641,7 +1641,8 @@ struct ParamTraits<WebPreferences> {
     WriteParam(m, p.uses_universal_detector);
     WriteParam(m, p.text_areas_are_resizable);
     WriteParam(m, p.java_enabled);
-    WriteParam(m, p.allow_scripts_to_close_windows);
+    WriteParam(m, p.user_style_sheet_enabled);
+    WriteParam(m, p.user_style_sheet_location);
     WriteParam(m, p.uses_page_cache);
     WriteParam(m, p.remote_fonts_enabled);
     WriteParam(m, p.xss_auditor_enabled);
@@ -1649,10 +1650,6 @@ struct ParamTraits<WebPreferences> {
     WriteParam(m, p.databases_enabled);
     WriteParam(m, p.session_storage_enabled);
     WriteParam(m, p.application_cache_enabled);
-    WriteParam(m, p.tabs_to_links);
-    WriteParam(m, p.user_style_sheet_enabled);
-    WriteParam(m, p.user_style_sheet_location);
-    WriteParam(m, p.allow_universal_access_from_file_urls);
     WriteParam(m, p.experimental_webgl_enabled);
     WriteParam(m, p.experimental_notifications_enabled);
   }
@@ -1681,7 +1678,8 @@ struct ParamTraits<WebPreferences> {
         ReadParam(m, iter, &p->uses_universal_detector) &&
         ReadParam(m, iter, &p->text_areas_are_resizable) &&
         ReadParam(m, iter, &p->java_enabled) &&
-        ReadParam(m, iter, &p->allow_scripts_to_close_windows) &&
+        ReadParam(m, iter, &p->user_style_sheet_enabled) &&
+        ReadParam(m, iter, &p->user_style_sheet_location) &&
         ReadParam(m, iter, &p->uses_page_cache) &&
         ReadParam(m, iter, &p->remote_fonts_enabled) &&
         ReadParam(m, iter, &p->xss_auditor_enabled) &&
@@ -1689,11 +1687,7 @@ struct ParamTraits<WebPreferences> {
         ReadParam(m, iter, &p->databases_enabled) &&
         ReadParam(m, iter, &p->session_storage_enabled) &&
         ReadParam(m, iter, &p->application_cache_enabled) &&
-        ReadParam(m, iter, &p->tabs_to_links) &&
-        ReadParam(m, iter, &p->user_style_sheet_enabled) &&
-        ReadParam(m, iter, &p->user_style_sheet_location) &&
-        ReadParam(m, iter, &p->allow_universal_access_from_file_urls) &&
-        ReadParam(m, iter, &p->experimental_webgl_enabled);
+        ReadParam(m, iter, &p->experimental_webgl_enabled) &&
         ReadParam(m, iter, &p->experimental_notifications_enabled);
   }
   static void Log(const param_type& p, std::wstring* l) {

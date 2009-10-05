@@ -112,7 +112,6 @@ class ExtensionHost : public RenderViewHostDelegate,
                                     const int flags,
                                     IPC::Message* reply_msg,
                                     bool* did_suppress_message);
-  virtual void Close(RenderViewHost* render_view_host);
 
   // RenderViewHostDelegate::View
   virtual void CreateNewWindow(int route_id);

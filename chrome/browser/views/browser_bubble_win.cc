@@ -27,21 +27,7 @@ public:
     if (closed_)
       return;
     closed_ = true;
-    if (IsActive()) {
-      BrowserBubble::Delegate* delegate = bubble_->delegate();
-      if (delegate)
-        delegate->BubbleLostFocus(bubble_);
-    }
     views::WidgetWin::Close();
-  }
-
-  void Hide() {
-    if (IsActive()) {
-      BrowserBubble::Delegate* delegate = bubble_->delegate();
-      if (delegate)
-        delegate->BubbleLostFocus(bubble_);
-    }
-    views::WidgetWin::Hide();
   }
 
   void OnActivate(UINT action, BOOL minimized, HWND window) {
