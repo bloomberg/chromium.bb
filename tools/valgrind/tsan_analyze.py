@@ -123,6 +123,7 @@ class TsanAnalyze:
       match = re.search(" used_suppression:\s+([0-9]+)\s(.*)", self.line_)
       if match:
         count, supp_name = match.groups()
+        count = int(count)
         if supp_name in self.used_suppressions:
           self.used_suppressions[supp_name] += count
         else:
