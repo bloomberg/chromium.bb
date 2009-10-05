@@ -34,6 +34,10 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 
+#if defined(OS_WIN)
+#include "base/win_util.h"
+#endif
+
 
 using base::TimeTicks;
 
@@ -307,6 +311,15 @@ void UITest::StartHttpServer(const FilePath& root_directory) {
   cmd_line->AppendSwitchWithValue(L"server", L"start");
   cmd_line->AppendSwitch(L"register_cygwin");
   cmd_line->AppendSwitchWithValue(L"root", root_directory.ToWStringHack());
+
+  // For Windows 7, if we start the lighttpd server on the foreground mode,
+  // it will mess up with the command window and cause conhost.exe to crash. To
+  // work around this, we start the http server on the background mode.
+#if defined(OS_WIN)
+  if (win_util::GetWinVersion() >= win_util::WINVERSION_WIN7)
+    cmd_line->AppendSwitch(L"run_background");
+#endif
+
   RunCommand(*cmd_line.get());
 }
 

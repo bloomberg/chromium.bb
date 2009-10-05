@@ -84,7 +84,7 @@ class Lighttpd:
 
 
   def __init__(self, output_dir, background=False, port=None, root=None,
-               register_cygwin=None):
+               register_cygwin=None, run_background=None):
     """Args:
       output_dir: the absolute path to the layout test result directory
     """
@@ -93,6 +93,7 @@ class Lighttpd:
     self._port = port
     self._root = root
     self._register_cygwin = register_cygwin
+    self._run_background = run_background
     if self._port:
       self._port = int(self._port)
 
@@ -181,9 +182,11 @@ class Lighttpd:
                   '-f', path_utils.PathFromBase(self._output_dir,
                                                 'lighttpd.conf'),
                   # Where it can find its module dynamic libraries
-                  '-m', module_path,
-                  # Don't background
-                  '-D' ]
+                  '-m', module_path ]
+
+    if not self._run_background:
+      start_cmd.append(# Don't background
+                       '-D')
 
     # Copy liblightcomp.dylib to /tmp/lighttpd/lib to work around the bug that
     # mod_alias.so loads it from the hard coded path.
@@ -278,6 +281,8 @@ if '__main__' == __name__:
       help='Absolute path to DocumentRoot (overrides layout test roots)')
   option_parser.add_option('--register_cygwin', action="store_true",
       dest="register_cygwin", help='Register Cygwin paths (on Win try bots)')
+  option_parser.add_option('--run_background', action="store_true",
+      dest="run_background", help='Run on background (for running as UI test)')
   options, args = option_parser.parse_args()
 
   if not options.server:
@@ -292,7 +297,8 @@ if '__main__' == __name__:
     httpd = Lighttpd(tempfile.gettempdir(),
                      port=options.port,
                      root=options.root,
-                     register_cygwin=options.register_cygwin)
+                     register_cygwin=options.register_cygwin,
+                     run_background=options.run_background)
     if 'start' == options.server:
       httpd.Start()
     else:
