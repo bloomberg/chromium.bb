@@ -250,7 +250,7 @@ class SVNWrapper(SCMWrapper):
       command = ['checkout', url, checkout_path]
       if revision:
         command.extend(['--revision', str(revision)])
-      RunSVNAndGetFileList(command, self._root_dir, file_list)
+      RunSVNAndGetFileList(options, command, self._root_dir, file_list)
       return
 
     # Get the existing scm url and the revision number of the current checkout.
@@ -261,12 +261,12 @@ class SVNWrapper(SCMWrapper):
                                 "and try again." %
                                 checkout_path)
 
-    if options.manually_grab_svn_rev:
-      # Retrieve the current HEAD version because svn is slow at null updates.
-      if not revision:
-        from_info_live = CaptureSVNInfo(from_info['URL'], '.')
-        revision = str(from_info_live['Revision'])
-        rev_str = ' at %s' % revision
+    # Retrieve the current HEAD version because svn is slow at null updates.
+    if not revision:
+      from_info_live = CaptureSVNInfo(from_info['URL'], '.')
+      revision = str(from_info_live['Revision'])
+      rev_str = ' at %s' % revision
+      forced_revision = True
 
     if from_info['URL'] != components[0]:
       to_info = CaptureSVNInfo(url, '.')
@@ -308,7 +308,7 @@ class SVNWrapper(SCMWrapper):
         command = ['checkout', url, checkout_path]
         if revision:
           command.extend(['--revision', str(revision)])
-        RunSVNAndGetFileList(command, self._root_dir, file_list)
+        RunSVNAndGetFileList(options, command, self._root_dir, file_list)
         return
 
 
@@ -322,7 +322,7 @@ class SVNWrapper(SCMWrapper):
     command = ["update", checkout_path]
     if revision:
       command.extend(['--revision', str(revision)])
-    RunSVNAndGetFileList(command, self._root_dir, file_list)
+    RunSVNAndGetFileList(options, command, self._root_dir, file_list)
 
   def revert(self, options, args, file_list):
     """Reverts local modifications. Subversion specific.
@@ -372,7 +372,8 @@ class SVNWrapper(SCMWrapper):
 
     # svn revert is so broken we don't even use it. Using
     # "svn up --revision BASE" achieve the same effect.
-    RunSVNAndGetFileList(['update', '--revision', 'BASE'], path, file_list)
+    RunSVNAndGetFileList(options, ['update', '--revision', 'BASE'], path, 
+                         file_list)
 
   def runhooks(self, options, args, file_list):
     self.status(options, args, file_list)
@@ -389,7 +390,7 @@ class SVNWrapper(SCMWrapper):
             % (' '.join(command), path))
       # There's no file list to retrieve.
     else:
-      RunSVNAndGetFileList(command, path, file_list)
+      RunSVNAndGetFileList(options, command, path, file_list)
 
   def pack(self, options, args, file_list):
     """Generates a patch file which can be applied to the root of the
@@ -483,7 +484,7 @@ def CaptureSVN(args, in_directory=None, print_error=True):
                           stderr=stderr).communicate()[0]
 
 
-def RunSVNAndGetFileList(args, in_directory, file_list):
+def RunSVNAndGetFileList(options, args, in_directory, file_list):
   """Runs svn checkout, update, or status, output to stdout.
 
   The first item in args must be either "checkout", "update", or "status".
@@ -493,6 +494,7 @@ def RunSVNAndGetFileList(args, in_directory, file_list):
   sys.stdout as in RunSVN.
 
   Args:
+    options: command line options to gclient
     args: A sequence of command line parameters to be passed to svn.
     in_directory: The directory where svn is to be run.
 
@@ -532,7 +534,7 @@ def RunSVNAndGetFileList(args, in_directory, file_list):
 
   RunSVNAndFilterOutput(args,
                         in_directory,
-                        True,
+                        options.verbose,
                         True,
                         CaptureMatchingLines)
 
