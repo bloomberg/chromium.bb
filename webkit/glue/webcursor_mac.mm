@@ -7,6 +7,7 @@
 #import <AppKit/AppKit.h>
 
 #include "base/logging.h"
+#include "base/nsimage_cache_mac.h"
 #include "base/scoped_cftyperef.h"
 #include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/api/public/WebImage.h"
@@ -18,11 +19,12 @@ using WebKit::WebSize;
 
 namespace {
 
-// TODO(avi): Is loading resources what we want to do here?
+// TODO: This image fech can (and probably should) be serviced by the resource
+// resource bundle instead of going through nsimage_cache.
 NSCursor* LoadCursor(const char* name, int x, int y) {
   NSString* file_name = [NSString stringWithUTF8String:name];
   DCHECK(file_name);
-  NSImage* cursor_image = [NSImage imageNamed:file_name];
+  NSImage* cursor_image = nsimage_cache::ImageNamed(file_name);
   DCHECK(cursor_image);
   return [[[NSCursor alloc] initWithImage:cursor_image
                                   hotSpot:NSMakePoint(x, y)] autorelease];
