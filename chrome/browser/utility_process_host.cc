@@ -64,6 +64,13 @@ std::wstring UtilityProcessHost::GetUtilityProcessCmd() {
 }
 
 bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
+#if defined(OS_POSIX)
+  // TODO(port): We should not reach here on linux (crbug.com/22703) or
+  // MacOS (crbug.com/8102) until problems related to autoupdate are fixed.
+  NOTREACHED();
+  return false;
+#endif
+
   // Name must be set or metrics_service will crash in any test which
   // launches a UtilityProcessHost.
   set_name(L"utility process");

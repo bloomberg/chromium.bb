@@ -63,8 +63,16 @@ void SandboxedExtensionUnpacker::Start() {
   //
   // TODO(asargent) we shouldn't need to do this branch here - instead
   // UtilityProcessHost should handle it for us. (http://crbug.com/19192)
-  if (rdh_ &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess)) {
+  bool use_utility_process = rdh_ &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
+
+#if defined(OS_POSIX)
+    // TODO(port): Don't use a utility process on linux (crbug.com/22703) or
+    // MacOS (crbug.com/8102) until problems related to autoupdate are fixed.
+    use_utility_process = false;
+#endif
+
+  if (use_utility_process) {
     ChromeThread::GetMessageLoop(ChromeThread::IO)->PostTask(FROM_HERE,
         NewRunnableMethod(this,
             &SandboxedExtensionUnpacker::StartProcessOnIOThread,

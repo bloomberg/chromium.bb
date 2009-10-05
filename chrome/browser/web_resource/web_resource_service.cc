@@ -103,14 +103,23 @@ class WebResourceService::UnpackerClient
   void Start() {
     AddRef();  // balanced in Cleanup.
 
-    if (web_resource_service_->resource_dispatcher_host_) {
+    // If we don't have a resource_dispatcher_host_, assume we're in
+    // a test and run the unpacker directly in-process.
+    bool use_utility_process =
+        web_resource_service_->resource_dispatcher_host_ != NULL;
+
+#if defined(OS_POSIX)
+    // TODO(port): Don't use a utility process on linux (crbug.com/22703) or
+    // MacOS (crbug.com/8102) until problems related to autoupdate are fixed.
+    use_utility_process = false;
+#endif
+
+    if (use_utility_process) {
       ChromeThread::GetMessageLoop(ChromeThread::IO)->PostTask(FROM_HERE,
           NewRunnableMethod(this, &UnpackerClient::StartProcessOnIOThread,
                             web_resource_service_->resource_dispatcher_host_,
                             MessageLoop::current()));
     } else {
-      // If we don't have a resource_dispatcher_host_, assume we're in
-      // a test and run the unpacker directly in-process.
       WebResourceUnpacker unpacker(json_data_);
       if (unpacker.Run()) {
         OnUnpackWebResourceSucceeded(*unpacker.parsed_json());
@@ -287,4 +296,3 @@ void WebResourceService::UpdateResourceCache(const std::string& json_data) {
       DoubleToWString(base::Time::Now().ToDoubleT()));
   prefs_->SetString(prefs::kNTPTipsServer, web_resource_server_);
 }
-
