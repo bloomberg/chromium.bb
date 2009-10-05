@@ -18,6 +18,29 @@
         'chromium_code': 1,
       }],
     ],
+
+    # List of DevTools source files, ordered by dependencies. It is used both
+    # for copying them to resource dir, and for generating 'devtools.html' file.
+    'devtools_files': [
+      'glue/devtools/js/devtools.css',
+      'glue/devtools/js/base.js',
+      'glue/devtools/js/devtools_callback.js',
+      'glue/devtools/js/inspector_controller.js',
+      'glue/devtools/js/inspector_controller_impl.js',
+      'glue/devtools/js/debugger_agent.js',
+      '../v8/tools/codemap.js',
+      '../v8/tools/consarray.js',
+      '../v8/tools/csvparser.js',
+      '../v8/tools/logreader.js',
+      '../v8/tools/profile.js',
+      '../v8/tools/profile_view.js',
+      '../v8/tools/splaytree.js',
+      'glue/devtools/js/profiler_processor.js',
+      'glue/devtools/js/heap_profiler_panel.js',
+      'glue/devtools/js/devtools.js',
+      'glue/devtools/js/devtools_host_stub.js',
+      'glue/devtools/js/tests.js',
+    ],
   },
   'targets': [
     {
@@ -695,32 +718,18 @@
       'target_name': 'inspector_resources',
       'type': 'none',
       'msvs_guid': '5330F8EE-00F5-D65C-166E-E3150171055D',
+      'dependencies': [
+        'devtools_html',
+      ],
       'copies': [
         {
           'destination': '<(PRODUCT_DIR)/resources/inspector',
           'files': [
-            'glue/devtools/js/base.js',
-            'glue/devtools/js/debugger_agent.js',
-            'glue/devtools/js/devtools.css',
-            'glue/devtools/js/devtools.html',
-            'glue/devtools/js/devtools.js',
-            'glue/devtools/js/devtools_callback.js',
-            'glue/devtools/js/devtools_host_stub.js',
-            'glue/devtools/js/heap_profiler_panel.js',
-            'glue/devtools/js/inspector_controller.js',
-            'glue/devtools/js/inspector_controller_impl.js',
-            'glue/devtools/js/profiler_processor.js',
-            'glue/devtools/js/tests.js',
+
+            '<@(devtools_files)',
 
             '<@(webinspector_files)',
 
-            '../v8/tools/codemap.js',
-            '../v8/tools/consarray.js',
-            '../v8/tools/csvparser.js',
-            '../v8/tools/logreader.js',
-            '../v8/tools/profile.js',
-            '../v8/tools/profile_view.js',
-            '../v8/tools/splaytree.js',
           ],
         },
         {
@@ -733,5 +742,23 @@
         },
       ],
     },
+    {
+      'target_name': 'devtools_html',
+      'type': 'none',
+      'msvs_guid': '9BE5D4D5-E800-44F9-B6C0-27DF15A9D817',
+      'actions': [
+        {
+          'action_name': 'devtools_html',
+          'inputs': [
+            'build/generate_devtools_html.py',
+            '../third_party/WebKit/WebCore/inspector/front-end/inspector.html',
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/resources/inspector/devtools.html',
+          ],
+          'action': ['python', '<@(_inputs)', '<@(_outputs)', '<@(devtools_files)'],
+        },
+      ],
+    }
   ], # targets
 }
