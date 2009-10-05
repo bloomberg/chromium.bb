@@ -14,6 +14,7 @@
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/net/url_fetcher.h"
 
+class ImporterBridge;
 class XmlReader;
 
 // Currently the only configuration information we need is to check whether or
@@ -40,9 +41,7 @@ class Toolbar5Importer : public URLFetcher::Delegate, public Importer {
   // of Importer::StartImport.
   virtual void StartImport(ProfileInfo profile_info,
                            uint16 items,
-                           ProfileWriter* writer,
-                           MessageLoop* delegate_loop,
-                           ImporterHost* host);
+                           ImporterBridge* bridge);
 
   // Importer view call this method when the user clicks the cancel button
   // in the ImporterView UI.  We need to post a message to our loop

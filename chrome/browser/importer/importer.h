@@ -15,10 +15,12 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
+class ImporterBridge;
 class MessageLoop;
 class TemplateURL;
 
@@ -27,22 +29,6 @@ struct IE7PasswordInfo;
 namespace webkit_glue {
 struct PasswordForm;
 }
-
-// An enumeration of the type of browsers that we support to import
-// settings and data from them.
-enum ProfileType {
-#if defined(OS_WIN)
-  MS_IE,
-#endif
-  FIREFOX2,
-  FIREFOX3,
-#if defined(OS_MACOSX)
-  SAFARI,
-#endif
-  GOOGLE_TOOLBAR5,
-  // Identifies a 'bookmarks.html' file.
-  BOOKMARKS_HTML
-};
 
 // An enumeration of the type of data we want to import.
 enum ImportItem {
@@ -56,13 +42,13 @@ enum ImportItem {
   ALL            = 0x003f
 };
 
-typedef struct {
+struct ProfileInfo {
   std::wstring description;
   ProfileType browser_type;
   std::wstring source_path;
   std::wstring app_path;
   uint16 services_supported;  // bitmap of ImportItem
-} ProfileInfo;
+};
 
 class FirefoxProfileLock;
 class Importer;
@@ -264,45 +250,35 @@ class ImporterHost : public base::RefCounted<ImporterHost>,
   void ImportItemEnded(ImportItem item);
   void ImportEnded();
 
-  Importer* CreateImporterByType(ProfileType type);
+  int GetAvailableProfileCount() {
+      return importer_list_.GetAvailableProfileCount();
+  }
 
-  // Returns the number of different browser profiles you can import from.
-  int GetAvailableProfileCount();
-
-  // Returns the name of the profile at the 'index' slot. The profiles are
+    // Returns the name of the profile at the 'index' slot. The profiles are
   // ordered such that the profile at index 0 is the likely default browser.
-  std::wstring GetSourceProfileNameAt(int index) const;
+  std::wstring GetSourceProfileNameAt(int index) const {
+    return importer_list_.GetSourceProfileNameAt(index);
+  }
 
   // Returns the ProfileInfo at the specified index.  The ProfileInfo should be
   // passed to StartImportSettings().
-  const ProfileInfo& GetSourceProfileInfoAt(int index) const;
+  const ProfileInfo& GetSourceProfileInfoAt(int index) const {
+    return importer_list_.GetSourceProfileInfoAt(index);
+  }
 
-  // Returns the ProfileInfo with the given browser type
-  const ProfileInfo& GetSourceProfileInfoForBrowserType(int browser_type) const;
+  // Returns the ProfileInfo with the given browser type.
+  const ProfileInfo& GetSourceProfileInfoForBrowserType(int browser_type)
+      const {
+    return importer_list_.GetSourceProfileInfoForBrowserType(browser_type);
+  }
+
 
  private:
   // If we're not waiting on any model to finish loading, invokes the task_.
   void InvokeTaskIfDone();
 
-  // Detects the installed browsers and their associated profiles, then
-  // stores their information in a list. It returns the list of description
-  // of all profiles.
-  void DetectSourceProfiles();
-
-  // Helper methods for detecting available profiles.
-#if defined(OS_WIN)
-  void DetectIEProfiles();
-#endif
-  void DetectFirefoxProfiles();
-  void DetectGoogleToolbarProfiles();
-#if defined(OS_MACOSX)
-  void DetectSafariProfiles();
-#endif
-
   NotificationRegistrar registrar_;
-
-  // The list of profiles with the default one first.
-  std::vector<ProfileInfo*> source_profiles_;
+  ImporterList importer_list_;
 
   Observer* observer_;
   scoped_refptr<ProfileWriter> writer_;
@@ -337,8 +313,6 @@ class ImporterHost : public base::RefCounted<ImporterHost>,
 // The base class of all importers.
 class Importer : public base::RefCounted<Importer> {
  public:
-  virtual ~Importer() { }
-
   // All importers should implement this method by adding their
   // import logic. And it will be run in file thread by ImporterHost.
   //
@@ -347,9 +321,7 @@ class Importer : public base::RefCounted<Importer> {
   // stuff have been finished.
   virtual void StartImport(ProfileInfo profile_info,
                            uint16 items,
-                           ProfileWriter* writer,
-                           MessageLoop* delegate_loop,
-                           ImporterHost* host) = 0;
+                           ImporterBridge* bridge) = 0;
 
   // Cancels the import process.
   virtual void Cancel() { cancelled_ = true; }
@@ -363,20 +335,6 @@ class Importer : public base::RefCounted<Importer> {
  protected:
   Importer();
 
-  // Notifies the coordinator that the collection of data for the specified
-  // item has begun.
-  void NotifyItemStarted(ImportItem item);
-
-  // Notifies the coordinator that the collection of data for the specified
-  // item has completed.
-  void NotifyItemEnded(ImportItem item);
-
-  // Notifies the coordinator that the import operation has begun.
-  void NotifyStarted();
-
-  // Notifies the coordinator that the entire import operation has completed.
-  void NotifyEnded();
-
   // Given raw image data, decodes the icon, re-sampling to the correct size as
   // necessary, and re-encodes as PNG data in the given output vector. Returns
   // true on success.
@@ -385,15 +343,7 @@ class Importer : public base::RefCounted<Importer> {
 
   bool import_to_bookmark_bar() const { return import_to_bookmark_bar_; }
 
-  // The importer should know the main thread so that ProfileWriter
-  // will be invoked in thread instead.
-  MessageLoop* main_loop_;
-
-  // The message loop in which the importer operates.
-  MessageLoop* delagate_loop_;
-
-  // The coordinator host for this importer.
-  ImporterHost* importer_host_;
+  scoped_refptr<ImporterBridge> bridge_;
 
  private:
   // True if the caller cancels the import process.

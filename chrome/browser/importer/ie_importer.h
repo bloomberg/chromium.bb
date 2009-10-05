@@ -15,9 +15,7 @@ class IEImporter : public Importer {
   // Importer methods.
   virtual void StartImport(ProfileInfo browser_info,
                            uint16 items,
-                           ProfileWriter* writer,
-                           MessageLoop* delagate_loop,
-                           ImporterHost* host);
+                           ImporterBridge* bridge);
 
  private:
   FRIEND_TEST(ImporterTest, IEImporter);
@@ -81,7 +79,7 @@ class IEImporter : public Importer {
   // providing a fake source.
   std::wstring source_path_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(IEImporter);
+  DISALLOW_COPY_AND_ASSIGN(IEImporter);
 };
 
 #endif  // CHROME_BROWSER_IMPORTER_IE_IMPORTER_H_

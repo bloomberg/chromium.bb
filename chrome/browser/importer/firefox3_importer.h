@@ -26,9 +26,7 @@ class Firefox3Importer : public Importer {
   // Importer methods.
   virtual void StartImport(ProfileInfo profile_info,
                            uint16 items,
-                           ProfileWriter* writer,
-                           MessageLoop* delagate_loop_,
-                           ImporterHost* host);
+                           ImporterBridge* bridge);
 
  private:
   typedef std::map<int64, std::set<GURL> > FaviconMap;
@@ -76,7 +74,6 @@ class Firefox3Importer : public Importer {
                     const FaviconMap& favicon_map,
                     std::vector<history::ImportedFavIconUsage>* favicons);
 
-  ProfileWriter* writer_;
   std::wstring source_path_;
   std::wstring app_path_;
 
