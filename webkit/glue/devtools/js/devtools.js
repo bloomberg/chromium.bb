@@ -380,10 +380,14 @@ InjectedScriptAccess.getProperties = function(
 
 
 InjectedScriptAccess.evaluateInCallFrame = function(callFrameId, code,
-                                                    callback)
+                                                    objectGroup, callback)
 {
-    devtools.tools.getDebuggerAgent().evaluateInCallFrame(
-        callFrameId, code, callback);
+  //TODO(pfeldman): remove once 49084 is rolled.
+  if (!callback) {
+    callback = objectGroup;
+  }
+  devtools.tools.getDebuggerAgent().evaluateInCallFrame(
+      callFrameId, code, callback);
 };
 
 

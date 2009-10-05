@@ -14,19 +14,21 @@ devtools.InspectorControllerImpl = function() {
   this.frame_element_id_ = 1;
 
   this.installInspectorControllerDelegate_('clearMessages');
-  this.installInspectorControllerDelegate_('storeLastActivePanel');
+  this.installInspectorControllerDelegate_('disableResourceTracking');
+  this.installInspectorControllerDelegate_('disableTimeline');
+  this.installInspectorControllerDelegate_('enableResourceTracking');
+  this.installInspectorControllerDelegate_('enableTimeline');
+  this.installInspectorControllerDelegate_('getChildNodes');
+  this.installInspectorControllerDelegate_('getEventListenersForNode');
   this.installInspectorControllerDelegate_('highlightDOMNode');
   this.installInspectorControllerDelegate_('hideDOMNodeHighlight');
-  this.installInspectorControllerDelegate_('getChildNodes');
-  this.installInspectorControllerDelegate_('setAttribute');
+  this.installInspectorControllerDelegate_('releaseWrapperObjectGroup');
   this.installInspectorControllerDelegate_('removeAttribute');
-  this.installInspectorControllerDelegate_('setTextNodeValue');
-  this.installInspectorControllerDelegate_('enableResourceTracking');
-  this.installInspectorControllerDelegate_('disableResourceTracking');
-  this.installInspectorControllerDelegate_('enableTimeline');
-  this.installInspectorControllerDelegate_('disableTimeline');
-  this.installInspectorControllerDelegate_('setting');
+  this.installInspectorControllerDelegate_('setAttribute');
   this.installInspectorControllerDelegate_('setSetting');
+  this.installInspectorControllerDelegate_('setTextNodeValue');
+  this.installInspectorControllerDelegate_('setting');
+  this.installInspectorControllerDelegate_('storeLastActivePanel');
 };
 goog.inherits(devtools.InspectorControllerImpl,
     devtools.InspectorController);
