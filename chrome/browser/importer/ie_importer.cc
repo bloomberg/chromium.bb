@@ -25,7 +25,6 @@
 #include "base/time.h"
 #include "base/win_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/time_format.h"
@@ -65,11 +64,14 @@ const GUID IEImporter::kUnittestGUID = { 0xa79029d6, 0x753e, 0x4e27,
 
 void IEImporter::StartImport(ProfileInfo profile_info,
                              uint16 items,
-                             ImporterBridge* bridge) {
-  bridge_ = bridge;
+                             ProfileWriter* writer,
+                             MessageLoop* delagate_loop,
+                             ImporterHost* host) {
+  writer_ = writer;
   source_path_ = profile_info.source_path;
+  importer_host_ = host;
 
-  bridge_->NotifyStarted();
+  NotifyStarted();
 
   // Some IE settings (such as Protected Storage) are obtained via COM APIs.
   win_util::ScopedCOMInitializer com_initializer;
@@ -78,30 +80,30 @@ void IEImporter::StartImport(ProfileInfo profile_info,
     ImportHomepage();  // Doesn't have a UI item.
   // The order here is important!
   if ((items & HISTORY) && !cancelled()) {
-    bridge_->NotifyItemStarted(HISTORY);
+    NotifyItemStarted(HISTORY);
     ImportHistory();
-    bridge_->NotifyItemEnded(HISTORY);
+    NotifyItemEnded(HISTORY);
   }
   if ((items & FAVORITES) && !cancelled()) {
-    bridge_->NotifyItemStarted(FAVORITES);
+    NotifyItemStarted(FAVORITES);
     ImportFavorites();
-    bridge_->NotifyItemEnded(FAVORITES);
+    NotifyItemEnded(FAVORITES);
   }
   if ((items & SEARCH_ENGINES) && !cancelled()) {
-    bridge_->NotifyItemStarted(SEARCH_ENGINES);
+    NotifyItemStarted(SEARCH_ENGINES);
     ImportSearchEngines();
-    bridge_->NotifyItemEnded(SEARCH_ENGINES);
+    NotifyItemEnded(SEARCH_ENGINES);
   }
   if ((items & PASSWORDS) && !cancelled()) {
-    bridge_->NotifyItemStarted(PASSWORDS);
+    NotifyItemStarted(PASSWORDS);
     // Always import IE6 passwords.
     ImportPasswordsIE6();
 
     if (CurrentIEVersion() >= 7)
       ImportPasswordsIE7();
-    bridge_->NotifyItemEnded(PASSWORDS);
+    NotifyItemEnded(PASSWORDS);
   }
-  bridge_->NotifyEnded();
+  NotifyEnded();
 }
 
 void IEImporter::ImportFavorites() {
@@ -115,12 +117,10 @@ void IEImporter::ImportFavorites() {
   ParseFavoritesFolder(info, &bookmarks);
 
   if (!bookmarks.empty() && !cancelled()) {
-    const std::wstring& first_folder_name =
-        l10n_util::GetString(IDS_BOOKMARK_GROUP_FROM_IE);
-    int options = 0;
-    if (import_to_bookmark_bar())
-      options = ProfileWriter::IMPORT_TO_BOOKMARK_BAR;
-    bridge_->AddBookmarkEntries(bookmarks, first_folder_name, options);
+    main_loop_->PostTask(FROM_HERE, NewRunnableMethod(writer_,
+        &ProfileWriter::AddBookmarkEntry, bookmarks,
+        l10n_util::GetString(IDS_BOOKMARK_GROUP_FROM_IE),
+        import_to_bookmark_bar() ? ProfileWriter::IMPORT_TO_BOOKMARK_BAR : 0));
   }
 }
 
@@ -239,7 +239,8 @@ void IEImporter::ImportPasswordsIE6() {
         }
     }
 
-    bridge_->SetPasswordForm(form);
+    main_loop_->PostTask(FROM_HERE, NewRunnableMethod(writer_,
+        &ProfileWriter::AddPasswordForm, form));
   }
 }
 
@@ -266,8 +267,10 @@ void IEImporter::ImportPasswordsIE7() {
         password_info.url_hash = reg_iterator.Name();
         password_info.encrypted_data = value;
         password_info.date_created = Time::Now();
-
-        bridge_->AddIE7PasswordInfo(password_info);
+        main_loop_->PostTask(FROM_HERE,
+            NewRunnableMethod(writer_,
+                              &ProfileWriter::AddIE7PasswordInfo,
+                              password_info));
       }
     }
 
@@ -328,7 +331,8 @@ void IEImporter::ImportHistory() {
     }
 
     if (!rows.empty() && !cancelled()) {
-      bridge_->SetHistoryItems(rows);
+      main_loop_->PostTask(FROM_HERE, NewRunnableMethod(writer_,
+          &ProfileWriter::AddHistoryPage, rows));
     }
   }
 }
@@ -405,7 +409,9 @@ void IEImporter::ImportSearchEngines() {
           static_cast<int>(search_engines.size()) - 1;
     }
   }
-  bridge_->SetKeywords(search_engines, default_search_engine_index, true);
+  main_loop_->PostTask(FROM_HERE, NewRunnableMethod(writer_,
+      &ProfileWriter::AddKeywords, search_engines, default_search_engine_index,
+      true));
 }
 
 void IEImporter::ImportHomepage() {
@@ -432,7 +438,8 @@ void IEImporter::ImportHomepage() {
       return;
   }
 
-  bridge_->AddHomePage(homepage);
+  main_loop_->PostTask(FROM_HERE, NewRunnableMethod(writer_,
+      &ProfileWriter::AddHomepage, homepage));
 }
 
 bool IEImporter::GetFavoritesInfo(IEImporter::FavoritesInfo *info) {

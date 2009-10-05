@@ -51,7 +51,6 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/importer.h"
-#include "chrome/browser/importer/importer_bridge.h"
 
 using base::Time;
 
@@ -545,7 +544,8 @@ void AddToHistory(MorkReader::ColumnDataList* column_values,
 
 // It sets up the file stream and loops over the lines in the file to
 // parse them, then adds the resulting row set to history.
-void ImportHistoryFromFirefox2(std::wstring file, ImporterBridge* bridge) {
+void ImportHistoryFromFirefox2(std::wstring file, MessageLoop* loop,
+                               ProfileWriter* writer) {
   MorkReader reader;
   reader.Read(file);
 
@@ -582,5 +582,6 @@ void ImportHistoryFromFirefox2(std::wstring file, ImporterBridge* bridge) {
   for (MorkReader::iterator i = reader.begin(); i != reader.end(); ++i)
     AddToHistory(i->second, data, &rows);
   if (!rows.empty())
-    bridge->SetHistoryItems(rows);
+    loop->PostTask(FROM_HERE, NewRunnableMethod(writer,
+                   &ProfileWriter::AddHistoryPage, rows));
 }

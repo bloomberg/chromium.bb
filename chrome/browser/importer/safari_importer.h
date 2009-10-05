@@ -32,7 +32,9 @@ class SafariImporter : public Importer {
   // Importer methods.
   virtual void StartImport(ProfileInfo profile_info,
                            uint16 items,
-                           ImporterBridge* bridge);
+                           ProfileWriter* writer,
+                           MessageLoop* delegate_loop,
+                           ImporterHost* host);
 
 
  // Does this user account have a Safari Profile and if so, what items

@@ -10,7 +10,6 @@
 #include "base/string_util.h"
 #include "base/rand_util.h"
 #include "chrome/browser/first_run.h"
-#include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/common/libxml_utils.h"
 #include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"
@@ -91,14 +90,19 @@ Toolbar5Importer::~Toolbar5Importer() {
 
 void Toolbar5Importer::StartImport(ProfileInfo profile_info,
                                    uint16 items,
-                                   ImporterBridge* bridge) {
-  DCHECK(bridge);
+                                   ProfileWriter* writer,
+                                   MessageLoop* delagate_loop,
+                                   ImporterHost* host) {
+  DCHECK(writer);
+  DCHECK(host);
 
-  bridge_ = bridge;
+  importer_host_ = host;
+  delagate_loop_ = delagate_loop;
+  writer_ = writer;
   items_to_import_ = items;
   state_ = INITIALIZED;
 
-  bridge_->NotifyStarted();
+  NotifyStarted();
   ContinueImport();
 }
 
@@ -113,9 +117,9 @@ void Toolbar5Importer::Cancel() {
 
   // If we are conducting network operations, post a message to the importer
   // thread for synchronization.
-  if (NULL != bridge_->delegate_loop_) {
-    if (bridge_->delegate_loop_ != MessageLoop::current()) {
-      bridge_->delegate_loop_->PostTask(
+  if (NULL != delagate_loop_) {
+    if (delagate_loop_ != MessageLoop::current()) {
+      delagate_loop_->PostTask(
           FROM_HERE,
           NewRunnableMethod(this, &Toolbar5Importer::Cancel));
     } else {
@@ -197,17 +201,17 @@ void Toolbar5Importer::EndImport() {
       data_fetcher_ = NULL;
     }
 
-    bridge_->NotifyEnded();
+    NotifyEnded();
   }
 }
 
 void Toolbar5Importer::BeginImportBookmarks() {
-  bridge_->NotifyItemStarted(FAVORITES);
+  NotifyItemStarted(FAVORITES);
   GetAuthenticationFromServer();
 }
 
 void Toolbar5Importer::EndImportBookmarks() {
-  bridge_->NotifyItemEnded(FAVORITES);
+  NotifyItemEnded(FAVORITES);
   ContinueImport();
 }
 
@@ -578,10 +582,11 @@ bool Toolbar5Importer::ExtractFoldersFromXmlReader(
 void  Toolbar5Importer::AddBookmarksToChrome(
     const std::vector<ProfileWriter::BookmarkEntry>& bookmarks) {
   if (!bookmarks.empty() && !cancelled()) {
-    const std::wstring& first_folder_name =
-        l10n_util::GetString(IDS_BOOKMARK_GROUP_FROM_GOOGLE_TOOLBAR);
     int options = ProfileWriter::ADD_IF_UNIQUE |
         (import_to_bookmark_bar() ? ProfileWriter::IMPORT_TO_BOOKMARK_BAR : 0);
-    bridge_->AddBookmarkEntries(bookmarks, first_folder_name, options);
+    main_loop_->PostTask(FROM_HERE, NewRunnableMethod(writer_,
+        &ProfileWriter::AddBookmarkEntry, bookmarks,
+        l10n_util::GetString(IDS_BOOKMARK_GROUP_FROM_GOOGLE_TOOLBAR),
+        options));
   }
 }
