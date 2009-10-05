@@ -713,7 +713,7 @@ BUG13907 : LayoutTests/media/video-controls-transformed.html = FAIL
 BUG9798 BUG13907 LINUX DEBUG : LayoutTests/media/video-currentTime-set.html = FAIL TIMEOUT
 BUG13907 LINUX RELEASE : LayoutTests/media/video-currentTime-set.html = FAIL
 BUG13907 WIN MAC : LayoutTests/media/video-currentTime-set.html = FAIL
-BUG9798 BUG13907 LINUX DEBUG : LayoutTests/media/video-load-networkState.html = TIMEOUT PASS
+BUG9798 BUG13907 WIN LINUX DEBUG : LayoutTests/media/video-load-networkState.html = TIMEOUT PASS
 BUG13907 : LayoutTests/media/video-loop.html = FAIL
 BUG13907 : LayoutTests/media/video-played-collapse.html = FAIL
 BUG13907 : LayoutTests/media/video-played-ranges-1.html = FAIL
@@ -2457,7 +2457,8 @@ BUG9798 WIN DEBUG : LayoutTests/editing/selection/4776665.html = FAIL PASS
 BUG9798 MAC RELEASE : LayoutTests/editing/selection/4776665.html = FAIL PASS
 BUG9798 DEBUG : LayoutTests/svg/custom/path-bad-data.svg = CRASH FAIL
 BUG9798 LINUX DEBUG : chrome/fast/dom/extensions/interval.html = CRASH FAIL PASS
-BUG9798 MAC WIN DEBUG : chrome/fast/dom/extensions/interval.html = FAIL PASS
+BUG9798 MAC DEBUG : chrome/fast/dom/extensions/interval.html = FAIL PASS
+BUG9798 WIN : chrome/fast/dom/extensions/interval.html = FAIL PASS
 BUG9798 LINUX MAC : LayoutTests/http/tests/misc/BOM-override-script.html = TIMEOUT PASS
 BUG9798 LINUX DEBUG : LayoutTests/svg/text/text-text-07-t.svg = FAIL PASS
 BUG9798 LINUX : LayoutTests/tables/mozilla/bugs/45621.html = FAIL PASS CRASH
@@ -2477,7 +2478,9 @@ BUG9798 WIN : LayoutTests/transitions/change-values-during-transition.html = FAI
 BUG9797 LINUX DEBUG : LayoutTests/svg/carto.net/colourpicker.svg = FAIL
 BUG9797 WIN DEBUG : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
 BUG9797 WIN LINUX MAC : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
+BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/referer.html = TIMEOUT PASS
 BUG9797 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = TIMEOUT PASS
+BUG9798 LINUX DEBUG : LayoutTests/transitions/multiple-shadow-transitions.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-multiple-01.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-multiple-02.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-multiple-04.html = FAIL PASS
@@ -2654,7 +2657,8 @@ BUG13174 WIN DEBUG : LayoutTests/transitions/shorthand-border-transitions.html =
 // WebKit 44438:44544
 BUG13721 LINUX : LayoutTests/fast/dynamic/positioned-movement-with-positioned-children.html = FAIL
 
-BUG14207 WIN LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug28341.html = PASS FAIL
+BUG14207 LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug28341.html = PASS FAIL
+BUG14207 WIN : LayoutTests/tables/mozilla/bugs/bug28341.html = PASS FAIL
 
 // Newly added test http://trac.webkit.org/changeset/44816
 BUG14673 : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-authorization.html = FAIL TIMEOUT
