@@ -2469,6 +2469,7 @@ BUG9798 MAC : LayoutTests/svg/custom/use-instanceRoot-as-event-target.xhtml = TI
 BUG9798 MAC RELEASE : LayoutTests/http/tests/loading/preload-img-test.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/empty-file-formdata.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/refresh-headers.php = TIMEOUT PASS
+BUG9798 MAC RELEASE : LayoutTests/http/tests/misc/refresh-headers.php = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/security/dataURL/xss-DENIED-from-data-url-in-foreign-domain-subframe.html = TIMEOUT PASS
 BUG9798 : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-header.html = TIMEOUT PASS
 BUG9798 : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = TIMEOUT PASS
