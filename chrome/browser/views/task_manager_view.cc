@@ -343,6 +343,7 @@ void TaskManagerView::Init() {
 
   UpdateStatsCounters();
   tab_table_->SetObserver(this);
+  tab_table_->SetContextMenuController(this);
   SetContextMenuController(this);
   // If we're running with --purge-memory-button, add a "Purge memory" button.
   if (CommandLine::ForCurrentProcess()->HasSwitch(

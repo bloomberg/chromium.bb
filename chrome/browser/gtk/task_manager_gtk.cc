@@ -802,10 +802,6 @@ gboolean TaskManagerGtk::OnButtonPressEvent(GtkWidget* widget,
 gboolean TaskManagerGtk::OnButtonReleaseEvent(GtkWidget* widget,
                                               GdkEventButton* event,
                                               TaskManagerGtk* task_manager) {
-  // We don't want to open the context menu in the treeview.
-  if (gtk_util::WidgetContainsCursor(task_manager->treeview_))
-    return FALSE;
-
   if (event->button == 3)
     task_manager->ShowContextMenu();
 
