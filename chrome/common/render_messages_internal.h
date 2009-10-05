@@ -689,6 +689,26 @@ IPC_BEGIN_MESSAGES(View)
   // width.
   IPC_MESSAGE_ROUTED0(ViewMsg_EnableIntrinsicWidthChangedMode)
 
+  // Used to inform the renderer that the browser has displayed its
+  // requested notification.
+  IPC_MESSAGE_ROUTED1(ViewMsg_PostDisplayToNotificationObject,
+                      int /* notification_id */)
+
+  // Used to inform the renderer that the browser has encountered an error
+  // trying to display a notification.
+  IPC_MESSAGE_ROUTED2(ViewMsg_PostErrorToNotificationObject,
+                      int /* notification_id */,
+                      string16 /* message */)
+
+  // Informs the renderer that the one if its notifications has closed.
+  IPC_MESSAGE_ROUTED2(ViewMsg_PostCloseToNotificationObject,
+                      int /* notification_id */,
+                      bool /* by_user */)
+
+  // Informs the renderer that the one if its notifications has closed.
+  IPC_MESSAGE_ROUTED1(ViewMsg_PermissionRequestDone,
+                      int /* request_id */)
+
   // Activate/deactivate the RenderView (i.e., set its controls' tint
   // accordingly, etc.).
   IPC_MESSAGE_ROUTED1(ViewMsg_SetActive,
@@ -1621,6 +1641,27 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               GURL /* url */,
                               int /* render_view_route_id */,
                               int /* route_id */)
+
+  // A message sent to the browser on behalf of a renderer which wants to show
+  // a desktop notification.
+  IPC_MESSAGE_ROUTED3(ViewHostMsg_ShowDesktopNotification,
+                      GURL /* origin */,
+                      GURL /* contents_url */,
+                      int /* notification_id */)
+  IPC_MESSAGE_ROUTED5(ViewHostMsg_ShowDesktopNotificationText,
+                      GURL /* origin */,
+                      GURL /* icon_url */,
+                      string16 /* title */,
+                      string16 /* text */,
+                      int /* notification_id */)
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_CancelDesktopNotification,
+                      int /* notification_id */ )
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_RequestNotificationPermission,
+                      string16 /* origin */,
+                      int /* callback_context */)
+  IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_CheckNotificationPermission,
+                             string16 /* origin */,
+                             int /* permission_result */)
 
   // Sent if the worker object has sent a ViewHostMsg_CreateDedicatedWorker
   // message and not received a ViewMsg_DedicatedWorkerCreated reply, but in the

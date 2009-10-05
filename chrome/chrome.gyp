@@ -485,6 +485,8 @@
       ],
       'sources': [
         # All .cc, .h, and .mm files under chrome/common except for tests.
+        'common/desktop_notifications/active_notification_tracker.h',
+        'common/desktop_notifications/active_notification_tracker.cc',
         'common/extensions/extension.cc',
         'common/extensions/extension.h',
         'common/extensions/extension_constants.cc',
@@ -3073,6 +3075,8 @@
         'renderer/localized_error.cc',
         'renderer/localized_error.h',
         'renderer/navigation_state.h',
+        'renderer/notification_provider.cc',
+        'renderer/notification_provider.h',
         'renderer/plugin_channel_host.cc',
         'renderer/plugin_channel_host.h',
         'renderer/print_web_view_helper.cc',

@@ -56,7 +56,9 @@ namespace WebKit {
 
         WebNotification& operator=(const WebNotification& other) { assign(other); return *this; }
 
+        // Operators required to put WebNotification in an ordered map.
         bool equals(const WebNotification& other) const { return m_private == other.m_private; }
+        bool lessThan(const WebNotification& other) const;
 
         // Is the notification HTML vs. icon-title-text?
         WEBKIT_API bool isHTML() const;
@@ -99,6 +101,11 @@ namespace WebKit {
     inline bool operator!=(const WebNotification& a, const WebNotification& b)
     {
         return !a.equals(b);
+    }
+
+    inline bool operator<(const WebNotification& a, const WebNotification& b)
+    {
+        return a.lessThan(b);
     }
 
 } // namespace WebKit

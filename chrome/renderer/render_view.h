@@ -29,6 +29,7 @@
 #include "chrome/renderer/dom_ui_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/external_host_bindings.h"
+#include "chrome/renderer/notification_provider.h"
 #include "chrome/renderer/render_widget.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -267,6 +268,10 @@ class RenderView : public RenderWidget,
   virtual int historyForwardListCount();
   virtual void didAddHistoryItem();
   virtual void didUpdateInspectorSettings();
+
+  virtual WebKit::WebNotificationPresenter* GetNotificationPresenter() {
+    return notification_provider_.get();
+  }
 
   // WebKit::WebWidgetClient
   // Most methods are handled by RenderWidget.
@@ -902,6 +907,9 @@ class RenderView : public RenderWidget,
 
   // The text selection the last time DidChangeSelection got called.
   std::string last_selection_;
+
+  // Hopds a reference to the service which provides desktop notifications.
+  scoped_refptr<NotificationProvider> notification_provider_;
 
   // Set to true if request for capturing page text has been made.
   bool determine_page_text_after_loading_stops_;

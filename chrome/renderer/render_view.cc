@@ -44,6 +44,7 @@
 #include "chrome/renderer/localized_error.h"
 #include "chrome/renderer/media/audio_renderer_impl.h"
 #include "chrome/renderer/navigation_state.h"
+#include "chrome/renderer/notification_provider.h"
 #include "chrome/renderer/plugin_channel_host.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/render_process.h"
@@ -252,6 +253,7 @@ RenderView::~RenderView() {
 #endif
 
   render_thread_->RemoveFilter(audio_message_filter_);
+  render_thread_->RemoveFilter(notification_provider_.get());
 }
 
 /*static*/
@@ -312,6 +314,8 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
 
   devtools_agent_.reset(new DevToolsAgent(routing_id, this));
 
+  notification_provider_ = new NotificationProvider(this);
+
   webwidget_ = WebView::Create(this);
   webkit_preferences_.Apply(webview());
   webview()->initializeMainFrame(this);
@@ -339,6 +343,7 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
 
   audio_message_filter_ = new AudioMessageFilter(routing_id_);
   render_thread_->AddFilter(audio_message_filter_);
+  render_thread_->AddFilter(notification_provider_.get());
 }
 
 void RenderView::OnMessageReceived(const IPC::Message& message) {

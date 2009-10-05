@@ -58,6 +58,11 @@ void WebNotification::assign(const WebNotification& other)
     assign(p);
 }
 
+bool WebNotification::lessThan(const WebNotification& other) const
+{
+    return reinterpret_cast<uintptr_t>(m_private) < reinterpret_cast<uintptr_t>(other.m_private);
+}
+
 bool WebNotification::isHTML() const
 {
     return m_private->isHTML();
@@ -89,19 +94,22 @@ WebString WebNotification::body() const
 
 void WebNotification::dispatchDisplayEvent()
 {
-    m_private->dispatchDisplayEvent();
+    RefPtr<Event> event = Event::create("display", false, true);
+    m_private->dispatchEvent(event.release());
 }
 
 void WebNotification::dispatchErrorEvent(const WebKit::WebString& /* errorMessage */)
 {
     // FIXME: errorMessage not supported by WebCore yet
-    m_private->dispatchErrorEvent();
+    RefPtr<Event> event = Event::create(eventNames().errorEvent, false, true);
+    m_private->dispatchEvent(event.release());
 }
 
 void WebNotification::dispatchCloseEvent(bool /* byUser */)
 {
     // FIXME: byUser flag not supported by WebCore yet
-    m_private->dispatchCloseEvent();
+    RefPtr<Event> event = Event::create(eventNames().closeEvent, false, true);
+    m_private->dispatchEvent(event.release());
 }
 
 WebNotification::WebNotification(const WTF::PassRefPtr<Notification>& notification)
