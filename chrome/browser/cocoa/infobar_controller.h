@@ -21,7 +21,6 @@ class InfoBarDelegate;
   IBOutlet NSTextField* label_;
   IBOutlet NSButton* okButton_;
   IBOutlet NSButton* cancelButton_;
-  IBOutlet NSButton* closeButton_;
 };
 
 // Initializes a new InfoBarController.
@@ -51,20 +50,17 @@ class InfoBarDelegate;
 // subclass.  Each of these subclasses overrides addAdditionalControls to
 // configure its view as necessary.
 
-@interface AlertInfoBarController : InfoBarController {
-}
+@interface AlertInfoBarController : InfoBarController
 @end
 
 
-@interface LinkInfoBarController : InfoBarController {
-}
+@interface LinkInfoBarController : InfoBarController
 // Called when there is a click on the link in the infobar.
 - (void)linkClicked;
 @end
 
 
-@interface ConfirmInfoBarController : InfoBarController {
-}
+@interface ConfirmInfoBarController : InfoBarController
 // Called when the ok and cancel buttons are clicked.
 - (IBAction)ok:(id)sender;
 - (IBAction)cancel:(id)sender;

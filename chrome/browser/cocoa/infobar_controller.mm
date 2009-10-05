@@ -13,6 +13,7 @@
 #import "chrome/browser/cocoa/infobar_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "webkit/glue/window_open_disposition.h"
 
 
@@ -23,6 +24,9 @@
 // delegate is removed from the container, it is no longer needed, so
 // we ask it to delete itself.
 - (void)closeInfoBar;
+// Removes the ok and cancel buttons, and resizes the textfield to use the
+// space.
+- (void)removeButtons;
 @end
 
 @implementation InfoBarController
@@ -44,6 +48,15 @@
 - (void)awakeFromNib {
   if (delegate_->GetIcon()) {
     [image_ setImage:gfx::SkBitmapToNSImage(*(delegate_->GetIcon()))];
+  } else {
+    // No icon, remove it from the view and grow the textfield to include the
+    // space.
+    NSRect imageFrame = [image_ frame];
+    NSRect labelFrame = [label_ frame];
+    labelFrame.size.width += NSMinX(imageFrame) - NSMinX(labelFrame);
+    labelFrame.origin.x = imageFrame.origin.x;
+    [image_ removeFromSuperview];
+    [label_ setFrame:labelFrame];
   }
 
   [self addAdditionalControls];
@@ -73,6 +86,7 @@
 @end
 
 @implementation InfoBarController (PrivateMethods)
+
 - (void)closeInfoBar {
   // Calling RemoveDelegate() triggers notifications which will remove
   // the infobar view from the infobar container.  At that point it is
@@ -82,6 +96,17 @@
   delegate_->InfoBarClosed();
   delegate_ = NULL;
 }
+
+- (void)removeButtons {
+  // Extend the label all the way across.
+  // Remove the ok and cancel buttons, since they are not needed.
+  NSRect labelFrame = [label_ frame];
+  labelFrame.size.width = NSMaxX([cancelButton_ frame]) - NSMinX(labelFrame);
+  [okButton_ removeFromSuperview];
+  [cancelButton_ removeFromSuperview];
+  [label_ setFrame:labelFrame];
+}
+
 @end
 
 
@@ -92,13 +117,12 @@
 
 // Alert infobars have a text message.
 - (void)addAdditionalControls {
-  AlertInfoBarDelegate* delegate = delegate_->AsAlertInfoBarDelegate();
-  [label_ setStringValue:base::SysWideToNSString(
-        delegate->GetMessageText())];
+  // No buttons.
+  [self removeButtons];
 
-  // Remove the ok and cancel buttons, since they are not needed.
-  [okButton_ removeFromSuperview];
-  [cancelButton_ removeFromSuperview];
+  // Insert the text.
+  AlertInfoBarDelegate* delegate = delegate_->AsAlertInfoBarDelegate();
+  [label_ setStringValue:base::SysWideToNSString(delegate->GetMessageText())];
 }
 
 @end
@@ -117,21 +141,24 @@
 //
 // TODO(rohitrao): Using an NSTextField here has some weird UI side
 // effects, such as showing the wrong cursor at times.  Explore other
-// solutions.
+// solutions.  The About box legal block has the same issue, maybe share
+// a solution.
 - (void)addAdditionalControls {
+  // No buttons.
+  [self removeButtons];
+
   LinkInfoBarDelegate* delegate = delegate_->AsLinkInfoBarDelegate();
   size_t offset = std::wstring::npos;
   std::wstring message = delegate->GetMessageTextWithOffset(&offset);
 
   // Create an attributes dictionary for the entire message.  We have
-  // to expicitly set the font to the system font, because
-  // NSAttributedString defaults to Helvetica 12.  We also override
+  // to expicitly set the font the control's font.  We also override
   // the cursor to give us the normal cursor rather than the text
   // insertion cursor.
   NSMutableDictionary* linkAttributes =
       [NSMutableDictionary dictionaryWithObject:[NSCursor arrowCursor]
                            forKey:NSCursorAttributeName];
-  [linkAttributes setObject:[NSFont systemFontOfSize:[NSFont systemFontSize]]
+  [linkAttributes setObject:[label_ font]
                   forKey:NSFontAttributeName];
 
   // Create the attributed string for the main message text.
@@ -164,13 +191,9 @@
   // Update the label view with the new text.  The view must be
   // selectable and allow editing text attributes for the
   // linkification to work correctly.
-  [label_ setAllowsEditingTextAttributes: YES];
-  [label_ setSelectable: YES];
+  [label_ setAllowsEditingTextAttributes:YES];
+  [label_ setSelectable:YES];
   [label_ setAttributedStringValue:infoText];
-
-  // Remove the ok and cancel buttons, since they are not needed.
-  [okButton_ removeFromSuperview];
-  [cancelButton_ removeFromSuperview];
 }
 
 // Called when someone clicks on the link in the infobar.  This method
@@ -209,67 +232,73 @@
 - (void)addAdditionalControls {
   ConfirmInfoBarDelegate* delegate = delegate_->AsConfirmInfoBarDelegate();
   int visibleButtons = delegate->GetButtons();
-  [label_ setStringValue:base::SysWideToNSString(delegate->GetMessageText())];
 
-  // Save the margins between the buttons, so we can keep them constant.
-  float cancelMargin =
-      NSMinX([closeButton_ frame]) - NSMaxX([cancelButton_ frame]);
-  float okMargin = NSMinX([cancelButton_ frame]) - NSMaxX([okButton_ frame]);
-  float labelMargin = NSMinX([okButton_ frame]) - NSMaxX([label_ frame]);
+  NSRect okButtonFrame = [okButton_ frame];
+  NSRect cancelButtonFrame = [cancelButton_ frame];
 
-  // Create and position the cancel button if needed.  Otherwise, hide it.
+  DCHECK(NSMaxX(okButtonFrame) < NSMinX(cancelButtonFrame))
+      << "Cancel button expected to be on the right of the Ok button in nib";
+
+  CGFloat rightEdge = NSMaxX(cancelButtonFrame);
+  CGFloat spaceBetweenButtons =
+      NSMinX(cancelButtonFrame) - NSMaxX(okButtonFrame);
+  CGFloat spaceBeforeButtons =
+      NSMinX(okButtonFrame) - NSMaxX([label_ frame]);
+
+  // Update and position the Cancel button if needed.  Otherwise, hide it.
   if (visibleButtons & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
     [cancelButton_ setTitle:base::SysWideToNSString(
           delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL))];
-    [cancelButton_ sizeToFit];
+    [GTMUILocalizerAndLayoutTweaker sizeToFitView:cancelButton_];
+    cancelButtonFrame = [cancelButton_ frame];
 
-    NSRect cancelFrame = [cancelButton_ frame];
-    float cancelWidth = cancelFrame.size.width + cancelMargin;
+    // Position the cancel button to the left of the Close button.
+    cancelButtonFrame.origin.x = rightEdge - cancelButtonFrame.size.width;
+    [cancelButton_ setFrame:cancelButtonFrame];
 
-    // Position the cancel button to the left of the close button.
-    // The appropriate margin is already built into cancelWidth.
-    cancelFrame.origin.x = NSMinX([closeButton_ frame]) - cancelWidth;
-    [cancelButton_ setFrame:cancelFrame];
-
-    // Resize the label box to extend all the way to the cancel button,
-    // minus the saved margin, but only if we're not also adding an OK button.
-    if (!(visibleButtons & ConfirmInfoBarDelegate::BUTTON_OK)) {
-      NSRect labelFrame = [label_ frame];
-      labelFrame.size.width =
-          NSMinX(cancelFrame) - NSMinX(labelFrame) - labelMargin;
-      [label_ setFrame:labelFrame];
-    }
+    // Update the rightEdge
+    rightEdge = NSMinX(cancelButtonFrame);
   } else {
     [cancelButton_ removeFromSuperview];
   }
 
-  // Create and position the OK button if needed.  Otherwise, hide it.
+  // Update and position the OK button if needed.  Otherwise, hide it.
   if (visibleButtons & ConfirmInfoBarDelegate::BUTTON_OK) {
     [okButton_ setTitle:base::SysWideToNSString(
           delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK))];
-    [okButton_ sizeToFit];
+    [GTMUILocalizerAndLayoutTweaker sizeToFitView:okButton_];
+    okButtonFrame = [okButton_ frame];
 
-    NSRect okFrame = [okButton_ frame];
-    int okWidth = okFrame.size.width + okMargin;
+    // If we had a Cancel button, leave space between the buttons.
+    if (visibleButtons & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
+      rightEdge -= spaceBetweenButtons;
+    }
 
-    // Position the OK button to the left of the cancel button, if
-    // present.  Otherwise, position it relative to the close button.
-    float relativeX = (visibleButtons & ConfirmInfoBarDelegate::BUTTON_CANCEL) ?
-        NSMinX([cancelButton_ frame]) :
-        NSMinX([closeButton_ frame]);
+    // Position the OK button on our current right edge.
+    okButtonFrame.origin.x = rightEdge - okButtonFrame.size.width;
+    [okButton_ setFrame:okButtonFrame];
 
-    // The appropriate margin is already built into okWidth.
-    okFrame.origin.x = relativeX - okWidth;
-    [okButton_ setFrame:okFrame];
 
-    // Resize the label box to extend all the way to the OK button,
-    // minus the saved margin.
-    NSRect labelFrame = [label_ frame];
-    labelFrame.size.width = NSMinX(okFrame) - NSMinX(labelFrame) - labelMargin;
-    [label_ setFrame:labelFrame];
+    // Update the rightEdge
+    rightEdge = NSMinX(okButtonFrame);
   } else {
     [okButton_ removeFromSuperview];
   }
+
+  // If we had either button, leave space before the edge of the textfield.
+  if ((visibleButtons & ConfirmInfoBarDelegate::BUTTON_CANCEL) ||
+      (visibleButtons & ConfirmInfoBarDelegate::BUTTON_OK)) {
+    rightEdge -= spaceBeforeButtons;
+  }
+
+  NSRect frame = [label_ frame];
+  DCHECK(rightEdge > NSMinX(frame))
+      << "Need to make the xib larger to handle buttons with text this long";
+  frame.size.width = rightEdge - NSMinX(frame);
+  [label_ setFrame:frame];
+
+  // Set the text.
+  [label_ setStringValue:base::SysWideToNSString(delegate->GetMessageText())];
 }
 
 @end
