@@ -370,9 +370,15 @@ class SVNWrapper(SCMWrapper):
       except EnvironmentError:
         logging.error('Failed to remove %s.' % file_path)
 
-    # svn revert is so broken we don't even use it. Using
-    # "svn up --revision BASE" achieve the same effect.
-    RunSVNAndGetFileList(['update', '--revision', 'BASE'], path, file_list)
+    try:
+      # svn revert is so broken we don't even use it. Using
+      # "svn up --revision BASE" achieve the same effect.
+      RunSVNAndGetFileList(['update', '--revision', 'BASE'], path,
+                           file_list)
+    except OSError, e:
+      # Maybe the directory disapeared meanwhile. We don't want it to throw an
+      # exception.
+      logging.error('Failed to update:\n%s' % str(e))
 
   def runhooks(self, options, args, file_list):
     self.status(options, args, file_list)
