@@ -172,46 +172,6 @@ class FocusManagerTest : public testing::Test, public WindowDelegate {
   virtual void InitContentView() {
   }
 
-  gfx::NativeView CreateChildNativeView(gfx::NativeView parent) {
-#if defined(OS_WIN)
-    const wchar_t* kChildClassName = L"FocusTestChildClass";
-    WNDCLASS wnd_class = { 0 };
-    if (!::GetClassInfo(::GetModuleHandle(NULL), kChildClassName, &wnd_class)) {
-      // Let's register our dummy class.
-      wnd_class.lpfnWndProc = ::DefWindowProc;
-      wnd_class.hInstance = ::GetModuleHandle(NULL);
-      wnd_class.lpszClassName = kChildClassName;
-      ATOM atom = RegisterClass(&wnd_class);
-    }
-    return ::CreateWindow(kChildClassName, NULL, WS_CHILD, 0, 0, 0, 0, parent,
-                          NULL, NULL, NULL);
-#else
-    GtkWidget* widget =  gtk_link_button_new("stupid button");
-    if (parent)
-      gtk_container_add(GTK_CONTAINER(parent), widget);
-    return widget;
-#endif
-  }
-
-  gfx::NativeView CreateContainerNativeView() {
-#if defined(OS_WIN)
-    const wchar_t* kTopClassName = L"FocusTestTopClass";
-    WNDCLASS wnd_class = { 0 };
-    if (!::GetClassInfo(::GetModuleHandle(NULL), kTopClassName, &wnd_class)) {
-      // Let's register our dummy class.
-      wnd_class.lpfnWndProc = ::DefWindowProc;
-      wnd_class.hInstance = ::GetModuleHandle(NULL);
-      wnd_class.lpszClassName = kTopClassName;
-      ATOM atom = RegisterClass(&wnd_class);
-    }
-    // Create a top window HWND
-    return ::CreateWindow(kTopClassName, NULL, 0, 0, 0, 0, 0, 0,
-                          NULL, NULL, NULL);
-#else
-    return gtk_fixed_new();
-#endif
-  }
-
  protected:
   virtual gfx::Rect bounds() {
     return gfx::Rect(0, 0, 500, 500);
@@ -262,9 +222,7 @@ class BorderView : public NativeViewHost {
  public:
   explicit BorderView(View* child) : child_(child), widget_(NULL) {
     DCHECK(child);
-     // This is a container and no view should get focused when its associated
-    // native view gets the focus.
-    set_focus_view(NULL);
+    SetFocusable(false);
   }
 
   virtual ~BorderView() {}
@@ -864,66 +822,6 @@ TEST_F(FocusManagerTest, FocusNativeControls) {
   EXPECT_EQ(tab_button, GetFocusManager()->GetFocusedView());
 }
 #endif
-
-// A simple view we use to contain a NativeViewHost.
-// The only thing it does is not mess with the native focus when focused.
-class NoNativeFocusView : public View {
- public:
-  NoNativeFocusView() {
-    SetFocusable(true);
-  }
-  virtual void Focus() {
-  }
-};
-
-// Tests that the NativeViewHost class sets the focus View appropriately on the
-// FocusManager.
-TEST_F(FocusManagerTest, FocusNativeViewHost) {
-  {
-    // Test wrapping a simple native view.
-    gfx::NativeView top_native_view  = CreateContainerNativeView();
-    gfx::NativeView native_view = CreateChildNativeView(top_native_view);
-    NativeViewHost* native_view_host = new NativeViewHost();
-    content_view_->AddChildView(native_view_host);
-    native_view_host->Attach(native_view);
-    FocusNativeView(native_view);
-    EXPECT_EQ(native_view_host, GetFocusManager()->GetFocusedView());
-    GetFocusManager()->ClearFocus();
-  }
-
-  {
-    // Test with nested native views, making sure set_focus_native_view() works.
-    gfx::NativeView top_native_view  = CreateContainerNativeView();
-    gfx::NativeView child_native_view = CreateChildNativeView(top_native_view);
-    NativeViewHost* native_view_host = new NativeViewHost();
-    native_view_host->set_focus_native_view(child_native_view);
-    content_view_->AddChildView(native_view_host);
-    native_view_host->Attach(top_native_view);
-
-    // Focus the top native view, that shouldn't change the focus.
-    // (Note this isn't a case that we expect to happen.)
-    FocusNativeView(top_native_view);
-    EXPECT_EQ(NULL, GetFocusManager()->GetFocusedView());
-    // Focus the inner HWND, the focused view should change.
-    FocusNativeView(child_native_view);
-    EXPECT_EQ(native_view_host, GetFocusManager()->GetFocusedView());
-    GetFocusManager()->ClearFocus();
-  }
-
-  {
-    // Now also make sure set_focused_view() works.
-    gfx::NativeView top_native_view  = CreateContainerNativeView();
-    gfx::NativeView native_view = CreateChildNativeView(top_native_view);
-    NativeViewHost* native_view_host = new NativeViewHost();
-    NoNativeFocusView* container_view = new NoNativeFocusView();
-    container_view->AddChildView(native_view_host);
-    content_view_->AddChildView(container_view);
-    native_view_host->set_focus_view(container_view);
-    native_view_host->Attach(native_view);
-    FocusNativeView(native_view);
-    EXPECT_EQ(container_view, GetFocusManager()->GetFocusedView());
-  }
-}
 
 // Test that when activating/deactivating the top window, the focus is stored/
 // restored properly.

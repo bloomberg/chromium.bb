@@ -120,7 +120,6 @@ class AutocompleteEditViewWin
   virtual void OnBeforePossibleChange();
   virtual bool OnAfterPossibleChange();
   virtual gfx::NativeView GetNativeView() const;
-  virtual gfx::NativeView GetFocusNativeView() const;
 
   // Exposes custom IAccessible implementation to the overall MSAA hierarchy.
   IAccessible* GetIAccessible();

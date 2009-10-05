@@ -551,10 +551,6 @@ gfx::NativeView AutocompleteEditViewMac::GetNativeView() const {
   return field_;
 }
 
-gfx::NativeView AutocompleteEditViewMac::GetFocusNativeView() const {
-  return field_;
-}
-
 void AutocompleteEditViewMac::OnUpOrDownKeyPressed(bool up, bool by_page) {
   // We should only arrive here when the field is focussed.
   DCHECK(IsFirstResponder());
