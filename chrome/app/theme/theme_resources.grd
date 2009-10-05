@@ -386,8 +386,16 @@
         <include name="IDR_STATUSBAR_WIFI_7" file="statusbar_wifi_7.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIFI_8" file="statusbar_wifi_8.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIRED" file="statusbar_wired.png" type="BINDATA" />
+      </if>
+
+      <if expr="pp_ifdef('chromeos') and pp_ifdef('_google_chrome')">
         <include name="IDR_MAIN_MENU_BUTTON" file="google_chrome/button_menu.png" type="BINDATA" />
         <include name="IDR_MAIN_MENU_BUTTON_DROP_DOWN" file="google_chrome/button_menu_drop_down.png" type="BINDATA" />
+      </if>
+
+      <if expr="pp_ifdef('chromeos') and not pp_ifdef('_google_chrome')">
+        <include name="IDR_MAIN_MENU_BUTTON" file="chromium/button_menu.png" type="BINDATA" />
+        <include name="IDR_MAIN_MENU_BUTTON_DROP_DOWN" file="chromium/button_menu_drop_down.png" type="BINDATA" />
       </if>
 
       <if expr="not pp_ifdef('chromeos')">
@@ -402,3 +410,5 @@
     </includes>
   </release>
 </grit>
+
+
