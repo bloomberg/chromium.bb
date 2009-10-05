@@ -75,13 +75,42 @@ typedef std::map<int, std::pair<const char*, int> >
     IdToCanonicalEncodingNameMapType;
 typedef std::map<const std::string, int> CanonicalEncodingNameToIdMapType;
 
+typedef struct {
+  const char* canonical_form;
+  const char* display_form;
+} CanonicalEncodingDisplayNamePair;
+
+static CanonicalEncodingDisplayNamePair canonical_display_name_overrides[] = {
+  // Only lists the canonical names where we want a different form for display.
+  { "macintosh", "Macintosh" },
+  { "windows-874", "Windows-874" },
+  { "windows-949", "Windows-949" },
+  { "windows-1250", "Windows-1250" },
+  { "windows-1251", "Windows-1251" },
+  { "windows-1252", "Windows-1252" },
+  { "windows-1253", "Windows-1253" },
+  { "windows-1254", "Windows-1254" },
+  { "windows-1255", "Windows-1255" },
+  { "windows-1256", "Windows-1256" },
+  { "windows-1257", "Windows-1257" },
+  { "windows-1258", "Windows-1258" },
+};
+
+static const int canonical_display_name_overrides_length =
+    arraysize(canonical_display_name_overrides);
+
+typedef std::map<std::string, const char*>
+    CanonicalNameDisplayNameMapType;
+
 class CanonicalEncodingMap {
  public:
   CanonicalEncodingMap()
       : id_to_encoding_name_map_(NULL),
-        encoding_name_to_id_map_(NULL) { }
+        encoding_name_to_id_map_(NULL),
+        encoding_name_to_display_name_map_(NULL) { }
   const IdToCanonicalEncodingNameMapType* GetIdToCanonicalEncodingNameMapData();
   const CanonicalEncodingNameToIdMapType* GetCanonicalEncodingNameToIdMapData();
+  const CanonicalNameDisplayNameMapType* GetCanonicalNameDisplayNameMapData();
   std::vector<int>* const locale_dependent_encoding_ids() {
     return &locale_dependent_encoding_ids_;
   }
@@ -94,6 +123,7 @@ class CanonicalEncodingMap {
  private:
   scoped_ptr<IdToCanonicalEncodingNameMapType> id_to_encoding_name_map_;
   scoped_ptr<CanonicalEncodingNameToIdMapType> encoding_name_to_id_map_;
+  scoped_ptr<CanonicalNameDisplayNameMapType> encoding_name_to_display_name_map_;
   std::vector<int> locale_dependent_encoding_ids_;
   std::vector<CharacterEncoding::EncodingInfo> current_display_encodings_;
 
@@ -127,6 +157,28 @@ const CanonicalEncodingNameToIdMapType*
     }
   }
   return encoding_name_to_id_map_.get();
+}
+
+const CanonicalNameDisplayNameMapType*
+    CanonicalEncodingMap::GetCanonicalNameDisplayNameMapData() {
+  if (!encoding_name_to_display_name_map_.get()) {
+    encoding_name_to_display_name_map_.reset(
+        new CanonicalNameDisplayNameMapType);
+    // First store the names in the canonical_encoding_names list.
+    for (int i = 0; i < canonical_encoding_names_length; ++i) {
+      (*encoding_name_to_display_name_map_)[canonical_encoding_names[i].name] =
+          canonical_encoding_names[i].name;
+    }
+    // Then save in the overrides.
+    for (int i = 0; i < canonical_display_name_overrides_length; ++i) {
+      (*encoding_name_to_display_name_map_)[canonical_display_name_overrides[i].canonical_form] =
+          canonical_display_name_overrides[i].display_form;
+    }
+    DCHECK(static_cast<int>(encoding_name_to_display_name_map_->size()) ==
+           canonical_encoding_names_length)
+        << "Got an override that wasn't in the encoding list";
+  }
+  return encoding_name_to_display_name_map_.get();
 }
 
 // A static map object which contains all resourceid-nonsequenced canonical
@@ -200,9 +252,17 @@ string16 GetEncodingDisplayName(std::string encoding_name,
   if (category_string_id != IDS_ENCODING_KOREAN &&
       category_string_id != IDS_ENCODING_THAI &&
       category_string_id != IDS_ENCODING_TURKISH) {
+    const CanonicalNameDisplayNameMapType* map =
+        canonical_encoding_name_map_singleton.
+            GetCanonicalNameDisplayNameMapData();
+    DCHECK(map);
+
+    CanonicalNameDisplayNameMapType::const_iterator found_name =
+        map->find(encoding_name);
+    DCHECK(found_name != map->end());
     return l10n_util::GetStringFUTF16(IDS_ENCODING_DISPLAY_TEMPLATE,
                                       category_name,
-                                      ASCIIToUTF16(encoding_name));
+                                      ASCIIToUTF16(found_name->second));
   }
   return category_name;
 }
