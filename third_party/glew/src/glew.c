@@ -65,6 +65,28 @@
 #  define GLXEW_CONTEXT_ARG_DEF_LIST void
 #endif /* GLEW_MX */
 
+#ifdef _WIN32
+void* WinGetProcAddress(const GLubyte* name)
+{
+  /* Need to use GetProcAddress to bootstrap things now that we are
+     dynamically looking up OpenGL 1.1 entry points as well. */
+  static HMODULE oglImage = NULL;
+  void* proc = NULL;
+
+  if (NULL == oglImage) {
+    oglImage = LoadLibraryA("opengl32.dll");
+  }
+  if (NULL != oglImage) {
+    proc = (void*) GetProcAddress(oglImage, (LPCSTR) name);
+  }
+  if (NULL == proc) {
+    proc = wglGetProcAddress((LPCSTR) name);
+  }
+  return proc;
+}
+
+#endif /* _WIN32 */
+
 #if defined(__APPLE__)
 #include <dlfcn.h>
 #include <stdlib.h>
@@ -81,7 +103,7 @@ void* NSGLGetProcAddress (const GLubyte *name)
 }
 #endif /* __APPLE__ */
 
-#if defined(__sgi) || defined (__sun)
+#if defined(__sgi) || defined (__sun) || defined(__linux__)
 #include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -94,7 +116,11 @@ void* dlGetProcAddress (const GLubyte* name)
   if (h == NULL)
   {
     if ((h = dlopen(NULL, RTLD_LAZY | RTLD_LOCAL)) == NULL) return NULL;
+#ifdef __linux__
+    gpa = dlsym(h, "glXGetProcAddressARB");
+#else
     gpa = dlsym(h, "glXGetProcAddress");
+#endif
   }
 
   if (gpa != NULL)
@@ -108,14 +134,14 @@ void* dlGetProcAddress (const GLubyte* name)
  * Define glewGetProcAddress.
  */
 #if defined(_WIN32)
-#  define glewGetProcAddress(name) wglGetProcAddress((LPCSTR)name)
+#  define glewGetProcAddress(name) WinGetProcAddress((LPCSTR)name)
 #else
 #  if defined(__APPLE__)
 #    define glewGetProcAddress(name) NSGLGetProcAddress(name)
 #  else
-#    if defined(__sgi) || defined(__sun)
+#    if defined(__sgi) || defined(__sun) || defined(__linux__)
 #      define glewGetProcAddress(name) dlGetProcAddress(name)
-#    else /* __linux */
+#    else /* Used to use this for Linux, but no longer */
 #      define glewGetProcAddress(name) (*glXGetProcAddressARB)(name)
 #    endif
 #  endif
@@ -209,6 +235,343 @@ static GLboolean _glewStrSame3 (GLubyte** a, GLuint* na, const GLubyte* b, GLuin
 }
 
 #if !defined(_WIN32) || !defined(GLEW_MX)
+
+PFNGLACCUMPROC __glewAccum = NULL;
+PFNGLALPHAFUNCPROC __glewAlphaFunc = NULL;
+PFNGLARETEXTURESRESIDENTPROC __glewAreTexturesResident = NULL;
+PFNGLARRAYELEMENTPROC __glewArrayElement = NULL;
+PFNGLBEGINPROC __glewBegin = NULL;
+PFNGLBINDTEXTUREPROC __glewBindTexture = NULL;
+PFNGLBITMAPPROC __glewBitmap = NULL;
+PFNGLBLENDFUNCPROC __glewBlendFunc = NULL;
+PFNGLCALLLISTPROC __glewCallList = NULL;
+PFNGLCALLLISTSPROC __glewCallLists = NULL;
+PFNGLCLEARPROC __glewClear = NULL;
+PFNGLCLEARACCUMPROC __glewClearAccum = NULL;
+PFNGLCLEARCOLORPROC __glewClearColor = NULL;
+PFNGLCLEARDEPTHPROC __glewClearDepth = NULL;
+PFNGLCLEARINDEXPROC __glewClearIndex = NULL;
+PFNGLCLEARSTENCILPROC __glewClearStencil = NULL;
+PFNGLCLIPPLANEPROC __glewClipPlane = NULL;
+PFNGLCOLOR3BPROC __glewColor3b = NULL;
+PFNGLCOLOR3BVPROC __glewColor3bv = NULL;
+PFNGLCOLOR3DPROC __glewColor3d = NULL;
+PFNGLCOLOR3DVPROC __glewColor3dv = NULL;
+PFNGLCOLOR3FPROC __glewColor3f = NULL;
+PFNGLCOLOR3FVPROC __glewColor3fv = NULL;
+PFNGLCOLOR3IPROC __glewColor3i = NULL;
+PFNGLCOLOR3IVPROC __glewColor3iv = NULL;
+PFNGLCOLOR3SPROC __glewColor3s = NULL;
+PFNGLCOLOR3SVPROC __glewColor3sv = NULL;
+PFNGLCOLOR3UBPROC __glewColor3ub = NULL;
+PFNGLCOLOR3UBVPROC __glewColor3ubv = NULL;
+PFNGLCOLOR3UIPROC __glewColor3ui = NULL;
+PFNGLCOLOR3UIVPROC __glewColor3uiv = NULL;
+PFNGLCOLOR3USPROC __glewColor3us = NULL;
+PFNGLCOLOR3USVPROC __glewColor3usv = NULL;
+PFNGLCOLOR4BPROC __glewColor4b = NULL;
+PFNGLCOLOR4BVPROC __glewColor4bv = NULL;
+PFNGLCOLOR4DPROC __glewColor4d = NULL;
+PFNGLCOLOR4DVPROC __glewColor4dv = NULL;
+PFNGLCOLOR4FPROC __glewColor4f = NULL;
+PFNGLCOLOR4FVPROC __glewColor4fv = NULL;
+PFNGLCOLOR4IPROC __glewColor4i = NULL;
+PFNGLCOLOR4IVPROC __glewColor4iv = NULL;
+PFNGLCOLOR4SPROC __glewColor4s = NULL;
+PFNGLCOLOR4SVPROC __glewColor4sv = NULL;
+PFNGLCOLOR4UBPROC __glewColor4ub = NULL;
+PFNGLCOLOR4UBVPROC __glewColor4ubv = NULL;
+PFNGLCOLOR4UIPROC __glewColor4ui = NULL;
+PFNGLCOLOR4UIVPROC __glewColor4uiv = NULL;
+PFNGLCOLOR4USPROC __glewColor4us = NULL;
+PFNGLCOLOR4USVPROC __glewColor4usv = NULL;
+PFNGLCOLORMASKPROC __glewColorMask = NULL;
+PFNGLCOLORMATERIALPROC __glewColorMaterial = NULL;
+PFNGLCOLORPOINTERPROC __glewColorPointer = NULL;
+PFNGLCOPYPIXELSPROC __glewCopyPixels = NULL;
+PFNGLCOPYTEXIMAGE1DPROC __glewCopyTexImage1D = NULL;
+PFNGLCOPYTEXIMAGE2DPROC __glewCopyTexImage2D = NULL;
+PFNGLCOPYTEXSUBIMAGE1DPROC __glewCopyTexSubImage1D = NULL;
+PFNGLCOPYTEXSUBIMAGE2DPROC __glewCopyTexSubImage2D = NULL;
+PFNGLCULLFACEPROC __glewCullFace = NULL;
+PFNGLDELETELISTSPROC __glewDeleteLists = NULL;
+PFNGLDELETETEXTURESPROC __glewDeleteTextures = NULL;
+PFNGLDEPTHFUNCPROC __glewDepthFunc = NULL;
+PFNGLDEPTHMASKPROC __glewDepthMask = NULL;
+PFNGLDEPTHRANGEPROC __glewDepthRange = NULL;
+PFNGLDISABLEPROC __glewDisable = NULL;
+PFNGLDISABLECLIENTSTATEPROC __glewDisableClientState = NULL;
+PFNGLDRAWARRAYSPROC __glewDrawArrays = NULL;
+PFNGLDRAWBUFFERPROC __glewDrawBuffer = NULL;
+PFNGLDRAWELEMENTSPROC __glewDrawElements = NULL;
+PFNGLDRAWPIXELSPROC __glewDrawPixels = NULL;
+PFNGLEDGEFLAGPROC __glewEdgeFlag = NULL;
+PFNGLEDGEFLAGPOINTERPROC __glewEdgeFlagPointer = NULL;
+PFNGLEDGEFLAGVPROC __glewEdgeFlagv = NULL;
+PFNGLENABLEPROC __glewEnable = NULL;
+PFNGLENABLECLIENTSTATEPROC __glewEnableClientState = NULL;
+PFNGLENDPROC __glewEnd = NULL;
+PFNGLENDLISTPROC __glewEndList = NULL;
+PFNGLEVALCOORD1DPROC __glewEvalCoord1d = NULL;
+PFNGLEVALCOORD1DVPROC __glewEvalCoord1dv = NULL;
+PFNGLEVALCOORD1FPROC __glewEvalCoord1f = NULL;
+PFNGLEVALCOORD1FVPROC __glewEvalCoord1fv = NULL;
+PFNGLEVALCOORD2DPROC __glewEvalCoord2d = NULL;
+PFNGLEVALCOORD2DVPROC __glewEvalCoord2dv = NULL;
+PFNGLEVALCOORD2FPROC __glewEvalCoord2f = NULL;
+PFNGLEVALCOORD2FVPROC __glewEvalCoord2fv = NULL;
+PFNGLEVALMESH1PROC __glewEvalMesh1 = NULL;
+PFNGLEVALMESH2PROC __glewEvalMesh2 = NULL;
+PFNGLEVALPOINT1PROC __glewEvalPoint1 = NULL;
+PFNGLEVALPOINT2PROC __glewEvalPoint2 = NULL;
+PFNGLFEEDBACKBUFFERPROC __glewFeedbackBuffer = NULL;
+PFNGLFINISHPROC __glewFinish = NULL;
+PFNGLFLUSHPROC __glewFlush = NULL;
+PFNGLFOGFPROC __glewFogf = NULL;
+PFNGLFOGFVPROC __glewFogfv = NULL;
+PFNGLFOGIPROC __glewFogi = NULL;
+PFNGLFOGIVPROC __glewFogiv = NULL;
+PFNGLFRONTFACEPROC __glewFrontFace = NULL;
+PFNGLFRUSTUMPROC __glewFrustum = NULL;
+PFNGLGENLISTSPROC __glewGenLists = NULL;
+PFNGLGENTEXTURESPROC __glewGenTextures = NULL;
+PFNGLGETBOOLEANVPROC __glewGetBooleanv = NULL;
+PFNGLGETCLIPPLANEPROC __glewGetClipPlane = NULL;
+PFNGLGETDOUBLEVPROC __glewGetDoublev = NULL;
+PFNGLGETERRORPROC __glewGetError = NULL;
+PFNGLGETFLOATVPROC __glewGetFloatv = NULL;
+PFNGLGETINTEGERVPROC __glewGetIntegerv = NULL;
+PFNGLGETLIGHTFVPROC __glewGetLightfv = NULL;
+PFNGLGETLIGHTIVPROC __glewGetLightiv = NULL;
+PFNGLGETMAPDVPROC __glewGetMapdv = NULL;
+PFNGLGETMAPFVPROC __glewGetMapfv = NULL;
+PFNGLGETMAPIVPROC __glewGetMapiv = NULL;
+PFNGLGETMATERIALFVPROC __glewGetMaterialfv = NULL;
+PFNGLGETMATERIALIVPROC __glewGetMaterialiv = NULL;
+PFNGLGETPIXELMAPFVPROC __glewGetPixelMapfv = NULL;
+PFNGLGETPIXELMAPUIVPROC __glewGetPixelMapuiv = NULL;
+PFNGLGETPIXELMAPUSVPROC __glewGetPixelMapusv = NULL;
+PFNGLGETPOINTERVPROC __glewGetPointerv = NULL;
+PFNGLGETPOLYGONSTIPPLEPROC __glewGetPolygonStipple = NULL;
+PFNGLGETSTRINGPROC __glewGetString = NULL;
+PFNGLGETTEXENVFVPROC __glewGetTexEnvfv = NULL;
+PFNGLGETTEXENVIVPROC __glewGetTexEnviv = NULL;
+PFNGLGETTEXGENDVPROC __glewGetTexGendv = NULL;
+PFNGLGETTEXGENFVPROC __glewGetTexGenfv = NULL;
+PFNGLGETTEXGENIVPROC __glewGetTexGeniv = NULL;
+PFNGLGETTEXIMAGEPROC __glewGetTexImage = NULL;
+PFNGLGETTEXLEVELPARAMETERFVPROC __glewGetTexLevelParameterfv = NULL;
+PFNGLGETTEXLEVELPARAMETERIVPROC __glewGetTexLevelParameteriv = NULL;
+PFNGLGETTEXPARAMETERFVPROC __glewGetTexParameterfv = NULL;
+PFNGLGETTEXPARAMETERIVPROC __glewGetTexParameteriv = NULL;
+PFNGLHINTPROC __glewHint = NULL;
+PFNGLINDEXMASKPROC __glewIndexMask = NULL;
+PFNGLINDEXPOINTERPROC __glewIndexPointer = NULL;
+PFNGLINDEXDPROC __glewIndexd = NULL;
+PFNGLINDEXDVPROC __glewIndexdv = NULL;
+PFNGLINDEXFPROC __glewIndexf = NULL;
+PFNGLINDEXFVPROC __glewIndexfv = NULL;
+PFNGLINDEXIPROC __glewIndexi = NULL;
+PFNGLINDEXIVPROC __glewIndexiv = NULL;
+PFNGLINDEXSPROC __glewIndexs = NULL;
+PFNGLINDEXSVPROC __glewIndexsv = NULL;
+PFNGLINDEXUBPROC __glewIndexub = NULL;
+PFNGLINDEXUBVPROC __glewIndexubv = NULL;
+PFNGLINITNAMESPROC __glewInitNames = NULL;
+PFNGLINTERLEAVEDARRAYSPROC __glewInterleavedArrays = NULL;
+PFNGLISENABLEDPROC __glewIsEnabled = NULL;
+PFNGLISLISTPROC __glewIsList = NULL;
+PFNGLISTEXTUREPROC __glewIsTexture = NULL;
+PFNGLLIGHTMODELFPROC __glewLightModelf = NULL;
+PFNGLLIGHTMODELFVPROC __glewLightModelfv = NULL;
+PFNGLLIGHTMODELIPROC __glewLightModeli = NULL;
+PFNGLLIGHTMODELIVPROC __glewLightModeliv = NULL;
+PFNGLLIGHTFPROC __glewLightf = NULL;
+PFNGLLIGHTFVPROC __glewLightfv = NULL;
+PFNGLLIGHTIPROC __glewLighti = NULL;
+PFNGLLIGHTIVPROC __glewLightiv = NULL;
+PFNGLLINESTIPPLEPROC __glewLineStipple = NULL;
+PFNGLLINEWIDTHPROC __glewLineWidth = NULL;
+PFNGLLISTBASEPROC __glewListBase = NULL;
+PFNGLLOADIDENTITYPROC __glewLoadIdentity = NULL;
+PFNGLLOADMATRIXDPROC __glewLoadMatrixd = NULL;
+PFNGLLOADMATRIXFPROC __glewLoadMatrixf = NULL;
+PFNGLLOADNAMEPROC __glewLoadName = NULL;
+PFNGLLOGICOPPROC __glewLogicOp = NULL;
+PFNGLMAP1DPROC __glewMap1d = NULL;
+PFNGLMAP1FPROC __glewMap1f = NULL;
+PFNGLMAP2DPROC __glewMap2d = NULL;
+PFNGLMAP2FPROC __glewMap2f = NULL;
+PFNGLMAPGRID1DPROC __glewMapGrid1d = NULL;
+PFNGLMAPGRID1FPROC __glewMapGrid1f = NULL;
+PFNGLMAPGRID2DPROC __glewMapGrid2d = NULL;
+PFNGLMAPGRID2FPROC __glewMapGrid2f = NULL;
+PFNGLMATERIALFPROC __glewMaterialf = NULL;
+PFNGLMATERIALFVPROC __glewMaterialfv = NULL;
+PFNGLMATERIALIPROC __glewMateriali = NULL;
+PFNGLMATERIALIVPROC __glewMaterialiv = NULL;
+PFNGLMATRIXMODEPROC __glewMatrixMode = NULL;
+PFNGLMULTMATRIXDPROC __glewMultMatrixd = NULL;
+PFNGLMULTMATRIXFPROC __glewMultMatrixf = NULL;
+PFNGLNEWLISTPROC __glewNewList = NULL;
+PFNGLNORMAL3BPROC __glewNormal3b = NULL;
+PFNGLNORMAL3BVPROC __glewNormal3bv = NULL;
+PFNGLNORMAL3DPROC __glewNormal3d = NULL;
+PFNGLNORMAL3DVPROC __glewNormal3dv = NULL;
+PFNGLNORMAL3FPROC __glewNormal3f = NULL;
+PFNGLNORMAL3FVPROC __glewNormal3fv = NULL;
+PFNGLNORMAL3IPROC __glewNormal3i = NULL;
+PFNGLNORMAL3IVPROC __glewNormal3iv = NULL;
+PFNGLNORMAL3SPROC __glewNormal3s = NULL;
+PFNGLNORMAL3SVPROC __glewNormal3sv = NULL;
+PFNGLNORMALPOINTERPROC __glewNormalPointer = NULL;
+PFNGLORTHOPROC __glewOrtho = NULL;
+PFNGLPASSTHROUGHPROC __glewPassThrough = NULL;
+PFNGLPIXELMAPFVPROC __glewPixelMapfv = NULL;
+PFNGLPIXELMAPUIVPROC __glewPixelMapuiv = NULL;
+PFNGLPIXELMAPUSVPROC __glewPixelMapusv = NULL;
+PFNGLPIXELSTOREFPROC __glewPixelStoref = NULL;
+PFNGLPIXELSTOREIPROC __glewPixelStorei = NULL;
+PFNGLPIXELTRANSFERFPROC __glewPixelTransferf = NULL;
+PFNGLPIXELTRANSFERIPROC __glewPixelTransferi = NULL;
+PFNGLPIXELZOOMPROC __glewPixelZoom = NULL;
+PFNGLPOINTSIZEPROC __glewPointSize = NULL;
+PFNGLPOLYGONMODEPROC __glewPolygonMode = NULL;
+PFNGLPOLYGONOFFSETPROC __glewPolygonOffset = NULL;
+PFNGLPOLYGONSTIPPLEPROC __glewPolygonStipple = NULL;
+PFNGLPOPATTRIBPROC __glewPopAttrib = NULL;
+PFNGLPOPCLIENTATTRIBPROC __glewPopClientAttrib = NULL;
+PFNGLPOPMATRIXPROC __glewPopMatrix = NULL;
+PFNGLPOPNAMEPROC __glewPopName = NULL;
+PFNGLPRIORITIZETEXTURESPROC __glewPrioritizeTextures = NULL;
+PFNGLPUSHATTRIBPROC __glewPushAttrib = NULL;
+PFNGLPUSHCLIENTATTRIBPROC __glewPushClientAttrib = NULL;
+PFNGLPUSHMATRIXPROC __glewPushMatrix = NULL;
+PFNGLPUSHNAMEPROC __glewPushName = NULL;
+PFNGLRASTERPOS2DPROC __glewRasterPos2d = NULL;
+PFNGLRASTERPOS2DVPROC __glewRasterPos2dv = NULL;
+PFNGLRASTERPOS2FPROC __glewRasterPos2f = NULL;
+PFNGLRASTERPOS2FVPROC __glewRasterPos2fv = NULL;
+PFNGLRASTERPOS2IPROC __glewRasterPos2i = NULL;
+PFNGLRASTERPOS2IVPROC __glewRasterPos2iv = NULL;
+PFNGLRASTERPOS2SPROC __glewRasterPos2s = NULL;
+PFNGLRASTERPOS2SVPROC __glewRasterPos2sv = NULL;
+PFNGLRASTERPOS3DPROC __glewRasterPos3d = NULL;
+PFNGLRASTERPOS3DVPROC __glewRasterPos3dv = NULL;
+PFNGLRASTERPOS3FPROC __glewRasterPos3f = NULL;
+PFNGLRASTERPOS3FVPROC __glewRasterPos3fv = NULL;
+PFNGLRASTERPOS3IPROC __glewRasterPos3i = NULL;
+PFNGLRASTERPOS3IVPROC __glewRasterPos3iv = NULL;
+PFNGLRASTERPOS3SPROC __glewRasterPos3s = NULL;
+PFNGLRASTERPOS3SVPROC __glewRasterPos3sv = NULL;
+PFNGLRASTERPOS4DPROC __glewRasterPos4d = NULL;
+PFNGLRASTERPOS4DVPROC __glewRasterPos4dv = NULL;
+PFNGLRASTERPOS4FPROC __glewRasterPos4f = NULL;
+PFNGLRASTERPOS4FVPROC __glewRasterPos4fv = NULL;
+PFNGLRASTERPOS4IPROC __glewRasterPos4i = NULL;
+PFNGLRASTERPOS4IVPROC __glewRasterPos4iv = NULL;
+PFNGLRASTERPOS4SPROC __glewRasterPos4s = NULL;
+PFNGLRASTERPOS4SVPROC __glewRasterPos4sv = NULL;
+PFNGLREADBUFFERPROC __glewReadBuffer = NULL;
+PFNGLREADPIXELSPROC __glewReadPixels = NULL;
+PFNGLRECTDPROC __glewRectd = NULL;
+PFNGLRECTDVPROC __glewRectdv = NULL;
+PFNGLRECTFPROC __glewRectf = NULL;
+PFNGLRECTFVPROC __glewRectfv = NULL;
+PFNGLRECTIPROC __glewRecti = NULL;
+PFNGLRECTIVPROC __glewRectiv = NULL;
+PFNGLRECTSPROC __glewRects = NULL;
+PFNGLRECTSVPROC __glewRectsv = NULL;
+PFNGLRENDERMODEPROC __glewRenderMode = NULL;
+PFNGLROTATEDPROC __glewRotated = NULL;
+PFNGLROTATEFPROC __glewRotatef = NULL;
+PFNGLSCALEDPROC __glewScaled = NULL;
+PFNGLSCALEFPROC __glewScalef = NULL;
+PFNGLSCISSORPROC __glewScissor = NULL;
+PFNGLSELECTBUFFERPROC __glewSelectBuffer = NULL;
+PFNGLSHADEMODELPROC __glewShadeModel = NULL;
+PFNGLSTENCILFUNCPROC __glewStencilFunc = NULL;
+PFNGLSTENCILMASKPROC __glewStencilMask = NULL;
+PFNGLSTENCILOPPROC __glewStencilOp = NULL;
+PFNGLTEXCOORD1DPROC __glewTexCoord1d = NULL;
+PFNGLTEXCOORD1DVPROC __glewTexCoord1dv = NULL;
+PFNGLTEXCOORD1FPROC __glewTexCoord1f = NULL;
+PFNGLTEXCOORD1FVPROC __glewTexCoord1fv = NULL;
+PFNGLTEXCOORD1IPROC __glewTexCoord1i = NULL;
+PFNGLTEXCOORD1IVPROC __glewTexCoord1iv = NULL;
+PFNGLTEXCOORD1SPROC __glewTexCoord1s = NULL;
+PFNGLTEXCOORD1SVPROC __glewTexCoord1sv = NULL;
+PFNGLTEXCOORD2DPROC __glewTexCoord2d = NULL;
+PFNGLTEXCOORD2DVPROC __glewTexCoord2dv = NULL;
+PFNGLTEXCOORD2FPROC __glewTexCoord2f = NULL;
+PFNGLTEXCOORD2FVPROC __glewTexCoord2fv = NULL;
+PFNGLTEXCOORD2IPROC __glewTexCoord2i = NULL;
+PFNGLTEXCOORD2IVPROC __glewTexCoord2iv = NULL;
+PFNGLTEXCOORD2SPROC __glewTexCoord2s = NULL;
+PFNGLTEXCOORD2SVPROC __glewTexCoord2sv = NULL;
+PFNGLTEXCOORD3DPROC __glewTexCoord3d = NULL;
+PFNGLTEXCOORD3DVPROC __glewTexCoord3dv = NULL;
+PFNGLTEXCOORD3FPROC __glewTexCoord3f = NULL;
+PFNGLTEXCOORD3FVPROC __glewTexCoord3fv = NULL;
+PFNGLTEXCOORD3IPROC __glewTexCoord3i = NULL;
+PFNGLTEXCOORD3IVPROC __glewTexCoord3iv = NULL;
+PFNGLTEXCOORD3SPROC __glewTexCoord3s = NULL;
+PFNGLTEXCOORD3SVPROC __glewTexCoord3sv = NULL;
+PFNGLTEXCOORD4DPROC __glewTexCoord4d = NULL;
+PFNGLTEXCOORD4DVPROC __glewTexCoord4dv = NULL;
+PFNGLTEXCOORD4FPROC __glewTexCoord4f = NULL;
+PFNGLTEXCOORD4FVPROC __glewTexCoord4fv = NULL;
+PFNGLTEXCOORD4IPROC __glewTexCoord4i = NULL;
+PFNGLTEXCOORD4IVPROC __glewTexCoord4iv = NULL;
+PFNGLTEXCOORD4SPROC __glewTexCoord4s = NULL;
+PFNGLTEXCOORD4SVPROC __glewTexCoord4sv = NULL;
+PFNGLTEXCOORDPOINTERPROC __glewTexCoordPointer = NULL;
+PFNGLTEXENVFPROC __glewTexEnvf = NULL;
+PFNGLTEXENVFVPROC __glewTexEnvfv = NULL;
+PFNGLTEXENVIPROC __glewTexEnvi = NULL;
+PFNGLTEXENVIVPROC __glewTexEnviv = NULL;
+PFNGLTEXGENDPROC __glewTexGend = NULL;
+PFNGLTEXGENDVPROC __glewTexGendv = NULL;
+PFNGLTEXGENFPROC __glewTexGenf = NULL;
+PFNGLTEXGENFVPROC __glewTexGenfv = NULL;
+PFNGLTEXGENIPROC __glewTexGeni = NULL;
+PFNGLTEXGENIVPROC __glewTexGeniv = NULL;
+PFNGLTEXIMAGE1DPROC __glewTexImage1D = NULL;
+PFNGLTEXIMAGE2DPROC __glewTexImage2D = NULL;
+PFNGLTEXPARAMETERFPROC __glewTexParameterf = NULL;
+PFNGLTEXPARAMETERFVPROC __glewTexParameterfv = NULL;
+PFNGLTEXPARAMETERIPROC __glewTexParameteri = NULL;
+PFNGLTEXPARAMETERIVPROC __glewTexParameteriv = NULL;
+PFNGLTEXSUBIMAGE1DPROC __glewTexSubImage1D = NULL;
+PFNGLTEXSUBIMAGE2DPROC __glewTexSubImage2D = NULL;
+PFNGLTRANSLATEDPROC __glewTranslated = NULL;
+PFNGLTRANSLATEFPROC __glewTranslatef = NULL;
+PFNGLVERTEX2DPROC __glewVertex2d = NULL;
+PFNGLVERTEX2DVPROC __glewVertex2dv = NULL;
+PFNGLVERTEX2FPROC __glewVertex2f = NULL;
+PFNGLVERTEX2FVPROC __glewVertex2fv = NULL;
+PFNGLVERTEX2IPROC __glewVertex2i = NULL;
+PFNGLVERTEX2IVPROC __glewVertex2iv = NULL;
+PFNGLVERTEX2SPROC __glewVertex2s = NULL;
+PFNGLVERTEX2SVPROC __glewVertex2sv = NULL;
+PFNGLVERTEX3DPROC __glewVertex3d = NULL;
+PFNGLVERTEX3DVPROC __glewVertex3dv = NULL;
+PFNGLVERTEX3FPROC __glewVertex3f = NULL;
+PFNGLVERTEX3FVPROC __glewVertex3fv = NULL;
+PFNGLVERTEX3IPROC __glewVertex3i = NULL;
+PFNGLVERTEX3IVPROC __glewVertex3iv = NULL;
+PFNGLVERTEX3SPROC __glewVertex3s = NULL;
+PFNGLVERTEX3SVPROC __glewVertex3sv = NULL;
+PFNGLVERTEX4DPROC __glewVertex4d = NULL;
+PFNGLVERTEX4DVPROC __glewVertex4dv = NULL;
+PFNGLVERTEX4FPROC __glewVertex4f = NULL;
+PFNGLVERTEX4FVPROC __glewVertex4fv = NULL;
+PFNGLVERTEX4IPROC __glewVertex4i = NULL;
+PFNGLVERTEX4IVPROC __glewVertex4iv = NULL;
+PFNGLVERTEX4SPROC __glewVertex4s = NULL;
+PFNGLVERTEX4SVPROC __glewVertex4sv = NULL;
+PFNGLVERTEXPOINTERPROC __glewVertexPointer = NULL;
+PFNGLVIEWPORTPROC __glewViewport = NULL;
 
 PFNGLCOPYTEXSUBIMAGE3DPROC __glewCopyTexSubImage3D = NULL;
 PFNGLDRAWRANGEELEMENTSPROC __glewDrawRangeElements = NULL;
@@ -2156,6 +2519,354 @@ GLboolean __GLEW_WIN_specular_fog = GL_FALSE;
 GLboolean __GLEW_WIN_swap_hint = GL_FALSE;
 
 #endif /* !GLEW_MX */
+
+#ifdef GL_VERSION_1_1
+
+static GLboolean _glewInit_GL_VERSION_1_1 (GLEW_CONTEXT_ARG_DEF_INIT)
+{
+  GLboolean r = GL_FALSE;
+
+  r = ((glAccum = (PFNGLACCUMPROC)glewGetProcAddress((const GLubyte*)"glAccum")) == NULL) || r;
+  r = ((glAlphaFunc = (PFNGLALPHAFUNCPROC)glewGetProcAddress((const GLubyte*)"glAlphaFunc")) == NULL) || r;
+  r = ((glAreTexturesResident = (PFNGLARETEXTURESRESIDENTPROC)glewGetProcAddress((const GLubyte*)"glAreTexturesResident")) == NULL) || r;
+  r = ((glArrayElement = (PFNGLARRAYELEMENTPROC)glewGetProcAddress((const GLubyte*)"glArrayElement")) == NULL) || r;
+  r = ((glBegin = (PFNGLBEGINPROC)glewGetProcAddress((const GLubyte*)"glBegin")) == NULL) || r;
+  r = ((glBindTexture = (PFNGLBINDTEXTUREPROC)glewGetProcAddress((const GLubyte*)"glBindTexture")) == NULL) || r;
+  r = ((glBitmap = (PFNGLBITMAPPROC)glewGetProcAddress((const GLubyte*)"glBitmap")) == NULL) || r;
+  r = ((glBlendFunc = (PFNGLBLENDFUNCPROC)glewGetProcAddress((const GLubyte*)"glBlendFunc")) == NULL) || r;
+  r = ((glCallList = (PFNGLCALLLISTPROC)glewGetProcAddress((const GLubyte*)"glCallList")) == NULL) || r;
+  r = ((glCallLists = (PFNGLCALLLISTSPROC)glewGetProcAddress((const GLubyte*)"glCallLists")) == NULL) || r;
+  r = ((glClear = (PFNGLCLEARPROC)glewGetProcAddress((const GLubyte*)"glClear")) == NULL) || r;
+  r = ((glClearAccum = (PFNGLCLEARACCUMPROC)glewGetProcAddress((const GLubyte*)"glClearAccum")) == NULL) || r;
+  r = ((glClearColor = (PFNGLCLEARCOLORPROC)glewGetProcAddress((const GLubyte*)"glClearColor")) == NULL) || r;
+  r = ((glClearDepth = (PFNGLCLEARDEPTHPROC)glewGetProcAddress((const GLubyte*)"glClearDepth")) == NULL) || r;
+  r = ((glClearIndex = (PFNGLCLEARINDEXPROC)glewGetProcAddress((const GLubyte*)"glClearIndex")) == NULL) || r;
+  r = ((glClearStencil = (PFNGLCLEARSTENCILPROC)glewGetProcAddress((const GLubyte*)"glClearStencil")) == NULL) || r;
+  r = ((glClipPlane = (PFNGLCLIPPLANEPROC)glewGetProcAddress((const GLubyte*)"glClipPlane")) == NULL) || r;
+  r = ((glColor3b = (PFNGLCOLOR3BPROC)glewGetProcAddress((const GLubyte*)"glColor3b")) == NULL) || r;
+  r = ((glColor3bv = (PFNGLCOLOR3BVPROC)glewGetProcAddress((const GLubyte*)"glColor3bv")) == NULL) || r;
+  r = ((glColor3d = (PFNGLCOLOR3DPROC)glewGetProcAddress((const GLubyte*)"glColor3d")) == NULL) || r;
+  r = ((glColor3dv = (PFNGLCOLOR3DVPROC)glewGetProcAddress((const GLubyte*)"glColor3dv")) == NULL) || r;
+  r = ((glColor3f = (PFNGLCOLOR3FPROC)glewGetProcAddress((const GLubyte*)"glColor3f")) == NULL) || r;
+  r = ((glColor3fv = (PFNGLCOLOR3FVPROC)glewGetProcAddress((const GLubyte*)"glColor3fv")) == NULL) || r;
+  r = ((glColor3i = (PFNGLCOLOR3IPROC)glewGetProcAddress((const GLubyte*)"glColor3i")) == NULL) || r;
+  r = ((glColor3iv = (PFNGLCOLOR3IVPROC)glewGetProcAddress((const GLubyte*)"glColor3iv")) == NULL) || r;
+  r = ((glColor3s = (PFNGLCOLOR3SPROC)glewGetProcAddress((const GLubyte*)"glColor3s")) == NULL) || r;
+  r = ((glColor3sv = (PFNGLCOLOR3SVPROC)glewGetProcAddress((const GLubyte*)"glColor3sv")) == NULL) || r;
+  r = ((glColor3ub = (PFNGLCOLOR3UBPROC)glewGetProcAddress((const GLubyte*)"glColor3ub")) == NULL) || r;
+  r = ((glColor3ubv = (PFNGLCOLOR3UBVPROC)glewGetProcAddress((const GLubyte*)"glColor3ubv")) == NULL) || r;
+  r = ((glColor3ui = (PFNGLCOLOR3UIPROC)glewGetProcAddress((const GLubyte*)"glColor3ui")) == NULL) || r;
+  r = ((glColor3uiv = (PFNGLCOLOR3UIVPROC)glewGetProcAddress((const GLubyte*)"glColor3uiv")) == NULL) || r;
+  r = ((glColor3us = (PFNGLCOLOR3USPROC)glewGetProcAddress((const GLubyte*)"glColor3us")) == NULL) || r;
+  r = ((glColor3usv = (PFNGLCOLOR3USVPROC)glewGetProcAddress((const GLubyte*)"glColor3usv")) == NULL) || r;
+  r = ((glColor4b = (PFNGLCOLOR4BPROC)glewGetProcAddress((const GLubyte*)"glColor4b")) == NULL) || r;
+  r = ((glColor4bv = (PFNGLCOLOR4BVPROC)glewGetProcAddress((const GLubyte*)"glColor4bv")) == NULL) || r;
+  r = ((glColor4d = (PFNGLCOLOR4DPROC)glewGetProcAddress((const GLubyte*)"glColor4d")) == NULL) || r;
+  r = ((glColor4dv = (PFNGLCOLOR4DVPROC)glewGetProcAddress((const GLubyte*)"glColor4dv")) == NULL) || r;
+  r = ((glColor4f = (PFNGLCOLOR4FPROC)glewGetProcAddress((const GLubyte*)"glColor4f")) == NULL) || r;
+  r = ((glColor4fv = (PFNGLCOLOR4FVPROC)glewGetProcAddress((const GLubyte*)"glColor4fv")) == NULL) || r;
+  r = ((glColor4i = (PFNGLCOLOR4IPROC)glewGetProcAddress((const GLubyte*)"glColor4i")) == NULL) || r;
+  r = ((glColor4iv = (PFNGLCOLOR4IVPROC)glewGetProcAddress((const GLubyte*)"glColor4iv")) == NULL) || r;
+  r = ((glColor4s = (PFNGLCOLOR4SPROC)glewGetProcAddress((const GLubyte*)"glColor4s")) == NULL) || r;
+  r = ((glColor4sv = (PFNGLCOLOR4SVPROC)glewGetProcAddress((const GLubyte*)"glColor4sv")) == NULL) || r;
+  r = ((glColor4ub = (PFNGLCOLOR4UBPROC)glewGetProcAddress((const GLubyte*)"glColor4ub")) == NULL) || r;
+  r = ((glColor4ubv = (PFNGLCOLOR4UBVPROC)glewGetProcAddress((const GLubyte*)"glColor4ubv")) == NULL) || r;
+  r = ((glColor4ui = (PFNGLCOLOR4UIPROC)glewGetProcAddress((const GLubyte*)"glColor4ui")) == NULL) || r;
+  r = ((glColor4uiv = (PFNGLCOLOR4UIVPROC)glewGetProcAddress((const GLubyte*)"glColor4uiv")) == NULL) || r;
+  r = ((glColor4us = (PFNGLCOLOR4USPROC)glewGetProcAddress((const GLubyte*)"glColor4us")) == NULL) || r;
+  r = ((glColor4usv = (PFNGLCOLOR4USVPROC)glewGetProcAddress((const GLubyte*)"glColor4usv")) == NULL) || r;
+  r = ((glColorMask = (PFNGLCOLORMASKPROC)glewGetProcAddress((const GLubyte*)"glColorMask")) == NULL) || r;
+  r = ((glColorMaterial = (PFNGLCOLORMATERIALPROC)glewGetProcAddress((const GLubyte*)"glColorMaterial")) == NULL) || r;
+  r = ((glColorPointer = (PFNGLCOLORPOINTERPROC)glewGetProcAddress((const GLubyte*)"glColorPointer")) == NULL) || r;
+  r = ((glCopyPixels = (PFNGLCOPYPIXELSPROC)glewGetProcAddress((const GLubyte*)"glCopyPixels")) == NULL) || r;
+  r = ((glCopyTexImage1D = (PFNGLCOPYTEXIMAGE1DPROC)glewGetProcAddress((const GLubyte*)"glCopyTexImage1D")) == NULL) || r;
+  r = ((glCopyTexImage2D = (PFNGLCOPYTEXIMAGE2DPROC)glewGetProcAddress((const GLubyte*)"glCopyTexImage2D")) == NULL) || r;
+  r = ((glCopyTexSubImage1D = (PFNGLCOPYTEXSUBIMAGE1DPROC)glewGetProcAddress((const GLubyte*)"glCopyTexSubImage1D")) == NULL) || r;
+  r = ((glCopyTexSubImage2D = (PFNGLCOPYTEXSUBIMAGE2DPROC)glewGetProcAddress((const GLubyte*)"glCopyTexSubImage2D")) == NULL) || r;
+  r = ((glCullFace = (PFNGLCULLFACEPROC)glewGetProcAddress((const GLubyte*)"glCullFace")) == NULL) || r;
+  r = ((glDeleteLists = (PFNGLDELETELISTSPROC)glewGetProcAddress((const GLubyte*)"glDeleteLists")) == NULL) || r;
+  r = ((glDeleteTextures = (PFNGLDELETETEXTURESPROC)glewGetProcAddress((const GLubyte*)"glDeleteTextures")) == NULL) || r;
+  r = ((glDepthFunc = (PFNGLDEPTHFUNCPROC)glewGetProcAddress((const GLubyte*)"glDepthFunc")) == NULL) || r;
+  r = ((glDepthMask = (PFNGLDEPTHMASKPROC)glewGetProcAddress((const GLubyte*)"glDepthMask")) == NULL) || r;
+  r = ((glDepthRange = (PFNGLDEPTHRANGEPROC)glewGetProcAddress((const GLubyte*)"glDepthRange")) == NULL) || r;
+  r = ((glDisable = (PFNGLDISABLEPROC)glewGetProcAddress((const GLubyte*)"glDisable")) == NULL) || r;
+  r = ((glDisableClientState = (PFNGLDISABLECLIENTSTATEPROC)glewGetProcAddress((const GLubyte*)"glDisableClientState")) == NULL) || r;
+  r = ((glDrawArrays = (PFNGLDRAWARRAYSPROC)glewGetProcAddress((const GLubyte*)"glDrawArrays")) == NULL) || r;
+  r = ((glDrawBuffer = (PFNGLDRAWBUFFERPROC)glewGetProcAddress((const GLubyte*)"glDrawBuffer")) == NULL) || r;
+  r = ((glDrawElements = (PFNGLDRAWELEMENTSPROC)glewGetProcAddress((const GLubyte*)"glDrawElements")) == NULL) || r;
+  r = ((glDrawPixels = (PFNGLDRAWPIXELSPROC)glewGetProcAddress((const GLubyte*)"glDrawPixels")) == NULL) || r;
+  r = ((glEdgeFlag = (PFNGLEDGEFLAGPROC)glewGetProcAddress((const GLubyte*)"glEdgeFlag")) == NULL) || r;
+  r = ((glEdgeFlagPointer = (PFNGLEDGEFLAGPOINTERPROC)glewGetProcAddress((const GLubyte*)"glEdgeFlagPointer")) == NULL) || r;
+  r = ((glEdgeFlagv = (PFNGLEDGEFLAGVPROC)glewGetProcAddress((const GLubyte*)"glEdgeFlagv")) == NULL) || r;
+  r = ((glEnable = (PFNGLENABLEPROC)glewGetProcAddress((const GLubyte*)"glEnable")) == NULL) || r;
+  r = ((glEnableClientState = (PFNGLENABLECLIENTSTATEPROC)glewGetProcAddress((const GLubyte*)"glEnableClientState")) == NULL) || r;
+  r = ((glEnd = (PFNGLENDPROC)glewGetProcAddress((const GLubyte*)"glEnd")) == NULL) || r;
+  r = ((glEndList = (PFNGLENDLISTPROC)glewGetProcAddress((const GLubyte*)"glEndList")) == NULL) || r;
+  r = ((glEvalCoord1d = (PFNGLEVALCOORD1DPROC)glewGetProcAddress((const GLubyte*)"glEvalCoord1d")) == NULL) || r;
+  r = ((glEvalCoord1dv = (PFNGLEVALCOORD1DVPROC)glewGetProcAddress((const GLubyte*)"glEvalCoord1dv")) == NULL) || r;
+  r = ((glEvalCoord1f = (PFNGLEVALCOORD1FPROC)glewGetProcAddress((const GLubyte*)"glEvalCoord1f")) == NULL) || r;
+  r = ((glEvalCoord1fv = (PFNGLEVALCOORD1FVPROC)glewGetProcAddress((const GLubyte*)"glEvalCoord1fv")) == NULL) || r;
+  r = ((glEvalCoord2d = (PFNGLEVALCOORD2DPROC)glewGetProcAddress((const GLubyte*)"glEvalCoord2d")) == NULL) || r;
+  r = ((glEvalCoord2dv = (PFNGLEVALCOORD2DVPROC)glewGetProcAddress((const GLubyte*)"glEvalCoord2dv")) == NULL) || r;
+  r = ((glEvalCoord2f = (PFNGLEVALCOORD2FPROC)glewGetProcAddress((const GLubyte*)"glEvalCoord2f")) == NULL) || r;
+  r = ((glEvalCoord2fv = (PFNGLEVALCOORD2FVPROC)glewGetProcAddress((const GLubyte*)"glEvalCoord2fv")) == NULL) || r;
+  r = ((glEvalMesh1 = (PFNGLEVALMESH1PROC)glewGetProcAddress((const GLubyte*)"glEvalMesh1")) == NULL) || r;
+  r = ((glEvalMesh2 = (PFNGLEVALMESH2PROC)glewGetProcAddress((const GLubyte*)"glEvalMesh2")) == NULL) || r;
+  r = ((glEvalPoint1 = (PFNGLEVALPOINT1PROC)glewGetProcAddress((const GLubyte*)"glEvalPoint1")) == NULL) || r;
+  r = ((glEvalPoint2 = (PFNGLEVALPOINT2PROC)glewGetProcAddress((const GLubyte*)"glEvalPoint2")) == NULL) || r;
+  r = ((glFeedbackBuffer = (PFNGLFEEDBACKBUFFERPROC)glewGetProcAddress((const GLubyte*)"glFeedbackBuffer")) == NULL) || r;
+  r = ((glFinish = (PFNGLFINISHPROC)glewGetProcAddress((const GLubyte*)"glFinish")) == NULL) || r;
+  r = ((glFlush = (PFNGLFLUSHPROC)glewGetProcAddress((const GLubyte*)"glFlush")) == NULL) || r;
+  r = ((glFogf = (PFNGLFOGFPROC)glewGetProcAddress((const GLubyte*)"glFogf")) == NULL) || r;
+  r = ((glFogfv = (PFNGLFOGFVPROC)glewGetProcAddress((const GLubyte*)"glFogfv")) == NULL) || r;
+  r = ((glFogi = (PFNGLFOGIPROC)glewGetProcAddress((const GLubyte*)"glFogi")) == NULL) || r;
+  r = ((glFogiv = (PFNGLFOGIVPROC)glewGetProcAddress((const GLubyte*)"glFogiv")) == NULL) || r;
+  r = ((glFrontFace = (PFNGLFRONTFACEPROC)glewGetProcAddress((const GLubyte*)"glFrontFace")) == NULL) || r;
+  r = ((glFrustum = (PFNGLFRUSTUMPROC)glewGetProcAddress((const GLubyte*)"glFrustum")) == NULL) || r;
+  r = ((glGenLists = (PFNGLGENLISTSPROC)glewGetProcAddress((const GLubyte*)"glGenLists")) == NULL) || r;
+  r = ((glGenTextures = (PFNGLGENTEXTURESPROC)glewGetProcAddress((const GLubyte*)"glGenTextures")) == NULL) || r;
+  r = ((glGetBooleanv = (PFNGLGETBOOLEANVPROC)glewGetProcAddress((const GLubyte*)"glGetBooleanv")) == NULL) || r;
+  r = ((glGetClipPlane = (PFNGLGETCLIPPLANEPROC)glewGetProcAddress((const GLubyte*)"glGetClipPlane")) == NULL) || r;
+  r = ((glGetDoublev = (PFNGLGETDOUBLEVPROC)glewGetProcAddress((const GLubyte*)"glGetDoublev")) == NULL) || r;
+  r = ((glGetError = (PFNGLGETERRORPROC)glewGetProcAddress((const GLubyte*)"glGetError")) == NULL) || r;
+  r = ((glGetFloatv = (PFNGLGETFLOATVPROC)glewGetProcAddress((const GLubyte*)"glGetFloatv")) == NULL) || r;
+  r = ((glGetIntegerv = (PFNGLGETINTEGERVPROC)glewGetProcAddress((const GLubyte*)"glGetIntegerv")) == NULL) || r;
+  r = ((glGetLightfv = (PFNGLGETLIGHTFVPROC)glewGetProcAddress((const GLubyte*)"glGetLightfv")) == NULL) || r;
+  r = ((glGetLightiv = (PFNGLGETLIGHTIVPROC)glewGetProcAddress((const GLubyte*)"glGetLightiv")) == NULL) || r;
+  r = ((glGetMapdv = (PFNGLGETMAPDVPROC)glewGetProcAddress((const GLubyte*)"glGetMapdv")) == NULL) || r;
+  r = ((glGetMapfv = (PFNGLGETMAPFVPROC)glewGetProcAddress((const GLubyte*)"glGetMapfv")) == NULL) || r;
+  r = ((glGetMapiv = (PFNGLGETMAPIVPROC)glewGetProcAddress((const GLubyte*)"glGetMapiv")) == NULL) || r;
+  r = ((glGetMaterialfv = (PFNGLGETMATERIALFVPROC)glewGetProcAddress((const GLubyte*)"glGetMaterialfv")) == NULL) || r;
+  r = ((glGetMaterialiv = (PFNGLGETMATERIALIVPROC)glewGetProcAddress((const GLubyte*)"glGetMaterialiv")) == NULL) || r;
+  r = ((glGetPixelMapfv = (PFNGLGETPIXELMAPFVPROC)glewGetProcAddress((const GLubyte*)"glGetPixelMapfv")) == NULL) || r;
+  r = ((glGetPixelMapuiv = (PFNGLGETPIXELMAPUIVPROC)glewGetProcAddress((const GLubyte*)"glGetPixelMapuiv")) == NULL) || r;
+  r = ((glGetPixelMapusv = (PFNGLGETPIXELMAPUSVPROC)glewGetProcAddress((const GLubyte*)"glGetPixelMapusv")) == NULL) || r;
+  r = ((glGetPointerv = (PFNGLGETPOINTERVPROC)glewGetProcAddress((const GLubyte*)"glGetPointerv")) == NULL) || r;
+  r = ((glGetPolygonStipple = (PFNGLGETPOLYGONSTIPPLEPROC)glewGetProcAddress((const GLubyte*)"glGetPolygonStipple")) == NULL) || r;
+  r = ((glGetString = (PFNGLGETSTRINGPROC)glewGetProcAddress((const GLubyte*)"glGetString")) == NULL) || r;
+  r = ((glGetTexEnvfv = (PFNGLGETTEXENVFVPROC)glewGetProcAddress((const GLubyte*)"glGetTexEnvfv")) == NULL) || r;
+  r = ((glGetTexEnviv = (PFNGLGETTEXENVIVPROC)glewGetProcAddress((const GLubyte*)"glGetTexEnviv")) == NULL) || r;
+  r = ((glGetTexGendv = (PFNGLGETTEXGENDVPROC)glewGetProcAddress((const GLubyte*)"glGetTexGendv")) == NULL) || r;
+  r = ((glGetTexGenfv = (PFNGLGETTEXGENFVPROC)glewGetProcAddress((const GLubyte*)"glGetTexGenfv")) == NULL) || r;
+  r = ((glGetTexGeniv = (PFNGLGETTEXGENIVPROC)glewGetProcAddress((const GLubyte*)"glGetTexGeniv")) == NULL) || r;
+  r = ((glGetTexImage = (PFNGLGETTEXIMAGEPROC)glewGetProcAddress((const GLubyte*)"glGetTexImage")) == NULL) || r;
+  r = ((glGetTexLevelParameterfv = (PFNGLGETTEXLEVELPARAMETERFVPROC)glewGetProcAddress((const GLubyte*)"glGetTexLevelParameterfv")) == NULL) || r;
+  r = ((glGetTexLevelParameteriv = (PFNGLGETTEXLEVELPARAMETERIVPROC)glewGetProcAddress((const GLubyte*)"glGetTexLevelParameteriv")) == NULL) || r;
+  r = ((glGetTexParameterfv = (PFNGLGETTEXPARAMETERFVPROC)glewGetProcAddress((const GLubyte*)"glGetTexParameterfv")) == NULL) || r;
+  r = ((glGetTexParameteriv = (PFNGLGETTEXPARAMETERIVPROC)glewGetProcAddress((const GLubyte*)"glGetTexParameteriv")) == NULL) || r;
+  r = ((glHint = (PFNGLHINTPROC)glewGetProcAddress((const GLubyte*)"glHint")) == NULL) || r;
+  r = ((glIndexMask = (PFNGLINDEXMASKPROC)glewGetProcAddress((const GLubyte*)"glIndexMask")) == NULL) || r;
+  r = ((glIndexPointer = (PFNGLINDEXPOINTERPROC)glewGetProcAddress((const GLubyte*)"glIndexPointer")) == NULL) || r;
+  r = ((glIndexd = (PFNGLINDEXDPROC)glewGetProcAddress((const GLubyte*)"glIndexd")) == NULL) || r;
+  r = ((glIndexdv = (PFNGLINDEXDVPROC)glewGetProcAddress((const GLubyte*)"glIndexdv")) == NULL) || r;
+  r = ((glIndexf = (PFNGLINDEXFPROC)glewGetProcAddress((const GLubyte*)"glIndexf")) == NULL) || r;
+  r = ((glIndexfv = (PFNGLINDEXFVPROC)glewGetProcAddress((const GLubyte*)"glIndexfv")) == NULL) || r;
+  r = ((glIndexi = (PFNGLINDEXIPROC)glewGetProcAddress((const GLubyte*)"glIndexi")) == NULL) || r;
+  r = ((glIndexiv = (PFNGLINDEXIVPROC)glewGetProcAddress((const GLubyte*)"glIndexiv")) == NULL) || r;
+  r = ((glIndexs = (PFNGLINDEXSPROC)glewGetProcAddress((const GLubyte*)"glIndexs")) == NULL) || r;
+  r = ((glIndexsv = (PFNGLINDEXSVPROC)glewGetProcAddress((const GLubyte*)"glIndexsv")) == NULL) || r;
+  r = ((glIndexub = (PFNGLINDEXUBPROC)glewGetProcAddress((const GLubyte*)"glIndexub")) == NULL) || r;
+  r = ((glIndexubv = (PFNGLINDEXUBVPROC)glewGetProcAddress((const GLubyte*)"glIndexubv")) == NULL) || r;
+  r = ((glInitNames = (PFNGLINITNAMESPROC)glewGetProcAddress((const GLubyte*)"glInitNames")) == NULL) || r;
+  r = ((glInterleavedArrays = (PFNGLINTERLEAVEDARRAYSPROC)glewGetProcAddress((const GLubyte*)"glInterleavedArrays")) == NULL) || r;
+  r = ((glIsEnabled = (PFNGLISENABLEDPROC)glewGetProcAddress((const GLubyte*)"glIsEnabled")) == NULL) || r;
+  r = ((glIsList = (PFNGLISLISTPROC)glewGetProcAddress((const GLubyte*)"glIsList")) == NULL) || r;
+  r = ((glIsTexture = (PFNGLISTEXTUREPROC)glewGetProcAddress((const GLubyte*)"glIsTexture")) == NULL) || r;
+  r = ((glLightModelf = (PFNGLLIGHTMODELFPROC)glewGetProcAddress((const GLubyte*)"glLightModelf")) == NULL) || r;
+  r = ((glLightModelfv = (PFNGLLIGHTMODELFVPROC)glewGetProcAddress((const GLubyte*)"glLightModelfv")) == NULL) || r;
+  r = ((glLightModeli = (PFNGLLIGHTMODELIPROC)glewGetProcAddress((const GLubyte*)"glLightModeli")) == NULL) || r;
+  r = ((glLightModeliv = (PFNGLLIGHTMODELIVPROC)glewGetProcAddress((const GLubyte*)"glLightModeliv")) == NULL) || r;
+  r = ((glLightf = (PFNGLLIGHTFPROC)glewGetProcAddress((const GLubyte*)"glLightf")) == NULL) || r;
+  r = ((glLightfv = (PFNGLLIGHTFVPROC)glewGetProcAddress((const GLubyte*)"glLightfv")) == NULL) || r;
+  r = ((glLighti = (PFNGLLIGHTIPROC)glewGetProcAddress((const GLubyte*)"glLighti")) == NULL) || r;
+  r = ((glLightiv = (PFNGLLIGHTIVPROC)glewGetProcAddress((const GLubyte*)"glLightiv")) == NULL) || r;
+  r = ((glLineStipple = (PFNGLLINESTIPPLEPROC)glewGetProcAddress((const GLubyte*)"glLineStipple")) == NULL) || r;
+  r = ((glLineWidth = (PFNGLLINEWIDTHPROC)glewGetProcAddress((const GLubyte*)"glLineWidth")) == NULL) || r;
+  r = ((glListBase = (PFNGLLISTBASEPROC)glewGetProcAddress((const GLubyte*)"glListBase")) == NULL) || r;
+  r = ((glLoadIdentity = (PFNGLLOADIDENTITYPROC)glewGetProcAddress((const GLubyte*)"glLoadIdentity")) == NULL) || r;
+  r = ((glLoadMatrixd = (PFNGLLOADMATRIXDPROC)glewGetProcAddress((const GLubyte*)"glLoadMatrixd")) == NULL) || r;
+  r = ((glLoadMatrixf = (PFNGLLOADMATRIXFPROC)glewGetProcAddress((const GLubyte*)"glLoadMatrixf")) == NULL) || r;
+  r = ((glLoadName = (PFNGLLOADNAMEPROC)glewGetProcAddress((const GLubyte*)"glLoadName")) == NULL) || r;
+  r = ((glLogicOp = (PFNGLLOGICOPPROC)glewGetProcAddress((const GLubyte*)"glLogicOp")) == NULL) || r;
+  r = ((glMap1d = (PFNGLMAP1DPROC)glewGetProcAddress((const GLubyte*)"glMap1d")) == NULL) || r;
+  r = ((glMap1f = (PFNGLMAP1FPROC)glewGetProcAddress((const GLubyte*)"glMap1f")) == NULL) || r;
+  r = ((glMap2d = (PFNGLMAP2DPROC)glewGetProcAddress((const GLubyte*)"glMap2d")) == NULL) || r;
+  r = ((glMap2f = (PFNGLMAP2FPROC)glewGetProcAddress((const GLubyte*)"glMap2f")) == NULL) || r;
+  r = ((glMapGrid1d = (PFNGLMAPGRID1DPROC)glewGetProcAddress((const GLubyte*)"glMapGrid1d")) == NULL) || r;
+  r = ((glMapGrid1f = (PFNGLMAPGRID1FPROC)glewGetProcAddress((const GLubyte*)"glMapGrid1f")) == NULL) || r;
+  r = ((glMapGrid2d = (PFNGLMAPGRID2DPROC)glewGetProcAddress((const GLubyte*)"glMapGrid2d")) == NULL) || r;
+  r = ((glMapGrid2f = (PFNGLMAPGRID2FPROC)glewGetProcAddress((const GLubyte*)"glMapGrid2f")) == NULL) || r;
+  r = ((glMaterialf = (PFNGLMATERIALFPROC)glewGetProcAddress((const GLubyte*)"glMaterialf")) == NULL) || r;
+  r = ((glMaterialfv = (PFNGLMATERIALFVPROC)glewGetProcAddress((const GLubyte*)"glMaterialfv")) == NULL) || r;
+  r = ((glMateriali = (PFNGLMATERIALIPROC)glewGetProcAddress((const GLubyte*)"glMateriali")) == NULL) || r;
+  r = ((glMaterialiv = (PFNGLMATERIALIVPROC)glewGetProcAddress((const GLubyte*)"glMaterialiv")) == NULL) || r;
+  r = ((glMatrixMode = (PFNGLMATRIXMODEPROC)glewGetProcAddress((const GLubyte*)"glMatrixMode")) == NULL) || r;
+  r = ((glMultMatrixd = (PFNGLMULTMATRIXDPROC)glewGetProcAddress((const GLubyte*)"glMultMatrixd")) == NULL) || r;
+  r = ((glMultMatrixf = (PFNGLMULTMATRIXFPROC)glewGetProcAddress((const GLubyte*)"glMultMatrixf")) == NULL) || r;
+  r = ((glNewList = (PFNGLNEWLISTPROC)glewGetProcAddress((const GLubyte*)"glNewList")) == NULL) || r;
+  r = ((glNormal3b = (PFNGLNORMAL3BPROC)glewGetProcAddress((const GLubyte*)"glNormal3b")) == NULL) || r;
+  r = ((glNormal3bv = (PFNGLNORMAL3BVPROC)glewGetProcAddress((const GLubyte*)"glNormal3bv")) == NULL) || r;
+  r = ((glNormal3d = (PFNGLNORMAL3DPROC)glewGetProcAddress((const GLubyte*)"glNormal3d")) == NULL) || r;
+  r = ((glNormal3dv = (PFNGLNORMAL3DVPROC)glewGetProcAddress((const GLubyte*)"glNormal3dv")) == NULL) || r;
+  r = ((glNormal3f = (PFNGLNORMAL3FPROC)glewGetProcAddress((const GLubyte*)"glNormal3f")) == NULL) || r;
+  r = ((glNormal3fv = (PFNGLNORMAL3FVPROC)glewGetProcAddress((const GLubyte*)"glNormal3fv")) == NULL) || r;
+  r = ((glNormal3i = (PFNGLNORMAL3IPROC)glewGetProcAddress((const GLubyte*)"glNormal3i")) == NULL) || r;
+  r = ((glNormal3iv = (PFNGLNORMAL3IVPROC)glewGetProcAddress((const GLubyte*)"glNormal3iv")) == NULL) || r;
+  r = ((glNormal3s = (PFNGLNORMAL3SPROC)glewGetProcAddress((const GLubyte*)"glNormal3s")) == NULL) || r;
+  r = ((glNormal3sv = (PFNGLNORMAL3SVPROC)glewGetProcAddress((const GLubyte*)"glNormal3sv")) == NULL) || r;
+  r = ((glNormalPointer = (PFNGLNORMALPOINTERPROC)glewGetProcAddress((const GLubyte*)"glNormalPointer")) == NULL) || r;
+  r = ((glOrtho = (PFNGLORTHOPROC)glewGetProcAddress((const GLubyte*)"glOrtho")) == NULL) || r;
+  r = ((glPassThrough = (PFNGLPASSTHROUGHPROC)glewGetProcAddress((const GLubyte*)"glPassThrough")) == NULL) || r;
+  r = ((glPixelMapfv = (PFNGLPIXELMAPFVPROC)glewGetProcAddress((const GLubyte*)"glPixelMapfv")) == NULL) || r;
+  r = ((glPixelMapuiv = (PFNGLPIXELMAPUIVPROC)glewGetProcAddress((const GLubyte*)"glPixelMapuiv")) == NULL) || r;
+  r = ((glPixelMapusv = (PFNGLPIXELMAPUSVPROC)glewGetProcAddress((const GLubyte*)"glPixelMapusv")) == NULL) || r;
+  r = ((glPixelStoref = (PFNGLPIXELSTOREFPROC)glewGetProcAddress((const GLubyte*)"glPixelStoref")) == NULL) || r;
+  r = ((glPixelStorei = (PFNGLPIXELSTOREIPROC)glewGetProcAddress((const GLubyte*)"glPixelStorei")) == NULL) || r;
+  r = ((glPixelTransferf = (PFNGLPIXELTRANSFERFPROC)glewGetProcAddress((const GLubyte*)"glPixelTransferf")) == NULL) || r;
+  r = ((glPixelTransferi = (PFNGLPIXELTRANSFERIPROC)glewGetProcAddress((const GLubyte*)"glPixelTransferi")) == NULL) || r;
+  r = ((glPixelZoom = (PFNGLPIXELZOOMPROC)glewGetProcAddress((const GLubyte*)"glPixelZoom")) == NULL) || r;
+  r = ((glPointSize = (PFNGLPOINTSIZEPROC)glewGetProcAddress((const GLubyte*)"glPointSize")) == NULL) || r;
+  r = ((glPolygonMode = (PFNGLPOLYGONMODEPROC)glewGetProcAddress((const GLubyte*)"glPolygonMode")) == NULL) || r;
+  r = ((glPolygonOffset = (PFNGLPOLYGONOFFSETPROC)glewGetProcAddress((const GLubyte*)"glPolygonOffset")) == NULL) || r;
+  r = ((glPolygonStipple = (PFNGLPOLYGONSTIPPLEPROC)glewGetProcAddress((const GLubyte*)"glPolygonStipple")) == NULL) || r;
+  r = ((glPopAttrib = (PFNGLPOPATTRIBPROC)glewGetProcAddress((const GLubyte*)"glPopAttrib")) == NULL) || r;
+  r = ((glPopClientAttrib = (PFNGLPOPCLIENTATTRIBPROC)glewGetProcAddress((const GLubyte*)"glPopClientAttrib")) == NULL) || r;
+  r = ((glPopMatrix = (PFNGLPOPMATRIXPROC)glewGetProcAddress((const GLubyte*)"glPopMatrix")) == NULL) || r;
+  r = ((glPopName = (PFNGLPOPNAMEPROC)glewGetProcAddress((const GLubyte*)"glPopName")) == NULL) || r;
+  r = ((glPrioritizeTextures = (PFNGLPRIORITIZETEXTURESPROC)glewGetProcAddress((const GLubyte*)"glPrioritizeTextures")) == NULL) || r;
+  r = ((glPushAttrib = (PFNGLPUSHATTRIBPROC)glewGetProcAddress((const GLubyte*)"glPushAttrib")) == NULL) || r;
+  r = ((glPushClientAttrib = (PFNGLPUSHCLIENTATTRIBPROC)glewGetProcAddress((const GLubyte*)"glPushClientAttrib")) == NULL) || r;
+  r = ((glPushMatrix = (PFNGLPUSHMATRIXPROC)glewGetProcAddress((const GLubyte*)"glPushMatrix")) == NULL) || r;
+  r = ((glPushName = (PFNGLPUSHNAMEPROC)glewGetProcAddress((const GLubyte*)"glPushName")) == NULL) || r;
+  r = ((glRasterPos2d = (PFNGLRASTERPOS2DPROC)glewGetProcAddress((const GLubyte*)"glRasterPos2d")) == NULL) || r;
+  r = ((glRasterPos2dv = (PFNGLRASTERPOS2DVPROC)glewGetProcAddress((const GLubyte*)"glRasterPos2dv")) == NULL) || r;
+  r = ((glRasterPos2f = (PFNGLRASTERPOS2FPROC)glewGetProcAddress((const GLubyte*)"glRasterPos2f")) == NULL) || r;
+  r = ((glRasterPos2fv = (PFNGLRASTERPOS2FVPROC)glewGetProcAddress((const GLubyte*)"glRasterPos2fv")) == NULL) || r;
+  r = ((glRasterPos2i = (PFNGLRASTERPOS2IPROC)glewGetProcAddress((const GLubyte*)"glRasterPos2i")) == NULL) || r;
+  r = ((glRasterPos2iv = (PFNGLRASTERPOS2IVPROC)glewGetProcAddress((const GLubyte*)"glRasterPos2iv")) == NULL) || r;
+  r = ((glRasterPos2s = (PFNGLRASTERPOS2SPROC)glewGetProcAddress((const GLubyte*)"glRasterPos2s")) == NULL) || r;
+  r = ((glRasterPos2sv = (PFNGLRASTERPOS2SVPROC)glewGetProcAddress((const GLubyte*)"glRasterPos2sv")) == NULL) || r;
+  r = ((glRasterPos3d = (PFNGLRASTERPOS3DPROC)glewGetProcAddress((const GLubyte*)"glRasterPos3d")) == NULL) || r;
+  r = ((glRasterPos3dv = (PFNGLRASTERPOS3DVPROC)glewGetProcAddress((const GLubyte*)"glRasterPos3dv")) == NULL) || r;
+  r = ((glRasterPos3f = (PFNGLRASTERPOS3FPROC)glewGetProcAddress((const GLubyte*)"glRasterPos3f")) == NULL) || r;
+  r = ((glRasterPos3fv = (PFNGLRASTERPOS3FVPROC)glewGetProcAddress((const GLubyte*)"glRasterPos3fv")) == NULL) || r;
+  r = ((glRasterPos3i = (PFNGLRASTERPOS3IPROC)glewGetProcAddress((const GLubyte*)"glRasterPos3i")) == NULL) || r;
+  r = ((glRasterPos3iv = (PFNGLRASTERPOS3IVPROC)glewGetProcAddress((const GLubyte*)"glRasterPos3iv")) == NULL) || r;
+  r = ((glRasterPos3s = (PFNGLRASTERPOS3SPROC)glewGetProcAddress((const GLubyte*)"glRasterPos3s")) == NULL) || r;
+  r = ((glRasterPos3sv = (PFNGLRASTERPOS3SVPROC)glewGetProcAddress((const GLubyte*)"glRasterPos3sv")) == NULL) || r;
+  r = ((glRasterPos4d = (PFNGLRASTERPOS4DPROC)glewGetProcAddress((const GLubyte*)"glRasterPos4d")) == NULL) || r;
+  r = ((glRasterPos4dv = (PFNGLRASTERPOS4DVPROC)glewGetProcAddress((const GLubyte*)"glRasterPos4dv")) == NULL) || r;
+  r = ((glRasterPos4f = (PFNGLRASTERPOS4FPROC)glewGetProcAddress((const GLubyte*)"glRasterPos4f")) == NULL) || r;
+  r = ((glRasterPos4fv = (PFNGLRASTERPOS4FVPROC)glewGetProcAddress((const GLubyte*)"glRasterPos4fv")) == NULL) || r;
+  r = ((glRasterPos4i = (PFNGLRASTERPOS4IPROC)glewGetProcAddress((const GLubyte*)"glRasterPos4i")) == NULL) || r;
+  r = ((glRasterPos4iv = (PFNGLRASTERPOS4IVPROC)glewGetProcAddress((const GLubyte*)"glRasterPos4iv")) == NULL) || r;
+  r = ((glRasterPos4s = (PFNGLRASTERPOS4SPROC)glewGetProcAddress((const GLubyte*)"glRasterPos4s")) == NULL) || r;
+  r = ((glRasterPos4sv = (PFNGLRASTERPOS4SVPROC)glewGetProcAddress((const GLubyte*)"glRasterPos4sv")) == NULL) || r;
+  r = ((glReadBuffer = (PFNGLREADBUFFERPROC)glewGetProcAddress((const GLubyte*)"glReadBuffer")) == NULL) || r;
+  r = ((glReadPixels = (PFNGLREADPIXELSPROC)glewGetProcAddress((const GLubyte*)"glReadPixels")) == NULL) || r;
+  r = ((glRectd = (PFNGLRECTDPROC)glewGetProcAddress((const GLubyte*)"glRectd")) == NULL) || r;
+  r = ((glRectdv = (PFNGLRECTDVPROC)glewGetProcAddress((const GLubyte*)"glRectdv")) == NULL) || r;
+  r = ((glRectf = (PFNGLRECTFPROC)glewGetProcAddress((const GLubyte*)"glRectf")) == NULL) || r;
+  r = ((glRectfv = (PFNGLRECTFVPROC)glewGetProcAddress((const GLubyte*)"glRectfv")) == NULL) || r;
+  r = ((glRecti = (PFNGLRECTIPROC)glewGetProcAddress((const GLubyte*)"glRecti")) == NULL) || r;
+  r = ((glRectiv = (PFNGLRECTIVPROC)glewGetProcAddress((const GLubyte*)"glRectiv")) == NULL) || r;
+  r = ((glRects = (PFNGLRECTSPROC)glewGetProcAddress((const GLubyte*)"glRects")) == NULL) || r;
+  r = ((glRectsv = (PFNGLRECTSVPROC)glewGetProcAddress((const GLubyte*)"glRectsv")) == NULL) || r;
+  r = ((glRenderMode = (PFNGLRENDERMODEPROC)glewGetProcAddress((const GLubyte*)"glRenderMode")) == NULL) || r;
+  r = ((glRotated = (PFNGLROTATEDPROC)glewGetProcAddress((const GLubyte*)"glRotated")) == NULL) || r;
+  r = ((glRotatef = (PFNGLROTATEFPROC)glewGetProcAddress((const GLubyte*)"glRotatef")) == NULL) || r;
+  r = ((glScaled = (PFNGLSCALEDPROC)glewGetProcAddress((const GLubyte*)"glScaled")) == NULL) || r;
+  r = ((glScalef = (PFNGLSCALEFPROC)glewGetProcAddress((const GLubyte*)"glScalef")) == NULL) || r;
+  r = ((glScissor = (PFNGLSCISSORPROC)glewGetProcAddress((const GLubyte*)"glScissor")) == NULL) || r;
+  r = ((glSelectBuffer = (PFNGLSELECTBUFFERPROC)glewGetProcAddress((const GLubyte*)"glSelectBuffer")) == NULL) || r;
+  r = ((glShadeModel = (PFNGLSHADEMODELPROC)glewGetProcAddress((const GLubyte*)"glShadeModel")) == NULL) || r;
+  r = ((glStencilFunc = (PFNGLSTENCILFUNCPROC)glewGetProcAddress((const GLubyte*)"glStencilFunc")) == NULL) || r;
+  r = ((glStencilMask = (PFNGLSTENCILMASKPROC)glewGetProcAddress((const GLubyte*)"glStencilMask")) == NULL) || r;
+  r = ((glStencilOp = (PFNGLSTENCILOPPROC)glewGetProcAddress((const GLubyte*)"glStencilOp")) == NULL) || r;
+  r = ((glTexCoord1d = (PFNGLTEXCOORD1DPROC)glewGetProcAddress((const GLubyte*)"glTexCoord1d")) == NULL) || r;
+  r = ((glTexCoord1dv = (PFNGLTEXCOORD1DVPROC)glewGetProcAddress((const GLubyte*)"glTexCoord1dv")) == NULL) || r;
+  r = ((glTexCoord1f = (PFNGLTEXCOORD1FPROC)glewGetProcAddress((const GLubyte*)"glTexCoord1f")) == NULL) || r;
+  r = ((glTexCoord1fv = (PFNGLTEXCOORD1FVPROC)glewGetProcAddress((const GLubyte*)"glTexCoord1fv")) == NULL) || r;
+  r = ((glTexCoord1i = (PFNGLTEXCOORD1IPROC)glewGetProcAddress((const GLubyte*)"glTexCoord1i")) == NULL) || r;
+  r = ((glTexCoord1iv = (PFNGLTEXCOORD1IVPROC)glewGetProcAddress((const GLubyte*)"glTexCoord1iv")) == NULL) || r;
+  r = ((glTexCoord1s = (PFNGLTEXCOORD1SPROC)glewGetProcAddress((const GLubyte*)"glTexCoord1s")) == NULL) || r;
+  r = ((glTexCoord1sv = (PFNGLTEXCOORD1SVPROC)glewGetProcAddress((const GLubyte*)"glTexCoord1sv")) == NULL) || r;
+  r = ((glTexCoord2d = (PFNGLTEXCOORD2DPROC)glewGetProcAddress((const GLubyte*)"glTexCoord2d")) == NULL) || r;
+  r = ((glTexCoord2dv = (PFNGLTEXCOORD2DVPROC)glewGetProcAddress((const GLubyte*)"glTexCoord2dv")) == NULL) || r;
+  r = ((glTexCoord2f = (PFNGLTEXCOORD2FPROC)glewGetProcAddress((const GLubyte*)"glTexCoord2f")) == NULL) || r;
+  r = ((glTexCoord2fv = (PFNGLTEXCOORD2FVPROC)glewGetProcAddress((const GLubyte*)"glTexCoord2fv")) == NULL) || r;
+  r = ((glTexCoord2i = (PFNGLTEXCOORD2IPROC)glewGetProcAddress((const GLubyte*)"glTexCoord2i")) == NULL) || r;
+  r = ((glTexCoord2iv = (PFNGLTEXCOORD2IVPROC)glewGetProcAddress((const GLubyte*)"glTexCoord2iv")) == NULL) || r;
+  r = ((glTexCoord2s = (PFNGLTEXCOORD2SPROC)glewGetProcAddress((const GLubyte*)"glTexCoord2s")) == NULL) || r;
+  r = ((glTexCoord2sv = (PFNGLTEXCOORD2SVPROC)glewGetProcAddress((const GLubyte*)"glTexCoord2sv")) == NULL) || r;
+  r = ((glTexCoord3d = (PFNGLTEXCOORD3DPROC)glewGetProcAddress((const GLubyte*)"glTexCoord3d")) == NULL) || r;
+  r = ((glTexCoord3dv = (PFNGLTEXCOORD3DVPROC)glewGetProcAddress((const GLubyte*)"glTexCoord3dv")) == NULL) || r;
+  r = ((glTexCoord3f = (PFNGLTEXCOORD3FPROC)glewGetProcAddress((const GLubyte*)"glTexCoord3f")) == NULL) || r;
+  r = ((glTexCoord3fv = (PFNGLTEXCOORD3FVPROC)glewGetProcAddress((const GLubyte*)"glTexCoord3fv")) == NULL) || r;
+  r = ((glTexCoord3i = (PFNGLTEXCOORD3IPROC)glewGetProcAddress((const GLubyte*)"glTexCoord3i")) == NULL) || r;
+  r = ((glTexCoord3iv = (PFNGLTEXCOORD3IVPROC)glewGetProcAddress((const GLubyte*)"glTexCoord3iv")) == NULL) || r;
+  r = ((glTexCoord3s = (PFNGLTEXCOORD3SPROC)glewGetProcAddress((const GLubyte*)"glTexCoord3s")) == NULL) || r;
+  r = ((glTexCoord3sv = (PFNGLTEXCOORD3SVPROC)glewGetProcAddress((const GLubyte*)"glTexCoord3sv")) == NULL) || r;
+  r = ((glTexCoord4d = (PFNGLTEXCOORD4DPROC)glewGetProcAddress((const GLubyte*)"glTexCoord4d")) == NULL) || r;
+  r = ((glTexCoord4dv = (PFNGLTEXCOORD4DVPROC)glewGetProcAddress((const GLubyte*)"glTexCoord4dv")) == NULL) || r;
+  r = ((glTexCoord4f = (PFNGLTEXCOORD4FPROC)glewGetProcAddress((const GLubyte*)"glTexCoord4f")) == NULL) || r;
+  r = ((glTexCoord4fv = (PFNGLTEXCOORD4FVPROC)glewGetProcAddress((const GLubyte*)"glTexCoord4fv")) == NULL) || r;
+  r = ((glTexCoord4i = (PFNGLTEXCOORD4IPROC)glewGetProcAddress((const GLubyte*)"glTexCoord4i")) == NULL) || r;
+  r = ((glTexCoord4iv = (PFNGLTEXCOORD4IVPROC)glewGetProcAddress((const GLubyte*)"glTexCoord4iv")) == NULL) || r;
+  r = ((glTexCoord4s = (PFNGLTEXCOORD4SPROC)glewGetProcAddress((const GLubyte*)"glTexCoord4s")) == NULL) || r;
+  r = ((glTexCoord4sv = (PFNGLTEXCOORD4SVPROC)glewGetProcAddress((const GLubyte*)"glTexCoord4sv")) == NULL) || r;
+  r = ((glTexCoordPointer = (PFNGLTEXCOORDPOINTERPROC)glewGetProcAddress((const GLubyte*)"glTexCoordPointer")) == NULL) || r;
+  r = ((glTexEnvf = (PFNGLTEXENVFPROC)glewGetProcAddress((const GLubyte*)"glTexEnvf")) == NULL) || r;
+  r = ((glTexEnvfv = (PFNGLTEXENVFVPROC)glewGetProcAddress((const GLubyte*)"glTexEnvfv")) == NULL) || r;
+  r = ((glTexEnvi = (PFNGLTEXENVIPROC)glewGetProcAddress((const GLubyte*)"glTexEnvi")) == NULL) || r;
+  r = ((glTexEnviv = (PFNGLTEXENVIVPROC)glewGetProcAddress((const GLubyte*)"glTexEnviv")) == NULL) || r;
+  r = ((glTexGend = (PFNGLTEXGENDPROC)glewGetProcAddress((const GLubyte*)"glTexGend")) == NULL) || r;
+  r = ((glTexGendv = (PFNGLTEXGENDVPROC)glewGetProcAddress((const GLubyte*)"glTexGendv")) == NULL) || r;
+  r = ((glTexGenf = (PFNGLTEXGENFPROC)glewGetProcAddress((const GLubyte*)"glTexGenf")) == NULL) || r;
+  r = ((glTexGenfv = (PFNGLTEXGENFVPROC)glewGetProcAddress((const GLubyte*)"glTexGenfv")) == NULL) || r;
+  r = ((glTexGeni = (PFNGLTEXGENIPROC)glewGetProcAddress((const GLubyte*)"glTexGeni")) == NULL) || r;
+  r = ((glTexGeniv = (PFNGLTEXGENIVPROC)glewGetProcAddress((const GLubyte*)"glTexGeniv")) == NULL) || r;
+  r = ((glTexImage1D = (PFNGLTEXIMAGE1DPROC)glewGetProcAddress((const GLubyte*)"glTexImage1D")) == NULL) || r;
+  r = ((glTexImage2D = (PFNGLTEXIMAGE2DPROC)glewGetProcAddress((const GLubyte*)"glTexImage2D")) == NULL) || r;
+  r = ((glTexParameterf = (PFNGLTEXPARAMETERFPROC)glewGetProcAddress((const GLubyte*)"glTexParameterf")) == NULL) || r;
+  r = ((glTexParameterfv = (PFNGLTEXPARAMETERFVPROC)glewGetProcAddress((const GLubyte*)"glTexParameterfv")) == NULL) || r;
+  r = ((glTexParameteri = (PFNGLTEXPARAMETERIPROC)glewGetProcAddress((const GLubyte*)"glTexParameteri")) == NULL) || r;
+  r = ((glTexParameteriv = (PFNGLTEXPARAMETERIVPROC)glewGetProcAddress((const GLubyte*)"glTexParameteriv")) == NULL) || r;
+  r = ((glTexSubImage1D = (PFNGLTEXSUBIMAGE1DPROC)glewGetProcAddress((const GLubyte*)"glTexSubImage1D")) == NULL) || r;
+  r = ((glTexSubImage2D = (PFNGLTEXSUBIMAGE2DPROC)glewGetProcAddress((const GLubyte*)"glTexSubImage2D")) == NULL) || r;
+  r = ((glTranslated = (PFNGLTRANSLATEDPROC)glewGetProcAddress((const GLubyte*)"glTranslated")) == NULL) || r;
+  r = ((glTranslatef = (PFNGLTRANSLATEFPROC)glewGetProcAddress((const GLubyte*)"glTranslatef")) == NULL) || r;
+  r = ((glVertex2d = (PFNGLVERTEX2DPROC)glewGetProcAddress((const GLubyte*)"glVertex2d")) == NULL) || r;
+  r = ((glVertex2dv = (PFNGLVERTEX2DVPROC)glewGetProcAddress((const GLubyte*)"glVertex2dv")) == NULL) || r;
+  r = ((glVertex2f = (PFNGLVERTEX2FPROC)glewGetProcAddress((const GLubyte*)"glVertex2f")) == NULL) || r;
+  r = ((glVertex2fv = (PFNGLVERTEX2FVPROC)glewGetProcAddress((const GLubyte*)"glVertex2fv")) == NULL) || r;
+  r = ((glVertex2i = (PFNGLVERTEX2IPROC)glewGetProcAddress((const GLubyte*)"glVertex2i")) == NULL) || r;
+  r = ((glVertex2iv = (PFNGLVERTEX2IVPROC)glewGetProcAddress((const GLubyte*)"glVertex2iv")) == NULL) || r;
+  r = ((glVertex2s = (PFNGLVERTEX2SPROC)glewGetProcAddress((const GLubyte*)"glVertex2s")) == NULL) || r;
+  r = ((glVertex2sv = (PFNGLVERTEX2SVPROC)glewGetProcAddress((const GLubyte*)"glVertex2sv")) == NULL) || r;
+  r = ((glVertex3d = (PFNGLVERTEX3DPROC)glewGetProcAddress((const GLubyte*)"glVertex3d")) == NULL) || r;
+  r = ((glVertex3dv = (PFNGLVERTEX3DVPROC)glewGetProcAddress((const GLubyte*)"glVertex3dv")) == NULL) || r;
+  r = ((glVertex3f = (PFNGLVERTEX3FPROC)glewGetProcAddress((const GLubyte*)"glVertex3f")) == NULL) || r;
+  r = ((glVertex3fv = (PFNGLVERTEX3FVPROC)glewGetProcAddress((const GLubyte*)"glVertex3fv")) == NULL) || r;
+  r = ((glVertex3i = (PFNGLVERTEX3IPROC)glewGetProcAddress((const GLubyte*)"glVertex3i")) == NULL) || r;
+  r = ((glVertex3iv = (PFNGLVERTEX3IVPROC)glewGetProcAddress((const GLubyte*)"glVertex3iv")) == NULL) || r;
+  r = ((glVertex3s = (PFNGLVERTEX3SPROC)glewGetProcAddress((const GLubyte*)"glVertex3s")) == NULL) || r;
+  r = ((glVertex3sv = (PFNGLVERTEX3SVPROC)glewGetProcAddress((const GLubyte*)"glVertex3sv")) == NULL) || r;
+  r = ((glVertex4d = (PFNGLVERTEX4DPROC)glewGetProcAddress((const GLubyte*)"glVertex4d")) == NULL) || r;
+  r = ((glVertex4dv = (PFNGLVERTEX4DVPROC)glewGetProcAddress((const GLubyte*)"glVertex4dv")) == NULL) || r;
+  r = ((glVertex4f = (PFNGLVERTEX4FPROC)glewGetProcAddress((const GLubyte*)"glVertex4f")) == NULL) || r;
+  r = ((glVertex4fv = (PFNGLVERTEX4FVPROC)glewGetProcAddress((const GLubyte*)"glVertex4fv")) == NULL) || r;
+  r = ((glVertex4i = (PFNGLVERTEX4IPROC)glewGetProcAddress((const GLubyte*)"glVertex4i")) == NULL) || r;
+  r = ((glVertex4iv = (PFNGLVERTEX4IVPROC)glewGetProcAddress((const GLubyte*)"glVertex4iv")) == NULL) || r;
+  r = ((glVertex4s = (PFNGLVERTEX4SPROC)glewGetProcAddress((const GLubyte*)"glVertex4s")) == NULL) || r;
+  r = ((glVertex4sv = (PFNGLVERTEX4SVPROC)glewGetProcAddress((const GLubyte*)"glVertex4sv")) == NULL) || r;
+  r = ((glVertexPointer = (PFNGLVERTEXPOINTERPROC)glewGetProcAddress((const GLubyte*)"glVertexPointer")) == NULL) || r;
+  r = ((glViewport = (PFNGLVIEWPORTPROC)glewGetProcAddress((const GLubyte*)"glViewport")) == NULL) || r;
+
+  return r;
+}
+
+#endif /* GL_VERSION_1_1 */
 
 #ifdef GL_VERSION_1_2
 
@@ -6144,6 +6855,12 @@ GLenum glewContextInit (GLEW_CONTEXT_ARG_DEF_LIST)
   const GLubyte* s;
   GLuint dot, major, minor;
   /* query opengl version */
+  if (glGetString == NULL) {
+    glGetString = (PFNGLGETSTRINGPROC) glewGetProcAddress((const GLubyte*) "glGetString");
+  }
+  if (glGetString == NULL) {
+    return GLEW_ERROR_NO_GL_VERSION;
+  }
   s = glGetString(GL_VERSION);
   dot = _glewStrCLen(s, '.');
   major = dot-1;
@@ -6219,6 +6936,9 @@ GLenum glewContextInit (GLEW_CONTEXT_ARG_DEF_LIST)
 	}
   }
   /* initialize extensions */
+#ifdef GL_VERSION_1_1
+  if (glewExperimental || GLEW_VERSION_1_1) CONST_CAST(GLEW_VERSION_1_1) = !_glewInit_GL_VERSION_1_1(GLEW_CONTEXT_ARG_VAR_INIT);
+#endif /* GL_VERSION_1_2 */
 #ifdef GL_VERSION_1_2
   if (glewExperimental || GLEW_VERSION_1_2) CONST_CAST(GLEW_VERSION_1_2) = !_glewInit_GL_VERSION_1_2(GLEW_CONTEXT_ARG_VAR_INIT);
 #endif /* GL_VERSION_1_2 */
@@ -8826,15 +9546,22 @@ static GLboolean _glewInit_GLX_SUN_video_resize (GLXEW_CONTEXT_ARG_DEF_INIT)
 
 /* ------------------------------------------------------------------------ */
 
+typedef const char* ( * PFNGLXGETCLIENTSTRINGPROC) (Display *dpy, int name);
+
 GLboolean glxewGetExtension (const char* name)
 {    
   GLubyte* p;
   GLubyte* end;
   GLuint len = _glewStrLen((const GLubyte*)name);
+  static PFNGLXGETCLIENTSTRINGPROC __glewXGetClientString = NULL;
 /*   if (glXQueryExtensionsString == NULL || glXGetCurrentDisplay == NULL) return GL_FALSE; */
 /*   p = (GLubyte*)glXQueryExtensionsString(glXGetCurrentDisplay(), DefaultScreen(glXGetCurrentDisplay())); */
-  if (glXGetClientString == NULL || glXGetCurrentDisplay == NULL) return GL_FALSE;
-  p = (GLubyte*)glXGetClientString(glXGetCurrentDisplay(), GLX_EXTENSIONS);
+  if (__glewXGetClientString == NULL) {
+    __glewXGetClientString = (PFNGLXGETCLIENTSTRINGPROC) glewGetProcAddress("glXGetClientString");
+  }
+  if (__glewXGetClientString == NULL) return GL_FALSE;
+  if (glXGetCurrentDisplay == NULL) return GL_FALSE;
+  p = (GLubyte*)__glewXGetClientString(glXGetCurrentDisplay(), GLX_EXTENSIONS);
   if (0 == p) return GL_FALSE;
   end = p + _glewStrLen(p);
   while (p < end)
@@ -8846,9 +9573,16 @@ GLboolean glxewGetExtension (const char* name)
   return GL_FALSE;
 }
 
+typedef Bool (* PFNGLXQUERYVERSIONPROC) (Display *dpy, int *major, int *minor);
+
 GLenum glxewContextInit (GLXEW_CONTEXT_ARG_DEF_LIST)
 {
   int major, minor;
+  static PFNGLXQUERYVERSIONPROC __glewXQueryVersion = NULL;
+  if (__glewXQueryVersion == NULL) {
+    __glewXQueryVersion = (PFNGLXQUERYVERSIONPROC) glewGetProcAddress("glXQueryVersion");
+  }
+  if (__glewXQueryVersion == NULL) return GL_FALSE;
   /* initialize core GLX 1.2 */
   if (_glewInit_GLX_VERSION_1_2(GLEW_CONTEXT_ARG_VAR_INIT)) return GLEW_ERROR_GLX_VERSION_11_ONLY;
   /* initialize flags */
@@ -8858,7 +9592,7 @@ GLenum glxewContextInit (GLXEW_CONTEXT_ARG_DEF_LIST)
   CONST_CAST(GLXEW_VERSION_1_3) = GL_TRUE;
   CONST_CAST(GLXEW_VERSION_1_4) = GL_TRUE;
   /* query GLX version */
-  glXQueryVersion(glXGetCurrentDisplay(), &major, &minor);
+  __glewXQueryVersion(glXGetCurrentDisplay(), &major, &minor);
   if (major == 1 && minor <= 3)
   {
     switch (minor)

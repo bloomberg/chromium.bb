@@ -282,6 +282,7 @@
           ],
           'defines+': [
             'GLEW_STATIC=1',
+            'GLEW_NO_GLU=1',
           ],
           'conditions': [
             ['OS=="win"', {

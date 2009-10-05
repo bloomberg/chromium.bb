@@ -2,9 +2,18 @@ This is Chrome's local copy of the GLEW library, which is currently
 used to interface to OpenGL and extensions to implement the WebGL
 specification.
 
-Compared to the original distribution, the implementation of
-NSGLGetProcAddress has been changed to use the standard dlfcn.h
-functions rather than the deprecated mach-o/dyld.h ones.
+Compared to the original distribution:
+
+  - GLEW was changed to dynamically look up the OpenGL 1.1 entry
+    points in addition to those for later OpenGL versions and
+    extensions. This was necessary to be able to stop linking directly
+    against libGL.so on Linux due to http://crbug.com/16800 .
+
+  - The implementation of NSGLGetProcAddress has been changed to use
+    the standard dlfcn.h functions rather than the deprecated
+    mach-o/dyld.h ones.
+
+  - A GLEW_NO_GLU #define was added to prevent including GL/glu.h.
 
 Originally obtained from http://glew.sourceforge.net/ . The
 LICENSE.txt from that distribution has been preserved here.

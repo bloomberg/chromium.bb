@@ -81,6 +81,11 @@
 #define USE_TEXTURE_RECTANGLE_FOR_FRAMEBUFFER
 #endif
 
+#if PLATFORM(LINUX)
+#include <dlfcn.h>
+#include "GL/glxew.h"
+#endif
+
 using namespace std;
 
 namespace WebCore {
@@ -167,6 +172,24 @@ private:
     CGLContextObj m_contextObj;
     unsigned char* m_renderOutput;
     CGContextRef m_cgContext;
+#elif PLATFORM(LINUX)
+    Display* m_display;
+    GLXContext m_contextObj;
+    GLXPbuffer m_pbuffer;
+    // In order to avoid problems caused by linking against libGL, we
+    // dynamically look up all the symbols we need.
+    // http://code.google.com/p/chromium/issues/detail?id=16800
+    void* m_libGL;
+    PFNGLXCHOOSEFBCONFIGPROC m_glXChooseFBConfig;
+    PFNGLXCREATENEWCONTEXTPROC m_glXCreateNewContext;
+    PFNGLXCREATEPBUFFERPROC m_glXCreatePbuffer;
+    PFNGLXDESTROYPBUFFERPROC m_glXDestroyPbuffer;
+    typedef Bool (* PFNGLXMAKECURRENTPROC)(Display* dpy, GLXDrawable drawable, GLXContext ctx);
+    PFNGLXMAKECURRENTPROC m_glXMakeCurrent;
+    typedef void (* PFNGLXDESTROYCONTEXTPROC)(Display* dpy, GLXContext ctx);
+    PFNGLXDESTROYCONTEXTPROC m_glXDestroyContext;
+    typedef GLXContext (* PFNGLXGETCURRENTCONTEXTPROC)(void);
+    PFNGLXGETCURRENTCONTEXTPROC m_glXGetCurrentContext;
 #else
     #error Must port GraphicsContext3D to your platform
 #endif
@@ -183,6 +206,15 @@ GraphicsContext3DInternal::VertexAttribPointerState::VertexAttribPointerState()
     , offset(0)
 {
 }
+
+#if PLATFORM(LINUX)
+static void* tryLoad(const char* libName) {
+    // We use RTLD_GLOBAL semantics so that GLEW initialization works;
+    // GLEW expects to be able to open the current process's handle
+    // and do dlsym's of GL entry points from there.
+    return dlopen(libName, RTLD_LAZY | RTLD_GLOBAL);
+}
+#endif
 
 GraphicsContext3DInternal::GraphicsContext3DInternal()
     : m_texture(0)
@@ -201,6 +233,17 @@ GraphicsContext3DInternal::GraphicsContext3DInternal()
     , m_contextObj(NULL)
     , m_renderOutput(NULL)
     , m_cgContext(NULL)
+#elif PLATFORM(LINUX)
+    , m_display(NULL)
+    , m_contextObj(NULL)
+    , m_pbuffer(NULL)
+    , m_glXChooseFBConfig(NULL)
+    , m_glXCreateNewContext(NULL)
+    , m_glXCreatePbuffer(NULL)
+    , m_glXDestroyPbuffer(NULL)
+    , m_glXMakeCurrent(NULL)
+    , m_glXDestroyContext(NULL)
+    , m_glXGetCurrentContext(NULL)
 #else
 #error Must port to your platform
 #endif
@@ -317,19 +360,106 @@ GraphicsContext3DInternal::GraphicsContext3DInternal()
     }
     m_pbuffer = pbuffer;
     m_contextObj = context;
+#elif PLATFORM(LINUX)
+    m_display = XOpenDisplay(NULL);
+    if (m_display == NULL) {
+        printf("GraphicsContext3D: error opening X display\n");
+        return;
+    }
+
+    const char* libNames[] = {
+        "/usr/lib/libGL.so.1",
+        "/usr/lib32/libGL.so.1",
+        "/usr/lib64/libGL.so.1",
+    };
+    for (int i = 0; i < sizeof(libNames) / sizeof(const char*); i++) {
+        m_libGL = tryLoad(libNames[i]);
+        if (m_libGL != NULL)
+            break;
+    }
+    if (m_libGL == NULL) {
+        printf("GraphicsContext3D: error opening libGL.so.1\n");
+        printf("GraphicsContext3D: tried:");
+        for (int i = 0; i < sizeof(libNames) / sizeof(const char*); i++) {
+            printf(" %s", libNames[i]);
+        }
+        return;
+    }
+    m_glXChooseFBConfig = (PFNGLXCHOOSEFBCONFIGPROC) dlsym(m_libGL, "glXChooseFBConfig");
+    m_glXCreateNewContext = (PFNGLXCREATENEWCONTEXTPROC) dlsym(m_libGL, "glXCreateNewContext");
+    m_glXCreatePbuffer = (PFNGLXCREATEPBUFFERPROC) dlsym(m_libGL, "glXCreatePbuffer");
+    m_glXDestroyPbuffer = (PFNGLXDESTROYPBUFFERPROC) dlsym(m_libGL, "glXDestroyPbuffer");
+    m_glXMakeCurrent = (PFNGLXMAKECURRENTPROC) dlsym(m_libGL, "glXMakeCurrent");
+    m_glXDestroyContext = (PFNGLXDESTROYCONTEXTPROC) dlsym(m_libGL, "glXDestroyContext");
+    m_glXGetCurrentContext = (PFNGLXGETCURRENTCONTEXTPROC) dlsym(m_libGL, "glXGetCurrentContext");
+    if (!m_glXChooseFBConfig || !m_glXCreateNewContext || !m_glXCreatePbuffer ||
+        !m_glXDestroyPbuffer || !m_glXMakeCurrent || !m_glXDestroyContext ||
+        !m_glXGetCurrentContext) {
+        printf("GraphicsContext3D: error looking up bootstrapping entry points\n");
+        return;
+    }
+    int configAttrs[] = {
+        GLX_DRAWABLE_TYPE,
+        GLX_PBUFFER_BIT,
+        GLX_RENDER_TYPE,
+        GLX_RGBA_BIT,
+        GLX_DOUBLEBUFFER,
+        0,
+        0
+    };
+    int nelements = 0;
+    GLXFBConfig* config = m_glXChooseFBConfig(m_display, 0, configAttrs, &nelements);
+    if (config == NULL) {
+        printf("GraphicsContext3D: glXChooseFBConfig failed\n");
+        return;
+    }
+    if (nelements == 0) {
+        printf("GraphicsContext3D: glXChooseFBConfig returned 0 elements\n");
+        XFree(config);
+        return;
+    }
+    GLXContext context = m_glXCreateNewContext(m_display, config[0], GLX_RGBA_TYPE, NULL, True);
+    if (context == NULL) {
+        printf("GraphicsContext3D: glXCreateNewContext failed\n");
+        XFree(config);
+        return;
+    }
+    int pbufferAttrs[] = {
+        GLX_PBUFFER_WIDTH,
+        1,
+        GLX_PBUFFER_HEIGHT,
+        1,
+        0
+    };
+    GLXPbuffer pbuffer = m_glXCreatePbuffer(m_display, config[0], pbufferAttrs);
+    XFree(config);
+    if (!pbuffer) {
+        printf("GraphicsContext3D: glxCreatePbuffer failed\n");
+        return;
+    }
+    if (!m_glXMakeCurrent(m_display, pbuffer, context)) {
+        printf("GraphicsContext3D: glXMakeCurrent failed\n");
+        return;
+    }
+    m_contextObj = context;
+    m_pbuffer = pbuffer;
 #else
 #error Must port to your platform
 #endif
 
-    // Initialize GLEW and check for GL 2.0 support by the drivers.
-    GLenum glewInitResult = glewInit();
-    if (glewInitResult != GLEW_OK) {
-        printf("GraphicsContext3D: GLEW initialization failed\n");
-        return;
-    }
-    if (!glewIsSupported("GL_VERSION_2_0")) {
-        printf("GraphicsContext3D: OpenGL 2.0 not supported\n");
-        return;
+    static bool initializedGLEW = false;
+    if (!initializedGLEW) {
+        // Initialize GLEW and check for GL 2.0 support by the drivers.
+        GLenum glewInitResult = glewInit();
+        if (glewInitResult != GLEW_OK) {
+            printf("GraphicsContext3D: GLEW initialization failed\n");
+            return;
+        }
+        if (!glewIsSupported("GL_VERSION_2_0")) {
+            printf("GraphicsContext3D: OpenGL 2.0 not supported\n");
+            return;
+        }
+        initializedGLEW = true;
     }
 }
 
@@ -358,6 +488,12 @@ GraphicsContext3DInternal::~GraphicsContext3DInternal()
         CGContextRelease(m_cgContext);
     if (m_renderOutput != NULL)
         delete[] m_renderOutput;
+#elif PLATFORM(LINUX)
+    m_glXMakeCurrent(m_display, NULL, NULL);
+    m_glXDestroyContext(m_display, m_contextObj);
+    m_glXDestroyPbuffer(m_display, m_pbuffer);
+    XCloseDisplay(m_display);
+    dlclose(m_libGL);
 #else
 #error Must port to your platform
 #endif
@@ -384,6 +520,10 @@ bool GraphicsContext3DInternal::makeContextCurrent()
 #elif PLATFORM(CG)
     if (CGLGetCurrentContext() != m_contextObj)
         if (CGLSetCurrentContext(m_contextObj) == kCGLNoError)
+            return true;
+#elif PLATFORM(LINUX)
+    if (m_glXGetCurrentContext() != m_contextObj)
+        if (m_glXMakeCurrent(m_display, m_pbuffer, m_contextObj))
             return true;
 #else
 #error Must port to your platform
