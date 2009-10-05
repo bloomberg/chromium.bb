@@ -33,7 +33,7 @@ void ListenSocketTester::SetUp() {
   server_ = NULL;
   net::EnsureWinsockInit();
 #elif defined(OS_POSIX)
-  ASSERT_EQ(0, pthread_mutex_init(&lock_, NULL ));
+  ASSERT_EQ(0, pthread_mutex_init(&lock_, NULL));
   sem_unlink(kSemaphoreName);
   semaphore_ = sem_open(kSemaphoreName, O_CREAT, 0, 0);
   ASSERT_NE(SEM_FAILED, semaphore_);
@@ -42,7 +42,7 @@ void ListenSocketTester::SetUp() {
   options.message_loop_type = MessageLoop::TYPE_IO;
   thread_.reset(new base::Thread("socketio_test"));
   thread_->StartWithOptions(options);
-  loop_ = (MessageLoopForIO*)thread_->message_loop();
+  loop_ = reinterpret_cast<MessageLoopForIO*>(thread_->message_loop());
 
   loop_->PostTask(FROM_HERE, NewRunnableMethod(
       this, &ListenSocketTester::Listen));
@@ -54,6 +54,7 @@ void ListenSocketTester::SetUp() {
 
   // verify the connect/accept and setup test_socket_
   test_socket_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+  ASSERT_NE(-1, test_socket_);
   struct sockaddr_in client;
   client.sin_family = AF_INET;
   client.sin_addr.s_addr = inet_addr(kLoopback);
@@ -132,7 +133,7 @@ bool ListenSocketTester::NextAction(int timeout) {
     return false;
   while (true) {
     int result = sem_trywait(semaphore_);
-    PlatformThread::Sleep(1); // 1MS sleep
+    PlatformThread::Sleep(1);  // 1MS sleep
     timeout--;
     if (timeout <= 0)
       return false;
