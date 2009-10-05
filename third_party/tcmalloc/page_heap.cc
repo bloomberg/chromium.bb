@@ -151,10 +151,13 @@ Span* PageHeap::Split(Span* span, Length n) {
 }
 
 void PageHeap::CommitSpan(Span* span) {
-  TCMalloc_SystemCommit(
-      reinterpret_cast<void*>(span->start << kPageShift),
-      static_cast<size_t>(span->length << kPageShift)
-  );
+  TCMalloc_SystemCommit(reinterpret_cast<void*>(span->start << kPageShift),
+                        static_cast<size_t>(span->length << kPageShift));
+}
+
+void PageHeap::DecommitSpan(Span* span) {
+  TCMalloc_SystemRelease(reinterpret_cast<void*>(span->start << kPageShift),
+                         static_cast<size_t>(span->length << kPageShift));
 }
 
 Span* PageHeap::Carve(Span* span, Length n) {
@@ -182,14 +185,14 @@ Span* PageHeap::Carve(Span* span, Length n) {
     span->length = n;
     pagemap_.set(span->start + n - 1, span);
   }
+  ASSERT(Check());
+  free_pages_ -= n;
   if (old_location == Span::ON_RETURNED_FREELIST) {
     // We need to recommit this address space.
     CommitSpan(span);
   }
   ASSERT(span->location == Span::IN_USE);
   ASSERT(span->length == n);
-  ASSERT(Check());
-  free_pages_ -= n;
   return span;
 }
 
@@ -207,10 +210,22 @@ void PageHeap::Delete(Span* span) {
   // entries for the pieces we are merging together because we only
   // care about the pagemap entries for the boundaries.
   //
-  // Note that the spans we merge into "span" may come out of
-  // a "returned" list.  We move those into "normal" list
-  // as for 'immediate' operations we favour committing over
-  // decommitting (decommitting is performed offline).
+  // Note that the adjacent spans we merge into "span" may come out of a
+  // "normal" (committed) list, and cleanly merge with our IN_USE span, which
+  // is implicitly committed.  If the adjacents spans are on the "returned"
+  // (decommitted) list, then we must get both spans into the same state before
+  // or after we coalesce them.  The current code always decomits. This is
+  // achieved by blindly decommitting the entire coalesced region, which  may
+  // include any combination of committed and decommitted spans, at the end of
+  // the method.
+
+  // TODO(jar): "Always decommit" causes some extra calls to commit when we are
+  // called in GrowHeap() during an allocation :-/.  We need to eval the cost of
+  // that oscillation, and possibly do something to reduce it.
+
+  // TODO(jar): We need a better strategy for deciding to commit, or decommit,
+  // based on memory usage and free heap sizes.
+
   const PageID p = span->start;
   const Length n = span->length;
   Span* prev = GetDescriptor(p-1);
@@ -218,9 +233,6 @@ void PageHeap::Delete(Span* span) {
     // Merge preceding span into this span
     ASSERT(prev->start + prev->length == p);
     const Length len = prev->length;
-    if (prev->location == Span::ON_RETURNED_FREELIST) {
-      CommitSpan(prev);
-    }
     DLL_Remove(prev);
     DeleteSpan(prev);
     span->start -= len;
@@ -233,9 +245,6 @@ void PageHeap::Delete(Span* span) {
     // Merge next span into this span
     ASSERT(next->start == p+n);
     const Length len = next->length;
-    if (next->location == Span::ON_RETURNED_FREELIST) {
-      CommitSpan(next);
-    }
     DLL_Remove(next);
     DeleteSpan(next);
     span->length += len;
@@ -244,11 +253,12 @@ void PageHeap::Delete(Span* span) {
   }
 
   Event(span, 'D', span->length);
-  span->location = Span::ON_NORMAL_FREELIST;
+  span->location = Span::ON_RETURNED_FREELIST;
+  DecommitSpan(span);
   if (span->length < kMaxPages) {
-    DLL_Prepend(&free_[span->length].normal, span);
+    DLL_Prepend(&free_[span->length].returned, span);
   } else {
-    DLL_Prepend(&large_.normal, span);
+    DLL_Prepend(&large_.returned, span);
   }
   free_pages_ += n;
 

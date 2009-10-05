@@ -213,6 +213,9 @@ class PageHeap {
   // Commit the span.
   void CommitSpan(Span* span);
 
+  // Decommit the span.
+  void DecommitSpan(Span* span);
+
   // Incrementally release some memory to the system.
   // IncrementalScavenge(n) is called whenever n pages are freed.
   void IncrementalScavenge(Length n);
