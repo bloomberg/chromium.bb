@@ -10,8 +10,8 @@
 #include "base/scoped_nsobject.h"
 
 @interface DelayedMenuButton : NSButton {
-  NSMenu* menu_;                            // Strong (retained).
-  BOOL menuEnabled_;
+  NSMenu* attachedMenu_;  // Strong (retained).
+  BOOL attachedMenuEnabled_;
 }
 
 // The menu to display. Note that it should have no (i.e., a blank) title and
@@ -20,10 +20,10 @@
 // in the button. This might change if we ever switch to a pop-up. Our direct
 // use of the given NSMenu object means that the one can set and use NSMenu's
 // delegate as usual.)
-@property(retain, nonatomic) NSMenu* menu;
+@property(retain, nonatomic) NSMenu* attachedMenu;
 
 // Is the menu enabled? (If not, don't act like a click-hold button.)
-@property(assign, nonatomic) BOOL menuEnabled;
+@property(assign, nonatomic) BOOL attachedMenuEnabled;
 
 @end  // @interface DelayedMenuButton
 

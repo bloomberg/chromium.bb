@@ -30,37 +30,37 @@ using gfx::SkBitmapToNSImage;
     button_ = button;
     model_.reset(new BackForwardMenuModel(browser, type_));
     DCHECK(model_.get());
-    menu_.reset([[NSMenu alloc] initWithTitle:@""]);
-    DCHECK(menu_.get());
-    [menu_ setDelegate:self];
+    backForwardMenu_.reset([[NSMenu alloc] initWithTitle:@""]);
+    DCHECK(backForwardMenu_.get());
+    [backForwardMenu_ setDelegate:self];
 
-    [button_ setMenu:menu_];
-    [button_ setMenuEnabled:YES];
+    [button_ setAttachedMenu:backForwardMenu_];
+    [button_ setAttachedMenuEnabled:YES];
   }
   return self;
 }
 
 // Methods as delegate:
 
-// Called by menu_ just before tracking begins.
+// Called by backForwardMenu_ just before tracking begins.
 //TODO(viettrungluu@gmail.com): do anything for chapter stops (see model)?
 - (void)menuNeedsUpdate:(NSMenu*)menu {
-  DCHECK(menu == menu_);
+  DCHECK(menu == backForwardMenu_);
 
   // Remove old menu items (backwards order is as good as any).
-  for (NSInteger i = [menu_ numberOfItems]; i > 0; i--)
-    [menu_ removeItemAtIndex:(i-1)];
+  for (NSInteger i = [menu numberOfItems]; i > 0; i--)
+    [menu removeItemAtIndex:(i-1)];
 
   // 0-th item must be blank. (This is because we use a pulldown list, for which
   // Cocoa uses the 0-th item as "title" in the button.)
-  [menu_ insertItemWithTitle:@""
-                      action:nil
-               keyEquivalent:@""
-                     atIndex:0];
+  [menu insertItemWithTitle:@""
+                     action:nil
+              keyEquivalent:@""
+                    atIndex:0];
   for (int menuID = 1; menuID <= model_->GetTotalItemCount(); menuID++) {
     if (model_->IsSeparator(menuID)) {
-      [menu_ insertItem:[NSMenuItem separatorItem]
-                atIndex:menuID];
+      [menu insertItem:[NSMenuItem separatorItem]
+               atIndex:menuID];
     } else {
       // Create a menu item with the right label.
       NSMenuItem* menuItem = [[NSMenuItem alloc]
@@ -83,8 +83,8 @@ using gfx::SkBitmapToNSImage;
       [menuItem setAction:@selector(executeMenuItem:)];
 
       // Put it in the menu!
-      [menu_ insertItem:menuItem
-                atIndex:menuID];
+      [menu insertItem:menuItem
+               atIndex:menuID];
     }
   }
 }

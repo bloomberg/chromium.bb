@@ -12,7 +12,7 @@
 // |ClickHoldButtonCell| as cell.
 @interface MenuButton : NSButton {
  @private
-  IBOutlet NSMenu* menu_;
+  IBOutlet NSMenu* attachedMenu_;
 }
 
 // The menu to display. Note that it should have no (i.e., a blank) title and
@@ -21,7 +21,7 @@
 // in the button. This might change if we ever switch to a pop-up. Our direct
 // use of the given NSMenu object means that the one can set and use NSMenu's
 // delegate as usual.)
-@property(assign, nonatomic) NSMenu* menu;
+@property(assign, nonatomic) NSMenu* attachedMenu;
 
 @end  // @interface MenuButton
 

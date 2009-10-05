@@ -11,7 +11,7 @@
 @interface DelayedMenuButton (Private)
 
 - (void)setupCell;
-- (void)menuAction:(id)sender;
+- (void)attachedMenuAction:(id)sender;
 
 @end  // @interface DelayedMenuButton (Private)
 
@@ -42,7 +42,7 @@
 }
 
 - (void)dealloc {
-  [menu_ release];
+  [attachedMenu_ release];
   [super dealloc];
 }
 
@@ -57,16 +57,16 @@
 
 // Accessors and mutators:
 
-@synthesize menu = menu_;
+@synthesize attachedMenu = attachedMenu_;
 
-// Don't synthesize for menuEnabled_; its mutator must do other things.
-- (void)setMenuEnabled:(BOOL)enabled {
-  menuEnabled_ = enabled;
-  [[self cell] setEnableClickHold:menuEnabled_];
+// Don't synthesize for attachedMenuEnabled_; its mutator must do other things.
+- (void)setAttachedMenuEnabled:(BOOL)enabled {
+  attachedMenuEnabled_ = enabled;
+  [[self cell] setEnableClickHold:attachedMenuEnabled_];
 }
 
-- (BOOL)menuEnabled {
-  return menuEnabled_;
+- (BOOL)attachedMenuEnabled {
+  return attachedMenuEnabled_;
 }
 
 @end  // @implementation DelayedMenuButton
@@ -81,19 +81,19 @@
     [self setEnabled:NO];               // Make the controller put in a menu and
                                         // enable it explicitly. This also takes
                                         // care of |[cell setEnableClickHold:]|.
-    [cell setClickHoldAction:@selector(menuAction:)];
+    [cell setClickHoldAction:@selector(attachedMenuAction:)];
     [cell setClickHoldTarget:self];
   }
 }
 
 // Display the menu.
-- (void)menuAction:(id)sender {
+- (void)attachedMenuAction:(id)sender {
   // We shouldn't get here unless the menu is enabled.
-  DCHECK(menuEnabled_);
+  DCHECK(attachedMenuEnabled_);
 
   // If we don't have a menu (in which case the person using this control is
   // being bad), just wait for a mouse up.
-  if (!menu_) {
+  if (!attachedMenu_) {
     LOG(WARNING) << "No menu available.";
     [NSApp nextEventMatchingMask:NSLeftMouseUpMask
                        untilDate:[NSDate distantFuture]
@@ -122,7 +122,7 @@
       [[NSPopUpButtonCell alloc] initTextCell:@""
                                     pullsDown:YES]);
   DCHECK(popUpCell.get());
-  [popUpCell setMenu:menu_];
+  [popUpCell setMenu:attachedMenu_];
   [popUpCell selectItem:nil];
   [popUpCell attachPopUpWithFrame:frame
                            inView:self];

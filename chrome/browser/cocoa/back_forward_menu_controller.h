@@ -27,7 +27,7 @@ const BackForwardMenuType BACK_FORWARD_MENU_TYPE_FORWARD =
   BackForwardMenuType type_;
   DelayedMenuButton* button_;           // Weak; comes from nib.
   scoped_ptr<BackForwardMenuModel> model_;
-  scoped_nsobject<NSMenu> menu_;
+  scoped_nsobject<NSMenu> backForwardMenu_;
 }
 
 // Type (back or forwards); can only be set on initialization.

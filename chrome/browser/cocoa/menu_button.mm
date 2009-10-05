@@ -45,7 +45,7 @@
 
 // Accessors and mutators:
 
-@synthesize menu = menu_;
+@synthesize attachedMenu = attachedMenu_;
 
 @end  // @implementation MenuButton
 
@@ -67,7 +67,7 @@
 // Actually show the menu (in the correct location). |isDragging| indicates
 // whether the mouse button is still down or not.
 - (void)showMenu:(BOOL)isDragging {
-  if (!menu_) {
+  if (![self attachedMenu]) {
     LOG(WARNING) << "No menu available.";
     if (isDragging) {
       // If we're dragging, wait for mouse up.
@@ -96,7 +96,7 @@
       [[NSPopUpButtonCell alloc] initTextCell:@""
                                     pullsDown:YES]);
   DCHECK(popUpCell.get());
-  [popUpCell setMenu:menu_];
+  [popUpCell setMenu:[self attachedMenu]];
   [popUpCell selectItem:nil];
   [popUpCell attachPopUpWithFrame:frame
                            inView:self];

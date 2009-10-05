@@ -8,9 +8,9 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="1"/>
-			<integer value="67"/>
 			<integer value="48"/>
+			<integer value="67"/>
+			<integer value="1"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -249,7 +249,7 @@
 						<int key="NSTag">33005</int>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="482050975">
-							<int key="NSCellFlags">67239424</int>
+							<int key="NSCellFlags">-2080244224</int>
 							<int key="NSCellFlags2">134250496</int>
 							<string key="NSContents"/>
 							<reference key="NSSupport" ref="64724822"/>
@@ -1011,27 +1011,27 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">menu_</string>
-						<reference key="source" ref="571076484"/>
-						<reference key="destination" ref="1035953805"/>
-					</object>
-					<int key="connectionID">125</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">menu_</string>
-						<reference key="source" ref="602421009"/>
-						<reference key="destination" ref="558188039"/>
-					</object>
-					<int key="connectionID">126</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
 						<string key="label">encodingMenu_</string>
 						<reference key="source" ref="1001"/>
 						<reference key="destination" ref="1054137046"/>
 					</object>
 					<int key="connectionID">134</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">attachedMenu_</string>
+						<reference key="source" ref="571076484"/>
+						<reference key="destination" ref="1035953805"/>
+					</object>
+					<int key="connectionID">135</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">attachedMenu_</string>
+						<reference key="source" ref="602421009"/>
+						<reference key="destination" ref="558188039"/>
+					</object>
+					<int key="connectionID">136</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -1749,7 +1749,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">134</int>
+			<int key="maxID">136</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1887,7 +1887,7 @@
 					<string key="className">MenuButton</string>
 					<string key="superclassName">NSButton</string>
 					<object class="NSMutableDictionary" key="outlets">
-						<string key="NS.key.0">menu_</string>
+						<string key="NS.key.0">attachedMenu_</string>
 						<string key="NS.object.0">NSMenu</string>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -1924,6 +1924,7 @@
 						<object class="NSMutableArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addHomepage:</string>
+							<string>browseDownloadLocation:</string>
 							<string>clearData:</string>
 							<string>importData:</string>
 							<string>makeDefaultBrowser:</string>
@@ -1948,6 +1949,7 @@
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
+							<string>id</string>
 						</object>
 					</object>
 					<object class="NSMutableDictionary" key="outlets">
@@ -1957,6 +1959,7 @@
 							<string>advancedScroller_</string>
 							<string>advancedView_</string>
 							<string>customPagesArrayController_</string>
+							<string>downloadLocationControl_</string>
 							<string>tabView_</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
@@ -1964,6 +1967,7 @@
 							<string>NSScrollView</string>
 							<string>NSView</string>
 							<string>NSArrayController</string>
+							<string>NSPathControl</string>
 							<string>NSTabView</string>
 						</object>
 					</object>

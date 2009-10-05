@@ -52,16 +52,17 @@ TEST_F(DelayedMenuButtonTest, MenuAssign) {
   [menu insertItemWithTitle:@"bar" action:nil keyEquivalent:@"" atIndex:2];
   [menu insertItemWithTitle:@"baz" action:nil keyEquivalent:@"" atIndex:3];
   
-  [button_ setMenu:menu];
-  EXPECT_TRUE([button_ menu]);
+  [button_ setAttachedMenu:menu];
+  EXPECT_TRUE([button_ attachedMenu]);
 
-  [button_ setMenuEnabled:YES];
-  EXPECT_TRUE([button_ menuEnabled]);
+  [button_ setAttachedMenuEnabled:YES];
+  EXPECT_TRUE([button_ attachedMenuEnabled]);
 
   // TODO(viettrungluu): Display the menu. (Calling DelayedMenuButton's private
-  // |-menuAction:| method displays it fine, but the problem is getting rid of
-  // the menu. We can catch the |NSMenuDidBeginTrackingNotification| from |menu|
-  // fine, but then |-cancelTracking| doesn't dismiss it. I don't know why.)
+  // |-attachedMenuAction:| method displays it fine, but the problem is
+  // getting rid of the menu. We can catch the
+  // |NSMenuDidBeginTrackingNotification| from |menu| fine, but then
+  // |-cancelTracking| doesn't dismiss it. I don't know why.)
 }
 
 // TODO(viettrungluu): Test the two actions of the button (the normal one and

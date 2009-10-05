@@ -107,7 +107,7 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
            name:NSViewFrameDidChangeNotification
          object:[self view]];
 
-  DCHECK([offTheSideButton_ menu]);
+  DCHECK([offTheSideButton_ attachedMenu]);
 }
 
 - (void)showIfNeeded {
@@ -334,7 +334,7 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 
 // Get the off-the-side menu.
 - (NSMenu*)offTheSideMenu {
-  return [offTheSideButton_ menu];
+  return [offTheSideButton_ attachedMenu];
 }
 
 // Called by any menus which have set us as their delegate (right now just the

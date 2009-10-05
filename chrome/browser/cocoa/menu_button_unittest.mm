@@ -51,14 +51,14 @@ TEST_F(MenuButtonTest, MenuAssign) {
   [menu insertItemWithTitle:@"bar" action:nil keyEquivalent:@"" atIndex:2];
   [menu insertItemWithTitle:@"baz" action:nil keyEquivalent:@"" atIndex:3];
   
-  [button_ setMenu:menu];
-  EXPECT_TRUE([button_ menu]);
+  [button_ setAttachedMenu:menu];
+  EXPECT_TRUE([button_ attachedMenu]);
 
   // TODO(viettrungluu): Display the menu. (The tough part is closing the menu,
   // not opening it!)
 
   // Since |button_| doesn't retain menu, we should probably unset it here.
-  [button_ setMenu:nil];
+  [button_ setAttachedMenu:nil];
 }
 
 }  // namespace
