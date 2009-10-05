@@ -370,13 +370,12 @@ void ThumbnailStore::InitializeFromDB(const FilePath& db_name,
 }
 
 void ThumbnailStore::GetAllThumbnailsFromDisk(MessageLoop* cb_loop) {
-  Cache* cache = new Cache;
-
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "SELECT * FROM thumbnails"));
   if (!statement)
     return;
 
+  Cache* cache = new Cache;
   while (statement.Step()) {
     // The URL
     GURL url(statement.ColumnString(0));
