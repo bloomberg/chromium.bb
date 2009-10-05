@@ -75,6 +75,7 @@
       'target_name': 'ncopcode_utils',
       'type': 'static_library',
       'sources': [ 'ncopcode_desc.c' ],
+      'dependencies': ['ncopcode_utils_gen'],
       'cflags!': [
         '-Wextra',
         '-Wswitch-enum',
@@ -87,7 +88,13 @@
           '-Wsign-compare'
         ]
       },
-      'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
+    },
+    {
+      'target_name': 'ncopcode_utils_gen',
+      'type': 'none',
+      'direct_dependent_settings': {
+        'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
+      },
       'actions': [
        {
           'action_name': 'ncopcode_prefix',
@@ -210,7 +217,7 @@
         ]
       },
       'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
-      'dependencies': ['ncopcode_utils' ],
+      'dependencies': ['ncopcode_utils'],
       'conditions': [
         ['OS=="win"', {
           'msvs_settings': {
