@@ -199,7 +199,7 @@ class BlockedPopupContainer : public TabContentsDelegate,
   // A number larger than the internal popup count on the Renderer; meant for
   // preventing a compromised renderer from exhausting GDI memory by spawning
   // infinite windows.
-  static const size_t kImpossibleNumberOfPopups = 30;
+  static const size_t kImpossibleNumberOfPopups;
 
  protected:
   struct BlockedPopup {

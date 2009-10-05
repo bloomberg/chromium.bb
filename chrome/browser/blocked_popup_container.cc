@@ -11,6 +11,9 @@
 #include "chrome/common/notification_service.h"
 
 // static
+const size_t BlockedPopupContainer::kImpossibleNumberOfPopups = 30;
+
+// static
 BlockedPopupContainer* BlockedPopupContainer::Create(
     TabContents* owner, Profile* profile) {
   BlockedPopupContainer* container =
