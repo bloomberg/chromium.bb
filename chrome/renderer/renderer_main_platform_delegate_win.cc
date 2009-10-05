@@ -6,10 +6,12 @@
 
 #include "base/command_line.h"
 #include "base/gfx/native_theme.h"
+#include "base/scoped_ptr.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/injection_test_dll.h"
 #include "sandbox/src/sandbox.h"
+#include "unicode/timezone.h"
 
 namespace {
 
@@ -33,7 +35,7 @@ void EnableThemeSupportForRenderer(bool no_sandbox) {
   }
 
   HWND window = ::CreateWindowExW(0, L"Static", L"", WS_POPUP | WS_DISABLED,
-                                  CW_USEDEFAULT, 0, 0, 0,  HWND_MESSAGE, NULL, 
+                                  CW_USEDEFAULT, 0, 0, 0,  HWND_MESSAGE, NULL,
                                   ::GetModuleHandleA(NULL), NULL);
   if (!window) {
     DLOG(WARNING) << "failed to enable theme support";
@@ -75,6 +77,16 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
   const CommandLine& command_line = parameters_.command_line_;
   bool no_sandbox = command_line.HasSwitch(switches::kNoSandbox);
   EnableThemeSupportForRenderer(no_sandbox);
+
+  if (!no_sandbox) {
+    // ICU DateFormat class (used in base/time_format.cc) needs to get the
+    // Olson timezone ID by accessing the registry keys under
+    // HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Time Zones.
+    // After TimeZone::createDefault is called once here, the timezone ID is
+    // cached and there's no more need to access the registry. If the sandbox
+    // is disabled, we don't have to make this dummy call.
+    scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
+  }
 }
 
 void RendererMainPlatformDelegate::PlatformUninitialize() {

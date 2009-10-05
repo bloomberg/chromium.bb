@@ -18,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/rand_util.h"
+#include "base/scoped_ptr.h"
 #include "base/sys_info.h"
 #include "base/unix_domain_socket_posix.h"
 
@@ -36,6 +37,8 @@
 #include <selinux/selinux.h>
 #include <selinux/context.h>
 #endif
+
+#include "unicode/timezone.h"
 
 // http://code.google.com/p/chromium/wiki/LinuxZygote
 
@@ -376,6 +379,12 @@ static void PreSandboxInit() {
     // FilePath for IPC.
     const char* locale = setlocale(LC_ALL, "");
     LOG_IF(WARNING, locale == NULL) << "setlocale failed.";
+
+    // ICU DateFormat class (used in base/time_format.cc) needs to get the
+    // Olson timezone ID by accessing the zoneinfo files on disk. After
+    // TimeZone::createDefault is called once here, the timezone ID is
+    // cached and there's no more need to access the file system.
+    scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
 
     FilePath module_path;
     if (PathService::Get(base::DIR_MODULE, &module_path))
