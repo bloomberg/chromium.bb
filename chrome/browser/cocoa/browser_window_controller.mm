@@ -1148,17 +1148,6 @@ willPositionSheet:(NSWindow*)sheet
   return defaultSheetRect;
 }
 
-// In addition to the tab strip and content area, which the superview's impl
-// takes care of, we need to add the toolbar and bookmark bar to the
-// overlay so they draw correctly when dragging out a new window.
-- (NSArray*)viewsToMoveToOverlay {
-  NSArray* views = [super viewsToMoveToOverlay];
-  NSArray* browserViews =
-      [NSArray arrayWithObjects:[toolbarController_ view],
-                                nil];
-  return [views arrayByAddingObjectsFromArray:browserViews];
-}
-
 // Undocumented method for multi-touch gestures in 10.5. Future OS's will
 // likely add a public API, but the worst that will happen is that this will
 // turn into dead code and just won't get called.

@@ -60,20 +60,21 @@
   [self setUseOverlay:YES];
 }
 
-- (NSArray*)viewsToMoveToOverlay {
-  return [NSArray arrayWithObjects:[self tabStripView],
-            [self tabContentArea], nil];
-}
-
 // if |useOverlay| is true, we're moving views into the overlay's content
 // area. If false, we're moving out of the overlay back into the window's
 // content.
 - (void)moveViewsBetweenWindowAndOverlay:(BOOL)useOverlay {
-  NSView* moveTo = useOverlay ?
-      [overlayWindow_ contentView] : [cachedContentView_ superview];
-  NSArray* viewsToMove = [self viewsToMoveToOverlay];
-  for (NSView* view in viewsToMove)
-    [moveTo addSubview:view];
+  if (useOverlay) {
+    [[[overlayWindow_ contentView] superview] addSubview:[self tabStripView]];
+    // Add the original window's content view as a subview of the overlay
+    // window's content view.  We cannot simply use setContentView: here because
+    // the overlay window has a different content size (due to it being
+    // borderless).
+    [[overlayWindow_ contentView] addSubview:cachedContentView_];
+  } else {
+    [[[[self window] contentView] superview] addSubview:[self tabStripView]];
+    [[self window] setContentView:cachedContentView_];
+  }
 }
 
 // If |useOverlay| is YES, creates a new overlay window and puts the tab strip
@@ -95,8 +96,6 @@
     [overlayWindow_ setBackgroundColor:[NSColor clearColor]];
     [overlayWindow_ setOpaque:NO];
     [overlayWindow_ setDelegate:self];
-    NSView *contentView = [overlayWindow_ contentView];
-    [contentView addSubview:[self tabStripView]];
     cachedContentView_ = [[self window] contentView];
     [self moveViewsBetweenWindowAndOverlay:useOverlay];
     [[self window] addChildWindow:overlayWindow_ ordered:NSWindowAbove];

@@ -123,11 +123,6 @@
 @end
 
 @interface TabWindowController(ProtectedMethods)
-// A list of all the views that need to move to the overlay window. Subclasses
-// can override this to add more things besides the tab strip. Be sure to
-// call the superclass' version if overridden.
-- (NSArray*)viewsToMoveToOverlay;
-
 // Tells the tab strip to forget about this tab in preparation for it being
 // put into a different tab strip, such as during a drop on another window.
 - (void)detachTabView:(NSView*)view;
