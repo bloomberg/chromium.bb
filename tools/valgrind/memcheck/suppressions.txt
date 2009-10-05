@@ -601,6 +601,17 @@
    fun:_ZN7WebCore5Frame4initEv
 }
 {
+   bug_17067
+   Memcheck:Value4
+   fun:rgb_ycc_convert
+   fun:pre_process_data
+   fun:process_data_simple_main
+   fun:chromium_jpeg_write_scanlines
+   fun:_ZN3gfx9JPEGCodec6EncodeEPKhNS0_11ColorFormatEiiiiPSt6vectorIhSaIhEE
+   fun:_ZN7history8TopSites16SetPageThumbnailERK4GURLRK8SkBitmapRK14ThumbnailScore
+   fun:_ZN7history34TopSitesTest_SetPageThumbnail_Test8TestBodyEv
+}
+{
    bug_17113
    Memcheck:Leak
    fun:_Znw*
