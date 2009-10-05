@@ -88,7 +88,9 @@ RenderProcessHost::RenderProcessHost(Profile* profile)
 }
 
 RenderProcessHost::~RenderProcessHost() {
-  all_hosts.Remove(id());
+  // In unit tests, Release() might not have been called.
+  if (all_hosts.Lookup(id()))
+    all_hosts.Remove(id());
 }
 
 void RenderProcessHost::Attach(IPC::Channel::Listener* listener,
@@ -109,6 +111,10 @@ void RenderProcessHost::Release(int listener_id) {
         NotificationType::RENDERER_PROCESS_TERMINATED,
         Source<RenderProcessHost>(this), NotificationService::NoDetails());
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+
+    // Remove ourself from the list of renderer processes so that we can't be
+    // reused in between now and when the Delete task runs.
+    all_hosts.Remove(id());
   }
 }
 
