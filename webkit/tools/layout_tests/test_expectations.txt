@@ -2405,8 +2405,7 @@ BUG10477 : LayoutTests/http/tests/navigation/onload-navigation-iframe-2.html = T
 // Merge WebKit: 42026:42115 new tests
 BUG10475 WIN LINUX : LayoutTests/fast/block/positioning/negative-rel-position.html = FAIL
 // This test isn't just slow -- sometimes it times out indefinitely.
-BUG10475 WIN LINUX : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html = TIMEOUT PASS
-BUG10475 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html = TIMEOUT PASS
+BUG10475 WIN LINUX MAC : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html = TIMEOUT PASS
 BUG10475 WIN LINUX : LayoutTests/fast/forms/range-thumb-height-percentage.html = FAIL
 
 SKIP BUG9613 : LayoutTests/fast/dom/clientWidthAfterDocumentIsRemoved.html = PASS
@@ -2449,6 +2448,7 @@ BUG10479 RELEASE MAC : LayoutTests/fast/dom/Window/window-object-cross-frame-cal
 BUG10479 MAC : LayoutTests/svg/hixie/perf/001.xml = FAIL
 BUG10479 MAC : LayoutTests/svg/hixie/perf/002.xml = FAIL
 
+BUG9798 WIN RELEASE : LayoutTests/fast/dom/Window/slow_unload_handler.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/fast/encoding/char-encoding.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/fast/lists/inlineBoxWrapperNullCheck.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/redirect-with-quotes.php = TIMEOUT PASS
@@ -2482,6 +2482,7 @@ BUG9797 WIN DEBUG : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
 BUG9797 WIN LINUX MAC : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/referer.html = TIMEOUT PASS
 BUG9797 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = TIMEOUT PASS
+BUG9798 WIN RELEASE : LayoutTests/tables/mozilla_expected_failures/bugs/bug85016.html = FAIL PASS
 BUG9798 LINUX DEBUG : LayoutTests/transitions/multiple-background-transitions.html = FAIL PASS
 BUG9798 LINUX DEBUG : LayoutTests/transitions/multiple-shadow-transitions.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-multiple-01.html = FAIL PASS
@@ -2498,6 +2499,7 @@ BUG9798 LINUX : LayoutTests/transitions/transition-end-event-attributes.html = F
 BUG9798 LINUX : LayoutTests/transitions/extra-transition.html = TIMEOUT PASS
 BUG9798 LINUX : LayoutTests/storage/change-version.html = TIMEOUT PASS
 BUG9798 WIN : LayoutTests/fast/replaced/border-radius-clip.html = FAIL PASS
+BUG9798 LINUX DEBUG : LayoutTests/media/video-controls-rendering.html = FAIL PASS
 BUG9798 : LayoutTests/media/video-seeking.html = FAIL PASS
 BUG9798 : LayoutTests/media/video-layer-crash.html = FAIL PASS
 BUG9798 : LayoutTests/media/video-src-invalid-remove.html = FAIL PASS
@@ -2693,7 +2695,7 @@ BUG15270 : LayoutTests/fast/js/excessive-comma-usage.html = FAIL
 BUG15490 LINUX : LayoutTests/editing/deleting/25322-1.html = PASS FAIL CRASH
 
 // Flaky for a while on DEBUG; also related to BUG17974
-BUG15267 LINUX DEBUG : LayoutTests/transitions/cancel-transition.html = PASS FAIL
+BUG15267 WIN LINUX DEBUG : LayoutTests/transitions/cancel-transition.html = PASS FAIL
 
 // WebKit 45431:45444
 BUG10384 MAC : LayoutTests/fast/events/frame-tab-focus.html = CRASH FAIL
@@ -2839,6 +2841,7 @@ BUG18116 : LayoutTests/fast/dom/prototype-inheritance-2.html = FAIL
 BUG18584 : LayoutTests/animations/change-one-anim.html = FAIL PASS
 BUG18584 LINUX WIN : LayoutTests/animations/play-state.html = FAIL PASS
 BUG18584 : LayoutTests/transitions/shorthand-transitions.html = FAIL PASS
+BUG18584 WIN RELEASE : LayoutTests/animations/combo-transform-translate+scale.html = FAIL PASS
 
 // Flaky crashes
 BUG18656 MAC : LayoutTests/fast/dom/Window/window-lookup-precedence.html = FAIL CRASH
