@@ -149,3 +149,6 @@ SUBSTRING : webframeloaderclient::dispatchdidchangelocationwithinpage___webcore:
 
 # 23281
 REGEX : tabcontents::washidden___.*___tabcontents::~tabcontents
+
+# bug 23780
+PREFIX: v8::internal::mayaccessprecheck___v8::internal::top::maynamedaccess___v8::internal::jsobject::getpropertyattribute___v8::internal::jsobject::getlocalpropertyattribute___v8::internal::gethiddenproperties___v8::object::deletehiddenvalue___webcore::v8abstracteventlistener::~v8abstracteventlistener___webcore::v8workercontexteventlistener::`scalar deleting destructor'
