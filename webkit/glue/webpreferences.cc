@@ -52,6 +52,8 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setDatabasesEnabled(WebKit::databasesEnabled() || databases_enabled);
   settings->setSessionStorageEnabled(session_storage_enabled);
   settings->setOfflineWebApplicationCacheEnabled(application_cache_enabled);
+  settings->setExperimentalNotificationsEnabled(
+      experimental_notifications_enabled);
 
   // This setting affects the behavior of links in an editable region:
   // clicking the link should select it rather than navigate to it.

@@ -186,6 +186,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
       command_line.HasSwitch(switches::kEnableSessionStorage);
     web_prefs.experimental_webgl_enabled =
       command_line.HasSwitch(switches::kEnableExperimentalWebGL);
+    web_prefs.experimental_notifications_enabled =
+      command_line.HasSwitch(switches::kEnableDesktopNotifications);
   }
 
   web_prefs.uses_universal_detector =

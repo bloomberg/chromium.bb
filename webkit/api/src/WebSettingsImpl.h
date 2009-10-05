@@ -82,6 +82,7 @@ namespace WebKit {
         virtual void setTextDirectionSubmenuInclusionBehaviorNeverIncluded();
         virtual void setOfflineWebApplicationCacheEnabled(bool);
         virtual void setExperimentalWebGLEnabled(bool);
+        virtual void setExperimentalNotificationsEnabled(bool);
 
     private:
         WebCore::Settings* m_settings;

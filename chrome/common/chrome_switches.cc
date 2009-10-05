@@ -620,4 +620,8 @@ const wchar_t kActivateOnLaunch[]              = L"activate-on-launch";
 // Enable experimental WebGL support.
 const wchar_t kEnableExperimentalWebGL[]       = L"enable-webgl";
 
+// Enabled desktop notifications.
+const wchar_t kEnableDesktopNotifications[]    =
+    L"enable-desktop-notifications";
+
 }  // namespace switches

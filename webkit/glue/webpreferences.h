@@ -49,6 +49,7 @@ struct WebPreferences {
   bool session_storage_enabled;
   bool application_cache_enabled;
   bool tabs_to_links;
+  bool experimental_notifications_enabled;
 
   // TODO(tc): User style sheets will not work in chrome because it tries to
   // load the style sheet using a request without a frame.
@@ -94,6 +95,7 @@ struct WebPreferences {
         session_storage_enabled(false),
         application_cache_enabled(false),
         tabs_to_links(true),
+        experimental_notifications_enabled(false),
         user_style_sheet_enabled(false),
         allow_universal_access_from_file_urls(false),
         experimental_webgl_enabled(false) {

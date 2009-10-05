@@ -250,6 +250,8 @@ extern const wchar_t kActivateOnLaunch[];
 
 extern const wchar_t kEnableExperimentalWebGL[];
 
+extern const wchar_t kEnableDesktopNotifications[];
+
 }  // namespace switches
 
 #endif  // CHROME_COMMON_CHROME_SWITCHES_H_

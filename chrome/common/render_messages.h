@@ -1651,6 +1651,7 @@ struct ParamTraits<WebPreferences> {
     WriteParam(m, p.session_storage_enabled);
     WriteParam(m, p.application_cache_enabled);
     WriteParam(m, p.experimental_webgl_enabled);
+    WriteParam(m, p.experimental_notifications_enabled);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
@@ -1686,7 +1687,8 @@ struct ParamTraits<WebPreferences> {
         ReadParam(m, iter, &p->databases_enabled) &&
         ReadParam(m, iter, &p->session_storage_enabled) &&
         ReadParam(m, iter, &p->application_cache_enabled) &&
-        ReadParam(m, iter, &p->experimental_webgl_enabled);
+        ReadParam(m, iter, &p->experimental_webgl_enabled) &&
+        ReadParam(m, iter, &p->experimental_notifications_enabled);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"<WebPreferences>");
