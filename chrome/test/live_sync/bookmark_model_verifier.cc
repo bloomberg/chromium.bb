@@ -10,6 +10,7 @@
 #include <stack>
 
 #include "app/tree_node_iterator.h"
+#include "base/rand_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/test/live_sync/live_bookmarks_sync_test.h"
@@ -74,6 +75,29 @@ void BookmarkModelVerifier::ExpectModelsMatchIncludingFavicon(
   ASSERT_FALSE(a_iterator.has_next());
 }
 
+void BookmarkModelVerifier::VerifyNoDuplicates(BookmarkModel* model) {
+  TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
+  // Pre-order traversal of model tree, looking for duplicate node at
+  // each step.
+  while (iterator.has_next()) {
+    const BookmarkNode* node = iterator.Next();
+    std::vector<const BookmarkNode*> nodes;
+    if (node->GetType() != BookmarkNode::URL) { continue; }
+    // Get nodes with same URL.
+    model->GetNodesByURL(node->GetURL(),&nodes);
+    EXPECT_TRUE(nodes.size()>=1);
+    for(std::vector<const BookmarkNode*>::const_iterator i=nodes.begin(), e=nodes.end(); i!=e; i++) {
+      // Skip if it's same node.
+      int64 id = node->id();
+      if ( id == (*i)->id()) { continue; }
+      else {
+        // Make sure title are not same.
+        EXPECT_NE(node->GetTitle(),(*i)->GetTitle());
+      }
+    }
+  } // end of while
+}
+
 void BookmarkModelVerifier::FindNodeInVerifier(BookmarkModel* foreign_model,
                                                const BookmarkNode* foreign_node,
                                                const BookmarkNode** result) {
@@ -112,6 +136,38 @@ const BookmarkNode* BookmarkModelVerifier::AddGroup(BookmarkModel* model,
   if (!v_node) return NULL;
   ExpectBookmarkInfoMatch(v_node, result);
   return result;
+}
+
+const BookmarkNode* BookmarkModelVerifier::AddNonEmptyGroup(
+    BookmarkModel* model, const BookmarkNode* parent, int index,
+    const string16& title, int children_count) {
+  const BookmarkNode* bm_folder = AddGroup(model, parent, index, title);
+  EXPECT_TRUE(bm_folder);
+  if (!bm_folder) return NULL;
+  for (int child_index = 0; child_index < children_count; child_index++) {
+    int random_int = base::RandInt(1, 100);
+    // To create randomness in order, 60% of time add bookmarks
+    if (random_int > 40) {
+      string16 child_bm_title(bm_folder->GetTitle());
+      child_bm_title.append(L"-ChildBM");
+      string16 url(L"http://www.nofaviconurl");
+      string16 index_str = IntToString16(child_index);
+      child_bm_title.append(index_str);
+      url.append(index_str);
+      url.append(L".com");
+      const BookmarkNode* child_nofavicon_bm =
+         AddURL(model, bm_folder, child_index, child_bm_title, GURL(url));
+    } else {
+      // Remaining % of time - Add Bookmark folders
+      string16 child_bmfolder_title(bm_folder->GetTitle());
+      child_bmfolder_title.append(L"-ChildBMFolder");
+      string16 index_str = IntToString16(child_index);
+      child_bmfolder_title.append(index_str);
+      const BookmarkNode* child_bm_folder =
+          AddGroup(model, bm_folder, child_index, child_bmfolder_title);
+    }
+  }
+  return bm_folder;
 }
 
 const BookmarkNode* BookmarkModelVerifier::AddURL(BookmarkModel* model,
@@ -166,15 +222,25 @@ void BookmarkModelVerifier::SortChildren(BookmarkModel* model,
   verifier_->SortChildren(v_parent);
 }
 
-void BookmarkModelVerifier::SetURL(BookmarkModel* model,
+void BookmarkModelVerifier::ReverseChildOrder(BookmarkModel* model,
+                                         const BookmarkNode* parent) {
+  int child_count = parent->GetChildCount();
+  if (child_count <= 0) return;
+  for (int index = 0; index < child_count; index++) {
+    Move(model, parent->GetChild(index), parent, child_count-index);
+  }
+}
+
+const BookmarkNode* BookmarkModelVerifier::SetURL(BookmarkModel* model,
                                    const BookmarkNode* node,
                                    const GURL& new_url) {
   const BookmarkNode* v_node = NULL;
   FindNodeInVerifier(model, node, &v_node);
-  bookmark_utils::ApplyEditsWithNoGroupChange(model, node->GetParent(),
-      node, node->GetTitle(), new_url, NULL);
+  const BookmarkNode* result = bookmark_utils::ApplyEditsWithNoGroupChange(
+      model, node->GetParent(), node, node->GetTitle(), new_url, NULL);
   bookmark_utils::ApplyEditsWithNoGroupChange(verifier_, v_node->GetParent(),
       v_node, v_node->GetTitle(), new_url, NULL);
+  return result;
 }
 
 #endif  // CHROME_PERSONALIZATION

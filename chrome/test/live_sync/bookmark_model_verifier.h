@@ -35,6 +35,14 @@ class BookmarkModelVerifier {
                                int index,
                                const string16& title);
 
+  // Adds the same non-empty folder to |model| and |verifier|.
+  // It also adds specified number of childern (mix of bm and folder).
+  const BookmarkNode* AddNonEmptyGroup(BookmarkModel* model,
+                               const BookmarkNode* parent,
+                               int index,
+                               const string16& title,
+                               int children_count);
+
   // Adds the same bookmark to |model| and |verifier|.
   // See BookmarkModel::AddURL for details.
   const BookmarkNode* AddURL(BookmarkModel* model,
@@ -63,7 +71,11 @@ class BookmarkModelVerifier {
   // See BookmarkModel::SortChildren for details.
   void SortChildren(BookmarkModel* model, const BookmarkNode* parent);
 
-  void SetURL(BookmarkModel* model,
+  // Reverses the order of children of the same parent node in |model|
+  // and |verifier|.
+  void ReverseChildOrder(BookmarkModel* model, const BookmarkNode* parent);
+
+  const BookmarkNode* SetURL(BookmarkModel* model,
               const BookmarkNode* node,
               const GURL& new_url);
 
@@ -80,6 +92,8 @@ class BookmarkModelVerifier {
   static void ExpectModelsMatchIncludingFavicon(BookmarkModel* expected,
                                 BookmarkModel* actual,
                                 bool compare_favicon);
+
+  static void VerifyNoDuplicates(BookmarkModel* model);
 
  private:
   BookmarkModelVerifier();

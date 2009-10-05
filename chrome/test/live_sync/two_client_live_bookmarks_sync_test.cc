@@ -18,27 +18,118 @@
 #include "chrome/test/live_sync/live_bookmarks_sync_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// TODO(tejasshah): Move single client tests to separate file.
+
+// Some Abbreviations Used:
+// F -- BookmarkFolder
+// BM -- Bookmark
+// L -- Level (Depth of bookmark folder)
 class TwoClientLiveBookmarksSyncTest : public LiveBookmarksSyncTest {
  public:
   TwoClientLiveBookmarksSyncTest() {
+    // This makes sure browser is visible and active while running test.
+    InProcessBrowserTest::set_show_window(true);
     // Set the initial timeout value to 5 min.
     InProcessBrowserTest::SetInitialTimeoutInMS(300000);
   }
   virtual ~TwoClientLiveBookmarksSyncTest() {}
   bool SetupSync() {
-    profile2_.reset(MakeProfile(L"clienttwo"));
+    profile2_.reset(MakeProfile(L"client2"));
     client1_.reset(new ProfileSyncServiceTestHarness(
         browser()->profile(), username_, password_));
     client2_.reset(new ProfileSyncServiceTestHarness(
         profile2_.get(), username_, password_));
-    return client1_->SetupSync() && client2_->SetupSync();
+    if (ShouldSetupSyncWithRace()) {
+      return client1_->SetupSync() && client2_->SetupSync();
+    } else {
+      bool result_client1 = client1_->SetupSync();
+      client1()->AwaitSyncCycleCompletion("Initial setup");
+      return result_client1 && client2_->SetupSync();
+    }
   }
+
+  // Overwrites ShouldDeleteProfile, so profile doesn't get deleted.
   virtual bool ShouldDeleteProfile() {
     return false;
   }
 
+  // Overload this method in inherited class and return false to avoid
+  // race condition (two clients trying to sync/commit at the same time).
+  // Race condition may lead to duplicate bookmarks if there is existing
+  // bookmark model on both clients.
+  virtual bool ShouldSetupSyncWithRace() {
+    return true;
+  }
+
+  // Overload this method in your class and return true to pre-populate
+  // bookmark files for client2 also.
+  virtual bool ShouldCopyBookmarksToClient2() {
+    return false;
+  }
+
+  // This is used to pre-populate bookmarks hierarchy file to Client1 and
+  // Verifier Client.
+  void PrePopulateBookmarksHierarchy(const string16 &bookmarks_file_name) {
+    // Let's create default profile directory.
+    FilePath dest_user_data_dir;
+    PathService::Get(chrome::DIR_USER_DATA, &dest_user_data_dir);
+    FilePath dest_user_data_dir_default = dest_user_data_dir.Append(
+        FILE_PATH_LITERAL("Default"));
+    file_util::CreateDirectoryW(dest_user_data_dir_default);
+    // Let's create verifier profile directory.
+    FilePath dest_user_data_dir_verifier = dest_user_data_dir.Append(
+        FILE_PATH_LITERAL("verifier"));
+    file_util::CreateDirectoryW(dest_user_data_dir_verifier);
+
+    // Let's prepare sync data source file path.
+    FilePath sync_data_source;
+    PathService::Get(base::DIR_SOURCE_ROOT, &sync_data_source);
+    sync_data_source = sync_data_source.Append(FILE_PATH_LITERAL("chrome"));
+    sync_data_source = sync_data_source.Append(
+        FILE_PATH_LITERAL("personalization"));
+    sync_data_source = sync_data_source.Append(FILE_PATH_LITERAL("test"));
+    sync_data_source = sync_data_source.Append(
+        FILE_PATH_LITERAL("live_sync_data"));
+    FilePath source_file = sync_data_source.Append(
+        bookmarks_file_name);
+    ASSERT_TRUE(file_util::PathExists(source_file));
+    // Now copy pre-generated bookmark file to default profile.
+    ASSERT_TRUE(file_util::CopyFileW(
+        source_file, dest_user_data_dir_default.Append(
+        FILE_PATH_LITERAL("bookmarks"))));
+    // Now copy pre-generated bookmark file to verifier profile.
+    ASSERT_TRUE(file_util::CopyFileW(
+        source_file, dest_user_data_dir_verifier.Append(
+        FILE_PATH_LITERAL("bookmarks"))));
+
+    // Let's pre-populate bookmarks file for client2 also if we need to.
+    if (ShouldCopyBookmarksToClient2()) {
+      // Let's create verifier profile directory.
+      FilePath dest_user_data_dir_client2 = dest_user_data_dir.Append(
+          FILE_PATH_LITERAL("client2"));
+      file_util::CreateDirectoryW(dest_user_data_dir_client2);
+      // Now copy pre-generated bookmark file to verifier profile.
+      ASSERT_TRUE(file_util::CopyFileW(
+          source_file, dest_user_data_dir_client2.Append(
+          FILE_PATH_LITERAL("bookmarks"))));
+    }
+  }
+
   ProfileSyncServiceTestHarness* client1() { return client1_.get(); }
   ProfileSyncServiceTestHarness* client2() { return client2_.get(); }
+
+  void set_client1(ProfileSyncServiceTestHarness* p_client1) {
+    client1_.reset(p_client1);
+  }
+
+  void set_client2(ProfileSyncServiceTestHarness* p_client2) {
+    client2_.reset(p_client2);
+  }
+
+  void set_profile2(Profile* p) {
+    profile2_.reset(p);
+  }
+
   Profile* profile1() { return browser()->profile(); }
   Profile* profile2() { return profile2_.get(); }
 
@@ -55,13 +146,16 @@ class TwoClientLiveBookmarksSyncTest : public LiveBookmarksSyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientLiveBookmarksSyncTest);
 };
 
-class LiveSyncTest_PrePopulatedHistory1K
+class LiveSyncTestPrePopulatedHistory1K
     : public TwoClientLiveBookmarksSyncTest {
  public:
-  LiveSyncTest_PrePopulatedHistory1K() {}
-  virtual ~LiveSyncTest_PrePopulatedHistory1K() {}
+  LiveSyncTestPrePopulatedHistory1K() {}
+  virtual ~LiveSyncTestPrePopulatedHistory1K() {}
 
-  virtual void SetUp() {
+  // This is used to pre-populate history data (1K URL Visit)to Client1
+  // and Verifier Client.
+  void PrePopulateHistory1K() {
+    // Let's copy history files to default profile.
     FilePath dest_user_data_dir;
     PathService::Get(chrome::DIR_USER_DATA, &dest_user_data_dir);
     dest_user_data_dir = dest_user_data_dir.Append(
@@ -87,12 +181,104 @@ class LiveSyncTest_PrePopulatedHistory1K
       ASSERT_TRUE(file_util::CopyFileW(source_file, dest_file));
       source_file = sync_data.Next();
     }
+  }
+
+  virtual void SetUp() {
+    PrePopulateHistory1K();
     LiveBookmarksSyncTest::SetUp();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(LiveSyncTest_PrePopulatedHistory1K);
+  DISALLOW_COPY_AND_ASSIGN(LiveSyncTestPrePopulatedHistory1K);
 };
+
+class LiveSyncTestBasicHierarchy50BM
+    : public TwoClientLiveBookmarksSyncTest {
+ public:
+  LiveSyncTestBasicHierarchy50BM() {}
+  virtual ~LiveSyncTestBasicHierarchy50BM() {}
+
+  virtual void SetUp() {
+    const string16 file_name(L"bookmarks_50BM5F3L");
+    PrePopulateBookmarksHierarchy(file_name);
+    LiveBookmarksSyncTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LiveSyncTestBasicHierarchy50BM);
+};
+
+class LiveSyncTestBasicHierarchy50BMBothClients
+    : public LiveSyncTestBasicHierarchy50BM {
+ public:
+  LiveSyncTestBasicHierarchy50BMBothClients() {}
+  virtual ~LiveSyncTestBasicHierarchy50BMBothClients() {}
+  // Overloading this method and return true to pre-populate
+  // bookmark files for client2 also.
+  virtual bool ShouldCopyBookmarksToClient2() {
+    return true;
+  }
+
+  // Overloading to ensure there is no race condition between clients
+  // while doing initial set up of sync.
+  virtual bool ShouldSetupSyncWithRace() {
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LiveSyncTestBasicHierarchy50BMBothClients);
+};
+
+class LiveSyncTestComplexHierarchy800BM
+    : public TwoClientLiveBookmarksSyncTest {
+ public:
+  LiveSyncTestComplexHierarchy800BM() {}
+  virtual ~LiveSyncTestComplexHierarchy800BM() {}
+  virtual void SetUp() {
+    const string16 file_name(L"bookmarks_800BM32F8L");
+    TwoClientLiveBookmarksSyncTest::PrePopulateBookmarksHierarchy(file_name);
+    LiveBookmarksSyncTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LiveSyncTestComplexHierarchy800BM);
+};
+
+class LiveSyncTestHugeHierarchy5500BM
+    : public TwoClientLiveBookmarksSyncTest {
+ public:
+  LiveSyncTestHugeHierarchy5500BM() {}
+  virtual ~LiveSyncTestHugeHierarchy5500BM() {}
+  virtual void SetUp() {
+    const string16 file_name(L"bookmarks_5500BM125F25L");
+    TwoClientLiveBookmarksSyncTest::PrePopulateBookmarksHierarchy(file_name);
+    LiveBookmarksSyncTest::SetUp();
+  }
+  virtual bool ShouldSetupSyncWithRace() {
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LiveSyncTestHugeHierarchy5500BM);
+};
+
+class LiveSyncTestDefaultIEFavorites
+    : public TwoClientLiveBookmarksSyncTest {
+ public:
+  LiveSyncTestDefaultIEFavorites() {}
+  virtual ~LiveSyncTestDefaultIEFavorites() {}
+
+  virtual void SetUp() {
+    const string16 file_name(L"bookmarks_default_IE_favorites");
+    TwoClientLiveBookmarksSyncTest::PrePopulateBookmarksHierarchy(file_name);
+    LiveBookmarksSyncTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LiveSyncTestDefaultIEFavorites);
+};
+
+
 
 // Test case Naming Convention:
 // SC/MC - SingleClient / MultiClient.
@@ -220,54 +406,60 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   Cleanup();
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_CleanAccount_AddFirstFolder_370558) {
-
+// Test Scribe ID - 370439.
+IN_PROC_BROWSER_TEST_F(LiveSyncTestDefaultIEFavorites,
+    SC_BootStrapWithDefaultIEFavorites) {
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
   BookmarkModel* model_one = profile1()->GetBookmarkModel();
   BookmarkModel* model_two = profile2()->GetBookmarkModel();
-  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
 
-  verifier->ExpectMatch(model_one);
-  verifier->ExpectMatch(model_two);
-
-  {
-    // Let's add first bookmark folder to client1
-    const BookmarkNode* new_folder_one =
-        verifier->AddGroup(model_one, bbn_one, 0, L"TestFolder");
-  }
+  // Wait for changes to propagate.
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  // Let's compare and make sure both bookmark models are same after sync.
   verifier->ExpectMatch(model_one);
   verifier->ExpectMatch(model_two);
+
   Cleanup();
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_CleanAccount_AddFirstBMWithoutFavicon_370559) {
-
+// Test Scribe ID - 370441.
+IN_PROC_BROWSER_TEST_F(LiveSyncTestComplexHierarchy800BM,
+    SC_BootStrapWithComplexBMHierarchy) {
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
   BookmarkModel* model_one = profile1()->GetBookmarkModel();
   BookmarkModel* model_two = profile2()->GetBookmarkModel();
-  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
 
-  verifier->ExpectMatch(model_one);
-  verifier->ExpectMatch(model_two);
-
-  // Let's add first bookmark(without favicon)
-  {
-    const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one, bbn_one, 0,
-        L"TestBookmark", GURL("http://www.nofaviconurl.com"));
-  }
+  // Wait for changes to propagate.
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  // Let's compare and make sure both bookmark models are same after sync.
   verifier->ExpectMatch(model_one);
   verifier->ExpectMatch(model_two);
+
   Cleanup();
 }
 
-IN_PROC_BROWSER_TEST_F(LiveSyncTest_PrePopulatedHistory1K,
-    SC_CleanAccount_AddFirstBMWithFavicon_370489) {
+// Test Scribe ID - 370442.
+IN_PROC_BROWSER_TEST_F(LiveSyncTestHugeHierarchy5500BM,
+    SC_BootStrapWithHugeBMs) {
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+
+  // Wait for changes to propagate.
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  // Let's compare and make sure both bookmark models are same after sync.
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  Cleanup();
+}
+
+// Test Scribe ID - 370489.
+IN_PROC_BROWSER_TEST_F(LiveSyncTestPrePopulatedHistory1K,
+    SC_AddFirstBMWithFavicon) {
 
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
@@ -290,9 +482,57 @@ IN_PROC_BROWSER_TEST_F(LiveSyncTest_PrePopulatedHistory1K,
   Cleanup();
 }
 
+// Test Scribe ID - 370558.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_CleanAccount_AddNonHTTPBMs_370560) {
+    SC_AddFirstFolder) {
 
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  {
+    // Let's add first bookmark folder to client1
+    const BookmarkNode* new_folder_one =
+        verifier->AddGroup(model_one, bbn_one, 0, L"TestFolder");
+  }
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+  Cleanup();
+}
+
+// Test Scribe ID - 370559.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_AddFirstBMWithoutFavicon) {
+
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's add first bookmark(without favicon)
+  {
+    const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one, bbn_one, 0,
+        L"TestBookmark", GURL("http://www.nofaviconurl.com"));
+  }
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+  Cleanup();
+}
+
+// Test Scribe ID - 370560.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_AddNonHTTPBMs) {
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
   BookmarkModel* model_one = profile1()->GetBookmarkModel();
@@ -305,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   {
     const BookmarkNode* ftp_bm = verifier->AddURL(model_one, bbn_one, 0,
         L"FTPBookmark", GURL("ftp://ftp.testbookmark.com"));
-    const BookmarkNode* file_bm = verifier->AddURL(model_one, bbn_one, 0,
+    const BookmarkNode* file_bm = verifier->AddURL(model_one, bbn_one, 1,
         L"FileBookmark", GURL("file:///"));
   }
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
@@ -314,8 +554,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   Cleanup();
 }
 
+// Test Scribe ID - 370561.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_CleanAccount_AddFirstBM_UnderFolder_370561) {
+    SC_AddFirstBMUnderFolder) {
 
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
@@ -342,242 +583,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   Cleanup();
 }
 
+// Test Scribe ID - 370562.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_SingleClient_RenameBMName_371817) {
-
-  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
-  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
-  BookmarkModel* model_one = profile1()->GetBookmarkModel();
-  BookmarkModel* model_two = profile2()->GetBookmarkModel();
-  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
-
-  verifier->ExpectMatch(model_one);
-  verifier->ExpectMatch(model_two);
-    // Add first bookmark
-  const BookmarkNode* test_bm1 = verifier->AddURL(
-      model_one, bbn_one, 0, L"Test BM", GURL("http://www.bmtest.com"));
-
-  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
-  verifier->ExpectMatch(model_one);
-  verifier->ExpectMatch(model_two);
-
-  {
-    // Rename recently added BM
-    verifier->SetTitle(model_one, test_bm1, L"New Test BM");
-  }
-
-  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
-  verifier->ExpectMatch(model_one);
-  verifier->ExpectMatch(model_two);
-  Cleanup();
-}
-
-IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_RenameBMFolder_371824) {
-
-  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
-  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
-  BookmarkModel* model_one = profile1()->GetBookmarkModel();
-  BookmarkModel* model_two = profile2()->GetBookmarkModel();
-  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
-  verifier->ExpectMatch(model_one);
-  verifier->ExpectMatch(model_two);
-
-  // Let's add first bookmark folder to client1
-  const BookmarkNode* new_folder_one = verifier->AddGroup(model_one, bbn_one, 0,
-      L"TestBMFolder");
-
-  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
-  verifier->ExpectMatch(model_one);
-  verifier->ExpectMatch(model_two);
-
-  // Rename recently added Bookmark folder
-  verifier->SetTitle(model_one, new_folder_one, L"New TestBMFolder");
-
-  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
-  verifier->ExpectMatch(model_one);
-  verifier->ExpectMatch(model_two);
-  Cleanup();
-}
-
-IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_DeleteBM_EmptyAccountAfterThisDelete_371832) {
-
-  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
-  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
-  BookmarkModel* model_one = profile1()->GetBookmarkModel();
-  BookmarkModel* model_two = profile2()->GetBookmarkModel();
-  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
-
-  verifier->ExpectMatch(model_one);
-  verifier->ExpectMatch(model_two);
-
-  // Let's add first bookmark(without favicon)
-  {
-    const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one, bbn_one, 0,
-        L"TestBookmark", GURL("http://www.nofaviconurl.com"));
-  }
-  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
-  verifier->ExpectMatch(model_one);
-  verifier->ExpectMatch(model_two);
-
-  {
-    // Delete this newly created bookmark
-    verifier->Remove(model_one, bbn_one, 0);
-  }
-  client1()->AwaitMutualSyncCycleCompletionWithConflict(client2());
-  verifier->ExpectMatch(model_one);
-  verifier->ExpectMatch(model_two);
-
-  Cleanup();
-}
-
-IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_DeleteBM_NonEmptyAccountAfterThisDelete_371833) {
-
-  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
-  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
-  BookmarkModel* model_one = profile1()->GetBookmarkModel();
-  BookmarkModel* model_two = profile2()->GetBookmarkModel();
-  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
-
-  verifier->ExpectMatch(model_one);
-  verifier->ExpectMatch(model_two);
-  // Let's add some bookmarks(without favicon)
-  for (int index = 0; index < 20; index++) {
-    string16 title(L"TestBookmark");
-    string16 url(L"http://www.nofaviconurl");
-    string16 index_str = IntToString16(index);
-    title.append(index_str);
-    url.append(index_str);
-    url.append(L".com");
-    const BookmarkNode* nofavicon_bm = verifier->AddURL(
-        model_one, bbn_one, index,
-        title, GURL(url));
-  }
-  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
-  verifier->ExpectMatch(model_one);
-  verifier->ExpectMatch(model_two);
-
-  {
-    // Delete this newly created bookmark
-    verifier->Remove(model_one, bbn_one, 0);
-  }
-  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
-  verifier->ExpectMatch(model_one);
-  verifier->ExpectMatch(model_two);
-
-  Cleanup();
-}
-
-IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_RepositioningBM_ab_To_ba_371931) {
-
-  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
-  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
-  BookmarkModel* model_one = profile1()->GetBookmarkModel();
-  BookmarkModel* model_two = profile2()->GetBookmarkModel();
-  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
-  verifier->ExpectMatch(model_one);
-  verifier->ExpectMatch(model_two);
-
-  const BookmarkNode* bm_a = verifier->AddURL(
-      model_one, bbn_one, 0, L"Bookmark A",
-      GURL("http://www.nofaviconurla.com"));
-  const BookmarkNode* bm_b = verifier->AddURL(
-      model_one, bbn_one, 1, L"Bookmark B",
-      GURL("http://www.nofaviconurlb.com"));
-
-  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
-  verifier->ExpectMatch(model_one);
-  verifier->ExpectMatch(model_two);
-
-  {
-    // Move bm_a to new position
-    verifier->Move(model_one, bm_a, bbn_one, 2);
-  }
-  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
-  verifier->ExpectMatch(model_one);
-  verifier->ExpectMatch(model_two);
-
-  Cleanup();
-}
-
-IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_Repositioning_NonEmptyBMFolder_ab_To_ba_372026) {
-
-  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
-  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
-  BookmarkModel* model_one = profile1()->GetBookmarkModel();
-  BookmarkModel* model_two = profile2()->GetBookmarkModel();
-  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
-
-  verifier->ExpectMatch(model_one);
-  verifier->ExpectMatch(model_two);
-
-  const BookmarkNode* bm_folder_a =
-    verifier->AddGroup(model_one, bbn_one, 0, L"TestBMFolderA");
-  const BookmarkNode* bm_folder_b =
-    verifier->AddGroup(model_one, bbn_one, 1, L"TestBMFolderB");
-  for (int index = 0; index < 10; index++) {
-    int random_int = base::RandInt(1, 100);
-    // To create randomness in order, 60% of time add bookmarks
-    if (random_int > 40) {
-        string16 title(L"Folder A - ChildTestBookmark");
-        string16 url(L"http://www.nofaviconurl");
-        string16 index_str = IntToString16(index);
-        title.append(index_str);
-        url.append(index_str);
-        url.append(L".com");
-        const BookmarkNode* nofavicon_bm =
-            verifier->AddURL(model_one, bm_folder_a, index, title, GURL(url));
-    } else {
-        // Remaining % of time - Add Bookmark folders
-        string16 title(L"Folder A - ChildTestBMFolder");
-        string16 index_str = IntToString16(index);
-        title.append(index_str);
-        const BookmarkNode* bm_folder =
-            verifier->AddGroup(model_one, bm_folder_a, index, title);
-    }
-  }
-
-  for (int index = 0; index < 10; index++) {
-    int random_int = base::RandInt(1, 100);
-    // To create randomness in order, 60% of time add bookmarks
-    if (random_int > 40) {
-        string16 title(L"Folder B - ChildTestBookmark");
-        string16 url(L"http://www.nofaviconurl");
-        string16 index_str = IntToString16(index);
-        title.append(index_str);
-        url.append(index_str);
-        url.append(L".com");
-        const BookmarkNode* nofavicon_bm =
-            verifier->AddURL(model_one, bm_folder_b, index, title, GURL(url));
-    } else {
-        // Remaining % of time - Add Bookmark folders
-        string16 title(L"Folder B - ChildTestBMFolder");
-        string16 index_str = IntToString16(index);
-        title.append(index_str);
-        const BookmarkNode* bm_folder =
-            verifier->AddGroup(model_one, bm_folder_b, index, title);
-    }
-  }
-
-  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
-  verifier->ExpectMatch(model_one);
-  verifier->ExpectMatch(model_two);
-  {
-    // Move bm_a to new position
-    verifier->Move(model_one, bm_folder_a, bbn_one, 2);
-  }
-  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
-  verifier->ExpectMatch(model_one);
-  verifier->ExpectMatch(model_two);
-  Cleanup();
-}
-
-IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_CleanAccount_AddSeveralBMs_UnderBMBarAndOtherBM_370562) {
+    SC_AddSeveralBMsUnderBMBarAndOtherBM) {
 
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
@@ -615,8 +623,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   Cleanup();
 }
 
+// Test Scribe ID - 370563.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_CleanAccount_AddSeveralBMs_And_SeveralFolders_370563) {
+    SC_AddSeveralBMsAndFolders) {
 
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
@@ -681,8 +690,66 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   Cleanup();
 }
 
+// Test Scribe ID - 370641.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_RenameBMURL_371822) {
+    SC_DuplicateBMWithDifferentURLSameName) {
+
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's add two bookmarks with different URL but same name
+  {
+    const BookmarkNode* google_bm = verifier->AddURL(model_one, bbn_one, 0,
+        L"Google", GURL("http://www.google.com"));
+    const BookmarkNode* google_news_bm = verifier->AddURL(model_one, bbn_one, 1,
+        L"Google", GURL("http://www.google.com/news"));
+  }
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+  Cleanup();
+}
+
+// Test Scribe ID - 371817.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_RenameBMName) {
+
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+    // Add first bookmark
+  const BookmarkNode* test_bm1 = verifier->AddURL(
+      model_one, bbn_one, 0, L"Test BM", GURL("http://www.bmtest.com"));
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  {
+    // Rename recently added BM
+    verifier->SetTitle(model_one, test_bm1, L"New Test BM");
+  }
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+  Cleanup();
+}
+
+// Test Scribe ID - 371822.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_RenameBMURL) {
 
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
@@ -702,7 +769,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   verifier->ExpectMatch(model_two);
 
   // Let's rename/change URL
-  verifier->SetURL(model_one, nofavicon_bm, GURL("http://www.cnn.com"));
+  nofavicon_bm = verifier->SetURL(model_one, nofavicon_bm,
+      GURL("http://www.cnn.com"));
   // Wait for changes to sync and then verify
   ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
   verifier->ExpectMatch(model_one);
@@ -710,9 +778,38 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   Cleanup();
 }
 
+// Test Scribe ID - 371824.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_RenameEmptyBMFolder_371825) {
+    SC_RenameBMFolder) {
 
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's add first bookmark folder to client1
+  const BookmarkNode* new_folder_one = verifier->AddGroup(model_one, bbn_one, 0,
+      L"TestBMFolder");
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Rename recently added Bookmark folder
+  verifier->SetTitle(model_one, new_folder_one, L"New TestBMFolder");
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+  Cleanup();
+}
+
+// Test Scribe ID - 371825.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_RenameEmptyBMFolder) {
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
   BookmarkModel* model_one = profile1()->GetBookmarkModel();
@@ -739,9 +836,235 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   Cleanup();
 }
 
+// Test Scribe ID - 371826.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_DeleteFirstBM_Under_BMFolder_NonEmptyFolderAfterDelete_371835) {
+    SC_RenameBMFolderWithLongHierarchy) {
 
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's add first bookmark folder to under bookmark_bar.
+  const BookmarkNode* test_bm_folder =
+      verifier->AddGroup(model_one, bbn_one, 0, L"Test BMFolder");
+
+  // Let's add lots of bookmarks and folders underneath test_bm_folder.
+  for (int index = 0; index < 120; index++) {
+    int random_int = base::RandInt(1, 100);
+    // To create randomness in order, 85% of time add bookmarks
+    if (random_int > 15) {
+        string16 title(L"Test BMFolder - ChildTestBookmark");
+        string16 url(L"http://www.nofaviconurl");
+        string16 index_str = IntToString16(index);
+        title.append(index_str);
+        url.append(index_str);
+        url.append(L".com");
+        const BookmarkNode* nofavicon_bm =
+            verifier->AddURL(model_one, test_bm_folder, index,
+            title, GURL(url));
+    } else {
+        // Remaining % of time - Add Bookmark folders
+        string16 title(L"Test BMFolder - ChildTestBMFolder");
+        string16 index_str = IntToString16(index);
+        title.append(index_str);
+        const BookmarkNode* bm_folder =
+            verifier->AddGroup(model_one, test_bm_folder, index, title);
+    }
+  }
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's rename test_bm_folder.
+  verifier->SetTitle(model_one, test_bm_folder, L"New TestBMFolder");
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  Cleanup();
+}
+
+// Test Scribe ID - 371827.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_RenameBMFolderThatHasParentAndChildren) {
+
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's add first bookmark folder to under bookmark_bar.
+  const BookmarkNode* parent_bm_folder =
+      verifier->AddGroup(model_one, bbn_one, 0, L"Parent TestBMFolder");
+
+  // Let's add few bookmarks under bookmark_bar.
+  for (int index = 1; index < 15; index++) {
+    string16 title(L"TestBookmark");
+    string16 url(L"http://www.nofaviconurl");
+    string16 index_str = IntToString16(index);
+    title.append(index_str);
+    url.append(index_str);
+    url.append(L".com");
+    const BookmarkNode* nofavicon_bm =
+        verifier->AddURL(model_one, bbn_one, index, title, GURL(url));
+  }
+
+  // Let's add first bookmark folder under parent_bm_folder.
+  const BookmarkNode* test_bm_folder =
+      verifier->AddGroup(model_one, parent_bm_folder, 0, L"Test BMFolder");
+  // Let's add lots of bookmarks and folders underneath test_bm_folder.
+  for (int index = 0; index < 120; index++) {
+    int random_int = base::RandInt(1, 100);
+    // To create randomness in order, 85% of time add bookmarks
+    if (random_int > 15) {
+        string16 title(L"Test BMFolder - ChildTestBookmark");
+        string16 url(L"http://www.nofaviconurl");
+        string16 index_str = IntToString16(index);
+        title.append(index_str);
+        url.append(index_str);
+        url.append(L".com");
+        const BookmarkNode* nofavicon_bm =
+            verifier->AddURL(model_one, test_bm_folder, index,
+            title, GURL(url));
+    } else {
+        // Remaining % of time - Add Bookmark folders
+        string16 title(L"Test BMFolder - ChildTestBMFolder");
+        string16 index_str = IntToString16(index);
+        title.append(index_str);
+        const BookmarkNode* bm_folder =
+            verifier->AddGroup(model_one, test_bm_folder, index, title);
+    }
+  }
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's rename test_bm_folder.
+  verifier->SetTitle(model_one, test_bm_folder, L"New TestBMFolder");
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  Cleanup();
+}
+
+// Test Scribe ID - 371828.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_RenameBMNameAndURL) {
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+  // Let's add first bookmark(without favicon)
+  const BookmarkNode* nofavicon_bm =
+      verifier->AddURL(model_one, bbn_one, 0, L"Google",
+      GURL("http://www.google.com"));
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's change the URL.
+  nofavicon_bm = verifier->SetURL(model_one, nofavicon_bm,
+      GURL("http://www.cnn.com"));
+  // Let's change the Name.
+  verifier->SetTitle(model_one, nofavicon_bm, L"CNN");
+  // Wait for changes to sync and then verify
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+  Cleanup();
+}
+
+// Test Scribe ID - 371832.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_DeleteBMEmptyAccountAfterwards) {
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's add first bookmark(without favicon)
+  {
+    const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one, bbn_one, 0,
+        L"TestBookmark", GURL("http://www.nofaviconurl.com"));
+  }
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  {
+    // Delete this newly created bookmark
+    verifier->Remove(model_one, bbn_one, 0);
+  }
+  client1()->AwaitMutualSyncCycleCompletionWithConflict(client2());
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  Cleanup();
+}
+
+// Test Scribe ID - 371833.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_DelBMNonEmptyAccountAfterwards) {
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+  // Let's add some bookmarks(without favicon)
+  for (int index = 0; index < 20; index++) {
+    string16 title(L"TestBookmark");
+    string16 url(L"http://www.nofaviconurl");
+    string16 index_str = IntToString16(index);
+    title.append(index_str);
+    url.append(index_str);
+    url.append(L".com");
+    const BookmarkNode* nofavicon_bm = verifier->AddURL(
+        model_one, bbn_one, index,
+        title, GURL(url));
+  }
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  {
+    // Delete this newly created bookmark
+    verifier->Remove(model_one, bbn_one, 0);
+  }
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  Cleanup();
+}
+
+
+// Test Scribe ID - 371835.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_DelFirstBMUnderBMFoldNonEmptyFoldAfterwards) {
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
   BookmarkModel* model_one = profile1()->GetBookmarkModel();
@@ -780,9 +1103,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 }
 
 
+// Test Scribe ID - 371836.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_DeleteLastBM_Under_BMFolder_NonEmptyFolderAfterDelete_371836) {
-
+    SC_DelLastBMUnderBMFoldNonEmptyFoldAfterwards) {
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
   BookmarkModel* model_one = profile1()->GetBookmarkModel();
@@ -823,9 +1146,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 }
 
 
+// Test Scribe ID - 371856.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_DelMiddleBM_Under_BMFold_NonEmptyFoldAfterDel_371856) {
-
+    SC_DelMiddleBMUnderBMFoldNonEmptyFoldAfterwards) {
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
   BookmarkModel* model_one = profile1()->GetBookmarkModel();
@@ -864,9 +1187,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 }
 
 
+// Test Scribe ID - 371857.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_DeleteBMs_Under_BMFolder_EmptyFolderAfterDelete_371857) {
-
+    SC_DelBMsUnderBMFoldEmptyFolderAfterwards) {
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
   BookmarkModel* model_one = profile1()->GetBookmarkModel();
@@ -903,9 +1226,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   Cleanup();
 }
 
+// Test Scribe ID - 371858.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_DeleteEmptyBMFolder_EmptyAccountAfterDelete_371858) {
-
+    SC_DelEmptyBMFoldEmptyAccountAfterwards) {
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
   BookmarkModel* model_one = profile1()->GetBookmarkModel();
@@ -934,9 +1257,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 }
 
 
+// Test Scribe ID - 371869.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_DeleteEmptyBMFolder_NonEmptyAccountAfterDelete_371869) {
-
+    SC_DelEmptyBMFoldNonEmptyAccountAfterwards) {
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
   BookmarkModel* model_one = profile1()->GetBookmarkModel();
@@ -985,9 +1308,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   Cleanup();
 }
 
+// Test Scribe ID - 371879.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_DeleteBMFolderWithBMs_NonEmptyAccountAfterDelete_371879) {
-
+    SC_DelBMFoldWithBMsNonEmptyAccountAfterwards) {
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
   BookmarkModel* model_one = profile1()->GetBookmarkModel();
@@ -1052,9 +1375,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 }
 
 
+// Test Scribe ID - 371880.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_DelBMFoldWithBMsAndBMFolds_NonEmptyACAfterDelete_371880) {
-
+    SC_DelBMFoldWithBMsAndBMFoldsNonEmptyACAfterwards) {
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
   BookmarkModel* model_one = profile1()->GetBookmarkModel();
@@ -1157,9 +1480,149 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   Cleanup();
 }
 
+// Test Scribe ID - 371882.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_Moving_BMsFromBookmarkBar_To_BMFolder_371954) {
+    SC_DelBMFoldWithParentAndChildrenBMsAndBMFolds) {
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
 
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's add first bookmark folder to under bookmark_bar.
+  const BookmarkNode* parent_bm_folder =
+      verifier->AddGroup(model_one, bbn_one, 0, L"Parent TestBMFolder");
+
+  // Let's add few bookmarks under bookmark_bar.
+  for (int index = 1; index < 11; index++) {
+    string16 title(L"TestBookmark");
+    string16 url(L"http://www.nofaviconurl");
+    string16 index_str = IntToString16(index);
+    title.append(index_str);
+    url.append(index_str);
+    url.append(L".com");
+    const BookmarkNode* nofavicon_bm =
+        verifier->AddURL(model_one, bbn_one, index, title, GURL(url));
+  }
+
+  // Let's add first bookmark folder under parent_bm_folder.
+  const BookmarkNode* test_bm_folder =
+      verifier->AddGroup(model_one, parent_bm_folder, 0, L"Test BMFolder");
+  // Let's add lots of bookmarks and folders underneath test_bm_folder.
+  for (int index = 0; index < 30; index++) {
+    int random_int = base::RandInt(1, 100);
+    // To create randomness in order, 80% of time add bookmarks
+    if (random_int > 20) {
+        string16 title(L"Test BMFolder - ChildTestBookmark");
+        string16 url(L"http://www.nofaviconurl");
+        string16 index_str = IntToString16(index);
+        title.append(index_str);
+        url.append(index_str);
+        url.append(L".com");
+        const BookmarkNode* nofavicon_bm =
+            verifier->AddURL(model_one, test_bm_folder, index, title,
+            GURL(url));
+    } else {
+        // Remaining % of time - Add Bookmark folders
+        string16 title(L"Test BMFolder - ChildTestBMFolder");
+        string16 index_str = IntToString16(index);
+        title.append(index_str);
+        const BookmarkNode* bm_folder =
+            verifier->AddGroup(model_one, test_bm_folder, index, title);
+    }
+  }
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's delete test_bm_folder
+  verifier->Remove(model_one, parent_bm_folder, 0);
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  Cleanup();
+}
+
+
+// Test Scribe ID - 371931.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_ReverseTheOrderOfTwoBMs) {
+
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  const BookmarkNode* bm_a = verifier->AddURL(
+      model_one, bbn_one, 0, L"Bookmark A",
+      GURL("http://www.nofaviconurla.com"));
+  const BookmarkNode* bm_b = verifier->AddURL(
+      model_one, bbn_one, 1, L"Bookmark B",
+      GURL("http://www.nofaviconurlb.com"));
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  {
+    // Move bm_a to new position
+    verifier->Move(model_one, bm_a, bbn_one, 2);
+  }
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  Cleanup();
+}
+
+// Test Scribe ID - 371933.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_ReverseTheOrderOf10BMs) {
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's add 10 bookmarks like 0123456789
+  for (int index = 0; index < 10; index++) {
+    string16 title(L"BM-");
+    string16 url(L"http://www.nofaviconurl-");
+    string16 index_str = IntToString16(index);
+    title.append(index_str);
+    url.append(index_str);
+    url.append(L".com");
+    const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
+        bbn_one, index, title, GURL(url));
+  }
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Shuffle bookmarks to make it look like 9876543210
+  verifier->ReverseChildOrder(model_one, bbn_one);
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  Cleanup();
+}
+
+// Test Scribe ID - 371954.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_MovingBMsFromBMBarToBMFolder) {
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
   BookmarkModel* model_one = profile1()->GetBookmarkModel();
@@ -1202,9 +1665,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   Cleanup();
 }
 
+// Test Scribe ID - 371957.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
-    SC_Moving_BMsFromBMFolder_To_BookmarkBar_371957) {
-
+    SC_MovingBMsFromBMFoldToBMBar) {
   ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
   scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
   BookmarkModel* model_one = profile1()->GetBookmarkModel();
@@ -1246,5 +1709,780 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   }
   Cleanup();
 }
+
+// Test Scribe ID - 371961.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_MovingBMsFromParentBMFoldToChildBMFold) {
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  const BookmarkNode* parent_folder =
+      verifier->AddGroup(model_one, bbn_one, 0, L"Test Parent BMFolder");
+
+  // Let's add bookmarks a,b,c to parent_folder.
+  const BookmarkNode* bm_a = verifier->AddURL(
+      model_one, parent_folder, 0, L"Bookmark A",
+      GURL("http://www.nofaviconurl-a.com"));
+  const BookmarkNode* bm_b = verifier->AddURL(
+      model_one, parent_folder, 1, L"Bookmark B",
+      GURL("http://www.nofaviconurl-b.com"));
+  const BookmarkNode* bm_c = verifier->AddURL(
+      model_one, parent_folder, 2, L"Bookmark C",
+      GURL("http://www.nofaviconurl-c.com"));
+  const BookmarkNode* child_folder =
+      verifier->AddGroup(model_one, parent_folder, 3, L"Test Child BMFolder");
+
+  // Let's add few bookmarks under child_folder.
+  for (int index = 0; index < 10; index++) {
+    string16 title(L"TestBookmark");
+    string16 url(L"http://www.nofaviconurl");
+    string16 index_str = IntToString16(index);
+    title.append(index_str);
+    url.append(index_str);
+    url.append(L".com");
+    const BookmarkNode* nofavicon_bm =
+        verifier->AddURL(model_one, child_folder, index, title, GURL(url));
+  }
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's move bookmark a,b,c to child_folder.
+  verifier->Move(model_one, bm_a, child_folder, 10);
+  verifier->Move(model_one, bm_b, child_folder, 11);
+  verifier->Move(model_one, bm_c, child_folder, 12);
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  Cleanup();
+}
+
+
+// Test Scribe ID - 371964.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_MovingBMsFromChildBMFoldToParentBMFold) {
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  const BookmarkNode* parent_folder =
+      verifier->AddGroup(model_one, bbn_one, 0, L"Test Parent BMFolder");
+
+  // Let's add bookmarks a,b,c to parent_folder.
+  const BookmarkNode* bm_a = verifier->AddURL(
+      model_one, parent_folder, 0, L"Bookmark A",
+      GURL("http://www.nofaviconurl-a.com"));
+  const BookmarkNode* bm_b = verifier->AddURL(
+      model_one, parent_folder, 1, L"Bookmark B",
+      GURL("http://www.nofaviconurl-b.com"));
+  const BookmarkNode* bm_c = verifier->AddURL(
+      model_one, parent_folder, 2, L"Bookmark C",
+      GURL("http://www.nofaviconurl-c.com"));
+  const BookmarkNode* child_folder =
+      verifier->AddGroup(model_one, parent_folder, 3, L"Test Child BMFolder");
+
+  // Let's add bookmarks d,e,f,g,h to child_folder.
+  const BookmarkNode* bm_d = verifier->AddURL(
+      model_one, child_folder, 0, L"Bookmark D",
+      GURL("http://www.nofaviconurl-d.com"));
+  const BookmarkNode* bm_e = verifier->AddURL(
+      model_one, child_folder, 1, L"Bookmark E",
+      GURL("http://www.nofaviconurl-e.com"));
+  const BookmarkNode* bm_f = verifier->AddURL(
+      model_one, child_folder, 2, L"Bookmark F",
+      GURL("http://www.nofaviconurl-f.com"));
+  const BookmarkNode* bm_g = verifier->AddURL(
+      model_one, child_folder, 3, L"Bookmark G",
+      GURL("http://www.nofaviconurl-g.com"));
+  const BookmarkNode* bm_h = verifier->AddURL(
+      model_one, child_folder, 4, L"Bookmark H",
+      GURL("http://www.nofaviconurl-h.com"));
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's move bookmark d,e,h to parent_folder.
+  verifier->Move(model_one, bm_d, parent_folder, 4);
+  verifier->Move(model_one, bm_e, parent_folder, 3);
+  verifier->Move(model_one, bm_h, parent_folder, 0);
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  Cleanup();
+}
+
+
+// Test Scribe ID - 371967.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_HoistBMs10LevelUp) {
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+  const BookmarkNode* bm_folder = bbn_one;
+  const BookmarkNode* bm_folder_L10;
+  const BookmarkNode* bm_folder_L0;
+  for (int level = 0; level < 15; level++) {
+    // Let's add some bookmarks(without favicon) to bm_folder.
+    int child_count = base::RandInt(0, 10);
+    for (int index = 0; index < child_count; index++) {
+      string16 title(bm_folder->GetTitle());
+      title.append(L"-BM");
+      string16 url(L"http://www.nofaviconurl-");
+      string16 index_str = IntToString16(index);
+      title.append(index_str);
+      url.append(index_str);
+      url.append(L".com");
+      const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
+          bm_folder, index, title, GURL(url));
+    }
+    string16 title(L"Test BMFolder-");
+    string16 level_str = IntToString16(level);
+    title.append(level_str);
+
+    bm_folder = verifier->AddGroup(model_one,
+        bm_folder, bm_folder->GetChildCount(), title);
+    // Let's remember first bm folder for later use.
+    if (level == 0) {
+      bm_folder_L0 = bm_folder;
+    }
+    // Let's remember 10th level bm folder for later use.
+    if (level == 9) {
+      bm_folder_L10 = bm_folder;
+    }
+  }
+  const BookmarkNode* bm_a = verifier->AddURL(model_one,
+      bm_folder_L10, bm_folder_L10->GetChildCount(), L"BM-A",
+      GURL("http://www.bm-a.com"));
+  const BookmarkNode* bm_b = verifier->AddURL(model_one,
+      bm_folder_L10, bm_folder_L10->GetChildCount(), L"BM-B",
+      GURL("http://www.bm-b.com"));
+  const BookmarkNode* bm_c = verifier->AddURL(model_one,
+      bm_folder_L10, bm_folder_L10->GetChildCount(), L"BM-C",
+      GURL("http://www.bm-c.com"));
+  // Let's wait till all the changes populate to another client.
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's move bookmark a from bm_folder_L10 to first bookmark folder- at end.
+  verifier->Move(model_one, bm_a, bm_folder_L0, bm_folder_L0->GetChildCount());
+  // Let's move bookmark b to first bookmark folder- at the beginning.
+  verifier->Move(model_one, bm_b, bm_folder_L0, 0);
+  // Let's move bookmark c to first bookmark folder- in the middle.
+  verifier->Move(model_one, bm_c, bm_folder_L0, 1);
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  Cleanup();
+}
+
+// Test Scribe ID - 371968.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_SinkBMs10LevelDown) {
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+  const BookmarkNode* bm_folder = bbn_one;
+  const BookmarkNode* bm_folder_L10;
+  const BookmarkNode* bm_folder_L0;
+  for (int level = 0; level < 15; level++) {
+    // Let's add some bookmarks(without favicon) to bm_folder.
+    int child_count = base::RandInt(0, 10);
+    for (int index = 0; index < child_count; index++) {
+      string16 title(bm_folder->GetTitle());
+      title.append(L"-BM");
+      string16 url(L"http://www.nofaviconurl-");
+      string16 index_str = IntToString16(index);
+      title.append(index_str);
+      url.append(index_str);
+      url.append(L".com");
+      const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
+          bm_folder, index, title, GURL(url));
+    }
+    string16 title(L"Test BMFolder-");
+    string16 level_str = IntToString16(level);
+    title.append(level_str);
+
+    bm_folder = verifier->AddGroup(model_one,
+        bm_folder, bm_folder->GetChildCount(), title);
+    // Let's remember first bm folder for later use.
+    if (level == 0) {
+      bm_folder_L0 = bm_folder;
+    }
+    // Let's remember 10th level bm folder for later use.
+    if (level == 9) {
+      bm_folder_L10 = bm_folder;
+    }
+  }
+  const BookmarkNode* bm_a = verifier->AddURL(model_one,
+      bm_folder_L10, bm_folder_L0->GetChildCount(), L"BM-A",
+      GURL("http://www.bm-a.com"));
+  const BookmarkNode* bm_b = verifier->AddURL(model_one,
+      bm_folder_L10, bm_folder_L0->GetChildCount(), L"BM-B",
+      GURL("http://www.bm-b.com"));
+  const BookmarkNode* bm_c = verifier->AddURL(model_one,
+      bm_folder_L10, bm_folder_L0->GetChildCount(), L"BM-C",
+      GURL("http://www.bm-c.com"));
+  // Let's wait till all the changes populate to another client.
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's move bookmark a from bm_folder_L10 to first bookmark
+  // folder- at end.
+  verifier->Move(model_one, bm_a, bm_folder_L10,
+      bm_folder_L10->GetChildCount());
+  // Let's move bookmark b to first bookmark folder- at the beginning.
+  verifier->Move(model_one, bm_b, bm_folder_L10, 0);
+  // Let's move bookmark c to first bookmark folder- in the middle.
+  verifier->Move(model_one, bm_c, bm_folder_L10, 1);
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  Cleanup();
+}
+
+
+// Test Scribe ID - 371980.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_SinkEmptyBMFold5LevelsDown) {
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  const BookmarkNode* bm_folder = bbn_one;
+  const BookmarkNode* bm_folder_L5 = NULL;
+  for (int level = 0; level < 6; level++) {
+    // Let's add some bookmarks(without favicon) to bm_folder.
+    int child_count = base::RandInt(0, 10);
+    for (int index = 0; index < child_count; index++) {
+      string16 title(bm_folder->GetTitle());
+      title.append(L"-BM");
+      string16 url(L"http://www.nofaviconurl-");
+      string16 index_str = IntToString16(index);
+      title.append(index_str);
+      url.append(index_str);
+      url.append(L".com");
+      const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
+          bm_folder, index, title, GURL(url));
+    }
+    string16 title(L"Test BMFolder-");
+    string16 level_str = IntToString16(level);
+    title.append(level_str);
+
+    bm_folder = verifier->AddGroup(model_one,
+        bm_folder, bm_folder->GetChildCount(), title);
+    // Let's remember 5th level bm folder for later use.
+    if (level == 5) {
+      bm_folder_L5 = bm_folder;
+    }
+  }
+  const BookmarkNode* empty_bm_folder = verifier->AddGroup(model_one,
+      bbn_one, bbn_one->GetChildCount(), L"EmptyTest BMFolder");
+
+  // Let's wait until all the changes populate to another client.
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's move empty_bm_folder from bookmark bar to bm_folder_L5 (at the end).
+  verifier->Move(model_one, empty_bm_folder, bm_folder_L5,
+      bm_folder_L5->GetChildCount());
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  Cleanup();
+}
+
+// Test Scribe ID - 371997.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_SinkNonEmptyBMFold5LevelsDown) {
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  const BookmarkNode* bm_folder = bbn_one;
+  const BookmarkNode* bm_folder_L5 = NULL;
+  for (int level = 0; level < 6; level++) {
+    // Let's add some bookmarks (without favicon) to bm_folder.
+    int child_count = base::RandInt(0, 10);
+    for (int index = 0; index < child_count; index++) {
+      string16 title(bm_folder->GetTitle());
+      title.append(L"-BM");
+      string16 url(L"http://www.nofaviconurl-");
+      string16 index_str = IntToString16(index);
+      title.append(index_str);
+      url.append(index_str);
+      url.append(L".com");
+      const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
+          bm_folder, index, title, GURL(url));
+    }
+    string16 title(L"Test BMFolder-");
+    string16 level_str = IntToString16(level);
+    title.append(level_str);
+
+    bm_folder = verifier->AddGroup(model_one,
+        bm_folder, bm_folder->GetChildCount(), title);
+    // Let's remember 5th level bm folder for later use.
+    if (level == 5) {
+      bm_folder_L5 = bm_folder;
+    }
+  }
+  const BookmarkNode* my_bm_folder = verifier->AddGroup(model_one,
+      bbn_one, bbn_one->GetChildCount(), L"MyTest BMFolder");
+  // Let's add few bookmarks to my_bm_folder.
+  for (int index = 0; index < 10; index++) {
+    string16 title(bm_folder->GetTitle());
+    title.append(L"-BM");
+    string16 url(L"http://www.nofaviconurl-");
+    string16 index_str = IntToString16(index);
+    title.append(index_str);
+    url.append(index_str);
+    url.append(L".com");
+    const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
+        my_bm_folder, index, title, GURL(url));
+  }
+
+  // Let's wait until all the changes populate to another client.
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's move my_bm_folder from bookmark bar to bm_folder_L5 (at the end).
+  verifier->Move(model_one, my_bm_folder, bm_folder_L5,
+      bm_folder_L5->GetChildCount());
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  Cleanup();
+}
+
+// Test Scribe ID - 372006.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_HoistFolder5LevelsUp) {
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  const BookmarkNode* bm_folder = bbn_one;
+  const BookmarkNode* bm_folder_L5 = NULL;
+  for (int level = 0; level < 6; level++) {
+    // Let's add some bookmarks(without favicon) to bm_folder.
+    int child_count = base::RandInt(0, 10);
+    for (int index = 0; index < child_count; index++) {
+      string16 title(bm_folder->GetTitle());
+      title.append(L"-BM");
+      string16 url(L"http://www.nofaviconurl-");
+      string16 index_str = IntToString16(index);
+      title.append(index_str);
+      url.append(index_str);
+      url.append(L".com");
+      const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
+          bm_folder, index, title, GURL(url));
+    }
+    string16 title(L"Test BMFolder-");
+    string16 level_str = IntToString16(level);
+    title.append(level_str);
+
+    bm_folder = verifier->AddGroup(model_one,
+        bm_folder, bm_folder->GetChildCount(), title);
+    // Let's remember 5th level bm folder for later use.
+    if (level == 5) {
+      bm_folder_L5 = bm_folder;
+    }
+  }
+  const BookmarkNode* my_bm_folder = verifier->AddGroup(model_one,
+      bm_folder_L5, bm_folder_L5->GetChildCount(), L"MyTest BMFolder");
+  // Let's add few bookmarks to my_bm_folder.
+  for (int index = 0; index < 10; index++) {
+    string16 title(bm_folder->GetTitle());
+    title.append(L"-BM");
+    string16 url(L"http://www.nofaviconurl-");
+    string16 index_str = IntToString16(index);
+    title.append(index_str);
+    url.append(index_str);
+    url.append(L".com");
+    const BookmarkNode* nofavicon_bm = verifier->AddURL(model_one,
+        my_bm_folder, index, title, GURL(url));
+  }
+
+  // Let's wait until all the changes populate to another client.
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's move my_bm_folder from  bm_folder_L5 to bookmark bar- at end.
+  verifier->Move(model_one, my_bm_folder, bbn_one, bbn_one->GetChildCount());
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  Cleanup();
+}
+
+
+
+// Test Scribe ID - 372026.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_ReverseTheOrderOfTwoBMFolders) {
+
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  const BookmarkNode* bm_folder_a =
+    verifier->AddNonEmptyGroup(model_one, bbn_one, 0, L"TestBMFolderA", 10);
+  const BookmarkNode* bm_folder_b =
+    verifier->AddNonEmptyGroup(model_one, bbn_one, 1, L"TestBMFolderB", 10);
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's change positions of bookmark folders so it is more like ba.
+  verifier->ReverseChildOrder(model_one, bbn_one);
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+  Cleanup();
+}
+
+// Test Scribe ID - 372028.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    SC_ReverseTheOrderOfTenBMFolders) {
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Let's add 10 non-empty bookmark folders like 0123456789
+  for (int index = 0; index < 10; index++) {
+    string16 title(L"BM Folder");
+    string16 index_str = IntToString16(index);
+    title.append(index_str);
+    const BookmarkNode* child_bm_folder = verifier->AddNonEmptyGroup(
+        model_one, bbn_one, index, title, 10);
+  }
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  // Shuffle bookmark folders to make it look like 9876543210
+  verifier->ReverseChildOrder(model_one, bbn_one);
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  Cleanup();
+}
+
+// Test Scribe ID - 373378.
+IN_PROC_BROWSER_TEST_F(LiveSyncTestBasicHierarchy50BM,
+    MC_PushExistingBMsToSecondClient) {
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+
+  // Wait for changes to propagate.
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  // Let's compare and make sure both bookmark models are same after sync.
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  Cleanup();
+}
+
+// Test Scribe ID - 373379.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    MC_BiDirectionalPushAddingBM) {
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+  const BookmarkNode* bbn_two = model_one->GetBookmarkBarNode();
+
+  BookmarkModelVerifier::ExpectModelsMatch(model_one, model_two);
+
+  // Let's add 2 bookmarks (without favicon) on each client.
+  {
+    const BookmarkNode* bm_foo1 = model_one->AddURL(
+        bbn_one, 0, L"Foo1", GURL("http://www.foo1.com"));
+    const BookmarkNode* bm_foo3 = model_two->AddURL(
+        bbn_two, 0, L"Foo3", GURL("http://www.foo3.com"));
+
+    const BookmarkNode* bm_foo2 = model_one->AddURL(
+        bbn_one, 1, L"Foo2", GURL("http://www.foo2.com"));
+    const BookmarkNode* bm_foo4 = model_two->AddURL(
+        bbn_two, 1, L"Foo4", GURL("http://www.foo4.com"));
+  }
+
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletionWithConflict(client2()));
+  BookmarkModelVerifier::ExpectModelsMatch(model_one, model_two);
+  Cleanup();
+}
+
+// Test Scribe ID - 373506.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    MC_BootStrapEmptyStateEverywhere) {
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+
+  // Wait for changes to propagate.
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  // Let's compare and make sure both bookmark models are same after sync.
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  Cleanup();
+}
+
+// Test Scribe ID - 373507.
+IN_PROC_BROWSER_TEST_F(LiveSyncTestBasicHierarchy50BMBothClients,
+    MC_FirstUseExistingSameBMModelBothClients) {
+  ASSERT_TRUE(SetupSync()) << "Failed to SetupSync";
+  scoped_ptr<BookmarkModelVerifier> verifier(BookmarkModelVerifier::Create());
+  BookmarkModel* model_one = profile1()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+
+  // Wait for changes to propagate.
+  ASSERT_TRUE(client1()->AwaitMutualSyncCycleCompletion(client2()));
+  // Let's compare and make sure both bookmark models are same after sync.
+  verifier->ExpectMatch(model_one);
+  verifier->ExpectMatch(model_two);
+
+  Cleanup();
+}
+
+// Test Scribe ID - 373508.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    MC_SimpleMergeOfDifferentBMModels) {
+  set_profile2(MakeProfile(L"client2"));
+  BookmarkModel* model_one = browser()->profile()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  LiveBookmarksSyncTest::BlockUntilLoaded(model_two);
+
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+  const BookmarkNode* bbn_two = model_two->GetBookmarkBarNode();
+
+  // Let's add same bookmarks (without favicon) to both clients.
+  for (int index = 0; index < 3; index++) {
+    string16 title(L"TestBookmark");
+    string16 url(L"http://www.nofaviconurl");
+    string16 index_str = IntToString16(index);
+    title.append(index_str);
+    url.append(index_str);
+    url.append(L".com");
+    const BookmarkNode* nofavicon_bm_client1 =
+        model_one->AddURL(bbn_one, index, title, GURL(url));
+    const BookmarkNode* nofavicon_bm_client2 =
+        model_two->AddURL(bbn_two, index, title, GURL(url));
+  }
+
+  // Let's add some different bookmarks (without favicon) to client1.
+  for (int index = 3; index < 11 ; index++) {
+    string16 title(L"Client1-TestBookmark");
+    string16 url(L"http://www.client1-nofaviconurl");
+    string16 index_str = IntToString16(index);
+    title.append(index_str);
+    url.append(index_str);
+    url.append(L".com");
+    const BookmarkNode* nofavicon_bm_client1 =
+        model_one->AddURL(bbn_one, index, title, GURL(url));
+  }
+
+   // Let's add some different bookmarks (without favicon) to client2.
+  for (int index = 3; index < 11 ; index++) {
+    string16 title(L"Client2-TestBookmark");
+    string16 url(L"http://www.Client2-nofaviconurl");
+    string16 index_str = IntToString16(index);
+    title.append(index_str);
+    url.append(index_str);
+    url.append(L".com");
+    const BookmarkNode* nofavicon_bm_client2 =
+        model_two->AddURL(bbn_two, index, title, GURL(url));
+  }
+
+  // Set up sync on both clients.
+  set_client1(new ProfileSyncServiceTestHarness(
+      browser()->profile(), username_, password_));
+  set_client2(new ProfileSyncServiceTestHarness(
+      profile2(), username_, password_));
+  ASSERT_TRUE(client1()->SetupSync()) << "Failed to SetupSync on Client1";
+  ASSERT_TRUE(client2()->SetupSync()) << "Failed to SetupSync on Client2";
+
+  // Wait for changes to propagate.
+  ASSERT_TRUE(client2()->AwaitMutualSyncCycleCompletion(client1()));
+  // Let's make sure there aren't any duplicates after sync.
+  BookmarkModelVerifier::VerifyNoDuplicates(model_one);
+  // Let's compare and make sure both bookmark models are same after sync.
+  BookmarkModelVerifier::ExpectModelsMatchIncludingFavicon(
+      model_one, model_two, false);
+
+  Cleanup();
+}
+
+// Test Scribe ID - 386586.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    MC_MergeSimpleBMHierarchyUnderBMBar) {
+  set_profile2(MakeProfile(L"client2"));
+  BookmarkModel* model_one = browser()->profile()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  LiveBookmarksSyncTest::BlockUntilLoaded(model_two);
+
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+  const BookmarkNode* bbn_two = model_two->GetBookmarkBarNode();
+
+  // Let's add same bookmarks (without favicon) to both clients.
+  for (int index = 0; index < 3 ; index++) {
+    string16 title(L"TestBookmark");
+    string16 url(L"http://www.nofaviconurl");
+    string16 index_str = IntToString16(index);
+    title.append(index_str);
+    url.append(index_str);
+    url.append(L".com");
+    const BookmarkNode* nofavicon_bm_client1 =
+        model_one->AddURL(bbn_one, index, title, GURL(url));
+    const BookmarkNode* nofavicon_bm_client2 =
+        model_two->AddURL(bbn_two, index, title, GURL(url));
+  }
+
+  // Let's add some different bookmarks (without favicon) to client2.
+  for (int index = 3; index < 5 ; index++) {
+    string16 title(L"Client2-TestBookmark");
+    string16 url(L"http://www.client2-nofaviconurl");
+    string16 index_str = IntToString16(index);
+    title.append(index_str);
+    url.append(index_str);
+    url.append(L".com");
+    const BookmarkNode* nofavicon_bm_client2 =
+        model_two->AddURL(bbn_two, index, title, GURL(url));
+  }
+
+  // Set up sync on both clients.
+  set_client1(new ProfileSyncServiceTestHarness(
+      browser()->profile(), username_, password_));
+  set_client2(new ProfileSyncServiceTestHarness(
+      profile2(), username_, password_));
+  ASSERT_TRUE(client1()->SetupSync()) << "Failed to SetupSync on Client1";
+  ASSERT_TRUE(client2()->SetupSync()) << "Failed to SetupSync on Client2";
+
+  // Wait for changes to propagate.
+  ASSERT_TRUE(client2()->AwaitMutualSyncCycleCompletion(client1()));
+  // Let's make sure there aren't any duplicates after sync.
+  BookmarkModelVerifier::VerifyNoDuplicates(model_one);
+  // Let's compare and make sure both bookmark models are same after sync.
+  BookmarkModelVerifier::ExpectModelsMatchIncludingFavicon(
+      model_one, model_two, false);
+
+  Cleanup();
+}
+
+// Test Scribe ID - 386589.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
+    MC_MergeSimpleBMHierarchyEqualSetsUnderBMBar) {
+  set_profile2(MakeProfile(L"client2"));
+  BookmarkModel* model_one = browser()->profile()->GetBookmarkModel();
+  BookmarkModel* model_two = profile2()->GetBookmarkModel();
+  LiveBookmarksSyncTest::BlockUntilLoaded(model_two);
+
+  const BookmarkNode* bbn_one = model_one->GetBookmarkBarNode();
+  const BookmarkNode* bbn_two = model_two->GetBookmarkBarNode();
+
+  // Let's add same bookmarks (without favicon) to both clients.
+  for (int index = 0; index < 3 ; index++) {
+    string16 title(L"TestBookmark");
+    string16 url(L"http://www.nofaviconurl");
+    string16 index_str = IntToString16(index);
+    title.append(index_str);
+    url.append(index_str);
+    url.append(L".com");
+    const BookmarkNode* nofavicon_bm_client1 =
+        model_one->AddURL(bbn_one, index, title, GURL(url));
+    const BookmarkNode* nofavicon_bm_client2 =
+        model_two->AddURL(bbn_two, index, title, GURL(url));
+  }
+
+  // Set up sync on both clients.
+  set_client1(new ProfileSyncServiceTestHarness(
+      browser()->profile(), username_, password_));
+  set_client2(new ProfileSyncServiceTestHarness(
+      profile2(), username_, password_));
+  ASSERT_TRUE(client1()->SetupSync()) << "Failed to SetupSync on Client1";
+  ASSERT_TRUE(client2()->SetupSync()) << "Failed to SetupSync on Client2";
+
+  // Wait for changes to propagate.
+  ASSERT_TRUE(client2()->AwaitMutualSyncCycleCompletion(client1()));
+  // Let's make sure there aren't any duplicates after sync.
+  BookmarkModelVerifier::VerifyNoDuplicates(model_one);
+  // Let's compare and make sure both bookmark models are same after sync.
+  BookmarkModelVerifier::ExpectModelsMatchIncludingFavicon(
+      model_one, model_two, false);
+
+  Cleanup();
+}
+
 
 #endif  // CHROME_PERSONALIZATION
