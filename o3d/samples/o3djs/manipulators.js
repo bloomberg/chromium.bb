@@ -100,7 +100,7 @@ o3djs.manipulators.createManager = function(pack,
  *     line. Does not need to be normalized but must not be the zero
  *     vector. Defaults to [1, 0, 0] if not specified.
  * @param {o3djs.math.Vector3} opt_point A point through which the
- *     line goes.
+ *     line goes. Defaults to [0, 0, 0] if not specified.
  */
 o3djs.manipulators.Line_ = function(opt_direction,
                                     opt_point) {
@@ -193,6 +193,46 @@ o3djs.manipulators.X_AXIS = [1, 0, 0];
  */
 o3djs.manipulators.Line_.prototype.closestPointToRay = function(startPoint,
                                                                 endPoint) {
+  // Consider a two-sided line and a one-sided ray, both in in 3D
+  // space, and assume they are not parallel. Their parametric
+  // formulation is:
+  //
+  //   p1 = point + t * dir
+  //   p2 = raystart + u * raydir
+  //
+  // Here t and u are scalar parameter values, and the other values
+  // are three-dimensional vectors. p1 and p2 are arbitrary points on
+  // the line and ray, respectively.
+  //
+  // At the points cp1 and cp2 on these two lines where the line and
+  // the ray are closest together, the line segment between cp1 and
+  // cp2 is perpendicular to both of the lines.
+  //
+  // We can therefore write the following equations ("**" is the "dot"
+  // operator):
+  //
+  //   dir  ** (cp2 - cp1) = 0
+  // raydir ** (cp2 - cp1) = 0
+  //
+  // Define t' and u' as the parameter values for cp1 and cp2,
+  // respectively. Expanding, these equations become
+  //
+  //    dir ** ((raystart + u' * raydir) - (point + t' * dir)) = 0
+  // raydir ** ((raystart + u' * raydir) - (point + t' * dir)) = 0
+  //
+  // With some reshuffling, these can be expressed in vector/matrix
+  // form:
+  //
+  //   [    dir ** raystart -    dir ** point ]
+  //   [ raydir ** raystart - raydir ** point ] *  (continued)
+  //
+  //       [ -(   dir ** dir)     dir ** raydir ] [ t' ]   [0]
+  //       [ -(raydir ** dir)  raydir ** raydir ] [ u' ] = [0]
+  //
+  // u' is the parameter for the world space ray being cast into the
+  // screen. We can deduce whether the starting point of the ray is
+  // actually the closest point to the infinite 3D line by whether the
+  // value of u' is less than zero.
   var rayDirection = o3djs.math.subVector(endPoint, startPoint);
   var ddrd = o3djs.math.dot(this.direction_, rayDirection);
   var A = [[-o3djs.math.lengthSquared(this.direction_), ddrd],
