@@ -29,10 +29,11 @@
 // This is a client for the dwarf2reader to extract function and line
 // information from the debug info.
 
+#include <assert.h>
+
 #include <map>
 #include <queue>
 #include <vector>
-
 
 #include "common/mac/dwarf/functioninfo.h"
 
