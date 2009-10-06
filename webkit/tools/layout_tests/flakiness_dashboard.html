@@ -81,16 +81,14 @@
       position: fixed;
       top: 5px;
       right: 5px;
-      width: 130px;
+      width: 200px;
+      padding: 2px;
       border: 2px solid grey;
       background-color: white;
     }
     #legend-contents * {
-      margin: 3px;
+      margin: 3px 0;
       padding: 0 2px;
-    }
-    body > div > :not(#legend) {
-      margin-right: 145px;
     }
     #builders * {
       margin: 0 5px;
@@ -128,7 +126,7 @@
     .merge {
       background-color: grey;
     }
-    :not(#legend-contents) > .merge {
+    table .merge {
       width: 1px;
     }
     .separator {
@@ -179,6 +177,49 @@
       margin: 0;
       padding-left: 20px;
     }
+    .expectations-container {
+      clear: both;
+    }
+    .expectations-item {
+      float: left;
+      border: 1px solid grey;
+    }
+    .expectations-item .expectation {
+      width: 400px;
+      height: 300px;
+      border: 0;
+      border-top: 1px solid grey;
+    }
+    .expectations-item .large {
+      width: 800px;
+      height: 600px;
+    }
+    .expectations-item .checksum {
+      height: 30px;
+    }
+    .fallback-list {
+      margin-top: 0;
+    }
+    .used-platform {
+      float: right;
+      color: darkblue;
+      margin: 0 5px;
+    }
+    .expectations-title {
+      /* Hack to make a containing block for absolute positioned elements. */
+      position: relative;
+      overflow: hidden;
+    }
+    .title {
+      /* Position absolutely so the container does not grow to contain this. */
+      position: absolute;
+    }
+    .platforms {
+      position: absolute;
+      background-color: white;
+      right: 0;
+      z-index: 1;
+    }
   </style>
 
   <script src="dashboards/dashboard_base.js"></script>
@@ -206,6 +247,9 @@
   var ALL = 'ALL';
   var FORWARD = 'forward';
   var BACKWARD = 'backward';
+  var LAYOUT_TESTS_PREFIX = 'LayoutTests/';
+  var CHROME_TEST_BASE_URL = 'http://src.chromium.org/viewvc/chrome/trunk/' +
+      'src/webkit/data/layout_tests/platform/';
   var TEST_URL_BASE_PATH =
       'http://trac.webkit.org/projects/webkit/browser/trunk/';
   var BUILDERS_BASE_PATH =
@@ -251,7 +295,6 @@
     }
 
     $('max-results-input').value = currentState.maxResults;
-    updateLegendDisplay();
 
     for (var builder in builders) {
       processTestResultsForBuilderAsync(builder);
@@ -305,11 +348,12 @@
 
         return true;
 
-      case 'showWontFix':
       case 'showCorrectExpectations':
+      case 'showExpectations':
       case 'showFlaky':
-      case 'showLegend':
+      case 'showLargeExpectations':
       case 'showSkipped':
+      case 'showWontFix':
         currentState[key] = value == 'true';
 
         return true;
@@ -322,12 +366,13 @@
   defaultStateValues = {
     sortOrder: BACKWARD,
     sortColumn: 'flakiness',
-    showWontFix: false,
     showCorrectExpectations: false,
-    showLegend: true,
+    showExpectations: false,
     showFlaky: true,
+    showLargeExpectations: false,
+    showWontFix: false,
     showSkipped: false,
-    maxResults: 200,
+    maxResults: 200
   };
 
   //////////////////////////////////////////////////////////////////////////////
@@ -894,6 +939,7 @@
 
   function showPopupForTest(e, test) {
     showPopup(e, getHTMLForIndividulTestOnAllBuilders(test));
+    appendExpectations();
   }
 
   function getHtmlForTestResults(test, builder) {
@@ -1186,9 +1232,10 @@
       processTestRunsForBuilder(builder);
 
     var testResults = testToResultsMap[test];
+    var html = '';
     if (testResults && testResults.length) {
       var tracURL = TEST_URL_BASE_PATH + test
-      var html = getLinkHTMLToOpenWindow(tracURL, tracURL) +
+      html += getLinkHTMLToOpenWindow(tracURL, tracURL) +
           '<div><b>If a builder is not listed, that means the builder does ' +
           'run that test or all runs of the test passed.</b></div>';
 
@@ -1196,28 +1243,321 @@
         html += getHTMLForSingleTestRow(testResults[j].results,
             testResults[j].builder, true);
       }
-      return getHTMLForTestTable(html);
+      html = getHTMLForTestTable(html);
     } else {
-      var html = '';
       if (expectationsByTest[test]) {
         for (var i = 0; i < expectationsByTest[test].length; i++) {
           html += '<div>' + expectationsByTest[test][i].modifiers + ' | ' +
               expectationsByTest[test][i].expectations + '</div>';
         }
       }
-      return html + '<div class="not-found">Test not found. Either it does ' +
+      html += '<div class="not-found">Test not found. Either it does ' +
           'not exist, is skipped or passes on all platforms.</div>';
+    }
+    return html + '<div class=expectations test=' + test + '><div>' +
+        getLinkHTMLToToggleState('showExpectations', 'expectations') + ' | ' +
+        getLinkHTMLToToggleState('showLargeExpectations', 'large thumbnails') +
+        '</div></div>';
+  }
+
+  function getExpectationsContainer(expectationsContainers, parentContainer,
+      expectationsType) {
+    if (!expectationsContainers[expectationsType]) {
+      var container = document.createElement('div');
+      container.className = 'expectations-container';
+      parentContainer.appendChild(container);
+      expectationsContainers[expectationsType] = container;
+    }
+    return expectationsContainers[expectationsType];
+  }
+
+  function getExtension(path) {
+    var parts = path.split('.')
+    var extension = parts[parts.length - 1];
+    return extension == 'html' ? 'txt' : extension;
+  }
+
+  function ensureTrailingSlash(path) {
+    if (path.match(/\/$/))
+      return path;
+    return path + '/';
+  }
+
+  /**
+   * Adds a specific expectation. If it's an image, it's only added on the
+   * image's onload handler. If it's a text file, then a script tag is appended
+   * as a hack to see if the file 404s (necessary since it's cross-domain).
+   * Once all the expectations for a specific type have loaded or errored
+   * (e.g. all the checksums), then we go through and identify which platform
+   * uses which expectation.
+   *
+   * @param {Object} expectationsContainers Map from expectations type to
+   *     container DIV.
+   * @param {Element} parentContainer Container element for
+   *     expectationsContainer divs.
+   * @param {string} platform Platform string. "LayoutTests/" for non-platform
+   *     specific expectations.
+   * @param {string} path Relative path to the expectation.
+   * @param {string} base Base path for the expectation URL.
+   * @param {string} opt_suffix Suffix to place at the end of the path.
+   */
+  function addExpectationItem(expectationsContainers, parentContainer, platform,
+      path, base, opt_suffix) {
+    var fileExtension = getExtension(path);
+    var container = getExpectationsContainer(expectationsContainers,
+          parentContainer, fileExtension);
+    var isImage = path.match(/\.png$/);
+
+    // TODO(ojan): Is there any way to do this that doesn't rely on script
+    // tags? They spew a lot of errors to the console.
+    var dummyNode = document.createElement(isImage ? 'img' : 'script');
+    var suffix = opt_suffix || '';
+    var platformPart = platform ? ensureTrailingSlash(platform) : '';
+    dummyNode.src = base + platformPart + path + suffix;
+
+    var childContainer = document.createElement('span');
+    childContainer.className = 'unloaded';
+
+    dummyNode.onload = function() {
+      childContainer.appendChild(getExpectationsTitle(platform, path));
+      childContainer.className = 'expectations-item';
+
+      var item;
+      if (isImage) {
+        item = dummyNode;
+      } else {
+        item = document.createElement('iframe');
+        item.src = dummyNode.src;
+      }
+
+      item.className = 'expectation ' + fileExtension;
+      if (currentState.showLargeExpectations)
+        item.className += ' large';
+      childContainer.appendChild(item);
+      handleFinishedLoadingExpectations(container);
+    }
+    dummyNode.onerror = function() {
+      childContainer.parentNode.removeChild(childContainer);
+      handleFinishedLoadingExpectations(container);
+    }
+
+    // Append script elements now so that they load. Images load without being
+    // appended to the DOM.
+    if (!isImage) {
+      childContainer.appendChild(dummyNode);
+    }
+
+    container.appendChild(childContainer);
+  }
+
+  /**
+   * Identifies which expectations are used on which platform once all the
+   * expectations of a given type have loaded (e.g. the container for checksum
+   * expectations for this test had no child elements with the class
+   * "unloaded").
+   *
+   * @param {string} container Element containing the expectations for a given
+   *     test and a given type (e.g. checksum).
+   */
+  function handleFinishedLoadingExpectations(container) {
+    if (container.getElementsByClassName('unloaded').length)
+      return;
+
+    var titles = container.getElementsByClassName('expectations-title');
+    for (var platform in fallbacksMap) {
+      var fallbacks = fallbacksMap[platform];
+      var winner = null;
+      var winningIndex = -1;
+      for (var i = 0; i < titles.length; i++) {
+        var title = titles[i];
+
+        if (!winner && title.platform == LAYOUT_TESTS_PREFIX) {
+          winner = title;
+          continue;
+        }
+
+        for (var j = 0; j < fallbacks.length; j++) {
+          if ((winningIndex == -1 || winningIndex > j) &&
+               title.platform == fallbacks[j]) {
+            winningIndex = j;
+            winner = title;
+            break;
+          }
+        }
+      }
+      if (winner) {
+        winner.getElementsByClassName('platforms')[0].innerHTML +=
+            '<div class=used-platform>' + platform + '</div>';
+      } else {
+        console.log('No expectations identified for this test. This means ' +
+            'there is a logic bug in the dashboard for which expectations a ' +
+            'platform uses or trac.webkit.org/src.chromium.org is giving ' +
+            ' 5XXs.');
+      }
+    }
+  }
+
+  var TRAC_IMAGE_BASE_URL;
+  /**
+   * Trac seems to only show the raw image if you're viewing at a specific
+   * revision. Use the latest revision on any builder.
+   */
+  function getTracImageBaseURL() {
+    if (!TRAC_IMAGE_BASE_URL) {
+      TRAC_IMAGE_BASE_URL = 'http://trac.webkit.org/export/' +
+          getLatestKnownRevision(false) + '/trunk/';
+    }
+    return TRAC_IMAGE_BASE_URL;
+  }
+
+  function getLatestKnownRevision(isChrome) {
+    var revision = 0;
+    for (var builder in builders) {
+      var results = resultsByBuilder[builder];
+      var revisions = isChrome ? results.chromeRevision :
+          results.webkitRevision;
+      if (revision < revisions[0])
+        revision = revisions[0];
+    }
+    return revision;
+  }
+
+  function addExpectations(expectationsContainers, container, base, imageBase,
+        platform, text, checksum, png, textSuffix) {
+    addExpectationItem(expectationsContainers, container, platform, text, base,
+        textSuffix);
+    addExpectationItem(expectationsContainers, container, platform, checksum,
+        base, textSuffix);
+    addExpectationItem(expectationsContainers, container, platform, png,
+        imageBase);
+  }
+
+  function getExpectationsTitle(platform, path) {
+    var header = document.createElement('h3');
+    header.className = 'expectations-title';
+
+    var innerHTML;
+    if (platform == LAYOUT_TESTS_PREFIX) {
+      var parts = path.split('/');
+      innerHTML = parts[parts.length - 1];
+    } else {
+      innerHTML = platform || path;
+    }
+
+    header.innerHTML = '<div class=title>' + innerHTML +
+        '</div><div style="float:left">&nbsp;</div>' +
+        '<div class=platforms style="float:right"></div>';
+    header.style.clear = 'both';
+    header.platform = platform;
+    return header;
+  }
+
+  function loadExpectations(expectationsContainer) {
+    // Map from file extension to container div for expectations of that type.
+    var expectationsContainers = {};
+
+    var test = expectationsContainer.getAttribute('test');
+    var textSuffixWebKit = '?format=txt';
+    addExpectationItem(expectationsContainers, expectationsContainer, null,
+        test, TEST_URL_BASE_PATH, textSuffixWebKit);
+
+    var testWithoutSuffix = test.substring(0, test.lastIndexOf('.'));
+
+    var isUpstreamTest = startsWith(test, LAYOUT_TESTS_PREFIX);
+    if (isUpstreamTest) {
+      var testWithoutPrefix = testWithoutSuffix.substring(
+          LAYOUT_TESTS_PREFIX.length);
+      var textWithoutPrefix = testWithoutPrefix + "-expected.txt";
+      var checksumWithoutPrefix = testWithoutPrefix + "-expected.checksum"
+      var pngWithoutPrefix = testWithoutPrefix + "-expected.png";
+
+      addExpectations(expectationsContainers, expectationsContainer,
+          TEST_URL_BASE_PATH, getTracImageBaseURL(), LAYOUT_TESTS_PREFIX,
+          textWithoutPrefix, checksumWithoutPrefix, pngWithoutPrefix,
+          textSuffixWebKit);
+    }
+
+    var text = testWithoutSuffix + "-expected.txt";
+    var checksum = testWithoutSuffix + "-expected.checksum"
+    var png = testWithoutSuffix + "-expected.png";
+
+    var textSuffixChrome = '?revision=' + getLatestKnownRevision(true);
+
+    var fallbacks = getAllFallbacks();
+    for (var i = 0; i < fallbacks.length; i++) {
+      var fallback = fallbacks[i];
+      if (startsWith(fallback, 'platform')) {
+        if (isUpstreamTest) {
+          addExpectations(expectationsContainers, expectationsContainer,
+              TEST_URL_BASE_PATH + LAYOUT_TESTS_PREFIX,
+              getTracImageBaseURL() + LAYOUT_TESTS_PREFIX,
+              fallback, textWithoutPrefix,
+              checksumWithoutPrefix, pngWithoutPrefix, textSuffixWebKit);
+        }
+      } else {
+        addExpectations(expectationsContainers, expectationsContainer,
+            CHROME_TEST_BASE_URL, CHROME_TEST_BASE_URL, fallback, text,
+            checksum, png, textSuffixChrome);
+      }
+    }
+
+    // Add a clearing element so floated elements don't bleed out of their
+    // containing block.
+    var br = document.createElement('br');
+    br.style.clear = 'both';
+    expectationsContainer.appendChild(br);
+  }
+
+  var allFallbacks;
+
+  /**
+   * Returns the reverse sorted, deduped list of all platform fallback
+   * directories.
+   */
+  function getAllFallbacks() {
+    if (!allFallbacks) {
+      var holder = {};
+      for (var platform in fallbacksMap) {
+        var fallbacks = fallbacksMap[platform];
+        for (var i = 0; i < fallbacks.length; i++) {
+          holder[fallbacks[i]] = 1;
+        }
+      }
+
+      allFallbacks = [];
+      for (var fallback in holder) {
+        allFallbacks.push(fallback);
+      }
+      allFallbacks.sort(function(a, b) {
+        if (a == b)
+          return 0;
+        return a < b;
+      });
+    }
+    return allFallbacks;
+  }
+
+  /**
+   * Appends the expectations for each test listed.
+   */
+  function appendExpectations() {
+    if (currentState.showExpectations) {
+      var expectations = document.getElementsByClassName('expectations');
+      for (var i = 0, len = expectations.length; i < len; i++) {
+        loadExpectations(expectations[i]);
+      }
     }
   }
 
   function generatePageForIndividualTests(tests) {
-    var html = getHTMLForNavBar();
+    var testsHTML = [];
     for (var i = 0; i < tests.length; i++) {
-      html += '<h2>' + tests[i] + '</h2>' +
-          getHTMLForIndividulTestOnAllBuilders(tests[i]);
+      testsHTML.push('<h2>' + tests[i] + '</h2>' +
+          getHTMLForIndividulTestOnAllBuilders(tests[i]));
     }
-    setFullPageHTML(html);
+    setFullPageHTML(getHTMLForNavBar() + testsHTML.join('<hr>'));
 
+    appendExpectations();
     $('tests-input').value = currentState.tests;
   }
 
@@ -1229,7 +1569,7 @@
           ' onclick=\'setState("builder", "' + builder + '")\'>' +
           builder + '</span>';
     }
-    html += '</div>' +
+    return html + '</div>' +
         '<form id=tests-form ' +
         'onsubmit="setState(\'tests\', tests.value);return false;">' +
         '<div>Show tests on all platforms: </div><input name=tests ' +
@@ -1240,17 +1580,9 @@
         '<form id=max-results-form ' +
         'onsubmit="setState(\'maxResults\', maxResults.value);return false;"' +
         '><span>Number of results to show (max=500): </span>' +
-        '<input name=maxResults id=max-results-input></form>' +
-        '<div id="loading-ui">LOADING...</div><div id=legend>' +
-        '<div id=legend-toggle>' + getLinkHTMLToToggleLegendDisplay() +
-        '</div><div id=legend-contents>';
-
-    for (var expectation in EXPECTATIONS_MAP) {
-      html += '<div class=' + expectation + '>' +
-          EXPECTATIONS_MAP[expectation] + '</div>';
-    }
-    return html + '<div class=wrong-expectations>WRONG EXPECTATIONS</div>' +
-        '<div class=merge>WEBKIT MERGE</div></div></div>';
+        '<input name=maxResults id=max-results-input></form> | ' +
+        '<b>Type ? for legend and expectations fallback order</b>' +
+        '<div id="loading-ui">LOADING...</div>';
   }
 
   function getLinkHTMLToToggleState(key, linkText) {
@@ -1279,8 +1611,8 @@
         getLinkHTMLToToggleState('showCorrectExpectations',
             'tests with correct expectations') + ' | ' +
         getLinkHTMLToToggleState('showFlaky', 'flaky tests') + ' | ' +
-        '<b>All columns are sortable. | ' +
-        'Flakiness reader order is newer --> older runs.</b></div>' +
+        'All columns are sortable. | ' +
+        'Flakiness reader order is newer --> older runs.</div>' +
         testsHTML;
 
     setFullPageHTML(html);
@@ -1290,14 +1622,6 @@
       ths[i].addEventListener('click', changeSort, false);
       ths[i].className = "sortable";
     }
-  }
-
-  function getLinkHTMLToToggleLegendDisplay() {
-    return getLinkHTMLToToggleState('showLegend', 'Legend');
-  }
-
-  function updateLegendDisplay() {
-    $('legend-contents').style.display = currentState.showLegend ? '' : 'none';
   }
 
   function createTableHeadersArray(firstColumnHeader) {
@@ -1324,6 +1648,13 @@
     }
   }
 
+  var VALID_KEYS_FOR_INDIVIDUAL_TESTS = {
+    tests: 1,
+    maxResults: 1,
+    showExpectations: 1,
+    showLargeExpectations: 1
+  };
+
   /**
    * Sets the page state and regenerates the page. Takes varargs of key, value
    * pairs.
@@ -1333,7 +1664,7 @@
     for (var i = 0; i < arguments.length; i += 2) {
       var key = arguments[i];
 
-      if (key != 'tests' && key != 'maxResults') {
+      if (!(key in VALID_KEYS_FOR_INDIVIDUAL_TESTS)) {
         delete currentState.tests;
       }
 
@@ -1342,14 +1673,6 @@
         // of results to show. This makes changing the number of maxResults slow
         // but is considerably easier than refactoring all the other code.
         clearProcessedTestState();
-      }
-
-      if (key == 'showLegend') {
-        // No need to regenerate the page if only the legend's display is being
-        // updated.
-        shouldRegeneratePage = keys.length == 1;
-        updateLegendDisplay();
-        $('legend-toggle').innerHTML = getLinkHTMLToToggleLegendDisplay();
       }
     }
 
@@ -1361,6 +1684,63 @@
       handleLocationChange();
   }
 
+  function hideLegend() {
+    var legend = $('legend');
+    if (legend)
+      legend.parentNode.removeChild(legend);
+  }
+
+  var fallbacksMap = {};
+  fallbacksMap['WIN-VISTA'] = ['chromium-win-vista', 'chromium-win',
+      'platform/win', 'platform/mac'];
+  fallbacksMap['WIN-XP'] = ['chromium-win-xp'].concat(
+      fallbacksMap['WIN-VISTA']);
+  // Should mac look at the tiger results?
+  fallbacksMap['MAC'] = ['chromium-mac', 'platform/mac',
+      'platform/mac-snowleopard', 'platform/mac-leopard', 'platform/mac-tiger'];
+  fallbacksMap['LINUX'] = ['chromium-linux', 'chromium-win', 'platform/win',
+      'platform/mac'];
+
+  function htmlForFallbackHelp(fallbacks) {
+    return '<ol class=fallback-list><li>' + fallbacks.join('</li><li>') +
+        '</li></ol>';
+  }
+
+  function showLegend() {
+    var legend = $('legend');
+    if (!legend) {
+      legend = document.createElement('div');
+      legend.id = 'legend';
+      document.body.appendChild(legend);
+    }
+
+    var innerHTML = '<div id=legend-toggle onclick="hideLegend()">Hide ' +
+        'legend (or hit esc to close)</div><div id=legend-contents>';
+    for (var expectation in EXPECTATIONS_MAP) {
+      innerHTML += '<div class=' + expectation + '>' +
+          EXPECTATIONS_MAP[expectation] + '</div>';
+    }
+    innerHTML += '<div class=wrong-expectations>WRONG EXPECTATIONS</div>' +
+        '<div class=merge>WEBKIT MERGE</div></div>' +'</div>' +
+        '<h3>Test expectatons fallback order.</h3>';
+
+    for (var platform in fallbacksMap) {
+      innerHTML += '<div class=fallback-header>' + platform + '</div>' +
+        htmlForFallbackHelp(fallbacksMap[platform]);
+    }
+    legend.innerHTML = innerHTML;
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.keyIdentifier == 'U+003F') {
+      // ? key
+      showLegend();
+    } else if (e.keyIdentifier == 'U+001B') {
+      // escape key
+      hideLegend();
+      hidePopup();
+    }
+  }, false);
 
   </script>
 </head>
