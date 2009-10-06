@@ -244,7 +244,7 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLRequest* request) {
   manifest_url_request_ = NULL;
 
   if (!request->status().is_success()) {
-    LOG(INFO) << "Request non-success, status: " << request->status().status()
+    LOG(ERROR) << "Request non-success, status: " << request->status().status()
         << " os_error: " << request->status().os_error();
     internal_state_ = CACHE_FAILURE;
     MaybeCompleteUpdate();  // if not done, run async cache failure steps
@@ -268,7 +268,7 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLRequest* request) {
     NotifyAllPendingMasterHosts(ERROR_EVENT);
     DeleteSoon();
   } else {
-    LOG(INFO) << "Cache failure, response code: " << response_code;
+    LOG(ERROR) << "Cache failure, response code: " << response_code;
     internal_state_ = CACHE_FAILURE;
     MaybeCompleteUpdate();  // if not done, run async cache failure steps
   }
@@ -287,7 +287,7 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
   Manifest manifest;
   if (!ParseManifest(manifest_url_, manifest_data_.data(),
                      manifest_data_.length(), manifest)) {
-    LOG(INFO) << "Failed to parse manifest: " << manifest_url_;
+    LOG(ERROR) << "Failed to parse manifest: " << manifest_url_;
     internal_state_ = CACHE_FAILURE;
     MaybeCompleteUpdate();  // if not done, run async cache failure steps
     return;

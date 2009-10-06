@@ -1145,11 +1145,11 @@ TEST_F(AppCacheUpdateJobTest, BasicCacheAttemptSuccess) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::BasicCacheAttemptSuccessTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, BasicUpgradeSuccess) {
+TEST_F(AppCacheUpdateJobTest, DISABLED_BasicUpgradeSuccess) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::BasicUpgradeSuccessTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, UpgradeSuccessMergedTypes) {
+TEST_F(AppCacheUpdateJobTest, DISABLED_UpgradeSuccessMergedTypes) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeSuccessMergedTypesTest);
 }
 
@@ -1165,7 +1165,7 @@ TEST_F(AppCacheUpdateJobTest, UpgradeFailMasterUrlFetch) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeFailMasterUrlFetchTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, EmptyManifest) {
+TEST_F(AppCacheUpdateJobTest, DISABLED_EmptyManifest) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::EmptyManifestTest);
 }
 
