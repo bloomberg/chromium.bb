@@ -12,7 +12,7 @@ DOMView::DOMView() : initialized_(false), tab_contents_(NULL) {
 }
 
 DOMView::~DOMView() {
-  if (tab_contents_.get())
+  if (native_view())
     Detach();
 }
 
