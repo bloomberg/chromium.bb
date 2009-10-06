@@ -378,6 +378,9 @@ void BrowserActionsContainer::Observe(NotificationType type,
       type == NotificationType::EXTENSION_UNLOADED ||
       type == NotificationType::EXTENSION_UNLOADED_DISABLED) {
     RefreshBrowserActionViews();
+
+    // All these actions may change visibility of BrowserActions.
+    OnBrowserActionVisibilityChanged();
   } else {
     NOTREACHED() << L"Received unexpected notification";
   }
@@ -416,7 +419,7 @@ void BrowserActionsContainer::PaintChildren(gfx::Canvas* canvas) {
   }
 }
 
-void BrowserActionsContainer::PaintBadge(gfx::Canvas* canvas, 
+void BrowserActionsContainer::PaintBadge(gfx::Canvas* canvas,
                                          BrowserActionImageView* view,
                                          const SkColor& badge_color,
                                          const std::string& text) {
