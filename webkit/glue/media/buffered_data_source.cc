@@ -469,6 +469,7 @@ BufferedDataSource::BufferedDataSource(
       read_position_(0),
       read_size_(0),
       read_buffer_(NULL),
+      read_attempts_(0),
       intermediate_read_buffer_(new uint8[kInitialReadBufferSize]),
       intermediate_read_buffer_size_(kInitialReadBufferSize),
       render_loop_(render_loop),
