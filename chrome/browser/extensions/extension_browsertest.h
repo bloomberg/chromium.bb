@@ -56,6 +56,7 @@ class ExtensionBrowserTest
   bool loaded_;
   bool installed_;
   FilePath test_data_dir_;
+  std::string last_loaded_extension_id_;
 
  private:
   bool InstallOrUpdateExtension(const std::string& id, const FilePath& path,

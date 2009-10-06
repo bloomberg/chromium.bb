@@ -400,7 +400,7 @@ void BrowserEventAutomationProxy::HandleMessageFromChrome() {
     // TEST_F(BrowserEventExtensionTest, RunTest) to understand where the
     // extension Id comes from.
     tab_->HandleMessageFromExternalHost(
-        "{\"rqid\":0, \"extid\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\","
+        "{\"rqid\":0, \"extid\": \"ofoknjclcmghjfmbncljcnpjmfmldhno\","
         " \"connid\": 1}",
         keys::kAutomationOrigin,
         keys::kAutomationPortRequestTarget);
@@ -475,15 +475,8 @@ TEST_F(BrowserEventExtensionTest, RunTest) {
   // This test loads an HTML file that tries to add listeners to a bunch of
   // chrome.* events and upon adding a listener it posts the name of the event
   // to the automation layer, which we'll count to make sure the events work.
-  //
-  // The extension for this test does not specify a "key" property in its
-  // manifest file.  Therefore, the extension system will automatically assign
-  // it an Id.  To make this test consistent and non-flaky, the genetated Id
-  // counter is reset before the test so that we can hardcode the first Id
-  // that will be generated.
-  Extension::ResetGeneratedIdCounter();
   TestWithURL(GURL(
-      "chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/test.html"));
+      "chrome-extension://ofoknjclcmghjfmbncljcnpjmfmldhno/test.html"));
   BrowserEventAutomationProxy* proxy =
       static_cast<BrowserEventAutomationProxy*>(automation());
 

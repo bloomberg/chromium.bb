@@ -106,16 +106,8 @@ class Extension {
   // The mimetype used for extensions.
   static const char kMimeType[];
 
-  Extension()
-      : location_(INVALID), is_theme_(false),
-        background_page_ready_(false) {}
   explicit Extension(const FilePath& path);
   virtual ~Extension();
-
-  // Resets the id counter. This is only useful for unit tests.
-  static void ResetGeneratedIdCounter() {
-    id_counter_ = 0;
-  }
 
   // Checks to see if the extension has a valid ID.
   static bool IdIsValid(const std::string& id);
@@ -160,10 +152,9 @@ class Extension {
   // Does a simple base64 encoding of |input| into |output|.
   static bool ProducePEM(const std::string& input, std::string* output);
 
-  // Note: The result is coverted to lower-case because the browser enforces
-  // hosts to be lower-case in omni-bar.
-  static bool GenerateIdFromPublicKey(const std::string& input,
-                                      std::string* output);
+  // Generates an extension ID from arbitrary input. The same input string will
+  // always generate the same output ID.
+  static bool GenerateId(const std::string& input, std::string* output);
 
   // Expects base64 encoded |input| and formats into |output| including
   // the appropriate header & footer.
@@ -281,14 +272,6 @@ class Extension {
   void SetBackgroundPageReady();
 
  private:
-  // Counter used to assign ids to extensions that are loaded using
-  // --load-extension.
-  static int id_counter_;
-
-  // Returns the next counter id. Intentionally post-incrementing so that first
-  // value is 0.
-  static int NextGeneratedId() { return id_counter_++; }
-
   // Helper method that loads a UserScript object from a
   // dictionary in the content_script list of the manifest.
   bool LoadUserScriptHelper(const DictionaryValue* content_script,

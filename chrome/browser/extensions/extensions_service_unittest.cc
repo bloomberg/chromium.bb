@@ -1197,7 +1197,6 @@ TEST_F(ExtensionsServiceTest, LoadExtension) {
 // --load-extension.
 TEST_F(ExtensionsServiceTest, GenerateID) {
   InitializeEmptyExtensionsService();
-  Extension::ResetGeneratedIdCounter();
 
   FilePath extensions_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
@@ -1208,25 +1207,19 @@ TEST_F(ExtensionsServiceTest, GenerateID) {
   loop_.RunAllPending();
   EXPECT_EQ(0u, GetErrors().size());
   ASSERT_EQ(1u, loaded_.size());
-  std::string id1 = loaded_[0]->id();
-  EXPECT_EQ(all_zero, id1);
-  EXPECT_EQ("chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/",
-            loaded_[0]->url().spec());
+  ASSERT_TRUE(Extension::IdIsValid(loaded_[0]->id()));
   EXPECT_EQ(loaded_[0]->location(), Extension::LOAD);
 
   // --load-extension doesn't add entries to prefs
   ValidatePrefKeyCount(0);
 
+  std::string previous_id = loaded_[0]->id();
+
+  // If we reload the same path, we should get the same extension ID.
   service_->LoadExtension(no_id_ext);
   loop_.RunAllPending();
-  std::string id2 = loaded_[1]->id();
-  EXPECT_EQ(zero_n_one, id2);
-  EXPECT_EQ("chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab/",
-            loaded_[1]->url().spec());
-  EXPECT_EQ(loaded_[1]->location(), Extension::LOAD);
-
-  // --load-extension doesn't add entries to prefs
-  ValidatePrefKeyCount(0);
+  ASSERT_EQ(1u, loaded_.size());
+  ASSERT_EQ(previous_id, loaded_[0]->id());
 }
 
 // Tests the external installation feature

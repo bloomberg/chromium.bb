@@ -64,9 +64,6 @@ static bool IsAPIPermission(const std::string& str) {
 
 }  // namespace
 
-// static
-int Extension::id_counter_ = 0;
-
 const char Extension::kManifestFilename[] = "manifest.json";
 const char Extension::kLocaleFolder[] = "_locales";
 const char Extension::kMessagesFilename[] = "messages.json";
@@ -176,8 +173,7 @@ Extension::Location Extension::ExternalExtensionInstallType(
   return Extension::EXTERNAL_PREF;
 }
 
-bool Extension::GenerateIdFromPublicKey(const std::string& input,
-                                        std::string* output) {
+bool Extension::GenerateId(const std::string& input, std::string* output) {
   CHECK(output);
   if (input.length() == 0)
     return false;
@@ -607,7 +603,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     std::string public_key_bytes;
     if (!source.GetString(keys::kPublicKey, &public_key_) ||
       !ParsePEMKeyBytes(public_key_, &public_key_bytes) ||
-      !GenerateIdFromPublicKey(public_key_bytes, &id_)) {
+      !GenerateId(public_key_bytes, &id_)) {
         *error = errors::kInvalidKey;
         return false;
     }
@@ -615,14 +611,13 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     *error = errors::kInvalidKey;
     return false;
   } else {
-    // Generate a random ID
-    id_ = StringPrintf("%x", NextGeneratedId());
-
-    // pad the string out to kIdSize*2 chars with zeroes.
-    id_.insert(0, Extension::kIdSize*2 - id_.length(), '0');
-
-    // Convert to our mp-decimal.
-    ConvertHexadecimalToIDAlphabet(&id_);
+    // If there is a path, we generate the ID from it. This is useful for
+    // development mode, because it keeps the ID stable across restarts and
+    // reloading the extension.
+    if (!GenerateId(WideToUTF8(path_.ToWStringHack()), &id_)) {
+      NOTREACHED() << "Could not create ID from path.";
+      return false;
+    }
   }
 
   // Make a copy of the manifest so we can store it in prefs.

@@ -199,6 +199,7 @@ void ExtensionBrowserTest::Observe(NotificationType type,
                                    const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::EXTENSION_LOADED:
+      last_loaded_extension_id_ = Details<Extension>(details).ptr()->id();
       std::cout << "Got EXTENSION_LOADED notification.\n";
       MessageLoopForUI::current()->Quit();
       break;

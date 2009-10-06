@@ -79,8 +79,6 @@ class ScopedTempPrefService {
   scoped_ptr<PrefService> prefs_;
 };
 
-const char* kIdPrefix = "000000000000000000000000000000000000000";
-
 // Creates test extensions and inserts them into list. The name and
 // version are all based on their index. If |update_url| is non-null, it
 // will be used as the update_url for each extension.
@@ -88,7 +86,12 @@ void CreateTestExtensions(int count, ExtensionList *list,
                           const std::string* update_url) {
   for (int i = 1; i <= count; i++) {
     DictionaryValue input;
-    Extension* e = new Extension();
+#if defined(OS_WIN)
+    FilePath path(StringPrintf(L"c:\\extension%i", i));
+#else
+    FilePath path(StringPrintf("/extension%i", i));
+#endif
+    Extension* e = new Extension(path);
     input.SetString(extension_manifest_keys::kVersion,
                     StringPrintf("%d.0.0.0", i));
     input.SetString(extension_manifest_keys::kName,

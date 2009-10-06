@@ -227,8 +227,6 @@ TEST(ExtensionTest, InitFromValueValid) {
 #elif defined(OS_POSIX)
   FilePath path(FILE_PATH_LITERAL("/foo"));
 #endif
-  Extension::ResetGeneratedIdCounter();
-
   Extension extension(path);
   std::string error;
   DictionaryValue input_value;
@@ -239,11 +237,10 @@ TEST(ExtensionTest, InitFromValueValid) {
 
   EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
   EXPECT_EQ("", error);
-  EXPECT_EQ("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", extension.id());
+  EXPECT_TRUE(Extension::IdIsValid(extension.id()));
   EXPECT_EQ("1.0.0.0", extension.VersionString());
   EXPECT_EQ("my extension", extension.name());
-  EXPECT_EQ("chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/",
-            extension.url().spec());
+  EXPECT_EQ(extension.id(), extension.url().host());
   EXPECT_EQ(path.value(), extension.path().value());
 }
 
@@ -277,7 +274,12 @@ TEST(ExtensionTest, GetResourceURLAndPath) {
 }
 
 TEST(ExtensionTest, LoadPageActionHelper) {
-  Extension extension;
+#if defined(OS_WIN)
+    FilePath path(StringPrintf(L"c:\\extension"));
+#else
+    FilePath path(StringPrintf("/extension"));
+#endif
+  Extension extension(path);
   std::string error_msg;
   scoped_ptr<ExtensionAction> action;
   DictionaryValue input;
@@ -424,7 +426,7 @@ TEST(ExtensionTest, IdIsValid) {
   EXPECT_FALSE(Extension::IdIsValid("abcdefghijklmnopabcdefghijklmno0"));
 }
 
-TEST(ExtensionTest, GenerateIDFromPublicKey) {
+TEST(ExtensionTest, GenerateID) {
   const uint8 public_key_info[] = {
     0x30, 0x81, 0x9f, 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7,
     0x0d, 0x01, 0x01, 0x01, 0x05, 0x00, 0x03, 0x81, 0x8d, 0x00, 0x30, 0x81,
@@ -444,7 +446,7 @@ TEST(ExtensionTest, GenerateIDFromPublicKey) {
 
   std::string extension_id;
   EXPECT_TRUE(
-      Extension::GenerateIdFromPublicKey(
+      Extension::GenerateId(
           std::string(reinterpret_cast<const char*>(&public_key_info[0]),
                       arraysize(public_key_info)),
           &extension_id));
@@ -463,7 +465,12 @@ TEST(ExtensionTest, UpdateUrls) {
     EXPECT_TRUE(url.is_valid());
 
     DictionaryValue input_value;
-    Extension extension;
+#if defined(OS_WIN)
+    FilePath path(StringPrintf(L"c:\\extension%i", i));
+#else
+    FilePath path(StringPrintf("/extension%i", i));
+#endif
+    Extension extension(path);
     std::string error;
 
     input_value.SetString(keys::kVersion, "1.0");
@@ -480,7 +487,12 @@ TEST(ExtensionTest, UpdateUrls) {
   valid.push_back("http://test.com/update#whatever");
   for (size_t i = 0; i < invalid.size(); i++) {
     DictionaryValue input_value;
-    Extension extension;
+#if defined(OS_WIN)
+    FilePath path(StringPrintf(L"c:\\extension%i", i));
+#else
+    FilePath path(StringPrintf("/extension%i", i));
+#endif
+    Extension extension(path);
     std::string error;
     input_value.SetString(keys::kVersion, "1.0");
     input_value.SetString(keys::kName, "Test");
@@ -529,7 +541,7 @@ static Extension* LoadManifest(const std::string& dir,
     return NULL;
 
   std::string error;
-  scoped_ptr<Extension> extension(new Extension);
+  scoped_ptr<Extension> extension(new Extension(path.DirName()));
   extension->InitFromValue(*static_cast<DictionaryValue*>(result.get()),
                            false, &error);
 

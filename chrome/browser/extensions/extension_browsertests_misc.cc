@@ -27,9 +27,6 @@
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/net_util.h"
 
-// ID assigned to the first unpacked extension loaded by LoadExtension().
-#define kDefaultExtensionID "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-
 const std::wstring kSubscribePage =
     L"files/extensions/samples/subscribe_page_action/subscribe.html";
 const std::wstring kValidFeed0 = L"files/feeds/feed_script.xml";
@@ -250,7 +247,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
   ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(feed));
   ASSERT_TRUE(WaitForPageActionCountChangeTo(1));
 
-  UnloadExtension(kDefaultExtensionID);
+  UnloadExtension(last_loaded_extension_id_);
 
   // Make sure the page action goes away when it's unloaded.
   ASSERT_TRUE(WaitForPageActionCountChangeTo(0));
@@ -622,7 +619,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenExtension) {
 
   TabContents* newtab = WindowOpenHelper(
       browser(),
-      GURL("chrome-extension://" kDefaultExtensionID "/test.html"),
+      GURL(std::string("chrome-extension://") + last_loaded_extension_id_ +
+           "/test.html"),
       "newtab.html");
 
   bool result = false;
@@ -639,7 +637,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenInvalidExtension) {
 
   WindowOpenHelper(
       browser(),
-      GURL("chrome-extension://" kDefaultExtensionID "/test.html"),
+      GURL(std::string("chrome-extension://") + last_loaded_extension_id_ +
+           "/test.html"),
       "chrome-extension://thisissurelynotavalidextensionid/newtab.html");
 
   // If we got to this point, we didn't crash, so we're good.
@@ -655,7 +654,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
   TabContents* newtab = WindowOpenHelper(
       browser(),
       GURL("about:blank"),
-      "chrome-extension://" kDefaultExtensionID "/newtab.html");
+      std::string("chrome-extension://") + last_loaded_extension_id_ +
+          "/newtab.html");
 
   // Extension API should fail.
   bool result = false;
