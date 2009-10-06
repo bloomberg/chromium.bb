@@ -389,7 +389,7 @@ class AffectedFile(object):
   def AbsoluteLocalPath(self):
     """Returns the absolute path of this file on the local disk.
     """
-    return normpath(os.path.join(self._local_root, self.LocalPath()))
+    return os.path.abspath(os.path.join(self._local_root, self.LocalPath()))
 
   def IsDirectory(self):
     """Returns true if this object is a directory."""
@@ -562,7 +562,8 @@ class Change(object):
       files = []
     self._name = name
     self._full_description = description
-    self._local_root = local_root
+    # Convert root into an absolute path.
+    self._local_root = os.path.abspath(local_root)
     self.issue = issue
     self.patchset = patchset
     self.scm = ''
@@ -764,6 +765,12 @@ class PresubmitExecuter(object):
     Return:
       A list of result objects, empty if no problems.
     """
+
+    # Change to the presubmit file's directory to support local imports.
+    main_path = os.getcwd()
+    os.chdir(os.path.dirname(presubmit_path))
+
+    # Load the presubmit script into context.
     input_api = InputApi(self.change, presubmit_path, self.committing)
     context = {}
     exec script_text in context
@@ -789,6 +796,8 @@ class PresubmitExecuter(object):
     else:
       result = ()  # no error since the script doesn't care about current event.
 
+    # Return the process to the original working directory.
+    os.chdir(main_path)
     return result
 
 
@@ -939,7 +948,7 @@ def Main(argv):
         options.files = ParseFiles(args, options.recursive)
       else:
         # Grab modified files.
-        raise NotImplementedException()  # TODO(maruel) Implement.
+        options.files = gclient_scm.CaptureGitStatus([options.root])
   elif os.path.isdir(os.path.join(options.root, '.svn')):
     change_class = SvnChange
     if not options.files:
@@ -947,12 +956,15 @@ def Main(argv):
         options.files = ParseFiles(args, options.recursive)
       else:
         # Grab modified files.
-        files = gclient_scm.CaptureSVNStatus([options.root])
+        options.files = gclient_scm.CaptureSVNStatus([options.root])
   else:
     # Doesn't seem under source control.
     change_class = Change
   if options.verbose:
-    print "Found %d files." % len(options.files)
+    if len(options.files) != 1:
+      print "Found %d files." % len(options.files)
+    else:
+      print "Found 1 file."
   return not DoPresubmitChecks(change_class(options.name,
                                             options.description,
                                             options.root,

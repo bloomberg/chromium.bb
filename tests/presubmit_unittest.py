@@ -53,12 +53,16 @@ def CheckChangeOnUpload(input_api, output_api):
     self.mox.StubOutWithMock(presubmit, 'random')
     self.mox.StubOutWithMock(presubmit, 'sys')
     presubmit._ASKED_FOR_FEEDBACK = False
+    presubmit.os.path.commonprefix = os_path_commonprefix
+    self.fake_root_dir = self.RootDir()
     # Special mocks.
     def MockAbsPath(f):
       return f
+    def MockChdir(f):
+      return None
     presubmit.os.path.abspath = MockAbsPath
-    presubmit.os.path.commonprefix = os_path_commonprefix
-    self.fake_root_dir = self.RootDir()
+    presubmit.os.getcwd = self.RootDir
+    presubmit.os.chdir = MockChdir
     self.mox.StubOutWithMock(presubmit.gclient_scm, 'CaptureSVNInfo')
     self.mox.StubOutWithMock(presubmit.gcl, 'GetSVNFileProperty')
     self.mox.StubOutWithMock(presubmit.gcl, 'ReadFile')

@@ -23,6 +23,7 @@ import xml.dom.minidom
 import gclient_utils
 
 SVN_COMMAND = "svn"
+GIT_COMMAND = "git"
 
 
 ### SCM abstraction layer
@@ -440,6 +441,62 @@ class SVNWrapper(SCMWrapper):
 
     filterer = DiffFilterer(self.relpath)
     RunSVNAndFilterOutput(command, path, False, False, filterer.Filter)
+
+
+# -----------------------------------------------------------------------------
+# Git utils:
+
+
+def CaptureGit(args, in_directory=None, print_error=True):
+  """Runs git, capturing output sent to stdout as a string.
+
+  Args:
+    args: A sequence of command line parameters to be passed to git.
+    in_directory: The directory where git is to be run.
+
+  Returns:
+    The output sent to stdout as a string.
+  """
+  c = [GIT_COMMAND]
+  c.extend(args)
+
+  # *Sigh*:  Windows needs shell=True, or else it won't search %PATH% for
+  # the git.exe executable, but shell=True makes subprocess on Linux fail
+  # when it's called with a list because it only tries to execute the
+  # first string ("git").
+  stderr = None
+  if not print_error:
+    stderr = subprocess.PIPE
+  return subprocess.Popen(c,
+                          cwd=in_directory,
+                          shell=sys.platform.startswith('win'),
+                          stdout=subprocess.PIPE,
+                          stderr=stderr).communicate()[0]
+
+
+def CaptureGitStatus(files, upstream_branch='origin'):
+  """Returns git status.
+
+  @files can be a string (one file) or a list of files.
+
+  Returns an array of (status, file) tuples."""
+  command = ["diff", "--name-status", "-r", "%s.." % upstream_branch]
+  if not files:
+    pass
+  elif isinstance(files, basestring):
+    command.append(files)
+  else:
+    command.extend(files)
+
+  status = CaptureGit(command).rstrip()
+  results = []
+  if status:
+    for statusline in status.split('\n'):
+      m = re.match('^(\w)\t(.+)$', statusline)
+      if not m:
+        raise Exception("status currently unsupported: %s" % statusline)
+      results.append(('%s      ' % m.group(1), m.group(2)))
+  return results
 
 
 # -----------------------------------------------------------------------------
