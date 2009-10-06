@@ -31,14 +31,11 @@
 
 Import('env')
 
-######################################################################
-# Smoke Test
-######################################################################
-env.ComponentProgram('mmap_test.nexe', 'mmap_test.cc',
+env.ComponentProgram('mmap_test.nexe',
+                     'mmap_test.cc',
                      EXTRA_LIBS=['pthread'])
-
 node = env.CommandSelLdrTestNacl('mmap_test.out',
                                  command=[env.File('mmap_test.nexe')],
                                  stdout_golden=env.File('mmap_test.stdout'),
                                  )
-env.AddNodeToTestSuite(node, ['small_tests'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_mmap_test')

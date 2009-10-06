@@ -40,6 +40,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "native_client/src/include/elf_constants.h"
 #include "native_client/src/include/nacl_elf.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
@@ -72,12 +73,20 @@ struct NaClPhdrChecks nacl_phdr_check_data[] = {
   { PT_LOAD, PF_R, PCA_NONE, 0, 0, },
   /* data/bss */
   { PT_LOAD, PF_R|PF_W, PCA_NONE, 0, 0, },
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  /* arm exception handling unwind info (for c++)*/
+  /* TODO(robertm): for some reason this does NOT end up in ro maybe because
+   *             it is relocatable. Try hacking the linker script to move it.
+   */
+  { PT_ARM_EXIDX, PF_R, PCA_IGNORE, 0, 0, },
+#endif
   /*
    * allow optional GNU stack permission marker, but require that the
    * stack is non-executable.
    */
   { PT_GNU_STACK, PF_R|PF_W, PCA_NONE, 0, 0, },
 };
+
 
 NaClErrorCode NaClProcessPhdrs(struct NaClApp *nap) {
     /* Scan phdrs and do sanity checks in-line.  Verify that the load

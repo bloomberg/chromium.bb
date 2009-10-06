@@ -29,8 +29,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
-
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -39,7 +37,6 @@
 
 #define PRINT_HEADER 0
 #define TEXT_LINE_SIZE 1024
-
 
 /*
  * function failed(testname, msg)
@@ -51,7 +48,6 @@ bool failed(const char *testname, const char *msg) {
   return false;
 }
 
-
 /*
  * function passed(testname, msg)
  *   print success message
@@ -61,8 +57,6 @@ bool passed(const char *testname, const char *msg) {
   printf("TEST PASSED: %s: %s\n", testname, msg);
   return true;
 }
-
-
 
 /*
  * function test*()
@@ -74,8 +68,7 @@ bool passed(const char *testname, const char *msg) {
  *   test1() before test2(), and so on.
  */
 
-bool test1()
-{
+bool test1() {
   int size = 64 * 1024;  /* we need 64K */
   void *zeroes;
   // test simple mmap
@@ -110,13 +103,13 @@ bool test1()
  *   Verify that munmap of executable text pages will fail.
  */
 
-bool test2()
-{
+bool test2() {
   int rv;
 
   printf("test2\n");
 
-  rv = munmap((void *) (1<<16), (size_t) (1<<16));  /* text starts at 64K */
+  /* text starts at 64K */
+  rv = munmap(reinterpret_cast<void*>(1<<16), (size_t) (1<<16));
 
   /*
    * if the munmap succeeds, we probably won't be able to continue to
@@ -131,18 +124,15 @@ bool test2()
   return false;
 }
 
-
-
 /*
  *   Verify that mmap into the NULL pointer guard page will fail.
  */
 
-bool test3()
-{
+bool test3() {
   void  *res;
 
   printf("test3\n");
-  res = mmap((void *) 0, (size_t) (1 << 16),
+  res = mmap(static_cast<void*>(0), (size_t) (1 << 16),
              PROT_READ, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, 0, 0);
   printf("res = %p\n", res);
   if (MAP_FAILED == res) {
@@ -154,7 +144,6 @@ bool test3()
   }
 }
 
-
 /*
  * function testSuite()
  *
@@ -163,8 +152,7 @@ bool test3()
  * returns true if all tests succeed.  false if one or more fail.
  */
 
-bool testSuite()
-{
+bool testSuite() {
   bool ret = true;
   // The order of executing these tests matters!
   ret &= test1();
@@ -172,7 +160,6 @@ bool testSuite()
   ret &= test3();
   return ret;
 }
-
 
 /*
  * main entry point.
@@ -182,8 +169,7 @@ bool testSuite()
  *  -1 - one or more tests failed.
  */
 
-int main(const int argc, const char *argv[])
-{
+int main(const int argc, const char *argv[]) {
   bool passed;
 
   // run the full test suite
