@@ -33,6 +33,9 @@ deps = {
   "src/third_party/protobuf2/src":
     "http://protobuf.googlecode.com/svn/trunk@219",
 
+  "src/third_party/pywebsocket":
+    "http://pywebsocket.googlecode.com/svn/trunk/src@34",
+
   "src/tools/gyp":
     "http://gyp.googlecode.com/svn/trunk@671",
 
