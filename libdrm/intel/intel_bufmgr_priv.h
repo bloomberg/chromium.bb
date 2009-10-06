@@ -40,178 +40,190 @@
  * Contains public methods followed by private storage for the buffer manager.
  */
 struct _drm_intel_bufmgr {
-   /**
-    * Allocate a buffer object.
-    *
-    * Buffer objects are not necessarily initially mapped into CPU virtual
-    * address space or graphics device aperture.  They must be mapped using
-    * bo_map() to be used by the CPU, and validated for use using bo_validate()
-    * to be used from the graphics device.
-    */
-   drm_intel_bo *(*bo_alloc)(drm_intel_bufmgr *bufmgr, const char *name,
-			     unsigned long size, unsigned int alignment);
+	/**
+	 * Allocate a buffer object.
+	 *
+	 * Buffer objects are not necessarily initially mapped into CPU virtual
+	 * address space or graphics device aperture.  They must be mapped
+	 * using bo_map() to be used by the CPU, and validated for use using
+	 * bo_validate() to be used from the graphics device.
+	 */
+	drm_intel_bo *(*bo_alloc) (drm_intel_bufmgr *bufmgr, const char *name,
+				   unsigned long size, unsigned int alignment);
 
-   /**
-    * Allocate a buffer object, hinting that it will be used as a render target.
-    *
-    * This is otherwise the same as bo_alloc.
-    */
-   drm_intel_bo *(*bo_alloc_for_render)(drm_intel_bufmgr *bufmgr,
-					const char *name,
-					unsigned long size,
-					unsigned int alignment);
+	/**
+	 * Allocate a buffer object, hinting that it will be used as a
+	 * render target.
+	 *
+	 * This is otherwise the same as bo_alloc.
+	 */
+	drm_intel_bo *(*bo_alloc_for_render) (drm_intel_bufmgr *bufmgr,
+					      const char *name,
+					      unsigned long size,
+					      unsigned int alignment);
 
-   /** Takes a reference on a buffer object */
-   void (*bo_reference)(drm_intel_bo *bo);
+	/** Takes a reference on a buffer object */
+	void (*bo_reference) (drm_intel_bo *bo);
 
-   /**
-    * Releases a reference on a buffer object, freeing the data if
-    * rerefences remain.
-    */
-   void (*bo_unreference)(drm_intel_bo *bo);
+	/**
+	 * Releases a reference on a buffer object, freeing the data if
+	 * rerefences remain.
+	 */
+	void (*bo_unreference) (drm_intel_bo *bo);
 
-   /**
-    * Maps the buffer into userspace.
-    *
-    * This function will block waiting for any existing execution on the
-    * buffer to complete, first.  The resulting mapping is available at
-    * buf->virtual.
-    */
-   int (*bo_map)(drm_intel_bo *bo, int write_enable);
+	/**
+	 * Maps the buffer into userspace.
+	 *
+	 * This function will block waiting for any existing execution on the
+	 * buffer to complete, first.  The resulting mapping is available at
+	 * buf->virtual.
+	 */
+	int (*bo_map) (drm_intel_bo *bo, int write_enable);
 
-   /** Reduces the refcount on the userspace mapping of the buffer object. */
-   int (*bo_unmap)(drm_intel_bo *bo);
+	/**
+	 * Reduces the refcount on the userspace mapping of the buffer
+	 * object.
+	 */
+	int (*bo_unmap) (drm_intel_bo *bo);
 
-   /**
-    * Write data into an object.
-    *
-    * This is an optional function, if missing,
-    * drm_intel_bo will map/memcpy/unmap.
-    */
-   int (*bo_subdata)(drm_intel_bo *bo, unsigned long offset,
-		     unsigned long size, const void *data);
+	/**
+	 * Write data into an object.
+	 *
+	 * This is an optional function, if missing,
+	 * drm_intel_bo will map/memcpy/unmap.
+	 */
+	int (*bo_subdata) (drm_intel_bo *bo, unsigned long offset,
+			   unsigned long size, const void *data);
 
-   /**
-    * Read data from an object
-    *
-    * This is an optional function, if missing,
-    * drm_intel_bo will map/memcpy/unmap.
-    */
-   int (*bo_get_subdata)(drm_intel_bo *bo, unsigned long offset,
-			 unsigned long size, void *data);
+	/**
+	 * Read data from an object
+	 *
+	 * This is an optional function, if missing,
+	 * drm_intel_bo will map/memcpy/unmap.
+	 */
+	int (*bo_get_subdata) (drm_intel_bo *bo, unsigned long offset,
+			       unsigned long size, void *data);
 
-   /**
-    * Waits for rendering to an object by the GPU to have completed.
-    *
-    * This is not required for any access to the BO by bo_map, bo_subdata, etc.
-    * It is merely a way for the driver to implement glFinish.
-    */
-   void (*bo_wait_rendering)(drm_intel_bo *bo);
+	/**
+	 * Waits for rendering to an object by the GPU to have completed.
+	 *
+	 * This is not required for any access to the BO by bo_map,
+	 * bo_subdata, etc.  It is merely a way for the driver to implement
+	 * glFinish.
+	 */
+	void (*bo_wait_rendering) (drm_intel_bo *bo);
 
-   /**
-    * Tears down the buffer manager instance.
-    */
-   void (*destroy)(drm_intel_bufmgr *bufmgr);
+	/**
+	 * Tears down the buffer manager instance.
+	 */
+	void (*destroy) (drm_intel_bufmgr *bufmgr);
 
-    /**
-     * Add relocation entry in reloc_buf, which will be updated with the
-     * target buffer's real offset on on command submission.
-     *
-     * Relocations remain in place for the lifetime of the buffer object.
-     *
-     * \param bo Buffer to write the relocation into.
-     * \param offset Byte offset within reloc_bo of the pointer to target_bo.
-     * \param target_bo Buffer whose offset should be written into the
-     *                  relocation entry.
-     * \param target_offset Constant value to be added to target_bo's offset in
-     *	                    relocation entry.
-     * \param read_domains GEM read domains which the buffer will be read into
-     *	      by the command that this relocation is part of.
-     * \param write_domains GEM read domains which the buffer will be dirtied
-     *	      in by the command that this relocation is part of.
-     */
-    int (*bo_emit_reloc)(drm_intel_bo *bo, uint32_t offset,
-			 drm_intel_bo *target_bo, uint32_t target_offset,
-			 uint32_t read_domains, uint32_t write_domain);
+	/**
+	 * Add relocation entry in reloc_buf, which will be updated with the
+	 * target buffer's real offset on on command submission.
+	 *
+	 * Relocations remain in place for the lifetime of the buffer object.
+	 *
+	 * \param bo Buffer to write the relocation into.
+	 * \param offset Byte offset within reloc_bo of the pointer to
+	 *			target_bo.
+	 * \param target_bo Buffer whose offset should be written into the
+	 *                  relocation entry.
+	 * \param target_offset Constant value to be added to target_bo's
+	 *			offset in relocation entry.
+	 * \param read_domains GEM read domains which the buffer will be
+	 *			read into by the command that this relocation
+	 *			is part of.
+	 * \param write_domains GEM read domains which the buffer will be
+	 *			dirtied in by the command that this
+	 *			relocation is part of.
+	 */
+	int (*bo_emit_reloc) (drm_intel_bo *bo, uint32_t offset,
+			      drm_intel_bo *target_bo, uint32_t target_offset,
+			      uint32_t read_domains, uint32_t write_domain);
 
-    /** Executes the command buffer pointed to by bo. */
-    int (*bo_exec)(drm_intel_bo *bo, int used,
-		   drm_clip_rect_t *cliprects, int num_cliprects,
-		   int DR4);
+	/** Executes the command buffer pointed to by bo. */
+	int (*bo_exec) (drm_intel_bo *bo, int used,
+			drm_clip_rect_t *cliprects, int num_cliprects,
+			int DR4);
 
-    /**
-     * Pin a buffer to the aperture and fix the offset until unpinned
-     *
-     * \param buf Buffer to pin
-     * \param alignment Required alignment for aperture, in bytes
-     */
-    int (*bo_pin)(drm_intel_bo *bo, uint32_t alignment);
-    /**
-     * Unpin a buffer from the aperture, allowing it to be removed
-     *
-     * \param buf Buffer to unpin
-     */
-    int (*bo_unpin)(drm_intel_bo *bo);
-    /**
-     * Ask that the buffer be placed in tiling mode
-     *
-     * \param buf Buffer to set tiling mode for
-     * \param tiling_mode desired, and returned tiling mode
-     */
-    int (*bo_set_tiling)(drm_intel_bo *bo, uint32_t *tiling_mode,
-			 uint32_t stride);
-    /**
-     * Get the current tiling (and resulting swizzling) mode for the bo.
-     *
-     * \param buf Buffer to get tiling mode for
-     * \param tiling_mode returned tiling mode
-     * \param swizzle_mode returned swizzling mode
-     */
-    int (*bo_get_tiling)(drm_intel_bo *bo, uint32_t *tiling_mode,
-			 uint32_t *swizzle_mode);
-    /**
-     * Create a visible name for a buffer which can be used by other apps
-     *
-     * \param buf Buffer to create a name for
-     * \param name Returned name
-     */
-    int (*bo_flink)(drm_intel_bo *bo, uint32_t *name);
+	/**
+	 * Pin a buffer to the aperture and fix the offset until unpinned
+	 *
+	 * \param buf Buffer to pin
+	 * \param alignment Required alignment for aperture, in bytes
+	 */
+	int (*bo_pin) (drm_intel_bo *bo, uint32_t alignment);
 
-    /**
-     * Returns 1 if mapping the buffer for write could cause the process
-     * to block, due to the object being active in the GPU.
-     */
-    int (*bo_busy)(drm_intel_bo *bo);
+	/**
+	 * Unpin a buffer from the aperture, allowing it to be removed
+	 *
+	 * \param buf Buffer to unpin
+	 */
+	int (*bo_unpin) (drm_intel_bo *bo);
 
-    int (*check_aperture_space)(drm_intel_bo **bo_array, int count);
+	/**
+	 * Ask that the buffer be placed in tiling mode
+	 *
+	 * \param buf Buffer to set tiling mode for
+	 * \param tiling_mode desired, and returned tiling mode
+	 */
+	int (*bo_set_tiling) (drm_intel_bo *bo, uint32_t * tiling_mode,
+			      uint32_t stride);
 
-    /**
-     * Disable buffer reuse for buffers which will be shared in some way,
-     * as with scanout buffers. When the buffer reference count goes to zero,
-     * it will be freed and not placed in the reuse list.
-     *
-     * \param bo Buffer to disable reuse for
-     */
-    int (*bo_disable_reuse)(drm_intel_bo *bo);
+	/**
+	 * Get the current tiling (and resulting swizzling) mode for the bo.
+	 *
+	 * \param buf Buffer to get tiling mode for
+	 * \param tiling_mode returned tiling mode
+	 * \param swizzle_mode returned swizzling mode
+	 */
+	int (*bo_get_tiling) (drm_intel_bo *bo, uint32_t * tiling_mode,
+			      uint32_t * swizzle_mode);
 
-    /**
-     *
-     * Return the pipe associated with a crtc_id so that vblank
-     * synchronization can use the correct data in the request.
-     * This is only supported for KMS and gem at this point, when
-     * unsupported, this function returns -1 and leaves the decision
-     * of what to do in that case to the caller
-     *
-     * \param bufmgr the associated buffer manager
-     * \param crtc_id the crtc identifier
-     */
-    int (*get_pipe_from_crtc_id)(drm_intel_bufmgr *bufmgr, int crtc_id);
+	/**
+	 * Create a visible name for a buffer which can be used by other apps
+	 *
+	 * \param buf Buffer to create a name for
+	 * \param name Returned name
+	 */
+	int (*bo_flink) (drm_intel_bo *bo, uint32_t * name);
 
-   /** Returns true if target_bo is in the relocation tree rooted at bo. */
-    int (*bo_references)(drm_intel_bo *bo, drm_intel_bo *target_bo);
+	/**
+	 * Returns 1 if mapping the buffer for write could cause the process
+	 * to block, due to the object being active in the GPU.
+	 */
+	int (*bo_busy) (drm_intel_bo *bo);
 
-    int debug; /**< Enables verbose debugging printouts */
+	int (*check_aperture_space) (drm_intel_bo ** bo_array, int count);
+
+	/**
+	 * Disable buffer reuse for buffers which will be shared in some way,
+	 * as with scanout buffers. When the buffer reference count goes to
+	 * zero, it will be freed and not placed in the reuse list.
+	 *
+	 * \param bo Buffer to disable reuse for
+	 */
+	int (*bo_disable_reuse) (drm_intel_bo *bo);
+
+	/**
+	 *
+	 * Return the pipe associated with a crtc_id so that vblank
+	 * synchronization can use the correct data in the request.
+	 * This is only supported for KMS and gem at this point, when
+	 * unsupported, this function returns -1 and leaves the decision
+	 * of what to do in that case to the caller
+	 *
+	 * \param bufmgr the associated buffer manager
+	 * \param crtc_id the crtc identifier
+	 */
+	int (*get_pipe_from_crtc_id) (drm_intel_bufmgr *bufmgr, int crtc_id);
+
+	/** Returns true if target_bo is in the relocation tree rooted at bo. */
+	int (*bo_references) (drm_intel_bo *bo, drm_intel_bo *target_bo);
+
+	/**< Enables verbose debugging printouts */
+	int debug;
 };
 
 #endif /* INTEL_BUFMGR_PRIV_H */
-

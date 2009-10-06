@@ -40,37 +40,40 @@ typedef struct _drm_intel_bufmgr drm_intel_bufmgr;
 typedef struct _drm_intel_bo drm_intel_bo;
 
 struct _drm_intel_bo {
-    /**
-     * Size in bytes of the buffer object.
-     *
-     * The size may be larger than the size originally requested for the
-     * allocation, such as being aligned to page size.
-     */
-    unsigned long size;
-    /**
-     * Alignment requirement for object
-     *
-     * Used for GTT mapping & pinning the object.
-     */
-    unsigned long align;
+	/**
+	 * Size in bytes of the buffer object.
+	 *
+	 * The size may be larger than the size originally requested for the
+	 * allocation, such as being aligned to page size.
+	 */
+	unsigned long size;
 
-    /**
-     * Card virtual address (offset from the beginning of the aperture) for the
-     * object.  Only valid while validated.
-     */
-    unsigned long offset;
-    /**
-     * Virtual address for accessing the buffer data.  Only valid while mapped.
-     */
-    void *virtual;
+	/**
+	 * Alignment requirement for object
+	 *
+	 * Used for GTT mapping & pinning the object.
+	 */
+	unsigned long align;
 
-    /** Buffer manager context associated with this buffer object */
-    drm_intel_bufmgr *bufmgr;
+	/**
+	 * Card virtual address (offset from the beginning of the aperture)
+	 * for the object.  Only valid while validated.
+	 */
+	unsigned long offset;
 
-    /**
-     * MM-specific handle for accessing object
-     */
-    int handle;
+	/**
+	 * Virtual address for accessing the buffer data.  Only valid while
+	 * mapped.
+	 */
+	void *virtual;
+
+	/** Buffer manager context associated with this buffer object */
+	drm_intel_bufmgr *bufmgr;
+
+	/**
+	 * MM-specific handle for accessing object
+	 */
+	int handle;
 };
 
 drm_intel_bo *drm_intel_bo_alloc(drm_intel_bufmgr *bufmgr, const char *name,
@@ -85,28 +88,27 @@ int drm_intel_bo_map(drm_intel_bo *bo, int write_enable);
 int drm_intel_bo_unmap(drm_intel_bo *bo);
 
 int drm_intel_bo_subdata(drm_intel_bo *bo, unsigned long offset,
-		     unsigned long size, const void *data);
+			 unsigned long size, const void *data);
 int drm_intel_bo_get_subdata(drm_intel_bo *bo, unsigned long offset,
-			 unsigned long size, void *data);
+			     unsigned long size, void *data);
 void drm_intel_bo_wait_rendering(drm_intel_bo *bo);
 
 void drm_intel_bufmgr_set_debug(drm_intel_bufmgr *bufmgr, int enable_debug);
 void drm_intel_bufmgr_destroy(drm_intel_bufmgr *bufmgr);
 int drm_intel_bo_exec(drm_intel_bo *bo, int used,
-		      drm_clip_rect_t *cliprects, int num_cliprects,
-		      int DR4);
-int drm_intel_bufmgr_check_aperture_space(drm_intel_bo **bo_array, int count);
+		      drm_clip_rect_t * cliprects, int num_cliprects, int DR4);
+int drm_intel_bufmgr_check_aperture_space(drm_intel_bo ** bo_array, int count);
 
 int drm_intel_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 			    drm_intel_bo *target_bo, uint32_t target_offset,
 			    uint32_t read_domains, uint32_t write_domain);
 int drm_intel_bo_pin(drm_intel_bo *bo, uint32_t alignment);
 int drm_intel_bo_unpin(drm_intel_bo *bo);
-int drm_intel_bo_set_tiling(drm_intel_bo *bo, uint32_t *tiling_mode,
+int drm_intel_bo_set_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 			    uint32_t stride);
-int drm_intel_bo_get_tiling(drm_intel_bo *bo, uint32_t *tiling_mode,
-			uint32_t *swizzle_mode);
-int drm_intel_bo_flink(drm_intel_bo *bo, uint32_t *name);
+int drm_intel_bo_get_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
+			    uint32_t * swizzle_mode);
+int drm_intel_bo_flink(drm_intel_bo *bo, uint32_t * name);
 int drm_intel_bo_busy(drm_intel_bo *bo);
 
 int drm_intel_bo_disable_reuse(drm_intel_bo *bo);
@@ -129,26 +131,29 @@ drm_intel_bufmgr *drm_intel_bufmgr_fake_init(int fd,
 					     unsigned long low_offset,
 					     void *low_virtual,
 					     unsigned long size,
-					     volatile unsigned int *last_dispatch);
+					     volatile unsigned int
+					     *last_dispatch);
 void drm_intel_bufmgr_fake_set_last_dispatch(drm_intel_bufmgr *bufmgr,
-					     volatile unsigned int *last_dispatch);
+					     volatile unsigned int
+					     *last_dispatch);
 void drm_intel_bufmgr_fake_set_exec_callback(drm_intel_bufmgr *bufmgr,
-					     int (*exec)(drm_intel_bo *bo,
-							 unsigned int used,
-							 void *priv),
+					     int (*exec) (drm_intel_bo *bo,
+							  unsigned int used,
+							  void *priv),
 					     void *priv);
 void drm_intel_bufmgr_fake_set_fence_callback(drm_intel_bufmgr *bufmgr,
-					      unsigned int (*emit)(void *priv),
-					      void (*wait)(unsigned int fence,
-							   void *priv),
+					      unsigned int (*emit) (void *priv),
+					      void (*wait) (unsigned int fence,
+							    void *priv),
 					      void *priv);
 drm_intel_bo *drm_intel_bo_fake_alloc_static(drm_intel_bufmgr *bufmgr,
 					     const char *name,
-					     unsigned long offset, unsigned long size,
-					     void *virtual);
+					     unsigned long offset,
+					     unsigned long size, void *virtual);
 void drm_intel_bo_fake_disable_backing_store(drm_intel_bo *bo,
-					     void (*invalidate_cb)(drm_intel_bo *bo,
-								   void *ptr),
+					     void (*invalidate_cb) (drm_intel_bo
+								    * bo,
+								    void *ptr),
 					     void *ptr);
 
 void drm_intel_bufmgr_fake_contended_lock_take(drm_intel_bufmgr *bufmgr);
@@ -174,8 +179,8 @@ void drm_intel_bufmgr_fake_evict_all(drm_intel_bufmgr *bufmgr);
 #define dri_bo_emit_reloc(reloc_bo, read, write, target_offset,		\
 			  reloc_offset, target_bo)			\
 	drm_intel_bo_emit_reloc(reloc_bo, reloc_offset,			\
-			    target_bo, target_offset,			\
-			    read, write);
+				target_bo, target_offset,		\
+				read, write);
 #define dri_bo_pin drm_intel_bo_pin
 #define dri_bo_unpin drm_intel_bo_unpin
 #define dri_bo_get_tiling drm_intel_bo_get_tiling
@@ -196,4 +201,3 @@ void drm_intel_bufmgr_fake_evict_all(drm_intel_bufmgr *bufmgr);
 /** @{ */
 
 #endif /* INTEL_BUFMGR_H */
-

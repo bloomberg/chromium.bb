@@ -42,7 +42,9 @@
 
 #define HAS_ATOMIC_OPS 1
 
-typedef struct { int atomic; } atomic_t;
+typedef struct {
+	int atomic;
+} atomic_t;
 
 # define atomic_read(x) ((x)->atomic)
 # define atomic_set(x, val) ((x)->atomic = (val))

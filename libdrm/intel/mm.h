@@ -21,23 +21,21 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-
 /**
  * Memory manager code.  Primarily used by device drivers to manage texture
  * heaps, etc.
  */
 
-
 #ifndef MM_H
 #define MM_H
 
 struct mem_block {
-   struct mem_block *next, *prev;
-   struct mem_block *next_free, *prev_free;
-   struct mem_block *heap;
-   int ofs,size;
-   unsigned int free:1;
-   unsigned int reserved:1;
+	struct mem_block *next, *prev;
+	struct mem_block *next_free, *prev_free;
+	struct mem_block *heap;
+	int ofs, size;
+	unsigned int free:1;
+	unsigned int reserved:1;
 };
 
 /* Rename the variables in the drm copy of this code so that it doesn't
@@ -67,7 +65,7 @@ extern struct mem_block *mmInit(int ofs, int size);
  * return: pointer to the allocated block, 0 if error
  */
 extern struct mem_block *mmAllocMem(struct mem_block *heap, int size,
-				       int align2, int startSearch);
+				    int align2, int startSearch);
 
 /**
  * Free block starts at offset
