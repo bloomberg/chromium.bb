@@ -51,7 +51,7 @@ static const wchar_t kURLSwitch[] = L"main-menu-url";
 static const wchar_t kMenuSizeSwitch[] = L"main-menu-size";
 
 // URL of the page to load. This is ignored if kURLSwitch is specified.
-static const char kMenuURL[] = "http://goto.ext.google.com/crux-menu";
+static const char kMenuURL[] = "http://goto.ext.google.com/crux-home";
 
 // Returns the size of the popup. By default the popup is sized slightly
 // larger than full screen, but can be overriden by the command line switch
