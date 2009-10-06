@@ -444,6 +444,7 @@ gfx::Size ToolbarView::GetPreferredSize() {
         (home_->GetPreferredSize().width() + kControlHorizOffset) : 0) +
         star_->GetPreferredSize().width() + go_->GetPreferredSize().width() +
         kMenuButtonOffset +
+        browser_actions_->GetPreferredSize().width() +
         (bookmark_menu_ ? bookmark_menu_->GetPreferredSize().width() : 0) +
         page_menu_->GetPreferredSize().width() +
         app_menu_->GetPreferredSize().width() + kPaddingRight;
@@ -532,15 +533,14 @@ void ToolbarView::Layout() {
 
   int next_menu_x = go_->x() + go_->width() + kMenuButtonOffset;
 
+  browser_actions_->SetBounds(next_menu_x, 0, browser_actions_width, height());
+  next_menu_x += browser_actions_width;
+
   if (bookmark_menu_) {
     bookmark_menu_->SetBounds(next_menu_x, child_y, bookmark_menu_width,
                               child_height);
     next_menu_x += bookmark_menu_width;
   }
-
-  browser_actions_->SetBounds(
-      next_menu_x, 0, browser_actions_width, height());
-  next_menu_x += browser_actions_width;
 
   page_menu_->SetBounds(next_menu_x, child_y, page_menu_width, child_height);
   next_menu_x += page_menu_width;
