@@ -448,6 +448,8 @@
     enable = YES;
   } else if (action == @selector(orderFrontStandardAboutPanel:)) {
     enable = YES;
+  } else if (action == @selector(newWindowFromDock:)) {
+    enable = YES;
   }
   return enable;
 }
@@ -667,12 +669,18 @@
   [aboutController_ showWindow:self];
 }
 
+// Explicitly bring to the foreground when creating new windows from the dock.
+- (void)newWindowFromDock:(id)sender {
+  [NSApp activateIgnoringOtherApps:YES];
+  [self commandDispatch:sender];
+}
+
 - (NSMenu*)applicationDockMenu:(id)sender {
   NSMenu* dockMenu = [[[NSMenu alloc] initWithTitle: @""] autorelease];
   NSString* titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_WINDOW_MAC);
   scoped_nsobject<NSMenuItem> item([[NSMenuItem alloc]
                                        initWithTitle:titleStr
-                                              action:@selector(commandDispatch:)
+                                       action:@selector(newWindowFromDock:)
                                        keyEquivalent:@""]);
   [item setTarget:self];
   [item setTag:IDC_NEW_WINDOW];
@@ -680,7 +688,7 @@
 
   titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_INCOGNITO_WINDOW_MAC);
   item.reset([[NSMenuItem alloc] initWithTitle:titleStr
-                                        action:@selector(commandDispatch:)
+                                 action:@selector(newWindowFromDock:)
                                  keyEquivalent:@""]);
   [item setTarget:self];
   [item setTag:IDC_NEW_INCOGNITO_WINDOW];
