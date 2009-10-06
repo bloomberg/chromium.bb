@@ -7,6 +7,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/render_messages.h"
 
 namespace extension_browser_actions_api_constants {
 
@@ -44,8 +45,10 @@ bool BrowserActionSetNameFunction::RunImpl() {
 }
 
 bool BrowserActionSetIconFunction::RunImpl() {
-  int icon_index = -1;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetAsInteger(&icon_index));
+  // setIcon can take a variant argument: either a canvas ImageData, or an
+  // icon index.
+  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_BINARY) ||
+                              args_->IsType(Value::TYPE_INTEGER));
 
   Extension* extension = dispatcher()->GetExtension();
   if (!extension->browser_action()) {
@@ -53,7 +56,19 @@ bool BrowserActionSetIconFunction::RunImpl() {
     return false;
   }
 
-  extension->browser_action_state()->set_icon_index(icon_index);
+  if (args_->IsType(Value::TYPE_BINARY)) {
+    BinaryValue* binary = static_cast<BinaryValue*>(args_);
+    IPC::Message bitmap_pickle(binary->GetBuffer(), binary->GetSize());
+    void* iter = NULL;
+    scoped_ptr<SkBitmap> bitmap(new SkBitmap);
+    EXTENSION_FUNCTION_VALIDATE(
+        IPC::ReadParam(&bitmap_pickle, &iter, bitmap.get()));
+    extension->browser_action_state()->set_icon(bitmap.release());
+  } else {
+    int icon_index = -1;
+    EXTENSION_FUNCTION_VALIDATE(args_->GetAsInteger(&icon_index));
+    extension->browser_action_state()->set_icon_index(icon_index);
+  }
 
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,

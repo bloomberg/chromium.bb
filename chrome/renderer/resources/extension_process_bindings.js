@@ -21,6 +21,7 @@ var chrome = chrome || {};
   native function OpenChannelToTab();
   native function GetRenderViewId();
   native function GetL10nMessage();
+  native function SetBrowserActionIcon();
 
   if (!chrome)
     chrome = {};
@@ -175,6 +176,16 @@ var chrome = chrome || {};
                         request.callback ? true : false);
   }
 
+  // Send a special API request that is not JSON stringifiable, and optionally
+  // register a callback.
+  function sendCustomRequest(nativeFunction, functionName, args, argSchemas) {
+    var request = prepareRequest(args, argSchemas);
+    var requestId = GetNextRequestId();
+    requests[requestId] = request;
+    return nativeFunction(functionName, args, requestId,
+                          request.callback ? true : false);
+  }
+
   function bind(obj, func) {
     return function() {
       return func.apply(obj, arguments);
@@ -327,6 +338,16 @@ var chrome = chrome || {};
     apiFunctions["i18n.getMessage"].handleRequest =
         function(message_name, placeholders) {
       return GetL10nMessage(message_name, placeholders);
+    }
+
+    apiFunctions["browserAction.setIcon"].handleRequest =
+        function(idOrImageData) {
+      if (typeof(idOrImageData) == "number") {
+        sendRequest(this.name, arguments, this.definition.parameters);
+      } else if (typeof(idOrImageData) == "object") {
+        sendCustomRequest(SetBrowserActionIcon, "browserAction.setIcon",
+                          idOrImageData, this.definition.parameters);
+      }
     }
 
     setupPageActionEvents(extensionId);

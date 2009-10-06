@@ -23,6 +23,7 @@
 #include "chrome/renderer/render_view.h"
 #include "grit/common_resources.h"
 #include "grit/renderer_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebKit.h"
@@ -140,6 +141,8 @@ class ExtensionImpl : public ExtensionBase {
       return v8::FunctionTemplate::New(GetRenderViewId);
     } else if (name->Equals(v8::String::New("GetL10nMessage"))) {
       return v8::FunctionTemplate::New(GetL10nMessage);
+    } else if (name->Equals(v8::String::New("SetBrowserActionIcon"))) {
+      return v8::FunctionTemplate::New(SetBrowserActionIcon);
     }
 
     return ExtensionBase::GetNativeFunction(name);
@@ -330,17 +333,14 @@ class ExtensionImpl : public ExtensionBase {
         UTF8ToUTF16(message), substitutions, NULL)).c_str());
   }
 
-  // Starts an API request to the browser, with an optional callback.  The
-  // callback will be dispatched to EventBindings::HandleResponse.
-  static v8::Handle<v8::Value> StartRequest(const v8::Arguments& args) {
+  // Common code for starting an API request to the browser. |value_args|
+  // contains the request's arguments.
+  static v8::Handle<v8::Value> StartRequestCommon(
+      const v8::Arguments& args, Value* value_args) {
     // Get the current RenderView so that we can send a routed IPC message from
     // the correct source.
     RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
     if (!renderview)
-      return v8::Undefined();
-
-    if (args.Length() != 4 || !args[0]->IsString() || !args[1]->IsString() ||
-        !args[2]->IsInt32() || !args[3]->IsBoolean())
       return v8::Undefined();
 
     std::string name = *v8::String::AsciiValue(args[0]);
@@ -353,24 +353,13 @@ class ExtensionImpl : public ExtensionBase {
       return ExtensionProcessBindings::ThrowPermissionDeniedException(name);
     }
 
-    std::string str_args = *v8::String::Utf8Value(args[1]);
     int request_id = args[2]->Int32Value();
     bool has_callback = args[3]->BooleanValue();
 
-    ListValue args_holder;
-    JSONReader reader;
-    Value* json_args = reader.JsonToValue(str_args, false, false);
-
-    // Since we do the serialization in the v8 extension, we should always get
-    // valid JSON.
-    if (!json_args) {
-      NOTREACHED() << "Invalid JSON passed to StartRequest.";
-      return v8::Undefined();
-    }
-
     // Put the args in a 1-element list for easier serialization. Maybe all
     // requests should have a list of args?
-    args_holder.Append(json_args);
+    ListValue args_holder;
+    args_holder.Append(value_args);
 
     v8::Persistent<v8::Context> current_context =
         v8::Persistent<v8::Context>::New(v8::Context::GetCurrent());
@@ -382,6 +371,64 @@ class ExtensionImpl : public ExtensionBase {
                                      request_id, has_callback);
 
     return v8::Undefined();
+  }
+
+  // Starts an API request to the browser, with an optional callback.  The
+  // callback will be dispatched to EventBindings::HandleResponse.
+  static v8::Handle<v8::Value> StartRequest(const v8::Arguments& args) {
+    std::string str_args = *v8::String::Utf8Value(args[1]);
+    JSONReader reader;
+    Value* value_args = reader.JsonToValue(str_args, false, false);
+
+    // Since we do the serialization in the v8 extension, we should always get
+    // valid JSON.
+    if (!value_args) {
+      NOTREACHED() << "Invalid JSON passed to StartRequest.";
+      return v8::Undefined();
+    }
+
+    return StartRequestCommon(args, value_args);
+  }
+
+  // A special request for setting the browser action icon. This function
+  // accepts a canvas ImageData object, so it needs to do extra processing
+  // before sending the request to the browser.
+  static v8::Handle<v8::Value> SetBrowserActionIcon(const v8::Arguments& args) {
+    v8::Local<v8::Object> image_data = args[1]->ToObject();
+    v8::Local<v8::Object> data =
+        image_data->Get(v8::String::New("data"))->ToObject();
+    int width = image_data->Get(v8::String::New("width"))->Int32Value();
+    int height = image_data->Get(v8::String::New("height"))->Int32Value();
+
+    int data_length = data->Get(v8::String::New("length"))->Int32Value();
+    if (data_length != 4 * width * height) {
+      NOTREACHED() <<
+          "Invalid argument to browserAction.setIcon. Expecting ImageData.";
+      return v8::Undefined();
+    }
+
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
+    bitmap.allocPixels();
+    bitmap.eraseARGB(0, 0, 0, 0);
+
+    uint32_t* pixels = bitmap.getAddr32(0, 0);
+    for (int t = 0; t < width*height; t++) {
+      // |data| is RGBA, pixels is ARGB.
+      pixels[t] =
+          ((data->Get(v8::Integer::New(4*t + 3))->Int32Value() & 0xFF) << 24) |
+          ((data->Get(v8::Integer::New(4*t + 0))->Int32Value() & 0xFF) << 16) |
+          ((data->Get(v8::Integer::New(4*t + 1))->Int32Value() & 0xFF) << 8) |
+          ((data->Get(v8::Integer::New(4*t + 2))->Int32Value() & 0xFF) << 0);
+    }
+
+    // Construct the Value object.
+    IPC::Message bitmap_pickle;
+    IPC::WriteParam(&bitmap_pickle, bitmap);
+    Value* bitmap_value = BinaryValue::CreateWithCopiedBuffer(
+        static_cast<const char*>(bitmap_pickle.data()), bitmap_pickle.size());
+
+    return StartRequestCommon(args, bitmap_value);
   }
 
   static v8::Handle<v8::Value> GetRenderViewId(const v8::Arguments& args) {

@@ -160,7 +160,9 @@ void BrowserActionImageView::OnImageLoaded(SkBitmap* image, size_t index) {
 }
 
 void BrowserActionImageView::OnStateUpdated() {
-  SkBitmap* image = &browser_action_icons_[browser_action_state_->icon_index()];
+  SkBitmap* image = browser_action_state_->icon();
+  if (!image)
+    image = &browser_action_icons_[browser_action_state_->icon_index()];
   SetIcon(*image);
   SetTooltipText(ASCIIToWide(browser_action_state_->title()));
   panel_->OnBrowserActionVisibilityChanged();

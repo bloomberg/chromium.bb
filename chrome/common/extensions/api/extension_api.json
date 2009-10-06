@@ -819,7 +819,21 @@
         "type": "function",
         "description": "Sets the icon for the browser action. Can be up to about 22px square.",
         "parameters": [
-          {"type": "integer", "name": "iconId", "minimum": 0, "optional": true, "description": "A zero-based index into the |icons| vector specified in the manifest. This id is useful to represent different browser action states.  Example: A GMail checker could have a 'new email' icon and a 'no unread email' icon."}
+          {
+            "name": "iconId",
+            "description": "An ImageData object from a canvas element, or a zero-based index into the |icons| vector specified in the manifest. This is useful to represent different browser action states.  Example: A GMail checker could have a 'new email' icon and a 'no unread email' icon.",
+            "choices": [
+              {"type": "integer", "minimum": 0},
+              {
+                "type": "object",
+                "properties": {
+                  "width": {"type": "integer", "description": "The image's width."},
+                  "height": {"type": "integer", "description": "The image's height."},
+                  "data": {"type": "any", "description": "The pixel data. Must be a CanvasPixelArray, with 32 bits per pixel and size equal to 4*width*height."}
+                }
+              }
+            ]
+          }
         ]
       },
       {

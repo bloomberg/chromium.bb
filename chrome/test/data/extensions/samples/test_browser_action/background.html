@@ -2,12 +2,34 @@
 <head>
 <script>
   // Called when the user clicks on the browser action.
-  var i = 1;
+  var i = 0;
   chrome.browserAction.onClicked.addListener(function(windowId) {
-    chrome.browserAction.setName("Ouch" + i); i++;
-    chrome.browserAction.setIcon(i % 2);
+    i++;
+    chrome.browserAction.setName("Ouch" + i);
+    if (i < 4) {
+      chrome.browserAction.setIcon(i % 2);
+    } else {
+      var image = draw(i * 2, i * 4);
+      chrome.browserAction.setIcon(image);
+    }
   });
+
+  function draw(starty, startx) {
+    var canvas = document.getElementById('canvas');
+    var context = canvas.getContext('2d');
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = "rgba(0,200,0,255)";
+    context.fillRect(startx % 20, starty % 20, 8, 8);
+    context.fillStyle = "rgba(0,0,200,255)";
+    context.fillRect((startx + 5) % 20, (starty + 5) % 20, 8, 8);
+    context.fillStyle = "rgba(200,0,0,255)";
+    context.fillRect((startx + 10) % 20, (starty + 10) % 20, 8, 8);
+    return context.getImageData(0, 0, 20, 20);
+  }
 </script>
 </head>
+<body>
+<canvas id="canvas" width="20" height="20"></canvas>
+</body>
 </html>
 

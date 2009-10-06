@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class ExtensionAction {
@@ -111,6 +112,9 @@ class ExtensionActionState {
   int icon_index() const { return icon_index_; }
   void set_icon_index(int icon_index) { icon_index_ = icon_index; }
 
+  SkBitmap* icon() const { return icon_.get(); }
+  void set_icon(SkBitmap* icon) { icon_.reset(icon); }
+
  private:
   // The title to use.
   std::string title_;
@@ -118,7 +122,10 @@ class ExtensionActionState {
   // The icon to use.
   int icon_index_;
 
-  // The badge text.
+  // If non-NULL, overrides icon_index.
+  scoped_ptr<SkBitmap> icon_;
+
+    // The badge text.
   std::string badge_text_;
 
   // The background color for the badge.
