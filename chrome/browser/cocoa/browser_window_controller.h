@@ -67,6 +67,7 @@ class TabStripModelObserverBridge;
   scoped_ptr<StatusBubble> statusBubble_;
   scoped_nsobject<DownloadShelfController> downloadShelfController_;
   scoped_nsobject<ExtensionShelfController> extensionShelfController_;
+  scoped_nsobject<BookmarkBarController> bookmarkBarController_;
   scoped_nsobject<BookmarkBubbleController> bookmarkBubbleController_;
   scoped_nsobject<GTMTheme> theme_;
   BOOL ownsBrowser_;  // Only ever NO when testing
@@ -113,7 +114,8 @@ class TabStripModelObserverBridge;
 
 - (BOOL)isBookmarkBarVisible;
 
-- (void)toggleBookmarkBar;
+// Called after the visibility perf changed.
+- (void)updateBookmarkBarVisibility;
 
 - (BOOL)isDownloadShelfVisible;
 

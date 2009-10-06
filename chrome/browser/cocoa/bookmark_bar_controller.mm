@@ -19,8 +19,10 @@
 #import "chrome/browser/cocoa/bookmark_menu_cocoa_controller.h"
 #import "chrome/browser/cocoa/event_utils.h"
 #import "chrome/browser/cocoa/menu_button.h"
+#import "chrome/browser/cocoa/toolbar_controller.h"
 #import "chrome/browser/cocoa/view_resizer.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "grit/generated_resources.h"
@@ -45,12 +47,16 @@
 - (void)addFolderNode:(const BookmarkNode*)node toMenu:(NSMenu*)menu;
 - (void)tagEmptyMenu:(NSMenu*)menu;
 - (void)clearMenuTagMap;
+- (int)preferredHeight;
 @end
 
 namespace {
 
-// Our height, when opened.
+// Our height, when opened in "always visible" mode.
 const int kBookmarkBarHeight = 28;
+
+// Our height, when visible in "new tab page" mode.
+const int kNTPBookmarkBarHeight = 40;
 
 // Magic numbers from Cole
 const CGFloat kDefaultBookmarkWidth = 150.0;
@@ -61,18 +67,22 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 
 @implementation BookmarkBarController
 
-- (id)initWithProfile:(Profile*)profile
+- (id)initWithBrowser:(Browser*)browser
          initialWidth:(float)initialWidth
+     compressDelegate:(id<ToolbarCompressable>)compressDelegate
        resizeDelegate:(id<ViewResizer>)resizeDelegate
           urlDelegate:(id<BookmarkURLOpener>)urlDelegate {
   if ((self = [super initWithNibName:@"BookmarkBar"
                               bundle:mac_util::MainAppBundle()])) {
-    profile_ = profile;
+    browser_ = browser;
     initialWidth_ = initialWidth;
-    bookmarkModel_ = profile->GetBookmarkModel();
+    bookmarkModel_ = browser_->profile()->GetBookmarkModel();
     buttons_.reset([[NSMutableArray alloc] init]);
+    compressDelegate_ = compressDelegate;
     resizeDelegate_ = resizeDelegate;
     urlDelegate_ = urlDelegate;
+    tabObserver_.reset(
+        new TabStripModelObserverBridge(browser_->tabstrip_model(), self));
   }
   return self;
 }
@@ -110,8 +120,13 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   DCHECK([offTheSideButton_ attachedMenu]);
 }
 
+// Method is the same as [self view], but is provided to be explicit.
+- (BackgroundGradientView*)backgroundGradientView {
+  return (BackgroundGradientView*)[self view];
+}
+
 - (void)showIfNeeded {
-  if (profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))
+  if (browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))
     [self showBookmarkBar:YES immediately:YES];
 }
 
@@ -140,50 +155,48 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   [self checkHideOffTheSideButton];
 }
 
-// Show or hide the bar based on the value of |show|. Handles
-// animating the resize of the content view.  if |immediately| is YES,
-// make changes immediately instead of using an animator.  If the bar
-// is disabled, do absolutely nothing.  The routine which enables the
-// bar will show it if relevant using other mechanisms (the pref) to
-// determine desired state.
+// Show or hide the bar based on the value of |show|. Handles animating the
+// resize of the content view.  if |immediately| is YES, make changes
+// immediately instead of using an animator. The routine which enables the bar
+// will show it if relevant using other mechanisms (the pref) to determine
+// desired state.
 - (void)showBookmarkBar:(BOOL)show immediately:(BOOL)immediately {
-  if (barIsEnabled_ && (barShouldBeShown_ != show)) {
-    if ([self view]) {
-      [[self view] setHidden:show ? NO : YES];
-      [resizeDelegate_ resizeView:[self view]
-                       newHeight:(show ? kBookmarkBarHeight : 0)];
-    }
-    barShouldBeShown_ = show;
-    if (show) {
-      [self loaded:bookmarkModel_];
-    }
-  }
-}
+  BOOL compressed = [self isAlwaysVisible];
+  [compressDelegate_ setShouldBeCompressed:compressed];
 
-- (BOOL)isBookmarkBarVisible {
-  return barShouldBeShown_;
+  CGFloat height = show ? [self preferredHeight] : 0;
+  [resizeDelegate_ resizeView:[self view] newHeight:height];
+  [[self view] setHidden:show ? NO : YES];
 }
 
 // We don't change a preference; we only change visibility.
 // Preference changing (global state) is handled in
-// BrowserWindowCocoa::ToggleBookmarkBar().
-- (void)toggleBookmarkBar {
-  [self showBookmarkBar:!barShouldBeShown_ immediately:YES];
+// BrowserWindowCocoa::ToggleBookmarkBar(). We simply update the visibility of
+// the bar based on the current value of the pref.
+- (void)updateVisibility {
+  [self showBookmarkBar:[self isVisible] immediately:YES];
 }
 
 - (void)setBookmarkBarEnabled:(BOOL)enabled {
-  if (enabled) {
-    // Enabling the bar; set enabled then show if needed.
-    barIsEnabled_ = YES;
-    if (profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))
-      [self showBookmarkBar:YES immediately:YES];
-  } else {
-    // Disabling the bar; hide if visible.
-    if ([self isBookmarkBarVisible]) {
-      [self showBookmarkBar:NO immediately:YES];
-    }
-    barIsEnabled_ = NO;
-  }
+  barIsEnabled_ = enabled ? YES : NO;
+  [self updateVisibility];
+}
+
+- (BOOL)isVisible {
+  return ([self isAlwaysVisible] && barIsEnabled_) || [self isNewTabPage];
+}
+
+- (BOOL)isNewTabPage {
+  return browser_ && browser_->GetSelectedTabContents() &&
+      browser_->GetSelectedTabContents()->ShouldShowBookmarkBar();
+}
+
+- (BOOL)isAlwaysVisible {
+  return browser_ && browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+}
+
+- (BOOL)drawAsFloatingBar {
+  return ![self isAlwaysVisible] && [self isNewTabPage];
 }
 
 // Return nil if menuItem has no delegate.
@@ -226,6 +239,27 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 - (void)clearMenuTagMap {
   seedId_ = 0;
   menuTagMap_.clear();
+}
+
+- (int)preferredHeight {
+  return [self isAlwaysVisible] ? kBookmarkBarHeight : kNTPBookmarkBarHeight;
+}
+
+- (void)selectTabWithContents:(TabContents*)newContents
+             previousContents:(TabContents*)oldContents
+                      atIndex:(NSInteger)index
+                  userGesture:(bool)wasUserGesture {
+  // We need selectTabWithContents: for when we change from a tab that is the
+  // new tab page to a tab that isn't.
+  [self updateVisibility];
+}
+
+- (void)tabChangedWithContents:(TabContents*)contents
+                       atIndex:(NSInteger)index
+                   loadingOnly:(BOOL)loading {
+  // We need tabChangedWithContents: for when the user clicks a bookmark from
+  // the bookmark bar on the new tab page.
+  [self updateVisibility];
 }
 
 // Recursively add the given bookmark node and all its children to
@@ -382,7 +416,7 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   // for the other platforms but can't find a way to trigger it in the
   // UI.
   BookmarkEditor::Show([[[self view] window] contentView],
-                       profile_,
+                       browser_->profile(),
                        node->GetParent(),
                        node,
                        BookmarkEditor::SHOW_TREE,
@@ -433,7 +467,7 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   if (!parent)
     parent = bookmarkModel_->GetBookmarkBarNode();
   BookmarkEditor::Show([[[self view] window] contentView],
-                       profile_,
+                       browser_->profile(),
                        parent,
                        nil,
                        BookmarkEditor::SHOW_TREE,
@@ -447,7 +481,7 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   BookmarkNameFolderController* controller =
     [[BookmarkNameFolderController alloc]
       initWithParentWindow:[[self view] window]
-                   profile:profile_
+                   profile:browser_->profile()
                       node:node];
   [controller runAsModalSheet];
 
@@ -610,8 +644,7 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 // TODO(jrg): for now this is brute force.
 - (void)loaded:(BookmarkModel*)model {
   DCHECK(model == bookmarkModel_);
-  // Do nothing if not active or too early
-  if ((barShouldBeShown_ == NO) || !model->IsLoaded())
+  if (!model->IsLoaded())
     return;
   // Else brute force nuke and build.
   const BookmarkNode* node = model->GetBookmarkBarNode();

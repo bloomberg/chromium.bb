@@ -29,7 +29,7 @@ class DOMUITest : public RenderViewHostTestHarness {
     // Check the things the pending DOM UI should have set.
     EXPECT_FALSE(contents->ShouldDisplayURL());
     EXPECT_FALSE(contents->ShouldDisplayFavIcon());
-    EXPECT_TRUE(contents->IsBookmarkBarAlwaysVisible());
+    EXPECT_TRUE(contents->ShouldShowBookmarkBar());
     EXPECT_TRUE(contents->FocusLocationBarByDefault());
 
     // Now commit the load.
@@ -39,7 +39,7 @@ class DOMUITest : public RenderViewHostTestHarness {
     // The same flags should be set as before now that the load has committed.
     EXPECT_FALSE(contents->ShouldDisplayURL());
     EXPECT_FALSE(contents->ShouldDisplayFavIcon());
-    EXPECT_TRUE(contents->IsBookmarkBarAlwaysVisible());
+    EXPECT_TRUE(contents->ShouldShowBookmarkBar());
     EXPECT_TRUE(contents->FocusLocationBarByDefault());
 
     // Start a pending navigation to a regular page.
@@ -50,7 +50,7 @@ class DOMUITest : public RenderViewHostTestHarness {
     // should reflect the old one (bookmark bar) until it has committed.
     EXPECT_TRUE(contents->ShouldDisplayURL());
     EXPECT_TRUE(contents->ShouldDisplayFavIcon());
-    EXPECT_TRUE(contents->IsBookmarkBarAlwaysVisible());
+    EXPECT_TRUE(contents->ShouldShowBookmarkBar());
     EXPECT_FALSE(contents->FocusLocationBarByDefault());
 
     // Commit the regular page load. Note that we must send it to the "pending"
@@ -70,7 +70,7 @@ class DOMUITest : public RenderViewHostTestHarness {
     // The state should now reflect a regular page.
     EXPECT_TRUE(contents->ShouldDisplayURL());
     EXPECT_TRUE(contents->ShouldDisplayFavIcon());
-    EXPECT_FALSE(contents->IsBookmarkBarAlwaysVisible());
+    EXPECT_FALSE(contents->ShouldShowBookmarkBar());
     EXPECT_FALSE(contents->FocusLocationBarByDefault());
   }
 
@@ -112,7 +112,7 @@ TEST_F(DOMUITest, DOMUIToDOMUI) {
   // The flags should be the same as the non-pending state.
   EXPECT_FALSE(contents()->ShouldDisplayURL());
   EXPECT_FALSE(contents()->ShouldDisplayFavIcon());
-  EXPECT_TRUE(contents()->IsBookmarkBarAlwaysVisible());
+  EXPECT_TRUE(contents()->ShouldShowBookmarkBar());
   EXPECT_TRUE(contents()->FocusLocationBarByDefault());
 }
 
@@ -125,14 +125,14 @@ TEST_F(DOMUITest, StandardToDOMUI) {
   // The state should now reflect the default.
   EXPECT_TRUE(contents()->ShouldDisplayURL());
   EXPECT_TRUE(contents()->ShouldDisplayFavIcon());
-  EXPECT_FALSE(contents()->IsBookmarkBarAlwaysVisible());
+  EXPECT_FALSE(contents()->ShouldShowBookmarkBar());
   EXPECT_FALSE(contents()->FocusLocationBarByDefault());
 
   // Commit the load, the state should be the same.
   rvh()->SendNavigate(1, std_url);
   EXPECT_TRUE(contents()->ShouldDisplayURL());
   EXPECT_TRUE(contents()->ShouldDisplayFavIcon());
-  EXPECT_FALSE(contents()->IsBookmarkBarAlwaysVisible());
+  EXPECT_FALSE(contents()->ShouldShowBookmarkBar());
   EXPECT_FALSE(contents()->FocusLocationBarByDefault());
 
   // The sync service must be created to host the sync NTP advertisement.
@@ -143,7 +143,7 @@ TEST_F(DOMUITest, StandardToDOMUI) {
   controller().LoadURL(new_tab_url, GURL(), PageTransition::LINK);
   EXPECT_FALSE(contents()->ShouldDisplayURL());
   EXPECT_TRUE(contents()->ShouldDisplayFavIcon());
-  EXPECT_FALSE(contents()->IsBookmarkBarAlwaysVisible());
+  EXPECT_FALSE(contents()->ShouldShowBookmarkBar());
   EXPECT_TRUE(contents()->FocusLocationBarByDefault());
 
   // Committing DOM UI is tested above.

@@ -326,7 +326,7 @@ bool BookmarkBarGtk::IsAnimating() {
 
 bool BookmarkBarGtk::OnNewTabPage() {
   return (browser_ && browser_->GetSelectedTabContents() &&
-          browser_->GetSelectedTabContents()->IsBookmarkBarAlwaysVisible());
+          browser_->GetSelectedTabContents()->ShouldShowBookmarkBar());
 }
 
 void BookmarkBarGtk::Loaded(BookmarkModel* model) {

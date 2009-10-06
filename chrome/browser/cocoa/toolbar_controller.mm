@@ -36,7 +36,7 @@ static NSString* const kStarredImageName = @"starred.pdf";
 static const float kBaseToolbarHeight = 36.0;
 
 // Overlap (in pixels) between the toolbar and the bookmark bar.
-static const float kBookmarkBarOverlap = 7.0;
+static const float kBookmarkBarOverlap = 6.0;
 
 @interface ToolbarController(Private)
 - (void)initCommandStatus:(CommandUpdater*)commands;
@@ -90,8 +90,7 @@ class PrefObserverBridge : public NotificationObserver {
            commands:(CommandUpdater*)commands
             profile:(Profile*)profile
             browser:(Browser*)browser
-     resizeDelegate:(id<ViewResizer>)resizeDelegate
-   bookmarkDelegate:(id<BookmarkURLOpener>)delegate {
+     resizeDelegate:(id<ViewResizer>)resizeDelegate {
   DCHECK(model && commands && profile);
   if ((self = [super initWithNibName:@"Toolbar"
                               bundle:mac_util::MainAppBundle()])) {
@@ -100,7 +99,6 @@ class PrefObserverBridge : public NotificationObserver {
     profile_ = profile;
     browser_ = browser;
     resizeDelegate_ = resizeDelegate;
-    bookmarkBarDelegate_ = delegate;
     hasToolbar_ = YES;
 
     // Register for notificaotions about state changes for the toolbar buttons
@@ -145,24 +143,6 @@ class PrefObserverBridge : public NotificationObserver {
                               prefObserver_.get());
   [self showOptionalHomeButton];
   [self showOptionalPageWrenchButtons];
-
-  // Create a sub-controller for the bookmark bar.
-  bookmarkBarController_.reset([[BookmarkBarController alloc]
-                                   initWithProfile:profile_
-                                      initialWidth:NSWidth([[self view] frame])
-                                    resizeDelegate:self
-                                       urlDelegate:bookmarkBarDelegate_]);
-
-  // Add bookmark bar to the view hierarchy.  This also triggers the
-  // nib load.  The bookmark bar is defined (in the nib) to be
-  // bottom-aligned to it's parent view (among other things), so
-  // position and resize properties don't need to be set.
-  [[self view] addSubview:[bookmarkBarController_ view]];
-
-  // We don't want to try and show the bar before it gets placed in
-  // it's parent view, so this step shoudn't be inside the bookmark
-  // bar controller's awakeFromNib.
-  [bookmarkBarController_ showIfNeeded];
 
   // Create the controllers for the back/forward menus.
   backMenuController_.reset([[BackForwardMenuController alloc]
@@ -233,22 +213,6 @@ class PrefObserverBridge : public NotificationObserver {
 
 - (void)mouseEntered:(NSEvent*)event {
   [self mouseMoved:event];
-}
-
-- (void)resizeView:(NSView*)view newHeight:(float)height {
-  DCHECK(view == [bookmarkBarController_ view]);
-
-  // The bookmark bar is always rooted at the bottom of the toolbar view, with
-  // width equal to the toolbar's width.  The toolbar view is resized to
-  // accomodate the new bookmark bar height.
-  NSRect frame = NSMakeRect(0, 0, [[self view] bounds].size.width, height);
-  [view setFrame:frame];
-
-  float newToolbarHeight = kBaseToolbarHeight + height - kBookmarkBarOverlap;
-  if (newToolbarHeight < kBaseToolbarHeight)
-    newToolbarHeight = kBaseToolbarHeight;
-
-  [resizeDelegate_ resizeView:[self view] newHeight:newToolbarHeight];
 }
 
 - (LocationBar*)locationBar {
@@ -349,14 +313,8 @@ class PrefObserverBridge : public NotificationObserver {
   return locationBar_;
 }
 
-- (BookmarkBarController*)bookmarkBarController {
-  // Browser has a FEATURE_BOOKMARKBAR but it is ignored by Safari
-  // when using window.open(); the logic seems to be "if no toolbar,
-  // no bookmark bar".
-  // TODO(jrg): investigate non-Mac Chrome behavior and possibly expand this.
-  if (hasToolbar_ == NO)
-    return nil;
-  return bookmarkBarController_.get();
+- (BackgroundGradientView*)backgroundGradientView {
+  return (BackgroundGradientView*)[super view];
 }
 
 - (id)customFieldEditorForObject:(id)obj {
@@ -465,6 +423,14 @@ class PrefObserverBridge : public NotificationObserver {
 - (NSRect)starButtonInWindowCoordinates {
   return [[[starButton_ window] contentView] convertRect:[starButton_ bounds]
                                                 fromView:starButton_];
+}
+
+- (void)setShouldBeCompressed:(BOOL)compressed {
+  CGFloat newToolbarHeight = kBaseToolbarHeight;
+  if (compressed)
+    newToolbarHeight -= kBookmarkBarOverlap;
+
+  [resizeDelegate_ resizeView:[self view] newHeight:newToolbarHeight];
 }
 
 - (NSString *)view:(NSView *)view

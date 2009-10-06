@@ -753,7 +753,7 @@ bool BookmarkBarView::IsAlwaysShown() const {
 
 bool BookmarkBarView::OnNewTabPage() const {
   return (browser_ && browser_->GetSelectedTabContents() &&
-          browser_->GetSelectedTabContents()->IsBookmarkBarAlwaysVisible());
+          browser_->GetSelectedTabContents()->ShouldShowBookmarkBar());
 }
 
 int BookmarkBarView::GetToolbarOverlap(bool return_max) {

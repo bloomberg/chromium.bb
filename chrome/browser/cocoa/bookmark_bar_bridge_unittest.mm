@@ -33,9 +33,10 @@ typedef std::pair<GURL,WindowOpenDisposition> OpenInfo;
 
 @implementation FakeBookmarkBarController
 
-- (id)initWithProfile:(Profile*)profile {
-  if ((self = [super initWithProfile:profile
+- (id)initWithBrowser:(Browser*)browser {
+  if ((self = [super initWithBrowser:browser
                         initialWidth:100  // arbitrary
+                    compressDelegate:nil
                       resizeDelegate:nil
                          urlDelegate:self])) {
     callbacks_.reset([[NSMutableArray alloc] init]);
@@ -99,8 +100,9 @@ class BookmarkBarBridgeTest : public PlatformTest {
 
 // Call all the callbacks; make sure they are all redirected to the objc object.
 TEST_F(BookmarkBarBridgeTest, TestRedirect) {
-  Profile *profile = browser_test_helper_.profile();
-  BookmarkModel *model = profile->GetBookmarkModel();
+  Browser* browser = browser_test_helper_.browser();
+  Profile* profile = browser_test_helper_.profile();
+  BookmarkModel* model = profile->GetBookmarkModel();
 
   scoped_nsobject<NSView> parentView([[NSView alloc]
                                        initWithFrame:NSMakeRect(0,0,100,100)]);
@@ -110,7 +112,7 @@ TEST_F(BookmarkBarBridgeTest, TestRedirect) {
       [[NSView alloc] initWithFrame:NSMakeRect(0,0,100,100)]);
 
   scoped_nsobject<FakeBookmarkBarController>
-      controller([[FakeBookmarkBarController alloc] initWithProfile:profile]);
+      controller([[FakeBookmarkBarController alloc] initWithBrowser:browser]);
   EXPECT_TRUE(controller.get());
   scoped_ptr<BookmarkBarBridge> bridge(new BookmarkBarBridge(controller.get(),
                                                              model));

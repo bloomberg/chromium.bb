@@ -60,8 +60,7 @@ class ToolbarControllerTest : public PlatformTest {
                                         commands:browser->command_updater()
                                          profile:helper_.profile()
                                          browser:browser
-                                  resizeDelegate:resizeDelegate_.get()
-                                bookmarkDelegate:nil]);
+                                  resizeDelegate:resizeDelegate_.get()]);
     EXPECT_TRUE([bar_ view]);
     NSView* parent = [cocoa_helper_.window() contentView];
     [parent addSubview:[bar_ view]];
@@ -94,19 +93,12 @@ TEST_F(ToolbarControllerTest, InitialState) {
   CompareState(updater, [bar_ toolbarViews]);
 }
 
-// Make sure awakeFromNib created a bookmarkBarController
-TEST_F(ToolbarControllerTest, AwakeFromNibCreatesBMBController) {
-  EXPECT_TRUE([bar_ bookmarkBarController]);
-}
-
 // Make sure a "titlebar only" toolbar works
 TEST_F(ToolbarControllerTest, TitlebarOnly) {
   NSView* view = [bar_ view];
-  EXPECT_TRUE([bar_ bookmarkBarController]);
 
   [bar_ setHasToolbar:NO];
   EXPECT_NE(view, [bar_ view]);
-  EXPECT_FALSE([bar_ bookmarkBarController]);
 
   // Simulate a popup going fullscreen and back.
   NSView* superview = [view superview];
@@ -118,7 +110,6 @@ TEST_F(ToolbarControllerTest, TitlebarOnly) {
 
   [bar_ setHasToolbar:YES];
   EXPECT_EQ(view, [bar_ view]);
-  EXPECT_TRUE([bar_ bookmarkBarController]);
 
   // Leave it off to make sure that's fine
   [bar_ setHasToolbar:NO];
@@ -240,31 +231,6 @@ TEST_F(ToolbarControllerTest, DontToggleWhenNoToolbar) {
   EXPECT_TRUE(NSEqualRects(locationBarFrame, newLocationBarFrame));
 }
 
-// Make sure, by default, the bookmark bar is the full width of the
-// toolbar.
-TEST_F(ToolbarControllerTest, BookmarkBarIsFullWidth) {
-  // Set the pref to the bookmark bar is visible when the toolbar is
-  // first created.
-  helper_.profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
-
-  // Create a new bar (after the pref is set)
-  Browser* browser = helper_.browser();
-  bar_.reset(
-    [[ToolbarController alloc] initWithModel:browser->toolbar_model()
-                                    commands:browser->command_updater()
-                                     profile:helper_.profile()
-                                     browser:browser
-                              resizeDelegate:resizeDelegate_.get()
-                            bookmarkDelegate:nil]);
-  EXPECT_TRUE([bar_ view]);
-
-  // Make sure the bookmark bar is the same width as the toolbar
-  NSView* bookmarkBarView = [[bar_ bookmarkBarController] view];
-  EXPECT_EQ([[bar_ view] frame].size.width,
-            [bookmarkBarView frame].size.width);
-  EXPECT_TRUE([bookmarkBarView isDescendantOf:[bar_ view]]);
-}
-
 TEST_F(ToolbarControllerTest, StarButtonInWindowCoordinates) {
   NSRect star = [bar_ starButtonInWindowCoordinates];
   NSRect all = [[[bar_ view] window] frame];
@@ -327,6 +293,16 @@ TEST_F(ToolbarControllerTest, PopulateEncodingMenu) {
   // items so check that we at least populated the menu with something at
   // startup.
   EXPECT_NE(0, [encodings numberOfItems]);
+}
+
+TEST_F(ToolbarControllerTest, CorrectHeightWhenCompressed) {
+  [bar_ setShouldBeCompressed:YES];
+  EXPECT_EQ(30.0, [resizeDelegate_ height]);
+}
+
+TEST_F(ToolbarControllerTest, CorrectHeightWhenUnompressed) {
+  [bar_ setShouldBeCompressed:NO];
+  EXPECT_EQ(36.0, [resizeDelegate_ height]);
 }
 
 }  // namespace

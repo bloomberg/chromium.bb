@@ -10,8 +10,10 @@
 #import "chrome/browser/cocoa/bookmark_bar_view.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/cocoa/toolbar_compressable.h"
 #include "chrome/browser/cocoa/test_event_utils.h"
 #import "chrome/browser/cocoa/view_resizer_pong.h"
+#include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -76,6 +78,33 @@
 
 @end
 
+// A BookmarkBarController that always beleives that it's on the new tab page.
+@interface AlwaysNewTabPageBookmarkBarController : BookmarkBarController {
+}
+@end
+
+@implementation AlwaysNewTabPageBookmarkBarController
+-(BOOL)isNewTabPage {
+  return YES;
+}
+@end
+
+@interface CompressablePong : NSObject<ToolbarCompressable> {
+@private
+  BOOL compressed_;
+}
+@property (readonly) BOOL compressed;
+@end
+
+@implementation CompressablePong
+
+@synthesize compressed = compressed_;
+
+- (void)setShouldBeCompressed:(BOOL)compressed {
+  compressed_ = compressed;
+}
+
+@end
 
 namespace {
 
@@ -86,12 +115,14 @@ class BookmarkBarControllerTest : public PlatformTest {
  public:
   BookmarkBarControllerTest() {
     resizeDelegate_.reset([[ViewResizerPong alloc] init]);
+    compressDelegate_.reset([[CompressablePong alloc] init]);
     NSRect parent_frame = NSMakeRect(0, 0, 800, 50);
     parent_view_.reset([[NSView alloc] initWithFrame:parent_frame]);
     [parent_view_ setHidden:YES];
     bar_.reset(
-        [[BookmarkBarController alloc] initWithProfile:helper_.profile()
+        [[BookmarkBarController alloc] initWithBrowser:helper_.browser()
                                           initialWidth:NSWidth(parent_frame)
+                                      compressDelegate:compressDelegate_.get()
                                         resizeDelegate:resizeDelegate_.get()
                                            urlDelegate:nil]);
 
@@ -118,9 +149,8 @@ class BookmarkBarControllerTest : public PlatformTest {
     [[[bar view] superview] setFrame:frame];
 
     // make sure it's open so certain things aren't no-ops
-    [bar toggleBookmarkBar];
+    helper_.profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
   }
-
 
   // Return a menu item that points to the right URL.
   NSMenuItem* ItemForBookmarkBarMenu(GURL& gurl) {
@@ -140,6 +170,7 @@ class BookmarkBarControllerTest : public PlatformTest {
   scoped_nsobject<NSView> parent_view_;
   BrowserTestHelper helper_;
   scoped_nsobject<ViewResizerPong> resizeDelegate_;
+  scoped_nsobject<CompressablePong> compressDelegate_;
   scoped_nsobject<BookmarkBarController> bar_;
   scoped_nsobject<NSMenu> menu_;
   scoped_nsobject<NSMenuItem> menu_item_;
@@ -147,28 +178,57 @@ class BookmarkBarControllerTest : public PlatformTest {
   scoped_ptr<BookmarkNode> node_;
 };
 
-TEST_F(BookmarkBarControllerTest, ShowHide) {
-  // The test class opens the bar by default since many actions are
-  // no-ops with it closed.  Set back to closed as a baseline.
-  if ([bar_ isBookmarkBarVisible])
-    [bar_ toggleBookmarkBar];
+TEST_F(BookmarkBarControllerTest, ShowWhenShowBookmarkBarTrue) {
+  helper_.profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
+  [bar_ updateVisibility];
 
-  // Start hidden.
-  EXPECT_FALSE([bar_ isBookmarkBarVisible]);
-  EXPECT_TRUE([[bar_ view] isHidden]);
-
-  // Show and hide it by toggling.
-  [bar_ toggleBookmarkBar];
-  EXPECT_TRUE([bar_ isBookmarkBarVisible]);
+  EXPECT_TRUE([bar_ isVisible]);
   EXPECT_FALSE([[bar_ view] isHidden]);
   EXPECT_GT([resizeDelegate_ height], 0);
   EXPECT_GT([[bar_ view] frame].size.height, 0);
+}
 
-  [bar_ toggleBookmarkBar];
-  EXPECT_FALSE([bar_ isBookmarkBarVisible]);
+TEST_F(BookmarkBarControllerTest, HideWhenShowBookmarkBarFalse) {
+  helper_.profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, false);
+  [bar_ updateVisibility];
+
+  EXPECT_FALSE([bar_ isVisible]);
   EXPECT_TRUE([[bar_ view] isHidden]);
   EXPECT_EQ(0, [resizeDelegate_ height]);
   EXPECT_EQ(0, [[bar_ view] frame].size.height);
+}
+
+TEST_F(BookmarkBarControllerTest, HideWhenShowBookmarkBarTrueButDisabled) {
+  helper_.profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
+  [bar_ setBookmarkBarEnabled:NO];
+  [bar_ updateVisibility];
+
+  EXPECT_FALSE([bar_ isVisible]);
+  EXPECT_TRUE([[bar_ view] isHidden]);
+  EXPECT_EQ(0, [resizeDelegate_ height]);
+  EXPECT_EQ(0, [[bar_ view] frame].size.height);
+}
+
+TEST_F(BookmarkBarControllerTest, ShowOnNewTabPage) {
+  helper_.profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, false);
+
+  scoped_nsobject<BookmarkBarControllerTogglePong> bar;
+  bar.reset(
+      [[AlwaysNewTabPageBookmarkBarController alloc]
+          initWithBrowser:helper_.browser()
+             initialWidth:100  // arbitrary
+         compressDelegate:compressDelegate_.get()
+           resizeDelegate:resizeDelegate_.get()
+              urlDelegate:nil]);
+  InstallAndToggleBar(bar.get());
+
+  [bar setBookmarkBarEnabled:NO];
+  [bar updateVisibility];
+
+  EXPECT_TRUE([bar isVisible]);
+  EXPECT_FALSE([[bar view] isHidden]);
+  EXPECT_GT([resizeDelegate_ height], 0);
+  EXPECT_GT([[bar view] frame].size.height, 0);
 }
 
 // Make sure we're watching for frame change notifications.
@@ -176,16 +236,19 @@ TEST_F(BookmarkBarControllerTest, FrameChangeNotification) {
   scoped_nsobject<BookmarkBarControllerTogglePong> bar;
   bar.reset(
     [[BookmarkBarControllerTogglePong alloc]
-          initWithProfile:helper_.profile()
+          initWithBrowser:helper_.browser()
              initialWidth:100  // arbitrary
+         compressDelegate:compressDelegate_.get()
            resizeDelegate:resizeDelegate_.get()
               urlDelegate:nil]);
   InstallAndToggleBar(bar.get());
 
-  EXPECT_GT([bar toggles], 0);
+  // Send a frame did change notification for the pong's view.
+  [[NSNotificationCenter defaultCenter]
+    postNotificationName:NSViewFrameDidChangeNotification
+                  object:[bar view]];
 
-  // Hard to force toggles -- simple whacking the frame is inadequate.
-  // TODO(jrg): find a way to set frame, force a toggle, and verify it.
+  EXPECT_GT([bar toggles], 0);
 }
 
 // Confirm off the side button only enabled when reasonable.

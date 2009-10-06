@@ -11,16 +11,21 @@
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/cocoa/bookmark_bar_bridge.h"
+#include "chrome/browser/cocoa/tab_strip_model_observer_bridge.h"
 #include "webkit/glue/window_open_disposition.h"
 
+@class BackgroundGradientView;
 @class BookmarkBarStateController;
 class BookmarkModel;
 class BookmarkNode;
 @class BookmarkBarView;
+class Browser;
+@protocol ToolbarCompressable;
 class GURL;
 @class MenuButton;
 class Profile;
 class PrefService;
+@class ToolbarController;
 @protocol ViewResizer;
 
 // The interface for an object which can open URLs for a bookmark.
@@ -29,12 +34,19 @@ class PrefService;
             disposition:(WindowOpenDisposition)disposition;
 @end
 
+// An interface to allow mocking of a BookmarkBarController by the
+// BookmarkBarToolbarView.
+@protocol BookmarkBarFloating
+// Returns true if the bookmark bar should be drawn as if it's a disconnected
+// bookmark bar on the New Tag Page.
+- (BOOL)drawAsFloatingBar;
+@end
 
 // A controller for the bookmark bar in the browser window. Handles showing
 // and hiding based on the preference in the given profile.
-@interface BookmarkBarController : NSViewController {
+@interface BookmarkBarController : NSViewController<BookmarkBarFloating> {
  @private
-  Profile* profile_;              // weak
+  Browser* browser_;              // weak; owned by its window
   BookmarkModel* bookmarkModel_;  // weak; part of the profile owned by the
                                   // top-level Browser object.
 
@@ -55,18 +67,22 @@ class PrefService;
   // Set when using fullscreen mode.
   BOOL barIsEnabled_;
 
-  // Set to YES when the user elects to always show the bookmark bar.
-  BOOL barShouldBeShown_;
-
   // Bridge from Chrome-style C++ notifications (e.g. derived from
   // BookmarkModelObserver)
   scoped_ptr<BookmarkBarBridge> bridge_;
+
+  // Delegate that is alerted about whether it should be compressed because
+  // it's right next to us.
+  id<ToolbarCompressable> compressDelegate_;  // weak
 
   // Delegate that can resize us.
   id<ViewResizer> resizeDelegate_;  // weak
 
   // Delegate that can open URLs for us.
   id<BookmarkURLOpener> urlDelegate_;  // weak
+
+  // Lets us get TabSelectedAt notifications.
+  scoped_ptr<TabStripModelObserverBridge> tabObserver_;
 
   IBOutlet BookmarkBarView* buttonView_;
   IBOutlet MenuButton* offTheSideButton_;
@@ -75,25 +91,41 @@ class PrefService;
 
 // Initializes the bookmark bar controller with the given browser
 // profile and delegates.
-- (id)initWithProfile:(Profile*)profile
+- (id)initWithBrowser:(Browser*)browser
          initialWidth:(float)initialWidth
+     compressDelegate:(id<ToolbarCompressable>)compressDelegate
        resizeDelegate:(id<ViewResizer>)resizeDelegate
           urlDelegate:(id<BookmarkURLOpener>)urlDelegate;
+
+// Returns the backdrop to the bookmark bar.
+- (BackgroundGradientView*)backgroundGradientView;
 
 // Tell the bar to show itself if needed (e.g. if the kShowBookmarkBar
 // is set).  Called once after the controller is first created.
 - (void)showIfNeeded;
 
-// Returns whether or not the bookmark bar is visible.
-- (BOOL)isBookmarkBarVisible;
-
-// Toggle the state of the bookmark bar.
-- (void)toggleBookmarkBar;
+// Update the visible state of the bookmark bar based on the current value of
+// -[BookmarkBarController isAlwaysVisible].
+- (void)updateVisibility;
 
 // Turn on or off the bookmark bar and prevent or reallow its
 // appearance.  On disable, toggle off if shown.  On enable, show only
 // if needed.  For fullscreen mode.
 - (void)setBookmarkBarEnabled:(BOOL)enabled;
+
+// Returns YES if the bookmarks bar is currently visible, either because the
+// user has asked for it to always be visible, or because the current tab is the
+// New Tab page.
+- (BOOL)isVisible;
+
+// Returns true if the bookmark bar needs to be shown currently because a tab
+// that requires it is selected. The bookmark bar will have a different
+// appearance when it is shown if isAlwaysVisible returns NO.
+- (BOOL)isNewTabPage;
+
+// Returns true if the bookmark bar is visible for all tabs. (This corresponds
+// to the user having selected "Always show the bookmark bar")
+- (BOOL)isAlwaysVisible;
 
 // Actions for manipulating bookmarks.
 // From a button, ...

@@ -1290,7 +1290,7 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(TabContents* contents,
     show_bar = true;
   }
 
-  if (show_bar && contents && !contents->IsBookmarkBarAlwaysVisible()) {
+  if (show_bar && contents && !contents->ShouldShowBookmarkBar()) {
     PrefService* prefs = contents->profile()->GetPrefs();
     show_bar = prefs->GetBoolean(prefs::kShowBookmarkBar) && !IsFullscreen();
   }

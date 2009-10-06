@@ -25,6 +25,8 @@
 // Implementations are below.
 - (NSView*)infoBarContainerView;
 - (NSView*)toolbarView;
+- (NSView*)bookmarkView;
+- (BOOL)bookmarkBarVisible;
 - (NSView*)extensionShelfView;
 @end
 
@@ -35,6 +37,14 @@
 
 - (NSView*)toolbarView {
   return [toolbarController_ view];
+}
+
+- (NSView*)bookmarkView {
+  return [bookmarkBarController_ view];
+}
+
+- (BOOL)bookmarkBarVisible {
+  return [bookmarkBarController_ isVisible];
 }
 
 - (NSView*)extensionShelfView {
@@ -146,7 +156,13 @@ TEST_F(BrowserWindowControllerTest, TestTheme) {
 
 TEST_F(BrowserWindowControllerTest, BookmarkBarControllerIndirection) {
   EXPECT_FALSE([controller_ isBookmarkBarVisible]);
-  [controller_ toggleBookmarkBar];
+
+  // Explicitly show the bar. Can't use bookmark_utils::ToggleWhenVisible()
+  // because of the notification issues.
+  browser_helper_.profile()->GetPrefs()->
+      SetBoolean(prefs::kShowBookmarkBar, true);
+
+  [controller_ updateBookmarkBarVisibility];
   EXPECT_TRUE([controller_ isBookmarkBarVisible]);
 }
 
@@ -186,7 +202,16 @@ void CheckViewPositions(BrowserWindowController* controller) {
   EXPECT_EQ(NSMaxY(extension), NSMinY(download));
   EXPECT_EQ(NSMaxY(download), NSMinY(contentArea));
   EXPECT_EQ(NSMaxY(contentArea), NSMinY(infobar));
-  EXPECT_EQ(NSMaxY(infobar), NSMinY(toolbar));
+
+  // Bookmark bar frame is random memory when hidden.
+  if ([controller bookmarkBarVisible]) {
+    NSRect bookmark = [[controller bookmarkView] frame];
+    EXPECT_EQ(NSMaxY(infobar), NSMinY(bookmark));
+    EXPECT_EQ(NSMaxY(bookmark), NSMinY(toolbar));
+  } else {
+    EXPECT_EQ(NSMaxY(infobar), NSMinY(toolbar));
+  }
+
   EXPECT_EQ(NSMaxY(contentView), NSMaxY(toolbar));
 }
 }  // end namespace
@@ -238,6 +263,83 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
   [controller_ resizeView:infobar newHeight:0];
   [controller_ resizeView:toolbar newHeight:39];
   CheckViewPositions(controller_);
+}
+
+TEST_F(BrowserWindowControllerTest, TestResizeViewsWithBookmarkBar) {
+  // Force a display of the bookmark bar.
+  browser_helper_.profile()->GetPrefs()->
+      SetBoolean(prefs::kShowBookmarkBar, true);
+
+  TabStripView* tabstrip = [controller_ tabStripView];
+  NSView* contentView = [[tabstrip window] contentView];
+  NSView* toolbar = [controller_ toolbarView];
+  NSView* bookmark = [controller_ bookmarkView];
+  NSView* infobar = [controller_ infoBarContainerView];
+  NSView* extensionShelf = [controller_ extensionShelfView];
+
+  // We need to muck with the views a bit to put us in a consistent state before
+  // we start resizing.  In particular, we need to move the tab strip to be
+  // immediately above the content area, since we layout views to be directly
+  // under the tab strip.  We also explicitly set the contentView's frame to be
+  // 800x600.
+  [contentView setFrame:NSMakeRect(0, 0, 800, 600)];
+  NSRect tabstripFrame = [tabstrip frame];
+  tabstripFrame.origin.y = NSMaxY([contentView frame]);
+  [tabstrip setFrame:tabstripFrame];
+
+  // The download shelf is created lazily.  Force-create it and set its initial
+  // height to 0.
+  NSView* download = [[controller_ downloadShelf] view];
+  [controller_ resizeView:download newHeight:0];
+
+  // Force a layout and check each view's frame.
+  [controller_ layoutSubviews];
+  CheckViewPositions(controller_);
+
+  // Add the bookmark bar and recheck.
+  [controller_ resizeView:bookmark newHeight:40];
+  CheckViewPositions(controller_);
+
+  // Add an extension shelf and recheck.
+  [controller_ resizeView:extensionShelf newHeight:40];
+  CheckViewPositions(controller_);
+
+  // Expand the infobar to 60px and recheck
+  [controller_ resizeView:infobar newHeight:60];
+  CheckViewPositions(controller_);
+
+  // Expand the toolbar to 64px and recheck
+  [controller_ resizeView:toolbar newHeight:64];
+  CheckViewPositions(controller_);
+
+  // Add a 30px download shelf and recheck
+  [controller_ resizeView:download newHeight:30];
+  CheckViewPositions(controller_);
+
+  // Remove the bookmark bar and recheck
+  browser_helper_.profile()->GetPrefs()->
+      SetBoolean(prefs::kShowBookmarkBar, false);
+  [controller_ resizeView:bookmark newHeight:0];
+  CheckViewPositions(controller_);
+
+  // Shrink the infobar to 0px and toolbar to 39px and recheck
+  [controller_ resizeView:infobar newHeight:0];
+  [controller_ resizeView:toolbar newHeight:39];
+  CheckViewPositions(controller_);
+}
+
+// Make sure, by default, the bookmark bar and the toolbar are the same width.
+TEST_F(BrowserWindowControllerTest, BookmarkBarIsSameWidth) {
+  // Set the pref to the bookmark bar is visible when the toolbar is
+  // first created.
+  browser_helper_.profile()->GetPrefs()->SetBoolean(
+      prefs::kShowBookmarkBar, true);
+
+  // Make sure the bookmark bar is the same width as the toolbar
+  NSView* bookmarkBarView = [controller_ bookmarkView];
+  NSView* toolbarView = [controller_ toolbarView];
+  EXPECT_EQ([toolbarView frame].size.width,
+            [bookmarkBarView frame].size.width);
 }
 
 TEST_F(BrowserWindowControllerTest, TestTopLeftForBubble) {

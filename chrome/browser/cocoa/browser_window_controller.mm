@@ -181,14 +181,33 @@ willPositionSheet:(NSWindow*)sheet
                                     commands:browser->command_updater()
                                      profile:browser->profile()
                                      browser:browser
-                              resizeDelegate:self
-                            bookmarkDelegate:self]);
+                              resizeDelegate:self]);
     // If we are a pop-up, we have a titlebar and no toolbar.
     if (!browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) &&
         browser_->SupportsWindowFeature(Browser::FEATURE_TITLEBAR)) {
       [toolbarController_ setHasToolbar:NO];
     }
     [[[self window] contentView] addSubview:[toolbarController_ view]];
+
+    // Create a sub-controller for the bookmark bar.
+    bookmarkBarController_.reset(
+        [[BookmarkBarController alloc]
+            initWithBrowser:browser_.get()
+               initialWidth:NSWidth([[[self window] contentView] frame])
+           compressDelegate:toolbarController_.get()
+             resizeDelegate:self
+                urlDelegate:self]);
+
+    // Add bookmark bar to the view hierarchy.  This also triggers the
+    // nib load.  The bookmark bar is defined (in the nib) to be
+    // bottom-aligned to it's parent view (among other things), so
+    // position and resize properties don't need to be set.
+    [[[self window] contentView] addSubview:[bookmarkBarController_ view]];
+
+    // We don't want to try and show the bar before it gets placed in
+    // it's parent view, so this step shoudn't be inside the bookmark
+    // bar controller's awakeFromNib.
+    [bookmarkBarController_ showIfNeeded];
 
     if (browser_->SupportsWindowFeature(Browser::FEATURE_EXTENSIONSHELF)) {
       // Create the extension shelf.
@@ -457,12 +476,14 @@ willPositionSheet:(NSWindow*)sheet
 // relayout.
 - (void)resizeView:(NSView*)view newHeight:(float)height {
   // We should only ever be called for one of the following four views.
-  // |downloadShelfController_| may be nil.
+  // |downloadShelfController_| may be nil. If we are asked to size the bookmark
+  // bar directly, its superview must be this controller's content view.
   DCHECK(view);
   DCHECK(view == [toolbarController_ view] ||
          view == [infoBarContainerController_ view] ||
+         view == [extensionShelfController_ view] ||
          view == [downloadShelfController_ view] ||
-         view == [extensionShelfController_ view]);
+         view == [bookmarkBarController_ view]);
 
   // Change the height of the view and call layoutViews.  We set the height here
   // without regard to where the view is on the screen or whether it needs to
@@ -816,12 +837,11 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (BOOL)isBookmarkBarVisible {
-  return [[toolbarController_ bookmarkBarController] isBookmarkBarVisible];
+  return [bookmarkBarController_ isVisible];
 }
 
-- (void)toggleBookmarkBar {
-  BookmarkBarController* bar = [toolbarController_ bookmarkBarController];
-  [bar toggleBookmarkBar];
+- (void)updateBookmarkBarVisibility {
+  [bookmarkBarController_ updateVisibility];
 }
 
 - (BOOL)isDownloadShelfVisible {
@@ -858,8 +878,7 @@ willPositionSheet:(NSWindow*)sheet
   if (fullscreen) {
     // Disable showing of the bookmark bar.  This does not toggle the
     // preference.
-    // TODO(jrg): Is this still necessary?
-    [[toolbarController_ bookmarkBarController] setBookmarkBarEnabled:NO];
+    [bookmarkBarController_ setBookmarkBarEnabled:NO];
     // Make room for more content area.
     [[toolbarController_ view] removeFromSuperview];
     // Hide the menubar, and allow it to un-hide when moving the mouse
@@ -869,8 +888,7 @@ willPositionSheet:(NSWindow*)sheet
   } else {
     SetSystemUIMode(kUIModeNormal, 0);
     [[[self window] contentView] addSubview:[toolbarController_ view]];
-    // TODO(jrg): Is this still necessary?
-    [[toolbarController_ bookmarkBarController] setBookmarkBarEnabled:YES];
+    [bookmarkBarController_ setBookmarkBarEnabled:YES];
   }
 
   // Force a relayout.
@@ -973,6 +991,7 @@ willPositionSheet:(NSWindow*)sheet
 
   // Update all the UI bits.
   windowShim_->UpdateTitleBar();
+
 #if 0
 // TODO(pinkerton):Update as more things become window-specific
   toolbar_->SetProfile(newContents->profile());
@@ -1224,6 +1243,16 @@ willPositionSheet:(NSWindow*)sheet
   }
   [toolbarView setFrame:toolbarFrame];
 
+  if ([bookmarkBarController_ isAlwaysVisible]) {
+    NSView* bookmarkBarView = [bookmarkBarController_ view];
+    [bookmarkBarView setHidden:NO];
+    NSRect bookmarkBarFrame = [bookmarkBarView frame];
+    bookmarkBarFrame.origin.y = maxY - NSHeight(bookmarkBarFrame);
+    bookmarkBarFrame.size.width = NSWidth(contentFrame);
+    [bookmarkBarView setFrame:bookmarkBarFrame];
+    maxY -= NSHeight(bookmarkBarFrame);
+  }
+
   // Place the infobar container in place below the toolbar.
   NSView* infoBarView = [infoBarContainerController_ view];
   NSRect infoBarFrame = [infoBarView frame];
@@ -1231,6 +1260,23 @@ willPositionSheet:(NSWindow*)sheet
   infoBarFrame.size.width = NSWidth(contentFrame);
   [infoBarView setFrame:infoBarFrame];
   maxY -= NSHeight(infoBarFrame);
+
+  if (![bookmarkBarController_ isAlwaysVisible] &&
+      [bookmarkBarController_ isVisible]) {
+    NSView* bookmarkBarView = [bookmarkBarController_ view];
+    [bookmarkBarView setHidden:NO];
+    NSRect bookmarkBarFrame = [bookmarkBarView frame];
+    bookmarkBarFrame.origin.y = maxY - NSHeight(bookmarkBarFrame);
+    bookmarkBarFrame.size.width = NSWidth(contentFrame);
+    [bookmarkBarView setFrame:bookmarkBarFrame];
+    maxY -= NSHeight(bookmarkBarFrame);
+  }
+
+  if (![bookmarkBarController_ isVisible]) {
+    // If the bookmark bar is not visible in either mode, we need to hide it
+    // otherwise it'll render over other elements.
+    [[bookmarkBarController_ view] setHidden:YES];
+  }
 
   // Place the extension shelf at the bottom of the view, if it exists.
   if (extensionShelfController_.get()) {
@@ -1265,6 +1311,16 @@ willPositionSheet:(NSWindow*)sheet
     positionFindBarView:[infoBarContainerController_ view]];
 
   verticalOffsetForStatusBubble_ = minY;
+
+  // The bottom of the visible toolbar stack is the one that shows the
+  // divider stroke. If the bookmark bar is visible and not in new tab page
+  // mode, it is the bottom visible toolbar and so it must, otherwise the
+  // main toolbar is.
+  BOOL bookmarkToolbarShowsDivider = [bookmarkBarController_ isAlwaysVisible];
+  [[toolbarController_ backgroundGradientView]
+      setShowsDivider:!bookmarkToolbarShowsDivider];
+  [[bookmarkBarController_ backgroundGradientView]
+      setShowsDivider:bookmarkToolbarShowsDivider];
 }
 
 @end

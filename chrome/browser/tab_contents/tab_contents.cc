@@ -977,7 +977,7 @@ void TabContents::ReplaceInfoBar(InfoBarDelegate* old_delegate,
   infobar_delegates_.push_back(new_delegate);
 }
 
-bool TabContents::IsBookmarkBarAlwaysVisible() {
+bool TabContents::ShouldShowBookmarkBar() {
   // See GetDOMUIForCurrentState() comment for more info. This case is very
   // similar, but for non-first loads, we want to use the committed entry. This
   // is so the bookmarks bar disappears at the same time the page does.
@@ -1996,12 +1996,12 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
   int extra_invalidate_flags = 0;
 
   if (PageTransition::IsMainFrame(params.transition)) {
-    bool was_bookmark_bar_visible = IsBookmarkBarAlwaysVisible();
+    bool was_bookmark_bar_visible = ShouldShowBookmarkBar();
     bool was_extension_shelf_visible = IsExtensionShelfAlwaysVisible();
 
     render_manager_.DidNavigateMainFrame(rvh);
 
-    if (was_bookmark_bar_visible != IsBookmarkBarAlwaysVisible())
+    if (was_bookmark_bar_visible != ShouldShowBookmarkBar())
       extra_invalidate_flags |= INVALIDATE_BOOKMARK_BAR;
     if (was_extension_shelf_visible != IsExtensionShelfAlwaysVisible())
       extra_invalidate_flags |= INVALIDATE_EXTENSION_SHELF;

@@ -19,7 +19,8 @@ class Browser;
 
 class BookmarkBarBridge : public BookmarkModelObserver {
  public:
-  BookmarkBarBridge(BookmarkBarController* controller, BookmarkModel* model);
+  BookmarkBarBridge(BookmarkBarController* controller,
+                    BookmarkModel* model);
   virtual ~BookmarkBarBridge();
 
   // Overridden from BookmarkModelObserver
@@ -46,7 +47,7 @@ class BookmarkBarBridge : public BookmarkModelObserver {
 
  private:
   BookmarkBarController* controller_;  // weak; owns me
-  BookmarkModel *model_;  // weak; it is owned by a Profile.
+  BookmarkModel* model_;  // weak; it is owned by a Profile.
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarBridge);
 };

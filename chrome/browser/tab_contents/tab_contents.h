@@ -109,7 +109,7 @@ class TabContents : public PageNavigator,
                                           // changed.
     INVALIDATE_LOAD            = 1 << 2,  // The loading state has changed.
     INVALIDATE_PAGE_ACTIONS    = 1 << 3,  // Page action icons have changed.
-    INVALIDATE_BOOKMARK_BAR    = 1 << 4,  // State of IsBookmarkBarAlwaysVisible
+    INVALIDATE_BOOKMARK_BAR    = 1 << 4,  // State of ShouldShowBookmarkBar
                                           // changed.
     INVALIDATE_EXTENSION_SHELF = 1 << 5,  // State of
                                           // IsExtensionShelfAlwaysVisible
@@ -436,8 +436,8 @@ class TabContents : public PageNavigator,
 
   // Toolbars and such ---------------------------------------------------------
 
-  // Returns whether the bookmark bar should be visible.
-  virtual bool IsBookmarkBarAlwaysVisible();
+  // Returns true if a Bookmark Bar should be shown for this tab.
+  virtual bool ShouldShowBookmarkBar();
 
   // Returns whether the extension shelf should be visible.
   virtual bool IsExtensionShelfAlwaysVisible();

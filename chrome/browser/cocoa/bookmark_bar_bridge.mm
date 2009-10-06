@@ -9,7 +9,8 @@
 
 BookmarkBarBridge::BookmarkBarBridge(BookmarkBarController* controller,
                                      BookmarkModel* model)
-    : controller_(controller), model_(model) {
+    : controller_(controller),
+      model_(model) {
   model_->AddObserver(this);
 
   // Bookmark loading is async; it may may not have happened yet.
