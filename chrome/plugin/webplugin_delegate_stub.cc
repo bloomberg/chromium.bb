@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,11 +52,13 @@ WebPluginDelegateStub::WebPluginDelegateStub(
     instance_id_(instance_id),
     channel_(channel),
     delegate_(NULL),
-    webplugin_(NULL) {
+    webplugin_(NULL),
+    in_destructor_(false) {
   DCHECK(channel);
 }
 
 WebPluginDelegateStub::~WebPluginDelegateStub() {
+  in_destructor_ = true;
   child_process_logging::ScopedActiveURLSetter url_setter(page_url_);
 
   if (channel_->in_send()) {
@@ -79,7 +81,9 @@ void WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
   // A plugin can execute a script to delete itself in any of its NPP methods.
   // Hold an extra reference to ourself so that if this does occur and we're
   // handling a sync message, we don't crash when attempting to send a reply.
-  AddRef();
+  // The exception to this is when we're already in the destructor.
+  if (!in_destructor_)
+    AddRef();
 
   IPC_BEGIN_MESSAGE_MAP(WebPluginDelegateStub, msg)
     IPC_MESSAGE_HANDLER(PluginMsg_Init, OnInit)
@@ -113,7 +117,8 @@ void WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 
-  Release();
+  if (!in_destructor_)
+    Release();
 }
 
 bool WebPluginDelegateStub::Send(IPC::Message* msg) {

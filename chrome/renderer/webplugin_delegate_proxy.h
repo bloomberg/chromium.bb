@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,9 +44,6 @@ class WebPluginDelegateProxy :
  public:
   WebPluginDelegateProxy(const std::string& mime_type,
                          const base::WeakPtr<RenderView>& render_view);
-
-  // Called to drop our pointer to the window script object.
-  void DropWindowScriptObject() { window_script_object_ = NULL; }
 
   // WebPluginDelegate implementation:
   virtual void PluginDestroyed();
@@ -171,7 +168,7 @@ class WebPluginDelegateProxy :
   gfx::Rect plugin_rect_;
 
   NPObject* npobject_;
-  NPObjectStub* window_script_object_;
+  base::WeakPtr<NPObjectStub> window_script_object_;
 
   // Event passed in by the plugin process and is used to decide if
   // messages need to be pumped in the NPP_HandleEvent sync call.

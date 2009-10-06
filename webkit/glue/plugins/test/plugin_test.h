@@ -28,6 +28,7 @@ class PluginTest {
   //
   virtual NPError New(uint16 mode, int16 argc, const char* argn[],
                       const char* argv[], NPSavedData* saved);
+  virtual NPError Destroy();
   virtual NPError SetWindow(NPWindow* pNPWindow);
   virtual NPError NewStream(NPMIMEType type, NPStream* stream,
                             NPBool seekable, uint16* stype);

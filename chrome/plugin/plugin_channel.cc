@@ -222,11 +222,18 @@ void PluginChannel::OnDestroyInstance(int instance_id,
                                       IPC::Message* reply_msg) {
   for (size_t i = 0; i < plugin_stubs_.size(); ++i) {
     if (plugin_stubs_[i]->instance_id() == instance_id) {
-      filter_->ReleaseModalDialogEvent(
-          plugin_stubs_[i]->webplugin()->containing_window());
+      scoped_refptr<MessageFilter> filter(filter_);
+      gfx::NativeViewId window =
+          plugin_stubs_[i]->webplugin()->containing_window();
       plugin_stubs_.erase(plugin_stubs_.begin() + i);
-      RemoveRoute(instance_id);
       Send(reply_msg);
+      RemoveRoute(instance_id);
+      // NOTE: *this* might be deleted as a result of calling RemoveRoute.
+      // Don't release the modal dialog event right away, but do it after the
+      // stack unwinds since the plugin can be destroyed later if it's in use
+      // right now.
+      MessageLoop::current()->PostNonNestableTask(FROM_HERE, NewRunnableMethod(
+          filter.get(), &MessageFilter::ReleaseModalDialogEvent, window));
       return;
     }
   }

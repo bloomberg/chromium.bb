@@ -101,6 +101,7 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
 
   WebPluginDelegateImpl* delegate_;
   WebPluginProxy* webplugin_;
+  bool in_destructor_;
 
   // The url of the main frame hosting the plugin.
   GURL page_url_;

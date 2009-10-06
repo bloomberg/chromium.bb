@@ -12,11 +12,11 @@
 
 #include "base/gfx/native_widget_types.h"
 #include "base/ref_counted.h"
+#include "base/weak_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 
 class PluginChannelBase;
-class WebPluginDelegateProxy;
 struct NPIdentifier_Param;
 struct NPObject;
 struct NPVariant_Param;
@@ -25,7 +25,8 @@ struct NPVariant_Param;
 // to the object.  The results are marshalled back.  See npobject_proxy.h for
 // more information.
 class NPObjectStub : public IPC::Channel::Listener,
-                     public IPC::Message::Sender {
+                     public IPC::Message::Sender,
+                     public base::SupportsWeakPtr<NPObjectStub> {
  public:
   NPObjectStub(NPObject* npobject,
                PluginChannelBase* channel,
@@ -40,10 +41,7 @@ class NPObjectStub : public IPC::Channel::Listener,
   // Called when the plugin widget that this NPObject came from is destroyed.
   // This is needed because the renderer calls NPN_DeallocateObject on the
   // window script object on destruction to avoid leaks.
-  void set_invalid() { valid_ = false; }
-  void set_proxy(WebPluginDelegateProxy* proxy) {
-    web_plugin_delegate_proxy_ = proxy;
-  }
+  void OnPluginDestroyed();
 
  private:
   // IPC::Channel::Listener implementation:
@@ -81,13 +79,6 @@ class NPObjectStub : public IPC::Channel::Listener,
   NPObject* npobject_;
   scoped_refptr<PluginChannelBase> channel_;
   int route_id_;
-
-  // These variables are used to ensure that the window script object is not
-  // called after the plugin widget has gone away, as the frame manually
-  // deallocates it and ignores the refcount to avoid leaks.
-  bool valid_;
-  WebPluginDelegateProxy* web_plugin_delegate_proxy_;
-
   gfx::NativeViewId containing_window_;
 
   // The url of the main frame hosting the plugin.

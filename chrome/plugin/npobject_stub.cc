@@ -9,7 +9,6 @@
 #include "chrome/plugin/npobject_util.h"
 #include "chrome/plugin/plugin_channel_base.h"
 #include "chrome/plugin/plugin_thread.h"
-#include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "webkit/api/public/WebBindings.h"
@@ -26,8 +25,6 @@ NPObjectStub::NPObjectStub(
     : npobject_(npobject),
       channel_(channel),
       route_id_(route_id),
-      valid_(true),
-      web_plugin_delegate_proxy_(NULL),
       containing_window_(containing_window),
       page_url_(page_url) {
   channel_->AddRoute(route_id, this, true);
@@ -37,11 +34,8 @@ NPObjectStub::NPObjectStub(
 }
 
 NPObjectStub::~NPObjectStub() {
-  if (web_plugin_delegate_proxy_)
-    web_plugin_delegate_proxy_->DropWindowScriptObject();
-
   channel_->RemoveRoute(route_id_);
-  if (npobject_ && valid_)
+  if (npobject_)
     WebBindings::releaseObject(npobject_);
 }
 
@@ -49,10 +43,21 @@ bool NPObjectStub::Send(IPC::Message* msg) {
   return channel_->Send(msg);
 }
 
+void NPObjectStub::OnPluginDestroyed() {
+  // We null out the underlying NPObject pointer since it's not valid anymore (
+  // ScriptController manually deleted the object).  As a result,
+  // OnMessageReceived won't dispatch any more messages.  Since this includes
+  // OnRelease, this object won't get deleted until OnChannelError which might
+  // not happen for a long time if this renderer process has a long lived
+  // plugin instance to the same process.  So we delete this object manually.
+  npobject_ = NULL;
+  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+}
+
 void NPObjectStub::OnMessageReceived(const IPC::Message& msg) {
   child_process_logging::ScopedActiveURLSetter url_setter(page_url_);
 
-  if (!valid_) {
+  if (!npobject_) {
     if (msg.is_sync()) {
       // The object could be garbage because the frame has gone away, so
       // just send an error reply to the caller.
@@ -82,10 +87,6 @@ void NPObjectStub::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void NPObjectStub::OnChannelError() {
-  // When the plugin process is shutting down, all the NPObjectStubs
-  // destructors are called.  However the plugin dll might have already
-  // been released, in which case the NPN_ReleaseObject will cause a crash.
-  npobject_ = NULL;
   delete this;
 }
 

@@ -15,12 +15,14 @@ class WindowedPluginTest : public PluginTest {
  public:
   WindowedPluginTest(NPP id, NPNetscapeFuncs *host_functions);
   ~WindowedPluginTest();
-  virtual NPError SetWindow(NPWindow* pNPWindow);
 
  private:
   static LRESULT CALLBACK WindowProc(
       HWND window, UINT message, WPARAM wparam, LPARAM lparam);
   static void CallJSFunction(WindowedPluginTest*, const char*);
+
+  virtual NPError SetWindow(NPWindow* pNPWindow);
+  virtual NPError Destroy();
 
   HWND window_;
   bool done_;

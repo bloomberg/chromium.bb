@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -165,7 +165,6 @@ WebPluginDelegateProxy::WebPluginDelegateProxy(
       mime_type_(mime_type),
       instance_id_(MSG_ROUTING_NONE),
       npobject_(NULL),
-      window_script_object_(NULL),
       sad_plugin_(NULL),
       invalidate_pending_(false),
       transparent_(false),
@@ -176,30 +175,17 @@ WebPluginDelegateProxy::~WebPluginDelegateProxy() {
 }
 
 void WebPluginDelegateProxy::PluginDestroyed() {
-  if (window_) {
+  if (window_)
     WillDestroyWindow();
-  }
-  plugin_ = NULL;
-
-  if (npobject_) {
-    // When we destroy the plugin instance, the NPObjectStub NULLs out its
-    // pointer to the npobject (see NPObjectStub::OnChannelError).  Therefore,
-    // we release the object before destroying the instance to avoid leaking.
-    WebBindings::releaseObject(npobject_);
-    npobject_ = NULL;
-  }
-
-  if (window_script_object_) {
-    // The ScriptController deallocates this object independent of its ref count
-    // to avoid leaks if the plugin forgets to release it.  So mark the object
-    // invalid to avoid accessing it past this point.
-    window_script_object_->set_proxy(NULL);
-    window_script_object_->set_invalid();
-  }
 
   if (channel_host_) {
-    channel_host_->RemoveRoute(instance_id_);
     Send(new PluginMsg_DestroyInstance(instance_id_));
+
+    // Must remove the route after sending the destroy message, since
+    // RemoveRoute can lead to all the outstanding NPObjects being told the
+    // channel went away if this was the last instance.
+    channel_host_->RemoveRoute(instance_id_);
+
     // Release the channel host now. If we are is the last reference to the
     // channel, this avoids a race where this renderer asks a new connection to
     // the same plugin between now and the time 'this' is actually deleted.
@@ -209,6 +195,17 @@ void WebPluginDelegateProxy::PluginDestroyed() {
     // to associate it with the channel name.
     channel_host_ = NULL;
   }
+
+  if (window_script_object_) {
+    // The ScriptController deallocates this object independent of its ref count
+    // to avoid leaks if the plugin forgets to release it.  So mark the object
+    // invalid to avoid accessing it past this point.  Note: only do this after
+    // the DestroyInstance message in case the window object is scripted by the
+    // plugin in NPP_Destroy.
+    window_script_object_->OnPluginDestroyed();
+  }
+
+  plugin_ = NULL;
 
   MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
@@ -828,10 +825,8 @@ void WebPluginDelegateProxy::OnGetWindowScriptNPObject(
 
   // The stub will delete itself when the proxy tells it that it's released, or
   // otherwise when the channel is closed.
-  NPObjectStub* stub = new NPObjectStub(
-      npobject, channel_host_.get(), route_id, 0, page_url_);
-  window_script_object_ = stub;
-  window_script_object_->set_proxy(this);
+  window_script_object_ = (new NPObjectStub(
+      npobject, channel_host_.get(), route_id, 0, page_url_))->AsWeakPtr();
   *success = true;
   *npobject_ptr = reinterpret_cast<intptr_t>(npobject);
 }

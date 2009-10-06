@@ -160,7 +160,8 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode,
   // TODO(port): plugin_windowed_test.*.
   } else if (test_name == "hidden_plugin" ||
              test_name == "create_instance_in_paint" ||
-             test_name == "alert_in_window_message") {
+             test_name == "alert_in_window_message" ||
+             test_name == "ensure_scripting_works_in_destroy") {
     new_test = new NPAPIClient::WindowedPluginTest(instance,
         NPAPIClient::PluginClient::HostFunctions());
 #endif
@@ -191,10 +192,10 @@ NPError NPP_Destroy(NPP instance, NPSavedData** save) {
 
   NPAPIClient::PluginTest *plugin =
     (NPAPIClient::PluginTest*)instance->pdata;
-  delete plugin;
 
-  // XXXMB - do work here.
-  return NPERR_GENERIC_ERROR;
+  NPError rv = plugin->Destroy();
+  delete plugin;
+  return rv;
 }
 
 NPError NPP_SetWindow(NPP instance, NPWindow* pNPWindow) {

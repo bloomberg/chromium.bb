@@ -64,6 +64,37 @@ NPError WindowedPluginTest::SetWindow(NPWindow* pNPWindow) {
   return NPERR_NO_ERROR;
 }
 
+NPError WindowedPluginTest::Destroy() {
+  if (test_name() != "ensure_scripting_works_in_destroy")
+    return NPERR_NO_ERROR;
+
+  // Bug 23706: ensure that scripting works with no asserts.
+  NPObject *window_obj = NULL;
+  HostFunctions()->getvalue(id(), NPNVWindowNPObject,&window_obj);
+
+  if (!window_obj) {
+    SetError("Failed to get NPObject for plugin instance");
+  } else {
+    std::string script = "javascript:GetMagicNumber()";
+    NPString script_string;
+    script_string.UTF8Characters = script.c_str();
+    script_string.UTF8Length =
+        static_cast<unsigned int>(script.length());
+
+    NPVariant result_var;
+    bool result = HostFunctions()->evaluate(
+        id(), window_obj, &script_string, &result_var);
+    if (!result ||
+        result_var.type != NPVariantType_Int32 ||
+        result_var.value.intValue != 42) {
+      SetError("Failed to script during NPP_Destroy");
+    }
+  }
+
+  SignalTestCompleted();
+  return NPERR_NO_ERROR;
+}
+
 void WindowedPluginTest::CallJSFunction(
     WindowedPluginTest* this_ptr, const char* function) {
   NPIdentifier function_id = this_ptr->HostFunctions()->getstringidentifier(

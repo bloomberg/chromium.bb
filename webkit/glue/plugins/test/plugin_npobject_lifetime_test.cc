@@ -152,9 +152,9 @@ void CALLBACK NPObjectDeletePluginInNPN_Evaluate::TimerProc(
       static_cast<unsigned int>(script.length());
 
   NPVariant result_var;
-  NPError result = g_npn_evaluate_test_instance_->HostFunctions()->evaluate(
-                      g_npn_evaluate_test_instance_->id(), window_obj,
-                      &script_string, &result_var);
+  bool result = g_npn_evaluate_test_instance_->HostFunctions()->evaluate(
+      g_npn_evaluate_test_instance_->id(), window_obj,
+      &script_string, &result_var);
   // If this test failed we would have crashed by now.
 }
 

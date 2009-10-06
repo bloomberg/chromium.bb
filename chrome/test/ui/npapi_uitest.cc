@@ -159,27 +159,29 @@ TEST_F(NPAPITester, DISABLED_SelfDeletePluginInvokeAlert) {
 // Tests if a plugin executing a self deleting script in the context of
 // a synchronous paint event works correctly
 TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInvokeInSynchronousPaint) {
-  if (!UITest::in_process_renderer()) {
-    show_window_ = true;
-    std::wstring test_case = L"execute_script_delete_in_paint.html";
-    GURL url = GetTestUrl(L"npapi", test_case);
-    NavigateToURL(url);
-    WaitForFinish("execute_script_delete_in_paint", "1", url,
-                  kTestCompleteCookie, kTestCompleteSuccess,
-                  kShortWaitTimeout);
-  }
+  if (UITest::in_process_renderer())
+    return;
+
+  show_window_ = true;
+  std::wstring test_case = L"execute_script_delete_in_paint.html";
+  GURL url = GetTestUrl(L"npapi", test_case);
+  NavigateToURL(url);
+  WaitForFinish("execute_script_delete_in_paint", "1", url,
+                kTestCompleteCookie, kTestCompleteSuccess,
+                kShortWaitTimeout);
 }
 
 TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNewStream) {
-  if (!UITest::in_process_renderer()) {
-    show_window_ = true;
-    std::wstring test_case = L"self_delete_plugin_stream.html";
-    GURL url = GetTestUrl(L"npapi", test_case);
-    NavigateToURL(url);
-    WaitForFinish("self_delete_plugin_stream", "1", url,
-                  kTestCompleteCookie, kTestCompleteSuccess,
-                  kShortWaitTimeout);
-  }
+  if (UITest::in_process_renderer())
+    return;
+
+  show_window_ = true;
+  std::wstring test_case = L"self_delete_plugin_stream.html";
+  GURL url = GetTestUrl(L"npapi", test_case);
+  NavigateToURL(url);
+  WaitForFinish("self_delete_plugin_stream", "1", url,
+                kTestCompleteCookie, kTestCompleteSuccess,
+                kShortWaitTimeout);
 }
 
 // Tests if a plugin has a non zero window rect.
@@ -235,15 +237,16 @@ TEST_F(NPAPIVisiblePluginTester, AlertInWindowMessage) {
 #endif
 
 TEST_F(NPAPIVisiblePluginTester, VerifyNPObjectLifetimeTest) {
-  if (!UITest::in_process_renderer()) {
-    show_window_ = true;
-    std::wstring test_case = L"npobject_lifetime_test.html";
-    GURL url = GetTestUrl(L"npapi", test_case);
-    NavigateToURL(url);
-    WaitForFinish("npobject_lifetime_test", "1", url,
-                  kTestCompleteCookie, kTestCompleteSuccess,
-                  kShortWaitTimeout);
-  }
+  if (UITest::in_process_renderer())
+    return;
+
+  show_window_ = true;
+  std::wstring test_case = L"npobject_lifetime_test.html";
+  GURL url = GetTestUrl(L"npapi", test_case);
+  NavigateToURL(url);
+  WaitForFinish("npobject_lifetime_test", "1", url,
+                kTestCompleteCookie, kTestCompleteSuccess,
+                kShortWaitTimeout);
 }
 
 // Tests that we don't crash or assert if NPP_New fails
@@ -255,14 +258,15 @@ TEST_F(NPAPIVisiblePluginTester, NewFails) {
 }
 
 TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInNPNEvaluate) {
-  if (!UITest::in_process_renderer()) {
-    GURL url = GetTestUrl(L"npapi",
-                          L"execute_script_delete_in_npn_evaluate.html");
-    NavigateToURL(url);
-    WaitForFinish("npobject_delete_plugin_in_evaluate", "1", url,
-                  kTestCompleteCookie, kTestCompleteSuccess,
-                  kShortWaitTimeout);
-  }
+  if (UITest::in_process_renderer())
+    return;
+
+  GURL url = GetTestUrl(L"npapi",
+                        L"execute_script_delete_in_npn_evaluate.html");
+  NavigateToURL(url);
+  WaitForFinish("npobject_delete_plugin_in_evaluate", "1", url,
+                kTestCompleteCookie, kTestCompleteSuccess,
+                kShortWaitTimeout);
 }
 
 // Flaky. See http://crbug.com/17645
@@ -320,4 +324,15 @@ TEST_F(NPAPIVisiblePluginTester, GetURLRequestFailWrite) {
 
   WaitForFinish("geturl_fail_write", "1", url, kTestCompleteCookie,
                 kTestCompleteSuccess, kShortWaitTimeout);
+}
+
+TEST_F(NPAPITester, EnsureScriptingWorksInDestroy) {
+  if (UITest::in_process_renderer())
+    return;
+
+  GURL url = GetTestUrl(L"npapi", L"ensure_scripting_works_in_destroy.html");
+  NavigateToURL(url);
+  WaitForFinish("ensure_scripting_works_in_destroy", "1", url,
+                kTestCompleteCookie, kTestCompleteSuccess,
+                kShortWaitTimeout);
 }

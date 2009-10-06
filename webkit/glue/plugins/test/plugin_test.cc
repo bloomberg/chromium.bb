@@ -23,6 +23,10 @@ NPError PluginTest::New(uint16 mode, int16 argc, const char* argn[],
   return NPERR_NO_ERROR;
 }
 
+NPError PluginTest::Destroy() {
+  return NPERR_NO_ERROR;
+}
+
 NPError PluginTest::SetWindow(NPWindow* pNPWindow) {
   return NPERR_NO_ERROR;
 }
@@ -60,33 +64,40 @@ std::string URLEncode(const std::string &sIn) {
 }
 
 void PluginTest::SignalTestCompleted() {
+  NPObject *window_obj = NULL;
+  host_functions_->getvalue(id_, NPNVWindowNPObject, &window_obj);
+  if (!window_obj)
+    return;
+
   test_completed_ = true;
   // To signal test completion, we expect a couple of
   // javascript functions to be defined in the webpage
   // which hosts this plugin:
   //    onSuccess(test_name, test_id)
   //    onFailure(test_name, test_id, error_message)
-  std::string script_result;
-  std::string script_url;
+  std::string script("javascript:");
   if (Succeeded()) {
-    script_url.append("onSuccess(\"");
-    script_url.append(test_name_);
-    script_url.append("\",\"");
-    script_url.append(test_id_);
-    script_url.append("\");");
+    script.append("onSuccess(\"");
+    script.append(test_name_);
+    script.append("\",\"");
+    script.append(test_id_);
+    script.append("\");");
   } else {
-    script_url.append("onFailure(\"");
-    script_url.append(test_name_);
-    script_url.append("\",\"");
-    script_url.append(test_id_);
-    script_url.append("\",\"");
-    script_url.append(test_status_);
-    script_url.append("\");");
+    script.append("onFailure(\"");
+    script.append(test_name_);
+    script.append("\",\"");
+    script.append(test_id_);
+    script.append("\",\"");
+    script.append(test_status_);
+    script.append("\");");
   }
-  script_url = URLEncode(script_url);
-  script_result.append("javascript:");
-  script_result.append(script_url);
-  host_functions_->geturl(id_, script_result.c_str(), "_self");
+
+  NPString script_string;
+  script_string.UTF8Characters = script.c_str();
+  script_string.UTF8Length = static_cast<unsigned int>(script.length());
+
+  NPVariant result_var;
+  host_functions_->evaluate(id_, window_obj, &script_string, &result_var);
 }
 
 const char *PluginTest::GetArgValue(const char *name, const int16 argc,
