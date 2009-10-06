@@ -37,6 +37,7 @@
 
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/npruntime/npmodule.h"
 
 #include "native_client/src/trusted/plugin/srpc/srpc_client.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
@@ -69,6 +70,18 @@ bool SrpcClient::Init(PortablePluginInterface *portable_plugin,
   dprintf(("SrpcClient::SrpcClient: Ctor worked\n"));
   // Record the method names in a convenient way for later dispatches.
   GetMethods();
+#ifdef  NACL_NPAPI_INTERACTION_ENABLED
+  // TODO(sehr): this needs to be revisited when we allow groups of instances
+  // in one NaCl module.
+  int npapi_ident =
+      PortablePluginInterface::GetStrIdentifierCallback("NP_Initialize");
+  if (methods_.find(npapi_ident) != methods_.end()) {
+    dprintf(("SrpcClient::SrpcClient: Is an NPAPI plugin\n"));
+    // Start up NPAPI interaction.
+    portable_plugin->set_module(
+        new(std::nothrow) nacl::NPModule(&srpc_channel_));
+  }
+#endif  // NACL_NPAPI_INTERACTION_ENABLED
   dprintf(("SrpcClient::SrpcClient: GetMethods worked\n"));
   return true;
 }
@@ -81,6 +94,14 @@ SrpcClient::~SrpcClient() {
     dprintf(("SrpcClient::~SrpcClient: no plugin\n"));
     return;
   }
+#ifdef  NACL_NPAPI_INTERACTION_ENABLED
+  // TODO(sehr): this needs to be revisited when we allow groups of instances
+  // in one NaCl module.
+  if (NULL != portable_plugin->module()) {
+    delete portable_plugin->module();
+    portable_plugin->set_module(NULL);
+  }
+#endif  // NACL_NPAPI_INTERACTION_ENABLED
   dprintf(("SrpcClient::~SrpcClient: destroying the channel\n"));
   // And delete the connection.
   NaClSrpcDtor(&srpc_channel_);

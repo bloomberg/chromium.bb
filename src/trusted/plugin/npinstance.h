@@ -38,6 +38,8 @@
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 
 namespace nacl {
+// Incomplete class declarations.
+class NPModule;
 
 // Pure abstract base class for the NaCl MIME type implementation classes.
 class NPInstance {
@@ -80,6 +82,10 @@ class NPInstance {
   // Processes NPP_URLNotify() invocation from the browser.
   virtual void URLNotify(const char* url, NPReason reason,
                          void* notify_data) = 0;
+
+  // NPModule responsible for implementing connections to NaCl modules.
+  virtual NPModule* module() = 0;
+  virtual void set_module(NPModule* module) = 0;
 };
 
 extern bool CheckExecutableVersion(NPP instance, const char *filename);

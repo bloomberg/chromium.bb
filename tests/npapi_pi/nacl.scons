@@ -34,15 +34,15 @@ env.Prepend(CPPDEFINES = ['XP_UNIX'])
 
 npapi_pi_inputs = [
   'base_object.cc',
-  'main.cc',
   'npp_gate.cc',
   'plugin.cc',
 ]
 
 env.ComponentProgram('npapi_pi.nexe', npapi_pi_inputs,
-                     EXTRA_LIBS=['google_nacl_npruntime',
-                                 'google_nacl_imc',
-                                 'pthread'])
+                     EXTRA_LIBS=['google_nacl_imc',
+                                 'google_nacl_npruntime',
+                                 'pthread',
+                                 'srpc'])
 
 # Note that the html is required to run this program.
 env.Publish('npapi_pi.nexe', 'run', ['npapi_pi.html',])

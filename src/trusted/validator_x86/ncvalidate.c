@@ -418,7 +418,8 @@ int NCValidateFinish(struct NCValidatorState *vstate) {
   for (offset = 0; offset < vstate->iadrlimit - vstate->iadrbase;
        offset += vstate->alignment) {
     if (!GetAdrTable(offset, vstate->vttable)) {
-      ValidatePrintError(vstate->iadrbase + offset, "Bad basic block alignent");
+      ValidatePrintError(vstate->iadrbase + offset,
+                         "Bad basic block alignment");
       Stats_BadAlignment(vstate);
     }
   }

@@ -40,100 +40,128 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "native_client/src/include/portability_process.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
-#include "native_client/src/shared/npruntime/nacl_util.h"
+#include "native_client/src/shared/npruntime/npobject_proxy.h"
+#include "native_client/src/shared/npruntime/npobject_stub.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 
 namespace nacl {
 
-NPBridge::NPBridge(NPP npp)
-    : npp_(npp),
-      peer_pid_(-1),
+#if NACL_TARGET_SUBARCH == 64
+std::map<NPP, int>* NPBridge::npp_64_32_map = NULL;
+std::map<int, NPP>* NPBridge::npp_32_64_map = NULL;
+std::map<NPIdentifier, int>* NPBridge::npident_int_map = NULL;
+std::map<int, NPIdentifier>* NPBridge::int_npident_map = NULL;
+#endif  // NACL_TARGET_SUBARCH
+
+NPBridge::NPBridge()
+    : peer_pid_(-1),
       peer_npvariant_size_(0),  // Must be set later
-      channel_(kInvalidHtpHandle),
-      waiting_since_(0),
-      tag_(0),
-      handle_count_(0),
-      is_webkit_(false) {  // TBD
-  Init();
+      channel_(NULL) {
+#if NACL_BUILD_SUBARCH == 64
+  // The mappings from NPP to integers and back for interchange with NaCl
+  // modules
+  if (NULL == npp_64_32_map || NULL == npp_32_64_map) {
+    npp_64_32_map = new(std::nothrow) std::map<NPP, int>;
+    npp_32_64_map = new(std::nothrow) std::map<int, NPP>;
+  }
+  if (NULL == npident_int_map || NULL == int_npident_map) {
+    npident_int_map = new(std::nothrow) std::map<NPIdentifier, int>;
+    int_npident_map = new(std::nothrow) std::map<int, NPIdentifier>;
+  }
+#endif  // NACL_BUILD_SUBARCH
 }
 
 NPBridge::~NPBridge() {
+  // TODO(sehr): the cleanup needs to be done when an instance shuts down.
+  // Free the stubs created on the other end of the channel.
   while (!stub_map_.empty()) {
     std::map<NPObject*, NPObjectStub*>::iterator i = stub_map_.begin();
     NPObjectStub* stub = (*i).second;
     delete stub;
   }
-
-  Close(channel_);
-
-  // Note proxy objects are deleted by Navigator.
-  for (std::map<const NPCapability, NPObjectProxy*>::iterator i =
-          proxy_map_.begin();
-       proxy_map_.end() != i;
-       ++i) {
-    NPObjectProxy* proxy = (*i).second;
-    proxy->Detach();
-  }
 }
 
-NPObjectStub* NPBridge::LookupStub(NPObject* object) {
-  assert(object);
-  std::map<NPObject*, NPObjectStub*>::iterator i;
-  i = stub_map_.find(object);
-  if (stub_map_.end() != i) {
-    return (*i).second;
+int NPBridge::NppToInt(NPP npp) {
+#if NACL_BUILD_SUBARCH == 64
+  static int next_npp_int = 0;
+  if (NULL == npp_64_32_map || NULL == npp_32_64_map) {
+    // Translation called without proper setup.
+    return -1;
   }
-  return NULL;
+  if (npp_64_32_map->end() == npp_64_32_map->find(npp)) {
+    if (-1 == next_npp_int) {
+      // We have wrapped around and consumed all the identifiers.
+      return -1;
+    }
+    (*npp_32_64_map)[next_npp_int] = npp;
+    (*npp_64_32_map)[npp] = next_npp_int++;
+  }
+  return (*npp_64_32_map)[npp];
+#else
+  return reinterpret_cast<int>(npp);
+#endif  // NACL_BUILD_SUBARCH
 }
 
-NPObjectProxy* NPBridge::LookupProxy(const NPCapability& capability) {
+NPP NPBridge::IntToNpp(int npp_int) {
+#if NACL_BUILD_SUBARCH == 64
+  if (NULL == npp_64_32_map || NULL == npp_32_64_map) {
+    // Translation called without proper setup.
+    return NULL;
+  }
+  if (npp_32_64_map->end() == npp_32_64_map->find(npp_int)) {
+    // No mapping was created for this value.
+    return NULL;
+  }
+  return (*npp_32_64_map)[npp_int];
+#else
+  return reinterpret_cast<NPP>(npp_int);
+#endif  // NACL_BUILD_SUBARCH
+}
+
+int NPBridge::NpidentifierToInt(NPIdentifier npident) {
+#if NACL_BUILD_SUBARCH == 64
+  static int next_npident_int = 0;
+  if (NULL == npident_int_map || NULL == int_npident_map) {
+    // Translation called without proper setup.
+    return -1;
+  }
+  if (npident_int_map->end() == npident_int_map->find(npident)) {
+    if (-1 == next_npident_int) {
+      // We have wrapped around and consumed all the identifiers.
+      return -1;
+    }
+    (*int_npident_map)[next_npident_int] = npident;
+    (*npident_int_map)[npident] = next_npident_int++;
+  }
+  return (*npident_int_map)[npident];
+#else
+  return reinterpret_cast<int>(npident);
+#endif  // NACL_BUILD_SUBARCH
+}
+
+NPIdentifier NPBridge::IntToNpidentifier(int npident_int) {
+#if NACL_BUILD_SUBARCH == 64
+  if (NULL == npident_int_map || NULL == int_npident_map) {
+    // Translation called without proper setup.
+    return NULL;
+  }
+  if (int_npident_map->end() == int_npident_map->find(npident_int)) {
+    // No mapping was created for this value.
+    return NULL;
+  }
+  return (*int_npident_map)[npident_int];
+#else
+  return reinterpret_cast<NPIdentifier>(npident_int);
+#endif  // NACL_BUILD_SUBARCH
+}
+
+NPObject* NPBridge::CreateProxy(NPP npp, const NPCapability& capability) {
   if (NULL == capability.object) {
     return NULL;
   }
-  if (GetPID() == capability.pid) {
-    return NULL;
-  }
-  std::map<const NPCapability, NPObjectProxy*>::iterator i;
-  i = proxy_map_.find(capability);
-  if (i != proxy_map_.end()) {
-    return (*i).second;
-  }
-  return NULL;
-}
-
-int NPBridge::CreateStub(NPObject* object, NPCapability* cap) {
-  NPObjectStub* stub = NULL;
-  if (NULL != object) {
-    if (NPObjectProxy::IsInstance(object)) {  // object can be a proxy
-      NPObjectProxy* proxy = static_cast<NPObjectProxy*>(object);
-      if (peer_pid() == proxy->capability().pid) {
-        *cap = proxy->capability();
-        return 0;
-      }
-    }
-    stub = LookupStub(object);
-    if (stub) {
-      cap->pid = GetPID();
-      cap->object = object;
-      return 1;
-    }
-    stub = new(std::nothrow) NPObjectStub(this, object);
-  }
-  cap->pid = GetPID();
-  if (NULL == stub) {
-    cap->object = NULL;
-    return 0;
-  }
-  stub_map_[object] = stub;
-  cap->object = object;
-  return 1;
-}
-
-NPObject* NPBridge::CreateProxy(const NPCapability& capability) {
-  if (NULL == capability.object) {
-    return NULL;
-  }
-  if (capability.pid == GetPID()) {  // capability can be of my process
+  if (capability.pid == GETPID()) {  // capability can be of my process
     std::map<NPObject*, NPObjectStub*>::iterator i;
     i = stub_map_.find(capability.object);
     if (i == stub_map_.end()) {
@@ -150,12 +178,31 @@ NPObject* NPBridge::CreateProxy(const NPCapability& capability) {
     NPN_RetainObject(proxy);
     return proxy;
   }
-  NPObjectProxy* proxy = new(std::nothrow) NPObjectProxy(this, capability);
+  NPObjectProxy* proxy = new(std::nothrow) NPObjectProxy(npp, capability);
   if (NULL == proxy) {
     return NULL;
   }
   AddProxy(proxy);
   return proxy;
+}
+
+NPObjectProxy* NPBridge::LookupProxy(const NPCapability& capability) {
+  printf("LookupProxy(%p): %p %d\n",
+         reinterpret_cast<const void*>(&capability),
+         reinterpret_cast<void*>(capability.object),
+         capability.pid);
+  if (NULL == capability.object) {
+    return NULL;
+  }
+  if (GETPID() == capability.pid) {
+    return NULL;
+  }
+  std::map<const NPCapability, NPObjectProxy*>::iterator i;
+  i = proxy_map_.find(capability);
+  if (i != proxy_map_.end()) {
+    return (*i).second;
+  }
+  return NULL;
 }
 
 void NPBridge::AddProxy(NPObjectProxy* proxy) {
@@ -166,8 +213,46 @@ void NPBridge::RemoveProxy(NPObjectProxy* proxy) {
   proxy_map_.erase(proxy->capability());
 }
 
+int NPBridge::CreateStub(NPP npp, NPObject* object, NPCapability* cap) {
+  NPObjectStub* stub = NULL;
+  if (NULL != object) {
+    if (NPObjectProxy::IsInstance(object)) {  // object can be a proxy
+      NPObjectProxy* proxy = static_cast<NPObjectProxy*>(object);
+      if (peer_pid() == proxy->capability().pid) {
+        *cap = proxy->capability();
+        return 0;
+      }
+    }
+    stub = LookupStub(object);
+    if (stub) {
+      cap->pid = GETPID();
+      cap->object = object;
+      return 1;
+    }
+    stub = new(std::nothrow) NPObjectStub(npp, object);
+  }
+  cap->pid = GETPID();
+  if (NULL == stub) {
+    cap->object = NULL;
+    return 0;
+  }
+  stub_map_[object] = stub;
+  cap->object = object;
+  return 1;
+}
+
+NPObjectStub* NPBridge::LookupStub(NPObject* object) {
+  assert(object);
+  std::map<NPObject*, NPObjectStub*>::iterator i;
+  i = stub_map_.find(object);
+  if (stub_map_.end() != i) {
+    return (*i).second;
+  }
+  return NULL;
+}
+
 NPObjectStub* NPBridge::GetStub(const NPCapability& capability) {
-  if (GetPID() != capability.pid) {
+  if (GETPID() != capability.pid) {
     return NULL;
   }
   std::map<NPObject*, NPObjectStub*>::iterator i;
@@ -180,140 +265,6 @@ NPObjectStub* NPBridge::GetStub(const NPCapability& capability) {
 
 void NPBridge::RemoveStub(NPObjectStub* stub) {
   stub_map_.erase(stub->object());
-}
-
-RpcHeader* NPBridge::Request(RpcHeader* request, IOVec* iov, size_t iov_length,
-                             int* length) {
-  if (kInvalidHtpHandle == channel_) {
-    return NULL;
-  }
-  assert(iov[0].base == request);
-  request->tag = ++tag_;
-  request->pid = GetPID();
-
-  HtpHeader message;
-  message.iov = iov;
-  message.iov_length = iov_length;
-  message.handles = handles_;
-  message.handle_count = handle_count_;
-  if (SendDatagram(channel_, &message, 0) <
-          static_cast<int>(sizeof(RpcHeader))) {
-    clear_handle_count();
-    return NULL;
-  }
-  return Wait(request, length);
-}
-
-RpcHeader* NPBridge::Wait(const RpcHeader* request, int* length) {
-  RpcHeader* header = static_cast<RpcHeader*>(top());
-  for (;;) {
-    HtpHeader message;
-    IOVec vec;
-    vec.base = top();
-    vec.length = GetFreeSize();
-    message.iov = &vec;
-    message.iov_length = 1;
-    message.handles = handles_;
-    message.handle_count = kHandleCountMax;
-    clear_handle_count();
-
-    waiting_since_ = time(NULL);
-    int result = ReceiveDatagram(channel_, &message, 0);
-    waiting_since_ = 0;
-    if (-1 == result) {
-      Close(channel_);
-      channel_ = kInvalidHtpHandle;
-      return NULL;
-    }
-    if (result < static_cast<int>(sizeof(RpcHeader))) {
-      for (size_t i = 0; i < message.handle_count; ++i) {
-        Close(handles_[i]);
-      }
-      Close(channel_);
-      channel_ = kInvalidHtpHandle;
-      return NULL;
-    }
-    handle_count_ = message.handle_count;
-    if (request && header->Equals(*request)) {
-      // Received the response for the request.
-      if (0 != length) {
-        *length = result;
-      }
-      return header;
-    }
-    RpcStack stack(this);
-    stack.Alloc(result);
-    result = Dispatch(header, result);
-    if (-1 == result) {
-      // Send back a truncated header to indicate failure.
-      clear_handle_count();
-      IOVec iov = {
-        const_cast<RpcHeader*>(request),
-        offsetof(RpcHeader, error_code)
-      };
-      Respond(request, &iov, 1);
-    }
-    if (RPC_DESTROY == header->type) {
-      return NULL;
-    }
-  }
-}
-
-int NPBridge::Dispatch(RpcHeader* request, int len) {
-  RpcArg arg(this, request, len);
-  if (len < static_cast<int>(sizeof(RpcHeader) + sizeof(NPCapability))) {
-    return -1;
-  }
-  arg.Step(sizeof(RpcHeader));
-  const NPCapability* capability = arg.GetCapability();
-  assert(capability);
-
-  switch (request->type) {
-    case RPC_SET_EXCEPTION: {
-      NPObjectStub* stub = GetStub(*capability);
-      if (NULL != stub) {
-        return stub->Dispatch(request, len);
-      }
-      NPObjectProxy* proxy = LookupProxy(*capability);
-      if (NULL != proxy) {
-        return proxy->SetException(request, len);
-      }
-      break;
-    }
-    case RPC_DEALLOCATE:
-    case RPC_INVALIDATE:
-    case RPC_HAS_METHOD:
-    case RPC_INVOKE:
-    case RPC_INVOKE_DEFAULT:
-    case RPC_HAS_PROPERTY:
-    case RPC_GET_PROPERTY:
-    case RPC_SET_PROPERTY:
-    case RPC_REMOVE_PROPERTY:
-    case RPC_ENUMERATION:
-    case RPC_CONSTRUCT: {
-      NPObjectStub* stub = GetStub(*capability);
-      if (NULL != stub) {
-         return stub->Dispatch(request, len);
-      }
-      break;
-    }
-    default:
-      break;
-  }
-  return -1;
-}
-
-int NPBridge::Respond(const RpcHeader* reply, IOVec* iov, size_t iov_length) {
-  assert(1 <= iov_length);
-  assert(channel_ != kInvalidHtpHandle);
-  assert(iov[0].base == reply);
-
-  HtpHeader message;
-  message.iov = iov;
-  message.iov_length = iov_length;
-  message.handles = handles_;
-  message.handle_count = handle_count_;
-  return SendDatagram(channel_, &message, 0);
 }
 
 }  // namespace nacl

@@ -6,13 +6,10 @@ resource 'STR#' (126) { {
 } };
 
 resource 'STR#' (127) { {
-  "NativeClient Module - NPAPI bridge",
   "NativeClient Module - SRPC",
 } };
 
 resource 'STR#' (128) { {
-  "application/x-nacl-npapi",
-  "nexe",
   "application/x-nacl-srpc",
   "nexe",
 } };

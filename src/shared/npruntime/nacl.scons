@@ -42,14 +42,10 @@ env.ComponentLibrary('google_nacl_npruntime',
                       'npobject_proxy.cc',
                       'npobject_stub.cc',
                       'nprpc.cc',
-                      'npobject_handle.cc',
-                      'naclnp_util.cc',
-                      'nacl/util_nacl.cc',
                       ])
 
 headers = [
   'nacl_npapi.h',
-  'nacl_util.h',
   '$SOURCE_ROOT/native_client/src/third_party/npapi/files/include/npapi.h',
   '$SOURCE_ROOT/native_client/src/third_party/npapi/files/include/npruntime.h',
   '$SOURCE_ROOT/native_client/src/third_party/npapi/files/include/nptypes.h',

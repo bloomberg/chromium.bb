@@ -139,9 +139,15 @@ static bool Invoke(NPObject* obj, NPIdentifier methodName,
 }
 
 static bool HasProperty(NPObject *obj, NPIdentifier propertyName) {
-  printf("*** HasProperty\n");
-  /*  char *name = npnfuncs->utf8fromidentifier(propertyName); */
-  /*  printf(("*** hasProperty(%s)\n", name)); */
+  printf("*** HasProperty(%p)\n", propertyName);
+  if (NPN_IdentifierIsString(propertyName)) {
+    printf("*** is a string\n");
+    char *name = NPN_UTF8FromIdentifier(propertyName);
+    printf("*** HasProperty(string %s)\n", name);
+  } else {
+    int i = NPN_IntFromIdentifier(propertyName);
+    printf("*** HasProperty(int %d)\n", i);
+  }
   return false;
 }
 
@@ -155,13 +161,6 @@ static bool SetProperty(NPObject* object, NPIdentifier name,
                         const NPVariant* value) {
   printf("*** SetProperty\n");
   return false;
-}
-
-int main(int argc, char* argv[]) {
-  printf("*** main\n");
-  NaClNP_Init(&argc, argv);
-  NaClNP_MainLoop(0);
-  return 0;
 }
 
 NPClass *GetNPSimpleClass() {

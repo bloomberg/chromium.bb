@@ -181,7 +181,7 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
  * Some steps involve skipping a parameter in a va_arg list.
  */
 #define SKIP(va, impl_type) \
-    (void) va_arg(in_va, impl_type);
+    (void) va_arg(va, impl_type);
 
 /*
  * The first phase is the args[] vector construction.
@@ -337,7 +337,6 @@ NaClSrpcError NaClSrpcInvokeVaList(NaClSrpcChannel  *channel,
     ARGRET_SWITCH(ARG, in_va, inv[i]);
     inv[i]->tag = *p;
   }
-
   for (i = 0, p = ret_types; i < num_out; ++i, ++p) {
     ARGRET_SWITCH(RETINIT, in_va, outv[i]);
     outv[i]->tag = *p;

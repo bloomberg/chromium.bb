@@ -1,5 +1,5 @@
 /*
- * Copyright 2008, Google Inc.
+ * Copyright 2009, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,28 +29,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
-#include <sys/stat.h>
-#include <sys/types.h>
-
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
-
-#include "native_client/src/shared/npruntime/nacl_util.h"
-
-namespace nacl {
-
-int GetPID() {
-  return getpid();
-}
-
-Handle OpenFile(const char* filename) {
-  return open(filename, O_RDONLY);
-}
-
-int ReadFile(Handle handle, void* buffer, size_t length) {
-  return read(handle, buffer, length);
-}
-
-}  // namespace nacl
+// We want to have calls to various library routines, but do not want
+// those calls executed when the test is run.  run_tests is a global boolean
+// initialized in libs_present_stub.cc to defeat optimizations removing the
+// calls.  This header file provides a declaration rather than using an
+// ugly extern in a .cc file.
+extern bool run_tests;

@@ -31,6 +31,7 @@
 
 
 #include "native_client/src/trusted/plugin/srpc/srpc.h"
+#include "native_client/src/include/nacl_macros.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -39,7 +40,7 @@
 #include <set>
 
 #include "native_client/src/include/portability.h"
-
+#include "native_client/src/shared/npruntime/npmodule.h"
 #include "native_client/src/trusted/plugin/origin.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/closure.h"
@@ -94,7 +95,9 @@ int32_t StreamBuffer::write(int32_t offset, int32_t len, void* buf) {
 
 SRPC_Plugin::SRPC_Plugin(NPP npp, int argc, char* argn[], char* argv[])
     : npp_(npp),
-      plugin_(NULL) {
+      plugin_(NULL),
+      module_(NULL),
+      nacl_instance_(NULL) {
   dprintf(("SRPC_Plugin::SRPC_Plugin(%p, %d)\n",
            static_cast<void*>(this), argc));
   InitializeIdentifiers();
@@ -106,6 +109,10 @@ SRPC_Plugin::SRPC_Plugin(NPP npp, int argc, char* argn[], char* argv[])
              " ScriptableHandle::New returned null\n"));
     return;
   }
+  // Remember the argn/argv pairs for NPAPI proxying
+  npapi_argn_ = new(std::nothrow) char*[argc];
+  npapi_argv_ = new(std::nothrow) char*[argc];
+  npapi_argc_ = 0;
   // Set up the height and width attributes if passed (for Opera)
   for (int i = 0; i < argc; ++i) {
     if (!strncmp(argn[i], "height", 7)) {
@@ -129,6 +136,19 @@ SRPC_Plugin::SRPC_Plugin(NPP npp, int argc, char* argn[], char* argv[])
       nacl_srpc::ScriptableHandle<nacl_srpc::Plugin>::SetProperty(plugin_,
         (NPIdentifier)PortablePluginInterface::kVideoUpdateModeIdent,
         &variant);
+    } else {
+      if (NULL != npapi_argn_ && NULL != npapi_argv_) {
+        npapi_argn_[npapi_argc_] = strdup(argn[i]);
+        npapi_argv_[npapi_argc_] = strdup(argv[i]);
+        if (NULL == npapi_argn_[npapi_argc_] ||
+            NULL == npapi_argv_[npapi_argc_]) {
+          // Give up on passing arguments.
+          free(npapi_argn_[npapi_argc_]);
+          free(npapi_argv_[npapi_argc_]);
+          continue;
+        }
+        ++npapi_argc_;
+      }
     }
   }
 
@@ -138,9 +158,32 @@ SRPC_Plugin::SRPC_Plugin(NPP npp, int argc, char* argn[], char* argv[])
     plugin_->Unref();
     plugin_ = NULL;
   }
+
   dprintf(("SRPC_Plugin::SRPC_Plugin: done, plugin_ %p, video_ %p\n",
            static_cast<void*>(plugin_),
            static_cast<void*>(video_)));
+}
+
+void SRPC_Plugin::set_module(nacl::NPModule* module) {
+#ifdef NACL_NPAPI_INTERACTION_ENABLED
+  dprintf(("Setting module pointer to %p\n", static_cast<void*>(module)));
+  module_ = module;
+  // Initialize the NaCl module's NPAPI interface.
+  // This should only be done for the first instance in a given group.
+  module->Initialize();
+  // Create a new instance of that group.
+  const char mime_type[] = "application/nacl-npapi-over-srpc";
+  NPError err = module->New(const_cast<char*>(mime_type),
+                            npp_,
+                            argc(),
+                            argn(),
+                            argv());
+  dprintf(("New result %x\n", err));
+  // Remember the scriptable version of the NaCl instance.
+  nacl_instance_ = module_->GetScriptableInstance(npp_);
+#else
+  UNREFERENCED_PARAMETER(module);
+#endif  // NACL_NPAPI_INTERACTION_ENABLED
 }
 
 SRPC_Plugin::~SRPC_Plugin() {

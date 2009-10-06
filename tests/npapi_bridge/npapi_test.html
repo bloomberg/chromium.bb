@@ -23,16 +23,10 @@ var PostInit = function() {
     document.getElementById('button_embed1_fillRect').disabled = null;
     document.getElementById('button_embed1_setProxy').disabled = null;
     document.getElementById('button_embed1_useProxy').disabled = null;
-    document.getElementById('button_embed1_setHandle').disabled = null;
-    document.getElementById('button_embed1_useHandle').disabled = null;
-    document.getElementById('button_embed1_freeze').disabled = null;
     document.getElementById('button_embed2_alert').disabled = null;
     document.getElementById('button_embed2_fillRect').disabled = null;
     document.getElementById('button_embed2_setProxy').disabled = null;
     document.getElementById('button_embed2_useProxy').disabled = null;
-    document.getElementById('button_embed2_setHandle').disabled = null;
-    document.getElementById('button_embed2_useHandle').disabled = null;
-    document.getElementById('button_embed2_freeze').disabled = null;
 
     var canvas = document.getElementById("tutorial");
     var context = canvas.getContext("2d");
@@ -66,20 +60,21 @@ function doOnUnload()
 
   <h1>Native Client NPAPI Plug-in Test</h1>
 
-  <!-- `object` element test -->
-  <object id="embed1" data="npapi_test.nexe" type="application/x-nacl-npapi"
-          width="0" height="0">
-    <param name="canvas" value="tutorial">
-    <param name="param1" value="with space">
-    <param name="param2" value="">
-    <param name="param3" value="with'quote">
-    <param name="param4" value='with"doublequote'>
-  </object>
   <!-- `embed` element test -->
-  <embed id="embed2" src="npapi_test.nexe" type="application/x-nacl-npapi"
+  <embed id="embed1" src="npapi_test.nexe" type="application/x-nacl-srpc"
+         width="0" height="0"
+         canvas="tutorial"
+         param1="with space"
+         param2=""
+         param3="with'quote"
+         param4='with"doublequote' />
+  <!-- `embed` element test -->
+  <embed id="embed2" src="npapi_test.nexe" type="application/x-nacl-srpc"
          width=0 height=0
          canvas='tutorial2'
-         param1="with space" param2="" param3="with'quote"
+         param1="with space"
+         param2=""
+         param3="with'quote"
          param4='with"doublequote' />
 
   <br />
@@ -97,12 +92,6 @@ function doOnUnload()
             id='button_embed1_setProxy' onclick='embed1.setProxy()' />
       <input type=button value="embed1.useProxy()" disabled="true"
             id='button_embed1_useProxy' onclick='embed1.useProxy()' />
-      <input type=button value="embed1.setHandle()" disabled="true"
-            id='button_embed1_setHandle' onclick='embed1.setHandle()' />
-      <input type=button value="embed1.useHandle()" disabled="true"
-            id='button_embed1_useHandle' onclick='embed1.useHandle()' />
-      <input type=button value="embed1.freeze()" disabled="true"
-            id='button_embed1_freeze' onclick='embed1.freeze()' />
       <hr />
       <input type=button value="alert(embed2.bar)" disabled="true"
             id='button_embed2_alert' onclick='alert(embed2.bar)' />
@@ -112,12 +101,6 @@ function doOnUnload()
             id='button_embed2_setProxy' onclick='embed2.setProxy()' />
       <input type=button value="embed2.useProxy()" disabled="true"
             id='button_embed2_useProxy' onclick='embed2.useProxy()' />
-      <input type=button value="embed2.setHandle()" disabled="true"
-            id='button_embed2_setHandle' onclick='embed2.setHandle()' />
-      <input type=button value="embed2.useHandle()" disabled="true"
-            id='button_embed2_useHandle' onclick='embed2.useHandle()' />
-      <input type=button value="embed2.freeze()" disabled="true"
-            id='button_embed2_freeze' onclick='embed2.freeze()' />
     </form>
   <hr />
 

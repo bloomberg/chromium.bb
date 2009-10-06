@@ -35,9 +35,8 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_NPRUNTIME_NPOBJECT_STUB_H_
 #define NATIVE_CLIENT_SRC_SHARED_NPRUNTIME_NPOBJECT_STUB_H_
 
-// TODO(sehr): prune the included files.
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
-
 #include "native_client/src/shared/npruntime/npcapability.h"
 #include "native_client/src/shared/npruntime/nprpc.h"
 
@@ -49,15 +48,15 @@ class RpcArg;
 // An NPObjectStub wraps an NPObject and converts IMC messages from
 // NPObjectProxy to calls to the object.
 class NPObjectStub {
-  // The NPBridge that manages this stub instance.
-  NPBridge* bridge_;
+  // The NPP instance to which this stub belongs.
+  NPP npp_;
   // The NPObject for which this stub instance is created.
   NPObject* object_;
 
  public:
-  // Creates a new instance of NPObjectStub within the specified bridge for
+  // Creates a new instance of NPObjectStub with the specified NPP for
   // the specified local NPObject.
-  NPObjectStub(NPBridge* bridge, NPObject* object);
+  NPObjectStub(NPP npp, NPObject* object);
   ~NPObjectStub();
 
   // Returns true if this stub instance is created for the local NPObject
@@ -66,29 +65,82 @@ class NPObjectStub {
     return object_ == capability.object;
   }
 
+  NPP npp() const {
+    return npp_;
+  }
+
   NPObject* object() const {
     return object_;
   }
 
-  // Dispatches the request message received from the remote NPObjectProxy
-  // object.
-  int Dispatch(RpcHeader* request, int len);
+  // Gets the NPObjectStub corresponding to a particular capability.
+  // Used by the SRPC methods to determine the object stub to dispatch to.
+  static NPObjectStub* Lookup(NaClSrpcChannel* channel, RpcArg* arg);
 
+  // The SRPC methods for all of the NPObject interfaces.
+  static NaClSrpcError Deallocate(NaClSrpcChannel* channel,
+                                  NaClSrpcArg** inputs,
+                                  NaClSrpcArg** outputs);
+  static NaClSrpcError Invalidate(NaClSrpcChannel* channel,
+                                  NaClSrpcArg** inputs,
+                                  NaClSrpcArg** outputs);
+  static NaClSrpcError HasMethod(NaClSrpcChannel* channel,
+                                 NaClSrpcArg** inputs,
+                                 NaClSrpcArg** outputs);
+  static NaClSrpcError Invoke(NaClSrpcChannel* channel,
+                              NaClSrpcArg** inputs,
+                              NaClSrpcArg** outputs);
+  static NaClSrpcError InvokeDefault(NaClSrpcChannel* channel,
+                                     NaClSrpcArg** inputs,
+                                     NaClSrpcArg** outputs);
+  static NaClSrpcError HasProperty(NaClSrpcChannel* channel,
+                                   NaClSrpcArg** inputs,
+                                   NaClSrpcArg** outputs);
+  static NaClSrpcError GetProperty(NaClSrpcChannel* channel,
+                                   NaClSrpcArg** inputs,
+                                   NaClSrpcArg** outputs);
+  static NaClSrpcError SetProperty(NaClSrpcChannel* channel,
+                                   NaClSrpcArg** inputs,
+                                   NaClSrpcArg** outputs);
+  static NaClSrpcError RemoveProperty(NaClSrpcChannel* channel,
+                                      NaClSrpcArg** inputs,
+                                      NaClSrpcArg** outputs);
+  static NaClSrpcError Enumerate(NaClSrpcChannel* channel,
+                                 NaClSrpcArg** inputs,
+                                 NaClSrpcArg** outputs);
+  static NaClSrpcError Construct(NaClSrpcChannel* channel,
+                                 NaClSrpcArg** inputs,
+                                 NaClSrpcArg** outputs);
+  static NaClSrpcError SetException(NaClSrpcChannel* channel,
+                                    NaClSrpcArg** inputs,
+                                    NaClSrpcArg** outputs);
+
+  // This implementation is an exception because it is also called from
+  // npn_gate.cc
+  void SetExceptionImpl(const NPUTF8* message);
+
+ private:
   // NPClass methods. NPObjectStub forwards these RPC requests received from
   // the remote NPObjectProxy object to object_;
-  bool Invalidate(RpcArg* arg);
-  bool HasMethod(RpcArg* arg);
-  bool Invoke(uint32_t arg_count, RpcArg* arg, NPVariant* result);
-  bool InvokeDefault(uint32_t arg_count, RpcArg* arg, NPVariant* result);
-  bool HasProperty(RpcArg* arg);
-  bool GetProperty(RpcArg* arg, NPVariant* result);
-  bool SetProperty(RpcArg* arg);
-  bool RemoveProperty(RpcArg* arg);
-  bool Enumeration(RpcArg* arg);
-  bool Construct(uint32_t arg_count, RpcArg* arg, NPVariant* result);
-
-  // Processes NPN_SetException() request from the remote proxy object.
-  void SetException(const NPUTF8* message);
+  void DeallocateImpl();
+  void InvalidateImpl();
+  bool HasMethodImpl(NPIdentifier name);
+  NPError InvokeImpl(NPIdentifier name,
+                     const NPVariant* args,
+                     uint32_t arg_count,
+                     NPVariant* result);
+  NPError InvokeDefaultImpl(const NPVariant* args,
+                            uint32_t arg_count,
+                            NPVariant* result);
+  bool HasPropertyImpl(NPIdentifier name);
+  bool GetPropertyImpl(NPIdentifier name, NPVariant* result);
+  bool SetPropertyImpl(NPIdentifier name, const NPVariant* variant);
+  bool RemovePropertyImpl(NPIdentifier name);
+  bool EnumerateImpl(NPIdentifier** identifiers,
+                     uint32_t* identifier_count);
+  bool ConstructImpl(const NPVariant* args,
+                     uint32_t arg_count,
+                     NPVariant* result);
 };
 
 }  // namespace nacl

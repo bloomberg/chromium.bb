@@ -53,6 +53,7 @@ namespace nacl_srpc {
 
 namespace nacl {
   class VideoMap;
+  class NPModule;
 }
 
 // PortablePluginInterface represents the interface to the browser from
@@ -63,6 +64,9 @@ class PortablePluginInterface {
   virtual nacl_srpc::PluginIdentifier GetPluginIdentifier() = 0;
   virtual nacl::VideoMap* video() = 0;
   virtual nacl_srpc::ScriptableHandle<nacl_srpc::Plugin>* plugin() = 0;
+  virtual nacl::NPModule* module() = 0;
+  virtual void set_module(nacl::NPModule* module)  = 0;
+  virtual NPObject* nacl_instance() = 0;
 
   // Functions for communication with the browser.
   // NOTE(gregoryd): some of the functions below may require more information

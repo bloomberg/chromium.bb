@@ -41,7 +41,7 @@
 #include <set>
 
 #include "native_client/src/include/portability.h"
-
+#include "native_client/src/third_party/npapi/files/include/npapi.h"
 #include "native_client/src/trusted/plugin/srpc/npapi_native.h"
 #include "native_client/src/trusted/plugin/srpc/ret_array.h"
 #include "native_client/src/trusted/plugin/srpc/socket_address.h"
@@ -110,13 +110,13 @@ class ScriptableHandle: public ScriptableHandleBase {
                                              Invalidate,
                                              HasMethod,
                                              Invoke,
-                                             0,
+                                             InvokeDefault,
                                              HasProperty,
                                              GetProperty,
                                              SetProperty,
-                                             0,  // RemoveProperty,
-                                             0,  // Enumerate,
-                                             0,  // Construct,
+                                             RemoveProperty,
+                                             Enumerate,
+                                             Construct
     };
 
     dprintf(("ScriptableHandle::New\n"));
@@ -160,7 +160,7 @@ class ScriptableHandle: public ScriptableHandleBase {
                      const NPVariant* args,
                      uint32_t arg_count,
                      NPVariant* result) {
-      ScriptableHandle<HandleType>* unknown_handle =
+    ScriptableHandle<HandleType>* unknown_handle =
         static_cast<ScriptableHandle<HandleType>*>(obj);
 
       dprintf(("ScriptableHandle::Invoke(%p, %s, %d)\n",
@@ -169,26 +169,62 @@ class ScriptableHandle: public ScriptableHandleBase {
                    reinterpret_cast<uintptr_t>(name)),
                arg_count));
 
+    PortablePluginInterface* intf = unknown_handle->plugin_interface_;
+    if (NULL == intf->nacl_instance()) {
       return unknown_handle->GenericInvoke(name,
                                            METHOD_CALL,
                                            args,
                                            arg_count,
                                            result);
+    } else {
+      NPObject* proxy = intf->nacl_instance();
+      bool retval = proxy->_class->invoke(proxy, name, args, arg_count, result);
+      printf("scriptable handle returned %d\n", retval);
+      return retval;
+    }
+  }
+
+  static bool InvokeDefault(NPObject* obj,
+                            const NPVariant* args,
+                            uint32_t arg_count,
+                            NPVariant* result) {
+    ScriptableHandle<HandleType>* unknown_handle =
+        static_cast<ScriptableHandle<HandleType>*>(obj);
+
+    dprintf(("ScriptableHandle::InvokeDefault(%p, %d)\n",
+             static_cast<void*>(obj),
+             arg_count));
+
+    PortablePluginInterface* intf = unknown_handle->plugin_interface_;
+    if (NULL == intf->nacl_instance()) {
+      return false;
+    } else {
+      NPObject* proxy = intf->nacl_instance();
+      return proxy->_class->invokeDefault(proxy, args, arg_count, result);
+    }
   }
 
   // Property accessors/mutators.
   static bool HasProperty(NPObject* obj, NPIdentifier name) {
     ScriptableHandle<HandleType>* unknown_handle =
       static_cast<ScriptableHandle<HandleType>*>(obj);
+
     dprintf(("ScriptableHandle::HasProperty(%p, %s)\n",
              static_cast<void*>(obj),
              PortablePluginInterface::IdentToString(
                  reinterpret_cast<uintptr_t>(name))));
 
-    // If the property is supported,
-    // the interface should include both set and get methods.
-    return unknown_handle->handle_->HasMethod(reinterpret_cast<uintptr_t>(name),
-                                              PROPERTY_GET);
+    PortablePluginInterface* intf = unknown_handle->plugin_interface_;
+    if (NULL == intf->nacl_instance()) {
+      // If the property is supported,
+      // the interface should include both set and get methods.
+      return unknown_handle->handle_->HasMethod(
+          reinterpret_cast<uintptr_t>(name),
+          PROPERTY_GET);
+    } else {
+      NPObject* proxy = intf->nacl_instance();
+      return proxy->_class->hasProperty(proxy, name);
+    }
   }
 
   static bool GetProperty(NPObject* obj,
@@ -202,11 +238,17 @@ class ScriptableHandle: public ScriptableHandleBase {
              PortablePluginInterface::IdentToString(
                  reinterpret_cast<uintptr_t>(name))));
 
-    return unknown_handle->GenericInvoke(name,
-                                         PROPERTY_GET,
-                                         NULL,
-                                         0,
-                                         variant);
+    PortablePluginInterface* intf = unknown_handle->plugin_interface_;
+    if (NULL == intf->nacl_instance()) {
+      return unknown_handle->GenericInvoke(name,
+                                           PROPERTY_GET,
+                                           NULL,
+                                           0,
+                                           variant);
+    } else {
+      NPObject* proxy = intf->nacl_instance();
+      return proxy->_class->getProperty(proxy, name, variant);
+    }
   }
 
   static bool SetProperty(NPObject* obj,
@@ -221,11 +263,65 @@ class ScriptableHandle: public ScriptableHandleBase {
                  reinterpret_cast<uintptr_t>(name)),
              static_cast<void*>(const_cast<NPVariant*>(variant))));
 
-    return unknown_handle->GenericInvoke(name,
-                                         PROPERTY_SET,
-                                         variant,
-                                         1,
-                                         NULL);
+    PortablePluginInterface* intf = unknown_handle->plugin_interface_;
+    if (NULL == intf->nacl_instance()) {
+      return unknown_handle->GenericInvoke(name,
+                                           PROPERTY_SET,
+                                           variant,
+                                           1,
+                                           NULL);
+    } else {
+      NPObject* proxy = intf->nacl_instance();
+      return proxy->_class->setProperty(proxy, name, variant);
+    }
+  }
+
+  static bool RemoveProperty(NPObject* obj,
+                             NPIdentifier name) {
+    ScriptableHandle<HandleType>* unknown_handle =
+      static_cast<ScriptableHandle<HandleType>*>(obj);
+
+    dprintf(("ScriptableHandle::RemoveProperty(%p, %s)\n",
+             static_cast<void*>(obj),
+             PortablePluginInterface::IdentToString(
+                 reinterpret_cast<int>(name))));
+
+    PortablePluginInterface* intf = unknown_handle->plugin_interface_;
+    if (NULL == intf->nacl_instance()) {
+      return false;
+    } else {
+      NPObject* proxy = intf->nacl_instance();
+      return proxy->_class->removeProperty(proxy, name);
+    }
+  }
+
+  static bool Enumerate(NPObject* obj,
+                        NPIdentifier** names,
+                        uint32_t* name_count) {
+    dprintf(("ScriptableHandle::Enumerate(%p)\n",
+             static_cast<void*>(obj)));
+
+    UNREFERENCED_PARAMETER(obj);
+    UNREFERENCED_PARAMETER(names);
+    UNREFERENCED_PARAMETER(name_count);
+
+    // TODO(sehr): connect this.
+    return false;
+  }
+
+  static bool Construct(NPObject* obj,
+                        const NPVariant* args,
+                        uint32_t arg_count,
+                        NPVariant* result) {
+    dprintf(("ScriptableHandle::Construct(%p)\n",
+             static_cast<void*>(obj)));
+
+    UNREFERENCED_PARAMETER(obj);
+    UNREFERENCED_PARAMETER(args);
+    UNREFERENCED_PARAMETER(arg_count);
+    UNREFERENCED_PARAMETER(result);
+    // TODO(sehr): connect this.
+    return false;
   }
 
   // Allocation and deallocation.
@@ -278,8 +374,16 @@ class ScriptableHandle: public ScriptableHandleBase {
              static_cast<void*>(obj),
              PortablePluginInterface::IdentToString(
                  reinterpret_cast<uintptr_t>(name))));
-    return unknown_handle->handle_->HasMethod(reinterpret_cast<uintptr_t>(name),
-                                              METHOD_CALL);
+    if (NULL == unknown_handle->plugin_interface_->nacl_instance()) {
+      return unknown_handle->handle_->HasMethod(
+          reinterpret_cast<uintptr_t>(name),
+          METHOD_CALL);
+    } else {
+      PortablePluginInterface* intf = unknown_handle->plugin_interface_;
+      NPObject* proxy = intf->nacl_instance();
+      printf("Invoking HASMETHOD %p\n", static_cast<void*>(proxy));
+      return proxy->_class->hasMethod(proxy, name);
+    }
   }
 
   bool GenericInvoke(NPIdentifier name,

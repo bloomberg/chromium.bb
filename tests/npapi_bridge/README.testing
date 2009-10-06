@@ -98,33 +98,3 @@ To test, please follow the following steps:
   If you click [embed1.setProxy()] in the 2nd row, and then click
   [embed1.useProxy()] or [embed2.useProxy()], it is the color of the bottom left
   rectangle that changes.
-
-
-9. Click [embed1.setHandle()] or [embed2.setHandle()], and then click
-   [embed1.useHandle()] and [embed2.useHandle()].
-
-  [The following step works only on Linux and OS X right now since stdout
-   file handle cannot be transferred to the other processes on Windows.]
-
-  When setHandle() method is called, the NaCl module tries to transfer the
-  stdout file handle (NRD) to the browser and store it in the "handleobj"
-  browser window property.  When useHandle() is called, the NaCl module tries
-  to retrieve the stored file handle (NRD) from the "handleobj" browser window
-  property, and write a short message to it.
-
-  On success, you should see "Hello, there!" text message in the default output
-  location (in the console window on Windows, in /var/log/system.log on OS X,
-  and in the stdout on Linux). Notice by clicking [embed1.setHandle()] or
-  [embed2.setHandle()], the output goes to the corresponding NaCl module.
-
-10. Click [embed1.freeze()]
-
-  [The following step works only on Windows and Linux right now. Support for
-   OS X will be added shortly.]
-
-  When freeze() method is called, the NaCl module enters an infinite loop and
-  does not respond to the NaCl plugin.  Therefore, the Web browser appears to be
-  freezed.  After waiting for about five seconds, a message box pops up and let
-  you terminate the non-responding NaCl module by pushing the [Cancel] button.
-  After that, the browser regains the control from the NaCl plugin and you can
-  continue working with the browser.

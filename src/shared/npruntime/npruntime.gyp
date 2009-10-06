@@ -69,20 +69,17 @@
       'type': 'static_library',
       'sources': [
         'nacl_npapi.h',
-        'nacl_util.h',
         'naclnp_util.cc',
         'npbridge.cc',
         'npbridge.h',
         'npcapability.h',
         'npn_gate.cc',
-        'npnavigator.cc',
-        'npnavigator.h',
-        'npobject_handle.h',
+        'npmodule.cc',
+        'npmodule.h',
         'npobject_proxy.cc',
         'npobject_proxy.h',
         'npobject_stub.cc',
         'npobject_stub.h',
-        'npobject_handle.cc',
         # TODO env_no_strict_aliasing.ComponentObject('nprpc.cc')
         'nprpc.cc',
         'nprpc.h',
@@ -98,17 +95,6 @@
           '-Wswitch-enum'
         ]
       },
-      'conditions': [
-        ['OS=="linux"', { 'sources': [
-            'linux/util_linux.cc',
-        ]}],
-        ['OS=="mac"', { 'sources': [
-            'osx/util_osx.cc',
-        ]}],
-        ['OS=="win"', { 'sources': [
-            'win/util_win.cc',
-        ]}],
-      ],
     }
   ]
 }

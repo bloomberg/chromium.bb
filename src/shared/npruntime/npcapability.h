@@ -53,11 +53,6 @@ struct NPCapability {
     object = capability.object;
     return *this;
   }
-
-  // Returns true if this capability represents a NaCl resource handle.
-  bool IsHandle() const {
-    return (pid == kHandle) ? true : false;
-  }
 };
 
 // Less (<) is required for the std::map template class.

@@ -53,14 +53,15 @@ function helloworld() {
 //<![CDATA[
 var nacllib = new NaclLib(document.getElementsByName("nacl_module"),
                           document.getElementById("status"),
-                          50);
+                          5);
 
 // we use a custom detector for whether a module is ready or not
 nacllib.numModulesReady = function(modules) {
   var count = 0;
   for (var i = 0; i < modules.length; i++) {
     try {
-      modules[i].fortytwo();
+      var foo = modules[i].fortytwo();
+      alert(foo);
       count += 1;
     } catch(e) {
       // do nothing

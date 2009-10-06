@@ -613,9 +613,12 @@ int NaClSrpcServerLoop(NaClSrpcImcDescType              imc_socket_desc,
  * processing loop refers to this section to build its tables.
  * The handler array begins at __kNaclSrpcHandlers.
  */
-extern const struct NaClSrpcHandlerDesc
-  __attribute__((section(".nacl_rpc_methods")))
+#define NACL_SRPC_METHOD_SECTION_ATTRIBUTE \
+  __attribute__((section(".nacl_rpc_methods"))) \
   __attribute__((aligned(8)))
+
+extern const struct NaClSrpcHandlerDesc
+  NACL_SRPC_METHOD_SECTION_ATTRIBUTE
   __kNaClSrpcHandlers[];
 /*
  * Not documented: in NativeClient code the default RPC descriptors are
@@ -623,10 +626,19 @@ extern const struct NaClSrpcHandlerDesc
  * The handler array ends at __kNaclSrpcHandlerEnd.
  */
 extern const struct NaClSrpcHandlerDesc
-  __attribute__((section(".nacl_rpc_methods")))
-  __attribute__((aligned(8)))
+  NACL_SRPC_METHOD_SECTION_ATTRIBUTE
   __kNaClSrpcHandlerEnd;
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
+#else
+#define NACL_SRPC_METHOD_SECTION_ATTRIBUTE
+#endif /* defined(__native_client__) ... */
+
+/**
+ * Exports an array of method descriptors to the default RPC descriptor array.
+ * @param name is the name of the array containing the method descriptors.
+ */
+#define NACL_SRPC_METHOD_ARRAY(name) \
+    struct NaClSrpcHandlerDesc NACL_SRPC_METHOD_SECTION_ATTRIBUTE name[]
 
 /**
  * Exports a method to the default RPC descriptor array.
@@ -635,14 +647,10 @@ extern const struct NaClSrpcHandlerDesc
  * @param method_handler A function pointer for the implementation of the
  * method.
  */
+/* TODO(sehr): these names can clash. */
 #define NACL_SRPC_METHOD(entry_format, method_handler) \
-struct NaClSrpcHandlerDesc \
-  __attribute__((section(".nacl_rpc_methods"))) \
-  __attribute__((aligned(8))) \
-  NaClSrpcMethod##method_handler = \
-  { entry_format, method_handler }
-
-#endif /* defined(NACL_LINUX) ... */
+  NACL_SRPC_METHOD_ARRAY(NaClSrpcMethod##method_handler) = \
+      { { entry_format, method_handler } }
 
 /**
  *  @clientSrpc Invokes a specified RPC on the given channel.  Parameters

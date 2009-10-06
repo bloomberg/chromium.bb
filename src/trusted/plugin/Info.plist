@@ -30,15 +30,6 @@
   <string>npGoogleNaClPlugin</string>
 	<key>WebPluginMIMETypes</key>
 	<dict>
-		<key>application/x-nacl-npapi</key>
-		<dict>
-			<key>WebPluginTypeDescription</key>
-			<string>Native Client NPAPI remote interaction</string>
-			<key>WebPluginExtensions</key>
-			<array>
-				<string>nexe,nacl</string>
-			</array>
-		</dict>
 		<key>application/x-nacl-srpc</key>
 		<dict>
 			<key>WebPluginTypeDescription</key>

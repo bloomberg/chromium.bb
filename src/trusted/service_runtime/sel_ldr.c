@@ -437,7 +437,7 @@ char const  *NaClErrorString(NaClErrorCode errcode) {
     case LOAD_BAD_FILE:
       return "ELF file not accessible";
     case LOAD_BAD_ENTRY:
-      return "Bad symbol table entry: not a text symbol/entry point";
+      return "Bad program entry point address";
     case LOAD_SEGMENT_OUTSIDE_ADDRSPACE:
       return ("ELF executable contains a segment which lies outside"
               " the assigned address space");

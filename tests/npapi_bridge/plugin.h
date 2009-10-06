@@ -35,13 +35,8 @@
 
 #include <map>
 
-#ifdef __native_client__
 #include <nacl/nacl_htp.h>
 #include <nacl/nacl_npapi.h>
-#else
-#include "native_client/src/shared/imc/nacl_htp.h"
-#include "native_client/src/shared/npruntime/nacl_npapi.h"
-#endif  // __native_client__
 #include "native_client/tests/npapi_bridge/base_object.h"
 
 class Plugin {
@@ -78,10 +73,7 @@ class ScriptablePluginObject : public BaseObject {
   bool FillRect(const NPVariant* args, uint32_t arg_count, NPVariant* result);
   bool SetProxy(const NPVariant* args, uint32_t arg_count, NPVariant* result);
   bool UseProxy(const NPVariant* args, uint32_t arg_count, NPVariant* result);
-  bool SetHandle(const NPVariant* args, uint32_t arg_count, NPVariant* result);
-  bool UseHandle(const NPVariant* args, uint32_t arg_count, NPVariant* result);
   bool NullMethod(const NPVariant* args, uint32_t arg_count, NPVariant* result);
-  bool Freeze(const NPVariant* args, uint32_t arg_count, NPVariant* result);
   bool Paint(const NPVariant* args, uint32_t arg_count, NPVariant* result);
 
   static void Notify(const char* url, void* notify_data,
@@ -118,10 +110,7 @@ class ScriptablePluginObject : public BaseObject {
   static NPIdentifier id_proxy;
   static NPIdentifier id_set_proxy;
   static NPIdentifier id_use_proxy;
-  static NPIdentifier id_set_handle;
-  static NPIdentifier id_use_handle;
   static NPIdentifier id_null_method;
-  static NPIdentifier id_freeze;
   static NPIdentifier id_paint;
 
   static NPObject* window_object;

@@ -47,6 +47,7 @@ class SharedMemory;
 namespace nacl {
 
 class VideoMap;
+class NPModule;
 
 class StreamBuffer {
  public:
@@ -91,11 +92,24 @@ class SRPC_Plugin : public NPInstance, public PortablePluginInterface {
   virtual nacl_srpc::PluginIdentifier GetPluginIdentifier() { return GetNPP(); }
   virtual VideoMap* video() { return video_; }
   nacl_srpc::ScriptableHandle<nacl_srpc::Plugin>* plugin() { return plugin_; }
+  // NPAPI proxy support.
+  virtual nacl::NPModule* module() { return module_; }
+  virtual void set_module(nacl::NPModule* module);
+  NPObject* nacl_instance() { return nacl_instance_; }
+  char** argn() { return npapi_argn_; }
+  char** argv() { return npapi_argv_; }
+  int argc() { return npapi_argc_; }
 
  private:
   NPP npp_;
   nacl_srpc::ScriptableHandle<nacl_srpc::Plugin>* plugin_;
   VideoMap* video_;
+  // NPAPI proxy support.
+  NPModule* module_;
+  NPObject* nacl_instance_;
+  char** npapi_argn_;
+  char** npapi_argv_;
+  int npapi_argc_;
 };
 
 }  // namespace nacl

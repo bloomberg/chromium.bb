@@ -35,14 +35,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <cstring>
-
-#ifdef __native_client__
-#include <nacl/nacl_htp.h>
+#include <nacl/nacl_srpc.h>
 #include <nacl/nacl_util.h>
-#else
-#include "native_client/src/shared/imc/nacl_htp.h"
-#include "native_client/src/shared/npruntime/nacl_util.h"
-#endif  // __native_client__
 
 NPIdentifier ScriptablePluginObject::id_bar;
 NPIdentifier ScriptablePluginObject::id_document;
@@ -57,10 +51,7 @@ NPIdentifier ScriptablePluginObject::id_fill_rect;
 NPIdentifier ScriptablePluginObject::id_proxy;
 NPIdentifier ScriptablePluginObject::id_set_proxy;
 NPIdentifier ScriptablePluginObject::id_use_proxy;
-NPIdentifier ScriptablePluginObject::id_set_handle;
-NPIdentifier ScriptablePluginObject::id_use_handle;
 NPIdentifier ScriptablePluginObject::id_null_method;
-NPIdentifier ScriptablePluginObject::id_freeze;
 NPIdentifier ScriptablePluginObject::id_paint;
 NPObject* ScriptablePluginObject::window_object;
 NPVariant ScriptablePluginObject::canvas_name;
@@ -88,10 +79,7 @@ bool ScriptablePluginObject::InitializeIdentifiers(NPObject* object,
   id_proxy = NPN_GetStringIdentifier("proxy");
   id_set_proxy = NPN_GetStringIdentifier("setProxy");
   id_use_proxy = NPN_GetStringIdentifier("useProxy");
-  id_set_handle = NPN_GetStringIdentifier("setHandle");
-  id_use_handle = NPN_GetStringIdentifier("useHandle");
   id_null_method = NPN_GetStringIdentifier("nullMethod");
-  id_freeze = NPN_GetStringIdentifier("freeze");
   id_paint = NPN_GetStringIdentifier("paint");
 
   STRINGZ_TO_NPVARIANT(canvas, canvas_name);
@@ -111,17 +99,8 @@ bool ScriptablePluginObject::InitializeIdentifiers(NPObject* object,
     std::pair<NPIdentifier, Method>(id_use_proxy,
                                     &ScriptablePluginObject::UseProxy));
   method_table->insert(
-    std::pair<NPIdentifier, Method>(id_set_handle,
-                                    &ScriptablePluginObject::SetHandle));
-  method_table->insert(
-    std::pair<NPIdentifier, Method>(id_use_handle,
-                                    &ScriptablePluginObject::UseHandle));
-  method_table->insert(
     std::pair<NPIdentifier, Method>(id_null_method,
                                     &ScriptablePluginObject::NullMethod));
-  method_table->insert(
-    std::pair<NPIdentifier, Method>(id_freeze,
-                                    &ScriptablePluginObject::Freeze));
   method_table->insert(
     std::pair<NPIdentifier, Method>(id_paint,
                                     &ScriptablePluginObject::Paint));
@@ -163,7 +142,8 @@ bool ScriptablePluginObject::GetProperty(NPIdentifier name,
 }
 
 bool ScriptablePluginObject::Invoke(NPIdentifier name,
-                                    const NPVariant* args, uint32_t arg_count,
+                                    const NPVariant* args,
+                                    uint32_t arg_count,
                                     NPVariant* result) {
   std::map<NPIdentifier, Method>::iterator i;
   i = method_table->find(name);
@@ -173,10 +153,12 @@ bool ScriptablePluginObject::Invoke(NPIdentifier name,
   return false;
 }
 
-void ScriptablePluginObject::Notify(const char* url, void* notify_data,
-                                    nacl::HtpHandle handle) {
+void ScriptablePluginObject::Notify(const char* url,
+                                    void* notify_data,
+                                    NaClSrpcImcDescType handle) {
+  // TODO(sehr): reimplement a test for file download.
   NPP npp = static_cast<NPP>(notify_data);
-  if (handle == nacl::kInvalidHtpHandle) {
+  if (handle == kNaClSrpcInvalidImcDesc) {
     return;
   }
 
@@ -190,7 +172,7 @@ void ScriptablePluginObject::Notify(const char* url, void* notify_data,
   }
 
   char buffer[1024];
-  int count = nacl::Read(handle, buffer, sizeof buffer);
+  int count = read(handle, buffer, sizeof buffer);
   if (0 < count) {
     printf("%.*s", count, buffer);
 
@@ -206,12 +188,20 @@ void ScriptablePluginObject::Notify(const char* url, void* notify_data,
 
       NPVariant text;
       VOID_TO_NPVARIANT(text);
-      if (NPN_Invoke(npp, NPVARIANT_TO_OBJECT(document), id_create_text_node,
-                     &string, 1, &text) &&
+      if (NPN_Invoke(npp,
+                     NPVARIANT_TO_OBJECT(document),
+                     id_create_text_node,
+                     &string,
+                     1,
+                     &text) &&
           NPVARIANT_IS_OBJECT(text)) {
         NPVariant result;
         VOID_TO_NPVARIANT(result);
-        NPN_Invoke(npp, NPVARIANT_TO_OBJECT(div), id_append_child, &text, 1,
+        NPN_Invoke(npp,
+                   NPVARIANT_TO_OBJECT(div),
+                   id_append_child,
+                   &text,
+                   1,
                    &result);
         NPN_ReleaseVariantValue(&result);
       }
@@ -223,7 +213,11 @@ void ScriptablePluginObject::Notify(const char* url, void* notify_data,
           NPVARIANT_IS_OBJECT(body)) {
         NPVariant result;
         VOID_TO_NPVARIANT(result);
-        NPN_Invoke(npp, NPVARIANT_TO_OBJECT(body), id_append_child, &div, 1,
+        NPN_Invoke(npp,
+                   NPVARIANT_TO_OBJECT(body),
+                   id_append_child,
+                   &div,
+                   1,
                    &result);
         NPN_ReleaseVariantValue(&result);
       }
@@ -249,12 +243,8 @@ bool ScriptablePluginObject::GetBar(NPVariant* result) {
     NULL_TO_NPVARIANT(*result);
   }
 
-#if 0
-  NPN_SetException(this, "Exception test!");
-  return false;
-#endif
-
-  NaClNPN_OpenURL(npp_, "hello_npapi.txt", npp_, Notify);
+  // TODO(sehr): This still needs to be implemented.
+  // NaClNPN_OpenURL(npp_, "hello_npapi.txt", npp_, Notify);
 
   return true;
 }
@@ -274,8 +264,12 @@ bool ScriptablePluginObject::FillRect(const NPVariant* args,
 
   NPVariant canvas;
   VOID_TO_NPVARIANT(canvas);
-  if (!NPN_Invoke(npp_, NPVARIANT_TO_OBJECT(document), id_get_element_by_id,
-                  &canvas_name, 1, &canvas) ||
+  if (!NPN_Invoke(npp_,
+                  NPVARIANT_TO_OBJECT(document),
+                  id_get_element_by_id,
+                  &canvas_name,
+                  1,
+                  &canvas) ||
       !NPVARIANT_IS_OBJECT(canvas)) {
     NPN_ReleaseVariantValue(&canvas);
     NPN_ReleaseVariantValue(&document);
@@ -287,7 +281,11 @@ bool ScriptablePluginObject::FillRect(const NPVariant* args,
 
   NPVariant context;
   VOID_TO_NPVARIANT(context);
-  if (!NPN_Invoke(npp_, NPVARIANT_TO_OBJECT(canvas), id_get_context, &string, 1,
+  if (!NPN_Invoke(npp_,
+                  NPVARIANT_TO_OBJECT(canvas),
+                  id_get_context,
+                  &string,
+                  1,
                   &context) ||
       !NPVARIANT_IS_OBJECT(context)) {
     NPN_ReleaseVariantValue(&context);
@@ -319,7 +317,11 @@ bool ScriptablePluginObject::FillRect(const NPVariant* args,
   DOUBLE_TO_NPVARIANT(0.0, rect[1]);
   DOUBLE_TO_NPVARIANT(150.0, rect[2]);
   DOUBLE_TO_NPVARIANT(150.0, rect[3]);
-  if (NPN_Invoke(npp_, NPVARIANT_TO_OBJECT(context), id_fill_rect, rect, 4,
+  if (NPN_Invoke(npp_,
+                 NPVARIANT_TO_OBJECT(context),
+                 id_fill_rect,
+                 rect,
+                 4,
                  result)) {
     NPN_ReleaseVariantValue(result);
   }
@@ -351,52 +353,18 @@ bool ScriptablePluginObject::UseProxy(const NPVariant* args,
   if (NPN_GetProperty(npp_, window_object, id_proxy, &proxy) &&
       NPVARIANT_IS_OBJECT(proxy)) {
     NPVariant result;
-    if (NPN_Invoke(npp_, NPVARIANT_TO_OBJECT(proxy), id_fill_rect, NULL, 0,
+    if (NPN_Invoke(npp_,
+                   NPVARIANT_TO_OBJECT(proxy),
+                   id_fill_rect,
+                   NULL,
+                   0,
                    &result)) {
       NPN_ReleaseVariantValue(&result);
     }
   }
   NPN_ReleaseVariantValue(&proxy);
-  return true;
-}
 
-bool ScriptablePluginObject::SetHandle(const NPVariant* args,
-                                       uint32_t arg_count,
-                                       NPVariant* result) {
-  printf("setHandle called!\n");
-  NPVariant var;
-  NPIdentifier id = NPN_GetStringIdentifier("handleobj");
-#ifdef __native_client__
-  nacl::HtpHandle handle = 1;  // stdout
-#else   // __native_client__
-#if NACL_WINDOWS
-  // Note STD_OUTPUT_HANDLE cannot be transferred to the other processes,
-  // and thus this method fails on Windows
-  nacl::HtpHandle handle = nacl::CreateIoDesc(GetStdHandle(STD_OUTPUT_HANDLE));
-#else   // NACL_WINDOWS
-  nacl::HtpHandle handle = nacl::CreateIoDesc(1);
-#endif  // NACL_WINDOWS
-#endif  // __native_client__
-  HANDLE_TO_NPVARIANT(handle, var);
   VOID_TO_NPVARIANT(*result);
-  return NPN_SetProperty(npp_, window_object, id, &var);
-}
-
-bool ScriptablePluginObject::UseHandle(const NPVariant* args,
-                                       uint32_t arg_count,
-                                       NPVariant* result) {
-  printf("useHandle called!\n");
-  NPIdentifier id = NPN_GetStringIdentifier("handleobj");
-  NPVariant handle;
-  VOID_TO_NPVARIANT(handle);
-  if (NPN_GetProperty(npp_, window_object, id, &handle) &&
-      NPVARIANT_IS_HANDLE(handle)) {
-    nacl::Write(NPVARIANT_TO_HANDLE(handle), "Hello, there!\n", 14);
-    printf("succeeded!\n");
-  } else {
-    printf("FAILED!\n");
-  }
-  NPN_ReleaseVariantValue(&handle);
   return true;
 }
 
@@ -405,7 +373,7 @@ bool ScriptablePluginObject::Paint(const NPVariant* args,
                                    NPVariant* result) {
   printf("paint called!\n");
   Plugin* plugin = static_cast<Plugin*>(npp_->pdata);
-  if (plugin) {
+  if (NULL != plugin) {
     VOID_TO_NPVARIANT(*result);
     return plugin->Paint();
   }
@@ -417,17 +385,6 @@ bool ScriptablePluginObject::NullMethod(const NPVariant* args,
                                         NPVariant* result) {
   NULL_TO_NPVARIANT(*result);
   return true;
-}
-
-bool ScriptablePluginObject::Freeze(const NPVariant* args,
-                                    uint32_t arg_count,
-                                    NPVariant* result) {
-  printf("freeze called!\n");
-  // Do not return to test if the plugin can detect the non-responding NaCl
-  // module.
-  for (;;) {
-  }
-  return false;
 }
 
 Plugin::Plugin(NPP npp, const char* canvas)

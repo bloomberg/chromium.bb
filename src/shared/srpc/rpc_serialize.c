@@ -354,7 +354,7 @@ static int name##ArrGet(NaClSrpcImcBuffer* buffer,                             \
   uint32_t dimdim;                                                             \
   size_t dim;                                                                  \
                                                                                \
-  if (1 != __NaClSrpcImcRead(buffer, sizeof(dim), 1, &dimdim)) {               \
+  if (1 != __NaClSrpcImcRead(buffer, sizeof(dimdim), 1, &dimdim)) {            \
     return 0;                                                                  \
   }                                                                            \
   dim = (size_t) dimdim;                                                       \
@@ -497,7 +497,7 @@ static int StringGet(NaClSrpcImcBuffer* buffer,
   UNREFERENCED_PARAMETER(allocate_memory);
   UNREFERENCED_PARAMETER(arg);
   if (read_value) {
-    if (1 != __NaClSrpcImcRead(buffer, sizeof(dim), 1, &dimdim)) {
+    if (1 != __NaClSrpcImcRead(buffer, sizeof(dimdim), 1, &dimdim)) {
       return 0;
     }
     /*

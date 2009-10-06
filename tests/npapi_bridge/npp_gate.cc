@@ -52,6 +52,7 @@ NPError NPP_New(NPMIMEType mime_type, NPP instance, uint16_t mode,
     printf("%u: '%s' '%s'\n", i, argn[i], argv[i]);
     if (strcmp(argn[i], "canvas") == 0) {
       canvas = argv[i];
+      printf("CANVAS: %s\n", canvas);
     }
   }
 

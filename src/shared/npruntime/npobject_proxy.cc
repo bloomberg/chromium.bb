@@ -35,8 +35,11 @@
 // The "proxy" side is in the process scripting the object.
 // The "stub" side is in the process implementing the object.
 
+#include "native_client/src/shared/npruntime/npobject_proxy.h"
+
 #include <stdarg.h>
 
+#include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npbridge.h"
 
 static void DebugPrintf(const char *fmt, ...) {
@@ -51,12 +54,18 @@ static void DebugPrintf(const char *fmt, ...) {
 
 namespace {
 
+// These methods populate the NPClass for an object proxy:
+// Alloc, Deallocate, Invalidate, HasMethod, Invoke, InvokeDefault, HasProperty,
+// GetProperty, SetProperty, RemoveProperty, Enumerate, and Construct.
+// They simply extract the proxy address and invoke the corresponding
+// function on that object.
 NPObject* Alloc(NPP npp, NPClass* aClass) {
   return nacl::NPObjectProxy::GetLastAllocated();
 }
 
 void Deallocate(NPObject* object) {
   nacl::NPObjectProxy* npobj = static_cast<nacl::NPObjectProxy*>(object);
+  DebugPrintf("Deallocate(%p)\n", reinterpret_cast<void*>(object));
   delete npobj;
 }
 
@@ -108,9 +117,9 @@ bool RemoveProperty(NPObject* object, NPIdentifier name) {
   return npobj->RemoveProperty(name);
 }
 
-bool Enumeration(NPObject* object, NPIdentifier* *value, uint32_t* count) {
+bool Enumerate(NPObject* object, NPIdentifier* *value, uint32_t* count) {
   nacl::NPObjectProxy* npobj = static_cast<nacl::NPObjectProxy*>(object);
-  return npobj->Enumeration(value, count);
+  return npobj->Enumerate(value, count);
 }
 
 bool Construct(NPObject* object,
@@ -139,7 +148,7 @@ NPClass NPObjectProxy::np_class = {
   ::GetProperty,
   ::SetProperty,
   ::RemoveProperty,
-  ::Enumeration,
+  ::Enumerate,
   ::Construct
 };
 
@@ -163,382 +172,423 @@ NPClass NPObjectProxy::np_class = {
 
 NPObject* NPObjectProxy::last_allocated;
 
-NPObjectProxy::NPObjectProxy(NPBridge* bridge, const NPCapability& capability)
-    : bridge_(bridge) {
+NPObjectProxy::NPObjectProxy(NPP npp, const NPCapability& capability)
+    : npp_(npp) {
+  DebugPrintf("NPObjectProxy\n");
+
   capability_.CopyFrom(capability);
   last_allocated = this;
-  NPN_CreateObject(bridge->npp(), &np_class);
+  NPN_CreateObject(npp_, &np_class);
 }
 
 NPObjectProxy::~NPObjectProxy() {
-  if (NULL == bridge_) {
+  DebugPrintf("~NPObjectProxy\n");
+
+  NPBridge* bridge = NPBridge::LookupBridge(npp_);
+  if (NULL == bridge) {
     return;
   }
-  RpcHeader request;
-  request.type = RPC_DEALLOCATE;
-  IOVec vecv[2];
-  IOVec* vecp = vecv;
-  vecp->base = &request;
-  vecp->length = sizeof request;
-  ++vecp;
-  vecp->base = &capability_;
-  vecp->length = sizeof capability_;
-  ++vecp;
-  int length;
-  bridge_->Request(&request, vecv, vecp - vecv, &length);
-  bridge_->RemoveProxy(this);
+  NaClSrpcInvokeByName(bridge->channel(),
+                       "NPN_Deallocate",
+                       sizeof capability_,
+                       &capability_);
+  bridge->RemoveProxy(this);
+}
+
+void NPObjectProxy::Deallocate() {
+  DebugPrintf("Deallocate\n");
+
+  NPBridge* bridge = NPBridge::LookupBridge(npp_);
+  if (NULL == bridge) {
+    return;
+  }
+  NaClSrpcInvokeByName(bridge->channel(),
+                       "NPN_Deallocate",
+                       sizeof capability_,
+                       &capability_);
 }
 
 void NPObjectProxy::Invalidate() {
   DebugPrintf("Invalidate\n");
+
   // Note Invalidate() can be called after NPP_Destroy() is called.
-  if (NULL == bridge_) {
+  NPBridge* bridge = NPBridge::LookupBridge(npp_);
+  if (NULL == bridge) {
     return;
   }
-  RpcHeader request;
-  request.type = RPC_INVALIDATE;
-  IOVec vecv[2];
-  IOVec* vecp = vecv;
-  vecp->base = &request;
-  vecp->length = sizeof request;
-  ++vecp;
-  vecp->base = &capability_;
-  vecp->length = sizeof capability_;
-  ++vecp;
-  int length;
-  bridge_->Request(&request, vecv, vecp - vecv, &length);
+  NaClSrpcInvokeByName(bridge->channel(),
+                       "NPN_Invalidate",
+                       sizeof capability_,
+                       &capability_);
 }
 
 bool NPObjectProxy::HasMethod(NPIdentifier name) {
-  DebugPrintf("HasMethod %p\n", name);
-  RpcStack stack(bridge_);
-  if (NULL == stack.Push(name)) {
+  DebugPrintf("HasMethod(%p, ", reinterpret_cast<void*>(this));
+  PrintIdent(name);
+  printf(")\n");
+
+  NPBridge* bridge = NPBridge::LookupBridge(npp_);
+  if (NULL == bridge) {
     return false;
   }
-  RpcHeader request;
-  request.type = RPC_HAS_METHOD;
-  IOVec vecv[4];
-  IOVec* vecp = vecv;
-  vecp->base = &request;
-  vecp->length = sizeof request;
-  ++vecp;
-  vecp->base = &capability_;
-  vecp->length = sizeof capability_;
-  ++vecp;
-  vecp->base = &name;
-  vecp->length = sizeof name;
-  ++vecp;
-  vecp = stack.SetIOVec(vecp);
-  int length;
-  RpcHeader* reply = bridge_->Request(&request, vecv, vecp - vecv, &length);
-  if (reply == NULL) {
+  int error_code;
+  if (NACL_SRPC_RESULT_OK !=
+      NaClSrpcInvokeByName(bridge->channel(),
+                           "NPN_HasMethod",
+                           sizeof capability_,
+                           &capability_,
+                           NPBridge::NpidentifierToInt(name),
+                           &error_code)) {
     return false;
   }
-  return reply->error_code ? true : false;
+  return error_code ? true : false;
 }
 
 bool NPObjectProxy::Invoke(NPIdentifier name,
                            const NPVariant* args,
                            uint32_t arg_count,
                            NPVariant* variant) {
-  char* sname = NPN_UTF8FromIdentifier(name);
-  DebugPrintf("Invoke %p %s\n", name, sname);
-  NPN_MemFree(sname);
-
-  RpcStack stack(bridge_);
-  char converted_args[kNPVariantSizeMax * kParamMax];
-  // Avoid stack overflow if too many parameters are passed.
-  if (kParamMax < arg_count) {
-    return false;
-  }
-  if (bridge_->peer_npvariant_size() != sizeof(NPVariant)) {
-    ConvertNPVariants(args, converted_args,
-                      bridge_->peer_npvariant_size(),
-                      arg_count);
-  }
-  if (NULL == stack.Push(name)) {
-    return false;
-  }
+  DebugPrintf("Invoke(%p, ", reinterpret_cast<void*>(this));
+  PrintIdent(name);
+  printf(", [");
   for (uint32_t i = 0; i < arg_count; ++i) {
-    if (NULL == stack.Push(args[i], true)) {
-      return false;
+    PrintVariant(args + i);
+    if (i < arg_count -1) {
+      printf(", ");
     }
   }
-  RpcHeader request;
-  request.type = RPC_INVOKE;
-  request.error_code = arg_count;
-  IOVec vecv[5];
-  IOVec* vecp = vecv;
-  vecp->base = &request;
-  vecp->length = sizeof request;
-  ++vecp;
-  vecp->base = &capability_;
-  vecp->length = sizeof capability_;
-  ++vecp;
-  vecp->base = &name;
-  vecp->length = sizeof name;
-  ++vecp;
-  if (0 < arg_count) {
-    if (sizeof(NPVariant) == bridge_->peer_npvariant_size()) {
-      vecp->base = const_cast<NPVariant*>(args);
-      vecp->length = arg_count * sizeof(NPVariant);
-    } else {
-      vecp->base = converted_args;
-      vecp->length = arg_count * bridge_->peer_npvariant_size();
-    }
-    ++vecp;
-  }
-  vecp = stack.SetIOVec(vecp);
-  int length;
-  RpcHeader* reply = bridge_->Request(&request, vecv, vecp - vecv, &length);
-  if (NULL == reply) {
+  printf("], %u)\n", static_cast<unsigned int>(arg_count));
+
+  NPBridge* bridge = NPBridge::LookupBridge(npp_);
+  if (NULL == bridge) {
     return false;
   }
-  RpcArg result(bridge_, reply, length);
-  result.Step(sizeof(RpcHeader));
-  if (NPERR_NO_ERROR != reply->error_code) {
-    result.StepOption(sizeof(NPVariant));
-    *variant = *result.GetVariant(false);
+  // TODO(sehr): this is really verbose.  New RpcArg constructor.
+  char fixed[kNPVariantSizeMax * kParamMax];
+  uint32_t fixed_size = static_cast<uint32_t>(sizeof(fixed));
+  char optional[kNPVariantSizeMax * kParamMax];
+  uint32_t optional_size = static_cast<uint32_t>(sizeof(optional));
+  RpcArg vars(npp_, fixed, fixed_size, optional, optional_size);
+  if (!vars.PutVariantArray(args, arg_count)) {
+    return false;
+  }
+  int ret_bool;
+  char ret_fixed[100 * kNPVariantSizeMax];
+  uint32_t ret_fixed_size = static_cast<uint32_t>(sizeof(ret_fixed));
+  char ret_optional[100 * kNPVariantSizeMax];
+  uint32_t ret_optional_size = static_cast<uint32_t>(sizeof(ret_optional));
+  if (NACL_SRPC_RESULT_OK !=
+      NaClSrpcInvokeByName(bridge->channel(),
+                           "NPN_Invoke",
+                           sizeof capability_,
+                           &capability_,
+                           NPBridge::NpidentifierToInt(name),
+                           fixed_size,
+                           fixed,
+                           optional_size,
+                           optional,
+                           arg_count,
+                           &ret_bool,
+                           ret_fixed_size,  // Need size set by return
+                           ret_fixed,
+                           ret_optional_size,  // Need size set by return
+                           ret_optional)) {
+    DebugPrintf("    invoke error\n");
+    return false;
+  }
+  if (ret_bool) {
+    RpcArg rets(npp_,
+                ret_fixed,
+                ret_fixed_size,
+                ret_optional,
+                ret_optional_size);
+    *variant = *rets.GetVariant(true);
+    DebugPrintf("Invoke(%p, ", reinterpret_cast<void*>(this));
+    PrintIdent(name);
+    printf(") succeeded: ");
+    PrintVariant(variant);
+    printf("\n");
     return true;
   }
+  DebugPrintf("Invoke(%p, ", reinterpret_cast<void*>(this));
+  PrintIdent(name);
+  printf(") failed.");
   return false;
 }
 
 bool NPObjectProxy::InvokeDefault(const NPVariant* args,
                                   uint32_t arg_count,
                                   NPVariant* variant) {
-  DebugPrintf("InvokeDefault\n");
-  RpcStack stack(bridge_);
-  char converted_args[kNPVariantSizeMax * kParamMax];
-  // Avoid stack overflow if too many parameters are passed.
-  if (kParamMax < arg_count) {
-    return false;
-  }
-  if (sizeof(NPVariant) != bridge_->peer_npvariant_size()) {
-    ConvertNPVariants(args, converted_args,
-                      bridge_->peer_npvariant_size(),
-                      arg_count);
-  }
+  DebugPrintf("InvokeDefault(%p, [", reinterpret_cast<void*>(this));
   for (uint32_t i = 0; i < arg_count; ++i) {
-    if (NULL == stack.Push(args[i], true)) {
-      return false;
+    PrintVariant(args + i);
+    if (i < arg_count -1) {
+      printf(", ");
     }
   }
-  RpcHeader request;
-  request.type = RPC_INVOKE_DEFAULT;
-  request.error_code = arg_count;
-  IOVec vecv[4];
-  IOVec* vecp = vecv;
-  vecp->base = &request;
-  vecp->length = sizeof request;
-  ++vecp;
-  vecp->base = &capability_;
-  vecp->length = sizeof capability_;
-  ++vecp;
-  if (0 < arg_count) {
-    if (sizeof(NPVariant) == bridge_->peer_npvariant_size()) {
-      vecp->base = const_cast<NPVariant*>(args);
-      vecp->length = arg_count * sizeof(NPVariant);
-    } else {
-      vecp->base = converted_args;
-      vecp->length = arg_count * bridge_->peer_npvariant_size();
-    }
-    ++vecp;
-  }
-  vecp = stack.SetIOVec(vecp);
-  int length;
-  RpcHeader* reply = bridge_->Request(&request, vecv, vecp - vecv, &length);
-  if (NULL == reply) {
+  printf("], %u)\n", static_cast<unsigned int>(arg_count));
+
+  NPBridge* bridge = NPBridge::LookupBridge(npp_);
+  if (NULL == bridge) {
     return false;
   }
-  RpcArg result(bridge_, reply, length);
-  result.Step(sizeof(RpcHeader));
-  if (NPERR_NO_ERROR != reply->error_code) {
-    result.StepOption(sizeof(NPVariant));
-    *variant = *result.GetVariant(false);
+  char fixed[kNPVariantSizeMax * kParamMax];
+  size_t fixed_size = sizeof(fixed);
+  char optional[kNPVariantSizeMax * kParamMax];
+  size_t optional_size = sizeof(optional);
+  RpcArg vars(npp_, fixed, fixed_size, optional, optional_size);
+  if (!vars.PutVariantArray(args, arg_count)) {
+    return false;
+  }
+  int error_code;
+  char ret_fixed[kNPVariantSizeMax];
+  uint32_t ret_fixed_size = static_cast<uint32_t>(sizeof(optional));
+  char ret_optional[kNPVariantSizeMax];
+  uint32_t ret_optional_size = static_cast<uint32_t>(sizeof(optional));
+  if (NACL_SRPC_RESULT_OK !=
+      NaClSrpcInvokeByName(bridge->channel(),
+                           "NPN_InvokeDefault",
+                           sizeof capability_,
+                           &capability_,
+                           static_cast<uint32_t>(fixed_size),
+                           fixed,
+                           static_cast<uint32_t>(optional_size),
+                           optional,
+                           &error_code,
+                           ret_fixed_size,  // Need size set by return
+                           ret_fixed,
+                           ret_optional_size,  // Need size set by return
+                           ret_optional)) {
+    return false;
+  }
+  if (NPERR_NO_ERROR != error_code) {
+    RpcArg rets(npp_,
+                ret_fixed,
+                ret_fixed_size,
+                ret_optional,
+                ret_optional_size);
+    *variant = *rets.GetVariant(true);
+    DebugPrintf("InvokeDefault(%p) succeeded: ",
+                reinterpret_cast<void*>(this));
+    PrintVariant(variant);
+    printf("\n");
     return true;
   }
+  DebugPrintf("InvokeDefault(%p) failed: ", reinterpret_cast<void*>(this));
   return false;
 }
 
 bool NPObjectProxy::HasProperty(NPIdentifier name) {
-  DebugPrintf("HasProperty %p\n", name);
-  RpcStack stack(bridge_);
-  if (NULL == stack.Push(name)) {
+  DebugPrintf("HasProperty(%p, ", reinterpret_cast<void*>(this));
+  PrintIdent(name);
+  printf(")\n");
+
+  NPBridge* bridge = NPBridge::LookupBridge(npp_);
+  if (NULL == bridge) {
     return false;
   }
-  RpcHeader request;
-  request.type = RPC_HAS_PROPERTY;
-  IOVec vecv[4];
-  IOVec* vecp = vecv;
-  vecp->base = &request;
-  vecp->length = sizeof request;
-  ++vecp;
-  vecp->base = &capability_;
-  vecp->length = sizeof capability_;
-  ++vecp;
-  vecp->base = &name;
-  vecp->length = sizeof name;
-  ++vecp;
-  vecp = stack.SetIOVec(vecp);
-  int length;
-  RpcHeader* reply = bridge_->Request(&request, vecv, vecp - vecv, &length);
-  if (NULL == reply) {
+  int error_code;
+  if (NACL_SRPC_RESULT_OK !=
+      NaClSrpcInvokeByName(bridge->channel(),
+                           "NPN_HasProperty",
+                           sizeof capability_,
+                           &capability_,
+                           NPBridge::NpidentifierToInt(name),
+                           &error_code)) {
     return false;
   }
-  return reply->error_code ? true : false;
+  return error_code ? true : false;
 }
 
 bool NPObjectProxy::GetProperty(NPIdentifier name, NPVariant* variant) {
-  DebugPrintf("GetProperty %p\n", name);
-  RpcStack stack(bridge_);
-  if (NULL == stack.Push(name)) {
+  DebugPrintf("GetProperty(%p, ", reinterpret_cast<void*>(this));
+  PrintIdent(name);
+  printf(")\n");
+
+  NPBridge* bridge = NPBridge::LookupBridge(npp_);
+  if (NULL == bridge) {
     return false;
   }
-  RpcHeader request;
-  request.type = RPC_GET_PROPERTY;
-  IOVec vecv[4];
-  IOVec* vecp = vecv;
-  vecp->base = &request;
-  vecp->length = sizeof request;
-  ++vecp;
-  vecp->base = &capability_;
-  vecp->length = sizeof capability_;
-  ++vecp;
-  vecp->base = &name;
-  vecp->length = sizeof name;
-  ++vecp;
-  vecp = stack.SetIOVec(vecp);
-  int length;
-  RpcHeader* reply = bridge_->Request(&request, vecv, vecp - vecv, &length);
-  if (NULL == reply) {
+  int error_code;
+  char ret_fixed[kNPVariantSizeMax];
+  uint32_t ret_fixed_size = static_cast<uint32_t>(sizeof(ret_fixed));
+  char ret_optional[kNPVariantSizeMax];
+  uint32_t ret_optional_size = static_cast<uint32_t>(sizeof(ret_optional));
+  if (NACL_SRPC_RESULT_OK !=
+      NaClSrpcInvokeByName(bridge->channel(),
+                           "NPN_GetProperty",
+                           sizeof capability_,
+                           &capability_,
+                           NPBridge::NpidentifierToInt(name),
+                           &error_code,
+                           ret_fixed_size,  // Need size set by return
+                           ret_fixed,
+                           ret_optional_size,  // Need size set by return
+                           ret_optional)) {
     return false;
   }
-  RpcArg result(bridge_, reply, length);
-  result.Step(sizeof(RpcHeader));
-  if (NPERR_NO_ERROR != reply->error_code) {
-    result.StepOption(sizeof(NPVariant));
-    *variant = *result.GetVariant(false);
+  if (NPERR_NO_ERROR != error_code) {
+    RpcArg rets(npp_,
+                ret_fixed,
+                ret_fixed_size,
+                ret_optional,
+                ret_optional_size);
+    *variant = *rets.GetVariant(true);
     return true;
   }
   return false;
 }
 
 bool NPObjectProxy::SetProperty(NPIdentifier name, const NPVariant* value) {
-  DebugPrintf("SetProperty %p\n", name);
-  RpcStack stack(bridge_);
-  char converted_value[kNPVariantSizeMax];
-  if (sizeof(NPVariant) != bridge_->peer_npvariant_size()) {
-    ConvertNPVariants(value, converted_value,
-                      bridge_->peer_npvariant_size(),
-                      1);
-  }
-  if (NULL == stack.Push(name)) {
+  DebugPrintf("SetProperty(%p, ", reinterpret_cast<void*>(this));
+  PrintIdent(name);
+  printf(", ");
+  PrintVariant(value);
+  printf(")\n");
+
+  NPBridge* bridge = NPBridge::LookupBridge(npp_);
+  if (NULL == bridge) {
     return false;
   }
-  if (NULL == stack.Push(*value, true)) {
+  char fixed[kNPVariantSizeMax];
+  size_t fixed_size = sizeof(fixed);
+  char optional[kNPVariantSizeMax];
+  size_t optional_size = sizeof(optional);
+  RpcArg vars(npp_, fixed, fixed_size, optional, optional_size);
+  if (!vars.PutVariant(value)) {
     return false;
   }
-  RpcHeader request;
-  request.type = RPC_SET_PROPERTY;
-  IOVec vecv[5];
-  IOVec* vecp = vecv;
-  vecp->base = &request;
-  vecp->length = sizeof request;
-  ++vecp;
-  vecp->base = &capability_;
-  vecp->length = sizeof capability_;
-  ++vecp;
-  vecp->base = &name;
-  vecp->length = sizeof name;
-  ++vecp;
-  if (sizeof(NPVariant) == bridge_->peer_npvariant_size()) {
-    vecp->base = const_cast<NPVariant*>(value);
-    vecp->length = sizeof(NPVariant);
-  } else {
-    vecp->base = converted_value;
-    vecp->length = bridge_->peer_npvariant_size();
-  }
-  ++vecp;
-  vecp = stack.SetIOVec(vecp);
-  int length;
-  RpcHeader* reply = bridge_->Request(&request, vecv, vecp - vecv, &length);
-  if (NULL == reply) {
+  int error_code;
+  if (NACL_SRPC_RESULT_OK !=
+      NaClSrpcInvokeByName(bridge->channel(),
+                           "NPN_SetProperty",
+                           sizeof capability_,
+                           &capability_,
+                           NPBridge::NpidentifierToInt(name),
+                           static_cast<uint32_t>(fixed_size),
+                           fixed,
+                           static_cast<uint32_t>(optional_size),
+                           optional,
+                           &error_code)) {
     return false;
   }
-  return reply->error_code ? true : false;
+  return error_code ? true : false;
 }
 
 bool NPObjectProxy::RemoveProperty(NPIdentifier name) {
-  DebugPrintf("RemoveProperty %p\n", name);
-  RpcStack stack(bridge_);
-  if (NULL == stack.Push(name)) {
+  DebugPrintf("RemoveProperty(%p, ", reinterpret_cast<void*>(this));
+  PrintIdent(name);
+  printf(")\n");
+
+  NPBridge* bridge = NPBridge::LookupBridge(npp_);
+  if (NULL == bridge) {
     return false;
   }
-  RpcHeader request;
-  request.type = RPC_REMOVE_PROPERTY;
-  IOVec vecv[4];
-  IOVec* vecp = vecv;
-  vecp->base = &request;
-  vecp->length = sizeof request;
-  ++vecp;
-  vecp->base = &capability_;
-  vecp->length = sizeof capability_;
-  ++vecp;
-  vecp->base = &name;
-  vecp->length = sizeof name;
-  ++vecp;
-  vecp = stack.SetIOVec(vecp);
-  int length;
-  RpcHeader* reply = bridge_->Request(&request, vecv, vecp - vecv, &length);
-  if (NULL == reply) {
+  int error_code;
+  if (NACL_SRPC_RESULT_OK !=
+      NaClSrpcInvokeByName(bridge->channel(),
+                           "NPN_RemoveProperty",
+                           sizeof capability_,
+                           &capability_,
+                           NPBridge::NpidentifierToInt(name),
+                           &error_code)) {
     return false;
   }
-  return reply->error_code ? true : false;
+  return error_code ? true : false;
 }
 
-bool NPObjectProxy::Enumeration(NPIdentifier* *value, uint32_t* count) {
-  // TODO(sehr): shouldn't this API do something?
+bool NPObjectProxy::Enumerate(NPIdentifier** identifiers,
+                              uint32_t* identifier_count) {
+  DebugPrintf("Enumerate(%p)\n", reinterpret_cast<void*>(this));
+
+  NPBridge* bridge = NPBridge::LookupBridge(npp_);
+  if (NULL == bridge) {
+    return false;
+  }
+  // TODO(sehr): there are some identifier copying issues here, etc.
+  char idents[kNPVariantSizeMax * kParamMax];
+  int error_code;
+  if (NACL_SRPC_RESULT_OK !=
+      NaClSrpcInvokeByName(bridge->channel(),
+                           "NPN_Enumerate",
+                           sizeof capability_,
+                           &capability_,
+                           &error_code,
+                           sizeof(idents),
+                           idents,
+                           identifier_count)) {
+    return false;
+  }
   return false;
 }
 
 bool NPObjectProxy::Construct(const NPVariant* args,
                               uint32_t arg_count,
                               NPVariant* result) {
-  // TODO(sehr): shouldn't this API do something?
+  DebugPrintf("Construct(%p, %u)\n",
+              reinterpret_cast<void*>(this),
+              static_cast<unsigned int>(arg_count));
+
+  NPBridge* bridge = NPBridge::LookupBridge(npp_);
+  if (NULL == bridge) {
+    return false;
+  }
+  char fixed[kNPVariantSizeMax * kParamMax];
+  size_t fixed_size = sizeof(fixed);
+  char optional[kNPVariantSizeMax * kParamMax];
+  size_t optional_size = sizeof(optional);
+  RpcArg vars(npp_, fixed, fixed_size, optional, optional_size);
+  if (!vars.PutVariantArray(args, arg_count)) {
+    return false;
+  }
+  int error_code;
+  char ret_fixed[kNPVariantSizeMax];
+  uint32_t ret_fixed_size = static_cast<uint32_t>(sizeof(optional));
+  char ret_optional[kNPVariantSizeMax];
+  uint32_t ret_optional_size = static_cast<uint32_t>(sizeof(optional));
+  if (NACL_SRPC_RESULT_OK !=
+      NaClSrpcInvokeByName(bridge->channel(),
+                           "NPN_Construct",
+                           sizeof capability_,
+                           &capability_,
+                           static_cast<uint32_t>(fixed_size),
+                           fixed,
+                           static_cast<uint32_t>(optional_size),
+                           optional,
+                           &error_code,
+                           ret_fixed_size,  // Need size set by return
+                           ret_fixed,
+                           ret_optional_size,  // Need size set by return
+                           ret_optional)) {
+    return false;
+  }
+  if (NPERR_NO_ERROR != error_code) {
+    RpcArg rets(npp_,
+                ret_fixed,
+                ret_fixed_size,
+                ret_optional,
+                ret_optional_size);
+    *result = *rets.GetVariant(true);
+    return true;
+  }
   return false;
 }
 
 void NPObjectProxy::SetException(const NPUTF8* message) {
-  DebugPrintf("SetException\n");
-  RpcHeader request;
-  request.type = RPC_SET_EXCEPTION;
-  IOVec vecv[3];
-  IOVec* vecp = vecv;
-  vecp->base = &request;
-  vecp->length = sizeof request;
-  ++vecp;
-  vecp->base = &capability_;
-  vecp->length = sizeof capability_;
-  ++vecp;
-  vecp->base = const_cast<NPUTF8*>(message);
-  vecp->length = strlen(message) + 1;
-  ++vecp;
-  bridge_->Request(&request, vecv, vecp - vecv, NULL);
-}
+  DebugPrintf("SetException(%p, %s)\n",
+              reinterpret_cast<void*>(this),
+              message);
 
-int NPObjectProxy::SetException(RpcHeader* request, int len) {
-  RpcArg arg(bridge_, request, len);
-  arg.Step(sizeof(RpcHeader));
-  arg.Step(sizeof(NPCapability));
-  const NPUTF8* message = arg.GetString();
-  NPN_SetException(this, message ? message : "");
-  IOVec vecv[1];
-  IOVec* vecp = vecv;
-  vecp->base = request;
-  vecp->length = sizeof(RpcHeader);
-  ++vecp;
-  return bridge_->Respond(request, vecv, vecp - vecv);
+  NPBridge* bridge = NPBridge::LookupBridge(npp_);
+  if (NULL == bridge) {
+    return;
+  }
+  NaClSrpcInvokeByName(bridge->channel(),
+                       "NPN_SetException",
+                       sizeof capability_,
+                       &capability_,
+                       strlen(message) + 1,
+                       const_cast<NPUTF8*>(message));
 }
 
 }  // namespace nacl

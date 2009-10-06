@@ -37,93 +37,155 @@
 
 #include <string.h>
 #include <set>
+#include <map>
 
 #include "native_client/src/shared/npruntime/npbridge.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 
 namespace nacl {
 
 // Represents the NaCl module end of the connection to the browser plugin. The
 // opposite end is the NPModule.
 class NPNavigator : public NPBridge {
-  // Compares two strings in string_set_.
-  struct StringCompare {
-    bool operator()(const NPUTF8* left, const NPUTF8* right) const {
-      return (strcmp(left, right) < 0) ? true : false;
-    }
-  };
-
-  // The number of argument passed from the plugin.
-  int* argc_;
-  // The array of arguments passed from the plugin.
-  char** argv_;
-
-  // The set of character strings for NPIdentifier names.
-  std::set<const NPUTF8*, StringCompare> string_set_;
-
   // The following three member variables save the user parameters passed to
   // OpenURL().
   //
   // The callback function to be called upon a successful OpenURL() invocation.
-  void (*notify_)(const char* url, void* notify_data, HtpHandle handle);
+  void (*notify_)(const char* url,
+                  void* notify_data,
+                  NaClSrpcImcDescType handle);
   // The user supplied pointer to the user data.
   void* notify_data_;
   // The URL to open.
   char* url_;
 
-  // The NPWindow for this NaCl module.
-  NPWindow window_;
-  // The shared memory object handle received from the plugin into which the
-  // window content is rendered.
-  HtpHandle bitmap_shm_;
+  // The one navigator in this NaCl module.
+  static NPNavigator* navigator;
+
+  // The lookup table from browser NPP to NaCl module NPP.
+  static std::map<NPP, NPP> *nacl_npp_map;
+  // The lookup table from NaCl module NPP to browser plugin NPP.
+  static std::map<NPP, NPP> *plugin_npp_map;
+
+  // The SRPC methods the navigator exports to the browser plugin.
+  static NACL_SRPC_METHOD_ARRAY(srpc_methods);
+
+  // NPIdentifiers:
+  // The browser controls the master identifier representation.
+  // The navigator retains two local idetifier caches to reduce RPC traffic.
+  static std::map<const NPUTF8*, NPIdentifier>* string_id_map;
+  static std::map<int32_t, NPIdentifier>* int_id_map;
+  // It also retains a mapping from NPIdentifier to NPUTF8* for name retrieval.
+  static std::map<NPIdentifier, const NPUTF8*>* id_string_map;
+  // And retains a mapping from NPIdentifier to int32_t for value retrieval.
+  static std::map<NPIdentifier, int32_t>* id_int_map;
+
+  // Canonical representation of strings used in identifier lookups.
+  static const NPUTF8* InternString(const NPUTF8* name);
+  // Compares two strings in string_set.
+  struct StringCompare {
+    bool operator()(const NPUTF8* left, const NPUTF8* right) const {
+      return (strcmp(left, right) < 0) ? true : false;
+    }
+  };
+  // The set of character strings for NPIdentifier names.
+  static std::set<const NPUTF8*, StringCompare>* string_set;
 
  public:
   // Creates a new instance of NPNavigator. argc and argv should be unmodified
   // variables from NaClNP_Init(). npp must be a pointer to an NPP_t structure
   // to be used for the NaCl module.
-  NPNavigator(NPP npp, int* argc, char* argv[]);
+  NPNavigator(uint32_t peer_pid, size_t peer_npvariant_size);
   ~NPNavigator();
 
-  // Dispatches the received request message.
-  virtual int Dispatch(RpcHeader* request, int length);
+  // Get the Navigator for the current module.
+  static inline NPNavigator* GetNavigator() {
+    return navigator;
+  }
 
+  // Get the NaCl module NPP from the browser NPP.
+  static NPP GetNaClNPP(NPP plugin_npp, bool add_to_map);
+  // Get the plugin NPP from the NaCl module NPP.
+  static NPP GetPluginNPP(NPP nacl_npp);
+
+  // Sets up recognition of the services exported from the browser.
+  static NaClSrpcError SetUpcallServices(NaClSrpcChannel *channel,
+                                         NaClSrpcArg **in_args,
+                                         NaClSrpcArg **out_args);
+
+  // Processes NP_Initialize() request from the plugin.
+  static NaClSrpcError Initialize(NaClSrpcChannel* channel,
+                                  NaClSrpcArg** inputs,
+                                  NaClSrpcArg** outputs);
   // Processes NPP_New() request from the plugin.
-  int New(RpcHeader* request, int length);
+  static NaClSrpcError New(NaClSrpcChannel* channel,
+                           NaClSrpcArg** inputs,
+                           NaClSrpcArg** outputs);
   // Processes NPP_Destroy() request from the plugin.
-  int Destroy(RpcHeader* request, int length);
+  static NaClSrpcError Destroy(NaClSrpcChannel* channel,
+                               NaClSrpcArg** inputs,
+                               NaClSrpcArg** outputs);
   // Processes NPP_GetScriptableInstance() request from the plugin.
-  int GetPluginScriptableObject(RpcHeader* request, int length);
+  static NaClSrpcError GetScriptableInstance(NaClSrpcChannel* channel,
+                                             NaClSrpcArg** inputs,
+                                             NaClSrpcArg** outputs);
   // Processes NPP_URLNotify() request from the plugin.
-  int URLNotify(RpcHeader* request, int length);
+  static NaClSrpcError URLNotify(NaClSrpcChannel* channel,
+                                 NaClSrpcArg** inputs,
+                                 NaClSrpcArg** outputs);
+
+  // Implements NPP_New() request from the plugin.
+  NPError NewImpl(NPMIMEType mimetype,
+                  NPP npp,
+                  uint32_t argc,
+                  char* argn[],
+                  char* argv[],
+                  NaClSrpcArg* result_object);
+  // Implements NPP_Destroy() request from the plugin.
+  NPError DestroyImpl(NPP npp);
+  // Implements NPP_URLNotify() request from the plugin.
+  void URLNotifyImpl(NPP npp,
+                     NaClSrpcImcDescType received_handle,
+                     uint32_t reason);
+
+  // Implements NPP_GetScriptableInstance() request from the plugin.
+  NPCapability* GetScriptableInstanceImpl(NPP npp);
 
   // Sends NPN_Status() request to the plugin.
-  void SetStatus(const char* message);
+  void SetStatus(NPP npp, const char* message);
   // Sends NPN_GetValue() request to the plugin.
-  NPError GetValue(nacl::RpcType, void* value);
+  NPError GetValue(NPP npp, NPNVariable var, void* value);
   // Sends NaClNPN_CreateArray() request to the plugin.
-  NPObject* CreateArray();
+  NPObject* CreateArray(NPP npp);
   // Sends NaClNPN_OpenURL() request to the plugin.
-  NPError OpenURL(const char* url, void* notify_data,
-                  void (*notify)(const char* url, void* notify_data,
-                                 HtpHandle handle));
-  // Sends NPN_InvalidateRect() request to the plugin.
-  void InvalidateRect(NPRect* invalid_rect);
+  NPError OpenURL(NPP npp,
+                  const char* url,
+                  void* notify_data,
+                  void (*notify)(const char* url,
+                                 void* notify_data,
+                                 NaClSrpcImcDescType handle));
+  // Sends NPN_InvalidateRect(NPP npp) request to the plugin.
+  void InvalidateRect(NPP npp, NPRect* invalid_rect);
   // Sends NPN_ForceRedraw() request to the plugin.
-  void ForceRedraw();
+  void ForceRedraw(NPP npp);
 
-  // Gets the character string from string_set_ that matches the specified name.
-  const NPUTF8* GetStringIdentifier(const NPUTF8* name);
+  static void AddIntIdentifierMapping(int32_t intid, NPIdentifier identifier);
+  static void AddStringIdentifierMapping(const NPUTF8* name,
+                                         NPIdentifier identifier);
 
+  // Gets the NPIdentifier that matches the specified string name.
+  static NPIdentifier GetStringIdentifier(const NPUTF8* name);
+  // Gets the NPUTF8 representation of a string identifier
+  static NPUTF8* UTF8FromIdentifier(NPIdentifier identifier);
   // Returns true if name is a string NPIdentifier.
-  // Note NPN_IdentifierIsString() inside the browser cannot be used to detect
-  // string identifiers being transferred from the NaCl module over the IMC
-  // channel.
-  static bool IdentifierIsString(NPIdentifier name) {
-    return (reinterpret_cast<intptr_t>(name) & 1) ? false : true;
-  }
+  static bool IdentifierIsString(NPIdentifier name);
+
+  // Gets the NPIdentifier that matches the specified integer value.
+  static NPIdentifier GetIntIdentifier(int32_t value);
+  // Gets the NPUTF8 representation of a string identifier
+  static int32_t IntFromIdentifier(NPIdentifier identifier);
 };
 
 }  // namespace nacl
-
-nacl::NPNavigator* NaClNP_GetNavigator();
 
 #endif  // NATIVE_CLIENT_SRC_SHARED_NPRUNTIME_NPNAVIGATOR_H_

@@ -45,8 +45,12 @@ struct PlugIn {
  * NPP_New.
  * In the NaCl module, NPP_New is called from NaClNP_MainLoop().
  */
-NPError NPP_New(NPMIMEType mime_type, NPP instance, uint16_t mode,
-                int16_t argc, char* argn[], char* argv[],
+NPError NPP_New(NPMIMEType mime_type,
+                NPP instance,
+                uint16_t mode,
+                int16_t argc,
+                char* argn[],
+                char* argv[],
                 NPSavedData* saved) {
   int i;
   struct PlugIn *plugin;
@@ -75,11 +79,11 @@ NPError NPP_New(NPMIMEType mime_type, NPP instance, uint16_t mode,
 NPError NPP_Destroy(NPP instance, NPSavedData** save) {
   printf("*** NPP_Destroy\n");
 
-  if (instance == NULL)
+  if (NULL == instance)
     return NPERR_INVALID_INSTANCE_ERROR;
 
   /* free plugin */
-  if (instance->pdata != NULL) free(instance->pdata);
+  if (NULL != instance->pdata) free(instance->pdata);
   instance->pdata = NULL;
   return NPERR_NO_ERROR;
 }
@@ -90,15 +94,20 @@ NPObject *NPP_GetScriptableInstance(NPP instance) {
   extern NPClass *GetNPSimpleClass();
   printf("*** NPP_GetScriptableInstance\n");
 
-  if (instance == NULL)
+  if (NULL == instance) {
+    printf("NULL NPP\n");
     return NULL;
+  }
   plugin = (struct PlugIn *)instance->pdata;
-  if (!plugin->npobject) {
+  if (NULL == plugin->npobject) {
+    printf("Creating the plugin object\n");
     plugin->npobject = NPN_CreateObject(instance, GetNPSimpleClass());
   }
-  if (plugin->npobject) {
+  if (NULL != plugin->npobject) {
+    printf("Retaining the plugin object\n");
     NPN_RetainObject(plugin->npobject);
   }
+  printf("The plugin object %p\n", (void*) plugin->npobject);
   return plugin->npobject;
 }
 
