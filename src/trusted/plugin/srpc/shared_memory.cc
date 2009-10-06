@@ -255,7 +255,7 @@ bool SharedMemory::Init(struct PortableHandleInitializer* init_info) {
                                    plugin_->effp_,
                                    &map_addr_,
                                    &size_);
-  if (rval || (NULL == map_addr_)) {
+  if (0 == rval || (NULL == map_addr_)) {
     return false;
   }
 

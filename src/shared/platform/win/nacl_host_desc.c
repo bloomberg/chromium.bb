@@ -134,7 +134,7 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
                           size_t              len,
                           int                 prot,
                           int                 flags,
-                          off_t               offset) {
+                          nacl_off64_t        offset) {
   uintptr_t retval;
   uintptr_t addr;
   HANDLE    hFile;
@@ -246,12 +246,19 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
   for (chunk_offset = 0;
        chunk_offset < len;
        chunk_offset += NACL_MAP_PAGESIZE) {
+    nacl_off64_t net_offset;
+    uint32_t net_offset_high;
+    uint32_t net_offset_low;
+
     chunk_size = size_min(len - chunk_offset, NACL_MAP_PAGESIZE);
     /* in case MapViewOfFile cares that we exceed the file size */
+    net_offset = offset + chunk_offset;
+    net_offset_high = (uint32_t) (net_offset >> 32);
+    net_offset_low = (uint32_t) net_offset;
     map_result = (uintptr_t) MapViewOfFileEx(hMap,
                                              dwDesiredAccess,
-                                             0,
-                                             offset + chunk_offset,
+                                             net_offset_high,
+                                             net_offset_low,
                                              chunk_size,
                                              (void *) (addr + chunk_offset));
     if ((addr + chunk_offset) != map_result) {
@@ -464,15 +471,15 @@ ssize_t NaClHostDescWrite(struct NaClHostDesc *d,
   return actual;
 }
 
-int NaClHostDescSeek(struct NaClHostDesc  *d,
-                     off_t                offset,
-                     int                  whence) {
-  int retval;
+nacl_off64_t NaClHostDescSeek(struct NaClHostDesc  *d,
+                              nacl_off64_t         offset,
+                              int                  whence) {
+  nacl_off64_t retval;
 
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDescSeek: 'this' is NULL\n");
   }
-  return (-1 == (retval = _lseek(d->d, offset, whence))) ? -errno : retval;
+  return (-1 == (retval = _lseeki64(d->d, offset, whence))) ? -errno : retval;
 }
 
 int NaClHostDescIoctl(struct NaClHostDesc *d,
@@ -485,58 +492,12 @@ int NaClHostDescIoctl(struct NaClHostDesc *d,
   return -NACL_ABI_ENOSYS;
 }
 
-void NaClHostDescStatCommon(struct nacl_abi_stat  *nasp,
-                            struct _stat          *sbp) {
-  nacl_abi_mode_t m;
-
-  nasp->nacl_abi_st_dev = 0;
-  nasp->nacl_abi_st_ino = 0x6c43614e;
-
-  switch (sbp->st_mode & S_IFMT) {
-    case S_IFREG:
-      m = NACL_ABI_S_IFREG;
-      break;
-    case S_IFDIR:
-      m = NACL_ABI_S_IFDIR;
-      break;
-    default:
-      NaClLog(LOG_ERROR,
-              ("NaClHostDescStatCommon: how did NaCl app open a file"
-               " with st_mode = 0%o?\n"),
-              sbp->st_mode);
-      m = NACL_ABI_S_UNSUP;
-  }
-  if (0 != (nasp->nacl_abi_st_mode & _S_IREAD)) {
-      m |= NACL_ABI_S_IRUSR;
-  }
-  if (0 != (nasp->nacl_abi_st_mode & _S_IWRITE)) {
-      m |= NACL_ABI_S_IWUSR;
-  }
-  if (0 != (nasp->nacl_abi_st_mode & _S_IEXEC)) {
-      m |= NACL_ABI_S_IXUSR;
-  }
-  nasp->nacl_abi_st_mode = m;
-  nasp->nacl_abi_st_nlink = sbp->st_nlink;
-  nasp->nacl_abi_st_uid = -1;  /* not root */
-  nasp->nacl_abi_st_gid = -1;  /* not wheel */
-  nasp->nacl_abi_st_rdev = 0;
-  nasp->nacl_abi_st_size = sbp->st_size;
-  nasp->nacl_abi_st_blksize = 0;
-  nasp->nacl_abi_st_blocks = 0;
-  nasp->nacl_abi_st_atime = (nacl_abi_time_t) sbp->st_atime;
-  nasp->nacl_abi_st_mtime = (nacl_abi_time_t) sbp->st_mtime;
-  nasp->nacl_abi_st_ctime = (nacl_abi_time_t) sbp->st_ctime;
-}
-
 int NaClHostDescFstat(struct NaClHostDesc   *d,
-                      struct nacl_abi_stat  *nasp) {
-  struct _stat stbuf;
-
-  if (_fstat(d->d, &stbuf) == -1) {
+                      nacl_host_stat_t      *nasp) {
+  if (_fstat64(d->d, nasp) == -1) {
     return -GetErrno();
   }
 
-  NaClHostDescStatCommon(nasp, &stbuf);
   return 0;
 }
 
@@ -557,15 +518,11 @@ int NaClHostDescClose(struct NaClHostDesc *d) {
  * This is not a host descriptor function, but is closely related to
  * fstat and should behave similarly.
  */
-int NaClHostDescStat(char const           *host_os_pathname,
-                     struct nacl_abi_stat *nasp) {
-  struct _stat stbuf;
-
-  if (_stat(host_os_pathname, &stbuf) == -1) {
+int NaClHostDescStat(char const       *host_os_pathname,
+                     nacl_host_stat_t *nhsp) {
+  if (_stati64(host_os_pathname, nhsp) == -1) {
     return -GetErrno();
   }
-
-  NaClHostDescStatCommon(nasp, &stbuf);
 
   return 0;
 }
