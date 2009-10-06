@@ -70,10 +70,12 @@ class DisplayMode {
     }
   }
   DisplayMode& operator=(const DisplayMode& mode) {
-    if (mode.valid()) {
-      Set(mode.width(), mode.height(), mode.refresh_rate(), mode.id());
-    } else {
-      valid_ = false;
+    if (&mode != this) {
+      if (mode.valid()) {
+        Set(mode.width(), mode.height(), mode.refresh_rate(), mode.id());
+      } else {
+        valid_ = false;
+      }
     }
     return *this;
   }
