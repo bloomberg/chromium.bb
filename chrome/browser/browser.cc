@@ -1486,7 +1486,7 @@ void Browser::ExecuteCommand(int id) {
 
     // Go find the browser action in question.
     std::vector<ExtensionAction*> browser_actions =
-        service->GetBrowserActions();
+        service->GetBrowserActions(false);  // false means no popup actions.
     for (size_t i = 0; i < browser_actions.size(); ++i) {
       if (browser_actions[i]->command_id() == id) {
         int window_id = ExtensionTabUtil::GetWindowId(this);
@@ -2378,7 +2378,7 @@ void Browser::InitCommandState() {
   ExtensionsService* service = profile()->GetExtensionsService();
   if (service) {
     std::vector<ExtensionAction*> browser_actions =
-        service->GetBrowserActions();
+        service->GetBrowserActions(false);  // false means no popup actions.
     for (size_t i = 0; i < browser_actions.size(); ++i) {
       command_updater_.UpdateCommandEnabled(browser_actions[i]->command_id(),
                                             true);

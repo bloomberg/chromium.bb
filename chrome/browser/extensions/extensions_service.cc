@@ -146,11 +146,12 @@ void ExtensionsService::Init() {
 }
 
 std::vector<ExtensionAction*> ExtensionsService::GetPageActions() const {
-  return GetExtensionActions(ExtensionAction::PAGE_ACTION);
+  return GetExtensionActions(ExtensionAction::PAGE_ACTION, true);
 }
 
-std::vector<ExtensionAction*> ExtensionsService::GetBrowserActions() const {
-  return GetExtensionActions(ExtensionAction::BROWSER_ACTION);
+std::vector<ExtensionAction*> ExtensionsService::GetBrowserActions(
+    bool include_popups) const {
+  return GetExtensionActions(ExtensionAction::BROWSER_ACTION, include_popups);
 }
 
 void ExtensionsService::InstallExtension(const FilePath& extension_path) {
@@ -365,7 +366,8 @@ void ExtensionsService::NotifyExtensionUnloaded(Extension* extension) {
 }
 
 std::vector<ExtensionAction*> ExtensionsService::GetExtensionActions(
-    ExtensionAction::ExtensionActionType action_type) const {
+    ExtensionAction::ExtensionActionType action_type,
+    bool include_popups) const {
   std::vector<ExtensionAction*> result;
 
   // TODO(finnur): Sort the icons in some meaningful way.
@@ -375,11 +377,12 @@ std::vector<ExtensionAction*> ExtensionsService::GetExtensionActions(
       const ExtensionActionMap* page_actions = &(*iter)->page_actions();
       for (ExtensionActionMap::const_iterator i(page_actions->begin());
            i != page_actions->end(); ++i) {
-        result.push_back(i->second);
+        if (include_popups || !i->second->is_popup())
+          result.push_back(i->second);
       }
     } else {
       ExtensionAction* browser_action = (*iter)->browser_action();
-      if (browser_action)
+      if (browser_action && (include_popups || !browser_action->is_popup()))
         result.push_back(browser_action);
     }
   }

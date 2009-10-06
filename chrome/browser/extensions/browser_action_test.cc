@@ -18,9 +18,10 @@ static void TestAction(Browser* browser) {
   ui_test_utils::NavigateToURL(browser,
       GURL("http://localhost:1337/files/extensions/test_file.txt"));
 
-  // Send the command.
+  // Send the command.  Note that this only works for non-popup actions, so
+  // we specify |false|.
   ExtensionsService* service = browser->profile()->GetExtensionsService();
-  browser->ExecuteCommand(service->GetBrowserActions()[0]->command_id());
+  browser->ExecuteCommand(service->GetBrowserActions(false)[0]->command_id());
 
   // Verify the command worked.
   TabContents* tab = browser->GetSelectedTabContents();

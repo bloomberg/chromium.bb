@@ -51,6 +51,8 @@ class ExtensionAction {
   const int popup_height() const { return popup_height_; }
   void set_popup_height(int height) { popup_height_ = height; }
 
+  bool is_popup() const { return !popup_url_.is_empty(); }
+
  private:
   static int next_command_id_;
 

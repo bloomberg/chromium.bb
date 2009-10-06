@@ -108,7 +108,7 @@ class ExtensionsService
 
   // Retrieves a vector of all browser actions, irrespective of which extension
   // they belong to.
-  std::vector<ExtensionAction*> GetBrowserActions() const;
+  std::vector<ExtensionAction*> GetBrowserActions(bool include_popups) const;
 
   // Install the extension file at |extension_path|.  Will install as an
   // update if an older version is already installed.
@@ -243,9 +243,11 @@ class ExtensionsService
   void NotifyExtensionUnloaded(Extension* extension);
 
   // Retrieves a vector of all page actions or browser actions, irrespective of
-  // which extension they belong to.
+  // which extension they belong to.  If |include_popups| is false, actions that
+  // are popups are excluded.
   std::vector<ExtensionAction*> GetExtensionActions(
-      ExtensionAction::ExtensionActionType action_type) const;
+      ExtensionAction::ExtensionActionType action_type,
+      bool include_popups) const;
 
   // The profile this ExtensionsService is part of.
   Profile* profile_;

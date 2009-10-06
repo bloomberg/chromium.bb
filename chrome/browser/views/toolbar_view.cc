@@ -1083,10 +1083,10 @@ void ToolbarView::CreateAppMenu() {
   ExtensionsService* extensions_service =
       browser_->profile()->GetExtensionsService();
   if (extensions_service && extensions_service->extensions_enabled()) {
-    const ExtensionList* extensions = extensions_service->extensions();
+    // Get a count of all non-popup browser actions to decide how to layout
+    // the Extensions menu.
     std::vector<ExtensionAction*> browser_actions =
-        browser_->profile()->GetExtensionsService()->GetBrowserActions();
-
+        browser_->profile()->GetExtensionsService()->GetBrowserActions(false);
     if (browser_actions.size() == 0) {
       app_menu_contents_->AddItemWithStringId(IDC_MANAGE_EXTENSIONS,
                                               IDS_SHOW_EXTENSIONS);
@@ -1097,6 +1097,11 @@ void ToolbarView::CreateAppMenu() {
 
       extension_menu_contents_->AddItemWithStringId(IDC_MANAGE_EXTENSIONS,
                                                     IDS_MANAGE_EXTENSIONS);
+
+      // TODO(erikkay) Even though we just got the list of all browser actions,
+      // we have to enumerate the list of extensions in order to get the action
+      // state.  It seems like we should find a way to combine these.
+      const ExtensionList* extensions = extensions_service->extensions();
       for (size_t i = 0; i < extensions->size(); ++i) {
         Extension* extension = extensions->at(i);
         if (!extension->browser_action()) {
@@ -1104,7 +1109,7 @@ void ToolbarView::CreateAppMenu() {
         } else if (extension->browser_action()->command_id() >
                    IDC_BROWSER_ACTION_LAST) {
           NOTREACHED() << "Too many browser actions.";
-        } else {
+        } else if (!extension->browser_action()->is_popup()) {
           extension_menu_contents_->AddItem(
               extension->browser_action()->command_id(),
               UTF8ToUTF16(extension->browser_action_state()->title()));

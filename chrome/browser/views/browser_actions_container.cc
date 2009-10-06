@@ -178,7 +178,7 @@ void BrowserActionImageView::Observe(NotificationType type,
 }
 
 bool BrowserActionImageView::IsPopup() {
-  return (browser_action_ && !browser_action_->popup_url().is_empty());
+  return browser_action_->is_popup();
 }
 
 bool BrowserActionImageView::Activate() {
@@ -268,8 +268,9 @@ void BrowserActionsContainer::RefreshBrowserActionViews() {
   if (!extension_service)  // The |extension_service| can be NULL in Incognito.
     return;
 
+  // Get all browser actions, including those with popups.
   std::vector<ExtensionAction*> browser_actions;
-  browser_actions = extension_service->GetBrowserActions();
+  browser_actions = extension_service->GetBrowserActions(true);
 
   DeleteBrowserActionViews();
   for (size_t i = 0; i < browser_actions.size(); ++i) {
