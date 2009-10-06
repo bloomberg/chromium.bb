@@ -46,8 +46,45 @@ TEST(AppCacheTest, AddModifyEntry) {
   AppCacheEntry entry3(AppCacheEntry::EXPLICIT);
   cache->AddOrModifyEntry(kUrl1, entry3);
   EXPECT_EQ((AppCacheEntry::MASTER | AppCacheEntry::EXPLICIT),
-    cache->GetEntry(kUrl1)->types());
+            cache->GetEntry(kUrl1)->types());
   EXPECT_EQ(entry2.types(), cache->GetEntry(kUrl2)->types());  // unchanged
+}
+
+TEST(AppCacheTest, InitializeWithManifest) {
+  AppCacheService service;
+
+  scoped_refptr<AppCache> cache = new AppCache(&service, 1234);
+  EXPECT_TRUE(cache->fallback_namespaces_.empty());
+  EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
+  EXPECT_FALSE(cache->online_whitelist_all_);
+
+  Manifest manifest;
+  manifest.explicit_urls.insert("http://one.com");
+  manifest.explicit_urls.insert("http://two.com");
+  manifest.fallback_namespaces.push_back(
+      FallbackNamespace(GURL("http://fb1.com"), GURL("http://fbone.com")));
+  manifest.online_whitelist_namespaces.push_back(GURL("http://w1.com"));
+  manifest.online_whitelist_namespaces.push_back(GURL("http://w2.com"));
+  manifest.online_whitelist_all = true;
+
+  cache->InitializeWithManifest(&manifest);
+  const std::vector<FallbackNamespace>& fallbacks =
+      cache->fallback_namespaces_;
+  size_t expected = 1;
+  EXPECT_EQ(expected, fallbacks.size());
+  EXPECT_EQ(GURL("http://fb1.com"), fallbacks[0].first);
+  EXPECT_EQ(GURL("http://fbone.com"), fallbacks[0].second);
+  const std::vector<GURL>& whitelist = cache->online_whitelist_namespaces_;
+  expected = 2;
+  EXPECT_EQ(expected, whitelist.size());
+  EXPECT_EQ(GURL("http://w1.com"), whitelist[0]);
+  EXPECT_EQ(GURL("http://w2.com"), whitelist[1]);
+  EXPECT_TRUE(cache->online_whitelist_all_);
+
+  // Ensure collections in manifest were taken over by the cache rather than
+  // copied.
+  EXPECT_TRUE(manifest.fallback_namespaces.empty());
+  EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
 }
 
 }  // namespace appacache

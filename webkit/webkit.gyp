@@ -406,6 +406,8 @@
         'appcache/appcache_request_handler.h',
         'appcache/appcache_service.cc',
         'appcache/appcache_service.h',
+        'appcache/appcache_update_job.cc',
+        'appcache/appcache_update_job.h',
         'appcache/manifest_parser.cc',
         'appcache/manifest_parser.h',
         'appcache/web_application_cache_host_impl.cc',

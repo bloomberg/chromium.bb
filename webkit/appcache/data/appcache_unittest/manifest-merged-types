@@ -1,0 +1,9 @@
+CACHE MANIFEST
+explicit1
+# manifest is also an explicit entry
+manifest-merged-types
+FALLBACK:
+# fallback is also explicit entry
+fallback1 explicit1
+NETWORK:
+online1

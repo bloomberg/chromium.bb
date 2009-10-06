@@ -61,6 +61,8 @@ void AppCacheService::AddGroup(AppCacheGroup* group) {
 
 void AppCacheService::RemoveGroup(AppCacheGroup* group) {
   groups_.erase(group->manifest_url());
+
+  // TODO(jennb): if group is obsolete, delete from storage.
 }
 
 void AppCacheService::LoadCache(int64 id, LoadClient* client) {

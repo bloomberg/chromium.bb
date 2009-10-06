@@ -12,6 +12,8 @@ using WebKit::WebApplicationCacheHost;
 
 namespace appcache {
 
+const char kManifestMimeType[] = "text/cache-manifest";
+
 const char kHttpScheme[] = "http";
 const char kHttpsScheme[] = "https";
 const char kHttpGETMethod[] = "GET";

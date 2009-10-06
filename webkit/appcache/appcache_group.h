@@ -7,19 +7,29 @@
 
 #include <vector>
 
+#include "base/observer_list.h"
 #include "base/ref_counted.h"
 #include "googleurl/src/gurl.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace appcache {
 
 class AppCache;
 class AppCacheHost;
 class AppCacheService;
+class AppCacheUpdateJob;
 
 // Collection of application caches identified by the same manifest URL.
 // A group exists as long as it is in use by a host or is being updated.
 class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
  public:
+
+  class Observer {
+    public:
+      // Called just after an appcache update has completed.
+      virtual void OnUpdateComplete(AppCacheGroup* group) = 0;
+      virtual ~Observer() { }
+  };
 
   enum UpdateStatus {
     IDLE,
@@ -30,10 +40,12 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   AppCacheGroup(AppCacheService* service, const GURL& manifest_url);
   ~AppCacheGroup();
 
-  const GURL& manifest_url() { return manifest_url_; }
+  // Adds/removes an observer, the AppCacheGroup does not take
+  // ownership of the observer.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
-  UpdateStatus update_status() { return update_status_; }
-  void set_update_status(UpdateStatus status) { update_status_ = status; }
+  const GURL& manifest_url() { return manifest_url_; }
 
   bool is_obsolete() { return is_obsolete_; }
   void set_obsolete(bool value) { is_obsolete_ = value; }
@@ -45,6 +57,10 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   // Returns false if cache cannot be removed. The newest complete cache
   // cannot be removed as long as the group is still in use.
   bool RemoveCache(AppCache* cache);
+
+  bool HasCache() { return newest_complete_cache_ || !old_caches_.empty(); }
+
+  UpdateStatus update_status() { return update_status_; }
 
   // Starts an update via update() javascript API.
   void StartUpdate() {
@@ -63,19 +79,39 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
                                      const GURL& new_master_resource);
 
  private:
+  friend class AppCacheUpdateJob;
+  friend class AppCacheUpdateJobTest;
+
+  typedef std::vector<scoped_refptr<AppCache> > Caches;
+
+  AppCacheUpdateJob* update_job() { return update_job_; }
+  void SetUpdateStatus(UpdateStatus status);
+
+  const Caches& old_caches() { return old_caches_; }
+
   GURL manifest_url_;
   UpdateStatus update_status_;
   bool is_obsolete_;
 
-  // old complete app caches
-  typedef std::vector<scoped_refptr<AppCache> > Caches;
+  // Old complete app caches.
   Caches old_caches_;
 
-  // newest cache in this group to be complete, aka relevant cache
+  // Newest cache in this group to be complete, aka relevant cache.
   scoped_refptr<AppCache> newest_complete_cache_;
 
-  // to notify service when group is no longer needed
+  // Current update job for this group, if any.
+  AppCacheUpdateJob* update_job_;
+
+  // Central service object.
   AppCacheService* service_;
+
+  // List of objects observing this group.
+  ObserverList<Observer> observers_;
+
+  FRIEND_TEST(AppCacheGroupTest, StartUpdate);
+  FRIEND_TEST(AppCacheUpdateJobTest, AlreadyChecking);
+  FRIEND_TEST(AppCacheUpdateJobTest, AlreadyDownloading);
+  DISALLOW_COPY_AND_ASSIGN(AppCacheGroup);
 };
 
 }  // namespace appcache

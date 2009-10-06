@@ -13,6 +13,7 @@
 #include "base/ref_counted.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/appcache/appcache_entry.h"
 #include "webkit/appcache/manifest_parser.h"
 
@@ -27,6 +28,8 @@ class AppCacheService;
 // cache is being created during an appcache upate.
 class AppCache : public base::RefCounted<AppCache> {
  public:
+  typedef std::map<GURL, AppCacheEntry> EntryMap;
+
   AppCache(AppCacheService *service, int64 cache_id);
   ~AppCache();
 
@@ -50,19 +53,27 @@ class AppCache : public base::RefCounted<AppCache> {
   // Do not store the returned object as it could be deleted anytime.
   AppCacheEntry* GetEntry(const GURL& url);
 
-  typedef std::map<GURL, AppCacheEntry> EntryMap;
   const EntryMap& entries() const { return entries_; }
+
+  const std::set<AppCacheHost*>& associated_hosts() const {
+    return associated_hosts_;
+  }
 
   bool IsNewerThan(AppCache* cache) const {
     return update_time_ > cache->update_time_;
   }
 
-  void set_update_time(base::TimeTicks ticks = base::TimeTicks::Now()) {
+  void set_update_time(base::TimeTicks ticks) {
     update_time_ = ticks;
   }
 
+  // Initializes the cache with information in the manifest.
+  // Do not use the manifest after this call.
+  void InitializeWithManifest(Manifest* manifest);
+
  private:
   friend class AppCacheHost;
+  friend class AppCacheUpdateJobTest;
 
   // Use AppCacheHost::AssociateCache() to manipulate host association.
   void AssociateHost(AppCacheHost* host) {
@@ -71,7 +82,6 @@ class AppCache : public base::RefCounted<AppCache> {
   void UnassociateHost(AppCacheHost* host);
 
   const int64 cache_id_;
-  AppCacheEntry* manifest_;  // also in entry map
   AppCacheGroup* owning_group_;
   std::set<AppCacheHost*> associated_hosts_;
 
@@ -88,6 +98,9 @@ class AppCache : public base::RefCounted<AppCache> {
 
   // to notify service when cache is deleted
   AppCacheService* service_;
+
+  FRIEND_TEST(AppCacheTest, InitializeWithManifest);
+  DISALLOW_COPY_AND_ASSIGN(AppCache);
 };
 
 }  // namespace appcache

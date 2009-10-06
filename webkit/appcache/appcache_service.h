@@ -53,8 +53,6 @@ class AppCacheService {
     request_context_ = context;
   }
 
-  // TODO(jennb): API to set service settings, like file paths for storage
-
   // Track which processes are using this appcache service.
   void RegisterBackend(AppCacheBackendImpl* backend_impl);
   void UnregisterBackend(AppCacheBackendImpl* backend_impl);

@@ -361,6 +361,7 @@
         '../../appcache/appcache_group_unittest.cc',
         '../../appcache/appcache_host_unittest.cc',
         '../../appcache/appcache_service_unittest.cc',
+        '../../appcache/appcache_update_job_unittest.cc',
         '../../glue/bookmarklet_unittest.cc',
         '../../glue/context_menu_unittest.cc',
         '../../glue/cpp_bound_class_unittest.cc',

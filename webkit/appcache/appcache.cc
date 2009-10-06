@@ -7,17 +7,17 @@
 #include "base/logging.h"
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_host.h"
+#include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/appcache/appcache_service.h"
 
 namespace appcache {
 
 AppCache::AppCache(AppCacheService *service, int64 cache_id)
-  : cache_id_(cache_id),
-    manifest_(NULL),
-    owning_group_(NULL),
-    online_whitelist_all_(false),
-    is_complete_(false),
-    service_(service) {
+    : cache_id_(cache_id),
+      owning_group_(NULL),
+      online_whitelist_all_(false),
+      is_complete_(false),
+      service_(service) {
   service_->AddCache(this);
 }
 
@@ -42,7 +42,7 @@ void AppCache::AddEntry(const GURL& url, const AppCacheEntry& entry) {
 
 void AppCache::AddOrModifyEntry(const GURL& url, const AppCacheEntry& entry) {
   std::pair<EntryMap::iterator, bool> ret =
-    entries_.insert(EntryMap::value_type(url, entry));
+      entries_.insert(EntryMap::value_type(url, entry));
 
   // Entry already exists.  Merge the types of the new and existing entries.
   if (!ret.second)
@@ -52,6 +52,13 @@ void AppCache::AddOrModifyEntry(const GURL& url, const AppCacheEntry& entry) {
 AppCacheEntry* AppCache::GetEntry(const GURL& url) {
   EntryMap::iterator it = entries_.find(url);
   return (it != entries_.end()) ? &(it->second) : NULL;
+}
+
+void AppCache::InitializeWithManifest(Manifest* manifest) {
+  DCHECK(manifest);
+  fallback_namespaces_.swap(manifest->fallback_namespaces);
+  online_whitelist_namespaces_.swap(manifest->online_whitelist_namespaces);
+  online_whitelist_all_ = manifest->online_whitelist_all;
 }
 
 }  // namespace appcache

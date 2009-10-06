@@ -7,6 +7,7 @@
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_host.h"
 #include "webkit/appcache/appcache_service.h"
+#include "webkit/appcache/appcache_update_job.h"
 
 namespace {
 
@@ -128,6 +129,29 @@ TEST(AppCacheGroupTest, CleanupUnusedGroup) {
   EXPECT_EQ(frontend.last_host_id_, host2.host_id());
   EXPECT_EQ(frontend.last_cache_id_, appcache::kNoCacheId);
   EXPECT_EQ(frontend.last_status_, appcache::UNCACHED);
+}
+
+TEST(AppCacheGroupTest, StartUpdate) {
+  /* TODO(jennb) - uncomment after AppCacheGroup::StartUpdate does something.
+  AppCacheService service;
+  scoped_refptr<AppCacheGroup> group =
+      new AppCacheGroup(&service, GURL("http://foo.com"));
+
+  // Set state to checking to prevent update job from executing fetches.
+  group->update_status_ = AppCacheGroup::CHECKING;
+  group->StartUpdate();
+  AppCacheUpdateJob* update = group->update_job_;
+  EXPECT_TRUE(update != NULL);
+
+  // Start another update, check that same update job is in use.
+  group->StartUpdateWithHost(NULL);
+  EXPECT_EQ(update, group->update_job_);
+
+  // Remove update job's reference to this group.
+  delete update;
+  EXPECT_TRUE(group->update_job_ == NULL);
+  EXPECT_EQ(AppCacheGroup::IDLE, group->update_status());
+  */
 }
 
 }  // namespace appcache
