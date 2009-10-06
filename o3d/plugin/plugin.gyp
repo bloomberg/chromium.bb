@@ -200,17 +200,6 @@
                 '-lGL',
               ],
             },
-            # On Linux, shared library targets aren't copied to the
-            # product dir automatically.  Filed GYP issue #74 to address this.
-            # TODO(gspencer): Remove when issue #74 is resolved.
-            'copies': [
-              {
-                'destination': '<(PRODUCT_DIR)',
-                'files': [
-                  '<(PRODUCT_DIR)/obj/o3d/plugin/<(LIBRARY_PREFIX)<(_target_name)<(SHARED_LIB_SUFFIX)',
-                ],
-              },
-            ],
           },
         ],
         ['OS == "win"',
