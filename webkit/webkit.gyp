@@ -749,6 +749,9 @@
       'target_name': 'devtools_html',
       'type': 'none',
       'msvs_guid': '9BE5D4D5-E800-44F9-B6C0-27DF15A9D817',
+      'sources': [
+        '<(PRODUCT_DIR)/resources/inspector/devtools.html',
+      ],
       'actions': [
         {
           'action_name': 'devtools_html',
