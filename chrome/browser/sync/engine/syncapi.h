@@ -48,18 +48,10 @@ typedef uint16 sync_char16;
 #endif
 
 // The MSVC compiler for Windows requires that any classes exported by, or
-// imported from, a dynamic library be decorated with the following fanciness.
-#if defined(OS_WIN)
-#if COMPILING_SYNCAPI_LIBRARY
-#define SYNC_EXPORT __declspec(dllexport)
-#elif COMPILING_SYNCAPI_STUB
+// imported from, a dynamic library be marked with an appropriate
+// __declspec() decoration. However, we currently use static linkage
+// on all platforms.
 #define SYNC_EXPORT
-#else
-#define SYNC_EXPORT __declspec(dllimport)
-#endif
-#else
-#define SYNC_EXPORT
-#endif  // OS_WIN
 
 // Forward declarations of internal class types so that sync API objects
 // may have opaque pointers to these types.

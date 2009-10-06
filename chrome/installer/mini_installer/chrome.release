@@ -42,8 +42,7 @@ servers\*.dll: %(VersionDir)s\
 servers\*.exe: %(VersionDir)s\
 Extensions\*.*: %(VersionDir)s\Extensions\
 av*.dll: %(VersionDir)s\
-syncapi.dll: %(VersionDir)s\
+pthreads.dll: %(VersionDir)s\
 
 [GOOGLE_CHROME]
 rlz.dll: %(VersionDir)s\
-pthreads.dll: %(VersionDir)s\

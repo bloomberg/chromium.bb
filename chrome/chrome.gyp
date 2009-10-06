@@ -4684,7 +4684,7 @@
           'type': 'none',
         }, {
           # Build sync.
-          'type': 'shared_library',
+          'type': '<(library)',
           'sources': [
             'browser/sync/engine/syncapi.cc',
           ],
@@ -4693,7 +4693,6 @@
             '<(protoc_out_dir)',
           ],
           'defines' : [
-            'COMPILING_SYNCAPI_LIBRARY',
             '_CRT_SECURE_NO_WARNINGS',
             '_USE_32BIT_TIME_T',
           ],
@@ -4711,31 +4710,9 @@
           ],
           'conditions': [
             ['OS=="win"', {
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'ImportLibrary': '$(OutDir)\\lib\\syncapi.lib',
-                  'ProgramDatabaseFile': '$(OutDir)\\syncapi_dll.pdb',
-                },
-              },
-              'link_settings': {
-                'libraries': [
-                  '-lcrypt32.lib',
-                  '-liphlpapi.lib',
-                  '-lsecur32.lib',
-                ]
-              },
               'dependencies': [
                 '../third_party/pthreads-win32/pthreads.gyp:pthreads',
               ],
-              'direct_dependent_settings': {
-                'msvs_settings': {
-                  'VCLinkerTool': {
-                    'DelayLoadDLLs': [
-                      'syncapi.dll',
-                    ],
-                  },
-                },
-              },
             }],
             ['OS=="linux"', {
               'defines': [
@@ -4956,6 +4933,8 @@
                     'psapi.dll',
                     'urlmon.dll',
                     'imm32.dll',
+                    'iphlpapi.dll',
+                    'pthreads.dll',
                   ],
                   'ImportLibrary': '$(OutDir)\\lib\\chrome_dll.lib',
                   'ProgramDatabaseFile': '$(OutDir)\\chrome_dll.pdb',
@@ -6607,7 +6586,6 @@
             '<(protoc_out_dir)',
           ],
           'defines' : [
-            'COMPILING_SYNCAPI_LIBRARY',
             'SYNC_ENGINE_VERSION_STRING="Unknown"',
             '_CRT_SECURE_NO_WARNINGS',
             '_USE_32BIT_TIME_T',
@@ -6776,7 +6754,6 @@
             '<(protoc_out_dir)',
           ],
           'defines' : [
-            'COMPILING_SYNCAPI_LIBRARY',
             'SYNC_ENGINE_VERSION_STRING="Unknown"',
             '_CRT_SECURE_NO_WARNINGS',
             '_USE_32BIT_TIME_T',

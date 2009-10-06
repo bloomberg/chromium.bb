@@ -16,7 +16,6 @@
 #include <string>
 #include <vector>
 
-#include "base/at_exit.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/scoped_ptr.h"
@@ -45,6 +44,10 @@
 #include "chrome/browser/sync/util/user_settings.h"
 #include "googleurl/src/gurl.h"
 
+#if defined(OS_WIN)
+#pragma comment(lib, "iphlpapi.lib")
+#endif
+
 using browser_sync::AllStatus;
 using browser_sync::AllStatusEvent;
 using browser_sync::AuthWatcher;
@@ -68,16 +71,6 @@ using syncable::DirectoryManager;
 static const int kServerReachablePollingIntervalMsec = 60000 * 60;
 static const int kThreadExitTimeoutMsec = 60000;
 static const int kSSLPort = 443;
-
-// We shouldn't call InitLogFiles more than once since that will cause a crash.
-// So we use a global state variable to avoid that. This doesn't work in case
-// of multiple threads, and if some other part also tries to call InitLogFiles
-// apart from this file. But this is okay for now since this is the only place
-// we call InitLogFiles.
-namespace {
-static bool g_log_files_initialized = false;
-static base::AtExitManager g_at_exit_manager;  // Necessary for NewCallback.
-}  // namespace
 
 struct ThreadParams {
   browser_sync::ServerConnectionManager* conn_mgr;
@@ -992,16 +985,6 @@ bool SyncManager::SyncInternal::Init(
     bool attempt_last_user_authentication,
     const char* user_agent) {
 
-  if (!g_log_files_initialized) {
-    // TODO(timsteele): Call InitLogFiles() or equivalent.
-    g_log_files_initialized = true;
-  }
-
-  // TODO(timsteele): We need to do this for syncapi.dll, but should remove
-  // once we link statically.  On windows this will set up the correct command
-  // line, on posix it will be create an empty command line.
-  CommandLine::Init(0, NULL);
-
   // Set up UserSettings, creating the db if necessary. We need this to
   // instantiate a URLFactory to give to the Syncer.
   PathString settings_db_file = AppendSlash(database_location) +
@@ -1229,8 +1212,6 @@ void SyncManager::SyncInternal::Shutdown() {
   LOG_IF(ERROR, WAIT_TIMEOUT == wait_result) << "Thread exit timeout expired";
   CloseHandle(address_watch_params_.exit_flag);
 #endif
-
-  CommandLine::Terminate();
 }
 
 // Listen to model changes, filter out ones initiated by the sync API, and
