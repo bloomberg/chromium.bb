@@ -36,8 +36,8 @@ class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
   void set_name(const std::string& name) { name_ = name; }
   const std::string name() { return name_; }
 
-  // Specifies the raw arguments to the function, as a JSON-encoded string.
-  virtual void SetArgs(const std::string& args) = 0;
+  // Specifies the raw arguments to the function, as a JSON value.
+  virtual void SetArgs(const Value* args) = 0;
 
   // Retrieves the results of the function as a JSON-encoded string (may
   // be empty).
@@ -103,7 +103,7 @@ class AsyncExtensionFunction : public ExtensionFunction {
   AsyncExtensionFunction() : args_(NULL), bad_message_(false) {}
   virtual ~AsyncExtensionFunction() {}
 
-  virtual void SetArgs(const std::string& args);
+  virtual void SetArgs(const Value* args);
   virtual const std::string GetResult();
   virtual const std::string GetError() { return error_; }
   virtual void Run() {

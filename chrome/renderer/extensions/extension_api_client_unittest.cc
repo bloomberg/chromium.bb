@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/json_reader.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_paths.h"
@@ -53,7 +54,14 @@ class ExtensionAPIClientTest : public RenderViewTest {
     ViewHostMsg_ExtensionRequest::Param params;
     ViewHostMsg_ExtensionRequest::Read(request_msg, &params);
     ASSERT_EQ(function.c_str(), params.a) << js;
-    ASSERT_EQ(arg1.c_str(), params.b) << js;
+
+    Value* args = NULL;
+    ASSERT_TRUE(params.b.IsType(Value::TYPE_LIST));
+    ASSERT_TRUE(static_cast<const ListValue*>(&params.b)->Get(0, &args));
+
+    JSONReader reader;
+    Value* arg1_value = reader.JsonToValue(arg1, false, false);
+    ASSERT_TRUE(args->Equals(arg1_value)) << js;
     render_thread_.sink().ClearMessages();
   }
 };

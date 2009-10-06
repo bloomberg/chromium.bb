@@ -35,7 +35,7 @@ DOMUI::~DOMUI() {
 // DOMUI, public: -------------------------------------------------------------
 
 void DOMUI::ProcessDOMUIMessage(const std::string& message,
-                                const std::string& content,
+                                const Value* content,
                                 int request_id,
                                 bool has_callback) {
   // Look up the callback for this message.
@@ -44,20 +44,8 @@ void DOMUI::ProcessDOMUIMessage(const std::string& message,
   if (callback == message_callbacks_.end())
     return;
 
-  // Convert the content JSON into a Value.
-  scoped_ptr<Value> value;
-  if (!content.empty()) {
-    value.reset(JSONReader::Read(content, false));
-    if (!value.get()) {
-      // The page sent us something that we didn't understand.
-      // This probably indicates a programming error.
-      NOTREACHED();
-      return;
-    }
-  }
-
   // Forward this message and content on.
-  callback->second->Run(value.get());
+  callback->second->Run(content);
 }
 
 void DOMUI::CallJavascriptFunction(const std::wstring& function_name) {

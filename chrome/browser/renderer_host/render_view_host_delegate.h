@@ -19,6 +19,7 @@ class AutofillForm;
 struct ContextMenuParams;
 class FilePath;
 class GURL;
+class Value;
 struct NativeWebKeyboardEvent;
 class NavigationEntry;
 class Profile;
@@ -467,7 +468,7 @@ class RenderViewHostDelegate {
   // A message was sent from HTML-based UI.
   // By default we ignore such messages.
   virtual void ProcessDOMUIMessage(const std::string& message,
-                                   const std::string& content,
+                                   const Value* content,
                                    int request_id,
                                    bool has_callback) {}
 

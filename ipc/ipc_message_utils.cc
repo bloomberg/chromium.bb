@@ -27,36 +27,38 @@ static void WriteValue(Message* m, const Value* value, int recursion) {
   m->WriteInt(value->GetType());
 
   switch (value->GetType()) {
-  case Value::TYPE_NULL:
+    case Value::TYPE_NULL:
     break;
-  case Value::TYPE_BOOLEAN: {
+    case Value::TYPE_BOOLEAN: {
       bool val;
       value->GetAsBoolean(&val);
       WriteParam(m, val);
       break;
     }
-  case Value::TYPE_INTEGER: {
+    case Value::TYPE_INTEGER: {
       int val;
       value->GetAsInteger(&val);
       WriteParam(m, val);
       break;
     }
-  case Value::TYPE_REAL: {
+    case Value::TYPE_REAL: {
       double val;
       value->GetAsReal(&val);
       WriteParam(m, val);
       break;
     }
-  case Value::TYPE_STRING: {
+    case Value::TYPE_STRING: {
       std::string val;
       value->GetAsString(&val);
       WriteParam(m, val);
       break;
     }
-  case Value::TYPE_BINARY: {
-      NOTREACHED() << "Don't send BinaryValues over IPC.";
+    case Value::TYPE_BINARY: {
+      const BinaryValue* binary = static_cast<const BinaryValue*>(value);
+      m->WriteData(binary->GetBuffer(), binary->GetSize());
+      break;
     }
-  case Value::TYPE_DICTIONARY: {
+    case Value::TYPE_DICTIONARY: {
       const DictionaryValue* dict = static_cast<const DictionaryValue*>(value);
 
       WriteParam(m, static_cast<int>(dict->GetSize()));
@@ -73,7 +75,7 @@ static void WriteValue(Message* m, const Value* value, int recursion) {
       }
       break;
     }
-  case Value::TYPE_LIST: {
+    case Value::TYPE_LIST: {
       const ListValue* list = static_cast<const ListValue*>(value);
       WriteParam(m, static_cast<int>(list->GetSize()));
       for (size_t i = 0; i < list->GetSize(); ++i) {
@@ -139,56 +141,60 @@ static bool ReadValue(const Message* m, void** iter, Value** value,
     return false;
 
   switch (type) {
-  case Value::TYPE_NULL:
+    case Value::TYPE_NULL:
     *value = Value::CreateNullValue();
     break;
-  case Value::TYPE_BOOLEAN: {
+    case Value::TYPE_BOOLEAN: {
       bool val;
       if (!ReadParam(m, iter, &val))
         return false;
       *value = Value::CreateBooleanValue(val);
       break;
     }
-  case Value::TYPE_INTEGER: {
+    case Value::TYPE_INTEGER: {
       int val;
       if (!ReadParam(m, iter, &val))
         return false;
       *value = Value::CreateIntegerValue(val);
       break;
     }
-  case Value::TYPE_REAL: {
+    case Value::TYPE_REAL: {
       double val;
       if (!ReadParam(m, iter, &val))
         return false;
       *value = Value::CreateRealValue(val);
       break;
     }
-  case Value::TYPE_STRING: {
+    case Value::TYPE_STRING: {
       std::string val;
       if (!ReadParam(m, iter, &val))
         return false;
       *value = Value::CreateStringValue(val);
       break;
     }
-  case Value::TYPE_BINARY: {
-      NOTREACHED() << "Don't send BinaryValues over IPC.";
+    case Value::TYPE_BINARY: {
+      const char* data;
+      int length;
+      if (!m->ReadData(iter, &data, &length))
+        return false;
+      *value = BinaryValue::CreateWithCopiedBuffer(data, length);
       break;
     }
-  case Value::TYPE_DICTIONARY: {
+    case Value::TYPE_DICTIONARY: {
       scoped_ptr<DictionaryValue> val(new DictionaryValue());
       if (!ReadDictionaryValue(m, iter, val.get(), recursion))
         return false;
       *value = val.release();
       break;
     }
-  case Value::TYPE_LIST: {
+    case Value::TYPE_LIST: {
       scoped_ptr<ListValue> val(new ListValue());
       if (!ReadListValue(m, iter, val.get(), recursion))
         return false;
       *value = val.release();
       break;
     }
-  default:
+    default:
     return false;
   }
 

@@ -3297,7 +3297,7 @@ void RenderView::OnSetActive(bool active) {
 }
 
 void RenderView::SendExtensionRequest(const std::string& name,
-                                      const std::string& args,
+                                      const ListValue& args,
                                       int request_id,
                                       bool has_callback) {
   Send(new ViewHostMsg_ExtensionRequest(routing_id_, name, args, request_id,

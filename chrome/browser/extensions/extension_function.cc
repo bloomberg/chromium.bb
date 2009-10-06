@@ -4,24 +4,13 @@
 
 #include "chrome/browser/extensions/extension_function.h"
 
-#include "base/json_reader.h"
 #include "base/json_writer.h"
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 
-void AsyncExtensionFunction::SetArgs(const std::string& args) {
+void AsyncExtensionFunction::SetArgs(const Value* args) {
   DCHECK(!args_);  // Should only be called once.
-  if (!args.empty()) {
-    JSONReader reader;
-    args_ = reader.JsonToValue(args, false, false);
-
-    // Since we do the serialization in the v8 extension, we should always get
-    // valid JSON.
-    if (!args_) {
-      DCHECK(false);
-      return;
-    }
-  }
+  args_ = args->DeepCopy();
 }
 
 const std::string AsyncExtensionFunction::GetResult() {

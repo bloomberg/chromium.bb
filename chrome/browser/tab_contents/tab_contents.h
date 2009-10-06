@@ -873,7 +873,7 @@ class TabContents : public PageNavigator,
   virtual void DomOperationResponse(const std::string& json_string,
                                     int automation_id);
   virtual void ProcessDOMUIMessage(const std::string& message,
-                                   const std::string& content,
+                                   const Value* content,
                                    int request_id,
                                    bool has_callback);
   virtual void ProcessExternalHostMessage(const std::string& message,

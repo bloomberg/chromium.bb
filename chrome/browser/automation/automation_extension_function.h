@@ -20,7 +20,7 @@ class AutomationExtensionFunction : public ExtensionFunction {
   AutomationExtensionFunction() { }
 
   // ExtensionFunction implementation.
-  virtual void SetArgs(const std::string& args);
+  virtual void SetArgs(const Value* args);
   virtual const std::string GetResult();
   virtual const std::string GetError();
   virtual void Run();

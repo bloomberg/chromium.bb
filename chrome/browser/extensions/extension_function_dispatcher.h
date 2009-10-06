@@ -19,6 +19,7 @@ class ExtensionHost;
 class Profile;
 class RenderViewHost;
 class RenderViewHostDelegate;
+class Value;
 
 // A factory function for creating new ExtensionFunction instances.
 typedef ExtensionFunction* (*ExtensionFunctionFactory)();
@@ -61,7 +62,7 @@ class ExtensionFunctionDispatcher {
   ~ExtensionFunctionDispatcher();
 
   // Handle a request to execute an extension function.
-  void HandleRequest(const std::string& name, const std::string& args,
+  void HandleRequest(const std::string& name, const Value* args,
                      int request_id, bool has_callback);
 
   // Send a response to a function.

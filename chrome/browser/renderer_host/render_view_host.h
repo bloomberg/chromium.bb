@@ -22,6 +22,7 @@
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/window_open_disposition.h"
 
+class ListValue;
 class RenderViewHostDelegate;
 class SiteInstance;
 class SkBitmap;
@@ -571,7 +572,7 @@ class RenderViewHost : public RenderWidgetHost,
   void OnRemoveAutofillEntry(const std::wstring& field_name,
                              const std::wstring& value);
 
-  void OnExtensionRequest(const std::string& name, const std::string& args,
+  void OnExtensionRequest(const std::string& name, const ListValue& args,
                           int request_id, bool has_callback);
   void OnExtensionPostMessage(int port_id, const std::string& message);
   void OnAccessibilityFocusChange(int acc_obj_id);

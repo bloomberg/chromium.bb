@@ -279,7 +279,7 @@ Extension* ExtensionFunctionDispatcher::GetExtension() {
 }
 
 void ExtensionFunctionDispatcher::HandleRequest(const std::string& name,
-                                                const std::string& args,
+                                                const Value* args,
                                                 int request_id,
                                                 bool has_callback) {
   scoped_refptr<ExtensionFunction> function(

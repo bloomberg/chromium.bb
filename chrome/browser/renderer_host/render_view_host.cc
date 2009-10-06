@@ -10,6 +10,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/native_widget_types.h"
+#include "base/json_reader.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/waitable_event.h"
@@ -1219,8 +1220,19 @@ void RenderViewHost::OnMsgDOMUISend(
   // values here.
   const int kRequestId = -1;
   const bool kHasCallback = false;
+  scoped_ptr<Value> value;
+  if (!content.empty()) {
+    value.reset(JSONReader::Read(content, false));
+    if (!value.get()) {
+      // The page sent us something that we didn't understand.
+      // This probably indicates a programming error.
+      NOTREACHED() << "Invalid JSON argument in OnMsgDOMUISend.";
+      return;
+    }
+  }
 
-  delegate_->ProcessDOMUIMessage(message, content, kRequestId, kHasCallback);
+  delegate_->ProcessDOMUIMessage(message, value.get(),
+                                 kRequestId, kHasCallback);
 }
 
 void RenderViewHost::OnMsgForwardMessageToExternalHost(
@@ -1633,7 +1645,7 @@ void RenderViewHost::ForwardMessageFromExternalHost(const std::string& message,
 }
 
 void RenderViewHost::OnExtensionRequest(const std::string& name,
-                                        const std::string& args,
+                                        const ListValue& args_holder,
                                         int request_id,
                                         bool has_callback) {
   if (!ChildProcessSecurityPolicy::GetInstance()->
@@ -1641,6 +1653,15 @@ void RenderViewHost::OnExtensionRequest(const std::string& name,
     // This can happen if someone uses window.open() to open an extension URL
     // from a non-extension context.
     BlockExtensionRequest(request_id);
+    return;
+  }
+
+  // The renderer sends the args in a 1-element list to make serialization
+  // easier.
+  Value* args = NULL;
+  if (!args_holder.IsType(Value::TYPE_LIST) ||
+      !static_cast<const ListValue*>(&args_holder)->Get(0, &args)) {
+    NOTREACHED();
     return;
   }
 

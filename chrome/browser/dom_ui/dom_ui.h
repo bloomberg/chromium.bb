@@ -41,7 +41,7 @@ class DOMUI {
 
   // Called from TabContents.
   virtual void ProcessDOMUIMessage(const std::string& message,
-                                   const std::string& content,
+                                   const Value* content,
                                    int request_id,
                                    bool has_callback);
 

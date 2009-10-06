@@ -9,6 +9,7 @@
 
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 
+#include "base/json_reader.h"
 #include "base/singleton.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
@@ -352,9 +353,24 @@ class ExtensionImpl : public ExtensionBase {
       return ExtensionProcessBindings::ThrowPermissionDeniedException(name);
     }
 
-    std::string json_args = *v8::String::Utf8Value(args[1]);
+    std::string str_args = *v8::String::Utf8Value(args[1]);
     int request_id = args[2]->Int32Value();
     bool has_callback = args[3]->BooleanValue();
+
+    ListValue args_holder;
+    JSONReader reader;
+    Value* json_args = reader.JsonToValue(str_args, false, false);
+
+    // Since we do the serialization in the v8 extension, we should always get
+    // valid JSON.
+    if (!json_args) {
+      NOTREACHED() << "Invalid JSON passed to StartRequest.";
+      return v8::Undefined();
+    }
+
+    // Put the args in a 1-element list for easier serialization. Maybe all
+    // requests should have a list of args?
+    args_holder.Append(json_args);
 
     v8::Persistent<v8::Context> current_context =
         v8::Persistent<v8::Context>::New(v8::Context::GetCurrent());
@@ -362,7 +378,8 @@ class ExtensionImpl : public ExtensionBase {
     GetPendingRequestMap()[request_id].reset(new PendingRequest(
         current_context, name));
 
-    renderview->SendExtensionRequest(name, json_args, request_id, has_callback);
+    renderview->SendExtensionRequest(name, args_holder,
+                                     request_id, has_callback);
 
     return v8::Undefined();
   }

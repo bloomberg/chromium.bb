@@ -103,7 +103,7 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   virtual WebPreferences GetWebkitPrefs();
   virtual void ProcessDOMUIMessage(const std::string& message,
-                                   const std::string& content,
+                                   const Value* content,
                                    int request_id,
                                    bool has_callback);
   virtual void RunJavaScriptMessage(const std::wstring& message,

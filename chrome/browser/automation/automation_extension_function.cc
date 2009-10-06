@@ -14,8 +14,8 @@
 
 bool AutomationExtensionFunction::enabled_ = false;
 
-void AutomationExtensionFunction::SetArgs(const std::string& args) {
-  args_ = args;
+void AutomationExtensionFunction::SetArgs(const Value* args) {
+  JSONWriter::Write(args, false, &args_);
 }
 
 const std::string AutomationExtensionFunction::GetResult() {

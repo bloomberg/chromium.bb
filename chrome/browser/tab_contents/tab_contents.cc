@@ -2208,7 +2208,7 @@ void TabContents::DomOperationResponse(const std::string& json_string,
 }
 
 void TabContents::ProcessDOMUIMessage(const std::string& message,
-                                      const std::string& content,
+                                      const Value* content,
                                       int request_id,
                                       bool has_callback) {
   if (!render_manager_.dom_ui()) {
