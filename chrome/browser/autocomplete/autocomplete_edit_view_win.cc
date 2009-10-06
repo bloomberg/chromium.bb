@@ -2012,7 +2012,11 @@ void AutocompleteEditViewWin::EmphasizeURLComponents() {
   // the standard text color.
   cf.crTextColor = skia::SkColorToCOLORREF(LocationBarView::GetColor(is_secure,
       emphasize ? LocationBarView::DEEMPHASIZED_TEXT : LocationBarView::TEXT));
-  SetDefaultCharFormat(cf);
+  // NOTE: Don't use SetDefaultCharFormat() instead of the below; that sets the
+  // format that will get applied to text added in the future, not to text
+  // already in the edit.
+  SelectAll(false);
+  SetSelectionCharFormat(cf);
 
   if (emphasize) {
     // We've found a host name, give it more emphasis.
