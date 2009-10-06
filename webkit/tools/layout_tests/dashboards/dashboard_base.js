@@ -77,6 +77,7 @@ function handleValidHashParameterWrapper(key, value) {
 
       return true;
 
+    case 'useWebKitCanary':
     case 'debug':
       currentState[key] = value == 'true';
 
@@ -89,6 +90,7 @@ function handleValidHashParameterWrapper(key, value) {
 
 var defaultCrossDashboardStateValues = {
   testType: 'layout_test_results',
+  useWebKitCanary: false,
   debug: false
 }
 
@@ -101,6 +103,10 @@ function stringContains(a, b) {
   return a.indexOf(b) != -1;
 }
 
+function caseInsensitiveContains(a, b) {
+  return a.match(new RegExp(b, 'i'));
+}
+
 function startsWith(a, b) {
   return a.indexOf(b) == 0;
 }
@@ -111,13 +117,6 @@ function isValidName(str) {
 
 function trimString(str) {
   return str.replace(/^\s+|\s+$/g, '');
-}
-
-/**
- * Naive check that path points to a directory.
- */
-function isDirectory(path) {
-  return !stringContains(path, '.')
 }
 
 function validateParameter(state, key, value, validateFn) {
@@ -184,30 +183,39 @@ var currentState;
 // Parse cross-dashboard parameters before using them.
 parseParameters();
 
+var builders, builderBase;
 if (currentState.debug) {
   // In debug mode point to the results.json and expectations.json in the
   // local tree. Useful for debugging changes to the python JSON generator.
-  var builders = {'DUMMY_BUILDER_NAME': ''};
-  var builderBase = '../../Debug/';
+  builders = {'DUMMY_BUILDER_NAME': ''};
+  builderBase = '../../Debug/';
 } else {
   // Map of builderName (the name shown in the waterfall)
   // to builderPath (the path used in the builder's URL)
   // TODO(ojan): Make this switch based off of the testType.
-  var builders = {
-    'Webkit': 'webkit-rel',
-    'Webkit (dbg)(1)': 'webkit-dbg-1',
-    'Webkit (dbg)(2)': 'webkit-dbg-2',
-    'Webkit (dbg)(3)': 'webkit-dbg-3',
-    'Webkit Linux': 'webkit-rel-linux',
-    'Webkit Linux (dbg)(1)': 'webkit-dbg-linux-1',
-    'Webkit Linux (dbg)(2)': 'webkit-dbg-linux-2',
-    'Webkit Linux (dbg)(3)': 'webkit-dbg-linux-3',
-    'Webkit Mac10.5': 'webkit-rel-mac5',
-    'Webkit Mac10.5 (dbg)(1)': 'webkit-dbg-mac5-1',
-    'Webkit Mac10.5 (dbg)(2)': 'webkit-dbg-mac5-2',
-    'Webkit Mac10.5 (dbg)(3)': 'webkit-dbg-mac5-3'
-  };
-  var builderBase = 'http://build.chromium.org/buildbot/';
+  if (currentState.useWebKitCanary) {
+    builders = {
+      'Webkit (webkit.org)': 'webkit-rel-webkit-org',
+      'Webkit Linux (webkit.org)': 'webkit-rel-linux-webkit-org',
+      'Webkit Mac (webkit.org)': 'webkit-rel-mac-webkit-org'
+    };
+  } else {
+    builders = {
+      'Webkit': 'webkit-rel',
+      'Webkit (dbg)(1)': 'webkit-dbg-1',
+      'Webkit (dbg)(2)': 'webkit-dbg-2',
+      'Webkit (dbg)(3)': 'webkit-dbg-3',
+      'Webkit Linux': 'webkit-rel-linux',
+      'Webkit Linux (dbg)(1)': 'webkit-dbg-linux-1',
+      'Webkit Linux (dbg)(2)': 'webkit-dbg-linux-2',
+      'Webkit Linux (dbg)(3)': 'webkit-dbg-linux-3',
+      'Webkit Mac10.5': 'webkit-rel-mac5',
+      'Webkit Mac10.5 (dbg)(1)': 'webkit-dbg-mac5-1',
+      'Webkit Mac10.5 (dbg)(2)': 'webkit-dbg-mac5-2',
+      'Webkit Mac10.5 (dbg)(3)': 'webkit-dbg-mac5-3'
+    };
+  }
+  builderBase = 'http://build.chromium.org/buildbot/';
 }
 
 // Append JSON script elements.

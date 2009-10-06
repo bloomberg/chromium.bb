@@ -353,7 +353,7 @@
       case 'showFlaky':
       case 'showLargeExpectations':
       case 'showSkipped':
-      case 'showWontFix':
+      case 'showWontFixSkip':
         currentState[key] = value == 'true';
 
         return true;
@@ -370,7 +370,7 @@
     showExpectations: false,
     showFlaky: true,
     showLargeExpectations: false,
-    showWontFix: false,
+    showWontFixSkip: false,
     showSkipped: false,
     maxResults: 200
   };
@@ -401,7 +401,7 @@
       flips: 0,
       slowestTime: 0,
       meetsExpectations: true,
-      isWontFix: false,
+      isWontFixSkip: false,
       // Sorted string of missing expectations
       missing: '',
       // String of extra expectations (i.e. expectations that never occur).
@@ -491,15 +491,10 @@
     var tests = [];
     for (var i = 0; i < testList.length; i++) {
       var path = testList[i];
-      if (!isDirectory(path)) {
-        tests.push(path);
-      } else {
-        // Loop over all tests and find the ones that are in the directory.
-        var allTests = getAllTests();
-        for (var test in allTests) {
-          if (stringContains(test, path)) {
-            tests.push(test);
-          }
+      var allTests = getAllTests();
+      for (var test in allTests) {
+        if (caseInsensitiveContains(test, path)) {
+          tests.push(test);
         }
       }
     }
@@ -622,7 +617,8 @@
           resultsObj.bugs = bugs;
           resultsObj.expectations = expectations;
           resultsObj.modifiers = modifiers;
-          resultsObj.isWontFix = stringContains(modifiers, 'WONTFIX');
+          resultsObj.isWontFixSkip = stringContains(modifiers, 'WONTFIX') ||
+              stringContains(modifiers, 'SKIP');
         } else {
           addHtmlToOptionsArrays(htmlArrays, expectations, modifiers, bugs,
               false);
@@ -740,7 +736,7 @@
         continue;
 
       // Test has expectations, but no result in the builders results.
-      // This means it's either SKIP or they pass on on builds.
+      // This means it's either SKIP or passes on all builds.
       if (!allTestsForPlatformAndBuildType[test] &&
           !stringContains(expectations.modifiers, 'WONTFIX')) {
         if (stringContains(expectations.modifiers, 'SKIP')) {
@@ -837,8 +833,6 @@
       // Also, if a test times out, then it should not be marked as slow.
       if (resultsForTest.slowestTime > MIN_SECONDS_FOR_SLOW_TEST &&
           !resultsMap['TIMEOUT'] &&
-          (!resultsForTest.expectations ||
-           !stringContains(resultsForTest.expectations, 'TIMEOUT')) &&
           (!resultsForTest.modifiers ||
            !stringContains(resultsForTest.modifiers, 'SLOW'))) {
         missingExpectations.push('SLOW');
@@ -1071,7 +1065,7 @@
    * Returns whether we should exclude test results from the test table.
    */
   function shouldHideTest(testResult) {
-    if (testResult.isWontFix && !currentState.showWontFix)
+    if (testResult.isWontFixSkip && !currentState.showWontFixSkip)
       return true;
 
      if (hasPassedInMaxRuns(testResult)) {
@@ -1607,7 +1601,8 @@
     var html = getHTMLForNavBar(builderName) +
         getHTMLForTestsWithExpectationsButNoFailures(builderName) +
         '<h2>Failing tests</h2><div>' +
-        getLinkHTMLToToggleState('showWontFix', 'WONTFIX tests') + ' | ' +
+        getLinkHTMLToToggleState('showWontFixSkip', 'WONTFIX/SKIP tests') +
+        ' | ' +
         getLinkHTMLToToggleState('showCorrectExpectations',
             'tests with correct expectations') + ' | ' +
         getLinkHTMLToToggleState('showFlaky', 'flaky tests') + ' | ' +
