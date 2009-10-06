@@ -4913,6 +4913,12 @@ BUG_SENORBLANCO WIN : LayoutTests/tables/mozilla_expected_failures/other/test4.h
 BUG_SENORBLANCO WIN : LayoutTests/transforms/2d/compound-transforms-vs-containers.html = FAIL
 BUG_SENORBLANCO WIN : LayoutTests/transforms/2d/hindi-rotated.html = FAIL
 BUG_SENORBLANCO WIN : LayoutTests/webarchive/test-duplicate-resources.html = FAIL
+BUG_SENORBLANCO WIN RELEASE : LayoutTests/editing/execCommand/paste-1.html = FAIL
+BUG_SENORBLANCO WIN RELEASE : LayoutTests/editing/execCommand/paste-2.html = FAIL
+BUG_SENORBLANCO WIN RELEASE : LayoutTests/editing/selection/4776665.html = FAIL
+BUG_SENORBLANCO WIN RELEASE : LayoutTests/editing/selection/4975120.html = FAIL
+BUG_SENORBLANCO WIN RELEASE : LayoutTests/editing/selection/move-by-line-001.html = FAIL
+
 
 BUG_SENORBLANCO LINUX : LayoutTests/css1/basic/class_as_selector.html = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/css1/basic/comments.html = FAIL
@@ -6768,6 +6774,11 @@ BUG_SENORBLANCO LINUX : LayoutTests/tables/mozilla_expected_failures/other/test4
 BUG_SENORBLANCO LINUX : LayoutTests/transforms/2d/compound-transforms-vs-containers.html = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/transforms/2d/hindi-rotated.html = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/webarchive/test-duplicate-resources.html = FAIL
+BUG_SENORBLANCO LINUX RELEASE : LayoutTests/editing/execCommand/paste-1.html = FAIL
+BUG_SENORBLANCO LINUX RELEASE : LayoutTests/fast/backgrounds/size/contain-and-cover.html = FAIL
+BUG_SENORBLANCO LINUX RELEASE : LayoutTests/svg/text/text-text-07-t.svg = FAIL
+BUG_SENORBLANCO LINUX RELEASE : LayoutTests/svg/text/text-tselect-02-f.svg = FAIL
+
 
 // WebKit update: 49111:49142
 // Added in http://trac.webkit.org/changeset/49131, probably just needs expectations.
