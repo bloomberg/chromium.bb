@@ -7,6 +7,6 @@
   "browser_action": {
       "name": "Set this page's color.",
       "icons": ["icon.png"],
-      "popup": { "path": "popup.html", "height": 78 }
+      "popup": { "path": "popup.html", "height": 79 }
   }
 }

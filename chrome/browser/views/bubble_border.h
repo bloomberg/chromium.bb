@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VIEWS_BUBBLE_BORDER_H_
 
 #include "third_party/skia/include/core/SkColor.h"
+#include "views/background.h"
 #include "views/border.h"
 
 class SkBitmap;
@@ -46,6 +47,7 @@ class BubbleBorder : public views::Border {
   void set_background_color(SkColor background_color) {
     background_color_ = background_color;
   }
+  SkColor background_color() const { return background_color_; }
 
   // For borders with an arrow, gives the desired bounds (in screen coordinates)
   // given the rect to point to and the size of the contained contents.  This
@@ -97,6 +99,21 @@ class BubbleBorder : public views::Border {
   SkColor background_color_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleBorder);
+};
+
+// A Background that clips itself to the specified BubbleBorder and uses
+// the background color of the BubbleBorder.
+class BubbleBackground : public views::Background {
+public:
+  BubbleBackground(BubbleBorder* border) : border_(border) {}
+
+  // Background overrides.
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const;
+
+private:
+  BubbleBorder* border_;
+
+  DISALLOW_COPY_AND_ASSIGN(BubbleBackground);
 };
 
 #endif  // #ifndef CHROME_BROWSER_VIEWS_BUBBLE_BORDER_H_

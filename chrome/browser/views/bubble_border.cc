@@ -265,3 +265,22 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) const {
                          width - bl_width - br_width, b_height);
   }
 }
+
+/////////////////////////
+
+void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
+  // The border of this view creates an anti-aliased round-rect region for the
+  // contents, which we need to fill with the background color.
+  SkPaint paint;
+  paint.setAntiAlias(true);
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setColor(border_->background_color());
+  gfx::Path path;
+  gfx::Rect bounds(view->GetLocalBounds(false));
+  SkRect rect;
+  rect.set(SkIntToScalar(bounds.x()), SkIntToScalar(bounds.y()),
+           SkIntToScalar(bounds.right()), SkIntToScalar(bounds.bottom()));
+  SkScalar radius = SkIntToScalar(BubbleBorder::GetCornerRadius());
+  path.addRoundRect(rect, radius, radius);
+  canvas->drawPath(path, paint);
+}

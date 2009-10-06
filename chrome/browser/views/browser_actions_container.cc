@@ -334,8 +334,8 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
       return;
 
     gfx::Point origin;
-    View::ConvertPointToWidget(button, &origin);
-    gfx::Rect rect = bounds();
+    View::ConvertPointToScreen(button, &origin);
+    gfx::Rect rect = button->bounds();
     rect.set_x(origin.x());
     rect.set_y(origin.y());
     popup_ = ExtensionPopup::Show(browser_action.popup_url(),

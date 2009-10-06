@@ -88,16 +88,16 @@ class BrowserBubble {
   // Move the popup to an absolute position.
   void MovePopup(int x, int y, int w, int h);
 
- private:
+  // The widget that this bubble is in.
+  views::Widget* popup_;
+
   // The frame that this bubble is attached to.
   views::Widget* frame_;
   gfx::NativeView frame_native_view_;
 
+ private:
   // The view that is displayed in this bubble.
   views::View* view_;
-
-  // The widget that this bubble is in.
-  views::Widget* popup_;
 
   // The bounds relative to the frame.
   gfx::Rect bounds_;

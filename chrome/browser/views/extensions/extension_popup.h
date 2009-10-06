@@ -8,6 +8,7 @@
 #include "googleurl/src/gurl.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/views/browser_bubble.h"
+#include "chrome/browser/views/bubble_border.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -20,8 +21,8 @@ class ExtensionPopup : public BrowserBubble,
   virtual ~ExtensionPopup();
 
   // Create and show a popup with |url| positioned below |relative_to| in
-  // |browser| coordinates. This is anchored to the lower right corner of the
-  // rect, extending to the left, just like the wrench and page menus.
+  // screen coordinates. This is anchored to the lower middle of the rect,
+  // extending to the left, just like the wrench and page menus.
   //
   // The actual display of the popup is delayed until the page contents
   // finish loading in order to minimize UI flashing and resizing.
@@ -33,6 +34,7 @@ class ExtensionPopup : public BrowserBubble,
 
   // BrowserBubble overrides.
   virtual void Show();
+  virtual void Hide();
 
   // NotificationObserver overrides.
   virtual void Observe(NotificationType type,
@@ -45,12 +47,20 @@ class ExtensionPopup : public BrowserBubble,
                  const gfx::Rect& relative_to);
 
   // The area on the screen that the popup should be positioned relative to.
-  const gfx::Rect relative_to_;
+  gfx::Rect relative_to_;
 
   // The contained host for the view.
   scoped_ptr<ExtensionHost> extension_host_;
 
   NotificationRegistrar registrar_;
+
+  // A separate widget and associated pieces to draw a border behind the
+  // popup.  This has to be a separate window in order to support transparency.
+  // Layered windows can't contain native child windows, so we wouldn't be
+  // able to have the ExtensionView child.
+  scoped_ptr<views::Widget> border_widget_;
+  BubbleBorder* border_;
+  views::View* border_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPopup);
 };

@@ -62,24 +62,10 @@ private:
 };
 
 void BrowserBubble::InitPopup() {
-  gfx::NativeWindow native_window = frame_->GetWindow()->GetNativeWindow();
-
   // popup_ is a Widget, but we need to do some WidgetWin stuff first, then
   // we'll assign it into popup_.
   views::WidgetWin* pop = new BubbleWidget(this);
   pop->set_window_style(WS_POPUP);
-
-#if 0
-  // TODO(erikkay) Layered windows don't draw child windows.
-  // Apparently there's some tricks you can do to handle that.
-  // Do the research so we can use this.
-  pop->set_window_ex_style(WS_EX_LAYERED |
-                           l10n_util::GetExtendedTooltipStyles());
-  pop->SetOpacity(0xFF);
-#endif
-
-  // A focus manager is necessary if you want to be able to handle various
-  // mouse events properly.
   pop->Init(frame_native_view_, bounds_);
   pop->SetContentsView(view_);
 
