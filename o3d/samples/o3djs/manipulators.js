@@ -152,7 +152,7 @@ o3djs.manipulators.Line_.prototype.setPoint = function(point) {
   this.point_ = o3djs.math.copyVector(point);
   this.recalc_();
 }
-  
+
 /**
  * Gets one point through which this line travels.
  * @private
@@ -208,26 +208,25 @@ o3djs.manipulators.Line_.prototype.closestPointToRay = function(startPoint,
   // the ray are closest together, the line segment between cp1 and
   // cp2 is perpendicular to both of the lines.
   //
-  // We can therefore write the following equations ("**" is the "dot"
-  // operator):
+  // We can therefore write the following equations:
   //
-  //   dir  ** (cp2 - cp1) = 0
-  // raydir ** (cp2 - cp1) = 0
+  //   dot(   dir, (cp2 - cp1)) = 0
+  //   dot(raydir, (cp2 - cp1)) = 0
   //
   // Define t' and u' as the parameter values for cp1 and cp2,
   // respectively. Expanding, these equations become
   //
-  //    dir ** ((raystart + u' * raydir) - (point + t' * dir)) = 0
-  // raydir ** ((raystart + u' * raydir) - (point + t' * dir)) = 0
+  //   dot(   dir, ((raystart + u' * raydir) - (point + t' * dir))) = 0
+  //   dot(raydir, ((raystart + u' * raydir) - (point + t' * dir))) = 0
   //
   // With some reshuffling, these can be expressed in vector/matrix
   // form:
   //
-  //   [    dir ** raystart -    dir ** point ]
-  //   [ raydir ** raystart - raydir ** point ] *  (continued)
+  //   [ dot(   dir, raystart) - dot(   dir, point) ]
+  //   [ dot(raydir, raystart) - dot(raydir, point) ] +  (continued)
   //
-  //       [ -(   dir ** dir)     dir ** raydir ] [ t' ]   [0]
-  //       [ -(raydir ** dir)  raydir ** raydir ] [ u' ] = [0]
+  //       [ -dot(   dir, dir)   dot(   dir, raydir) ]   [ t' ]   [0]
+  //       [ -dot(raydir, dir)   dot(raydir, raydir) ] * [ u' ] = [0]
   //
   // u' is the parameter for the world space ray being cast into the
   // screen. We can deduce whether the starting point of the ray is
