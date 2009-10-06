@@ -39,9 +39,10 @@ var EXPECTATIONS_MAP = {
   'T': 'TIMEOUT',
   'C': 'CRASH',
   'P': 'PASS',
-  'F': 'TEXT FAIL',
   'S': 'SIMPLIFIED',
   'I': 'IMAGE',
+  'Z': 'TEXT+IMAGE',
+  'F': 'TEXT',
   'O': 'OTHER',
   'N': 'NO DATA',
   'X': 'SKIP'

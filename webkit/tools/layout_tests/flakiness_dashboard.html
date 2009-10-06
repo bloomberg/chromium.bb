@@ -274,6 +274,7 @@
   var BASE_TABLE_HEADERS = ['bugs', 'modifiers', 'expectations', 'missing',
       'extra', 'slowest run', 'flakiness (numbers are runtimes in seconds)'];
   var MIN_SECONDS_FOR_SLOW_TEST = 2;
+  var FAIL_RESULTS = ['IMAGE', 'IMAGE+TEXT', 'TEXT', 'SIMPLIFIED', 'OTHER'];
 
   //////////////////////////////////////////////////////////////////////////////
   // Methods and objects from dashboard_base.js to override.
@@ -352,6 +353,7 @@
       case 'showExpectations':
       case 'showFlaky':
       case 'showLargeExpectations':
+      case 'legacyExpectationsSemantics':
       case 'showSkipped':
       case 'showWontFixSkip':
         currentState[key] = value == 'true';
@@ -370,6 +372,7 @@
     showExpectations: false,
     showFlaky: true,
     showLargeExpectations: false,
+    legacyExpectationsSemantics: true,
     showWontFixSkip: false,
     showSkipped: false,
     maxResults: 200
@@ -448,12 +451,12 @@
    */
   function getExpectationsFileStringForResult(result) {
     // For the purposes of comparing against the expecations of a test,
-    // consider image/simplified diff failures as just failures since
+    // consider simplified diff failures as just text failures since
     // the test_expectations file doesn't treat them specially.
-    if (result == 'F' || result == 'S' || result == 'I')
-      return 'FAIL';
+    if (result == 'S')
+      return 'TEXT';
 
-    if (result == 'N' || result == 'O')
+    if (result == 'N')
       return '';
 
     return EXPECTATIONS_MAP[result];
@@ -787,36 +790,6 @@
       resultsForTest.rawResults = rawResults;
       resultsForTest.flips = rawResults.length - 1;
 
-      var unexpectedExpectations = [];
-      var resultsMap = {}
-      var numResultsSeen = 0;
-      for (var i = 0;
-           i < rawResults.length && numResultsSeen < currentState.maxResults;
-           i++) {
-        numResultsSeen += rawResults[i][0];
-        var expectation = getExpectationsFileStringForResult(rawResults[i][1]);
-        resultsMap[expectation] = true;
-      }
-
-      var expectationsArray = resultsForTest.expectations ?
-          resultsForTest.expectations.split(' ') : [];
-      var extraExpectations = expectationsArray.filter(
-          function(element) {
-              return element && !resultsMap[element] &&
-                  !stringContains(element, 'BUG');
-          });
-
-      var missingExpectations = [];
-      for (var result in resultsMap) {
-        var hasExpectation = false;
-        for (var i = 0; i < expectationsArray.length; i++) {
-          if (result == expectationsArray[i])
-            hasExpectation = true;
-        }
-        if (!hasExpectation)
-          missingExpectations.push(result);
-      }
-
       var times = resultsByBuilder[builderName].tests[test].times;
       var numResultsSeen = 0;
       for (var i = 0;
@@ -827,25 +800,7 @@
             times[i][1]);
       }
 
-      // Only highlight tests that take > 2 seconds as needing to be marked as
-      // slow. There are too many tests that take ~2 seconds every couple
-      // hundred runs. It's not worth the manual maintenance effort.
-      // Also, if a test times out, then it should not be marked as slow.
-      if (resultsForTest.slowestTime > MIN_SECONDS_FOR_SLOW_TEST &&
-          !resultsMap['TIMEOUT'] &&
-          (!resultsForTest.modifiers ||
-           !stringContains(resultsForTest.modifiers, 'SLOW'))) {
-        missingExpectations.push('SLOW');
-      } else if (resultsForTest.slowestTime <= MIN_SECONDS_FOR_SLOW_TEST &&
-                 resultsForTest.modifiers &&
-                 stringContains(resultsForTest.modifiers, 'SLOW')) {
-        extraExpectations.push('SLOW');
-      }
-
-      resultsForTest.meetsExpectations =
-          !missingExpectations.length && !extraExpectations.length;
-      resultsForTest.missing = missingExpectations.sort().join(' ');
-      resultsForTest.extra = extraExpectations.sort().join(' ');
+      processMissingAndExtraExpectations(test, resultsForTest);
 
       failures.push(resultsForTest);
 
@@ -857,6 +812,95 @@
 
     perBuilderFailures[builderName] = failures;
     logTime('processTestRunsForBuilder: ' + builderName, start);
+  }
+
+  function processMissingAndExtraExpectations(test, resultsForTest) {
+    var unexpectedExpectations = [];
+    var resultsMap = {}
+    var numResultsSeen = 0;
+    var rawResults = resultsForTest.rawResults;
+
+    for (var i = 0;
+         i < rawResults.length && numResultsSeen < currentState.maxResults;
+         i++) {
+      numResultsSeen += rawResults[i][0];
+      var expectation = getExpectationsFileStringForResult(rawResults[i][1]);
+      resultsMap[expectation] = true;
+    }
+
+    var expectationsArray = resultsForTest.expectations ?
+        resultsForTest.expectations.split(' ') : [];
+    var extraExpectations = expectationsArray.filter(
+        function(element) {
+          // TODO(ojan): Once all the FAIL lines are removed from
+          // test_expectations.txt, delete all the legacyExpectationsSemantics
+          // code.
+          if (currentState.legacyExpectationsSemantics) {
+            if (element == 'FAIL') {
+              for (var i = 0; i < FAIL_RESULTS.length; i++) {
+                if (resultsMap[FAIL_RESULTS[i]])
+                  return false;
+              }
+              return true;
+            } else if (currentState.legacyExpectationsSemantics &&
+                       element == 'IMAGE+TEXT') {
+              element = 'IMAGE';
+            }
+          }
+
+          return element && !resultsMap[element] &&
+              !stringContains(element, 'BUG');
+        });
+
+    var missingExpectations = [];
+    for (var result in resultsMap) {
+      var hasExpectation = false;
+      for (var i = 0; i < expectationsArray.length; i++) {
+        var expectation = expectationsArray[i];
+        // TODO(ojan): Once all the FAIL lines are removed from
+        // test_expectations.txt, delete all the legacyExpectationsSemantics
+        // code.
+        if (currentState.legacyExpectationsSemantics) {
+          if (expectation == 'FAIL') {
+            for (var j = 0; j < FAIL_RESULTS.length; j++) {
+              if (result == FAIL_RESULTS[j])
+                hasExpectation = true;
+            }
+          } else if (result == 'IMAGE' && expectation == 'IMAGE+TEXT') {
+            hasExpectation = true;
+          }
+        }
+
+        if (result == expectation) {
+          hasExpectation = true;
+        }
+
+        if (hasExpectation)
+          break;
+      }
+      if (!hasExpectation)
+        missingExpectations.push(result);
+    }
+
+    // Only highlight tests that take > 2 seconds as needing to be marked as
+    // slow. There are too many tests that take ~2 seconds every couple
+    // hundred runs. It's not worth the manual maintenance effort.
+    // Also, if a test times out, then it should not be marked as slow.
+    if (resultsForTest.slowestTime > MIN_SECONDS_FOR_SLOW_TEST &&
+        !resultsMap['TIMEOUT'] &&
+        (!resultsForTest.modifiers ||
+         !stringContains(resultsForTest.modifiers, 'SLOW'))) {
+      missingExpectations.push('SLOW');
+    } else if (resultsForTest.slowestTime <= MIN_SECONDS_FOR_SLOW_TEST &&
+               resultsForTest.modifiers &&
+               stringContains(resultsForTest.modifiers, 'SLOW')) {
+      extraExpectations.push('SLOW');
+    }
+
+    resultsForTest.meetsExpectations =
+        !missingExpectations.length && !extraExpectations.length;
+    resultsForTest.missing = missingExpectations.sort().join(' ');
+    resultsForTest.extra = extraExpectations.sort().join(' ');
   }
 
   var bugUrlPrefix = '<a href="http://';
@@ -1647,7 +1691,8 @@
     tests: 1,
     maxResults: 1,
     showExpectations: 1,
-    showLargeExpectations: 1
+    showLargeExpectations: 1,
+    legacyExpectationsSemantics: 1
   };
 
   /**
