@@ -15,8 +15,6 @@
 #include "chrome/browser/sync/glue/bookmark_model_worker.h"
 #include "webkit/glue/webkit_glue.h"
 
-static const char kSwitchSyncServiceURL[] = "sync-url";
-static const char kSwitchSyncServicePort[] = "sync-port";
 static const int kSaveChangesIntervalSeconds = 10;
 static const char kGaiaServiceId[] = "chromiumsync";
 static const char kGaiaSourceForChrome[] = "ChromiumBrowser";

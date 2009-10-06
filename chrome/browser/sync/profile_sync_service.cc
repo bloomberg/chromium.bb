@@ -72,8 +72,8 @@ void ProfileSyncService::Initialize() {
 void ProfileSyncService::InitSettings() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  // Override the sync server URL from the command-line, if sync server and sync
-  // port command-line arguments exist.
+  // Override the sync server URL from the command-line, if sync server 
+  // command-line argument exists.
   if (command_line.HasSwitch(switches::kSyncServiceURL)) {
     std::wstring value(command_line.GetSwitchValue(switches::kSyncServiceURL));
     if (!value.empty()) {
