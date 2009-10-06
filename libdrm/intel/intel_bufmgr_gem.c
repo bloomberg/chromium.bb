@@ -193,6 +193,66 @@ static void drm_intel_gem_bo_unreference(drm_intel_bo *bo);
 
 static void drm_intel_gem_bo_free(drm_intel_bo *bo);
 
+static unsigned long
+drm_intel_gem_bo_tile_size(drm_intel_bufmgr_gem *bufmgr_gem, unsigned long size,
+			   uint32_t *tiling_mode)
+{
+	unsigned long min_size, max_size;
+	unsigned long i;
+
+	if (*tiling_mode == I915_TILING_NONE)
+		return size;
+
+	/* 965+ just need multiples of page size for tiling */
+	if (IS_I965G(bufmgr_gem))
+		return ROUND_UP_TO(size, 4096);
+
+	/* Older chips need powers of two, of at least 512k or 1M */
+	if (IS_I9XX(bufmgr_gem)) {
+		min_size = 1024*1024;
+		max_size = 128*1024*1024;
+	} else {
+		min_size = 512*1024;
+		max_size = 64*1024*1024;
+	}
+
+	if (size > max_size) {
+		*tiling_mode = I915_TILING_NONE;
+		return size;
+	}
+
+	for (i = min_size; i < size; i <<= 1)
+		;
+
+	return i;
+}
+
+/*
+ * Round a given pitch up to the minimum required for X tiling on a
+ * given chip.  We use 512 as the minimum to allow for a later tiling
+ * change.
+ */
+static unsigned long
+drm_intel_gem_bo_tile_pitch(drm_intel_bufmgr_gem *bufmgr_gem,
+			    unsigned long pitch, uint32_t tiling_mode)
+{
+	unsigned long tile_width = 512;
+	unsigned long i;
+
+	if (tiling_mode == I915_TILING_NONE)
+		return ROUND_UP_TO(pitch, tile_width);
+
+	/* 965 is flexible */
+	if (IS_I965G(bufmgr_gem))
+		return ROUND_UP_TO(pitch, tile_width);
+
+	/* Pre-965 needs power of two tile width */
+	for (i = tile_width; i < pitch; i <<= 1)
+		;
+
+	return i;
+}
+
 static struct drm_intel_gem_bo_bucket *
 drm_intel_gem_bo_bucket_for_size(drm_intel_bufmgr_gem *bufmgr_gem,
 				 unsigned long size)
@@ -372,8 +432,7 @@ static drm_intel_bo *
 drm_intel_gem_bo_alloc_internal(drm_intel_bufmgr *bufmgr,
 				const char *name,
 				unsigned long size,
-				unsigned int alignment,
-				int for_render)
+				unsigned long flags)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bufmgr;
 	drm_intel_bo_gem *bo_gem;
@@ -382,6 +441,10 @@ drm_intel_gem_bo_alloc_internal(drm_intel_bufmgr *bufmgr,
 	struct drm_intel_gem_bo_bucket *bucket;
 	int alloc_from_cache;
 	unsigned long bo_size;
+	int for_render = 0;
+
+	if (flags & BO_ALLOC_FOR_RENDER)
+		for_render = 1;
 
 	/* Round the allocated size up to a power of two number of pages. */
 	bucket = drm_intel_gem_bo_bucket_for_size(bufmgr_gem, size);
@@ -482,8 +545,9 @@ drm_intel_gem_bo_alloc_for_render(drm_intel_bufmgr *bufmgr,
 				  unsigned long size,
 				  unsigned int alignment)
 {
-	return drm_intel_gem_bo_alloc_internal(bufmgr, name, size, alignment,
-					       1);
+	assert(alignment <= 4096);
+	return drm_intel_gem_bo_alloc_internal(bufmgr, name, size,
+					       BO_ALLOC_FOR_RENDER);
 }
 
 static drm_intel_bo *
@@ -492,8 +556,45 @@ drm_intel_gem_bo_alloc(drm_intel_bufmgr *bufmgr,
 		       unsigned long size,
 		       unsigned int alignment)
 {
-	return drm_intel_gem_bo_alloc_internal(bufmgr, name, size, alignment,
-					       0);
+	assert(alignment <= 4096);
+	return drm_intel_gem_bo_alloc_internal(bufmgr, name, size, 0);
+}
+
+static drm_intel_bo *
+drm_intel_gem_bo_alloc_tiled(drm_intel_bufmgr *bufmgr, const char *name,
+			     int x, int y, int cpp, uint32_t *tiling_mode,
+			     unsigned long *pitch, unsigned long flags)
+{
+	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bufmgr;
+	drm_intel_bo *bo;
+	unsigned long size, stride, aligned_y = y;
+	int ret;
+
+	if (*tiling_mode == I915_TILING_NONE)
+		aligned_y = ALIGN(y, 2);
+	else if (*tiling_mode == I915_TILING_X)
+		aligned_y = ALIGN(y, 8);
+	else if (*tiling_mode == I915_TILING_Y)
+		aligned_y = ALIGN(y, 32);
+
+	stride = x * cpp;
+	stride = drm_intel_gem_bo_tile_pitch(bufmgr_gem, stride, *tiling_mode);
+	size = stride * aligned_y;
+	size = drm_intel_gem_bo_tile_size(bufmgr_gem, size, tiling_mode);
+
+	bo = drm_intel_gem_bo_alloc_internal(bufmgr, name, size, flags);
+	if (!bo)
+		return NULL;
+
+	ret = drm_intel_gem_bo_set_tiling(bo, tiling_mode, stride);
+	if (ret != 0) {
+		drm_intel_gem_bo_unreference(bo);
+		return NULL;
+	}
+
+	*pitch = stride;
+
+	return bo;
 }
 
 /**
@@ -1565,6 +1666,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	bufmgr_gem->bufmgr.bo_alloc = drm_intel_gem_bo_alloc;
 	bufmgr_gem->bufmgr.bo_alloc_for_render =
 	    drm_intel_gem_bo_alloc_for_render;
+	bufmgr_gem->bufmgr.bo_alloc_tiled = drm_intel_gem_bo_alloc_tiled;
 	bufmgr_gem->bufmgr.bo_reference = drm_intel_gem_bo_reference;
 	bufmgr_gem->bufmgr.bo_unreference = drm_intel_gem_bo_unreference;
 	bufmgr_gem->bufmgr.bo_map = drm_intel_gem_bo_map;

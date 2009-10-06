@@ -51,8 +51,6 @@
 #include "mm.h"
 #include "libdrm_lists.h"
 
-#define ALIGN(value, alignment)  ((value + alignment - 1) & ~(alignment - 1))
-
 #define DBG(...) do {					\
 	if (bufmgr_fake->bufmgr.debug)			\
 		drmMsg(__VA_ARGS__);			\
@@ -838,6 +836,32 @@ drm_intel_fake_bo_alloc(drm_intel_bufmgr *bufmgr,
 	return &bo_fake->bo;
 }
 
+static drm_intel_bo *
+drm_intel_fake_bo_alloc_tiled(drm_intel_bufmgr * bufmgr,
+			      const char *name,
+			      int x, int y, int cpp,
+			      uint32_t *tiling_mode,
+			      unsigned long *pitch,
+			      unsigned long flags)
+{
+	unsigned long stride, aligned_y;
+
+	/* No runtime tiling support for fake. */
+	*tiling_mode = I915_TILING_NONE;
+
+	/* Align it for being a render target.  Shouldn't need anything else. */
+	stride = x * cpp;
+	stride = ROUND_UP_TO(stride, 64);
+
+	/* 965 subspan loading alignment */
+	aligned_y = ALIGN(y, 2);
+
+	*pitch = stride;
+
+	return drm_intel_fake_bo_alloc(bufmgr, name, stride * aligned_y,
+				       4096);
+}
+
 drm_intel_bo *
 drm_intel_bo_fake_alloc_static(drm_intel_bufmgr *bufmgr,
 			       const char *name,
@@ -1565,6 +1589,7 @@ drm_intel_bufmgr *drm_intel_bufmgr_fake_init(int fd,
 	/* Hook in methods */
 	bufmgr_fake->bufmgr.bo_alloc = drm_intel_fake_bo_alloc;
 	bufmgr_fake->bufmgr.bo_alloc_for_render = drm_intel_fake_bo_alloc;
+	bufmgr_fake->bufmgr.bo_alloc_tiled = drm_intel_fake_bo_alloc_tiled;
 	bufmgr_fake->bufmgr.bo_reference = drm_intel_fake_bo_reference;
 	bufmgr_fake->bufmgr.bo_unreference = drm_intel_fake_bo_unreference;
 	bufmgr_fake->bufmgr.bo_map = drm_intel_fake_bo_map;

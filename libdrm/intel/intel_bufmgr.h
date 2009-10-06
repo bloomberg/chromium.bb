@@ -77,12 +77,20 @@ struct _drm_intel_bo {
 	int handle;
 };
 
+#define BO_ALLOC_FOR_RENDER (1<<0)
+
 drm_intel_bo *drm_intel_bo_alloc(drm_intel_bufmgr *bufmgr, const char *name,
 				 unsigned long size, unsigned int alignment);
 drm_intel_bo *drm_intel_bo_alloc_for_render(drm_intel_bufmgr *bufmgr,
 					    const char *name,
 					    unsigned long size,
 					    unsigned int alignment);
+drm_intel_bo *drm_intel_bo_alloc_tiled(drm_intel_bufmgr *bufmgr,
+				       const char *name,
+				       int x, int y, int cpp,
+				       uint32_t *tiling_mode,
+				       unsigned long *pitch,
+				       unsigned long flags);
 void drm_intel_bo_reference(drm_intel_bo *bo);
 void drm_intel_bo_unreference(drm_intel_bo *bo);
 int drm_intel_bo_map(drm_intel_bo *bo, int write_enable);

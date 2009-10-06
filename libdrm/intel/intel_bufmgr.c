@@ -58,6 +58,15 @@ drm_intel_bo *drm_intel_bo_alloc_for_render(drm_intel_bufmgr *bufmgr,
 	return bufmgr->bo_alloc_for_render(bufmgr, name, size, alignment);
 }
 
+drm_intel_bo *
+drm_intel_bo_alloc_tiled(drm_intel_bufmgr *bufmgr, const char *name,
+                        int x, int y, int cpp, uint32_t *tiling_mode,
+                        unsigned long *pitch, unsigned long flags)
+{
+	return bufmgr->bo_alloc_tiled(bufmgr, name, x, y, cpp,
+				      tiling_mode, pitch, flags);
+}
+
 void drm_intel_bo_reference(drm_intel_bo *bo)
 {
 	bo->bufmgr->bo_reference(bo);

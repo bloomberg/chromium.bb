@@ -61,6 +61,28 @@ struct _drm_intel_bufmgr {
 					      unsigned long size,
 					      unsigned int alignment);
 
+	/**
+	 * Allocate a tiled buffer object.
+	 *
+	 * Alignment for tiled objects is set automatically; the 'flags'
+	 * argument provides a hint about how the object will be used initially.
+	 *
+	 * Valid tiling formats are:
+	 *  I915_TILING_NONE
+	 *  I915_TILING_X
+	 *  I915_TILING_Y
+	 *
+	 * Note the tiling format may be rejected; callers should check the
+	 * 'tiling_mode' field on return, as well as the pitch value, which
+	 * may have been rounded up to accommodate for tiling restrictions.
+	 */
+	drm_intel_bo *(*bo_alloc_tiled) (drm_intel_bufmgr *bufmgr,
+					 const char *name,
+					 int x, int y, int cpp,
+					 uint32_t *tiling_mode,
+					 unsigned long *pitch,
+					 unsigned long flags);
+
 	/** Takes a reference on a buffer object */
 	void (*bo_reference) (drm_intel_bo *bo);
 
@@ -224,5 +246,9 @@ struct _drm_intel_bufmgr {
 	/**< Enables verbose debugging printouts */
 	int debug;
 };
+
+#define ALIGN(value, alignment)	((value + alignment - 1) & ~(alignment - 1))
+#define ROUND_UP_TO(x, y)	(((x) + (y) - 1) / (y) * (y))
+#define ROUND_UP_TO_MB(x)	ROUND_UP_TO((x), 1024*1024)
 
 #endif /* INTEL_BUFMGR_PRIV_H */
