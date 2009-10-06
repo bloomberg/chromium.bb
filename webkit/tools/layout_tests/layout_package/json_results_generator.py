@@ -43,7 +43,15 @@ class JSONResultsGenerator:
   FIXABLE = "fixableCounts"
   ALL_FIXABLE_COUNT = "allFixableCount"
   FIXABLE_COUNT = "fixableCount"
-  FAILURE_CHARS = ("C", "T", "I", "S", "F", "O")
+  """
+    C = CRASH
+    T = TIMEOUT
+    I = IMAGE
+    F = TEXT
+    O = OTHER
+    Z = TEXT+IMAGE
+  """
+  FAILURE_CHARS = ("C", "T", "I", "F", "O", "Z")
   BUILDER_BASE_URL = "http://build.chromium.org/buildbot/layout_test_results/"
   RESULTS_FILENAME = "results.json"
 
@@ -371,15 +379,18 @@ class JSONResultsGenerator:
     """Returns the worst failure from the list of failures
     since we can only show one failure per run for each test on the dashboard.
     """
+    has_text_failure = (test_failures.FailureTextMismatch in failures or
+        test_failures.FailureSimplifiedTextMismatch in failures)
+
     if test_failures.FailureCrash in failures:
       return "C"
     elif test_failures.FailureTimeout in failures:
       return "T"
     elif test_failures.FailureImageHashMismatch in failures:
+      if has_text_failure:
+        return "Z"
       return "I"
-    elif test_failures.FailureSimplifiedTextMismatch in failures:
-      return "S"
-    elif test_failures.FailureTextMismatch in failures:
+    elif has_text_failure:
       return "F"
     else:
       return "O"

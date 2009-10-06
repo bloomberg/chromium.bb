@@ -773,6 +773,10 @@ class TestRunner:
 
     for test, failures in failures.iteritems():
       for failure in failures:
+        # TODO(ojan): Now that we have IMAGE+TEXT, IMAGE and TEXT,
+        # we can avoid adding multiple failures per test since there should
+        # be a unique type of failure for each test. This would make the
+        # statistics printed at the end easier to grok.
         if self._expectations.IsDeferred(test):
           count_group = deferred_counts
           failure_group = deferred_failures
