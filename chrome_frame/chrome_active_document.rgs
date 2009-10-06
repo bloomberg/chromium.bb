@@ -49,20 +49,3 @@ HKLM {
     }
   }
 }
-
-HKCU {
-  NoRemove Software {
-    NoRemove Microsoft {
-      NoRemove Windows {
-        NoRemove CurrentVersion {
-          NoRemove 'Internet Settings' {
-            NoRemove 'Secure Mime Handlers' {
-              val ChromeTab.ChromeActiveDocument.1 = d '1'
-              val ChromeTab.ChromeActiveDocument = d '1'
-            }
-          }
-        }
-      }
-    }
-  }
-}
