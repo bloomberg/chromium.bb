@@ -173,3 +173,9 @@ Alloc Location
    base/tuple.h  ?DispatchToMethod@VCore@SyncBackendHost@browser_sync@@P8123@AEX_N@Z_N@@YAXPAVCore@SyncBackendHost@browser_sync@@P8012@AEX_N@ZABU?$Tuple1@_N@@@Z
    ^^^  
 
+std::_W::_Allocate(unsigned int,wchar_t *) [unit_tests.exe]
+Alloc Location
+   ...  
+   chrome/browser/importer/ie_importer.cc  IEImporter::StartImport(ProfileInfo,WORD,ImporterBridge *)
+   base/tuple.h  ?DispatchToMethod@VImporter@@P81@AEXUProfileInfo@@GPAVImporterBridge@@@ZU2@GV?$scoped_refptr@VImporterBridge@@@@@@YAXPAVImporter@@P80@AEXUProfileInfo@@GPAVImporterBridge@@@ZABU?$Tuple3@UProfileInfo@@GV?$scoped_refptr@VImporterBridge@@@@@@@Z
+   ^^^  
