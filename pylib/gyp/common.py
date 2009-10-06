@@ -54,22 +54,9 @@ def RelativePath(path, relative_to):
   path = os.path.abspath(path)
   relative_to = os.path.abspath(relative_to)
 
-  # Split the paths into components.  As a special case, if either path is
-  # the current directory, use an empty list as a split-up path.  This must be
-  # done because the code that follows is unprepared to deal with "." meaning
-  # "current directory" and it will instead assume that it's a subdirectory,
-  # which is wrong.  It's possible to wind up with "." when it's passed to this
-  # function, for example, by taking the dirname of a relative path in the
-  # current directory.
-  if path == os.path.curdir:
-    path_split = []
-  else:
-    path_split = path.split(os.path.sep)
-
-  if relative_to == os.path.curdir:
-    relative_to_split = []
-  else:
-    relative_to_split = relative_to.split(os.path.sep)
+  # Split the paths into components.
+  path_split = path.split(os.path.sep)
+  relative_to_split = relative_to.split(os.path.sep)
 
   # Determine how much of the prefix the two paths share.
   prefix_len = len(os.path.commonprefix([path_split, relative_to_split]))
