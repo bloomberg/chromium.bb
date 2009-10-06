@@ -31,9 +31,8 @@
 #include "chrome/common/view_types.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-
 #include "grit/browser_resources.h"
-
+#include "views/widget/widget.h"
 #include "webkit/glue/context_menu.h"
 
 using WebKit::WebDragOperation;
@@ -339,10 +338,26 @@ void ExtensionHost::RunJavaScriptMessage(const std::wstring& message,
   render_view_host()->JavaScriptMessageBoxClosed(reply_msg, true, L"");
 }
 
+void ExtensionHost::Close(RenderViewHost* render_view_host) {
+  if (extension_host_type_ == ViewType::EXTENSION_POPUP) {
+#if defined(TOOLKIT_VIEWS)
+    // TODO(erikkay) This is a bit of a hack.  By hiding the widget, we trigger
+    // a deactivation which will then bubble into ExtensionPopup and actually
+    // close the popup. Perhaps we should have a more explicit delegate to
+    // ExtensionHost.
+    view_->GetWidget()->Hide();
+#endif
+  }
+}
+
 WebPreferences ExtensionHost::GetWebkitPrefs() {
   PrefService* prefs = render_view_host()->process()->profile()->GetPrefs();
   const bool kIsDomUI = true;
-  return RenderViewHostDelegateHelper::GetWebkitPrefs(prefs, kIsDomUI);
+  WebPreferences webkit_prefs =
+      RenderViewHostDelegateHelper::GetWebkitPrefs(prefs, kIsDomUI);
+  if (extension_host_type_ == ViewType::EXTENSION_POPUP)
+    webkit_prefs.allow_scripts_to_close_windows = true;
+  return webkit_prefs;
 }
 
 void ExtensionHost::ProcessDOMUIMessage(const std::string& message,

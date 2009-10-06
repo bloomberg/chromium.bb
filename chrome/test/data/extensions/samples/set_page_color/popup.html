@@ -37,6 +37,7 @@ div:hover {
 function click(color) {
   chrome.tabs.executeScript(null,
       {code:"document.body.bgColor='" + color.id + "'"});
+  window.close();
 }
 </script>
 <div onclick="click(this)" id="red">red</div>
