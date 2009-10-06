@@ -149,6 +149,7 @@ WONTFIX SKIP : LayoutTests/fast/events/message-port-deleted-frame.html = FAIL
 WONTFIX SKIP : LayoutTests/fast/events/message-port-inactive-document.html = FAIL
 WONTFIX SKIP : LayoutTests/fast/events/message-port-no-wrapper.html = FAIL
 WONTFIX SKIP : LayoutTests/fast/events/message-port.html = FAIL
+WONTFIX SKIP : LayoutTests/fast/events/message-port-multi.html = FAIL
 WONTFIX SKIP : LayoutTests/http/tests/security/MessagePort/event-listener-context.html = FAIL
 WONTFIX SKIP : chrome/fast/dom/messageport-gc.html = FAIL
 
@@ -1441,7 +1442,6 @@ BUG10374 MAC : LayoutTests/plugins/open-and-close-window-with-plugin.html = CRAS
 
 // Not really sure why these are failing at the moment
 BUG10376 MAC : LayoutTests/fast/dom/isindex-002.html = FAIL
-BUG10376 MAC : LayoutTests/fast/events/init-events.html = FAIL
 
 // These two have a different object type in the dom dump. Plugin-related.
 // Ignored on Win/Linux because they rely on QT to provide a TIFF decoder.
@@ -2910,10 +2910,8 @@ BUG20886 WIN DEBUG : LayoutTests/fast/js/regexp-non-capturing-groups.html = CRAS
 
 BUG20898 MAC DEBUG : LayoutTests/svg/W3C-SVG-1.1/painting-marker-02-f.svg = FAIL PASS
 
-// WebKit 48020:48030
-BUG21033 : LayoutTests/fast/events/message-port-multi.html = TIMEOUT
-BUG21033 : LayoutTests/fast/dom/Window/window-postmessage-args.html = FAIL
-BUG21033 WIN LINUX : LayoutTests/fast/events/init-events.html = FAIL
+// MessageEvent.initMessageEvent() does not set the source attribute.
+BUG23607 : LayoutTests/fast/events/init-events.html = FAIL
 
 // The linux layout result in build bot shows the changed method does not
 // executed.
