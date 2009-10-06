@@ -995,7 +995,9 @@ void RenderViewHost::OnUpdateInspectorSettings(
 }
 
 void RenderViewHost::OnMsgClose() {
-  delegate_->Close(this);
+  // If the renderer is telling us to close, it has already run the unload
+  // events, and we can take the fast path.
+  ClosePageIgnoringUnloadEvents();
 }
 
 void RenderViewHost::OnMsgRequestMove(const gfx::Rect& pos) {

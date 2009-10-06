@@ -23,6 +23,9 @@ const std::string BEFORE_UNLOAD_HTML =
     "<script>window.onbeforeunload=function(e){return 'foo'}</script>"
     "</body></html>";
 
+const std::wstring OPEN_NEW_BEFOREUNLOAD_PAGE =
+    L"w=window.open(); w.onbeforeunload=function(e){return 'foo'};";
+
 namespace {
 
 // Given a page title, returns the expected window caption string.
@@ -158,3 +161,23 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
   browser()->GetSelectedTabContents()->render_view_host()->
       ExecuteJavascriptInWebFrame(L"", L"onbeforeunload=null;");
 }
+
+// Test for crbug.com/11647.  A page closed with window.close() should not have
+// two beforeunload dialogs shown.
+IN_PROC_BROWSER_TEST_F(BrowserTest, SingleBeforeUnloadAfterWindowClose) {
+  browser()->GetSelectedTabContents()->render_view_host()->
+      ExecuteJavascriptInWebFrame(L"", OPEN_NEW_BEFOREUNLOAD_PAGE);
+
+  // Close the new window with JavaScript, which should show a single
+  // beforeunload dialog.  Then show another alert, to make it easy to verify
+  // that a second beforeunload dialog isn't shown.
+  browser()->GetTabContentsAt(0)->render_view_host()->
+      ExecuteJavascriptInWebFrame(L"", L"w.close(); alert('bar');");
+  AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
+  alert->AcceptWindow();
+
+  alert = ui_test_utils::WaitForAppModalDialog();
+  EXPECT_FALSE(alert->is_before_unload_dialog());
+  alert->AcceptWindow();
+}
+
