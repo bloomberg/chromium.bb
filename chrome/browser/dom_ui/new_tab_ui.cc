@@ -175,7 +175,7 @@ class PaintTimer : public RenderWidgetHost::PaintObserver {
  private:
   // The amount of time there must be no painting for us to consider painting
   // finished.  Observed times are in the ~1200ms range on Windows.
-  static const int kTimeoutMs = 5000;
+  static const int kTimeoutMs = 2000;
   // The time when we started benchmarking.
   base::TimeTicks start_;
   // The last time we got a paint notification.
