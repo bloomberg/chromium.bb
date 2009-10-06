@@ -6,7 +6,7 @@
 """Enables directory-specific presubmit checks to run at upload and/or commit.
 """
 
-__version__ = '1.3.2'
+__version__ = '1.3.3'
 
 # TODO(joi) Add caching where appropriate/needed. The API is designed to allow
 # caching (between all different invocations of presubmit scripts for a given
@@ -742,6 +742,78 @@ def ListRelevantPresubmitFiles(files, root):
   entries.sort()
   entries = map(lambda x: os.path.join(x, 'PRESUBMIT.py'), entries)
   return filter(lambda x: os.path.isfile(x), entries)
+
+
+class GetTrySlavesExecuter(object):
+  def ExecPresubmitScript(self, script_text):
+    """Executes GetPreferredTrySlaves() from a single presubmit script.
+
+    Args:
+      script_text: The text of the presubmit script.
+
+    Return:
+      A list of try slaves.
+    """
+    context = {}
+    exec script_text in context
+
+    function_name = 'GetPreferredTrySlaves'
+    if function_name in context:
+      result = eval(function_name + '()', context)
+      if not isinstance(result, types.ListType):
+        raise exceptions.RuntimeError(
+            'Presubmit functions must return a list, got a %s instead: %s' %
+            (type(result), str(result)))
+      for item in result:
+        if not isinstance(item, basestring):
+          raise exceptions.RuntimeError('All try slaves names must be strings.')
+        if item != item.strip():
+          raise exceptions.RuntimeError('Try slave names cannot start/end'
+                                        'with whitespace')
+    else:
+      result = []
+    return result
+
+
+def DoGetTrySlaves(changed_files,
+                   repository_root,
+                   default_presubmit,
+                   verbose,
+                   output_stream):
+  """Get the list of try servers from the presubmit scripts.
+
+  Args:
+    changed_files: List of modified files.
+    repository_root: The repository root.
+    default_presubmit: A default presubmit script to execute in any case.
+    verbose: Prints debug info.
+    output_stream: A stream to write debug output to.
+
+  Return:
+    List of try slaves
+  """
+  presubmit_files = ListRelevantPresubmitFiles(changed_files, repository_root)
+  if not presubmit_files and verbose:
+    output_stream.write("Warning, no presubmit.py found.\n")
+  results = []
+  executer = GetTrySlavesExecuter()
+  if default_presubmit:
+    if verbose:
+      output_stream.write("Running default presubmit script.\n")
+    results += executer.ExecPresubmitScript(default_presubmit)
+  for filename in presubmit_files:
+    filename = os.path.abspath(filename)
+    if verbose:
+      output_stream.write("Running %s\n" % filename)
+    # Accept CRLF presubmit script.
+    presubmit_script = gcl.ReadFile(filename, 'rU')
+    results += executer.ExecPresubmitScript(presubmit_script)
+
+  slaves = list(set(results))
+  if slaves and verbose:
+    output_stream.write(', '.join(slaves))
+    output_stream.write('\n')
+  return slaves
 
 
 class PresubmitExecuter(object):

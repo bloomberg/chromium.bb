@@ -72,8 +72,9 @@ def GetSubRepWorkingDir(sub_rep_path):
 
 def GetMungedDiff(branch, prefix, sub_rep_path):
   """Get the diff we'll send to the try server.  We munge paths to match svn.
-     We add the prefix that the try bot is expecting. If sub_rep_path is 
-     provided, diff will be calculated in the sub repository."""
+     We add the prefix that the try bot is expecting. If sub_rep_path is
+     provided, diff will be calculated in the sub repository.
+     We also return the list of files in this diff, without munged paths."""
   # Make the following changes:
   # - Prepend "src/" (or some other prefix) to paths as svn is expecting
   # - In the case of added files, replace /dev/null with the path to the file
@@ -96,7 +97,7 @@ def GetMungedDiff(branch, prefix, sub_rep_path):
     # Add the right prefix
     command.extend(['--src-prefix=' + sub_rep_path])
     command.extend(['--dst-prefix=' + sub_rep_path])
-    
+
   command.extend([branch, 'HEAD'])
 
   # Run diff tree
@@ -113,23 +114,28 @@ def GetMungedDiff(branch, prefix, sub_rep_path):
 
   # Add root prefix
   output = []
+  file_set = set()
   for line in diff:
     if line.startswith('--- ') or line.startswith('+++ '):
-      line = line[0:4] + os.path.join(prefix,line[4:])
+      filename = line[4:]
+      line = line[0:4] + os.path.join(prefix, filename)
+      file_set.add(filename.rstrip('\r\n'))
     output.append(line)
 
   munged_diff = ''.join(output)
   if len(munged_diff.strip()) == 0:
     raise Exception("Patch was empty, did you give the right remote branch?")
 
-  return munged_diff
+  return (munged_diff, list(file_set))
 
 def OneRepositoryDiff(diff_file, patch_names, branch, prefix, sub_rep_path):
   """Computes a diff for one git repository at a given path against a given
      branch. Writes the diff into diff_file and appends a name to the
-     patch_names list."""
-  
-  diff = GetMungedDiff(branch, prefix, sub_rep_path)
+     patch_names list.
+
+     Returns the list of files in the diff."""
+
+  (diff, file_list) = GetMungedDiff(branch, prefix, sub_rep_path)
 
   # Write the diff out
   diff_file.write(diff)
@@ -137,6 +143,7 @@ def OneRepositoryDiff(diff_file, patch_names, branch, prefix, sub_rep_path):
   # Add patch name to list of patches
   patch_name = GetPatchName(GetSubRepWorkingDir(sub_rep_path))
   patch_names.extend([patch_name])
+  return file_list
 
 
 def ValidEmail(email):
@@ -150,11 +157,9 @@ def GetEmail():
   return email
 
 
-def TryChange(args):
+def TryChange(args, file_list):
   """Put a patch on the try server."""
-  root_dir = Backquote(['git', 'rev-parse', '--show-cdup'])
-  trychange.checkout_root = os.path.abspath(root_dir)
-  trychange.TryChange(args, None, False)
+  trychange.TryChange(args, file_list, False)
 
 
 if __name__ == '__main__':
@@ -169,12 +174,12 @@ if __name__ == '__main__':
   parser.add_option("-r", "--revision",
                     help="Specify the SVN base revision to use")
   parser.add_option("--root", default="src", metavar="PATH",
-                    help="Specify the root prefix that is appended to paths "
+                    help="Specify the root prefix that is prepended to paths "
                          "in the patch")
   parser.add_option("--dry_run", action="store_true",
                     help="Print the diff but don't send it to the try bots")
-  parser.add_option("--sub_rep", nargs=2, action="append", default=[], 
-                    metavar="PATH BRANCH", 
+  parser.add_option("--sub_rep", nargs=2, action="append", default=[],
+                    metavar="PATH BRANCH",
                     help="Specify a path to a git sub-repository and a branch "
                          "to diff with in order to simultanously try changes "
                          "in multiple git repositories. Option may be "
@@ -182,7 +187,7 @@ if __name__ == '__main__':
   parser.add_option("--webkit", metavar="BRANCH",
                     help="Specify webkit branch. Syntactic sugar for "
                          "--sub_rep third_party/WebKit/ <branch>")
-                         
+
   (options, args) = parser.parse_args(sys.argv)
 
   if options.webkit:
@@ -195,17 +200,18 @@ if __name__ == '__main__':
 
   # Dump all diffs into one diff file.
   diff_file = tempfile.NamedTemporaryFile()
-  
+
   # Calculate diff for main git repository.
-  OneRepositoryDiff(diff_file, patch_names, branch, options.root, None)
-  
+  file_list = OneRepositoryDiff(diff_file, patch_names, branch, options.root,
+                                None)
+
   # Calculate diff for each extra git repository.
   for path_and_branch in options.sub_rep:
-    OneRepositoryDiff(diff_file,
-                      patch_names,
-                      path_and_branch[1],
-                      options.root,
-                      path_and_branch[0]) 
+    file_list.extend(OneRepositoryDiff(diff_file,
+                                      patch_names,
+                                      path_and_branch[1],
+                                      options.root,
+                                      path_and_branch[0]))
   # Make diff file ready for reading.
   diff_file.flush()
 
@@ -217,7 +223,7 @@ if __name__ == '__main__':
       '-u', user,
       '-e', email,
       '-n', '-'.join(patch_names),
-      '--diff', diff_file.name, 
+      '--diff', diff_file.name,
   ]
 
   # Send to try server via HTTP if we can parse the config, otherwise
@@ -257,4 +263,4 @@ if __name__ == '__main__':
     exit(0)
 
   print sendmsg
-  TryChange(args=args)
+  TryChange(args, file_list)

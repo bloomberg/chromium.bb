@@ -24,6 +24,7 @@ import urllib
 import gcl
 import gclient
 import gclient_scm
+import presubmit_support
 import upload
 
 __version__ = '1.1.1'
@@ -195,6 +196,14 @@ class SVN(SCM):
     os.chdir(previous_cwd)
     return "".join(diff)
 
+  def GetFileNames(self):
+    """Return the list of files in the diff."""
+    return self.change_info.GetFileNames()
+
+  def GetLocalRoot(self):
+    """Return the path of the repository root."""
+    return self.change_info.GetLocalRoot()
+
   def ProcessOptions(self):
     if not self.options.diff:
       # Generate the diff with svn and write it to the submit queue path.  The
@@ -205,6 +214,8 @@ class SVN(SCM):
       prefix = PathDifference(source_root, gcl.GetRepositoryRoot())
       adjusted_paths = [os.path.join(prefix, x) for x in self.options.files]
       self.options.diff = self.GenerateDiff(adjusted_paths, root=source_root)
+      self.change_info = gcl.LoadChangelistInfoForMultiple(self.options.name,
+          gcl.GetRepositoryRoot(), True, True)
 
 
 class GIT(SCM):
@@ -224,6 +235,16 @@ class GIT(SCM):
   def GetEmail(self):
     # TODO: check for errors here?
     return upload.RunShell(['git', 'config', 'user.email']).strip()
+
+  def GetFileNames(self):
+    """Return the list of files in the diff."""
+    return self.options.files
+
+  def GetLocalRoot(self):
+    """Return the path of the repository root."""
+    # TODO: check for errors here?
+    root = upload.RunShell(['git', 'rev-parse', '--show-cdup']).strip()
+    return os.path.abspath(root)
 
   def GetPatchName(self):
     """Construct a name for this patch."""
@@ -410,6 +431,12 @@ def TryChange(argv,
               file_list,
               swallow_exception,
               prog=None):
+  """
+  Args:
+    argv: Arguments and options.
+    file_list: Default value to pass to --file.
+    swallow_exception: Whether we raise or swallow exceptions.
+  """
   default_settings = GetTryServerSettings()
   transport_functions = { 'http': _SendChangeHTTP, 'svn': _SendChangeSVN }
   default_transport = transport_functions.get(
@@ -542,9 +569,19 @@ def TryChange(argv,
       if not options.diff:
         raise
 
+    # Get try slaves from PRESUBMIT.py files if not specified.
+    if not options.bot:
+      root_presubmit = gcl.GetCachedFile('PRESUBMIT.py', use_root=True)
+      options.bot = presubmit_support.DoGetTrySlaves(options.scm.GetFileNames(),
+                                                     options.scm.GetLocalRoot(),
+                                                     root_presubmit,
+                                                     False,
+                                                     sys.stdout)
+
     # Send the patch.
     patch_name = options.send_patch(options)
-    print 'Patch \'%s\' sent to try server.' % patch_name
+    print 'Patch \'%s\' sent to try server: %s' % (patch_name,
+                                                   ', '.join(options.bot))
     if patch_name == 'Unnamed':
       print "Note: use --name NAME to change the try's name."
   except (InvalidScript, NoTryServerAccess), e:

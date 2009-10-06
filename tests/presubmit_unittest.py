@@ -31,6 +31,10 @@ def CheckChangeOnUpload(input_api, output_api):
   else:
     return ()
 """
+  presubmit_tryslave = """
+def GetPreferredTrySlaves():
+  return %s
+"""
 
   def setUp(self):
     super_mox.SuperMoxTestBase.setUp(self)
@@ -73,8 +77,8 @@ class PresubmitUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-      'AffectedFile', 'Change', 'DoPresubmitChecks', 'GitChange',
-      'GitAffectedFile', 'InputApi',
+      'AffectedFile', 'Change', 'DoGetTrySlaves', 'DoPresubmitChecks',
+      'GetTrySlavesExecuter', 'GitChange', 'GitAffectedFile', 'InputApi',
       'ListRelevantPresubmitFiles', 'Main', 'NotImplementedException',
       'OutputApi', 'ParseFiles', 'PresubmitExecuter', 'ScanSubDirs',
       'SvnAffectedFile', 'SvnChange',
@@ -483,6 +487,60 @@ def CheckChangeOnCommit(input_api, output_api):
                        'Running default presubmit script.\n'
                        '** Presubmit Messages **\n'
                        'http://tracker.com/42\n\n'))
+
+  def testGetTrySlavesExecuter(self):
+    self.mox.ReplayAll()
+
+    executer = presubmit.GetTrySlavesExecuter()
+    self.assertEqual([], executer.ExecPresubmitScript(''))
+    self.assertEqual([], executer.ExecPresubmitScript('def foo():\n  return\n'))
+
+    # bad results
+    starts_with_space_result = ['  starts_with_space']
+    not_list_result1 = "'foo'"
+    not_list_result2 = "('a', 'tuple')"
+    for result in starts_with_space_result, not_list_result1, not_list_result2:
+      self.assertRaises(exceptions.RuntimeError,
+                        executer.ExecPresubmitScript,
+                        self.presubmit_tryslave % result)
+
+    # good results
+    expected_result = ['1', '2', '3']
+    empty_result = []
+    space_in_name_result = ['foo bar', '1\t2 3']
+    for result in expected_result, empty_result, space_in_name_result:
+      self.assertEqual(result,
+                       executer.ExecPresubmitScript(self.presubmit_tryslave %
+                                                    str(result)))
+
+  def testDoGetTrySlaves(self):
+    join = presubmit.os.path.join
+    filename = 'foo.cc'
+    filename_linux = join('linux_only', 'penguin.cc')
+    root_presubmit = join(self.fake_root_dir, 'PRESUBMIT.py')
+    linux_presubmit = join(self.fake_root_dir, 'linux_only', 'PRESUBMIT.py')
+
+    presubmit.os.path.isfile(root_presubmit).AndReturn(True)
+    presubmit.gcl.ReadFile(root_presubmit, 'rU').AndReturn(
+        self.presubmit_tryslave % '["win"]')
+
+    presubmit.os.path.isfile(root_presubmit).AndReturn(True)
+    presubmit.os.path.isfile(linux_presubmit).AndReturn(True)
+    presubmit.gcl.ReadFile(root_presubmit, 'rU').AndReturn(
+        self.presubmit_tryslave % '["win"]')
+    presubmit.gcl.ReadFile(linux_presubmit, 'rU').AndReturn(
+        self.presubmit_tryslave % '["linux"]')
+    self.mox.ReplayAll()
+
+    output = StringIO.StringIO()
+    self.assertEqual(['win'],
+                     presubmit.DoGetTrySlaves([filename], self.fake_root_dir,
+                                              None, False, output))
+    output = StringIO.StringIO()
+    self.assertEqual(['win', 'linux'],
+                     presubmit.DoGetTrySlaves([filename, filename_linux],
+                                              self.fake_root_dir, None, False,
+                                              output))
 
   def testMain(self):
     self.mox.StubOutWithMock(presubmit, 'DoPresubmitChecks')
