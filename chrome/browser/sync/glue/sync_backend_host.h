@@ -19,6 +19,7 @@
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/bookmark_model_worker.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/url_request_context.h"
 
 namespace browser_sync {
 
@@ -84,7 +85,7 @@ class SyncBackendHost {
   ~SyncBackendHost();
 
   // Called on |frontend_loop_| to kick off asynchronous initialization.
-  void Initialize(const GURL& service_url);
+  void Initialize(const GURL& service_url, URLRequestContext* baseline_context);
 
   // Called on |frontend_loop_| to kick off asynchronous authentication.
   void Authenticate(const std::string& username, const std::string& password);
@@ -139,8 +140,7 @@ class SyncBackendHost {
     // created it, and *always* after core_thread_ has exited. The syncapi
     // watches thread exit events and keeps pointers to objects this dtor will
     // destroy, so this ordering is important.
-    ~Core() {
-    }
+    ~Core();
 
     // SyncManager::Observer implementation.  The Core just acts like an air
     // traffic controller here, forwarding incoming messages to appropriate
@@ -163,7 +163,7 @@ class SyncBackendHost {
     // Called on the SyncBackendHost core_thread_ to perform initialization
     // of the syncapi on behalf of SyncBackendHost::Initialize.
     void DoInitialize(const GURL& service_url,
-                      BookmarkModelWorker* bookmark_model_worker_,
+                      BookmarkModelWorker* bookmark_model_worker,
                       bool attempt_last_user_authentication);
 
     // Called on our SyncBackendHost's core_thread_ to perform authentication
@@ -181,6 +181,13 @@ class SyncBackendHost {
     // 3) Destroy this Core. That will delete syncapi components in a safe order
     //    because the thread that was using them has exited (in step 2).
     void DoShutdown(bool stopping_sync);
+
+    // Set the base request context to use when making HTTP calls.
+    // This method will add a reference to the context to persist it
+    // on the IO thread. Must be removed from IO thread.
+    // TODO(chron): After HttpNetworkSession reorganization happens, try
+    //              getting HttpBridgeFactory to initialize earlier.
+    void SetBaseRequestContext(URLRequestContext* request_context);
 
     sync_api::SyncManager* syncapi() { return syncapi_.get(); }
 
@@ -233,6 +240,10 @@ class SyncBackendHost {
 
     // Our parent SyncBackendHost
     SyncBackendHost* host_;
+
+    // Our request context that we have to keep a ref to.
+    // Contains session data.
+    URLRequestContext* base_request_context_;
 
     // The timer used to periodically call SaveChanges.
     base::RepeatingTimer<Core> save_changes_timer_;

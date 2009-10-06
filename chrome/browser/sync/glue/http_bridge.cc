@@ -12,20 +12,20 @@
 #include "chrome/browser/profile.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
 #include "net/proxy/proxy_service.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace browser_sync {
 
-HttpBridge::RequestContext* HttpBridgeFactory::GetRequestContext() {
-  if (!request_context_) {
-    request_context_ =
-        new HttpBridge::RequestContext(Profile::GetDefaultRequestContext());
-    request_context_->AddRef();
-  }
-  return request_context_;
+HttpBridgeFactory::HttpBridgeFactory(
+    URLRequestContext* baseline_context) {
+  DCHECK(baseline_context != NULL);
+  request_context_ = new HttpBridge::RequestContext(baseline_context);
+  request_context_->AddRef();
 }
 
 HttpBridgeFactory::~HttpBridgeFactory() {
@@ -38,8 +38,7 @@ HttpBridgeFactory::~HttpBridgeFactory() {
 }
 
 sync_api::HttpPostProviderInterface* HttpBridgeFactory::Create() {
-  // TODO(timsteele): We want the active profile request context.
-  HttpBridge* http = new HttpBridge(GetRequestContext(),
+  HttpBridge* http = new HttpBridge(request_context_,
       ChromeThread::GetMessageLoop(ChromeThread::IO));
   http->AddRef();
   return http;
@@ -49,8 +48,8 @@ void HttpBridgeFactory::Destroy(sync_api::HttpPostProviderInterface* http) {
   static_cast<HttpBridge*>(http)->Release();
 }
 
-HttpBridge::RequestContext::RequestContext(
-    const URLRequestContext* baseline_context) {
+HttpBridge::RequestContext::RequestContext(URLRequestContext* baseline_context)
+    : baseline_context_(baseline_context) {
 
   // Create empty, in-memory cookie store.
   cookie_store_ = new net::CookieMonster();
@@ -59,9 +58,15 @@ HttpBridge::RequestContext::RequestContext(
   host_resolver_ = baseline_context->host_resolver();
   proxy_service_ = baseline_context->proxy_service();
   ssl_config_service_ = baseline_context->ssl_config_service();
-  http_transaction_factory_ =
-      net::HttpNetworkLayer::CreateFactory(host_resolver_, proxy_service_,
-                                           ssl_config_service_);
+
+  // We want to share the HTTP session data with the network layer factory,
+  // which includes auth_cache for proxies.
+  // Session is not refcounted so we need to be careful to not lose the parent
+  // context.
+  net::HttpNetworkSession* session =
+      baseline_context->http_transaction_factory()->GetSession();
+  DCHECK(session);
+  http_transaction_factory_ = net::HttpNetworkLayer::CreateFactory(session);
 
   // TODO(timsteele): We don't currently listen for pref changes of these
   // fields or CookiePolicy; I'm not sure we want to strictly follow the
@@ -187,6 +192,10 @@ const char* HttpBridge::GetResponseContent() const {
   DCHECK_EQ(MessageLoop::current(), created_on_loop_);
   DCHECK(request_completed_);
   return response_content_.data();
+}
+
+URLRequestContext* HttpBridge::GetRequestContext() const {
+  return context_for_request_;
 }
 
 void HttpBridge::OnURLFetchComplete(const URLFetcher *source, const GURL &url,

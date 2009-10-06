@@ -8,6 +8,7 @@
 #include "base/file_version_info.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
@@ -41,11 +42,12 @@ SyncBackendHost::~SyncBackendHost() {
   DCHECK(!core_ && !frontend_) << "Must call Shutdown before destructor.";
 }
 
-void SyncBackendHost::Initialize(const GURL& sync_service_url) {
+void SyncBackendHost::Initialize(const GURL& sync_service_url,
+                                 URLRequestContext* baseline_context) {
   if (!core_thread_.Start())
     return;
-
   bookmark_model_worker_ = new BookmarkModelWorker(frontend_loop_);
+  core_.get()->SetBaseRequestContext(baseline_context);
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoInitialize,
                         sync_service_url, bookmark_model_worker_, true));
@@ -127,9 +129,26 @@ AuthErrorState SyncBackendHost::GetAuthErrorState() const {
   return last_auth_error_;
 }
 
+void SyncBackendHost::Core::SetBaseRequestContext(
+    URLRequestContext* request_context) {
+  DCHECK(base_request_context_ == NULL);
+  base_request_context_ = request_context;
+  // This ref is removed on the IO thread after the core thread is over.
+  base_request_context_->AddRef();
+}
+
 SyncBackendHost::Core::Core(SyncBackendHost* backend)
     : host_(backend),
-      syncapi_(new sync_api::SyncManager()) {
+      syncapi_(new sync_api::SyncManager()),
+      base_request_context_(NULL) {
+}
+
+SyncBackendHost::Core::~Core() {
+  if (base_request_context_) {
+    ChromeThread::GetMessageLoop(ChromeThread::IO)->ReleaseSoon(FROM_HERE,
+        base_request_context_);
+    base_request_context_ = NULL;
+  }
 }
 
 // Helper to construct a user agent string (ASCII) suitable for use by
@@ -183,8 +202,8 @@ void SyncBackendHost::Core::DoInitialize(
       kGaiaServiceId,
       kGaiaSourceForChrome,
       service_url.SchemeIsSecure(),
-      new HttpBridgeFactory(),
-      new HttpBridgeFactory(),
+      new HttpBridgeFactory(base_request_context_),
+      new HttpBridgeFactory(base_request_context_),
       bookmark_model_worker,
       attempt_last_user_authentication,
       MakeUserAgentForSyncapi().c_str());

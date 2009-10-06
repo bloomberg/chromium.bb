@@ -47,6 +47,12 @@ class HttpBridgeTest : public testing::Test {
   }
 
   MessageLoop* io_thread_loop() { return io_thread_.message_loop(); }
+
+  // Note this is lazy created, so don't call this before your bridge.
+  TestURLRequestContext* GetTestRequestContext() {
+    return fake_default_request_context_;
+  }
+
  private:
   // A make-believe "default" request context, as would be returned by
   // Profile::GetDefaultRequestContext().  Created lazily by BuildBridge.
@@ -60,7 +66,7 @@ class HttpBridgeTest : public testing::Test {
 // back with dummy response info.
 class ShuntedHttpBridge : public HttpBridge {
  public:
-  ShuntedHttpBridge(const URLRequestContext* baseline_context,
+  ShuntedHttpBridge(URLRequestContext* baseline_context,
                     MessageLoop* io_loop, HttpBridgeTest* test)
       : HttpBridge(new HttpBridge::RequestContext(baseline_context),
                    io_loop), test_(test) { }
@@ -84,6 +90,16 @@ class ShuntedHttpBridge : public HttpBridge {
   }
   HttpBridgeTest* test_;
 };
+
+TEST_F(HttpBridgeTest, TestUsesSameHttpNetworkSession) {
+  scoped_refptr<HttpBridge> http_bridge(this->BuildBridge());
+  EXPECT_TRUE(GetTestRequestContext());
+  net::HttpNetworkSession* test_session =
+      GetTestRequestContext()->http_transaction_factory()->GetSession();
+  EXPECT_EQ(test_session,
+            http_bridge->GetRequestContext()->
+                http_transaction_factory()->GetSession());
+}
 
 // Test the HttpBridge without actually making any network requests.
 TEST_F(HttpBridgeTest, TestMakeSynchronousPostShunted) {

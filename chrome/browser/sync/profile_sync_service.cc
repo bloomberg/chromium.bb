@@ -105,7 +105,7 @@ void ProfileSyncService::ClearPreferences() {
 }
 
 void ProfileSyncService::InitializeBackend() {
-  backend_->Initialize(sync_service_url_);
+  backend_->Initialize(sync_service_url_, profile_->GetRequestContext());
 }
 
 void ProfileSyncService::StartUp() {
@@ -126,11 +126,6 @@ void ProfileSyncService::StartUp() {
   model_associator_ = new ModelAssociator(this);
   change_processor_->set_model_associator(model_associator_);
 
-  // TODO(timsteele): HttpBridgeFactory should take a const* to the profile's
-  // URLRequestContext, because it needs it to create HttpBridge objects, and
-  // it may need to do that before the default request context has been set
-  // up. For now, call GetRequestContext lazy-init to force creation.
-  profile_->GetRequestContext();
   InitializeBackend();
 }
 

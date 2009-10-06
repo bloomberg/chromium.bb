@@ -47,7 +47,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     // accept-charsets, and proxy service information for bridged requests.
     // Typically |baseline_context| should be the URLRequestContext of the
     // currently active profile.
-    explicit RequestContext(const URLRequestContext* baseline_context);
+    explicit RequestContext(URLRequestContext* baseline_context);
     virtual ~RequestContext();
 
     // Set the user agent for requests using this context. The default is
@@ -68,6 +68,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
 
    private:
     std::string user_agent_;
+    scoped_refptr<URLRequestContext> baseline_context_;
 
     DISALLOW_COPY_AND_ASSIGN(RequestContext);
   };
@@ -96,6 +97,8 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
+
+  URLRequestContext* GetRequestContext() const;
 
  protected:
   // Protected virtual so the unit test can override to shunt network requests.
@@ -162,11 +165,13 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
 class HttpBridgeFactory
   : public sync_api::HttpPostProviderFactory {
  public:
-  HttpBridgeFactory() : request_context_(NULL) { }
+  explicit HttpBridgeFactory(URLRequestContext* baseline_context);
   virtual ~HttpBridgeFactory();
   virtual sync_api::HttpPostProviderInterface* Create();
   virtual void Destroy(sync_api::HttpPostProviderInterface* http);
  private:
+  // This request context is built on top of the baseline context and shares
+  // common components.
   HttpBridge::RequestContext* GetRequestContext();
   // We must Release() this from the IO thread.
   HttpBridge::RequestContext* request_context_;
