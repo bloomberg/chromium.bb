@@ -811,7 +811,7 @@
         "type": "function",
         "description": "Sets the text for the browser action. Shows up in the tooltip if the browser action is visible, and in the menu item.",
         "parameters": [
-          {"type": "string", "name": "name", "description": "The string the browser action should display when moused over.", optional: false}
+          {"type": "string", "name": "name", "description": "The string the browser action should display when moused over.", "optional": false}
         ]
       },
       {
