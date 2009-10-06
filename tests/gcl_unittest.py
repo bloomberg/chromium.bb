@@ -49,7 +49,7 @@ class GclUnittest(GclTestsBase):
       'GetChangelistInfoFile', 'GetCodeReviewSetting', 'GetEditor',
       'GetFilesNotInCL', 'GetInfoDir', 'GetIssueDescription',
       'GetModifiedFiles', 'GetRepositoryRoot',
-      'GetSVNFileProperty', 'Help', 'IGNORE_PATHS', 'IsSVNMoved',
+      'GetSVNFileProperty', 'Help', 'IsSVNMoved',
       'Lint', 'LoadChangelistInfoForMultiple',
       'MISSING_TEST_MSG', 'Opened', 'OptionallyDoPresubmitChecks',
       'PresubmitCL', 'ReadFile', 'REPOSITORY_ROOT', 'RunShell',

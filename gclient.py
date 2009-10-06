@@ -892,7 +892,6 @@ def DoCleanup(options, args):
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
     print(client.ConfigContent())
-  options.verbose = True
   return client.RunOnDeps('cleanup', args)
 
 
@@ -971,7 +970,6 @@ def DoPack(options, args):
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
     print(client.ConfigContent())
-  options.verbose = True
   return client.RunOnDeps('pack', args)
 
 
@@ -988,7 +986,6 @@ def DoStatus(options, args):
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
     print(client.ConfigContent())
-  options.verbose = True
   return client.RunOnDeps('status', args)
 
 
@@ -1043,7 +1040,6 @@ def DoDiff(options, args):
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
     print(client.ConfigContent())
-  options.verbose = True
   return client.RunOnDeps('diff', args)
 
 
@@ -1143,10 +1139,6 @@ def Main(argv):
                                  "containing the provided string"))
   option_parser.add_option("", "--verbose", action="store_true", default=False,
                            help="produce additional output for diagnostics")
-  option_parser.add_option("", "--manually_grab_svn_rev", action="store_true",
-                           default=False,
-                           help="Skip svn up whenever possible by requesting "
-                                "actual HEAD revision from the repository")
   option_parser.add_option("", "--head", action="store_true", default=False,
                            help=("skips any safesync_urls specified in "
                                  "configured solutions"))
