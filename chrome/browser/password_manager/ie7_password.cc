@@ -50,10 +50,16 @@ struct PasswordEntry {
 
 // Cleans up a crypt prov and a crypt hash.
 void CleanupHashContext(HCRYPTPROV prov, HCRYPTHASH hash) {
-  if (hash)
-    CryptDestroyHash(hash);
-  if (prov)
-    CryptReleaseContext(prov, 0);
+  BOOL ok;
+  if (hash) {
+    ok = CryptDestroyHash(hash);
+    DCHECK(ok);
+  }
+
+  if (prov) {
+    ok = CryptReleaseContext(prov, 0);
+    DCHECK(ok);
+  }
 }
 
 }  // namespace
