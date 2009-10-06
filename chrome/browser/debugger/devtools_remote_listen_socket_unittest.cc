@@ -76,6 +76,7 @@ void DevToolsRemoteListenSocketTester::SetUp() {
 
   // verify the connect/accept and setup test_socket_
   test_socket_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+  ASSERT_NE(-1, test_socket_);
   struct sockaddr_in client;
   client.sin_family = AF_INET;
   client.sin_addr.s_addr = inet_addr(kLoopback);
