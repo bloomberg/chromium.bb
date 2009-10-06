@@ -60,7 +60,6 @@
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
-
 /*
  * Map our ABI to the host OS's ABI.  On linux, this should be a big no-op.
  */
@@ -130,7 +129,7 @@ uintptr_t NaClHostDescMap(struct NaClHostDesc *d,
                           size_t              len,
                           int                 prot,
                           int                 flags,
-                          nacl_off64_t        offset) {
+                          off_t               offset) {
   int   desc;
   void  *map_addr;
   int   host_prot;
@@ -216,7 +215,7 @@ int NaClHostDescUnmap(void    *start_addr,
                                             (MAP_PRIVATE
                                              | MAP_ANONYMOUS | MAP_FIXED),
                                             -1,
-                                            (nacl_off64_t) 0)))
+                                            (off_t) 0)))
           ? -NaClXlateErrno(errno) : retval);
 }
 
@@ -356,23 +355,16 @@ ssize_t NaClHostDescWrite(struct NaClHostDesc *d,
           ? -NaClXlateErrno(errno) : retval);
 }
 
-nacl_off64_t NaClHostDescSeek(struct NaClHostDesc  *d,
-                              nacl_off64_t         offset,
-                              int                  whence) {
-  nacl_off64_t retval;
+int NaClHostDescSeek(struct NaClHostDesc  *d,
+                     off_t                offset,
+                     int                  whence) {
+  int retval;
 
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDescSeek: 'this' is NULL\n");
   }
-#if NACL_LINUX
-  return ((-1 == (retval = lseek64(d->d, offset, whence)))
-          ? -NaClXlateErrno(errno) : retval);
-#elif NACL_OSX
   return ((-1 == (retval = lseek(d->d, offset, whence)))
           ? -NaClXlateErrno(errno) : retval);
-#else
-# error "What Unix-like OS is this?"
-#endif
 }
 
 int NaClHostDescIoctl(struct NaClHostDesc *d,
@@ -400,22 +392,67 @@ int NaClHostDescIoctl(struct NaClHostDesc *d,
 #endif
 }
 
+void NaClHostDescStatCommon(struct nacl_abi_stat  *nasp,
+                            struct stat           *sbp) {
+  nacl_abi_mode_t m;
+
+  nasp->nacl_abi_st_dev = 0;
+  nasp->nacl_abi_st_ino = 0x6c43614e;
+
+  switch (sbp->st_mode & S_IFMT) {
+    case S_IFREG:
+      m = NACL_ABI_S_IFREG;
+      break;
+    case S_IFDIR:
+      m = NACL_ABI_S_IFDIR;
+      break;
+#if defined(S_IFCHR)
+    case S_IFCHR:
+      /* stdin/out/err can be inherited, so this is okay */
+      m = NACL_ABI_S_IFCHR;
+      break;
+#endif
+    default:
+      NaClLog(LOG_ERROR,
+              ("NaClHostDescStatCommon: how did NaCl app open a file"
+               " with st_mode = 0%o?\n"),
+              sbp->st_mode);
+      m = NACL_ABI_S_UNSUP;
+  }
+  if (0 != (nasp->nacl_abi_st_mode & S_IRUSR)) {
+      m |= NACL_ABI_S_IRUSR;
+  }
+  if (0 != (nasp->nacl_abi_st_mode & S_IWUSR)) {
+      m |= NACL_ABI_S_IWUSR;
+  }
+  if (0 != (nasp->nacl_abi_st_mode & S_IXUSR)) {
+      m |= NACL_ABI_S_IXUSR;
+  }
+  nasp->nacl_abi_st_mode = m;
+  nasp->nacl_abi_st_nlink = sbp->st_nlink;
+  nasp->nacl_abi_st_uid = -1;  /* not root */
+  nasp->nacl_abi_st_gid = -1;  /* not wheel */
+  nasp->nacl_abi_st_rdev = 0;
+  nasp->nacl_abi_st_size = sbp->st_size;
+  nasp->nacl_abi_st_blksize = 0;
+  nasp->nacl_abi_st_blocks = 0;
+  nasp->nacl_abi_st_atime = sbp->st_atime;
+  nasp->nacl_abi_st_mtime = sbp->st_mtime;
+  nasp->nacl_abi_st_ctime = sbp->st_ctime;
+}
+
 /*
  * See NaClHostDescStat below.
  */
 int NaClHostDescFstat(struct NaClHostDesc  *d,
-                      nacl_host_stat_t     *nhsp) {
-#if NACL_LINUX
-  if (fstat64(d->d, nhsp) == -1) {
+                      struct nacl_abi_stat *nasp) {
+  struct stat stbuf;
+
+  if (fstat(d->d, &stbuf) == -1) {
     return -errno;
   }
-#elif NACL_OSX
-  if (fstat(d->d, nhsp) == -1) {
-    return -errno;
-  }
-#else
-# error "What OS?"
-#endif
+
+  NaClHostDescStatCommon(nasp, &stbuf);
 
   return 0;
 }
@@ -437,20 +474,15 @@ int NaClHostDescClose(struct NaClHostDesc *d) {
  * This is not a host descriptor function, but is closely related to
  * fstat and should behave similarly.
  */
-int NaClHostDescStat(char const       *host_os_pathname,
-                     nacl_host_stat_t *nhsp) {
+int NaClHostDescStat(char const           *host_os_pathname,
+                     struct nacl_abi_stat *nasp) {
+  struct stat stbuf;
 
-#if NACL_LINUX
-  if (stat64(host_os_pathname, nhsp) == -1) {
+  if (stat(host_os_pathname, &stbuf) == -1) {
     return -errno;
   }
-#elif NACL_OSX
-  if (stat(host_os_pathname, nhsp) == -1) {
-    return -errno;
-  }
-#else
-# error "What OS?"
-#endif
+
+  NaClHostDescStatCommon(nasp, &stbuf);
 
   return 0;
 }

@@ -150,9 +150,7 @@ int NaClDescImcDescFstat(struct NaClDesc          *vself,
   UNREFERENCED_PARAMETER(effp);
 
   memset(statbuf, 0, sizeof *statbuf);
-  statbuf->nacl_abi_st_mode = (NACL_ABI_S_IFSOCK |
-                               NACL_ABI_S_IRUSR |
-                               NACL_ABI_S_IWUSR);
+  statbuf->nacl_abi_st_mode = NACL_ABI_S_IFSOCK;
   return 0;
 }
 

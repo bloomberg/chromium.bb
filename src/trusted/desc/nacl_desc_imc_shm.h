@@ -57,7 +57,7 @@ struct nacl_abi_stat;
 
 int NaClDescImcShmCtor(struct NaClDescImcShm  *self,
                        NaClHandle             h,
-                       nacl_off64_t           size);
+                       off_t                  size);
 
 void NaClDescImcShmDtor(struct NaClDesc *vself);
 
@@ -69,7 +69,7 @@ uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
                             size_t                  len,
                             int                     prot,
                             int                     flags,
-                            nacl_off64_t            offset);
+                            off_t                   offset);
 
 int NaClDescImcShmUnmapUnsafe(struct NaClDesc         *vself,
                               struct NaClDescEffector *effp,

@@ -67,7 +67,7 @@ uintptr_t NaClDescIoDescMap(struct NaClDesc         *vself,
                             size_t                  len,
                             int                     prot,
                             int                     flags,
-                            nacl_off64_t            offset);
+                            off_t                   offset);
 
 int NaClDescIoDescUnmapUnsafe(struct NaClDesc         *vself,
                               struct NaClDescEffector *effp,
@@ -89,10 +89,10 @@ ssize_t NaClDescIoDescWrite(struct NaClDesc         *vself,
                             void const              *buf,
                             size_t                  len);
 
-nacl_off64_t NaClDescIoDescSeek(struct NaClDesc          *vself,
-                                struct NaClDescEffector  *effp,
-                                nacl_off64_t             offset,
-                                int                      whence);
+int NaClDescIoDescSeek(struct NaClDesc          *vself,
+                       struct NaClDescEffector  *effp,
+                       off_t                    offset,
+                       int                      whence);
 
 int NaClDescIoDescIoctl(struct NaClDesc         *vself,
                         struct NaClDescEffector *effp,

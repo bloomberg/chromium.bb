@@ -72,8 +72,7 @@ typedef unsigned __int64  uint64_t;
 
 #if !defined(__cplusplus) || defined(__STDC_LIMIT_MACROS)
 /* only what we need so far */
-# define UINT8_MAX      (255)
-# define INT32_MAX      ((int32_t) (((uint32_t) -1) >> 1))
+# define UINT8_MAX       (255)
 #endif
 
 EXTERN_C_BEGIN

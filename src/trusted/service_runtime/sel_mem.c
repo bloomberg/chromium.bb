@@ -39,7 +39,6 @@
 #include <stdio.h>
 
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/trusted/service_runtime/sel_mem.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/trusted/service_runtime/nacl_check.h"
@@ -328,8 +327,8 @@ void NaClVmmapUpdate(struct NaClVmmap   *self,
 
   for (i = 0; i < self->nvalid; i++) {
     struct NaClVmmapEntry *ent = self->vmentry[i];
-    uintptr_t             ent_end_page = ent->page_num + ent->npages;
-    nacl_off64_t          additional_offset =
+    uintptr_t ent_end_page = ent->page_num + ent->npages;
+    off_t additional_offset =
         (new_region_end_page - ent->page_num) << NACL_PAGESHIFT;
 
     if (ent->page_num < page_num && new_region_end_page < ent_end_page) {

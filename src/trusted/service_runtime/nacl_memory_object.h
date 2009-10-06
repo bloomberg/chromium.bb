@@ -39,7 +39,6 @@
 #include "native_client/src/include/portability.h"
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
-#include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 
@@ -90,13 +89,13 @@ struct NaClMemObj {
    *
    * TODO(bsy): figure out exactly what we need to do.
    */
-  nacl_off64_t           nbytes;  /* stat member is off_t st_size */
+  off_t           nbytes;  /* stat member is off_t st_size */
   /*
    * All memory objects that back virtual memory must support
    * offset/nbytes mapping.  NB: the VM map code may split a
    * NaClMemObj into two if some middle page got unmapped, etc.
    */
-  nacl_off64_t           offset;
+  off_t           offset;
 };
 
 /*
@@ -104,12 +103,12 @@ struct NaClMemObj {
  */
 int NaClMemObjCtor(struct NaClMemObj  *nmop,
                    struct NaClDesc    *ndp,
-                   nacl_off64_t       nbytes,
-                   nacl_off64_t       offset) NACL_WUR;
+                   off_t              nbytes,
+                   off_t              offset) NACL_WUR;
 
 int NaClMemObjCopyCtorOff(struct NaClMemObj *nmop,
                           struct NaClMemObj *src,
-                          nacl_off64_t      additional) NACL_WUR;
+                          off_t             additional) NACL_WUR;
 
 void NaClMemObjDtor(struct NaClMemObj *nmop);
 
@@ -117,14 +116,14 @@ void NaClMemObjDtor(struct NaClMemObj *nmop);
  * Allocating Ctor.  Increments refcount on ndp, which must not be NULL.
  */
 struct NaClMemObj *NaClMemObjMake(struct NaClDesc *ndp,
-                                  nacl_off64_t    nbytes,
-                                  nacl_off64_t    offset) NACL_WUR;
+                                  off_t           nbytes,
+                                  off_t           offset) NACL_WUR;
 
 struct NaClMemObj *NaClMemObjSplit(struct NaClMemObj  *nmop,
-                                   nacl_off64_t       additional) NACL_WUR;
+                                   off_t              additional) NACL_WUR;
 
 void NaClMemObjIncOffset(struct NaClMemObj  *nmop,
-                         nacl_off64_t       additional);
+                         off_t              additional);
 
 EXTERN_C_END
 

@@ -57,29 +57,6 @@ EXTERN_C_BEGIN
 struct nacl_abi_stat;
 struct NaClHostDesc;
 
-/*
- * off64_t in linux, off_t in osx and __int64_t in win
- */
-typedef int64_t nacl_off64_t;
-
-/*
- * We do not explicitly provide an abstracted version of a
- * host-independent stat64 structure.  Instead, it is up to the user
- * of the nacl_host_desc code to not use anything but the
- * POSIX-blessed fields, to know that the shape/size may differ across
- * platforms, and to know that the st_size field is a 64-bit value
- * compatible w/ nacl_off64_t above.
- */
-#if NACL_LINUX
-typedef struct stat64 nacl_host_stat_t;
-#elif NACL_OSX
-typedef struct stat nacl_host_stat_t;
-#elif NACL_WINDOWS
-typedef struct _stati64 nacl_host_stat_t;
-#else
-# error "what OS?"
-#endif
-
 static INLINE int NaClIsNegErrno(int val) {
   /*
    * On 64-bit Linux, the app has the entire 32-bit address space
@@ -127,7 +104,7 @@ extern uintptr_t NaClHostDescMap(struct NaClHostDesc  *d,
                                  size_t               len,
                                  int                  prot,
                                  int                  flags,
-                                 nacl_off64_t         offset);
+                                 off_t                offset);
 
 /*
  * Undo a file mapping.  The memory range specified by start_address,
@@ -231,9 +208,9 @@ extern ssize_t NaClHostDescWrite(struct NaClHostDesc  *d,
                                  void const           *buf,
                                  size_t               count);
 
-extern nacl_off64_t NaClHostDescSeek(struct NaClHostDesc *d,
-                                     nacl_off64_t        offset,
-                                     int                 whence);
+extern int NaClHostDescSeek(struct NaClHostDesc *d,
+                            off_t               offset,
+                            int                 whence);
 
 /*
  * TODO(bsy): Need to enumerate which request is supported and the
@@ -248,7 +225,7 @@ extern int NaClHostDescIoctl(struct NaClHostDesc  *d,
  * Fstat.
  */
 extern int NaClHostDescFstat(struct NaClHostDesc  *d,
-                             nacl_host_stat_t     *nasp);
+                             struct nacl_abi_stat *nasp);
 
 /*
  * Dtor for the NaClHostFile object. Close the file.
@@ -257,8 +234,8 @@ extern int NaClHostDescFstat(struct NaClHostDesc  *d,
  */
 extern int NaClHostDescClose(struct NaClHostDesc  *d);
 
-extern int NaClHostDescStat(char const        *host_os_pathname,
-                            nacl_host_stat_t  *nasp);
+extern int NaClHostDescStat(char const            *host_os_pathname,
+                            struct nacl_abi_stat  *nasp);
 
 /*
  * Maps NACI_ABI_ versions of the mmap prot argument to host ABI versions

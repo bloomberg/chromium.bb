@@ -39,7 +39,6 @@
 #include "native_client/src/include/portability.h"
 
 #include "native_client/src/include/nacl_base.h"
-#include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/trusted/service_runtime/include/sys/time.h"
 
 #if defined(HAVE_SDL)

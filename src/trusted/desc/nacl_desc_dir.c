@@ -164,12 +164,7 @@ int NaClDescDirDescFstat(struct NaClDesc          *vself,
   UNREFERENCED_PARAMETER(effp);
 
   memset(statbuf, 0, sizeof *statbuf);
-  /*
-   * TODO(bsy): saying it's executable/searchable might be a lie.
-   */
-  statbuf->nacl_abi_st_mode = (NACL_ABI_S_IFDIR |
-                               NACL_ABI_S_IRUSR |
-                               NACL_ABI_S_IXUSR);
+  statbuf->nacl_abi_st_mode = NACL_ABI_S_IFDIR;
   return 0;
 }
 

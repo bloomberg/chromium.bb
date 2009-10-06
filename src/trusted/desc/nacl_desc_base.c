@@ -35,9 +35,6 @@
  */
 
 #include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_platform.h"
@@ -169,8 +166,6 @@ char const *NaClDescTypeString(enum NaClDescTypeTag type_tag) {
   }
   return "BAD TYPE TAG";
 }
-
-
 void NaClDescDtorNotImplemented(struct NaClDesc  *vself) {
   UNREFERENCED_PARAMETER(vself);
 
@@ -183,7 +178,7 @@ uintptr_t NaClDescMapNotImplemented(struct NaClDesc         *vself,
                                     size_t                  len,
                                     int                     prot,
                                     int                     flags,
-                                    nacl_off64_t            offset) {
+                                    off_t                   offset) {
   UNREFERENCED_PARAMETER(effp);
   UNREFERENCED_PARAMETER(start_addr);
   UNREFERENCED_PARAMETER(len);
@@ -253,10 +248,10 @@ ssize_t NaClDescWriteNotImplemented(struct NaClDesc         *vself,
   return -NACL_ABI_EINVAL;
 }
 
-nacl_off64_t NaClDescSeekNotImplemented(struct NaClDesc          *vself,
-                                        struct NaClDescEffector  *effp,
-                                        nacl_off64_t             offset,
-                                        int                      whence) {
+int NaClDescSeekNotImplemented(struct NaClDesc          *vself,
+                               struct NaClDescEffector  *effp,
+                               off_t                    offset,
+                               int                      whence) {
   UNREFERENCED_PARAMETER(effp);
   UNREFERENCED_PARAMETER(offset);
   UNREFERENCED_PARAMETER(whence);
@@ -503,49 +498,28 @@ int NaClDescInternalizeNotImplemented(struct NaClDesc           **baseptr,
   return -NACL_ABI_EIO;
 }
 
-/*
- * What is the semantics of this? 0, 1, -NACL_ABI_EINVAL etc?
- */
-int NaClDescMapDescriptor(struct NaClDesc         *desc,
+int NaClDescMapDescriptor(struct NaClDesc *desc,
                           struct NaClDescEffector *effector,
-                          void                    **addr,
-                          size_t                  *size) {
-  struct nacl_abi_stat  st;
-  size_t                rounded_size = 0;
-  const int             kMaxTries = 10;
-  int                   tries = 0;
-  void                  *map_addr = NULL;
-  int                   rval;
-  uintptr_t             rval_ptr;
+                          void** addr,
+                          size_t* size) {
+  struct nacl_abi_stat st;
+  size_t rounded_size = 0;
+  const int kMaxTries = 10;
+  int tries = 0;
+  void* map_addr = NULL;
+  int rval;
+  uintptr_t rval_ptr;
 
   *addr = NULL;
   *size = 0;
 
-  rval = (*desc->vtbl->Fstat)(desc,
-                              effector,
-                              &st);
+  rval = desc->vtbl->Fstat(desc,
+                           effector,
+                           &st);
   if (0 != rval) {
     /* Failed to get the size - return failure. */
     return rval;
   }
-
-  /*
-   * on sane systems, sizef(size_t) <= sizeof(nacl_abi_off_t) must hold.
-   */
-  if (st.nacl_abi_st_size < 0) {
-    return -NACL_ABI_ENOMEM;
-  }
-  if (sizeof(size_t) < sizeof(nacl_abi_off_t)) {
-    if ((nacl_abi_off_t) SIZE_T_MAX < st.nacl_abi_st_size) {
-      return -NACL_ABI_ENOMEM;
-    }
-  }
-  /*
-   * size_t and uintptr_t and void * should have the same number of
-   * bits (well, void * could be smaller than uintptr_t, and on weird
-   * architectures one could imagine the maximum size is smaller than
-   * all addr bits, but we're talking sane architectures...).
-   */
 
   /*
    * When probing by VirtualAlloc/mmap, use the same granularity
@@ -573,13 +547,13 @@ int NaClDescMapDescriptor(struct NaClDesc         *desc,
       continue;
     }
 #endif
-    rval = (*desc->vtbl->Map)(desc,
-                              effector,
-                              map_addr,
-                              rounded_size,
-                              NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
-                              NACL_ABI_MAP_SHARED,
-                              0);
+    rval = desc->vtbl->Map(desc,
+                           effector,
+                           map_addr,
+                           rounded_size,
+                           NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+                           NACL_ABI_MAP_SHARED,
+                           0);
     if (!NaClIsNegErrno(rval)) {
       rval_ptr = (uintptr_t) rval;
       map_addr = (void*)(rval_ptr);
@@ -588,7 +562,7 @@ int NaClDescMapDescriptor(struct NaClDesc         *desc,
   } while (NULL == map_addr && tries < kMaxTries);
 
   if (NULL == map_addr) {
-    return rval;
+    return 1;
   }
 
   *addr = map_addr;

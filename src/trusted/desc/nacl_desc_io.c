@@ -51,7 +51,6 @@
 
 #include "native_client/src/trusted/service_runtime/internal_errno.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
-#include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
@@ -136,7 +135,7 @@ uintptr_t NaClDescIoDescMap(struct NaClDesc         *vself,
                             size_t                  len,
                             int                     prot,
                             int                     flags,
-                            nacl_off64_t            offset) {
+                            off_t                   offset) {
   struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
   int                   rv;
   uintptr_t             status;
@@ -229,10 +228,10 @@ ssize_t NaClDescIoDescWrite(struct NaClDesc         *vself,
   return NaClHostDescWrite(self->hd, buf, len);
 }
 
-nacl_off64_t NaClDescIoDescSeek(struct NaClDesc          *vself,
-                                struct NaClDescEffector  *effp,
-                                nacl_off64_t             offset,
-                                int                      whence) {
+int NaClDescIoDescSeek(struct NaClDesc          *vself,
+                       struct NaClDescEffector  *effp,
+                       off_t                    offset,
+                       int                      whence) {
   struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
 
   UNREFERENCED_PARAMETER(effp);
@@ -255,16 +254,10 @@ int NaClDescIoDescFstat(struct NaClDesc         *vself,
                         struct NaClDescEffector *effp,
                         struct nacl_abi_stat    *statbuf) {
   struct NaClDescIoDesc *self = (struct NaClDescIoDesc *) vself;
-  int                   rv;
-  nacl_host_stat_t      hstatbuf;
 
   UNREFERENCED_PARAMETER(effp);
 
-  rv = NaClHostDescFstat(self->hd, &hstatbuf);
-  if (0 != rv) {
-    return rv;
-  }
-  return NaClAbiStatHostDescStatXlateCtor(statbuf, &hstatbuf);
+  return NaClHostDescFstat(self->hd, statbuf);
 }
 
 int NaClDescIoDescClose(struct NaClDesc         *vself,

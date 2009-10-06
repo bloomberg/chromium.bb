@@ -36,8 +36,6 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_BASE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_BASE_H_
 
-#include <sys/types.h>
-#include <sys/stat.h>
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
@@ -45,8 +43,6 @@
 /* For NaClHandle */
 #include "native_client/src/shared/imc/nacl_htp_c.h"
 
-/* for nacl_off64_t */
-#include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_interruptible_condvar.h"
 #include "native_client/src/shared/platform/nacl_interruptible_mutex.h"
 #include "native_client/src/shared/platform/nacl_semaphore.h"
@@ -180,7 +176,7 @@ struct NaClDescVtbl {
                    size_t                   len,
                    int                      prot,
                    int                      flags,
-                   nacl_off64_t             offset) NACL_WUR;
+                   off_t                    offset) NACL_WUR;
   /*
    * UnmapUnsafe really unmaps and leaves a hole in the address space.
    * It is intended for use by Map (through the effector interface) to
@@ -211,10 +207,10 @@ struct NaClDescVtbl {
                    struct NaClDescEffector  *effp,
                    void const               *buf,
                    size_t                   len) NACL_WUR;
-  nacl_off64_t (*Seek)(struct NaClDesc         *vself,
-                       struct NaClDescEffector *effp,
-                       nacl_off64_t            offset,
-                       int                     whence) NACL_WUR;
+  int (*Seek)(struct NaClDesc         *vself,
+              struct NaClDescEffector *effp,
+              off_t                   offset,
+              int                     whence) NACL_WUR;
   /*
    * TODO(bsy): Need to figure out which requests we support.  Also,
    * request determines arg size and whether it is an input or output arg!
@@ -444,8 +440,7 @@ extern struct NaClDescVtbl const kNaClDescImcShmVtbl;
 struct NaClDescImcShm {
   struct NaClDesc           base;
   NaClHandle                h;
-  nacl_off64_t              size;
-  /* note nacl_off64_t so struct stat incompatible */
+  off_t                     size;  /* note off_t so struct stat compatible */
 };
 
 extern int NaClDescImcShmInternalize(struct NaClDesc          **baseptr,
@@ -491,10 +486,6 @@ void NaClDeallocAddrRange(uintptr_t addr,
                           size_t    len);
 
 
-int32_t NaClAbiStatHostDescStatXlateCtor(struct nacl_abi_stat    *dst,
-                                         nacl_host_stat_t const  *src);
-
-
 /* default functions for the vtable - return -NACL_ABI_EINVAL */
 void NaClDescDtorNotImplemented(struct NaClDesc  *vself);
 
@@ -504,7 +495,7 @@ uintptr_t NaClDescMapNotImplemented(struct NaClDesc         *vself,
                                     size_t                  len,
                                     int                     prot,
                                     int                     flags,
-                                    nacl_off64_t            offset);
+                                    off_t                   offset);
 int NaClDescUnmapUnsafeNotImplemented(struct NaClDesc         *vself,
                                       struct NaClDescEffector *effp,
                                       void                    *start_addr,
@@ -522,10 +513,10 @@ ssize_t NaClDescWriteNotImplemented(struct NaClDesc         *vself,
                                     struct NaClDescEffector *effp,
                                     void const              *buf,
                                     size_t                  len);
-nacl_off64_t NaClDescSeekNotImplemented(struct NaClDesc          *vself,
-                                        struct NaClDescEffector  *effp,
-                                        nacl_off64_t             offset,
-                                        int                      whence);
+int NaClDescSeekNotImplemented(struct NaClDesc          *vself,
+                               struct NaClDescEffector  *effp,
+                               off_t                    offset,
+                               int                      whence);
 int NaClDescIoctlNotImplemented(struct NaClDesc         *vself,
                                 struct NaClDescEffector *natp,
                                 int                     request,

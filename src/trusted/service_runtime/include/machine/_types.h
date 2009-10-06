@@ -69,9 +69,6 @@ typedef nacl_abi___dev_t nacl_abi_dev_t;
 #define PRIxNACL_DEV NACL_PRI_(x, 64)
 #define PRIXNACL_DEV NACL_PRI_(X, 64)
 
-#define NACL_ABI_DEV_T_MIN ((nacl_abi_dev_t) 1 << 31)
-#define NACL_ABI_DEV_T_MAX (~((nacl_abi_dev_t) 1 << 31))
-
 #ifndef nacl_abi___ino_t_defined
 #define nacl_abi___ino_t_defined
 typedef uint32_t nacl_abi___ino_t;
@@ -86,9 +83,6 @@ typedef nacl_abi___ino_t nacl_abi_ino_t;
 #define PRIuNACL_INO NACL_PRI_(u, 32)
 #define PRIxNACL_INO NACL_PRI_(x, 32)
 #define PRIXNACL_INO NACL_PRI_(X, 32)
-
-#define NACL_ABI_INO_T_MIN ((nacl_abi_ino_t) 0)
-#define NACL_ABI_INO_T_MAX ((nacl_abi_ino_t) -1)
 
 #ifndef nacl_abi___mode_t_defined
 #define nacl_abi___mode_t_defined
@@ -105,9 +99,6 @@ typedef nacl_abi___mode_t nacl_abi_mode_t;
 #define PRIxNACL_MODE NACL_PRI_(x, 32)
 #define PRIXNACL_MODE NACL_PRI_(X, 32)
 
-#define NACL_ABI_MODE_T_MIN ((nacl_abi_mode_t) 0)
-#define NACL_ABI_MODE_T_MAX ((nacl_abi_mode_t) -1)
-
 #ifndef nacl_abi___nlink_t_defined
 #define nacl_abi___nlink_t_defined
 typedef uint32_t nacl_abi___nlink_t;
@@ -122,9 +113,6 @@ typedef nacl_abi___nlink_t nacl_abi_nlink_t;
 #define PRIuNACL_NLINK NACL_PRI_(u, 32)
 #define PRIxNACL_NLINK NACL_PRI_(x, 32)
 #define PRIXNACL_NLINK NACL_PRI_(X, 32)
-
-#define NACL_ABI_NLINK_T_MIN ((nacl_abi_nlink_t) 0)
-#define NACL_ABI_NLINK_T_MAX ((nacl_abi_nlink_t) -1)
 
 #ifndef nacl_abi___uid_t_defined
 #define nacl_abi___uid_t_defined
@@ -141,9 +129,6 @@ typedef nacl_abi___uid_t nacl_abi_uid_t;
 #define PRIxNACL_UID NACL_PRI_(x, 32)
 #define PRIXNACL_UID NACL_PRI_(X, 32)
 
-#define NACL_ABI_UID_T_MIN ((nacl_abi_uid_t) 0)
-#define NACL_ABI_UID_T_MAX ((nacl_abi_uid_t) -1)
-
 #ifndef nacl_abi___gid_t_defined
 #define nacl_abi___gid_t_defined
 typedef uint32_t nacl_abi___gid_t;
@@ -158,9 +143,6 @@ typedef nacl_abi___gid_t nacl_abi_gid_t;
 #define PRIuNACL_GID NACL_PRI_(u, 32)
 #define PRIxNACL_GID NACL_PRI_(x, 32)
 #define PRIXNACL_GID NACL_PRI_(X, 32)
-
-#define NACL_ABI_GID_T_MIN ((nacl_abi_gid_t) 0)
-#define NACL_ABI_GID_T_MAX ((nacl_abi_gid_t) -1)
 
 #ifndef nacl_abi___off_t_defined
 #define nacl_abi___off_t_defined
@@ -177,9 +159,6 @@ typedef nacl_abi__off_t nacl_abi_off_t;
 #define PRIxNACL_OFF NACL_PRI_(x, 32)
 #define PRIXNACL_OFF NACL_PRI_(X, 32)
 
-#define NACL_ABI_OFF_T_MIN ((nacl_abi_off_t) 1 << 31)
-#define NACL_ABI_OFF_T_MAX (~((nacl_abi_off_t) 1 << 31))
-
 #ifndef nacl_abi___blksize_t_defined
 #define nacl_abi___blksize_t_defined
 typedef int32_t nacl_abi___blksize_t;
@@ -192,9 +171,6 @@ typedef nacl_abi___blksize_t nacl_abi_blksize_t;
 #define PRIuNACL_BLKSIZE NACL_PRI_(u, 32)
 #define PRIxNACL_BLKSIZE NACL_PRI_(x, 32)
 #define PRIXNACL_BLKSIZE NACL_PRI_(X, 32)
-
-#define NACL_ABI_BLKSIZE_T_MIN ((nacl_abi_blksize_t) 1 << 31)
-#define NACL_ABI_BLKSIZE_T_MAX (~((nacl_abi_blksize_t) 1 << 31))
 
 #ifndef nacl_abi___blkcnt_t_defined
 #define nacl_abi___blkcnt_t_defined
@@ -209,9 +185,6 @@ typedef nacl_abi___blkcnt_t nacl_abi_blkcnt_t;
 #define PRIxNACL_BLKCNT NACL_PRI_(x, 32)
 #define PRIXNACL_BLKCNT NACL_PRI_(X, 32)
 
-#define NACL_ABI_BLKCNT_T_MIN ((nacl_abi_blkcnt_t) 1 << 31)
-#define NACL_ABI_BLKCNT_T_MAX (~((nacl_abi_blkcnt_t) 1 << 31))
-
 #ifndef nacl_abi___time_t_defined
 #define nacl_abi___time_t_defined
 typedef int32_t       nacl_abi___time_t;
@@ -224,9 +197,6 @@ typedef nacl_abi___time_t nacl_abi_time_t;
 #define PRIuNACL_TIME NACL_PRI_(u, 32)
 #define PRIxNACL_TIME NACL_PRI_(x, 32)
 #define PRIXNACL_TIME NACL_PRI_(X, 32)
-
-#define NACL_ABI_TIME_T_MIN ((nacl_abi_time_t) 1 << 31)
-#define NACL_ABI_TIME_T_MAX (~((nacl_abi_time_t) 1 << 31))
 
 /*
  * stddef.h defines size_t, and we cannot export another definition.
