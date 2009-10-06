@@ -819,7 +819,7 @@ elif linux_env['BUILD_ARCHITECTURE'] == 'arm':
                              os.getenv('ARM_LIB_DIR', '').split()],
                     CCFLAGS=['-march=armv6','-pedantic','-Wall','-Werror'],
 # TODO(robertm): we are missing static libs (rt), enable this ASAP
-#                    LINKFLAGS=os.getenv('ARM_LINKFLAGS', ''),
+                    LINKFLAGS=os.getenv('ARM_LINKFLAGS', ''),
                     )
 
   linux_env.Append(LIBS=['rt', 'dl', 'pthread', 'ssl', 'crypto'])
