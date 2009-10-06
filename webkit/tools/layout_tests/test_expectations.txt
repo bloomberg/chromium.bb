@@ -736,6 +736,7 @@ BUG13907 : LayoutTests/media/video-play-pause-events.html = TIMEOUT PASS
 BUG13907 : LayoutTests/media/video-seek-past-end-playing.html = FAIL
 BUG9798 BUG13907 : LayoutTests/media/video-seeking.html = FAIL PASS
 BUG13907 : LayoutTests/media/video-source-add-src.html = TIMEOUT
+BUG9798 BUG13907 WIN DEBUG : LayoutTests/media/video-source-error.html = FAIL PASS
 BUG9798 BUG13907 : LayoutTests/media/video-src-invalid-remove.html = FAIL PASS
 BUG9798 BUG13907 LINUX DEBUG : LayoutTests/media/video-zoom.html = FAIL PASS
 BUG13907 : LayoutTests/media/video-zoom-controls.html = FAIL
@@ -2465,6 +2466,11 @@ BUG9798 WIN DEBUG : LayoutTests/editing/selection/4776665.html = FAIL PASS
 BUG9798 MAC RELEASE : LayoutTests/editing/selection/4776665.html = FAIL PASS
 BUG9798 WIN : LayoutTests/fast/dom/Window/slow_unload_handler.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/fast/encoding/char-encoding.html = FAIL PASS
+BUG9798 WIN RELEASE : LayoutTests/fast/forms/textarea-setvalue-submit.html = CRASH PASS
+// BUG_SENORBLANCO FAIL on next line is due to Skia roll and should be reverted by end of 10/06/2009
+BUG9798 WIN : LayoutTests/fast/frames/onlyCommentInIFrame.html = CRASH FAIL
+BUG9798 LINUX DEBUG : LayoutTests/fast/frames/frame-limit.html = TIMEOUT PASS
+BUG9798 LINUX RELEASE : LayoutTests/fast/frames/frame-limit.html = CRASH PASS
 BUG9798 WIN DEBUG : LayoutTests/fast/lists/inlineBoxWrapperNullCheck.html = FAIL PASS
 BUG9798 WIN : LayoutTests/fast/replaced/border-radius-clip.html = FAIL PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/loading/preload-img-test.html = TIMEOUT PASS
@@ -2475,7 +2481,7 @@ BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/redirect-with-quotes.php = TIMEO
 BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/refresh-headers.php = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/misc/refresh-headers.php = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/navigation/success200-frames-loadsame.html = TIMEOUT PASS
-BUG9798 MAC RELEASE : LayoutTests/http/tests/security/dataURL/xss-DENIED-from-data-url-in-foreign-domain-subframe.html = TIMEOUT PASS
+BUG9798 WIN LINUX RELEASE : LayoutTests/http/tests/security/dataURL/xss-DENIED-from-data-url-in-foreign-domain-subframe.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-no-quote.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = TIMEOUT PASS
 BUG9798 MAC : LayoutTests/http/tests/xmlhttprequest/basic-auth.html = TIMEOUT PASS
@@ -2503,7 +2509,7 @@ BUG9798 LINUX DEBUG : LayoutTests/transitions/interrupted-all-transition.html = 
 BUG9798 LINUX : LayoutTests/transitions/mask-transitions.html = FAIL PASS
 BUG9798 LINUX DEBUG : LayoutTests/transitions/multiple-background-transitions.html = FAIL PASS
 BUG9798 LINUX DEBUG : LayoutTests/transitions/multiple-shadow-transitions.html = FAIL PASS
-BUG9798 LINUX : LayoutTests/transitions/shorthand-border-transitions.html = FAIL PASS
+BUG9798 LINUX SLOW : LayoutTests/transitions/shorthand-border-transitions.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-all-properties.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-attributes.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-container.html = FAIL PASS
@@ -2666,7 +2672,7 @@ BUG12881 WIN LINUX : LayoutTests/fast/borders/border-radius-constraints.html = F
 BUG12881 WIN LINUX : LayoutTests/fast/borders/border-radius-split-inline.html = FAIL
 
 // WebKit 44286:44342
-BUG13174 WIN DEBUG : LayoutTests/transitions/shorthand-border-transitions.html = PASS FAIL
+BUG13174 WIN RELEASE : LayoutTests/transitions/shorthand-border-transitions.html = PASS FAIL
 
 // WebKit 44438:44544
 BUG13721 LINUX : LayoutTests/fast/dynamic/positioned-movement-with-positioned-children.html = FAIL
@@ -2873,8 +2879,6 @@ BUG_LEVIN WIN : LayoutTests/fast/events/mouse-click-events.html = FAIL
 // Fallout from webkit 47265:47277
 BUG_MBELSHE : LayoutTests/fast/js/Array-isArray.html = FAIL
 
-BUG19519 WIN DEBUG : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL PASS
-
 // WebKit roll r47417:47528
 BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug83786.html = FAIL
 BUG19766 LINUX : LayoutTests/fast/replaced/width100percent-menulist.html = FAIL
@@ -3027,7 +3031,7 @@ BUG_ATWILSON WIN LINUX : LayoutTests/fast/css/text-rendering.html = FAIL
 BUG_ATWILSON WIN LINUX: LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
 // This was happening previously - might be a flakey test?
 BUG_ATWILSON LINUX : LayoutTests/editing/selection/extend-selection.html = TIMEOUT PASS
-BUG_ATWILSON MAC LINUX : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL
+BUG_ATWILSON MAC : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL
 
 // WebKit update: 48994:49006
 BUG_ATWILSON WIN LINUX : LayoutTests/fast/box-shadow/inset.html = FAIL
@@ -3830,7 +3834,6 @@ BUG_SENORBLANCO WIN : LayoutTests/fast/frames/iframe-option-crash.xhtml = FAIL
 BUG_SENORBLANCO WIN : LayoutTests/fast/frames/iframe-scrolling-attribute.html = FAIL
 BUG_SENORBLANCO WIN : LayoutTests/fast/frames/iframe-text-contents.html = FAIL
 BUG_SENORBLANCO WIN : LayoutTests/fast/frames/iframe-with-frameborder.html = FAIL
-BUG_SENORBLANCO WIN : LayoutTests/fast/frames/onlyCommentInIFrame.html = FAIL
 BUG_SENORBLANCO WIN : LayoutTests/fast/frames/viewsource-attribute.html = FAIL
 BUG_SENORBLANCO WIN : LayoutTests/fast/frames/viewsource-on-image-file.html = FAIL
 BUG_SENORBLANCO WIN : LayoutTests/fast/gradients/background-clipped.html = FAIL
@@ -5678,7 +5681,6 @@ BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/encoding-test.html = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/fieldset-align.html = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/fieldset-with-float.html = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/floating-textfield-relayout.html = FAIL
-BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/form-element-geometry.html = FAIL CRASH
 BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/image-border.html = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/input-align.html = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/input-appearance-bkcolor.html = FAIL
@@ -6791,4 +6793,6 @@ BUG_SENORBLANCO LINUX RELEASE : LayoutTests/svg/text/text-tselect-02-f.svg = FAI
 BUG_JPARENT WIN LINUX: LayoutTests/fast/repaint/line-in-scrolled-clipped-block.html = FAIL
 
 // Started failing for no apparent reason at r28124
+// BUG_SENORBLANCO FAIL on next line is due to Skia roll and should be reverted by end of 10/06/2009
+BUG23972 LINUX : LayoutTests/fast/forms/form-element-geometry.html = CRASH FAIL
 BUG23972 WIN : LayoutTests/fast/forms/form-element-geometry.html = CRASH PASS
