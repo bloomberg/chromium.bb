@@ -29,9 +29,22 @@ bool AcceleratorHandler::Dispatch(const MSG& msg) {
                          msg.lParam & 0xFFFF,
                          (msg.lParam & 0xFFFF0000) >> 16);
           process_message = focus_manager->OnKeyEvent(event);
-          // TODO(jcampan): http://crbug.com/23383 We should not translate and
-          //                dispatch the associated WM_KEYUP if process_message
-          //                is true.
+          if (!process_message) {
+            // Record that this key is pressed so we can remember not to
+            // translate and dispatch the associated WM_KEYUP.
+            pressed_keys_.insert(msg.wParam);
+          }
+          break;
+        }
+        case WM_KEYUP:
+        case WM_SYSKEYUP: {
+          std::set<WPARAM>::iterator iter = pressed_keys_.find(msg.wParam);
+          if (iter != pressed_keys_.end()) {
+            // Don't translate/dispatch the KEYUP since we have eaten the
+            // associated KEYDOWN.
+            pressed_keys_.erase(iter);
+            return true;
+          }
           break;
         }
       }
