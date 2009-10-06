@@ -5678,7 +5678,7 @@ BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/encoding-test.html = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/fieldset-align.html = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/fieldset-with-float.html = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/floating-textfield-relayout.html = FAIL
-BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/form-element-geometry.html = FAIL
+BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/form-element-geometry.html = FAIL CRASH
 BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/image-border.html = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/input-align.html = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/input-appearance-bkcolor.html = FAIL
@@ -6791,4 +6791,4 @@ BUG_SENORBLANCO LINUX RELEASE : LayoutTests/svg/text/text-tselect-02-f.svg = FAI
 BUG_JPARENT WIN LINUX: LayoutTests/fast/repaint/line-in-scrolled-clipped-block.html = FAIL
 
 // Started failing for no apparent reason at r28124
-BUG23972 LINUX WIN : LayoutTests/fast/forms/form-element-geometry.html = CRASH PASS
+BUG23972 WIN : LayoutTests/fast/forms/form-element-geometry.html = CRASH PASS
