@@ -8,6 +8,10 @@
 #include "base/string16.h"
 #include "base/gfx/native_widget_types.h"
 
+namespace gfx {
+class Insets;
+}  // namespace gfx
+
 namespace views {
 
 class Textfield;
@@ -59,6 +63,9 @@ class NativeTextfieldWrapper {
 
   // Updates the enabled state of the native text field.
   virtual void UpdateEnabled() = 0;
+
+  // Returns the insets for the text field.
+  virtual gfx::Insets CalculateInsets() = 0;
 
   // Sets the horizontal margins for the native text field.
   virtual void SetHorizontalMargins(int left, int right) = 0;

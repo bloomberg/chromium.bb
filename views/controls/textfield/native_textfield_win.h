@@ -53,6 +53,7 @@ class NativeTextfieldWin
   virtual void UpdateReadOnly();
   virtual void UpdateFont();
   virtual void UpdateEnabled();
+  virtual gfx::Insets CalculateInsets();
   virtual void SetHorizontalMargins(int left, int right);
   virtual void SetFocus();
   virtual View* GetView();

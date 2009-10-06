@@ -82,6 +82,9 @@ void NativeTextfieldGtk::ClearSelection() {
 void NativeTextfieldGtk::UpdateBorder() {
   if (!native_view())
     return;
+
+  if (!textfield_->draw_border())
+    gtk_entry_set_has_frame(GTK_ENTRY(native_view()), false);
 }
 
 void NativeTextfieldGtk::UpdateTextColor() {
@@ -124,6 +127,47 @@ void NativeTextfieldGtk::UpdateEnabled() {
   if (!native_view())
     return;
   SetEnabled(textfield_->IsEnabled());
+}
+
+gfx::Insets NativeTextfieldGtk::CalculateInsets() {
+  if (!native_view())
+    return gfx::Insets();
+
+  GtkWidget* widget = native_view();
+  GtkEntry* entry = GTK_ENTRY(widget);
+  const GtkBorder* inner_border = gtk_entry_get_inner_border(entry);
+  int left = 0, right = 0, top = 0, bottom = 0;
+  if (!inner_border)
+    gtk_widget_style_get(widget, "inner-border", &inner_border, NULL);
+
+  if (inner_border) {
+    left += inner_border->left;
+    right += inner_border->right;
+    top += inner_border->top;
+    bottom += inner_border->bottom;
+  }
+
+  if (entry->has_frame) {
+    left += widget->style->xthickness;
+    right += widget->style->xthickness;
+    top += widget->style->ythickness;
+    bottom += widget->style->ythickness;
+  }
+
+  gboolean interior_focus;
+  gint focus_width;
+  gtk_widget_style_get(widget,
+                       "focus-line-width", &focus_width,
+                       "interior-focus", &interior_focus,
+                       NULL);
+  if (!interior_focus) {
+    left += focus_width;
+    right += focus_width;
+    top += focus_width;
+    bottom += focus_width;
+  }
+
+  return gfx::Insets(top, left, bottom, right);
 }
 
 void NativeTextfieldGtk::SetHorizontalMargins(int left, int right) {

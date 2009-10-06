@@ -181,9 +181,6 @@ class Textfield : public View {
   bool draw_border() const { return draw_border_; }
   void RemoveBorder();
 
-  // Calculates the insets for the text field.
-  void CalculateInsets(gfx::Insets* insets);
-
   // Invoked by the edit control when the value changes. This method set
   // the text_ member variable to the value contained in edit control.
   // This is important because the edit control can be replaced if it has

@@ -205,6 +205,15 @@ void NativeTextfieldWin::UpdateEnabled() {
   SendMessage(m_hWnd, WM_ENABLE, textfield_->IsEnabled(), 0);
 }
 
+gfx::Insets NativeTextfieldWin::CalculateInsets() {
+  // NOTE: One would think GetThemeMargins would return the insets we should
+  // use, but it doesn't. The margins returned by GetThemeMargins are always
+  // 0.
+
+  // This appears to be the insets used by Windows.
+  return gfx::Insets(3, 3, 3, 3);
+}
+
 void NativeTextfieldWin::SetHorizontalMargins(int left, int right) {
   // SendMessage expects the two values to be packed into one using MAKELONG
   // so we truncate to 16 bits if necessary.
@@ -587,7 +596,8 @@ void NativeTextfieldWin::OnMouseMove(UINT keys, const CPoint& point) {
 
 int NativeTextfieldWin::OnNCCalcSize(BOOL w_param, LPARAM l_param) {
   content_insets_.Set(0, 0, 0, 0);
-  textfield_->CalculateInsets(&content_insets_);
+  if (textfield_->draw_border())
+    content_insets_ = CalculateInsets();
   if (w_param) {
     NCCALCSIZE_PARAMS* nc_params =
         reinterpret_cast<NCCALCSIZE_PARAMS*>(l_param);

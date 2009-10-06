@@ -173,20 +173,6 @@ void Textfield::RemoveBorder() {
 }
 
 
-void Textfield::CalculateInsets(gfx::Insets* insets) {
-  DCHECK(insets);
-
-  if (!draw_border_)
-    return;
-
-  // NOTE: One would think GetThemeMargins would return the insets we should
-  // use, but it doesn't. The margins returned by GetThemeMargins are always
-  // 0.
-
-  // This appears to be the insets used by Windows.
-  insets->Set(3, 3, 3, 3);
-}
-
 void Textfield::SyncText() {
   if (native_wrapper_)
     text_ = native_wrapper_->GetText();
@@ -204,7 +190,8 @@ void Textfield::Layout() {
 
 gfx::Size Textfield::GetPreferredSize() {
   gfx::Insets insets;
-  CalculateInsets(&insets);
+  if (draw_border_ && native_wrapper_)
+    insets = native_wrapper_->CalculateInsets();
   return gfx::Size(font_.GetExpectedTextWidth(default_width_in_chars_) +
                        insets.width(),
                    num_lines_ * font_.height() + insets.height());
