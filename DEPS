@@ -37,7 +37,7 @@ deps = {
     "http://pywebsocket.googlecode.com/svn/trunk/src@34",
 
   "src/tools/gyp":
-    "http://gyp.googlecode.com/svn/trunk@676",
+    "http://gyp.googlecode.com/svn/trunk@681",
 
   "src/v8":
     "http://v8.googlecode.com/svn/trunk@2997",
