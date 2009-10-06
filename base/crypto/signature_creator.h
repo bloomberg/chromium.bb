@@ -10,7 +10,7 @@
 #if defined(USE_NSS)
 #include <cryptoht.h>
 #elif defined(OS_MACOSX)
-// TODO(port)
+#include <Security/cssm.h>
 #elif defined(OS_WIN)
 #include <windows.h>
 #include <wincrypt.h>
@@ -48,7 +48,8 @@ class SignatureCreator {
 #if defined(USE_NSS)
   SGNContext* sign_context_;
 #elif defined(OS_MACOSX)
-  // TODO(port)
+  CSSM_CSP_HANDLE csp_handle_;	
+  CSSM_CC_HANDLE sig_handle_;
 #elif defined(OS_WIN)
   HCRYPTHASH hash_object_;
 #endif

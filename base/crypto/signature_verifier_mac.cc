@@ -9,34 +9,6 @@
 #include "base/crypto/cssm_init.h"
 #include "base/logging.h"
 
-namespace {
-
-void* AppMalloc(CSSM_SIZE size, void *alloc_ref) {
-  return malloc(size);
-}
-
-void AppFree(void* mem_ptr, void* alloc_ref) {
-  free(mem_ptr);
-}
-
-void* AppRealloc(void* ptr, CSSM_SIZE size, void* alloc_ref) {
-  return realloc(ptr, size);
-}
-
-void* AppCalloc(uint32 num, CSSM_SIZE size, void* alloc_ref) {
-  return calloc(num, size);
-}
-
-const CSSM_API_MEMORY_FUNCS mem_funcs = {
-  AppMalloc,
-  AppFree,
-  AppRealloc,
-  AppCalloc,
-  NULL
-};
-
-}  // namespace
-
 namespace base {
 
 SignatureVerifier::SignatureVerifier() : csp_handle_(0), sig_handle_(0) {
@@ -44,7 +16,7 @@ SignatureVerifier::SignatureVerifier() : csp_handle_(0), sig_handle_(0) {
 
   static CSSM_VERSION version = {2, 0};
   CSSM_RETURN crtn;
-  crtn = CSSM_ModuleAttach(&gGuidAppleCSP, &version, &mem_funcs, 0,
+  crtn = CSSM_ModuleAttach(&gGuidAppleCSP, &version, &kCssmMemoryFunctions, 0,
                            CSSM_SERVICE_CSP, 0, CSSM_KEY_HIERARCHY_NONE,
                            NULL, 0, NULL, &csp_handle_);
   DCHECK(crtn == CSSM_OK);

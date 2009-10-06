@@ -3,9 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/crypto/cssm_init.h"
-
-#include <Security/cssm.h>
-
 #include "base/logging.h"
 #include "base/singleton.h"
 
@@ -68,5 +65,29 @@ namespace base {
 void EnsureCSSMInit() {
   Singleton<CSSMInitSingleton>::get();
 }
+
+void* CSSMMalloc(CSSM_SIZE size, void *alloc_ref) {
+  return malloc(size);
+}
+
+void CSSMFree(void* mem_ptr, void* alloc_ref) {
+  free(mem_ptr);
+}
+
+void* CSSMRealloc(void* ptr, CSSM_SIZE size, void* alloc_ref) {
+  return realloc(ptr, size);
+}
+
+void* CSSMCalloc(uint32 num, CSSM_SIZE size, void* alloc_ref) {
+  return calloc(num, size);
+}
+
+const CSSM_API_MEMORY_FUNCS kCssmMemoryFunctions = {
+  CSSMMalloc,
+  CSSMFree,
+  CSSMRealloc,
+  CSSMCalloc,
+  NULL
+};
 
 }  // namespace base

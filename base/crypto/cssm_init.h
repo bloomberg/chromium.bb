@@ -5,12 +5,20 @@
 #ifndef BASE_CRYPTO_CSSM_INIT_H_
 #define BASE_CRYPTO_CSSM_INIT_H_
 
+#include <Security/cssm.h>
+
+#include "base/logging.h"
+#include "base/scoped_ptr.h"
+
 namespace base {
 
 // Initialize CSSM if it isn't already initialized.  This must be called before
 // any other CSSM functions.  This function is thread-safe, and CSSM will only
 // ever be initialized once.  CSSM will be properly shut down on program exit.
 void EnsureCSSMInit();
+
+// Set of pointers to memory function wrappers that are required for CSSM
+extern const CSSM_API_MEMORY_FUNCS kCssmMemoryFunctions;
 
 }  // namespace base
 

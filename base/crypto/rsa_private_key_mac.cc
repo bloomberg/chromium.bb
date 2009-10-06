@@ -25,32 +25,6 @@ const uint8 kNullTag = 0x05;
 const uint8 kOctetStringTag = 0x04;
 const uint8 kBitStringTag = 0x03;
 
-// TODO(hawk): Move the App* functions into a shared location,
-// perhaps cssm_init.cc.
-void* AppMalloc(CSSM_SIZE size, void *alloc_ref) {
-  return malloc(size);
-}
-
-void AppFree(void* mem_ptr, void* alloc_ref) {
-  free(mem_ptr);
-}
-
-void* AppRealloc(void* ptr, CSSM_SIZE size, void* alloc_ref) {
-  return realloc(ptr, size);
-}
-
-void* AppCalloc(uint32 num, CSSM_SIZE size, void* alloc_ref) {
-  return calloc(num, size);
-}
-
-const CSSM_API_MEMORY_FUNCS mem_funcs = {
-  AppMalloc,
-  AppFree,
-  AppRealloc,
-  AppCalloc,
-  NULL
-};
-
 // Helper for error handling during key import.
 #define READ_ASSERT(truth) \
   if (!(truth)) { \
@@ -317,7 +291,7 @@ RSAPrivateKey::RSAPrivateKey() : csp_handle_(0) {
 
   static CSSM_VERSION version = {2, 0};
   CSSM_RETURN crtn;
-  crtn = CSSM_ModuleAttach(&gGuidAppleCSP, &version, &mem_funcs, 0,
+  crtn = CSSM_ModuleAttach(&gGuidAppleCSP, &version, &kCssmMemoryFunctions, 0,
                            CSSM_SERVICE_CSP, 0, CSSM_KEY_HIERARCHY_NONE,
                            NULL, 0, NULL, &csp_handle_);
   DCHECK(crtn == CSSM_OK);
