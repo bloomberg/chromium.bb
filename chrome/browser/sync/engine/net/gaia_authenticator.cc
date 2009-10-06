@@ -94,7 +94,8 @@ GaiaAuthenticator::GaiaAuthenticator(const string& user_agent,
       request_count_(0),
       delay_(0),
       next_allowed_auth_attempt_time_(0),
-      early_auth_attempt_count_(0) {
+      early_auth_attempt_count_(0),
+      message_loop_(NULL) {
   GaiaAuthEvent done = { GaiaAuthEvent::GAIA_AUTHENTICATOR_DESTROYED, None,
                          this };
   channel_ = new Channel(done);
