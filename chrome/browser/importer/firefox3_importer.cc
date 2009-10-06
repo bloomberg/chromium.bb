@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/importer/firefox2_importer.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
+#include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/nss_decryptor.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/time_format.h"
@@ -25,17 +26,15 @@ using base::Time;
 using webkit_glue::PasswordForm;
 
 void Firefox3Importer::StartImport(ProfileInfo profile_info,
-                                   uint16 items, ProfileWriter* writer,
-                                   MessageLoop* delagate_loop,
-                                   ImporterHost* host) {
-  writer_ = writer;
+                                   uint16 items,
+                                   ImporterBridge* bridge) {
+  bridge_ = bridge;
   source_path_ = profile_info.source_path;
   app_path_ = profile_info.app_path;
-  importer_host_ = host;
 
 
   // The order here is important!
-  NotifyStarted();
+  bridge_->NotifyStarted();
   if ((items & HOME_PAGE) && !cancelled())
     ImportHomepage();  // Doesn't have a UI item.
 
@@ -43,27 +42,27 @@ void Firefox3Importer::StartImport(ProfileInfo profile_info,
   // will also import favicons and we store favicon for a URL only if the URL
   // exist in history or bookmarks.
   if ((items & HISTORY) && !cancelled()) {
-    NotifyItemStarted(HISTORY);
+    bridge_->NotifyItemStarted(HISTORY);
     ImportHistory();
-    NotifyItemEnded(HISTORY);
+    bridge_->NotifyItemEnded(HISTORY);
   }
 
   if ((items & FAVORITES) && !cancelled()) {
-    NotifyItemStarted(FAVORITES);
+    bridge_->NotifyItemStarted(FAVORITES);
     ImportBookmarks();
-    NotifyItemEnded(FAVORITES);
+    bridge_->NotifyItemEnded(FAVORITES);
   }
   if ((items & SEARCH_ENGINES) && !cancelled()) {
-    NotifyItemStarted(SEARCH_ENGINES);
+    bridge_->NotifyItemStarted(SEARCH_ENGINES);
     ImportSearchEngines();
-    NotifyItemEnded(SEARCH_ENGINES);
+    bridge_->NotifyItemEnded(SEARCH_ENGINES);
   }
   if ((items & PASSWORDS) && !cancelled()) {
-    NotifyItemStarted(PASSWORDS);
+    bridge_->NotifyItemStarted(PASSWORDS);
     ImportPasswords();
-    NotifyItemEnded(PASSWORDS);
+    bridge_->NotifyItemEnded(PASSWORDS);
   }
-  NotifyEnded();
+  bridge_->NotifyEnded();
 }
 
 void Firefox3Importer::ImportHistory() {
@@ -110,8 +109,7 @@ void Firefox3Importer::ImportHistory() {
     rows.push_back(row);
   }
   if (!rows.empty() && !cancelled()) {
-    main_loop_->PostTask(FROM_HERE, NewRunnableMethod(writer_,
-        &ProfileWriter::AddHistoryPage, rows));
+    bridge_->SetHistoryItems(rows);
   }
 }
 
@@ -244,22 +242,22 @@ void Firefox3Importer::ImportBookmarks() {
 
   // Write into profile.
   if (!bookmarks.empty() && !cancelled()) {
-    main_loop_->PostTask(FROM_HERE, NewRunnableMethod(writer_,
-        &ProfileWriter::AddBookmarkEntry, bookmarks,
-        l10n_util::GetString(IDS_BOOKMARK_GROUP_FROM_FIREFOX),
-        import_to_bookmark_bar() ? ProfileWriter::IMPORT_TO_BOOKMARK_BAR : 0));
+    const std::wstring& first_folder_name =
+        l10n_util::GetString(IDS_BOOKMARK_GROUP_FROM_FIREFOX);
+    int options = 0;
+    if (import_to_bookmark_bar())
+      options = ProfileWriter::IMPORT_TO_BOOKMARK_BAR;
+    bridge_->AddBookmarkEntries(bookmarks, first_folder_name, options);
   }
   if (!template_urls.empty() && !cancelled()) {
-    main_loop_->PostTask(FROM_HERE, NewRunnableMethod(writer_,
-        &ProfileWriter::AddKeywords, template_urls, -1, false));
+    bridge_->SetKeywords(template_urls, -1, false);
   } else {
     STLDeleteContainerPointers(template_urls.begin(), template_urls.end());
   }
   if (!favicon_map.empty() && !cancelled()) {
     std::vector<history::ImportedFavIconUsage> favicons;
     LoadFavicons(db.get(), favicon_map, &favicons);
-    main_loop_->PostTask(FROM_HERE, NewRunnableMethod(writer_,
-        &ProfileWriter::AddFavicons, favicons));
+    bridge_->SetFavIcons(favicons);
   }
 }
 
@@ -289,8 +287,7 @@ void Firefox3Importer::ImportPasswords() {
 
   if (!cancelled()) {
     for (size_t i = 0; i < forms.size(); ++i) {
-      main_loop_->PostTask(FROM_HERE, NewRunnableMethod(writer_,
-          &ProfileWriter::AddPasswordForm, forms[i]));
+      bridge_->SetPasswordForm(forms[i]);
     }
   }
 }
@@ -301,16 +298,15 @@ void Firefox3Importer::ImportSearchEngines() {
 
   std::vector<TemplateURL*> search_engines;
   ParseSearchEnginesFromXMLFiles(files, &search_engines);
-  main_loop_->PostTask(FROM_HERE, NewRunnableMethod(writer_,
-      &ProfileWriter::AddKeywords, search_engines,
-      GetFirefoxDefaultSearchEngineIndex(search_engines, source_path_), true));
+  int default_index =
+      GetFirefoxDefaultSearchEngineIndex(search_engines, source_path_);
+  bridge_->SetKeywords(search_engines, default_index, true);
 }
 
 void Firefox3Importer::ImportHomepage() {
-  GURL homepage = GetHomepage(source_path_);
-  if (homepage.is_valid() && !IsDefaultHomepage(homepage, app_path_)) {
-    main_loop_->PostTask(FROM_HERE, NewRunnableMethod(writer_,
-        &ProfileWriter::AddHomepage, homepage));
+  GURL home_page = GetHomepage(source_path_);
+  if (home_page.is_valid() && !IsDefaultHomepage(home_page, app_path_)) {
+    bridge_->AddHomePage(home_page);
   }
 }
 

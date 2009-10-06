@@ -11,6 +11,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/file_test_utils.h"
+#include "chrome/browser/importer/importer_bridge.h"
 #include "testing/platform_test.h"
 
 // In order to test the Safari import functionality effectively, we store a

@@ -16,6 +16,7 @@
 #include "base/string16.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
+#include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/common/sqlite_utils.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
@@ -76,32 +77,30 @@ bool SafariImporter::CanImport(const FilePath& library_dir,
 }
 
 void SafariImporter::StartImport(ProfileInfo profile_info,
-                                 uint16 services_supported, ProfileWriter* writer,
-                                 MessageLoop* delegate_loop,
-                                 ImporterHost* host) {
-  writer_ = writer;
-  importer_host_ = host;
+                                 uint16 services_supported,
+                                 ImporterBridge* bridge) {
+  bridge_ = bridge;
 
   // The order here is important!
-  NotifyStarted();
+  bridge_->NotifyStarted();
   if ((services_supported & HOME_PAGE) && !cancelled())
     ImportHomepage();  // Doesn't have a UI item.
   if ((services_supported & HISTORY) && !cancelled()) {
-    NotifyItemStarted(HISTORY);
+    bridge_->NotifyItemStarted(HISTORY);
     ImportHistory();
-    NotifyItemEnded(HISTORY);
+    bridge_->NotifyItemEnded(HISTORY);
   }
   if ((services_supported & FAVORITES) && !cancelled()) {
-    NotifyItemStarted(FAVORITES);
+    bridge_->NotifyItemStarted(FAVORITES);
     ImportBookmarks();
-    NotifyItemEnded(FAVORITES);
+    bridge_->NotifyItemEnded(FAVORITES);
   }
   if ((services_supported & PASSWORDS) && !cancelled()) {
-    NotifyItemStarted(PASSWORDS);
+    bridge_->NotifyItemStarted(PASSWORDS);
     ImportPasswords();
-    NotifyItemEnded(PASSWORDS);
+    bridge_->NotifyItemEnded(PASSWORDS);
   }
-  NotifyEnded();
+  bridge_->NotifyEnded();
 }
 
 void SafariImporter::ImportBookmarks() {
@@ -110,10 +109,12 @@ void SafariImporter::ImportBookmarks() {
 
   // Write bookmarks into profile.
   if (!bookmarks.empty() && !cancelled()) {
-    main_loop_->PostTask(FROM_HERE, NewRunnableMethod(writer_,
-        &ProfileWriter::AddBookmarkEntry, bookmarks,
-        l10n_util::GetString(IDS_BOOKMARK_GROUP_FROM_SAFARI),
-        import_to_bookmark_bar() ? ProfileWriter::IMPORT_TO_BOOKMARK_BAR : 0));
+    const std::wstring& first_folder_name =
+        l10n_util::GetString(IDS_BOOKMARK_GROUP_FROM_SAFARI);
+    int options = 0;
+    if (import_to_bookmark_bar())
+      options = ProfileWriter::IMPORT_TO_BOOKMARK_BAR;
+    bridge_->AddBookmarkEntries(bookmarks, first_folder_name, options);
   }
 
   // Import favicons.
@@ -124,8 +125,7 @@ void SafariImporter::ImportBookmarks() {
   if (!favicon_map.empty() && !cancelled()) {
     std::vector<history::ImportedFavIconUsage> favicons;
     LoadFaviconData(db.get(), favicon_map, &favicons);
-    main_loop_->PostTask(FROM_HERE, NewRunnableMethod(writer_,
-        &ProfileWriter::AddFavicons, favicons));
+    bridge_->SetFavIcons(favicons);
   }
 }
 
@@ -317,8 +317,7 @@ void SafariImporter::ImportHistory() {
   ParseHistoryItems(&rows);
 
   if (!rows.empty() && !cancelled()) {
-    main_loop_->PostTask(FROM_HERE, NewRunnableMethod(writer_,
-        &ProfileWriter::AddHistoryPage, rows));
+    bridge_->SetHistoryItems(rows);
   }
 }
 
@@ -406,7 +405,6 @@ void SafariImporter::ImportHomepage() {
   string16 hompeage_str = base::SysNSStringToUTF16(homepage_ns.get());
   GURL homepage(hompeage_str);
   if (homepage.is_valid()) {
-    main_loop_->PostTask(FROM_HERE, NewRunnableMethod(writer_,
-        &ProfileWriter::AddHomepage, homepage));
+    bridge_->AddHomePage(homepage);
   }
 }
