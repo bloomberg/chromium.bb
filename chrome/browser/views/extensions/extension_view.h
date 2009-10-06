@@ -44,6 +44,10 @@ class ExtensionView : public views::NativeViewHost {
   void HandleMouseEvent();
   void HandleMouseLeave();
 
+  // Method for the ExtensionHost to notify us when the RenderViewHost has a
+  // connection.
+  void RenderViewCreated();
+
   // Set a custom background for the view. The background will be tiled.
   void SetBackground(const SkBitmap& background);
 

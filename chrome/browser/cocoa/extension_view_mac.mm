@@ -37,7 +37,11 @@ RenderViewHost* ExtensionViewMac::render_view_host() const {
 
 void ExtensionViewMac::SetBackground(const SkBitmap& background) {
   DCHECK(render_widget_host_view_);
-  render_widget_host_view_->SetBackground(background);
+  if (render_view_host()->IsRenderViewLive()) {
+    render_widget_host_view_->SetBackground(background);
+  } else {
+    pending_background_ = background;
+  }
 }
 
 void ExtensionViewMac::UpdatePreferredWidth(int pref_width) {
@@ -53,6 +57,13 @@ void ExtensionViewMac::UpdatePreferredWidth(int pref_width) {
   // RenderWidgetHostViewCocoa overrides setFrame but not setFrameSize.
   [view setFrame:frame];
   [view setNeedsDisplay:YES];
+}
+
+void ExtensionViewMac::RenderViewCreated() {
+  if (!pending_background_.empty()) {
+    render_widget_host_view_->SetBackground(pending_background_);
+    pending_background_.reset();
+  }
 }
 
 void ExtensionViewMac::CreateWidgetHostView() {

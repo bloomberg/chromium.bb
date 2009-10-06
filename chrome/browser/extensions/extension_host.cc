@@ -490,6 +490,9 @@ ViewType::Type ExtensionHost::GetRenderViewType() const {
 }
 
 void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
+  if (view_.get())
+    view_->RenderViewCreated();
+
   // TODO(mpcomplete): This is duplicated in DidNavigate, which means that
   // we'll create 2 EFDs for the first navigation. We should try to find a
   // better way to unify them.

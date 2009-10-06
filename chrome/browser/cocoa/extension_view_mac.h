@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/gfx/native_widget_types.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 class Browser;
 class ExtensionHost;
@@ -43,6 +44,10 @@ class ExtensionViewMac {
   // extension contents.
   void UpdatePreferredWidth(int pref_width);
 
+  // Method for the ExtensionHost to notify us when the RenderViewHost has a
+  // connection.
+  void RenderViewCreated();
+
  private:
   RenderViewHost* render_view_host() const;
 
@@ -58,6 +63,10 @@ class ExtensionViewMac {
   // Created by us, but owned by its |native_view()|. We |release| the
   // rwhv's native view in our destructor, effectively freeing this.
   RenderWidgetHostViewMac* render_widget_host_view_;
+
+  // The background the view should have once it is initialized. This is set
+  // when the view has a custom background, but hasn't been initialized yet.
+  SkBitmap pending_background_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionViewMac);
 };

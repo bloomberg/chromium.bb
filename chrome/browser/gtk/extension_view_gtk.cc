@@ -29,7 +29,11 @@ RenderViewHost* ExtensionViewGtk::render_view_host() const {
 }
 
 void ExtensionViewGtk::SetBackground(const SkBitmap& background) {
-  render_widget_host_view_->SetBackground(background);
+  if (render_view_host()->IsRenderViewLive()) {
+    render_widget_host_view_->SetBackground(background);
+  } else {
+    pending_background_ = background;
+  }
 }
 
 void ExtensionViewGtk::UpdatePreferredWidth(int pref_width) {
@@ -42,4 +46,11 @@ void ExtensionViewGtk::CreateWidgetHostView() {
   render_widget_host_view_->InitAsChild();
 
   extension_host_->CreateRenderViewSoon(render_widget_host_view_);
+}
+
+void ExtensionViewGtk::RenderViewCreated() {
+  if (!pending_background_.empty()) {
+    render_widget_host_view_->SetBackground(pending_background_);
+    pending_background_.reset();
+  }
 }

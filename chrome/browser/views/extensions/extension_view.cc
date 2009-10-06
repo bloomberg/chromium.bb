@@ -95,11 +95,6 @@ void ExtensionView::CreateWidgetHostView() {
 
   host_->CreateRenderViewSoon(view);
   SetVisible(false);
-
-  if (!pending_background_.empty()) {
-    render_view_host()->view()->SetBackground(pending_background_);
-    pending_background_.reset();
-  }
 }
 
 void ExtensionView::ShowIfCompletelyLoaded() {
@@ -108,7 +103,7 @@ void ExtensionView::ShowIfCompletelyLoaded() {
 
   // We wait to show the ExtensionView until it has loaded, and the view has
   // actually been created. These can happen in different orders.
-  if (host_->did_stop_loading() && initialized_) {
+  if (host_->did_stop_loading()) {
     // For toolstrips, also wait until our parent has given us a background.
     if (host_->GetRenderViewType() == ViewType::EXTENSION_TOOLSTRIP &&
         render_view_host()->view()->background().empty()) {
@@ -128,7 +123,7 @@ void ExtensionView::CleanUp() {
 }
 
 void ExtensionView::SetBackground(const SkBitmap& background) {
-  if (initialized_ && render_view_host()->view()) {
+  if (render_view_host()->IsRenderViewLive() && render_view_host()->view()) {
     render_view_host()->view()->SetBackground(background);
   } else {
     pending_background_ = background;
@@ -165,4 +160,11 @@ void ExtensionView::HandleMouseEvent() {
 void ExtensionView::HandleMouseLeave() {
   if (container_)
     container_->OnExtensionMouseLeave(this);
+}
+
+void ExtensionView::RenderViewCreated() {
+  if (!pending_background_.empty()) {
+    render_view_host()->view()->SetBackground(pending_background_);
+    pending_background_.reset();
+  }
 }
