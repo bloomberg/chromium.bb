@@ -2466,7 +2466,7 @@ BUG9798 MAC RELEASE : LayoutTests/editing/selection/4776665.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/editing/selection/5136696.html = FAIL PASS
 BUG9798 WIN : LayoutTests/fast/dom/Window/slow_unload_handler.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/fast/encoding/char-encoding.html = FAIL PASS
-BUG9798 WIN RELEASE : LayoutTests/fast/forms/check-box-enter-key.html = CRASH PASS
+BUG9798 WIN : LayoutTests/fast/forms/check-box-enter-key.html = CRASH PASS
 BUG9798 LINUX DEBUG : LayoutTests/fast/forms/input-align-image.html = FAIL PASS
 BUG9798 WIN RELEASE : LayoutTests/fast/forms/textarea-setvalue-submit.html = CRASH PASS
 // BUG_SENORBLANCO FAIL on next line is due to Skia roll and should be reverted by end of 10/06/2009
@@ -2536,7 +2536,7 @@ BUG9798 LINUX DEBUG : LayoutTests/transitions/transition-end-event-multiple-03.h
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-multiple-04.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-set-none.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/transition-end-event-window.html = FAIL PASS
-BUG9798 LINUX DEBUG : LayoutTests/transitions/transition-timing-function.html = FAIL PASS
+BUG9798 LINUX : LayoutTests/transitions/transition-timing-function.html = FAIL PASS
 
 // New tests or failures from WebKit merge 42324:42364. Re-baselined on
 // Windows. Probably just need the same on other platforms.
@@ -2693,8 +2693,7 @@ BUG13174 WIN RELEASE : LayoutTests/transitions/shorthand-border-transitions.html
 // WebKit 44438:44544
 BUG13721 LINUX : LayoutTests/fast/dynamic/positioned-movement-with-positioned-children.html = FAIL
 
-BUG14207 LINUX : LayoutTests/tables/mozilla/bugs/bug28341.html = PASS FAIL
-BUG14207 WIN : LayoutTests/tables/mozilla/bugs/bug28341.html = PASS FAIL
+BUG14207 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug28341.html = PASS FAIL
 
 // Newly added test http://trac.webkit.org/changeset/44816
 BUG14673 : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-authorization.html = FAIL TIMEOUT
@@ -2869,7 +2868,7 @@ BUG18116 : LayoutTests/fast/dom/prototype-inheritance-2.html = FAIL
 BUG18584 : LayoutTests/animations/change-one-anim.html = FAIL PASS
 BUG18584 LINUX WIN : LayoutTests/animations/play-state.html = FAIL PASS
 BUG18584 : LayoutTests/transitions/shorthand-transitions.html = FAIL PASS
-BUG18584 WIN RELEASE : LayoutTests/animations/combo-transform-translate+scale.html = FAIL PASS
+BUG18584 WIN : LayoutTests/animations/combo-transform-translate+scale.html = FAIL PASS
 
 // Flaky crashes
 BUG18656 MAC : LayoutTests/fast/dom/Window/window-lookup-precedence.html = FAIL CRASH
