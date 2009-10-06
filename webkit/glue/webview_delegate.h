@@ -53,18 +53,6 @@ class WebDevToolsAgentDelegate;
 class WebView;
 struct ContextMenuMediaParams;
 
-// Interface passed in to the WebViewDelegate to receive notification of the
-// result of an open file dialog.
-class WebFileChooserCallback {
- public:
-  WebFileChooserCallback() {}
-  virtual ~WebFileChooserCallback() {}
-  virtual void OnFileChoose(const std::vector<FilePath>& file_names) { }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebFileChooserCallback);
-};
-
 // TODO(darin): Eliminate WebViewDelegate in favor of WebViewClient.
 class WebViewDelegate : public WebKit::WebViewClient {
  public:
@@ -114,17 +102,6 @@ class WebViewDelegate : public WebKit::WebViewClient {
   }
 
   // UIDelegate --------------------------------------------------------------
-
-  // Called to display a file chooser prompt.  The prompt should be pre-
-  // populated with the given initial_filename string.  The WebViewDelegate
-  // will own the WebFileChooserCallback object and is responsible for
-  // freeing it.
-  virtual void RunFileChooser(bool multi_select,
-                              const string16& title,
-                              const FilePath& initial_filename,
-                              WebFileChooserCallback* file_chooser) {
-    delete file_chooser;
-  }
 
   // @abstract Shows a context menu with commands relevant to a specific
   //           element on the current page.

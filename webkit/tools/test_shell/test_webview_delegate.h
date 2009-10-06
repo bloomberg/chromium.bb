@@ -126,6 +126,10 @@ class TestWebViewDelegate : public WebViewDelegate,
   virtual bool isShowingSpellingUI() { return false; }
   virtual void updateSpellingUIWithMisspelledWord(
       const WebKit::WebString& word) {}
+  virtual bool runFileChooser(
+      bool multi_select, const WebKit::WebString& title,
+      const WebKit::WebString& initial_value,
+      WebKit::WebFileChooserCompletion* chooser_completion){ return false; }
   virtual void runModalAlertDialog(
       WebKit::WebFrame* frame, const WebKit::WebString& message);
   virtual bool runModalConfirmDialog(

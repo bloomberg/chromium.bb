@@ -163,10 +163,6 @@ class RenderView : public RenderWidget,
                                       int64 node_id);
   virtual void RemoveStoredAutofillEntry(const std::wstring& field_name,
                                          const std::wstring& text);
-  virtual void RunFileChooser(bool multi_select,
-                              const string16& title,
-                              const FilePath& initial_filename,
-                              WebFileChooserCallback* file_chooser);
   virtual void LoadNavigationErrorPage(
       WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& failed_request,
@@ -244,6 +240,11 @@ class RenderView : public RenderWidget,
   virtual bool isShowingSpellingUI();
   virtual void updateSpellingUIWithMisspelledWord(
       const WebKit::WebString& word);
+  virtual bool runFileChooser(
+      bool multi_select,
+      const WebKit::WebString& title,
+      const WebKit::WebString& initial_value,
+      WebKit::WebFileChooserCompletion* chooser_completion);
   virtual void runModalAlertDialog(
       WebKit::WebFrame* frame, const WebKit::WebString& message);
   virtual bool runModalConfirmDialog(
@@ -841,7 +842,9 @@ class RenderView : public RenderWidget,
   // render views.
   scoped_ptr<DevToolsClient> devtools_client_;
 
-  scoped_ptr<WebFileChooserCallback> file_chooser_;
+  // A pointer to a file chooser completion object. When not empty, file
+  // choosing operation is underway.
+  WebKit::WebFileChooserCompletion* file_chooser_completion_;
 
   int history_back_list_count_;
   int history_forward_list_count_;

@@ -33,6 +33,7 @@
 
 #include "WebDragOperation.h"
 #include "WebEditingAction.h"
+#include "WebFileChooserCompletion.h"
 #include "WebTextAffinity.h"
 #include "WebWidgetClient.h"
 
@@ -153,6 +154,14 @@ namespace WebKit {
 
         // Dialogs -------------------------------------------------------------
 
+        // This method returns immediately after showing the dialog. When the
+        // dialog is closed, it should call the WebFileChooserCompletion to
+        // pass the results of the dialog. Returns false if
+        // WebFileChooseCompletion will never be called.
+        virtual bool runFileChooser(
+            bool multiSelect, const WebString& title,
+            const WebString& initialValue, WebFileChooserCompletion*) = 0;
+
         // Displays a modal alert dialog containing the given message.  Returns
         // once the user dismisses the dialog.
         virtual void runModalAlertDialog(
@@ -179,15 +188,6 @@ namespace WebKit {
         // 'OK' or false otherwise.
         virtual bool runModalBeforeUnloadDialog(
             WebFrame*, const WebString& message) = 0;
-
-        // This method returns immediately after showing the dialog.  When the
-        // dialog is closed, it should call the WebFileChooserCompletion to
-        // pass the results of the dialog.
-        // FIXME hook this up
-        //virtual void runFileChooser(
-        //    bool multiSelect, const WebString& title,
-        //    const WebString& initialValue, WebFileChooserCompletion*) = 0;
-
 
         // UI ------------------------------------------------------------------
 

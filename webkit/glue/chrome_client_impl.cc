@@ -31,6 +31,7 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/api/public/WebConsoleMessage.h"
 #include "webkit/api/public/WebCursorInfo.h"
+#include "webkit/api/public/WebFileChooserCompletion.h"
 #include "webkit/api/public/WebFrameClient.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/api/public/WebKit.h"
@@ -38,7 +39,9 @@
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebTextDirection.h"
 #include "webkit/api/public/WebURLRequest.h"
+#include "webkit/api/public/WebViewClient.h"
 #include "webkit/api/src/NotificationPresenterImpl.h"
+#include "webkit/api/src/WebFileChooserCompletionImpl.h"
 #include "webkit/api/src/WrappedResourceRequest.h"
 #include "webkit/glue/chrome_client_impl.h"
 #include "webkit/glue/glue_util.h"
@@ -53,6 +56,7 @@ using WebCore::PopupItem;
 
 using WebKit::WebConsoleMessage;
 using WebKit::WebCursorInfo;
+using WebKit::WebFileChooserCompletionImpl;
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebNavigationPolicy;
@@ -63,36 +67,9 @@ using WebKit::WebTextDirection;
 using WebKit::WebURL;
 using WebKit::WebURLRequest;
 using WebKit::WebVector;
+using WebKit::WebViewClient;
 using WebKit::WebWidget;
 using WebKit::WrappedResourceRequest;
-
-// Callback class that's given to the WebViewDelegate during a file choose
-// operation.
-class WebFileChooserCallbackImpl : public WebFileChooserCallback {
- public:
-  WebFileChooserCallbackImpl(PassRefPtr<WebCore::FileChooser> file_chooser)
-      : file_chooser_(file_chooser) {
-  }
-
-  virtual void OnFileChoose(const std::vector<FilePath>& file_names) {
-    if (file_names.size() == 1) {
-      file_chooser_->chooseFile(
-          webkit_glue::FilePathStringToString(file_names.front().value()));
-    } else {
-      // This clause handles a case of file_names.size()==0 too.
-      Vector<WebCore::String> paths;
-      for (std::vector<FilePath>::const_iterator filename =
-             file_names.begin(); filename != file_names.end(); ++filename) {
-        paths.append(webkit_glue::FilePathStringToString((*filename).value()));
-      }
-      file_chooser_->chooseFiles(paths);
-    }
-  }
-
- private:
-  RefPtr<WebCore::FileChooser> file_chooser_;
-  DISALLOW_COPY_AND_ASSIGN(WebFileChooserCallbackImpl);
-};
 
 ChromeClientImpl::ChromeClientImpl(WebViewImpl* webview)
     : webview_(webview),
@@ -543,21 +520,27 @@ void ChromeClientImpl::exceededDatabaseQuota(WebCore::Frame* frame,
 }
 
 void ChromeClientImpl::runOpenPanel(WebCore::Frame* frame,
-  PassRefPtr<WebCore::FileChooser> fileChooser) {
-  WebViewDelegate* delegate = webview_->delegate();
-  if (!delegate)
+  PassRefPtr<WebCore::FileChooser> file_chooser) {
+  WebViewClient* client = webview_->client();
+  if (!client)
     return;
 
-  bool multiple_files = fileChooser->allowsMultipleFiles();
+  bool multiple_files = file_chooser->allowsMultipleFiles();
 
-  FilePath suggestion;
-  if (fileChooser->filenames().size() > 0)
-    suggestion = FilePath(
-      webkit_glue::StringToFilePathString(fileChooser->filenames()[0]));
+  WebString suggestion;
+  if (file_chooser->filenames().size() > 0)
+    suggestion = webkit_glue::StringToWebString(file_chooser->filenames()[0]);
 
-  WebFileChooserCallbackImpl* chooser =
-      new WebFileChooserCallbackImpl(fileChooser);
-  delegate->RunFileChooser(multiple_files, string16(), suggestion, chooser);
+  WebFileChooserCompletionImpl* chooser_completion =
+      new WebFileChooserCompletionImpl(file_chooser);
+  bool ok = client->runFileChooser(multiple_files,
+                                   WebString(),
+                                   suggestion,
+                                   chooser_completion);
+  if (!ok) {
+    // Choosing failed, so do callback with an empty list.
+    chooser_completion->didChooseFile(WebVector<WebString>());
+  }
 }
 
 void ChromeClientImpl::popupOpened(PopupContainer* popup_container,

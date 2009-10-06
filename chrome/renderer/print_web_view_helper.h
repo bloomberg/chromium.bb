@@ -183,6 +183,12 @@ class PrintWebViewHelper : public WebViewDelegate {
       WebKit::WebFrame* frame, const WebKit::WebString& message) {
     return true;
   }
+  virtual bool runFileChooser(
+      bool multi_select, const WebKit::WebString& title,
+      const WebKit::WebString& initial_value,
+      WebKit::WebFileChooserCompletion* chooser_completion) {
+    return false;
+  }
   virtual void setStatusText(const WebKit::WebString& text) {}
   virtual void setMouseOverURL(const WebKit::WebURL& url) {}
   virtual void setToolTipText(

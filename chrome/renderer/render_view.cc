@@ -70,6 +70,7 @@
 #include "webkit/api/public/WebScriptSource.h"
 #include "webkit/api/public/WebSecurityOrigin.h"
 #include "webkit/api/public/WebSize.h"
+#include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLError.h"
 #include "webkit/api/public/WebURLRequest.h"
@@ -213,6 +214,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       devtools_agent_(NULL),
       devtools_client_(NULL),
+      file_chooser_completion_(NULL),
       history_back_list_count_(0),
       history_forward_list_count_(0),
       has_unload_listener_(false),
@@ -245,6 +247,10 @@ RenderView::~RenderView() {
        i != image_fetchers_.end(); ++i) {
     delete *i;
   }
+
+  // If file chooser is still waiting for answer, dispatch empty answer.
+  if (file_chooser_completion_)
+    file_chooser_completion_->didChooseFile(WebVector<WebString>());
 
 #if defined(OS_MACOSX)
   // Tell the spellchecker that the document is closed.
@@ -1250,25 +1256,6 @@ uint32 RenderView::GetCPBrowsingContext() {
   return context;
 }
 
-void RenderView::RunFileChooser(bool multi_select,
-                                const string16& title,
-                                const FilePath& default_filename,
-                                WebFileChooserCallback* file_chooser) {
-  if (file_chooser_.get()) {
-    // TODO(brettw): bug 1235154: This should be a synchronous message to deal
-    // with the fact that web pages can programatically trigger this. With the
-    // asnychronous messages, we can get an additional call when one is pending,
-    // which this test is for. For now, we just ignore the additional file
-    // chooser request. WebKit doesn't do anything to expect the callback, so
-    // we can just ignore calling it.
-    delete file_chooser;
-    return;
-  }
-  file_chooser_.reset(file_chooser);
-  Send(new ViewHostMsg_RunFileChooser(routing_id_, multi_select, title,
-                                      default_filename));
-}
-
 void RenderView::AddSearchProvider(const std::string& url) {
   AddGURLSearchProvider(GURL(url),
                         false);  // not autodetected
@@ -1560,6 +1547,27 @@ bool RenderView::isShowingSpellingUI() {
 void RenderView::updateSpellingUIWithMisspelledWord(const WebString& word) {
   Send(new ViewHostMsg_UpdateSpellingPanelWithMisspelledWord(
       routing_id_, UTF16ToWideHack(word)));
+}
+
+bool RenderView::runFileChooser(
+    bool multi_select,
+    const WebKit::WebString& title,
+    const WebKit::WebString& initial_value,
+    WebKit::WebFileChooserCompletion* chooser_completion) {
+  if (file_chooser_completion_) {
+    // TODO(brettw): bug 1235154: This should be a synchronous message to deal
+    // with the fact that web pages can programatically trigger this. With the
+    // asnychronous messages, we can get an additional call when one is pending,
+    // which this test is for. For now, we just ignore the additional file
+    // chooser request. WebKit doesn't do anything to expect the callback, so
+    // we can just ignore calling it.
+    return false;
+  }
+  file_chooser_completion_ = chooser_completion;
+  Send(new ViewHostMsg_RunFileChooser(
+    routing_id_, multi_select, title,
+    webkit_glue::WebStringToFilePath(initial_value)));
+  return true;
 }
 
 void RenderView::runModalAlertDialog(
@@ -2988,11 +2996,17 @@ void RenderView::OnFileChooserResponse(
     const std::vector<FilePath>& file_names) {
   // This could happen if we navigated to a different page before the user
   // closed the chooser.
-  if (!file_chooser_.get())
+  if (!file_chooser_completion_)
     return;
 
-  file_chooser_->OnFileChoose(file_names);
-  file_chooser_.reset();
+  WebKit::WebVector<WebKit::WebString> ws_file_names(file_names.size());
+  for (size_t i = 0; i < file_names.size(); ++i) {
+    ws_file_names[i] = webkit_glue::FilePathToWebString(file_names[i]);
+  }
+
+  file_chooser_completion_->didChooseFile(ws_file_names);
+  // Reset the chooser pointer
+  file_chooser_completion_ = NULL;
 }
 
 void RenderView::OnEnableViewSourceMode() {
