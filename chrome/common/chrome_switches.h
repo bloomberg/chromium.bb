@@ -247,6 +247,7 @@ extern const wchar_t kEnableByteRangeSupport[];
 extern const wchar_t kExplicitlyAllowedPorts[];
 
 extern const wchar_t kActivateOnLaunch[];
+extern const wchar_t kEnableWebSockets[];
 
 extern const wchar_t kEnableExperimentalWebGL[];
 

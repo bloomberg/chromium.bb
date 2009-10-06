@@ -631,4 +631,7 @@ const wchar_t kEnableExperimentalWebGL[]       = L"enable-webgl";
 const wchar_t kEnableDesktopNotifications[]    =
     L"enable-desktop-notifications";
 
+// Enable Web Sockets support.
+const wchar_t kEnableWebSockets[] = L"enable-web-sockets";
+
 }  // namespace switches
