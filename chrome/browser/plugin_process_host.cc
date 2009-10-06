@@ -330,10 +330,15 @@ PluginProcessHost::~PluginProcessHost() {
   }
 #elif defined(OS_MACOSX)
   // If the plugin process crashed but had windows open at the time, make
-  // sure that the menu bar is visible if the browser window is not also in
-  // fullscreen mode.
+  // sure that the menu bar is visible.
+  // TODO: only do this if the browser window is not also in fullscreen mode.
+  // (see http://code.google.com/p/chromium/issues/detail?id=23571)
   if (!plugin_visible_windows_set_.empty()) {
-    SetSystemUIMode(kUIModeNormal, 0);
+    SystemUIMode mode;
+    SystemUIOptions options;
+    GetSystemUIMode(&mode, &options);
+    if (mode != kUIModeNormal)
+      SetSystemUIMode(kUIModeNormal, 0);
   }
 #endif
 }

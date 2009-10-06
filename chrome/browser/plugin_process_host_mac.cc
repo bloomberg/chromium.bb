@@ -34,7 +34,11 @@ void PluginProcessHost::OnPluginShowWindow(uint32 window_id,
 void PluginProcessHost::OnPluginHideWindow(uint32 window_id,
                                            gfx::Rect window_rect) {
   plugin_visible_windows_set_.erase(window_id);
-  SetSystemUIMode(kUIModeNormal, 0);
+  SystemUIMode mode;
+  SystemUIOptions options;
+  GetSystemUIMode(&mode, &options);
+  if (mode != kUIModeNormal)
+    SetSystemUIMode(kUIModeNormal, 0);
 }
 
 void PluginProcessHost::OnPluginDisposeWindow(uint32 window_id,
