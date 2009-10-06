@@ -190,6 +190,7 @@
         '../third_party/skia/src/core/SkBlitBWMaskTemplate.h',
         '../third_party/skia/src/core/SkBlitRow.h',
         '../third_party/skia/src/core/SkBlitRow_D16.cpp',
+        '../third_party/skia/src/core/SkBlitRow_D32.cpp',
         '../third_party/skia/src/core/SkBlitRow_D4444.cpp',
         '../third_party/skia/src/core/SkBlitter.cpp',
         '../third_party/skia/src/core/SkBlitter_4444.cpp',
