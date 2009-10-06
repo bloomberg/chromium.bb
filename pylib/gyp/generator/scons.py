@@ -668,6 +668,7 @@ non_compilable_suffixes = {
         '.mk',
         '.rc',
         '.sigs',
+        '',
     ]),
     'WINDOWS' : set([
         '.h',
