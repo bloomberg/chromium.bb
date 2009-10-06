@@ -543,7 +543,7 @@ int BookmarkBarGtk::GetFirstHiddenBookmark(
 bool BookmarkBarGtk::ShouldBeFloating() {
   return (!IsAlwaysShown() || (window_ && window_->IsFullscreen())) &&
          browser_ && browser_->GetSelectedTabContents() &&
-         browser_->GetSelectedTabContents()->IsBookmarkBarAlwaysVisible();
+         browser_->GetSelectedTabContents()->ShouldShowBookmarkBar();
 }
 
 void BookmarkBarGtk::UpdateFloatingState() {
