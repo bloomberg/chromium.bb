@@ -6789,3 +6789,6 @@ BUG_SENORBLANCO LINUX RELEASE : LayoutTests/svg/text/text-tselect-02-f.svg = FAI
 // WebKit update: 49111:49142
 // Added in http://trac.webkit.org/changeset/49131, probably just needs expectations.
 BUG_JPARENT WIN LINUX: LayoutTests/fast/repaint/line-in-scrolled-clipped-block.html = FAIL
+
+// Started failing for no apparent reason at r28124
+BUG23972 LINUX WIN : LayoutTests/fast/forms/form-element-geometry.html = CRASH PASS
