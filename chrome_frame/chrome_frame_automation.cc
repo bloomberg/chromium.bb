@@ -234,6 +234,8 @@ void ProxyFactory::CreateProxy(ProxyFactory::ProxyCacheEntry* entry,
   // Chrome Frame never wants Chrome to start up with a First Run UI.
   command_line->AppendSwitch(switches::kNoFirstRun);
 
+  command_line->AppendSwitch(switches::kEnableRendererAccessibility);
+
   // Place the profile directory in
   // "<chrome_exe_path>\..\User Data\<profile-name>"
   if (!entry->profile_name.empty()) {

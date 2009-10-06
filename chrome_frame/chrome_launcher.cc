@@ -26,6 +26,7 @@ const wchar_t* kAllowedSwitches[] = {
   switches::kNoFirstRun,
   switches::kUserDataDir,
   switches::kLoadExtension,
+  switches::kEnableRendererAccessibility,
 };
 
 CommandLine* CreateLaunchCommandLine() {
@@ -44,7 +45,7 @@ CommandLine* CreateLaunchCommandLine() {
     if (file_util::PathExists(same_dir_path)) {
       return new CommandLine(same_dir_path.ToWStringHack());
     } else {
-      FilePath servers_path = 
+      FilePath servers_path =
           current_dir.Append(L"servers").Append(kLauncherExeBaseName);
       DCHECK(file_util::PathExists(servers_path)) <<
           "What module is this? It's not in 'servers' or main output dir.";
