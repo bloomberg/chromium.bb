@@ -60,8 +60,8 @@ class ExtensionAPIClientTest : public RenderViewTest {
     ASSERT_TRUE(static_cast<const ListValue*>(&params.b)->Get(0, &args));
 
     JSONReader reader;
-    Value* arg1_value = reader.JsonToValue(arg1, false, false);
-    ASSERT_TRUE(args->Equals(arg1_value)) << js;
+    scoped_ptr<Value> arg1_value(reader.JsonToValue(arg1, false, false));
+    ASSERT_TRUE(args->Equals(arg1_value.get())) << js;
     render_thread_.sink().ClearMessages();
   }
 };
