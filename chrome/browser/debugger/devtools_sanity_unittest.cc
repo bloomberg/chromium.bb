@@ -152,7 +152,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestResourceHeaders) {
 }
 
 // Tests profiler panel.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestProfilerTab) {
+// Flaky: http://code.google.com/p/chromium/issues/detail?id=23768
+// TODO(mnaganov): fix the problem in V8 and roll it out.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestProfilerTab) {
   RunTest("testProfilerTab", kJsPage);
 }
 
