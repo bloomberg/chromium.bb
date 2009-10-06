@@ -367,6 +367,7 @@ size_t InvalidGetAllocatedSize(void* ptr) {
 // Extract interesting stats
 struct TCMallocStats {
   uint64_t system_bytes;        // Bytes alloced from system
+  uint64_t committed_bytes;     // Bytes alloced and committed from system
   uint64_t thread_bytes;        // Bytes in thread caches
   uint64_t central_bytes;       // Bytes in central cache
   uint64_t transfer_bytes;      // Bytes in central transfer cache
@@ -398,6 +399,7 @@ static void ExtractStats(TCMallocStats* r, uint64_t* class_count) {
   { //scope
     SpinLockHolder h(Static::pageheap_lock());
     r->system_bytes = Static::pageheap()->SystemBytes();
+    r->committed_bytes = Static::pageheap()->CommittedBytes();
     r->metadata_bytes = tcmalloc::metadata_system_bytes();
     r->pageheap_bytes = Static::pageheap()->FreeBytes();
   }
@@ -410,6 +412,20 @@ static void DumpStats(TCMalloc_Printer* out, int level) {
   ExtractStats(&stats, (level >= 2 ? class_count : NULL));
 
   static const double MB = 1048576.0;
+
+  const uint64_t bytes_in_use = stats.system_bytes
+                                - stats.pageheap_bytes
+                                - stats.central_bytes
+                                - stats.transfer_bytes
+                                - stats.thread_bytes;
+
+  out->printf("WASTE: %7.1f MB committed but not used\n"
+              "WASTE: %7.1f MB bytes committed, %7.1f MB bytes in use\n"
+              "WASTE: committed/used ratio of %f\n",
+              (stats.committed_bytes - bytes_in_use) / MB,
+              stats.committed_bytes / MB,
+              bytes_in_use / MB,
+              stats.committed_bytes / static_cast<double>(bytes_in_use));
 
   if (level >= 2) {
     out->printf("------------------------------------------------\n");
@@ -435,14 +451,9 @@ static void DumpStats(TCMalloc_Printer* out, int level) {
     DumpSystemAllocatorStats(out);
   }
 
-  const uint64_t bytes_in_use = stats.system_bytes
-                                - stats.pageheap_bytes
-                                - stats.central_bytes
-                                - stats.transfer_bytes
-                                - stats.thread_bytes;
-
   out->printf("------------------------------------------------\n"
               "MALLOC: %12" PRIu64 " (%7.1f MB) Heap size\n"
+              "MALLOC: %12" PRIu64 " (%7.1f MB) Bytes committed\n"
               "MALLOC: %12" PRIu64 " (%7.1f MB) Bytes in use by application\n"
               "MALLOC: %12" PRIu64 " (%7.1f MB) Bytes free in page heap\n"
               "MALLOC: %12" PRIu64 " (%7.1f MB) Bytes free in central cache\n"
@@ -453,6 +464,7 @@ static void DumpStats(TCMalloc_Printer* out, int level) {
               "MALLOC: %12" PRIu64 " (%7.1f MB) Metadata allocated\n"
               "------------------------------------------------\n",
               stats.system_bytes, stats.system_bytes / MB,
+              stats.committed_bytes, stats.committed_bytes / MB,
               bytes_in_use, bytes_in_use / MB,
               stats.pageheap_bytes, stats.pageheap_bytes / MB,
               stats.central_bytes, stats.central_bytes / MB,
@@ -568,6 +580,13 @@ class TCMallocImplementation : public MallocExtension {
       TCMallocStats stats;
       ExtractStats(&stats, NULL);
       *value = stats.system_bytes;
+      return true;
+    }
+
+    if (strcmp(name, "generic.committed_bytes") == 0) {
+      TCMallocStats stats;
+      ExtractStats(&stats, NULL);
+      *value = Static::pageheap()->CommittedBytes();
       return true;
     }
 

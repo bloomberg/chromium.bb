@@ -121,6 +121,8 @@ class PageHeap {
   // Return number of bytes allocated from system
   inline uint64_t SystemBytes() const { return system_bytes_; }
 
+  inline uint64_t CommittedBytes() const { return committed_bytes_; }
+
   // Return number of free bytes in heap
   uint64_t FreeBytes() const {
     return (static_cast<uint64_t>(free_pages_) << kPageShift);
@@ -188,6 +190,9 @@ class PageHeap {
   // Bytes allocated from system
   uint64_t system_bytes_;
 
+  // Bytes committed, always <= system_bytes_.
+  uint64_t committed_bytes_;
+
   bool GrowHeap(Length n);
 
   // REQUIRES: span->length >= n
@@ -219,6 +224,10 @@ class PageHeap {
   // Incrementally release some memory to the system.
   // IncrementalScavenge(n) is called whenever n pages are freed.
   void IncrementalScavenge(Length n);
+
+  // Releases all memory held in the given list's 'normal' freelist and adds
+  // it to the 'released' freelist.
+  void ReleaseFreeList(Span* list, Span* returned);
 
   // Number of pages to deallocate before doing more scavenging
   int64_t scavenge_counter_;
