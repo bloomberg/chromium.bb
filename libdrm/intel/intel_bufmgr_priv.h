@@ -45,8 +45,7 @@ struct _drm_intel_bufmgr {
 	 *
 	 * Buffer objects are not necessarily initially mapped into CPU virtual
 	 * address space or graphics device aperture.  They must be mapped
-	 * using bo_map() to be used by the CPU, and validated for use using
-	 * bo_validate() to be used from the graphics device.
+	 * using bo_map() or drm_intel_gem_bo_map_gtt() to be used by the CPU.
 	 */
 	drm_intel_bo *(*bo_alloc) (drm_intel_bufmgr *bufmgr, const char *name,
 				   unsigned long size, unsigned int alignment);
@@ -67,7 +66,7 @@ struct _drm_intel_bufmgr {
 
 	/**
 	 * Releases a reference on a buffer object, freeing the data if
-	 * rerefences remain.
+	 * no references remain.
 	 */
 	void (*bo_unreference) (drm_intel_bo *bo);
 

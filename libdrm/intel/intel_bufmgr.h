@@ -56,8 +56,9 @@ struct _drm_intel_bo {
 	unsigned long align;
 
 	/**
-	 * Card virtual address (offset from the beginning of the aperture)
-	 * for the object.  Only valid while validated.
+	 * Last seen card virtual address (offset from the beginning of the
+	 * aperture) for the object.  This should be used to fill relocation
+	 * entries when calling drm_intel_bo_emit_reloc()
 	 */
 	unsigned long offset;
 
