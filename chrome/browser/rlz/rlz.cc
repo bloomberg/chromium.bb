@@ -75,8 +75,10 @@ SendFinancialPingFn send_ping = NULL;
 
 template <typename FuncT>
 FuncT WireExport(HMODULE module, const char* export_name) {
+  if (!module)
+    return NULL;
   void* entry_point = ::GetProcAddress(module, export_name);
-  return (module)? reinterpret_cast<FuncT>(entry_point) : NULL;
+  return reinterpret_cast<FuncT>(entry_point);
 }
 
 HMODULE LoadRLZLibraryInternal(int directory_key) {
