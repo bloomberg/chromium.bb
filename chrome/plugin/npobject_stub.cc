@@ -87,7 +87,9 @@ void NPObjectStub::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void NPObjectStub::OnChannelError() {
-  delete this;
+  // If npobject_ is NULLed out, that means a DeleteSoon is happening.
+  if (npobject_)
+    delete this;
 }
 
 void NPObjectStub::OnRelease(IPC::Message* reply_msg) {
