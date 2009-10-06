@@ -601,9 +601,9 @@ class MakefileWriter:
     output = None
     target = spec['target_name']
     if self.type == 'static_library':
-      target = 'lib%s.a' % target
+      target = 'lib%s.a' % (target[:3] == 'lib' and [target[3:]] or [target])[0]
     elif self.type in ('loadable_module', 'shared_library'):
-      target = 'lib%s.so' % target
+      target = 'lib%s.so' % (target[:3] == 'lib' and [target[3:]] or [target])[0]
     elif self.type == 'none':
       target = '%s.stamp' % target
     elif self.type == 'settings':

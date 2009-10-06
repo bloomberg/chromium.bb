@@ -711,7 +711,8 @@ def GypLibrary(env, target, source, *args, **kw):
 
 def GypLoadableModule(env, target, source, *args, **kw):
   source = compilable_files(env, source)
-  result = env.LoadableModule(target, source, *args, **kw)
+  result = env.LoadableModule('$TOP_BUILDDIR/' + str(target), source, *args,
+                              **kw)
   return result
 
 def GypStaticLibrary(env, target, source, *args, **kw):
