@@ -115,7 +115,13 @@ STDMETHODIMP ChromeActiveDocument::DoVerb(LONG verb,
   // (client supports IOleDocumentSite)
   if (doc_site_) {
     switch (verb) {
-    case OLEIVERB_SHOW:
+    case OLEIVERB_SHOW: {
+      ScopedComPtr<IDocHostUIHandler> doc_host_handler;
+      doc_host_handler.QueryFrom(doc_site_);
+      if (doc_host_handler.get()) {
+        doc_host_handler->ShowUI(DOCHOSTUITYPE_BROWSE, this, this, NULL, NULL);
+      }
+    }
     case OLEIVERB_OPEN:
     case OLEIVERB_UIACTIVATE:
       if (!m_bUIActive) {
@@ -736,3 +742,51 @@ bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
 
   return true;
 }
+
+HRESULT ChromeActiveDocument::SetPageFontSize(const GUID* cmd_group_guid,
+                                              DWORD command_id,
+                                              DWORD cmd_exec_opt,
+                                              VARIANT* in_args,
+                                              VARIANT* out_args) {
+  if (!automation_client_.get()) {
+    NOTREACHED() << "Invalid automtion client";
+    return E_FAIL;
+  }
+
+  switch (command_id) {
+    case IDM_BASELINEFONT1:
+      automation_client_->SetPageFontSize(SMALLEST_FONT);
+      break;
+
+    case IDM_BASELINEFONT2:
+      automation_client_->SetPageFontSize(SMALL_FONT);
+      break;
+
+    case IDM_BASELINEFONT3:
+      automation_client_->SetPageFontSize(MEDIUM_FONT);
+      break;
+
+    case IDM_BASELINEFONT4:
+      automation_client_->SetPageFontSize(LARGE_FONT);
+      break;
+
+    case IDM_BASELINEFONT5:
+      automation_client_->SetPageFontSize(LARGEST_FONT);
+      break;
+
+    default:
+      NOTREACHED() << "Invalid font size command: "
+                  << command_id;
+      return E_FAIL;
+  }
+
+  // Forward the command back to IEFrame with group set to
+  // CGID_ExplorerBarDoc. This is probably needed to update the menu state to
+  // indicate that the font size was set. This currently fails with error
+  // 0x80040104.
+  // TODO(iyengar)
+  // Do some investigation into why this Exec call fails.
+  IEExec(&CGID_ExplorerBarDoc, command_id, cmd_exec_opt, NULL, NULL);
+  return S_OK;
+}
+

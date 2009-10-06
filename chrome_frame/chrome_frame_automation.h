@@ -26,6 +26,7 @@
 const unsigned long kCommandExecutionTimeout = 4000;  // NOLINT, 4 seconds
 
 class ProxyFactory;
+enum AutomationPageFontSize;
 
 struct DECLSPEC_NOVTABLE ChromeFrameAutomationProxy {
   virtual bool Send(IPC::Message* msg) = 0;
@@ -275,6 +276,8 @@ class ChromeFrameAutomationClient
 
   // Attaches an existing external tab to this automation client instance.
   void AttachExternalTab(intptr_t external_tab_cookie);
+
+  void SetPageFontSize(enum AutomationPageFontSize);
 
  protected:
   // ChromeFrameAutomationProxy::LaunchDelegate implementation.

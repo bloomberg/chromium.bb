@@ -1109,4 +1109,8 @@ IPC_BEGIN_MESSAGES(Automation)
   //   bool - true if query is successful
   IPC_SYNC_MESSAGE_ROUTED1_2(AutomationMsg_IsWindowMaximized, int, bool, bool)
 
+  IPC_MESSAGE_ROUTED2(AutomationMsg_SetPageFontSize,
+                      int /* tab_handle */,
+                      int /* The font size */)
+
 IPC_END_MESSAGES(Automation)

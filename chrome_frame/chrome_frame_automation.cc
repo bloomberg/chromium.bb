@@ -980,3 +980,16 @@ void ChromeFrameAutomationClient::AttachExternalTab(
 
   external_tab_cookie_ = external_tab_cookie;
 }
+
+void ChromeFrameAutomationClient::SetPageFontSize(
+    enum AutomationPageFontSize font_size) {
+  if (font_size < SMALLEST_FONT ||
+      font_size > LARGEST_FONT) {
+      NOTREACHED() << "Invalid font size specified : "
+                   << font_size;
+      return;
+  }
+
+  Send(new AutomationMsg_SetPageFontSize(0, tab_handle_, font_size));
+}
+

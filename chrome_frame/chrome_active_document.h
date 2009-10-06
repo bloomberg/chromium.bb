@@ -9,6 +9,7 @@
 #include <atlcom.h>
 #include <atlctl.h>
 #include <map>
+#include <mshtmcid.h>
 
 #include "base/scoped_ptr.h"
 #include "base/scoped_comptr_win.h"
@@ -133,6 +134,7 @@ END_MSG_MAP()
 BEGIN_EXEC_COMMAND_MAP(ChromeActiveDocument)
   EXEC_COMMAND_HANDLER_GENERIC(OLECMDID_PRINT, automation_client_->PrintTab())
   EXEC_COMMAND_HANDLER_NO_ARGS(OLECMDID_FIND, OnFindInPage)
+  EXEC_COMMAND_HANDLER_NO_ARGS(IDM_FIND, OnFindInPage)
   EXEC_COMMAND_HANDLER_NO_ARGS(INTERNAL_IE_CONTEXTMENU_VIEWSOURCE, OnViewSource)
   FORWARD_TAB_COMMAND(OLECMDID_SELECTALL, SelectAll)
   FORWARD_TAB_COMMAND(OLECMDID_CUT, Cut)
@@ -141,6 +143,11 @@ BEGIN_EXEC_COMMAND_MAP(ChromeActiveDocument)
   FORWARD_TAB_COMMAND(OLECMDID_REFRESH, ReloadAsync)
   FORWARD_TAB_COMMAND(OLECMDID_STOP, StopAsync)
   EXEC_COMMAND_HANDLER(SBCMDID_MIXEDZONE, OnDetermineSecurityZone)
+  EXEC_COMMAND_HANDLER(IDM_BASELINEFONT1, SetPageFontSize)
+  EXEC_COMMAND_HANDLER(IDM_BASELINEFONT2, SetPageFontSize)
+  EXEC_COMMAND_HANDLER(IDM_BASELINEFONT3, SetPageFontSize)
+  EXEC_COMMAND_HANDLER(IDM_BASELINEFONT4, SetPageFontSize)
+  EXEC_COMMAND_HANDLER(IDM_BASELINEFONT5, SetPageFontSize)
 END_EXEC_COMMAND_MAP()
 
   // IPCs from automation server.
@@ -247,6 +254,13 @@ END_EXEC_COMMAND_MAP()
   // Initiates navigation to the URL passed in.
   // Returns true on success.
   bool LaunchUrl(const std::wstring& url, bool is_new_navigation);
+
+  // Handler to set the page font size in Chrome.
+  HRESULT SetPageFontSize(const GUID* cmd_group_guid,
+                          DWORD command_id,
+                          DWORD cmd_exec_opt,
+                          VARIANT* in_args,
+                          VARIANT* out_args);
 
  protected:
   typedef std::map<int, bool> EnabledCommandsMap;

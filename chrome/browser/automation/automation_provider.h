@@ -299,6 +299,8 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                           gfx::NativeWindow* tab_window,
                           int* tab_handle);
 
+  void OnSetPageFontSize(int tab_handle, int font_size);
+
   void NavigateInExternalTab(
       int handle, const GURL& url,
       AutomationMsg_NavigationResponseValues* status);

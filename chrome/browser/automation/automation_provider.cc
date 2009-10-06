@@ -50,8 +50,10 @@
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/platform_util.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/test/automation/automation_messages.h"
+#include "chrome/test/automation/tab_proxy.h"
 #include "net/proxy/proxy_service.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/url_request/url_request_context.h"
@@ -429,6 +431,7 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(AutomationMsg_ConnectExternalTab, ConnectExternalTab)
 #endif
+    IPC_MESSAGE_HANDLER(AutomationMsg_SetPageFontSize, OnSetPageFontSize)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -1965,6 +1968,30 @@ void AutomationProvider::StopAsync(int tab_handle) {
 
   view->Stop();
 }
+
+void AutomationProvider::OnSetPageFontSize(int tab_handle,
+                                           int font_size) {
+  AutomationPageFontSize automation_font_size =
+      static_cast<AutomationPageFontSize>(font_size);
+
+  if (automation_font_size < SMALLEST_FONT ||
+      automation_font_size > LARGEST_FONT) {
+      DLOG(ERROR) << "Invalid font size specified : "
+                  << font_size;
+      return;
+  }
+
+  if (tab_tracker_->ContainsHandle(tab_handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
+    DCHECK(tab != NULL);
+    if (tab && tab->tab_contents()) {
+      DCHECK(tab->tab_contents()->profile() != NULL);
+      tab->tab_contents()->profile()->GetPrefs()->SetInteger(
+          prefs::kWebKitDefaultFontSize, font_size);
+    }
+  }
+}
+
 
 void AutomationProvider::WaitForBrowserWindowCountToBecome(
     int target_count, IPC::Message* reply_message) {
