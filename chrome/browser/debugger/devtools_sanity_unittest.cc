@@ -127,22 +127,22 @@ class DevToolsSanityTest : public InProcessBrowserTest {
 };
 
 // WebInspector opens.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestHostIsPresent) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestHostIsPresent) {
   RunTest("testHostIsPresent", kSimplePage);
 }
 
 // Tests elements panel basics.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestElementsTreeRoot) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestElementsTreeRoot) {
   RunTest("testElementsTreeRoot", kSimplePage);
 }
 
 // Tests main resource load.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestMainResource) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestMainResource) {
   RunTest("testMainResource", kSimplePage);
 }
 
 // Tests resources panel enabling.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestEnableResourcesTab) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEnableResourcesTab) {
   RunTest("testEnableResourcesTab", kSimplePage);
 }
 
@@ -152,54 +152,54 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestResourceHeaders) {
 }
 
 // Tests profiler panel.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestProfilerTab) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestProfilerTab) {
   RunTest("testProfilerTab", kJsPage);
 }
 
 // Tests scripts panel showing.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestShowScriptsTab) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
 
 // Tests that scripts are not duplicated after Scripts Panel switch.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       DISABLED_TestNoScriptDuplicatesOnPanelSwitch) {
+                       TestNoScriptDuplicatesOnPanelSwitch) {
   RunTest("testNoScriptDuplicatesOnPanelSwitch", kDebuggerTestPage);
 }
 
 // Tests set breakpoint.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestSetBreakpoint) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSetBreakpoint) {
   RunTest("testSetBreakpoint", kDebuggerTestPage);
 }
 
 // Tests eval on call frame.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestEvalOnCallFrame) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalOnCallFrame) {
   RunTest("testEvalOnCallFrame", kDebuggerTestPage);
 }
 
 // Tests step over functionality in the debugger.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestStepOver) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepOver) {
   RunTest("testStepOver", kDebuggerStepTestPage);
 }
 
 // Tests step out functionality in the debugger.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestStepOut) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepOut) {
   RunTest("testStepOut", kDebuggerStepTestPage);
 }
 
 // Tests step in functionality in the debugger.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestStepIn) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepIn) {
   RunTest("testStepIn", kDebuggerStepTestPage);
 }
 
 // Tests that scope can be expanded and contains expected variables.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestExpandScope) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestExpandScope) {
   RunTest("testExpandScope", kDebuggerClosurePage);
 }
 
 // Tests that execution continues automatically when there is a syntax error in
 // script and DevTools are open.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestAutoContinueOnSyntaxError) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestAutoContinueOnSyntaxError) {
   RunTest("testAutoContinueOnSyntaxError", kSyntaxErrorTestPage);
 }
 
@@ -209,17 +209,17 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseInEval) {
 }
 
 // Tests console eval.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestConsoleEval) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleEval) {
   RunTest("testConsoleEval", kConsoleTestPage);
 }
 
 // Tests console log.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestConsoleLog) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleLog) {
   RunTest("testConsoleLog", kConsoleTestPage);
 }
 
 // Tests eval global values.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestEvalGlobal) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalGlobal) {
   RunTest("testEvalGlobal", kEvalTestPage);
 }
 
