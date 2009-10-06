@@ -12,15 +12,21 @@
     'gtestdir': 'testing/gtest/include',
     'jpegdir': 'third_party/libjpeg',
     'nacldir': 'third_party/native_client/googleclient',
-    'nixysadir': 'third_party/nixysa',
-    'npapidir': 'third_party/npapi',
+    'nixysadir': 'o3d/third_party/nixysa',
+    'npapidir': 'o3d/third_party/npapi',
     'pdiffdir': 'third_party/pdiff/files',
     'pngdir': 'third_party/libpng',
     'screenshotsdir': 'o3d_assets/tests/screenshots',
     'seleniumdir': 'third_party/selenium_rc/files',
     'skiadir': 'third_party/skia/include',
     'zlibdir': 'third_party/zlib',
-    'o3d_in_chrome%': 0,
+    # If the DEPS file exists two levels up, then we're in a Chrome tree.
+    'o3d_in_chrome%': '<!(python <(DEPTH)/o3d/build/file_exists.py ../../DEPS)',
+    # We default to building everything only if the assets exist.
+    # (and the teapot is the least likely asset to change).
+    # This is so that chrome developers get a much reduced dependency set.
+    'o3d_developer%': '<!(python <(DEPTH)/o3d/build/file_exists.py '
+                      '../o3d_assets/samples/convert_assets/teapot.zip)',
     'selenium_screenshots%': 0,
   },
   'target_defaults': {
@@ -66,6 +72,7 @@
             'OS_WIN',
             'UNICODE',
             'NACL_WINDOWS',
+            '_X86_',
           ],
           # Disable warning: "'this' : used in base member initialization list."
           'msvs_disabled_warnings': [4355],

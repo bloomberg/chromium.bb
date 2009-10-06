@@ -22,7 +22,7 @@ import os
 
 script_dir = os.path.join(os.path.dirname(__file__))
 third_party = os.path.normpath(
-  os.path.join(script_dir, '..', '..', '..', 'third_party'))
+  os.path.join(script_dir, '..', '..', 'third_party'))
 pythonpath = os.pathsep.join([os.path.join(third_party, 'gflags', 'python'),
                               os.path.join(third_party, 'ply')])
 

@@ -22,7 +22,7 @@ import sys
 
 script_dir = os.path.join(os.path.dirname(sys.argv[0]))
 gflags_dir = os.path.normpath(
-  os.path.join(script_dir, '..', '..', 'third_party', 'gflags', 'python'))
+  os.path.join(script_dir, '..', 'third_party', 'gflags', 'python'))
 sys.path.append(gflags_dir)
 
 import gflags

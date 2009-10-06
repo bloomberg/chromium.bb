@@ -1,0 +1,72 @@
+vars = {
+  "o3d_code_rev": "149",
+}
+
+deps = {
+  "src/o3d/o3d_assets":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/o3d_assets@" + Var("o3d_code_rev"),
+
+  "src/third_party/antlr3":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/antlr3@" + Var("o3d_code_rev"),
+
+  "src/third_party/cg":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/cg@" + Var("o3d_code_rev"),
+
+  "src/third_party/fcollada":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/fcollada@" + Var("o3d_code_rev"),
+
+  "src/third_party/jsdoctoolkit":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/jsdoctoolkit@" + Var("o3d_code_rev"),
+
+  "src/third_party/pdiff":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/pdiff@" + Var("o3d_code_rev"),
+
+  "src/third_party/zip_utils":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/zip_utils@" + Var("o3d_code_rev"),
+
+  "src/third_party/selenium_rc":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/selenium_rc@" + Var("o3d_code_rev"),
+}
+
+deps_os = {
+  "win": {
+    "src/third_party/wix_2_0_4221":
+      "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/wix_2_0_4221@" + Var("o3d_code_rev"),
+  },
+}
+vars = {
+  "o3d_code_rev": "149",
+}
+
+deps = {
+  "src/o3d/o3d_assets":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/o3d_assets@" + Var("o3d_code_rev"),
+
+  "src/third_party/antlr3":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/antlr3@" + Var("o3d_code_rev"),
+
+  "src/third_party/cg":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/cg@" + Var("o3d_code_rev"),
+
+  "src/third_party/fcollada":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/fcollada@" + Var("o3d_code_rev"),
+
+  "src/third_party/jsdoctoolkit":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/jsdoctoolkit@" + Var("o3d_code_rev"),
+
+  "src/third_party/pdiff":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/pdiff@" + Var("o3d_code_rev"),
+
+  "src/third_party/zip_utils":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/zip_utils@" + Var("o3d_code_rev"),
+
+  "src/third_party/selenium_rc":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/selenium_rc@" + Var("o3d_code_rev"),
+}
+
+deps_os = {
+  "win": {
+    "src/third_party/wix_2_0_4221":
+      "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/wix_2_0_4221@" + Var("o3d_code_rev"),
+  },
+}

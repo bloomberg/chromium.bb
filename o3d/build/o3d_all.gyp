@@ -8,7 +8,7 @@
   ],
   'targets': [
     {
-      'target_name': 'All',
+      'target_name': 'O3D_All',
       'type': 'none',
       'dependencies': [
         '../../<(antlrdir)/antlr.gyp:*',
@@ -25,10 +25,10 @@
         '../import/import.gyp:o3dImport',
         '../installer/installer.gyp:installer',
         '../plugin/idl/idl.gyp:o3dPluginIdl',
+        '../plugin/idl/idl.gyp:o3dNpnApi',
         '../plugin/plugin.gyp:npo3dautoplugin',
         '../samples/samples.gyp:*',
         '../tests/selenium/selenium.gyp:*',
-        '../serializer/serializer.gyp:o3dSerializer',
         '../tests/tests.gyp:unit_tests',
         '../utils/utils.gyp:o3dUtils',
       ],
@@ -51,9 +51,3 @@
     },
   ],
 }
-
-# Local Variables:
-# tab-width:2
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=2 shiftwidth=2:

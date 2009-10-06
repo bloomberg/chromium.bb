@@ -2,9 +2,59 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# PLEASE NOTE: This file contains the targets for generating the
+# plugin two different ways -- once as a shared library, and once as a
+# static library.  The static library is only built if we are inside
+# of a Chrome tree, and it gets built with different defined symbols,
+# and without the packaging code on the Mac.  The shared library gets
+# built in an o3d tree, or in a chrome tree when built by an o3d
+# developer (someone who has added the .gclient stanza to include
+# DEPS_chrome).  This results in having two targets in this file which
+# are largely identical, but still significantly different.
+#
+# Please be sure and synchronize these two targets so that we can
+# continue to build both the standalone plugin and the Chrome-embedded
+# plugin.
+
 {
   'variables': {
     'chromium_code': 1,
+    'plugin_sources': [
+      'cross/async_loading.cc',
+      'cross/async_loading.h',
+      'cross/blacklist.cc',
+      'cross/config.h',
+      'cross/config_common.cc',
+      'cross/download_stream.h',
+      'cross/main.cc',
+      'cross/main.h',
+      'cross/main_thread_task_poster.cc',
+      'cross/main_thread_task_poster.h',
+      'cross/marshaling_utils.h',
+      'cross/np_v8_bridge.cc',
+      'cross/np_v8_bridge.h',
+      'cross/out_of_memory.cc',
+      'cross/out_of_memory.h',
+      'cross/plugin_logging.h',
+      'cross/plugin_main.h',
+      'cross/stream_manager.cc',
+      'cross/stream_manager.h',
+      'cross/texture_static_glue.cc',
+    ],
+    'plugin_depends': [
+      '../../<(jpegdir)/libjpeg.gyp:libjpeg',
+      '../../<(pngdir)/libpng.gyp:libpng',
+      '../../<(zlibdir)/zlib.gyp:zlib',
+      '../../base/base.gyp:base',
+      '../../skia/skia.gyp:skia',
+      '../../v8/tools/gyp/v8.gyp:v8',
+      '../core/core.gyp:o3dCore',
+      '../core/core.gyp:o3dCorePlatform',
+      '../import/archive.gyp:o3dArchive',
+      '../utils/utils.gyp:o3dUtils',
+      '../../native_client/src/shared/imc/imc.gyp:google_nacl_imc',
+      'idl/idl.gyp:o3dPluginIdl',
+    ],
   },
   'includes': [
     '../build/common.gypi',
@@ -24,43 +74,15 @@
   },
   'targets': [
     {
+      # This is the shared library version of the plugin.
       'target_name': 'npo3dautoplugin',
-      'type': '<(o3d_main_lib_type)',
+      'type': 'loadable_module',
       'dependencies': [
-        '../../<(jpegdir)/libjpeg.gyp:libjpeg',
-        '../../<(pngdir)/libpng.gyp:libpng',
-        '../../<(zlibdir)/zlib.gyp:zlib',
-        '../../base/base.gyp:base',
-        '../../skia/skia.gyp:skia',
-        '../../v8/tools/gyp/v8.gyp:v8',
-        '../core/core.gyp:o3dCore',
-        '../core/core.gyp:o3dCorePlatform',
-        '../import/archive.gyp:o3dArchive',
-        '../utils/utils.gyp:o3dUtils',
-        '../../native_client/src/shared/imc/imc.gyp:google_nacl_imc',
-        'idl/idl.gyp:o3dPluginIdl',
+        '<@(plugin_depends)',
+        'idl/idl.gyp:o3dNpnApi',
       ],
       'sources': [
-        'cross/async_loading.cc',
-        'cross/async_loading.h',
-        'cross/blacklist.cc',
-        'cross/config.h',
-        'cross/config_common.cc',
-        'cross/download_stream.h',
-        'cross/main.cc',
-        'cross/main.h',
-        'cross/main_thread_task_poster.cc',
-        'cross/main_thread_task_poster.h',
-        'cross/marshaling_utils.h',
-        'cross/np_v8_bridge.cc',
-        'cross/np_v8_bridge.h',
-        'cross/out_of_memory.cc',
-        'cross/out_of_memory.h',
-        'cross/plugin_logging.h',
-        'cross/plugin_main.h',
-        'cross/stream_manager.cc',
-        'cross/stream_manager.h',
-        'cross/texture_static_glue.cc',
+        '<@(plugin_sources)',
       ],
       'conditions' : [
         ['OS != "linux"',
@@ -239,19 +261,156 @@
   'conditions': [
     ['o3d_in_chrome == "True"',
       {
-        'variables': {
-          'o3d_main_lib_type': 'static_library',
-        },
-        'target_defaults': {
-          'defines': [
-            'O3D_INTERNAL_PLUGIN=1',
-          ],
-        },
-      },
-      {
-        'variables': {
-          'o3d_main_lib_type': 'loadable_module',
-        },
+        # Only use the "static_library" plugin target if we're
+        # building in a chrome tree, since we don't need it in an O3D
+        # tree.
+        'targets': [
+          {
+            'target_name': 'o3dPlugin',
+            'type': 'static_library',
+            'dependencies': [
+              '<@(plugin_depends)',
+            ],
+            'sources': [
+              '<@(plugin_sources)',
+            ],
+            'defines':['O3D_INTERNAL_PLUGIN=1'],
+            'conditions' : [
+              ['OS != "linux"',
+                {
+                  'dependencies': [
+                    '../statsreport/statsreport.gyp:o3dStatsReport',
+                    'add_version',
+                    'o3dPluginLogging',
+                  ],
+                },
+              ],
+              ['renderer == "gl"',
+                {
+                  'dependencies': [
+                    '../build/libs.gyp:gl_libs',
+                    '../build/libs.gyp:cg_libs',
+                  ],
+                },
+              ],
+              ['OS == "mac"',
+                {
+                  'mac_bundle': 1,
+                  'product_extension': 'plugin',
+                  'product_name': 'O3D',
+                  'dependencies': [
+                    '../../breakpad/breakpad.gyp:breakpad',
+                  ],
+                  'xcode_settings': {
+                    'INFOPLIST_FILE': '<(SHARED_INTERMEDIATE_DIR)/plugin/Info.plist',
+                  },
+                  'mac_bundle_resources': [
+                    'mac/Resources/English.lproj',
+                  ],
+                  'sources': [
+                    'mac/config_mac.mm',
+                    'mac/main_mac.mm',
+                    'mac/o3d_plugin.r',
+                    'mac/plugin_logging-mac.mm',
+                    'mac/plugin_mac.h',
+                    'mac/plugin_mac.mm',
+                    'mac/graphics_utils_mac.mm',
+                  ],
+                  'mac_framework_dirs': [
+                    '../../<(cgdir)',
+                  ],
+                  'include_dirs': [
+                    '../../breakpad/src/client/mac/Framework',
+                  ],
+                  'defines': [
+                    'XP_MACOSX=1',
+                  ],
+                  'link_settings': {
+                    'libraries': [
+                      '$(SDKROOT)/System/Library/Frameworks/Cocoa.framework',
+                      '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
+                      '$(SDKROOT)/System/Library/Frameworks/AGL.framework',
+                      '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+                      '$(SDKROOT)/System/Library/Frameworks/IOKit.framework',
+                      '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
+                      '$(SDKROOT)/System/Library/Frameworks/QuickTime.framework',
+                      'libbreakpad.a',
+                      'libbreakpad_utilities.a',
+                      '../../third_party/cg/files/mac/Cg.framework',
+                      '../../third_party/glew/files/lib/libMacStaticGLEW.a',
+                    ],
+                  },
+                },
+              ],
+              ['OS == "linux"',
+                {
+                  'sources': [
+                    'linux/main_linux.cc',
+                    'linux/config.cc',
+                  ],
+                  'link_settings': {
+                    'libraries': [
+                      '-lGL',
+                    ],
+                  },
+                  # On Linux, shared library targets aren't copied to the
+                  # product dir automatically.  Filed GYP issue #74 to address this.
+                  # TODO(gspencer): Remove when issue #74 is resolved.
+                  'copies': [
+                    {
+                      'destination': '<(PRODUCT_DIR)',
+                      'files': [
+                        '<(PRODUCT_DIR)/obj/o3d/plugin/<(LIBRARY_PREFIX)<(_target_name)<(SHARED_LIB_SUFFIX)',
+                      ],
+                    },
+                  ],
+                },
+              ],
+              ['OS == "win"',
+                {
+                  'dependencies': [
+                    '../breakpad/breakpad.gyp:o3dBreakpad',
+                  ],
+                  'sources': [
+                    'win/config.cc',
+                    'win/logger_main.cc',
+                    'win/main_win.cc',
+                    'win/o3dPlugin.def',
+                    'win/o3dPlugin.rc',
+                    'win/plugin_logging-win32.cc',
+                    'win/resource.h',
+                    'win/update_lock.cc',
+                    'win/update_lock.h',
+                  ],
+                  'link_settings': {
+                    'libraries': [
+                      '-lrpcrt4.lib',
+                    ],
+                  },
+                },
+              ],
+              ['OS == "win" and renderer == "d3d9"',
+                {
+                  'link_settings': {
+                    'libraries': [
+                      '"$(DXSDK_DIR)/Lib/x86/d3dx9.lib"',
+                      '-ld3d9.lib',
+                    ],
+                  },
+                },
+              ],
+              ['OS == "win" and (renderer == "d3d9" or cb_service == "d3d9")',
+                {
+                  'link_settings': {
+                    'libraries': [
+                      '"$(DXSDK_DIR)/Lib/x86/DxErr.lib"',
+                    ],
+                  },
+                },
+              ],
+            ],
+          },
+        ],
       },
     ],
     ['OS != "linux"',

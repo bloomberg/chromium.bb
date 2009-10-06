@@ -9,7 +9,7 @@
   'variables': {
     'chromium_code': 0,
     'idl_out_path': '<(SHARED_INTERMEDIATE_DIR)/idl_glue',
-    'static_glue_dir': '../../../third_party/nixysa/static_glue/npapi',
+    'static_glue_dir': '../../../<(nixysadir)/static_glue/npapi',
     'idl_files': [
       'archive_request.idl',
       'bitmap.idl',
@@ -117,6 +117,18 @@
   },
   'targets': [
     {
+      # This target is only used when we're not built as part of Chrome,
+      # since chrome has its own implementation of the NPAPI from webkit.
+      'target_name': 'o3dNpnApi',
+      'type': 'static_library',
+      'include_dirs': [
+        '../../../<(npapidir)/include',
+      ],
+      'sources': [
+        '<(static_glue_dir)/npn_api.cc',
+      ],
+    },
+    {
       'target_name': 'o3dPluginIdl',
       'type': 'static_library',
       'dependencies': [
@@ -136,14 +148,10 @@
           'action_name': 'generate_idl',
           'process_outputs_as_sources': 1,
           'inputs': [
-            '../../../<(nixysadir)/codegen.py',
-            'codegen.py',
             '<@(idl_files)',
           ],
           'outputs': [
-            # TODO(bradnelson): fix gyp to be able to handle outputs without
-            # and extension on linux.
-            #'<(idl_out_path)/hash',
+            '<(idl_out_path)/hash',
             '<(idl_out_path)/globals_glue.cc',
             '<(idl_out_path)/globals_glue.h',
             '<!@(python idl_filenames.py \'<(idl_out_path)\' <@(idl_files))',
@@ -165,7 +173,6 @@
         '../cross/o3d_glue.cc',
         '../cross/o3d_glue.h',
         '<(static_glue_dir)/common.cc',
-        '<(static_glue_dir)/npn_api.cc',
         '<(static_glue_dir)/static_object.cc',
       ],
     },

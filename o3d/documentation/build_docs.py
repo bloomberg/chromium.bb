@@ -46,6 +46,7 @@ import re
 _java_exe = ''
 _output_dir = ''
 _third_party_dir = ''
+_o3d_third_party_dir = ''
 _script_path = os.path.dirname(os.path.realpath(__file__))
 _js_copyright = """
 /*
@@ -171,7 +172,7 @@ def RunNixysa(idl_files, generate, output_dir, nixysa_options):
   """Executes Nixysa."""
   Execute([
     sys.executable,
-    MakePath(_third_party_dir, 'nixysa', 'codegen.py'),
+    MakePath(_o3d_third_party_dir, 'nixysa', 'codegen.py'),
     '--binding-module=o3d:%s' % MakePath('..', 'plugin', 'o3d_binding.py'),
     '--generate=' + generate,
     '--force',
@@ -331,10 +332,13 @@ def main(argv):
   _java_exe = argv[0]
   global _third_party_dir
   _third_party_dir = argv[1]
+  global _o3d_third_party_dir
+  _o3d_third_party_dir = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), '..', 'third_party'))
 
   # Fix up the python path of subprocesses by setting PYTHONPATH.
-  pythonpath = os.pathsep.join([MakePath(_third_party_dir, 'gflags', 'python'),
-                                MakePath(_third_party_dir, 'ply')])
+  pythonpath = os.pathsep.join([MakePath(_o3d_third_party_dir, 'gflags', 'python'),
+                                MakePath(_o3d_third_party_dir, 'ply')])
 
   orig_pythonpath = os.environ.get('PYTHONPATH')
   if orig_pythonpath:

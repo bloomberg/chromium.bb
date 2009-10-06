@@ -41,14 +41,28 @@ deps = {
   "third_party/scons":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/scons@" + Var("o3d_code_rev"),
 
-  "third_party/vectormath":
-    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/vectormath@" + Var("o3d_code_rev"),
-
   "third_party/zip_utils":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/zip_utils@" + Var("o3d_code_rev"),
 
   "third_party/selenium_rc":
     "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/selenium_rc@" + Var("o3d_code_rev"),
+
+# Stuff that is O3D specific (from a Chrome point of view).
+
+  "o3d/third_party/vectormath":
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/vectormath@" + Var("o3d_code_rev"),
+
+  "o3d/third_party/nixysa":
+    "http://nixysa.googlecode.com/svn/trunk/nixysa@" + Var("nixysa_rev"),
+
+  "o3d/third_party/npapi":
+    "http://nixysa.googlecode.com/svn/trunk/third_party/npapi@" + Var("nixysa_rev"),
+
+  "o3d/third_party/ply":
+    "http://nixysa.googlecode.com/svn/trunk/third_party/ply-3.1@" + Var("nixysa_rev"),
+
+  "o3d/third_party/gflags":
+    "http://google-gflags.googlecode.com/svn/trunk@" + Var("gflags_rev"),
 
 # Stuff from the Chromium tree.
 
@@ -97,18 +111,6 @@ deps = {
   "breakpad/src":
     "http://google-breakpad.googlecode.com/svn/trunk/src@" + Var("breakpad_rev"),
 
-  "third_party/nixysa":
-    "http://nixysa.googlecode.com/svn/trunk/nixysa@" + Var("nixysa_rev"),
-
-  "third_party/npapi":
-    "http://nixysa.googlecode.com/svn/trunk/third_party/npapi@" + Var("nixysa_rev"),
-
-  "third_party/ply":
-    "http://nixysa.googlecode.com/svn/trunk/third_party/ply-3.1@" + Var("nixysa_rev"),
-
-  "third_party/gflags":
-    "http://google-gflags.googlecode.com/svn/trunk@" + Var("gflags_rev"),
-
   "testing/gtest":
     "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),
 
@@ -155,6 +157,6 @@ hooks = [
   {
     # A change to a .gyp, .gypi, or to GYP itself should run the generator.
     "pattern": "\\.gypi?$|[/\\\\]src[/\\\\]tools[/\\\\]gyp[/\\\\]|[/\\\\]src[/\\\\]o3d[/\\\\]build[/\\\\]gyp_o3d$|MANIFEST$",
-    "action": ["python", "o3d/build/gyp_o3d", "o3d/build/all.gyp"],
+    "action": ["python", "o3d/build/gyp_o3d", "o3d/build/o3d.gyp"],
   },
 ]

@@ -55,15 +55,15 @@
 #include "third_party/nixysa/static_glue/npapi/common.h"
 #include "third_party/nixysa/static_glue/npapi/npn_api.h"
 
-#if defined(O3D_INTERNAL_PLUGIN)
-#define HANDLE_CRASHES void(0)
-#else  // O3D_INTERNAL_PLUGIN
-
 #if defined(OS_LINUX)
 #define EXPORT_SYMBOL __attribute__((visibility ("default")))
 #else
 #define EXPORT_SYMBOL
 #endif
+
+#if defined(O3D_INTERNAL_PLUGIN)
+#define HANDLE_CRASHES void(0)
+#else  // O3D_INTERNAL_PLUGIN
 
 extern ExceptionManager *g_exception_manager;
 

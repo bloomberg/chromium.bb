@@ -8,7 +8,7 @@ import subprocess
 script_dir = os.path.normpath(os.path.dirname(os.path.abspath(__file__)))
 o3d_dir = os.path.dirname(os.path.dirname(script_dir))
 src_dir = os.path.dirname(o3d_dir)
-third_party_dir = os.path.join(src_dir, 'third_party')
+third_party_dir = os.path.join(o3d_dir, 'third_party')
 internal_dir = os.path.join(src_dir, 'o3d-internal')
 gflags_dir = os.path.join(third_party_dir, 'gflags', 'python')
 sys.path.append(gflags_dir)
