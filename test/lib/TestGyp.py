@@ -255,7 +255,7 @@ class TestGypMake(TestGypBase):
     Runs an executable built by Make.
     """
     configuration = self.configuration or 'Default'
-    os.environ['LD_LIBRARY_PATH'] = os.path.join(configuration, 'lib')
+    os.environ['LD_LIBRARY_PATH'] = os.path.join('out', configuration, 'lib')
     # Enclosing the name in a list avoids prepending the original dir.
     program = [os.path.join('out', configuration, name)]
     return self.run(program=program, *args, **kw)
