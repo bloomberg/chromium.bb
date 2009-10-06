@@ -1,0 +1,15 @@
+{
+  "name": "Browser action test",
+  "description": "This extension adds a Gmail button to the toolbar which notifies when new email comes",
+  "version": "1.0",
+  "background_page": "background.html",
+  "permissions": [
+    "tabs", "http://*.google.com/", "https://*.google.com/"
+   ],
+  "browser_action": {
+      "name": "Gmail",
+      "icons": ["gmail_not_logged_in.png",
+                "gmail_logged_in.png",
+                "gmail_whiteout.png"]
+  }
+}

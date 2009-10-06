@@ -1,0 +1,136 @@
+<html>
+<head>
+<script>
+var gmail = "http://mail.google.com/";
+var gmailAtomRef = "http://mail.google.com/mail/feed/atom";
+var pollInterval = 1000 * 10;  // 10 seconds
+var requestTimeout = 1000 * 2;  // 5 seconds
+var unreadCount = 0;
+var defaultIconId = 1;
+var whiteoutIconId = 2;
+var numberOfBlinks = 0;
+
+function init() {
+  window.setTimeout(startRequest, 0);
+}
+
+function scheduleRequest() {
+  window.setTimeout(startRequest, pollInterval);
+}
+
+// ajax stuff
+function startRequest() {
+  getInboxCount(
+    function(count) {
+      updateUnreadCount(count);
+      scheduleRequest();
+    },
+    function() {
+      scheduleRequest();
+    }
+  );
+}
+
+function getInboxCount(onSuccess, onError) {
+  var xhr = new XMLHttpRequest();
+  var abortTimerId = window.setTimeout(function() {
+    xhr.abort();
+    onError();
+  }, requestTimeout);
+
+  function handleSuccess(count) {
+    window.clearTimeout(abortTimerId);
+    onSuccess(count);
+  }
+
+  function handleError() {
+    window.clearTimeout(abortTimerId);
+    onError();
+  }
+
+  try {
+    console.log("request..");
+    xhr.onreadystatechange = function(){
+      console.log("readystate: " + xhr.readyState);
+      if (xhr.readyState == 4) {
+        console.log("responseText: " + xhr.responseText.substring(0, 200) +
+                    "...");
+        if (xhr.responseXML) {
+          var xmlDoc = xhr.responseXML;
+          var fullCountSet = xmlDoc.evaluate("/gmail:feed/gmail:fullcount",
+              xmlDoc, gmailNSResolver, XPathResult.ANY_TYPE, null);
+          var fullCountNode = fullCountSet.iterateNext();
+          if (fullCountNode) {
+            handleSuccess(fullCountNode.textContent);
+          } else {
+            console.log("fullcount not found!");
+            console.error("Error: feed retrieved, but no <fullcount> node " +
+                          "found");
+            handleError();
+          }
+        } else {
+          console.log("No responseXML!");
+        }
+      }
+    }
+
+    xhr.onerror = function(error) {
+      console.log("error");
+      console.log(error);
+      handleError();
+    }
+
+    xhr.open("GET", gmailAtomRef, true);
+    xhr.send(null);
+  } catch(e) {
+    console.log("ex: " + e);
+    console.error("exception: " + e);
+    handleError();
+  }
+}
+
+function gmailNSResolver(prefix) {
+  if(prefix == 'gmail') {
+    return 'http://purl.org/atom/ns#';
+  }
+}
+
+function updateUnreadCount(count) {
+  if (unreadCount != count) {
+    unreadCount = count;
+    startBlink();
+  }
+}
+
+function startBlink() {
+  chrome.browserAction.setIcon(defaultIconId);
+  if (numberOfBlinks < 2) {
+    setTimeout(doWhiteout, 200);
+    numberOfBlinks = numberOfBlinks + 1;
+  } else {
+    numberOfBlinks = 0;
+    chrome.browserAction.setBadgeText(unreadCount);
+    chrome.browserAction.setName(unreadCount + " unread emails");
+  }
+}
+
+function doWhiteout() {
+  chrome.browserAction.setIcon(whiteoutIconId);
+  setTimeout(startBlink, 200);
+}
+
+function goToInbox() {
+  chrome.tabs.create({url: gmail});
+}
+
+// Called when the user clicks on the browser action.
+chrome.browserAction.onClicked.addListener(function(windowId) {
+  goToInbox();
+});
+
+</script>
+</head>
+<body onload="init()">
+</body>
+</html>
+
