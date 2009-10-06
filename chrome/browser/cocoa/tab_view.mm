@@ -253,7 +253,7 @@ static const CGFloat kRapidCloseDist = 2.5;
     NSEventType type = [theEvent type];
     if (type == NSLeftMouseDragged) {
       [self mouseDragged:theEvent];
-    } else { // Mouse Up
+    } else if (type == NSLeftMouseUp) {
       NSPoint upLocation = [theEvent locationInWindow];
       CGFloat dx = upLocation.x - downLocation.x;
       CGFloat dy = upLocation.y - downLocation.y;
@@ -274,6 +274,12 @@ static const CGFloat kRapidCloseDist = 2.5;
 
       [self mouseUp:theEvent];
       break;
+    } else {
+      // TODO(viettrungluu): [crbug.com/23830] We can receive right-mouse-ups
+      // (and maybe even others?) for reasons I don't understand. So we
+      // explicitly check for both events we're expecting, and log others. We
+      // should figure out what's going on.
+      LOG(WARNING) << "Spurious event received of type " << type << ".";
     }
   }
 }

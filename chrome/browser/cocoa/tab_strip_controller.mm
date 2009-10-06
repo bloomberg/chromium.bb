@@ -631,6 +631,12 @@ static const float kIndentLeavingSpaceForControls = 64.0;
   NSView* tab = [self viewAtIndex:index];
   [tab removeFromSuperview];
 
+  // Clear the tab controller's target.
+  // TODO(viettrungluu): [crbug.com/23829] Find a better way to handle the tab
+  // controller's target.
+  TabController* tabController = [tabArray_ objectAtIndex:index];
+  [tabController setTarget:nil];
+
   if ([hoveredTab_ isEqual:tab]) {
     hoveredTab_ = nil;
   }
