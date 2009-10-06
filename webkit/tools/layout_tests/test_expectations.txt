@@ -2379,7 +2379,6 @@ BUG10458 LINUX : LayoutTests/fast/parser/comment-in-textarea.html = FAIL
 BUG10461 SKIP : LayoutTests/platform/mac/fast/text/international/Geeza-Pro-vertical-metrics-adjustment.html = PASS
 
 // New failures from merge
-BUG10463 WIN LINUX : LayoutTests/editing/selection/hit-test-anonymous.html = FAIL
 BUG10463 WIN LINUX : LayoutTests/fast/forms/listbox-hit-test-zoomed.html = FAIL
 BUG10463 WIN LINUX : LayoutTests/fast/forms/slider-zoomed.html = FAIL
 
@@ -2453,7 +2452,7 @@ BUG10479 RELEASE MAC : LayoutTests/fast/dom/Window/window-object-cross-frame-cal
 BUG10479 MAC : LayoutTests/svg/hixie/perf/001.xml = FAIL
 BUG10479 MAC : LayoutTests/svg/hixie/perf/002.xml = FAIL
 
-BUG9798 WIN RELEASE : LayoutTests/fast/dom/Window/slow_unload_handler.html = TIMEOUT PASS
+BUG9798 WIN : LayoutTests/fast/dom/Window/slow_unload_handler.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/fast/encoding/char-encoding.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/fast/lists/inlineBoxWrapperNullCheck.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/redirect-with-quotes.php = TIMEOUT PASS
@@ -3029,3 +3028,7 @@ BUG_ATWILSON MAC LINUX : LayoutTests/fast/css/last-of-type-pseudo-class.html = F
 
 // WebKit update: 48994:49006
 BUG_ATWILSON WIN LINUX : LayoutTests/fast/box-shadow/inset.html = FAIL
+
+// WebKit update: 49111:49142
+// Added in http://trac.webkit.org/changeset/49131, probably just needs expectations.
+BUG_JPARENT WIN LINUX: LayoutTests/fast/repaint/line-in-scrolled-clipped-block.html = FAIL
