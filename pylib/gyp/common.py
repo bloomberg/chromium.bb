@@ -50,14 +50,9 @@ def RelativePath(path, relative_to):
   # directory, returns a relative path that identifies path relative to
   # relative_to.
 
-  if os.path.isabs(path) != os.path.isabs(relative_to):
-    # If one of the paths is absolute, both need to be absolute.
-    path = os.path.abspath(path)
-    relative_to = os.path.abspath(relative_to)
-  else:
-    # If both paths are relative, make sure they're normalized.
-    path = os.path.normpath(path)
-    relative_to = os.path.normpath(relative_to)
+  # Convert to absolute (and therefore normalized paths).
+  path = os.path.abspath(path)
+  relative_to = os.path.abspath(relative_to)
 
   # Split the paths into components.  As a special case, if either path is
   # the current directory, use an empty list as a split-up path.  This must be
