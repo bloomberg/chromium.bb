@@ -859,20 +859,6 @@ class AppCacheUpdateJobTest : public testing::Test,
       }
       if (expect_newest_cache_)
         EXPECT_EQ(expect_newest_cache_, group_->newest_complete_cache());
-      switch (tested_manifest_) {
-        case MANIFEST1:
-          VerifyManifest1(group_->newest_complete_cache());
-          break;
-        case MANIFEST_MERGED_TYPES:
-          VerifyManifestMergedTypes(group_->newest_complete_cache());
-          break;
-        case EMPTY_MANIFEST:
-          VerifyEmptyManifest(group_->newest_complete_cache());
-          break;
-        case NONE:
-        default:
-          break;
-      }
     } else {
       EXPECT_TRUE(group_->newest_complete_cache() == NULL);
     }
@@ -900,6 +886,23 @@ class AppCacheUpdateJobTest : public testing::Test,
               actual_ids.end());
         }
       }
+    }
+
+    // Verify expected cache contents last as some checks are asserts
+    // and will abort the test if they fail.
+    switch (tested_manifest_) {
+      case MANIFEST1:
+        VerifyManifest1(group_->newest_complete_cache());
+        break;
+      case MANIFEST_MERGED_TYPES:
+        VerifyManifestMergedTypes(group_->newest_complete_cache());
+        break;
+      case EMPTY_MANIFEST:
+        VerifyEmptyManifest(group_->newest_complete_cache());
+        break;
+      case NONE:
+      default:
+        break;
     }
   }
 
@@ -1145,11 +1148,11 @@ TEST_F(AppCacheUpdateJobTest, BasicCacheAttemptSuccess) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::BasicCacheAttemptSuccessTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, DISABLED_BasicUpgradeSuccess) {
+TEST_F(AppCacheUpdateJobTest, BasicUpgradeSuccess) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::BasicUpgradeSuccessTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, DISABLED_UpgradeSuccessMergedTypes) {
+TEST_F(AppCacheUpdateJobTest, UpgradeSuccessMergedTypes) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeSuccessMergedTypesTest);
 }
 
@@ -1165,7 +1168,7 @@ TEST_F(AppCacheUpdateJobTest, UpgradeFailMasterUrlFetch) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::UpgradeFailMasterUrlFetchTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, DISABLED_EmptyManifest) {
+TEST_F(AppCacheUpdateJobTest, EmptyManifest) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::EmptyManifestTest);
 }
 

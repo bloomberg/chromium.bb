@@ -337,7 +337,7 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLRequest* request) {
     // whose value doesn't match the manifest url of the application cache
     // being processed, mark the entry as being foreign.
   } else {
-    LOG(INFO) << "Request status: " << request->status().status()
+    LOG(ERROR) << "Request status: " << request->status().status()
         << " os_error: " << request->status().os_error()
         << " response code: " << response_code;
 
@@ -403,7 +403,7 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLRequest* request) {
     DeleteSoon();
     // TODO(jennb): end of part that needs to be made async.
   } else {
-    LOG(INFO) << "Request status: " << request->status().status()
+    LOG(ERROR) << "Request status: " << request->status().status()
         << " os_error: " << request->status().os_error()
         << " response code: " << response_code;
     ScheduleUpdateRetry(kRerunDelayMs);

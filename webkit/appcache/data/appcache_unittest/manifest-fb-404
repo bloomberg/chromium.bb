@@ -1,7 +1,7 @@
 CACHE MANIFEST
 explicit1
 FALLBACK:
-fallback404 fallback-404
 fallback1 fallback1a
+fallback404 fallback-404
 NETWORK:
 online1

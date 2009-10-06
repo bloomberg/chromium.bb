@@ -75,18 +75,38 @@ TEST(AppCacheGroupTest, AddRemoveCache) {
   group->AddCache(cache3);
   EXPECT_EQ(cache3, group->newest_complete_cache());
 
+  // Adding cache with same update time uses one with larger ID.
+  AppCache* cache4 = new AppCache(&service, 444);
+  cache4->set_complete(true);
+  cache4->set_update_time(ticks + base::TimeDelta::FromDays(1)); // same as 3
+  cache4->set_owning_group(group);
+  group->AddCache(cache4);
+  EXPECT_EQ(cache4, group->newest_complete_cache());
+
+  AppCache* cache5 = new AppCache(&service, 55);  // smaller id
+  cache5->set_complete(true);
+  cache5->set_update_time(ticks + base::TimeDelta::FromDays(1)); // same as 4
+  cache5->set_owning_group(group);
+  group->AddCache(cache5);
+  EXPECT_EQ(cache4, group->newest_complete_cache());  // no change
+
   // Old caches can always be removed.
   EXPECT_TRUE(group->RemoveCache(cache1));
-  EXPECT_EQ(cache3, group->newest_complete_cache());  // newest unchanged
+  EXPECT_EQ(cache4, group->newest_complete_cache());  // newest unchanged
 
   // Cannot remove newest cache if there are older caches.
-  EXPECT_FALSE(group->RemoveCache(cache3));
-  EXPECT_EQ(cache3, group->newest_complete_cache());  // newest unchanged
+  EXPECT_FALSE(group->RemoveCache(cache4));
+  EXPECT_EQ(cache4, group->newest_complete_cache());  // newest unchanged
 
   // Can remove newest cache after all older caches are removed.
   EXPECT_TRUE(group->RemoveCache(cache2));
-  EXPECT_EQ(cache3, group->newest_complete_cache());  // newest unchanged
+  EXPECT_EQ(cache4, group->newest_complete_cache());  // newest unchanged
   EXPECT_TRUE(group->RemoveCache(cache3));
+  EXPECT_EQ(cache4, group->newest_complete_cache());  // newest unchanged
+  EXPECT_TRUE(group->RemoveCache(cache5));
+  EXPECT_EQ(cache4, group->newest_complete_cache());  // newest unchanged
+  EXPECT_TRUE(group->RemoveCache(cache4));            // newest removed
+  EXPECT_FALSE(group->newest_complete_cache());       // no more newest cache
 }
 
 TEST(AppCacheGroupTest, CleanupUnusedGroup) {

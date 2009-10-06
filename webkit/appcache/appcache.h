@@ -60,7 +60,14 @@ class AppCache : public base::RefCounted<AppCache> {
   }
 
   bool IsNewerThan(AppCache* cache) const {
-    return update_time_ > cache->update_time_;
+    if (update_time_ > cache->update_time_)
+      return true;
+
+    // Tie breaker. Newer caches have a larger cache ID.
+    if (update_time_ == cache->update_time_)
+      return cache_id_ > cache->cache_id_;
+
+    return false;
   }
 
   void set_update_time(base::TimeTicks ticks) {
