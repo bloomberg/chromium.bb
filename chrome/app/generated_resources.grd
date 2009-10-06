@@ -5248,7 +5248,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Sync my bookmarks
       </message>
       <message name="IDS_SYNC_LOGIN_INTRODUCTION" desc="The message to display at the top of the Login dialog">
-        Google Chrome can store your bookmark data with your Google account.
+        Google Chrome can store your bookmark data in your Google Account.
         Bookmarks that you create on this computer will instantly be made
         available on all the computers synced to this account.
       </message>
