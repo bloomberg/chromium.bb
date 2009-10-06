@@ -6,6 +6,7 @@
 
 class TemplateURL;
 
+#include "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/search_engines/edit_search_engine_controller.h"
@@ -16,7 +17,8 @@ class TemplateURL;
 // perform the actual database modifications, and should probably be an
 // instance of KeywordEditorModelObserver.
 
-@interface EditSearchEngineCocoaController : NSWindowController {
+@interface EditSearchEngineCocoaController :
+    NSWindowController<NSWindowDelegate> {
   IBOutlet NSTextField* nameField_;
   IBOutlet NSTextField* keywordField_;
   IBOutlet NSTextField* urlField_;
