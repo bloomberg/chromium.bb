@@ -5,6 +5,7 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_view_mac.h"
 
 #include "app/gfx/text_elider.h"
+#include "app/resource_bundle.h"
 #include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
 #include "base/gfx/rect.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/cocoa/event_utils.h"
+#include "grit/theme_resources.h"
 
 namespace {
 
@@ -76,32 +78,45 @@ static const NSColor* DescriptionTextColor() {
   return [NSColor darkGrayColor];
 }
 
+// Helper to fetch and retain an image from the resource bundle.
+NSImage* RetainedResourceImage(int resource_id) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  NSImage* image = rb.GetNSImageNamed(resource_id);
+  DCHECK(image);
+  return [image retain];
+}
+
 // Return the appropriate icon for the given match.  Derived from the
 // gtk code.
 NSImage* MatchIcon(const AutocompleteMatch& match) {
   if (match.starred) {
-    return nsimage_cache::ImageNamed(@"o2_star.png");
+    static NSImage* starImage = RetainedResourceImage(IDR_O2_STAR);
+    return starImage;
   }
 
   switch (match.type) {
     case AutocompleteMatch::URL_WHAT_YOU_TYPED:
     case AutocompleteMatch::NAVSUGGEST: {
-      return nsimage_cache::ImageNamed(@"o2_globe.png");
+      static NSImage* globeImage = RetainedResourceImage(IDR_O2_GLOBE);
+      return globeImage;
     }
     case AutocompleteMatch::HISTORY_URL:
     case AutocompleteMatch::HISTORY_TITLE:
     case AutocompleteMatch::HISTORY_BODY:
     case AutocompleteMatch::HISTORY_KEYWORD: {
-      return nsimage_cache::ImageNamed(@"o2_history.png");
+      static NSImage* historyImage = RetainedResourceImage(IDR_O2_HISTORY);
+      return historyImage;
     }
     case AutocompleteMatch::SEARCH_WHAT_YOU_TYPED:
     case AutocompleteMatch::SEARCH_HISTORY:
     case AutocompleteMatch::SEARCH_SUGGEST:
     case AutocompleteMatch::SEARCH_OTHER_ENGINE: {
-      return nsimage_cache::ImageNamed(@"o2_search.png");
+      static NSImage* searchImage = RetainedResourceImage(IDR_O2_SEARCH);
+      return searchImage;
     }
     case AutocompleteMatch::OPEN_HISTORY_PAGE: {
-      return nsimage_cache::ImageNamed(@"o2_more.png");
+      static NSImage* moreImage = RetainedResourceImage(IDR_O2_MORE);
+      return moreImage;
     }
     default:
       NOTREACHED();
