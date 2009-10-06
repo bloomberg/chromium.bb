@@ -20,7 +20,14 @@ namespace net {
 
 // TCPConnectJobs will time out after this many seconds.  Note this is the total
 // time, including both host resolution and TCP connect() times.
-static const int kTCPConnectJobTimeoutInSeconds = 60;
+//
+// TODO(eroman): The use of this constant needs to be re-evaluated. The time
+// needed for TCPClientSocketXXX::Connect() can be arbitrarily long, since
+// the address list may contain many alternatives, and most of those may
+// timeout. Even worse, the per-connect timeout threshold varies greatly
+// between systems (anywhere from 20 seconds to 190 seconds).
+// See comment #12 at http://crbug.com/23364 for specifics.
+static const int kTCPConnectJobTimeoutInSeconds = 240; // 4 minutes.
 
 TCPConnectJob::TCPConnectJob(
     const std::string& group_name,
