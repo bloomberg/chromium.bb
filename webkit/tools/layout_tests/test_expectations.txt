@@ -735,7 +735,7 @@ BUG13907 : LayoutTests/media/video-play-pause-events.html = TIMEOUT PASS
 BUG13907 : LayoutTests/media/video-seek-past-end-playing.html = FAIL
 BUG9798 BUG13907 : LayoutTests/media/video-seeking.html = FAIL PASS
 BUG13907 : LayoutTests/media/video-source-add-src.html = TIMEOUT
-BUG9798 BUG13907 WIN DEBUG : LayoutTests/media/video-source-error.html = FAIL PASS
+BUG9798 BUG13907 WIN LINUX DEBUG : LayoutTests/media/video-source-error.html = FAIL PASS
 BUG9798 BUG13907 : LayoutTests/media/video-src-invalid-remove.html = FAIL PASS
 BUG9798 BUG13907 LINUX DEBUG : LayoutTests/media/video-zoom.html = FAIL PASS
 BUG13907 : LayoutTests/media/video-zoom-controls.html = FAIL
@@ -1585,7 +1585,7 @@ BUG23498 MAC : LayoutTests/fast/css/empty-pseudo-class.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/css/first-child-pseudo-class.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/css/first-of-type-pseudo-class.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/css/hsl-color.html = IMAGE
-BUG23498 MAC : LayoutTests/fast/css/last-child-pseudo-class.html = IMAGE
+BUG9798 BUG23498 MAC : LayoutTests/fast/css/last-child-pseudo-class.html = IMAGE FAIL
 BUG23498 MAC : LayoutTests/fast/css/line-height-overflow.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/css/nested-floating-relative-position-percentages.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/css/only-child-pseudo-class.html = IMAGE
@@ -2457,21 +2457,25 @@ BUG10479 MAC : LayoutTests/svg/hixie/perf/002.xml = FAIL
 
 BUG9798 LINUX DEBUG : chrome/fast/dom/extensions/interval.html = CRASH FAIL PASS
 BUG9798 MAC DEBUG : chrome/fast/dom/extensions/interval.html = FAIL PASS
-BUG9798 MAC RELEASE : LayoutTests/fast/js/stack-unwinding.html = CRASH PASS
 BUG9798 WIN : chrome/fast/dom/extensions/interval.html = FAIL PASS
 BUG9797 WIN : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
 BUG9798 WIN : LayoutTests/editing/execCommand/paste-2.html = FAIL PASS
 BUG9797 WIN LINUX MAC : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
 BUG9798 WIN : LayoutTests/editing/selection/4776665.html = FAIL PASS
 BUG9798 MAC RELEASE : LayoutTests/editing/selection/4776665.html = FAIL PASS
+BUG9798 WIN DEBUG : LayoutTests/editing/selection/5136696.html = FAIL PASS
 BUG9798 WIN : LayoutTests/fast/dom/Window/slow_unload_handler.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/fast/encoding/char-encoding.html = FAIL PASS
+BUG9798 WIN RELEASE : LayoutTests/fast/forms/check-box-enter-key.html = CRASH PASS
+BUG9798 LINUX DEBUG : LayoutTests/fast/forms/input-align-image.html = FAIL PASS
 BUG9798 WIN RELEASE : LayoutTests/fast/forms/textarea-setvalue-submit.html = CRASH PASS
 // BUG_SENORBLANCO FAIL on next line is due to Skia roll and should be reverted by end of 10/06/2009
 BUG9798 WIN : LayoutTests/fast/frames/onlyCommentInIFrame.html = CRASH FAIL
-BUG9798 LINUX DEBUG : LayoutTests/fast/frames/calculate-round.html = CRASH PASS
+BUG9798 LINUX : LayoutTests/fast/frames/calculate-round.html = CRASH PASS
 BUG9798 MAC LINUX DEBUG : LayoutTests/fast/frames/frame-limit.html = TIMEOUT PASS
 BUG9798 LINUX RELEASE : LayoutTests/fast/frames/frame-limit.html = CRASH PASS
+BUG9798 MAC DEBUG : LayoutTests/fast/frames/frame-name-reset.html = TIMEOUT PASS
+BUG9798 MAC RELEASE : LayoutTests/fast/js/stack-unwinding.html = CRASH PASS
 BUG9798 MAC RELEASE : LayoutTests/fast/js/toString-dontEnum.html = CRASH PASS
 BUG9798 WIN DEBUG : LayoutTests/fast/lists/inlineBoxWrapperNullCheck.html = FAIL PASS
 BUG9798 WIN : LayoutTests/fast/replaced/border-radius-clip.html = FAIL PASS
@@ -2487,6 +2491,7 @@ BUG9798 MAC RELEASE : LayoutTests/http/tests/navigation/success200-frames-loadsa
 BUG9798 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-protocol-explicit-domain.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-protocol.html = FAIL PASS
 BUG9798 WIN LINUX RELEASE : LayoutTests/http/tests/security/dataURL/xss-DENIED-from-data-url-in-foreign-domain-subframe.html = TIMEOUT PASS
+BUG9798 MAC RELEASE : LayoutTests/http/tests/security/xssAuditor/javascript-link-HTML-entities.html = TIMEOUT PASS
 BUG9798 MAC DEBUG : LayoutTests/http/tests/security/xssAuditor/script-tag.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/security/xssAuditor/script-tag-utf-7.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-no-quote.html = TIMEOUT PASS
@@ -2507,6 +2512,7 @@ BUG9798 LINUX RELEASE : LayoutTests/svg/carto.net/colourpicker.svg = FAIL PASS
 BUG9798 LINUX DEBUG : LayoutTests/svg/carto.net/scrollbar.svg = TIMEOUT PASS FAIL
 BUG9798 DEBUG : LayoutTests/svg/custom/path-bad-data.svg = CRASH FAIL
 BUG9798 LINUX : LayoutTests/svg/custom/invisible-text-after-scrolling.xhtml = FAIL PASS
+BUG9798 LINUX DEBUG : LayoutTests/svg/custom/js-late-marker-and-object-creation.svg = FAIL PASS
 BUG9798 MAC : LayoutTests/svg/custom/use-instanceRoot-as-event-target.xhtml = TIMEOUT FAIL
 BUG9798 LINUX DEBUG : LayoutTests/svg/text/text-text-07-t.svg = FAIL PASS
 BUG9798 LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug1220.html = FAIL PASS
@@ -2687,7 +2693,7 @@ BUG13174 WIN RELEASE : LayoutTests/transitions/shorthand-border-transitions.html
 // WebKit 44438:44544
 BUG13721 LINUX : LayoutTests/fast/dynamic/positioned-movement-with-positioned-children.html = FAIL
 
-BUG14207 LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug28341.html = PASS FAIL
+BUG14207 LINUX : LayoutTests/tables/mozilla/bugs/bug28341.html = PASS FAIL
 BUG14207 WIN : LayoutTests/tables/mozilla/bugs/bug28341.html = PASS FAIL
 
 // Newly added test http://trac.webkit.org/changeset/44816
