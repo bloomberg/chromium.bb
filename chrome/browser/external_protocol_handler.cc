@@ -90,7 +90,7 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
   }
 
   // Check the stored prefs.
-  // TODO(pkasting): http://b/119651 This kind of thing should go in the
+  // TODO(pkasting): http://b/1119651 This kind of thing should go in the
   // preferences on the profile, not in the local state.
   PrefService* pref = g_browser_process->local_state();
   if (pref) {  // May be NULL during testing.
@@ -110,6 +110,25 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
 }
 
 // static
+void ExternalProtocolHandler::SetBlockState(const std::wstring& scheme,
+                                            BlockState state) {
+  // Set in the stored prefs.
+  // TODO(pkasting): http://b/1119651 This kind of thing should go in the
+  // preferences on the profile, not in the local state.
+  PrefService* pref = g_browser_process->local_state();
+  if (pref) {  // May be NULL during testing.
+    DictionaryValue* win_pref =
+        pref->GetMutableDictionary(prefs::kExcludedSchemes);
+    CHECK(win_pref);
+
+    if (state == UNKNOWN)
+      win_pref->Remove(scheme, NULL);
+    else
+      win_pref->SetBoolean(scheme, state == BLOCK ? true : false);
+  }
+}
+
+// static
 void ExternalProtocolHandler::LaunchUrl(const GURL& url,
                                         int render_process_host_id,
                                         int tab_contents_id) {
@@ -124,7 +143,7 @@ void ExternalProtocolHandler::LaunchUrl(const GURL& url,
     return;
 
   if (block_state == UNKNOWN) {
-#if defined(OS_WIN) || defined(TOOLKIT_GTK)
+#if defined(OS_WIN) || defined(TOOLKIT_GTK) || defined(OS_MACOSX)
     g_accept_requests = false;
     // Ask the user if they want to allow the protocol. This will call
     // LaunchUrlWithoutSecurityCheck if the user decides to accept the protocol.
@@ -132,8 +151,8 @@ void ExternalProtocolHandler::LaunchUrl(const GURL& url,
                               render_process_host_id,
                               tab_contents_id);
 #endif
-    // For now, allow only whitelisted protocols to fire on Mac and Linux/Views.
-    // See http://crbug.com/15546.
+    // For now, allow only whitelisted protocols to fire on Linux/Views.
+    // See http://crbug.com/23853 .
     return;
   }
 

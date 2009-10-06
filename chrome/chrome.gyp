@@ -1032,6 +1032,8 @@
         'browser/cocoa/extension_shelf_controller.mm',
         'browser/cocoa/extension_view_mac.h',
         'browser/cocoa/extension_view_mac.mm',
+        'browser/cocoa/external_protocol_dialog.h',
+        'browser/cocoa/external_protocol_dialog.mm',
         'browser/cocoa/file_metadata.h',
         'browser/cocoa/file_metadata.mm',
         'browser/cocoa/find_bar_bridge.h',
