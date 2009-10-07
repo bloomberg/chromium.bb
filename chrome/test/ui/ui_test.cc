@@ -924,7 +924,7 @@ void UITest::RewritePreferencesFile(const FilePath& user_data_dir) {
 }
 
 // static
-FilePath UITest::ComputeTypicalUserDataSource(int profile_type) {
+FilePath UITest::ComputeTypicalUserDataSource(ProfileType profile_type) {
   FilePath source_history_file;
   EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA,
                                &source_history_file));
