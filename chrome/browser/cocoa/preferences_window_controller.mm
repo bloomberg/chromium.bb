@@ -4,6 +4,7 @@
 
 #import "chrome/browser/cocoa/preferences_window_controller.h"
 
+#include <algorithm>
 #include "app/l10n_util.h"
 #include "base/mac_util.h"
 #include "base/string_util.h"
@@ -41,10 +42,19 @@ NSString* const kUserDoneEditingPrefsNotification =
     @"kUserDoneEditingPrefsNotification";
 
 namespace {
+
 std::wstring GetNewTabUIURLString() {
   std::wstring temp = UTF8ToWide(chrome::kChromeUINewTabURL);
   return URLFixerUpper::FixupURL(temp, std::wstring());
 }
+
+// Adjusts the views origin so it will be centered if in a given width parent.
+void CenterViewForWidth(NSView* view, CGFloat width) {
+  NSRect frame = [view frame];
+  frame.origin.x = (width - NSWidth(frame)) / 2.0;
+  [view setFrame:frame];
+}
+
 }  // namespace
 
 //-------------------------------------------------------------------------
@@ -75,6 +85,7 @@ std::wstring GetNewTabUIURLString() {
 - (void)setMetricsRecording:(BOOL)value;
 - (void)setCookieBehavior:(NSInteger)value;
 - (void)setAskForSaveLocation:(BOOL)value;
+- (void)displayPreferenceView:(NSView*)subView;
 @end
 
 // A C++ class registered for changes in preferences. Bridges the
@@ -146,17 +157,34 @@ class PrefObserverBridge : public NotificationObserver {
 }
 
 - (void)awakeFromNib {
-  // TODO(pinkerton): save/restore size based on prefs.
-  [[self window] center];
-
   // Put the advanced view into the scroller and scroll it to the top.
   [advancedScroller_ setDocumentView:advancedView_];
   NSInteger height = [advancedView_ bounds].size.height;
   [advancedView_ scrollPoint:NSMakePoint(0, height)];
 
-  // Ensure the "basics" tab is selected regardless of what is the selected
-  // tab in the nib.
-  [tabView_ selectFirstTabViewItem:self];
+  // Make sure the window is wide enough to fit the the widest view
+  CGFloat widest = std::max([basicsView_ frame].size.width,
+                            [personalStuffView_ frame].size.width);
+  widest = std::max(widest, [underTheHoodView_ frame].size.width);
+  NSWindow* prefsWindow = [self window];
+  NSRect frame = [prefsWindow frame];
+  frame.size.width = widest;
+  [prefsWindow setFrame:frame display:NO];
+
+  // Adjust the view origins so they show up centered.
+  CenterViewForWidth(basicsView_, widest);
+  CenterViewForWidth(personalStuffView_, widest);
+  CenterViewForWidth(underTheHoodView_, widest);
+
+  // Ensure the "basics" is selected.
+  // TODO: change this to remember what's selected in a preference and restore
+  // it.
+  NSToolbarItem* firstItem = [[toolbar_ items] objectAtIndex:0];
+  [toolbar_ setSelectedItemIdentifier:[firstItem itemIdentifier]];
+  [self displayPreferenceView:basicsView_];
+
+  // TODO(pinkerton): save/restore position based on prefs.
+  [[self window] center];
 }
 
 - (void)dealloc {
@@ -164,6 +192,14 @@ class PrefObserverBridge : public NotificationObserver {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [self unregisterPrefObservers];
   [super dealloc];
+}
+
+// Xcode 3.1.x version of Interface Builder doesn't do a lot for editing
+// toolbars in XIB.  So the toolbar's delegate is set to the controller so it
+// can tell the toolbar what items are selectable.
+- (NSArray*)toolbarSelectableItemIdentifiers:(NSToolbar*)toolbar {
+  DCHECK(toolbar == toolbar_);
+  return [[toolbar_ items] valueForKey:@"itemIdentifier"];
 }
 
 // Register our interest in the preferences we're displaying so if anything
@@ -763,6 +799,59 @@ const int kDisabledIndex = 1;
                   modalDelegate:self
                  didEndSelector:@selector(downloadPathPanelDidEnd:code:context:)
                     contextInfo:NULL];
+}
+
+- (IBAction)toolbarButtonSelected:(id)sender {
+  DCHECK([sender isKindOfClass:[NSToolbarItem class]]);
+  NSToolbarItem* toolbarItem = sender;
+
+  NSView* prefsView = NULL;
+  // Tags are set in the nib file.
+  switch ([toolbarItem tag]) {
+    case 0:  // Basics
+      prefsView = basicsView_;
+      break;
+    case 1:  // Personal Stuff
+      prefsView = personalStuffView_;
+      break;
+    case 2:  // Under the Hood
+      prefsView = underTheHoodView_;
+      break;
+    default:
+      NOTIMPLEMENTED();
+  }
+
+  [self displayPreferenceView:prefsView];
+}
+
+// Helper to update the window to display a given preferences view.
+- (void)displayPreferenceView:(NSView*)prefsView {
+  NSWindow* prefsWindow = [self window];
+  NSView* contentView = [prefsWindow contentView];
+
+  // Remove the previous view.
+  NSArray* subviews = [contentView subviews];
+  DCHECK_LE([subviews count], 1U);
+  if ([subviews count]) {
+    [[subviews objectAtIndex:0] removeFromSuperviewWithoutNeedingDisplay];
+  }
+
+  // Set the size of the window
+  NSRect windowFrame = [prefsWindow frame];
+  CGFloat titleToolbarHeight =
+      NSHeight(windowFrame) -
+      NSHeight([prefsWindow contentRectForFrameRect:windowFrame]);
+  NSRect prefsViewFrame = [prefsView frame];
+  windowFrame.size.height =
+      NSHeight(prefsViewFrame) + titleToolbarHeight;
+  DCHECK_GE(NSWidth(windowFrame), NSWidth(prefsViewFrame))
+      << "Initial width set wasn't wide enough.";
+  windowFrame.origin.y = NSMaxY([prefsWindow frame]) - NSHeight(windowFrame);
+  [prefsWindow setFrame:windowFrame display:YES];
+
+  // Add the view
+  [contentView addSubview:prefsView];
+  [prefsWindow setInitialFirstResponder:prefsView];
 }
 
 // Returns whether the alternate error page checkbox should be checked based

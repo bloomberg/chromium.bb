@@ -32,7 +32,14 @@ class Profile;
   Profile* profile_;  // weak ref
   PrefService* prefs_;  // weak ref - Obtained from profile_ for convenience.
   scoped_ptr<PrefObserverBridge> observer_;  // Watches for pref changes.
-  IBOutlet NSTabView* tabView_;
+
+  IBOutlet NSToolbar* toolbar_;
+
+  // The views we'll rotate through
+  IBOutlet NSView* basicsView_;
+  IBOutlet NSView* personalStuffView_;
+  IBOutlet NSView* underTheHoodView_;
+
   IBOutlet NSArrayController* customPagesArrayController_;
 
   // Basics panel
@@ -89,6 +96,9 @@ class Profile;
 
 // Under the hood
 - (IBAction)browseDownloadLocation:(id)sender;
+
+// When a toolbar button is clicked
+- (IBAction)toolbarButtonSelected:(id)sender;
 
 // Usable from cocoa bindings to hook up the custom home pages table.
 @property(readonly) CustomHomePagesModel* customPagesSource;
