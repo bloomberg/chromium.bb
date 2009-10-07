@@ -200,6 +200,10 @@ class LayoutTestController : public CppBoundClass {
   // Clears all databases.
   void clearAllDatabases(const CppArgumentList& args, CppVariant* result);
 
+  // Calls setlocale(LC_ALL, ...) for a specified locale.
+  // Resets between tests.
+  void setPOSIXLocale(const CppArgumentList& args, CppVariant* result);
+
  public:
   // The following methods are not exposed to JavaScript.
   void SetWorkQueueFrozen(bool frozen) { work_queue_.set_frozen(frozen); }

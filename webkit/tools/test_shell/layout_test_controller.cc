@@ -127,6 +127,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) {
   BindMethod("setWillSendRequestReturnsNullOnRedirect", &LayoutTestController::setWillSendRequestReturnsNullOnRedirect);
   BindMethod("whiteListAccessFromOrigin", &LayoutTestController::whiteListAccessFromOrigin);
   BindMethod("clearAllDatabases", &LayoutTestController::clearAllDatabases);
+  BindMethod("setPOSIXLocale", &LayoutTestController::setPOSIXLocale);
 
   // The following are stubs.
   BindMethod("dumpAsWebArchive", &LayoutTestController::dumpAsWebArchive);
@@ -435,6 +436,8 @@ void LayoutTestController::Reset() {
 
   SimpleResourceLoaderBridge::SetAcceptAllCookies(false);
   WebKit::resetOriginAccessWhiteLists();
+
+  setlocale(LC_ALL, "");
 
   if (close_remaining_windows_) {
     // Iterate through the window list and close everything except the original
@@ -969,6 +972,15 @@ void LayoutTestController::clearAllDatabases(
     const CppArgumentList& args, CppVariant* result) {
   result->SetNull();
   SimpleDatabaseSystem::GetInstance()->ClearAllDatabases();
+}
+
+void LayoutTestController::setPOSIXLocale(const CppArgumentList& args,
+                                          CppVariant* result) {
+  result->SetNull();
+  if (args.size() == 1 && args[0].isString()) {
+    std::string new_locale = args[0].ToString();
+    setlocale(LC_ALL, new_locale.c_str());
+  }
 }
 
 void LayoutTestController::LogErrorToConsole(const std::string& text) {
