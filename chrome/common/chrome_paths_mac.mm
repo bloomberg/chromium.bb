@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/mac_util.h"
 #include "base/path_service.h"
+#include "chrome/common/mac_app_names.h"
 
 namespace chrome {
 
@@ -65,29 +66,31 @@ bool GetUserDesktop(FilePath* result) {
   return success;
 }
 
-NSBundle* GetFrameworkBundle() {
-  NSString* app_bundle_identifier = [[NSBundle mainBundle] bundleIdentifier];
+FilePath GetFrameworkBundlePath() {
+  // It's tempting to use +[NSBundle bundleWithIdentifier:], but it's really
+  // slow (about 30ms on 10.5 and 10.6), despite Apple's documentation stating
+  // that it may be more efficient than +bundleForClass:.  +bundleForClass:
+  // itself takes 1-2ms.  Getting an NSBundle from a path, on the other hand,
+  // essentially takes no time at all, at least when the bundle has already
+  // been loaded as it will have been in this case.  The FilePath operations
+  // needed to compute the framework's path are also effectively free, so that
+  // is the approach that is used here.
 
-  NSString* browser_bundle_identifier = app_bundle_identifier;
+  // Start out with the path to the running .app.
+  FilePath path([[[NSBundle mainBundle] bundlePath] fileSystemRepresentation]);
+
   if (mac_util::IsBackgroundOnlyProcess()) {
-    // Take off the last component of a background helper process' bundle
-    // identifier to form the browser process' bundle identifier.
-    NSRange range = [app_bundle_identifier rangeOfString:@"."
-                                                 options:NSBackwardsSearch];
-    range.length = [app_bundle_identifier length] - range.location;
-    browser_bundle_identifier =
-        [app_bundle_identifier stringByReplacingCharactersInRange:range
-                                                       withString:@""];
+    // path identifies the helper .app in the browser .app's Contents/Resources
+    // directory.  Go up two levels to get to the browser's Contents directory.
+    path = path.DirName().DirName();
+  } else {
+    // path identifies the browser .app.  Go into the Contents directory.
+    path = path.Append("Contents");
   }
 
-  // Append ".framework" to the browser's bundle identifier to get the
-  // framework's bundle identifier.
-  NSString* framework_bundle_identifier =
-      [browser_bundle_identifier stringByAppendingString:@".framework"];
-  NSBundle* framework_bundle =
-      [NSBundle bundleWithIdentifier:framework_bundle_identifier];
-
-  return framework_bundle;
+  // The framework bundle is at a known path and name from the browser .app's
+  // Contents directory.
+  return path.Append("Frameworks").Append(MAC_FRAMEWORK_NAME);
 }
 
 }  // namespace chrome

@@ -354,7 +354,7 @@ int ChromeMain(int argc, char** argv) {
       parsed_command_line.GetSwitchValue(switches::kProcessType);
 
 #if defined(OS_MACOSX)
-  mac_util::SetOverrideAppBundle(chrome::GetFrameworkBundle());
+  mac_util::SetOverrideAppBundlePath(chrome::GetFrameworkBundlePath());
 #endif  // OS_MACOSX
 
 #if defined(OS_WIN)

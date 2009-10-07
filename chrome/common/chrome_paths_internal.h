@@ -38,7 +38,7 @@ bool GetUserDownloadsDirectory(FilePath* result);
 bool GetUserDesktop(FilePath* result);
 
 #if defined(OS_MACOSX)
-NSBundle* GetFrameworkBundle();
+FilePath GetFrameworkBundlePath();
 #endif  // OS_MACOSX
 
 }  // namespace chrome
