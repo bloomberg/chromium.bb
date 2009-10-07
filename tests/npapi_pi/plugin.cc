@@ -36,7 +36,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <nacl/nacl_util.h>
+#include <nacl/nacl_imc.h>
+#include <nacl/nacl_npapi.h>
+#include <nacl/npruntime.h>
 
 NPIdentifier ScriptablePluginObject::id_paint;
 

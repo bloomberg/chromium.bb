@@ -36,7 +36,6 @@
 #include <string.h>
 #include <cstring>
 #include <nacl/nacl_srpc.h>
-#include <nacl/nacl_util.h>
 
 NPIdentifier ScriptablePluginObject::id_bar;
 NPIdentifier ScriptablePluginObject::id_document;

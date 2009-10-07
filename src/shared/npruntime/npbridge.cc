@@ -48,12 +48,12 @@
 
 namespace nacl {
 
-#if NACL_TARGET_SUBARCH == 64
+#if NACL_BUILD_SUBARCH == 64
 std::map<NPP, int>* NPBridge::npp_64_32_map = NULL;
 std::map<int, NPP>* NPBridge::npp_32_64_map = NULL;
 std::map<NPIdentifier, int>* NPBridge::npident_int_map = NULL;
 std::map<int, NPIdentifier>* NPBridge::int_npident_map = NULL;
-#endif  // NACL_TARGET_SUBARCH
+#endif  // NACL_BUILD_SUBARCH
 
 NPBridge::NPBridge()
     : peer_pid_(-1),
@@ -74,8 +74,8 @@ NPBridge::NPBridge()
 }
 
 NPBridge::~NPBridge() {
-  // TODO(sehr): the cleanup needs to be done when an instance shuts down.
-  // Free the stubs created on the other end of the channel.
+  // TODO(sehr): the cleanup needs to be done when all instances shut down.
+  // i.e., in a class destructor rather than the instance destructor.
   while (!stub_map_.empty()) {
     std::map<NPObject*, NPObjectStub*>::iterator i = stub_map_.begin();
     NPObjectStub* stub = (*i).second;
@@ -158,30 +158,38 @@ NPIdentifier NPBridge::IntToNpidentifier(int npident_int) {
 }
 
 NPObject* NPBridge::CreateProxy(NPP npp, const NPCapability& capability) {
-  if (NULL == capability.object) {
+  NPObject* object = capability.object;
+  if (NULL == object) {
+    // Do not create proxies for NULL objects.
     return NULL;
   }
-  if (capability.pid == GETPID()) {  // capability can be of my process
-    std::map<NPObject*, NPObjectStub*>::iterator i;
-    i = stub_map_.find(capability.object);
-    if (i == stub_map_.end()) {
+  if (capability.pid == GETPID()) {
+    // The capability is to an object in my process.
+    std::map<NPObject*, NPObjectStub*>::iterator i = stub_map_.find(object);
+    if (stub_map_.end() == i) {
+      // There was no stub for this object in my process.  Hence it was never
+      // given out from this module, so it is not ok to access.
       return NULL;
     }
-    NPN_RetainObject(capability.object);
-    return capability.object;
+    // Found the object in the stub table, so the capability was previously
+    // given out.  Hence it is ok to use the object.  Bump the refcount and
+    // return the object.
+    return NPN_RetainObject(object);
   }
-
+  // The capability is to an object in another process.
   std::map<const NPCapability, NPObjectProxy*>::iterator i;
   i = proxy_map_.find(capability);
   if (proxy_map_.end() != i) {
-    NPObjectProxy* proxy = (*i).second;
-    NPN_RetainObject(proxy);
-    return proxy;
+    // Found the proxy.  Bump the reference count and return it.
+    return NPN_RetainObject((*i).second);
   }
+  // Create a new proxy.
   NPObjectProxy* proxy = new(std::nothrow) NPObjectProxy(npp, capability);
   if (NULL == proxy) {
+    // Out of memory.
     return NULL;
   }
+  // Add it to the local lookup table.
   AddProxy(proxy);
   return proxy;
 }
@@ -216,19 +224,22 @@ void NPBridge::RemoveProxy(NPObjectProxy* proxy) {
 int NPBridge::CreateStub(NPP npp, NPObject* object, NPCapability* cap) {
   NPObjectStub* stub = NULL;
   if (NULL != object) {
-    if (NPObjectProxy::IsInstance(object)) {  // object can be a proxy
+    if (NPObjectProxy::IsInstance(object)) {
+      // The specified object is a proxy.
       NPObjectProxy* proxy = static_cast<NPObjectProxy*>(object);
       if (peer_pid() == proxy->capability().pid) {
+        // The proxy is to an object in the peer process.
         *cap = proxy->capability();
         return 0;
       }
     }
-    stub = LookupStub(object);
-    if (stub) {
+    if (NULL != LookupStub(object)) {
+      // There is already a stub for this object in the mapping.
       cap->pid = GETPID();
       cap->object = object;
       return 1;
     }
+    // Create a new stub for the object.
     stub = new(std::nothrow) NPObjectStub(npp, object);
   }
   cap->pid = GETPID();
@@ -243,24 +254,21 @@ int NPBridge::CreateStub(NPP npp, NPObject* object, NPCapability* cap) {
 
 NPObjectStub* NPBridge::LookupStub(NPObject* object) {
   assert(object);
-  std::map<NPObject*, NPObjectStub*>::iterator i;
-  i = stub_map_.find(object);
-  if (stub_map_.end() != i) {
-    return (*i).second;
+  // Find the object in the stub table.
+  std::map<NPObject*, NPObjectStub*>::iterator i = stub_map_.find(object);
+  if (stub_map_.end() == i) {
+    // There is no capability for the specified object in the table.
+    return NULL;
   }
-  return NULL;
+  return (*i).second;
 }
 
 NPObjectStub* NPBridge::GetStub(const NPCapability& capability) {
   if (GETPID() != capability.pid) {
+    // Only capabilities to objects in this process have stubs in the table.
     return NULL;
   }
-  std::map<NPObject*, NPObjectStub*>::iterator i;
-  i = stub_map_.find(capability.object);
-  if (stub_map_.end() == i) {
-    return NULL;
-  }
-  return (*i).second;
+  return LookupStub(capability.object);
 }
 
 void NPBridge::RemoveStub(NPObjectStub* stub) {
