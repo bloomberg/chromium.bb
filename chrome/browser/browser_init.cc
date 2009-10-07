@@ -28,7 +28,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/defaults.h"
+#if defined(OS_WIN)  // TODO(port)
 #include "chrome/browser/extensions/extension_creator.h"
+#endif
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/first_run.h"
@@ -363,20 +365,6 @@ bool LaunchBrowser(const CommandLine& command_line, Profile* profile,
 GURL GetWelcomePageURL() {
   std::string welcome_url = l10n_util::GetStringUTF8(IDS_WELCOME_PAGE_URL);
   return GURL(welcome_url);
-}
-
-void ShowPackExtensionMessage(const std::wstring caption,
-    const std::wstring message) {
-#if defined(OS_WIN)
-  win_util::MessageBox(NULL, message, caption, MB_OK | MB_SETFOREGROUND);
-#else
-  // Just send caption & text to stdout on mac & linux.
-  std::string out_text = WideToASCII(caption);
-  out_text.append("\n\n");
-  out_text.append(WideToASCII(message));
-  out_text.append("\n");
-  printf(out_text.c_str());
-#endif
 }
 
 }  // namespace
@@ -763,6 +751,7 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
       // ExtensionCreator depends on base/crypto/rsa_private_key and
       // base/crypto/signature_creator, both of which only have windows
       // implementations.
+#if defined(OS_WIN)
       scoped_ptr<ExtensionCreator> creator(new ExtensionCreator());
       if (creator->Run(src_dir, crx_path, private_key_path,
           output_private_key_path)) {
@@ -780,12 +769,16 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
           message = StringPrintf(L"Created the extension:\n\n%ls",
                                  crx_path.ToWStringHack().c_str());
         }
-        ShowPackExtensionMessage(L"Extension Packaging Success", message);
+        win_util::MessageBox(NULL, message, L"Extension Packaging Success",
+                             MB_OK | MB_SETFOREGROUND);
       } else {
-        ShowPackExtensionMessage(L"Extension Packaging Error",
-            UTF8ToWide(creator->error_message()));
+        win_util::MessageBox(NULL, UTF8ToWide(creator->error_message()),
+            L"Extension Packaging Error", MB_OK | MB_SETFOREGROUND);
         return false;
       }
+#else
+      NOTIMPLEMENTED() << " extension creation not implemented on POSIX.";
+#endif  // defined(OS_WIN)
       return false;
     }
   }

@@ -520,8 +520,9 @@ void ChromeURLRequestContext::OnDefaultCharsetChange(
 
 void ChromeURLRequestContext::OnNewExtensions(const std::string& id,
                                               const FilePath& path) {
-  if (!is_off_the_record_)
+  if (!is_off_the_record_) {
     extension_paths_[id] = path;
+  }
 }
 
 void ChromeURLRequestContext::OnUnloadedExtension(const std::string& id) {
