@@ -284,7 +284,7 @@ Chrome supports. -->
       </message>
       <message name="IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE"
                desc="Title for the hard-coded thumbnail that represents the Google Chrome Welcome page.  This is used on the NTP when there aren't enough thumbnails to show.">
-        Welcome to Chrome
+        Welcome to Google Chrome
       </message>
       <message name="IDS_EXTERNAL_PROTOCOL_INFORMATION" desc="General information about what Chrome is trying to do when opening this external protocol">
         Google Chrome needs to launch an external application to handle <ph name="SCHEME">$1<ex>acrobat:</ex></ph> links. The link requested is <ph name="PROTOLINK">$2<ex>acrobat:yourpdf</ex></ph>.
@@ -303,7 +303,7 @@ Chrome supports. -->
         Google Chrome language:
       </message>
       <message name="IDS_OPTIONS_RESTART_REQUIRED" desc="The message displayed for an option that requires a restart to take effect. This appears in a message box if an option is changed that requires a restart.">
-        Please close all Chrome windows and restart Chrome for this change to take effect.
+        Please close all Google Chrome windows and restart it for this change to take effect.
       </message>
       <message name="IDS_OPTIONS_RESET_MESSAGE" desc="The message shown when the user presses the 'Reset Chrome options' button">
         When you reset Google Chrome options any changes you've made will be reverted to the default settings. Do you want to reset Chrome options?
@@ -325,13 +325,13 @@ Chrome supports. -->
         Whoa! Google Chrome has crashed. Restart now?
       </message>
       <message name="IDS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT" desc="Info bar message to save a password">
-        Do you want Chrome to save your password?
+        Do you want Google Chrome to save your password?
       </message>
       <message name="IDS_IMPORT_PROGRESS_STATUS_CANCEL_CONFIRM" desc="Import cancellation confirmation">
-        If you cancel now, not all items will be imported. You can import again later from the Chrome menu.
+        If you cancel now, not all items will be imported. You can import again later from the Google Chrome menu.
       </message>
       <message name="IDS_FR_BUBBLE_QUESTION" desc="Main text for the bubble">
-        Chrome uses your default search engine, which is currently set to <ph name="PAGE_TITLE">$1<ex>Google</ex></ph>. Do you want to keep your default search engine?
+        Google Chrome uses your default search engine, which is currently set to <ph name="PAGE_TITLE">$1<ex>Google</ex></ph>. Do you want to keep your default search engine?
       </message>
       <message name="IDS_CANT_WRITE_USER_DIRECTORY_EXIT_BUTTON" desc="Text on button of dialog that closes Chrome if we can't create a directory for this user.">
         Exit Chrome
