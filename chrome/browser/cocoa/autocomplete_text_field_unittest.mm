@@ -13,16 +13,17 @@
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 
 using ::testing::InSequence;
 
-@interface AutocompleteTextFieldTestDelegate : NSObject {
-  BOOL receivedControlTextDidBeginEditing_;
-  BOOL receivedControlTextShouldEndEditing_;
-}
-- init;
-- (BOOL)receivedControlTextDidBeginEditing;
-- (BOOL)receivedControlTextShouldEndEditing;
+// OCMock wants to mock a concrete class or protocol.  This should
+// provide a correct protocol for newer versions of the SDK, while
+// providing something mockable for older versions.
+
+@protocol MockTextEditingDelegate<NSControlTextEditingDelegate>
+- (void)controlTextDidBeginEditing:(NSNotification*)aNotification;
+- (BOOL)control:(NSControl*)control textShouldEndEditing:(NSText*)fieldEditor;
 @end
 
 namespace {
@@ -309,52 +310,58 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorKeywordHint) {
 // Test that resetting the field editor bounds does not cause untoward
 // messages to the field's delegate.
 TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBlocksEndEditing) {
-  cocoa_helper_.makeFirstResponder(field_);
-
   // First, test that -makeFirstResponder: sends
   // -controlTextDidBeginEditing: and -control:textShouldEndEditing at
   // the expected times.
   {
-    scoped_nsobject<AutocompleteTextFieldTestDelegate> delegate(
-        [[AutocompleteTextFieldTestDelegate alloc] init]);
-    EXPECT_FALSE([delegate receivedControlTextDidBeginEditing]);
-    EXPECT_FALSE([delegate receivedControlTextShouldEndEditing]);
+    id mockDelegate =
+        [OCMockObject mockForProtocol:@protocol(MockTextEditingDelegate)];
 
-    [field_ setDelegate:delegate];
-    [[field_ window] makeFirstResponder:field_];
+    [field_ setDelegate:mockDelegate];
+
+    // Becoming first responder doesn't begin editing.
+    cocoa_helper_.makeFirstResponder(field_);
     NSTextView* editor = static_cast<NSTextView*>([field_ currentEditor]);
     EXPECT_TRUE(nil != editor);
-    EXPECT_FALSE([delegate receivedControlTextDidBeginEditing]);
-    EXPECT_FALSE([delegate receivedControlTextShouldEndEditing]);
+    [mockDelegate verify];
 
-    // This should start the begin/end editing state.
+    // This should begin editing.
+    [[mockDelegate expect] controlTextDidBeginEditing:OCMOCK_ANY];
     [editor shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:@""];
-    EXPECT_TRUE([delegate receivedControlTextDidBeginEditing]);
-    EXPECT_FALSE([delegate receivedControlTextShouldEndEditing]);
+    [mockDelegate verify];
 
-    // This should send the end-editing message.
-    [[field_ window] makeFirstResponder:field_];
-    EXPECT_TRUE([delegate receivedControlTextShouldEndEditing]);
+    // Changing first responder ends editing.
+    BOOL yes = YES;
+    [[[mockDelegate expect] andReturnValue:OCMOCK_VALUE(yes)]
+      control:OCMOCK_ANY textShouldEndEditing:OCMOCK_ANY];
+    cocoa_helper_.makeFirstResponder(field_);
+    [mockDelegate verify];
+
     [field_ setDelegate:nil];
   }
 
-  // Then test that -resetFieldEditorFrameIfNeeded manages without
-  // sending that message.
+  // Test that -resetFieldEditorFrameIfNeeded manages to rearrange the
+  // editor without ending editing.
   {
-    scoped_nsobject<AutocompleteTextFieldTestDelegate> delegate(
-        [[AutocompleteTextFieldTestDelegate alloc] init]);
-    [field_ setDelegate:delegate];
-    EXPECT_FALSE([delegate receivedControlTextDidBeginEditing]);
-    EXPECT_FALSE([delegate receivedControlTextShouldEndEditing]);
+    id mockDelegate =
+        [OCMockObject mockForProtocol:@protocol(MockTextEditingDelegate)];
 
+    [field_ setDelegate:mockDelegate];
+
+    // Start editing.
+    [[mockDelegate expect] controlTextDidBeginEditing:OCMOCK_ANY];
+    NSTextView* editor = static_cast<NSTextView*>([field_ currentEditor]);
+    [editor shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:@""];
+    [mockDelegate verify];
+
+    // No more messages to mockDelegate.
     AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
     EXPECT_FALSE([cell fieldEditorNeedsReset]);
     [cell setSearchHintString:@"Type to search"];
     EXPECT_TRUE([cell fieldEditorNeedsReset]);
-    EXPECT_FALSE([delegate receivedControlTextShouldEndEditing]);
     [field_ resetFieldEditorFrameIfNeeded];
-    EXPECT_FALSE([delegate receivedControlTextShouldEndEditing]);
-    EXPECT_FALSE([delegate receivedControlTextDidBeginEditing]);
+    [mockDelegate verify];
+
     [field_ setDelegate:nil];
   }
 }
@@ -530,33 +537,3 @@ TEST_F(AutocompleteTextFieldTest, SecurityIconMouseDown) {
 }
 
 }  // namespace
-
-@implementation AutocompleteTextFieldTestDelegate
-
-- init {
-  self = [super init];
-  if (self) {
-    receivedControlTextDidBeginEditing_ = NO;
-    receivedControlTextShouldEndEditing_ = NO;
-  }
-  return self;
-}
-
-- (BOOL)receivedControlTextDidBeginEditing {
-  return receivedControlTextDidBeginEditing_;
-}
-
-- (BOOL)receivedControlTextShouldEndEditing {
-  return receivedControlTextShouldEndEditing_;
-}
-
-- (void)controlTextDidBeginEditing:(NSNotification*)aNotification {
-  receivedControlTextDidBeginEditing_ = YES;
-}
-
-- (BOOL)control:(NSControl*)control textShouldEndEditing:(NSText*)fieldEditor {
-  receivedControlTextShouldEndEditing_ = YES;
-  return YES;
-}
-
-@end
