@@ -206,6 +206,11 @@ willPositionSheet:(NSWindow*)sheet
                                  positioned:NSWindowBelow
                                  relativeTo:[toolbarController_ view]];
 
+    // Disable the bookmark bar if this window doesn't support them.
+    if (!browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR)) {
+      [bookmarkBarController_ setBookmarkBarEnabled:NO];
+    }
+
     // We don't want to try and show the bar before it gets placed in
     // it's parent view, so this step shoudn't be inside the bookmark
     // bar controller's awakeFromNib.
@@ -890,7 +895,9 @@ willPositionSheet:(NSWindow*)sheet
   } else {
     SetSystemUIMode(kUIModeNormal, 0);
     [[[self window] contentView] addSubview:[toolbarController_ view]];
-    [bookmarkBarController_ setBookmarkBarEnabled:YES];
+    if (browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR)) {
+      [bookmarkBarController_ setBookmarkBarEnabled:YES];
+    }
   }
 
   // Force a relayout.

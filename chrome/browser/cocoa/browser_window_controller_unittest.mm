@@ -133,8 +133,13 @@ TEST_F(BrowserWindowControllerTest, TestFullscreen) {
 }
 
 TEST_F(BrowserWindowControllerTest, TestNormal) {
+  // Force the bookmark bar to be shown.
+  browser_helper_.profile()->GetPrefs()->
+      SetBoolean(prefs::kShowBookmarkBar, true);
+
   // Make sure a normal BrowserWindowController is, uh, normal.
   EXPECT_TRUE([controller_ isNormalWindow]);
+  EXPECT_TRUE([controller_ isBookmarkBarVisible]);
 
   // And make sure a controller for a pop-up window is not normal.
   scoped_ptr<Browser> popup_browser(Browser::CreateForPopup(
@@ -143,6 +148,7 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
                               initWithBrowser:popup_browser.get()
                                 takeOwnership:NO]);
   EXPECT_FALSE([controller_ isNormalWindow]);
+  EXPECT_FALSE([controller_ isBookmarkBarVisible]);
 
   // The created BrowserWindowController gets autoreleased, so make
   // sure we don't also release it.
