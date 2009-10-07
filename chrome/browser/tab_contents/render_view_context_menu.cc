@@ -29,7 +29,9 @@
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
-#include "webkit/glue/media_player_action.h"
+#include "webkit/api/public/WebMediaPlayerAction.h"
+
+using WebKit::WebMediaPlayerAction;
 
 namespace {
 
@@ -543,43 +545,38 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
 
     case IDS_CONTENT_CONTEXT_PLAY:
       UserMetrics::RecordAction(L"MediaContextMenu_Play", profile_);
-      MediaPlayerActionAt(params_.x,
-                          params_.y,
-                          MediaPlayerAction(MediaPlayerAction::PLAY));
+      MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
+                          WebMediaPlayerAction(
+                              WebMediaPlayerAction::Play, true));
       break;
 
     case IDS_CONTENT_CONTEXT_PAUSE:
       UserMetrics::RecordAction(L"MediaContextMenu_Pause", profile_);
-      MediaPlayerActionAt(params_.x,
-                          params_.y,
-                          MediaPlayerAction(MediaPlayerAction::PAUSE));
+      MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
+                          WebMediaPlayerAction(
+                              WebMediaPlayerAction::Play, false));
       break;
 
     case IDS_CONTENT_CONTEXT_MUTE:
       UserMetrics::RecordAction(L"MediaContextMenu_Mute", profile_);
-      MediaPlayerActionAt(params_.x,
-                        params_.y,
-                        MediaPlayerAction(MediaPlayerAction::MUTE));
+      MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
+                          WebMediaPlayerAction(
+                              WebMediaPlayerAction::Mute, true));
       break;
 
     case IDS_CONTENT_CONTEXT_UNMUTE:
       UserMetrics::RecordAction(L"MediaContextMenu_Unmute", profile_);
-      MediaPlayerActionAt(params_.x,
-                          params_.y,
-                          MediaPlayerAction(MediaPlayerAction::UNMUTE));
+      MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
+                          WebMediaPlayerAction(
+                              WebMediaPlayerAction::Mute, false));
       break;
 
     case IDS_CONTENT_CONTEXT_LOOP:
       UserMetrics::RecordAction(L"MediaContextMenu_Loop", profile_);
-      if (ItemIsChecked(IDS_CONTENT_CONTEXT_LOOP)) {
-        MediaPlayerActionAt(params_.x,
-                            params_.y,
-                            MediaPlayerAction(MediaPlayerAction::NO_LOOP));
-      } else {
-        MediaPlayerActionAt(params_.x,
-                            params_.y,
-                            MediaPlayerAction(MediaPlayerAction::LOOP));
-      }
+      MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
+                          WebMediaPlayerAction(
+                              WebMediaPlayerAction::Loop,
+                              !ItemIsChecked(IDS_CONTENT_CONTEXT_LOOP)));
       break;
 
     case IDS_CONTENT_CONTEXT_BACK:
@@ -809,8 +806,8 @@ void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
 }
 
 void RenderViewContextMenu::MediaPlayerActionAt(
-    int x,
-    int y,
-    const MediaPlayerAction& action) {
-  source_tab_contents_->render_view_host()->MediaPlayerActionAt(x, y, action);
+    const gfx::Point& location,
+    const WebMediaPlayerAction& action) {
+  source_tab_contents_->render_view_host()->MediaPlayerActionAt(
+      location, action);
 }

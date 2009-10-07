@@ -37,7 +37,6 @@
 #include "webkit/glue/autofill_form.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/form_data.h"
-#include "webkit/glue/media_player_action.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/resource_loader_bridge.h"
@@ -950,39 +949,6 @@ struct ParamTraits<ContextMenuParams> {
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"<ContextMenuParams>");
-  }
-};
-
-template <>
-struct ParamTraits<MediaPlayerAction> {
-  typedef MediaPlayerAction param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.command);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return
-      ReadParam(m, iter, &p->command);
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    std::wstring event = L"";
-    if (!p.command) {
-      l->append(L"NONE");
-    } else {
-      l->append(L"(");
-      if (p.command & MediaPlayerAction::PLAY)
-        l->append(L"PLAY|");
-      if (p.command & MediaPlayerAction::PAUSE)
-        l->append(L"PAUSE|");
-      if (p.command & MediaPlayerAction::MUTE)
-        l->append(L"MUTE|");
-      if (p.command & MediaPlayerAction::UNMUTE)
-        l->append(L"UNMUTE|");
-      if (p.command & MediaPlayerAction::LOOP)
-        l->append(L"LOOP|");
-      if (p.command & MediaPlayerAction::NO_LOOP)
-        l->append(L"NO_LOOP|");
-      l->append(L")");
-    }
   }
 };
 

@@ -23,7 +23,6 @@ struct WebPoint;
 class GURL;
 class WebDevToolsAgent;
 class WebViewDelegate;
-struct MediaPlayerAction;
 
 //
 //  @class WebView
@@ -80,12 +79,6 @@ class WebView : public WebKit::WebView {
 
   // Returns development tools agent instance belonging to this view.
   virtual WebDevToolsAgent* GetWebDevToolsAgent() = 0;
-
-  // Performs an action from a context menu for the node at the given
-  // location.
-  virtual void MediaPlayerActionAt(int x,
-                                   int y,
-                                   const MediaPlayerAction& action) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebView);

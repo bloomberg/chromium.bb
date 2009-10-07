@@ -12,7 +12,14 @@
 
 class Profile;
 class TabContents;
-struct MediaPlayerAction;
+
+namespace gfx {
+class Point;
+}
+
+namespace WebKit {
+struct WebMediaPlayerAction;
+}
 
 class RenderViewContextMenu {
  public:
@@ -97,7 +104,8 @@ class RenderViewContextMenu {
   // Writes the specified text/url to the system clipboard
   void WriteURLToClipboard(const GURL& url);
 
-  void MediaPlayerActionAt(int x, int y, const MediaPlayerAction& action);
+  void MediaPlayerActionAt(const gfx::Point& location,
+                           const WebKit::WebMediaPlayerAction& action);
 
   bool IsDevCommandEnabled(int id) const;
 

@@ -609,9 +609,8 @@ class RenderView : public RenderWidget,
   void OnEnableViewSourceMode();
   void OnEnableIntrinsicWidthChangedMode();
   void OnSetRendererPrefs(const RendererPreferences& renderer_prefs);
-  void OnMediaPlayerActionAt(int x,
-                             int y,
-                             const MediaPlayerAction& action);
+  void OnMediaPlayerActionAt(const gfx::Point& location,
+                             const WebKit::WebMediaPlayerAction& action);
   void OnNotifyRendererViewType(ViewType::Type view_type);
   void OnUpdateBrowserWindowId(int window_id);
   void OnExecuteCode(int request_id,

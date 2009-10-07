@@ -106,6 +106,9 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual void zoomIn(bool text_only);
   virtual void zoomOut(bool text_only);
   virtual void zoomDefault();
+  virtual void performMediaPlayerAction(
+      const WebKit::WebMediaPlayerAction& action,
+      const WebKit::WebPoint& location);
   virtual void copyImageAt(const WebKit::WebPoint& point);
   virtual void dragSourceEndedAt(
       const WebKit::WebPoint& client_point,
@@ -144,9 +147,6 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual void SetIgnoreInputEvents(bool new_value);
   virtual WebDevToolsAgent* GetWebDevToolsAgent();
   WebDevToolsAgentImpl* GetWebDevToolsAgentImpl();
-  virtual void MediaPlayerActionAt(int x,
-                                   int y,
-                                   const MediaPlayerAction& action);
 
   // WebViewImpl
 

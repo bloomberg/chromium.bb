@@ -63,6 +63,7 @@ MSVC_POP_WARNING();
 #include "base/message_loop.h"
 #include "webkit/api/public/WebDragData.h"
 #include "webkit/api/public/WebInputEvent.h"
+#include "webkit/api/public/WebMediaPlayerAction.h"
 #include "webkit/api/public/WebPoint.h"
 #include "webkit/api/public/WebRect.h"
 #include "webkit/api/public/WebString.h"
@@ -72,7 +73,6 @@ MSVC_POP_WARNING();
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/image_resource_fetcher.h"
-#include "webkit/glue/media_player_action.h"
 #include "webkit/glue/searchable_form_data.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
 #include "webkit/glue/webkit_glue.h"
@@ -104,6 +104,7 @@ using WebKit::WebFrame;
 using WebKit::WebFrameClient;
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
+using WebKit::WebMediaPlayerAction;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
 using WebKit::WebNavigationPolicy;
@@ -1417,6 +1418,36 @@ void WebViewImpl::zoomDefault() {
       main_frame()->frame()->isZoomFactorTextOnly());
 }
 
+void WebViewImpl::performMediaPlayerAction(const WebMediaPlayerAction& action,
+                                           const WebPoint& location) {
+  HitTestResult result =
+      HitTestResultForWindowPos(webkit_glue::WebPointToIntPoint(location));
+  WTF::RefPtr<WebCore::Node> node = result.innerNonSharedNode();
+  if (!node->hasTagName(WebCore::HTMLNames::videoTag) &&
+      !node->hasTagName(WebCore::HTMLNames::audioTag))
+    return;
+
+  WTF::RefPtr<WebCore::HTMLMediaElement> media_element =
+      static_pointer_cast<WebCore::HTMLMediaElement>(node);
+  switch (action.type) {
+    case WebMediaPlayerAction::Play:
+      if (action.enable) {
+        media_element->play();
+      } else {
+        media_element->pause();
+      }
+      break;
+    case WebMediaPlayerAction::Mute:
+      media_element->setMuted(action.enable);
+      break;
+    case WebMediaPlayerAction::Loop:
+      media_element->setLoop(action.enable);
+      break;
+    default:
+      ASSERT_NOT_REACHED();
+  }
+}
+
 void WebViewImpl::copyImageAt(const WebPoint& point) {
   if (!page_.get())
     return;
@@ -1714,37 +1745,6 @@ void WebViewImpl::setIsTransparent(bool is_transparent) {
 
 bool WebViewImpl::isTransparent() const {
   return is_transparent_;
-}
-
-void WebViewImpl::MediaPlayerActionAt(int x,
-                                      int y,
-                                      const MediaPlayerAction& action) {
-  HitTestResult result = HitTestResultForWindowPos(IntPoint(x, y));
-
-  WTF::RefPtr<WebCore::Node> node = result.innerNonSharedNode();
-  if (node->hasTagName(WebCore::HTMLNames::videoTag) ||
-      node->hasTagName(WebCore::HTMLNames::audioTag)) {
-    WTF::RefPtr<WebCore::HTMLMediaElement> media_element =
-        static_pointer_cast<WebCore::HTMLMediaElement>(node);
-    if (action.command & MediaPlayerAction::PLAY) {
-      media_element->play();
-    }
-    if (action.command & MediaPlayerAction::PAUSE) {
-      media_element->pause();
-    }
-    if (action.command & MediaPlayerAction::MUTE) {
-      media_element->setMuted(true);
-    }
-    if (action.command & MediaPlayerAction::UNMUTE) {
-      media_element->setMuted(false);
-    }
-    if (action.command & MediaPlayerAction::LOOP) {
-      media_element->setLoop(true);
-    }
-    if (action.command & MediaPlayerAction::NO_LOOP) {
-      media_element->setLoop(false);
-    }
-  }
 }
 
 void WebViewImpl::setIsActive(bool active) {

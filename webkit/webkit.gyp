@@ -108,6 +108,7 @@
         'api/public/WebKitClient.h',
         'api/public/WebLocalizedString.h',
         'api/public/WebMediaPlayer.h',
+        'api/public/WebMediaPlayerAction.h',
         'api/public/WebMediaPlayerClient.h',
         'api/public/WebMessagePortChannel.h',
         'api/public/WebMessagePortChannelClient.h',

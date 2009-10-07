@@ -41,6 +41,7 @@ namespace WebKit {
     class WebSettings;
     class WebString;
     class WebViewClient;
+    struct WebMediaPlayerAction;
     struct WebPoint;
 
     class WebView : public WebWidget {
@@ -139,6 +140,13 @@ namespace WebKit {
         virtual void zoomIn(bool textOnly) = 0;
         virtual void zoomOut(bool textOnly) = 0;
         virtual void zoomDefault() = 0;
+
+
+        // Media ---------------------------------------------------------------
+
+        // Performs the specified action on the node at the given location.
+        virtual void performMediaPlayerAction(
+            const WebMediaPlayerAction&, const WebPoint& location) = 0;
 
 
         // Data exchange -------------------------------------------------------

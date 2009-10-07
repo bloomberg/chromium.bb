@@ -93,11 +93,10 @@ IPC_BEGIN_MESSAGES(View)
                       RendererPreferences)
 
   // Tells the renderer to perform the given action on the media player
-  // located at |x|, |y|.
-  IPC_MESSAGE_ROUTED3(ViewMsg_MediaPlayerActionAt,
-                      int32 /* x */,
-                      int32 /* y */,
-                      MediaPlayerAction)
+  // located at the given point.
+  IPC_MESSAGE_ROUTED2(ViewMsg_MediaPlayerActionAt,
+                      gfx::Point, /* location */
+                      WebKit::WebMediaPlayerAction)
 
   // Tells the render view to close.
   IPC_MESSAGE_ROUTED0(ViewMsg_Close)

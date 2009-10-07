@@ -47,6 +47,10 @@ class AutofillForm;
 struct WebApplicationInfo;
 }
 
+namespace WebKit {
+struct WebMediaPlayerAction;
+}
+
 //
 // RenderViewHost
 //
@@ -299,8 +303,9 @@ class RenderViewHost : public RenderWidgetHost,
   void ModalHTMLDialogClosed(IPC::Message* reply_msg,
                              const std::string& json_retval);
 
-  // Send an action to the media player element located at |x|, |y|.
-  void MediaPlayerActionAt(int x, int y, const MediaPlayerAction& action);
+  // Send an action to the media player element located at |location|.
+  void MediaPlayerActionAt(const gfx::Point& location,
+                           const WebKit::WebMediaPlayerAction& action);
 
   // Copies the image at the specified point.
   void CopyImageAt(int x, int y);

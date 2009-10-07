@@ -123,6 +123,7 @@ using WebKit::WebForm;
 using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
 using WebKit::WebMediaPlayer;
+using WebKit::WebMediaPlayerAction;
 using WebKit::WebMediaPlayerClient;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebNavigationType;
@@ -3032,13 +3033,10 @@ void RenderView::OnSetRendererPrefs(const RendererPreferences& renderer_prefs) {
 #endif
 }
 
-void RenderView::OnMediaPlayerActionAt(int x,
-                                       int y,
-                                       const MediaPlayerAction& action) {
-  if (!webview())
-    return;
-
-  webview()->MediaPlayerActionAt(x, y, action);
+void RenderView::OnMediaPlayerActionAt(const gfx::Point& location,
+                                       const WebMediaPlayerAction& action) {
+  if (webview())
+    webview()->performMediaPlayerAction(action, location);
 }
 
 void RenderView::OnNotifyRendererViewType(ViewType::Type type) {

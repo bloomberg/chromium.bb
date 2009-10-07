@@ -30,6 +30,7 @@
 #include "webkit/api/public/WebDragOperation.h"
 #include "webkit/api/public/WebFindOptions.h"
 #include "webkit/api/public/WebInputEvent.h"
+#include "webkit/api/public/WebMediaPlayerAction.h"
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/WebTextDirection.h"
 
@@ -304,7 +305,7 @@ struct ParamTraits<WebKit::WebTextDirection> {
 };
 
 template <>
-  struct ParamTraits<WebKit::WebDragOperation> {
+struct ParamTraits<WebKit::WebDragOperation> {
   typedef WebKit::WebDragOperation param_type;
   static void Write(Message* m, const param_type& p) {
     m->WriteInt(p);
@@ -317,6 +318,42 @@ template <>
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(StringPrintf(L"%d", p));
+  }
+};
+
+template <>
+struct ParamTraits<WebKit::WebMediaPlayerAction> {
+  typedef WebKit::WebMediaPlayerAction param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, static_cast<int>(p.type));
+    WriteParam(m, p.enable);
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    int temp;
+    if (!ReadParam(m, iter, &temp))
+      return false;
+    r->type = static_cast<param_type::Type>(temp);
+    return ReadParam(m, iter, &r->enable);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    switch (p.type) {
+      case WebKit::WebMediaPlayerAction::Play:
+        l->append(L"Play");
+        break;
+      case WebKit::WebMediaPlayerAction::Mute:
+        l->append(L"Mute");
+        break;
+      case WebKit::WebMediaPlayerAction::Loop:
+        l->append(L"Loop");
+        break;
+      default:
+        l->append(L"Unknown");
+        break;
+    }
+    l->append(L", ");
+    LogParam(p.enable, l);
+    l->append(L")");
   }
 };
 
