@@ -28,7 +28,7 @@ void TipsHandler::RegisterMessages() {
 }
 
 void TipsHandler::HandleGetTips(const Value* content) {
-  // List containing the tips to be displayed.
+  // List containing the tips to be displayed.
   ListValue list_value;
 
   // Holds the web resource data found in the preferences cache.
@@ -38,15 +38,15 @@ void TipsHandler::HandleGetTips(const Value* content) {
   int current_tip_index;
   std::string current_tip;
 
-  // If tips are not correct for our locale, do not send.  Wait for update.
+  // If tips are not correct for our language, do not send.  Wait for update.
   // We need to check here because the new tab page calls for tips before
   // the tip service starts up.
   PrefService* current_prefs = dom_ui_->GetProfile()->GetPrefs();
   if (current_prefs->HasPrefPath(prefs::kNTPTipsServer)) {
     std::wstring server = current_prefs->GetString(prefs::kNTPTipsServer);
-    std::wstring locale = ASCIIToWide(
-        g_browser_process->GetApplicationLocale());
-    if (!EndsWith(server, locale, false)) {
+    std::wstring tips_language = WebResourceService::GetWebResourceLanguage(
+        current_prefs);
+    if (!EndsWith(server, tips_language, false)) {
       dom_ui_->CallJavascriptFunction(L"tips", list_value);
       return;
     }
