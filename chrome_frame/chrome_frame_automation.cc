@@ -234,6 +234,10 @@ void ProxyFactory::CreateProxy(ProxyFactory::ProxyCacheEntry* entry,
   // Chrome Frame never wants Chrome to start up with a First Run UI.
   command_line->AppendSwitch(switches::kNoFirstRun);
 
+  // Disable the "Whoa! Chrome has crashed." dialog, because that isn't very
+  // useful for Chrome Frame users.
+  command_line->AppendSwitch(switches::kNoErrorDialogs);
+
   command_line->AppendSwitch(switches::kEnableRendererAccessibility);
 
   // Place the profile directory in
