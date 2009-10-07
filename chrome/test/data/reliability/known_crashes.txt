@@ -130,10 +130,6 @@ SUBSTRING : renderwidgethost::~renderwidgethost___renderviewhost::`scalar deleti
 # 21862
 PREFIX : urlrequesthttpjob::factory___urlrequestjobmanager::createjob___urlrequest::start
 
-# 23043
-PREFIX : v8::internal::invoke___v8::internal::execution::call___v8::function::call___webcore::dateextension::setallowsleep___webcore::v8abstracteventlistener::invokeeventhandler___webcore::v8abstracteventlistener::handleevent___webcore::eventtarget::fireeventlisteners___webcore::domwindow::dispatchevent
-PREFIX : v8::internal::invoke___v8::internal::execution::call___v8::function::call___webcore::dateextension::setallowsleep___webcore::dateextension::onsleepdetected
-
 # 23138
 PREFIX : tabrestoreservice::save___tabrestoreservice::~tabrestoreservice___tabrestoreservice::`scalar deleting destructor'
 
