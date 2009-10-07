@@ -39,12 +39,12 @@ class InfoBubbleGtkDelegate {
 
 class InfoBubbleGtk : public NotificationObserver {
  public:
-  // Show an InfoBubble, pointing at the area |rect| (in screen coordinates).
-  // An info bubble will try to fit on the screen, so it can point to any edge
-  // of |rect|.  The bubble will host the |content| widget.  The |delegate| will
-  // be notified when the bubble is closed.  The bubble will perform an X grab
-  // of the pointer and keyboard, and will close itself if a click is received
-  // outside of the bubble.
+  // Show an InfoBubble, pointing at the area |rect| (in coordinates relative to
+  // |toplevel_window|'s origin).  An info bubble will try to fit on the screen,
+  // so it can point to any edge of |rect|.  The bubble will host the |content|
+  // widget.  The |delegate| will be notified when the bubble is closed.  The
+  // bubble will perform an X grab of the pointer and keyboard, and will close
+  // itself if a click is received outside of the bubble.
   // TODO(derat): This implementation doesn't try to position itself onscreen.
   static InfoBubbleGtk* Show(GtkWindow* toplevel_window,
                              const gfx::Rect& rect,
@@ -80,8 +80,13 @@ class InfoBubbleGtk : public NotificationObserver {
             const gfx::Rect& rect,
             GtkWidget* content);
 
-  // Sets |screen_x_| according to our allocation and |rect_|.
-  void UpdateScreenX();
+  // Calculate the current screen position for the bubble's window (per
+  // |toplevel_window_|'s position as of its most-recent ConfigureNotify event
+  // and |rect_|) and move it there.
+  void MoveWindow();
+
+  // Restack the bubble's window directly above |toplevel_window_|.
+  void StackWindow();
 
   // Sets the delegate.
   void set_delegate(InfoBubbleGtkDelegate* delegate) { delegate_ = delegate; }
@@ -112,26 +117,40 @@ class InfoBubbleGtk : public NotificationObserver {
 
   static gboolean HandleButtonPressThunk(GtkWidget* widget,
                                          GdkEventButton* event,
-                                         gpointer userdata) {
-    return reinterpret_cast<InfoBubbleGtk*>(userdata)->
+                                         gpointer user_data) {
+    return reinterpret_cast<InfoBubbleGtk*>(user_data)->
         HandleButtonPress(event);
   }
   gboolean HandleButtonPress(GdkEventButton* event);
 
   static gboolean HandleButtonReleaseThunk(GtkWidget* widget,
                                            GdkEventButton* event,
-                                           gpointer userdata) {
-    return reinterpret_cast<InfoBubbleGtk*>(userdata)->
+                                           gpointer user_data) {
+    return reinterpret_cast<InfoBubbleGtk*>(user_data)->
         HandleButtonRelease(event);
   }
   gboolean HandleButtonRelease(GdkEventButton* event);
 
   static gboolean HandleDestroyThunk(GtkWidget* widget,
-                                     gpointer userdata) {
-    return reinterpret_cast<InfoBubbleGtk*>(userdata)->
-        HandleDestroy();
+                                     gpointer user_data) {
+    return reinterpret_cast<InfoBubbleGtk*>(user_data)->HandleDestroy();
   }
   gboolean HandleDestroy();
+
+  static gboolean HandleToplevelConfigureThunk(GtkWidget* widget,
+                                               GdkEventConfigure* event,
+                                               gpointer user_data) {
+    return reinterpret_cast<InfoBubbleGtk*>(user_data)->
+        HandleToplevelConfigure(event);
+  }
+  gboolean HandleToplevelConfigure(GdkEventConfigure* event);
+
+  static gboolean HandleToplevelUnmapThunk(GtkWidget* widget,
+                                           GdkEvent* event,
+                                           gpointer user_data) {
+    return reinterpret_cast<InfoBubbleGtk*>(user_data)->HandleToplevelUnmap();
+  }
+  gboolean HandleToplevelUnmap();
 
   // The caller supplied delegate, can be NULL.
   InfoBubbleGtkDelegate* delegate_;
@@ -146,12 +165,12 @@ class InfoBubbleGtk : public NotificationObserver {
   // The accel group attached to |window_|, to handle closing with escape.
   GtkAccelGroup* accel_group_;
 
-  // The rectangle that we use to calculate |screen_x_| and |screen_y_|.
-  gfx::Rect rect_;
+  // The window for which we're being shown (and to which |rect_| is relative).
+  GtkWindow* toplevel_window_;
 
-  // Where we want our window to be positioned on the screen.
-  int screen_x_;
-  int screen_y_;
+  // Provides an offset from |toplevel_window_|'s origin for MoveWindow() to
+  // use.
+  gfx::Rect rect_;
 
   // The current shape of |window_| (used to test whether clicks fall in it or
   // not).

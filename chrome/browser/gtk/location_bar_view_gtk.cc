@@ -48,8 +48,6 @@ const int kBorderThickness = 1;
 const int kFirstRunBubbleLeftMargin = 8;
 // Extra vertical spacing for first run bubble.
 const int kFirstRunBubbleTopMargin = 1;
-// Task delay (in milliseconds) to show first run bubble.
-const int kFirstRunBubbleTaskDelay = 200;
 
 // The padding around the top, bottom, and sides of the location bar hbox.
 // We don't want to edit control's text to be right against the edge,
@@ -363,10 +361,11 @@ std::wstring LocationBarViewGtk::GetTitle() const {
 }
 
 void LocationBarViewGtk::ShowFirstRunBubble(bool use_OEM_bubble) {
+  // We need the browser window to be shown before we can show the bubble, but
+  // we get called before that's happened.
   Task* task = first_run_bubble_.NewRunnableMethod(
       &LocationBarViewGtk::ShowFirstRunBubbleInternal, use_OEM_bubble);
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, task,
-                                          kFirstRunBubbleTaskDelay);
+  MessageLoop::current()->PostTask(FROM_HERE, task);
 }
 
 std::wstring LocationBarViewGtk::GetInputString() const {
@@ -636,22 +635,21 @@ void LocationBarViewGtk::ShowFirstRunBubbleInternal(bool use_OEM_bubble) {
   if (!location_entry_.get() || !widget()->window)
     return;
 
-  gint x, y;
-  gdk_window_get_origin(widget()->window, &x, &y);
+  int x = widget()->allocation.x;
+  int y = widget()->allocation.y;
+
   // The bubble needs to be just below the Omnibox and slightly to the right
   // of star button, so shift x and y co-ordinates.
-  y += widget()->allocation.y + widget()->allocation.height +
-       kFirstRunBubbleTopMargin;
-  if (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT) {
-    x += widget()->allocation.x + kFirstRunBubbleLeftMargin;
-  } else {
-    x += widget()->allocation.x + widget()->allocation.width -
-         kFirstRunBubbleLeftMargin;
-  }
+  y += widget()->allocation.height + kFirstRunBubbleTopMargin;
+  if (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT)
+    x += kFirstRunBubbleLeftMargin;
+  else
+    x += widget()->allocation.width - kFirstRunBubbleLeftMargin;
 
   FirstRunBubble::Show(profile_,
-      GTK_WINDOW(gtk_widget_get_toplevel(widget())),
-      gfx::Rect(x, y, 0, 0), use_OEM_bubble);
+                       GTK_WINDOW(gtk_widget_get_toplevel(widget())),
+                       gfx::Rect(x, y, 0, 0),
+                       use_OEM_bubble);
 }
 
 // static

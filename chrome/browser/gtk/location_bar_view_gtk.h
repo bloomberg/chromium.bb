@@ -173,6 +173,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
   // Set the keyword text for the Search BLAH: keyword box.
   void SetKeywordLabel(const std::wstring& keyword);
+
   // Set the keyword text for the "Press tab to search BLAH" hint box.
   void SetKeywordHintLabel(const std::wstring& keyword);
 

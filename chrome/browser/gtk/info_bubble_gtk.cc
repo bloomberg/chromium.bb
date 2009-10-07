@@ -137,8 +137,7 @@ InfoBubbleGtk::InfoBubbleGtk(GtkThemeProvider* provider)
       window_(NULL),
       theme_provider_(provider),
       accel_group_(gtk_accel_group_new()),
-      screen_x_(0),
-      screen_y_(0),
+      toplevel_window_(NULL),
       mask_region_(NULL) {
 }
 
@@ -148,12 +147,23 @@ InfoBubbleGtk::~InfoBubbleGtk() {
     gdk_region_destroy(mask_region_);
     mask_region_ = NULL;
   }
+
+  g_signal_handlers_disconnect_by_func(
+      toplevel_window_,
+      reinterpret_cast<gpointer>(HandleToplevelConfigureThunk),
+      this);
+  g_signal_handlers_disconnect_by_func(
+      toplevel_window_,
+      reinterpret_cast<gpointer>(HandleToplevelUnmapThunk),
+      this);
+  toplevel_window_ = NULL;
 }
 
 void InfoBubbleGtk::Init(GtkWindow* toplevel_window,
                          const gfx::Rect& rect,
                          GtkWidget* content) {
   DCHECK(!window_);
+  toplevel_window_ = toplevel_window;
   rect_ = rect;
 
   window_ = gtk_window_new(GTK_WINDOW_POPUP);
@@ -180,13 +190,13 @@ void InfoBubbleGtk::Init(GtkWindow* toplevel_window,
   // HandleSizeAllocate, so the mask can be applied to the GdkWindow.
   gtk_widget_realize(window_);
 
-  UpdateScreenX();
-  screen_y_ = rect.y() + rect.height() + kArrowToContentPadding;
   // For RTL, we will have to move the window again when it is allocated, but
   // this should be somewhat close to its final position.
-  gtk_window_move(GTK_WINDOW(window_), screen_x_, screen_y_);
+  MoveWindow();
   GtkRequisition req;
   gtk_widget_size_request(window_, &req);
+
+  StackWindow();
 
   gtk_widget_add_events(window_, GDK_BUTTON_PRESS_MASK |
                                  GDK_BUTTON_RELEASE_MASK);
@@ -200,28 +210,12 @@ void InfoBubbleGtk::Init(GtkWindow* toplevel_window,
   g_signal_connect(window_, "destroy",
                    G_CALLBACK(&HandleDestroyThunk), this);
 
-  gtk_widget_show_all(window_);
+  g_signal_connect(toplevel_window, "configure-event",
+                   G_CALLBACK(&HandleToplevelConfigureThunk), this);
+  g_signal_connect(toplevel_window, "unmap-event",
+                   G_CALLBACK(&HandleToplevelUnmapThunk), this);
 
-  // Stack our window directly above the toplevel window.  Our window is a
-  // direct child of the root window, so we need to find a similar ancestor
-  // for the toplevel window (which might have been reparented by a window
-  // manager).
-  XID toplevel_window_base = x11_util::GetHighestAncestorWindow(
-      x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(toplevel_window)),
-      x11_util::GetX11RootWindow());
-  if (toplevel_window_base) {
-    XID window_xid = x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(window_));
-    XID window_parent = x11_util::GetParentWindow(window_xid);
-    if (window_parent == x11_util::GetX11RootWindow()) {
-      x11_util::RestackWindow(window_xid, toplevel_window_base, true);
-    } else {
-      // The window manager shouldn't reparent override-redirect windows.
-      DLOG(ERROR) << "override-redirect window " << window_xid
-                  << "'s parent is " << window_parent
-                  << ", rather than root window "
-                  << x11_util::GetX11RootWindow();
-    }
-  }
+  gtk_widget_show_all(window_);
 
   // We add a GTK (application-level) grab.  This means we will get all
   // mouse events for our application, even if they were delivered on another
@@ -246,13 +240,46 @@ void InfoBubbleGtk::Init(GtkWindow* toplevel_window,
   theme_provider_->InitThemesFor(this);
 }
 
-void InfoBubbleGtk::UpdateScreenX() {
+void InfoBubbleGtk::MoveWindow() {
+  gint toplevel_x = 0, toplevel_y = 0;
+  gdk_window_get_position(
+      GTK_WIDGET(toplevel_window_)->window, &toplevel_x, &toplevel_y);
+
+  gint screen_x = 0;
   if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
-    screen_x_ = rect_.x() + (rect_.width() / 2) - window_->allocation.width
-                + kArrowX;
+    screen_x = toplevel_x + rect_.x() + (rect_.width() / 2) -
+               window_->allocation.width + kArrowX;
   }
   else {
-    screen_x_ = rect_.x() + (rect_.width() / 2) - kArrowX;
+    screen_x = toplevel_x + rect_.x() + (rect_.width() / 2) - kArrowX;
+  }
+
+  gint screen_y = toplevel_y + rect_.y() + rect_.height() +
+                  kArrowToContentPadding;
+
+  gtk_window_move(GTK_WINDOW(window_), screen_x, screen_y);
+}
+
+void InfoBubbleGtk::StackWindow() {
+  // Stack our window directly above the toplevel window.  Our window is a
+  // direct child of the root window, so we need to find a similar ancestor
+  // for the toplevel window (which might have been reparented by a window
+  // manager).
+  XID toplevel_window_base = x11_util::GetHighestAncestorWindow(
+      x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(toplevel_window_)),
+      x11_util::GetX11RootWindow());
+  if (toplevel_window_base) {
+    XID window_xid = x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(window_));
+    XID window_parent = x11_util::GetParentWindow(window_xid);
+    if (window_parent == x11_util::GetX11RootWindow()) {
+      x11_util::RestackWindow(window_xid, toplevel_window_base, true);
+    } else {
+      // The window manager shouldn't reparent override-redirect windows.
+      DLOG(ERROR) << "override-redirect window " << window_xid
+                  << "'s parent is " << window_parent
+                  << ", rather than root window "
+                  << x11_util::GetX11RootWindow();
+    }
   }
 }
 
@@ -320,10 +347,8 @@ gboolean InfoBubbleGtk::HandleEscape() {
 // When our size is initially allocated or changed, we need to recompute
 // and apply our shape mask region.
 void InfoBubbleGtk::HandleSizeAllocate() {
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
-    UpdateScreenX();
-    gtk_window_move(GTK_WINDOW(window_), screen_x_, screen_y_);
-  }
+  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+    MoveWindow();
 
   DCHECK(window_->allocation.x == 0 && window_->allocation.y == 0);
   if (mask_region_) {
@@ -359,4 +384,15 @@ gboolean InfoBubbleGtk::HandleDestroy() {
   // delete the InfoBubbleGtk object.
   delete this;
   return FALSE;  // Propagate.
+}
+
+gboolean InfoBubbleGtk::HandleToplevelConfigure(GdkEventConfigure* event) {
+  MoveWindow();
+  StackWindow();
+  return FALSE;
+}
+
+gboolean InfoBubbleGtk::HandleToplevelUnmap() {
+  Close();
+  return FALSE;
 }
