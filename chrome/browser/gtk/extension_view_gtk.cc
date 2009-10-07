@@ -49,7 +49,7 @@ void ExtensionViewGtk::CreateWidgetHostView() {
 }
 
 void ExtensionViewGtk::RenderViewCreated() {
-  if (!pending_background_.empty()) {
+  if (!pending_background_.empty() && render_view_host()->view()) {
     render_widget_host_view_->SetBackground(pending_background_);
     pending_background_.reset();
   }
