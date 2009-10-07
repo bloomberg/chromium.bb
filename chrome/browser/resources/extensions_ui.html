@@ -111,87 +111,6 @@ button {
   font-size:100%;
 }
 
-#dialogBackground, #dialogBackground div {
-  display: -webkit-box;
-  -webkit-box-align: center;
-}
-
-#dialog input[type="button"] {
-  font-size: 12px;
-  height: 25px;
-  width: 100px;
-}
-
-#dialog input[type="text"] {
-  width: 220px;
-  font-size: 12px;
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-#dialogBackground {
-  background-color: rgba(0, 0, 0, .2);
-  display: none;
-  height: 100%;
-  left: 0;
-  position: fixed;
-  top: 0;
-  width: 100%;
-  z-index: 1;
-  -webkit-box-orient: vertical;
-  -webkit-user-select:none;
-}
-
-#dialogHBackground {
-  height: 100%;
-  -webkit-box-orient: horizontal;
-}
-
-#dialog {
-  background-color: #5296DE;
-  border: 1px solid #3A75BD;
-  border-radius: 6px 6px;
-  font-size: 12px;
-  width: 500px;
-  -webkit-box-orient: vertical;
-}
-
-#dialogHeader {
-  background-color: rgba(0,0,0,0);
-  color: white;
-  margin: 4px;
-  width: 100%;
-}
-
-#dialogBody {
-  background-color: rgb(240, 240, 240);
-  border: 1px solid #3A75BD;
-  border-bottom-left-radius: 4px 4px;
-  border-bottom-right-radius: 4px 4px;
-  margin: 0px 2px 2px 2px;
-  -webkit-box-orient: vertical;
-}
-
-#dialogContentHeader {
-  margin: 16px;
-}
-
-.dialogBrowseRow {
-  margin-left: -24px;
-  width: 100%;
-  -webkit-box-orient: horizontal;
-  -webkit-box-pack: end;
-}
-
-.dialogBrowseRow>* {
-  margin: 2px
-}
-
-#dialogContentFooter {
-  margin-bottom: 6px;
-  margin-left: -12px;
-  margin-top: 20px;
-}
-
 </style>
 <script>
 /**
@@ -345,69 +264,17 @@ function handleUninstallExtension(node) {
 }
 
 /**
- * Utility function which asks the C++ to show a platform-specific file select
- * dialog, and fire |callback| with the |filePath| that resulted. |selectType|
- * can be either 'file' or 'folder'. |operation| can be 'load', 'packRoot',
- * or 'pem' which are signals to the C++ to do some operation-specific 
- * configuration.
- */
-function showFileDialog(selectType, operation, callback) {
-  handleFilePathSelected = function(filePath) {
-    callback(filePath);
-    handleFilePathSelected = function() {};
-  };
-
-  chrome.send('selectFilePath', [selectType, operation]);
-}
-
-/**
  * Handles the "Load extension..." button being pressed.
  */
 function loadExtension() {
-  showFileDialog('folder', 'load', function(filePath) {
-    chrome.send('load', [String(filePath)]);
-  });
+  chrome.send('load', []);
 }
 
 /**
  * Handles the "Pack extension..." button being pressed.
  */
 function packExtension() {
-  var extensionPath = document.getElementById('extensionPathText').value;
-  var privateKeyPath = document.getElementById('privateKeyPath').value;
-  chrome.send('pack', [extensionPath, privateKeyPath]);
-}
-
-/**
- * Shows to modal HTML pack dialog.
- */
-function showPackDialog() {
-  document.getElementById('dialogBackground').style.display="-webkit-box";
-}
-
-/**
- * Hides the pack dialog.
- */ 
-function hidePackDialog() {
-  document.getElementById('dialogBackground').style.display="none"
-}
-
-/**
- * Pop up a select dialog to capture the extension path.
- */
-function selectExtensionPath() {
-  showFileDialog('folder', 'packRoot', function(filePath) {
-    document.getElementById('extensionPathText').value = filePath;
-  });
-}
-
-/**
- * Pop up a select dialog to capture the private key path.
- */
-function selectPrivateKeyPath() {
-  showFileDialog('file', 'pem', function(filePath) {
-    document.getElementById('privateKeyPath').value = filePath;
-  });
+  chrome.send('pack', []);
 }
 
 /**
@@ -420,55 +287,6 @@ function autoUpdate() {
 </script>
 </head>
 <body onload="requestExtensionsData();">
-  <div id="dialogBackground">
-    <div id="dialogHBackground">
-      <div id="dialog">
-        <div id="dialogHeader">
-          Pack Extension
-        </div>
-        <div id="dialogBody">
-          <div id="dialogContentHeader" i18n-content="packDialogHeading">
-            HEADING
-          </div>
-          <div class="dialogBrowseRow">
-            <div i18n-content="rootDirectoryLabel">
-              ROOT_DIR
-            </div>
-            <div>
-              <input type="text" id="extensionPathText">
-            </div>
-            <div>
-              <input type="button" value="BROWSE" 
-                     i18n-values="value:packDialogBrowse"
-                     onclick="selectExtensionPath();">
-            </div>
-          </div>
-          <div class="dialogBrowseRow">
-            <div i18n-content="privateKeyLabel">
-              PRIVATE_KEY
-            </div>
-            <div>
-              <input type="text" id="privateKeyPath">
-            </div>
-            <div>
-              <input type="button" value="BROWSE" 
-                     i18n-values="value:packDialogBrowse"
-                     onclick="selectPrivateKeyPath();">
-            </div>
-          </div>
-          <div class="dialogBrowseRow" id="dialogContentFooter">
-            <div>
-              <input type="button" value="OK" onclick="packExtension();">
-            </div>
-            <div>
-              <input type="button" value="Cancel" onclick="hidePackDialog();">
-            </div>
-          </div>        
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div id="body-container" style="display:none;">
 
     <div id="header"><h1>About extensions</h1></div>
@@ -538,7 +356,7 @@ function autoUpdate() {
 
             <div class="sidebar-content">
               <button onclick="loadExtension()">Load unpacked extension...</button><br />
-              <button onclick="showPackDialog()">Pack extension...</button><br />
+              <button onclick="packExtension()">Pack extension...</button><br />
               <button onclick="autoUpdate()">Update extensions now</button>
             </div>
           </td>

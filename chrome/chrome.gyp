@@ -2098,6 +2098,7 @@
         'browser/views/event_utils.cc',
         'browser/views/event_utils.h',
         'browser/views/extensions/extension_install_prompt.cc',
+        'browser/views/extensions/extension_pack_dialog.cc',
         'browser/views/extensions/extension_popup.cc',
         'browser/views/extensions/extension_popup.h',
         'browser/views/extensions/extension_shelf.cc',
@@ -2751,6 +2752,11 @@
                 ['exclude', '^browser/tab_contents/tab_contents_view_gtk.h'],
                 ['exclude', '^browser/tab_contents/render_view_context_menu_gtk.cc'],
                 ['exclude', '^browser/tab_contents/render_view_context_menu_gtk.h'],
+                # This compiles but has Linux shared build linking issues due to
+                # missing rsa_private_key functions.
+                ['exclude', '^browser/extensions/extension_creator.cc'],
+                # This compiles but it needs extension_creator.
+                ['exclude', '^browser/extensions/pack_extension_job.cc'],
               ],
             }],
             ['OS=="linux" and toolkit_views==0', {
@@ -2836,6 +2842,8 @@
             'browser/bookmarks/bookmark_menu_controller.h',
             'browser/browser_accessibility.cc',
             'browser/browser_accessibility_manager.cc',
+            'browser/extensions/extension_creator.cc',
+            'browser/extensions/pack_extension_job.cc',
             'browser/dom_ui/html_dialog_contents.cc',
             'browser/external_tab_container.cc',
             'browser/google_update.cc',

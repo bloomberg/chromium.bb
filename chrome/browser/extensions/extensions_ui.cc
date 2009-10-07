@@ -9,7 +9,6 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -48,14 +47,6 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
   DictionaryValue localized_strings;
   localized_strings.SetString(L"title",
       l10n_util::GetString(IDS_EXTENSIONS_TITLE));
-  localized_strings.SetString(L"packDialogHeading",
-      l10n_util::GetString(IDS_EXTENSION_PACK_DIALOG_HEADING));
-  localized_strings.SetString(L"rootDirectoryLabel",
-      l10n_util::GetString(IDS_EXTENSION_PACK_DIALOG_ROOT_DIRECTORY_LABEL));
-  localized_strings.SetString(L"packDialogBrowse",
-      l10n_util::GetString(IDS_EXTENSION_PACK_DIALOG_BROWSE));
-  localized_strings.SetString(L"privateKeyLabel",
-      l10n_util::GetString(IDS_EXTENSION_PACK_DIALOG_PRIVATE_KEY_LABEL));
 
   static const base::StringPiece extensions_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -100,8 +91,6 @@ void ExtensionsDOMHandler::RegisterMessages() {
       NewCallback(this, &ExtensionsDOMHandler::HandlePackMessage));
   dom_ui_->RegisterMessageCallback("autoupdate",
       NewCallback(this, &ExtensionsDOMHandler::HandleAutoUpdateMessage));
-  dom_ui_->RegisterMessageCallback("selectFilePath",
-      NewCallback(this, &ExtensionsDOMHandler::HandleSelectFilePathMessage));
 }
 
 void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
@@ -198,77 +187,18 @@ void ExtensionsDOMHandler::HandleUninstallMessage(const Value* value) {
 }
 
 void ExtensionsDOMHandler::HandleLoadMessage(const Value* value) {
-  std::string string_path;
-  CHECK(value->IsType(Value::TYPE_LIST));
-  const ListValue* list = static_cast<const ListValue*>(value);
-  CHECK(list->GetSize() == 1) << list->GetSize();
-  CHECK(list->GetString(0, &string_path));
-  FilePath file_path = FilePath::FromWStringHack(ASCIIToWide(string_path));
-  extensions_service_->LoadExtension(file_path);
-}
-
-void ExtensionsDOMHandler::ShowAlert(const std::string& message) {
-  ListValue arguments;
-  arguments.Append(Value::CreateStringValue(message));
-  dom_ui_->CallJavascriptFunction(L"alert", arguments);
+  load_extension_dialog_ = SelectFileDialog::Create(this);
+  load_extension_dialog_->SelectFile(
+      SelectFileDialog::SELECT_FOLDER,
+      l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY),
+      FilePath(), NULL, 0, FILE_PATH_LITERAL(""),
+      dom_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
 }
 
 void ExtensionsDOMHandler::HandlePackMessage(const Value* value) {
-  std::string extension_path;
-  std::string private_key_path;
-  CHECK(value->IsType(Value::TYPE_LIST));
-  const ListValue* list = static_cast<const ListValue*>(value);
-  CHECK(list->GetSize() == 2);
-  CHECK(list->GetString(0, &extension_path));
-  CHECK(list->GetString(1, &private_key_path));
-
-  FilePath root_directory = FilePath::FromWStringHack(ASCIIToWide(
-      extension_path));
-  FilePath key_file = FilePath::FromWStringHack(ASCIIToWide(private_key_path));
-
-  if (root_directory.empty()) {
-    if (extension_path.empty()) {
-      ShowAlert(l10n_util::GetStringUTF8(
-          IDS_EXTENSION_PACK_DIALOG_ERROR_ROOT_REQUIRED));
-    } else {
-      ShowAlert(l10n_util::GetStringUTF8(
-          IDS_EXTENSION_PACK_DIALOG_ERROR_ROOT_INVALID));
-    }
-
-    return;
-  }
-
-  if (!private_key_path.empty() && key_file.empty()) {
-    ShowAlert(l10n_util::GetStringUTF8(
-        IDS_EXTENSION_PACK_DIALOG_ERROR_KEY_INVALID));
-    return;
-  }
-
-  pack_job_ = new PackExtensionJob(this, root_directory, key_file,
-      ChromeThread::GetMessageLoop(ChromeThread::FILE));
-}
-
-void ExtensionsDOMHandler::OnPackSuccess(const FilePath& crx_file,
-                                         const FilePath& pem_file) {
-  std::string message;
-  if (!pem_file.empty()) {
-    message = WideToASCII(l10n_util::GetStringF(
-        IDS_EXTENSION_PACK_DIALOG_SUCCESS_BODY_NEW,
-        crx_file.ToWStringHack(),
-        pem_file.ToWStringHack()));
-  } else {
-    message = WideToASCII(l10n_util::GetStringF(
-        IDS_EXTENSION_PACK_DIALOG_SUCCESS_BODY_UPDATE,
-        crx_file.ToWStringHack()));
-  }
-  ShowAlert(message);
-
-  ListValue results;
-  dom_ui_->CallJavascriptFunction(L"hidePackDialog", results);
-}
-
-void ExtensionsDOMHandler::OnPackFailure(const std::wstring& error) {
-  ShowAlert(WideToASCII(error));
+#if defined(OS_WIN)
+  ShowPackDialog();
+#endif
 }
 
 void ExtensionsDOMHandler::HandleAutoUpdateMessage(const Value* value) {
@@ -278,55 +208,9 @@ void ExtensionsDOMHandler::HandleAutoUpdateMessage(const Value* value) {
   }
 }
 
-void ExtensionsDOMHandler::HandleSelectFilePathMessage(const Value* value) {
-  std::string select_type;
-  std::string operation;
-  CHECK(value->IsType(Value::TYPE_LIST));
-  const ListValue* list = static_cast<const ListValue*>(value);
-  CHECK(list->GetSize() == 2);
-  CHECK(list->GetString(0, &select_type));
-  CHECK(list->GetString(1, &operation));
-
-  SelectFileDialog::Type type = SelectFileDialog::SELECT_FOLDER;
-  static SelectFileDialog::FileTypeInfo info;
-  int file_type_index = 0;
-  if (select_type == "file")
-    type = SelectFileDialog::SELECT_OPEN_FILE;
-
-  string16 select_title;
-  if (operation == "load")
-    select_title = l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY);
-  else if (operation == "packRoot")
-    select_title = l10n_util::GetStringUTF16(
-        IDS_EXTENSION_PACK_DIALOG_SELECT_ROOT);
-  else if (operation == "pem") {
-    select_title = l10n_util::GetStringUTF16(
-        IDS_EXTENSION_PACK_DIALOG_SELECT_KEY);
-    info.extensions.push_back(std::vector<FilePath::StringType>());
-        info.extensions.front().push_back(FILE_PATH_LITERAL("pem"));
-        info.extension_description_overrides.push_back(WideToUTF16(
-            l10n_util::GetString(
-                IDS_EXTENSION_PACK_DIALOG_KEY_FILE_TYPE_DESCRIPTION)));
-        info.include_all_files = true;
-    file_type_index = 1;
-  } else {
-    NOTREACHED();
-    return;
-  }
-
-  load_extension_dialog_ = SelectFileDialog::Create(this);
-  load_extension_dialog_->SelectFile(type, select_title, FilePath(), &info,
-      file_type_index, FILE_PATH_LITERAL(""),
-      dom_ui_->tab_contents()->view()->GetTopLevelNativeWindow(), NULL);
-}
-
-
 void ExtensionsDOMHandler::FileSelected(const FilePath& path, int index,
                                         void* params) {
-  // Add the extensions to the results structure.
-  ListValue results;
-  results.Append(Value::CreateStringValue(path.value()));
-  dom_ui_->CallJavascriptFunction(L"window.handleFilePathSelected", results);
+  extensions_service_->LoadExtension(path);
 }
 
 void ExtensionsDOMHandler::Observe(NotificationType type,
@@ -459,8 +343,6 @@ std::vector<ExtensionPage> ExtensionsDOMHandler::GetActivePagesForExtension(
 }
 
 ExtensionsDOMHandler::~ExtensionsDOMHandler() {
-  if (pack_job_.get())
-    pack_job_->ClearClient();
 }
 
 // ExtensionsDOMHandler, public: -----------------------------------------------

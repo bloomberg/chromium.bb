@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_PACK_EXTENSION_JOB_UI_H_
-#define CHROME_BROWSER_EXTENSIONS_PACK_EXTENSION_JOB_UI_H_
-
 #include <string>
 
 #include "base/file_path.h"
@@ -14,7 +11,7 @@ class MessageLoop;
 
 // Manages packing an extension on the file thread and reporting the result
 // back to the UI.
-class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
+class PackExtensionJob : public base::RefCounted<PackExtensionJob> {
  public:
 
   // Interface for people who want to use PackExtensionJob to implement.
@@ -49,6 +46,3 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
 
   DISALLOW_COPY_AND_ASSIGN(PackExtensionJob);
 };
-
-#endif  // CHROME_BROWSER_EXTENSIONS_PACK_EXTENSION_JOB_UI_H_
-
