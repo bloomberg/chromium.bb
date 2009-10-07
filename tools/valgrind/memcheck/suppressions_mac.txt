@@ -208,6 +208,19 @@
    fun:_ZN3IPC7Channel11ChannelImpl23ProcessOutgoingMessagesEv
 }
 {
+   bug_20814
+   Memcheck:Addr4
+   fun:_ZN10CLVContextC2EPKvm
+   fun:_Z26getAllCarbonLazyValues2000v
+   fun:CLVVisitValuesForKey
+   fun:INIT_ResourceManager
+   fun:CurResFile
+   fun:_ZN5NPAPI12_GLOBAL__N_124ScopedBundleResourceFileC1EP10__CFBundle
+   ...
+   fun:_ZN5NPAPI12_GLOBAL__N_117ReadSTRPluginInfoERK8FilePathP10__CFBundleP13WebPluginInfo
+   fun:_ZN5NPAPI9PluginLib17ReadWebPluginInfoERK8FilePathP13WebPluginInfo
+}
+{
    bug_20997
    Memcheck:Param
    socketcall.sendmsg(msg.msg_iov[i])
