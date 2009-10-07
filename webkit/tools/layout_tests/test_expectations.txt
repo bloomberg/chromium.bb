@@ -3084,8 +3084,8 @@ BUG24102 LINUX MAC : LayoutTests/fast/forms/input-maxlength.html = TIMEOUT
 // Webkit update: 49221:49245
 BUG_HAMAJI : LayoutTests/fast/css/counters/t1204-increment-00-c-o.html = FAIL
 BUG_HAMAJI : LayoutTests/fast/css/counters/t1204-increment-01-c-o.html = FAIL
-
-BUG_JOHNNYG WIN : LayoutTests/fast/forms/select-size.html = CRASH
+BUG_JOHNNYG WIN : LayoutTests/fast/forms/select-size.html = PASS CRASH
+BUG_JOHNNYG WIN : LayoutTests/fast/css/last-child-pseudo-class.html = FAIL
 
 // Failing after r28267
 BUG_24116 : LayoutTests/http/tests/loading/gmail-assert-on-load.html = FAIL
