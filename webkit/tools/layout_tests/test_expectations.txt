@@ -3085,3 +3085,6 @@ BUG_HAMAJI : LayoutTests/fast/css/counters/t1204-increment-00-c-o.html = FAIL
 BUG_HAMAJI : LayoutTests/fast/css/counters/t1204-increment-01-c-o.html = FAIL
 
 BUG_JOHNNYG WIN : LayoutTests/fast/forms/select-size.html = CRASH
+
+// Failing after r28267
+BUG_24116 : LayoutTests/http/tests/loading/gmail-assert-on-load.html = FAIL
