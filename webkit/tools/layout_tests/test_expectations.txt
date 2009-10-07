@@ -3093,5 +3093,5 @@ BUG_24119 LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug1220.html = PASS FAIL
 
 // WebKit roll 49245:49254
 BUG_24142 : LayoutTests/fast/css/large-number-round-trip.html = FAIL
-BUG_JOHNNYG WIN LINUX : LayoutTests/fast/frames/viewsource-link-on-href-value.html = FAIL PASS
+BUG_JOHNNYG WIN LINUX : LayoutTests/fast/frames/viewsource-link-on-href-value.html = FAIL PASS CRASH
 BUG_24159 WIN LINUX : LayoutTests/fast/css/opacity-float.html = FAIL
