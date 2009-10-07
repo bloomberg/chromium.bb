@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/thread.h"
 #include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -208,8 +207,7 @@ TEST_F(WorkerTest, LimitPerPage) {
 }
 #endif
 
-// http://code.google.com/p/chromium/issues/detail?id=22608
-TEST_F(WorkerTest, DISABLED_LimitTotal) {
+TEST_F(WorkerTest, LimitTotal) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   int total_workers = WorkerService::kMaxWorkersWhenSeparate;
 
@@ -224,15 +222,21 @@ TEST_F(WorkerTest, DISABLED_LimitTotal) {
   for (int i = 1; i < tab_count; ++i)
     window->AppendTab(url);
 
+  // The 1 is for the browser process.
+  int number_of_processes = 1 +
+      (UITest::in_process_renderer() ? 0 : tab_count);
+#if defined(OS_LINUX)
+  // On Linux, we also have a zygote process and a sandbox host process.
+  number_of_processes += 2;
+#endif
+
   // Check that we didn't create more than the max number of workers.
-  EXPECT_EQ(total_workers + 1 + (UITest::in_process_renderer() ? 0 : tab_count),
+  EXPECT_EQ(total_workers + number_of_processes,
             UITest::GetBrowserProcessCount());
 
-  // Now close the first tab and check that the queued workers were started.
-  ASSERT_TRUE(tab->Close(true));
-  // Give the tab process time to shut down.
-  PlatformThread::Sleep(sleep_timeout_ms());
+  // Now close a page and check that the queued workers were started.
+  tab->NavigateToURL(GetTestUrl(L"google", L"google.html"));
 
-  EXPECT_EQ(total_workers + 1 + (UITest::in_process_renderer() ? 0 : tab_count),
+  EXPECT_EQ(total_workers + number_of_processes,
             UITest::GetBrowserProcessCount());
 }
