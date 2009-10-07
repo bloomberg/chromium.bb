@@ -155,6 +155,10 @@ r"""
 # use single quotes and escape_quotes.
 escape_quotes = $(subst ','\'',$(1))
 # This comment is here just to include a ' to unconfuse syntax highlighting.
+# Define an escape_vars function to escape '$' variable syntax.
+# This allows us to read/write command lines wth shell variables (e.g.
+# $LD_LIBRARY_PATH), without triggering make substitution.
+escape_vars = $(subst $$,$$$$,$(1))
 """
 """
 # Helper to compare the command we're about to run against the command
@@ -185,7 +189,7 @@ $(if $(or $(command_changed),$(prereq_changed)),
   @echo '  $($(quiet)cmd_$(1))'
   @mkdir -p $(dir $@)
   @$(cmd_$(1))
-  @echo '$(call escape_quotes,cmd_$@ := $(cmd_$(1)))' > $(depfile)
+  @echo '$(call escape_vars,$(call escape_quotes,cmd_$@ := $(cmd_$(1))))' > $(depfile)
   @$(if $(2),$(fixup_dep))
 )
 endef
