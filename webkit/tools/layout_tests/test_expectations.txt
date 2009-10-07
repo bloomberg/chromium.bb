@@ -3048,6 +3048,9 @@ BUG_SENORBLANCO WIN : LayoutTests/fast/text/cg-vs-atsui.html = FAIL
 BUG_SENORBLANCO WIN : LayoutTests/svg/text/text-fonts-01-t.svg = FAIL
 BUG_SENORBLANCO WIN : LayoutTests/svg/text/text-intro-05-t.svg = FAIL
 
+BUG_SENORBLANCO LINUX : LayoutTests/svg/text/text-tselect-02-f.svg = FAIL
+BUG_SENORBLANCO LINUX : LayoutTests/svg/text/text-text-07-t.svg = FAIL
+
 // WebKit update: 49111:49142
 // Added in http://trac.webkit.org/changeset/49131, probably just needs expectations.
 BUG_JPARENT WIN LINUX: LayoutTests/fast/repaint/line-in-scrolled-clipped-block.html = FAIL
