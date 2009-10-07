@@ -958,7 +958,9 @@ gfx::Rect BrowserView::GetRootWindowResizerRect() const {
 }
 
 void BrowserView::DisableInactiveFrame() {
+#if defined(OS_WIN)
   frame_->GetWindow()->DisableInactiveRendering();
+#endif  // No tricks are needed to get the right behavior on Linux.
 }
 
 void BrowserView::ConfirmAddSearchProvider(const TemplateURL* template_url,

@@ -7,6 +7,7 @@
 
 #include <gtk/gtk.h>
 
+#include "app/active_window_watcher_x.h"
 #include "base/message_loop.h"
 #include "views/focus/focus_manager.h"
 #include "views/widget/widget.h"
@@ -30,7 +31,8 @@ class WindowGtk;
 class WidgetGtk
     : public Widget,
       public MessageLoopForUI::Observer,
-      public FocusTraversable {
+      public FocusTraversable,
+      public ActiveWindowWatcherX::Observer {
  public:
   // Type of widget.
   enum Type {
@@ -47,6 +49,17 @@ class WidgetGtk
 
   explicit WidgetGtk(Type type);
   virtual ~WidgetGtk();
+
+  // Marks this window as transient to its parent. A window that is transient
+  // to its parent results in the parent rendering active when the child is
+  // active.
+  // This must be invoked before Init. This is only used for types other than
+  // TYPE_CHILD. The default is false.
+  // See gtk_window_set_transient_for for details.
+  void make_transient_to_parent() {
+    DCHECK(!widget_);
+    transient_to_parent_ = true;
+  }
 
   // Makes the background of the window totally transparent. This must be
   // invoked before Init. This does a couple of checks and returns true if
@@ -87,6 +100,12 @@ class WidgetGtk
   // Are we in PaintNow? See use in root_view_gtk for details on what this is
   // used for.
   bool in_paint_now() const { return in_paint_now_; }
+
+  // Invoked when the active status changes.
+  virtual void IsActiveChanged();
+
+  // Overriden from ActiveWindowWatcherX::Observer.
+  virtual void ActiveWindowChanged(GdkWindow* active_window);
 
   // Overridden from Widget:
   virtual void Init(gfx::NativeView parent, const gfx::Rect& bounds);
@@ -383,6 +402,12 @@ class WidgetGtk
 
   // See description above getter for details.
   bool in_paint_now_;
+
+  // Are we active?
+  bool is_active_;
+
+  // See make_transient_to_parent for a description.
+  bool transient_to_parent_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetGtk);
 };

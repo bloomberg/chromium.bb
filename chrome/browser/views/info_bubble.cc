@@ -211,7 +211,7 @@ void InfoBubble::Close() {
 InfoBubble::InfoBubble()
     :
 #if defined(OS_LINUX)
-      WidgetGtk(TYPE_POPUP),
+      WidgetGtk(TYPE_WINDOW),
 #endif
       delegate_(NULL),
       parent_(NULL),
@@ -223,16 +223,17 @@ void InfoBubble::Init(views::Window* parent,
                       views::View* contents,
                       InfoBubbleDelegate* delegate) {
   parent_ = parent;
-  parent_->DisableInactiveRendering();
   delegate_ = delegate;
 
   // Create the main window.
 #if defined(OS_WIN)
+  parent_->DisableInactiveRendering();
   set_window_style(WS_POPUP | WS_CLIPCHILDREN);
   set_window_ex_style(WS_EX_TOOLWINDOW);
   WidgetWin::Init(parent->GetNativeWindow(), gfx::Rect());
 #elif defined(OS_LINUX)
   MakeTransparent();
+  make_transient_to_parent();
   WidgetGtk::Init(GTK_WIDGET(parent->GetNativeWindow()), gfx::Rect());
 #endif
 
@@ -305,6 +306,11 @@ void InfoBubble::OnActivate(UINT action, BOOL minimized, HWND window) {
     DCHECK(GetRootView()->GetChildViewCount() > 0);
     GetRootView()->GetChildViewAt(0)->RequestFocus();
   }
+}
+#elif defined(OS_LINUX)
+void InfoBubble::IsActiveChanged() {
+  if (!IsActive())
+    Close();
 }
 #endif
 

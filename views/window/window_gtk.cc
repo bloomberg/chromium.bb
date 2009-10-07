@@ -76,7 +76,6 @@ GdkCursorType HitTestCodeToGdkCursorType(int hittest_code) {
 namespace views {
 
 WindowGtk::~WindowGtk() {
-  ActiveWindowWatcherX::RemoveObserver(this);
 }
 
 // static
@@ -159,7 +158,7 @@ void WindowGtk::Restore() {
 }
 
 bool WindowGtk::IsActive() const {
-  return is_active_;
+  return WidgetGtk::IsActive();
 }
 
 bool WindowGtk::IsVisible() const {
@@ -187,11 +186,6 @@ bool WindowGtk::IsFullscreen() const {
 
 void WindowGtk::EnableClose(bool enable) {
   gtk_window_set_deletable(GetNativeWindow(), enable);
-}
-
-void WindowGtk::DisableInactiveRendering() {
-  // TODO(sky): this doesn't make sense as bubbles are popups, which don't
-  // trigger a change in active status.
 }
 
 void WindowGtk::UpdateWindowTitle() {
@@ -338,19 +332,6 @@ gboolean WindowGtk::OnWindowStateEvent(GtkWidget* widget,
   return FALSE;
 }
 
-void WindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
-  if (!GetNativeWindow())
-    return;
-
-  bool was_active = IsActive();
-  is_active_ = (active_window == GTK_WIDGET(GetNativeWindow())->window);
-  if (was_active != IsActive())
-    IsActiveChanged();
-}
-
-void WindowGtk::IsActiveChanged() {
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // WindowGtk, protected:
 
@@ -360,12 +341,9 @@ WindowGtk::WindowGtk(WindowDelegate* window_delegate)
       window_delegate_(window_delegate),
       non_client_view_(new NonClientView(this)),
       window_state_(GDK_WINDOW_STATE_WITHDRAWN),
-      window_closed_(false),
-      is_active_(false) {
+      window_closed_(false) {
   is_window_ = true;
   window_delegate_->window_.reset(this);
-
-  ActiveWindowWatcherX::AddObserver(this);
 }
 
 void WindowGtk::Init(GtkWindow* parent, const gfx::Rect& bounds) {

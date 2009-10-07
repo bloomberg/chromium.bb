@@ -116,6 +116,9 @@ class InfoBubble : public views::WidgetGtk {
 #if defined(OS_WIN)
   // Overridden from WidgetWin:
   virtual void OnActivate(UINT action, BOOL minimized, HWND window);
+#elif defined(OS_LINUX)
+  // Overridden from WidgetGtk:
+  virtual void IsActiveChanged();
 #endif
 
  private:

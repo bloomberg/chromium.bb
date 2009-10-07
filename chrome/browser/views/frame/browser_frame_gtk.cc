@@ -89,6 +89,5 @@ views::RootView* BrowserFrameGtk::CreateRootView() {
 void BrowserFrameGtk::IsActiveChanged() {
   GetRootView()->SchedulePaint();
   browser_view_->ActivationChanged(IsActive());
-  views::WindowGtk::IsActiveChanged();
+  views::WidgetGtk::IsActiveChanged();
 }
-

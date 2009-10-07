@@ -108,7 +108,9 @@ WidgetGtk::WidgetGtk(Type type)
       ignore_drag_leave_(false),
       opacity_(255),
       drag_data_(NULL),
-      in_paint_now_(false) {
+      in_paint_now_(false),
+      is_active_(false),
+      transient_to_parent_(false) {
   static bool installed_message_loop_observer = false;
   if (!installed_message_loop_observer) {
     installed_message_loop_observer = true;
@@ -122,6 +124,8 @@ WidgetGtk::WidgetGtk(Type type)
 }
 
 WidgetGtk::~WidgetGtk() {
+  if (type_ != TYPE_CHILD)
+    ActiveWindowWatcherX::RemoveObserver(this);
   MessageLoopForUI::current()->RemoveObserver(this);
 }
 
@@ -190,11 +194,37 @@ void WidgetGtk::DoDrag(const OSExchangeData& data, int operation) {
   drag_data_ = NULL;
 }
 
+void WidgetGtk::ActiveWindowChanged(GdkWindow* active_window) {
+  if (!GetNativeView())
+    return;
+
+  bool was_active = IsActive();
+  is_active_ = (active_window == GTK_WIDGET(GetNativeView())->window);
+  if (!is_active_ && active_window && type_ != TYPE_CHILD) {
+    // We're not active, but the force the window to be rendered as active if
+    // a child window is transient to us.
+    GtkWidget* widget = NULL;
+    gdk_window_get_user_data(active_window,
+                             reinterpret_cast<gpointer*>(&widget));
+    is_active_ =
+        (widget && GTK_IS_WINDOW(widget) &&
+         gtk_window_get_transient_for(GTK_WINDOW(widget)) == GTK_WINDOW(
+             widget_));
+  }
+  if (was_active != IsActive())
+    IsActiveChanged();
+}
+
+void WidgetGtk::IsActiveChanged() {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, Widget implementation:
 
 void WidgetGtk::Init(GtkWidget* parent,
                      const gfx::Rect& bounds) {
+  if (type_ != TYPE_CHILD)
+    ActiveWindowWatcherX::AddObserver(this);
   // Force creation of the RootView if it hasn't been created yet.
   GetRootView();
 
@@ -433,9 +463,8 @@ bool WidgetGtk::IsVisible() const {
 }
 
 bool WidgetGtk::IsActive() const {
-  // If this only applies to windows, it shouldn't be in widget.
-  DCHECK(GTK_IS_WINDOW(widget_));
-  return gtk_window_is_active(GTK_WINDOW(widget_));
+  DCHECK(type_ != TYPE_CHILD);
+  return is_active_;
 }
 
 void WidgetGtk::GenerateMousePressedForView(View* view,
@@ -558,6 +587,8 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
     widget_ = gtk_window_new(
         (type_ == TYPE_WINDOW || type_ == TYPE_DECORATED_WINDOW) ?
         GTK_WINDOW_TOPLEVEL : GTK_WINDOW_POPUP);
+    if (transient_to_parent_)
+      gtk_window_set_transient_for(GTK_WINDOW(widget_), GTK_WINDOW(parent));
     GTK_WIDGET_UNSET_FLAGS(widget_, GTK_DOUBLE_BUFFERED);
 
     if (!bounds.size().IsEmpty()) {

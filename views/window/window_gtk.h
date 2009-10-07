@@ -5,7 +5,6 @@
 #ifndef VIEWS_WINDOW_WINDOW_GTK_H_
 #define VIEWS_WINDOW_WINDOW_GTK_H_
 
-#include "app/active_window_watcher_x.h"
 #include "base/basictypes.h"
 #include "views/widget/widget_gtk.h"
 #include "views/window/window.h"
@@ -21,9 +20,7 @@ class Client;
 class WindowDelegate;
 
 // Window implementation for GTK.
-class WindowGtk : public WidgetGtk,
-                  public Window,
-                  public ActiveWindowWatcherX::Observer {
+class WindowGtk : public WidgetGtk, public Window {
  public:
   virtual ~WindowGtk();
 
@@ -46,7 +43,6 @@ class WindowGtk : public WidgetGtk,
   virtual void SetFullscreen(bool fullscreen);
   virtual bool IsFullscreen() const;
   virtual void EnableClose(bool enable);
-  virtual void DisableInactiveRendering();
   virtual void UpdateWindowTitle();
   virtual void UpdateWindowIcon();
   virtual void SetIsAlwaysOnTop(bool always_on_top);
@@ -70,13 +66,6 @@ class WindowGtk : public WidgetGtk,
   virtual void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
   virtual gboolean OnWindowStateEvent(GtkWidget* widget,
                                       GdkEventWindowState* event);
-
-  // Overriden from ActiveWindowWatcherX::Observer.
-  virtual void ActiveWindowChanged(GdkWindow* active_window);
-
-  // WindowGtk specific.
-  // Invoked when the active status changes.
-  virtual void IsActiveChanged();
 
  protected:
   // For  the constructor.
@@ -121,9 +110,6 @@ class WindowGtk : public WidgetGtk,
 
   // Set to true if the window is in the process of closing.
   bool window_closed_;
-
-  // Are we active?
-  bool is_active_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowGtk);
 };

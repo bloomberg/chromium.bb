@@ -82,6 +82,13 @@ class Window {
   // Decrements the force hidden count, showing the window if we have reached
   // the top of the stack. See PushForceHidden.
   virtual void PopForceHidden() = 0;
+
+  // Prevents the window from being rendered as deactivated the next time it is.
+  // This state is reset automatically as soon as the window becomes activated
+  // again. There is no ability to control the state through this API as this
+  // leads to sync problems.
+  // For Gtk use WidgetGtk::make_transient_to_parent.
+  virtual void DisableInactiveRendering() = 0;
 #endif
 
   // Activate the window, assuming it already exists and is visible.
@@ -120,12 +127,6 @@ class Window {
   // Toggles the enable state for the Close button (and the Close menu item in
   // the system menu).
   virtual void EnableClose(bool enable) = 0;
-
-  // Prevents the window from being rendered as deactivated the next time it is.
-  // This state is reset automatically as soon as the window becomes activated
-  // again. There is no ability to control the state through this API as this
-  // leads to sync problems.
-  virtual void DisableInactiveRendering() = 0;
 
   // Tell the window to update its title from the delegate.
   virtual void UpdateWindowTitle() = 0;
