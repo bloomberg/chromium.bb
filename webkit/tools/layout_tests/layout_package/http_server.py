@@ -17,6 +17,7 @@ import time
 import urllib
 
 import path_utils
+import google.httpd_utils
 
 def RemoveLogFiles(folder, starts_with):
   files = os.listdir(folder)
@@ -24,9 +25,6 @@ def RemoveLogFiles(folder, starts_with):
     if file.startswith(starts_with) :
       full_path = os.path.join(folder, file)
       os.remove(full_path)
-
-class HttpdNotStarted(Exception):
-  pass
 
 class Lighttpd:
   # Webkit tests
@@ -220,38 +218,14 @@ class Lighttpd:
     for mapping in mappings:
       url = 'http%s://127.0.0.1:%d/' % ('sslcert' in mapping and 's' or '',
                                         mapping['port'])
-      if not self._UrlIsAlive(url):
-        raise HttpdNotStarted('Failed to start httpd on port %s' %
-                              str(mapping['port']))
+      if not google.httpd_utils.UrlIsAlive(url):
+        raise google.httpd_utils.HttpdNotStarted('Failed to start httpd on ',
+                                                 'port %s' %
+                                                 str(mapping['port']))
 
     # Our process terminated already
     if self._process.returncode != None:
-      raise HttpdNotStarted('Failed to start httpd.')
-
-  def _UrlIsAlive(self, url):
-    """Checks to see if we get an http response from |url|.
-    We poll the url 5 times with a 3 second delay.  If we don't
-    get a reply in that time, we give up and assume the httpd
-    didn't start properly.
-
-    Args:
-      url: The URL to check.
-    Return:
-      True if the url is alive.
-    """
-    attempts = 5
-    while attempts > 0:
-      try:
-        response = urllib.urlopen(url)
-        # Server is up and responding.
-        return True
-      except IOError:
-        pass
-      attempts -= 1
-      # Wait 3 seconds and try again.
-      time.sleep(3)
-
-    return False
+      raise google.httpd_utils.HttpdNotStarted('Failed to start httpd.')
 
   # TODO(deanm): Find a nicer way to shutdown cleanly.  Our log files are
   # probably not being flushed, etc... why doesn't our python have os.kill ?
