@@ -3828,7 +3828,7 @@ BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/input-appearance-visibility.html 
 BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/input-appearance-width.html = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/input-baseline.html = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/input-disabled-color.html = FAIL
-BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/input-double-click-selection-gap-bug.html = FAIL
+BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/input-double-click-selection-gap-bug.html = CRASH FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/input-field-text-truncated.html = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/input-paste-undo.html = FAIL
 BUG_SENORBLANCO LINUX : LayoutTests/fast/forms/input-readonly-autoscroll.html = FAIL
@@ -4930,6 +4930,11 @@ BUG_JPARENT WIN LINUX: LayoutTests/fast/repaint/line-in-scrolled-clipped-block.h
 BUG_JORLOW: LayoutTests/storage/domstorage/sessionstorage/complex-values.html = FAIL
 // Added in http://trac.webkit.org/changeset/49153, probably just needs expectations.
 BUG_JPARENT: LayoutTests/svg/filters/sourceAlpha.svg = FAIL
+
+ // WebKit update: 49190:49206
+ BUG_JPARENT MAC DEBUG : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
+ BUG_JPARENT MAC DEBUG : LayoutTests/editing/execCommand/paste-2.html = FAIL PASS
+ BUG_JPARENT WIN DEBUG : LayoutTests/fast/frames/calculate-percentage.html = CRASH
 
 // Started failing for no apparent reason at r28124
 // BUG_SENORBLANCO FAIL on next line is due to Skia roll and should be reverted by end of 10/06/2009
