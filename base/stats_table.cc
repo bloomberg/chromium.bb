@@ -11,8 +11,8 @@
 #include "base/shared_memory.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
-#include "base/sys_string_conversions.h"
 #include "base/thread_local_storage.h"
+#include "base/utf_string_conversions.h"
 
 #if defined(OS_POSIX)
 #include "errno.h"
@@ -170,8 +170,7 @@ StatsTablePrivate* StatsTablePrivate::New(const std::string& name,
                                           int max_threads,
                                           int max_counters) {
   scoped_ptr<StatsTablePrivate> priv(new StatsTablePrivate());
-  if (!priv->shared_memory_.Create(base::SysUTF8ToWide(name), false, true,
-                                   size))
+  if (!priv->shared_memory_.Create(UTF8ToWide(name), false, true, size))
     return NULL;
   if (!priv->shared_memory_.Map(size))
     return NULL;

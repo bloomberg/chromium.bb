@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 
 static const JSONReader::Token kInvalidToken(JSONReader::Token::INVALID_TOKEN,
@@ -118,8 +119,8 @@ std::string JSONReader::FormatErrorMessage(int line, int column,
 }
 
 JSONReader::JSONReader()
-  : start_pos_(NULL), json_pos_(NULL), stack_depth_(0),
-    allow_trailing_comma_(false) {}
+    : start_pos_(NULL), json_pos_(NULL), stack_depth_(0),
+      allow_trailing_comma_(false) {}
 
 Value* JSONReader::JsonToValue(const std::string& json, bool check_root,
                                bool allow_trailing_comma) {

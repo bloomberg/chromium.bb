@@ -11,6 +11,7 @@
 #include "base/platform_thread.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/time.h"
 
 #define USE_UNRELIABLE_NOW

@@ -1,12 +1,18 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <string>
 
+#include "base/string_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_LINUX)
+#include <locale.h>
+#endif
 
 class DownloadManagerTest : public testing::Test {
  public:
@@ -455,6 +461,16 @@ const struct {
 // Tests to ensure that the file names we generate from hints from the server
 // (content-disposition, URL name, etc) don't cause security holes.
 TEST_F(DownloadManagerTest, TestDownloadFilename) {
+#if defined(OS_LINUX)
+  // This test doesn't run when the locale is not UTF-8 becuase some of the
+  // string conversions fail. This is OK (we have the default value) but they
+  // don't match our expectations.
+  std::string locale = setlocale(LC_CTYPE, NULL);
+  StringToLowerASCII(&locale);
+  ASSERT_NE(std::string::npos, locale.find("utf-8"))
+      << "Your locale must be set to UTF-8 for this test to pass!";
+#endif
+
   std::wstring file_name;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kGeneratedFiles); ++i) {
     GetGeneratedFilename(kGeneratedFiles[i].disposition,

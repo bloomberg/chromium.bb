@@ -8,10 +8,10 @@
 class PowerTest : public base::SystemMonitor::PowerObserver {
  public:
   PowerTest()
-    : battery_(false),
-      power_state_changes_(0),
-      suspends_(0),
-      resumes_(0) {};
+      : battery_(false),
+        power_state_changes_(0),
+        suspends_(0),
+        resumes_(0) {};
 
   // PowerObserver callbacks.
   void OnPowerStateChange(bool on_battery_power) {
