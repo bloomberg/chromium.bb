@@ -117,12 +117,6 @@ PREFIX : messageloop::dowork
 # 21295
 PREFIX : renderwidgethost::getbackingstore
 
-# bug 21520 from [25866:25873]
-PREFIX : renderviewhost::setnavigationssuspended___renderviewhostmanager::shouldclosetabonunresponsiverenderer___tabcontents::rendererunresponsive
-
-# bug 21520 from [25874:25879]
-PREFIX : renderviewhost::executejavascriptinwebframe___domui::calljavascriptfunction___downloadsdomhandler::sendcurrentdownloads
-
 # bug 23411
 PREFIX : renderviewhost::setnavigationssuspended___renderviewhostmanager::shouldclosepage___renderviewhost::onmsgshouldcloseack
 SUBSTRING : renderwidgethost::~renderwidgethost___renderviewhost::`scalar deleting destructor'___renderwidgethost::destroy___renderwidgethost::shutdown___renderviewhostmanager::cancelpending
