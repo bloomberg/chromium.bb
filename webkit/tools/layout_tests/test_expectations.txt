@@ -3109,3 +3109,11 @@ BUG_SENORBLANCO MAC DEBUG : LayoutTests/svg/custom/path-bad-data.svg = FAIL
 BUG_SENORBLANCO LINUX DEBUG : LayoutTests/svg/text/text-text-07-t.svg = FAIL
 BUG_SENORBLANCO LINUX DEBUG : LayoutTests/svg/text/text-tselect-02-f.svg = FAIL
 BUG_SENORBLANCO WIN RELEASE : LayoutTests/fast/frames/onlyCommentInIFrame.html = FAIL
+
+// WebKit roll 49254:49260
+BUG_JOHNNYG REBASELINE : LayoutTests/media/audio-controls-rendering.html = FAIL
+BUG_JOHNNYG REBASELINE : LayoutTests/media/controls-after-reload.html = FAIL
+BUG_JOHNNYG REBASELINE : LayoutTests/media/controls-strict.html = FAIL
+BUG_JOHNNYG REBASELINE : LayoutTests/media/video-controls-rendering.html = FAIL
+BUG_JOHNNYG REBASELINE : LayoutTests/media/video-display-toggle.html = FAIL
+BUG_JOHNNYG REBASELINE : LayoutTests/media/video-empty-source.html = FAIL
