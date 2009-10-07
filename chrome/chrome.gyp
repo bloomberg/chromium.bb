@@ -1696,6 +1696,8 @@
         'browser/net/url_request_slow_http_job.h',
         'browser/net/url_request_tracking.cc',
         'browser/net/url_request_tracking.h',
+        'browser/ntp_background_util.cc',
+        'browser/ntp_background_util.h',
         'browser/omnibox_search_hint.cc',
         'browser/omnibox_search_hint.h',
         'browser/options_page_base.cc',

@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "app/gfx/canvas_paint.h"
 #include "app/gfx/text_elider.h"
 #include "app/gtk_dnd_util.h"
 #include "app/l10n_util.h"
@@ -30,8 +31,10 @@
 #include "chrome/browser/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/ntp_background_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -1017,12 +1020,12 @@ gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
   if (theme_provider->UseGtkTheme() && !bar->floating_)
     return FALSE;
 
-  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
-  cairo_rectangle(cr, event->area.x, event->area.y,
-                  event->area.width, event->area.height);
-  cairo_clip(cr);
-
   if (!bar->floating_) {
+    cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(widget->window));
+    cairo_rectangle(cr, event->area.x, event->area.y,
+                    event->area.width, event->area.height);
+    cairo_clip(cr);
+
     // Paint the background theme image.
     gfx::Point tabstrip_origin =
         bar->tabstrip_origin_provider_->GetTabStripOriginForWidget(widget);
@@ -1038,39 +1041,29 @@ gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
         event->area.x + event->area.width - tabstrip_origin.x(),
         event->area.y + event->area.height - tabstrip_origin.y());
     cairo_fill(cr);
+
+    cairo_destroy(cr);
   } else {
-    // Paint the NTP background. First set the background color.
-    GdkColor bg_color = theme_provider->UseGtkTheme() ? gfx::kGdkWhite :
-        theme_provider->GetGdkColor(BrowserThemeProvider::COLOR_NTP_BACKGROUND);
-    double bg_color_rgb[] = {
-        static_cast<double>(bg_color.red / 257) / 255.0,
-        static_cast<double>(bg_color.green / 257) / 255.0,
-        static_cast<double>(bg_color.blue / 257) / 255.0, };
-    cairo_set_source_rgb(cr, bg_color_rgb[0], bg_color_rgb[1], bg_color_rgb[2]);
-    cairo_rectangle(cr,
-        event->area.x,
-        event->area.y,
-        event->area.width,
-        event->area.height);
-    cairo_fill(cr);
-
-    // Now paint the image, if it exists.
-    // TODO(estade): handle different alignments.
-    if (theme_provider->HasCustomImage(IDR_THEME_NTP_BACKGROUND)) {
-      CairoCachedSurface* background = theme_provider->GetSurfaceNamed(
-          IDR_THEME_NTP_BACKGROUND, widget);
-      background->SetSource(cr, widget->allocation.x, widget->allocation.y);
-      cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
-      cairo_rectangle(cr,
-          event->area.x,
-          event->area.y,
-          event->area.width,
-          event->area.height);
-      cairo_fill(cr);
+    gfx::Size tab_contents_size;
+    Browser* browser = bar->browser_;
+    if (!browser) {
+      NOTREACHED();
+      return FALSE;
     }
+    TabContents* tab_contents = browser->GetSelectedTabContents();
+    if (!tab_contents) {
+      NOTREACHED();
+      return FALSE;
+    }
+    if (!tab_contents->view()) {
+      NOTREACHED();
+      return FALSE;
+    }
+    tab_contents_size = tab_contents->view()->GetContainerSize();
+    gfx::CanvasPaint canvas(event, true);
+    NtpBackgroundUtil::PaintBackgroundDetachedMode(theme_provider, &canvas,
+        gfx::Rect(widget->allocation), tab_contents_size.height());
   }
-
-  cairo_destroy(cr);
 
   return FALSE;  // Propagate expose to children.
 }
