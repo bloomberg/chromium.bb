@@ -10,6 +10,12 @@
 static const char kTestCompleteCookie[] = "status";
 static const char kTestCompleteSuccess[] = "OK";
 
+#if defined(OS_WIN)
+#define MAYBE_LimitTotal FLAKY_LimitTotal
+#else
+#define MAYBE_LimitTotal LimitTotal
+#endif
+
 class WorkerTest : public UILayoutTest {
  protected:
   virtual ~WorkerTest() { }
@@ -207,7 +213,7 @@ TEST_F(WorkerTest, LimitPerPage) {
 }
 #endif
 
-TEST_F(WorkerTest, LimitTotal) {
+TEST_F(WorkerTest, MAYBE_LimitTotal) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   int total_workers = WorkerService::kMaxWorkersWhenSeparate;
 
