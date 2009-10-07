@@ -13,7 +13,6 @@
 #include "base/json_reader.h"
 #include "base/string_util.h"
 #include "base/time.h"
-#include "base/values.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/cross_site_request_manager.h"
@@ -1122,29 +1121,14 @@ void RenderViewHost::OnDeterminePageTextReply(
 #if defined(OS_WIN)  // Only for windows.
     int num_languages = 0;
     bool is_reliable = false;
-    Language language[3];
-    int percent[3];
-    int text_bytes;
-    DetectLanguageSummaryOfUnicodeText(page_text.c_str(), true, language,
-        percent, &text_bytes, &is_reliable);
-
-    // The summary returns the top three languages. Put these languages and
-    // their corresponding percentages as a list of DictionaryValues objects.
-    scoped_ptr<ListValue> list_value(new ListValue());
-    for (int i = 0; i < 3; i++) {
-      DictionaryValue* language_summary = new DictionaryValue();
-      std::string language_string(LanguageCodeISO639_1(language[i]));
-      language_summary->Set(L"languageName",
-                            Value::CreateStringValue(language_string));
-      language_summary->Set(L"percentUsed",
-                            Value::CreateIntegerValue(percent[i]));
-      list_value->Append(language_summary);
-    }
-
+    const char* language_iso_code = LanguageCodeISO639_1(
+        DetectLanguageOfUnicodeText(page_text.c_str(), true, &is_reliable,
+                                    &num_languages, NULL));
+    std::string language(language_iso_code);
     NotificationService::current()->Notify(
         NotificationType::TAB_LANGUAGE_DETERMINED,
         Source<RenderViewHost>(this),
-        Details<ListValue>(list_value.get()));
+        Details<std::string>(&language));
 #endif
 }
 

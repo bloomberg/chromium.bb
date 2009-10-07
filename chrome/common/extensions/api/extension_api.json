@@ -551,23 +551,9 @@
             "name": "callback",
             "parameters": [
               {
-                "type": "array",
-                "name": "topLanguages",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "languageName": {
-                      "type": "string",
-                      "description": "An ISO language code like <var>en</var> or <var>fr</var>. For the complete list of languages supported by this method, see 2nd column of kLanguageInfoTable in http://src.chromium.org/viewvc/chrome/trunk/src/third_party/cld/bar/toolbar/cld/i18n/languages/internal/languages.cc"
-                 },
-                    "percentUsed": {
-                      "type": "number",
-                      "description": "The percentage of the page that uses this language",
-                      "minimum": 0, "maximum": 100
-                    }
-                  }
-                },
-                "description": "The top three languages used in the document, in decreasing order of usage."
+                "type": "string",
+                "name": "language",
+                "description": "An ISO language code like <var>en</var> or <var>fr</var>. For the complete list of languages supported by this method, see 2nd column of kLanguageInfoTable in http://src.chromium.org/viewvc/chrome/trunk/src/third_party/cld/bar/toolbar/cld/i18n/languages/internal/languages.cc"
               }
             ]
           }

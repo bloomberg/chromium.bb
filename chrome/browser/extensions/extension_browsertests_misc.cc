@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Toolstrip) {
   // actually call the language detection API through the existing extension,
   // and verify that the language returned is indeed French.
   FilePath language_url = extension_test_data_dir.AppendASCII(
-      "three_languages.html");
+      "french_sentence.html");
   ui_test_utils::NavigateToURL(
       browser(),
       GURL(language_url.ToWStringHack()));
