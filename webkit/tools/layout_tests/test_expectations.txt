@@ -1612,7 +1612,8 @@ BUG23498 MAC : LayoutTests/fast/forms/form-hides-table.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/forms/input-table.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/forms/textAreaLineHeight.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/forms/textarea-rows-cols.html = IMAGE
-BUG23498 MAC : LayoutTests/fast/frames/frame-scrolling-attribute.html = IMAGE
+// Also BUG_24121 for the CRASH
+BUG23498 MAC : LayoutTests/fast/frames/frame-scrolling-attribute.html = IMAGE CRASH
 BUG23498 MAC : LayoutTests/fast/frames/iframe-scrolling-attribute.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/frames/invalid.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/frames/onlyCommentInIFrame.html = IMAGE
@@ -3088,3 +3089,6 @@ BUG_JOHNNYG WIN : LayoutTests/fast/forms/select-size.html = CRASH
 
 // Failing after r28267
 BUG_24116 : LayoutTests/http/tests/loading/gmail-assert-on-load.html = FAIL
+
+// Failing at WebKit Linux (dbg)(3) build 7795
+BUG_24119 LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug1220.html = PASS FAIL
