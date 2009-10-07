@@ -41,15 +41,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-#if NACL_LINUX && defined(MOZ_X11)
-#include <X11/Xlib.h>
-#include <X11/Intrinsic.h>
-#endif  // NACL_LINUX && defined(MOZ_X11)
-
 #include <string>
 
 #include "native_client/src/shared/imc/nacl_imc.h"
-// #include "native_client/npapi_plugin/npinstance.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npbridge.h"
 #include "native_client/src/shared/npruntime/nprpc.h"
