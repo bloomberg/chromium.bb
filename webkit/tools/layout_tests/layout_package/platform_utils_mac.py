@@ -97,7 +97,13 @@ def ShutDownHTTPServer(server_process):
   if server_process is None:
     # TODO(mmoss) This isn't ideal, since it could conflict with lighttpd
     # processes not started by http_server.py, but good enough for now.
-    subprocess.call(['killall', '-u', os.getenv('USER'), '-TERM', 'lighttpd'])
+
+    # On 10.6, killall has a new constraint: -SIGNALNAME or
+    # -SIGNALNUMBER must come first.  Example problem:
+    #   $ killall -u $USER -TERM lighttpd
+    #   killall: illegal option -- T
+    # Use of the earlier -TERM placement is just fine on 10.5.
+    subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), 'lighttpd'])
   else:
     os.kill(server_process.pid, signal.SIGTERM)
 
@@ -106,4 +112,3 @@ def KillAllTestShells():
    subprocess.Popen(('killall', '-TERM', 'test_shell'),
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE).wait()
-
