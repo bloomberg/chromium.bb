@@ -43,7 +43,6 @@ const gint kTaskManagerAboutMemoryLink = 2;
 enum TaskManagerColumn {
   kTaskManagerIcon,
   kTaskManagerPage,
-  kTaskManagerPhysicalMem,
   kTaskManagerSharedMem,
   kTaskManagerPrivateMem,
   kTaskManagerCPU,
@@ -60,8 +59,6 @@ TaskManagerColumn TaskManagerResourceIDToColumnID(int id) {
   switch (id) {
     case IDS_TASK_MANAGER_PAGE_COLUMN:
       return kTaskManagerPage;
-    case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN:
-      return kTaskManagerPhysicalMem;
     case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:
       return kTaskManagerSharedMem;
     case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:
@@ -90,8 +87,6 @@ int TaskManagerColumnIDToResourceID(int id) {
   switch (id) {
     case kTaskManagerPage:
       return IDS_TASK_MANAGER_PAGE_COLUMN;
-    case kTaskManagerPhysicalMem:
-      return IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN;
     case kTaskManagerSharedMem:
       return IDS_TASK_MANAGER_SHARED_MEM_COLUMN;
     case kTaskManagerPrivateMem:
@@ -473,9 +468,6 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
                                   kTaskManagerPage,
                                   ComparePage, this, NULL);
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
-                                  kTaskManagerPhysicalMem,
-                                  ComparePhysicalMemory, this, NULL);
-  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
                                   kTaskManagerSharedMem,
                                   CompareSharedMemory, this, NULL);
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(process_list_sort_),
@@ -506,7 +498,6 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
 
   // Insert all the columns.
   TreeViewInsertColumnWithPixbuf(treeview_, IDS_TASK_MANAGER_PAGE_COLUMN);
-  TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_SHARED_MEM_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_CPU_COLUMN);
@@ -519,7 +510,6 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN);
 
   // Hide some columns by default.
-  TreeViewColumnSetVisible(treeview_, kTaskManagerSharedMem, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerPrivateMem, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerProcessID, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerWebCoreImageCache, false);
@@ -545,11 +535,6 @@ std::string TaskManagerGtk::GetModelText(int row, int col_id) {
       if (!model_->IsResourceFirstInGroup(row))
         return std::string();
       return WideToUTF8(model_->GetResourceSharedMemory(row));
-
-    case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN:  // Memory
-      if (!model_->IsResourceFirstInGroup(row))
-        return std::string();
-      return WideToUTF8(model_->GetResourcePhysicalMemory(row));
 
     case IDS_TASK_MANAGER_CPU_COLUMN:  // CPU
       if (!model_->IsResourceFirstInGroup(row))
@@ -602,8 +587,6 @@ GdkPixbuf* TaskManagerGtk::GetModelIcon(int row) {
 void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {
   GdkPixbuf* icon = GetModelIcon(row);
   std::string page = GetModelText(row, IDS_TASK_MANAGER_PAGE_COLUMN);
-  std::string phys_mem = GetModelText(
-      row, IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN);
   std::string shared_mem = GetModelText(
       row, IDS_TASK_MANAGER_SHARED_MEM_COLUMN);
   std::string priv_mem = GetModelText(row, IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN);
@@ -631,7 +614,6 @@ void TaskManagerGtk::SetRowDataFromModel(int row, GtkTreeIter* iter) {
   gtk_list_store_set(process_list_, iter,
                      kTaskManagerIcon, icon,
                      kTaskManagerPage, page.c_str(),
-                     kTaskManagerPhysicalMem, phys_mem.c_str(),
                      kTaskManagerSharedMem, shared_mem.c_str(),
                      kTaskManagerPrivateMem, priv_mem.c_str(),
                      kTaskManagerCPU, cpu.c_str(),
@@ -748,7 +730,7 @@ void TaskManagerGtk::OnTreeViewRealize(GtkTreeView* treeview,
   // size even if the data would overflow, preventing a horizontal scroll
   // bar from appearing due to the row data.
   const TaskManagerColumn dfl_columns[] = {kTaskManagerNetwork, kTaskManagerCPU,
-                                           kTaskManagerPhysicalMem};
+                                           kTaskManagerSharedMem};
   GtkTreeViewColumn* column = NULL;
   gint width;
   for (size_t i = 0; i < arraysize(dfl_columns); ++i) {
