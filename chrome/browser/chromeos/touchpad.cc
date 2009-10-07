@@ -104,19 +104,17 @@ void Touchpad::SetVertEdgeScroll() {
 }
 
 void Touchpad::SetSpeedFactor() {
-  // To set speed factor, we use MinSpeed. Both MaxSpeed and AccelFactor are 0.
-  // So MinSpeed will control the speed of the cursor with respect to the
-  // touchpad movement and there will not be any acceleration.
-  // MinSpeed is between 0.01 and 1.00. The preference is an integer between
-  // 1 and 10, so we divide that by 10 for the value of MinSpeed.
+  // To set speed factor, we use MaxSpeed. MinSpeed is set to 0.2.
+  // MaxSpeed can go from 0.2 to 1.1. The preference is an integer between
+  // 1 and 10, so we divide that by 10 and add 0.1 for the value of MaxSpeed.
   int value = speed_factor_.GetValue();
   if (value < 1)
     value = 1;
   if (value > 10)
     value = 10;
-  // Convert from 1-10 to 0.1-1.0
-  double d = static_cast<double>(value) / 10.0;
-  SetSynclientParam("MinSpeed", d);
+  // Convert from 1-10 to 0.2-1.1
+  double d = static_cast<double>(value) / 10.0 + 0.1;
+  SetSynclientParam("MaxSpeed", d);
 }
 
 void Touchpad::SetSensitivity() {
