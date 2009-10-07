@@ -7,6 +7,7 @@
 
 #include "base/hash_tables.h"
 #include "base/nullable_string16.h"
+#include "base/scoped_ptr.h"
 
 namespace WebKit {
 class WebStorageArea;
@@ -35,7 +36,7 @@ class StorageArea {
   string16 origin_;
 
   // The storage area we wrap.
-  WebKit::WebStorageArea* storage_area_;
+  scoped_ptr<WebKit::WebStorageArea> storage_area_;
 
   // Our storage area id.  Unique to our parent WebKitContext.
   int64 id_;

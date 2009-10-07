@@ -7,6 +7,7 @@
 
 #include "base/string16.h"
 #include "base/hash_tables.h"
+#include "base/scoped_ptr.h"
 #include "chrome/common/dom_storage_type.h"
 
 class DOMStorageContext;
@@ -51,7 +52,7 @@ class StorageNamespace {
   DOMStorageContext* dom_storage_context_;
 
   // The WebKit storage namespace we manage.
-  WebKit::WebStorageNamespace* storage_namespace_;
+  scoped_ptr<WebKit::WebStorageNamespace> storage_namespace_;
 
   // Our id.  Unique to our parent WebKitContext class.
   int64 id_;

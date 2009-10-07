@@ -49,7 +49,7 @@ StorageNamespace::StorageNamespace(DOMStorageContext* dom_storage_context,
       id_(id),
       dom_storage_type_(dom_storage_type) {
   DCHECK(dom_storage_context_);
-  DCHECK(storage_namespace_);
+  DCHECK(storage_namespace_.get());
   dom_storage_context_->RegisterStorageNamespace(this);
 }
 

@@ -15,6 +15,7 @@ StorageArea::StorageArea(const string16& origin, WebStorageArea* storage_area,
     : origin_(origin),
       storage_area_(storage_area),
       id_(id) {
+  DCHECK(storage_area_.get());
 }
 
 StorageArea::~StorageArea() {
