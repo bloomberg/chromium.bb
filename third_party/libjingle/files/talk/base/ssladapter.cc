@@ -31,7 +31,8 @@
 #ifdef WIN32
 #define SSL_USE_SCHANNEL 1
 #else  // !WIN32
-#define SSL_USE_OPENSSL 1
+// Turn off OpenSSL
+//#define SSL_USE_OPENSSL 1
 #endif  // !WIN32
 #endif
 
@@ -82,7 +83,11 @@ namespace talk_base {
 
 SSLAdapter*
 SSLAdapter::Create(AsyncSocket* socket) {
+#if SSL_USE_OPENSSL || SSL_USE_SCHANNEL
   return new DefaultSSLAdapter(socket);
+#else
+  return NULL;
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

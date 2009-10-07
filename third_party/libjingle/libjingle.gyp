@@ -261,6 +261,11 @@
             'files/talk/base/winping.h',
           ],
         }],
+        ['OS=="linux"', {
+          'sources': [
+            'files/talk/base/unixfilesystem.cc',
+          ],
+        }],
       ],
     },
   ],
