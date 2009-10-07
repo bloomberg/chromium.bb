@@ -15,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "grit/generated_resources.h"
+#include "skia/ext/skia_utils_mac.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 @interface KeywordEditorCocoaController (Private)
@@ -25,7 +26,13 @@
 // KeywordEditorModelObserver -------------------------------------------------
 
 KeywordEditorModelObserver::KeywordEditorModelObserver(
-    KeywordEditorCocoaController* controller) : controller_(controller) {
+    KeywordEditorCocoaController* controller)
+    : controller_(controller),
+      iconImages_([[NSPointerArray alloc] initWithOptions:
+          NSPointerFunctionsStrongMemory |
+          NSPointerFunctionsObjectPersonality]) {
+  int count = [controller_ controller]->table_model()->RowCount();
+  [iconImages_ setCount:count];
 }
 
 KeywordEditorModelObserver::~KeywordEditorModelObserver() {
@@ -49,6 +56,56 @@ void KeywordEditorModelObserver::OnEditedKeyword(
   }
 }
 
+void KeywordEditorModelObserver::OnModelChanged() {
+  InvalidateIconCache(0, [iconImages_ count]);
+  int count = [controller_ controller]->table_model()->RowCount();
+  [iconImages_ setCount:count];
+  [controller_ modelChanged];
+}
+
+void KeywordEditorModelObserver::OnItemsChanged(int start, int length) {
+  InvalidateIconCache(start, length);
+  [controller_ modelChanged];
+}
+
+void KeywordEditorModelObserver::OnItemsAdded(int start, int length) {
+  DCHECK_LE(start, static_cast<int>([iconImages_ count]));
+  for (int i = 0; i < length; ++i) {
+    [iconImages_ insertPointer:NULL atIndex:start];  // Values slide down.
+  }
+  [controller_ modelChanged];
+}
+
+void KeywordEditorModelObserver::OnItemsRemoved(int start, int length) {
+  DCHECK_LE(start + length, static_cast<int>([iconImages_ count]));
+  for (int i = 0; i < length; ++i) {
+    [iconImages_ removePointerAtIndex:start];  // Values slide up.
+  }
+  [controller_ modelChanged];
+}
+
+NSImage* KeywordEditorModelObserver::GetImageForRow(int row) {
+  DCHECK(row >= 0 && row < static_cast<int>([iconImages_ count]));
+  NSImage* image = static_cast<NSImage*>([iconImages_ pointerAtIndex:row]);
+  if (!image) {
+    const SkBitmap bitmapIcon =
+        [controller_ controller]->table_model()->GetIcon(row);
+    if (!bitmapIcon.isNull()) {
+      image = gfx::SkBitmapToNSImage(bitmapIcon);
+      DCHECK(image);
+      [iconImages_ replacePointerAtIndex:row withPointer:image];
+    }
+  }
+  return image;
+}
+
+void KeywordEditorModelObserver::InvalidateIconCache(int start, int length) {
+  DCHECK_LE(start + length, static_cast<int>([iconImages_ count]));
+  for (int i = start; i < (start + length); ++i) {
+    [iconImages_ replacePointerAtIndex:i withPointer:NULL];
+  }
+}
+
 // KeywordEditorCocoaController -----------------------------------------------
 
 @implementation KeywordEditorCocoaController
@@ -62,12 +119,14 @@ void KeywordEditorModelObserver::OnEditedKeyword(
     profile_ = profile;
     controller_.reset(new KeywordEditorController(profile_));
     observer_.reset(new KeywordEditorModelObserver(self));
+    controller_->table_model()->SetObserver(observer_.get());
     controller_->url_model()->AddObserver(observer_.get());
   }
   return self;
 }
 
 - (void)dealloc {
+  controller_->table_model()->SetObserver(NULL);
   controller_->url_model()->RemoveObserver(observer_.get());
   [super dealloc];
 }
@@ -175,18 +234,26 @@ void KeywordEditorModelObserver::OnEditedKeyword(
 }
 
 - (id)tableView:(NSTableView*)tv
-objectValueForTableColumn:(NSTableColumn*)tableColumn
-            row:(NSInteger)row {
+    objectValueForTableColumn:(NSTableColumn*)tableColumn
+                          row:(NSInteger)row {
+  if (!tableColumn)
+    return nil;
   NSString* identifier = [tableColumn identifier];
-  int columnID = -1;
+
   if ([identifier isEqualToString:@"name"]) {
-    columnID = IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_COLUMN;
+    // The name column is an NSButtonCell so we can have text and image in the
+    // same cell. As such, the "object value" for a button cell is either on
+    // or off, so we always return off so we don't act like a button.
+    return [NSNumber numberWithInt:NSOffState];
   } else if ([identifier isEqualToString:@"keyword"]) {
-    columnID = IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN;
+    // The keyword object value is a normal string.
+    int columnID = IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN;
+    std::wstring text = controller_->table_model()->GetText(row, columnID);
+    return base::SysWideToNSString(text);
   }
-  DCHECK_NE(columnID, -1);
-  std::wstring text = controller_->table_model()->GetText(row, columnID);
-  return base::SysWideToNSString(text);
+  // And we shouldn't have any other columns...
+  NOTREACHED();
+  return nil;
 }
 
 // Table View Delegate --------------------------------------------------------
@@ -196,11 +263,25 @@ objectValueForTableColumn:(NSTableColumn*)tableColumn
   [self adjustEditingButtons];
 }
 
-- (NSCell*)tableView:(NSTableView *)tableView
-dataCellForTableColumn:(NSTableColumn*)tableColumn
-                 row:(NSInteger)row {
+- (NSCell*)tableView:(NSTableView*)tableView
+    dataCellForTableColumn:(NSTableColumn*)tableColumn
+                       row:(NSInteger)row {
   static const CGFloat kCellFontSize = 12.0;
   NSCell* cell = [tableColumn dataCellForRow:row];
+
+  // Set the favicon and title for the search engine in the name column.
+  if ([[tableColumn identifier] isEqualToString:@"name"]) {
+    DCHECK([cell isKindOfClass:[NSButtonCell class]]);
+	NSButtonCell* buttonCell = static_cast<NSButtonCell*>(cell);
+    std::wstring title = controller_->table_model()->GetText(row,
+        IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_COLUMN);
+    [buttonCell setTitle:base::SysWideToNSString(title)];
+    [buttonCell setImage:observer_->GetImageForRow(row)];
+    [buttonCell setRefusesFirstResponder:YES];  // Don't push in like a button.
+    [buttonCell setHighlightsBy:NSNoCellMask];
+  }
+
+  // The default search engine should be in bold font.
   const TemplateURL* defaultEngine =
       controller_->url_model()->GetDefaultSearchProvider();
   if (controller_->table_model()->IndexOfTemplateURL(defaultEngine) == row) {

@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "app/table_model_observer.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/search_engines/edit_search_engine_controller.h"
 #include "chrome/browser/search_engines/keyword_editor_controller.h"
@@ -15,7 +16,8 @@ class Profile;
 
 // Very thin bridge that simply pushes notifications from C++ to ObjC.
 class KeywordEditorModelObserver : public TemplateURLModelObserver,
-                                   public EditSearchEngineControllerDelegate {
+                                   public EditSearchEngineControllerDelegate,
+                                   public TableModelObserver {
  public:
   explicit KeywordEditorModelObserver(KeywordEditorCocoaController* controller);
   virtual ~KeywordEditorModelObserver();
@@ -33,8 +35,25 @@ class KeywordEditorModelObserver : public TemplateURLModelObserver,
                                const std::wstring& keyword,
                                const std::wstring& url);
 
+  // TableModelObserver overrides. Invalidate icon cache.
+  virtual void OnModelChanged();
+  virtual void OnItemsChanged(int start, int length);
+  virtual void OnItemsAdded(int start, int length);
+  virtual void OnItemsRemoved(int start, int length);
+
+  // Lazily converts the image at the given row and caches it in |iconImages_|.
+  NSImage* GetImageForRow(int row);
+
+ protected:
+  // Invalidates a range of the |iconImages_| cache.
+  void InvalidateIconCache(int start, int length);
+
  private:
   KeywordEditorCocoaController* controller_;
+
+  // Stores strong NSImage refs for icons. If an entry is NULL, it will be
+  // created in GetImageForRow().
+  scoped_nsobject<NSPointerArray> iconImages_;
 
   DISALLOW_COPY_AND_ASSIGN(KeywordEditorModelObserver);
 };
@@ -56,6 +75,8 @@ class KeywordEditorModelObserver : public TemplateURLModelObserver,
 @property (readonly) KeywordEditorController* controller;
 
 - (id)initWithProfile:(Profile*)profile;
+
+- (KeywordEditorController*)controller;
 
 // Message forwarded by KeywordEditorModelObserver.
 - (void)modelChanged;
