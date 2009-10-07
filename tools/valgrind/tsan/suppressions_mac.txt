@@ -90,11 +90,9 @@
 }
 
 {
-  A warning inside AudioQueueStop
+  Benign data race in CAMutex bug_23579
   ThreadSanitizer:Race
-  fun:*CAMutex*Lock*
-  ...
-  fun:*AudioQueueStop*
+  fun:*CAMutex*ock*
 }
 
 #-----------------------------------------------------------------------
