@@ -154,6 +154,8 @@ static float kFindBarCloseDuration = 0.15;
              command == @selector(pageDown:) ||
              command == @selector(pageDownAndModifySelection:) ||
              command == @selector(scrollPageDown:) ||
+             command == @selector(scrollToBeginningOfDocument:) ||
+             command == @selector(scrollToEndOfDocument:) ||
              command == @selector(moveUp:) ||
              command == @selector(moveDown:)) {
     TabContents* contents =
@@ -168,7 +170,10 @@ static float kFindBarCloseDuration = 0.15;
 
     // Forward the event to the renderer.
     // TODO(rohitrao): Should this call -[BaseView keyEvent:]?  Is there code in
-    // that function that we want to keep or avoid?
+    // that function that we want to keep or avoid? Calling
+    // |ForwardKeyboardEvent()| directly ignores edit commands, which breaks
+    // cmd-up/down if we ever decide to include |moveToBeginningOfDocument:| in
+    // the list above.
     RenderViewHost* render_view_host = contents->render_view_host();
     render_view_host->ForwardKeyboardEvent(NativeWebKeyboardEvent(event));
     return YES;
