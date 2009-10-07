@@ -127,6 +127,9 @@ class SelectFileDialogImpl : public SelectFileDialog {
   // The GtkImage widget for showing previews of selected images.
   GtkWidget* preview_;
 
+  // All our dialogs.
+  std::set<GtkWidget*> dialogs_;
+
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImpl);
 };
 
@@ -151,6 +154,10 @@ SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener)
 }
 
 SelectFileDialogImpl::~SelectFileDialogImpl() {
+  for (std::set<GtkWidget*>::iterator iter = dialogs_.begin();
+       iter != dialogs_.end(); ++iter) {
+    gtk_widget_destroy(*iter);
+  }
 }
 
 bool SelectFileDialogImpl::IsRunning(gfx::NativeWindow parent_window) const {
@@ -205,6 +212,7 @@ void SelectFileDialogImpl::SelectFile(
       NOTREACHED();
       return;
   }
+  dialogs_.insert(dialog);
 
   preview_ = gtk_image_new();
   g_signal_connect(dialog, "update-preview", G_CALLBACK(OnUpdatePreview), this);
@@ -287,6 +295,7 @@ void SelectFileDialogImpl::FileSelected(GtkWidget* dialog,
   }
   RemoveParentForDialog(dialog);
   gtk_widget_destroy(dialog);
+  dialogs_.erase(dialog);
 }
 
 void SelectFileDialogImpl::MultiFilesSelected(GtkWidget* dialog,
@@ -297,6 +306,7 @@ void SelectFileDialogImpl::MultiFilesSelected(GtkWidget* dialog,
     listener_->MultiFilesSelected(files, PopParamsForDialog(dialog));
   RemoveParentForDialog(dialog);
   gtk_widget_destroy(dialog);
+  dialogs_.erase(dialog);
 }
 
 void SelectFileDialogImpl::FileNotSelected(GtkWidget* dialog) {
@@ -305,6 +315,7 @@ void SelectFileDialogImpl::FileNotSelected(GtkWidget* dialog) {
     listener_->FileSelectionCanceled(params);
   RemoveParentForDialog(dialog);
   gtk_widget_destroy(dialog);
+  dialogs_.erase(dialog);
 }
 
 GtkWidget* SelectFileDialogImpl::CreateSelectFolderDialog(
