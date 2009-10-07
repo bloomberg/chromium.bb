@@ -76,7 +76,10 @@ class TestGypBase(TestCommon.TestCommon):
 
     super(TestGypBase, self).__init__(*args, **kw)
 
-    if formats and self.format not in formats:
+    excluded_formats = set([f for f in formats if f[0] == '!'])
+    included_formats = set(formats) - excluded_formats
+    if ('!'+self.format in excluded_formats or
+        included_formats and self.format not in included_formats):
       msg = 'Invalid test for %r format; skipping test.\n'
       self.skip_test(msg % self.format)
 
