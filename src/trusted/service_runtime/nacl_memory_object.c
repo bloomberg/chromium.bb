@@ -45,8 +45,8 @@
  */
 int NaClMemObjCtor(struct NaClMemObj  *nmop,
                    struct NaClDesc    *ndp,
-                   off_t              nbytes,
-                   off_t              offset) {
+                   nacl_off64_t       nbytes,
+                   nacl_off64_t       offset) {
   if (NULL == ndp) {
     NaClLog(LOG_FATAL, "NaClMemObjCtor: ndp is NULL\n");
   }
@@ -63,7 +63,7 @@ int NaClMemObjCtor(struct NaClMemObj  *nmop,
  */
 int NaClMemObjCopyCtorOff(struct NaClMemObj *nmop,
                           struct NaClMemObj *src,
-                          off_t             additional) {
+                          nacl_off64_t      additional) {
   nmop->ndp = src->ndp;
   NaClDescRef(nmop->ndp);
   nmop->nbytes = src->nbytes;
@@ -81,8 +81,8 @@ void NaClMemObjDtor(struct NaClMemObj *nmop) {
 
 
 struct NaClMemObj *NaClMemObjMake(struct NaClDesc *ndp,
-                                  off_t           nbytes,
-                                  off_t           offset) {
+                                  nacl_off64_t    nbytes,
+                                  nacl_off64_t    offset) {
   struct NaClMemObj *nmop;
 
   if (NULL == ndp) {
@@ -92,7 +92,7 @@ struct NaClMemObj *NaClMemObjMake(struct NaClDesc *ndp,
   if (NULL == (nmop = malloc(sizeof *nmop))) {
     NaClLog(LOG_FATAL, ("NaClMemObjMake: out of memory creating object"
                         " (NaClDesc = 0x%08"PRIxPTR", offset = 0x%"PRIx64")\n"),
-            (uintptr_t) ndp, (int64_t) offset);
+            (uintptr_t) ndp, offset);
   }
   if (!NaClMemObjCtor(nmop, ndp, nbytes, offset)) {
     NaClLog(LOG_FATAL, "NaClMemObjMake: NaClMemObjCtor failed!\n");
@@ -102,7 +102,7 @@ struct NaClMemObj *NaClMemObjMake(struct NaClDesc *ndp,
 
 
 struct NaClMemObj *NaClMemObjSplit(struct NaClMemObj *orig,
-                                   off_t             additional) {
+                                   nacl_off64_t      additional) {
   struct NaClMemObj *nmop;
 
   if (NULL == orig)
@@ -112,7 +112,7 @@ struct NaClMemObj *NaClMemObjSplit(struct NaClMemObj *orig,
     NaClLog(LOG_FATAL, ("NaClMemObjSplit: out of memory creating object"
                         " (NaClMemObj = 0x%08"PRIxPTR","
                         " additional = 0x%"PRIx64")\n"),
-            (uintptr_t) orig, (int64_t) additional);
+            (uintptr_t) orig, additional);
   }
   if (!NaClMemObjCopyCtorOff(nmop, orig, additional)) {
     NaClLog(LOG_FATAL, "NaClMemObjSplit: NaClMemObjCopyCtorOff failed\n");
@@ -122,7 +122,7 @@ struct NaClMemObj *NaClMemObjSplit(struct NaClMemObj *orig,
 
 
 void NaClMemObjIncOffset(struct NaClMemObj *nmop,
-                         off_t             additional) {
+                         nacl_off64_t      additional) {
   if (NULL != nmop) {
     nmop->offset += additional;
   }

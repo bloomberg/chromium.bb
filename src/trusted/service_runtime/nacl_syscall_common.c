@@ -32,6 +32,9 @@
 /*
  * NaCl service run-time, non-platform specific system call helper routines.
  */
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/include/nacl_macros.h"
@@ -51,7 +54,9 @@
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
+#include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
+#include "native_client/src/trusted/service_runtime/nacl_assert.h"
 #include "native_client/src/trusted/service_runtime/nacl_thread_nice.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
@@ -429,7 +434,7 @@ int32_t NaClCommonSysOpen(struct NaClAppThread  *natp,
   uintptr_t            sysaddr;
   char                 path[NACL_CONFIG_PATH_MAX];
   int                  len;
-  struct nacl_abi_stat stbuf;
+  nacl_host_stat_t     stbuf;
   int                  allowed_flags;
 
   NaClLog(3, "NaClCommonSysOpen(0x%08"PRIxPTR", 0x%08"PRIxPTR", 0x%x, 0x%x)\n",
@@ -500,7 +505,8 @@ int32_t NaClCommonSysOpen(struct NaClAppThread  *natp,
    */
   retval = NaClHostDescStat(path, &stbuf);
 
-  if (0 == retval && NACL_ABI_S_ISDIR(stbuf.nacl_abi_st_mode)) {
+  /* Windows does not have S_ISDIR(m) macro */
+  if (0 == retval && S_IFDIR == (S_IFDIR & stbuf.st_mode)) {
     struct NaClHostDir  *hd;
 
     hd = malloc(sizeof *hd);
@@ -686,11 +692,16 @@ cleanup:
   return retval;
 }
 
+/*
+ * This is not lseek64, so the return value on success can be
+ * E_OVERFLOW if it does not fit in a 32-bit off_t.
+ */
 int32_t NaClCommonSysLseek(struct NaClAppThread *natp,
                            int                  d,
-                           off_t                offset,
+                           nacl_off64_t         offset,
                            int                  whence) {
-  int             retval = -NACL_ABI_EINVAL;
+  nacl_off64_t    retval64;
+  int32_t         retval = -NACL_ABI_EINVAL;
   struct NaClDesc *ndp;
 
   NaClLog(4,
@@ -705,7 +716,13 @@ int32_t NaClCommonSysLseek(struct NaClAppThread *natp,
     retval = -NACL_ABI_EBADF;
     goto cleanup;
   }
-  retval = (*ndp->vtbl->Seek)(ndp, natp->effp, offset, whence);
+
+  retval64 = (*ndp->vtbl->Seek)(ndp, natp->effp, offset, whence);
+  if (INT32_MAX < retval64) {
+    retval = -NACL_ABI_EOVERFLOW;
+  } else {
+    retval = (int32_t) retval64;
+  }
   NaClDescUnref(ndp);
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
@@ -760,12 +777,13 @@ cleanup:
   return retval;
 }
 
+
 int32_t NaClCommonSysFstat(struct NaClAppThread *natp,
                            int                  d,
                            struct nacl_abi_stat *nasp) {
-  int32_t         retval = -NACL_ABI_EINVAL;
-  uintptr_t       sysaddr;
-  struct NaClDesc *ndp;
+  int32_t               retval = -NACL_ABI_EINVAL;
+  uintptr_t             sysaddr;
+  struct NaClDesc       *ndp;
 
   NaClLog(4, "In NaClSysFstat(%d, 0x%08"PRIxPTR")\n", d, (uintptr_t) nasp);
 
@@ -784,8 +802,10 @@ int32_t NaClCommonSysFstat(struct NaClAppThread *natp,
     retval = -NACL_ABI_EBADF;
     goto cleanup;
   }
-  retval = (*ndp->vtbl->Fstat)(ndp, natp->effp,
+  retval = (*ndp->vtbl->Fstat)(ndp,
+                               natp->effp,
                                (struct nacl_abi_stat *) sysaddr);
+
   NaClDescUnref(ndp);
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
@@ -796,11 +816,12 @@ cleanup:
 int32_t NaClCommonSysStat(struct NaClAppThread  *natp,
                           const char            *pathname,
                           struct nacl_abi_stat  *buf) {
-  int32_t              retval = -NACL_ABI_EINVAL;
-  uintptr_t            syspathaddr;
-  uintptr_t            sysbufaddr;
-  char                 path[NACL_CONFIG_PATH_MAX];
-  int                  len;
+  int32_t             retval = -NACL_ABI_EINVAL;
+  uintptr_t           syspathaddr;
+  uintptr_t           sysbufaddr;
+  char                path[NACL_CONFIG_PATH_MAX];
+  int                 len;
+  nacl_host_stat_t    stbuf;
 
   NaClLog(4,
           ("In NaClCommonSysStat(0x%08"PRIxPTR", 0x%08"PRIxPTR","
@@ -858,7 +879,12 @@ int32_t NaClCommonSysStat(struct NaClAppThread  *natp,
   /*
    * Perform a host stat.
    */
-  retval = NaClHostDescStat(path, (struct nacl_abi_stat *) sysbufaddr);
+  retval = NaClHostDescStat(path, &stbuf);
+  if (0 == retval) {
+    retval = NaClAbiStatHostDescStatXlateCtor((struct nacl_abi_stat *)
+                                              sysbufaddr,
+                                              &stbuf);
+  }
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
   return retval;
@@ -869,18 +895,19 @@ void NaClCommonUtilUpdateAddrMap(struct NaClAppThread *natp,
                                  size_t               nbytes,
                                  int                  sysprot,
                                  struct NaClDesc      *backing_desc,
-                                 size_t               backing_bytes,
-                                 off_t                offset_bytes,
+                                 nacl_off64_t         backing_bytes,
+                                 nacl_off64_t         offset_bytes,
                                  int                  delete_mem) {
   uintptr_t                   usraddr;
   struct NaClMemObj           *nmop;
 
   NaClLog(3,
           ("NaClCommonUtilUpdateAddrMap(0x%08"PRIxPTR", 0x%08"PRIxPTR","
-           " 0x%"PRIxS", 0x%x, 0x%08"PRIxPTR", 0x%"PRIxS", 0x%"PRIx64", %d)\n"),
+           " 0x%"PRIxS", 0x%x, 0x%08"PRIxPTR", 0x%"PRIx64","
+           " 0x%"PRIx64", %d)\n"),
           (uintptr_t) natp, sysaddr, nbytes,
           sysprot, (uintptr_t) backing_desc, backing_bytes,
-          (int64_t) offset_bytes,
+          offset_bytes,
           delete_mem);
   usraddr = NaClSysToUser(natp->nap, sysaddr);
   nmop = NULL;
@@ -947,8 +974,8 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
   struct NaClMemObj           *nmop;
   struct nacl_abi_stat        stbuf;
   size_t                      alloc_rounded_length;
-  off_t                       file_size;
-  size_t                      file_bytes;
+  nacl_off64_t                file_size;
+  nacl_off64_t                file_bytes;
   size_t                      alloc_rounded_file_bytes;
   size_t                      start_of_inaccessible;
 
@@ -996,10 +1023,22 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
     usraddr = NaClRoundAllocPage(usraddr);
   }
   /*
+   * Offset should be non-negative (nacl_abi_off_t is signed).  This
+   * condition is caught when the file is stat'd and checked, and
+   * offset is ignored for anonymous mappings.
+   */
+  if (offset < 0) {
+    NaClLog(1,  /* application bug */
+            "NaClSysMmap: negative file offset: %"PRIdNACL_OFF"\n",
+            offset);
+    retval = -NACL_ABI_EINVAL;
+    goto cleanup;
+  }
+  /*
    * And offset must be a multiple of the allocation unit.
    */
   if (!NaClIsAllocPageMultiple((uintptr_t) offset)) {
-    NaClLog(LOG_INFO,
+    NaClLog(1,
             ("NaClSysMmap: file offset 0x%08"PRIxPTR" not multiple"
              " of allocation size\n"),
             (uintptr_t) offset);
@@ -1013,17 +1052,18 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
   }
   alloc_rounded_length = NaClRoundAllocPage(length);
   if (alloc_rounded_length != length) {
-    NaClLog(LOG_WARNING,
-            "mmap: rounded length to 0x%"PRIxS"\n", alloc_rounded_length);
+    NaClLog(1,
+            "mmap: rounded length to 0x%"PRIxS"\n",
+            alloc_rounded_length);
   }
 
   if (NULL == ndp) {
     /*
-     * sentinel values that are bigger than the addr space
+     * Note: sentinel values are bigger than the NaCl module addr space.
      */
-    file_size = ~0u>>1;
-    file_bytes = file_size;
-    alloc_rounded_file_bytes = file_size;
+    file_size                = kMaxUsableFileSize;
+    file_bytes               = kMaxUsableFileSize;
+    alloc_rounded_file_bytes = kMaxUsableFileSize;
   } else {
     /*
      * We stat the file to figure out its actual size.
@@ -1055,12 +1095,24 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
       retval = -NACL_ABI_EINVAL;
       goto cleanup;
     }
-    file_bytes = NaClRoundHostAllocPage(file_size - offset);
+
+    file_bytes = file_size - offset;
+    if ((nacl_off64_t) kMaxUsableFileSize < file_bytes) {
+      file_bytes = kMaxUsableFileSize;
+    } else {
+      file_bytes = NaClRoundHostAllocPage((size_t) (file_size - offset));
+    }
+
+    ASSERT(file_bytes <= (nacl_off64_t) kMaxUsableFileSize);
     /*
      * We need to deal with NaClRoundHostAllocPage rounding up to zero
      * from ~0u - n, where n < 4096 or 65536 (== 1 alloc page).
+     *
+     * Luckily, file_bytes is at most kMaxUsableFileSize which is
+     * smaller than SIZE_T_MAX, so it should never happen, but we
+     * leave the explicit check below as defensive programming.
      */
-    alloc_rounded_file_bytes = NaClRoundAllocPage(file_bytes);
+    alloc_rounded_file_bytes = NaClRoundAllocPage((size_t) file_bytes);
 
     if (0 == alloc_rounded_file_bytes && 0 != file_bytes) {
       retval = -NACL_ABI_ENOMEM;
@@ -1078,9 +1130,9 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
    * file_bytes is how many bytes we can map from the file, given the
    * user-supplied starting offset.  It is at least one page.  If it
    * came from a real file, it is a multiple of host-OS allocation
-   * size.
+   * size.  it cannot be larger than kMaxUsableFileSize.
    */
-  length = size_min(alloc_rounded_length, file_bytes);
+  length = size_min(alloc_rounded_length, (size_t) file_bytes);
   start_of_inaccessible = size_min(alloc_rounded_length,
                                    alloc_rounded_file_bytes);
 

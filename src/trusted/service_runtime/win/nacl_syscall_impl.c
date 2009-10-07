@@ -175,7 +175,7 @@ int32_t NaClSysLseek(struct NaClAppThread *natp,
                      int                  d,
                      nacl_abi_off_t       offset,
                      int                  whence) {
-  return NaClCommonSysLseek(natp, d, offset, whence);
+  return NaClCommonSysLseek(natp, d, (nacl_off64_t) offset, whence);
 }
 
 int32_t NaClSysIoctl(struct NaClAppThread *natp,

@@ -65,7 +65,7 @@
 
 int NaClDescImcShmCtor(struct NaClDescImcShm  *self,
                        NaClHandle             h,
-                       off_t                  size) {
+                       nacl_off64_t           size) {
   struct NaClDesc *basep = (struct NaClDesc *) self;
 
   /*
@@ -103,16 +103,17 @@ uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
                             size_t                  len,
                             int                     prot,
                             int                     flags,
-                            off_t                   offset) {
+                            nacl_off64_t            offset) {
   struct NaClDescImcShm  *self = (struct NaClDescImcShm *) vself;
 
-  int       rv;
-  int       nacl_prot;
-  int       nacl_flags;
-  uintptr_t addr;
-  uintptr_t end_addr;
-  void      *result;
-  off_t     tmp_off;
+  int           rv;
+  int           nacl_prot;
+  int           nacl_flags;
+  uintptr_t     addr;
+  uintptr_t     end_addr;
+  void          *result;
+  nacl_off64_t  tmp_off64;
+  off_t         tmp_off;
 
   /*
    * shm must have NACL_ABI_MAP_SHARED in flags, and all calls through
@@ -146,6 +147,16 @@ uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
   }
   nacl_flags = NACL_MAP_SHARED | NACL_MAP_FIXED;
 
+  tmp_off64 = offset + len;
+  /* just NaClRoundAllocPage, but in 64 bits */
+  tmp_off64 = ((tmp_off64 + NACL_MAP_PAGESIZE - 1)
+             & ~(uint64_t) (NACL_MAP_PAGESIZE - 1));
+  if (tmp_off64 > INT32_MAX) {
+    NaClLog(LOG_INFO,
+            "NaClDescImcShmMap: total offset exceeds 32-bits\n");
+    return -NACL_ABI_EOVERFLOW;
+  }
+
   /*
    * For *x, we just map with MAP_FIXED and the kernel takes care of
    * atomically unmapping any existing memory.  For Windows, we must
@@ -168,7 +179,9 @@ uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
    * -NACL_ABI_E_MOVE_ADDRESS_SPACE to ask the caller to do the address space
    * dance.
    */
-  for (addr = (uintptr_t) start_addr, end_addr = addr + len, tmp_off = offset;
+  for (addr = (uintptr_t) start_addr,
+           end_addr = addr + len,
+           tmp_off = (off_t) offset;
        addr < end_addr;
        addr += NACL_MAP_PAGESIZE, tmp_off += NACL_MAP_PAGESIZE) {
 
@@ -264,14 +277,20 @@ int NaClDescImcShmFstat(struct NaClDesc         *vself,
 
   UNREFERENCED_PARAMETER(effp);
 
+  if (self->size > INT32_MAX) {
+    return -NACL_ABI_EOVERFLOW;
+  }
+
   stbp->nacl_abi_st_dev = 0;
   stbp->nacl_abi_st_ino = 0x6c43614e;
-  stbp->nacl_abi_st_mode = NACL_ABI_S_IFREG | NACL_ABI_S_IRWXU;
+  stbp->nacl_abi_st_mode = (NACL_ABI_S_IFSHM |
+                            NACL_ABI_S_IRUSR |
+                            NACL_ABI_S_IWUSR);
   stbp->nacl_abi_st_nlink = 1;
   stbp->nacl_abi_st_uid = -1;
   stbp->nacl_abi_st_gid = -1;
   stbp->nacl_abi_st_rdev = 0;
-  stbp->nacl_abi_st_size = self->size;  /* the only real reason for fstat */
+  stbp->nacl_abi_st_size = (nacl_abi_off_t) self->size;
   stbp->nacl_abi_st_blksize = 0;
   stbp->nacl_abi_st_blocks = 0;
   stbp->nacl_abi_st_atime = 0;
@@ -346,7 +365,7 @@ int NaClDescImcShmInternalize(struct NaClDesc           **baseptr,
   int                   rv;
   struct NaClDescImcShm *ndisp;
   NaClHandle            h;
-  off_t                 hsize;
+  nacl_off64_t          hsize;
 
   rv = -NACL_ABI_EIO;
   ndisp = NULL;

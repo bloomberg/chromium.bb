@@ -39,6 +39,7 @@
 #include "native_client/src/include/portability.h"
 
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/trusted/service_runtime/include/sys/time.h"
 
 #if defined(HAVE_SDL)
@@ -117,7 +118,7 @@ int32_t NaClCommonSysWrite(struct NaClAppThread *natp,
 
 int32_t NaClCommonSysLseek(struct NaClAppThread *natp,
                            int                  d,
-                           off_t                offset,
+                           nacl_off64_t         offset,
                            int                  whence);
 
 int32_t NaClCommonSysIoctl(struct NaClAppThread *natp,
