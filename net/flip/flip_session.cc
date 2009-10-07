@@ -81,7 +81,7 @@ class FlipStreamImpl {
   std::string path_;
   FlipDelegate* delegate_;
   scoped_ptr<HttpResponseInfo> response_;
-  std::list<scoped_refptr<IOBufferWithSize>> response_body_;
+  std::list<scoped_refptr<IOBufferWithSize> > response_body_;
   bool data_complete_;
 };
 
@@ -106,14 +106,12 @@ FlipSession::FlipSession(std::string host, HttpNetworkSession* session)
       session_(session),
       connection_started_(false),
       connection_ready_(false),
-      delayed_write_pending_(false),
-      write_pending_(false),
       read_buffer_(new IOBuffer(kReadBufferSize)),
       read_pending_(false),
-      stream_hi_water_mark_(0) {
-  // Always start at 1 for the first stream id.
-  // TODO(mbelshe): consider randomization.
-  stream_hi_water_mark_ = 1;
+      stream_hi_water_mark_(1),  // Always start at 1 for the first stream id.
+      delayed_write_pending_(false),
+      write_pending_(false) {
+  // TODO(mbelshe): consider randomization of the stream_hi_water_mark.
 
   flip_framer_.set_visitor(this);
 
@@ -176,8 +174,17 @@ void CreateFlipHeadersFromHttpRequest(
   // up to a test server.
   // For testing content on our test server, we modify the URL.
   GURL url = info->url;
-  FilePath path = UrlToFilenameEncoder::Encode(url.spec(), FilePath());
-  std::string hack_url = "/" + WideToASCII(path.value());
+  FilePath path(UrlToFilenameEncoder::Encode(url.spec(), FilePath("/")));
+
+  // We do the unusual conversion from a FilePath::StringType to
+  // an ascii string.  Recognize that StringType is a wstring on windows,
+  // so a failure is technically possible, but this is just used as a test
+  // case, so it's okay.  This code will be deleted.
+#if defined(OS_WIN)
+  std::string hack_url = WideToASCII(path.value());
+#else
+  std::string hack_url = path.value();
+#endif
 
   // switch backslashes.  HACK
   std::string::size_type pos(0);
@@ -185,7 +192,7 @@ void CreateFlipHeadersFromHttpRequest(
     hack_url.replace(pos, 1, "/");
     pos += 1;
   }
-#endif
+#endif  // REWRITE_URLS
 
   (*headers)["method"] = info->method;
   // (*headers)["url"] = info->url.PathForRequest();
@@ -543,7 +550,8 @@ int FlipSession::GetNewStreamId() {
   return id;
 }
 
-FlipStreamImpl* FlipSession::ActivateStream(int id, FlipDelegate* delegate) {
+FlipStreamImpl* FlipSession::ActivateStream(flip::FlipStreamId id,
+                                            FlipDelegate* delegate) {
   DCHECK(!IsStreamActive(id));
 
   FlipStreamImpl* stream = new FlipStreamImpl(id, delegate);
@@ -551,7 +559,7 @@ FlipStreamImpl* FlipSession::ActivateStream(int id, FlipDelegate* delegate) {
   return stream;
 }
 
-void FlipSession::DeactivateStream(int id) {
+void FlipSession::DeactivateStream(flip::FlipStreamId id) {
   DCHECK(IsStreamActive(id));
 
   // Verify it is not on the pushed_streams_ list.
@@ -681,13 +689,13 @@ void FlipSession::OnSynReply(const flip::FlipSynReplyControlFrame* frame,
     std::string::size_type end = 0;
     do {
       end = content.find("||", start);
-      if (end == -1)
+      if (end == std::string::npos)
         end = content.length();
       std::string url = content.substr(start, end - start);
       std::string::size_type pos = url.find("??");
-      if (pos == -1)
+      if (pos == std::string::npos)
         break;
-      url = url.substr(pos+2);
+      url = url.substr(pos + 2);
       GURL gurl(url);
       pending_streams_[gurl.PathForRequest()] = NULL;
       start = end + 2;
@@ -700,7 +708,6 @@ void FlipSession::OnSynReply(const flip::FlipSynReplyControlFrame* frame,
 
 void FlipSession::OnControl(const flip::FlipControlFrame* frame) {
   flip::FlipHeaderBlock headers;
-  bool parsed_headers = false;
   uint32 type = frame->type();
   if (type == flip::SYN_STREAM || type == flip::SYN_REPLY) {
     if (!flip_framer_.ParseHeaderBlock(

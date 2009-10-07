@@ -158,8 +158,8 @@ class FlipSession : public base::RefCounted<FlipSession>,
   int GetNewStreamId();
 
   // Track active streams in the active stream list.
-  FlipStreamImpl* ActivateStream(int id, FlipDelegate* delegate);
-  void DeactivateStream(int id);
+  FlipStreamImpl* ActivateStream(flip::FlipStreamId id, FlipDelegate* delegate);
+  void DeactivateStream(flip::FlipStreamId id);
 
   // Check if we have a pending pushed-stream for this url
   // Returns the stream if found (and returns it from the pending
