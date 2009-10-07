@@ -202,7 +202,6 @@ Directory::Kernel::Kernel(const PathString& db_path,
   next_metahandle(info.max_metahandle + 1),
   next_id(info.kernel_info.next_id) {
   info_status_ = Directory::KERNEL_SHARE_INFO_VALID;
-  CHECK(0 == pthread_mutex_init(&mutex, NULL));
 }
 
 inline void DeleteEntry(EntryKernel* kernel) {
@@ -222,7 +221,6 @@ Directory::Kernel::~Kernel() {
   CHECK(0 == refcount);
   delete channel;
   delete changes_channel;
-  CHECK(0 == pthread_mutex_destroy(&mutex));
   delete unsynced_metahandles;
   delete unapplied_update_metahandles;
   delete extended_attributes;
@@ -764,7 +762,9 @@ void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
 bool Directory::SaveChanges() {
   bool success = false;
   DCHECK(store_);
-  PThreadScopedLock<PThreadMutex> lock(&kernel_->save_changes_mutex);
+
+  AutoLock(kernel_->save_changes_mutex);
+
   // Snapshot and save.
   SaveChangesSnapshot snapshot;
   TakeSnapshotForSaveChanges(&snapshot);
@@ -1104,22 +1104,9 @@ void Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
 // ScopedKernelLocks
 
 ScopedKernelLock::ScopedKernelLock(const Directory* dir)
-  : dir_(const_cast<Directory*>(dir)) {
+  : dir_(const_cast<Directory*>(dir)), scoped_lock_(dir_->kernel_->mutex) {
   // Swap out the dbhandle to enforce the "No IO while holding kernel
   // lock" rule.
-  // HA!! Yeah right. What about your pre-cached queries :P
-  pthread_mutex_lock(&dir->kernel_->mutex);
-}
-ScopedKernelLock::~ScopedKernelLock() {
-  pthread_mutex_unlock(&dir_->kernel_->mutex);
-}
-
-ScopedKernelUnlock::ScopedKernelUnlock(ScopedKernelLock* lock)
-  : lock_(lock) {
-  pthread_mutex_unlock(&lock->dir_->kernel_->mutex);
-}
-ScopedKernelUnlock::~ScopedKernelUnlock() {
-  pthread_mutex_lock(&lock_->dir_->kernel_->mutex);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -1167,7 +1154,7 @@ void BaseTransaction::UnlockAndLog(OriginalEntries* originals_arg) {
     return;
   }
 
-  dirkernel_->changes_channel_mutex.Lock();
+  AutoLock(dirkernel_->changes_channel_mutex);
   // Tell listeners to calculate changes while we still have the mutex.
   DirectoryChangeEvent event = { DirectoryChangeEvent::CALCULATE_CHANGES,
                                  originals.get(), this, writer_ };
@@ -1179,7 +1166,6 @@ void BaseTransaction::UnlockAndLog(OriginalEntries* originals_arg) {
       { DirectoryChangeEvent::TRANSACTION_COMPLETE,
         NULL, NULL, INVALID };
   dirkernel_->changes_channel->NotifyListeners(complete_event);
-  dirkernel_->changes_channel_mutex.Unlock();
 }
 
 ReadTransaction::ReadTransaction(Directory* directory, const char* file,
