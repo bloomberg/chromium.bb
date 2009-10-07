@@ -619,7 +619,9 @@ gfx::Rect AutocompletePopupContentsView::GetPopupBounds() const {
 // AutocompletePopupContentsView, AutocompletePopupView overrides:
 
 bool AutocompletePopupContentsView::IsOpen() const {
-  return popup_->IsOpen();
+  const bool is_open = popup_->IsOpen();
+  CHECK(!!GetChildViewCount() == is_open);
+  return is_open;
 }
 
 void AutocompletePopupContentsView::InvalidateLine(size_t line) {
