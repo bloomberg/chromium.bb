@@ -411,8 +411,8 @@ void BookmarkBubbleView::ShowEditor() {
   // restored to the browser.
   ShowWindow(GetWidget()->GetNativeView(), SW_HIDE);
 #else
-  NOTIMPLEMENTED();  // TODO(brettw) find the parent.
-  gfx::NativeView parent = NULL;
+  gfx::NativeView parent = GTK_WIDGET(
+      static_cast<views::WidgetGtk*>(GetWidget())->GetTransientParent());
 #endif
 
   // Even though we just hid the window, we need to invoke Close to schedule

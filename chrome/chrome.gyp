@@ -2691,6 +2691,8 @@
                 ['include', '^browser/gtk/about_chrome_dialog.h'],
                 ['include', '^browser/gtk/autocomplete_edit_gtk.cc'],
                 ['include', '^browser/gtk/autocomplete_edit_gtk.h'],
+                ['include', '^browser/gtk/bookmark_editor_gtk.cc'],
+                ['include', '^browser/gtk/bookmark_editor_gtk.h'],
                 ['include', '^browser/gtk/bookmark_manager_gtk.cc'],
                 ['include', '^browser/gtk/bookmark_manager_gtk.h'],
                 ['include', '^browser/gtk/bookmark_tree_model.cc'],

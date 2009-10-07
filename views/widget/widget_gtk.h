@@ -61,6 +61,10 @@ class WidgetGtk
     transient_to_parent_ = true;
   }
 
+  // Returns the transient parent. See make_transient_to_parent for details on
+  // what the transient parent is.
+  GtkWindow* GetTransientParent();
+
   // Makes the background of the window totally transparent. This must be
   // invoked before Init. This does a couple of checks and returns true if
   // the window can be made transparent. The actual work of making the window

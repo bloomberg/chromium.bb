@@ -129,6 +129,11 @@ WidgetGtk::~WidgetGtk() {
   MessageLoopForUI::current()->RemoveObserver(this);
 }
 
+GtkWindow* WidgetGtk::GetTransientParent() {
+  return (type_ != TYPE_CHILD && widget_) ?
+      gtk_window_get_transient_for(GTK_WINDOW(widget_)) : NULL;
+}
+
 bool WidgetGtk::MakeTransparent() {
   // Transparency can only be enabled for windows/popups and only if we haven't
   // realized the widget.

@@ -24,8 +24,6 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/bookmarks/bookmark_editor.h"
-#include "chrome/browser/bookmarks/bookmark_manager.h"
 #include "chrome/browser/download/download_request_dialog_delegate.h"
 #include "chrome/browser/download/download_request_manager.h"
 #include "chrome/browser/tab_contents/constrained_window.h"
@@ -257,15 +255,6 @@ ConstrainedWindow* ConstrainedWindow::CreateConstrainedDialog(
     ConstrainedWindowDelegate* delegate) {
   NOTIMPLEMENTED();
   return NULL;
-}
-
-void BookmarkEditor::Show(gfx::NativeView parent_window,
-                          Profile* profile,
-                          const BookmarkNode* parent,
-                          const BookmarkNode* node,
-                          Configuration configuration,
-                          Handler* handler) {
-  NOTIMPLEMENTED();
 }
 
 #endif
