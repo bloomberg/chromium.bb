@@ -1,10 +1,10 @@
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
  *     * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -61,6 +61,22 @@ void WebCache::setCapacities(
         cache->setCapacities(static_cast<unsigned int>(minDeadCapacity),
                              static_cast<unsigned int>(maxDeadCapacity),
                              static_cast<unsigned int>(capacity));
+}
+
+void WebCache::clear()
+{
+    Cache* cache = WebCore::cache();
+    if (cache && !cache->disabled()) {
+        // NOTE: I think using setDisabled() instead of setCapacities() will
+        // remove from the cache items that won't actually be freed from memory
+        // (due to other live references to them), so it just results in wasting
+        // time later and not saving memory compared to the below technique.
+        unsigned minDeadCapacity = cache->m_minDeadCapacity;
+        unsigned maxDeadCapacity = cache->m_maxDeadCapacity;
+        unsigned capacity = cache->m_capacity;
+        cache->setCapacities(0, 0, 0);  // Will prune the cache.
+        cache->setCapacities(minDeadCapacity, maxDeadCapacity, capacity);
+    }
 }
 
 void WebCache::getUsageStats(UsageStats* result)

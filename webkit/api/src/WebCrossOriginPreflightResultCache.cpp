@@ -29,30 +29,15 @@
  */
 
 #include "config.h"
-#include "WebFontCache.h"
+#include "WebCrossOriginPreflightResultCache.h"
 
-#include "FontCache.h"
-
-using namespace WebCore;
+#include "CrossOriginPreflightResultCache.h"
 
 namespace WebKit {
 
-// static
-size_t WebFontCache::fontDataCount()
+void WebCrossOriginPreflightResultCache::clear()
 {
-    return fontCache()->fontDataCount();
+    WebCore::CrossOriginPreflightResultCache::shared().empty();
 }
 
-// static
-size_t WebFontCache::inactiveFontDataCount()
-{
-    return fontCache()->inactiveFontDataCount();
-}
-
-// static
-void WebFontCache::clear()
-{
-    fontCache()->invalidate();
-}
-
-}  // namespace WebKit
+} // namespace WebKit
