@@ -9,6 +9,7 @@
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #include "chrome/browser/cocoa/browser_window_controller.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/cocoa/find_bar_bridge.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/test/testing_browser_process.h"
@@ -41,6 +42,10 @@
 
 - (NSView*)bookmarkView {
   return [bookmarkBarController_ view];
+}
+
+- (NSView*)findBarView {
+  return [findBarCocoaController_ view];
 }
 
 - (BOOL)bookmarkBarVisible {
@@ -434,6 +439,26 @@ TEST_F(BrowserWindowControllerTest, TestZoomFrame) {
   EXPECT_EQ(screenFrame.size.height, zoomFrame.size.height);
   EXPECT_EQ(testFrame.origin.x, zoomFrame.origin.x);
   EXPECT_EQ(screenFrame.origin.y, zoomFrame.origin.y);
+}
+
+TEST_F(BrowserWindowControllerTest, TestFindBarOnTop) {
+  FindBarBridge bridge;
+  [controller_.get() addFindBar:bridge.find_bar_cocoa_controller()];
+
+  // Test that the Z-order of the find bar is on top of everything.
+  NSArray* subviews = [[[controller_.get() window] contentView] subviews];
+  NSUInteger findBar_index =
+      [subviews indexOfObject:[controller_.get() findBarView]];
+  EXPECT_NE(NSNotFound, findBar_index);
+  NSUInteger toolbar_index =
+      [subviews indexOfObject:[controller_.get() toolbarView]];
+  EXPECT_NE(NSNotFound, toolbar_index);
+  NSUInteger bookmark_index =
+      [subviews indexOfObject:[controller_.get() bookmarkView]];
+  EXPECT_NE(NSNotFound, bookmark_index);
+
+  EXPECT_GT(findBar_index, toolbar_index);
+  EXPECT_GT(findBar_index, bookmark_index);
 }
 
 

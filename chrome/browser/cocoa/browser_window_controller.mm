@@ -202,7 +202,9 @@ willPositionSheet:(NSWindow*)sheet
     // nib load.  The bookmark bar is defined (in the nib) to be
     // bottom-aligned to it's parent view (among other things), so
     // position and resize properties don't need to be set.
-    [[[self window] contentView] addSubview:[bookmarkBarController_ view]];
+    [[[self window] contentView] addSubview:[bookmarkBarController_ view]
+                                 positioned:NSWindowBelow
+                                 relativeTo:[toolbarController_ view]];
 
     // We don't want to try and show the bar before it gets placed in
     // it's parent view, so this step shoudn't be inside the bookmark
