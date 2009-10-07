@@ -92,7 +92,7 @@ void Connection::Preload() {
   if (!DoesTableExist("meta"))
     return;
   Statement dummy(GetUniqueStatement("SELECT * FROM meta"));
-  if (!dummy || !dummy.Run())
+  if (!dummy || !dummy.Step())
     return;
 
   sqlite3Preload(db_);

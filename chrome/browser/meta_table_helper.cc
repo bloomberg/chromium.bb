@@ -12,24 +12,6 @@
 static const char kVersionKey[] = "version";
 static const char kCompatibleVersionKey[] = "last_compatible_version";
 
-// static
-void MetaTableHelper::PrimeCache(const std::string& db_name, sqlite3* db) {
-  // A statement must be open for the preload command to work. If the meta
-  // table doesn't exist, it probably means this is a new database and there
-  // is nothing to preload (so it's OK we do nothing).
-  SQLStatement dummy;
-  if (!DoesSqliteTableExist(db, db_name.c_str(), "meta"))
-    return;
-  std::string sql("SELECT * from ");
-  appendMetaTableName(db_name, &sql);
-  if (dummy.prepare(db, sql.c_str()) != SQLITE_OK)
-    return;
-  if (dummy.step() != SQLITE_ROW)
-    return;
-
-  sqlite3Preload(db);
-}
-
 MetaTableHelper::MetaTableHelper() : db_(NULL) {
 }
 

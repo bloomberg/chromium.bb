@@ -20,12 +20,6 @@ class SQLStatement;
 // database to use.
 class MetaTableHelper {
  public:
-  // Primes the sqlite cache by filling it with the file in sequence
-  // until there is no more data or the cache is full. Since this is one
-  // contiguous read operation, it is much faster than letting the pages come
-  // in on-demand (which causes lots of seeks).
-  static void PrimeCache(const std::string& db_name, sqlite3* db);
-
   // Creates a new MetaTableHelper. After construction you must invoke
   // Init with the appropriate database.
   MetaTableHelper();
