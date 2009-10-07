@@ -23,9 +23,11 @@
 #include "chrome/browser/sync/syncable/path_name_cmp.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/util/compat_file.h"
+#include "chrome/browser/sync/util/compat_pthread.h"
 #include "chrome/browser/sync/util/dbgq.h"
 #include "chrome/browser/sync/util/event_sys.h"
 #include "chrome/browser/sync/util/path_helpers.h"
+#include "chrome/browser/sync/util/pthread_helpers.h"
 #include "chrome/browser/sync/util/row_iterator.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
@@ -808,6 +810,7 @@ struct ExtendedAttributeValue {
 typedef std::map<ExtendedAttributeKey, ExtendedAttributeValue>
     ExtendedAttributes;
 
+typedef PThreadScopedLock<PThreadMutex> ScopedTransactionLock;
 typedef std::set<int64> MetahandleSet;
 
 // A list of metahandles whose metadata should not be purged.
@@ -1124,7 +1127,7 @@ class Directory {
     //
     // Never hold the mutex and do anything with the database or any
     // other buffered IO.  Violating this rule will result in deadlock.
-    Lock mutex;
+    pthread_mutex_t mutex;  // TODO(chron): Swap this out for Chrome Lock
     MetahandlesIndex* metahandles_index;  // Entries indexed by metahandle
     IdsIndex* ids_index;  // Entries indexed by id
     ParentIdAndNamesIndex* parent_id_and_names_index;
@@ -1147,7 +1150,7 @@ class Directory {
     // while holding the transaction mutex and released after
     // releasing the transaction mutex.
     ChangesChannel* const changes_channel;
-    Lock changes_channel_mutex;
+    PThreadMutex changes_channel_mutex;
     KernelShareInfoStatus info_status_;
     // These 5 members are backed in the share_info table, and
     // their state is marked by the flag above.
@@ -1164,7 +1167,7 @@ class Directory {
 
     // It doesn't make sense for two threads to run SaveChanges at the same
     // time; this mutex protects that activity.
-    Lock save_changes_mutex;
+    PThreadMutex save_changes_mutex;
 
     // The next metahandle and id are protected by kernel mutex.
     int64 next_metahandle;
@@ -1183,11 +1186,18 @@ class Directory {
 class ScopedKernelLock {
  public:
   explicit ScopedKernelLock(const Directory*);
-  ~ScopedKernelLock() {}
+  ~ScopedKernelLock();
 
-  AutoLock scoped_lock_;
   Directory* const dir_;
   DISALLOW_COPY_AND_ASSIGN(ScopedKernelLock);
+};
+
+class ScopedKernelUnlock {
+ public:
+  explicit ScopedKernelUnlock(ScopedKernelLock* lock);
+  ~ScopedKernelUnlock();
+  ScopedKernelLock* const lock_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedKernelUnlock);
 };
 
 // Transactions are now processed FIFO (+overlapping reads).
