@@ -32,7 +32,6 @@
 #include "chrome/browser/jsmessage_box_handler.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
 #include "chrome/browser/load_notification_details.h"
-#include "chrome/browser/metrics/metric_event_duration_details.h"
 #include "chrome/browser/modal_html_dialog_delegate.h"
 #include "chrome/browser/omnibox_search_hint.h"
 #include "chrome/browser/password_manager/password_manager.h"
@@ -1178,9 +1177,6 @@ void TabContents::LogNewTabTime(const std::string& event_name) {
     return;
 
   base::TimeDelta duration = base::TimeTicks::Now() - new_tab_start_time_;
-  MetricEventDurationDetails details(event_name,
-      static_cast<int>(duration.InMilliseconds()));
-
   if (event_name == "NewTab.ScriptStart") {
     UMA_HISTOGRAM_TIMES("NewTab.ScriptStart", duration);
   } else if (event_name == "NewTab.DOMContentLoaded") {
@@ -1189,13 +1185,7 @@ void TabContents::LogNewTabTime(const std::string& event_name) {
     UMA_HISTOGRAM_TIMES("NewTab.Onload", duration);
     // The new tab page has finished loading; reset it.
     new_tab_start_time_ = base::TimeTicks();
-  } else {
-    NOTREACHED();
   }
-  NotificationService::current()->Notify(
-      NotificationType::METRIC_EVENT_DURATION,
-      Source<TabContents>(this),
-      Details<MetricEventDurationDetails>(&details));
 }
 
 // Notifies the RenderWidgetHost instance about the fact that the page is

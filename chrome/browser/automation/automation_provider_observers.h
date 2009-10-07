@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_
 #define CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_
 
-#include <map>
 #include <set>
 
 #include "chrome/common/notification_observer.h"
@@ -338,26 +337,5 @@ class DocumentPrintedNotificationObserver : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(DocumentPrintedNotificationObserver);
 };
 #endif  // defined(OS_WIN)
-
-// Collects METRIC_EVENT_DURATION notifications and keep track of the times.
-class MetricEventDurationObserver : public NotificationObserver {
- public:
-  MetricEventDurationObserver();
-
-  // Get the duration of an event.  Returns -1 if we haven't seen the event.
-  int GetEventDurationMs(const std::string& event_name);
-
-  // NotificationObserver interface.
-  virtual void Observe(NotificationType type, const NotificationSource& source,
-                       const NotificationDetails& details);
-
- private:
-  NotificationRegistrar registrar_;
-
-  typedef std::map<std::string, int> EventDurationMap;
-  EventDurationMap durations_;
-
-  DISALLOW_COPY_AND_ASSIGN(MetricEventDurationObserver);
-};
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

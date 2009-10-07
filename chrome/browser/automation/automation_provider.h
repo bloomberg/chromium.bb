@@ -40,11 +40,10 @@ struct Reposition_Params;
 struct ExternalTabSettings;
 }
 
-class ExtensionPortContainer;
-class ExternalTabContainer;
 class LoginHandler;
-class MetricEventDurationObserver;
 class NavigationControllerRestoredObserver;
+class ExternalTabContainer;
+class ExtensionPortContainer;
 struct AutocompleteMatchData;
 
 namespace gfx {
@@ -338,10 +337,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void GetPageType(int handle, bool* success,
                    NavigationEntry::PageType* page_type);
 
-  // Gets the duration in ms of the last event matching |event_name|.
-  // |duration_ms| is -1 if the event hasn't occurred yet.
-  void GetMetricEventDuration(const std::string& event_name, int* duration_ms);
-
   // Simulates an action on the SSL blocking page at the tab specified by
   // |handle|. If |proceed| is true, it is equivalent to the user pressing the
   // 'Proceed' button, if false the 'Get me out of there button'.
@@ -515,7 +510,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   scoped_ptr<NotificationObserver> find_in_page_observer_;
   scoped_ptr<NotificationObserver> dom_operation_observer_;
   scoped_ptr<NotificationObserver> dom_inspector_observer_;
-  scoped_ptr<MetricEventDurationObserver> metric_event_duration_observer_;
   scoped_ptr<AutomationBrowserTracker> browser_tracker_;
   scoped_ptr<AutomationTabTracker> tab_tracker_;
   scoped_ptr<AutomationWindowTracker> window_tracker_;

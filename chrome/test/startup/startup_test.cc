@@ -50,7 +50,7 @@ class StartupTest : public UITest {
   }
 
   void RunStartupTest(const char* graph, const char* trace,
-      bool test_cold, bool important, UITest::ProfileType profile_type) {
+      bool test_cold, bool important, int profile_type) {
     profile_type_ = profile_type;
 
     // Sets the profile data for the run.  For now, this is only used for

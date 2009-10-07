@@ -9,14 +9,12 @@
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/login_prompt.h"
-#include "chrome/browser/metrics/metric_event_duration_details.h"
-#include "chrome/browser/tab_contents/navigation_controller.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/notification_service.h"
-
 #if defined(OS_WIN)
 #include "chrome/browser/printing/print_job.h"
 #endif  // defined(OS_WIN)
+#include "chrome/browser/tab_contents/navigation_controller.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/notification_service.h"
 
 InitialLoadObserver::InitialLoadObserver(size_t tab_count,
                                          AutomationProvider* automation)
@@ -630,28 +628,3 @@ void DocumentPrintedNotificationObserver::Observe(
   }
 }
 #endif  // defined(OS_WIN)
-
-MetricEventDurationObserver::MetricEventDurationObserver() {
-  registrar_.Add(this, NotificationType::METRIC_EVENT_DURATION,
-                 NotificationService::AllSources());
-}
-
-int MetricEventDurationObserver::GetEventDurationMs(
-    const std::string& event_name) {
-  EventDurationMap::const_iterator it = durations_.find(event_name);
-  if (it == durations_.end())
-    return -1;
-  return it->second;
-}
-
-void MetricEventDurationObserver::Observe(NotificationType type,
-    const NotificationSource& source, const NotificationDetails& details) {
-  if (type != NotificationType::METRIC_EVENT_DURATION) {
-    NOTREACHED();
-    return;
-  }
-  MetricEventDurationDetails* metric_event_duration =
-      Details<MetricEventDurationDetails>(details).ptr();
-  durations_[metric_event_duration->event_name] =
-      metric_event_duration->duration_ms;
-}

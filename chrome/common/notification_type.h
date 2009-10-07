@@ -314,11 +314,6 @@ class NotificationType {
     // starting and finishing all painting.
     INITIAL_NEW_TAB_UI_LOAD,
 
-    // Used to fire notifications about how long various events took to
-    // complete.  E.g., this is used to get more fine grained timings from the
-    // new tab page.  Details is a MetricEventDurationDetails.
-    METRIC_EVENT_DURATION,
-
     // This notification is sent when a TabContents is being hidden, e.g. due
     // to switching away from this tab.  The source is a Source<TabContents>.
     TAB_CONTENTS_HIDDEN,

@@ -1641,7 +1641,6 @@
         'browser/memory_purger.h',
         'browser/meta_table_helper.cc',
         'browser/meta_table_helper.h',
-        'browser/metrics/metric_event_duration_details.h',
         'browser/metrics/metrics_log.cc',
         'browser/metrics/metrics_log.h',
         'browser/metrics/metrics_response.cc',

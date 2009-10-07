@@ -1113,10 +1113,4 @@ IPC_BEGIN_MESSAGES(Automation)
                       int /* tab_handle */,
                       int /* The font size */)
 
-  // Returns a metric event duration that was last recorded.  Returns -1 if the
-  // event hasn't occurred yet.
-  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_GetMetricEventDuration,
-                             std::string /* event_name */,
-                             int /* duration ms */)
-
 IPC_END_MESSAGES(Automation)
