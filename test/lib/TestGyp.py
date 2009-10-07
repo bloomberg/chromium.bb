@@ -70,7 +70,7 @@ class TestGypBase(TestCommon.TestCommon):
       # a temporary directory for us.
       kw['workdir'] = ''
 
-    formats = kw.get('formats')
+    formats = kw.get('formats', [])
     if kw.has_key('formats'):
       del kw['formats']
 
