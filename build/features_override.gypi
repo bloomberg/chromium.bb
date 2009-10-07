@@ -10,7 +10,7 @@
     # features.gypi. Therefore, if an enable is listed in features.gypi
     # but not listed below, it will revert to its hardcoded webkit value.
     'feature_defines': [
-      'ENABLE_3D_CANVAS=0',
+      'ENABLE_3D_CANVAS=1',
       'ENABLE_CHANNEL_MESSAGING=1',
       'ENABLE_DATABASE=1',
       'ENABLE_DATAGRID=0',
