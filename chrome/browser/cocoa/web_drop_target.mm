@@ -176,11 +176,18 @@ using WebKit::WebDragOperationsMask;
   DCHECK([pboard containsURLData]);
 
   // The getURLs:andTitles: will already validate URIs so we don't need to
-  // again. The arrays it returns are both of NSString's.
+  // again. However, if the URI is a local file, it won't be prefixed with
+  // file://, which is what GURL expects. We can detect that case because the
+  // resulting URI will have no valid scheme, and we'll assume it's a local
+  // file. The arrays returned are both of NSString's.
   NSArray* urls = nil;
   NSArray* titles = nil;
   [pboard getURLs:&urls andTitles:&titles];
-  data->url = GURL([[urls objectAtIndex:0] UTF8String]);
+  NSString* urlString = [urls objectAtIndex:0];
+  NSURL* url = [NSURL URLWithString:urlString];
+  if (![url scheme])
+    urlString = [[NSURL fileURLWithPath:urlString] absoluteString];
+  data->url = GURL([urlString UTF8String]);
   data->url_title = base::SysNSStringToUTF16([titles objectAtIndex:0]);
 }
 
