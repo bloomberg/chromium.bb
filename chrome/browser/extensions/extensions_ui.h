@@ -10,6 +10,7 @@
 
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
+#include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -52,6 +53,7 @@ class ExtensionsUIHTMLSource : public ChromeURLDataManager::DataSource {
 class ExtensionsDOMHandler
     : public DOMMessageHandler,
       public NotificationObserver,
+      public PackExtensionJob::Client,
       public SelectFileDialog::Listener {
  public:
   explicit ExtensionsDOMHandler(ExtensionsService* extension_service);
@@ -71,13 +73,13 @@ class ExtensionsDOMHandler
       const UserScript& script,
       const FilePath& extension_path);
 
- private:
-#if defined(OS_WIN)
-  // The implementation of this method is platform-specific and defined
-  // elsewhere.
-  static void ShowPackDialog();
-#endif
+  // ExtensionPackJob::Client
+  virtual void OnPackSuccess(const FilePath& crx_file,
+                             const FilePath& key_file);
 
+  virtual void OnPackFailure(const std::wstring& message);
+
+ private:
   // Callback for "requestExtensionsData" message.
   void HandleRequestExtensionsData(const Value* value);
 
@@ -102,6 +104,12 @@ class ExtensionsDOMHandler
   // Callback for "autoupdate" message.
   void HandleAutoUpdateMessage(const Value* value);
 
+  // Utility for calling javascript window.alert in the page.
+  void ShowAlert(const std::string& message);
+
+  // Callback for "selectFilePath" message.
+  void HandleSelectFilePathMessage(const Value* value);
+
   // SelectFileDialog::Listener
   virtual void FileSelected(const FilePath& path,
                             int index, void* params);
@@ -125,6 +133,9 @@ class ExtensionsDOMHandler
 
   // Used to pick the directory when loading an extension.
   scoped_refptr<SelectFileDialog> load_extension_dialog_;
+
+  // Used to package the extension.
+  scoped_refptr<PackExtensionJob> pack_job_;
 
   // We monitor changes to the extension system so that we can reload when
   // necessary.

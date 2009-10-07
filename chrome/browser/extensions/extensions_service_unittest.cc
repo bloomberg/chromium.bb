@@ -727,7 +727,6 @@ TEST_F(ExtensionsServiceTest, InstallExtension) {
   // TODO(erikkay): add tests for upgrade cases.
 }
 
-#if defined(OS_WIN)  // TODO(port)
 // Test Packaging and installing an extension.
 // TODO(rafaelw): add more tests for failure cases.
 TEST_F(ExtensionsServiceTest, PackExtension) {
@@ -791,7 +790,6 @@ TEST_F(ExtensionsServiceTest, PackExtensionOpenSSLKey) {
 
   file_util::Delete(crx_path, false);
 }
-#endif  // defined(OS_WIN)
 
 TEST_F(ExtensionsServiceTest, InstallTheme) {
   InitializeEmptyExtensionsService();
