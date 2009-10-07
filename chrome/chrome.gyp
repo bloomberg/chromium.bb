@@ -2859,6 +2859,12 @@
             'browser/tab_contents/web_drop_target.cc',
           ],
         }],
+        # views depends on webkit headers.
+        ['OS=="win" or toolkit_views==1',{
+          'dependencies': [
+            '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+          ],
+        }],
       ],
     },
     {
@@ -3025,6 +3031,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/npapi/npapi.gyp:npapi',
+        '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
         '../webkit/webkit.gyp:glue',
         '../webkit/webkit.gyp:webkit',
       ],

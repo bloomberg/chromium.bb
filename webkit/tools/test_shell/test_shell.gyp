@@ -35,6 +35,7 @@
         '../../../testing/gmock.gyp:gmock',
         '../../../testing/gtest.gyp:gtest',
         '../../../third_party/npapi/npapi.gyp:npapi',
+        '../../../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
         '../../webkit.gyp:appcache',
         '../../webkit.gyp:database',
         '../../webkit.gyp:glue',
@@ -107,6 +108,7 @@
       'export_dependent_settings': [
         '../../../base/base.gyp:base',
         '../../../net/net.gyp:net',
+        '../../../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
         '../../webkit.gyp:glue',
         '../../webkit.gyp:webkit',
       ],
