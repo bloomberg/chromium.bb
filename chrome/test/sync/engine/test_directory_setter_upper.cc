@@ -4,6 +4,7 @@
 
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 
+#include "base/string_util.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/compat_file.h"
@@ -17,6 +18,8 @@ using syncable::ScopedDirLookup;
 namespace browser_sync {
 
 TestDirectorySetterUpper::TestDirectorySetterUpper() : name_(PSTR("Test")) {}
+TestDirectorySetterUpper::TestDirectorySetterUpper(const PathString& name)
+    : name_(name) {}
 
 TestDirectorySetterUpper::~TestDirectorySetterUpper() {}
 
@@ -78,6 +81,24 @@ void ManuallyOpenedTestDirectorySetterUpper::Open() {
 
 void ManuallyOpenedTestDirectorySetterUpper::TearDown() {
   if (was_opened_) {
+    TestDirectorySetterUpper::TearDown();
+  }
+}
+
+TriggeredOpenTestDirectorySetterUpper::TriggeredOpenTestDirectorySetterUpper(
+    const std::string& name) : TestDirectorySetterUpper(UTF8ToWide(name)) {
+}
+
+void TriggeredOpenTestDirectorySetterUpper::SetUp() {
+  Init();
+}
+
+void TriggeredOpenTestDirectorySetterUpper::TearDown() {
+  DirectoryManager::DirNames names;
+  manager()->GetOpenDirectories(&names);
+  if (!names.empty()) {
+    ASSERT_EQ(1, names.size());
+    ASSERT_EQ(name(), names[0]);
     TestDirectorySetterUpper::TearDown();
   }
 }

@@ -12,11 +12,14 @@
 #include <string>
 
 #include "base/atomicops.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/thread.h"
 #include "chrome/browser/sync/engine/net/gaia_authenticator.h"
+#include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/util/event_sys.h"
-#include "chrome/browser/sync/util/pthread_helpers.h"
 #include "chrome/browser/sync/util/sync_types.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 namespace syncable {
 struct DirectoryManagerEvent;
@@ -65,7 +68,15 @@ struct AuthWatcherEvent {
   AuthenticationTrigger trigger;
 };
 
-class AuthWatcher {
+// The mother-class of Authentication for the sync backend.  Handles both gaia
+// and sync service authentication via asynchronous Authenticate* methods,
+// raising AuthWatcherEvents on success/failure.  The implementation currently
+// runs its own backend thread for the actual auth processing, which means
+// the AuthWatcherEvents can be raised on a different thread than the one that
+// invoked authentication.
+class AuthWatcher : public base::RefCountedThreadSafe<AuthWatcher> {
+ friend class AuthWatcherTest;
+ FRIEND_TEST(AuthWatcherTest, Construction);
  public:
   // Normal progression is local -> gaia -> token.
   enum Status { LOCALLY_AUTHENTICATED, GAIA_AUTHENTICATED, NOT_AUTHENTICATED };
@@ -93,6 +104,8 @@ class AuthWatcher {
     return channel_.get();
   }
 
+  // The following 3 flavors of authentication routines are asynchronous and can
+  // be called from any thread.
   void Authenticate(const std::string& email, const std::string& password,
       const std::string& captcha_token, const std::string& captcha_value,
       bool persist_creds_to_disk);
@@ -102,11 +115,14 @@ class AuthWatcher {
     Authenticate(email, password, "", "", persist_creds_to_disk);
   }
 
-  // Retrieves an auth token for a named service for which a long-lived token
-  // was obtained at login time. Returns true if a long-lived token can be
-  // found, false otherwise.
-  bool GetAuthTokenForService(const std::string& service_name,
-                              std::string* service_token);
+  // Use this version when you don't need the gaia authentication step because
+  // you already have a valid token for |gaia_email|.
+  void AuthenticateWithToken(const std::string& gaia_email,
+                             const std::string& auth_token);
+
+  // Joins on the backend thread.  The AuthWatcher is useless after this and
+  // should be destroyed.
+  void Shutdown() { auth_backend_thread_.Stop(); }
 
   std::string email() const;
   syncable::DirectoryManager* dirman() const { return dirman_; }
@@ -115,33 +131,23 @@ class AuthWatcher {
   UserSettings* settings() const { return user_settings_; }
   Status status() const { return (Status)status_; }
 
-  void Logout();
-
-  // For synchronizing other destructors.
-  void WaitForAuthThreadFinish();
-
-  bool AuthenticateWithToken(const std::string& email,
-                             const std::string& auth_token);
-
  protected:
-  void Reset();
   void ClearAuthenticationData();
 
   void NotifyAuthSucceeded(const std::string& email);
-  bool StartNewAuthAttempt(const std::string& email,
-      const std::string& password,
-      const std::string& auth_token, const std::string& captcha_token,
-      const std::string& captcha_value, bool persist_creds_to_disk,
-      AuthWatcherEvent::AuthenticationTrigger trigger);
   void HandleServerConnectionEvent(const ServerConnectionEvent& event);
 
   void SaveUserSettings(const std::string& username,
                         const std::string& auth_token,
                         const bool save_credentials);
 
+  MessageLoop* message_loop() { return auth_backend_thread_.message_loop(); }
+
+ private:
   // These two helpers should only be called from the auth function.
-  // Returns false iff we had problems and should try GAIA_AUTH again.
-  bool ProcessGaiaAuthSuccess();
+  // Called when authentication with gaia succeeds, to save credential info.
+  void PersistCredentials();
+  // Called when authentication with gaia fails.
   void ProcessGaiaAuthFailure();
 
   // Just checks that the user has at least one local share cache.
@@ -152,48 +158,52 @@ class AuthWatcher {
   // Sets the trigger member of the event and sends the event on channel_.
   void NotifyListeners(AuthWatcherEvent* event);
 
-  const std::string& sync_service_token() const { return sync_service_token_; }
+  inline std::string FormatAsEmailAddress(const std::string& email) const {
+    std::string mail(email);
+    if (email.find('@') == std::string::npos) {
+      mail.push_back('@');
+      // TODO(chron): Should this be done only at the UI level?
+      mail.append(DEFAULT_SIGNIN_DOMAIN);
+    }
+    return mail;
+  }
 
-  typedef PThreadScopedLock<PThreadMutex> MutexLock;
-
-  // Passed to newly created threads.
-  struct ThreadParams {
-    AuthWatcher* self;
-    std::string email;
-    std::string password;
-    std::string auth_token;
-    std::string captcha_token;
-    std::string captcha_value;
-    bool persist_creds_to_disk;
-    AuthWatcherEvent::AuthenticationTrigger trigger;
+  // A struct to marshal various data across to the auth_backend_thread_ on
+  // Authenticate() and AuthenticateWithToken calls.
+  struct AuthRequest {
+      std::string email;
+      std::string password;
+      std::string auth_token;
+      std::string captcha_token;
+      std::string captcha_value;
+      bool persist_creds_to_disk;
+      AuthWatcherEvent::AuthenticationTrigger trigger;
   };
 
-  // Initial function passed to pthread_create.
-  static void* AuthenticationThreadStartRoutine(void* arg);
-  // Member function called by AuthenticationThreadStartRoutine.
-  void* AuthenticationThreadMain(struct ThreadParams* arg);
+  // The public interface Authenticate methods are proxies to these, which
+  // can only be called from |auth_backend_thread_|.
+  void DoAuthenticate(const AuthRequest& request);
+  void DoAuthenticateWithToken(const std::string& email,
+                               const std::string& auth_token);
+
+  // The public HandleServerConnectionEvent method proxies to this method, which
+  // can only be called on |auth_backend_thread_|.
+  void DoHandleServerConnectionEvent(
+      const ServerConnectionEvent& event,
+      const std::string& auth_token_snapshot);
 
   scoped_ptr<GaiaAuthenticator> const gaia_;
   syncable::DirectoryManager* const dirman_;
   ServerConnectionManager* const scm_;
   scoped_ptr<EventListenerHookup> connmgr_hookup_;
   AllStatus* const allstatus_;
-  // TODO(chron): It is incorrect to make assignments to AtomicWord.
-  volatile base::subtle::AtomicWord status_;
+  Status status_;
   UserSettings* const user_settings_;
   TalkMediator* talk_mediator_;  // Interface to the notifications engine.
   scoped_ptr<Channel> channel_;
 
-  // We store our service token in memory as a workaround to the fact that we
-  // don't persist it when the user unchecks "remember me".
-  // We also include it on outgoing requests.
-  std::string sync_service_token_;
+  base::Thread auth_backend_thread_;
 
-  PThreadMutex mutex_;
-  // All members below are protected by the above mutex
-  pthread_t thread_;
-  bool thread_handle_valid_;
-  bool authenticating_now_;
   AuthWatcherEvent::AuthenticationTrigger current_attempt_trigger_;
   DISALLOW_COPY_AND_ASSIGN(AuthWatcher);
 };

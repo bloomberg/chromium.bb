@@ -15,6 +15,7 @@
 #include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/notifier/listener/mediator_thread.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator.h"
+#include "chrome/browser/sync/util/pthread_helpers.h"
 #include "talk/xmpp/xmppclientsettings.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 

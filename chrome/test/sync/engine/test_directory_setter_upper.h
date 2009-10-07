@@ -59,6 +59,8 @@ class TestDirectorySetterUpper {
   const PathString& name() const { return name_; }
 
  protected:
+  // Subclasses may want to use a different directory name.
+  explicit TestDirectorySetterUpper(const PathString& name);
   virtual void Init();
 
  private:
@@ -80,6 +82,18 @@ class ManuallyOpenedTestDirectorySetterUpper : public TestDirectorySetterUpper {
   void Open();
  private:
   bool was_opened_;
+};
+
+// Use this flavor if you have a test that will trigger the opening event to
+// happen automagically.  It is careful on teardown to close only if needed.
+class TriggeredOpenTestDirectorySetterUpper : public TestDirectorySetterUpper {
+ public:
+  // A triggered open is typically in response to a successful auth event just
+  // as in "real life".  In this case, the name that will be used should be
+  // deterministically known at construction, and is passed in |name|.
+  TriggeredOpenTestDirectorySetterUpper(const std::string& name);
+  virtual void SetUp();
+  virtual void TearDown();
 };
 
 }  // namespace browser_sync

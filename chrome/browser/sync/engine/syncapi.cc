@@ -882,7 +882,7 @@ class SyncManager::SyncInternal {
   // the initial connectivity and causes the server connection event to be
   // broadcast, which signals the syncer thread to start syncing.
   // It has a heavy duty constructor requiring boilerplate so we heap allocate.
-  scoped_ptr<AuthWatcher> auth_watcher_;
+  scoped_refptr<AuthWatcher> auth_watcher_;
 
   // A store of change records produced by HandleChangeEvent during the
   // CALCULATE_CHANGES step, and to be processed, and forwarded to the
@@ -1033,15 +1033,15 @@ bool SyncManager::SyncInternal::Init(
   BridgedGaiaAuthenticator* gaia_auth = new BridgedGaiaAuthenticator(
       gaia_source, service_id, gaia_url, auth_post_factory);
 
-  auth_watcher_.reset(new AuthWatcher(dir_manager(),
-                                      connection_manager(),
-                                      &allstatus_,
-                                      gaia_source,
-                                      service_id,
-                                      gaia_url,
-                                      user_settings_.get(),
-                                      gaia_auth,
-                                      talk_mediator()));
+  auth_watcher_ = new AuthWatcher(dir_manager(),
+                                  connection_manager(),
+                                  &allstatus_,
+                                  gaia_source,
+                                  service_id,
+                                  gaia_url,
+                                  user_settings_.get(),
+                                  gaia_auth,
+                                  talk_mediator());
 
   talk_mediator()->WatchAuthWatcher(auth_watcher());
   allstatus()->WatchAuthWatcher(auth_watcher());
@@ -1172,7 +1172,8 @@ void SyncManager::SyncInternal::Shutdown() {
   // it terminates gracefully before we shutdown and close other components.
   // Otherwise the attempt can complete after we've closed the directory, for
   // example, and cause initialization to continue, which is bad.
-  auth_watcher_.reset();
+  auth_watcher_->Shutdown();
+  auth_watcher_ = NULL;
 
   if (syncer_thread()) {
     if (!syncer_thread()->Stop(kThreadExitTimeoutMsec))

@@ -105,7 +105,7 @@ class GaiaAuthenticator {
 
   // This object should only be invoked from the AuthWatcherThread message
   // loop, which is injected here.
-  void set_message_loop(MessageLoop* loop) {
+  void set_message_loop(const MessageLoop* loop) {
     message_loop_ = loop;
   }
 
@@ -181,9 +181,10 @@ class GaiaAuthenticator {
   // The real Authenticate implementations.
   bool AuthenticateImpl(const AuthParams& params);
   bool AuthenticateImpl(const AuthParams& params, AuthResults* results);
-  bool PerformGaiaRequest(const AuthParams& params, AuthResults* results);
 
   // virtual for testing purposes.
+  virtual bool PerformGaiaRequest(const AuthParams& params,
+                                  AuthResults* results);
   virtual bool Post(const GURL& url, const std::string& post_body,
                     unsigned long* response_code, std::string* response_body) {
     return false;
@@ -191,7 +192,7 @@ class GaiaAuthenticator {
 
   // Caller should fill in results->LSID before calling. Result in
   // results->primary_email.
-  bool LookupEmail(AuthResults* results);
+  virtual bool LookupEmail(AuthResults* results);
 
  public:
   // Retrieve email.
@@ -288,7 +289,7 @@ class GaiaAuthenticator {
 
   // The message loop all our methods are invoked on.  Generally this is the
   // SyncEngine_AuthWatcherThread's message loop.
-  MessageLoop* message_loop_;
+  const MessageLoop* message_loop_;
 };
 
 }  // namespace browser_sync

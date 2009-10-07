@@ -109,6 +109,12 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   void SetNewTimestamp(int64 ts);
   void SetNewestTimestamp(int64 ts);
 
+  // For AUTHENTICATE responses.
+  void SetAuthenticationResponseInfo(const std::string& valid_auth_token,
+                                     const std::string& user_display_name,
+                                     const std::string& user_display_email,
+                                     const std::string& user_obfuscated_id);
+
   void FailNextPostBufferToPathCall() { fail_next_postbuffer_ = true; }
 
   // Simple inspectors.
@@ -144,6 +150,9 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   // Functions to handle the various types of server request.
   void ProcessGetUpdates(sync_pb::ClientToServerMessage* csm,
                          sync_pb::ClientToServerResponse* response);
+  void ProcessAuthenticate(sync_pb::ClientToServerMessage* csm,
+                           sync_pb::ClientToServerResponse* response,
+                           const std::string& auth_token);
   void ProcessCommit(sync_pb::ClientToServerMessage* csm,
                      sync_pb::ClientToServerResponse* response_buffer);
   // Locate the most recent update message for purpose of alteration.
@@ -189,6 +198,11 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   sync_pb::GetUpdatesResponse updates_;
   TestCallbackFunction mid_commit_callback_function_;
   MidCommitObserver* mid_commit_observer_;
+
+  // The AUTHENTICATE response we'll return for auth requests.
+  sync_pb::AuthenticateResponse auth_response_;
+  // What we use to determine if we should return SUCCESS or BAD_AUTH_TOKEN.
+  std::string valid_auth_token_;
 
   scoped_ptr<sync_pb::ClientCommand> client_command_;
 

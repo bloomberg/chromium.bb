@@ -11,12 +11,10 @@
 #include "chrome/browser/sync/engine/net/gaia_authenticator.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator.h"
-#include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/character_set_converters.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
-#include "chrome/browser/sync/util/pthread_helpers.h"
 #include "chrome/browser/sync/util/user_settings.h"
 
 // How authentication happens:
@@ -57,9 +55,14 @@ AuthWatcher::AuthWatcher(DirectoryManager* dirman,
       status_(NOT_AUTHENTICATED),
       user_settings_(user_settings),
       talk_mediator_(talk_mediator),
-      thread_handle_valid_(false),
-      authenticating_now_(false),
+      auth_backend_thread_("SyncEngine_AuthWatcherThread"),
       current_attempt_trigger_(AuthWatcherEvent::USER_INITIATED) {
+
+  if (!auth_backend_thread_.Start())
+    NOTREACHED() << "Couldn't start SyncEngine_AuthWatcherThread";
+
+  gaia_->set_message_loop(message_loop());
+
   connmgr_hookup_.reset(
       NewEventListenerHookup(scm->channel(), this,
                              &AuthWatcher::HandleServerConnectionEvent));
@@ -67,12 +70,8 @@ AuthWatcher::AuthWatcher(DirectoryManager* dirman,
   channel_.reset(new Channel(done));
 }
 
-void* AuthWatcher::AuthenticationThreadStartRoutine(void* arg) {
-  ThreadParams* args = reinterpret_cast<ThreadParams*>(arg);
-  return args->self->AuthenticationThreadMain(args);
-}
-
-bool AuthWatcher::ProcessGaiaAuthSuccess() {
+void AuthWatcher::PersistCredentials() {
+  DCHECK_EQ(MessageLoop::current(), message_loop());
   GaiaAuthenticator::AuthResults results = gaia_->results();
 
   // We just successfully signed in again, let's clear out any residual cached
@@ -92,48 +91,19 @@ bool AuthWatcher::ProcessGaiaAuthSuccess() {
                                            SYNC_SERVICE_NAME,
                                            gaia_->auth_token());
   }
-
-  return AuthenticateWithToken(results.email, gaia_->auth_token());
-}
-
-bool AuthWatcher::GetAuthTokenForService(const string& service_name,
-                                         string* service_token) {
-  string user_name;
-
-  // We special case this one by trying to return it from memory first. We
-  // do this because the user may not have checked "Remember me" and so we
-  // may not have persisted the sync service token beyond the initial
-  // login.
-  if (SYNC_SERVICE_NAME == service_name && !sync_service_token_.empty()) {
-    *service_token = sync_service_token_;
-    return true;
-  }
-
-  if (user_settings_->GetLastUserAndServiceToken(service_name, &user_name,
-                                                 service_token)) {
-    // The casing gets preserved in some places and not in others it seems,
-    // at least I have observed different casings persisted to different DB
-    // tables.
-    if (!base::strcasecmp(user_name.c_str(),
-                          user_settings_->email().c_str())) {
-      return true;
-    } else {
-      LOG(ERROR) << "ERROR: We seem to have saved credentials for someone "
-                 << " other than the current user.";
-      return false;
-    }
-  }
-
-  return false;
 }
 
 const char kAuthWatcher[] = "AuthWatcher";
 
-bool AuthWatcher::AuthenticateWithToken(const string& gaia_email,
-                                        const string& auth_token) {
-  // Store a copy of the sync service token in memory.
-  sync_service_token_ = auth_token;
-  scm_->set_auth_token(sync_service_token_);
+void AuthWatcher::AuthenticateWithToken(const std::string& gaia_email,
+                                        const std::string& auth_token) {
+  message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &AuthWatcher::DoAuthenticateWithToken, gaia_email, auth_token));
+}
+
+void AuthWatcher::DoAuthenticateWithToken(const std::string& gaia_email,
+                                          const std::string& auth_token) {
+  DCHECK_EQ(MessageLoop::current(), message_loop());
 
   Authenticator auth(scm_, user_settings_);
   Authenticator::AuthenticationResult result =
@@ -158,11 +128,12 @@ bool AuthWatcher::AuthenticateWithToken(const string& gaia_email,
 
         // Set the authentication token for notifications
         talk_mediator_->SetAuthToken(email, auth_token);
+        scm_->set_auth_token(auth_token);
 
         if (!was_authenticated)
           LoadDirectoryListAndOpen(share_name);
         NotifyAuthSucceeded(email);
-        return true;
+        return;
       }
   case Authenticator::BAD_AUTH_TOKEN:
     event.what_happened = AuthWatcherEvent::SERVICE_AUTH_FAILED;
@@ -176,19 +147,19 @@ bool AuthWatcher::AuthenticateWithToken(const string& gaia_email,
     break;
   default:
     LOG(FATAL) << "Illegal return from AuthenticateToken";
-    return true;  // keep the compiler happy
+    return;
   }
   // Always fall back to local authentication.
   if (was_authenticated || AuthenticateLocally(email)) {
     if (AuthWatcherEvent::SERVICE_CONNECTION_FAILED == event.what_happened)
-      return true;
+      return;
   }
-  CHECK(event.what_happened != AuthWatcherEvent::ILLEGAL_VALUE);
+  DCHECK_NE(event.what_happened, AuthWatcherEvent::ILLEGAL_VALUE);
   NotifyListeners(&event);
-  return true;
 }
 
 bool AuthWatcher::AuthenticateLocally(string email) {
+  DCHECK_EQ(MessageLoop::current(), message_loop());
   user_settings_->GetEmailForSignin(&email);
   if (file_util::PathExists(FilePath(dirman_->GetSyncDataDatabasePath()))) {
     gaia_->SetUsername(email);
@@ -205,12 +176,14 @@ bool AuthWatcher::AuthenticateLocally(string email) {
 }
 
 bool AuthWatcher::AuthenticateLocally(string email, const string& password) {
+  DCHECK_EQ(MessageLoop::current(), message_loop());
   user_settings_->GetEmailForSignin(&email);
   return user_settings_->VerifyAgainstStoredHash(email, password)
     && AuthenticateLocally(email);
 }
 
 void AuthWatcher::ProcessGaiaAuthFailure() {
+  DCHECK_EQ(MessageLoop::current(), message_loop());
   GaiaAuthenticator::AuthResults results = gaia_->results();
   if (LOCALLY_AUTHENTICATED == status_) {
     return;  // nothing todo
@@ -234,77 +207,44 @@ void AuthWatcher::ProcessGaiaAuthFailure() {
   NotifyListeners(&myevent);
 }
 
-void* AuthWatcher::AuthenticationThreadMain(ThreadParams* args) {
-  NameCurrentThreadForDebugging("SyncEngine_AuthWatcherThread");
-  // TODO(timsteele):  Remove this; this is temporary to satisfy code that
-  // compares MessageLoop pointers until AuthWatcher uses a base::Thread.
-  // We allocate a message_loop from the AuthWatcherThread so that
-  // GaiaAuth and EventChannel get a valid opaque pointer to the current
-  // message loop used for comparison. It gets stored in TLS as the 'current'
-  // loop for this thread.
-  MessageLoop message_loop;
-  {
-    // This short lock ensures our launching function (StartNewAuthAttempt) is
-    // done.
-    MutexLock lock(&mutex_);
-    current_attempt_trigger_ = args->trigger;
-  }
-  SaveCredentials save = args->persist_creds_to_disk ?
+void AuthWatcher::DoAuthenticate(const AuthRequest& request) {
+  DCHECK_EQ(MessageLoop::current(), message_loop());
+
+  AuthWatcherEvent event = { AuthWatcherEvent::AUTHENTICATION_ATTEMPT_START };
+  NotifyListeners(&event);
+
+  current_attempt_trigger_ = request.trigger;
+
+  SaveCredentials save = request.persist_creds_to_disk ?
       PERSIST_TO_DISK : SAVE_IN_MEMORY_ONLY;
-  int attempt = 0;
   SignIn const signin = user_settings_->
-    RecallSigninType(args->email, GMAIL_SIGNIN);
+      RecallSigninType(request.email, GMAIL_SIGNIN);
 
-  gaia_->set_message_loop(&message_loop);
-
-  if (!args->password.empty()) {
-    // TODO(timsteele): Split this mess up into functions.
-    while (true) {
-      bool authenticated;
-      if (!args->captcha_token.empty() && !args->captcha_value.empty()) {
-        authenticated = gaia_->Authenticate(args->email, args->password,
-                                            save, args->captcha_token,
-                                            args->captcha_value, signin);
-      } else {
-        authenticated = gaia_->Authenticate(args->email, args->password,
-                                            save, signin);
-      }
-      if (authenticated) {
-        if (!ProcessGaiaAuthSuccess()) {
-            if (3 != ++attempt) {
-              continue;
-            }
-          AuthWatcherEvent event =
-              { AuthWatcherEvent::SERVICE_CONNECTION_FAILED, 0 };
-          NotifyListeners(&event);
-        }
-      } else {
-        ProcessGaiaAuthFailure();
-      }
-      break;  // We are done trying to authenticate.
+  if (!request.password.empty()) {
+    bool authenticated = false;
+    if (!request.captcha_token.empty() && !request.captcha_value.empty()) {
+      authenticated = gaia_->Authenticate(request.email, request.password,
+                                          save, request.captcha_token,
+                                          request.captcha_value, signin);
+    } else {
+      authenticated = gaia_->Authenticate(request.email, request.password,
+                                          save, signin);
     }
-  } else if (!args->auth_token.empty()) {
-    AuthenticateWithToken(args->email, args->auth_token);
+    if (authenticated) {
+      PersistCredentials();
+      DoAuthenticateWithToken(gaia_->email(), gaia_->auth_token());
+    } else {
+      ProcessGaiaAuthFailure();
+    }
+  } else if (!request.auth_token.empty()) {
+      DoAuthenticateWithToken(request.email, request.auth_token);
   } else {
-    LOG(ERROR) << "Attempt to authenticate with no credentials.";
+      LOG(ERROR) << "Attempt to authenticate with no credentials.";
   }
-
-  // We're done trying to authenticate.  Set state and terminate the thread.
-  {
-    MutexLock lock(&mutex_);
-    authenticating_now_ = false;
-  }
-  // TODO(timsteele): Remove this; nothing ever gets posted to this loop.
-  gaia_->set_message_loop(NULL);
-  delete args;
-  return 0;
-}
-
-void AuthWatcher::Reset() {
-  status_ = NOT_AUTHENTICATED;
 }
 
 void AuthWatcher::NotifyAuthSucceeded(const string& email) {
+  DCHECK_EQ(MessageLoop::current(), message_loop());
   LOG(INFO) << "NotifyAuthSucceeded";
   AuthWatcherEvent event = { AuthWatcherEvent::AUTH_SUCCEEDED };
   event.user_email = email;
@@ -312,76 +252,40 @@ void AuthWatcher::NotifyAuthSucceeded(const string& email) {
   NotifyListeners(&event);
 }
 
-bool AuthWatcher::StartNewAuthAttempt(const string& email,
-    const string& password, const string& auth_token,
-    const string& captcha_token, const string& captcha_value,
-    bool persist_creds_to_disk,
-    AuthWatcherEvent::AuthenticationTrigger trigger) {
-  AuthWatcherEvent event = { AuthWatcherEvent::AUTHENTICATION_ATTEMPT_START };
-  NotifyListeners(&event);
-  MutexLock lock(&mutex_);
-  if (authenticating_now_)
-    return false;
-  if (thread_handle_valid_) {
-    int join_return = pthread_join(thread_, 0);
-    if (0 != join_return)
-      LOG(ERROR) << "pthread_join failed returning " << join_return;
-  }
-  string mail = email;
-  if (email.find('@') == string::npos) {
-    mail.push_back('@');
-    // TODO(chron): Should this be done only at the UI level?
-    mail.append(DEFAULT_SIGNIN_DOMAIN);
-  }
-  ThreadParams* args = new ThreadParams;
-  args->self = this;
-  args->email = mail;
-  args->password = password;
-  args->auth_token = auth_token;
-  args->captcha_token = captcha_token;
-  args->captcha_value = captcha_value;
-  args->persist_creds_to_disk = persist_creds_to_disk;
-  args->trigger = trigger;
-  if (0 != pthread_create(&thread_, NULL, AuthenticationThreadStartRoutine,
-                          args)) {
-    LOG(ERROR) << "Failed to create auth thread.";
-    return false;
-  }
-  authenticating_now_ = true;
-  thread_handle_valid_ = true;
-  return true;
-}
-
-void AuthWatcher::WaitForAuthThreadFinish() {
-  {
-    MutexLock lock(&mutex_);
-    if (!thread_handle_valid_)
-      return;
-  }
-  pthread_join(thread_, 0);
-}
-
 void AuthWatcher::HandleServerConnectionEvent(
     const ServerConnectionEvent& event) {
+  message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &AuthWatcher::DoHandleServerConnectionEvent, event,
+          scm_->auth_token()));
+}
+
+void AuthWatcher::DoHandleServerConnectionEvent(
+    const ServerConnectionEvent& event,
+    const std::string& auth_token_snapshot) {
+  DCHECK_EQ(MessageLoop::current(), message_loop());
   if (event.server_reachable &&
-      !authenticating_now_ &&
+      // If the auth_token at the time of the event differs from the current
+      // one, we have authenticated since then and don't need to re-try.
+      (auth_token_snapshot == gaia_->auth_token()) &&
       (event.connection_code == HttpResponse::SYNC_AUTH_ERROR ||
-      status_ == LOCALLY_AUTHENTICATED)) {
+       status_ == LOCALLY_AUTHENTICATED)) {
     // We're either online or just got reconnected and want to try to
     // authenticate. If we've got a saved token this should just work. If not
     // the auth failure should trigger UI indications that we're not logged in.
 
     // METRIC: If we get a SYNC_AUTH_ERROR, our token expired.
     GaiaAuthenticator::AuthResults authresults = gaia_->results();
-    if (!StartNewAuthAttempt(authresults.email, authresults.password,
-                             authresults.auth_token, "", "",
-                             PERSIST_TO_DISK == authresults.credentials_saved,
-                             AuthWatcherEvent::EXPIRED_CREDENTIALS))
-      LOG(INFO) << "Couldn't start a new auth attempt.";
+    AuthRequest request = { authresults.email, authresults.password,
+                            authresults.auth_token, std::string(),
+                            std::string(),
+                            PERSIST_TO_DISK == authresults.credentials_saved,
+                            AuthWatcherEvent::EXPIRED_CREDENTIALS };
+    DoAuthenticate(request);
   }
 }
 
 bool AuthWatcher::LoadDirectoryListAndOpen(const PathString& login) {
+  DCHECK_EQ(MessageLoop::current(), message_loop());
   LOG(INFO) << "LoadDirectoryListAndOpen(" << login << ")";
   bool initial_sync_ended = false;
 
@@ -395,33 +299,30 @@ bool AuthWatcher::LoadDirectoryListAndOpen(const PathString& login) {
 }
 
 AuthWatcher::~AuthWatcher() {
-  WaitForAuthThreadFinish();
+  auth_backend_thread_.Stop();
+  // The gaia authenticator takes a const MessageLoop* because it only uses it
+  // to ensure all methods are invoked on the given loop.  Once our thread has
+  // stopped, the current message loop will be NULL, and no methods should be
+  // invoked on |gaia_| after this point.  We could set it to NULL, but
+  // abstaining allows for even more sanity checking that nothing is invoked on
+  // it from now on.
 }
 
 void AuthWatcher::Authenticate(const string& email, const string& password,
     const string& captcha_token, const string& captcha_value,
     bool persist_creds_to_disk) {
   LOG(INFO) << "AuthWatcher::Authenticate called";
-  WaitForAuthThreadFinish();
 
-  // We CHECK here because WaitForAuthThreadFinish should ensure there's no
-  // ongoing auth attempt.
   string empty;
-  CHECK(StartNewAuthAttempt(email, password, empty, captcha_token,
-                            captcha_value, persist_creds_to_disk,
-                            AuthWatcherEvent::USER_INITIATED));
-}
-
-void AuthWatcher::Logout() {
-  scm_->ResetAuthStatus();
-  Reset();
-  WaitForAuthThreadFinish();
-  ClearAuthenticationData();
+  AuthRequest request = { FormatAsEmailAddress(email), password, empty,
+                          captcha_token, captcha_value, persist_creds_to_disk,
+                          AuthWatcherEvent::USER_INITIATED };
+  message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &AuthWatcher::DoAuthenticate, request));
 }
 
 void AuthWatcher::ClearAuthenticationData() {
-  sync_service_token_.clear();
-  scm_->set_auth_token(sync_service_token());
+  scm_->set_auth_token(std::string());
   user_settings_->ClearAllServiceTokens();
 }
 

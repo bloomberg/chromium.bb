@@ -256,6 +256,10 @@ class ServerConnectionManager {
     auth_token_.assign(auth_token);
   }
 
+  const std::string& auth_token() const {
+    return auth_token_;
+  }
+
  protected:
 
   PThreadMutex shutdown_event_mutex_;

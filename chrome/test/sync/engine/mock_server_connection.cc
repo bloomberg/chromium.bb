@@ -70,22 +70,23 @@ void MockConnectionManager::SetMidCommitObserver(
 bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
                                              const string& path,
                                              const string& auth_token) {
-
-  ScopedDirLookup directory(directory_manager_, directory_name_);
-  CHECK(directory.good());
-
   ClientToServerMessage post;
   CHECK(post.ParseFromString(params->buffer_in));
   client_stuck_ = post.sync_problem_detected();
   ClientToServerResponse response;
   response.Clear();
+
+  ScopedDirLookup directory(directory_manager_, directory_name_);
+  // For any non-AUTHENTICATE requests, a valid directory should be set up.
   // If the Directory's locked when we do this, it's a problem as in normal
   // use this function could take a while to return because it accesses the
   // network. As we can't test this we do the next best thing and hang here
   // when there's an issue.
-  {
+  if (post.message_contents() != ClientToServerMessage::AUTHENTICATE) {
+    CHECK(directory.good());
     WriteTransaction wt(directory, syncable::UNITTEST, __FILE__, __LINE__);
   }
+
   if (fail_next_postbuffer_) {
     fail_next_postbuffer_ = false;
     return false;
@@ -101,12 +102,15 @@ bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
     return true;
   }
   bool result = true;
-  EXPECT_TRUE(!store_birthday_sent_ || post.has_store_birthday());
+  EXPECT_TRUE(!store_birthday_sent_ || post.has_store_birthday() ||
+              post.message_contents() == ClientToServerMessage::AUTHENTICATE);
   store_birthday_sent_ = true;
   if (post.message_contents() == ClientToServerMessage::COMMIT) {
     ProcessCommit(&post, &response);
   } else if (post.message_contents() == ClientToServerMessage::GET_UPDATES) {
     ProcessGetUpdates(&post, &response);
+  } else if (post.message_contents() == ClientToServerMessage::AUTHENTICATE) {
+    ProcessAuthenticate(&post, &response, auth_token);
   } else {
     EXPECT_TRUE(false) << "Unknown/unsupported ClientToServerMessage";
     return false;
@@ -247,6 +251,33 @@ void MockConnectionManager::ProcessGetUpdates(ClientToServerMessage* csm,
   // TODO(sync): filter results dependant on timestamp? or check limits?
   response->mutable_get_updates()->CopyFrom(updates_);
   ResetUpdates();
+}
+
+void MockConnectionManager::ProcessAuthenticate(ClientToServerMessage* csm,
+    ClientToServerResponse* response, const std::string& auth_token){
+  ASSERT_EQ(csm->message_contents(), ClientToServerMessage::AUTHENTICATE);
+  EXPECT_FALSE(auth_token.empty());
+
+  if (auth_token != valid_auth_token_) {
+    response->set_error_code(ClientToServerResponse::AUTH_INVALID);
+    return;
+  }
+
+  response->set_error_code(ClientToServerResponse::SUCCESS);
+  response->mutable_authenticate()->CopyFrom(auth_response_);
+  auth_response_.Clear();
+}
+
+void MockConnectionManager::SetAuthenticationResponseInfo(
+    const std::string& valid_auth_token,
+    const std::string& user_display_name,
+    const std::string& user_display_email,
+    const std::string& user_obfuscated_id) {
+  valid_auth_token_ = valid_auth_token;
+  sync_pb::UserIdentification* user = auth_response_.mutable_user();
+  user->set_display_name(user_display_name);
+  user->set_email(user_display_email);
+  user->set_obfuscated_id(user_obfuscated_id);
 }
 
 bool MockConnectionManager::ShouldConflictThisCommit() {
