@@ -159,6 +159,24 @@ void RunUIMessageLoop(BrowserProcess* browser_process) {
 void SIGCHLDHandler(int signal) {
 }
 
+// See comment below, where sigaction is called.
+void SIGTERMHandler(int signal) {
+  DCHECK_EQ(signal, SIGTERM);
+  LOG(WARNING) << "Addressing SIGTERM on " << PlatformThread::CurrentId();
+  MessageLoop* main_loop = ChromeThread::GetMessageLoop(ChromeThread::UI);
+  if (main_loop) {
+    main_loop->PostTask(FROM_HERE,
+                        NewRunnableFunction(
+                            BrowserList::CloseAllBrowsers, true));
+  }
+  // Reinstall the default handler.  We had one shot at graceful shutdown.
+  LOG(WARNING) << "Posted task to UI thread; resetting SIGTERM handler.";
+  struct sigaction term_action;
+  memset(&term_action, 0, sizeof(term_action));
+  term_action.sa_handler = SIG_DFL;
+  CHECK(sigaction(SIGTERM, &term_action, NULL) == 0);
+}
+
 // Sets the file descriptor soft limit to |max_descriptors| or the OS hard
 // limit, whichever is lower.
 void SetFileDescriptorLimit(unsigned int max_descriptors) {
@@ -236,6 +254,13 @@ int BrowserMain(const MainFunctionParams& parameters) {
   memset(&action, 0, sizeof(action));
   action.sa_handler = SIGCHLDHandler;
   CHECK(sigaction(SIGCHLD, &action, NULL) == 0);
+
+  // We need to handle SIGTERM, because that is how many POSIX-based distros ask
+  // processes to quit gracefully at shutdown time.
+  struct sigaction term_action;
+  memset(&term_action, 0, sizeof(term_action));
+  term_action.sa_handler = SIGTERMHandler;
+  CHECK(sigaction(SIGTERM, &term_action, NULL) == 0);
 
   const std::wstring fd_limit_string =
       parsed_command_line.GetSwitchValue(switches::kFileDescriptorLimit);

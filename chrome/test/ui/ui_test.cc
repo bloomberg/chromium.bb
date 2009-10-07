@@ -613,8 +613,6 @@ int UITest::GetBrowserProcessCount() {
   return GetRunningChromeProcesses(data_dir).size();
 }
 
-#if defined(OS_WIN)
-// TODO(port): Port GetRunningChromeProcesses and sort out one w/string issue.
 static DictionaryValue* LoadDictionaryValueFromPath(const FilePath& path) {
   if (path.empty())
     return NULL;
@@ -634,13 +632,12 @@ DictionaryValue* UITest::GetLocalState() {
 }
 
 DictionaryValue* UITest::GetDefaultProfilePreferences() {
-  std::wstring path;
-  PathService::Get(chrome::DIR_USER_DATA, &path);
-  file_util::AppendToPath(&path, chrome::kNotSignedInProfile);
-  file_util::AppendToPath(&path, chrome::kPreferencesFilename);
-  return LoadDictionaryValueFromPath(FilePath::FromWStringHack(path));
+  std::wstring path_wstring;
+  PathService::Get(chrome::DIR_USER_DATA, &path_wstring);
+  file_util::AppendToPath(&path_wstring, chrome::kNotSignedInProfile);
+  FilePath path(FilePath::FromWStringHack(path_wstring));
+  return LoadDictionaryValueFromPath(path.Append(chrome::kPreferencesFilename));
 }
-#endif  // OS_WIN
 
 int UITest::GetTabCount() {
   scoped_refptr<BrowserProxy> first_window(automation()->GetBrowserWindow(0));

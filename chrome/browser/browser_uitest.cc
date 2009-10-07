@@ -23,7 +23,49 @@
 
 namespace {
 
+// Delay to let the browser shut down before trying more brutal methods.
+static const int kWaitForTerminateMsec = 30000;
+
 class BrowserTest : public UITest {
+
+ protected:
+  void TerminateBrowser() {
+#if defined(OS_WIN)
+    scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+    ASSERT_TRUE(browser->TerminateSession());
+#elif defined(OS_POSIX)
+    // There's nothing to do here if the browser is not running.
+    if (IsBrowserRunning()) {
+      automation()->SetFilteredInet(false);
+
+      int window_count = 0;
+      EXPECT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+
+      // Now, drop the automation IPC channel so that the automation provider in
+      // the browser notices and drops its reference to the browser process.
+      automation()->Disconnect();
+
+      EXPECT_EQ(kill(process_, SIGTERM), 0);
+
+      // Wait for the browser process to quit. It should have quit when it got
+      // SIGTERM.
+      int timeout = kWaitForTerminateMsec;
+#ifdef WAIT_FOR_DEBUGGER_ON_OPEN
+      timeout = 500000;
+#endif
+      if (!base::WaitForSingleProcess(process_, timeout)) {
+        // We need to force the browser to quit because it didn't quit fast
+        // enough. Take no chance and kill every chrome processes.
+        CleanupAppProcesses();
+      }
+
+      // Don't forget to close the handle
+      base::CloseProcessHandle(process_);
+      process_ = NULL;
+    }
+#endif  // OS_POSIX
+  }
+
 };
 
 class VisibleBrowserTest : public UITest {
@@ -36,14 +78,18 @@ class VisibleBrowserTest : public UITest {
 #if defined(OS_WIN)
 // The browser should quit quickly if it receives a WM_ENDSESSION message.
 TEST_F(BrowserTest, WindowsSessionEnd) {
+#elif defined(OS_POSIX)
+// The browser should quit gracefully and quickly if it receives a SIGTERM.
+TEST_F(BrowserTest, PosixSessionEnd) {
+#endif
+#if defined(OS_WIN) || defined(OS_POSIX)
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("title1.html");
 
   NavigateToURL(net::FilePathToFileURL(test_file));
   PlatformThread::Sleep(action_timeout_ms());
 
-  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(browser->TerminateSession());
+  TerminateBrowser();
 
   PlatformThread::Sleep(action_timeout_ms());
   ASSERT_FALSE(IsBrowserRunning());
@@ -69,7 +115,7 @@ TEST_F(BrowserTest, WindowsSessionEnd) {
                                         &exited_cleanly));
   ASSERT_TRUE(exited_cleanly);
 }
-#endif
+#endif  // OS_WIN || OS_POSIX
 
 // Test that scripts can fork a new renderer process for a tab in a particular
 // case (which matches following a link in Gmail).  The script must open a new
