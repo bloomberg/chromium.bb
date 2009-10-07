@@ -865,11 +865,6 @@
    fun:_ZN27SafeBrowsingProtocolManager10InitializeEv
 }
 {
-   bug_20778
-   Memcheck:Cond
-   fun:_ZN7WebCore10XSSAuditor23CachingURLCanonicalizer15canonicalizeURLERKNS_6StringERKNS_12TextEncodingEb
-}
-{
    bug_20805
    Memcheck:Leak
    fun:_Znw*
