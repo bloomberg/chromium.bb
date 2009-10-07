@@ -3024,17 +3024,11 @@ BUG23748 : LayoutTests/http/tests/globalhistory/history-delegate-basic-refresh-r
 // WebKit update 48937:48947
 BUG23751 WIN LINUX DEBUG : LayoutTests/fast/inline/relative-positioned-overflow.html = CRASH
 
-// WebKit update 48976:48993 (48989 busted all these)
-BUG_ATWILSON WIN LINUX: LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = FAIL
-BUG_ATWILSON WIN LINUX: LayoutTests/fast/css/getComputedStyle/computed-style.html = FAIL
-BUG_ATWILSON WIN LINUX : LayoutTests/fast/css/text-rendering.html = FAIL
-BUG_ATWILSON WIN LINUX: LayoutTests/svg/css/getComputedStyle-basic.xhtml = FAIL
-// This was happening previously - might be a flakey test?
-BUG_ATWILSON LINUX : LayoutTests/editing/selection/extend-selection.html = TIMEOUT PASS
-BUG_ATWILSON MAC : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL
+// Started happening somewhere around http://trac.webkit.org/changeset/48989.
+BUG23955 MAC LINUX: LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL PASS
 
-// WebKit update: 48994:49006
-BUG_ATWILSON WIN LINUX : LayoutTests/fast/box-shadow/inset.html = FAIL
+// Possibly busted as part of http://trac.webkit.org/changeset/49003
+BUG23901 WIN LINUX : LayoutTests/fast/box-shadow/inset.html = FAIL
 
 // Skia update 364:376
 // Bad news:  1883 failures on Windows, 1854 failures on Linux.

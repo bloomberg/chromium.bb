@@ -50,8 +50,6 @@ rect: style.getPropertyValue(border-top-width) : 0px
 rect: style.getPropertyCSSValue(border-top-width) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(bottom) : auto
 rect: style.getPropertyCSSValue(bottom) : [object CSSPrimitiveValue]
-rect: style.getPropertyValue(box-shadow) : none
-rect: style.getPropertyCSSValue(box-shadow) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(caption-side) : top
 rect: style.getPropertyCSSValue(caption-side) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(clear) : none
@@ -154,6 +152,8 @@ rect: style.getPropertyValue(text-decoration) : none
 rect: style.getPropertyCSSValue(text-decoration) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(text-indent) : 0px
 rect: style.getPropertyCSSValue(text-indent) : [object CSSPrimitiveValue]
+rect: style.getPropertyValue(text-rendering) : auto
+rect: style.getPropertyCSSValue(text-rendering) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(text-shadow) : none
 rect: style.getPropertyCSSValue(text-shadow) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(text-overflow) : clip
@@ -234,6 +234,8 @@ rect: style.getPropertyValue(-webkit-box-pack) : start
 rect: style.getPropertyCSSValue(-webkit-box-pack) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(-webkit-box-reflect) : none
 rect: style.getPropertyCSSValue(-webkit-box-reflect) : [object CSSPrimitiveValue]
+rect: style.getPropertyValue(-webkit-box-shadow) : none
+rect: style.getPropertyCSSValue(-webkit-box-shadow) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(-webkit-box-sizing) : content-box
 rect: style.getPropertyCSSValue(-webkit-box-sizing) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(-webkit-column-break-after) : auto
@@ -386,8 +388,6 @@ rect: style.getPropertyValue(stroke-opacity) : 1
 rect: style.getPropertyCSSValue(stroke-opacity) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(stroke-width) : 2px
 rect: style.getPropertyCSSValue(stroke-width) : [object CSSPrimitiveValue]
-rect: style.getPropertyValue(text-rendering) : auto
-rect: style.getPropertyCSSValue(text-rendering) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(alignment-baseline) : auto
 rect: style.getPropertyCSSValue(alignment-baseline) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(baseline-shift) : baseline
@@ -456,8 +456,6 @@ g: style.getPropertyValue(border-top-width) : 0px
 g: style.getPropertyCSSValue(border-top-width) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(bottom) : auto
 g: style.getPropertyCSSValue(bottom) : [object CSSPrimitiveValue]
-g: style.getPropertyValue(box-shadow) : none
-g: style.getPropertyCSSValue(box-shadow) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(caption-side) : top
 g: style.getPropertyCSSValue(caption-side) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(clear) : none
@@ -560,6 +558,8 @@ g: style.getPropertyValue(text-decoration) : none
 g: style.getPropertyCSSValue(text-decoration) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(text-indent) : 0px
 g: style.getPropertyCSSValue(text-indent) : [object CSSPrimitiveValue]
+g: style.getPropertyValue(text-rendering) : auto
+g: style.getPropertyCSSValue(text-rendering) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(text-shadow) : none
 g: style.getPropertyCSSValue(text-shadow) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(text-overflow) : clip
@@ -640,6 +640,8 @@ g: style.getPropertyValue(-webkit-box-pack) : start
 g: style.getPropertyCSSValue(-webkit-box-pack) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(-webkit-box-reflect) : none
 g: style.getPropertyCSSValue(-webkit-box-reflect) : [object CSSPrimitiveValue]
+g: style.getPropertyValue(-webkit-box-shadow) : none
+g: style.getPropertyCSSValue(-webkit-box-shadow) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(-webkit-box-sizing) : content-box
 g: style.getPropertyCSSValue(-webkit-box-sizing) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(-webkit-column-break-after) : auto
@@ -792,8 +794,6 @@ g: style.getPropertyValue(stroke-opacity) : 1
 g: style.getPropertyCSSValue(stroke-opacity) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(stroke-width) : 2px
 g: style.getPropertyCSSValue(stroke-width) : [object CSSPrimitiveValue]
-g: style.getPropertyValue(text-rendering) : auto
-g: style.getPropertyCSSValue(text-rendering) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(alignment-baseline) : auto
 g: style.getPropertyCSSValue(alignment-baseline) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(baseline-shift) : baseline
