@@ -873,7 +873,7 @@ void WebFrameImpl::setReferrerForRequest(
   } else {
     referrer = webkit_glue::WebStringToString(referrer_url.spec().utf16());
   }
-  if (FrameLoader::shouldHideReferrer(
+  if (SecurityOrigin::shouldHideReferrer(
           webkit_glue::WebURLToKURL(request.url()), referrer))
     return;
   request.setHTTPHeaderField(WebString::fromUTF8("Referer"),

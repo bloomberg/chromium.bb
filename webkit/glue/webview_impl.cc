@@ -50,6 +50,7 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #endif
 #include "RenderView.h"
 #include "ResourceHandle.h"
+#include "SecurityOrigin.h"
 #include "SelectionController.h"
 #include "Settings.h"
 #include "TypingCommand.h"
@@ -357,8 +358,8 @@ void WebViewImpl::initializeMainFrame(WebFrameClient* frame_client) {
 
   // Restrict the access to the local file system
   // (see WebView.mm WebView::_commonInitializationWithFrameName).
-  FrameLoader::setLocalLoadPolicy(
-      FrameLoader::AllowLocalLoadsForLocalOnly);
+  SecurityOrigin::setLocalLoadPolicy(
+      SecurityOrigin::AllowLocalLoadsForLocalOnly);
 }
 
 // static
