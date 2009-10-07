@@ -10,7 +10,7 @@
 namespace net {
 
 // The maximum number of sessions to open to a single domain.
-const int kMaxSessionsPerDomain = 1;
+const size_t kMaxSessionsPerDomain = 1;
 
 scoped_ptr<FlipSessionPool::FlipSessionsMap> FlipSessionPool::sessions_;
 
