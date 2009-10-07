@@ -12,11 +12,10 @@
 #ifndef CHROME_BROWSER_SYNC_SYNCABLE_DIRECTORY_MANAGER_H_
 #define CHROME_BROWSER_SYNC_SYNCABLE_DIRECTORY_MANAGER_H_
 
-#include <pthread.h>
-
 #include <vector>
 
 #include "base/atomicops.h"
+#include "base/lock.h"
 #include "base/basictypes.h"
 #include "chrome/browser/sync/syncable/dir_open_result.h"
 #include "chrome/browser/sync/syncable/path_name_cmp.h"
@@ -66,10 +65,6 @@ class DirectoryManager {
   // file handles and resources are freed by other threads.
   void Close(const PathString& name);
 
-  // Marks all directories as closed.  It might take a while until all the
-  // file handles and resources are freed by other threads.
-  void CloseAllDirectories();
-
   // Should be called at App exit.
   void FinalSaveChangesForAll();
 
@@ -87,8 +82,9 @@ class DirectoryManager {
   friend class ScopedDirLookup;
 
   const PathString root_path_;
+
   // protects managed_directory_
-  mutable pthread_mutex_t mutex_;
+  Lock lock_;
   Directory* managed_directory_;
 
   Channel* const channel_;

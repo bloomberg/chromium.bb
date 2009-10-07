@@ -40,7 +40,7 @@ static const int kSaltSize = 20;
 static const int kCurrentDBVersion = 11;
 
 UserSettings::ScopedDBHandle::ScopedDBHandle(UserSettings* settings) :
-  mutex_lock_(&settings->dbhandle_mutex_), handle_(&settings->dbhandle_) {
+  mutex_lock_(settings->dbhandle_mutex_), handle_(&settings->dbhandle_) {
 }
 
 UserSettings::UserSettings() :
@@ -48,7 +48,7 @@ UserSettings::UserSettings() :
 }
 
 string UserSettings::email() const {
-  ScopedLock lock(&mutex_);
+  AutoLock lock(mutex_);
   return email_;
 }
 
@@ -260,10 +260,8 @@ void UserSettings::StoreHashedPassword(const string& email,
                                        const string& password) {
   // Save one-way hashed password:
   char binary_salt[kSaltSize];
-  {
-    ScopedLock lock(&mutex_);
-    GetRandomBytes(binary_salt, sizeof(binary_salt));
-  }
+  GetRandomBytes(binary_salt, sizeof(binary_salt));
+
   const string salt = APEncode(string(binary_salt, sizeof(binary_salt)));
   MD5Calculator md5;
   md5.AddData(salt.data(), salt.size());
@@ -311,7 +309,7 @@ bool UserSettings::VerifyAgainstStoredHash(const string& email,
 
 void UserSettings::SwitchUser(const string& username) {
   {
-    ScopedLock lock(&mutex_);
+    AutoLock lock(mutex_);
     email_ = username;
   }
 }

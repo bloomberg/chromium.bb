@@ -11,10 +11,10 @@
 #include <map>
 
 #include "base/atomicops.h"
+#include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/engine/syncer_status.h"
 #include "chrome/browser/sync/util/event_sys.h"
-#include "chrome/browser/sync/util/pthread_helpers.h"
 
 namespace browser_sync {
 
@@ -133,7 +133,6 @@ class AllStatus {
   int GetRecommendedDelay(int base_delay) const;
 
  protected:
-  typedef PThreadScopedLock<PThreadMutex> MutexLock;
   typedef std::map<Syncer*, EventListenerHookup*> Syncers;
 
   // Examines syncer to calculate syncing and the unsynced count,
@@ -154,7 +153,7 @@ class AllStatus {
   scoped_ptr<EventListenerHookup> diskfull_hookup_;
   scoped_ptr<EventListenerHookup> talk_mediator_hookup_;
 
-  mutable PThreadMutex mutex_;  // Protects all data members.
+  mutable Lock mutex_;  // Protects all data members.
   DISALLOW_COPY_AND_ASSIGN(AllStatus);
 };
 

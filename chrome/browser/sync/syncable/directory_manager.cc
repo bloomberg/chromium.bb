@@ -39,16 +39,13 @@ DirectoryManager::DirectoryManager(const PathString& path)
     : root_path_(AppendSlash(path)),
       managed_directory_(NULL),
       channel_(new Channel(DirectoryManagerShutdownEvent())) {
-  CHECK(0 == pthread_mutex_init(&mutex_, NULL));
 }
 
 DirectoryManager::~DirectoryManager() {
+  AutoLock lock(lock_);
   DCHECK_EQ(managed_directory_, static_cast<Directory*>(NULL))
       << "Dir " << managed_directory_->name() << " not closed!";
-  pthread_mutex_lock(&mutex_);
   delete channel_;
-  pthread_mutex_unlock(&mutex_);
-  CHECK(0 == pthread_mutex_destroy(&mutex_));
 }
 
 bool DirectoryManager::Open(const PathString& name) {
@@ -73,15 +70,17 @@ bool DirectoryManager::Open(const PathString& name) {
 DirOpenResult DirectoryManager::OpenImpl(const PathString& name,
                                          const PathString& path,
                                          bool* was_open) {
-  pthread_mutex_lock(&mutex_);
-  // Check to see if it's already open.
   bool opened = false;
-  if (managed_directory_) {
-    DCHECK_EQ(ComparePathNames(name, managed_directory_->name()), 0)
-        << "Can't open more than one directory.";
-    opened = *was_open = true;
+  {
+    AutoLock lock(lock_);
+    // Check to see if it's already open.
+    if (managed_directory_) {
+      DCHECK_EQ(ComparePathNames(name, managed_directory_->name()), 0)
+          << "Can't open more than one directory.";
+      opened = *was_open = true;
+    }
   }
-  pthread_mutex_unlock(&mutex_);
+
   if (opened)
     return syncable::OPENED;
   // Otherwise, open it.
@@ -89,9 +88,8 @@ DirOpenResult DirectoryManager::OpenImpl(const PathString& name,
   Directory* dir = new Directory;
   const DirOpenResult result = dir->Open(path, name);
   if (syncable::OPENED == result) {
-    pthread_mutex_lock(&mutex_);
+    AutoLock lock(lock_);
     managed_directory_ = dir;
-    pthread_mutex_unlock(&mutex_);
   } else {
     delete dir;
   }
@@ -102,16 +100,16 @@ DirOpenResult DirectoryManager::OpenImpl(const PathString& name,
 // handles and resources are freed by other threads.
 void DirectoryManager::Close(const PathString& name) {
   // Erase from mounted and opened directory lists.
-  pthread_mutex_lock(&mutex_);
-
-  if (!managed_directory_ ||
-      ComparePathNames(name, managed_directory_->name()) != 0) {
-    // It wasn't open;
-    pthread_mutex_unlock(&mutex_);
-    return;
+  {
+    AutoLock lock(lock_);
+    if (!managed_directory_ ||
+        ComparePathNames(name, managed_directory_->name()) != 0) {
+      // It wasn't open.
+      return;
+    }
   }
-  pthread_mutex_unlock(&mutex_);
 
+  // TODO(timsteele): No lock?!
   // Notify listeners.
   managed_directory_->channel()->NotifyListeners(DIRECTORY_CLOSED);
   DirectoryManagerEvent event = { DirectoryManagerEvent::CLOSED, name };
@@ -121,26 +119,17 @@ void DirectoryManager::Close(const PathString& name) {
   managed_directory_ = NULL;
 }
 
-// Marks all directories as closed.  It might take a while until all the file
-// handles and resources are freed by other threads.
-void DirectoryManager::CloseAllDirectories() {
-  if (managed_directory_)
-    Close(managed_directory_->name());
-}
-
 void DirectoryManager::FinalSaveChangesForAll() {
-  pthread_mutex_lock(&mutex_);
+  AutoLock lock(lock_);
   if (managed_directory_)
     managed_directory_->SaveChanges();
-  pthread_mutex_unlock(&mutex_);
 }
 
 void DirectoryManager::GetOpenDirectories(DirNames* result) {
   result->clear();
-  pthread_mutex_lock(&mutex_);
+  AutoLock lock(lock_);
   if (managed_directory_)
     result->push_back(managed_directory_->name());
-  pthread_mutex_unlock(&mutex_);
 }
 
 ScopedDirLookup::ScopedDirLookup(DirectoryManager* dirman,

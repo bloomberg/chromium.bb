@@ -9,8 +9,8 @@
 #include <set>
 #include <string>
 
+#include "base/lock.h"
 #include "build/build_config.h"
-#include "chrome/browser/sync/util/pthread_helpers.h"
 #include "chrome/browser/sync/util/signin.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
@@ -80,7 +80,7 @@ class UserSettings {
   struct ScopedDBHandle {
     ScopedDBHandle(UserSettings* settings);
     inline sqlite3* get() const { return *handle_; }
-    PThreadScopedLock<PThreadMutex> mutex_lock_;
+    AutoLock mutex_lock_;
     sqlite3** const handle_;
   };
 
@@ -91,12 +91,11 @@ class UserSettings {
 
  private:
   std::string email_;
-  mutable PThreadMutex mutex_;  // protects email_
-  typedef PThreadScopedLock<PThreadMutex> ScopedLock;
+  mutable Lock mutex_;  // protects email_.
 
   // We keep a single dbhandle.
   sqlite3* dbhandle_;
-  PThreadMutex dbhandle_mutex_;
+  Lock dbhandle_mutex_;
 
   // TODO(sync): Use in-memory cache for service auth tokens on posix.
   // Have someone competent in Windows switch it over to not use Sqlite in the

@@ -40,7 +40,6 @@
 #include "chrome/browser/sync/util/compat_file.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
 #include "chrome/browser/sync/util/path_helpers.h"
-#include "chrome/browser/sync/util/pthread_helpers.h"
 #include "chrome/browser/sync/util/query_helpers.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -921,7 +920,7 @@ namespace DirectoryKernelStalenessBug {
           CHECK(dir.good());
           dir->SaveChanges();
         }
-        dirman->CloseAllDirectories();
+        dirman->Close(dirname);
         break;
       case 1:
         {

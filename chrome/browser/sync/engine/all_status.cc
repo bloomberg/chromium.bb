@@ -281,7 +281,7 @@ void AllStatus::HandleTalkMediatorEvent(
 }
 
 AllStatus::Status AllStatus::status() const {
-  MutexLock lock(&mutex_);
+  AutoLock lock(mutex_);
   return status_;
 }
 
@@ -313,17 +313,17 @@ int AllStatus::GetRecommendedDelay(int base_delay_ms) const {
 ScopedStatusLockWithNotify::ScopedStatusLockWithNotify(AllStatus* allstatus)
   : allstatus_(allstatus), plan_(NOTIFY_IF_STATUS_CHANGED) {
   event_.what_changed = 0;
-  allstatus->mutex_.Lock();
+  allstatus->mutex_.Acquire();
   event_.status = allstatus->status_;
 }
 
 ScopedStatusLockWithNotify::~ScopedStatusLockWithNotify() {
   if (DONT_NOTIFY == plan_) {
-    allstatus_->mutex_.Unlock();
+    allstatus_->mutex_.Release();
     return;
   }
   event_.what_changed |= allstatus_->CalcStatusChanges(&event_.status);
-  allstatus_->mutex_.Unlock();
+  allstatus_->mutex_.Release();
   if (event_.what_changed)
     allstatus_->channel()->NotifyListeners(event_);
 }
