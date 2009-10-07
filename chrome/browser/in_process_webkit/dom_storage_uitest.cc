@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ui/ui_layout_test.h"
 
@@ -58,7 +59,15 @@ TEST_F(DOMStorageTest, DOMStorageLayoutTests) {
   //  RunLayoutTest(kTopLevelFiles[i], false, true);
 }
 
-TEST_F(DOMStorageTest, LocalStorageLayoutTests) {
+// http://code.google.com/p/chromium/issues/detail?id=24145
+// Remove build_config.h include when this is removed.
+#if defined(OS_WIN)
+#define MAYBE_LocalStorageLayoutTests FLAKY_LocalStorageLayoutTests
+#else
+#define MAYBE_LocalStorageLayoutTests LocalStorageLayoutTests
+#endif  // defined(OS_WIN)
+
+TEST_F(DOMStorageTest, MAYBE_LocalStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("localstorage"),
                           false);
   for (size_t i=0; i<arraysize(kSubDirFiles); ++i)
