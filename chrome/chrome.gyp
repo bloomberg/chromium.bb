@@ -2756,6 +2756,8 @@
                 ['exclude', '^browser/extensions/extension_creator.cc'],
                 # This compiles but it needs extension_creator.
                 ['exclude', '^browser/extensions/pack_extension_job.cc'],
+                # Overlaps with browser/views/frame/browser_view.cc
+                ['exclude', '^browser/browser_list_gtk.cc'],
               ],
             }],
             ['OS=="linux" and toolkit_views==0', {
