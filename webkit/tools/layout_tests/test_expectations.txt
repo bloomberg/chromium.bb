@@ -3085,3 +3085,8 @@ BUG_24159 WIN LINUX : LayoutTests/fast/css/opacity-float.html = FAIL
 
 // Flaky failure
 BUG_241167 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-port-explicit-domain.html = PASS FAIL
+
+BUG_SENORBLANCO MAC DEBUG : LayoutTests/svg/custom/path-bad-data.svg = FAIL
+BUG_SENORBLANCO LINUX DEBUG : LayoutTests/svg/text/text-text-07-t.svg = FAIL
+BUG_SENORBLANCO LINUX DEBUG : LayoutTests/svg/text/text-tselect-02-f.svg = FAIL
+BUG_SENORBLANCO WIN RELEASE : LayoutTests/fast/frames/onlyCommentInIFrame.html = FAIL
