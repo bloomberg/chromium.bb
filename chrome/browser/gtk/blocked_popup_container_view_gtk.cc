@@ -4,8 +4,8 @@
 
 #include "chrome/browser/gtk/blocked_popup_container_view_gtk.h"
 
+#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
-#include "base/gfx/gtk_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"

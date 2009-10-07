@@ -21,11 +21,6 @@
 #include "views/view.h"
 #endif
 
-#if defined(OS_WIN)
-#include "base/gfx/gdi_util.h"
-#include "chrome/app/chrome_dll_resource.h"
-#endif  // defined(OS_WIN)
-
 #if defined (OS_MACOSX)
 #include "webkit/api/public/WebScreenInfo.h"
 #include "webkit/api/public/mac/WebScreenInfoFactory.h"

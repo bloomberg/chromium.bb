@@ -4,9 +4,9 @@
 
 #include "chrome/browser/gtk/options/exceptions_page_gtk.h"
 
+#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/gfx/gtk_util.h"
 #include "chrome/common/gtk_tree.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"

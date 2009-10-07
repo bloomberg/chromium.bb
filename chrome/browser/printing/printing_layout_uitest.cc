@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/gfx/gdi_util.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/gfx/gdi_util.h"
 #include "base/simple_thread.h"
 #include "base/win_util.h"
 #include "chrome/common/chrome_paths.h"

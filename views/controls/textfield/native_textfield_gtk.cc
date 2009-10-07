@@ -6,7 +6,7 @@
 
 #include "views/controls/textfield/native_textfield_gtk.h"
 
-#include "base/gfx/gtk_util.h"
+#include "app/gfx/gtk_util.h"
 #include "base/string_util.h"
 #include "skia/ext/skia_utils_gtk.h"
 #include "views/controls/textfield/textfield.h"

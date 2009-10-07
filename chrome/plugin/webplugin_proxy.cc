@@ -8,9 +8,10 @@
 
 #include "app/gfx/canvas.h"
 #if defined(OS_WIN)
+#include "app/gfx/gdi_util.h"
 #include "app/win_util.h"
 #endif
-#include "base/gfx/blit.h"
+#include "app/gfx/blit.h"
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
 #endif
@@ -29,10 +30,6 @@
 #include "skia/ext/platform_device.h"
 #include "webkit/api/public/WebBindings.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
-
-#if defined(OS_WIN)
-#include "base/gfx/gdi_util.h"
-#endif
 
 using WebKit::WebBindings;
 using webkit_glue::WebPluginResourceClient;

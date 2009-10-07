@@ -15,7 +15,6 @@
 #include "app/gfx/codec/png_codec.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/gfx/gdi_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "skia/ext/vector_canvas.h"
@@ -43,7 +42,7 @@ class Context {
  private:
   HDC context_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(Context);
+  DISALLOW_COPY_AND_ASSIGN(Context);
 };
 
 // Lightweight HBITMAP management.
@@ -51,7 +50,17 @@ class Bitmap {
  public:
   Bitmap(const Context& context, int x, int y) {
     BITMAPINFOHEADER hdr;
-    gfx::CreateBitmapHeader(x, y, &hdr);
+    hdr.biSize = sizeof(BITMAPINFOHEADER);
+    hdr.biWidth = x;
+    hdr.biHeight = -y;  // Minus means top-down bitmap.
+    hdr.biPlanes = 1;
+    hdr.biBitCount = 32;
+    hdr.biCompression = BI_RGB;  // No compression.
+    hdr.biSizeImage = 0;
+    hdr.biXPelsPerMeter = 1;
+    hdr.biYPelsPerMeter = 1;
+    hdr.biClrUsed = 0;
+    hdr.biClrImportant = 0;
     bitmap_ = CreateDIBSection(context.context(),
                                reinterpret_cast<BITMAPINFO*>(&hdr), 0,
                                &data_, NULL, 0);
@@ -67,7 +76,7 @@ class Bitmap {
 
   void* data_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(Bitmap);
+  DISALLOW_COPY_AND_ASSIGN(Bitmap);
 };
 
 // Lightweight raw-bitmap management. The image, once initialized, is immuable.
@@ -198,7 +207,7 @@ class Image {
   // Flag to signal if the comparison functions should ignore the alpha channel.
   const bool ignore_alpha_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(Image);
+  DISALLOW_COPY_AND_ASSIGN(Image);
 };
 
 // Base for tests. Capability to process an image.
@@ -294,7 +303,7 @@ class ImageTest : public testing::Test {
   // Path to directory used to contain the test data.
   std::wstring test_dir_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ImageTest);
+  DISALLOW_COPY_AND_ASSIGN(ImageTest);
 };
 
 // Premultiply the Alpha channel on the R, B and G channels.

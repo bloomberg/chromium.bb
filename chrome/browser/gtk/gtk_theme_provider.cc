@@ -7,7 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "app/gfx/color_utils.h"
-#include "base/gfx/gtk_util.h"
+#include "app/gfx/gtk_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"

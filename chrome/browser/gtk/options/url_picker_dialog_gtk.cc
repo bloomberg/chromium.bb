@@ -4,9 +4,9 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
-#include "base/gfx/gtk_util.h"
 #include "chrome/browser/gtk/options/url_picker_dialog_gtk.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/possible_url_model.h"

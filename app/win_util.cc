@@ -13,12 +13,12 @@
 #include <algorithm>
 
 #include "app/gfx/codec/png_codec.h"
+#include "app/gfx/gdi_util.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/gfx/gdi_util.h"
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "base/registry.h"

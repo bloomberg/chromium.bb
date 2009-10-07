@@ -8,9 +8,9 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/font.h"
+#include "app/gfx/native_theme_win.h"
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
-#include "base/gfx/native_theme.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"

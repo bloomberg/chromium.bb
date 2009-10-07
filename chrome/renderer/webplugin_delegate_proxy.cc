@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "app/gfx/blit.h"
 #include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -14,7 +15,6 @@
 #include "base/logging.h"
 #include "base/ref_counted.h"
 #include "base/string_util.h"
-#include "base/gfx/blit.h"
 #include "base/gfx/size.h"
 #include "base/gfx/native_widget_types.h"
 #include "chrome/common/child_process_logging.h"

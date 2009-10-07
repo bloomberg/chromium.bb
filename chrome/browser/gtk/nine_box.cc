@@ -4,11 +4,11 @@
 
 #include "chrome/browser/gtk/nine_box.h"
 
+#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "base/basictypes.h"
-#include "base/gfx/gtk_util.h"
 #include "base/gfx/point.h"
 #include "base/logging.h"
 

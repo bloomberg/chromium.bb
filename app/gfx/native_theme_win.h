@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -8,8 +8,8 @@
 // For more information on visual style parts and states, see:
 // http://msdn.microsoft.com/library/default.asp?url=/library/en-us/shellcc/platform/commctls/userex/topics/partsandstates.asp
 
-#ifndef BASE_GFX_NATIVE_THEME_H__
-#define BASE_GFX_NATIVE_THEME_H__
+#ifndef APP_GFX_NATIVE_THEME_WIN_H_
+#define APP_GFX_NATIVE_THEME_WIN_H_
 
 #include <windows.h>
 #include <uxtheme.h>
@@ -288,9 +288,9 @@ class NativeTheme {
   // A cache of open theme handles.
   mutable HANDLE theme_handles_[LAST];
 
-  DISALLOW_EVIL_CONSTRUCTORS(NativeTheme);
+  DISALLOW_COPY_AND_ASSIGN(NativeTheme);
 };
 
 }  // namespace gfx
 
-#endif  // BASE_GFX_NATIVE_THEME_H__
+#endif  // APP_GFX_NATIVE_THEME_WIN_H_

@@ -12,7 +12,7 @@
 #include "skia/ext/platform_device.h"
 
 #if defined(OS_WIN)
-#include "base/gfx/gdi_util.h"  // EMF support
+#include "app/gfx/gdi_util.h"  // EMF support
 #endif
 
 namespace {

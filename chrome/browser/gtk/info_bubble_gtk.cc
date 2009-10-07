@@ -7,10 +7,10 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
+#include "app/gfx/gtk_util.h"
 #include "app/gfx/path.h"
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
-#include "base/gfx/gtk_util.h"
 #include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"

@@ -8,7 +8,7 @@
 #include <uxtheme.h>
 #include <Vssym32.h>
 
-#include "base/gfx/native_theme.h"
+#include "app/gfx/native_theme_win.h"
 #include "base/logging.h"
 #include "app/l10n_util_win.h"
 #include "base/win_util.h"

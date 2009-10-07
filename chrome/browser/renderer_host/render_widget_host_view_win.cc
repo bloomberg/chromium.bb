@@ -1,15 +1,15 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/renderer_host/render_widget_host_view_win.h"
 
 #include "app/gfx/canvas.h"
+#include "app/gfx/gdi_util.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
-#include "base/gfx/gdi_util.h"
 #include "base/gfx/rect.h"
 #include "base/histogram.h"
 #include "base/process_util.h"

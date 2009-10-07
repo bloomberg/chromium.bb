@@ -9,7 +9,7 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 
-#include "base/gfx/gtk_util.h"
+#include "app/gfx/gtk_util.h"
 #include "base/gfx/point.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"

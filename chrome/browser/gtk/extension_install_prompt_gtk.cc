@@ -4,8 +4,8 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
-#include "base/gfx/gtk_util.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"

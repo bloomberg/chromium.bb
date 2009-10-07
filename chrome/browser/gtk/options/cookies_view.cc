@@ -7,8 +7,8 @@
 #include <set>
 #include <string>
 
+#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
-#include "base/gfx/gtk_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/time_format.h"

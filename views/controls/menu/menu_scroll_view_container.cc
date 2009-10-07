@@ -19,7 +19,7 @@
 #include "views/controls/menu/submenu_view.h"
 
 #if defined(OS_WIN)
-#include "base/gfx/native_theme.h"
+#include "app/gfx/native_theme_win.h"
 #endif
 
 #if defined(OS_WIN)

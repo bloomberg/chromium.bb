@@ -10,10 +10,10 @@
 #include <string>
 #include <vector>
 
+#include "app/gfx/gtk_util.h"
 #include "app/gfx/skbitmap_operations.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/gfx/gtk_util.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/encoding_menu_controller.h"

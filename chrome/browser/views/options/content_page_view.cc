@@ -10,9 +10,9 @@
 #include <vssym32.h>
 
 #include "app/gfx/canvas.h"
+#include "app/gfx/native_theme_win.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/gfx/native_theme.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"

@@ -6,9 +6,9 @@
 
 #include "app/combobox_model.h"
 #include "app/gfx/font.h"
+#include "app/gfx/native_theme_win.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/gfx/native_theme.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/widget/widget.h"
 

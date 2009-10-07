@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/gfx/gtk_util.h"
+#include "app/gfx/gtk_util.h"
 #include "base/keyboard_codes.h"
 #include "base/string_util.h"
 #include "base/time.h"

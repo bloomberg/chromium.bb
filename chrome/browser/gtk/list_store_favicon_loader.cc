@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "app/gfx/codec/png_codec.h"
-#include "base/gfx/gtk_util.h"
+#include "app/gfx/gtk_util.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/profile.h"
 #include "third_party/skia/include/core/SkBitmap.h"

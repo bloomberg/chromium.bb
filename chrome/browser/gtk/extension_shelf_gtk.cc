@@ -4,7 +4,7 @@
 
 #include "chrome/browser/gtk/extension_shelf_gtk.h"
 
-#include "base/gfx/gtk_util.h"
+#include "app/gfx/gtk_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"

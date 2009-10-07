@@ -6,8 +6,8 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
-#include "base/gfx/gtk_util.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/search_engines/template_url_model.h"

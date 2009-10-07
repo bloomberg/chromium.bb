@@ -99,7 +99,7 @@
 #if defined(OS_WIN)
 // TODO(port): these files are currently Windows only because they concern:
 //   * theming
-#include "base/gfx/native_theme.h"
+#include "app/gfx/native_theme_win.h"
 #endif
 
 using base::Time;

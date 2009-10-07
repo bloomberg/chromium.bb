@@ -13,6 +13,7 @@
 #include <tom.h>  // For ITextDocument, a COM interface to CRichEditCtrl
 #include <vsstyle.h>
 
+#include "app/gfx/insets.h"
 #include "base/scoped_comptr_win.h"
 #include "views/controls/menu/simple_menu_model.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"

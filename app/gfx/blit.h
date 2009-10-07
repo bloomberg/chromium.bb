@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_GFX_BLIT_H_
-#define BASE_GFX_BLIT_H_
+#ifndef APP_GFX_BLIT_H_
+#define APP_GFX_BLIT_H_
 
 #include "base/gfx/native_widget_types.h"
 #include "base/gfx/point.h"
@@ -44,4 +44,4 @@ void BlitCanvasToCanvas(skia::PlatformCanvas *dst_canvas,
 
 }  // namespace gfx
 
-#endif  // BASE_GFX_BLIT_H_
+#endif  // APP_GFX_BLIT_H_

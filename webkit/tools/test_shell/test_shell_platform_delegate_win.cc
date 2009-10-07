@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,10 @@
 #include <list>
 #include <windows.h>
 #include <commctrl.h>
+
+#include "app/gfx/native_theme_win.h"
 #include "base/command_line.h"
 #include "base/event_recorder.h"
-#include "base/gfx/native_theme.h"
 #include "base/resource_util.h"
 #include "base/win_util.h"
 #include "webkit/tools/test_shell/foreground_helper.h"

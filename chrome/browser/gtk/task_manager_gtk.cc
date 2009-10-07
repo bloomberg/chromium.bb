@@ -9,9 +9,9 @@
 #include <algorithm>
 #include <vector>
 
+#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/gfx/gtk_util.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"

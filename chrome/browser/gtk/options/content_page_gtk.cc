@@ -4,9 +4,9 @@
 
 #include "chrome/browser/gtk/options/content_page_gtk.h"
 
+#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/gfx/gtk_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"

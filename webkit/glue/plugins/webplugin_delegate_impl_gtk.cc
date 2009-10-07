@@ -10,9 +10,9 @@
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
 
+#include "app/gfx/blit.h"
 #include "base/basictypes.h"
 #include "base/file_util.h"
-#include "base/gfx/blit.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/stats_counters.h"

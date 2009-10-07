@@ -6,9 +6,9 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gfx/gtk_util.h"
 #include "app/gfx/text_elider.h"
 #include "app/l10n_util.h"
-#include "base/gfx/gtk_util.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"

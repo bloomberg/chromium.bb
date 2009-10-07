@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "views/controls/textfield/native_textfield_win.h"
+
 #include <algorithm>
 
 #include "app/clipboard/clipboard.h"
 #include "app/clipboard/scoped_clipboard_writer.h"
+#include "app/gfx/native_theme_win.h"
 #include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/win_util.h"
-#include "base/gfx/native_theme.h"
 #include "base/keyboard_codes.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
@@ -17,7 +19,6 @@
 #include "skia/ext/skia_utils_win.h"
 #include "views/controls/menu/menu_win.h"
 #include "views/controls/native/native_view_host.h"
-#include "views/controls/textfield/native_textfield_win.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/focus/focus_manager.h"
 #include "views/focus/focus_util_win.h"

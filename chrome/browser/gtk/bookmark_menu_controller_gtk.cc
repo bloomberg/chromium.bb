@@ -6,10 +6,10 @@
 
 #include <gtk/gtk.h>
 
+#include "app/gfx/gtk_util.h"
 #include "app/gtk_dnd_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/gfx/gtk_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/gtk/bookmark_context_menu.h"

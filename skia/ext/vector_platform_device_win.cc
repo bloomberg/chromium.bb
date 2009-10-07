@@ -6,11 +6,24 @@
 
 #include "skia/ext/vector_platform_device_win.h"
 
-#include "base/gfx/gdi_util.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkUtils.h"
 
 namespace skia {
+
+static void FillBitmapInfoHeader(int width, int height, BITMAPINFOHEADER* hdr) {
+  hdr->biSize = sizeof(BITMAPINFOHEADER);
+  hdr->biWidth = width;
+  hdr->biHeight = -height;  // Minus means top-down bitmap.
+  hdr->biPlanes = 1;
+  hdr->biBitCount = 32;
+  hdr->biCompression = BI_RGB;  // no compression
+  hdr->biSizeImage = 0;
+  hdr->biXPelsPerMeter = 1;
+  hdr->biYPelsPerMeter = 1;
+  hdr->biClrUsed = 0;
+  hdr->biClrImportant = 0;
+}
 
 VectorPlatformDevice* VectorPlatformDevice::create(HDC dc,
                                                    int width, int height) {
@@ -562,9 +575,18 @@ void VectorPlatformDevice::InternalDrawBitmap(const SkBitmap& bitmap,
   if (!src_size_x || !src_size_y)
     return;
 
-  // Create a BMP v4 header that we can serialize.
+  // Create a BMP v4 header that we can serialize. We use the shared "V3"
+  // fillter to fill the stardard items, then add in the "V4" stuff we want.
   BITMAPV4HEADER bitmap_header;
-  gfx::CreateBitmapV4Header(src_size_x, src_size_y, &bitmap_header);
+  memset(&bitmap_header, 0, sizeof(BITMAPV4HEADER));
+  FillBitmapInfoHeader(src_size_x, src_size_y,
+                       reinterpret_cast<BITMAPINFOHEADER*>(&bitmap_header));
+  bitmap_header.bV4Size = sizeof(BITMAPV4HEADER);
+  bitmap_header.bV4RedMask   = 0x00ff0000;
+  bitmap_header.bV4GreenMask = 0x0000ff00;
+  bitmap_header.bV4BlueMask  = 0x000000ff;
+  bitmap_header.bV4AlphaMask = 0xff000000;
+
   HDC dc = getBitmapDC();
   SkAutoLockPixels lock(bitmap);
   SkASSERT(bitmap.getConfig() == SkBitmap::kARGB_8888_Config);
@@ -589,7 +611,7 @@ void VectorPlatformDevice::InternalDrawBitmap(const SkBitmap& bitmap,
   }
 
   BITMAPINFOHEADER hdr;
-  gfx::CreateBitmapHeader(src_size_x, src_size_y, &hdr);
+  FillBitmapInfoHeader(src_size_x, src_size_y, &hdr);
   if (is_translucent) {
     // The image must be loaded as a bitmap inside a device context.
     HDC bitmap_dc = ::CreateCompatibleDC(dc);

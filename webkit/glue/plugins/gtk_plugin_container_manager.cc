@@ -6,7 +6,7 @@
 
 #include <gtk/gtk.h>
 
-#include "base/gfx/gtk_util.h"
+#include "app/gfx/gtk_util.h"
 #include "base/logging.h"
 #include "webkit/glue/plugins/gtk_plugin_container.h"
 #include "webkit/glue/webplugin.h"

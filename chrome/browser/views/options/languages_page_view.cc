@@ -10,12 +10,12 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/font.h"
+#include "app/gfx/native_theme_win.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
-#include "base/gfx/native_theme.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/language_combobox_model.h"

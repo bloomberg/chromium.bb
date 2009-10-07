@@ -10,12 +10,12 @@
 #include <string>
 
 #include "app/gfx/color_utils.h"
+#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "base/base_paths_linux.h"
 #include "base/command_line.h"
-#include "base/gfx/gtk_util.h"
 #include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "base/message_loop.h"

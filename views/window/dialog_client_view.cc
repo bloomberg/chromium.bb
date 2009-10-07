@@ -26,7 +26,7 @@
 #include "views/window/dialog_delegate.h"
 #include "views/window/window.h"
 #if defined(OS_WIN)
-#include "base/gfx/native_theme.h"
+#include "app/gfx/native_theme_win.h"
 #else
 #include "views/window/hit_test.h"
 #include "views/widget/widget.h"
