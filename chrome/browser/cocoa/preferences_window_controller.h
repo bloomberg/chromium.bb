@@ -40,6 +40,9 @@ class Profile;
   IBOutlet NSView* personalStuffView_;
   IBOutlet NSView* underTheHoodView_;
 
+  // Having two animations around is bad (they fight), so just use one.
+  scoped_nsobject<NSViewAnimation> animation_;
+
   IBOutlet NSArrayController* customPagesArrayController_;
 
   // Basics panel

@@ -55,6 +55,14 @@ void CenterViewForWidth(NSView* view, CGFloat width) {
   [view setFrame:frame];
 }
 
+// Helper to remove all but the last view from the view heirarchy.
+void RemoveAllButLastView(NSArray* views) {
+  NSArray* toRemove = [views subarrayWithRange:NSMakeRange(0, [views count]-1)];
+  for (NSView* view in toRemove) {
+    [view removeFromSuperviewWithoutNeedingDisplay];
+  }
+}
+
 }  // namespace
 
 //-------------------------------------------------------------------------
@@ -85,7 +93,8 @@ void CenterViewForWidth(NSView* view, CGFloat width) {
 - (void)setMetricsRecording:(BOOL)value;
 - (void)setCookieBehavior:(NSInteger)value;
 - (void)setAskForSaveLocation:(BOOL)value;
-- (void)displayPreferenceView:(NSView*)subView;
+- (void)displayPreferenceViewForToolbarItem:(NSToolbarItem*)toolbarItem
+                                    animate:(BOOL)animate;
 @end
 
 // A C++ class registered for changes in preferences. Bridges the
@@ -152,6 +161,17 @@ class PrefObserverBridge : public NotificationObserver {
     // This needs to be done before awakeFromNib: because the bindings set up
     // in the nib rely on it.
     [self registerPrefObservers];
+
+    // Use one animation so we can stop it if the user clicks quickly, and
+    // start the new animation.
+    animation_.reset([[NSViewAnimation alloc] init]);
+    // Make this the delegate so it can remove the old view at the end of the
+    // animation (once it is faded out).
+    [animation_ setDelegate:self];
+    // The default duration is 0.5s, which actually feels slow in here, so speed
+    // it up a bit.
+    [animation_ setDuration:0.2];
+    [animation_ setAnimationBlockingMode:NSAnimationNonblocking];
   }
   return self;
 }
@@ -179,9 +199,10 @@ class PrefObserverBridge : public NotificationObserver {
   // Ensure the "basics" is selected.
   // TODO: change this to remember what's selected in a preference and restore
   // it.
+
   NSToolbarItem* firstItem = [[toolbar_ items] objectAtIndex:0];
+  [self displayPreferenceViewForToolbarItem:firstItem animate:NO];
   [toolbar_ setSelectedItemIdentifier:[firstItem itemIdentifier]];
-  [self displayPreferenceView:basicsView_];
 
   // TODO(pinkerton): save/restore position based on prefs.
   [[self window] center];
@@ -803,8 +824,13 @@ const int kDisabledIndex = 1;
 
 - (IBAction)toolbarButtonSelected:(id)sender {
   DCHECK([sender isKindOfClass:[NSToolbarItem class]]);
-  NSToolbarItem* toolbarItem = sender;
+  [self displayPreferenceViewForToolbarItem:sender
+                                    animate:YES];
+}
 
+// Helper to update the window to display a preferences view for a toolbaritem.
+- (void)displayPreferenceViewForToolbarItem:(NSToolbarItem*)toolbarItem
+                                    animate:(BOOL)animate {
   NSView* prefsView = NULL;
   // Tags are set in the nib file.
   switch ([toolbarItem tag]) {
@@ -821,37 +847,98 @@ const int kDisabledIndex = 1;
       NOTIMPLEMENTED();
   }
 
-  [self displayPreferenceView:prefsView];
-}
-
-// Helper to update the window to display a given preferences view.
-- (void)displayPreferenceView:(NSView*)prefsView {
   NSWindow* prefsWindow = [self window];
   NSView* contentView = [prefsWindow contentView];
 
-  // Remove the previous view.
+  // Normally there is only one view, but if the user clicks really quickly, the
+  // animation could still been running, and the last view is the one that was
+  // animating in.
   NSArray* subviews = [contentView subviews];
-  DCHECK_LE([subviews count], 1U);
+  NSView* currentPrefsView = nil;
   if ([subviews count]) {
-    [[subviews objectAtIndex:0] removeFromSuperviewWithoutNeedingDisplay];
+    currentPrefsView = [subviews lastObject];
   }
 
-  // Set the size of the window
+  // Make sure we aren't being told to display the same thing again.
+  if (currentPrefsView == prefsView) {
+    return;
+  }
+
+  // Stop any running animation, and remove any past views that were on the way
+  // out.
+  [animation_ stopAnimation];
+  if ([subviews count]) {
+    RemoveAllButLastView(subviews);
+  }
+
+  NSRect prefsViewFrame = [prefsView frame];
+  NSRect contentViewFrame = [contentView frame];
+  if (animate) {
+    // NSViewAnimation doesn't seem to honor subview resizing as it animates the
+    // Window's frame.  So instead of trying to get the top in the right place,
+    // just set the origin where it should be at the end, and let the fade/size
+    // slide things into the right spot.
+    prefsViewFrame.origin.y = 0.0;
+  } else {
+    // The prefView is anchored to the top of its parent, so set its origin so
+    // that the top is where it should be.  When the window's frame is set, the
+    // origin will be adjusted to keep it in the right spot.
+    prefsViewFrame.origin.y =
+        NSHeight(contentViewFrame) - NSHeight(prefsViewFrame);
+  }
+  [prefsView setFrame:prefsViewFrame];
+
+  // Add the view.
+  [contentView addSubview:prefsView];
+  [prefsWindow setInitialFirstResponder:prefsView];
+
+  // Update the window title.
+  [prefsWindow setTitle:[toolbarItem label]];
+
+  // Figure out the size of the window.
   NSRect windowFrame = [prefsWindow frame];
   CGFloat titleToolbarHeight =
-      NSHeight(windowFrame) -
-      NSHeight([prefsWindow contentRectForFrameRect:windowFrame]);
-  NSRect prefsViewFrame = [prefsView frame];
+      NSHeight(windowFrame) - NSHeight(contentViewFrame);
   windowFrame.size.height =
       NSHeight(prefsViewFrame) + titleToolbarHeight;
   DCHECK_GE(NSWidth(windowFrame), NSWidth(prefsViewFrame))
       << "Initial width set wasn't wide enough.";
   windowFrame.origin.y = NSMaxY([prefsWindow frame]) - NSHeight(windowFrame);
-  [prefsWindow setFrame:windowFrame display:YES];
 
-  // Add the view
-  [contentView addSubview:prefsView];
-  [prefsWindow setInitialFirstResponder:prefsView];
+  // Now change the size.
+  if (animate) {
+    NSDictionary* oldViewOut =
+        [NSDictionary dictionaryWithObjectsAndKeys:
+         currentPrefsView, NSViewAnimationTargetKey,
+         NSViewAnimationFadeOutEffect, NSViewAnimationEffectKey,
+         nil];
+    NSDictionary* newViewIn =
+        [NSDictionary dictionaryWithObjectsAndKeys:
+         prefsView, NSViewAnimationTargetKey,
+         NSViewAnimationFadeInEffect, NSViewAnimationEffectKey,
+         nil];
+    NSDictionary* windowResize =
+        [NSDictionary dictionaryWithObjectsAndKeys:
+         prefsWindow, NSViewAnimationTargetKey,
+         [NSValue valueWithRect:windowFrame], NSViewAnimationEndFrameKey,
+         nil];
+    [animation_ setViewAnimations:
+        [NSArray arrayWithObjects:oldViewOut, newViewIn, windowResize, nil]];
+    [animation_ startAnimation];
+  } else {
+    [currentPrefsView removeFromSuperviewWithoutNeedingDisplay];
+    // If not animating, odds are we don't want to display either (because it
+    // is initial window setup).
+    [prefsWindow setFrame:windowFrame display:NO];
+  }
+}
+
+- (void)animationDidEnd:(NSAnimation*)animation {
+  DCHECK_EQ(animation_.get(), animation);
+  // Animation finished, remove everything but the view we just added (it will
+  // be last in the list).
+  NSArray* subviews = [[[self window] contentView] subviews];
+  RemoveAllButLastView(subviews);
 }
 
 // Returns whether the alternate error page checkbox should be checked based
