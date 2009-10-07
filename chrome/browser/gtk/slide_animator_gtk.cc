@@ -40,11 +40,10 @@ SlideAnimatorGtk::SlideAnimatorGtk(GtkWidget* child,
                      G_CALLBACK(OnFixedSizeAllocate), child_);
   }
 
-  // The size of the GtkFixed widget is set during animation. When we open
-  // without showing the animation, we have to call AnimationProgressed
-  // ourselves to properly set the size of the GtkFixed. We can't do this until
-  // after the child has been allocated, hence we connect to "size-allocate" on
-  // the child.
+  // We connect to this signal to set an initial position for our child widget.
+  // The reason we connect to this signal rather than setting the initial
+  // position here is that the widget is currently unallocated and may not
+  // even have a size request.
   g_signal_connect(child, "size-allocate",
                    G_CALLBACK(OnChildSizeAllocate), this);
 
@@ -108,7 +107,8 @@ void SlideAnimatorGtk::AnimationProgressed(const Animation* animation) {
                                         animation_->GetCurrentValue());
   if (direction_ == DOWN) {
     gtk_fixed_move(GTK_FIXED(widget_.get()), child_, 0,
-                   showing_height - child_->allocation.height);
+                   showing_height - req.height);
+    child_needs_move_ = false;
   }
   gtk_widget_set_size_request(widget_.get(), -1, showing_height);
 }
