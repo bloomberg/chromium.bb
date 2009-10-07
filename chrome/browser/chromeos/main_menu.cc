@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_factory.h"
@@ -92,24 +93,31 @@ static GURL GetMenuURL() {
 
 // static
 void MainMenu::Show(Browser* browser) {
-  (new MainMenu(browser))->ShowImpl();
+  MainMenu::Get()->ShowImpl(browser);
+}
+
+// static
+void MainMenu::ScheduleCreation() {
+  MessageLoop::current()->PostDelayedTask(FROM_HERE, new LoadTask(), 5000);
 }
 
 MainMenu::~MainMenu() {
-  popup_->Close();
-  menu_rvh_->Shutdown();
+  // NOTE: we leak the menu_rvh_ and popup_ as by the time we get here the
+  // message loop and notification services have been shutdown.
+  // TODO(sky); fix this.
+  // menu_rvh_->Shutdown();
+  // popup_->CloseNow();
 }
 
-MainMenu::MainMenu(Browser* browser)
-    : browser_(browser),
+MainMenu::MainMenu()
+    : browser_(NULL),
       popup_(NULL),
       site_instance_(NULL),
       menu_rvh_(NULL),
       rwhv_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(tab_contents_delegate_(this)) {
-}
-
-void MainMenu::ShowImpl() {
+      ALLOW_THIS_IN_INITIALIZER_LIST(tab_contents_delegate_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      has_shown_(false) {
   SkBitmap* drop_down_image = ResourceBundle::GetSharedInstance().
       GetBitmapNamed(IDR_MAIN_MENU_BUTTON_DROP_DOWN);
 
@@ -130,8 +138,10 @@ void MainMenu::ShowImpl() {
       views::Background::CreateBackgroundPainter(true, painter));
 
   GURL menu_url(GetMenuURL());
-  site_instance_ = SiteInstance::CreateSiteInstanceForURL(browser_->profile(),
-                                                          menu_url);
+  DCHECK(BrowserList::begin() != BrowserList::end());
+  // TODO(sky): this shouldn't pick a random profile to use.
+  site_instance_ = SiteInstance::CreateSiteInstanceForURL(
+      (*BrowserList::begin())->profile(), menu_url);
   menu_rvh_ = new RenderViewHost(site_instance_, this, MSG_ROUTING_NONE);
 
   rwhv_ = new RenderWidgetHostViewGtk(menu_rvh_);
@@ -143,12 +153,29 @@ void MainMenu::ShowImpl() {
                             rwhv_size.width(), rwhv_size.height());
   rwhv_->SetSize(rwhv_size);
   menu_rvh_->NavigateToURL(menu_url);
-  menu_popup->Show();
+}
+
+// static
+MainMenu* MainMenu::Get() {
+  return Singleton<MainMenu>::get();
+}
+
+void MainMenu::ShowImpl(Browser* browser) {
+  Cleanup();
+
+  browser_ = browser;
+
+  popup_->Show();
 
   GtkWidget* rwhv_widget = rwhv_->GetNativeView();
-  gtk_widget_realize(rwhv_widget);
-  g_signal_connect(rwhv_widget, "button-press-event",
-                   G_CALLBACK(CallButtonPressEvent), this);
+
+  if (!has_shown_) {
+    has_shown_ = true;
+    gtk_widget_realize(rwhv_widget);
+    g_signal_connect(rwhv_widget, "button-press-event",
+                     G_CALLBACK(CallButtonPressEvent), this);
+  }
+
   // Do a mouse grab on the renderer widget host view's widget so that we can
   // close the popup if the user clicks anywhere else. And do a keyboard
   // grab so that we get all key events.
@@ -160,16 +187,22 @@ void MainMenu::ShowImpl() {
   gdk_keyboard_grab(rwhv_widget->window, FALSE, GDK_CURRENT_TIME);
 }
 
-void MainMenu::Delete(bool now) {
+void MainMenu::Hide() {
   gdk_keyboard_ungrab(GDK_CURRENT_TIME);
   gdk_pointer_ungrab(GDK_CURRENT_TIME);
-  // Hide the popup immediately. We don't close it as it contains the
-  // renderwidgethostview, which hasn't been shutdown yet.
+
   popup_->Hide();
-  if (now)
-    delete this;
-  else
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+
+  // The stack may have pending_contents_ on it. Delay deleting the
+  // pending_contents_ as TabContents doesn't deal well with being deleted
+  // while on the stack.
+  MessageLoop::current()->PostTask(FROM_HERE,
+      method_factory_.NewRunnableMethod(&MainMenu::Cleanup));
+}
+
+void MainMenu::Cleanup() {
+  pending_contents_.reset(NULL);
+  method_factory_.RevokeAll();
 }
 
 // static
@@ -186,7 +219,7 @@ gboolean MainMenu::OnButtonPressEvent(GtkWidget* widget,
       event->y >= widget->allocation.height) {
     // The user clicked outside the bounds of the menu, delete the main which
     // results in closing it.
-    Delete(true);
+    Hide();
   }
   return FALSE;
 }
@@ -227,7 +260,7 @@ void MainMenu::ShowCreatedWindow(int route_id,
     browser_->GetSelectedTabContents()->AddNewContents(
         pending_contents_.release(), disposition, initial_pos, user_gesture,
         creator_url);
-    Delete(false);
+    Hide();
   }
 }
 
@@ -239,5 +272,11 @@ void MainMenu::TabContentsDelegateImpl::OpenURLFromTab(
     PageTransition::Type transition) {
   menu_->browser_->OpenURL(url, referrer, NEW_FOREGROUND_TAB,
                            PageTransition::LINK);
-  menu_->Delete(true);
+  menu_->Hide();
+}
+
+// LoadTask -------------------------------------------------------------------
+
+void MainMenu::LoadTask::Run() {
+  MainMenu::Get();
 }

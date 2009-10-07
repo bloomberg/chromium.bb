@@ -8,6 +8,8 @@
 #include <gtk/gtk.h>
 
 #include "base/scoped_ptr.h"
+#include "base/singleton.h"
+#include "base/task.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
@@ -39,18 +41,34 @@ class WidgetGtk;
 // When a new url is opened, or the user clicks outsides the bounds of the
 // widget the menu is closed.
 //
-// MainMenu manages its own lifetime. In some cases deletion is delayed because
-// the callers can't deal with being deleted while servicing a message from
-// the renderer.
+// MainMenu manages its own lifetime and currently creates one instance for
+// the life of the browser. This is done to make sure we have the html page
+// loaded when the user clicks on it.
 class MainMenu : public RenderViewHostDelegate,
                  public RenderViewHostDelegate::View {
  public:
   // Shows the menu.
   static void Show(Browser* browser);
 
+  // Schedules creation of the shared MainMenu.
+  static void ScheduleCreation();
+
   ~MainMenu();
 
  private:
+  friend struct DefaultSingletonTraits<MainMenu>;
+
+  // Task used to ask for the MainMenu instance. This is scheduled from
+  // ScheduleCreation.
+  class LoadTask : public Task {
+   public:
+    LoadTask() {}
+    virtual void Run();
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(LoadTask);
+  };
+
   // TabContentsDelegate and RenderViewHostDelegate::View have some methods
   // in common (with differing signatures). The TabContentsDelegate methods are
   // implemented by this class.
@@ -87,14 +105,20 @@ class MainMenu : public RenderViewHostDelegate,
 
   friend class TabContentsDelegateImpl;
 
-  explicit MainMenu(Browser* browser);
+  MainMenu();
 
-  void ShowImpl();
+  // Returns the single MainMenu instance.
+  static MainMenu* Get();
 
-  // Does cleanup before deletion. If |now| is true delete is invoked
-  // immediately, otherwise deletion occurs after a delay. See description
-  // above class as to why we need to delay deletion in some situations.
-  void Delete(bool now);
+  // Shows the menu for the specified browser.
+  void ShowImpl(Browser* browser);
+
+  // Hides the menu.
+  void Hide();
+
+  // Cleans up state. This is invoked before showing and after a delay when
+  // hidden.
+  void Cleanup();
 
   // Callback from button presses on the render widget host view. Clicks
   // outside the widget resulting in closing the menu.
@@ -163,6 +187,11 @@ class MainMenu : public RenderViewHostDelegate,
 
   // TabContents created when the user clicks a link.
   scoped_ptr<TabContents> pending_contents_;
+
+  ScopedRunnableMethodFactory<MainMenu> method_factory_;
+
+  // True if the popup has ever been shown.
+  bool has_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(MainMenu);
 };

@@ -1613,6 +1613,8 @@ void BrowserWindowGtk::InitWidgets() {
     gtk_box_pack_start(GTK_BOX(titlebar_hbox), main_menu_button->widget(),
                        FALSE, FALSE, 0);
 
+    MainMenu::ScheduleCreation();
+
     if (has_compact_nav_bar) {
       navbar_hbox = gtk_hbox_new(FALSE, 0);
       gtk_widget_show(navbar_hbox);
