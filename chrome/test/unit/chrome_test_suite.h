@@ -98,9 +98,13 @@ class ChromeTestSuite : public TestSuite {
       PathService::Override(chrome::DIR_USER_DATA, user_data_dir);
 
 #if defined(OS_MACOSX)
+    // Look in the framework bundle for resources.
     FilePath path;
     PathService::Get(base::DIR_EXE, &path);
     path = path.AppendASCII(MAC_BROWSER_APP_NAME);
+    path = path.AppendASCII("Contents");
+    path = path.AppendASCII("Frameworks");
+    path = path.AppendASCII(MAC_FRAMEWORK_NAME);
     mac_util::SetOverrideAppBundlePath(path);
 #endif
 

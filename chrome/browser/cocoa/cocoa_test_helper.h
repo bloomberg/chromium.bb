@@ -50,10 +50,13 @@
 class CocoaTestHelper {
  public:
   CocoaTestHelper() {
-    // Look in the Chromium app bundle for resources.
+    // Look in the framework bundle for resources.
     FilePath path;
     PathService::Get(base::DIR_EXE, &path);
     path = path.AppendASCII(MAC_BROWSER_APP_NAME);
+    path = path.AppendASCII("Contents");
+    path = path.AppendASCII("Frameworks");
+    path = path.AppendASCII(MAC_FRAMEWORK_NAME);
     mac_util::SetOverrideAppBundlePath(path);
 
     // Bootstrap Cocoa. It's very unhappy without this.

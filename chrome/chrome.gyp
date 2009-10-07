@@ -995,8 +995,6 @@
         'browser/cocoa/clear_browsing_data_controller.mm',
         'browser/cocoa/clickhold_button_cell.h',
         'browser/cocoa/clickhold_button_cell.mm',
-        'browser/cocoa/cocoa_test_helper.h',
-        'browser/cocoa/cocoa_test_helper.mm',
         'browser/cocoa/command_observer_bridge.h',
         'browser/cocoa/command_observer_bridge.mm',
         'browser/cocoa/constrained_window_mac.h',
@@ -3245,60 +3243,6 @@
         '../build/util/support/support.gyp:*',
       ],
       'mac_bundle_resources': [
-        # put any pdfs down in the sources block below so pdfsqueeze runs on
-        # them.
-        'app/nibs/About.xib',
-        'app/nibs/AboutIPC.xib',
-        'app/nibs/BookmarkBar.xib',
-        'app/nibs/BookmarkBubble.xib',
-        'app/nibs/BookmarkEditor.xib',
-        'app/nibs/BookmarkNameFolder.xib',
-        'app/nibs/BrowserWindow.xib',
-        'app/nibs/ClearBrowsingData.xib',
-        'app/nibs/DownloadItem.xib',
-        'app/nibs/DownloadShelf.xib',
-        'app/nibs/EditSearchEngine.xib',
-        'app/nibs/ExtensionShelf.xib',
-        'app/nibs/FindBar.xib',
-        'app/nibs/FirstRunDialog.xib',
-        'app/nibs/HungRendererDialog.xib',
-        'app/nibs/HttpAuthLoginSheet.xib',
-        'app/nibs/InfoBar.xib',
-        'app/nibs/InfoBarContainer.xib',
-        'app/nibs/ImportProgressDialog.xib',
-        'app/nibs/KeywordEditor.xib',
-        'app/nibs/MainMenu.xib',
-        'app/nibs/PageInfo.xib',
-        'app/nibs/Preferences.xib',
-        'app/nibs/SaveAccessoryView.xib',
-        'app/nibs/TabContents.xib',
-        'app/nibs/TabView.xib',
-        'app/nibs/TaskManager.xib',
-        'app/nibs/Toolbar.xib',
-        'app/theme/alert_small.png',
-        'app/theme/back_Template.pdf',
-        'app/theme/bookmark_bar_folder.png',
-        'app/theme/chevron.png', # TODO(jrg): get (and use) a pdf version
-        'app/theme/close_bar.pdf',
-        'app/theme/close_bar_h.pdf',
-        'app/theme/close_bar_p.pdf',
-        'app/theme/downloads_favicon.png',
-        'app/theme/find_next_Template.pdf',
-        'app/theme/find_prev_Template.pdf',
-        'app/theme/forward_Template.pdf',
-        'app/theme/go_Template.pdf',
-        'app/theme/home_Template.pdf',
-        'app/theme/menu_chrome_rtl_Template.pdf',
-        'app/theme/menu_chrome_Template.pdf',
-        'app/theme/menu_page_rtl_Template.pdf',
-        'app/theme/menu_page_Template.pdf',
-        'app/theme/nav.pdf',
-        'app/theme/newtab.pdf',
-        'app/theme/otr_icon.pdf',
-        'app/theme/reload_Template.pdf',
-        'app/theme/star_Template.pdf',
-        'app/theme/starred.pdf',
-        'app/theme/stop_Template.pdf',
         'app/app-Info.plist',
       ],
       # TODO(mark): Come up with a fancier way to do this.  It should only
@@ -3440,12 +3384,6 @@
                 '../breakpad/breakpad.gyp:dump_syms',
                 '../breakpad/breakpad.gyp:symupload',
               ],
-              'copies': [
-                {
-                  'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources/',
-                  'files': ['<(PRODUCT_DIR)/crash_inspector', '<(PRODUCT_DIR)/crash_report_sender.app'],
-                },
-              ],
               'postbuilds': [
                 {
                   'postbuild_name': 'Dump Symbols',
@@ -3481,24 +3419,8 @@
           'dependencies': [
             'helper_app',
             'infoplist_strings_tool',
-            # Bring in pdfsqueeze and run it on all pdfs
-            '../build/temp_gyp/pdfsqueeze.gyp:pdfsqueeze',
             # This library provides the real implementation for NaClSyscallSeg
             '../native_client/src/trusted/service_runtime/arch/x86_32/service_runtime_x86_32.gyp:service_runtime_x86_32_chrome'
-          ],
-          'rules': [
-            {
-              'rule_name': 'pdfsqueeze',
-              'extension': 'pdf',
-              'inputs': [
-                '<(PRODUCT_DIR)/pdfsqueeze',
-              ],
-              'outputs': [
-                '<(INTERMEDIATE_DIR)/pdfsqueeze/<(RULE_INPUT_ROOT).pdf',
-              ],
-              'action': ['<(PRODUCT_DIR)/pdfsqueeze', '<(RULE_INPUT_PATH)', '<@(_outputs)'],
-              'message': 'Running pdfsqueeze on <(RULE_INPUT_PATH)',
-            },
           ],
           'actions': [
             {
@@ -3550,19 +3472,16 @@
               'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Frameworks',
               'files': ['<(PRODUCT_DIR)/<(mac_product_name) Framework.framework'],
             },
-            {
-              # Copy web inspector resources to the Contents/Resources folder.
-              'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/Resources',
-              'files': ['<(PRODUCT_DIR)/resources/inspector/'],
-            },
           ],
           'postbuilds': [
             {
               # Modify the Info.plist as needed.  The script explains why this
-              # is needed.  This is also done in the helper_app target.
+              # is needed.  This is also done in the helper_app and chrome_dll
+              # targets.  Use -b0 to not include any Breakpad information;
+              # that all goes into the framework's Info.plist.
               'postbuild_name': 'Tweak Info.plist',
               'action': ['<(DEPTH)/build/mac/tweak_app_infoplist',
-                         '-b<(mac_breakpad)',
+                         '-b0',
                          '-k<(mac_keystone)',
                          '-s1',  # Include Subversion information
                          '<(branding)'],
@@ -3570,6 +3489,11 @@
             {
               'postbuild_name': 'Tweak Mac lproj folders',
               'action': ['app/tweak_mac_lproj_folders'],
+            },
+            {
+              # TODO(mark): Remove after October 20, 2009.
+              'postbuild_name': 'Clean up old resources',
+              'action': ['app/clean_mac_resources'],
             },
           ],  # postbuilds
         }, { # else: OS != "mac"
@@ -3694,10 +3618,19 @@
             },
           ],
         }, {  # 'OS!="win"
+          'sources!': [
+            'app/chrome_exe_main.cc',
+            'app/client_util.cc',
+            'app/google_update_client.cc',
+          ]
+        }],
+        ['OS=="linux" or OS=="freebsd"', {
           'variables': {
             'repack_path': '../tools/data_pack/repack.py',
           },
           'actions': [
+            # TODO(mark): These actions are duplicated for the Mac in the
+            # chrome_dll target.  Can they be unified?
             {
               'action_name': 'repack_chrome',
               'variables': {
@@ -3716,8 +3649,8 @@
               'outputs': [
                 '<(INTERMEDIATE_DIR)/repack/chrome.pak',
               ],
-              'action': ['python', '<(repack_path)', '<@(_outputs)', '<@(pak_inputs)'],
-              'process_outputs_as_mac_bundle_resources': 1,
+              'action': ['python', '<(repack_path)', '<@(_outputs)',
+                         '<@(pak_inputs)'],
             },
             {
               'action_name': 'repack_theme',
@@ -3732,21 +3665,13 @@
                 '<@(pak_inputs)',
               ],
               'outputs': [
-                '<(INTERMEDIATE_DIR)/repack/theme.pak',
+                '<(INTERMEDIATE_DIR)/repack/default.pak',
               ],
-              'action': ['python', '<(repack_path)', '<@(_outputs)', '<@(pak_inputs)'],
-              'process_outputs_as_mac_bundle_resources': 1,
-              'conditions': [
-                ['OS=="linux" or OS=="freebsd"', {
-                  'outputs=': [
-                    '<(INTERMEDIATE_DIR)/repack/default.pak',
-                  ]
-                }],
-              ],
+              'action': ['python', '<(repack_path)', '<@(_outputs)',
+                         '<@(pak_inputs)'],
             },
             {
               'action_name': 'repack_locales',
-              'process_outputs_as_mac_bundle_resources': 1,
               'variables': {
                 'conditions': [
                   ['branding=="Chrome"', {
@@ -3768,7 +3693,8 @@
               'outputs': [
                 '>!@(<(repack_locales_cmd) -o -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
               ],
-              'action': ['<@(repack_locales_cmd)',
+              'action': [
+                '<@(repack_locales_cmd)',
                 '<@(branding_flag)',
                 '-g', '<(grit_out_dir)',
                 '-s', '<(SHARED_INTERMEDIATE_DIR)',
@@ -3777,11 +3703,6 @@
               ],
             },
           ],
-          'sources!': [
-            'app/chrome_exe_main.cc',
-            'app/client_util.cc',
-            'app/google_update_client.cc',
-          ]
         }],
       ],
     },
@@ -4251,6 +4172,8 @@
         'browser/cocoa/bubble_view_unittest.mm',
         'browser/cocoa/clear_browsing_data_controller_unittest.mm',
         'browser/cocoa/clickhold_button_cell_unittest.mm',
+        'browser/cocoa/cocoa_test_helper.h',
+        'browser/cocoa/cocoa_test_helper.mm',
         'browser/cocoa/command_observer_bridge_unittest.mm',
         'browser/cocoa/custom_home_pages_model_unittest.mm',
         'browser/cocoa/delayedmenu_button_unittest.mm',
@@ -4989,69 +4912,197 @@
               # three times it is listed here.
               'mac_bundle_resources': [
                 'app/framework-Info.plist',
+                'app/nibs/About.xib',
+                'app/nibs/AboutIPC.xib',
+                'app/nibs/BookmarkBar.xib',
+                'app/nibs/BookmarkBubble.xib',
+                'app/nibs/BookmarkEditor.xib',
+                'app/nibs/BookmarkNameFolder.xib',
+                'app/nibs/BrowserWindow.xib',
+                'app/nibs/ClearBrowsingData.xib',
+                'app/nibs/DownloadItem.xib',
+                'app/nibs/DownloadShelf.xib',
+                'app/nibs/EditSearchEngine.xib',
+                'app/nibs/ExtensionShelf.xib',
+                'app/nibs/FindBar.xib',
+                'app/nibs/FirstRunDialog.xib',
+                'app/nibs/HungRendererDialog.xib',
+                'app/nibs/HttpAuthLoginSheet.xib',
+                'app/nibs/InfoBar.xib',
+                'app/nibs/InfoBarContainer.xib',
+                'app/nibs/ImportProgressDialog.xib',
+                'app/nibs/KeywordEditor.xib',
+                'app/nibs/MainMenu.xib',
+                'app/nibs/PageInfo.xib',
+                'app/nibs/Preferences.xib',
+                'app/nibs/SaveAccessoryView.xib',
+                'app/nibs/TabContents.xib',
+                'app/nibs/TabView.xib',
+                'app/nibs/TaskManager.xib',
+                'app/nibs/Toolbar.xib',
+                'app/theme/alert_small.png',
+                'app/theme/back_Template.pdf',
+                'app/theme/bookmark_bar_folder.png',
+                'app/theme/chevron.png',  # TODO(jrg): get and use a pdf version
+                'app/theme/close_bar.pdf',
+                'app/theme/close_bar_h.pdf',
+                'app/theme/close_bar_p.pdf',
+                'app/theme/downloads_favicon.png',
+                'app/theme/find_next_Template.pdf',
+                'app/theme/find_prev_Template.pdf',
+                'app/theme/forward_Template.pdf',
+                'app/theme/go_Template.pdf',
+                'app/theme/home_Template.pdf',
+                'app/theme/menu_chrome_rtl_Template.pdf',
+                'app/theme/menu_chrome_Template.pdf',
+                'app/theme/menu_page_rtl_Template.pdf',
+                'app/theme/menu_page_Template.pdf',
+                'app/theme/nav.pdf',
+                'app/theme/newtab.pdf',
+                'app/theme/otr_icon.pdf',
+                'app/theme/reload_Template.pdf',
+                'app/theme/star_Template.pdf',
+                'app/theme/starred.pdf',
+                'app/theme/stop_Template.pdf',
               ],
               'mac_bundle_resources!': [
                 'app/framework-Info.plist',
               ],
               'dependencies': [
+                # Bring in pdfsqueeze and run it on all pdfs
+                '../build/temp_gyp/pdfsqueeze.gyp:pdfsqueeze',
                 '../build/util/support/support.gyp:*',
               ],
-              # For now, don't put any resources into the framework.  Exclude
-              # them all and push them into the bundle resources of the sole
-              # app bundle, the only dependent of this target.
-              # TODO(mark): Fix.
-              'mac_bundle_resources/': [
-                ['exclude', '.*'],
+              'rules': [
+                {
+                  'rule_name': 'pdfsqueeze',
+                  'extension': 'pdf',
+                  'inputs': [
+                    '<(PRODUCT_DIR)/pdfsqueeze',
+                  ],
+                  'outputs': [
+                    '<(INTERMEDIATE_DIR)/pdfsqueeze/<(RULE_INPUT_ROOT).pdf',
+                  ],
+                  'action': ['<(PRODUCT_DIR)/pdfsqueeze',
+                             '<(RULE_INPUT_PATH)', '<@(_outputs)'],
+                  'message': 'Running pdfsqueeze on <(RULE_INPUT_PATH)',
+                },
               ],
-              'direct_dependent_settings': {
-                'mac_bundle_resources': [
-                  '../third_party/WebKit/WebCore/Resources/aliasCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/cellCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/contextMenuCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/copyCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/crossHairCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/eastResizeCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/eastWestResizeCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/helpCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/linkCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/missingImage.png',
-                  '../third_party/WebKit/WebCore/Resources/moveCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/noDropCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/noneCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/northEastResizeCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/northEastSouthWestResizeCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/northResizeCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/northWestResizeCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/northWestSouthEastResizeCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/notAllowedCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/progressCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/southEastResizeCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/southResizeCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/southWestResizeCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/verticalTextCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/waitCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/westResizeCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/zoomInCursor.png',
-                  '../third_party/WebKit/WebCore/Resources/zoomOutCursor.png',
-                  'renderer/renderer.sb',
-                ],
+              'variables': {
+                'repack_path': '../tools/data_pack/repack.py',
               },
+              'actions': [
+                # TODO(mark): These actions are duplicated for Linux and
+                # and FreeBSD in the chrome target.  Can they be unified?
+                {
+                  'action_name': 'repack_chrome',
+                  'variables': {
+                    'pak_inputs': [
+                      '<(grit_out_dir)/browser_resources.pak',
+                      '<(grit_out_dir)/common_resources.pak',
+                      '<(grit_out_dir)/renderer_resources.pak',
+                      '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
+                      '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
+                    ],
+                  },
+                  'inputs': [
+                    '<(repack_path)',
+                    '<@(pak_inputs)',
+                  ],
+                  'outputs': [
+                    '<(INTERMEDIATE_DIR)/repack/chrome.pak',
+                  ],
+                  'action': ['python', '<(repack_path)', '<@(_outputs)',
+                             '<@(pak_inputs)'],
+                  'process_outputs_as_mac_bundle_resources': 1,
+                },
+                {
+                  'action_name': 'repack_theme',
+                  'variables': {
+                    'pak_inputs': [
+                      '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.pak',
+                      '<(grit_out_dir)/theme_resources.pak',
+                    ],
+                  },
+                  'inputs': [
+                    '<(repack_path)',
+                    '<@(pak_inputs)',
+                  ],
+                  'outputs': [
+                    '<(INTERMEDIATE_DIR)/repack/theme.pak',
+                  ],
+                  'action': ['python', '<(repack_path)', '<@(_outputs)',
+                             '<@(pak_inputs)'],
+                  'process_outputs_as_mac_bundle_resources': 1,
+                },
+                {
+                  'action_name': 'repack_locales',
+                  'process_outputs_as_mac_bundle_resources': 1,
+                  'variables': {
+                    'conditions': [
+                      ['branding=="Chrome"', {
+                        'branding_flag': ['-b', 'google_chrome',],
+                      }, {  # else: branding!="Chrome"
+                        'branding_flag': ['-b', 'chromium',],
+                      }],
+                    ],
+                  },
+                  'inputs': [
+                    'tools/build/repack_locales.py',
+                    # NOTE: Ideally the common command args would be shared
+                    # amongst inputs/outputs/action, but the args include shell
+                    # variables which need to be passed intact, and command
+                    # expansion wants to expand the shell variables. Adding the
+                    # explicit quoting here was the only way it seemed to work.
+                    '>!@(<(repack_locales_cmd) -i <(branding_flag) -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
+                  ],
+                  'outputs': [
+                    '>!@(<(repack_locales_cmd) -o -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
+                  ],
+                  'action': [
+                    '<@(repack_locales_cmd)',
+                    '<@(branding_flag)',
+                    '-g', '<(grit_out_dir)',
+                    '-s', '<(SHARED_INTERMEDIATE_DIR)',
+                    '-x', '<(INTERMEDIATE_DIR)',
+                    '<@(locales)',
+                  ],
+                },
+              ],
               'postbuilds': [
                 {
                   # Modify the Info.plist as needed.  The script explains why
                   # this is needed.  This is also done in the chrome target.
-                  # The framework does not need the breakpad, keystone, or
-                  # subversion keys as those are only needed on the main
-                  # or helper app.
+                  # The framework does not need the Keystone or Subversion
+                  # keys, but it does need the Breakpad keys.
                   'postbuild_name': 'Tweak Info.plist',
                   'action': ['<(DEPTH)/build/mac/tweak_app_infoplist',
-                             '-b0',
+                             '-b<(mac_breakpad)',
                              '-k0',
                              '-s0',
                              '<(branding)'],
                 },
+                {
+                  'postbuild_name': 'Tweak Mac lproj folders',
+                  'action': ['app/tweak_mac_lproj_folders'],
+                },
               ],
-
+              'copies': [
+                {
+                  'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Resources',
+                  'files': [
+                    '<(PRODUCT_DIR)/resources/inspector/'
+                  ],
+                  'conditions': [
+                    ['mac_breakpad==1', {
+                      'files': [
+                        '<(PRODUCT_DIR)/crash_inspector',
+                        '<(PRODUCT_DIR)/crash_report_sender.app'
+                      ],
+                    }],
+                  ],
+                },
+              ],
               'conditions': [
                 ['mac_breakpad==1', {
                   'variables': {
@@ -5178,14 +5229,15 @@
             },
             {
               # Modify the Info.plist as needed.  The script explains why this
-              # is needed.  This is also done in the chrome target.  In
-              # this case, -k0 is always used because Keystone never runs
-              # within the helper app.  -s0 is used to avoid placing Subversion
-              # data in the helper app's Info.plist.  It will be present in
-              # the main app's Info.plist, which is sufficient.
+              # is needed.  This is also done in the chrome and chrome_dll
+              # targets.  In this case, -b0 is used because Breakpad data is
+              # not placed into the helper, it is only placed in the framework.
+              # -k0 is used because Keystone never runs within the helper, only
+              # within the main app.  -s0 is used to avoid placing Subversion
+              # data in the helper's Info.plist.
               'postbuild_name': 'Tweak Info.plist',
               'action': ['<(DEPTH)/build/mac/tweak_app_infoplist',
-                         '-b<(mac_breakpad)',
+                         '-b0',
                          '-k0',
                          '-s0',
                          '<(branding)'],

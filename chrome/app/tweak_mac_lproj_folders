@@ -11,7 +11,7 @@
 set -e
 
 # Working in the resources directory
-cd "${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Contents/Resources"
+cd "${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Resources"
 
 # Provide an link for en.lproj that points to en_US.lproj.
 

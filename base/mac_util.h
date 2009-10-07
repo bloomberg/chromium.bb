@@ -31,6 +31,7 @@ bool IsBackgroundOnlyProcess();
 // to fetch resources from bundles, but work within a unittest where we
 // aren't a bundle.
 NSBundle* MainAppBundle();
+FilePath MainAppBundlePath();
 
 // Set the bundle that MainAppBundle will return, overriding the default value
 // (Restore the default by calling SetOverrideAppBundle(nil)).

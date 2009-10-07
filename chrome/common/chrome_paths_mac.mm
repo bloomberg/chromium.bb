@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/common/chrome_paths_internal.h"
+#include "chrome/common/chrome_paths_internal.h"
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/base_paths.h"
-#import "base/logging.h"
-#import "base/path_service.h"
+#include "base/base_paths.h"
+#include "base/logging.h"
+#include "base/mac_util.h"
+#include "base/path_service.h"
 
 namespace chrome {
 
@@ -64,30 +65,29 @@ bool GetUserDesktop(FilePath* result) {
   return success;
 }
 
-FilePath GetBrowserBundlePath() {
-  NSBundle* running_app_bundle = [NSBundle mainBundle];
-  NSString* running_app_bundle_path = [running_app_bundle bundlePath];
-  DCHECK(running_app_bundle_path) << "failed to get the main bundle path";
+NSBundle* GetFrameworkBundle() {
+  NSString* app_bundle_identifier = [[NSBundle mainBundle] bundleIdentifier];
 
-  // Are we the helper or the browser (main bundle)?
-  if (![[[running_app_bundle infoDictionary]
-           objectForKey:@"LSUIElement"] boolValue]) {
-    // We aren't a LSUIElement, so this must be the browser, return it's path.
-    return FilePath([running_app_bundle_path fileSystemRepresentation]);
+  NSString* browser_bundle_identifier = app_bundle_identifier;
+  if (mac_util::IsBackgroundOnlyProcess()) {
+    // Take off the last component of a background helper process' bundle
+    // identifier to form the browser process' bundle identifier.
+    NSRange range = [app_bundle_identifier rangeOfString:@"."
+                                                 options:NSBackwardsSearch];
+    range.length = [app_bundle_identifier length] - range.location;
+    browser_bundle_identifier =
+        [app_bundle_identifier stringByReplacingCharactersInRange:range
+                                                       withString:@""];
   }
 
-  // Helper lives at ...app/Contents/Resources/...Helper.app
-  NSArray* components = [running_app_bundle_path pathComponents];
-  DCHECK_GE([components count], static_cast<NSUInteger>(4))
-      << "too few path components for this bundle to be within another bundle";
-  components =
-      [components subarrayWithRange:NSMakeRange(0, [components count] - 3)];
+  // Append ".framework" to the browser's bundle identifier to get the
+  // framework's bundle identifier.
+  NSString* framework_bundle_identifier =
+      [browser_bundle_identifier stringByAppendingString:@".framework"];
+  NSBundle* framework_bundle =
+      [NSBundle bundleWithIdentifier:framework_bundle_identifier];
 
-  NSString* browser_path = [NSString pathWithComponents:components];
-  DCHECK([[browser_path pathExtension] isEqualToString:@"app"])
-      << "we weren't within another app?";
-
-  return FilePath([browser_path fileSystemRepresentation]);
+  return framework_bundle;
 }
 
 }  // namespace chrome

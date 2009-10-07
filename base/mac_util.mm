@@ -61,6 +61,11 @@ NSBundle* MainAppBundle() {
   return [NSBundle mainBundle];
 }
 
+FilePath MainAppBundlePath() {
+  NSBundle* bundle = MainAppBundle();
+  return FilePath([[bundle bundlePath] fileSystemRepresentation]);
+}
+
 void SetOverrideAppBundle(NSBundle* bundle) {
   if (bundle != g_override_app_bundle) {
     [g_override_app_bundle release];

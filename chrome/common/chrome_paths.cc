@@ -115,16 +115,15 @@ bool PathProvider(int key, FilePath* result) {
         return false;
       break;
     case chrome::DIR_INSPECTOR:
+#if defined(OS_MACOSX)
+      cur = mac_util::MainAppBundlePath();
+      cur = cur.Append(FILE_PATH_LITERAL("Resources"));
+#else
       if (!PathService::Get(chrome::DIR_APP, &cur))
         return false;
-#if defined(OS_MACOSX)
-      cur = cur.DirName();
-      cur = cur.Append(FILE_PATH_LITERAL("Resources"));
-      cur = cur.Append(FILE_PATH_LITERAL("inspector"));
-#else
       cur = cur.Append(FILE_PATH_LITERAL("resources"));
-      cur = cur.Append(FILE_PATH_LITERAL("inspector"));
 #endif
+      cur = cur.Append(FILE_PATH_LITERAL("inspector"));
       break;
     case chrome::DIR_APP_DICTIONARIES:
 #if defined(OS_LINUX) || defined(OS_MACOSX)

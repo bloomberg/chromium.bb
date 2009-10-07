@@ -33,12 +33,24 @@ class AppTestSuite : public TestSuite {
     app::RegisterPathProvider();
 
 #if defined(OS_MACOSX)
+    // Look in the framework bundle for resources.
+    // TODO(port): make a resource bundle for non-app exes.
     FilePath path;
     PathService::Get(base::DIR_EXE, &path);
-    // TODO(port): make a resource bundle for non-app exes.
-    path = path.AppendASCII("Chromium.app");
-    mac_util::SetOverrideAppBundlePath(path);
+#if defined(GOOGLE_CHROME_BUILD)
+#define MAC_PRODUCT_NAME "Google Chrome"
+#elif defined(CHROMIUM_BUILD)
+#define MAC_PRODUCT_NAME "Chromium"
+#else
+#error Unknown branding
 #endif
+    path = path.AppendASCII(MAC_PRODUCT_NAME ".app");
+    path = path.AppendASCII("Contents");
+    path = path.AppendASCII("Frameworks");
+    path = path.AppendASCII(MAC_PRODUCT_NAME " Framework.framework");
+#undef MAC_PRODUCT_NAME
+    mac_util::SetOverrideAppBundlePath(path);
+#endif  // OS_MACOSX
 
     // Force unittests to run using en-US so if we test against string
     // output, it'll pass regardless of the system language.

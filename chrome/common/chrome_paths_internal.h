@@ -9,6 +9,14 @@
 
 #include "base/file_path.h"
 
+#if defined(OS_MACOSX)
+#ifdef __OBJC__
+@class NSBundle;
+#else
+class NSBundle;
+#endif
+#endif
+
 namespace chrome {
 
 // Get the path to the user's data directory, regardless of whether
@@ -30,13 +38,9 @@ bool GetUserDownloadsDirectory(FilePath* result);
 bool GetUserDesktop(FilePath* result);
 
 #if defined(OS_MACOSX)
-// Retrieves the browser bundle path.  It is only valid to call this from a
-// helper process, as it makes assumptions about the location of the enclosing
-// bundle on disk.
-FilePath GetBrowserBundlePath();
-#endif  // defined(OS_MACOSX)
+NSBundle* GetFrameworkBundle();
+#endif  // OS_MACOSX
 
 }  // namespace chrome
-
 
 #endif  // CHROME_COMMON_CHROME_PATHS_INTERNAL_H_
