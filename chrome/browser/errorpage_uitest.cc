@@ -56,7 +56,7 @@ TEST_F(ErrorPageTest, DNSError_GoBack1) {
   NavigateToURLBlockUntilNavigationsComplete(test_url, 2);
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
 
-  GetActiveTab()->GoBack();
+  EXPECT_TRUE(GetActiveTab()->GoBack());
 
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
 }
@@ -80,9 +80,9 @@ TEST_F(ErrorPageTest, DNSError_GoBack2) {
 
   // The first navigation should fail, and the second one should be the error
   // page.
-  GetActiveTab()->GoBackBlockUntilNavigationsComplete(2);
+  EXPECT_TRUE(GetActiveTab()->GoBackBlockUntilNavigationsComplete(2));
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
-  GetActiveTab()->GoBack();
+  EXPECT_TRUE(GetActiveTab()->GoBack());
 
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
 }
@@ -107,12 +107,12 @@ TEST_F(ErrorPageTest, DNSError_GoBack2AndForward) {
 
   // The first navigation should fail, and the second one should be the error
   // page.
-  GetActiveTab()->GoBackBlockUntilNavigationsComplete(2);
+  EXPECT_TRUE(GetActiveTab()->GoBackBlockUntilNavigationsComplete(2));
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
-  GetActiveTab()->GoBack();
+  EXPECT_TRUE(GetActiveTab()->GoBack());
   // The first navigation should fail, and the second one should be the error
   // page.
-  GetActiveTab()->GoForwardBlockUntilNavigationsComplete(2);
+  EXPECT_TRUE(GetActiveTab()->GoForwardBlockUntilNavigationsComplete(2));
 
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
 }
@@ -137,14 +137,14 @@ TEST_F(ErrorPageTest, DNSError_GoBack2Forward2) {
 
   // The first navigation should fail, and the second one should be the error
   // page.
-  GetActiveTab()->GoBackBlockUntilNavigationsComplete(2);
+  EXPECT_TRUE(GetActiveTab()->GoBackBlockUntilNavigationsComplete(2));
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
-  GetActiveTab()->GoBack();
+  EXPECT_TRUE(GetActiveTab()->GoBack());
   // The first navigation should fail, and the second one should be the error
   // page.
-  GetActiveTab()->GoForwardBlockUntilNavigationsComplete(2);
+  EXPECT_TRUE(GetActiveTab()->GoForwardBlockUntilNavigationsComplete(2));
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
-  GetActiveTab()->GoForward();
+  EXPECT_TRUE(GetActiveTab()->GoForward());
 
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
 }
@@ -171,7 +171,7 @@ TEST_F(ErrorPageTest, IFrameDNSError_GoBack) {
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"iframe_dns_error.html"));
 
-  GetActiveTab()->GoBack();
+  EXPECT_TRUE(GetActiveTab()->GoBack());
 
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
 }
@@ -188,8 +188,8 @@ TEST_F(ErrorPageTest, IFrameDNSError_GoBackAndForward) {
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"title2.html"));
   NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(L"iframe_dns_error.html"));
 
-  GetActiveTab()->GoBack();
-  GetActiveTab()->GoForward();
+  EXPECT_TRUE(GetActiveTab()->GoBack());
+  EXPECT_TRUE(GetActiveTab()->GoForward());
 
   EXPECT_TRUE(WaitForTitleMatching(L"Blah"));
 }
@@ -241,7 +241,7 @@ TEST_F(ErrorPageTest, Page404_GoBack) {
       URLRequestMockHTTPJob::GetMockUrl(L"page404.html"), 2);
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
 
-  GetActiveTab()->GoBack();
+  EXPECT_TRUE(GetActiveTab()->GoBack());
 
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
 }
