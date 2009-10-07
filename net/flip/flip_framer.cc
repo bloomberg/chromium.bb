@@ -15,10 +15,10 @@ namespace flip {
 
 // The initial size of the control frame buffer; this is used internally
 // as we we parse though control frames.
-static const int kControlFrameBufferInitialSize = 32 * 1024;
+static const size_t kControlFrameBufferInitialSize = 32 * 1024;
 // The maximum size of the control frame buffer that we support.
 // TODO(mbelshe): We should make this stream-based so there are no limits.
-static const int kControlFrameBufferMaxSize = 64 * 1024;
+static const size_t kControlFrameBufferMaxSize = 64 * 1024;
 
 // This implementation of Flip is version 1.
 static const int kFlipProtocolVersion = 1;
@@ -100,7 +100,7 @@ const char* FlipFramer::StateToString(int state) {
   return "UNKNOWN_STATE";
 }
 
-uint32 FlipFramer::BytesSafeToRead() const {
+size_t FlipFramer::BytesSafeToRead() const {
   switch (state_) {
     case FLIP_ERROR:
     case FLIP_DONE:
@@ -148,11 +148,11 @@ const char* FlipFramer::ErrorCodeToString(int error_code) {
   return "UNKNOWN_STATE";
 }
 
-uint32 FlipFramer::ProcessInput(const char* data, uint32 len) {
+size_t FlipFramer::ProcessInput(const char* data, size_t len) {
   DCHECK(visitor_);
   DCHECK(data);
 
-  uint32 original_len = len;
+  size_t original_len = len;
   while (len != 0) {
     FlipControlFrame* current_control_frame =
         reinterpret_cast<FlipControlFrame*>(current_frame_buffer_);
@@ -240,7 +240,7 @@ uint32 FlipFramer::ProcessInput(const char* data, uint32 len) {
         // intentional fallthrough
       case FLIP_FORWARD_STREAM_FRAME:
         if (remaining_payload_) {
-          uint32 amount_to_forward = std::min(remaining_payload_, len);
+          size_t amount_to_forward = std::min(remaining_payload_, len);
           if (amount_to_forward && state_ != FLIP_IGNORE_REMAINING_PAYLOAD) {
             const FlipDataFrame* data_frame =
                 reinterpret_cast<const FlipDataFrame*>(current_data_frame);
@@ -290,7 +290,7 @@ uint32 FlipFramer::ProcessInput(const char* data, uint32 len) {
   return original_len - len;
 }
 
-uint32 FlipFramer::ProcessCommonHeader(const char* data, uint32 len) {
+size_t FlipFramer::ProcessCommonHeader(const char* data, size_t len) {
   // This should only be called when we're in the FLIP_READING_COMMON_HEADER
   // state.
   DCHECK(state_ == FLIP_READING_COMMON_HEADER);
@@ -301,8 +301,8 @@ uint32 FlipFramer::ProcessCommonHeader(const char* data, uint32 len) {
 
   do {
     if (current_frame_len_ < sizeof(FlipFrame)) {
-      uint32 bytes_desired = sizeof(FlipFrame) - current_frame_len_;
-      uint32 bytes_to_append = std::min(bytes_desired, len);
+      size_t bytes_desired = sizeof(FlipFrame) - current_frame_len_;
+      size_t bytes_to_append = std::min(bytes_desired, len);
       char* header_buffer = current_frame_buffer_;
       memcpy(&header_buffer[current_frame_len_], data, bytes_to_append);
       current_frame_len_ += bytes_to_append;
@@ -328,11 +328,11 @@ uint32 FlipFramer::ProcessCommonHeader(const char* data, uint32 len) {
   return original_len - len;
 }
 
-uint32 FlipFramer::ProcessControlFramePayload(const char* data, uint32 len) {
-  int original_len = len;
+size_t FlipFramer::ProcessControlFramePayload(const char* data, size_t len) {
+  size_t original_len = len;
   do {
     if (remaining_control_payload_) {
-      uint32 amount_to_consume = std::min(remaining_control_payload_, len);
+      size_t amount_to_consume = std::min(remaining_control_payload_, len);
       memcpy(&current_frame_buffer_[current_frame_len_], data,
              amount_to_consume);
       current_frame_len_ += amount_to_consume;
@@ -351,7 +351,7 @@ uint32 FlipFramer::ProcessControlFramePayload(const char* data, uint32 len) {
   return original_len - len;
 }
 
-void FlipFramer::ExpandControlFrameBuffer(int size) {
+void FlipFramer::ExpandControlFrameBuffer(size_t size) {
   DCHECK(size < kControlFrameBufferMaxSize);
   if (size < current_frame_capacity_)
     return;

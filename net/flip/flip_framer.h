@@ -48,9 +48,9 @@ class FlipFramerVisitorInterface {
   virtual void OnControl(const FlipControlFrame* frame) = 0;
 
   // Called when data is received.
-  virtual void OnStreamFrameData(uint32 sream_id,
+  virtual void OnStreamFrameData(flip::FlipStreamId stream_id,
                                  const char* data,
-                                 uint32 len) = 0;
+                                 size_t len) = 0;
 
   // TODO(fenix): Implement me!
   virtual void OnLameDuck() = 0;
@@ -99,7 +99,7 @@ class FlipFramer {
   // Pass data into the framer for parsing.
   // Returns the number of bytes consumed. It is safe to pass more bytes in
   // than may be consumed.
-  uint32 ProcessInput(const char* data, uint32 len);
+  size_t ProcessInput(const char* data, size_t len);
 
   // Resets the framer state after a frame has been successfully decoded.
   // TODO(mbelshe): can we make this private?
@@ -183,21 +183,21 @@ class FlipFramer {
  private:
   // Internal breakout from ProcessInput.  Returns the number of bytes
   // consumed from the data.
-  uint32 ProcessCommonHeader(const char* data, uint32 len);
-  uint32 ProcessControlFramePayload(const char* data, uint32 len);
+  size_t ProcessCommonHeader(const char* data, size_t len);
+  size_t ProcessControlFramePayload(const char* data, size_t len);
 
   // Initialize the ZLib state.
   bool InitializeCompressor();
   bool InitializeDecompressor();
 
   // Not used (yet)
-  uint32 BytesSafeToRead() const;
+  size_t BytesSafeToRead() const;
 
   // Set the error code.
   void set_error(FlipError error);
 
   // Expands the control frame buffer to accomodate a particular payload size.
-  void ExpandControlFrameBuffer(int size);
+  void ExpandControlFrameBuffer(size_t size);
 
   // Given a frame, breakdown the variable payload length, the static header
   // header length, and variable payload pointer.
@@ -207,12 +207,12 @@ class FlipFramer {
 
   FlipState state_;
   FlipError error_code_;
-  uint32 remaining_payload_;
-  uint32 remaining_control_payload_;
+  size_t remaining_payload_;
+  size_t remaining_control_payload_;
 
   char* current_frame_buffer_;
-  int current_frame_len_;  // Number of bytes read into the current_frame_.
-  int current_frame_capacity_;
+  size_t current_frame_len_;  // Number of bytes read into the current_frame_.
+  size_t current_frame_capacity_;
 
   bool enable_compression_;
   scoped_ptr<z_stream> compressor_;
