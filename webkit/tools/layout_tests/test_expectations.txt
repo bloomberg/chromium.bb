@@ -1611,7 +1611,7 @@ BUG23498 MAC : LayoutTests/fast/forms/input-table.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/forms/textAreaLineHeight.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/forms/textarea-rows-cols.html = IMAGE
 // Also BUG_24121 for the CRASH
-BUG23498 MAC : LayoutTests/fast/frames/frame-scrolling-attribute.html = IMAGE CRASH
+BUG23498 WIN MAC : LayoutTests/fast/frames/frame-scrolling-attribute.html = IMAGE CRASH
 BUG23498 MAC : LayoutTests/fast/frames/iframe-scrolling-attribute.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/frames/invalid.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/frames/onlyCommentInIFrame.html = IMAGE
@@ -2481,6 +2481,7 @@ BUG9798 WIN DEBUG : LayoutTests/fast/lists/inlineBoxWrapperNullCheck.html = FAIL
 BUG9798 WIN : LayoutTests/fast/replaced/border-radius-clip.html = FAIL PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/loading/preload-img-test.html = TIMEOUT PASS
 BUG9798 LINUX DEBUG : LayoutTests/http/tests/local/style-access-before-stylesheet-loaded.html = FAIL PASS
+BUG9798 WIN DEBUG : LayoutTests/http/tests/local/style-access-before-stylesheet-loaded.html = FAIL PASS
 BUG9798 LINUX MAC : LayoutTests/http/tests/misc/BOM-override-script.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/empty-file-formdata.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/redirect-with-quotes.php = TIMEOUT PASS
@@ -3081,3 +3082,6 @@ BUG_24119 LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug1220.html = PASS FAIL
 BUG_24142 : LayoutTests/fast/css/large-number-round-trip.html = FAIL
 BUG_JOHNNYG WIN LINUX : LayoutTests/fast/frames/viewsource-link-on-href-value.html = FAIL PASS CRASH
 BUG_24159 WIN LINUX : LayoutTests/fast/css/opacity-float.html = FAIL
+
+// Flaky failure
+BUG_241167 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-port-explicit-domain.html = PASS FAIL
