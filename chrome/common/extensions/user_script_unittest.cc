@@ -78,13 +78,16 @@ TEST(UserScriptTest, Pickle) {
 
   UserScript script1;
   script1.js_scripts().push_back(UserScript::File(
-      FilePath(FILE_PATH_LITERAL("c:\\foo\\foo.user.js")),
+      ExtensionResource(FilePath(FILE_PATH_LITERAL("c:\\foo\\")),
+                        FilePath(FILE_PATH_LITERAL("foo.user.js"))),
       GURL("chrome-user-script:/foo.user.js")));
   script1.css_scripts().push_back(UserScript::File(
-      FilePath(FILE_PATH_LITERAL("c:\\foo\\foo.user.css")),
+      ExtensionResource(FilePath(FILE_PATH_LITERAL("c:\\foo\\")),
+                        FilePath(FILE_PATH_LITERAL("foo.user.css"))),
       GURL("chrome-user-script:/foo.user.css")));
   script1.css_scripts().push_back(UserScript::File(
-      FilePath(FILE_PATH_LITERAL("c:\\foo\\foo2.user.css")),
+      ExtensionResource(FilePath(FILE_PATH_LITERAL("c:\\foo\\")),
+                        FilePath(FILE_PATH_LITERAL("foo2.user.css"))),
       GURL("chrome-user-script:/foo2.user.css")));
   script1.set_run_location(UserScript::DOCUMENT_START);
 

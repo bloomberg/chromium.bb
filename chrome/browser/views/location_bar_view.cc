@@ -1204,8 +1204,7 @@ LocationBarView::PageActionImageView::PageActionImageView(
   tracker_ = new ImageLoadingTracker(this, icon_paths.size());
   for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
        iter != icon_paths.end(); ++iter) {
-    FilePath path = extension->GetResourcePath(*iter);
-    tracker_->PostLoadImageTask(path);
+    tracker_->PostLoadImageTask(extension->GetResource(*iter));
   }
 }
 

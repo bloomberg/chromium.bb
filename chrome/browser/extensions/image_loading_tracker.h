@@ -2,18 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_IMAGE_LOADING_TRACKER_H_
-#define CHROME_BROWSER_IMAGE_LOADING_TRACKER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_IMAGE_LOADING_TRACKER_H_
+#define CHROME_BROWSER_EXTENSIONS_IMAGE_LOADING_TRACKER_H_
 
 #include "base/ref_counted.h"
 
-class FilePath;
+class ExtensionResource;
 class SkBitmap;
 
 // The views need to load their icons asynchronously but might be deleted before
 // the images have loaded. This class stays alive while the request is in
 // progress (manages its own lifetime) and keeps track of whether the view still
 // cares about the icon loading.
+// Consider abstracting out a FilePathProvider (ExtensionResource) and moving
+// back to chrome/browser/ if other subsystems want to use it.
 class ImageLoadingTracker
   : public base::RefCountedThreadSafe<ImageLoadingTracker> {
  public:
@@ -40,10 +42,10 @@ class ImageLoadingTracker
     observer_ = NULL;
   }
 
-  // Specify path of image to load.  This method must be called a number of
+  // Specify image resource to load.  This method must be called a number of
   // times equal to the |image_count| arugment to the constructor.  Calling it
   // any more or less than that is an error.
-  void PostLoadImageTask(FilePath path);
+  void PostLoadImageTask(const ExtensionResource& resource);
 
  private:
   class LoadImageTask;
@@ -69,4 +71,4 @@ class ImageLoadingTracker
   DISALLOW_COPY_AND_ASSIGN(ImageLoadingTracker);
 };
 
-#endif  // CHROME_BROWSER_IMAGE_LOADING_TRACKER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_IMAGE_LOADING_TRACKER_H_

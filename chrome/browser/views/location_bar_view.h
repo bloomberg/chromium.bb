@@ -11,7 +11,7 @@
 #include "app/gfx/font.h"
 #include "base/gfx/rect.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
-#include "chrome/browser/image_loading_tracker.h"
+#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/toolbar_model.h"

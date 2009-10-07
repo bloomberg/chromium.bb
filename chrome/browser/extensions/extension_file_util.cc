@@ -137,7 +137,7 @@ bool ValidateExtension(Extension* extension, std::string* error) {
   // Validate icons exist.
   for (std::map<int, std::string>::const_iterator iter =
        extension->icons().begin(); iter != extension->icons().end(); ++iter) {
-    if (!file_util::PathExists(extension->GetResourcePath(iter->second))) {
+    if (extension->GetResource(iter->second).GetFilePath().empty()) {
       *error = StringPrintf("Could not load extension icon '%s'.",
                             iter->second.c_str());
       return false;
@@ -172,8 +172,9 @@ bool ValidateExtension(Extension* extension, std::string* error) {
     const UserScript& script = extension->content_scripts()[i];
 
     for (size_t j = 0; j < script.js_scripts().size(); j++) {
-      const FilePath& path = script.js_scripts()[j].path();
-      if (!file_util::PathExists(path)) {
+      const FilePath& path =
+        script.js_scripts()[j].resource().GetFilePath();
+      if (path.empty()) {
         *error = StringPrintf("Could not load '%s' for content script.",
                               WideToUTF8(path.ToWStringHack()).c_str());
         return false;
@@ -181,8 +182,9 @@ bool ValidateExtension(Extension* extension, std::string* error) {
     }
 
     for (size_t j = 0; j < script.css_scripts().size(); j++) {
-      const FilePath& path = script.css_scripts()[j].path();
-      if (!file_util::PathExists(path)) {
+      const FilePath& path =
+        script.css_scripts()[j].resource().GetFilePath();
+      if (path.empty()) {
         *error = StringPrintf("Could not load '%s' for content script.",
                               WideToUTF8(path.ToWStringHack()).c_str());
         return false;
@@ -219,7 +221,7 @@ bool ValidateExtension(Extension* extension, std::string* error) {
     const std::vector<std::string>& icon_paths = page_action->icon_paths();
     for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
          iter != icon_paths.end(); ++iter) {
-      if (!file_util::PathExists(extension->GetResourcePath(*iter))) {
+      if (extension->GetResource(*iter).GetFilePath().empty()) {
         *error = StringPrintf("Could not load icon '%s' for page action.",
                               iter->c_str());
         return false;
@@ -233,7 +235,7 @@ bool ValidateExtension(Extension* extension, std::string* error) {
     const std::vector<std::string>& icon_paths = browser_action->icon_paths();
     for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
          iter != icon_paths.end(); ++iter) {
-      if (!file_util::PathExists(extension->GetResourcePath(*iter))) {
+      if (extension->GetResource(*iter).GetFilePath().empty()) {
         *error = StringPrintf("Could not load icon '%s' for browser action.",
                               iter->c_str());
         return false;

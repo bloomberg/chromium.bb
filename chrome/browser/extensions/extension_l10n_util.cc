@@ -144,4 +144,16 @@ ExtensionMessageBundle* LoadMessageCatalogs(
                                         error);
 }
 
+FilePath GetL10nRelativePath(const FilePath& relative_resource_path) {
+  // Get locale relative path.
+  static std::string current_locale = l10n_util::GetApplicationLocale(L"");
+  std::replace(current_locale.begin(), current_locale.end(), '-', '_');
+
+  FilePath locale_relative_path;
+  return locale_relative_path
+      .AppendASCII(Extension::kLocaleFolder)
+      .AppendASCII(current_locale)
+      .Append(relative_resource_path);
+}
+
 }  // namespace extension_l10n_util

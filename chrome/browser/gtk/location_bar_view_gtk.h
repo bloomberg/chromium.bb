@@ -15,7 +15,7 @@
 #include "base/scoped_vector.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
-#include "chrome/browser/image_loading_tracker.h"
+#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"

@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
-#include "chrome/browser/image_loading_tracker.h"
+#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "chrome/browser/views/toolbar_view.h"
@@ -129,8 +129,7 @@ BrowserActionButton::BrowserActionButton(
   tracker_ = new ImageLoadingTracker(this, icon_paths.size());
   for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
        iter != icon_paths.end(); ++iter) {
-    FilePath path = extension->GetResourcePath(*iter);
-    tracker_->PostLoadImageTask(path);
+    tracker_->PostLoadImageTask(extension->GetResource(*iter));
   }
 
   registrar_.Add(this, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
@@ -251,7 +250,7 @@ class BrowserActionView : public views::View {
 
  private:
   virtual void Layout();
-   
+
   // Override PaintChildren so that we can paint the badge on top of children.
   virtual void PaintChildren(gfx::Canvas* canvas);
 
@@ -270,7 +269,7 @@ void BrowserActionView::Layout() {
   button_->SetBounds(0, kControlVertOffset, width(),
                      height() - 2 * kControlVertOffset);
 }
-   
+
 void BrowserActionView::PaintChildren(gfx::Canvas* canvas) {
   View::PaintChildren(canvas);
 

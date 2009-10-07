@@ -55,6 +55,9 @@ ExtensionMessageBundle* LoadMessageCatalogs(const FilePath& locale_path,
                                             const std::string& app_locale,
                                             std::string* error);
 
+// Returns relative l10n path to the resource.
+FilePath GetL10nRelativePath(const FilePath& relative_resource_path);
+
 }  // namespace extension_l10n_util
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_L10N_UTIL_H_

@@ -10,6 +10,7 @@
 
 #include "base/file_path.h"
 #include "base/string_piece.h"
+#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "googleurl/src/gurl.h"
 
@@ -34,14 +35,16 @@ class UserScript {
   // Holds actual script file info.
   class File {
    public:
-    File(const FilePath& path, const GURL& url):
-         path_(path),
+    File(const ExtensionResource& resource, const GURL& url):
+         resource_(resource),
          url_(url) {
     }
     File() {}
 
-    const FilePath& path() const { return path_; }
-    void set_path(const FilePath& path) { path_ = path; }
+    const ExtensionResource& resource() const { return resource_; }
+    void set_resource(const ExtensionResource& resource) {
+      resource_ = resource;
+    }
 
     const GURL& url() const { return url_; }
     void set_url(const GURL& url) { url_ = url; }
@@ -61,14 +64,14 @@ class UserScript {
       content_.assign(content.begin(), content.end());
     }
 
-    // Serialization support. The content and path_ member will not be
+    // Serialization support. The content and resource_ member will not be
     // serialized!
     void Pickle(::Pickle* pickle) const;
     void Unpickle(const ::Pickle& pickle, void** iter);
 
    private:
-    // Where is the script file lives on the disk.
-    FilePath path_;
+    // Where the script file lives on the disk.
+    ExtensionResource resource_;
 
     // The url to this scipt file.
     GURL url_;

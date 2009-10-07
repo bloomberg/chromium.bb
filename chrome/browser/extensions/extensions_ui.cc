@@ -239,15 +239,11 @@ static void CreateScriptFileDetailValue(
 
   ListValue *list = new ListValue();
   for (size_t i = 0; i < scripts.size(); ++i) {
-    const UserScript::File &file = scripts[i];
-    // We are passing through GURLs to canonicalize the output to a valid
-    // URL path fragment.
-    GURL script_url = net::FilePathToFileURL(file.path());
-    GURL extension_url = net::FilePathToFileURL(extension_path);
-    std::string relative_path =
-        script_url.spec().substr(extension_url.spec().length() + 1);
-
-    list->Append(new StringValue(relative_path));
+    const UserScript::File& file = scripts[i];
+    // TODO(cira): this information is not used on extension page yet. We
+    // may want to display actual resource that got loaded, not default.
+    list->Append(
+        new StringValue(file.resource().relative_path().value()));
   }
   script_data->Set(key, list);
 }
@@ -292,8 +288,8 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
   UserScriptList content_scripts = extension->content_scripts();
   for (UserScriptList::const_iterator script = content_scripts.begin();
     script != content_scripts.end(); ++script) {
-      content_script_list->Append(CreateContentScriptDetailValue(*script,
-          extension->path()));
+      content_script_list->Append(
+          CreateContentScriptDetailValue(*script, extension->path()));
   }
   extension_data->Set(L"content_scripts", content_script_list);
 

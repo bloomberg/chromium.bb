@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/net/file_reader.h"
+#include "chrome/browser/extensions/file_reader.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension_resource.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -48,6 +50,7 @@ class Receiver {
 void RunBasicTest(const char* filename) {
   FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
+  ExtensionResource resource(path, FilePath().AppendASCII(filename));
   path = path.AppendASCII(filename);
 
   std::string file_contents;
@@ -56,7 +59,7 @@ void RunBasicTest(const char* filename) {
   Receiver receiver;
 
   scoped_refptr<FileReader> file_reader(
-      new FileReader(path, receiver.NewCallback()));
+      new FileReader(resource, receiver.NewCallback()));
   file_reader->Start();
 
   MessageLoop::current()->Run();
@@ -76,12 +79,14 @@ TEST_F(FileReaderTest, BiggerFile) {
 TEST_F(FileReaderTest, NonExistantFile) {
   FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
+  ExtensionResource resource(path, FilePath(
+      FILE_PATH_LITERAL("file_that_does_not_exist")));
   path = path.AppendASCII("file_that_does_not_exist");
 
   Receiver receiver;
 
   scoped_refptr<FileReader> file_reader(
-      new FileReader(path, receiver.NewCallback()));
+      new FileReader(resource, receiver.NewCallback()));
   file_reader->Start();
 
   MessageLoop::current()->Run();

@@ -10,6 +10,7 @@
 
 #include "base/file_path.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -40,8 +41,9 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction,
   // Id of tab which executes code.
   int execute_tab_id_;
 
-  // Contain path of file which is specified in JSON arguments.
-  FilePath file_path_;
+  // Contains extension resource built from path of file which is
+  // specified in JSON arguments.
+  ExtensionResource resource_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXECUTE_CODE_IN_TAB_FUNCTION_H__

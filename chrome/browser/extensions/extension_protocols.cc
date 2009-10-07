@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/url_util.h"
 #include "net/base/net_util.h"
@@ -26,10 +27,10 @@ static URLRequestJob* CreateExtensionURLRequestJob(URLRequest* request,
     return NULL;
   }
 
-  std::string resource = request->url().path();
-  FilePath path = Extension::GetResourcePath(directory_path, resource);
+  ExtensionResource resource =
+    Extension::GetResource(directory_path, request->url().path());
 
-  return new URLRequestFileJob(request, path);
+  return new URLRequestFileJob(request, resource.GetFilePath());
 }
 
 // Factory registered with URLRequest to create URLRequestJobs for
@@ -41,10 +42,11 @@ static URLRequestJob* CreateUserScriptURLRequestJob(URLRequest* request,
 
   // chrome-user-script:/user-script-name.user.js
   FilePath directory_path = context->user_script_dir_path();
-  std::string resource = request->url().path();
 
-  FilePath path = Extension::GetResourcePath(directory_path, resource);
-  return new URLRequestFileJob(request, path);
+  ExtensionResource resource =
+    Extension::GetResource(directory_path, request->url().path());
+
+  return new URLRequestFileJob(request, resource.GetFilePath());
 }
 
 void RegisterExtensionProtocols() {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/image_loading_tracker.h"
+#include "chrome/browser/extensions/image_loading_tracker.h"
 
 #include "app/gfx/favicon_size.h"
 #include "base/file_util.h"
@@ -12,6 +12,7 @@
 #include "base/task.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/common/extensions/extension_resource.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/image_decoder.h"
@@ -29,11 +30,11 @@ class ImageLoadingTracker::LoadImageTask : public Task {
   // decode it. |path| is the path to load the image from. |index| is an
   // identifier for the image that we pass back to the caller.
   LoadImageTask(ImageLoadingTracker* tracker,
-                const FilePath& path,
+                const ExtensionResource& resource,
                 size_t index)
     : callback_loop_(MessageLoop::current()),
       tracker_(tracker),
-      path_(path),
+      resource_(resource),
       index_(index) {}
 
   void ReportBack(SkBitmap* image) {
@@ -47,8 +48,8 @@ class ImageLoadingTracker::LoadImageTask : public Task {
   virtual void Run() {
     // Read the file from disk.
     std::string file_contents;
-    if (!file_util::PathExists(path_) ||
-        !file_util::ReadFileToString(path_, &file_contents)) {
+    FilePath path = resource_.GetFilePath();
+    if (path.empty() || !file_util::ReadFileToString(path, &file_contents)) {
       ReportBack(NULL);
       return;
     }
@@ -85,8 +86,8 @@ class ImageLoadingTracker::LoadImageTask : public Task {
   // The object that is waiting for us to respond back.
   ImageLoadingTracker* tracker_;
 
-  // The path to the image to load asynchronously.
-  FilePath path_;
+  // The image resource to load asynchronously.
+  ExtensionResource resource_;
 
   // The index of the icon being loaded.
   size_t index_;
@@ -95,9 +96,9 @@ class ImageLoadingTracker::LoadImageTask : public Task {
 ////////////////////////////////////////////////////////////////////////////////
 // ImageLoadingTracker
 
-void ImageLoadingTracker::PostLoadImageTask(FilePath path) {
+void ImageLoadingTracker::PostLoadImageTask(const ExtensionResource& resource) {
   MessageLoop* file_loop = g_browser_process->file_thread()->message_loop();
-  file_loop->PostTask(FROM_HERE, new LoadImageTask(this, path,
+  file_loop->PostTask(FROM_HERE, new LoadImageTask(this, resource,
                                                    posted_count_++));
 }
 

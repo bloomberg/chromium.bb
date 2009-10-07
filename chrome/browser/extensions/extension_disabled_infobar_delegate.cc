@@ -7,11 +7,13 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/extension_file_util.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
@@ -28,7 +30,7 @@ class ExtensionDisabledDialogDelegate
     AddRef();  // balanced in ContinueInstall or AbortInstall.
 
     // Do this now because we can't touch extension on the file loop.
-    install_icon_path_ =
+    install_icon_resource_ =
         extension_->GetIconPath(Extension::EXTENSION_ICON_LARGE);
 
     ChromeThread::GetMessageLoop(ChromeThread::FILE)->PostTask(FROM_HERE,
@@ -48,7 +50,8 @@ class ExtensionDisabledDialogDelegate
  private:
   void Start() {
     // We start on the file thread so we can decode the install icon.
-    CrxInstaller::DecodeInstallIcon(install_icon_path_, &install_icon_);
+    FilePath install_icon_path = install_icon_resource_.GetFilePath();
+    CrxInstaller::DecodeInstallIcon(install_icon_path, &install_icon_);
     // Then we display the UI on the UI thread.
     ui_loop_->PostTask(FROM_HERE,
         NewRunnableMethod(this,
@@ -64,7 +67,7 @@ class ExtensionDisabledDialogDelegate
   Profile* profile_;
   ExtensionsService* service_;
   Extension* extension_;
-  FilePath install_icon_path_;
+  ExtensionResource install_icon_resource_;
   scoped_ptr<SkBitmap> install_icon_;
   MessageLoop* ui_loop_;
 };

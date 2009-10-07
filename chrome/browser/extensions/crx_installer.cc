@@ -124,8 +124,9 @@ void CrxInstaller::OnUnpackSuccess(const FilePath& temp_dir,
   }
 
   if (client_.get()) {
-    DecodeInstallIcon(extension_->GetIconPath(Extension::EXTENSION_ICON_LARGE),
-                      &install_icon_);
+    FilePath icon_path =
+        extension_->GetIconPath(Extension::EXTENSION_ICON_LARGE).GetFilePath();
+    DecodeInstallIcon(icon_path, &install_icon_);
   }
   ui_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
       &CrxInstaller::ConfirmInstall));

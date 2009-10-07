@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
+#include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "googleurl/src/gurl.h"
@@ -132,15 +133,14 @@ class Extension {
     return GetResourceURL(url(), relative_path);
   }
 
-  // Returns an absolute path to a resource inside of an extension. The
-  // |extension_path| argument should be the path() from an Extension object.
-  // The |relative_path| can be untrusted user input. The returned path will
-  // either be empty or a child of extension_path.
+  // Returns an extension resource object. The |extension_path| argument should
+  // be the path() from an Extension object.
+  // The |relative_path| can be untrusted user input.
   // NOTE: Static so that it can be used from multiple threads.
-  static FilePath GetResourcePath(const FilePath& extension_path,
-                                  const std::string& relative_path);
-  FilePath GetResourcePath(const std::string& relative_path) {
-    return GetResourcePath(path(), relative_path);
+  static ExtensionResource GetResource(const FilePath& extension_path,
+                                       const std::string& relative_path);
+  ExtensionResource GetResource(const std::string& relative_path) {
+    return GetResource(path(), relative_path);
   }
 
   // |input| is expected to be the text of an rsa public or private key. It
@@ -243,7 +243,7 @@ class Extension {
 
   // Returns an absolute path to the given icon inside of the extension. Returns
   // an empty FilePath if the extension does not have that icon.
-  FilePath GetIconPath(Icons icon);
+  ExtensionResource GetIconPath(Icons icon);
 
   const DictionaryValue* manifest_value() const {
     return manifest_value_.get();

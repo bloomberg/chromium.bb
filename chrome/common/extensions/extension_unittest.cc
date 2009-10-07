@@ -262,15 +262,6 @@ TEST(ExtensionTest, GetResourceURLAndPath) {
             Extension::GetResourceURL(extension.url(), "bar/../baz.js").spec());
   EXPECT_EQ(extension.url().spec() + "baz.js",
             Extension::GetResourceURL(extension.url(), "../baz.js").spec());
-
-  EXPECT_EQ(path.Append(FILE_PATH_LITERAL("bar"))
-                .Append(FILE_PATH_LITERAL("baz.js")).value(),
-            Extension::GetResourcePath(extension.path(), "bar/baz.js").value());
-  EXPECT_EQ(path.Append(FILE_PATH_LITERAL("baz.js")).value(),
-            Extension::GetResourcePath(extension.path(), "bar/../baz.js")
-                .value());
-  EXPECT_EQ(FilePath().value(),
-            Extension::GetResourcePath(extension.path(), "../baz.js").value());
 }
 
 TEST(ExtensionTest, LoadPageActionHelper) {

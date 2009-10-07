@@ -13,6 +13,7 @@
 #include "base/stl_util-inl.h"
 #include "base/third_party/nss/blapi.h"
 #include "base/third_party/nss/sha256.h"
+#include "chrome/browser/extensions/extension_l10n_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
@@ -21,7 +22,6 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/base64.h"
-#include "net/base/net_util.h"
 
 #if defined(OS_WIN)
 #include "base/registry.h"
@@ -282,8 +282,8 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
       }
       // TODO(georged): Make GetResourceURL accept wstring too
       GURL url = GetResourceURL(WideToUTF8(relative));
-      FilePath path = GetResourcePath(WideToUTF8(relative));
-      result->js_scripts().push_back(UserScript::File(path, url));
+      ExtensionResource resource = GetResource(WideToUTF8(relative));
+      result->js_scripts().push_back(UserScript::File(resource, url));
     }
   }
 
@@ -299,8 +299,8 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
       }
       // TODO(georged): Make GetResourceURL accept wstring too
       GURL url = GetResourceURL(WideToUTF8(relative));
-      FilePath path = GetResourcePath(WideToUTF8(relative));
-      result->css_scripts().push_back(UserScript::File(path, url));
+      ExtensionResource resource = GetResource(WideToUTF8(relative));
+      result->css_scripts().push_back(UserScript::File(resource, url));
     }
   }
 
@@ -427,37 +427,11 @@ bool Extension::ContainsNonThemeKeys(const DictionaryValue& source) {
 }
 
 // static
-FilePath Extension::GetResourcePath(const FilePath& extension_path,
-                                    const std::string& relative_path) {
-  // Build up a file:// URL and convert that back to a FilePath.  This avoids
-  // URL encoding and path separator issues.
-
-  // Convert the extension's root to a file:// URL.
-  GURL extension_url = net::FilePathToFileURL(extension_path);
-  if (!extension_url.is_valid())
-    return FilePath();
-
-  // Append the requested path.
-  GURL::Replacements replacements;
-  std::string new_path(extension_url.path());
-  new_path += "/";
-  new_path += relative_path;
-  replacements.SetPathStr(new_path);
-  GURL file_url = extension_url.ReplaceComponents(replacements);
-  if (!file_url.is_valid())
-    return FilePath();
-
-  // Convert the result back to a FilePath.
-  FilePath ret_val;
-  if (!net::FileURLToFilePath(file_url, &ret_val))
-    return FilePath();
-
-  // Double-check that the path we ended up with is actually inside the
-  // extension root.
-  if (!extension_path.IsParent(ret_val))
-    return FilePath();
-
-  return ret_val;
+ExtensionResource Extension::GetResource(const FilePath& extension_path,
+                                         const std::string& relative_path) {
+  FilePath relative_resource_path;
+  return ExtensionResource(extension_path,
+                           relative_resource_path.AppendASCII(relative_path));
 }
 
 Extension::Extension(const FilePath& path)
@@ -1119,12 +1093,12 @@ void Extension::SetBackgroundPageReady() {
       NotificationService::NoDetails());
 }
 
-FilePath Extension::GetIconPath(Icons icon) {
+ExtensionResource Extension::GetIconPath(Icons icon) {
   std::map<int, std::string>::const_iterator iter =
       icons_.find(Extension::EXTENSION_ICON_LARGE);
   if (iter == icons_.end())
-    return FilePath();
-  return GetResourcePath(iter->second);
+    return ExtensionResource();
+  return GetResource(iter->second);
 }
 
 bool Extension::CanAccessHost(const GURL& url) const {

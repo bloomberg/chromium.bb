@@ -540,21 +540,15 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   EXPECT_EQ("https://*.google.com/*",
             scripts[0].url_patterns()[2].GetAsString());
   EXPECT_EQ(2u, scripts[0].js_scripts().size());
-  EXPECT_EQ(
-      NormalizeSeperators(extension->path().AppendASCII("script1.js").value()),
-      NormalizeSeperators(scripts[0].js_scripts()[0].path().value()));
-  EXPECT_EQ(
-      NormalizeSeperators(extension->path().AppendASCII("script2.js").value()),
-      NormalizeSeperators(scripts[0].js_scripts()[1].path().value()));
+  EXPECT_TRUE(scripts[0].js_scripts()[0].resource().ComparePathWithDefault(
+      extension->path().AppendASCII("script1.js")));
+  EXPECT_TRUE(scripts[0].js_scripts()[1].resource().ComparePathWithDefault(
+      extension->path().AppendASCII("script2.js")));
   EXPECT_TRUE(extension->plugins().empty());
   EXPECT_EQ(1u, scripts[1].url_patterns().size());
   EXPECT_EQ("http://*.news.com/*", scripts[1].url_patterns()[0].GetAsString());
-  EXPECT_EQ(
-      NormalizeSeperators(extension->path()
-                          .AppendASCII("js_files")
-                          .AppendASCII("script3.js")
-                          .value()),
-      NormalizeSeperators(scripts[1].js_scripts()[0].path().value()));
+  EXPECT_TRUE(scripts[1].js_scripts()[0].resource().ComparePathWithDefault(
+      extension->path().AppendASCII("js_files").AppendASCII("script3.js")));
   const std::vector<URLPattern> permissions = extension->host_permissions();
   ASSERT_EQ(2u, permissions.size());
   EXPECT_EQ("http://*.google.com/*", permissions[0].GetAsString());

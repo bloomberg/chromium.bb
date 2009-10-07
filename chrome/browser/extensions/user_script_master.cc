@@ -136,20 +136,20 @@ void UserScriptMaster::ScriptReloader::NotifyMaster(
 
 static bool LoadScriptContent(UserScript::File* script_file) {
   std::string content;
-  if (!file_util::ReadFileToString(script_file->path(), &content)) {
-    LOG(WARNING) << "Failed to load user script file: "
-                 << script_file->path().value();
+  FilePath path = script_file->resource().GetFilePath();
+  if (path.empty() || !file_util::ReadFileToString(path, &content)) {
+    LOG(WARNING) << "Failed to load user script file: " << path.value();
     return false;
   }
 
   script_file->set_content(content);
-  LOG(INFO) << "Loaded user script file: " << script_file->path().value();
+  LOG(INFO) << "Loaded user script file: " << path.value();
   return true;
 }
 
 void UserScriptMaster::ScriptReloader::LoadScriptsFromDirectory(
     const FilePath& script_dir, UserScriptList* result) {
-  // Clear the list. We will populate it with the scrips found in script_dir.
+  // Clear the list. We will populate it with the scripts found in script_dir.
   result->clear();
 
   // Find all the scripts in |script_dir|.
@@ -168,7 +168,8 @@ void UserScriptMaster::ScriptReloader::LoadScriptsFromDirectory(
       // Push single js file in this UserScript.
       GURL url(std::string(chrome::kUserScriptScheme) + ":/" +
           net::FilePathToFileURL(file).ExtractFileName());
-      user_script.js_scripts().push_back(UserScript::File(file, url));
+      ExtensionResource resource(script_dir, file.BaseName());
+      user_script.js_scripts().push_back(UserScript::File(resource, url));
       UserScript::File& script_file = user_script.js_scripts().back();
       if (!LoadScriptContent(&script_file))
         result->pop_back();

@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/file_reader.h"
+#include "chrome/browser/extensions/file_reader.h"
 
 #include "base/file_util.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/common/extensions/extension_resource.h"
 
-FileReader::FileReader(const FilePath& path, Callback* callback)
-    : path_(path),
+FileReader::FileReader(const ExtensionResource& resource, Callback* callback)
+    : resource_(resource),
       callback_(callback),
       origin_loop_(MessageLoop::current()) {
   DCHECK(callback_);
@@ -21,7 +22,7 @@ void FileReader::Start() {
 
 void FileReader::ReadFileOnBackgroundThread() {
   std::string data;
-  bool success = file_util::ReadFileToString(path_, &data);
+  bool success = file_util::ReadFileToString(resource_.GetFilePath(), &data);
   origin_loop_->PostTask(FROM_HERE, NewRunnableMethod(
       this, &FileReader::RunCallback, success, data));
 }

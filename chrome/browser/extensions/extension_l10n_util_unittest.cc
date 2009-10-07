@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_l10n_util.h"
 
+#include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -141,6 +142,36 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsDuplicateKeys) {
                                                &error));
   EXPECT_TRUE(NULL != message_bundle.get());
   EXPECT_TRUE(error.empty());
+}
+
+bool PathsAreEqual(const FilePath& path1, const FilePath& path2) {
+  FilePath::StringType path1_str = path1.value();
+  std::replace(path1_str.begin(), path1_str.end(), '\\', '/');
+
+  FilePath::StringType path2_str = path2.value();
+  std::replace(path2_str.begin(), path2_str.end(), '\\', '/');
+
+  if (path1_str == path2_str) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+TEST(ExtensionL10nUtil, GetL10nRelativePath) {
+  static std::string current_locale = l10n_util::GetApplicationLocale(L"");
+  std::replace(current_locale.begin(), current_locale.end(), '-', '_');
+
+  FilePath locale_path;
+  locale_path = locale_path
+      .AppendASCII(Extension::kLocaleFolder)
+      .AppendASCII(current_locale)
+      .AppendASCII("foo")
+      .AppendASCII("bar.js");
+
+  FilePath result = extension_l10n_util::GetL10nRelativePath(
+      FilePath(FILE_PATH_LITERAL("foo/bar.js")));
+  EXPECT_TRUE(PathsAreEqual(locale_path, result));
 }
 
 }  // namespace

@@ -7,7 +7,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
-#include "chrome/browser/net/file_reader.h"
+#include "chrome/browser/extensions/file_reader.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -80,15 +80,15 @@ bool ExecuteCodeInTabFunction::RunImpl() {
   if (script_info->HasKey(kFileKey)) {
     if (!script_info->GetString(kFileKey, &relative_path))
       return false;
-    file_path_ = GetExtension()->GetResourcePath(relative_path);
+    resource_ = GetExtension()->GetResource(relative_path);
   }
-  if (file_path_.empty()) {
+  if (resource_.extension_root().empty() || resource_.relative_path().empty()) {
     error_ = keys::kNoCodeOrFileToExecuteError;
     return false;
   }
 
   scoped_refptr<FileReader> file_reader(new FileReader(
-      file_path_, NewCallback(this, &ExecuteCodeInTabFunction::DidLoadFile)));
+      resource_, NewCallback(this, &ExecuteCodeInTabFunction::DidLoadFile)));
   file_reader->Start();
   AddRef();  // Keep us alive until DidLoadFile is called.
 
@@ -102,10 +102,10 @@ void ExecuteCodeInTabFunction::DidLoadFile(bool success,
   } else {
 #if defined(OS_POSIX)
     error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kLoadFileError,
-        file_path_.value());
+        resource_.relative_path().value());
 #elif defined(OS_WIN)
     error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kLoadFileError,
-        WideToUTF8(file_path_.value()));
+        WideToUTF8(resource_.relative_path().value()));
 #endif  // OS_WIN
     SendResponse(false);
   }
