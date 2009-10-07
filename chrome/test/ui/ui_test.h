@@ -362,9 +362,18 @@ class UITest : public testing::Test {
     log_level_ = value;
   }
 
+  // Profile theme type choices.
+  typedef enum {
+    DEFAULT_THEME = 0,
+    COMPLEX_THEME = 1,
+    NATIVE_THEME = 2,
+    CUSTOM_FRAME = 3,
+    CUSTOM_FRAME_NATIVE_THEME = 4,
+  } ProfileType;
+
   // Returns the directory name where the "typical" user data is that we use
   // for testing.
-  static FilePath ComputeTypicalUserDataSource(int profile_type);
+  static FilePath ComputeTypicalUserDataSource(ProfileType profile_type);
 
   // Rewrite the preferences file to point to the proper image directory.
   static void RewritePreferencesFile(const FilePath& user_data_dir);
@@ -443,15 +452,6 @@ class UITest : public testing::Test {
   void StartHttpServer(const FilePath& root_directory);
   void StopHttpServer();
 
-  // Profile theme type choices.
-  typedef enum {
-    DEFAULT_THEME = 0,
-    COMPLEX_THEME = 1,
-    NATIVE_THEME = 2,
-    CUSTOM_FRAME = 3,
-    CUSTOM_FRAME_NATIVE_THEME = 4,
-  } ProfileType;
-
  private:
   // Check that no processes related to Chrome exist, displaying
   // the given message if any do.
@@ -518,7 +518,7 @@ class UITest : public testing::Test {
   bool use_existing_browser_;           // Duplicate of the static version.
                                         // Default value comes from static.
   bool enable_file_cookies_;            // Enable file cookies, default is true.
-  int profile_type_;                    // Are we using a profile with a
+  ProfileType profile_type_;            // Are we using a profile with a
                                         // complex theme?
 
  private:

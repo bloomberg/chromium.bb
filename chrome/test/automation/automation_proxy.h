@@ -124,6 +124,10 @@ class AutomationProxy : public IPC::Channel::Listener,
   // Returns true if one of the tabs in any window displays given url.
   bool IsURLDisplayed(GURL url);
 
+  // Get the duration of the last |event_name| in the browser.  Returns
+  // false if the IPC failed to send.
+  bool GetMetricEventDuration(const std::string& event_name, int* duration_ms);
+
   // Returns the BrowserProxy for the browser window at the given index,
   // transferring ownership of the pointer to the caller.
   // On failure, returns NULL.

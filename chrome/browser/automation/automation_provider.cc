@@ -133,6 +133,7 @@ AutomationProvider::AutomationProvider(Profile* profile)
       new AutomationAutocompleteEditTracker(this));
   new_tab_ui_load_observer_.reset(new NewTabUILoadObserver(this));
   dom_operation_observer_.reset(new DomOperationNotificationObserver(this));
+  metric_event_duration_observer_.reset(new MetricEventDurationObserver());
 }
 
 AutomationProvider::~AutomationProvider() {
@@ -356,6 +357,8 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
 #endif
     IPC_MESSAGE_HANDLER(AutomationMsg_GetSecurityState, GetSecurityState)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetPageType, GetPageType)
+    IPC_MESSAGE_HANDLER(AutomationMsg_GetMetricEventDuration,
+                        GetMetricEventDuration)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_ActionOnSSLBlockingPage,
                                     ActionOnSSLBlockingPage)
     IPC_MESSAGE_HANDLER(AutomationMsg_BringBrowserToFront, BringBrowserToFront)
@@ -1441,6 +1444,12 @@ void AutomationProvider::GetPageType(int handle, bool* success,
     *success = false;
     *page_type = NavigationEntry::NORMAL_PAGE;
   }
+}
+
+void AutomationProvider::GetMetricEventDuration(const std::string& event_name,
+                                                int* duration_ms) {
+  *duration_ms = metric_event_duration_observer_->GetEventDurationMs(
+      event_name);
 }
 
 void AutomationProvider::ActionOnSSLBlockingPage(int handle, bool proceed,

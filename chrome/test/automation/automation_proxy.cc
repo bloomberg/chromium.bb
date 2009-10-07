@@ -342,6 +342,12 @@ bool AutomationProxy::IsURLDisplayed(GURL url) {
   return false;
 }
 
+bool AutomationProxy::GetMetricEventDuration(const std::string& event_name,
+                                             int* duration_ms) {
+  return Send(new AutomationMsg_GetMetricEventDuration(0, event_name,
+                                                       duration_ms));
+}
+
 bool AutomationProxy::SetFilteredInet(bool enabled) {
   return Send(new AutomationMsg_SetFilteredInet(0, enabled));
 }
