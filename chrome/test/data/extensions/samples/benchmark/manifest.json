@@ -10,5 +10,8 @@
       "matches": ["http://*/*"],
       "js": ["script.js"]
     }
+  ],
+  "permissions": [
+    "tabs"
   ]
 }
