@@ -254,6 +254,25 @@ const NSInteger kHintIconHorizontalPad = 5;
   return [super drawingRectForBounds:[self textFrameForFrame:theRect]];
 }
 
+- (NSRect)hintImageFrameForFrame:(NSRect)cellFrame {
+  // We'll draw the entire image
+  const NSSize imageRect([hintIcon_ size]);
+
+  // Move the rect that we're drawing into to the far right
+  cellFrame.origin.x += cellFrame.size.width - imageRect.width;
+  // Add back the padding
+  cellFrame.origin.x -= kHintIconHorizontalPad;
+
+  // Center the image vertically in the frame
+  cellFrame.origin.y +=
+      floor((cellFrame.size.height - imageRect.height) / 2);
+
+  // Set the drawing size to the image size
+  cellFrame.size = imageRect;
+
+  return cellFrame;
+}
+
 - (void)drawHintWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   DCHECK(hintString_);
 
@@ -296,25 +315,14 @@ const NSInteger kHintIconHorizontalPad = 5;
 }
 
 - (void)drawHintIconWithFrame:(NSRect)cellFrame
-                           inView:(NSView*)controlView {
+                       inView:(NSView*)controlView {
   // We'll draw the entire image
   NSRect imageRect = NSZeroRect;
   imageRect.size = [hintIcon_ size];
-
-  // Move the rect that we're drawing into to the far right
-  cellFrame.origin.x += cellFrame.size.width - imageRect.size.width;
-  // Add back the padding
-  cellFrame.origin.x -= kHintIconHorizontalPad;
-
-  // Center the image vertically in the frame
-  cellFrame.origin.y +=
-      floor((cellFrame.size.height - imageRect.size.height) / 2);
-
-  // Set the drawing size to the image size
-  cellFrame.size = imageRect.size;
+  const NSRect hintFrame([self hintImageFrameForFrame:cellFrame]);
 
   [hintIcon_ setFlipped:[controlView isFlipped]];
-  [hintIcon_ drawInRect:cellFrame
+  [hintIcon_ drawInRect:hintFrame
                fromRect:imageRect
               operation:NSCompositeSourceOver
                fraction:1.0];

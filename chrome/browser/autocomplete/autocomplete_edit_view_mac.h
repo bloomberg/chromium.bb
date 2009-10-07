@@ -96,6 +96,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   virtual bool CanPasteAndGo();
   virtual int GetPasteActionStringId();
   virtual void OnPasteAndGo();
+  virtual void OnSecurityIconClicked();
 
   // Helper functions for use from AutocompleteEditHelper Objective-C
   // class.

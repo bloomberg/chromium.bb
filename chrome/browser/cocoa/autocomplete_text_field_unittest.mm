@@ -517,6 +517,18 @@ TEST_F(AutocompleteTextFieldTest, TripleClickSelectsAll) {
   EXPECT_EQ(selectedRange.length, [[field_ stringValue] length]);
 }
 
+TEST_F(AutocompleteTextFieldTest, SecurityIconMouseDown) {
+  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+  scoped_nsobject<NSImage> hintIcon(
+      [[NSImage alloc] initWithSize:NSMakeSize(20, 20)]);
+  [cell setHintIcon:hintIcon.get()];
+  NSRect iconFrame([cell hintImageFrameForFrame:[field_ bounds]]);
+  NSPoint location(NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame)));
+  NSEvent* event(Event(field_, location, NSLeftMouseDown, 1));
+  EXPECT_CALL(field_observer_, OnSecurityIconClicked());
+  [field_ mouseDown:event];
+}
+
 }  // namespace
 
 @implementation AutocompleteTextFieldTestDelegate

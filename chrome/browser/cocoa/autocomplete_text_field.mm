@@ -94,7 +94,8 @@
   const NSPoint locationInWindow = [theEvent locationInWindow];
   const NSPoint location = [self convertPoint:locationInWindow fromView:nil];
 
-  const NSRect textFrame = [[self cell] textFrameForFrame:[self bounds]];
+  AutocompleteTextFieldCell* cell = [self cell];
+  const NSRect textFrame([cell textFrameForFrame:[self bounds]]);
 
   // A version of the textFrame which extends across the field's
   // entire width.
@@ -129,6 +130,14 @@
       }
     }
 
+    return;
+  }
+
+  // Check to see if the user clicked the hint icon in the cell. If so, we need
+  // to display the page info window.
+  const NSRect hintIconFrame = [cell hintImageFrameForFrame:[self bounds]];
+  if (NSMouseInRect(location, hintIconFrame, [self isFlipped])) {
+    observer_->OnSecurityIconClicked();
     return;
   }
 

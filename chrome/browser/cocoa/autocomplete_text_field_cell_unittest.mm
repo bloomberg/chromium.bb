@@ -355,4 +355,38 @@ TEST_F(AutocompleteTextFieldCellTest, DrawingRectForBounds) {
   EXPECT_TRUE(NSContainsRect(NSInsetRect(textFrame, 1, 1), drawingRect));
 }
 
+// Test that the security icon is at the right side of the cell.
+TEST_F(AutocompleteTextFieldCellTest, HintImageFrame) {
+  AutocompleteTextFieldCell* cell =
+      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
+  const NSRect bounds([view_ bounds]);
+  scoped_nsobject<NSImage> hintIcon(
+      [[NSImage alloc] initWithSize:NSMakeSize(20, 20)]);
+
+  NSRect iconRect = [cell hintImageFrameForFrame:bounds];
+  EXPECT_TRUE(NSIsEmptyRect(iconRect));
+
+  // Save the starting frame for after clear.
+  const NSRect originalIconRect(iconRect);
+
+  [cell setHintIcon:hintIcon];
+  iconRect = [cell hintImageFrameForFrame:bounds];
+  EXPECT_FALSE(NSIsEmptyRect(iconRect));
+  EXPECT_TRUE(NSContainsRect(bounds, iconRect));
+
+  // Make sure we are right of the |drawingRect|.
+  NSRect drawingRect = [cell drawingRectForBounds:bounds];
+  EXPECT_LE(NSMaxX(drawingRect), NSMinX(iconRect));
+
+  // Make sure we're right of the |textFrame|.
+  NSRect textFrame = [cell textFrameForFrame:bounds];
+  EXPECT_LE(NSMaxX(textFrame), NSMinX(iconRect));
+
+  // Make sure we clear correctly.
+  [cell setHintIcon:nil];
+  iconRect = [cell hintImageFrameForFrame:bounds];
+  EXPECT_TRUE(NSEqualRects(iconRect, originalIconRect));
+  EXPECT_TRUE(NSIsEmptyRect(iconRect));
+}
+
 }  // namespace

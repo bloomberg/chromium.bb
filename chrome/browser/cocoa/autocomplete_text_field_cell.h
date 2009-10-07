@@ -68,6 +68,9 @@
 // corresponds to the frame with our added decorations sliced off.
 - (NSRect)textFrameForFrame:(NSRect)cellFrame;
 
+// Return the portion of the cell to use for displaing the |hintIcon_|.
+- (NSRect)hintImageFrameForFrame:(NSRect)cellFrame;
+
 @end
 
 // Internal methods here exposed for unit testing.
