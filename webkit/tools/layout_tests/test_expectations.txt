@@ -2687,7 +2687,7 @@ BUG12881 WIN LINUX : LayoutTests/fast/borders/border-radius-constraints.html = F
 BUG12881 WIN LINUX : LayoutTests/fast/borders/border-radius-split-inline.html = FAIL
 
 // WebKit 44286:44342
-BUG13174 WIN RELEASE : LayoutTests/transitions/shorthand-border-transitions.html = PASS FAIL
+BUG13174 WIN : LayoutTests/transitions/shorthand-border-transitions.html = PASS FAIL
 
 // WebKit 44438:44544
 BUG13721 LINUX : LayoutTests/fast/dynamic/positioned-movement-with-positioned-children.html = FAIL
