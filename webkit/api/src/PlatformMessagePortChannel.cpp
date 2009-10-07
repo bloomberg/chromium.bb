@@ -38,6 +38,7 @@
 
 #include "MessagePort.h"
 #include "ScriptExecutionContext.h"
+#include "SerializedScriptValue.h"
 
 using namespace WebKit;
 
@@ -178,7 +179,7 @@ void PlatformMessagePortChannel::postMessageToRemote(PassOwnPtr<MessagePortChann
     if (!m_localPort || !m_webChannel)
         return;
 
-    WebString messageString = message->message();
+    WebString messageString = message->message()->toString();
     OwnPtr<WebCore::MessagePortChannelArray> channels = message->channels();
     WebMessagePortChannelArray* webChannels = NULL;
     if (channels.get() && channels->size()) {
@@ -210,7 +211,8 @@ bool PlatformMessagePortChannel::tryGetMessageFromRemote(OwnPtr<MessagePortChann
                 (*channels)[i] = MessagePortChannel::create(platformChannel);
             }
         }
-        result = MessagePortChannel::EventData::create(message, channels.release());
+        RefPtr<SerializedScriptValue> serializedMessage = SerializedScriptValue::create(message);
+        result = MessagePortChannel::EventData::create(serializedMessage.release(), channels.release());
     }
 
     return rv;

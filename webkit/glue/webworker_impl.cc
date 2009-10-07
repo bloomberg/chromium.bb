@@ -15,6 +15,7 @@
 #include "MessagePortChannel.h"
 #include "ScriptExecutionContext.h"
 #include "SecurityOrigin.h"
+#include "SerializedScriptValue.h"
 #include "SubstituteData.h"
 #include <wtf/MainThread.h>
 #include <wtf/Threading.h>
@@ -123,8 +124,11 @@ void WebWorkerImpl::PostMessageToWorkerContextTask(
 
   WTF::OwnPtr<WebCore::MessagePortArray> ports =
       WebCore::MessagePort::entanglePorts(*context, channels.release());
+  WTF::RefPtr<WebCore::SerializedScriptValue> serialized_message =
+      WebCore::SerializedScriptValue::create(message);
   worker_context->dispatchEvent(
-      WebCore::MessageEvent::create(ports.release(), message));
+      WebCore::MessageEvent::create(ports.release(),
+                                    serialized_message.release()));
 
   this_ptr->confirmMessageFromWorkerObject(
       worker_context->hasPendingActivity());
@@ -229,12 +233,12 @@ void WebWorkerImpl::InvokeTaskMethod(void* param) {
 // WorkerObjectProxy -----------------------------------------------------------
 
 void WebWorkerImpl::postMessageToWorkerObject(
-    const WebCore::String& message,
+    WTF::PassRefPtr<WebCore::SerializedScriptValue> message,
     WTF::PassOwnPtr<WebCore::MessagePortChannelArray> channels) {
   DispatchTaskToMainThread(WebCore::createCallbackTask(
       &PostMessageTask,
       this,
-      message,
+      message->toString(),
       channels));
 }
 

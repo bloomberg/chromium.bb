@@ -3074,3 +3074,7 @@ BUG23972 WIN : LayoutTests/fast/forms/form-element-geometry.html = CRASH PASS
 
 // Flaky timeouts first appearing at r27764 (webkit 48947)
 BUG9798 LINUX MAC : LayoutTests/http/tests/cookies/multiple-cookies.html = TIMEOUT PASS
+
+// WebKit update: 49213:49221
+BUG24063 : LayoutTests/fast/dom/Window/window-postmessage-clone.html = FAIL
+

@@ -34,7 +34,7 @@ class WebWorkerImpl: public WebCore::WorkerObjectProxy,
 
   // WebCore::WorkerObjectProxy methods:
   virtual void postMessageToWorkerObject(
-      const WebCore::String& message,
+      WTF::PassRefPtr<WebCore::SerializedScriptValue> message,
       WTF::PassOwnPtr<WebCore::MessagePortChannelArray> channels);
   virtual void postExceptionToWorkerObject(
       const WebCore::String& error_message,

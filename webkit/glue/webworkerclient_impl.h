@@ -44,7 +44,7 @@ class WebWorkerClientImpl : public WebCore::WorkerContextProxy,
                                   const WebCore::String& source_code);
   virtual void terminateWorkerContext();
   virtual void postMessageToWorkerContext(
-      const WebCore::String& message,
+      WTF::PassRefPtr<WebCore::SerializedScriptValue> message,
       WTF::PassOwnPtr<WebCore::MessagePortChannelArray> channels);
   virtual bool hasPendingActivity() const;
   virtual void workerObjectDestroyed();

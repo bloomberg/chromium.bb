@@ -154,7 +154,7 @@ void WebWorkerClientImpl::terminateWorkerContext() {
 }
 
 void WebWorkerClientImpl::postMessageToWorkerContext(
-    const WebCore::String& message,
+    WTF::PassRefPtr<WebCore::SerializedScriptValue> message,
     WTF::PassOwnPtr<WebCore::MessagePortChannelArray> channels) {
   // Worker.terminate() could be called from JS before the context is started.
   if (asked_to_terminate_)
@@ -165,7 +165,10 @@ void WebWorkerClientImpl::postMessageToWorkerContext(
   if (!WTF::isMainThread()) {
     WebWorkerImpl::DispatchTaskToMainThread(
         WebCore::createCallbackTask(
-            &PostMessageToWorkerContextTask, this, message, channels));
+            &PostMessageToWorkerContextTask,
+            this,
+            message->toString(),
+            channels));
     return;
   }
 
@@ -179,7 +182,7 @@ void WebWorkerClientImpl::postMessageToWorkerContext(
   }
 
   webworker_->postMessageToWorkerContext(
-      webkit_glue::StringToWebString(message), webchannels);
+      webkit_glue::StringToWebString(message->toString()), webchannels);
 }
 
 bool WebWorkerClientImpl::hasPendingActivity() const {
@@ -349,8 +352,11 @@ void WebWorkerClientImpl::PostMessageToWorkerObjectTask(
   if (this_ptr->worker_) {
     WTF::OwnPtr<WebCore::MessagePortArray> ports =
         WebCore::MessagePort::entanglePorts(*context, channels.release());
+    WTF::RefPtr<WebCore::SerializedScriptValue> serialized_message =
+        WebCore::SerializedScriptValue::create(message);
     this_ptr->worker_->dispatchEvent(
-        WebCore::MessageEvent::create(ports.release(), message));
+        WebCore::MessageEvent::create(ports.release(),
+                                      serialized_message.release()));
   }
 }
 
