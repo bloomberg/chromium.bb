@@ -2687,7 +2687,7 @@ BUG12310 SKIP : LayoutTests/fast/wcss/marquee-speed.xhtml = FAIL
 BUG12310 SKIP : LayoutTests/fast/wcss/marquee-style.xhtml = FAIL
 
 // Details for all of these are in the bugs.
-BUG12341 WIN SLOW : LayoutTests/editing/selection/4975120.html = IMAGE
+BUG12341 WIN MAC : LayoutTests/editing/selection/4975120.html = PASS FAIL
 BUG12361 WIN SLOW : LayoutTests/http/tests/cookies/double-quoted-value-with-semi-colon.html = FAIL
 BUG12361 LINUX MAC : LayoutTests/http/tests/cookies/double-quoted-value-with-semi-colon.html = FAIL
 
@@ -2960,7 +2960,7 @@ BUG21141 LINUX : LayoutTests/fast/forms/select-script-onchange.html = FAIL
 BUG_JAPHET MAC : LayoutTests/animations/change-keyframes-name.html = FAIL PASS
 
 // Flaky, not clear as of when.
-BUG21411 SLOW WIN LINUX DEBUG: LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg = FAIL PASS
+BUG21411 SLOW DEBUG: LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg = FAIL PASS
 
 // WebKit 48217:48239
 // Fails because we don't support layoutTestController.addUserStyleSheet().
