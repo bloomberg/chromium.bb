@@ -103,7 +103,7 @@
       background-color: #8fdf5f;
     }
     .N {
-      background-color: #e0b0ff;
+      background-color: #fff;
     }
     .C {
       background-color: #ffc343;
@@ -112,7 +112,7 @@
       background-color: #fffc6c;
     }
     .I {
-      background-color: #96f;
+      background-color: #69f;
     }
     .S {
       background-color: #c6c;
@@ -121,7 +121,10 @@
       background-color: #e98080;
     }
     .O {
-      background-color: #69f;
+      background-color: #8a7700;
+    }
+    .Z {
+      background-color: #96f;
     }
     .merge {
       background-color: grey;
@@ -891,7 +894,7 @@
         (!resultsForTest.modifiers ||
          !stringContains(resultsForTest.modifiers, 'SLOW'))) {
       missingExpectations.push('SLOW');
-    } else if (resultsForTest.slowestTime <= MIN_SECONDS_FOR_SLOW_TEST &&
+    } else if (resultsForTest.slowestTime <= 1 &&
                resultsForTest.modifiers &&
                stringContains(resultsForTest.modifiers, 'SLOW')) {
       extraExpectations.push('SLOW');
@@ -988,18 +991,24 @@
 
     var indexToReplaceCurrentResult = -1;
     var indexToReplaceCurrentTime = -1;
-    var currentResultArray, currentTimeArray, currentResult, innerHTML;
+    var currentResultArray, currentTimeArray, currentResult, innerHTML,
+        resultString;
     var maxIndex = Math.min(buildNumbers.length, currentState.maxResults);
     for (var i = 0; i < maxIndex; i++) {
       if (i > indexToReplaceCurrentResult) {
         currentResultArray = results.shift();
         if (currentResultArray) {
           currentResult = currentResultArray[1];
+          // Treat simplified diff failures as just text failures.
+          if (currentResult == 'S')
+            currentResult = 'F';
           indexToReplaceCurrentResult += currentResultArray[0];
         } else {
           currentResult = 'N';
           indexToReplaceCurrentResult += buildNumbers.length;
         }
+
+        resultString = getExpectationsFileStringForResult(currentResult);
       }
 
       if (i > indexToReplaceCurrentTime) {
@@ -1014,9 +1023,10 @@
         innerHTML = currentTime || '&nbsp;';
       }
 
-      html += '<td title="Click results for handy links." class="results ' +
-          currentResult + '" onclick=\'showPopupForBuild(event, "' + builder +
-          '",' + i + ')\'>' + innerHTML + '</td>';
+      html += '<td title="' + resultString + '. Click for more info." ' +
+          'class="results ' + currentResult +
+          '" onclick=\'showPopupForBuild(event, "' + builder + '",' + i +
+          ')\'>' + innerHTML + '</td>';
 
       var webkitRevision = resultsByBuilder[builder].webkitRevision;
       var isWebkitMerge = webkitRevision[i + 1] &&
@@ -1619,7 +1629,7 @@
         'onsubmit="setState(\'maxResults\', maxResults.value);return false;"' +
         '><span>Number of results to show (max=500): </span>' +
         '<input name=maxResults id=max-results-input></form> | ' +
-        '<b>Type ? for legend and expectations fallback order</b>' +
+        '<span class=link onclick="showLegend()">Show legend [type ?]</span> ' +
         '<div id="loading-ui">LOADING...</div>';
   }
 
@@ -1755,7 +1765,7 @@
     }
 
     var innerHTML = '<div id=legend-toggle onclick="hideLegend()">Hide ' +
-        'legend (or hit esc to close)</div><div id=legend-contents>';
+        'legend [type esc]</div><div id=legend-contents>';
     for (var expectation in EXPECTATIONS_MAP) {
       innerHTML += '<div class=' + expectation + '>' +
           EXPECTATIONS_MAP[expectation] + '</div>';
@@ -1772,7 +1782,8 @@
   }
 
   document.addEventListener('keydown', function(e) {
-    if (e.keyIdentifier == 'U+003F') {
+    if (e.keyIdentifier == 'U+003F' || e.keyIdentifier == 'U+00BF') {
+      // WebKit MAC retursn 3F. WebKit WIN returns BF. This is a bug!
       // ? key
       showLegend();
     } else if (e.keyIdentifier == 'U+001B') {
