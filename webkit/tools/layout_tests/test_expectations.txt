@@ -2456,8 +2456,10 @@ BUG10479 MAC : LayoutTests/svg/hixie/perf/001.xml = FAIL
 BUG10479 MAC : LayoutTests/svg/hixie/perf/002.xml = FAIL
 
 BUG9798 LINUX DEBUG : chrome/fast/dom/extensions/interval.html = CRASH FAIL PASS
+BUG9798 LINUX RELEASE : chrome/fast/dom/extensions/interval.html = FAIL PASS
 BUG9798 MAC DEBUG : chrome/fast/dom/extensions/interval.html = FAIL PASS
 BUG9798 WIN : chrome/fast/dom/extensions/interval.html = FAIL PASS
+BUG9798 LINUX RELEASE : LayoutTests/editing/execCommand/15381.html = FAIL PASS
 BUG9797 WIN : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
 BUG9798 WIN : LayoutTests/editing/execCommand/paste-2.html = FAIL PASS
 BUG9797 WIN LINUX MAC : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
@@ -2471,6 +2473,7 @@ BUG9798 LINUX DEBUG : LayoutTests/fast/forms/input-align-image.html = FAIL PASS
 BUG9798 WIN RELEASE : LayoutTests/fast/forms/textarea-setvalue-submit.html = CRASH PASS
 // BUG_SENORBLANCO FAIL on next line is due to Skia roll and should be reverted by end of 10/06/2009
 BUG9798 WIN : LayoutTests/fast/frames/onlyCommentInIFrame.html = CRASH FAIL
+BUG9798 LINUX DEBUG : LayoutTests/fast/frames/calculate-order.html = CRASH PASS
 BUG9798 LINUX : LayoutTests/fast/frames/calculate-round.html = CRASH PASS
 BUG9798 MAC LINUX DEBUG : LayoutTests/fast/frames/frame-limit.html = TIMEOUT PASS
 BUG9798 LINUX RELEASE : LayoutTests/fast/frames/frame-limit.html = CRASH PASS
@@ -2496,6 +2499,7 @@ BUG9798 MAC DEBUG : LayoutTests/http/tests/security/xssAuditor/script-tag.html =
 BUG9798 MAC RELEASE : LayoutTests/http/tests/security/xssAuditor/script-tag-utf-7.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-no-quote.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/ssl/verify-ssl-enabled.php = TIMEOUT PASS
+BUG9798 MAC DEBUG : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-header.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = TIMEOUT PASS
 BUG9798 MAC DEBUG : LayoutTests/http/tests/xmlhttprequest/access-control-basic-non-simple-allow.html = TIMEOUT PASS
@@ -2869,6 +2873,7 @@ BUG18584 : LayoutTests/animations/change-one-anim.html = FAIL PASS
 BUG18584 LINUX WIN : LayoutTests/animations/play-state.html = FAIL PASS
 BUG18584 : LayoutTests/transitions/shorthand-transitions.html = FAIL PASS
 BUG18584 WIN : LayoutTests/animations/combo-transform-translate+scale.html = FAIL PASS
+BUG18584 LINUX RELEASE : LayoutTests/animations/combo-transform-translate+scale.html = FAIL PASS
 
 // Flaky crashes
 BUG18656 MAC : LayoutTests/fast/dom/Window/window-lookup-precedence.html = FAIL CRASH
