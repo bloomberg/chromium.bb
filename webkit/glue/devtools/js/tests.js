@@ -1104,6 +1104,44 @@ TestSuite.prototype._checkScopeSectionDiv = function(
 
 
 /**
+ * Expands scope sections matching the filter and invokes the callback on
+ * success.
+ * @param {function(WebInspector.ObjectPropertiesSection, number):boolean}
+ *     filter
+ * @param {Function} callback
+ */
+TestSuite.prototype._expandScopeSections = function(filter, callback) {
+  var sections = WebInspector.currentPanel.sidebarPanes.scopechain.sections;
+
+  var toBeUpdatedCount = 0;
+  function updateListener() {
+    --toBeUpdatedCount;
+    if (toBeUpdatedCount == 0) {
+      // Report when all scopes are expanded and populated.
+      callback();
+    }
+  }
+
+  // Global scope is always the last one.
+  for (var i = 0; i < sections.length - 1; i++) {
+    var section = sections[i];
+    if (!filter(sections, i)) {
+      continue;
+    }
+    this.addSniffer(section, 'updateProperties', updateListener);
+    ++toBeUpdatedCount;
+    var populated = section.populated;
+    section.expand();
+    if (populated) {
+      // Make sure 'updateProperties' callback will be called at least once
+      // after it was overridden.
+      section.update();
+    }
+  }
+};
+
+
+/**
  * Tests that scopes can be expanded and contain expected data.
  */
 TestSuite.prototype.testExpandScope = function() {
@@ -1125,30 +1163,11 @@ TestSuite.prototype.testExpandScope = function() {
 
   // Expanding Global scope takes for too long so we skeep it.
   function expandAllSectionsExceptGlobal() {
-    var sections = WebInspector.currentPanel.sidebarPanes.scopechain.sections;
-
-    var toBeUpdatedCount = 0;
-    function updateListener() {
-      --toBeUpdatedCount;
-      if (toBeUpdatedCount == 0) {
-        // When all scopes are expanded and populated check them.
-        examineScopes();
-      }
-    }
-
-    // Global scope is always the last one.
-    for (var i = 0; i < sections.length - 1; i++) {
-      var section = sections[i];
-      test.addSniffer(section, 'updateProperties', updateListener);
-      ++toBeUpdatedCount;
-      var populated = section.populated;
-      section.expand();
-      if (populated) {
-        // Make sure 'updateProperties' callback will be called at least once
-        // after it was overridden.
-        section.update();
-      }
-    }
+      test._expandScopeSections(function(sections, i) {
+        return i < sections.length - 1;
+      },
+      examineScopes /* When all scopes are expanded and populated check
+          them. */);
   }
 
   // Check scope sections contents.
@@ -1189,6 +1208,149 @@ TestSuite.prototype.testExpandScope = function() {
                       'Unexpected number of scopes.');
 
     test.releaseControl();
+  }
+
+  test.takeControl();
+};
+
+
+/**
+ * Returns child tree element for a property with given name.
+ * @param {TreeElement} parent Parent tree element.
+ * @param {string} childName
+ * @return {TreeElement}
+ */
+TestSuite.prototype._findChildProperty = function(parent, childName) {
+  var children = parent.children;
+  for (var i = 0; i < children.length; i++) {
+    var treeElement = children[i];
+    var property = treeElement.property;
+    if (property.name == childName) {
+      return treeElement;
+    }
+  }
+  this.fail('Cannot find ' + childName);
+};
+
+
+/**
+ * Tests that all elements in prototype chain of an object have expected
+ * intrinic proprties(__proto__, constructor, prototype).
+ */
+TestSuite.prototype.testDebugIntrinsicProperties = function() {
+  this.showPanel('scripts');
+  var test = this;
+
+  this._executeCodeWhenScriptsAreParsed(
+      'handleClick()',
+      ['debugger_intrinsic_properties.html$']);
+
+  this._waitForScriptPause(
+      {
+        functionsOnStack: ['callDebugger', 'handleClick',
+                           '(anonymous function)'],
+        lineNumber: 29,
+        lineText: '  debugger;'
+      },
+      expandLocalScope);
+
+  var localScopeSection = null;
+  function expandLocalScope() {
+    test._expandScopeSections(function(sections, i) {
+        if (i == 0) {
+          test.assertTrue(sections[i].object.isLocal, 'Scope #0 is not Local.');
+          localScopeSection = sections[i];
+          return true;
+        }
+        return false;
+      },
+      examineLocalScope);
+  }
+
+  function examineLocalScope() {
+    var aTreeElement = test._findChildProperty(
+        localScopeSection.propertiesTreeOutline, 'a');
+    test.assertTrue(!!aTreeElement, 'Not found');
+
+    var orig = overrideGetProperties(checkA.bind(null, aTreeElement));
+    aTreeElement.expand();
+    InjectedScriptAccess.getProperties = orig;
+  }
+
+  function checkA(aTreeElement) {
+    checkIntrinsicProperties(aTreeElement,
+        [
+          'constructor', 'function Child()',
+          '__proto__', 'Object',
+          'prototype', 'undefined',
+        ]);
+    expandProto(aTreeElement, checkAProto);
+  }
+
+  function checkAProto(treeElement) {
+    checkIntrinsicProperties(treeElement,
+        [
+          'constructor', 'function Child()',
+          '__proto__', 'Object',
+          'prototype', 'undefined',
+        ]);
+    expandProto(treeElement, checkAProtoProto);
+  }
+
+  function checkAProtoProto(treeElement) {
+    checkIntrinsicProperties(treeElement,
+        [
+          'constructor', 'function Parent()',
+          '__proto__', 'Object',
+          'prototype', 'undefined',
+        ]);
+    expandProto(treeElement, checkAProtoProtoProto);
+  }
+
+  function checkAProtoProtoProto(treeElement) {
+    checkIntrinsicProperties(treeElement,
+        [
+          'constructor', 'function Object()',
+          '__proto__', 'null',
+          'prototype', 'undefined',
+        ]);
+    test.releaseControl();
+  }
+
+  function overrideGetProperties(afterCallback) {
+    var orig = InjectedScriptAccess.getProperties;
+    InjectedScriptAccess.getProperties = function(objectProxy,
+        ignoreHasOwnProperty, callback) {
+      orig.call(InjectedScriptAccess, objectProxy, ignoreHasOwnProperty,
+          function() {
+            callback.apply(this, arguments);
+            afterCallback();
+          });
+    };
+    return orig;
+  }
+
+  function expandProto(treeElement, callback) {
+    var proto = test._findChildProperty(treeElement, '__proto__');
+    test.assertTrue(proto, '__proro__ not found');
+
+    var orig = overrideGetProperties(callback.bind(null, proto));
+    proto.expand();
+    InjectedScriptAccess.getProperties = orig;
+  }
+
+  function checkIntrinsicProperties(treeElement, expectations) {
+    for (var i = 0; i < expectations.length; i += 2) {
+      var name = expectations[i];
+      var value = expectations[i+1];
+
+      var propertyTreeElement = test._findChildProperty(treeElement, name);
+      test.assertTrue(propertyTreeElement,
+                      'Property "' + name + '" not found.');
+      test.assertEquals(value,
+          propertyTreeElement.property.value.description,
+          'Unexpected "' + name + '" value.');
+    }
   }
 
   test.takeControl();

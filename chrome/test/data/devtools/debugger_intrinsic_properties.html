@@ -1,0 +1,41 @@
+<html>
+<head>
+<script>
+
+function Parent(n) {
+  this.name_ = 'parent.' + n;
+  this.parentField = 10;
+}
+Parent.prototype.parentProtoField = 11;
+
+
+function Child(n) {
+  Parent.call(this, n);
+  this.name_ = 'child.' + n;
+  this.childField = 20;
+}
+inherits(Child, Parent);
+Child.prototype.childProtoField = 21;
+
+function inherits(childCtor, parentCtor) {
+  function tempCtor() {};
+  tempCtor.prototype = parentCtor.prototype;
+  childCtor.prototype = new tempCtor();
+  childCtor.prototype.constructor = childCtor;
+}
+
+function callDebugger(a) {
+  var s = a.name_;
+  debugger;
+}
+
+function handleClick() {
+  var c = new Child('name');
+  callDebugger(c);
+}
+</script>
+</head>
+<body>
+<input type='button' onclick='handleClick()' value='Test'/>
+</body>
+</html>

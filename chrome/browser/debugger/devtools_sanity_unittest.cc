@@ -54,6 +54,8 @@ const wchar_t kDebuggerStepTestPage[] =
     L"files/devtools/debugger_step.html";
 const wchar_t kDebuggerClosurePage[] =
     L"files/devtools/debugger_closure.html";
+const wchar_t kDebuggerIntrinsicPropertiesPage[] =
+    L"files/devtools/debugger_intrinsic_properties.html";
 
 
 class DevToolsSanityTest : public InProcessBrowserTest {
@@ -197,6 +199,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepIn) {
 // Tests that scope can be expanded and contains expected variables.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestExpandScope) {
   RunTest("testExpandScope", kDebuggerClosurePage);
+}
+
+// Tests that intrinsic properties(__proto__, prototype, constructor) are
+// present.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDebugIntrinsicProperties) {
+  RunTest("testDebugIntrinsicProperties", kDebuggerIntrinsicPropertiesPage);
 }
 
 // Tests that execution continues automatically when there is a syntax error in

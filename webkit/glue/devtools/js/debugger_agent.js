@@ -1120,12 +1120,14 @@ devtools.DebuggerAgent.formatObjectProxy_ = function(v) {
       description = 'function ' + v.name + '()';
     }
     hasChildren = true;
-  } else if (goog.isDef(v.value)) {
-    description = v.value;
   } else if (v.type == 'undefined') {
     description = 'undefined';
   } else if (v.type == 'null') {
     description = 'null';
+  } else if (goog.isDef(v.value)) {
+    // Check for undefined and null types before checking the value, otherwise
+    // null/undefined may have blank value.
+    description = v.value;
   } else {
     description = '<unresolved ref: ' + v.ref + ', type: ' + v.type + '>';
   }

@@ -371,7 +371,7 @@ InjectedScriptAccess.getProperties = function(
         callback);
   } else if (objectProxy.isV8Ref) {
     devtools.tools.getDebuggerAgent().resolveChildren(objectProxy.objectId,
-        callback, true);
+        callback, false);
   } else {
     orig.apply(this, arguments);
   }
