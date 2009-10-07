@@ -712,7 +712,6 @@ BUG13907 : LayoutTests/media/audio-delete-while-slider-thumb-clicked.html = PASS
 BUG13907 : LayoutTests/media/audio-delete-while-step-button-clicked.html = FAIL
 BUG13907 : LayoutTests/media/audio-play-event.html = TIMEOUT
 BUG13907 : LayoutTests/media/controls-drag-timebar.html = TIMEOUT
-// BUG_SENORBLANCO FAIL on next line is due to Skia roll and should be reverted by end of 10/06/2009
 BUG13907 : LayoutTests/media/controls-styling.html = FAIL
 BUG13907 : LayoutTests/media/event-attributes.html = TIMEOUT CRASH
 BUG13907 : LayoutTests/media/video-canvas-source.html = FAIL
@@ -1263,7 +1262,7 @@ BUG10342 MAC LINUX : LayoutTests/fast/loader/file-URL-with-port-number.html = FA
 BUG10343 LINUX : LayoutTests/fast/text/atsui-kerning-and-ligatures.html = FAIL
 BUG10343 LINUX : LayoutTests/fast/text/atsui-partial-selection.html = FAIL
 BUG10343 LINUX : LayoutTests/fast/text/atsui-small-caps-punctuation-size.html = FAIL
-BUG10343 LINUX : LayoutTests/fast/text/cg-vs-atsui.html = FAIL
+BUG10343 LINUX WIN : LayoutTests/fast/text/cg-vs-atsui.html = FAIL
 
 // Started timing out with agl's complext text change.  Page is verrry slow.
 BUG10343 SKIP LINUX : LayoutTests/fast/text/large-text-composed-char.html = TIMEOUT FAIL
@@ -2291,10 +2290,10 @@ BUG10428 WIN LINUX : LayoutTests/fast/canvas/fillrect_gradient.html = FAIL PASS
 BUG10429 LINUX : LayoutTests/css2.1/t100801-c544-valgn-01-d-ag.html = FAIL
 
 // New failures from Merge 41078:41149
-BUG10430 LINUX : LayoutTests/fast/text/atsui-spacing-features.html = FAIL
+BUG10430 LINUX WIN : LayoutTests/fast/text/atsui-spacing-features.html = FAIL
 BUG10430 LINUX : LayoutTests/svg/W3C-SVG-1.1/text-intro-05-t.svg = FAIL
-BUG10430 LINUX : LayoutTests/svg/text/text-fonts-01-t.svg = FAIL
-BUG10430 LINUX : LayoutTests/svg/text/text-intro-05-t.svg = FAIL
+BUG10430 LINUX WIN : LayoutTests/svg/text/text-fonts-01-t.svg = FAIL
+BUG10430 LINUX WIN : LayoutTests/svg/text/text-intro-05-t.svg = FAIL
 
 // New tests from merge 41181:41217
 
@@ -2470,8 +2469,6 @@ BUG9798 WIN : LayoutTests/fast/forms/check-box-enter-key.html = CRASH PASS
 BUG9798 LINUX DEBUG : LayoutTests/fast/forms/input-align-image.html = FAIL PASS
 BUG9798 MAC RELEASE : LayoutTests/fast/forms/menulist-separator-painting.html = CRASH PASS
 BUG9798 WIN RELEASE : LayoutTests/fast/forms/textarea-setvalue-submit.html = CRASH PASS
-// BUG_SENORBLANCO FAIL on next line is due to Skia roll and should be reverted by end of 10/06/2009
-BUG9798 WIN : LayoutTests/fast/frames/onlyCommentInIFrame.html = CRASH FAIL
 BUG9798 LINUX DEBUG : LayoutTests/fast/frames/calculate-order.html = CRASH PASS
 BUG9798 LINUX RELEASE : LayoutTests/fast/frames/calculate-percentage.html = CRASH PASS
 BUG9798 LINUX : LayoutTests/fast/frames/calculate-round.html = CRASH PASS
@@ -2512,8 +2509,6 @@ BUG9797 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/state-after-
 BUG9798 LINUX : LayoutTests/storage/change-version.html = TIMEOUT PASS
 BUG9797 LINUX DEBUG : LayoutTests/svg/carto.net/colourpicker.svg = FAIL
 BUG9798 LINUX RELEASE : LayoutTests/svg/carto.net/colourpicker.svg = FAIL PASS
-// BUG_SENORBLANCO FAIL on next line is due to Skia roll and should be reverted by end of 10/06/2009
-BUG9798 DEBUG : LayoutTests/svg/custom/path-bad-data.svg = CRASH FAIL
 BUG9798 LINUX : LayoutTests/svg/custom/invisible-text-after-scrolling.xhtml = FAIL PASS
 BUG9798 LINUX DEBUG : LayoutTests/svg/custom/js-late-marker-and-object-creation.svg = FAIL PASS
 BUG9798 MAC : LayoutTests/svg/custom/use-instanceRoot-as-event-target.xhtml = TIMEOUT FAIL
@@ -3040,13 +3035,6 @@ BUG23901 WIN LINUX : LayoutTests/fast/box-shadow/inset.html = FAIL
 
 // Skia update 364:376
 
-BUG_SENORBLANCO WIN : LayoutTests/fast/text/atsui-spacing-features.html = FAIL
-BUG_SENORBLANCO WIN : LayoutTests/fast/text/cg-vs-atsui.html = FAIL
-BUG_SENORBLANCO WIN : LayoutTests/svg/text/text-fonts-01-t.svg = FAIL
-BUG_SENORBLANCO WIN : LayoutTests/svg/text/text-intro-05-t.svg = FAIL
-
-BUG_SENORBLANCO LINUX : LayoutTests/svg/text/text-tselect-02-f.svg = FAIL
-BUG_SENORBLANCO LINUX : LayoutTests/svg/text/text-text-07-t.svg = FAIL
 
 // WebKit update: 49111:49142
 // Added in http://trac.webkit.org/changeset/49131, probably just needs expectations.
@@ -3065,9 +3053,7 @@ BUG_JPARENT: LayoutTests/svg/filters/sourceAlpha.svg = FAIL
  BUG_JPARENT WIN DEBUG : LayoutTests/fast/frames/calculate-fixed.html = CRASH PASS
 
 // Started failing for no apparent reason at r28124
-// BUG_SENORBLANCO FAIL on next line is due to Skia roll and should be reverted by end of 10/06/2009
-BUG23972 LINUX : LayoutTests/fast/forms/form-element-geometry.html = CRASH FAIL
-BUG23972 WIN : LayoutTests/fast/forms/form-element-geometry.html = CRASH PASS
+BUG23972 LINUX WIN : LayoutTests/fast/forms/form-element-geometry.html = CRASH PASS
 
 // Flaky timeouts first appearing at r27764 (webkit 48947)
 BUG9798 LINUX MAC : LayoutTests/http/tests/cookies/multiple-cookies.html = TIMEOUT PASS
