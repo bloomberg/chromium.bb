@@ -57,9 +57,6 @@ bool WebPluginDelegateImpl::Initialize(
   plugin_ = plugin;
 
   instance_->set_web_plugin(plugin_);
-  NPAPI::PluginInstance* old_instance =
-      NPAPI::PluginInstance::SetInitializingInstance(instance_);
-
   if (quirks_ & PLUGIN_QUIRK_DONT_ALLOW_MULTIPLE_INSTANCES) {
     NPAPI::PluginLib* plugin_lib = instance()->plugin_lib();
     if (plugin_lib->instance_count() > 1) {
@@ -85,9 +82,6 @@ bool WebPluginDelegateImpl::Initialize(
 
   bool start_result = instance_->Start(
       url, argn.get(), argv.get(), argc, load_manually);
-
-  NPAPI::PluginInstance::SetInitializingInstance(old_instance);
-
   if (!start_result)
     return false;
 

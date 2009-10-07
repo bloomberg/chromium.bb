@@ -101,6 +101,9 @@ void PluginHost::InitializeHostFuncs() {
   host_funcs_.enumerate = WebBindings::enumerate;
   host_funcs_.pluginthreadasynccall = NPN_PluginThreadAsyncCall;
   host_funcs_.construct = WebBindings::construct;
+  host_funcs_.getvalueforurl = NPN_GetValueForURL;
+  host_funcs_.setvalueforurl = NPN_SetValueForURL;
+  host_funcs_.getauthenticationinfo = NPN_GetAuthenticationInfo;
 
 }
 
@@ -724,19 +727,6 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void *value) {
     rv = NPERR_NO_ERROR;
     break;
   }
-  case NPNVserviceManager:
-  {
-    NPAPI::PluginInstance* instance =
-        NPAPI::PluginInstance::GetInitializingInstance();
-    if (instance) {
-      instance->GetServiceManager(reinterpret_cast<void**>(value));
-    } else {
-      NOTREACHED();
-    }
-
-    rv = NPERR_NO_ERROR;
-    break;
-  }
 #if defined(OS_LINUX)
   case NPNVToolkit:
     // Tell them we are GTK2.  (The alternative is GTK 1.2.)
@@ -894,12 +884,116 @@ void NPN_PopPopupsEnabledState(NPP id) {
 }
 
 void NPN_PluginThreadAsyncCall(NPP id,
-                         void (*func)(void *),
-                         void *userData) {
+                               void (*func)(void *),
+                               void *userData) {
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
   if (plugin) {
     plugin->PluginThreadAsyncCall(func, userData);
   }
+}
+
+NPError NPN_GetValueForURL(NPP id,
+                           NPNURLVariable variable,
+                           const char *url,
+                           char **value,
+                           uint32_t *len) {
+  if (!id)
+    return NPERR_INVALID_PARAM;
+
+  if (!url || !*url || !len)
+    return NPERR_INVALID_URL;
+
+  *len = 0;
+  std::string result;
+
+  switch (variable) {
+    case NPNURLVProxy: {
+      result = "DIRECT";
+      if (!webkit_glue::FindProxyForUrl(GURL((std::string(url))), &result))
+        return NPERR_GENERIC_ERROR;
+
+      break;
+    }
+    case NPNURLVCookie: {
+      scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+      if (!plugin)
+        return NPERR_GENERIC_ERROR;
+
+      webkit_glue::WebPlugin* webplugin = plugin->webplugin();
+      if (!webplugin)
+        return NPERR_GENERIC_ERROR;
+
+      // Bypass third-party cookie blocking by using the url as the policy_url.
+      GURL cookies_url((std::string(url)));
+      result = webplugin->GetCookies(cookies_url, cookies_url);
+      break;
+    }
+    default:
+      return NPERR_GENERIC_ERROR;
+  }
+
+  // Allocate this using the NPAPI allocator. The plugin will call
+  // NPN_Free to free this.
+  *value = static_cast<char*>(NPN_MemAlloc(result.length() + 1));
+  strncpy(*value, result.c_str(), result.length() + 1);
+  *len = result.length();
+
+  return NPERR_NO_ERROR;
+}
+
+NPError NPN_SetValueForURL(NPP id,
+                           NPNURLVariable variable,
+                           const char *url,
+                           const char *value,
+                           uint32_t len) {
+  if (!id)
+    return NPERR_INVALID_PARAM;
+
+  if (!url || !*url)
+    return NPERR_INVALID_URL;
+
+  switch (variable) {
+    case NPNURLVCookie: {
+      scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+      if (!plugin)
+        return NPERR_GENERIC_ERROR;
+
+      webkit_glue::WebPlugin* webplugin = plugin->webplugin();
+      if (!webplugin)
+        return NPERR_GENERIC_ERROR;
+
+      std::string cookie(value, len);
+      GURL cookies_url((std::string(url)));
+      webplugin->SetCookie(cookies_url, cookies_url, cookie);
+      return NPERR_NO_ERROR;
+    }
+    case NPNURLVProxy:
+      // We don't support setting proxy values, fall through...
+      break;
+    default:
+      // Fall through and return an error...
+      break;
+  }
+
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError NPN_GetAuthenticationInfo(NPP id,
+                                  const char *protocol,
+                                  const char *host,
+                                  int32_t port,
+                                  const char *scheme,
+                                  const char *realm,
+                                  char **username,
+                                  uint32_t *ulen,
+                                  char **password,
+                                  uint32_t *plen) {
+  if (!id || !protocol || !host || !scheme || !realm || !username ||
+      !ulen || !password || !plen)
+    return NPERR_INVALID_PARAM;
+
+  // TODO: implement me (bug 23928)
+  return NPERR_GENERIC_ERROR;
 }
 
 } // extern "C"

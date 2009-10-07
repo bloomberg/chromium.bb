@@ -120,8 +120,6 @@ bool WebPluginDelegateImpl::Initialize(const GURL& url,
   plugin_ = plugin;
 
   instance_->set_web_plugin(plugin);
-  NPAPI::PluginInstance* old_instance =
-      NPAPI::PluginInstance::SetInitializingInstance(instance_);
 
   int argc = 0;
   scoped_array<char*> argn(new char*[arg_names.size()]);
@@ -138,9 +136,6 @@ bool WebPluginDelegateImpl::Initialize(const GURL& url,
 
   bool start_result = instance_->Start(
       url, argn.get(), argv.get(), argc, load_manually);
-
-  NPAPI::PluginInstance::SetInitializingInstance(old_instance);
-
   if (!start_result)
     return false;
 

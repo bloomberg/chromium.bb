@@ -34,7 +34,6 @@ class PluginHost;
 class PluginStream;
 class PluginStreamUrl;
 class PluginDataStream;
-class MozillaExtensionApi;
 
 // A PluginInstance is an active, running instance of a Plugin.
 // A single plugin may have many PluginInstances.
@@ -181,11 +180,6 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   void DidFinishManualLoading();
   void DidManualLoadFail();
 
-  NPError GetServiceManager(void** service_manager);
-
-  static PluginInstance* SetInitializingInstance(PluginInstance* instance);
-  static PluginInstance* GetInitializingInstance();
-
   void PushPopupsEnabledState(bool enabled);
   void PopPopupsEnabledState();
 
@@ -235,9 +229,6 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   GURL                                     get_url_;
   intptr_t                                 get_notify_data_;
   bool                                     use_mozilla_user_agent_;
-#if defined(OS_WIN)
-  scoped_refptr<MozillaExtensionApi>       mozilla_extenstions_;
-#endif
   MessageLoop*                             message_loop_;
   scoped_refptr<PluginStreamUrl>           plugin_data_stream_;
 

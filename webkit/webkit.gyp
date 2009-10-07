@@ -482,8 +482,6 @@
         'glue/media/simple_data_source.h',
         'glue/media/video_renderer_impl.cc',
         'glue/media/video_renderer_impl.h',
-        'glue/plugins/mozilla_extensions.cc',
-        'glue/plugins/mozilla_extensions.h',
         'glue/plugins/nphostapi.h',
         'glue/plugins/fake_plugin_window_tracker_mac.h',
         'glue/plugins/fake_plugin_window_tracker_mac.cc',
@@ -699,7 +697,6 @@
             # platforms.
             'glue/glue_accessibility_object.cc',
             'glue/glue_accessibility_object.h',
-            'glue/plugins/mozilla_extensions.cc',
             'glue/webaccessibility.h',
             'glue/webaccessibilitymanager.h',
             'glue/webaccessibilitymanager_impl.cc',

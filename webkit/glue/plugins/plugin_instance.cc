@@ -7,10 +7,8 @@
 #include "webkit/glue/plugins/plugin_instance.h"
 
 #include "base/file_util.h"
-#include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/thread_local.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webplugin.h"
 #include "webkit/glue/webkit_glue.h"
@@ -18,18 +16,9 @@
 #include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/plugins/plugin_stream_url.h"
 #include "webkit/glue/plugins/plugin_string_stream.h"
-#if defined(OS_WIN)
-#include "webkit/glue/plugins/mozilla_extensions.h"
-#endif
 #include "net/base/escape.h"
 
 namespace NPAPI {
-
-// Use TLS to store the PluginInstance object during its creation.  We need to
-// pass this instance to the service manager (MozillaExtensionApi) created as a
-// result of NPN_GetValue in the context of NP_Initialize.
-static base::LazyInstance<base::ThreadLocalPointer<PluginInstance> > lazy_tls(
-    base::LINKER_INITIALIZED);
 
 PluginInstance::PluginInstance(PluginLib *plugin, const std::string &mime_type)
     : plugin_(plugin),
@@ -195,14 +184,6 @@ void PluginInstance::NPP_Destroy() {
     //       to be stored there.
     DCHECK(savedData == 0);
   }
-
-#if defined(OS_WIN)
-  // Clean up back references to this instance if any
-  if (mozilla_extenstions_) {
-    mozilla_extenstions_->DetachFromInstance();
-    mozilla_extenstions_ = NULL;
-  }
-#endif
 
   for (unsigned int file_index = 0; file_index < files_created_.size();
        file_index++) {
@@ -407,32 +388,6 @@ void PluginInstance::OnPluginThreadAsyncCall(void (*func)(void *),
 #else
   func(userData);
 #endif
-}
-
-PluginInstance* PluginInstance::SetInitializingInstance(
-    PluginInstance* instance) {
-  PluginInstance* old_instance = lazy_tls.Pointer()->Get();
-  lazy_tls.Pointer()->Set(instance);
-  return old_instance;
-}
-
-PluginInstance* PluginInstance::GetInitializingInstance() {
-  return lazy_tls.Pointer()->Get();
-}
-
-NPError PluginInstance::GetServiceManager(void** service_manager) {
-#if defined(OS_WIN)
-  if (!mozilla_extenstions_) {
-    mozilla_extenstions_ = new MozillaExtensionApi(this);
-  }
-
-  DCHECK(mozilla_extenstions_);
-  mozilla_extenstions_->QueryInterface(nsIServiceManager::GetIID(),
-                                       service_manager);
-#else
-  NOTIMPLEMENTED();
-#endif
-  return NPERR_NO_ERROR;
 }
 
 void PluginInstance::PushPopupsEnabledState(bool enabled) {

@@ -14,9 +14,15 @@
 // These headers must be included in this order to make the declaration gods
 // happy.
 #include "base/third_party/nspr/prcpucfg_linux.h"
-#include "third_party/mozilla/include/nsplugindefs.h"
 
 namespace {
+
+// Copied from nsplugindefs.h instead of including the file since it has a bunch
+// of dependencies.
+enum nsPluginVariable {
+  nsPluginVariable_NameString        = 1,
+  nsPluginVariable_DescriptionString = 2
+};
 
 // Read the ELF header and return true if it is usable on
 // the current architecture (e.g. 32-bit ELF on 32-bit build).
