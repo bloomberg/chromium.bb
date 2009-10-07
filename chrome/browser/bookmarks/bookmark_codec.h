@@ -9,6 +9,7 @@
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_CODEC_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_CODEC_H_
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -137,8 +138,13 @@ class BookmarkCodec {
   // Whether or not IDs were reassigned by the codec.
   bool ids_reassigned_;
 
-  // Whether or not IDs were missing for some bookmark nodes during decoding.
-  bool ids_missing_;
+  // Whether or not IDs are valid. This is initially true, but set to false
+  // if an id is missing or not unique.
+  bool ids_valid_;
+
+  // Contains the id of each of the nodes found in the file. Used to determine
+  // if we have duplicates.
+  std::set<int64> ids_;
 
   // MD5 context used to compute MD5 hash of all bookmark data.
   MD5Context md5_context_;

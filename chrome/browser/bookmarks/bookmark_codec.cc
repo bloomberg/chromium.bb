@@ -35,7 +35,7 @@ static const int kCurrentVersion = 1;
 
 BookmarkCodec::BookmarkCodec()
     : ids_reassigned_(false),
-      ids_missing_(false),
+      ids_valid_(true),
       maximum_id_(0) {
 }
 
@@ -66,15 +66,17 @@ bool BookmarkCodec::Decode(BookmarkNode* bb_node,
                            BookmarkNode* other_folder_node,
                            int64* max_id,
                            const Value& value) {
+  ids_.clear();
   ids_reassigned_ = false;
-  ids_missing_ = false;
+  ids_valid_ = true;
   maximum_id_ = 0;
   stored_checksum_.clear();
   InitializeChecksum();
   bool success = DecodeHelper(bb_node, other_folder_node, value);
   FinalizeChecksum();
-  // If either the checksums differ or some IDs were missing, reassign IDs.
-  if (ids_missing_ || computed_checksum() != stored_checksum())
+  // If either the checksums differ or some IDs were missing/not unique,
+  // reassign IDs.
+  if (!ids_valid_ || computed_checksum() != stored_checksum())
     ReassignIDs(bb_node, other_folder_node);
   *max_id = maximum_id_ + 1;
   return success;
@@ -189,8 +191,15 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
 
   std::string id_string;
   int64 id = 0;
-  if (!value.GetString(kIdKey, &id_string) || !StringToInt64(id_string, &id))
-    ids_missing_ = true;
+  if (ids_valid_) {
+    if (!value.GetString(kIdKey, &id_string) ||
+        !StringToInt64(id_string, &id) ||
+        ids_.count(id) != 0) {
+      ids_valid_ = false;
+    } else {
+      ids_.insert(id);
+    }
+  }
 
   maximum_id_ = std::max(maximum_id_, id);
 

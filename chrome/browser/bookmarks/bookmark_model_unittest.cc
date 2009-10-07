@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
+
 #include "app/tree_node_iterator.h"
 #include "app/tree_node_model.h"
 #include "base/hash_tables.h"
@@ -764,6 +766,32 @@ class BookmarkModelTestWithProfile2 : public BookmarkModelTestWithProfile {
 
     ASSERT_TRUE(bb_model_->IsBookmarked(GURL("http://www.google.com")));
   }
+
+  void VerifyUniqueIDs() {
+    std::set<int64> ids;
+    bool has_unique = true;
+    VerifyUniqueIDImpl(bb_model_->GetBookmarkBarNode(), &ids, &has_unique);
+    VerifyUniqueIDImpl(bb_model_->other_node(), &ids, &has_unique);
+    ASSERT_TRUE(has_unique);
+  }
+
+ private:
+  void VerifyUniqueIDImpl(const BookmarkNode* node,
+                          std::set<int64>* ids,
+                          bool* has_unique) {
+    if (!*has_unique)
+      return;
+    if (ids->count(node->id()) != 0) {
+      *has_unique = false;
+      return;
+    }
+    ids->insert(node->id());
+    for (int i = 0; i < node->GetChildCount(); ++i) {
+      VerifyUniqueIDImpl(node->GetChild(i), ids, has_unique);
+      if (!*has_unique)
+        return;
+    }
+  }
 };
 
 // Tests migrating bookmarks from db into file. This copies an old history db
@@ -793,6 +821,11 @@ TEST_F(BookmarkModelTestWithProfile2, MigrateFromDBToFileTest) {
   if (HasFatalFailure())
     return;
 
+  // Make sure the ids are unique.
+  VerifyUniqueIDs();
+  if (HasFatalFailure())
+    return;
+
   // Create again. This time we shouldn't load from history at all.
   profile_->CreateBookmarkModel(false);
   BlockTillBookmarkModelLoaded();
@@ -802,12 +835,17 @@ TEST_F(BookmarkModelTestWithProfile2, MigrateFromDBToFileTest) {
   if (HasFatalFailure())
     return;
 
+  VerifyUniqueIDs();
+  if (HasFatalFailure())
+    return;
+
   // Recreate the history service (with a clean db). Do this just to make sure
   // we're loading correctly from the bookmarks file.
   profile_->CreateHistoryService(true);
   profile_->CreateBookmarkModel(false);
   BlockTillBookmarkModelLoaded();
   VerifyExpectedState();
+  VerifyUniqueIDs();
 }
 
 // Simple test that removes a bookmark. This test exercises the code paths in
