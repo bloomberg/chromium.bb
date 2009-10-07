@@ -37,6 +37,7 @@ MSVC_PUSH_WARNING_LEVEL(0);
 #include "ResourceHandleClient.h"
 #include "Frame.h"
 #include "PlatformString.h"
+#include <wtf/RefCounted.h>
 MSVC_POP_WARNING();
 
 class ChromePrintContext;
@@ -64,8 +65,7 @@ class WebFrameClient;
 }
 
 // Implementation of WebFrame, note that this is a reference counted object.
-class WebFrameImpl : public WebKit::WebFrame,
-                     public base::RefCounted<WebFrameImpl> {
+class WebFrameImpl : public WebKit::WebFrame, public RefCounted<WebFrameImpl> {
  public:
   // WebFrame methods:
   virtual WebKit::WebString name() const;
@@ -169,7 +169,7 @@ class WebFrameImpl : public WebKit::WebFrame,
   virtual WebKit::WebString contentAsText(size_t max_chars) const;
   virtual WebKit::WebString contentAsMarkup() const;
 
-  WebFrameImpl(WebKit::WebFrameClient* client);
+  static PassRefPtr<WebFrameImpl> create(WebKit::WebFrameClient* client);
   ~WebFrameImpl();
 
   static int live_object_count() {
@@ -242,11 +242,28 @@ class WebFrameImpl : public WebKit::WebFrame,
   webkit_glue::PasswordAutocompleteListener* GetPasswordListener(
       WebCore::HTMLInputElement* user_name_input_element);
 
-  WebKit::WebFrameClient* client() const { return client_; }
-  void drop_client() { client_ = NULL; }
+  WebKit::WebFrameClient* client() const { return client_handle_->client(); }
+  void drop_client() { client_handle_->drop_client(); }
 
  protected:
   friend class WebFrameLoaderClient;
+
+  // A weak reference to the WebFrameClient.  Each WebFrame in the hierarchy
+  // owns a reference to a ClientHandle.  When the main frame is destroyed, it
+  // clears the WebFrameClient.
+  class ClientHandle : public RefCounted<ClientHandle> {
+   public:
+    static PassRefPtr<ClientHandle> create(WebKit::WebFrameClient* client) {
+      return adoptRef(new ClientHandle(client));
+    }
+    WebKit::WebFrameClient* client() { return client_; }
+    void drop_client() { client_ = NULL; }
+   private:
+    ClientHandle(WebKit::WebFrameClient* client) : client_(client) {}
+    WebKit::WebFrameClient* client_;
+  };
+
+  WebFrameImpl(PassRefPtr<ClientHandle> client_handle);
 
   // Informs the WebFrame that the Frame is being closed, called by the
   // WebFrameLoaderClient
@@ -261,7 +278,7 @@ class WebFrameImpl : public WebKit::WebFrame,
   // asynchronously in order to scope string matches during a find operation.
   ScopedRunnableMethodFactory<WebFrameImpl> scope_matches_factory_;
 
-  WebKit::WebFrameClient* client_;
+  RefPtr<ClientHandle> client_handle_;
 
   // This is a weak pointer to our corresponding WebCore frame.  A reference to
   // ourselves is held while frame_ is valid.  See our Closing method.

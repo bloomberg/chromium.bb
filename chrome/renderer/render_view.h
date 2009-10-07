@@ -169,9 +169,6 @@ class RenderView : public RenderWidget,
       const WebKit::WebURLError& error,
       const std::string& html,
       bool replace);
-  virtual void DidCreateScriptContextForFrame(WebKit::WebFrame* webframe);
-  virtual void DidDestroyScriptContextForFrame(WebKit::WebFrame* webframe);
-  virtual void DidCreateIsolatedScriptContext(WebKit::WebFrame* webframe);
   virtual void OnMissingPluginStatus(
       WebPluginDelegateProxy* delegate,
       int status);
@@ -349,6 +346,9 @@ class RenderView : public RenderWidget,
   virtual void didRunInsecureContent(
       WebKit::WebFrame* frame, const WebKit::WebSecurityOrigin& origin);
   virtual void didExhaustMemoryAvailableForScript(WebKit::WebFrame* frame);
+  virtual void didCreateScriptContext(WebKit::WebFrame* frame);
+  virtual void didDestroyScriptContext(WebKit::WebFrame* frame);
+  virtual void didCreateIsolatedScriptContext(WebKit::WebFrame* frame);
   virtual void didChangeContentsSize(
       WebKit::WebFrame* frame, const WebKit::WebSize& size);
   virtual void reportFindInPageMatchCount(

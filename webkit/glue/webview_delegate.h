@@ -70,22 +70,6 @@ class WebViewDelegate : public WebKit::WebViewClient {
   virtual void FocusAccessibilityObject(WebCore::AccessibilityObject* acc_obj) {
   }
 
-  // FrameLoaderClient -------------------------------------------------------
-
-  // Notifies that a new script context has been created for this frame.
-  // This is similar to WindowObjectCleared but only called once per frame
-  // context.
-  virtual void DidCreateScriptContextForFrame(WebKit::WebFrame* webframe) {
-  }
-
-  // Notifies that this frame's script context has been destroyed.
-  virtual void DidDestroyScriptContextForFrame(WebKit::WebFrame* webframe) {
-  }
-
-  // Notifies that a garbage-collected context was created - content scripts.
-  virtual void DidCreateIsolatedScriptContext(WebKit::WebFrame* webframe) {
-  }
-
   // ChromeClient ------------------------------------------------------------
 
   // Queries the browser for suggestions to be shown for the form text field

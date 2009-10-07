@@ -346,7 +346,7 @@ WebView* WebView::Create(WebViewDelegate* delegate) {
 void WebViewImpl::initializeMainFrame(WebFrameClient* frame_client) {
   // NOTE: The WebFrameImpl takes a reference to itself within InitMainFrame
   // and releases that reference once the corresponding Frame is destroyed.
-  scoped_refptr<WebFrameImpl> main_frame = new WebFrameImpl(frame_client);
+  RefPtr<WebFrameImpl> main_frame = WebFrameImpl::create(frame_client);
 
   main_frame->InitMainFrame(this);
 
@@ -942,17 +942,26 @@ WebViewImpl* WebViewImpl::FromPage(WebCore::Page* page) {
 // WebWidget ------------------------------------------------------------------
 
 void WebViewImpl::close() {
+  RefPtr<WebFrameImpl> main_frame;
+
   if (page_.get()) {
     // Initiate shutdown for the entire frameset.  This will cause a lot of
     // notifications to be sent.
-    if (page_->mainFrame())
+    if (page_->mainFrame()) {
+      main_frame = WebFrameImpl::FromFrame(page_->mainFrame());
       page_->mainFrame()->loader()->frameDetached();
+    }
     page_.reset();
   }
 
   // Should happen after page_.reset().
   if (devtools_agent_.get())
     devtools_agent_.reset(NULL);
+
+  // We drop the client after the page has been destroyed to support the
+  // WebFrameClient::didDestroyScriptContext method.
+  if (main_frame)
+    main_frame->drop_client();
 
   // Reset the delegate to prevent notifications being sent as we're being
   // deleted.

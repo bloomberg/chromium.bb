@@ -1434,8 +1434,8 @@ void WebFrameImpl::increaseMatchCount(int count, int request_id) {
   total_matchcount_ += count;
 
   // Update the UI with the latest findings.
-  if (client_) {
-    client_->reportFindInPageMatchCount(
+  if (client()) {
+    client()->reportFindInPageMatchCount(
         request_id, total_matchcount_, frames_scoping_count_ == 0);
   }
 }
@@ -1444,8 +1444,8 @@ void WebFrameImpl::ReportFindInPageSelection(const WebRect& selection_rect,
                                              int active_match_ordinal,
                                              int request_id) {
   // Update the UI with the latest selection rect.
-  if (client_) {
-    client_->reportFindInPageSelection(
+  if (client()) {
+    client()->reportFindInPageSelection(
         request_id, OrdinalOfFirstMatchForFrame(this) + active_match_ordinal,
         selection_rect);
   }
@@ -1482,10 +1482,14 @@ WebString WebFrameImpl::contentAsMarkup() const {
 
 int WebFrameImpl::live_object_count_ = 0;
 
-WebFrameImpl::WebFrameImpl(WebFrameClient* client)
+PassRefPtr<WebFrameImpl> WebFrameImpl::create(WebFrameClient* client) {
+  return adoptRef(new WebFrameImpl(ClientHandle::create(client)));
+}
+
+WebFrameImpl::WebFrameImpl(PassRefPtr<ClientHandle> client_handle)
   : ALLOW_THIS_IN_INITIALIZER_LIST(frame_loader_client_(this)),
     ALLOW_THIS_IN_INITIALIZER_LIST(scope_matches_factory_(this)),
-    client_(client),
+    client_handle_(client_handle),
     active_match_frame_(NULL),
     active_match_index_(-1),
     locating_active_rect_(false),
@@ -1514,7 +1518,7 @@ void WebFrameImpl::InitMainFrame(WebViewImpl* webview_impl) {
 
   // Add reference on behalf of FrameLoader.  See comments in
   // WebFrameLoaderClient::frameLoaderDestroyed for more info.
-  AddRef();
+  ref();
 
   // We must call init() after frame_ is assigned because it is referenced
   // during init().
@@ -1525,12 +1529,12 @@ PassRefPtr<Frame> WebFrameImpl::CreateChildFrame(
     const FrameLoadRequest& request, HTMLFrameOwnerElement* owner_element) {
   // TODO(darin): share code with initWithName()
 
-  scoped_refptr<WebFrameImpl> webframe = new WebFrameImpl(client());
+  RefPtr<WebFrameImpl> webframe(adoptRef(new WebFrameImpl(client_handle_)));
 
   // Add an extra ref on behalf of the Frame/FrameLoader, which references the
   // WebFrame via the FrameLoaderClient interface. See the comment at the top
   // of this file for more info.
-  webframe->AddRef();
+  webframe->ref();
 
   RefPtr<Frame> child_frame = Frame::create(
       frame_->page(), owner_element, &webframe->frame_loader_client_);
@@ -1712,14 +1716,14 @@ void WebFrameImpl::SetFindEndstateFocusAndSelection() {
 }
 
 void WebFrameImpl::DidFail(const ResourceError& error, bool was_provisional) {
-  if (!client_)
+  if (!client())
     return;
   const WebURLError& web_error =
       webkit_glue::ResourceErrorToWebURLError(error);
   if (was_provisional) {
-    client_->didFailProvisionalLoad(this, web_error);
+    client()->didFailProvisionalLoad(this, web_error);
   } else {
-    client_->didFailLoad(this, web_error);
+    client()->didFailLoad(this, web_error);
   }
 }
 

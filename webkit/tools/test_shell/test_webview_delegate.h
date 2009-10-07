@@ -234,6 +234,9 @@ class TestWebViewDelegate : public WebViewDelegate,
   virtual void didRunInsecureContent(
       WebKit::WebFrame* frame, const WebKit::WebSecurityOrigin& origin);
   virtual void didExhaustMemoryAvailableForScript(WebKit::WebFrame*) {}
+  virtual void didCreateScriptContext(WebKit::WebFrame* frame) {}
+  virtual void didDestroyScriptContext(WebKit::WebFrame* frame) {}
+  virtual void didCreateIsolatedScriptContext(WebKit::WebFrame* frame) {}
   virtual void didChangeContentsSize(
       WebKit::WebFrame*, const WebKit::WebSize&) {}
   virtual void reportFindInPageMatchCount(

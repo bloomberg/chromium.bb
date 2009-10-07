@@ -215,6 +215,18 @@ namespace WebKit {
         // Script in the page tried to allocate too much memory.
         virtual void didExhaustMemoryAvailableForScript(WebFrame*) = 0;
 
+        // Notifies that a new script context has been created for this frame.
+        // This is similar to didClearWindowObject but only called once per
+        // frame context.
+        virtual void didCreateScriptContext(WebFrame*) = 0;
+
+        // Notifies that this frame's script context has been destroyed.
+        virtual void didDestroyScriptContext(WebFrame*) = 0;
+
+        // Notifies that a garbage-collected context was created - content
+        // scripts.
+        virtual void didCreateIsolatedScriptContext(WebFrame*) = 0;
+
 
         // Geometry notifications ----------------------------------------------
 

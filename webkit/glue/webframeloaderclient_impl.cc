@@ -108,7 +108,7 @@ void WebFrameLoaderClient::frameLoaderDestroyed() {
   // FrameLoader calls this method when it's going away.  Therefore, we balance
   // out that extra reference, which may cause 'this' to be deleted.
   webframe_->Closing();
-  webframe_->Release();
+  webframe_->deref();
 }
 
 void WebFrameLoaderClient::windowObjectCleared() {
@@ -129,24 +129,18 @@ void WebFrameLoaderClient::documentElementAvailable() {
 }
 
 void WebFrameLoaderClient::didCreateScriptContextForFrame() {
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
-  if (d)
-    d->DidCreateScriptContextForFrame(webframe_);
+  if (webframe_->client())
+    webframe_->client()->didCreateScriptContext(webframe_);
 }
 
 void WebFrameLoaderClient::didDestroyScriptContextForFrame() {
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
-  if (d)
-    d->DidDestroyScriptContextForFrame(webframe_);
+  if (webframe_->client())
+    webframe_->client()->didDestroyScriptContext(webframe_);
 }
 
 void WebFrameLoaderClient::didCreateIsolatedScriptContext() {
-  WebViewImpl* webview = webframe_->GetWebViewImpl();
-  WebViewDelegate* d = webview->delegate();
-  if (d)
-    d->DidCreateIsolatedScriptContext(webframe_);
+  if (webframe_->client())
+    webframe_->client()->didCreateIsolatedScriptContext(webframe_);
 }
 
 void WebFrameLoaderClient::didPerformFirstNavigation() const {
@@ -197,9 +191,6 @@ void WebFrameLoaderClient::detachedFromParent3() {
   // go to a page and then navigate to a new page without getting any asserts
   // or crashes.
   webframe_->frame()->script()->proxy()->clearForClose();
-
-  // Drop any reference to the client since it may shortly become invalid.
-  webframe_->drop_client();
 }
 
 // This function is responsible for associating the |identifier| with a given

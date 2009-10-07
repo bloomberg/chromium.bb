@@ -1186,18 +1186,6 @@ void RenderView::BindDOMAutomationController(WebFrame* frame) {
                                               L"domAutomationController");
 }
 
-void RenderView::DidCreateScriptContextForFrame(WebFrame* webframe) {
-  EventBindings::HandleContextCreated(webframe, false);
-}
-
-void RenderView::DidDestroyScriptContextForFrame(WebFrame* webframe) {
-  EventBindings::HandleContextDestroyed(webframe);
-}
-
-void RenderView::DidCreateIsolatedScriptContext(WebFrame* webframe) {
-  EventBindings::HandleContextCreated(webframe, true);
-}
-
 bool RenderView::RunJavaScriptMessage(int type,
                                       const std::wstring& message,
                                       const std::wstring& default_value,
@@ -2325,6 +2313,18 @@ void RenderView::didRunInsecureContent(
 
 void RenderView::didExhaustMemoryAvailableForScript(WebFrame* frame) {
   Send(new ViewHostMsg_JSOutOfMemory(routing_id_));
+}
+
+void RenderView::didCreateScriptContext(WebFrame* frame) {
+  EventBindings::HandleContextCreated(frame, false);
+}
+
+void RenderView::didDestroyScriptContext(WebFrame* frame) {
+  EventBindings::HandleContextDestroyed(frame);
+}
+
+void RenderView::didCreateIsolatedScriptContext(WebFrame* frame) {
+  EventBindings::HandleContextCreated(frame, true);
 }
 
 void RenderView::didChangeContentsSize(WebFrame* frame, const WebSize& size) {
