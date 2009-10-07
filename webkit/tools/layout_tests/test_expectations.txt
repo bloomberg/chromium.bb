@@ -2957,9 +2957,6 @@ BUG_JIANLI : LayoutTests/editing/selection/drag-in-iframe.html = FAIL PASS
 // New test added in r48318 (GoogleURL bug)
 BUG21764 : LayoutTests/fast/forms/ValidityState-typeMismatch-url.html = FAIL
 
-// New test added in r48336 (V8 bug)
-BUG21767 : LayoutTests/fast/js/Object-keys.html = FAIL
-
 // WK roll to 48371
 BUG21841 MAC RELEASE : LayoutTests/plugins/destroy-during-npp-new.html = FAIL
 BUG21841 MAC DEBUG SLOW : LayoutTests/plugins/destroy-during-npp-new.html = FAIL
@@ -3078,3 +3075,7 @@ BUG9798 LINUX MAC : LayoutTests/http/tests/cookies/multiple-cookies.html = TIMEO
 // WebKit update: 49213:49221
 BUG24063 : LayoutTests/fast/dom/Window/window-postmessage-clone.html = FAIL
 
+// V8 update to 1.3.15
+BUG24102 LINUX MAC : LayoutTests/fast/css/large-list-of-rules-crash.html = TIMEOUT
+BUG24102 LINUX MAC : LayoutTests/fast/forms/input-implicit-length-limit.html = TIMEOUT
+BUG24102 LINUX MAC : LayoutTests/fast/forms/input-maxlength.html = TIMEOUT
