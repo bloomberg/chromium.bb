@@ -20,76 +20,9 @@
 // rsa_private_key_win.cc or using NSS's ASN.1 encoder.
 namespace {
 
-// ASN.1 encoding of the AlgorithmIdentifier from PKCS #8.
-const uint8 kRsaAlgorithmIdentifier[] = {
-  0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01,
-  0x05, 0x00
-};
-
-// ASN.1 tags for some types we use.
-const uint8 kSequenceTag = 0x30;
-const uint8 kIntegerTag = 0x02;
-const uint8 kNullTag = 0x05;
-const uint8 kOctetStringTag = 0x04;
-
-static void PrependBytesInOrder(uint8* val, int start, int num_bytes,
-                                std::list<uint8>* data) {
-  while(num_bytes > start) {
-    --num_bytes;
-    data->push_front(val[num_bytes]);
-  }
-}
-
-// Helper to prepend an ASN.1 length field.
-static void PrependLength(size_t size, std::list<uint8>* data) {
-  // The high bit is used to indicate whether additional octets are needed to
-  // represent the length.
-  if (size < 0x80) {
-    data->push_front(static_cast<uint8>(size));
-  } else {
-    uint8 num_bytes = 0;
-    while (size > 0) {
-      data->push_front(static_cast<uint8>(size & 0xFF));
-      size >>= 8;
-      num_bytes++;
-    }
-    CHECK(num_bytes <= 4);
-    data->push_front(0x80 | num_bytes);
-  }
-}
-
-// Helper to prepend an ASN.1 type header.
-static void PrependTypeHeaderAndLength(uint8 type, uint32 length,
-                                       std::list<uint8>* output) {
-  PrependLength(length, output);
-  output->push_front(type);
-}
-
-// Helper to prepend an ASN.1 integer.
-static void PrependInteger(uint8* val, int num_bytes, std::list<uint8>* data) {
-  // ASN.1 integers are unpadded byte arrays, so skip any null padding bytes
-  // from the most-significant end of the integer.
-  int start = 0;
-  while (start < (num_bytes - 1) && val[start] == 0x00)
-    start++;
-
-  PrependBytesInOrder(val, start, num_bytes, data);
-
-  // ASN.1 integers are signed. To encode a positive integer whose sign bit
-  // (the most significant bit) would otherwise be set and make the number
-  // negative, ASN.1 requires a leading null byte to force the integer to be
-  // positive.
-  if ((val[start] & 0x80) != 0) {
-    data->push_front(0x00);
-    num_bytes++;
-  }
-
-  PrependTypeHeaderAndLength(kIntegerTag, num_bytes, data);
-}
-
-static bool ReadAttributeAndPrependInteger(SECKEYPrivateKey* key,
-                                           CK_ATTRIBUTE_TYPE type,
-                                           std::list<uint8>* output) {
+static bool ReadAttribute(SECKEYPrivateKey* key,
+                          CK_ATTRIBUTE_TYPE type,
+                          std::vector<uint8>* output) {
   SECItem item;
   SECStatus rv;
   rv = PK11_ReadRawAttribute(PK11_TypePrivKey, key, type, &item);
@@ -98,13 +31,12 @@ static bool ReadAttributeAndPrependInteger(SECKEYPrivateKey* key,
     return false;
   }
 
-  PrependInteger(item.data, item.len, output);
+  output->assign(item.data, item.data + item.len);
   SECITEM_FreeItem(&item, PR_FALSE);
   return true;
 }
 
 }  // namespace
-
 
 namespace base {
 
@@ -170,42 +102,25 @@ RSAPrivateKey::~RSAPrivateKey() {
 }
 
 bool RSAPrivateKey::ExportPrivateKey(std::vector<uint8>* output) {
-  std::list<uint8> content;
+  PrivateKeyInfoCodec private_key_info(true);
 
-  // Version (always zero)
-  uint8 version = 0;
-
-  // Manually read the component attributes of the private key and build up the
-  // output in reverse order to prevent having to do copies to figure out the
-  // length.
-  if (!ReadAttributeAndPrependInteger(key_, CKA_COEFFICIENT, &content) ||
-      !ReadAttributeAndPrependInteger(key_, CKA_EXPONENT_2, &content) ||
-      !ReadAttributeAndPrependInteger(key_, CKA_EXPONENT_1, &content) ||
-      !ReadAttributeAndPrependInteger(key_, CKA_PRIME_2, &content) ||
-      !ReadAttributeAndPrependInteger(key_, CKA_PRIME_1, &content) ||
-      !ReadAttributeAndPrependInteger(key_, CKA_PRIVATE_EXPONENT, &content) ||
-      !ReadAttributeAndPrependInteger(key_, CKA_PUBLIC_EXPONENT, &content) ||
-      !ReadAttributeAndPrependInteger(key_, CKA_MODULUS, &content)) {
+  // Manually read the component attributes of the private key and build up
+  // the PrivateKeyInfo.
+  if (!ReadAttribute(key_, CKA_MODULUS, private_key_info.modulus()) ||
+      !ReadAttribute(key_, CKA_PUBLIC_EXPONENT,
+          private_key_info.public_exponent()) ||
+      !ReadAttribute(key_, CKA_PRIVATE_EXPONENT,
+          private_key_info.private_exponent()) ||
+      !ReadAttribute(key_, CKA_PRIME_1, private_key_info.prime1()) ||
+      !ReadAttribute(key_, CKA_PRIME_2, private_key_info.prime2()) ||
+      !ReadAttribute(key_, CKA_EXPONENT_1, private_key_info.exponent1()) ||
+      !ReadAttribute(key_, CKA_EXPONENT_2, private_key_info.exponent2()) ||
+      !ReadAttribute(key_, CKA_COEFFICIENT, private_key_info.coefficient())) {
     NOTREACHED();
     return false;
   }
-  PrependInteger(&version, 1, &content);
-  PrependTypeHeaderAndLength(kSequenceTag, content.size(), &content);
-  PrependTypeHeaderAndLength(kOctetStringTag, content.size(), &content);
 
-  // RSA algorithm OID
-  for (size_t i = sizeof(kRsaAlgorithmIdentifier); i > 0; --i)
-    content.push_front(kRsaAlgorithmIdentifier[i - 1]);
-
-  PrependInteger(&version, 1, &content);
-  PrependTypeHeaderAndLength(kSequenceTag, content.size(), &content);
-
-  // Copy everying into the output.
-  output->reserve(content.size());
-  for (std::list<uint8>::iterator i = content.begin(); i != content.end(); ++i)
-    output->push_back(*i);
-
-  return true;
+  return private_key_info.Export(output);
 }
 
 bool RSAPrivateKey::ExportPublicKey(std::vector<uint8>* output) {

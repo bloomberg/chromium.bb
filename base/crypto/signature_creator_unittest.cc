@@ -19,6 +19,7 @@ TEST(SignatureCreatorTest, BasicTest) {
   key_original->ExportPrivateKey(&key_info);
   scoped_ptr<base::RSAPrivateKey> key(
       base::RSAPrivateKey::CreateFromPrivateKeyInfo(key_info));
+  ASSERT_TRUE(key.get());
 
   scoped_ptr<base::SignatureCreator> signer(
       base::SignatureCreator::Create(key.get()));
