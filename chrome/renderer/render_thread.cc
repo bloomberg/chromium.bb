@@ -488,7 +488,7 @@ void RenderThread::IdleHandler() {
 
   if (!v8::V8::IsDead()) {
     LOG(INFO) << "RenderThread calling v8 IdleNotification for " << this;
-    v8::V8::IdleNotification(false);
+    v8::V8::IdleNotification();
   }
 
   // Schedule next invocation.
