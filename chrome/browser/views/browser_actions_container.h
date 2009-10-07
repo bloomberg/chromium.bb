@@ -13,7 +13,8 @@
 #include "chrome/common/notification_registrar.h"
 #include "views/view.h"
 
-class BrowserActionImageView;
+class BrowserActionButton;
+class BrowserActionView;
 class ExtensionAction;
 class ExtensionPopup;
 class Profile;
@@ -45,7 +46,7 @@ class BrowserActionsContainer : public views::View,
   void OnBrowserActionVisibilityChanged();
 
   // Called when the user clicks on the browser action icon.
-  void OnBrowserActionExecuted(BrowserActionImageView* button);
+  void OnBrowserActionExecuted(BrowserActionButton* button);
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
@@ -67,16 +68,8 @@ class BrowserActionsContainer : public views::View,
   // Hide the current popup.
   void HidePopup();
 
-  // We override PaintChildren so that we can paint the badges on top of them.
-  virtual void PaintChildren(gfx::Canvas* canvas);
-
-  // Paints an individual badge.
-  virtual void PaintBadge(gfx::Canvas* canvas, BrowserActionImageView* button,
-                          const SkColor& badge_color,
-                          const std::string& text);
-
   // The vector of browser actions (icons/image buttons for each action).
-  std::vector<BrowserActionImageView*> browser_action_views_;
+  std::vector<BrowserActionView*> browser_action_views_;
 
   NotificationRegistrar registrar_;
 
@@ -90,7 +83,7 @@ class BrowserActionsContainer : public views::View,
 
   // The button that triggered the current popup (just a reference to a button
   // from browser_action_views_).
-  BrowserActionImageView* popup_button_;
+  BrowserActionButton* popup_button_;
 
   ScopedRunnableMethodFactory<BrowserActionsContainer> task_factory_;
 

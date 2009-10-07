@@ -36,21 +36,22 @@ static const int kHorizontalPadding = 4;
 static const int kControlVertOffset = 6;
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserActionImageView
+// BrowserActionButton
 
-// The BrowserActionImageView is a specialization of the TextButton class.
+// The BrowserActionButton is a specialization of the MenuButton class.
 // It acts on a ExtensionAction, in this case a BrowserAction and handles
 // loading the image for the button asynchronously on the file thread to
-class BrowserActionImageView : public views::MenuButton,
-                               public views::ButtonListener,
-                               public ImageLoadingTracker::Observer,
-                               public NotificationObserver {
+class BrowserActionButton : public views::MenuButton,
+                            public views::ButtonListener,
+                            public ImageLoadingTracker::Observer,
+                            public NotificationObserver {
  public:
-  BrowserActionImageView(ExtensionAction* browser_action,
-                         Extension* extension,
-                         BrowserActionsContainer* panel);
-  ~BrowserActionImageView();
+  BrowserActionButton(ExtensionAction* browser_action,
+                      Extension* extension,
+                      BrowserActionsContainer* panel);
+  ~BrowserActionButton();
 
+  const ExtensionAction& browser_action() const { return *browser_action_; }
   ExtensionActionState* browser_action_state() { return browser_action_state_; }
 
   // Overridden from views::ButtonListener:
@@ -82,8 +83,6 @@ class BrowserActionImageView : public views::MenuButton,
   virtual void PopupDidShow();
   virtual void PopupDidHide();
 
-  const ExtensionAction& browser_action() const { return *browser_action_; }
-
  private:
   // Called to update the display to match the browser action's state.
   void OnStateUpdated();
@@ -108,10 +107,10 @@ class BrowserActionImageView : public views::MenuButton,
 
   NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserActionImageView);
+  DISALLOW_COPY_AND_ASSIGN(BrowserActionButton);
 };
 
-BrowserActionImageView::BrowserActionImageView(
+BrowserActionButton::BrowserActionButton(
     ExtensionAction* browser_action, Extension* extension,
     BrowserActionsContainer* panel)
     : MenuButton(this, L"", NULL, false),
@@ -138,19 +137,19 @@ BrowserActionImageView::BrowserActionImageView(
                  Source<ExtensionAction>(browser_action_));
 }
 
-BrowserActionImageView::~BrowserActionImageView() {
+BrowserActionButton::~BrowserActionButton() {
   if (tracker_) {
     tracker_->StopTrackingImageLoad();
     tracker_ = NULL;  // The tracker object will be deleted when we return.
   }
 }
 
-void BrowserActionImageView::ButtonPressed(
+void BrowserActionButton::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   panel_->OnBrowserActionExecuted(this);
 }
 
-void BrowserActionImageView::OnImageLoaded(SkBitmap* image, size_t index) {
+void BrowserActionButton::OnImageLoaded(SkBitmap* image, size_t index) {
   DCHECK(index < browser_action_icons_.size());
   browser_action_icons_[index] = *image;
   if (index == browser_action_icons_.size() - 1) {
@@ -159,19 +158,19 @@ void BrowserActionImageView::OnImageLoaded(SkBitmap* image, size_t index) {
   }
 }
 
-void BrowserActionImageView::OnStateUpdated() {
+void BrowserActionButton::OnStateUpdated() {
   SkBitmap* image = browser_action_state_->icon();
   if (!image)
     image = &browser_action_icons_[browser_action_state_->icon_index()];
   SetIcon(*image);
   SetTooltipText(ASCIIToWide(browser_action_state_->title()));
   panel_->OnBrowserActionVisibilityChanged();
-  SchedulePaint();
+  GetParent()->SchedulePaint();
 }
 
-void BrowserActionImageView::Observe(NotificationType type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
+void BrowserActionButton::Observe(NotificationType type,
+                                  const NotificationSource& source,
+                                  const NotificationDetails& details) {
   if (type == NotificationType::EXTENSION_BROWSER_ACTION_UPDATED) {
     OnStateUpdated();
   } else {
@@ -179,11 +178,11 @@ void BrowserActionImageView::Observe(NotificationType type,
   }
 }
 
-bool BrowserActionImageView::IsPopup() {
+bool BrowserActionButton::IsPopup() {
   return browser_action_->is_popup();
 }
 
-bool BrowserActionImageView::Activate() {
+bool BrowserActionButton::Activate() {
   if (IsPopup()) {
     panel_->OnBrowserActionExecuted(this);
 
@@ -199,14 +198,14 @@ bool BrowserActionImageView::Activate() {
   return true;
 }
 
-bool BrowserActionImageView::OnMousePressed(const views::MouseEvent& e) {
+bool BrowserActionButton::OnMousePressed(const views::MouseEvent& e) {
   if (IsPopup())
     return MenuButton::OnMousePressed(e);
   return TextButton::OnMousePressed(e);
 }
 
-void BrowserActionImageView::OnMouseReleased(const views::MouseEvent& e,
-                                             bool canceled) {
+void BrowserActionButton::OnMouseReleased(const views::MouseEvent& e,
+                                          bool canceled) {
   if (IsPopup()) {
     // TODO(erikkay) this never actually gets called (probably because of the
     // loss of focus).
@@ -216,28 +215,148 @@ void BrowserActionImageView::OnMouseReleased(const views::MouseEvent& e,
   }
 }
 
-bool BrowserActionImageView::OnKeyReleased(const views::KeyEvent& e) {
+bool BrowserActionButton::OnKeyReleased(const views::KeyEvent& e) {
   if (IsPopup())
     return MenuButton::OnKeyReleased(e);
   return TextButton::OnKeyReleased(e);
 }
 
-void BrowserActionImageView::OnMouseExited(const views::MouseEvent& e) {
+void BrowserActionButton::OnMouseExited(const views::MouseEvent& e) {
   if (IsPopup())
     MenuButton::OnMouseExited(e);
   else
     TextButton::OnMouseExited(e);
 }
 
-void BrowserActionImageView::PopupDidShow() {
+void BrowserActionButton::PopupDidShow() {
   SetState(views::CustomButton::BS_PUSHED);
   menu_visible_ = true;
 }
 
-void BrowserActionImageView::PopupDidHide() {
+void BrowserActionButton::PopupDidHide() {
   SetState(views::CustomButton::BS_NORMAL);
   menu_visible_ = false;
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+// BrowserActionView
+// A single section in the browser action container. This contains the actual
+// BrowserActionButton, as well as the logic to paint the badge.
+
+class BrowserActionView : public views::View {
+ public:
+  BrowserActionView(ExtensionAction* browser_action, Extension* extension,
+                    BrowserActionsContainer* panel);
+
+ private:
+  virtual void Layout();
+   
+  // Override PaintChildren so that we can paint the badge on top of children.
+  virtual void PaintChildren(gfx::Canvas* canvas);
+
+  // The button this view contains.
+  BrowserActionButton* button_;
+};
+
+BrowserActionView::BrowserActionView(ExtensionAction* browser_action,
+                                     Extension* extension,
+                                     BrowserActionsContainer* panel) {
+  button_ = new BrowserActionButton(browser_action, extension, panel);
+  AddChildView(button_);
+}
+
+void BrowserActionView::Layout() {
+  button_->SetBounds(0, kControlVertOffset, width(),
+                     height() - 2 * kControlVertOffset);
+}
+   
+void BrowserActionView::PaintChildren(gfx::Canvas* canvas) {
+  View::PaintChildren(canvas);
+
+  const std::string& text = button_->browser_action_state()->badge_text();
+  if (text.empty())
+    return;
+
+  const int kTextSize = 8;
+  const int kBottomMargin = 5;
+  const int kPadding = 2;
+  const int kBadgeHeight = 11;
+  const int kMaxTextWidth = 23;
+  const int kCenterAlignThreshold = 20;  // at than width, we center align
+
+  canvas->save();
+
+  SkTypeface* typeface = SkTypeface::CreateFromName("Arial", SkTypeface::kBold);
+  SkPaint text_paint;
+  text_paint.setAntiAlias(true);
+  text_paint.setColor(SkColorSetARGB(255, 255, 255, 255));
+  text_paint.setFakeBoldText(true);
+  text_paint.setTextAlign(SkPaint::kLeft_Align);
+  text_paint.setTextSize(SkIntToScalar(kTextSize));
+  text_paint.setTypeface(typeface);
+
+  // Calculate text width. We clamp it to a max size.
+  SkScalar text_width = text_paint.measureText(text.c_str(), text.size());
+  text_width = SkIntToScalar(
+      std::min(kMaxTextWidth, SkScalarFloor(text_width)));
+
+  // Cacluate badge size. It is clamped to a min width just because it looks
+  // silly if it is too skinny.
+  int badge_width = SkScalarFloor(text_width) + kPadding * 2;
+  badge_width = std::max(kBadgeHeight, badge_width);
+
+  // Paint the badge background color in the right location. It is usually
+  // right-aligned, but it can also be center-aligned if it is large.
+  SkRect rect;
+  rect.fBottom = SkIntToScalar(height() - kBottomMargin);
+  rect.fTop = rect.fBottom - SkIntToScalar(kBadgeHeight);
+  if (badge_width >= kCenterAlignThreshold) {
+    rect.fLeft = SkIntToScalar((width() - badge_width) / 2);
+    rect.fRight = rect.fLeft + SkIntToScalar(badge_width);
+  } else {
+    rect.fRight = SkIntToScalar(width());
+    rect.fLeft = rect.fRight - badge_width;
+  }
+
+  SkPaint rect_paint;
+  rect_paint.setStyle(SkPaint::kFill_Style);
+  rect_paint.setAntiAlias(true);
+  rect_paint.setColor(
+      button_->browser_action_state()->badge_background_color());
+  canvas->drawRoundRect(rect, SkIntToScalar(2), SkIntToScalar(2), rect_paint);
+
+  // Overlay the gradient. It is stretchy, so we do this in three parts.
+  ResourceBundle& resource_bundle = ResourceBundle::GetSharedInstance();
+  SkBitmap* gradient_left = resource_bundle.GetBitmapNamed(
+      IDR_BROWSER_ACTION_BADGE_LEFT);
+  SkBitmap* gradient_right = resource_bundle.GetBitmapNamed(
+      IDR_BROWSER_ACTION_BADGE_RIGHT);
+  SkBitmap* gradient_center = resource_bundle.GetBitmapNamed(
+      IDR_BROWSER_ACTION_BADGE_CENTER);
+
+  canvas->drawBitmap(*gradient_left, rect.fLeft, rect.fTop);
+  canvas->TileImageInt(*gradient_center,
+      SkScalarFloor(rect.fLeft) + gradient_left->width(),
+      SkScalarFloor(rect.fTop),
+      SkScalarFloor(rect.width()) - gradient_left->width() -
+                    gradient_right->width(),
+      SkScalarFloor(rect.height()));
+  canvas->drawBitmap(*gradient_right,
+      rect.fRight - SkIntToScalar(gradient_right->width()), rect.fTop);
+
+  // Finally, draw the text centered within the badge. We set a clip in case the
+  // text was too large.
+  rect.fLeft += kPadding;
+  rect.fRight -= kPadding;
+  canvas->clipRect(rect);
+  canvas->drawText(text.c_str(), text.size(),
+                   rect.fLeft + (rect.width() - text_width) / 2,
+                   rect.fTop + kTextSize + 1,
+                   text_paint);
+  canvas->restore();
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionsContainer
@@ -282,8 +401,8 @@ void BrowserActionsContainer::RefreshBrowserActionViews() {
 
     // Only show browser actions that have an icon.
     if (browser_actions[i]->icon_paths().size() > 0) {
-      BrowserActionImageView* view =
-          new BrowserActionImageView(browser_actions[i], extension, this);
+      BrowserActionView* view =
+          new BrowserActionView(browser_actions[i], extension, this);
       browser_action_views_.push_back(view);
       AddChildView(view);
     }
@@ -316,7 +435,7 @@ void BrowserActionsContainer::HidePopup() {
 }
 
 void BrowserActionsContainer::OnBrowserActionExecuted(
-    BrowserActionImageView* button) {
+    BrowserActionButton* button) {
   const ExtensionAction& browser_action = button->browser_action();
 
   // Popups just display.  No notification to the extension.
@@ -363,10 +482,9 @@ gfx::Size BrowserActionsContainer::GetPreferredSize() {
 
 void BrowserActionsContainer::Layout() {
   for (size_t i = 0; i < browser_action_views_.size(); ++i) {
-    BrowserActionImageView* view = browser_action_views_[i];
+    BrowserActionView* view = browser_action_views_[i];
     int x = kHorizontalPadding + i * kIconSize;
-    view->SetBounds(x, kControlVertOffset, kIconSize,
-        height() - (2 * kControlVertOffset));
+    view->SetBounds(x, 0, kIconSize, height());
   }
 }
 
@@ -403,100 +521,4 @@ void BrowserActionsContainer::BubbleLostFocus(BrowserBubble* bubble) {
   // shown again.  To workaround this, we put in a delay.
   MessageLoop::current()->PostTask(FROM_HERE,
       task_factory_.NewRunnableMethod(&BrowserActionsContainer::HidePopup));
-}
-
-void BrowserActionsContainer::PaintChildren(gfx::Canvas* canvas) {
-  View::PaintChildren(canvas);
-
-  for (size_t i = 0; i < browser_action_views_.size(); ++i) {
-    BrowserActionImageView* view = browser_action_views_[i];
-    const std::string& text = view->browser_action_state()->badge_text();
-    SkColor* color = view->browser_action_state()->badge_background_color();
-
-    if (!text.empty())
-      PaintBadge(canvas, browser_action_views_[i], *color, text);
-  }
-}
-
-void BrowserActionsContainer::PaintBadge(gfx::Canvas* canvas,
-                                         BrowserActionImageView* view,
-                                         const SkColor& badge_color,
-                                         const std::string& text) {
-  const int kTextSize = 8;
-  const int kBottomMargin = 6;
-  const int kPadding = 2;
-  const int kBadgeHeight = 11;
-  const int kMaxTextWidth = 23;
-  const int kCenterAlignThreshold = 20;  // at than width, we center align
-
-  canvas->save();
-
-  SkTypeface* typeface = SkTypeface::CreateFromName("Arial", SkTypeface::kBold);
-  SkPaint text_paint;
-  text_paint.setAntiAlias(true);
-  text_paint.setColor(SkColorSetARGB(255, 255, 255, 255));
-  text_paint.setFakeBoldText(true);
-  text_paint.setTextAlign(SkPaint::kLeft_Align);
-  text_paint.setTextSize(SkIntToScalar(kTextSize));
-  text_paint.setTypeface(typeface);
-
-  // Calculate text width. We clamp it to a max size.
-  SkScalar text_width = text_paint.measureText(text.c_str(), text.size());
-  text_width = SkIntToScalar(
-      std::min(kMaxTextWidth, SkScalarFloor(text_width)));
-
-  // Cacluate badge size. It is clamped to a min width just because it looks
-  // silly if it is too skinny.
-  int badge_width = SkScalarFloor(text_width) + kPadding * 2;
-  badge_width = std::max(kBadgeHeight, badge_width);
-
-  // Paint the badge background color in the right location. It is usually
-  // right-aligned, but it can also be center-aligned if it is large.
-  SkRect rect;
-  rect.fBottom = SkIntToScalar(height() - kBottomMargin);
-  rect.fTop = rect.fBottom - SkIntToScalar(kBadgeHeight);
-  if (badge_width >= kCenterAlignThreshold) {
-    rect.fLeft = SkIntToScalar(view->bounds().x() +
-        (view->bounds().width() - badge_width) / 2);
-    rect.fRight = rect.fLeft + SkIntToScalar(badge_width);
-  } else {
-    rect.fRight = SkIntToScalar(view->bounds().right());
-    rect.fLeft = rect.fRight - badge_width;
-  }
-
-  SkPaint rect_paint;
-  rect_paint.setStyle(SkPaint::kFill_Style);
-  rect_paint.setAntiAlias(true);
-  rect_paint.setColor(badge_color);
-  canvas->drawRoundRect(rect, SkIntToScalar(2), SkIntToScalar(2), rect_paint);
-
-  // Overlay the gradient. It is stretchy, so we do this in three parts.
-  ResourceBundle& resource_bundle = ResourceBundle::GetSharedInstance();
-  SkBitmap* gradient_left = resource_bundle.GetBitmapNamed(
-      IDR_BROWSER_ACTION_BADGE_LEFT);
-  SkBitmap* gradient_right = resource_bundle.GetBitmapNamed(
-      IDR_BROWSER_ACTION_BADGE_RIGHT);
-  SkBitmap* gradient_center = resource_bundle.GetBitmapNamed(
-      IDR_BROWSER_ACTION_BADGE_CENTER);
-
-  canvas->drawBitmap(*gradient_left, rect.fLeft, rect.fTop);
-  canvas->TileImageInt(*gradient_center,
-      SkScalarFloor(rect.fLeft) + gradient_left->width(),
-      SkScalarFloor(rect.fTop),
-      SkScalarFloor(rect.width()) - gradient_left->width() -
-                    gradient_right->width(),
-      SkScalarFloor(rect.height()));
-  canvas->drawBitmap(*gradient_right,
-      rect.fRight - SkIntToScalar(gradient_right->width()), rect.fTop);
-
-  // Finally, draw the text centered within the badge. We set a clip in case the
-  // text was too large.
-  rect.fLeft += kPadding;
-  rect.fRight -= kPadding;
-  canvas->clipRect(rect);
-  canvas->drawText(text.c_str(), text.size(),
-                   rect.fLeft + (rect.width() - text_width) / 2,
-                   rect.fTop + kTextSize + 1,
-                   text_paint);
-  canvas->restore();
 }

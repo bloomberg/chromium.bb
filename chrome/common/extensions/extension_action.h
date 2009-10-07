@@ -91,7 +91,7 @@ class ExtensionActionState {
  public:
   ExtensionActionState(std::string title, int icon_index)
     : title_(title), icon_index_(icon_index),
-      badge_background_color_(new SkColor(SkColorSetARGB(255, 218, 0, 24))) {
+      badge_background_color_(SkColorSetARGB(255, 218, 0, 24)) {
   }
 
   const std::string& title() const { return title_; }
@@ -102,11 +102,11 @@ class ExtensionActionState {
     badge_text_ = badge_text;
   }
 
-  SkColor* badge_background_color() const {
-    return badge_background_color_.get();
+  SkColor badge_background_color() const {
+    return badge_background_color_;
   }
-  void set_badge_background_color(const SkColor& badge_background_color) {
-    badge_background_color_.reset(new SkColor(badge_background_color));
+  void set_badge_background_color(SkColor badge_background_color) {
+    badge_background_color_ = badge_background_color;
   }
 
   int icon_index() const { return icon_index_; }
@@ -129,7 +129,7 @@ class ExtensionActionState {
   std::string badge_text_;
 
   // The background color for the badge.
-  scoped_ptr<SkColor> badge_background_color_;
+  SkColor badge_background_color_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionState);
 };
