@@ -65,7 +65,7 @@ void FlipNetworkTransaction::OnRequestSent(int status) {
   else
     next_state_ = STATE_NONE;
 
-  int rv = DoLoop(status);
+  DoLoop(status);
 }
 
 void FlipNetworkTransaction::OnResponseReceived(HttpResponseInfo* response) {
@@ -73,7 +73,7 @@ void FlipNetworkTransaction::OnResponseReceived(HttpResponseInfo* response) {
 
   response_ = *response;  // TODO(mbelshe): avoid copy.
 
-  int rv = DoLoop(net::OK);
+  DoLoop(net::OK);
 }
 
 void FlipNetworkTransaction::OnDataReceived(const char* buffer, int bytes) {
@@ -93,7 +93,7 @@ void FlipNetworkTransaction::OnDataReceived(const char* buffer, int bytes) {
 
     response_body_.push_back(io_buffer);
   }
-  int rv = DoLoop(net::OK);
+  DoLoop(net::OK);
 }
 
 void FlipNetworkTransaction::OnClose(int status) {
@@ -101,7 +101,7 @@ void FlipNetworkTransaction::OnClose(int status) {
   response_complete_ = true;
   response_status_ = status;
   flip_request_id_ = 0;  // TODO(mbelshe) - do we need this?
-  int rv = DoLoop(status);
+  DoLoop(status);
 }
 
 void FlipNetworkTransaction::OnCancel() {
