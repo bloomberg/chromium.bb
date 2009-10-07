@@ -4510,6 +4510,7 @@
           # target-default 'sources/' including gtk_unittest and 'source/' takes
           # precedence over 'sources!'.
           'sources/': [
+             ['exclude', 'browser/gtk/bookmark_bar_gtk_unittest\\.cc$'],
              ['exclude', 'browser/gtk/bookmark_editor_gtk_unittest\\.cc$'],
              ['exclude', 'browser/gtk/go_button_gtk_unittest\\.cc$'],
              ['exclude', 'browser/gtk/tabs/tab_renderer_gtk_unittest\\.cc$'],
