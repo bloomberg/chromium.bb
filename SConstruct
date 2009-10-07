@@ -818,7 +818,6 @@ elif linux_env['BUILD_ARCHITECTURE'] == 'arm':
                     LIBPATH=['${LIB_DIR}',
                              os.getenv('ARM_LIB_DIR', '').split()],
                     CCFLAGS=['-march=armv6','-pedantic','-Wall','-Werror'],
-# TODO(robertm): we are missing static libs (rt), enable this ASAP
                     LINKFLAGS=os.getenv('ARM_LINKFLAGS', ''),
                     )
 
@@ -968,7 +967,7 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
 #      'tests/nthread_nice/nacl.scons',
       'tests/null/nacl.scons',
       'tests/nullptr/nacl.scons',
-      # NOTE: does not run sel_univesal test
+      # NOTE: does not run sel_univesal test which invokes sel_ldr
       'tests/srpc/nacl.scons',
       'tests/srpc_hw/nacl.scons',
       'tests/srpc_without_pthread/nacl.scons',
