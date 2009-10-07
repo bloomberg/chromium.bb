@@ -715,7 +715,7 @@ BUG13907 : LayoutTests/media/controls-drag-timebar.html = TIMEOUT
 // BUG_SENORBLANCO FAIL on next line is due to Skia roll and should be reverted by end of 10/06/2009
 BUG9798 BUG13907 LINUX DEBUG : LayoutTests/media/controls-strict.html = TIMEOUT PASS FAIL
 BUG13907 : LayoutTests/media/controls-styling.html = FAIL
-BUG13907 : LayoutTests/media/event-attributes.html = TIMEOUT
+BUG13907 : LayoutTests/media/event-attributes.html = TIMEOUT CRASH
 BUG13907 : LayoutTests/media/video-canvas-source.html = FAIL
 BUG9798 BUG13907 LINUX DEBUG : LayoutTests/media/video-controls.html = TIMEOUT PASS
 BUG9798 BUG13907 LINUX DEBUG : LayoutTests/media/video-controls-rendering.html = FAIL PASS
@@ -4933,9 +4933,13 @@ BUG_JPARENT: LayoutTests/svg/filters/sourceAlpha.svg = FAIL
  // WebKit update: 49190:49206
  BUG_JPARENT MAC DEBUG : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
  BUG_JPARENT MAC DEBUG : LayoutTests/editing/execCommand/paste-2.html = FAIL PASS
- BUG_JPARENT WIN DEBUG : LayoutTests/fast/frames/calculate-percentage.html = CRASH
+ BUG_JPARENT WIN DEBUG : LayoutTests/fast/frames/calculate-percentage.html = CRASH PASS
+ BUG_JPARENT WIN DEBUG : LayoutTests/fast/frames/calculate-fixed.html = CRASH PASS
 
 // Started failing for no apparent reason at r28124
 // BUG_SENORBLANCO FAIL on next line is due to Skia roll and should be reverted by end of 10/06/2009
 BUG23972 LINUX : LayoutTests/fast/forms/form-element-geometry.html = CRASH FAIL
 BUG23972 WIN : LayoutTests/fast/forms/form-element-geometry.html = CRASH PASS
+
+// Flaky timeouts first appearing at r27764 (webkit 48947)
+BUG9798 LINUX MAC : LayoutTests/http/tests/cookies/multiple-cookies.html = TIMEOUT PASS
