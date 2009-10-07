@@ -1097,7 +1097,7 @@ def main(options, args):
   logging.info("Placing test results in %s" % options.results_directory)
   if options.new_baseline:
     logging.info("Placing new baselines in %s" %
-                 path_utils.ChromiumBaselinePath())
+                 path_utils.ChromiumBaselinePath(options.platform))
   logging.info("Using %s build at %s" %
                (options.target, test_shell_binary_path))
   if not options.no_pixel_tests:

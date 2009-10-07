@@ -10,6 +10,7 @@ Also defines the TestArguments "struct" to pass them additional arguments.
 import cgi
 import difflib
 import errno
+import logging
 import os.path
 import subprocess
 
@@ -79,7 +80,9 @@ class TestTypeBase(object):
                                    self.FILENAME_SUFFIX_EXPECTED + modifier)
 
     path_utils.MaybeMakeDirectory(output_dir)
-    open(os.path.join(output_dir, output_file), "wb").write(data)
+    output_path = os.path.join(output_dir, output_file)
+    logging.debug('writing new baseline to "%s"' % (output_path))
+    open(output_path, "wb").write(data)
 
   def OutputFilename(self, filename, modifier):
     """Returns a filename inside the output dir that contains modifier.
