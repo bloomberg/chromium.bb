@@ -1149,16 +1149,6 @@ function handleIfEnterKey(f) {
   };
 }
 
-function maybeOpenFile(e) {
-  var el = findAncestor(e.target, function(el) {
-    return el.fileId !== undefined;
-  });
-  if (el) {
-    chrome.send('openFile', [String(el.fileId)]);
-    e.preventDefault();
-  }
-}
-
 function maybeReopenTab(e) {
   var el = findAncestor(e.target, function(el) {
     return el.sessionId !== undefined;
@@ -1166,6 +1156,13 @@ function maybeReopenTab(e) {
   if (el) {
     chrome.send('reopenTab', [String(el.sessionId)]);
     e.preventDefault();
+
+    // HACK(arv): After the window onblur event happens we get a mouseover event
+    // on the next item and we want to make sure that we do not show a tooltip
+    // for that.
+    window.setTimeout(function() {
+      windowTooltip.hide();
+    }, 2 * WindowTooltip.DELAY);
   }
 }
 
@@ -1182,9 +1179,6 @@ function maybeShowWindowTooltip(e) {
 
 
 var recentlyClosedElement = $('recently-closed');
-recentlyClosedElement.addEventListener('click', maybeOpenFile);
-recentlyClosedElement.addEventListener('keydown',
-                                       handleIfEnterKey(maybeOpenFile));
 
 recentlyClosedElement.addEventListener('click', maybeReopenTab);
 recentlyClosedElement.addEventListener('keydown',
@@ -1211,6 +1205,12 @@ WindowTooltip.trackMouseMove_ = function(e) {
   WindowTooltip.clientY = e.clientY;
 };
 
+/**
+ * Time in ms to delay before the tooltip is shown.
+ * @type {number}
+ */
+WindowTooltip.DELAY = 300;
+
 WindowTooltip.prototype = {
   timer: 0,
   handleMouseOver: function(e, linkEl, tabs) {
@@ -1222,13 +1222,13 @@ WindowTooltip.prototype = {
       this.linkEl_.addEventListener('blur', this.boundHide_);
     }
     this.timer = window.setTimeout(bind(this.show, this, e.type, linkEl, tabs),
-                                   300);
+                                   WindowTooltip.DELAY);
   },
   show: function(type, linkEl, tabs) {
     window.addEventListener('blur', this.boundHide_);
     this.linkEl_.removeEventListener('mousemove',
                                      WindowTooltip.trackMouseMove_);
-    clearTimeout(this.timer);
+    window.clearTimeout(this.timer);
 
     this.renderItems(tabs);
     var rect = linkEl.getBoundingClientRect();
