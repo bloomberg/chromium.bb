@@ -934,7 +934,7 @@ TEST_F(ExternalTabTestType, IncognitoMode) {
   EXPECT_EQ("", value_result);
 }
 
-TEST_F(ExternalTabTestType, ExternalTabPostMessage) {
+TEST_F(ExternalTabTestType, DISABLED_ExternalTabPostMessage) {
   AutomationProxyForExternalTab* proxy =
       static_cast<AutomationProxyForExternalTab*>(automation());
   HWND external_tab_container = NULL;
