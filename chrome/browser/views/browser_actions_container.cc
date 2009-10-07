@@ -306,7 +306,6 @@ void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
 
 void BrowserActionsContainer::HidePopup() {
   if (popup_) {
-    popup_->Hide();
     popup_->DetachFromBrowser();
     delete popup_;
     popup_ = NULL;

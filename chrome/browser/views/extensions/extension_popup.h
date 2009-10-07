@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_VIEWS_EXTENSIONS_EXTENSION_POPUP_H_
 #define CHROME_BROWSER_VIEWS_EXTENSIONS_EXTENSION_POPUP_H_
 
-#include "googleurl/src/gurl.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/views/browser_bubble.h"
 #include "chrome/browser/views/bubble_border.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "googleurl/src/gurl.h"
 
 class Browser;
 class ExtensionHost;
@@ -58,7 +58,7 @@ class ExtensionPopup : public BrowserBubble,
   // popup.  This has to be a separate window in order to support transparency.
   // Layered windows can't contain native child windows, so we wouldn't be
   // able to have the ExtensionView child.
-  scoped_ptr<views::Widget> border_widget_;
+  views::Widget* border_widget_;
   BubbleBorder* border_;
   views::View* border_view_;
 

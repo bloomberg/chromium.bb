@@ -27,8 +27,10 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
 
   // TODO(erikkay) Some of this border code is derived from InfoBubble.
   // We should see if we can unify these classes.
+
+  // |true| here means the widget is set to delete on destroy.
+  border_widget_ = views::Widget::CreateTransparentPopupWidget(true);
   gfx::NativeView native_window = frame->GetNativeView();
-  border_widget_.reset(views::Widget::CreateTransparentPopupWidget(true));
   border_widget_->Init(native_window, bounds());
   border_ = new BubbleBorder;
   border_->set_arrow_location(BubbleBorder::TOP_RIGHT);
@@ -39,6 +41,7 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
 }
 
 ExtensionPopup::~ExtensionPopup() {
+  // The widget is set to delete on destroy, so no leak here.
   border_widget_->Close();
 }
 
