@@ -54,12 +54,22 @@ class InfoBubbleGtk : public NotificationObserver {
 
   // Close the bubble if it's open.  This will delete the widgets and object,
   // so you shouldn't hold a InfoBubbleGtk pointer after calling Close().
-  void Close() { Close(false); }
+  void Close() { CloseInternal(false); }
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // If the content contains widgets that can steal our pointer and keyboard
+  // grabs (e.g. GtkComboBox), this method should be called after a widget
+  // releases the grabs so we can reacquire them.  Note that this causes a race
+  // condition; another client could grab them before we do (ideally, GDK would
+  // transfer the grabs back to us when the widget releases them).  The window
+  // is small, though, and the worst-case scenario for this seems to just be
+  // that the content's widgets will appear inactive even after the user clicks
+  // in them.
+  void HandlePointerAndKeyboardUngrabbedByContent();
 
  private:
   explicit InfoBubbleGtk(GtkThemeProvider* provider);
@@ -78,7 +88,11 @@ class InfoBubbleGtk : public NotificationObserver {
 
   // Closes the window and notifies the delegate. |closed_by_escape| is true if
   // the close is the result of pressing escape.
-  void Close(bool closed_by_escape);
+  void CloseInternal(bool closed_by_escape);
+
+  // Grab (in the X sense) the pointer and keyboard.  This is needed to make
+  // sure that we have the input focus.
+  void GrabPointerAndKeyboard();
 
   static gboolean HandleEscapeThunk(GtkAccelGroup* group,
                                     GObject* acceleratable,

@@ -229,6 +229,8 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* toplevel_window,
                    G_CALLBACK(&HandleNameActivateThunk), this);
   g_signal_connect(folder_combo_, "changed",
                    G_CALLBACK(&HandleFolderChangedThunk), this);
+  g_signal_connect(folder_combo_, "notify::popup-shown",
+                   G_CALLBACK(&HandleFolderPopupShownThunk), this);
   g_signal_connect(edit_button, "clicked",
                    G_CALLBACK(&HandleEditButtonThunk), this);
   g_signal_connect(close_button, "clicked",
@@ -279,6 +281,17 @@ void BookmarkBubbleGtk::HandleFolderChanged() {
     MessageLoop::current()->PostTask(FROM_HERE,
         factory_.NewRunnableMethod(&BookmarkBubbleGtk::ShowEditor));
   }
+}
+
+void BookmarkBubbleGtk::HandleFolderPopupShown() {
+  // GtkComboBox grabs the keyboard and pointer when it displays its popup,
+  // which steals the grabs that InfoBubbleGtk had installed.  When the popup is
+  // hidden, we notify InfoBubbleGtk so it can try to reacquire the grabs
+  // (otherwise, GTK won't activate our widgets when the user clicks in them).
+  gboolean popup_shown = FALSE;
+  g_object_get(G_OBJECT(folder_combo_), "popup-shown", &popup_shown, NULL);
+  if (!popup_shown)
+    bubble_->HandlePointerAndKeyboardUngrabbedByContent();
 }
 
 void BookmarkBubbleGtk::HandleEditButton() {

@@ -239,29 +239,7 @@ void InfoBubbleGtk::Init(GtkWindow* toplevel_window,
                               GTK_WINDOW(window_));
   gtk_grab_add(window_);
 
-  // Do X pointer and keyboard grabs to make sure that we have the focus and get
-  // all mouse and keyboard events until we're closed.
-  GdkGrabStatus pointer_grab_status =
-      gdk_pointer_grab(window_->window,
-                       TRUE,                   // owner_events
-                       GDK_BUTTON_PRESS_MASK,  // event_mask
-                       NULL,                   // confine_to
-                       NULL,                   // cursor
-                       GDK_CURRENT_TIME);
-  if (pointer_grab_status != GDK_GRAB_SUCCESS) {
-    // This will fail if someone else already has the pointer grabbed, but
-    // there's not really anything we can do about that.
-    DLOG(ERROR) << "Unable to grab pointer for info bubble (status="
-                << pointer_grab_status << ")";
-  }
-  GdkGrabStatus keyboard_grab_status =
-      gdk_keyboard_grab(window_->window,
-                        FALSE,  // owner_events
-                        GDK_CURRENT_TIME);
-  if (keyboard_grab_status != GDK_GRAB_SUCCESS) {
-    DLOG(ERROR) << "Unable to grab keyboard for info bubble (status="
-                << keyboard_grab_status << ")";
-  }
+  GrabPointerAndKeyboard();
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
@@ -290,7 +268,11 @@ void InfoBubbleGtk::Observe(NotificationType type,
   }
 }
 
-void InfoBubbleGtk::Close(bool closed_by_escape) {
+void InfoBubbleGtk::HandlePointerAndKeyboardUngrabbedByContent() {
+  GrabPointerAndKeyboard();
+}
+
+void InfoBubbleGtk::CloseInternal(bool closed_by_escape) {
   // Notify the delegate that we're about to close.  This gives the chance
   // to save state / etc from the hosted widget before it's destroyed.
   if (delegate_)
@@ -304,8 +286,34 @@ void InfoBubbleGtk::Close(bool closed_by_escape) {
   // |this| has been deleted, see HandleDestroy.
 }
 
+void InfoBubbleGtk::GrabPointerAndKeyboard() {
+  // Install X pointer and keyboard grabs to make sure that we have the focus
+  // and get all mouse and keyboard events until we're closed.
+  GdkGrabStatus pointer_grab_status =
+      gdk_pointer_grab(window_->window,
+                       TRUE,                   // owner_events
+                       GDK_BUTTON_PRESS_MASK,  // event_mask
+                       NULL,                   // confine_to
+                       NULL,                   // cursor
+                       GDK_CURRENT_TIME);
+  if (pointer_grab_status != GDK_GRAB_SUCCESS) {
+    // This will fail if someone else already has the pointer grabbed, but
+    // there's not really anything we can do about that.
+    DLOG(ERROR) << "Unable to grab pointer (status="
+                << pointer_grab_status << ")";
+  }
+  GdkGrabStatus keyboard_grab_status =
+      gdk_keyboard_grab(window_->window,
+                        FALSE,  // owner_events
+                        GDK_CURRENT_TIME);
+  if (keyboard_grab_status != GDK_GRAB_SUCCESS) {
+    DLOG(ERROR) << "Unable to grab keyboard (status="
+                << keyboard_grab_status << ")";
+  }
+}
+
 gboolean InfoBubbleGtk::HandleEscape() {
-  Close(true);  // Close by escape.
+  CloseInternal(true);  // Close by escape.
   return TRUE;
 }
 

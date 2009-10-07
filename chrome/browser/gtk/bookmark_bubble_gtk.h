@@ -81,6 +81,14 @@ class BookmarkBubbleGtk : public InfoBubbleGtkDelegate,
   }
   void HandleFolderChanged();
 
+  static void HandleFolderPopupShownThunk(GObject* object,
+                                          GParamSpec* property,
+                                          gpointer user_data) {
+    return reinterpret_cast<BookmarkBubbleGtk*>(user_data)->
+        HandleFolderPopupShown();
+  }
+  void HandleFolderPopupShown();
+
   static void HandleEditButtonThunk(GtkWidget* widget,
                                     gpointer user_data) {
     reinterpret_cast<BookmarkBubbleGtk*>(user_data)->
