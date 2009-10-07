@@ -203,9 +203,9 @@ void WidgetGtk::ActiveWindowChanged(GdkWindow* active_window) {
   if (!is_active_ && active_window && type_ != TYPE_CHILD) {
     // We're not active, but the force the window to be rendered as active if
     // a child window is transient to us.
-    GtkWidget* widget = NULL;
-    gdk_window_get_user_data(active_window,
-                             reinterpret_cast<gpointer*>(&widget));
+    gpointer data = NULL;
+    gdk_window_get_user_data(active_window, &data);
+    GtkWidget* widget = reinterpret_cast<GtkWidget*>(data);
     is_active_ =
         (widget && GTK_IS_WINDOW(widget) &&
          gtk_window_get_transient_for(GTK_WINDOW(widget)) == GTK_WINDOW(
