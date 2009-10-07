@@ -21,11 +21,11 @@ TEST(SyncerProtoUtil, TestBlobToProtocolBufferBytesUtilityFunctions) {
   unsigned char test_data3[] = {99, 2, 3, 4, 5, 6, 7, 8};
 
   syncable::Blob test_blob1, test_blob2, test_blob3;
-  for (int i = 0; i < arraysize(test_data1); ++i)
+  for (size_t i = 0; i < arraysize(test_data1); ++i)
     test_blob1.push_back(test_data1[i]);
-  for (int i = 0; i < arraysize(test_data2); ++i)
+  for (size_t i = 0; i < arraysize(test_data2); ++i)
     test_blob2.push_back(test_data2[i]);
-  for (int i = 0; i < arraysize(test_data3); ++i)
+  for (size_t i = 0; i < arraysize(test_data3); ++i)
     test_blob3.push_back(test_data3[i]);
 
   string test_message1(reinterpret_cast<char*>(test_data1),

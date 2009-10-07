@@ -27,6 +27,8 @@ static const time_t kMinSyncObserveInterval = 10;  // seconds
 // Backoff interval randomization factor.
 static const int kBackoffRandomizationFactor = 2;
 
+const int AllStatus::kMaxBackoffSeconds = 60 * 60 * 4;  // 4 hours.
+
 const char* AllStatus::GetSyncStatusString(SyncStatus icon) {
   const char* strings[] = {"OFFLINE", "OFFLINE_UNSYNCED", "SYNCING", "READY",
       "CONFLICT", "OFFLINE_UNUSABLE"};

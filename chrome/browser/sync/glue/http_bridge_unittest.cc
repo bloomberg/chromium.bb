@@ -13,13 +13,14 @@ using browser_sync::HttpBridge;
 
 namespace {
 // TODO(timsteele): Should use PathService here. See Chromium Issue 3113.
-const char16 kDocRoot[] = L"chrome/test/data";
+const wchar_t kDocRoot[] = L"chrome/test/data";
 }
 
 class HttpBridgeTest : public testing::Test {
  public:
-  HttpBridgeTest() : io_thread_("HttpBridgeTest IO thread"),
-      fake_default_request_context_(NULL) {
+  HttpBridgeTest()
+      : fake_default_request_context_(NULL),
+        io_thread_("HttpBridgeTest IO thread") {
   }
 
   virtual void SetUp() {
@@ -125,8 +126,8 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostShunted) {
 // Full round-trip test of the HttpBridge, using default UA string and
 // no request cookies.
 TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveWithPayload) {
-  scoped_refptr<HTTPTestServer> server = HTTPTestServer::CreateServer(kDocRoot,
-                                                                      NULL);
+  scoped_refptr<HTTPTestServer> server =
+      HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
 
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
@@ -143,14 +144,15 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveWithPayload) {
   EXPECT_EQ(200, response_code);
   EXPECT_EQ(0, os_error);
 
-  EXPECT_EQ(payload.length() + 1, http_bridge->GetResponseContentLength());
+  EXPECT_EQ(payload.length() + 1,
+            static_cast<size_t>(http_bridge->GetResponseContentLength()));
   EXPECT_EQ(payload, std::string(http_bridge->GetResponseContent()));
 }
 
 // Full round-trip test of the HttpBridge, using custom UA string
 TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
-  scoped_refptr<HTTPTestServer> server = HTTPTestServer::CreateServer(kDocRoot,
-                                                                      NULL);
+  scoped_refptr<HTTPTestServer> server =
+      HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
 
@@ -177,8 +179,8 @@ TEST_F(HttpBridgeTest, TestMakeSynchronousPostLiveComprehensive) {
 }
 
 TEST_F(HttpBridgeTest, TestExtraRequestHeaders) {
-  scoped_refptr<HTTPTestServer> server = HTTPTestServer::CreateServer(kDocRoot,
-                                                                      NULL);
+  scoped_refptr<HTTPTestServer> server =
+      HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
   scoped_refptr<HttpBridge> http_bridge(BuildBridge());
 

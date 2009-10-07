@@ -11,8 +11,8 @@
 
 using browser_sync::UserSettings;
 
-static const wchar_t* kV10UserSettingsDB = L"Version10Settings.sqlite3";
-static const wchar_t* kOldStyleSyncDataDB = L"OldStyleSyncData.sqlite3";
+static const PathChar* kV10UserSettingsDB = PSTR("Version10Settings.sqlite3");
+static const PathChar* kOldStyleSyncDataDB = PSTR("OldStyleSyncData.sqlite3");
 
 class UserSettingsTest : public testing::Test {
  public:
@@ -20,12 +20,13 @@ class UserSettingsTest : public testing::Test {
   void SetUpVersion10Databases() {
     CleanUpVersion10Databases();
     sqlite3* primer_handle = NULL;
-    ASSERT_EQ(SQLITE_OK, SqliteOpen(kV10UserSettingsDB,
+    ASSERT_TRUE(SQLITE_OK == SqliteOpen(kV10UserSettingsDB,
         &primer_handle));
     FilePath old_sync_data(kOldStyleSyncDataDB);
 
-    ASSERT_EQ(sync_data_.length(), file_util::WriteFile(
-        old_sync_data, sync_data_.data(), sync_data_.length()));
+    ASSERT_TRUE(sync_data_.length() ==
+                static_cast<size_t>(file_util::WriteFile(
+                    old_sync_data, sync_data_.data(), sync_data_.length())));
 
     // Create settings table.
     ExecOrDie(primer_handle, "CREATE TABLE settings"
@@ -39,16 +40,23 @@ class UserSettingsTest : public testing::Test {
     ExecOrDie(primer_handle, "CREATE TABLE shares"
               " (email, share_name, file_name,"
               "  PRIMARY KEY(email, share_name) ON CONFLICT REPLACE)");
+#if OS_WIN
     // Populate a share.
     ExecOrDie(primer_handle, "INSERT INTO shares values ( ?, ?, ?)",
               "foo@foo.com", "foo@foo.com", WideToUTF8(kOldStyleSyncDataDB));
+#elif OS_LINUX
+    // Populate a share.
+    ExecOrDie(primer_handle, "INSERT INTO shares values ( ?, ?, ?)",
+              "foo@foo.com", "foo@foo.com", kOldStyleSyncDataDB);
+#endif
     sqlite3_close(primer_handle);
   }
 
   void CleanUpVersion10Databases() {
     ASSERT_TRUE(file_util::DieFileDie(FilePath(kV10UserSettingsDB), false));
     ASSERT_TRUE(file_util::DieFileDie(FilePath(kOldStyleSyncDataDB), false));
-    ASSERT_TRUE(file_util::DieFileDie(FilePath(L"SyncData.sqlite3"), false));
+    ASSERT_TRUE(file_util::DieFileDie(FilePath(PSTR("SyncData.sqlite3")),
+                                      false));
   }
 
   const std::string& sync_data() const { return sync_data_; }
@@ -69,18 +77,18 @@ TEST_F(UserSettingsTest, MigrateFromV10ToV11) {
 
   // Now poke around using sqlite to see if UserSettings migrated properly.
   sqlite3* handle = NULL;
-  ASSERT_EQ(SQLITE_OK, SqliteOpen(kV10UserSettingsDB, &handle));
+  ASSERT_TRUE(SQLITE_OK == SqliteOpen(kV10UserSettingsDB, &handle));
   ScopedStatement version_query(PrepareQuery(handle,
       "SELECT version FROM db_version"));
-  ASSERT_EQ(SQLITE_ROW, sqlite3_step(version_query.get()));
+  ASSERT_TRUE(SQLITE_ROW == sqlite3_step(version_query.get()));
 
   const int version = sqlite3_column_int(version_query.get(), 0);
-  EXPECT_EQ(11, version);
-  EXPECT_FALSE(file_util::PathExists(kOldStyleSyncDataDB));
+  EXPECT_TRUE(11 == version);
+  EXPECT_FALSE(file_util::PathExists(FilePath(kOldStyleSyncDataDB)));
 
-  std::wstring path(syncable::DirectoryManager::GetSyncDataDatabaseFilename());
+  PathString path(syncable::DirectoryManager::GetSyncDataDatabaseFilename());
 
   std::string contents;
-  ASSERT_TRUE(file_util::ReadFileToString(path, &contents));
-  EXPECT_EQ(sync_data(), contents);
+  ASSERT_TRUE(file_util::ReadFileToString(FilePath(path), &contents));
+  EXPECT_TRUE(sync_data() == contents);
 }

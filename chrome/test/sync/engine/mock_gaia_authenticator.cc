@@ -16,7 +16,7 @@ namespace browser_sync {
 MockGaiaAuthenticator::MockGaiaAuthenticator(const char* user_agent,
                                              const char* service_id,
                                              const char* gaia_url) :
-    current_user_(""), should_save_credentials_(false) {
+    should_save_credentials_(false), current_user_("") {
   // This discards user_agent, service_id, gaia_url since the mock object
   // doesn't care about them.
 }

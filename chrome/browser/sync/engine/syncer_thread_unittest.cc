@@ -5,7 +5,6 @@
 #include <list>
 #include <map>
 #include <set>
-#include <strstream>
 
 #include "base/command_line.h"
 #include "base/scoped_ptr.h"
@@ -113,27 +112,27 @@ TEST_F(SyncerThreadTest, CalculateSyncWaitTime) {
 
   // user_idle_ms is ge than 10 * (syncer_polling_interval*1000).
   int last_poll_time = 2000;
-  ASSERT_LE(last_poll_time,
-            syncer_thread->CalculateSyncWaitTime(last_poll_time, 10000));
-  ASSERT_GE(last_poll_time*3,
-            syncer_thread->CalculateSyncWaitTime(last_poll_time, 10000));
-  ASSERT_LE(last_poll_time,
-            syncer_thread->CalculateSyncWaitTime(last_poll_time, 100000));
-  ASSERT_GE(last_poll_time*3,
-            syncer_thread->CalculateSyncWaitTime(last_poll_time, 100000));
+  ASSERT_TRUE(last_poll_time <=
+              syncer_thread->CalculateSyncWaitTime(last_poll_time, 10000));
+  ASSERT_TRUE(last_poll_time * 3 >=
+              syncer_thread->CalculateSyncWaitTime(last_poll_time, 10000));
+  ASSERT_TRUE(last_poll_time <=
+              syncer_thread->CalculateSyncWaitTime(last_poll_time, 100000));
+  ASSERT_TRUE(last_poll_time * 3 >=
+              syncer_thread->CalculateSyncWaitTime(last_poll_time, 100000));
 
   // Maximum backoff time should be syncer_max_interval.
   int near_threshold = SyncerThread::kDefaultMaxPollIntervalMs / 2 - 1;
   int threshold = SyncerThread::kDefaultMaxPollIntervalMs;
   int over_threshold = SyncerThread::kDefaultMaxPollIntervalMs + 1;
-  ASSERT_LE(near_threshold,
-            syncer_thread->CalculateSyncWaitTime(near_threshold, 10000));
-  ASSERT_GE(SyncerThread::kDefaultMaxPollIntervalMs,
-            syncer_thread->CalculateSyncWaitTime(near_threshold, 10000));
-  ASSERT_EQ(SyncerThread::kDefaultMaxPollIntervalMs,
-            syncer_thread->CalculateSyncWaitTime(threshold, 10000));
-  ASSERT_EQ(SyncerThread::kDefaultMaxPollIntervalMs,
-            syncer_thread->CalculateSyncWaitTime(over_threshold, 10000));
+  ASSERT_TRUE(near_threshold <=
+              syncer_thread->CalculateSyncWaitTime(near_threshold, 10000));
+  ASSERT_TRUE(SyncerThread::kDefaultMaxPollIntervalMs >=
+              syncer_thread->CalculateSyncWaitTime(near_threshold, 10000));
+  ASSERT_TRUE(SyncerThread::kDefaultMaxPollIntervalMs ==
+              syncer_thread->CalculateSyncWaitTime(threshold, 10000));
+  ASSERT_TRUE(SyncerThread::kDefaultMaxPollIntervalMs ==
+              syncer_thread->CalculateSyncWaitTime(over_threshold, 10000));
 
   // Possible idle time must be capped by syncer_max_interval.
   int over_sync_max_interval =
@@ -145,12 +144,12 @@ TEST_F(SyncerThreadTest, CalculateSyncWaitTime) {
             syncer_thread->CalculateSyncWaitTime(1000, over_sync_max_interval));
   syncer_polling_interval = TimeDelta::FromSeconds(1);
   syncer_thread->SetSyncerPollingInterval(syncer_polling_interval);
-  ASSERT_LE(last_poll_time,
-            syncer_thread->CalculateSyncWaitTime(last_poll_time,
-                                                over_sync_max_interval));
-  ASSERT_GE(last_poll_time * 3,
-            syncer_thread->CalculateSyncWaitTime(last_poll_time,
-                                                over_sync_max_interval));
+  ASSERT_TRUE(last_poll_time <=
+              syncer_thread->CalculateSyncWaitTime(last_poll_time,
+                                                   over_sync_max_interval));
+  ASSERT_TRUE(last_poll_time * 3 >=
+              syncer_thread->CalculateSyncWaitTime(last_poll_time,
+                                                   over_sync_max_interval));
 }
 
 TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
@@ -168,22 +167,22 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     bool continue_sync_cycle_param = false;
 
     // No work and no backoff.
-    ASSERT_EQ(SyncerThread::kDefaultShortPollIntervalSeconds,
-              syncer_thread->CalculatePollingWaitTime(
-                  status,
-                  0,
-                  &user_idle_milliseconds_param,
-                  &continue_sync_cycle_param));
+    ASSERT_TRUE(SyncerThread::kDefaultShortPollIntervalSeconds ==
+                syncer_thread->CalculatePollingWaitTime(
+                    status,
+                    0,
+                    &user_idle_milliseconds_param,
+                    &continue_sync_cycle_param));
     ASSERT_FALSE(continue_sync_cycle_param);
 
     // In this case the continue_sync_cycle is turned off.
     continue_sync_cycle_param = true;
-    ASSERT_EQ(SyncerThread::kDefaultShortPollIntervalSeconds,
-              syncer_thread->CalculatePollingWaitTime(
-                  status,
-                  0,
-                  &user_idle_milliseconds_param,
-                  &continue_sync_cycle_param));
+    ASSERT_TRUE(SyncerThread::kDefaultShortPollIntervalSeconds ==
+                syncer_thread->CalculatePollingWaitTime(
+                    status,
+                    0,
+                    &user_idle_milliseconds_param,
+                    &continue_sync_cycle_param));
     ASSERT_FALSE(continue_sync_cycle_param);
 
     // TODO(brg) : Find a way to test exponential backoff is inoperable.
@@ -199,22 +198,22 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     bool continue_sync_cycle_param = false;
 
     // No work and no backoff.
-    ASSERT_EQ(SyncerThread::kDefaultLongPollIntervalSeconds,
-              syncer_thread->CalculatePollingWaitTime(
-                  status,
-                  0,
-                  &user_idle_milliseconds_param,
-                  &continue_sync_cycle_param));
+    ASSERT_TRUE(SyncerThread::kDefaultLongPollIntervalSeconds ==
+                syncer_thread->CalculatePollingWaitTime(
+                    status,
+                    0,
+                    &user_idle_milliseconds_param,
+                    &continue_sync_cycle_param));
     ASSERT_FALSE(continue_sync_cycle_param);
 
     // In this case the continue_sync_cycle is turned off.
     continue_sync_cycle_param = true;
-    ASSERT_EQ(SyncerThread::kDefaultLongPollIntervalSeconds,
-              syncer_thread->CalculatePollingWaitTime(
-                  status,
-                  0,
-                  &user_idle_milliseconds_param,
-                  &continue_sync_cycle_param));
+    ASSERT_TRUE(SyncerThread::kDefaultLongPollIntervalSeconds ==
+                syncer_thread->CalculatePollingWaitTime(
+                    status,
+                    0,
+                    &user_idle_milliseconds_param,
+                    &continue_sync_cycle_param));
     ASSERT_FALSE(continue_sync_cycle_param);
 
     // TODO(brg) : Find a way to test exponential backoff.
@@ -231,40 +230,40 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     status.updates_received = 0;
     bool continue_sync_cycle_param = false;
 
-    ASSERT_LE(0, syncer_thread->CalculatePollingWaitTime(
-                     status,
-                     0,
-                     &user_idle_milliseconds_param,
-                     &continue_sync_cycle_param));
+    ASSERT_TRUE(0 <= syncer_thread->CalculatePollingWaitTime(
+                         status,
+                         0,
+                         &user_idle_milliseconds_param,
+                         &continue_sync_cycle_param));
     ASSERT_TRUE(continue_sync_cycle_param);
 
     continue_sync_cycle_param = false;
-    ASSERT_GE(3, syncer_thread->CalculatePollingWaitTime(
-                     status,
-                     0,
-                     &user_idle_milliseconds_param,
-                     &continue_sync_cycle_param));
+    ASSERT_TRUE(3 >= syncer_thread->CalculatePollingWaitTime(
+                         status,
+                         0,
+                         &user_idle_milliseconds_param,
+                         &continue_sync_cycle_param));
     ASSERT_TRUE(continue_sync_cycle_param);
 
-    ASSERT_LE(0, syncer_thread->CalculatePollingWaitTime(
-                     status,
-                     0,
-                     &user_idle_milliseconds_param,
-                     &continue_sync_cycle_param));
-    ASSERT_GE(2, syncer_thread->CalculatePollingWaitTime(
-                     status,
-                     0,
-                     &user_idle_milliseconds_param,
-                     &continue_sync_cycle_param));
+    ASSERT_TRUE(0 <= syncer_thread->CalculatePollingWaitTime(
+                         status,
+                         0,
+                         &user_idle_milliseconds_param,
+                         &continue_sync_cycle_param));
+    ASSERT_TRUE(2 >= syncer_thread->CalculatePollingWaitTime(
+                         status,
+                         0,
+                         &user_idle_milliseconds_param,
+                         &continue_sync_cycle_param));
     ASSERT_TRUE(continue_sync_cycle_param);
 
     status.updates_received = 1;
-    ASSERT_EQ(SyncerThread::kDefaultShortPollIntervalSeconds,
-              syncer_thread->CalculatePollingWaitTime(
-                  status,
-                  10,
-                  &user_idle_milliseconds_param,
-                  &continue_sync_cycle_param));
+    ASSERT_TRUE(SyncerThread::kDefaultShortPollIntervalSeconds ==
+                syncer_thread->CalculatePollingWaitTime(
+                    status,
+                    10,
+                    &user_idle_milliseconds_param,
+                    &continue_sync_cycle_param));
     ASSERT_FALSE(continue_sync_cycle_param);
   }
 
@@ -273,28 +272,28 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     status.unsynced_count = 1;
     bool continue_sync_cycle_param = false;
 
-    ASSERT_LE(0, syncer_thread->CalculatePollingWaitTime(
-                     status,
-                     0,
-                     &user_idle_milliseconds_param,
-                     &continue_sync_cycle_param));
+    ASSERT_TRUE(0 <= syncer_thread->CalculatePollingWaitTime(
+                         status,
+                         0,
+                         &user_idle_milliseconds_param,
+                         &continue_sync_cycle_param));
     ASSERT_TRUE(continue_sync_cycle_param);
 
     continue_sync_cycle_param = false;
-    ASSERT_GE(2, syncer_thread->CalculatePollingWaitTime(
-                     status,
-                     0,
-                     &user_idle_milliseconds_param,
-                     &continue_sync_cycle_param));
+    ASSERT_TRUE(2 >= syncer_thread->CalculatePollingWaitTime(
+                         status,
+                         0,
+                         &user_idle_milliseconds_param,
+                         &continue_sync_cycle_param));
     ASSERT_TRUE(continue_sync_cycle_param);
 
     status.unsynced_count = 0;
-    ASSERT_EQ(SyncerThread::kDefaultShortPollIntervalSeconds,
-              syncer_thread->CalculatePollingWaitTime(
-                  status,
-                  4,
-                  &user_idle_milliseconds_param,
-                  &continue_sync_cycle_param));
+    ASSERT_TRUE(SyncerThread::kDefaultShortPollIntervalSeconds ==
+                syncer_thread->CalculatePollingWaitTime(
+                    status,
+                    4,
+                    &user_idle_milliseconds_param,
+                    &continue_sync_cycle_param));
     ASSERT_FALSE(continue_sync_cycle_param);
   }
 
@@ -306,60 +305,60 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
 
     // Expect move from default polling interval to exponential backoff due to
     // unsynced_count != 0.
-    ASSERT_LE(0, syncer_thread->CalculatePollingWaitTime(
-                     status,
-                     3600,
-                     &user_idle_milliseconds_param,
-                     &continue_sync_cycle_param));
+    ASSERT_TRUE(0 <= syncer_thread->CalculatePollingWaitTime(
+                         status,
+                         3600,
+                         &user_idle_milliseconds_param,
+                         &continue_sync_cycle_param));
     ASSERT_TRUE(continue_sync_cycle_param);
 
     continue_sync_cycle_param = false;
-    ASSERT_GE(2, syncer_thread->CalculatePollingWaitTime(
-                     status,
-                     3600,
-                     &user_idle_milliseconds_param,
-                     &continue_sync_cycle_param));
+    ASSERT_TRUE(2 >= syncer_thread->CalculatePollingWaitTime(
+                         status,
+                         3600,
+                         &user_idle_milliseconds_param,
+                         &continue_sync_cycle_param));
     ASSERT_TRUE(continue_sync_cycle_param);
 
     // Expect exponential backoff.
-    ASSERT_LE(2, syncer_thread->CalculatePollingWaitTime(
-                     status,
-                     2,
-                     &user_idle_milliseconds_param,
-                     &continue_sync_cycle_param));
-    ASSERT_GE(6, syncer_thread->CalculatePollingWaitTime(
-                     status,
-                     2,
-                     &user_idle_milliseconds_param,
-                     &continue_sync_cycle_param));
+    ASSERT_TRUE(2 <= syncer_thread->CalculatePollingWaitTime(
+                         status,
+                         2,
+                         &user_idle_milliseconds_param,
+                         &continue_sync_cycle_param));
+    ASSERT_TRUE(6 >= syncer_thread->CalculatePollingWaitTime(
+                         status,
+                         2,
+                         &user_idle_milliseconds_param,
+                         &continue_sync_cycle_param));
     ASSERT_TRUE(continue_sync_cycle_param);
 
     // A nudge resets the continue_sync_cycle_param value, so our backoff
     // should return to the minimum.
     continue_sync_cycle_param = false;
-    ASSERT_LE(0, syncer_thread->CalculatePollingWaitTime(
-                     status,
-                     3600,
-                     &user_idle_milliseconds_param,
-                     &continue_sync_cycle_param));
+    ASSERT_TRUE(0 <= syncer_thread->CalculatePollingWaitTime(
+                         status,
+                         3600,
+                         &user_idle_milliseconds_param,
+                         &continue_sync_cycle_param));
     ASSERT_TRUE(continue_sync_cycle_param);
 
     continue_sync_cycle_param = false;
-    ASSERT_GE(2, syncer_thread->CalculatePollingWaitTime(
-                     status,
-                     3600,
-                     &user_idle_milliseconds_param,
-                     &continue_sync_cycle_param));
+    ASSERT_TRUE(2 >= syncer_thread->CalculatePollingWaitTime(
+                         status,
+                         3600,
+                         &user_idle_milliseconds_param,
+                         &continue_sync_cycle_param));
     ASSERT_TRUE(continue_sync_cycle_param);
 
     // Setting unsynced_count = 0 returns us to the default polling interval.
     status.unsynced_count = 0;
-    ASSERT_EQ(SyncerThread::kDefaultShortPollIntervalSeconds,
-              syncer_thread->CalculatePollingWaitTime(
-                  status,
-                  4,
-                  &user_idle_milliseconds_param,
-                  &continue_sync_cycle_param));
+    ASSERT_TRUE(SyncerThread::kDefaultShortPollIntervalSeconds ==
+                syncer_thread->CalculatePollingWaitTime(
+                    status,
+                    4,
+                    &user_idle_milliseconds_param,
+                    &continue_sync_cycle_param));
     ASSERT_FALSE(continue_sync_cycle_param);
   }
 }

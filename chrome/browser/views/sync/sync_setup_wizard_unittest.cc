@@ -46,7 +46,7 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   }
 
   virtual string16 GetAuthenticatedUsername() const {
-    return UTF8ToWide(username_);
+    return UTF8ToUTF16(username_);
   }
 
   void set_auth_state(const std::string& last_email, AuthErrorState state) {
@@ -210,7 +210,7 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
   dialog_args.Clear();
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
-  EXPECT_EQ(2, dialog_args.GetSize());
+  EXPECT_TRUE(2 == dialog_args.GetSize());
   std::string actual_user;
   dialog_args.GetString(L"user", &actual_user);
   EXPECT_EQ(kTestUser, actual_user);
@@ -342,7 +342,7 @@ TEST_F(SyncSetupWizardTest, DiscreteRun) {
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   EXPECT_TRUE(wizard_->IsVisible());
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
-  EXPECT_EQ(2, dialog_args.GetSize());
+  EXPECT_TRUE(2 == dialog_args.GetSize());
   std::string actual_user;
   dialog_args.GetString(L"user", &actual_user);
   EXPECT_EQ(kTestUser, actual_user);
@@ -356,4 +356,3 @@ TEST_F(SyncSetupWizardTest, DiscreteRun) {
 }
 
 #endif  // CHROME_PERSONALIZATION
-

@@ -92,7 +92,7 @@ class AllStatus {
   };
 
   // Maximum interval for exponential backoff.
-  static const int kMaxBackoffSeconds = 60 * 60 * 4;  // 4 hours.
+  static const int kMaxBackoffSeconds;
 
   AllStatus();
   ~AllStatus();

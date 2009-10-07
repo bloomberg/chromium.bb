@@ -17,34 +17,34 @@ TEST(HighresTimer, DISABLED_MillisecondClock) {
 
   // Note: this could fail if we context switch between initializing the timer
   // and here. Very unlikely however.
-  EXPECT_EQ(0, timer.GetElapsedMs());
+  EXPECT_TRUE(0 == timer.GetElapsedMs());
   timer.Start();
   uint64 half_ms = HighresTimer::GetTimerFrequency() / 2000;
   // Busy wait for half a millisecond.
   while (timer.start_ticks() + half_ms > HighresTimer::GetCurrentTicks()) {
     // Nothing
   }
-  EXPECT_EQ(1, timer.GetElapsedMs());
+  EXPECT_TRUE(1 == timer.GetElapsedMs());
 }
 
 TEST(HighresTimer, DISABLED_SecondClock) {
   HighresTimer timer;
 
-  EXPECT_EQ(0, timer.GetElapsedSec());
+  EXPECT_TRUE(0 == timer.GetElapsedSec());
 #ifdef OS_WIN
   ::Sleep(250);
 #else
   struct timespec ts1 = {0, 250000000};
   nanosleep(&ts1, 0);
 #endif
-  EXPECT_EQ(0, timer.GetElapsedSec());
-  EXPECT_LE(230, timer.GetElapsedMs());
-  EXPECT_GE(270, timer.GetElapsedMs());
+  EXPECT_TRUE(0 == timer.GetElapsedSec());
+  EXPECT_TRUE(230 <= timer.GetElapsedMs());
+  EXPECT_TRUE(270 >= timer.GetElapsedMs());
 #ifdef OS_WIN
   ::Sleep(251);
 #else
   struct timespec ts2 = {0, 251000000};
   nanosleep(&ts2, 0);
 #endif
-  EXPECT_EQ(1, timer.GetElapsedSec());
+  EXPECT_TRUE(1 == timer.GetElapsedSec());
 }
