@@ -397,11 +397,13 @@ bool Importer::ReencodeFavicon(const unsigned char* src_data, size_t src_len,
 // ImporterHost.
 
 ImporterHost::ImporterHost()
-    : observer_(NULL),
+    : profile_(NULL),
+      observer_(NULL),
       task_(NULL),
       importer_(NULL),
       file_loop_(g_browser_process->file_thread()->message_loop()),
       waiting_for_bookmarkbar_model_(false),
+      installed_bookmark_observer_(false),
       is_source_readable_(true),
       headless_(false),
       parent_window_(NULL) {
@@ -409,11 +411,13 @@ ImporterHost::ImporterHost()
 }
 
 ImporterHost::ImporterHost(MessageLoop* file_loop)
-    : observer_(NULL),
+    : profile_(NULL),
+      observer_(NULL),
       task_(NULL),
       importer_(NULL),
       file_loop_(file_loop),
       waiting_for_bookmarkbar_model_(false),
+      installed_bookmark_observer_(false),
       is_source_readable_(true),
       headless_(false),
       parent_window_(NULL) {
@@ -423,17 +427,27 @@ ImporterHost::ImporterHost(MessageLoop* file_loop)
 ImporterHost::~ImporterHost() {
   if (NULL != importer_)
     importer_->Release();
+  if (installed_bookmark_observer_) {
+    DCHECK(profile_);  // Only way for waiting_for_bookmarkbar_model_ to be true
+                       // is if we have a profile.
+    profile_->GetBookmarkModel()->RemoveObserver(this);
+  }
 }
 
 void ImporterHost::Loaded(BookmarkModel* model) {
   DCHECK(model->IsLoaded());
   model->RemoveObserver(this);
   waiting_for_bookmarkbar_model_ = false;
+  installed_bookmark_observer_ = false;
 
   std::vector<GURL> starred_urls;
   model->GetBookmarks(&starred_urls);
   importer_->set_import_to_bookmark_bar(starred_urls.size() == 0);
   InvokeTaskIfDone();
+}
+
+void ImporterHost::BookmarkModelBeingDeleted(BookmarkModel* model) {
+  installed_bookmark_observer_ = false;
 }
 
 void ImporterHost::Observe(NotificationType type,
@@ -487,6 +501,9 @@ void ImporterHost::StartImportSettings(const ProfileInfo& profile_info,
                                        uint16 items,
                                        ProfileWriter* writer,
                                        bool first_run) {
+  DCHECK(!profile_);  // We really only support importing from one host at a
+                      // time.
+  profile_ = target_profile;
   // Preserves the observer and creates a task, since we do async import
   // so that it doesn't block the UI. When the import is complete, observer
   // will be notified.
@@ -564,6 +581,7 @@ void ImporterHost::StartImportSettings(const ProfileInfo& profile_info,
   if ((items & FAVORITES) && !writer_->BookmarkModelIsLoaded()) {
     target_profile->GetBookmarkModel()->AddObserver(this);
     waiting_for_bookmarkbar_model_ = true;
+    installed_bookmark_observer_ = true;
   }
 
   // Observes the TemplateURLModel if needed to import search engines from the

@@ -182,6 +182,7 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
                                              const BookmarkNode* node) {}
   virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
                                          const BookmarkNode* node) {}
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model);
 
   // NotificationObserver method. Called when TemplateURLModel has been loaded.
   void Observe(NotificationType type,
@@ -280,6 +281,9 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   NotificationRegistrar registrar_;
   ImporterList importer_list_;
 
+  // Profile we're importing from.
+  Profile* profile_;
+
   Observer* observer_;
   scoped_refptr<ProfileWriter> writer_;
 
@@ -294,6 +298,9 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
 
   // True if we're waiting for the model to finish loading.
   bool waiting_for_bookmarkbar_model_;
+
+  // Have we installed a listener on the bookmark model?
+  bool installed_bookmark_observer_;
 
   // True if source profile is readable.
   bool is_source_readable_;
