@@ -652,7 +652,7 @@ void BrowserRenderProcessHost::SendUserScriptsUpdate(
 bool BrowserRenderProcessHost::FastShutdownIfPossible() {
   if (!process_.handle())
     return false;  // Render process is probably crashed.
-  if (BrowserRenderProcessHost::run_renderer_in_process())
+  if (run_renderer_in_process())
     return false;  // Single process mode can't do fast shutdown.
 
   // Test if there's an unload listener.
@@ -684,7 +684,20 @@ bool BrowserRenderProcessHost::FastShutdownIfPossible() {
   // Otherwise, we're allowed to just terminate the process. Using exit code 0
   // means that UMA won't treat this as a renderer crash.
   process_.Terminate(ResultCodes::NORMAL_EXIT);
+  // On POSIX, we must additionally reap the child.
+#if defined(OS_POSIX)
+  if (zygote_child_) {
+#if defined(OS_LINUX)
+    // If the renderer was created via a zygote, we have to proxy the reaping
+    // through the zygote process.
+    Singleton<ZygoteHost>()->EnsureProcessTerminated(process_.handle());
+#endif  // defined(OS_LINUX)
+  } else {
+    ProcessWatcher::EnsureProcessGetsReaped(process_.handle());
+  }
+#endif  // defined(OS_POSIX)
   process_.Close();
+
   fast_shutdown_started_ = true;
   return true;
 }
