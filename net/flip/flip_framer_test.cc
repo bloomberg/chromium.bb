@@ -61,18 +61,15 @@ class TestFlipVisitor : public FlipFramerVisitorInterface  {
             reinterpret_cast<const FlipFrame*>(frame), &headers);
         DCHECK(parsed_headers);
         syn_frame_count_++;
-        VLOG(2) << "OnSyn(" << frame->stream_id() << ")\n";
         break;
       case SYN_REPLY:
         parsed_headers = framer_->ParseHeaderBlock(
             reinterpret_cast<const FlipFrame*>(frame), &headers);
         DCHECK(parsed_headers);
         syn_reply_frame_count_++;
-        VLOG(2) << "OnSynReply(" << frame->stream_id() << ")\n";
         break;
       case FIN_STREAM:
         fin_frame_count_++;
-        VLOG(2) << "OnFin(" << frame->stream_id() << ")\n";
         break;
       default:
         DCHECK(false);  // Error!

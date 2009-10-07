@@ -16,11 +16,6 @@
 #include "base/logging.h"
 #include "flip_protocol.h"  // cross-google3 directory naming.
 
-#ifdef WIN32
-#undef VLOG
-#define VLOG(x) LOG_IF(INFO, false)
-#endif  // WIN32
-
 namespace flip {
 
 // This class provides facilities for basic binary value packing and unpacking
@@ -114,26 +109,12 @@ class FlipFrameBuilder {
   // payload, returns false.
   bool IteratorHasRoomFor(const void* iter, int len) const {
     const char* end_of_region = reinterpret_cast<const char*>(iter) + len;
-    VLOG(1) << "len: " << len;
-    if (len < 0) {
-      VLOG(1) << "Len < 0";
+    if (len < 0 ||
+        iter < buffer_ ||
+        iter > end_of_payload() ||
+        iter > end_of_region ||
+        end_of_region > end_of_payload())
       return false;
-    } else if (iter < buffer_) {
-      VLOG(1) << "iter < buffer_";
-      return false;
-    } else if (iter > end_of_payload()) {
-      VLOG(1) << "iter > end_of_payload())";
-      return false;
-    } else if (iter > end_of_region) {
-      VLOG(1) << "iter > end_of_region)";
-      return false;
-    } else if (end_of_region > end_of_payload()) {
-      VLOG(1) << "end_of_region > end_of_payload()";
-      VLOG(1) << "end_of_region - end_of_payload(): "
-        << (end_of_region - end_of_payload());
-
-      return false;
-    }
 
     // Watch out for overflow in pointer calculation, which wraps.
     return (iter <= end_of_region) && (end_of_region <= end_of_payload());

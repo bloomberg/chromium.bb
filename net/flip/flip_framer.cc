@@ -9,11 +9,7 @@
 #include "flip_frame_builder.h"
 #include "flip_bitmasks.h"
 
-#ifdef WIN32
 #include "third_party/zlib/zlib.h"
-#else
-#include "third_party/zlib/v1_2_3/zlib.h"
-#endif
 
 namespace flip {
 
@@ -385,18 +381,13 @@ bool FlipFramer::ParseHeaderBlock(const FlipFrame* frame,
   void* iter = NULL;
   uint16 num_headers;
   if (builder.ReadUInt16(&iter, &num_headers)) {
-    VLOG(2) << "found num_headers: " << num_headers;
     for (int index = 0; index < num_headers; ++index) {
       std::string name;
       std::string value;
-      if (!builder.ReadString(&iter, &name)) {
-        VLOG(1) << "couldn't read string (key)!";
+      if (!builder.ReadString(&iter, &name))
         break;
-      }
-      if (!builder.ReadString(&iter, &value)) {
-        VLOG(1) << "couldn't read string (value)!";
+      if (!builder.ReadString(&iter, &value))
         break;
-      }
       if (block->empty()) {
         (*block)[name] = value;
       } else {
@@ -410,8 +401,6 @@ bool FlipFramer::ParseHeaderBlock(const FlipFrame* frame,
       }
     }
     return true;
-  } else {
-    VLOG(2) << "didn't find headers";
   }
   return false;
 }

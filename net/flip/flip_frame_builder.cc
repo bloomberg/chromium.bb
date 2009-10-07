@@ -64,14 +64,11 @@ bool FlipFrameBuilder::ReadString(void** iter, std::string* result) const {
   DCHECK(iter);
 
   uint16 len;
-  if (!ReadUInt16(iter, &len)) {
-    VLOG(1) << "Unable to read length";
+  if (!ReadUInt16(iter, &len))
     return false;
-  }
-  if (!IteratorHasRoomFor(*iter, len)) {
-    VLOG(1) << "!IteratorHasRoomFor";
+
+  if (!IteratorHasRoomFor(*iter, len))
     return false;
-  }
 
   char* chars = reinterpret_cast<char*>(*iter);
   result->assign(chars, len);
