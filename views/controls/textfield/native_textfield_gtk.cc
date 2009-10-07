@@ -20,6 +20,10 @@ NativeTextfieldGtk::NativeTextfieldGtk(Textfield* textfield)
     : textfield_(textfield) {
   if (textfield_->style() & Textfield::STYLE_MULTILINE)
     NOTIMPLEMENTED();  // We don't support multiline yet.
+  // Make |textfield| the focused view, so that when we get focused the focus
+  // manager sees |textfield| as the focused view (since we are just a wrapper
+  // view).
+  set_focus_view(textfield);
 }
 
 NativeTextfieldGtk::~NativeTextfieldGtk() {

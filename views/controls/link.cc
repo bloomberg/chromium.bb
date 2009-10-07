@@ -123,13 +123,8 @@ void Link::OnMouseReleased(const MouseEvent& e, bool canceled) {
 }
 
 bool Link::OnKeyPressed(const KeyEvent& e) {
-#if defined(OS_WIN)
   bool activate = ((e.GetKeyCode() == base::VKEY_SPACE) ||
                    (e.GetKeyCode() == base::VKEY_RETURN));
-#else
-  bool activate = false;
-  NOTIMPLEMENTED();
-#endif
   if (!activate)
     return false;
 
@@ -145,14 +140,9 @@ bool Link::OnKeyPressed(const KeyEvent& e) {
 }
 
 bool Link::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
-#if defined(OS_WIN)
   // Make sure we don't process space or enter as accelerators.
   return (e.GetKeyCode() == base::VKEY_SPACE) ||
       (e.GetKeyCode() == base::VKEY_RETURN);
-#else
-  NOTIMPLEMENTED();
-  return false;
-#endif
 }
 
 void Link::SetFont(const gfx::Font& font) {

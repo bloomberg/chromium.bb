@@ -617,8 +617,13 @@ View* RootView::FindNextFocusableViewImpl(View* starting_view,
                                           FocusTraversable** focus_traversable,
                                           View** focus_traversable_view) {
   if (check_starting_view) {
-    if (IsViewFocusableCandidate(starting_view, skip_group_id))
-      return FindSelectedViewForGroup(starting_view);
+    if (IsViewFocusableCandidate(starting_view, skip_group_id)) {
+      View* v = FindSelectedViewForGroup(starting_view);
+      // The selected view might not be focusable (if it is disabled for
+      // example).
+      if (v && v->IsFocusable())
+        return v;
+    }
 
     *focus_traversable = starting_view->GetFocusTraversable();
     if (*focus_traversable) {
@@ -710,7 +715,11 @@ View* RootView::FindPreviousFocusableViewImpl(
   // a FocusTraversable, since we do not want to go down any more.
   if (check_starting_view &&
       IsViewFocusableCandidate(starting_view, skip_group_id)) {
-    return FindSelectedViewForGroup(starting_view);
+    View* v = FindSelectedViewForGroup(starting_view);
+    // The selected view might not be focusable (if it is disabled for
+    // example).
+    if (v && v->IsFocusable())
+      return v;
   }
 
   // Then try the left sibling.

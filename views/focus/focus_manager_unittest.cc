@@ -41,68 +41,70 @@
 #include "views/window/window_gtk.h"
 #endif
 
+namespace {
+const int kWindowWidth = 600;
+const int kWindowHeight = 500;
+
+int count = 1;
+
+const int kTopCheckBoxID = count++;  // 1
+const int kLeftContainerID = count++;
+const int kAppleLabelID = count++;
+const int kAppleTextfieldID = count++;
+const int kOrangeLabelID = count++;  // 5
+const int kOrangeTextfieldID = count++;
+const int kBananaLabelID = count++;
+const int kBananaTextfieldID = count++;
+const int kKiwiLabelID = count++;
+const int kKiwiTextfieldID = count++;  // 10
+const int kFruitButtonID = count++;
+const int kFruitCheckBoxID = count++;
+const int kComboboxID = count++;
+
+const int kRightContainerID = count++;
+const int kAsparagusButtonID = count++;  // 15
+const int kBroccoliButtonID = count++;
+const int kCauliflowerButtonID = count++;
+
+const int kInnerContainerID = count++;
+const int kScrollViewID = count++;
+const int kRosettaLinkID = count++;  // 20
+const int kStupeurEtTremblementLinkID = count++;
+const int kDinerGameLinkID = count++;
+const int kRidiculeLinkID = count++;
+const int kClosetLinkID = count++;
+const int kVisitingLinkID = count++;  // 25
+const int kAmelieLinkID = count++;
+const int kJoyeuxNoelLinkID = count++;
+const int kCampingLinkID = count++;
+const int kBriceDeNiceLinkID = count++;
+const int kTaxiLinkID = count++;  // 30
+const int kAsterixLinkID = count++;
+
+const int kOKButtonID = count++;
+const int kCancelButtonID = count++;
+const int kHelpButtonID = count++;
+
+
+const int kStyleContainerID = count++;  // 35
+const int kBoldCheckBoxID = count++;
+const int kItalicCheckBoxID = count++;
+const int kUnderlinedCheckBoxID = count++;
+const int kStyleHelpLinkID = count++;
+const int kStyleTextEditID = count++;  // 40
+
+const int kSearchContainerID = count++;
+const int kSearchTextfieldID = count++;
+const int kSearchButtonID = count++;
+const int kHelpLinkID = count++;
+
+const int kThumbnailContainerID = count++;  // 45
+const int kThumbnailStarID = count++;
+const int kThumbnailSuperStarID = count++;
+}
+
 namespace views {
 
-static const int kWindowWidth = 600;
-static const int kWindowHeight = 500;
-
-#if defined(OS_WIN)
-static int count = 1;
-
-static const int kTopCheckBoxID = count++;  // 1
-static const int kLeftContainerID = count++;
-static const int kAppleLabelID = count++;
-static const int kAppleTextfieldID = count++;
-static const int kOrangeLabelID = count++;  // 5
-static const int kOrangeTextfieldID = count++;
-static const int kBananaLabelID = count++;
-static const int kBananaTextfieldID = count++;
-static const int kKiwiLabelID = count++;
-static const int kKiwiTextfieldID = count++; // 10
-static const int kFruitButtonID = count++;
-static const int kFruitCheckBoxID = count++;
-static const int kComboboxID = count++;
-
-static const int kRightContainerID = count++;
-static const int kAsparagusButtonID = count++;  // 15
-static const int kBroccoliButtonID = count++;
-static const int kCauliflowerButtonID = count++;
-
-static const int kInnerContainerID = count++;
-static const int kScrollViewID = count++;
-static const int kRosettaLinkID = count++;  // 20
-static const int kStupeurEtTremblementLinkID = count++;
-static const int kDinerGameLinkID = count++;
-static const int kRidiculeLinkID = count++;
-static const int kClosetLinkID = count++;
-static const int kVisitingLinkID = count++;  // 25
-static const int kAmelieLinkID = count++;
-static const int kJoyeuxNoelLinkID = count++;
-static const int kCampingLinkID = count++;
-static const int kBriceDeNiceLinkID = count++;
-static const int kTaxiLinkID = count++;  // 30
-static const int kAsterixLinkID = count++;
-
-static const int kOKButtonID = count++;
-static const int kCancelButtonID = count++;
-static const int kHelpButtonID = count++;
-
-static const int kStyleContainerID = count++;  // 35
-static const int kBoldCheckBoxID = count++;
-static const int kItalicCheckBoxID = count++;
-static const int kUnderlinedCheckBoxID = count++;
-static const int kStyleHelpLinkID = count++;
-static const int kStyleTextEditID = count++;  // 40
-
-static const int kSearchContainerID = count++;
-static const int kSearchTextfieldID = count++;
-static const int kSearchButtonID = count++;
-static const int kHelpLinkID = count++;
-
-static const int kThumbnailContainerID = count++;  // 45
-static const int kThumbnailStarID = count++;
-static const int kThumbnailSuperStarID = count++;
-#endif
 
 class FocusManagerTest : public testing::Test, public WindowDelegate {
  public:
@@ -258,11 +260,9 @@ class BorderView : public NativeViewHost {
         widget_ = widget_win;
 #else
         WidgetGtk* widget_gtk = new WidgetGtk(WidgetGtk::TYPE_CHILD);
-        // TODO(jcampan): implement WidgetGtk::SetFocusTraversableParentView()
-        // widget_gtk->SetFocusTraversableParentView(this);
+        widget_gtk->Init(native_view(), gfx::Rect(0, 0, 0, 0));
+        widget_gtk->SetFocusTraversableParentView(this);
         widget_ = widget_gtk;
-        widget_->Init(parent->GetRootView()->GetWidget()->GetNativeView(),
-                      gfx::Rect(0, 0, 0, 0));
 #endif
         widget_->SetContentsView(child_);
       }
@@ -290,7 +290,6 @@ class DummyComboboxModel : public ComboboxModel {
   }
 };
 
-#if defined(OS_WIN)
 class FocusTraversalTest : public FocusManagerTest {
  public:
   ~FocusTraversalTest();
@@ -442,7 +441,7 @@ void FocusTraversalTest::InitContentView() {
   y = 10;
   int radio_button_height = 15;
   int gap_between_radio_buttons = 10;
-  View* radio_button = new RadioButton(L"Asparagus", 1);
+  RadioButton* radio_button = new RadioButton(L"Asparagus", 1);
   radio_button->SetID(kAsparagusButtonID);
   right_container->AddChildView(radio_button);
   radio_button->SetBounds(5, y, 70, radio_button_height);
@@ -453,6 +452,7 @@ void FocusTraversalTest::InitContentView() {
   right_container->AddChildView(radio_button);
   radio_button->SetBounds(5, y, 70, radio_button_height);
   radio_button->SetGroup(1);
+  RadioButton* radio_button_to_check = radio_button;
   y += radio_button_height + gap_between_radio_buttons;
   radio_button = new RadioButton(L"Cauliflower", 1);
   radio_button->SetID(kCauliflowerButtonID);
@@ -603,8 +603,10 @@ void FocusTraversalTest::InitContentView() {
 
   content_view_->AddChildView(contents);
   contents->SetBounds(250, y, 200, 50);
+  // We can only call RadioButton::SetChecked() on the radio-button is part of
+  // the view hierarchy.
+  radio_button_to_check->SetChecked(true);
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // The tests
@@ -898,7 +900,6 @@ TEST_F(FocusManagerTest, FocusStoreRestore) {
   */
 }
 
-#if defined(OS_WIN)
 TEST_F(FocusManagerTest, ContainsView) {
   View* view = new View();
   scoped_ptr<View> detached_view(new View());
@@ -923,7 +924,7 @@ TEST_F(FocusManagerTest, ContainsView) {
 TEST_F(FocusTraversalTest, NormalTraversal) {
   const int kTraversalIDs[] = { kTopCheckBoxID,  kAppleTextfieldID,
       kOrangeTextfieldID, kBananaTextfieldID, kKiwiTextfieldID,
-      kFruitButtonID, kFruitCheckBoxID, kComboboxID, kAsparagusButtonID,
+      kFruitButtonID, kFruitCheckBoxID, kComboboxID, kBroccoliButtonID,
       kRosettaLinkID, kStupeurEtTremblementLinkID,
       kDinerGameLinkID, kRidiculeLinkID, kClosetLinkID, kVisitingLinkID,
       kAmelieLinkID, kJoyeuxNoelLinkID, kCampingLinkID, kBriceDeNiceLinkID,
@@ -939,7 +940,7 @@ TEST_F(FocusTraversalTest, NormalTraversal) {
 
   // Let's traverse the whole focus hierarchy (several times, to make sure it
   // loops OK).
-  GetFocusManager()->SetFocusedView(NULL);
+  GetFocusManager()->ClearFocus();
   for (int i = 0; i < 3; ++i) {
     for (size_t j = 0; j < arraysize(kTraversalIDs); j++) {
       GetFocusManager()->AdvanceFocus(false);
@@ -951,7 +952,7 @@ TEST_F(FocusTraversalTest, NormalTraversal) {
   }
 
   // Let's traverse in reverse order.
-  GetFocusManager()->SetFocusedView(NULL);
+  GetFocusManager()->ClearFocus();
   for (int i = 0; i < 3; ++i) {
     for (int j = arraysize(kTraversalIDs) - 1; j >= 0; --j) {
       GetFocusManager()->AdvanceFocus(true);
@@ -993,7 +994,7 @@ TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
 
   View* focused_view;
   // Let's do one traversal (several times, to make sure it loops ok).
-  GetFocusManager()->SetFocusedView(NULL);
+  GetFocusManager()->ClearFocus();
   for (int i = 0; i < 3; ++i) {
     for (size_t j = 0; j < arraysize(kTraversalIDs); j++) {
       GetFocusManager()->AdvanceFocus(false);
@@ -1005,7 +1006,7 @@ TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
   }
 
   // Same thing in reverse.
-  GetFocusManager()->SetFocusedView(NULL);
+  GetFocusManager()->ClearFocus();
   for (int i = 0; i < 3; ++i) {
     for (int j = arraysize(kTraversalIDs) - 1; j >= 0; --j) {
       GetFocusManager()->AdvanceFocus(true);
@@ -1016,7 +1017,6 @@ TEST_F(FocusTraversalTest, TraversalWithNonEnabledViews) {
     }
   }
 }
-#endif
 
 // Counts accelerator calls.
 class TestAcceleratorTarget : public AcceleratorTarget {
