@@ -85,32 +85,35 @@ static const NPUTF8 *pluginPropertyIdentifierNames[NUM_PROPERTY_IDENTIFIERS] = {
     "testObjectCount",
 };
 
-#define ID_TEST_CALLBACK_METHOD     0
-#define ID_TEST_GETURL              1
-#define ID_REMOVE_DEFAULT_METHOD    2
-#define ID_TEST_DOM_ACCESS          3
-#define ID_TEST_GET_URL_NOTIFY      4
-#define ID_TEST_INVOKE_DEFAULT      5
-#define ID_DESTROY_STREAM           6
-#define ID_TEST_ENUMERATE           7
-#define ID_TEST_GETINTIDENTIFIER    8
-#define ID_TEST_GET_PROPERTY        9
-#define ID_TEST_EVALUATE            10
-#define ID_TEST_GET_PROPERTY_RETURN_VALUE 11
-#define ID_TEST_CALLBACK_METHOD_RET 12
-#define ID_TEST_CREATE_TEST_OBJECT  13
-#define ID_TEST_PASS_TEST_OBJECT    14
-#define ID_TEST_CLONE_OBJECT        15
-#define ID_TEST_SCRIPT_OBJECT_INVOKE 16
-#define ID_TEST_IDENTIFIER_TO_STRING 17
-#define ID_TEST_IDENTIFIER_TO_INT   18
-#define ID_TEST_POSTURL_FILE        19
-#define ID_TEST_CALLBACK_AND_GET_VALUE 20
-#define ID_TEST_CONSTRUCT           21
-#define ID_DESTROY_NULL_STREAM      22
-#define ID_TEST_HAS_PROPERTY        23
-#define ID_TEST_HAS_METHOD          24
-#define NUM_METHOD_IDENTIFIERS      25
+enum {
+    ID_TEST_CALLBACK_METHOD = 0,
+    ID_TEST_GETURL,
+    ID_REMOVE_DEFAULT_METHOD,
+    ID_TEST_DOM_ACCESS,
+    ID_TEST_GET_URL_NOTIFY,
+    ID_TEST_INVOKE_DEFAULT,
+    ID_DESTROY_STREAM,
+    ID_TEST_ENUMERATE,
+    ID_TEST_GETINTIDENTIFIER,
+    ID_TEST_GET_PROPERTY,
+    ID_TEST_EVALUATE,
+    ID_TEST_GET_PROPERTY_RETURN_VALUE,
+    ID_TEST_CALLBACK_METHOD_RET,
+    ID_TEST_CREATE_TEST_OBJECT,
+    ID_TEST_PASS_TEST_OBJECT,
+    ID_TEST_CLONE_OBJECT,
+    ID_TEST_SCRIPT_OBJECT_INVOKE,
+    ID_TEST_IDENTIFIER_TO_STRING,
+    ID_TEST_IDENTIFIER_TO_INT,
+    ID_TEST_POSTURL_FILE,
+    ID_TEST_CALLBACK_AND_GET_VALUE,
+    ID_TEST_CONSTRUCT,
+    ID_DESTROY_NULL_STREAM,
+    ID_TEST_HAS_PROPERTY,
+    ID_TEST_HAS_METHOD,
+    ID_TEST_THROW_EXCEPTION_METHOD,
+    NUM_METHOD_IDENTIFIERS
+};
 
 static NPIdentifier pluginMethodIdentifiers[NUM_METHOD_IDENTIFIERS];
 static const NPUTF8 *pluginMethodIdentifierNames[NUM_METHOD_IDENTIFIERS] = {
@@ -139,7 +142,8 @@ static const NPUTF8 *pluginMethodIdentifierNames[NUM_METHOD_IDENTIFIERS] = {
     "testConstruct",
     "destroyNullStream",
     "testHasProperty",
-    "testHasMethod"
+    "testHasMethod",
+    "testThrowException"
 };
 
 static NPUTF8* createCStringFromNPVariant(const NPVariant* variant)
@@ -778,16 +782,20 @@ static bool pluginInvoke(NPObject* header, NPIdentifier name, const NPVariant* a
             }
             return true;
         }
-    } else if (name == pluginMethodIdentifiers[ID_TEST_CALLBACK_AND_GET_VALUE]) {
+    } else if (name == pluginMethodIdentifiers[ID_TEST_CALLBACK_AND_GET_VALUE])
         return testCallbackAndGetValue(plugin, args, argCount, result);
-    } else if (name == pluginMethodIdentifiers[ID_TEST_CONSTRUCT]) {
+    else if (name == pluginMethodIdentifiers[ID_TEST_CONSTRUCT])
         return testConstruct(plugin, args, argCount, result);
-    } else if (name == pluginMethodIdentifiers[ID_DESTROY_NULL_STREAM])
+    else if (name == pluginMethodIdentifiers[ID_DESTROY_NULL_STREAM])
         return destroyNullStream(plugin, args, argCount, result);
     else if (name == pluginMethodIdentifiers[ID_TEST_HAS_PROPERTY])
         return testHasProperty(plugin, args, argCount, result);
     else if (name == pluginMethodIdentifiers[ID_TEST_HAS_METHOD])
         return testHasMethod(plugin, args, argCount, result);
+    else if (name == pluginMethodIdentifiers[ID_TEST_THROW_EXCEPTION_METHOD]) {
+        browser->setexception(header, "plugin object testThrowException SUCCESS");
+        return true;
+    }
 
     return false;
 }
