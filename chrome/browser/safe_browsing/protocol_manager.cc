@@ -51,7 +51,9 @@ static const char* const kSbMalwareReportUrl =
     "http://safebrowsing.clients.google.com/safebrowsing/report?evts=malblhit"
     "&evtd=%s&evtr=%s&evhr=%s&client=%s&appver=%s";
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if defined(CHROME_FRAME_BUILD)
+static const char* const kSbClientName = "googlechromeframe";
+#elif defined(GOOGLE_CHROME_BUILD)
 static const char* const kSbClientName = "googlechrome";
 #else
 static const char* const kSbClientName = "chromium";
