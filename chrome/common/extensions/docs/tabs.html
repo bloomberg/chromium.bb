@@ -1126,12 +1126,12 @@ For example:
                   </p>
 
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>string language</span>) <span class="subdued">{...}</span>);</pre>
+                  <pre>function(<span>array of object topLanguages</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
                     <div jsinstance="*0">
                       <div>
           <dt>
-            <var>language</var>
+            <var>topLanguages</var>
               <em>
 
                 <!-- TYPE -->
@@ -1143,10 +1143,20 @@ For example:
                         <a> Type</a>
                       </span>
                       <span>
+                        <span>
+                          array of <span><span>
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
                         <span style="display: none; ">
                           array of <span><span></span></span>
                         </span>
-                        <span>string</span>
+                        <span>object</span>
+                      </span>
+                    </span></span>
+                        </span>
+                        <span style="display: none; ">paramType</span>
                       </span>
                     </span>
                   )
@@ -1157,7 +1167,7 @@ For example:
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>An ISO language code like <var>en</var> or <var>fr</var>. For the complete list of languages supported by this method, see 2nd column of kLanguageInfoTable in http://src.chromium.org/viewvc/chrome/trunk/src/third_party/cld/bar/toolbar/cld/i18n/languages/internal/languages.cc</dd>
+          <dd>The top three languages used in the document, in decreasing order of usage.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">

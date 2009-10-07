@@ -11,8 +11,10 @@ LICENSE file.
 var selectedId = -1;
 function refreshLanguage() {
   console.log("refeshing...");
-  chrome.tabs.detectLanguage(null, function(language) {
-    document.getElementById("languageDiv").innerHTML = language;
+  chrome.tabs.detectLanguage(null, function(topLanguages) {
+    var dictionaryValue = topLanguages[0];
+    document.getElementById("languageDiv").innerHTML =
+        dictionaryValue.languageName;
   });
 }
 

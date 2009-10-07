@@ -14,8 +14,10 @@ function testTabsAPI() {
 // function to make sure it can be used as an extension API. This will pass if
 // the browser navigates to a page in French language before this is called.
 function testTabsLanguageAPI() {
-  chrome.tabs.detectLanguage(null, function(language) {
-    window.domAutomationController.send(language == 'fr');
+  chrome.tabs.detectLanguage(null, function(topLanguages) {
+    window.domAutomationController.send(topLanguages[0].languageName == 'it' &&
+                                        topLanguages[1].languageName == 'en' &&
+                                        topLanguages[2].languageName == 'fr');
   });
 }
 

@@ -855,8 +855,9 @@ void DetectTabLanguageFunction::Observe(NotificationType type,
                                         const NotificationSource& source,
                                         const NotificationDetails& details) {
   DCHECK(type == NotificationType::TAB_LANGUAGE_DETERMINED);
-  std::string language(*Details<std::string>(details).ptr());
-  result_.reset(Value::CreateStringValue(language.c_str()));
+  ListValue* list = static_cast<ListValue*>(Details<ListValue>(details).
+      ptr()->DeepCopy());
+  result_.reset(list);
   SendResponse(true);
   Release();  // balanced in Run()
 }
