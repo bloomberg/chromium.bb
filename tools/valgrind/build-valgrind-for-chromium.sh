@@ -167,6 +167,24 @@ then
 
   test -d "${OVERRIDE_LD_DIR}" && rm -rf "${OVERRIDE_LD_DIR}"
 
+  # Build and install gdb if needed
+  case `uname` in
+  Darwin)
+    cd gdb-1344/src
+    ./configure --prefix="${PREFIX}"
+    # gdb makefile is not yet parallel-safe
+    make
+    if test -w "${parent_of_prefix}"
+    then
+       make install
+    else
+       sudo make install
+    fi
+    cd ../..
+    ;;
+  esac
+
+  # Finally install valgrind.
   # Don't use sudo if we own the destination
   if test -w "${parent_of_prefix}"
   then
@@ -175,18 +193,5 @@ then
      sudo make install
   fi
 
-  case `uname` in
-  Darwin)
-    cd gdb-1344/src
-    ./configure --prefix="${PREFIX}"
-    make -j4
-    if test -w "${parent_of_prefix}"
-    then
-       make install
-    else
-       sudo make install
-    fi
-    ;;
-  esac
   cd ..
 fi
