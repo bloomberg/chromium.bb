@@ -77,6 +77,7 @@ static const char* const g_executables[] = {
   "hta",
   "htm",
   "html",
+  "htt",
   "inf",
   "ins",
   "isp",
@@ -101,6 +102,8 @@ static const char* const g_executables[] = {
   "mdt",
   "mdw",
   "mdz",
+  "mht",
+  "mhtml",
   "msc",
   "msh",
   "mshxml",
@@ -138,6 +141,9 @@ static const char* const g_executables[] = {
   "xht",
   "xhtm",
   "xhtml",
+  "xml",
+  "xsl",
+  "xslt",
 #elif defined(OS_LINUX)
   // TODO(estade): lengthen this list.
   "exe",
