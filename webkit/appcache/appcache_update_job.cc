@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "webkit/appcache/appcache_group.h"
@@ -15,6 +16,7 @@ namespace appcache {
 
 static const int kBufferSize = 4096;
 static const size_t kMaxConcurrentUrlFetches = 2;
+static const int kMax503Retries = 3;
 
 // Extra info associated with requests for use during response processing.
 // This info is deleted when the URLRequest is deleted.
@@ -27,12 +29,15 @@ struct UpdateJobInfo :  public URLRequest::UserData {
 
   explicit UpdateJobInfo(RequestType request_type)
       : type(request_type),
-        buffer(new net::IOBuffer(kBufferSize)) {
+        buffer(new net::IOBuffer(kBufferSize)),
+        retry_503_attempts(0) {
   }
 
   RequestType type;
   scoped_refptr<net::IOBuffer> buffer;
   // TODO(jennb): need storage info to stream response data to storage
+
+  int retry_503_attempts;
 };
 
 // Helper class for collecting hosts per frontend when sending notifications
@@ -219,7 +224,13 @@ void AppCacheUpdateJob::OnReceivedRedirect(URLRequest* request,
 }
 
 void AppCacheUpdateJob::OnResponseCompleted(URLRequest* request) {
-  // TODO(jennb): think about retrying for 503s where retry-after is 0
+  // Retry for 503s where retry-after is 0.
+  if (request->status().is_success() &&
+      request->GetResponseCode() == 503 &&
+      RetryRequest(request)) {
+    return;
+  }
+
   UpdateJobInfo* info =
       static_cast<UpdateJobInfo*>(request->GetUserData(this));
   switch (info->type) {
@@ -239,12 +250,50 @@ void AppCacheUpdateJob::OnResponseCompleted(URLRequest* request) {
   delete request;
 }
 
+bool AppCacheUpdateJob::RetryRequest(URLRequest* request) {
+  UpdateJobInfo* info =
+      static_cast<UpdateJobInfo*>(request->GetUserData(this));
+  if (info->retry_503_attempts >= kMax503Retries) {
+    return false;
+  }
+
+  if (!request->response_headers()->HasHeaderValue("retry-after", "0"))
+    return false;
+
+  const GURL& url = request->original_url();
+  URLRequest* retry = new URLRequest(url, this);
+  UpdateJobInfo* retry_info = new UpdateJobInfo(info->type);
+  retry_info->retry_503_attempts = info->retry_503_attempts + 1;
+  retry->SetUserData(this, retry_info);
+  retry->set_context(request->context());
+  retry->set_load_flags(request->load_flags());
+
+  switch (info->type) {
+    case UpdateJobInfo::MANIFEST_FETCH:
+    case UpdateJobInfo::MANIFEST_REFETCH:
+      manifest_url_request_ = retry;
+      manifest_data_.clear();
+      break;
+    case UpdateJobInfo::URL_FETCH:
+      pending_url_fetches_.erase(url);
+      pending_url_fetches_.insert(PendingUrlFetches::value_type(url, retry));
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  retry->Start();
+
+  delete request;
+  return true;
+}
+
 void AppCacheUpdateJob::HandleManifestFetchCompleted(URLRequest* request) {
   DCHECK(internal_state_ == FETCH_MANIFEST);
   manifest_url_request_ = NULL;
 
   if (!request->status().is_success()) {
-    LOG(ERROR) << "Request non-success, status: " << request->status().status()
+    LOG(INFO) << "Request non-success, status: " << request->status().status()
         << " os_error: " << request->status().os_error();
     internal_state_ = CACHE_FAILURE;
     MaybeCompleteUpdate();  // if not done, run async cache failure steps
@@ -255,7 +304,7 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLRequest* request) {
   std::string mime_type;
   request->GetMimeType(&mime_type);
 
-  if (response_code == 200 && mime_type == kManifestMimeType) {
+  if ((response_code / 100 == 2) && mime_type == kManifestMimeType) {
     if (update_type_ == UPGRADE_ATTEMPT)
       CheckIfManifestChanged();  // continues asynchronously
     else
@@ -268,7 +317,7 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLRequest* request) {
     NotifyAllPendingMasterHosts(ERROR_EVENT);
     DeleteSoon();
   } else {
-    LOG(ERROR) << "Cache failure, response code: " << response_code;
+    LOG(INFO) << "Cache failure, response code: " << response_code;
     internal_state_ = CACHE_FAILURE;
     MaybeCompleteUpdate();  // if not done, run async cache failure steps
   }
@@ -287,7 +336,7 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
   Manifest manifest;
   if (!ParseManifest(manifest_url_, manifest_data_.data(),
                      manifest_data_.length(), manifest)) {
-    LOG(ERROR) << "Failed to parse manifest: " << manifest_url_;
+    LOG(INFO) << "Failed to parse manifest: " << manifest_url_;
     internal_state_ = CACHE_FAILURE;
     MaybeCompleteUpdate();  // if not done, run async cache failure steps
     return;
@@ -327,7 +376,7 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLRequest* request) {
   int response_code = request->GetResponseCode();
   AppCacheEntry& entry = url_file_list_.find(url)->second;
 
-  if (request->status().is_success() && response_code == 200) {
+  if (request->status().is_success() && (response_code / 100 == 2)) {
     // TODO(jennb): associate storage with the new entry
     inprogress_cache_->AddEntry(url, entry);
 
@@ -337,7 +386,7 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLRequest* request) {
     // whose value doesn't match the manifest url of the application cache
     // being processed, mark the entry as being foreign.
   } else {
-    LOG(ERROR) << "Request status: " << request->status().status()
+    LOG(INFO) << "Request status: " << request->status().status()
         << " os_error: " << request->status().os_error()
         << " response code: " << response_code;
 
@@ -403,7 +452,7 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLRequest* request) {
     DeleteSoon();
     // TODO(jennb): end of part that needs to be made async.
   } else {
-    LOG(ERROR) << "Request status: " << request->status().status()
+    LOG(INFO) << "Request status: " << request->status().status()
         << " os_error: " << request->status().os_error()
         << " response code: " << response_code;
     ScheduleUpdateRetry(kRerunDelayMs);

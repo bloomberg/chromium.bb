@@ -75,6 +75,107 @@ static URLRequestJob* RedirectFactory(URLRequest* request,
                                true);
 }
 
+// Helper class to simulate a URL that returns retry or success.
+class RetryRequestTestJob : public URLRequestTestJob {
+ public:
+  enum RetryHeader {
+    NO_RETRY_AFTER,
+    NONZERO_RETRY_AFTER,
+    RETRY_AFTER_0,
+  };
+
+  static const GURL kRetryUrl;
+
+  // Call this at the start of each retry test.
+  static void Initialize(int num_retry_responses, RetryHeader header,
+      int expected_requests) {
+    num_requests_ = 0;
+    num_retries_ = num_retry_responses;
+    retry_after_ = header;
+    expected_requests_ = expected_requests;
+  }
+
+  // Verifies results at end of test and resets counters.
+  static void Verify() {
+    EXPECT_EQ(expected_requests_, num_requests_);
+    num_requests_ = 0;
+    expected_requests_ = 0;
+  }
+
+  static URLRequestJob* RetryFactory(URLRequest* request,
+                                   const std::string& scheme) {
+    ++num_requests_;
+    if (num_retries_ > 0 && request->original_url() == kRetryUrl) {
+      --num_retries_;
+      return new RetryRequestTestJob(
+          request, RetryRequestTestJob::retry_headers(), 503);
+    } else {
+      return new RetryRequestTestJob(
+          request, RetryRequestTestJob::manifest_headers(), 200);
+    }
+  }
+
+  virtual int GetResponseCode() const { return response_code_; }
+
+ private:
+  static std::string retry_headers() {
+    const char no_retry_after[] =
+        "HTTP/1.1 503 BOO HOO\0"
+        "\0";
+    const char nonzero[] =
+        "HTTP/1.1 503 BOO HOO\0"
+        "Retry-After: 60\0"
+        "\0";
+    const char retry_after_0[] =
+        "HTTP/1.1 503 BOO HOO\0"
+        "Retry-After: 0\0"
+        "\0";
+
+    switch (retry_after_) {
+      case NO_RETRY_AFTER:
+        return std::string(no_retry_after, arraysize(no_retry_after));
+      case NONZERO_RETRY_AFTER:
+        return std::string(nonzero, arraysize(nonzero));
+      case RETRY_AFTER_0:
+      default:
+        return std::string(retry_after_0, arraysize(retry_after_0));
+    }
+  }
+
+  static std::string manifest_headers() {
+    const char headers[] =
+        "HTTP/1.1 200 OK\0"
+        "Content-type: text/cache-manifest\0"
+        "\0";
+    return std::string(headers, arraysize(headers));
+  }
+
+  static std::string data() {
+    return std::string("CACHE MANIFEST\r"
+        "http://retry\r");  // must be same as kRetryUrl
+  }
+
+  explicit RetryRequestTestJob(URLRequest* request, const std::string& headers,
+                               int response_code)
+      : URLRequestTestJob(request, headers, data(), true),
+        response_code_(response_code) {
+  }
+
+  int response_code_;
+
+  static int num_requests_;
+  static int num_retries_;
+  static RetryHeader retry_after_;
+  static int expected_requests_;
+};
+
+// static
+const GURL RetryRequestTestJob::kRetryUrl("http://retry");
+int RetryRequestTestJob::num_requests_ = 0;
+int RetryRequestTestJob::num_retries_;
+RetryRequestTestJob::RetryHeader RetryRequestTestJob::retry_after_;
+int RetryRequestTestJob::expected_requests_ = 0;
+
 class AppCacheUpdateJobTest : public testing::Test,
                               public AppCacheGroup::Observer {
  public:
@@ -85,11 +186,13 @@ class AppCacheUpdateJobTest : public testing::Test,
         expect_group_has_cache_(false),
         expect_old_cache_(NULL),
         expect_newest_cache_(NULL),
-        tested_manifest_(NONE) {
+        tested_manifest_(NONE),
+        registered_factory_(false),
+        old_factory_(NULL) {
   }
 
   static void SetUpTestCase() {
-    io_thread_.reset(new base::Thread("AppCacheUpdateJob IO  test thread"));
+    io_thread_.reset(new base::Thread("AppCacheUpdateJob IO test thread"));
     base::Thread::Options options(MessageLoop::TYPE_IO, 0);
     io_thread_->StartWithOptions(options);
 
@@ -276,7 +379,9 @@ class AppCacheUpdateJobTest : public testing::Test,
   void ManifestRedirectTest() {
     ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
 
-    URLRequest::RegisterProtocolFactory("http", RedirectFactory);
+    old_factory_ =
+        URLRequest::RegisterProtocolFactory("http", RedirectFactory);
+    registered_factory_ = true;
 
     MakeService();
     group_ = new AppCacheGroup(service_.get(), GURL("http://testme"));
@@ -362,7 +467,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     MakeService();
     group_ = new AppCacheGroup(
-      service_.get(), http_server_->TestServerPage("files/gone"));
+        service_.get(), http_server_->TestServerPage("files/gone"));
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
@@ -386,7 +491,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     MakeService();
     group_ = new AppCacheGroup(
-      service_.get(), http_server_->TestServerPage("files/notmodified"));
+        service_.get(), http_server_->TestServerPage("files/notmodified"));
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
@@ -483,7 +588,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     MakeService();
     group_ = new AppCacheGroup(
-      service_.get(), http_server_->TestServerPage("files/manifest1"));
+        service_.get(), http_server_->TestServerPage("files/manifest1"));
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
@@ -604,8 +709,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
 
     MakeService();
-    group_ = new AppCacheGroup(
-      service_.get(), http_server_->TestServerPage("files/manifest-with-404"));
+    group_ = new AppCacheGroup(service_.get(),
+        http_server_->TestServerPage("files/manifest-with-404"));
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
@@ -628,8 +733,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
 
     MakeService();
-    group_ = new AppCacheGroup(
-      service_.get(), http_server_->TestServerPage("files/manifest-fb-404"));
+    group_ = new AppCacheGroup(service_.get(),
+        http_server_->TestServerPage("files/manifest-fb-404"));
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
@@ -785,6 +890,155 @@ class AppCacheUpdateJobTest : public testing::Test,
     WaitForUpdateToFinish();
   }
 
+  void RetryRequestTest() {
+    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+
+    // Set some large number of times to return retry.
+    // Expect 1 manifest fetch and 3 retries.
+    RetryRequestTestJob::Initialize(5, RetryRequestTestJob::RETRY_AFTER_0, 4);
+    old_factory_ = URLRequest::RegisterProtocolFactory(
+        "http", RetryRequestTestJob::RetryFactory);
+    registered_factory_ = true;
+
+    MakeService();
+    group_ = new AppCacheGroup(service_.get(), RetryRequestTestJob::kRetryUrl);
+    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(1, frontend);
+    update->StartUpdate(host, GURL::EmptyGURL());
+    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = false;
+    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
+                               CHECKING_EVENT);
+
+    WaitForUpdateToFinish();
+  }
+
+  void RetryNoRetryAfterTest() {
+    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+
+    // Set some large number of times to return retry.
+    // Expect 1 manifest fetch and 0 retries.
+    RetryRequestTestJob::Initialize(5, RetryRequestTestJob::NO_RETRY_AFTER, 1);
+    old_factory_ = URLRequest::RegisterProtocolFactory(
+        "http", RetryRequestTestJob::RetryFactory);
+    registered_factory_ = true;
+
+    MakeService();
+    group_ = new AppCacheGroup(service_.get(), RetryRequestTestJob::kRetryUrl);
+    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(1, frontend);
+    update->StartUpdate(host, GURL::EmptyGURL());
+    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = false;
+    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
+                               CHECKING_EVENT);
+
+    WaitForUpdateToFinish();
+  }
+
+  void RetryNonzeroRetryAfterTest() {
+    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+
+    // Set some large number of times to return retry.
+    // Expect 1 request and 0 retry attempts.
+    RetryRequestTestJob::Initialize(
+        5, RetryRequestTestJob::NONZERO_RETRY_AFTER, 1);
+    old_factory_ = URLRequest::RegisterProtocolFactory(
+        "http", RetryRequestTestJob::RetryFactory);
+    registered_factory_ = true;
+
+    MakeService();
+    group_ = new AppCacheGroup(service_.get(), RetryRequestTestJob::kRetryUrl);
+    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(1, frontend);
+    update->StartUpdate(host, GURL::EmptyGURL());
+    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = false;
+    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
+                               CHECKING_EVENT);
+
+    WaitForUpdateToFinish();
+  }
+
+  void RetrySuccessTest() {
+    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+
+    // Set 2 as the retry limit (does not exceed the max).
+    // Expect 1 manifest fetch, 2 retries, 1 url fetch, 1 manifest refetch.
+    RetryRequestTestJob::Initialize(2, RetryRequestTestJob::RETRY_AFTER_0, 5);
+    old_factory_ = URLRequest::RegisterProtocolFactory(
+        "http", RetryRequestTestJob::RetryFactory);
+    registered_factory_ = true;
+
+    MakeService();
+    group_ = new AppCacheGroup(service_.get(), RetryRequestTestJob::kRetryUrl);
+    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(1, frontend);
+    update->StartUpdate(host, GURL::EmptyGURL());
+    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
+                               CHECKING_EVENT);
+
+    WaitForUpdateToFinish();
+  }
+
+  void RetryUrlTest() {
+    // Set 1 as the retry limit (does not exceed the max).
+    // Expect 1 manifest fetch, 1 url fetch, 1 url retry, 1 manifest refetch.
+    RetryRequestTestJob::Initialize(1, RetryRequestTestJob::RETRY_AFTER_0, 4);
+    old_factory_ = URLRequest::RegisterProtocolFactory(
+        "http", RetryRequestTestJob::RetryFactory);
+    registered_factory_ = true;
+
+    MakeService();
+    group_ = new AppCacheGroup(service_.get(), GURL("http://retryurl"));
+    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(1, frontend);
+    update->StartUpdate(host, GURL::EmptyGURL());
+    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
+                               CHECKING_EVENT);
+
+    WaitForUpdateToFinish();
+  }
+
   void WaitForUpdateToFinish() {
     if (group_->update_status() == AppCacheGroup::IDLE)
       UpdateFinished();
@@ -812,7 +1066,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     STLDeleteContainerPointers(hosts_.begin(), hosts_.end());
     STLDeleteContainerPointers(frontends_.begin(), frontends_.end());
     service_.reset(NULL);
-    URLRequest::RegisterProtocolFactory("http", NULL);
+    if (registered_factory_)
+      URLRequest::RegisterProtocolFactory("http", old_factory_);
 
     event_->Signal();
   }
@@ -847,6 +1102,8 @@ class AppCacheUpdateJobTest : public testing::Test,
   // Verifies conditions about the group and notifications after an update
   // has finished. Cannot verify update job internals as update is deleted.
   void VerifyExpectations() {
+    RetryRequestTestJob::Verify();
+
     EXPECT_EQ(expect_group_obsolete_, group_->is_obsolete());
 
     if (expect_group_has_cache_) {
@@ -1034,6 +1291,9 @@ class AppCacheUpdateJobTest : public testing::Test,
   std::vector<MockFrontend*> frontends_;  // to check expected events
   TestedManifest tested_manifest_;
   AppCache::EntryMap expect_extra_entries_;
+
+  bool registered_factory_;
+  URLRequest::ProtocolFactory* old_factory_;
 };
 
 // static
@@ -1170,6 +1430,26 @@ TEST_F(AppCacheUpdateJobTest, UpgradeFailMasterUrlFetch) {
 
 TEST_F(AppCacheUpdateJobTest, EmptyManifest) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::EmptyManifestTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, RetryRequest) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::RetryRequestTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, RetryNoRetryAfter) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::RetryNoRetryAfterTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, RetryNonzeroRetryAfter) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::RetryNonzeroRetryAfterTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, RetrySuccess) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::RetrySuccessTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, RetryUrl) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::RetryUrlTest);
 }
 
 }  // namespace appcache

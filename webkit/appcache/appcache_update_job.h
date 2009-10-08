@@ -74,6 +74,10 @@ class AppCacheUpdateJob : public URLRequest::Delegate {
 
   void OnResponseCompleted(URLRequest* request);
 
+  // Retries a 503 request with retry-after header of 0.
+  // Returns true if request should be retried and deletes original request.
+  bool RetryRequest(URLRequest* request);
+
   void ReadResponseData(URLRequest* request);
 
   // Returns false if response data is processed asynchronously, in which
