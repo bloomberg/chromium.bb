@@ -10,9 +10,6 @@
 
 namespace views {
 
-// TODO(jcampan): the same physical key can send different keyvals (ex: a or A).
-// In order for accelerators to work, we need to normalize that.  The right
-// solution should probably to get the key-code out of the keystate.
 KeyEvent::KeyEvent(GdkEventKey* event)
     : Event(event->type == GDK_KEY_PRESS ?
             Event::ET_KEY_PRESSED : Event::ET_KEY_RELEASED,
@@ -23,6 +20,7 @@ KeyEvent::KeyEvent(GdkEventKey* event)
       message_flags_(0) {
 }
 
+// static
 int Event::GetFlagsFromGdkState(int state) {
   int flags = 0;
   if (state & GDK_CONTROL_MASK)

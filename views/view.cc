@@ -988,8 +988,6 @@ void View::RemoveAccelerator(const Accelerator& accelerator) {
     return;
   }
 
-  // TODO(port): Fix this once we have a FocusManger for Linux.
-#if defined(OS_WIN)
   FocusManager* focus_manager = GetFocusManager();
   if (focus_manager) {
     // We may not have a FocusManager if the window containing us is being
@@ -997,7 +995,6 @@ void View::RemoveAccelerator(const Accelerator& accelerator) {
     // nothing to unregister.
     focus_manager->UnregisterAccelerator(accelerator, this);
   }
-#endif
 }
 
 void View::ResetAccelerators() {
@@ -1047,8 +1044,6 @@ void View::UnregisterAccelerators() {
 
   RootView* root_view = GetRootView();
   if (root_view) {
-    // TODO(port): Fix this once we have a FocusManger for Linux.
-#if defined(OS_WIN)
     FocusManager* focus_manager = GetFocusManager();
     if (focus_manager) {
       // We may not have a FocusManager if the window containing us is being
@@ -1059,7 +1054,6 @@ void View::UnregisterAccelerators() {
     accelerators_->clear();
     accelerators_.reset();
     registered_accelerator_count_ = 0;
-#endif
   }
 }
 

@@ -999,17 +999,15 @@ TEST_F(ViewTest, DISABLED_RerouteMouseWheelTest) {
 }
 #endif
 
-#if defined(OS_WIN)
 ////////////////////////////////////////////////////////////////////////////////
 // Dialogs' default button
 ////////////////////////////////////////////////////////////////////////////////
 
-class TestDialogView : public views::View,
-                       public views::DialogDelegate,
-                       public views::ButtonListener {
+class TestDialog : public DialogDelegate, public ButtonListener {
  public:
-  TestDialogView()
-      : button1_(NULL),
+  TestDialog()
+      : contents_(NULL),
+        button1_(NULL),
         button2_(NULL),
         checkbox_(NULL),
         last_pressed_button_(NULL),
@@ -1023,14 +1021,16 @@ class TestDialogView : public views::View,
   }
 
   virtual View* GetContentsView() {
-    views::View* container = new views::View();
-    button1_ = new views::NativeButton(this, L"Button1");
-    button2_ = new views::NativeButton(this, L"Button2");
-    checkbox_ = new views::Checkbox(L"My checkbox");
-    container->AddChildView(button1_);
-    container->AddChildView(button2_);
-    container->AddChildView(checkbox_);
-    return container;
+    if (!contents_) {
+      contents_ = new View();
+      button1_ = new NativeButton(this, L"Button1");
+      button2_ = new NativeButton(this, L"Button2");
+      checkbox_ = new Checkbox(L"My checkbox");
+      contents_->AddChildView(button1_);
+      contents_->AddChildView(button2_);
+      contents_->AddChildView(checkbox_);
+    }
+    return contents_;
   }
 
   // Prevent the dialog from really closing (so we can click the OK/Cancel
@@ -1055,10 +1055,11 @@ class TestDialogView : public views::View,
     last_pressed_button_ = NULL;
   }
 
-  views::NativeButton* button1_;
-  views::NativeButton* button2_;
-  views::NativeButton* checkbox_;
-  views::Button* last_pressed_button_;
+  View* contents_;
+  NativeButton* button1_;
+  NativeButton* button2_;
+  NativeButton* checkbox_;
+  Button* last_pressed_button_;
 
   bool canceled_;
   bool oked_;
@@ -1074,21 +1075,21 @@ class DefaultButtonTest : public ViewTest {
   };
 
   DefaultButtonTest()
-      : native_window_(NULL),
-        focus_manager_(NULL),
+      : focus_manager_(NULL),
+        test_dialog_(NULL),
         client_view_(NULL),
         ok_button_(NULL),
         cancel_button_(NULL) {
   }
 
   virtual void SetUp() {
-    dialog_view_ = new TestDialogView();
+    test_dialog_ = new TestDialog();
     views::Window* window =
         views::Window::CreateChromeWindow(NULL, gfx::Rect(0, 0, 100, 100),
-                                          dialog_view_);
+                                          test_dialog_);
     window->Show();
-    native_window_ = window->GetNativeWindow();
-    focus_manager_ = FocusManager::GetFocusManagerForNativeView(native_window_);
+    focus_manager_ = test_dialog_->contents_->GetFocusManager();
+    ASSERT_TRUE(focus_manager_ != NULL);
     client_view_ =
         static_cast<views::DialogClientView*>(window->GetClientView());
     ok_button_ = client_view_->ok_button();
@@ -1096,43 +1097,37 @@ class DefaultButtonTest : public ViewTest {
   }
 
   void SimularePressingEnterAndCheckDefaultButton(ButtonID button_id) {
-#if defined(OS_WIN)
-    KeyEvent event(Event::ET_KEY_PRESSED, base::VKEY_RETURN, 0, 0);
+    KeyEvent event(Event::ET_KEY_PRESSED, base::VKEY_RETURN, 0, 0, 0);
     focus_manager_->OnKeyEvent(event);
-#else
-    // TODO(platform)
-    return;
-#endif
     switch (button_id) {
       case OK:
-        EXPECT_TRUE(dialog_view_->oked_);
-        EXPECT_FALSE(dialog_view_->canceled_);
-        EXPECT_FALSE(dialog_view_->last_pressed_button_);
+        EXPECT_TRUE(test_dialog_->oked_);
+        EXPECT_FALSE(test_dialog_->canceled_);
+        EXPECT_FALSE(test_dialog_->last_pressed_button_);
         break;
       case CANCEL:
-        EXPECT_FALSE(dialog_view_->oked_);
-        EXPECT_TRUE(dialog_view_->canceled_);
-        EXPECT_FALSE(dialog_view_->last_pressed_button_);
+        EXPECT_FALSE(test_dialog_->oked_);
+        EXPECT_TRUE(test_dialog_->canceled_);
+        EXPECT_FALSE(test_dialog_->last_pressed_button_);
         break;
       case BUTTON1:
-        EXPECT_FALSE(dialog_view_->oked_);
-        EXPECT_FALSE(dialog_view_->canceled_);
-        EXPECT_TRUE(dialog_view_->last_pressed_button_ ==
-            dialog_view_->button1_);
+        EXPECT_FALSE(test_dialog_->oked_);
+        EXPECT_FALSE(test_dialog_->canceled_);
+        EXPECT_TRUE(test_dialog_->last_pressed_button_ ==
+            test_dialog_->button1_);
         break;
       case BUTTON2:
-        EXPECT_FALSE(dialog_view_->oked_);
-        EXPECT_FALSE(dialog_view_->canceled_);
-        EXPECT_TRUE(dialog_view_->last_pressed_button_ ==
-            dialog_view_->button2_);
+        EXPECT_FALSE(test_dialog_->oked_);
+        EXPECT_FALSE(test_dialog_->canceled_);
+        EXPECT_TRUE(test_dialog_->last_pressed_button_ ==
+            test_dialog_->button2_);
         break;
     }
-    dialog_view_->ResetStates();
+    test_dialog_->ResetStates();
   }
 
-  gfx::NativeWindow native_window_;
   views::FocusManager* focus_manager_;
-  TestDialogView* dialog_view_;
+  TestDialog* test_dialog_;
   DialogClientView* client_view_;
   views::NativeButton* ok_button_;
   views::NativeButton* cancel_button_;
@@ -1147,44 +1142,43 @@ TEST_F(DefaultButtonTest, DialogDefaultButtonTest) {
   SimularePressingEnterAndCheckDefaultButton(OK);
 
   // Simulate focusing another button, it should become the default button.
-  client_view_->FocusWillChange(ok_button_, dialog_view_->button1_);
+  client_view_->FocusWillChange(ok_button_, test_dialog_->button1_);
   EXPECT_FALSE(ok_button_->is_default());
-  EXPECT_TRUE(dialog_view_->button1_->is_default());
+  EXPECT_TRUE(test_dialog_->button1_->is_default());
   // Simulate pressing enter, that should trigger button1.
   SimularePressingEnterAndCheckDefaultButton(BUTTON1);
 
   // Now select something that is not a button, the OK should become the default
   // button again.
-  client_view_->FocusWillChange(dialog_view_->button1_,
-                                dialog_view_->checkbox_);
+  client_view_->FocusWillChange(test_dialog_->button1_,
+                                test_dialog_->checkbox_);
   EXPECT_TRUE(ok_button_->is_default());
-  EXPECT_FALSE(dialog_view_->button1_->is_default());
+  EXPECT_FALSE(test_dialog_->button1_->is_default());
   SimularePressingEnterAndCheckDefaultButton(OK);
 
   // Select yet another button.
-  client_view_->FocusWillChange(dialog_view_->checkbox_,
-                                dialog_view_->button2_);
+  client_view_->FocusWillChange(test_dialog_->checkbox_,
+                                test_dialog_->button2_);
   EXPECT_FALSE(ok_button_->is_default());
-  EXPECT_FALSE(dialog_view_->button1_->is_default());
-  EXPECT_TRUE(dialog_view_->button2_->is_default());
+  EXPECT_FALSE(test_dialog_->button1_->is_default());
+  EXPECT_TRUE(test_dialog_->button2_->is_default());
   SimularePressingEnterAndCheckDefaultButton(BUTTON2);
 
   // Focus nothing.
-  client_view_->FocusWillChange(dialog_view_->button2_, NULL);
+  client_view_->FocusWillChange(test_dialog_->button2_, NULL);
   EXPECT_TRUE(ok_button_->is_default());
-  EXPECT_FALSE(dialog_view_->button1_->is_default());
-  EXPECT_FALSE(dialog_view_->button2_->is_default());
+  EXPECT_FALSE(test_dialog_->button1_->is_default());
+  EXPECT_FALSE(test_dialog_->button2_->is_default());
   SimularePressingEnterAndCheckDefaultButton(OK);
 
   // Focus the cancel button.
   client_view_->FocusWillChange(NULL, cancel_button_);
   EXPECT_FALSE(ok_button_->is_default());
   EXPECT_TRUE(cancel_button_->is_default());
-  EXPECT_FALSE(dialog_view_->button1_->is_default());
-  EXPECT_FALSE(dialog_view_->button2_->is_default());
+  EXPECT_FALSE(test_dialog_->button1_->is_default());
+  EXPECT_FALSE(test_dialog_->button2_->is_default());
   SimularePressingEnterAndCheckDefaultButton(CANCEL);
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // View hierachy / Visibility changes
@@ -1213,49 +1207,3 @@ TEST_F(ViewTest, ChangeVisibility) {
   native->SetVisible(true);
 }
 */
-
-#if defined(OS_LINUX)
-class TestViewWithControls : public View {
- public:
- TestViewWithControls() {
-   button_ = new NativeButton(NULL, L"Button");
-   checkbox_ = new Checkbox(L"My checkbox");
-   text_field_ = new Textfield();
-   AddChildView(button_);
-   button_->SetBounds(0, 0, 100, 30);
-   AddChildView(checkbox_);
-   checkbox_->SetBounds(0, 100, 100, 30);
-   AddChildView(text_field_);
-   text_field_->SetBounds(0, 200, 100, 30);
-   text_field_->SetBackgroundColor(SK_ColorYELLOW);
-   text_field_->SetFont(gfx::Font::CreateFont(L"Arial", 30));
- }
-
-  Button* button_;
-  Checkbox* checkbox_;
-  Textfield* text_field_;
-};
-
-class SimpleWindowDelegate : public WindowDelegate {
- public:
-  SimpleWindowDelegate(View* contents) : contents_(contents) { }
-
-  virtual void DeleteDelegate() { delete this; }
-
-  virtual View* GetContentsView() { return contents_; }
-
- private:
-  View* contents_;
-};
-
-TEST_F(ViewTest, DISABLED_Stupid) {
-  TestViewWithControls* view_with_controls = new TestViewWithControls();
-  views::Window* window =
-      views::Window::CreateChromeWindow(
-          NULL, gfx::Rect(200, 200, 500, 500),
-          new SimpleWindowDelegate(view_with_controls));
-  window->Show();
-  AcceleratorHandler accelerator_handler;
-  MessageLoopForUI::current()->Run(&accelerator_handler);
-}
-#endif

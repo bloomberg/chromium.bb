@@ -37,7 +37,7 @@ class Accelerator {
     modifiers_ = accelerator.modifiers_;
   }
 
-  ~Accelerator() { };
+  ~Accelerator() { }
 
   Accelerator& operator=(const Accelerator& accelerator) {
     if (this != &accelerator) {
@@ -77,6 +77,10 @@ class Accelerator {
 
   base::KeyboardCode GetKeyCode() const {
     return key_code_;
+  }
+
+  int modifiers() const {
+    return modifiers_;
   }
 
   // Returns a string with the localized shortcut if any.

@@ -571,8 +571,8 @@ void WidgetWin::OnInitMenuPopup(HMENU menu,
 }
 
 void WidgetWin::OnKeyDown(TCHAR c, UINT rep_cnt, UINT flags) {
-  KeyEvent event(Event::ET_KEY_PRESSED,
-                 win_util::WinToKeyboardCode(c), rep_cnt, flags);
+  KeyEvent event(Event::ET_KEY_PRESSED, win_util::WinToKeyboardCode(c),
+                 KeyEvent::GetKeyStateFlags(), rep_cnt, flags);
   RootView* root_view = GetFocusedViewRootView();
   if (!root_view)
     root_view = root_view_.get();
@@ -581,8 +581,8 @@ void WidgetWin::OnKeyDown(TCHAR c, UINT rep_cnt, UINT flags) {
 }
 
 void WidgetWin::OnKeyUp(TCHAR c, UINT rep_cnt, UINT flags) {
-  KeyEvent event(Event::ET_KEY_RELEASED,
-                 win_util::WinToKeyboardCode(c), rep_cnt, flags);
+  KeyEvent event(Event::ET_KEY_RELEASED, win_util::WinToKeyboardCode(c),
+                 KeyEvent::GetKeyStateFlags(), rep_cnt, flags);
   RootView* root_view = GetFocusedViewRootView();
   if (!root_view)
     root_view = root_view_.get();

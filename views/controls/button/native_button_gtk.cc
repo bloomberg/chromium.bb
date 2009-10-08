@@ -55,7 +55,8 @@ void NativeButtonGtk::UpdateEnabled() {
 void NativeButtonGtk::UpdateDefault() {
   if (!native_view())
     return;
-  NOTIMPLEMENTED();
+  if (native_button_->is_default())
+    gtk_widget_grab_default(native_view());
 }
 
 View* NativeButtonGtk::GetView() {
@@ -96,6 +97,10 @@ void NativeButtonGtk::CreateNativeControl() {
   GtkWidget* widget = gtk_button_new();
   g_signal_connect(G_OBJECT(widget), "clicked",
                    G_CALLBACK(CallClicked), this);
+
+  // Any push button can become the default button.
+  GTK_WIDGET_SET_FLAGS(widget, GTK_CAN_DEFAULT);
+
   NativeControlCreated(widget);
 }
 

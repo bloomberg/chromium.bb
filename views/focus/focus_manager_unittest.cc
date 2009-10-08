@@ -414,19 +414,19 @@ void FocusTraversalTest::InitContentView() {
   y += label_height + gap_between_labels;
 
   NativeButton* button = new NativeButton(NULL, L"Click me");
-  button->SetBounds(label_x, y + 10, 50, 20);
+  button->SetBounds(label_x, y + 10, 80, 30);
   button->SetID(kFruitButtonID);
   left_container->AddChildView(button);
   y += 40;
 
   cb =  new Checkbox(L"This is another check box");
-  cb->SetBounds(label_x + label_width + 5, y, 150, 20);
+  cb->SetBounds(label_x + label_width + 5, y, 180, 20);
   cb->SetID(kFruitCheckBoxID);
   left_container->AddChildView(cb);
   y += 20;
 
   Combobox* combobox =  new Combobox(&combobox_model_);
-  combobox->SetBounds(label_x + label_width + 5, y, 150, 20);
+  combobox->SetBounds(label_x + label_width + 5, y, 150, 30);
   combobox->SetID(kComboboxID);
   left_container->AddChildView(combobox);
 
@@ -439,7 +439,7 @@ void FocusTraversalTest::InitContentView() {
   right_container->SetBounds(270, 35, 300, 200);
 
   y = 10;
-  int radio_button_height = 15;
+  int radio_button_height = 18;
   int gap_between_radio_buttons = 10;
   RadioButton* radio_button = new RadioButton(L"Asparagus", 1);
   radio_button->SetID(kAsparagusButtonID);
@@ -507,22 +507,23 @@ void FocusTraversalTest::InitContentView() {
   }
 
   y = 250;
-  int width = 50;
+  int width = 60;
   button = new NativeButton(NULL, L"OK");
   button->SetID(kOKButtonID);
+  button->SetIsDefault(true);
 
   content_view_->AddChildView(button);
-  button->SetBounds(150, y, width, 20);
+  button->SetBounds(150, y, width, 30);
 
   button = new NativeButton(NULL, L"Cancel");
   button->SetID(kCancelButtonID);
   content_view_->AddChildView(button);
-  button->SetBounds(250, y, width, 20);
+  button->SetBounds(220, y, width, 30);
 
   button = new NativeButton(NULL, L"Help");
   button->SetID(kHelpButtonID);
   content_view_->AddChildView(button);
-  button->SetBounds(350, y, width, 20);
+  button->SetBounds(290, y, width, 30);
 
   y += 40;
 
@@ -571,20 +572,20 @@ void FocusTraversalTest::InitContentView() {
 
   button = new NativeButton(NULL, L"Search");
   contents->AddChildView(button);
-  button->SetBounds(115, 10, 50, 20);
+  button->SetBounds(112, 5, 60, 30);
   button->SetID(kSearchButtonID);
 
   link = new Link(L"Help");
   link->SetHorizontalAlignment(Label::ALIGN_LEFT);
   link->SetID(kHelpLinkID);
   contents->AddChildView(link);
-  link->SetBounds(170, 20, 30, 15);
+  link->SetBounds(175, 10, 30, 20);
 
   search_border_view_ = new BorderView(contents);
   search_border_view_->SetID(kSearchContainerID);
 
   content_view_->AddChildView(search_border_view_);
-  search_border_view_->SetBounds(300, y, 200, 50);
+  search_border_view_->SetBounds(300, y, 240, 50);
 
   y += 60;
 
@@ -594,11 +595,11 @@ void FocusTraversalTest::InitContentView() {
   contents->SetID(kThumbnailContainerID);
   button = new NativeButton(NULL, L"Star");
   contents->AddChildView(button);
-  button->SetBounds(5, 5, 50, 20);
+  button->SetBounds(5, 5, 50, 30);
   button->SetID(kThumbnailStarID);
   button = new NativeButton(NULL, L"SuperStar");
   contents->AddChildView(button);
-  button->SetBounds(60, 5, 100, 20);
+  button->SetBounds(60, 5, 100, 30);
   button->SetID(kThumbnailSuperStarID);
 
   content_view_->AddChildView(contents);

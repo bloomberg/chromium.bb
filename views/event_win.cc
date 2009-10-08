@@ -37,15 +37,8 @@ int Event::ConvertWindowsFlags(UINT win_flags) {
   return r;
 }
 
-KeyEvent::KeyEvent(EventType type, base::KeyboardCode key_code,
-                   int repeat_count, int message_flags)
-    : Event(type, GetKeyStateFlags()),
-      key_code_(key_code),
-      repeat_count_(repeat_count),
-      message_flags_(message_flags) {
-}
-
-int KeyEvent::GetKeyStateFlags() const {
+// static
+int KeyEvent::GetKeyStateFlags() {
   // Windows Keyboard messages don't come with control key state as parameters
   // like mouse messages do, so we need to explicitly probe for these key
   // states.

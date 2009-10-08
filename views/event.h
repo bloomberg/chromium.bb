@@ -241,13 +241,13 @@ class MouseEvent : public LocatedEvent {
 ////////////////////////////////////////////////////////////////////////////////
 class KeyEvent : public Event {
  public:
-#if defined(OS_WIN)
   // Create a new key event
   KeyEvent(EventType type,
            base::KeyboardCode key_code,
+           int event_flags,
            int repeat_count,
            int message_flags);
-#elif defined(OS_LINUX)
+#if defined(OS_LINUX)
   explicit KeyEvent(GdkEventKey* event);
 #endif
 
@@ -267,10 +267,12 @@ class KeyEvent : public Event {
     return repeat_count_;
   }
 
- private:
 #if defined(OS_WIN)
-  int GetKeyStateFlags() const;
+  // Returns the current state of the KeyState.
+  static int GetKeyStateFlags();
 #endif
+
+ private:
 
   base::KeyboardCode key_code_;
   int repeat_count_;

@@ -94,18 +94,8 @@ bool CustomButton::IsTriggerableEvent(const MouseEvent& e) {
 bool CustomButton::AcceleratorPressed(const Accelerator& accelerator) {
   if (enabled_) {
     SetState(BS_NORMAL);
-#if defined(OS_WIN)
-    KeyEvent key_event(Event::ET_KEY_RELEASED, accelerator.GetKeyCode(), 0, 0);
-#elif defined(OS_LINUX)
-    GdkEventKey gdk_key;
-    memset(&gdk_key, 0, sizeof(GdkEventKey));
-    gdk_key.type = GDK_KEY_RELEASE;
-    gdk_key.keyval = accelerator.GetKeyCode();
-    gdk_key.state = (accelerator.IsAltDown() << 3) +
-                    (accelerator.IsCtrlDown() << 2) +
-                    accelerator.IsShiftDown();
-    KeyEvent key_event(&gdk_key);
-#endif
+    KeyEvent key_event(Event::ET_KEY_RELEASED, accelerator.GetKeyCode(),
+                       accelerator.modifiers(), 0, 0);
     NotifyClick(key_event);
     return true;
   }
