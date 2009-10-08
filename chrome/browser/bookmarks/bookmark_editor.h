@@ -28,9 +28,14 @@ class BookmarkEditor {
     NO_TREE
   };
 
-  // Shows the platform specific BookmarkEditor subclass editing |node|. If
-  // |node| is NULL a new entry is created initially parented to |parent|. If
-  // |show_tree| is false the tree is not shown. BookmarkEditor takes
+  // Shows the platform specific BookmarkEditor subclass editing |node|. |node|
+  // may be one of three values:
+  // . NULL, in which a case a new entry is created initially parented to
+  //  |parent|.
+  // . non-null and a url.
+  // . non-null and a folder. In this case the url field is not shown and an
+  //   entry for the node is not shown in the tree.
+  // If |show_tree| is false the tree is not shown. BookmarkEditor takes
   // ownership of |handler| and deletes it when done. |handler| may be
   // null. See description of Handler for details.
   static void Show(gfx::NativeView parent_window,

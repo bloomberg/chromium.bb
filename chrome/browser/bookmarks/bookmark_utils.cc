@@ -549,14 +549,14 @@ const BookmarkNode* ApplyEditsWithPossibleGroupChange(BookmarkModel* model,
     Time date_added = node->date_added();
     if (new_parent == node->GetParent()) {
       // The parent is the same.
-      if (new_url != node->GetURL()) {
+      if (node->is_url() && new_url != node->GetURL()) {
         model->Remove(old_parent, old_index);
         return_node = model->AddURLWithCreationTime(old_parent, old_index,
             new_title, new_url, date_added);
       } else {
         model->SetTitle(node, new_title);
       }
-    } else if (new_url != node->GetURL()) {
+    } else if (node->is_url() && new_url != node->GetURL()) {
       // The parent and URL changed.
       model->Remove(old_parent, old_index);
       return_node = model->AddURLWithCreationTime(new_parent,
@@ -594,13 +594,11 @@ void ToggleWhenVisible(Profile* profile) {
       NotificationService::NoDetails());
 }
 
-// static
 void RegisterPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kBookmarkManagerPlacement);
   prefs->RegisterIntegerPref(prefs::kBookmarkManagerSplitLocation, -1);
 }
 
-// static
 void RegisterUserPrefs(PrefService* prefs) {
   // Formerly in BookmarkBarView
   prefs->RegisterBooleanPref(prefs::kShowBookmarkBar, false);
@@ -611,6 +609,37 @@ void RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kBookmarkTableNameWidth2, -1);
   prefs->RegisterIntegerPref(prefs::kBookmarkTableURLWidth2, -1);
   prefs->RegisterIntegerPref(prefs::kBookmarkTablePathWidth, -1);
+}
+
+bool GetURLAndTitleToBookmark(TabContents* tab_contents,
+                              GURL* url,
+                              std::wstring* title) {
+  if (!tab_contents->ShouldDisplayURL())
+    return false;
+  *url = tab_contents->GetURL();
+  if (url->is_empty() || !url->is_valid())
+    return false;
+  *title = UTF16ToWideHack(tab_contents->GetTitle());
+  return true;
+}
+
+const BookmarkNode* CreateBookmarkForAllTabs(Browser* browser) {
+  BookmarkModel* model = browser->profile()->GetBookmarkModel();
+  if (!model || !model->IsLoaded())
+    return NULL;
+
+  const BookmarkNode* parent = model->GetParentForNewNodes();
+  const BookmarkNode* folder = model->AddGroup(
+      parent, parent->GetChildCount(),
+      l10n_util::GetString(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME));
+  for (int i = 0; i < browser->tab_count(); ++i) {
+    GURL url;
+    std::wstring title;
+    if (GetURLAndTitleToBookmark(browser->GetTabContentsAt(i), &url, &title)) {
+      model->AddURL(folder, folder->GetChildCount(), title, url);
+    }
+  }
+  return folder;
 }
 
 }  // namespace bookmark_utils

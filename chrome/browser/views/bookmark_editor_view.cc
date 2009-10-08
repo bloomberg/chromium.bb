@@ -87,11 +87,15 @@ BookmarkEditorView::~BookmarkEditorView() {
 bool BookmarkEditorView::IsDialogButtonEnabled(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
+    if (IsEditingFolder())
+      return !title_tf_.text().empty();
+
     const GURL url(GetInputURL());
     return bb_model_->IsLoaded() && url.is_valid();
   }
   return true;
 }
+
 bool BookmarkEditorView::IsModal() const {
   return true;
 }
@@ -263,7 +267,7 @@ void BookmarkEditorView::Init() {
   title_tf_.SetController(this);
 
   std::wstring url_text;
-  if (node_) {
+  if (node_ && !IsEditingFolder()) {
     std::wstring languages = profile_
         ? profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)
         : std::wstring();
@@ -271,7 +275,7 @@ void BookmarkEditorView::Init() {
     // false and unescape=false to show the original URL except IDN.
     url_text =
         net::FormatUrl(node_->GetURL(), languages, false, UnescapeRule::NONE,
-        NULL, NULL);
+                       NULL, NULL);
   }
   url_tf_.SetText(url_text);
   url_tf_.SetController(this);
@@ -323,12 +327,14 @@ void BookmarkEditorView::Init() {
       new Label(l10n_util::GetString(IDS_BOOMARK_EDITOR_NAME_LABEL)));
   layout->AddView(&title_tf_);
 
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  if (!IsEditingFolder()) {
+    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
-  layout->StartRow(0, labels_column_set_id);
-  layout->AddView(
-      new Label(l10n_util::GetString(IDS_BOOMARK_EDITOR_URL_LABEL)));
-  layout->AddView(&url_tf_);
+    layout->StartRow(0, labels_column_set_id);
+    layout->AddView(
+        new Label(l10n_util::GetString(IDS_BOOMARK_EDITOR_URL_LABEL)));
+    layout->AddView(&url_tf_);
+  }
 
   if (show_tree_) {
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
@@ -441,12 +447,15 @@ BookmarkEditorView::EditorNode* BookmarkEditorView::AddNewGroup(
   return new_node;
 }
 
+bool BookmarkEditorView::IsEditingFolder() const {
+  return node_ && node_->is_folder();
+}
+
 void BookmarkEditorView::ExpandAndSelect() {
   tree_view_->ExpandAll();
 
   const BookmarkNode* to_select = node_ ? node_->GetParent() : parent_;
   int64 group_id_to_select = to_select->id();
-  DCHECK(group_id_to_select);  // GetMostRecentParent should never return NULL.
   EditorNode* b_node =
       FindNodeWithID(tree_model_->GetRoot(), group_id_to_select);
   if (!b_node)
@@ -469,9 +478,10 @@ void BookmarkEditorView::CreateNodes(const BookmarkNode* bb_node,
                                      BookmarkEditorView::EditorNode* b_node) {
   for (int i = 0; i < bb_node->GetChildCount(); ++i) {
     const BookmarkNode* child_bb_node = bb_node->GetChild(i);
-    if (child_bb_node->is_folder()) {
+    if (child_bb_node->is_folder() &&
+        (!IsEditingFolder() || child_bb_node != node_)) {
       EditorNode* new_b_node = new EditorNode(child_bb_node->GetTitle(),
-                                                  child_bb_node->id());
+                                              child_bb_node->id());
       b_node->Add(b_node->GetChildCount(), new_b_node);
       CreateNodes(child_bb_node, new_b_node);
     }

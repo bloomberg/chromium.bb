@@ -53,9 +53,11 @@ class TestTabStripDelegate : public TabStripModelDelegate {
   virtual bool CanRestoreTab() {
     return true;
   }
-  virtual void RestoreTab() { }
+  virtual void RestoreTab() {}
 
   virtual bool CanCloseContentsAt(int index) { return true; }
+
+  virtual void BookmarkAllTabs() {}
 };
 
 class TabStripControllerTest : public PlatformTest {

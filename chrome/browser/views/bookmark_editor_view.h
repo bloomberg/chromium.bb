@@ -22,13 +22,16 @@ class NativeButton;
 class Window;
 }
 
+class BookmarkEditorViewTest;
 class GURL;
 class Menu;
 class Profile;
 
 // View that allows the user to edit a bookmark/starred URL. The user can
 // change the URL, title and where the bookmark appears as well as adding
-// new groups and changing the name of other groups.
+// new groups and changing the name of other groups. The editor is used for
+// both editing a url bookmark, as well as editing a folder bookmark when
+// created from 'Bookmark all tabs'.
 //
 // Edits are applied to the BookmarkModel when the user presses 'OK'.
 //
@@ -43,17 +46,27 @@ class BookmarkEditorView : public BookmarkEditor,
                            public views::ContextMenuController,
                            public views::SimpleMenuModel::Delegate,
                            public BookmarkModelObserver {
-  FRIEND_TEST(BookmarkEditorViewTest, ChangeParent);
-  FRIEND_TEST(BookmarkEditorViewTest, ChangeParentAndURL);
-  FRIEND_TEST(BookmarkEditorViewTest, ChangeURLToExistingURL);
-  FRIEND_TEST(BookmarkEditorViewTest, EditTitleKeepsPosition);
-  FRIEND_TEST(BookmarkEditorViewTest, EditURLKeepsPosition);
-  FRIEND_TEST(BookmarkEditorViewTest, ModelsMatch);
-  FRIEND_TEST(BookmarkEditorViewTest, MoveToNewParent);
-  FRIEND_TEST(BookmarkEditorViewTest, NewURL);
-  FRIEND_TEST(BookmarkEditorViewTest, ChangeURLNoTree);
-  FRIEND_TEST(BookmarkEditorViewTest, ChangeTitleNoTree);
  public:
+  // Type of node in the tree. Public purely for testing.
+  typedef TreeNodeWithValue<int64> EditorNode;
+
+  // Model for the TreeView. Trivial subclass that doesn't allow titles with
+  // empty strings. Public purely for testing.
+  class EditorTreeModel : public TreeNodeModel<EditorNode> {
+   public:
+    explicit EditorTreeModel(EditorNode* root)
+        : TreeNodeModel<EditorNode>(root) {}
+
+    virtual void SetTitle(TreeModelNode* node,
+                          const std::wstring& title) {
+      if (!title.empty())
+        TreeNodeModel::SetTitle(node, title);
+    }
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(EditorTreeModel);
+  };
+
   BookmarkEditorView(Profile* profile,
                      const BookmarkNode* parent,
                      const BookmarkNode* node,
@@ -113,25 +126,7 @@ class BookmarkEditorView : public BookmarkEditor,
                                bool is_mouse_gesture);
 
  private:
-  // Type of node in the tree.
-  typedef TreeNodeWithValue<int64> EditorNode;
-
-  // Model for the TreeView. Trivial subclass that doesn't allow titles with
-  // empty strings.
-  class EditorTreeModel : public TreeNodeModel<EditorNode> {
-   public:
-    explicit EditorTreeModel(EditorNode* root)
-        : TreeNodeModel<EditorNode>(root) {}
-
-    virtual void SetTitle(TreeModelNode* node,
-                          const std::wstring& title) {
-      if (!title.empty())
-        TreeNodeModel::SetTitle(node, title);
-    }
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(EditorTreeModel);
-  };
+  friend class BookmarkEditorViewTest;
 
   // Creates the necessary sub-views, configures them, adds them to the layout,
   // and requests the entries to display from the database.
@@ -172,7 +167,7 @@ class BookmarkEditorView : public BookmarkEditor,
   EditorNode* CreateRootNode();
 
   // Adds and creates a child node in b_node for all children of bb_node that
-  // are groups.
+  // are groups, except for |node_| if editing a folder.
   void CreateNodes(const BookmarkNode* bb_node, EditorNode* b_node);
 
   // Returns the node with the specified id, or NULL if one can't be found.
@@ -219,6 +214,9 @@ class BookmarkEditorView : public BookmarkEditor,
   // added to the model and returned. This does NOT start editing. This is used
   // internally by NewGroup and broken into a separate method for testing.
   EditorNode* AddNewGroup(EditorNode* parent);
+
+  // Returns true if editing a folder.
+  bool IsEditingFolder() const;
 
   // Profile the entry is from.
   Profile* profile_;

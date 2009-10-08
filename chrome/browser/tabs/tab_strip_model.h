@@ -199,6 +199,9 @@ class TabStripModelDelegate {
 
   // Returns whether some contents can be closed.
   virtual bool CanCloseContentsAt(int index) = 0;
+
+  // Creates a bookmark folder containing a bookmark for all open tabs.
+  virtual void BookmarkAllTabs() = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -464,6 +467,7 @@ class TabStripModel : public NotificationObserver {
     CommandCloseTabsOpenedBy,
     CommandRestoreTab,
     CommandTogglePinned,
+    CommandBookmarkAllTabs,
     CommandLast
   };
 

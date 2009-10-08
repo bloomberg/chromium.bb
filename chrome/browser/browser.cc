@@ -13,6 +13,7 @@
 #include "base/thread.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -897,12 +898,10 @@ void Browser::BookmarkCurrentPage() {
   UserMetrics::RecordAction(L"Star", profile_);
 
   TabContents* contents = GetSelectedTabContents();
-  if (!contents->ShouldDisplayURL())
+  GURL url;
+  std::wstring title;
+  if (!bookmark_utils::GetURLAndTitleToBookmark(contents, &url, &title))
     return;
-  const GURL& url = contents->GetURL();
-  if (url.is_empty() || !url.is_valid())
-    return;
-  std::wstring title = UTF16ToWideHack(contents->GetTitle());
 
   BookmarkModel* model = contents->profile()->GetBookmarkModel();
   if (!model || !model->IsLoaded())
@@ -1678,6 +1677,19 @@ bool Browser::CanCloseContentsAt(int index) {
   // Note that the next call when it returns false will ask the user for
   // confirmation before closing the browser if the user decides so.
   return CanCloseWithInProgressDownloads();
+}
+
+void Browser::BookmarkAllTabs() {
+  const BookmarkNode* node = bookmark_utils::CreateBookmarkForAllTabs(this);
+  if (!node)
+    return;
+
+  // TODO(sky): BookmarkEditor::Show should take a NativeWindow, not view.
+#if defined(OS_WIN)
+  BookmarkEditor::Show(window()->GetNativeHandle(), profile_,
+                       node->GetParent(), node, BookmarkEditor::SHOW_TREE,
+                       NULL);
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

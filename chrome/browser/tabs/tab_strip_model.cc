@@ -10,6 +10,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "build/build_config.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
@@ -486,6 +487,12 @@ bool TabStripModel::IsContextMenuCommandEnabled(
       return delegate_->CanRestoreTab();
     case CommandTogglePinned:
       return true;
+    case CommandBookmarkAllTabs: {
+      if (count() <= 1)
+        return false;
+      BookmarkModel* model = profile_->GetBookmarkModel();
+      return model && model->IsLoaded();
+    }
     default:
       NOTREACHED();
   }
@@ -548,6 +555,13 @@ void TabStripModel::ExecuteContextMenuCommand(
 
       SelectTabContentsAt(context_index, true);
       SetTabPinned(context_index, !IsTabPinned(context_index));
+      break;
+    }
+
+    case CommandBookmarkAllTabs: {
+      UserMetrics::RecordAction(L"TabContextMenu_BookmarkAllTabs", profile_);
+
+      delegate_->BookmarkAllTabs();
       break;
     }
     default:

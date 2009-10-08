@@ -474,6 +474,7 @@ class Browser : public TabStripModelDelegate,
   virtual void CreateHistoricalTab(TabContents* contents);
   virtual bool RunUnloadListenerBeforeClosing(TabContents* contents);
   virtual bool CanCloseContentsAt(int index);
+  virtual void BookmarkAllTabs();
 
   // Overridden from TabStripModelObserver:
   virtual void TabInsertedAt(TabContents* contents,

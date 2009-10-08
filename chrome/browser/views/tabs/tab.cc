@@ -85,6 +85,8 @@ class Tab::TabContextMenuContents : public views::SimpleMenuModel,
     AddItemWithStringId(TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD);
     AddItemWithStringId(TabStripModel::CommandDuplicate,
                         IDS_TAB_CXMENU_DUPLICATE);
+    AddCheckItemWithStringId(TabStripModel::CommandTogglePinned,
+                             IDS_TAB_CXMENU_PIN_TAB);
     AddSeparator();
     AddItemWithStringId(TabStripModel::CommandCloseTab,
                         IDS_TAB_CXMENU_CLOSETAB);
@@ -94,10 +96,12 @@ class Tab::TabContextMenuContents : public views::SimpleMenuModel,
                         IDS_TAB_CXMENU_CLOSETABSTORIGHT);
     AddItemWithStringId(TabStripModel::CommandCloseTabsOpenedBy,
                         IDS_TAB_CXMENU_CLOSETABSOPENEDBY);
-    AddItemWithStringId(TabStripModel::CommandRestoreTab, IDS_RESTORE_TAB);
     AddSeparator();
-    AddCheckItemWithStringId(TabStripModel::CommandTogglePinned,
-                             IDS_TAB_CXMENU_PIN_TAB);
+    AddItemWithStringId(TabStripModel::CommandRestoreTab, IDS_RESTORE_TAB);
+#if defined(OS_WIN)
+    AddItemWithStringId(TabStripModel::CommandBookmarkAllTabs,
+                        IDS_TAB_CXMENU_BOOKMARK_ALL_TABS);
+#endif
     menu_.reset(new views::Menu2(this));
   }
 
