@@ -454,6 +454,13 @@ devtools.InspectorController.prototype.profiles = function() {
 
 
 /**
+ * Tells backend to create a heap snapshot.
+ */
+devtools.InspectorController.prototype.takeHeapSnapshot = function() {
+};
+
+
+/**
  * @return {Array.<string>} Database table names available offline.
  */
 devtools.InspectorController.prototype.databaseTableNames =

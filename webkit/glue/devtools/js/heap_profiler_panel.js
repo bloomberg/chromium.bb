@@ -6,177 +6,70 @@
  * @fileoverview Heap profiler panel implementation.
  */
 
-WebInspector.HeapProfilerPanel = function() {
-    WebInspector.Panel.call(this);
-
-    this.element.addStyleClass("heap-profiler");
-
-    this.sidebarElement = document.createElement("div");
-    this.sidebarElement.id = "heap-snapshot-sidebar";
-    this.sidebarElement.className = "sidebar";
-    this.element.appendChild(this.sidebarElement);
-
-    this.sidebarResizeElement = document.createElement("div");
-    this.sidebarResizeElement.className = "sidebar-resizer-vertical";
-    this.sidebarResizeElement.addEventListener("mousedown", this._startSidebarDragging.bind(this), false);
-    this.element.appendChild(this.sidebarResizeElement);
-
-    this.sidebarTreeElement = document.createElement("ol");
-    this.sidebarTreeElement.className = "sidebar-tree";
-    this.sidebarElement.appendChild(this.sidebarTreeElement);
-
-    this.sidebarTree = new TreeOutline(this.sidebarTreeElement);
-
-    this.snapshotViews = document.createElement("div");
-    this.snapshotViews.id = "heap-snapshot-views";
-    this.element.appendChild(this.snapshotViews);
-
-    this.snapshotButton = new WebInspector.StatusBarButton(WebInspector.UIString("Take heap snapshot."), "heap-snapshot-status-bar-item");
-    this.snapshotButton.addEventListener("click", this._snapshotClicked.bind(this), false);
-
-    this.snapshotViewStatusBarItemsContainer = document.createElement("div");
-    this.snapshotViewStatusBarItemsContainer.id = "heap-snapshot-status-bar-items";
-
-    this.reset();
-};
-
-WebInspector.HeapProfilerPanel.prototype = {
-    toolbarItemClass: "heap-profiler",
-
-    get toolbarItemLabel() {
-        return WebInspector.UIString("Heap");
-    },
-
-    get statusBarItems() {
-        return [this.snapshotButton.element, this.snapshotViewStatusBarItemsContainer];
-    },
-
-    show: function() {
-        WebInspector.Panel.prototype.show.call(this);
-        this._updateSidebarWidth();
-    },
-
-    reset: function() {
-        if (this._snapshots) {
-            var snapshotsLength = this._snapshots.length;
-            for (var i = 0; i < snapshotsLength; ++i) {
-                var snapshot = this._snapshots[i];
-                delete snapshot._snapshotView;
-            }
+WebInspector.ProfilesPanel.prototype.__oldReset = WebInspector.ProfilesPanel.prototype.reset;
+WebInspector.ProfilesPanel.prototype.reset = function() {
+    if (this._snapshots) {
+        var snapshotsLength = this._snapshots.length;
+        for (var i = 0; i < snapshotsLength; ++i) {
+            var snapshot = this._snapshots[i];
+            delete snapshot._snapshotView;
         }
-
-        this._snapshots = [];
-
-        this.sidebarTreeElement.removeStyleClass("some-expandable");
-
-        this.sidebarTree.removeChildren();
-        this.snapshotViews.removeChildren();
-
-        this.snapshotViewStatusBarItemsContainer.removeChildren();
-    },
-
-    handleKeyEvent: function(event) {
-        this.sidebarTree.handleKeyEvent(event);
-    },
-
-    addSnapshot: function(snapshot) {
-        this._snapshots.push(snapshot);
-        snapshot.list = this._snapshots;
-        snapshot.listIndex = this._snapshots.length - 1;
-
-        var snapshotsTreeElement = new WebInspector.HeapSnapshotSidebarTreeElement(snapshot);
-        snapshotsTreeElement.small = false;
-        snapshot._snapshotsTreeElement = snapshotsTreeElement;
-
-        this.sidebarTree.appendChild(snapshotsTreeElement);
-
-        this.dispatchEventToListeners("snapshot added");
-    },
-
-    showSnapshot: function(snapshot) {
-        if (!snapshot)
-            return;
-
-        if (this.visibleView)
-            this.visibleView.hide();
-        var view = this.snapshotViewForSnapshot(snapshot);
-        view.show(this.snapshotViews);
-        this.visibleView = view;
-
-        this.snapshotViewStatusBarItemsContainer.removeChildren();
-        var statusBarItems = view.statusBarItems;
-        for (var i = 0; i < statusBarItems.length; ++i)
-            this.snapshotViewStatusBarItemsContainer.appendChild(statusBarItems[i]);
-    },
-
-    showView: function(view)
-    {
-        this.showSnapshot(view.snapshot);
-    },
-
-    snapshotViewForSnapshot: function(snapshot)
-    {
-        if (!snapshot)
-            return null;
-        if (!snapshot._snapshotView)
-            snapshot._snapshotView = new WebInspector.HeapSnapshotView(this, snapshot);
-        return snapshot._snapshotView;
-    },
-
-    closeVisibleView: function()
-    {
-        if (this.visibleView)
-            this.visibleView.hide();
-        delete this.visibleView;
-    },
-
-    _snapshotClicked: function() {
-        devtools.tools.getDebuggerAgent().startProfiling(
-            devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_HEAP_SNAPSHOT |
-                devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_HEAP_STATS |
-                devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_JS_CONSTRUCTORS);
-    },
-
-    _startSidebarDragging: function(event)
-    {
-        WebInspector.elementDragStart(this.sidebarResizeElement, this._sidebarDragging.bind(this), this._endSidebarDragging.bind(this), event, "col-resize");
-    },
-
-    _sidebarDragging: function(event)
-    {
-        this._updateSidebarWidth(event.pageX);
-
-        event.preventDefault();
-    },
-
-    _endSidebarDragging: function(event)
-    {
-        WebInspector.elementDragEnd(event);
-    },
-
-    _updateSidebarWidth: function(width)
-    {
-        if (this.sidebarElement.offsetWidth <= 0) {
-            // The stylesheet hasn"t loaded yet or the window is closed,
-            // so we can"t calculate what is need. Return early.
-            return;
-        }
-
-        if (!("_currentSidebarWidth" in this))
-            this._currentSidebarWidth = this.sidebarElement.offsetWidth;
-        if (typeof width === "undefined")
-            width = this._currentSidebarWidth;
-
-        width = Number.constrain(width, Preferences.minSidebarWidth, window.innerWidth / 2);
-        this._currentSidebarWidth = width;
-        this.sidebarElement.style.width = width + "px";
-        this.snapshotViews.style.left = width + "px";
-        this.snapshotViewStatusBarItemsContainer.style.left = width + "px";
-        this.sidebarResizeElement.style.left = (width - 3) + "px";
     }
-};
+    this._snapshots = [];
 
-WebInspector.HeapProfilerPanel.prototype.__proto__ = WebInspector.Panel.prototype;
+    this.__oldReset();
+}
+
+
+WebInspector.ProfilesPanel.prototype.addSnapshot = function(snapshot) {
+    this._snapshots.push(snapshot);
+    snapshot.list = this._snapshots;
+    snapshot.listIndex = this._snapshots.length - 1;
+
+    var snapshotsTreeElement = new WebInspector.HeapSnapshotSidebarTreeElement(snapshot);
+    snapshotsTreeElement.small = false;
+    snapshot._snapshotsTreeElement = snapshotsTreeElement;
+
+    this.snapshotsListTreeElement.appendChild(snapshotsTreeElement);
+
+    this.dispatchEventToListeners("snapshot added");
+}
+
+
+WebInspector.ProfilesPanel.prototype.showSnapshot = function(snapshot) {
+    if (!snapshot)
+        return;
+
+    if (this.visibleView)
+        this.visibleView.hide();
+    var view = this.snapshotViewForSnapshot(snapshot);
+    view.show(this.profileViews);
+    this.visibleView = view;
+
+    this.profileViewStatusBarItemsContainer.removeChildren();
+    var statusBarItems = view.statusBarItems;
+    for (var i = 0; i < statusBarItems.length; ++i)
+        this.profileViewStatusBarItemsContainer.appendChild(statusBarItems[i]);
+}
+
+
+WebInspector.ProfilesPanel.prototype.__oldShowView = WebInspector.ProfilesPanel.prototype.showView;
+WebInspector.ProfilesPanel.prototype.showView = function(view) {
+    if ('snapshot' in view)
+        this.showSnapshot(view.snapshot);
+    else
+        this.__oldShowView(view);
+}
+
+
+WebInspector.ProfilesPanel.prototype.snapshotViewForSnapshot = function(snapshot) {
+    if (!snapshot)
+        return null;
+    if (!snapshot._snapshotView)
+        snapshot._snapshotView = new WebInspector.HeapSnapshotView(this, snapshot);
+    return snapshot._snapshotView;
+}
+
 
 WebInspector.HeapSnapshotView = function(parent, snapshot)
 {
@@ -460,7 +353,7 @@ WebInspector.HeapSnapshotSidebarTreeElement = function(snapshot)
 WebInspector.HeapSnapshotSidebarTreeElement.prototype = {
     onselect: function()
     {
-        WebInspector.panels.heap.showSnapshot(this.snapshot);
+        WebInspector.panels.profiles.showSnapshot(this.snapshot);
     },
 
     get mainTitle()

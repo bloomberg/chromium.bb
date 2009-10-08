@@ -22,24 +22,6 @@ body.attached #toolbar {
 
 /* Heap Profiler Styles */
 
-#heap-snapshot-views {
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 200px;
-    bottom: 0;
-}
-
-#heap-snapshot-status-bar-items {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 200px;
-    overflow: hidden;
-    border-left: 1px solid rgb(184, 184, 184);
-    margin-left: -1px;
-}
-
 .heap-snapshot-status-bar-item .glyph {
     -webkit-mask-image: url(Images/focusButtonGlyph.png);
 }

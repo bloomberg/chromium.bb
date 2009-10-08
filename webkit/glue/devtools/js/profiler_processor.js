@@ -462,7 +462,7 @@ devtools.profiler.Processor.prototype.processHeapSampleEnd_ = function(
   for (var item in snapshot.lowlevels) {
       snapshot.used += snapshot.lowlevels[item].size;
   }
-  WebInspector.panels.heap.addSnapshot(snapshot);
+  WebInspector.panels.profiles.addSnapshot(snapshot);
 };
 
 

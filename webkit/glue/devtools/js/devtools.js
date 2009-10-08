@@ -160,6 +160,7 @@ WebInspector.loaded = function() {
 
   Preferences.ignoreWhitespace = false;
   Preferences.samplingCPUProfiler = true;
+  Preferences.heapProfilerPresent = true;
   oldLoaded.call(this);
 
   // Hide dock button on Mac OS.
@@ -349,15 +350,6 @@ WebInspector.UIString = function(string) {
 
     var glassPane = document.getElementById('glass-pane-for-drag');
     glassPane.parentElement.removeChild(glassPane);
-  };
-})();
-
-
-(function() {
-  var originalCreatePanels = WebInspector._createPanels;
-  WebInspector._createPanels = function() {
-    originalCreatePanels.apply(this, arguments);
-    this.panels.heap = new WebInspector.HeapProfilerPanel();
   };
 })();
 

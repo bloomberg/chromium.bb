@@ -240,6 +240,17 @@ devtools.InspectorControllerImpl.prototype.stopProfiling = function() {
 /**
  * @override
  */
+devtools.InspectorControllerImpl.prototype.takeHeapSnapshot = function() {
+  devtools.tools.getDebuggerAgent().startProfiling(
+      devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_HEAP_SNAPSHOT
+      | devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_HEAP_STATS
+      | devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_JS_CONSTRUCTORS);
+};
+
+
+/**
+ * @override
+ */
 devtools.InspectorControllerImpl.prototype.dispatchOnInjectedScript = function(
     callId, methodName, argsString) {
   var callback = function(result, isException) {
