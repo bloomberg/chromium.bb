@@ -13,6 +13,7 @@
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
 #include "base/string_util.h"
+#include "chrome/browser/chromeos/cros_network_library.h"
 #include "chrome/browser/chromeos/password_dialog_view.h"
 #include "chrome/common/pref_member.h"
 #include "chrome/common/pref_names.h"
@@ -32,92 +33,53 @@ using views::ColumnSet;
 namespace {
 
 ////////////////////////////////////////////////////////////////////////////////
-// WifiSSIDComboModel
+// WifiNetworkComboModel
 
 // The Combobox model for the list of wifi networks
-class WifiSSIDComboModel : public ComboboxModel {
+class WifiNetworkComboModel : public ComboboxModel {
  public:
-  struct NetworkData {
-    NetworkData() { }
-    NetworkData(const string16& encryption, const int& strength)
-        : encryption(encryption),
-          strength(strength) { }
-
-    string16 encryption;
-    int strength;
-  };
-  typedef std::map<std::string, NetworkData> NetworkDataMap;
-
-  WifiSSIDComboModel();
+  WifiNetworkComboModel();
 
   virtual int GetItemCount();
   virtual std::wstring GetItemAt(int index);
 
-  const std::string& GetSSIDAt(int index);
-  bool RequiresPassword(const std::string& ssid);
+  bool HasWifiNetworks();
+  const WifiNetwork& GetWifiNetworkAt(int index);
 
  private:
-  std::vector<std::string> ssids_;
+  WifiNetworkVector wifi_networks_;
 
-  // A map of some extra data (NetworkData) keyed off the ssids.
-  NetworkDataMap ssids_map_;
-
-  void AddWifiNetwork(const std::string& ssid,
-                      const string16& encryption,
-                      int strength);
-
-  DISALLOW_COPY_AND_ASSIGN(WifiSSIDComboModel);
+  DISALLOW_COPY_AND_ASSIGN(WifiNetworkComboModel);
 };
 
-WifiSSIDComboModel::WifiSSIDComboModel() {
-  // TODO(chocobo): Load wifi info from conman.
-  // This is just temporary data until we hook this up to real data.
-  AddWifiNetwork("Wifi Combobox Mock", string16(), 80);
-  AddWifiNetwork("Wifi WPA-PSK Password is chronos",
-                 ASCIIToUTF16("WPA-PSK"), 60);
-  AddWifiNetwork("Wifi No Encryption", string16(), 90);
+WifiNetworkComboModel::WifiNetworkComboModel() {
+  wifi_networks_ = CrosNetworkLibrary::Get()->GetWifiNetworks();
 }
 
-int WifiSSIDComboModel::GetItemCount() {
-  return static_cast<int>(ssids_.size());
+int WifiNetworkComboModel::GetItemCount() {
+  // Item count is always 1 more than number of networks.
+  // If there are no networks, then we show a message stating that.
+  // If there are networks, the first item is empty.
+  return static_cast<int>(wifi_networks_.size()) + 1;
 }
 
-std::wstring WifiSSIDComboModel::GetItemAt(int index) {
-  DCHECK(static_cast<int>(ssids_.size()) > index);
-
-  NetworkDataMap::const_iterator it = ssids_map_.find(ssids_[index]);
-  DCHECK(it != ssids_map_.end());
-
-  // TODO(chocobo): Finalize UI, then put strings in resource file.
-  std::vector<string16> subst;
-  subst.push_back(ASCIIToUTF16(it->first));  // $1
-  // The "None" string is just temporary for now. Have not finalized the UI yet.
-  if (it->second.encryption.empty())
-    subst.push_back(ASCIIToUTF16("None"));  // $2
-  else
-    subst.push_back(it->second.encryption);  // $2
-  subst.push_back(IntToString16(it->second.strength));  // $3
-
-  return UTF16ToWide(
-      ReplaceStringPlaceholders(ASCIIToUTF16("$1 ($2, $3)"), subst, NULL));
+std::wstring WifiNetworkComboModel::GetItemAt(int index) {
+  if (index == 0) {
+    return wifi_networks_.empty() ?
+        l10n_util::GetString(IDS_STATUSBAR_NO_NETWORKS_MESSAGE) :
+        ASCIIToWide("");
+  }
+  // If index is greater than one, we get the corresponding network, which is
+  // in the wifi_networks_ list in [index-1] position.
+  return ASCIIToWide(wifi_networks_[index-1].ssid);
 }
 
-const std::string& WifiSSIDComboModel::GetSSIDAt(int index) {
-  DCHECK(static_cast<int>(ssids_.size()) > index);
-  return ssids_[index];
+bool WifiNetworkComboModel::HasWifiNetworks() {
+  return !wifi_networks_.empty();
 }
 
-bool WifiSSIDComboModel::RequiresPassword(const std::string& ssid) {
-  NetworkDataMap::const_iterator it = ssids_map_.find(ssid);
-  DCHECK(it != ssids_map_.end());
-  return !it->second.encryption.empty();
-}
-
-void WifiSSIDComboModel::AddWifiNetwork(const std::string& ssid,
-                                        const string16& encryption,
-                                        int strength) {
-  ssids_.push_back(ssid);
-  ssids_map_[ssid] = NetworkData(encryption, strength);
+const WifiNetwork& WifiNetworkComboModel::GetWifiNetworkAt(int index) {
+  return wifi_networks_[index-1];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -126,10 +88,11 @@ void WifiSSIDComboModel::AddWifiNetwork(const std::string& ssid,
 // Network section for wifi settings
 class NetworkSection : public OptionsPageView,
                        public views::Combobox::Listener,
-                       public PasswordDialogDelegate {
+                       public PasswordDialogDelegate,
+                       public CrosNetworkLibrary::Observer {
  public:
   explicit NetworkSection(Profile* profile);
-  virtual ~NetworkSection() {}
+  virtual ~NetworkSection();
 
   // Overridden from views::Combobox::Listener:
   virtual void ItemChanged(views::Combobox* sender,
@@ -141,7 +104,8 @@ class NetworkSection : public OptionsPageView,
   virtual bool OnPasswordDialogAccept(const std::string& ssid,
                                       const string16& password);
 
-  bool ConnectToWifi(const std::string& ssid, const string16& password);
+  // CrosNetworkLibrary::Observer implementation.
+  virtual void NetworkChanged(CrosNetworkLibrary* obj);
 
  protected:
   // OptionsPageView overrides:
@@ -158,8 +122,11 @@ class NetworkSection : public OptionsPageView,
   // Used to store the index (in combobox) of the currently connected wifi.
   int last_selected_wifi_ssid_index_;
 
-  // Dummy for now. Used to populate wifi ssid models.
-  WifiSSIDComboModel wifi_ssid_model_;
+  // The activated wifi network.
+  WifiNetwork activated_wifi_network_;
+
+  // The wifi ssid models.
+  WifiNetworkComboModel wifi_ssid_model_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkSection);
 };
@@ -172,6 +139,11 @@ NetworkSection::NetworkSection(Profile* profile)
       contents_(NULL),
       wifi_ssid_combobox_(NULL),
       last_selected_wifi_ssid_index_(0) {
+  CrosNetworkLibrary::Get()->AddObserver(this);
+}
+
+NetworkSection::~NetworkSection() {
+  CrosNetworkLibrary::Get()->RemoveObserver(this);
 }
 
 void NetworkSection::ItemChanged(views::Combobox* sender,
@@ -179,39 +151,56 @@ void NetworkSection::ItemChanged(views::Combobox* sender,
                                  int new_index) {
   if (new_index == prev_index)
     return;
-  if (sender == wifi_ssid_combobox_) {
-    last_selected_wifi_ssid_index_ = prev_index;
-    std::string ssid = wifi_ssid_model_.GetSSIDAt(new_index);
-    // Connect to wifi here. Open password page if appropriate
-    if (wifi_ssid_model_.RequiresPassword(ssid)) {
-      views::Window* window = views::Window::CreateChromeWindow(
-          NULL,
-          gfx::Rect(),
-          new PasswordDialogView(this, ssid));
-      window->SetIsAlwaysOnTop(true);
-      window->Show();
-    } else {
-      ConnectToWifi(ssid, string16());
-    }
+
+  // Don't allow switching to the first item (which is empty).
+  if (new_index == 0) {
+    wifi_ssid_combobox_->SetSelectedItem(prev_index);
+    return;
+  }
+
+  if (!wifi_ssid_model_.HasWifiNetworks())
+    return;
+
+  last_selected_wifi_ssid_index_ = prev_index;
+  activated_wifi_network_ = wifi_ssid_model_.GetWifiNetworkAt(new_index);
+  // Connect to wifi here. Open password page if appropriate.
+  if (activated_wifi_network_.encrypted) {
+    views::Window* window = views::Window::CreateChromeWindow(
+        NULL,
+        gfx::Rect(),
+        new PasswordDialogView(this, activated_wifi_network_.ssid));
+    window->SetIsAlwaysOnTop(true);
+    window->Show();
+  } else {
+    CrosNetworkLibrary::Get()->ConnectToWifiNetwork(activated_wifi_network_,
+                                                    string16());
   }
 }
 
 bool NetworkSection::OnPasswordDialogCancel() {
-  // Change combobox to previous setting
+  // Change combobox to previous setting.
   wifi_ssid_combobox_->SetSelectedItem(last_selected_wifi_ssid_index_);
   return true;
 }
 
 bool NetworkSection::OnPasswordDialogAccept(const std::string& ssid,
                                             const string16& password) {
-  // Try connecting to wifi
-  return ConnectToWifi(ssid, password);
+  CrosNetworkLibrary::Get()->ConnectToWifiNetwork(activated_wifi_network_,
+                                                  password);
+  return true;
 }
 
-bool NetworkSection::ConnectToWifi(const std::string& ssid,
-                                   const string16& password) {
-  // TODO(chocobo): Connect to wifi
-  return password == ASCIIToUTF16("chronos");
+void NetworkSection::NetworkChanged(CrosNetworkLibrary* obj) {
+  if (wifi_ssid_model_.HasWifiNetworks()) {
+    for (int i = 1; i < wifi_ssid_model_.GetItemCount(); i++) {
+      if (wifi_ssid_model_.GetWifiNetworkAt(i).ssid == obj->wifi_ssid()) {
+        last_selected_wifi_ssid_index_ = i;
+        if (wifi_ssid_combobox_)
+          wifi_ssid_combobox_->SetSelectedItem(i);
+        return;
+      }
+    }
+  }
 }
 
 void NetworkSection::InitControlLayout() {
@@ -248,6 +237,7 @@ void NetworkSection::InitContents() {
   contents_->SetLayoutManager(layout);
 
   wifi_ssid_combobox_ = new views::Combobox(&wifi_ssid_model_);
+  wifi_ssid_combobox_->SetSelectedItem(last_selected_wifi_ssid_index_);
   wifi_ssid_combobox_->set_listener(this);
 
   int single_column_view_set_id = 0;
@@ -474,10 +464,9 @@ void SettingsContentsView::InitControlLayout() {
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
-  // TODO(chocobo): Add NetworkSection back in when we finalized the UI.
-//  layout->StartRow(0, single_column_view_set_id);
-//  layout->AddView(new NetworkSection(profile()));
-//  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->StartRow(0, single_column_view_set_id);
+  layout->AddView(new NetworkSection(profile()));
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(new TouchpadSection(profile()));
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);

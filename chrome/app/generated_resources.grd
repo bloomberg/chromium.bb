@@ -5637,6 +5637,30 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_STATUSBAR_NO_NETWORKS_MESSAGE" desc="No networks are available">
         No networks are available
       </message>
+      <message name="IDS_STATUSBAR_CLOCK_SHORT_TIME_AM" desc="In the clock menu button, this shows the AM time in a short format.">
+        <ph name="HOUR">$1<ex>2</ex></ph>:<ph name="MIUTE">$2<ex>30</ex></ph>a
+      </message>
+      <message name="IDS_STATUSBAR_CLOCK_SHORT_TIME_PM" desc="In the clock menu button, this shows the PM time in a short format.">
+        <ph name="HOUR">$1<ex>2</ex></ph>:<ph name="MIUTE">$2<ex>30</ex></ph>p
+      </message>
+      <message name="IDS_STATUSBAR_BATTERY_PERCENTAGE" desc="In the power menu button, this shows what percentage of battery is left.">
+        Battery: <ph name="PRECENTAGE">$1<ex>100</ex></ph>%
+      </message>
+      <message name="IDS_STATUSBAR_BATTERY_TIME_UNTIL_FULL" desc="In the power menu button, this shows how much time until fully charged.">
+        <ph name="HOUR">$1<ex>2</ex></ph>:<ph name="MIUTE">$2<ex>30</ex></ph> until full
+      </message>
+      <message name="IDS_STATUSBAR_BATTERY_TIME_UNTIL_EMPTY" desc="In the power menu button, this shows how much time until empty.">
+        <ph name="HOUR">$1<ex>2</ex></ph>:<ph name="MIUTE">$2<ex>30</ex></ph> remaining
+      </message>
+      <message name="IDS_STATUSBAR_BATTERY_CALCULATING_TIME_UNTIL_FULL" desc="In the power menu button, this is the message the shows when we are calculating time until full.">
+        Calculating time until full
+      </message>
+      <message name="IDS_STATUSBAR_BATTERY_CALCULATING_TIME_UNTIL_EMPTY" desc="In the power menu button, this is the message the shows when we are calculating time until empty.">
+        Calculating remaining time
+      </message>
+      <message name="IDS_STATUSBAR_BATTERY_IS_CHARGED" desc="In the power menu button, the battery is charged message.">
+        Battery is charged
+      </message>
     </if>
 
     </messages>

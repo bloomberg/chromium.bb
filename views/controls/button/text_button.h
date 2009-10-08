@@ -94,6 +94,7 @@ class TextButton : public CustomButton {
   void ClearMaxTextSize();
 
   void set_max_width(int max_width) { max_width_ = max_width; }
+  void SetFont(const gfx::Font& font);
   void SetEnabledColor(SkColor color);
   void SetDisabledColor(SkColor color);
   void SetHighlightColor(SkColor color);

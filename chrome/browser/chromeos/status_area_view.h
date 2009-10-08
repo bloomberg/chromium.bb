@@ -6,18 +6,17 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_AREA_VIEW_H_
 
 #include "base/basictypes.h"
-#include "third_party/cros/chromeos_cros_api.h"
-#include "third_party/cros/chromeos_power.h"
 #include "views/controls/menu/simple_menu_model.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
 
 class Browser;
+class ClockMenuButton;
 class NetworkMenuButton;
+class PowerMenuButton;
 
 namespace views {
 class MenuButton;
-class ImageView;
 }
 
 // This class is used to wrap the small informative widgets in the upper-right
@@ -33,7 +32,7 @@ class StatusAreaView : public views::View,
   };
 
   explicit StatusAreaView(Browser* browser);
-  virtual ~StatusAreaView();
+  virtual ~StatusAreaView() {}
 
   void Init();
 
@@ -58,34 +57,20 @@ class StatusAreaView : public views::View,
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt,
                        gfx::NativeView hwnd);
-  // Called whenever the battery status changes.
-  void PowerStatusChanged(const chromeos::PowerStatus& status);
-
-  static void LoadCrosLibrary();
-  // Called whenever the battery status changes. Dispatches to
-  // PowerStatusChanged() instance method.
-  static void PowerStatusChangedHandler(
-      void* object, const chromeos::PowerStatus& status);
 
   // The browser window that owns us.
   Browser* browser_;
 
+  ClockMenuButton* clock_view_;
   NetworkMenuButton* network_view_;
-  views::ImageView* battery_view_;
+  PowerMenuButton* battery_view_;
   views::MenuButton* menu_view_;
 
   scoped_ptr<views::SimpleMenuModel> app_menu_contents_;
   scoped_ptr<views::SimpleMenuModel> options_menu_contents_;
   scoped_ptr<views::Menu2> app_menu_menu_;
-  // A reference to the battery power api, to allow callbacks when the
-  // battery status changes.
-  chromeos::PowerStatusConnection power_status_connection_;
 
   static OpenTabsMode open_tabs_mode_;
-  // True if the library was loaded.
-  static bool cros_library_loaded_;
-  // True if there was an error loading the cros shared object.
-  static bool cros_library_error_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaView);
 };

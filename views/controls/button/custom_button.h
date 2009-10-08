@@ -41,6 +41,9 @@ class CustomButton : public Button,
   // Set how long the hover animation will last for.
   void SetAnimationDuration(int duration);
 
+  // Sets whether or not to show the highlighed (i.e. hot) state. Default true.
+  void SetShowHighlighted(bool show_highlighted);
+
   // Overridden from View:
   virtual void SetEnabled(bool enabled);
   virtual bool IsEnabled() const;
@@ -104,6 +107,9 @@ class CustomButton : public Button,
   // Should we animate when the state changes? Defaults to true, but false while
   // throbbing.
   bool animate_on_state_change_;
+
+  // Whether or not to show the highlighted (i.e. hot) state.
+  bool show_highlighted_;
 
   // Mouse event flags which can trigger button actions.
   int triggerable_event_flags_;

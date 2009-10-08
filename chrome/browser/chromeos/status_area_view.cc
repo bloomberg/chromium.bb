@@ -4,127 +4,34 @@
 
 #include "chrome/browser/chromeos/status_area_view.h"
 
-#include <dlfcn.h>
-
 #include <algorithm>
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/font.h"
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "app/theme_provider.h"
-#include "base/path_service.h"
 #include "base/string_util.h"
-#include "base/time.h"
-#include "base/timer.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/chromeos/clock_menu_button.h"
 #include "chrome/browser/chromeos/network_menu_button.h"
+#include "chrome/browser/chromeos/power_menu_button.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/profile.h"
-#include "chrome/common/chrome_paths.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/menu_button.h"
-#include "views/controls/image_view.h"
 #include "views/controls/menu/menu.h"
 #include "views/controls/menu/simple_menu_model.h"
 
 namespace {
-
-// The number of images representing the fullness of the battery.
-const int kNumBatteryImages = 8;
 
 // Number of pixels to separate adjacent status items.
 const int kStatusItemSeparation = 1;
 
 // BrowserWindowGtk tiles its image with this offset
 const int kCustomFrameBackgroundVerticalOffset = 15;
-
-class ClockView : public views::View {
- public:
-  ClockView();
-  virtual ~ClockView();
-
-  // views::View* overrides.
-  virtual gfx::Size GetPreferredSize();
-  virtual void Paint(gfx::Canvas* canvas);
-
- private:
-  // Schedules the timer to fire at the next minute interval.
-  void SetNextTimer();
-
-  // Schedules a paint when the timer goes off.
-  void OnTimer();
-
-  gfx::Font font_;
-
-  base::OneShotTimer<ClockView> timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClockView);
-};
-
-// Amount of slop to add into the timer to make sure we're into the next minute
-// when the timer goes off.
-const int kTimerSlopSeconds = 1;
-
-ClockView::ClockView()
-    : font_(ResourceBundle::GetSharedInstance().GetFont(
-                ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD)) {
-  SetNextTimer();
-}
-
-ClockView::~ClockView() {
-}
-
-gfx::Size ClockView::GetPreferredSize() {
-  return gfx::Size(40, 12);
-}
-
-void ClockView::Paint(gfx::Canvas* canvas) {
-  base::Time now = base::Time::Now();
-  base::Time::Exploded now_exploded;
-  now.LocalExplode(&now_exploded);
-  int hour = now_exploded.hour % 12;
-  if (hour == 0)
-    hour = 12;
-
-  std::wstring time_string = StringPrintf(L"%d:%02d%lc",
-                                          hour,
-                                          now_exploded.minute,
-                                          now_exploded.hour < 12 ? L'p' : L'p');
-  canvas->DrawStringInt(time_string, font_, SK_ColorWHITE, 0, 0,
-                        width(), height(), gfx::Canvas::TEXT_ALIGN_CENTER);
-}
-
-void ClockView::SetNextTimer() {
-  // Try to set the timer to go off at the next change of the minute. We don't
-  // want to have the timer go off more than necessary since that will cause
-  // the CPU to wake up and consume power.
-  base::Time now = base::Time::Now();
-  base::Time::Exploded exploded;
-  now.LocalExplode(&exploded);
-
-  // Often this will be called at minute boundaries, and we'll actually want
-  // 60 seconds from now.
-  int seconds_left = 60 - exploded.second;
-  if (seconds_left == 0)
-    seconds_left = 60;
-
-  // Make sure that the timer fires on the next minute. Without this, if it is
-  // called just a teeny bit early, then it will skip the next minute.
-  seconds_left += kTimerSlopSeconds;
-
-  timer_.Start(base::TimeDelta::FromSeconds(seconds_left),
-               this, &ClockView::OnTimer);
-}
-
-void ClockView::OnTimer() {
-  SchedulePaint();
-  SetNextTimer();
-}
 
 class OptionsMenuModel : public views::SimpleMenuModel,
                          public views::SimpleMenuModel::Delegate {
@@ -200,49 +107,34 @@ class OptionsMenuModel : public views::SimpleMenuModel,
 StatusAreaView::OpenTabsMode StatusAreaView::open_tabs_mode_ =
     StatusAreaView::OPEN_TABS_ON_LEFT;
 
-// static
-bool StatusAreaView::cros_library_loaded_ = false;
-bool StatusAreaView::cros_library_error_ = false;
-
 StatusAreaView::StatusAreaView(Browser* browser)
     : browser_(browser),
+      clock_view_(NULL),
       network_view_(NULL),
       battery_view_(NULL),
-      menu_view_(NULL),
-      power_status_connection_(NULL) {
-}
-
-StatusAreaView::~StatusAreaView() {
-  if (power_status_connection_)
-    chromeos::DisconnectPowerStatus(power_status_connection_);
+      menu_view_(NULL) {
 }
 
 void StatusAreaView::Init() {
-  LoadCrosLibrary();
   ThemeProvider* theme = browser_->profile()->GetThemeProvider();
 
   // Clock.
-  AddChildView(new ClockView);
+  clock_view_ = new ClockMenuButton();
+  AddChildView(clock_view_);
 
   // Network.
-  network_view_ = new NetworkMenuButton(browser_, cros_library_loaded_);
+  network_view_ = new NetworkMenuButton(browser_);
   AddChildView(network_view_);
 
   // Battery.
-  battery_view_ = new views::ImageView;
-  battery_view_->SetImage(theme->GetBitmapNamed(IDR_STATUSBAR_BATTERY_UNKNOWN));
+  battery_view_ = new PowerMenuButton();
   AddChildView(battery_view_);
 
   // Menu.
   menu_view_ = new views::MenuButton(NULL, std::wstring(), this, false);
+  menu_view_->SetShowHighlighted(false);
   menu_view_->SetIcon(*theme->GetBitmapNamed(IDR_STATUSBAR_MENU));
   AddChildView(menu_view_);
-
-  if (cros_library_loaded_) {
-    power_status_connection_ = chromeos::MonitorPowerStatus(
-        StatusAreaView::PowerStatusChangedHandler,
-        this);
-  }
 }
 
 gfx::Size StatusAreaView::GetPreferredSize() {
@@ -373,54 +265,3 @@ void StatusAreaView::RunMenu(views::View* source, const gfx::Point& pt,
   app_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 }
 
-// static
-void StatusAreaView::LoadCrosLibrary() {
-  if (cros_library_loaded_) {
-    // Already loaded.
-    return;
-  }
-
-  if (cros_library_error_) {
-    // Error in previous load attempt.
-    return;
-  }
-
-  FilePath path;
-  if (PathService::Get(chrome::FILE_CHROMEOS_API, &path)) {
-    cros_library_loaded_ = chromeos::LoadCros(path.value().c_str());
-    if (!cros_library_loaded_) {
-      cros_library_error_ = true;
-      char* error = dlerror();
-      if (error) {
-        LOG(ERROR) << "Problem loading chromeos shared object: " << error;
-      }
-    }
-  }
-}
-
-// static
-void StatusAreaView::PowerStatusChangedHandler(
-    void* object, const chromeos::PowerStatus& status) {
-  static_cast<StatusAreaView*>(object)->PowerStatusChanged(status);
-}
-
-void StatusAreaView::PowerStatusChanged(const chromeos::PowerStatus& status) {
-  ThemeProvider* theme = browser_->profile()->GetThemeProvider();
-  int image_index;
-
-  if (status.battery_state == chromeos::BATTERY_STATE_FULLY_CHARGED &&
-      status.line_power_on) {
-    image_index = IDR_STATUSBAR_BATTERY_CHARGED;
-  } else {
-    image_index = status.line_power_on ?
-        IDR_STATUSBAR_BATTERY_CHARGING_1 :
-        IDR_STATUSBAR_BATTERY_DISCHARGING_1;
-    double percentage = status.battery_percentage;
-    int offset = floor(percentage / (100.0 / kNumBatteryImages));
-    // This can happen if the battery is 100% full.
-    if (offset == kNumBatteryImages)
-      offset--;
-    image_index += offset;
-  }
-  battery_view_->SetImage(theme->GetBitmapNamed(image_index));
-}

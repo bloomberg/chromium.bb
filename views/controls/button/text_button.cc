@@ -4,6 +4,8 @@
 
 #include "views/controls/button/text_button.h"
 
+#include <algorithm>
+
 #include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/throb_animation.h"
@@ -182,6 +184,10 @@ void TextButton::SetText(const std::wstring& text) {
 
 void TextButton::SetIcon(const SkBitmap& icon) {
   icon_ = icon;
+}
+
+void TextButton::SetFont(const gfx::Font& font) {
+  font_ = font;
 }
 
 void TextButton::SetEnabledColor(SkColor color) {
