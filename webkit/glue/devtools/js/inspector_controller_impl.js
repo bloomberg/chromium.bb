@@ -70,7 +70,7 @@ devtools.InspectorControllerImpl.prototype.detach = function() {
  * {@inheritDoc}.
  */
 devtools.InspectorControllerImpl.prototype.hiddenPanels = function() {
-  return 'databases';
+  return '';
 };
 
 
