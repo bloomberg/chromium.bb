@@ -3139,3 +3139,7 @@ BUG_AA : LayoutTests/http/tests/security/isolatedWorld/string-prototype.html = F
 BUG_AA : LayoutTests/http/tests/security/isolatedWorld/window-properties.html = FAIL
 BUG_AA : LayoutTests/http/tests/security/isolatedWorld/window-setTimeout-function.html = TIMEOUT
 BUG_AA : LayoutTests/http/tests/security/isolatedWorld/window-setTimeout-string.html = TIMEOUT
+BUG_AA SKIP : LayoutTests/http/tests/security/isolatedWorld/iframe.html = FAIL
+
+BUG_JOHNNYG MAC LINUX : LayoutTests/http/tests/globalhistory/history-delegate-basic-title.html = FAIL
+BUG_JOHNNYG WIN DEBUG : LayoutTests/fast/frames/onlyCommentInIFrame.html = FAIL
