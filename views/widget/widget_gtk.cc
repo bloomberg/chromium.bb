@@ -426,7 +426,7 @@ gfx::NativeView WidgetGtk::GetNativeView() const {
 }
 
 void WidgetGtk::PaintNow(const gfx::Rect& update_rect) {
-  if (widget_) {
+  if (widget_ && GTK_WIDGET_DRAWABLE(widget_)) {
     gtk_widget_queue_draw_area(widget_, update_rect.x(), update_rect.y(),
                                update_rect.width(), update_rect.height());
     // Force the paint to occur now.
