@@ -34,6 +34,10 @@
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "webkit/glue/webkit_glue.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac_util.h"
+#endif
+
 //-----------------------------------------------------------------------------
 
 RenderProcess::RenderProcess()
@@ -91,10 +95,18 @@ RenderProcess::RenderProcess()
     webkit_glue::SetMediaCacheEnabled(true);
   }
 
+#if defined(OS_MACOSX)
+  FilePath bundle_path = mac_util::MainAppBundlePath();
+
+  initialized_media_library_ =
+     media::InitializeMediaLibrary(bundle_path.Append("Libraries"));
+        
+#else
   FilePath module_path;
   initialized_media_library_ =
       PathService::Get(base::DIR_MODULE, &module_path) &&
       media::InitializeMediaLibrary(module_path);
+#endif
 }
 
 RenderProcess::~RenderProcess() {

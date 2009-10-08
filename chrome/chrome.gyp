@@ -3386,33 +3386,10 @@
                 'app/theme/google_chrome/app.icns',
                 'app/theme/google_chrome/document.icns',
               ],
-              'copies': [
-                {
-                  'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/MacOS',
-                  # TODO(ajwong): This, and the parallel chromium stanza below
-                  # really should find a way to share file paths with
-                  # ffmpeg.gyp so they don't diverge. (BUG=23602)
-                  'files': [
-                    '../third_party/ffmpeg/binaries/chrome/mac/ia32/libavcodec.52.dylib',
-                    '../third_party/ffmpeg/binaries/chrome/mac/ia32/libavformat.52.dylib',
-                    '../third_party/ffmpeg/binaries/chrome/mac/ia32/libavutil.50.dylib',
-                  ],
-                },
-              ],
             }, {  # else: 'branding!="Chrome"
               'mac_bundle_resources': [
                 'app/theme/chromium/app.icns',
                 'app/theme/chromium/document.icns',
-              ],
-              'copies': [
-                {
-                  'destination': '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/MacOS',
-                  'files': [
-                    '../third_party/ffmpeg/binaries/chromium/mac/ia32/libavcodec.52.dylib',
-                    '../third_party/ffmpeg/binaries/chromium/mac/ia32/libavformat.52.dylib',
-                    '../third_party/ffmpeg/binaries/chromium/mac/ia32/libavutil.50.dylib',
-                  ],
-                },
               ],
             }],
             ['mac_breakpad==1', {
@@ -5139,6 +5116,13 @@
                   'postbuild_name': 'Tweak Mac lproj folders',
                   'action': ['app/tweak_mac_lproj_folders'],
                 },
+                {
+                  'postbuild_name': 'Symlink Libraries',
+                  'action': ['ln',
+                             '-fhs',
+                             'Versions/Current/Libraries',
+                             '${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Libraries'],
+                },
               ],
               'copies': [
                 {
@@ -5176,6 +5160,32 @@
                     'app/breakpad_mac.h',
                   ],
                 }],  # mac_breakpad
+                ['branding=="Chrome"', {
+                  'copies': [
+                    {
+                      'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
+                      # TODO(ajwong): This, and the parallel chromium stanza
+                      # below really should find a way to share file paths with
+                      # ffmpeg.gyp so they don't diverge. (BUG=23602)
+                      'files': [
+                        '../third_party/ffmpeg/binaries/chrome/mac/ia32/libavcodec.52.dylib',
+                        '../third_party/ffmpeg/binaries/chrome/mac/ia32/libavformat.52.dylib',
+                        '../third_party/ffmpeg/binaries/chrome/mac/ia32/libavutil.50.dylib',
+                      ],
+                    },
+                  ],
+                }, {  # else: 'branding!="Chrome"
+                  'copies': [
+                    {
+                      'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
+                      'files': [
+                        '../third_party/ffmpeg/binaries/chromium/mac/ia32/libavcodec.52.dylib',
+                        '../third_party/ffmpeg/binaries/chromium/mac/ia32/libavformat.52.dylib',
+                        '../third_party/ffmpeg/binaries/chromium/mac/ia32/libavutil.50.dylib',
+                      ],
+                    },
+                  ],
+                }],  # branding
               ],  # conditions
             }],  # OS=="mac"
           ],  # conditions
