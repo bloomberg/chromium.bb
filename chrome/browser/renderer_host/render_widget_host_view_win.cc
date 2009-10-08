@@ -187,6 +187,16 @@ class NotifyPluginProcessHostTask : public Task {
   HWND parent_;  // Parent HWND, created and destroyed on the browser UI thread.
 };
 
+// Windows callback for OnDestroy to detach the plugin windows.
+BOOL CALLBACK DetachPluginWindowsCallback(HWND window, LPARAM param) {
+  if (WebPluginDelegateImpl::IsPluginDelegateWindow(window) &&
+      !IsHungAppWindow(window)) {
+    ::ShowWindow(window, SW_HIDE);
+    SetParent(window, NULL);
+  }
+  return TRUE;
+}
+
 }  // namespace
 
 // RenderWidgetHostView --------------------------------------------------------
@@ -689,6 +699,21 @@ void RenderWidgetHostViewWin::OnActivate(UINT action, BOOL minimized,
 }
 
 void RenderWidgetHostViewWin::OnDestroy() {
+  // When a tab is closed all its child plugin windows are destroyed
+  // automatically. This happens before plugins get any notification that its
+  // instances are tearing down.
+  //
+  // Plugins like Quicktime assume that their windows will remain valid as long
+  // as they have plugin instances active. Quicktime crashes in this case
+  // because its windowing code cleans up an internal data structure that the
+  // handler for NPP_DestroyStream relies on.
+  //
+  // The fix is to detach plugin windows from web contents when it is going
+  // away. This will prevent the plugin windows from getting destroyed
+  // automatically. The detached plugin windows will get cleaned up in proper
+  // sequence as part of the usual cleanup when the plugin instance goes away.
+  EnumChildWindows(m_hWnd, DetachPluginWindowsCallback, NULL);
+
   ResetTooltip();
   TrackMouseLeave(false);
 }

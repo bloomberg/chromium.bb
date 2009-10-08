@@ -75,14 +75,6 @@ class TabContentsView : public RenderViewHostDelegate::View {
     return gfx::Size(rc.width(), rc.height());
   }
 
-  // Called when the TabContents is being destroyed. This should clean up child
-  // windows that are part of the view.
-  //
-  // TODO(brettw) It seems like this might be able to be done internally as the
-  // window is being torn down without input from the TabContents. Try to
-  // implement functions that way rather than adding stuff here.
-  virtual void OnContentsDestroy() = 0;
-
   // Sets the page title for the native widgets corresponding to the view. This
   // is not strictly necessary and isn't expected to be displayed anywhere, but
   // can aid certain debugging tools such as Spy++ on Windows where you are

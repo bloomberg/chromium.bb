@@ -326,9 +326,6 @@ TabContents::~TabContents() {
       prefs->RemovePrefObserver(kPrefsToObserve[i], this);
   }
 
-  // Clean up subwindows like plugins and the find in page bar.
-  view_->OnContentsDestroy();
-
   NotifyDisconnected();
   HungRendererDialog::HideForTabContents(this);
 

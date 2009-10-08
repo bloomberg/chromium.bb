@@ -181,16 +181,6 @@ void TabContentsViewGtk::StartDragging(const WebDropData& drop_data,
   // TODO(snej): Make use of WebDragOperationsMask
 }
 
-void TabContentsViewGtk::OnContentsDestroy() {
-  // TODO(brettw) this seems like maybe it can be moved into OnDestroy and this
-  // function can be deleted? If you're adding more here, consider whether it
-  // can be moved into OnDestroy which is a Windows message handler as the
-  // window is being torn down.
-
-  // We don't want to try to handle drag events from this point on.
-  drag_source_.reset();
-}
-
 void TabContentsViewGtk::SetPageTitle(const std::wstring& title) {
   // Set the window name to include the page title so it's easier to spot
   // when debugging (e.g. via xwininfo -tree).

@@ -480,11 +480,6 @@ void TabContentsViewGtk::GetContainerBounds(gfx::Rect* out) const {
                requested_size_.width(), requested_size_.height());
 }
 
-void TabContentsViewGtk::OnContentsDestroy() {
-  // We don't want to try to handle drag events from this point on.
-  drag_source_.reset();
-}
-
 void TabContentsViewGtk::SetPageTitle(const std::wstring& title) {
   // Set the window name to include the page title so it's easier to spot
   // when debugging (e.g. via xwininfo -tree).

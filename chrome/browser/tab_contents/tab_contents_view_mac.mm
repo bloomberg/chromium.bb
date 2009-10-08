@@ -112,9 +112,6 @@ void TabContentsViewMac::StartDragging(const WebDropData& drop_data,
   MessageLoop::current()->SetNestableTasksAllowed(false);
 }
 
-void TabContentsViewMac::OnContentsDestroy() {
-}
-
 void TabContentsViewMac::RenderViewCreated(RenderViewHost* host) {
   // We want updates whenever the intrinsic width of the webpage
   // changes. Put the RenderView into that mode.

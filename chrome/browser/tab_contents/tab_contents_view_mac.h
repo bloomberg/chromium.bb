@@ -54,7 +54,6 @@ class TabContentsViewMac : public TabContentsView,
   virtual gfx::NativeView GetContentNativeView() const;
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const;
   virtual void GetContainerBounds(gfx::Rect* out) const;
-  virtual void OnContentsDestroy();
   virtual void RenderViewCreated(RenderViewHost* host);
   virtual void SetPageTitle(const std::wstring& title);
   virtual void OnTabCrashed();

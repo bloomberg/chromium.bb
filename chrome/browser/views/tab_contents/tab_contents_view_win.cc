@@ -31,27 +31,12 @@
 #include "net/base/net_util.h"
 #include "views/focus/view_storage.h"
 #include "views/widget/root_view.h"
-#include "webkit/glue/plugins/webplugin_delegate_impl.h"
 #include "webkit/glue/webdropdata.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationNone;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebInputEvent;
-
-namespace {
-
-// Windows callback for OnDestroy to detach the plugin windows.
-BOOL CALLBACK DetachPluginWindowsCallback(HWND window, LPARAM param) {
-  if (WebPluginDelegateImpl::IsPluginDelegateWindow(window) &&
-      !IsHungAppWindow(window)) {
-    ::ShowWindow(window, SW_HIDE);
-    SetParent(window, NULL);
-  }
-  return TRUE;
-}
-
-}  // namespace
 
 // static
 TabContentsView* TabContentsView::Create(TabContents* tab_contents) {
@@ -206,28 +191,6 @@ void TabContentsViewWin::StartDragging(const WebDropData& drop_data,
 
   if (tab_contents()->render_view_host())
     tab_contents()->render_view_host()->DragSourceSystemDragEnded();
-}
-
-void TabContentsViewWin::OnContentsDestroy() {
-  // TODO(brettw) this seems like maybe it can be moved into OnDestroy and this
-  // function can be deleted? If you're adding more here, consider whether it
-  // can be moved into OnDestroy which is a Windows message handler as the
-  // window is being torn down.
-
-  // When a tab is closed all its child plugin windows are destroyed
-  // automatically. This happens before plugins get any notification that its
-  // instances are tearing down.
-  //
-  // Plugins like Quicktime assume that their windows will remain valid as long
-  // as they have plugin instances active. Quicktime crashes in this case
-  // because its windowing code cleans up an internal data structure that the
-  // handler for NPP_DestroyStream relies on.
-  //
-  // The fix is to detach plugin windows from web contents when it is going
-  // away. This will prevent the plugin windows from getting destroyed
-  // automatically. The detached plugin windows will get cleaned up in proper
-  // sequence as part of the usual cleanup when the plugin instance goes away.
-  EnumChildWindows(GetNativeView(), DetachPluginWindowsCallback, NULL);
 }
 
 void TabContentsViewWin::OnDestroy() {

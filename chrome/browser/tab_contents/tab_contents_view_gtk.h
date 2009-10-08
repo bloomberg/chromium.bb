@@ -55,7 +55,6 @@ class TabContentsViewGtk : public TabContentsView,
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const;
   virtual void InitRendererPrefs(RendererPreferences* prefs);
   virtual void GetContainerBounds(gfx::Rect* out) const;
-  virtual void OnContentsDestroy();
   virtual void SetPageTitle(const std::wstring& title);
   virtual void OnTabCrashed();
   virtual void SizeContents(const gfx::Size& size);
