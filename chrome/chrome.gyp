@@ -2776,7 +2776,7 @@
             }],
             ['chromeos==1',{
               'dependencies': [
-                '../third_party/protobuf2/protobuf.gyp:protobuf',
+                '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
                 '../third_party/protobuf2/protobuf.gyp:protoc',
                 '../third_party/cros/cros_api.gyp:cros_api',
               ],
