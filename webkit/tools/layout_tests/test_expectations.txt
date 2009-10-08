@@ -3141,5 +3141,5 @@ BUG_AA : LayoutTests/http/tests/security/isolatedWorld/window-setTimeout-functio
 BUG_AA : LayoutTests/http/tests/security/isolatedWorld/window-setTimeout-string.html = TIMEOUT
 BUG_AA SKIP : LayoutTests/http/tests/security/isolatedWorld/iframe.html = FAIL
 
-BUG_JOHNNYG MAC LINUX : LayoutTests/http/tests/globalhistory/history-delegate-basic-title.html = FAIL
+BUG_JOHNNYG : LayoutTests/http/tests/globalhistory/history-delegate-basic-title.html = FAIL
 BUG_JOHNNYG WIN DEBUG : LayoutTests/fast/frames/onlyCommentInIFrame.html = FAIL
