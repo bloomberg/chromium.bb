@@ -853,7 +853,7 @@ BUG23463 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-symbol-01-b.svg = IMAGE+
 BUG23463 WIN LINUX : LayoutTests/svg/W3C-SVG-1.1/struct-use-01-t.svg = IMAGE+TEXT
 
 // Merge 39744:39829 - regression
-BUG10284 RELEASE : LayoutTests/svg/custom/path-bad-data.svg = FAIL
+BUG10284 MAC : LayoutTests/svg/custom/path-bad-data.svg = FAIL
 
 // Upstream dumprendertree changes caused the expected to change.
 // Now our baseline is out of date, and we differ from Mac expected on the
@@ -883,9 +883,6 @@ BUG10415 WIN LINUX : LayoutTests/svg/custom/pattern-with-transformation.svg = FA
 
 // Selection wrong.
 BUG10292 MAC LINUX : LayoutTests/editing/selection/5354455-1.html = FAIL
-
-// Missing scrollbar.
-BUG10294 LINUX : LayoutTests/fast/frames/onlyCommentInIFrame.html = FAIL
 
 // Compact support was removed from WebKit by Hyatt and layout tests rebaselined in r40259.
 
@@ -3055,8 +3052,9 @@ BUG23955 MAC LINUX : LayoutTests/fast/css/last-of-type-pseudo-class.html = FAIL 
 // Possibly busted as part of http://trac.webkit.org/changeset/49003
 BUG23901 WIN LINUX : LayoutTests/fast/box-shadow/inset.html = FAIL
 
-// Skia update 364:376
-
+// Flaky on Linux debug since WebKit merge 49051:49097
+BUG24331 LINUX DEBUG : LayoutTests/svg/text/text-text-07-t.svg = FAIL PASS
+BUG24331 LINUX DEBUG : LayoutTests/svg/text/text-tselect-02-f.svg = FAIL PASS
 
 // WebKit update: 49111:49142
 // Added in http://trac.webkit.org/changeset/49131, probably just needs expectations.
@@ -3107,11 +3105,6 @@ BUG24159 WIN LINUX : LayoutTests/fast/css/opacity-float.html = FAIL
 // Flaky failure
 BUG24167 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-port-explicit-domain.html = PASS FAIL
 
-BUG_SENORBLANCO MAC DEBUG : LayoutTests/svg/custom/path-bad-data.svg = FAIL
-BUG_SENORBLANCO LINUX DEBUG : LayoutTests/svg/text/text-text-07-t.svg = FAIL
-BUG_SENORBLANCO LINUX DEBUG : LayoutTests/svg/text/text-tselect-02-f.svg = FAIL
-BUG_SENORBLANCO WIN RELEASE : LayoutTests/fast/frames/onlyCommentInIFrame.html = FAIL
-
 // WebKit roll 49254:49260
 BUG_JOHNNYG REBASELINE : LayoutTests/media/audio-controls-rendering.html = FAIL
 BUG_JOHNNYG REBASELINE : LayoutTests/media/controls-after-reload.html = FAIL
@@ -3145,7 +3138,6 @@ BUG_AA : LayoutTests/http/tests/security/isolatedWorld/window-setTimeout-string.
 BUG_AA SKIP : LayoutTests/http/tests/security/isolatedWorld/iframe.html = FAIL
 
 BUG_JOHNNYG : LayoutTests/http/tests/globalhistory/history-delegate-basic-title.html = FAIL
-BUG_JOHNNYG WIN DEBUG : LayoutTests/fast/frames/onlyCommentInIFrame.html = FAIL
 
 BUG_24308 MAC : LayoutTests/http/tests/navigation/back-send-referrer.html = PASS TIMEOUT
 
