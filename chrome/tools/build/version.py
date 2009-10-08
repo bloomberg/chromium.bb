@@ -59,10 +59,9 @@ def fetch_values(file_list):
   return values
 
 
-def subst_contents(file_name, values):
+def subst_template(contents, values):
   """
-  Returns the contents of the specified file_name with substited
-  values from the specified dictionary.
+  Returns the template with substituted values from the specified dictionary.
 
   Keywords to be substituted are surrounded by '@':  @KEYWORD@.
 
@@ -72,13 +71,23 @@ def subst_contents(file_name, values):
   contains any @KEYWORD@ strings expecting them to be recursively
   substituted, okay?
   """
-  contents = open(file_name, 'r').read()
-  for key, val in values.items():
+  for key, val in values.iteritems():
     try:
       contents = contents.replace('@' + key + '@', val)
     except TypeError:
       print repr(key), repr(val)
   return contents
+
+
+def subst_file(file_name, values):
+  """
+  Returns the contents of the specified file_name with substited
+  values from the specified dictionary.
+
+  This is like subst_template, except it operates on a file.
+  """
+  template = open(file_name, 'r').read()
+  return subst_template(template, values);
 
 
 def write_if_changed(file_name, contents):
@@ -101,21 +110,23 @@ def main(argv=None):
   if argv is None:
     argv = sys.argv
 
-  short_options = 'f:i:o:h'
+  short_options = 'f:i:o:t:h'
   long_options = ['file=', 'help']
 
   helpstr = """\
-Usage:  version.py [-h] [-f FILE] [[-i] FILE] [[-o] FILE]
+Usage:  version.py [-h] [-f FILE] ([[-i] FILE] | -t TEMPLATE) [[-o] FILE]
 
-  -f FILE, --file=FILE          Read variables from FILE.
-  -i FILE, --input=FILE         Read strings to substitute from FILE.
-  -o FILE, --output=FILE        Write substituted strings to FILE.
-  -h, --help                    Print this help and exit.
+  -f FILE, --file=FILE              Read variables from FILE.
+  -i FILE, --input=FILE             Read strings to substitute from FILE.
+  -o FILE, --output=FILE            Write substituted strings to FILE.
+  -t TEMPLATE, --template=TEMPLATE  Use TEMPLATE as the strings to substitute.
+  -h, --help                        Print this help and exit.
 """
 
   variable_files = []
   in_file = None
   out_file = None
+  template = None
 
   try:
     try:
@@ -129,10 +140,13 @@ Usage:  version.py [-h] [-f FILE] [[-i] FILE] [[-o] FILE]
         in_file = a
       elif o in ('-o', '--output'):
         out_file = a
+      elif o in ('-t', '--template'):
+        template = a
       elif o in ('-h', '--help'):
         print helpstr
         return 0
-    while len(args) and (in_file is None or out_file is None):
+    while len(args) and (in_file is None or out_file is None or
+                         template is None):
       if in_file is None:
         in_file = args.pop(0)
       elif out_file is None:
@@ -148,8 +162,10 @@ Usage:  version.py [-h] [-f FILE] [[-i] FILE] [[-o] FILE]
   values = fetch_values(variable_files)
 
 
-  if in_file:
-    contents = subst_contents(in_file, values)
+  if template is not None:
+    contents = subst_template(template, values)
+  elif in_file:
+    contents = subst_file(in_file, values)
   else:
     # Generate a default set of version information.
     contents = """MAJOR=%(MAJOR)s

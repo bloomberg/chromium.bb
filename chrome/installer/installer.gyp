@@ -468,7 +468,7 @@
             '../chrome.gyp:chrome',
           ],
           'variables': {
-            'version' : '<!(echo -n "@MAJOR@.@MINOR@.@BUILD@.@PATCH@" | <(version_py) -f ../../chrome/VERSION /dev/stdin)',
+            'version' : '<!(python <(version_py) -f ../../chrome/VERSION -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")',
             'revision' : '<!(python ../../build/util/lastchange.py | cut -d "=" -f 2)',
             'input_files': [
               # TODO(mmoss) Any convenient way to get all the relevant build
