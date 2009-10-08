@@ -3102,12 +3102,12 @@ BUG24159 WIN LINUX : LayoutTests/fast/css/opacity-float.html = FAIL
 BUG24167 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-port-explicit-domain.html = PASS FAIL
 
 // WebKit roll 49254:49260
-BUG_JOHNNYG REBASELINE : LayoutTests/media/audio-controls-rendering.html = FAIL
-BUG_JOHNNYG REBASELINE : LayoutTests/media/controls-after-reload.html = FAIL
-BUG_JOHNNYG REBASELINE : LayoutTests/media/controls-strict.html = FAIL
-BUG_JOHNNYG REBASELINE : LayoutTests/media/video-controls-rendering.html = FAIL
-BUG_JOHNNYG REBASELINE : LayoutTests/media/video-display-toggle.html = FAIL
-BUG_JOHNNYG REBASELINE : LayoutTests/media/video-empty-source.html = FAIL
+BUG_JOHNNYG : LayoutTests/media/audio-controls-rendering.html = FAIL
+BUG_JOHNNYG : LayoutTests/media/controls-after-reload.html = FAIL
+BUG_JOHNNYG : LayoutTests/media/controls-strict.html = FAIL
+BUG_JOHNNYG : LayoutTests/media/video-controls-rendering.html = FAIL
+BUG_JOHNNYG : LayoutTests/media/video-display-toggle.html = FAIL
+BUG_JOHNNYG : LayoutTests/media/video-empty-source.html = FAIL
 
 // WebKit roll 49260:49288
 BUG_AA : LayoutTests/http/tests/security/isolatedWorld/all-window-properties.html = FAIL
