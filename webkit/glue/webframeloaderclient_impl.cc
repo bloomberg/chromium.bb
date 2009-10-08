@@ -759,7 +759,7 @@ void WebFrameLoaderClient::dispatchDecidePolicyForMIMEType(
   }
 
   // NOTE: ERR_POLICY_CHANGE will be generated when action is not PolicyUse.
-  (webframe_->frame()->loader()->*function)(action);
+  (webframe_->frame()->loader()->policyChecker()->*function)(action);
 }
 
 void WebFrameLoaderClient::dispatchDecidePolicyForNewWindowAction(
@@ -784,7 +784,7 @@ void WebFrameLoaderClient::dispatchDecidePolicyForNewWindowAction(
     // to keep this state.
     next_navigation_policy_ = navigation_policy;
   }
-  (webframe_->frame()->loader()->*function)(policy_action);
+  (webframe_->frame()->loader()->policyChecker()->*function)(policy_action);
 }
 
 void WebFrameLoaderClient::dispatchDecidePolicyForNavigationAction(
@@ -836,7 +836,7 @@ void WebFrameLoaderClient::dispatchDecidePolicyForNavigationAction(
     }
   }
 
-  (webframe_->frame()->loader()->*function)(policy_action);
+  (webframe_->frame()->loader()->policyChecker()->*function)(policy_action);
 }
 
 void WebFrameLoaderClient::cancelPolicyCheck() {
@@ -853,7 +853,7 @@ void WebFrameLoaderClient::dispatchWillSubmitForm(FramePolicyFunction function,
     webframe_->client()->willSubmitForm(
         webframe_, webkit_glue::HTMLFormElementToWebForm(form_ref->form()));
   }
-  (webframe_->frame()->loader()->*function)(PolicyUse);
+  (webframe_->frame()->loader()->policyChecker()->*function)(PolicyUse);
 }
 
 void WebFrameLoaderClient::dispatchDidLoadMainResource(DocumentLoader*) {
