@@ -388,6 +388,10 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
       gtk_widget_queue_draw(progress_area_.get());
       break;
     case DownloadItem::COMPLETE:
+      if (download->auto_opened()) {
+        parent_shelf_->RemoveDownloadItem(this);  // This will delete us!
+        return;
+      }
       StopDownloadProgress();
 
       // Set up the widget as a drag source.
