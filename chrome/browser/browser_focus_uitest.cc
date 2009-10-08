@@ -245,7 +245,13 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_ClickingMovesFocus) {
   CheckViewHasFocus(VIEW_ID_LOCATION_BAR);
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BrowsersRememberFocus) {
+#if defined(OS_WIN)
+#define MAYBE_BrowsersRememberFocus DISABLED_BrowsersRememberFocus
+#else
+#define MAYBE_BrowsersRememberFocus BrowsersRememberFocus
+#endif  // defined(OS_WIN)
+
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_BrowsersRememberFocus) {
   HTTPTestServer* server = StartHTTPServer();
 
   // First we navigate to our test page.
