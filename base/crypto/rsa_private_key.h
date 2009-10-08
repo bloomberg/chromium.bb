@@ -8,8 +8,9 @@
 #include "build/build_config.h"
 
 #if defined(USE_NSS)
-#include <cryptoht.h>
-#include <keythi.h>
+// Forward declaration.
+struct SECKEYPrivateKeyStr;
+struct SECKEYPublicKeyStr;
 #elif defined(OS_MACOSX)
 #include <Security/cssm.h>
 #elif defined(OS_WIN)
@@ -166,7 +167,7 @@ class RSAPrivateKey {
   ~RSAPrivateKey();
 
 #if defined(USE_NSS)
-  SECKEYPrivateKey* key() { return key_; }
+  SECKEYPrivateKeyStr* key() { return key_; }
 #elif defined(OS_WIN)
   HCRYPTPROV provider() { return provider_; }
   HCRYPTKEY key() { return key_; }
@@ -187,8 +188,8 @@ private:
   RSAPrivateKey();
 
 #if defined(USE_NSS)
-  SECKEYPrivateKey* key_;
-  SECKEYPublicKey* public_key_;
+  SECKEYPrivateKeyStr* key_;
+  SECKEYPublicKeyStr* public_key_;
 #elif defined(OS_WIN)
   bool InitProvider();
 

@@ -8,7 +8,8 @@
 #include "build/build_config.h"
 
 #if defined(USE_NSS)
-#include <cryptoht.h>
+// Forward declaration.
+struct SGNContextStr;
 #elif defined(OS_MACOSX)
 #include <Security/cssm.h>
 #elif defined(OS_WIN)
@@ -46,7 +47,7 @@ class SignatureCreator {
   RSAPrivateKey* key_;
 
 #if defined(USE_NSS)
-  SGNContext* sign_context_;
+  SGNContextStr* sign_context_;
 #elif defined(OS_MACOSX)
   CSSM_CSP_HANDLE csp_handle_;	
   CSSM_CC_HANDLE sig_handle_;
