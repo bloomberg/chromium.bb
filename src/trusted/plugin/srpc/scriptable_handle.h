@@ -284,7 +284,7 @@ class ScriptableHandle: public ScriptableHandleBase {
     dprintf(("ScriptableHandle::RemoveProperty(%p, %s)\n",
              static_cast<void*>(obj),
              PortablePluginInterface::IdentToString(
-                 reinterpret_cast<int>(name))));
+                 reinterpret_cast<uintptr_t>(name))));
 
     PortablePluginInterface* intf = unknown_handle->plugin_interface_;
     if (NULL == intf->nacl_instance()) {
