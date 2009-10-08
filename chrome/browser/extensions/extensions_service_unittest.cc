@@ -638,8 +638,9 @@ TEST_F(ExtensionsServiceTest, CleanupOnStartup) {
   InitializeInstalledExtensionsService(pref_path, source_install_dir);
 
   // Simulate that one of them got partially deleted by clearing its pref.
-  prefs_->GetMutableDictionary(L"extensions.settings")->
-      Remove(L"behllobkkfkfnphdnhnkndlbkcpglgmj", NULL);
+  DictionaryValue* dict = prefs_->GetMutableDictionary(L"extensions.settings");
+  ASSERT_NE(NULL, dict);
+  dict->Remove(L"behllobkkfkfnphdnhnkndlbkcpglgmj", NULL);
 
   service_->Init();
   loop_.RunAllPending();
