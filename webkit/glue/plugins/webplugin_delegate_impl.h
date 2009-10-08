@@ -59,27 +59,23 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   static bool IsDummyActivationWindow(gfx::NativeWindow window);
 
   // WebPluginDelegate implementation
-  virtual void PluginDestroyed();
   virtual bool Initialize(const GURL& url,
                           const std::vector<std::string>& arg_names,
                           const std::vector<std::string>& arg_values,
                           webkit_glue::WebPlugin* plugin,
                           bool load_manually);
+  virtual void PluginDestroyed();
   virtual void UpdateGeometry(const gfx::Rect& window_rect,
                               const gfx::Rect& clip_rect);
   virtual void Paint(gfx::NativeDrawingContext context, const gfx::Rect& rect);
   virtual void Print(gfx::NativeDrawingContext context);
-
-  virtual void SetFocus();  // only called when windowless
-  // only called when windowless
-  // See NPAPI NPP_HandleEvent for more information.
+  virtual void SetFocus();
   virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
                                 WebKit::WebCursorInfo* cursor);
   virtual NPObject* GetPluginScriptableObject();
   virtual void DidFinishLoadWithReason(const GURL& url, NPReason reason,
                                        intptr_t notify_data);
   virtual int GetProcessId();
-
   virtual void SendJavaScriptStream(const GURL& url,
                                     const std::string& result,
                                     bool success, bool notify_needed,
@@ -92,7 +88,6 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   virtual void DidReceiveManualData(const char* buffer, int length);
   virtual void DidFinishManualLoading();
   virtual void DidManualLoadFail();
-  virtual FilePath GetPluginPath();
   virtual void InstallMissingPlugin();
   virtual webkit_glue::WebPluginResourceClient* CreateResourceClient(
       int resource_id,
@@ -100,10 +95,14 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
       bool notify_needed,
       intptr_t notify_data,
       intptr_t stream);
+  // End of WebPluginDelegate implementation.
 
-  virtual bool IsWindowless() const { return windowless_ ; }
-  virtual gfx::Rect GetRect() const { return window_rect_; }
-  virtual gfx::Rect GetClipRect() const { return clip_rect_; }
+  bool IsWindowless() const { return windowless_ ; }
+  gfx::Rect GetRect() const { return window_rect_; }
+  gfx::Rect GetClipRect() const { return clip_rect_; }
+
+  // Returns the path for the library implementing this plugin.
+  FilePath GetPluginPath();
 
   // Returns a combination of PluginQuirks.
   int GetQuirks() const { return quirks_; }
@@ -111,11 +110,12 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 #if defined(OS_MACOSX)
   // Informs the delegate that the context used for painting windowless plugins
   // has changed.
-  virtual void UpdateContext(gfx::NativeDrawingContext context);
+  void UpdateContext(gfx::NativeDrawingContext context);
 #endif
 
  private:
   friend class DeleteTask<WebPluginDelegateImpl>;
+  friend class webkit_glue::WebPluginDelegate;
 
   WebPluginDelegateImpl(gfx::PluginWindowHandle containing_view,
                         NPAPI::PluginInstance *instance);
@@ -333,9 +333,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // Holds the current cursor set by the windowless plugin.
   WebCursor current_windowless_cursor_;
 
-  friend class webkit_glue::WebPluginDelegate;
-
-  DISALLOW_EVIL_CONSTRUCTORS(WebPluginDelegateImpl);
+  DISALLOW_COPY_AND_ASSIGN(WebPluginDelegateImpl);
 };
 
 #endif  // #ifndef WEBKIT_GLUE_PLUGIN_WEBPLUGIN_DELEGATE_IMPL_H_

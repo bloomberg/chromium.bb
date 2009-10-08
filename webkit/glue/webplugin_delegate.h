@@ -70,11 +70,13 @@ class WebPluginDelegate {
   // Tells the plugin to print itself.
   virtual void Print(gfx::NativeDrawingContext hdc) = 0;
 
-  // Informs the plugin that it now has focus.
+  // Informs the plugin that it now has focus. This is only called in
+  // windowless mode.
   virtual void SetFocus() = 0;
 
   // For windowless plugins, gives them a user event like mouse/keyboard.
-  // Returns whether the event was handled.
+  // Returns whether the event was handled. This is only called in windowsless
+  // mode. See NPAPI NPP_HandleEvent for more information.
   virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
                                 WebKit::WebCursorInfo* cursor) = 0;
 

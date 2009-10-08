@@ -255,10 +255,6 @@ void WebPluginDelegateImpl::DidManualLoadFail() {
   instance()->DidManualLoadFail();
 }
 
-FilePath WebPluginDelegateImpl::GetPluginPath() {
-  return instance()->plugin_lib()->plugin_info().path;
-}
-
 void WebPluginDelegateImpl::InstallMissingPlugin() {
   NPEvent evt;
   instance()->NPP_HandleEvent(&evt);
