@@ -253,7 +253,7 @@ void VisitSegmentDatabase::QuerySegmentUsage(
   while (statement.Step()) {
     SegmentID segment_id = statement.ColumnInt64(0);
     if (segment_id != last_segment_id) {
-      if (last_segment_id != 0) {
+      if (pud) {
         pud->SetScore(score);
         results->push_back(pud);
       }
@@ -279,7 +279,7 @@ void VisitSegmentDatabase::QuerySegmentUsage(
     score += recency_boost * day_visits_score;
   }
 
-  if (last_segment_id != 0) {
+  if (pud) {
     pud->SetScore(score);
     results->push_back(pud);
   }
