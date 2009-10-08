@@ -35,6 +35,8 @@ class DownloadShelfContextMenuMac;
   // other views.
   IBOutlet GTMWidthBasedTweaker* buttonTweaker_;
 
+  IBOutlet NSImageView* image_;
+
   scoped_ptr<DownloadItemMac> bridge_;
   scoped_ptr<DownloadShelfContextMenuMac> menuBridge_;
 

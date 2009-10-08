@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "app/l10n_util_mac.h"
+#include "app/resource_bundle.h"
 #include "base/mac_util.h"
 #include "base/nsimage_cache_mac.h"
 #include "base/sys_string_conversions.h"
@@ -83,6 +84,9 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
     urlDelegate_ = urlDelegate;
     tabObserver_.reset(
         new TabStripModelObserverBridge(browser_->tabstrip_model(), self));
+
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    folderImage_.reset([rb.GetNSImageNamed(IDR_BOOKMARK_BAR_FOLDER) retain]);
   }
   return self;
 }
@@ -513,7 +517,7 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 
   NSImage* image = NULL;
   if (node->is_folder()) {
-    image = nsimage_cache::ImageNamed(@"bookmark_bar_folder.png");
+    image = folderImage_;
   } else {
     const SkBitmap& favicon = bookmarkModel_->GetFavIcon(node);
     if (!favicon.isNull()) {

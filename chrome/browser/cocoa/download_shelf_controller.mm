@@ -5,6 +5,7 @@
 #import "chrome/browser/cocoa/download_shelf_controller.h"
 
 #include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser.h"
@@ -86,6 +87,11 @@ const NSTimeInterval kDownloadItemOpenDuration = 0.8;
 
   [[showAllDownloadsLink_ textStorage] setAttributedString:linkText.get()];
   [showAllDownloadsLink_ setDelegate:self];
+
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  NSImage* favicon = rb.GetNSImageNamed(IDR_DOWNLOADS_FAVICON);
+  DCHECK(favicon);
+  [image_ setImage:favicon];
 
   [self resizeDownloadLinkToFit];
 }

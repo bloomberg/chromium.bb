@@ -6,6 +6,7 @@
 
 #include "app/gfx/text_elider.h"
 #include "app/l10n_util_mac.h"
+#include "app/resource_bundle.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/download_item_cell.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_util.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 static const int kTextWidth = 140;            // Pixels
@@ -102,6 +104,11 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   NSPoint frameOrigin = [buttonTweaker_ frame].origin;
   frameOrigin.x += widthChange;
   [buttonTweaker_ setFrameOrigin:frameOrigin];
+
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  NSImage* alertIcon = rb.GetNSImageNamed(IDR_WARNING);
+  DCHECK(alertIcon);
+  [image_ setImage:alertIcon];
 
   [self setStateFromDownload:bridge_->download_model()];
   bridge_->LoadIcon();
