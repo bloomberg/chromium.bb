@@ -22,6 +22,7 @@
 #include "chrome/browser/tab_contents/interstitial_page.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/browser/tab_contents/web_drag_dest_gtk.h"
 #include "chrome/browser/views/sad_tab_view.h"
 #include "chrome/browser/views/tab_contents/render_view_context_menu_win.h"
 #include "views/focus/view_storage.h"
@@ -152,6 +153,9 @@ RenderWidgetHostView* TabContentsViewGtk::CreateViewForWidget(
   gtk_widget_add_events(view->native_view(), GDK_LEAVE_NOTIFY_MASK |
                         GDK_POINTER_MOTION_MASK);
 
+  // Renderer target DnD.
+  drag_dest_.reset(new WebDragDestGtk(tab_contents(), view->native_view()));
+
   gtk_fixed_put(GTK_FIXED(GetNativeView()), view->native_view(), 0, 0);
   return view;
 }
@@ -265,7 +269,7 @@ void TabContentsViewGtk::RestoreFocus() {
 }
 
 void TabContentsViewGtk::UpdateDragCursor(WebDragOperation operation) {
-  NOTIMPLEMENTED();
+  drag_dest_->UpdateDragStatus(operation);
 }
 
 void TabContentsViewGtk::GotFocus() {

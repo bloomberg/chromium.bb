@@ -22,7 +22,7 @@ class GtkThemeProperties;
 class RenderViewContextMenuGtk;
 class SadTabGtk;
 class TabContentsDragSource;
-class WebDragDest;
+class WebDragDestGtk;
 typedef struct _GtkFloatingContainer GtkFloatingContainer;
 
 class TabContentsViewGtk : public TabContentsView,
@@ -133,7 +133,7 @@ class TabContentsViewGtk : public TabContentsView,
 
   // The helper object that handles drag destination related interactions with
   // GTK.
-  scoped_ptr<WebDragDest> drag_dest_;
+  scoped_ptr<WebDragDestGtk> drag_dest_;
 
   // Object responsible for handling drags from the page for us.
   scoped_ptr<TabContentsDragSource> drag_source_;

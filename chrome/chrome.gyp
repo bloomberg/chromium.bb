@@ -2034,6 +2034,8 @@
         'browser/tab_contents/thumbnail_generator.h',
         'browser/tab_contents/web_drag_source.cc',
         'browser/tab_contents/web_drag_source.h',
+        'browser/tab_contents/web_drag_dest_gtk.cc',
+        'browser/tab_contents/web_drag_dest_gtk.h',
         'browser/tab_contents/web_drop_target.cc',
         'browser/tab_contents/web_drop_target.h',
         'browser/tabs/tab_strip_model.cc',

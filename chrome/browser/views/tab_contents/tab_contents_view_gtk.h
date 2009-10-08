@@ -13,6 +13,7 @@
 class RenderViewContextMenuWin;
 class SadTabView;
 class TabContentsDragSource;
+class WebDragDestGtk;
 namespace views {
 class NativeViewHost;
 }
@@ -92,6 +93,10 @@ class TabContentsViewGtk : public TabContentsView,
 
   // The event for the last mouse down we handled. We need this for drags.
   GdkEventButton last_mouse_down_;
+
+  // The helper object that handles drag destination related interactions with
+  // GTK.
+  scoped_ptr<WebDragDestGtk> drag_dest_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsViewGtk);
 };
