@@ -716,7 +716,7 @@ BUG4363 LINUX MAC SKIP : LayoutTests/http/tests/security/local-video-src-from-re
 BUG13907 SKIP : LayoutTests/accessibility/media-element.html = TIMEOUT
 BUG13907 SKIP : LayoutTests/http/tests/security/local-video-source-from-remote.html = FAIL
 BUG13907 SKIP : LayoutTests/http/tests/media = FAIL
-BUG13907 : LayoutTests/media/audio-constructor-autobuffer.html = FAIL TIMEOUT
+BUG13907 : LayoutTests/media/audio-constructor-autobuffer.html = FAIL
 BUG13907 : LayoutTests/media/audio-constructor-src.html = TIMEOUT
 BUG13907 : LayoutTests/media/audio-delete-while-slider-thumb-clicked.html = PASS FAIL CRASH
 BUG13907 : LayoutTests/media/audio-delete-while-step-button-clicked.html = FAIL
@@ -3141,14 +3141,9 @@ BUG_AA : LayoutTests/http/tests/security/isolatedWorld/string-prototype.html = F
 BUG_AA : LayoutTests/http/tests/security/isolatedWorld/window-properties.html = FAIL
 BUG_AA : LayoutTests/http/tests/security/isolatedWorld/window-setTimeout-function.html = TIMEOUT
 BUG_AA : LayoutTests/http/tests/security/isolatedWorld/window-setTimeout-string.html = TIMEOUT
+BUG_AA SKIP : LayoutTests/http/tests/security/isolatedWorld/iframe.html = FAIL
 
 BUG_JOHNNYG : LayoutTests/http/tests/globalhistory/history-delegate-basic-title.html = FAIL
 BUG_JOHNNYG WIN DEBUG : LayoutTests/fast/frames/onlyCommentInIFrame.html = FAIL
 
 BUG_24308 MAC : LayoutTests/http/tests/navigation/back-send-referrer.html = PASS TIMEOUT
-
-// Webkit roll 49278-49309
-BUG_JOHNNYG : LayoutTests/media/media-load-event.html = FAIL
-BUG_JOHNNYG : LayoutTests/media/progress-event-at-least-one.html = FAIL
-BUG_JOHNNYG : LayoutTests/media/audio-constructor.html = TIMEOUT
-
