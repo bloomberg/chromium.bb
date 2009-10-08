@@ -44,8 +44,8 @@
 #include "chrome/renderer/renderer_webkitclient_impl.h"
 #include "chrome/renderer/user_script_slave.h"
 #include "ipc/ipc_message.h"
-#include "webkit/api/public/WebColor.h"
 #include "webkit/api/public/WebCache.h"
+#include "webkit/api/public/WebColor.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebStorageEventDispatcher.h"
 #include "webkit/api/public/WebString.h"
@@ -317,7 +317,7 @@ void RenderThread::OnSetNextPageID(int32 next_page_id) {
 // views.
 void RenderThread::OnSetCSSColors(
     const std::vector<CSSColors::CSSColorMapping>& colors) {
-
+  EnsureWebKitInitialized();
   size_t num_colors = colors.size();
   scoped_array<WebKit::WebColorName> color_names(
       new WebKit::WebColorName[num_colors]);
@@ -338,7 +338,6 @@ void RenderThread::OnCreateNewView(gfx::NativeViewId parent_hwnd,
                                    const WebPreferences& webkit_prefs,
                                    int32 view_id) {
   EnsureWebKitInitialized();
-
   // When bringing in render_view, also bring in webkit's glue and jsbindings.
   RenderView::Create(
       this, parent_hwnd, MSG_ROUTING_NONE, renderer_prefs,
@@ -486,10 +485,8 @@ void RenderThread::IdleHandler() {
   MallocExtension::instance()->ReleaseFreeMemory();
 #endif
 
-  if (!v8::V8::IsDead()) {
-    LOG(INFO) << "RenderThread calling v8 IdleNotification for " << this;
-    v8::V8::IdleNotification();
-  }
+  LOG(INFO) << "RenderThread calling v8 IdleNotification for " << this;
+  v8::V8::IdleNotification();
 
   // Schedule next invocation.
   // Dampen the delay using the algorithm:
@@ -513,6 +510,7 @@ void RenderThread::OnExtensionMessageInvoke(const std::string& function_name,
 }
 
 void RenderThread::OnPurgePluginListCache(bool reload_pages) {
+  EnsureWebKitInitialized();
   // The call below will cause a GetPlugins call with refresh=true, but at this
   // point we already know that the browser has refreshed its list, so disable
   // refresh temporarily to prevent each renderer process causing the list to be
