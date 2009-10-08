@@ -167,7 +167,7 @@ ToolbarView::ToolbarView(Browser* browser)
   browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
   browser_->command_updater()->AddCommandObserver(IDC_RELOAD, this);
   browser_->command_updater()->AddCommandObserver(IDC_HOME, this);
-  browser_->command_updater()->AddCommandObserver(IDC_STAR, this);
+  browser_->command_updater()->AddCommandObserver(IDC_BOOKMARK_PAGE, this);
   if (browser->type() == Browser::TYPE_NORMAL)
     display_mode_ = DISPLAYMODE_NORMAL;
   else
@@ -329,7 +329,7 @@ void ToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
     case IDC_HOME:
       button = home_;
       break;
-    case IDC_STAR:
+    case IDC_BOOKMARK_PAGE:
       button = star_;
       break;
   }
@@ -831,7 +831,7 @@ void ToolbarView::CreateLeftSideControls() {
 
 void ToolbarView::CreateCenterStack(Profile *profile) {
   star_ = new ToolbarStarToggle(this, this);
-  star_->set_tag(IDC_STAR);
+  star_->set_tag(IDC_BOOKMARK_PAGE);
   star_->SetDragController(this);
   star_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_STAR));
   star_->SetToggledTooltipText(l10n_util::GetString(IDS_TOOLTIP_STARRED));

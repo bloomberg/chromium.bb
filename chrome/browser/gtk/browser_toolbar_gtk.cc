@@ -84,7 +84,7 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
   browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
   browser_->command_updater()->AddCommandObserver(IDC_RELOAD, this);
   browser_->command_updater()->AddCommandObserver(IDC_HOME, this);
-  browser_->command_updater()->AddCommandObserver(IDC_STAR, this);
+  browser_->command_updater()->AddCommandObserver(IDC_BOOKMARK_PAGE, this);
 
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
@@ -298,7 +298,7 @@ void BrowserToolbarGtk::EnabledStateChangedForCommand(int id, bool enabled) {
       if (home_.get())
         widget = home_->widget();
       break;
-    case IDC_STAR:
+    case IDC_BOOKMARK_PAGE:
       widget = star_->widget();
       break;
   }
@@ -600,7 +600,7 @@ void BrowserToolbarGtk::OnButtonClick(GtkWidget* button,
   } else if (toolbar->home_.get() && button == toolbar->home_->widget()) {
     tag = IDC_HOME;
   } else if (button == toolbar->star_->widget()) {
-    tag = IDC_STAR;
+    tag = IDC_BOOKMARK_PAGE;
   }
 
   DCHECK_NE(tag, -1) << "Unexpected button click callback";

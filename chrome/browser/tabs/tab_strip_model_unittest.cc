@@ -65,6 +65,7 @@ class TabStripDummyDelegate : public TabStripModelDelegate {
   virtual bool CanRestoreTab() { return false; }
   virtual void RestoreTab() {}
   virtual bool CanCloseContentsAt(int index) { return can_close_ ; }
+  virtual bool CanBookmarkAllTabs() const { return false; }
   virtual void BookmarkAllTabs() {}
 
  private:

@@ -98,7 +98,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { base::VKEY_F5, true, false, false, IDC_RELOAD },
 
   // Miscellany.
-  { base::VKEY_D, false, true, false, IDC_STAR },
+  { base::VKEY_D, false, true, false, IDC_BOOKMARK_PAGE },
   { base::VKEY_B, false, true, false, IDC_SHOW_BOOKMARK_BAR },
   { base::VKEY_H, false, true, false, IDC_SHOW_HISTORY },
   { base::VKEY_J, false, true, false, IDC_SHOW_DOWNLOADS },

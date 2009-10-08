@@ -488,10 +488,7 @@ bool TabStripModel::IsContextMenuCommandEnabled(
     case CommandTogglePinned:
       return true;
     case CommandBookmarkAllTabs: {
-      if (count() <= 1)
-        return false;
-      BookmarkModel* model = profile_->GetBookmarkModel();
-      return model && model->IsLoaded();
+      return delegate_->CanBookmarkAllTabs();
     }
     default:
       NOTREACHED();

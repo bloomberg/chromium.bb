@@ -90,10 +90,10 @@ TEST_F(BrowserCommandsTest, BookmarkCurrentPage) {
   // TODO(beng): remove this once we can use TabContentses directly in testing
   //             instead of the TestTabContents which causes this command not to
   //             be enabled when the tab is added (and selected).
-  browser()->command_updater()->UpdateCommandEnabled(IDC_STAR, true);
+  browser()->command_updater()->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, true);
 
   // Star it.
-  browser()->ExecuteCommand(IDC_STAR);
+  browser()->ExecuteCommand(IDC_BOOKMARK_PAGE);
 
   // It should now be bookmarked in the bookmark model.
   EXPECT_EQ(profile(), browser()->profile());

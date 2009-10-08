@@ -77,7 +77,7 @@ class ToolbarControllerTest : public PlatformTest {
               [[views objectAtIndex:kReloadIndex] isEnabled] ? true : false);
     EXPECT_EQ(updater->IsCommandEnabled(IDC_HOME),
               [[views objectAtIndex:kHomeIndex] isEnabled] ? true : false);
-    EXPECT_EQ(updater->IsCommandEnabled(IDC_STAR),
+    EXPECT_EQ(updater->IsCommandEnabled(IDC_BOOKMARK_PAGE),
               [[views objectAtIndex:kStarIndex] isEnabled] ? true : false);
   }
 

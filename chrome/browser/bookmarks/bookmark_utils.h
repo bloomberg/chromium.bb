@@ -182,15 +182,14 @@ void RegisterPrefs(PrefService* prefs);
 // Register user prefs for BookmarkBar, BookmarkView, ...
 void RegisterUserPrefs(PrefService* prefs);
 
-// Gets the url and title to use in creating a bookmark for the specified
-// TabContents. Returns false if a bookmark shouldn't be created for the
-// specified TabContents.
+// Returns whether |tab_contents| can be bookmarked.  If it can, |url| and
+// |title| are filled in.  Any of the parameters may be NULL.
 bool GetURLAndTitleToBookmark(TabContents* tab_contents,
                               GURL* url,
                               std::wstring* title);
 
 // Creates a new folder containing a bookmark for each of the tabs in
-// |browser|. This returns null if the bookmark model isn't loaded.
+// |browser|.
 const BookmarkNode* CreateBookmarkForAllTabs(Browser* browser);
 
 // Number of bookmarks we'll open before prompting the user to see if they

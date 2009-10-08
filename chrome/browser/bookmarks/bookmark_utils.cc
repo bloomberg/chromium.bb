@@ -614,20 +614,21 @@ void RegisterUserPrefs(PrefService* prefs) {
 bool GetURLAndTitleToBookmark(TabContents* tab_contents,
                               GURL* url,
                               std::wstring* title) {
-  if (!tab_contents->ShouldDisplayURL())
+  if (!tab_contents || !tab_contents->ShouldDisplayURL())
     return false;
-  *url = tab_contents->GetURL();
-  if (url->is_empty() || !url->is_valid())
+  GURL tab_url = tab_contents->GetURL();
+  if (!tab_url.is_valid())
     return false;
-  *title = UTF16ToWideHack(tab_contents->GetTitle());
+  if (url != NULL)
+    *url = tab_url;
+  if (title != NULL)
+    *title = UTF16ToWideHack(tab_contents->GetTitle());
   return true;
 }
 
 const BookmarkNode* CreateBookmarkForAllTabs(Browser* browser) {
   BookmarkModel* model = browser->profile()->GetBookmarkModel();
-  if (!model || !model->IsLoaded())
-    return NULL;
-
+  DCHECK(model && model->IsLoaded());
   const BookmarkNode* parent = model->GetParentForNewNodes();
   const BookmarkNode* folder = model->AddGroup(
       parent, parent->GetChildCount(),
@@ -635,9 +636,8 @@ const BookmarkNode* CreateBookmarkForAllTabs(Browser* browser) {
   for (int i = 0; i < browser->tab_count(); ++i) {
     GURL url;
     std::wstring title;
-    if (GetURLAndTitleToBookmark(browser->GetTabContentsAt(i), &url, &title)) {
+    if (GetURLAndTitleToBookmark(browser->GetTabContentsAt(i), &url, &title))
       model->AddURL(folder, folder->GetChildCount(), title, url);
-    }
   }
   return folder;
 }

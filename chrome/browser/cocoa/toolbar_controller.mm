@@ -101,13 +101,13 @@ class PrefObserverBridge : public NotificationObserver {
     resizeDelegate_ = resizeDelegate;
     hasToolbar_ = YES;
 
-    // Register for notificaotions about state changes for the toolbar buttons
+    // Register for notifications about state changes for the toolbar buttons
     commandObserver_.reset(new CommandObserverBridge(self, commands));
     commandObserver_->ObserveCommand(IDC_BACK);
     commandObserver_->ObserveCommand(IDC_FORWARD);
     commandObserver_->ObserveCommand(IDC_RELOAD);
     commandObserver_->ObserveCommand(IDC_HOME);
-    commandObserver_->ObserveCommand(IDC_STAR);
+    commandObserver_->ObserveCommand(IDC_BOOKMARK_PAGE);
   }
   return self;
 }
@@ -239,7 +239,7 @@ class PrefObserverBridge : public NotificationObserver {
     case IDC_HOME:
       button = homeButton_;
       break;
-    case IDC_STAR:
+    case IDC_BOOKMARK_PAGE:
       button = starButton_;
       break;
   }
@@ -254,7 +254,8 @@ class PrefObserverBridge : public NotificationObserver {
       setEnabled:commands->IsCommandEnabled(IDC_FORWARD) ? YES : NO];
   [reloadButton_ setEnabled:commands->IsCommandEnabled(IDC_RELOAD) ? YES : NO];
   [homeButton_ setEnabled:commands->IsCommandEnabled(IDC_HOME) ? YES : NO];
-  [starButton_ setEnabled:commands->IsCommandEnabled(IDC_STAR) ? YES : NO];
+  [starButton_
+      setEnabled:commands->IsCommandEnabled(IDC_BOOKMARK_PAGE) ? YES : NO];
 }
 
 - (void)updateToolbarWithContents:(TabContents*)tab

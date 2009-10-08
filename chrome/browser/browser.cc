@@ -1366,7 +1366,8 @@ void Browser::ExecuteCommandWithDisposition(
 
     // Page-related commands
     case IDC_SAVE_PAGE:             SavePage();                    break;
-    case IDC_STAR:                  BookmarkCurrentPage();         break;
+    case IDC_BOOKMARK_PAGE:         BookmarkCurrentPage();         break;
+    case IDC_BOOKMARK_ALL_TABS:     BookmarkAllTabs();             break;
     case IDC_VIEW_SOURCE:           ViewSource();                  break;
 #if defined(OS_WIN)
     case IDC_CLOSE_POPUPS:          ClosePopups();                 break;
@@ -1677,6 +1678,19 @@ bool Browser::CanCloseContentsAt(int index) {
   // Note that the next call when it returns false will ask the user for
   // confirmation before closing the browser if the user decides so.
   return CanCloseWithInProgressDownloads();
+}
+
+bool Browser::CanBookmarkAllTabs() const {
+  BookmarkModel* model = profile()->GetBookmarkModel();
+  if (!model || !model->IsLoaded())
+    return false;
+
+  int bookmarkable_tab_contents = 0;
+  for (int i = 0; i < tab_count(); ++i) {
+    if (CanBookmarkTabContents(GetTabContentsAt(i)))
+      ++bookmarkable_tab_contents;
+  }
+  return (bookmarkable_tab_contents > 1);
 }
 
 void Browser::BookmarkAllTabs() {
@@ -2419,9 +2433,6 @@ void Browser::InitCommandState() {
     command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB,
         normal_window && !profile_->IsOffTheRecord());
 
-    // Page-related commands
-    command_updater_.UpdateCommandEnabled(IDC_STAR, normal_window);
-
     // Show various bits of UI
     command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA,
                                           normal_window);
@@ -2453,6 +2464,11 @@ void Browser::UpdateCommandsForTabState() {
 
   // Page-related commands
   window_->SetStarredState(current_tab->is_starred());
+  command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_PAGE,
+                                        CanBookmarkTabContents(current_tab));
+  command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_ALL_TABS,
+                                        CanBookmarkAllTabs());
+
   // View-source should not be enabled if already in view-source mode or
   // the source is not viewable.
   command_updater_.UpdateCommandEnabled(IDC_VIEW_SOURCE,
@@ -2482,6 +2498,10 @@ void Browser::UpdateStopGoState(bool is_loading, bool force) {
   command_updater_.UpdateCommandEnabled(IDC_STOP, is_loading);
 }
 
+bool Browser::CanBookmarkTabContents(TabContents* tab_contents) const {
+  return (type() == TYPE_NORMAL) &&
+      bookmark_utils::GetURLAndTitleToBookmark(tab_contents, NULL, NULL);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, UI update coalescing and handling (private):

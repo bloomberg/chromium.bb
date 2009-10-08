@@ -200,6 +200,10 @@ class TabStripModelDelegate {
   // Returns whether some contents can be closed.
   virtual bool CanCloseContentsAt(int index) = 0;
 
+  // Returns true if we should allow "bookmark all tabs" in this window; this is
+  // true when there is more than one bookmarkable tab open.
+  virtual bool CanBookmarkAllTabs() const = 0;
+
   // Creates a bookmark folder containing a bookmark for all open tabs.
   virtual void BookmarkAllTabs() = 0;
 };

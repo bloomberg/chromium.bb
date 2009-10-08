@@ -474,6 +474,7 @@ class Browser : public TabStripModelDelegate,
   virtual void CreateHistoricalTab(TabContents* contents);
   virtual bool RunUnloadListenerBeforeClosing(TabContents* contents);
   virtual bool CanCloseContentsAt(int index);
+  virtual bool CanBookmarkAllTabs() const;
   virtual void BookmarkAllTabs();
 
   // Overridden from TabStripModelObserver:
@@ -562,6 +563,9 @@ class Browser : public TabStripModelDelegate,
   // command states.  |is_loading| is true if the current TabContents is
   // loading.  |force| is true if the button should change its icon immediately.
   void UpdateStopGoState(bool is_loading, bool force);
+
+  // Returns true if the specified tab contents can be bookmarked.
+  bool CanBookmarkTabContents(TabContents* tab_contents) const;
 
   // UI update coalescing and handling ////////////////////////////////////////
 

@@ -57,6 +57,8 @@ class TestTabStripDelegate : public TabStripModelDelegate {
 
   virtual bool CanCloseContentsAt(int index) { return true; }
 
+  virtual bool CanBookmarkAllTabs() const { return false; }
+
   virtual void BookmarkAllTabs() {}
 };
 

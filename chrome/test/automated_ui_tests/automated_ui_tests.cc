@@ -519,7 +519,7 @@ bool AutomatedUITest::PressUpArrow() {
 }
 
 bool AutomatedUITest::StarPage() {
-  return RunCommandAsync(IDC_STAR);
+  return RunCommandAsync(IDC_BOOKMARK_PAGE);
 }
 
 bool AutomatedUITest::ViewSource() {
