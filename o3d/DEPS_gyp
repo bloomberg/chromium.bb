@@ -1,15 +1,14 @@
 vars = {
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "nixysa_rev": "54",
-  "chromium_rev": "28024",
+  "chromium_rev": "28458",
   "o3d_code_rev": "149",
-  "skia_rev": "341",
+  "skia_rev": "376",
   "gyp_rev": "682",
   "gtest_rev": "267",
   "gflags_rev": "30",
   "breakpad_rev": "391",
   "v8_rev": "2901",
-  "icu_rev": "28024",
   "nacl_rev": "823",
 }
 
@@ -70,7 +69,7 @@ deps = {
     Var("chromium_trunk") + "/src/third_party/harfbuzz@" + Var("chromium_rev"),
 
   "third_party/icu":
-    Var("chromium_trunk") + "/deps/third_party/icu42@" + Var("icu_rev"),
+    Var("chromium_trunk") + "/deps/third_party/icu42@" + Var("chromium_rev"),
 
   "third_party/libevent":
     Var("chromium_trunk") + "/src/third_party/libevent@" + Var("chromium_rev"),
