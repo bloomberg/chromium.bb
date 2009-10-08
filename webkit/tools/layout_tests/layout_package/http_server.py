@@ -17,6 +17,9 @@ import time
 import urllib
 
 import path_utils
+
+# So we can import httpd_utils below to make ui_tests happy.
+sys.path.append(path_utils.PathFromBase('tools', 'python'))
 import google.httpd_utils
 
 def RemoveLogFiles(folder, starts_with):
