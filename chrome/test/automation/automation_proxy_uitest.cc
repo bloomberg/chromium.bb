@@ -968,7 +968,7 @@ TEST_F(ExternalTabTestType, DISABLED_ExternalTabPostMessage) {
   }
 }
 
-TEST_F(ExternalTabTestType, ExternalTabPostMessageTarget) {
+TEST_F(ExternalTabTestType, DISABLED_ExternalTabPostMessageTarget) {
   const wchar_t kDocRoot[] = L"chrome/test/data/external_tab";
   scoped_refptr<HTTPTestServer> server(
       HTTPTestServer::CreateServer(kDocRoot, NULL));
