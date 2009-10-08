@@ -13,7 +13,7 @@
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
-#include "chrome/browser/gtk/bookmark_context_menu.h"
+#include "chrome/browser/gtk/bookmark_context_menu_gtk.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/common/gtk_tree.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -327,9 +327,7 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   // The Organize menu item.
   GtkWidget* organize_;
   // The submenu the item pops up.
-#if defined(TOOLKIT_GTK)
-  scoped_ptr<BookmarkContextMenu> organize_menu_;
-#endif
+  scoped_ptr<BookmarkContextMenuGtk> organize_menu_;
   // Whether the menu refers to the left selection.
   bool organize_is_for_left_;
 

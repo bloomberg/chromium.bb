@@ -11,15 +11,7 @@
 #include "base/gfx/native_widget_types.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
-
-// TODO(port): Port this file.
-#if defined(TOOLKIT_VIEWS)
-#include "views/controls/menu/menu_delegate.h"
-#elif defined(OS_LINUX)
 #include "chrome/browser/gtk/menu_gtk.h"
-#else
-#include "chrome/common/temp_scaffolding_stubs.h"
-#endif
 
 class Browser;
 class PageNavigator;
@@ -28,13 +20,8 @@ class Profile;
 // BookmarkContextMenu manages the context menu shown for the
 // bookmark bar, items on the bookmark bar, submenus of the bookmark bar and
 // the bookmark manager.
-class BookmarkContextMenu : public BookmarkModelObserver,
-#if defined(TOOLKIT_VIEWS)
-                            public views::MenuDelegate
-#elif defined(OS_LINUX)
-                            public MenuGtk::Delegate
-#endif
-{
+class BookmarkContextMenuGtk : public BookmarkModelObserver,
+                               public MenuGtk::Delegate {
  public:
   // Used to configure what the context menu shows.
   enum ConfigurationType {
@@ -63,29 +50,21 @@ class BookmarkContextMenu : public BookmarkModelObserver,
   // |parent| is the parent for newly created nodes if |selection| is empty.
   // |selection| is the nodes the context menu operates on and may be empty.
   // |configuration| determines which items to show.
-  BookmarkContextMenu(gfx::NativeView hwnd,
-                      Profile* profile,
-                      Browser* browser,
-                      PageNavigator* navigator,
-                      const BookmarkNode* parent,
-                      const std::vector<const BookmarkNode*>& selection,
-                      ConfigurationType configuration,
-                      Delegate* delegate);
-  virtual ~BookmarkContextMenu();
+  BookmarkContextMenuGtk(gfx::NativeView hwnd,
+                         Profile* profile,
+                         Browser* browser,
+                         PageNavigator* navigator,
+                         const BookmarkNode* parent,
+                         const std::vector<const BookmarkNode*>& selection,
+                         ConfigurationType configuration,
+                         Delegate* delegate);
+  virtual ~BookmarkContextMenuGtk();
 
-#if defined(TOOLKIT_VIEWS)
-  // Shows the menu at the specified place.
-  void RunMenuAt(int x, int y);
-
-  // Returns the menu.
-  views::MenuItemView* menu() const { return menu_.get(); }
-#elif defined(OS_LINUX)
   // Pops up this menu. This call doesn't block.
   void PopupAsContext(guint32 event_time);
 
   // Returns the menu.
   GtkWidget* menu() const { return menu_->widget(); }
-#endif
 
   // Should be called by the delegate when it is no longer valid.
   void DelegateDestroyed();
@@ -154,14 +133,9 @@ class BookmarkContextMenu : public BookmarkModelObserver,
   BookmarkModel* model_;
   ConfigurationType configuration_;
   Delegate* delegate_;
-
-#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
-  scoped_ptr<views::MenuItemView> menu_;
-#elif defined(OS_LINUX)
   scoped_ptr<MenuGtk> menu_;
-#endif
 
-  DISALLOW_COPY_AND_ASSIGN(BookmarkContextMenu);
+  DISALLOW_COPY_AND_ASSIGN(BookmarkContextMenuGtk);
 };
 
 #endif  // CHROME_BROWSER_GTK_BOOKMARK_CONTEXT_MENU_H_

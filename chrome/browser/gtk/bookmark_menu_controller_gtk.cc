@@ -12,7 +12,7 @@
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/gtk/bookmark_context_menu.h"
+#include "chrome/browser/gtk/bookmark_context_menu_gtk.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
@@ -250,10 +250,10 @@ gboolean BookmarkMenuController::OnButtonPressed(
     if (node)
       nodes.push_back(node);
     controller->context_menu_.reset(
-        new BookmarkContextMenu(
+        new BookmarkContextMenuGtk(
             GTK_WIDGET(controller->parent_window_), controller->profile_,
             controller->browser_, controller->page_navigator_, parent, nodes,
-            BookmarkContextMenu::BOOKMARK_BAR, controller));
+            BookmarkContextMenuGtk::BOOKMARK_BAR, controller));
 
     // Our bookmark folder menu loses the grab to the context menu. When the
     // context menu is hidden, re-assert our grab.

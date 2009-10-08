@@ -20,7 +20,7 @@
 #include "chrome/common/owned_widget_gtk.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
-class BookmarkContextMenu;
+class BookmarkContextMenuGtk;
 class BookmarkMenuController;
 class Browser;
 class BrowserWindowGtk;
@@ -302,7 +302,7 @@ class BookmarkBarGtk : public AnimationDelegate,
 
   // The last displayed right click menu, or NULL if no menus have been
   // displayed yet.
-  scoped_ptr<BookmarkContextMenu> current_context_menu_;
+  scoped_ptr<BookmarkContextMenuGtk> current_context_menu_;
 
   // The last displayed left click menu, or NULL if no menus have been
   // displayed yet.
