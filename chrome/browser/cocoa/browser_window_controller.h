@@ -23,6 +23,7 @@
 class Browser;
 class BrowserWindow;
 class BrowserWindowCocoa;
+@class ChromeBrowserWindow;
 class ConstrainedWindowMac;
 @class DownloadShelfController;
 @class ExtensionShelfController;
@@ -55,7 +56,7 @@ class TabStripModelObserverBridge;
   // alive ensures that weak view or window pointers remain valid through
   // their destruction sequence.
   scoped_ptr<Browser> browser_;
-  scoped_nsobject<NSWindow> window_;
+  scoped_nsobject<ChromeBrowserWindow> window_;
   scoped_nsobject<NSWindow> fullscreen_window_;
   scoped_ptr<TabStripModelObserverBridge> tabObserver_;
   scoped_ptr<BrowserWindowCocoa> windowShim_;

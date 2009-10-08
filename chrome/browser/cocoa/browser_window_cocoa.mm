@@ -102,17 +102,7 @@ void BrowserWindowCocoa::UpdateTitleBar() {
   NSString* newTitle =
       base::SysUTF16ToNSString(browser_->GetWindowTitleForCurrentTab());
 
-  // Only set the title if we're a popup window. If we call setTitle on a
-  // regular browser window, it will show up in the titlle bar and cover the
-  // tab strip.
-  if (browser_->type() == Browser::TYPE_POPUP)
-    [window_ setTitle:newTitle];
-
-  // Window menu
-  [NSApp changeWindowsItem:window_ title:newTitle filename:NO];
-
-  // Dock
-  [window_ setMiniwindowTitle:newTitle];
+  [window_ setTitle:newTitle];
 }
 
 void BrowserWindowCocoa::ShelfVisibilityChanged() {
