@@ -379,8 +379,7 @@ class JSONResultsGenerator:
     """Returns the worst failure from the list of failures
     since we can only show one failure per run for each test on the dashboard.
     """
-    has_text_failure = (test_failures.FailureTextMismatch in failures or
-        test_failures.FailureSimplifiedTextMismatch in failures)
+    has_text_failure = test_failures.FailureTextMismatch in failures
 
     if test_failures.FailureCrash in failures:
       return "C"

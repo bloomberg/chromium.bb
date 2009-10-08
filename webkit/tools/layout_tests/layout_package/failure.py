@@ -50,7 +50,6 @@ class Failure(object):
     self.platform = ""
     self.test_path = ""
     self.text_diff_mismatch = False
-    self.simplified_text_diff_mismatch = False
     self.image_mismatch = False
     self.timeout = False
     self.crashed = False

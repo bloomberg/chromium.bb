@@ -104,11 +104,11 @@ class HTMLGenerator(object):
                   </tr>
                 """
 
-        if failure.text_diff_mismatch or failure.simplified_text_diff_mismatch:
-            html += self._GenerateTextFailureHTML(failure)
+        if failure.text_diff_mismatch:
+          html += self._GenerateTextFailureHTML(failure)
 
         if failure.image_mismatch:
-            html += self._GenerateImageFailureHTML(failure)
+          html += self._GenerateImageFailureHTML(failure)
 
         html += "</table>"
       html += "</div></td></tr></table><br>"

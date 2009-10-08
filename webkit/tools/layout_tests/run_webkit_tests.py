@@ -47,7 +47,6 @@ from test_types import fuzzy_image_diff
 from test_types import image_diff
 from test_types import test_type_base
 from test_types import text_diff
-from test_types import simplified_text_diff
 
 class TestInfo:
   """Groups information about a test for easy passing of data."""
@@ -1118,7 +1117,6 @@ def main(options, args):
     shutil.rmtree(cachedir)
 
   test_runner.AddTestType(text_diff.TestTextDiff)
-  test_runner.AddTestType(simplified_text_diff.SimplifiedTextDiff)
   if not options.no_pixel_tests:
     test_runner.AddTestType(image_diff.ImageDiff)
     if options.fuzzy_pixel_tests:

@@ -43,7 +43,6 @@ TEST_EXPECTATIONS_URL = (CHROMIUM_SRC_HOME +
 
 # Failure types as found in builder stdio.
 TEXT_DIFF_MISMATCH = "Text diff mismatch"
-SIMPLIFIED_TEXT_DIFF_MISMATCH = "Simplified text diff mismatch"
 IMAGE_MISMATCH = "Image mismatch"
 TEST_TIMED_OUT = "Test timed out"
 TEST_SHELL_CRASHED = "Test shell crashed"
@@ -72,7 +71,6 @@ CHROMIUM_FILE_AGE_REGEX = '<br />\s*Modified\s*<em>.*</em> \((.*)\) by'
 TEST_PATH_REGEX = "[^\s]+?"
 FAILED_REGEX = ("ERROR (" + TEST_PATH_REGEX + ") failed:\s*"
                 "(" + TEXT_DIFF_MISMATCH + ")?\s*"
-                "(" + SIMPLIFIED_TEXT_DIFF_MISMATCH +")?\s*"
                 "(" + IMAGE_MISMATCH + ")?\s*"
                 "(" + TEST_TIMED_OUT + ")?\s*"
                 "(" + TEST_SHELL_CRASHED + ")?")
@@ -347,10 +345,9 @@ class FailureFinder(object):
   def _CreateFailureFromMatch(self, match):
     failure = Failure()
     failure.text_diff_mismatch = match[1] != ''
-    failure.simplified_text_diff_mismatch = match[2] != ''
-    failure.image_mismatch = match[3] != ''
-    failure.crashed = match[5] != ''
-    failure.timeout = match[4] != ''
+    failure.image_mismatch = match[2] != ''
+    failure.crashed = match[4] != ''
+    failure.timeout = match[3] != ''
     failure.test_path = match[0]
     failure.platform = self.platform
     return failure
@@ -415,7 +412,7 @@ class FailureFinder(object):
         if self.exclude_wontfix and failure.IsWontFix():
           self.failures.remove(failure)
           continue
-        if failure.text_diff_mismatch or failure.simplified_text_diff_mismatch:
+        if failure.text_diff_mismatch:
           self._PopulateTextFailure(failure, directory, zip)
         if failure.image_mismatch:
           self._PopulateImageFailure(failure, directory, zip)

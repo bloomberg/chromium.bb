@@ -11,15 +11,12 @@ from failure_finder import FailureFinder
 TEST_BUILDER_OUTPUT = """090723 10:38:22 test_shell_thread.py:289
             ERROR chrome/fast/forms/textarea-metrics.html failed:
               Text diff mismatch
-              Simplified text diff mismatch
             090723 10:38:21 test_shell_thread.py:289
             ERROR chrome/fast/dom/xss-DENIED-javascript-variations.html failed:
               Text diff mismatch
-              Simplified text diff mismatch
             090723 10:37:58 test_shell_thread.py:289
             ERROR LayoutTests/plugins/bindings-test.html failed:
               Text diff mismatch
-              Simplified text diff mismatch
 
 ------------------------------------------------------------------------------
 Expected to crash, but passed (1):

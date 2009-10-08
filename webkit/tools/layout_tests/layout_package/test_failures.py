@@ -12,14 +12,13 @@ class FailureSort(object):
   # order will be sorted alphabetically by Message().
   SORT_ORDERS = {
     'FailureTextMismatch': 1,
-    'FailureSimplifiedTextMismatch': 2,
-    'FailureImageHashMismatch': 3,
-    'FailureTimeout': 4,
-    'FailureCrash': 5,
-    'FailureMissingImageHash': 6,
-    'FailureMissingImage': 7,
-    'FailureMissingResult': 8,
-    'FailureImageHashIncorrect': 9,
+    'FailureImageHashMismatch': 2,
+    'FailureTimeout': 3,
+    'FailureCrash': 4,
+    'FailureMissingImageHash': 5,
+    'FailureMissingImage': 6,
+    'FailureMissingResult': 7,
+    'FailureImageHashIncorrect': 8,
   }
 
   @staticmethod
@@ -143,25 +142,6 @@ class FailureTextMismatch(FailureWithType):
   @staticmethod
   def Message():
     return "Text diff mismatch"
-
-
-class FailureSimplifiedTextMismatch(FailureTextMismatch):
-  """Simplified text diff output failed.
-
-  The results.html output format is basically the same as regular diff
-  failures (links to expected, actual and diff text files) so we share code
-  with the FailureTextMismatch class.
-  """
-
-  OUT_FILENAMES = ["-simp-actual.txt", "-simp-expected.txt",
-                   "-simp-diff.txt"]
-  def __init__(self, test_type):
-    # Don't run wdiff on simplified text diffs.
-    FailureTextMismatch.__init__(self, test_type, False)
-
-  @staticmethod
-  def Message():
-    return "Simplified text diff mismatch"
 
 
 class FailureMissingImageHash(FailureWithType):
