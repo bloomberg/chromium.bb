@@ -161,6 +161,7 @@ class MorkReader {
 };
 
 // ImportHistoryFromFirefox2 is the main entry point to the importer.
-void ImportHistoryFromFirefox2(std::wstring file, ImporterBridge* bridge);
+void ImportHistoryFromFirefox2(const std::wstring& file,
+                               ImporterBridge* bridge);
 
 #endif  // CHROME_BROWSER_IMPORTER_MORK_READER_H__

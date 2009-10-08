@@ -545,7 +545,8 @@ void AddToHistory(MorkReader::ColumnDataList* column_values,
 
 // It sets up the file stream and loops over the lines in the file to
 // parse them, then adds the resulting row set to history.
-void ImportHistoryFromFirefox2(std::wstring file, ImporterBridge* bridge) {
+void ImportHistoryFromFirefox2(const std::wstring& file,
+                               ImporterBridge* bridge) {
   MorkReader reader;
   reader.Read(file);
 
