@@ -20,20 +20,17 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
-#include "chrome/browser/dom_ui/dom_ui_thumbnail_source.h"
 #include "chrome/browser/dom_ui/dom_ui_theme_source.h"
 #include "chrome/browser/dom_ui/history_ui.h"
+#include "chrome/browser/dom_ui/most_visited_handler.h"
 #include "chrome/browser/dom_ui/new_tab_page_sync_handler.h"
 #include "chrome/browser/dom_ui/shown_sections_handler.h"
 #include "chrome/browser/dom_ui/tips_handler.h"
-#include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/sessions/session_types.h"
-#include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -51,15 +48,6 @@
 
 namespace {
 
-// The number of most visited pages we show.
-const size_t kMostVisitedPages = 8;
-
-// The number of most visited pages we show on the old new tab page.
-const size_t kOldMostVisitedPages = 9;
-
-// The number of days of history we consider for most visited entries.
-const int kMostVisitedScope = 90;
-
 // The number of recent bookmarks we show.
 const int kRecentBookmarks = 9;
 
@@ -70,60 +58,6 @@ const int kSearchURLs = 3;
 // HTML document based on locale.
 const wchar_t kRTLHtmlTextDirection[] = L"rtl";
 const wchar_t kDefaultHtmlTextDirection[] = L"ltr";
-
-// Adds "url", "title", and "direction" keys on incoming dictionary, setting
-// title as the url as a fallback on empty title.
-void SetURLTitleAndDirection(DictionaryValue* dictionary,
-                             const string16& title,
-                             const GURL& gurl) {
-  std::wstring wstring_url = UTF8ToWide(gurl.spec());
-  dictionary->SetString(L"url", wstring_url);
-
-  std::wstring wstring_title = UTF16ToWide(title);
-
-  bool using_url_as_the_title = false;
-  std::wstring title_to_set(wstring_title);
-  if (title_to_set.empty()) {
-    using_url_as_the_title = true;
-    title_to_set = wstring_url;
-  }
-
-  // We set the "dir" attribute of the title, so that in RTL locales, a LTR
-  // title is rendered left-to-right and truncated from the right. For example,
-  // the title of http://msdn.microsoft.com/en-us/default.aspx is "MSDN:
-  // Microsoft developer network". In RTL locales, in the [New Tab] page, if
-  // the "dir" of this title is not specified, it takes Chrome UI's
-  // directionality. So the title will be truncated as "soft developer
-  // network". Setting the "dir" attribute as "ltr" renders the truncated title
-  // as "MSDN: Microsoft D...". As another example, the title of
-  // http://yahoo.com is "Yahoo!". In RTL locales, in the [New Tab] page, the
-  // title will be rendered as "!Yahoo" if its "dir" attribute is not set to
-  // "ltr".
-  //
-  // Since the title can contain BiDi text, we need to mark the text as either
-  // RTL or LTR, depending on the characters in the string. If we use the URL
-  // as the title, we mark the title as LTR since URLs are always treated as
-  // left to right strings. Simply setting the title's "dir" attribute works
-  // fine for rendering and truncating the title. However, it does not work for
-  // entire title within a tooltip when the mouse is over the title link.. For
-  // example, without LRE-PDF pair, the title "Yahoo!" will be rendered as
-  // "!Yahoo" within the tooltip when the mouse is over the title link.
-  std::wstring direction = kDefaultHtmlTextDirection;
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
-    if (using_url_as_the_title) {
-      l10n_util::WrapStringWithLTRFormatting(&title_to_set);
-    } else {
-      if (l10n_util::StringContainsStrongRTLChars(wstring_title)) {
-        l10n_util::WrapStringWithRTLFormatting(&title_to_set);
-        direction = kRTLHtmlTextDirection;
-      } else {
-        l10n_util::WrapStringWithLTRFormatting(&title_to_set);
-      }
-    }
-  }
-  dictionary->SetString(L"title", title_to_set);
-  dictionary->SetString(L"direction", direction);
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // PaintTimer
@@ -186,269 +120,6 @@ class PaintTimer : public RenderWidgetHost::PaintObserver {
   DISALLOW_COPY_AND_ASSIGN(PaintTimer);
 };
 
-///////////////////////////////////////////////////////////////////////////////
-// NewTabHTMLSource
-
-class NewTabHTMLSource : public ChromeURLDataManager::DataSource {
- public:
-  explicit NewTabHTMLSource(Profile* profile);
-
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
-  virtual void StartDataRequest(const std::string& path, int request_id);
-
-  virtual std::string GetMimeType(const std::string&) const {
-    return "text/html";
-  }
-
-  virtual MessageLoop* MessageLoopForRequestPath(const std::string& path)
-      const {
-    // NewTabHTMLSource does all of the operations that need to be on the
-    // UI thread from InitFullHTML, called by the constructor.  It is safe
-    // to call StartDataRequest from any thread, so return NULL.
-    return NULL;
-  }
-
-  // Setters and getters for first_view.
-  static void set_first_view(bool first_view) { first_view_ = first_view; }
-  static bool first_view() { return first_view_; }
-
-  // Setters and getters for first_run.
-  static void set_first_run(bool first_run) { first_run_ = first_run; }
-  static bool first_run() { return first_run_; }
-
- private:
-  // In case a file path to the new tab page was provided this tries to load
-  // the file and returns the file content if successful. This returns an empty
-  // string in case of failure.
-  static std::string GetCustomNewTabPageFromCommandLine();
-
-  // Populate full_html_.  This must be called from the UI thread because it
-  // involves profile access.
-  //
-  // A new NewTabHTMLSource object is used for each new tab page instance
-  // and each reload of an existing new tab page, so there is no concern
-  // about cached data becoming stale.
-  void InitFullHTML();
-
-  // The content to be served by StartDataRequest, stored by InitFullHTML.
-  std::string full_html_;
-
-  // Whether this is the first viewing of the new tab page and
-  // we think it is the user's startup page.
-  static bool first_view_;
-
-  // Whether this is the first run.
-  static bool first_run_;
-
-  // The user's profile.
-  Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(NewTabHTMLSource);
-};
-
-bool NewTabHTMLSource::first_view_ = true;
-
-bool NewTabHTMLSource::first_run_ = true;
-
-NewTabHTMLSource::NewTabHTMLSource(Profile* profile)
-    : DataSource(chrome::kChromeUINewTabHost, MessageLoop::current()),
-      profile_(profile) {
-  InitFullHTML();
-}
-
-void NewTabHTMLSource::StartDataRequest(const std::string& path,
-                                        int request_id) {
-  if (!path.empty()) {
-    // A path under new-tab was requested; it's likely a bad relative
-    // URL from the new tab page, but in any case it's an error.
-    NOTREACHED();
-    return;
-  }
-
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(full_html_.size());
-  std::copy(full_html_.begin(), full_html_.end(), html_bytes->data.begin());
-
-  SendResponse(request_id, html_bytes);
-}
-
-// static
-std::string NewTabHTMLSource::GetCustomNewTabPageFromCommandLine() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  const std::wstring file_path_wstring = command_line->GetSwitchValue(
-      switches::kNewTabPage);
-
-#if defined(OS_WIN)
-  const FilePath::StringType file_path = file_path_wstring;
-#else
-  const FilePath::StringType file_path = WideToASCII(file_path_wstring);
-#endif
-
-  if (!file_path.empty()) {
-    // Read the file contents in, blocking the UI thread of the browser.
-    // This is for testing purposes only! It is used to test new versions of
-    // the new tab page using a special command line option. Never use this
-    // in a way that will be used by default in product.
-    std::string file_contents;
-    if (file_util::ReadFileToString(FilePath(file_path), &file_contents))
-      return file_contents;
-  }
-
-  return std::string();
-}
-
-void NewTabHTMLSource::InitFullHTML() {
-  // Show the profile name in the title and most visited labels if the current
-  // profile is not the default.
-  std::wstring title;
-  std::wstring most_visited;
-  if (UserDataManager::Get()->is_current_profile_default()) {
-    title = l10n_util::GetString(IDS_NEW_TAB_TITLE);
-    most_visited = l10n_util::GetString(IDS_NEW_TAB_MOST_VISITED);
-  } else {
-    // Get the current profile name.
-    std::wstring profile_name =
-      UserDataManager::Get()->current_profile_name();
-    title = l10n_util::GetStringF(IDS_NEW_TAB_TITLE_WITH_PROFILE_NAME,
-                                  profile_name);
-    most_visited = l10n_util::GetStringF(
-        IDS_NEW_TAB_MOST_VISITED_WITH_PROFILE_NAME,
-        profile_name);
-  }
-  DictionaryValue localized_strings;
-  localized_strings.SetString(L"bookmarkbarattached",
-      profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) ?
-      "true" : "false");
-  localized_strings.SetString(L"hasattribution",
-      profile_->GetThemeProvider()->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ?
-      "true" : "false");
-  localized_strings.SetString(L"title", title);
-  localized_strings.SetString(L"mostvisited", most_visited);
-  localized_strings.SetString(L"searches",
-      l10n_util::GetString(IDS_NEW_TAB_SEARCHES));
-  localized_strings.SetString(L"bookmarks",
-      l10n_util::GetString(IDS_NEW_TAB_BOOKMARKS));
-  localized_strings.SetString(L"recent",
-      l10n_util::GetString(IDS_NEW_TAB_RECENT));
-  localized_strings.SetString(L"showhistory",
-      l10n_util::GetString(IDS_NEW_TAB_HISTORY_SHOW));
-  localized_strings.SetString(L"showhistoryurl",
-      chrome::kChromeUIHistoryURL);
-  localized_strings.SetString(L"editthumbnails",
-      l10n_util::GetString(IDS_NEW_TAB_REMOVE_THUMBNAILS));
-  localized_strings.SetString(L"restorethumbnails",
-      l10n_util::GetString(IDS_NEW_TAB_RESTORE_THUMBNAILS_LINK));
-  localized_strings.SetString(L"editmodeheading",
-      l10n_util::GetString(IDS_NEW_TAB_MOST_VISITED_EDIT_MODE_HEADING));
-  localized_strings.SetString(L"doneediting",
-      l10n_util::GetString(IDS_NEW_TAB_MOST_VISITED_DONE_REMOVING_BUTTON));
-  localized_strings.SetString(L"cancelediting",
-      l10n_util::GetString(IDS_NEW_TAB_MOST_VISITED_CANCEL_REMOVING_BUTTON));
-  localized_strings.SetString(L"searchhistory",
-      l10n_util::GetString(IDS_NEW_TAB_HISTORY_SEARCH));
-  localized_strings.SetString(L"recentlyclosed",
-      l10n_util::GetString(IDS_NEW_TAB_RECENTLY_CLOSED));
-  localized_strings.SetString(L"mostvisitedintro",
-      l10n_util::GetStringF(IDS_NEW_TAB_MOST_VISITED_INTRO,
-          l10n_util::GetString(IDS_WELCOME_PAGE_URL)));
-  localized_strings.SetString(L"closedwindowsingle",
-      l10n_util::GetString(IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE));
-  localized_strings.SetString(L"closedwindowmultiple",
-      l10n_util::GetString(IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_MULTIPLE));
-  localized_strings.SetString(L"attributionintro",
-      l10n_util::GetString(IDS_NEW_TAB_ATTRIBUTION_INTRO));
-  localized_strings.SetString(L"viewfullhistory",
-      l10n_util::GetString(IDS_NEW_TAB_VIEW_FULL_HISTORY));
-  localized_strings.SetString(L"showthumbnails",
-      l10n_util::GetString(IDS_NEW_TAB_SHOW_THUMBNAILS));
-  localized_strings.SetString(L"hidethumbnails",
-      l10n_util::GetString(IDS_NEW_TAB_HIDE_THUMBNAILS));
-  localized_strings.SetString(L"showlist",
-      l10n_util::GetString(IDS_NEW_TAB_SHOW_LIST));
-  localized_strings.SetString(L"hidelist",
-      l10n_util::GetString(IDS_NEW_TAB_HIDE_LIST));
-  localized_strings.SetString(L"showrecentlyclosedtabs",
-      l10n_util::GetString(IDS_NEW_TAB_SHOW_RECENTLY_CLOSED_TABS));
-  localized_strings.SetString(L"hiderecentlyclosedtabs",
-      l10n_util::GetString(IDS_NEW_TAB_HIDE_RECENTLY_CLOSED_TABS));
-  localized_strings.SetString(L"thumbnailremovednotification",
-      l10n_util::GetString(IDS_NEW_TAB_THUMBNAIL_REMOVED_NOTIFICATION));
-  localized_strings.SetString(L"undothumbnailremove",
-      l10n_util::GetString(IDS_NEW_TAB_UNDO_THUMBNAIL_REMOVE));
-  localized_strings.SetString(L"otrmessage",
-      l10n_util::GetString(IDS_NEW_TAB_OTR_MESSAGE));
-  localized_strings.SetString(L"removethumbnailtooltip",
-      l10n_util::GetString(IDS_NEW_TAB_REMOVE_THUMBNAIL_TOOLTIP));
-  localized_strings.SetString(L"pinthumbnailtooltip",
-      l10n_util::GetString(IDS_NEW_TAB_PIN_THUMBNAIL_TOOLTIP));
-  localized_strings.SetString(L"unpinthumbnailtooltip",
-      l10n_util::GetString(IDS_NEW_TAB_UNPIN_THUMBNAIL_TOOLTIP));
-  localized_strings.SetString(L"showhidethumbnailtooltip",
-      l10n_util::GetString(IDS_NEW_TAB_SHOW_HIDE_THUMBNAIL_TOOLTIP));
-  localized_strings.SetString(L"showhidelisttooltip",
-      l10n_util::GetString(IDS_NEW_TAB_SHOW_HIDE_LIST_TOOLTIP));
-  localized_strings.SetString(L"pagedisplaytooltip",
-      l10n_util::GetString(IDS_NEW_TAB_PAGE_DISPLAY_TOOLTIP));
-  localized_strings.SetString(L"firstrunnotification",
-      l10n_util::GetString(IDS_NEW_TAB_FIRST_RUN_NOTIFICATION));
-  localized_strings.SetString(L"closefirstrunnotification",
-      l10n_util::GetString(IDS_NEW_TAB_CLOSE_FIRST_RUN_NOTIFICATION));
-  localized_strings.SetString(L"makethishomepage",
-      l10n_util::GetString(IDS_NEW_TAB_MAKE_THIS_HOMEPAGE));
-  localized_strings.SetString(L"themelink",
-      l10n_util::GetString(IDS_THEMES_GALLERY_URL));
-  // Don't initiate the sync related message passing with the page if the sync
-  // code is not present.
-  if (profile_->GetProfileSyncService())
-    localized_strings.SetString(L"syncispresent", "true");
-  else
-    localized_strings.SetString(L"syncispresent", "false");
-
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kHomePageIsNewTabPage))
-    localized_strings.SetString(L"showsetashomepage", "true");
-
-  SetFontAndTextDirection(&localized_strings);
-
-  // Let the tab know whether it's the first tab being viewed.
-  if (first_view_) {
-    localized_strings.SetString(L"firstview", L"true");
-
-    // Decrement ntp promo counter; the default value is specified in
-    // Browser::RegisterUserPrefs.
-    profile_->GetPrefs()->SetInteger(prefs::kNTPThemePromoRemaining,
-        profile_->GetPrefs()->GetInteger(prefs::kNTPThemePromoRemaining) - 1);
-    first_view_ = false;
-  }
-
-  // Control fade and resize animations.
-  std::wstring anim =
-      Animation::ShouldRenderRichAnimation() ? L"true" : L"false";
-  localized_strings.SetString(L"anim", anim);
-
-  // In case we have the new new tab page enabled we first try to read the file
-  // provided on the command line. If that fails we just get the resource from
-  // the resource bundle.
-  base::StringPiece new_tab_html;
-  std::string new_tab_html_str;
-  new_tab_html_str = GetCustomNewTabPageFromCommandLine();
-
-  if (!new_tab_html_str.empty()) {
-    new_tab_html = base::StringPiece(new_tab_html_str);
-  }
-
-  if (new_tab_html.empty()) {
-    new_tab_html = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        NewTabUI::UseOldNewTabPage() ?
-            IDR_NEW_TAB_HTML :
-            IDR_NEW_NEW_TAB_HTML);
-  }
-
-  full_html_.assign(new_tab_html.data(), new_tab_html.size());
-  jstemplate_builder::AppendJsonHtml(&localized_strings, &full_html_);
-  jstemplate_builder::AppendI18nTemplateSourceHtml(&full_html_);
-  jstemplate_builder::AppendI18nTemplateProcessHtml(&full_html_);
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // IncognitoTabHTMLSource
@@ -524,478 +195,6 @@ void IncognitoTabHTMLSource::InitFullHTML() {
 
   full_html_ = jstemplate_builder::GetI18nTemplateHtml(incognito_tab_html,
                                                        &localized_strings);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// MostVisitedPage
-
-// This struct is used when getting the pre-populated pages in case the user
-// hasn't filled up his most visited pages.
-struct MostVisitedPage {
-  std::wstring title;
-  GURL url;
-  GURL thumbnail_url;
-  GURL favicon_url;
-};
-
-// Adds the fields in the page to the dictionary.
-void SetMostVisistedPage(DictionaryValue* dict, const MostVisitedPage& page) {
-  SetURLTitleAndDirection(dict, WideToUTF16(page.title), page.url);
-  if (!page.favicon_url.is_empty())
-    dict->SetString(L"faviconUrl", page.favicon_url.spec());
-  if (!page.thumbnail_url.is_empty())
-    dict->SetString(L"thumbnailUrl", page.thumbnail_url.spec());
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// MostVisitedHandler
-
-// The handler for Javascript messages related to the "most visited" view.
-class MostVisitedHandler : public DOMMessageHandler,
-                           public NotificationObserver {
- public:
-  MostVisitedHandler() : url_blacklist_(NULL), pinned_urls_(NULL) {}
-  virtual ~MostVisitedHandler() { }
-
-  // DOMMessageHandler override and implementation.
-  virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
-  virtual void RegisterMessages();
-
-  // Callback for the "getMostVisited" message.
-  void HandleGetMostVisited(const Value* value);
-
-  // Callback for the "blacklistURLFromMostVisited" message.
-  void HandleBlacklistURL(const Value* url);
-
-  // Callback for the "removeURLsFromMostVisitedBlacklist" message.
-  void HandleRemoveURLsFromBlacklist(const Value* url);
-
-  // Callback for the "clearMostVisitedURLsBlacklist" message.
-  void HandleClearBlacklist(const Value* url);
-
-  // Callback for the "addPinnedURL" message.
-  void HandleAddPinnedURL(const Value* value);
-
-  // Callback for the "removePinnedURL" message.
-  void HandleRemovePinnedURL(const Value* value);
-
-  // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
-  const std::vector<GURL>& most_visited_urls() const {
-    return most_visited_urls_;
-  }
-
-  static void RegisterUserPrefs(PrefService* prefs);
-
- private:
-  // Callback from the history system when the most visited list is available.
-  void OnSegmentUsageAvailable(CancelableRequestProvider::Handle handle,
-                               std::vector<PageUsageData*>* data);
-
-  // Puts the passed URL in the blacklist (so it does not show as a thumbnail).
-  void BlacklistURL(const GURL& url);
-
-  // Returns the key used in url_blacklist_ and pinned_urls_ for the passed
-  // |url|.
-  std::wstring GetDictionaryKeyForURL(const std::string& url);
-
-  // Gets the page data for a pinned URL at a given index. This returns
-  // true if found.
-  const bool GetPinnedURLAtIndex(const int index, MostVisitedPage* page);
-
-  void AddPinnedURL(const MostVisitedPage& page, int index);
-  void RemovePinnedURL(const GURL& url);
-
-  static std::vector<MostVisitedPage> GetPrePopulatedPages();
-
-  NotificationRegistrar registrar_;
-
-  // Our consumer for the history service.
-  CancelableRequestConsumerTSimple<PageUsageData*> cancelable_consumer_;
-
-  // The most visited URLs, in priority order.
-  // Only used for matching up clicks on the page to which most visited entry
-  // was clicked on for metrics purposes.
-  std::vector<GURL> most_visited_urls_;
-
-  // The URL blacklist: URLs we do not want to show in the thumbnails list.  It
-  // is a dictionary for quick access (it associates a dummy boolean to the URL
-  // string).
-  DictionaryValue* url_blacklist_;
-
-  // This is a dictionary for the pinned URLs for the the most visited part of
-  // the new tab page. The key of the dictionary is a hash of the URL and the
-  // value is a dictionary with title, url and index.
-  DictionaryValue* pinned_urls_;
-
-  DISALLOW_COPY_AND_ASSIGN(MostVisitedHandler);
-};
-
-DOMMessageHandler* MostVisitedHandler::Attach(DOMUI* dom_ui) {
-  url_blacklist_ = dom_ui->GetProfile()->GetPrefs()->
-      GetMutableDictionary(prefs::kNTPMostVisitedURLsBlacklist);
-  pinned_urls_ = dom_ui->GetProfile()->GetPrefs()->
-      GetMutableDictionary(prefs::kNTPMostVisitedPinnedURLs);
-  // Set up our sources for thumbnail and favicon data. Since we may be in
-  // testing mode with no I/O thread, only add our handler when an I/O thread
-  // exists. Ownership is passed to the ChromeURLDataManager.
-  if (g_browser_process->io_thread()) {
-    g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(&chrome_url_data_manager,
-                          &ChromeURLDataManager::AddDataSource,
-                          new DOMUIThumbnailSource(dom_ui->GetProfile())));
-    g_browser_process->io_thread()->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(&chrome_url_data_manager,
-                          &ChromeURLDataManager::AddDataSource,
-                          new DOMUIFavIconSource(dom_ui->GetProfile())));
-  }
-
-  // Get notifications when history is cleared.
-  registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
-      Source<Profile>(dom_ui->GetProfile()));
-
-  return DOMMessageHandler::Attach(dom_ui);
-}
-
-void MostVisitedHandler::RegisterMessages() {
-  // Register ourselves as the handler for the "mostvisited" message from
-  // Javascript.
-  dom_ui_->RegisterMessageCallback("getMostVisited",
-      NewCallback(this, &MostVisitedHandler::HandleGetMostVisited));
-
-  // Register ourselves for any most-visited item blacklisting.
-  dom_ui_->RegisterMessageCallback("blacklistURLFromMostVisited",
-      NewCallback(this, &MostVisitedHandler::HandleBlacklistURL));
-  dom_ui_->RegisterMessageCallback("removeURLsFromMostVisitedBlacklist",
-      NewCallback(this, &MostVisitedHandler::HandleRemoveURLsFromBlacklist));
-  dom_ui_->RegisterMessageCallback("clearMostVisitedURLsBlacklist",
-      NewCallback(this, &MostVisitedHandler::HandleClearBlacklist));
-
-  // Register ourself for pinned URL messages.
-  dom_ui_->RegisterMessageCallback("addPinnedURL",
-      NewCallback(this, &MostVisitedHandler::HandleAddPinnedURL));
-  dom_ui_->RegisterMessageCallback("removePinnedURL",
-      NewCallback(this, &MostVisitedHandler::HandleRemovePinnedURL));
-}
-
-void MostVisitedHandler::HandleGetMostVisited(const Value* value) {
-  const int kMostVisitedCount = 9;
-  // Let's query for the number of items we want plus the blacklist size as
-  // we'll be filtering-out the returned list with the blacklist URLs.
-  // We do not subtract the number of pinned URLs we have because the
-  // HistoryService does not know about those.
-  int result_count = kMostVisitedCount + url_blacklist_->GetSize();
-  HistoryService* hs =
-      dom_ui_->GetProfile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  hs->QuerySegmentUsageSince(
-      &cancelable_consumer_,
-      base::Time::Now() - base::TimeDelta::FromDays(kMostVisitedScope),
-      result_count,
-      NewCallback(this, &MostVisitedHandler::OnSegmentUsageAvailable));
-}
-
-void MostVisitedHandler::HandleBlacklistURL(const Value* value) {
-  if (!value->IsType(Value::TYPE_LIST)) {
-    NOTREACHED();
-    return;
-  }
-  std::string url;
-  const ListValue* list = static_cast<const ListValue*>(value);
-  if (list->GetSize() == 0 || !list->GetString(0, &url)) {
-    NOTREACHED();
-    return;
-  }
-  BlacklistURL(GURL(url));
-}
-
-void MostVisitedHandler::HandleRemoveURLsFromBlacklist(const Value* urls) {
-  if (!urls->IsType(Value::TYPE_LIST)) {
-    NOTREACHED();
-    return;
-  }
-  const ListValue* list = static_cast<const ListValue*>(urls);
-  if (list->GetSize() == 0) {
-    NOTREACHED();
-    return;
-  }
-
-  for (ListValue::const_iterator iter = list->begin();
-       iter != list->end(); ++iter) {
-    std::wstring url;
-    bool r = (*iter)->GetAsString(&url);
-    if (!r) {
-      NOTREACHED();
-      return;
-    }
-    r = url_blacklist_->Remove(GetDictionaryKeyForURL(WideToUTF8(url)), NULL);
-    DCHECK(r) << "Unknown URL removed from the NTP Most Visited blacklist.";
-  }
-}
-
-void MostVisitedHandler::HandleClearBlacklist(const Value* value) {
-  url_blacklist_->Clear();
-}
-
-void MostVisitedHandler::HandleAddPinnedURL(const Value* value) {
-  if (!value->IsType(Value::TYPE_LIST)) {
-    NOTREACHED();
-    return;
-  }
-
-  const ListValue* list = static_cast<const ListValue*>(value);
-  DCHECK(list->GetSize() == 5) << "Wrong number of params to addPinnedURL";
-  MostVisitedPage mvp;
-  std::string tmp_string;
-  int index;
-
-  bool r = list->GetString(0, &tmp_string);
-  DCHECK(r) << "Missing URL in addPinnedURL from the NTP Most Visited.";
-  mvp.url = GURL(tmp_string);
-
-  r = list->GetString(1, &tmp_string);
-  DCHECK(r) << "Missing title in addPinnedURL from the NTP Most Visited.";
-  mvp.title = UTF8ToWide(tmp_string);
-
-  r = list->GetString(2, &tmp_string);
-  DCHECK(r) << "Failed to read the favicon URL in addPinnedURL from the NTP "
-            << "Most Visited.";
-  if (!tmp_string.empty())
-    mvp.favicon_url = GURL(tmp_string);
-
-  r = list->GetString(3, &tmp_string);
-  DCHECK(r) << "Failed to read the thumbnail URL in addPinnedURL from the NTP "
-            << "Most Visited.";
-  if (!tmp_string.empty())
-    mvp.thumbnail_url = GURL(tmp_string);
-
-  r = list->GetString(4, &tmp_string);
-  DCHECK(r) << "Missing index in addPinnedURL from the NTP Most Visited.";
-  index = StringToInt(tmp_string);
-
-  AddPinnedURL(mvp, index);
-}
-
-void MostVisitedHandler::AddPinnedURL(const MostVisitedPage& page, int index) {
-  // Remove any pinned URL at the given index.
-  MostVisitedPage old_page;
-  if (GetPinnedURLAtIndex(index, &old_page)) {
-    RemovePinnedURL(old_page.url);
-  }
-
-  DictionaryValue* new_value = new DictionaryValue();
-  SetMostVisistedPage(new_value, page);
-
-  bool r = new_value->SetInteger(L"index", index);
-  DCHECK(r) << "Failed to set the index for a pinned URL from the NTP Most "
-            << "Visited.";
-
-  r = pinned_urls_->Set(GetDictionaryKeyForURL(page.url.spec()), new_value);
-  DCHECK(r) << "Failed to add pinned URL from the NTP Most Visited.";
-
-  // TODO(arv): Notify observers?
-
-  // Don't call HandleGetMostVisited. Let the client call this as needed.
-}
-
-void MostVisitedHandler::HandleRemovePinnedURL(const Value* value) {
-  if (!value->IsType(Value::TYPE_LIST)) {
-    NOTREACHED();
-    return;
-  }
-
-  const ListValue* list = static_cast<const ListValue*>(value);
-  std::string url;
-
-  bool r = list->GetString(0, &url);
-  DCHECK(r) << "Failed to read the URL to remove from the NTP Most Visited.";
-
-  RemovePinnedURL(GURL(url));
-}
-
-void MostVisitedHandler::RemovePinnedURL(const GURL& url) {
-  const std::wstring key = GetDictionaryKeyForURL(url.spec());
-  if (pinned_urls_->HasKey(key))
-    pinned_urls_->Remove(key, NULL);
-
-  // TODO(arv): Notify observers?
-
-  // Don't call HandleGetMostVisited. Let the client call this as needed.
-}
-
-const bool MostVisitedHandler::GetPinnedURLAtIndex(const int index,
-    MostVisitedPage* page) {
-  // This iterates over all the pinned URLs. It might seem like it is worth
-  // having a map from the index to the item but the number of items is limited
-  // to the number of items the most visited section is showing on the NTP so
-  // this will be fast enough for now.
-  for (DictionaryValue::key_iterator it = pinned_urls_->begin_keys();
-      it != pinned_urls_->end_keys(); ++it) {
-    Value* value;
-    if (pinned_urls_->Get(*it, &value)) {
-      if (!value->IsType(DictionaryValue::TYPE_DICTIONARY)) {
-        NOTREACHED();
-        return false;
-      }
-
-      int dict_index;
-      DictionaryValue* dict = static_cast<DictionaryValue*>(value);
-      if (dict->GetInteger(L"index", &dict_index) && dict_index == index) {
-        // The favicon and thumbnail URLs may be empty.
-        std::string tmp_string;
-        if (dict->GetString(L"faviconUrl", &tmp_string))
-          page->favicon_url = GURL(tmp_string);
-        if (dict->GetString(L"thumbnailUrl", &tmp_string))
-          page->thumbnail_url = GURL(tmp_string);
-
-        if (dict->GetString(L"url", &tmp_string))
-          page->url = GURL(tmp_string);
-        else
-          return false;
-
-        return dict->GetString(L"title", &page->title);
-      }
-    } else {
-      NOTREACHED() << "DictionaryValue iterators are filthy liars.";
-    }
-  }
-
-  return false;
-}
-
-void MostVisitedHandler::OnSegmentUsageAvailable(
-    CancelableRequestProvider::Handle handle,
-    std::vector<PageUsageData*>* data) {
-  most_visited_urls_.clear();
-  ListValue pages_value;
-  std::set<GURL> seen_urls;
-
-  size_t data_index = 0;
-  size_t output_index = 0;
-  size_t pre_populated_index = 0;
-  const size_t pages_count = NewTabUI::UseOldNewTabPage() ?
-      kOldMostVisitedPages : kMostVisitedPages;
-  static std::vector<MostVisitedPage> pre_populated_pages =
-        MostVisitedHandler::GetPrePopulatedPages();
-
-  while (output_index < pages_count) {
-    bool found = false;
-    bool pinned = false;
-    std::string pinned_url;
-    std::string pinned_title;
-    MostVisitedPage mvp;
-
-    if (MostVisitedHandler::GetPinnedURLAtIndex(output_index, &mvp)) {
-      pinned = true;
-      found = true;
-    }
-
-    while (!found && data_index < data->size()) {
-      const PageUsageData& page = *(*data)[data_index];
-      data_index++;
-      mvp.url = page.GetURL();
-
-      // Don't include blacklisted or pinned URLs.
-      std::wstring key = GetDictionaryKeyForURL(mvp.url.spec());
-      if (pinned_urls_->HasKey(key) || url_blacklist_->HasKey(key))
-        continue;
-
-      mvp.title = UTF16ToWide(page.GetTitle());
-      found = true;
-    }
-
-    while (!found && pre_populated_index < pre_populated_pages.size()) {
-      mvp = pre_populated_pages[pre_populated_index++];
-      std::wstring key = GetDictionaryKeyForURL(mvp.url.spec());
-      if (pinned_urls_->HasKey(key) || url_blacklist_->HasKey(key) ||
-          seen_urls.find(mvp.url) != seen_urls.end())
-        continue;
-
-      found = true;
-    }
-
-    if (found) {
-      // Add fillers as needed.
-      while (pages_value.GetSize() < output_index) {
-        DictionaryValue* filler_value = new DictionaryValue();
-        filler_value->SetBoolean(L"filler", true);
-        pages_value.Append(filler_value);
-      }
-
-      DictionaryValue* page_value = new DictionaryValue();
-      SetMostVisistedPage(page_value, mvp);
-      page_value->SetBoolean(L"pinned", pinned);
-      pages_value.Append(page_value);
-      most_visited_urls_.push_back(mvp.url);
-      seen_urls.insert(mvp.url);
-    }
-    output_index++;
-  }
-
-  // If we found no pages we treat this as the first run.
-  FundamentalValue first_run(NewTabHTMLSource::first_run() &&
-      pages_value.GetSize() == pre_populated_pages.size());
-  // but first_run should only be true once.
-  NewTabHTMLSource::set_first_run(false);
-
-  dom_ui_->CallJavascriptFunction(L"mostVisitedPages", pages_value, first_run);
-}
-
-// static
-std::vector<MostVisitedPage> MostVisitedHandler::GetPrePopulatedPages() {
-  // TODO(arv): This needs to get the data from some configurable place.
-  // http://crbug.com/17630
-  std::vector<MostVisitedPage> pages;
-
-  MostVisitedPage welcome_page = {
-      l10n_util::GetString(IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE),
-      GURL(WideToUTF8(l10n_util::GetString(IDS_CHROME_WELCOME_URL))),
-      GURL("chrome://theme/newtab_chrome_welcome_page_thumbnail"),
-      GURL("chrome://theme/newtab_chrome_welcome_page_favicon")};
-  pages.push_back(welcome_page);
-
-  MostVisitedPage gallery_page = {
-      l10n_util::GetString(IDS_NEW_TAB_THEMES_GALLERY_PAGE_TITLE),
-      GURL(WideToUTF8(l10n_util::GetString(IDS_THEMES_GALLERY_URL))),
-      GURL("chrome://theme/newtab_themes_gallery_thumbnail"),
-      GURL("chrome://theme/newtab_themes_gallery_favicon")};
-  pages.push_back(gallery_page);
-
-  return pages;
-}
-
-void MostVisitedHandler::Observe(NotificationType type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
-  if (type != NotificationType::HISTORY_URLS_DELETED) {
-    NOTREACHED();
-    return;
-  }
-
-  // Some URLs were deleted from history.  Reload the most visited list.
-  HandleGetMostVisited(NULL);
-}
-
-void MostVisitedHandler::BlacklistURL(const GURL& url) {
-  RemovePinnedURL(url);
-
-  std::wstring key = GetDictionaryKeyForURL(url.spec());
-  if (url_blacklist_->HasKey(key))
-    return;
-  url_blacklist_->SetBoolean(key, true);
-}
-
-std::wstring MostVisitedHandler::GetDictionaryKeyForURL(
-    const std::string& url) {
-  return ASCIIToWide(MD5String(url));
-}
-
-// static
-void MostVisitedHandler::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kNTPMostVisitedURLsBlacklist);
-  prefs->RegisterDictionaryPref(prefs::kNTPMostVisitedPinnedURLs);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1240,8 +439,8 @@ void RecentlyBookmarkedHandler::SendBookmarksToPage() {
   for (size_t i = 0; i < recently_bookmarked.size(); ++i) {
     const BookmarkNode* node = recently_bookmarked[i];
     DictionaryValue* entry_value = new DictionaryValue;
-    SetURLTitleAndDirection(entry_value,
-                            WideToUTF16(node->GetTitle()), node->GetURL());
+    NewTabUI::SetURLTitleAndDirection(entry_value,
+        WideToUTF16(node->GetTitle()), node->GetURL());
     entry_value->SetReal(L"time", node->date_added().ToDoubleT());
     list_value.Append(entry_value);
   }
@@ -1432,8 +631,8 @@ bool RecentlyClosedTabsHandler::TabToValue(
   if (current_navigation.url() == GURL(chrome::kChromeUINewTabURL))
     return false;
 
-  SetURLTitleAndDirection(dictionary, current_navigation.title(),
-                          current_navigation.url());
+  NewTabUI::SetURLTitleAndDirection(dictionary, current_navigation.title(),
+                                    current_navigation.url());
   dictionary->SetString(L"type", L"tab");
   dictionary->SetReal(L"timestamp", tab.timestamp.ToDoubleT());
   return true;
@@ -1773,4 +972,263 @@ bool NewTabUI::WebResourcesEnabled() {
 bool NewTabUI::FirstRunDisabled() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(switches::kDisableNewTabFirstRun);
+}
+
+// static
+void NewTabUI::SetURLTitleAndDirection(DictionaryValue* dictionary,
+                                       const string16& title,
+                                       const GURL& gurl) {
+  std::wstring wstring_url = UTF8ToWide(gurl.spec());
+  dictionary->SetString(L"url", wstring_url);
+
+  std::wstring wstring_title = UTF16ToWide(title);
+
+  bool using_url_as_the_title = false;
+  std::wstring title_to_set(wstring_title);
+  if (title_to_set.empty()) {
+    using_url_as_the_title = true;
+    title_to_set = wstring_url;
+  }
+
+  // We set the "dir" attribute of the title, so that in RTL locales, a LTR
+  // title is rendered left-to-right and truncated from the right. For example,
+  // the title of http://msdn.microsoft.com/en-us/default.aspx is "MSDN:
+  // Microsoft developer network". In RTL locales, in the [New Tab] page, if
+  // the "dir" of this title is not specified, it takes Chrome UI's
+  // directionality. So the title will be truncated as "soft developer
+  // network". Setting the "dir" attribute as "ltr" renders the truncated title
+  // as "MSDN: Microsoft D...". As another example, the title of
+  // http://yahoo.com is "Yahoo!". In RTL locales, in the [New Tab] page, the
+  // title will be rendered as "!Yahoo" if its "dir" attribute is not set to
+  // "ltr".
+  //
+  // Since the title can contain BiDi text, we need to mark the text as either
+  // RTL or LTR, depending on the characters in the string. If we use the URL
+  // as the title, we mark the title as LTR since URLs are always treated as
+  // left to right strings. Simply setting the title's "dir" attribute works
+  // fine for rendering and truncating the title. However, it does not work for
+  // entire title within a tooltip when the mouse is over the title link.. For
+  // example, without LRE-PDF pair, the title "Yahoo!" will be rendered as
+  // "!Yahoo" within the tooltip when the mouse is over the title link.
+  std::wstring direction = kDefaultHtmlTextDirection;
+  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) {
+    if (using_url_as_the_title) {
+      l10n_util::WrapStringWithLTRFormatting(&title_to_set);
+    } else {
+      if (l10n_util::StringContainsStrongRTLChars(wstring_title)) {
+        l10n_util::WrapStringWithRTLFormatting(&title_to_set);
+        direction = kRTLHtmlTextDirection;
+      } else {
+        l10n_util::WrapStringWithLTRFormatting(&title_to_set);
+      }
+    }
+  }
+  dictionary->SetString(L"title", title_to_set);
+  dictionary->SetString(L"direction", direction);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// NewTabHTMLSource
+
+bool NewTabUI::NewTabHTMLSource::first_view_ = true;
+
+bool NewTabUI::NewTabHTMLSource::first_run_ = true;
+
+NewTabUI::NewTabHTMLSource::NewTabHTMLSource(Profile* profile)
+    : DataSource(chrome::kChromeUINewTabHost, MessageLoop::current()),
+      profile_(profile) {
+  InitFullHTML();
+}
+
+void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
+                                                  int request_id) {
+  if (!path.empty()) {
+    // A path under new-tab was requested; it's likely a bad relative
+    // URL from the new tab page, but in any case it's an error.
+    NOTREACHED();
+    return;
+  }
+
+  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
+  html_bytes->data.resize(full_html_.size());
+  std::copy(full_html_.begin(), full_html_.end(), html_bytes->data.begin());
+
+  SendResponse(request_id, html_bytes);
+}
+
+// static
+std::string NewTabUI::NewTabHTMLSource::GetCustomNewTabPageFromCommandLine() {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const std::wstring file_path_wstring = command_line->GetSwitchValue(
+      switches::kNewTabPage);
+
+#if defined(OS_WIN)
+  const FilePath::StringType file_path = file_path_wstring;
+#else
+  const FilePath::StringType file_path = WideToASCII(file_path_wstring);
+#endif
+
+  if (!file_path.empty()) {
+    // Read the file contents in, blocking the UI thread of the browser.
+    // This is for testing purposes only! It is used to test new versions of
+    // the new tab page using a special command line option. Never use this
+    // in a way that will be used by default in product.
+    std::string file_contents;
+    if (file_util::ReadFileToString(FilePath(file_path), &file_contents))
+      return file_contents;
+  }
+
+  return std::string();
+}
+
+void NewTabUI::NewTabHTMLSource::InitFullHTML() {
+  // Show the profile name in the title and most visited labels if the current
+  // profile is not the default.
+  std::wstring title;
+  std::wstring most_visited;
+  if (UserDataManager::Get()->is_current_profile_default()) {
+    title = l10n_util::GetString(IDS_NEW_TAB_TITLE);
+    most_visited = l10n_util::GetString(IDS_NEW_TAB_MOST_VISITED);
+  } else {
+    // Get the current profile name.
+    std::wstring profile_name =
+      UserDataManager::Get()->current_profile_name();
+    title = l10n_util::GetStringF(IDS_NEW_TAB_TITLE_WITH_PROFILE_NAME,
+                                  profile_name);
+    most_visited = l10n_util::GetStringF(
+        IDS_NEW_TAB_MOST_VISITED_WITH_PROFILE_NAME,
+        profile_name);
+  }
+  DictionaryValue localized_strings;
+  localized_strings.SetString(L"bookmarkbarattached",
+      profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) ?
+      "true" : "false");
+  localized_strings.SetString(L"hasattribution",
+      profile_->GetThemeProvider()->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ?
+      "true" : "false");
+  localized_strings.SetString(L"title", title);
+  localized_strings.SetString(L"mostvisited", most_visited);
+  localized_strings.SetString(L"searches",
+      l10n_util::GetString(IDS_NEW_TAB_SEARCHES));
+  localized_strings.SetString(L"bookmarks",
+      l10n_util::GetString(IDS_NEW_TAB_BOOKMARKS));
+  localized_strings.SetString(L"recent",
+      l10n_util::GetString(IDS_NEW_TAB_RECENT));
+  localized_strings.SetString(L"showhistory",
+      l10n_util::GetString(IDS_NEW_TAB_HISTORY_SHOW));
+  localized_strings.SetString(L"showhistoryurl",
+      chrome::kChromeUIHistoryURL);
+  localized_strings.SetString(L"editthumbnails",
+      l10n_util::GetString(IDS_NEW_TAB_REMOVE_THUMBNAILS));
+  localized_strings.SetString(L"restorethumbnails",
+      l10n_util::GetString(IDS_NEW_TAB_RESTORE_THUMBNAILS_LINK));
+  localized_strings.SetString(L"editmodeheading",
+      l10n_util::GetString(IDS_NEW_TAB_MOST_VISITED_EDIT_MODE_HEADING));
+  localized_strings.SetString(L"doneediting",
+      l10n_util::GetString(IDS_NEW_TAB_MOST_VISITED_DONE_REMOVING_BUTTON));
+  localized_strings.SetString(L"cancelediting",
+      l10n_util::GetString(IDS_NEW_TAB_MOST_VISITED_CANCEL_REMOVING_BUTTON));
+  localized_strings.SetString(L"searchhistory",
+      l10n_util::GetString(IDS_NEW_TAB_HISTORY_SEARCH));
+  localized_strings.SetString(L"recentlyclosed",
+      l10n_util::GetString(IDS_NEW_TAB_RECENTLY_CLOSED));
+  localized_strings.SetString(L"mostvisitedintro",
+      l10n_util::GetStringF(IDS_NEW_TAB_MOST_VISITED_INTRO,
+          l10n_util::GetString(IDS_WELCOME_PAGE_URL)));
+  localized_strings.SetString(L"closedwindowsingle",
+      l10n_util::GetString(IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE));
+  localized_strings.SetString(L"closedwindowmultiple",
+      l10n_util::GetString(IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_MULTIPLE));
+  localized_strings.SetString(L"attributionintro",
+      l10n_util::GetString(IDS_NEW_TAB_ATTRIBUTION_INTRO));
+  localized_strings.SetString(L"viewfullhistory",
+      l10n_util::GetString(IDS_NEW_TAB_VIEW_FULL_HISTORY));
+  localized_strings.SetString(L"showthumbnails",
+      l10n_util::GetString(IDS_NEW_TAB_SHOW_THUMBNAILS));
+  localized_strings.SetString(L"hidethumbnails",
+      l10n_util::GetString(IDS_NEW_TAB_HIDE_THUMBNAILS));
+  localized_strings.SetString(L"showlist",
+      l10n_util::GetString(IDS_NEW_TAB_SHOW_LIST));
+  localized_strings.SetString(L"hidelist",
+      l10n_util::GetString(IDS_NEW_TAB_HIDE_LIST));
+  localized_strings.SetString(L"showrecentlyclosedtabs",
+      l10n_util::GetString(IDS_NEW_TAB_SHOW_RECENTLY_CLOSED_TABS));
+  localized_strings.SetString(L"hiderecentlyclosedtabs",
+      l10n_util::GetString(IDS_NEW_TAB_HIDE_RECENTLY_CLOSED_TABS));
+  localized_strings.SetString(L"thumbnailremovednotification",
+      l10n_util::GetString(IDS_NEW_TAB_THUMBNAIL_REMOVED_NOTIFICATION));
+  localized_strings.SetString(L"undothumbnailremove",
+      l10n_util::GetString(IDS_NEW_TAB_UNDO_THUMBNAIL_REMOVE));
+  localized_strings.SetString(L"otrmessage",
+      l10n_util::GetString(IDS_NEW_TAB_OTR_MESSAGE));
+  localized_strings.SetString(L"removethumbnailtooltip",
+      l10n_util::GetString(IDS_NEW_TAB_REMOVE_THUMBNAIL_TOOLTIP));
+  localized_strings.SetString(L"pinthumbnailtooltip",
+      l10n_util::GetString(IDS_NEW_TAB_PIN_THUMBNAIL_TOOLTIP));
+  localized_strings.SetString(L"unpinthumbnailtooltip",
+      l10n_util::GetString(IDS_NEW_TAB_UNPIN_THUMBNAIL_TOOLTIP));
+  localized_strings.SetString(L"showhidethumbnailtooltip",
+      l10n_util::GetString(IDS_NEW_TAB_SHOW_HIDE_THUMBNAIL_TOOLTIP));
+  localized_strings.SetString(L"showhidelisttooltip",
+      l10n_util::GetString(IDS_NEW_TAB_SHOW_HIDE_LIST_TOOLTIP));
+  localized_strings.SetString(L"pagedisplaytooltip",
+      l10n_util::GetString(IDS_NEW_TAB_PAGE_DISPLAY_TOOLTIP));
+  localized_strings.SetString(L"firstrunnotification",
+      l10n_util::GetString(IDS_NEW_TAB_FIRST_RUN_NOTIFICATION));
+  localized_strings.SetString(L"closefirstrunnotification",
+      l10n_util::GetString(IDS_NEW_TAB_CLOSE_FIRST_RUN_NOTIFICATION));
+  localized_strings.SetString(L"makethishomepage",
+      l10n_util::GetString(IDS_NEW_TAB_MAKE_THIS_HOMEPAGE));
+  localized_strings.SetString(L"themelink",
+      l10n_util::GetString(IDS_THEMES_GALLERY_URL));
+  // Don't initiate the sync related message passing with the page if the sync
+  // code is not present.
+  if (profile_->GetProfileSyncService())
+    localized_strings.SetString(L"syncispresent", "true");
+  else
+    localized_strings.SetString(L"syncispresent", "false");
+
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kHomePageIsNewTabPage))
+    localized_strings.SetString(L"showsetashomepage", "true");
+
+  SetFontAndTextDirection(&localized_strings);
+
+  // Let the tab know whether it's the first tab being viewed.
+  if (first_view_) {
+    localized_strings.SetString(L"firstview", L"true");
+
+    // Decrement ntp promo counter; the default value is specified in
+    // Browser::RegisterUserPrefs.
+    profile_->GetPrefs()->SetInteger(prefs::kNTPThemePromoRemaining,
+        profile_->GetPrefs()->GetInteger(prefs::kNTPThemePromoRemaining) - 1);
+    first_view_ = false;
+  }
+
+  // Control fade and resize animations.
+  std::wstring anim =
+      Animation::ShouldRenderRichAnimation() ? L"true" : L"false";
+  localized_strings.SetString(L"anim", anim);
+
+  // In case we have the new new tab page enabled we first try to read the file
+  // provided on the command line. If that fails we just get the resource from
+  // the resource bundle.
+  base::StringPiece new_tab_html;
+  std::string new_tab_html_str;
+  new_tab_html_str = GetCustomNewTabPageFromCommandLine();
+
+  if (!new_tab_html_str.empty()) {
+    new_tab_html = base::StringPiece(new_tab_html_str);
+  }
+
+  if (new_tab_html.empty()) {
+    new_tab_html = ResourceBundle::GetSharedInstance().GetRawDataResource(
+        NewTabUI::UseOldNewTabPage() ?
+            IDR_NEW_TAB_HTML :
+            IDR_NEW_NEW_TAB_HTML);
+  }
+
+  full_html_.assign(new_tab_html.data(), new_tab_html.size());
+  jstemplate_builder::AppendJsonHtml(&localized_strings, &full_html_);
+  jstemplate_builder::AppendI18nTemplateSourceHtml(&full_html_);
+  jstemplate_builder::AppendI18nTemplateProcessHtml(&full_html_);
 }

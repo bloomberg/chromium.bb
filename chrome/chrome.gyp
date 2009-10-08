@@ -1193,6 +1193,8 @@
         'browser/dom_ui/history_ui.h',
         'browser/dom_ui/html_dialog_ui.cc',
         'browser/dom_ui/html_dialog_ui.h',
+        'browser/dom_ui/most_visited_handler.cc',
+        'browser/dom_ui/most_visited_handler.h',
         'browser/dom_ui/new_tab_page_sync_handler.cc',
         'browser/dom_ui/new_tab_page_sync_handler.h',
         'browser/dom_ui/new_tab_ui.cc',
