@@ -43,7 +43,7 @@
             'COMPILED_FROM_DSP',
           ],
         }],
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="mac"', {
           'defines': [
             'HAVE_EXPAT_CONFIG_H',
           ],

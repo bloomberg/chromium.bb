@@ -301,19 +301,6 @@ class SyncName {
            const PathString& non_unique_sync_name)
       : value_(unique_sync_name), non_unique_value_(non_unique_sync_name) { }
 
-#ifdef OS_MACOSX
-  // Translate [':' -> '/'] within the sync name.  Used on OSX.
-  void ConvertColonsToSlashes() {
-    DCHECK_EQ(value_, non_unique_value_)
-        << "Deriving value_ will overwrite non_unique_value_.";
-    std::string temporary_copy;
-    temporary_copy.reserve(value_.size());
-    StringReplace(value_, ":", "/", true, &temporary_copy);
-    value_.swap(temporary_copy);
-    non_unique_value_ = value_;
-  }
-#endif
-
   // Transform |value_| so that it's a legal server name.
   void MakeServerLegal() {
     DCHECK_EQ(value_, non_unique_value_)

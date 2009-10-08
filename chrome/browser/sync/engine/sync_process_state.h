@@ -291,13 +291,13 @@ class SyncProcessState {
   // For testing.
   SyncProcessState()
       : num_sync_cycles_(0),
-        silenced_until_(0),
         connection_manager_(NULL),
         account_name_(PSTR("")),
         dirman_(NULL),
         resolver_(NULL),
         model_safe_worker_(NULL),
         syncer_event_channel_(NULL),
+        silenced_until_(0),
         error_rate_(0),
         current_sync_timestamp_(0),
         servers_latest_timestamp_(0),
@@ -316,6 +316,8 @@ class SyncProcessState {
         auth_dirty_(false),
         auth_failed_(false) {}
 
+  int num_sync_cycles_;
+
   ServerConnectionManager* connection_manager_;
   const PathString account_name_;
   syncable::DirectoryManager* const dirman_;
@@ -331,8 +333,6 @@ class SyncProcessState {
   std::set<syncable::Id> blocked_item_ids_;
   std::map<syncable::Id, ConflictSet*> id_to_conflict_set_;
   std::set<ConflictSet*> conflict_sets_;
-
-  int num_sync_cycles_;
 
   // When we're over bandwidth quota, we don't update until past this time.
   time_t silenced_until_;

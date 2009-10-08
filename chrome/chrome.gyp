@@ -4679,11 +4679,6 @@
                 '../third_party/pthreads-win32/pthreads.gyp:pthreads',
               ],
             }],
-            ['OS=="linux"', {
-              'defines': [
-                'POSIX',
-              ],
-            }],
           ],
         }],
       ],
@@ -6583,6 +6578,8 @@
             'browser/sync/util/highres_timer.h',
             'browser/sync/util/highres_timer_linux.cc',
             'browser/sync/util/highres_timer_linux.h',
+            'browser/sync/util/highres_timer_mac.cc',
+            'browser/sync/util/highres_timer_mac.h',
             'browser/sync/util/highres_timer_win.cc',
             'browser/sync/util/highres_timer_win.h',
             'browser/sync/util/path_helpers.h',

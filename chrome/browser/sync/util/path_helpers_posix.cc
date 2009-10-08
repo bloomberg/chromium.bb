@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <pwd.h>
 #include <string.h>
 
-#include "chrome/browser/sync/notifier/base/string.h"
 #include "chrome/browser/sync/util/path_helpers.h"
 
 #if ((!defined(OS_LINUX)) && (!defined(OS_MACOSX)))
@@ -91,6 +91,6 @@ PathString MakePathComponentOSLegal(const PathString& component) {
   if (PathString::npos == component.find("/"))
     return PSTR("");
   PathString new_name(component);
-  notifier::StringReplace(&new_name, "/", ":", true);
+  std::replace(new_name.begin(), new_name.end(), '/', ':');
   return new_name;
 }

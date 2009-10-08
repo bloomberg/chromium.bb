@@ -7,7 +7,7 @@
 #include "build/build_config.h"
 
 #include <sys/stat.h>
-#ifdef OS_LINUX
+#ifdef OS_POSIX
 #include <sys/time.h>
 #endif
 #include <sys/types.h>

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "chrome/browser/sync/notifier/base/nethelpers.h"
 
 namespace notifier {
@@ -17,7 +18,7 @@ hostent* SafeGetHostByName(const char* hostname, hostent* host,
   }
 #elif OS_LINUX
   gethostbyname_r(hostname, host, buffer, buffer_len, &result, herrno);
-#elif OSX
+#elif OS_MACOSX
   result = getipnodebyname(hostname, AF_INET, AI_DEFAULT, herrno);
 #else
 #error "I don't know how to do gethostbyname safely on your system."
@@ -32,7 +33,7 @@ void FreeHostEnt(hostent* host) {
   // No need to free anything, struct returned is static memory.
 #elif OS_LINUX
   // No need to free anything, we pass in a pointer to a struct.
-#elif OSX
+#elif OS_MACOSX
   freehostent(host);
 #else
 #error "I don't know how to free a hostent on your system."

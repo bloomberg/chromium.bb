@@ -27,6 +27,13 @@
         'FEATURE_ENABLE_SSL',
         'FEATURE_ENABLE_VOICEMAIL',
       ],
+      'conditions': [
+        ['OS=="linux" or OS=="mac"', {
+          'defines': [
+            'POSIX',
+          ],
+        }],
+      ],
     },
     'conditions': [
       ['OS=="win"', {
@@ -34,7 +41,7 @@
           '../third_party/platformsdk_win2008_6_1/files/Include',
         ],
       }],
-      ['OS=="linux"', {
+      ['OS=="linux" or OS=="mac"', {
         'defines': [
           'POSIX',
         ],

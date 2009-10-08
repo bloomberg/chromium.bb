@@ -9,7 +9,7 @@
 #if defined(OS_WIN)
 #include "chrome/browser/sync/util/highres_timer_win.h"
 #elif defined(OS_MACOSX)
-#error "Mac timer functions are missing."
+#include "chrome/browser/sync/util/highres_timer_mac.h"
 #else
 #include "chrome/browser/sync/util/highres_timer_linux.h"
 #endif
