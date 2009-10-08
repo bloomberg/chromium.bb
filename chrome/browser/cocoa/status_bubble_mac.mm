@@ -182,11 +182,8 @@ void StatusBubbleMac::Create() {
   if (window_)
     return;
 
-  NSRect rect = [parent_ frame];
-  rect.size.height = kWindowHeight;
-  rect.size.width = static_cast<int>(kWindowWidthPercent * rect.size.width);
   // TODO(avi):fix this for RTL
-  window_ = [[NSWindow alloc] initWithContentRect:rect
+  window_ = [[NSWindow alloc] initWithContentRect:CalculateWindowFrame()
                                         styleMask:NSBorderlessWindowMask
                                           backing:NSBackingStoreBuffered
                                             defer:YES];
@@ -227,3 +224,18 @@ void StatusBubbleMac::FadeOut() {
   [NSAnimationContext endGrouping];
 }
 
+void StatusBubbleMac::UpdateSizeAndPosition() {
+  if (!window_)
+    return;
+
+  [window_ setFrame:CalculateWindowFrame() display:YES];
+}
+
+NSRect StatusBubbleMac::CalculateWindowFrame() {
+  DCHECK(parent_);
+
+  NSRect rect = [parent_ frame];
+  rect.size.height = kWindowHeight;
+  rect.size.width = static_cast<int>(kWindowWidthPercent * rect.size.width);
+  return rect;
+}

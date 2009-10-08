@@ -26,6 +26,11 @@ class StatusBubbleMac : public StatusBubble {
   virtual void MouseMoved();
   virtual void UpdateDownloadShelfVisibility(bool visible);
 
+  // Mac-specific method: Update the size and position of the status bubble to
+  // match the parent window. Safe to call even when the status bubble does not
+  // exist.
+  void UpdateSizeAndPosition();
+
  private:
   friend class StatusBubbleMacTest;
 
@@ -37,6 +42,9 @@ class StatusBubbleMac : public StatusBubble {
 
   void FadeIn();
   void FadeOut();
+
+  // Calculate the appropriate frame for the status bubble window.
+  NSRect CalculateWindowFrame();
 
   // The window we attach ourselves to.
   NSWindow* parent_;  // WEAK

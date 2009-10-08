@@ -31,7 +31,7 @@ class ConstrainedWindowMac;
 @class GTMWindowSheetController;
 @class InfoBarContainerController;
 class LocationBar;
-class StatusBubble;
+class StatusBubbleMac;
 class TabContents;
 @class TabContentsController;
 @class TabStripController;
@@ -65,7 +65,7 @@ class TabStripModelObserverBridge;
   scoped_nsobject<TabStripController> tabStripController_;
   scoped_nsobject<FindBarCocoaController> findBarCocoaController_;
   scoped_nsobject<InfoBarContainerController> infoBarContainerController_;
-  scoped_ptr<StatusBubble> statusBubble_;
+  scoped_ptr<StatusBubbleMac> statusBubble_;
   scoped_nsobject<DownloadShelfController> downloadShelfController_;
   scoped_nsobject<ExtensionShelfController> extensionShelfController_;
   scoped_nsobject<BookmarkBarController> bookmarkBarController_;
@@ -91,7 +91,7 @@ class TabStripModelObserverBridge;
 - (LocationBar*)locationBar;
 
 // Access the C++ bridge object representing the status bubble for the window.
-- (StatusBubble*)statusBubble;
+- (StatusBubbleMac*)statusBubble;
 
 // Updates the toolbar (and transitively the location bar) with the states of
 // the specified |tab|.  If |shouldRestore| is true, we're switching
@@ -155,6 +155,9 @@ class TabStripModelObserverBridge;
 
 - (void)attachConstrainedWindow:(ConstrainedWindowMac*)window;
 - (void)removeConstrainedWindow:(ConstrainedWindowMac*)window;
+
+// Delegate method called when window is resized.
+- (void)windowDidResize:(NSNotification*)notification;
 
 @end
 

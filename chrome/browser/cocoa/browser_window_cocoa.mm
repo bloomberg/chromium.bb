@@ -11,6 +11,7 @@
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
 #include "chrome/browser/cocoa/page_info_window_mac.h"
+#include "chrome/browser/cocoa/status_bubble_mac.h"
 #include "chrome/browser/cocoa/task_manager_mac.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/download/download_shelf.h"

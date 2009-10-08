@@ -647,7 +647,7 @@ willPositionSheet:(NSWindow*)sheet
   return [toolbarController_ locationBar];
 }
 
-- (StatusBubble*)statusBubble {
+- (StatusBubbleMac*)statusBubble {
   return statusBubble_.get();
 }
 
@@ -1079,6 +1079,14 @@ willPositionSheet:(NSWindow*)sheet
 // Implement BookmarkBubbleControllerDelegate
 - (void)doneWithBubbleController:(BookmarkBubbleController*)controller {
   bookmarkBubbleController_.reset(nil);
+}
+
+// Delegate method called when window is resized.
+- (void)windowDidResize:(NSNotification*)notification {
+  // Resize (and possibly move) the status bubble. Note that we may get called
+  // when the status bubble does not exist.
+  if(statusBubble_.get())
+    statusBubble_->UpdateSizeAndPosition();
 }
 
 @end

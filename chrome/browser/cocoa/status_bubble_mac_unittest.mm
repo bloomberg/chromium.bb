@@ -17,7 +17,6 @@
 @end
 @implementation StatusBubbleMacTestWindowDelegate
 - (GTMTheme *)gtm_themeForWindow:(NSWindow *)window {
-  NSLog(@"gettheme");
   return [[[GTMTheme alloc] init] autorelease];
 }
 @end
@@ -118,4 +117,50 @@ TEST_F(StatusBubbleMacTest, Delete) {
   bubble = new StatusBubbleMac(window, nil);
   bubble->SetStatus(L"showing");
   delete bubble;
+}
+
+TEST_F(StatusBubbleMacTest, UpdateSizeAndPosition) {
+  // Test |UpdateSizeAndPosition()| when status bubble does not exist (shouldn't
+  // crash; shouldn't create window).
+  EXPECT_FALSE(GetWindow());
+  bubble_->UpdateSizeAndPosition();
+  EXPECT_FALSE(GetWindow());
+
+  // Create a status bubble (with contents) and call resize (without actually
+  // resizing); the frame size shouldn't change.
+  bubble_->SetStatus(L"UpdateSizeAndPosition test");
+  ASSERT_TRUE(GetWindow());
+  NSRect rect_before = [GetWindow() frame];
+  bubble_->UpdateSizeAndPosition();
+  NSRect rect_after = [GetWindow() frame];
+  EXPECT_TRUE(NSEqualRects(rect_before, rect_after));
+
+  // Move the window and call resize; only the origin should change.
+  NSWindow* window = cocoa_helper_.window();
+  ASSERT_TRUE(window);
+  NSRect frame = [window frame];
+  rect_before = [GetWindow() frame];
+  frame.origin.x += 10.0;  // (fairly arbitrary nonzero value)
+  frame.origin.y += 10.0;  // (fairly arbitrary nonzero value)
+  [window setFrame:frame display:YES];
+  bubble_->UpdateSizeAndPosition();
+  rect_after = [GetWindow() frame];
+  EXPECT_NE(rect_before.origin.x, rect_after.origin.x);
+  EXPECT_NE(rect_before.origin.y, rect_after.origin.y);
+  EXPECT_EQ(rect_before.size.width, rect_after.size.width);
+  EXPECT_EQ(rect_before.size.height, rect_after.size.height);
+
+  // Resize the window (without moving). The origin shouldn't change. The width
+  // should change (in the current implementation), but not the height.
+  frame = [window frame];
+  rect_before = [GetWindow() frame];
+  frame.size.width += 50.0;   // (fairly arbitrary nonzero value)
+  frame.size.height += 50.0;  // (fairly arbitrary nonzero value)
+  [window setFrame:frame display:YES];
+  bubble_->UpdateSizeAndPosition();
+  rect_after = [GetWindow() frame];
+  EXPECT_EQ(rect_before.origin.x, rect_after.origin.x);
+  EXPECT_EQ(rect_before.origin.y, rect_after.origin.y);
+  EXPECT_NE(rect_before.size.width, rect_after.size.width);
+  EXPECT_EQ(rect_before.size.height, rect_after.size.height);
 }
