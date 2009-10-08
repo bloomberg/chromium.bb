@@ -36,7 +36,7 @@ TEST(ExtensionResourceTest, CreateWithMissingResourceOnDisk) {
 
   EXPECT_EQ(root_path.value(), resource.extension_root().value());
   EXPECT_EQ(relative_path.value(), resource.relative_path().value());
-  EXPECT_EQ(root_path.Append(relative_path).value(),
+  EXPECT_EQ(ToLower(root_path.Append(relative_path).value()),
     ToLower(resource.GetFilePath().value()));
 
   EXPECT_FALSE(resource.GetFilePath().empty());
