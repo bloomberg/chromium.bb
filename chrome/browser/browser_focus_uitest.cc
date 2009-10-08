@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
+
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/automation/ui_controls.h"
@@ -217,7 +219,14 @@ class TestInterstitialPage : public InterstitialPage {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, ClickingMovesFocus) {
+
+#if defined(OS_WIN)
+#define MAYBE_ClickingMovesFocus DISABLED_ClickingMovesFocus
+#else
+#define MAYBE_ClickingMovesFocus ClickingMovesFocus
+#endif  // defined(OS_WIN)
+
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_ClickingMovesFocus) {
 #if defined(OS_LINUX)
   // It seems we have to wait a little bit for the widgets to spin up before
   // we can start clicking on them.
