@@ -2639,10 +2639,10 @@ BUG11483 LINUX : LayoutTests/fast/forms/input-text-double-click.html = FAIL
 BUG11483 LINUX : LayoutTests/svg/text/foreignObject-repaint.xml = FAIL
 
 // Regressions from WebKit merge 43242:43321.  These just need to re-baselining:
-BUG_DARIN LINUX : LayoutTests/fast/forms/select-dirty-parent-pref-widths.html = FAIL
-BUG_DARIN LINUX : LayoutTests/svg/transforms/animated-path-inside-transformed-html.xhtml = FAIL
-BUG_DARIN LINUX : LayoutTests/svg/transforms/text-with-pattern-inside-transformed-html.xhtml = FAIL
-BUG_DARIN LINUX : LayoutTests/svg/transforms/text-with-pattern-with-svg-transform.svg = FAIL
+BUG24229 LINUX : LayoutTests/fast/forms/select-dirty-parent-pref-widths.html = FAIL
+BUG24229 LINUX : LayoutTests/svg/transforms/animated-path-inside-transformed-html.xhtml = FAIL
+BUG24229 LINUX : LayoutTests/svg/transforms/text-with-pattern-inside-transformed-html.xhtml = FAIL
+BUG24229 LINUX : LayoutTests/svg/transforms/text-with-pattern-with-svg-transform.svg = FAIL
 
 // TODO(erg): Attempted to rebaseline these tests as part of the above
 // 43346:43361 rebaseling from http://trac.webkit.org/changeset/43355. Turned
@@ -2908,10 +2908,10 @@ BUG18939 : LayoutTests/fast/js/prototypes.html = FAIL
 // Fallout from webkit 47041:47189
 BUG19248 : LayoutTests/fast/js/const.html = FAIL
 
-BUG_LEVIN WIN : LayoutTests/fast/events/mouse-click-events.html = FAIL
+BUG24230 WIN : LayoutTests/fast/events/mouse-click-events.html = FAIL
 
 // Fallout from webkit 47265:47277
-BUG_MBELSHE : LayoutTests/fast/js/Array-isArray.html = FAIL
+BUG24231 : LayoutTests/fast/js/Array-isArray.html = FAIL
 
 // WebKit roll r47417:47528
 BUG19766 WIN LINUX : LayoutTests/tables/mozilla/bugs/bug83786.html = FAIL
@@ -2964,7 +2964,7 @@ BUG23607 : LayoutTests/fast/events/init-events.html = FAIL
 BUG21141 LINUX : LayoutTests/fast/forms/select-double-onchange.html = FAIL
 BUG21141 LINUX : LayoutTests/fast/forms/select-script-onchange.html = FAIL
 
-BUG_JAPHET MAC : LayoutTests/animations/change-keyframes-name.html = FAIL PASS
+BUG24232 MAC : LayoutTests/animations/change-keyframes-name.html = FAIL PASS
 
 // Flaky, not clear as of when.
 BUG21411 SLOW DEBUG: LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg = FAIL PASS
@@ -2974,7 +2974,7 @@ BUG21411 SLOW DEBUG: LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-
 BUG21439 : LayoutTests/userscripts/simple-stylesheet.html = FAIL
 
 // Need investigation after we enable file URL universal access in test shell.
-BUG_JIANLI WIN LINUX : LayoutTests/editing/selection/drag-in-iframe.html = FAIL
+BUG24233 WIN LINUX : LayoutTests/editing/selection/drag-in-iframe.html = FAIL
 
 // New test added in r48318 (GoogleURL bug)
 BUG21764 : LayoutTests/fast/forms/ValidityState-typeMismatch-url.html = FAIL
