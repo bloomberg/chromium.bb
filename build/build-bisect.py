@@ -37,6 +37,10 @@ BUILD_EXE_NAME = ''
 # URL to the ViewVC commit page.
 BUILD_VIEWVC_URL = "http://src.chromium.org/viewvc/chrome?view=rev&revision=%d"
 
+# Changelogs URL
+CHANGELOG_URL = "http://build.chromium.org/buildbot/" \
+                "perf/dashboard/ui/changelog.html?url=/trunk/src&range=%d:%d"
+
 ###############################################################################
 
 import math
@@ -92,7 +96,7 @@ def GetRevList(good, bad):
   revlist.sort()
   return revlist
 
-def TryRevision(rev, profile):
+def TryRevision(rev, profile, args):
   """Downloads revision |rev|, unzips it, and opens it for the user to test.
   |profile| is the profile to use."""
   # Do this in a temp dir so we don't collide with user files.
@@ -114,11 +118,12 @@ def TryRevision(rev, profile):
   os.system("unzip -q %s" % BUILD_ZIP_NAME)
 
   # Tell the system to open the app.
-  flags = '--user-data-dir=' + profile
+  args = ['--user-data-dir=%s' % profile] + args
+  flags = ' '.join(map(pipes.quote, args))
   print 'Running %s/%s/%s %s' % (os.getcwd(), BUILD_DIR_NAME, BUILD_EXE_NAME,
                                  flags)
   if BUILD_ARCHIVE_TYPE in ('linux', 'linux-64', 'mac'):
-    os.system("%s/%s %s" % (BUILD_DIR_NAME, BUILD_EXE_NAME, pipes.quote(flags)))
+    os.system("%s/%s %s" % (BUILD_DIR_NAME, BUILD_EXE_NAME, flags))
   elif BUILD_ARCHIVE_TYPE in ('xp'):
     # TODO(mmoss) Does Windows need 'start' or something?
     os.system("%s/%s %s" % (BUILD_DIR_NAME, BUILD_EXE_NAME, flags))
@@ -209,6 +214,7 @@ def main():
   # These are indexes of |revlist|.
   good = 0
   bad = len(revlist) - 1
+  last_known_good_rev = revlist[good]
 
   # Binary search time!
   while good < bad:
@@ -228,15 +234,18 @@ def main():
     profile = opts.profile
     if not profile:
       profile = 'profile'  # In a temp dir.
-    TryRevision(test_rev, profile)
+    TryRevision(test_rev, profile, args)
     if AskIsGoodBuild(test_rev):
+      last_known_good_rev = revlist[good]
       good = test + 1
     else:
       bad = test
 
   # We're done. Let the user know the results in an official manner.
   print("You are probably looking for build %d." % revlist[bad])
-  print("This is the ViewVC URL for the potential bustage:")
+  print("CHANGELOG URL:")
+  print(CHANGELOG_URL % (last_known_good_rev, revlist[bad]))
+  print("Built at revision:")
   print(BUILD_VIEWVC_URL % revlist[bad])
 
 if __name__ == '__main__':
