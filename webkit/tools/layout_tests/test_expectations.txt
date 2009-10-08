@@ -2169,7 +2169,7 @@ BUG23462 MAC : LayoutTests/svg/W3C-SVG-1.1/text-fonts-01-t.svg = IMAGE
 BUG23460 MAC : LayoutTests/tables/mozilla/bugs/bug28341.html = IMAGE
 
 // Plugin drawing off
-BUG23459 MAC : LayoutTests/plugins/embed-attributes-style.html = IMAGE
+BUG12030 MAC : LayoutTests/plugins/embed-attributes-style.html = IMAGE
 
 // Missing baselines
 BUG23557 MAC : LayoutTests/fast/text/text-letter-spacing.html = IMAGE
@@ -2421,9 +2421,9 @@ BUG10473 LINUX : LayoutTests/fast/forms/searchfield-heights.html = FAIL
 BUG10473 LINUX : LayoutTests/fast/replaced/width100percent-searchfield.html = FAIL
 
 // Changed in http://trac.webkit.org/changeset/42082
-BUG9704 : LayoutTests/http/tests/navigation/onload-navigation-iframe-timeout.html = TIMEOUT
-BUG9704 : LayoutTests/http/tests/navigation/onload-navigation-iframe.html = TIMEOUT
-BUG10477 : LayoutTests/http/tests/navigation/onload-navigation-iframe-2.html = TIMEOUT
+BUG20570 : LayoutTests/http/tests/navigation/onload-navigation-iframe-timeout.html = TIMEOUT
+BUG20570 : LayoutTests/http/tests/navigation/onload-navigation-iframe.html = TIMEOUT
+BUG20570 : LayoutTests/http/tests/navigation/onload-navigation-iframe-2.html = TIMEOUT
 
 // Merge WebKit: 42026:42115 new tests
 BUG10475 WIN LINUX : LayoutTests/fast/block/positioning/negative-rel-position.html = FAIL
@@ -2436,7 +2436,7 @@ SKIP BUG9613 : LayoutTests/fast/dom/clientWidthAfterDocumentIsRemoved.html = PAS
 BUG10476 WIN LINUX : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post.html = FAIL PASS
 
 // Merge WebKit 42133:42199 regressions
-BUG10477 LINUX : LayoutTests/fast/events/context-no-deselect.html = FAIL
+BUG20570 LINUX : LayoutTests/fast/events/context-no-deselect.html = FAIL
 // All platforms fail because Chrome allows XHR to local directories and Safari doesn't.
 // Mac also has unimplemented test shell features.
 BUG20450 LINUX WIN : LayoutTests/fast/xmlhttprequest/xmlhttprequest-nonexistent-file.html = FAIL
@@ -2479,10 +2479,10 @@ BUG9798 WIN : chrome/fast/dom/extensions/interval.html = FAIL PASS
 BUG9798 LINUX RELEASE : LayoutTests/editing/execCommand/15381.html = FAIL PASS
 
 // Was flaky. Became a consistent failure.
-BUG9797 WIN : LayoutTests/editing/execCommand/paste-1.html = FAIL
+BUG9798 WIN : LayoutTests/editing/execCommand/paste-1.html = FAIL
 
 BUG9798 WIN : LayoutTests/editing/execCommand/paste-2.html = FAIL PASS
-BUG9797 WIN LINUX MAC : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
+BUG9798 WIN LINUX MAC : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
 BUG9798 WIN : LayoutTests/editing/selection/4776665.html = FAIL PASS
 BUG9798 MAC RELEASE : LayoutTests/editing/selection/4776665.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/editing/selection/5136696.html = FAIL PASS
@@ -2985,7 +2985,7 @@ BUG21841 MAC DEBUG SLOW : LayoutTests/plugins/destroy-during-npp-new.html = FAIL
 BUG21841 WIN DEBUG : LayoutTests/plugins/destroy-during-npp-new.html = CRASH PASS
 
 // missing upstream baseline from 48368
-BUG21842 SKIP WIN LINUX MAC : LayoutTests/platform/win/accessibility/scroll-to-anchor.html = FAIL
+BUG10322 SKIP WIN LINUX MAC : LayoutTests/platform/win/accessibility/scroll-to-anchor.html = FAIL
 
 BUG21859 WIN-VISTA : LayoutTests/fast/css/css2-system-fonts.html = FAIL
 BUG21859 WIN : LayoutTests/fast/forms/search-styled.html = FAIL
