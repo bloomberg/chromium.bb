@@ -652,12 +652,12 @@
       
       <!-- The width of the sync setup wizard / login dialog in characters. -->
       <message name="IDS_SYNC_SETUP_WIZARD_WIDTH_CHARS" use_name_for_id="true">
-        45
+        30
       </message>
       
       <!-- The height of the sync setup wizard / login dialog in lines. -->
       <message name="IDS_SYNC_SETUP_WIZARD_HEIGHT_LINES" use_name_for_id="true">
-        25
+        15.5
       </message>
 
       <message name="IDS_CONFIRM_MESSAGE_BOX_DEFAULT_WIDTH_CHARS" use_name_for_id="true">

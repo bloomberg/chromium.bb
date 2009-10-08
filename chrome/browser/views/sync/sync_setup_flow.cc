@@ -6,6 +6,7 @@
 
 #include "chrome/browser/views/sync/sync_setup_flow.h"
 
+#include "app/gfx/font.h"
 #include "base/histogram.h"
 #include "base/json_reader.h"
 #include "base/json_writer.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/sync/auth_error_state.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/pref_names.h"
 #include "grit/locale_settings.h"
 #include "views/window/window.h"
 
@@ -133,9 +135,16 @@ SyncSetupFlow::~SyncSetupFlow() {
 }
 
 void SyncSetupFlow::GetDialogSize(gfx::Size* size) const {
-  gfx::Size s(views::Window::GetLocalizedContentsSize(
+  PrefService* prefs = service_->profile()->GetPrefs();
+  gfx::Font approximate_web_font = gfx::Font::CreateFont(
+      prefs->GetString(prefs::kWebKitSansSerifFontFamily),
+      prefs->GetInteger(prefs::kWebKitDefaultFontSize));
+
+  gfx::Size s = views::Window::GetLocalizedContentsSizeForFont(
       IDS_SYNC_SETUP_WIZARD_WIDTH_CHARS,
-      IDS_SYNC_SETUP_WIZARD_HEIGHT_LINES));
+      IDS_SYNC_SETUP_WIZARD_HEIGHT_LINES,
+      approximate_web_font);
+
   size->set_width(s.width());
   size->set_height(s.height());
 }

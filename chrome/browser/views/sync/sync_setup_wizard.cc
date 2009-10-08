@@ -122,7 +122,8 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
 }
 
 SyncSetupWizard::SyncSetupWizard(ProfileSyncService* service)
-      : service_(service), flow_container_(new SyncSetupFlowContainer()) {
+    : service_(service),
+      flow_container_(new SyncSetupFlowContainer()) {
   // Register data sources for HTML content we require.
   // g_browser_process and/or io_thread may not exist during testing.
   if (g_browser_process && g_browser_process->io_thread()) {
