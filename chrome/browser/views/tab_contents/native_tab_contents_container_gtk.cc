@@ -100,7 +100,9 @@ void NativeTabContentsContainerGtk::Focus() {
       container_->tab_contents()->interstitial_page()->Focus();
       return;
     }
-    gtk_widget_grab_focus(container_->tab_contents()->GetContentNativeView());
+    GtkWidget* widget = container_->tab_contents()->GetContentNativeView();
+    if (widget)
+      gtk_widget_grab_focus(widget);
   }
 }
 

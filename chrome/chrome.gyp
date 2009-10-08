@@ -2662,6 +2662,8 @@
                 #['include', '^browser/views/panels/panel_scroller_container.h'],
                 #['include', '^browser/views/panels/panel_scroller_header.cc'],
                 #['include', '^browser/views/panels/panel_scroller_header.h'],
+                ['include', '^browser/views/sad_tab_view.cc'],
+                ['include', '^browser/views/sad_tab_view.h'],
                 ['include', '^browser/views/status_bubble_views.cc'],
                 ['include', '^browser/views/status_bubble_views.h'],
                 ['include', '^browser/views/tab_contents/native_tab_contents_container_gtk.cc'],

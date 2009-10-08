@@ -62,6 +62,7 @@ class TabContentsViewGtk : public TabContentsView,
   // Overridden from views::WidgetGtk:
   virtual gboolean OnButtonPress(GtkWidget* widget, GdkEventButton* event);
   virtual void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
+  virtual void OnPaint(GtkWidget* widget, GdkEventExpose* event);
 
   // Handles notifying the TabContents and other operations when the window was
   // shown or hidden.

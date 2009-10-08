@@ -7,6 +7,7 @@
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
+#include "app/gfx/canvas_paint.h"
 #include "base/string_util.h"
 #include "base/gfx/point.h"
 #include "base/gfx/rect.h"
@@ -199,7 +200,6 @@ void TabContentsViewGtk::SetPageTitle(const std::wstring& title) {
 }
 
 void TabContentsViewGtk::OnTabCrashed() {
-  NOTIMPLEMENTED();
 }
 
 void TabContentsViewGtk::SizeContents(const gfx::Size& size) {
@@ -348,6 +348,19 @@ gboolean TabContentsViewGtk::OnButtonPress(GtkWidget* widget,
 void TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
                                         GtkAllocation* allocation) {
   WasSized(gfx::Size(allocation->width, allocation->height));
+}
+
+void TabContentsViewGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
+  if (tab_contents()->render_view_host() &&
+      !tab_contents()->render_view_host()->IsRenderViewLive()) {
+    if (!sad_tab_.get())
+      sad_tab_.reset(new SadTabView);
+    gfx::Rect bounds;
+    GetBounds(&bounds, true);
+    sad_tab_->SetBounds(gfx::Rect(0, 0, bounds.width(), bounds.height()));
+    gfx::CanvasPaint canvas(event);
+    sad_tab_->ProcessPaint(&canvas);
+  }
 }
 
 void TabContentsViewGtk::WasHidden() {
