@@ -28,6 +28,30 @@
     'o3d_developer%': '<!(python <(DEPTH)/o3d/build/file_exists.py '
                       '../o3d_assets/samples/convert_assets/teapot.zip)',
     'selenium_screenshots%': 0,
+    'conditions' : [
+      # These have to come first because GYP doesn't like it when
+      # they're part of the same conditional as a conditions clause that
+      # uses them.
+      ['OS == "win"',
+        {
+          'cgdir': 'third_party/cg/files/win',
+          'renderer%': 'd3d9',
+          'swiftshaderdir': 'o3d-internal/third_party/swiftshader/files',
+        },
+      ],
+      ['OS == "mac"',
+        {
+          'cgdir': 'third_party/cg/files/mac',
+          'renderer%': 'gl',
+        },
+      ],
+      ['OS == "linux"',
+        {
+          'cgdir': 'third_party/cg/files/linux',
+          'renderer%': 'gl',
+        },
+      ],
+    ],
   },
   'target_defaults': {
     'defines': [
@@ -60,12 +84,6 @@
   'conditions' : [
     ['OS == "win"',
       {
-        'variables': {
-          'renderer%': 'd3d9',
-          'cgdir': 'third_party/cg/files/win',
-          'swiftshaderdir': 'o3d-internal/third_party/swiftshader/files',
-          'LIBRARY_SUFFIX': '.lib',
-        },
         'target_defaults': {
           'defines': [
             '_CRT_SECURE_NO_WARNINGS',
@@ -104,11 +122,6 @@
     ],
     ['OS == "mac"',
       {
-        'variables': {
-          'renderer%': 'gl',
-          'cgdir': 'third_party/cg/files/mac',
-          'LIBRARY_SUFFIX': '.a',
-        },
         'target_defaults': {
           'defines': [
             'OS_MACOSX',
@@ -155,11 +168,6 @@
     ],
     ['OS == "linux"',
       {
-        'variables': {
-          'renderer%': 'gl',
-          'cgdir': 'third_party/cg/files/linux',
-          'LIBRARY_SUFFIX': '.a',
-        },
         'target_defaults': {
           'defines': [
             'LINUX',
@@ -213,9 +221,3 @@
     ],
   ],
 }
-
-# Local Variables:
-# tab-width:2
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=2 shiftwidth=2:
