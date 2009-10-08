@@ -836,11 +836,6 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window) {
     // Avoid spurious resize requests.
     if (window->width != obj->width() ||
         window->height != obj->height()) {
-      if (!obj->fullscreen()) {
-        ::SetWindowPos(obj->GetContentHWnd(), obj->GetPluginHWnd(), 0, 0,
-                       window->width, window->height,
-                       SWP_NOZORDER | SWP_NOREPOSITION);
-      }
       // Even if we are in full-screen mode, store off the new width
       // and height to restore to them later.
       obj->Resize(window->width, window->height);
