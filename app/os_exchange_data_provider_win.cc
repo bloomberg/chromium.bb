@@ -6,7 +6,7 @@
 
 #include "app/clipboard/clipboard_util_win.h"
 #include "app/l10n_util.h"
-#include "base/file_util.h"
+#include "base/i18n/file_util_icu.h"
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "base/scoped_handle.h"

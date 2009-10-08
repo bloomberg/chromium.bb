@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "app/resource_bundle.h"
 #include "base/file_version_info.h"
 #include "base/histogram.h"
+#include "base/i18n/number_formatting.h"
 #include "base/path_service.h"
 #include "base/platform_thread.h"
 #include "base/stats_table.h"
@@ -482,7 +483,7 @@ static void AddIntSyncDetail(ListValue* details, const std::wstring& stat_name,
                              int64 stat_value) {
   DictionaryValue* val = new DictionaryValue;
   val->SetString(L"stat_name", stat_name);
-  val->SetString(L"stat_value", FormatNumber(stat_value));
+  val->SetString(L"stat_value", UTF16ToWide(base::FormatNumber(stat_value)));
   details->Append(val);
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
+#include "base/i18n/number_formatting.h"
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/history_contents_provider.h"
@@ -879,12 +880,12 @@ void AutocompleteController::AddHistoryContentsShortcut() {
   } else {
     // We can report exact matches when there aren't too many.
     std::vector<size_t> content_param_offsets;
-    match.contents =
-        l10n_util::GetStringF(IDS_OMNIBOX_RECENT_HISTORY,
-                              FormatNumber(history_contents_provider_->
-                                           db_match_count()),
-                              input_.text(),
-                              &content_param_offsets);
+    match.contents = l10n_util::GetStringF(
+        IDS_OMNIBOX_RECENT_HISTORY,
+        UTF16ToWide(base::FormatNumber(history_contents_provider_->
+                                           db_match_count())),
+        input_.text(),
+        &content_param_offsets);
 
     // content_param_offsets is ordered based on supplied params, we expect
     // that the second one contains the query (first is the number).

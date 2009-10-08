@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/compiler_specific.h"
+#include "base/i18n/number_formatting.h"
 #include "base/process_util.h"
 #include "base/stats_table.h"
 #include "base/string_util.h"
@@ -128,8 +129,7 @@ std::wstring TaskManagerModel::GetResourcePrivateMemory(int index) const {
       metrics_map_.find(resources_[index]->GetProcess());
   DCHECK(iter != metrics_map_.end());
   base::ProcessMetrics* process_metrics = iter->second;
-  std::wstring number = FormatNumber(GetPrivateMemory(process_metrics));
-  return GetMemCellText(&number);
+  return GetMemCellText(GetPrivateMemory(process_metrics));
 }
 
 std::wstring TaskManagerModel::GetResourceSharedMemory(int index) const {
@@ -138,8 +138,7 @@ std::wstring TaskManagerModel::GetResourceSharedMemory(int index) const {
       metrics_map_.find(resources_[index]->GetProcess());
   DCHECK(iter != metrics_map_.end());
   base::ProcessMetrics* process_metrics = iter->second;
-  std::wstring number = FormatNumber(GetSharedMemory(process_metrics));
-  return GetMemCellText(&number);
+  return GetMemCellText(GetSharedMemory(process_metrics));
 }
 
 std::wstring TaskManagerModel::GetResourcePhysicalMemory(int index) const {
@@ -148,8 +147,7 @@ std::wstring TaskManagerModel::GetResourcePhysicalMemory(int index) const {
       metrics_map_.find(resources_[index]->GetProcess());
   DCHECK(iter != metrics_map_.end());
   base::ProcessMetrics* process_metrics = iter->second;
-  std::wstring number = FormatNumber(GetPhysicalMemory(process_metrics));
-  return GetMemCellText(&number);
+  return GetMemCellText(GetPhysicalMemory(process_metrics));
 }
 
 std::wstring TaskManagerModel::GetResourceProcessId(int index) const {
@@ -166,7 +164,7 @@ std::wstring TaskManagerModel::GetResourceStatsValue(int index, int col_id)
 std::wstring TaskManagerModel::GetResourceGoatsTeleported(int index) const {
   DCHECK(index < ResourceCount());
   goats_teleported_ += rand() & 4095;
-  return FormatNumber(goats_teleported_);
+  return UTF16ToWide(base::FormatNumber(goats_teleported_));
 }
 
 std::wstring TaskManagerModel::GetResourceWebCoreImageCacheSize(
@@ -385,11 +383,12 @@ int TaskManagerModel::GetStatsValue(const TaskManager::Resource* resource,
   return 0;
 }
 
-std::wstring TaskManagerModel::GetMemCellText(
-    std::wstring* number) const {
+std::wstring TaskManagerModel::GetMemCellText(int64 number) const {
+  std::wstring str = UTF16ToWide(base::FormatNumber(number));
+
   // Adjust number string if necessary.
-  l10n_util::AdjustStringForLocaleDirection(*number, number);
-  return l10n_util::GetStringF(IDS_TASK_MANAGER_MEM_CELL_TEXT, *number);
+  l10n_util::AdjustStringForLocaleDirection(str, &str);
+  return l10n_util::GetStringF(IDS_TASK_MANAGER_MEM_CELL_TEXT, str);
 }
 
 void TaskManagerModel::StartUpdating() {

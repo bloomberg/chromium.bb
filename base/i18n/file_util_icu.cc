@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// File utilities that use the ICU library go in this file.  Functions using ICU
-// are separated from the other functions to prevent ICU being pulled in by the
-// linker if there is a false dependency.
-//
-// (The VS2005 linker finds such a false dependency and adds ~300K of ICU to
-// chrome.exe if this code lives in file_util.cc, even though none of this code
-// is called.)
+// File utilities that use the ICU library go in this file.
 
-#include "base/file_util.h"
+#include "base/i18n/file_util_icu.h"
 
+#include "base/file_path.h"
+#include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
+#include "base/sys_string_conversions.h"
+#include "build/build_config.h"
+#include "unicode/coll.h"
 #include "unicode/uniset.h"
 
 namespace {
+
 class IllegalCharacters {
  public:
   bool contains(UChar32 ucs4) {
@@ -72,6 +72,50 @@ IllegalCharacters::IllegalCharacters() {
   set->freeze();
 }
 
+class LocaleAwareComparator {
+ public:
+  LocaleAwareComparator() {
+    UErrorCode error_code = U_ZERO_ERROR;
+    // Use the default collator. The default locale should have been properly
+    // set by the time this constructor is called.
+    collator_.reset(icu::Collator::createInstance(error_code));
+    DCHECK(U_SUCCESS(error_code));
+    // Make it case-sensitive.
+    collator_->setStrength(icu::Collator::TERTIARY);
+    // Note: We do not set UCOL_NORMALIZATION_MODE attribute. In other words, we
+    // do not pay performance penalty to guarantee sort order correctness for
+    // non-FCD (http://unicode.org/notes/tn5/#FCD) file names. This should be a
+    // reasonable tradeoff because such file names should be rare and the sort
+    // order doesn't change much anyway.
+  }
+
+  // Note: A similar function is available in l10n_util.
+  // We cannot use it because base should not depend on l10n_util.
+  // TODO(yuzo): Move some of l10n_util to base.
+  int Compare(const string16& a, const string16& b) {
+    // We are not sure if Collator::compare is thread-safe.
+    // Use an AutoLock just in case.
+    AutoLock auto_lock(lock_);
+
+    UErrorCode error_code = U_ZERO_ERROR;
+    UCollationResult result = collator_->compare(
+        static_cast<const UChar*>(a.c_str()),
+        static_cast<int>(a.length()),
+        static_cast<const UChar*>(b.c_str()),
+        static_cast<int>(b.length()),
+        error_code);
+    DCHECK(U_SUCCESS(error_code));
+    return result;
+  }
+
+ private:
+  scoped_ptr<icu::Collator> collator_;
+  Lock lock_;
+  friend struct DefaultSingletonTraits<LocaleAwareComparator>;
+
+  DISALLOW_COPY_AND_ASSIGN(LocaleAwareComparator);
+};
+
 }  // namespace
 
 namespace file_util {
@@ -123,6 +167,26 @@ void ReplaceIllegalCharacters(std::wstring* file_name, int replace_char) {
   }
 #else
 #error wchar_t* should be either UTF-16 or UTF-32
+#endif
+}
+
+bool LocaleAwareCompareFilenames(const FilePath& a, const FilePath& b) {
+#if defined(OS_WIN)
+  return Singleton<LocaleAwareComparator>()->Compare(a.value().c_str(),
+                                                     b.value().c_str()) < 0;
+
+#elif defined(OS_POSIX)
+  // On linux, the file system encoding is not defined. We assume
+  // SysNativeMBToWide takes care of it.
+  //
+  // ICU's collator can take strings in OS native encoding. But we convert the
+  // strings to UTF-16 ourselves to ensure conversion consistency.
+  // TODO(yuzo): Perhaps we should define SysNativeMBToUTF16?
+  return Singleton<LocaleAwareComparator>()->Compare(
+      WideToUTF16(base::SysNativeMBToWide(a.value().c_str())),
+      WideToUTF16(base::SysNativeMBToWide(b.value().c_str()))) < 0;
+#else
+  #error Not implemented on your system
 #endif
 }
 

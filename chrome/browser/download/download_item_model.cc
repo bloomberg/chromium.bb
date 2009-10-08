@@ -1,10 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/download/download_item_model.h"
 
 #include "app/l10n_util.h"
+#include "base/i18n/number_formatting.h"
 #include "base/string_util.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/save_package.h"
@@ -110,9 +111,10 @@ std::wstring SavePageModel::GetStatusText() {
   std::wstring status_text;
   switch (download_->state()) {
     case DownloadItem::IN_PROGRESS:
-      status_text = l10n_util::GetStringF(IDS_SAVE_PAGE_PROGRESS,
-                                          FormatNumber(size),
-                                          FormatNumber(total_size));
+      status_text = l10n_util::GetStringF(
+          IDS_SAVE_PAGE_PROGRESS,
+          UTF16ToWide(base::FormatNumber(size)),
+          UTF16ToWide(base::FormatNumber(total_size)));
       break;
     case DownloadItem::COMPLETE:
       status_text = l10n_util::GetString(IDS_SAVE_PAGE_STATUS_COMPLETED);

@@ -315,9 +315,9 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
                                 base::ProcessMetrics** proc_metrics1,
                                 base::ProcessMetrics** proc_metrics2) const;
 
-  // Given a string containing a number, this function returns the formatted
-  // string that should be displayed in the task manager's memory cell.
-  std::wstring GetMemCellText(std::wstring* number) const;
+  // Given a number, this function returns the formatted string that should be
+  // displayed in the task manager's memory cell.
+  std::wstring GetMemCellText(int64 number) const;
 
   // The list of providers to the task manager. They are ref counted.
   ResourceProviderList providers_;

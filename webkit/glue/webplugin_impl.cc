@@ -6,6 +6,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "net/base/escape.h"
 #include "skia/ext/platform_canvas.h"
 #include "webkit/api/public/WebConsoleMessage.h"
@@ -150,9 +151,7 @@ std::string GetAllHeaders(const WebURLResponse& response) {
     return result;
 
   // TODO(darin): Shouldn't we also report HTTP version numbers?
-  result.append("HTTP ");
-  result.append(WideToUTF8(FormatNumber(response.httpStatusCode())));
-  result.append(" ");
+  result = StringPrintf("HTTP %d ", response.httpStatusCode());
   result.append(status.utf8());
   result.append("\n");
 

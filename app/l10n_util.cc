@@ -11,6 +11,7 @@
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/i18n/file_util_icu.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
