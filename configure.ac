@@ -66,6 +66,13 @@ AC_HEADER_STDC
 AC_LIBTOOL_WIN32_DLL
 AM_PROG_LIBTOOL
 
+# GNU help2man creates man pages from --help output; in many cases,
+# this is sufficient, and obviates the need to maintain man pages
+# separately. However, some developers do not have it so we do not
+# make its use mandatory.
+AC_CHECK_PROG([HELP2MAN], [help2man], [help2man])
+AM_CONDITIONAL([HAVE_HELP2MAN], [test x$HELP2MAN = xhelp2man])
+
 AC_PATH_PROG(PKG_CONFIG, pkg-config)
 
 AC_ARG_ENABLE(ucs4,
@@ -93,6 +100,7 @@ esac
 
 AC_CONFIG_FILES([Makefile
                  doc/Makefile
+                 man/Makefile
                  liblouis/Makefile
                  tables/Makefile
 		 liblouis.pc

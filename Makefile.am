@@ -1,4 +1,4 @@
-SUBDIRS = gnulib liblouis tools tables doc tests python
+SUBDIRS = gnulib liblouis tools tables doc man tests python
 
 ACLOCAL_AMFLAGS = -I gnulib/m4
 
