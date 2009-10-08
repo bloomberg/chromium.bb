@@ -12,7 +12,7 @@
 #include "base/mac_util.h"
 #include "base/path_service.h"
 #import "base/scoped_nsobject.h"
-#include "chrome/common/mac_app_names.h"
+#include "chrome/common/chrome_constants.h"
 
 // Background windows normally will not display things such as focus
 // rings.  This class allows -isKeyWindow to be manipulated to test
@@ -58,10 +58,7 @@ class CocoaNoWindowTestHelper {
     // Look in the framework bundle for resources.
     FilePath path;
     PathService::Get(base::DIR_EXE, &path);
-    path = path.AppendASCII(MAC_BROWSER_APP_NAME);
-    path = path.AppendASCII("Contents");
-    path = path.AppendASCII("Frameworks");
-    path = path.AppendASCII(MAC_FRAMEWORK_NAME);
+    path = path.Append(chrome::kFrameworkName);
     mac_util::SetOverrideAppBundlePath(path);
 
     // Bootstrap Cocoa. It's very unhappy without this.

@@ -15,6 +15,9 @@ extern const wchar_t kBrowserProcessExecutableName[];
 extern const wchar_t kHelperProcessExecutableName[];
 extern const wchar_t kBrowserProcessExecutablePath[];
 extern const wchar_t kHelperProcessExecutablePath[];
+#if defined(OS_MACOSX)
+extern const FilePath::CharType kFrameworkName[];
+#endif
 extern const wchar_t kBrowserAppName[];
 extern const wchar_t kMessageWindowClass[];
 extern const wchar_t kCrashReportLog[];

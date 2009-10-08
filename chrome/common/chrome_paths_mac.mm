@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/mac_util.h"
 #include "base/path_service.h"
-#include "chrome/common/mac_app_names.h"
+#include "chrome/common/chrome_constants.h"
 
 namespace chrome {
 
@@ -90,7 +90,7 @@ FilePath GetFrameworkBundlePath() {
 
   // The framework bundle is at a known path and name from the browser .app's
   // Contents directory.
-  return path.Append("Frameworks").Append(MAC_FRAMEWORK_NAME);
+  return path.Append("Frameworks").Append(kFrameworkName);
 }
 
 }  // namespace chrome

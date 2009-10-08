@@ -8,7 +8,7 @@
 #include "base/mac_util.h"
 #include "base/nsimage_cache_mac.h"
 #include "base/path_service.h"
-#include "chrome/common/mac_app_names.h"
+#include "chrome/common/chrome_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -23,10 +23,7 @@ class NSImageCacheTest : public PlatformTest {
     // Look in the framework bundle for resources.
     FilePath path;
     PathService::Get(base::DIR_EXE, &path);
-    path = path.AppendASCII(MAC_BROWSER_APP_NAME);
-    path = path.AppendASCII("Contents");
-    path = path.AppendASCII("Frameworks");
-    path = path.AppendASCII(MAC_FRAMEWORK_NAME);
+    path = path.Append(chrome::kFrameworkName);
     mac_util::SetOverrideAppBundlePath(path);
   }
   virtual ~NSImageCacheTest() {

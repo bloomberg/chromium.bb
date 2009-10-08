@@ -34,21 +34,18 @@ class AppTestSuite : public TestSuite {
 
 #if defined(OS_MACOSX)
     // Look in the framework bundle for resources.
-    // TODO(port): make a resource bundle for non-app exes.
+    // TODO(port): make a resource bundle for non-app exes.  What's done here
+    // isn't really right because this code needs to depend on chrome_dll
+    // being built.  This is inappropriate in app.
     FilePath path;
     PathService::Get(base::DIR_EXE, &path);
 #if defined(GOOGLE_CHROME_BUILD)
-#define MAC_PRODUCT_NAME "Google Chrome"
+    path = path.AppendASCII("Google Chrome Framework.framework");
 #elif defined(CHROMIUM_BUILD)
-#define MAC_PRODUCT_NAME "Chromium"
+    path = path.AppendASCII("Chromium Framework.framework");
 #else
 #error Unknown branding
 #endif
-    path = path.AppendASCII(MAC_PRODUCT_NAME ".app");
-    path = path.AppendASCII("Contents");
-    path = path.AppendASCII("Frameworks");
-    path = path.AppendASCII(MAC_PRODUCT_NAME " Framework.framework");
-#undef MAC_PRODUCT_NAME
     mac_util::SetOverrideAppBundlePath(path);
 #endif  // OS_MACOSX
 

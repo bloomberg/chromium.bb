@@ -10,9 +10,13 @@
 
 #if defined(OS_MACOSX)
 #if defined(GOOGLE_CHROME_BUILD)
-#define PRODUCT_STRING L"Google Chrome"
+#define PRODUCT_STRING "Google Chrome"
+#define PRODUCT_STRING_W L"Google Chrome"
+#elif defined(CHROMIUM_BUILD)
+#define PRODUCT_STRING "Chromium"
+#define PRODUCT_STRING_W L"Chromium"
 #else
-#define PRODUCT_STRING L"Chromium"
+#error Unknown branding
 #endif
 #endif  // OS_MACOSX
 
@@ -27,8 +31,8 @@ const wchar_t kHelperProcessExecutableName[] = L"chrome.exe";
 const wchar_t kBrowserProcessExecutableName[] = L"chrome";
 const wchar_t kHelperProcessExecutableName[] = L"chrome";
 #elif defined(OS_MACOSX)
-const wchar_t kBrowserProcessExecutableName[] = PRODUCT_STRING;
-const wchar_t kHelperProcessExecutableName[] = PRODUCT_STRING L" Helper";
+const wchar_t kBrowserProcessExecutableName[] = PRODUCT_STRING_W;
+const wchar_t kHelperProcessExecutableName[] = PRODUCT_STRING_W L" Helper";
 #endif  // OS_*
 #if defined(OS_WIN)
 const wchar_t kBrowserProcessExecutablePath[] = L"chrome.exe";
@@ -38,11 +42,15 @@ const wchar_t kBrowserProcessExecutablePath[] = L"chrome";
 const wchar_t kHelperProcessExecutablePath[] = L"chrome";
 #elif defined(OS_MACOSX)
 const wchar_t kBrowserProcessExecutablePath[] =
-    PRODUCT_STRING L".app/Contents/MacOS/" PRODUCT_STRING;
+    PRODUCT_STRING_W L".app/Contents/MacOS/" PRODUCT_STRING_W;
 const wchar_t kHelperProcessExecutablePath[] =
-    PRODUCT_STRING L".app/Contents/Resources/"
-    PRODUCT_STRING L" Helper.app/Contents/MacOS/" PRODUCT_STRING L" Helper";
+    PRODUCT_STRING_W L".app/Contents/Resources/"
+    PRODUCT_STRING_W L" Helper.app/Contents/MacOS/" PRODUCT_STRING_W L" Helper";
 #endif  // OS_*
+#if defined(OS_MACOSX)
+const FilePath::CharType kFrameworkName[] =
+    PRODUCT_STRING " Framework.framework";
+#endif  // OS_MACOSX
 #if defined(CHROME_FRAME_BUILD)
 const wchar_t kBrowserAppName[] = L"ChromeFrame";
 const char    kStatsFilename[] = "ChromeFrameStats2";

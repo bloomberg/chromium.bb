@@ -13,7 +13,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
-#include "chrome/common/mac_app_names.h"
 #endif
 
 using base::Time;

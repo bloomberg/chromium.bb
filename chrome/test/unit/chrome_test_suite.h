@@ -22,11 +22,9 @@
 #include "base/test_suite.h"
 #include "chrome/app/scoped_ole_initializer.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#if defined(OS_MACOSX)
-#include "chrome/common/mac_app_names.h"
-#endif
 #include "chrome/test/testing_browser_process.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
@@ -101,10 +99,7 @@ class ChromeTestSuite : public TestSuite {
     // Look in the framework bundle for resources.
     FilePath path;
     PathService::Get(base::DIR_EXE, &path);
-    path = path.AppendASCII(MAC_BROWSER_APP_NAME);
-    path = path.AppendASCII("Contents");
-    path = path.AppendASCII("Frameworks");
-    path = path.AppendASCII(MAC_FRAMEWORK_NAME);
+    path = path.Append(chrome::kFrameworkName);
     mac_util::SetOverrideAppBundlePath(path);
 #endif
 
