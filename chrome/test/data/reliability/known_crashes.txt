@@ -141,4 +141,4 @@ SUBSTRING : webframeloaderclient::dispatchdidchangelocationwithinpage___webcore:
 REGEX : tabcontents::washidden___.*___tabcontents::~tabcontents
 
 # bug 23780
-PREFIX : v8::internal::mayaccessprecheck___v8::internal::top::maynamedaccess___v8::internal::jsobject::getpropertyattribute
+PREFIX : v8::internal::mayaccessprecheck
