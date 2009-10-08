@@ -2102,10 +2102,7 @@ void AutocompleteEditViewWin::DrawSlashForInsecureScheme(
   // it to fully transparent so any antialiasing will look nice when painted
   // atop the edit.
   gfx::Canvas canvas(scheme_rect.Width(), scheme_rect.Height(), false);
-  // TODO (jcampan): This const_cast should not be necessary once the SKIA
-  // API has been changed to return a non-const bitmap.
-  (const_cast<SkBitmap&>(canvas.getDevice()->accessBitmap(true))).
-      eraseARGB(0, 0, 0, 0);
+  canvas.getDevice()->accessBitmap(true).eraseARGB(0, 0, 0, 0);
 
   // Calculate the start and end of the stroke, which are just the lower left
   // and upper right corners of the canvas, inset by the radius of the endcap

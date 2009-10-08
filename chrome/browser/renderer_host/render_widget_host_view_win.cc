@@ -569,10 +569,7 @@ void RenderWidgetHostViewWin::DrawResizeCorner(const gfx::Rect& paint_rect,
     SkBitmap* bitmap = ResourceBundle::GetSharedInstance().
         GetBitmapNamed(IDR_TEXTAREA_RESIZER);
     gfx::Canvas canvas(bitmap->width(), bitmap->height(), false);
-    // TODO(jcampan): This const_cast should not be necessary once the
-    // SKIA API has been changed to return a non-const bitmap.
-    const_cast<SkBitmap&>(canvas.getDevice()->accessBitmap(true)).
-        eraseARGB(0, 0, 0, 0);
+    canvas.getDevice()->accessBitmap(true).eraseARGB(0, 0, 0, 0);
     int x = resize_corner_rect.x() + resize_corner_rect.width() -
         bitmap->width();
     bool rtl_dir = (l10n_util::GetTextDirection() ==
