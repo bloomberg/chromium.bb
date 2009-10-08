@@ -6,6 +6,17 @@
   'variables': {
     'chromium_code': 1,
 
+    'variables': {
+      'version_py_path': 'tools/build/version.py',
+      'version_path': 'VERSION',
+    },
+    'version_py_path': '<(version_py_path)',
+    'version_path': '<(version_path)',
+    'version_major_minor':
+        '<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@.@MINOR@")',
+    'version_build_patch':
+        '<!(python <(version_py_path) -f <(version_path) -t "@BUILD@.@PATCH@")',
+
     # Define the common dependencies that contain all the actual
     # Chromium functionality.  This list gets pulled in below by
     # the link of the actual chrome (or chromium) executable on
@@ -3451,7 +3462,6 @@
               'action_name': 'Generating InfoPlist.strings files',
               'variables': {
                 'tool_path': '<(PRODUCT_DIR)/infoplist_strings_tool',
-                'version_file_path': 'VERSION',
                 # Unique dir to write to so the [lang].lproj/InfoPlist.strings
                 # for the main app and the helper app don't name collide.
                 'output_path': '<(INTERMEDIATE_DIR)/app_infoplist_strings',
@@ -3469,7 +3479,7 @@
               ],
               'inputs': [
                 '<(tool_path)',
-                '<(version_file_path)',
+                '<(version_path)',
                 # TODO: remove this helper when we have loops in GYP
                 '>!@(<(apply_locales_cmd) \'<(grit_out_dir)/<(branding_name)_ZZLOCALE.pak\' <(locales))',
               ],
@@ -3480,7 +3490,7 @@
               'action': [
                 '<(tool_path)',
                 '-b', '<(branding_name)',
-                '-v', '<(version_file_path)',
+                '-v', '<(version_path)',
                 '-g', '<(grit_out_dir)',
                 '-o', '<(output_path)',
                 '-t', 'main',
@@ -3594,8 +3604,6 @@
             {
               'action_name': 'version',
               'variables': {
-                'version_py': 'tools/build/version.py',
-                'version_path': 'VERSION',
                 'template_input_path': 'app/chrome_exe_version.rc.version',
               },
               'conditions': [
@@ -3619,7 +3627,7 @@
               ],
               'action': [
                 'python',
-                '<(version_py)',
+                '<(version_py_path)',
                 '-f', '<(version_path)',
                 '-f', '<(branding_path)',
                 '<(template_input_path)',
@@ -4921,7 +4929,29 @@
               'product_name': '<(mac_product_name) Framework',
               'mac_bundle': 1,
               'xcode_settings': {
+                # The dylib versions are of the form a[.b[.c]], where a is a
+                # 16-bit unsigned integer, and b and c are 8-bit unsigned
+                # integers.  Any missing component is taken to be 0.  The
+                # best mapping from product version numbers into this scheme
+                # is to just use the build and patch numbers.  There is no
+                # ambiguity in this scheme because the build number is
+                # guaranteed unique even across distinct major and minor
+                # version numbers.
+                'DYLIB_COMPATIBILITY_VERSION': '<(version_build_patch)',
+                'DYLIB_CURRENT_VERSION': '<(version_build_patch)',
                 'DYLIB_INSTALL_NAME_BASE': '@executable_path/../Frameworks',
+                # FRAMEWORK_VERSION is used as the name of the directory in
+                # the framework's Versions directory that the Current symbolic
+                # link points to.  Unfortunately, Xcode does not create this
+                # symbolic link properly: in a non-clobber build, if the
+                # version changes, Xcode won't adjust the Current link to point
+                # to the new version.  Instead of setting FRAMEWORK_VERSION
+                # to correspond to the application version, just leave it at
+                # its default, 'A'.  This is more than sufficient for our
+                # purposes, because the framework does not need to maintain
+                # any sort of stable public interface.
+                # 'FRAMEWORK_VERSION':
+                #     '<(version_major_minor).<(version_build_patch)',
                 'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
                 'INFOPLIST_FILE': 'app/framework-Info.plist',
               },
@@ -5205,7 +5235,6 @@
               'action_name': 'Generating InfoPlist.strings files',
               'variables': {
                 'tool_path': '<(PRODUCT_DIR)/infoplist_strings_tool',
-                'version_file_path': 'VERSION',
                 # Unique dir to write to so the [lang].lproj/InfoPlist.strings
                 # for the main app and the helper app don't name collide.
                 'output_path': '<(INTERMEDIATE_DIR)/helper_infoplist_strings',
@@ -5223,7 +5252,7 @@
               ],
               'inputs': [
                 '<(tool_path)',
-                '<(version_file_path)',
+                '<(version_path)',
                 # TODO: remove this helper when we have loops in GYP
                 '>!@(<(apply_locales_cmd) \'<(grit_out_dir)/<(branding_name)_ZZLOCALE.pak\' <(locales))',
               ],
@@ -5234,7 +5263,7 @@
               'action': [
                 '<(tool_path)',
                 '-b', '<(branding_name)',
-                '-v', '<(version_file_path)',
+                '-v', '<(version_path)',
                 '-g', '<(grit_out_dir)',
                 '-o', '<(output_path)',
                 '-t', 'helper',
@@ -5732,8 +5761,6 @@
               'variables': {
                 'lastchange_path':
                   '<(SHARED_INTERMEDIATE_DIR)/build/LASTCHANGE',
-                'version_py': 'tools/build/version.py',
-                'version_path': 'VERSION',
                 'template_input_path': 'app/chrome_dll_version.rc.version',
               },
               'conditions': [
@@ -5758,7 +5785,7 @@
               ],
               'action': [
                 'python',
-                '<(version_py)',
+                '<(version_py_path)',
                 '-f', '<(version_path)',
                 '-f', '<(branding_path)',
                 '-f', '<(lastchange_path)',
