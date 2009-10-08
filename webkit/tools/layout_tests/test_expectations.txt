@@ -3143,3 +3143,5 @@ BUG_AA SKIP : LayoutTests/http/tests/security/isolatedWorld/iframe.html = FAIL
 
 BUG_JOHNNYG : LayoutTests/http/tests/globalhistory/history-delegate-basic-title.html = FAIL
 BUG_JOHNNYG WIN DEBUG : LayoutTests/fast/frames/onlyCommentInIFrame.html = FAIL
+
+BUG_24308 MAC : LayoutTests/http/tests/navigation/back-send-referrer.html = PASS TIMEOUT
