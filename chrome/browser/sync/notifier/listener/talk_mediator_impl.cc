@@ -77,7 +77,7 @@ TalkMediatorImpl::~TalkMediatorImpl() {
 
 void TalkMediatorImpl::AuthWatcherEventHandler(
     const AuthWatcherEvent& auth_event) {
-  MutexLock lock(&mutex_);
+  AutoLock lock(mutex_);
   switch (auth_event.what_happened) {
     case AuthWatcherEvent::AUTHWATCHER_DESTROYED:
     case AuthWatcherEvent::GAIA_AUTH_FAILED:
@@ -111,7 +111,7 @@ void TalkMediatorImpl::WatchAuthWatcher(AuthWatcher* watcher) {
 }
 
 bool TalkMediatorImpl::Login() {
-  MutexLock lock(&mutex_);
+  AutoLock lock(mutex_);
   return DoLogin();
 }
 
@@ -132,7 +132,7 @@ bool TalkMediatorImpl::DoLogin() {
 }
 
 bool TalkMediatorImpl::Logout() {
-  MutexLock lock(&mutex_);
+  AutoLock lock(mutex_);
   // We do not want to be called back during logout since we may be closing.
   if (state_.connected) {
     mediator_thread_->SignalStateChange.disconnect(this);
@@ -149,7 +149,7 @@ bool TalkMediatorImpl::Logout() {
 }
 
 bool TalkMediatorImpl::SendNotification() {
-  MutexLock lock(&mutex_);
+  AutoLock lock(mutex_);
   if (state_.logged_in && state_.subscribed) {
     mediator_thread_->SendNotification();
     return true;
@@ -163,7 +163,7 @@ TalkMediatorChannel* TalkMediatorImpl::channel() const {
 
 bool TalkMediatorImpl::SetAuthToken(const std::string& email,
                                     const std::string& token) {
-  MutexLock lock(&mutex_);
+  AutoLock lock(mutex_);
 
   // Verify that we can create a JID from the email provided.
   buzz::Jid jid = buzz::Jid(email);
@@ -212,7 +212,7 @@ void TalkMediatorImpl::MediatorThreadMessageHandler(
 
 void TalkMediatorImpl::OnLogin() {
   LOG(INFO) << "P2P: Logged in.";
-  MutexLock lock(&mutex_);
+  AutoLock lock(mutex_);
   // ListenForUpdates enables the ListenTask.  This is done before
   // SubscribeForUpdates.
   mediator_thread_->ListenForUpdates();
@@ -224,7 +224,7 @@ void TalkMediatorImpl::OnLogin() {
 void TalkMediatorImpl::OnLogout() {
   LOG(INFO) << "P2P: Logged off.";
   OnSubscriptionFailure();
-  MutexLock lock(&mutex_);
+  AutoLock lock(mutex_);
   state_.logged_in = 0;
   TalkMediatorEvent event = { TalkMediatorEvent::LOGOUT_SUCCEEDED };
   channel_->NotifyListeners(event);
@@ -232,7 +232,7 @@ void TalkMediatorImpl::OnLogout() {
 
 void TalkMediatorImpl::OnSubscriptionSuccess() {
   LOG(INFO) << "P2P: Update subscription active.";
-  MutexLock lock(&mutex_);
+  AutoLock lock(mutex_);
   state_.subscribed = 1;
   TalkMediatorEvent event = { TalkMediatorEvent::SUBSCRIPTIONS_ON };
   channel_->NotifyListeners(event);
@@ -240,7 +240,7 @@ void TalkMediatorImpl::OnSubscriptionSuccess() {
 
 void TalkMediatorImpl::OnSubscriptionFailure() {
   LOG(INFO) << "P2P: Update subscription failure.";
-  MutexLock lock(&mutex_);
+  AutoLock lock(mutex_);
   state_.subscribed = 0;
   TalkMediatorEvent event = { TalkMediatorEvent::SUBSCRIPTIONS_OFF };
   channel_->NotifyListeners(event);
@@ -248,7 +248,7 @@ void TalkMediatorImpl::OnSubscriptionFailure() {
 
 void TalkMediatorImpl::OnNotificationReceived() {
   LOG(INFO) << "P2P: Updates are available on the server.";
-  MutexLock lock(&mutex_);
+  AutoLock lock(mutex_);
   TalkMediatorEvent event = { TalkMediatorEvent::NOTIFICATION_RECEIVED };
   channel_->NotifyListeners(event);
 }
@@ -256,7 +256,7 @@ void TalkMediatorImpl::OnNotificationReceived() {
 void TalkMediatorImpl::OnNotificationSent() {
   LOG(INFO) <<
       "P2P: Peers were notified that updates are available on the server.";
-  MutexLock lock(&mutex_);
+  AutoLock lock(mutex_);
   TalkMediatorEvent event = { TalkMediatorEvent::NOTIFICATION_SENT };
   channel_->NotifyListeners(event);
 }

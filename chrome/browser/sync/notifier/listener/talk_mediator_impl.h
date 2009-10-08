@@ -11,11 +11,11 @@
 
 #include <string>
 
+#include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/notifier/listener/mediator_thread.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator.h"
-#include "chrome/browser/sync/util/pthread_helpers.h"
 #include "talk/xmpp/xmppclientsettings.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
@@ -60,8 +60,6 @@ class TalkMediatorImpl
     unsigned int subscribed : 1;   // Subscribed to the xmpp receiving channel.
   };
 
-  typedef PThreadScopedLock<PThreadMutex> MutexLock;
-
   // Completes common initialization between the constructors.  Set should
   // connect to true if the talk mediator should connect to the controlled
   // mediator thread's SignalStateChange object.
@@ -90,7 +88,7 @@ class TalkMediatorImpl
   // sources, Authwatcher and MediatorThread.  It can also be called by through
   // the TalkMediatorInteface.  All these access points are serialized by
   // this mutex.
-  PThreadMutex mutex_;
+  Lock mutex_;
 
   // Internal state.
   TalkMediatorState state_;

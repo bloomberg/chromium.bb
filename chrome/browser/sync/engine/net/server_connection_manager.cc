@@ -38,15 +38,6 @@ static const ServerConnectionEvent shutdown_event =
   { ServerConnectionEvent::SHUTDOWN, HttpResponse::CONNECTION_UNAVAILABLE,
     false };
 
-typedef PThreadScopedLock<PThreadMutex> MutexLock;
-
-struct ServerConnectionManager::PlatformMembers {
-  explicit PlatformMembers(const string& user_agent) { }
-  void Kill() { }
-  void Reset() { }
-  void Reset(MutexLock*) { }
-};
-
 bool ServerConnectionManager::Post::ReadBufferResponse(
     string* buffer_out, HttpResponse* response, bool require_response) {
   if (RC_REQUEST_OK != response->response_code) {
@@ -154,21 +145,12 @@ ServerConnectionManager::ServerConnectionManager(
       channel_(new Channel(shutdown_event)),
       server_status_(HttpResponse::NONE),
       server_reachable_(false),
-      platform_(new PlatformMembers(user_agent)),
       reset_count_(0),
       terminate_all_io_(false) {
 }
 
 ServerConnectionManager::~ServerConnectionManager() {
   delete channel_;
-  delete platform_;
-  shutdown_event_mutex_.Lock();
-  int result = pthread_cond_broadcast(&shutdown_event_condition_.condvar_);
-  shutdown_event_mutex_.Unlock();
-  if (result) {
-    LOG(ERROR) << "Error signaling shutdown_event_condition_ last error = "
-               << result;
-  }
 }
 
 void ServerConnectionManager::NotifyStatusChanged() {
@@ -281,16 +263,8 @@ bool ServerConnectionManager::CheckServerReachable() {
 
 void ServerConnectionManager::kill() {
   {
-    MutexLock lock(&terminate_all_io_mutex_);
+    AutoLock lock(terminate_all_io_mutex_);
     terminate_all_io_ = true;
-  }
-  platform_->Kill();
-  shutdown_event_mutex_.Lock();
-  int result = pthread_cond_broadcast(&shutdown_event_condition_.condvar_);
-  shutdown_event_mutex_.Unlock();
-  if (result) {
-    LOG(ERROR) << "Error signaling shutdown_event_condition_ last error = "
-               << result;
   }
 }
 
@@ -302,12 +276,11 @@ void ServerConnectionManager::ResetAuthStatus() {
 
 void ServerConnectionManager::ResetConnection() {
   base::subtle::NoBarrier_AtomicIncrement(&reset_count_, 1);
-  platform_->Reset();
 }
 
 bool ServerConnectionManager::IncrementErrorCount() {
 #ifdef OS_WIN
-  error_count_mutex_.Lock();
+  error_count_mutex_.Acquire();
   error_count_++;
 
   if (error_count_ > kMaxConnectionErrorsBeforeReset) {
@@ -316,7 +289,7 @@ bool ServerConnectionManager::IncrementErrorCount() {
     // Be careful with this mutex because calling out to other methods can
     // result in being called back. Unlock it here to prevent any potential
     // double-acquisitions.
-    error_count_mutex_.Unlock();
+    error_count_mutex_.Release();
 
     if (!IsServerReachable()) {
       LOG(WARNING) << "Too many connection failures, server is not reachable. "
@@ -328,7 +301,7 @@ bool ServerConnectionManager::IncrementErrorCount() {
     return false;
   }
 
-  error_count_mutex_.Unlock();
+  error_count_mutex_.Release();
   return true;
 #endif
   return true;
@@ -337,18 +310,17 @@ bool ServerConnectionManager::IncrementErrorCount() {
 void ServerConnectionManager::SetServerParameters(const string& server_url,
                                                   int port, bool use_ssl) {
   {
-    ParametersLock lock(&server_parameters_mutex_);
+    ParametersLock lock(server_parameters_mutex_);
     sync_server_ = server_url;
     sync_server_port_ = port;
     use_ssl_ = use_ssl;
   }
-  platform_->Reset();
 }
 
 // Returns the current server parameters in server_url and port.
 void ServerConnectionManager::GetServerParameters(string* server_url,
-                                                  int* port, bool* use_ssl) {
-  ParametersLock lock(&server_parameters_mutex_);
+    int* port, bool* use_ssl) const {
+  ParametersLock lock(server_parameters_mutex_);
   if (server_url != NULL)
     *server_url = sync_server_;
   if (port != NULL)

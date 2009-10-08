@@ -10,13 +10,13 @@
 #include <vector>
 
 #include "base/atomicops.h"
+#include "base/lock.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/sync/engine/net/http_return.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/util/event_sys.h"
-#include "chrome/browser/sync/util/pthread_helpers.h"
 #include "chrome/browser/sync/util/signin.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
@@ -163,9 +163,9 @@ class ServerConnectionManager {
                                   const std::string& path, bool use_ssl) const;
 
     void GetServerParams(std::string* server, int* server_port,
-                         bool* use_ssl) {
+                         bool* use_ssl) const {
       ServerConnectionManager::ParametersLock lock(
-          &scm_->server_parameters_mutex_);
+          scm_->server_parameters_mutex_);
       server->assign(scm_->sync_server_);
       *server_port = scm_->sync_server_port_;
       *use_ssl = scm_->use_ssl_;
@@ -239,10 +239,11 @@ class ServerConnectionManager {
                            bool use_ssl);
 
   // Returns the current server parameters in server_url, port and use_ssl.
-  void GetServerParameters(std::string* server_url, int* port, bool* use_ssl);
+  void GetServerParameters(std::string* server_url,
+                           int* port, bool* use_ssl) const;
 
   bool terminate_all_io() const {
-    PThreadScopedLock<PThreadMutex> lock(&terminate_all_io_mutex_);
+    AutoLock lock(terminate_all_io_mutex_);
     return terminate_all_io_;
   }
 
@@ -261,13 +262,9 @@ class ServerConnectionManager {
   }
 
  protected:
-
-  PThreadMutex shutdown_event_mutex_;
-  PThreadCondVar shutdown_event_condition_;
-
   // Protects access to sync_server_, sync_server_port_ and use_ssl_:
-  mutable PThreadMutex server_parameters_mutex_;
-  typedef PThreadScopedLock<PThreadMutex> ParametersLock;
+  mutable Lock server_parameters_mutex_;
+  typedef AutoLock ParametersLock;
 
   // The sync_server_ is the server that requests will be made to.
   std::string sync_server_;
@@ -285,8 +282,8 @@ class ServerConnectionManager {
   bool use_ssl_;
 
   // The paths we post to.
-  mutable PThreadMutex path_mutex_;
-  typedef PThreadScopedLock<PThreadMutex> ScopedPathLock;
+  mutable Lock path_mutex_;
+  typedef AutoLock ScopedPathLock;
 
   std::string proto_sync_path_;
   std::string get_time_path_;
@@ -295,18 +292,18 @@ class ServerConnectionManager {
   std::string auth_token_;
 
   inline std::string proto_sync_path() const {
-    ScopedPathLock lock(&path_mutex_);
+    ScopedPathLock lock(path_mutex_);
     return proto_sync_path_;
   }
   std::string get_time_path() const {
-    ScopedPathLock lock(&path_mutex_);
+    ScopedPathLock lock(path_mutex_);
     return get_time_path_;
   }
 
   // Called wherever a failure should be taken as an indication that we may
   // be experiencing connection difficulties.
   virtual bool IncrementErrorCount();
-  mutable PThreadMutex error_count_mutex_;  // Protects error_count_
+  Lock error_count_mutex_;  // Protects error_count_
   int error_count_;  // Tracks the number of connection errors.
 
  protected:
@@ -315,9 +312,6 @@ class ServerConnectionManager {
   // synchronization.
   volatile HttpResponse::ServerConnectionCode server_status_;
   bool server_reachable_;
-
-  struct PlatformMembers;  // Contains platform specific member vars.
-  PlatformMembers* const platform_;
 
   // A counter that is incremented everytime ResetAuthStatus() is called.
   volatile base::subtle::AtomicWord reset_count_;
@@ -330,7 +324,7 @@ class ServerConnectionManager {
                                 const std::string& auth_token);
 
  private:
-  mutable PThreadMutex terminate_all_io_mutex_;
+  mutable Lock terminate_all_io_mutex_;
   bool terminate_all_io_;  // When set to true, terminate all connections asap.
   DISALLOW_COPY_AND_ASSIGN(ServerConnectionManager);
 };

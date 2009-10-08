@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/notifier/listener/mediator_thread_impl.h"
 
 #include "base/logging.h"
+#include "base/platform_thread.h"
 #include "chrome/browser/sync/engine/net/gaia_authenticator.h"
 #include "chrome/browser/sync/notifier/base/async_dns_lookup.h"
 #include "chrome/browser/sync/notifier/base/task_pump.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/sync/notifier/listener/send_update_task.h"
 #include "chrome/browser/sync/notifier/listener/subscribe_task.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
-#include "chrome/browser/sync/util/pthread_helpers.h"
 #include "talk/base/thread.h"
 #ifdef WIN32
 #include "talk/base/win32socketserver.h"
@@ -38,7 +38,7 @@ void MediatorThreadImpl::Start() {
 }
 
 void MediatorThreadImpl::Run() {
-  NameCurrentThreadForDebugging("SyncEngine_MediatorThread");
+  PlatformThread::SetName("SyncEngine_MediatorThread");
   // For win32, this sets up the win32socketserver. Note that it needs to
   // dispatch windows messages since that is what the win32 socket server uses.
 #ifdef WIN32

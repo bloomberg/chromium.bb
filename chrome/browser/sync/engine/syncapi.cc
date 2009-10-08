@@ -18,6 +18,7 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/sync/engine/all_status.h"
@@ -40,7 +41,6 @@
 #include "chrome/browser/sync/util/crypto_helpers.h"
 #include "chrome/browser/sync/util/event_sys.h"
 #include "chrome/browser/sync/util/path_helpers.h"
-#include "chrome/browser/sync/util/pthread_helpers.h"
 #include "chrome/browser/sync/util/user_settings.h"
 #include "googleurl/src/gurl.h"
 
@@ -83,7 +83,7 @@ struct ThreadParams {
 // table that maps IP addresses to interfaces, for example when the user
 // unplugs his network cable.
 void* AddressWatchThread(void* arg) {
-  NameCurrentThreadForDebugging("SyncEngine_AddressWatcher");
+  PlatformThread::SetName("SyncEngine_AddressWatcher");
   LOG(INFO) << "starting the address watch thread";
 #if defined(OS_WIN)
   const ThreadParams* const params = reinterpret_cast<const ThreadParams*>(arg);
