@@ -11,6 +11,7 @@
 #include "base/id_map.h"
 #include "base/process.h"
 #include "base/scoped_ptr.h"
+#include "base/time.h"
 #include "chrome/common/transport_dib.h"
 #include "chrome/common/visitedlink_common.h"
 #include "ipc/ipc_sync_channel.h"
@@ -106,6 +107,20 @@ class RenderProcessHost : public IPC::Channel::Sender,
   }
   bool ignore_input_events() {
     return ignore_input_events_;
+  }
+
+  // Returns how long the child has been idle. The definition of idle
+  // depends on when a derived class calls mark_child_process_activity_time().
+  // This is a rough indicator and its resolution should not be better than
+  // 10 milliseconds.
+  base::TimeDelta get_child_process_idle_time() const {
+    return base::TimeTicks::Now() - child_process_activity_time_;
+  }
+
+  // Call this function when it is evident that the child process is actively
+  // performing some operation, for example if we just received an IPC message.
+  void mark_child_process_activity_time() {
+    child_process_activity_time_ = base::TimeTicks::Now();
   }
 
   // Try to shutdown the associated render process as fast as possible, but
@@ -262,6 +277,9 @@ class RenderProcessHost : public IPC::Channel::Sender,
 
   // See getter above.
   static bool run_renderer_in_process_;
+
+  // Records the last time we regarded the child process active.
+  base::TimeTicks child_process_activity_time_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHost);
 };

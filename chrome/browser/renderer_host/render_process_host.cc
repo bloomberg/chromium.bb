@@ -85,6 +85,8 @@ RenderProcessHost::RenderProcessHost(Profile* profile)
       ignore_input_events_(false) {
   all_hosts.AddWithID(this, id());
   all_hosts.set_check_on_null_data(true);
+  // Initialize |child_process_activity_time_| to a reasonable value.
+  mark_child_process_activity_time();
 }
 
 RenderProcessHost::~RenderProcessHost() {

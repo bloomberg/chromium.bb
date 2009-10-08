@@ -181,3 +181,17 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SingleBeforeUnloadAfterWindowClose) {
   alert->AcceptWindow();
 }
 
+// Test that get_process_idle_time() returns reasonable values when compared
+// with time deltas measured locally.
+IN_PROC_BROWSER_TEST_F(BrowserTest, RenderIdleTime) {
+  base::TimeTicks start = base::TimeTicks::Now();
+  ui_test_utils::NavigateToURL(browser(),
+                               ui_test_utils::GetTestUrl(L".", L"title1.html"));
+  RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
+  for (; !it.IsAtEnd(); it.Advance()) {
+    base::TimeDelta renderer_td =
+        it.GetCurrentValue()->get_child_process_idle_time();
+    base::TimeDelta browser_td = base::TimeTicks::Now() - start;
+    EXPECT_TRUE(browser_td >= renderer_td);
+  }
+}

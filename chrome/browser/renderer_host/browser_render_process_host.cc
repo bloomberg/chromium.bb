@@ -781,6 +781,7 @@ bool BrowserRenderProcessHost::Send(IPC::Message* msg) {
 }
 
 void BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
+  mark_child_process_activity_time();
   if (msg.routing_id() == MSG_ROUTING_CONTROL) {
     // dispatch control messages
     bool msg_is_ok = true;
@@ -860,6 +861,7 @@ void BrowserRenderProcessHost::OnChannelConnected(int32 peer_pid) {
       CHECK(peer_pid == process_.pid()) << peer_pid << " " << process_.pid();
 #endif
     }
+    mark_child_process_activity_time();
   }
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
