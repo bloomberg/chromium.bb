@@ -330,17 +330,21 @@ set the position of the camera.
       <tbody>
         <tr>
           <td>Eye</td>
-          <td><input name="eyeX"
+          <td><input id="eyeX"
+                     name="eyeX"
                      type="text"
                      onblur="validateFloat(this)"/></td>
-          <td><input name="eyeY"
+          <td><input id="eyeY"
+                     name="eyeY"
                      type="text"
                      onblur="validateFloat(this)"/></td>
-          <td><input name="eyeZ"
+          <td><input id="eyeZ"
+                     name="eyeZ"
                      type="text"
                      onblur="validateFloat(this)"/></td>
           <td rowspan="2">
-            <input name="btnSet"
+            <input id="btnSet"
+                   name="btnSet"
                    type="button"
                    value="Set camera"
                    onClick="setCamera()"/>
@@ -348,29 +352,36 @@ set the position of the camera.
         </tr>
         <tr>
           <td>Target</td>
-          <td><input name="targetX"
+          <td><input id="targetX"
+                     name="targetX"
                      type="text"
                      onblur="validateFloat(this)"/></td>
-          <td><input name="targetY"
+          <td><input id="targetY"
+                     name="targetY"
                      type="text"
                      onblur="validateFloat(this)"/></td>
-          <td><input name="targetZ"
+          <td><input id="targetZ"
+                     name="targetZ"
                      type="text"
                      onblur="validateFloat(this)"/></td>
         </tr>
         <tr>
           <td>Up vector</td>
-          <td><input name="upX"
+          <td><input id="upX"
+                     name="upX"
                      type="text"
                      onblur="validateFloat(this)"/></td>
-          <td><input name="upY"
+          <td><input id="upY"
+                     name="upY"
                      type="text"
                      onblur="validateFloat(this)"/></td>
-          <td><input name="upZ"
+          <td><input id="upZ"
+                     name="upZ"
                      type="text"
                      onblur="validateFloat(this)"/></td>
           <td>
-            <input name="btnDefault"
+            <input id="btnDefault"
+                   name="btnDefault"
                    type="button"
                    value="Restore default camera"
                    onClick="setDefaultCameraValues()"/>
@@ -378,7 +389,8 @@ set the position of the camera.
         </tr>
         <tr>
           <td colspan="5" style="text-align:center">
-            <input name="btnAnimate"
+            <input id="btnAnimate"
+                   name="btnAnimate"
                    type="button"
                    value="Animate"
                    onClick="toggleAnimate()"/>

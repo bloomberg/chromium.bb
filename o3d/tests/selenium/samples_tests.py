@@ -180,28 +180,21 @@ class SampleTests(selenium_utilities.SeleniumTestCase):
     self.assertEqual("null", s.get_eval("window.undefined_symbol_xxxyyy"))
 
     # Try different views of the camera
-    time.sleep(1)
+    # Set delay between each operation at 100ms.
+    s.set_speed(100)
     s.type("eyeX", "5")
-    time.sleep(1)
     s.type("eyeY", "5")
-    time.sleep(1)
     s.type("eyeZ", "5")
-    time.sleep(1)
     s.click("btnSet")
 
-    time.sleep(1)
     s.type("eyeX", "2")
-    time.sleep(1)
     s.type("eyeY", "3")
-    time.sleep(1)
     s.type("eyeZ", "2")
-    time.sleep(1)
     s.type("upX", "1")
-    time.sleep(1)
     s.type("upY", "0")
-    time.sleep(1)
     s.click("btnSet")
-    time.sleep(2)
+    # Reset delay to default value, 0ms.
+    s.set_speed(0)
 
     # Capture screenshot
     self.assertTrue(selenium_utilities.TakeScreenShot(s, self.browser,
