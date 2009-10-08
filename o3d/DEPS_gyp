@@ -4,11 +4,11 @@ vars = {
   "chromium_rev": "28458",
   "o3d_code_rev": "149",
   "skia_rev": "376",
-  "gyp_rev": "682",
-  "gtest_rev": "267",
+  "gyp_rev": "685",
+  "gtest_rev": "329",
   "gflags_rev": "30",
   "breakpad_rev": "391",
-  "v8_rev": "2901",
+  "v8_rev": "3030",
   "nacl_rev": "823",
 }
 
