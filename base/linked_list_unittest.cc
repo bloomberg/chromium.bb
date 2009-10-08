@@ -19,6 +19,18 @@ class Node : public LinkNode<Node> {
   int id_;
 };
 
+class MultipleInheritanceNodeBase {
+ public:
+  MultipleInheritanceNodeBase() : field_taking_up_space_(0) {}
+  int field_taking_up_space_;
+};
+
+class MultipleInheritanceNode : public MultipleInheritanceNodeBase,
+                                public LinkNode<MultipleInheritanceNode> {
+ public:
+  MultipleInheritanceNode() {}
+};
+
 // Checks that when iterating |list| (either from head to tail, or from
 // tail to head, as determined by |forward|), we get back |node_ids|,
 // which is an array of size |num_nodes|.
@@ -55,7 +67,6 @@ TEST(LinkedList, Empty) {
   EXPECT_EQ(list.end(), list.tail());
   ExpectListContents(list, 0, NULL);
 }
-
 
 TEST(LinkedList, Append) {
   LinkedList<Node> list;
@@ -239,6 +250,11 @@ TEST(LinkedList, InsertAfter) {
     const int expected[] = {1, 4, 2, 3};
     ExpectListContents(list, arraysize(expected), expected);
   }
+}
+
+TEST(LinkedList, MultipleInheritanceNode) {
+  MultipleInheritanceNode node;
+  EXPECT_EQ(&node, node.value());
 }
 
 }  // namespace

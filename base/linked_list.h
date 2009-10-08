@@ -118,11 +118,11 @@ class LinkNode {
 
   // Cast from the node-type to the value type.
   const T* value() const {
-    return reinterpret_cast<const T*>(this);
+    return static_cast<const T*>(this);
   }
 
   T* value() {
-    return reinterpret_cast<T*>(this);
+    return static_cast<T*>(this);
   }
 
  private:
