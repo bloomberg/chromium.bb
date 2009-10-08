@@ -169,6 +169,7 @@ class Rebaseliner(object):
     self._test_expectations = test_expectations.TestExpectations(None,
                                                                  self._file_dir,
                                                                  platform,
+                                                                 False,
                                                                  False)
 
   def Run(self, backup):

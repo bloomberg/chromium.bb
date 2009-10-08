@@ -27,11 +27,11 @@ import simplejson
 class TestExpectations:
   TEST_LIST = "test_expectations.txt"
 
-  def __init__(self, tests, directory, platform, is_debug_mode):
+  def __init__(self, tests, directory, platform, is_debug_mode, is_lint_mode):
     """Reads the test expectations files from the given directory."""
     path = os.path.join(directory, self.TEST_LIST)
     self._expected_failures = TestExpectationsFile(path, tests, platform,
-        is_debug_mode)
+        is_debug_mode, is_lint_mode)
 
   # TODO(ojan): Allow for removing skipped tests when getting the list of tests
   # to run, but not when getting metrics.
@@ -223,7 +223,8 @@ class TestExpectationsFile:
                 'rebaseline': REBASELINE,
                 'none': NONE }
 
-  def __init__(self, path, full_test_list, platform, is_debug_mode):
+  def __init__(self, path, full_test_list, platform, is_debug_mode,
+      is_lint_mode):
     """
     path: The path to the expectation file. An error is thrown if a test is
         listed more than once.
@@ -231,10 +232,11 @@ class TestExpectationsFile:
         expections for those tests.
     platform: Which platform from self.PLATFORMS to filter tests for.
     is_debug_mode: Whether we testing a test_shell built debug mode.
+    is_lint_mode: Whether this is just linting test_expecatations.txt.
     """
 
     self._path = path
-    self._is_lint_mode = full_test_list is None
+    self._is_lint_mode = is_lint_mode
     self._full_test_list = full_test_list
     self._errors = []
     self._non_fatal_errors = []

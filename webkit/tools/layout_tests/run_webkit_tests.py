@@ -164,7 +164,8 @@ class TestRunner:
 
     try:
       self._expectations = test_expectations.TestExpectations(test_files,
-          self._file_dir, platform, is_debug_mode)
+          self._file_dir, platform, is_debug_mode,
+          self._options.lint_test_files)
       return self._expectations
     except Exception, err:
       if self._options.lint_test_files:
