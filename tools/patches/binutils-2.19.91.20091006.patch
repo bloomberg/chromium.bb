@@ -1,7 +1,7 @@
-diff -uNr binutils-2.19.51.20090622.orig/bfd/Makefile.am binutils-2.19.51.20090622/bfd/Makefile.am
---- binutils-2.19.51.20090622.orig/bfd/Makefile.am	2009-06-16 15:41:07.000000000 +0200
-+++ binutils-2.19.51.20090622/bfd/Makefile.am	2009-06-28 18:54:27.000000000 +0200
-@@ -293,6 +293,7 @@
+==== binutils-2.19.91.20091006/bfd/Makefile.am ====
+--- binutils-2.19.91.20091006/bfd/Makefile.am#1	2009-10-02 01:58:55.000000000 +0200
++++ binutils-2.19.91.20091006/bfd/Makefile.am	2009-10-02 01:31:24.000000000 +0200
+@@ -303,6 +303,7 @@
  	elf32-moxie.lo \
  	elf32-msp430.lo \
  	elf32-mt.lo \
@@ -9,7 +9,7 @@ diff -uNr binutils-2.19.51.20090622.orig/bfd/Makefile.am binutils-2.19.51.200906
  	elf32-openrisc.lo \
  	elf32-or32.lo \
  	elf32-pj.lo \
-@@ -476,6 +477,7 @@
+@@ -486,6 +487,7 @@
  	elf32-moxie.c \
  	elf32-msp430.c \
  	elf32-mt.c \
@@ -17,31 +17,26 @@ diff -uNr binutils-2.19.51.20090622.orig/bfd/Makefile.am binutils-2.19.51.200906
  	elf32-openrisc.c \
  	elf32-or32.c \
  	elf32-pj.c \
-@@ -2590,6 +2592,20 @@
-   $(INCDIR)/hashtab.h \
-   elf-bfd.h \
-   elf32-target.h
-+elf32-nacl.lo: \
-+  elf32-i386.c \
-+  elf32-nacl.c \
-+  $(INCDIR)/bfdlink.h \
-+  $(INCDIR)/elf/common.h \
-+  $(INCDIR)/elf/external.h \
-+  $(INCDIR)/elf/internal.h \
-+  $(INCDIR)/elf/i386.h \
-+  $(INCDIR)/elf/reloc-macros.h \
-+  $(INCDIR)/filenames.h \
-+  $(INCDIR)/hashtab.h \
-+  elf-bfd.h \
-+  elf-vxworks.h \
-+  elf32-target.h
- elf32-openrisc.lo: \
-   elf32-openrisc.c \
-   $(INCDIR)/bfdlink.h \
-diff -uNr binutils-2.19.51.20090622.orig/bfd/Makefile.in binutils-2.19.51.20090622/bfd/Makefile.in
---- binutils-2.19.51.20090622.orig/bfd/Makefile.in	2009-06-16 15:41:07.000000000 +0200
-+++ binutils-2.19.51.20090622/bfd/Makefile.in	2009-06-28 17:16:42.000000000 +0200
-@@ -564,6 +564,7 @@
+@@ -598,6 +600,7 @@
+ 	elf64-ia64.lo \
+ 	elf64-mips.lo \
+ 	elf64-mmix.lo \
++	elf64-nacl.lo \
+ 	elf64-ppc.lo \
+ 	elf64-s390.lo \
+ 	elf64-sh64.lo \
+@@ -628,6 +631,7 @@
+ 	elf64-hppa.c \
+ 	elf64-mips.c \
+ 	elf64-mmix.c \
++	elf64-nacl.c \
+ 	elf64-ppc.c \
+ 	elf64-s390.c \
+ 	elf64-sh64.c \
+==== binutils-2.19.91.20091006/bfd/Makefile.in ====
+--- binutils-2.19.91.20091006/bfd/Makefile.in#1	2009-10-02 01:58:56.000000000 +0200
++++ binutils-2.19.91.20091006/bfd/Makefile.in	2009-10-02 01:31:33.000000000 +0200
+@@ -599,6 +599,7 @@
  	elf32-moxie.lo \
  	elf32-msp430.lo \
  	elf32-mt.lo \
@@ -49,7 +44,7 @@ diff -uNr binutils-2.19.51.20090622.orig/bfd/Makefile.in binutils-2.19.51.200906
  	elf32-openrisc.lo \
  	elf32-or32.lo \
  	elf32-pj.lo \
-@@ -747,6 +748,7 @@
+@@ -782,6 +783,7 @@
  	elf32-moxie.c \
  	elf32-msp430.c \
  	elf32-mt.c \
@@ -57,45 +52,53 @@ diff -uNr binutils-2.19.51.20090622.orig/bfd/Makefile.in binutils-2.19.51.200906
  	elf32-openrisc.c \
  	elf32-or32.c \
  	elf32-pj.c \
-@@ -3191,6 +3193,19 @@
-   $(INCDIR)/hashtab.h \
-   elf-bfd.h \
-   elf32-target.h
-+elf32-nacl.lo: \
-+  elf32-nacl.c \
-+  $(INCDIR)/bfdlink.h \
-+  $(INCDIR)/elf/common.h \
-+  $(INCDIR)/elf/external.h \
-+  $(INCDIR)/elf/internal.h \
-+  $(INCDIR)/elf/i386.h \
-+  $(INCDIR)/elf/reloc-macros.h \
-+  $(INCDIR)/filenames.h \
-+  $(INCDIR)/hashtab.h \
-+  elf-bfd.h \
-+  elf-vxworks.h \
-+  elf32-target.h
- elf32-openrisc.lo: \
-   elf32-openrisc.c \
-   $(INCDIR)/bfdlink.h \
-diff -uNr binutils-2.19.51.20090622.orig/bfd/config.bfd binutils-2.19.51.20090622/bfd/config.bfd
---- binutils-2.19.51.20090622.orig/bfd/config.bfd	2009-06-18 04:11:02.000000000 +0200
-+++ binutils-2.19.51.20090622/bfd/config.bfd	2009-06-28 17:16:42.000000000 +0200
-@@ -602,6 +602,11 @@
+@@ -895,6 +897,7 @@
+ 	elf64-ia64.lo \
+ 	elf64-mips.lo \
+ 	elf64-mmix.lo \
++	elf64-nacl.lo \
+ 	elf64-ppc.lo \
+ 	elf64-s390.lo \
+ 	elf64-sh64.lo \
+@@ -925,6 +928,7 @@
+ 	elf64-hppa.c \
+ 	elf64-mips.c \
+ 	elf64-mmix.c \
++	elf64-nacl.c \
+ 	elf64-ppc.c \
+ 	elf64-s390.c \
+ 	elf64-sh64.c \
+==== binutils-2.19.91.20091006/bfd/config.bfd ====
+--- binutils-2.19.91.20091006/bfd/config.bfd#1	2009-10-02 01:58:56.000000000 +0200
++++ binutils-2.19.91.20091006/bfd/config.bfd	2009-10-02 01:31:41.000000000 +0200
+@@ -603,6 +603,11 @@
      targ_selvecs="i386linux_vec i386pei_vec"
-     targ64_selvecs=bfd_elf64_x86_64_vec
+     targ64_selvecs="bfd_elf64_x86_64_vec bfd_elf64_l1om_vec"
      ;;
 +  i[3-7]86-*-nacl*)
 +    targ_defvec=bfd_elf32_nacl_vec
-+    targ_selvecs="bfd_elf32_i386_vec i386linux_vec i386pei_vec mach_o_le_vec mach_o_be_vec mach_o_fat_vec"
-+    targ_archs="bfd_i386_arch bfd_powerpc_arch"
++    targ_selvecs="bfd_elf32_i386_vec i386linux_vec i386pei_vec"
++    targ64_selvecs="bfd_elf64_x86_64_vec bfd_elf64_nacl_vec"
 +    ;;
  #ifdef BFD64
    x86_64-*-darwin*)
      targ_defvec=mach_o_le_vec
-diff -uNr binutils-2.19.51.20090622.orig/bfd/configure binutils-2.19.51.20090622/bfd/configure
---- binutils-2.19.51.20090622.orig/bfd/configure	2009-06-16 15:41:08.000000000 +0200
-+++ binutils-2.19.51.20090622/bfd/configure	2009-06-28 17:16:42.000000000 +0200
-@@ -21047,6 +21047,7 @@
+@@ -641,6 +646,11 @@
+     want64=true
+     targ_underscore=yes
+     ;;
++  x86_64-*-nacl*)
++    targ_defvec=bfd_elf64_nacl_vec
++    targ_selvecs="bfd_elf32_i386_vec i386linux_vec i386pei_vec bfd_elf32_nacl_vec x86_64pei_vec"
++    want64=true
++    ;;
+ #endif
+   i[3-7]86-*-lynxos*)
+     targ_defvec=bfd_elf32_i386_vec
+==== binutils-2.19.91.20091006/bfd/configure ====
+--- binutils-2.19.91.20091006/bfd/configure#1	2009-10-02 01:58:58.000000000 +0200
++++ binutils-2.19.91.20091006/bfd/configure	2009-10-07 04:58:40.534983000 +0200
+@@ -14857,6 +14857,7 @@
      bfd_elf32_mn10300_vec)	tb="$tb elf-m10300.lo elf32.lo $elf" ;;
      bfd_elf32_mt_vec)           tb="$tb elf32-mt.lo elf32.lo $elf" ;;
      bfd_elf32_msp430_vec)	tb="$tb elf32-msp430.lo elf32.lo $elf" ;;
@@ -103,10 +106,18 @@ diff -uNr binutils-2.19.51.20090622.orig/bfd/configure binutils-2.19.51.20090622
      bfd_elf32_nbigmips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
      bfd_elf32_nlittlemips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
      bfd_elf32_ntradbigmips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
-diff -uNr binutils-2.19.51.20090622.orig/bfd/configure.in binutils-2.19.51.20090622/bfd/configure.in
---- binutils-2.19.51.20090622.orig/bfd/configure.in	2009-06-16 15:41:09.000000000 +0200
-+++ binutils-2.19.51.20090622/bfd/configure.in	2009-06-28 17:16:42.000000000 +0200
-@@ -744,6 +744,7 @@
+@@ -14914,6 +14915,7 @@
+     bfd_elf64_little_generic_vec) tb="$tb elf64-gen.lo elf64.lo $elf"; target_size=64 ;;
+     bfd_elf64_littlemips_vec) 	tb="$tb elf64-mips.lo elf64.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
+     bfd_elf64_mmix_vec) 	tb="$tb elf64-mmix.lo elf64.lo $elf" target_size=64 ;;
++    bfd_elf64_nacl_vec)		tb="$tb elf64-nacl.lo elf64.lo $elf" target_size=64 ;;
+     bfd_elf64_powerpc_vec)	tb="$tb elf64-ppc.lo elf64-gen.lo elf64.lo $elf"; target_size=64 ;;
+     bfd_elf64_powerpcle_vec)	tb="$tb elf64-ppc.lo elf64-gen.lo elf64.lo $elf" target_size=64 ;;
+     bfd_elf64_s390_vec)		tb="$tb elf64-s390.lo elf64.lo $elf"; target_size=64 ;;
+==== binutils-2.19.91.20091006/bfd/configure.in ====
+--- binutils-2.19.91.20091006/bfd/configure.in#1	2009-10-02 01:58:58.000000000 +0200
++++ binutils-2.19.91.20091006/bfd/configure.in	2009-10-02 01:31:57.000000000 +0200
+@@ -745,6 +745,7 @@
      bfd_elf32_mn10300_vec)	tb="$tb elf-m10300.lo elf32.lo $elf" ;;
      bfd_elf32_mt_vec)           tb="$tb elf32-mt.lo elf32.lo $elf" ;;
      bfd_elf32_msp430_vec)	tb="$tb elf32-msp430.lo elf32.lo $elf" ;;
@@ -114,9 +125,17 @@ diff -uNr binutils-2.19.51.20090622.orig/bfd/configure.in binutils-2.19.51.20090
      bfd_elf32_nbigmips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
      bfd_elf32_nlittlemips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
      bfd_elf32_ntradbigmips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
-diff -uNr binutils-2.19.51.20090622.orig/bfd/elf32-i386.c binutils-2.19.51.20090622/bfd/elf32-i386.c
---- binutils-2.19.51.20090622.orig/bfd/elf32-i386.c	2009-06-20 02:43:21.000000000 +0200
-+++ binutils-2.19.51.20090622/bfd/elf32-i386.c	2009-06-28 18:52:12.000000000 +0200
+@@ -802,6 +803,7 @@
+     bfd_elf64_little_generic_vec) tb="$tb elf64-gen.lo elf64.lo $elf"; target_size=64 ;;
+     bfd_elf64_littlemips_vec) 	tb="$tb elf64-mips.lo elf64.lo elfxx-mips.lo elf-vxworks.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
+     bfd_elf64_mmix_vec) 	tb="$tb elf64-mmix.lo elf64.lo $elf" target_size=64 ;;
++    bfd_elf64_nacl_vec)		tb="$tb elf64-nacl.lo elf64.lo $elf" ;;
+     bfd_elf64_powerpc_vec)	tb="$tb elf64-ppc.lo elf64-gen.lo elf64.lo $elf"; target_size=64 ;;
+     bfd_elf64_powerpcle_vec)	tb="$tb elf64-ppc.lo elf64-gen.lo elf64.lo $elf" target_size=64 ;;
+     bfd_elf64_s390_vec)		tb="$tb elf64-s390.lo elf64.lo $elf"; target_size=64 ;;
+==== binutils-2.19.91.20091006/bfd/elf32-i386.c ====
+--- binutils-2.19.91.20091006/bfd/elf32-i386.c#1	2009-10-02 01:58:59.000000000 +0200
++++ binutils-2.19.91.20091006/bfd/elf32-i386.c	2009-10-07 04:59:31.171260000 +0200
 @@ -34,6 +34,10 @@
  
  #include "elf/i386.h"
@@ -265,7 +284,7 @@ diff -uNr binutils-2.19.51.20090622.orig/bfd/elf32-i386.c binutils-2.19.51.20090
 +  ret->plt0_pad_byte = 0xf4;
 +#else
    ret->plt0_pad_byte = 0;
-+#endif  
++#endif
    ret->tls_module_base = NULL;
  
    ret->loc_hash_table = htab_try_create (1024,
@@ -281,13 +300,23 @@ diff -uNr binutils-2.19.51.20090622.orig/bfd/elf32-i386.c binutils-2.19.51.20090
    if (htab->is_vxworks
        && !elf_vxworks_create_dynamic_sections (dynobj, info,
  					       &htab->srelplt2))
-@@ -4154,16 +4249,20 @@
+@@ -4115,7 +4210,8 @@
+ 		      (gotplt->output_section->vma
+ 		       + gotplt->output_offset
+ 		       + got_offset),
+-		      plt->contents + h->plt.offset + 2);
++		      (plt->contents + h->plt.offset
++		       + elf_i386_plt_entry_offset1));
+ 
+ 	  if (htab->is_vxworks)
+ 	    {
+@@ -4158,16 +4254,20 @@
  	  memcpy (plt->contents + h->plt.offset, elf_i386_pic_plt_entry,
  		  PLT_ENTRY_SIZE);
  	  bfd_put_32 (output_bfd, got_offset,
 -		      plt->contents + h->plt.offset + 2);
 +		      (plt->contents + h->plt.offset
-+		       + elf_i386_plt_entry_offset1));
++		       + elf_i386_plt0_entry_offset1));
  	}
  
        /* Don't fill PLT entry for static executables.  */
@@ -306,7 +335,7 @@ diff -uNr binutils-2.19.51.20090622.orig/bfd/elf32-i386.c binutils-2.19.51.20090
  	}
  
        /* Fill in the entry in the global offset table.  */
-@@ -4171,7 +4270,7 @@
+@@ -4175,7 +4275,7 @@
  		  (plt->output_section->vma
  		   + plt->output_offset
  		   + h->plt.offset
@@ -315,7 +344,7 @@ diff -uNr binutils-2.19.51.20090622.orig/bfd/elf32-i386.c binutils-2.19.51.20090
  		  gotplt->contents + got_offset);
  
        /* Fill in the entry in the .rel.plt section.  */
-@@ -4454,12 +4553,12 @@
+@@ -4458,12 +4558,12 @@
  			  (htab->elf.sgotplt->output_section->vma
  			   + htab->elf.sgotplt->output_offset
  			   + 4),
@@ -330,7 +359,7 @@ diff -uNr binutils-2.19.51.20090622.orig/bfd/elf32-i386.c binutils-2.19.51.20090
  
  	      if (htab->is_vxworks)
  		{
-@@ -4587,8 +4686,16 @@
+@@ -4591,8 +4691,16 @@
    return TRUE;
  }
  
@@ -347,7 +376,7 @@ diff -uNr binutils-2.19.51.20090622.orig/bfd/elf32-i386.c binutils-2.19.51.20090
  #define ELF_ARCH			bfd_arch_i386
  #define ELF_MACHINE_CODE		EM_386
  #define ELF_MAXPAGESIZE			0x1000
-@@ -4636,6 +4743,63 @@
+@@ -4640,6 +4748,63 @@
  #undef	elf_backend_post_process_headers
  #define	elf_backend_post_process_headers	_bfd_elf_set_osabi
  
@@ -411,21 +440,323 @@ diff -uNr binutils-2.19.51.20090622.orig/bfd/elf32-i386.c binutils-2.19.51.20090
  #include "elf32-target.h"
  
  /* FreeBSD support.  */
-@@ -4725,3 +4889,4 @@
+@@ -4729,3 +4894,4 @@
  #define elf32_bed				elf32_i386_vxworks_bed
  
  #include "elf32-target.h"
 +#endif
-diff -uNr binutils-2.19.51.20090622.orig/bfd/elf32-nacl.c binutils-2.19.51.20090622/bfd/elf32-nacl.c
---- binutils-2.19.51.20090622.orig/bfd/elf32-nacl.c	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.19.51.20090622/bfd/elf32-nacl.c	2009-06-28 18:53:52.000000000 +0200
+==== (added) binutils-2.19.91.20091006/bfd/elf32-nacl.c ====
+--- /dev/null	2009-05-01 06:17:58.000000000 +0200
++++ binutils-2.19.91.20091006/bfd/elf32-nacl.c	2009-10-02 01:32:11.000000000 +0200
 @@ -0,0 +1,2 @@
 +#define ELF32_NACL_C
 +#include "elf32-i386.c"
-diff -uNr binutils-2.19.51.20090622.orig/bfd/targets.c binutils-2.19.51.20090622/bfd/targets.c
---- binutils-2.19.51.20090622.orig/bfd/targets.c	2009-06-05 11:19:44.000000000 +0200
-+++ binutils-2.19.51.20090622/bfd/targets.c	2009-06-28 17:16:42.000000000 +0200
-@@ -629,6 +629,7 @@
+==== (added) binutils-2.19.91.20091006/bfd/elf64-nacl.c ====
+--- /dev/null	2009-05-01 06:17:58.000000000 +0200
++++ binutils-2.19.91.20091006/bfd/elf64-nacl.c	2009-10-02 01:32:13.000000000 +0200
+@@ -0,0 +1,2 @@
++#define ELF64_NACL_C
++#include "elf64-x86-64.c"
+==== binutils-2.19.91.20091006/bfd/elf64-x86-64.c ====
+--- binutils-2.19.91.20091006/bfd/elf64-x86-64.c#1	2009-10-02 01:58:59.000000000 +0200
++++ binutils-2.19.91.20091006/bfd/elf64-x86-64.c	2009-10-02 01:32:37.000000000 +0200
+@@ -31,6 +31,10 @@
+ 
+ #include "elf/x86-64.h"
+ 
++#ifdef ELF64_NACL_C
++#include "elf/nacl.h"
++#endif
++
+ /* In case we're on a 32-bit machine, construct a 64-bit "-1" value.  */
+ #define MINUS_ONE (~ (bfd_vma) 0)
+ 
+@@ -372,29 +376,100 @@
+ 
+ /* The size in bytes of an entry in the procedure linkage table.  */
+ 
++#ifdef ELF64_NACL_C
++#define PLT_ENTRY_SIZE 64
++#else
+ #define PLT_ENTRY_SIZE 16
++#endif
+ 
+ /* The first entry in a procedure linkage table looks like this.  See the
+    SVR4 ABI i386 supplement and the x86-64 ABI to see how this works.  */
+ 
++#ifdef ELF64_NACL_C
++static const bfd_byte elf64_x86_64_plt0_entry[PLT_ENTRY_SIZE] =
++{
++  0xff, 0x35, 8, 0, 0, 0,	/* pushq GOT+8(%rip) */
++#define elf_x86_64_plt0_entry_offset1 2
++#define elf_x86_64_plt0_entry_instsize1 6
++  0x4c, 0x8b, 0x1d, 16, 0, 0, 0,/* movq GOT+16(%rip), %r11 */
++#define elf_x86_64_plt0_entry_offset2 9
++#define elf_x86_64_plt0_entry_instsize2 7
++  0x4d, 0x8b, 0x1b,		/* mov (%r11), %r11 */
++  0x49, 0x83, 0xe3, 0xe0,	/* andq NACLMASK, %r11 */
++  0x41, 0xff, 0xe3,		/* jmp *%r11 */
++  0xf4, 0xf4, 0xf4, 0xf4,	/* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,	/* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,	/* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,	/* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,	/* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,	/* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,	/* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,	/* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,	/* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,	/* fill with hlt instructions. */
++  0xf4				/* fill with hlt instructions. */
++};
++#else
+ static const bfd_byte elf64_x86_64_plt0_entry[PLT_ENTRY_SIZE] =
+ {
+   0xff, 0x35, 8, 0, 0, 0,	/* pushq GOT+8(%rip)  */
++#define elf_x86_64_plt0_entry_offset1 2
++#define elf_x86_64_plt0_entry_instsize1 6
+   0xff, 0x25, 16, 0, 0, 0,	/* jmpq *GOT+16(%rip) */
++#define elf_x86_64_plt0_entry_offset2 8
++#define elf_x86_64_plt0_entry_instsize2 6
+   0x0f, 0x1f, 0x40, 0x00	/* nopl 0(%rax)       */
+ };
++#endif
+ 
+ /* Subsequent entries in a procedure linkage table look like this.  */
+ 
++#ifdef ELF64_NACL_C
++static const bfd_byte elf64_x86_64_plt_entry[PLT_ENTRY_SIZE] =
++{
++  0x4c, 0x8b, 0x1d,	    /* movq name@GOTPC(%rip), %r11 */
++#define elf_x86_64_plt_entry_offset1 3
++#define elf_x86_64_plt_entry_instsize1 7
++  0, 0, 0, 0,		    /* replaced with offset to this symbol in .got.  */
++  0x4d, 0x8b, 0x1b,	    /* mov (%r11), %r11 */
++  0x49, 0x83, 0xe3, 0xe0,   /* andq NACLMASK, %r11 */
++  0x41, 0xff, 0xe3,	    /* jmp *%r11 */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4,	    /* fill with hlt instructions. */
++#define elf_x86_64_plt_entry_offset2 32
++  0x68,			    /* pushq immediate */
++#define elf_x86_64_plt_entry_offset3 33
++  0, 0, 0, 0,		    /* replaced with index into relocation table.  */
++  0xe9,			    /* jmp relative */
++#define elf_x86_64_plt_entry_offset4 38
++  0, 0, 0, 0,		    /* replaced with offset to start of .plt0.  */
++#define elf_x86_64_plt_entry_offset5 42
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4		    /* fill with hlt instructions. */
++};
++#else
+ static const bfd_byte elf64_x86_64_plt_entry[PLT_ENTRY_SIZE] =
+ {
+   0xff, 0x25,	/* jmpq *name@GOTPC(%rip) */
++#define elf_x86_64_plt_entry_offset1 2
++#define elf_x86_64_plt_entry_instsize1 6
+   0, 0, 0, 0,	/* replaced with offset to this symbol in .got.	 */
++#define elf_x86_64_plt_entry_offset2 6
+   0x68,		/* pushq immediate */
++#define elf_x86_64_plt_entry_offset3 7
+   0, 0, 0, 0,	/* replaced with index into relocation table.  */
+   0xe9,		/* jmp relative */
++#define elf_x86_64_plt_entry_offset4 12
+   0, 0, 0, 0	/* replaced with offset to start of .plt0.  */
++#define elf_x86_64_plt_entry_offset5 16
+ };
++#endif
+ 
+ /* x86-64 ELF linker hash entry.  */
+ 
+@@ -687,6 +762,11 @@
+       || (!info->shared && !htab->srelbss))
+     abort ();
+ 
++#ifdef ELF64_NACL_C
++  if (!bfd_set_section_alignment(dynobj, htab->elf.splt, 5))
++    return FALSE;
++#endif
++
+   return TRUE;
+ }
+ 
+@@ -3791,25 +3871,28 @@
+ 		       - plt->output_section->vma
+ 		       - plt->output_offset
+ 		       - h->plt.offset
+-		       - 6),
+-		  plt->contents + h->plt.offset + 2);
++		       - elf_x86_64_plt_entry_instsize1),
++		  plt->contents + h->plt.offset + elf_x86_64_plt_entry_offset1);
+ 
+       /* Don't fill PLT entry for static executables.  */
+       if (plt == htab->elf.splt)
+ 	{
+ 	  /* Put relocation index.  */
+ 	  bfd_put_32 (output_bfd, plt_index,
+-		      plt->contents + h->plt.offset + 7);
++		      (plt->contents + h->plt.offset
++		       + elf_x86_64_plt_entry_offset3));
+ 	  /* Put offset for jmp .PLT0.  */
+-	  bfd_put_32 (output_bfd, - (h->plt.offset + PLT_ENTRY_SIZE),
+-		      plt->contents + h->plt.offset + 12);
++	  bfd_put_32 (output_bfd,
++		      - (h->plt.offset + elf_x86_64_plt_entry_offset5),
++		      (plt->contents + h->plt.offset
++		       + elf_x86_64_plt_entry_offset4));
+ 	}
+ 
+       /* Fill in the entry in the global offset table, initially this
+ 	 points to the pushq instruction in the PLT which is at offset 6.  */
+       bfd_put_64 (output_bfd, (plt->output_section->vma
+ 			       + plt->output_offset
+-			       + h->plt.offset + 6),
++			       + h->plt.offset + elf_x86_64_plt_entry_offset2),
+ 		  gotplt->contents + got_offset);
+ 
+       /* Fill in the entry in the .rela.plt section.  */
+@@ -4086,8 +4169,8 @@
+ 		       + 8
+ 		       - htab->elf.splt->output_section->vma
+ 		       - htab->elf.splt->output_offset
+-		       - 6),
+-		      htab->elf.splt->contents + 2);
++		       - elf_x86_64_plt0_entry_instsize1),
++		      htab->elf.splt->contents + elf_x86_64_plt0_entry_offset1);
+ 	  /* Add offset for jmp *GOT+16(%rip). The 12 is the offset to
+ 	     the end of the instruction.  */
+ 	  bfd_put_32 (output_bfd,
+@@ -4096,8 +4179,9 @@
+ 		       + 16
+ 		       - htab->elf.splt->output_section->vma
+ 		       - htab->elf.splt->output_offset
+-		       - 12),
+-		      htab->elf.splt->contents + 8);
++		       - elf_x86_64_plt0_entry_instsize1
++		       - elf_x86_64_plt0_entry_instsize2),
++		      htab->elf.splt->contents + elf_x86_64_plt0_entry_offset2);
+ 
+ 	  elf_section_data (htab->elf.splt->output_section)->this_hdr.sh_entsize =
+ 	    PLT_ENTRY_SIZE;
+@@ -4120,8 +4204,9 @@
+ 			   - htab->elf.splt->output_section->vma
+ 			   - htab->elf.splt->output_offset
+ 			   - htab->tlsdesc_plt
+-			   - 6),
+-			  htab->elf.splt->contents + htab->tlsdesc_plt + 2);
++			   - elf_x86_64_plt0_entry_instsize1),
++			  (htab->elf.splt->contents + htab->tlsdesc_plt
++			   + elf_x86_64_plt0_entry_offset1));
+ 	      /* Add offset for jmp *GOT+TDG(%rip), where TGD stands for
+ 		 htab->tlsdesc_got. The 12 is the offset to the end of
+ 		 the instruction.  */
+@@ -4132,8 +4217,10 @@
+ 			   - htab->elf.splt->output_section->vma
+ 			   - htab->elf.splt->output_offset
+ 			   - htab->tlsdesc_plt
+-			   - 12),
+-			  htab->elf.splt->contents + htab->tlsdesc_plt + 8);
++			   - elf_x86_64_plt0_entry_instsize1
++			   - elf_x86_64_plt0_entry_instsize2),
++			  (htab->elf.splt->contents + htab->tlsdesc_plt
++			   + elf_x86_64_plt0_entry_offset2));
+ 	    }
+ 	}
+     }
+@@ -4397,8 +4484,16 @@
+   { NULL,	                0,          0, 0,            0 }
+ };
+ 
++#ifdef ELF64_NACL_C
++#define TARGET_LITTLE_SYM		    bfd_elf64_nacl_vec
++#define TARGET_LITTLE_NAME		    "elf64-nacl"
++/* NativeClient defines its own ABI.*/
++#undef ELF_OSABI
++#define ELF_OSABI ELFOSABI_NACL
++#else
+ #define TARGET_LITTLE_SYM		    bfd_elf64_x86_64_vec
+ #define TARGET_LITTLE_NAME		    "elf64-x86-64"
++#endif
+ #define ELF_ARCH			    bfd_arch_i386
+ #define ELF_MACHINE_CODE		    EM_X86_64
+ #define ELF_MAXPAGESIZE			    0x200000
+@@ -4470,6 +4565,63 @@
+ #undef  elf_backend_post_process_headers
+ #define elf_backend_post_process_headers  _bfd_elf_set_osabi
+ 
++#ifdef ELF64_NACL_C
++#define bfd_elf64_bfd_merge_private_bfd_data \
++  elf64_nacl_merge_private_bfd_data
++
++static unsigned long previous_ibfd_e_flags = (unsigned long) EF_NACL_ALIGN_LIB;
++static unsigned char previous_ibfd_abiversion = 0;
++
++static bfd_boolean
++elf64_nacl_merge_private_bfd_data (bfd *ibfd,
++                                   bfd *obfd)
++{
++  unsigned long ibfd_e_flags;
++  unsigned char ibfd_abiversion;
++
++  ibfd_e_flags = elf_elfheader (ibfd)->e_flags & EF_NACL_ALIGN_MASK;
++  if ((ibfd_e_flags != EF_NACL_ALIGN_LIB) &&
++      (previous_ibfd_e_flags != EF_NACL_ALIGN_LIB) &&
++      (ibfd_e_flags != previous_ibfd_e_flags)) {
++    (*_bfd_error_handler)
++    (_("%B: linking files with incompatible alignments"), ibfd);
++    bfd_set_error (bfd_error_bad_value);
++    return FALSE;
++  }
++
++  ibfd_abiversion = elf_elfheader (ibfd)->e_ident[EI_ABIVERSION];
++  if (ibfd_abiversion != 0 &&
++      previous_ibfd_abiversion != 0 &&
++      ibfd_abiversion != previous_ibfd_abiversion) {
++    (*_bfd_error_handler)
++    (_("%B: linking files with incompatible abi version"), ibfd);
++    bfd_set_error (bfd_error_bad_value);
++    return FALSE;
++  }
++
++  previous_ibfd_e_flags = ibfd_e_flags;
++  elf_elfheader (obfd)->e_flags |= previous_ibfd_e_flags;
++
++  previous_ibfd_abiversion = ibfd_abiversion;
++  elf_elfheader (obfd)->e_ident[EI_ABIVERSION] = previous_ibfd_abiversion;
++
++  return TRUE;
++}
++
++#define elf_backend_final_write_processing \
++  elf64_nacl_backend_final_write_processing
++
++static void
++elf64_nacl_backend_final_write_processing (bfd *abfd,
++                                           bfd_boolean linker ATTRIBUTE_UNUSED)
++{
++  elf_elfheader (abfd)->e_ident[EI_OSABI] = ELFOSABI_NACL;
++  elf_elfheader (abfd)->e_ident[EI_ABIVERSION] = EF_NACL_ABIVERSION;
++  elf_elfheader (abfd)->e_flags |= previous_ibfd_e_flags;
++}
++
++#include "elf64-target.h"
++#else
+ #include "elf64-target.h"
+ 
+ /* FreeBSD support.  */
+@@ -4536,3 +4688,4 @@
+ #define elf_backend_post_process_headers  _bfd_elf_set_osabi
+ 
+ #include "elf64-target.h"
++#endif
+==== binutils-2.19.91.20091006/bfd/targets.c ====
+--- binutils-2.19.91.20091006/bfd/targets.c#1	2009-10-02 01:58:59.000000000 +0200
++++ binutils-2.19.91.20091006/bfd/targets.c	2009-10-02 01:32:44.000000000 +0200
+@@ -630,6 +630,7 @@
  extern const bfd_target bfd_elf32_mn10300_vec;
  extern const bfd_target bfd_elf32_mt_vec;
  extern const bfd_target bfd_elf32_msp430_vec;
@@ -433,10 +764,18 @@ diff -uNr binutils-2.19.51.20090622.orig/bfd/targets.c binutils-2.19.51.20090622
  extern const bfd_target bfd_elf32_nbigmips_vec;
  extern const bfd_target bfd_elf32_nlittlemips_vec;
  extern const bfd_target bfd_elf32_ntradbigmips_vec;
-diff -uNr binutils-2.19.51.20090622.orig/binutils/readelf.c binutils-2.19.51.20090622/binutils/readelf.c
---- binutils-2.19.51.20090622.orig/binutils/readelf.c	2009-06-22 10:46:13.000000000 +0200
-+++ binutils-2.19.51.20090622/binutils/readelf.c	2009-06-28 17:16:42.000000000 +0200
-@@ -2434,6 +2434,7 @@
+@@ -684,6 +685,7 @@
+ extern const bfd_target bfd_elf64_little_generic_vec;
+ extern const bfd_target bfd_elf64_littlemips_vec;
+ extern const bfd_target bfd_elf64_mmix_vec;
++extern const bfd_target bfd_elf64_nacl_vec;
+ extern const bfd_target bfd_elf64_powerpc_vec;
+ extern const bfd_target bfd_elf64_powerpcle_vec;
+ extern const bfd_target bfd_elf64_s390_vec;
+==== binutils-2.19.91.20091006/binutils/readelf.c ====
+--- binutils-2.19.91.20091006/binutils/readelf.c#1	2009-10-02 01:59:00.000000000 +0200
++++ binutils-2.19.91.20091006/binutils/readelf.c	2009-10-02 01:32:49.000000000 +0200
+@@ -2462,6 +2462,7 @@
      case ELFOSABI_AROS:		return "AROS";
      case ELFOSABI_STANDALONE:	return _("Standalone App");
      case ELFOSABI_ARM:		return "ARM";
@@ -444,13 +783,17 @@ diff -uNr binutils-2.19.51.20090622.orig/binutils/readelf.c binutils-2.19.51.200
      default:
        snprintf (buff, sizeof (buff), _("<unknown: %x>"), osabi);
        return buff;
-diff -uNr binutils-2.19.51.20090622.orig/config.sub binutils-2.19.51.20090622/config.sub
---- binutils-2.19.51.20090622.orig/config.sub	2009-06-03 01:00:59.000000000 +0200
-+++ binutils-2.19.51.20090622/config.sub	2009-06-28 17:16:42.000000000 +0200
-@@ -311,6 +311,10 @@
+==== binutils-2.19.91.20091006/config.sub ====
+--- binutils-2.19.91.20091006/config.sub#1	2009-10-02 01:59:00.000000000 +0200
++++ binutils-2.19.91.20091006/config.sub	2009-10-02 01:32:52.000000000 +0200
+@@ -314,6 +314,14 @@
  	i*86 | x86_64)
  	  basic_machine=$basic_machine-pc
  	  ;;
++	nacl64*)
++	  basic_machine=x86_64-pc
++	  os=-nacl
++	  ;;
 +	nacl*)
 +	  basic_machine=i686-pc
 +	  os=-nacl
@@ -458,7 +801,7 @@ diff -uNr binutils-2.19.51.20090622.orig/config.sub binutils-2.19.51.20090622/co
  	# Object if more than one company name word.
  	*-*-*)
  		echo Invalid configuration \`$1\': machine \`$basic_machine\' not recognized 1>&2
-@@ -1295,6 +1299,9 @@
+@@ -1305,6 +1313,9 @@
  			;;
  		esac
  		;;
@@ -468,21 +811,65 @@ diff -uNr binutils-2.19.51.20090622.orig/config.sub binutils-2.19.51.20090622/co
  	-nto-qnx*)
  		;;
  	-nto*)
-diff -uNr binutils-2.19.51.20090622.orig/gas/as.c binutils-2.19.51.20090622/gas/as.c
---- binutils-2.19.51.20090622.orig/gas/as.c	2009-06-22 19:56:00.000000000 +0200
-+++ binutils-2.19.51.20090622/gas/as.c	2009-06-28 17:16:42.000000000 +0200
-@@ -434,7 +434,7 @@
-       OPTION_AL,
-       OPTION_HASH_TABLE_SIZE,
-       OPTION_REDUCE_MEMORY_OVERHEADS,
--      OPTION_WARN_FATAL
-+      OPTION_WARN_FATAL,
-     /* When you add options here, check that they do
-        not collide with OPTION_MD_BASE.  See as.h.  */
-     };
-diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-i386.c binutils-2.19.51.20090622/gas/config/tc-i386.c
---- binutils-2.19.51.20090622.orig/gas/config/tc-i386.c	2009-06-22 19:56:01.000000000 +0200
-+++ binutils-2.19.51.20090622/gas/config/tc-i386.c	2009-06-28 19:32:23.000000000 +0200
+==== binutils-2.19.91.20091006/gas/Makefile.in ====
+--- binutils-2.19.91.20091006/gas/Makefile.in#1	2009-10-07 07:32:37.000000000 +0200
++++ binutils-2.19.91.20091006/gas/Makefile.in	2009-10-07 07:31:25.662308000 +0200
+@@ -341,6 +341,7 @@
+ 	mn10300 \
+ 	msp430 \
+ 	mt \
++	nacl \
+ 	ns32k \
+ 	openrisc \
+ 	or32 \
+@@ -542,6 +543,7 @@
+ 	config/tc-moxie.c \
+ 	config/tc-msp430.c \
+ 	config/tc-mt.c \
++	config/tc-nacl.c \
+ 	config/tc-ns32k.c \
+ 	config/tc-openrisc.c \
+ 	config/tc-or32.c \
+@@ -604,6 +606,7 @@
+ 	config/tc-mn10300.h \
+ 	config/tc-msp430.h \
+ 	config/tc-mt.h \
++	config/tc-nacl.h \
+ 	config/tc-ns32k.h \
+ 	config/tc-openrisc.h \
+ 	config/tc-or32.h \
+@@ -983,6 +986,7 @@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tc-moxie.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tc-msp430.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tc-mt.Po@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tc-nacl.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tc-ns32k.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tc-openrisc.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tc-or32.Po@am__quote@
+@@ -1562,6 +1566,20 @@
+ @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+ @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tc-mt.obj `if test -f 'config/tc-mt.c'; then $(CYGPATH_W) 'config/tc-mt.c'; else $(CYGPATH_W) '$(srcdir)/config/tc-mt.c'; fi`
+ 
++tc-nacl.o: config/tc-nacl.c
++@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tc-nacl.o -MD -MP -MF $(DEPDIR)/tc-nacl.Tpo -c -o tc-nacl.o `test -f 'config/tc-nacl.c' || echo '$(srcdir)/'`config/tc-nacl.c
++@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tc-nacl.Tpo $(DEPDIR)/tc-nacl.Po
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='config/tc-nacl.c' object='tc-nacl.o' libtool=no @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tc-nacl.o `test -f 'config/tc-nacl.c' || echo '$(srcdir)/'`config/tc-nacl.c
++
++tc-nacl.obj: config/tc-nacl.c
++@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tc-nacl.obj -MD -MP -MF $(DEPDIR)/tc-nacl.Tpo -c -o tc-nacl.obj `if test -f 'config/tc-nacl.c'; then $(CYGPATH_W) 'config/tc-nacl.c'; else $(CYGPATH_W) '$(srcdir)/config/tc-nacl.c'; fi`
++@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tc-nacl.Tpo $(DEPDIR)/tc-nacl.Po
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='config/tc-nacl.c' object='tc-nacl.obj' libtool=no @AMDEPBACKSLASH@
++@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
++@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tc-nacl.obj `if test -f 'config/tc-nacl.c'; then $(CYGPATH_W) 'config/tc-nacl.c'; else $(CYGPATH_W) '$(srcdir)/config/tc-nacl.c'; fi`
++
+ tc-ns32k.o: config/tc-ns32k.c
+ @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tc-ns32k.o -MD -MP -MF $(DEPDIR)/tc-ns32k.Tpo -c -o tc-ns32k.o `test -f 'config/tc-ns32k.c' || echo '$(srcdir)/'`config/tc-ns32k.c
+ @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tc-ns32k.Tpo $(DEPDIR)/tc-ns32k.Po
+==== binutils-2.19.91.20091006/gas/config/tc-i386.c ====
+--- binutils-2.19.91.20091006/gas/config/tc-i386.c#1	2009-10-02 01:59:01.000000000 +0200
++++ binutils-2.19.91.20091006/gas/config/tc-i386.c	2009-10-07 05:06:05.948496000 +0200
 @@ -33,6 +33,9 @@
  #include "dwarf2dbg.h"
  #include "dw2gencfi.h"
@@ -501,7 +888,21 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-i386.c binutils-2.19.51.2
  
  static const char *default_arch = DEFAULT_ARCH;
  
-@@ -454,6 +458,14 @@
+@@ -243,6 +247,13 @@
+        explicit segment overrides are given.  */
+     const seg_entry *seg[2];
+ 
++#ifdef TC_NACL_C
++    /* NaCl-style truncation for data accesses: if the %nacl prefix is used for
++       an address it means the index register should be truncated to 32bit.
++       Base register is untouched. */
++    char nacl_truncate[2];
++#endif
++
+     /* PREFIX holds all the given prefix opcodes (usually null).
+        PREFIXES is the number of prefix opcodes.  */
+     unsigned int prefixes;
+@@ -454,6 +465,14 @@
  /* The dwarf2 data alignment, adjusted for 32 or 64 bit.  */
  int x86_cie_data_alignment;
  
@@ -516,7 +917,7 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-i386.c binutils-2.19.51.2
  /* Interface to relax_segment.
     There are 3 major relax states for 386 jump insns because the
     different types of jumps add different sizes to frags when we're
-@@ -2013,6 +2025,34 @@
+@@ -2117,6 +2136,34 @@
    else
      as_fatal (_("Unknown architecture"));
  }
@@ -551,7 +952,7 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-i386.c binutils-2.19.51.2
  
  void
  md_begin ()
-@@ -2130,7 +2170,11 @@
+@@ -2234,7 +2281,11 @@
  #if defined (OBJ_ELF) || defined (OBJ_MAYBE_ELF)
    if (IS_ELF)
      {
@@ -563,7 +964,7 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-i386.c binutils-2.19.51.2
        record_alignment (data_section, 2);
        record_alignment (bss_section, 2);
      }
-@@ -2146,6 +2190,8 @@
+@@ -2250,6 +2301,8 @@
        x86_dwarf2_return_column = 8;
        x86_cie_data_alignment = -4;
      }
@@ -572,7 +973,20 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-i386.c binutils-2.19.51.2
  }
  
  void
-@@ -5428,19 +5474,96 @@
+@@ -3416,6 +3469,12 @@
+   if (i.mem_operands == 2)
+     {
+       const seg_entry *temp_seg;
++#ifdef TC_NACL_C
++      char nacl_truncate;
++      nacl_truncate = i.nacl_truncate[0];
++      i.nacl_truncate[0] = i.nacl_truncate[1];
++      i.nacl_truncate[1] = nacl_truncate;
++#endif
+       temp_seg = i.seg[0];
+       i.seg[0] = i.seg[1];
+       i.seg[1] = temp_seg;
+@@ -5560,19 +5619,124 @@
  }
  
  static void
@@ -582,22 +996,63 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-i386.c binutils-2.19.51.2
 +  int align_mask = (1 << nacl_alignment) - 1;
 +
 +  if (getenv("NACL_DEBUG_ALIGN")) {
-+    p = frag_more (12);
-+    p[0] = 0xF7; p[1] = 0xC0 + i.rm.regmem;
-+    p[2] = align_mask; p[3] = p[4] = p[5] = 0x00; // TEST reg, align_mask
-+    p[6] = 0x74; p[7] = 0x04; // JZ +4
-+    p[8] = 0xCC; // INT3
-+    p[9] = 0x0F; p[10] = 0x1F; p[11] = 0x00; // NOP
++    if (i.rex & REX_B) {
++      p = frag_more (12);
++      p[0] = 0x40 | (i.rex & REX_B);
++      p[1] = 0xF7; p[2] = 0xC0 + i.rm.regmem; // TEST reg, align_mask
++      p[3] = align_mask; p[4] = p[5] = p[6] = 0x00;
++      p[7] = 0x74; p[8] = 0x03; // JZ +3
++      p[9] = 0xCC;
++      p[10] = 0x66; p[11] = 0x90; // NOP
++    } else {
++      p = frag_more (12);
++      p[0] = 0xF7; p[1] = 0xC0 + i.rm.regmem;
++      p[2] = align_mask; p[3] = p[4] = p[5] = 0x00; // TEST reg, align_mask
++      p[6] = 0x74; p[7] = 0x04; // JZ +4
++      p[8] = 0xCC; // INT3
++      p[9] = 0x66; p[10] = 0x66; p[11] = 0x90; // NOP
++    }
 +  }
 +  else {
-+    p = frag_more (3);
-+    p[0] = 0x83; // AND instruction.
-+    p[1] = (0xe0 + i.rm.regmem); // mod = 11, reg = 100,  rm = i.rm.regmem;
++    if (i.rex & REX_B) {
++      p = frag_more (4);
++      p[0] = 0x40 | (i.rex & REX_B);
++      p[1] = 0x83; // AND instruction
++      p[2] = (0xe0 + i.rm.regmem); // mod = 11, reg = 100,  rm = i.rm.regmem
 +#ifdef TC_NACL_C
-+    p[2] = 0xff & ~align_mask;
++      p[3] = 0xff & ~align_mask;
 +#else
-+    p[2] = 0xff;
++      p[3] = 0xff;
 +#endif
++    } else {
++      p = frag_more (3);
++      p[0] = 0x83; // AND instruction.
++      p[1] = (0xe0 + i.rm.regmem); // mod = 11, reg = 100,  rm = i.rm.regmem
++#ifdef TC_NACL_C
++      p[2] = 0xff & ~align_mask;
++#else
++      p[2] = 0xff;
++#endif
++    }
++    if (i.operands == 2) {
++      p = frag_more (4);
++      p[0] = 0x48 | ((i.rex & REX_B) ? REX_B | REX_R : 0)
++		  | ((i.rex & REX_R) ? REX_X : 0);
++      p[1] = 0x8d;
++      p[2] = 0x04 | (i.rm.regmem << 3);
++      p[3] = 0x00 | i.rm.regmem | (i.rm.reg << 3);
++      // Clear %rbase from call
++      i.rex &= ~(REX_W | REX_R);
++      if (!i.rex && i.prefix[REX_PREFIX]) {
++        i.prefix[REX_PREFIX] = 0;
++        i.prefixes--;
++      } else {
++        i.prefix[REX_PREFIX] &= ~(REX_W | REX_R);
++      }
++      i.rm.reg = i.tm.extension_opcode;
++      i.operands = 1;
++      i.reg_operands = 1;
++    }
 +  }
 +}
 +
@@ -625,7 +1080,6 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-i386.c binutils-2.19.51.2
    fragS *insn_start_frag;
    offsetT insn_start_off;
  
-+  // DCS -- New code for NativeClient.
 +  // Frag_align_code sets the alignment on the current fragment and may
 +  // create a new one.  Because of this we remember the current fragment
 +  // before calling frag_align_code.
@@ -633,18 +1087,6 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-i386.c binutils-2.19.51.2
 +
 +  if (nacl_alignment > 0) {
 +    frag_align_code(0, 0);
-+#ifdef DCS
-+    // TODO(sehr): this code seems unnecessary.  Remove it.
-+    // Really ugly stuff to avoid splitting call and its subsequent alignment
-+    // across two fragments.
-+    if (frag_is_a_call() &&
-+        obstack_room(&frchain_now->frch_obstack) < (unsigned)((1<<(nacl_alignment+1))-1)) {
-+      fragS *temp_frag = frag_now;
-+      frag_align_code(nacl_alignment + 1, 0);
-+      temp_frag->fr_offset = 0;
-+      temp_frag->fr_subtype = 0;
-+    }
-+#endif /* DCS */
 +  }
 +
    /* Tie dwarf2 debug info to the address at the start of the insn.
@@ -670,7 +1112,35 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-i386.c binutils-2.19.51.2
    /* Output jumps.  */
    if (i.tm.opcode_modifier.jump)
      output_branch ();
-@@ -5568,10 +5691,18 @@
+@@ -5624,6 +5788,27 @@
+ 	      abort ();
+ 	    }
+ 
++	    /* First output NaCl "prefix" */
++#ifdef TC_NACL_C
++	  if (i.nacl_truncate[0])
++	    {
++	      if (i.rex & REX_X)
++		{
++		  p = frag_more (4);
++		  p[0] = 0x41;
++		  p[1] = 0x83; // AND instruction
++		  p[2] = (0xe0 + i.sib.index);
++		  p[3] = 0xff;
++		}
++	      else
++		{
++		  p = frag_more (3);
++		  p[0] = 0x83; // AND instruction.
++		  p[1] = (0xe0 + i.sib.index);
++		  p[2] = 0xff;
++		}
++	    }
++#endif
+ 	  /* The prefix bytes.  */
+ 	  for (j = ARRAY_SIZE (i.prefix), q = i.prefix; j > 0; j--, q++)
+ 	    if (*q)
+@@ -5700,10 +5885,18 @@
  	}
  
        if (i.disp_operands)
@@ -689,7 +1159,7 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-i386.c binutils-2.19.51.2
      }
  
  #ifdef DEBUG386
-@@ -5580,6 +5711,74 @@
+@@ -5712,6 +5905,74 @@
        pi ("" /*line*/, &i);
      }
  #endif /* DEBUG386  */
@@ -764,7 +1234,54 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-i386.c binutils-2.19.51.2
  }
  
  /* Return the size of the displacement operand N.  */
-@@ -7585,6 +7784,8 @@
+@@ -6858,8 +7119,44 @@
+     }
+   else if (*op_string == REGISTER_PREFIX)
+     {
+-      as_bad (_("bad register name `%s'"), op_string);
+-      return 0;
++#ifdef TC_NACL_C
++      if (flag_code == CODE_64BIT && strncmp(op_string, "%nacl", 5) == 0)
++        {
++          /* Check for a nacl override by searching for ':' after a %nacl */
++          op_string += 5;
++          if (is_space_char (*op_string))
++	    ++op_string;
++	  if (*op_string == ':')
++	    {
++	      /* Skip the ':' and whitespace.  */
++	      ++op_string;
++	      if (is_space_char (*op_string))
++		++op_string;
++
++	      i.nacl_truncate[i.mem_operands] = 1;
++
++	      if (!is_digit_char (*op_string)
++		  && !is_identifier_char (*op_string)
++		  && *op_string != '('
++		  && *op_string != ABSOLUTE_PREFIX)
++		{
++		  as_bad (_("bad memory operand `%s'"), op_string);
++		   return 0;
++		}
++	      goto do_memory_reference;
++	    }
++	  if (*op_string)
++	    {
++	      as_bad (_("junk `%s' after register"), op_string);
++	      return 0;
++	    }
++        }
++      else
++#endif
++        {      
++          as_bad (_("bad register name `%s'"), op_string);
++          return 0;
++        }
+     }
+   else if (*op_string == IMMEDIATE_PREFIX)
+     {
+@@ -7725,6 +8022,8 @@
  #define OPTION_MOLD_GCC (OPTION_MD_BASE + 9)
  #define OPTION_MSSE2AVX (OPTION_MD_BASE + 10)
  #define OPTION_MSSE_CHECK (OPTION_MD_BASE + 11)
@@ -773,7 +1290,7 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-i386.c binutils-2.19.51.2
  
  struct option md_longopts[] =
  {
-@@ -7603,6 +7804,8 @@
+@@ -7743,6 +8042,8 @@
    {"mold-gcc", no_argument, NULL, OPTION_MOLD_GCC},
    {"msse2avx", no_argument, NULL, OPTION_MSSE2AVX},
    {"msse-check", required_argument, NULL, OPTION_MSSE_CHECK},
@@ -782,7 +1299,7 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-i386.c binutils-2.19.51.2
    {NULL, no_argument, NULL, 0}
  };
  size_t md_longopts_size = sizeof (md_longopts);
-@@ -7808,6 +8011,20 @@
+@@ -7953,6 +8254,20 @@
  	as_fatal (_("Invalid -msse-check= option: `%s'"), arg);
        break;
  
@@ -803,7 +1320,7 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-i386.c binutils-2.19.51.2
      default:
        return 0;
      }
-@@ -8434,4 +8651,19 @@
+@@ -8597,4 +8912,19 @@
        bss_section = saved_bss_section;
      }
  }
@@ -823,18 +1340,10 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-i386.c binutils-2.19.51.2
 +}
 +#endif
  #endif /* OBJ_ELF || OBJ_MAYBE_ELF */
-diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-i386.h binutils-2.19.51.20090622/gas/config/tc-i386.h
---- binutils-2.19.51.20090622.orig/gas/config/tc-i386.h	2009-06-14 03:39:46.000000000 +0200
-+++ binutils-2.19.51.20090622/gas/config/tc-i386.h	2009-06-28 19:14:51.000000000 +0200
-@@ -109,6 +109,7 @@
- #if (defined (OBJ_ELF) || defined (OBJ_MAYBE_ELF)) && !defined (LEX_AT)
- #define TC_PARSE_CONS_EXPRESSION(EXP, NBYTES) x86_cons (EXP, NBYTES)
- extern void x86_cons (expressionS *, int);
-+
- #endif
- 
- #define TC_CONS_FIX_NEW(FRAG,OFF,LEN,EXP) x86_cons_fix_new(FRAG, OFF, LEN, EXP)
-@@ -294,4 +295,12 @@
+==== binutils-2.19.91.20091006/gas/config/tc-i386.h ====
+--- binutils-2.19.91.20091006/gas/config/tc-i386.h#1	2009-10-02 01:59:01.000000000 +0200
++++ binutils-2.19.91.20091006/gas/config/tc-i386.h	2009-10-07 05:06:16.641693000 +0200
+@@ -297,4 +297,12 @@
  /* X_add_symbol:X_op_symbol (Intel mode only) */
  #define O_full_ptr O_md2
  
@@ -847,16 +1356,16 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-i386.h binutils-2.19.51.2
 +extern int nacl_library_mode;
 +
  #endif /* TC_I386 */
-diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-nacl.c binutils-2.19.51.20090622/gas/config/tc-nacl.c
---- binutils-2.19.51.20090622.orig/gas/config/tc-nacl.c	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.19.51.20090622/gas/config/tc-nacl.c	2009-06-28 19:33:01.000000000 +0200
+==== (added) binutils-2.19.91.20091006/gas/config/tc-nacl.c ====
+--- /dev/null	2009-05-01 06:17:58.000000000 +0200
++++ binutils-2.19.91.20091006/gas/config/tc-nacl.c	2009-10-02 01:33:56.000000000 +0200
 @@ -0,0 +1,2 @@
 +#define TC_NACL_C
 +#include "tc-i386.c"
-diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-nacl.h binutils-2.19.51.20090622/gas/config/tc-nacl.h
---- binutils-2.19.51.20090622.orig/gas/config/tc-nacl.h	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.19.51.20090622/gas/config/tc-nacl.h	2009-06-28 19:22:09.000000000 +0200
-@@ -0,0 +1,34 @@
+==== (added) binutils-2.19.91.20091006/gas/config/tc-nacl.h ====
+--- /dev/null	2009-05-01 06:17:58.000000000 +0200
++++ binutils-2.19.91.20091006/gas/config/tc-nacl.h	2009-10-02 01:33:58.000000000 +0200
+@@ -0,0 +1,37 @@
 +/* tc-nacl.h -- Header file for tc-nacl.c
 +   Copyright 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
 +   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
@@ -887,41 +1396,61 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/config/tc-nacl.h binutils-2.19.51.2
 +#undef ELF_TARGET_FORMAT
 +#define ELF_TARGET_FORMAT "elf32-nacl"
 +
++#undef ELF_TARGET_FORMAT64
++#define ELF_TARGET_FORMAT64 "elf64-nacl"
++
 +#define elf_tc_final_processing nacl_elf_final_processing
 +extern void nacl_elf_final_processing PARAMS ((void));
 +
 +#endif /* TC_NACL */
-diff -uNr binutils-2.19.51.20090622.orig/gas/configure.tgt binutils-2.19.51.20090622/gas/configure.tgt
---- binutils-2.19.51.20090622.orig/gas/configure.tgt	2009-06-18 04:11:03.000000000 +0200
-+++ binutils-2.19.51.20090622/gas/configure.tgt	2009-06-28 17:16:42.000000000 +0200
-@@ -58,6 +58,7 @@
+==== binutils-2.19.91.20091006/gas/configure ====
+--- binutils-2.19.91.20091006/gas/configure#1	2009-10-02 01:59:02.000000000 +0200
++++ binutils-2.19.91.20091006/gas/configure	2009-10-02 01:33:37.000000000 +0200
+@@ -12019,7 +12019,7 @@
+         using_cgen=yes
+ 	;;
+ 
+-      i386 | s390 | sparc)
++      i386 | nacl | s390 | sparc)
+ 	if test $this_target = $target ; then
+ 
+ cat >>confdefs.h <<_ACEOF
+==== binutils-2.19.91.20091006/gas/configure.in ====
+--- binutils-2.19.91.20091006/gas/configure.in#1	2009-10-02 01:59:02.000000000 +0200
++++ binutils-2.19.91.20091006/gas/configure.in	2009-10-02 01:33:45.000000000 +0200
+@@ -347,7 +347,7 @@
+         using_cgen=yes
+ 	;;
+ 
+-      i386 | s390 | sparc)
++      i386 | nacl | s390 | sparc)
+ 	if test $this_target = $target ; then
+ 	  AC_DEFINE_UNQUOTED(DEFAULT_ARCH, "${arch}", [Default architecture.])
+ 	fi
+==== binutils-2.19.91.20091006/gas/configure.tgt ====
+--- binutils-2.19.91.20091006/gas/configure.tgt#1	2009-10-02 01:59:02.000000000 +0200
++++ binutils-2.19.91.20091006/gas/configure.tgt	2009-10-02 01:34:01.000000000 +0200
+@@ -59,6 +59,8 @@
    mips*el)		cpu_type=mips endian=little ;;
    mips*)		cpu_type=mips endian=big ;;
    mt)                   cpu_type=mt endian=big ;;
 +  nacl*)		cpu_type=nacl arch=i386 ;;
++  nacl64*)		cpu_type=nacl arch=x86_64 ;;
    or32*)		cpu_type=or32 endian=big ;;
    pjl*)			cpu_type=pj endian=little ;;
    pj*)			cpu_type=pj endian=big ;;
-@@ -201,6 +202,7 @@
+@@ -203,6 +205,7 @@
    i386-*-linux*coff*)			fmt=coff em=linux ;;
    i386-*-linux-*)			fmt=elf em=linux ;;
    i386-*-lynxos*)			fmt=elf em=lynx ;;
-+  i386-*-nacl*)			fmt=elf em=linux cpu_type=nacl;;
++  i386-*-nacl*)				fmt=elf em=linux cpu_type=nacl;;
    i386-*-sysv[45]*)			fmt=elf ;;
    i386-*-solaris*)			fmt=elf em=solaris ;;
    i386-*-freebsdaout*)			fmt=aout em=386bsd ;;
-diff -uNr binutils-2.19.51.20090622.orig/gas/frags.c binutils-2.19.51.20090622/gas/frags.c
---- binutils-2.19.51.20090622.orig/gas/frags.c	2009-06-22 19:56:00.000000000 +0200
-+++ binutils-2.19.51.20090622/gas/frags.c	2009-06-28 17:16:42.000000000 +0200
-@@ -35,6 +35,7 @@
-   zero_address_frag.fr_type = rs_fill;
-   bss_address_frag.fr_type = rs_fill;
- }
-+
- 
- /* Check that we're not trying to assemble into a section that can't
-    allocate frags (currently, this is only possible in the absolute
-@@ -69,6 +70,16 @@
+==== binutils-2.19.91.20091006/gas/frags.c ====
+--- binutils-2.19.91.20091006/gas/frags.c#1	2009-10-02 01:59:02.000000000 +0200
++++ binutils-2.19.91.20091006/gas/frags.c	2009-10-07 05:09:07.685208000 +0200
+@@ -69,6 +69,16 @@
    (void) obstack_alloc (ob, 0);
    oalign = obstack_alignment_mask (ob);
    obstack_alignment_mask (ob) = 0;
@@ -931,16 +1460,16 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/frags.c binutils-2.19.51.20090622/g
 +     * chunk. */
 +
 +    int space = obstack_room (ob);
-+    if (space < SIZEOF_STRUCT_FRAG + (1 <<(nacl_alignment + 2))) {
++    if (space < SIZEOF_STRUCT_FRAG + (1 << (nacl_alignment + 2))) {
 +      (void) obstack_alloc (ob, space-1);
 +    }
 +  }
-   ptr = obstack_alloc (ob, SIZEOF_STRUCT_FRAG);
+   ptr = (fragS *) obstack_alloc (ob, SIZEOF_STRUCT_FRAG);
    obstack_alignment_mask (ob) = oalign;
    memset (ptr, 0, SIZEOF_STRUCT_FRAG);
-diff -uNr binutils-2.19.51.20090622.orig/gas/frags.h binutils-2.19.51.20090622/gas/frags.h
---- binutils-2.19.51.20090622.orig/gas/frags.h	2007-07-03 13:01:03.000000000 +0200
-+++ binutils-2.19.51.20090622/gas/frags.h	2009-06-28 17:16:42.000000000 +0200
+==== binutils-2.19.91.20091006/gas/frags.h ====
+--- binutils-2.19.91.20091006/gas/frags.h#1	2009-10-02 01:59:03.000000000 +0200
++++ binutils-2.19.91.20091006/gas/frags.h	2009-10-02 01:34:06.000000000 +0200
 @@ -77,10 +77,22 @@
    unsigned int has_code:1;
    unsigned int insn_addr:6;
@@ -964,12 +1493,12 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/frags.h binutils-2.19.51.20090622/g
  #ifdef USING_CGEN
    /* Don't include this unless using CGEN to keep frag size down.  */
    struct {
-diff -uNr binutils-2.19.51.20090622.orig/gas/write.c binutils-2.19.51.20090622/gas/write.c
---- binutils-2.19.51.20090622.orig/gas/write.c	2009-06-22 19:56:00.000000000 +0200
-+++ binutils-2.19.51.20090622/gas/write.c	2009-06-28 17:16:42.000000000 +0200
+==== binutils-2.19.91.20091006/gas/write.c ====
+--- binutils-2.19.91.20091006/gas/write.c#1	2009-10-02 01:59:03.000000000 +0200
++++ binutils-2.19.91.20091006/gas/write.c	2009-10-02 01:34:09.000000000 +0200
 @@ -158,6 +158,8 @@
  
-   fixP = obstack_alloc (&notes, sizeof (fixS));
+   fixP = (fixS *) obstack_alloc (&notes, sizeof (fixS));
  
 +  frag->nacl_fixup = fixP;
 +
@@ -1026,7 +1555,7 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/write.c binutils-2.19.51.20090622/g
        fragP->fr_type = rs_fill;
        break;
  
-@@ -1174,6 +1212,8 @@
+@@ -1177,6 +1215,8 @@
      {
        int j;
        int fx_size, slack;
@@ -1035,7 +1564,7 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/write.c binutils-2.19.51.20090622/g
        offsetT loc;
  
        if (fixp->fx_done)
-@@ -1184,7 +1224,10 @@
+@@ -1187,7 +1227,10 @@
        if (slack > 0)
  	fx_size = fx_size > slack ? fx_size - slack : 0;
        loc = fixp->fx_where + fx_size;
@@ -1047,9 +1576,9 @@ diff -uNr binutils-2.19.51.20090622.orig/gas/write.c binutils-2.19.51.20090622/g
  	as_bad_where (fixp->fx_file, fixp->fx_line,
  		      _("internal error: fixup not contained within frag"));
  
-diff -uNr binutils-2.19.51.20090622.orig/include/elf/common.h binutils-2.19.51.20090622/include/elf/common.h
---- binutils-2.19.51.20090622.orig/include/elf/common.h	2009-05-27 19:05:53.000000000 +0200
-+++ binutils-2.19.51.20090622/include/elf/common.h	2009-06-28 17:16:42.000000000 +0200
+==== binutils-2.19.91.20091006/include/elf/common.h ====
+--- binutils-2.19.91.20091006/include/elf/common.h#1	2009-10-02 01:59:03.000000000 +0200
++++ binutils-2.19.91.20091006/include/elf/common.h	2009-10-02 01:34:12.000000000 +0200
 @@ -75,6 +75,7 @@
  #define ELFOSABI_NSK	     14	/* Hewlett-Packard Non-Stop Kernel */
  #define ELFOSABI_AROS	     15	/* AROS */
@@ -1058,9 +1587,9 @@ diff -uNr binutils-2.19.51.20090622.orig/include/elf/common.h binutils-2.19.51.2
  #define ELFOSABI_STANDALONE 255	/* Standalone (embedded) application */
  
  #define EI_ABIVERSION	8	/* ABI version */
-diff -uNr binutils-2.19.51.20090622.orig/include/elf/nacl.h binutils-2.19.51.20090622/include/elf/nacl.h
---- binutils-2.19.51.20090622.orig/include/elf/nacl.h	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.19.51.20090622/include/elf/nacl.h	2009-06-28 17:16:42.000000000 +0200
+==== (added) binutils-2.19.91.20091006/include/elf/nacl.h ====
+--- /dev/null	2009-05-01 06:17:58.000000000 +0200
++++ binutils-2.19.91.20091006/include/elf/nacl.h	2009-10-02 01:34:13.000000000 +0200
 @@ -0,0 +1,33 @@
 +/* ix86 ELF support for BFD.
 +   Copyright 1998, 1999, 2000, 2002, 2004, 2005, 2006
@@ -1092,13 +1621,13 @@ diff -uNr binutils-2.19.51.20090622.orig/include/elf/nacl.h binutils-2.19.51.200
 +#define EF_NACL_ALIGN_LIB   0x000000	/* aligned to pass either way */
 +
 +/* ABI version number -- increment when ABI changes are incompatible. */
-+#define EF_NACL_ABIVERSION  6
++#define EF_NACL_ABIVERSION  5
 +
 +#endif
-diff -uNr binutils-2.19.51.20090622.orig/ld/Makefile.am binutils-2.19.51.20090622/ld/Makefile.am
---- binutils-2.19.51.20090622.orig/ld/Makefile.am	2009-06-04 08:57:56.000000000 +0200
-+++ binutils-2.19.51.20090622/ld/Makefile.am	2009-06-28 17:16:42.000000000 +0200
-@@ -213,6 +213,7 @@
+==== binutils-2.19.91.20091006/ld/Makefile.am ====
+--- binutils-2.19.91.20091006/ld/Makefile.am#1	2009-10-02 01:59:04.000000000 +0200
++++ binutils-2.19.91.20091006/ld/Makefile.am	2009-10-02 01:34:16.000000000 +0200
+@@ -221,6 +221,7 @@
  	eelf_i386_fbsd.o \
  	eelf_i386_ldso.o \
  	eelf_i386_vxworks.o \
@@ -1106,20 +1635,32 @@ diff -uNr binutils-2.19.51.20090622.orig/ld/Makefile.am binutils-2.19.51.2009062
  	eelf_s390.o \
  	egld960.o \
  	egld960coff.o \
-@@ -1027,6 +1028,9 @@
+@@ -1072,6 +1073,10 @@
+   $(srcdir)/emultempl/needrelax.em \
+   $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
+ 	${GENSCRIPTS} elf64_ia64_fbsd "$(tdir_elf64_ia64_fbsd)"
++eelf64_nacl.c: $(srcdir)/emulparams/elf64_nacl.sh \
++  $(srcdir)/emulparams/elf_x86_64.sh \
++  $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
++	${GENSCRIPTS} elf64_nacl "$(tdir_elf64_nacl)"
+ eelf64_s390.c: $(srcdir)/emulparams/elf64_s390.sh \
+   $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
+ 	${GENSCRIPTS} elf64_s390 "$(tdir_elf64_s390)"
+@@ -1110,6 +1115,10 @@
  eelf_i386.c: $(srcdir)/emulparams/elf_i386.sh \
    $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
  	${GENSCRIPTS} elf_i386 "$(tdir_elf_i386)"
 +eelf_nacl.c: $(srcdir)/emulparams/elf_nacl.sh \
++  $(srcdir)/emulparams/elf_i386.sh \
 +  $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
 +	${GENSCRIPTS} elf_nacl "$(tdir_elf_nacl)"
  eelf_x86_64.c: $(srcdir)/emulparams/elf_x86_64.sh \
    $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
  	${GENSCRIPTS} elf_x86_64 "$(tdir_elf_x86_64)"
-diff -uNr binutils-2.19.51.20090622.orig/ld/Makefile.in binutils-2.19.51.20090622/ld/Makefile.in
---- binutils-2.19.51.20090622.orig/ld/Makefile.in	2009-06-04 08:57:56.000000000 +0200
-+++ binutils-2.19.51.20090622/ld/Makefile.in	2009-06-28 17:16:42.000000000 +0200
-@@ -478,6 +478,7 @@
+==== binutils-2.19.91.20091006/ld/Makefile.in ====
+--- binutils-2.19.91.20091006/ld/Makefile.in#1	2009-10-02 01:59:04.000000000 +0200
++++ binutils-2.19.91.20091006/ld/Makefile.in	2009-10-02 01:37:32.000000000 +0200
+@@ -507,6 +507,7 @@
  	eelf_i386_fbsd.o \
  	eelf_i386_ldso.o \
  	eelf_i386_vxworks.o \
@@ -1127,47 +1668,67 @@ diff -uNr binutils-2.19.51.20090622.orig/ld/Makefile.in binutils-2.19.51.2009062
  	eelf_s390.o \
  	egld960.o \
  	egld960coff.o \
-@@ -1874,6 +1875,9 @@
+@@ -709,6 +710,7 @@
+ 	eelf_x86_64_fbsd.o \
+ 	eelf_l1om.o \
+ 	eelf_l1om_fbsd.o \
++	eelf64_nacl.o \
+ 	eelf64_s390.o \
+ 	eelf64_sparc.o \
+ 	eelf64_sparc_fbsd.o \
+@@ -2413,6 +2415,10 @@
+   $(srcdir)/emultempl/needrelax.em \
+   $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
+ 	${GENSCRIPTS} elf64_ia64_fbsd "$(tdir_elf64_ia64_fbsd)"
++eelf64_nacl.c: $(srcdir)/emulparams/elf64_nacl.sh \
++  $(srcdir)/emulparams/elf_x86_64.sh \
++  $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
++	${GENSCRIPTS} elf64_nacl "$(tdir_elf64_nacl)"
+ eelf64_s390.c: $(srcdir)/emulparams/elf64_s390.sh \
+   $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
+ 	${GENSCRIPTS} elf64_s390 "$(tdir_elf64_s390)"
+@@ -2451,6 +2457,10 @@
  eelf_i386.c: $(srcdir)/emulparams/elf_i386.sh \
    $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
  	${GENSCRIPTS} elf_i386 "$(tdir_elf_i386)"
 +eelf_nacl.c: $(srcdir)/emulparams/elf_nacl.sh \
++  $(srcdir)/emulparams/elf_i386.sh \
 +  $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
 +	${GENSCRIPTS} elf_nacl "$(tdir_elf_nacl)"
  eelf_x86_64.c: $(srcdir)/emulparams/elf_x86_64.sh \
    $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
  	${GENSCRIPTS} elf_x86_64 "$(tdir_elf_x86_64)"
-diff -uNr binutils-2.19.51.20090622.orig/ld/configure.tgt binutils-2.19.51.20090622/ld/configure.tgt
---- binutils-2.19.51.20090622.orig/ld/configure.tgt	2009-06-18 04:11:03.000000000 +0200
-+++ binutils-2.19.51.20090622/ld/configure.tgt	2009-06-28 17:16:42.000000000 +0200
-@@ -230,6 +230,7 @@
+==== binutils-2.19.91.20091006/ld/configure.tgt ====
+--- binutils-2.19.91.20091006/ld/configure.tgt#1	2009-10-02 01:59:04.000000000 +0200
++++ binutils-2.19.91.20091006/ld/configure.tgt	2009-10-02 01:34:24.000000000 +0200
+@@ -230,6 +230,8 @@
  			targ_extra_ofiles="deffilep.o pe-dll.o" ;;
  i[3-7]86-*-netbsd*)	targ_emul=i386nbsd
  			targ_extra_emuls=elf_i386 ;;
 +i[3-7]86-*-nacl*)	targ_emul=elf_nacl ;;
++x86_64-*-nacl*)		targ_emul=elf64_nacl ;;
  x86_64-*-netbsd*)	targ_emul=elf_x86_64
- 			targ_extra_emuls="elf_i386 i386nbsd"
+ 			targ_extra_emuls="elf_i386 i386nbsd elf_l1om"
  			tdir_elf_i386=`echo ${targ_alias} | \
-diff -uNr binutils-2.19.51.20090622.orig/ld/emulparams/elf_nacl.sh binutils-2.19.51.20090622/ld/emulparams/elf_nacl.sh
---- binutils-2.19.51.20090622.orig/ld/emulparams/elf_nacl.sh	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.19.51.20090622/ld/emulparams/elf_nacl.sh	2009-06-28 17:16:42.000000000 +0200
-@@ -0,0 +1,13 @@
+==== (added) binutils-2.19.91.20091006/ld/emulparams/elf64_nacl.sh ====
+--- /dev/null	2009-05-01 06:17:58.000000000 +0200
++++ binutils-2.19.91.20091006/ld/emulparams/elf64_nacl.sh	2009-10-02 01:34:25.000000000 +0200
+@@ -0,0 +1,4 @@
++. ${srcdir}/emulparams/elf_x86_64.sh
++SCRIPT_NAME=naclelf
++OUTPUT_FORMAT="elf64-nacl"
++TEXT_START_ADDR=0x00020000
+==== (added) binutils-2.19.91.20091006/ld/emulparams/elf_nacl.sh ====
+--- /dev/null	2009-05-01 06:17:58.000000000 +0200
++++ binutils-2.19.91.20091006/ld/emulparams/elf_nacl.sh	2009-10-02 01:34:27.000000000 +0200
+@@ -0,0 +1,4 @@
++. ${srcdir}/emulparams/elf_i386.sh
 +SCRIPT_NAME=naclelf
 +OUTPUT_FORMAT="elf32-nacl"
 +TEXT_START_ADDR=0x00020000
-+MAXPAGESIZE="CONSTANT (MAXPAGESIZE)"
-+COMMONPAGESIZE="CONSTANT (COMMONPAGESIZE)"
-+ARCH=i386
-+MACHINE=
-+NOP=0x90909090
-+TEMPLATE_NAME=elf32
-+GENERATE_SHLIB_SCRIPT=yes
-+GENERATE_PIE_SCRIPT=yes
-+NO_SMALL_DATA=yes
-+SEPARATE_GOTPLT=12
-diff -uNr binutils-2.19.51.20090622.orig/ld/ldexp.c binutils-2.19.51.20090622/ld/ldexp.c
---- binutils-2.19.51.20090622.orig/ld/ldexp.c	2008-09-25 04:34:00.000000000 +0200
-+++ binutils-2.19.51.20090622/ld/ldexp.c	2009-06-28 17:16:42.000000000 +0200
+==== binutils-2.19.91.20091006/ld/ldexp.c ====
+--- binutils-2.19.91.20091006/ld/ldexp.c#1	2009-10-02 01:59:04.000000000 +0200
++++ binutils-2.19.91.20091006/ld/ldexp.c	2009-10-02 01:34:28.000000000 +0200
 @@ -46,6 +46,8 @@
  static void exp_fold_tree_1 (etree_type *);
  static void exp_fold_tree_no_dot (etree_type *);
@@ -1226,10 +1787,10 @@ diff -uNr binutils-2.19.51.20090622.orig/ld/ldexp.c binutils-2.19.51.20090622/ld
 +    return value - 1;
 +  }
 +}
-diff -uNr binutils-2.19.51.20090622.orig/ld/ldgram.y binutils-2.19.51.20090622/ld/ldgram.y
---- binutils-2.19.51.20090622.orig/ld/ldgram.y	2009-03-02 18:27:35.000000000 +0100
-+++ binutils-2.19.51.20090622/ld/ldgram.y	2009-06-28 17:16:42.000000000 +0200
-@@ -135,7 +135,7 @@
+==== binutils-2.19.91.20091006/ld/ldgram.y ====
+--- binutils-2.19.91.20091006/ld/ldgram.y#1	2009-10-02 01:59:05.000000000 +0200
++++ binutils-2.19.91.20091006/ld/ldgram.y	2009-10-02 01:34:31.000000000 +0200
+@@ -136,7 +136,7 @@
  %token NOLOAD DSECT COPY INFO OVERLAY
  %token DEFINED TARGET_K SEARCH_DIR MAP ENTRY
  %token <integer> NEXT
@@ -1238,7 +1799,7 @@ diff -uNr binutils-2.19.51.20090622.orig/ld/ldgram.y binutils-2.19.51.20090622/l
  %token STARTUP HLL SYSLIB FLOAT NOFLOAT NOCROSSREFS
  %token ORIGIN FILL
  %token LENGTH CREATE_OBJECT_SYMBOLS INPUT GROUP OUTPUT CONSTRUCTORS
-@@ -892,6 +892,10 @@
+@@ -893,6 +893,10 @@
  			{ $$ = exp_binop (MAX_K, $3, $5 ); }
  	|	MIN_K '(' exp ',' exp ')'
  			{ $$ = exp_binop (MIN_K, $3, $5 ); }
@@ -1249,9 +1810,9 @@ diff -uNr binutils-2.19.51.20090622.orig/ld/ldgram.y binutils-2.19.51.20090622/l
  	|	ASSERT_K '(' exp ',' NAME ')'
  			{ $$ = exp_assert ($3, $5); }
  	|	ORIGIN '(' NAME ')'
-diff -uNr binutils-2.19.51.20090622.orig/ld/ldlex.l binutils-2.19.51.20090622/ld/ldlex.l
---- binutils-2.19.51.20090622.orig/ld/ldlex.l	2009-03-02 18:27:35.000000000 +0100
-+++ binutils-2.19.51.20090622/ld/ldlex.l	2009-06-28 17:16:42.000000000 +0200
+==== binutils-2.19.91.20091006/ld/ldlex.l ====
+--- binutils-2.19.91.20091006/ld/ldlex.l#1	2009-10-02 01:59:05.000000000 +0200
++++ binutils-2.19.91.20091006/ld/ldlex.l	2009-10-02 01:34:32.000000000 +0200
 @@ -254,6 +254,8 @@
  <EXPRESSION,BOTH,SCRIPT>"ALIGNOF"	{ RTOKEN(ALIGNOF); }
  <EXPRESSION,BOTH>"MAX"			{ RTOKEN(MAX_K); }
@@ -1261,10 +1822,10 @@ diff -uNr binutils-2.19.51.20090622.orig/ld/ldlex.l binutils-2.19.51.20090622/ld
  <EXPRESSION,BOTH,SCRIPT>"ASSERT"	{ RTOKEN(ASSERT_K); }
  <BOTH,SCRIPT>"ENTRY"			{ RTOKEN(ENTRY);}
  <BOTH,SCRIPT,MRI>"EXTERN"		{ RTOKEN(EXTERN);}
-diff -uNr binutils-2.19.51.20090622.orig/ld/scripttempl/naclelf.sc binutils-2.19.51.20090622/ld/scripttempl/naclelf.sc
---- binutils-2.19.51.20090622.orig/ld/scripttempl/naclelf.sc	1970-01-01 01:00:00.000000000 +0100
-+++ binutils-2.19.51.20090622/ld/scripttempl/naclelf.sc	2009-06-28 17:16:42.000000000 +0200
-@@ -0,0 +1,552 @@
+==== (added) binutils-2.19.91.20091006/ld/scripttempl/naclelf.sc ====
+--- /dev/null	2009-05-01 06:17:58.000000000 +0200
++++ binutils-2.19.91.20091006/ld/scripttempl/naclelf.sc	2009-10-02 01:34:34.000000000 +0200
+@@ -0,0 +1,609 @@
 +#
 +# Unusual variables checked by this code:
 +#	NOP - four byte opcode for no-op (defaults to 0)
@@ -1303,6 +1864,9 @@ diff -uNr binutils-2.19.51.20090622.orig/ld/scripttempl/naclelf.sc binutils-2.19
 +#	DATA_PLT - .plt should be in data segment, not text segment.
 +#	PLT_BEFORE_GOT - .plt just before .got when .plt is in data segement.
 +#	BSS_PLT - .plt should be in bss segment
++#	NO_REL_RELOCS - Don't include .rel.* sections in script
++#	NO_RELA_RELOCS - Don't include .rela.* sections in script
++#	NON_ALLOC_DYN - Place dynamic sections after data segment.
 +#	TEXT_DYNAMIC - .dynamic in text segment, not data segment.
 +#	EMBEDDED - whether this is for an embedded system. 
 +#	SHLIB_TEXT_START_ADDR - if set, add to SIZEOF_HEADERS to set
@@ -1377,15 +1941,15 @@ diff -uNr binutils-2.19.51.20090622.orig/ld/scripttempl/naclelf.sc binutils-2.19
 +  INITIAL_READONLY_SECTIONS=".interp       ${RELOCATING-0} : { *(.interp) }"
 +fi
 +if test -z "$PLT"; then
-+  PLT=".plt          ${RELOCATING-0} : { *(.plt) }"
++  PLT=".plt          ${RELOCATING-0} : { *(.plt) *(.iplt)}"
 +fi
 +test -n "${DATA_PLT-${BSS_PLT-text}}" && TEXT_PLT=yes
 +if test -z "$GOT"; then
 +  if test -z "$SEPARATE_GOTPLT"; then
-+    GOT=".got          ${RELOCATING-0} : { *(.got.plt) *(.got) }"
++    GOT=".got          ${RELOCATING-0} : { *(.got.plt) *(.igot.plt) *(.got) *(.igot) }"
 +  else
-+    GOT=".got          ${RELOCATING-0} : { *(.got) }"
-+    GOTPLT=".got.plt      ${RELOCATING-0} : { *(.got.plt) }"
++    GOT=".got          ${RELOCATING-0} : { *(.got) *(.igot) }"
++    GOTPLT=".got.plt      ${RELOCATING-0} : { *(.got.plt)  *(.igot.plt) }"
 +  fi
 +fi
 +DYNAMIC=".dynamic      ${RELOCATING-0} : { *(.dynamic) }"
@@ -1506,6 +2070,9 @@ diff -uNr binutils-2.19.51.20090622.orig/ld/scripttempl/naclelf.sc binutils-2.19
 +    *(.stack)
 +  }"
 +
++TEXT_START_ADDR="SEGMENT_START(\"text-segment\", ${TEXT_START_ADDR})"
++SHLIB_TEXT_START_ADDR="SEGMENT_START(\"text-segment\", ${SHLIB_TEXT_START_ADDR:-0})"
++
 +# if this is for an embedded system (or nacl), don't add SIZEOF_HEADERS.
 +if [ -z "$EMBEDDED" ]; then
 +   test -z "${TEXT_BASE_ADDRESS}" && TEXT_BASE_ADDRESS="${TEXT_START_ADDR}"
@@ -1517,7 +2084,7 @@ diff -uNr binutils-2.19.51.20090622.orig/ld/scripttempl/naclelf.sc binutils-2.19
 +OUTPUT_FORMAT("${OUTPUT_FORMAT}", "${BIG_OUTPUT_FORMAT}",
 +	      "${LITTLE_OUTPUT_FORMAT}")
 +OUTPUT_ARCH(${OUTPUT_ARCH})
-+ENTRY(${ENTRY})
++${RELOCATING+ENTRY(${ENTRY})}
 +
 +${RELOCATING+${LIB_SEARCH_DIRS}}
 +${RELOCATING+${EXECUTABLE_SYMBOLS}}
@@ -1540,10 +2107,15 @@ diff -uNr binutils-2.19.51.20090622.orig/ld/scripttempl/naclelf.sc binutils-2.19
 +{
 +  /* Read-only sections, merged into text segment: */
 +  ${CREATE_SHLIB-${CREATE_PIE-${RELOCATING+PROVIDE (__executable_start = ${TEXT_START_ADDR}); . = ${TEXT_BASE_ADDRESS};}}}
-+  ${CREATE_SHLIB+${RELOCATING+. = ${SHLIB_TEXT_START_ADDR:-0} + SIZEOF_HEADERS;}}
-+  ${CREATE_PIE+${RELOCATING+. = ${SHLIB_TEXT_START_ADDR:-0} + SIZEOF_HEADERS;}}
++  ${CREATE_SHLIB+${RELOCATING+. = ${SHLIB_TEXT_START_ADDR} + SIZEOF_HEADERS;}}
++  ${CREATE_PIE+${RELOCATING+. = ${SHLIB_TEXT_START_ADDR} + SIZEOF_HEADERS;}}
 +  ${INITIAL_READONLY_SECTIONS}
 +  .note.gnu.build-id : { *(.note.gnu.build-id) }
++EOF
++
++test -n "${RELOCATING+0}" || unset NON_ALLOC_DYN
++test -z "${NON_ALLOC_DYN}" || TEXT_DYNAMIC=
++cat > ldscripts/dyntmp.$$ <<EOF
 +  ${TEXT_DYNAMIC+${DYNAMIC}}
 +  .hash         ${RELOCATING-0} : { *(.hash) }
 +  .gnu.hash     ${RELOCATING-0} : { *(.gnu.hash) }
@@ -1552,10 +2124,10 @@ diff -uNr binutils-2.19.51.20090622.orig/ld/scripttempl/naclelf.sc binutils-2.19
 +  .gnu.version  ${RELOCATING-0} : { *(.gnu.version) }
 +  .gnu.version_d ${RELOCATING-0}: { *(.gnu.version_d) }
 +  .gnu.version_r ${RELOCATING-0}: { *(.gnu.version_r) }
-+
 +EOF
++
 +if [ "x$COMBRELOC" = x ]; then
-+  COMBRELOCCAT=cat
++  COMBRELOCCAT="cat >> ldscripts/dyntmp.$$"
 +else
 +  COMBRELOCCAT="cat > $COMBRELOC"
 +fi
@@ -1591,28 +2163,60 @@ diff -uNr binutils-2.19.51.20090622.orig/ld/scripttempl/naclelf.sc binutils-2.19
 +  .rel.bss      ${RELOCATING-0} : { *(.rel.bss${RELOCATING+ .rel.bss.* .rel.gnu.linkonce.b.*}) }
 +  .rela.bss     ${RELOCATING-0} : { *(.rela.bss${RELOCATING+ .rela.bss.* .rela.gnu.linkonce.b.*}) }
 +  ${REL_LARGE}
++  .rel.ifunc      ${RELOCATING-0} : { *(.rel.ifunc) }
++  .rela.ifunc     ${RELOCATING-0} : { *(.rela.ifunc) }
 +EOF
++
 +if [ -n "$COMBRELOC" ]; then
-+cat <<EOF
++cat >> ldscripts/dyntmp.$$ <<EOF
 +  .rel.dyn      ${RELOCATING-0} :
 +    {
 +EOF
-+sed -e '/^[ 	]*[{}][ 	]*$/d;/:[ 	]*$/d;/\.rela\./d;s/^.*: { *\(.*\)}$/      \1/' $COMBRELOC
-+cat <<EOF
++sed -e '/^[ 	]*[{}][ 	]*$/d;/:[ 	]*$/d;/\.rela\./d;s/^.*: { *\(.*\)}$/      \1/' $COMBRELOC >> ldscripts/dyntmp.$$
++cat >> ldscripts/dyntmp.$$ <<EOF
 +    }
 +  .rela.dyn     ${RELOCATING-0} :
 +    {
 +EOF
-+sed -e '/^[ 	]*[{}][ 	]*$/d;/:[ 	]*$/d;/\.rel\./d;s/^.*: { *\(.*\)}/      \1/' $COMBRELOC
-+cat <<EOF
++sed -e '/^[ 	]*[{}][ 	]*$/d;/:[ 	]*$/d;/\.rel\./d;s/^.*: { *\(.*\)}/      \1/' $COMBRELOC >> ldscripts/dyntmp.$$
++cat >> ldscripts/dyntmp.$$ <<EOF
 +    }
 +EOF
 +fi
-+cat <<EOF
-+  .rel.plt      ${RELOCATING-0} : { *(.rel.plt) }
-+  .rela.plt     ${RELOCATING-0} : { *(.rela.plt) }
-+  ${OTHER_PLT_RELOC_SECTIONS}
 +
++cat >> ldscripts/dyntmp.$$ <<EOF
++  .rel.plt      ${RELOCATING-0} :
++    {
++      *(.rel.plt)
++      ${RELOCATING+${CREATE_SHLIB-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__rel_iplt_start = .);}}
++      *(.rel.iplt)
++      ${RELOCATING+${CREATE_SHLIB-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__rel_iplt_end = .);}}
++    }
++  .rela.plt     ${RELOCATING-0} :
++    {
++      *(.rela.plt)
++      ${RELOCATING+${CREATE_SHLIB-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__rela_iplt_start = .);}}
++      *(.rela.iplt)
++      ${RELOCATING+${CREATE_SHLIB-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__rela_iplt_end = .);}}
++    }
++  ${OTHER_PLT_RELOC_SECTIONS}
++EOF
++
++if test -z "${NON_ALLOC_DYN}"; then
++  if test -z "${NO_REL_RELOCS}${NO_RELA_RELOCS}"; then
++    cat ldscripts/dyntmp.$$
++  else
++    if test -z "${NO_REL_RELOCS}"; then
++      sed -e '/^[ 	]*\.rela\.[^}]*$/,/}/d' -e '/^[ 	]*\.rela\./d' ldscripts/dyntmp.$$
++    fi
++    if test -z "${NO_RELA_RELOCS}"; then
++      sed -e '/^[ 	]*\.rel\.[^}]*$/,/}/d' -e '/^[ 	]*\.rel\./d' ldscripts/dyntmp.$$
++    fi
++  fi
++  rm -f ldscripts/dyntmp.$$
++fi
++
++cat <<EOF
 +  .init         ${RELOCATING-0} : 
 +  { 
 +    ${RELOCATING+${INIT_START}}
@@ -1626,7 +2230,6 @@ diff -uNr binutils-2.19.51.20090622.orig/ld/scripttempl/naclelf.sc binutils-2.19
 +  {
 +    ${RELOCATING+${TEXT_START_SYMBOLS}}
 +    *(.text .stub${RELOCATING+ .text.* .gnu.linkonce.t.*})
-+    KEEP (*(.text.*personality*))
 +    /* .gnu.warning sections are handled specially by elf32.em.  */
 +    *(.gnu.warning)
 +    ${RELOCATING+${OTHER_TEXT_SECTIONS}}
@@ -1722,7 +2325,6 @@ diff -uNr binutils-2.19.51.20090622.orig/ld/scripttempl/naclelf.sc binutils-2.19
 +  {
 +    ${RELOCATING+${DATA_START_SYMBOLS}}
 +    *(.data${RELOCATING+ .data.* .gnu.linkonce.d.*})
-+    ${RELOCATING+KEEP (*(.gnu.linkonce.d.*personality*))}
 +    ${CONSTRUCTING+SORT(CONSTRUCTORS)}
 +  } :data
 +  .data1        ${RELOCATING-0} : { *(.data1) }
@@ -1761,7 +2363,23 @@ diff -uNr binutils-2.19.51.20090622.orig/ld/scripttempl/naclelf.sc binutils-2.19
 +  ${RELOCATING+${OTHER_END_SYMBOLS}}
 +  ${RELOCATING+${END_SYMBOLS-${USER_LABEL_PREFIX}_end = .; PROVIDE (${USER_LABEL_PREFIX}end = .);}}
 +  ${RELOCATING+${DATA_SEGMENT_END}}
++EOF
 +
++if test -n "${NON_ALLOC_DYN}"; then
++  if test -z "${NO_REL_RELOCS}${NO_RELA_RELOCS}"; then
++    cat ldscripts/dyntmp.$$
++  else
++    if test -z "${NO_REL_RELOCS}"; then
++      sed -e '/^[ 	]*\.rela\.[^}]*$/,/}/d' -e '/^[ 	]*\.rela\./d' ldscripts/dyntmp.$$
++    fi
++    if test -z "${NO_RELA_RELOCS}"; then
++      sed -e '/^[ 	]*\.rel\.[^}]*$/,/}/d' -e '/^[ 	]*\.rel\./d' ldscripts/dyntmp.$$
++    fi
++  fi
++  rm -f ldscripts/dyntmp.$$
++fi
++
++cat <<EOF
 +  /* Stabs debugging sections.  */
 +  .stab          0 : { *(.stab) }
 +  .stabstr       0 : { *(.stabstr) }
@@ -1817,71 +2435,75 @@ diff -uNr binutils-2.19.51.20090622.orig/ld/scripttempl/naclelf.sc binutils-2.19
 +  ${RELOCATING+${DISCARDED}}
 +}
 +EOF
-diff -uNr binutils-2.19.51.20090622.orig/opcodes/i386-opc.tbl binutils-2.19.51.20090622/opcodes/i386-opc.tbl
---- binutils-2.19.51.20090622.orig/opcodes/i386-opc.tbl	2009-05-22 17:57:25.000000000 +0200
-+++ binutils-2.19.51.20090622/opcodes/i386-opc.tbl	2009-06-28 17:16:42.000000000 +0200
+==== binutils-2.19.91.20091006/opcodes/i386-opc.tbl ====
+--- binutils-2.19.91.20091006/opcodes/i386-opc.tbl#1	2009-10-02 01:59:06.000000000 +0200
++++ binutils-2.19.91.20091006/opcodes/i386-opc.tbl	2009-10-02 01:34:38.000000000 +0200
 @@ -209,6 +209,12 @@
  or, 2, 0xc, None, 1, 0, W|No_sSuf|No_ldSuf, { Imm8|Imm16|Imm32|Imm32S, Acc|Byte|Word|Dword|Qword }
  or, 2, 0x80, 0x1, 1, 0, W|Modrm|No_sSuf|No_ldSuf, { Imm8|Imm16|Imm32|Imm32S, Reg8|Reg16|Reg32|Reg64|Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S }
  
 +// Native client support instructions.
-+nacland, 2, 0x81, 0x4, 1, 0, D|W|Modrm|No_sSuf|No_ldSuf, { Imm32, Reg32 }
-+naclor, 2, 0x81, 0x1, 1, 0, D|W|Modrm|No_sSuf|No_ldSuf, { Imm32, Reg32 }
-+naclcall, 1, 0xff, 0x2, 1, 0, Modrm|DefaultSize|No_bSuf|No_wSuf|No_lSuf|No_sSuf|No_qSuf|No_ldSuf, { Reg32 }
-+nacljmp, 1, 0xff, 0x4, 1, 0, Modrm|DefaultSize|No_bSuf|No_wSuf|No_lSuf|No_sSuf|No_qSuf|No_ldSuf, { Reg32 }
++naclcall, 1, 0xff, 0x2, 1, CpuNo64, Modrm|DefaultSize|No_bSuf|No_wSuf|No_lSuf|No_sSuf|No_qSuf|No_ldSuf, { Reg32 }
++nacljmp, 1, 0xff, 0x4, 1, CpuNo64, Modrm|DefaultSize|No_bSuf|No_wSuf|No_lSuf|No_sSuf|No_qSuf|No_ldSuf, { Reg32 }
++naclcall, 2, 0xff, 0x2, 1, Cpu64, Modrm|DefaultSize|No_bSuf|No_wSuf|No_lSuf|No_sSuf|No_qSuf|No_ldSuf, { Reg32, Reg64 }
++nacljmp, 2, 0xff, 0x4, 1, Cpu64, Modrm|DefaultSize|No_bSuf|No_wSuf|No_lSuf|No_sSuf|No_qSuf|No_ldSuf, { Reg32, Reg64 }
 +
  xor, 2, 0x30, None, 1, 0, D|W|Modrm|No_sSuf|No_ldSuf, { Reg8|Reg16|Reg32|Reg64, Reg8|Reg16|Reg32|Reg64|Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S }
  xor, 2, 0x83, 0x6, 1, 0, Modrm|No_bSuf|No_sSuf|No_ldSuf, { Imm8S, Reg16|Reg32|Reg64|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S }
  xor, 2, 0x34, None, 1, 0, W|No_sSuf|No_ldSuf, { Imm8|Imm16|Imm32|Imm32S, Acc|Byte|Word|Dword|Qword }
-diff -uNr binutils-2.19.51.20090622.orig/opcodes/i386-tbl.h binutils-2.19.51.20090622/opcodes/i386-tbl.h
---- binutils-2.19.51.20090622.orig/opcodes/i386-tbl.h	2009-05-22 17:57:25.000000000 +0200
-+++ binutils-2.19.51.20090622/opcodes/i386-tbl.h	2009-06-28 17:16:42.000000000 +0200
-@@ -1457,6 +1457,48 @@
+==== binutils-2.19.91.20091006/opcodes/i386-tbl.h ====
+--- binutils-2.19.91.20091006/opcodes/i386-tbl.h#1	2009-10-02 01:59:06.000000000 +0200
++++ binutils-2.19.91.20091006/opcodes/i386-tbl.h	2009-10-07 06:58:19.000000000 +0200
+@@ -1587,6 +1587,52 @@
        { { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
  	  1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 
  	  0, 0, 1, 0, 0 } } } },
-+  { "nacland", 2, 0x81, 0x4, 1,
-+    { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } },
-+    { 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-+      1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-+    { { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 
-+	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-+	  0, 0, 0, 0, 0 } },
-+      { { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-+	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-+	  0, 0, 0, 0, 0 } } } },
-+  { "naclor", 2, 0x81, 0x1, 1,
-+    { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } },
-+    { 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-+      1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-+    { { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 
-+	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-+	  0, 0, 0, 0, 0 } },
-+      { { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-+	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-+	  0, 0, 0, 0, 0 } } } },
 +  { "naclcall", 1, 0xff, 0x2, 1,
 +    { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } },
++        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++        1, 0 } },
 +    { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 
 +      1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 +      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 +    { { { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0 } } } },
++  { "naclcall", 2, 0xff, 0x2, 1,
++    { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
++        0, 0 } },
++    { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 
++      1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
++    { { { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0 } },
++      { { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 +	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 +	  0, 0, 0, 0, 0 } } } },
 +  { "nacljmp", 1, 0xff, 0x4, 1,
 +    { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } },
++        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++        1, 0 } },
 +    { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 
 +      1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 +      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 +    { { { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 +	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 +	  0, 0, 0, 0, 0 } } } },
++  { "nacljmp", 2, 0xff, 0x4, 1,
++    { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 
++        0, 0 } },
++    { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 
++      1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
++    { { { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0 } },
++      { { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
++	  0, 0, 0, 0, 0 } } } },
    { "xor", 2, 0x30, None, 1,
      { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } },
+         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
