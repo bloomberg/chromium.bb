@@ -177,7 +177,7 @@ void BookmarkStorage::MigrateFromHistory() {
       model_->DoneLoading(details_.release());
     return;
   }
-  if (!history->backend_loaded()) {
+  if (!history->BackendLoaded()) {
     // The backend isn't finished loading. Wait for it.
     notification_registrar_.Add(this, NotificationType::HISTORY_LOADED,
                                 Source<Profile>(profile_));

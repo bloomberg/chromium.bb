@@ -81,6 +81,9 @@ class AutomationProfileImpl : public Profile {
   virtual HistoryService* GetHistoryService(ServiceAccessType access) {
     return original_profile_->GetHistoryService(access);
   }
+  virtual HistoryService* GetHistoryServiceWithoutCreating() {
+    return original_profile_->GetHistoryServiceWithoutCreating();
+  }
   virtual WebDataService* GetWebDataService(ServiceAccessType access) {
     return original_profile_->GetWebDataService(access);
   }

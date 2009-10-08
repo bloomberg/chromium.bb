@@ -48,7 +48,7 @@ HistoryMenuBridge::HistoryMenuBridge(Profile* profile)
     // may not be ready when the Bridge is created. If this happens, register
     // for a notification that tells us the HistoryService is ready.
     HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-    if (hs != NULL && hs->backend_loaded()) {
+    if (hs != NULL && hs->BackendLoaded()) {
       history_service_ = hs;
       Init();
     }
@@ -90,7 +90,7 @@ void HistoryMenuBridge::Observe(NotificationType type,
   if (type == NotificationType::HISTORY_LOADED) {
     HistoryService* hs =
         profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-    if (hs != NULL && hs->backend_loaded()) {
+    if (hs != NULL && hs->BackendLoaded()) {
       history_service_ = hs;
       Init();
 

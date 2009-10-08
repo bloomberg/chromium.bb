@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
@@ -102,8 +103,14 @@ class HistoryService : public CancelableRequestProvider,
   // test if a URL is bookmarked; it may be NULL during testing.
   bool Init(const FilePath& history_dir, BookmarkService* bookmark_service);
 
-  // Did the backend finish loading the databases?
-  bool backend_loaded() const { return backend_loaded_; }
+  // Triggers the backend to load if it hasn't already, and then returns whether
+  // it's finished loading.
+  bool BackendLoaded();
+
+  // Unloads the backend without actually shutting down the history service.
+  // This can be used to temporarily reduce the browser process' memory
+  // footprint.
+  void UnloadBackend();
 
   // Called on shutdown, this will tell the history backend to complete and
   // will release pointers to it. No other functions should be called once
@@ -124,12 +131,13 @@ class HistoryService : public CancelableRequestProvider,
   // identification purposes, hence it is a void*.
   void NotifyRenderProcessHostDestruction(const void* host);
 
-  // Returns the in-memory URL database. The returned pointer MAY BE NULL if
-  // the in-memory database has not been loaded yet. This pointer is owned
-  // by the history system. Callers should not store or cache this value.
+  // Triggers the backend to load if it hasn't already, and then returns the
+  // in-memory URL database. The returned pointer MAY BE NULL if the in-memory
+  // database has not been loaded yet. This pointer is owned by the history
+  // system. Callers should not store or cache this value.
   //
   // TODO(brettw) this should return the InMemoryHistoryBackend.
-  history::URLDatabase* in_memory_database() const;
+  history::URLDatabase* InMemoryDatabase();
 
   // Navigation ----------------------------------------------------------------
 
@@ -553,6 +561,9 @@ class HistoryService : public CancelableRequestProvider,
   void BroadcastNotifications(NotificationType type,
                               history::HistoryDetails* details_deleted);
 
+  // Initializes the backend.
+  void LoadBackendIfNecessary();
+
   // Notification from the backend that it has finished loading. Sends
   // notification (NOTIFY_HISTORY_LOADED) and sets backend_loaded_ to true.
   void OnDBLoaded();
@@ -613,7 +624,7 @@ class HistoryService : public CancelableRequestProvider,
   // Schedule ------------------------------------------------------------------
   //
   // Functions for scheduling operations on the history thread that have a
-  // handle and are cancelable. For fire-and-forget operations, see
+  // handle and may be cancelable. For fire-and-forget operations, see
   // ScheduleAndForget below.
 
   template<typename BackendFunc, class RequestType>
@@ -621,8 +632,10 @@ class HistoryService : public CancelableRequestProvider,
                   BackendFunc func,  // Function to call on the HistoryBackend.
                   CancelableRequestConsumerBase* consumer,
                   RequestType* request) {
-    DCHECK(history_backend_) << "History service being called after cleanup";
-    AddRequest(request, consumer);
+    DCHECK(thread_) << "History service being called after cleanup";
+    LoadBackendIfNecessary();
+    if (consumer)
+      AddRequest(request, consumer);
     ScheduleTask(priority,
                  NewRunnableMethod(history_backend_.get(), func,
                                    scoped_refptr<RequestType>(request)));
@@ -635,8 +648,10 @@ class HistoryService : public CancelableRequestProvider,
                   CancelableRequestConsumerBase* consumer,
                   RequestType* request,
                   const ArgA& a) {
-    DCHECK(history_backend_) << "History service being called after cleanup";
-    AddRequest(request, consumer);
+    DCHECK(thread_) << "History service being called after cleanup";
+    LoadBackendIfNecessary();
+    if (consumer)
+      AddRequest(request, consumer);
     ScheduleTask(priority,
                  NewRunnableMethod(history_backend_.get(), func,
                                    scoped_refptr<RequestType>(request),
@@ -654,8 +669,10 @@ class HistoryService : public CancelableRequestProvider,
                   RequestType* request,
                   const ArgA& a,
                   const ArgB& b) {
-    DCHECK(history_backend_) << "History service being called after cleanup";
-    AddRequest(request, consumer);
+    DCHECK(thread_) << "History service being called after cleanup";
+    LoadBackendIfNecessary();
+    if (consumer)
+      AddRequest(request, consumer);
     ScheduleTask(priority,
                  NewRunnableMethod(history_backend_.get(), func,
                                    scoped_refptr<RequestType>(request),
@@ -675,8 +692,10 @@ class HistoryService : public CancelableRequestProvider,
                   const ArgA& a,
                   const ArgB& b,
                   const ArgC& c) {
-    DCHECK(history_backend_) << "History service being called after cleanup";
-    AddRequest(request, consumer);
+    DCHECK(thread_) << "History service being called after cleanup";
+    LoadBackendIfNecessary();
+    if (consumer)
+      AddRequest(request, consumer);
     ScheduleTask(priority,
                  NewRunnableMethod(history_backend_.get(), func,
                                    scoped_refptr<RequestType>(request),
@@ -692,7 +711,8 @@ class HistoryService : public CancelableRequestProvider,
   template<typename BackendFunc>
   void ScheduleAndForget(SchedulePriority priority,
                          BackendFunc func) {  // Function to call on backend.
-    DCHECK(history_backend_) << "History service being called after cleanup";
+    DCHECK(thread_) << "History service being called after cleanup";
+    LoadBackendIfNecessary();
     ScheduleTask(priority, NewRunnableMethod(history_backend_.get(), func));
   }
 
@@ -700,7 +720,8 @@ class HistoryService : public CancelableRequestProvider,
   void ScheduleAndForget(SchedulePriority priority,
                          BackendFunc func,  // Function to call on backend.
                          const ArgA& a) {
-    DCHECK(history_backend_) << "History service being called after cleanup";
+    DCHECK(thread_) << "History service being called after cleanup";
+    LoadBackendIfNecessary();
     ScheduleTask(priority, NewRunnableMethod(history_backend_.get(), func, a));
   }
 
@@ -709,7 +730,8 @@ class HistoryService : public CancelableRequestProvider,
                          BackendFunc func,  // Function to call on backend.
                          const ArgA& a,
                          const ArgB& b) {
-    DCHECK(history_backend_) << "History service being called after cleanup";
+    DCHECK(thread_) << "History service being called after cleanup";
+    LoadBackendIfNecessary();
     ScheduleTask(priority, NewRunnableMethod(history_backend_.get(), func,
                                              a, b));
   }
@@ -720,7 +742,8 @@ class HistoryService : public CancelableRequestProvider,
                          const ArgA& a,
                          const ArgB& b,
                          const ArgC& c) {
-    DCHECK(history_backend_) << "History service being called after cleanup";
+    DCHECK(thread_) << "History service being called after cleanup";
+    LoadBackendIfNecessary();
     ScheduleTask(priority, NewRunnableMethod(history_backend_.get(), func,
                                              a, b, c));
   }
@@ -736,7 +759,8 @@ class HistoryService : public CancelableRequestProvider,
                          const ArgB& b,
                          const ArgC& c,
                          const ArgD& d) {
-    DCHECK(history_backend_) << "History service being called after cleanup";
+    DCHECK(thread_) << "History service being called after cleanup";
+    LoadBackendIfNecessary();
     ScheduleTask(priority, NewRunnableMethod(history_backend_.get(), func,
                                              a, b, c, d));
   }
@@ -770,7 +794,11 @@ class HistoryService : public CancelableRequestProvider,
   // completed.
   bool backend_loaded_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(HistoryService);
+  // Cached values from Init(), used whenever we need to reload the backend.
+  FilePath history_dir_;
+  BookmarkService* bookmark_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(HistoryService);
 };
 
 #endif  // CHROME_BROWSER_HISTORY_HISTORY_H__

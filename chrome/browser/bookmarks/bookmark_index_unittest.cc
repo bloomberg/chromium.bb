@@ -224,7 +224,7 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
   HistoryService* const history_service =
       profile.GetHistoryService(Profile::EXPLICIT_ACCESS);
 
-  history::URLDatabase* url_db = history_service->in_memory_database();
+  history::URLDatabase* url_db = history_service->InMemoryDatabase();
 
   struct TestData {
     const GURL url;

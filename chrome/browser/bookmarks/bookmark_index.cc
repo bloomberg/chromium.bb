@@ -80,7 +80,7 @@ void BookmarkIndex::SortMatches(const Matches& matches,
       profile_->GetHistoryService(Profile::EXPLICIT_ACCESS) : NULL;
 
   history::URLDatabase* url_db = history_service ?
-      history_service->in_memory_database() : NULL;
+      history_service->InMemoryDatabase() : NULL;
 
   for (Matches::const_iterator i = matches.begin(); i != matches.end(); ++i)
     ExtractBookmarkNodePairs(url_db, *i, node_typed_counts);

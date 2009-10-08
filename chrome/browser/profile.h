@@ -201,6 +201,10 @@ class Profile {
   // the ServiceAccessType definition above.
   virtual HistoryService* GetHistoryService(ServiceAccessType access) = 0;
 
+  // Similar to GetHistoryService(), but won't create the history service if it
+  // doesn't already exist.
+  virtual HistoryService* GetHistoryServiceWithoutCreating() = 0;
+
   // Returns the WebDataService for this profile. This is owned by
   // the Profile. Callers that outlive the life of this profile need to be
   // sure they refcount the returned value.
@@ -398,6 +402,7 @@ class ProfileImpl : public Profile,
   virtual ExtensionMessageService* GetExtensionMessageService();
   virtual FaviconService* GetFaviconService(ServiceAccessType sat);
   virtual HistoryService* GetHistoryService(ServiceAccessType sat);
+  virtual HistoryService* GetHistoryServiceWithoutCreating();
   virtual WebDataService* GetWebDataService(ServiceAccessType sat);
   virtual PasswordStore* GetPasswordStore(ServiceAccessType sat);
   virtual PrefService* GetPrefs();

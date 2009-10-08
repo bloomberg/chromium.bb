@@ -93,6 +93,9 @@ class TestingProfile : public Profile {
   virtual HistoryService* GetHistoryService(ServiceAccessType access) {
     return history_service_.get();
   }
+  virtual HistoryService* GetHistoryServiceWithoutCreating() {
+    return history_service_.get();
+  }
   void set_has_history_service(bool has_history_service) {
     has_history_service_ = has_history_service;
   }

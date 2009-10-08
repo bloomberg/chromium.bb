@@ -50,7 +50,7 @@ class AutocompleteBrowserTest : public InProcessBrowserTest,
   void WaitForHistoryBackendToLoad() {
     HistoryService* history_service =
         browser()->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
-    if (!history_service->backend_loaded()) {
+    if (!history_service->BackendLoaded()) {
       NotificationRegistrar registrar;
       registrar.Add(this, NotificationType::HISTORY_LOADED,
                     NotificationService::AllSources());

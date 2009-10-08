@@ -636,13 +636,14 @@ void HistoryURLProvider::RunAutocompletePasses(
 
     // Pass 1: Get the in-memory URL database, and use it to find and promote
     // the inline autocomplete match, if any.
-    history::URLDatabase* url_db = history_service->in_memory_database();
+    history::URLDatabase* url_db = history_service->InMemoryDatabase();
     // url_db can be NULL if it hasn't finished initializing (or failed to
     // initialize).  In this case all we can do is fall back on the second
-    // pass.  Ultimately, we should probably try to ensure the history system
-    // starts properly before we get here, as otherwise this can cause
-    // inconsistent behavior when the user has just started the browser and
-    // tries to type immediately.
+    // pass.
+    //
+    // TODO(pkasting): We should just block here until this loads.  Any time
+    // someone unloads the history backend, we'll get inconsistent inline
+    // autocomplete behavior here.
     if (url_db) {
       DoAutocomplete(NULL, url_db, params.get());
       // params->matches now has the matches we should expose to the provider.

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,6 @@
 #include "chrome/browser/history/history.h"
 
 #include "app/l10n_util.h"
-#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/ref_counted.h"
@@ -154,29 +153,41 @@ HistoryService::~HistoryService() {
 
 bool HistoryService::Init(const FilePath& history_dir,
                           BookmarkService* bookmark_service) {
-  if (!thread_->Start())
+  if (!thread_->Start()) {
+    Cleanup();
     return false;
+  }
+
+  history_dir_ = history_dir;
+  bookmark_service_ = bookmark_service;
 
   // Create the history backend.
-  scoped_refptr<HistoryBackend> backend(
-      new HistoryBackend(history_dir,
-                         new BackendDelegate(this),
-                         bookmark_service));
-  history_backend_.swap(backend);
-
-  ScheduleAndForget(PRIORITY_UI, &HistoryBackend::Init);
+  LoadBackendIfNecessary();
   return true;
 }
 
-void HistoryService::Cleanup() {
-  if (!thread_) {
-    // We've already cleaned up.
-    return;
-  }
+bool HistoryService::BackendLoaded() {
+  // NOTE: We start the backend loading even though it completes asynchronously
+  // and thus won't affect the return value of this function.  This is because
+  // callers of this assume that if the backend isn't yet loaded it will be
+  // soon, so they will either listen for notifications or just retry this call
+  // later.  If we've purged the backend, we haven't necessarily restarted it
+  // loading by now, so we need to trigger the load in order to maintain that
+  // expectation.
+  LoadBackendIfNecessary();
+  return backend_loaded_;
+}
 
-  // Shutdown is a little subtle. The backend's destructor must run on the
-  // history thread since it is not threadsafe. So this thread must not be the
-  // last thread holding a reference to the backend, or a crash could happen.
+void HistoryService::UnloadBackend() {
+  if (!history_backend_)
+    return;  // Already unloaded.
+
+  // Get rid of the in-memory backend.
+  in_memory_backend_.reset();
+
+  // The backend's destructor must run on the history thread since it is not
+  // threadsafe. So this thread must not be the last thread holding a reference
+  // to the backend, or a crash could happen.
   //
   // We have a reference to the history backend. There is also an extra
   // reference held by our delegate installed in the backend, which
@@ -195,6 +206,16 @@ void HistoryService::Cleanup() {
       NewRunnableMethod(history_backend_.get(), &HistoryBackend::Closing);
   history_backend_ = NULL;
   ScheduleTask(PRIORITY_NORMAL, closing_task);
+}
+
+void HistoryService::Cleanup() {
+  if (!thread_) {
+    // We've already cleaned up.
+    return;
+  }
+
+  // Unload the backend.
+  UnloadBackend();
 
   // Delete the thread, which joins with the background thread. We defensively
   // NULL the pointer before deleting it in case somebody tries to use it
@@ -209,7 +230,11 @@ void HistoryService::NotifyRenderProcessHostDestruction(const void* host) {
                     &HistoryBackend::NotifyRenderProcessHostDestruction, host);
 }
 
-history::URLDatabase* HistoryService::in_memory_database() const {
+history::URLDatabase* HistoryService::InMemoryDatabase() {
+  // NOTE: See comments in BackendLoaded() as to why we call
+  // LoadBackendIfNecessary() here even though it won't affect the return value
+  // for this call.
+  LoadBackendIfNecessary();
   if (in_memory_backend_.get())
     return in_memory_backend_->db();
   return NULL;
@@ -297,7 +322,7 @@ void HistoryService::AddPage(const GURL& url,
                              PageTransition::Type transition,
                              const history::RedirectList& redirects,
                              bool did_replace_entry) {
-  DCHECK(history_backend_) << "History service being called after cleanup";
+  DCHECK(thread_) << "History service being called after cleanup";
 
   // Filter out unwanted URLs. We don't add auto-subframe URLs. They are a
   // large part of history (think iframes for ads) and we never display them in
@@ -387,6 +412,7 @@ void HistoryService::SetPageContents(const GURL& url,
                                      const std::wstring& contents) {
   if (!CanAddURL(url))
     return;
+
   ScheduleAndForget(PRIORITY_LOW, &HistoryBackend::SetPageContents,
                     url, contents);
 }
@@ -411,33 +437,23 @@ HistoryService::Handle HistoryService::GetPageThumbnail(
 
 void HistoryService::GetFavicon(FaviconService::GetFaviconRequest* request,
                                 const GURL& icon_url) {
-  ScheduleTask(PRIORITY_NORMAL,
-      NewRunnableMethod(history_backend_.get(),
-          &HistoryBackend::GetFavIcon,
-          scoped_refptr<FaviconService::GetFaviconRequest>(request),
-          icon_url));
+  Schedule(PRIORITY_NORMAL, &HistoryBackend::GetFavIcon, NULL, request,
+           icon_url);
 }
 
 void HistoryService::UpdateFaviconMappingAndFetch(
     FaviconService::GetFaviconRequest* request,
     const GURL& page_url,
     const GURL& icon_url) {
-  ScheduleTask(PRIORITY_NORMAL,
-      NewRunnableMethod(history_backend_.get(),
-          &HistoryBackend::UpdateFavIconMappingAndFetch,
-          scoped_refptr<FaviconService::GetFaviconRequest>(request),
-          page_url,
-          icon_url));
+  Schedule(PRIORITY_NORMAL, &HistoryBackend::UpdateFavIconMappingAndFetch, NULL,
+           request, page_url, icon_url);
 }
 
 void HistoryService::GetFaviconForURL(
     FaviconService::GetFaviconRequest* request,
     const GURL& page_url) {
-  ScheduleTask(PRIORITY_UI,
-      NewRunnableMethod(history_backend_.get(),
-          &HistoryBackend::GetFavIconForURL,
-          scoped_refptr<FaviconService::GetFaviconRequest>(request),
-          page_url));
+  Schedule(PRIORITY_NORMAL, &HistoryBackend::GetFavIconForURL, NULL, request,
+           page_url);
 }
 
 void HistoryService::SetFavicon(const GURL& page_url,
@@ -694,6 +710,19 @@ void HistoryService::BroadcastNotifications(
   Details<history::HistoryDetails> det(details_deleted);
 
   NotificationService::current()->Notify(type, source, det);
+}
+
+void HistoryService::LoadBackendIfNecessary() {
+  if (!thread_ || history_backend_)
+    return;  // Failed to init, or already started loading.
+
+  scoped_refptr<HistoryBackend> backend(
+      new HistoryBackend(history_dir_,
+                         new BackendDelegate(this),
+                         bookmark_service_));
+  history_backend_.swap(backend);
+
+  ScheduleAndForget(PRIORITY_UI, &HistoryBackend::Init);
 }
 
 void HistoryService::OnDBLoaded() {

@@ -204,7 +204,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
         profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
     ASSERT_TRUE(history_service);
 
-    if (!history_service->backend_loaded()) {
+    if (!history_service->BackendLoaded()) {
       NotificationRegistrar registrar;
       registrar.Add(this, NotificationType::HISTORY_LOADED,
                     Source<Profile>(profile));

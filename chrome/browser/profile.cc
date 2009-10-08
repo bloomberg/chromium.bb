@@ -312,6 +312,10 @@ class OffTheRecordProfileImpl : public Profile,
     }
   }
 
+  virtual HistoryService* GetHistoryServiceWithoutCreating() {
+    return profile_->GetHistoryServiceWithoutCreating();
+  }
+
   virtual FaviconService* GetFaviconService(ServiceAccessType sat) {
     if (sat == EXPLICIT_ACCESS) {
       return profile_->GetFaviconService(sat);
@@ -1024,6 +1028,10 @@ HistoryService* ProfileImpl::GetHistoryService(ServiceAccessType sat) {
         Notify(NotificationType::HISTORY_CREATED, Source<Profile>(this),
                Details<HistoryService>(history_service_.get()));
   }
+  return history_service_.get();
+}
+
+HistoryService* ProfileImpl::GetHistoryServiceWithoutCreating() {
   return history_service_.get();
 }
 
