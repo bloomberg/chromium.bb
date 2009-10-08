@@ -3148,3 +3148,5 @@ BUG_JOHNNYG : LayoutTests/http/tests/globalhistory/history-delegate-basic-title.
 BUG_JOHNNYG WIN DEBUG : LayoutTests/fast/frames/onlyCommentInIFrame.html = FAIL
 
 BUG_24308 MAC : LayoutTests/http/tests/navigation/back-send-referrer.html = PASS TIMEOUT
+
+BUG_24314 LINUX DEBUG : LayoutTests/editing/selection/extend-selection.html = PASS TIMEOUT
