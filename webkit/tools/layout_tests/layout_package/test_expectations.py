@@ -234,6 +234,7 @@ class TestExpectationsFile:
     """
 
     self._path = path
+    self._is_lint_mode = full_test_list is None
     self._full_test_list = full_test_list
     self._errors = []
     self._non_fatal_errors = []
@@ -468,6 +469,10 @@ class TestExpectationsFile:
     if 'wontfix' in options and 'defer' in options:
       self._AddError(lineno, 'Test cannot be both DEFER and WONTFIX.',
           test_and_expectations)
+
+    if self._is_lint_mode and 'rebaseline' in options:
+      self._AddError(lineno, 'REBASELINE should only be used for running'
+          'rebaseline.py. Cannot be checked in.', test_and_expectations)
 
     return True
 
