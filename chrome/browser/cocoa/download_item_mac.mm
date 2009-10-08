@@ -46,6 +46,10 @@ void DownloadItemMac::OnDownloadUpdated(DownloadItem* download) {
     case DownloadItem::IN_PROGRESS:
     case DownloadItem::CANCELLED:
     case DownloadItem::COMPLETE:
+      if (download->auto_opened()) {
+        [item_controller_ remove];  // We're deleted now!
+        return;
+      }
       [item_controller_ setStateFromDownload:download_model_.get()];
       break;
     default:
