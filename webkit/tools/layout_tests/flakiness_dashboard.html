@@ -156,7 +156,6 @@
       font-size: large;
     }
     #loading-ui {
-      display: none;
       position: fixed;
       top: 0;
       left: 0;
@@ -276,13 +275,15 @@
   var BUILD_TYPES = {'DEBUG': 'DBG', 'RELEASE': 'RELEASE'};
   var BASE_TABLE_HEADERS = ['bugs', 'modifiers', 'expectations', 'missing',
       'extra', 'slowest run', 'flakiness (numbers are runtimes in seconds)'];
-  var MIN_SECONDS_FOR_SLOW_TEST = 2;
+  var MIN_SECONDS_FOR_SLOW_TEST = 3;
   var FAIL_RESULTS = ['IMAGE', 'IMAGE+TEXT', 'TEXT', 'SIMPLIFIED', 'OTHER'];
+  var CHUNK_SIZE = 25;
 
   //////////////////////////////////////////////////////////////////////////////
   // Methods and objects from dashboard_base.js to override.
   //////////////////////////////////////////////////////////////////////////////
   function generatePage() {
+    console.log('generate page');
     if (!currentState.tests && !('builder' in currentState)) {
       for (var builder in builders) {
         currentState.builder = builder;
@@ -290,8 +291,9 @@
       }
     }
 
+    document.body.innerHTML = '<div id="loading-ui">LOADING...</div>';
+
     if (currentState.tests) {
-      createTableHeadersArray('builder');
       generatePageForIndividualTests(getIndividualTests());
     } else {
       createTableHeadersArray('test');
@@ -491,12 +493,24 @@
   function getIndividualTests() {
     if (!currentState.tests) {
       return [];
+    } else if (currentState.tests == 'allSlowTests') {
+      return getSlowTests();
+    } else if (currentState.tests == 'allNeedSlowTests') {
+      return getNeedSlowTests();
+    } else if (currentState.tests == 'allIncorrectExpectations') {
+      return getAllTestsWithIncorrectExpectations();
     }
+
     var separator = stringContains(currentState.tests, ' ') ? ' ' : ',';
     var testList = currentState.tests.split(separator);
     var tests = [];
     for (var i = 0; i < testList.length; i++) {
       var path = testList[i];
+
+      // Ignore whitespace entries as they'd match every test.
+      if (path.match(/^\s*$/))
+        continue;
+
       var allTests = getAllTests();
       for (var test in allTests) {
         if (caseInsensitiveContains(test, path)) {
@@ -506,6 +520,45 @@
     }
     return tests;
   }
+
+  function getAllTestsWithIncorrectExpectations() {
+    return getAllTestsWithCondition(function(resultsForTest) {
+      return !resultsForTest.meetsExpectations;
+    });
+  }
+
+  function getSlowTests() {
+    return getAllTestsWithCondition(isSlowTest);
+  }
+
+  function getNeedSlowTests() {
+    return getAllTestsWithCondition(function(resultsForTest) {
+      return stringContains(resultsForTest.missing, 'SLOW') &&
+          isSlowTest(resultsForTest) && !resultsForTest.isWontFixSkip;
+    });
+  }
+
+  function isSlowTest(results) {
+    return results.slowestTime > MIN_SECONDS_FOR_SLOW_TEST;
+  }
+
+  function getAllTestsWithCondition(conditionFn) {
+    processTestRunsForAllBuilders();
+    var tests = getAllTests();
+    var retVal = [];
+    for (var test in tests) {
+      var resultsArray = testToResultsMap[test];
+      for (var i = 0; i < resultsArray.length; i++) {
+        var results = resultsArray[i].results;
+        if (conditionFn(results)) {
+          retVal.push(test);
+          break;
+        }
+      }
+    }
+    return retVal;
+  }
+
 
   /**
    * Adds all the tests for the given builder to the testMapToPopulate.
@@ -767,6 +820,11 @@
       }, 0);
   }
 
+  function processTestRunsForAllBuilders() {
+    for (var builder in builders)
+      processTestRunsForBuilder(builder);
+  }
+
   function processTestRunsForBuilder(builderName) {
     if (perBuilderFailures[builderName])
       return;
@@ -889,8 +947,7 @@
     // slow. There are too many tests that take ~2 seconds every couple
     // hundred runs. It's not worth the manual maintenance effort.
     // Also, if a test times out, then it should not be marked as slow.
-    if (resultsForTest.slowestTime > MIN_SECONDS_FOR_SLOW_TEST &&
-        !resultsMap['TIMEOUT'] &&
+    if (isSlowTest(resultsForTest) && !resultsMap['TIMEOUT'] &&
         (!resultsForTest.modifiers ||
          !stringContains(resultsForTest.modifiers, 'SLOW'))) {
       missingExpectations.push('SLOW');
@@ -1200,13 +1257,12 @@
     return html + '</tr></thead><tbody>' + rowsHTML + '</tbody></table>';
   }
 
-  function setFullPageHTML(html) {
+  function appendHTML(html) {
     var startTime = Date.now();
     // InnerHTML to a div that's not in the document. This is
     // ~300ms faster in Safari 4 and Chrome 4 on mac.
     var div = document.createElement('div');
     div.innerHTML = html;
-    document.body.innerHTML = '';
     document.body.appendChild(div);
     logTime('Time to innerHTML', startTime);
   }
@@ -1276,8 +1332,8 @@
   }
 
   function getHTMLForIndividulTestOnAllBuilders(test) {
-    for (var builder in builders)
-      processTestRunsForBuilder(builder);
+    createTableHeadersArray('builder');
+    processTestRunsForAllBuilders();
 
     var testResults = testToResultsMap[test];
     var html = '';
@@ -1589,24 +1645,53 @@
    * Appends the expectations for each test listed.
    */
   function appendExpectations() {
-    if (currentState.showExpectations) {
-      var expectations = document.getElementsByClassName('expectations');
-      for (var i = 0, len = expectations.length; i < len; i++) {
-        loadExpectations(expectations[i]);
+    var expectations = currentState.showExpectations ?
+        document.getElementsByClassName('expectations') : [];
+    // Loading expectations is *very* slow. Use a large timeout to avoid
+    // totally hanging the renderer.
+    performChunkedAction(expectations, function(chunk) {
+      for (var i = 0, len = chunk.length; i < len; i++) {
+        loadExpectations(chunk[i]);
       }
-    }
+    }, hideLoadingUI, 10000);
+  }
+
+  function hideLoadingUI() {
+    $('loading-ui').style.display = 'none';
   }
 
   function generatePageForIndividualTests(tests) {
+    console.log('Number of tests: ' + tests.length);
+    appendHTML(getHTMLForNavBar());
+    performChunkedAction(tests, function(chunk) {
+      appendHTML(getHTMLForIndividualTests(chunk));
+    }, appendExpectations, 500);
+    $('tests-input').value = currentState.tests;
+  }
+
+  function performChunkedAction(tests, handleChunk, onComplete, timeout,
+      opt_index) {
+    var index = opt_index || 0;
+    setTimeout(function() {
+      var chunk = Array.prototype.slice.call(tests, index * CHUNK_SIZE,
+          (index + 1) * CHUNK_SIZE);
+      if (chunk.length) {
+        handleChunk(chunk);
+        performChunkedAction(tests, handleChunk, onComplete, timeout, ++index);
+      } else {
+        onComplete();
+      }
+    // No need for a timeout on the first chunked action.
+    }, index ? timeout : 0);
+  }
+
+  function getHTMLForIndividualTests(tests) {
     var testsHTML = [];
     for (var i = 0; i < tests.length; i++) {
-      testsHTML.push('<h2>' + tests[i] + '</h2>' +
-          getHTMLForIndividulTestOnAllBuilders(tests[i]));
+      testsHTML.push('<h2 onclick="selectContents(this)">' + tests[i] +
+          '</h2>' + getHTMLForIndividulTestOnAllBuilders(tests[i]));
     }
-    setFullPageHTML(getHTMLForNavBar() + testsHTML.join('<hr>'));
-
-    appendExpectations();
-    $('tests-input').value = currentState.tests;
+    return testsHTML.join('<hr>');
   }
 
   function getHTMLForNavBar(opt_builderName) {
@@ -1617,10 +1702,22 @@
           ' onclick=\'setState("builder", "' + builder + '")\'>' +
           builder + '</span>';
     }
+    var canaryLink = '<span class=link onClick="setState(\'useWebKitCanary\',' +
+        !currentState.useWebKitCanary + ');window.location.reload()">' +
+        (currentState.useWebKitCanary ? 'Main builders' : 'WebKit.org Canary') +
+        '</span>';
+
     return html + '</div>' +
         '<form id=tests-form ' +
         'onsubmit="setState(\'tests\', tests.value);return false;">' +
-        '<div>Show tests on all platforms: </div><input name=tests ' +
+        '<div>' + canaryLink + ' | <span class=link ' +
+        'onclick="setState(\'tests\', \'allIncorrectExpectations\')">' +
+        'All incorrect expectations</span> | '+
+        '<span class=link ' +
+        'onclick="setState(\'tests\', \'allSlowTests\')">All SLOW' +
+        '</span> | <span class=link ' +
+        'onclick="setState(\'tests\', \'allNeedSlowTests\')">All need ' +
+        'SLOW</span> | Show tests on all platforms: </div><input name=tests ' +
         'placeholder="Comma or space-separated list of tests or partial ' +
         'paths to show test results across all builders, e.g., ' +
         'LayoutTests/foo/bar.html,LayoutTests/foo/baz,forms" ' +
@@ -1629,8 +1726,7 @@
         'onsubmit="setState(\'maxResults\', maxResults.value);return false;"' +
         '><span>Number of results to show (max=500): </span>' +
         '<input name=maxResults id=max-results-input></form> | ' +
-        '<span class=link onclick="showLegend()">Show legend [type ?]</span> ' +
-        '<div id="loading-ui">LOADING...</div>';
+        '<span class=link onclick="showLegend()">Show legend [type ?]</span>';
   }
 
   function getLinkHTMLToToggleState(key, linkText) {
@@ -1664,13 +1760,15 @@
         'Flakiness reader order is newer --> older runs.</div>' +
         testsHTML;
 
-    setFullPageHTML(html);
+    appendHTML(html);
 
     var ths = document.getElementsByTagName('th');
     for (var i = 0; i < ths.length; i++) {
       ths[i].addEventListener('click', changeSort, false);
       ths[i].className = "sortable";
     }
+
+    hideLoadingUI();
   }
 
   function createTableHeadersArray(firstColumnHeader) {
@@ -1778,7 +1876,11 @@
       innerHTML += '<div class=fallback-header>' + platform + '</div>' +
         htmlForFallbackHelp(fallbacksMap[platform]);
     }
-    legend.innerHTML = innerHTML;
+    legend.innerHTML = innerHTML + '<div>TIMES:<ul>' +
+        '<li>&lt;1 second == !SLOW</li><li>&gt;1 second && &lt;' +
+        MIN_SECONDS_FOR_SLOW_TEST +
+        ' seconds == SLOW || !SLOW is fine</li><li>&gt;' +
+        MIN_SECONDS_FOR_SLOW_TEST + ' seconds == SLOW</li></ul></div>';
   }
 
   document.addEventListener('keydown', function(e) {

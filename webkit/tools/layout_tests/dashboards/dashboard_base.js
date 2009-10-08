@@ -6,13 +6,13 @@
  * The calling page is expected to implement three "abstract" functions/objects.
  * generatePage, validateHashParameter and defaultStateValues.
  */
- var pageLoadStartTime = Date.now();
+var pageLoadStartTime = Date.now();
 
 /**
  * Generates the contents of the dashboard. The page should override this with
  * a function that generates the page assuming all resources have loaded.
  */
- function generatePage() {
+function generatePage() {
 }
 
 /**
@@ -131,7 +131,6 @@ function validateParameter(state, key, value, validateFn) {
  * Parses window.location.hash and set the currentState values appropriately.
  */
 function parseParameters(parameterStr) {
-  saveStoredWindowLocation();
   currentState = {};
 
   var params = window.location.hash.substring(1).split('&');
@@ -162,13 +161,6 @@ function fillMissingValues(to, from) {
     if (!(state in to))
       to[state] = from[state];
   }
-}
-
-// Keep the location around for detecting changes to hash arguments
-// manually typed into the URL bar.
-var oldLocation;
-function saveStoredWindowLocation() {
-  oldLocation = window.location.href;
 }
 
 function appendScript(path) {
@@ -227,7 +219,7 @@ function ADD_RESULTS(builds) {
       resultsByBuilder[builderName] = builds[builderName];
   }
 
-  handleLocationChange();
+  handleResourceLoad();
 }
 
 function getPathToBuilderResultsFile(builderName) {
@@ -239,7 +231,7 @@ var expectationsLoaded = false;
 function ADD_EXPECTATIONS(expectations) {
   expectationsLoaded = true;
   expectationsByTest = expectations;
-  handleLocationChange();
+  handleResourceLoad();
 }
 
 function appendJSONScriptElements() {
@@ -253,30 +245,28 @@ function appendJSONScriptElements() {
   appendScript(getPathToBuilderResultsFile(builderName) + 'expectations.json');
 }
 
-function setLoadingUIDisplayStyle(value) {
-  if ($('loading-ui'))
-    $('loading-ui').style.display = value;
+var hasDoneInitialPageGeneration = false;
+
+function handleResourceLoad() {
+  if (!hasDoneInitialPageGeneration)
+    handleLocationChange();
 }
 
 function handleLocationChange() {
-  setLoadingUIDisplayStyle('block');
-  setTimeout(function() {
-    saveStoredWindowLocation();
-    parseParameters();
+  if (!expectationsLoaded)
+    return;
 
-    if (!expectationsLoaded)
+  for (var build in builders) {
+    if (!resultsByBuilder[build])
       return;
+  }
 
-    for (var build in builders) {
-      if (!resultsByBuilder[build])
-        return;
-    }
-
-    generatePage();
-
-    setLoadingUIDisplayStyle('none');
-  }, 0);
+  hasDoneInitialPageGeneration = true;
+  parseParameters();
+  generatePage();
 }
+
+window.onhashchange = handleLocationChange;
 
 /**
  * Sets the page state. Takes varargs of key, value pairs.
@@ -286,7 +276,6 @@ function setQueryParameter(var_args) {
     currentState[arguments[i]] = arguments[i + 1];
   }
   window.location.replace(getPermaLinkURL());
-  saveStoredWindowLocation();
 }
 
 function getPermaLinkURL() {
@@ -307,7 +296,8 @@ function logTime(msg, startTime) {
 
 function hidePopup() {
   var popup = $('popup');
-  popup.parentNode.removeChild(popup);
+  if (popup)
+    popup.parentNode.removeChild(popup);
 }
 
 function showPopup(e, html) {
@@ -351,8 +341,4 @@ window.addEventListener('load', function() {
       // This doesn't seem totally accurate as there is a race between
       // onload firing and the last script tag being executed.
       logTime('Time to load JS', pageLoadStartTime);
-      setInterval(function() {
-        if (oldLocation != window.location.href)
-          handleLocationChange();
-      }, 100);
     }, false);
