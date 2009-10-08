@@ -158,7 +158,8 @@ TEST_F(NPAPITester, DISABLED_SelfDeletePluginInvokeAlert) {
 
 // Tests if a plugin executing a self deleting script in the context of
 // a synchronous paint event works correctly
-TEST_F(NPAPIVisiblePluginTester, SelfDeletePluginInvokeInSynchronousPaint) {
+TEST_F(NPAPIVisiblePluginTester,
+       DISABLED_SelfDeletePluginInvokeInSynchronousPaint) {
   if (UITest::in_process_renderer())
     return;
 
