@@ -47,14 +47,9 @@
 // added. If your test wants one, it can derive from PlatformTest instead of
 // testing::Test.
 
-// Provides the Cocoa goodness without the extraneous window.
-// TODO(shess): It might make more sense to have CocoaTest as a
-// PlatformTest subclass which adds the Cocoa magic, then
-// CocoaViewTest as a further subclass which provides a convenience
-// window.
-class CocoaNoWindowTestHelper {
+class CocoaTestHelper {
  public:
-  CocoaNoWindowTestHelper() {
+  CocoaTestHelper() {
     // Look in the framework bundle for resources.
     FilePath path;
     PathService::Get(base::DIR_EXE, &path);
@@ -67,21 +62,17 @@ class CocoaNoWindowTestHelper {
     // Bootstrap Cocoa. It's very unhappy without this.
     [NSApplication sharedApplication];
 
-    // Set the duration of AppKit-evaluated animations (such as frame changes)
-    // to zero for testing purposes. That way they take effect immediately.
-    [[NSAnimationContext currentContext] setDuration:0.0];
-  }
-};
-
-class CocoaTestHelper : public CocoaNoWindowTestHelper {
- public:
-  CocoaTestHelper() {
+    // Create a window.
     window_.reset([[CocoaTestHelperWindow alloc] init]);
     if (DebugUtil::BeingDebugged()) {
       [window_ orderFront:nil];
     } else {
       [window_ orderBack:nil];
     }
+
+    // Set the duration of AppKit-evaluated animations (such as frame changes)
+    // to zero for testing purposes. That way they take effect immediately.
+    [[NSAnimationContext currentContext] setDuration:0.0];
   }
 
   // Access the Cocoa window created for the test.

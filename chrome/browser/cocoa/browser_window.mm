@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/cocoa/chrome_browser_window.h"
+#import "chrome/browser/cocoa/browser_window.h"
 
 #include "base/logging.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
@@ -33,14 +33,6 @@
   }
 
   return [super performKeyEquivalent:event];
-}
-
-- (void)setShouldHideTitle:(BOOL)flag {
-  shouldHideTitle_ = flag;
-}
-
--(BOOL)_isTitleHidden {
-  return shouldHideTitle_;
 }
 
 @end

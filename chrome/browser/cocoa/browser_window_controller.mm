@@ -24,7 +24,6 @@
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
 #import "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
-#import "chrome/browser/cocoa/chrome_browser_window.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
 #import "chrome/browser/cocoa/extension_shelf_controller.h"
 #import "chrome/browser/cocoa/find_bar_cocoa_controller.h"
@@ -361,8 +360,7 @@ willPositionSheet:(NSWindow*)sheet
   // message, since it just means that a menu extra (on the "system status bar")
   // was activated; we'll get another |-windowDidResignKey| if we ever really
   // lose key window status.
-  if ([NSApp isActive] &&
-      ([NSApp keyWindow] == static_cast<NSWindow*>(window_)))
+  if ([NSApp isActive] && ([NSApp keyWindow] == window_))
     return;
 
   // We need to deactivate the controls (in the "WebView"). To do this, get the
@@ -1240,10 +1238,6 @@ willPositionSheet:(NSWindow*)sheet
     maxY = NSMinY([[self tabStripView] frame]);
   }
   DCHECK_GE(maxY, minY);
-
-  // Suppress title drawing for normal windows (popups use normal
-  // window title bars).
-  [window_ setShouldHideTitle:[self isNormalWindow]];
 
   // Place the toolbar at the top of the reserved area, but only if we're not in
   // fullscreen mode.
