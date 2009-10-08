@@ -1,4 +1,4 @@
-.comment { /* while we're working on doc, comment out display */
+.todo, .comment { /* while we're working on doc, comment out display */
   color: rgb(255, 0, 0);
   display: none;
 }
@@ -10,7 +10,7 @@
 .pageData {
   display: none;
 }
- 
+
 body {
   font-family:Arial, Helvetica, sans-serif;
   font-size: 13px;
@@ -99,7 +99,7 @@ div#searchbox {
 dd {
   margin-bottom: 0.75em;
 }
- 
+
 ol li {
   margin-top: 1em;
 }
