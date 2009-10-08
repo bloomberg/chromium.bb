@@ -3253,9 +3253,6 @@
         'app/hard_error_handler_win.h',
         'app/scoped_ole_initializer.h',
       ],
-      'dependencies': [
-        '../build/util/support/support.gyp:*',
-      ],
       'mac_bundle_resources': [
         'app/app-Info.plist',
       ],
@@ -3269,6 +3266,11 @@
         'INFOPLIST_FILE': 'app/app-Info.plist',
       },
       'conditions': [
+        ['chrome_frame_define==1 and OS=="win"', {
+          'dependencies': [
+            '../chrome_frame/chrome_frame.gyp:npchrome_tab',
+          ],
+        }],
         ['OS=="linux" or OS=="freebsd"', {
           'actions': [
             {
@@ -5830,6 +5832,13 @@
             '../sandbox/sandbox.gyp:*',
             '../tools/memory_watcher/memory_watcher.gyp:*',
             '../v8/tools/gyp/v8.gyp:v8_shell',
+          ],
+          'conditions': [
+            ['chrome_frame_define==1', {
+              'dependencies': [
+                '../chrome_frame/chrome_frame.gyp:*',
+              ],
+            }],
           ],
         },
         {
