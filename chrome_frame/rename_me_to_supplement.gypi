@@ -18,13 +18,7 @@
   'variables': {
     'google_update_appid': '{8BA986DA-5100-405E-AA35-86F34A02ACBF}',
     'extra_installer_util_sources': 0,
-    'branding': 'Chrome',
     'chrome_frame_define': 1,
   },
 }
 
-# Local Variables:
-# tab-width:2
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=2 shiftwidth=2:
