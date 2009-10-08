@@ -43,7 +43,7 @@ class TemplateURLParserTest : public testing::Test {
     ASSERT_TRUE(file_util::PathExists(full_path));
 
     std::string contents;
-    file_util::ReadFileToString(full_path, &contents);
+    ASSERT_TRUE(file_util::ReadFileToString(full_path, &contents));
     parse_result_ = TemplateURLParser::Parse(
         reinterpret_cast<const unsigned char*>(contents.c_str()),
         contents.length(), filter, &template_url_);
