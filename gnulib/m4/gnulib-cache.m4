@@ -15,13 +15,14 @@
 
 
 # Specification in the form of a command-line invocation:
-#   gnulib-tool --import --dir=. --local-dir=gnulib/override --lib=libgnu --source-base=gnulib --m4-base=gnulib/m4 --doc-base=doc --tests-base=tests --aux-dir=build-aux --libtool --macro-prefix=gl getopt progname
+#   gnulib-tool --import --dir=. --local-dir=gnulib/override --lib=libgnu --source-base=gnulib --m4-base=gnulib/m4 --doc-base=doc --tests-base=tests --aux-dir=build-aux --libtool --macro-prefix=gl getopt progname version-etc
 
 # Specification in the form of a few gnulib-tool.m4 macro invocations:
 gl_LOCAL_DIR([gnulib/override])
 gl_MODULES([
   getopt
   progname
+  version-etc
 ])
 gl_AVOID([])
 gl_SOURCE_BASE([gnulib])

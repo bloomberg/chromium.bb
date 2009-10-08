@@ -25,6 +25,11 @@ AC_DEFUN([gl_EARLY],
   m4_pattern_allow([^gl_LIBOBJS$])dnl a variable
   m4_pattern_allow([^gl_LTLIBOBJS$])dnl a variable
   AC_REQUIRE([AC_PROG_RANLIB])
+  dnl Some compilers (e.g., AIX 5.3 cc) need to be in c99 mode
+  dnl for the builtin va_copy to work.  With Autoconf 2.60 or later,
+  dnl AC_PROG_CC_STDC arranges for this.  With older Autoconf AC_PROG_CC_STDC
+  dnl shouldn't hurt, though installers are on their own to set c99 mode.
+  AC_REQUIRE([AC_PROG_CC_STDC])
 ])
 
 # This macro should be invoked from ./configure.ac, in the section
@@ -43,6 +48,7 @@ AC_DEFUN([gl_INIT],
   gl_GETOPT
   AC_SUBST([LIBINTL])
   AC_SUBST([LTLIBINTL])
+  gl_STDARG_H
   gl_UNISTD_H
   m4_ifval(gl_LIBSOURCES_LIST, [
     m4_syscmd([test ! -d ]m4_defn([gl_LIBSOURCES_DIR])[ ||
@@ -180,10 +186,14 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/gettext.h
   lib/progname.c
   lib/progname.h
+  lib/stdarg.in.h
   lib/unistd.in.h
+  lib/version-etc.c
+  lib/version-etc.h
   m4/getopt.m4
   m4/gnulib-common.m4
   m4/include_next.m4
   m4/onceonly.m4
+  m4/stdarg.m4
   m4/unistd_h.m4
 ])
