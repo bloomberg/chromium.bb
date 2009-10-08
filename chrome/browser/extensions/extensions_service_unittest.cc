@@ -639,7 +639,7 @@ TEST_F(ExtensionsServiceTest, CleanupOnStartup) {
 
   // Simulate that one of them got partially deleted by clearing its pref.
   DictionaryValue* dict = prefs_->GetMutableDictionary(L"extensions.settings");
-  ASSERT_NE(NULL, dict);
+  ASSERT_TRUE(dict != NULL);
   dict->Remove(L"behllobkkfkfnphdnhnkndlbkcpglgmj", NULL);
 
   service_->Init();
