@@ -108,7 +108,51 @@ void KeywordEditorModelObserver::InvalidateIconCache(int start, int length) {
 
 // KeywordEditorCocoaController -----------------------------------------------
 
+namespace {
+
+typedef std::map<Profile*,KeywordEditorCocoaController*> ProfileControllerMap;
+
+}  // namespace
+
 @implementation KeywordEditorCocoaController
+
++ (KeywordEditorCocoaController*)sharedInstanceForProfile:(Profile*)profile {
+  ProfileControllerMap* map = Singleton<ProfileControllerMap>::get();
+  DCHECK(map != NULL);
+  ProfileControllerMap::iterator it = map->find(profile);
+  if (it != map->end()) {
+    return it->second;
+  }
+  return nil;
+}
+
+// TODO(shess): The Windows code watches a single global window which
+// is not distinguished by profile.  This code could distinguish by
+// profile by checking the controller's class and profile.
++ (void)showKeywordEditor:(Profile*)profile {
+  // http://crbug.com/23359 describes a case where this panel is
+  // opened from an incognito window, which can leave the panel
+  // holding onto a stale profile.  Since the same panel is used
+  // either way, arrange to use the original profile instead.
+  if (profile->IsOffTheRecord()) {
+    profile = profile->GetOriginalProfile();
+  }
+
+  ProfileControllerMap* map = Singleton<ProfileControllerMap>::get();
+  DCHECK(map != NULL);
+  ProfileControllerMap::iterator it = map->find(profile);
+  if (it == map->end()) {
+    // Since we don't currently support multiple profiles, this class
+    // has not been tested against them, so document that assumption.
+    DCHECK_EQ(map->size(), 0U);
+
+    KeywordEditorCocoaController* controller =
+        [[self alloc] initWithProfile:profile];
+    it = map->insert(std::make_pair(profile, controller)).first;
+  }
+
+  [it->second showWindow:nil];
+}
 
 - (id)initWithProfile:(Profile*)profile {
   DCHECK(profile);
@@ -155,6 +199,16 @@ void KeywordEditorModelObserver::InvalidateIconCache(int start, int length) {
 // When the window closes, clean ourselves up.
 - (void)windowWillClose:(NSNotification*)notif {
   [self autorelease];
+
+  ProfileControllerMap* map = Singleton<ProfileControllerMap>::get();
+  ProfileControllerMap::iterator it = map->find(profile_);
+  // It should not be possible for this to be missing.
+  // TODO(shess): Except that the unit test reaches in directly.
+  // Consider circling around and refactoring that.
+  //DCHECK(it != map->end());
+  if (it != map->end()) {
+    map->erase(it);
+  }
 }
 
 // The last page info window that was moved will determine the location of the

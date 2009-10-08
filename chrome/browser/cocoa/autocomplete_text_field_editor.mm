@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "grit/generated_resources.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/app/chrome_dll_resource.h"  // IDC_*
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 
 @implementation AutocompleteTextFieldEditor
@@ -100,10 +101,20 @@
 
       // TODO(rohitrao): If the clipboard is empty, should we show a
       // greyed-out "Paste and Go" or nothing at all?
-      if (label) {
+      if ([label length]) {
         [menu addItemWithTitle:label
                         action:@selector(pasteAndGo:)
                  keyEquivalent:@""];
+      }
+
+      label = l10n_util::GetNSStringWithFixup(IDS_EDIT_SEARCH_ENGINES);
+      DCHECK([label length]);
+      if ([label length]) {
+        [menu addItem:[NSMenuItem separatorItem]];
+        NSMenuItem* item = [menu addItemWithTitle:label
+                                           action:@selector(commandDispatch:)
+                                    keyEquivalent:@""];
+        [item setTag:IDC_EDIT_SEARCH_ENGINES];
       }
     }
   }

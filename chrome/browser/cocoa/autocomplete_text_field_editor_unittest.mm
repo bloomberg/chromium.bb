@@ -7,6 +7,7 @@
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "chrome/app/chrome_dll_resource.h"  // IDC_*
 #import "chrome/browser/cocoa/autocomplete_text_field_unittest_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "grit/generated_resources.h"
@@ -174,13 +175,18 @@ TEST_F(AutocompleteTextFieldEditorTest, CanPasteAndGoMenu) {
 
   NSMenu* menu = [editor_.get() menuForEvent:nil];
   NSArray* items = [menu itemArray];
-  ASSERT_EQ([items count], 4U);
+  ASSERT_EQ([items count], 6U);
   // TODO(shess): Check the titles, too?
   NSUInteger i = 0;  // Use an index to make future changes easier.
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(cut:));
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(copy:));
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(paste:));
   EXPECT_EQ([[items objectAtIndex:i++] action], @selector(pasteAndGo:));
+  EXPECT_TRUE([[items objectAtIndex:i++] isSeparatorItem]);
+
+  EXPECT_EQ([[items objectAtIndex:i] action], @selector(commandDispatch:));
+  EXPECT_EQ([[items objectAtIndex:i] tag], IDC_EDIT_SEARCH_ENGINES);
+  i++;
 }
 
 // Test that the menu is constructed correctly when !CanPasteAndGo().

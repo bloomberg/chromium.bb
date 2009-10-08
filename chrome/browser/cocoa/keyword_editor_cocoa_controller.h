@@ -74,7 +74,11 @@ class KeywordEditorModelObserver : public TemplateURLModelObserver,
 }
 @property (readonly) KeywordEditorController* controller;
 
-- (id)initWithProfile:(Profile*)profile;
+// Show the keyword editor associated with the given profile (or the
+// original profile if this is an incognito profile).  If no keyword
+// editor exists for this profile, create one and show it.  Any
+// resulting editor releases itself when closed.
++ (void)showKeywordEditor:(Profile*)profile;
 
 - (KeywordEditorController*)controller;
 
@@ -84,5 +88,16 @@ class KeywordEditorModelObserver : public TemplateURLModelObserver,
 - (IBAction)addKeyword:(id)sender;
 - (IBAction)deleteKeyword:(id)sender;
 - (IBAction)makeDefault:(id)sender;
+
+@end
+
+@interface KeywordEditorCocoaController (TestingAPI)
+
+// Instances of this class are managed, use +showKeywordEditor:.
+- (id)initWithProfile:(Profile*)profile;
+
+// Returns a reference to the shared instance for the given profile,
+// or nil if there is none.
++ (KeywordEditorCocoaController*)sharedInstanceForProfile:(Profile*)profile;
 
 @end

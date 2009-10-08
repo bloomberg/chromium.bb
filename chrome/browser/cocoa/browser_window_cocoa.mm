@@ -10,6 +10,7 @@
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
+#import "chrome/browser/cocoa/keyword_editor_cocoa_controller.h"
 #include "chrome/browser/cocoa/page_info_window_mac.h"
 #include "chrome/browser/cocoa/status_bubble_mac.h"
 #include "chrome/browser/cocoa/task_manager_mac.h"
@@ -248,7 +249,7 @@ void BrowserWindowCocoa::ShowImportDialog() {
 }
 
 void BrowserWindowCocoa::ShowSearchEnginesDialog() {
-  NOTIMPLEMENTED();
+  [KeywordEditorCocoaController showKeywordEditor:browser_->profile()];
 }
 
 void BrowserWindowCocoa::ShowPasswordManager() {
