@@ -541,6 +541,11 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_CONTROL1(ViewMsg_GetRendererHistograms,
                        int /* sequence number of Renderer Histograms. */)
 
+#if defined(USE_TCMALLOC)
+  // Asks the renderer to send back tcmalloc stats.
+  IPC_MESSAGE_CONTROL0(ViewMsg_GetRendererTcmalloc)
+#endif
+
   // Notifies the renderer about ui theme changes
   IPC_MESSAGE_ROUTED0(ViewMsg_ThemeChanged)
 
@@ -1359,6 +1364,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_CONTROL2(ViewHostMsg_RendererHistograms,
                        int, /* sequence number of Renderer Histograms. */
                        std::vector<std::string>)
+
+#if defined USE_TCMALLOC
+  // Send back tcmalloc stats output.
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_RendererTcmalloc,
+                       int          /* pid */,
+                       std::string  /* tcmalloc debug output */)
+#endif
 
   // Request for a DNS prefetch of the names in the array.
   // NameList is typedef'ed std::vector<std::string>

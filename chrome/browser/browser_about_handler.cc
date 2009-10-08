@@ -68,6 +68,13 @@ using sync_api::SyncManager;
 using base::Time;
 using base::TimeDelta;
 
+#if defined(USE_TCMALLOC)
+// Glue between the callback task and the method in the singleton.
+void AboutTcmallocRendererCallback(base::ProcessId pid, std::string output) {
+  Singleton<AboutTcmallocOutputs>::get()->RendererCallback(pid, output);
+}
+#endif
+
 namespace {
 
 // The paths used for the about pages.
@@ -191,11 +198,42 @@ std::string AboutDns() {
 #if defined(USE_TCMALLOC)
 std::string AboutTcmalloc(const std::string& query) {
   std::string data;
-  char buffer[1024*32];
+  AboutTcmallocOutputsType* outputs =
+      Singleton<AboutTcmallocOutputs>::get()->outputs();
+
+  // Display any stats for which we sent off requests the last time.
+  data.append("<html><head><title>About tcmalloc</title></head><body>\n");
+  data.append("<p>Stats as of last page load;");
+  data.append("reload to get stats as of this page load.</p>\n");
+  data.append("<table width=\"100%\">\n");
+  for (AboutTcmallocOutputsType::const_iterator oit = outputs->begin();
+       oit != outputs->end();
+       oit++) {
+    data.append("<tr><td bgcolor=\"yellow\">");
+    data.append(oit->first);
+    data.append("</td></tr>\n");
+    data.append("<tr><td><pre>\n");
+    data.append(oit->second);
+    data.append("</pre></td></tr>\n");
+  }
+  data.append("</table>\n");
+  data.append("</body></html>\n");
+
+  // Reset our collector singleton.
+  outputs->clear();
+
+  // Populate the collector with stats from the local browser process
+  // and send off requests to all the renderer processes.
+  char buffer[1024 * 32];
   MallocExtension::instance()->GetStats(buffer, sizeof(buffer));
-  data.append("<html><head><title>About tcmalloc</title></head><body><pre>\n");
-  data.append(buffer);
-  data.append("</pre></body></html>\n");
+  std::string browser("Browser");
+  Singleton<AboutTcmallocOutputs>::get()->SetOutput(browser, buffer);
+  RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
+  while (!it.IsAtEnd()) {
+    it.GetCurrentValue()->Send(new ViewMsg_GetRendererTcmalloc);
+    it.Advance();
+  }
+
   return data;
 }
 #endif

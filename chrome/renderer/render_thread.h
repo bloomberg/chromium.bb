@@ -172,6 +172,9 @@ class RenderThread : public RenderThreadBase,
   // Send all histograms to browser.
   void OnGetRendererHistograms(int sequence_number);
 
+  // Send tcmalloc info to browser.
+  void OnGetRendererTcmalloc();
+
   void OnExtensionMessageInvoke(const std::string& function_name,
                                 const ListValue& args);
   void OnPurgePluginListCache(bool reload_pages);

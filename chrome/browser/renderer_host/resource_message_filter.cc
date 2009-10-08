@@ -10,6 +10,7 @@
 #include "base/histogram.h"
 #include "base/process_util.h"
 #include "base/thread.h"
+#include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/chrome_plugin_browsing_context.h"
 #include "chrome/browser/chrome_thread.h"
@@ -372,6 +373,9 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
                           OnCloseIdleConnections)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SetCacheMode, OnSetCacheMode)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileSize, OnGetFileSize)
+#if defined(USE_TCMALLOC)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
+#endif
 
       IPC_MESSAGE_UNHANDLED(
           handled = false)
@@ -1047,3 +1051,11 @@ void ResourceMessageFilter::ReplyGetFileSize(int64 result, void* param) {
   // Getting file size callback done, decrease the ref count.
   Release();
 }
+
+#if defined(USE_TCMALLOC)
+void ResourceMessageFilter::OnRendererTcmalloc(base::ProcessId pid,
+                                               const std::string& output) {
+  ui_loop()->PostTask(FROM_HERE,
+      NewRunnableFunction(AboutTcmallocRendererCallback, pid, output));
+}
+#endif

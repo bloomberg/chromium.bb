@@ -16,6 +16,7 @@
 #include "base/file_path.h"
 #include "base/gfx/rect.h"
 #include "base/gfx/native_widget_types.h"
+#include "base/process.h"
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
 #include "base/string16.h"
@@ -173,6 +174,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnDnsPrefetch(const std::vector<std::string>& hostnames);
   void OnRendererHistograms(int sequence_number,
                             const std::vector<std::string>& histogram_info);
+#if defined(USE_TCMALLOC)
+  void OnRendererTcmalloc(base::ProcessId pid, const std::string& output);
+#endif
   void OnReceiveContextMenuMsg(const IPC::Message& msg);
   // Clipboard messages
   void OnClipboardWriteObjects(const Clipboard::ObjectMap& objects);

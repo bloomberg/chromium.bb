@@ -12,6 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/nullable_string16.h"
+#include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "base/stats_table.h"
 #include "base/string_util.h"
@@ -277,6 +278,10 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetCacheCapacities, OnSetCacheCapacities)
     IPC_MESSAGE_HANDLER(ViewMsg_GetRendererHistograms,
                         OnGetRendererHistograms)
+#if defined(USE_TCMALLOC)
+    IPC_MESSAGE_HANDLER(ViewMsg_GetRendererTcmalloc,
+                        OnGetRendererTcmalloc)
+#endif
     IPC_MESSAGE_HANDLER(ViewMsg_GetCacheResourceStats,
                         OnGetCacheResourceStats)
     IPC_MESSAGE_HANDLER(ViewMsg_UserScripts_UpdatedScripts,
@@ -362,6 +367,17 @@ void RenderThread::OnGetCacheResourceStats() {
 void RenderThread::OnGetRendererHistograms(int sequence_number) {
   SendHistograms(sequence_number);
 }
+
+#if defined(USE_TCMALLOC)
+void RenderThread::OnGetRendererTcmalloc() {
+  std::string result;
+  char buffer[1024 * 32];
+  int pid = base::GetCurrentProcId();
+  MallocExtension::instance()->GetStats(buffer, sizeof(buffer));
+  result.append(buffer);
+  Send(new ViewHostMsg_RendererTcmalloc(pid, result));
+}
+#endif
 
 void RenderThread::InformHostOfCacheStats() {
   EnsureWebKitInitialized();
