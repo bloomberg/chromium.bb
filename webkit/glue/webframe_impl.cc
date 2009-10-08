@@ -628,8 +628,8 @@ void WebFrameImpl::executeScriptInNewContext(
   frame_->script()->evaluateInNewContext(sources, extension_group);
 }
 
-void WebFrameImpl::executeScriptInNewWorld(
-    const WebScriptSource* sources_in, unsigned num_sources,
+void WebFrameImpl::executeScriptInIsolatedWorld(
+    int world_id, const WebScriptSource* sources_in, unsigned num_sources,
     int extension_group) {
   Vector<WebCore::ScriptSourceCode> sources;
 
@@ -640,7 +640,7 @@ void WebFrameImpl::executeScriptInNewWorld(
         sources_in[i].startLine));
   }
 
-  frame_->script()->evaluateInNewWorld(sources, extension_group);
+  frame_->script()->evaluateInIsolatedWorld(world_id, sources, extension_group);
 }
 
 void WebFrameImpl::addMessageToConsole(const WebConsoleMessage& message) {

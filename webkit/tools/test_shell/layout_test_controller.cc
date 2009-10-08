@@ -825,9 +825,12 @@ void LayoutTestController::setXSSAuditorEnabled(
 
 void LayoutTestController::evaluateScriptInIsolatedWorld(
     const CppArgumentList& args, CppVariant* result) {
-  if (args.size() > 0 && args[0].isString()) {
-    WebScriptSource source(WebString::fromUTF8(args[0].ToString()));
-    shell_->webView()->mainFrame()->executeScriptInNewWorld(&source, 1, 1);
+  if (args.size() >= 2 && args[0].isNumber() && args[1].isString()) {
+    WebScriptSource source(WebString::fromUTF8(args[1].ToString()));
+    // This relies on the iframe focusing itself when it loads. This is a bit
+    // sketchy, but it seems to be what other tests do.
+    shell_->webView()->focusedFrame()->executeScriptInIsolatedWorld(
+        args[0].ToInt32(), &source, 1, 1);
   }
   result->SetNull();
 }

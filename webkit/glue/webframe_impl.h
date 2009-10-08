@@ -99,9 +99,9 @@ class WebFrameImpl : public WebKit::WebFrame, public RefCounted<WebFrameImpl> {
   virtual void executeScriptInNewContext(
       const WebKit::WebScriptSource* sources, unsigned num_sources,
       int extension_group);
-  virtual void executeScriptInNewWorld(
-      const WebKit::WebScriptSource* sources, unsigned num_sources,
-      int extension_group);
+  virtual void executeScriptInIsolatedWorld(
+      int world_id,  const WebKit::WebScriptSource* sources,
+      unsigned num_sources, int extension_group);
   virtual void addMessageToConsole(const WebKit::WebConsoleMessage&);
   virtual void collectGarbage();
 #if WEBKIT_USING_V8

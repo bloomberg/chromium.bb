@@ -35,6 +35,8 @@ class UserScriptSlave {
   // testability.
   bool InjectScripts(WebKit::WebFrame* frame, UserScript::RunLocation location);
 
+  static int GetIsolatedWorldId(const std::string& extension_id);
+
   static void InsertInitExtensionCode(std::vector<WebScriptSource>* sources,
                                       const std::string& extension_id);
  private:

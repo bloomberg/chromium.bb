@@ -196,9 +196,9 @@ namespace WebKit {
         // extensionGroup is an embedder-provided specifier that controls which
         // v8 extensions are loaded into the new context - see
         // WebKit::registerExtension for the corresponding specifier.
-        virtual void executeScriptInNewWorld(const WebScriptSource* sources,
-                                             unsigned numSources,
-                                             int extensionGroup) = 0;
+        virtual void executeScriptInIsolatedWorld(
+            int worldId, const WebScriptSource* sources, unsigned numSources,
+            int extensionGroup) = 0;
 
         // Logs to the console associated with this frame.
         virtual void addMessageToConsole(const WebConsoleMessage&) = 0;

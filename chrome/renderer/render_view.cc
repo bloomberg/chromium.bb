@@ -3606,8 +3606,9 @@ void RenderView::OnExecuteCode(int request_id, const std::string& extension_id,
     sources.push_back(
         WebScriptSource(WebString::fromUTF8(code_string)));
     UserScriptSlave::InsertInitExtensionCode(&sources, extension_id);
-    main_frame->executeScriptInNewWorld(&sources.front(), sources.size(),
-                                        EXTENSION_GROUP_CONTENT_SCRIPTS);
+    main_frame->executeScriptInIsolatedWorld(
+        UserScriptSlave::GetIsolatedWorldId(extension_id),
+        &sources.front(), sources.size(), EXTENSION_GROUP_CONTENT_SCRIPTS);
   } else {
     main_frame->insertStyleText(WebString::fromUTF8(code_string), WebString());
   }

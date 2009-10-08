@@ -32,6 +32,25 @@ static const char kInitExtension[] =
     "chrome.extension = new chrome.Extension('%s');"
     "chrome.self.onConnect = chrome.extension.onConnect;";
 
+int UserScriptSlave::GetIsolatedWorldId(const std::string& extension_id) {
+  typedef std::map<std::string, int> IsolatedWorldMap;
+
+  static IsolatedWorldMap g_isolated_world_ids;
+  static int g_next_isolated_world_id = 1;
+
+  IsolatedWorldMap::iterator iter = g_isolated_world_ids.find(extension_id);
+  if (iter != g_isolated_world_ids.end())
+    return iter->second;
+
+  int new_id = g_next_isolated_world_id;
+  ++g_next_isolated_world_id;
+
+  // This map will tend to pile up over time, but realistically, you're never
+  // going to have enough extensions for it to matter.
+  g_isolated_world_ids[extension_id] = new_id;
+  return new_id;
+}
+
 UserScriptSlave::UserScriptSlave()
     : shared_memory_(NULL),
       script_deleter_(&scripts_),
@@ -159,6 +178,8 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
     }
 
     if (!sources.empty()) {
+      int isolated_world_id = 0;
+
       if (script->is_standalone()) {
         // For standalone scripts, we try to emulate the Greasemonkey API.
         sources.insert(sources.begin(),
@@ -167,10 +188,12 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
         // Setup chrome.self to contain an Extension object with the correct
         // ID.
         InsertInitExtensionCode(&sources, script->extension_id());
+        isolated_world_id = GetIsolatedWorldId(script->extension_id());
       }
 
-      frame->executeScriptInNewWorld(&sources.front(), sources.size(),
-                                     EXTENSION_GROUP_CONTENT_SCRIPTS);
+      frame->executeScriptInIsolatedWorld(
+          isolated_world_id, &sources.front(), sources.size(),
+          EXTENSION_GROUP_CONTENT_SCRIPTS);
     }
   }
 
