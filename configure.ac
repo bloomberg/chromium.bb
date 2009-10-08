@@ -4,11 +4,17 @@ AC_PREREQ(2.59)
 AC_INIT(liblouis, 1.7.0, john.boyer@abilitiessoft.com)
 AC_CONFIG_SRCDIR([liblouis/lou_backTranslateString.c])
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
-AM_CONFIG_HEADER(liblouis/louiscfg.h)
+AM_CONFIG_HEADER(liblouis/config.h)
 # AM_MAINTAINER_MODE
 
 # Checks for programs.
 AC_PROG_CC
+
+# gnulib
+gl_EARLY
+gl_INIT
+
+# Checks for more programs.
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
@@ -89,10 +95,11 @@ AC_CONFIG_FILES([Makefile
                  doc/Makefile
                  liblouis/Makefile
                  tables/Makefile
-		         liblouis.pc
+		 liblouis.pc
                  tests/Makefile
-				 python/Makefile
-				 python/louis/Makefile
-                 tools/Makefile])
+		 python/Makefile
+		 python/louis/Makefile
+                 tools/Makefile
+		 gnulib/Makefile])
 AC_OUTPUT
 
