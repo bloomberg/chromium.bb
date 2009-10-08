@@ -77,7 +77,6 @@
 
 #include "app/win_util.h"
 #include "chrome/browser/automation/ui_controls.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_url_handler.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/download/save_package.h"
@@ -540,12 +539,10 @@ TabContents* Browser::AddTabWithURL(
   return contents;
 }
 
-// TODO(brettw) this should be just AddTab and it should take a TabContents.
-TabContents* Browser::AddTabWithNavigationController(
-    NavigationController* ctrl, PageTransition::Type type) {
-  TabContents* tc = ctrl->tab_contents();
-  tabstrip_model_.AddTabContents(tc, -1, false, type, true);
-  return tc;
+TabContents* Browser::AddTab(TabContents* tab_contents,
+                             PageTransition::Type type) {
+  tabstrip_model_.AddTabContents(tab_contents, -1, false, type, true);
+  return tab_contents;
 }
 
 void Browser::AddTabContents(TabContents* new_contents,
@@ -1619,8 +1616,8 @@ void Browser::DuplicateContentsAt(int index) {
     browser->window()->Show();
 
     // The page transition below is only for the purpose of inserting the tab.
-    new_contents = browser->AddTabWithNavigationController(
-        &contents->Clone()->controller(),
+    new_contents = browser->AddTab(
+        contents->Clone()->controller().tab_contents(),
         PageTransition::LINK);
   }
 

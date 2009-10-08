@@ -234,10 +234,9 @@ class Browser : public TabStripModelDelegate,
                              bool force_index,
                              SiteInstance* instance);
 
-  // Add a new tab, given a NavigationController. A TabContents appropriate to
+  // Add a new tab, given a TabContents. A TabContents appropriate to
   // display the last committed entry is created and returned.
-  TabContents* AddTabWithNavigationController(NavigationController* ctrl,
-                                              PageTransition::Type type);
+  TabContents* AddTab(TabContents* tab_contents, PageTransition::Type type);
 
   // Add a tab with its session history restored from the SessionRestore
   // system. If select is true, the tab is selected. |tab_index| gives the index
