@@ -88,7 +88,7 @@ bool FocusManager::OnKeyEvent(const KeyEvent& event) {
 
   // Process keyboard accelerators.
   // If the key combination matches an accelerator, the accelerator is
-  // triggered, otherwise the key event is proceed as usual.
+  // triggered, otherwise the key event is processed as usual.
   Accelerator accelerator(event.GetKeyCode(),
                           event.IsShiftDown(),
                           event.IsControlDown(),

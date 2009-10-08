@@ -13,7 +13,6 @@
 #include "grit/generated_resources.h"
 
 // TODO(thakis): Autoremember window size/pos (and selected columns?)
-// TODO(thakis): Link that opens about:memory
 // TODO(thakis): Activate button iff something is selected, hook it up
 // TODO(thakis): Column sort comparator
 // TODO(thakis): Clicking column header doesn't sort
@@ -48,6 +47,10 @@
 
 - (void)reloadData {
   [tableView_ reloadData];
+}
+
+- (IBAction)statsLinkClicked:(id)sender {
+  TaskManager::GetInstance()->OpenAboutMemory();
 }
 
 - (void)awakeFromNib {

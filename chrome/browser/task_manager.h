@@ -125,6 +125,8 @@ class TaskManager {
 
   TaskManagerModel* model() const { return model_.get(); }
 
+  void OpenAboutMemory();
+
  private:
   FRIEND_TEST(TaskManagerTest, Basic);
   FRIEND_TEST(TaskManagerTest, Resources);

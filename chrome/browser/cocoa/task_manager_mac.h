@@ -22,6 +22,8 @@
 
 // Refreshes all data in the task manager table.
 - (void)reloadData;
+
+- (IBAction)statsLinkClicked:(id)sender;
 @end
 
 // This class listens to task changed events sent by chrome.

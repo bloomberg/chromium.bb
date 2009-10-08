@@ -14,12 +14,14 @@
 #include "base/thread.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/task_manager_resource_providers.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
+#include "chrome/common/url_constants.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -819,4 +821,21 @@ void TaskManager::OnWindowClosed() {
 // static
 TaskManager* TaskManager::GetInstance() {
   return Singleton<TaskManager>::get();
+}
+
+void TaskManager::OpenAboutMemory() {
+  Browser* browser = BrowserList::GetLastActive();
+  DCHECK(browser);
+  browser->OpenURL(GURL(chrome::kAboutMemoryURL), GURL(), NEW_FOREGROUND_TAB,
+                   PageTransition::LINK);
+  // In case the browser window is minimzed, show it. If this is an application
+  // or popup, we can only have one tab, hence we need to process this in a
+  // tabbed browser window. Currently, |browser| is pointing to the application,
+  // popup window. Therefore, we have to retrieve the last active tab again,
+  // since a new window has been used.
+  if (browser->type() & Browser::TYPE_APP_POPUP) {
+    browser = BrowserList::GetLastActive();
+    DCHECK(browser);
+  }
+  browser->window()->Show();
 }

@@ -16,7 +16,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
-#include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -581,20 +580,7 @@ void TaskManagerView::OnKeyDown(unsigned short virtual_keycode) {
 // views::LinkController implementation
 void TaskManagerView::LinkActivated(views::Link* source, int event_flags) {
   DCHECK(source == about_memory_link_);
-  Browser* browser = BrowserList::GetLastActive();
-  DCHECK(browser);
-  browser->OpenURL(GURL(chrome::kAboutMemoryURL), GURL(), NEW_FOREGROUND_TAB,
-                   PageTransition::LINK);
-  // In case the browser window is minimzed, show it. If this is an application
-  // or popup, we can only have one tab, hence we need to process this in a
-  // tabbed browser window. Currently, |browser| is pointing to the application,
-  // popup window. Therefore, we have to retrieve the last active tab again,
-  // since a new window has been used.
-  if (browser->type() & Browser::TYPE_APP_POPUP) {
-    browser = BrowserList::GetLastActive();
-    DCHECK(browser);
-  }
-  browser->window()->Show();
+  task_manager_->OpenAboutMemory();
 }
 
 void TaskManagerView::ShowContextMenu(views::View* source, int x, int y,
