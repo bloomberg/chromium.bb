@@ -206,15 +206,15 @@ void Textfield::AboutToRequestFocusFromTabTraversal(bool reverse) {
 }
 
 bool Textfield::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
-#if defined(OS_WIN)
   // TODO(hamaji): Figure out which keyboard combinations we need to add here,
   //               similar to LocationBarView::SkipDefaultKeyEventProcessing.
   base::KeyboardCode key = e.GetKeyCode();
   if (key == base::VKEY_BACK)
     return true;  // We'll handle BackSpace ourselves.
 
-  // We don't translate accelerators for ALT + NumPad digit, they are used for
-  // entering special characters.  We do translate alt-home.
+#if defined(OS_WIN)
+  // We don't translate accelerators for ALT + NumPad digit on Windows, they are
+  // used for entering special characters.  We do translate alt-home.
   if (e.IsAltDown() && (key != base::VKEY_HOME) &&
       win_util::IsNumPadDigit(key, e.IsExtendedKey()))
     return true;
