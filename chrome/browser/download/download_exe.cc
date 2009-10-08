@@ -125,6 +125,7 @@ static const char* const g_executables[] = {
   "shs",
   "shtm",
   "shtml",
+  "svg",
   "url",
   "vb",
   "vbe",
