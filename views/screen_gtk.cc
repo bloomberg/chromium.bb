@@ -38,8 +38,11 @@ gfx::Rect Screen::GetMonitorWorkAreaNearestWindow(gfx::NativeWindow window) {
 
 // static
 gfx::Rect Screen::GetMonitorAreaNearestPoint(const gfx::Point& point) {
-  // TODO: use |point|.
-  return GetPrimaryMonitorBounds();
+  GdkScreen* screen = gdk_screen_get_default();
+  gint monitor = gdk_screen_get_monitor_at_point(screen, point.x(), point.y());
+  GdkRectangle bounds;
+  gdk_screen_get_monitor_geometry(screen, monitor, &bounds);
+  return gfx::Rect(bounds);
 }
 
 }  // namespace
