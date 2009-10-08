@@ -1128,15 +1128,18 @@ TestSuite.prototype._expandScopeSections = function(filter, callback) {
     if (!filter(sections, i)) {
       continue;
     }
-    this.addSniffer(section, 'updateProperties', updateListener);
     ++toBeUpdatedCount;
     var populated = section.populated;
-    section.expand();
-    if (populated) {
-      // Make sure 'updateProperties' callback will be called at least once
-      // after it was overridden.
-      section.update();
-    }
+
+    this._hookGetPropertiesCallback(updateListener,
+      function() {
+        section.expand();
+        if (populated) {
+          // Make sure 'updateProperties' callback will be called at least once
+          // after it was overridden.
+          section.update();
+        }
+      });
   }
 };
 
@@ -1234,6 +1237,31 @@ TestSuite.prototype._findChildProperty = function(parent, childName) {
 
 
 /**
+ * Executes the 'code' with InjectedScriptAccess.getProperties overriden
+ * so that all callbacks passed to InjectedScriptAccess.getProperties are
+ * extended with the 'hook'.
+ * @param {Function} hook The hook function.
+ * @param {Function} code A code snippet to be executed.
+ */
+TestSuite.prototype._hookGetPropertiesCallback = function(hook, code) {
+  var orig = InjectedScriptAccess.getProperties;
+  InjectedScriptAccess.getProperties = function(objectProxy,
+      ignoreHasOwnProperty, callback) {
+    orig.call(InjectedScriptAccess, objectProxy, ignoreHasOwnProperty,
+        function() {
+          callback.apply(this, arguments);
+          hook();
+        });
+  };
+  try {
+    code();
+  } finally {
+    InjectedScriptAccess.getProperties = orig;
+  }
+};
+
+
+/**
  * Tests that all elements in prototype chain of an object have expected
  * intrinic proprties(__proto__, constructor, prototype).
  */
@@ -1272,9 +1300,12 @@ TestSuite.prototype.testDebugIntrinsicProperties = function() {
         localScopeSection.propertiesTreeOutline, 'a');
     test.assertTrue(!!aTreeElement, 'Not found');
 
-    var orig = overrideGetProperties(checkA.bind(null, aTreeElement));
-    aTreeElement.expand();
-    InjectedScriptAccess.getProperties = orig;
+    test._hookGetPropertiesCallback(
+        checkA.bind(null, aTreeElement),
+        function () {
+          aTreeElement.expand();
+        });
+
   }
 
   function checkA(aTreeElement) {
@@ -1283,6 +1314,8 @@ TestSuite.prototype.testDebugIntrinsicProperties = function() {
           'constructor', 'function Child()',
           '__proto__', 'Object',
           'prototype', 'undefined',
+          'parentField', '10',
+          'childField', '20',
         ]);
     expandProto(aTreeElement, checkAProto);
   }
@@ -1293,6 +1326,7 @@ TestSuite.prototype.testDebugIntrinsicProperties = function() {
           'constructor', 'function Child()',
           '__proto__', 'Object',
           'prototype', 'undefined',
+          'childProtoField', '21',
         ]);
     expandProto(treeElement, checkAProtoProto);
   }
@@ -1303,6 +1337,7 @@ TestSuite.prototype.testDebugIntrinsicProperties = function() {
           'constructor', 'function Parent()',
           '__proto__', 'Object',
           'prototype', 'undefined',
+          'parentProtoField', '11',
         ]);
     expandProto(treeElement, checkAProtoProtoProto);
   }
@@ -1317,26 +1352,14 @@ TestSuite.prototype.testDebugIntrinsicProperties = function() {
     test.releaseControl();
   }
 
-  function overrideGetProperties(afterCallback) {
-    var orig = InjectedScriptAccess.getProperties;
-    InjectedScriptAccess.getProperties = function(objectProxy,
-        ignoreHasOwnProperty, callback) {
-      orig.call(InjectedScriptAccess, objectProxy, ignoreHasOwnProperty,
-          function() {
-            callback.apply(this, arguments);
-            afterCallback();
-          });
-    };
-    return orig;
-  }
-
   function expandProto(treeElement, callback) {
     var proto = test._findChildProperty(treeElement, '__proto__');
     test.assertTrue(proto, '__proro__ not found');
 
-    var orig = overrideGetProperties(callback.bind(null, proto));
-    proto.expand();
-    InjectedScriptAccess.getProperties = orig;
+    test._hookGetPropertiesCallback(callback.bind(null, proto),
+        function() {
+          proto.expand();
+        });
   }
 
   function checkIntrinsicProperties(treeElement, expectations) {
