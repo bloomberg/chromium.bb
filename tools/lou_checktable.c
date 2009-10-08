@@ -27,22 +27,89 @@
 #include <string.h>
 #include <stdlib.h>
 #include "louis.h"
+#include <getopt.h>
+#include "progname.h"
+#include "config.h"
+#include "version-etc.h"
+
+static const struct option longopts[] =
+{
+  { "help", no_argument, NULL, 'h' },
+  { "version", no_argument, NULL, 'v' },
+  { NULL, 0, NULL, 0 }
+};
+
+const char version_etc_copyright[] =
+  "Copyright %s %d ViewPlus Technologies, Inc. and JJB Software, Inc.";
+
+const char program_author[] = "John J. Boyer";
+
+static void
+print_help (void)
+{
+  printf ("\
+Usage: %s [OPTION] TABLE\n", program_name);
+  
+  fputs ("\
+Test a translation table.\n", stdout);
+
+  fputs ("\
+  -h, --help          display this help and exit\n\
+  -v, --version       display version information and exit\n", stdout);
+
+  printf ("\n");
+  printf ("\
+Report bugs to <%s>.\n", PACKAGE_BUGREPORT);
+}
 
 int
 main (int argc, char **argv)
 {
   const TranslationTableHeader *table;
-  if (argc != 2)
+  int optc;
+
+  set_program_name (argv[0]);
+
+  while ((optc = getopt_long (argc, argv, "hv", longopts, NULL)) != -1)
+    switch (optc)
+      {
+      /* --help and --version exit immediately, per GNU coding standards.  */
+      case 'v':
+        version_etc (stdout, program_name, PACKAGE_NAME, VERSION, program_author, (char *) NULL);
+        exit (EXIT_SUCCESS);
+        break;
+      case 'h':
+        print_help ();
+        exit (EXIT_SUCCESS);
+        break;
+      default:
+	fprintf (stderr, "Try `%s --help' for more information.\n",
+		 program_name);
+	exit (EXIT_FAILURE);
+        break;
+      }
+
+  if (optind != argc - 1)
     {
-      fprintf (stderr, "Usage: lou_checktable tablename\n");
-      exit (1);
+      /* Print error message and exit.  */
+      if (optind < argc - 1)
+	fprintf (stderr, "%s: extra operand: %s\n",
+		 program_name, argv[optind + 1]);
+      else
+	fprintf (stderr, "%s: no table specified\n", 
+		 program_name);
+      fprintf (stderr, "Try `%s --help' for more information.\n",
+               program_name);
+      exit (EXIT_FAILURE);
     }
-  if (!(table = lou_getTable (argv[1])))
+
+  if (!(table = lou_getTable (argv[optind])))
     {
       lou_free ();
-      return 1;
+      exit (EXIT_FAILURE);
     }
   fprintf (stderr, "No errors found.\n");
   lou_free ();
-  return 0;
+  exit (EXIT_SUCCESS);
 }
+
