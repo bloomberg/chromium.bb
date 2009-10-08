@@ -3116,3 +3116,26 @@ BUG_JOHNNYG REBASELINE : LayoutTests/media/controls-strict.html = FAIL
 BUG_JOHNNYG REBASELINE : LayoutTests/media/video-controls-rendering.html = FAIL
 BUG_JOHNNYG REBASELINE : LayoutTests/media/video-display-toggle.html = FAIL
 BUG_JOHNNYG REBASELINE : LayoutTests/media/video-empty-source.html = FAIL
+
+// WebKit roll 49260:49288
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/all-window-properties.html = FAIL
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/all-window-prototypes.html = FAIL
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/body-properties.html = FAIL
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/body-prototype.html = FAIL
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/click-event.html = FAIL
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/document-open.html = FAIL
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/document-properties.html = FAIL
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/document-prototype.html = FAIL
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/global-variables.html = FAIL
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/image-properties.html = FAIL
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/image-prototype.html = FAIL
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/location-properties.html = FAIL
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/location-prototype.html = FAIL
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/number-prototype.html = FAIL
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/object-prototype.html = FAIL
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/storage-properties.html = FAIL
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/storage-prototype.html = FAIL
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/string-prototype.html = FAIL
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/window-properties.html = FAIL
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/window-setTimeout-function.html = TIMEOUT
+BUG_AA : LayoutTests/http/tests/security/isolatedWorld/window-setTimeout-string.html = TIMEOUT
