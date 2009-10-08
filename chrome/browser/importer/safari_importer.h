@@ -89,7 +89,6 @@ class SafariImporter : public Importer {
                        const FaviconMap& favicon_map,
                        std::vector<history::ImportedFavIconUsage>* favicons);
 
-  ProfileWriter* writer_;
   FilePath library_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(SafariImporter);

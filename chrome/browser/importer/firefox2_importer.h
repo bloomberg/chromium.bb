@@ -113,7 +113,6 @@ class Firefox2Importer : public Importer {
       const GURL& favicon_data,
       std::vector<history::ImportedFavIconUsage>* favicons);
 
-  ProfileWriter* writer_;
   std::wstring source_path_;
   std::wstring app_path_;
   // If true, we only parse the bookmarks.html file specified as source_path_.

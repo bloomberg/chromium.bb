@@ -74,8 +74,7 @@ const char Toolbar5Importer::kT5FrontEndUrlTemplate[] =
 
 // The constructor should set the initial state to NOT_USED.
 Toolbar5Importer::Toolbar5Importer()
-    : writer_(NULL),
-      state_(NOT_USED),
+    : state_(NOT_USED),
       items_to_import_(NONE),
       token_fetcher_(NULL),
       data_fetcher_(NULL) {

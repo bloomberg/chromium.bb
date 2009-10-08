@@ -40,7 +40,7 @@ bool CanImportSafariURL(const GURL& url) {
 }  // namespace
 
 SafariImporter::SafariImporter(const FilePath& library_dir)
-    : writer_(NULL), library_dir_(library_dir) {
+    : library_dir_(library_dir) {
 }
 
 SafariImporter::~SafariImporter() {

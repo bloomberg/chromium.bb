@@ -148,9 +148,6 @@ class Toolbar5Importer : public URLFetcher::Delegate, public Importer {
   void AddBookmarksToChrome(
       const std::vector<ProfileWriter::BookmarkEntry>& bookmarks);
 
-  // The writer used in this importer is stored in writer_.
-  ProfileWriter* writer_;
-
   // Internal state is stored in state_.
   InternalStateEnum state_;
 

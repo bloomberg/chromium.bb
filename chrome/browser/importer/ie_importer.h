@@ -59,9 +59,6 @@ class IEImporter : public Importer {
   // Determines which version of IE is in use.
   int CurrentIEVersion() const;
 
-  // Hosts the writer used in this importer.
-  ProfileWriter* writer_;
-
   // IE PStore subkey GUID: AutoComplete password & form data.
   static const GUID kPStoreAutocompleteGUID;
 
