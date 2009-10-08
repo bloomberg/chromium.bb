@@ -58,16 +58,23 @@
 // SLOW TESTS
 // -----------------------------------------------------------------
 
-BUG_OJAN SLOW : LayoutTests/fast/js/regexp-overflow.html = PASS
-BUG_OJAN SLOW : LayoutTests/http/tests/misc/DOMContentLoaded-event.html = PASS
-BUG_OJAN SLOW : LayoutTests/http/tests/navigation/multiple-back-forward-entries.html = PASS
-BUG_OJAN SLOW : LayoutTests/http/tests/xmlhttprequest/simple-cross-origin-progress-events.html = PASS
-BUG_OJAN SLOW MAC LINUX : LayoutTests/http/tests/xmlhttprequest/small-chunks-response-text.html = PASS
-BUG_OJAN SLOW WIN RELEASE : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS
-BUG_OJAN SLOW LINUX : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS
+BUG24182 SLOW : LayoutTests/fast/js/regexp-overflow.html = PASS
+BUG24182 SLOW : LayoutTests/http/tests/misc/DOMContentLoaded-event.html = PASS
+BUG24182 SLOW : LayoutTests/http/tests/navigation/multiple-back-forward-entries.html = PASS
+BUG24182 SLOW : LayoutTests/http/tests/xmlhttprequest/simple-cross-origin-progress-events.html = PASS
+BUG24182 SLOW MAC LINUX : LayoutTests/http/tests/xmlhttprequest/small-chunks-response-text.html = PASS
+BUG24182 SLOW WIN RELEASE : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS
+BUG24182 SLOW LINUX : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS
+BUG24182 SLOW WIN MAC : LayoutTests/svg/custom/invisible-text-after-scrolling.xhtml = PASS
+BUG24182 SLOW : LayoutTests/tables/mozilla/other/slashlogo.html = PASS
+
+BUG24182 SLOW WIN LINUX: LayoutTests/tables/mozilla/bugs/bug113235-1.html = PASS
+BUG24182 SLOW DEBUG : LayoutTests/fast/js/toString-and-valueOf-override.html = PASS
+BUG24182 SLOW WIN RELEASE : LayoutTests/fast/dom/Window/webkitConvertPoint.html = PASS
+BUG24182 WIN DEBUG SLOW : LayoutTests/http/tests/loading/redirect-methods.html = PASS
+BUG24182 WIN SLOW : LayoutTests/http/tests/cache/subresource-expiration.html = PASS
+
 BUG18702 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS TIMEOUT
-BUG_OJAN SLOW WIN MAC : LayoutTests/svg/custom/invisible-text-after-scrolling.xhtml = PASS
-BUG_OJAN SLOW : LayoutTests/tables/mozilla/other/slashlogo.html = PASS
 
 // -----------------------------------------------------------------
 // SKIPPED TESTS
@@ -185,7 +192,7 @@ WONTFIX : LayoutTests/fast/dom/gc-10.html = FAIL
 // This fails because we're missing various useless apple-specific
 // properties on the window object.
 // This test also timeouts in Debug mode.
-BUG1058654 WONTFIX : LayoutTests/fast/dom/Window/window-properties.html = FAIL TIMEOUT
+BUG1058654 WONTFIX SLOW : LayoutTests/fast/dom/Window/window-properties.html = FAIL
 
 // Safari specific test to ensure that JavaScript errors aren't logged when in
 // private browsing mode.
@@ -731,7 +738,7 @@ BUG9798 BUG13907 WIN LINUX DEBUG : LayoutTests/media/video-load-networkState.htm
 BUG13907 SLOW: LayoutTests/media/video-loop.html = FAIL
 BUG13907 : LayoutTests/media/video-no-audio.html = TIMEOUT
 BUG13907 : LayoutTests/media/video-played-collapse.html = FAIL
-BUG13907 : LayoutTests/media/video-played-ranges-1.html = FAIL
+BUG13907 SLOW : LayoutTests/media/video-played-ranges-1.html = FAIL
 BUG13907 : LayoutTests/media/video-played-reset.html = FAIL
 BUG13907 : LayoutTests/media/video-play-pause-events.html = TIMEOUT PASS
 BUG13907 : LayoutTests/media/video-seek-past-end-playing.html = FAIL
@@ -948,7 +955,7 @@ BUG992321 LINUX WIN : LayoutTests/svg/custom/path-textPath-simulation.svg = FAIL
 // but I feel like ours makes more sense.
 // The crash started occuring after the WebKit merge 43242:43321
 BUG992321 RELEASE : LayoutTests/svg/custom/stroke-width-click.svg = FAIL
-BUG992321 DEBUG : LayoutTests/svg/custom/stroke-width-click.svg = CRASH
+BUG992321 DEBUG SLOW : LayoutTests/svg/custom/stroke-width-click.svg = CRASH
 
 // The red marker is not drawing the same way as the mac.
 BUG992321 LINUX WIN : LayoutTests/svg/custom/marker-changes.svg = PASS FAIL
@@ -1010,7 +1017,8 @@ BUG10304 LINUX : LayoutTests/svg/custom/use-referencing-nonexisting-symbol.svg =
 BUG10304 LINUX : LayoutTests/svg/hixie/perf/003.xml = FAIL
 BUG10304 LINUX : LayoutTests/svg/hixie/perf/004.xml = FAIL
 BUG10304 LINUX : LayoutTests/svg/hixie/perf/005.xml = TIMEOUT FAIL
-BUG10304 LINUX : LayoutTests/svg/hixie/perf/006.xml = FAIL
+BUG10304 LINUX RELEASE : LayoutTests/svg/hixie/perf/006.xml = FAIL
+BUG10304 LINUX DEBUG SLOW : LayoutTests/svg/hixie/perf/006.xml = FAIL
 BUG10304 LINUX : LayoutTests/svg/hixie/text/003b.xml = FAIL
 BUG10304 LINUX : LayoutTests/svg/text/text-spacing-01-b.svg = FAIL
 BUG10304 LINUX : LayoutTests/svg/text/text-text-01-b.svg = FAIL
@@ -1467,7 +1475,7 @@ BUG10382 MAC : LayoutTests/transitions/shorthand-border-transitions.html = FAIL 
 // green so new mac regressions are caught much quicker.
 // (there are a few others marked w/ multiple status like this in other parts of
 // the file, but they were left there as the comments in those areas are valid.)
-BUG10384 MAC : LayoutTests/fast/dom/Window/new-window-opener.html = CRASH TIMEOUT FAIL
+BUG10384 MAC SLOW : LayoutTests/fast/dom/Window/new-window-opener.html = FAIL
 BUG10384 MAC : LayoutTests/fast/forms/focus2.html = CRASH FAIL
 
 BUG10399 MAC : LayoutTests/fast/encoding/char-encoding-mac.html = FAIL
@@ -2361,7 +2369,7 @@ BUG9161 RELEASE : LayoutTests/fast/forms/basic-textareas.html = FAIL
 BUG9161 DEBUG SLOW : LayoutTests/fast/forms/basic-textareas.html = FAIL
 
 // Tests that fail in debug mode on linux
-BUG10454 DEBUG LINUX : LayoutTests/svg/custom/mask-excessive-malloc.svg = CRASH
+BUG10454 DEBUG LINUX SLOW : LayoutTests/svg/custom/mask-excessive-malloc.svg = CRASH
 
 // This test hits a stack-overflow exception earlier in debug mode than in
 // release mode on Windows.
@@ -2486,7 +2494,8 @@ BUG9798 MAC RELEASE : LayoutTests/fast/forms/menulist-separator-painting.html = 
 BUG9798 WIN RELEASE : LayoutTests/fast/forms/textarea-setvalue-submit.html = CRASH PASS
 BUG9798 LINUX DEBUG : LayoutTests/fast/frames/calculate-order.html = CRASH PASS
 BUG9798 LINUX RELEASE : LayoutTests/fast/frames/calculate-percentage.html = CRASH PASS
-BUG9798 LINUX : LayoutTests/fast/frames/calculate-round.html = CRASH PASS
+BUG9798 LINUX RELEASE : LayoutTests/fast/frames/calculate-round.html = CRASH PASS
+BUG9798 LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-round.html = CRASH PASS
 BUG9798 MAC LINUX DEBUG : LayoutTests/fast/frames/frame-limit.html = TIMEOUT PASS
 BUG9798 LINUX RELEASE : LayoutTests/fast/frames/frame-limit.html = CRASH PASS
 BUG9798 MAC DEBUG : LayoutTests/fast/frames/frame-name-reset.html = TIMEOUT PASS
@@ -2713,7 +2722,7 @@ BUG14673 WIN SLOW : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-author
 BUG14673 LINUX MAC : LayoutTests/http/tests/xmlhttprequest/cross-origin-no-authorization.html = FAIL
 
 // Need investigation: test shell crashers.
-BUG14752 LINUX : LayoutTests/http/tests/cache/subresource-expiration.html = CRASH FAIL PASS
+BUG14752 LINUX SLOW : LayoutTests/http/tests/cache/subresource-expiration.html = FAIL PASS
 BUG14751 LINUX DEBUG: LayoutTests/css2.1/atrule_longest_match.html = CRASH FAIL PASS
 BUG14767 LINUX : LayoutTests/dom/html/level1/core/documentgetdoctypenodtd.html = CRASH FAIL PASS
 
@@ -2762,7 +2771,6 @@ BUG16690 SKIP MAC : LayoutTests/fast/text/international/khmer-selection.html = F
 
 // WebKit merge 42738:45840
 // New tests, need baseline.
-BUG16240 WIN SLOW : LayoutTests/http/tests/cache/subresource-expiration.html = PASS
 BUG16240 MAC : LayoutTests/http/tests/cache/subresource-expiration.html = PASS TIMEOUT
 
 // HTML5 DataGrid bindings are not enabled yet because the feature's not fully implemented.
@@ -2887,12 +2895,11 @@ BUG18656 MAC : LayoutTests/fast/dom/Window/window-lookup-precedence.html = FAIL 
 BUG18724 LINUX DEBUG : LayoutTests/transitions/transition-drt-api-delay.html = PASS CRASH
 
 // Flaky timeout
-BUG18659 WIN DEBUG : LayoutTests/http/tests/loading/redirect-methods.html = PASS TIMEOUT
 BUG18733 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/cross-origin-authorization.html = PASS TIMEOUT
 BUG18740 WIN MAC DEBUG : LayoutTests/http/tests/security/credentials-in-referer.html = PASS TIMEOUT
 
 // Test failures caused by re-enabling skia asserts.
-BUG18896 WIN LINUX DEBUG : LayoutTests/svg/batik/paints/gradientLimit.svg = FAIL
+BUG18896 WIN LINUX DEBUG SLOW : LayoutTests/svg/batik/paints/gradientLimit.svg = FAIL
 
 // Test failures from WebKit merge 46894 to 46977
 BUG18939 : LayoutTests/fast/js/function-declaration.html = FAIL
