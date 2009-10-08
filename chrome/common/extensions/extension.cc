@@ -429,9 +429,16 @@ bool Extension::ContainsNonThemeKeys(const DictionaryValue& source) {
 // static
 ExtensionResource Extension::GetResource(const FilePath& extension_path,
                                          const std::string& relative_path) {
+  // IsAbsolutePath gets confused on Unix if relative path starts with /.
+  // Lets remove leading / if there is one.
+  size_t start_pos = relative_path.find_first_not_of("/");
+  if (start_pos == std::string::npos)
+    return ExtensionResource();
+  std::string trimmed_path = relative_path.substr(start_pos);
+
   FilePath relative_resource_path;
   return ExtensionResource(extension_path,
-                           relative_resource_path.AppendASCII(relative_path));
+                           relative_resource_path.AppendASCII(trimmed_path));
 }
 
 Extension::Extension(const FilePath& path)
