@@ -47,6 +47,9 @@
 #include "ipc/ipc_message.h"
 #include "webkit/api/public/WebCache.h"
 #include "webkit/api/public/WebColor.h"
+#include "webkit/api/public/WebCrossOriginPreflightResultCache.h"
+#include "webkit/api/public/WebFontCache.h"
+#include "webkit/api/public/WebColor.h"
 #include "webkit/api/public/WebKit.h"
 #include "webkit/api/public/WebStorageEventDispatcher.h"
 #include "webkit/api/public/WebString.h"
@@ -62,6 +65,8 @@
 #endif
 
 using WebKit::WebCache;
+using WebKit::WebCrossOriginPreflightResultCache;
+using WebKit::WebFontCache;
 using WebKit::WebString;
 using WebKit::WebStorageEventDispatcher;
 
@@ -292,6 +297,7 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnExtensionMessageInvoke)
     IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetFunctionNames,
                         OnSetExtensionFunctionNames)
+    IPC_MESSAGE_HANDLER(ViewMsg_PurgeMemory, OnPurgeMemory)
     IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache,
                         OnPurgePluginListCache)
     IPC_MESSAGE_HANDLER(ViewMsg_Extension_UpdatePageActions,
@@ -523,6 +529,32 @@ void RenderThread::IdleHandler() {
 void RenderThread::OnExtensionMessageInvoke(const std::string& function_name,
                                             const ListValue& args) {
   RendererExtensionBindings::Invoke(function_name, args, NULL);
+}
+
+void RenderThread::OnPurgeMemory() {
+  EnsureWebKitInitialized();
+
+  // Clear the object cache (as much as possible; some live objects cannot be
+  // freed).
+  WebCache::clear();
+
+  // Clear the font/glyph cache.
+  WebFontCache::clear();
+
+  // Clear the Cross-Origin Preflight cache.
+  WebCrossOriginPreflightResultCache::clear();
+
+  // Repeatedly call the V8 idle notification until it returns true ("nothing
+  // more to free").  Note that it makes more sense to do this than to implement
+  // a new "delete everything" pass because object references make it difficult
+  // to free everything possible in just one pass.
+  while (!v8::V8::IdleNotification())
+    ;
+
+#if defined(OS_WIN)
+  // Tell tcmalloc to release any free pages it's still holding.
+  MallocExtension::instance()->ReleaseFreeMemory();
+#endif
 }
 
 void RenderThread::OnPurgePluginListCache(bool reload_pages) {

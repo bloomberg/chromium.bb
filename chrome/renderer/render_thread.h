@@ -177,6 +177,7 @@ class RenderThread : public RenderThreadBase,
 
   void OnExtensionMessageInvoke(const std::string& function_name,
                                 const ListValue& args);
+  void OnPurgeMemory();
   void OnPurgePluginListCache(bool reload_pages);
 
   // Gather usage statistics from the in-memory cache and inform our host.

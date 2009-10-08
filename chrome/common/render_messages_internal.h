@@ -139,6 +139,12 @@ IPC_BEGIN_MESSAGES(View)
                       int /* document_cookie */,
                       bool /* success */)
 
+  // Tells the renderer to dump as much memory as it can, perhaps because we
+  // have memory pressure or the renderer is (or will be) paged out.  This
+  // should only result in purging objects we can recalculate, e.g. caches or
+  // JS garbage, not in purging irreplaceable objects.
+  IPC_MESSAGE_CONTROL0(ViewMsg_PurgeMemory)
+
   // Tells the render view that a ViewHostMsg_ScrollRect message was processed.
   // This signals the render view that it can send another ScrollRect message.
   IPC_MESSAGE_ROUTED0(ViewMsg_ScrollRect_ACK)
