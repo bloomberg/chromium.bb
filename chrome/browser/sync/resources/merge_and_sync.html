@@ -28,7 +28,8 @@
      var throbber = document.getElementById('throbber_container');
      throbber.style.display = "none";
      document.getElementById("header").innerHTML =
-         "<font size='-1'><b>" + templateData['alldone'] + "</b></font>";
+         "<p><font size='-1'><b>" + templateData['alldone']
+         + "</b></font></p>";
      document.getElementById("close").value = templateData['closelabel'];
      setTimeout(Close, 1600);
     }
@@ -37,7 +38,8 @@
      var throbber = document.getElementById('throbber_container');
      throbber.style.display = "none";
      document.getElementById("header").innerHTML =
-         "<font size='-1'><b>" + templateData['setuperror'] + "</b></font>";
+         "<p><font size='-1'><b>" + templateData['setuperror']
+         + "</b></font></p>";
     }
     
 </script>
