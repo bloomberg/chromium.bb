@@ -545,7 +545,6 @@ drm_intel_gem_bo_alloc_for_render(drm_intel_bufmgr *bufmgr,
 				  unsigned long size,
 				  unsigned int alignment)
 {
-	assert(alignment <= 4096);
 	return drm_intel_gem_bo_alloc_internal(bufmgr, name, size,
 					       BO_ALLOC_FOR_RENDER);
 }
@@ -556,7 +555,6 @@ drm_intel_gem_bo_alloc(drm_intel_bufmgr *bufmgr,
 		       unsigned long size,
 		       unsigned int alignment)
 {
-	assert(alignment <= 4096);
 	return drm_intel_gem_bo_alloc_internal(bufmgr, name, size, 0);
 }
 
