@@ -47,6 +47,7 @@ void ThumbnailStore::Init(const FilePath& db_name, Profile* profile) {
   // Store a pointer to a persistent table of blacklisted URLs.
   url_blacklist_ = profile->GetPrefs()->
     GetMutableDictionary(prefs::kNTPMostVisitedURLsBlacklist);
+  DCHECK(url_blacklist_);
 
   // Get the list of most visited URLs and redirect information from the
   // HistoryService.
