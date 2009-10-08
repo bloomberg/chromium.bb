@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/cocoa/hung_renderer_controller.h"
+
 #import <Cocoa/Cocoa.h>
 
 #include "app/resource_bundle.h"
@@ -11,7 +13,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/hung_renderer_dialog.h"
-#import "chrome/browser/cocoa/hung_renderer_controller.h"
+#import "chrome/browser/cocoa/multi_key_equivalent_button.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/result_codes.h"
@@ -63,6 +65,12 @@ HungRendererController* g_instance = NULL;
   [GTMUILocalizerAndLayoutTweaker
       resizeWindowWithoutAutoResizingSubViews:[self window]
                                         delta:windowDelta];
+
+  // Make the "wait" button respond to additional keys.  By setting this to
+  // @"\e", it will respond to both Esc and Command-. (period).
+  KeyEquivalentAndModifierMask key;
+  key.charCode = @"\e";
+  [waitButton_ addKeyEquivalent:key];
 }
 
 - (IBAction)kill:(id)sender {
@@ -135,7 +143,7 @@ HungRendererController* g_instance = NULL;
   return killButton_;
 }
 
-- (NSButton*)waitButton {
+- (MultiKeyEquivalentButton*)waitButton {
   return waitButton_;
 }
 @end

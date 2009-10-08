@@ -1101,6 +1101,8 @@
         'browser/cocoa/location_bar_view_mac.mm',
         'browser/cocoa/menu_button.h',
         'browser/cocoa/menu_button.mm',
+        'browser/cocoa/multi_key_equivalent_button.h',
+        'browser/cocoa/multi_key_equivalent_button.mm',
         'browser/cocoa/nswindow_local_state.h',
         'browser/cocoa/nswindow_local_state.mm',
         'browser/cocoa/page_info_window_controller.h',
