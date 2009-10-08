@@ -941,12 +941,6 @@
    fun:_ZN3net16HostResolverImpl3Job16OnLookupCompleteEv
 }
 {
-   bug_22702
-   Memcheck:Cond
-   fun:_ZN7WebCore23V8AbstractEventListener18invokeEventHandlerEN2v86HandleINS1_7ContextEEEPNS_5EventENS2_INS1_5ValueEEEb
-   fun:_ZN7WebCore23V8AbstractEventListener11handleEventEPNS_5EventEb
-}
-{
    bug_22923
    Memcheck:Leak
    fun:_Znw*
