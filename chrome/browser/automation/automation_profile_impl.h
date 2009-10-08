@@ -30,6 +30,9 @@ class AutomationProfileImpl : public Profile {
   }
 
   // Profile implementation.
+  virtual ProfileId GetRuntimeId() {
+    return original_profile_->GetRuntimeId();
+  }
   virtual FilePath GetPath() {
     return original_profile_->GetPath();
   }

@@ -147,6 +147,9 @@ static void CleanupAppCacheService(ChromeAppCacheService* appcache_service) {
 }
 
 // static
+const ProfileId Profile::InvalidProfileId = static_cast<ProfileId>(0);
+
+// static
 void Profile::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kSearchSuggestEnabled, true);
   prefs->RegisterBooleanPref(prefs::kSessionExitedCleanly, true);
@@ -225,6 +228,10 @@ class OffTheRecordProfileImpl : public Profile,
     CleanupRequestContext(request_context_);
     CleanupRequestContext(extensions_request_context_);
     CleanupAppCacheService(appcache_service_);
+  }
+
+  virtual ProfileId GetRuntimeId() {
+    return reinterpret_cast<ProfileId>(this);
   }
 
   virtual FilePath GetPath() { return profile_->GetPath(); }
@@ -796,6 +803,10 @@ ProfileImpl::~ProfileImpl() {
     extensions_service_->ProfileDestroyed();
 
   MarkAsCleanShutdown();
+}
+
+ProfileId ProfileImpl::GetRuntimeId() {
+  return reinterpret_cast<ProfileId>(this);
 }
 
 FilePath ProfileImpl::GetPath() {

@@ -60,6 +60,8 @@ class VisitedLinkEventListener;
 class WebDataService;
 class WebKitContext;
 
+typedef intptr_t ProfileId;
+
 class Profile {
  public:
   // Profile services are accessed with the following parameter. This parameter
@@ -86,6 +88,10 @@ class Profile {
     // off the record mode.
     IMPLICIT_ACCESS
   };
+
+  // Value that represents no profile Id.
+  static const ProfileId InvalidProfileId;
+
   Profile() : restored_last_session_(false) {}
   virtual ~Profile() {}
 
@@ -104,6 +110,10 @@ class Profile {
   // The returned object is ref'd by the profile.  Callers who AddRef() it (to
   // keep it alive longer than the profile) must Release() it on the I/O thread.
   static URLRequestContext* GetDefaultRequestContext();
+
+  // Returns a unique Id that can be used to identify this profile at runtime.
+  // This Id is not persistent and will not survive a restart of the browser.
+  virtual ProfileId GetRuntimeId() = 0;
 
   // Returns the path of the directory where this profile's data is stored.
   virtual FilePath GetPath() = 0;
@@ -371,6 +381,7 @@ class ProfileImpl : public Profile,
   virtual ~ProfileImpl();
 
   // Profile implementation.
+  virtual ProfileId GetRuntimeId();
   virtual FilePath GetPath();
   virtual bool IsOffTheRecord();
   virtual Profile* GetOffTheRecordProfile();
@@ -536,19 +547,6 @@ class ProfileImpl : public Profile,
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
 };
-
-#if defined(COMPILER_GCC)
-namespace __gnu_cxx {
-
-template<>
-struct hash<Profile*> {
-  std::size_t operator()(Profile* const& p) const {
-    return reinterpret_cast<std::size_t>(p);
-  }
-};
-
-}  // namespace __gnu_cxx
-#endif
 
 // This struct is used to pass the spellchecker object through the notification
 // SPELLCHECKER_REINITIALIZED. This is used as the details for the notification

@@ -166,7 +166,7 @@ void AutomationResourceMessageFilter::UnRegisterRenderViewInIOThread(
       filtered_render_views_.find(RendererId(renderer_pid, renderer_id)));
 
   if (automation_details_iter == filtered_render_views_.end()) {
-    NOTREACHED();
+    LOG(INFO) << "UnRegisterRenderViewInIOThread: already unregistered";
     return;
   }
 

@@ -53,7 +53,9 @@ BrowsingInstance::SiteInstanceMap* BrowsingInstance::GetSiteInstanceMap(
 
   // Otherwise, process-per-site is in use, at least for this URL.  Look up the
   // global map for this profile, creating an entry if necessary.
-  return &profile_site_instance_map_[profile];
+  ProfileId runtime_id = profile ? profile->GetRuntimeId()
+                                 : Profile::InvalidProfileId;
+  return &profile_site_instance_map_[runtime_id];
 }
 
 bool BrowsingInstance::HasSiteInstance(const GURL& url) {

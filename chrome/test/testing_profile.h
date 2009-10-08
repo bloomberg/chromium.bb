@@ -57,6 +57,10 @@ class TestingProfile : public Profile {
   // ownership of |theme_provider|.
   void UseThemeProvider(BrowserThemeProvider* theme_provider);
 
+  virtual ProfileId GetRuntimeId() {
+    return reinterpret_cast<ProfileId>(this);
+  }
+
   virtual FilePath GetPath() {
     return path_;
   }
@@ -219,6 +223,22 @@ class TestingProfile : public Profile {
 
   // Did the last session exit cleanly? Default is true.
   bool last_session_exited_cleanly_;
+};
+
+// A profile that derives from another profile.  This does not actually
+// override anything except the GetRuntimeId() in order to test sharing of
+// site information.
+class DerivedTestingProfile : public TestingProfile {
+ public:
+   DerivedTestingProfile(Profile* profile) : original_profile_(profile) {
+   }
+
+  virtual ProfileId GetRuntimeId() {
+    return original_profile_->GetRuntimeId();
+  }
+
+ protected:
+  Profile* original_profile_;
 };
 
 #endif  // CHROME_TEST_TESTING_PROFILE_H_
