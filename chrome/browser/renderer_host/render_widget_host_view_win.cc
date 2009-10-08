@@ -626,14 +626,14 @@ void RenderWidgetHostViewWin::Destroy() {
 }
 
 void RenderWidgetHostViewWin::SetTooltipText(const std::wstring& tooltip_text) {
-  if (tooltip_text != tooltip_text_) {
-    tooltip_text_ = tooltip_text;
+  // Clamp the tooltip length to kMaxTooltipLength so that we don't
+  // accidentally DOS the user with a mega tooltip (since Windows doesn't seem
+  // to do this itself).
+  const std::wstring& new_tooltip_text =
+      l10n_util::TruncateString(tooltip_text, kMaxTooltipLength);
 
-    // Clamp the tooltip length to kMaxTooltipLength so that we don't
-    // accidentally DOS the user with a mega tooltip (since Windows doesn't seem
-    // to do this itself).
-    if (tooltip_text_.length() > kMaxTooltipLength)
-      tooltip_text_ = tooltip_text_.substr(0, kMaxTooltipLength);
+  if (new_tooltip_text != tooltip_text_) {
+    tooltip_text_ = new_tooltip_text;
 
     // Need to check if the tooltip is already showing so that we don't
     // immediately show the tooltip with no delay when we move the mouse from
