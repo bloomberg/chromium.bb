@@ -568,7 +568,10 @@ void WebViewImpl::MouseUp(const WebMouseEvent& event) {
     HitTestResult hit_test_result =
       focused->eventHandler()->hitTestResultAtPoint(click_point, false, false,
                                                     ShouldHitTestScrollbars);
-    if (!hit_test_result.scrollbar() && focused) {
+    // We don't want to send a paste when middle clicking a scroll bar or a
+    // link (which will navigate later in the code).
+    if (!hit_test_result.scrollbar() && !hit_test_result.isLiveLink() &&
+        focused) {
       Editor* editor = focused->editor();
       Pasteboard* pasteboard = Pasteboard::generalPasteboard();
       bool oldSelectionMode = pasteboard->isSelectionMode();
