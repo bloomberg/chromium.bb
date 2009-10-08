@@ -2501,6 +2501,7 @@ BUG9798 LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-round.html = CRASH 
 BUG9798 MAC LINUX DEBUG : LayoutTests/fast/frames/frame-limit.html = TIMEOUT PASS
 BUG9798 LINUX RELEASE : LayoutTests/fast/frames/frame-limit.html = CRASH PASS
 BUG9798 MAC DEBUG : LayoutTests/fast/frames/frame-name-reset.html = TIMEOUT PASS
+BUG24340 LINUX : LayoutTests/fast/frames/iframe-text-contents.html = CRASH PASS
 BUG9798 MAC RELEASE : LayoutTests/fast/js/stack-unwinding.html = CRASH PASS
 BUG9798 MAC RELEASE : LayoutTests/fast/js/toString-dontEnum.html = CRASH PASS
 BUG9798 WIN DEBUG : LayoutTests/fast/lists/inlineBoxWrapperNullCheck.html = FAIL PASS
