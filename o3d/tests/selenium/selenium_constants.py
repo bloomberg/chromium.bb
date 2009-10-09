@@ -69,6 +69,3 @@ SELENIUM_BROWSER_SET = ["*iexplore", "*firefox", "*googlechrome", "*safari"]
 # otherwise the OpenGL context will be clipped to the size of the window
 RESIZE_WIDTH = 1400
 RESIZE_HEIGHT = 1200
-
-# Time to wait (after load timeout) till assume the browser has crashed.
-MAX_SELENIUM_TEST_TIME = 60

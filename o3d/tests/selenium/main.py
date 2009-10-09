@@ -381,6 +381,10 @@ class SeleniumSessionBuilder:
     
     new_session.start()
     new_session.set_timeout(self.sel_timeout)
+    if browser == "*iexplore":
+      # This improves stability on IE, especially IE 6. It at least fixes the
+      # StressWindow test. It adds a 10ms delay between selenium commands.
+      new_session.set_speed(10)
     
     return new_session
 

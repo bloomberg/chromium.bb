@@ -243,6 +243,8 @@ class SeleniumTestCase(unittest.TestCase):
       path_to_html: path to html from server root
       test_type: Type of test ("small", "medium", "large")
       sample_path: Path to test.
+      load_timeout: Time to wait for page to load (ms).
+      run_timeout: Time to wait for test to run.
       options: list of option strings.
     """
 
@@ -254,26 +256,38 @@ class SeleniumTestCase(unittest.TestCase):
     self.sample_path = sample_path
     self.path_to_html = path_to_html
     self.screenshots = []
-    self.timeout = 10000
+    self.load_timeout = 10000
+    self.run_timeout = None
     self.client = "g_client"
     # parse options
     for option in options:
-      if option.startswith("screenshot"):
+      if option.startswith("screenshots"):
+        for i in range(int(GetArgument(option))):
+          self.screenshots.append("27.5")
+      elif option.startswith("screenshot"):
         clock = GetArgument(option)
         if clock is None:
           clock = "27.5"
         self.screenshots.append(clock)
       elif option.startswith("timeout"):
-        self.timeout = int(GetArgument(option))
+        self.load_timeout = int(GetArgument(option))
       elif option.startswith("client"):
         self.client = GetArgument(option)
-        
+      elif option.startswith("run_time"):
+        self.run_timeout = int(GetArgument(option))
+    
+    if self.run_timeout is None:
+      # Estimate how long this test needs to run.    
+      time_per_screenshot = 10000
+      if browser == "*iexplore":
+        time_per_screenshot = 60000
+      self.run_timeout = 25000 + len(self.screenshots) * time_per_screenshot
 
   def SetSession(self, session):
     self.session = session
 
   def GetTestTimeout(self):
-    return self.timeout
+    return self.load_timeout + self.run_timeout
 
   def GetURL(self, url):
     """Gets a URL for the test."""
@@ -306,7 +320,7 @@ class SeleniumTestCase(unittest.TestCase):
     g_client which is the o3d client object for that sample.  This is
     used to take a screenshot.
     """
-    self.assertTrue(not self.timeout is None)
+    self.assertTrue(not self.load_timeout is None)
     self.assertTrue(not self.client is None)
     self.assertTrue(self.test_type in ["small", "medium", "large"])
 
@@ -316,7 +330,7 @@ class SeleniumTestCase(unittest.TestCase):
     self.session.open(url)
 
     # wait for it to initialize.
-    self.session.wait_for_condition(ready_condition, self.timeout)
+    self.session.wait_for_condition(ready_condition, self.load_timeout)
 
     self.session.run_script(
         "if (window.o3d_prepForSelenium) { window.o3d_prepForSelenium(); }")

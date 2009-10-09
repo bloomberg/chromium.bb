@@ -363,10 +363,19 @@ class SeleniumTestRunner(TestRunnerThread):
           pdiff_test = None
 
         self.can_continue = False
+        
+        # Check the current selenium session. Particularly, we are
+        # interested if the previous test ran to completion, but the
+        # browser window is closed.
+        try:
+          # This will generate an exception if the window is closed.
+          self.session.window_focus()
+        except Exception:
+          self._StopSession()
+          self._StartSession()
 
-        # Deadline is the time to load page timeout plus a constant.
-        self.deadline = (time.time() + (test.GetTestTimeout() / 1000.0) +
-                         selenium_constants.MAX_SELENIUM_TEST_TIME)
+        # Deadline is the time to load page plus test run time.
+        self.deadline = time.time() + (test.GetTestTimeout() / 1000.0)
         # Supply test with necessary selenium session.
         test.SetSession(self.session)
 
