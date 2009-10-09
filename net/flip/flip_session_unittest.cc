@@ -17,18 +17,18 @@ class FlipSessionTest : public PlatformTest {
 // Test the PrioritizedIOBuffer class.
 TEST_F(FlipSessionTest, PrioritizedIOBuffer) {
   std::priority_queue<PrioritizedIOBuffer> queue_;
-  const int kQueueSize = 100;
+  const size_t kQueueSize = 100;
 
   // Insert 100 items; pri 100 to 1.
-  for (int index = 0; index < kQueueSize; ++index) {
+  for (size_t index = 0; index < kQueueSize; ++index) {
     PrioritizedIOBuffer buffer(NULL, kQueueSize - index);
     queue_.push(buffer);
   }
 
   // Insert several priority 0 items last.
-  const int kNumDuplicates = 12;
+  const size_t kNumDuplicates = 12;
   IOBufferWithSize* buffers[kNumDuplicates];
-  for (int index = 0; index < kNumDuplicates; ++index) {
+  for (size_t index = 0; index < kNumDuplicates; ++index) {
     buffers[index] = new IOBufferWithSize(index+1);
     queue_.push(PrioritizedIOBuffer(buffers[index], 0));
   }
@@ -36,7 +36,7 @@ TEST_F(FlipSessionTest, PrioritizedIOBuffer) {
   EXPECT_EQ(kQueueSize + kNumDuplicates, queue_.size());
 
   // Verify the P0 items come out in FIFO order.
-  for (int index = 0; index < kNumDuplicates; ++index) {
+  for (size_t index = 0; index < kNumDuplicates; ++index) {
     PrioritizedIOBuffer buffer = queue_.top();
     EXPECT_EQ(0, buffer.priority());
     EXPECT_EQ(index + 1, buffer.size());

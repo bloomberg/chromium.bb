@@ -24,7 +24,7 @@
 namespace {
 
 // True if FLIP should run over SSL.
-static bool use_ssl_flip = true;
+static bool use_ssl_flip = false;
 
 }  // namespace
 
@@ -469,11 +469,11 @@ void FlipSession::WriteSocket() {
     return;
 
   while (queue_.size()) {
-    const int kMaxSegmentSize = 1430;
-    const int kMaxPayload = 4 * kMaxSegmentSize;
-    int max_size = std::max(kMaxPayload, queue_.top().size());
+    const size_t kMaxSegmentSize = 1430;
+    const size_t kMaxPayload = 4 * kMaxSegmentSize;
+    size_t max_size = std::max(kMaxPayload, queue_.top().size());
 
-    int bytes = 0;
+    size_t bytes = 0;
     // If we have multiple IOs to do, accumulate up to 4 MSS's worth of data
     // and send them in batch.
     IOBufferWithSize* buffer = new IOBufferWithSize(max_size);
@@ -485,7 +485,7 @@ void FlipSession::WriteSocket() {
           reinterpret_cast<flip::FlipFrame*>(next_buffer.buffer()->data());
       scoped_array<flip::FlipFrame> compressed_frame(
           flip_framer_.CompressFrame(uncompressed_frame));
-      int size = compressed_frame.get()->length() + sizeof(flip::FlipFrame);
+      size_t size = compressed_frame.get()->length() + sizeof(flip::FlipFrame);
       if (bytes + size > kMaxPayload)
         break;
       memcpy(buffer->data() + bytes, compressed_frame.get(), size);

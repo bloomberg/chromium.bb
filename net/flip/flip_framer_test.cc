@@ -8,13 +8,7 @@
 #include "flip_framer.h"  // cross-google3 directory naming.
 #include "flip_protocol.h"
 #include "flip_frame_builder.h"
-#ifdef _WIN32
 #include "testing/platform_test.h"
-#else
-#include "testing/base/public/gunit.h"
-
-#define PlatformTest ::testing::Test
-#endif
 
 namespace flip {
 
@@ -90,12 +84,12 @@ class TestFlipVisitor : public FlipFramerVisitorInterface  {
 
 // Test our protocol constants
 TEST_F(FlipFramerTest, ProtocolConstants) {
-  EXPECT_EQ(8, sizeof(FlipFrame));
-  EXPECT_EQ(8, sizeof(FlipDataFrame));
-  EXPECT_EQ(12, sizeof(FlipControlFrame));
-  EXPECT_EQ(16, sizeof(FlipSynStreamControlFrame));
-  EXPECT_EQ(16, sizeof(FlipSynReplyControlFrame));
-  EXPECT_EQ(16, sizeof(FlipFinStreamControlFrame));
+  EXPECT_EQ(8u, sizeof(FlipFrame));
+  EXPECT_EQ(8u, sizeof(FlipDataFrame));
+  EXPECT_EQ(12u, sizeof(FlipControlFrame));
+  EXPECT_EQ(16u, sizeof(FlipSynStreamControlFrame));
+  EXPECT_EQ(16u, sizeof(FlipSynReplyControlFrame));
+  EXPECT_EQ(16u, sizeof(FlipFinStreamControlFrame));
   EXPECT_EQ(1, SYN_STREAM);
   EXPECT_EQ(2, SYN_REPLY);
   EXPECT_EQ(3, FIN_STREAM);

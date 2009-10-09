@@ -56,7 +56,7 @@ class PrioritizedIOBuffer {
 
   IOBuffer* buffer() const { return buffer_; }
 
-  int size() const { return buffer_->size(); }
+  size_t size() const { return buffer_->size(); }
 
   void release() { buffer_ = NULL; }
 
