@@ -3994,6 +3994,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_HOMEPAGE_SHOW_BUTTON" desc="The label of the 'Show home button on toolbar' checkbox">
         Show Home button on the toolbar
       </message>
+      
+      <if expr="os == 'darwin'">
+        <!-- Mac has a Toolbar group (IDS_OPTIONS_HOMEPAGE_SHOW_BUTTON moved in this group) -->
+        <message name="IDS_OPTIONS_TOOLBAR_GROUP_NAME" desc="The title of the toolbar group">
+          Toolbar:
+        </message>
+        <message name="IDS_OPTIONS_PAGE_OPTION_SHOW_BUTTON" desc="The label of the 'Show Page and Option buttons on toolbar' checkbox">
+          Show Page and Option buttons on the toolbar
+        </message>
+      </if>
 
       <message name="IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME" desc="The title of the default search engine group">
         Default search:

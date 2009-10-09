@@ -8,7 +8,8 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="4"/>
+			<integer value="74"/>
+			<integer value="3"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -39,7 +40,7 @@
 				<int key="NSWindowBacking">2</int>
 				<string key="NSWindowRect">{{196, 224}, {450, 286}}</string>
 				<int key="NSWTFlags">1677722624</int>
-				<string key="NSWindowTitle">Preferences</string>
+				<string key="NSWindowTitle">FROM CODE</string>
 				<string key="NSWindowClass">NSWindow</string>
 				<object class="NSToolbar" key="NSViewClass" id="530275816">
 					<object class="NSMutableString" key="NSToolbarIdentifier">
@@ -66,8 +67,8 @@
 								<object class="NSMutableString" key="NSToolbarItemIdentifier">
 									<characters key="NS.bytes">89B72B0D-82E6-4116-9E65-052CEF41D839</characters>
 								</object>
-								<string key="NSToolbarItemLabel">Personal Stuff</string>
-								<string key="NSToolbarItemPaletteLabel">Personal Stuff</string>
+								<string key="NSToolbarItemLabel">^IDS_OPTIONS_CONTENT_TAB_LABEL</string>
+								<string key="NSToolbarItemPaletteLabel">^IDS_OPTIONS_CONTENT_TAB_LABEL</string>
 								<string key="NSToolbarItemToolTip"/>
 								<nil key="NSToolbarItemView"/>
 								<object class="NSCustomResource" key="NSToolbarItemImage">
@@ -88,8 +89,8 @@
 								<object class="NSMutableString" key="NSToolbarItemIdentifier">
 									<characters key="NS.bytes">BB0BB13B-2005-4DF0-9802-48E954305230</characters>
 								</object>
-								<string key="NSToolbarItemLabel">Under the Hood</string>
-								<string key="NSToolbarItemPaletteLabel">Under the Hood</string>
+								<string key="NSToolbarItemLabel">^IDS_OPTIONS_ADVANCED_TAB_LABEL</string>
+								<string key="NSToolbarItemPaletteLabel">^IDS_OPTIONS_ADVANCED_TAB_LABEL</string>
 								<string key="NSToolbarItemToolTip"/>
 								<nil key="NSToolbarItemView"/>
 								<object class="NSCustomResource" key="NSToolbarItemImage">
@@ -110,8 +111,8 @@
 								<object class="NSMutableString" key="NSToolbarItemIdentifier">
 									<characters key="NS.bytes">F143F7AC-F296-4156-B8B6-82F4B7DD7DAC</characters>
 								</object>
-								<string key="NSToolbarItemLabel">Basics</string>
-								<string key="NSToolbarItemPaletteLabel">Basics</string>
+								<string key="NSToolbarItemLabel">^IDS_OPTIONS_GENERAL_TAB_LABEL</string>
+								<string key="NSToolbarItemPaletteLabel">^IDS_OPTIONS_GENERAL_TAB_LABEL</string>
 								<string key="NSToolbarItemToolTip"/>
 								<nil key="NSToolbarItemView"/>
 								<object class="NSCustomResource" key="NSToolbarItemImage">
@@ -157,7 +158,7 @@
 				<string key="NSMaxSize">{3.40282e+38, 3.40282e+38}</string>
 			</object>
 			<object class="NSCustomView" id="1016273328">
-				<nil key="NSNextResponder"/>
+				<reference key="NSNextResponder"/>
 				<int key="NSvFlags">268</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -170,7 +171,7 @@
 						<object class="NSButtonCell" key="NSCell" id="82310084">
 							<int key="NSCellFlags">67239424</int>
 							<int key="NSCellFlags2">134217728</int>
-							<string type="base64-UTF8" key="NSContents">QnJvd3Nl4oCmA</string>
+							<string key="NSContents">^IDS_OPTIONS_DOWNLOADLOCATION_BROWSE_BUTTON</string>
 							<object class="NSFont" key="NSSupport" id="445696277">
 								<string key="NSName">LucidaGrande</string>
 								<double key="NSSize">1.300000e+01</double>
@@ -188,13 +189,13 @@
 					<object class="NSTextField" id="1032231978">
 						<reference key="NSNextResponder" ref="1016273328"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{17, 602}, {146, 17}}</string>
+						<string key="NSFrame">{{17, 602}, {432, 17}}</string>
 						<reference key="NSSuperview" ref="1016273328"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="710610494">
 							<int key="NSCellFlags">68288064</int>
 							<int key="NSCellFlags2">4195328</int>
-							<string key="NSContents">Privacy</string>
+							<string key="NSContents">^IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY</string>
 							<object class="NSFont" key="NSSupport" id="290273273">
 								<string key="NSName">LucidaGrande-Bold</string>
 								<double key="NSSize">1.300000e+01</double>
@@ -225,13 +226,13 @@
 					<object class="NSTextField" id="287656702">
 						<reference key="NSNextResponder" ref="1016273328"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{17, 187}, {146, 17}}</string>
+						<string key="NSFrame">{{17, 187}, {432, 17}}</string>
 						<reference key="NSSuperview" ref="1016273328"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="237538019">
 							<int key="NSCellFlags">68288064</int>
 							<int key="NSCellFlags2">4195328</int>
-							<string key="NSContents">Web Content</string>
+							<string key="NSContents">^IDS_OPTIONS_ADVANCED_SECTION_TITLE_CONTENT</string>
 							<reference key="NSSupport" ref="290273273"/>
 							<reference key="NSControlView" ref="287656702"/>
 							<reference key="NSBackgroundColor" ref="592613688"/>
@@ -241,15 +242,13 @@
 					<object class="NSTextField" id="412658410">
 						<reference key="NSNextResponder" ref="1016273328"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{43, 212}, {421, 59}}</string>
+						<string key="NSFrame">{{43, 244}, {406, 59}}</string>
 						<reference key="NSSuperview" ref="1016273328"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="786981193">
 							<int key="NSCellFlags">67239424</int>
 							<int key="NSCellFlags2">272629760</int>
-							<string type="base64-UTF8" key="NSContents">SWYgeW91IGhhdmUgY2hvc2VuIHRvIG9wZW4gY2VydGFpbiBmaWxlIHR5cGVzIGF1dG9tYXRpY2FsbHkg
-YWZ0ZXIgZG93bmxvYWRpbmcsIHlvdSBjYW4gY2xlYXIgdGhlc2Ugc2V0dGluZ3Mgc28gdGhhdCBkb3du
-bG9hZGVkIGZpbGVzIGRvbid0IG9wZW4gYXV0b21hdGljYWxseS4</string>
+							<string key="NSContents">^IDS_OPTIONS_AUTOOPENFILETYPES_INFO</string>
 							<object class="NSFont" key="NSSupport" id="497093453">
 								<string key="NSName">LucidaGrande</string>
 								<double key="NSSize">1.300000e+01</double>
@@ -263,15 +262,13 @@ bG9hZGVkIGZpbGVzIGRvbid0IG9wZW4gYXV0b21hdGljYWxseS4</string>
 					<object class="NSTextField" id="1043699198">
 						<reference key="NSNextResponder" ref="1016273328"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{25, 559}, {441, 40}}</string>
+						<string key="NSFrame">{{25, 559}, {424, 40}}</string>
 						<reference key="NSSuperview" ref="1016273328"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="494850700">
 							<int key="NSCellFlags">67239424</int>
 							<int key="NSCellFlags2">272629760</int>
-							<string type="base64-UTF8" key="NSContents">VGhlIGZvbGxvd2luZyB3ZWIgc2VydmljZXMgbWF5IGJlIHVzZWQgdG8gaW1wcm92ZSB5b3VyIGJyb3dz
-aW5nIGV4cGVyaWVuY2Ug4oCUIHlvdSBtYXkgb3B0aW9uYWxseSBkaXNhYmxlIHRoZXNlIHNlcnZpY2Vz
-Lg</string>
+							<string key="NSContents">^IDS_OPTIONS_DISABLE_SERVICES</string>
 							<reference key="NSSupport" ref="497093453"/>
 							<reference key="NSControlView" ref="1043699198"/>
 							<reference key="NSBackgroundColor" ref="592613688"/>
@@ -281,13 +278,13 @@ Lg</string>
 					<object class="NSButton" id="348105916">
 						<reference key="NSNextResponder" ref="1016273328"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{22, 271}, {220, 32}}</string>
+						<string key="NSFrame">{{75, 207}, {220, 32}}</string>
 						<reference key="NSSuperview" ref="1016273328"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="1018797611">
 							<int key="NSCellFlags">604110336</int>
 							<int key="NSCellFlags2">134217728</int>
-							<string key="NSContents">Clear Auto-opening Settings</string>
+							<string key="NSContents">^IDS_OPTIONS_AUTOOPENFILETYPES_RESETTODEFAULT</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="348105916"/>
 							<int key="NSButtonFlags">-2038284033</int>
@@ -307,7 +304,7 @@ Lg</string>
 						<object class="NSButtonCell" key="NSCell" id="298042898">
 							<int key="NSCellFlags">-2080244224</int>
 							<int key="NSCellFlags2">0</int>
-							<string key="NSContents">Show suggestions for navigation errors</string>
+							<string key="NSContents">^IDS_OPTIONS_LINKDOCTOR_PREF</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="480577047"/>
 							<int key="NSButtonFlags">1211912703</int>
@@ -334,7 +331,7 @@ Lg</string>
 						<object class="NSButtonCell" key="NSCell" id="874031585">
 							<int key="NSCellFlags">-2080244224</int>
 							<int key="NSCellFlags2">0</int>
-							<string key="NSContents">Use a suggestion service to aid with address bar completion</string>
+							<string key="NSContents">^IDS_OPTIONS_SUGGEST_PREF</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="808321623"/>
 							<int key="NSButtonFlags">1211912703</int>
@@ -356,7 +353,7 @@ Lg</string>
 						<object class="NSButtonCell" key="NSCell" id="647261577">
 							<int key="NSCellFlags">-2080244224</int>
 							<int key="NSCellFlags2">0</int>
-							<string key="NSContents">Use DNS pre-fetching to improve page load performance</string>
+							<string key="NSContents">^IDS_NETWORK_DNS_PREFETCH_ENABLED_DESCRIPTION</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="139965100"/>
 							<int key="NSButtonFlags">1211912703</int>
@@ -378,7 +375,7 @@ Lg</string>
 						<object class="NSButtonCell" key="NSCell" id="821186353">
 							<int key="NSCellFlags">604110336</int>
 							<int key="NSCellFlags2">134217728</int>
-							<string key="NSContents">Manage Certificates</string>
+							<string key="NSContents">^IDS_OPTIONS_CERTIFICATES_MANAGE_BUTTON</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="514356928"/>
 							<int key="NSButtonFlags">-2038284033</int>
@@ -392,13 +389,13 @@ Lg</string>
 					<object class="NSTextField" id="860741341">
 						<reference key="NSNextResponder" ref="1016273328"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{17, 110}, {146, 17}}</string>
+						<string key="NSFrame">{{17, 110}, {432, 17}}</string>
 						<reference key="NSSuperview" ref="1016273328"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="240354523">
 							<int key="NSCellFlags">68288064</int>
 							<int key="NSCellFlags2">4195328</int>
-							<string key="NSContents">Security</string>
+							<string key="NSContents">^IDS_OPTIONS_ADVANCED_SECTION_TITLE_SECURITY</string>
 							<reference key="NSSupport" ref="290273273"/>
 							<reference key="NSControlView" ref="860741341"/>
 							<reference key="NSBackgroundColor" ref="592613688"/>
@@ -414,7 +411,7 @@ Lg</string>
 						<object class="NSButtonCell" key="NSCell" id="935362863">
 							<int key="NSCellFlags">-2080244224</int>
 							<int key="NSCellFlags2">0</int>
-							<string key="NSContents">Enable phishing and malware protection</string>
+							<string key="NSContents">^IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="217654608"/>
 							<int key="NSButtonFlags">1211912703</int>
@@ -430,13 +427,13 @@ Lg</string>
 					<object class="NSTextField" id="886068350">
 						<reference key="NSNextResponder" ref="1016273328"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{29, 85}, {193, 17}}</string>
+						<string key="NSFrame">{{29, 85}, {420, 17}}</string>
 						<reference key="NSSuperview" ref="1016273328"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="550006091">
 							<int key="NSCellFlags">68288064</int>
 							<int key="NSCellFlags2">272630784</int>
-							<string key="NSContents">Select trusted SSL certificates:</string>
+							<string key="NSContents">^IDS_OPTIONS_CERTIFICATES_LABEL</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="886068350"/>
 							<reference key="NSBackgroundColor" ref="592613688"/>
@@ -452,7 +449,7 @@ Lg</string>
 						<object class="NSButtonCell" key="NSCell" id="694359929">
 							<int key="NSCellFlags">-1543373312</int>
 							<int key="NSCellFlags2">0</int>
-							<string key="NSContents">Check for server certificate revocation</string>
+							<string key="NSContents">^IDS_OPTIONS_SSL_CHECKREVOCATION</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="733677494"/>
 							<int key="NSButtonFlags">1211912703</int>
@@ -474,7 +471,7 @@ Lg</string>
 						<object class="NSTextFieldCell" key="NSCell" id="589077222">
 							<int key="NSCellFlags">68288064</int>
 							<int key="NSCellFlags2">272630784</int>
-							<string key="NSContents">Cookie settings:</string>
+							<string key="NSContents">^IDS_OPTIONS_COOKIES_ACCEPT_LABEL</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="913832943"/>
 							<reference key="NSBackgroundColor" ref="592613688"/>
@@ -484,13 +481,13 @@ Lg</string>
 					<object class="NSButton" id="1054376288">
 						<reference key="NSNextResponder" ref="1016273328"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{307, 396}, {151, 32}}</string>
+						<string key="NSFrame">{{301, 396}, {151, 32}}</string>
 						<reference key="NSSuperview" ref="1016273328"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="441531293">
 							<int key="NSCellFlags">604110336</int>
 							<int key="NSCellFlags2">134217728</int>
-							<string type="base64-UTF8" key="NSContents">U2hvdyBDb29raWVz4oCmA</string>
+							<string key="NSContents">^IDS_OPTIONS_COOKIES_SHOWCOOKIES</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="1054376288"/>
 							<int key="NSButtonFlags">-2038284033</int>
@@ -575,13 +572,13 @@ Lg</string>
 					<object class="NSTextField" id="630848197">
 						<reference key="NSNextResponder" ref="1016273328"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{17, 367}, {146, 17}}</string>
+						<string key="NSFrame">{{17, 367}, {432, 17}}</string>
 						<reference key="NSSuperview" ref="1016273328"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="660352048">
 							<int key="NSCellFlags">68288064</int>
 							<int key="NSCellFlags2">4195328</int>
-							<string key="NSContents">Downloads</string>
+							<string key="NSContents">^IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME</string>
 							<reference key="NSSupport" ref="290273273"/>
 							<reference key="NSControlView" ref="630848197"/>
 							<bool key="NSDrawsBackground">YES</bool>
@@ -627,7 +624,7 @@ Lg</string>
 						<object class="NSButtonCell" key="NSCell" id="731161158">
 							<int key="NSCellFlags">-2080244224</int>
 							<int key="NSCellFlags2">0</int>
-							<string key="NSContents">Ask where to save each file before downloading</string>
+							<string key="NSContents">^IDS_OPTIONS_DOWNLOADLOCATION_ASKFORSAVELOCATION</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="928184762"/>
 							<int key="NSButtonFlags">1211912703</int>
@@ -649,7 +646,7 @@ Lg</string>
 						<object class="NSButtonCell" key="NSCell" id="526979400">
 							<int key="NSCellFlags">604110336</int>
 							<int key="NSCellFlags2">134217728</int>
-							<string type="base64-UTF8" key="NSContents">Q2hhbmdlIEZvbnQgYW5kIExhbmd1YWdlIFNldHRpbmdz4oCmA</string>
+							<string key="NSContents">^IDS_OPTIONS_FONTSETTINGS_CONFIGUREFONTS_BUTTON</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="777041502"/>
 							<int key="NSButtonFlags">-2038284033</int>
@@ -669,7 +666,7 @@ Lg</string>
 						<object class="NSButtonCell" key="NSCell" id="209704674">
 							<int key="NSCellFlags">-2080244224</int>
 							<int key="NSCellFlags2">0</int>
-							<string key="NSContents">Automatically send usage statistics and crash reports</string>
+							<string key="NSContents">^IDS_OPTIONS_ENABLE_LOGGING</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="346222444"/>
 							<int key="NSButtonFlags">1211912703</int>
@@ -684,10 +681,8 @@ Lg</string>
 					</object>
 				</object>
 				<string key="NSFrameSize">{466, 639}</string>
+				<reference key="NSSuperview"/>
 				<string key="NSClassName">NSView</string>
-			</object>
-			<object class="NSCustomObject" id="775776152">
-				<string key="NSClassName">PreferencesLocalizer</string>
 			</object>
 			<object class="NSArrayController" id="495015235">
 				<object class="NSMutableArray" key="NSDeclaredKeys">
@@ -715,13 +710,13 @@ Lg</string>
 					<object class="NSButton" id="810089388">
 						<reference key="NSNextResponder" ref="930668015"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{249, 276}, {182, 23}}</string>
+						<string key="NSFrame">{{249, 276}, {198, 23}}</string>
 						<reference key="NSSuperview" ref="930668015"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="788559409">
 							<int key="NSCellFlags">-2080244224</int>
 							<int key="NSCellFlags2">134217728</int>
-							<string key="NSContents">Use Current</string>
+							<string key="NSContents">^IDS_OPTIONS_STARTUP_USE_CURRENT</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="810089388"/>
 							<int key="NSButtonFlags">-2033434369</int>
@@ -789,7 +784,7 @@ Lg</string>
 						<object class="NSTextFieldCell" key="NSCell" id="519689237">
 							<int key="NSCellFlags">68288064</int>
 							<int key="NSCellFlags2">71304192</int>
-							<string key="NSContents">Toolbar:</string>
+							<string key="NSContents">^IDS_OPTIONS_TOOLBAR_GROUP_NAME</string>
 							<reference key="NSSupport" ref="290273273"/>
 							<reference key="NSControlView" ref="881113898"/>
 							<reference key="NSBackgroundColor" ref="592613688"/>
@@ -805,7 +800,7 @@ Lg</string>
 						<object class="NSButtonCell" key="NSCell" id="131780438">
 							<int key="NSCellFlags">-1543373312</int>
 							<int key="NSCellFlags2">0</int>
-							<string key="NSContents">Show home button on the toolbar</string>
+							<string key="NSContents">^IDS_OPTIONS_HOMEPAGE_SHOW_BUTTON</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="136601899"/>
 							<int key="NSButtonFlags">1211912703</int>
@@ -827,7 +822,7 @@ Lg</string>
 						<object class="NSTextFieldCell" key="NSCell" id="542921234">
 							<int key="NSCellFlags">68288064</int>
 							<int key="NSCellFlags2">71304192</int>
-							<string key="NSContents">On startup:</string>
+							<string key="NSContents">^IDS_OPTIONS_STARTUP_GROUP_NAME</string>
 							<reference key="NSSupport" ref="290273273"/>
 							<reference key="NSControlView" ref="325467010"/>
 							<reference key="NSBackgroundColor" ref="592613688"/>
@@ -847,7 +842,7 @@ Lg</string>
 							<object class="NSButtonCell" id="866030183">
 								<int key="NSCellFlags">-2080244224</int>
 								<int key="NSCellFlags2">0</int>
-								<string key="NSContents">Open the home page</string>
+								<string key="NSContents">^IDS_OPTIONS_STARTUP_SHOW_DEFAULT_AND_NEWTAB</string>
 								<reference key="NSSupport" ref="445696277"/>
 								<reference key="NSControlView" ref="1016627403"/>
 								<int key="NSButtonFlags">1211912703</int>
@@ -863,7 +858,7 @@ Lg</string>
 							<object class="NSButtonCell" id="29669784">
 								<int key="NSCellFlags">67239424</int>
 								<int key="NSCellFlags2">0</int>
-								<string key="NSContents">Restore the pages that were open last</string>
+								<string key="NSContents">^IDS_OPTIONS_STARTUP_SHOW_LAST_SESSION</string>
 								<reference key="NSSupport" ref="445696277"/>
 								<int key="NSTag">1</int>
 								<reference key="NSControlView" ref="1016627403"/>
@@ -972,7 +967,7 @@ QXBwbGUgQ29tcHV0ZXIsIEluYy4sIDIwMDUAAAAAA</bytes>
 							<object class="NSButtonCell" id="799465121">
 								<int key="NSCellFlags">67239424</int>
 								<int key="NSCellFlags2">0</int>
-								<string key="NSContents">Open the following pages:</string>
+								<string key="NSContents">^IDS_OPTIONS_STARTUP_SHOW_PAGES</string>
 								<reference key="NSSupport" ref="445696277"/>
 								<int key="NSTag">2</int>
 								<reference key="NSControlView" ref="1016627403"/>
@@ -1170,7 +1165,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<object class="NSButtonCell" key="NSCell" id="114177510">
 							<int key="NSCellFlags">-1543373312</int>
 							<int key="NSCellFlags2">0</int>
-							<string key="NSContents">Show page and option menus on the toolbar</string>
+							<string key="NSContents">^IDS_OPTIONS_PAGE_OPTION_SHOW_BUTTON</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="306778908"/>
 							<int key="NSButtonFlags">1211912703</int>
@@ -1192,7 +1187,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<object class="NSTextFieldCell" key="NSCell" id="901046858">
 							<int key="NSCellFlags">68288064</int>
 							<int key="NSCellFlags2">71304192</int>
-							<string key="NSContents">Home Page:</string>
+							<string key="NSContents">^IDS_OPTIONS_HOMEPAGE_GROUP_NAME</string>
 							<reference key="NSSupport" ref="290273273"/>
 							<reference key="NSControlView" ref="982570975"/>
 							<reference key="NSBackgroundColor" ref="592613688"/>
@@ -1212,7 +1207,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<object class="NSButtonCell" id="182948450">
 								<int key="NSCellFlags">67239424</int>
 								<int key="NSCellFlags2">0</int>
-								<string key="NSContents">Use the New Tab page</string>
+								<string key="NSContents">^IDS_OPTIONS_HOMEPAGE_USE_NEWTAB</string>
 								<reference key="NSSupport" ref="445696277"/>
 								<reference key="NSControlView" ref="743261621"/>
 								<int key="NSButtonFlags">1211912703</int>
@@ -1226,7 +1221,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<object class="NSButtonCell" id="1001736883">
 								<int key="NSCellFlags">-2080244224</int>
 								<int key="NSCellFlags2">0</int>
-								<string key="NSContents">Open this page:</string>
+								<string key="NSContents">^IDS_OPTIONS_HOMEPAGE_USE_URL</string>
 								<reference key="NSSupport" ref="445696277"/>
 								<int key="NSTag">1</int>
 								<reference key="NSControlView" ref="743261621"/>
@@ -1401,7 +1396,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<object class="NSTextFieldCell" key="NSCell" id="617938891">
 							<int key="NSCellFlags">68288064</int>
 							<int key="NSCellFlags2">71304192</int>
-							<string key="NSContents">Default browser:</string>
+							<string key="NSContents">^IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME</string>
 							<reference key="NSSupport" ref="290273273"/>
 							<reference key="NSControlView" ref="495791200"/>
 							<reference key="NSBackgroundColor" ref="592613688"/>
@@ -1417,7 +1412,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<object class="NSTextFieldCell" key="NSCell" id="952238196">
 							<int key="NSCellFlags">68288064</int>
 							<int key="NSCellFlags2">71304192</int>
-							<string key="NSContents">Default search:</string>
+							<string key="NSContents">^IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME</string>
 							<reference key="NSSupport" ref="290273273"/>
 							<reference key="NSControlView" ref="254133467"/>
 							<reference key="NSBackgroundColor" ref="592613688"/>
@@ -1427,13 +1422,13 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<object class="NSButton" id="192681043">
 						<reference key="NSNextResponder" ref="930668015"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{139, 34}, {306, 32}}</string>
+						<string key="NSFrame">{{139, 34}, {314, 32}}</string>
 						<reference key="NSSuperview" ref="930668015"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="523146452">
 							<int key="NSCellFlags">67239424</int>
 							<int key="NSCellFlags2">134217728</int>
-							<string key="NSContents">^Make Chromium My Default Browser</string>
+							<string key="NSContents">^IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT$IDS_PRODUCT_NAME</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="192681043"/>
 							<int key="NSButtonFlags">-2038284033</int>
@@ -1447,7 +1442,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<object class="NSTextField" id="188533588">
 						<reference key="NSNextResponder" ref="930668015"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{271, 207}, {160, 22}}</string>
+						<string key="NSFrame">{{271, 207}, {176, 22}}</string>
 						<reference key="NSSuperview" ref="930668015"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="771835631">
@@ -1484,7 +1479,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 									<object class="NSTableView" id="165250101">
 										<reference key="NSNextResponder" ref="570210247"/>
 										<int key="NSvFlags">256</int>
-										<string key="NSFrameSize">{282, 63}</string>
+										<string key="NSFrameSize">{298, 63}</string>
 										<reference key="NSSuperview" ref="570210247"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="_NSCornerView" key="NSCornerView">
@@ -1495,7 +1490,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 										<object class="NSMutableArray" key="NSTableColumns">
 											<bool key="EncodedWithXMLCoder">YES</bool>
 											<object class="NSTableColumn" id="1005813658">
-												<double key="NSWidth">2.790000e+02</double>
+												<double key="NSWidth">2.950000e+02</double>
 												<double key="NSMinWidth">4.000000e+01</double>
 												<double key="NSMaxWidth">1.000000e+03</double>
 												<object class="NSTableHeaderCell" key="NSHeaderCell">
@@ -1558,9 +1553,8 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 										<bool key="NSAllowsTypeSelect">YES</bool>
 									</object>
 								</object>
-								<string key="NSFrame">{{1, 1}, {282, 63}}</string>
+								<string key="NSFrame">{{1, 1}, {298, 63}}</string>
 								<reference key="NSSuperview" ref="54854923"/>
-								<reference key="NSNextKeyView" ref="165250101"/>
 								<reference key="NSDocView" ref="165250101"/>
 								<reference key="NSBGColor" ref="452188023"/>
 								<int key="NScvFlags">4</int>
@@ -1586,9 +1580,8 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 								<double key="NSPercent">5.714286e-01</double>
 							</object>
 						</object>
-						<string key="NSFrame">{{147, 296}, {284, 65}}</string>
+						<string key="NSFrame">{{147, 296}, {300, 65}}</string>
 						<reference key="NSSuperview" ref="930668015"/>
-						<reference key="NSNextKeyView" ref="570210247"/>
 						<int key="NSsFlags">530</int>
 						<reference key="NSVScroller" ref="895676258"/>
 						<reference key="NSHScroller" ref="757862790"/>
@@ -1598,13 +1591,13 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<object class="NSButton" id="19477846">
 						<reference key="NSNextResponder" ref="930668015"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{313, 68}, {124, 32}}</string>
+						<string key="NSFrame">{{329, 67}, {124, 32}}</string>
 						<reference key="NSSuperview" ref="930668015"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="580118686">
 							<int key="NSCellFlags">-2080244224</int>
 							<int key="NSCellFlags2">134217728</int>
-							<string key="NSContents">Manage</string>
+							<string key="NSContents">^IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES_LINK</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="19477846"/>
 							<int key="NSButtonFlags">-2038021889</int>
@@ -1625,7 +1618,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<object class="NSTextFieldCell" key="NSCell" id="448510798">
 							<int key="NSCellFlags">68288064</int>
 							<int key="NSCellFlags2">272630784</int>
-							<string key="NSContents">Chromium is not the default browser.</string>
+							<string key="NSContents">Chromium is [not] the default browser.</string>
 							<object class="NSFont" key="NSSupport" id="783256529">
 								<string key="NSName">LucidaGrande</string>
 								<double key="NSSize">1.100000e+01</double>
@@ -1642,7 +1635,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<object class="NSPopUpButton" id="803459266">
 						<reference key="NSNextResponder" ref="930668015"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{144, 71}, {170, 26}}</string>
+						<string key="NSFrame">{{144, 71}, {186, 26}}</string>
 						<reference key="NSSuperview" ref="930668015"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSPopUpButtonCell" key="NSCell" id="197973245">
@@ -1687,7 +1680,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="393583039">
-				<nil key="NSNextResponder"/>
+				<reference key="NSNextResponder"/>
 				<int key="NSvFlags">268</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1696,11 +1689,12 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{17, 315}, {138, 17}}</string>
 						<reference key="NSSuperview" ref="393583039"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="218087448">
 							<int key="NSCellFlags">68288064</int>
 							<int key="NSCellFlags2">71304192</int>
-							<string key="NSContents">Passwords:</string>
+							<string key="NSContents">^IDS_OPTIONS_PASSWORDS_GROUP_NAME</string>
 							<reference key="NSSupport" ref="290273273"/>
 							<reference key="NSControlView" ref="173446497"/>
 							<reference key="NSBackgroundColor" ref="592613688"/>
@@ -1712,6 +1706,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{166, 292}, {300, 40}}</string>
 						<reference key="NSSuperview" ref="393583039"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<int key="NSNumRows">2</int>
 						<int key="NSNumCols">1</int>
@@ -1720,7 +1715,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<object class="NSButtonCell" id="33780881">
 								<int key="NSCellFlags">-2080244224</int>
 								<int key="NSCellFlags2">0</int>
-								<string key="NSContents">Offer to save passwords</string>
+								<string key="NSContents">^IDS_OPTIONS_PASSWORDS_ASKTOSAVE</string>
 								<reference key="NSSupport" ref="445696277"/>
 								<int key="NSTag">1</int>
 								<reference key="NSControlView" ref="1019357609"/>
@@ -1735,7 +1730,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<object class="NSButtonCell" id="243612558">
 								<int key="NSCellFlags">67239424</int>
 								<int key="NSCellFlags2">0</int>
-								<string key="NSContents">Never save passwords</string>
+								<string key="NSContents">^IDS_OPTIONS_PASSWORDS_NEVERSAVE</string>
 								<reference key="NSSupport" ref="445696277"/>
 								<reference key="NSControlView" ref="1019357609"/>
 								<int key="NSButtonFlags">1211912703</int>
@@ -1904,11 +1899,12 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{160, 250}, {184, 32}}</string>
 						<reference key="NSSuperview" ref="393583039"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="745829249">
 							<int key="NSCellFlags">67239424</int>
 							<int key="NSCellFlags2">134217728</int>
-							<string key="NSContents">Show Saved Passwords</string>
+							<string key="NSContents">^IDS_OPTIONS_PASSWORDS_SHOWPASSWORDS</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="667220499"/>
 							<int key="NSButtonFlags">-2038284033</int>
@@ -1924,11 +1920,12 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{17, 21}, {139, 17}}</string>
 						<reference key="NSSuperview" ref="393583039"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="1066495099">
 							<int key="NSCellFlags">68288064</int>
 							<int key="NSCellFlags2">71304192</int>
-							<string key="NSContents">Themes:</string>
+							<string key="NSContents">^IDS_THEMES_GROUP_NAME</string>
 							<reference key="NSSupport" ref="290273273"/>
 							<reference key="NSControlView" ref="921350969"/>
 							<reference key="NSBackgroundColor" ref="592613688"/>
@@ -1940,11 +1937,12 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{17, 213}, {138, 17}}</string>
 						<reference key="NSSuperview" ref="393583039"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="677476881">
 							<int key="NSCellFlags">68288064</int>
 							<int key="NSCellFlags2">71304192</int>
-							<string key="NSContents">Form autofill:</string>
+							<string key="NSContents">^IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME</string>
 							<reference key="NSSupport" ref="290273273"/>
 							<reference key="NSControlView" ref="212252045"/>
 							<reference key="NSBackgroundColor" ref="592613688"/>
@@ -1956,11 +1954,12 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{17, 142}, {138, 17}}</string>
 						<reference key="NSSuperview" ref="393583039"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="340834043">
 							<int key="NSCellFlags">68288064</int>
 							<int key="NSCellFlags2">71304192</int>
-							<string key="NSContents">Browsing Data:</string>
+							<string key="NSContents">^IDS_OPTIONS_BROWSING_DATA_GROUP_NAME</string>
 							<reference key="NSSupport" ref="290273273"/>
 							<reference key="NSControlView" ref="155299174"/>
 							<reference key="NSBackgroundColor" ref="592613688"/>
@@ -1972,11 +1971,12 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{163, 69}, {331, 30}}</string>
 						<reference key="NSSuperview" ref="393583039"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="1066779324">
 							<int key="NSCellFlags">67239424</int>
 							<int key="NSCellFlags2">272629760</int>
-							<string key="NSContents">You can import your bookmarks and settings from other browsers or clear your browsing data from this computer.</string>
+							<string key="NSContents">^IDS_OPTIONS_BROWSING_DATA_INFO</string>
 							<reference key="NSSupport" ref="783256529"/>
 							<reference key="NSControlView" ref="357234760"/>
 							<reference key="NSBackgroundColor" ref="592613688"/>
@@ -1988,11 +1988,12 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{160, 131}, {153, 32}}</string>
 						<reference key="NSSuperview" ref="393583039"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="325720834">
 							<int key="NSCellFlags">604110336</int>
 							<int key="NSCellFlags2">134217728</int>
-							<string type="base64-UTF8" key="NSContents">SW1wb3J0IERhdGHigKY</string>
+							<string key="NSContents">^IDS_OPTIONS_IMPORT_DATA_BUTTON</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="885386403"/>
 							<int key="NSButtonFlags">-2038284033</int>
@@ -2008,11 +2009,12 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{160, 99}, {180, 32}}</string>
 						<reference key="NSSuperview" ref="393583039"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="551321318">
 							<int key="NSCellFlags">67239424</int>
 							<int key="NSCellFlags2">134217728</int>
-							<string type="base64-UTF8" key="NSContents">Q2xlYXIgQnJvd3NpbmcgRGF0YeKApg</string>
+							<string key="NSContents">^IDS_OPTIONS_CLEAR_DATA_BUTTON</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="987908490"/>
 							<int key="NSButtonFlags">-2038284033</int>
@@ -2028,6 +2030,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{166, 190}, {300, 40}}</string>
 						<reference key="NSSuperview" ref="393583039"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<int key="NSNumRows">2</int>
 						<int key="NSNumCols">1</int>
@@ -2036,7 +2039,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<object class="NSButtonCell" id="674682819">
 								<int key="NSCellFlags">-2080244224</int>
 								<int key="NSCellFlags2">0</int>
-								<string key="NSContents">Save text from forms on web pages</string>
+								<string key="NSContents">^IDS_OPTIONS_AUTOFILL_SAVE</string>
 								<reference key="NSSupport" ref="445696277"/>
 								<int key="NSTag">1</int>
 								<reference key="NSControlView" ref="854747859"/>
@@ -2051,7 +2054,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<object class="NSButtonCell" id="201008548">
 								<int key="NSCellFlags">67239424</int>
 								<int key="NSCellFlags2">0</int>
-								<string key="NSContents">Never save text from forms</string>
+								<string key="NSContents">^IDS_OPTIONS_AUTOFILL_NEVERSAVE</string>
 								<reference key="NSSupport" ref="445696277"/>
 								<reference key="NSControlView" ref="854747859"/>
 								<int key="NSButtonFlags">1211912703</int>
@@ -2220,11 +2223,12 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{345, 22}, {82, 16}}</string>
 						<reference key="NSSuperview" ref="393583039"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="309945174">
 							<int key="NSCellFlags">67239424</int>
 							<int key="NSCellFlags2">134217728</int>
-							<string key="NSContents">Get themes</string>
+							<string key="NSContents">^IDS_THEMES_GALLERY_BUTTON</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="423027085"/>
 							<int key="NSButtonFlags">-2038284033</int>
@@ -2240,11 +2244,12 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{160, 12}, {183, 32}}</string>
 						<reference key="NSSuperview" ref="393583039"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="270492768">
 							<int key="NSCellFlags">67239424</int>
 							<int key="NSCellFlags2">134217728</int>
-							<string key="NSContents">Reset to default theme</string>
+							<string key="NSContents">^IDS_THEMES_RESET_BUTTON</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="865039969"/>
 							<int key="NSButtonFlags">-2038284033</int>
@@ -2257,6 +2262,8 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					</object>
 				</object>
 				<string key="NSFrameSize">{511, 352}</string>
+				<reference key="NSSuperview"/>
+				<reference key="NSWindow"/>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="933437956">
@@ -2284,7 +2291,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 								</object>
 								<string key="NSFrame">{{1, 1}, {466, 384}}</string>
 								<reference key="NSSuperview" ref="14278481"/>
-								<reference key="NSNextKeyView" ref="772886817"/>
 								<reference key="NSDocView" ref="772886817"/>
 								<reference key="NSBGColor" ref="592613688"/>
 								<int key="NScvFlags">4</int>
@@ -2313,7 +2319,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						</object>
 						<string key="NSFrame">{{20, 57}, {479, 386}}</string>
 						<reference key="NSSuperview" ref="933437956"/>
-						<reference key="NSNextKeyView" ref="277407604"/>
 						<int key="NSsFlags">18</int>
 						<reference key="NSVScroller" ref="331420378"/>
 						<reference key="NSHScroller" ref="470087648"/>
@@ -2328,7 +2333,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<object class="NSButtonCell" key="NSCell" id="319834642">
 							<int key="NSCellFlags">604110336</int>
 							<int key="NSCellFlags2">134217728</int>
-							<string key="NSContents">Reset to Defaults</string>
+							<string key="NSContents">^IDS_OPTIONS_RESET</string>
 							<reference key="NSSupport" ref="445696277"/>
 							<reference key="NSControlView" ref="961419405"/>
 							<int key="NSButtonFlags">-2038284033</int>
@@ -2342,6 +2347,12 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				</object>
 				<string key="NSFrameSize">{519, 463}</string>
 				<string key="NSClassName">NSView</string>
+			</object>
+			<object class="NSCustomObject" id="385419425">
+				<string key="NSClassName">ChromeUILocalizer</string>
+			</object>
+			<object class="NSCustomObject" id="305848829">
+				<string key="NSClassName">ChromeUILocalizer</string>
 			</object>
 		</object>
 		<object class="IBObjectContainer" key="IBDocument.Objects">
@@ -2570,14 +2581,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						</object>
 					</object>
 					<int key="connectionID">323</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">owner_</string>
-						<reference key="source" ref="775776152"/>
-						<reference key="destination" ref="1001"/>
-					</object>
-					<int key="connectionID">359</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
@@ -2950,14 +2953,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">otherObjectToLocalize_</string>
-						<reference key="source" ref="775776152"/>
-						<reference key="destination" ref="930668015"/>
-					</object>
-					<int key="connectionID">484</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
 						<string key="label">basicsView_</string>
 						<reference key="source" ref="1001"/>
 						<reference key="destination" ref="930668015"/>
@@ -3020,6 +3015,46 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					</object>
 					<int key="connectionID">504</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">owner_</string>
+						<reference key="source" ref="385419425"/>
+						<reference key="destination" ref="871378074"/>
+					</object>
+					<int key="connectionID">507</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">otherObjectToLocalize_</string>
+						<reference key="source" ref="385419425"/>
+						<reference key="destination" ref="930668015"/>
+					</object>
+					<int key="connectionID">508</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">yetAnotherObjectToLocalize_</string>
+						<reference key="source" ref="385419425"/>
+						<reference key="destination" ref="393583039"/>
+					</object>
+					<int key="connectionID">509</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">otherObjectToLocalize_</string>
+						<reference key="source" ref="305848829"/>
+						<reference key="destination" ref="933437956"/>
+					</object>
+					<int key="connectionID">511</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">yetAnotherObjectToLocalize_</string>
+						<reference key="source" ref="305848829"/>
+						<reference key="destination" ref="1016273328"/>
+					</object>
+					<int key="connectionID">512</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -3076,8 +3111,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<reference ref="1032231978"/>
 							<reference ref="1043699198"/>
 							<reference ref="287656702"/>
-							<reference ref="412658410"/>
-							<reference ref="348105916"/>
 							<reference ref="480577047"/>
 							<reference ref="808321623"/>
 							<reference ref="139965100"/>
@@ -3091,10 +3124,12 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<reference ref="630848197"/>
 							<reference ref="777041502"/>
 							<reference ref="346222444"/>
-							<reference ref="1054376288"/>
 							<reference ref="928184762"/>
 							<reference ref="484273049"/>
 							<reference ref="602116533"/>
+							<reference ref="1054376288"/>
+							<reference ref="412658410"/>
+							<reference ref="348105916"/>
 						</object>
 						<reference key="parent" ref="415821041"/>
 						<string key="objectName">Under the Hood Content</string>
@@ -3368,11 +3403,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<reference key="parent" ref="777041502"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">358</int>
-						<reference key="object" ref="775776152"/>
-						<reference key="parent" ref="415821041"/>
-					</object>
-					<object class="IBObjectRecord">
 						<int key="objectID">380</int>
 						<reference key="object" ref="495015235"/>
 						<reference key="parent" ref="415821041"/>
@@ -3460,7 +3490,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="803459266"/>
 							<reference ref="402804707"/>
-							<reference ref="19477846"/>
 							<reference ref="54854923"/>
 							<reference ref="188533588"/>
 							<reference ref="192681043"/>
@@ -3476,6 +3505,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<reference ref="940065158"/>
 							<reference ref="909713979"/>
 							<reference ref="810089388"/>
+							<reference ref="19477846"/>
 						</object>
 						<reference key="parent" ref="415821041"/>
 						<string key="objectName">Basics View</string>
@@ -4100,6 +4130,16 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<reference key="object" ref="268912411"/>
 						<reference key="parent" ref="530275816"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">505</int>
+						<reference key="object" ref="385419425"/>
+						<reference key="parent" ref="415821041"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">510</int>
+						<reference key="object" ref="305848829"/>
+						<reference key="parent" ref="415821041"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -4175,7 +4215,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<string>35.IBPluginDependency</string>
 					<string>353.IBPluginDependency</string>
 					<string>354.IBPluginDependency</string>
-					<string>358.IBPluginDependency</string>
 					<string>36.IBPluginDependency</string>
 					<string>362.IBPluginDependency</string>
 					<string>363.IBPluginDependency</string>
@@ -4225,7 +4264,9 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<string>495.IBPluginDependency</string>
 					<string>495.toolbarItem.selectable</string>
 					<string>50.IBPluginDependency</string>
+					<string>505.IBPluginDependency</string>
 					<string>51.IBPluginDependency</string>
+					<string>510.IBPluginDependency</string>
 					<string>52.IBPluginDependency</string>
 					<string>53.IBPluginDependency</string>
 					<string>54.IBPluginDependency</string>
@@ -4345,7 +4386,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{271, 431}, {170, 23}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -4371,7 +4411,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{80, 1032}, {474, 450}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{592, 1127}, {511, 352}}</string>
+					<string>{{61, 998}, {511, 352}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{81, 523}, {519, 463}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -4405,7 +4445,9 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{348, 217}, {466, 639}}</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>{{287, 222}, {466, 639}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -4445,11 +4487,19 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">504</int>
+			<int key="maxID">514</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
 				<bool key="EncodedWithXMLCoder">YES</bool>
+				<object class="IBPartialClassDescription">
+					<string key="className">ChromeUILocalizer</string>
+					<string key="superclassName">GTMUILocalizer</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/ui_localizer.h</string>
+					</object>
+				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">GTMUILocalizer</string>
 					<string key="superclassName">NSObject</string>
@@ -4500,14 +4550,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/cocoa/nswindow_local_state.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">PreferencesLocalizer</string>
-					<string key="superclassName">GTMUILocalizer</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/preferences_localizer.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
