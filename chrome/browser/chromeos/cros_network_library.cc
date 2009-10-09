@@ -92,9 +92,10 @@ void CrosNetworkLibrary::ConnectToWifiNetwork(WifiNetwork network,
 
 // static
 void CrosNetworkLibrary::NetworkStatusChangedHandler(void* object,
-    const chromeos::ServiceInfo& service) {
+    const chromeos::ServiceStatus& service_status) {
   CrosNetworkLibrary* network = static_cast<CrosNetworkLibrary*>(object);
-  network->ParseNetworkServiceInfo(service);
+  for (int i = 0; i < service_status.size; i++)
+    network->ParseNetworkServiceInfo(service_status.services[i]);
   FOR_EACH_OBSERVER(Observer, network->observers_, NetworkChanged(network));
 }
 

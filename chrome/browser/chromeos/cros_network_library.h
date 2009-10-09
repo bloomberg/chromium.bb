@@ -73,7 +73,7 @@ class CrosNetworkLibrary {
   // This method is called when there's a change in network status.
   // This will notify all the Observers.
   static void NetworkStatusChangedHandler(void* object,
-      const chromeos::ServiceInfo& service);
+      const chromeos::ServiceStatus& service_status);
 
   // Parse a ServiceInfo objects and update our status.
   void ParseNetworkServiceInfo(const chromeos::ServiceInfo& service);
