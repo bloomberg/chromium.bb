@@ -47,9 +47,7 @@ TEST_F(WorkerTest, MultipleWorkers) {
 #define WorkerFastLayoutTests DISABLED_WorkerFastLayoutTests
 #endif
 
-// WorkerFastLayoutTests failed on all platforms since r27553.
-// http://crbug.com/23391
-TEST_F(WorkerTest, DISABLED_WorkerFastLayoutTests) {
+TEST_F(WorkerTest, WorkerFastLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "stress-js-execution.html",
 #if defined(OS_WIN)
@@ -80,7 +78,8 @@ TEST_F(WorkerTest, DISABLED_WorkerFastLayoutTests) {
     "worker-navigator.html",
     "worker-replace-global-constructor.html",
     "worker-replace-self.html",
-    "worker-script-error.html",
+    // Disabled afer r27553 (WebKit merge), http://crbug.com/23391
+    // "worker-script-error.html",
     "worker-terminate.html",
     "worker-timeout.html"
   };
