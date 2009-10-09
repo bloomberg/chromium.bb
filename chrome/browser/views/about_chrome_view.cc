@@ -8,12 +8,12 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/color_utils.h"
+#include "base/i18n/word_iterator.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/file_version_info.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
-#include "base/word_iterator.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/views/restart_message_box.h"
