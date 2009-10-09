@@ -551,7 +551,7 @@
             },
           ],
           'conditions': [
-            ['target_arch=="ia32" and chromeos==0', {
+            ['chromeos==0', {
               'actions': [
                 {
                   'variables': {
