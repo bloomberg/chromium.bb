@@ -299,12 +299,15 @@ void TabContentsViewMac::Observe(NotificationType type,
   if (![self window])
     return;
 
-  ChromeBrowserWindow* window = (ChromeBrowserWindow*)[self window];
-  DCHECK([window isKindOfClass:[ChromeBrowserWindow class]]);
-  if ([window handleExtraBrowserKeyboardShortcut:event])
-    return;
-  if ([window handleExtraWindowKeyboardShortcut:event])
-    return;
+  // Do not fire shortcuts on key up.
+  if ([event type] == NSKeyDown) {
+    ChromeBrowserWindow* window = (ChromeBrowserWindow*)[self window];
+    DCHECK([window isKindOfClass:[ChromeBrowserWindow class]]);
+    if ([window handleExtraBrowserKeyboardShortcut:event])
+      return;
+    if ([window handleExtraWindowKeyboardShortcut:event])
+      return;
+  }
 
   if ([event type] == NSKeyDown)
     [super keyDown:event];

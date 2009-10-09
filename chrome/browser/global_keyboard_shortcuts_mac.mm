@@ -19,15 +19,15 @@ const KeyboardShortcutData* GetWindowKeyboardShortcutTable
     {false, false, true,  kVK_PageUp,        IDC_SELECT_PREVIOUS_TAB},
     {false, true,  true,  kVK_Tab,           IDC_SELECT_PREVIOUS_TAB},
     // Cmd-0..8 select the Nth tab, with cmd-9 being "last tab".
-    {true, false,  false, kVK_ANSI_1,        IDC_SELECT_TAB_0},
-    {true, false,  false, kVK_ANSI_2,        IDC_SELECT_TAB_1},
-    {true, false,  false, kVK_ANSI_3,        IDC_SELECT_TAB_2},
-    {true, false,  false, kVK_ANSI_4,        IDC_SELECT_TAB_3},
-    {true, false,  false, kVK_ANSI_5,        IDC_SELECT_TAB_4},
-    {true, false,  false, kVK_ANSI_6,        IDC_SELECT_TAB_5},
-    {true, false,  false, kVK_ANSI_7,        IDC_SELECT_TAB_6},
-    {true, false,  false, kVK_ANSI_8,        IDC_SELECT_TAB_7},
-    {true, false,  false, kVK_ANSI_9,        IDC_SELECT_LAST_TAB},
+    {true,  false, false, kVK_ANSI_1,        IDC_SELECT_TAB_0},
+    {true,  false, false, kVK_ANSI_2,        IDC_SELECT_TAB_1},
+    {true,  false, false, kVK_ANSI_3,        IDC_SELECT_TAB_2},
+    {true,  false, false, kVK_ANSI_4,        IDC_SELECT_TAB_3},
+    {true,  false, false, kVK_ANSI_5,        IDC_SELECT_TAB_4},
+    {true,  false, false, kVK_ANSI_6,        IDC_SELECT_TAB_5},
+    {true,  false, false, kVK_ANSI_7,        IDC_SELECT_TAB_6},
+    {true,  false, false, kVK_ANSI_8,        IDC_SELECT_TAB_7},
+    {true,  false, false, kVK_ANSI_9,        IDC_SELECT_LAST_TAB},
   };
 
   *num_entries = arraysize(keyboard_shortcuts);
@@ -38,8 +38,10 @@ const KeyboardShortcutData* GetWindowKeyboardShortcutTable
 const KeyboardShortcutData* GetBrowserKeyboardShortcutTable
     (size_t* num_entries) {
   static const KeyboardShortcutData keyboard_shortcuts[] = {
-    {true, false, false, kVK_LeftArrow,      IDC_BACK},
-    {true, false, false, kVK_RightArrow,     IDC_FORWARD},
+    {true,  false, false, kVK_LeftArrow,     IDC_BACK},
+    {true,  false, false, kVK_RightArrow,    IDC_FORWARD},
+    {false, false, false, kVK_Delete,        IDC_BACK},
+    {false, true,  false, kVK_Delete,        IDC_FORWARD},
   };
 
   *num_entries = arraysize(keyboard_shortcuts);
