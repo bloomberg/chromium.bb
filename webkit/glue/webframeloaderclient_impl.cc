@@ -4,6 +4,9 @@
 
 #include "config.h"
 
+#include <string>
+#include <vector>
+
 #include "Chrome.h"
 #include "CString.h"
 #include "Document.h"
@@ -24,6 +27,9 @@
 #include "WindowFeatures.h"
 #undef LOG
 
+#include "base/basictypes.h"
+#include "base/logging.h"
+#include "base/string_util.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_errors.h"
 #include "webkit/api/public/WebForm.h"
@@ -41,13 +47,18 @@
 #include "webkit/api/src/WrappedResourceRequest.h"
 #include "webkit/api/src/WrappedResourceResponse.h"
 #include "webkit/glue/glue_util.h"
+#include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webframeloaderclient_impl.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/webview_delegate.h"
 #include "webkit/glue/webview_impl.h"
 
 using namespace WebCore;
+
+using base::Time;
+using base::TimeDelta;
 
 using WebKit::WebData;
 using WebKit::WebDataSourceImpl;
@@ -418,8 +429,7 @@ void WebFrameLoaderClient::dispatchDidHandleOnloadEvents() {
 void WebFrameLoaderClient::dispatchDidReceiveServerRedirectForProvisionalLoad() {
   WebDataSourceImpl* ds = webframe_->GetProvisionalDataSourceImpl();
   if (!ds) {
-    // Got a server redirect when there is no provisional DS!
-    ASSERT_NOT_REACHED();
+    NOTREACHED() << "Got a server redirect when there is no provisional DS";
     return;
   }
 
@@ -429,13 +439,13 @@ void WebFrameLoaderClient::dispatchDidReceiveServerRedirectForProvisionalLoad() 
 
   // A provisional load should have started already, which should have put an
   // entry in our redirect chain.
-  ASSERT(ds->hasRedirectChain());
+  DCHECK(ds->hasRedirectChain());
 
   // The URL of the destination is on the provisional data source. We also need
   // to update the redirect chain to account for this addition (we do this
   // before the callback so the callback can look at the redirect chain to see
   // what happened).
-  ds->appendRedirect(webkit_glue::WebURLToKURL(ds->request().url()));
+  ds->appendRedirect(ds->request().url());
 
   if (webframe_->client())
     webframe_->client()->didReceiveServerRedirectForProvisionalLoad(webframe_);
@@ -445,8 +455,8 @@ void WebFrameLoaderClient::dispatchDidReceiveServerRedirectForProvisionalLoad() 
 void WebFrameLoaderClient::dispatchDidCancelClientRedirect() {
   // No longer expecting a client redirect.
   if (webframe_->client()) {
-    expected_client_redirect_src_ = KURL();
-    expected_client_redirect_dest_ = KURL();
+    expected_client_redirect_src_ = GURL();
+    expected_client_redirect_dest_ = GURL();
     webframe_->client()->didCancelClientRedirect(webframe_);
   }
 
@@ -460,25 +470,26 @@ void WebFrameLoaderClient::dispatchWillPerformClientRedirect(
     double fire_date) {
   // Tells dispatchDidStartProvisionalLoad that if it sees this item it is a
   // redirect and the source item should be added as the start of the chain.
-  expected_client_redirect_src_ = webkit_glue::WebURLToKURL(webframe_->url());
-  expected_client_redirect_dest_ = url;
+  expected_client_redirect_src_ = webframe_->url();
+  expected_client_redirect_dest_ = webkit_glue::KURLToGURL(url);
 
   // TODO(timsteele): bug 1135512. Webkit does not properly notify us of
   // cancelling http > file client redirects. Since the FrameLoader's policy
   // is to never carry out such a navigation anyway, the best thing we can do
   // for now to not get confused is ignore this notification.
-  if (expected_client_redirect_dest_.isLocalFile() &&
-      expected_client_redirect_src_.protocolInHTTPFamily()) {
-    expected_client_redirect_src_ = KURL();
-    expected_client_redirect_dest_ = KURL();
+  if (expected_client_redirect_dest_.SchemeIsFile() &&
+     (expected_client_redirect_src_.SchemeIs("http") ||
+      expected_client_redirect_src_.SchemeIsSecure())) {
+    expected_client_redirect_src_ = GURL();
+    expected_client_redirect_dest_ = GURL();
     return;
   }
 
   if (webframe_->client()) {
     webframe_->client()->willPerformClientRedirect(
         webframe_,
-        webkit_glue::KURLToWebURL(expected_client_redirect_src_),
-        webkit_glue::KURLToWebURL(expected_client_redirect_dest_),
+        expected_client_redirect_src_,
+        expected_client_redirect_dest_,
         static_cast<unsigned int>(interval),
         static_cast<unsigned int>(fire_date));
   }
@@ -492,10 +503,10 @@ void WebFrameLoaderClient::dispatchDidChangeLocationWithinPage() {
     webview->client()->didStartLoading();
 
   WebDataSourceImpl* ds = webframe_->GetDataSourceImpl();
-  ASSERT(ds);  // Should not be null when navigating to a reference fragment!
+  DCHECK(ds) << "DataSource NULL when navigating to reference fragment";
   if (ds) {
-    KURL url = webkit_glue::WebURLToKURL(ds->request().url());
-    KURL chain_end = ds->endOfRedirectChain();
+    GURL url = ds->request().url();
+    GURL chain_end = ds->endOfRedirectChain();
     ds->clearRedirectChain();
 
     // Figure out if this location change is because of a JS-initiated client
@@ -512,15 +523,13 @@ void WebFrameLoaderClient::dispatchDidChangeLocationWithinPage() {
         !webframe_->isProcessingUserGesture();
 
     if (was_client_redirect) {
-      if (webframe_->client()) {
-        webframe_->client()->didCompleteClientRedirect(
-            webframe_, webkit_glue::KURLToWebURL(chain_end));
-      }
+      if (webframe_->client())
+        webframe_->client()->didCompleteClientRedirect(webframe_, chain_end);
       ds->appendRedirect(chain_end);
       // Make sure we clear the expected redirect since we just effectively
       // completed it.
-      expected_client_redirect_src_ = KURL();
-      expected_client_redirect_dest_ = KURL();
+      expected_client_redirect_src_ = GURL();
+      expected_client_redirect_dest_ = GURL();
      }
 
     // Regardless of how we got here, we are navigating to a URL so we need to
@@ -557,24 +566,24 @@ void WebFrameLoaderClient::dispatchDidStartProvisionalLoad() {
   // See dispatchDidReceiveServerRedirectForProvisionalLoad.
   WebDataSourceImpl* ds = webframe_->GetProvisionalDataSourceImpl();
   if (!ds) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED() << "Attempting to provisional load but there isn't one";
     return;
   }
-  KURL url = webkit_glue::WebURLToKURL(ds->request().url());
+  GURL url = ds->request().url();
 
   // Since the provisional load just started, we should have not gotten
   // any redirects yet.
-  ASSERT(!ds->hasRedirectChain());
+  DCHECK(!ds->hasRedirectChain());
 
   // If this load is what we expected from a client redirect, treat it as a
   // redirect from that original page. The expected redirect urls will be
   // cleared by DidCancelClientRedirect.
   bool completing_client_redirect = false;
-  if (expected_client_redirect_src_.isValid()) {
+  if (expected_client_redirect_src_.is_valid()) {
     // expected_client_redirect_dest_ could be something like
     // "javascript:history.go(-1)" thus we need to exclude url starts with
     // "javascript:". See bug: 1080873
-    ASSERT(expected_client_redirect_dest_.protocolIs("javascript") ||
+    DCHECK(expected_client_redirect_dest_.SchemeIs("javascript") ||
            expected_client_redirect_dest_ == url);
     ds->appendRedirect(expected_client_redirect_src_);
     completing_client_redirect = true;
@@ -590,7 +599,7 @@ void WebFrameLoaderClient::dispatchDidStartProvisionalLoad() {
     webframe_->client()->didStartProvisionalLoad(webframe_);
     if (completing_client_redirect)
       webframe_->client()->didCompleteClientRedirect(
-          webframe_, webkit_glue::KURLToWebURL(expected_client_redirect_src_));
+          webframe_, expected_client_redirect_src_);
   }
 }
 
@@ -676,7 +685,7 @@ Frame* WebFrameLoaderClient::dispatchCreatePage() {
 
   // Make sure that we have a valid disposition.  This should have been set in
   // the preceeding call to dispatchDecidePolicyForNewWindowAction.
-  ASSERT(next_navigation_policy_ != WebKit::WebNavigationPolicyIgnore);
+  DCHECK(next_navigation_policy_ != WebKit::WebNavigationPolicyIgnore);
   WebNavigationPolicy policy = next_navigation_policy_;
   next_navigation_policy_ = WebKit::WebNavigationPolicyIgnore;
 
@@ -690,8 +699,9 @@ Frame* WebFrameLoaderClient::dispatchCreatePage() {
 
 void WebFrameLoaderClient::dispatchShow() {
   WebViewImpl* webview = webframe_->GetWebViewImpl();
-  if (webview && webview->client())
-    webview->client()->show(webview->initial_navigation_policy());
+  WebViewDelegate* d = webview->delegate();
+  if (d)
+    d->show(webview->initial_navigation_policy());
 }
 
 static bool TreatAsAttachment(const ResourceResponse& response) {
@@ -799,8 +809,8 @@ void WebFrameLoaderClient::dispatchDecidePolicyForNavigationAction(
     // Give the delegate a chance to change the navigation policy.
     const WebDataSourceImpl* ds = webframe_->GetProvisionalDataSourceImpl();
     if (ds) {
-      KURL url = webkit_glue::WebURLToKURL(ds->request().url());
-      if (url.protocolIs(webkit_glue::kBackForwardNavigationScheme)) {
+      GURL url = ds->request().url();
+      if (url.SchemeIs(webkit_glue::kBackForwardNavigationScheme)) {
         HandleBackForwardNavigation(url);
         navigation_policy = WebKit::WebNavigationPolicyIgnore;
       } else {
@@ -1142,8 +1152,7 @@ String WebFrameLoaderClient::userAgent(const KURL& url) {
 }
 
 void WebFrameLoaderClient::savePlatformDataToCachedFrame(WebCore::CachedFrame*) {
-  // The page cache should be disabled.
-  ASSERT_NOT_REACHED();
+  NOTREACHED() << "Page cache should be disabled";
 }
 
 void WebFrameLoaderClient::transitionToCommittedFromCachedFrame(WebCore::CachedFrame*) {
@@ -1168,7 +1177,7 @@ void WebFrameLoaderClient::download(ResourceHandle* handle,
                                     const ResourceRequest& request,
                                     const ResourceRequest& initialRequest,
                                     const ResourceResponse& response) {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 PassRefPtr<Frame> WebFrameLoaderClient::createFrame(
@@ -1237,7 +1246,7 @@ PassRefPtr<Widget> WebFrameLoaderClient::createPlugin(
 // (e.g., acrobat reader).
 void WebFrameLoaderClient::redirectDataToPlugin(Widget* pluginWidget) {
   plugin_widget_ = static_cast<WebPluginContainerImpl*>(pluginWidget);
-  ASSERT(plugin_widget_.get());
+  DCHECK(plugin_widget_.get());
 }
 
 PassRefPtr<Widget> WebFrameLoaderClient::createJavaAppletWidget(
@@ -1284,7 +1293,8 @@ ObjectContentType WebFrameLoaderClient::objectContentType(
 
 String WebFrameLoaderClient::overrideMediaType() const {
   // FIXME
-  return String();
+  String rv;
+  return rv;
 }
 
 bool WebFrameLoaderClient::ActionSpecifiesNavigationPolicy(
@@ -1300,12 +1310,12 @@ bool WebFrameLoaderClient::ActionSpecifiesNavigationPolicy(
       policy);
 }
 
-void WebFrameLoaderClient::HandleBackForwardNavigation(const KURL& url) {
-  ASSERT(url.protocolIs(webkit_glue::kBackForwardNavigationScheme));
+void WebFrameLoaderClient::HandleBackForwardNavigation(const GURL& url) {
+  DCHECK(url.SchemeIs(webkit_glue::kBackForwardNavigationScheme));
 
-  bool ok;
-  int offset = url.lastPathComponent().toIntStrict(&ok);
-  if (!ok)
+  std::string offset_str = url.ExtractFileName();
+  int offset;
+  if (!StringToInt(offset_str, &offset))
     return;
 
   WebViewImpl* webview = webframe_->GetWebViewImpl();
