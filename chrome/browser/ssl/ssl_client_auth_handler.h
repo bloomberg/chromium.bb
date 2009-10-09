@@ -19,7 +19,8 @@ class URLRequest;
 // authentication by the user.
 // It is self-owned and deletes itself when the UI reports the user selection or
 // when the URLRequest is cancelled.
-class SSLClientAuthHandler : public base::RefCounted<SSLClientAuthHandler> {
+class SSLClientAuthHandler :
+    public base::RefCountedThreadSafe<SSLClientAuthHandler> {
  public:
   SSLClientAuthHandler(URLRequest* request,
                        net::SSLCertRequestInfo* cert_request_info,
