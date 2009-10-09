@@ -12,7 +12,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/icu_util.h"
+#include "base/i18n/icu_util.h"
 #include "base/path_service.h"
 #include "base/scoped_bstr_win.h"
 #include "base/scoped_comptr_win.h"

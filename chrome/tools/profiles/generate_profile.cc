@@ -10,7 +10,7 @@
 #include "app/gfx/codec/jpeg_codec.h"
 #include "base/at_exit.h"
 #include "base/file_path.h"
-#include "base/icu_util.h"
+#include "base/i18n/icu_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
