@@ -6,12 +6,13 @@
 #                2.  Change text_expectations parsing to existing
 #                    logic in layout_pagckage.test_expectations.
 
-import chromium_utils
 import difflib
 import errno
 import os
 import path_utils
+import platform_utils
 import re
+import shutil
 import subprocess
 import sys
 import urllib2
@@ -425,8 +426,8 @@ class FailureFinder(object):
       if self.delete_zip_file:
         if self.verbose:
           print "Cleaning up zip file..."
-        chromium_utils.RemoveDirectory(TEMP_ZIP_DIR)
-        chromium_utils.RemoveFile(filename)
+        path_utils.RemoveDirectory(TEMP_ZIP_DIR)
+        os.remove(filename)
       return True
     else:
       if self.verbose:
@@ -528,7 +529,7 @@ class FailureFinder(object):
       if test_path_key in dict:
         local_baseline = dict[test_path_key]
         url_of_baseline = local_baseline
-        chromium_utils.CopyFileToDir(local_baseline, local_directory)
+        shutil.copy(local_baseline, local_directory)
       elif self.verbose:
         print "Baseline %s does not exist in the index." % test_path_key
     else:
@@ -573,9 +574,9 @@ class FailureFinder(object):
     self.webkit_baseline_dict = {}
 
     base = os.path.abspath(os.path.curdir)
-    webkit_base = chromium_utils.FindUpward(base, 'third_party', 'Webkit',
-                                            'LayoutTests')
-    chromium_base = chromium_utils.FindUpward(base, 'data', 'layout_tests')
+    webkit_base = path_utils.PathFromBase('third_party', 'Webkit',
+                                          'LayoutTests')
+    chromium_base = path_utils.PathFromBase('webkit', 'data', 'layout_tests')
     chromium_base_platform = os.path.join(chromium_base, PLATFORM)
     webkit_base_platform = os.path.join(webkit_base, PLATFORM)
 
@@ -765,7 +766,7 @@ class FailureFinder(object):
     dir = os.path.join(os.path.split(file_to_create)[0:-1])[0]
     CreateDirectory(dir)
     file = os.path.normpath(os.path.join(TEMP_ZIP_DIR, file_in_zip))
-    chromium_utils.CopyFileToDir(file, dir)
+    shutil.copy(file, dir)
 
   def _ExtractFileFromZip(self, zip, file_in_zip, file_to_create):
     modifiers = ""
