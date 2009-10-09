@@ -11,6 +11,7 @@
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/cocoa/bookmark_bar_bridge.h"
+#import "chrome/browser/cocoa/bookmark_bar_toolbar_view.h"
 #include "chrome/browser/cocoa/tab_strip_model_observer_bridge.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -34,17 +35,10 @@ class PrefService;
             disposition:(WindowOpenDisposition)disposition;
 @end
 
-// An interface to allow mocking of a BookmarkBarController by the
-// BookmarkBarToolbarView.
-@protocol BookmarkBarFloating
-// Returns true if the bookmark bar should be drawn as if it's a disconnected
-// bookmark bar on the New Tag Page.
-- (BOOL)drawAsFloatingBar;
-@end
-
 // A controller for the bookmark bar in the browser window. Handles showing
 // and hiding based on the preference in the given profile.
-@interface BookmarkBarController : NSViewController<BookmarkBarFloating> {
+@interface BookmarkBarController :
+  NSViewController<BookmarkBarToolbarViewController> {
  @private
   Browser* browser_;              // weak; owned by its window
   BookmarkModel* bookmarkModel_;  // weak; part of the profile owned by the

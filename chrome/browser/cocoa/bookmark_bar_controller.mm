@@ -12,7 +12,9 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #import "chrome/browser/cocoa/bookmark_bar_bridge.h"
+#import "chrome/browser/cocoa/bookmark_bar_constants.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
+#import "chrome/browser/cocoa/bookmark_bar_toolbar_view.h"
 #import "chrome/browser/cocoa/bookmark_bar_view.h"
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
@@ -24,6 +26,7 @@
 #import "chrome/browser/cocoa/view_resizer.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "grit/generated_resources.h"
@@ -52,12 +55,6 @@
 @end
 
 namespace {
-
-// Our height, when opened in "always visible" mode.
-const int kBookmarkBarHeight = 28;
-
-// Our height, when visible in "new tab page" mode.
-const int kNTPBookmarkBarHeight = 40;
 
 // Magic numbers from Cole
 const CGFloat kDefaultBookmarkWidth = 150.0;
@@ -171,6 +168,9 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   CGFloat height = show ? [self preferredHeight] : 0;
   [resizeDelegate_ resizeView:[self view] newHeight:height];
   [[self view] setHidden:show ? NO : YES];
+
+  DCHECK([[self view] isKindOfClass:[BookmarkBarToolbarView class]]);
+  [(BookmarkBarToolbarView*)[self view] layoutViews];
 }
 
 // We don't change a preference; we only change visibility.
@@ -196,7 +196,17 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 }
 
 - (BOOL)isAlwaysVisible {
-  return browser_ && browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+  return browser_ &&
+      browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+}
+
+- (int)currentTabContentsHeight {
+  return browser_->GetSelectedTabContents()->view()->GetContainerSize().
+      height();
+}
+
+- (ThemeProvider*)themeProvider {
+  return browser_->profile()->GetThemeProvider();
 }
 
 - (BOOL)drawAsFloatingBar {
@@ -246,7 +256,8 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 }
 
 - (int)preferredHeight {
-  return [self isAlwaysVisible] ? kBookmarkBarHeight : kNTPBookmarkBarHeight;
+  return [self isAlwaysVisible] ? bookmarks::kBookmarkBarHeight :
+      bookmarks::kNTPBookmarkBarHeight;
 }
 
 - (void)selectTabWithContents:(TabContents*)newContents
@@ -552,7 +563,7 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
   NSRect bounds = [[self view] bounds];
   // TODO: be smarter about this; the animator delays the right height
   if (bounds.size.height == 0)
-    bounds.size.height = kBookmarkBarHeight;
+    bounds.size.height = bookmarks::kBookmarkBarHeight;
   NSRect frame = NSInsetRect(bounds,
                              kBookmarkHorizontalPadding,
                              kBookmarkVerticalPadding);

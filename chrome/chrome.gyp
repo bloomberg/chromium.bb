@@ -987,6 +987,7 @@
         'browser/cocoa/blocked_popup_container_controller.mm',
         'browser/cocoa/bookmark_bar_bridge.h',
         'browser/cocoa/bookmark_bar_bridge.mm',
+        'browser/cocoa/bookmark_bar_constants.h',
         'browser/cocoa/bookmark_bar_controller.h',
         'browser/cocoa/bookmark_bar_controller.mm',
         'browser/cocoa/bookmark_bar_view.h',
