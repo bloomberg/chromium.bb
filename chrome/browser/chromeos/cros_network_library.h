@@ -75,11 +75,9 @@ class CrosNetworkLibrary {
   static void NetworkStatusChangedHandler(void* object,
       const chromeos::ServiceStatus& service_status);
 
-  // Parse a ServiceInfo objects and update our status.
-  void ParseNetworkServiceInfo(const chromeos::ServiceInfo& service);
-
-  // Initialize the network status on startup.
-  void InitNetworkStatus();
+  // Update the network with the ServiceStatus.
+  void UpdateNetworkServiceStatus(
+      const chromeos::ServiceStatus& service_status);
 
   ObserverList<Observer> observers_;
 
