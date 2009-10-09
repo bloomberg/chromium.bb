@@ -42,6 +42,7 @@ const wchar_t kFlush[]                  = L"flush";
 const wchar_t kDjb2[]                   = L"djb2";
 const wchar_t kMd5[]                    = L"md5";
 const wchar_t kFrames[]                 = L"frames";
+const wchar_t kLoop[]                   = L"loop";
 
 }  // namespace switches
 
@@ -104,6 +105,8 @@ int main(int argc, const char** argv) {
               << "Set FFmpeg log verbosity (-8 to 48)\n"
               << "  --frames=N                      "
               << "Decode N frames\n"
+              << "  --loop=N                        "
+              << "Loop N times\n"
               << "  --fast2                         "
               << "Enable fast2 flag\n"
               << "  --flush                         "
@@ -168,6 +171,14 @@ int main(int argc, const char** argv) {
   if (!frames_opt.empty() &&
       !StringToInt(WideToUTF16Hack(frames_opt), &max_frames)) {
     max_frames = 0;
+  }
+
+  // Determine number of times to loop (optional).
+  int max_loops = 0;
+  std::wstring loop_opt(cmd_line->GetSwitchValue(switches::kLoop));
+  if (!loop_opt.empty() &&
+      !StringToInt(WideToUTF16Hack(loop_opt), &max_loops)) {
+    max_loops = 0;
   }
 
   bool fast2 = false;
@@ -341,6 +352,14 @@ int main(int argc, const char** argv) {
     read_result = av_read_frame(format_context, &packet);
 
     if (read_result < 0) {
+      if (max_loops) {
+        --max_loops;
+      }
+      if (max_loops > 0) {
+        av_seek_frame(format_context, -1, 0, AVSEEK_FLAG_BACKWARD);
+        read_result = 0;
+        continue;
+      }
       if (flush) {
         packet.stream_index = target_stream;
         packet.size = 0;
@@ -466,6 +485,7 @@ int main(int argc, const char** argv) {
   } while (read_result >= 0);
   base::TimeDelta total = base::TimeTicks::HighResNow() - start;
   LeaveTimingSection();
+
   if (output)
     file_util::CloseFile(output);
 
