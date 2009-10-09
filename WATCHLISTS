@@ -93,6 +93,9 @@
     'automation': {
       'filepath': 'chrome/browser/automation/.*|chrome/test/automation/.*',
     },
+    'chrome_frame': {
+      'filepath': 'chrome_frame/.*',
+    },
   },
 
   'WATCHLISTS': {
@@ -126,5 +129,6 @@
     'tools': ['pam+watch@chromium.org'],
     'tests': ['phajdan.jr@chromium.org', 'tim@chromium.org'],
     'automation': ['phajdan.jr@chromium.org'],
+    'chrome_frame' : ['amit@chromium.org'],
   },
 }
