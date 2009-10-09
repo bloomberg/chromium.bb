@@ -23,13 +23,16 @@
    Maintained by John J. Boyer john.boyer@jjb-software.com
    */
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include "louis.h"
 #include <getopt.h>
 #include "progname.h"
-#include "config.h"
 #include "version-etc.h"
 
 static const struct option longopts[] =
@@ -42,7 +45,7 @@ static const struct option longopts[] =
 const char version_etc_copyright[] =
   "Copyright %s %d ViewPlus Technologies, Inc. and JJB Software, Inc.";
 
-const char program_author[] = "John J. Boyer";
+#define AUTHORS "John J. Boyer"
 
 static void
 print_help (void)
@@ -51,7 +54,9 @@ print_help (void)
 Usage: %s [OPTION] TABLE\n", program_name);
   
   fputs ("\
-Test a translation table.\n", stdout);
+Test a Braille translation table. If the table contains errors,\n\
+appropriate messages are displayed. If there are no errors the\n\
+message \"no errors found.\" is shown.\n", stdout);
 
   fputs ("\
   -h, --help          display this help and exit\n\
@@ -75,7 +80,7 @@ main (int argc, char **argv)
       {
       /* --help and --version exit immediately, per GNU coding standards.  */
       case 'v':
-        version_etc (stdout, program_name, PACKAGE_NAME, VERSION, program_author, (char *) NULL);
+        version_etc (stdout, program_name, PACKAGE_NAME, VERSION, AUTHORS, (char *) NULL);
         exit (EXIT_SUCCESS);
         break;
       case 'h':

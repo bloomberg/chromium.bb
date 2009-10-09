@@ -23,13 +23,16 @@
    Maintained by John J. Boyer john.boyer@jjb-software.com
    */
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <getopt.h>
 #include "liblouis.h"
 #include "progname.h"
-#include "config.h"
 #include "version-etc.h"
 
 #define BUFSIZE 2048
@@ -49,7 +52,7 @@ static const struct option longopts[] =
 const char version_etc_copyright[] =
   "Copyright %s %d ViewPlus Technologies, Inc. and JJB Software, Inc.";
 
-const char program_author[] = "John J. Boyer";
+#define AUTHORS "John J. Boyer"
 
 static void 
 translate_input (int forward_translation, char *table_name)
@@ -98,7 +101,7 @@ Usage: %s [OPTION] TABLE\n", program_name);
   fputs ("\
 Translate whatever is on standard input and print it on standard\n\
 output. It is intended for large-scale testing of the accuracy of\n\
-translation and back-translation.\n", stdout);
+Braille translation and back-translation.\n\n", stdout);
 
   fputs ("\
   -h, --help          display this help and exit\n\
@@ -124,7 +127,7 @@ main (int argc, char **argv)
       {
       /* --help and --version exit immediately, per GNU coding standards.  */
       case 'v':
-        version_etc (stdout, program_name, PACKAGE_NAME, VERSION, program_author, (char *) NULL);
+        version_etc (stdout, program_name, PACKAGE_NAME, VERSION, AUTHORS, (char *) NULL);
         exit (EXIT_SUCCESS);
         break;
       case 'h':
