@@ -39,6 +39,7 @@
 #include "WrappedResourceResponse.h"
 
 #include "DocumentLoader.h"
+#include "KURL.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/Vector.h>
@@ -72,9 +73,9 @@ namespace WebKit {
         static WebNavigationType toWebNavigationType(WebCore::NavigationType type);
 
         bool hasRedirectChain() const { return !m_redirectChain.isEmpty(); }
-        WebURL endOfRedirectChain() const;
+        const WebCore::KURL& endOfRedirectChain() const;
         void clearRedirectChain();
-        void appendRedirect(const WebURL& url);
+        void appendRedirect(const WebCore::KURL& url);
 
         PassOwnPtr<WebPluginLoadObserver> releasePluginLoadObserver() { return m_pluginLoadObserver.release(); }
         static void setNextPluginLoadObserver(PassOwnPtr<WebPluginLoadObserver>);
@@ -92,7 +93,7 @@ namespace WebKit {
         // Lists all intermediate URLs that have redirected for the current provisional load.
         // See WebFrameLoaderClient::dispatchDidReceiveServerRedirectForProvisionalLoad for a
         // description of who modifies this when to keep it up to date.
-        Vector<WebURL> m_redirectChain;
+        Vector<WebCore::KURL> m_redirectChain;
 
         OwnPtr<ExtraData> m_extraData;
         OwnPtr<WebPluginLoadObserver> m_pluginLoadObserver;
