@@ -8,9 +8,9 @@
 #include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/i18n/time_format.h"
 #include "base/string_util.h"
 #include "base/time.h"
-#include "base/time_format.h"
 #include "grit/generated_resources.h"
 
 // Amount of slop to add into the timer to make sure we're into the next minute
