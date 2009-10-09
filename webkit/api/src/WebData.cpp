@@ -51,7 +51,8 @@ void WebData::reset()
 void WebData::assign(const WebData& other)
 {
     WebDataPrivate* p = const_cast<WebDataPrivate*>(other.m_private);
-    p->ref();
+    if (p)
+        p->ref();
     assign(p);
 }
 

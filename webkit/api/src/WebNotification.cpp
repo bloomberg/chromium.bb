@@ -54,7 +54,8 @@ void WebNotification::reset()
 void WebNotification::assign(const WebNotification& other)
 {
     WebNotificationPrivate* p = const_cast<WebNotificationPrivate*>(other.m_private);
-    p->ref();
+    if (p)
+        p->ref();
     assign(p);
 }
 

@@ -50,7 +50,8 @@ void WebSecurityOrigin::reset()
 void WebSecurityOrigin::assign(const WebSecurityOrigin& other)
 {
     WebSecurityOriginPrivate* p = const_cast<WebSecurityOriginPrivate*>(other.m_private);
-    p->ref();
+    if (p)
+        p->ref();
     assign(p);
 }
 

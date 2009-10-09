@@ -53,7 +53,8 @@ void WebHTTPBody::reset()
 void WebHTTPBody::assign(const WebHTTPBody& other)
 {
     WebHTTPBodyPrivate* p = const_cast<WebHTTPBodyPrivate*>(other.m_private);
-    p->ref();
+    if (p)
+        p->ref();
     assign(p);
 }
 

@@ -59,7 +59,8 @@ void WebDragData::reset()
 void WebDragData::assign(const WebDragData& other)
 {
     WebDragDataPrivate* p = const_cast<WebDragDataPrivate*>(other.m_private);
-    p->ref();
+    if (p)
+        p->ref();
     assign(p);
 }
 

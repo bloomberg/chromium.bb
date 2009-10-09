@@ -49,7 +49,8 @@ void WebForm::reset()
 void WebForm::assign(const WebForm& other)
 {
     WebFormPrivate* p = const_cast<WebFormPrivate*>(other.m_private);
-    p->ref();
+    if (p)
+        p->ref();
     assign(p);
 }
 

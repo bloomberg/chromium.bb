@@ -60,7 +60,8 @@ void WebHistoryItem::reset()
 void WebHistoryItem::assign(const WebHistoryItem& other)
 {
     WebHistoryItemPrivate* p = const_cast<WebHistoryItemPrivate*>(other.m_private);
-    p->ref();
+    if (p)
+        p->ref();
     assign(p);
 }
 

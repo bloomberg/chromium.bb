@@ -51,7 +51,8 @@ void WebRange::reset()
 void WebRange::assign(const WebRange& other)
 {
     WebRangePrivate* p = const_cast<WebRangePrivate*>(other.m_private);
-    p->ref();
+    if (p)
+        p->ref();
     assign(p);
 }
 
