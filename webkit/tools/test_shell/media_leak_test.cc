@@ -12,8 +12,7 @@
 class MediaLeakTest : public TestShellTest {
 };
 
-// Ignore these until 64-bit ffmpeg libs are available. http://crbug.com/20467
-#if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(ARCH_CPU_64_BITS)
+#if defined(OS_WIN) || defined(OS_LINUX)
 
 // This test plays a Theora video file for 1 second. It tries to expose
 // memory leaks during a normal playback.
