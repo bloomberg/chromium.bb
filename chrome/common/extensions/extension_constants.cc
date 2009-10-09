@@ -82,7 +82,7 @@ const char* kInvalidJsList =
 const char* kInvalidKey =
     "Value 'key' is missing or invalid.";
 const char* kInvalidManifest =
-    "Manifest is missing or invalid.";
+    "Manifest file is invalid.";
 const char* kInvalidMatchCount =
     "Invalid value for 'content_scripts[*].matches. There must be at least one "
     "match specified.";
@@ -142,6 +142,10 @@ const char* kInvalidVersion =
     "dot-separated integers.";
 const char* kInvalidZipHash =
     "Required key 'zip_hash' is missing or invalid.";
+const char* kManifestParseError =
+    "Manifest is not valid JSON.";
+const char* kManifestUnreadable =
+    "Manifest file is missing or unreadable.";
 const char* kMissingFile =
     "At least one js or css file is required for 'content_scripts[*]'.";
 const char* kInvalidTheme =

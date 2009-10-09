@@ -185,6 +185,41 @@ TEST(ExtensionFileUtil, CheckIllegalFilenamesReservedAndIllegal) {
                                                              &error));
 }
 
+TEST(ExtensionFileUtil, LoadExtensionGivesHelpfullErrorOnMissingManifest) {
+  FilePath install_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
+  install_dir = install_dir.AppendASCII("extensions")
+      .AppendASCII("bad")
+      .AppendASCII("Extensions")
+      .AppendASCII("dddddddddddddddddddddddddddddddd")
+      .AppendASCII("1.0");
+
+  std::string error;
+  scoped_ptr<Extension> extension(
+      extension_file_util::LoadExtension(install_dir, false, &error));
+  ASSERT_TRUE(extension == NULL);
+  ASSERT_FALSE(error.empty());
+  ASSERT_STREQ("Manifest file is missing or unreadable.", error.c_str());
+}
+
+TEST(ExtensionFileUtil, LoadExtensionGivesHelpfullErrorOnBadManifest) {
+  FilePath install_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
+  install_dir = install_dir.AppendASCII("extensions")
+      .AppendASCII("bad")
+      .AppendASCII("Extensions")
+      .AppendASCII("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+      .AppendASCII("1.0");
+
+  std::string error;
+  scoped_ptr<Extension> extension(
+      extension_file_util::LoadExtension(install_dir, false, &error));
+  ASSERT_TRUE(extension == NULL);
+  ASSERT_FALSE(error.empty());
+  ASSERT_STREQ("Manifest is not valid JSON.  "
+               "Line: 2, column: 16, Syntax error.", error.c_str());
+}
+
 // TODO(aa): More tests as motivation allows. Maybe steal some from
 // ExtensionsService? Many of them could probably be tested here without the
 // MessageLoop shenanigans.

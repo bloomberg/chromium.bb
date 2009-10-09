@@ -101,14 +101,26 @@ Extension* LoadExtension(const FilePath& extension_path,
   FilePath manifest_path =
       extension_path.AppendASCII(Extension::kManifestFilename);
   if (!file_util::PathExists(manifest_path)) {
-    *error = extension_manifest_errors::kInvalidManifest;
+    *error = extension_manifest_errors::kManifestUnreadable;
     return NULL;
   }
 
   JSONFileValueSerializer serializer(manifest_path);
   scoped_ptr<Value> root(serializer.Deserialize(error));
-  if (!root.get())
+  if (!root.get()) {
+    if (error->empty()) {
+      // If |error| is empty, than the file could not be read.
+      // It would be cleaner to have the JSON reader give a specific error
+      // in this case, but other code tests for a file error with
+      // error->empty().  For now, be consistent.
+      *error = extension_manifest_errors::kManifestUnreadable;
+    } else {
+      *error = StringPrintf("%s  %s",
+                            extension_manifest_errors::kManifestParseError,
+                            error->c_str());
+    }
     return NULL;
+  }
 
   if (!root->IsType(Value::TYPE_DICTIONARY)) {
     *error = extension_manifest_errors::kInvalidManifest;

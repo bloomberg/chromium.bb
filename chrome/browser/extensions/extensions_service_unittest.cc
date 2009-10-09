@@ -611,7 +611,7 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectoryFail) {
 
   EXPECT_TRUE(MatchPattern(GetErrors()[1],
       std::string("Could not load extension from '*'. ") +
-      extension_manifest_errors::kInvalidManifest)) << GetErrors()[1];
+      extension_manifest_errors::kManifestUnreadable)) << GetErrors()[1];
 
   EXPECT_TRUE(MatchPattern(GetErrors()[2],
       std::string("Could not load extension from '*'. ") +
@@ -619,7 +619,7 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectoryFail) {
 
   EXPECT_TRUE(MatchPattern(GetErrors()[3],
       std::string("Could not load extension from '*'. ") +
-      extension_manifest_errors::kInvalidManifest)) << GetErrors()[3];
+      extension_manifest_errors::kManifestUnreadable)) << GetErrors()[3];
 };
 
 // Test that partially deleted extensions are cleaned up during startup

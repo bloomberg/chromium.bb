@@ -104,6 +104,8 @@ namespace extension_manifest_errors {
   extern const char* kInvalidThemeColors;
   extern const char* kInvalidThemeTints;
   extern const char* kThemesCannotContainExtensions;
+  extern const char* kManifestParseError;
+  extern const char* kManifestUnreadable;
   extern const char* kMissingFile;
   extern const char* kInvalidUpdateURL;
   extern const char* kInvalidDefaultLocale;
