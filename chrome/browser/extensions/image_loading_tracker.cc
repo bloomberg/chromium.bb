@@ -29,19 +29,13 @@ class ImageLoadingTracker::LoadImageTask : public Task {
   // we use to communicate back to the entity that wants the image after we
   // decode it. |path| is the path to load the image from. |index| is an
   // identifier for the image that we pass back to the caller.
-  // |max_size| is the maximum size for the loaded image. If the image is
-  // larger, it will be resized to fit. It is optional.
   LoadImageTask(ImageLoadingTracker* tracker,
                 const ExtensionResource& resource,
-                size_t index,
-                gfx::Size* max_size)
+                size_t index)
     : callback_loop_(MessageLoop::current()),
       tracker_(tracker),
       resource_(resource),
-      index_(index){
-    if (max_size)
-      max_size_.reset(new gfx::Size(*max_size));
-  }
+      index_(index) {}
 
   void ReportBack(SkBitmap* image) {
     DCHECK(image);
@@ -71,18 +65,15 @@ class ImageLoadingTracker::LoadImageTask : public Task {
       return;  // Unable to decode.
     }
 
-    if (max_size_.get()) {
-      if (decoded->width() > max_size_->width() ||
-          decoded->height() > max_size_->height()) {
-        // The bitmap is not the correct size, re-sample.
-        int new_width = decoded->width();
-        int new_height = decoded->height();
-        // Calculate what dimensions to use within the constraints (16x16 max).
-        calc_favicon_target_size(&new_width, &new_height);
-        *decoded = skia::ImageOperations::Resize(
-            *decoded, skia::ImageOperations::RESIZE_LANCZOS3,
-            new_width, new_height);
-      }
+    if (decoded->width() != kFavIconSize || decoded->height() != kFavIconSize) {
+      // The bitmap is not the correct size, re-sample.
+      int new_width = decoded->width();
+      int new_height = decoded->height();
+      // Calculate what dimensions to use within the constraints (16x16 max).
+      calc_favicon_target_size(&new_width, &new_height);
+      *decoded = skia::ImageOperations::Resize(
+          *decoded, skia::ImageOperations::RESIZE_LANCZOS3,
+          new_width, new_height);
     }
 
     ReportBack(decoded.release());
@@ -100,20 +91,15 @@ class ImageLoadingTracker::LoadImageTask : public Task {
 
   // The index of the icon being loaded.
   size_t index_;
-
-  // The max size for the image. If the image is larger than this, it will be
-  // scaled down.
-  scoped_ptr<gfx::Size> max_size_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 // ImageLoadingTracker
 
-void ImageLoadingTracker::PostLoadImageTask(const ExtensionResource& resource,
-                                            gfx::Size* max_size) {
+void ImageLoadingTracker::PostLoadImageTask(const ExtensionResource& resource) {
   MessageLoop* file_loop = g_browser_process->file_thread()->message_loop();
   file_loop->PostTask(FROM_HERE, new LoadImageTask(this, resource,
-                                                   posted_count_++, max_size));
+                                                   posted_count_++));
 }
 
 void ImageLoadingTracker::OnImageLoaded(SkBitmap* image, size_t index) {
