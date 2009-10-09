@@ -12,7 +12,7 @@
 #include "base/rand_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/extensions/theme_preview_infobar_delegate.h"
+#include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
@@ -27,7 +27,7 @@
 #include "base/sys_string_conversions.h"
 #include <CoreFoundation/CFUserNotification.h>
 #elif defined(TOOLKIT_GTK)
-#include "chrome/browser/extensions/gtk_theme_preview_infobar_delegate.h"
+#include "chrome/browser/extensions/gtk_theme_installed_infobar_delegate.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #endif
 
@@ -231,12 +231,12 @@ void ExtensionInstallUI::ShowThemeInfoBar(Extension* new_theme) {
   // Then either replace that old one or add a new one.
   InfoBarDelegate* new_delegate =
 #if defined(TOOLKIT_GTK)
-      new GtkThemePreviewInfobarDelegate(
+      new GtkThemeInstalledInfoBarDelegate(
           tab_contents,
           new_theme->name(), previous_theme_id_, previous_use_gtk_theme_);
 #else
-      new ThemePreviewInfobarDelegate(tab_contents,
-                                      new_theme->name(), previous_theme_id_);
+      new ThemeInstalledInfoBarDelegate(tab_contents,
+                                        new_theme->name(), previous_theme_id_);
 #endif
 
   if (old_delegate)
