@@ -61,6 +61,18 @@
  fun:*logging*SetMinLogLevel*
 }
 
+{
+  bug_24307
+  ThreadSanitizer:Race
+  fun:*RefCounted*disk_cache*File*
+}
+
+{
+  bug_24419
+  ThreadSanitizer:Race
+  fun:*BrowserProcessImpl*nspector*iles*
+}
+
 ############################
 # Data races in tests
 
@@ -146,3 +158,23 @@
   fun:sqlite3MutexAlloc
 }
 
+############################
+# Benign races in libc
+{
+  Benign races in __lll_*lock_*_private
+  ThreadSanitizer:Race
+  fun:__lll_*lock_*_private
+}
+
+{
+   fun:__tz*
+   ThreadSanitizer:Race
+   fun:__tz*
+}
+
+{
+   fun:tzset*
+   ThreadSanitizer:Race
+   ...
+   fun:tzset*
+}
