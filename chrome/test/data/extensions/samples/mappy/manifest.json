@@ -1,16 +1,18 @@
 {
   "name": "Mappy",
-  "version": "0.4.1",
+  "version": "0.6",
   "description": "Finds addresses in the web page you're on and pops up a map window.",
   "icons": { "128": "icon.png" },
-  "toolstrips": [
-    "mappy_toolstrip.html"
-  ],
   "content_scripts": [
     { "matches": ["http://*/*"], "js": ["mappy_content_script.js"] }
   ],
   "permissions": [ 
     "tabs",
     "http://maps.google.com/*"
-  ]
+  ],
+  "browser_action": {
+      "name": "Display Map",
+      "icons": ["marker.png"],
+      "popup": { "path": "popup.html", "height": 512 }
+  }
 }

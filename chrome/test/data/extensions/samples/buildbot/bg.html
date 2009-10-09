@@ -1,0 +1,58 @@
+<script>
+var statusURL = "http://chromium-status.appspot.com/current";
+
+function updateStatus(text) {
+  // Page outputs a line like this:
+  // <div class="Notice">Tree is open (issue -> person) </div> 
+  // Although what's in the <div> is arbitrary and typed by a person.
+  var results = (new RegExp('"Notice"[^>]*>(.*)<', 'g')).exec(text);
+  if (!results || results.index < 0) {
+    throw new Error("couldn't find status div in " + text);
+  }
+  var status = results[1];
+  chrome.browserAction.setName(status);
+  var open = /open/i;
+  if (open.exec(status)) {
+    //chrome.browserAction.setBadgeText("\u263A");
+    chrome.browserAction.setBadgeText("\u2022");
+    chrome.browserAction.setBadgeBackgroundColor([255,0,255,0]);
+  } else {
+    //chrome.browserAction.setBadgeText("\u2639");
+    chrome.browserAction.setBadgeText("\u00D7");
+    chrome.browserAction.setBadgeBackgroundColor([255,255,0,0]);
+  }
+}
+
+function requestStatus() {
+  requestURL(statusURL, updateStatus);
+  setTimeout(requestStatus, 30000);
+}
+
+function requestURL(url, callback) {
+  console.log("requestURL: " + url);
+  var xhr = new XMLHttpRequest();
+  try {
+    xhr.onreadystatechange = function(state) {
+      if (xhr.readyState == 4) {
+        var text = xhr.responseText;
+        //console.log(text);
+        callback(text);
+      }
+    }
+
+    xhr.onerror = function(error) {
+      console.log("xhr error: " + JSON.stringify(error));
+      console.dir(error);
+    }
+
+    xhr.open("GET", url, true);
+    xhr.send({});
+  } catch(e) {
+    console.log("exception: " + e);
+  }
+}
+
+window.onload = function() {
+  window.setTimeout(requestStatus, 10);
+}
+</script>
