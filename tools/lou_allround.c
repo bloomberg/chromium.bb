@@ -24,11 +24,50 @@ Library
    Maintained by John J. Boyer john.boyer@jjb-software.com
    */
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include "liblouis.h"
 #include "louis.h"
+#include <getopt.h>
+#include "progname.h"
+#include "version-etc.h"
+
+static const struct option longopts[] =
+{
+  { "help", no_argument, NULL, 'h' },
+  { "version", no_argument, NULL, 'v' },
+  { NULL, 0, NULL, 0 }
+};
+
+const char version_etc_copyright[] =
+  "Copyright %s %d ViewPlus Technologies, Inc. and JJB Software, Inc.";
+
+#define AUTHORS "John J. Boyer"
+
+static void
+print_help (void)
+{
+  printf ("\
+Usage: %s [OPTION]\n", program_name);
+  
+  fputs ("\
+This program tests every capability of the liblouis library. It is\n\
+completely interactive. \n\n", stdout);
+
+  fputs ("\
+  -h, --help          display this help and exit\n\
+  -v, --version       display version information and exit\n", stdout);
+
+  printf ("\n");
+  printf ("\
+Report bugs to <%s>.\n", PACKAGE_BUGREPORT);
+}
+
 #define BUFSIZE 256
 
 static char inputBuffer[BUFSIZE];
@@ -215,7 +254,7 @@ getCommands (void)
 }
 
 int
-main ()
+main (int argc, char **argv)
 {
   widechar inbuf[BUFSIZE];
   widechar transbuf[BUFSIZE];
@@ -228,6 +267,39 @@ main ()
   int cursorPos;
   int realInlen = 0;
   int k;
+  int optc;
+
+  set_program_name (argv[0]);
+
+  while ((optc = getopt_long (argc, argv, "hv", longopts, NULL)) != -1)
+    switch (optc)
+      {
+      /* --help and --version exit immediately, per GNU coding standards.  */
+      case 'v':
+        version_etc (stdout, program_name, PACKAGE_NAME, VERSION, AUTHORS, (char *) NULL);
+        exit (EXIT_SUCCESS);
+        break;
+      case 'h':
+        print_help ();
+        exit (EXIT_SUCCESS);
+        break;
+      default:
+	fprintf (stderr, "Try `%s --help' for more information.\n",
+		 program_name);
+	exit (EXIT_FAILURE);
+        break;
+      }
+
+  if (optind < argc)
+    {
+      /* Print error message and exit.  */
+      fprintf (stderr, "%s: extra operand: %s\n",
+	       program_name, argv[optind]);
+      fprintf (stderr, "Try `%s --help' for more information.\n",
+               program_name);
+      exit (EXIT_FAILURE);
+    }
+
   validTable = NULL;
   enteredCursorPos = -1;
   mode = 0;
