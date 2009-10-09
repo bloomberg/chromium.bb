@@ -10,7 +10,18 @@ var defaultIconId = 1;
 var whiteoutIconId = 2;
 var numberOfBlinks = 0;
 
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
+  if (changeInfo.url && changeInfo.url.indexOf(gmail) == 0) {
+    console.log("saw gmail! updating...");
+    getInboxCount(function(count) {
+      updateUnreadCount(count);
+    });
+  }
+});
+
 function init() {
+  chrome.browserAction.setBadgeBackgroundColor([230, 190, 190, 190]);
+  chrome.browserAction.setBadgeText("?");
   window.setTimeout(startRequest, 0);
 }
 
@@ -40,12 +51,14 @@ function getInboxCount(onSuccess, onError) {
 
   function handleSuccess(count) {
     window.clearTimeout(abortTimerId);
-    onSuccess(count);
+    if (onSuccess)
+      onSuccess(count);
   }
 
   function handleError() {
     window.clearTimeout(abortTimerId);
-    onError();
+    if (onError)
+      onError();
   }
 
   try {
@@ -98,25 +111,11 @@ function gmailNSResolver(prefix) {
 function updateUnreadCount(count) {
   if (unreadCount != count) {
     unreadCount = count;
-    startBlink();
-  }
-}
-
-function startBlink() {
-  chrome.browserAction.setIcon(defaultIconId);
-  if (numberOfBlinks < 2) {
-    setTimeout(doWhiteout, 200);
-    numberOfBlinks = numberOfBlinks + 1;
-  } else {
-    numberOfBlinks = 0;
     chrome.browserAction.setBadgeText(unreadCount);
+    chrome.browserAction.setBadgeBackgroundColor([255, 208, 0, 24]);
+    chrome.browserAction.setIcon(defaultIconId);
     chrome.browserAction.setName(unreadCount + " unread emails");
   }
-}
-
-function doWhiteout() {
-  chrome.browserAction.setIcon(whiteoutIconId);
-  setTimeout(startBlink, 200);
 }
 
 function goToInbox() {

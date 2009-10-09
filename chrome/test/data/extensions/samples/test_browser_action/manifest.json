@@ -1,10 +1,10 @@
 {
-  "name": "Browser action test",
-  "description": "This extension adds a changeable button to the toolbar",
+  "name": "Animated Browser Action",
+  "description": "This extension adds an animated browser action to the toolbar.",
   "version": "1.0",
   "background_page": "background.html",
   "browser_action": {
       "name": "First icon",
-      "icons": ["print_16x16.png", "print2_16x16.png"]
+      "icons": ["print_16x16.png"]
   }
 }

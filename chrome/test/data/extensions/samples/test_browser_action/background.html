@@ -3,16 +3,11 @@
 <script>
   // Called when the user clicks on the browser action.
   var i = 0;
-  chrome.browserAction.onClicked.addListener(function(windowId) {
+
+  window.setInterval(function() {
     i++;
-    chrome.browserAction.setName("Ouch" + i);
-    if (i < 4) {
-      chrome.browserAction.setIcon(i % 2);
-    } else {
-      var image = draw(i * 2, i * 4);
-      chrome.browserAction.setIcon(image);
-    }
-  });
+    chrome.browserAction.setIcon(draw(i*2, i*4));
+  }, 50);
 
   function draw(starty, startx) {
     var canvas = document.getElementById('canvas');

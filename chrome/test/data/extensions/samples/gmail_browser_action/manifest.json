@@ -1,5 +1,5 @@
 {
-  "name": "Browser action test",
+  "name": "Gmail Checker 2",
   "description": "This extension adds a Gmail button to the toolbar which notifies when new email comes",
   "version": "1.0",
   "background_page": "background.html",
@@ -9,7 +9,9 @@
   "browser_action": {
       "name": "Gmail",
       "icons": ["gmail_not_logged_in.png",
-                "gmail_logged_in.png",
-                "gmail_whiteout.png"]
+                "gmail_logged_in.png"]
+  },
+  "icons": {
+    "128": "icon_128.png"
   }
 }
