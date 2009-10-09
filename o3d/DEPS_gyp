@@ -8,7 +8,7 @@ vars = {
   "gtest_rev": "329",
   "gflags_rev": "30",
   "breakpad_rev": "391",
-  "v8_rev": "3030",
+  "v8_rev": "2901",
   "nacl_rev": "823",
 }
 
