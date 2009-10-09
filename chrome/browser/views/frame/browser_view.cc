@@ -24,6 +24,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/find_bar_controller.h"
+#include "chrome/browser/ntp_background_util.h"
 #include "chrome/browser/page_info_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/view_ids.h"
@@ -130,7 +131,8 @@ static const char kBrowserViewClassName[] = "browser/views/BrowserView";
 class BookmarkExtensionBackground : public views::Background {
  public:
   explicit BookmarkExtensionBackground(BrowserView* browser_view,
-                                       DetachableToolbarView* host_view);
+                                       DetachableToolbarView* host_view,
+                                       Browser* browser);
 
   // View methods overridden from views:Background.
   virtual void Paint(gfx::Canvas* canvas, views::View* view) const;
@@ -141,14 +143,18 @@ class BookmarkExtensionBackground : public views::Background {
   // The view hosting this background.
   DetachableToolbarView* host_view_;
 
+  Browser* browser_;
+
   DISALLOW_COPY_AND_ASSIGN(BookmarkExtensionBackground);
 };
 
 BookmarkExtensionBackground::BookmarkExtensionBackground(
     BrowserView* browser_view,
-    DetachableToolbarView* host_view)
+    DetachableToolbarView* host_view,
+    Browser* browser)
     : browser_view_(browser_view),
-      host_view_(host_view) {
+      host_view_(host_view),
+      browser_(browser) {
 }
 
 void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
@@ -156,7 +162,14 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
   ThemeProvider* tp = host_view_->GetThemeProvider();
   if (host_view_->IsDetached()) {
     // Draw the background to match the new tab page.
-    DetachableToolbarView::PaintBackgroundDetachedMode(canvas, host_view_);
+    int height = 0;
+    TabContents* contents = browser_->GetSelectedTabContents();
+    if (contents && contents->view())
+      height = contents->view()->GetContainerSize().height();
+    NtpBackgroundUtil::PaintBackgroundDetachedMode(
+        host_view_->GetThemeProvider(), canvas,
+        gfx::Rect(0, 0, host_view_->width(), host_view_->height()),
+        height);
 
     SkRect rect;
 
@@ -1672,7 +1685,8 @@ void BrowserView::Init() {
   if (browser_->SupportsWindowFeature(Browser::FEATURE_EXTENSIONSHELF)) {
     extension_shelf_ = new ExtensionShelf(browser_.get());
     extension_shelf_->set_background(
-        new BookmarkExtensionBackground(this, extension_shelf_));
+        new BookmarkExtensionBackground(this, extension_shelf_,
+                                        browser_.get()));
     extension_shelf_->
         SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_EXTENSIONS));
     AddChildView(extension_shelf_);
@@ -1886,7 +1900,8 @@ bool BrowserView::MaybeShowBookmarkBar(TabContents* contents) {
                                                    browser_.get()));
       bookmark_bar_view_->SetParentOwned(false);
       bookmark_bar_view_->set_background(
-          new BookmarkExtensionBackground(this, bookmark_bar_view_.get()));
+          new BookmarkExtensionBackground(this, bookmark_bar_view_.get(),
+                                          browser_.get()));
     } else {
       bookmark_bar_view_->SetProfile(contents->profile());
     }

@@ -32,11 +32,6 @@ class DetachableToolbarView : public views::View {
   virtual double GetAnimationValue() const = 0;
 
   // Paint the background (including the theme image behind content area) when
-  // in bar/shelf is detached from the Chrome frame.
-  static void PaintBackgroundDetachedMode(gfx::Canvas* canvas,
-                                          views::View* view);
-
-  // Paint the background (including the theme image behind content area) when
   // in bar/shelf is attached to the Chrome frame.
   static void PaintBackgroundAttachedMode(gfx::Canvas* canvas,
                                           views::View* view);
@@ -82,20 +77,6 @@ class DetachableToolbarView : public views::View {
                                    const SkColor& middle_color,
                                    const SkColor& bottom_color);
 
-  // Paint the theme background with the proper alignment.
-  static void PaintThemeBackgroundTopAligned(gfx::Canvas* canvas,
-                                             SkBitmap* ntp_background,
-                                             int tiling,
-                                             int alignment,
-                                             int width,
-                                             int height);
-  static void PaintThemeBackgroundBottomAligned(gfx::Canvas* canvas,
-                                                SkBitmap* ntp_background,
-                                                int tiling,
-                                                int alignment,
-                                                int width,
-                                                int height,
-                                                int browser_height);
  private:
   DISALLOW_COPY_AND_ASSIGN(DetachableToolbarView);
 };
