@@ -1717,6 +1717,10 @@ void BrowserWindowGtk::InitWidgets() {
     // The window manager needs the min size for popups.
     gtk_widget_set_size_request(
         GTK_WIDGET(window_), bounds_.width(), bounds_.height());
+    // If we don't explicitly resize here there is a race condition between
+    // the X Server and the window manager. Windows will appear with a default
+    // size of 200x200 if this happens.
+    gtk_window_resize(window_, bounds_.width(), bounds_.height());
   }
 #endif
 
