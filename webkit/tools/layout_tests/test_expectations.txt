@@ -2476,10 +2476,6 @@ BUG9798 LINUX RELEASE : chrome/fast/dom/extensions/interval.html = FAIL PASS
 BUG9798 MAC DEBUG : chrome/fast/dom/extensions/interval.html = FAIL PASS
 BUG9798 WIN : chrome/fast/dom/extensions/interval.html = FAIL PASS
 BUG9798 LINUX RELEASE : LayoutTests/editing/execCommand/15381.html = FAIL PASS
-
-// Was flaky. Became a consistent failure.
-BUG9798 WIN : LayoutTests/editing/execCommand/paste-1.html = FAIL
-
 BUG9798 WIN : LayoutTests/editing/execCommand/paste-2.html = FAIL PASS
 
 BUG9798 WIN LINUX MAC : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
@@ -3056,7 +3052,7 @@ BUG24331 LINUX DEBUG : LayoutTests/svg/text/text-tselect-02-f.svg = FAIL PASS
 BUG_JORLOW : LayoutTests/storage/domstorage/sessionstorage/complex-values.html = FAIL
 
 // WebKit update: 49190:49206
-BUG_JPARENT MAC LINUX : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
+BUG_JPARENT MAC WIN DEBUG : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
 BUG_JPARENT MAC DEBUG : LayoutTests/editing/execCommand/paste-2.html = FAIL PASS
 BUG_JPARENT WIN DEBUG : LayoutTests/fast/frames/calculate-percentage.html = CRASH PASS
 BUG_JPARENT WIN DEBUG : LayoutTests/fast/frames/calculate-fixed.html = CRASH PASS
