@@ -14,6 +14,9 @@
 #include "base/win_util.h"
 #endif
 
+#if defined(OS_LINUX)
+#include "base/keyboard_code_conversion_gtk.h"
+#endif
 #include "base/keyboard_codes.h"
 #include "base/string_util.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
@@ -291,7 +294,8 @@ base::KeyboardCode Textfield::Keystroke::GetKeyboardCode() const {
 #if defined(OS_WIN)
   return static_cast<base::KeyboardCode>(key_);
 #else
-  return static_cast<base::KeyboardCode>(event_.keyval);
+  return static_cast<base::KeyboardCode>(
+      base::WindowsKeyCodeForGdkKeyCode(event_.keyval));
 #endif
 }
 
