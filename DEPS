@@ -9,6 +9,8 @@ deps = {
     "http://googletest.googlecode.com/svn/trunk@267",
   "third_party":
     "http://nativeclient.googlecode.com/svn/trunk/src/third_party",
+  "native_client_sdk":
+    "http://nativeclient.googlecode.com/svn/trunk/src/native_client_sdk",
 }
 
 deps_os = {
