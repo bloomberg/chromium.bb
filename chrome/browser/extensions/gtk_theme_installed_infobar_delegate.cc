@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/gtk_theme_preview_infobar_delegate.h"
+#include "chrome/browser/extensions/gtk_theme_installed_infobar_delegate.h"
 
 #include "chrome/browser/profile.h"
 
