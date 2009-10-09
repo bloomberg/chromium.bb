@@ -411,8 +411,8 @@ chrome.extension.onConnect.addListener(function(port) {
 &lt;/div&gt;
 &lt;script&gt;
 // Listen for notifications from the content script.
-chrome.extension.onConnect.addListener(function(port, name) {
-  console.assert(name == "notifyChannel");
+chrome.extension.onConnect.addListener(function(port) {
+  console.assert(port.name == "notifyChannel");
   port.onMessage.addListener(function(msg) {
     // Color our button based on whether a login element was found.
     var color = msg.found ? "blue" : "grey";
