@@ -69,7 +69,8 @@ class SVNUnittest(TryChangeTestsBase):
 class GITUnittest(TryChangeTestsBase):
   """trychange.GIT tests."""
   def setUp(self):
-    self.fake_root = '/fake_root'
+    self.fake_root = gcl.os.path.join(gcl.os.path.dirname(__file__),
+                                      'fake_root')
     self.expected_files = ['foo.txt', 'bar.txt']
     options = optparse.Values()
     options.files = self.expected_files

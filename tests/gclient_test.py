@@ -442,12 +442,12 @@ class GClientClassTestCase(GclientTestCase):
       "deps = {\n"
       "  'src/t': 'svn://scm.t/trunk',\n"
       "}\n")
-
+    entry_path = os.path.join(solution_name, 'src', 't').replace('\\', '\\\\')
     entries_content = (
       "entries = \\\n"
       "{ '%s': '%s',\n"
       "  '%s': 'svn://scm.t/trunk'}\n"
-    ) % (solution_name, self.url, os.path.join(solution_name, 'src', 't'))
+    ) % (solution_name, self.url, entry_path)
 
     scm_wrapper_sol = self.mox.CreateMockAnything()
     scm_wrapper_t = self.mox.CreateMockAnything()

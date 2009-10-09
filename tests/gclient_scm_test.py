@@ -378,18 +378,22 @@ M 100644 :5 b
 reset refs/heads/master
 from :3
 """
-
   def Options(self, *args, **kwargs):
     return self.OptionsObject(self, *args, **kwargs)
 
   def CreateGitRepo(self, git_import, path):
-    subprocess.Popen(['git', 'init'], stdout=subprocess.PIPE,
-                     stderr=subprocess.STDOUT, cwd=path).communicate()
+    try:
+      subprocess.Popen(['git', 'init'], stdout=subprocess.PIPE,
+                       stderr=subprocess.STDOUT, cwd=path).communicate()
+    except WindowsError:
+      # git is not available, skip this test.
+      return False
     subprocess.Popen(['git', 'fast-import'], stdin=subprocess.PIPE,
                      stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                      cwd=path).communicate(input=git_import)
     subprocess.Popen(['git', 'checkout'], stdout=subprocess.PIPE,
                      stderr=subprocess.STDOUT, cwd=path).communicate()
+    return True
 
   def GetGitRev(self, path):
     return subprocess.Popen(['git', 'rev-parse', 'HEAD'],
@@ -404,7 +408,7 @@ from :3
     self.root_dir = tempfile.mkdtemp()
     self.relpath = '.'
     self.base_path = os.path.join(self.root_dir, self.relpath)
-    self.CreateGitRepo(self.sample_git_import, self.base_path)
+    self.enabled = self.CreateGitRepo(self.sample_git_import, self.base_path)
 
   def tearDown(self):
     shutil.rmtree(self.root_dir)
@@ -420,6 +424,8 @@ from :3
     self.compareMembers(gclient_scm.CreateSCM(url=self.url), members)
 
   def testRevertMissing(self):
+    if not self.enabled:
+      return
     options = self.Options()
     file_path = os.path.join(self.base_path, 'a')
     os.remove(file_path)
@@ -433,6 +439,8 @@ from :3
     self.assertEquals(file_list, [])
 
   def testRevertNone(self):
+    if not self.enabled:
+      return
     options = self.Options()
     scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
                                 relpath=self.relpath)
@@ -444,6 +452,8 @@ from :3
 
 
   def testRevertModified(self):
+    if not self.enabled:
+      return
     options = self.Options()
     file_path = os.path.join(self.base_path, 'a')
     open(file_path, 'a').writelines('touched\n')
@@ -459,6 +469,8 @@ from :3
                       '069c602044c5388d2d15c3f875b057c852003458')
 
   def testRevertNew(self):
+    if not self.enabled:
+      return
     options = self.Options()
     file_path = os.path.join(self.base_path, 'c')
     f = open(file_path, 'w')
@@ -478,6 +490,8 @@ from :3
                       '069c602044c5388d2d15c3f875b057c852003458')
 
   def testStatusNew(self):
+    if not self.enabled:
+      return
     options = self.Options()
     file_path = os.path.join(self.base_path, 'a')
     open(file_path, 'a').writelines('touched\n')
@@ -488,6 +502,8 @@ from :3
     self.assertEquals(file_list, [file_path])
 
   def testStatus2New(self):
+    if not self.enabled:
+      return
     options = self.Options()
     expected_file_list = []
     for f in ['a', 'b']:
@@ -502,6 +518,8 @@ from :3
     self.assertEquals(sorted(file_list), expected_file_list)
 
   def testUpdateCheckout(self):
+    if not self.enabled:
+      return
     options = self.Options(verbose=True)
     root_dir = tempfile.mkdtemp()
     relpath = 'foo'
@@ -520,6 +538,8 @@ from :3
       shutil.rmtree(root_dir)
 
   def testUpdateUpdate(self):
+    if not self.enabled:
+      return
     options = self.Options()
     expected_file_list = [os.path.join(self.base_path, x) for x in ['a', 'b']]
     scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
