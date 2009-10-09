@@ -221,8 +221,8 @@ void NativeMenuGtk::MenuPositionFunc(GtkMenu* menu,
 }
 
 void NativeMenuGtk::OnActivate(GtkMenuItem* menu_item) {
-  int position = reinterpret_cast<int>(g_object_get_data(G_OBJECT(menu_item),
-                                                         "position"));
+  int position = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(menu_item),
+                                                   "position"));
   if (model_->IsEnabledAt(position) &&
       MenuTypeCanExecute(model_->GetTypeAt(position))) {
     model_->ActivatedAt(position);
