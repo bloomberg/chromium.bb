@@ -42,6 +42,9 @@ const char kTextBaseColor[] = "#808080";
 const char kSecureSchemeColor[] = "#009614";
 const char kInsecureSchemeColor[] = "#c80000";
 
+const double kStrikethroughStrokeRed = 210.0 / 256.0;
+const double kStrikethroughStrokeWidth = 2.0;
+
 size_t GetUTF8Offset(const std::wstring& wide_text, size_t wide_text_offset) {
   return WideToUTF8(wide_text.substr(0, wide_text_offset)).size();
 }
@@ -220,6 +223,8 @@ void AutocompleteEditViewGtk::Init() {
                    G_CALLBACK(&HandleCopyClipboardThunk), this);
   g_signal_connect(text_view_, "paste-clipboard",
                    G_CALLBACK(&HandlePasteClipboardThunk), this);
+  g_signal_connect_after(text_view_, "expose-event",
+                         G_CALLBACK(&HandleExposeEventThunk), this);
 
 #if !defined(TOOLKIT_VIEWS)
   registrar_.Add(this,
@@ -1036,6 +1041,60 @@ void AutocompleteEditViewGtk::HandlePasteClipboard() {
   paste_clipboard_requested_ = true;
 }
 
+gfx::Rect AutocompleteEditViewGtk::WindowBoundsFromIters(
+    GtkTextIter* iter1, GtkTextIter* iter2) {
+  GdkRectangle start_location, end_location;
+  GtkTextView* text_view = GTK_TEXT_VIEW(text_view_);
+  gtk_text_view_get_iter_location(text_view, iter1, &start_location);
+  gtk_text_view_get_iter_location(text_view, iter2, &end_location);
+
+  gint x1, x2, y1, y2;
+  gtk_text_view_buffer_to_window_coords(text_view, GTK_TEXT_WINDOW_WIDGET,
+                                        start_location.x, start_location.y,
+                                        &x1, &y1);
+  gtk_text_view_buffer_to_window_coords(text_view, GTK_TEXT_WINDOW_WIDGET,
+                                        end_location.x + end_location.width,
+                                        end_location.y + end_location.height,
+                                        &x2, &y2);
+
+  return gfx::Rect(x1, y1, x2 - x1, y2 - y1);
+}
+
+gboolean AutocompleteEditViewGtk::HandleExposeEvent(GdkEventExpose* expose) {
+  if (strikethrough_.cp_min >= strikethrough_.cp_max)
+    return FALSE;
+
+  gfx::Rect expose_rect(expose->area);
+
+  GtkTextIter iter_min, iter_max;
+  ItersFromCharRange(strikethrough_, &iter_min, &iter_max);
+  gfx::Rect strikethrough_rect = WindowBoundsFromIters(&iter_min, &iter_max);
+
+  if (!expose_rect.Intersects(strikethrough_rect))
+    return FALSE;
+
+  // Finally, draw.
+  cairo_t* cr = gdk_cairo_create(GDK_DRAWABLE(expose->window));
+  cairo_rectangle(cr, expose_rect.x(), expose_rect.y(),
+                      expose_rect.width(), expose_rect.height());
+  cairo_clip(cr);
+
+  // TODO(estade): we probably shouldn't draw the strikethrough on selected
+  // text. I started to do this, but it was way more effort than it seemed
+  // worth.
+  strikethrough_rect.Inset(kStrikethroughStrokeWidth,
+                           kStrikethroughStrokeWidth);
+  cairo_set_source_rgb(cr, kStrikethroughStrokeRed, 0.0, 0.0);
+  cairo_set_line_width(cr, kStrikethroughStrokeWidth);
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+  cairo_move_to(cr, strikethrough_rect.x(), strikethrough_rect.bottom());
+  cairo_line_to(cr, strikethrough_rect.right(), strikethrough_rect.y());
+  cairo_stroke(cr);
+  cairo_destroy(cr);
+
+  return FALSE;
+}
+
 void AutocompleteEditViewGtk::SelectAllInternal(bool reversed,
                                                 bool update_primary_selection) {
   GtkTextIter start, end;
@@ -1136,15 +1195,17 @@ void AutocompleteEditViewGtk::EmphasizeURLComponents() {
     gtk_text_buffer_apply_tag(text_buffer_, normal_text_tag_, &start, &end);
   }
 
+  strikethrough_ = CharRange();
   // Emphasize the scheme for security UI display purposes (if necessary).
   if (!model_->user_input_in_progress() && parts.scheme.is_nonempty() &&
       (scheme_security_level_ != ToolbarModel::NORMAL)) {
-    gtk_text_buffer_get_iter_at_line_index(text_buffer_, &start, 0,
-                                           GetUTF8Offset(text,
-                                                         parts.scheme.begin));
-    gtk_text_buffer_get_iter_at_line_index(text_buffer_, &end, 0,
-                                           GetUTF8Offset(text,
-                                                         parts.scheme.end()));
+    strikethrough_ = CharRange(GetUTF8Offset(text, parts.scheme.begin),
+                               GetUTF8Offset(text, parts.scheme.end()));
+    ItersFromCharRange(strikethrough_, &start, &end);
+    // When we draw the strikethrough, we don't want to include the ':' at the
+    // end of the scheme.
+    strikethrough_.cp_max--;
+
     if (scheme_security_level_ == ToolbarModel::SECURE) {
       gtk_text_buffer_apply_tag(text_buffer_, secure_scheme_tag_,
                                 &start, &end);

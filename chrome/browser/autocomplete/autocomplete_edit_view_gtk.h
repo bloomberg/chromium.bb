@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
@@ -280,6 +281,18 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   }
   void HandlePasteClipboard();
 
+  static gboolean HandleExposeEventThunk(GtkTextView* text_view,
+                                         GdkEventExpose* expose,
+                                         gpointer self) {
+    return reinterpret_cast<AutocompleteEditViewGtk*>(self)->
+        HandleExposeEvent(expose);
+  }
+  gboolean HandleExposeEvent(GdkEventExpose* expose);
+
+  // Gets the GTK_TEXT_WINDOW_WIDGET coordinates for |text_view_| that bound the
+  // given iters.
+  gfx::Rect WindowBoundsFromIters(GtkTextIter* iter1, GtkTextIter* iter2);
+
   // Actual implementation of SelectAll(), but also provides control over
   // whether the PRIMARY selection is set to the selected text (in SelectAll(),
   // it isn't, but we want set the selection when the user clicks in the entry).
@@ -412,6 +425,11 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   // It's used in the key press handler to determine if an Enter key event is
   // handled by IME or not.
   bool enter_was_inserted_;
+
+  // Contains the character range that should have a strikethrough (used for
+  // insecure schemes). If the range is size one or less, no strikethrough
+  // is needed.
+  CharRange strikethrough_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditViewGtk);
 };
