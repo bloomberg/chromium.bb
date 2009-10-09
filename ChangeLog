@@ -1,3 +1,28 @@
+2009-10-09  Christian Egli  <christian.egli@sbszh.ch>
+
+	* Makefile.am:
+	* configure.ac:
+	* tools/lou_allround.c:
+	* tools/lou_checkhyphens.c:
+	* tools/lou_checktable.c:
+	* tools/lou_debug.c:
+	* tools/lou_translate.c: Integrate gnulib (modules getopt,
+	progname and version-etc) and use it to add --help and --version
+	options to all the tools. Due to an (apparent) restriction in
+	progname I also changed the config header to (standard) "config.h"
+	instead of "louiscfg.h".
+
+	* man/Makefile.am (man_MANS): Automatically generate man pages for
+	all the tools if help2man is installed.
+
+2009-10-08  Christian Egli  <christian.egli@sbszh.ch>
+
+	* tools/lou_allround.c:
+	* tools/lou_checkhyphens.c:
+	* tools/lou_checktable.c:
+	* tools/lou_debug.c:
+	* tools/lou_translate.c: Change the license of the tools to GPL.
+
 2009-09-18  Christian Egli  <christian.egli@sbszh.ch>
 
 	* tests/Makefile.am: Define the test scripts with check_SCRIPTS
