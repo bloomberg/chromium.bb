@@ -68,6 +68,7 @@ int pthread_mutex_validate(pthread_mutex_t *mutex) {
 
 int pthread_mutex_init (pthread_mutex_t *mutex,
                         pthread_mutexattr_t *mutex_attr) {
+  mutex->spinlock = 0;
   if (mutex_attr != NULL) {
     mutex->mutex_type = mutex_attr->kind;
   } else {

@@ -41,13 +41,20 @@
 #include "native_client/src/untrusted/pthread/pthread.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"
 
+static int nc_thread_cond_init(pthread_cond_t *cond,
+                               pthread_condattr_t *cond_attr) {
+  cond->handle = NACL_SYSCALL(cond_create)();
+
+  /* 0 for success, 1 for failure */
+  return (cond->handle < 0);
+}
 
 /* TODO(gregoryd): make this static?  */
 void pthread_cond_validate(pthread_cond_t* cond) {
   nc_spinlock_lock(&cond->spinlock);
 
   if (NC_INVALID_HANDLE == cond->handle) {
-    pthread_cond_init(cond, NULL);
+    nc_thread_cond_init(cond, NULL);
   }
 
   nc_spinlock_unlock(&cond->spinlock);
@@ -60,10 +67,8 @@ void pthread_cond_validate(pthread_cond_t* cond) {
  */
 int pthread_cond_init (pthread_cond_t *cond,
                        pthread_condattr_t *cond_attr) {
-  cond->handle = NACL_SYSCALL(cond_create)();
-
-  /* 0 for success, 1 for failure */
-  return (cond->handle < 0);
+  cond->spinlock = 0;
+  return nc_thread_cond_init(cond, cond_attr);
 }
 
 /*
