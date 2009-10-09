@@ -182,9 +182,8 @@ void RegisterPrefs(PrefService* prefs);
 // Register user prefs for BookmarkBar, BookmarkView, ...
 void RegisterUserPrefs(PrefService* prefs);
 
-// Returns whether |tab_contents| can be bookmarked.  If it can, |url| and
-// |title| are filled in.  Any of the parameters may be NULL.
-bool GetURLAndTitleToBookmark(TabContents* tab_contents,
+// Fills in the URL and title for a bookmark of |tab_contents|.
+void GetURLAndTitleToBookmark(TabContents* tab_contents,
                               GURL* url,
                               std::wstring* title);
 

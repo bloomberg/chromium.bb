@@ -564,9 +564,6 @@ class Browser : public TabStripModelDelegate,
   // loading.  |force| is true if the button should change its icon immediately.
   void UpdateStopGoState(bool is_loading, bool force);
 
-  // Returns true if the specified tab contents can be bookmarked.
-  bool CanBookmarkTabContents(TabContents* tab_contents) const;
-
   // UI update coalescing and handling ////////////////////////////////////////
 
   // Asks the toolbar (and as such the location bar) to update its state to

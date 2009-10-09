@@ -611,19 +611,11 @@ void RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kBookmarkTablePathWidth, -1);
 }
 
-bool GetURLAndTitleToBookmark(TabContents* tab_contents,
+void GetURLAndTitleToBookmark(TabContents* tab_contents,
                               GURL* url,
                               std::wstring* title) {
-  if (!tab_contents || !tab_contents->ShouldDisplayURL())
-    return false;
-  GURL tab_url = tab_contents->GetURL();
-  if (!tab_url.is_valid())
-    return false;
-  if (url != NULL)
-    *url = tab_url;
-  if (title != NULL)
-    *title = UTF16ToWideHack(tab_contents->GetTitle());
-  return true;
+  *url = tab_contents->GetURL();
+  *title = UTF16ToWideHack(tab_contents->GetTitle());
 }
 
 const BookmarkNode* CreateBookmarkForAllTabs(Browser* browser) {
@@ -636,8 +628,8 @@ const BookmarkNode* CreateBookmarkForAllTabs(Browser* browser) {
   for (int i = 0; i < browser->tab_count(); ++i) {
     GURL url;
     std::wstring title;
-    if (GetURLAndTitleToBookmark(browser->GetTabContentsAt(i), &url, &title))
-      model->AddURL(folder, folder->GetChildCount(), title, url);
+    GetURLAndTitleToBookmark(browser->GetTabContentsAt(i), &url, &title);
+    model->AddURL(folder, folder->GetChildCount(), title, url);
   }
   return folder;
 }

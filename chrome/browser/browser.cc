@@ -897,16 +897,14 @@ void Browser::Exit() {
 void Browser::BookmarkCurrentPage() {
   UserMetrics::RecordAction(L"Star", profile_);
 
-  TabContents* contents = GetSelectedTabContents();
-  GURL url;
-  std::wstring title;
-  if (!bookmark_utils::GetURLAndTitleToBookmark(contents, &url, &title))
-    return;
-
-  BookmarkModel* model = contents->profile()->GetBookmarkModel();
+  BookmarkModel* model = profile()->GetBookmarkModel();
   if (!model || !model->IsLoaded())
     return;  // Ignore requests until bookmarks are loaded.
 
+  GURL url;
+  std::wstring title;
+  bookmark_utils::GetURLAndTitleToBookmark(GetSelectedTabContents(), &url,
+                                           &title);
   bool was_bookmarked = model->IsBookmarked(url);
   model->SetURLStarred(url, title, true);
   if (window_->IsActive()) {
@@ -1682,15 +1680,7 @@ bool Browser::CanCloseContentsAt(int index) {
 
 bool Browser::CanBookmarkAllTabs() const {
   BookmarkModel* model = profile()->GetBookmarkModel();
-  if (!model || !model->IsLoaded())
-    return false;
-
-  int bookmarkable_tab_contents = 0;
-  for (int i = 0; i < tab_count(); ++i) {
-    if (CanBookmarkTabContents(GetTabContentsAt(i)))
-      ++bookmarkable_tab_contents;
-  }
-  return (bookmarkable_tab_contents > 1);
+  return (model && model->IsLoaded() && (tab_count() > 1));
 }
 
 void Browser::BookmarkAllTabs() {
@@ -2433,6 +2423,9 @@ void Browser::InitCommandState() {
     command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB,
         normal_window && !profile_->IsOffTheRecord());
 
+  // Page-related commands
+    command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_PAGE, normal_window);
+
     // Show various bits of UI
     command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA,
                                           normal_window);
@@ -2464,8 +2457,6 @@ void Browser::UpdateCommandsForTabState() {
 
   // Page-related commands
   window_->SetStarredState(current_tab->is_starred());
-  command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_PAGE,
-                                        CanBookmarkTabContents(current_tab));
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_ALL_TABS,
                                         CanBookmarkAllTabs());
 
@@ -2496,11 +2487,6 @@ void Browser::UpdateStopGoState(bool is_loading, bool force) {
   window_->UpdateStopGoState(is_loading, force);
   command_updater_.UpdateCommandEnabled(IDC_GO, !is_loading);
   command_updater_.UpdateCommandEnabled(IDC_STOP, is_loading);
-}
-
-bool Browser::CanBookmarkTabContents(TabContents* tab_contents) const {
-  return (type() == TYPE_NORMAL) &&
-      bookmark_utils::GetURLAndTitleToBookmark(tab_contents, NULL, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
