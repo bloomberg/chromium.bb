@@ -43,6 +43,12 @@ std::wstring GetKeywordName(Profile* profile, const std::wstring& keyword) {
   return std::wstring();
 }
 
+// Values for the green text color displayed for EV certificates, based
+// on the values for kEvTextColor in location_bar_view_gtk.cc.
+static const CGFloat kEvTextColorRedComponent = 0.0;
+static const CGFloat kEvTextColorGreenComponent = 0.59;
+static const CGFloat kEvTextColorBlueComponent = 0.08;
+
 }  // namespace
 
 LocationBarViewMac::LocationBarViewMac(
@@ -267,17 +273,35 @@ NSImage* LocationBarViewMac::GetTabButtonImage() {
 }
 
 void LocationBarViewMac::SetSecurityIcon(ToolbarModel::Icon security_icon) {
+  std::wstring info_text, info_tooltip;
+  ToolbarModel::InfoTextType info_text_type =
+      toolbar_model_->GetInfoText(&info_text, &info_tooltip);
+  NSColor* color = nil;
+  NSString* icon_label = nil;
+  if (info_text_type == ToolbarModel::INFO_EV_TEXT) {
+    icon_label = base::SysWideToNSString(info_text);
+    color =
+      [NSColor colorWithCalibratedRed:kEvTextColorRedComponent
+                                green:kEvTextColorGreenComponent
+                                 blue:kEvTextColorBlueComponent
+                                alpha:1.0];
+  }
+
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
   switch (security_icon) {
     case ToolbarModel::LOCK_ICON:
-      [cell setHintIcon:rb.GetNSImageNamed(IDR_LOCK)];
+      [cell setHintIcon:rb.GetNSImageNamed(IDR_LOCK)
+                  label:icon_label
+                  color:color];
       break;
     case ToolbarModel::WARNING_ICON:
-      [cell setHintIcon:rb.GetNSImageNamed(IDR_WARNING)];
+      [cell setHintIcon:rb.GetNSImageNamed(IDR_WARNING)
+                  label:icon_label
+                  color:color];
       break;
     case ToolbarModel::NO_ICON:
-      [cell setHintIcon:nil];
+      [cell setHintIcon:nil label:nil color:nil];
       break;
     default:
       NOTREACHED();

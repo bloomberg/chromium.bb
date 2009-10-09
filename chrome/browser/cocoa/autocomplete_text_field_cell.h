@@ -40,6 +40,11 @@
 
   // Icon that represents the state of the SSL connection
   scoped_nsobject<NSImage> hintIcon_;
+
+  // Optional text that appears to the right of the hint icon which
+  // appears only alongside the icon (i.e., it's possible to display a
+  // hintIcon without an hintIconLabel, but not vice-versa).
+  scoped_nsobject<NSAttributedString> hintIconLabel_;
 }
 
 @property BOOL fieldEditorNeedsReset;
@@ -59,7 +64,9 @@
 - (void)setSearchHintString:(NSString*)aString;
 - (void)clearKeywordAndHint;
 
-- (void)setHintIcon:(NSImage*)icon;
+// Sets the hint icon and optional icon label. If |icon| is nil, the current
+// icon is cleared. If |label| is provided, |color| must be provided as well.
+- (void)setHintIcon:(NSImage*)icon label:(NSString*)label color:(NSColor*)color;
 
 // Return the portion of the cell to show the text cursor over.
 - (NSRect)textCursorFrameForFrame:(NSRect)cellFrame;
@@ -79,5 +86,6 @@
 @property(readonly) NSAttributedString* keywordString;
 @property(readonly) NSAttributedString* hintString;
 @property(readonly) NSImage* hintIcon;
+@property(readonly) NSAttributedString* hintIconLabel;
 
 @end

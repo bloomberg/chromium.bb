@@ -144,20 +144,54 @@ TEST_F(AutocompleteTextFieldCellTest, SecurityIcon) {
 
   NSImage* image1 = [NSImage imageNamed:@"NSApplicationIcon"];
   // Setting a security icon will need a reset.
-  [cell setHintIcon:image1];
+  [cell setHintIcon:image1 label:nil color:nil];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
   [cell setFieldEditorNeedsReset:NO];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
 
   // Changing the security icon needs a reset.
   NSImage* image2 = [NSImage imageNamed:@"NSComputer"];
-  [cell setHintIcon:image2];
+  [cell setHintIcon:image2 label:nil color:nil];
   EXPECT_TRUE([cell fieldEditorNeedsReset]);
   [cell setFieldEditorNeedsReset:NO];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
 
   // Changing to an identical security icon doesn't need a reset.
-  [cell setHintIcon:image2];
+  [cell setHintIcon:image2 label:nil color:nil];
+  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+
+  // Adding a label without changing the icon needs a reset.
+  NSColor *color = [NSColor blackColor];
+  [cell setHintIcon:image2 label:@"New Label" color:color];
+  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+
+  // Removing the label without changing the icon needs a reset.
+  [cell setHintIcon:image2 label:nil color:nil];
+  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+}
+
+TEST_F(AutocompleteTextFieldCellTest, SecurityIconLabel) {
+  AutocompleteTextFieldCell* cell =
+      static_cast<AutocompleteTextFieldCell*>([view_ cell]);
+  NSColor *color = [NSColor blackColor];
+
+  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+
+  NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
+  // Setting a security icon will need a reset.
+  [cell setHintIcon:image label:@"Hello, world" color:color];
+  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+  [cell setFieldEditorNeedsReset:NO];
+  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+
+  // Changing the label needs a reset.
+  [cell setHintIcon:image label:@"Hello, you" color:color];
+  EXPECT_TRUE([cell fieldEditorNeedsReset]);
+  [cell setFieldEditorNeedsReset:NO];
+  EXPECT_FALSE([cell fieldEditorNeedsReset]);
+
+  // Changing to an identical label doesn't need a reset
+  [cell setHintIcon:image label:@"Hello, you" color:color];
   EXPECT_FALSE([cell fieldEditorNeedsReset]);
 }
 
@@ -289,7 +323,7 @@ TEST_F(AutocompleteTextFieldCellTest, TextFrame) {
   EXPECT_TRUE(NSContainsRect(cursorFrame, textFrame));
 
   // Hint icon takes up space on the right
-  [cell setHintIcon:[NSImage imageNamed:@"NSComputer"]];
+  [cell setHintIcon:[NSImage imageNamed:@"NSComputer"] label:nil color:nil];
   textFrame = [cell textFrameForFrame:bounds];
   EXPECT_FALSE(NSIsEmptyRect(textFrame));
   EXPECT_TRUE(NSContainsRect(bounds, textFrame));
@@ -348,7 +382,7 @@ TEST_F(AutocompleteTextFieldCellTest, DrawingRectForBounds) {
   EXPECT_TRUE(NSContainsRect(NSInsetRect(textFrame, 1, 1), drawingRect));
   EXPECT_TRUE(NSEqualRects(drawingRect, originalDrawingRect));
 
-  [cell setHintIcon:[NSImage imageNamed:@"NSComputer"]];
+  [cell setHintIcon:[NSImage imageNamed:@"NSComputer"] label:nil color:nil];
   textFrame = [cell textFrameForFrame:bounds];
   drawingRect = [cell drawingRectForBounds:bounds];
   EXPECT_FALSE(NSIsEmptyRect(drawingRect));
@@ -369,7 +403,7 @@ TEST_F(AutocompleteTextFieldCellTest, HintImageFrame) {
   // Save the starting frame for after clear.
   const NSRect originalIconRect(iconRect);
 
-  [cell setHintIcon:hintIcon];
+  [cell setHintIcon:hintIcon label:nil color:nil];
   iconRect = [cell hintImageFrameForFrame:bounds];
   EXPECT_FALSE(NSIsEmptyRect(iconRect));
   EXPECT_TRUE(NSContainsRect(bounds, iconRect));
@@ -383,7 +417,7 @@ TEST_F(AutocompleteTextFieldCellTest, HintImageFrame) {
   EXPECT_LE(NSMaxX(textFrame), NSMinX(iconRect));
 
   // Make sure we clear correctly.
-  [cell setHintIcon:nil];
+  [cell setHintIcon:nil label:nil color:nil];
   iconRect = [cell hintImageFrameForFrame:bounds];
   EXPECT_TRUE(NSEqualRects(iconRect, originalIconRect));
   EXPECT_TRUE(NSIsEmptyRect(iconRect));

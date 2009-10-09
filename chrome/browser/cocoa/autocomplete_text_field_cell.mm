@@ -4,6 +4,8 @@
 
 #import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
 
+#include "app/gfx/font.h"
+#include "app/resource_bundle.h"
 #import "base/logging.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
@@ -40,7 +42,10 @@ const NSInteger kKeywordHintImageBaseline = -6;
 const NSInteger kBaselineOffset = 4;
 
 // The amount of padding on either side reserved for drawing the hint icon
-const NSInteger kHintIconHorizontalPad = 5;
+const NSInteger kHintIconHorizontalPad = 3;
+
+// How far to shift bounding box of hint icon label down from top of field.
+const NSInteger kHintIconLabelYOffset = 7;
 
 }  // namespace
 
@@ -159,10 +164,34 @@ const NSInteger kHintIconHorizontalPad = 5;
   }
 }
 
-- (void)setHintIcon:(NSImage*)icon {
-  if (icon != hintIcon_) {
+- (void)setHintIcon:(NSImage*)icon
+              label:(NSString*)label
+              color:(NSColor*)color {
+  // Create an attributed string for the label, if a label was given.
+  NSAttributedString* as = nil;
+  if (label) {
+    DCHECK(color);
+    NSFont *baseFont = [self font];
+    NSFont *font = [NSFont fontWithDescriptor:[baseFont fontDescriptor]
+                                         size:[baseFont pointSize] - 2.0];
+    NSDictionary* attributes =
+        [NSDictionary dictionaryWithObjectsAndKeys:
+         color, NSForegroundColorAttributeName,
+         font, NSFontAttributeName,
+         NULL];
+    as = [[[NSAttributedString alloc] initWithString:label
+                                          attributes:attributes] autorelease];
+  }
+
+  // Did the icon change? Is there a label now but there wasn't before,
+  // or vice-versa? Did the label change?
+  if (icon != hintIcon_.get() || (as && !hintIconLabel_.get()) ||
+      (!as && hintIconLabel_.get()) ||
+      (as && ![hintIconLabel_.get() isEqualToAttributedString:as])) {
+    hintIconLabel_.reset([as retain]);
     hintIcon_.reset([icon retain]);
     if (!keywordString_ && !hintString_) {
+      // Redraw if the icon is visible.
       fieldEditorNeedsReset_ = YES;
     }
   }
@@ -239,6 +268,9 @@ const NSInteger kHintIconHorizontalPad = 5;
   } else if (hintIcon_) {
     CGFloat width = [hintIcon_ size].width;
     width += kHintIconHorizontalPad * 2;
+    if (hintIconLabel_) {
+      width += ceil([hintIconLabel_ size].width) + kHintXOffset;
+    }
     if (width < NSWidth(cellFrame)) {
       textFrame.size.width -= width;
     }
@@ -258,8 +290,15 @@ const NSInteger kHintIconHorizontalPad = 5;
   // We'll draw the entire image
   const NSSize imageRect([hintIcon_ size]);
 
-  // Move the rect that we're drawing into to the far right
+  CGFloat labelWidth = 0;
+  if (hintIconLabel_) {
+    labelWidth = ceil([hintIconLabel_ size].width) + kHintXOffset;
+  }
+
+  // Move the rect that we're drawing into to the far right, minus
+  // enough space for the label (if present)
   cellFrame.origin.x += cellFrame.size.width - imageRect.width;
+  cellFrame.origin.x -= labelWidth;
   // Add back the padding
   cellFrame.origin.x -= kHintIconHorizontalPad;
 
@@ -316,11 +355,21 @@ const NSInteger kHintIconHorizontalPad = 5;
 
 - (void)drawHintIconWithFrame:(NSRect)cellFrame
                        inView:(NSView*)controlView {
+  // If there's a label, draw it to the right of the icon.
+  CGFloat labelWidth = 0;
+  if (hintIconLabel_) {
+    labelWidth = ceil([hintIconLabel_ size].width) + kHintXOffset;
+    NSRect textFrame(NSMakeRect(NSMaxX(cellFrame) - labelWidth,
+                                cellFrame.origin.y + kHintIconLabelYOffset,
+                                labelWidth,
+                                cellFrame.size.height - kHintIconLabelYOffset));
+    [hintIconLabel_.get() drawInRect:textFrame];
+  }
+
   // We'll draw the entire image
   NSRect imageRect = NSZeroRect;
   imageRect.size = [hintIcon_ size];
   const NSRect hintFrame([self hintImageFrameForFrame:cellFrame]);
-
   [hintIcon_ setFlipped:[controlView isFlipped]];
   [hintIcon_ drawInRect:hintFrame
                fromRect:imageRect
