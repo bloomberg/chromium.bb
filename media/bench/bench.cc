@@ -27,6 +27,7 @@
 #include "base/md5.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "media/base/djb2.h"
 #include "media/base/media.h"
 #include "media/bench/file_protocol.h"
 #include "media/filters/ffmpeg_common.h"
@@ -45,19 +46,6 @@ const wchar_t kFrames[]                 = L"frames";
 const wchar_t kLoop[]                   = L"loop";
 
 }  // namespace switches
-
-namespace {
-// DJB2 hash
-unsigned int DJB2Hash(const uint8* s,
-                      size_t len, unsigned int hash) {
-  if (len > 0) {
-    do {
-      hash = hash * 33 + *s++;
-    } while (--len);
-  }
-  return hash;
-}
-}
 
 #if defined(OS_WIN)
 // warning: disable warning about exception handler.
