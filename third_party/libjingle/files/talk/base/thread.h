@@ -133,7 +133,7 @@ private:
 
   std::list<_SendMessage> sendlist_;
   ThreadPriority priority_;
-  CriticalSection crit_;
+  CriticalSection started_crit_;
   bool started_;
   bool has_sends_;
 

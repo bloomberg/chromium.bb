@@ -126,13 +126,13 @@ void Thread::Start() {
     param.sched_priority = 15;           // +15 = 
     pthread_attr_setschedparam(&attr, &param);
   }
-  CritScope cs(&crit_);
+  CritScope cs(&started_crit_);
   pthread_create(&thread_, &attr, PreRun, this);
   started_ = true;
 }
 
 void Thread::Join() {
-  CritScope cs(&crit_);
+  CritScope cs(&started_crit_);
   if (started_) {
     void *pv;
     pthread_join(thread_, &pv);
@@ -173,7 +173,7 @@ void Thread::Start() {
   if (priority_ != PRIORITY_NORMAL) {
     flags = CREATE_SUSPENDED;
   }
-  CritScope cs(&crit_);
+  CritScope cs(&started_crit_);
   thread_ = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)PreRun, this, flags, NULL);
   if (thread_) {
     if (priority_ != PRIORITY_NORMAL) {
@@ -187,7 +187,7 @@ void Thread::Start() {
 }
 
 void Thread::Join() {
-  CritScope cs(&crit_);
+  CritScope cs(&started_crit_);
   if (started_) {
     WaitForSingleObject(thread_, INFINITE);
     CloseHandle(thread_);
