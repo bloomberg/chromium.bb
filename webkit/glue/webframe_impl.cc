@@ -606,7 +606,7 @@ void WebFrameImpl::bindToWindowObject(const WebString& name,
 }
 
 void WebFrameImpl::executeScript(const WebScriptSource& source) {
-  frame_->loader()->executeScript(
+  frame_->script()->executeScript(
       WebCore::ScriptSourceCode(
           webkit_glue::WebStringToString(source.code),
           webkit_glue::WebURLToKURL(source.url),
@@ -1896,7 +1896,7 @@ void WebFrameImpl::LoadJavaScriptURL(const KURL& url) {
 
   String script =
       decodeURLEscapeSequences(url.string().substring(strlen("javascript:")));
-  ScriptValue result = frame_->loader()->executeScript(script, true);
+  ScriptValue result = frame_->script()->executeScript(script, true);
 
   String script_result;
   if (!result.getString(script_result))

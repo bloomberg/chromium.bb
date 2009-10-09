@@ -246,7 +246,7 @@ WebString WebPluginContainerImpl::executeScriptURL(const WebURL& url, bool popup
     String script = decodeURLEscapeSequences(
         kurl.string().substring(strlen("javascript:")));
 
-    ScriptValue result = frame->loader()->executeScript(script, popupsAllowed);
+    ScriptValue result = frame->script()->executeScript(script, popupsAllowed);
 
     // Failure is reported as a null string.
     String resultStr;
