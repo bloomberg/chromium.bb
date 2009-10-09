@@ -69,7 +69,8 @@ BUILDTYPE ?= __default_configuration__
 # Directory all our build output goes into.
 # Note that this must be two directories beneath src/ for unit tests to pass,
 # as they reach into the src/ directory for data with relative paths.
-builddir ?= $(rootdir)/$(builddir_name)/$(BUILDTYPE)
+builddir ?= $(builddir_name)/$(BUILDTYPE)
+abs_builddir := $(abspath $(builddir))
 
 # Object output directory.
 obj := $(builddir)/obj
@@ -230,14 +231,7 @@ $(obj)/%.o: $(obj)/%.cpp FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 """)
 
-# This gets added to the very beginning of the Makefile, setting the root
-# directory as computed by gyp.
-SHARED_HEADER_ROOTDIR = ("""\
-# The root of the project.
-rootdir ?= %s
-
-""")
-
+# This gets added to the very beginning of the Makefile.
 SHARED_HEADER_BUILDDIR_NAME = ("""\
 # The name of the builddir.
 builddir_name ?= %s
@@ -408,8 +402,10 @@ class MakefileWriter:
         command = 'mkdir -p %s' % ' '.join(dirs) + '; ' + command
       # Set LD_LIBRARY_PATH in case the action runs an executable from this
       # build which links to shared libs from this build.
-      self.WriteLn('cmd_%s = export LD_LIBRARY_PATH=$(builddir)/lib:$$LD_LIBRARY_PATH; cd %s; %s'
-                   % (name, self.path, command))
+      cd_action = 'cd %s; ' % self.path if self.path else ''
+      self.WriteLn('cmd_%s = export LD_LIBRARY_PATH=$(builddir)/lib:'
+                   '$$LD_LIBRARY_PATH; %s%s'
+                   % (name, cd_action, command))
       self.WriteLn()
       outputs = map(self.Absolutify, outputs)
       # The makefile rules are all relative to the top dir, but the gyp actions
@@ -417,14 +413,12 @@ class MakefileWriter:
       # variable for the action rule with an absolute version so that the output
       # goes in the right place.
       self.WriteMakeRule(outputs, ['obj := $(abs_obj)'])
-      self.WriteDoCmd(outputs,
-                      map(self.Absolutify, inputs),
-                      command = name)
+      self.WriteMakeRule(outputs, ['builddir := $(abs_builddir)'])
+      self.WriteDoCmd(outputs, map(self.Absolutify, inputs), command = name)
 
       # Stuff the outputs in a variable so we can refer to them later.
       outputs_variable = 'action_%s_outputs' % name
-      self.WriteLn('%s := %s' % (outputs_variable,
-                                 ' '.join(outputs)))
+      self.WriteLn('%s := %s' % (outputs_variable, ' '.join(outputs)))
       extra_outputs.append('$(%s)' % outputs_variable)
       self.WriteLn()
 
@@ -830,7 +824,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
   makefile_name = 'Makefile' + options.suffix
   root_makefile = open(os.path.join(options.depth, makefile_name), 'w')
-  root_makefile.write(SHARED_HEADER_ROOTDIR % options.depth)
   root_makefile.write(SHARED_HEADER_BUILDDIR_NAME % builddir_name)
   root_makefile.write(SHARED_HEADER.replace('__default_configuration__',
                                             default_configuration))
