@@ -5,32 +5,33 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_group.h"
-#include "webkit/appcache/appcache_service.h"
+#include "webkit/appcache/appcache_storage.h"
+#include "webkit/appcache/mock_appcache_service.h"
 
 namespace appcache {
 
-class AppCacheServiceTest : public testing::Test {
+class AppCacheStorageTest : public testing::Test {
 };
 
-TEST(AppCacheServiceTest, AddRemoveCache) {
-  AppCacheService service;
+TEST(AppCacheStorageTest, AddRemoveCache) {
+  MockAppCacheService service;
   scoped_refptr<AppCache> cache = new AppCache(&service, 111);
-  service.RemoveCache(cache);
+  service.storage()->working_set()->RemoveCache(cache);
 
   // Removing non-existing cache from service should not fail.
-  AppCacheService dummy;
-  dummy.RemoveCache(cache);
+  MockAppCacheService dummy;
+  dummy.storage()->working_set()->RemoveCache(cache);
 }
 
-TEST(AppCacheServiceTest, AddRemoveGroup) {
-  AppCacheService service;
+TEST(AppCacheStorageTest, AddRemoveGroup) {
+  MockAppCacheService service;
   scoped_refptr<AppCacheGroup> group =
       new AppCacheGroup(&service, GURL::EmptyGURL());
-  service.RemoveGroup(group);
+  service.storage()->working_set()->RemoveGroup(group);
 
   // Removing non-existing group from service should not fail.
-  AppCacheService dummy;
-  dummy.RemoveGroup(group);
+  MockAppCacheService dummy;
+  dummy.storage()->working_set()->RemoveGroup(group);
 }
 
 }  // namespace appcache

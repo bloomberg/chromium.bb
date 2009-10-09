@@ -10,6 +10,7 @@
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_host.h"
 #include "webkit/appcache/appcache_service.h"
+#include "webkit/appcache/appcache_storage.h"
 #include "webkit/appcache/appcache_update_job.h"
 
 namespace appcache {
@@ -22,7 +23,7 @@ AppCacheGroup::AppCacheGroup(AppCacheService* service,
       newest_complete_cache_(NULL),
       update_job_(NULL),
       service_(service) {
-  service_->AddGroup(this);
+  service_->storage()->working_set()->AddGroup(this);
 }
 
 AppCacheGroup::~AppCacheGroup() {
@@ -34,7 +35,7 @@ AppCacheGroup::~AppCacheGroup() {
   if (newest_complete_cache_)
     RemoveCache(newest_complete_cache_);
 
-  service_->RemoveGroup(this);
+  service_->storage()->working_set()->RemoveGroup(this);
 }
 
 void AppCacheGroup::AddObserver(Observer* observer) {

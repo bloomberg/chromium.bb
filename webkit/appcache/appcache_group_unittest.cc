@@ -6,7 +6,7 @@
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_host.h"
-#include "webkit/appcache/appcache_service.h"
+#include "webkit/appcache/mock_appcache_service.h"
 #include "webkit/appcache/appcache_update_job.h"
 
 namespace {
@@ -46,7 +46,7 @@ class AppCacheGroupTest : public testing::Test {
 };
 
 TEST(AppCacheGroupTest, AddRemoveCache) {
-  AppCacheService service;
+  MockAppCacheService service;
   scoped_refptr<AppCacheGroup> group =
       new AppCacheGroup(&service, GURL::EmptyGURL());
 
@@ -110,7 +110,7 @@ TEST(AppCacheGroupTest, AddRemoveCache) {
 }
 
 TEST(AppCacheGroupTest, CleanupUnusedGroup) {
-  AppCacheService service;
+  MockAppCacheService service;
   TestAppCacheFrontend frontend;
   AppCacheGroup* group = new AppCacheGroup(&service, GURL::EmptyGURL());
 
@@ -153,7 +153,7 @@ TEST(AppCacheGroupTest, CleanupUnusedGroup) {
 
 TEST(AppCacheGroupTest, StartUpdate) {
   /* TODO(jennb) - uncomment after AppCacheGroup::StartUpdate does something.
-  AppCacheService service;
+  MockAppCacheService service;
   scoped_refptr<AppCacheGroup> group =
       new AppCacheGroup(&service, GURL("http://foo.com"));
 

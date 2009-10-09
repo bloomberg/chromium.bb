@@ -20,6 +20,7 @@ extern const char kManifestMimeType[];
 
 static const int kNoHostId = 0;
 static const int64 kNoCacheId = 0;
+static const int64 kNoResponseId = 0;
 static const int64 kUnknownCacheId = -1;
 
 enum Status {

@@ -11,8 +11,8 @@
 #include "net/url_request/url_request_unittest.h"
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_host.h"
-#include "webkit/appcache/appcache_service.h"
 #include "webkit/appcache/appcache_update_job.h"
+#include "webkit/appcache/mock_appcache_service.h"
 
 namespace appcache {
 class AppCacheUpdateJobTest;
@@ -617,7 +617,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
-    AppCache* cache = MakeCacheForGroup(service_->NewCacheId());
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId());
     MockFrontend* frontend1 = MakeMockFrontend();
     MockFrontend* frontend2 = MakeMockFrontend();
     AppCacheHost* host1 = MakeHost(1, frontend1);
@@ -662,7 +662,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
-    AppCache* cache = MakeCacheForGroup(service_->NewCacheId());
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId());
     MockFrontend* frontend1 = MakeMockFrontend();
     MockFrontend* frontend2 = MakeMockFrontend();
     AppCacheHost* host1 = MakeHost(1, frontend1);
@@ -738,7 +738,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
-    AppCache* cache = MakeCacheForGroup(service_->NewCacheId());
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId());
     MockFrontend* frontend1 = MakeMockFrontend();
     MockFrontend* frontend2 = MakeMockFrontend();
     AppCacheHost* host1 = MakeHost(1, frontend1);
@@ -784,7 +784,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
-    AppCache* cache = MakeCacheForGroup(service_->NewCacheId());
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId());
     MockFrontend* frontend1 = MakeMockFrontend();
     MockFrontend* frontend2 = MakeMockFrontend();
     AppCacheHost* host1 = MakeHost(1, frontend1);
@@ -858,7 +858,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
-    AppCache* cache = MakeCacheForGroup(service_->NewCacheId());
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId());
     MockFrontend* frontend1 = MakeMockFrontend();
     MockFrontend* frontend2 = MakeMockFrontend();
     AppCacheHost* host1 = MakeHost(1, frontend1);
@@ -1048,14 +1048,18 @@ class AppCacheUpdateJobTest : public testing::Test,
 
   void OnUpdateComplete(AppCacheGroup* group) {
     ASSERT_EQ(group_, group);
-
-    // Finish up outside of observer callback so that group can be deleted.
-    MessageLoop::current()->PostTask(FROM_HERE,
-        method_factory_.NewRunnableMethod(
-            &AppCacheUpdateJobTest::UpdateFinished));
+    UpdateFinished();
   }
 
   void UpdateFinished() {
+    // We unwind the stack prior to finishing up to let stack
+    // based objects get deleted.
+    MessageLoop::current()->PostTask(FROM_HERE,
+        method_factory_.NewRunnableMethod(
+            &AppCacheUpdateJobTest::UpdateFinishedUnwound));
+  }
+
+  void UpdateFinishedUnwound() {
     EXPECT_EQ(AppCacheGroup::IDLE, group_->update_status());
     EXPECT_TRUE(group_->update_job() == NULL);
     if (do_checks_after_update_finished_)
@@ -1073,7 +1077,7 @@ class AppCacheUpdateJobTest : public testing::Test,
   }
 
   void MakeService() {
-    service_.reset(new AppCacheService());
+    service_.reset(new MockAppCacheService());
     request_context_ = new TestURLRequestContext();
     service_->set_request_context(request_context_);
   }
@@ -1273,7 +1277,7 @@ class AppCacheUpdateJobTest : public testing::Test,
   static scoped_refptr<HTTPTestServer> http_server_;
 
   ScopedRunnableMethodFactory<AppCacheUpdateJobTest> method_factory_;
-  scoped_ptr<AppCacheService> service_;
+  scoped_ptr<MockAppCacheService> service_;
   scoped_refptr<TestURLRequestContext> request_context_;
   scoped_refptr<AppCacheGroup> group_;
   scoped_ptr<base::WaitableEvent> event_;
@@ -1301,7 +1305,7 @@ scoped_ptr<base::Thread> AppCacheUpdateJobTest::io_thread_;
 scoped_refptr<HTTPTestServer> AppCacheUpdateJobTest::http_server_;
 
 TEST_F(AppCacheUpdateJobTest, AlreadyChecking) {
-  AppCacheService service;
+  MockAppCacheService service;
   scoped_refptr<AppCacheGroup> group =
       new AppCacheGroup(&service, GURL("http://manifesturl.com"));
 
@@ -1328,7 +1332,7 @@ TEST_F(AppCacheUpdateJobTest, AlreadyChecking) {
 }
 
 TEST_F(AppCacheUpdateJobTest, AlreadyDownloading) {
-  AppCacheService service;
+  MockAppCacheService service;
   scoped_refptr<AppCacheGroup> group =
       new AppCacheGroup(&service, GURL("http://manifesturl.com"));
 

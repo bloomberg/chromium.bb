@@ -7,7 +7,7 @@
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_host.h"
-#include "webkit/appcache/appcache_service.h"
+#include "webkit/appcache/mock_appcache_service.h"
 
 namespace appcache {
 
@@ -65,7 +65,7 @@ class AppCacheHostTest : public testing::Test {
   }
 
   // Mock classes for the 'host' to work with
-  AppCacheService service_;  // TODO(michaeln): make service mockable?
+  MockAppCacheService service_;
   MockFrontend mock_frontend_;
 
   // Mock callbacks we expect to receive from the 'host'
@@ -179,7 +179,7 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
   EXPECT_EQ(reinterpret_cast<void*>(-1), last_callback_param_);
 
   // Satisfy the load with NULL, a failure.
-  host.CacheLoadedCallback(NULL, kMockCacheId);
+  host.OnCacheLoaded(NULL, kMockCacheId);
 
   // Cache selection should have finished
   EXPECT_FALSE(host.is_selection_pending());
@@ -211,7 +211,7 @@ TEST_F(AppCacheHostTest, FailedGroupLoad) {
   EXPECT_EQ(reinterpret_cast<void*>(-1), last_callback_param_);
 
   // Satisfy the load will NULL, a failure.
-  host.GroupLoadedCallback(NULL, kMockManifestUrl);
+  host.OnGroupLoaded(NULL, kMockManifestUrl);
 
   // Cache selection should have finished
   EXPECT_FALSE(host.is_selection_pending());

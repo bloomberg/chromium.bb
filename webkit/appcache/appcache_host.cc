@@ -25,7 +25,7 @@ AppCacheHost::~AppCacheHost() {
   FOR_EACH_OBSERVER(Observer, observers_, OnDestructionImminent(this));
   if (associated_cache_.get())
     associated_cache_->UnassociateHost(this);
-  service_->CancelLoads(this);
+  service_->storage()->CancelDelegateCallbacks(this);
 }
 
 void AppCacheHost::AddObserver(Observer* observer) {
@@ -54,7 +54,7 @@ void AppCacheHost::SelectCache(const GURL& document_url,
   // results (or suggest changes to the algorihtms described in the spec
   // if the resulting behavior is just too insane).
   if (is_selection_pending()) {
-    service_->CancelLoads(this);
+    service_->storage()->CancelDelegateCallbacks(this);
     pending_selected_manifest_url_ = GURL::EmptyGURL();
     pending_selected_cache_id_ = kNoCacheId;
   } else if (associated_cache()) {
@@ -89,9 +89,11 @@ void AppCacheHost::SelectCache(const GURL& document_url,
   FinishCacheSelection(NULL, NULL);
 }
 
+// TODO(michaeln): change method name to MarkEntryAsForeign for consistency
 void AppCacheHost::MarkAsForeignEntry(const GURL& document_url,
                                       int64 cache_document_was_loaded_from) {
-  service_->MarkAsForeignEntry(document_url, cache_document_was_loaded_from);
+  service_->storage()->MarkEntryAsForeign(
+      document_url, cache_document_was_loaded_from);
   SelectCache(document_url, kNoCacheId, GURL::EmptyGURL());
 }
 
@@ -191,11 +193,11 @@ Status AppCacheHost::GetStatus() {
 void AppCacheHost::LoadOrCreateGroup(const GURL& manifest_url) {
   DCHECK(manifest_url.is_valid());
   pending_selected_manifest_url_ = manifest_url;
-  service_->LoadOrCreateGroup(manifest_url, this);
+  service_->storage()->LoadOrCreateGroup(manifest_url, this);
 }
 
-void AppCacheHost::GroupLoadedCallback(
-    AppCacheGroup* group, const GURL& manifest_url) {
+void AppCacheHost::OnGroupLoaded(AppCacheGroup* group,
+                                const GURL& manifest_url) {
   DCHECK(manifest_url == pending_selected_manifest_url_);
   pending_selected_manifest_url_ = GURL::EmptyGURL();
   FinishCacheSelection(NULL, group);
@@ -204,10 +206,10 @@ void AppCacheHost::GroupLoadedCallback(
 void AppCacheHost::LoadCache(int64 cache_id) {
   DCHECK(cache_id != kNoCacheId);
   pending_selected_cache_id_ = cache_id;
-  service_->LoadCache(cache_id, this);
+  service_->storage()->LoadCache(cache_id, this);
 }
 
-void AppCacheHost::CacheLoadedCallback(AppCache* cache, int64 cache_id) {
+void AppCacheHost::OnCacheLoaded(AppCache* cache, int64 cache_id) {
   DCHECK(cache_id == pending_selected_cache_id_);
   pending_selected_cache_id_ = kNoCacheId;
   if (cache)

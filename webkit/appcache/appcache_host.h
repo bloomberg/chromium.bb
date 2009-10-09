@@ -8,12 +8,12 @@
 #include "base/observer_list.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
-#include "base/weak_ptr.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/appcache/appcache_service.h"
+#include "webkit/appcache/appcache_storage.h"
 
 class URLRequest;
 
@@ -29,8 +29,7 @@ typedef Callback2<bool, void*>::Type StartUpdateCallback;
 typedef Callback2<bool, void*>::Type SwapCacheCallback;
 
 // Server-side representation of an application cache host.
-class AppCacheHost : public base::SupportsWeakPtr<AppCacheHost>,
-                     public AppCacheService::LoadClient {
+class AppCacheHost : public AppCacheStorage::Delegate {
  public:
 
   class Observer {
@@ -91,10 +90,10 @@ class AppCacheHost : public base::SupportsWeakPtr<AppCacheHost>,
   void LoadCache(int64 cache_id);
   void LoadOrCreateGroup(const GURL& manifest_url);
 
-  // LoadClient impl
-  virtual void CacheLoadedCallback(AppCache* cache, int64 cache_id);
-  virtual void GroupLoadedCallback(AppCacheGroup* group,
-                                   const GURL& manifest_url);
+  // AppCacheStorage::Delegate impl
+  virtual void OnCacheLoaded(AppCache* cache, int64 cache_id);
+  virtual void OnGroupLoaded(AppCacheGroup* group,
+                             const GURL& manifest_url);
 
   void FinishCacheSelection(AppCache* cache, AppCacheGroup* group);
   void DoPendingGetStatus();

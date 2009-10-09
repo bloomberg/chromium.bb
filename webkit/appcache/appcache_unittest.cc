@@ -6,7 +6,7 @@
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_frontend_impl.h"
 #include "webkit/appcache/appcache_host.h"
-#include "webkit/appcache/appcache_service.h"
+#include "webkit/appcache/mock_appcache_service.h"
 
 namespace appcache {
 
@@ -14,23 +14,23 @@ class AppCacheTest : public testing::Test {
 };
 
 TEST(AppCacheTest, CleanupUnusedCache) {
-  AppCacheService service;
+  MockAppCacheService service;
   AppCacheFrontendImpl frontend;
-  AppCache* cache = new AppCache(&service, 111);
+  scoped_refptr<AppCache> cache(new AppCache(&service, 111));
   cache->set_complete(true);
 
   AppCacheHost host1(1, &frontend, &service);
   AppCacheHost host2(2, &frontend, &service);
 
-  host1.AssociateCache(cache);
-  host2.AssociateCache(cache);
+  host1.AssociateCache(cache.get());
+  host2.AssociateCache(cache.get());
 
   host1.AssociateCache(NULL);
   host2.AssociateCache(NULL);
 }
 
 TEST(AppCacheTest, AddModifyEntry) {
-  AppCacheService service;
+  MockAppCacheService service;
   scoped_refptr<AppCache> cache = new AppCache(&service, 111);
 
   const GURL kUrl1("http://foo.com");
@@ -51,7 +51,7 @@ TEST(AppCacheTest, AddModifyEntry) {
 }
 
 TEST(AppCacheTest, InitializeWithManifest) {
-  AppCacheService service;
+  MockAppCacheService service;
 
   scoped_refptr<AppCache> cache = new AppCache(&service, 1234);
   EXPECT_TRUE(cache->fallback_namespaces_.empty());
