@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_IMAGE_LOADING_TRACKER_H_
 #define CHROME_BROWSER_EXTENSIONS_IMAGE_LOADING_TRACKER_H_
 
+#include "base/gfx/size.h"
 #include "base/ref_counted.h"
 
 class ExtensionResource;
@@ -45,7 +46,8 @@ class ImageLoadingTracker
   // Specify image resource to load.  This method must be called a number of
   // times equal to the |image_count| arugment to the constructor.  Calling it
   // any more or less than that is an error.
-  void PostLoadImageTask(const ExtensionResource& resource);
+  void PostLoadImageTask(const ExtensionResource& resource,
+                         gfx::Size* max_size);
 
  private:
   class LoadImageTask;

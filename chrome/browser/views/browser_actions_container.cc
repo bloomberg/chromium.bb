@@ -35,6 +35,9 @@ static const int kHorizontalPadding = 4;
 // can draw the badge outside the visual bounds of the contianer.
 static const int kControlVertOffset = 6;
 
+// The maximum dimension of the browser action icons.
+static const int kMaxIconSize = 16;
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionButton
 
@@ -127,9 +130,10 @@ BrowserActionButton::BrowserActionButton(
   const std::vector<std::string>& icon_paths = browser_action->icon_paths();
   browser_action_icons_.resize(icon_paths.size());
   tracker_ = new ImageLoadingTracker(this, icon_paths.size());
+  gfx::Size max_size(kMaxIconSize, kMaxIconSize);
   for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
        iter != icon_paths.end(); ++iter) {
-    tracker_->PostLoadImageTask(extension->GetResource(*iter));
+    tracker_->PostLoadImageTask(extension->GetResource(*iter), &max_size);
   }
 
   registrar_.Add(this, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,

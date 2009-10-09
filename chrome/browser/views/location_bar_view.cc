@@ -59,6 +59,9 @@ static const int kEntryPadding = 3;
 // Padding between the entry and the leading/trailing views.
 static const int kInnerPadding = 3;
 
+// Maximum size of the page action icons.
+static const int kMaxPageActionIconSize = 16;
+
 static const SkBitmap* kBackground = NULL;
 
 static const SkBitmap* kPopupBackground = NULL;
@@ -1202,9 +1205,10 @@ LocationBarView::PageActionImageView::PageActionImageView(
   const std::vector<std::string>& icon_paths = page_action->icon_paths();
   page_action_icons_.resize(icon_paths.size());
   tracker_ = new ImageLoadingTracker(this, icon_paths.size());
+  gfx::Size max_size(kMaxPageActionIconSize, kMaxPageActionIconSize);
   for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
        iter != icon_paths.end(); ++iter) {
-    tracker_->PostLoadImageTask(extension->GetResource(*iter));
+    tracker_->PostLoadImageTask(extension->GetResource(*iter), &max_size);
   }
 }
 
