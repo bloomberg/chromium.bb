@@ -9,7 +9,9 @@
 #include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/shell_dialogs.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/views/bookmark_context_menu.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/controls/table/table_view_observer.h"
 #include "views/controls/textfield/textfield.h"
@@ -34,14 +36,18 @@ class SingleSplitView;
 // text field is also provided that allows the user to search the contents
 // of the bookmarks.
 class BookmarkManagerView : public views::View,
-                            public views::WindowDelegate,
-                            public views::TreeViewController,
+                            public views::ContextMenuController,
+                            public views::MenuDelegate,
                             public views::TableViewObserver,
                             public views::Textfield::Controller,
-                            public BookmarkModelObserver,
-                            public views::ContextMenuController,
+                            public views::TreeViewController,
                             public views::ViewMenuDelegate,
-                            public views::MenuDelegate,
+                            public views::WindowDelegate,
+#if defined(CHROME_PERSONALIZATION)
+                            public views::ButtonListener,
+                            public ProfileSyncServiceObserver,
+#endif
+                            public BookmarkModelObserver,
                             public SelectFileDialog::Listener {
  public:
   enum CutCopyPasteType {
@@ -88,6 +94,11 @@ class BookmarkManagerView : public views::View,
   //virtual bool ShouldShowWindowIcon() const { return true; }
   virtual void WindowClosing();
 
+#if defined(CHROME_PERSONALIZATION)
+  // ProfileSyncServiceObserver method.
+  virtual void OnStateChanged();
+#endif
+
   Profile* profile() const { return profile_; }
 
  protected:
@@ -106,6 +117,11 @@ class BookmarkManagerView : public views::View,
   // TreeViewController methods.
   virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view);
   virtual void OnTreeViewKeyDown(unsigned short virtual_keycode);
+
+#if defined(CHROME_PERSONALIZATION)
+  // views::ButtonListener method.
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+#endif
 
   // BookmarkModelObserver. We're only installed as an observer until the
   // bookmarks are loaded.
@@ -199,6 +215,11 @@ class BookmarkManagerView : public views::View,
   void ShowImportBookmarksFileChooser();
   void ShowExportBookmarksFileChooser();
 
+#if defined(CHROME_PERSONALIZATION)
+  void UpdateSyncStatus();
+  void OpenSyncMyBookmarksDialog();
+#endif
+
   Profile* profile_;
   BookmarkTableView* table_view_;
   BookmarkFolderTreeView* tree_view_;
@@ -209,6 +230,15 @@ class BookmarkManagerView : public views::View,
 
   // Import/export file dialog.
   scoped_refptr<SelectFileDialog> select_file_dialog_;
+
+#if defined(CHROME_PERSONALIZATION)
+  // The sync status button that notifies the user about the current status of
+  // bookmarks synchronization.
+  views::TextButton* sync_status_button_;
+
+  // A pointer to the ProfileSyncService instance if one exists.
+  ProfileSyncService* sync_service_;
+#endif
 
   // Factory used for delaying search.
   ScopedRunnableMethodFactory<BookmarkManagerView> search_factory_;

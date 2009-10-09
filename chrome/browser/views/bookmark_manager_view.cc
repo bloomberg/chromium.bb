@@ -40,6 +40,11 @@
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 
+#if defined(CHROME_PERSONALIZATION)
+#include "chrome/browser/options_window.h"
+#include "chrome/browser/sync/sync_status_ui_helper.h"
+#endif
+
 // If non-null, there is an open editor and this is the window it is contained
 // in it.
 static views::Window* open_window = NULL;
@@ -163,6 +168,10 @@ BookmarkManagerView::BookmarkManagerView(Profile* profile)
     : profile_(profile->GetOriginalProfile()),
       table_view_(NULL),
       tree_view_(NULL),
+#if defined(CHROME_PERSONALIZATION)
+      sync_status_button_(NULL),
+      sync_service_(NULL),
+#endif
       ALLOW_THIS_IN_INITIALIZER_LIST(search_factory_(this)) {
   search_tf_ = new views::Textfield();
   search_tf_->set_default_width_in_chars(30);
@@ -201,6 +210,10 @@ BookmarkManagerView::BookmarkManagerView(Profile* profile)
                         0, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                         0, views::GridLayout::USE_PREF, 0, 0);
+#if defined(CHROME_PERSONALIZATION)
+  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
+                        0, views::GridLayout::USE_PREF, 0, 0);
+#endif
   column_set->AddPaddingColumn(1, kUnrelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                         0, views::GridLayout::USE_PREF, 0, 0);
@@ -216,6 +229,10 @@ BookmarkManagerView::BookmarkManagerView(Profile* profile)
   layout->StartRow(0, top_id);
   layout->AddView(organize_menu_button);
   layout->AddView(tools_menu_button);
+#if defined(CHROME_PERSONALIZATION)
+  sync_status_button_ = new views::TextButton(this, std::wstring());
+  layout->AddView(sync_status_button_);
+#endif
   layout->AddView(new views::Label(
       l10n_util::GetString(IDS_BOOKMARK_MANAGER_SEARCH_TITLE)));
   layout->AddView(search_tf_);
@@ -231,6 +248,14 @@ BookmarkManagerView::BookmarkManagerView(Profile* profile)
   BookmarkModel* bookmark_model = profile_->GetBookmarkModel();
   if (!bookmark_model->IsLoaded())
     bookmark_model->AddObserver(this);
+
+#if defined(CHROME_PERSONALIZATION)
+  if (profile->GetProfileSyncService()) {
+    sync_service_ = profile_->GetProfileSyncService();
+    sync_service_->AddObserver(this);
+    UpdateSyncStatus();
+  }
+#endif
 }
 
 BookmarkManagerView::~BookmarkManagerView() {
@@ -248,8 +273,12 @@ BookmarkManagerView::~BookmarkManagerView() {
   }
   manager = NULL;
   open_window = NULL;
-}
 
+#if defined(CHROME_PERSONALIZATION)
+  if (sync_service_)
+    sync_service_->RemoveObserver(this);
+#endif
+}
 
 // static
 void BookmarkManagerView::Show(Profile* profile) {
@@ -356,6 +385,12 @@ void BookmarkManagerView::WindowClosing() {
   g_browser_process->local_state()->SetInteger(
       prefs::kBookmarkManagerSplitLocation, split_view_->divider_offset());
 }
+
+#if defined(CHROME_PERSONALIZATION)
+void BookmarkManagerView::OnStateChanged() {
+  UpdateSyncStatus();
+}
+#endif
 
 bool BookmarkManagerView::AcceleratorPressed(
     const views::Accelerator& accelerator) {
@@ -488,6 +523,16 @@ void BookmarkManagerView::OnTreeViewKeyDown(unsigned short virtual_keycode) {
       break;
   }
 }
+
+#if defined(CHROME_PERSONALIZATION)
+void BookmarkManagerView::ButtonPressed(views::Button* sender,
+                                        const views::Event& event) {
+  if (sender == sync_status_button_) {
+    UserMetrics::RecordAction(L"BookmarkManager_Sync", profile_);
+    OpenSyncMyBookmarksDialog();
+  }
+}
+#endif
 
 void BookmarkManagerView::Loaded(BookmarkModel* model) {
   model->RemoveObserver(this);
@@ -793,3 +838,35 @@ void BookmarkManagerView::ShowExportBookmarksFileChooser() {
       L"html", GetWidget()->GetNativeView(),
       reinterpret_cast<void*>(IDS_BOOKMARK_MANAGER_EXPORT_MENU));
 }
+
+#if defined(CHROME_PERSONALIZATION)
+void BookmarkManagerView::UpdateSyncStatus() {
+  DCHECK(sync_service_);
+  std::wstring status_label;
+  std::wstring link_label;
+  bool synced = SyncStatusUIHelper::GetLabels(sync_service_,
+      &status_label, &link_label) == SyncStatusUIHelper::SYNCED;
+
+  if (sync_service_->HasSyncSetupCompleted()) {
+    std::wstring username = UTF16ToWide(
+        sync_service_->GetAuthenticatedUsername());
+    status_label = l10n_util::GetStringF(IDS_SYNC_NTP_SYNCED_TO, username);
+  } else if (!sync_service_->SetupInProgress() && !synced) {
+    status_label = l10n_util::GetString(IDS_SYNC_START_SYNC_BUTTON_LABEL);
+  }
+  sync_status_button_->SetText(status_label);
+  sync_status_button_->GetParent()->Layout();
+}
+
+void BookmarkManagerView::OpenSyncMyBookmarksDialog() {
+  if (!sync_service_)
+    return;
+  if (sync_service_->HasSyncSetupCompleted()) {
+    ShowOptionsWindow(OPTIONS_PAGE_CONTENT, OPTIONS_GROUP_NONE, profile_);
+  } else {
+    sync_service_->EnableForUser();
+    ProfileSyncService::SyncEvent(
+        ProfileSyncService::START_FROM_BOOKMARK_MANAGER);
+  }
+}
+#endif
