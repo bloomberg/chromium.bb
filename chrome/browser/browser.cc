@@ -2423,7 +2423,7 @@ void Browser::InitCommandState() {
     command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB,
         normal_window && !profile_->IsOffTheRecord());
 
-  // Page-related commands
+    // Page-related commands
     command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_PAGE, normal_window);
 
     // Show various bits of UI
