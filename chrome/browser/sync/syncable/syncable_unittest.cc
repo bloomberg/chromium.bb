@@ -31,6 +31,7 @@
 
 #include "base/at_exit.h"
 #include "base/logging.h"
+#include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -784,18 +785,27 @@ TEST(SyncableDirectoryManager, TestFileRelease) {
   ASSERT_TRUE(0 == PathRemove(dm.GetSyncDataDatabasePath()));
 }
 
-static void* OpenTestThreadMain(void* arg) {
-  DirectoryManager* const dm = reinterpret_cast<DirectoryManager*>(arg);
-  CHECK(dm->Open(PSTR("Open")));
-  return 0;
-}
+class ThreadOpenTestDelegate : public PlatformThread::Delegate {
+  public:
+   explicit ThreadOpenTestDelegate(DirectoryManager* dm)
+       : directory_manager_(dm) {}
+   DirectoryManager* const directory_manager_;
+
+  private:
+   // PlatformThread::Delegate methods:
+   virtual void ThreadMain() {
+    CHECK(directory_manager_->Open(PSTR("Open")));
+   }
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadOpenTestDelegate);
+};
 
 TEST(SyncableDirectoryManager, ThreadOpenTest) {
   DirectoryManager dm(PSTR("."));
-  pthread_t thread;
-  ASSERT_TRUE(0 == pthread_create(&thread, 0, OpenTestThreadMain, &dm));
-  void* result;
-  ASSERT_TRUE(0 == pthread_join(thread, &result));
+  PlatformThreadHandle thread_handle;
+  ThreadOpenTestDelegate test_delegate(&dm);
+  ASSERT_TRUE(PlatformThread::Create(0, &test_delegate, &thread_handle));
+  PlatformThread::Join(thread_handle);
   {
     ScopedDirLookup dir(&dm, PSTR("Open"));
     ASSERT_TRUE(dir.good());
@@ -805,107 +815,114 @@ TEST(SyncableDirectoryManager, ThreadOpenTest) {
   ASSERT_FALSE(dir.good());
 }
 
-namespace ThreadBug1 {
-  struct Step {
-    PThreadMutex mutex;
-    PThreadCondVar condvar;
-    int number;
-    int64 metahandle;
-  };
-  struct ThreadArg {
-    int role;  // 0 or 1, meaning this thread does the odd or event steps.
-    Step* step;
-    DirectoryManager* dirman;
-  };
+struct Step {
+  Step() : condvar(&mutex), number(0) {}
 
-  void* ThreadMain(void* arg) {
-    ThreadArg* const args = reinterpret_cast<ThreadArg*>(arg);
-    const int role = args->role;
-    Step* const step = args->step;
-    DirectoryManager* const dirman = args->dirman;
-    const PathString dirname = PSTR("ThreadBug1");
-    PThreadScopedLock<PThreadMutex> lock(&step->mutex);
-    while (step->number < 3) {
-      while (step->number % 2 != role)
-        pthread_cond_wait(&step->condvar.condvar_, &step->mutex.mutex_);
-      switch (step->number) {
+  Lock mutex;
+  ConditionVariable condvar;
+  int number;
+  int64 metahandle;
+};
+
+class ThreadBugDelegate : public PlatformThread::Delegate {
+  public:
+   // a role is 0 or 1, meaning this thread does the odd or event steps.
+   ThreadBugDelegate(int role, Step* step, DirectoryManager* dirman)
+       : role_(role), step_(step), directory_manager_(dirman) {}
+
+  protected:
+   const int role_;
+   Step* const step_;
+   DirectoryManager* const directory_manager_;
+
+   // PlatformThread::Delegate methods:
+   virtual void ThreadMain() {
+     const PathString dirname = PSTR("ThreadBug1");
+     AutoLock scoped_lock(step_->mutex);
+
+     while (step_->number < 3) {
+       while (step_->number % 2 != role_) {
+         step_->condvar.Wait();
+       }
+       switch (step_->number) {
       case 0:
-        dirman->Open(dirname);
+        directory_manager_->Open(dirname);
         break;
       case 1:
         {
-          dirman->Close(dirname);
-          dirman->Open(dirname);
-          ScopedDirLookup dir(dirman, dirname);
+          directory_manager_->Close(dirname);
+          directory_manager_->Open(dirname);
+          ScopedDirLookup dir(directory_manager_, dirname);
           CHECK(dir.good());
           WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
           MutableEntry me(&trans, CREATE, trans.root_id(), PSTR("Jeff"));
-          step->metahandle = me.Get(META_HANDLE);
+          step_->metahandle = me.Get(META_HANDLE);
           me.Put(IS_UNSYNCED, true);
         }
         break;
       case 2:
         {
-          ScopedDirLookup dir(dirman, dirname);
+          ScopedDirLookup dir(directory_manager_, dirname);
           CHECK(dir.good());
           ReadTransaction trans(dir, __FILE__, __LINE__);
-          Entry e(&trans, GET_BY_HANDLE, step->metahandle);
+          Entry e(&trans, GET_BY_HANDLE, step_->metahandle);
           CHECK(e.good());  // Failed due to ThreadBug1
         }
-        dirman->Close(dirname);
+        directory_manager_->Close(dirname);
         break;
-      }
-      step->number += 1;
-      pthread_cond_signal(&step->condvar.condvar_);
-    }
-    return 0;
-  }
-}
+       }
+       step_->number += 1;
+       step_->condvar.Signal();
+     }
+   }
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadBugDelegate);
+};
 
 TEST(SyncableDirectoryManager, ThreadBug1) {
-  using ThreadBug1::Step;
-  using ThreadBug1::ThreadArg;
-  using ThreadBug1::ThreadMain;
-
   Step step;
   step.number = 0;
   DirectoryManager dirman(PSTR("."));
-  ThreadArg arg1 = { 0, &step, &dirman };
-  ThreadArg arg2 = { 1, &step, &dirman };
-  pthread_t thread1, thread2;
-  ASSERT_TRUE(0 == pthread_create(&thread1, NULL, &ThreadMain, &arg1));
-  ASSERT_TRUE(0 == pthread_create(&thread2, NULL, &ThreadMain, &arg2));
-  void* retval;
-  ASSERT_TRUE(0 == pthread_join(thread1, &retval));
-  ASSERT_TRUE(0 == pthread_join(thread2, &retval));
+  ThreadBugDelegate thread_delegate_1(0, &step, &dirman);
+  ThreadBugDelegate thread_delegate_2(1, &step, &dirman);
+
+  PlatformThreadHandle thread_handle_1;
+  PlatformThreadHandle thread_handle_2;
+
+  ASSERT_TRUE(PlatformThread::Create(0, &thread_delegate_1, &thread_handle_1));
+  ASSERT_TRUE(PlatformThread::Create(0, &thread_delegate_2, &thread_handle_2));
+
+  PlatformThread::Join(thread_handle_1);
+  PlatformThread::Join(thread_handle_2);
 }
 
-namespace DirectoryKernelStalenessBug {
-  // The in-memory information would get out of sync because a
-  // directory would be closed and re-opened, and then an old
-  // Directory::Kernel with stale information would get saved to the db.
-  typedef ThreadBug1::Step Step;
-  typedef ThreadBug1::ThreadArg ThreadArg;
 
-  void* ThreadMain(void* arg) {
+// The in-memory information would get out of sync because a
+// directory would be closed and re-opened, and then an old
+// Directory::Kernel with stale information would get saved to the db.
+class DirectoryKernelStalenessBugDelegate : public ThreadBugDelegate {
+ public:
+  DirectoryKernelStalenessBugDelegate(int role, Step* step,
+                                               DirectoryManager* dirman)
+    : ThreadBugDelegate(role, step, dirman) {}
+
+  virtual void ThreadMain() {
     const char test_bytes[] = "test data";
-    ThreadArg* const args = reinterpret_cast<ThreadArg*>(arg);
-    const int role = args->role;
-    Step* const step = args->step;
-    DirectoryManager* const dirman = args->dirman;
     const PathString dirname = PSTR("DirectoryKernelStalenessBug");
-    PThreadScopedLock<PThreadMutex> lock(&step->mutex);
-    while (step->number < 4) {
-      while (step->number % 2 != role)
-        pthread_cond_wait(&step->condvar.condvar_, &step->mutex.mutex_);
-      switch (step->number) {
+    AutoLock scoped_lock(step_->mutex);
+
+    while (step_->number < 4) {
+      while (step_->number % 2 != role_) {
+        step_->condvar.Wait();
+      }
+      switch (step_->number) {
       case 0:
         {
           // Clean up remnants of earlier test runs.
-          PathRemove(dirman->GetSyncDataDatabasePath());
+          PathRemove(directory_manager_->GetSyncDataDatabasePath());
           // Test.
-          dirman->Open(dirname);
-          ScopedDirLookup dir(dirman, dirname);
+          directory_manager_->Open(dirname);
+          ScopedDirLookup dir(directory_manager_, dirname);
           CHECK(dir.good());
           WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
           MutableEntry me(&trans, CREATE, trans.root_id(), PSTR("Jeff"));
@@ -915,28 +932,28 @@ namespace DirectoryKernelStalenessBug {
                                      sizeof(test_bytes));
         }
         {
-          ScopedDirLookup dir(dirman, dirname);
+          ScopedDirLookup dir(directory_manager_, dirname);
           CHECK(dir.good());
           dir->SaveChanges();
         }
-        dirman->Close(dirname);
+        directory_manager_->Close(dirname);
         break;
       case 1:
         {
-          dirman->Open(dirname);
-          ScopedDirLookup dir(dirman, dirname);
+          directory_manager_->Open(dirname);
+          ScopedDirLookup dir(directory_manager_, dirname);
           CHECK(dir.good());
         }
         break;
       case 2:
         {
-          ScopedDirLookup dir(dirman, dirname);
+          ScopedDirLookup dir(directory_manager_, dirname);
           CHECK(dir.good());
         }
         break;
       case 3:
         {
-          ScopedDirLookup dir(dirman, dirname);
+          ScopedDirLookup dir(directory_manager_, dirname);
           CHECK(dir.good());
           ReadTransaction trans(dir, __FILE__, __LINE__);
           Entry e(&trans, GET_BY_PATH, PSTR("Jeff"));
@@ -944,118 +961,149 @@ namespace DirectoryKernelStalenessBug {
                                                 sizeof(test_bytes));
         }
         // Same result as CloseAllDirectories, but more code coverage.
-        dirman->Close(dirname);
+        directory_manager_->Close(dirname);
         break;
       }
-      step->number += 1;
-      pthread_cond_signal(&step->condvar.condvar_);
+      step_->number += 1;
+      step_->condvar.Signal();
     }
-    return 0;
   }
-}
+
+  DISALLOW_COPY_AND_ASSIGN(DirectoryKernelStalenessBugDelegate);
+};
 
 TEST(SyncableDirectoryManager, DirectoryKernelStalenessBug) {
-  using DirectoryKernelStalenessBug::Step;
-  using DirectoryKernelStalenessBug::ThreadArg;
-  using DirectoryKernelStalenessBug::ThreadMain;
-
   Step step;
-  step.number = 0;
+
   DirectoryManager dirman(PSTR("."));
-  ThreadArg arg1 = { 0, &step, &dirman };
-  ThreadArg arg2 = { 1, &step, &dirman };
-  pthread_t thread1, thread2;
-  ASSERT_TRUE(0 == pthread_create(&thread1, NULL, &ThreadMain, &arg1));
-  ASSERT_TRUE(0 == pthread_create(&thread2, NULL, &ThreadMain, &arg2));
-  void* retval;
-  ASSERT_TRUE(0 == pthread_join(thread1, &retval));
-  ASSERT_TRUE(0 == pthread_join(thread2, &retval));
+  DirectoryKernelStalenessBugDelegate thread_delegate_1(0, &step, &dirman);
+  DirectoryKernelStalenessBugDelegate thread_delegate_2(1, &step, &dirman);
+
+  PlatformThreadHandle thread_handle_1;
+  PlatformThreadHandle thread_handle_2;
+
+  ASSERT_TRUE(PlatformThread::Create(0, &thread_delegate_1, &thread_handle_1));
+  ASSERT_TRUE(PlatformThread::Create(0, &thread_delegate_2, &thread_handle_2));
+
+  PlatformThread::Join(thread_handle_1);
+  PlatformThread::Join(thread_handle_2);
 }
 
-timespec operator + (const timespec& a, const timespec& b) {
-  const long nanos = a.tv_nsec + b.tv_nsec;
-  static const long nanos_per_second = 1000000000;
-  timespec r = { a.tv_sec + b.tv_sec + (nanos / nanos_per_second),
-                 nanos % nanos_per_second };
-  return r;
-}
+class StressTransactionsDelegate : public PlatformThread::Delegate {
+  public:
+   StressTransactionsDelegate(DirectoryManager* dm, PathString dirname,
+                                      int thread_number)
+       : directory_manager_(dm), dirname_(dirname),
+         thread_number_(thread_number) {}
 
-void SleepMs(int milliseconds) {
-#ifdef OS_WIN
-  Sleep(milliseconds);
-#else
-  usleep(milliseconds * 1000);
-#endif
-}
+  private:
+   DirectoryManager* const directory_manager_;
+   PathString dirname_;
+   const int thread_number_;
 
-namespace StressTransaction {
-  struct Globals {
-    DirectoryManager* dirman;
-    PathString dirname;
-  };
+   // PlatformThread::Delegate methods:
+   virtual void ThreadMain() {
+     ScopedDirLookup dir(directory_manager_, dirname_);
+     CHECK(dir.good());
+     int entry_count = 0;
+     PathString path_name;
 
-  struct ThreadArg {
-    Globals* globals;
-    int thread_number;
-  };
-
-  void* ThreadMain(void* arg) {
-    ThreadArg* const args = reinterpret_cast<ThreadArg*>(arg);
-    Globals* const globals = args->globals;
-    ScopedDirLookup dir(globals->dirman, globals->dirname);
-    CHECK(dir.good());
-    int entry_count = 0;
-    PathString path_name;
-    for (int i = 0; i < 20; ++i) {
-      const int rand_action = rand() % 10;
-      if (rand_action < 4 && !path_name.empty()) {
-        ReadTransaction trans(dir, __FILE__, __LINE__);
-        Entry e(&trans, GET_BY_PARENTID_AND_NAME, trans.root_id(), path_name);
-        SleepMs(rand() % 10);
-        CHECK(e.good());
-      } else {
-        string unique_name = StringPrintf("%d.%d", args->thread_number,
-                                          entry_count++);
-        path_name.assign(unique_name.begin(), unique_name.end());
-        WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-        MutableEntry e(&trans, CREATE, trans.root_id(), path_name);
-        CHECK(e.good());
-        SleepMs(rand() % 20);
-        e.Put(IS_UNSYNCED, true);
-        if (e.Put(ID, TestIdFactory::FromNumber(rand())) &&
-            e.Get(ID).ServerKnows() && !e.Get(ID).IsRoot())
-          e.Put(BASE_VERSION, 1);
-      }
+     for (int i = 0; i < 20; ++i) {
+       const int rand_action = rand() % 10;
+       if (rand_action < 4 && !path_name.empty()) {
+         ReadTransaction trans(dir, __FILE__, __LINE__);
+         Entry e(&trans, GET_BY_PARENTID_AND_NAME, trans.root_id(), path_name);
+         PlatformThread::Sleep(rand() % 10);
+         CHECK(e.good());
+       } else {
+         string unique_name = StringPrintf("%d.%d", thread_number_,
+           entry_count++);
+         path_name.assign(unique_name.begin(), unique_name.end());
+         WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
+         MutableEntry e(&trans, CREATE, trans.root_id(), path_name);
+         CHECK(e.good());
+         PlatformThread::Sleep(rand() % 20);
+         e.Put(IS_UNSYNCED, true);
+         if (e.Put(ID, TestIdFactory::FromNumber(rand())) &&
+           e.Get(ID).ServerKnows() && !e.Get(ID).IsRoot())
+           e.Put(BASE_VERSION, 1);
+       }
     }
-    return 0;
-  }
-}
+   }
+
+  DISALLOW_COPY_AND_ASSIGN(StressTransactionsDelegate);
+};
 
 TEST(SyncableDirectory, StressTransactions) {
-  using StressTransaction::Globals;
-  using StressTransaction::ThreadArg;
-  using StressTransaction::ThreadMain;
-
   DirectoryManager dirman(PSTR("."));
-  Globals globals;
-  globals.dirname = PSTR("stress");
-  globals.dirman = &dirman;
+  PathString dirname = PSTR("stress");
   PathRemove(dirman.GetSyncDataDatabasePath());
-  dirman.Open(globals.dirname);
+  dirman.Open(dirname);
+
   const int kThreadCount = 7;
-  pthread_t threads[kThreadCount];
-  ThreadArg thread_args[kThreadCount];
+  PlatformThreadHandle threads[kThreadCount];
+  scoped_ptr<StressTransactionsDelegate> thread_delegates[kThreadCount];
+
   for (int i = 0; i < kThreadCount; ++i) {
-    thread_args[i].thread_number = i;
-    thread_args[i].globals = &globals;
-    ASSERT_TRUE(0 == pthread_create(threads + i, NULL, &ThreadMain,
-                                thread_args + i));
+    thread_delegates[i].reset(
+        new StressTransactionsDelegate(&dirman, dirname, i));
+    ASSERT_TRUE(
+        PlatformThread::Create(0, thread_delegates[i].get(), &threads[i]));
   }
-  void* retval;
-  for (pthread_t* i = threads; i < threads + kThreadCount; ++i)
-    ASSERT_TRUE(0 == pthread_join(*i, &retval));
-  dirman.Close(globals.dirname);
+
+  for (int i = 0; i < kThreadCount; ++i) {
+    PlatformThread::Join(threads[i]);
+  }
+
+  dirman.Close(dirname);
   PathRemove(dirman.GetSyncDataDatabasePath());
+}
+
+static PathString UTF8ToPathStringQuick(const char* str) {
+  PathString ret;
+  CHECK(browser_sync::UTF8ToPathString(str, strlen(str), &ret));
+  return ret;
+}
+
+// Returns number of chars used. Max possible is 4.
+// This algorithm was coded from the table at
+// http://en.wikipedia.org/w/index.php?title=UTF-8&oldid=153391259
+// There are no endian issues.
+static int UTF32ToUTF8(uint32 incode, unsigned char* out) {
+  if (incode <= 0x7f) {
+    out[0] = incode;
+    return 1;
+  }
+  if (incode <= 0x7ff) {
+    out[0] = 0xC0;
+    out[0] |= (incode >> 6);
+    out[1] = 0x80;
+    out[1] |= (incode & 0x3F);
+    return 2;
+  }
+  if (incode <= 0xFFFF) {
+    if ((incode > 0xD7FF) && (incode < 0xE000))
+      return 0;
+    out[0] = 0xE0;
+    out[0] |= (incode >> 12);
+    out[1] = 0x80;
+    out[1] |= (incode >> 6) & 0x3F;
+    out[2] = 0x80;
+    out[2] |= incode & 0x3F;
+    return 3;
+  }
+  if (incode <= 0x10FFFF) {
+    out[0] = 0xF0;
+    out[0] |= incode >> 18;
+    out[1] = 0x80;
+    out[1] |= (incode >> 12) & 0x3F;
+    out[2] = 0x80;
+    out[2] |= (incode >> 6) & 0x3F;
+    out[3] = 0x80;
+    out[3] |= incode & 0x3F;
+    return 4;
+  }
+  return 0;
 }
 
 TEST(Syncable, ComparePathNames) {

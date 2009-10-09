@@ -41,6 +41,7 @@
 #include "chrome/browser/sync/util/crypto_helpers.h"
 #include "chrome/browser/sync/util/event_sys.h"
 #include "chrome/browser/sync/util/path_helpers.h"
+#include "chrome/browser/sync/util/pthread_helpers.h"
 #include "chrome/browser/sync/util/user_settings.h"
 #include "googleurl/src/gurl.h"
 
