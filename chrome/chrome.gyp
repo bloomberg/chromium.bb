@@ -640,6 +640,8 @@
         'common/result_codes.h',
         'common/sandbox_init_wrapper.cc',
         'common/sandbox_init_wrapper.h',
+        'common/sandbox_mac.h',
+        'common/sandbox_mac.mm',
         'common/security_filter_peer.cc',
         'common/security_filter_peer.h',
         'common/nacl_messages.h',

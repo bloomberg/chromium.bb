@@ -225,6 +225,10 @@ extern const wchar_t kEnableSessionStorage[];
 
 extern const wchar_t kAllowSandboxDebugging[];
 
+#if defined(OS_MACOSX)
+extern const wchar_t kEnableSandboxLogging[];
+#endif
+
 extern const wchar_t kEnableSeccompSandbox[];
 
 extern const wchar_t kDiagnostics[];

@@ -585,6 +585,12 @@ const wchar_t kEnableSessionStorage[]          = L"enable-session-storage";
 // Allows debugging of sandboxed processes (see zygote_main_linux.cc).
 const wchar_t kAllowSandboxDebugging[]         = L"allow-sandbox-debugging";
 
+#if defined(OS_MACOSX)
+// Cause the OS X sandbox write to syslog every time an access to a resource
+// is denied by the sandbox.
+const wchar_t kEnableSandboxLogging[]         = L"enable-sandbox-logging";
+#endif
+
 // Enable the seccomp sandbox (Linux only)
 const wchar_t kEnableSeccompSandbox[]          = L"enable-seccomp-sandbox";
 

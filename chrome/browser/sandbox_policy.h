@@ -20,6 +20,6 @@ base::ProcessHandle StartProcess(CommandLine* cmd_line);
 base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
                                            const FilePath& exposed_dir);
 
-}  // namespace sandbox;
+}  // namespace sandbox
 
 #endif  // CHROME_BROWSER_SANDBOX_POLICY_H_
