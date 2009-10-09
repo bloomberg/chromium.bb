@@ -6,6 +6,7 @@
 #define VIEWS_EXAMPLES_TEXTFIELD_EXAMPLE_H_
 
 #include "base/string_util.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/controls/textfield/textfield.h"
@@ -17,12 +18,15 @@ using views::Textfield;
 
 // TextfieldExample mimics login screen.
 class TextfieldExample : protected ExampleBase,
-                         public Textfield::Controller {
+                         private Textfield::Controller,
+                         private views::ButtonListener {
  public:
   TextfieldExample(views::TabbedPane* tabbed_pane, views::Label* message)
       : ExampleBase(message),
         name_(new Textfield()),
-        password_(new Textfield(Textfield::STYLE_PASSWORD)) {
+        password_(new Textfield(Textfield::STYLE_PASSWORD)),
+        show_password_(new views::TextButton(this, L"Show password")),
+        clear_all_(new views::TextButton(this, L"Clear All")) {
     name_->SetController(this);
     password_->SetController(this);
 
@@ -42,6 +46,10 @@ class TextfieldExample : protected ExampleBase,
     layout->StartRow(0, 0);
     layout->AddView(new views::Label(L"Password:"));
     layout->AddView(password_);
+    layout->StartRow(0, 0);
+    layout->AddView(show_password_);
+    layout->StartRow(0, 0);
+    layout->AddView(clear_all_);
   }
 
   virtual ~TextfieldExample() {}
@@ -64,8 +72,25 @@ class TextfieldExample : protected ExampleBase,
     return false;
   }
 
+  // ButtonListner implementation.
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
+    if (sender == show_password_) {
+      PrintStatus(L"Password [%ls]",
+                  UTF16ToWideHack(password_->text()).c_str());
+    } else if (sender == clear_all_) {
+      string16 empty;
+      name_->SetText(empty);
+      password_->SetText(empty);
+    }
+  }
+
   // Textfields for name and password.
-  views::Textfield* name_, *password_;
+  views::Textfield* name_;
+  views::Textfield* password_;
+
+  // Buttons to show password text and to clear the textfields.
+  views::TextButton* show_password_;
+  views::TextButton* clear_all_;
 
   DISALLOW_COPY_AND_ASSIGN(TextfieldExample);
 };
@@ -73,4 +98,3 @@ class TextfieldExample : protected ExampleBase,
 }  // namespace examples
 
 #endif  // VIEWS_EXAMPLES_TEXTFIELD_EXAMPLE_H_
-

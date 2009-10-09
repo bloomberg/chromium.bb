@@ -220,6 +220,7 @@ gboolean NativeTextfieldGtk::OnChangedHandler(
 }
 
 gboolean NativeTextfieldGtk::OnChanged() {
+  textfield_->SyncText();
   Textfield::Controller* controller = textfield_->GetController();
   if (controller)
     controller->ContentsChanged(textfield_, GetText());
