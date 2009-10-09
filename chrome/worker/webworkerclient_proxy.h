@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/task.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
 #include "webkit/api/public/WebWorkerClient.h"
@@ -73,6 +74,8 @@ class WebWorkerClientProxy : public WebKit::WebWorkerClient,
   int route_id_;
 
   WebKit::WebWorker* impl_;
+
+  ScopedRunnableMethodFactory<WebWorkerClientProxy> kill_process_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebWorkerClientProxy);
 };

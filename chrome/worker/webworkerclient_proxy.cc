@@ -23,25 +23,8 @@ using WebKit::WebString;
 using WebKit::WebWorker;
 using WebKit::WebWorkerClient;
 
-namespace {
-
 // How long to wait for worker to finish after it's been told to terminate.
-static const int kMaxTimeForRunawayWorkerMs = 3000;
-
-class KillProcessTask : public Task {
- public:
-  KillProcessTask(WebWorkerClientProxy* proxy) : proxy_(proxy) { }
-  void Run() {
-    // This shuts down the process cleanly from the perspective of the browser
-    // process, and avoids the crashed worker infobar from appearing to the new
-    // page.
-    proxy_->workerContextDestroyed();
-  }
- private:
-  WebWorkerClientProxy* proxy_;
-};
-
-}
+#define kMaxTimeForRunawayWorkerMs 3000
 
 static bool UrlIsNativeWorker(const GURL& url) {
   // If the renderer was not passed the switch to enable native workers,
@@ -63,7 +46,8 @@ static bool UrlIsNativeWorker(const GURL& url) {
 
 WebWorkerClientProxy::WebWorkerClientProxy(const GURL& url, int route_id)
     : url_(url),
-      route_id_(route_id) {
+      route_id_(route_id),
+      ALLOW_THIS_IN_INITIALIZER_LIST(kill_process_factory_(this)) {
   if (UrlIsNativeWorker(url)) {
     // Launch a native worker.
     impl_ = NativeWebWorkerImpl::create(this);
@@ -178,8 +162,13 @@ void WebWorkerClientProxy::OnTerminateWorkerContext() {
     return;
   }
 
+  // This shuts down the process cleanly from the perspective of the browser
+  // process, and avoids the crashed worker infobar from appearing to the new
+  // page.
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      new KillProcessTask(this), kMaxTimeForRunawayWorkerMs);
+      kill_process_factory_.NewRunnableMethod(
+          &WebWorkerClientProxy::workerContextDestroyed),
+          kMaxTimeForRunawayWorkerMs);
 }
 
 void WebWorkerClientProxy::OnPostMessage(
