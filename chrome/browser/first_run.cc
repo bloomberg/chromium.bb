@@ -21,14 +21,7 @@
 namespace {
 
 // The kSentinelFile file absence will tell us it is a first run.
-#if defined(OS_WIN)
 const char kSentinelFile[] = "First Run";
-#else
-// On other platforms de intentionally use a different file name, so
-// when the remainder of this file is implemented, we can switch to
-// the proper file name and users will get the first run interface again.
-const char kSentinelFile[] = "First Run Dev";
-#endif
 
 // Gives the full path to the sentinel file. The file might not exist.
 bool GetFirstRunSentinelFilePath(FilePath* path) {
@@ -45,12 +38,18 @@ bool GetFirstRunSentinelFilePath(FilePath* path) {
       return false;
   }
 #else
-  // TODO(port): logic as above.  Not important for our "First Run Dev" file.
   if (!PathService::Get(chrome::DIR_USER_DATA, &first_run_sentinel))
     return false;
 #endif
 
+  // TODO(evanm): remove this old_sentinel business once users are migrated.
+  // http://code.google.com/p/chromium/issues/detail?id=24450
+  FilePath old_sentinel = first_run_sentinel.AppendASCII("First Run Dev");
   first_run_sentinel = first_run_sentinel.AppendASCII(kSentinelFile);
+
+  if (file_util::PathExists(old_sentinel))
+    file_util::Move(old_sentinel, first_run_sentinel);
+
   *path = first_run_sentinel;
   return true;
 }
