@@ -98,6 +98,11 @@ void ThreadManager::Remove(Thread *thread) {
   threads_.erase(std::remove(threads_.begin(), threads_.end(), thread), threads_.end());
 }
 
+bool ThreadManager::ThreadActive(Thread *thread) {
+  CritScope cs(&crit_);
+  return(std::find(threads_.begin(), threads_.end(), thread) != threads_.end());
+}
+
 Thread::Thread(SocketServer* ss) : MessageQueue(ss), priority_(PRIORITY_NORMAL) {
   g_thmgr.Add(this);
   started_ = false;
@@ -121,11 +126,13 @@ void Thread::Start() {
     param.sched_priority = 15;           // +15 = 
     pthread_attr_setschedparam(&attr, &param);
   }
+  CritScope cs(&crit_);
   pthread_create(&thread_, &attr, PreRun, this);
   started_ = true;
 }
 
 void Thread::Join() {
+  CritScope cs(&crit_);
   if (started_) {
     void *pv;
     pthread_join(thread_, &pv);
@@ -166,6 +173,7 @@ void Thread::Start() {
   if (priority_ != PRIORITY_NORMAL) {
     flags = CREATE_SUSPENDED;
   }
+  CritScope cs(&crit_);
   thread_ = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)PreRun, this, flags, NULL);
   if (thread_) {
     if (priority_ != PRIORITY_NORMAL) {
@@ -179,6 +187,7 @@ void Thread::Start() {
 }
 
 void Thread::Join() {
+  CritScope cs(&crit_);
   if (started_) {
     WaitForSingleObject(thread_, INFINITE);
     CloseHandle(thread_);
@@ -189,6 +198,9 @@ void Thread::Join() {
 
 void *Thread::PreRun(void *pv) {
   Thread *thread = (Thread *)pv;
+  // Make sure the thread hasn't been deleted.
+  if (!g_thmgr.ThreadActive(thread))
+    return NULL;
   ThreadManager::SetCurrent(thread);
 #if defined(WIN32) && defined(_DEBUG)
   char buf[256];

@@ -55,6 +55,7 @@ public:
   static void SetCurrent(Thread *thread);
   void Add(Thread *thread);
   void Remove(Thread *thread);
+  bool ThreadActive(Thread *thread);
 
 private:
   Thread *main_thread_;
@@ -132,6 +133,7 @@ private:
 
   std::list<_SendMessage> sendlist_;
   ThreadPriority priority_;
+  CriticalSection crit_;
   bool started_;
   bool has_sends_;
 
