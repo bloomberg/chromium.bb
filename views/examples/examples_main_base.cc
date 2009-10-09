@@ -20,6 +20,7 @@
 #include "views/examples/radio_button_example.h"
 #include "views/examples/scroll_view_example.h"
 #include "views/examples/tabbed_pane_example.h"
+#include "views/examples/textfield_example.h"
 
 namespace examples {
 
@@ -70,6 +71,7 @@ void ExamplesMainBase::Run() {
   layout->StartRow(0 /* no expand */, 0);
   layout->AddView(message);
 
+  TextfieldExample textfield_example(tabbed_pane, message);
   ButtonExample button_example(tabbed_pane, message);
   ComboboxExample combobox_example(tabbed_pane, message);
   TabbedPaneExample tabbed_pane_example(tabbed_pane, message);

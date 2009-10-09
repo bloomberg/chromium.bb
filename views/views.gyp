@@ -349,6 +349,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../skia/skia.gyp:skia',
+            '../build/linux/system.gyp:x11',
             'views',
           ],
           'include_dirs': [
@@ -365,6 +366,7 @@
             'examples/message_box_example.h',
             'examples/radio_button_example.h',
             'examples/tabbed_pane_example.h',
+            'examples/textfield_example.h',
           ],
           'conditions': [
             ['OS=="linux"', {

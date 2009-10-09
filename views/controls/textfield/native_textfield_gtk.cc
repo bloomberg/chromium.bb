@@ -12,6 +12,8 @@
 #include "views/controls/textfield/textfield.h"
 
 namespace views {
+// A character used to hide a text in password mode.
+const char kPasswordChar = '*';
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTextfieldGtk, public:
@@ -229,6 +231,11 @@ gboolean NativeTextfieldGtk::OnChanged() {
 
 void NativeTextfieldGtk::CreateNativeControl() {
   NativeControlCreated(gtk_entry_new());
+  if (textfield_->IsPassword()) {
+    gtk_entry_set_invisible_char(GTK_ENTRY(native_view()),
+                                 static_cast<gunichar>(kPasswordChar));
+    gtk_entry_set_visibility(GTK_ENTRY(native_view()), false);
+  }
 }
 
 void NativeTextfieldGtk::NativeControlCreated(GtkWidget* widget) {
