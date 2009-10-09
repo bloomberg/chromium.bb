@@ -17,6 +17,7 @@
 #include "FormState.h"
 #include "FrameLoader.h"
 #include "FrameLoadRequest.h"
+#include "HitTestResult.h"
 #include "MIMETypeRegistry.h"
 #include "MouseEvent.h"
 #include "Page.h"
@@ -33,6 +34,7 @@
 #include "net/base/net_errors.h"
 #include "webkit/api/public/WebForm.h"
 #include "webkit/api/public/WebFrameClient.h"
+#include "webkit/api/public/WebNode.h"
 #include "webkit/api/public/WebPlugin.h"
 #include "webkit/api/public/WebPluginParams.h"
 #include "webkit/api/public/WebSecurityOrigin.h"
@@ -62,6 +64,7 @@ using WebKit::WebData;
 using WebKit::WebDataSourceImpl;
 using WebKit::WebNavigationType;
 using WebKit::WebNavigationPolicy;
+using WebKit::WebNode;
 using WebKit::WebPlugin;
 using WebKit::WebPluginContainerImpl;
 using WebKit::WebPluginLoadObserver;
@@ -816,9 +819,22 @@ void WebFrameLoaderClient::dispatchDecidePolicyForNavigationAction(
         WebNavigationType webnav_type =
             WebDataSourceImpl::toWebNavigationType(action.type());
 
+        RefPtr<WebCore::Node> node;
+        for (const Event* event = action.event(); event;
+            event = event->underlyingEvent()) {
+          if (event->isMouseEvent()) {
+            const MouseEvent* mouse_event =
+                static_cast<const MouseEvent*>(event);
+            node = webframe_->frame()->eventHandler()->hitTestResultAtPoint(
+                mouse_event->absoluteLocation(), false).innerNonSharedNode();
+            break;
+          }
+        }
+        WebNode originating_node = webkit_glue::NodeToWebNode(node);
+
         navigation_policy = webframe_->client()->decidePolicyForNavigation(
-            webframe_, ds->request(), webnav_type, navigation_policy,
-            is_redirect);
+            webframe_, ds->request(), webnav_type, originating_node,
+            navigation_policy, is_redirect);
       }
     }
 

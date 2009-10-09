@@ -295,7 +295,7 @@ class RenderView : public RenderWidget,
       WebKit::WebNavigationPolicy policy);
   virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(
       WebKit::WebFrame* frame, const WebKit::WebURLRequest& request,
-      WebKit::WebNavigationType type,
+      WebKit::WebNavigationType type, const WebKit::WebNode&,
       WebKit::WebNavigationPolicy default_policy, bool is_redirect);
   virtual void willSubmitForm(WebKit::WebFrame* frame,
       const WebKit::WebForm& form);

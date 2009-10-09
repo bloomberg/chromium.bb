@@ -27,7 +27,7 @@ class EmptyWebFrameClient : public WebKit::WebFrameClient {
       WebKit::WebNavigationPolicy policy) {}
   virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(
       WebKit::WebFrame* frame, const WebKit::WebURLRequest& request,
-      WebKit::WebNavigationType type,
+      WebKit::WebNavigationType type, const WebKit::WebNode& originating_node,
       WebKit::WebNavigationPolicy default_policy, bool is_redirect) {
     return default_policy; }
   virtual void willSubmitForm(WebKit::WebFrame* frame,

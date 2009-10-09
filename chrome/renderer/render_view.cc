@@ -1811,7 +1811,7 @@ void RenderView::loadURLExternally(
 
 WebNavigationPolicy RenderView::decidePolicyForNavigation(
     WebFrame* frame, const WebURLRequest& request, WebNavigationType type,
-    WebNavigationPolicy default_policy, bool is_redirect) {
+    const WebNode&, WebNavigationPolicy default_policy, bool is_redirect) {
   // Webkit is asking whether to navigate to a new URL.
   // This is fine normally, except if we're showing UI from one security
   // context and they're trying to navigate to a different context.

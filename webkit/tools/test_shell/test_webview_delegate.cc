@@ -632,13 +632,21 @@ void TestWebViewDelegate::loadURLExternally(
 
 WebNavigationPolicy TestWebViewDelegate::decidePolicyForNavigation(
     WebFrame* frame, const WebURLRequest& request,
-    WebNavigationType type, WebNavigationPolicy default_policy,
-    bool is_redirect) {
+    WebNavigationType type, const WebNode& originating_node,
+    WebNavigationPolicy default_policy, bool is_redirect) {
   WebNavigationPolicy result;
   if (policy_delegate_enabled_) {
-    printf("Policy delegate: attempt to load %s with navigation type '%s'\n",
+    printf("Policy delegate: attempt to load %s with navigation type '%s'",
            GetURLDescription(request.url()).c_str(),
            WebNavigationTypeToString(type));
+    WebNode node = originating_node;
+    if (!node.isNull()) {
+      printf(" originating from %s", node.nodeName().utf8().data());
+      for (node = node.parentNode(); !node.isNull(); node = node.parentNode()) {
+        printf(" > %s", node.nodeName().utf8().data());
+      }
+    }
+    printf("\n");
     if (policy_delegate_is_permissive_) {
       result = WebKit::WebNavigationPolicyCurrentTab;
     } else {

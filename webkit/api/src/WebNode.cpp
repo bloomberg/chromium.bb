@@ -49,7 +49,8 @@ void WebNode::reset()
 void WebNode::assign(const WebNode& other)
 {
     WebNodePrivate* p = const_cast<WebNodePrivate*>(other.m_private);
-    p->ref();
+    if (p)
+        p->ref();
     assign(p);
 }
 

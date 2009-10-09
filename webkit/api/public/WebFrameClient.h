@@ -41,6 +41,7 @@ namespace WebKit {
     class WebFrame;
     class WebMediaPlayer;
     class WebMediaPlayerClient;
+    class WebNode;
     class WebPlugin;
     class WebSecurityOrigin;
     class WebString;
@@ -87,6 +88,7 @@ namespace WebKit {
         // defaultPolicy should just be returned.
         virtual WebNavigationPolicy decidePolicyForNavigation(
             WebFrame*, const WebURLRequest&, WebNavigationType,
+            const WebNode& originatingNode,
             WebNavigationPolicy defaultPolicy, bool isRedirect) = 0;
 
 
