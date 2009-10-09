@@ -8,9 +8,9 @@
 
 #include "base/file_util.h"
 #include "base/i18n/file_util_icu.h"
+#include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
 #include "base/time.h"
-#include "base/time_format.h"
 #include "printing/printed_document.h"
 #include "skia/ext/platform_device_win.h"
 
