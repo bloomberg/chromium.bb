@@ -8,7 +8,7 @@
 #include "app/gfx/font.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/i18n/time_format.h"
+#include "base/i18n/time_formatting.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "grit/generated_resources.h"
