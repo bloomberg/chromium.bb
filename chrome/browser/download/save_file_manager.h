@@ -124,9 +124,6 @@ class SaveFileManager
   void OnShowSavedFileInShell(const FilePath full_path);
 #endif
 
-  // Helper to create the download directory.
-  void CreateDownloadDirectory(FilePath save_dir,
-                               SavePackage* save_package);
   // Helper function for deleting specified file.
   void DeleteDirectoryOrFile(const FilePath& full_path, bool is_dir);
 

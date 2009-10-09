@@ -13,6 +13,7 @@
 #include "base/file_path.h"
 #include "base/hash_tables.h"
 #include "base/ref_counted.h"
+#include "base/task.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "googleurl/src/gurl.h"
@@ -314,6 +315,8 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   scoped_refptr<SelectFileDialog> select_file_dialog_;
 
   friend class SavePackageTest;
+
+  ScopedRunnableMethodFactory<SavePackage> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SavePackage);
 };

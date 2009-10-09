@@ -117,6 +117,30 @@ FilePath::StringType StripOrdinalNumber(
   return pure_file_name.substr(0, l_paren_index);
 }
 
+// This task creates a directory and then posts a task on the given thread.
+class CreateDownloadDirectoryTask : public Task {
+ public:
+  CreateDownloadDirectoryTask(const FilePath& save_dir,
+                              Task* follow_up,
+                              MessageLoop* target_thread)
+      : save_dir_(save_dir),
+        follow_up_(follow_up),
+        target_thread_(target_thread) {
+  }
+
+  virtual void Run() {
+    file_util::CreateDirectory(save_dir_);
+    target_thread_->PostTask(FROM_HERE, follow_up_);
+  }
+
+ private:
+  FilePath save_dir_;
+  Task* follow_up_;
+  MessageLoop* target_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(CreateDownloadDirectoryTask);
+};
+
 }  // namespace
 
 SavePackage::SavePackage(TabContents* web_content,
@@ -134,7 +158,8 @@ SavePackage::SavePackage(TabContents* web_content,
       save_type_(save_type),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
-      tab_id_(web_content->process()->id()) {
+      tab_id_(web_content->process()->id()),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK(web_content);
   const GURL& current_page_url = tab_contents_->GetURL();
   DCHECK(current_page_url.is_valid());
@@ -158,7 +183,8 @@ SavePackage::SavePackage(TabContents* tab_contents)
       save_type_(SAVE_TYPE_UNKNOWN),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
-      tab_id_(tab_contents->process()->id()) {
+      tab_id_(tab_contents->process()->id()),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   const GURL& current_page_url = tab_contents_->GetURL();
   DCHECK(current_page_url.is_valid());
   page_url_ = current_page_url;
@@ -181,7 +207,8 @@ SavePackage::SavePackage(const FilePath& file_full_path,
       save_type_(SAVE_TYPE_UNKNOWN),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
-      tab_id_(0) {
+      tab_id_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK(!saved_main_file_path_.empty() &&
          saved_main_file_path_.value().length() <= kMaxFilePathLength);
   DCHECK(!saved_main_directory_path_.empty() &&
@@ -1056,12 +1083,13 @@ FilePath SavePackage::GetSaveDirPreference(PrefService* prefs) {
 void SavePackage::GetSaveInfo() {
   FilePath save_dir =
       GetSaveDirPreference(tab_contents_->profile()->GetPrefs());
+
   file_manager_->file_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(file_manager_,
-                        &SaveFileManager::CreateDownloadDirectory,
-                        save_dir,
-                        this));
-  // CreateDownloadDirectory() calls ContinueGetSaveInfo() below.
+      new CreateDownloadDirectoryTask(save_dir,
+          method_factory_.NewRunnableMethod(
+              &SavePackage::ContinueGetSaveInfo, save_dir),
+          MessageLoop::current()));
+  // CreateDownloadDirectoryTask calls ContinueGetSaveInfo() below.
 }
 
 void SavePackage::ContinueGetSaveInfo(FilePath save_dir) {

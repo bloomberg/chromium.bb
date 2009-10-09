@@ -577,12 +577,3 @@ void SaveFileManager::RemoveSavedFileFromFileMap(
     }
   }
 }
-
-void SaveFileManager::CreateDownloadDirectory(FilePath save_dir,
-                                              SavePackage* save_package) {
-  file_util::CreateDirectory(save_dir);
-  ui_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(save_package,
-                        &SavePackage::ContinueGetSaveInfo,
-                        save_dir));
-}
