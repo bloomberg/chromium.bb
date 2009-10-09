@@ -22,7 +22,7 @@ struct KeyboardShortcutData {
 // |performKeyEquivalent:| bubbles events up from the window to the views.
 // If we let it bubble up to the Omnibox, then the Omnibox handles
 // cmd-left/right just fine, but it swallows cmd-1 and doesn't give us a chance
-// to intercept this. Hence, we need to types of keyboard shortcuts.
+// to intercept this. Hence, we need two types of keyboard shortcuts.
 //
 // This means cmd-left doesn't work if you hit cmd-l tab, which focusses
 // something that's neither omnibox nor tab contents. This behavior is
