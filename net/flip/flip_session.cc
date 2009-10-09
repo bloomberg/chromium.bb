@@ -174,16 +174,17 @@ void CreateFlipHeadersFromHttpRequest(
   // up to a test server.
   // For testing content on our test server, we modify the URL.
   GURL url = info->url;
-  FilePath path(UrlToFilenameEncoder::Encode(url.spec(), FilePath("/")));
+  FilePath path(UrlToFilenameEncoder::Encode(url.spec(), FilePath()));
 
   // We do the unusual conversion from a FilePath::StringType to
   // an ascii string.  Recognize that StringType is a wstring on windows,
   // so a failure is technically possible, but this is just used as a test
   // case, so it's okay.  This code will be deleted.
+  std::string hack_url("/");
 #if defined(OS_WIN)
-  std::string hack_url = WideToASCII(path.value());
+  hack_url.append(WideToASCII(path.value()));
 #else
-  std::string hack_url = path.value();
+  hack_url.append(path.value());
 #endif
 
   // switch backslashes.  HACK
