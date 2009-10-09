@@ -49,7 +49,7 @@ namespace WebKit {
     class WebString;
     class WebWidget;
     struct WebConsoleMessage;
-    struct WebContextMenuInfo;
+    struct WebContextMenuData;
     struct WebPoint;
     struct WebPopupMenuInfo;
 
@@ -188,6 +188,10 @@ namespace WebKit {
         // 'OK' or false otherwise.
         virtual bool runModalBeforeUnloadDialog(
             WebFrame*, const WebString& message) = 0;
+
+        // Shows a context menu with commands relevant to a specific element on
+        // the a given frame. Additional context data is supplied.
+        virtual void showContextMenu(WebFrame*, const WebContextMenuData&) = 0;
 
         // UI ------------------------------------------------------------------
 

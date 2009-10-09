@@ -16,11 +16,16 @@
 #include "HTMLNames.h"
 #include "KURL.h"
 #include "MediaError.h"
+#include "PlatformString.h"
 #include "Widget.h"
 #undef LOG
 
 #include "base/string_util.h"
 #include "base/word_iterator.h"
+#include "webkit/api/public/WebContextMenuData.h"
+#include "webkit/api/public/WebFrame.h"
+#include "webkit/api/public/WebPoint.h"
+#include "webkit/api/public/WebString.h"
 #include "webkit/api/public/WebURL.h"
 #include "webkit/api/public/WebURLResponse.h"
 #include "webkit/api/src/WebDataSourceImpl.h"
@@ -29,11 +34,15 @@
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webview_impl.h"
 
+using WebKit::WebContextMenuData;
 using WebKit::WebDataSource;
 using WebKit::WebDataSourceImpl;
+using WebKit::WebFrame;
+using WebKit::WebPoint;
+using WebKit::WebString;
+using WebKit::WebURL;
 
 namespace {
-
 // Helper function to determine whether text is a single word or a sentence.
 bool IsASingleWord(const std::wstring& text) {
   WordIterator iter(text, WordIterator::BREAK_WORD);
@@ -97,7 +106,7 @@ std::wstring GetMisspelledWord(const WebCore::ContextMenu* default_menu,
 
   misspelled_word_string = CollapseWhitespace(
       webkit_glue::StringToStdWString(selected_frame->selectedText()),
-                                      false);
+      false);
 
   // If misspelled word is empty, then that portion should not be selected.
   // Set the selection to that position only, and do not expand.
@@ -121,23 +130,18 @@ void ContextMenuClientImpl::contextMenuDestroyed() {
 // Figure out the URL of a page or subframe. Returns |page_type| as the type,
 // which indicates page or subframe, or ContextNodeType::NONE if the URL could not
 // be determined for some reason.
-static ContextNodeType GetTypeAndURLFromFrame(
-    WebCore::Frame* frame,
-    GURL* url,
-    ContextNodeType page_node_type) {
-  ContextNodeType node_type;
+static WebURL GetURLFromFrame(WebCore::Frame* frame) {
   if (frame) {
     WebCore::DocumentLoader* dl = frame->loader()->documentLoader();
     if (dl) {
       WebDataSource* ds = WebDataSourceImpl::fromDocumentLoader(dl);
       if (ds) {
-        node_type = page_node_type;
-        *url = ds->hasUnreachableURL() ? ds->unreachableURL()
+        return ds->hasUnreachableURL() ? ds->unreachableURL()
                                        : ds->request().url();
       }
     }
   }
-  return node_type;
+  return WebURL();
 }
 
 WebCore::PlatformMenuDescription
@@ -154,101 +158,78 @@ WebCore::PlatformMenuDescription
   WebCore::HitTestResult r = default_menu->hitTestResult();
   WebCore::Frame* selected_frame = r.innerNonSharedNode()->document()->frame();
 
-  WebCore::IntPoint menu_point =
-      selected_frame->view()->contentsToWindow(r.point());
-
-  ContextNodeType node_type;
+  WebContextMenuData data;
+  WebCore::IntPoint mouse_position = selected_frame->view()->contentsToWindow(
+      r.point());
+  data.mousePosition = webkit_glue::IntPointToWebPoint(mouse_position);
 
   // Links, Images, Media tags, and Image/Media-Links take preference over
   // all else.
-  WebCore::KURL link_url = r.absoluteLinkURL();
-  if (!link_url.isEmpty()) {
-    node_type.type |= ContextNodeType::LINK;
-  }
+  data.linkURL = webkit_glue::KURLToWebURL(r.absoluteLinkURL());
 
-  WebCore::KURL src_url;
-
-  ContextMenuMediaParams media_params;
+  data.mediaType = WebContextMenuData::MediaTypeNone;
 
   if (!r.absoluteImageURL().isEmpty()) {
-    src_url = r.absoluteImageURL();
-    node_type.type |= ContextNodeType::IMAGE;
+    data.srcURL = webkit_glue::KURLToWebURL(r.absoluteImageURL());
+    data.mediaType = WebContextMenuData::MediaTypeImage;
   } else if (!r.absoluteMediaURL().isEmpty()) {
-    src_url = r.absoluteMediaURL();
+    data.srcURL = webkit_glue::KURLToWebURL(r.absoluteMediaURL());
 
     // We know that if absoluteMediaURL() is not empty, then this is a media
     // element.
     WebCore::HTMLMediaElement* media_element =
         static_cast<WebCore::HTMLMediaElement*>(r.innerNonSharedNode());
     if (media_element->hasTagName(WebCore::HTMLNames::videoTag)) {
-      node_type.type |= ContextNodeType::VIDEO;
+      data.mediaType = WebContextMenuData::MediaTypeVideo;
     } else if (media_element->hasTagName(WebCore::HTMLNames::audioTag)) {
-      node_type.type |= ContextNodeType::AUDIO;
+      data.mediaType = WebContextMenuData::MediaTypeAudio;
     }
 
     if (media_element->error()) {
-      media_params.player_state |= ContextMenuMediaParams::IN_ERROR;
+      data.mediaFlags |= WebContextMenuData::MediaInError;
     }
     if (media_element->paused()) {
-      media_params.player_state |= ContextMenuMediaParams::PAUSED;
+      data.mediaFlags |= WebContextMenuData::MediaPaused;
     }
     if (media_element->muted()) {
-      media_params.player_state |= ContextMenuMediaParams::MUTED;
+      data.mediaFlags |= WebContextMenuData::MediaMuted;
     }
     if (media_element->loop()) {
-      media_params.player_state |= ContextMenuMediaParams::LOOP;
+      data.mediaFlags |= WebContextMenuData::MediaLoop;
     }
     if (media_element->supportsSave()) {
-      media_params.player_state |= ContextMenuMediaParams::CAN_SAVE;
+      data.mediaFlags |= WebContextMenuData::MediaCanSave;
     }
-
-    media_params.has_audio = media_element->hasAudio();
+    if (media_element->hasAudio()) {
+      data.mediaFlags |= WebContextMenuData::MediaHasAudio;
+    }
   }
-
   // If it's not a link, an image, a media element, or an image/media link,
   // show a selection menu or a more generic page menu.
-  std::wstring selection_text_string;
-  std::wstring misspelled_word_string;
-  GURL frame_url;
-  GURL page_url;
-  std::string security_info;
+  data.frameEncoding = webkit_glue::StringToWebString(
+      selected_frame->loader()->encoding());
 
-  std::string frame_charset = WideToASCII(
-      webkit_glue::StringToStdWString(selected_frame->loader()->encoding()));
   // Send the frame and page URLs in any case.
-  ContextNodeType frame_node = ContextNodeType(ContextNodeType::NONE);
-  ContextNodeType page_node =
-      GetTypeAndURLFromFrame(webview_->main_frame()->frame(),
-                             &page_url,
-                             ContextNodeType(ContextNodeType::PAGE));
+  data.pageURL = GetURLFromFrame(webview_->main_frame()->frame());
   if (selected_frame != webview_->main_frame()->frame()) {
-    frame_node =
-      GetTypeAndURLFromFrame(selected_frame,
-          &frame_url,
-          ContextNodeType(ContextNodeType::FRAME));
+    data.frameURL = GetURLFromFrame(selected_frame);
   }
 
   if (r.isSelected()) {
-    node_type.type |= ContextNodeType::SELECTION;
-    selection_text_string = CollapseWhitespace(
-      webkit_glue::StringToStdWString(selected_frame->selectedText()),
-      false);
+    data.selectedText = WideToUTF16Hack(CollapseWhitespace(
+        webkit_glue::StringToStdWString(selected_frame->selectedText()),
+        false));
   }
 
+  data.isEditable = false;
   if (r.isContentEditable()) {
-    node_type.type |= ContextNodeType::EDITABLE;
+    data.isEditable = true;
     if (webview_->GetFocusedWebCoreFrame()->editor()->
         isContinuousSpellCheckingEnabled()) {
-      misspelled_word_string = GetMisspelledWord(default_menu,
-                                                 selected_frame);
-    }
-  }
-
-  if (node_type.type == ContextNodeType::NONE) {
-    if (selected_frame != webview_->main_frame()->frame()) {
-      node_type = frame_node;
-    } else {
-      node_type = page_node;
+      data.isSpellCheckingEnabled = true;
+      // TODO: GetMisspelledWord should move downstream to RenderView.
+      data.misspelledWord = WideToUTF16Hack(
+          GetMisspelledWord(default_menu, selected_frame));
     }
   }
 
@@ -256,41 +237,29 @@ WebCore::PlatformMenuDescription
   WebCore::DocumentLoader* dl = selected_frame->loader()->documentLoader();
   WebDataSource* ds = WebDataSourceImpl::fromDocumentLoader(dl);
   if (ds)
-    security_info = ds->response().securityInfo();
+    data.securityInfo = ds->response().securityInfo();
 
-  int edit_flags = ContextNodeType::CAN_DO_NONE;
+  // Compute edit flags.
+  data.editFlags = WebContextMenuData::CanDoNone;
   if (webview_->GetFocusedWebCoreFrame()->editor()->canUndo())
-    edit_flags |= ContextNodeType::CAN_UNDO;
+    data.editFlags |= WebContextMenuData::CanUndo;
   if (webview_->GetFocusedWebCoreFrame()->editor()->canRedo())
-    edit_flags |= ContextNodeType::CAN_REDO;
+    data.editFlags |= WebContextMenuData::CanRedo;
   if (webview_->GetFocusedWebCoreFrame()->editor()->canCut())
-    edit_flags |= ContextNodeType::CAN_CUT;
+    data.editFlags |= WebContextMenuData::CanCut;
   if (webview_->GetFocusedWebCoreFrame()->editor()->canCopy())
-    edit_flags |= ContextNodeType::CAN_COPY;
+    data.editFlags |= WebContextMenuData::CanCopy;
   if (webview_->GetFocusedWebCoreFrame()->editor()->canPaste())
-    edit_flags |= ContextNodeType::CAN_PASTE;
+    data.editFlags |= WebContextMenuData::CanPaste;
   if (webview_->GetFocusedWebCoreFrame()->editor()->canDelete())
-    edit_flags |= ContextNodeType::CAN_DELETE;
+    data.editFlags |= WebContextMenuData::CanDelete;
   // We can always select all...
-  edit_flags |= ContextNodeType::CAN_SELECT_ALL;
+  data.editFlags |= WebContextMenuData::CanSelectAll;
 
-  WebViewDelegate* d = webview_->delegate();
-  if (d) {
-    d->ShowContextMenu(webview_,
-                       node_type,
-                       menu_point.x(),
-                       menu_point.y(),
-                       webkit_glue::KURLToGURL(link_url),
-                       webkit_glue::KURLToGURL(src_url),
-                       page_url,
-                       frame_url,
-                       media_params,
-                       selection_text_string,
-                       misspelled_word_string,
-                       edit_flags,
-                       security_info,
-                       frame_charset);
-  }
+  WebFrame* selected_web_frame = WebFrameImpl::FromFrame(selected_frame);
+  if (webview_->client())
+    webview_->client()->showContextMenu(selected_web_frame, data);
+
   return NULL;
 }
 

@@ -24,6 +24,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
+#include "webkit/api/public/WebContextMenuData.h"
 #include "webkit/api/public/WebFrameClient.h"
 #include "webkit/api/public/WebRect.h"
 #if defined(OS_MACOSX)
@@ -38,7 +39,6 @@
 #endif
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 
-struct ContextMenuMediaParams;
 struct WebPreferences;
 class GURL;
 class TestShell;
@@ -50,7 +50,7 @@ class TestWebViewDelegate : public WebViewDelegate,
                             public base::SupportsWeakPtr<TestWebViewDelegate> {
  public:
   struct CapturedContextMenuEvent {
-    CapturedContextMenuEvent(ContextNodeType in_node_type,
+    CapturedContextMenuEvent(int in_node_type,
                              int in_x,
                              int in_y)
       : node_type(in_node_type),
@@ -58,28 +58,12 @@ class TestWebViewDelegate : public WebViewDelegate,
         y(in_y) {
     }
 
-    ContextNodeType node_type;
+    int node_type;
     int x;
     int y;
   };
 
   typedef std::vector<CapturedContextMenuEvent> CapturedContextMenuEvents;
-
-  // WebViewDelegate
-  virtual void ShowContextMenu(WebView* webview,
-                               ContextNodeType node_type,
-                               int x,
-                               int y,
-                               const GURL& link_url,
-                               const GURL& image_url,
-                               const GURL& page_url,
-                               const GURL& frame_url,
-                               const ContextMenuMediaParams& media_params,
-                               const std::wstring& selection_text,
-                               const std::wstring& misspelled_word,
-                               int edit_flags,
-                               const std::string& security_info,
-                               const std::string& frame_charset);
 
   // WebKit::WebViewClient
   virtual WebView* createView(WebKit::WebFrame* creator);
@@ -139,6 +123,8 @@ class TestWebViewDelegate : public WebViewDelegate,
       const WebKit::WebString& default_value, WebKit::WebString* actual_value);
   virtual bool runModalBeforeUnloadDialog(
       WebKit::WebFrame* frame, const WebKit::WebString& message);
+  virtual void showContextMenu(
+      WebKit::WebFrame* frame, const WebKit::WebContextMenuData& data);
   virtual void setStatusText(const WebKit::WebString& text);
   virtual void setMouseOverURL(const WebKit::WebURL& url) {}
   virtual void setToolTipText(

@@ -8,87 +8,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/string_util.h"
 #include "googleurl/src/gurl.h"
-
-// The type of node that the user may perform a contextual action on
-// in the WebView.
-struct ContextNodeType {
-  enum TypeBit {
-    // No node is selected
-    NONE = 0x0,
-
-    // The top page is selected
-    PAGE = 0x1,
-
-    // A subframe page is selected
-    FRAME = 0x2,
-
-    // A link is selected
-    LINK = 0x4,
-
-    // An image is selected
-    IMAGE = 0x8,
-
-    // There is a textual or mixed selection that is selected
-    SELECTION = 0x10,
-
-    // An editable element is selected
-    EDITABLE = 0x20,
-
-    // A misspelled word is selected
-    MISSPELLED_WORD = 0x40,
-
-    // A video node is selected
-    VIDEO = 0x80,
-
-    // A video node is selected
-    AUDIO = 0x100,
-  };
-
-  enum Capability {
-    CAN_DO_NONE = 0x0,
-    CAN_UNDO = 0x1,
-    CAN_REDO = 0x2,
-    CAN_CUT = 0x4,
-    CAN_COPY = 0x8,
-    CAN_PASTE = 0x10,
-    CAN_DELETE = 0x20,
-    CAN_SELECT_ALL = 0x40,
-  };
-
-  int32 type;
-  ContextNodeType() : type(NONE) {}
-  explicit ContextNodeType(int32 t) : type(t) {}
-};
-
-// Parameters structure used in ContextMenuParams with attributes needed to
-// render the context menu for media elements.
-//
-// TODO(ajwong): Add support for multiple audio tracks and subtitles.
-struct ContextMenuMediaParams {
-  // Values for the bitfield representing the state of the media player.
-  // If the state is IN_ERROR, most media controls should disable
-  // themselves.
-  enum PlayerStateBit {
-    NO_STATE = 0x0,
-    IN_ERROR = 0x1,
-    PAUSED = 0x2,
-    MUTED = 0x4,
-    LOOP = 0x8,
-    CAN_SAVE = 0x10,
-  };
-
-  // A bitfield representing the current state of the player, such as
-  // playing, muted, etc.
-  int32 player_state;
-
-  // Whether a playable audio track is present.
-  bool has_audio;
-
-  ContextMenuMediaParams()
-      : player_state(NO_STATE), has_audio(false) {
-  }
-};
+#include "webkit/api/public/WebContextMenuData.h"
 
 // Parameters structure for ViewHostMsg_ContextMenu.
 // FIXME(beng): This would be more useful in the future and more efficient
@@ -98,7 +20,7 @@ struct ContextMenuMediaParams {
 //              could be used for more contextual actions.
 struct ContextMenuParams {
   // This is the type of Context Node that the context menu was invoked on.
-  ContextNodeType node_type;
+  WebKit::WebContextMenuData::MediaType media_type;
 
   // These values represent the coordinates of the mouse when the context menu
   // was invoked.  Coords are relative to the associated RenderView's origin.
@@ -127,7 +49,7 @@ struct ContextMenuParams {
 
   // These are the parameters for the media element that the context menu
   // was invoked on.
-  ContextMenuMediaParams media_params;
+  int media_flags;
 
   // This is the text of the selection that the context menu was invoked on.
   std::wstring selection_text;
@@ -146,6 +68,9 @@ struct ContextMenuParams {
   // If editable, flag for whether spell check is enabled or not.
   bool spellcheck_enabled;
 
+  // Whether context is editable.
+  bool is_editable;
+
   // These flags indicate to the browser whether the renderer believes it is
   // able to perform the corresponding action.
   int edit_flags;
@@ -155,6 +80,26 @@ struct ContextMenuParams {
 
   // The character encoding of the frame on which the menu is invoked.
   std::string frame_charset;
+
+  ContextMenuParams() {}
+
+  ContextMenuParams(const WebKit::WebContextMenuData& data)
+      : media_type(data.mediaType),
+        x(data.mousePosition.x),
+        y(data.mousePosition.y),
+        link_url(data.linkURL),
+        unfiltered_link_url(data.linkURL),
+        src_url(data.srcURL),
+        page_url(data.pageURL),
+        frame_url(data.frameURL),
+        media_flags(data.mediaFlags),
+        selection_text(UTF16ToWideHack(data.selectedText)),
+        misspelled_word(UTF16ToWideHack(data.misspelledWord)),
+        spellcheck_enabled(data.isSpellCheckingEnabled),
+        is_editable(data.isEditable),
+        edit_flags(data.editFlags),
+        security_info(data.securityInfo),
+        frame_charset(data.frameEncoding.utf8()) {}
 };
 
 #endif  // WEBKIT_GLUE_CONTEXT_MENU_H_

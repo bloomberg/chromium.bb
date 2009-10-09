@@ -27,6 +27,7 @@
 #include "webkit/api/public/WebCache.h"
 #include "webkit/api/public/WebCompositionCommand.h"
 #include "webkit/api/public/WebConsoleMessage.h"
+#include "webkit/api/public/WebContextMenuData.h"
 #include "webkit/api/public/WebDragOperation.h"
 #include "webkit/api/public/WebFindOptions.h"
 #include "webkit/api/public/WebInputEvent.h"
@@ -354,6 +355,20 @@ struct ParamTraits<WebKit::WebMediaPlayerAction> {
     l->append(L", ");
     LogParam(p.enable, l);
     l->append(L")");
+  }
+};
+
+template <>
+  struct ParamTraits<WebKit::WebContextMenuData::MediaType> {
+  typedef WebKit::WebContextMenuData::MediaType param_type;
+  static void Write(Message* m, const param_type& p) {
+    m->WriteInt(p);
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    int temp;
+    bool res = m->ReadInt(iter, &temp);
+    *r = static_cast<param_type>(temp);
+    return res;
   }
 };
 

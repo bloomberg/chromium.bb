@@ -51,7 +51,6 @@ class FilePath;
 class SkBitmap;
 class WebDevToolsAgentDelegate;
 class WebView;
-struct ContextMenuMediaParams;
 
 // TODO(darin): Eliminate WebViewDelegate in favor of WebViewClient.
 class WebViewDelegate : public WebKit::WebViewClient {
@@ -84,48 +83,6 @@ class WebViewDelegate : public WebKit::WebViewClient {
   virtual void RemoveStoredAutofillEntry(const std::wstring& name,
                                          const std::wstring& value) {
   }
-
-  // UIDelegate --------------------------------------------------------------
-
-  // @abstract Shows a context menu with commands relevant to a specific
-  //           element on the current page.
-  // @param webview The WebView sending the delegate method.
-  // @param node_type The type of the node(s) the context menu is being
-  // invoked on
-  // @param x The x position of the mouse pointer (relative to the webview)
-  // @param y The y position of the mouse pointer (relative to the webview)
-  // @param link_url The absolute URL of the link that contains the node the
-  // mouse right clicked on
-  // @param image_url The absolute URL of the image that the mouse right
-  // clicked on
-  // @param page_url The URL of the page the mouse right clicked on
-  // @param frame_url The URL of the subframe the mouse right clicked on
-  // @param media_params Extra attributed needed by the context menu for
-  // media elements.
-  // @param selection_text The raw text of the selection that the mouse right
-  // clicked on
-  // @param misspelled_word The editable (possibily) misspelled word
-  // in the Editor on which dictionary lookup for suggestions will be done.
-  // @param edit_flags which edit operations the renderer believes are available
-  // @param security_info
-  // @param frame_charset which indicates the character encoding of
-  // the currently focused frame.
-  virtual void ShowContextMenu(WebView* webview,
-                               ContextNodeType node_type,
-                               int x,
-                               int y,
-                               const GURL& link_url,
-                               const GURL& image_url,
-                               const GURL& page_url,
-                               const GURL& frame_url,
-                               const ContextMenuMediaParams& media_params,
-                               const std::wstring& selection_text,
-                               const std::wstring& misspelled_word,
-                               int edit_flags,
-                               const std::string& security_info,
-                               const std::string& frame_charset) {
-  }
-
 
   // DevTools ----------------------------------------------------------------
 

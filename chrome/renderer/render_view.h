@@ -36,6 +36,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/api/public/WebConsoleMessage.h"
+#include "webkit/api/public/WebContextMenuData.h"
 #include "webkit/api/public/WebFrameClient.h"
 #include "webkit/api/public/WebTextDirection.h"
 #include "webkit/glue/dom_serializer_delegate.h"
@@ -177,20 +178,6 @@ class RenderView : public RenderWidget,
   virtual void OnMissingPluginStatus(
       WebPluginDelegateProxy* delegate,
       int status);
-  virtual void ShowContextMenu(WebView* webview,
-                               ContextNodeType node_type,
-                               int x,
-                               int y,
-                               const GURL& link_url,
-                               const GURL& src_url,
-                               const GURL& page_url,
-                               const GURL& frame_url,
-                               const ContextMenuMediaParams& media_params,
-                               const std::wstring& selection_text,
-                               const std::wstring& misspelled_word,
-                               int edit_flags,
-                               const std::string& security_info,
-                               const std::string& frame_charset);
   virtual WebDevToolsAgentDelegate* GetWebDevToolsAgentDelegate();
   virtual bool WasOpenedByUserGesture() const;
   virtual void FocusAccessibilityObject(WebCore::AccessibilityObject* acc_obj);
@@ -256,6 +243,8 @@ class RenderView : public RenderWidget,
       const WebKit::WebString& default_value, WebKit::WebString* actual_value);
   virtual bool runModalBeforeUnloadDialog(
       WebKit::WebFrame* frame, const WebKit::WebString& message);
+  virtual void showContextMenu(
+      WebKit::WebFrame* frame, const WebKit::WebContextMenuData& data);
   virtual void setStatusText(const WebKit::WebString& text);
   virtual void setMouseOverURL(const WebKit::WebURL& url);
   virtual void setToolTipText(

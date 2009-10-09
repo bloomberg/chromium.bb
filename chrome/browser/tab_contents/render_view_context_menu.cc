@@ -30,7 +30,9 @@
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "webkit/api/public/WebMediaPlayerAction.h"
+#include "webkit/api/public/WebContextMenuData.h"
 
+using WebKit::WebContextMenuData;
 using WebKit::WebMediaPlayerAction;
 
 namespace {
@@ -66,44 +68,55 @@ RenderViewContextMenu::~RenderViewContextMenu() {
 // Menu construction functions -------------------------------------------------
 
 void RenderViewContextMenu::Init() {
-  InitMenu(params_.node_type, params_.media_params);
+  InitMenu();
   DoInit();
 }
 
-void RenderViewContextMenu::InitMenu(ContextNodeType node_type,
-                                     ContextMenuMediaParams media_params) {
-  if (node_type.type & ContextNodeType::PAGE)
-    AppendPageItems();
-  if (node_type.type & ContextNodeType::FRAME)
-    AppendFrameItems();
-  if (node_type.type & ContextNodeType::LINK)
+void RenderViewContextMenu::InitMenu() {
+
+  bool has_link = !params_.link_url.is_empty();
+  bool has_selection = !params_.selection_text.empty();
+
+  // When no special node or text is selected and selection has no link,
+  // show page items.
+  if (params_.media_type == WebContextMenuData::MediaTypeNone &&
+      !has_link &&
+      !params_.is_editable &&
+      !has_selection) {
+    // If context is in subframe, show subframe options instead.
+    if (!params_.frame_url.is_empty()) {
+      AppendFrameItems();
+    } else if (!params_.page_url.is_empty()) {
+      AppendPageItems();
+    }
+  }
+
+  if (has_link) {
     AppendLinkItems();
-
-  if (node_type.type & ContextNodeType::IMAGE) {
-    if (node_type.type & ContextNodeType::LINK)
+    if (params_.media_type != WebContextMenuData::MediaTypeNone)
       AppendSeparator();
-    AppendImageItems();
   }
 
-  if (node_type.type & ContextNodeType::VIDEO) {
-    if (node_type.type & ContextNodeType::LINK)
-      AppendSeparator();
-    AppendVideoItems(media_params);
+  switch (params_.media_type) {
+    case WebContextMenuData::MediaTypeNone:
+      break;
+    case WebContextMenuData::MediaTypeImage:
+      AppendImageItems();
+      break;
+    case WebContextMenuData::MediaTypeVideo:
+      AppendVideoItems();
+      break;
+    case WebContextMenuData::MediaTypeAudio:
+      AppendAudioItems();
+      break;
   }
 
-  if (node_type.type & ContextNodeType::AUDIO) {
-    if (node_type.type & ContextNodeType::LINK)
-      AppendSeparator();
-    AppendAudioItems(media_params);
-  }
-
-  if (node_type.type & ContextNodeType::EDITABLE)
+  if (params_.is_editable)
     AppendEditableItems();
-  else if (node_type.type & ContextNodeType::SELECTION ||
-           node_type.type & ContextNodeType::LINK)
+  else if (has_selection || has_link)
     AppendCopyItem();
 
-  if (node_type.type & ContextNodeType::SELECTION)
+  if (has_selection)
     AppendSearchProvider();
 
   AppendDeveloperItems();
@@ -138,33 +151,31 @@ void RenderViewContextMenu::AppendImageItems() {
   AppendMenuItem(IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
 }
 
-void RenderViewContextMenu::AppendAudioItems(
-    ContextMenuMediaParams media_params) {
-  AppendMediaItems(media_params);
+void RenderViewContextMenu::AppendAudioItems() {
+  AppendMediaItems();
   AppendSeparator();
   AppendMenuItem(IDS_CONTENT_CONTEXT_SAVEAUDIOAS);
   AppendMenuItem(IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION);
   AppendMenuItem(IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB);
 }
 
-void RenderViewContextMenu::AppendVideoItems(
-    ContextMenuMediaParams media_params) {
-  AppendMediaItems(media_params);
+void RenderViewContextMenu::AppendVideoItems() {
+  AppendMediaItems();
   AppendSeparator();
   AppendMenuItem(IDS_CONTENT_CONTEXT_SAVEVIDEOAS);
   AppendMenuItem(IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
   AppendMenuItem(IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB);
 }
 
-void RenderViewContextMenu::AppendMediaItems(
-    ContextMenuMediaParams media_params) {
-  if (media_params.player_state & ContextMenuMediaParams::PAUSED) {
+void RenderViewContextMenu::AppendMediaItems() {
+  int media_flags = params_.media_flags;
+  if (media_flags & WebContextMenuData::MediaPaused) {
     AppendMenuItem(IDS_CONTENT_CONTEXT_PLAY);
   } else {
     AppendMenuItem(IDS_CONTENT_CONTEXT_PAUSE);
   }
 
-  if (media_params.player_state & ContextMenuMediaParams::MUTED) {
+  if (media_flags & WebContextMenuData::MediaMuted) {
     AppendMenuItem(IDS_CONTENT_CONTEXT_UNMUTE);
   } else {
     AppendMenuItem(IDS_CONTENT_CONTEXT_MUTE);
@@ -352,15 +363,16 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
     case IDS_CONTENT_CONTEXT_PLAY:
     case IDS_CONTENT_CONTEXT_PAUSE:
     case IDS_CONTENT_CONTEXT_LOOP:
-      return (params_.media_params.player_state &
-              ContextMenuMediaParams::IN_ERROR) == 0;
+      return (params_.media_flags &
+              WebContextMenuData::MediaInError) == 0;
 
     // Mute and unmute should also be disabled if the player has no audio.
     case IDS_CONTENT_CONTEXT_MUTE:
     case IDS_CONTENT_CONTEXT_UNMUTE:
-      return params_.media_params.has_audio &&
-             (params_.media_params.player_state &
-              ContextMenuMediaParams::IN_ERROR) == 0;
+      return (params_.media_flags &
+              WebContextMenuData::MediaHasAudio) != 0 &&
+             (params_.media_flags &
+              WebContextMenuData::MediaInError) == 0;
 
     case IDS_CONTENT_CONTEXT_SAVESCREENSHOTAS:
       // TODO(ajwong): Enable save screenshot after we actually implement
@@ -374,8 +386,8 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
 
     case IDS_CONTENT_CONTEXT_SAVEAUDIOAS:
     case IDS_CONTENT_CONTEXT_SAVEVIDEOAS:
-      return (params_.media_params.player_state &
-              ContextMenuMediaParams::CAN_SAVE) &&
+      return (params_.media_flags &
+              WebContextMenuData::MediaCanSave) &&
              params_.src_url.is_valid() &&
              URLRequest::IsHandledURL(params_.src_url);
 
@@ -400,25 +412,25 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
       return params_.frame_url.is_valid();
 
     case IDS_CONTENT_CONTEXT_UNDO:
-      return !!(params_.edit_flags & ContextNodeType::CAN_UNDO);
+      return !!(params_.edit_flags & WebContextMenuData::CanUndo);
 
     case IDS_CONTENT_CONTEXT_REDO:
-      return !!(params_.edit_flags & ContextNodeType::CAN_REDO);
+      return !!(params_.edit_flags & WebContextMenuData::CanRedo);
 
     case IDS_CONTENT_CONTEXT_CUT:
-      return !!(params_.edit_flags & ContextNodeType::CAN_CUT);
+      return !!(params_.edit_flags & WebContextMenuData::CanCut);
 
     case IDS_CONTENT_CONTEXT_COPY:
-      return !!(params_.edit_flags & ContextNodeType::CAN_COPY);
+      return !!(params_.edit_flags & WebContextMenuData::CanCopy);
 
     case IDS_CONTENT_CONTEXT_PASTE:
-      return !!(params_.edit_flags & ContextNodeType::CAN_PASTE);
+      return !!(params_.edit_flags & WebContextMenuData::CanPaste);
 
     case IDS_CONTENT_CONTEXT_DELETE:
-      return !!(params_.edit_flags & ContextNodeType::CAN_DELETE);
+      return !!(params_.edit_flags & WebContextMenuData::CanDelete);
 
     case IDS_CONTENT_CONTEXT_SELECTALL:
-      return !!(params_.edit_flags & ContextNodeType::CAN_SELECT_ALL);
+      return !!(params_.edit_flags & WebContextMenuData::CanSelectAll);
 
     case IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD:
       return !profile_->IsOffTheRecord() && params_.link_url.is_valid();
@@ -457,8 +469,8 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
 bool RenderViewContextMenu::ItemIsChecked(int id) const {
   // See if the video is set to looping.
   if (id == IDS_CONTENT_CONTEXT_LOOP) {
-    return (params_.media_params.player_state &
-            ContextMenuMediaParams::LOOP) != 0;
+    return (params_.media_flags &
+            WebContextMenuData::MediaLoop) != 0;
   }
 
   // Check box for 'Check the Spelling of this field'.

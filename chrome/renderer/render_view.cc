@@ -79,6 +79,7 @@
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/default_plugin/default_plugin_shared.h"
 #include "webkit/glue/glue_serialize.h"
+#include "webkit/glue/glue_util.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/dom_serializer.h"
 #include "webkit/glue/image_decoder.h"
@@ -113,6 +114,7 @@ using webkit_glue::SearchableFormData;
 using WebKit::WebColor;
 using WebKit::WebColorName;
 using WebKit::WebConsoleMessage;
+using WebKit::WebContextMenuData;
 using WebKit::WebData;
 using WebKit::WebDataSource;
 using WebKit::WebDragData;
@@ -1623,6 +1625,11 @@ bool RenderView::runModalBeforeUnloadDialog(
   return success;
 }
 
+void RenderView::showContextMenu(
+    WebFrame* frame, const WebContextMenuData& data) {
+  Send(new ViewHostMsg_ContextMenu(routing_id_, ContextMenuParams(data)));
+}
+
 void RenderView::setStatusText(const WebString& text) {
 }
 
@@ -2495,40 +2502,6 @@ void RenderView::SyncNavigationState() {
 
   Send(new ViewHostMsg_UpdateState(
       routing_id_, page_id_, webkit_glue::HistoryItemToString(item)));
-}
-
-void RenderView::ShowContextMenu(WebView* webview,
-                                 ContextNodeType node_type,
-                                 int x,
-                                 int y,
-                                 const GURL& link_url,
-                                 const GURL& src_url,
-                                 const GURL& page_url,
-                                 const GURL& frame_url,
-                                 const ContextMenuMediaParams& media_params,
-                                 const std::wstring& selection_text,
-                                 const std::wstring& misspelled_word,
-                                 int edit_flags,
-                                 const std::string& security_info,
-                                 const std::string& frame_charset) {
-  ContextMenuParams params;
-  params.node_type = node_type;
-  params.x = x;
-  params.y = y;
-  params.src_url = src_url;
-  params.link_url = link_url;
-  params.unfiltered_link_url = link_url;
-  params.page_url = page_url;
-  params.frame_url = frame_url;
-  params.media_params = media_params;
-  params.selection_text = selection_text;
-  params.misspelled_word = misspelled_word;
-  params.spellcheck_enabled =
-      webview->focusedFrame()->isContinuousSpellCheckingEnabled();
-  params.edit_flags = edit_flags;
-  params.security_info = security_info;
-  params.frame_charset = frame_charset;
-  Send(new ViewHostMsg_ContextMenu(routing_id_, params));
 }
 
 bool RenderView::DownloadImage(int id, const GURL& image_url, int image_size) {

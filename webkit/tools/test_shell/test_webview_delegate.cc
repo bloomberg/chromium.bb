@@ -21,6 +21,7 @@
 #include "base/trace_event.h"
 #include "net/base/net_errors.h"
 #include "webkit/api/public/WebConsoleMessage.h"
+#include "webkit/api/public/WebContextMenuData.h"
 #include "webkit/api/public/WebCString.h"
 #include "webkit/api/public/WebData.h"
 #include "webkit/api/public/WebDataSource.h"
@@ -63,6 +64,7 @@
 #endif
 
 using WebKit::WebConsoleMessage;
+using WebKit::WebContextMenuData;
 using WebKit::WebData;
 using WebKit::WebDataSource;
 using WebKit::WebDragData;
@@ -274,25 +276,6 @@ std::string TestWebViewDelegate::GetResourceDescription(uint32 identifier) {
   return it != resource_identifier_map_.end() ? it->second : "<unknown>";
 }
 
-void TestWebViewDelegate::ShowContextMenu(
-    WebView* webview,
-    ContextNodeType node_type,
-    int x,
-    int y,
-    const GURL& link_url,
-    const GURL& image_url,
-    const GURL& page_url,
-    const GURL& frame_url,
-    const ContextMenuMediaParams& media_params,
-    const std::wstring& selection_text,
-    const std::wstring& misspelled_word,
-    int edit_flags,
-    const std::string& security_info,
-    const std::string& frame_charset) {
-  CapturedContextMenuEvent context(node_type, x, y);
-  captured_context_menu_events_.push_back(context);
-}
-
 void TestWebViewDelegate::SetUserStyleSheetEnabled(bool is_enabled) {
   WebPreferences* prefs = shell_->GetWebPreferences();
   prefs->user_style_sheet_enabled = is_enabled;
@@ -501,6 +484,15 @@ bool TestWebViewDelegate::runModalBeforeUnloadDialog(
     WebFrame* frame, const WebString& message) {
   return true;  // Allow window closure.
 }
+
+void TestWebViewDelegate::showContextMenu(
+    WebFrame* frame, const WebContextMenuData& data) {
+  CapturedContextMenuEvent context(data.mediaType,
+                                   data.mousePosition.x,
+                                   data.mousePosition.y);
+  captured_context_menu_events_.push_back(context);
+}
+
 
 void TestWebViewDelegate::setStatusText(const WebString& text) {
   if (WebKit::layoutTestMode() &&

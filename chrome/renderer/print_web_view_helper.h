@@ -169,6 +169,12 @@ class PrintWebViewHelper : public WebViewDelegate {
   virtual bool isShowingSpellingUI() { return false; }
   virtual void updateSpellingUIWithMisspelledWord(
       const WebKit::WebString& word) {}
+  virtual bool runFileChooser(
+      bool multi_select, const WebKit::WebString& title,
+      const WebKit::WebString& initial_value,
+      WebKit::WebFileChooserCompletion* chooser_completion) {
+    return false;
+  }
   virtual void runModalAlertDialog(
       WebKit::WebFrame* frame, const WebKit::WebString& message) {}
   virtual bool runModalConfirmDialog(
@@ -183,12 +189,8 @@ class PrintWebViewHelper : public WebViewDelegate {
       WebKit::WebFrame* frame, const WebKit::WebString& message) {
     return true;
   }
-  virtual bool runFileChooser(
-      bool multi_select, const WebKit::WebString& title,
-      const WebKit::WebString& initial_value,
-      WebKit::WebFileChooserCompletion* chooser_completion) {
-    return false;
-  }
+  virtual void showContextMenu(
+      WebKit::WebFrame* frame, const WebKit::WebContextMenuData& data) {}
   virtual void setStatusText(const WebKit::WebString& text) {}
   virtual void setMouseOverURL(const WebKit::WebURL& url) {}
   virtual void setToolTipText(

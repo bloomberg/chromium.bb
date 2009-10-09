@@ -33,7 +33,7 @@ class RenderViewContextMenu {
   void Init();
 
  protected:
-  void InitMenu(ContextNodeType node, ContextMenuMediaParams media_params);
+  void InitMenu();
 
   // Functions to be implemented by platform-specific subclasses ---------------
 
@@ -80,9 +80,9 @@ class RenderViewContextMenu {
   void AppendDeveloperItems();
   void AppendLinkItems();
   void AppendImageItems();
-  void AppendAudioItems(ContextMenuMediaParams media_params);
-  void AppendVideoItems(ContextMenuMediaParams media_params);
-  void AppendMediaItems(ContextMenuMediaParams media_params);
+  void AppendAudioItems();
+  void AppendVideoItems();
+  void AppendMediaItems();
   void AppendPageItems();
   void AppendFrameItems();
   void AppendCopyItem();

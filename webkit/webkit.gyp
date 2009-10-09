@@ -88,6 +88,7 @@
         'api/public/WebCommon.h',
         'api/public/WebCompositionCommand.h',
         'api/public/WebConsoleMessage.h',
+        'api/public/WebContextMenuData.h',
         'api/public/WebCrossOriginPreflightResultCache.h',
         'api/public/WebCString.h',
         'api/public/WebCursorInfo.h',
