@@ -15,6 +15,7 @@
 #include "googleurl/src/gurl.h"
 
 class DictionaryValue;
+class ListValue;
 class PageUsageData;
 class PrefService;
 class Value;
@@ -32,7 +33,7 @@ class MostVisitedHandler : public DOMMessageHandler,
     GURL favicon_url;
   };
 
-  MostVisitedHandler() : url_blacklist_(NULL), pinned_urls_(NULL) {}
+  MostVisitedHandler();
   virtual ~MostVisitedHandler() { }
 
   // DOMMessageHandler override and implementation.
@@ -69,6 +70,9 @@ class MostVisitedHandler : public DOMMessageHandler,
   static void RegisterUserPrefs(PrefService* prefs);
 
  private:
+  // Send a request to the HistoryService to get the most visited pages.
+  void StartQueryForMostVisited();
+
   // Callback from the history system when the most visited list is available.
   void OnSegmentUsageAvailable(CancelableRequestProvider::Handle handle,
                                std::vector<PageUsageData*>* data);
@@ -87,7 +91,10 @@ class MostVisitedHandler : public DOMMessageHandler,
   void AddPinnedURL(const MostVisitedPage& page, int index);
   void RemovePinnedURL(const GURL& url);
 
-  static std::vector<MostVisitedPage> GetPrePopulatedPages();
+  // Returns true if we should treat this as the first run of the new tab page.
+  bool IsFirstRun();
+
+  static const std::vector<MostVisitedPage>& GetPrePopulatedPages();
 
   NotificationRegistrar registrar_;
 
@@ -101,13 +108,21 @@ class MostVisitedHandler : public DOMMessageHandler,
 
   // The URL blacklist: URLs we do not want to show in the thumbnails list.  It
   // is a dictionary for quick access (it associates a dummy boolean to the URL
-  // string).
+  // string).  This is owned by the PrefService.
   DictionaryValue* url_blacklist_;
 
   // This is a dictionary for the pinned URLs for the the most visited part of
   // the new tab page. The key of the dictionary is a hash of the URL and the
-  // value is a dictionary with title, url and index.
+  // value is a dictionary with title, url and index.  This is owned by the
+  // PrefService.
   DictionaryValue* pinned_urls_;
+
+  // We pre-fetch the first set of result pages.  This variable is false until
+  // we get the first getMostVisited() call.
+  bool got_first_most_visited_request_;
+
+  // Keep the results of the db query here.
+  scoped_ptr<ListValue> pages_value_;
 
   DISALLOW_COPY_AND_ASSIGN(MostVisitedHandler);
 };
