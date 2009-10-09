@@ -1695,12 +1695,14 @@ void MetricsService::LogChildProcessChange(
     NotificationType type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  const std::wstring& child_name =
-      Details<ChildProcessInfo>(details)->name();
+  Details<ChildProcessInfo> child_details(details);
+  const std::wstring& child_name = child_details->name();
+
 
   if (child_process_stats_buffer_.find(child_name) ==
       child_process_stats_buffer_.end()) {
-    child_process_stats_buffer_[child_name] = ChildProcessStats();
+    child_process_stats_buffer_[child_name] =
+        ChildProcessStats(child_details->type());
   }
 
   ChildProcessStats& stats = child_process_stats_buffer_[child_name];
@@ -1822,8 +1824,14 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
   for (std::map<std::wstring, ChildProcessStats>::iterator cache_iter =
            child_process_stats_buffer_.begin();
        cache_iter != child_process_stats_buffer_.end(); ++cache_iter) {
-    std::wstring plugin_name = cache_iter->first;
     ChildProcessStats stats = cache_iter->second;
+
+    // Insert only plugins information into the plugins list.
+    if (ChildProcessInfo::PLUGIN_PROCESS != stats.process_type)
+      continue;
+
+    std::wstring plugin_name = cache_iter->first;
+
     DictionaryValue* plugin_dict = new DictionaryValue;
 
     plugin_dict->SetString(prefs::kStabilityPluginName, plugin_name);

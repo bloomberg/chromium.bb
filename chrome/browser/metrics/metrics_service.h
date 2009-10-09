@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chrome/browser/metrics/metrics_log.h"
 #include "chrome/browser/net/url_fetcher.h"
+#include "chrome/common/child_process_info.h"
 #include "chrome/common/notification_registrar.h"
 #include "webkit/glue/webplugininfo.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -37,7 +38,19 @@ class TemplateURLModel;
 // reported to the UMA server on next launch.
 struct ChildProcessStats {
  public:
-  ChildProcessStats() : process_launches(0), process_crashes(0), instances(0) {}
+  ChildProcessStats(ChildProcessInfo::ProcessType type)
+      : process_launches(0),
+        process_crashes(0),
+        instances(0),
+        process_type(type) {}
+
+  // This constructor is only used by the map to return some default value for
+  // an index for which no value has been assigned.
+  ChildProcessStats()
+      : process_launches(0),
+      process_crashes(0),
+      instances(0),
+      process_type(ChildProcessInfo::UNKNOWN_PROCESS) {}
 
   // The number of times that the given child process has been launched
   int process_launches;
@@ -49,6 +62,8 @@ struct ChildProcessStats {
   // An instance is a DOM object rendered by this child process during a page
   // load.
   int instances;
+
+  ChildProcessInfo::ProcessType process_type;
 };
 
 class MetricsService : public NotificationObserver,
