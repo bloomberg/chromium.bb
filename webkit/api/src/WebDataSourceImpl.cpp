@@ -127,7 +127,7 @@ WebNavigationType WebDataSourceImpl::toWebNavigationType(NavigationType type)
     }
 }
 
-const KURL& WebDataSourceImpl::endOfRedirectChain() const
+WebURL WebDataSourceImpl::endOfRedirectChain() const
 {
     ASSERT(!m_redirectChain.isEmpty());
     return m_redirectChain.last();
@@ -138,7 +138,7 @@ void WebDataSourceImpl::clearRedirectChain()
     m_redirectChain.clear();
 }
 
-void WebDataSourceImpl::appendRedirect(const KURL& url)
+void WebDataSourceImpl::appendRedirect(const WebURL& url)
 {
     m_redirectChain.append(url);
 }

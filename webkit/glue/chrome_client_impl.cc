@@ -28,6 +28,7 @@
 #endif
 #undef LOG
 
+#include "googleurl/src/gurl.h"
 #include "webkit/api/public/WebConsoleMessage.h"
 #include "webkit/api/public/WebCursorInfo.h"
 #include "webkit/api/public/WebFileChooserCompletion.h"
@@ -88,16 +89,17 @@ void ChromeClientImpl::chromeDestroyed() {
 }
 
 void ChromeClientImpl::setWindowRect(const WebCore::FloatRect& r) {
-  if (webview_->client()) {
-    webview_->client()->setWindowRect(
+  WebViewDelegate* delegate = webview_->delegate();
+  if (delegate) {
+    delegate->setWindowRect(
         webkit_glue::IntRectToWebRect(WebCore::IntRect(r)));
   }
 }
 
 WebCore::FloatRect ChromeClientImpl::windowRect() {
   WebRect rect;
-  if (webview_->client()) {
-    rect = webview_->client()->rootWindowRect();
+  if (webview_->delegate()) {
+    rect = webview_->delegate()->rootWindowRect();
   } else {
     // These numbers will be fairly wrong. The window's x/y coordinates will
     // be the top left corner of the screen and the size will be the content
@@ -127,40 +129,41 @@ float ChromeClientImpl::scaleFactor() {
 }
 
 void ChromeClientImpl::focus() {
-  if (!webview_->client())
-    return;
+  WebViewDelegate* delegate = webview_->delegate();
+  if (delegate) {
+    delegate->didFocus();
 
-  webview_->client()->didFocus();
-
-  // If accessibility is enabled, we should notify assistive technology that
-  // the active AccessibilityObject changed.
-  const WebCore::Frame* frame = webview_->GetFocusedWebCoreFrame();
-  if (!frame)
-    return;
-
-  WebCore::Document* doc = frame->document();
-
-  if (doc && doc->axObjectCache()->accessibilityEnabled()) {
-    WebCore::Node* focused_node = webview_->GetFocusedNode();
-
-    if (!focused_node) {
-      // Could not retrieve focused Node.
+    // If accessibility is enabled, we should notify assistive technology that
+    // the active AccessibilityObject changed.
+    const WebCore::Frame* frame = webview_->GetFocusedWebCoreFrame();
+    if (!frame)
       return;
+
+    WebCore::Document* doc = frame->document();
+
+    if (doc && doc->axObjectCache()->accessibilityEnabled()) {
+      WebCore::Node* focused_node = webview_->GetFocusedNode();
+
+      if (!focused_node) {
+        // Could not retrieve focused Node.
+        return;
+      }
+
+      // Retrieve the focused AccessibilityObject.
+      WebCore::AccessibilityObject* focused_acc_obj =
+          doc->axObjectCache()->getOrCreate(focused_node->renderer());
+
+      // Alert assistive technology that focus changed.
+      if (focused_acc_obj)
+        delegate->FocusAccessibilityObject(focused_acc_obj);
     }
-
-    // Retrieve the focused AccessibilityObject.
-    WebCore::AccessibilityObject* focused_acc_obj =
-        doc->axObjectCache()->getOrCreate(focused_node->renderer());
-
-    // Alert assistive technology that focus changed.
-    if (focused_acc_obj)
-      webview_->delegate()->FocusAccessibilityObject(focused_acc_obj);
   }
 }
 
 void ChromeClientImpl::unfocus() {
-  if (webview_->client())
-    webview_->client()->didBlur();
+  WebViewDelegate* delegate = webview_->delegate();
+  if (delegate)
+    delegate->didBlur();
 }
 
 bool ChromeClientImpl::canTakeFocus(WebCore::FocusDirection) {
@@ -265,12 +268,13 @@ void ChromeClientImpl::show() {
 }
 
 bool ChromeClientImpl::canRunModal() {
-  return webview_->client() != NULL;
+  return webview_->delegate() != NULL;
 }
 
 void ChromeClientImpl::runModal() {
-  if (webview_->client())
-    webview_->client()->runModal();
+  WebViewDelegate* delegate = webview_->delegate();
+  if (delegate)
+    delegate->runModal();
 }
 
 void ChromeClientImpl::setToolbarsVisible(bool value) {
@@ -328,7 +332,7 @@ void ChromeClientImpl::addMessageToConsole(WebCore::MessageSource source,
 }
 
 bool ChromeClientImpl::canRunBeforeUnloadConfirmPanel() {
-  return webview_->client() != NULL;
+  return webview_->delegate() != NULL;
 }
 
 bool ChromeClientImpl::runBeforeUnloadConfirmPanel(
@@ -417,9 +421,9 @@ bool ChromeClientImpl::tabsToLinks() const {
 
 WebCore::IntRect ChromeClientImpl::windowResizerRect() const {
   WebCore::IntRect result;
-  if (webview_->client()) {
+  if (webview_->delegate()) {
     result = webkit_glue::WebRectToIntRect(
-        webview_->client()->windowResizerRect());
+        webview_->delegate()->windowResizerRect());
   }
   return result;
 }
@@ -430,19 +434,19 @@ void ChromeClientImpl::repaint(
   // Ignore spurious calls.
   if (!content_changed || paint_rect.isEmpty())
     return;
-  if (webview_->client()) {
-    webview_->client()->didInvalidateRect(
-        webkit_glue::IntRectToWebRect(paint_rect));
-  }
+  WebViewDelegate* delegate = webview_->delegate();
+  if (delegate)
+    delegate->didInvalidateRect(webkit_glue::IntRectToWebRect(paint_rect));
 }
 
 void ChromeClientImpl::scroll(
     const WebCore::IntSize& scroll_delta, const WebCore::IntRect& scroll_rect,
     const WebCore::IntRect& clip_rect) {
-  if (webview_->client()) {
+  WebViewDelegate* delegate = webview_->delegate();
+  if (delegate) {
     int dx = scroll_delta.width();
     int dy = scroll_delta.height();
-    webview_->client()->didScrollRect(
+    delegate->didScrollRect(
         dx, dy, webkit_glue::IntRectToWebRect(clip_rect));
   }
 }
@@ -457,8 +461,9 @@ WebCore::IntRect ChromeClientImpl::windowToScreen(
     const WebCore::IntRect& rect) const {
   WebCore::IntRect screen_rect(rect);
 
-  if (webview_->client()) {
-    WebRect window_rect = webview_->client()->windowRect();
+  WebViewDelegate* delegate = webview_->delegate();
+  if (delegate) {
+    WebRect window_rect = delegate->windowRect();
     screen_rect.move(window_rect.x, window_rect.y);
   }
 
@@ -564,8 +569,9 @@ void ChromeClientImpl::SetCursor(const WebCursorInfo& cursor) {
     return;
   }
 
-  if (webview_->client())
-    webview_->client()->didChangeCursor(cursor);
+  WebViewDelegate* delegate = webview_->delegate();
+  if (delegate)
+    delegate->didChangeCursor(cursor);
 }
 
 void ChromeClientImpl::SetCursorForPlugin(const WebCursorInfo& cursor) {
