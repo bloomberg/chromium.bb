@@ -21,6 +21,7 @@
 #include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/task.h"
 #include "chrome/browser/sync/engine/all_status.h"
 #include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/engine/change_reorder_buffer.h"
@@ -41,7 +42,6 @@
 #include "chrome/browser/sync/util/crypto_helpers.h"
 #include "chrome/browser/sync/util/event_sys.h"
 #include "chrome/browser/sync/util/path_helpers.h"
-#include "chrome/browser/sync/util/pthread_helpers.h"
 #include "chrome/browser/sync/util/user_settings.h"
 #include "googleurl/src/gurl.h"
 
@@ -73,7 +73,7 @@ static const int kServerReachablePollingIntervalMsec = 60000 * 60;
 static const int kThreadExitTimeoutMsec = 60000;
 static const int kSSLPort = 443;
 
-struct ThreadParams {
+struct AddressWatchTaskParams {
   browser_sync::ServerConnectionManager* conn_mgr;
 #if defined(OS_WIN)
   HANDLE exit_flag;
@@ -83,44 +83,52 @@ struct ThreadParams {
 // This thread calls CheckServerReachable() whenever a change occurs in the
 // table that maps IP addresses to interfaces, for example when the user
 // unplugs his network cable.
-void* AddressWatchThread(void* arg) {
-  PlatformThread::SetName("SyncEngine_AddressWatcher");
-  LOG(INFO) << "starting the address watch thread";
+class AddressWatchTask : public Task {
+ public:
+  explicit AddressWatchTask(AddressWatchTaskParams* params)
+      : params_(params) {}
+  virtual ~AddressWatchTask() {}
+
+  virtual void Run() {
+    LOG(INFO) << "starting the address watch thread";
 #if defined(OS_WIN)
-  const ThreadParams* const params = reinterpret_cast<const ThreadParams*>(arg);
-  OVERLAPPED overlapped = {0};
-  overlapped.hEvent = CreateEvent(NULL, FALSE, TRUE, NULL);
-  HANDLE file;
-  DWORD rc = WAIT_OBJECT_0;
-  while (true) {
-    // Only call NotifyAddrChange() after the IP address has changed or if this
-    // is the first time through the loop.
-    if (WAIT_OBJECT_0 == rc) {
-      ResetEvent(overlapped.hEvent);
-      DWORD notify_result = NotifyAddrChange(&file, &overlapped);
-      if (ERROR_IO_PENDING != notify_result) {
-        LOG(ERROR) << "NotifyAddrChange() returned unexpected result "
-            << hex << notify_result;
-        break;
+    OVERLAPPED overlapped = {0};
+    overlapped.hEvent = CreateEvent(NULL, FALSE, TRUE, NULL);
+    HANDLE file;
+    DWORD rc = WAIT_OBJECT_0;
+    while (true) {
+      // Only call NotifyAddrChange() after the IP address has changed or if
+      // this is the first time through the loop.
+      if (WAIT_OBJECT_0 == rc) {
+        ResetEvent(overlapped.hEvent);
+        DWORD notify_result = NotifyAddrChange(&file, &overlapped);
+        if (ERROR_IO_PENDING != notify_result) {
+          LOG(ERROR) << "NotifyAddrChange() returned unexpected result "
+              << hex << notify_result;
+          break;
+        }
       }
+      HANDLE events[] = { overlapped.hEvent, params_->exit_flag };
+      rc = WaitForMultipleObjects(ARRAYSIZE(events), events, FALSE,
+                                  kServerReachablePollingIntervalMsec);
+
+      // If the exit flag was signaled, the thread will exit.
+      if (WAIT_OBJECT_0 + 1 == rc)
+        break;
+
+      params_->conn_mgr->CheckServerReachable();
     }
-    HANDLE events[] = { overlapped.hEvent, params->exit_flag };
-    rc = WaitForMultipleObjects(ARRAYSIZE(events), events, FALSE,
-                                kServerReachablePollingIntervalMsec);
-
-    // If the exit flag was signaled, the thread will exit.
-    if (WAIT_OBJECT_0 + 1 == rc)
-      break;
-
-    params->conn_mgr->CheckServerReachable();
-  }
-  CloseHandle(overlapped.hEvent);
+    CloseHandle(overlapped.hEvent);
 #else
   // TODO(zork): Add this functionality to Linux.
 #endif
-  LOG(INFO) << "The address watch thread has stopped";
-  return 0;
-}
+    LOG(INFO) << "The address watch thread has stopped";
+  }
+
+ private:
+  AddressWatchTaskParams* const params_;
+  DISALLOW_COPY_AND_ASSIGN(AddressWatchTask);
+};
 
 namespace sync_api {
 class ModelSafeWorkerBridge;
@@ -677,13 +685,13 @@ class BridgedGaiaAuthenticator : public browser_sync::GaiaAuthenticator {
 // SyncManager's implementation: SyncManager::SyncInternal
 class SyncManager::SyncInternal {
  public:
-  typedef PThreadScopedLock<PThreadMutex> MutexLock;
   explicit SyncInternal(SyncManager* sync_manager)
       : observer_(NULL),
         command_channel_(0),
         auth_problem_(AUTH_PROBLEM_NONE),
         sync_manager_(sync_manager),
         notification_pending_(false),
+        address_watch_thread_("SyncEngine_AddressWatcher"),
         initialized_(false) {
   }
 
@@ -783,7 +791,7 @@ class SyncManager::SyncInternal {
   // Whether we're initialized to the point of being able to accept changes
   // (and hence allow transaction creation). See initialized_ for details.
   bool initialized() const {
-    MutexLock lock(&initialized_mutex_);
+    AutoLock lock(initialized_mutex_);
     return initialized_;
   }
  private:
@@ -908,8 +916,8 @@ class SyncManager::SyncInternal {
   SyncManager* const sync_manager_;
 
   // Parameters for our thread listening to network status changes.
-  ThreadParams address_watch_params_;
-  thread_handle address_watch_thread_;
+  base::Thread address_watch_thread_;
+  AddressWatchTaskParams address_watch_params_;
 
   // True if the next SyncCycle should notify peers of an update.
   bool notification_pending_;
@@ -921,7 +929,7 @@ class SyncManager::SyncInternal {
   // meaning we are ready to accept changes.  Protected by initialized_mutex_
   // as it can get read/set by both the SyncerThread and the AuthWatcherThread.
   bool initialized_;
-  mutable PThreadMutex initialized_mutex_;
+  mutable Lock initialized_mutex_;
 };
 
 SyncManager::SyncManager() {
@@ -1004,18 +1012,16 @@ bool SyncManager::SyncInternal::Init(
   // network status changes. We should either pump this up to the embedder to
   // do (and call us in CheckServerReachable, for ex), or at least make this
   // platform independent in here.
-  // TODO(ncarter): When this gets cleaned up, the implementation of
-  // CreatePThread can also be removed.
 #if defined(OS_WIN)
   HANDLE exit_flag = CreateEvent(NULL, TRUE /*manual reset*/, FALSE, NULL);
   address_watch_params_.exit_flag = exit_flag;
 #endif
   address_watch_params_.conn_mgr = connection_manager();
-  address_watch_thread_ = CreatePThread(AddressWatchThread,
-                                        &address_watch_params_);
-#if defined(OS_WIN)
-  DCHECK(NULL != address_watch_thread_);
-#endif
+
+  bool address_watch_started = address_watch_thread_.Start();
+  DCHECK(address_watch_started);
+  address_watch_thread_.message_loop()->PostTask(FROM_HERE,
+      new AddressWatchTask(&address_watch_params_));
 
   // Hand over the bridged POST factory to be owned by the connection
   // dir_manager.
@@ -1079,7 +1085,7 @@ void SyncManager::SyncInternal::MarkAndNotifyInitializationComplete() {
   // between their respective threads to call MarkAndNotify.  We need to make
   // sure the observer is notified once and only once.
   {
-    MutexLock lock(&initialized_mutex_);
+    AutoLock lock(initialized_mutex_);
     if (initialized_)
       return;
     initialized_ = true;
@@ -1207,11 +1213,11 @@ void SyncManager::SyncInternal::Shutdown() {
   // Stop the address watch thread by signaling the exit flag.
   // TODO(timsteele): Same as todo in Init().
   SetEvent(address_watch_params_.exit_flag);
-  const DWORD wait_result = WaitForSingleObject(address_watch_thread_,
-                                                kThreadExitTimeoutMsec);
-  LOG_IF(ERROR, WAIT_FAILED == wait_result) << "Waiting for addr change thread "
-      "to exit failed. GetLastError(): " << hex << GetLastError();
-  LOG_IF(ERROR, WAIT_TIMEOUT == wait_result) << "Thread exit timeout expired";
+#endif
+
+  address_watch_thread_.Stop();
+
+#if defined(OS_WIN)
   CloseHandle(address_watch_params_.exit_flag);
 #endif
 }
