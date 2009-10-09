@@ -215,7 +215,22 @@ using WebKit::WebDragOperationsMask;
         base::SysNSStringToUTF16([pboard stringForType:NSHTMLPboardType]);
   }
 
-  // TODO(pinkerton): Get files and file contents.
+  // Get files.
+  if ([types containsObject:NSFilenamesPboardType]) {
+    NSArray* files = [pboard propertyListForType:NSFilenamesPboardType];
+    if ([files isKindOfClass:[NSArray class]] && [files count]) {
+      for (NSUInteger i = 0; i < [files count]; i++) {
+        NSString* filename = [files objectAtIndex:i];
+        BOOL isDir = NO;
+        BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath:filename
+                                                           isDirectory:&isDir];
+        if (exists && !isDir)
+          data->filenames.push_back(base::SysNSStringToUTF16(filename));
+      }
+    }
+  }
+
+  // TODO(pinkerton): Get file contents.
 }
 
 @end
