@@ -256,7 +256,7 @@ float WebMediaPlayerClientImpl::maxTimeSeekable() const
 WTF::PassRefPtr<WebCore::TimeRanges> WebMediaPlayerClientImpl::buffered() const
 {
     if (m_webMediaPlayer.get()) {
-        WebTimeRanges webRanges = m_webMediaPlayer->buffered();
+        const WebTimeRanges& webRanges = m_webMediaPlayer->buffered();
 
         // FIXME: Save the time ranges in a member variable and update it when needed.
         WTF::RefPtr<TimeRanges> ranges = TimeRanges::create();

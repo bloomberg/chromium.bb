@@ -505,10 +505,11 @@ void WebMediaPlayerImpl::OnPipelineInitialize() {
   DCHECK(MessageLoop::current() == main_loop_);
   if (pipeline_->GetError() == media::PIPELINE_OK) {
     // Only keep one time range starting from 0.
-    buffered_.push_back(
-        WebKit::WebTimeRange(
-            0.0f,
-            static_cast<float>(pipeline_->GetBufferedTime().InSecondsF())));
+    WebKit::WebTimeRanges new_buffered(static_cast<size_t>(1));
+    new_buffered[0].start = 0.0f;
+    new_buffered[0].end =
+        static_cast<float>(pipeline_->GetBufferedTime().InSecondsF());
+    buffered_.swap(new_buffered);
 
     // Since we have initialized the pipeline, say we have everything.
     // TODO(hclam): change this to report the correct status.

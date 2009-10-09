@@ -31,9 +31,8 @@
 #ifndef WebMediaPlayer_h
 #define WebMediaPlayer_h
 
-#include <vector>
-
 #include "WebCanvas.h"
+#include "WebVector.h"
 
 namespace WebKit {
     class WebMediaPlayerClient;
@@ -42,13 +41,14 @@ namespace WebKit {
     struct WebSize;
 
     struct WebTimeRange {
+        WebTimeRange() : start(0), end(0) {}
         WebTimeRange(float s, float e) : start(s), end(e) {}
 
         float start;
         float end;
     };
 
-    typedef std::vector<WebTimeRange> WebTimeRanges;
+    typedef WebVector<WebTimeRange> WebTimeRanges;
 
     class WebMediaPlayer {
     public:
