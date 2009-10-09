@@ -2697,7 +2697,7 @@ BUG12310 SKIP : LayoutTests/fast/wcss/marquee-speed.xhtml = FAIL
 BUG12310 SKIP : LayoutTests/fast/wcss/marquee-style.xhtml = FAIL
 
 // Details for all of these are in the bugs.
-BUG12341 WIN MAC : LayoutTests/editing/selection/4975120.html = PASS FAIL
+BUG12341 WIN LINUX MAC : LayoutTests/editing/selection/4975120.html = PASS FAIL
 BUG12361 WIN SLOW : LayoutTests/http/tests/cookies/double-quoted-value-with-semi-colon.html = FAIL
 BUG12361 LINUX MAC : LayoutTests/http/tests/cookies/double-quoted-value-with-semi-colon.html = FAIL
 
@@ -3105,6 +3105,8 @@ BUG_JOHNNYG : LayoutTests/http/tests/globalhistory/history-delegate-basic-title.
 BUG_24308 MAC : LayoutTests/http/tests/navigation/back-send-referrer.html = PASS TIMEOUT
 
 BUG_24314 LINUX DEBUG : LayoutTests/editing/selection/extend-selection.html = PASS TIMEOUT
+
+BUG_23475 WIN : LayoutTests/svg/custom/junk-data.svg = PASS IMAGE
 
 // Webkit roll  49284:49321
 BUG_JOHNNYG : LayoutTests/svg/custom/linking-a-03-b-transform.svg = FAIL
