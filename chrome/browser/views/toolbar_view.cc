@@ -61,6 +61,9 @@ static const int kStatusBubbleWidth = 480;
 // Separation between the location bar and the menus.
 static const int kMenuButtonOffset = 3;
 
+// The minimum width of the location bar when browser actions are visible.
+static const int kMinLocationBarWidthWithBrowserActions = 400;
+
 // Padding to the right of the location bar
 static const int kPaddingRight = 2;
 
@@ -525,6 +528,21 @@ void ToolbarView::Layout() {
   int available_width = width() - kPaddingRight - bookmark_menu_width -
       app_menu_width - page_menu_width - browser_actions_width -
       kMenuButtonOffset - go_button_width - location_x;
+
+  // We wait until the width of location bar is a minimum allowed. After this
+  // state, the width available for the browser actions is compromised until
+  // it can hold a minimum number of browser actions (currently 2). After this
+  // state, the location bar width starts shrinking again, with the minimum
+  // number of browser actions sticking on the the right of the location bar.
+  // TODO(sidchat): Use percentage width instead of fixed width to determine
+  //                minimum width of the location bar. BUG=24316.
+  if (available_width < kMinLocationBarWidthWithBrowserActions &&
+      browser_actions_width > 0) {
+    available_width += browser_actions_width;
+    browser_actions_width = browser_actions_->GetClippedPreferredWidth(
+        available_width - kMinLocationBarWidthWithBrowserActions);
+    available_width -= browser_actions_width;
+  }
   location_bar_->SetBounds(location_x, child_y, std::max(available_width, 0),
                            child_height);
 

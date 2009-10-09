@@ -35,6 +35,10 @@ static const int kHorizontalPadding = 4;
 // can draw the badge outside the visual bounds of the contianer.
 static const int kControlVertOffset = 6;
 
+// The maximum of the minimum number of browser actions present when there is
+// not enough space to fit all the browser actions in the toolbar.
+static const int kMinimumNumberOfVisibleBrowserActions = 2;
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionButton
 
@@ -492,7 +496,12 @@ void BrowserActionsContainer::Layout() {
   for (size_t i = 0; i < browser_action_views_.size(); ++i) {
     BrowserActionView* view = browser_action_views_[i];
     int x = kHorizontalPadding + i * kIconSize;
-    view->SetBounds(x, 0, kIconSize, height());
+    if (x + kIconSize <= width()) {
+      view->SetBounds(x, 0, kIconSize, height());
+      view->SetVisible(true);
+    } else {
+      view->SetVisible(false);
+    }
   }
 }
 
@@ -529,4 +538,21 @@ void BrowserActionsContainer::BubbleLostFocus(BrowserBubble* bubble) {
   // shown again.  To workaround this, we put in a delay.
   MessageLoop::current()->PostTask(FROM_HERE,
       task_factory_.NewRunnableMethod(&BrowserActionsContainer::HidePopup));
+}
+
+int BrowserActionsContainer::GetClippedPreferredWidth(int available_width) {
+  if (browser_action_views_.size() == 0)
+    return 0;
+
+  // We have at least one browser action. Make some of them sticky.
+  int min_width = kHorizontalPadding * 2 +
+      std::min(static_cast<int>(browser_action_views_.size()),
+               kMinimumNumberOfVisibleBrowserActions) * kIconSize;
+
+  // Even if available_width is <= 0, we still return at least the |min_width|.
+  if (available_width <= 0)
+    return min_width;
+
+  return std::max(min_width, available_width - available_width % kIconSize +
+                  kHorizontalPadding * 2);
 }

@@ -63,6 +63,12 @@ class BrowserActionsContainer : public views::View,
   virtual void BubbleGotFocus(BrowserBubble* bubble);
   virtual void BubbleLostFocus(BrowserBubble* bubble);
 
+  // Get clipped width required to precisely fit the browser action icons
+  // given a tentative available width. The minimum size it returns is not
+  // zero, but depends on the minimum number of icons that have to be there
+  // by default irrespective of the available space to draw them.
+  int GetClippedPreferredWidth(int available_width);
+
  private:
 
   // Hide the current popup.
