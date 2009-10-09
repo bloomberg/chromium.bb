@@ -5,6 +5,7 @@
 #ifndef CHROME_RENDERER_RENDER_VIEW_H_
 #define CHROME_RENDERER_RENDER_VIEW_H_
 
+#include <map>
 #include <set>
 #include <string>
 #include <queue>
@@ -31,6 +32,7 @@
 #include "chrome/renderer/external_host_bindings.h"
 #include "chrome/renderer/notification_provider.h"
 #include "chrome/renderer/render_widget.h"
+#include "chrome/renderer/render_view_visitor.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/api/public/WebConsoleMessage.h"
@@ -111,9 +113,12 @@ class RenderView : public RenderWidget,
                    public webkit_glue::DomSerializerDelegate,
                    public base::SupportsWeakPtr<RenderView> {
  public:
-  struct RenderViewSet {
-    std::set<RenderView*> render_view_set_;
-  };
+  // Visit all RenderViews with a live WebView (i.e., RenderViews that have
+  // been closed but not yet destroyed are excluded).
+  static void ForEach(RenderViewVisitor* visitor);
+
+  // Returns the RenderView containing the given WebView.
+  static RenderView* FromWebView(WebView* webview);
 
   // Creates a new RenderView.  The parent_hwnd specifies a HWND to use as the
   // parent of the WebView HWND that will be created.  If this is a constrained
@@ -431,12 +436,11 @@ class RenderView : public RenderWidget,
   bool SendAndRunNestedMessageLoop(IPC::SyncMessage* message);
 
  protected:
-  // RenderWidget override.
+  // RenderWidget overrides:
+  virtual void Close();
   virtual void OnResize(const gfx::Size& new_size,
                         const gfx::Rect& resizer_rect);
-  // RenderWidget override
   virtual void DidPaint();
-  // RenderWidget override.
   virtual void DidHandleKeyEvent();
 
  private:
@@ -810,6 +814,10 @@ class RenderView : public RenderWidget,
   // same page twice in a row.
   int32 last_indexed_page_id_;
 
+  // The next available page ID to use. This ensures that the page IDs are
+  // globally unique in the renderer.
+  static int32 next_page_id_;
+
   // Used for popups.
   bool opened_by_user_gesture_;
   GURL creator_url_;
@@ -982,6 +990,7 @@ class RenderView : public RenderWidget,
   typedef std::set<webkit_glue::ImageResourceFetcher*> ImageResourceFetcherSet;
   ImageResourceFetcherSet image_fetchers_;
 
+  typedef std::map<WebView*, RenderView*> ViewMap;
 
   DISALLOW_COPY_AND_ASSIGN(RenderView);
 };

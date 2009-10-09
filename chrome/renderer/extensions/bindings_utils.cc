@@ -106,7 +106,7 @@ RenderView* GetRenderViewForCurrentContext() {
   if (!webview)
     return NULL;  // can happen during closing
 
-  RenderView* renderview = static_cast<RenderView*>(webview->GetDelegate());
+  RenderView* renderview = RenderView::FromWebView(webview);
   DCHECK(renderview) << "Encountered a WebView without a WebViewDelegate";
   return renderview;
 }

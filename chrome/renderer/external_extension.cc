@@ -45,7 +45,7 @@ class ExternalExtensionWrapper : public v8::Extension {
       WebView* webview = webframe->view();
       if (!webview) return v8::Undefined();  // can happen during closing
 
-      RenderView* renderview = static_cast<RenderView*>(webview->GetDelegate());
+      RenderView* renderview = RenderView::FromWebView(webview);
       if (!renderview) return v8::Undefined();
 
       std::string name = std::string(*v8::String::Utf8Value(args[0]));

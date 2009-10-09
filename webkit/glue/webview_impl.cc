@@ -1661,10 +1661,6 @@ void WebViewImpl::setInspectorSettings(const WebString& settings) {
 
 // WebView --------------------------------------------------------------------
 
-WebViewDelegate* WebViewImpl::GetDelegate() {
-  return delegate_;
-}
-
 bool WebViewImpl::setDropEffect(bool accept) {
   if (drag_target_dispatch_) {
     drop_effect_ = accept ? DROP_EFFECT_COPY : DROP_EFFECT_NONE;

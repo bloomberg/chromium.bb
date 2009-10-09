@@ -98,6 +98,76 @@ static L10nMessagesMap* GetL10nMessagesMap(const std::string extension_id) {
   }
 }
 
+// Used to accumulate the list of views associated with an extension.
+class ExtensionViewAccumulator : public RenderViewVisitor {
+ public:
+  ExtensionViewAccumulator(const std::string& extension_id,
+                           int browser_window_id,
+                           ViewType::Type view_type)
+      : extension_id_(extension_id),
+        browser_window_id_(browser_window_id),
+        view_type_(view_type),
+        views_(v8::Array::New()),
+        index_(0) {
+  }
+
+  virtual bool Visit(RenderView* render_view) {
+    if (!ViewTypeMatches(render_view->view_type(), view_type_))
+      return true;
+
+    GURL url = render_view->webview()->mainFrame()->url();
+    if (!url.SchemeIs(chrome::kExtensionScheme))
+      return true;
+    const std::string& extension_id = url.host();
+    if (extension_id != extension_id_)
+      return true;
+
+    if (browser_window_id_ != -1 &&
+        render_view->browser_window_id() != browser_window_id_)
+      return true;
+
+    v8::Local<v8::Context> context =
+        render_view->webview()->mainFrame()->mainWorldScriptContext();
+    if (!context.IsEmpty()) {
+      v8::Local<v8::Value> window = context->Global();
+      DCHECK(!window.IsEmpty());
+      views_->Set(v8::Integer::New(index_), window);
+      index_++;
+      if (view_type_ == ViewType::EXTENSION_BACKGROUND_PAGE)
+        return false;  // There can be only one...
+    }
+    return true;
+  }
+
+  v8::Local<v8::Array> views() { return views_; }
+
+ private:
+  // Returns true is |type| "isa" |match|.
+  static bool ViewTypeMatches(ViewType::Type type, ViewType::Type match) {
+    if (type == match)
+      return true;
+
+    // INVALID means match all.
+    if (match == ViewType::INVALID)
+      return true;
+
+    // TODO(erikkay) for now, special case mole as a type of toolstrip.
+    // Perhaps this isn't the right long-term thing to do.
+    if (match == ViewType::EXTENSION_TOOLSTRIP &&
+        type == ViewType::EXTENSION_MOLE) {
+      return true;
+    }
+
+    return false;
+  }
+
+  std::string extension_id_;
+  int browser_window_id_;
+  ViewType::Type view_type_;
+  v8::Local<v8::Array> views_;
+  int index_;
+};
+
 class ExtensionImpl : public ExtensionBase {
  public:
   ExtensionImpl() : ExtensionBase(
@@ -154,25 +224,6 @@ class ExtensionImpl : public ExtensionBase {
     return v8::String::New(GetStringResource<IDR_EXTENSION_API_JSON>());
   }
 
-  // Returns true is |type| "isa" |match|.
-  static bool ViewTypeMatches(ViewType::Type type, ViewType::Type match) {
-    if (type == match)
-      return true;
-
-    // INVALID means match all.
-    if (match == ViewType::INVALID)
-      return true;
-
-    // TODO(erikkay) for now, special case mole as a type of toolstrip.
-    // Perhaps this isn't the right long-term thing to do.
-    if (match == ViewType::EXTENSION_TOOLSTRIP &&
-        type == ViewType::EXTENSION_MOLE) {
-      return true;
-    }
-
-    return false;
-  }
-
   static v8::Handle<v8::Value> GetExtensionViews(const v8::Arguments& args) {
     if (args.Length() != 2)
       return v8::Undefined();
@@ -199,44 +250,10 @@ class ExtensionImpl : public ExtensionBase {
       return v8::Undefined();
     }
 
-    v8::Local<v8::Array> views = v8::Array::New();
-    int index = 0;
-    RenderView::RenderViewSet* render_view_set_pointer =
-        Singleton<RenderView::RenderViewSet>::get();
-    DCHECK(render_view_set_pointer->render_view_set_.size() > 0);
-
-    v8::Local<v8::Value> window;
-    std::string current_extension_id = ExtensionIdForCurrentContext();
-    std::set<RenderView* >::iterator it =
-        render_view_set_pointer->render_view_set_.begin();
-    for (; it != render_view_set_pointer->render_view_set_.end(); ++it) {
-      if (!ViewTypeMatches((*it)->view_type(), view_type))
-        continue;
-
-      GURL url = (*it)->webview()->mainFrame()->url();
-      if (!url.SchemeIs(chrome::kExtensionScheme))
-        continue;
-      std::string extension_id = url.host();
-      if (extension_id != current_extension_id)
-        continue;
-
-      if (browser_window_id != -1 &&
-          (*it)->browser_window_id() != browser_window_id) {
-        continue;
-      }
-
-      v8::Local<v8::Context> context =
-          (*it)->webview()->mainFrame()->mainWorldScriptContext();
-      if (!context.IsEmpty()) {
-        v8::Local<v8::Value> window = context->Global();
-        DCHECK(!window.IsEmpty());
-        views->Set(v8::Integer::New(index), window);
-        index++;
-        if (view_type == ViewType::EXTENSION_BACKGROUND_PAGE)
-          break;
-      }
-    }
-    return views;
+    ExtensionViewAccumulator accumulator(
+        ExtensionIdForCurrentContext(), browser_window_id, view_type);
+    RenderView::ForEach(&accumulator);
+    return accumulator.views();
   }
 
   static v8::Handle<v8::Value> GetNextRequestId(const v8::Arguments& args) {

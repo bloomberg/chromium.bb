@@ -253,8 +253,8 @@ void EventBindings::HandleContextCreated(WebFrame* frame, bool content_script) {
   }
 
   RenderView* render_view = NULL;
-  if (frame->view() && frame->view()->GetDelegate())
-    render_view = static_cast<RenderView*>(frame->view()->GetDelegate());
+  if (frame->view())
+    render_view = RenderView::FromWebView(frame->view());
 
   contexts.push_back(linked_ptr<ContextInfo>(
       new ContextInfo(persistent_context, extension_id, parent_context,
@@ -298,7 +298,7 @@ void EventBindings::CallFunction(const std::string& function_name,
       continue;
     v8::Handle<v8::Value> retval = CallFunctionInContext((*it)->context,
         function_name, argc, argv);
-    // In debug, the js will validate the event parameters and return a 
+    // In debug, the js will validate the event parameters and return a
     // string if a validation error has occured.
     // TODO(rafaelw): Consider only doing this check if function_name ==
     // "Event.dispatchJSON".

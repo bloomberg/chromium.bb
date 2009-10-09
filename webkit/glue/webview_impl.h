@@ -138,7 +138,6 @@ class WebViewImpl : public WebView, public base::RefCounted<WebViewImpl> {
   virtual void setInspectorSettings(const WebKit::WebString& settings);
 
   // WebView methods:
-  virtual WebViewDelegate* GetDelegate();
   virtual void AutofillSuggestionsForNode(
       int64 node_id,
       const std::vector<std::wstring>& suggestions,

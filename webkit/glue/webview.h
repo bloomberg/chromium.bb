@@ -63,11 +63,6 @@ class WebView : public WebKit::WebView {
   // links.
   static void ResetVisitedLinkState();
 
-  // Returns the delegate for this WebView.  This is the pointer that was
-  // passed to WebView::Initialize. The caller must check this value before
-  // using it, it will be NULL during closing of the view.
-  virtual WebViewDelegate* GetDelegate() = 0;
-
   // Notifies the webview that autofill suggestions are available for a node.
   virtual void AutofillSuggestionsForNode(
       int64 node_id,

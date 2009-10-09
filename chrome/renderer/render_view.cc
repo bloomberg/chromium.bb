@@ -179,10 +179,6 @@ static const int kDelayForForcedCaptureMs = 6000;
 // that variable for more.
 const int kDefaultDelaySecondsForFormStateSync = 5;
 
-// The next available page ID to use. This ensures that the page IDs are
-// globally unique in the renderer.
-static int32 next_page_id_ = 1;
-
 // The maximum number of popups that can be spawned from one page.
 static const int kMaximumNumberOfUnacknowledgedPopups = 25;
 
@@ -200,6 +196,8 @@ static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+int32 RenderView::next_page_id_ = 1;
 
 RenderView::RenderView(RenderThreadBase* render_thread,
                        const WebPreferences& webkit_preferences)
@@ -235,11 +233,9 @@ RenderView::RenderView(RenderThreadBase* render_thread,
 #endif
       document_tag_(0),
       webkit_preferences_(webkit_preferences) {
-  Singleton<RenderViewSet>()->render_view_set_.insert(this);
 }
 
 RenderView::~RenderView() {
-  Singleton<RenderViewSet>()->render_view_set_.erase(this);
   if (decrement_shared_popup_at_destruction_)
     shared_popup_counter_->data--;
 
@@ -261,6 +257,29 @@ RenderView::~RenderView() {
 
   render_thread_->RemoveFilter(audio_message_filter_);
   render_thread_->RemoveFilter(notification_provider_.get());
+
+#ifndef NDEBUG
+  // Make sure we are no longer referenced by the ViewMap.
+  ViewMap* views = Singleton<ViewMap>::get();
+  for (ViewMap::iterator it = views->begin(); it != views->end(); ++it)
+    DCHECK_NE(this, it->second) << "Failed to call Close?";
+#endif
+}
+
+/*static*/
+void RenderView::ForEach(RenderViewVisitor* visitor) {
+  ViewMap* views = Singleton<ViewMap>::get();
+  for (ViewMap::iterator it = views->begin(); it != views->end(); ++it) {
+    if (!visitor->Visit(it->second))
+      return;
+  }
+}
+
+/*static*/
+RenderView* RenderView::FromWebView(WebView* webview) {
+  ViewMap* views = Singleton<ViewMap>::get();
+  ViewMap::iterator it = views->find(webview);
+  return it == views->end() ? NULL : it->second;
 }
 
 /*static*/
@@ -324,6 +343,7 @@ void RenderView::Init(gfx::NativeViewId parent_hwnd,
   notification_provider_ = new NotificationProvider(this);
 
   webwidget_ = WebView::Create(this);
+  Singleton<ViewMap>::get()->insert(std::make_pair(webview(), this));
   webkit_preferences_.Apply(webview());
   webview()->initializeMainFrame(this);
 
@@ -3614,6 +3634,13 @@ void RenderView::OnExecuteCode(int request_id, const std::string& extension_id,
   }
 
   Send(new ViewMsg_ExecuteCodeFinished(routing_id_, request_id, true));
+}
+
+void RenderView::Close() {
+  // We need to grab a pointer to the doomed WebView before we destroy it.
+  WebView* doomed = webview();
+  RenderWidget::Close();
+  Singleton<ViewMap>::get()->erase(doomed);
 }
 
 void RenderView::DidHandleKeyEvent() {
