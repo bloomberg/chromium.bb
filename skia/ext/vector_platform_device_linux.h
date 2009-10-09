@@ -57,6 +57,11 @@ class VectorPlatformDevice : public PlatformDevice {
   virtual void setMatrixClip(const SkMatrix& transform,
                              const SkRegion& region);
 
+  // Clean up cached fonts. It is an error to call this while some
+  // VectorPlatformDevice callee is still using fonts created for it by this
+  // class.
+  static void ClearFontCache();
+
  protected:
   explicit VectorPlatformDevice(PlatformSurface context,
                                 const SkBitmap& bitmap);
@@ -91,7 +96,7 @@ class VectorPlatformDevice : public PlatformDevice {
 
   // Selects the font associated with |font_id| in |context|.
   // Return true on success.
-  bool SelectFontById(PlatformSurface context, uint32_t font_id);
+  bool SelectFontById(uint32_t font_id);
 
   // Transformation assigned to the context.
   SkMatrix transform_;

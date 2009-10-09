@@ -14,6 +14,7 @@
 #include "base/file_descriptor_posix.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "skia/ext/vector_platform_device_linux.h"
 
 namespace {
 
@@ -369,6 +370,7 @@ void PdfPsMetafile::CleanUpAll() {
   CleanUpSurface(&page_surface_);
   current_page_.clear();
   all_pages_.clear();
+  skia::VectorPlatformDevice::ClearFontCache();
 }
 
 }  // namespace printing

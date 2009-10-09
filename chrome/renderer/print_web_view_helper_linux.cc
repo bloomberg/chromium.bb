@@ -138,4 +138,3 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
     NOTREACHED() << "metafile failed";
   }
 }
-

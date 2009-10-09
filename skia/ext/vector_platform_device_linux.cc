@@ -21,8 +21,6 @@
 
 namespace {
 
-FT_Library g_ft_library = NULL;  // handle to FreeType library.
-
 struct FontInfo {
   SkStream* font_stream;
   FT_Face ft_face;
@@ -32,32 +30,31 @@ struct FontInfo {
 
 typedef std::map<uint32_t, FontInfo> MapFontId2FontInfo;
 
-// NOTE: Only call this function when no further rendering will be performed,
-// and/or the metafile is closed.
-void CleanUpFonts() {
-  MapFontId2FontInfo* g_font_cache = Singleton<MapFontId2FontInfo>::get();
-  DCHECK(g_font_cache);
-
-  for (MapFontId2FontInfo::iterator it = g_font_cache->begin();
-       it !=g_font_cache->end();
-       ++it) {
-    DCHECK(it->second.cairo_face);
-    DCHECK(it->second.font_stream);
-
-    cairo_font_face_destroy(it->second.cairo_face);
-    // |it->second.ft_face| is handled by Cairo.
-    it->second.font_stream->unref();
+// Wrapper for FT_Library that handles initialization and cleanup, and allows
+// us to use a singleton.
+class FtLibrary {
+ public:
+  FtLibrary() : library_(NULL) {
+    FT_Error ft_error = FT_Init_FreeType(&library_);
+    if (ft_error) {
+      DLOG(ERROR) << "Cannot initialize FreeType library for " \
+                  << "VectorPlatformDevice.";
+    }
   }
-  g_font_cache->clear();
-}
 
-void CleanUpFreeType() {
-  if (g_ft_library) {
-    FT_Error ft_error = FT_Done_FreeType(g_ft_library);
-    g_ft_library = NULL;
-    DCHECK_EQ(ft_error, 0);
+  ~FtLibrary() {
+    if (library_) {
+      FT_Error ft_error = FT_Done_FreeType(library_);
+      library_ = NULL;
+      DCHECK_EQ(ft_error, 0);
+    }
   }
-}
+
+  FT_Library library() { return library_; }
+
+ private:
+  FT_Library library_;
+};
 
 // Verify cairo surface after creation/modification.
 bool IsContextValid(cairo_t* context) {
@@ -85,7 +82,8 @@ VectorPlatformDevice* VectorPlatformDevice::create(PlatformSurface context,
 
 VectorPlatformDevice::VectorPlatformDevice(PlatformSurface context,
                                            const SkBitmap& bitmap)
-    : PlatformDevice(bitmap), context_(context) {
+    : PlatformDevice(bitmap),
+      context_(context) {
   SkASSERT(bitmap.getConfig() == SkBitmap::kARGB_8888_Config);
 
   // Increase the reference count to keep the context alive.
@@ -97,8 +95,6 @@ VectorPlatformDevice::VectorPlatformDevice(PlatformSurface context,
 VectorPlatformDevice::~VectorPlatformDevice() {
   // Un-ref |context_| since we referenced it in the constructor.
   cairo_destroy(context_);
-  CleanUpFonts();
-  CleanUpFreeType();
 }
 
 void VectorPlatformDevice::drawBitmap(const SkDraw& draw,
@@ -339,8 +335,7 @@ void VectorPlatformDevice::drawPosText(const SkDraw& draw,
     }
   } else {  // kFill_Style.
     // Selects correct font.
-    if (!SelectFontById(
-            context_, paint.getTypeface()->uniqueID())) {
+    if (!SelectFontById(paint.getTypeface()->uniqueID())) {
       SkASSERT(false);
       return;
     }
@@ -568,21 +563,13 @@ void VectorPlatformDevice::LoadTransformToContext(const SkMatrix& matrix) {
   cairo_set_matrix(context_, &m);
 }
 
-bool VectorPlatformDevice::SelectFontById(PlatformSurface context,
-                                          uint32_t font_id) {
-  DCHECK(IsContextValid(context));
+bool VectorPlatformDevice::SelectFontById(uint32_t font_id) {
+  DCHECK(IsContextValid(context_));
   DCHECK(SkFontHost::ValidFontID(font_id));
 
-  if (!g_ft_library) {
-    // Initializes FreeType library.
-    FT_Error ft_error = FT_Init_FreeType(&g_ft_library);
-    if (ft_error) {
-      DLOG(ERROR) << "Cannot initialize FreeType library for " \
-                  << "VectorPlatformDevice.";
-      g_ft_library = NULL;
-      return false;
-    }
-  }
+  FtLibrary* ft_library = Singleton<FtLibrary>::get();
+  if (!ft_library->library())
+    return false;
 
   // Checks if we have a cache hit.
   MapFontId2FontInfo* g_font_cache = Singleton<MapFontId2FontInfo>::get();
@@ -590,8 +577,8 @@ bool VectorPlatformDevice::SelectFontById(PlatformSurface context,
 
   MapFontId2FontInfo::iterator it = g_font_cache->find(font_id);
   if (it != g_font_cache->end()) {
-    cairo_set_font_face(context, it->second.cairo_face);
-    if (IsContextValid(context)) {
+    cairo_set_font_face(context_, it->second.cairo_face);
+    if (IsContextValid(context_)) {
       return true;
     } else {
       NOTREACHED() << "Cannot set font face in Cairo!";
@@ -607,7 +594,7 @@ bool VectorPlatformDevice::SelectFontById(PlatformSurface context,
   DCHECK(stream_size) << "The Font stream has nothing!";
 
   FT_Error ft_error = FT_New_Memory_Face(
-      g_ft_library,
+      ft_library->library(),
       static_cast<FT_Byte*>(
           const_cast<void*>(new_font_info.font_stream->getMemoryBase())),
       stream_size,
@@ -644,13 +631,31 @@ bool VectorPlatformDevice::SelectFontById(PlatformSurface context,
   // Inserts |new_font_info| info |g_font_cache|.
   (*g_font_cache)[font_id] = new_font_info;
 
-  cairo_set_font_face(context, new_font_info.cairo_face);
-  if (IsContextValid(context)) {
+  cairo_set_font_face(context_, new_font_info.cairo_face);
+  if (IsContextValid(context_)) {
     return true;
   }
 
   DLOG(ERROR) << "Connot set font face in Cairo!";
   return false;
+}
+
+// static
+void VectorPlatformDevice::ClearFontCache() {
+  MapFontId2FontInfo* g_font_cache = Singleton<MapFontId2FontInfo>::get();
+  DCHECK(g_font_cache);
+
+  for (MapFontId2FontInfo::iterator it = g_font_cache->begin();
+       it !=g_font_cache->end();
+       ++it) {
+    DCHECK(it->second.cairo_face);
+    DCHECK(it->second.font_stream);
+
+    cairo_font_face_destroy(it->second.cairo_face);
+    // |it->second.ft_face| is handled by Cairo.
+    it->second.font_stream->unref();
+  }
+  g_font_cache->clear();
 }
 
 }  // namespace skia
