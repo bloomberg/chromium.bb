@@ -13,7 +13,6 @@
 #include "base/port.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
-#include "chrome/browser/sync/util/pthread_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::endl;
@@ -146,89 +145,83 @@ TEST(EventSys, Basic) {
 
 // This goes pretty far beyond the normal use pattern, so don't use
 // ThreadTester as an example of what to do.
-class ThreadTester : public EventListener<TestEvent> {
+class ThreadTester : public EventListener<TestEvent>,
+                     public PlatformThread::Delegate {
  public:
   explicit ThreadTester(Pair* pair)
-    : pair_(pair), remove_event_bool_(false)  {
+    : pair_(pair), remove_event_(&remove_event_mutex_),
+      remove_event_bool_(false)  {
     pair_->event_channel()->AddListener(this);
   }
   ~ThreadTester() {
     pair_->event_channel()->RemoveListener(this);
     for (size_t i = 0; i < threads_.size(); i++) {
-      CHECK(pthread_join(threads_[i].thread, NULL) == 0);
-      delete threads_[i].completed;
+      PlatformThread::Join(threads_[i].thread);
     }
   }
 
   struct ThreadInfo {
-    pthread_t thread;
+    PlatformThreadHandle thread;
     bool* completed;
   };
 
   struct ThreadArgs {
-    ThreadTester* self;
-    pthread_cond_t* thread_running_cond;
-    pthread_mutex_t* thread_running_mutex;
-    bool* thread_running;
-    bool* completed;
+    ConditionVariable* thread_running_cond;
+    Lock* thread_running_mutex;
+    bool thread_running;
+    bool completed;
   };
 
-  pthread_t Go() {
-    PThreadCondVar thread_running_cond;
-    PThreadMutex thread_running_mutex;
+  void Go() {
+    Lock thread_running_mutex;
+    ConditionVariable thread_running_cond(&thread_running_mutex);
     ThreadArgs args;
     ThreadInfo info;
-    info.completed = new bool(false);
-    args.self = this;
+    info.completed = false;
     args.completed = info.completed;
-    args.thread_running_cond = &(thread_running_cond.condvar_);
-    args.thread_running_mutex = &(thread_running_mutex.mutex_);
-    args.thread_running = new bool(false);
-    CHECK(0 ==
-        pthread_create(&info.thread, NULL, ThreadTester::ThreadMain, &args));
-    thread_running_mutex.Lock();
-    while ((*args.thread_running) == false) {
-      pthread_cond_wait(&(thread_running_cond.condvar_),
-                        &(thread_running_mutex.mutex_));
+    args.thread_running_cond = &(thread_running_cond);
+    args.thread_running_mutex = &(thread_running_mutex);
+    args.thread_running = false;
+    args_ = args;
+    ASSERT_TRUE(PlatformThread::Create(0, this, &info.thread));
+    thread_running_mutex.Acquire();
+    while ((args_.thread_running) == false) {
+      thread_running_cond.Wait();
     }
-    thread_running_mutex.Unlock();
-    delete args.thread_running;
+    thread_running_mutex.Release();
     threads_.push_back(info);
-    return info.thread;
   }
 
-  static void* ThreadMain(void* arg) {
+  // PlatformThread::Delegate methods.
+  virtual void ThreadMain() {
     // Make sure each thread gets a current MessageLoop in TLS.
     // This test should use chrome threads for testing, but I'll leave it like
     // this for the moment since it requires a big chunk of rewriting and I
     // want the test passing while I checkpoint my CL.  Technically speaking,
     // there should be no functional difference.
     MessageLoop message_loop;
-    ThreadArgs args = *reinterpret_cast<ThreadArgs*>(arg);
-    pthread_mutex_lock(args.thread_running_mutex);
-    *args.thread_running = true;
-    pthread_cond_signal(args.thread_running_cond);
-    pthread_mutex_unlock(args.thread_running_mutex);
+    args_.thread_running_mutex->Acquire();
+    args_.thread_running = true;
+    args_.thread_running_mutex->Release();
+    args_.thread_running_cond->Signal();
 
-    args.self->remove_event_mutex_.Lock();
-    while (args.self->remove_event_bool_ == false) {
-      pthread_cond_wait(&args.self->remove_event_.condvar_,
-                        &args.self->remove_event_mutex_.mutex_);
+    remove_event_mutex_.Acquire();
+    while (remove_event_bool_ == false) {
+      remove_event_.Wait();
     }
-    args.self->remove_event_mutex_.Unlock();
+    remove_event_mutex_.Release();
 
     // Normally, you'd just delete the hookup. This is very bad style, but
     // necessary for the test.
-    args.self->pair_->event_channel()->RemoveListener(args.self);
-    *args.completed = true;
-    return 0;
+    pair_->event_channel()->RemoveListener(this);
+    args_.completed = true;
   }
 
   void HandleEvent(const TestEvent& event) {
-    remove_event_mutex_.Lock();
+    remove_event_mutex_.Acquire();
     remove_event_bool_ = true;
-    pthread_cond_broadcast(&remove_event_.condvar_);
-    remove_event_mutex_.Unlock();
+    remove_event_mutex_.Release();
+    remove_event_.Broadcast();
 
     // Windows and posix use different functions to sleep.
 #ifdef OS_WIN
@@ -238,16 +231,17 @@ class ThreadTester : public EventListener<TestEvent> {
 #endif
 
     for (size_t i = 0; i < threads_.size(); i++) {
-      if (*(threads_[i].completed))
+      if (threads_[i].completed)
         LOG(FATAL) << "A test thread exited too early.";
     }
   }
 
   Pair* pair_;
-  PThreadCondVar remove_event_;
-  PThreadMutex remove_event_mutex_;
+  ConditionVariable remove_event_;
+  Lock remove_event_mutex_;
   bool remove_event_bool_;
   vector<ThreadInfo> threads_;
+  ThreadArgs args_;
 };
 
 TEST(EventSys, Multithreaded) {
