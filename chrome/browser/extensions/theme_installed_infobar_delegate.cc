@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/theme_preview_infobar_delegate.h"
+#include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -14,40 +14,41 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
-ThemePreviewInfobarDelegate::ThemePreviewInfobarDelegate(
+ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
     TabContents* tab_contents, const std::string& name,
     const std::string& previous_theme_id)
          : ConfirmInfoBarDelegate(tab_contents),
-           profile_(tab_contents->profile()), name_(name),
+           profile_(tab_contents->profile()),
+           name_(name),
            previous_theme_id_(previous_theme_id) {
 }
 
-void ThemePreviewInfobarDelegate::InfoBarClosed() {
+void ThemeInstalledInfoBarDelegate::InfoBarClosed() {
   delete this;
 }
 
-std::wstring ThemePreviewInfobarDelegate::GetMessageText() const {
+std::wstring ThemeInstalledInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringF(IDS_THEME_INSTALL_INFOBAR_LABEL,
                                UTF8ToWide(name_));
 }
 
-SkBitmap* ThemePreviewInfobarDelegate::GetIcon() const {
+SkBitmap* ThemeInstalledInfoBarDelegate::GetIcon() const {
   // TODO(aa): Reply with the theme's icon, but this requires reading it
   // asynchronously from disk.
   return ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_INFOBAR_THEME);
 }
 
-ThemePreviewInfobarDelegate*
-    ThemePreviewInfobarDelegate::AsThemePreviewInfobarDelegate() {
+ThemeInstalledInfoBarDelegate*
+    ThemeInstalledInfoBarDelegate::AsThemePreviewInfobarDelegate() {
   return this;
 }
 
-int ThemePreviewInfobarDelegate::GetButtons() const {
+int ThemeInstalledInfoBarDelegate::GetButtons() const {
   return BUTTON_CANCEL;
 }
 
-std::wstring ThemePreviewInfobarDelegate::GetButtonLabel(
+std::wstring ThemeInstalledInfoBarDelegate::GetButtonLabel(
     ConfirmInfoBarDelegate::InfoBarButton button) const {
   switch (button) {
     case BUTTON_CANCEL: {
@@ -58,7 +59,7 @@ std::wstring ThemePreviewInfobarDelegate::GetButtonLabel(
   }
 }
 
-bool ThemePreviewInfobarDelegate::Cancel() {
+bool ThemeInstalledInfoBarDelegate::Cancel() {
   if (!previous_theme_id_.empty()) {
     ExtensionsService* service = profile_->GetExtensionsService();
     if (service) {
