@@ -3101,40 +3101,11 @@ BUG24159 WIN LINUX : LayoutTests/fast/css/opacity-float.html = FAIL
 // Flaky failure
 BUG24167 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-port-explicit-domain.html = PASS FAIL
 
-// WebKit roll 49254:49260
-BUG_JOHNNYG : LayoutTests/media/audio-controls-rendering.html = FAIL
-BUG_JOHNNYG : LayoutTests/media/controls-after-reload.html = FAIL
-BUG_JOHNNYG : LayoutTests/media/controls-strict.html = FAIL
-BUG_JOHNNYG : LayoutTests/media/video-controls-rendering.html = FAIL
-BUG_JOHNNYG : LayoutTests/media/video-display-toggle.html = FAIL
-BUG_JOHNNYG : LayoutTests/media/video-empty-source.html = FAIL
-
-// WebKit roll 49260:49288
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/all-window-properties.html = FAIL
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/all-window-prototypes.html = FAIL
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/body-properties.html = FAIL
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/body-prototype.html = FAIL
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/click-event.html = FAIL
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/document-open.html = FAIL
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/document-properties.html = FAIL
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/document-prototype.html = FAIL
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/global-variables.html = FAIL
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/image-properties.html = FAIL
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/image-prototype.html = FAIL
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/location-properties.html = FAIL
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/location-prototype.html = FAIL
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/number-prototype.html = FAIL
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/object-prototype.html = FAIL
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/storage-properties.html = FAIL
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/storage-prototype.html = FAIL
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/string-prototype.html = FAIL
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/window-properties.html = FAIL
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/window-setTimeout-function.html = TIMEOUT
-BUG_AA : LayoutTests/http/tests/security/isolatedWorld/window-setTimeout-string.html = TIMEOUT
-BUG_AA SKIP : LayoutTests/http/tests/security/isolatedWorld/iframe.html = FAIL
-
 BUG_JOHNNYG : LayoutTests/http/tests/globalhistory/history-delegate-basic-title.html = FAIL
 
 BUG_24308 MAC : LayoutTests/http/tests/navigation/back-send-referrer.html = PASS TIMEOUT
 
 BUG_24314 LINUX DEBUG : LayoutTests/editing/selection/extend-selection.html = PASS TIMEOUT
+
+// Webkit roll  49284:49321
+BUG_JOHNNYG : LayoutTests/svg/custom/linking-a-03-b-transform.svg = FAIL
