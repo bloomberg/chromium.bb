@@ -111,10 +111,8 @@ void PowerMenuButton::UpdateIcon() {
           cros->battery_percentage();
       // Gets the power image depending on battery percentage. Percentage is
       // from 0 to 100, so we need to convert that to 0 to kNumPowerImages - 1.
-      int index = floor(percent / (100.0 / kNumPowerImages));
-      // This can happen if the battery is 100% full.
-      if (index == kNumPowerImages)
-        index--;
+      int index = static_cast<int>(percent / 100.0 *
+                  nextafter(static_cast<float>(kNumPowerImages), 0));
       if (cros->line_power_on())
         id = IDR_STATUSBAR_BATTERY_CHARGING_1 + index;
       else

@@ -4,10 +4,11 @@
 
 #include "chrome/browser/chromeos/network_menu_button.h"
 
+#include <limits>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
-#include "base/time.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "grit/generated_resources.h"
@@ -20,16 +21,17 @@
 
 // static
 const int NetworkMenuButton::kNumWifiImages = 8;
-const int NetworkMenuButton::kAnimationDelayMillis = 100;
+const int NetworkMenuButton::kThrobDuration = 1000;
 
 NetworkMenuButton::NetworkMenuButton(Browser* browser)
     : MenuButton(NULL, std::wstring(), this, false),
       refreshing_menu_(false),
-      network_menu_(this),
+      ALLOW_THIS_IN_INITIALIZER_LIST(network_menu_(this)),
       browser_(browser),
-      icon_animation_index_(0),
-      icon_animation_increasing_(true) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)) {
   SetShowHighlighted(false);
+  animation_.SetThrobDuration(kThrobDuration);
+  animation_.SetTweenType(SlideAnimation::NONE);
   UpdateIcon();
   CrosNetworkLibrary::Get()->AddObserver(this);
 }
@@ -113,6 +115,16 @@ bool NetworkMenuButton::OnPasswordDialogAccept(const std::string& ssid,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// NetworkMenuButton, AnimationDelegate implementation:
+
+void NetworkMenuButton::AnimationProgressed(const Animation* animation) {
+  if (animation == &animation_)
+    UpdateIcon();
+  else
+    MenuButton::AnimationProgressed(animation);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuButton, views::ViewMenuDelegate implementation:
 
 void NetworkMenuButton::RunMenu(views::View* source, const gfx::Point& pt,
@@ -129,61 +141,34 @@ void NetworkMenuButton::RunMenu(views::View* source, const gfx::Point& pt,
 // NetworkMenuButton, CrosNetworkLibrary::Observer implementation:
 
 void NetworkMenuButton::NetworkChanged(CrosNetworkLibrary* obj) {
-  if (CrosNetworkLibrary::Get()->wifi_connecting()) {
-    StartConnectingAnimation();
-  } else {
-    StopConnectingAnimation();
-    UpdateIcon();
-  }
-}
-
-void NetworkMenuButton::StartConnectingAnimation() {
-  if (!timer_.IsRunning()) {
-    icon_animation_index_ = 0;
-    icon_animation_increasing_ = true;
-    timer_.Start(base::TimeDelta::FromMilliseconds(kAnimationDelayMillis), this,
-                 &NetworkMenuButton::UpdateIcon);
-  }
-}
-
-void NetworkMenuButton::StopConnectingAnimation() {
-  if (timer_.IsRunning()) {
-    timer_.Stop();
-  }
+  UpdateIcon();
 }
 
 void NetworkMenuButton::UpdateIcon() {
   CrosNetworkLibrary* cros = CrosNetworkLibrary::Get();
   int id = IDR_STATUSBAR_DISCONNECTED;
   if (cros->wifi_connecting()) {
-    // Get the next frame. Reverse direction if necessary.
-    if (icon_animation_increasing_) {
-      icon_animation_index_++;
-      if (icon_animation_index_ >= kNumWifiImages) {
-        icon_animation_index_ = kNumWifiImages - 1;
-        icon_animation_increasing_ = false;
-      }
-    } else {
-      icon_animation_index_--;
-      if (icon_animation_index_ < 0) {
-        icon_animation_index_ = 0;
-        icon_animation_increasing_ = true;
-      }
-    }
-    id = IDR_STATUSBAR_WIFI_1 + icon_animation_index_;
+    // Start the connecting animation if not running.
+    if (!animation_.IsAnimating())
+      animation_.StartThrobbing(std::numeric_limits<int>::max());
+
+    // We need to map the value of 0-1 in the animation to 0 - kNumWifiImages-1.
+    int index = static_cast<int>(animation_.GetCurrentValue() *
+                nextafter(static_cast<float>(kNumWifiImages), 0));
+    id = IDR_STATUSBAR_WIFI_1 + index;
   } else {
-    if (cros->wifi_ssid().empty()) {
-      if (cros->ethernet_connected())
-        id = IDR_STATUSBAR_WIRED;
-      else
-        id = IDR_STATUSBAR_DISCONNECTED;
-    } else {
+    // Stop connecting animation since we are not connecting.
+    if (animation_.IsAnimating())
+      animation_.Stop();
+
+    // Always show the higher priority connection first. So ethernet then wifi.
+    if (cros->ethernet_connected()) {
+      id = IDR_STATUSBAR_WIRED;
+    } else if (!cros->wifi_ssid().empty()) {
       // Gets the wifi image of 1-8 bars depending on signal strength. Signal
       // strength is from 0 to 100, so we need to convert that to 0 to 7.
-      int index = floor(cros->wifi_strength() / (100.0 / kNumWifiImages));
-      // This can happen if the signal strength is 100.
-      if (index == kNumWifiImages)
-        index--;
+      int index = static_cast<int>(cros->wifi_strength() / 100.0 *
+                  nextafter(static_cast<float>(kNumWifiImages), 0));
       id = IDR_STATUSBAR_WIFI_1 + index;
     }
   }

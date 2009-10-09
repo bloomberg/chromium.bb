@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "app/throb_animation.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/cros_network_library.h"
 #include "chrome/browser/chromeos/password_dialog_view.h"
@@ -53,6 +54,9 @@ class NetworkMenuButton : public views::MenuButton,
   virtual bool OnPasswordDialogAccept(const std::string& ssid,
                                       const string16& password);
 
+  // AnimationDelegate implementation.
+  virtual void AnimationProgressed(const Animation* animation);
+
   // CrosNetworkLibrary::Observer implementation.
   virtual void NetworkChanged(CrosNetworkLibrary* obj);
 
@@ -60,12 +64,6 @@ class NetworkMenuButton : public views::MenuButton,
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt,
                        gfx::NativeView hwnd);
-
-  // Start animating the icon to show that we are connecting to a network.
-  void StartConnectingAnimation();
-
-  // Stop animating the icon and set the appropriate icon.
-  void StopConnectingAnimation();
 
   // Update the icon to either the connecting, connected, or disconnected icon.
   void UpdateIcon();
@@ -88,18 +86,11 @@ class NetworkMenuButton : public views::MenuButton,
   // The browser window that owns us.
   Browser* browser_;
 
-  // TODO(chocobo): Look into replacing our own animation with throb_animation.
-  // A timer for animating the icon when we are connecting.
-  base::RepeatingTimer<NetworkMenuButton> timer_;
+  // The throb animation that does the wifi connecting animation.
+  ThrobAnimation animation_;
 
-  // Current frame of the animated connecting icon.
-  int icon_animation_index_;
-
-  // Whether the next frame for the animated connecting icon is increasing.
-  bool icon_animation_increasing_;
-
-  // The number of milliseconds between frames of animated connecting icon..
-  static const int kAnimationDelayMillis;
+  // The duration of the wifi connecting icon throbbing in milliseconds.
+  static const int kThrobDuration;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMenuButton);
 };
