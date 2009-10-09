@@ -292,7 +292,6 @@ TEST_F(SpellCheckTest, SpellCheckStrings_EN_US) {
   }
 }
 
-
 TEST_F(SpellCheckTest, SpellCheckSuggestions_EN_US) {
   static const struct {
     // A string to be tested.
@@ -608,7 +607,7 @@ TEST_F(SpellCheckTest, SpellCheckSuggestions_EN_US) {
     {L"jum", false, 0, 0, L"hum"},
     {L"jum", false, 0, 0, L"sum"},
     {L"jum", false, 0, 0, L"um"},
-#endif //!OS_MACOSX
+#endif  // !OS_MACOSX
     // TODO (Sidchat): add many more examples.
   };
 

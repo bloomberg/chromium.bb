@@ -5,19 +5,20 @@
 #ifndef CHROME_BROWSER_SPELLCHECKER_H_
 #define CHROME_BROWSER_SPELLCHECKER_H_
 
-#include <vector>
+#include <queue>
 #include <string>
+#include <vector>
 
 #include "app/l10n_util.h"
 #include "base/string_util.h"
+#include "base/task.h"
+#include "base/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/spellcheck_worditerator.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_member.h"
-
-#include "base/task.h"
 #include "unicode/uscript.h"
 
 class FilePath;
@@ -115,9 +116,10 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
   static std::string GetLanguageFromLanguageRegion(std::string input_language);
 
  private:
+  friend class ReadDictionaryTask;
+
   // URLFetcher::Delegate implementation.  Called when we finish downloading the
   // spellcheck dictionary; saves the dictionary to disk.
-  // TODO(sidchat): Save to disk in the file thread instead of the IO thread.
   virtual void OnURLFetchComplete(const URLFetcher* source,
                                   const GURL& url,
                                   const URLRequestStatus& status,
@@ -137,13 +139,15 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
   // Initializes the Hunspell Dictionary.
   bool Initialize();
 
-  // After |hunspell_| is initialized, this function is called to add custom
-  // words from the custom dictionary to the |hunspell_|.
-  void AddCustomWordsToHunspell();
+  // Called when |hunspell| is done loading, succesfully or not. If |hunspell|
+  // and |bdict_file| are non-NULL, assume ownership.
+  void HunspellInited(Hunspell* hunspell,
+                      file_util::MemoryMappedFile* bdict_file,
+                      bool file_existed);
 
-  // Memory maps the given .bdic file. On success, it will return true and will
-  // place the data and length into the given out parameters.
-  bool MapBdictFile(const unsigned char** data, size_t* length);
+  // Either start downloading a dictionary if we have not already, or do nothing
+  // if we have already tried to download one.
+  void DoDictionaryDownload();
 
   // Returns whether or not the given word is a contraction of valid words
   // (e.g. "word:word").
@@ -163,7 +167,7 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
 
   // This method is called in the IO thread after dictionary download has
   // completed in FILE thread.
-  void OnDictionarySaveComplete(){ obtaining_dictionary_ = false; }
+  void OnDictionarySaveComplete();
 
   // The given path to the directory whether SpellChecker first tries to
   // download the spellcheck bdic dictionary file.
@@ -192,24 +196,19 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
   // The language that this spellchecker works in.
   std::string language_;
 
-#ifndef NDEBUG
   // This object must only be used on the same thread. However, it is normally
   // created on the UI thread. This checks calls to SpellCheckWord and the
   // destructor to make sure we're only ever running on the same thread.
   //
   // This will be NULL if it is not initialized yet (not initialized in the
-  // constructor since that's on a different thread.
+  // constructor since that's on a different thread).
   MessageLoop* worker_loop_;
-#endif
 
   // Flag indicating whether we tried to download the dictionary file.
   bool tried_to_download_dictionary_file_;
 
   // File Thread Message Loop.
   MessageLoop* file_loop_;
-
-  // UI Thread Message Loop.
-  MessageLoop* ui_loop_;
 
   // Used for requests. MAY BE NULL which means don't try to download.
   URLRequestContext* url_request_context_;
@@ -227,10 +226,13 @@ class SpellChecker : public base::RefCountedThreadSafe<SpellChecker>,
   // URLFetcher to download a file in memory.
   scoped_ptr<URLFetcher> fetcher_;
 
+  // While Hunspell is loading, we add any new custom words to this queue.
+  // We will add them to |hunspell_| when it is done loading.
+  std::queue<std::string> custom_words_;
+
   // Used for generating callbacks to spellchecker, since spellchecker is a
   // non-reference counted object.
-  ScopedRunnableMethodFactory<SpellChecker>
-      on_dictionary_save_complete_callback_factory_;
+  ScopedRunnableMethodFactory<SpellChecker> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellChecker);
 };
