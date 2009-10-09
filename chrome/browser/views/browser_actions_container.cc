@@ -54,6 +54,10 @@ class BrowserActionButton : public views::MenuButton,
   const ExtensionAction& browser_action() const { return *browser_action_; }
   ExtensionActionState* browser_action_state() { return browser_action_state_; }
 
+  // Overriden from views::View. Return a 0-inset so the icon can draw all the
+  // way to the edge of the view if it wants.
+  virtual gfx::Insets GetInsets() const;
+
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
@@ -141,6 +145,11 @@ BrowserActionButton::~BrowserActionButton() {
     tracker_->StopTrackingImageLoad();
     tracker_ = NULL;  // The tracker object will be deleted when we return.
   }
+}
+
+gfx::Insets BrowserActionButton::GetInsets() const {
+  static gfx::Insets zero_inset;
+  return zero_inset;
 }
 
 void BrowserActionButton::ButtonPressed(

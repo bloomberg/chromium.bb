@@ -1,14 +1,20 @@
 <html>
 <head>
 <script>
+var animationFrames = 36;
+var animationSpeed = 10; // ms
+var browserActionWidth = 27;
+var browserActionHeight = 23;
+var canvasContext;
 var gmail = "http://mail.google.com/";
 var gmailAtomRef = "http://mail.google.com/mail/feed/atom";
+var gmailIconName = 'gmail_logged_in.png';
+var gmailImage;
 var pollInterval = 1000 * 10;  // 10 seconds
 var requestTimeout = 1000 * 2;  // 5 seconds
+var rotation = 0;
 var unreadCount = 0;
-var defaultIconId = 1;
-var whiteoutIconId = 2;
-var numberOfBlinks = 0;
+
 
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
   if (changeInfo.url && changeInfo.url.indexOf(gmail) == 0) {
@@ -22,7 +28,14 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
 function init() {
   chrome.browserAction.setBadgeBackgroundColor([230, 190, 190, 190]);
   chrome.browserAction.setBadgeText("?");
-  window.setTimeout(startRequest, 0);
+
+  var canvas = document.getElementById('canvas');  
+  canvasContext = canvas.getContext('2d');
+  gmailImage = new Image();
+  gmailImage.onload = function() {
+    window.setTimeout(startRequest, 0);
+  } 
+  gmailImage.src = gmailIconName; 
 }
 
 function scheduleRequest() {
@@ -111,11 +124,41 @@ function gmailNSResolver(prefix) {
 function updateUnreadCount(count) {
   if (unreadCount != count) {
     unreadCount = count;
+    animateFlip();
+  }
+}
+
+
+function ease(x) {
+  return (1-Math.sin(Math.PI/2+x*Math.PI))/2;
+}
+
+function animateFlip() {
+  rotation += 1/animationFrames;
+  drawIconAtRotation();
+  
+  if (rotation <= 1) {
+    setTimeout("animateFlip()", animationSpeed);
+  } else {
+    rotation = 0;
+    drawIconAtRotation();
     chrome.browserAction.setBadgeText(unreadCount);
     chrome.browserAction.setBadgeBackgroundColor([255, 208, 0, 24]);
-    chrome.browserAction.setIcon(defaultIconId);
     chrome.browserAction.setName(unreadCount + " unread emails");
   }
+}
+
+function drawIconAtRotation() {
+  canvasContext.save();
+  canvasContext.clearRect(0, 0, browserActionWidth, browserActionHeight);
+  canvasContext.translate(browserActionWidth/2, browserActionHeight/2);
+  canvasContext.rotate(2*Math.PI*ease(rotation));
+  canvasContext.drawImage(gmailImage, -gmailImage.width/2,
+      -gmailImage.height/2);
+  canvasContext.restore();
+
+  chrome.browserAction.setIcon(canvasContext.getImageData(0, 0,
+      browserActionWidth,browserActionHeight));
 }
 
 function goToInbox() {
@@ -130,6 +173,7 @@ chrome.browserAction.onClicked.addListener(function(windowId) {
 </script>
 </head>
 <body onload="init()">
+<canvas id="canvas" width="27" height="23">
 </body>
 </html>
 

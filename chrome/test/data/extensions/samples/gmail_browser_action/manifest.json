@@ -8,8 +8,7 @@
    ],
   "browser_action": {
       "name": "Gmail",
-      "icons": ["gmail_not_logged_in.png",
-                "gmail_logged_in.png"]
+      "icons": ["blank.png"]
   },
   "icons": {
     "128": "icon_128.png"
