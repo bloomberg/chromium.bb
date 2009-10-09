@@ -60,8 +60,13 @@ void BrowserWindowCocoa::Close() {
   // still close the window, as that will happen when the drag completes.
   if ([controller_ overlayWindow])
     [controller_ deferPerformClose];
-  else
+  else {
+    // Make sure we hide the window immediately. Even though performClose:
+    // calls orderOut: eventually, it leaves the window on-screen long enough
+    // that we start to see tabs shutting down. http://crbug.com/23959
+    [window_ orderOut:controller_];
     [window_ performClose:controller_];
+  }
 }
 
 void BrowserWindowCocoa::Activate() {
