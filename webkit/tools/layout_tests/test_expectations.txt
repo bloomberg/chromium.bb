@@ -2049,7 +2049,7 @@ BUG23489 MAC : LayoutTests/svg/carto.net/window.svg = IMAGE
 BUG23489 MAC : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-17-b.svg = IMAGE
 
 // Uses the wrong bullets for the bulleted list
-BUG23487 MAC : LayoutTests/editing/execCommand/indent-selection.html = IMAGE
+// BUG_HCLAM BUG23487 MAC : LayoutTests/editing/execCommand/indent-selection.html = IMAGE
 
 // Selection glow gets clipped
 BUG23486 MAC : LayoutTests/editing/inserting/12882.html = IMAGE
@@ -3103,3 +3103,9 @@ BUG_JOHNNYG : LayoutTests/svg/custom/linking-a-03-b-transform.svg = FAIL
 
 // WebKit roll 49321:49372
 BUG24454 : LayoutTests/http/tests/globalhistory/history-delegate-basic-visited-links.html = FAIL
+
+BUG_HCLAM : LayoutTests/editing/execCommand/4641880-2.html = FAIL
+BUG_HCLAM : LayoutTests/editing/execCommand/4916541.html = FAIL
+BUG_HCLAM : LayoutTests/editing/execCommand/5138441.html = FAIL
+BUG_HCLAM : LayoutTests/editing/execCommand/5481523.html = FAIL
+BUG_HCLAM : LayoutTests/editing/execCommand/indent-selection.html = FAIL
