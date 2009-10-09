@@ -8,6 +8,9 @@
 
 #include "chrome/browser/browser.h" // TODO(beng): this dependency is awful.
 #import "chrome/browser/cocoa/focus_tracker.h"
+#import "chrome/browser/cocoa/chrome_browser_window.h"
+#import "chrome/browser/cocoa/browser_window_controller.h"
+#include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/cocoa/sad_tab_view.h"
 #import "chrome/browser/cocoa/web_drag_source.h"
 #import "chrome/browser/cocoa/web_drop_target.h"
@@ -291,6 +294,18 @@ void TabContentsViewMac::Observe(NotificationType type,
 }
 
 - (void)processKeyboardEvent:(NSEvent*)event {
+  // If this tab is no longer active, it's window will be |nil|. In that case,
+  // best ignore the event.
+  if (![self window])
+    return;
+
+  ChromeBrowserWindow* window = (ChromeBrowserWindow*)[self window];
+  DCHECK([window isKindOfClass:[ChromeBrowserWindow class]]);
+  if ([window handleExtraBrowserKeyboardShortcut:event])
+    return;
+  if ([window handleExtraWindowKeyboardShortcut:event])
+    return;
+
   if ([event type] == NSKeyDown)
     [super keyDown:event];
   else if ([event type] == NSKeyUp)
