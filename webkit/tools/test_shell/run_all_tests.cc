@@ -14,7 +14,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/icu_util.h"
+#include "base/i18n/icu_util.h"
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
 #include "base/path_service.h"

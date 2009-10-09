@@ -15,7 +15,6 @@
 #include "base/debug_util.h"
 #include "base/file_util.h"
 #include "base/gfx/size.h"
-#include "base/icu_util.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
 #include "base/memory_debug.h"

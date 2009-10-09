@@ -6,12 +6,12 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/time.h"
-#include "base/time_format.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_process.h"

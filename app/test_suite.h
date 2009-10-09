@@ -16,7 +16,7 @@
 #include "base/mac_util.h"
 #endif
 #include "base/scoped_nsautorelease_pool.h"
-#include "base/test_suite.h"
+#include "base/test/test_suite.h"
 
 class AppTestSuite : public TestSuite {
  public:

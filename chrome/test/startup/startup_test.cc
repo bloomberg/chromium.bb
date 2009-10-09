@@ -6,7 +6,7 @@
 #include "base/path_service.h"
 #include "base/platform_thread.h"
 #include "base/string_util.h"
-#include "base/test_file_util.h"
+#include "base/test/test_file_util.h"
 #include "base/time.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"

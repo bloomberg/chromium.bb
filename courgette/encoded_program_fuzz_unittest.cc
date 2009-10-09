@@ -16,7 +16,7 @@
 #include "base/path_service.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
-#include "base/test_suite.h"
+#include "base/test/test_suite.h"
 
 #include "courgette/courgette.h"
 #include "courgette/streams.h"

@@ -26,8 +26,8 @@
 #include "base/global_descriptors_posix.h"
 #endif
 #include "base/perftimer.h"
-#include "base/perf_test_suite.h"
-#include "base/test_suite.h"
+#include "base/test/perf_test_suite.h"
+#include "base/test/test_suite.h"
 #include "base/thread.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_channel.h"

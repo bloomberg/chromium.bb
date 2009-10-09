@@ -14,7 +14,7 @@
 #include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/time.h"
-#include "base/time_format.h"
+#include "base/i18n/time_formatting.h"
 #include "printing/page_number.h"
 #include "printing/page_overlays.h"
 #include "printing/printed_pages_source.h"

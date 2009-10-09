@@ -378,7 +378,7 @@
       'sources': [
         '../base/perf_test_suite.h',
         '../base/perftimer.cc',
-        '../base/test_file_util.h',
+        '../base/test/test_file_util.h',
         '../chrome/test/chrome_process_util.cc',
         '../chrome/test/chrome_process_util.h',
         '../chrome/test/ui/ui_test.cc',

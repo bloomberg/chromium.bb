@@ -6,9 +6,9 @@
 
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
+#include "base/i18n/time_formatting.h"
 #include "base/string_piece.h"
 #include "base/thread.h"
-#include "base/time_format.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"

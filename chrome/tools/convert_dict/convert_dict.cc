@@ -15,7 +15,7 @@
 
 #include "base/at_exit.h"
 #include "base/file_util.h"
-#include "base/icu_util.h"
+#include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "base/string_util.h"

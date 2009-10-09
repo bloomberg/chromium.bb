@@ -38,7 +38,7 @@
 #if defined(OS_POSIX)
 #include "base/global_descriptors_posix.h"
 #endif
-#include "base/icu_util.h"
+#include "base/i18n/icu_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"

@@ -15,7 +15,7 @@
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
-#include "base/test_file_util.h"
+#include "base/test/test_file_util.h"
 #include "base/time.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/net/url_fixer_upper.h"

@@ -8,7 +8,7 @@
 #include "base/event_recorder.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
-#include "base/icu_util.h"
+#include "base/i18n/icu_util.h"
 #include "base/memory_debug.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"

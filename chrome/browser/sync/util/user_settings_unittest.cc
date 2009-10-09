@@ -3,7 +3,7 @@
 // found in the LICENSE entry.
 
 #include "base/file_util.h"
-#include "base/test_file_util.h"
+#include "base/test/test_file_util.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/util/user_settings.h"
 #include "chrome/browser/sync/util/query_helpers.h"

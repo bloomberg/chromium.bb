@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_WORD_ITERATOR_H__
-#define BASE_WORD_ITERATOR_H__
+#ifndef BASE_I18N_WORD_ITERATOR_H_
+#define BASE_I18N_WORD_ITERATOR_H_
 
 #include <string>
 #include <vector>
@@ -81,7 +81,7 @@ class WordIterator {
   // Previous and current iterator positions.
   size_t prev_, pos_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(WordIterator);
+  DISALLOW_COPY_AND_ASSIGN(WordIterator);
 };
 
-#endif  // BASE_WORD_ITERATOR_H__
+#endif  // BASE_I18N_WORD_ITERATOR_H__

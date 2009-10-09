@@ -4,7 +4,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
-#include "base/test_file_util.h"
+#include "base/test/test_file_util.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/sync/engine/all_status.h"
 #include "chrome/browser/sync/engine/auth_watcher.h"

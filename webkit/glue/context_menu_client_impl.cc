@@ -20,8 +20,8 @@
 #include "Widget.h"
 #undef LOG
 
+#include "base/i18n/word_iterator.h"
 #include "base/string_util.h"
-#include "base/word_iterator.h"
 #include "webkit/api/public/WebContextMenuData.h"
 #include "webkit/api/public/WebFrame.h"
 #include "webkit/api/public/WebPoint.h"

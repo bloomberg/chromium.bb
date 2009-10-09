@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/test_file_util.h"
+#include "base/test/test_file_util.h"
 
 #include <sys/mman.h>
 #include <errno.h>
@@ -22,14 +22,14 @@ bool EvictFileFromSystemCache(const FilePath& file) {
     DLOG(WARNING) << "failed to memory map " << file.value();
     return false;
   }
-  
+
   if (msync(const_cast<uint8*>(mapped_file.data()), mapped_file.length(),
             MS_INVALIDATE) != 0) {
-    DLOG(WARNING) << "failed to invalidate memory map of " << file.value() 
+    DLOG(WARNING) << "failed to invalidate memory map of " << file.value()
         << ", errno: " << errno;
     return false;
   }
-  
+
   return true;
 }
 

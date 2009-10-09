@@ -8,8 +8,8 @@
 #include <SecurityInterface/SFCertificatePanel.h>
 
 #include "app/l10n_util.h"
+#include "base/i18n/time_formatting.h"
 #include "base/string_util.h"
-#include "base/time_format.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/page_info_window_controller.h"
 #include "chrome/browser/cert_store.h"
