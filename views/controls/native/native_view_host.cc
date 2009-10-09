@@ -52,9 +52,9 @@ void NativeViewHost::SetPreferredSize(const gfx::Size& size) {
 }
 
 void NativeViewHost::NativeViewDestroyed() {
-  // TODO(beng): figure out if this should/could call Detach instead since as it
-  //             stands right now this object is left in an inconsistent state.
-  native_view_ = NULL;
+  // Detach so we can clear our state and notify the native_wrapper_ to release
+  // ref on the native view.
+  Detach();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

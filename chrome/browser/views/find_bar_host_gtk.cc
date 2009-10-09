@@ -24,7 +24,10 @@ void FindBarHost::AudibleAlert() {
 }
 
 views::Widget* FindBarHost::CreateHost() {
-  return new views::WidgetGtk(views::WidgetGtk::TYPE_CHILD);
+  views::WidgetGtk* host = new views::WidgetGtk(views::WidgetGtk::TYPE_CHILD);
+  // We own the host.
+  host->set_delete_on_destroy(false);
+  return host;
 }
 
 void FindBarHost::SetDialogPositionNative(const gfx::Rect& new_pos,
