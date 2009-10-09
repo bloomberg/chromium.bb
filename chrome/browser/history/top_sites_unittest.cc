@@ -160,6 +160,7 @@ TEST_F(TopSitesTest, SetPageThumbnail) {
   SkBitmap thumbnail;
   thumbnail.setConfig(SkBitmap::kARGB_8888_Config, 4, 4);
   thumbnail.allocPixels();
+  thumbnail.eraseRGB(0x00, 0x00, 0x00);
 
   base::Time now = base::Time::Now();
   ThumbnailScore low_score(1.0, true, true, now);
