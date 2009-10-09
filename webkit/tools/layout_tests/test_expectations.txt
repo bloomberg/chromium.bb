@@ -2481,6 +2481,7 @@ BUG9798 LINUX RELEASE : LayoutTests/editing/execCommand/15381.html = FAIL PASS
 BUG9798 WIN : LayoutTests/editing/execCommand/paste-1.html = FAIL
 
 BUG9798 WIN : LayoutTests/editing/execCommand/paste-2.html = FAIL PASS
+
 BUG9798 WIN LINUX MAC : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL PASS
 BUG9798 WIN : LayoutTests/editing/selection/4776665.html = FAIL PASS
 BUG9798 MAC RELEASE : LayoutTests/editing/selection/4776665.html = FAIL PASS
@@ -3059,8 +3060,6 @@ BUG24331 LINUX DEBUG : LayoutTests/svg/text/text-tselect-02-f.svg = FAIL PASS
 // WebKit update: 49142:49190
 // Changed in http://trac.webkit.org/changeset/49155.
 BUG_JORLOW : LayoutTests/storage/domstorage/sessionstorage/complex-values.html = FAIL
-// Added in http://trac.webkit.org/changeset/49153, probably just needs expectations.
-BUG_JPARENT : LayoutTests/svg/filters/sourceAlpha.svg = FAIL
 
 // WebKit update: 49190:49206
 BUG_JPARENT MAC LINUX : LayoutTests/editing/execCommand/paste-1.html = FAIL PASS
