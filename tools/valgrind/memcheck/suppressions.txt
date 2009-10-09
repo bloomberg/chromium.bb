@@ -999,17 +999,22 @@
    fun:_ZN7WebCore5Frame4initEv
 }
 {
-   bug_23018
+   bug_23018_a
    Memcheck:Addr4
    fun:_ZN12_GLOBAL__N_115KillProcessTask3RunEv
    fun:_ZN11MessageLoop7RunTaskEP4Task
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop13DoDelayedWorkEPN4base4TimeE
-   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-   fun:_ZN11MessageLoop3RunEv
-   fun:_Z10WorkerMainRK18MainFunctionParams
+}
+{
+   # This is the same callstack as above, but for whatever reason the signature
+   # of the top line, KillProcessTask::Run(), is displayed differently.
+   bug_23018_b
+   Memcheck:Addr4
+   fun:_ZN122_GLOBAL__N__b_slave_chromium_rel_linux_valgrind_builder_build_src_chrome_worker_webworkerclient_proxy.cc_00000000_BBD84F3C15KillProcessTask3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop13DoDelayedWorkEPN4base4TimeE
 }
 {
    bug_23151
