@@ -1,7 +1,6 @@
 # Only build man pages if configure found the HELP2MAN tool
 if HAVE_HELP2MAN
-#man_MANS = lou_allround.1 lou_checkhyphens.1 lou_checktable.1 lou_debug.1 lou_translate.1
-man_MANS = lou_checkhyphens.1 lou_checktable.1 lou_debug.1 lou_translate.1
+man_MANS = lou_allround.1 lou_checkhyphens.1 lou_checktable.1 lou_debug.1 lou_translate.1
 endif
 
 EXTRA_DIST = $(man_MANS)
