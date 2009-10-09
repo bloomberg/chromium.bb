@@ -71,7 +71,7 @@ class MemoryTest : public UITest {
   ~MemoryTest() {
     // Cleanup our temporary directory.
     if (cleanup_temp_dir_on_exit_)
-      file_util::Delete(user_data_dir_, true);
+      file_util::Delete(temp_dir_, true);
   }
 
   // TODO(mbelshe): Separate this data to an external file.
@@ -375,30 +375,33 @@ class MemoryTest : public UITest {
   //   src_dir is set to the source directory
   // Output:
   //   On success, modifies user_data_dir_ to be a new profile directory
+  //   sets temp_dir_ to the containing temporary directory,
   //   and sets cleanup_temp_dir_on_exit_ to true.
   bool SetupTempDirectory(const FilePath& src_dir) {
     LOG(INFO) << "Setting up temp directory in " << src_dir.value();
     // We create a copy of the test dir and use it so that each
     // run of this test starts with the same data.  Running this
     // test has the side effect that it will change the profile.
-    FilePath temp_dir;
-    if (!file_util::CreateNewTempDirectory(kTempDirName, &temp_dir)) {
+    if (!file_util::CreateNewTempDirectory(kTempDirName, &temp_dir_)) {
       LOG(ERROR) << "Could not create temp directory:" << kTempDirName;
       return false;
     }
 
-    if (!file_util::CopyDirectory(src_dir, temp_dir, true)) {
+    if (!file_util::CopyDirectory(src_dir, temp_dir_, true)) {
       LOG(ERROR) << "Could not copy temp directory";
       return false;
     }
 
-    user_data_dir_ = temp_dir;
+    // The profile directory was copied in to the containing temp
+    // directory as its base name, so point user_data_dir_ there.
+    user_data_dir_ = temp_dir_.Append(src_dir.BaseName());
     cleanup_temp_dir_on_exit_ = true;
     LOG(INFO) << "Finished temp directory setup.";
     return true;
   }
 
   bool cleanup_temp_dir_on_exit_;
+  FilePath temp_dir_;
   FilePath user_data_dir_;
 };
 
