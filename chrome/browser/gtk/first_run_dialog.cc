@@ -43,6 +43,8 @@ FirstRunDialog::FirstRunDialog(Profile* profile, int& response)
       GTK_STOCK_APPLY, GTK_RESPONSE_ACCEPT);
 
   gtk_window_set_resizable(GTK_WINDOW(dialog_), FALSE);
+
+  gtk_widget_realize(dialog_);
   int width, height;
   gtk_util::GetWidgetSizeFromResources(dialog_,
                                        IDS_FIRSTRUN_DIALOG_WIDTH_CHARS,

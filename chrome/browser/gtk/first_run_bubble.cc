@@ -109,14 +109,18 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
       l10n_util::GetStringUTF8(IDS_FR_BUBBLE_CHANGE).c_str());
 
   content_ = gtk_vbox_new(FALSE, 5);
-  int width, height;
-  gtk_util::GetWidgetSizeFromResources(content_,
+
+  // We compute the widget's size using the parent window -- |content_| is
+  // unrealized at this point.
+  int width = -1, height = -1;
+  gtk_util::GetWidgetSizeFromResources(
+      GTK_WIDGET(parent_),
       IDS_FIRSTRUNBUBBLE_DIALOG_WIDTH_CHARS,
       IDS_FIRSTRUNBUBBLE_DIALOG_HEIGHT_LINES,
       &width, &height);
-  // TODO(estade): for now, don't set the height explicitly. The bubble is way
-  // too large for the text it contains.
-  gtk_widget_set_size_request(content_, width, -1);
+  // Resize the labels so that they don't wrap more than necessary.  We leave
+  // |content_| unsized so that it'll expand as needed to hold the other
+  // widgets -- the buttons may be wider than |width| on high-DPI displays.
   gtk_widget_set_size_request(label1, width, -1);
   gtk_widget_set_size_request(label2, width, -1);
   gtk_widget_set_size_request(label3, width, -1);

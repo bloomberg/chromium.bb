@@ -159,6 +159,8 @@ GtkWidget* CreateGtkBorderBin(GtkWidget* child, const GdkColor* color,
 
 void GetWidgetSizeFromResources(GtkWidget* widget, int width_chars,
                                 int height_lines, int* width, int* height) {
+  DCHECK(GTK_WIDGET_REALIZED(widget))
+      << " widget must be realized to compute font metrics correctly";
   PangoContext* context = gtk_widget_create_pango_context(widget);
   PangoFontMetrics* metrics = pango_context_get_metrics(context,
       widget->style->font_desc, pango_context_get_language(context));
