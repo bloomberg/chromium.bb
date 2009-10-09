@@ -114,8 +114,9 @@ bool AddAccessToKernelObject(HANDLE handle, WELL_KNOWN_SID_TYPE known_sid,
     }
 
     DWORD size = sizeof(TOKEN_USER) + size_sid;
-    TOKEN_USER* token_user = reinterpret_cast<TOKEN_USER*>(new BYTE[size]);
-    scoped_ptr<TOKEN_USER> token_user_ptr(token_user);
+    scoped_array<BYTE> token_user_bytes(new BYTE[size]);
+    TOKEN_USER* token_user =
+        reinterpret_cast<TOKEN_USER*>(token_user_bytes.get());
     BOOL ret = GetTokenInformation(token, TokenUser, token_user, size, &size);
 
     CloseHandle(token);
@@ -168,9 +169,10 @@ bool GetUserSidString(std::wstring* user_sid) {
   ScopedHandle token_scoped(token);
 
   DWORD size = sizeof(TOKEN_USER) + SECURITY_MAX_SID_SIZE;
-  scoped_ptr<TOKEN_USER> user(reinterpret_cast<TOKEN_USER*>(new BYTE[size]));
+  scoped_array<BYTE> user_bytes(new BYTE[size]);
+  TOKEN_USER* user = reinterpret_cast<TOKEN_USER*>(user_bytes.get());
 
-  if (!::GetTokenInformation(token, TokenUser, user.get(), size, &size))
+  if (!::GetTokenInformation(token, TokenUser, user, size, &size))
     return false;
 
   if (!user->User.Sid)
@@ -202,10 +204,11 @@ bool GetLogonSessionOnlyDACL(SECURITY_DESCRIPTOR** security_descriptor) {
     return false;
 
   // Get the data.
-  scoped_ptr<TOKEN_GROUPS> token_groups;
-  token_groups.reset(reinterpret_cast<TOKEN_GROUPS*>(new char[size]));
+  scoped_array<char> token_groups_chars(new char[size]);
+  TOKEN_GROUPS* token_groups =
+      reinterpret_cast<TOKEN_GROUPS*>(token_groups_chars.get());
 
-  if (!GetTokenInformation(token, TokenGroups, token_groups.get(), size, &size))
+  if (!GetTokenInformation(token, TokenGroups, token_groups, size, &size))
     return false;
 
   // Look for the logon sid.
