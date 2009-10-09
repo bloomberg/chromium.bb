@@ -402,7 +402,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_TabsRememberFocusFindInPage) {
 }
 
 // Background window does not steal focus.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BackgroundBrowserDontStealFocus) {
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest,
+                       MAYBE(BackgroundBrowserDontStealFocus)) {
   HTTPTestServer* server = StartHTTPServer();
 
   // First we navigate to our test page.
