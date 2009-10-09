@@ -457,6 +457,10 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   void GenerateSafeFilename(const std::string& mime_type,
                             FilePath* file_name);
 
+  // Used to determine whether the download item is an extension file or not.
+  static bool IsExtensionInstall(const DownloadItem* item);
+  static bool IsExtensionInstall(const DownloadCreateInfo* info);
+
  private:
   // Opens a download via the Windows shell.
   void OpenDownloadInShell(const DownloadItem* download,

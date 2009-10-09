@@ -54,16 +54,6 @@
 #include <gtk/gtk.h>
 #endif
 
-namespace {
-static bool IsExtensionInstall(const DownloadItem* item) {
-  return item->mime_type() == Extension::kMimeType && !item->save_as();
-}
-
-static bool IsExtensionInstall(const DownloadCreateInfo* info) {
-  return info->mime_type == Extension::kMimeType && !info->save_as;
-}
-}
-
 // Periodically update our observers.
 class DownloadItemUpdateTask : public Task {
  public:
@@ -1462,6 +1452,14 @@ void DownloadManager::GenerateSafeFilename(const std::string& mime_type,
     }
   }
 #endif
+}
+
+bool DownloadManager::IsExtensionInstall(const DownloadItem* item) {
+  return item->mime_type() == Extension::kMimeType && !item->save_as();
+}
+
+bool DownloadManager::IsExtensionInstall(const DownloadCreateInfo* info) {
+  return info->mime_type == Extension::kMimeType && !info->save_as;
 }
 
 // Operations posted to us from the history service ----------------------------

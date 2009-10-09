@@ -324,8 +324,15 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     std::wstring filename = rootname + L"." + extension;
     if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
       l10n_util::WrapStringWithLTRFormatting(&filename);
-    dangerous_download_label_ = new views::Label(
-        l10n_util::GetStringF(IDS_PROMPT_DANGEROUS_DOWNLOAD, filename));
+
+    // The dangerous download label text is different for an extension file.
+    if (DownloadManager::IsExtensionInstall(download)) {
+      dangerous_download_label_ = new views::Label(
+          l10n_util::GetString(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION));
+    } else {
+      dangerous_download_label_ = new views::Label(
+          l10n_util::GetStringF(IDS_PROMPT_DANGEROUS_DOWNLOAD, filename));
+    }
     dangerous_download_label_->SetMultiLine(true);
     dangerous_download_label_->SetHorizontalAlignment(
         views::Label::ALIGN_LEFT);
