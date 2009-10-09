@@ -4,6 +4,7 @@
 
 #import "chrome/browser/autocomplete/autocomplete_popup_view_mac.h"
 
+#include "app/gfx/text_elider.h"
 #include "base/scoped_ptr.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
@@ -416,6 +417,96 @@ TEST_F(AutocompletePopupViewMacTest, MatchTextDescriptionMatch) {
                                   NSFontAttributeName), runLength2);
   EXPECT_FALSE(RunHasFontTrait(decorated, descriptionLocation + runLength1,
                                NSBoldFontMask));
+}
+
+TEST_F(AutocompletePopupViewMacTest, ElideString) {
+  const NSString* contents = @"This is a test with long contents";
+  const std::wstring wideContents(base::SysNSStringToWide(contents));
+
+  const float kWide = 1000.0;
+  const float kNarrow = 20.0;
+
+  NSDictionary* attributes =
+      [NSDictionary dictionaryWithObject:font_.nativeFont()
+                                  forKey:NSFontAttributeName];
+  scoped_nsobject<NSMutableAttributedString> as(
+      [[NSMutableAttributedString alloc] initWithString:contents
+                                             attributes:attributes]);
+
+  // Nothing happens if the space is really wide.
+  NSMutableAttributedString* ret =
+      AutocompletePopupViewMac::ElideString(as, wideContents, font_, kWide);
+  EXPECT_TRUE(ret == as);
+  EXPECT_TRUE([[as string] isEqualToString:contents]);
+
+  // When elided, result is the same as ElideText().
+  ret = AutocompletePopupViewMac::ElideString(as, wideContents, font_, kNarrow);
+  std::wstring elided(ElideText(wideContents, font_, kNarrow));
+  EXPECT_TRUE(ret == as);
+  EXPECT_FALSE([[as string] isEqualToString:contents]);
+  EXPECT_TRUE([[as string] isEqualToString:base::SysWideToNSString(elided)]);
+
+  // When elided, result is the same as ElideText().
+  ret = AutocompletePopupViewMac::ElideString(as, wideContents, font_, 0.0);
+  elided = ElideText(wideContents, font_, 0.0);
+  EXPECT_TRUE(ret == as);
+  EXPECT_FALSE([[as string] isEqualToString:contents]);
+  EXPECT_TRUE([[as string] isEqualToString:base::SysWideToNSString(elided)]);
+}
+
+TEST_F(AutocompletePopupViewMacTest, MatchTextElide) {
+  const NSString* contents = @"This is a test with long contents";
+  const NSString* description = @"That was a test";
+  // Match "long".
+  const NSUInteger runLength1 = 20, runLength2 = 4, runLength3 = 9;
+  // Make sure nobody messed up the inputs.
+  EXPECT_EQ(runLength1 + runLength2 + runLength3, [contents length]);
+
+  AutocompleteMatch m = MakeMatch(base::SysNSStringToWide(contents),
+                                  base::SysNSStringToWide(description));
+
+  // Push each run onto contents classifications.
+  m.contents_class.push_back(
+      ACMatchClassification(0, ACMatchClassification::NONE));
+  m.contents_class.push_back(
+      ACMatchClassification(runLength1, ACMatchClassification::MATCH));
+  m.contents_class.push_back(
+      ACMatchClassification(runLength1 + runLength2,
+                            ACMatchClassification::URL));
+
+  // Figure out the width of the contents.
+  NSDictionary* attributes =
+      [NSDictionary dictionaryWithObject:font_.nativeFont()
+                                  forKey:NSFontAttributeName];
+  const float contentsWidth = [contents sizeWithAttributes:attributes].width;
+
+  // After accounting for the width of the image, this will force us
+  // to elide the contents.
+  float cellWidth = ceil(contentsWidth / 0.7);
+
+  NSAttributedString* decorated =
+      AutocompletePopupViewMac::MatchText(m, font_, cellWidth);
+
+  // Results contain a prefix of the contents and all of description.
+  NSString* commonPrefix =
+      [[decorated string] commonPrefixWithString:contents options:0];
+  EXPECT_GT([commonPrefix length], 0U);
+  EXPECT_LT([commonPrefix length], [contents length]);
+  EXPECT_TRUE([[decorated string] hasSuffix:description]);
+
+  // At one point the code had a bug where elided text was being
+  // marked up using pre-elided offsets, resulting in out-of-range
+  // values being passed to NSAttributedString.  Push the ellipsis
+  // through part of each run to verify that we don't continue to see
+  // such things.
+  while([commonPrefix length] > runLength1 - 3) {
+    EXPECT_GT(cellWidth, 0.0);
+    cellWidth -= 1.0;
+    decorated = AutocompletePopupViewMac::MatchText(m, font_, cellWidth);
+    commonPrefix =
+        [[decorated string] commonPrefixWithString:contents options:0];
+    ASSERT_GT([commonPrefix length], 0U);
+  }
 }
 
 // TODO(shess): Test that

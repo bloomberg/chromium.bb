@@ -93,6 +93,18 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
       const AutocompleteMatch::ACMatchClassifications &classifications,
       NSColor* textColor, gfx::Font& font);
 
+  // Helper for MatchText() to elide a marked-up string using
+  // gfx::ElideText() as a model.  Modifies |aString| in place.
+  // TODO(shess): Consider breaking AutocompleteButtonCell out of this
+  // code, and modifying it to have something like -setMatch:, so that
+  // these convolutions to expose internals for testing can be
+  // cleaner.
+  static NSMutableAttributedString* ElideString(
+      NSMutableAttributedString* aString,
+      const std::wstring originalString,
+      const gfx::Font& font,
+      const float cellWidth);
+
  private:
   // Create the popup_ instance if needed.
   void CreatePopupIfNeeded();

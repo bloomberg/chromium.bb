@@ -48,7 +48,7 @@ const float kShrinkAnimationDuration = 0.1;
 
 // Maximum fraction of the popup width that can be used to display match
 // contents.
-const float kMaxMatchContentsWidth = 0.7;
+const float kMaxContentsFraction = 0.7;
 
 // NSEvent -buttonNumber for middle mouse button.
 const static NSInteger kMiddleButtonNumber(2);
@@ -176,27 +176,63 @@ NSMutableAttributedString* AutocompletePopupViewMac::DecorateMatchedString(
   return as;
 }
 
+NSMutableAttributedString* AutocompletePopupViewMac::ElideString(
+    NSMutableAttributedString* aString,
+    const std::wstring originalString,
+    const gfx::Font& font,
+    const float width) {
+  // If it already fits, nothing to be done.
+  if ([aString size].width <= width) {
+    return aString;
+  }
+
+  // If ElideText() decides to do nothing, nothing to be done.
+  const std::wstring elided(ElideText(originalString, font, width));
+  if (0 == elided.compare(originalString)) {
+    return aString;
+  }
+
+  // If everything was elided away, clear the string.
+  if (elided.size() == 0) {
+    [aString deleteCharactersInRange:NSMakeRange(0, [aString length])];
+    return aString;
+  }
+
+  // The ellipses should be the last character, and everything before
+  // that should match the original string.
+  const size_t i(elided.size() - 1);
+  DCHECK(0 != elided.compare(0, i, originalString));
+
+  // Replace the end of |aString| with the ellipses from |elided|.
+  NSString* s = base::SysWideToNSString(elided.substr(i));
+  [aString replaceCharactersInRange:NSMakeRange(i, [aString length] - i)
+                         withString:s];
+
+  return aString;
+}
+
 // Return the text to show for the match, based on the match's
 // contents and description.  Result will be in |font|, with the
 // boldfaced version used for matches.
 NSAttributedString* AutocompletePopupViewMac::MatchText(
     const AutocompleteMatch& match, gfx::Font& font, float cellWidth) {
-  // If there is a description, then the URL can take at most 70% of the
-  // available width, with 30% being reserved for the description.  If there is
-  // no description, then the URL can take the full 100%.
-  float availableWidth = cellWidth - kTextXOffset - kLeftRightMargin;
-  BOOL hasDescription = match.description.empty() ? NO : YES;
-  float urlWidth = hasDescription ? availableWidth * kMaxMatchContentsWidth
-                                  : availableWidth;
-
   NSMutableAttributedString *as =
-      DecorateMatchedString(gfx::ElideText(match.contents, font, urlWidth),
+      DecorateMatchedString(match.contents,
                             match.contents_class,
                             ContentTextColor(), font);
 
   // If there is a description, append it, separated from the contents
   // with an en dash, and decorated with a distinct color.
   if (!match.description.empty()) {
+    // Make sure the current string fits w/in kMaxContentsFraction of
+    // the cell to make sure the description will be at least
+    // partially visible.
+    // TODO(shess): Consider revising our NSCell subclass to have two
+    // bits and just draw them right, rather than truncating here.
+    const float textWidth = cellWidth - kTextXOffset - kLeftRightMargin;
+    as = ElideString(as, match.contents, font,
+                     textWidth * kMaxContentsFraction);
+
     NSDictionary* attributes =
         [NSDictionary dictionaryWithObjectsAndKeys:
              font.nativeFont(), NSFontAttributeName,
