@@ -251,7 +251,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                            TransportDIB::Handle* result);
   void OnFreeTransportDIB(TransportDIB::Id dib_id);
 
-  void OnOpenChannelToExtension(int routing_id, const std::string& extension_id,
+  void OnOpenChannelToExtension(int routing_id,
+                                const std::string& source_extension_id,
+                                const std::string& target_extension_id,
                                 const std::string& channel_name, int* port_id);
   void OnOpenChannelToTab(int routing_id, int tab_id,
                           const std::string& extension_id,

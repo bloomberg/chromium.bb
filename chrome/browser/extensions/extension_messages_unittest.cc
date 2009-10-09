@@ -16,6 +16,7 @@ static void DispatchOnConnect(int source_port_id, const std::string& name,
   args.Set(1, Value::CreateStringValue(name));
   args.Set(2, Value::CreateStringValue(tab_json));
   args.Set(3, Value::CreateStringValue(""));  // extension ID is empty for tests
+  args.Set(4, Value::CreateStringValue(""));  // extension ID is empty for tests
   RendererExtensionBindings::Invoke(
       ExtensionMessageService::kDispatchOnConnect, args, NULL);
 }
@@ -41,8 +42,7 @@ TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
   render_thread_.sink().ClearMessages();
   LoadHTML("<body></body>");
   ExecuteJavaScript(
-    "var e = new chrome.Extension('foobar');"
-    "var port = e.connect({name:'testName'});"
+    "var port = chrome.extension.connect({name:'testName'});"
     "port.onMessage.addListener(doOnMessage);"
     "port.postMessage({message: 'content ready'});"
     "function doOnMessage(msg, port) {"
@@ -57,7 +57,7 @@ TEST_F(RenderViewTest, ExtensionMessagesOpenChannel) {
   void* iter = IPC::SyncMessage::GetDataIterator(open_channel_msg);
   ViewHostMsg_OpenChannelToExtension::SendParam open_params;
   ASSERT_TRUE(IPC::ReadParam(open_channel_msg, &iter, &open_params));
-  EXPECT_EQ("testName", open_params.c);
+  EXPECT_EQ("testName", open_params.d);
 
   const IPC::Message* post_msg =
       render_thread_.sink().GetUniqueMessageMatching(

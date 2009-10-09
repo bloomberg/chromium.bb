@@ -11,7 +11,15 @@
           "onDisconnect": {"type": "object"},
           "onMessage": {"type": "object"},
           "postMessage": {"type": "function"},
-          "tab": {"$ref": "Tab", "optional": true, "description":"This property will <b>only</b> be present on ports passed to onConnect listeners when the connection was opened from a tab or content script."}
+          "sender": {
+            "type": "object",
+            "optional": true,
+            "description": "This property will <b>only</b> be present on ports passed to onConnect/onConnectExternal listeners.",
+            "properties": {
+              "tab": {"$ref": "Tab", "optional": true, "description":"This property will <b>only</b> be present when the connection was opened from a tab or content script."},
+              "id": {"type": "string", "description": "The extension ID of the extension that opened the connection."}
+            }
+          }
         }
       }
     ],
@@ -31,6 +39,7 @@
         "type": "function",
         "description": "Attempts to connect to other listeners within the extension (listeners may be toolstrips or the extension's background page). This is primarily useful for content scripts connecting to their extension processes. Extensions may connect to content scripts embedded in tabs via <a href='broken'><var>chrome.tabs.connectToTab</var></a>.",
         "parameters": [
+          {"type": "string", "name": "extensionId", "optional": true, "description": "The extension ID of the extension you want to connect to. If omitted, default is your own extension."},
           {
             "type": "object",
             "name": "connectInfo",
@@ -113,6 +122,14 @@
         "name": "onConnect",
         "type": "function",
         "description": "Fired when a connection is made from either an extension process or a content script.",
+        "parameters": [
+          {"$ref": "Port", "name": "port"}
+        ]
+      },
+      {
+        "name": "onConnectExternal",
+        "type": "function",
+        "description": "Fired when a connection is made from another extension.",
         "parameters": [
           {"$ref": "Port", "name": "port"}
         ]

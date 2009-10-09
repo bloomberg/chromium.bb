@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// -----------------------------------------------------------------------------
-// NOTE: If you change this file you need to touch renderer_resources.grd to
-// have your change take effect.
-// -----------------------------------------------------------------------------
-
 // This script contains unprivileged javascript APIs related to chrome
 // extensions.  It is loaded by any extension-related context, such as content
 // scripts or toolstrips.
@@ -16,7 +11,7 @@
 
 var chrome = chrome || {};
 (function () {
-  native function OpenChannelToExtension(id, name);
+  native function OpenChannelToExtension(sourceId, targetId, name);
   native function CloseChannel(portId);
   native function PortAddRef(portId);
   native function PortRelease(portId);
@@ -56,19 +51,28 @@ var chrome = chrome || {};
 
   // Called by native code when a channel has been opened to this context.
   chromeHidden.Port.dispatchOnConnect = function(portId, channelName, tab,
-                                                 extensionId) {
+                                                 sourceExtensionId,
+                                                 targetExtensionId) {
     // Only create a new Port if someone is actually listening for a connection.
     // In addition to being an optimization, this also fixes a bug where if 2
     // channels were opened to and from the same process, closing one would
     // close both.
-    var connectEvent = "channel-connect:" + extensionId;
-    if (chromeHidden.Event.hasListener(connectEvent)) {
+    if (targetExtensionId != chromeHidden.extensionId)
+      return;  // not for us
+
+    // Determine whether this is coming from another extension, and use the
+    // right event.
+    var connectEvent = (sourceExtensionId == chromeHidden.extensionId ?
+        chrome.extension.onConnect : chrome.extension.onConnectExternal);
+    if (connectEvent.hasListeners()) {
       var port = chromeHidden.Port.createPort(portId, channelName);
       if (tab) {
         tab = JSON.parse(tab);
       }
-      port.tab = tab;
-      chromeHidden.Event.dispatch(connectEvent, [port]);
+      port.sender = {tab: tab, id: sourceExtensionId};
+      // TODO(EXTENSIONS_DEPRECATED): port.tab is obsolete.
+      port.tab = port.sender.tab;
+      connectEvent.dispatch(port);
     }
   };
 
@@ -107,30 +111,43 @@ var chrome = chrome || {};
     CloseChannel(this.portId_);
   }
 
-  // Extension object.
-  chrome.Extension = function(id) {
-    this.id_ = id;
-    this.onConnect = new chrome.Event('channel-connect:' + id);
-  };
+  // This function is called on context initialization for both content scripts
+  // and extension contexts.
+  chrome.initExtension = function(extensionId) {
+    delete chrome.initExtension;
+    chromeHidden.extensionId = extensionId;
 
-  // Opens a message channel to the extension.  Returns a Port for
-  // message passing.
-  chrome.Extension.prototype.connect = function(connectInfo) {
-    var name = "";
-    if (connectInfo) {
-      name = connectInfo.name || name;
-    }
-    var portId = OpenChannelToExtension(this.id_, name);
-    if (portId == -1)
-      throw new Error("No such extension: '" + this.id_ + "'");
-    return chromeHidden.Port.createPort(portId, name);
-  };
+    chrome.extension = chrome.extension || {};
 
-  // Returns a resource URL that can be used to fetch a resource from this
-  // extension.
-  chrome.Extension.prototype.getURL = function(path) {
-    return "chrome-extension://" + this.id_ + "/" + path;
-  };
+    // TODO(EXTENSIONS_DEPRECATED): chrome.self is obsolete.
+    // http://code.google.com/p/chromium/issues/detail?id=16356
+    chrome.self = chrome.extension;
 
-  chrome.self = chrome.self || {};
+    // Events for when a message channel is opened to our extension.
+    chrome.extension.onConnect = new chrome.Event();
+    chrome.extension.onConnectExternal = new chrome.Event();
+
+    // Opens a message channel to the given target extension, or the current one
+    // if unspecified.  Returns a Port for message passing.
+    chrome.extension.connect = function(targetId_opt, connectInfo_opt) {
+      var name = "";
+      var targetId = extensionId;
+      var nextArg = 0;
+      if (typeof(arguments[nextArg]) == "string")
+        targetId = arguments[nextArg++];
+      if (typeof(arguments[nextArg]) == "object")
+        name = arguments[nextArg++].name || name;
+
+      var portId = OpenChannelToExtension(extensionId, targetId, name);
+      if (portId >= 0)
+        return chromeHidden.Port.createPort(portId, name);
+      throw new Error("Error connecting to extension '" + targetId + "'");
+    };
+
+    // Returns a resource URL that can be used to fetch a resource from this
+    // extension.
+    chrome.extension.getURL = function(path) {
+      return "chrome-extension://" + extensionId + "/" + path;
+    };
+  }
 })();

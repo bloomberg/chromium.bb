@@ -1723,9 +1723,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // the given ID.  This always returns a valid port ID which can be used for
   // sending messages.  If an error occurred, the opener will be notified
   // asynchronously.
-  IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_OpenChannelToExtension,
+  IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_OpenChannelToExtension,
                               int /* routing_id */,
-                              std::string /* extension_id */,
+                              std::string /* source_extension_id */,
+                              std::string /* target_extension_id */,
                               std::string /* channel_name */,
                               int /* port_id */)
 

@@ -114,7 +114,9 @@ class ExtensionMessageService
   // an optional identifier for use by extension developers.
   // This runs on the IO thread so that it can be used in a synchronous IPC
   // message.
-  int OpenChannelToExtension(int routing_id, const std::string& extension_id,
+  int OpenChannelToExtension(int routing_id,
+                             const std::string& source_extension_id,
+                             const std::string& target_extension_id,
                              const std::string& channel_name,
                              ResourceMessageFilter* source);
 
@@ -146,7 +148,9 @@ class ExtensionMessageService
   // opened.
   void OpenChannelToExtensionOnUIThread(
     int source_process_id, int source_routing_id, int receiver_port_id,
-    const std::string& extension_id, const std::string& channel_name);
+    const std::string& source_extension_id,
+    const std::string& target_extension_id,
+    const std::string& channel_name);
 
   void OpenChannelToTabOnUIThread(
     int source_process_id, int source_routing_id, int receiver_port_id,
@@ -157,7 +161,9 @@ class ExtensionMessageService
   bool OpenChannelOnUIThreadImpl(
       IPC::Message::Sender* source, TabContents* source_contents,
       const MessagePort& receiver, int receiver_port_id,
-      const std::string& extension_id, const std::string& channel_name);
+      const std::string& source_extension_id,
+      const std::string& target_extension_id,
+      const std::string& channel_name);
 
   // NotificationObserver interface.
   void Observe(NotificationType type,

@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// -----------------------------------------------------------------------------
-// NOTE: If you change this file you need to touch renderer_resources.grd to
-// have your change take effect.
-// -----------------------------------------------------------------------------
-
 var chrome = chrome || {};
 (function () {
   native function GetChromeHidden();
@@ -103,6 +98,11 @@ var chrome = chrome || {};
   // Test if the given callback is registered for this event.
   chrome.Event.prototype.hasListener = function(cb) {
     return this.findListeners_(cb) > -1;
+  };
+
+  // Test if any callbacks are registered for this event.
+  chrome.Event.prototype.hasListeners = function(cb) {
+    return this.listeners_.length > 0;
   };
 
   // Returns the index of the given callback if registered, or -1 if not

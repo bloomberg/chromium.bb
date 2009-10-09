@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// -----------------------------------------------------------------------------
-// NOTE: If you change this file you need to touch renderer_resources.grd to
-// have your change take effect.
-// -----------------------------------------------------------------------------
-
 // This script contains privileged chrome extension related javascript APIs.
 // It is loaded by pages whose URL has the chrome-extension protocol.
 
@@ -221,11 +216,7 @@ var chrome = chrome || {};
   }
 
   chromeHidden.onLoad.addListener(function (extensionId) {
-    chrome.extension = new chrome.Extension(extensionId);
-
-    // TODO(mpcomplete): chrome.self is deprecated.  Remove it at 1.0.
-    // http://code.google.com/p/chromium/issues/detail?id=16356
-    chrome.self = chrome.extension;
+    chrome.initExtension(extensionId);
 
     // |apiFunctions| is a hash of name -> object that stores the
     // name & definition of the apiFunction. Custom handling of api functions
@@ -297,7 +288,7 @@ var chrome = chrome || {};
         name = connectInfo.name || name;
       }
       var portId = OpenChannelToTab(
-          tabId, chrome.extension.id_, name);
+          tabId, chromeHidden.extensionId, name);
       return chromeHidden.Port.createPort(portId, name);
     }
 

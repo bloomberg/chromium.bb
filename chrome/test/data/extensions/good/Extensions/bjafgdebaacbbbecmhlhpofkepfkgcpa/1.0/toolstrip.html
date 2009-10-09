@@ -11,6 +11,13 @@ window.onload = function() {
       // Ignore other messages since they are from us.
     });
   });
+  chrome.extension.onConnectExternal.addListener(function(port) {
+    port.onMessage.addListener(function(msg) {
+      if (msg.testConnectExternal) {
+        port.postMessage({success: true, senderId: port.sender.id});
+      }
+    });
+  });
 };
 
 // Tests that postMessage to the tab and its response works.

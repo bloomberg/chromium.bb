@@ -28,6 +28,11 @@ class ExtensionBase : public v8::Extension {
                 const char** deps)
       : v8::Extension(name, source, dep_count, deps) {}
 
+  // Note: do not call this function before or during the chromeHidden.onLoad
+  // event dispatch. The URL might not have been committed yet and might not
+  // be an extension URL.
+  static std::string ExtensionIdForCurrentContext();
+
   // Derived classes should call this at the end of their implementation in
   // order to expose common native functions, like GetChromeHidden, to the
   // v8 extension.

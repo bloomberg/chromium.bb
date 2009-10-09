@@ -182,8 +182,10 @@
                   <li>
                     <a href="#events">Events</a>
                     <ol>
-                      <li jsinstance="*0">
+                      <li jsinstance="0">
                         <a href="#event-onConnect">onConnect</a>
+                      </li><li jsinstance="*1">
+                        <a href="#event-onConnectExternal">onConnectExternal</a>
                       </li>
                     </ol>
                   </li>
@@ -351,7 +353,8 @@ For details, see
 
               <div class="summary"><span>Port</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.extension.connect</span>(<span jsinstance="*0" class="optional"><span style="display: none; ">, </span><span>object</span>
+                  <span>chrome.extension.connect</span>(<span jsinstance="0" class="optional"><span style="display: none; ">, </span><span>string</span>
+                      <var><span>extensionId</span></var></span><span jsinstance="*1" class="optional"><span>, </span><span>object</span>
                       <var><span>connectInfo</span></var></span>)</div>
 
               <div class="description">
@@ -361,7 +364,48 @@ For details, see
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
-                  <div jsinstance="*0">
+                  <div jsinstance="0">
+                    <div>
+          <dt>
+            <var>extensionId</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The extension ID of the extension you want to connect to. If omitted, default is your own extension.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div><div jsinstance="*1">
                     <div>
           <dt>
             <var>connectInfo</var>
@@ -1129,7 +1173,7 @@ For details, see
             <h3 id="events">Events</h3>
 
             <!-- iterates over all events -->
-            <div class="apiItem" jsinstance="*0">
+            <div class="apiItem" jsinstance="0">
               <a name="event-onConnect"></a>
               <h4>onConnect</h4>
 
@@ -1141,6 +1185,70 @@ For details, see
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
                 <p>Fired when a connection is made from either an extension process or a content script.</p>
+
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div jsinstance="*0">
+                    <div>
+          <dt>
+            <var>port</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="extension.html#type-Port">Port</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
+                          array of <span><span></span></span>
+                        </span>
+                        <span>paramType</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /decription -->
+
+            </div><div class="apiItem" jsinstance="*1">
+              <a name="event-onConnectExternal"></a>
+              <h4>onConnectExternal</h4>
+
+              <div class="summary">
+                <!-- Note: intentionally longer 80 columns -->
+                <span class="subdued">chrome.extension.</span><span>onConnectExternal</span><span class="subdued">.addListener</span>(function(<span>Port port</span>) <span class="subdued">{...}</span>);
+              </div>
+
+              <div class="description">
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Fired when a connection is made from another extension.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -1415,6 +1523,40 @@ For details, see
               </div><div jsinstance="*4">
                 <div>
           <dt>
+            <var>sender</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>This property will <b>only</b> be present on ports passed to onConnect/onConnectExternal listeners.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div jsinstance="0">
+                <div>
+          <dt>
             <var>tab</var>
               <em>
 
@@ -1441,7 +1583,7 @@ For details, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>This property will <b>only</b> be present on ports passed to onConnect listeners when the connection was opened from a tab or content script.</dd>
+          <dd>This property will <b>only</b> be present when the connection was opened from a tab or content script.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -1449,6 +1591,51 @@ For details, see
               <div>
                 <div>
                 </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div jsinstance="*1">
+                <div>
+          <dt>
+            <var>id</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The extension ID of the extension that opened the connection.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
               </div>
             </dl>
           </dd>

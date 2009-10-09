@@ -60,12 +60,14 @@ static void DispatchOnConnect(const ExtensionMessageService::MessagePort& port,
                               int dest_port_id,
                               const std::string& channel_name,
                               const std::string& tab_json,
-                              const std::string& extension_id) {
+                              const std::string& source_extension_id,
+                              const std::string& target_extension_id) {
   ListValue args;
   args.Set(0, Value::CreateIntegerValue(dest_port_id));
   args.Set(1, Value::CreateStringValue(channel_name));
   args.Set(2, Value::CreateStringValue(tab_json));
-  args.Set(3, Value::CreateStringValue(extension_id));
+  args.Set(3, Value::CreateStringValue(source_extension_id));
+  args.Set(4, Value::CreateStringValue(target_extension_id));
   CHECK(port.sender);
   port.sender->Send(new ViewMsg_ExtensionMessageInvoke(
       port.routing_id, ExtensionMessageService::kDispatchOnConnect, args));
@@ -193,7 +195,8 @@ void ExtensionMessageService::AllocatePortIdPair(int* port1, int* port2) {
 }
 
 int ExtensionMessageService::OpenChannelToExtension(
-    int routing_id, const std::string& extension_id,
+    int routing_id, const std::string& source_extension_id,
+    const std::string& target_extension_id,
     const std::string& channel_name, ResourceMessageFilter* source) {
   DCHECK_EQ(MessageLoop::current(),
             ChromeThread::GetMessageLoop(ChromeThread::IO));
@@ -208,7 +211,8 @@ int ExtensionMessageService::OpenChannelToExtension(
   ui_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this,
           &ExtensionMessageService::OpenChannelToExtensionOnUIThread,
-          source->id(), routing_id, port2_id, extension_id, channel_name));
+          source->id(), routing_id, port2_id, source_extension_id,
+          target_extension_id, channel_name));
 
   return port1_id;
 }
@@ -239,20 +243,24 @@ int ExtensionMessageService::OpenChannelToTab(int routing_id,
 
 void ExtensionMessageService::OpenChannelToExtensionOnUIThread(
     int source_process_id, int source_routing_id, int receiver_port_id,
-    const std::string& extension_id, const std::string& channel_name) {
+    const std::string& source_extension_id,
+    const std::string& target_extension_id,
+    const std::string& channel_name) {
   if (!profile_)
     return;
 
   RenderProcessHost* source = RenderProcessHost::FromID(source_process_id);
   MessagePort receiver(
-      profile_->GetExtensionProcessManager()->GetExtensionProcess(extension_id),
+      profile_->GetExtensionProcessManager()->GetExtensionProcess(
+          target_extension_id),
       MSG_ROUTING_CONTROL);
   receiver.debug_info = 1;
   TabContents* source_contents = tab_util::GetTabContentsByID(
       source_process_id, source_routing_id);
   OpenChannelOnUIThreadImpl(source, source_contents,
                             receiver, receiver_port_id,
-                            extension_id, channel_name);
+                            source_extension_id, target_extension_id,
+                            channel_name);
 }
 
 void ExtensionMessageService::OpenChannelToTabOnUIThread(
@@ -273,13 +281,15 @@ void ExtensionMessageService::OpenChannelToTabOnUIThread(
       source_process_id, source_routing_id);
   OpenChannelOnUIThreadImpl(source, source_contents,
                             receiver, receiver_port_id,
-                            extension_id, channel_name);
+                            extension_id, extension_id, channel_name);
 }
 
 bool ExtensionMessageService::OpenChannelOnUIThreadImpl(
     IPC::Message::Sender* source, TabContents* source_contents,
     const MessagePort& receiver, int receiver_port_id,
-    const std::string& extension_id, const std::string& channel_name) {
+    const std::string& source_extension_id,
+    const std::string& target_extension_id,
+    const std::string& channel_name) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
   // TODO(mpcomplete): notify source if reciever doesn't exist
@@ -320,7 +330,7 @@ bool ExtensionMessageService::OpenChannelOnUIThreadImpl(
   // Send the connect event to the receiver.  Give it the opener's port ID (the
   // opener has the opposite port ID).
   DispatchOnConnect(receiver, receiver_port_id, channel_name, tab_json,
-                    extension_id);
+                    source_extension_id, target_extension_id);
 
   return true;
 }
@@ -342,7 +352,8 @@ int ExtensionMessageService::OpenSpecialChannelToExtension(
       MSG_ROUTING_CONTROL);
   receiver.debug_info = 4;
   if (!OpenChannelOnUIThreadImpl(
-      source, NULL, receiver, port2_id, extension_id, channel_name))
+      source, NULL, receiver, port2_id, extension_id, extension_id,
+      channel_name))
     return -1;
 
   return port1_id;
@@ -365,7 +376,7 @@ int ExtensionMessageService::OpenSpecialChannelToTab(
   receiver.debug_info = 5;
   if (!OpenChannelOnUIThreadImpl(source, NULL,
                                  receiver, port2_id,
-                                 extension_id, channel_name))
+                                 extension_id, extension_id, channel_name))
     return -1;
 
   return port1_id;
