@@ -4,3 +4,5 @@ VisitedLinkEventsTest.Coalescense
 VisitedLinkRelayTest.Basics
 # Hangs (or takes forever?) reliably on bots; see http://crbug.com/23580
 RenderViewTest.ImeComposition
+# Hangs sometimes; see http://crbug.com/24416
+DnsMasterTest.MassiveConcurrentLookupTest
