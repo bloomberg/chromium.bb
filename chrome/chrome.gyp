@@ -5620,7 +5620,8 @@
                              '<(linux_strip_binary)',
                              '<(PRODUCT_DIR)/chrome',
                              '<@(_outputs)'],
-                  'message': 'Dumping breakpad symbols to <(_outputs)'
+                  'message': 'Dumping breakpad symbols to <(_outputs)',
+                  'process_outputs_as_sources': 1,
                 },
               ],
               'dependencies': [
