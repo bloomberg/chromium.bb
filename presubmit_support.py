@@ -63,6 +63,10 @@ def normpath(path):
   path = path.replace(os.sep, '/')
   return os.path.normpath(path)
 
+def PromptYesNo(input_stream, output_stream, prompt):
+  output_stream.write(prompt)
+  response = input_stream.readline().strip().lower()
+  return response == 'y' or response == 'yes'
 
 class OutputApi(object):
   """This class (more like a module) gets passed to presubmit scripts so that
@@ -102,9 +106,8 @@ class OutputApi(object):
                             self._long_text)
 
       if self.ShouldPrompt() and may_prompt:
-        output_stream.write('Are you sure you want to continue? (y/N): ')
-        response = input_stream.readline()
-        if response.strip().lower() != 'y':
+        if not PromptYesNo(input_stream, output_stream,
+                           'Are you sure you want to continue? (y/N): '):
           return False
 
       return not self.IsFatal()
@@ -953,10 +956,9 @@ def DoPresubmitChecks(change,
     print "Presubmit checks took %.1fs to calculate." % total_time
 
   if not errors and warnings and may_prompt:
-    output_stream.write(
-      'There were presubmit warnings. Sure you want to continue? (y/N): ')
-    response = input_stream.readline()
-    if response.strip().lower() != 'y':
+    if not PromptYesNo(input_stream, output_stream,
+                       'There were presubmit warnings. '
+                       'Are you sure you wish to continue? (y/N): '):
       error_count += 1
 
   global _ASKED_FOR_FEEDBACK

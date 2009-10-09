@@ -78,15 +78,16 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.mox.ReplayAll()
     members = [
       'AffectedFile', 'Change', 'DoGetTrySlaves', 'DoPresubmitChecks',
-      'GetTrySlavesExecuter', 'GitChange', 'GitAffectedFile', 'InputApi',
-      'ListRelevantPresubmitFiles', 'Main', 'NotImplementedException',
-      'OutputApi', 'ParseFiles', 'PresubmitExecuter', 'ScanSubDirs',
-      'SvnAffectedFile', 'SvnChange',
-      'cPickle', 'cStringIO', 'exceptions',
-      'fnmatch', 'gcl', 'gclient_scm', 'glob', 'logging', 'marshal', 'normpath',
-      'optparse', 'os', 'pickle',
-      'presubmit_canned_checks', 'random', 're', 'subprocess', 'sys', 'time',
-      'tempfile', 'traceback', 'types', 'unittest', 'urllib2', 'warnings',
+      'GetTrySlavesExecuter', 'GitAffectedFile', 'GitChange',
+      'InputApi', 'ListRelevantPresubmitFiles', 'Main',
+      'NotImplementedException', 'OutputApi', 'ParseFiles',
+      'PresubmitExecuter', 'PromptYesNo', 'ScanSubDirs',
+      'SvnAffectedFile', 'SvnChange', 'cPickle', 'cStringIO',
+      'exceptions', 'fnmatch', 'gcl', 'gclient_scm', 'glob',
+      'logging', 'marshal', 'normpath', 'optparse', 'os', 'pickle',
+      'presubmit_canned_checks', 'random', 're', 'subprocess', 'sys',
+      'tempfile', 'time', 'traceback', 'types', 'unittest', 'urllib2',
+      'warnings',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit, members)
