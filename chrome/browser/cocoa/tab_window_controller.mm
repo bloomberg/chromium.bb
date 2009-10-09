@@ -15,7 +15,7 @@
 @synthesize tabStripView = tabStripView_;
 @synthesize tabContentArea = tabContentArea_;
 
-- (id)initWithWindow:(NSWindow *)window {
+- (id)initWithWindow:(NSWindow*)window {
   if ((self = [super initWithWindow:window]) != nil) {
     lockedTabs_.reset([[NSMutableSet alloc] initWithCapacity:10]);
   }
@@ -77,6 +77,7 @@
   } else {
     [[[[self window] contentView] superview] addSubview:[self tabStripView]];
     [[self window] setContentView:cachedContentView_];
+    [[[[self window] contentView] superview] updateTrackingAreas];
   }
 }
 
@@ -89,9 +90,10 @@
   [NSObject cancelPreviousPerformRequestsWithTarget:self
                                            selector:@selector(removeOverlay)
                                              object:nil];
+  NSWindow* window = [self window];
   if (useOverlay && !overlayWindow_) {
     DCHECK(!cachedContentView_);
-    overlayWindow_ = [[NSPanel alloc] initWithContentRect:[[self window] frame]
+    overlayWindow_ = [[NSPanel alloc] initWithContentRect:[window frame]
                                                 styleMask:NSBorderlessWindowMask
                                                   backing:NSBackingStoreBuffered
                                                     defer:YES];
@@ -99,17 +101,17 @@
     [overlayWindow_ setBackgroundColor:[NSColor clearColor]];
     [overlayWindow_ setOpaque:NO];
     [overlayWindow_ setDelegate:self];
-    cachedContentView_ = [[self window] contentView];
+    cachedContentView_ = [window contentView];
     [self moveViewsBetweenWindowAndOverlay:useOverlay];
-    [[self window] addChildWindow:overlayWindow_ ordered:NSWindowAbove];
+    [window addChildWindow:overlayWindow_ ordered:NSWindowAbove];
     [overlayWindow_ orderFront:nil];
   } else if (!useOverlay && overlayWindow_) {
     DCHECK(cachedContentView_);
-    [[self window] setContentView:cachedContentView_];
+    [window setContentView:cachedContentView_];
     [self moveViewsBetweenWindowAndOverlay:useOverlay];
-    [[self window] makeFirstResponder:cachedContentView_];
-    [[self window] display];
-    [[self window] removeChildWindow:overlayWindow_];
+    [window makeFirstResponder:cachedContentView_];
+    [window display];
+    [window removeChildWindow:overlayWindow_];
     [overlayWindow_ orderOut:nil];
     [overlayWindow_ release];
     overlayWindow_ = nil;
@@ -134,7 +136,7 @@
   NOTIMPLEMENTED();
 }
 
-- (NSView *)selectedTabView {
+- (NSView*)selectedTabView {
   NOTIMPLEMENTED();
   return nil;
 }

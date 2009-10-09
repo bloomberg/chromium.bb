@@ -179,9 +179,7 @@ class PrefObserverBridge : public NotificationObserver {
 
   EncodingMenuControllerDelegate::BuildEncodingMenu(profile_, encodingMenu_);
 }
-- (void)removeFromSuperview {
-  NSLog(@"remove");
-}
+
 - (void)mouseExited:(NSEvent*)theEvent {
   [[hoveredButton_ cell] setMouseInside:NO animate:YES];
   [hoveredButton_ release];
@@ -189,8 +187,8 @@ class PrefObserverBridge : public NotificationObserver {
 }
 
 - (NSButton*)hoverButtonForEvent:(NSEvent*)theEvent {
-  NSButton* targetView = (NSButton *)[[self view]
-                                       hitTest:[theEvent locationInWindow]];
+  NSButton* targetView = (NSButton*)[[self view]
+                                     hitTest:[theEvent locationInWindow]];
 
   // Only interpret the view as a hoverButton_ if it's both button and has a
   // button cell that cares.  GradientButtonCell derived cells care.
@@ -434,10 +432,10 @@ class PrefObserverBridge : public NotificationObserver {
   [resizeDelegate_ resizeView:[self view] newHeight:newToolbarHeight];
 }
 
-- (NSString *)view:(NSView *)view
-  stringForToolTip:(NSToolTipTag)tag
-             point:(NSPoint)point
-          userData:(void *)userData {
+- (NSString*)view:(NSView*)view
+ stringForToolTip:(NSToolTipTag)tag
+            point:(NSPoint)point
+         userData:(void*)userData {
   DCHECK(view == goButton_);
 
   // Following chrome/browser/views/go_button.cc: GoButton::GetTooltipText()

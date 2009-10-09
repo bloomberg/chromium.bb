@@ -33,11 +33,15 @@
   self = [super initWithNibName:@"TabView" bundle:mac_util::MainAppBundle()];
   if (self != nil) {
     isIconShowing_ = YES;
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(viewResized:)
-               name:NSViewFrameDidChangeNotification
-             object:[self view]];
+    NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+    [defaultCenter addObserver:self
+                      selector:@selector(viewResized:)
+                          name:NSViewFrameDidChangeNotification
+                        object:[self view]];
+    [defaultCenter addObserver:self
+                      selector:@selector(themeChangedNotification:)
+                          name:kGTMThemeDidChangeNotification
+                        object:nil];
   }
   return self;
 }
@@ -52,9 +56,10 @@
 // mark ourselves as needing a redraw.
 - (void)internalSetSelected:(BOOL)selected {
   selected_ = selected;
-  [(TabView *)[self view] setState:selected];
+  TabView* tabView = static_cast<TabView*>([self view]);
+  [tabView setState:selected];
   [self updateVisibility];
-  [self applyTheme];
+  [self updateTitleColor];
 }
 
 // Called when the tab's nib is done loading and all outlets are hooked up.
@@ -70,9 +75,6 @@
   NSRect titleFrame = [titleView_ frame];
   iconTitleXOffset_ = NSMinX(titleFrame) - NSMinX(originalIconFrame_);
   titleCloseWidthOffset_ = NSMaxX([closeButton_ frame]) - NSMaxX(titleFrame);
-
-  // Ensure we don't show favicon if the tab is already too small to begin with.
-  [self updateVisibility];
 
   [self internalSetSelected:selected_];
 }
@@ -100,7 +102,7 @@
   return [[self target] isCommandEnabled:command forController:self];
 }
 
-- (void)setTitle:(NSString *)title {
+- (void)setTitle:(NSString*)title {
   [[self view] setToolTip:title];
   [super setTitle:title];
 }
@@ -131,7 +133,7 @@
   return iconView_;
 }
 
-- (NSString *)toolTip {
+- (NSString*)toolTip {
   return [[self view] toolTip];
 }
 
@@ -212,6 +214,21 @@
   [titleView_ setFrame:titleFrame];
 }
 
+- (void)updateTitleColor {
+  NSColor* titleColor = nil;
+  GTMTheme* theme = [[self view] gtm_theme];
+  if (![self selected]) {
+    titleColor = [theme textColorForStyle:GTMThemeStyleTabBarDeselected
+                                    state:GTMThemeStateActiveWindow];
+  }
+  // Default to the selected text color unless told otherwise.
+  if (!titleColor) {
+    titleColor = [theme textColorForStyle:GTMThemeStyleTabBarSelected
+                                    state:GTMThemeStateActiveWindow];
+  }
+  [titleView_ setTextColor:titleColor ? titleColor : [NSColor textColor]];
+}
+
 // Called when our view is resized. If it gets too small, start by hiding
 // the close button and only show it if tab is selected. Eventually, hide the
 // icon as well. We know that this is for our view because we only registered
@@ -220,21 +237,12 @@
   [self updateVisibility];
 }
 
-- (void)applyTheme {
-  GTMTheme* theme = [[self view] gtm_theme];
-  NSColor* color = nil;
-  if (!selected_) {
-    color = [theme textColorForStyle:GTMThemeStyleTabBarDeselected
-                               state:GTMThemeStateActiveWindow];
+- (void)themeChangedNotification:(NSNotification*)notification {
+  GTMTheme* theme = [notification object];
+  NSView* view = [self view];
+  if ([theme isEqual:[view gtm_theme]]) {
+    [self updateTitleColor];
   }
-  // Default to the selected text color unless told otherwise.
-  if (!color) {
-    color = [theme textColorForStyle:GTMThemeStyleToolBar
-                               state:GTMThemeStateActiveWindow];
-  }
-
-  [titleView_ setTextColor:color ? color : [NSColor textColor]];
-  [[self view] setNeedsDisplay:YES];
 }
 
 // Called by the tabs to determine whether we are in rapid (tab) closure mode.

@@ -51,8 +51,8 @@ const int kWindowGradientHeight = 24;
 }
 
 @interface GTMTheme (BrowserThemeProviderInitialization)
-+ (GTMTheme *)themeWithBrowserThemeProvider:(BrowserThemeProvider*)provider
-                             isOffTheRecord:(BOOL)offTheRecord;
++ (GTMTheme*)themeWithBrowserThemeProvider:(BrowserThemeProvider*)provider
+                            isOffTheRecord:(BOOL)offTheRecord;
 @end
 
 @interface NSWindow (NSPrivateApis)
@@ -72,12 +72,6 @@ const int kWindowGradientHeight = 24;
 
 @interface BrowserWindowController(Private)
 
-// Leopard's gradient heuristic gets confused by our tabs and makes the title
-// gradient jump when creating a tab that is less than a tab width from the
-// right side of the screen. This function disables Leopard's gradient
-// heuristic.
-- (void)fixWindowGradient;
-
 // Saves the window's position in the local state preferences.
 - (void)saveWindowPositionIfNeeded;
 
@@ -92,9 +86,6 @@ willPositionSheet:(NSWindow*)sheet
 
 // Assign a theme to the window.
 - (void)setTheme;
-
-// Theme up the window.
-- (void)applyTheme;
 
 // Repositions the windows subviews.
 - (void)layoutSubviews;
@@ -226,8 +217,6 @@ willPositionSheet:(NSWindow*)sheet
       [extensionShelfController_ wasInsertedIntoWindow];
     }
 
-    [self fixWindowGradient];
-
     // Force a relayout of all the various bars.
     [self layoutSubviews];
 
@@ -338,11 +327,16 @@ willPositionSheet:(NSWindow*)sheet
 - (void)windowDidBecomeMain:(NSNotification*)notification {
   BrowserList::SetLastActive(browser_.get());
   [self saveWindowPositionIfNeeded];
-  [self applyTheme];
+
+  // TODO(dmaclach): Instead of redrawing the whole window, views that care
+  // about the active window state should be registering for notifications.
+  [[self window] setViewsNeedDisplay:YES];
 }
 
 - (void)windowDidResignMain:(NSNotification*)notification {
-  [self applyTheme];
+  // TODO(dmaclach): Instead of redrawing the whole window, views that care
+  // about the active window state should be registering for notifications.
+  [[self window] setViewsNeedDisplay:YES];
 }
 
 // Called when we are activated (when we gain focus).
@@ -534,7 +528,7 @@ willPositionSheet:(NSWindow*)sheet
   EncodingMenuController encoding_controller;
   if (encoding_controller.DoesCommandBelongToEncodingMenu(tag)) {
     DCHECK(browser_.get());
-    Profile *profile = browser_->profile();
+    Profile* profile = browser_->profile();
     DCHECK(profile);
     TabContents* current_tab = browser_->GetSelectedTabContents();
     if (!current_tab) {
@@ -753,7 +747,7 @@ willPositionSheet:(NSWindow*)sheet
   return [tabStripController_ selectedTabView];
 }
 
-- (TabStripController *)tabStripController {
+- (TabStripController*)tabStripController {
   return tabStripController_;
 }
 
@@ -1022,11 +1016,33 @@ willPositionSheet:(NSWindow*)sheet
 
 - (void)userChangedTheme {
   [self setTheme];
-  [self applyTheme];
+  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+  [defaultCenter postNotificationName:kGTMThemeDidChangeNotification
+                               object:theme_];
+  // TODO(dmaclach): Instead of redrawing the whole window, views that care
+  // about the active window state should be registering for notifications.
+  [[self window] setViewsNeedDisplay:YES];
 }
 
-- (GTMTheme *)gtm_themeForWindow:(NSWindow*)window {
+- (GTMTheme*)gtm_themeForWindow:(NSWindow*)window {
   return theme_ ? theme_ : [GTMTheme defaultTheme];
+}
+
+- (NSPoint)gtm_themePatternPhaseForWindow:(NSWindow*)window {
+  // Our patterns want to be drawn from the upper left hand corner of the view.
+  // Cocoa wants to do it from the lower left of the window.
+  // Rephase our pattern to fit this view. Some other views (Tabs, Toolbar etc.)
+  // will phase their patterns relative to this so all the views look right.
+  NSView* tabStripView = [self tabStripView];
+  NSRect tabStripViewWindowBounds = [tabStripView bounds];
+  NSView* windowChromeView = [[window contentView] superview];
+  tabStripViewWindowBounds =
+      [tabStripView convertRect:tabStripViewWindowBounds
+                         toView:windowChromeView];
+  NSPoint phase = NSMakePoint(NSMinX(tabStripViewWindowBounds),
+                              NSMinY(tabStripViewWindowBounds)
+                              + [TabStripController defaultTabHeight]);
+  return phase;
 }
 
 - (NSPoint)topLeftForBubble {
@@ -1134,17 +1150,6 @@ willPositionSheet:(NSWindow*)sheet
   [[[[self window] contentView] superview] addSubview:incognitoView.get()];
 }
 
-- (void)fixWindowGradient {
-  NSWindow* win = [self window];
-  if ([win respondsToSelector:@selector(
-          setAutorecalculatesContentBorderThickness:forEdge:)] &&
-      [win respondsToSelector:@selector(
-           setContentBorderThickness:forEdge:)]) {
-    [win setAutorecalculatesContentBorderThickness:NO forEdge:NSMaxYEdge];
-    [win setContentBorderThickness:kWindowGradientHeight forEdge:NSMaxYEdge];
-  }
-}
-
 - (void)saveWindowPositionIfNeeded {
   if (browser_ != BrowserList::GetLastActive())
     return;
@@ -1215,20 +1220,15 @@ willPositionSheet:(NSWindow*)sheet
 
 - (void)setTheme {
   ThemeProvider* theme_provider = browser_->profile()->GetThemeProvider();
-  if (theme_provider) {
-    GTMTheme *theme = [GTMTheme themeWithBrowserThemeProvider:
-                        (BrowserThemeProvider *)theme_provider
-                          isOffTheRecord:browser_->profile()->IsOffTheRecord()];
+  BrowserThemeProvider* browser_theme_provider =
+     static_cast<BrowserThemeProvider*>(theme_provider);
+  if (browser_theme_provider) {
+    bool offtheRecord = browser_->profile()->IsOffTheRecord();
+    GTMTheme* theme =
+        [GTMTheme themeWithBrowserThemeProvider:browser_theme_provider
+                                 isOffTheRecord:offtheRecord];
     theme_.reset([theme retain]);
   }
-}
-
-- (void)applyTheme {
-  NSColor* color =
-      [theme_ backgroundPatternColorForStyle:GTMThemeStyleWindow
-                                       state:[[self window] isMainWindow]];
-  [[self window] setBackgroundColor:color];
-  [tabStripController_ applyTheme];
 }
 
 // Private method to layout browser window subviews.  Positions the toolbar and
@@ -1349,8 +1349,8 @@ willPositionSheet:(NSWindow*)sheet
 @end
 
 @implementation GTMTheme (BrowserThemeProviderInitialization)
-+ (GTMTheme *)themeWithBrowserThemeProvider:(BrowserThemeProvider*)provider
-                             isOffTheRecord:(BOOL)isOffTheRecord {
++ (GTMTheme*)themeWithBrowserThemeProvider:(BrowserThemeProvider*)provider
+                            isOffTheRecord:(BOOL)isOffTheRecord {
   // First check if it's in the cache.
   // TODO(pinkerton): This might be a good candidate for a singleton.
   typedef std::pair<std::string, BOOL> ThemeKey;
@@ -1375,7 +1375,7 @@ willPositionSheet:(NSWindow*)sheet
     [theme setBackgroundColor:incognitoColor];
     [theme setValue:[NSColor blackColor]
       forAttribute:@"textColor"
-             style:GTMThemeStyleToolBar
+             style:GTMThemeStyleTabBarSelected
              state:GTMThemeStateActiveWindow];
     [theme setValue:[NSColor blackColor]
       forAttribute:@"textColor"
@@ -1401,7 +1401,7 @@ willPositionSheet:(NSWindow*)sheet
       provider->GetNSColor(BrowserThemeProvider::COLOR_TAB_TEXT);
   [theme setValue:tabTextColor
      forAttribute:@"textColor"
-            style:GTMThemeStyleToolBar
+            style:GTMThemeStyleTabBarSelected
             state:GTMThemeStateActiveWindow];
 
   NSColor* tabInactiveTextColor =
@@ -1480,7 +1480,24 @@ willPositionSheet:(NSWindow*)sheet
             style:GTMThemeStyleToolBar
             state:GTMThemeStateActiveWindow];
 
+  NSImage* frameOverlayImage =
+      provider->GetNSImageNamed(IDR_THEME_FRAME_OVERLAY);
+  if (frameOverlayImage) {
+    [theme setValue:frameOverlayImage
+       forAttribute:@"overlay"
+              style:GTMThemeStyleWindow
+              state:GTMThemeStateActiveWindow];
+  }
+
+  NSImage* frameOverlayInactiveImage =
+      provider->GetNSImageNamed(IDR_THEME_FRAME_OVERLAY_INACTIVE);
+  if (frameOverlayInactiveImage) {
+    [theme setValue:frameOverlayInactiveImage
+       forAttribute:@"overlay"
+              style:GTMThemeStyleWindow
+              state:GTMThemeStateInactiveWindow];
+  }
+
   return theme;
 }
 @end
-

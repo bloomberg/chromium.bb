@@ -94,7 +94,7 @@ class ToolbarModel;
            browser:(Browser*)browser;
 
 // Return the view for the currently selected tab.
-- (NSView *)selectedTabView;
+- (NSView*)selectedTabView;
 
 // Set the frame of the selected tab, also updates the internal frame dict.
 - (void)setFrameOfSelectedTab:(NSRect)frame;
@@ -132,9 +132,6 @@ class ToolbarModel;
 
 // Force the tabs to rearrange themselves to reflect the current model.
 - (void)layoutTabs;
-
-// The user changed the theme, or theme state changed.
-- (void)applyTheme;
 
 // Are we in rapid (tab) closure mode? I.e., is a full layout deferred (while
 // the user closes tabs)? Needed to overcome missing clicks during rapid tab

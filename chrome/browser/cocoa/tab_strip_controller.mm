@@ -18,7 +18,6 @@
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/constrained_window_mac.h"
 #import "chrome/browser/cocoa/tab_strip_view.h"
-#import "chrome/browser/cocoa/tab_cell.h"
 #import "chrome/browser/cocoa/tab_contents_controller.h"
 #import "chrome/browser/cocoa/tab_controller.h"
 #import "chrome/browser/cocoa/tab_strip_model_observer_bridge.h"
@@ -426,7 +425,7 @@ static const float kIndentLeavingSpaceForControls = 64.0;
       [NSAnimationContext endGrouping];
 
       // Store the frame by identifier to aviod redundant calls to animator.
-      NSValue *identifier = [NSValue valueWithPointer:[tab view]];
+      NSValue* identifier = [NSValue valueWithPointer:[tab view]];
       [targetFrames_ setObject:[NSValue valueWithRect:tabFrame]
                         forKey:identifier];
       continue;
@@ -455,8 +454,8 @@ static const float kIndentLeavingSpaceForControls = 64.0;
 
       // Check the frame by identifier to avoid redundant calls to animator.
       id frameTarget = visible && animate ? [[tab view] animator] : [tab view];
-      NSValue *identifier = [NSValue valueWithPointer:[tab view]];
-      NSValue *oldTargetValue = [targetFrames_ objectForKey:identifier];
+      NSValue* identifier = [NSValue valueWithPointer:[tab view]];
+      NSValue* oldTargetValue = [targetFrames_ objectForKey:identifier];
       if (!oldTargetValue ||
           !NSEqualRects([oldTargetValue rectValue], tabFrame)) {
         [frameTarget setFrame:tabFrame];
@@ -641,7 +640,7 @@ static const float kIndentLeavingSpaceForControls = 64.0;
     hoveredTab_ = nil;
   }
 
-  NSValue *identifier = [NSValue valueWithPointer:tab];
+  NSValue* identifier = [NSValue valueWithPointer:tab];
   [targetFrames_ removeObjectForKey:identifier];
 
   // Once we're totally done with the tab, delete its controller
@@ -782,14 +781,14 @@ static const float kIndentLeavingSpaceForControls = 64.0;
 }
 
 - (void)setFrameOfSelectedTab:(NSRect)frame {
-  NSView *view = [self selectedTabView];
-  NSValue *identifier = [NSValue valueWithPointer:view];
+  NSView* view = [self selectedTabView];
+  NSValue* identifier = [NSValue valueWithPointer:view];
   [targetFrames_ setObject:[NSValue valueWithRect:frame]
                     forKey:identifier];
   [view setFrame:frame];
 }
 
-- (NSView *)selectedTabView {
+- (NSView*)selectedTabView {
   int selectedIndex = tabModel_->selected_index();
   return [self viewAtIndex:selectedIndex];
 }
@@ -837,12 +836,6 @@ static const float kIndentLeavingSpaceForControls = 64.0;
   tabModel_->InsertTabContentsAt(index, contents, true, false);
 }
 
-- (void)applyTheme {
-  for (TabController* tab in tabArray_.get()) {
-    [tab applyTheme];
-  }
-}
-
 // Called when the tab strip view changes size. As we only registered for
 // changes on our view, we know it's only for our view. Layout w/out
 // animations since they are blocked by the resize nested runloop. We need
@@ -856,7 +849,7 @@ static const float kIndentLeavingSpaceForControls = 64.0;
   return availableResizeWidth_ != kUseFullAvailableWidth;
 }
 
-- (void)mouseMoved:(NSEvent *)event {
+- (void)mouseMoved:(NSEvent*)event {
   // Use hit test to figure out what view we are hovering over.
   TabView* targetView = (TabView*)[tabView_ hitTest:[event locationInWindow]];
   if (![targetView isKindOfClass:[TabView class]]) {

@@ -16,8 +16,12 @@
 @interface StatusBubbleMacTestWindowDelegate : NSObject <GTMThemeDelegate>;
 @end
 @implementation StatusBubbleMacTestWindowDelegate
-- (GTMTheme *)gtm_themeForWindow:(NSWindow *)window {
+- (GTMTheme*)gtm_themeForWindow:(NSWindow*)window {
   return [[[GTMTheme alloc] init] autorelease];
+}
+
+- (NSPoint)gtm_themePatternPhaseForWindow:(NSWindow*)window {
+  return NSZeroPoint;
 }
 @end
 

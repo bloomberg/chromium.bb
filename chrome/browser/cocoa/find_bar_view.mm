@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/cocoa/find_bar_view.h"
+#import "chrome/browser/cocoa/find_bar_view.h"
 
 @implementation FindBarView
 
@@ -27,7 +27,7 @@
   NSPoint bottomRight =
       NSMakePoint(NSMaxX(rect) - (2 * curveSize), NSMinY(rect));
 
-  NSBezierPath *path = [NSBezierPath bezierPath];
+  NSBezierPath* path = [NSBezierPath bezierPath];
   [path moveToPoint:topLeft];
   [path curveToPoint:midLeft1
         controlPoint1:NSMakePoint(midLeft1.x, topLeft.y)
@@ -45,11 +45,16 @@
   [path curveToPoint:topRight
         controlPoint1:NSMakePoint(midRight2.x, topLeft.y)
         controlPoint2:NSMakePoint(midRight2.x, topLeft.y)];
-
-  [NSGraphicsContext saveGraphicsState];
+  NSGraphicsContext* context = [NSGraphicsContext currentContext];
+  [context saveGraphicsState];
   [path addClip];
-  [super drawRect:rect];
-  [NSGraphicsContext restoreGraphicsState];
+
+  // Set the pattern phase
+  NSPoint phase = [self gtm_themePatternPhase];
+
+  [context setPatternPhase:phase];
+  [super drawBackground];
+  [context restoreGraphicsState];
 
   [[self strokeColor] set];
   [path stroke];

@@ -59,7 +59,7 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
 // Overridden so that mouse clicks come to this view (the parent of the
 // hierarchy) first. We want to handle clicks and drags in this class and
 // leave the background button for display purposes only.
-- (BOOL)acceptsFirstMouse:(NSEvent *)theEvent {
+- (BOOL)acceptsFirstMouse:(NSEvent*)theEvent {
   return YES;
 }
 
@@ -88,7 +88,7 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   [self setNeedsDisplay:YES];
 }
 
-- (void)mouseEntered:(NSEvent *)theEvent {
+- (void)mouseEntered:(NSEvent*)theEvent {
   if ([theEvent trackingArea] == closeTrackingArea_) {
     [closeButton_ setImage:nsimage_cache::ImageNamed(@"close_bar_h.pdf")];
   } else {
@@ -99,13 +99,13 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   }
 }
 
-- (void)mouseMoved:(NSEvent *)theEvent {
+- (void)mouseMoved:(NSEvent*)theEvent {
   hoverPoint_ = [self convertPoint:[theEvent locationInWindow]
                           fromView:nil];
   [self setNeedsDisplay:YES];
 }
 
-- (void)mouseExited:(NSEvent *)theEvent {
+- (void)mouseExited:(NSEvent*)theEvent {
   if ([theEvent trackingArea] == closeTrackingArea_) {
     [closeButton_ setImage:nsimage_cache::ImageNamed(@"close_bar.pdf")];
   } else {
@@ -118,7 +118,7 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
 
 // Determines which view a click in our frame actually hit. It's either this
 // view or our child close button.
-- (NSView *)hitTest:(NSPoint)aPoint {
+- (NSView*)hitTest:(NSPoint)aPoint {
   NSPoint viewPoint = [self convertPoint:aPoint fromView:[self superview]];
   NSRect frame = [self frame];
 
@@ -136,7 +136,7 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
 
 // Returns |YES| if this tab can be torn away into a new window.
 - (BOOL)canBeDragged {
-  NSWindowController *controller = [sourceWindow_ windowController];
+  NSWindowController* controller = [sourceWindow_ windowController];
   if ([controller isKindOfClass:[TabWindowController class]]) {
     TabWindowController* realController =
         static_cast<TabWindowController*>(controller);
@@ -154,7 +154,7 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   for (NSWindow* window in [NSApp windows]) {
     if (window == dragWindow) continue;
     if (![window isVisible]) continue;
-    NSWindowController *controller = [window windowController];
+    NSWindowController* controller = [window windowController];
     if ([controller isKindOfClass:[TabWindowController class]]) {
       TabWindowController* realController =
           static_cast<TabWindowController*>(controller);
@@ -189,7 +189,7 @@ static const NSTimeInterval kTearDuration = 0.333;
 // has moved less than the threshold, we want to close the tab.
 static const CGFloat kRapidCloseDist = 2.5;
 
-- (void)mouseDown:(NSEvent *)theEvent {
+- (void)mouseDown:(NSEvent*)theEvent {
   NSPoint downLocation = [theEvent locationInWindow];
 
   // During the tab closure animation (in particular, during rapid tab closure),
@@ -284,7 +284,7 @@ static const CGFloat kRapidCloseDist = 2.5;
   }
 }
 
-- (void)mouseDragged:(NSEvent *)theEvent {
+- (void)mouseDragged:(NSEvent*)theEvent {
   // Special-case this to keep the logic below simpler.
   if (moveWindowOnDrag_) {
     NSPoint thisPoint = [NSEvent mouseLocation];
@@ -452,7 +452,7 @@ static const CGFloat kRapidCloseDist = 2.5;
     // Compute where placeholder should go and insert it into the
     // destination tab strip.
     NSRect dropTabFrame = [[targetController_ tabStripView] frame];
-    TabView *draggedTabView = (TabView *)[draggedController_ selectedTabView];
+    TabView* draggedTabView = (TabView*)[draggedController_ selectedTabView];
     NSRect tabFrame = [draggedTabView frame];
     tabFrame.origin = [dragWindow_ convertBaseToScreen:tabFrame.origin];
     tabFrame.origin = [[targetController_ window]
@@ -490,7 +490,7 @@ static const CGFloat kRapidCloseDist = 2.5;
   }
 }
 
-- (void)mouseUp:(NSEvent *)theEvent {
+- (void)mouseUp:(NSEvent*)theEvent {
   // The drag/click is done. If the user dragged the mouse, finalize the drag
   // and clean up.
 
@@ -549,19 +549,12 @@ static const CGFloat kRapidCloseDist = 2.5;
   }
 }
 
-- (NSPoint)patternPhase {
-  NSPoint phase = NSZeroPoint;
-  phase.x -= [self convertRect:[self bounds] toView:nil].origin.x;
-  // offset to start pattern in upper left corner
-  phase.y += NSHeight([self bounds]) - 1;
-  return phase;
-}
-
 - (void)drawRect:(NSRect)rect {
-  [[NSGraphicsContext currentContext] saveGraphicsState];
+  NSGraphicsContext* context = [NSGraphicsContext currentContext];
+  [context saveGraphicsState];
   rect = [self bounds];
   BOOL active = [[self window] isKeyWindow] || [[self window] isMainWindow];
-  BOOL selected = [(NSButton *)self state];
+  BOOL selected = [(NSButton*)self state];
 
   // Inset by 0.5 in order to draw on pixels rather than on borders (which would
   // cause blurry pixels). Decrease height by 1 in order to move away from the
@@ -583,7 +576,7 @@ static const CGFloat kRapidCloseDist = 2.5;
 
   // Outset many of these values by 1 to cause the fill to bleed outside the
   // clip area.
-  NSBezierPath *path = [NSBezierPath bezierPath];
+  NSBezierPath* path = [NSBezierPath bezierPath];
   [path moveToPoint:NSMakePoint(bottomLeft.x - 1, bottomLeft.y - 2)];
   [path lineToPoint:NSMakePoint(bottomLeft.x - 1, bottomLeft.y)];
   [path lineToPoint:bottomLeft];
@@ -601,52 +594,51 @@ static const CGFloat kRapidCloseDist = 2.5;
   [path lineToPoint:NSMakePoint(bottomRight.x + 1, bottomRight.y)];
   [path lineToPoint:NSMakePoint(bottomRight.x + 1, bottomRight.y - 2)];
 
-  GTMTheme *theme = [self gtm_theme];
+  GTMTheme* theme = [self gtm_theme];
+
+  // Setting the pattern phase
+  NSPoint phase = [self gtm_themePatternPhase];
+  [context setPatternPhase:phase];
 
   if (!selected) {
-    NSColor *windowColor =
+    NSColor* windowColor =
         [theme backgroundPatternColorForStyle:GTMThemeStyleWindow
                                         state:GTMThemeStateActiveWindow];
     if (windowColor) {
       [windowColor set];
-
-      [[NSGraphicsContext currentContext] setPatternPhase:[self patternPhase]];
     } else {
-      NSPoint phase = [self patternPhase];
-      phase.y += 1;
-      [[NSGraphicsContext currentContext] setPatternPhase:phase];
       [[NSColor windowBackgroundColor] set];
     }
 
     [path fill];
 
-    NSColor *tabColor =
+    NSColor* tabColor =
         [theme backgroundPatternColorForStyle:GTMThemeStyleTabBarDeselected
                                         state:GTMThemeStateActiveWindow];
     if (tabColor) {
       [tabColor set];
-      [[NSGraphicsContext currentContext] setPatternPhase:[self patternPhase]];
     } else {
       [[NSColor colorWithCalibratedWhite:1.0 alpha:0.3] set];
     }
     [path fill];
-
   }
 
-  [[NSGraphicsContext currentContext] saveGraphicsState];
+  [context saveGraphicsState];
   [path addClip];
 
   if (selected || hoverAlpha_ > 0) {
     // Draw the background.
     CGFloat backgroundAlpha = hoverAlpha_ * 0.5;
-    [[NSGraphicsContext currentContext] saveGraphicsState];
-    CGContextRef context =
-        (CGContextRef)([[NSGraphicsContext currentContext] graphicsPort]);
-    CGContextBeginTransparencyLayer(context, 0);
+    [context saveGraphicsState];
+    CGContextRef cgContext =
+        (CGContextRef)([context graphicsPort]);
+    CGContextBeginTransparencyLayer(cgContext, 0);
     if (!selected)
-      CGContextSetAlpha(context, backgroundAlpha);
+      CGContextSetAlpha(cgContext, backgroundAlpha);
     [path addClip];
-    [super drawRect:rect];
+    [context saveGraphicsState];
+    [super drawBackground];
+    [context restoreGraphicsState];
 
     // Draw a mouse hover gradient for the default themes
     if (!selected) {
@@ -671,8 +663,8 @@ static const CGFloat kRapidCloseDist = 2.5;
       }
     }
 
-    CGContextEndTransparencyLayer(context);
-    [[NSGraphicsContext currentContext] restoreGraphicsState];
+    CGContextEndTransparencyLayer(cgContext);
+    [context restoreGraphicsState];
   }
 
   // Draw the top inner highlight.
@@ -684,10 +676,10 @@ static const CGFloat kRapidCloseDist = 2.5;
       setStroke];
   [highlightPath stroke];
 
-  [[NSGraphicsContext currentContext] restoreGraphicsState];
+  [context restoreGraphicsState];
 
   // Draw the top stroke.
-  [[NSGraphicsContext currentContext] saveGraphicsState];
+  [context saveGraphicsState];
   if (selected) {
     [[NSColor colorWithDeviceWhite:0.0 alpha:active ? 0.3 : 0.15] set];
   } else {
@@ -696,7 +688,7 @@ static const CGFloat kRapidCloseDist = 2.5;
   }
   [path setLineWidth:1.0];
   [path stroke];
-  [[NSGraphicsContext currentContext] restoreGraphicsState];
+  [context restoreGraphicsState];
 
   // Draw the bottom border.
   if (!selected) {
@@ -706,13 +698,20 @@ static const CGFloat kRapidCloseDist = 2.5;
     [[NSColor colorWithDeviceWhite:0.0 alpha:active ? 0.3 : 0.15] set];
     NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
   }
-  [[NSGraphicsContext currentContext] restoreGraphicsState];
+  [context restoreGraphicsState];
 }
 
 // Called when the user hits the right mouse button (or control-clicks) to
 // show a context menu.
 - (void)rightMouseDown:(NSEvent*)theEvent {
   [NSMenu popUpContextMenu:[self menu] withEvent:theEvent forView:self];
+}
+
+- (void)viewDidMoveToWindow {
+  [super viewDidMoveToWindow];
+  if ([self window]) {
+    [controller_ updateTitleColor];
+  }
 }
 
 @end

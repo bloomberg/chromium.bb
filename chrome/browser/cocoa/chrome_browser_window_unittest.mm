@@ -8,6 +8,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #import "chrome/browser/cocoa/chrome_browser_window.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
+#import "chrome/browser/cocoa/browser_frame_view.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -73,7 +74,7 @@ TEST_F(ChromeBrowserWindowTest, ShowAndClose) {
 // forwards it to [delegate executeCommand:].  Assume that other
 // CommandForKeyboardShortcut() will work the same for the rest.
 TEST_F(ChromeBrowserWindowTest, PerformKeyEquivalentForwardToExecuteCommand) {
-  NSEvent *event = KeyEvent(NSCommandKeyMask, kVK_ANSI_1);
+  NSEvent* event = KeyEvent(NSCommandKeyMask, kVK_ANSI_1);
 
   id delegate = [OCMockObject mockForClass:[BrowserWindowController class]];
   // -stub to satisfy the DCHECK.
@@ -95,7 +96,7 @@ TEST_F(ChromeBrowserWindowTest, PerformKeyEquivalentForwardToExecuteCommand) {
 // TODO(shess) Think of a way to test that it is sent to the
 // superclass.
 TEST_F(ChromeBrowserWindowTest, PerformKeyEquivalentNoForward) {
-  NSEvent *event = KeyEvent(0, 0);
+  NSEvent* event = KeyEvent(0, 0);
 
   id delegate = [OCMockObject mockForClass:[BrowserWindowController class]];
   // -stub to satisfy the DCHECK.
@@ -140,6 +141,52 @@ TEST_F(ChromeBrowserWindowTest, DoesHideTitle) {
   // same as the window with an empty title.
   EXPECT_TRUE([window_ _isTitleHidden]);
   EXPECT_TRUE([emptyTitleData isEqualToData:hiddenTitleData]);
+}
+
+// Test to make sure that our window widgets are in the right place.
+TEST_F(ChromeBrowserWindowTest, WindowWidgetLocation) {
+  NSCell* closeBoxCell = [window_ accessibilityAttributeValue:
+                          NSAccessibilityCloseButtonAttribute];
+  NSView* closeBoxControl = [closeBoxCell controlView];
+  EXPECT_TRUE(closeBoxControl);
+  NSRect closeBoxFrame = [closeBoxControl frame];
+  NSRect windowBounds = [window_ frame];
+  windowBounds.origin = NSZeroPoint;
+  EXPECT_EQ(NSMaxY(closeBoxFrame),
+            NSMaxY(windowBounds) - kChromeWindowButtonsOffsetFromTop);
+  EXPECT_EQ(NSMinX(closeBoxFrame), kChromeWindowButtonsOffsetFromLeft);
+
+  NSCell* miniaturizeCell = [window_ accessibilityAttributeValue:
+                             NSAccessibilityMinimizeButtonAttribute];
+  NSView* miniaturizeControl = [miniaturizeCell controlView];
+  EXPECT_TRUE(miniaturizeControl);
+  NSRect miniaturizeFrame = [miniaturizeControl frame];
+  EXPECT_EQ(NSMaxY(miniaturizeFrame),
+            NSMaxY(windowBounds) - kChromeWindowButtonsOffsetFromTop);
+  EXPECT_EQ(NSMinX(miniaturizeFrame),
+            NSMaxX(closeBoxFrame) + kChromeWindowButtonsInterButtonSpacing);
+}
+
+// Test that we actually have a tracking area in place.
+TEST_F(ChromeBrowserWindowTest, WindowWidgetTrackingArea) {
+  NSCell* closeBoxCell = [window_ accessibilityAttributeValue:
+                          NSAccessibilityCloseButtonAttribute];
+  NSView* closeBoxControl = [closeBoxCell controlView];
+  NSView* frameView = [[window_ contentView] superview];
+  NSArray* trackingAreas = [frameView trackingAreas];
+  NSPoint point = [closeBoxControl frame].origin;
+  point.x += 1;
+  point.y += 1;
+  BOOL foundArea = NO;
+  for (NSTrackingArea* area in trackingAreas) {
+    NSRect rect = [area rect];
+    foundArea = NSPointInRect(point, rect);
+    if (foundArea) {
+      EXPECT_TRUE([[area owner] isEqual:window_]);
+      break;
+    }
+  }
+  EXPECT_TRUE(foundArea);
 }
 
 }  // namespace

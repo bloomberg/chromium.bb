@@ -102,7 +102,7 @@ const float kWindowEdge = 0.7f;
   [border stroke];
 
   // Text
-  NSColor* textColor = [theme textColorForStyle:GTMThemeStyleToolBar
+  NSColor* textColor = [theme textColorForStyle:GTMThemeStyleTabBarSelected
                                           state:GTMThemeStateActiveWindow];
   NSFont* textFont = [self font];
   scoped_nsobject<NSShadow> textShadow([[NSShadow alloc] init]);

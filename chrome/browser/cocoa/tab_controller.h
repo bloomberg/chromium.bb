@@ -64,7 +64,7 @@ enum TabLoadingState {
 + (float)minSelectedTabWidth;
 
 // The view associated with this controller, pre-casted as a TabView
-- (TabView *)tabView;
+- (TabView*)tabView;
 
 // Closes the associated TabView by relaying the message to |target_| to
 // perform the close.
@@ -78,18 +78,17 @@ enum TabLoadingState {
 - (void)setIconView:(NSView*)iconView;
 - (NSView*)iconView;
 
-// (Re)apply the current theme.
-- (void)applyTheme;
-
 // Called by the tabs to determine whether we are in rapid (tab) closure mode.
 // In this mode, we handle clicks slightly differently due to animation.
 // Ideally, tabs would know about their own animation and wouldn't need this.
 - (BOOL)inRapidClosureMode;
 
+// Update the title color to match the tabs current state.
+- (void)updateTitleColor;
 @end
 
 @interface TabController(TestingAPI)
-- (NSString *)toolTip;
+- (NSString*)toolTip;
 - (int)iconCapacity;
 - (BOOL)shouldShowIcon;
 - (BOOL)shouldShowCloseButton;

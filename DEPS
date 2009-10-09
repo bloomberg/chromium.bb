@@ -118,7 +118,7 @@ deps_os = {
   },
   "mac": {
     "src/third_party/GTM":
-      "http://google-toolbox-for-mac.googlecode.com/svn/trunk@223",
+      "http://google-toolbox-for-mac.googlecode.com/svn/trunk@230",
     "src/third_party/pdfsqueeze":
       "http://pdfsqueeze.googlecode.com/svn/trunk@2",
     "src/third_party/WebKit/WebKit/mac":

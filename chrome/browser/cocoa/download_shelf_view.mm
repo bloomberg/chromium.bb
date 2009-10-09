@@ -17,17 +17,20 @@
 - (void)drawRect:(NSRect)rect {
   BOOL isKey = [[self window] isKeyWindow];
 
-  GTMTheme *theme = [self gtm_theme];
+  GTMTheme* theme = [self gtm_theme];
 
-  NSImage *backgroundImage = [theme backgroundImageForStyle:GTMThemeStyleToolBar
+  NSImage* backgroundImage = [theme backgroundImageForStyle:GTMThemeStyleToolBar
                                                state:GTMThemeStateActiveWindow];
   if (backgroundImage) {
-    [[NSGraphicsContext currentContext] setPatternPhase:NSZeroPoint];
-    NSColor *color = [NSColor colorWithPatternImage:backgroundImage];
+    // We want our backgrounds for the shelf to be phased from the upper
+    // left hand corner of the view.
+    NSPoint phase = NSMakePoint(0, NSHeight([self bounds]));
+    [[NSGraphicsContext currentContext] setPatternPhase:phase];
+    NSColor* color = [NSColor colorWithPatternImage:backgroundImage];
     [color set];
     NSRectFill([self bounds]);
   } else {
-    NSGradient *gradient = [theme gradientForStyle:GTMThemeStyleToolBar
+    NSGradient* gradient = [theme gradientForStyle:GTMThemeStyleToolBar
                                              state:isKey];
     NSPoint startPoint = [self convertPointFromBase:NSMakePoint(0, 0)];
     NSPoint endPoint = [self convertPointFromBase:
