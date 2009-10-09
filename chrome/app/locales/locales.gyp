@@ -36,6 +36,18 @@
     ['OS=="win"', {
       'targets': [
         {
+          'target_name': 'am',
+          'msvs_guid': 'A59E9C5D-5140-4D8C-A1B5-58044D577AAF',
+          'sources': [
+            '<(chrome_grit_out_dir)/generated_resources_am.rc',
+            '<(chrome_grit_out_dir)/locale_settings_am.rc',
+            '<(chrome_grit_out_dir)/strings$(CHROMIUM_BUILD)_am.rc',
+            '<(webkit_grit_out_dir)/webkit_strings_am.rc',
+            '<(app_grit_out_dir)/app_strings_am.rc',
+            '<(app_grit_out_dir)/app_locale_settings_am.rc',
+          ],
+        },
+        {
           'target_name': 'ar',
           'msvs_guid': '3AB90E6A-56FF-4C9D-B918-AB76DDBF8BE8',
           'sources': [
@@ -537,6 +549,18 @@
             '<(webkit_grit_out_dir)/webkit_strings_sv.rc',
             '<(app_grit_out_dir)/app_strings_sv.rc',
             '<(app_grit_out_dir)/app_locale_settings_sv.rc',
+          ],
+        },
+        {
+          'target_name': 'sw',
+          'msvs_guid': 'CBB54535-5590-464D-BB3A-631DAD11EBB5',
+          'sources': [
+            '<(chrome_grit_out_dir)/generated_resources_sw.rc',
+            '<(chrome_grit_out_dir)/locale_settings_sw.rc',
+            '<(chrome_grit_out_dir)/strings$(CHROMIUM_BUILD)_sw.rc',
+            '<(webkit_grit_out_dir)/webkit_strings_sw.rc',
+            '<(app_grit_out_dir)/app_strings_sw.rc',
+            '<(app_grit_out_dir)/app_locale_settings_sw.rc',
           ],
         },
         {
