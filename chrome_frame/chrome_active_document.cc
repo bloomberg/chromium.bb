@@ -277,7 +277,7 @@ STDMETHODIMP ChromeActiveDocument::Exec(const GUID* cmd_group_guid,
     return ProcessExecCommand(cmd_group_guid, command_id, cmd_exec_opt,
                               in_args, out_args);
   }
-  return S_FALSE;
+  return OLECMDERR_E_NOTSUPPORTED;
 }
 
 STDMETHODIMP ChromeActiveDocument::GetUrlForEvents(BSTR* url) {
