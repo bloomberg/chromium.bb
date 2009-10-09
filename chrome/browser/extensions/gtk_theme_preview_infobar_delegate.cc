@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/gtk_theme_installed_infobar_delegate.h"
+#include "chrome/browser/extensions/gtk_theme_preview_infobar_delegate.h"
 
 #include "chrome/browser/profile.h"
 
-GtkThemeInstalledInfoBarDelegate::GtkThemeInstalledInfoBarDelegate(
+GtkThemePreviewInfobarDelegate::GtkThemePreviewInfobarDelegate(
     TabContents* tab_contents,
     const std::string& name,
     const std::string& previous_theme,
     bool previous_use_gtk_theme)
-    : ThemeInstalledInfoBarDelegate(tab_contents, name, previous_theme),
+    : ThemePreviewInfobarDelegate(tab_contents, name, previous_theme),
       previous_use_gtk_theme_(previous_use_gtk_theme) {
 }
 
-bool GtkThemeInstalledInfoBarDelegate::Cancel() {
+bool GtkThemePreviewInfobarDelegate::Cancel() {
   if (previous_use_gtk_theme_) {
     profile()->SetNativeTheme();
     return true;
   } else {
-    return ThemeInstalledInfoBarDelegate::Cancel();
+    return ThemePreviewInfobarDelegate::Cancel();
   }
 }
