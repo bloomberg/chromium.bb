@@ -4,7 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/test_suite.h"
+#include "base/test/test_suite.h"
 #include "chrome/test/mini_installer_test/mini_installer_test_constants.h"
 #include "chrome_mini_installer.h"
 
