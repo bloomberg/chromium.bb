@@ -729,7 +729,7 @@ bool WebFrameImpl::insertStyleText(
 }
 
 void WebFrameImpl::reload() {
-  frame_->loader()->saveDocumentAndScrollState();
+  frame_->loader()->history()->saveDocumentAndScrollState();
 
   stopLoading();  // Make sure existing activity stops.
   frame_->loader()->reload();
@@ -759,16 +759,16 @@ void WebFrameImpl::loadHistoryItem(const WebHistoryItem& item) {
   // If there is no current_item, which happens when we are navigating in
   // session history after a crash, we need to manufacture one otherwise WebKit
   // hoarks. This is probably the wrong thing to do, but it seems to work.
-  RefPtr<HistoryItem> current_item = frame_->loader()->currentHistoryItem();
+  RefPtr<HistoryItem> current_item = frame_->loader()->history()->currentItem();
   if (!current_item) {
     current_item = HistoryItem::create();
     current_item->setLastVisitWasFailure(true);
-    frame_->loader()->setCurrentHistoryItem(current_item);
+    frame_->loader()->history()->setCurrentItem(current_item);
     GetWebViewImpl()->SetCurrentHistoryItem(current_item.get());
   }
 
-  frame_->loader()->goToItem(history_item.get(),
-                             WebCore::FrameLoadTypeIndexedBackForward);
+  frame_->loader()->history()->goToItem(history_item.get(),
+                                        WebCore::FrameLoadTypeIndexedBackForward);
 }
 
 void WebFrameImpl::loadData(const WebData& data,
@@ -847,7 +847,7 @@ WebHistoryItem WebFrameImpl::previousHistoryItem() const {
 }
 
 WebHistoryItem WebFrameImpl::currentHistoryItem() const {
-  frame_->loader()->saveDocumentAndScrollState();
+  frame_->loader()->history()->saveDocumentAndScrollState();
 
   return webkit_glue::HistoryItemToWebHistoryItem(
       frame_->page()->backForwardList()->currentItem());
