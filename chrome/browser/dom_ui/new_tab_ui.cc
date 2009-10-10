@@ -886,6 +886,12 @@ NewTabUI::NewTabUI(TabContents* contents)
       AddMessageHandler((new HistoryHandler())->Attach(this));
     }
 
+#ifdef CHROME_PERSONALIZATION
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync)) {
+      AddMessageHandler((new NewTabPageSyncHandler())->Attach(this));
+    }
+#endif
+
     AddMessageHandler((new NewTabPageSetHomepageHandler())->Attach(this));
 
     // In testing mode there may not be an I/O thread.
