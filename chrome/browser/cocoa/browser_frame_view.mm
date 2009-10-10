@@ -103,7 +103,7 @@ static const NSInteger kBrowserFrameViewPatternPhaseOffset = 2;
 
   // Clear out everything
   [[NSColor clearColor] set];
-  NSRectFillUsingOperation(rect, NSCompositeSourceOver);
+  NSRectFill(rect);
 
   // Set up our clip
   NSWindow* window = [self window];
