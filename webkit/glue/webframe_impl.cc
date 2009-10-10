@@ -763,7 +763,7 @@ void WebFrameImpl::loadHistoryItem(const WebHistoryItem& item) {
   if (!current_item) {
     current_item = HistoryItem::create();
     current_item->setLastVisitWasFailure(true);
-    frame_->loader()->history()->setCurrentItem(current_item);
+    frame_->loader()->history()->setCurrentItem(current_item.get());
     GetWebViewImpl()->SetCurrentHistoryItem(current_item.get());
   }
 
