@@ -9,7 +9,17 @@ referred to with deeply-nested ../../.. paths.
 
 import TestGyp
 
-test = TestGyp.TestGyp()
+# TODO(mmoss): Make only supports (theoretically) a single, global build
+# directory (through GYP_GENERATOR_FLAGS 'output_dir'), rather than
+# gyp-file-specific settings (e.g. the stuff in builddir.gypi) that the other
+# generators support, so this doesn't work yet for make.
+# TODO(mmoss) Make also has the issue that the top-level Makefile is written to
+# the "--depth" location, which is one level above 'src', but then this test
+# moves 'src' somewhere else, leaving the Makefile behind, so make can't find
+# its sources. I'm not sure if make is wrong for writing outside the current
+# directory, or if the test is wrong for assuming everything generated is under
+# the current directory.
+test = TestGyp.TestGyp(formats=['!make'])
 
 test.run_gyp('prog1.gyp', '--depth=..', chdir='src')
 
