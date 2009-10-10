@@ -391,10 +391,6 @@ const wchar_t kDisableSync[]                   = L"disable-sync";
 // Stop().  Should only use if you experience problems with the default.
 const wchar_t kSyncerThreadTimedStop[]         = L"syncer-thread-timed-stop";
 
-// Use the old pthreads SyncerThread implementation.
-// Should only use if you experience problems with the default.
-const wchar_t kSyncerThreadPthreads[]          = L"syncer-thread-pthreads";
-
 // Enable support for SDCH filtering (dictionary based expansion of content).
 // Optional argument is *the* only domain name that will have SDCH suppport.
 // Default is  "-enable-sdch" to advertise SDCH on all domains.

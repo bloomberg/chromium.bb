@@ -20,7 +20,6 @@
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer.h"
-#include "chrome/browser/sync/engine/syncer_thread_pthreads.h"
 #include "chrome/browser/sync/engine/syncer_thread_timed_stop.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator_impl.h"
@@ -118,9 +117,6 @@ SyncerThread* SyncerThreadFactory::Create(
   const CommandLine* cmd = CommandLine::ForCurrentProcess();
   if (cmd->HasSwitch(switches::kSyncerThreadTimedStop)) {
     return new SyncerThreadTimedStop(command_channel, mgr, connection_manager,
-        all_status, model_safe_worker);
-  } else if (cmd->HasSwitch(switches::kSyncerThreadPthreads)) {
-    return new SyncerThreadPthreads(command_channel, mgr, connection_manager,
         all_status, model_safe_worker);
   } else {
     // The default SyncerThread implementation, which does not time-out when

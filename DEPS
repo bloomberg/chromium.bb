@@ -107,9 +107,6 @@ deps_os = {
     "src/third_party/ffmpeg/binaries/chromium/win/ia32":
       "/trunk/deps/third_party/ffmpeg/binaries/win@" + Var("ffmpeg_revision"),
 
-    "src/third_party/pthreads-win32":
-      "/trunk/deps/third_party/pthreads-win32@26716",
-
     # Chrome Frame related deps
     "src/third_party/xulrunner-sdk":
       "/trunk/deps/third_party/xulrunner-sdk@17887",

@@ -4658,13 +4658,6 @@
             'sync',
             'sync_proto',
           ],
-          'conditions': [
-            ['OS=="win"', {
-              'dependencies': [
-                '../third_party/pthreads-win32/pthreads.gyp:pthreads',
-              ],
-            }],
-          ],
         }],
       ],
     },
@@ -4879,7 +4872,6 @@
                     'urlmon.dll',
                     'imm32.dll',
                     'iphlpapi.dll',
-                    'pthreads.dll',
                   ],
                   'ImportLibrary': '$(OutDir)\\lib\\chrome_dll.lib',
                   'ProgramDatabaseFile': '$(OutDir)\\chrome_dll.pdb',
@@ -6402,11 +6394,6 @@
             'sync_proto',
           ],
           'conditions': [
-            ['OS=="win"', {
-              'dependencies': [
-                '../third_party/pthreads-win32/pthreads.gyp:pthreads',
-              ],
-            }],
             ['OS=="linux"', {
               'defines': [
                 'POSIX',
@@ -6467,9 +6454,6 @@
           ],
           'conditions': [
             ['OS=="win"', {
-              'dependencies': [
-                '../third_party/pthreads-win32/pthreads.gyp:pthreads',
-              ],
               'link_settings': {
                 'libraries': [
                   '-lcrypt32.lib',
@@ -6553,8 +6537,6 @@
             'browser/sync/engine/syncer_thread.h',
             'browser/sync/engine/syncer_thread_timed_stop.cc',
             'browser/sync/engine/syncer_thread_timed_stop.h',
-            'browser/sync/engine/syncer_thread_pthreads.cc',
-            'browser/sync/engine/syncer_thread_pthreads.h',
             'browser/sync/engine/syncer_types.h',
             'browser/sync/engine/syncer_util.cc',
             'browser/sync/engine/syncer_util.h',
@@ -6587,7 +6569,6 @@
             'browser/sync/util/compat_file.h',
             'browser/sync/util/compat_file_posix.cc',
             'browser/sync/util/compat_file_win.cc',
-            'browser/sync/util/compat_pthread.h',
             'browser/sync/util/crypto_helpers.cc',
             'browser/sync/util/crypto_helpers.h',
             'browser/sync/util/dbgq.h',
@@ -6604,9 +6585,6 @@
             'browser/sync/util/path_helpers.h',
             'browser/sync/util/path_helpers_linux.cc',
             'browser/sync/util/path_helpers_posix.cc',
-            'browser/sync/util/pthread_helpers.cc',
-            'browser/sync/util/pthread_helpers.h',
-            'browser/sync/util/pthread_helpers_fwd.h',
             'browser/sync/util/query_helpers.cc',
             'browser/sync/util/query_helpers.h',
             'browser/sync/util/row_iterator.h',
@@ -6636,9 +6614,6 @@
                 'browser/sync/util/data_encryption.cc',
                 'browser/sync/util/data_encryption.h',
                 'browser/sync/util/path_helpers.cc',
-              ],
-              'dependencies': [
-                '../third_party/pthreads-win32/pthreads.gyp:pthreads',
               ],
             }],
             ['OS=="linux"', {
