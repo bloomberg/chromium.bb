@@ -1808,7 +1808,6 @@
    * pairs.
    */
   function setState(var_args) {
-    var shouldRegeneratePage = true;
     for (var i = 0; i < arguments.length; i += 2) {
       var key = arguments[i];
 
@@ -1827,9 +1826,6 @@
     // Set all the custom state for this dashboard before calling
     // setQueryParameter since setQueryParameter updates the location bar.
     setQueryParameter.apply(null, arguments);
-
-    if (shouldRegeneratePage)
-      handleLocationChange();
   }
 
   function hideLegend() {

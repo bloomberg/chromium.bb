@@ -248,6 +248,8 @@ function appendJSONScriptElements() {
 var hasDoneInitialPageGeneration = false;
 
 function handleResourceLoad() {
+  // In case we load a results.json that's not in the list of builders,
+  // make sure to only call handleLocationChange once from the resource loads.
   if (!hasDoneInitialPageGeneration)
     handleLocationChange();
 }
