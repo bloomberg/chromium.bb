@@ -97,6 +97,9 @@ void WebWorkerProxy::workerObjectDestroyed() {
   delete this;
 }
 
+void WebWorkerProxy::clientDestroyed() {
+}
+
 bool WebWorkerProxy::Send(IPC::Message* message) {
   // It's possible that postMessage is called before the worker is created, in
   // which case route_id_ will be none.  Or the worker object can be interacted

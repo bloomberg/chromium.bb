@@ -38,6 +38,7 @@ class WebWorkerProxy : public WebKit::WebWorker,
       const WebKit::WebString& message,
       const WebKit::WebMessagePortChannelArray& channel_array);
   virtual void workerObjectDestroyed();
+  virtual void clientDestroyed();
 
   // IPC::Channel::Listener implementation.
   void OnMessageReceived(const IPC::Message& message);

@@ -218,6 +218,10 @@ void WebWorkerImpl::workerObjectDestroyed() {
   terminateWorkerContext();
 }
 
+void WebWorkerImpl::clientDestroyed() {
+  client_ = NULL;
+}
+
 void WebWorkerImpl::DispatchTaskToMainThread(
     PassRefPtr<WebCore::ScriptExecutionContext::Task> task) {
   return WTF::callOnMainThread(InvokeTaskMethod, task.releaseRef());
@@ -247,6 +251,9 @@ void WebWorkerImpl::PostMessageTask(
     WebWorkerImpl* this_ptr,
     WebCore::String message,
     WTF::PassOwnPtr<WebCore::MessagePortChannelArray> channels) {
+  if (!this_ptr->client_)
+    return;
+
   WebMessagePortChannelArray web_channels(
       channels.get() ? channels->size() : 0);
   for (size_t i = 0; i < web_channels.size(); ++i) {
@@ -276,6 +283,9 @@ void WebWorkerImpl::PostExceptionTask(
       const WebCore::String& error_message,
       int line_number,
       const WebCore::String& source_url) {
+  if (!this_ptr->client_)
+    return;
+
   this_ptr->client_->postExceptionToWorkerObject(
       webkit_glue::StringToWebString(error_message),
       line_number,
@@ -312,6 +322,9 @@ void WebWorkerImpl::PostConsoleMessageTask(
     const WebCore::String& message,
     int line_number,
     const WebCore::String& source_url) {
+  if (!this_ptr->client_)
+    return;
+
   this_ptr->client_->postConsoleMessageToWorkerObject(
       destination,
       source,
@@ -333,6 +346,9 @@ void WebWorkerImpl::ConfirmMessageTask(
     WebCore::ScriptExecutionContext* context,
     WebWorkerImpl* this_ptr,
     bool has_pending_activity) {
+  if (!this_ptr->client_)
+    return;
+
   this_ptr->client_->confirmMessageFromWorkerObject(has_pending_activity);
 }
 
@@ -347,6 +363,9 @@ void WebWorkerImpl::ReportPendingActivityTask(
     WebCore::ScriptExecutionContext* context,
     WebWorkerImpl* this_ptr,
     bool has_pending_activity) {
+  if (!this_ptr->client_)
+    return;
+
   this_ptr->client_->reportPendingActivity(has_pending_activity);
 }
 
@@ -373,7 +392,8 @@ void WebWorkerImpl::postTaskForModeToWorkerContext(
 void WebWorkerImpl::WorkerContextDestroyedTask(
     WebCore::ScriptExecutionContext* context,
     WebWorkerImpl* this_ptr) {
-  this_ptr->client_->workerContextDestroyed();
+  if (this_ptr->client_)
+    this_ptr->client_->workerContextDestroyed();
 
   // The lifetime of this proxy is controlled by the worker context.
   delete this_ptr;

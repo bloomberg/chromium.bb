@@ -53,6 +53,7 @@ namespace WebKit {
             const WebString&,
             const WebMessagePortChannelArray&) = 0;
         virtual void workerObjectDestroyed() = 0;
+        virtual void clientDestroyed() = 0;
     };
 
 } // namespace WebKit

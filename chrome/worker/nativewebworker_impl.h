@@ -31,6 +31,7 @@ class NativeWebWorkerImpl : public WebKit::WebWorker {
       const WebKit::WebString& message,
       const WebKit::WebMessagePortChannelArray& channels);
   void workerObjectDestroyed();
+  void clientDestroyed();
 
  private:
   WebKit::WebWorkerClient* client_;

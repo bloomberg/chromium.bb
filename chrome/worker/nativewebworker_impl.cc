@@ -164,3 +164,6 @@ void NativeWebWorkerImpl::postMessageToWorkerContext(
 
 void NativeWebWorkerImpl::workerObjectDestroyed() {
 }
+
+void NativeWebWorkerImpl::clientDestroyed() {
+}

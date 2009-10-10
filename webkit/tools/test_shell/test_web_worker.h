@@ -42,6 +42,8 @@ class TestWebWorker : public WebKit::WebWorker,
   virtual void workerObjectDestroyed() {
     Release();  // Releases the reference held for worker object.
   }
+  virtual void clientDestroyed() {
+  }
 
   // WebWorkerClient methods:
   virtual void postMessageToWorkerObject(

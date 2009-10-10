@@ -60,6 +60,7 @@ WebWorkerClientProxy::WebWorkerClientProxy(const GURL& url, int route_id)
 }
 
 WebWorkerClientProxy::~WebWorkerClientProxy() {
+  impl_->clientDestroyed();
   WorkerThread::current()->RemoveRoute(route_id_);
   ChildProcess::current()->ReleaseProcess();
 }
