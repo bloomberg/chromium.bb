@@ -4,8 +4,6 @@
 Verifies file copies using an explicit build target of 'all'.
 """
 
-import sys
-
 import TestGyp
 
 test = TestGyp.TestGyp()
@@ -33,7 +31,7 @@ test.build_all('copies.gyp', chdir='relocate/gypfiles')
 test.must_match(['relocate', 'copies', 'copies-out', 'file1'],
                 "file1 contents\n")
 
-if sys.platform in ('darwin',):
+if test.format == 'xcode':
   chdir = 'relocate/copies/build'
 else:
   chdir = 'relocate/gypfiles'
@@ -42,7 +40,7 @@ test.must_match([chdir, 'Default', 'copies-out', 'file2'], "file2 contents\n")
 test.must_match(['relocate', 'copies', 'subdir', 'copies-out', 'file3'],
                 "file3 contents\n")
 
-if sys.platform in ('darwin',):
+if test.format == 'xcode':
   chdir = 'relocate/copies/subdir/build'
 else:
   chdir = 'relocate/gypfiles'

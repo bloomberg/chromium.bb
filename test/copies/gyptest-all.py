@@ -4,8 +4,6 @@
 Verifies file copies using an explicit build target of 'all'.
 """
 
-import sys
-
 import TestGyp
 
 test = TestGyp.TestGyp()
@@ -18,7 +16,7 @@ test.build_all('copies.gyp', chdir='relocate/src')
 
 test.must_match(['relocate', 'src', 'copies-out', 'file1'], "file1 contents\n")
 
-if sys.platform in ('darwin',):
+if test.format == 'xcode':
   file2 = ['relocate', 'src', 'build', 'Default', 'copies-out', 'file2']
 elif test.format in ('make',):
   file2 = ['relocate', 'src', 'out', 'Default', 'copies-out', 'file2']

@@ -6,8 +6,6 @@ deep when the --generator-output= option is used to put the build
 configuration files in a separate directory tree.
 """
 
-import sys
-
 import TestGyp
 
 test = TestGyp.TestGyp()
@@ -25,7 +23,7 @@ test.build_all('deeper.gyp', chdir='gypfiles')
 
 chdir = 'gypfiles'
 
-if sys.platform in ('darwin',):
+if test.format == 'xcode':
   chdir = 'src/subdir2/deeper'
 test.run_built_executable('deeper',
                           chdir=chdir,

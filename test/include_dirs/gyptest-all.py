@@ -4,8 +4,6 @@
 Verifies use of include_dirs when using an explicit build target of 'all'.
 """
 
-import sys
-
 import TestGyp
 
 test = TestGyp.TestGyp()
@@ -24,7 +22,7 @@ Hello from subdir/inc2/include2.h
 """
 test.run_built_executable('includes', stdout=expect, chdir='relocate/src')
 
-if sys.platform in ('darwin',):
+if test.format == 'xcode':
   chdir='relocate/src/subdir'
 else:
   chdir='relocate/src'

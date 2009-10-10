@@ -28,8 +28,7 @@ test.run_built_executable('prog1',
                           stdout="Hello from prog1.c\n",
                           chdir='relocate/src')
 
-import sys
-if sys.platform in ('darwin',):
+if test.format == 'xcode':
   chdir = 'relocate/src/subdir'
 else:
   chdir = 'relocate/src'

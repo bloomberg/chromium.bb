@@ -4,8 +4,6 @@
 Verifies --generator-output= behavior when using rules.
 """
 
-import sys
-
 import TestGyp
 
 test = TestGyp.TestGyp()
@@ -38,7 +36,7 @@ Hello from define3.in0
 Hello from define4.in0
 """
 
-if sys.platform in ('darwin',):
+if test.format == 'xcode':
   chdir = 'relocate/rules/subdir1'
 else:
   chdir = 'relocate/gypfiles'

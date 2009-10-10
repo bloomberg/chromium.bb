@@ -6,8 +6,6 @@ targets, even if no executable uses it.
 """
 
 import TestGyp
-import sys
-
 
 test = TestGyp.TestGyp()
 
@@ -21,7 +19,7 @@ test.built_lib_must_exist('a')
 # On linux and windows a library target will at least pull its link dependencies
 # into the generated sln/_main.scons, since not doing so confuses users.
 # This is not currently implemented on mac, which has the opposite behavior.
-if sys.platform == 'darwin':
+if test.format == 'xcode':
   test.built_lib_must_not_exist('b')
 else:
   test.built_lib_must_exist('b')

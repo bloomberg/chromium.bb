@@ -5,8 +5,6 @@ Verifies that a project hierarchy created with the --generator-output=
 option can be built even when it's relocated to a different path.
 """
 
-import sys
-
 import TestGyp
 
 test = TestGyp.TestGyp()
@@ -42,15 +40,15 @@ Hello from inc3/include3.h
 Hello from subdir2/deeper/deeper.h
 """
 
-if sys.platform in ('darwin',):
+if test.format == 'xcode':
   chdir = 'relocate/src'
 test.run_built_executable('prog1', chdir=chdir, stdout=expect % 'prog1.c')
 
-if sys.platform in ('darwin',):
+if test.format == 'xcode':
   chdir = 'relocate/src/subdir2'
 test.run_built_executable('prog2', chdir=chdir, stdout=expect % 'prog2.c')
 
-if sys.platform in ('darwin',):
+if test.format == 'xcode':
   chdir = 'relocate/src/subdir3'
 test.run_built_executable('prog3', chdir=chdir, stdout=expect % 'prog3.c')
 

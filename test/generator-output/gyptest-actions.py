@@ -4,8 +4,6 @@
 Verifies --generator-output= behavior when using actions.
 """
 
-import sys
-
 import TestGyp
 
 test = TestGyp.TestGyp()
@@ -37,7 +35,7 @@ Hello from make-prog1.py
 Hello from make-prog2.py
 """
 
-if sys.platform in ('darwin',):
+if test.format == 'xcode':
   chdir = 'relocate/actions/subdir1'
 else:
   chdir = 'relocate/gypfiles'

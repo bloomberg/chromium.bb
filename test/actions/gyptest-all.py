@@ -4,8 +4,6 @@
 Verifies simple actions when using an explicit build target of 'all'.
 """
 
-import sys
-
 import TestGyp
 
 test = TestGyp.TestGyp()
@@ -22,7 +20,7 @@ Hello from make-prog1.py
 Hello from make-prog2.py
 """
 
-if sys.platform in ('darwin',):
+if test.format == 'xcode':
   chdir = 'relocate/src/subdir1'
 else:
   chdir = 'relocate/src'
