@@ -1137,13 +1137,6 @@ void ToolbarView::CreateAppMenu() {
   }
 
   app_menu_contents_->AddSeparator();
-#ifdef CHROME_PERSONALIZATION
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync)) {
-    app_menu_contents_->AddItem(IDC_SYNC_BOOKMARKS,
-        l10n_util::GetString(IDS_SYNC_MY_BOOKMARKS_LABEL) + L"...");
-    app_menu_contents_->AddSeparator();
-  }
-#endif
   app_menu_contents_->AddItem(IDC_OPTIONS,
                               l10n_util::GetStringFUTF16(
                                   IDS_OPTIONS,
