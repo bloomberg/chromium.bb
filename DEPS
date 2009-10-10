@@ -16,7 +16,7 @@ deps = {
     "http://google-url.googlecode.com/svn/trunk@119",
 
   "src/sdch/open-vcdiff":
-    "http://open-vcdiff.googlecode.com/svn/trunk@26",
+    "http://open-vcdiff.googlecode.com/svn/trunk@28",
 
   "src/testing/gtest":
     "http://googletest.googlecode.com/svn/trunk@329",
