@@ -130,7 +130,7 @@ class FlipSession : public base::RefCounted<FlipSession>,
   virtual void OnError(flip::FlipFramer*);
   virtual void OnStreamFrameData(flip::FlipStreamId stream_id,
                                  const char* data,
-                                 uint32 len);
+                                 size_t len);
   virtual void OnControl(const flip::FlipControlFrame* frame);
   virtual void OnLameDuck();
 

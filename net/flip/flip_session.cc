@@ -603,7 +603,7 @@ void FlipSession::OnError(flip::FlipFramer* framer) {
 
 void FlipSession::OnStreamFrameData(flip::FlipStreamId stream_id,
                                     const char* data,
-                                    uint32 len) {
+                                    size_t len) {
   LOG(INFO) << "Flip data for stream " << stream_id << ", " << len << " bytes";
   bool valid_stream = IsStreamActive(stream_id);
   if (!valid_stream) {
