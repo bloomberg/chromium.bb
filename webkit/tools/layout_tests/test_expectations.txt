@@ -103,7 +103,8 @@ BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug131020.html =
 BUG24182 SLOW LINUX DEBUG : LayoutTests/tables/mozilla/other/wa_table_thtd_rowspan.html = PASS
 BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug113424.html = PASS
 BUG24182 SLOW WIN MAC DEBUG : LayoutTests/tables/mozilla/bugs/45621.html = PASS
-BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/svg/carto.net/selectionlist.svg = PASS
+// This test starts to crash since to r28630
+// BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/svg/carto.net/selectionlist.svg = PASS
 BUG24182 SLOW LINUX DEBUG : LayoutTests/svg/W3C-SVG-1.1/animate-elem-29-b.svg = PASS
 BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/media/video-display-toggle.html = PASS
 BUG24182 SLOW WIN : LayoutTests/css1/font_properties/font.html = PASS
@@ -3186,4 +3187,5 @@ BUG_JOHNNYG : LayoutTests/svg/custom/linking-a-03-b-transform.svg = FAIL
 
 // WebKit roll 49321:49372
 BUG24454 : LayoutTests/http/tests/globalhistory/history-delegate-basic-visited-links.html = FAIL
-
+BUG_HCLAM WIN LINUX : LayoutTests/svg/carto.net/selectionlist.svg = CRASH
+BUG_HCLAM MAC : LayoutTests/svg/carto.net/scrollbar.svg = CRASH
