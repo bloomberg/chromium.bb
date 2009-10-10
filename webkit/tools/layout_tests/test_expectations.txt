@@ -3187,8 +3187,3 @@ BUG_JOHNNYG : LayoutTests/svg/custom/linking-a-03-b-transform.svg = FAIL
 // WebKit roll 49321:49372
 BUG24454 : LayoutTests/http/tests/globalhistory/history-delegate-basic-visited-links.html = FAIL
 
-BUG_HCLAM : LayoutTests/editing/execCommand/4641880-2.html = FAIL
-BUG_HCLAM : LayoutTests/editing/execCommand/4916541.html = FAIL
-BUG_HCLAM : LayoutTests/editing/execCommand/5138441.html = FAIL
-BUG_HCLAM : LayoutTests/editing/execCommand/5481523.html = FAIL
-BUG_HCLAM : LayoutTests/editing/execCommand/indent-selection.html = FAIL
