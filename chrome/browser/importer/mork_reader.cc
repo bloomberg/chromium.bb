@@ -45,6 +45,7 @@
 #include <algorithm>
 
 #include "base/file_path.h"
+#include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -518,11 +519,11 @@ void AddToHistory(MorkReader::ColumnDataList* column_values,
     // title is really a UTF-16 string at this point
     std::wstring title;
     if (data.swap_bytes) {
-      CodepageToWide(values[kNameColumn], "UTF-16BE",
-                     OnStringUtilConversionError::SKIP, &title);
+      base::CodepageToWide(values[kNameColumn], base::kCodepageUTF16BE,
+                           base::OnStringConversionError::SKIP, &title);
     } else {
-      CodepageToWide(values[kNameColumn], "UTF-16LE",
-                     OnStringUtilConversionError::SKIP, &title);
+      base::CodepageToWide(values[kNameColumn], base::kCodepageUTF16LE,
+                           base::OnStringConversionError::SKIP, &title);
     }
     row.set_title(title);
 

@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -53,8 +54,9 @@ string16 RawByteSequenceToFilename(const char* raw_filename,
   // Using the native codepage does not make much sense, but we don't have
   // much else to resort to.
   string16 filename;
-  if (!CodepageToUTF16(raw_filename, encoding.c_str(),
-                       OnStringUtilConversionError::SUBSTITUTE, &filename))
+  if (!base::CodepageToUTF16(raw_filename, encoding.c_str(),
+                             base::OnStringConversionError::SUBSTITUTE,
+                             &filename))
     filename = WideToUTF16Hack(base::SysNativeMBToWide(raw_filename));
   return filename;
 }
@@ -226,9 +228,9 @@ void FtpDirectoryListingResponseDelegate::Init() {
     // Try the detected encoding. If it fails, resort to the
     // OS native encoding.
     if (encoding.empty() ||
-        !CodepageToUTF16(unescaped_path, encoding.c_str(),
-                         OnStringUtilConversionError::SUBSTITUTE,
-                         &path_utf16))
+        !base::CodepageToUTF16(unescaped_path, encoding.c_str(),
+                               base::OnStringConversionError::SUBSTITUTE,
+                               &path_utf16))
       path_utf16 = WideToUTF16Hack(base::SysNativeMBToWide(unescaped_path));
   }
 

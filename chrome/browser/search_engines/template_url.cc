@@ -6,6 +6,7 @@
 
 #include "app/gfx/favicon_size.h"
 #include "app/l10n_util.h"
+#include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
@@ -318,8 +319,9 @@ std::wstring TemplateURLRef::ReplaceSearchTerms(
 
       case GOOGLE_UNESCAPED_SEARCH_TERMS: {
         std::string unescaped_terms;
-        WideToCodepage(terms, WideToASCII(input_encoding).c_str(),
-                       OnStringUtilConversionError::SKIP, &unescaped_terms);
+        base::WideToCodepage(terms, WideToASCII(input_encoding).c_str(),
+                             base::OnStringConversionError::SKIP,
+                             &unescaped_terms);
         url.insert(i->index, std::wstring(unescaped_terms.begin(),
                                           unescaped_terms.end()));
         break;
@@ -411,14 +413,14 @@ std::wstring TemplateURLRef::SearchTermToWide(const TemplateURL& host,
       UnescapeURLComponent(term, UnescapeRule::REPLACE_PLUS_WITH_SPACE |
                                  UnescapeRule::URL_SPECIAL_CHARS);
   for (size_t i = 0; i < encodings.size(); ++i) {
-    if (CodepageToWide(unescaped, encodings[i].c_str(),
-                       OnStringUtilConversionError::FAIL, &result))
+    if (base::CodepageToWide(unescaped, encodings[i].c_str(),
+                             base::OnStringConversionError::FAIL, &result))
       return result;
   }
 
   // Always fall back on UTF-8 if it works.
-  if (CodepageToWide(unescaped, "UTF-8",
-                     OnStringUtilConversionError::FAIL, &result))
+  if (base::CodepageToWide(unescaped, base::kCodepageUTF8,
+                           base::OnStringConversionError::FAIL, &result))
     return result;
 
   // When nothing worked, just use the escaped text. We have no idea what the

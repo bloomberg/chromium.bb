@@ -5,6 +5,7 @@
 #include "chrome/browser/autocomplete/search_provider.h"
 
 #include "app/l10n_util.h"
+#include "base/i18n/icu_string_conversions.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
@@ -165,8 +166,9 @@ void SearchProvider::OnURLFetchComplete(const URLFetcher* source,
     if (response_headers->GetCharset(&charset)) {
       std::wstring wide_data;
       // TODO(jungshik): Switch to CodePageToUTF8 after it's added.
-      if (CodepageToWide(data, charset.c_str(),
-                         OnStringUtilConversionError::FAIL, &wide_data))
+      if (base::CodepageToWide(data, charset.c_str(),
+                               base::OnStringConversionError::FAIL,
+                               &wide_data))
         json_data = WideToUTF8(wide_data);
     }
   }

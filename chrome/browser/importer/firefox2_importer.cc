@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/i18n/icu_string_conversions.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/stl_util-inl.h"
@@ -382,8 +383,8 @@ bool Firefox2Importer::ParseFolderNameFromLine(const std::string& line,
   if (end == std::string::npos || tag_end < arraysize(kFolderOpen))
     return false;
 
-  CodepageToWide(line.substr(tag_end, end - tag_end), charset.c_str(),
-                 OnStringUtilConversionError::SKIP, folder_name);
+  base::CodepageToWide(line.substr(tag_end, end - tag_end), charset.c_str(),
+                       base::OnStringConversionError::SKIP, folder_name);
   HTMLUnescape(folder_name);
 
   std::string attribute_list = line.substr(arraysize(kFolderOpen),
@@ -442,15 +443,15 @@ bool Firefox2Importer::ParseBookmarkFromLine(const std::string& line,
     return false;
 
   // Title
-  CodepageToWide(line.substr(tag_end, end - tag_end), charset.c_str(),
-                 OnStringUtilConversionError::SKIP, title);
+  base::CodepageToWide(line.substr(tag_end, end - tag_end), charset.c_str(),
+                       base::OnStringConversionError::SKIP, title);
   HTMLUnescape(title);
 
   // URL
   if (GetAttribute(attribute_list, kHrefAttribute, &value)) {
     std::wstring w_url;
-    CodepageToWide(value, charset.c_str(), OnStringUtilConversionError::SKIP,
-      &w_url);
+    base::CodepageToWide(value, charset.c_str(),
+                         base::OnStringConversionError::SKIP, &w_url);
     HTMLUnescape(&w_url);
 
     string16 url16 = WideToUTF16Hack(w_url);
@@ -464,8 +465,8 @@ bool Firefox2Importer::ParseBookmarkFromLine(const std::string& line,
 
   // Keyword
   if (GetAttribute(attribute_list, kShortcutURLAttribute, &value)) {
-    CodepageToWide(value, charset.c_str(), OnStringUtilConversionError::SKIP,
-                   shortcut);
+    base::CodepageToWide(value, charset.c_str(),
+                         base::OnStringConversionError::SKIP, shortcut);
     HTMLUnescape(shortcut);
   }
 
@@ -479,8 +480,8 @@ bool Firefox2Importer::ParseBookmarkFromLine(const std::string& line,
 
   // Post data.
   if (GetAttribute(attribute_list, kPostDataAttribute, &value)) {
-    CodepageToWide(value, charset.c_str(),
-                   OnStringUtilConversionError::SKIP, post_data);
+    base::CodepageToWide(value, charset.c_str(),
+                         base::OnStringConversionError::SKIP, post_data);
     HTMLUnescape(post_data);
   }
 

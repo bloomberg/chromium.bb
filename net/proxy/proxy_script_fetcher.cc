@@ -5,10 +5,12 @@
 #include "net/proxy/proxy_script_fetcher.h"
 
 #include "base/compiler_specific.h"
+#include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -50,7 +52,7 @@ void ConvertResponseToUTF8(const std::string& charset, std::string* bytes) {
 
   if (charset.empty()) {
     // Assume ISO-8859-1 if no charset was specified.
-    codepage = "ISO-8859-1";
+    codepage = base::kCodepageLatin1;
   } else {
     // Otherwise trust the charset that was provided.
     codepage = charset.c_str();
@@ -60,9 +62,9 @@ void ConvertResponseToUTF8(const std::string& charset, std::string* bytes) {
   // outside of |charset| (i.e. invalid), then substitute them with
   // U+FFFD rather than failing.
   std::wstring tmp_wide;
-  CodepageToWide(*bytes, codepage,
-                  OnStringUtilConversionError::SUBSTITUTE,
-                  &tmp_wide);
+  base::CodepageToWide(*bytes, codepage,
+                       base::OnStringConversionError::SUBSTITUTE,
+                       &tmp_wide);
   // TODO(eroman): would be nice to have a CodepageToUTF8() function.
   *bytes = WideToUTF8(tmp_wide);
 }

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/file_util.h"
+#include "base/i18n/icu_string_conversions.h"
 #include "base/string_util.h"
 #include "chrome/tools/convert_dict/hunspell_reader.h"
 
@@ -133,8 +134,8 @@ bool AffReader::Read() {
 bool AffReader::EncodingToUTF8(const std::string& encoded,
                                std::string* utf8) const {
   std::wstring wide_word;
-  if (!CodepageToWide(encoded, encoding(),
-                      OnStringUtilConversionError::FAIL, &wide_word))
+  if (!base::CodepageToWide(encoded, encoding(),
+                            base::OnStringConversionError::FAIL, &wide_word))
     return false;
   *utf8 = WideToUTF8(wide_word);
   return true;
