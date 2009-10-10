@@ -10,6 +10,7 @@
 
 #include <oleacc.h>
 
+#include "views/controls/native/native_view_host.h"
 #include "views/view.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -135,10 +136,18 @@ class ATL_NO_VTABLE ViewAccessibility
   // to MSAA states set.
   long MSAAState(AccessibilityTypes::State state);
 
+  // Returns the IAccessible interface for a native view if applicable.
+  // Returns S_OK on success.
+  HRESULT GetNativeIAccessibleInterface(views::NativeViewHost* native_host,
+                                        IDispatch** disp_child);
+
   // Member View needed for view-specific calls.
   views::View* view_;
 
   DISALLOW_EVIL_CONSTRUCTORS(ViewAccessibility);
 };
+
+extern const wchar_t kViewsUninitializeAccessibilityInstance[];
+extern const wchar_t kViewsNativeHostPropForAccessibility[];
 
 #endif  // VIEWS_ACCESSIBILITY_VIEW_ACCESSIBILITY_H_

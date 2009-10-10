@@ -74,6 +74,12 @@ View::~View() {
     else
       child_views_[c]->SetParent(NULL);
   }
+
+#if defined(OS_WIN)
+  if (accessibility_.get()) {
+    accessibility_->Uninitialize();
+  }
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////

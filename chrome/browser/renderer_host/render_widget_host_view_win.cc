@@ -31,6 +31,7 @@
 #include "skia/ext/skia_utils_win.h"
 #include "webkit/api/public/WebInputEvent.h"
 #include "webkit/api/public/win/WebInputEventFactory.h"
+#include "views/accessibility/view_accessibility.h"
 #include "views/focus/focus_util_win.h"
 // Included for views::kReflectedMessage - TODO(beng): move this to win_util.h!
 #include "views/widget/widget_win.h"
@@ -681,6 +682,9 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
   // Marks that window as supporting mouse-wheel messages rerouting so it is
   // scrolled when under the mouse pointer even if inactive.
   views::SetWindowSupportsRerouteMouseWheel(m_hWnd);
+  // Save away our HWND in the parent window as a property so that the
+  // accessibility code can find it.
+  SetProp(GetParent(), kViewsNativeHostPropForAccessibility, m_hWnd);
   return 0;
 }
 
@@ -1249,7 +1253,6 @@ LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
 
       if (!browser_accessibility_root_) {
         // No valid root found, return with failure.
-        NOTREACHED();
         return static_cast<LRESULT>(0L);
       }
     }

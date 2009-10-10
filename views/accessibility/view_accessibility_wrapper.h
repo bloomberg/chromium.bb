@@ -32,6 +32,8 @@ class ViewAccessibilityWrapper {
 
   STDMETHODIMP CreateDefaultInstance(REFIID iid);
 
+  HRESULT Uninitialize();
+
   // Returns a pointer to a specified interface on an object to which a client
   // currently holds an interface pointer. If pointer exists, it is reused,
   // otherwise a new pointer is created. Used by accessibility implementation to
