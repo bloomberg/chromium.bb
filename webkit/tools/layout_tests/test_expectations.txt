@@ -3190,3 +3190,5 @@ BUG_JOHNNYG : LayoutTests/svg/custom/linking-a-03-b-transform.svg = FAIL
 BUG24454 : LayoutTests/http/tests/globalhistory/history-delegate-basic-visited-links.html = FAIL
 BUG_HCLAM WIN LINUX : LayoutTests/svg/carto.net/selectionlist.svg = CRASH
 BUG_HCLAM MAC : LayoutTests/svg/carto.net/scrollbar.svg = CRASH
+// WebKit roll 49405:49413
+BUG_HCLAM : LayoutTests/http/tests/xmlhttprequest/logout.html = FAIL
