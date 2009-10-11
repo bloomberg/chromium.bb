@@ -13,7 +13,7 @@
 #include <shlwapi.h>
 
 #include "app/gfx/gdi_util.h"
-#include "base/gfx/native_widget_types.h"
+#include "app/gfx/native_widget_types.h"
 #include "base/gfx/point.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"

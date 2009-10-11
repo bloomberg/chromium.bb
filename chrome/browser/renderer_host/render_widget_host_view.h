@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_H_
 #define CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_H_
 
-#include "base/gfx/native_widget_types.h"
+#include "app/gfx/native_widget_types.h"
 #include "base/shared_memory.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/webplugin.h"

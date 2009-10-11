@@ -8,7 +8,7 @@
 #ifndef CHROME_PLUGIN_NPOBJECT_PROXY_H_
 #define CHROME_PLUGIN_NPOBJECT_PROXY_H_
 
-#include "base/gfx/native_widget_types.h"
+#include "app/gfx/native_widget_types.h"
 #include "base/ref_counted.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"

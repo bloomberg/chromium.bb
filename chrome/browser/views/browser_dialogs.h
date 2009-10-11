@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_VIEWS_BROWSER_DIALOGS_H_
 #define CHROME_BROWSER_VIEWS_BROWSER_DIALOGS_H_
 
-#include "base/gfx/native_widget_types.h"
+#include "app/gfx/native_widget_types.h"
 
 // This file contains functions for running a variety of browser dialogs and
 // popups. The dialogs here are the ones that the caller does not need to

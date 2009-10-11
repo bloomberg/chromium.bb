@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 
-#include "base/gfx/native_widget_types.h"
+#include "app/gfx/native_widget_types.h"
 #include "base/gfx/rect.h"
 #include "base/string16.h"
 #include "chrome/browser/tab_contents/constrained_window.h"

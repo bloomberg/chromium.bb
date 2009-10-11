@@ -7,13 +7,13 @@
 //
 // See render_message* for information about the multi-pass include of headers.
 
-#ifndef CHROME_COMMON_PLUGIN_MESSAGES_H__
-#define CHROME_COMMON_PLUGIN_MESSAGES_H__
+#ifndef CHROME_COMMON_PLUGIN_MESSAGES_H_
+#define CHROME_COMMON_PLUGIN_MESSAGES_H_
 
 #include <string>
 #include <vector>
 
-#include "base/gfx/native_widget_types.h"
+#include "app/gfx/native_widget_types.h"
 #include "base/gfx/rect.h"
 #include "base/basictypes.h"
 #include "chrome/common/common_param_traits.h"
@@ -440,4 +440,4 @@ struct ParamTraits<PluginMsg_UpdateGeometry_Param> {
 #define MESSAGES_INTERNAL_FILE "chrome/common/plugin_messages_internal.h"
 #include "ipc/ipc_message_macros.h"
 
-#endif  // CHROME_COMMON_PLUGIN_MESSAGES_H__
+#endif  // CHROME_COMMON_PLUGIN_MESSAGES_H_

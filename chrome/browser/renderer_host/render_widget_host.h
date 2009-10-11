@@ -8,8 +8,8 @@
 #include <queue>
 #include <vector>
 
+#include "app/gfx/native_widget_types.h"
 #include "base/process.h"
-#include "base/gfx/native_widget_types.h"
 #include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"

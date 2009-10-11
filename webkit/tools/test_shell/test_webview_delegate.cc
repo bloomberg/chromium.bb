@@ -12,9 +12,9 @@
 
 #include "webkit/tools/test_shell/test_webview_delegate.h"
 
+#include "app/gfx/native_widget_types.h"
 #include "base/file_util.h"
 #include "base/gfx/point.h"
-#include "base/gfx/native_widget_types.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/string_util.h"

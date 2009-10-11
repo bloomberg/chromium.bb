@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_UI_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_INSTALL_UI_H_
 
+#include "app/gfx/native_widget_types.h"
 #include "base/file_path.h"
-#include "base/gfx/native_widget_types.h"
 #include "base/ref_counted.h"
 
 #include <string>

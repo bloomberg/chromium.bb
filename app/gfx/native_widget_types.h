@@ -1,9 +1,9 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_GFX_NATIVE_WIDGET_TYPES_H_
-#define BASE_GFX_NATIVE_WIDGET_TYPES_H_
+#ifndef APP_GFX_NATIVE_WIDGET_TYPES_H_
+#define APP_GFX_NATIVE_WIDGET_TYPES_H_
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
@@ -140,4 +140,4 @@ NativeViewId IdFromNativeView(NativeView view);
 
 }  // namespace gfx
 
-#endif  // BASE_GFX_NATIVE_WIDGET_TYPES_H_
+#endif  // APP_GFX_NATIVE_WIDGET_TYPES_H_

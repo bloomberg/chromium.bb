@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/win/window_impl.h"
+
 #include <list>
 
 #include "base/singleton.h"
 #include "base/string_util.h"
-#include "base/window_impl.h"
 #include "base/win_util.h"
 
-namespace base {
+namespace app {
 
 static const DWORD kWindowDefaultChildStyle =
     WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
@@ -210,4 +211,4 @@ std::wstring WindowImpl::GetWindowClassName() {
   return name;
 }
 
-}  // namespace base
+}  // namespace app

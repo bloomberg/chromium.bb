@@ -5,7 +5,7 @@
 #ifndef CONTROLS_MENU_VIEWS_MENU_2_H_
 #define CONTROLS_MENU_VIEWS_MENU_2_H_
 
-#include "base/gfx/native_widget_types.h"
+#include "app/gfx/native_widget_types.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "views/controls/menu/menu_wrapper.h"

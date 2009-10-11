@@ -8,9 +8,9 @@
 #include <map>
 
 #include "app/clipboard/clipboard.h"
+#include "app/gfx/gtk_native_view_id_manager.h"
 #include "app/l10n_util.h"
 #include "base/file_util.h"
-#include "base/gfx/gtk_native_view_id_manager.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
 #include "chrome/browser/chrome_thread.h"

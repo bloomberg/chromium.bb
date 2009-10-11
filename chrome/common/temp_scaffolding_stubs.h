@@ -19,7 +19,7 @@
 
 #if !defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
 // For download_util::DragDownload
-#include "base/gfx/native_widget_types.h"
+#include "app/gfx/native_widget_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #endif
 

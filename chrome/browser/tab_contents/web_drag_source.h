@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_H_
 #define CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_H_
 
+#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
-#include "base/gfx/native_widget_types.h"
 #include "base/gfx/point.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"

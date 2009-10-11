@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_WINDOW_IMPL_H_
-#define BASE_WINDOW_IMPL_H_
+#ifndef APP_WIN_WINDOW_IMPL_H_
+#define APP_WIN_WINDOW_IMPL_H_
 
 #include <atlbase.h>
 #include <atlapp.h>
@@ -12,11 +12,11 @@
 
 #include <string>
 
-#include "base/gfx/native_widget_types.h"
+#include "app/gfx/native_widget_types.h"
 #include "base/gfx/rect.h"
 #include "base/logging.h"
 
-namespace base {
+namespace app {
 
 // An interface implemented by classes that use message maps.
 // ProcessWindowMessage is implemented by the BEGIN_MESSAGE_MAP_EX macro.
@@ -105,6 +105,6 @@ class WindowImpl : public MessageMapInterface {
   DISALLOW_COPY_AND_ASSIGN(WindowImpl);
 };
 
-}  // namespace base
+}  // namespace app
 
-#endif  // BASE_WINDOW_IMPL_H_
+#endif  // APP_WIN_WINDOW_IMPL_H_

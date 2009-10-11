@@ -10,7 +10,7 @@
 
 #include <vector>
 
-#include "base/gfx/native_widget_types.h"
+#include "app/gfx/native_widget_types.h"
 #include "base/ref_counted.h"
 #include "base/weak_ptr.h"
 #include "googleurl/src/gurl.h"

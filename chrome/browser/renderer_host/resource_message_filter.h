@@ -13,9 +13,9 @@
 #include <vector>
 
 #include "app/clipboard/clipboard.h"
+#include "app/gfx/native_widget_types.h"
 #include "base/file_path.h"
 #include "base/gfx/rect.h"
-#include "base/gfx/native_widget_types.h"
 #include "base/process.h"
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"

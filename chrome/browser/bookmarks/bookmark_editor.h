@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_EDITOR_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_EDITOR_H_
 
-#include "base/gfx/native_widget_types.h"
+#include "app/gfx/native_widget_types.h"
 
 class BookmarkNode;
 class Profile;

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/gfx/native_widget_types.h"
+#include "app/gfx/native_widget_types.h"
 #include "base/string16.h"
 #include "third_party/npapi/bindings/npapi.h"
 

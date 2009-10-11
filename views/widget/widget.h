@@ -5,7 +5,7 @@
 #ifndef VIEWS_WIDGET_WIDGET_H_
 #define VIEWS_WIDGET_WIDGET_H_
 
-#include "base/gfx/native_widget_types.h"
+#include "app/gfx/native_widget_types.h"
 
 class ThemeProvider;
 

@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/gfx/rect.h"
-#include "base/gfx/native_widget_types.h"
 
 // TODO(port): this typedef is obviously incorrect on non-Windows
 // platforms, but now a lot of code now accidentally depends on them

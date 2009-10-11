@@ -13,8 +13,8 @@
 #include <string>
 #include <vector>
 
+#include "app/gfx/native_widget_types.h"
 #include "app/os_exchange_data.h"
-#include "base/gfx/native_widget_types.h"
 #include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
 #include "views/accelerator.h"

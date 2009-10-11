@@ -11,7 +11,7 @@
 #include <vector>
 #include <string>
 
-#include "base/gfx/native_widget_types.h"
+#include "app/gfx/native_widget_types.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"

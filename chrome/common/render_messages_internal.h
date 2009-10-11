@@ -13,11 +13,11 @@
 #include "build/build_config.h"
 
 #include "app/clipboard/clipboard.h"
+#include "app/gfx/native_widget_types.h"
 #include "base/file_path.h"
 #include "base/nullable_string16.h"
 #include "base/platform_file.h"
 #include "base/gfx/rect.h"
-#include "base/gfx/native_widget_types.h"
 #include "base/shared_memory.h"
 #include "base/values.h"
 #include "chrome/common/css_colors.h"

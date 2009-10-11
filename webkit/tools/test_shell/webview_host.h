@@ -7,8 +7,8 @@
 
 #include <map>
 
+#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
-#include "base/gfx/native_widget_types.h"
 #include "base/gfx/rect.h"
 #include "webkit/tools/test_shell/webwidget_host.h"
 #if defined(OS_LINUX)

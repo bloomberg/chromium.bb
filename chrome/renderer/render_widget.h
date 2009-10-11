@@ -6,8 +6,9 @@
 #define CHROME_RENDERER_RENDER_WIDGET_H_
 
 #include <vector>
+
+#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
-#include "base/gfx/native_widget_types.h"
 #include "base/gfx/point.h"
 #include "base/gfx/rect.h"
 #include "base/gfx/size.h"

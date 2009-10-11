@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/gfx/native_widget_types.h"
+#include "app/gfx/native_widget_types.h"
 #include "base/task.h"
 #include "chrome/common/gears_api.h"
 

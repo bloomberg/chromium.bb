@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/gfx/native_widget_types.h"
 #include "base/file_path.h"
-#include "base/gfx/native_widget_types.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/values.h"

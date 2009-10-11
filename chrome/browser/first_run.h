@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
-#include "base/gfx/native_widget_types.h"
 #include "chrome/browser/browser_process_impl.h"
 
 class CommandLine;

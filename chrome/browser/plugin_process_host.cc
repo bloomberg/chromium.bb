@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "app/app_switches.h"
+#include "app/gfx/native_widget_types.h"
 #include "base/command_line.h"
 #if defined(OS_POSIX)
 #include "base/global_descriptors_posix.h"
@@ -20,7 +21,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
-#include "base/gfx/native_widget_types.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -66,7 +66,7 @@
 #endif
 
 #if defined(OS_LINUX)
-#include "base/gfx/gtk_native_view_id_manager.h"
+#include "app/gfx/gtk_native_view_id_manager.h"
 #endif
 
 #if defined(OS_MACOSX)

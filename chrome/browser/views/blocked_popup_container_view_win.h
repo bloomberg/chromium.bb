@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "app/gfx/native_widget_types.h"
 #include "app/slide_animation.h"
-#include "base/gfx/native_widget_types.h"
 #include "base/gfx/rect.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"

@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_DROP_INFO_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_DROP_INFO_H_
 
+#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
-#include "base/gfx/native_widget_types.h"
 #include "base/timer.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 

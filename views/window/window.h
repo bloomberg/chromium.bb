@@ -5,7 +5,7 @@
 #ifndef VIEWS_WINDOW_WINDOW_H_
 #define VIEWS_WINDOW_WINDOW_H_
 
-#include "base/gfx/native_widget_types.h"
+#include "app/gfx/native_widget_types.h"
 
 namespace gfx {
 class Font;

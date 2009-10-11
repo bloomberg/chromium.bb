@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_WEBPLUGIN_DELEGATE_PROXY_H__
-#define CHROME_RENDERER_WEBPLUGIN_DELEGATE_PROXY_H__
+#ifndef CHROME_RENDERER_WEBPLUGIN_DELEGATE_PROXY_H_
+#define CHROME_RENDERER_WEBPLUGIN_DELEGATE_PROXY_H_
 
 #include <string>
 #include <vector>
 
+#include "app/gfx/native_widget_types.h"
 #include "base/file_path.h"
 #include "base/gfx/rect.h"
-#include "base/gfx/native_widget_types.h"
 #include "base/ref_counted.h"
 #include "base/weak_ptr.h"
 #include "chrome/common/transport_dib.h"
@@ -198,7 +198,7 @@ class WebPluginDelegateProxy :
   // The url of the main frame hosting the plugin.
   GURL page_url_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(WebPluginDelegateProxy);
+  DISALLOW_COPY_AND_ASSIGN(WebPluginDelegateProxy);
 };
 
 #endif  // CHROME_RENDERER_WEBPLUGIN_DELEGATE_PROXY_H_

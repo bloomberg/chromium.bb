@@ -4,8 +4,8 @@
 
 #include "chrome/browser/gtk/tab_contents_container_gtk.h"
 
+#include "app/gfx/native_widget_types.h"
 #include "app/l10n_util.h"
-#include "base/gfx/native_widget_types.h"
 #include "chrome/browser/gtk/gtk_floating_container.h"
 #include "chrome/browser/gtk/status_bubble_gtk.h"
 #include "chrome/browser/tab_contents/tab_contents.h"

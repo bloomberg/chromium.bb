@@ -7,8 +7,8 @@
 
 #include <vector>
 
+#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
-#include "base/gfx/native_widget_types.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 
 class Browser;

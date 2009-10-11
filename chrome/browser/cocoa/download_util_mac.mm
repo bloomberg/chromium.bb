@@ -6,7 +6,7 @@
 
 #include "chrome/browser/cocoa/download_util_mac.h"
 
-#include "base/gfx/native_widget_types.h"
+#include "app/gfx/native_widget_types.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/download/download_manager.h"
 #include "skia/ext/skia_utils_mac.h"

@@ -9,8 +9,8 @@
 #include <commctrl.h>
 #include <string>
 
+#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
-#include "base/gfx/native_widget_types.h"
 #include "base/task.h"
 #include "views/widget/tooltip_manager.h"
 

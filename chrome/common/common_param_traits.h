@@ -13,7 +13,7 @@
 
 #include <vector>
 
-#include "base/gfx/native_widget_types.h"
+#include "app/gfx/native_widget_types.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/transport_dib.h"
 #include "ipc/ipc_message_utils.h"

@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_VIEWS_FIND_BAR_HOST_H_
 
 #include "app/animation.h"
+#include "app/gfx/native_widget_types.h"
 #include "base/gfx/rect.h"
-#include "base/gfx/native_widget_types.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"

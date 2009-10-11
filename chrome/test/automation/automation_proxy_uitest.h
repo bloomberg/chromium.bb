@@ -1,13 +1,13 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_AUTOMATION_AUTOMATION_PROXY_UITEST_H__
-#define CHROME_TEST_AUTOMATION_AUTOMATION_PROXY_UITEST_H__
+#ifndef CHROME_TEST_AUTOMATION_AUTOMATION_PROXY_UITEST_H_
+#define CHROME_TEST_AUTOMATION_AUTOMATION_PROXY_UITEST_H_
 
 #include <string>
 
-#include "base/gfx/native_widget_types.h"
+#include "app/gfx/native_widget_types.h"
 #include "base/message_loop.h"
 #include "base/platform_thread.h"
 #include "base/time.h"
@@ -135,4 +135,4 @@ class AutomationProxyForExternalTab : public AutomationProxy {
 typedef CustomAutomationProxyTest<AutomationProxyForExternalTab>
     ExternalTabTestType;
 
-#endif  // CHROME_TEST_AUTOMATION_AUTOMATION_PROXY_UITEST_H__
+#endif  // CHROME_TEST_AUTOMATION_AUTOMATION_PROXY_UITEST_H_

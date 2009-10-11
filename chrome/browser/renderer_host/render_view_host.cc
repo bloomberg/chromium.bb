@@ -7,9 +7,9 @@
 #include <string>
 #include <vector>
 
+#include "app/gfx/native_widget_types.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/gfx/native_widget_types.h"
 #include "base/json_reader.h"
 #include "base/string_util.h"
 #include "base/time.h"

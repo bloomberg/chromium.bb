@@ -13,7 +13,7 @@
 #include <wtypes.h>
 #endif
 
-#include "base/gfx/native_widget_types.h"
+#include "app/gfx/native_widget_types.h"
 #include "base/gfx/point.h"
 #include "base/keyboard_codes.h"
 

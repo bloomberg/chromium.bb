@@ -5,8 +5,8 @@
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 
 #include "app/clipboard/clipboard.h"
+#include "app/gfx/native_widget_types.h"
 #include "base/command_line.h"
-#include "base/gfx/native_widget_types.h"
 #include "base/histogram.h"
 #include "base/process_util.h"
 #include "base/thread.h"
