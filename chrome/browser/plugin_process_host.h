@@ -153,6 +153,8 @@ class PluginProcessHost : public ChildProcessHost,
 #if defined(OS_MACOSX)
   // Tracks plugin windows currently visible
   std::set<uint32> plugin_visible_windows_set_;
+  // Tracks full screen windows currently visible
+  std::set<uint32> plugin_fullscreen_windows_set_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PluginProcessHost);

@@ -70,6 +70,7 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "base/mac_util.h"
 #include "chrome/common/plugin_carbon_interpose_constants_mac.h"
 #endif
 
@@ -329,16 +330,19 @@ PluginProcessHost::~PluginProcessHost() {
     PostMessage(*window_index, WM_CLOSE, 0, 0);
   }
 #elif defined(OS_MACOSX)
-  // If the plugin process crashed but had windows open at the time, make
-  // sure that the menu bar is visible.
-  // TODO: only do this if the browser window is not also in fullscreen mode.
-  // (see http://code.google.com/p/chromium/issues/detail?id=23571)
-  if (!plugin_visible_windows_set_.empty()) {
-    SystemUIMode mode;
-    SystemUIOptions options;
-    GetSystemUIMode(&mode, &options);
-    if (mode != kUIModeNormal)
-      SetSystemUIMode(kUIModeNormal, 0);
+  // If the plugin process crashed but had fullscreen windows open at the time,
+  // make sure that the menu bar is visible.
+  std::set<uint32>::iterator window_index;
+  for (window_index = plugin_fullscreen_windows_set_.begin();
+       window_index != plugin_fullscreen_windows_set_.end();
+       window_index++) {
+    if (MessageLoop::current() ==
+        ChromeThread::GetMessageLoop(ChromeThread::UI)) {
+      mac_util::ReleaseFullScreen();
+    } else {
+      ChromeThread::GetMessageLoop(ChromeThread::UI)->PostTask(FROM_HERE,
+          NewRunnableFunction(mac_util::ReleaseFullScreen));
+    }
   }
 #endif
 }

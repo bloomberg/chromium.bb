@@ -8,6 +8,7 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/scoped_cftyperef.h"
 #include "base/sys_string_conversions.h"
 
@@ -136,6 +137,27 @@ CGColorSpaceRef GetSystemColorSpace() {
   }
 
   return g_system_color_space;
+}
+
+// a count of currently outstanding requests for full screen mode from browser
+// windows, plugins, etc.
+static int g_full_screen_requests = 0;
+
+// Add a request for full screen mode.  If the menu bar is not currently
+// hidden, hide it.  Must be called on main thread.
+void RequestFullScreen() {
+  if (!g_full_screen_requests)
+    SetSystemUIMode(kUIModeAllSuppressed, kUIOptionAutoShowMenuBar);
+  ++g_full_screen_requests;
+}
+
+// Release a request for full screen mode.  If there are no other outstanding
+// requests, show the menu bar. Must be called on main thread.
+void ReleaseFullScreen() {
+  DCHECK(g_full_screen_requests > 0);
+  --g_full_screen_requests;
+  if (g_full_screen_requests == 0)
+    SetSystemUIMode(kUIModeNormal, 0);
 }
 
 }  // namespace mac_util

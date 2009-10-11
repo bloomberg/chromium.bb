@@ -60,6 +60,18 @@ CGColorSpaceRef GetSRGBColorSpace();
 // is a static value; do not release it!
 CGColorSpaceRef GetSystemColorSpace();
 
+// Add a request for full screen mode.  This does not by itself create a
+// fullscreen window; rather, it manages per-application state related to
+// fullscreen windows.  For example, if the menu bar is not currently
+// hidden, this will hide it.  Must be called on main thread.
+void RequestFullScreen();
+
+// Release a request for full screen mode.  As with RequestFullScree(), this
+// does not affect windows directly, but rather manages per-application state.
+// For example, if there are no other outstanding requests for full screen,
+// this will show the menu bar.  Must be called on main thread.
+void ReleaseFullScreen();
+
 }  // namespace mac_util
 
 #endif  // BASE_MAC_UTIL_H_

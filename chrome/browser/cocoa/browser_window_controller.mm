@@ -887,9 +887,9 @@ willPositionSheet:(NSWindow*)sheet
     // Hide the menubar, and allow it to un-hide when moving the mouse
     // to the top of the screen.  Does this eliminate the need for an
     // info bubble describing how to exit fullscreen mode?
-    SetSystemUIMode(kUIModeAllHidden, kUIOptionAutoShowMenuBar);
+    mac_util::RequestFullScreen();
   } else {
-    SetSystemUIMode(kUIModeNormal, 0);
+    mac_util::ReleaseFullScreen();
     [[[self window] contentView] addSubview:[toolbarController_ view]];
     if (browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR)) {
       [bookmarkBarController_ setBookmarkBarEnabled:YES];
