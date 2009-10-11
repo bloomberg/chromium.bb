@@ -881,8 +881,6 @@ BUG10280 WIN LINUX : LayoutTests/fast/inline/dirtyLinesForInline.html = FAIL PAS
 
 BUG20507 : LayoutTests/http/tests/uri/resolve-encoding-relative.html = FAIL
 
-BUG6735 : LayoutTests/plugins/netscape-throw-exception.html = FAIL
-
 BUG10432 WIN LINUX : LayoutTests/fast/overflow/004.html = FAIL
 
 BUG9071 MAC WIN DEBUG SLOW : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL PASS
@@ -2283,12 +2281,6 @@ BUG10391 LINUX : LayoutTests/fast/events/5056619.html = FAIL PASS
 // Failed with r6844 (dglazkov)
 BUG10392 MAC LINUX : LayoutTests/http/tests/navigation/error404-goback.html = TIMEOUT FAIL
 
-// This test appears to pass on Linux, despite it referencing feed:// URLs which
-// we don't support.  Needs more investigation.
-// Expectations for this test changed upstream. We should fix this test, but
-// it doesn't need to block the current release
-BUG10393 : LayoutTests/http/tests/security/feed-urls-from-remote.html = FAIL
-
 // Skipped as this tests window.sessionStorage, which we don't
 // support. Enable once we turn on DOM_STORAGE.
 BUG4360 SKIP : LayoutTests/http/tests/navigation/post-goback-repost-policy.html = TIMEOUT
@@ -3159,7 +3151,6 @@ BUG24102 LINUX MAC : LayoutTests/fast/forms/input-maxlength.html = TIMEOUT
 // Webkit update: 49221:49245
 BUG_HAMAJI : LayoutTests/fast/css/counters/t1204-increment-00-c-o.html = FAIL
 BUG_HAMAJI : LayoutTests/fast/css/counters/t1204-increment-01-c-o.html = FAIL
-BUG_JOHNNYG WIN : LayoutTests/fast/css/last-child-pseudo-class.html = FAIL
 
 // Failing after r28267
 BUG24116 SLOW : LayoutTests/http/tests/loading/gmail-assert-on-load.html = FAIL
@@ -3168,9 +3159,7 @@ BUG24116 SLOW : LayoutTests/http/tests/loading/gmail-assert-on-load.html = FAIL
 BUG24119 LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug1220.html = PASS FAIL
 
 // WebKit roll 49245:49254
-BUG24142 : LayoutTests/fast/css/large-number-round-trip.html = FAIL
 BUG_JOHNNYG WIN LINUX : LayoutTests/fast/frames/viewsource-link-on-href-value.html = FAIL PASS CRASH
-BUG24159 WIN LINUX : LayoutTests/fast/css/opacity-float.html = FAIL
 
 // Flaky failure
 BUG24167 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-port-explicit-domain.html = PASS FAIL
