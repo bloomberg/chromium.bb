@@ -3203,3 +3203,4 @@ BUG_HCLAM : LayoutTests/http/tests/xmlhttprequest/frame-unload-abort-crash.html 
 BUG_HCLAM : LayoutTests/svg/custom/js-update-transform-changes.svg = CRASH
 BUG_HCLAM WIN MAC : LayoutTests/http/tests/xmlhttprequest/web-apps/012.html = CRASH
 BUG_HCLAM WIN MAC : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-image-not-loaded-svg.svg = CRASH
+BUG_HCLAM WIN : LayoutTests/fast/events/invalid-001.html = CRASH
