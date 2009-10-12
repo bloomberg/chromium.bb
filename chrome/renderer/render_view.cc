@@ -26,7 +26,6 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/histogram_synchronizer.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/page_zoom.h"
 #include "chrome/common/plugin_messages.h"
@@ -3161,11 +3160,6 @@ void RenderView::OnClosePage(const ViewMsg_ClosePage_Params& params) {
       DumpLoadHistograms();
   }
   webview()->dispatchUnloadEvent();
-
-  // Send histogram data before renderer closes.
-  if (RenderThread::current())
-    RenderThread::current()->SendHistograms(
-        HistogramSynchronizer::RENDERER_CLOSING_SEQUENCE_NUMBER);
 
   // Just echo back the params in the ACK.
   Send(new ViewHostMsg_ClosePage_ACK(routing_id_, params));

@@ -32,15 +32,6 @@ class HistogramSynchronizer : public
     SYNCHRONOUS_HISTOGRAMS
   };
 
-  // We reserve 0 through 9 sequence numbers for special purposes. For example,
-  // sequence number 0 is used by renderer to send its histograms before it
-  // closing renderer. We wanted to reserve the rest of sequence numbers for
-  // future purposes.
-  enum SequenceNumbers {
-    RENDERER_CLOSING_SEQUENCE_NUMBER = 0,
-    STARTING_SEQUENCE_NUMBER = 10
-  };
-
   HistogramSynchronizer();
 
   ~HistogramSynchronizer();
