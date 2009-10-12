@@ -28,31 +28,105 @@ import os.path
 import sys
 import subprocess
 import platform
+from optparse import OptionParser
 
 
-def Execute(args):
-  """Executes an external program."""
-  # Comment the next line in for debugging.
-  # print "Execute: ", ' '.join(args)
-  print " ".join(args)
-  if subprocess.call(args) > 0:
-    raise RuntimeError('FAILED: ' + ' '.join(args))
+class GypBuilder(object):
+  """A class to help build gyp projects in a cross platform way"""
+
+  def __init__(self, args):
+    self.execute = True
+    self.verbose = False
+
+    modes = ["build", "presubmit", "selenium", "unit_tests"]
+
+    parser = OptionParser()
+    parser.add_option(
+        "--list-targets", action="store_true",
+        help="lists all available targets")
+    parser.add_option(
+        "--no-execute", action="store_true", default=False,
+        help="just print commands that would get executed")
+    parser.add_option(
+        "--verbose", action="store_true",
+        help="prints more output")
+    parser.add_option(
+        "--targets", action="append",
+        help="targets to build separated by commas.")
+    parser.add_option(
+        "--clean", action="store_true",
+        help="clean the targets")
+    parser.add_option(
+        "--mode", choices=modes,
+        default="build",
+        help="mode to use. Valid modes are '%s'. Default='build' " %
+             "', '".join(modes))
+
+    (options, args) = parser.parse_args(args=args)
+
+    self.verbose = options.verbose
+    self.execute = not options.no_execute
+
+    if options.list_targets:
+      print "Not yet implemented"
+      sys.exit(0)
+
+    self.Log("mode:", options.mode)
+
+    targets = options.targets
+    if targets:
+      # flatten the targets.
+      targets = sum([t.split(",") for t in targets], [])
+
+    # call a Do method based on the mode.
+    os.chdir("build")
+    func = getattr(self, "Do%s" % options.mode)
+    func(targets, options)
+
+  def Log(self, *args):
+    if self.verbose:
+      print args
+
+  def Execute(self, args):
+    """Executes an external program."""
+    if self.execute:
+      self.Log(" ".join(args))
+      if subprocess.call(args) > 0:
+        raise RuntimeError("FAILED: " + " ".join(args))
+    else:
+      print " ".join(args)
+
+  def Dobuild(self, targets, options):
+    """Builds the specifed targets."""
+    if os.name == 'nt':
+      self.Execute(['msbuild',
+                    os.path.abspath('all.sln')])
+    elif platform.system() == 'Darwin':
+      self.Execute(['xcodebuild',
+                    '-project', 'all.xcodeproj'])
+    elif platform.system() == 'Linux':
+      self.Execute(['hammer',
+                    '-f', 'all_main.scons'])
+    else:
+      print "Error: Unknown platform", os.name
+
+  def Dopresubmit(self, targets, options):
+    """Builds and runs both the unit tests and selenium."""
+    self.Dounit_tests(targets, options)
+    self.Doselenium(targets, options)
+
+  def Doselenium(self, targets, options):
+    """Builds and runs the selenium tests."""
+    print "selenium not yet implemented."
+
+  def Dounit_tests(self, targets, options):
+    """Builds and runs the unit tests."""
+    print "unit_tests not yet implemented."
 
 
 def main(args):
-  os.chdir('build')
-  if os.name == 'nt':
-    Execute(['msbuild',
-             os.path.abspath('all.sln')] + args[1:])
-  elif platform.system() == 'Darwin':
-    Execute(['xcodebuild',
-             '-project', 'all.xcodeproj'])
-  elif platform.system() == 'Linux':
-    Execute(['hammer',
-             '-f', 'all_main.scons'])
-  else:
-    print "Error: Unknown platform", os.name
+  GypBuilder(args[1:])
 
-if __name__ == '__main__':
+if __name__ == "__main__":
   main(sys.argv)
 
