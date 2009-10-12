@@ -46,10 +46,6 @@ void NativeTextfieldGtk::UpdateText() {
 }
 
 void NativeTextfieldGtk::AppendText(const string16& text) {
-  gint position = -1;
-  gtk_editable_insert_text(GTK_EDITABLE(native_view()),
-                           UTF16ToUTF8(text).c_str(),
-                           text.size(), &position);
   if (!native_view())
     return;
   gtk_entry_append_text(GTK_ENTRY(native_view()), UTF16ToUTF8(text).c_str());
@@ -220,6 +216,7 @@ gboolean NativeTextfieldGtk::OnChangedHandler(
 }
 
 gboolean NativeTextfieldGtk::OnChanged() {
+  textfield_->SyncText();
   Textfield::Controller* controller = textfield_->GetController();
   if (controller)
     controller->ContentsChanged(textfield_, GetText());

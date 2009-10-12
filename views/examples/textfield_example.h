@@ -26,7 +26,8 @@ class TextfieldExample : protected ExampleBase,
         name_(new Textfield()),
         password_(new Textfield(Textfield::STYLE_PASSWORD)),
         show_password_(new views::TextButton(this, L"Show password")),
-        clear_all_(new views::TextButton(this, L"Clear All")) {
+        clear_all_(new views::TextButton(this, L"Clear All")),
+        append_(new views::TextButton(this, L"Append")) {
     name_->SetController(this);
     password_->SetController(this);
 
@@ -50,6 +51,8 @@ class TextfieldExample : protected ExampleBase,
     layout->AddView(show_password_);
     layout->StartRow(0, 0);
     layout->AddView(clear_all_);
+    layout->StartRow(0, 0);
+    layout->AddView(append_);
   }
 
   virtual ~TextfieldExample() {}
@@ -81,6 +84,8 @@ class TextfieldExample : protected ExampleBase,
       string16 empty;
       name_->SetText(empty);
       password_->SetText(empty);
+    } else if (sender == append_) {
+      name_->AppendText(WideToUTF16(L"[append]"));
     }
   }
 
@@ -91,6 +96,7 @@ class TextfieldExample : protected ExampleBase,
   // Buttons to show password text and to clear the textfields.
   views::TextButton* show_password_;
   views::TextButton* clear_all_;
+  views::TextButton* append_;
 
   DISALLOW_COPY_AND_ASSIGN(TextfieldExample);
 };
