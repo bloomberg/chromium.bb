@@ -212,7 +212,8 @@ TEST_F(WorkerTest, LimitPerPage) {
 }
 #endif
 
-TEST_F(WorkerTest, MAYBE_LimitTotal) {
+// This test fails after WebKit merge 49414:49432. (BUG=24652)
+TEST_F(WorkerTest, DISABLED_LimitTotal) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   int total_workers = WorkerService::kMaxWorkersWhenSeparate;
 
