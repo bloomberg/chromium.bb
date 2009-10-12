@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
@@ -301,7 +302,7 @@ bool MasterSM::DoInit() {
   if (dump_to_disk_) {
     writer_ = new DiskDumper(path_);
   } else {
-    cache_.reset(new disk_cache::BackendImpl(path_));
+    cache_.reset(new disk_cache::BackendImpl(FilePath::FromWStringHack(path_)));
     if (!cache_->Init()) {
       printf("Unable to initialize new files\n");
       return false;
@@ -509,7 +510,7 @@ class SlaveSM : public BaseSM {
  public:
   SlaveSM(const std::wstring& path, HANDLE channel)
       : BaseSM(channel), iterator_(NULL) {
-    cache_.reset(new disk_cache::BackendImpl(path));
+    cache_.reset(new disk_cache::BackendImpl(FilePath::FromWStringHack(path)));
     if (!cache_->Init()) {
       printf("Unable to open cache files\n");
       return;
