@@ -22,6 +22,7 @@
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/background.h"
 #include "views/painter.h"
