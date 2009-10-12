@@ -75,12 +75,10 @@ class DebugUtil {
   static void BreakDebugger();
 
 #if defined(OS_MACOSX)
-  // On OS X, it can take a really long time for the OS Crash handler to
-  // process a Chrome crash.  This translates into a long wait till the process
-  // actually dies.
-  // This method disables OS Crash reporting entireley.
-  // TODO(playmobil): Remove this when we have Breakpad integration enabled -
-  // see http://crbug.com/7652
+  // On Mac OS X, it can take a really long time for the OS crash handler to
+  // process a Chrome crash when debugging symbols are available.  This
+  // translates into a long wait until the process actually dies.  This call
+  // disables Apple Crash Reporter entirely.
   static void DisableOSCrashDumps();
 #endif  // defined(OS_MACOSX)
 };

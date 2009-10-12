@@ -14,19 +14,18 @@ static void ExitSignalHandler(int sig) {
 
 // static
 void DebugUtil::DisableOSCrashDumps() {
-  int signals_to_intercept[] ={SIGINT,
-                               SIGHUP,
-                               SIGTERM,
-                               SIGABRT,
-                               SIGILL,
-                               SIGTRAP,
-                               SIGEMT,
-                               SIGFPE,
-                               SIGBUS,
-                               SIGSEGV,
-                               SIGSYS,
-                               SIGXCPU,
-                               SIGXFSZ};
+  // These are the POSIX signals corresponding to the Mach exceptions that
+  // Apple Crash Reporter handles.  See ux_exception() in xnu's
+  // bsd/uxkern/ux_exception.c and machine_exception() in xnu's
+  // bsd/dev/*/unix_signal.c.
+  const int signals_to_intercept[] ={
+    SIGILL,   // EXC_BAD_INSTRUCTION
+    SIGTRAP,  // EXC_BREAKPOINT
+    SIGFPE,   // EXC_ARITHMETIC
+    SIGBUS,   // EXC_BAD_ACCESS
+    SIGSEGV   // EXC_BAD_ACCESS
+  };
+
   // For all these signals, just wire things up so we exit immediately.
   for (size_t i = 0; i < arraysize(signals_to_intercept); ++i) {
     signal(signals_to_intercept[i], ExitSignalHandler);
