@@ -34,13 +34,11 @@ class WorkerTest : public UILayoutTest {
   }
 };
 
-// This test fails after WebKit merge 49414:49432. (BUG=24652)
-TEST_F(WorkerTest, DISABLED_SingleWorker) {
+TEST_F(WorkerTest, SingleWorker) {
   RunTest(L"single_worker.html");
 }
 
-// This test fails after WebKit merge 49414:49432. (BUG=24652)
-TEST_F(WorkerTest, DISABLED_MultipleWorkers) {
+TEST_F(WorkerTest, MultipleWorkers) {
   RunTest(L"multi_worker.html");
 }
 
@@ -49,8 +47,7 @@ TEST_F(WorkerTest, DISABLED_MultipleWorkers) {
 #define WorkerFastLayoutTests DISABLED_WorkerFastLayoutTests
 #endif
 
-// This test fails after WebKit merge 49414:49432. (BUG=24652)
-TEST_F(WorkerTest, DISABLED_WorkerFastLayoutTests) {
+TEST_F(WorkerTest, WorkerFastLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "stress-js-execution.html",
 #if defined(OS_WIN)
@@ -131,8 +128,7 @@ TEST_F(WorkerTest, WorkerHttpLayoutTests) {
   StopHttpServer();
 }
 
-// This test fails after WebKit merge 49414:49432. (BUG=24652)
-TEST_F(WorkerTest, DISABLED_WorkerXhrHttpLayoutTests) {
+TEST_F(WorkerTest, WorkerXhrHttpLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "abort-exception-assert.html",
 #if defined(OS_WIN)
@@ -203,7 +199,7 @@ TEST_F(WorkerTest, MessagePorts) {
 // http://code.google.com/p/chromium/issues/detail?id=22608
 #if !defined(OS_LINUX)
 // This test fails after WebKit merge 49414:49432. (BUG=24652)
-TEST_F(WorkerTest, DISABLED_LimitPerPage) {
+TEST_F(WorkerTest, LimitPerPage) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   GURL url = GetTestUrl(L"workers", L"many_workers.html");
   url = GURL(url.spec() + StringPrintf("?count=%d", max_workers_per_tab + 1));
@@ -218,7 +214,7 @@ TEST_F(WorkerTest, DISABLED_LimitPerPage) {
 #endif
 
 // This test fails after WebKit merge 49414:49432. (BUG=24652)
-TEST_F(WorkerTest, DISABLED_LimitTotal) {
+TEST_F(WorkerTest, LimitTotal) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   int total_workers = WorkerService::kMaxWorkersWhenSeparate;
 
