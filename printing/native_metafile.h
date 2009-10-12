@@ -26,14 +26,13 @@ typedef Emf NativeMetafile;
 
 #elif defined(OS_MACOSX)
 
-// TODO(port): Printing using CG/PDF?
-// The mock class is here so we can compile.
-class NativeMetafile {
- public:
-  int GetDataSize() const { return 0; }
- private:
-  DISALLOW_COPY_AND_ASSIGN(NativeMetafile);
-};
+#include "printing/pdf_metafile_mac.h"
+
+namespace printing {
+
+typedef PdfMetafile NativeMetafile;
+
+}  // namespace printing
 
 #elif defined(OS_LINUX)
 
