@@ -128,7 +128,7 @@ function drawCursor(e) {
     g_canvasQuad.canvas.drawBitmap(
         g_brushTexture,
         (offset.x / brushScale - g_brushTexture.width * 0.5),
-        (offset.y / brushScale + g_brushTexture.height * 0.5));
+        (offset.y / brushScale - g_brushTexture.height * 0.5));
     g_canvasQuad.canvas.restoreMatrix();
     g_canvasQuad.updateTexture();
   }
@@ -151,7 +151,7 @@ function changeBrushTexture() {
       }
       g_brushTexture = texture;
     }
-  });
+  }, false, false);
 }
 
 /**

@@ -215,10 +215,11 @@ void Canvas::DrawBitmap(Texture2D* texture2d,
   SaveMatrix();
   if (flip_) {
     Scale(1, -1);
+    bottom = -bottom;
   }
   sk_canvas_.drawBitmap(bitmap,
                         SkFloatToScalar(left),
-                        SkFloatToScalar(-bottom),
+                        SkFloatToScalar(bottom),
                         NULL);
   RestoreMatrix();
 }

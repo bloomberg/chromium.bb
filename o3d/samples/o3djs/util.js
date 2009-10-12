@@ -60,7 +60,7 @@ o3djs.util.PLUGIN_NAME = 'O3D Plugin';
  * utility libraries.
  * @type {string}
  */
-o3djs.util.REQUIRED_VERSION = '0.1.42.0';
+o3djs.util.REQUIRED_VERSION = '0.1.42.4';
 
 /**
  * The width an O3D must be to put a failure message inside
