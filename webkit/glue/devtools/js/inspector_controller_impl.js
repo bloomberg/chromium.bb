@@ -19,6 +19,8 @@ devtools.InspectorControllerImpl = function() {
   this.installInspectorControllerDelegate_('enableResourceTracking');
   this.installInspectorControllerDelegate_('enableTimeline');
   this.installInspectorControllerDelegate_('getChildNodes');
+  this.installInspectorControllerDelegate_('getDatabaseTableNames');
+  this.installInspectorControllerDelegate_('getDOMStorageEntries');
   this.installInspectorControllerDelegate_('getEventListenersForNode');
   this.installInspectorControllerDelegate_('highlightDOMNode');
   this.installInspectorControllerDelegate_('hideDOMNodeHighlight');
@@ -70,7 +72,7 @@ devtools.InspectorControllerImpl.prototype.detach = function() {
  * {@inheritDoc}.
  */
 devtools.InspectorControllerImpl.prototype.hiddenPanels = function() {
-  return '';
+  return DevToolsHost.hiddenPanels();
 };
 
 
@@ -252,13 +254,13 @@ devtools.InspectorControllerImpl.prototype.takeHeapSnapshot = function() {
  * @override
  */
 devtools.InspectorControllerImpl.prototype.dispatchOnInjectedScript = function(
-    callId, methodName, argsString) {
+    callId, methodName, argsString, async) {
   var callback = function(result, isException) {
     WebInspector.didDispatchOnInjectedScript(callId, result, isException);
   };
   RemoteToolsAgent.DispatchOnInjectedScript(
-      devtools.Callback.wrap(callback),
-      methodName,
+      WebInspector.Callback.wrap(callback),
+      async ? methodName + "_async" : methodName,
       argsString);
 };
 
@@ -282,7 +284,7 @@ devtools.InspectorControllerImpl.prototype.callInspectorController_ =
     function(methodName, var_arg) {
   var args = Array.prototype.slice.call(arguments, 1);
   RemoteToolsAgent.DispatchOnInspectorController(
-      devtools.Callback.wrap(function(){}),
+      WebInspector.Callback.wrap(function(){}),
       methodName,
       JSON.stringify(args));
 };

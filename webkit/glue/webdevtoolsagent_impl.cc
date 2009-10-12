@@ -169,7 +169,8 @@ void WebDevToolsAgentImpl::DispatchOnInspectorController(
   String result;
   String exception;
   result = debugger_agent_impl_->ExecuteUtilityFunction(utility_context_,
-      "InspectorControllerDispatcher", function_name, json_args, &exception);
+      call_id, "InspectorControllerDispatcher", function_name, json_args,
+         false /* is sync */, &exception);
   tools_agent_delegate_stub_->DidDispatchOn(call_id,
       result, exception);
 }
@@ -180,10 +181,17 @@ void WebDevToolsAgentImpl::DispatchOnInjectedScript(
       const String& json_args) {
   String result;
   String exception;
+  String fname = function_name;
+  bool async = function_name.endsWith("_async");
+  if (async) {
+    fname = fname.substring(0, fname.length() - 6);
+  }
   result = debugger_agent_impl_->ExecuteUtilityFunction(utility_context_,
-      "InjectedScript", function_name, json_args, &exception);
-  tools_agent_delegate_stub_->DidDispatchOn(call_id,
-      result, exception);
+      call_id, "InjectedScript", fname, json_args, async, &exception);
+  if (!async) {
+    tools_agent_delegate_stub_->DidDispatchOn(call_id,
+        result, exception);
+  }
 }
 
 void WebDevToolsAgentImpl::ExecuteVoidJavaScript() {

@@ -53,9 +53,11 @@ class DebuggerAgentImpl : public DebuggerAgent {
   // implemented in the inject_dispatch.js file.
   WebCore::String ExecuteUtilityFunction(
       v8::Handle<v8::Context> context,
+      int call_id,
       const char* object,
       const WebCore::String& function_name,
       const WebCore::String& json_args,
+      bool async,
       WebCore::String* exception);
 
   // Executes a no-op function in the utility context. We don't use

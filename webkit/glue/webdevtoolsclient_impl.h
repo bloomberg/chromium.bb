@@ -73,6 +73,8 @@ class WebDevToolsClientImpl : public WebDevToolsClient,
       const v8::Arguments& args);
   static v8::Handle<v8::Value> JsGetApplicationLocale(
       const v8::Arguments& args);
+  static v8::Handle<v8::Value> JsHiddenPanels(
+      const v8::Arguments& args);
   static v8::Handle<v8::Value> JsDebuggerCommand(
       const v8::Arguments& args);
 

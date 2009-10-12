@@ -147,9 +147,11 @@ void DebuggerAgentImpl::CreateUtilityContext(
 
 String DebuggerAgentImpl::ExecuteUtilityFunction(
     v8::Handle<v8::Context> context,
+    int call_id,
     const char* object,
     const String &function_name,
     const String& json_args,
+    bool async,
     String* exception) {
   v8::HandleScope scope;
   ASSERT(!context.IsEmpty());
@@ -173,13 +175,17 @@ String DebuggerAgentImpl::ExecuteUtilityFunction(
       v8::String::New(function_name.utf8().data()));
   v8::Handle<v8::String> json_args_wrapper = v8::Handle<v8::String>(
       v8::String::New(json_args.utf8().data()));
+  v8::Handle<v8::Number> call_id_wrapper = v8::Handle<v8::Number>(
+      v8::Number::New(async ? call_id : 0));
+
   v8::Handle<v8::Value> args[] = {
     function_name_wrapper,
-    json_args_wrapper
+    json_args_wrapper,
+    call_id_wrapper
   };
 
   v8::TryCatch try_catch;
-  v8::Handle<v8::Value> res_obj = function->Call(context->Global(), 2, args);
+  v8::Handle<v8::Value> res_obj = function->Call(context->Global(), 3, args);
   if (try_catch.HasCaught()) {
     *exception = WebCore::toWebCoreString(try_catch.Message()->Get());
     return "";

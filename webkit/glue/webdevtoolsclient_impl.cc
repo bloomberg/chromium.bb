@@ -15,6 +15,7 @@
 #include "Page.h"
 #include "PlatformString.h"
 #include "SecurityOrigin.h"
+#include "Settings.h"
 #include "V8Binding.h"
 #include "V8CustomBinding.h"
 #include "V8Proxy.h"
@@ -167,6 +168,9 @@ WebDevToolsClientImpl::WebDevToolsClientImpl(
   dev_tools_host_->AddProtoFunction(
       "getApplicationLocale",
       WebDevToolsClientImpl::JsGetApplicationLocale);
+  dev_tools_host_->AddProtoFunction(
+      "hiddenPanels",
+      WebDevToolsClientImpl::JsHiddenPanels);
   dev_tools_host_->Build();
 }
 
@@ -383,6 +387,13 @@ v8::Handle<v8::Value> WebDevToolsClientImpl::JsGetApplicationLocale(
   WebDevToolsClientImpl* client = static_cast<WebDevToolsClientImpl*>(
       v8::External::Cast(*args.Data())->Value());
   return v8String(client->application_locale_);
+}
+
+// static
+v8::Handle<v8::Value> WebDevToolsClientImpl::JsHiddenPanels(
+    const v8::Arguments& args) {
+  Page* page = V8Proxy::retrieveFrameForEnteredContext()->page();
+  return v8String(page->settings()->databasesEnabled() ? "" : "databases");
 }
 
 // static
