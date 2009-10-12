@@ -44,9 +44,30 @@ namespace command_buffer {
 
 const float kPi = 3.14159265359f;
 
+const unsigned int kRandomMax = 0x7FFFFFFFu;
+inline int RandR(unsigned int *ctx) {
+  /*
+   * Compute x = (7^5 * x) mod (2^31 - 1)
+   * without overflowing 31 bits:
+   *      (2^31 - 1) = 127773 * (7^5) + 2836
+   * From "Random number generators: good ones are hard to find",
+   * Park and Miller, Communications of the ACM, vol. 31, no. 10,
+   * October 1988, p. 1195.
+   */
+  int hi, lo, x;
+
+  hi = *ctx / 127773u;
+  lo = *ctx % 127773u;
+  x = 16807u * lo - 2836u * hi;
+  if (x <= 0) {
+    x += 0x7fffffffu;
+  }
+  return ((*ctx = x) % (kRandomMax + 1));
+}
+
 // Returns a random value between min and max.
 inline float Randf(float min, float max, unsigned int *seed) {
-  return min + (max - min) / RAND_MAX * rand_r(seed);
+  return min + (max - min) / kRandomMax * RandR(seed);
 }
 
 // Converts a [0..1] float to a [0..255] color value.
@@ -64,7 +85,7 @@ inline float SmoothStep(float x) {
 
 // Interpolates between a and b, with a ratio of t.
 inline float Lerp(float t, float a, float b) {
-  return a + (b-a)*t;
+  return a + (b - a) * t;
 }
 
 }  // namespace command_buffer

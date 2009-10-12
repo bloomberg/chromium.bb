@@ -58,7 +58,7 @@ void PerlinNoise2D::Initialize(unsigned int *seed) {
   // element. Also duplicate the permutation table so that constructs like
   // permutation[x + permutation[y]] work without additional modulo.
   for (unsigned int i = 0; i < frequency_; ++i) {
-    unsigned int j = i + (rand_r(seed) % (frequency_ - i));
+    unsigned int j = i + (RandR(seed) % (frequency_ - i));
     unsigned int tmp = permutation_[j];
     permutation_[j] = permutation_[i];
     permutation_[i] = tmp;
