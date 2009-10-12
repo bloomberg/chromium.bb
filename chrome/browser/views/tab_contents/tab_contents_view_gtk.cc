@@ -56,8 +56,10 @@ gboolean OnFocus(GtkWidget* widget, GtkDirectionType focus,
 }
 
 // Called when the mouse leaves the widget. We notify our delegate.
-gboolean OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event,
-                       TabContents* tab_contents) {
+// WidgetGtk also defines OnLeaveNotify, so we use the name OnLeaveNotify2
+// here.
+gboolean OnLeaveNotify2(GtkWidget* widget, GdkEventCrossing* event,
+                        TabContents* tab_contents) {
   if (tab_contents->delegate())
     tab_contents->delegate()->ContentsMouseEvent(tab_contents, false);
   return FALSE;
@@ -142,10 +144,8 @@ RenderWidgetHostView* TabContentsViewGtk::CreateViewForWidget(
   view->InitAsChild();
   g_signal_connect(view->native_view(), "focus",
                    G_CALLBACK(OnFocus), tab_contents());
-/*
   g_signal_connect(view->native_view(), "leave-notify-event",
-                   G_CALLBACK(OnLeaveNotify), tab_contents());
-*/
+                   G_CALLBACK(OnLeaveNotify2), tab_contents());
   g_signal_connect(view->native_view(), "motion-notify-event",
                    G_CALLBACK(OnMouseMove), tab_contents());
   g_signal_connect(view->native_view(), "scroll-event",
