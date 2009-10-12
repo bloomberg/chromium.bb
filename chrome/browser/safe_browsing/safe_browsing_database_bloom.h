@@ -32,52 +32,26 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
   virtual ~SafeBrowsingDatabaseBloom();
 
   // SafeBrowsingDatabase interface:
-
-  // Initializes the database with the given filename.  The callback is
-  // executed after finishing a chunk.
-  virtual bool Init(const FilePath& filename,
+  virtual void Init(const FilePath& filename,
                     Callback0::Type* chunk_inserted_callback);
-
-  // Deletes the current database and creates a new one.
   virtual bool ResetDatabase();
-
-  // Returns false if the given url is not in the database.  If it returns
-  // true, then either "list" is the name of the matching list, or prefix_hits
-  // contains the matching hash prefixes.
   virtual bool ContainsUrl(const GURL& url,
                            std::string* matching_list,
                            std::vector<SBPrefix>* prefix_hits,
                            std::vector<SBFullHashResult>* full_hits,
                            base::Time last_update);
-
-  // Processes add/sub commands.  Database will free the chunks when it's done.
   virtual void InsertChunks(const std::string& list_name,
                             std::deque<SBChunk>* chunks);
-
-  // Processs adddel/subdel commands.  Database will free chunk_deletes when
-  // it's done.
   virtual void DeleteChunks(std::vector<SBChunkDelete>* chunk_deletes);
-
-  // Returns the lists and their add/sub chunks.
   virtual void GetListsInfo(std::vector<SBListChunkRanges>* lists);
-
-  // Does nothing in this implementation.  Operations in this class are
-  // always synchronous.
   virtual void SetSynchronous();
-
-  // Store the results of a GetHash response. In the case of empty results, we
-  // cache the prefixes until the next update so that we don't have to issue
-  // further GetHash requests we know will be empty.
   virtual void CacheHashResults(
       const std::vector<SBPrefix>& prefixes,
       const std::vector<SBFullHashResult>& full_hits);
-
-  // Called when the user's machine has resumed from a lower power state.
   virtual void HandleResume();
-
-  // Returns true if we have successfully started the update transaction.
   virtual bool UpdateStarted();
   virtual void UpdateFinished(bool update_succeeded);
+
 
   virtual bool NeedToCheckUrl(const GURL& url);
 

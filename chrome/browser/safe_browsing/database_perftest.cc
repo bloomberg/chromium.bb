@@ -40,7 +40,7 @@ class Database {
     }
   }
 
-  bool Init(const FilePath& name, bool create) {
+  void Init(const FilePath& name, bool create) {
     // get an empty file for the test DB
     FilePath filename;
     PathService::Get(base::DIR_TEMP, &filename);
@@ -55,15 +55,14 @@ class Database {
     }
 
     const std::string sqlite_path = WideToUTF8(filename.ToWStringHack());
-    if (sqlite3_open(sqlite_path.c_str(), &db_) != SQLITE_OK)
-      return false;
+    ASSERT_EQ(sqlite3_open(sqlite_path.c_str(), &db_), SQLITE_OK);
 
     statement_cache_.set_db(db_);
 
     if (!create)
-      return true;
+      return;
 
-    return CreateTable();
+    ASSERT_TRUE(CreateTable());
   }
 
   virtual bool CreateTable() = 0;
@@ -253,7 +252,7 @@ class SafeBrowsing: public testing::Test {
     db_name_.append(db_->GetDBSuffix());
 
     FilePath path = FilePath::FromWStringHack(ASCIIToWide(db_name_));
-    ASSERT_TRUE(db_->Init(path, type == WRITE));
+    db_->Init(path, type == WRITE);
 
     if (type == WRITE) {
       WriteEntries(size);
@@ -398,7 +397,7 @@ class SafeBrowsingDatabaseTest {
 
     scoped_ptr<SafeBrowsingDatabase> database(SafeBrowsingDatabase::Create());
     database->SetSynchronous();
-    EXPECT_TRUE(database->Init(path_, NULL));
+    database->Init(path_, NULL);
 
     int chunk_id = 0;
     int total_host_keys = size;
@@ -431,7 +430,7 @@ class SafeBrowsingDatabaseTest {
 
     scoped_ptr<SafeBrowsingDatabase> database(SafeBrowsingDatabase::Create());
     database->SetSynchronous();
-    EXPECT_TRUE(database->Init(path_, NULL));
+    database->Init(path_, NULL);
 
     PerfTimer total_timer;
     int64 db_ms = 0;
@@ -479,7 +478,7 @@ class SafeBrowsingDatabaseTest {
 
     scoped_ptr<SafeBrowsingDatabase> database(SafeBrowsingDatabase::Create());
     database->SetSynchronous();
-    EXPECT_TRUE(database->Init(path_, NULL));
+    database->Init(path_, NULL);
 
     int64 total_ms = total_timer.Elapsed().InMilliseconds();
 

@@ -36,7 +36,7 @@ class SafeBrowsingDatabase {
 
   // Initializes the database with the given filename.  The callback is
   // executed after finishing a chunk.
-  virtual bool Init(const FilePath& filename,
+  virtual void Init(const FilePath& filename,
                     Callback0::Type* chunk_inserted_callback) = 0;
 
   // Deletes the current database and creates a new one.
@@ -84,8 +84,9 @@ class SafeBrowsingDatabase {
   // Called when the user's machine has resumed from a lower power state.
   virtual void HandleResume() = 0;
 
-  virtual bool UpdateStarted() { return true; }
-  virtual void UpdateFinished(bool update_succeeded) {}
+  // Returns true if we have successfully started the update transaction.
+  virtual bool UpdateStarted() = 0;
+  virtual void UpdateFinished(bool update_succeeded) = 0;
 
   virtual FilePath filename() const { return filename_; }
 

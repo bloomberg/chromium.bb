@@ -54,7 +54,7 @@ SafeBrowsingDatabaseBloom::~SafeBrowsingDatabaseBloom() {
   Close();
 }
 
-bool SafeBrowsingDatabaseBloom::Init(const FilePath& filename,
+void SafeBrowsingDatabaseBloom::Init(const FilePath& filename,
                                      Callback0::Type* chunk_inserted_callback) {
   DCHECK(!init_ && filename_.empty());
 
@@ -67,8 +67,6 @@ bool SafeBrowsingDatabaseBloom::Init(const FilePath& filename,
 
   init_ = true;
   chunk_inserted_callback_.reset(chunk_inserted_callback);
-
-  return true;
 }
 
 bool SafeBrowsingDatabaseBloom::Open() {

@@ -82,7 +82,7 @@ namespace {
 
     SafeBrowsingDatabase* database = SafeBrowsingDatabase::Create();
     database->SetSynchronous();
-    EXPECT_TRUE(database->Init(filename, NULL));
+    database->Init(filename, NULL);
 
     return database;
   }
@@ -1076,7 +1076,7 @@ void PeformUpdate(const std::wstring& initial_db,
 
   SafeBrowsingDatabase* database = SafeBrowsingDatabase::Create();
   database->SetSynchronous();
-  EXPECT_TRUE(database->Init(path, NULL));
+  database->Init(path, NULL);
 
   Time before_time = Time::Now();
   base::ProcessHandle handle = base::Process::Current().handle();

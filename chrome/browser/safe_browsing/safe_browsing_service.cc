@@ -371,17 +371,11 @@ SafeBrowsingDatabase* SafeBrowsingService::GetDatabase() {
   SafeBrowsingDatabase* database = SafeBrowsingDatabase::Create();
   Callback0::Type* chunk_callback =
       NewCallback(this, &SafeBrowsingService::ChunkInserted);
-  bool init_success = database->Init(path, chunk_callback);
+  database->Init(path, chunk_callback);
+  database_ = database;
 
   io_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &SafeBrowsingService::DatabaseLoadComplete, !init_success));
-
-  if (!init_success) {
-    NOTREACHED();
-    return NULL;
-  }
-
-  database_ = database;
+      this, &SafeBrowsingService::DatabaseLoadComplete));
 
   TimeDelta open_time = Time::Now() - before;
   SB_DLOG(INFO) << "SafeBrowsing database open took " <<
@@ -532,15 +526,14 @@ void SafeBrowsingService::OnChunkInserted() {
     protocol_manager_->OnChunkInserted();
 }
 
-void SafeBrowsingService::DatabaseLoadComplete(bool database_error) {
+void SafeBrowsingService::DatabaseLoadComplete() {
   DCHECK(MessageLoop::current() == io_loop_);
   if (!enabled_)
     return;
 
   database_loaded_ = true;
 
-  // TODO(paulg): More robust database initialization error handling.
-  if (protocol_manager_ && !database_error)
+  if (protocol_manager_)
     protocol_manager_->Initialize();
 
   // If we have any queued requests, we can now check them.

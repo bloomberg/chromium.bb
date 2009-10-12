@@ -152,7 +152,7 @@ class SafeBrowsingService
   void ChunkInserted();
 
   // Notification from the database when it's done loading its bloom filter.
-  void DatabaseLoadComplete(bool database_error);
+  void DatabaseLoadComplete();
 
   // Preference handling.
   static void RegisterPrefs(PrefService* prefs);
