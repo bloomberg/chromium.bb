@@ -514,7 +514,8 @@ BUG18978 MAC : LayoutTests/http/tests/xmlhttprequest/methods.html = FAIL TIMEOUT
 BUG8941 LINUX WIN SLOW : LayoutTests/http/tests/xmlhttprequest/web-apps/013.html = FAIL
 BUG8941 MAC DEBUG SLOW : LayoutTests/http/tests/xmlhttprequest/web-apps/013.html = FAIL
 BUG8941 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/web-apps/013.html = FAIL TIMEOUT
-BUG8941 WIN LINUX : LayoutTests/http/tests/xmlhttprequest/web-apps/012.html = FAIL
+// Crashes after Webit merge 49414:49432
+// BUG_HCLAM BUG8941 WIN LINUX : LayoutTests/http/tests/xmlhttprequest/web-apps/012.html = FAIL
 
 // -----------------------------------------------------------------
 // TEXT
@@ -3200,3 +3201,5 @@ BUG_HCLAM : LayoutTests/fast/events/mouseover-mouseout2.html = CRASH
 BUG_HCLAM : LayoutTests/http/tests/loading/gmail-assert-on-load.html = CRASH
 BUG_HCLAM : LayoutTests/http/tests/xmlhttprequest/frame-unload-abort-crash.html = CRASH
 BUG_HCLAM : LayoutTests/svg/custom/js-update-transform-changes.svg = CRASH
+BUG_HCLAM WIN MAC : LayoutTests/http/tests/xmlhttprequest/web-apps/012.html = CRASH
+BUG_HCLAM WIN MAC : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-image-not-loaded-svg.svg = CRASH

@@ -1301,16 +1301,16 @@ void GraphicsContext3D::generateMipmap(unsigned long target)
 
 bool GraphicsContext3D::getActiveAttrib(CanvasProgram*, unsigned long, ActiveInfo&)
 {
-  // FIXME: implement.
-  notImplemented();
-  return false;
+    // FIXME: implement.
+    notImplemented();
+    return false;
 }
 
 bool GraphicsContext3D::getActiveUniform(CanvasProgram*, unsigned long, ActiveInfo&)
 {
-  // FIXME: implement.
-  notImplemented();
-  return false;
+    // FIXME: implement.
+    notImplemented();
+    return false;
 }
 
 int GraphicsContext3D::getAttribLocation(CanvasProgram* program, const String& name)
