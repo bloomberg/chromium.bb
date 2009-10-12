@@ -558,8 +558,6 @@
         'glue/editor_client_impl.h',
         'glue/entity_map.cc',
         'glue/entity_map.h',
-        'glue/feed_preview.cc',
-        'glue/feed_preview.h',
         'glue/form_data.h',
         'glue/ftp_directory_listing_response_delegate.cc',
         'glue/ftp_directory_listing_response_delegate.h',
