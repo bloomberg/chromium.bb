@@ -9,7 +9,10 @@
 #include "base/basictypes.h"
 
 static void ExitSignalHandler(int sig) {
-  exit(128 + sig);
+  // A call to exit() can call atexit() handlers.  If we SIGSEGV due
+  // to a corrupt heap, and if we have an atexit handler that
+  // allocates or frees memory, we are in trouble if we do not _exit.
+  _exit(128 + sig);
 }
 
 // static
