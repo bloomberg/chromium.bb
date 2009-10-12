@@ -8,7 +8,9 @@
 #include <string>
 
 #import <Cocoa/Cocoa.h>
+#import <QuartzCore/QuartzCore.h>
 
+#include "base/task.h"
 #include "chrome/browser/status_bubble.h"
 
 class GURL;
@@ -16,6 +18,17 @@ class StatusBubbleMacTest;
 
 class StatusBubbleMac : public StatusBubble {
  public:
+  // The various states that a status bubble may be in.  Public for delegate
+  // access (for testing).
+  enum StatusBubbleState {
+    kBubbleHidden,         // Fully hidden
+    kBubbleShowingTimer,   // Waiting to fade in
+    kBubbleShowingFadeIn,  // In a fade-in transition
+    kBubbleShown,          // Fully visible
+    kBubbleHidingTimer,    // Waiting to fade out
+    kBubbleHidingFadeOut   // In a fade-out transition
+  };
+
   StatusBubbleMac(NSWindow* parent, id delegate);
   virtual ~StatusBubbleMac();
 
@@ -31,17 +44,53 @@ class StatusBubbleMac : public StatusBubble {
   // exist.
   void UpdateSizeAndPosition();
 
+  // Delegate method called when a fade-in or fade-out transition has
+  // completed.  This is public so that it may be visible to the CAAnimation
+  // delegate, which is an Objective-C object.
+  void AnimationDidStop(CAAnimation* animation, bool finished);
+
  private:
   friend class StatusBubbleMacTest;
 
-  void SetStatus(NSString* status, bool is_url);
+  // Setter for state_.  Use this instead of writing to state_ directly so
+  // that state changes can be observed by unit tests.
+  void SetState(StatusBubbleState state);
+
+  // Sets the bubble text for SetStatus and SetURL.
+  void SetText(const std::wstring& text, bool is_url);
 
   // Construct the window/widget if it does not already exist. (Safe to call if
   // it does.)
   void Create();
 
-  void FadeIn();
-  void FadeOut();
+  // Attaches the status bubble window to its parent window.
+  void Attach();
+
+  // Begins fading the status bubble window in or out depending on the value
+  // of |show|.  This must be called from the appropriate fade state,
+  // kBubbleShowingFadeIn or kBubbleHidingFadeOut, or from the appropriate
+  // fully-shown/hidden state, kBubbleShown or kBubbleHidden.  This may be
+  // called at any point during a fade-in or fade-out; it is even possible to
+  // reverse a transition before it has completed.
+  void Fade(bool show);
+
+  // One-shot timer operations to manage the delays associated with the
+  // kBubbleShowingTimer and kBubbleHidingTimer states.  StartTimer and
+  // TimerFired must be called from one of these states.  StartTimer may be
+  // called while the timer is still running; in that case, the timer will be
+  // reset. CancelTimer may be called from any state.
+  void StartTimer(int64 time_ms);
+  void CancelTimer();
+  void TimerFired();
+
+  // Begin the process of showing or hiding the status bubble.  These may be
+  // called from any state, and will take the appropriate action to initiate
+  // any state changes that may be needed.
+  void StartShowing();
+  void StartHiding();
+
+  // The timer factory used for show and hide delay timers.
+  ScopedRunnableMethodFactory<StatusBubbleMac> timer_factory_;
 
   // Calculate the appropriate frame for the status bubble window.
   NSRect CalculateWindowFrame();
@@ -61,15 +110,26 @@ class StatusBubbleMac : public StatusBubble {
   // The url we want to display when there is no status text to display.
   NSString* url_text_;
 
-  // How vertically offset the bubble is from its root position.
-  int offset_;
+  // The status bubble's current state.  Do not write to this field directly;
+  // use SetState().
+  StatusBubbleState state_;
+
+  // True if operations are to be performed immediately rather than waiting
+  // for delays and transitions.  Normally false, this should only be set to
+  // true for testing.
+  bool immediate_;
+
+  DISALLOW_COPY_AND_ASSIGN(StatusBubbleMac);
 };
 
-// Delegate interface that allows the StatusBubble to query its delegate about
-// the vertical offset (if any) that should be applied to the StatusBubble's
-// position.
+// Delegate interface
 @interface NSObject(StatusBubbleDelegate)
+// Called to query the delegate about the vertical offset (if any) that should
+// be applied to the StatusBubble's position.
 - (float)verticalOffsetForStatusBubble;
+
+// Called from SetState to notify the delegate of state changes.
+- (void)statusBubbleWillEnterState:(StatusBubbleMac::StatusBubbleState)state;
 @end
 
 #endif  // #ifndef CHROME_BROWSER_COCOA_STATUS_BUBBLE_MAC_H_
