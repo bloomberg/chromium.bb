@@ -33,12 +33,12 @@ class TestFlipVisitor : public FlipFramerVisitorInterface  {
   }
   void OnStreamFrameData(FlipStreamId stream_id,
                          const char* data,
-                         uint32 len) {
+                         size_t len) {
     data_frame_count_++;
 #ifdef TEST_LOGGING
     std::cerr << "OnStreamFrameData(" << stream_id << ", \"";
     if (len > 0) {
-      for (uint32 i = 0 ; i < len; ++i) {
+      for (size_t i = 0 ; i < len; ++i) {
         std::cerr << std::hex << (0xFF & (unsigned int)data[i]) << std::dec;
       }
     }

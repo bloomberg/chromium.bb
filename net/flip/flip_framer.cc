@@ -249,7 +249,7 @@ size_t FlipFramer::ProcessInput(const char* data, size_t len) {
               if (!InitializeDecompressor())
                 return NULL;
 
-              int decompressed_max_size = amount_to_forward * 100;
+              size_t decompressed_max_size = amount_to_forward * 100;
               scoped_array<char> decompressed(new char[decompressed_max_size]);
               decompressor_->next_in = reinterpret_cast<Bytef*>(
                   const_cast<char*>(data));
@@ -263,7 +263,7 @@ size_t FlipFramer::ProcessInput(const char* data, size_t len) {
                 set_error(FLIP_DECOMPRESS_FAILURE);
                 goto bottom;
               }
-              int decompressed_size = decompressed_max_size -
+              size_t decompressed_size = decompressed_max_size -
                                       decompressor_->avail_out;
               visitor_->OnStreamFrameData(current_data_frame->stream_id(),
                                           decompressed.get(),
