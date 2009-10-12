@@ -88,13 +88,15 @@ class SampleTests(selenium_utilities.SeleniumTestCase):
     """
     # Alias for the selenium session
     s = self.session
-    for i in range(0, 4):
-      for j in range(0, 4):
-        string1 = "%s[%d][%d]" % (matrix1, i, j)
-        string2 = "%s[%d][%d]" % (matrix2, i, j)
-        a = float(s.get_eval(string1))
-        b = float(s.get_eval(string2))
-        self.assertTrue(abs(a - b) < 0.001)
+    mat1_values = s.get_eval(matrix1 + '.toString()').split(',')
+    mat2_values = s.get_eval(matrix2 + '.toString()').split(',')
+    
+    self.assertTrue(len(mat1_values) == 16)
+    self.assertTrue(len(mat2_values) == 16)
+    for i in range(len(mat1_values)):
+      a = float(mat1_values[i])
+      b = float(mat2_values[i])
+      self.assertTrue(abs(a - b) < 0.001)
 
   def TestSampleRotateModel(self):
     """Tests rotatemodel.html."""

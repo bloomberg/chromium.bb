@@ -130,7 +130,7 @@ small   TestSampleRefreshPageLoad_Small
 medium  TestSampleCustomCamera            pdiff_threshold(200) pdiff_threshold_win(200) screenshot
 medium  TestSamplePicking
 medium  TestSampleRenderMode
-medium  TestSampleRotateModel             pdiff_threshold(200) screenshot
+medium  TestSampleRotateModel             pdiff_threshold(200) screenshots(2)
 medium  TestSampleShader_Test             pdiff_threshold(200) pdiff_threshold_win(200) screenshots(13)
 large   TestSampleMultipleClientsLarge
 large   TestSamplePingPongLarge
