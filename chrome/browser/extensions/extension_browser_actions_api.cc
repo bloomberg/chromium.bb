@@ -23,6 +23,8 @@ namespace {
 // Errors.
 const char kNoBrowserActionError[] =
     "This extension has no browser action specified.";
+const char kIconIndexOutOfBounds[] =
+    "Browser action icon index out of bounds.";
 }
 
 bool BrowserActionSetNameFunction::RunImpl() {
@@ -67,7 +69,15 @@ bool BrowserActionSetIconFunction::RunImpl() {
   } else {
     int icon_index = -1;
     EXTENSION_FUNCTION_VALIDATE(args_->GetAsInteger(&icon_index));
+
+    if (icon_index < 0 ||
+        static_cast<size_t>(icon_index) >=
+            extension->browser_action()->icon_paths().size()) {
+      error_ = kIconIndexOutOfBounds;
+      return false;
+    }
     extension->browser_action_state()->set_icon_index(icon_index);
+    extension->browser_action_state()->set_icon(NULL);
   }
 
   NotificationService::current()->Notify(

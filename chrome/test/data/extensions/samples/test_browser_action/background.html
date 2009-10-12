@@ -2,9 +2,20 @@
 <head>
 <script>
   // Called when the user clicks on the browser action.
+  var clicks = 0;
+  chrome.browserAction.onClicked.addListener(function() {
+    chrome.browserAction.setIcon(clicks);
+    clicks++;
+    // We only have 2 icons, but cycle through 3 icons to test the
+    // out-of-bounds index bug.
+    if (clicks > 3)
+      clicks = 0;
+  });
   var i = 0;
 
   window.setInterval(function() {
+    // Don't animate while in "click" mode.
+    if (clicks > 0) return;
     i++;
     chrome.browserAction.setIcon(draw(i*2, i*4));
   }, 50);
