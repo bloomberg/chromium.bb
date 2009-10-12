@@ -99,7 +99,10 @@ devtools.ToolsAgent.prototype.frameNavigate_ = function(url) {
  * @private
  */
 devtools.ToolsAgent.prototype.dispatchOnClient_ = function(message) {
-  WebInspector.dispatch.apply(WebInspector, JSON.parse(message));
+  var args = JSON.parse(message);
+  var methodName = args[0];
+  var parameters = args.slice(1);
+  WebInspector[methodName].apply(WebInspector, parameters);
 };
 
 
