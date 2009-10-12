@@ -627,10 +627,12 @@ ProcessSingleton::~ProcessSingleton() {
 }
 
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
-  return NotifyOtherProcessWithTimeout(kTimeoutInSeconds);
+  return NotifyOtherProcessWithTimeout(*CommandLine::ForCurrentProcess(),
+                                       kTimeoutInSeconds);
 }
 
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
+    const CommandLine& cmd_line,
     int timeout_seconds) {
   int socket;
   sockaddr_un addr;
@@ -666,8 +668,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
     return PROCESS_NONE;
   to_send.append(current_dir.value());
 
-  const std::vector<std::string>& argv =
-      CommandLine::ForCurrentProcess()->argv();
+  const std::vector<std::string>& argv = cmd_line.argv();
   for (std::vector<std::string>::const_iterator it = argv.begin();
       it != argv.end(); ++it) {
     to_send.push_back(kTokenDelimiter);

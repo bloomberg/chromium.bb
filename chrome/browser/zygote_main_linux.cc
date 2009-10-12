@@ -193,8 +193,11 @@ class Zygote {
     if (!child) {
       close(3);  // our socket from the browser is in fd 3
       Singleton<base::GlobalDescriptors>()->Reset(mapping);
+
+      // Reset the process-wide command line to our new command line.
       CommandLine::Reset();
-      CommandLine::Init(args);
+      CommandLine::Init(0, NULL);
+      CommandLine::ForCurrentProcess()->InitFromArgv(args);
       CommandLine::SetProcTitle();
       return true;
     }

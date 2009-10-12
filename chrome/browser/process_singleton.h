@@ -18,6 +18,8 @@
 #include "base/non_thread_safe.h"
 #include "base/ref_counted.h"
 
+class CommandLine;
+
 // ProcessSingleton ----------------------------------------------------------
 //
 // This class allows different browser processes to communicate with
@@ -53,7 +55,8 @@ class ProcessSingleton : public NonThreadSafe {
 #if defined(OS_LINUX)
   // Exposed for testing.  We use a timeout on Linux, and in tests we want
   // this timeout to be short.
-  NotifyResult NotifyOtherProcessWithTimeout(int timeout_seconds);
+  NotifyResult NotifyOtherProcessWithTimeout(const CommandLine& command_line,
+                                             int timeout_seconds);
 #endif
 
   // Sets ourself up as the singleton instance.

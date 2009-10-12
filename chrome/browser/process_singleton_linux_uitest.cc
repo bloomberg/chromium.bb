@@ -25,46 +25,38 @@
 #include "chrome/test/ui/ui_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class ProcessSingletonLinuxTest : public UITest {
- public:
-  virtual void SetUp() {
-    UITest::SetUp();
-    old_argv_ = CommandLine::ForCurrentProcess()->argv();
-  }
 
-  virtual void TearDown() {
-    if (!old_argv_.empty()) {
-      CommandLine::Reset();
-      CommandLine::Init(old_argv_);
-    }
-    UITest::TearDown();
-  }
+namespace {
 
- protected:
-  // A helper method to call ProcessSingleton::NotifyOtherProcess().
-  // |url| will be added to CommandLine for current process, so that it can be
-  // sent to browser process by ProcessSingleton::NotifyOtherProcess().
-  ProcessSingleton::NotifyResult NotifyOtherProcess(const std::string& url) {
-    FilePath user_data_dir;
-    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+typedef UITest ProcessSingletonLinuxTest;
 
-    std::vector<std::string> argv;
-    argv.push_back(old_argv_[0]);
-    argv.push_back(url);
-    argv.push_back("--" + WideToASCII(switches::kNoProcessSingletonDialog));
+// A helper method to call ProcessSingleton::NotifyOtherProcess().
+// |url| will be added to CommandLine for current process, so that it can be
+// sent to browser process by ProcessSingleton::NotifyOtherProcess().
+ProcessSingleton::NotifyResult NotifyOtherProcess(const std::string& url) {
+  FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
 
-    CommandLine::Reset();
-    CommandLine::Init(argv);
+  // Hack: mutate the current process's command line so we don't show a dialog.
+  // Note that this only works if we have no loose values on the command line,
+  // but that's fine for unit tests.  In a UI test we disable error dialogs
+  // when spawning Chrome, but this test hits the ProcessSingleton directly.
+  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (!cmd_line->HasSwitch(switches::kNoProcessSingletonDialog))
+    cmd_line->AppendSwitch(switches::kNoProcessSingletonDialog);
 
-    ProcessSingleton process_singleton(user_data_dir);
+  CommandLine new_cmd_line(*cmd_line);
+  new_cmd_line.AppendLooseValue(ASCIIToWide(url));
 
-    // Use a short timeout to keep tests fast.
-    const int kTimeoutSeconds = 3;
-    return process_singleton.NotifyOtherProcessWithTimeout(kTimeoutSeconds);
-  }
+  ProcessSingleton process_singleton(user_data_dir);
 
-  std::vector<std::string> old_argv_;
-};
+  // Use a short timeout to keep tests fast.
+  const int kTimeoutSeconds = 3;
+  return process_singleton.NotifyOtherProcessWithTimeout(new_cmd_line,
+                                                         kTimeoutSeconds);
+}
+
+}  // namespace
 
 // Test if the socket file and symbol link created by ProcessSingletonLinux
 // are valid. When running this test, the ProcessSingleton object is already
