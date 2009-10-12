@@ -341,7 +341,7 @@
         <include name="IDR_PRODUCT_ICON_32" file="chromium/chromium_icon_32.png" type="BINDATA" />
       </if>
 
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="pp_ifdef('chromeos') or pp_ifdef('toolkit_views')">
         <include name="IDR_NEW_BROWSER_WINDOW_ICON" file="new_browser_window.png" type="BINDATA" />
         <include name="IDR_TAB_OVERVIEW_BUTTON_ICON" file="tab_overview.png" type="BINDATA" />
 
@@ -387,17 +387,17 @@
         <include name="IDR_STATUSBAR_WIRED" file="statusbar_wired.png" type="BINDATA" />
       </if>
 
-      <if expr="pp_ifdef('chromeos') and pp_ifdef('_google_chrome')">
+      <if expr="(pp_ifdef('chromeos') or pp_ifdef('toolkit_views')) and pp_ifdef('_google_chrome')">
         <include name="IDR_MAIN_MENU_BUTTON" file="google_chrome/button_menu.png" type="BINDATA" />
         <include name="IDR_MAIN_MENU_BUTTON_DROP_DOWN" file="google_chrome/button_menu_drop_down.png" type="BINDATA" />
       </if>
 
-      <if expr="pp_ifdef('chromeos') and not pp_ifdef('_google_chrome')">
+      <if expr="(pp_ifdef('chromeos') or pp_ifdef('toolkit_views')) and not pp_ifdef('_google_chrome')">
         <include name="IDR_MAIN_MENU_BUTTON" file="chromium/button_menu.png" type="BINDATA" />
         <include name="IDR_MAIN_MENU_BUTTON_DROP_DOWN" file="chromium/button_menu_drop_down.png" type="BINDATA" />
       </if>
 
-      <if expr="not pp_ifdef('chromeos')">
+      <if expr="not pp_ifdef('chromeos') and not pp_ifdef('toolkit_views')">
         <include name="IDR_THEME_FRAME" file="theme_frame_default.png" type="BINDATA" />
         <include name="IDR_THEME_TAB_BACKGROUND" file="theme_tab_background.png" type="BINDATA" />
         <include name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="theme_frame_default_incognito_inactive.png" type="BINDATA" />

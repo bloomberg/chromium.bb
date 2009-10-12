@@ -5646,7 +5646,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
     </if>
 
     <!-- Chrome OS Strings -->
-    <if expr="pp_ifdef('chromeos')">
+    <if expr="pp_ifdef('chromeos') or pp_ifdef('toolkit_views')">
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_NETWORK">
         Network
       </message>

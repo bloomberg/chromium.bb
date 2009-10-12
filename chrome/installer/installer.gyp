@@ -551,7 +551,7 @@
             },
           ],
           'conditions': [
-            ['chromeos==0', {
+            ['chromeos==0 and toolkit_views==0', {
               'actions': [
                 {
                   'variables': {

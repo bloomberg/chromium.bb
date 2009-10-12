@@ -342,7 +342,7 @@
                     'build', '-o', '<(grit_out_dir)',
                     '-D', '<(chrome_build)'],
           'conditions': [
-            ['chromeos==1', {
+            ['chromeos==1 or toolkit_views==1', {
               'action': ['-D', 'chromeos'],
             }],
             ['use_titlecase_in_grd_files==1', {
@@ -399,7 +399,7 @@
             '-D', '<(chrome_build)'
           ],
           'conditions': [
-            ['chromeos==1', {
+            ['chromeos==1 or toolkit_views==1', {
               'action': ['-D', 'chromeos'],
             }],
             ['use_titlecase_in_grd_files==1', {
@@ -2363,7 +2363,7 @@
             'CHROME_V8',
           ],
         }],
-        ['chromeos==0', {
+        ['chromeos==0 and toolkit_views==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
           ],
@@ -2811,7 +2811,7 @@
                 ['include', '^browser/printing/print_dialog_gtk.h'],
               ],
             }],
-            ['chromeos==1',{
+            ['chromeos==1 or toolkit_views==1',{
               'dependencies': [
                 '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
                 '../third_party/protobuf2/protobuf.gyp:protoc',
@@ -4429,7 +4429,7 @@
         '../third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
       ],
       'conditions': [
-        ['chromeos==0', {
+        ['chromeos==0 and toolkit_views==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
           ],

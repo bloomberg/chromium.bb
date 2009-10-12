@@ -13,6 +13,9 @@
 #include "chrome/browser/views/tabs/tab_overview_types.h"
 
 class Browser;
+#if defined(TOOLKIT_VIEWS)
+class BrowserView;
+#endif
 class NewBrowserWindowWidget;
 class TabOverviewController;
 
@@ -29,6 +32,11 @@ class TabOverviewMessageListener : public MessageLoopForUI::Observer {
 
  private:
   friend struct DefaultSingletonTraits<TabOverviewMessageListener>;
+
+#if defined(TOOLKIT_VIEWS)
+  // Returns a BrowserView that corresponds to given gdk_window.
+  static BrowserView* GetBrowserViewForGdkWindow(GdkWindow* gdk_window);
+#endif
 
   TabOverviewMessageListener();
   ~TabOverviewMessageListener();

@@ -127,7 +127,7 @@ be available for now. -->
       <message name="IDS_PRODUCT_NAME" desc="The Chrome application name">
         Chromium
       </message>
-      <if expr="pp_ifdef('chromeos')">
+      <if expr="pp_ifdef('chromeos') or pp_ifdef('toolkit_views')">
         <message name="IDS_PRODUCT_OS_NAME" desc="The Chrome OS application name">
           Chromium OS
         </message>

@@ -86,6 +86,9 @@ class BrowserView : public BrowserWindow,
   // there is no such association.
   static BrowserView* GetBrowserViewForNativeWindow(gfx::NativeWindow window);
 
+  // Returns a Browser instance of this view.
+  Browser* browser() const { return browser_.get(); }
+
   // Returns the show flag that should be used to show the frame containing
   // this view.
   int GetShowState() const;

@@ -6,7 +6,11 @@
 
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/views/frame/browser_view.h"
+#else
 #include "chrome/browser/gtk/browser_window_gtk.h"
+#endif
 #include "chrome/browser/metrics/system_metrics_logger_impl.h"
 #include "chrome/browser/metrics/system_metrics.pb.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -23,6 +27,22 @@ TabOverviewMessageListener* TabOverviewMessageListener::instance() {
   }
   return instance;
 }
+
+#if defined(TOOLKIT_VIEWS)
+// static
+BrowserView* TabOverviewMessageListener::GetBrowserViewForGdkWindow(
+    GdkWindow* gdk_window) {
+  gpointer data = NULL;
+  gdk_window_get_user_data(gdk_window, &data);
+  GtkWidget* widget = reinterpret_cast<GtkWidget*>(data);
+  if (widget) {
+    GtkWindow* gtk_window = GTK_WINDOW(widget);
+    return BrowserView::GetBrowserViewForNativeWindow(gtk_window);
+  } else {
+    return NULL;
+  }
+}
+#endif
 
 void TabOverviewMessageListener::WillProcessEvent(GdkEvent* event) {
 }
@@ -72,10 +92,14 @@ void TabOverviewMessageListener::ProcessMessage(
       if (message.param(0) == 0) {
         HideOverview();
       } else {
-        BrowserWindowGtk* browser_window =
+#if defined(TOOLKIT_VIEWS)
+        BrowserView* browser_window = GetBrowserViewForGdkWindow(window);
+#else
+        BrowerWindowGtk* browser_window =
             BrowserWindowGtk::GetBrowserWindowForNativeWindow(
                 BrowserWindowGtk::GetBrowserWindowForXID(
                     x11_util::GetX11WindowFromGdkWindow(window)));
+#endif
         if (browser_window)
           ShowOverview(browser_window->browser(), message.param(1));
         else
@@ -109,7 +133,12 @@ void TabOverviewMessageListener::ProcessMessage(
 
       // Over a mini-window, make sure the controller is showing the contents
       // of the browser the mouse is over.
-      BrowserWindowGtk* browser_window =
+#if defined(TOOLKIT_VIEWS)
+      NOTIMPLEMENTED();
+      // TODO(oshima): Figure out how to get BrowserView from XID
+      // in message.param(0).
+#else
+      BrowerWindowGtk* browser_window =
           BrowserWindowGtk::GetBrowserWindowForNativeWindow(
               BrowserWindowGtk::GetBrowserWindowForXID(message.param(0)));
       if (!browser_window)
@@ -125,6 +154,7 @@ void TabOverviewMessageListener::ProcessMessage(
 
       UserMetrics::RecordAction(L"TabOverview_DragOverMiniWindow",
                                 browser_window->browser()->profile());
+#endif
     }
 
     default:
