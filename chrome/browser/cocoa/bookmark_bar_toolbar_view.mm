@@ -23,14 +23,16 @@ const CGFloat kBorderRadius = 3.0;
 @implementation BookmarkBarToolbarView
 
 - (BOOL)isOpaque {
-  return YES;
+  return [controller_ drawAsFloatingBar];
 }
 
 - (void)drawRect:(NSRect)rect {
   if ([controller_ drawAsFloatingBar]) {
     [self drawRectAsFloating:rect];
   } else {
-    [super drawRect:rect];
+    NSPoint phase = [self gtm_themePatternPhase];
+    [[NSGraphicsContext currentContext] setPatternPhase:phase];
+    [self drawBackground];
   }
 }
 
