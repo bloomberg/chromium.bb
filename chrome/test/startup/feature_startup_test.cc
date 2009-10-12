@@ -44,7 +44,7 @@ class NewTabUIStartupTest : public UITest {
 
     // Install the location of the test profile file.
     set_template_user_data(UITest::ComputeTypicalUserDataSource(
-        profile_type).ToWStringHack());
+        profile_type));
 
     // Disable the first run notification because it has an animation which
     // masks any real performance regressions.

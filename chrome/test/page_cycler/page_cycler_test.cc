@@ -449,7 +449,7 @@ class PageCyclerExtensionTest : public PageCyclerTest {
     data_dir = data_dir.AppendASCII("extensions").AppendASCII("profiles").
         AppendASCII(extension_profile);
     ASSERT_TRUE(file_util::DirectoryExists(data_dir));
-    set_template_user_data(data_dir.ToWStringHack());
+    set_template_user_data(data_dir);
 
     // Now run the test.
     PageCyclerTest::SetUp();

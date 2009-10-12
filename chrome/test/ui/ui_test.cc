@@ -357,7 +357,7 @@ void UITest::LaunchBrowser(const CommandLine& arguments, bool clear_profile) {
     // Recursively copy the template directory to the user_data_dir.
     ASSERT_TRUE(file_util::CopyRecursiveDirNoCache(
         template_user_data_,
-        user_data_dir_.ToWStringHack()));
+        user_data_dir_));
     // If we're using the complex theme data, we need to write the
     // user_data_dir_ to our preferences file.
     if (profile_type_ == UITest::COMPLEX_THEME) {

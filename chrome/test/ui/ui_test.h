@@ -383,8 +383,8 @@ class UITest : public testing::Test {
   // copied into the user data directory for the test and the files will be
   // evicted from the OS cache. To start with a blank profile, supply an empty
   // string (the default).
-  std::wstring template_user_data() const { return template_user_data_; }
-  void set_template_user_data(const std::wstring& template_user_data) {
+  const FilePath& template_user_data() const { return template_user_data_; }
+  void set_template_user_data(const FilePath& template_user_data) {
     template_user_data_ = template_user_data;
   }
 
@@ -503,7 +503,7 @@ class UITest : public testing::Test {
   base::TimeTicks browser_launch_time_; // Time when the browser was run.
   bool dom_automation_enabled_;         // This can be set to true to have the
                                         // test run the dom automation case.
-  std::wstring template_user_data_;     // See set_template_user_data().
+  FilePath template_user_data_;         // See set_template_user_data().
   base::ProcessHandle process_;         // Handle to the first Chrome process.
   base::ProcessId process_id_;          // PID of |process_| (for debugging).
   FilePath user_data_dir_;              // User data directory used for the test

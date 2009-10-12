@@ -46,7 +46,7 @@ class StartupTest : public UITest {
     PathService::Get(chrome::DIR_TEST_DATA, &data_dir);
     data_dir = data_dir.AppendASCII("extensions").AppendASCII("profiles").
         AppendASCII(profile);
-    set_template_user_data(data_dir.ToWStringHack());
+    set_template_user_data(data_dir);
   }
 
   void RunStartupTest(const char* graph, const char* trace,
@@ -57,7 +57,7 @@ class StartupTest : public UITest {
     // the non-default themes test.
     if (profile_type != UITest::DEFAULT_THEME) {
       set_template_user_data(UITest::ComputeTypicalUserDataSource(
-          profile_type).ToWStringHack());
+          profile_type));
     }
 
     const int kNumCyclesMax = 20;
@@ -109,7 +109,7 @@ class StartupTest : public UITest {
         clear_profile_ = false;
         // Clear template_user_data_ so we don't try to copy it over each time
         // through.
-        set_template_user_data(L"");
+        set_template_user_data(FilePath());
       }
     }
 
