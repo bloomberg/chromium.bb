@@ -4,30 +4,6 @@
 
 #import "chrome/browser/chrome_application_mac.h"
 
-#import "base/scoped_nsobject.h"
-#import "chrome/app/breakpad_mac.h"
-
-namespace {
-
-// Helper to make it easy to get crash keys right.
-// TODO(shess): Find a better home for this.  app/breakpad_mac.h
-// doesn't work.
-class ScopedCrashKey {
- public:
-  ScopedCrashKey(NSString* key, NSString* value)
-      : crash_key_([key retain]) {
-    SetCrashKeyValue(crash_key_.get(), value);
-  }
-  ~ScopedCrashKey() {
-    ClearCrashKeyValue(crash_key_.get());
-  }
-
- private:
-  scoped_nsobject<NSString> crash_key_;
-};
-
-}  // namespace
-
 @implementation CrApplication
 
 // -terminate: is the entry point for orderly "quit" operations in Cocoa.
@@ -104,29 +80,6 @@ class ScopedCrashKey {
     }
   }
 
-  // When a Cocoa control is wired to a freed object, we get crashers
-  // in the call to |super| with no useful information in the
-  // backtrace.  Attempt to add some useful information.
-  static const NSString* kActionKey = @"sendaction";
-
-  // If the action is something generic like -commandDispatch:, then
-  // the tag is essential.
-  NSInteger tag = 0;
-  if ([sender isKindOfClass:[NSControl class]]) {
-    tag = [sender tag];
-    if (tag == 0 || tag == -1) {
-      tag = [sender selectedTag];
-    }
-  } else if ([sender isKindOfClass:[NSMenuItem class]]) {
-    tag = [sender tag];
-  }
-
-  NSString* actionString = NSStringFromSelector(anAction);
-  NSString* value =
-        [NSString stringWithFormat:@"%@ tag %d sending %@ to %p",
-                  [sender className], tag, actionString, aTarget];
-
-  ScopedCrashKey key(kActionKey, value);
   return [super sendAction:anAction to:aTarget from:sender];
 }
 
