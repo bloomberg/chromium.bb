@@ -78,6 +78,12 @@ class BrowserList {
   // the session. use_post should only be false when invoked from end session.
   static void CloseAllBrowsers(bool use_post);
 
+  // Closes all browsers and exits.  This is equivalent to
+  // CloseAllBrowsers(true) on platforms where the application exits when no
+  // more windows are remaining.  On other platforms (the Mac), this will
+  // additionally exit the application.
+  static void CloseAllBrowsersAndExit();
+
   // Begins shutdown of the application when the Windows session is ending.
   static void WindowsSessionEnding();
 

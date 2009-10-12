@@ -1699,7 +1699,7 @@ TestingAutomationProvider::~TestingAutomationProvider() {
 }
 
 void TestingAutomationProvider::OnChannelError() {
-  BrowserList::CloseAllBrowsers(true);
+  BrowserList::CloseAllBrowsersAndExit();
   AutomationProvider::OnChannelError();
 }
 

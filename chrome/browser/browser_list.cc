@@ -17,6 +17,10 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/result_codes.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/chrome_application_mac.h"
+#endif
+
 namespace {
 
 // This object is instantiated when the first Browser object is added to the
@@ -183,6 +187,19 @@ void BrowserList::CloseAllBrowsers(bool use_post) {
       }
     }
   }
+}
+
+// static
+void BrowserList::CloseAllBrowsersAndExit() {
+#if !defined(OS_MACOSX)
+  // On most platforms, closing all windows causes the application to exit.
+  CloseAllBrowsers(true);
+#else
+  // On the Mac, the application continues to run once all windows are closed.
+  // Terminate will result in a CloseAllBrowsers(true) call, and additionally,
+  // will cause the application to exit cleanly.
+  CrApplicationCC::Terminate();
+#endif
 }
 
 // static

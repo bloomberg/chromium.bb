@@ -84,3 +84,11 @@
 }
 
 @end
+
+namespace CrApplicationCC {
+
+void Terminate() {
+  [NSApp terminate:nil];
+}
+
+}  // namespace CrApplicationCC

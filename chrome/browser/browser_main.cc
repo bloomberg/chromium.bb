@@ -155,26 +155,49 @@ void RunUIMessageLoop(BrowserProcess* browser_process) {
 }
 
 #if defined(OS_POSIX)
-// See comment below, where sigaction is called.
+// See comment in BrowserMain, where sigaction is called.
 void SIGCHLDHandler(int signal) {
 }
 
-// See comment below, where sigaction is called.
+// See comment in BrowserMain, where sigaction is called.
 void SIGTERMHandler(int signal) {
   DCHECK_EQ(signal, SIGTERM);
   LOG(WARNING) << "Addressing SIGTERM on " << PlatformThread::CurrentId();
+
   MessageLoop* main_loop = ChromeThread::GetMessageLoop(ChromeThread::UI);
   if (main_loop) {
-    main_loop->PostTask(FROM_HERE,
-                        NewRunnableFunction(
-                            BrowserList::CloseAllBrowsers, true));
+    // Post the exit task to the main thread.
+    main_loop->PostTask(
+        FROM_HERE, NewRunnableFunction(BrowserList::CloseAllBrowsersAndExit));
+    LOG(WARNING) << "Posted task to UI thread; resetting SIGTERM handler";
   }
+
   // Reinstall the default handler.  We had one shot at graceful shutdown.
-  LOG(WARNING) << "Posted task to UI thread; resetting SIGTERM handler.";
   struct sigaction term_action;
   memset(&term_action, 0, sizeof(term_action));
   term_action.sa_handler = SIG_DFL;
   CHECK(sigaction(SIGTERM, &term_action, NULL) == 0);
+
+  if (!main_loop) {
+    // Without a UI thread to post the exit task to, there aren't many
+    // options.  Raise the signal again.  The default handler will pick it up
+    // and cause an ungraceful exit.
+    LOG(WARNING) << "No UI thread, exiting ungracefully";
+    kill(getpid(), signal);
+
+    // The signal may be handled on another thread.  Give that a chance to
+    // happen.
+    sleep(3);
+
+    // We really should be dead by now.  For whatever reason, we're not. Exit
+    // immediately, with the exit status set to the signal number with bit 8
+    // set.  On the systems that we care about, this exit status is what is
+    // normally used to indicate an exit by this signal's default handler.
+    // This mechanism isn't a de jure standard, but even in the worst case, it
+    // should at least result in an immediate exit.
+    LOG(WARNING) << "Still here, exiting really ungracefully";
+    _exit(signal | (1 << 7));
+  }
 }
 
 // Sets the file descriptor soft limit to |max_descriptors| or the OS hard

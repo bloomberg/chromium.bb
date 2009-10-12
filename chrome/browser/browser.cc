@@ -891,7 +891,7 @@ void Browser::ToggleFullscreenMode() {
 
 void Browser::Exit() {
   UserMetrics::RecordAction(L"Exit", profile_);
-  BrowserList::CloseAllBrowsers(true);
+  BrowserList::CloseAllBrowsersAndExit();
 }
 
 void Browser::BookmarkCurrentPage() {
