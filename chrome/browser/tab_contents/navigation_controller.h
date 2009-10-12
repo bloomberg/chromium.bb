@@ -5,10 +5,6 @@
 #ifndef CHROME_BROWSER_TAB_CONTENTS_NAVIGATION_CONTROLLER_H_
 #define CHROME_BROWSER_TAB_CONTENTS_NAVIGATION_CONTROLLER_H_
 
-#include <map>
-#include <string>
-#include <vector>
-
 #include "build/build_config.h"
 
 #include "base/linked_ptr.h"

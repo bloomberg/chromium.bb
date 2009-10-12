@@ -16,6 +16,7 @@
 #import "chrome/browser/cocoa/download_shelf_view.h"
 #include "chrome/browser/download/download_manager.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 
 namespace {
 

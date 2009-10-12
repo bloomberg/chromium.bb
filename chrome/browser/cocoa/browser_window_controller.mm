@@ -40,6 +40,7 @@
 #import "chrome/browser/browser_theme_provider.h"
 #include "chrome/common/pref_service.h"
 #import "chrome/browser/cocoa/background_gradient_view.h"
+#include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
 namespace {

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/renderer_host/site_instance.h"
 
+#include "chrome/browser/browsing_instance.h"
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/common/url_constants.h"

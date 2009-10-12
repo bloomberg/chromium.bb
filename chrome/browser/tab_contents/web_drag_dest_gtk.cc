@@ -5,6 +5,7 @@
 #include "chrome/browser/tab_contents/web_drag_dest_gtk.h"
 
 #include "app/gtk_dnd_util.h"
+#include "base/string_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/gtk_util.h"
 

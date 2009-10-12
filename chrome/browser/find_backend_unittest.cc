@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/string_util.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/common/url_constants.h"
 

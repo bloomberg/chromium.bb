@@ -18,6 +18,7 @@
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
+#include "grit/theme_resources.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
 
 class DownloadAnimationTabObserver;

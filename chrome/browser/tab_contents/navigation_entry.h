@@ -6,16 +6,15 @@
 #define CHROME_BROWSER_TAB_CONTENTS_NAVIGATION_ENTRY_H_
 
 #include "base/basictypes.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "base/string_util.h"
-#include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/security_style.h"
 #include "chrome/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
-#include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class NavigationController;
+class SiteInstance;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -179,8 +178,7 @@ class NavigationEntry {
                   const GURL& referrer,
                   const string16& title,
                   PageTransition::Type transition_type);
-  ~NavigationEntry() {
-  }
+  ~NavigationEntry();
 
   // Page-related stuff --------------------------------------------------------
 
@@ -202,9 +200,7 @@ class NavigationEntry {
   // Note that the SiteInstance should usually not be changed after it is set,
   // but this may happen if the NavigationEntry was cloned and needs to use a
   // different SiteInstance.
-  void set_site_instance(SiteInstance* site_instance) {
-    site_instance_ = site_instance;
-  }
+  void set_site_instance(SiteInstance* site_instance);
   SiteInstance* site_instance() const {
     return site_instance_;
   }

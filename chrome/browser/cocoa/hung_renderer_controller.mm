@@ -14,11 +14,13 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/hung_renderer_dialog.h"
 #import "chrome/browser/cocoa/multi_key_equivalent_button.h"
+#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/result_codes.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 namespace {

@@ -17,11 +17,11 @@
 #include "base/string16.h"
 #include "base/timer.h"
 #include "chrome/common/transport_dib.h"
-#include "chrome/browser/renderer_host/audio_renderer_host.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/notification_registrar.h"
 #include "webkit/api/public/WebCache.h"
 
+class AudioRendererHost;
 class CommandLine;
 class GURL;
 class RendererMainThread;

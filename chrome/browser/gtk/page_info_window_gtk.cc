@@ -15,7 +15,7 @@
 #include "chrome/common/gtk_util.h"
 #include "grit/locale_settings.h"
 #include "grit/generated_resources.h"
-
+#include "grit/theme_resources.h"
 
 namespace {
 

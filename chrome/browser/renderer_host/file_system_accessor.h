@@ -25,11 +25,11 @@
 #ifndef CHROME_BROWSER_RENDERER_HOST_FILE_SYSTEM_ACCESSOR_H_
 #define CHROME_BROWSER_RENDERER_HOST_FILE_SYSTEM_ACCESSOR_H_
 
-#include "base/file_path.h"
 #include "base/scoped_ptr.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
 
+class FilePath;
 class MessageLoop;
 
 class FileSystemAccessor

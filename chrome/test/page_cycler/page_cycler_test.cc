@@ -23,6 +23,7 @@
 
 #if defined(OS_MACOSX)
 #include <errno.h>
+#include <fcntl.h>
 #include <string.h>
 #include <sys/resource.h>
 #endif

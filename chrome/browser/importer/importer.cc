@@ -17,6 +17,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_instance.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/importer/firefox_profile_lock.h"

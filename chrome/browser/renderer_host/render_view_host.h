@@ -9,12 +9,11 @@
 #include <vector>
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_type.h"
 #include "chrome/common/page_zoom.h"
+#include "chrome/common/view_types.h"
+#include "net/base/load_states.h"
 #include "webkit/api/public/WebConsoleMessage.h"
 #include "webkit/api/public/WebDragOperation.h"
 #include "webkit/api/public/WebTextDirection.h"
@@ -22,6 +21,7 @@
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/window_open_disposition.h"
 
+class FilePath;
 class ListValue;
 class RenderViewHostDelegate;
 class SiteInstance;
@@ -29,6 +29,7 @@ class SkBitmap;
 class ViewMsg_Navigate;
 struct ContextMenuParams;
 struct MediaPlayerAction;
+struct ThumbnailScore;
 struct ViewHostMsg_DidPrintPage_Params;
 struct ViewMsg_Navigate_Params;
 struct WebDropData;

@@ -7,6 +7,7 @@
 #include "app/gfx/canvas.h"
 #include "app/resource_bundle.h"
 #include "base/stl_util-inl.h"
+#include "base/string_util.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"

@@ -10,6 +10,7 @@
 #include "chrome/browser/tab_contents/constrained_window.h"
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/scoped_nsobject.h"
 
 @class BrowserWindowController;

@@ -40,6 +40,7 @@
 #include "chrome/browser/login_prompt.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profile_manager.h"
+#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/ssl/ssl_manager.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"

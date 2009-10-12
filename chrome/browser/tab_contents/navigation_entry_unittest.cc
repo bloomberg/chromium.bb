@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/string16.h"
+#include "base/string_util.h"
+#include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -8,6 +8,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
+#include "grit/theme_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

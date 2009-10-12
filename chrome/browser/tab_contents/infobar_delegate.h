@@ -9,13 +9,13 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class AlertInfoBarDelegate;
 class ConfirmInfoBarDelegate;
 class InfoBar;
 class LinkInfoBarDelegate;
+class SkBitmap;
 class ThemeInstalledInfoBarDelegate;
 
 // An interface implemented by objects wishing to control an InfoBar.

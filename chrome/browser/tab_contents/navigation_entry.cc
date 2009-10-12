@@ -5,7 +5,9 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 
 #include "app/resource_bundle.h"
+#include "base/string_util.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -60,6 +62,13 @@ NavigationEntry::NavigationEntry(SiteInstance* instance,
       transition_type_(transition_type),
       has_post_data_(false),
       restored_(false) {
+}
+
+NavigationEntry::~NavigationEntry() {
+}
+
+void NavigationEntry::set_site_instance(SiteInstance* site_instance) {
+  site_instance_ = site_instance;
 }
 
 const string16& NavigationEntry::GetTitleForDisplay(

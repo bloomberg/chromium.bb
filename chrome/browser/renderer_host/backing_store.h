@@ -10,7 +10,6 @@
 #include "base/gfx/size.h"
 #include "base/process.h"
 #include "build/build_config.h"
-#include "chrome/common/mru_cache.h"
 
 #if defined(OS_WIN)
 #include <windows.h>

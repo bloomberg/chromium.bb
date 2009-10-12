@@ -11,6 +11,7 @@
 #include "app/resource_bundle.h"
 #include "base/process_util.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/logging_chrome.h"

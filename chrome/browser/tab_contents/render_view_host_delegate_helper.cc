@@ -5,6 +5,7 @@
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 
 #include "base/command_line.h"
+#include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/profile.h"

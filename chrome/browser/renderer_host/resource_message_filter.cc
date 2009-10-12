@@ -444,6 +444,10 @@ URLRequestContext* ResourceMessageFilter::GetRequestContext(
   return request_context;
 }
 
+MessageLoop* ResourceMessageFilter::ui_loop() {
+  return render_widget_helper_->ui_loop();
+}
+
 void ResourceMessageFilter::OnMsgCreateWindow(
     int opener_id, bool user_gesture, int* route_id) {
   render_widget_helper_->CreateNewWindow(opener_id,

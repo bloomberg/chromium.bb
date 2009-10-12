@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_instance.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/debugger/devtools_client_host.h"
 #include "chrome/browser/profile.h"

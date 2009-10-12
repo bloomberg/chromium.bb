@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/execute_code_in_tab_function.h"
 
+#include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"

@@ -21,7 +21,6 @@
 #include "base/observer_list.h"
 #include "base/process.h"
 #include "base/timer.h"
-#include "chrome/browser/renderer_host/resource_handler.h"
 #include "chrome/common/child_process_info.h"
 #include "chrome/browser/privacy_blacklist/blocked_response.h"
 #include "ipc/ipc_message.h"
@@ -35,6 +34,7 @@ class LoginHandler;
 class MessageLoop;
 class PluginService;
 class ResourceDispatcherHostRequestInfo;
+class ResourceHandler;
 class SafeBrowsingService;
 class SaveFileManager;
 class SSLClientAuthHandler;

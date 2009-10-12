@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_toolstrip_api.h"
 
 #include "base/json_writer.h"
+#include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_message_service.h"

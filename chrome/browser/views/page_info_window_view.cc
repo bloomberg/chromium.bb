@@ -20,6 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "grit/locale_settings.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "net/base/x509_certificate.h"
 #include "views/background.h"
 #include "views/grid_layout.h"

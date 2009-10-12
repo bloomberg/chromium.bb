@@ -22,6 +22,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 
 // The URLs of search engines for which we want to trigger the infobar.
 const char* kSearchEngineURLs[] = {

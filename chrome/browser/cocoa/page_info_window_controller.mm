@@ -12,6 +12,7 @@
 #include "chrome/browser/cocoa/page_info_window_mac.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
+#include "grit/theme_resources.h"
 
 @interface PageInfoWindowController (Private)
 // Saves the window preference to the local state.

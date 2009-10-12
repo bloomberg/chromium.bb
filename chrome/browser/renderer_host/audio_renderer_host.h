@@ -68,7 +68,6 @@
 #define CHROME_BROWSER_RENDERER_HOST_AUDIO_RENDERER_HOST_H_
 
 #include <map>
-#include <deque>
 
 #include "base/lock.h"
 #include "base/process.h"

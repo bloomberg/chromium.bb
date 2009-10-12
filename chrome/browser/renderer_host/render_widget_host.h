@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_H_
 
 #include <queue>
-#include <vector>
 
 #include "app/gfx/native_widget_types.h"
 #include "base/process.h"

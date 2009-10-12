@@ -5,8 +5,7 @@
 #ifndef CHROME_BROWSER_TAB_CONTENTS_CONSTRAINED_WINDOW_H_
 #define CHROME_BROWSER_TAB_CONTENTS_CONSTRAINED_WINDOW_H_
 
-#include "chrome/common/page_transition_types.h"
-#include "webkit/glue/window_open_disposition.h"
+#include "build/build_config.h"
 
 // The different platform specific subclasses use different delegates for their
 // dialogs.

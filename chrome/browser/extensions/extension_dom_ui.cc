@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_dom_ui.h"
 
+#include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/profile.h"

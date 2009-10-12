@@ -23,7 +23,6 @@
 #include "base/task.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
-#include "chrome/browser/renderer_host/render_widget_helper.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/notification_registrar.h"
@@ -102,7 +101,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   ResourceDispatcherHost* resource_dispatcher_host() {
     return resource_dispatcher_host_;
   }
-  MessageLoop* ui_loop() { return render_widget_helper_->ui_loop(); }
+  MessageLoop* ui_loop();
   bool off_the_record() { return off_the_record_; }
   CallbackWithReturnValue<int>::Type* next_route_id_callback() {
     return next_route_id_callback_.get();

@@ -30,6 +30,7 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 
 NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";

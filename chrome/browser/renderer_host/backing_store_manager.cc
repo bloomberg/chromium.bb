@@ -9,7 +9,7 @@
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_painting_observer.h"
 #include "chrome/common/chrome_constants.h"
-
+#include "chrome/common/mru_cache.h"
 
 namespace {
 
