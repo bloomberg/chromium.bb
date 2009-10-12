@@ -55,8 +55,7 @@ class StatusAreaView : public views::View,
   virtual void ExecuteCommand(int command_id);
 
   // views::ViewMenuDelegate implementation.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt,
-                       gfx::NativeView hwnd);
+  virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
   // The browser window that owns us.
   Browser* browser_;

@@ -148,12 +148,12 @@ void GtkInputWindowDialog::OnWindowDestroy(GtkWidget* widget,
 }
 
 // static
-InputWindowDialog* InputWindowDialog::Create(gfx::NativeView parent,
+InputWindowDialog* InputWindowDialog::Create(gfx::NativeWindow parent,
                                              const std::wstring& window_title,
                                              const std::wstring& label,
                                              const std::wstring& contents,
                                              Delegate* delegate) {
-  return new GtkInputWindowDialog(GTK_WINDOW(gtk_widget_get_toplevel(parent)),
+  return new GtkInputWindowDialog(parent,
                                   WideToUTF8(window_title),
                                   WideToUTF8(label),
                                   WideToUTF8(contents),

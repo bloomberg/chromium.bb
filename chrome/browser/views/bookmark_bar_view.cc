@@ -1070,9 +1070,7 @@ int BookmarkBarView::GetDragOperations(View* sender, int x, int y) {
   return DragDropTypes::DRAG_NONE;
 }
 
-void BookmarkBarView::RunMenu(views::View* view,
-                              const gfx::Point& pt,
-                              gfx::NativeView hwnd) {
+void BookmarkBarView::RunMenu(views::View* view, const gfx::Point& pt) {
   const BookmarkNode* node;
   MenuItemView::AnchorPosition anchor_point = MenuItemView::TOPLEFT;
 
@@ -1117,7 +1115,7 @@ void BookmarkBarView::RunMenu(views::View* view,
   gfx::Point screen_loc(x, 0);
   View::ConvertPointToScreen(this, &screen_loc);
   bookmark_menu_ = new BookmarkMenuController(
-      browser_, profile_, page_navigator_, GetWidget()->GetNativeView(),
+      browser_, profile_, page_navigator_, GetWindow()->GetNativeWindow(),
       node, start_index, false);
   bookmark_menu_->set_observer(this);
   bookmark_menu_->RunMenuAt(gfx::Rect(screen_loc.x(), screen_loc.y(),
@@ -1160,7 +1158,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
     page_navigator_->OpenURL(node->GetURL(), GURL(),
         disposition_from_event_flags, PageTransition::AUTO_BOOKMARK);
   } else {
-    bookmark_utils::OpenAll(GetWidget()->GetNativeView(), profile_,
+    bookmark_utils::OpenAll(GetWindow()->GetNativeWindow(), profile_,
         GetPageNavigator(), node, disposition_from_event_flags);
   }
   UserMetrics::RecordAction(L"ClickedBookmarkBarURLButton", profile_);
@@ -1196,7 +1194,7 @@ void BookmarkBarView::ShowContextMenu(View* source,
     parent = model_->GetBookmarkBarNode();
     nodes.push_back(parent);
   }
-  BookmarkContextMenu controller(GetWidget()->GetNativeView(), GetProfile(),
+  BookmarkContextMenu controller(GetWindow()->GetNativeWindow(), GetProfile(),
                                  browser()->GetSelectedTabContents(),
                                  parent, nodes,
                                  BookmarkContextMenuController::BOOKMARK_BAR);
@@ -1338,7 +1336,7 @@ void BookmarkBarView::ShowDropFolderForNode(const BookmarkNode* node) {
 
   drop_info_->is_menu_showing = true;
   bookmark_drop_menu_ = new BookmarkMenuController(
-      browser_, profile_, page_navigator_, GetWidget()->GetNativeView(),
+      browser_, profile_, page_navigator_, GetWindow()->GetNativeWindow(),
       node, start_index, false);
   bookmark_drop_menu_->set_observer(this);
   gfx::Point screen_loc;

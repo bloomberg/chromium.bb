@@ -17,10 +17,12 @@ class MenuHost : public WidgetGtk {
  public:
   explicit MenuHost(SubmenuView* submenu);
 
-  void Init(gfx::NativeView parent,
+  void Init(gfx::NativeWindow parent,
             const gfx::Rect& bounds,
             View* contents_view,
             bool do_capture);
+
+  gfx::NativeWindow GetNativeWindow();
 
   void Show();
   virtual void Hide();

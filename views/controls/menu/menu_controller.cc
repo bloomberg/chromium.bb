@@ -142,7 +142,7 @@ static int instance_count = 0;
 static int nested_depth = 0;
 #endif
 
-MenuItemView* MenuController::Run(gfx::NativeView parent,
+MenuItemView* MenuController::Run(gfx::NativeWindow parent,
                                   MenuItemView* root,
                                   const gfx::Rect& bounds,
                                   MenuItemView::AnchorPosition position,
@@ -1329,8 +1329,8 @@ void MenuController::RepostEvent(SubmenuView* source,
     SubmenuView* submenu = state_.item->GetRootMenuItem()->GetSubmenu();
     submenu->ReleaseCapture();
 
-    if (submenu->native_view() && submenu->native_view() &&
-        GetWindowThreadProcessId(submenu->native_view(), NULL) !=
+    if (submenu->native_window() && submenu->native_window() &&
+        GetWindowThreadProcessId(submenu->native_window(), NULL) !=
         GetWindowThreadProcessId(window, NULL)) {
       // Even though we have mouse capture, windows generates a mouse event
       // if the other window is in a separate thread. Don't generate an event in

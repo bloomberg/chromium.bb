@@ -20,7 +20,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/view_ids.h"
 #include "grit/theme_resources.h"
-#include "views/widget/widget.h"
+#include "views/window/window.h"
 
 BookmarkMenuButton::BookmarkMenuButton(Browser* browser)
     : views::MenuButton(NULL, std::wstring(), NULL, false),
@@ -117,14 +117,13 @@ void BookmarkMenuButton::BookmarkMenuDeleted(
 }
 
 void BookmarkMenuButton::RunMenu(views::View* source,
-                                 const gfx::Point& pt,
-                                 gfx::NativeView hwnd) {
-  RunMenu(source, pt, hwnd, false);
+                                 const gfx::Point& pt) {
+  RunMenu(source, pt, GetWindow()->GetNativeWindow(), false);
 }
 
 void BookmarkMenuButton::RunMenu(views::View* source,
                                  const gfx::Point& pt,
-                                 gfx::NativeView hwnd,
+                                 gfx::NativeWindow hwnd,
                                  bool for_drop) {
   Profile* profile = browser_->profile();
   BookmarkMenuController* menu = new BookmarkMenuController(
@@ -169,5 +168,5 @@ void BookmarkMenuButton::StopShowFolderDropMenuTimer() {
 }
 
 void BookmarkMenuButton::ShowDropMenu() {
-  RunMenu(NULL, gfx::Point(), GetWidget()->GetNativeView(), true);
+  RunMenu(NULL, gfx::Point(), GetWindow()->GetNativeWindow(), true);
 }

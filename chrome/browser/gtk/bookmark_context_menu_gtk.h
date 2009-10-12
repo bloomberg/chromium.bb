@@ -50,7 +50,7 @@ class BookmarkContextMenuGtk : public BookmarkModelObserver,
   // |parent| is the parent for newly created nodes if |selection| is empty.
   // |selection| is the nodes the context menu operates on and may be empty.
   // |configuration| determines which items to show.
-  BookmarkContextMenuGtk(gfx::NativeView hwnd,
+  BookmarkContextMenuGtk(gfx::NativeWindow hwnd,
                          Profile* profile,
                          Browser* browser,
                          PageNavigator* navigator,
@@ -124,7 +124,7 @@ class BookmarkContextMenuGtk : public BookmarkModelObserver,
   // parent_ is returned.
   const BookmarkNode* GetParentForNewNodes() const;
 
-  gfx::NativeView wnd_;
+  gfx::NativeWindow wnd_;
   Profile* profile_;
   Browser* browser_;
   PageNavigator* navigator_;

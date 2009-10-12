@@ -21,7 +21,7 @@
 BookmarkMenuController::BookmarkMenuController(Browser* browser,
                                                Profile* profile,
                                                PageNavigator* navigator,
-                                               gfx::NativeView parent,
+                                               gfx::NativeWindow parent,
                                                const BookmarkNode* node,
                                                int start_child_index,
                                                bool show_other_folder)

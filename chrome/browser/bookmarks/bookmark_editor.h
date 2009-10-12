@@ -38,7 +38,7 @@ class BookmarkEditor {
   // If |show_tree| is false the tree is not shown. BookmarkEditor takes
   // ownership of |handler| and deletes it when done. |handler| may be
   // null. See description of Handler for details.
-  static void Show(gfx::NativeView parent_window,
+  static void Show(gfx::NativeWindow parent_window,
                    Profile* profile,
                    const BookmarkNode* parent,
                    const BookmarkNode* node,

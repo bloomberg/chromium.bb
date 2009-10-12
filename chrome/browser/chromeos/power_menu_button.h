@@ -47,8 +47,7 @@ class PowerMenuButton : public views::MenuButton,
 
  private:
   // views::ViewMenuDelegate implementation.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt,
-                       gfx::NativeView hwnd);
+  virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
   // Update the power icon depending on the power status.
   void UpdateIcon();

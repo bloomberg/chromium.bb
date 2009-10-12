@@ -82,7 +82,7 @@ MenuItemView::~MenuItemView() {
   delete submenu_;
 }
 
-void MenuItemView::RunMenuAt(gfx::NativeView parent,
+void MenuItemView::RunMenuAt(gfx::NativeWindow parent,
                              const gfx::Rect& bounds,
                              AnchorPosition anchor,
                              bool has_mnemonics) {
@@ -134,7 +134,7 @@ void MenuItemView::RunMenuAt(gfx::NativeView parent,
     delegate_->ExecuteCommand(result->GetCommand(), mouse_event_flags);
 }
 
-void MenuItemView::RunMenuForDropAt(gfx::NativeView parent,
+void MenuItemView::RunMenuForDropAt(gfx::NativeWindow parent,
                                     const gfx::Rect& bounds,
                                     AnchorPosition anchor) {
   PrepareForRun(false);

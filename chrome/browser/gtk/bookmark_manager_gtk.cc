@@ -606,9 +606,9 @@ void BookmarkManagerGtk::ResetOrganizeMenu(bool left) {
   if (old_menu)
     MessageLoop::current()->DeleteSoon(FROM_HERE, old_menu);
 
-  organize_menu_.reset(new BookmarkContextMenuGtk(window_, profile_, NULL, NULL,
-      parent, nodes, BookmarkContextMenuGtk::BOOKMARK_MANAGER_ORGANIZE_MENU,
-      NULL));
+  organize_menu_.reset(new BookmarkContextMenuGtk(GTK_WINDOW(window_), profile_,
+      NULL, NULL, parent, nodes,
+      BookmarkContextMenuGtk::BOOKMARK_MANAGER_ORGANIZE_MENU, NULL));
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(organize_), organize_menu_->menu());
 }
 
@@ -1130,7 +1130,8 @@ void BookmarkManagerGtk::OnRightTreeViewRowActivated(
     bm->SelectInTree(nodes[0], false);
     return;
   }
-  bookmark_utils::OpenAll(bm->window_, bm->profile_, NULL, nodes, CURRENT_TAB);
+  bookmark_utils::OpenAll(GTK_WINDOW(bm->window_), bm->profile_, NULL, nodes,
+                          CURRENT_TAB);
 }
 
 // static

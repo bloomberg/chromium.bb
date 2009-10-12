@@ -1688,12 +1688,9 @@ void Browser::BookmarkAllTabs() {
   if (!node)
     return;
 
-  // TODO(sky): BookmarkEditor::Show should take a NativeWindow, not view.
-#if defined(OS_WIN)
   BookmarkEditor::Show(window()->GetNativeHandle(), profile_,
                        node->GetParent(), node, BookmarkEditor::SHOW_TREE,
                        NULL);
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

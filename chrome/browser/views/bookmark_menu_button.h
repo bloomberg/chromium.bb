@@ -39,15 +39,13 @@ class BookmarkMenuButton : public views::MenuButton,
   virtual void BookmarkMenuDeleted(BookmarkMenuController* controller);
 
   // ViewMenuDelegate.
-  virtual void RunMenu(views::View* source,
-                       const gfx::Point& pt,
-                       gfx::NativeView hwnd);
+  virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
  private:
   // Shows the menu.
   void RunMenu(views::View* source,
                const gfx::Point& pt,
-               gfx::NativeView hwnd,
+               gfx::NativeWindow hwnd,
                bool for_drop);
 
   // Returns the bookmark model.

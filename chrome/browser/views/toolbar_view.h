@@ -114,8 +114,7 @@ class ToolbarView : public views::View,
   virtual bool GetAcceleratorInfo(int id, views::Accelerator* accel);
 
   // Overridden from views::MenuDelegate:
-  virtual void RunMenu(views::View* source, const gfx::Point& pt,
-                       gfx::NativeView hwnd);
+  virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
   // Overridden from GetProfilesHelper::Delegate:
   virtual void OnGetProfilesDone(const std::vector<std::wstring>& profiles);
@@ -180,8 +179,8 @@ class ToolbarView : public views::View,
   void LoadRightSideControlsImages();
 
   // Runs various menus.
-  void RunPageMenu(const gfx::Point& pt, gfx::NativeView hwnd);
-  void RunAppMenu(const gfx::Point& pt, gfx::NativeView hwnd);
+  void RunPageMenu(const gfx::Point& pt);
+  void RunAppMenu(const gfx::Point& pt);
 
   void CreatePageMenu();
   void CreateZoomMenuContents();

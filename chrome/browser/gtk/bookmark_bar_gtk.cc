@@ -754,8 +754,9 @@ void BookmarkBarGtk::PopupMenuForNode(GtkWidget* sender,
     nodes.push_back(parent);
   }
 
+  GtkWindow* window = GTK_WINDOW(gtk_widget_get_toplevel(sender));
   current_context_menu_.reset(new BookmarkContextMenuGtk(
-                                  sender, profile_, browser_, page_navigator_,
+                                  window, profile_, browser_, page_navigator_,
                                   parent, nodes,
                                   BookmarkContextMenuGtk::BOOKMARK_BAR, NULL));
   current_context_menu_->PopupAsContext(event->time);
@@ -791,8 +792,9 @@ void BookmarkBarGtk::OnClicked(GtkWidget* sender,
         event_utils::DispositionFromEventFlags(event->state),
         PageTransition::AUTO_BOOKMARK);
   } else {
+    GtkWindow* window = GTK_WINDOW(gtk_widget_get_toplevel(sender));
     bookmark_utils::OpenAll(
-        sender, bar->profile_, bar->page_navigator_, node,
+        window, bar->profile_, bar->page_navigator_, node,
         event_utils::DispositionFromEventFlags(event->state));
   }
 

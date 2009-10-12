@@ -13,7 +13,7 @@
 // BookmarkContextMenu, public:
 
 BookmarkContextMenu::BookmarkContextMenu(
-    gfx::NativeView parent_window,
+    gfx::NativeWindow parent_window,
     Profile* profile,
     PageNavigator* page_navigator,
     const BookmarkNode* parent,

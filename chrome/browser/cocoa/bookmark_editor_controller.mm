@@ -11,15 +11,14 @@
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
 
 // static; implemented for each platform.
-void BookmarkEditor::Show(gfx::NativeView parent_hwnd,
+void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
                           Profile* profile,
                           const BookmarkNode* parent,
                           const BookmarkNode* node,
                           Configuration configuration,
                           Handler* handler) {
-  NSWindow* window = [parent_hwnd window];
   BookmarkEditorController* controller = [[BookmarkEditorController alloc]
-                                           initWithParentWindow:window
+                                           initWithParentWindow:parent_hwnd
                                                         profile:profile
                                                          parent:parent
                                                            node:node

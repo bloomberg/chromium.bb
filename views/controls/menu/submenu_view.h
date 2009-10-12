@@ -74,7 +74,7 @@ class SubmenuView : public View {
 
   // Shows the menu at the specified location. Coordinates are in screen
   // coordinates. max_width gives the max width the view should be.
-  void ShowAt(gfx::NativeView parent, const gfx::Rect& bounds, bool do_capture);
+  void ShowAt(gfx::NativeWindow parent, const gfx::Rect& bounds, bool do_capture);
 
   // Closes the menu, destroying the host.
   void Close();
@@ -112,8 +112,8 @@ class SubmenuView : public View {
   // Returns the container for the SubmenuView.
   MenuScrollViewContainer* GetScrollViewContainer();
 
-  // Returns the NativeView host of the menu, or NULL if not showing.
-  gfx::NativeView native_view() const;
+  // Returns the NativeWindow host of the menu, or NULL if not showing.
+  gfx::NativeWindow native_window() const;
 
   // Padding around the edges of the submenu.
   static const int kSubmenuBorderSize;

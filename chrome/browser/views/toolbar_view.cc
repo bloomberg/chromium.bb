@@ -252,14 +252,13 @@ bool ToolbarView::GetAcceleratorInfo(int id, views::Accelerator* accel) {
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, views::MenuDelegate implementation:
 
-void ToolbarView::RunMenu(views::View* source, const gfx::Point& pt,
-                          gfx::NativeView parent) {
+void ToolbarView::RunMenu(views::View* source, const gfx::Point& pt) {
   switch (source->GetID()) {
     case VIEW_ID_PAGE_MENU:
-      RunPageMenu(pt, parent);
+      RunPageMenu(pt);
       break;
     case VIEW_ID_APP_MENU:
-      RunAppMenu(pt, parent);
+      RunAppMenu(pt);
       break;
     default:
       NOTREACHED() << "Invalid source menu.";
@@ -997,12 +996,12 @@ void ToolbarView::LoadRightSideControlsImages() {
     bookmark_menu_->SetIcon(*tp->GetBitmapNamed(IDR_MENU_BOOKMARK));
 }
 
-void ToolbarView::RunPageMenu(const gfx::Point& pt, gfx::NativeView parent) {
+void ToolbarView::RunPageMenu(const gfx::Point& pt) {
   CreatePageMenu();
   page_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 }
 
-void ToolbarView::RunAppMenu(const gfx::Point& pt, gfx::NativeView parent) {
+void ToolbarView::RunAppMenu(const gfx::Point& pt) {
   CreateAppMenu();
   app_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 }

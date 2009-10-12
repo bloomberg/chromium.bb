@@ -411,7 +411,7 @@ void BookmarkBubbleView::ShowEditor() {
   // restored to the browser.
   ShowWindow(GetWidget()->GetNativeView(), SW_HIDE);
 #else
-  gfx::NativeView parent = GTK_WIDGET(
+  gfx::NativeWindow parent = GTK_WINDOW(
       static_cast<views::WidgetGtk*>(GetWidget())->GetTransientParent());
 #endif
 

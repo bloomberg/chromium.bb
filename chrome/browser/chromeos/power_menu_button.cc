@@ -85,8 +85,7 @@ string16 PowerMenuButton::GetLabelAt(int index) const {
 ////////////////////////////////////////////////////////////////////////////////
 // PowerMenuButton, views::ViewMenuDelegate implementation:
 
-void PowerMenuButton::RunMenu(views::View* source, const gfx::Point& pt,
-                              gfx::NativeView hwnd) {
+void PowerMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   power_menu_.Rebuild();
   power_menu_.UpdateStates();
   power_menu_.RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);

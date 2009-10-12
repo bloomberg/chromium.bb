@@ -13,12 +13,10 @@
 #include "views/controls/button/button.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/event.h"
+#include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
-
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#endif
+#include "views/window/window.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -105,25 +103,14 @@ void MenuButton::Paint(gfx::Canvas* canvas, bool for_drag) {
 ////////////////////////////////////////////////////////////////////////////////
 
 int MenuButton::GetMaximumScreenXCoordinate() {
-  Widget* widget = GetWidget();
-
-  if (!widget) {
+  if (!GetWindow()) {
     NOTREACHED();
     return 0;
   }
 
-#if defined(OS_WIN)
-  HWND hwnd = widget->GetNativeView();
-  RECT t;
-  ::GetWindowRect(hwnd, &t);
-
-  gfx::Rect r(t);
-  gfx::Rect monitor_rect = win_util::GetMonitorBoundsForRect(r);
-  return monitor_rect.x() + monitor_rect.width() - 1;
-#else
-  NOTIMPLEMENTED();
-  return 1000000;
-#endif
+  gfx::Rect monitor_bounds =
+      Screen::GetMonitorWorkAreaNearestWindow(GetWindow()->GetNativeWindow());
+  return monitor_bounds.right() - 1;
 }
 
 bool MenuButton::Activate() {
@@ -162,7 +149,7 @@ bool MenuButton::Activate() {
     GetRootView()->SetMouseHandler(NULL);
 
     menu_visible_ = true;
-    menu_delegate_->RunMenu(this, menu_position, GetWidget()->GetNativeView());
+    menu_delegate_->RunMenu(this, menu_position);
     menu_visible_ = false;
     menu_closed_time_ = Time::Now();
 

@@ -39,8 +39,7 @@ class ClockMenuButton : public views::MenuButton,
 
  private:
   // views::ViewMenuDelegate implementation.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt,
-                       gfx::NativeView hwnd);
+  virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
   // Schedules the timer to fire at the next minute interval.
   void SetNextTimer();

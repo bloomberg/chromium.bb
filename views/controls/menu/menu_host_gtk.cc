@@ -30,11 +30,11 @@ MenuHost::MenuHost(SubmenuView* submenu)
   }
 }
 
-void MenuHost::Init(gfx::NativeView parent,
+void MenuHost::Init(gfx::NativeWindow parent,
                     const gfx::Rect& bounds,
                     View* contents_view,
                     bool do_capture) {
-  WidgetGtk::Init(parent, bounds);
+  WidgetGtk::Init(GTK_WIDGET(parent), bounds);
   SetContentsView(contents_view);
   // TODO(sky): see if there is some way to show without changing focus.
   Show();
@@ -63,6 +63,10 @@ void MenuHost::Init(gfx::NativeView parent,
     DLOG(INFO) << "Doing capture";
 #endif
   }
+}
+
+gfx::NativeWindow MenuHost::GetNativeWindow() {
+  return GTK_WINDOW(GetNativeView());
 }
 
 void MenuHost::Show() {

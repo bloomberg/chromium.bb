@@ -564,14 +564,12 @@ void BookmarkManagerView::ShowContextMenu(views::View* source,
                                           bool is_mouse_gesture) {
   DCHECK(source == table_view_ || source == tree_view_);
   bool is_table = (source == table_view_);
-  ShowMenu(GetWidget()->GetNativeView(), x, y,
+  ShowMenu(x, y,
            is_table ? BookmarkContextMenuController::BOOKMARK_MANAGER_TABLE :
                       BookmarkContextMenuController::BOOKMARK_MANAGER_TREE);
 }
 
-void BookmarkManagerView::RunMenu(views::View* source,
-                                  const gfx::Point& pt,
-                                  HWND hwnd) {
+void BookmarkManagerView::RunMenu(views::View* source, const gfx::Point& pt) {
   // TODO(glen): when you change the buttons around and what not, futz with
   // this to make it look good. If you end up keeping padding numbers make them
   // constants.
@@ -582,10 +580,10 @@ void BookmarkManagerView::RunMenu(views::View* source,
   menu_x += UILayoutIsRightToLeft() ? (source->width() - 5) :
                                       (-source->width() + 5);
   if (source->GetID() == kOrganizeMenuButtonID) {
-    ShowMenu(hwnd, menu_x, pt.y() + 2,
+    ShowMenu(menu_x, pt.y() + 2,
              BookmarkContextMenuController::BOOKMARK_MANAGER_ORGANIZE_MENU);
   } else if (source->GetID() == kToolsMenuButtonID) {
-    ShowToolsMenu(hwnd, menu_x, pt.y() + 2);
+    ShowToolsMenu(menu_x, pt.y() + 2);
   } else {
     NOTREACHED();
   }
@@ -732,10 +730,7 @@ BookmarkModel* BookmarkManagerView::GetBookmarkModel() const {
 }
 
 void BookmarkManagerView::ShowMenu(
-    HWND host,
-    int x,
-    int y,
-    BookmarkContextMenuController::ConfigurationType config) {
+    int x, int y, BookmarkContextMenuController::ConfigurationType config) {
   if (!GetBookmarkModel()->IsLoaded())
     return;
 
@@ -753,7 +748,8 @@ void BookmarkManagerView::ShowMenu(
             BookmarkContextMenuController::BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER;
       }
     }
-    BookmarkContextMenu menu(host, profile_, NULL, parent, nodes, config);
+    BookmarkContextMenu menu(GetWindow()->GetNativeWindow(), profile_, NULL,
+                             parent, nodes, config);
     menu.RunMenuAt(gfx::Point(x, y));
   } else {
     const BookmarkNode* node = GetSelectedFolder();
@@ -791,7 +787,7 @@ void BookmarkManagerView::OnCutCopyPaste(CutCopyPasteType type,
   }
 }
 
-void BookmarkManagerView::ShowToolsMenu(HWND host, int x, int y) {
+void BookmarkManagerView::ShowToolsMenu(int x, int y) {
   views::MenuItemView menu(this);
   menu.AppendMenuItemWithLabel(
           IDS_BOOKMARK_MANAGER_IMPORT_MENU,

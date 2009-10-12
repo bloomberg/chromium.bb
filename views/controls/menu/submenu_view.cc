@@ -216,7 +216,7 @@ bool SubmenuView::IsShowing() {
   return host_ && host_->IsVisible();
 }
 
-void SubmenuView::ShowAt(gfx::NativeView parent,
+void SubmenuView::ShowAt(gfx::NativeWindow parent,
                          const gfx::Rect& bounds,
                          bool do_capture) {
   if (host_) {
@@ -280,8 +280,8 @@ MenuScrollViewContainer* SubmenuView::GetScrollViewContainer() {
   return scroll_view_container_;
 }
 
-gfx::NativeView SubmenuView::native_view() const {
-  return host_ ? host_->GetNativeView() : NULL;
+gfx::NativeWindow SubmenuView::native_window() const {
+  return host_ ? host_->GetNativeWindow() : NULL;
 }
 
 void SubmenuView::PaintDropIndicator(gfx::Canvas* canvas,

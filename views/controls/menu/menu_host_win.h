@@ -22,6 +22,8 @@ class MenuHost : public WidgetWin {
             View* contents_view,
             bool do_capture);
 
+  gfx::NativeWindow GetNativeWindow() { return GetNativeView(); }
+
   void Show();
   virtual void Hide();
   virtual void HideWindow();

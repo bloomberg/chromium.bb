@@ -138,7 +138,7 @@ void OpenAllImpl(const BookmarkNode* node,
   }
 }
 
-bool ShouldOpenAll(gfx::NativeView parent,
+bool ShouldOpenAll(gfx::NativeWindow parent,
                    const std::vector<const BookmarkNode*>& nodes) {
   int descendant_count = 0;
   for (size_t i = 0; i < nodes.size(); ++i)
@@ -310,7 +310,7 @@ void CloneDragData(BookmarkModel* model,
     CloneDragDataImpl(model, elements[i], parent, index_to_add_at + i);
 }
 
-void OpenAll(gfx::NativeView parent,
+void OpenAll(gfx::NativeWindow parent,
              Profile* profile,
              PageNavigator* navigator,
              const std::vector<const BookmarkNode*>& nodes,
@@ -338,7 +338,7 @@ void OpenAll(gfx::NativeView parent,
     OpenAllImpl(nodes[i], initial_disposition, &navigator, &opened_url);
 }
 
-void OpenAll(gfx::NativeView parent,
+void OpenAll(gfx::NativeWindow parent,
              Profile* profile,
              PageNavigator* navigator,
              const BookmarkNode* node,

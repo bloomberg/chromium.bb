@@ -251,7 +251,7 @@ gboolean BookmarkMenuController::OnButtonPressed(
       nodes.push_back(node);
     controller->context_menu_.reset(
         new BookmarkContextMenuGtk(
-            GTK_WIDGET(controller->parent_window_), controller->profile_,
+            controller->parent_window_, controller->profile_,
             controller->browser_, controller->page_navigator_, parent, nodes,
             BookmarkContextMenuGtk::BOOKMARK_BAR, controller));
 

@@ -127,8 +127,7 @@ void NetworkMenuButton::AnimationProgressed(const Animation* animation) {
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuButton, views::ViewMenuDelegate implementation:
 
-void NetworkMenuButton::RunMenu(views::View* source, const gfx::Point& pt,
-                                gfx::NativeView hwnd) {
+void NetworkMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   wifi_networks_ = CrosNetworkLibrary::Get()->GetWifiNetworks();
   refreshing_menu_ = true;
   network_menu_.Rebuild();

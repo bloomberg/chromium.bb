@@ -259,8 +259,7 @@ void StatusAreaView::ExecuteCommand(int command_id) {
   browser_->ExecuteCommand(command_id);
 }
 
-void StatusAreaView::RunMenu(views::View* source, const gfx::Point& pt,
-                             gfx::NativeView hwnd) {
+void StatusAreaView::RunMenu(views::View* source, const gfx::Point& pt) {
   CreateAppMenu();
   app_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 }

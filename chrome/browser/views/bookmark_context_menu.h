@@ -12,7 +12,7 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
                             public views::MenuDelegate {
  public:
   BookmarkContextMenu(
-      gfx::NativeView parent_window,
+      gfx::NativeWindow parent_window,
       Profile* profile,
       PageNavigator* page_navigator,
       const BookmarkNode* parent,
@@ -41,7 +41,7 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
   scoped_ptr<BookmarkContextMenuController> controller_;
 
   // The parent of dialog boxes opened from the context menu.
-  gfx::NativeView parent_window_;
+  gfx::NativeWindow parent_window_;
 
   // The menu itself.
   scoped_ptr<views::MenuItemView> menu_;

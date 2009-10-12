@@ -161,7 +161,7 @@ class BookmarkManagerView : public views::View,
                                bool is_mouse_gesture);
 
   // ViewMenuDelegate.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt, HWND hwnd);
+  virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
   // MenuDelegate.
   virtual void ExecuteCommand(int id);
@@ -198,9 +198,7 @@ class BookmarkManagerView : public views::View,
 
   // Shows the menu. This is invoked to show the context menu for table/tree
   // as well as to show the menu from the organize button.
-  void ShowMenu(HWND host,
-                int x,
-                int y,
+  void ShowMenu(int x, int y,
                 BookmarkContextMenuController::ConfigurationType config);
 
   // Invoked to handle cut/copy/paste from the table or tree. If |from_table|
@@ -208,7 +206,7 @@ class BookmarkManagerView : public views::View,
   void OnCutCopyPaste(CutCopyPasteType type, bool from_table);
 
   // Shows the tools menu.
-  void ShowToolsMenu(HWND host, int x, int y);
+  void ShowToolsMenu(int x, int y);
 
   // Shows the import/export file chooser. These invoke
   // FileSelected/FileSelectionCanceled when done.

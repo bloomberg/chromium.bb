@@ -81,11 +81,11 @@ class MenuItemView : public View {
   // a rectangle, which is used to position the menu. |has_mnemonics| indicates
   // whether the items have mnemonics. Mnemonics are identified by way of the
   // character following the '&'.
-  void RunMenuAt(gfx::NativeView parent,
+  void RunMenuAt(gfx::NativeWindow parent,
                  const gfx::Rect& bounds,
                  AnchorPosition anchor,
                  bool has_mnemonics);
-  void RunMenuForDropAt(gfx::NativeView parent,
+  void RunMenuForDropAt(gfx::NativeWindow parent,
                         const gfx::Rect& bounds,
                         AnchorPosition anchor);
 

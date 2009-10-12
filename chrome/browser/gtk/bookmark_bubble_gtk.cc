@@ -363,7 +363,7 @@ void BookmarkBubbleGtk::ShowEditor() {
 
   // Closing might delete us, so we'll cache what we want we need on the stack.
   Profile* profile = profile_;
-  GtkWidget* toplevel = GTK_WIDGET(toplevel_window_);
+  GtkWindow* toplevel = toplevel_window_;
 
   // Close the bubble, deleting the C++ objects, etc.
   bubble_->Close();

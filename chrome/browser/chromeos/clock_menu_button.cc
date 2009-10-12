@@ -89,8 +89,7 @@ string16 ClockMenuButton::GetLabelAt(int index) const {
 ////////////////////////////////////////////////////////////////////////////////
 // ClockMenuButton, views::ViewMenuDelegate implementation:
 
-void ClockMenuButton::RunMenu(views::View* source, const gfx::Point& pt,
-                              gfx::NativeView hwnd) {
+void ClockMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
   clock_menu_.Rebuild();
   clock_menu_.UpdateStates();
   clock_menu_.RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
