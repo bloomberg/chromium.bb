@@ -39,7 +39,8 @@ TEST_F(WorkerTest, DISABLED_SingleWorker) {
   RunTest(L"single_worker.html");
 }
 
-TEST_F(WorkerTest, MultipleWorkers) {
+// This test fails after WebKit merge 49414:49432. (BUG=24652)
+TEST_F(WorkerTest, DISABLED_MultipleWorkers) {
   RunTest(L"multi_worker.html");
 }
 
@@ -201,7 +202,8 @@ TEST_F(WorkerTest, MessagePorts) {
 // Disable LimitPerPage on Linux. Seems to work on Mac though:
 // http://code.google.com/p/chromium/issues/detail?id=22608
 #if !defined(OS_LINUX)
-TEST_F(WorkerTest, LimitPerPage) {
+// This test fails after WebKit merge 49414:49432. (BUG=24652)
+TEST_F(WorkerTest, DISABLED_LimitPerPage) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   GURL url = GetTestUrl(L"workers", L"many_workers.html");
   url = GURL(url.spec() + StringPrintf("?count=%d", max_workers_per_tab + 1));
