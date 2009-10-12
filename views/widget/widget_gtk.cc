@@ -628,6 +628,15 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
 }
 
 void WidgetGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
+  // See comment next to size_ as to why we do this. Also note, it's tempting
+  // to put this in the static method so subclasses don't need to worry about
+  // it, but if a subclasses needs to set a shape then they need to always
+  // reset the shape in this method regardless of whether the size changed.
+  gfx::Size new_size(allocation->width, allocation->height);
+  if (new_size == size_)
+    return;
+
+  size_ = new_size;
   root_view_->SetBounds(0, 0, allocation->width, allocation->height);
   root_view_->SchedulePaint();
 }

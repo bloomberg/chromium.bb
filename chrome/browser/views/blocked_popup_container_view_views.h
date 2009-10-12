@@ -2,42 +2,23 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_BLOCKED_POPUP_CONTAINER_VIEW_WIN_H_
-#define CHROME_BROWSER_VIEWS_BLOCKED_POPUP_CONTAINER_VIEW_WIN_H_
+#ifndef CHROME_BROWSER_VIEWS_BLOCKED_POPUP_CONTAINER_VIEW_VIEWS_H_
+#define CHROME_BROWSER_VIEWS_BLOCKED_POPUP_CONTAINER_VIEW_VIEWS_H_
 
-#include <set>
-#include <utility>
-#include <vector>
-
-#include "app/gfx/native_widget_types.h"
-#include "app/slide_animation.h"
-#include "base/gfx/rect.h"
+#include "app/animation.h"
 #include "chrome/browser/blocked_popup_container.h"
-#include "chrome/browser/tab_contents/tab_contents_delegate.h"
-#include "views/controls/button/button.h"
-#include "views/controls/button/menu_button.h"
-#include "views/controls/menu/menu.h"
-#include "views/view.h"
-#include "views/widget/widget_win.h"
 
+class BlockedPopupContainerViewWidget;
 class BlockedPopupContainerInternalView;
-class PrefService;
-class Profile;
-class TabContents;
-class TextButton;
-
-namespace views {
-class ImageButton;
-}
+class SlideAnimation;
 
 // Takes ownership of TabContents that are unrequested popup windows and
 // presents an interface to the user for launching them. (Or never showing them
 // again).
-class BlockedPopupContainerViewWin : public BlockedPopupContainerView,
-                                     public AnimationDelegate,
-                                     public views::WidgetWin {
+class BlockedPopupContainerViewViews : public BlockedPopupContainerView,
+                                       public AnimationDelegate {
  public:
-  virtual ~BlockedPopupContainerViewWin();
+  virtual ~BlockedPopupContainerViewViews();
 
   // Returns the URL and title for popup |index|, used to construct a string for
   // display.
@@ -63,14 +44,17 @@ class BlockedPopupContainerViewWin : public BlockedPopupContainerView,
  private:
   // For the static constructor BlockedPopupContainerView::Create().
   friend class BlockedPopupContainerView;
+  friend class BlockedPopupContainerViewWidget;
 
   // Creates a container for a certain TabContents.
-  explicit BlockedPopupContainerViewWin(BlockedPopupContainer* container);
+  explicit BlockedPopupContainerViewViews(BlockedPopupContainer* container);
 
-  // Overridden from views::WidgetWin:
+  // Updates the shape of the widget.
+  void UpdateWidgetShape(BlockedPopupContainerViewWidget* widget,
+                         const gfx::Size& size);
 
-  // Makes the top corners of the window rounded during resizing events.
-  virtual void OnSize(UINT param, const CSize& size);
+  // Widget hosting container_view_.
+  BlockedPopupContainerViewWidget* widget_;
 
   // Our model; calling the shots.
   BlockedPopupContainer* model_;
@@ -81,7 +65,7 @@ class BlockedPopupContainerViewWin : public BlockedPopupContainerView,
   // The animation that slides us up and down.
   scoped_ptr<SlideAnimation> slide_animation_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlockedPopupContainerViewWin);
+  DISALLOW_COPY_AND_ASSIGN(BlockedPopupContainerViewViews);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_BLOCKED_POPUP_CONTAINER_VIEW_WIN_H_
+#endif  // CHROME_BROWSER_VIEWS_BLOCKED_POPUP_CONTAINER_VIEW_VIEWS_H_
