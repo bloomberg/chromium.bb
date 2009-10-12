@@ -662,7 +662,7 @@ NPError EXPORT_SYMBOL OSCALL NP_Shutdown(void) {
   HANDLE_CRASHES;
   DLOG(INFO) << "NP_Shutdown";
 
-  CommandLine::Terminate();
+  CommandLine::Reset();
 
   return NPERR_NO_ERROR;
 }

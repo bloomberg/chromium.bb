@@ -687,7 +687,7 @@ NPError OSCALL NP_Shutdown(void) {
     stats_report::g_global_metrics.Uninitialize();
   }
 
-  CommandLine::Terminate();
+  CommandLine::Reset();
 
 #ifdef CFTIMER
   o3d::gRenderTimer.Stop();

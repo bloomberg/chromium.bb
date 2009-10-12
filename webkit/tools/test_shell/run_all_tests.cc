@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
   TestShell::ShutdownTestShell();
   TestShell::CleanupLogging();
 
-  CommandLine::Terminate();
+  CommandLine::Reset();
 
   return result;
 }

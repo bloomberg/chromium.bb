@@ -739,7 +739,7 @@ NPError OSCALL NP_Shutdown(void) {
     stats_report::g_global_metrics.Uninitialize();
   }
 
-  CommandLine::Terminate();
+  CommandLine::Reset();
 
   // TODO : This is commented out until we can determine if
   // it's safe to shutdown breakpad at this stage (Gears, for
