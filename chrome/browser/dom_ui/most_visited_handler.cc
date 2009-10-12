@@ -29,9 +29,6 @@ namespace {
 // The number of most visited pages we show.
 const size_t kMostVisitedPages = 8;
 
-// The number of most visited pages we show on the old new tab page.
-const size_t kOldMostVisitedPages = 9;
-
 // The number of days of history we consider for most visited entries.
 const int kMostVisitedScope = 90;
 
@@ -121,13 +118,12 @@ void MostVisitedHandler::HandleGetMostVisited(const Value* value) {
 }
 
 void MostVisitedHandler::StartQueryForMostVisited() {
-  int page_count = NewTabUI::UseOldNewTabPage() ?
-      kOldMostVisitedPages : kMostVisitedPages;
+  const int page_count = kMostVisitedPages;
   // Let's query for the number of items we want plus the blacklist size as
   // we'll be filtering-out the returned list with the blacklist URLs.
   // We do not subtract the number of pinned URLs we have because the
   // HistoryService does not know about those.
-  int result_count = page_count + url_blacklist_->GetSize();
+  const int result_count = page_count + url_blacklist_->GetSize();
   HistoryService* hs =
       dom_ui_->GetProfile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
   // |hs| may be null during unit tests.
@@ -318,8 +314,7 @@ void MostVisitedHandler::OnSegmentUsageAvailable(
   size_t data_index = 0;
   size_t output_index = 0;
   size_t pre_populated_index = 0;
-  const size_t pages_count = NewTabUI::UseOldNewTabPage() ?
-      kOldMostVisitedPages : kMostVisitedPages;
+  const size_t pages_count = kMostVisitedPages;
   const std::vector<MostVisitedPage> pre_populated_pages =
       MostVisitedHandler::GetPrePopulatedPages();
 

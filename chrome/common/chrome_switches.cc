@@ -507,9 +507,6 @@ const wchar_t kForceFieldTestNameAndValue[]    = L"force-fieldtest";
 // performance will be poor.
 const wchar_t kNewTabPage[]                    = L"new-tab-page";
 
-// Switches back to the old new tab page.
-const wchar_t kOldNewTabPage[]                 = L"old-new-tab-page";
-
 // Enables the backend service for web resources, used in the new tab page for
 // loading tips and recommendations from a JSON feed.
 const wchar_t kDisableWebResources[]           = L"disable-web-resources";

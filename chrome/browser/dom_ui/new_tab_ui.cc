@@ -591,7 +591,7 @@ void RecentlyClosedTabsHandler::TabRestoreServiceChanged(
   ListValue list_value;
   std::set<std::wstring> unique_items;
   int added_count = 0;
-  const int max_count = NewTabUI::UseOldNewTabPage() ? 3 : 10;
+  const int max_count = 10;
 
   // We filter the list of recently closed to only show 'interesting' entries,
   // where an interesting entry is either a closed window or a closed tab
@@ -881,12 +881,6 @@ NewTabUI::NewTabUI(TabContents* contents)
     if (WebResourcesEnabled())
       AddMessageHandler((new TipsHandler())->Attach(this));
 
-    if (UseOldNewTabPage()) {
-      AddMessageHandler((new TemplateURLHandler())->Attach(this));
-      AddMessageHandler((new RecentlyBookmarkedHandler())->Attach(this));
-      AddMessageHandler((new HistoryHandler())->Attach(this));
-    }
-
 #ifdef CHROME_PERSONALIZATION
     if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync)) {
       AddMessageHandler((new NewTabPageSyncHandler())->Attach(this));
@@ -955,12 +949,6 @@ void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
   ShownSectionsHandler::RegisterUserPrefs(prefs);
   if (NewTabUI::WebResourcesEnabled())
     TipsHandler::RegisterUserPrefs(prefs);
-}
-
-// static
-bool NewTabUI::UseOldNewTabPage() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kOldNewTabPage);
 }
 
 // static
@@ -1223,9 +1211,7 @@ void NewTabUI::NewTabHTMLSource::InitFullHTML() {
 
   if (new_tab_html.empty()) {
     new_tab_html = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        NewTabUI::UseOldNewTabPage() ?
-            IDR_NEW_TAB_HTML :
-            IDR_NEW_NEW_TAB_HTML);
+        IDR_NEW_NEW_TAB_HTML);
   }
 
   full_html_.assign(new_tab_html.data(), new_tab_html.size());

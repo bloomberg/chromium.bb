@@ -28,9 +28,6 @@ class NewTabUI : public DOMUI,
 
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // Whether we should use the old new tab page.
-  static bool UseOldNewTabPage();
-
   // Whether we should disable the web resources backend service
   static bool WebResourcesEnabled();
 
