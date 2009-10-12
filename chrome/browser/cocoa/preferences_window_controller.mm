@@ -806,6 +806,14 @@ const int kDisabledIndex = 1;
                     contextInfo:NULL];
 }
 
+- (IBAction)privacyLearnMore:(id)sender {
+  // We open a new browser window so the Options dialog doesn't get lost
+  // behind other windows.
+  Browser* browser = Browser::Create(profile_);
+  browser->OpenURL(GURL(l10n_util::GetStringUTF16(IDS_LEARN_MORE_PRIVACY_URL)),
+                   GURL(), NEW_WINDOW, PageTransition::LINK);
+}
+
 - (IBAction)toolbarButtonSelected:(id)sender {
   DCHECK([sender isKindOfClass:[NSToolbarItem class]]);
   [self displayPreferenceViewForToolbarItem:sender

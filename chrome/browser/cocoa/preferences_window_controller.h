@@ -97,6 +97,7 @@ class Profile;
 
 // Under the hood
 - (IBAction)browseDownloadLocation:(id)sender;
+- (IBAction)privacyLearnMore:(id)sender;
 
 // When a toolbar button is clicked
 - (IBAction)toolbarButtonSelected:(id)sender;
