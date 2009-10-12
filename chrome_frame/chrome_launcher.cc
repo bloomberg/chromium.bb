@@ -27,6 +27,7 @@ const wchar_t* kAllowedSwitches[] = {
   switches::kUserDataDir,
   switches::kLoadExtension,
   switches::kEnableRendererAccessibility,
+  switches::kNoErrorDialogs,
 };
 
 CommandLine* CreateLaunchCommandLine() {
