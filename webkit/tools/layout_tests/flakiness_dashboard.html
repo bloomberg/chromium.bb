@@ -81,14 +81,20 @@
       position: fixed;
       top: 5px;
       right: 5px;
-      width: 200px;
+      width: 400px;
       padding: 2px;
       border: 2px solid grey;
       background-color: white;
     }
+    #legend ul, #legend ol {
+      margin-top: 0;
+      margin-bottom: 5px;
+    }
     #legend-contents * {
       margin: 3px 0;
       padding: 0 2px;
+      float: left;
+      border: 1px solid grey;
     }
     #builders * {
       margin: 0 5px;
@@ -199,9 +205,6 @@
     .expectations-item .checksum {
       height: 30px;
     }
-    .fallback-list {
-      margin-top: 0;
-    }
     .used-platform {
       float: right;
       color: darkblue;
@@ -211,6 +214,7 @@
       /* Hack to make a containing block for absolute positioned elements. */
       position: relative;
       overflow: hidden;
+      clear: both;
     }
     .title {
       /* Position absolutely so the container does not grow to contain this. */
@@ -276,6 +280,7 @@
   var BASE_TABLE_HEADERS = ['bugs', 'modifiers', 'expectations', 'missing',
       'extra', 'slowest run', 'flakiness (numbers are runtimes in seconds)'];
   var MIN_SECONDS_FOR_SLOW_TEST = 3;
+  var MIN_SECONDS_FOR_SLOW_TEST_DEBUG = 2 * MIN_SECONDS_FOR_SLOW_TEST;
   var FAIL_RESULTS = ['IMAGE', 'IMAGE+TEXT', 'TEXT', 'SIMPLIFIED', 'OTHER'];
   var CHUNK_SIZE = 25;
 
@@ -431,7 +436,7 @@
     }
   }
 
-  function getPlatFormAndBuildType(builderName) {
+  function getPlatformAndBuildType(builderName) {
     if (!perBuilderPlatformAndBuildType[builderName]) {
       // If the build name does not contain a platform
       // or build type, assume Windows Release.
@@ -444,6 +449,10 @@
           buildType: buildType};
     }
     return perBuilderPlatformAndBuildType[builderName];
+  }
+
+  function isDebug(builderName) {
+    return getPlatformAndBuildType(builderName).buildType == 'DEBUG';
   }
 
   /**
@@ -533,13 +542,19 @@
 
   function getNeedSlowTests() {
     return getAllTestsWithCondition(function(resultsForTest) {
-      return stringContains(resultsForTest.missing, 'SLOW') &&
-          isSlowTest(resultsForTest) && !resultsForTest.isWontFixSkip;
+      if (resultsForTest.isWontFixSkip)
+        return false;
+
+      return stringContains(resultsForTest.missing, 'SLOW') ||
+          stringContains(resultsForTest.extra, 'SLOW');
     });
   }
 
-  function isSlowTest(results) {
-    return results.slowestTime > MIN_SECONDS_FOR_SLOW_TEST;
+  function isSlowTest(resultsForTest) {
+    var maxTime = isDebug(resultsForTest.builder) ?
+        MIN_SECONDS_FOR_SLOW_TEST_DEBUG :
+        MIN_SECONDS_FOR_SLOW_TEST;
+    return resultsForTest.slowestTime > maxTime;
   }
 
   function getAllTestsWithCondition(conditionFn) {
@@ -549,8 +564,7 @@
     for (var test in tests) {
       var resultsArray = testToResultsMap[test];
       for (var i = 0; i < resultsArray.length; i++) {
-        var results = resultsArray[i].results;
-        if (conditionFn(results)) {
+        if (conditionFn(resultsArray[i])) {
           retVal.push(test);
           break;
         }
@@ -587,7 +601,7 @@
     if (!allTestsByPlatformAndBuildType[platform][buildType]) {
       var tests = {};
       for (var thisBuilder in builders) {
-        var thisBuilderBuildInfo = getPlatFormAndBuildType(thisBuilder);
+        var thisBuilderBuildInfo = getPlatformAndBuildType(thisBuilder);
         if (thisBuilderBuildInfo.buildType == buildType &&
             thisBuilderBuildInfo.platform == platform) {
           addTestsForBuilder(thisBuilder, tests);
@@ -832,7 +846,7 @@
     var start = Date.now();
     processExpectations();
 
-    var buildInfo = getPlatFormAndBuildType(builderName);
+    var buildInfo = getPlatformAndBuildType(builderName);
     var platform = buildInfo.platform;
     var buildType = buildInfo.buildType;
     processMissingTestsWithExpectations(builderName, platform, buildType);
@@ -842,6 +856,7 @@
 
     for (var test in allTestsForThisBuilder) {
       var resultsForTest = createResultsObjectForTest(test);
+      resultsForTest.builder = builderName;
       populateExpectationsData(resultsForTest, platform, buildType,
           builderName);
 
@@ -861,21 +876,20 @@
             times[i][1]);
       }
 
-      processMissingAndExtraExpectations(test, resultsForTest);
+      processMissingAndExtraExpectations(resultsForTest);
 
       failures.push(resultsForTest);
 
       if (!testToResultsMap[test])
         testToResultsMap[test] = [];
-      testToResultsMap[test].push(
-          {builder: builderName, results: resultsForTest});
+      testToResultsMap[test].push(resultsForTest);
     }
 
     perBuilderFailures[builderName] = failures;
     logTime('processTestRunsForBuilder: ' + builderName, start);
   }
 
-  function processMissingAndExtraExpectations(test, resultsForTest) {
+  function processMissingAndExtraExpectations(resultsForTest) {
     var unexpectedExpectations = [];
     var resultsMap = {}
     var numResultsSeen = 0;
@@ -947,11 +961,12 @@
     // slow. There are too many tests that take ~2 seconds every couple
     // hundred runs. It's not worth the manual maintenance effort.
     // Also, if a test times out, then it should not be marked as slow.
+    var minTimeForNeedsSlow = isDebug(resultsForTest.builder) ? 2 : 1;
     if (isSlowTest(resultsForTest) && !resultsMap['TIMEOUT'] &&
         (!resultsForTest.modifiers ||
          !stringContains(resultsForTest.modifiers, 'SLOW'))) {
       missingExpectations.push('SLOW');
-    } else if (resultsForTest.slowestTime <= 1 &&
+    } else if (resultsForTest.slowestTime < 1 &&
                resultsForTest.modifiers &&
                stringContains(resultsForTest.modifiers, 'SLOW')) {
       extraExpectations.push('SLOW');
@@ -1040,10 +1055,11 @@
     appendExpectations();
   }
 
-  function getHtmlForTestResults(test, builder) {
+  function getHtmlForTestResults(test) {
     var html = '';
     var results = test.rawResults.concat();
     var times = test.rawTimes.concat();
+    var builder = test.builder;
     var buildNumbers = resultsByBuilder[builder].buildNumbers;
 
     var indexToReplaceCurrentResult = -1;
@@ -1100,7 +1116,7 @@
 
     var html = '';
     if (tests.length || skippedPaths.length) {
-      var buildInfo = getPlatFormAndBuildType(builder);
+      var buildInfo = getPlatformAndBuildType(builder);
       html += '<h2>Expectations for ' + buildInfo.platform + '-' +
           buildInfo.buildType + ':</h2>';
     }
@@ -1201,7 +1217,7 @@
     window.getSelection().selectAllChildren(element);
   }
 
-  function getHTMLForSingleTestRow(test, builder, opt_isCrossBuilderView) {
+  function getHTMLForSingleTestRow(test, opt_isCrossBuilderView) {
     if (!opt_isCrossBuilderView && shouldHideTest(test)) {
       // The innerHTML call is considerably faster if we exclude the rows for
       // items we're not showing than if we hide them using display:none.
@@ -1213,7 +1229,7 @@
     // If opt_isCrossBuilderView is true, we're just viewing a single test
     // with results for many builders, so the first column is builder names
     // instead of test paths.
-    var testCellHTML = opt_isCrossBuilderView ? builder :
+    var testCellHTML = opt_isCrossBuilderView ? test.builder :
       '<span class="link" onclick="showPopupForTest(event, \'' + test.test +
       '\');selectContents(this);return false;">' + test.test + '</span>';
 
@@ -1228,7 +1244,7 @@
       '</td><td>' + test.missing +
       '</td><td>' + test.extra +
       '</td><td>' + (test.slowestTime ? test.slowestTime + 's' : '') +
-      '</td>' + getHtmlForTestResults(test, builder) + '</tr>';
+      '</td>' + getHtmlForTestResults(test) + '</tr>';
   }
 
   function getSortColumnFromTableHeader(headerText) {
@@ -1344,8 +1360,7 @@
           'run that test or all runs of the test passed.</b></div>';
 
       for (var j = 0; j < testResults.length; j++) {
-        html += getHTMLForSingleTestRow(testResults[j].results,
-            testResults[j].builder, true);
+        html += getHTMLForSingleTestRow(testResults[j], true);
       }
       html = getHTMLForTestTable(html);
     } else {
@@ -1551,7 +1566,6 @@
     header.innerHTML = '<div class=title>' + innerHTML +
         '</div><div style="float:left">&nbsp;</div>' +
         '<div class=platforms style="float:right"></div>';
-    header.style.clear = 'both';
     header.platform = platform;
     return header;
   }
@@ -1742,7 +1756,7 @@
     var results = perBuilderFailures[builderName];
     sortTests(results, currentState.sortColumn, currentState.sortOrder);
     for (var i = 0; i < results.length; i++) {
-      tableRowsHTML += getHTMLForSingleTestRow(results[i], builderName);
+      tableRowsHTML += getHTMLForSingleTestRow(results[i]);
     }
 
     var testsHTML = tableRowsHTML ? getHTMLForTestTable(tableRowsHTML) :
@@ -1865,18 +1879,23 @@
           EXPECTATIONS_MAP[expectation] + '</div>';
     }
     innerHTML += '<div class=wrong-expectations>WRONG EXPECTATIONS</div>' +
-        '<div class=merge>WEBKIT MERGE</div></div>' +'</div>' +
-        '<h3>Test expectatons fallback order.</h3>';
+        '<div class=merge>WEBKIT MERGE</div></div><br style="clear:both">' +
+        '</div><h3>Test expectatons fallback order.</h3>';
 
     for (var platform in fallbacksMap) {
       innerHTML += '<div class=fallback-header>' + platform + '</div>' +
         htmlForFallbackHelp(fallbacksMap[platform]);
     }
-    legend.innerHTML = innerHTML + '<div>TIMES:<ul>' +
-        '<li>&lt;1 second == !SLOW</li><li>&gt;1 second && &lt;' +
-        MIN_SECONDS_FOR_SLOW_TEST +
-        ' seconds == SLOW || !SLOW is fine</li><li>&gt;' +
-        MIN_SECONDS_FOR_SLOW_TEST + ' seconds == SLOW</li></ul></div>';
+    legend.innerHTML = innerHTML + '<div>TIMES:</div>' +
+        getHtmlForSlowTimes(MIN_SECONDS_FOR_SLOW_TEST) +
+        '<div>DEBUG TIMES:</div>' +
+        getHtmlForSlowTimes(MIN_SECONDS_FOR_SLOW_TEST_DEBUG);
+  }
+
+  function getHtmlForSlowTimes(minTime) {
+    return '<ul><li>&lt;1 second == !SLOW</li><li>&gt;1 second && &lt;' +
+        minTime + ' seconds == SLOW || !SLOW is fine</li><li>&gt;' +
+        minTime + ' seconds == SLOW</li></ul>';
   }
 
   document.addEventListener('keydown', function(e) {
