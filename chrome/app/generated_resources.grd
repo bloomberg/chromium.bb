@@ -5333,6 +5333,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Your login details are out of date. Click to re-enter your password.
       </message>
 
+      <!-- Desktop notifications -->
+      <message name="IDS_NOTIFICATION_BALLOON_DISMISS_LABEL" desc="Text on the button which dismisses the balloon.">
+        Dismiss
+      </message>
+      <message name="IDS_NOTIFICATION_BALLOON_SOURCE_LABEL" desc="Text which labels the balloon with the source origin.">
+        from <ph name="SOURCE_ORIGIN">$1</ph>
+      </message>
+      <message name="IDS_NOTIFICATION_PERMISSION_YES" desc="The label of the 'allow' button on the notification permission infobar.">
+        Allow
+      </message>
+      <message name="IDS_NOTIFICATION_PERMISSION_NO" desc="The label of the 'deny' button on the notification permission infobar.">
+        Deny
+      </message>
+
       <!-- Mac Menubar Menus -->
       <if expr="os == 'darwin'">
         <!-- Menubar Menu Titles -->

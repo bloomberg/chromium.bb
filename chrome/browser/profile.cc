@@ -27,6 +27,7 @@
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/password_manager/password_store_default.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/profile_manager.h"
@@ -457,6 +458,10 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual BookmarkModel* GetBookmarkModel() {
     return profile_->GetBookmarkModel();
+  }
+
+  virtual DesktopNotificationService* GetDesktopNotificationService() {
+    return profile_->GetDesktopNotificationService();
   }
 
   virtual ProfileSyncService* GetProfileSyncService() {
@@ -1342,6 +1347,17 @@ WebKitContext* ProfileImpl::GetWebKitContext() {
     webkit_context_ = new WebKitContext(path_, false);
   DCHECK(webkit_context_.get());
   return webkit_context_.get();
+}
+
+DesktopNotificationService* ProfileImpl::GetDesktopNotificationService() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  if (!desktop_notification_service_.get()) {
+     // TODO(johnnyg): hook this up with notification UI manager.
+     desktop_notification_service_.reset(new DesktopNotificationService(
+         this, NULL));
+  }
+
+  return desktop_notification_service_.get();
 }
 
 void ProfileImpl::MarkAsCleanShutdown() {

@@ -112,6 +112,8 @@ extern const wchar_t kCheckDefaultBrowser[];
 extern const wchar_t kUseCustomChromeFrame[];
 extern const wchar_t kShowOmniboxSearchHint[];
 extern const wchar_t kNTPThemePromoRemaining[];
+extern const wchar_t kDesktopNotificationAllowedOrigins[];
+extern const wchar_t kDesktopNotificationDeniedOrigins[];
 
 // Local state
 extern const wchar_t kMetricsClientID[];

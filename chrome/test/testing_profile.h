@@ -173,6 +173,9 @@ class TestingProfile : public Profile {
   virtual void MarkAsCleanShutdown() {}
   virtual void InitExtensions() {}
   virtual void InitWebResources() {}
+  virtual DesktopNotificationService* GetDesktopNotificationService() {
+    return NULL;
+  }
 
   // Schedules a task on the history backend and runs a nested loop until the
   // task is processed.  This has the effect of blocking the caller until the

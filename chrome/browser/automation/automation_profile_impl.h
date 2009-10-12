@@ -168,6 +168,9 @@ class AutomationProfileImpl : public Profile {
   virtual BookmarkModel* GetBookmarkModel() {
     return original_profile_->GetBookmarkModel();
   }
+  virtual DesktopNotificationService* GetDesktopNotificationService() {
+    return original_profile_->GetDesktopNotificationService();
+  }
 
 #ifdef CHROME_PERSONALIZATION
   virtual ProfileSyncService* GetProfileSyncService() {

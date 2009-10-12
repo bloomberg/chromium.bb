@@ -1701,10 +1701,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_CancelDesktopNotification,
                       int /* notification_id */ )
   IPC_MESSAGE_ROUTED2(ViewHostMsg_RequestNotificationPermission,
-                      string16 /* origin */,
+                      GURL /* origin */,
                       int /* callback_context */)
   IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_CheckNotificationPermission,
-                             string16 /* origin */,
+                             GURL /* origin */,
                              int /* permission_result */)
 
   // Sent if the worker object has sent a ViewHostMsg_CreateDedicatedWorker

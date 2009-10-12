@@ -47,8 +47,8 @@ void NotificationProvider::objectDestroyed(
 WebNotificationPresenter::Permission NotificationProvider::checkPermission(
     const WebString& origin) {
   int permission;
-  Send(new ViewHostMsg_CheckNotificationPermission(view_->routing_id(), origin,
-                                                   &permission));
+  Send(new ViewHostMsg_CheckNotificationPermission(view_->routing_id(),
+                                                   GURL(origin), &permission));
   return static_cast<WebNotificationPresenter::Permission>(permission);
 }
 
@@ -57,7 +57,7 @@ void NotificationProvider::requestPermission(
   int id = manager_.RegisterPermissionRequest(callback);
 
   Send(new ViewHostMsg_RequestNotificationPermission(view_->routing_id(),
-                                                     origin, id));
+                                                     GURL(origin), id));
 }
 
 bool NotificationProvider::ShowHTML(const WebNotification& notification,

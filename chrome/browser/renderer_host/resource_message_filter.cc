@@ -19,6 +19,8 @@
 #include "chrome/browser/nacl_process_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/dns_global.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
@@ -167,6 +169,8 @@ ResourceMessageFilter::ResourceMessageFilter(
               resource_dispatcher_host->webkit_thread()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(db_dispatcher_host_(
           new DatabaseDispatcherHost(profile->GetPath(), this))),
+      notification_prefs_(
+          profile->GetDesktopNotificationService()->prefs_cache()),
       off_the_record_(profile->IsOffTheRecord()),
       next_route_id_callback_(NewCallbackWithReturnValue(
           render_widget_helper, &RenderWidgetHelper::GetNextRoutingID)) {
@@ -335,6 +339,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_ClipboardFindPboardWriteStringAsync,
                           OnClipboardFindPboardWriteString)
 #endif
+      IPC_MESSAGE_HANDLER(ViewHostMsg_CheckNotificationPermission,
+                          OnCheckNotificationPermission)
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetMimeTypeFromExtension,
                           OnGetMimeTypeFromExtension)
       IPC_MESSAGE_HANDLER(ViewHostMsg_GetMimeTypeFromFile,
@@ -689,6 +695,11 @@ void ResourceMessageFilter::OnClipboardReadHTML(Clipboard::Buffer buffer,
 }
 
 #endif
+
+void ResourceMessageFilter::OnCheckNotificationPermission(
+    const GURL& source_origin, int* result) {
+  *result = notification_prefs_->HasPermission(source_origin);
+}
 
 void ResourceMessageFilter::OnGetMimeTypeFromExtension(
     const FilePath::StringType& ext, std::string* mime_type) {

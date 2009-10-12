@@ -281,6 +281,12 @@ const wchar_t kShowOmniboxSearchHint[] = L"browser.show_omnibox_search_hint";
 // in a session.
 const wchar_t kNTPThemePromoRemaining[] = L"browser.ntp.theme_promo_remaining";
 
+// The list of origins which are allowed|denied to show desktop notifications.
+const wchar_t kDesktopNotificationAllowedOrigins[] =
+    L"profile.notification_allowed_sites";
+const wchar_t kDesktopNotificationDeniedOrigins[] =
+    L"profile.notification_denied_sites";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

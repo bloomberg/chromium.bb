@@ -36,6 +36,7 @@ class AudioRendererHost;
 class DatabaseDispatcherHost;
 class DOMStorageDispatcherHost;
 class ExtensionMessageService;
+class NotificationsPrefsCache;
 class Profile;
 class RenderWidgetHelper;
 class SpellChecker;
@@ -190,6 +191,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 #if defined(OS_MACOSX)
   void OnClipboardFindPboardWriteString(const string16& text);
 #endif
+
+  void OnCheckNotificationPermission(const GURL& origin,
+                                     int* permission_level);
 
 #if !defined(OS_MACOSX)
   // Not handled in the IO thread on Mac.
@@ -349,6 +353,10 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // Handles HTML5 DB related messages
   scoped_ptr<DatabaseDispatcherHost> db_dispatcher_host_;
+
+  // A cache of notifications preferences which is used to handle
+  // Desktop Notifications permission messages.
+  scoped_refptr<NotificationsPrefsCache> notification_prefs_;
 
   // Whether this process is used for off the record tabs.
   bool off_the_record_;

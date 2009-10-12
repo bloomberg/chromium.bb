@@ -30,6 +30,7 @@ class BookmarkModel;
 class BrowserThemeProvider;
 class ChromeAppCacheService;
 class ChromeURLRequestContext;
+class DesktopNotificationService;
 class DownloadManager;
 class Extension;
 class ExtensionDevToolsManager;
@@ -343,6 +344,9 @@ class Profile {
   // Returns the WebKitContext assigned to this profile.
   virtual WebKitContext* GetWebKitContext() = 0;
 
+  // Returns the provider of desktop notifications for this profile.
+  virtual DesktopNotificationService* GetDesktopNotificationService() = 0;
+
   // Marks the profile as cleanly shutdown.
   //
   // NOTE: this is invoked internally on a normal shutdown, but is public so
@@ -439,6 +443,7 @@ class ProfileImpl : public Profile,
   virtual SpellChecker* GetSpellChecker();
   virtual void DeleteSpellChecker() { DeleteSpellCheckerImpl(true); }
   virtual WebKitContext* GetWebKitContext();
+  virtual DesktopNotificationService* GetDesktopNotificationService();
   virtual void MarkAsCleanShutdown();
   virtual void InitExtensions();
   virtual void InitWebResources();
@@ -520,6 +525,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<SessionService> session_service_;
   scoped_ptr<BrowserThemeProvider> theme_provider_;
   scoped_refptr<WebKitContext> webkit_context_;
+  scoped_ptr<DesktopNotificationService> desktop_notification_service_;
   bool history_service_created_;
   bool favicon_service_created_;
   bool created_web_data_service_;

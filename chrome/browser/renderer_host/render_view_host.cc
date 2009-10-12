@@ -20,6 +20,7 @@
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
@@ -833,6 +834,12 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnQueryFormFieldAutofill)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RemoveAutofillEntry,
                         OnRemoveAutofillEntry)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDesktopNotification,
+                        OnShowDesktopNotification)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDesktopNotificationText,
+                        OnShowDesktopNotificationText)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestNotificationPermission,
+                        OnRequestNotificationPermission)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ExtensionRequest, OnExtensionRequest)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnMsgSelectionChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ExtensionPostMessage,
@@ -1642,6 +1649,32 @@ void RenderViewHost::ForwardMessageFromExternalHost(const std::string& message,
                                                     const std::string& target) {
   Send(new ViewMsg_HandleMessageFromExternalHost(routing_id(), message, origin,
                                                  target));
+}
+
+void RenderViewHost::OnShowDesktopNotification(const GURL& source_origin,
+    const GURL& url, int notification_id) {
+  DesktopNotificationService* service =
+      process()->profile()->GetDesktopNotificationService();
+  service->ShowDesktopNotification(source_origin, url, process()->id(),
+      routing_id(), DesktopNotificationService::PageNotification,
+      notification_id);
+}
+
+void RenderViewHost::OnShowDesktopNotificationText(const GURL& source_origin,
+    const GURL& icon, const string16& title, const string16& text,
+    int notification_id) {
+  DesktopNotificationService* service =
+      process()->profile()->GetDesktopNotificationService();
+  service->ShowDesktopNotificationText(source_origin, icon, title, text,
+      process()->id(), routing_id(),
+      DesktopNotificationService::PageNotification, notification_id);
+}
+
+void RenderViewHost::OnRequestNotificationPermission(
+    const GURL& source_origin, int callback_context) {
+  DesktopNotificationService* service =
+      process()->profile()->GetDesktopNotificationService();
+  service->RequestPermission(source_origin, callback_context);
 }
 
 void RenderViewHost::OnExtensionRequest(const std::string& name,

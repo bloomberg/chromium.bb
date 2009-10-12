@@ -577,6 +577,14 @@ class RenderViewHost : public RenderWidgetHost,
   void OnRemoveAutofillEntry(const std::wstring& field_name,
                              const std::wstring& value);
 
+  void OnShowDesktopNotification(const GURL& source_origin,
+                                 const GURL& url, int notification_id);
+  void OnShowDesktopNotificationText(const GURL& origin, const GURL& icon,
+                                     const string16& title,
+                                     const string16& text,
+                                     int notification_id);
+  void OnRequestNotificationPermission(const GURL& origin, int callback_id);
+
   void OnExtensionRequest(const std::string& name, const ListValue& args,
                           int request_id, bool has_callback);
   void OnExtensionPostMessage(int port_id, const std::string& message);
