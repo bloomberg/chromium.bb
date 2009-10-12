@@ -3636,7 +3636,10 @@ bool RenderView::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
   PluginChannelHost::Broadcast(
       new PluginMsg_SignalModalDialogEvent(host_window_));
 
+#if !defined(OS_MACOSX)  // see http://crbug.com/24337
   message->EnableMessagePumping();  // Runs a nested message loop.
+#endif
+
   bool rv = Send(message);
 
   PluginChannelHost::Broadcast(
