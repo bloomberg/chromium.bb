@@ -40,7 +40,6 @@
 #include "webkit/glue/webframeloaderclient_impl.h"
 #include "webkit/glue/webframe_impl.h"
 #include "webkit/glue/webkitclient_impl.h"
-#include "webkit/glue/webview_delegate.h"
 #include "webkit/glue/webview_impl.h"
 #include "webkit/glue/webworker_impl.h"
 

@@ -57,7 +57,7 @@ WebCore::HistoryItem* BackForwardListClientImpl::currentItem() {
 }
 
 WebCore::HistoryItem* BackForwardListClientImpl::itemAtIndex(int index) {
-  if (!webview_->delegate())
+  if (!webview_->client())
     return NULL;
 
   // Since we don't keep the entire back/forward list, we have no way to
