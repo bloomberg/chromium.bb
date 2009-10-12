@@ -602,21 +602,31 @@ def GetIssueDescription(issue):
   return SendToRietveld("/%d/description" % issue)
 
 
-def Opened():
+def Opened(show_unknown_files):
   """Prints a list of modified files in the current directory down."""
   files = GetModifiedFiles()
   cl_keys = files.keys()
   cl_keys.sort()
   for cl_name in cl_keys:
-    if cl_name:
-      note = ""
-      change_info = ChangeInfo.Load(cl_name, GetRepositoryRoot(),
-                                    fail_on_not_found=True, update_status=False)
-      if len(change_info.GetFiles()) != len(files[cl_name]):
-        note = " (Note: this changelist contains files outside this directory)"
-      print "\n--- Changelist " + cl_name + note + ":"
+    if not cl_name:
+      continue
+    note = ""
+    change_info = ChangeInfo.Load(cl_name, GetRepositoryRoot(),
+                                  fail_on_not_found=True, update_status=False)
+    if len(change_info.GetFiles()) != len(files[cl_name]):
+      note = " (Note: this changelist contains files outside this directory)"
+    print "\n--- Changelist " + cl_name + note + ":"
     for file in files[cl_name]:
       print "".join(file)
+  if show_unknown_files:
+    unknown_files = UnknownFiles([])
+  if (files.get('') or (show_unknown_files and len(unknown_files))):
+    print "\n--- Not in any changelist:"
+    for file in files.get('', []):
+      print "".join(file)
+    if show_unknown_files:
+      for file in unknown_files:
+        print "?      %s" % file
 
 
 def Help(argv=None):
@@ -1157,16 +1167,13 @@ def main(argv=None):
 
   # Commands that don't require an argument.
   command = argv[1]
-  if command == "opened":
-    Opened()
-    return 0
-  if command == "status":
-    Opened()
-    print "\n--- Not in any changelist:"
-    UnknownFiles([])
+  if command == "opened" or command == "status":
+    Opened(command == "status")
     return 0
   if command == "nothave":
-    UnknownFiles(argv[2:])
+    unknown_files = UnknownFiles(argv[2:])
+    for file in unknown_files:
+      print "?      " + "".join(file)
     return 0
   if command == "changes":
     Changes()
