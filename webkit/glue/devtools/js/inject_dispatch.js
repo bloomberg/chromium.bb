@@ -9,7 +9,6 @@
 
 var InspectorControllerDispatcher = {};
 
-
 /**
  * Main dispatch method, all calls from the host to InspectorController go
  * through this one.
@@ -22,6 +21,27 @@ InspectorControllerDispatcher.dispatch = function(functionName, json_args) {
   InspectorController[functionName].apply(InspectorController, params);
 };
 
+/**
+ * Special controller object for APU related messages. Outgoing messages
+ * are sent to this object if the ApuAgentDispatcher is enabled.
+ **/
+var ApuAgentDispatcher = { enabled : false };
+
+/**
+ * Dispatches messages to APU. This filters and transforms
+ * outgoing messages that are used by APU.
+ * @param {string} method name of the dispatch method.
+ **/
+ApuAgentDispatcher.dispatchToApu = function(method, args) {
+  if (method != 'addItemToTimeline' &&
+      method != 'updateResource' &&
+      method != 'addResource') {
+    return;
+  }
+  // TODO(knorton): Transform args so they can be used
+  // by APU.
+  DevToolsAgentHost.dispatchToApu(JSON.stringify(args));
+};
 
 /**
  * This is called by the InspectorFrontend for serialization.
@@ -38,6 +58,11 @@ function dispatch(method, var_args) {
     // Filter out messages we don't need here.
     // We do it on the sender side since they may have non-serializable
     // parameters.
+    return;
+  }
+
+  if (ApuAgentDispatcher.enabled) {
+    ApuAgentDispatcher.dispatchToApu(method, args);
     return;
   }
 

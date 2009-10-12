@@ -21,8 +21,6 @@ ExtensionDevToolsBridge::ExtensionDevToolsBridge(int tab_id,
       profile_(profile),
       on_page_event_name_(
           ExtensionDevToolsEvents::OnPageEventNameForTab(tab_id)),
-      on_tab_url_change_event_name_(
-          ExtensionDevToolsEvents::OnTabUrlChangeEventNameForTab(tab_id)),
       on_tab_close_event_name_(
           ExtensionDevToolsEvents::OnTabCloseEventNameForTab(tab_id)) {
   extension_devtools_manager_ = profile_->GetExtensionDevToolsManager();
@@ -42,8 +40,12 @@ bool ExtensionDevToolsBridge::RegisterAsDevToolsClientHost() {
   if (ExtensionTabUtil::GetTabById(tab_id_, profile_, &browser, &tab_strip,
                                    &contents, &tab_index)) {
     inspected_rvh_ = contents->render_view_host();
-    DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
+    DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
+    devtools_manager->RegisterDevToolsClientHostFor(
         inspected_rvh_, this);
+    devtools_manager->ForwardToDevToolsAgent(
+        this,
+        DevToolsAgentMsg_SetApuAgentEnabled(true));
     return true;
   }
   return false;
@@ -64,6 +66,8 @@ void ExtensionDevToolsBridge::UnregisterAsDevToolsClientHost() {
 void ExtensionDevToolsBridge::InspectedTabClosing() {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
+  // TODO(knorton): Remove this event in favor of the standard tabs.onRemoved
+  // event in extensions.
   std::string json("[{}]");
   profile_->GetExtensionMessageService()->
       DispatchEventToRenderers(on_tab_close_event_name_, json);
@@ -79,9 +83,8 @@ void ExtensionDevToolsBridge::SendMessageToClient(const IPC::Message& msg) {
   IPC_END_MESSAGE_MAP()
 }
 
-static const char kTimelineAgentClassName[] = "TimelineAgentClass";
-static const char kPageEventMessageName[] = "PageEventMessage";
-static const char kTabUrlChangeEventMessageName[] = "TabUrlChangeEventMessage";
+static const char kApuAgentClassName[] = "ApuAgentDelegate";
+static const char kApuPageEventMessageName[] = "DispatchToApu";
 
 void ExtensionDevToolsBridge::OnRpcMessage(const std::string& class_name,
                                            const std::string& message_name,
@@ -89,18 +92,12 @@ void ExtensionDevToolsBridge::OnRpcMessage(const std::string& class_name,
                                            const std::string& param2,
                                            const std::string& param3) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
-  // TODO(jamesr): Update the filtering and message creation logic once
-  // the TimelineAgent lands in WebKit.
-  if (class_name == kTimelineAgentClassName) {
-    if (message_name == kPageEventMessageName) {
-      std::string json = StringPrintf("[{\"record\": \"%s\"}]", param1.c_str());
-      profile_->GetExtensionMessageService()->
-          DispatchEventToRenderers(on_page_event_name_, json);
-    } else if (message_name == kTabUrlChangeEventMessageName) {
-      std::string json = StringPrintf("[{\"record\": \"%s\"}]", param1.c_str());
-      profile_->GetExtensionMessageService()->
-          DispatchEventToRenderers(on_tab_url_change_event_name_, json);
-    }
+
+  if (class_name == kApuAgentClassName
+      && message_name == kApuPageEventMessageName) {
+    std::string json = StringPrintf("[%s]", param1.c_str());
+    profile_->GetExtensionMessageService()->DispatchEventToRenderers(
+        on_page_event_name_, json);
   }
 }
 

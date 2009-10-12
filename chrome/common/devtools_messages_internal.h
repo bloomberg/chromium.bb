@@ -90,4 +90,7 @@ IPC_BEGIN_MESSAGES(DevToolsAgent)
                        int /* x */,
                        int /* y */)
 
+  // Enables/disables the apu agent.
+  IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_SetApuAgentEnabled, bool /* enabled */)
+
 IPC_END_MESSAGES(DevToolsAgent)

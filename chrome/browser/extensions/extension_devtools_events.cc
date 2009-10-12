@@ -12,7 +12,6 @@
 // in sync with chrome/renderer/resources/extension_process_bindings.js
 static const char kDevToolsEventPrefix[] = "devtools.";
 static const char kOnPageEventName[] = "onPageEvent";
-static const char kOnTabUrlChangeEventName[] = "onTabUrlChange";
 static const char kOnTabCloseEventName[] = "onTabClose";
 
 // static
@@ -40,14 +39,6 @@ std::string ExtensionDevToolsEvents::OnPageEventNameForTab(int tab_id) {
                       kDevToolsEventPrefix,
                       tab_id,
                       kOnPageEventName);
-}
-
-// static
-std::string ExtensionDevToolsEvents::OnTabUrlChangeEventNameForTab(int tab_id) {
-  return StringPrintf("%s%d.%s",
-                      kDevToolsEventPrefix,
-                      tab_id,
-                      kOnTabUrlChangeEventName);
 }
 
 // static

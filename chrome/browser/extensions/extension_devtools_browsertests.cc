@@ -79,21 +79,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, TimelineApi) {
           tab_contents->render_view_host());
   ASSERT_TRUE(devtools_client_host);
 
-  // Test onTabUrlChange event.
-  DevToolsClientMsg_RpcMessage tabUrlChangeEventMessage(
-      "TimelineAgentClass", "TabUrlChangeEventMessage", "", "", "");
-  devtools_client_host->SendMessageToClient(tabUrlChangeEventMessage);
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(),
-      L"",
-      L"testReceiveTabUrlChangeEvent()",
-      &result);
-  EXPECT_TRUE(result);
-
   // Test onPageEvent event.
   result = false;
   DevToolsClientMsg_RpcMessage pageEventMessage(
-      "TimelineAgentClass", "PageEventMessage", "", "", "");
+      "ApuAgentDelegate", "DispatchToApu", "", "", "");
   devtools_client_host->SendMessageToClient(pageEventMessage);
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host->render_view_host(), L"", L"testReceivePageEvent()", &result);

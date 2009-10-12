@@ -52,7 +52,6 @@ class ExtensionDevToolsBridge : public DevToolsClientHost {
   // The names of the events fired at extensions depend on the tab id,
   // so we store the various event names in each bridge.
   const std::string on_page_event_name_;
-  const std::string on_tab_url_change_event_name_;
   const std::string on_tab_close_event_name_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDevToolsBridge);

@@ -11,6 +11,7 @@
 
 #include "v8.h"
 #include "webkit/glue/devtools/devtools_rpc.h"
+#include "webkit/glue/devtools/apu_agent_delegate.h"
 #include "webkit/glue/devtools/tools_agent.h"
 #include "webkit/glue/webdevtoolsagent.h"
 
@@ -55,6 +56,7 @@ class WebDevToolsAgentImpl
   virtual void GetResourceContent(
       int call_id,
       int identifier);
+  virtual void SetApuAgentEnabled(bool enable);
 
   // WebDevToolsAgent implementation.
   virtual void Attach();
@@ -88,6 +90,7 @@ class WebDevToolsAgentImpl
 
  private:
   static v8::Handle<v8::Value> JsDispatchOnClient(const v8::Arguments& args);
+  static v8::Handle<v8::Value> JsDispatchToApu(const v8::Arguments& args);
   void DisposeUtilityContext();
   void UnhideResourcesPanelIfNecessary();
 
@@ -107,6 +110,9 @@ class WebDevToolsAgentImpl
   OwnPtr<ToolsAgentDelegateStub> tools_agent_delegate_stub_;
   OwnPtr<ToolsAgentNativeDelegateStub> tools_agent_native_delegate_stub_;
   OwnPtr<DebuggerAgentImpl> debugger_agent_impl_;
+  OwnPtr<ApuAgentDelegateStub> apu_agent_delegate_stub_;
+  bool apu_agent_enabled_;
+  bool resource_tracking_was_enabled_;
   bool attached_;
   // TODO(pfeldman): This should not be needed once GC styles issue is fixed
   // for matching rules.

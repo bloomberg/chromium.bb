@@ -58,6 +58,7 @@ class DevToolsAgent : public WebDevToolsAgentDelegate {
                     const std::string& param2,
                     const std::string& param3);
   void OnInspectElement(int x, int y);
+  void OnSetApuAgentEnabled(bool enabled);
 
   static std::map<int, DevToolsAgent*> agent_for_routing_id_;
 

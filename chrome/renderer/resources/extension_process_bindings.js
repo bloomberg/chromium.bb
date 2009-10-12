@@ -316,7 +316,7 @@ var chrome = chrome || {};
 
     apiFunctions["devtools.getTabEvents"].handleRequest = function(tabId) {
       var tabIdProxy = {};
-      var functions = ["onPageEvent", "onTabUrlChange", "onTabClose"];
+      var functions = ["onPageEvent", "onTabClose"];
       functions.forEach(function(name) {
         // Event disambiguation is handled by name munging.  See
         // chrome/browser/extensions/extension_devtools_events.h for the C++

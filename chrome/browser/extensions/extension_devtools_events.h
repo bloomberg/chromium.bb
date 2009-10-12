@@ -22,9 +22,6 @@ class ExtensionDevToolsEvents {
   // Generates the event string for an onPageEvent for a given tab.
   static std::string OnPageEventNameForTab(int tab_id);
 
-  // Generates the event string for an onPageEvent for a given tab.
-  static std::string OnTabUrlChangeEventNameForTab(int tab_id);
-
   // Generates the event string for an onTabCloseEvent for a given tab.
   static std::string OnTabCloseEventNameForTab(int tab_id);
 

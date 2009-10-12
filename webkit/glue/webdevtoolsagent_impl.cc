@@ -64,6 +64,18 @@ void InspectorBackendWeakReferenceCallback(v8::Persistent<v8::Value> object,
   object.Dispose();
 }
 
+void SetApuAgentEnabledInUtilityContext(v8::Handle<v8::Context> context,
+                                        bool enabled) {
+  v8::HandleScope handle_scope;
+  v8::Context::Scope context_scope(context);
+  v8::Handle<v8::Object> dispatcher = v8::Local<v8::Object>::Cast(
+      context->Global()->Get(v8::String::New("ApuAgentDispatcher")));
+  if (dispatcher.IsEmpty()) {
+    return;
+  }
+  dispatcher->Set(v8::String::New("enabled"), v8::Boolean::New(enabled));
+}
+
 } //  namespace
 
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
@@ -72,10 +84,13 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     : host_id_(delegate->GetHostId()),
       delegate_(delegate),
       web_view_impl_(web_view_impl),
+      apu_agent_enabled_(false),
+      resource_tracking_was_enabled_(false),
       attached_(false) {
   debugger_agent_delegate_stub_.set(new DebuggerAgentDelegateStub(this));
   tools_agent_delegate_stub_.set(new ToolsAgentDelegateStub(this));
   tools_agent_native_delegate_stub_.set(new ToolsAgentNativeDelegateStub(this));
+  apu_agent_delegate_stub_.set(new ApuAgentDelegateStub(this));
 }
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl() {
@@ -146,6 +161,7 @@ void WebDevToolsAgentImpl::DidCommitLoadForFrame(
     ResetInspectorFrontendProxy();
     tools_agent_delegate_stub_->FrameNavigate(
         url.possibly_invalid_spec());
+    SetApuAgentEnabledInUtilityContext(utility_context_, apu_agent_enabled_);
   }
   UnhideResourcesPanelIfNecessary();
 }
@@ -213,6 +229,27 @@ void WebDevToolsAgentImpl::GetResourceContent(
   tools_agent_native_delegate_stub_->DidGetResourceContent(call_id, content);
 }
 
+void WebDevToolsAgentImpl::SetApuAgentEnabled(bool enable) {
+  apu_agent_enabled_ = enable;
+  SetApuAgentEnabledInUtilityContext(utility_context_, enable);
+  InspectorController* ic = web_view_impl_->page()->inspectorController();
+  if (enable) {
+    resource_tracking_was_enabled_ = ic->resourceTrackingEnabled();
+    ic->enableTimeline(false);
+    if (!resource_tracking_was_enabled_) {
+      // TODO(knorton): Introduce some kind of agents dependency here so that
+      // user could turn off resource tracking while apu agent is on.
+      ic->enableResourceTracking(false);
+    }
+  } else {
+    ic->disableTimeline(false);
+    if (!resource_tracking_was_enabled_) {
+      ic->disableResourceTracking(false);
+    }
+    resource_tracking_was_enabled_ = false;
+  }
+}
+
 void WebDevToolsAgentImpl::DispatchMessageFromClient(
     const std::string& class_name,
     const std::string& method_name,
@@ -261,6 +298,9 @@ void WebDevToolsAgentImpl::InitDevToolsAgentHost() {
   devtools_agent_host_->AddProtoFunction(
       "dispatch",
       WebDevToolsAgentImpl::JsDispatchOnClient);
+  devtools_agent_host_->AddProtoFunction(
+      "dispatchToApu",
+      WebDevToolsAgentImpl::JsDispatchToApu);
   devtools_agent_host_->Build();
 
   v8::HandleScope scope;
@@ -336,6 +376,20 @@ v8::Handle<v8::Value> WebDevToolsAgentImpl::JsDispatchOnClient(
   WebDevToolsAgentImpl* agent = static_cast<WebDevToolsAgentImpl*>(
       v8::External::Cast(*args.Data())->Value());
   agent->tools_agent_delegate_stub_->DispatchOnClient(message);
+  return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> WebDevToolsAgentImpl::JsDispatchToApu(
+    const v8::Arguments& args) {
+  v8::TryCatch exception_catcher;
+  String message = WebCore::toWebCoreStringWithNullCheck(args[0]);
+  if (message.isEmpty() || exception_catcher.HasCaught()) {
+    return v8::Undefined();
+  }
+  WebDevToolsAgentImpl* agent = static_cast<WebDevToolsAgentImpl*>(
+      v8::External::Cast(*args.Data())->Value());
+  agent->apu_agent_delegate_stub_->DispatchToApu(message);
   return v8::Undefined();
 }
 

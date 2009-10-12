@@ -38,6 +38,8 @@ class WebDevToolsAgent {
 
   virtual void InspectElement(int x, int y) = 0;
 
+  virtual void SetApuAgentEnabled(bool enabled) = 0;
+
   // Asynchronously executes debugger command in the render thread.
   // |caller_id| will be used for sending response.
   static void ExecuteDebuggerCommand(const std::string& command,

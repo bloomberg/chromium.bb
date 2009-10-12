@@ -37,6 +37,8 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_RpcMessage, OnRpcMessage)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_InspectElement, OnInspectElement)
+    IPC_MESSAGE_HANDLER(DevToolsAgentMsg_SetApuAgentEnabled,
+                        OnSetApuAgentEnabled)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -103,6 +105,13 @@ void DevToolsAgent::OnInspectElement(int x, int y) {
   if (web_agent) {
     web_agent->Attach();
     web_agent->InspectElement(x, y);
+  }
+}
+
+void DevToolsAgent::OnSetApuAgentEnabled(bool enabled) {
+  WebDevToolsAgent* web_agent = GetWebAgent();
+  if (web_agent) {
+    web_agent->SetApuAgentEnabled(enabled);
   }
 }
 
