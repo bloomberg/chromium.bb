@@ -22,8 +22,9 @@
         '../../third_party/npapi/bindings',
         '../../third_party/npapi/include',
       ],
-      'direct_dependent_settings': {
+      'all_dependent_settings': {
         'include_dirs': [
+          '../..',
           '../../third_party/npapi',
 
           # Chrome NPAPI header dir appears before the O3D one so it takes
@@ -31,7 +32,7 @@
           '../../third_party/npapi/bindings',
           '../../third_party/npapi/include',
         ],
-      },  # 'direct_dependent_settings'
+      },  # 'all_dependent_settings'
       'sources': [
         'np_utils/default_np_object.h',
         'np_utils/dynamic_np_object.cc',
@@ -72,7 +73,6 @@
       ],
       'include_dirs': [
         '../..',
-        '../../third_party/npapi',
       ],
       'sources': [
         'np_utils/dispatched_np_object_unittest.cc',
@@ -92,23 +92,7 @@
       ],
       'include_dirs': [
         '../..',
-        '../../third_party/npapi',
-
-        # Chrome NPAPI header dir appears before the O3D one so it takes
-        # priority. TODO(apatrick): one set of NPAPI headers.
-        '../../third_party/npapi/bindings',
-        '../../third_party/npapi/include',
       ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '../../third_party/npapi',
-
-          # Chrome NPAPI header dir appears before the O3D one so it takes
-          # priority. TODO(apatrick): one set of NPAPI headers.
-          '../../third_party/npapi/bindings',
-          '../../third_party/npapi/include',
-        ],
-      },
       'sources': [
         'system_services/shared_memory.cc',
         'system_services/shared_memory.h',
@@ -130,7 +114,6 @@
       ],
       'include_dirs': [
         '../..',
-        '../../third_party/npapi',
       ],
       'sources': [
         'system_services/shared_memory_unittest.cc',
@@ -147,11 +130,11 @@
         '..',
         '../..',
       ],
-      'direct_dependent_settings': {
+      'all_dependent_settings': {
         'include_dirs': [
           '..',
         ],
-      },  # 'direct_dependent_settings'
+      },  # 'all_dependent_settings'
       'sources': [
         '../command_buffer/common/cross/bitfield_helpers.h',
         '../command_buffer/common/cross/cmd_buffer_format.h',
@@ -174,11 +157,11 @@
         '..',
         '../..',
       ],
-      'direct_dependent_settings': {
+      'all_dependent_settings': {
         'include_dirs': [
           '..',
         ],
-      },  # 'direct_dependent_settings'
+      },  # 'all_dependent_settings'
       'dependencies': [
         'command_buffer_common_subset',
       ],
@@ -220,11 +203,11 @@
             'include_dirs': [
               '$(DXSDK_DIR)/Include',
             ],
-            'direct_dependent_settings': {
+            'all_dependent_settings': {
               'include_dirs': [
                 '$(DXSDK_DIR)/Include',
               ],
-            },  # 'direct_dependent_settings'
+            },  # 'all_dependent_settings'
           },
         ],
         ['OS == "mac" or OS == "linux"',
@@ -256,8 +239,11 @@
       ],
     },
 
+    # These can eventually be merged back into the gpu_plugin target. There
+    # separated for now so O3D can statically link against them and use command
+    # buffers in-process without the GPU plugin.
     {
-      'target_name': 'gpu_plugin',
+      'target_name': 'command_buffer',
       'type': '<(library)',
       'dependencies': [
         '../../base/base.gyp:base',
@@ -265,13 +251,37 @@
         'np_utils',
       ],
       'include_dirs': [
+        '..',
         '../..',
-        '../../third_party/npapi',
       ],
+      'all_dependent_settings': {
+        'include_dirs': [
+          '..',
+          '../..',
+        ],
+      },  # 'all_dependent_settings'
       'sources': [
         'command_buffer.cc',
         'command_buffer.h',
         'command_buffer_mock.h',
+        'gpu_processor.h',
+        'gpu_processor.cc',
+        'gpu_processor_win.cc',
+      ],
+    },
+
+    {
+      'target_name': 'gpu_plugin',
+      'type': '<(library)',
+      'dependencies': [
+        '../../base/base.gyp:base',
+        'command_buffer',
+        'np_utils',
+      ],
+      'include_dirs': [
+        '../..',
+      ],
+      'sources': [
         'gpu_plugin.cc',
         'gpu_plugin.h',
         'gpu_plugin_object.cc',
@@ -279,9 +289,6 @@
         'gpu_plugin_object_win.cc',
         'gpu_plugin_object_factory.cc',
         'gpu_plugin_object_factory.h',
-        'gpu_processor.h',
-        'gpu_processor.cc',
-        'gpu_processor_win.cc',
       ],
     },
 
@@ -301,7 +308,6 @@
       ],
       'include_dirs': [
         '../..',
-        '../../third_party/npapi',
       ],
       'conditions': [
         ['OS == "win" and (renderer == "d3d9" or renderer == "cb")',
