@@ -295,6 +295,7 @@
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
+            '../build/linux/system.gyp:x11',
           ],
           'sources!': [
             'accelerator.cc',
@@ -349,7 +350,6 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../skia/skia.gyp:skia',
-            '../build/linux/system.gyp:x11',
             'views',
           ],
           'include_dirs': [
