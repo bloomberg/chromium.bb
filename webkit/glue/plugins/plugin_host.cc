@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Pepper API support should be turned on for this module.
+#define PEPPER_APIS_ENABLED
+
 #include "webkit/glue/plugins/plugin_host.h"
 
 #include "base/file_util.h"
@@ -104,7 +107,6 @@ void PluginHost::InitializeHostFuncs() {
   host_funcs_.getvalueforurl = NPN_GetValueForURL;
   host_funcs_.setvalueforurl = NPN_SetValueForURL;
   host_funcs_.getauthenticationinfo = NPN_GetAuthenticationInfo;
-
 }
 
 void PluginHost::PatchNPNetscapeFuncs(NPNetscapeFuncs* overrides) {
@@ -659,6 +661,29 @@ void NPN_ForceRedraw(NPP id) {
   NOTIMPLEMENTED();
 }
 
+#if defined(PEPPER_APIS_ENABLED)
+static NPError InitializeRenderContext(NPP id,
+                                       NPRenderType type,
+                                       NPRenderContext* context) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    return plugin->InitializeRenderContext(type, context);
+  }
+  return NPERR_GENERIC_ERROR;
+}
+
+static NPError FlushRenderContext(NPP id,
+                                  NPRenderContext* context,
+                                  NPFlushRenderContextCallbackPtr callback,
+                                  void* userData) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    return plugin->FlushRenderContext(context, callback, userData);
+  }
+  return NPERR_GENERIC_ERROR;
+}
+#endif  // defined(PEPPER_APIS_ENABLED)
+
 NPError NPN_GetValue(NPP id, NPNVariable variable, void *value) {
   // Allows the plugin to query the browser for information
   //
@@ -791,6 +816,24 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void *value) {
     break;
   }
 #endif
+#if defined(PEPPER_APIS_ENABLED)
+  case NPNVInitializeRenderContextFunc:
+  {
+    NPInitializeRenderContextPtr* func =
+        reinterpret_cast<NPInitializeRenderContextPtr*>(value);
+    *func = InitializeRenderContext;
+    rv = NPERR_NO_ERROR;
+    break;
+  }
+  case NPNVFlushRenderContextFunc:
+  {
+    NPFlushRenderContextPtr* func =
+        reinterpret_cast<NPFlushRenderContextPtr*>(value);
+    *func = FlushRenderContext;
+    rv = NPERR_NO_ERROR;
+    break;
+  }
+#endif  // defined(PEPPER_APIS_ENABLED)
   default:
   {
     // TODO: implement me
@@ -891,6 +934,29 @@ void NPN_PluginThreadAsyncCall(NPP id,
     plugin->PluginThreadAsyncCall(func, userData);
   }
 }
+
+#if defined(PEPPER_APIS_ENABLED)
+NPError NPN_InitializeRenderContext(NPP id,
+                                    NPRenderType type,
+                                    NPRenderContext* context) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    return plugin->InitializeRenderContext(type, context);
+  }
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError NPN_FlushRenderContext(NPP id,
+                               NPRenderContext* context,
+                               NPFlushRenderContextCallbackPtr callback,
+                               void* userData) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    return plugin->FlushRenderContext(context, callback, userData);
+  }
+  return NPERR_GENERIC_ERROR;
+}
+#endif  // defined(PEPPER_APIS_ENABLED)
 
 NPError NPN_GetValueForURL(NPP id,
                            NPNURLVariable variable,

@@ -100,13 +100,14 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
 
   NPAPI::PluginLib* plugin_lib() { return plugin_; }
 
-#if defined(OS_WIN)
-  // Handles a windows native message which this PluginInstance should deal
-  // with.  Returns true if the event is handled, false otherwise.
-  bool HandleEvent(UINT message, WPARAM wParam, LPARAM lParam);
-#elif defined(OS_LINUX)
-  bool HandleEvent(union _XEvent* event);
-#endif
+#if defined(PEPPER_APIS_ENABLED)
+  NPError InitializeRenderContext(NPRenderType type,
+                                  NPRenderContext* context);
+  NPError FlushRenderContext(NPRenderContext* context,
+                             NPFlushRenderContextCallbackPtr callback,
+                             void* userData);
+
+#endif  // defined(PEPPER_APIS_ENABLED)
 
   // Creates a stream for sending an URL.  If notify_needed
   // is true, it will send a notification to the plugin
@@ -163,7 +164,7 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   void NPP_URLNotify(const char *, NPReason, void *);
   NPError NPP_GetValue(NPPVariable, void *);
   NPError NPP_SetValue(NPNVariable, void *);
-  short NPP_HandleEvent(NPEvent *);
+  short NPP_HandleEvent(void*);
   void NPP_Destroy();
   bool NPP_Print(NPPrint* platform_print);
 

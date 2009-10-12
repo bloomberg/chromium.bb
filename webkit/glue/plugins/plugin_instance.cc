@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Pepper API support should be enabled for this file.
+#define PEPPER_APIS_ENABLED
+
 #include "build/build_config.h"
 
 #include "webkit/glue/plugins/plugin_instance.h"
@@ -104,25 +107,6 @@ void PluginInstance::CloseStreams() {
   open_streams_.clear();
   in_close_streams_ = false;
 }
-
-#if defined(OS_WIN)
-bool PluginInstance::HandleEvent(UINT message, WPARAM wParam, LPARAM lParam) {
-  if (!windowless_)
-    return false;
-
-  NPEvent windowEvent;
-  windowEvent.event = message;
-  windowEvent.lParam = static_cast<uint32>(lParam);
-  windowEvent.wParam = static_cast<uint32>(wParam);
-  return NPP_HandleEvent(&windowEvent) != 0;
-}
-#elif defined(OS_LINUX)
-bool PluginInstance::HandleEvent(XEvent* event) {
-  if (!windowless_)
-    return false;
-  return NPP_HandleEvent(event);
-}
-#endif
 
 bool PluginInstance::Start(const GURL& url,
                            char** const param_names,
@@ -291,7 +275,7 @@ NPError PluginInstance::NPP_SetValue(NPNVariable variable, void *value) {
   return NPERR_INVALID_FUNCTABLE_ERROR;
 }
 
-short PluginInstance::NPP_HandleEvent(NPEvent *event) {
+short PluginInstance::NPP_HandleEvent(void* event) {
   DCHECK(npp_functions_ != 0);
   DCHECK(npp_functions_->event != 0);
   if (npp_functions_->event != 0) {
@@ -367,26 +351,47 @@ void PluginInstance::DidManualLoadFail() {
   }
 }
 
+#ifndef PEPPER_APIS_DISABLED
+NPError PluginInstance::InitializeRenderContext(NPRenderType type,
+                                                NPRenderContext* context) {
+  // Set up the renderer for the specified type.
+  // Return no errors.
+  return NPERR_NO_ERROR;
+}
+
+NPError PluginInstance::FlushRenderContext(NPRenderContext* context,
+    NPFlushRenderContextCallbackPtr callback, void* user_data) {
+  // Do the flush.
+  NPError err = NPERR_NO_ERROR;
+  // Invoke the callback to inform the caller the work was done.
+  if (callback != NULL) {
+    (*callback)(context, err, user_data);
+  }
+  // Return no errors.
+  return NPERR_NO_ERROR;
+}
+#endif  // PEPPER_APIS_DISABLED
+
 void PluginInstance::PluginThreadAsyncCall(void (*func)(void *),
-                                           void *userData) {
+                                           void *user_data) {
   message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &PluginInstance::OnPluginThreadAsyncCall, func, userData));
+      this, &PluginInstance::OnPluginThreadAsyncCall, func, user_data));
 }
 
 void PluginInstance::OnPluginThreadAsyncCall(void (*func)(void *),
-                                             void *userData) {
+                                             void *user_data) {
 #if defined(OS_WIN)
     // We are invoking an arbitrary callback provided by a third
   // party plugin. It's better to wrap this into an exception
   // block to protect us from crashes.
   __try {
-    func(userData);
+    func(user_data);
   } __except(EXCEPTION_EXECUTE_HANDLER) {
     // Maybe we can disable a crashing plugin.
     // But for now, just continue.
   }
 #else
-  func(userData);
+  func(user_data);
 #endif
 }
 
