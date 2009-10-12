@@ -45,8 +45,8 @@ AC_ARG_ENABLE(udev,	AS_HELP_STRING([--enable-udev],
 
 AC_ARG_ENABLE(intel,
 	      AS_HELP_STRING([--disable-intel],
-	      [Enable support for intel's KMS API (default: enabled)]),
-	      [INTEL=$enableval], [INTEL=yes])
+	      [Enable support for intel's KMS API (default: auto)]),
+	      [INTEL=$enableval], [INTEL=auto])
 
 AC_ARG_ENABLE(nouveau-experimental-api,
 	      AS_HELP_STRING([--enable-nouveau-experimental-api],
@@ -151,9 +151,7 @@ if test "x$HAVE_LIBUDEV" = xyes; then
 fi
 AM_CONDITIONAL(HAVE_LIBUDEV, [test "x$HAVE_LIBUDEV" = xyes])
 
-AM_CONDITIONAL(HAVE_INTEL, [test "x$INTEL" = xyes])
-
-if test "x$INTEL" = xyes; then
+if test "x$INTEL" != "xno"; then
     # Check for atomic intrinsics
     AC_CACHE_CHECK([for native atomic primitives], drm_cv_atomic_primitives,
     [
@@ -170,7 +168,18 @@ if test "x$INTEL" = xyes; then
 	    AC_DEFINE(HAVE_INTEL_ATOMIC_PRIMITIVES, 1,
 		      [Enable if your compiler supports the Intel __sync_* atomic primitives])
     fi
+
+    if test "x$drm_cv_atomic_primitives" = "xnone"; then
+	    if test "x$INTEL" != "xauto"; then
+		    AC_MSG_ERROR([libdrm_intel depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or disable support for Intel GPUs by passing --disable-intel to ./configue])
+	   else
+		    INTEL=no
+	   fi
+    fi
 fi
+
+AM_CONDITIONAL(HAVE_INTEL, [test "x$INTEL" != "xno"])
+
 
 AC_SUBST(WARN_CFLAGS)
 AC_OUTPUT([
