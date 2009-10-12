@@ -74,6 +74,13 @@ BufferSyncInterface::ParseError CommandParser::ProcessCommand() {
     return BufferSyncInterface::kParseOutOfBounds;
   BufferSyncInterface::ParseError result = handler_->DoCommand(
       header.command, header.size - 1, buffer_ + get);
+  // TODO(gman): If you want to log errors this is the best place to catch them.
+  //     It seems like we need an official way to turn on a debug mode and
+  //     get these errors.
+  if (result != BufferSyncInterface::kParseNoError) {
+    DLOG(INFO) << "Error: " << result << " for Command "
+               << GetCommandName(static_cast<CommandId>(header.command));
+  }
   get_ = (get + header.size) % entry_count_;
   return result;
 }

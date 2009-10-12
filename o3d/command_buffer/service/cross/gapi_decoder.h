@@ -83,7 +83,7 @@ class GAPIDecoder : public AsyncAPIInterface {
        unsigned int arg_count,            \
        const cmd::name& args);            \
 
-  O3D_COMMAND_BUFFER_CMDS
+  O3D_COMMAND_BUFFER_CMDS(O3D_COMMAND_BUFFER_CMD_OP)
 
   #undef O3D_COMMAND_BUFFER_CMD_OP
 

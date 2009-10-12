@@ -36,6 +36,7 @@
 #define O3D_CORE_CROSS_COMMAND_BUFFER_RENDERER_CB_H_
 
 #include "core/cross/precompile.h"
+#include <vector>
 #include "core/cross/renderer.h"
 #include "command_buffer/common/cross/rpc.h"
 #include "command_buffer/common/cross/resource.h"
@@ -78,6 +79,39 @@ class RendererCB : public Renderer {
   // destructor.
   // Destroy() should be called before Init() is called again.
   virtual void Destroy();
+
+  // Overridden from Renderer.
+  virtual bool GoFullscreen(const DisplayWindow& display,
+                            int mode_id) {
+    // TODO(gman): implement this.
+    return false;
+  }
+
+  // Overridden from Renderer.
+  virtual bool CancelFullscreen(const DisplayWindow& display,
+                                int width, int height) {
+    // TODO(gman): implement this.
+    return false;
+  }
+
+  // Tells whether we're currently displayed fullscreen or not.
+  virtual bool fullscreen() const {
+    // TODO(gman): implement this.
+    return false;
+  }
+
+  // Get a vector of the available fullscreen display modes.
+  // Clears *modes on error.
+  virtual void GetDisplayModes(std::vector<DisplayMode> *modes) {
+    // TODO(gman): implement this.
+  }
+
+  // Get a single fullscreen display mode by id.
+  // Returns true on success, false on error.
+  virtual bool GetDisplayMode(int id, DisplayMode *mode) {
+    // TODO(gman): implement this.
+    return false;
+  }
 
   // Creates a StreamBank, returning a platform specific implementation class.
   virtual StreamBank::Ref CreateStreamBank();

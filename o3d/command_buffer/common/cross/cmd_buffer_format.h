@@ -76,83 +76,85 @@ namespace command_buffer {
 // COMMAND_NAME is the name of your command structure.
 //
 // NOTE: THE ORDER OF THESE MUST NOT CHANGE (their id is derived by order)
-#define O3D_COMMAND_BUFFER_CMDS \
-  O3D_COMMAND_BUFFER_CMD_OP(Noop)                          /*  0 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetToken)                      /*  1 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(BeginFrame)                    /*  2 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(EndFrame)                      /*  3 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(Clear)                         /*  4 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(CreateVertexBuffer)            /*  5 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(DestroyVertexBuffer)           /*  6 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetVertexBufferData)           /*  7 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetVertexBufferDataImmediate)  /*  8 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(GetVertexBufferData)           /*  9 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(CreateIndexBuffer)             /* 10 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(DestroyIndexBuffer)            /* 11 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetIndexBufferData)            /* 12 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetIndexBufferDataImmediate)   /* 13 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(GetIndexBufferData)            /* 14 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(CreateVertexStruct)            /* 15 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(DestroyVertexStruct)           /* 16 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetVertexInput)                /* 17 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetVertexStruct)               /* 18 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(Draw)                          /* 19 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(DrawIndexed)                   /* 20 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(CreateEffect)                  /* 21 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(CreateEffectImmediate)         /* 22 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(DestroyEffect)                 /* 23 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetEffect)                     /* 24 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(GetParamCount)                 /* 25 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(CreateParam)                   /* 26 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(CreateParamByName)             /* 27 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(CreateParamByNameImmediate)    /* 28 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(DestroyParam)                  /* 29 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetParamData)                  /* 30 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetParamDataImmediate)         /* 31 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(GetParamDesc)                  /* 32 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(GetStreamCount)                /* 33 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(GetStreamDesc)                 /* 34 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(DestroyTexture)                /* 35 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(CreateTexture2d)               /* 36 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(CreateTexture3d)               /* 37 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(CreateTextureCube)             /* 38 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetTextureData)                /* 39 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetTextureDataImmediate)       /* 40 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(GetTextureData)                /* 41 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(CreateSampler)                 /* 42 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(DestroySampler)                /* 43 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetSamplerStates)              /* 44 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetSamplerBorderColor)         /* 45 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetSamplerTexture)             /* 46 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetViewport)                   /* 47 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetScissor)                    /* 48 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetPointLineRaster)            /* 49 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetPolygonRaster)              /* 50 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetPolygonOffset)              /* 51 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetAlphaTest)                  /* 52 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetDepthTest)                  /* 53 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetStencilTest)                /* 54 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetBlending)                   /* 55 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetBlendingColor)              /* 56 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetColorWrite)                 /* 57 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(CreateRenderSurface)           /* 58 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(DestroyRenderSurface)          /* 59 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(CreateDepthSurface)            /* 60 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(DestroyDepthSurface)           /* 61 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetRenderSurface)              /* 62 */ \
-  O3D_COMMAND_BUFFER_CMD_OP(SetBackSurfaces)               /* 63 */ \
+#define O3D_COMMAND_BUFFER_CMDS(OP) \
+  OP(Noop)                          /*  0 */ \
+  OP(SetToken)                      /*  1 */ \
+  OP(BeginFrame)                    /*  2 */ \
+  OP(EndFrame)                      /*  3 */ \
+  OP(Clear)                         /*  4 */ \
+  OP(CreateVertexBuffer)            /*  5 */ \
+  OP(DestroyVertexBuffer)           /*  6 */ \
+  OP(SetVertexBufferData)           /*  7 */ \
+  OP(SetVertexBufferDataImmediate)  /*  8 */ \
+  OP(GetVertexBufferData)           /*  9 */ \
+  OP(CreateIndexBuffer)             /* 10 */ \
+  OP(DestroyIndexBuffer)            /* 11 */ \
+  OP(SetIndexBufferData)            /* 12 */ \
+  OP(SetIndexBufferDataImmediate)   /* 13 */ \
+  OP(GetIndexBufferData)            /* 14 */ \
+  OP(CreateVertexStruct)            /* 15 */ \
+  OP(DestroyVertexStruct)           /* 16 */ \
+  OP(SetVertexInput)                /* 17 */ \
+  OP(SetVertexStruct)               /* 18 */ \
+  OP(Draw)                          /* 19 */ \
+  OP(DrawIndexed)                   /* 20 */ \
+  OP(CreateEffect)                  /* 21 */ \
+  OP(CreateEffectImmediate)         /* 22 */ \
+  OP(DestroyEffect)                 /* 23 */ \
+  OP(SetEffect)                     /* 24 */ \
+  OP(GetParamCount)                 /* 25 */ \
+  OP(CreateParam)                   /* 26 */ \
+  OP(CreateParamByName)             /* 27 */ \
+  OP(CreateParamByNameImmediate)    /* 28 */ \
+  OP(DestroyParam)                  /* 29 */ \
+  OP(SetParamData)                  /* 30 */ \
+  OP(SetParamDataImmediate)         /* 31 */ \
+  OP(GetParamDesc)                  /* 32 */ \
+  OP(GetStreamCount)                /* 33 */ \
+  OP(GetStreamDesc)                 /* 34 */ \
+  OP(DestroyTexture)                /* 35 */ \
+  OP(CreateTexture2d)               /* 36 */ \
+  OP(CreateTexture3d)               /* 37 */ \
+  OP(CreateTextureCube)             /* 38 */ \
+  OP(SetTextureData)                /* 39 */ \
+  OP(SetTextureDataImmediate)       /* 40 */ \
+  OP(GetTextureData)                /* 41 */ \
+  OP(CreateSampler)                 /* 42 */ \
+  OP(DestroySampler)                /* 43 */ \
+  OP(SetSamplerStates)              /* 44 */ \
+  OP(SetSamplerBorderColor)         /* 45 */ \
+  OP(SetSamplerTexture)             /* 46 */ \
+  OP(SetViewport)                   /* 47 */ \
+  OP(SetScissor)                    /* 48 */ \
+  OP(SetPointLineRaster)            /* 49 */ \
+  OP(SetPolygonRaster)              /* 50 */ \
+  OP(SetPolygonOffset)              /* 51 */ \
+  OP(SetAlphaTest)                  /* 52 */ \
+  OP(SetDepthTest)                  /* 53 */ \
+  OP(SetStencilTest)                /* 54 */ \
+  OP(SetBlending)                   /* 55 */ \
+  OP(SetBlendingColor)              /* 56 */ \
+  OP(SetColorWrite)                 /* 57 */ \
+  OP(CreateRenderSurface)           /* 58 */ \
+  OP(DestroyRenderSurface)          /* 59 */ \
+  OP(CreateDepthSurface)            /* 60 */ \
+  OP(DestroyDepthSurface)           /* 61 */ \
+  OP(SetRenderSurface)              /* 62 */ \
+  OP(SetBackSurfaces)               /* 63 */ \
 
 
 // GAPI commands.
 enum CommandId {
   #define O3D_COMMAND_BUFFER_CMD_OP(name) k ## name,
 
-  O3D_COMMAND_BUFFER_CMDS
+  O3D_COMMAND_BUFFER_CMDS(O3D_COMMAND_BUFFER_CMD_OP)
 
   #undef O3D_COMMAND_BUFFER_CMD_OP
 
   kNumCommands,
 };
+
+const char* GetCommandName(CommandId id);
 
 namespace cmd {
   enum ArgFlags {

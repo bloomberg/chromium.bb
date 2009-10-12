@@ -70,7 +70,7 @@ const CommandInfo g_command_info[] = {
     cmd::name::kArgFlags,                                                \
     sizeof(cmd::name) / sizeof(CommandBufferEntry) - 1, },  /* NOLINT */ \
 
-  O3D_COMMAND_BUFFER_CMDS
+  O3D_COMMAND_BUFFER_CMDS(O3D_COMMAND_BUFFER_CMD_OP)
 
   #undef O3D_COMMAND_BUFFER_CMD_OP
 };
@@ -98,7 +98,7 @@ BufferSyncInterface::ParseError GAPIDecoder::DoCommand(
                 arg_count,                                         \
                 *static_cast<const cmd::name*>(cmd_data));         \
 
-        O3D_COMMAND_BUFFER_CMDS
+        O3D_COMMAND_BUFFER_CMDS(O3D_COMMAND_BUFFER_CMD_OP)
 
         #undef O3D_COMMAND_BUFFER_CMD_OP
       }

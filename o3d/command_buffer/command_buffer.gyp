@@ -44,6 +44,7 @@
         'common/cross/buffer_sync_api.cc',
         'common/cross/buffer_sync_api.h',
         'common/cross/cmd_buffer_format.h',
+        'common/cross/cmd_buffer_format.cc',
         'common/cross/gapi_interface.h',
         'common/cross/logging.h',
         'common/cross/mocks.h',
