@@ -6,7 +6,8 @@ Test actions that output to PRODUCT_DIR.
 
 import TestGyp
 
-test = TestGyp.TestGyp()
+# TODO fix this for xcode: http://code.google.com/p/gyp/issues/detail?id=88
+test = TestGyp.TestGyp(formats=['!xcode'])
 
 test.run_gyp('none.gyp', chdir='src')
 
