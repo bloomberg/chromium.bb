@@ -99,7 +99,7 @@ void RegisterURLRequestChromeJob() {
     url_util::AddStandardScheme(kChromeURLScheme);
   }
 
-  std::wstring inspector_dir;
+  FilePath inspector_dir;
   if (PathService::Get(chrome::DIR_INSPECTOR, &inspector_dir)) {
     // TODO(yurys): remove "inspector" source when new developer tools support
     // all features of in-process Web Inspector and Console Debugger. For the
@@ -157,7 +157,7 @@ void ChromeURLDataManager::URLToRequest(const GURL& url,
 
 // static
 bool ChromeURLDataManager::URLToFilePath(const GURL& url,
-                                         std::wstring* file_path) {
+                                         FilePath* file_path) {
   // Parse the URL into a request for a source and path.
   std::string source_name;
   std::string relative_path;
@@ -168,8 +168,8 @@ bool ChromeURLDataManager::URLToFilePath(const GURL& url,
   if (i == chrome_url_data_manager.file_sources_.end())
     return false;
 
-  file_path->assign(i->second);
-  file_util::AppendToPath(file_path, UTF8ToWide(relative_path));
+  *file_path = i->second.AppendASCII(relative_path);
+
   return true;
 }
 
@@ -184,7 +184,7 @@ void ChromeURLDataManager::AddDataSource(scoped_refptr<DataSource> source) {
 }
 
 void ChromeURLDataManager::AddFileSource(const std::string& source_name,
-                                         const std::wstring& file_path) {
+                                         const FilePath& file_path) {
   DCHECK(file_sources_.count(source_name) == 0);
   file_sources_[source_name] = file_path;
 }
@@ -328,10 +328,9 @@ class NetInternalsURLFormat : public URLRequestViewNetInternalsJob::URLFormat {
 URLRequestJob* ChromeURLDataManager::Factory(URLRequest* request,
                                              const std::string& scheme) {
   // Try first with a file handler
-  std::wstring path;
+  FilePath path;
   if (ChromeURLDataManager::URLToFilePath(request->url(), &path))
-    return new URLRequestChromeFileJob(request,
-                                       FilePath::FromWStringHack(path));
+    return new URLRequestChromeFileJob(request, path);
 
   // Next check for chrome://net-internals/, which uses its own job type.
   if (NetInternalsURLFormat::IsSupportedURL(request->url())) {

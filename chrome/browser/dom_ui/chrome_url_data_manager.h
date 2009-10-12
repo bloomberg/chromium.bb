@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BROWSER_DOM_UI_CHROME_URL_DATA_MANAGER_H__
-#define BROWSER_DOM_UI_CHROME_URL_DATA_MANAGER_H__
+#ifndef BROWSER_DOM_UI_CHROME_URL_DATA_MANAGER_H_
+#define BROWSER_DOM_UI_CHROME_URL_DATA_MANAGER_H_
 
 #include <map>
 #include <string>
@@ -12,6 +12,7 @@
 #include "chrome/common/ref_counted_util.h"
 
 class DictionaryValue;
+class FilePath;
 class GURL;
 class MessageLoop;
 class URLRequest;
@@ -100,7 +101,7 @@ class ChromeURLDataManager {
   // A file source acts like a file:// URL to the specified path.
   // Calling this from threads other the IO thread must be done via
   // InvokeLater.
-  void AddFileSource(const std::string& source_name, const std::wstring& path);
+  void AddFileSource(const std::string& source_name, const FilePath& path);
   void RemoveFileSource(const std::string& source_name);
 
   static URLRequestJob* Factory(URLRequest* request, const std::string& scheme);
@@ -115,7 +116,7 @@ private:
 
   // Translate a chrome resource URL into a local file path if there is one.
   // Returns false if there is no file handler for this URL
-  static bool URLToFilePath(const GURL& url, std::wstring* file_path);
+  static bool URLToFilePath(const GURL& url, FilePath* file_path);
 
   // Called by the job when it's starting up.
   // Returns false if |url| is not a URL managed by this object.
@@ -133,7 +134,7 @@ private:
                      scoped_refptr<RefCountedBytes> bytes);
 
   // File sources of data, keyed by source name (e.g. "inspector").
-  typedef std::map<std::string, std::wstring> FileSourceMap;
+  typedef std::map<std::string, FilePath> FileSourceMap;
   FileSourceMap file_sources_;
 
   // Custom sources of data, keyed by source path (e.g. "favicon").
@@ -167,4 +168,4 @@ void RegisterURLRequestChromeJob();
 // Undoes the registration done by RegisterURLRequestChromeJob.
 void UnregisterURLRequestChromeJob();
 
-#endif  // BROWSER_DOM_UI_CHROME_URL_DATA_MANAGER_H__
+#endif  // BROWSER_DOM_UI_CHROME_URL_DATA_MANAGER_H_
