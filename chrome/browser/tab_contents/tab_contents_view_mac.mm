@@ -43,7 +43,7 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 
 @interface TabContentsViewCocoa (Private)
 - (id)initWithTabContentsViewMac:(TabContentsViewMac*)w;
-- (void)processKeyboardEvent:(NSEvent*)event;
+- (void)processKeyboardEvent:(NativeWebKeyboardEvent*)event;
 - (void)registerDragTypes;
 - (void)setCurrentDragOperation:(NSDragOperation)operation;
 - (void)startDragWithDropData:(const WebDropData&)dropData
@@ -202,7 +202,8 @@ void TabContentsViewMac::TakeFocus(bool reverse) {
 
 void TabContentsViewMac::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  [cocoa_view_.get() processKeyboardEvent:event.os_event];
+  [cocoa_view_.get() processKeyboardEvent:
+      const_cast<NativeWebKeyboardEvent*>(&event)];
 }
 
 void TabContentsViewMac::ShowContextMenu(const ContextMenuParams& params) {
@@ -293,7 +294,15 @@ void TabContentsViewMac::Observe(NotificationType type,
   return tabContentsView_->tab_contents();
 }
 
-- (void)processKeyboardEvent:(NSEvent*)event {
+- (void)processKeyboardEvent:(NativeWebKeyboardEvent*)wkEvent {
+  NSEvent* event = wkEvent->os_event;
+
+  if ([event type] == NSKeyDown && ([event modifierFlags] & NSCommandKeyMask)) {
+    // We need to dispatch this to the menu.
+    if ([[NSApp mainMenu] performKeyEquivalent:event])
+      return;
+  }
+
   // If this tab is no longer active, it's window will be |nil|. In that case,
   // best ignore the event.
   if (![self window])
