@@ -94,4 +94,5 @@ TEST_F(TaskManagerTest, RefreshCalled) {
   model->update_state_ = TaskManagerModel::TASK_PENDING;
   model->Refresh();
   ASSERT_TRUE(resource.refresh_called());
+  task_manager.RemoveResource(&resource);
 }
