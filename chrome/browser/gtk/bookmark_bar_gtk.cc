@@ -125,7 +125,8 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       theme_provider_(GtkThemeProvider::GetFrom(profile)),
       show_instructions_(true),
       menu_bar_helper_(this),
-      floating_(false) {
+      floating_(false),
+      last_allocation_width_(-1) {
   Init(profile);
   SetProfile(profile);
   // Force an update by simulating being in the wrong state.
@@ -464,11 +465,10 @@ void BookmarkBarGtk::SetInstructionState() {
 }
 
 void BookmarkBarGtk::SetChevronState() {
-  if (!GTK_WIDGET_VISIBLE(bookmark_toolbar_.get()))
+  if (!GTK_WIDGET_VISIBLE(bookmark_hbox_))
     return;
 
   int extra_space = 0;
-
   if (GTK_WIDGET_VISIBLE(overflow_button_))
     extra_space = overflow_button_->allocation.width;
 
@@ -937,6 +937,16 @@ void BookmarkBarGtk::OnToolbarDragLeave(GtkToolbar* toolbar,
 void BookmarkBarGtk::OnToolbarSizeAllocate(GtkWidget* widget,
                                            GtkAllocation* allocation,
                                            BookmarkBarGtk* bar) {
+  if (bar->bookmark_toolbar_.get()->allocation.width ==
+      bar->last_allocation_width_) {
+    // If the width hasn't changed, then the visibility of the chevron
+    // doesn't need to change. This check prevents us from getting stuck in a
+    // loop where allocates are queued indefinitely while the visibility of
+    // overflow chevron toggles without actual resizes of the toolbar.
+    return;
+  }
+  bar->last_allocation_width_ = bar->bookmark_toolbar_.get()->allocation.width;
+
   bar->SetChevronState();
 }
 

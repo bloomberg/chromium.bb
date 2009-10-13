@@ -315,6 +315,10 @@ class BookmarkBarGtk : public AnimationDelegate,
   // what ShouldShowFloating() returns.
   bool floating_;
 
+  // Used to optimize out |bookmark_toolbar_| size-allocate events we don't
+  // need to respond to.
+  int last_allocation_width_;
+
   NotificationRegistrar registrar_;
 };
 
