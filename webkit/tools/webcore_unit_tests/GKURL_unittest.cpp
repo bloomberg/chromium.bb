@@ -599,3 +599,13 @@ TEST(GKURL, DeepCopy) {
   EXPECT_NE(dest.string().characters(), src.string().characters());
   EXPECT_NE(dest.utf8String().data(), src.utf8String().data());
 }
+
+TEST(GKURL, ProtocolIs) {
+  WebCore::KURL url1(WebCore::ParsedURLString,"foo://bar");
+  EXPECT_TRUE(url1.protocolIs("foo"));
+  EXPECT_FALSE(url1.protocolIs("foo-bar"));
+
+  WebCore::KURL url2(WebCore::ParsedURLString,"foo-bar:");
+  EXPECT_TRUE(url2.protocolIs("foo-bar"));
+  EXPECT_FALSE(url2.protocolIs("foo"));
+}
