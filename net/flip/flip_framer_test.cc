@@ -103,7 +103,7 @@ TEST_F(FlipFramerTest, HeaderBlock) {
   FlipFramer framer;
 
   // Encode the header block into a SynStream frame.
-  scoped_ptr<FlipSynStreamControlFrame> frame(
+  scoped_array<FlipSynStreamControlFrame> frame(
       framer.CreateSynStream(1, 1, true, &headers));
   EXPECT_TRUE(frame.get() != NULL);
 
@@ -151,26 +151,26 @@ TEST_F(FlipFramerTest, BasicCompression) {
   headers["content-length"] = "12";
 
   FlipFramer framer;
-  scoped_ptr<FlipSynStreamControlFrame>
+  scoped_array<FlipSynStreamControlFrame>
       frame1(framer.CreateSynStream(1, 1, true, &headers));
-  scoped_ptr<FlipSynStreamControlFrame>
+  scoped_array<FlipSynStreamControlFrame>
       frame2(framer.CreateSynStream(1, 1, true, &headers));
 
   // Expect the second frame to be more compact than the first.
-  EXPECT_LE(frame2->length(), frame1->length());
+  EXPECT_LE(frame2.get()->length(), frame1.get()->length());
 
   // Decompress the first frame
-  scoped_ptr<FlipFrame> frame3(
+  scoped_array<FlipFrame> frame3(
       framer.DecompressFrame(reinterpret_cast<FlipFrame*>(frame1.get())));
 
   // Decompress the second frame
-  scoped_ptr<FlipFrame> frame4(
+  scoped_array<FlipFrame> frame4(
       framer.DecompressFrame(reinterpret_cast<FlipFrame*>(frame2.get())));
 
   // Expect frames 3 & 4 to be the same.
   EXPECT_EQ(0,
       memcmp(frame3.get(), frame4.get(),
-      sizeof(FlipFrame) + frame3->length()));
+      sizeof(FlipFrame) + frame3.get()->length()));
 }
 
 TEST_F(FlipFramerTest, Basic) {

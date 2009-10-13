@@ -281,7 +281,7 @@ int FlipSession::CreateStream(FlipDelegate* delegate) {
   IOBufferWithSize* buffer =
       new IOBufferWithSize(length);
   memcpy(buffer->data(), syn_frame, length);
-  delete syn_frame;
+  delete[] syn_frame;
   queue_.push(PrioritizedIOBuffer(buffer, priority));
 
   static StatsCounter flip_requests("flip.requests");
