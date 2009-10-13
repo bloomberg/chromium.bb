@@ -151,7 +151,7 @@ const wchar_t kClockUserAgent[] = L"chromeframe";
 HRESULT SetClockUserAgent(const wchar_t* value) {
   HRESULT hr;
   RegKey ua_key;
-  if (ua_key.Create(HKEY_CURRENT_USER, kPostPlatformUAKey, KEY_WRITE)) {
+  if (ua_key.Create(HKEY_LOCAL_MACHINE, kPostPlatformUAKey, KEY_WRITE)) {
     if (value) {
       ua_key.WriteValue(kClockUserAgent, value);
     } else {
