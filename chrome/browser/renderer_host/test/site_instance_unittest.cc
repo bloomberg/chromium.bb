@@ -458,3 +458,54 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
 
   STLDeleteContainerPointers(hosts.begin(), hosts.end());
 }
+
+// Test to ensure that profiles that derive from each other share site
+// information.
+TEST_F(SiteInstanceTest, GetSiteInstanceMap) {
+  int deleteCounter = 0;
+
+  scoped_ptr<Profile> p1(new TestingProfile());
+  scoped_ptr<Profile> p2(new TestingProfile());
+  scoped_ptr<Profile> p3(new DerivedTestingProfile(p1.get()));
+
+  TestBrowsingInstance* instance1(new TestBrowsingInstance(p1.get(),
+      &deleteCounter));
+  TestBrowsingInstance* instance2(new TestBrowsingInstance(p2.get(),
+      &deleteCounter));
+  TestBrowsingInstance* instance3(new TestBrowsingInstance(p3.get(),
+      &deleteCounter));
+
+  instance1->use_process_per_site = true;
+  instance2->use_process_per_site = true;
+  instance3->use_process_per_site = true;
+
+  // The same profile with the same site.
+  EXPECT_EQ(
+      instance1->GetSiteInstanceForURL(GURL("chrome-extension://baz/bar")),
+      instance1->GetSiteInstanceForURL(GURL("chrome-extension://baz/bar")));
+
+  // The same profile with different sites.
+  EXPECT_NE(
+      instance1->GetSiteInstanceForURL(GURL("chrome-extension://baz/bar")),
+      instance1->GetSiteInstanceForURL(GURL("chrome-extension://foo/boo")));
+
+  // The different profiles with the same site.
+  EXPECT_NE(
+      instance1->GetSiteInstanceForURL(GURL("chrome-extension://baz/bar")),
+      instance2->GetSiteInstanceForURL(GURL("chrome-extension://baz/bar")));
+
+  // The different profiles with different sites.
+  EXPECT_NE(
+      instance1->GetSiteInstanceForURL(GURL("chrome-extension://baz/bar")),
+      instance2->GetSiteInstanceForURL(GURL("chrome-extension://foo/boo")));
+
+  // The dervived profiles with the same site.
+  EXPECT_EQ(
+      instance1->GetSiteInstanceForURL(GURL("chrome-extension://baz/bar")),
+      instance3->GetSiteInstanceForURL(GURL("chrome-extension://baz/bar")));
+
+  // The dervived profiles with the different sites.
+  EXPECT_NE(
+      instance1->GetSiteInstanceForURL(GURL("chrome-extension://baz/bar")),
+      instance3->GetSiteInstanceForURL(GURL("chrome-extension://foo/boo")));
+}
