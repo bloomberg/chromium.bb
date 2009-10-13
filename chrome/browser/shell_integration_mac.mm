@@ -10,8 +10,9 @@
 // Sets Chromium as default browser (only for current user). Returns false if
 // this operation fails (which we can't check for).
 bool ShellIntegration::SetAsDefaultBrowser() {
-  NSBundle* mainBundle = mac_util::MainAppBundle();
-  NSString* identifier = [mainBundle bundleIdentifier];
+  // We really do want the main bundle here, not mac_util::MainAppBundle(),
+  // which is the bundle for the framework.
+  NSString* identifier = [[NSBundle mainBundle] bundleIdentifier];
   [[NSWorkspace sharedWorkspace] setDefaultBrowserWithIdentifier:identifier];
   return true;
 }
@@ -38,8 +39,8 @@ bool IsIdentifierDefaultBrowser(NSString* identifier) {
 // protocols; we don't want to report "no" here if the user has simply chosen
 // to open HTML files in a text editor and FTP links with an FTP client.)
 ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
-  NSBundle* mainBundle = mac_util::MainAppBundle();
-  NSString* myIdentifier = [mainBundle bundleIdentifier];
+  // As above, we want to use the real main bundle.
+  NSString* myIdentifier = [[NSBundle mainBundle] bundleIdentifier];
   if (!myIdentifier)
     return UNKNOWN_DEFAULT_BROWSER;
   return IsIdentifierDefaultBrowser(myIdentifier) ? IS_DEFAULT_BROWSER
