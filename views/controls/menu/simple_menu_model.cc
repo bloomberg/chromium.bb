@@ -103,7 +103,9 @@ bool SimpleMenuModel::GetAcceleratorAt(int index,
 bool SimpleMenuModel::IsItemCheckedAt(int index) const {
   if (!delegate_)
     return false;
-  return delegate_->IsCommandIdChecked(GetCommandIdAt(index));
+  int item_index = FlipIndex(index);
+  return (items_[item_index].type == TYPE_CHECK) ?
+      delegate_->IsCommandIdChecked(GetCommandIdAt(index)) : false;
 }
 
 int SimpleMenuModel::GetGroupIdAt(int index) const {

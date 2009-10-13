@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 
 #include "app/active_window_watcher_x.h"
+#include "base/gfx/size.h"
 #include "base/message_loop.h"
 #include "views/focus/focus_manager.h"
 #include "views/widget/widget.h"
@@ -412,6 +413,12 @@ class WidgetGtk
 
   // See make_transient_to_parent for a description.
   bool transient_to_parent_;
+
+  // Last size supplied to OnSizeAllocate. We cache this as any time the
+  // size of a GtkWidget changes size_allocate is called, even if the size
+  // didn't change. If we didn't cache this and ignore calls when the size
+  // hasn't changed, we can end up getting stuck in a never ending loop.
+  gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetGtk);
 };

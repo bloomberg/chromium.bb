@@ -98,6 +98,9 @@ class TabContentsViewGtk : public TabContentsView,
   // GTK.
   scoped_ptr<WebDragDestGtk> drag_dest_;
 
+  // Current size. See comment in WidgetGtk as to why this is cached.
+  gfx::Size size_;
+
   DISALLOW_COPY_AND_ASSIGN(TabContentsViewGtk);
 };
 
