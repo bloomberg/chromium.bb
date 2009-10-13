@@ -144,7 +144,7 @@ TEST_F(ChromeBrowserWindowTest, DoesHideTitle) {
 }
 
 // Test to make sure that our window widgets are in the right place.
-TEST_F(ChromeBrowserWindowTest, WindowWidgetLocation) {
+TEST_F(ChromeBrowserWindowTest, DISABLED_WindowWidgetLocation) {
   NSCell* closeBoxCell = [window_ accessibilityAttributeValue:
                           NSAccessibilityCloseButtonAttribute];
   NSView* closeBoxControl = [closeBoxCell controlView];
@@ -170,7 +170,7 @@ TEST_F(ChromeBrowserWindowTest, WindowWidgetLocation) {
 }
 
 // Test that we actually have a tracking area in place.
-TEST_F(ChromeBrowserWindowTest, WindowWidgetTrackingArea) {
+TEST_F(ChromeBrowserWindowTest, DISABLED_WindowWidgetTrackingArea) {
   NSCell* closeBoxCell = [window_ accessibilityAttributeValue:
                           NSAccessibilityCloseButtonAttribute];
   NSView* closeBoxControl = [closeBoxCell controlView];
