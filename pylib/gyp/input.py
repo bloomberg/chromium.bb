@@ -39,6 +39,7 @@ base_path_sections = [
 ]
 path_sections = []
 
+
 def IsPathSection(section):
   if section in path_sections or \
      section.endswith('_dir') or section.endswith('_dirs') or \
@@ -84,6 +85,7 @@ non_configuration_keys = []
 # Controls how the generator want the build file paths.
 absolute_build_file_paths = False
 
+
 def GetIncludedBuildFiles(build_file_path, aux_data, included=None):
   """Return a list of all build files included into build_file_path.
 
@@ -116,6 +118,7 @@ def GetIncludedBuildFiles(build_file_path, aux_data, included=None):
 
   return included
 
+
 def CheckedEval(file_contents):
   """Return the eval of a gyp file.
 
@@ -135,6 +138,7 @@ def CheckedEval(file_contents):
   c3 = c2[0].getChildren()
   assert len(c3) == 1
   return CheckNode(c3[0],0)
+
 
 def CheckNode(node, level):
   if isinstance(node, Dict):
@@ -158,6 +162,7 @@ def CheckNode(node, level):
     return node.getChildren()[0]
   else:
     raise TypeError, "Unknown AST node " + repr(node)
+
 
 def LoadOneBuildFile(build_file_path, data, aux_data, variables, includes,
                      is_target, check):
@@ -353,6 +358,7 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
 
   return data
 
+
 # Look for the bracket that matches the first bracket seen in a
 # string, and return the start and end as a tuple.  For example, if
 # the input is something like "<(foo <(bar)) blah", then it would
@@ -385,6 +391,7 @@ def FindEnclosingBracketGroup(input):
 
 canonical_int_re = re.compile('^(0|-?[1-9][0-9]*)$')
 
+
 def IsStrCanonicalInt(string):
   """Returns True if |string| is in its canonical integer form.
 
@@ -402,6 +409,7 @@ early_variable_re = re.compile('(?P<replace>(?P<type><!?@?)'
 late_variable_re = re.compile('(?P<replace>(?P<type>>!?@?)'
                               '\((?P<is_array>\s*\[?)'
                               '(?P<content>.*?)(\]?)\))')
+
 
 def ExpandVariables(input, is_late, variables, build_file):
   # Look for the pattern that gets expanded into variables
@@ -651,10 +659,14 @@ def ProcessConditionsInDict(the_dict, is_late, variables, build_file):
         merge_dict = false_dict
     except SyntaxError, e:
       syntax_error = SyntaxError('%s while evaluating condition \'%s\' in %s '
-                          'at character %d.' %
-                          (str(e.args[0]), e.text, build_file, e.offset),
-                          e.filename, e.lineno, e.offset, e.text)
+                                 'at character %d.' %
+                                 (str(e.args[0]), e.text, build_file, e.offset),
+                                 e.filename, e.lineno, e.offset, e.text)
       raise syntax_error
+    except NameError, e:
+      gyp.common.ExceptionAppend(e, 'while evaluating condition \'%s\' in %s' %
+                                 (cond_expr_expanded, build_file))
+      raise
 
     if merge_dict != None:
       # Expand variables and nested conditinals in the merge_dict before
@@ -1128,7 +1140,15 @@ class DependencyGraphNode(object):
     # but that's presently the easiest way to access the target dicts so that
     # this function can find target types.
 
-    target_type = targets[self.ref]['type']
+    if not 'target_name' in targets[self.ref]:
+      raise Exception("Missing 'target_name' field in target.")
+
+    try:
+      target_type = targets[self.ref]['type']
+    except KeyError, e:
+      raise Exception("Missing 'type' field in target %s" %
+                      targets[self.ref]['target_name'])
+
     is_linkable = target_type in linkable_types
 
     if initial and not is_linkable:
@@ -1289,6 +1309,7 @@ def AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes):
 
 # Initialize this here to speed up MakePathRelative.
 exception_re = re.compile(r'''["']?[-/$<>]''')
+
 
 def MakePathRelative(to_file, fro_file, item):
   # If item is a relative path, it's relative to the build file dict that it's
@@ -1758,6 +1779,23 @@ def ValidateRulesInTarget(target, target_dict, extra_sources_for_rules):
     if len(rule_sources) > 0:
       rule['rule_sources'] = rule_sources
 
+
+def ValidateActionsInTarget(target, target_dict, build_file):
+  '''Validates the inputs to the actions in a target.'''
+  target_name = target_dict.get('target_name')
+  actions = target_dict.get('actions', [])
+  for action in actions:
+    action_name = action.get('action_name')
+    if not action_name:
+      raise Exception("Anonymous action in target %s.  "
+                      "An action must have an 'action_name' field." %
+                      target_name)
+    inputs = action.get('inputs', [])
+    if not inputs:
+      raise Exception("Need at least one input in action %s in target %s" %
+                      (action_name, target_name))
+
+
 def ValidateRunAsInTarget(target, target_dict, build_file):
   target_name = target_dict.get('target_name')
   run_as = target_dict.get('run_as')
@@ -1787,6 +1825,7 @@ def ValidateRunAsInTarget(target, target_dict, build_file):
                     "in file %s should be a dictionary." %
                     (target_name, build_file))
 
+
 def TurnIntIntoStrInDict(the_dict):
   """Given dict the_dict, recursively converts all integers into strings.
   """
@@ -1805,6 +1844,7 @@ def TurnIntIntoStrInDict(the_dict):
       the_dict[str(k)] = v
       del the_dict[k]
 
+
 def TurnIntIntoStrInList(the_list):
   """Given list the_list, recursively converts all integers into strings.
   """
@@ -1816,6 +1856,7 @@ def TurnIntIntoStrInList(the_list):
       TurnIntIntoStrInDict(item)
     elif isinstance(item, list):
       TurnIntIntoStrInList(item)
+
 
 def Load(build_files, variables, includes, depth, generator_input_info, check):
   # Set up path_sections and non_configuration_keys with the default data plus
@@ -1905,14 +1946,13 @@ def Load(build_files, variables, includes, depth, generator_input_info, check):
   # Make sure that the rules make sense, and build up rule_sources lists as
   # needed.  Not all generators will need to use the rule_sources lists, but
   # some may, and it seems best to build the list in a common spot.
+  # Also validate actions and run_as elements in targets.
   for target in flat_list:
     target_dict = targets[target]
-    ValidateRulesInTarget(target, target_dict, extra_sources_for_rules)
-
-  # Validate run_as sections in targets.
-  for target in flat_list:
     build_file = gyp.common.BuildFileAndTarget('', target)[0]
-    ValidateRunAsInTarget(target, targets[target], build_file)
+    ValidateRulesInTarget(target, target_dict, extra_sources_for_rules)
+    ValidateRunAsInTarget(target, target_dict, build_file)
+    ValidateActionsInTarget(target, target_dict, build_file)
 
   # Generators might not expect ints.  Turn them into strs.
   TurnIntIntoStrInDict(data)

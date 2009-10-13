@@ -446,7 +446,6 @@ class XcodeProject(object):
         os.umask(umask)
 
         os.chmod(new_pbxproj_path, 0666 & ~umask)
-
         os.rename(new_pbxproj_path, pbxproj_path)
 
     except Exception:
@@ -462,14 +461,14 @@ cached_xcode_version = None
 def InstalledXcodeVersion():
   """Fetches the installed version of Xcode, returns empty string if it is
   unable to figure it out."""
-  
+
   global cached_xcode_version
   if not cached_xcode_version is None:
     return cached_xcode_version
 
   # Default to an empty string
   cached_xcode_version = ''
-  
+
   # Collect the xcodebuild's version information.
   try:
     import subprocess
@@ -612,7 +611,12 @@ def GenerateOutput(target_list, target_dicts, data, params):
       if is_bundle:
         type_bundle_key += '+bundle'
       xctarget_type = gyp.xcodeproj_file.PBXNativeTarget
-      target_properties['productType'] = _types[type_bundle_key]
+      try:
+        target_properties['productType'] = _types[type_bundle_key]
+      except KeyError, e:
+        gyp.common.ExceptionAppend(e, "-- unknown product type while "
+                                   "writing target %s" % target_name)
+        raise
     else:
       xctarget_type = gyp.xcodeproj_file.PBXAggregateTarget
 
