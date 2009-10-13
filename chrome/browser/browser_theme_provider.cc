@@ -102,28 +102,26 @@ const SkColor BrowserThemeProvider::kDefaultColorFrameIncognitoInactive =
     SkColorSetRGB(126, 139, 156);
 const SkColor BrowserThemeProvider::kDefaultColorToolbar =
     SkColorSetRGB(210, 225, 246);
-const SkColor BrowserThemeProvider::kDefaultColorTabText =
-    SkColorSetRGB(0, 0, 0);
+const SkColor BrowserThemeProvider::kDefaultColorTabText = SK_ColorBLACK;
 const SkColor BrowserThemeProvider::kDefaultColorBackgroundTabText =
     SkColorSetRGB(64, 64, 64);
 const SkColor BrowserThemeProvider::kDefaultColorBookmarkText =
     SkColorSetRGB(18, 50, 114);
-const SkColor BrowserThemeProvider::kDefaultColorNTPBackground =
-    SkColorSetRGB(255, 255, 255);
-const SkColor BrowserThemeProvider::kDefaultColorNTPText =
-    SkColorSetRGB(0, 0, 0);
+const SkColor BrowserThemeProvider::kDefaultColorNTPBackground = SK_ColorWHITE;
+const SkColor BrowserThemeProvider::kDefaultColorNTPText = SK_ColorBLACK;
 const SkColor BrowserThemeProvider::kDefaultColorNTPLink =
     SkColorSetRGB(6, 55, 116);
 const SkColor BrowserThemeProvider::kDefaultColorNTPHeader =
     SkColorSetRGB(75, 140, 220);
 const SkColor BrowserThemeProvider::kDefaultColorNTPSection =
     SkColorSetRGB(229, 239, 254);
-const SkColor BrowserThemeProvider::kDefaultColorNTPSectionText =
-    SkColorSetRGB(0, 0, 0);
+const SkColor BrowserThemeProvider::kDefaultColorNTPSectionText = SK_ColorBLACK;
 const SkColor BrowserThemeProvider::kDefaultColorNTPSectionLink =
     SkColorSetRGB(6, 55, 116);
-const SkColor BrowserThemeProvider::kDefaultColorControlBackground = NULL;
-const SkColor BrowserThemeProvider::kDefaultColorButtonBackground = NULL;
+const SkColor BrowserThemeProvider::kDefaultColorControlBackground =
+    SkColorSetARGB(0, 0, 0, 0);
+const SkColor BrowserThemeProvider::kDefaultColorButtonBackground =
+    SkColorSetARGB(0, 0, 0, 0);
 
 // Default tints.
 const color_utils::HSL BrowserThemeProvider::kDefaultTintButtons =

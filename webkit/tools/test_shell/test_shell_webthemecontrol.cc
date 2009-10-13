@@ -18,12 +18,12 @@
 
 namespace TestShellWebTheme {
 
-const SkColor kEdgeColor     = SkColorSetRGB(0, 0, 0);
+const SkColor kEdgeColor     = SK_ColorBLACK;
 const SkColor kReadOnlyColor = SkColorSetRGB(0xe9, 0xc2, 0xa6);
-const SkColor kFgColor       = SkColorSetRGB(0, 0, 0);
+const SkColor kFgColor       = SK_ColorBLACK;
 
 const SkColor kBgColors[] = {
-  SkColorSetRGB(0, 0, 0),           // Unknown
+  SK_ColorBLACK,                    // Unknown
   SkColorSetRGB(0xc9, 0xc9, 0xc9),  // Disabled
   SkColorSetRGB(0xf3, 0xe0, 0xd0),  // Readonly
   SkColorSetRGB(0x89, 0xc4, 0xff),  // Normal

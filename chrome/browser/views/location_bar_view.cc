@@ -225,7 +225,7 @@ SkColor LocationBarView::GetColor(bool is_secure, ColorKind kind) {
     colors[NOT_SECURE][SELECTED_TEXT] = SK_ColorWHITE;
 #endif
     colors[SECURE][BACKGROUND] = SkColorSetRGB(255, 245, 195);
-    colors[SECURE][TEXT] = SkColorSetRGB(0, 0, 0);
+    colors[SECURE][TEXT] = SK_ColorBLACK;
     colors[SECURE][SELECTED_TEXT] = 0;  // Unused
     colors[NOT_SECURE][DEEMPHASIZED_TEXT] =
         color_utils::AlphaBlend(colors[NOT_SECURE][TEXT],

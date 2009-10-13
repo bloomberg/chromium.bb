@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,7 @@ static const SkColor kTextColorMatchCount = SkColorSetRGB(178, 178, 178);
 static const SkColor kTextColorNoMatch = SK_ColorBLACK;
 
 // The background color of the match count label when results are found.
-static const SkColor kBackgroundColorMatch = SkColorSetRGB(255, 255, 255);
+static const SkColor kBackgroundColorMatch = SK_ColorWHITE;
 
 // The background color of the match count label when no results are found.
 static const SkColor kBackgroundColorNoMatch = SkColorSetRGB(255, 102, 102);

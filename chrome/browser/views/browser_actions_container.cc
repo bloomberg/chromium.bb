@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -303,7 +303,7 @@ void BrowserActionView::PaintChildren(gfx::Canvas* canvas) {
   SkTypeface* typeface = SkTypeface::CreateFromName("Arial", SkTypeface::kBold);
   SkPaint text_paint;
   text_paint.setAntiAlias(true);
-  text_paint.setColor(SkColorSetARGB(255, 255, 255, 255));
+  text_paint.setColor(SK_ColorWHITE);
   text_paint.setFakeBoldText(true);
   text_paint.setTextAlign(SkPaint::kLeft_Align);
   text_paint.setTextSize(SkIntToScalar(kTextSize));
