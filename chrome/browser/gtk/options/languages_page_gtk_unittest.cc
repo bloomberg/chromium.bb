@@ -77,9 +77,10 @@ TEST_F(LanguagesPageGtkTest, RemoveAcceptLang) {
   EXPECT_STREQ("en,es", WideToASCII(
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.add_button_));
-  EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.move_up_button_));
+  EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.remove_button_));
+  EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.move_up_button_));
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.move_down_button_));
-  EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.remove_button_));
+  EXPECT_EQ(1, page.FirstSelectedRowNum());
 
   gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(page.language_order_store_),
                                 &iter, NULL, 1);
@@ -94,9 +95,10 @@ TEST_F(LanguagesPageGtkTest, RemoveAcceptLang) {
   EXPECT_STREQ("en", WideToASCII(
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.add_button_));
+  EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.remove_button_));
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.move_up_button_));
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.move_down_button_));
-  EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.remove_button_));
+  EXPECT_EQ(0, page.FirstSelectedRowNum());
 
   gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(page.language_order_store_),
                                 &iter, NULL, 0);
@@ -111,9 +113,10 @@ TEST_F(LanguagesPageGtkTest, RemoveAcceptLang) {
   EXPECT_STREQ("", WideToASCII(
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
   EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.add_button_));
+  EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.remove_button_));
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.move_up_button_));
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.move_down_button_));
-  EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.remove_button_));
+  EXPECT_EQ(-1, page.FirstSelectedRowNum());
 }
 
 TEST_F(LanguagesPageGtkTest, RemoveMultipleAcceptLang) {
@@ -135,7 +138,8 @@ TEST_F(LanguagesPageGtkTest, RemoveMultipleAcceptLang) {
   EXPECT_STREQ("English,Spanish", GetDisplayedLangs(page).c_str());
   EXPECT_STREQ("en,es", WideToASCII(
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
-  EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.remove_button_));
+  EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(page.remove_button_));
+  EXPECT_EQ(1, page.FirstSelectedRowNum());
 
   gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(page.language_order_store_),
                                 &iter, NULL, 1);
@@ -150,6 +154,7 @@ TEST_F(LanguagesPageGtkTest, RemoveMultipleAcceptLang) {
   EXPECT_STREQ("", WideToASCII(
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)).c_str());
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(page.remove_button_));
+  EXPECT_EQ(-1, page.FirstSelectedRowNum());
 }
 
 TEST_F(LanguagesPageGtkTest, MoveAcceptLang) {

@@ -385,10 +385,19 @@ void LanguagesPageGtk::OnRemoveButtonClicked(GtkButton* button,
   g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
   g_list_free(list);
 
+  int selected_row = 0;
   for (std::set<int>::reverse_iterator selected = selected_rows.rbegin();
        selected != selected_rows.rend(); ++selected) {
     languages_page->language_order_table_model_->Remove(*selected);
+    selected_row = *selected;
   }
+  int row_count = languages_page->language_order_table_model_->RowCount();
+  if (row_count <= 0)
+    return;
+  if (selected_row >= row_count)
+    selected_row = row_count - 1;
+  gtk_tree::SelectAndFocusRowNum(selected_row,
+      GTK_TREE_VIEW(languages_page->language_order_tree_));
 }
 
 // static
