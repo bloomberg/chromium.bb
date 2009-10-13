@@ -344,10 +344,6 @@ int ChromeMain(int argc, char** argv) {
 #else
   CommandLine::Init(argc, argv);
 #endif
-#if defined(OS_LINUX)
-  // Set up CommandLine::SetProcTitle() support.
-  CommandLine::SetTrueArgv(argv);
-#endif
 
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   std::wstring process_type =

@@ -104,6 +104,9 @@ void setproctitle(const char* fmt, ...) {
 // A version of this built into glibc would not need this function, since
 // it could stash the argv pointer in __libc_start_main(). But we need it.
 void setproctitle_init(char** main_argv) {
+  if (g_main_argv)
+    return;
+
   uintptr_t page_size = sysconf(_SC_PAGESIZE);
   // Check that the argv array is in fact on the same page of memory
   // as the environment array just as an added measure of protection.
