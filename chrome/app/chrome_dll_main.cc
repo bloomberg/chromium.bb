@@ -364,8 +364,8 @@ int ChromeMain(int argc, char** argv) {
   if (parsed_command_line.HasSwitch("help") ||
       parsed_command_line.HasSwitch("h")) {
     FilePath binary(parsed_command_line.argv()[0]);
-    int ret = execlp("man", "man", binary.BaseName().value().c_str(), NULL);
-    LOG(FATAL) << "execlp failed: " << strerror(ret);
+    execlp("man", "man", binary.BaseName().value().c_str(), NULL);
+    PLOG(FATAL) << "execlp failed";
   }
 #endif
 

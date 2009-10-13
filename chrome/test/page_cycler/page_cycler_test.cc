@@ -52,7 +52,7 @@ rlim_t GetFileDescriptorLimit(void) {
   if (getrlimit(RLIMIT_NOFILE, &limits) == 0) {
     return limits.rlim_cur;
   }
-  LOG(ERROR) << "Failed to get file descriptor limit: " << strerror(errno);
+  PLOG(ERROR) << "Failed to get file descriptor limit";
   return 0;
 }
 
@@ -65,10 +65,10 @@ void SetFileDescriptorLimit(rlim_t max_descriptors) {
       limits.rlim_cur = std::min(max_descriptors, limits.rlim_max);
     }
     if (setrlimit(RLIMIT_NOFILE, &limits) != 0) {
-      LOG(ERROR) << "Failed to set file descriptor limit: " << strerror(errno);
+      PLOG(ERROR) << "Failed to set file descriptor limit";
     }
   } else {
-    LOG(ERROR) << "Failed to get file descriptor limit: " << strerror(errno);
+    PLOG(ERROR) << "Failed to get file descriptor limit";
   }
 }
 

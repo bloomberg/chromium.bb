@@ -6,6 +6,7 @@
 
 #include <errno.h>
 
+#include "base/safe_strerror_posix.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 typedef testing::Test PipeReaderTest;
@@ -20,7 +21,7 @@ TEST_F(PipeReaderTest, SuccessfulReadTest) {
   pid_t pID = fork();
   if (pID == 0) {
     int pipe = open(pipe_name.c_str(), O_WRONLY);
-    EXPECT_NE(pipe, -1) << strerror(errno);
+    EXPECT_NE(pipe, -1) << safe_strerror(errno);
     write(pipe, line, strlen(line));
     close(pipe);
     exit(1);
@@ -46,7 +47,7 @@ TEST_F(PipeReaderTest, SuccessfulMultiLineReadTest) {
   pid_t pID = fork();
   if (pID == 0) {
     int pipe = open(pipe_name.c_str(), O_WRONLY);
-    EXPECT_NE(pipe, -1) << strerror(errno);
+    EXPECT_NE(pipe, -1) << safe_strerror(errno);
     write(pipe, line.c_str(), line.length());
     close(pipe);
     exit(1);
@@ -79,7 +80,7 @@ TEST_F(PipeReaderTest, SuccessfulMultiLineReadNoEndingNewlineTest) {
   pid_t pID = fork();
   if (pID == 0) {
     int pipe = open(pipe_name.c_str(), O_WRONLY);
-    EXPECT_NE(pipe, -1) << strerror(errno);
+    EXPECT_NE(pipe, -1) << safe_strerror(errno);
     write(pipe, line.c_str(), line.length());
     close(pipe);
     exit(1);

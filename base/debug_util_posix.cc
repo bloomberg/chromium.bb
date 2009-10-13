@@ -21,6 +21,7 @@
 #include "base/compat_execinfo.h"
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"
+#include "base/safe_strerror_posix.h"
 #include "base/scoped_ptr.h"
 #include "base/string_piece.h"
 
@@ -150,7 +151,7 @@ void StackTrace::OutputToStream(std::ostream* os) {
   // If we can't retrieve the symbols, print an error and just dump the raw
   // addresses.
   if (trace_symbols.get() == NULL) {
-    (*os) << "Unable get symbols for backtrace (" << strerror(errno)
+    (*os) << "Unable get symbols for backtrace (" << safe_strerror(errno)
           << "). Dumping raw addresses in trace:\n";
     for (int i = 0; i < count_; ++i) {
       (*os) << "\t" << trace_[i] << "\n";

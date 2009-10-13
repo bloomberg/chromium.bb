@@ -211,10 +211,10 @@ void SetFileDescriptorLimit(unsigned int max_descriptors) {
     }
     limits.rlim_cur = new_limit;
     if (setrlimit(RLIMIT_NOFILE, &limits) != 0) {
-      LOG(INFO) << "Failed to set file descriptor limit: " << strerror(errno);
+      PLOG(INFO) << "Failed to set file descriptor limit";
     }
   } else {
-    LOG(INFO) << "Failed to get file descriptor limit: " << strerror(errno);
+    PLOG(INFO) << "Failed to get file descriptor limit";
   }
 }
 #endif

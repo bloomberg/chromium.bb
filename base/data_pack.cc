@@ -50,8 +50,7 @@ DataPack::~DataPack() {
 bool DataPack::Load(const FilePath& path) {
   mmap_.reset(new file_util::MemoryMappedFile);
   if (!mmap_->Initialize(path)) {
-    CHECK(false) << "Failed to mmap " << path.value() << " errno: " <<
-        strerror(errno);
+    PCHECK(false) << "Failed to mmap " << path.value();
   }
 
   // Parse the header of the file.

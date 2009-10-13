@@ -52,6 +52,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/safe_strerror_posix.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -110,7 +111,7 @@ int SetCloseOnExec(int fd) {
 // Close a socket and check return value.
 void CloseSocket(int fd) {
   int rv = HANDLE_EINTR(close(fd));
-  DCHECK_EQ(0, rv) << "Error closing socket: " << strerror(errno);
+  DCHECK_EQ(0, rv) << "Error closing socket: " << safe_strerror(errno);
 }
 
 // Write a message to a socket fd.
@@ -128,7 +129,7 @@ bool WriteToSocket(int fd, const char *message, size_t length) {
         LOG(ERROR) << "ProcessSingleton would block on write(), so it gave up.";
         return false;
       }
-      LOG(ERROR) << "write() failed: " << strerror(errno);
+      PLOG(ERROR) << "write() failed";
       return false;
     }
     bytes_written += rv;
@@ -167,7 +168,7 @@ ssize_t ReadFromSocket(int fd, char *buf, size_t bufsize, int timeout) {
     ssize_t rv = HANDLE_EINTR(read(fd, buf + bytes_read, bufsize - bytes_read));
     if (rv < 0) {
       if (errno != EAGAIN && errno != EWOULDBLOCK) {
-        LOG(ERROR) << "read() failed: " << strerror(errno);
+        PLOG(ERROR) << "read() failed";
         return rv;
       } else {
         // It would block, so we just return what has been read.
@@ -187,7 +188,7 @@ ssize_t ReadFromSocket(int fd, char *buf, size_t bufsize, int timeout) {
 // Set up a socket and sockaddr appropriate for messaging.
 void SetupSocket(const std::string& path, int* sock, struct sockaddr_un* addr) {
   *sock = socket(PF_UNIX, SOCK_STREAM, 0);
-  CHECK(*sock >= 0) << "socket() failed: " << strerror(errno);
+  PCHECK(*sock >= 0) << "socket() failed";
 
   int rv = SetNonBlocking(*sock);
   DCHECK_EQ(0, rv) << "Failed to make non-blocking socket.";
@@ -216,7 +217,7 @@ std::string ReadLink(const std::string& path) {
       buf[len] = '\0';
       return std::string(buf);
     } else {
-      LOG(ERROR) << "readlink(" << path << ") failed: " << strerror(errno);
+      PLOG(ERROR) << "readlink(" << path << ") failed";
     }
   }
 
@@ -227,7 +228,7 @@ std::string ReadLink(const std::string& path) {
 bool UnlinkPath(const std::string& path) {
   int rv = unlink(path.c_str());
   if (rv < 0 && errno != ENOENT)
-    LOG(ERROR) << "Failed to unlink " << path << ": " << strerror(errno);
+    PLOG(ERROR) << "Failed to unlink " << path;
 
   return rv == 0;
 }
@@ -304,7 +305,7 @@ bool KillProcessByLockPath(const std::string& path) {
   if (pid >= 0) {
     // TODO(james.su@gmail.com): Is SIGKILL ok?
     int rv = kill(static_cast<base::ProcessHandle>(pid), SIGKILL);
-    DCHECK_EQ(0, rv) << "Error killing process:" << strerror(errno);
+    DCHECK_EQ(0, rv) << "Error killing process: " << safe_strerror(errno);
     return true;
   }
 
@@ -453,7 +454,7 @@ void ProcessSingleton::LinuxWatcher::OnFileCanReadWithoutBlocking(int fd) {
   int connection_socket = HANDLE_EINTR(accept(
       fd, reinterpret_cast<sockaddr*>(&from), &from_len));
   if (-1 == connection_socket) {
-    LOG(ERROR) << "accept() failed: " << strerror(errno);
+    PLOG(ERROR) << "accept() failed";
     return;
   }
   int rv = SetNonBlocking(connection_socket);
@@ -542,7 +543,7 @@ void ProcessSingleton::LinuxWatcher::SocketReader::OnFileCanReadWithoutBlocking(
         read(fd, buf_ + bytes_read_, sizeof(buf_) - bytes_read_));
     if (rv < 0) {
       if (errno != EAGAIN && errno != EWOULDBLOCK) {
-        LOG(ERROR) << "read() failed: " << strerror(errno);
+        PLOG(ERROR) << "read() failed";
         CloseSocket(fd);
         return;
       } else {
@@ -606,7 +607,7 @@ void ProcessSingleton::LinuxWatcher::SocketReader::FinishWithACK(
   }
 
   if (shutdown(fd_, SHUT_WR) < 0)
-    LOG(ERROR) << "shutdown() failed: " << strerror(errno);
+    PLOG(ERROR) << "shutdown() failed";
 
   parent_->RemoveSocketReader(this);
   // We are deleted beyond this point.
@@ -684,7 +685,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
   }
 
   if (shutdown(socket, SHUT_WR) < 0)
-    LOG(ERROR) << "shutdown() failed: " << strerror(errno);
+    PLOG(ERROR) << "shutdown() failed";
 
   // Read ACK message from the other process. It might be blocked for a certain
   // timeout, to make sure the other process has enough time to return ACK.
@@ -735,8 +736,8 @@ void ProcessSingleton::Create() {
       // startup race.
       // TODO(mattm): If the other instance is on the same host, we could try
       // to notify it rather than just failing.
-      LOG(FATAL) << "Failed to create " << lock_path_.value() << ": "
-                 << strerror(saved_errno);
+      errno = saved_errno;
+      PLOG(FATAL) << "Failed to create " << lock_path_.value();
     }
   }
 
@@ -745,7 +746,7 @@ void ProcessSingleton::Create() {
   UnlinkPath(socket_path_.value());
 
   if (bind(sock, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0) {
-    LOG(ERROR) << "bind() failed: " << strerror(errno);
+    PLOG(ERROR) << "bind() failed";
     LOG(ERROR) << "SingletonSocket failed to create a socket in your home "
                   "directory. This means that running multiple instances of "
                   "the Chrome binary will start multiple browser process "
@@ -755,7 +756,7 @@ void ProcessSingleton::Create() {
   }
 
   if (listen(sock, 5) < 0)
-    NOTREACHED() << "listen failed: " << strerror(errno);
+    NOTREACHED() << "listen failed: " << safe_strerror(errno);
 
   // Normally we would use ChromeThread, but the IO thread hasn't started yet.
   // Using g_browser_process, we start the thread so we can listen on the

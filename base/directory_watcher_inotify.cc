@@ -209,7 +209,7 @@ class InotifyReaderTask : public Task {
         HANDLE_EINTR(select(std::max(inotify_fd_, shutdown_fd_) + 1,
                             &rfds, NULL, NULL, NULL));
       if (select_result < 0) {
-        DLOG(WARNING) << "select failed: " << strerror(errno);
+        DPLOG(WARNING) << "select failed";
         return;
       }
 
@@ -222,7 +222,7 @@ class InotifyReaderTask : public Task {
                                             &buffer_size));
 
       if (ioctl_result != 0) {
-        DLOG(WARNING) << "ioctl failed: " << strerror(errno);
+        DPLOG(WARNING) << "ioctl failed";
         return;
       }
 
@@ -232,7 +232,7 @@ class InotifyReaderTask : public Task {
                                              buffer_size));
 
       if (bytes_read < 0) {
-        DLOG(WARNING) << "read from inotify fd failed: " << strerror(errno);
+        DPLOG(WARNING) << "read from inotify fd failed";
         return;
       }
 

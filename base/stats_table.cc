@@ -257,14 +257,8 @@ StatsTable::StatsTable(const std::string& name, int max_threads,
 
   impl_ = StatsTablePrivate::New(name, table_size, max_threads, max_counters);
 
-  // TODO(port): clean up this error reporting.
-#if defined(OS_WIN)
   if (!impl_)
-    LOG(ERROR) << "StatsTable did not initialize:" << GetLastError();
-#elif defined(OS_POSIX)
-  if (!impl_)
-    LOG(ERROR) << "StatsTable did not initialize:" << strerror(errno);
-#endif
+    PLOG(ERROR) << "StatsTable did not initialize";
 }
 
 StatsTable::~StatsTable() {

@@ -126,7 +126,7 @@ int ChannelNameToFD(const std::string& channel_id) {
   if (fd != -1) {
     int dup_fd = dup(fd);
     if (dup_fd < 0)
-      LOG(FATAL) << "dup(" << fd << "): " << strerror(errno);
+      PLOG(FATAL) << "dup(" << fd << ")";
     return dup_fd;
   }
 
@@ -264,9 +264,9 @@ Channel::ChannelImpl::ChannelImpl(const std::string& channel_id, Mode mode,
       factory_(this) {
   if (!CreatePipe(channel_id, mode)) {
     // The pipe may have been closed already.
-    LOG(WARNING) << "Unable to create pipe named \"" << channel_id <<
-                    "\" in " << (mode == MODE_SERVER ? "server" : "client") <<
-                    " mode error(" << strerror(errno) << ").";
+    PLOG(WARNING) << "Unable to create pipe named \"" << channel_id
+                  << "\" in " << (mode == MODE_SERVER ? "server" : "client")
+                  << " mode";
   }
 }
 
@@ -284,14 +284,14 @@ void RemoveAndCloseChannelSocket(const std::string& name) {
 bool SocketPair(int* fd1, int* fd2) {
   int pipe_fds[2];
   if (socketpair(AF_UNIX, SOCK_STREAM, 0, pipe_fds) != 0) {
-    LOG(ERROR) << "socketpair(): " << strerror(errno);
+    PLOG(ERROR) << "socketpair()";
     return false;
   }
 
   // Set both ends to be non-blocking.
   if (fcntl(pipe_fds[0], F_SETFL, O_NONBLOCK) == -1 ||
       fcntl(pipe_fds[1], F_SETFL, O_NONBLOCK) == -1) {
-    LOG(ERROR) << "fcntl(O_NONBLOCK): " << strerror(errno);
+    PLOG(ERROR) << "fcntl(O_NONBLOCK)";
     HANDLE_EINTR(close(pipe_fds[0]));
     HANDLE_EINTR(close(pipe_fds[1]));
     return false;
@@ -448,7 +448,7 @@ bool Channel::ChannelImpl::ProcessIncomingMessages() {
           return false;
 #endif  // defined(OS_MACOSX)
         } else {
-          LOG(ERROR) << "pipe error (" << pipe_ << "): " << strerror(errno);
+          PLOG(ERROR) << "pipe error (" << pipe_ << ")";
           return false;
         }
       } else if (bytes_read == 0) {
@@ -811,7 +811,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
         return false;
       }
 #endif  // OS_MACOSX
-      LOG(ERROR) << "pipe error on " << fd_written << ": " << strerror(errno);
+      PLOG(ERROR) << "pipe error on " << fd_written;
       return false;
     }
 
