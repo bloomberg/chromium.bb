@@ -1,0 +1,45 @@
+#!/bin/sh
+
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Using codesign, sign the application.  Inner components are signed as needed,
+# then the outermost bundle is signed, and everything is verified.
+
+set -e
+
+if [ $# -ne 3 ] ; then
+  echo "usage: ${0} APP_PATH CODESIGN_KEYCHAIN CODESIGN_ID" >& 2
+  exit 1
+fi
+
+APP_PATH="${1}"
+CODESIGN_KEYCHAIN="${2}"
+CODESIGN_ID="${3}"
+
+# An .app bundle to be signed can be signed directly.  Signging a framework
+# bundle requires that each version within be signed individually.
+# http://developer.apple.com/mac/library/technotes/tn2007/tn2206.html#TNTAG13
+
+BROWSER_APP="${APP_PATH}"
+FRAMEWORK="${BROWSER_APP}/Contents/Frameworks/@MAC_PRODUCT_NAME@ Framework.framework/Versions/A"
+HELPER_APP="${BROWSER_APP}/Contents/Resources/@MAC_PRODUCT_NAME@ Helper.app"
+
+echo "${0}: signing..."
+
+# Sign the outer .app last so that its seal includes the signed inner
+# components.
+
+codesign -s "${CODESIGN_ID}" --keychain "${CODESIGN_KEYCHAIN}" "${FRAMEWORK}"
+codesign -s "${CODESIGN_ID}" --keychain "${CODESIGN_KEYCHAIN}" "${HELPER_APP}"
+codesign -s "${CODESIGN_ID}" --keychain "${CODESIGN_KEYCHAIN}" "${BROWSER_APP}"
+
+# Verify everything to ensure that signing the outer bundle didn't break an
+# inner bundle.
+
+echo "${0}: verifying..."
+
+codesign -v "${FRAMEWORK}"
+codesign -v "${HELPER_APP}"
+codesign -v "${BROWSER_APP}"
