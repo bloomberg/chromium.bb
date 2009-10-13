@@ -109,6 +109,16 @@ def ShutDownHTTPServer(server_process):
                    stdout=subprocess.PIPE,
                    stderr=subprocess.PIPE).wait()
 
+def KillProcess(pid):
+  """Forcefully kill the process.
+
+  Args:
+    pid: The id of the process to be killed.
+  """
+  subprocess.call(('taskkill.exe', '/f', '/pid', str(pid)),
+                  stdout=subprocess.PIPE,
+                  stderr=subprocess.PIPE)
+
 def KillAllTestShells(self):
   """Kills all instances of the test_shell binary currently running."""
   subprocess.Popen(('taskkill.exe', '/f', '/im', 'test_shell.exe'),

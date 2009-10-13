@@ -117,6 +117,14 @@ def ShutDownHTTPServer(server_process):
   else:
     os.kill(server_process.pid, signal.SIGTERM)
 
+def KillProcess(pid):
+  """Forcefully kill the process.
+
+  Args:
+    pid: The id of the process to be killed.
+  """
+  os.kill(pid, signal.SIGKILL)
+
 def KillAllTestShells():
    """Kills all instances of the test_shell binary currently running."""
    subprocess.Popen(('killall', '-TERM', 'test_shell'),

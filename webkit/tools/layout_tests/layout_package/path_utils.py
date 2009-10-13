@@ -183,21 +183,26 @@ def FilenameToUri(full_path):
   """Convert a test file to a URI."""
   LAYOUTTEST_HTTP_DIR = "LayoutTests/http/tests/"
   PENDING_HTTP_DIR    = "pending/http/tests/"
+  LAYOUTTEST_WEBSOCKET_DIR = "LayoutTests/websocket/tests/"
 
   relative_path = _WinPathToUnix(RelativeTestFilename(full_path))
   port = None
   use_ssl = False
 
-  # LayoutTests/http/tests/ run off port 8000 and ssl/ off 8443
   if relative_path.startswith(LAYOUTTEST_HTTP_DIR):
+    # LayoutTests/http/tests/ run off port 8000 and ssl/ off 8443
     relative_path = relative_path[len(LAYOUTTEST_HTTP_DIR):]
     port = 8000
-    # pending/http/tests/ run off port 9000 and ssl/ off 9443
   elif relative_path.startswith(PENDING_HTTP_DIR):
+    # pending/http/tests/ run off port 9000 and ssl/ off 9443
     relative_path = relative_path[len(PENDING_HTTP_DIR):]
     port = 9000
-    # chrome/http/tests run off of port 8081 with the full path
+  elif relative_path.startswith(LAYOUTTEST_WEBSOCKET_DIR):
+    # LayoutTests/websocket/tests/ run off port 8880
+    relative_path = relative_path[len(LAYOUTTEST_WEBSOCKET_DIR):]
+    port = 8880
   elif relative_path.find("/http/") >= 0:
+    # chrome/http/tests run off of port 8081 with the full path
     port = 8081
 
   # Make LayoutTests/http/tests/local run as local files. This is to mimic the
