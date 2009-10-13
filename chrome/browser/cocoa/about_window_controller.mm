@@ -189,10 +189,13 @@ NSAttributedString* BuildAboutWindowLegalTextBlock() {
 
 @implementation AboutWindowController
 
-- (id)initWithWindowNibName:(NSString*)nibName {
-  NSString* nibpath = [mac_util::MainAppBundle() pathForResource:nibName
+- (id)initWithProfile:(Profile*)profile {
+  NSString* nibpath = [mac_util::MainAppBundle() pathForResource:@"About"
                                                           ofType:@"nib"];
   self = [super initWithWindowNibPath:nibpath owner:self];
+  if (self) {
+    profile_ = profile;
+  }
   return self;
 }
 
@@ -404,9 +407,12 @@ NSAttributedString* BuildAboutWindowLegalTextBlock() {
 - (BOOL)textView:(NSTextView *)aTextView
    clickedOnLink:(id)link
          atIndex:(NSUInteger)charIndex {
-  BrowserList::GetLastActive()->
-    OpenURL(GURL([link UTF8String]), GURL(), NEW_WINDOW,
-            PageTransition::LINK);
+  // We always create a new window, so there's no need to try to re-use
+  // an existing one just to pass in the NEW_WINDOW disposition.
+  Browser* browser = Browser::Create(profile_);
+  if (browser)
+    browser->OpenURL(GURL([link UTF8String]), GURL(), NEW_WINDOW,
+                     PageTransition::LINK);
   return YES;
 }
 

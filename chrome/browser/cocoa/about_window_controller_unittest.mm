@@ -18,7 +18,7 @@ class AboutWindowControllerTest : public PlatformTest {
   virtual void SetUp() {
     PlatformTest::SetUp();
     about_window_controller_.reset([[AboutWindowController alloc]
-                                    initWithWindowNibName:@"About"]);
+                                    initWithProfile:nil]);
     // make sure the nib is loaded
     [about_window_controller_ window];
   }

@@ -646,7 +646,7 @@
   // Otherwise bring up our special dialog (e.g. with an auto-update button).
   if (!aboutController_) {
     aboutController_.reset([[AboutWindowController alloc]
-                             initWithWindowNibName:@"About"]);
+                             initWithProfile:[self defaultProfile]]);
     if (!aboutController_) {
       // If we get here something is wacky.  I managed to do it when
       // testing by explicitly forcing an auto-update to an older

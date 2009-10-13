@@ -10,6 +10,7 @@
 #import "chrome/app/keystone_glue.h"
 
 @class BackgroundTileView;
+class Profile;
 
 // Returns an NSAttributedString that contains the locale specific legal text.
 NSAttributedString* BuildAboutWindowLegalTextBlock();
@@ -33,10 +34,15 @@ NSAttributedString* BuildAboutWindowLegalTextBlock();
   IBOutlet NSButton* updateNowButton_;
 
   BOOL updateTriggered_;  // Has an update ever been triggered?
+  Profile* profile_;  // Weak, probably the default profile.
 
   // The version we got told about by Keystone
   scoped_nsobject<NSString> newVersionAvailable_;
 }
+
+// Initialize the controller with the given profile, but does not show it.
+// Callers still need to call showWindow: to put it on screen.
+- (id)initWithProfile:(Profile*)profile;
 
 // Trigger an update right now, as initiated by a button.
 - (IBAction)updateNow:(id)sender;
