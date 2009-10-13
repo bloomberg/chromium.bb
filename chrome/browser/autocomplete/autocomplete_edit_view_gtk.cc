@@ -1199,13 +1199,15 @@ void AutocompleteEditViewGtk::EmphasizeURLComponents() {
   // Emphasize the scheme for security UI display purposes (if necessary).
   if (!model_->user_input_in_progress() && parts.scheme.is_nonempty() &&
       (scheme_security_level_ != ToolbarModel::NORMAL)) {
+    CharRange scheme_range = CharRange(GetUTF8Offset(text, parts.scheme.begin),
+                                       GetUTF8Offset(text, parts.scheme.end()));
+    ItersFromCharRange(scheme_range, &start, &end);
+
     if (scheme_security_level_ == ToolbarModel::SECURE) {
       gtk_text_buffer_apply_tag(text_buffer_, secure_scheme_tag_,
                                 &start, &end);
     } else {
-      strikethrough_ = CharRange(GetUTF8Offset(text, parts.scheme.begin),
-                                 GetUTF8Offset(text, parts.scheme.end()));
-      ItersFromCharRange(strikethrough_, &start, &end);
+      strikethrough_ = scheme_range;
       // When we draw the strikethrough, we don't want to include the ':' at the
       // end of the scheme.
       strikethrough_.cp_max--;
