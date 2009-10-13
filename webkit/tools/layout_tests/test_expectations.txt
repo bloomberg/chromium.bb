@@ -2830,7 +2830,8 @@ BUG11613 MAC : LayoutTests/http/tests/security/cross-frame-access-call.html = FA
 // WebKit tests regressions 20529:20532
 BUG16675 MAC : LayoutTests/fast/dynamic/flash-replacement-test.html = FAIL
 BUG16675 MAC : LayoutTests/fast/loader/loadInProgress.html = FAIL
-BUG16675 MAC DEBUG : LayoutTests/plugins/return-error-from-new-stream-callback-in-full-frame-plugin.html = FAIL
+// This started crashing regularly as a result of r28798 (see bug 24720).
+BUG16675 MAC DEBUG : LayoutTests/plugins/return-error-from-new-stream-callback-in-full-frame-plugin.html = FAIL CRASH
 
 // WebKit merge 42738:45840
 // New test, needs baseline.
