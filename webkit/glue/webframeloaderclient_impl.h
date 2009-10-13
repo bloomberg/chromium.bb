@@ -6,10 +6,10 @@
 #define WEBKIT_GLUE_WEBFRAMELOADERCLIENT_IMPL_H_
 
 #include "FrameLoaderClient.h"
+#include "KURL.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>
 
-#include "googleurl/src/gurl.h"
 #include "webkit/api/public/WebNavigationPolicy.h"
 #include "webkit/glue/webview_delegate.h"
 
@@ -209,7 +209,7 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
       WebKit::WebNavigationPolicy* policy);
 
   // Called when a dummy back-forward navigation is intercepted.
-  void HandleBackForwardNavigation(const GURL&);
+  void HandleBackForwardNavigation(const WebCore::KURL&);
 
   PassOwnPtr<WebKit::WebPluginLoadObserver> GetPluginLoadObserver();
 
@@ -228,8 +228,8 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
   // and the dest URL matches that load, we know that it was the result of a
   // previous client redirect and the source should be added as a redirect.
   // Both should be empty if unused.
-  GURL expected_client_redirect_src_;
-  GURL expected_client_redirect_dest_;
+  WebCore::KURL expected_client_redirect_src_;
+  WebCore::KURL expected_client_redirect_dest_;
 
   // Contains a pointer to the plugin widget.
   WTF::RefPtr<WebKit::WebPluginContainerImpl> plugin_widget_;
