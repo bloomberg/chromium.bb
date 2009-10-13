@@ -235,14 +235,18 @@ void WebDevToolsAgentImpl::SetApuAgentEnabled(bool enable) {
   InspectorController* ic = web_view_impl_->page()->inspectorController();
   if (enable) {
     resource_tracking_was_enabled_ = ic->resourceTrackingEnabled();
-    ic->enableTimeline(false);
+    // TODO(knorton): Disabled to allow a WebKit change to go through
+    // commit-queue.
+    // ic->startTimelineProfiler();
     if (!resource_tracking_was_enabled_) {
       // TODO(knorton): Introduce some kind of agents dependency here so that
       // user could turn off resource tracking while apu agent is on.
       ic->enableResourceTracking(false);
     }
   } else {
-    ic->disableTimeline(false);
+    // TODO(knorton): Disabled to allow a WebKit change to go through
+    // commit-queue.
+    // ic->stopTimelineProfiler();
     if (!resource_tracking_was_enabled_) {
       ic->disableResourceTracking(false);
     }
