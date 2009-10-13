@@ -1695,7 +1695,8 @@ void TabContents::OnFindReply(int request_id,
 }
 
 void TabContents::GoToEntryAtOffset(int offset) {
-  controller_.GoToOffset(offset);
+  if (!delegate_ || delegate_->OnGoToEntryOffset(offset))
+    controller_.GoToOffset(offset);
 }
 
 void TabContents::GetHistoryListCount(int* back_list_count,

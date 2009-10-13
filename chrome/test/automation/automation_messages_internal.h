@@ -1119,4 +1119,10 @@ IPC_BEGIN_MESSAGES(Automation)
                              std::string /* event_name */,
                              int /* duration ms */)
 
+  // Sent by automation provider - go to history entry via automation.
+  IPC_MESSAGE_ROUTED2(AutomationMsg_RequestGoToHistoryEntryOffset,
+                             int,   // tab handle
+                             int)   // numbers of entries (negative or positive)
+
+
 IPC_END_MESSAGES(Automation)

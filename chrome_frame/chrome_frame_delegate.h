@@ -91,6 +91,7 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
                                 const std::string& cookie) {}
   virtual void OnAttachExternalTab(int tab_handle, intptr_t cookie,
                                    int disposition) {}
+  virtual void OnGoToHistoryEntryOffset(int tab_handle, int offset) {}
 };
 
 #endif  // CHROME_FRAME_CHROME_FRAME_DELEGATE_H_

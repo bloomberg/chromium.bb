@@ -218,6 +218,7 @@ END_EXEC_COMMAND_MAP()
                          int open_disposition);
 
   virtual void OnLoad(int tab_handle, const GURL& url);
+  virtual void OnGoToHistoryEntryOffset(int tab_handle, int offset);
 
   // A helper method that updates our internal navigation state
   // as well as IE's navigation state (viz Title and current URL).

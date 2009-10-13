@@ -229,6 +229,12 @@ class TabContentsDelegate {
   // Shows the repost form confirmation dialog box.
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) {}
 
+  // Allows delegate to override navigation to the history entries.
+  // Returns true to allow TabContents to continue with the default processing.
+  virtual bool OnGoToEntryOffset(int offset) {
+    return true;
+  }
+
  protected:
   ~TabContentsDelegate() {}
 

@@ -638,3 +638,13 @@ void ExternalTabContainer::Navigate(const GURL& url, const GURL& referrer) {
   tab_contents_->controller().LoadURL(url, referrer,
                                       PageTransition::START_PAGE);
 }
+
+bool ExternalTabContainer::OnGoToEntryOffset(int offset) {
+  if (load_requests_via_automation_) {
+    automation_->Send(new AutomationMsg_RequestGoToHistoryEntryOffset(
+        0, tab_handle_, offset));
+    return false;
+  }
+
+  return true;
+}

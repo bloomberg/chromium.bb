@@ -790,3 +790,16 @@ HRESULT ChromeActiveDocument::SetPageFontSize(const GUID* cmd_group_guid,
   return S_OK;
 }
 
+void ChromeActiveDocument::OnGoToHistoryEntryOffset(int tab_handle,
+                                                    int offset) {
+  DLOG(INFO) << "GoToHistoryEntryOffset " << offset;
+  ScopedComPtr<IBrowserService> browser_service;
+  DoQueryService(SID_SShellBrowser, m_spClientSite, browser_service.Receive());
+  if (browser_service) {
+    ScopedComPtr<ITravelLog> travel_log;
+    browser_service->GetTravelLog(travel_log.Receive());
+    if (travel_log) {
+      travel_log->Travel(browser_service, offset);
+    }
+  }
+}
