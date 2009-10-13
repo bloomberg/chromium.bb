@@ -96,6 +96,10 @@
     'chrome_frame': {
       'filepath': 'chrome_frame/.*',
     },
+    'nacl': {
+      'filepath': 'chrome/nacl/.*|chrome/test/nacl/.*|chrome/browser/nacl_process_host.*|chrome/common/nacl.*',
+    },
+
   },
 
   'WATCHLISTS': {
@@ -130,5 +134,6 @@
     'tests': ['phajdan.jr@chromium.org', 'tim@chromium.org'],
     'automation': ['phajdan.jr@chromium.org'],
     'chrome_frame' : ['amit@chromium.org'],
+    'nacl' : ['native-client-reviews@googlegroups.com'],
   },
 }
