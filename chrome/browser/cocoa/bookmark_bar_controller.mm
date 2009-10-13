@@ -473,7 +473,7 @@
   const BookmarkNode* parent = [self nodeFromMenuItem:sender];
   if (!parent)
     parent = bookmarkModel_->GetBookmarkBarNode();
-  BookmarkEditor::Show([[[self view] window] contentView],
+  BookmarkEditor::Show([[self view] window],
                        browser_->profile(),
                        parent,
                        nil,
