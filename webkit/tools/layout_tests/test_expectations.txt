@@ -77,7 +77,7 @@ BUG24182 SLOW WIN : LayoutTests/fast/dom/Window/webkitConvertPoint.html = PASS
 BUG24182 WIN DEBUG SLOW : LayoutTests/http/tests/loading/redirect-methods.html = PASS
 BUG24182 WIN SLOW : LayoutTests/http/tests/cache/subresource-expiration.html = PASS
 BUG24182 WIN LINUX DEBUG SLOW : LayoutTests/tables/mozilla/bugs/bug5797.html = PASS
-BUG24182 SLOW WIN LINUX : LayoutTests/svg/custom/linking-a-03-b-viewBox-transform.svg = PASS
+BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/svg/custom/linking-a-03-b-viewBox-transform.svg = PASS
 BUG24182 WIN RELEASE SLOW : LayoutTests/dom/html/level2/html/HTMLAppletElement01.html = PASS
 BUG24182 WIN DEBUG SLOW : LayoutTests/editing/deleting/delete-line-016.html = PASS
 BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/svg/hixie/perf/001.xml = PASS
@@ -119,6 +119,7 @@ BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/editing/pasteboard/smart-paste-001.h
 BUG24182 SLOW WIN RELEASE : LayoutTests/http/tests/misc/SVGFont-delayed-load.html = PASS
 BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/fast/dom/Window/window-lookup-precedence.html = PASS
 BUG24182 SLOW WIN : LayoutTests/fast/loader/local-CSS-from-local.html = PASS
+
 
 BUG18702 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS TIMEOUT
 
@@ -504,7 +505,8 @@ BUG18978 MAC : LayoutTests/http/tests/xmlhttprequest/cache-override.html = FAIL
 // LightTPD doesn't accept unknown HTTP methods
 BUG18978 SKIP : LayoutTests/http/tests/xmlhttprequest/methods-lower-case.html = TIMEOUT CRASH
 BUG18978 : LayoutTests/http/tests/xmlhttprequest/methods-async.html = TIMEOUT
-BUG18978 : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL
+BUG18978 WIN SLOW : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL
+BUG18978 MAC LINUX : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL
 // LightTPD doesn't accept unknown HTTP methods and passes CGIs a Content-Type
 // even when a request didn't send the header.
 BUG18978 WIN SLOW : LayoutTests/http/tests/xmlhttprequest/methods.html = FAIL
@@ -1401,7 +1403,7 @@ BUG10351 MAC : LayoutTests/plugins/netscape-plugin-map-data-to-src.html = FAIL
 BUG10667 MAC : chrome/plugins/get-file-url.html = TIMEOUT
 // Skip because we throw an exception before we get to dumpAsText.
 BUG10667 SKIP MAC : chrome/plugins/get-url-with-blank-target.html = FAIL
-BUG10667 MAC : chrome/plugins/multiple-plugins.html = FAIL
+BUG10667 MAC SLOW : chrome/plugins/multiple-plugins.html = FAIL
 BUG10667 MAC : chrome/plugins/nested-plugin-objects.html = FAIL
 BUG10667 MAC : chrome/plugins/refcount-leaks.html = FAIL
 BUG10667 MAC : chrome/plugins/return-npobject.html = FAIL
@@ -1528,7 +1530,8 @@ BUG10376 MAC : LayoutTests/fast/dom/isindex-002.html = FAIL
 BUG10378 MAC : LayoutTests/fast/images/embed-image.html = FAIL CRASH
 BUG10378 MAC : LayoutTests/fast/images/object-image.html = FAIL CRASH
 
-BUG10381 LINUX : LayoutTests/svg/W3C-SVG-1.1/animate-elem-03-t.svg = FAIL PASS
+BUG10381 LINUX RELEASE : LayoutTests/svg/W3C-SVG-1.1/animate-elem-03-t.svg = FAIL
+BUG10381 LINUX DEBUG SLOW : LayoutTests/svg/W3C-SVG-1.1/animate-elem-03-t.svg = FAIL
 
 // These may be similar timing issue as above.
 BUG10382 MAC RELEASE : LayoutTests/transitions/change-values-during-transition.html = FAIL PASS
@@ -1716,8 +1719,7 @@ BUG23498 MAC : LayoutTests/fast/lists/olstart.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/lists/w3-list-styles.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/multicol/column-rules-stacking.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/multicol/columns-shorthand-parsing.html = IMAGE
-BUG23498 MAC RELEASE : LayoutTests/fast/multicol/float-multicol.html = IMAGE
-BUG23498 MAC DEBUG SLOW : LayoutTests/fast/multicol/float-multicol.html = IMAGE
+BUG23498 MAC : LayoutTests/fast/multicol/float-multicol.html = IMAGE
 // BUG23498 MAC : LayoutTests/fast/multicol/positioned-with-constrained-height.html = IMAGE
 // BUG23498 MAC : LayoutTests/fast/overflow/004.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/overflow/006.html = IMAGE
@@ -2430,8 +2432,7 @@ BUG9156 MAC LINUX WIN : LayoutTests/fast/js/console-non-string-values.html = FAI
 
 // New failures from 41660:41709
 // Newly added tests.
-BUG9161 RELEASE : LayoutTests/fast/forms/basic-textareas.html = FAIL
-BUG9161 DEBUG SLOW : LayoutTests/fast/forms/basic-textareas.html = FAIL
+BUG9161 : LayoutTests/fast/forms/basic-textareas.html = FAIL
 
 // Tests that fail in debug mode on linux
 BUG10454 DEBUG LINUX SLOW : LayoutTests/svg/custom/mask-excessive-malloc.svg = CRASH
@@ -2610,7 +2611,7 @@ BUG9798 MAC : LayoutTests/svg/custom/use-instanceRoot-as-event-target.xhtml = TI
 BUG9798 LINUX RELEASE : LayoutTests/tables/mozilla/bugs/45621.html = FAIL
 BUG9798 LINUX DEBUG SLOW : LayoutTests/tables/mozilla/bugs/45621.html = FAIL
 BUG9798 WIN RELEASE : LayoutTests/tables/mozilla_expected_failures/bugs/bug85016.html = FAIL PASS
-BUG9798 WIN : LayoutTests/transitions/change-values-during-transition.html = FAIL PASS
+BUG9798 WIN SLOW : LayoutTests/transitions/change-values-during-transition.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/extra-transition.html = TIMEOUT PASS
 BUG9798 LINUX : LayoutTests/transitions/interrupt-zero-duration.html = FAIL PASS
 BUG9798 LINUX DEBUG : LayoutTests/transitions/interrupted-all-transition.html = FAIL PASS
@@ -3035,7 +3036,7 @@ BUG21141 LINUX : LayoutTests/fast/forms/select-script-onchange.html = FAIL
 BUG24232 MAC : LayoutTests/animations/change-keyframes-name.html = FAIL PASS
 
 // Flaky, not clear as of when.
-BUG21411 SLOW DEBUG: LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg = FAIL PASS
+BUG21411 DEBUG: LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg = FAIL PASS
 
 // WebKit 48217:48239
 // Fails because we don't support layoutTestController.addUserStyleSheet().
@@ -3181,7 +3182,7 @@ BUG_JOHNNYG : LayoutTests/svg/custom/linking-a-03-b-transform.svg = FAIL
 // WebKit roll 49321:49372
 BUG24454 : LayoutTests/http/tests/globalhistory/history-delegate-basic-visited-links.html = FAIL
 BUG_HCLAM WIN LINUX : LayoutTests/svg/carto.net/selectionlist.svg = CRASH
-BUG_HCLAM MAC : LayoutTests/svg/carto.net/scrollbar.svg = CRASH
+BUG_HCLAM MAC SLOW : LayoutTests/svg/carto.net/scrollbar.svg = CRASH
 
 // WebKit roll 49405:49413
 BUG_HCLAM : LayoutTests/http/tests/xmlhttprequest/logout.html = FAIL
