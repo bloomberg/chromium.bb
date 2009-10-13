@@ -4088,6 +4088,66 @@
       ],
     },
     {
+      'target_name': 'nacl_ui_tests',
+      'type': 'executable',
+      'msvs_guid': '43E2004F-CD62-4595-A8A6-31E9BFA1EE5E',
+      'dependencies': [
+        'chrome',
+        'browser',
+        'debugger',
+        'common',
+        'chrome_resources',
+        'chrome_strings',
+        'syncapi',
+        'test_support_ui',
+        '../base/base.gyp:base',
+        '../net/net.gyp:net',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
+        '../skia/skia.gyp:skia',
+        '../testing/gtest.gyp:gtest',
+        '../third_party/icu/icu.gyp:icui18n',
+        '../third_party/icu/icu.gyp:icuuc',
+        '../third_party/libxml/libxml.gyp:libxml',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'test/nacl/nacl_test.cc',
+      ],
+      'conditions': [
+        # TODO(gregoryd): This test will run on Windows only at first.
+        # Refer to ui_tests target above if any problems appear when trying
+        # to enable it on other platforms.
+        ['OS=="win"', {
+          'dependencies': [
+            'crash_service',  # run time dependency
+            'security_tests',  # run time dependency
+            'test_support_common',
+            '../google_update/google_update.gyp:google_update',
+            '../views/views.gyp:views',
+            # run time dependency
+            '../webkit/tools/test_shell/test_shell.gyp:npapi_test_plugin',
+            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+          ],
+          'link_settings': {
+            'libraries': [
+              '-lOleAcc.lib',
+            ],
+          },
+          'configurations': {
+            'Debug': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
+            },
+          },
+        }],
+      ],
+    },
+    {
       'target_name': 'unit_tests',
       'type': 'executable',
       'msvs_guid': 'ECFC2BEC-9FC0-4AD9-9649-5F26793F65FC',
