@@ -306,11 +306,6 @@ static void RunCommand(const CommandLine& cmd_line) {
 }
 
 void UITest::StartHttpServer(const FilePath& root_directory) {
-  StartHttpServerWithPort(root_directory, L"");
-}
-
-void UITest::StartHttpServerWithPort(const FilePath& root_directory,
-                                     const std::wstring& port) {
   scoped_ptr<CommandLine> cmd_line(CreateHttpServerCommandLine());
   ASSERT_TRUE(cmd_line.get());
   cmd_line->AppendSwitchWithValue("server", "start");
@@ -325,9 +320,6 @@ void UITest::StartHttpServerWithPort(const FilePath& root_directory,
     cmd_line->AppendSwitch("run_background");
 #endif
 
-  if (!port.empty()) {
-     cmd_line->AppendSwitchWithValue(L"port", port);
-  }
   RunCommand(*cmd_line.get());
 }
 
