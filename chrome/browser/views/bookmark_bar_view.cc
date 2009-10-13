@@ -499,7 +499,7 @@ void BookmarkBarView::ViewHierarchyChanged(bool is_add,
     // We may get inserted into a hierarchy with a profile - this typically
     // occurs when the bar's contents get populated fast enough that the
     // buttons are created before the bar is attached to a frame.
-    UpdateButtonColors();
+    UpdateColors();
 
     if (height() > 0) {
       // We only layout while parented. When we become parented, if our bounds
@@ -798,6 +798,11 @@ views::MenuItemView* BookmarkBarView::GetDropMenu() {
 }
 
 void BookmarkBarView::Init() {
+  // Note that at this point we're not in a hierarchy so GetThemeProvider() will
+  // return NULL.  When we're inserted into a hierarchy, we'll call
+  // UpdateColors(), which will set the appropriate colors for all the objects
+  // added in this function.
+
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   if (!kDefaultFavIcon)
@@ -822,11 +827,6 @@ void BookmarkBarView::Init() {
   instructions_ = new views::Label(
       l10n_util::GetString(IDS_BOOKMARKS_NO_ITEMS),
       rb.GetFont(ResourceBundle::BaseFont));
-
-  if (GetThemeProvider()) {
-    instructions_->SetColor(GetThemeProvider()->GetColor(
-        BrowserThemeProvider::COLOR_BOOKMARK_TEXT));
-  }
 
   AddChildView(instructions_);
 
@@ -888,7 +888,7 @@ void BookmarkBarView::Loaded(BookmarkModel* model) {
   // Create a button for each of the children on the bookmark bar.
   for (int i = 0, child_count = node->GetChildCount(); i < child_count; ++i)
     AddChildView(i, CreateBookmarkButton(node->GetChild(i)));
-  UpdateButtonColors();
+  UpdateColors();
   other_bookmarked_button_->SetEnabled(true);
 
   Layout();
@@ -935,7 +935,7 @@ void BookmarkBarView::BookmarkNodeAddedImpl(BookmarkModel* model,
   }
   DCHECK(index >= 0 && index <= GetBookmarkButtonCount());
   AddChildView(index, CreateBookmarkButton(parent->GetChild(index)));
-  UpdateButtonColors();
+  UpdateColors();
   Layout();
   SchedulePaint();
 }
@@ -1011,7 +1011,7 @@ void BookmarkBarView::BookmarkNodeChildrenReordered(BookmarkModel* model,
   // Create the new buttons.
   for (int i = 0, child_count = node->GetChildCount(); i < child_count; ++i)
     AddChildView(i, CreateBookmarkButton(node->GetChild(i)));
-  UpdateButtonColors();
+  UpdateColors();
 
   Layout();
   SchedulePaint();
@@ -1281,7 +1281,7 @@ void BookmarkBarView::Observe(NotificationType type,
 }
 
 void BookmarkBarView::ThemeChanged() {
-  UpdateButtonColors();
+  UpdateColors();
 }
 
 void BookmarkBarView::NotifyModelChanged() {
@@ -1545,17 +1545,17 @@ void BookmarkBarView::StopThrobbing(bool immediate) {
   throbbing_view_ = NULL;
 }
 
-void BookmarkBarView::UpdateButtonColors() {
+void BookmarkBarView::UpdateColors() {
   // We don't always have a theme provider (ui tests, for example).
-  if (GetThemeProvider()) {
-    for (int i = 0; i < GetBookmarkButtonCount(); i++) {
-      views::TextButton* button = GetBookmarkButton(i);
-      button->SetEnabledColor(GetThemeProvider()->GetColor(
-          BrowserThemeProvider::COLOR_BOOKMARK_TEXT));
-    }
-    other_bookmarked_button()->SetEnabledColor(GetThemeProvider()->GetColor(
-          BrowserThemeProvider::COLOR_BOOKMARK_TEXT));
-  }
+  const ThemeProvider* theme_provider = GetThemeProvider();
+  if (!theme_provider)
+    return;
+  SkColor text_color =
+      theme_provider->GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+  instructions_->SetColor(text_color);
+  for (int i = 0; i < GetBookmarkButtonCount(); ++i)
+    GetBookmarkButton(i)->SetEnabledColor(text_color);
+  other_bookmarked_button()->SetEnabledColor(text_color);
 }
 
 gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {

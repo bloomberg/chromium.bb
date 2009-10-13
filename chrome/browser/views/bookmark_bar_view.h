@@ -394,8 +394,8 @@ class BookmarkBarView : public DetachableToolbarView,
   // throbs.
   void StopThrobbing(bool immediate);
 
-  // Updates the colors for all the buttons in the bookmarks bar.
-  void UpdateButtonColors();
+  // Updates the colors for all the child objects in the bookmarks bar.
+  void UpdateColors();
 
   // This method computes the bounds for the bookmark bar items. If
   // |compute_bounds_only| = TRUE, the bounds for the items are just computed,
