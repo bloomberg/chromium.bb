@@ -18,8 +18,6 @@
 # Global settings and utility functions are currently stuffed in the
 # toplevel Makefile.  It may make sense to generate some .mk files on
 # the side to keep the the files readable.
-#
-# Should add a rule that regens the Makefiles from the gyp files.
 
 import gyp
 import gyp.common
@@ -44,6 +42,12 @@ generator_default_variables = {
   'RULE_INPUT_NAME': 'XXXNAME$(notdir $(basename $^)0',
   'CONFIGURATION_NAME': '$(BUILDTYPE)',
 }
+
+
+def ensure_directory_exists(path):
+  dir = os.path.dirname(makefile_path)
+  if dir and not os.path.exists(dir):
+    os.makedirs(dir)
 
 # Header of toplevel Makefile.
 # This should go into the build tree, but it's easier to keep it here for now.
@@ -206,20 +210,20 @@ all:
 FORCE_DO_CMD:
 
 # Suffix rules, putting all outputs into $(obj).
-$(obj)/%.o: %.c FORCE_DO_CMD
+$(obj)/%.o: $(srcdir)/%.c FORCE_DO_CMD
 	@$(call do_cmd,cc,1)
 
-$(obj)/%.o: %.s FORCE_DO_CMD
+$(obj)/%.o: $(srcdir)/%.s FORCE_DO_CMD
 	@$(call do_cmd,cc)
 
-$(obj)/%.o: %.S FORCE_DO_CMD
+$(obj)/%.o: $(srcdir)/%.S FORCE_DO_CMD
 	@$(call do_cmd,cc)
 
-$(obj)/%.o: %.cpp FORCE_DO_CMD
+$(obj)/%.o: $(srcdir)/%.cpp FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
-$(obj)/%.o: %.cc FORCE_DO_CMD
+$(obj)/%.o: $(srcdir)/%.cc FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
-$(obj)/%.o: %.cxx FORCE_DO_CMD
+$(obj)/%.o: $(srcdir)/%.cxx FORCE_DO_CMD
 	@$(call do_cmd,cxx,1)
 
 # Try building from generated source, too.
@@ -232,6 +236,12 @@ $(obj)/%.o: $(obj)/%.cpp FORCE_DO_CMD
 """)
 
 # This gets added to the very beginning of the Makefile.
+SHARED_HEADER_SRCDIR = ("""\
+# The source directory tree.
+srcdir := %s
+
+""")
+
 SHARED_HEADER_BUILDDIR_NAME = ("""\
 # The name of the builddir.
 builddir_name ?= %s
@@ -284,6 +294,13 @@ def Objectify(path):
     return path
   return '$(obj)/' + path
 
+srcdir_prefix = ''
+def Sourceify(path):
+  """Convert a path to its source directory form."""
+  if '$(' in path:
+    return path
+  return srcdir_prefix + path
+
 
 # Map from qualified target to path to output.
 target_outputs = {}
@@ -299,16 +316,26 @@ class MakefileWriter:
   Its only real entry point is Write(), and is mostly used for namespacing.
   """
 
-  def Write(self, qualified_target, output_filename, root, spec, configs):
+  def Write(self, qualified_target, base_path, output_filename, spec, configs):
+    """The main entry point: writes a .mk file for a single target.
+
+    Arguments:
+      qualified_target: target we're generating
+      base_path: path relative to source root we're building in, used to resolv
+
+                 target-relative paths
+      output_filename: output .mk file name to write
+      spec, configs: gyp info
+    """
     print 'Generating %s' % output_filename
+
+    ensure_directory_exists(output_filename)
+
     self.fp = open(output_filename, 'w')
 
     self.fp.write(header)
 
-    # Paths in gyp files are relative to the .gyp file, but we need
-    # paths relative to the source root for the master makefile.  Grab
-    # the path of the .gyp file as the base to relativize against.
-    self.path = gyp.common.RelativePath(os.path.split(output_filename)[0], root)
+    self.path = base_path
     self.target = spec['target_name']
     self.type = spec['type']
 
@@ -505,7 +532,7 @@ class MakefileWriter:
     """Write Makefile code for any 'copies' from the gyp input.
 
     extra_outputs: a list that will be filled in with any outputs of this action
-                   (used to make other pieces dependent on this action
+                   (used to make other pieces dependent on this action)
     """
     self.WriteLn('### Generated for copy rule.')
 
@@ -513,7 +540,7 @@ class MakefileWriter:
     outputs = []
     for copy in copies:
       for path in copy['files']:
-        path = self.Absolutify(path)
+        path = Sourceify(self.Absolutify(path))
         filename = os.path.split(path)[1]
         output = os.path.join(copy['destination'], filename)
         self.WriteDoCmd([output], [path], 'copy')
@@ -547,7 +574,7 @@ class MakefileWriter:
       self.WriteList(config.get('cflags_cc'), 'CFLAGS_CC_%s' % configname)
       includes = config.get('include_dirs')
       if includes:
-        includes = map(self.Absolutify, includes)
+        includes = map(Sourceify, map(self.Absolutify, includes))
       self.WriteList(includes, 'INCS_%s' % configname, prefix='-I')
 
     sources = filter(Compilable, sources)
@@ -822,8 +849,17 @@ def GenerateOutput(target_list, target_dicts, data, params):
   if not default_configuration:
     default_configuration = 'Default'
 
+  srcdir = '.'
   makefile_name = 'Makefile' + options.suffix
-  root_makefile = open(os.path.join(options.depth, makefile_name), 'w')
+  makefile_path = os.path.join(options.depth, makefile_name)
+  if options.generator_output:
+    global srcdir_prefix
+    makefile_path = os.path.join(options.generator_output, makefile_path)
+    srcdir = gyp.common.RelativePath('.', options.generator_output)
+    srcdir_prefix = '$(srcdir)/'
+  ensure_directory_exists(makefile_path)
+  root_makefile = open(makefile_path, 'w')
+  root_makefile.write(SHARED_HEADER_SRCDIR % srcdir)
   root_makefile.write(SHARED_HEADER_BUILDDIR_NAME % builddir_name)
   root_makefile.write(SHARED_HEADER.replace('__default_configuration__',
                                             default_configuration))
@@ -831,8 +867,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
   build_files = set()
   for qualified_target in target_list:
     build_file, target = gyp.common.BuildFileAndTarget('', qualified_target)[:2]
-    output_file = os.path.join(os.path.split(build_file)[0],
-                               target + options.suffix + '.mk')
     build_files.add(gyp.common.RelativePath(build_file, options.depth))
     included_files = data[build_file]['included_files']
     for included_file in included_files:
@@ -842,11 +876,25 @@ def GenerateOutput(target_list, target_dicts, data, params):
       build_files.add(gyp.common.RelativePath(
           gyp.common.UnrelativePath(included_file, build_file), options.depth))
 
+    # Paths in gyp files are relative to the .gyp file, but we want
+    # paths relative to the source root for the master makefile.  Grab
+    # the path of the .gyp file as the base to relativize against.
+    # E.g. "foo/bar" when we're constructing targets found "foo/bar/baz.gyp".
+    base_path = gyp.common.RelativePath(os.path.dirname(build_file),
+                                        options.depth)
+    # We write the .mk file in the base_path directory.
+    output_file = os.path.join(options.depth,
+                               base_path,
+                               target + options.suffix + '.mk')
+
+    if options.generator_output:
+      output_file = os.path.join(options.generator_output, output_file)
+
     spec = target_dicts[qualified_target]
     configs = spec['configurations']
 
     writer = MakefileWriter()
-    writer.Write(qualified_target, output_file, options.depth, spec, configs)
+    writer.Write(qualified_target, base_path, output_file, spec, configs)
 
     # Our root_makefile lives at the source root.  Compute the relative path
     # from there to the output_file for including.
@@ -858,7 +906,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
                         for filename in params['build_files_arg']]
     root_makefile.write("%s: %s\n\t%s\n" % (
         makefile_name,
-        ' '.join(build_files),
+        ' '.join(map(Sourceify, build_files)),
         gyp.common.EncodePOSIXShellList(
             [gyp.common.FixIfRelativePath(params['gyp_binary'], options.depth),
              '-fmake'] +
