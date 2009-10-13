@@ -54,8 +54,6 @@ std::wstring ChildProcessInfo::GetTypeNameInEnglish(
       return L"Zygote";
     case SANDBOX_HELPER_PROCESS:
       return L"Sandbox helper";
-    case NACL_PROCESS:
-      return L"Native Client module";
     case UNKNOWN_PROCESS:
       default:
       DCHECK(false) << "Unknown child process type!";
@@ -77,8 +75,6 @@ std::wstring ChildProcessInfo::GetLocalizedTitle() const {
     message_id = IDS_TASK_MANAGER_UTILITY_PREFIX;
   } else if (type_ == ChildProcessInfo::PROFILE_IMPORT_PROCESS) {
     message_id = IDS_TASK_MANAGER_PROFILE_IMPORT_PREFIX;
-  } else if (type_ == ChildProcessInfo::NACL_PROCESS) {
-    message_id = IDS_TASK_MANAGER_NACL_PREFIX;
   } else {
     DCHECK(false) << "Need localized name for child process type.";
     return title;

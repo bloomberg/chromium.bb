@@ -34,8 +34,6 @@ NaClProcessHost::NaClProcessHost(
     ResourceDispatcherHost *resource_dispatcher_host)
     : ChildProcessHost(NACL_PROCESS, resource_dispatcher_host),
       resource_dispatcher_host_(resource_dispatcher_host) {
-  // TODO(gregoryd): fix this to include the nexe name.
-  set_name(L"nexe name should appear here");
 }
 
 bool NaClProcessHost::Launch(ResourceMessageFilter* renderer_msg_filter,
