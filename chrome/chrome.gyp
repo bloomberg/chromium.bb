@@ -4028,6 +4028,7 @@
           'sources': [
             'app/keystone_glue.h',
             'app/keystone_glue.m',
+            'app/breakpad_mac_stubs.mm',
           ],
           'sources!': [
             # TODO(port)
