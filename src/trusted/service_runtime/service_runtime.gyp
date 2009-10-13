@@ -162,27 +162,21 @@
           'action_name': 'nacl_syscall_handler',
           'inputs': [
             'nacl_syscall_handlers_gen2.py',
-            'nacl_syscall_handlers_gen3.py',
             '<(syscall_handler)',
           ],
-          'conditions': [
-            ['OS=="win"', {
-              'msvs_cygwin_shell': 0,
-              'msvs_quote_cmd': 0,
-            }],
-            ['OS=="mac" or OS=="linux"', {
-              # TODO(gregoryd): replace by a Python script
-              # that does not use redirection.
-              'action' :
-                ['bash', 'nacl_syscall_handlers_gen3.sh', '<@(syscall_handler)', '<@(_outputs)']
-            }, { # OS == win
-              'action':
-                # TODO(gregoryd): find out how to generate a file
-                # in such a location that can be found in both
-                # NaCl and Chrome builds.
-                ['<@(python_exe)', 'nacl_syscall_handlers_gen3.py', '-c', '-f', '"Video|Audio|Multimedia"', '<', '<@(syscall_handler)', '>', '<@(_outputs)'],
-            }],
-          ],
+          'action':
+            # TODO(gregoryd): find out how to generate a file
+            # in such a location that can be found in both
+            # NaCl and Chrome builds.
+            ['<@(python_exe)', 'nacl_syscall_handlers_gen2.py', '-c',
+             '-f', 'Video',
+             '-f', 'Audio',
+             '-f', 'Multimedia',
+             '-i', '<@(syscall_handler)',
+             '-o', '<@(_outputs)'],
+
+          'msvs_cygwin_shell': 0,
+          'msvs_quote_cmd': 0,
           'outputs': [
             '<(INTERMEDIATE_DIR)/nacl_syscall_handlers.c',
           ],

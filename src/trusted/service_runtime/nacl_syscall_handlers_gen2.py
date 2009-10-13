@@ -32,12 +32,10 @@
 #  This script extracts  "nacl syscall" prototypes from a c file
 #  given on stdin and then produces wrapped versions of the syscalls.
 #
-#  NOTE: Please use care to maintain python 2.3 compatibility, for
-#  portability.
-#
 import getopt
 import re
 import string
+import StringIO
 import sys
 
 AUTOGEN_COMMENT = """\
@@ -177,10 +175,12 @@ def ParseFileToBeWrapped(fin, filter_regex):
 
 def main(argv):
   usage='Usage: nacl_syscall_handlers_gen2.py [-f regex] [-c] [-d]'
-  filter_regex = ""
+  filter_regex = []
   mode = "dump"
+  input = sys.stdin
+  output = sys.stdout
   try:
-    opts, pargs = getopt.getopt(argv[1:], 'hcdf:')
+    opts, pargs = getopt.getopt(argv[1:], 'hcdf:i:o:')
   except getopt.error, e:
     print >>sys.stderr, 'Illegal option:', str(e)
     print >>sys.stderr, usage
@@ -192,20 +192,27 @@ def main(argv):
     elif opt == '-c':
       mode = "codegen"
     elif opt == '-f':
-      filter_regex = val
+      filter_regex.append(val)
+    elif opt == '-i':
+      input = open(val, 'r')
+    elif opt == '-o':
+      output = open(val, 'w')
     else:
       assert 0
 
-  protos = ParseFileToBeWrapped(sys.stdin, filter_regex)
+  data = input.read()
+  protos = ParseFileToBeWrapped(StringIO.StringIO(data),
+                                "|".join(filter_regex))
   if mode == "dump":
     for f, a in  protos:
-      print f
-      print "\t", a
+      print >>output, f
+      print >>output, "\t", a
   elif mode == "header":
-    PrintHeaderFile(protos, sys.stdout)
+    PrintHeaderFile(protos, output)
   elif mode == "codegen":
-    PrintImplSkel(protos, sys.stdout)
-    PrintSyscallTableIntializer(protos, sys.stdout)
+    print >>output, data
+    PrintImplSkel(protos, output)
+    PrintSyscallTableIntializer(protos, output)
 
 
   return 0

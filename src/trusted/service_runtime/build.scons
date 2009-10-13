@@ -91,11 +91,11 @@ else:
 GENERATED='${TARGET_ROOT}/gen/native_client/src/trusted/service_runtime'
 env.Command(target=env.File(GENERATED + '/nacl_syscall_handlers.c'),
             source=[syscall_impl, 'nacl_syscall_handlers_gen2.py'],
-            action=[Copy('${TARGET}.tmp', '${SOURCE}'),
-                    Chmod('${TARGET}.tmp', 0755),
-                    Action('${PYTHON} ${SOURCES[1]}'
-                           ' ${SYSCALL_GEN_FLAGS} < ${SOURCE} >>${TARGET}.tmp'),
-                    Move('${TARGET}', '${TARGET}.tmp')])
+            action=[Action('${PYTHON} ${SOURCES[1]} ${SYSCALL_GEN_FLAGS}'
+                           ' -i ${SOURCE} -o ${TARGET}'),
+                    ],
+            )
+
 
 if env['BUILD_ARCHITECTURE'] == 'x86':
   modules_env = env.Clone()
@@ -244,7 +244,7 @@ if sdl_mode not in ['hermetic', 'local', 'none']:
 
 if sdl_mode == 'none':
   # NOTE: do not export multimedia syscalls unless we are using sdl
-  env.Append(SYSCALL_GEN_FLAGS ='-c -f "Video|Audio|Multimedia"')
+  env.Append(SYSCALL_GEN_FLAGS ='-c -f Video -f Audio -f Multimedia')
 else:
   # NOTE: explain this
   env.Tool('sdl')
