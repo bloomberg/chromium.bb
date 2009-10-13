@@ -46,6 +46,7 @@ void InstallJankometer(const CommandLine&);
 //---------------------------------------------------------------------------
 // These stubs are for BrowserProcessImpl
 
+#if !defined(OS_MACOSX)
 class ViewMsg_Print_Params;
 
 // Printing is all (obviously) not implemented.
@@ -117,6 +118,7 @@ class PrintJobManager {
 };
 
 }  // namespace printing
+#endif  // !OS_MACOSX
 
 //---------------------------------------------------------------------------
 // These stubs are for Browser

@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/mock_render_thread.h"
 
+#include "base/process_util.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_message_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -74,7 +75,7 @@ void MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget);
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToExtension,
                         OnMsgOpenChannelToExtension);
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetDefaultPrintSettings,
                         OnGetDefaultPrintSettings);
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptedPrint,
@@ -82,7 +83,13 @@ void MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidGetPrintedPagesCount,
                         OnDidGetPrintedPagesCount)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidPrintPage, OnDidPrintPage)
+#endif
+#if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DuplicateSection, OnDuplicateSection)
+#endif
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_AllocatePDFTransport,
+                        OnAllocatePDFTransport)
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -103,6 +110,7 @@ void MockRenderThread::OnMsgOpenChannelToExtension(
   *port_id = 0;
 }
 
+#if defined(OS_WIN)
 void MockRenderThread::OnDuplicateSection(
     base::SharedMemoryHandle renderer_handle,
     base::SharedMemoryHandle* browser_handle) {
@@ -110,6 +118,21 @@ void MockRenderThread::OnDuplicateSection(
   // separate a browser process from a renderer process.
   *browser_handle = renderer_handle;
 }
+#endif
+
+#if defined(OS_MACOSX)
+void MockRenderThread::OnAllocatePDFTransport(
+    size_t buffer_size, base::SharedMemoryHandle* handle) {
+  base::SharedMemory shared_buf;
+  shared_buf.Create(L"", false, false, buffer_size);
+  if (!shared_buf.Map(buffer_size)) {
+    *handle = base::SharedMemory::NULLHandle();
+    NOTREACHED() << "Cannot map PDF transport buffer";
+    return;
+  }
+  shared_buf.GiveToProcess(base::GetCurrentProcessHandle(), handle);
+}
+#endif
 
 void MockRenderThread::OnGetDefaultPrintSettings(ViewMsg_Print_Params* params) {
   if (printer_.get())

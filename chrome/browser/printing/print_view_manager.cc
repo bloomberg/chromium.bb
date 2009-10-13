@@ -24,10 +24,10 @@ using base::TimeDelta;
 namespace printing {
 
 PrintViewManager::PrintViewManager(TabContents& owner)
-    : owner_(owner),
-      waiting_to_print_(false),
+    : waiting_to_print_(false),
       printing_succeeded_(false),
-      inside_inner_message_loop_(false) {
+      inside_inner_message_loop_(false),
+      owner_(owner) {
 }
 
 PrintViewManager::~PrintViewManager() {
@@ -101,6 +101,7 @@ void PrintViewManager::DidPrintPage(
     return;
   }
 
+#if defined(OS_WIN)
   // http://msdn2.microsoft.com/en-us/library/ms535522.aspx
   // Windows 2000/XP: When a page in a spooled file exceeds approximately 350
   // MB, it can fail to print and not send an error message.
@@ -110,6 +111,7 @@ void PrintViewManager::DidPrintPage(
     owner_.Stop();
     return;
   }
+#endif
 
   base::SharedMemory shared_buf(params.metafile_data_handle, true);
   if (!shared_buf.Map(params.data_size)) {

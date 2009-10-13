@@ -38,7 +38,9 @@
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "views/focus/view_storage.h"
-#elif defined(OS_POSIX)
+#elif defined(OS_MACOSX)
+#include "chrome/browser/printing/print_job_manager.h"
+#elif defined(OS_LINUX)
 // TODO(port): Remove the temporary scaffolding as we port the above headers.
 #include "chrome/common/temp_scaffolding_stubs.h"
 #endif

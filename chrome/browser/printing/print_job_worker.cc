@@ -5,6 +5,7 @@
 #include "chrome/browser/printing/print_job_worker.h"
 
 #include "base/message_loop.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/common/notification_service.h"
 #include "printing/printed_document.h"
@@ -64,7 +65,7 @@ void PrintJobWorker::SetNewOwner(PrintJobWorkerOwner* new_owner) {
 }
 
 void PrintJobWorker::GetSettings(bool ask_user_for_settings,
-                                 HWND parent_window,
+                                 gfx::NativeWindow parent_window,
                                  int document_page_count,
                                  bool has_selection) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
@@ -74,15 +75,24 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
   // destroyed by a task.
   MessageLoop::current()->SetNestableTasksAllowed(true);
 
-  PrintingContext::Result result;
   if (ask_user_for_settings) {
-    result = printing_context_.AskUserForSettings(parent_window,
-                                                  document_page_count,
-                                                  has_selection);
+#if defined(OS_MACOSX)
+    ChromeThread::GetMessageLoop(ChromeThread::UI)->PostTask(
+        FROM_HERE, NewRunnableMethod(this, &PrintJobWorker::GetSettingsWithUI,
+                                     parent_window, document_page_count,
+                                     has_selection));
+#else
+    PrintingContext::Result result = printing_context_.AskUserForSettings(
+        parent_window, document_page_count, has_selection);
+    GetSettingsDone(result);
+#endif
   } else {
-    result = printing_context_.UseDefaultSettings();
+    PrintingContext::Result result = printing_context_.UseDefaultSettings();
+    GetSettingsDone(result);
   }
+}
 
+void PrintJobWorker::GetSettingsDone(PrintingContext::Result result) {
   // Most PrintingContext functions may start a message loop and process
   // message recursively, so disable recursive task processing.
   MessageLoop::current()->SetNestableTasksAllowed(false);
@@ -97,13 +107,29 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
       result));
 }
 
+#if defined(OS_MACOSX)
+void PrintJobWorker::GetSettingsWithUI(gfx::NativeWindow parent_window,
+                                       int document_page_count,
+                                       bool has_selection) {
+  DCHECK_EQ(ChromeThread::GetMessageLoop(ChromeThread::UI),
+            MessageLoop::current());
+
+  PrintingContext::Result result = printing_context_.AskUserForSettings(
+      parent_window, document_page_count, has_selection);
+  message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
+      this, &PrintJobWorker::GetSettingsDone, result));
+}
+#endif
+
 void PrintJobWorker::StartPrinting(PrintedDocument* new_document) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK_EQ(page_number_, PageNumber::npos());
   DCHECK_EQ(document_, new_document);
   DCHECK(document_.get());
   DCHECK(new_document->settings().Equals(printing_context_.settings()));
+#if !defined(OS_MACOSX)
   DCHECK(printing_context_.context());
+#endif
   if (!document_.get() || page_number_ != PageNumber::npos() ||
       document_ != new_document) {
     return;
@@ -130,7 +156,9 @@ void PrintJobWorker::OnDocumentChanged(PrintedDocument* new_document) {
   DCHECK_EQ(page_number_, PageNumber::npos());
   DCHECK(!new_document ||
          new_document->settings().Equals(printing_context_.settings()));
+#if !defined(OS_MACOSX)
   DCHECK(printing_context_.context());
+#endif
   if (page_number_ != PageNumber::npos())
     return;
 
@@ -144,9 +172,11 @@ void PrintJobWorker::OnNewPage() {
   }
   // message_loop() could return NULL when the print job is cancelled.
   DCHECK_EQ(message_loop(), MessageLoop::current());
+#if !defined(OS_MACOSX)
   DCHECK(printing_context_.context());
   if (!printing_context_.context())
     return;
+#endif
 
   if (page_number_ == PageNumber::npos()) {
     // Find first page to print.
@@ -199,7 +229,9 @@ void PrintJobWorker::OnDocumentDone() {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK_EQ(page_number_, PageNumber::npos());
   DCHECK(document_.get());
+#if !defined(OS_MACOSX)
   DCHECK(printing_context_.context());
+#endif
 
   if (printing_context_.DocumentDone() != PrintingContext::OK) {
     OnFailure();
@@ -221,7 +253,9 @@ void PrintJobWorker::OnDocumentDone() {
 void PrintJobWorker::SpoolPage(PrintedPage& page) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK_NE(page_number_, PageNumber::npos());
+#if !defined(OS_MACOSX)
   DCHECK(printing_context_.context());
+#endif
   // Signal everyone that the page is about to be printed.
   NotificationTask* task = new NotificationTask();
   task->Init(owner_,
@@ -236,6 +270,10 @@ void PrintJobWorker::SpoolPage(PrintedPage& page) {
     return;
   }
 
+#if defined(OS_MACOSX)
+  // Context is only valid between NewPage and PageDone, so we only check here.
+  DCHECK(printing_context_.context());
+#endif
   // Actual printing.
   document_->RenderPrintedPage(page, printing_context_.context());
 

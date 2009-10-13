@@ -310,7 +310,7 @@ TEST_F(RenderViewTest, OnSetTextDirection) {
 // Tests that printing pages work and sending and receiving messages through
 // that channel all works.
 TEST_F(RenderViewTest, OnPrintPages) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   // Lets simulate a print pages with Hello world.
   LoadHTML("<body><p>Hello World!</p></body>");
   view_->OnPrintPages();
@@ -342,7 +342,7 @@ TEST_F(RenderViewTest, OnPrintPages) {
 
 // Duplicate of OnPrintPagesTest only using javascript to print.
 TEST_F(RenderViewTest, PrintWithJavascript) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   // HTML contains a call to window.print()
   LoadHTML("<body>Hello<script>window.print()</script>World</body>");
 

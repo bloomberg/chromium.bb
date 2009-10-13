@@ -17,8 +17,8 @@ PrinterQuery::PrinterQuery()
     : ui_message_loop_(MessageLoop::current()),
       worker_(new PrintJobWorker(this)),
       is_print_dialog_box_shown_(false),
-      last_status_(PrintingContext::FAILED),
-      cookie_(PrintSettings::NewCookie()) {
+      cookie_(PrintSettings::NewCookie()),
+      last_status_(PrintingContext::FAILED) {
 }
 
 PrinterQuery::~PrinterQuery() {
@@ -62,7 +62,7 @@ PrintJobWorker* PrinterQuery::DetachWorker(PrintJobWorkerOwner* new_owner) {
 }
 
 void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
-                               HWND parent_window,
+                               gfx::NativeWindow parent_window,
                                int expected_page_count,
                                bool has_selection,
                                CancelableTask* callback) {

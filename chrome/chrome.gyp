@@ -2393,6 +2393,11 @@
           'sources': [
             'browser/net/ssl_config_service_manager_pref.cc',
           ],
+          'sources/': [
+            # Exclude most of printing.
+            ['exclude', '^browser/printing/'],
+            ['include', '^browser/printing/page_(number|range|setup)\\.cc$'],
+          ],
           'conditions': [
             ['linux_breakpad==1', {
               'sources': [
@@ -2601,10 +2606,6 @@
 
             # Exclude parts of password_manager.
             ['exclude', '^browser/password_manager/ie7_password\\.cc$'],
-
-            # Exclude most of printing.
-            ['exclude', '^browser/printing/'],
-            ['include', '^browser/printing/page_(number|range|setup)\\.cc$'],
 
             # Exclude all of rlz.
             ['exclude', '^browser/rlz/'],
@@ -3144,7 +3145,7 @@
         'renderer/print_web_view_helper.cc',
         'renderer/print_web_view_helper.h',
         'renderer/print_web_view_helper_linux.cc',
-        'renderer/print_web_view_helper_mac.cc',
+        'renderer/print_web_view_helper_mac.mm',
         'renderer/print_web_view_helper_win.cc',
         'renderer/render_process.cc',
         'renderer/render_process.h',

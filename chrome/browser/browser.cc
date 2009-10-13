@@ -960,11 +960,7 @@ void Browser::ClosePopups() {
 
 void Browser::Print() {
   UserMetrics::RecordAction(L"PrintPreview", profile_);
-#if defined(OS_WIN) || defined(OS_LINUX)
   GetSelectedTabContents()->PrintPreview();
-#else
-  NOTIMPLEMENTED();
-#endif
 }
 
 void Browser::ToggleEncodingAutoDetect() {

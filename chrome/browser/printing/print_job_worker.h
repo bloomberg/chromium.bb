@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_H__
 #define CHROME_BROWSER_PRINTING_PRINT_JOB_WORKER_H__
 
+#include "app/gfx/native_widget_types.h"
 #include "base/task.h"
 #include "base/thread.h"
 #include "printing/page_number.h"
@@ -33,7 +34,7 @@ class PrintJobWorker : public base::Thread {
   // Initializes the print settings. If |ask_user_for_settings| is true, a
   // Print... dialog box will be shown to ask the user his preference.
   void GetSettings(bool ask_user_for_settings,
-                   HWND parent_window,
+                   gfx::NativeWindow parent_window,
                    int document_page_count,
                    bool has_selection);
 
@@ -77,6 +78,17 @@ class PrintJobWorker : public base::Thread {
   // Discards the current document, the current page and cancels the printing
   // context.
   void OnFailure();
+
+#if defined(OS_MACOSX)
+  // Asks the user for print settings. Must be called on the UI thread.
+  // Mac-only since Windows can display UI from non-main threads.
+  void GetSettingsWithUI(gfx::NativeWindow parent_window,
+                         int document_page_count,
+                         bool has_selection);
+#endif
+
+  // Reports settings back to owner_.
+  void GetSettingsDone(PrintingContext::Result result);
 
   // Information about the printer setting.
   PrintingContext printing_context_;

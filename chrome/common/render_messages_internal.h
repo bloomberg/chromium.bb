@@ -1341,7 +1341,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_SYNC_MESSAGE_ROUTED0_1(ViewHostMsg_GetDefaultPrintSettings,
                              ViewMsg_Print_Params /* default_settings */)
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   // It's the renderer that controls the printing process when it is generated
   // by javascript. This step is about showing UI to the user to select the
   // final print settings. The output parameter is the same as
@@ -1350,7 +1350,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               ViewHostMsg_ScriptedPrint_Params,
                               ViewMsg_PrintPages_Params /* settings choosen by
                                                           the user*/)
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
   // WebKit and JavaScript error messages to log to the console
   // or debugger UI.
@@ -1524,6 +1524,14 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               int /* fd in browser*/)
   IPC_MESSAGE_CONTROL1(ViewHostMsg_TempFileForPrintingWritten,
                        int /* fd in browser */)
+#endif
+
+#if defined(OS_MACOSX)
+  // Asks the browser create a block of shared memory for the renderer to pass
+  // NativeMetafile data to the browser.
+  IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_AllocatePDFTransport,
+                             size_t /* buffer size */,
+                             base::SharedMemoryHandle /* browser handle */)
 #endif
 
   // Provide the browser process with information about the WebCore resource

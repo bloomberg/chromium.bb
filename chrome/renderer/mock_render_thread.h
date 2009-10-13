@@ -87,8 +87,15 @@ class MockRenderThread : public RenderThreadBase {
       const std::string& source_extension_id,
       const std::string& target_extension_id, int* port_id);
 
+#if defined(OS_WIN)
   void OnDuplicateSection(base::SharedMemoryHandle renderer_handle,
                           base::SharedMemoryHandle* browser_handle);
+#endif
+
+#if defined(OS_MACOSX)
+  void OnAllocatePDFTransport(size_t buffer_size,
+                              base::SharedMemoryHandle* handle);
+#endif
 
   // The RenderView expects default print settings.
   void OnGetDefaultPrintSettings(ViewMsg_Print_Params* setting);

@@ -55,10 +55,10 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webplugin.h"
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
-#elif defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_FREEBSD)
+#elif defined(OS_LINUX) || defined(OS_FREEBSD)
 // TODO(port) remove this.
 #include "chrome/common/temp_scaffolding_stubs.h"
 #endif
@@ -118,7 +118,7 @@ class WriteClipboardTask : public Task {
 void RenderParamsFromPrintSettings(const printing::PrintSettings& settings,
                                    ViewMsg_Print_Params* params) {
   DCHECK(params);
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   params->printable_size.SetSize(
       settings.page_setup_pixels().content_area().width(),
       settings.page_setup_pixels().content_area().height());
@@ -358,11 +358,15 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_TempFileForPrintingWritten,
                           OnTempFileForPrintingWritten)
 #endif
+#if defined(OS_MACOSX)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_AllocatePDFTransport,
+                          OnAllocatePDFTransport)
+#endif
       IPC_MESSAGE_HANDLER(ViewHostMsg_ResourceTypeStats, OnResourceTypeStats)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ResolveProxy, OnResolveProxy)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetDefaultPrintSettings,
                                       OnGetDefaultPrintSettings)
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ScriptedPrint,
                                       OnScriptedPrint)
 #endif
@@ -738,6 +742,21 @@ void ResourceMessageFilter::OnDuplicateSection(
 }
 #endif
 
+#if defined(OS_MACOSX)
+void ResourceMessageFilter::OnAllocatePDFTransport(
+    size_t buffer_size,
+    base::SharedMemoryHandle* handle) {
+  base::SharedMemory shared_buf;
+  shared_buf.Create(L"", false, false, buffer_size);
+  if (!shared_buf.Map(buffer_size)) {
+    *handle = base::SharedMemory::NULLHandle();
+    NOTREACHED() << "Cannot map PDF transport buffer";
+    return;
+  }
+  shared_buf.GiveToProcess(base::GetCurrentProcessHandle(), handle);
+}
+#endif
+
 void ResourceMessageFilter::OnResourceTypeStats(
     const WebCache::ResourceTypeStats& stats) {
   HISTOGRAM_COUNTS("WebCoreCache.ImagesSizeKB",
@@ -820,12 +839,17 @@ void ResourceMessageFilter::OnGetDefaultPrintSettingsReply(
   }
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 
 void ResourceMessageFilter::OnScriptedPrint(
     const ViewHostMsg_ScriptedPrint_Params& params,
     IPC::Message* reply_msg) {
+#if defined(OS_WIN)
   HWND host_window = gfx::NativeViewFromId(params.host_window_id);
+#elif defined(OS_MACOSX)
+  gfx::NativeWindow host_window = NULL;
+  // TODO: Get an actual window ref here, to allow a sheet-based print dialog.
+#endif
 
   scoped_refptr<printing::PrinterQuery> printer_query;
   print_job_manager_->PopPrinterQuery(params.cookie, &printer_query);
@@ -839,6 +863,7 @@ void ResourceMessageFilter::OnScriptedPrint(
       printer_query,
       params.routing_id,
       reply_msg);
+#if defined(OS_WIN)
   // Shows the Print... dialog box. This is asynchronous, only the IPC message
   // sender will hang until the Print dialog is dismissed.
   if (!host_window || !IsWindow(host_window)) {
@@ -848,6 +873,7 @@ void ResourceMessageFilter::OnScriptedPrint(
     host_window = GetAncestor(host_window, GA_ROOTOWNER);
   }
   DCHECK(host_window);
+#endif
 
   printer_query->GetSettings(printing::PrinterQuery::ASK_USER,
                              host_window,
@@ -879,7 +905,7 @@ void ResourceMessageFilter::OnScriptedPrintReply(
   }
 }
 
-#endif  // OS_WIN
+#endif  // OS_WIN || OS_MACOSX
 
 // static
 Clipboard* ResourceMessageFilter::GetClipboard() {

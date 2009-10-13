@@ -21,8 +21,8 @@ namespace printing {
 
 PrintJob::PrintJob()
     : ui_message_loop_(MessageLoop::current()),
-      worker_(),
       source_(NULL),
+      worker_(),
       settings_(),
       is_job_pending_(false),
       is_print_dialog_box_shown_(false),
@@ -284,6 +284,10 @@ void PrintJob::OnDocumentDone() {
 
 void PrintJob::ControlledWorkerShutdown() {
   DCHECK_EQ(ui_message_loop_, MessageLoop::current());
+
+  // The deadlock this code works around is specific to window messaging on
+  // Windows, so we aren't likely to need it on any other platforms.
+#if defined(OS_WIN)
   // We could easily get into a deadlock case if worker_->Stop() is used; the
   // printer driver created a window as a child of the browser window. By
   // canceling the job, the printer driver initiated dialog box is destroyed,
@@ -323,6 +327,7 @@ void PrintJob::ControlledWorkerShutdown() {
       break;
     }
   }
+#endif
 
   // Now make sure the thread object is cleaned up.
   worker_->Stop();

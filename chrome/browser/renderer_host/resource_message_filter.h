@@ -219,6 +219,12 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnAllocateTempFileForPrinting(IPC::Message* reply_msg);
   void OnTempFileForPrintingWritten(int fd_in_browser);
 #endif
+#if defined(OS_MACOSX)
+  // Used to ask the browser to allocate a block of shared memory for the
+  // renderer to send PDF across in.
+  void OnAllocatePDFTransport(size_t buffer_size,
+                              base::SharedMemoryHandle* handle);
+#endif
 
   void OnResourceTypeStats(const WebKit::WebCache::ResourceTypeStats& stats);
   static void OnResourceTypeStatsOnUIThread(WebKit::WebCache::ResourceTypeStats,
@@ -238,7 +244,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnGetDefaultPrintSettingsReply(
       scoped_refptr<printing::PrinterQuery> printer_query,
       IPC::Message* reply_msg);
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   // A javascript code requested to print the current page. The renderer host
   // have to show to the user the print dialog and returns the selected print
   // settings.

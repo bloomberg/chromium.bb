@@ -40,10 +40,10 @@
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/webpreferences.h"
 
-#if defined(OS_MACOSX) || defined(OS_LINUX)
+#if defined(OS_LINUX)
 // Remove when we've finished porting the supporting classes.
 #include "chrome/common/temp_scaffolding_stubs.h"
-#elif defined(OS_WIN)
+#elif defined(OS_WIN) || defined(OS_MACOSX)
 #include "chrome/browser/printing/print_view_manager.h"
 #endif
 
