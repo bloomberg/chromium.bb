@@ -100,6 +100,14 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
 
   NPAPI::PluginLib* plugin_lib() { return plugin_; }
 
+#if defined(OS_MACOSX)
+  // Get/Set the Mac NPAPI drawing and event models
+  int drawing_model() { return drawing_model_; }
+  void set_drawing_model(int value) { drawing_model_ = value; }
+  int event_model() { return event_model_; }
+  void set_event_model(int value) { event_model_ = value; }
+#endif
+
 #if defined(PEPPER_APIS_ENABLED)
   NPError InitializeRenderContext(NPRenderType type,
                                   NPRenderContext* context);
@@ -230,6 +238,10 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   GURL                                     get_url_;
   intptr_t                                 get_notify_data_;
   bool                                     use_mozilla_user_agent_;
+#if defined(OS_MACOSX)
+  int                                      drawing_model_;
+  int                                      event_model_;
+#endif
   MessageLoop*                             message_loop_;
   scoped_refptr<PluginStreamUrl>           plugin_data_stream_;
 

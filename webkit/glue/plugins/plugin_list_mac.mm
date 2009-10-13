@@ -76,19 +76,6 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
       return false;
   }
 
-  // For now, only load plugins that we know are working reasonably well.
-  // Anything using QuickDraw-based drawing, for example, would crash
-  // immediately.
-
-  std::string plugin_name = WideToUTF8(info.name);
-  if (!(plugin_name == "WebKit Test PlugIn" ||
-        plugin_name == "Shockwave Flash" ||
-        plugin_name == "Picasa" ||
-        plugin_name == "Google Talk Browser Plugin" ||
-        plugin_name == "Google Talk NPAPI Plugin")) {
-    return false;
-  }
-
   // Hierarchy check
   // (we're loading plugins hierarchically from Library folders, so plugins we
   //  encounter earlier must override plugins we encounter later)

@@ -787,9 +787,10 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void *value) {
        default_plugin::MISSING_PLUGIN_USER_STARTED_DOWNLOAD:
   {
     // This is a hack for the default plugin to send notification to renderer.
-    // Because we will check if the plugin is default plugin, we don't need
+    // Even though we check if the plugin is the default plugin, we still need
     // to worry about future standard change that may conflict with the
-    // variable definition.
+    // variable definition, in order to avoid duplicate case clauses in this
+    // big switch statement.
     scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
     if (plugin->plugin_lib()->plugin_info().path.value() ==
           kDefaultPluginLibraryName) {
@@ -799,19 +800,38 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void *value) {
     break;
   }
 #if defined(OS_MACOSX)
+  case NPNVpluginDrawingModel:
+  {
+    // return the drawing model that was negotiated when we initialized.
+    scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+    *reinterpret_cast<int*>(value) = plugin->drawing_model();
+    rv = NPERR_NO_ERROR;
+    break;
+  }
   case NPNVsupportsQuickDrawBool:
   {
-    // we do not support the QuickDraw drawing model
+    // we do not admit to supporting the QuickDraw drawing model.
     NPBool* supports_qd = reinterpret_cast<NPBool*>(value);
     *supports_qd = FALSE;
     rv = NPERR_NO_ERROR;
     break;
   }
   case NPNVsupportsCoreGraphicsBool:
+  case NPNVsupportsCarbonBool:
   {
-    // we do support (and in fact require) the CoreGraphics drawing model
-    NPBool* supports_cg = reinterpret_cast<NPBool*>(value);
-    *supports_cg = TRUE;
+    // we do support these drawing and event models.
+    NPBool* supports_model = reinterpret_cast<NPBool*>(value);
+    *supports_model = TRUE;
+    rv = NPERR_NO_ERROR;
+    break;
+  }
+  case NPNVsupportsOpenGLBool:
+  case NPNVsupportsCoreAnimationBool:
+  case NPNVsupportsCocoaBool:
+  {
+    // we do not support these drawing and event models.
+    NPBool* supports_model = reinterpret_cast<NPBool*>(value);
+    *supports_model = FALSE;
     rv = NPERR_NO_ERROR;
     break;
   }
@@ -884,11 +904,31 @@ NPError  NPN_SetValue(NPP id, NPPVariable variable, void *value) {
     DLOG(INFO) << "NPN_SetValue(NPPVpluginKeepLibraryInMemory) is not implemented.";
     return NPERR_GENERIC_ERROR;
 #if defined(OS_MACOSX)
-  case NPNVpluginDrawingModel:
-    // we only support the CoreGraphics drawing model
-    if (reinterpret_cast<int>(value) == NPDrawingModelCoreGraphics)
+  case NPPVpluginDrawingModel:
+  {
+    // we only admit to supporting the CoreGraphics drawing model.  The logic
+    // here is that our QuickDraw plugin support is so rudimentary that we
+    // only want to use it as a fallback to keep plugins from crashing: if
+    // a plugin knows enough to ask, we want them to use CoreGraphics.
+    int model = reinterpret_cast<int>(value);
+    if (model == NPDrawingModelCoreGraphics) {
+      plugin->set_drawing_model(model);
       return NPERR_NO_ERROR;
+    }
     return NPERR_GENERIC_ERROR;
+  }
+  case NPPVpluginEventModel:
+  {
+    // we only support the Carbon event model
+    int model = reinterpret_cast<int>(value);
+    switch (model) {
+      case NPNVsupportsCarbonBool:
+        plugin->set_event_model(model);
+        return NPERR_NO_ERROR;
+        break;
+    }
+    return NPERR_GENERIC_ERROR;
+  }
 #endif
   default:
     // TODO: implement me
