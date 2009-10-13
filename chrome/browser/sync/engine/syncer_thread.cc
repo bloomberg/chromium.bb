@@ -109,6 +109,10 @@ int UserIdleTime() {
 
 namespace browser_sync {
 
+const int SyncerThread::kDefaultShortPollIntervalSeconds = 60;
+const int SyncerThread::kDefaultLongPollIntervalSeconds = 3600;
+const int SyncerThread::kDefaultMaxPollIntervalMs = 30 * 60 * 1000;
+
 SyncerThread* SyncerThreadFactory::Create(
     ClientCommandChannel* command_channel,
     syncable::DirectoryManager* mgr,

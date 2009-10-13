@@ -132,3 +132,4 @@ class BookmarkModelWorker
 #endif  // CHROME_BROWSER_SYNC_GLUE_BOOKMARK_MODEL_WORKER_H_
 
 #endif  // CHROME_PERSONALIZATION
+

@@ -108,9 +108,9 @@ class ProfileSyncService : public NotificationObserver,
   void SetSyncSetupCompleted();
 
   // NotificationObserver implementation.
-  virtual void ProfileSyncService::Observe(NotificationType type,
-                                           const NotificationSource& source,
-                                           const NotificationDetails& details);
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // SyncFrontend implementation.
   virtual void OnBackendInitialized();

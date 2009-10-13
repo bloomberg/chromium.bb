@@ -112,3 +112,4 @@ void BookmarkModelWorker::CallDoWorkAndSignalTask::Run() {
 }  // namespace browser_sync
 
 #endif  // CHROME_PERSONALIZATION
+

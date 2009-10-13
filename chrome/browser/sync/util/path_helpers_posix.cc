@@ -2,10 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <sys/types.h>
+
 #include <algorithm>
 #include <pwd.h>
 #include <string.h>
 
+#include "base/logging.h"
+#include "base/port.h"
+#include "chrome/browser/sync/util/character_set_converters.h"
 #include "chrome/browser/sync/util/path_helpers.h"
 
 #if ((!defined(OS_LINUX)) && (!defined(OS_MACOSX)))
@@ -94,3 +99,25 @@ PathString MakePathComponentOSLegal(const PathString& component) {
   std::replace(new_name.begin(), new_name.end(), '/', ':');
   return new_name;
 }
+
+string LastPathSegment(const string& path) {
+  string str(path);
+  string::size_type final_slash = str.find_last_of('/');
+  if (string::npos != final_slash && final_slash == str.length() - 1
+      && str.length() > 1) {
+    str.erase(final_slash);
+    final_slash = str.find_last_of('/');
+  }
+  if (string::npos == final_slash)
+    return str;
+  str.erase(0, final_slash + 1);
+  return str;
+}
+
+PathString AppendSlash(const PathString& path) {
+  if ((!path.empty()) && (*path.rbegin() != '/')) {
+    return path + '/';
+  }
+  return path;
+}
+

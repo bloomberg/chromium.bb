@@ -26,8 +26,8 @@ class ChangeProcessor : public BookmarkModelObserver,
                         public ChangeProcessingInterface {
  public:
   ChangeProcessor(UnrecoverableErrorHandler* error_handler)
-      : error_handler_(error_handler), model_associator_(NULL),
-        share_handle_(NULL), running_(false), bookmark_model_(NULL) {}
+      : running_(false), error_handler_(error_handler),
+        bookmark_model_(NULL), share_handle_(NULL), model_associator_(NULL) {}
   virtual ~ChangeProcessor() { Stop(); }
 
   // Call when the processor should accept changes from either provided model

@@ -5,12 +5,13 @@
 #include "base/port.h"
 #include "chrome/browser/sync/util/path_helpers.h"
 
-#ifndef OS_LINUX
-#error Compile this file on Linux only.
+#ifndef OS_MACOSX
+#error Compile this file on Mac only.
 #endif
 
 PathString GetFullPath(const PathString& path) {
   // TODO(sync): Not sure what the base of the relative path should be on
-  // linux.
+  // OS X.
   return path;
 }
+

@@ -82,12 +82,12 @@ public:
   };
   // Server can overwrite these values via client commands.
   // Standard short poll. This is used when XMPP is off.
-  static const int kDefaultShortPollIntervalSeconds = 60;
+  static const int kDefaultShortPollIntervalSeconds;
   // Long poll is used when XMPP is on.
-  static const int kDefaultLongPollIntervalSeconds = 3600;
+  static const int kDefaultLongPollIntervalSeconds;
   // 30 minutes by default. If exponential backoff kicks in, this is the
   // longest possible poll interval.
-  static const int kDefaultMaxPollIntervalMs = 30 * 60 * 1000;
+  static const int kDefaultMaxPollIntervalMs;
 
   virtual ~SyncerThread();
 

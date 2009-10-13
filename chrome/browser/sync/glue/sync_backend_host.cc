@@ -137,8 +137,8 @@ void SyncBackendHost::Core::SetBaseRequestContext(
 
 SyncBackendHost::Core::Core(SyncBackendHost* backend)
     : host_(backend),
-      syncapi_(new sync_api::SyncManager()),
-      base_request_context_(NULL) {
+      base_request_context_(NULL),
+      syncapi_(new sync_api::SyncManager()) {
 }
 
 SyncBackendHost::Core::~Core() {
@@ -192,7 +192,7 @@ void SyncBackendHost::Core::DoInitialize(
 #if defined (OS_WIN)
   path_str = host_->sync_data_folder_path().value();
 #elif (defined(OS_LINUX) || defined(OS_MACOSX))
-  path_str = UTF8ToUTF16(sync_data_folder_path().value());
+  path_str = UTF8ToUTF16(host_->sync_data_folder_path().value());
 #endif
   success = syncapi_->Init(path_str.c_str(),
       (service_url.host() + service_url.path()).c_str(),

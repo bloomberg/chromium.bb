@@ -58,3 +58,4 @@ void TrimPathStringToValidCharacter(PathString* string) {
 }
 
 }  // namespace browser_sync
+

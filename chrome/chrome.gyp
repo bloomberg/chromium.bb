@@ -4688,6 +4688,7 @@
             'browser/views/bookmark_editor_view_unittest.cc',
             'browser/views/find_bar_host_unittest.cc',
             'browser/views/keyword_editor_view_unittest.cc',
+            'browser/views/sync/sync_setup_wizard_unittest.cc',
             'common/chrome_plugin_unittest.cc',
             'common/net/url_util_unittest.cc',
             'test/browser_with_test_window_test.cc',
@@ -5761,6 +5762,7 @@
             'chrome_resources',
             'chrome_strings',
             'debugger',
+            'syncapi',
             'test_support_common',
             '../app/app.gyp:app_base',
             '../base/base.gyp:test_support_base',
@@ -6437,6 +6439,8 @@
             'browser/sync/notifier/base/fastalloc.h',
             'browser/sync/notifier/base/linux/network_status_detector_task_linux.cc',
             'browser/sync/notifier/base/linux/time_linux.cc',
+            'browser/sync/notifier/base/mac/network_status_detector_task_mac.cc',
+            'browser/sync/notifier/base/mac/time_mac.cc',
             'browser/sync/notifier/base/nethelpers.cc',
             'browser/sync/notifier/base/nethelpers.h',
             'browser/sync/notifier/base/network_status_detector_task.cc',
@@ -6570,7 +6574,6 @@
           'dependencies': [
             '../testing/gtest.gyp:gtest',
             '../third_party/libjingle/libjingle.gyp:libjingle',
-            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
             'notifier',
             'sync',
             'sync_proto',
@@ -6578,6 +6581,9 @@
           ],
           'conditions': [
             ['OS=="win"', {
+              'dependencies': [
+                '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+              ],
               'link_settings': {
                 'libraries': [
                   '-lcrypt32.lib',
@@ -6687,7 +6693,7 @@
             'browser/sync/syncable/syncable_id.h',
             'browser/sync/util/character_set_converters.cc',
             'browser/sync/util/character_set_converters.h',
-            'browser/sync/util/character_set_converters_linux.cc',
+            'browser/sync/util/character_set_converters_posix.cc',
             'browser/sync/util/character_set_converters_win.cc',
             'browser/sync/util/closure.h',
             'browser/sync/util/compat_file.h',
@@ -6708,6 +6714,7 @@
             'browser/sync/util/highres_timer_win.h',
             'browser/sync/util/path_helpers.h',
             'browser/sync/util/path_helpers_linux.cc',
+            'browser/sync/util/path_helpers_mac.cc',
             'browser/sync/util/path_helpers_posix.cc',
             'browser/sync/util/query_helpers.cc',
             'browser/sync/util/query_helpers.h',
@@ -6732,6 +6739,11 @@
             '../third_party/libjingle/libjingle.gyp:libjingle',
             'sync_proto',
           ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/IOKit.framework',
+	    ],
+          },
           'conditions': [
             ['OS=="win"', {
               'sources' : [

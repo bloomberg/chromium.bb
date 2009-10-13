@@ -141,3 +141,4 @@ class ModelAssociator
 
 #endif  // CHROME_BROWSER_SYNC_GLUE_MODEL_ASSOCATOR_H_
 #endif  // CHROME_PERSONALIZATION
+
