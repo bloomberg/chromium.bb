@@ -1193,10 +1193,12 @@ void SavePackage::ContinueSave(SavePackageParam* param,
 
 // Static
 bool SavePackage::IsSavableURL(const GURL& url) {
-  return url.SchemeIs(chrome::kHttpScheme) ||
-         url.SchemeIs(chrome::kHttpsScheme) ||
-         url.SchemeIs(chrome::kFileScheme) ||
-         url.SchemeIs(chrome::kFtpScheme);
+  for (int i = 0; chrome::kSavableSchemes[i] != NULL; ++i) {
+    if (url.SchemeIs(chrome::kSavableSchemes[i])) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // Static

@@ -51,8 +51,15 @@ void DomOperationsTests::GetSavableResourceLinksForPage(
                                              &referrers_list,
                                              &frames_list);
 
+  const char* savable_schemes[] = {
+    "http",
+    "https",
+    "file",
+    NULL
+  };
+
   ASSERT_TRUE(webkit_glue::GetAllSavableResourceLinksForCurrentPage(
-      test_shell_->webView(), file_url, &result));
+      test_shell_->webView(), file_url, &result, savable_schemes));
   // Check all links of sub-resource
   for (std::vector<GURL>::const_iterator cit = resources_list.begin();
        cit != resources_list.end(); ++cit) {

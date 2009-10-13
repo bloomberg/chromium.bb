@@ -3111,9 +3111,11 @@ void RenderView::OnGetAllSavableResourceLinksForCurrentPage(
                                              &referrers_list,
                                              &frames_list);
 
-  if (!webkit_glue::GetAllSavableResourceLinksForCurrentPage(webview(),
-                                                             page_url,
-                                                             &result)) {
+  if (!webkit_glue::GetAllSavableResourceLinksForCurrentPage(
+          webview(),
+          page_url,
+          &result,
+          chrome::kSavableSchemes)) {
     // If something is wrong when collecting all savable resource links,
     // send empty list to embedder(browser) to tell it failed.
     referrers_list.clear();

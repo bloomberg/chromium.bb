@@ -29,6 +29,9 @@ extern const char kViewSourceScheme[];
 // Used to separate a standard scheme and the hostname: "://".
 extern const char kStandardSchemeSeparator[];
 
+// Null terminated list of schemes that are savable.
+extern const char* kSavableSchemes[];
+
 // About URLs (including schmes).
 extern const char kAboutBlankURL[];
 extern const char kAboutBrowserCrash[];

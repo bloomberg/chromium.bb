@@ -87,7 +87,8 @@ struct SavableResourcesResult {
 // will send those links to embedder. Return value indicates whether we get
 // all saved resource links successfully.
 bool GetAllSavableResourceLinksForCurrentPage(WebView* view,
-    const GURL& page_url, SavableResourcesResult* savable_resources_result);
+    const GURL& page_url, SavableResourcesResult* savable_resources_result,
+    const char** savable_schemes);
 
 // Structure used when installing a web page as an app. Populated via
 // GetApplicationInfo.

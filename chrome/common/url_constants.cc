@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdlib.h>
+
 #include "chrome/common/url_constants.h"
 
 namespace chrome {
@@ -23,6 +25,15 @@ const char kUserScriptScheme[] = "chrome-user-script";
 const char kViewSourceScheme[] = "view-source";
 
 const char kStandardSchemeSeparator[] = "://";
+
+const char* kSavableSchemes[] = {
+  kHttpScheme,
+  kHttpsScheme,
+  kFileScheme,
+  kFtpScheme,
+  kExtensionScheme,
+  NULL
+};
 
 const char kAboutBlankURL[] = "about:blank";
 const char kAboutCacheURL[] = "about:cache";

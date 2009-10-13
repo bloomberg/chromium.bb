@@ -116,20 +116,28 @@ void GetSavableResourceLinkForElement(WebCore::Element* element,
 // Get all savable resource links from current WebFrameImpl object pointer.
 void GetAllSavableResourceLinksForFrame(WebFrameImpl* current_frame,
     SavableResourcesUniqueCheck* unique_check,
-    webkit_glue::SavableResourcesResult* result) {
+    webkit_glue::SavableResourcesResult* result,
+    const char** savable_schemes) {
   // Get current frame's URL.
   const WebCore::KURL& current_frame_kurl =
       current_frame->frame()->loader()->url();
   GURL current_frame_gurl(webkit_glue::KURLToGURL(current_frame_kurl));
 
-  // If url of current frame is invalid or not standard protocol, ignore it.
+  // If url of current frame is invalid, ignore it.
   if (!current_frame_gurl.is_valid())
     return;
-  if (!current_frame_gurl.SchemeIs("http") &&
-      !current_frame_gurl.SchemeIs("https") &&
-      !current_frame_gurl.SchemeIs("ftp") &&
-      !current_frame_gurl.SchemeIs("file"))
+
+  // If url of current frame is not a savable protocol, ignore it.
+  bool is_valid_protocol = false;
+  for (int i = 0; savable_schemes[i] != NULL; ++i) {
+    if (current_frame_gurl.SchemeIs(savable_schemes[i])) {
+      is_valid_protocol = true;
+      break;
+    }
+  }
+  if (!is_valid_protocol)
     return;
+
   // If find same frame we have recorded, ignore it.
   if (!unique_check->frames_set->insert(current_frame_gurl).second)
     return;
@@ -628,7 +636,8 @@ WebFrameImpl* GetWebFrameImplFromWebViewForSpecificURL(WebView* view,
 // Get all savable resource links from current webview, include main
 // frame and sub-frame
 bool GetAllSavableResourceLinksForCurrentPage(WebView* view,
-    const GURL& page_url, SavableResourcesResult* result) {
+    const GURL& page_url, SavableResourcesResult* result,
+    const char** savable_schemes) {
   WebFrame* main_frame = view->mainFrame();
   if (!main_frame)
     return false;
@@ -655,7 +664,8 @@ bool GetAllSavableResourceLinksForCurrentPage(WebView* view,
   // Check all resource in this page, include sub-frame.
   for (int i = 0; i < static_cast<int>(frames.size()); ++i) {
     // Get current frame's all savable resource links.
-    GetAllSavableResourceLinksForFrame(frames[i], &unique_check, result);
+    GetAllSavableResourceLinksForFrame(frames[i], &unique_check, result,
+                                       savable_schemes);
   }
 
   // Since frame's src can also point to sub-resources link, so it is possible
