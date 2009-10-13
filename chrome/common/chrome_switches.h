@@ -207,6 +207,8 @@ extern const char kEnableMonitorProfile[];
 
 extern const char kDisableXSSAuditor[];
 
+extern const wchar_t kUseFlip[];
+
 #if defined(OS_POSIX)
 extern const char kEnableCrashReporter[];
 #endif

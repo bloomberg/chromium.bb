@@ -550,6 +550,10 @@ const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 // Disable WebKit's XSSAuditor.  The XSSAuditor mitigates reflective XSS.
 const char kDisableXSSAuditor[]             = "disable-xss-auditor";
 
+// Use Flip for the transport protocol instead of HTTP.
+// This is a temporary testing flag.
+const wchar_t kUseFlip[] = L"use-flip";
+
 #if defined(OS_POSIX)
 // A flag, generated internally by Chrome for renderer and other helper process
 // command lines on Linux and Mac.  It tells the helper process to enable crash
