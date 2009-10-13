@@ -9,15 +9,15 @@
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-GdkPixbuf* BrowserThemeProvider::GetPixbufNamed(int id) {
+GdkPixbuf* BrowserThemeProvider::GetPixbufNamed(int id) const {
   return GetPixbufImpl(id, false);
 }
 
-GdkPixbuf* BrowserThemeProvider::GetRTLEnabledPixbufNamed(int id) {
+GdkPixbuf* BrowserThemeProvider::GetRTLEnabledPixbufNamed(int id) const {
   return GetPixbufImpl(id, true);
 }
 
-GdkPixbuf* BrowserThemeProvider::GetPixbufImpl(int id, bool rtl_enabled) {
+GdkPixbuf* BrowserThemeProvider::GetPixbufImpl(int id, bool rtl_enabled) const {
   DCHECK(CalledOnValidThread());
   // Use the negative |resource_id| for the key for BIDI-aware images.
   int key = rtl_enabled ? -id : id;

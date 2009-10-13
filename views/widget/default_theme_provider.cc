@@ -12,11 +12,11 @@
 
 namespace views {
 
-SkBitmap* DefaultThemeProvider::GetBitmapNamed(int id) {
+SkBitmap* DefaultThemeProvider::GetBitmapNamed(int id) const {
   return ResourceBundle::GetSharedInstance().GetBitmapNamed(id);
 }
 
-bool DefaultThemeProvider::ShouldUseNativeFrame() {
+bool DefaultThemeProvider::ShouldUseNativeFrame() const {
 #if defined(OS_WIN)
   return win_util::ShouldUseVistaFrame();
 #else

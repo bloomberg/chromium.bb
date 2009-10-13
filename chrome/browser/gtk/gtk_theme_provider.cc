@@ -142,15 +142,15 @@ GtkWidget* GtkThemeProvider::BuildChromeButton() {
   return button;
 }
 
-bool GtkThemeProvider::UseGtkTheme() {
+bool GtkThemeProvider::UseGtkTheme() const {
   return use_gtk_;
 }
 
-GdkColor GtkThemeProvider::GetGdkColor(int id) {
+GdkColor GtkThemeProvider::GetGdkColor(int id) const {
   return skia::SkColorToGdkColor(GetColor(id));
 }
 
-GdkColor GtkThemeProvider::GetBorderColor() {
+GdkColor GtkThemeProvider::GetBorderColor() const {
   GtkStyle* style = gtk_rc_get_style(fake_window_);
 
   GdkColor text;
@@ -254,7 +254,7 @@ void GtkThemeProvider::NotifyThemeChanged() {
   }
 }
 
-SkBitmap* GtkThemeProvider::LoadThemeBitmap(int id) {
+SkBitmap* GtkThemeProvider::LoadThemeBitmap(int id) const {
   if (use_gtk_) {
     if (id == IDR_THEME_TOOLBAR) {
       GtkStyle* style = gtk_rc_get_style(fake_window_);
@@ -275,7 +275,7 @@ SkBitmap* GtkThemeProvider::LoadThemeBitmap(int id) {
 }
 
 void GtkThemeProvider::SaveThemeBitmap(const std::string resource_name,
-                                       int id) {
+                                       int id) const {
   if (!use_gtk_) {
     // Prevent us from writing out our mostly unused resources in gtk theme
     // mode. Simply preventing us from writing this data out in gtk mode isn't

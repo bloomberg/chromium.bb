@@ -110,14 +110,14 @@ class ImageVerifierGtkThemeProvider : public GtkThemeProvider {
  public:
   ImageVerifierGtkThemeProvider() : theme_toolbar_(NULL) { }
 
-  virtual SkBitmap* LoadThemeBitmap(int id) {
+  virtual SkBitmap* LoadThemeBitmap(int id) const {
     if (id != IDR_THEME_TOOLBAR)
       return GtkThemeProvider::LoadThemeBitmap(id);
     theme_toolbar_ = GtkThemeProvider::LoadThemeBitmap(id);
     return theme_toolbar_;
   }
 
-  SkBitmap* theme_toolbar_;
+  mutable SkBitmap* theme_toolbar_;
 };
 
 TEST_F(GtkThemeProviderTest, InjectsToolbar) {

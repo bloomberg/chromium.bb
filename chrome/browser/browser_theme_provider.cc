@@ -304,7 +304,7 @@ void BrowserThemeProvider::Init(Profile* profile) {
   LoadThemePrefs();
 }
 
-SkBitmap* BrowserThemeProvider::GetBitmapNamed(int id) {
+SkBitmap* BrowserThemeProvider::GetBitmapNamed(int id) const {
   DCHECK(CalledOnValidThread());
 
   // First check to see if the Skia image is in the themed cache. The themed
@@ -346,41 +346,46 @@ SkBitmap* BrowserThemeProvider::GetBitmapNamed(int id) {
   }
 }
 
-SkColor BrowserThemeProvider::GetColor(int id) {
+SkColor BrowserThemeProvider::GetColor(int id) const {
   DCHECK(CalledOnValidThread());
 
   // Special-case NTP header - if the color isn't provided, we fall back to
   // the section color.
   if (id == COLOR_NTP_HEADER) {
-    if (colors_.find(kColorNTPHeader) != colors_.end())
-      return colors_[kColorNTPHeader];
-    return (colors_.find(kColorNTPSection) == colors_.end()) ?
-        GetDefaultColor(id) : colors_[kColorNTPSection];
+    ColorMap::const_iterator color_iter = colors_.find(kColorNTPHeader);
+    if (color_iter != colors_.end())
+      return color_iter->second;
+    color_iter = colors_.find(kColorNTPSection);
+    return (color_iter == colors_.end()) ?
+        GetDefaultColor(id) : color_iter->second;
   }
 
   // Special case the underline colors to use semi transparent in case not
   // defined.
   if (id == COLOR_NTP_SECTION_LINK_UNDERLINE) {
-    if (colors_.find(kColorNTPSectionLinkUnderline) != colors_.end())
-      return colors_[kColorNTPSectionLinkUnderline];
+    ColorMap::const_iterator color_iter =
+        colors_.find(kColorNTPSectionLinkUnderline);
+    if (color_iter != colors_.end())
+      return color_iter->second;
     SkColor color_section_link = GetColor(COLOR_NTP_SECTION_LINK);
     return SkColorSetA(color_section_link, SkColorGetA(color_section_link) / 3);
   }
 
   if (id == COLOR_NTP_LINK_UNDERLINE) {
-    if (colors_.find(kColorNTPLinkUnderline) != colors_.end())
-      return colors_[kColorNTPLinkUnderline];
+    ColorMap::const_iterator color_iter = colors_.find(kColorNTPLinkUnderline);
+    if (color_iter != colors_.end())
+      return color_iter->second;
     SkColor color_link = GetColor(COLOR_NTP_LINK);
     return SkColorSetA(color_link, SkColorGetA(color_link) / 3);
   }
 
   // TODO(glen): Figure out if we need to tint these. http://crbug.com/11578
-  ColorMap::iterator color_iter = colors_.find(GetColorKey(id));
+  ColorMap::const_iterator color_iter = colors_.find(GetColorKey(id));
   return (color_iter == colors_.end()) ?
       GetDefaultColor(id) : color_iter->second;
 }
 
-bool BrowserThemeProvider::GetDisplayProperty(int id, int* result) {
+bool BrowserThemeProvider::GetDisplayProperty(int id, int* result) const {
   switch (id) {
     case NTP_BACKGROUND_ALIGNMENT: {
       DisplayPropertyMap::const_iterator display_iter =
@@ -409,7 +414,7 @@ bool BrowserThemeProvider::GetDisplayProperty(int id, int* result) {
   return false;
 }
 
-bool BrowserThemeProvider::ShouldUseNativeFrame() {
+bool BrowserThemeProvider::ShouldUseNativeFrame() const {
   if (HasCustomImage(IDR_THEME_FRAME))
     return false;
 #if defined(OS_WIN)
@@ -419,30 +424,33 @@ bool BrowserThemeProvider::ShouldUseNativeFrame() {
 #endif
 }
 
-bool BrowserThemeProvider::HasCustomImage(int id) {
-  if (!themeable_images[id])
+bool BrowserThemeProvider::HasCustomImage(int id) const {
+  if (!themeable_images.count(id))
     return false;
 
   // A custom image = base name is NOT equal to resource name.  See note in
   // SaveThemeBitmap describing the process by which an original image is
   // tagged.
-  if ((images_.find(id) == images_.end()) ||
-      (resource_names_.find(id) == resource_names_.end()))
+  ImageMap::const_iterator images_iter = images_.find(id);
+  ResourceNameMap::const_iterator names_iter = resource_names_.find(id);
+  if ((images_iter == images_.end()) || (names_iter == resource_names_.end()))
     return false;
-  return !EndsWith(UTF8ToWide(images_[id]),
-                   UTF8ToWide(resource_names_[id]), false);
+  return !EndsWith(UTF8ToWide(images_iter->second),
+                   UTF8ToWide(names_iter->second), false);
 }
 
-bool BrowserThemeProvider::GetRawData(int id,
-                                      std::vector<unsigned char>* raw_data) {
+bool BrowserThemeProvider::GetRawData(
+    int id,
+    std::vector<unsigned char>* raw_data) const {
   // Check to see whether we should substitute some images.
   int ntp_alternate;
   GetDisplayProperty(NTP_LOGO_ALTERNATE, &ntp_alternate);
   if (id == IDR_PRODUCT_LOGO && ntp_alternate != 0)
     id = IDR_PRODUCT_LOGO_WHITE;
 
-  if (raw_data_.find(id) != raw_data_.end()) {
-    *raw_data = raw_data_[id];
+  RawDataMap::const_iterator data_iter = raw_data_.find(id);
+  if (data_iter != raw_data_.end()) {
+    *raw_data = data_iter->second;
     return true;
   }
 
@@ -494,20 +502,21 @@ void BrowserThemeProvider::UseDefaultTheme() {
   UserMetrics::RecordAction(L"Themes_Reset", profile_);
 }
 
-std::string BrowserThemeProvider::GetThemeID() {
+std::string BrowserThemeProvider::GetThemeID() const {
   std::wstring id = profile_->GetPrefs()->GetString(prefs::kCurrentThemeID);
   return WideToUTF8(id);
 }
 
 bool BrowserThemeProvider::ReadThemeFileData(
-    int id, std::vector<unsigned char>* raw_data) {
-  if (images_.count(id)) {
+    int id, std::vector<unsigned char>* raw_data) const {
+  ImageMap::const_iterator images_iter = images_.find(id);
+  if (images_iter != images_.end()) {
     // First check to see if we have a registered theme extension and whether
     // it can handle this resource.
 #if defined(OS_WIN)
-    FilePath path = FilePath(UTF8ToWide(images_[id]));
+    FilePath path = FilePath(UTF8ToWide(images_iter->second));
 #else
-    FilePath path = FilePath(images_[id]);
+    FilePath path = FilePath(images_iter->second);
 #endif
     if (!path.empty()) {
       net::FileStream file;
@@ -610,10 +619,10 @@ void BrowserThemeProvider::SetTint(const char* key,
   tints_[key] = tint;
 }
 
-color_utils::HSL BrowserThemeProvider::GetTint(int id) {
+color_utils::HSL BrowserThemeProvider::GetTint(int id) const {
   DCHECK(CalledOnValidThread());
 
-  TintMap::iterator tint_iter = tints_.find(GetTintKey(id));
+  TintMap::const_iterator tint_iter = tints_.find(GetTintKey(id));
   return (tint_iter == tints_.end()) ? GetDefaultTint(id) : tint_iter->second;
 }
 
@@ -637,8 +646,8 @@ void BrowserThemeProvider::GenerateFrameColors() {
   }
 }
 
-void BrowserThemeProvider::GenerateFrameImages() {
-  for (FrameTintMap::iterator iter(frame_tints.begin());
+void BrowserThemeProvider::GenerateFrameImages() const {
+  for (FrameTintMap::const_iterator iter(frame_tints.begin());
        iter != frame_tints.end(); ++iter) {
     int id = iter->first;
     scoped_ptr<SkBitmap> frame;
@@ -655,7 +664,7 @@ void BrowserThemeProvider::GenerateFrameImages() {
       if (frame.get())
         themed_image_cache_[id] = new SkBitmap(*frame.get());
     } else {
-      resource_name = resource_names_[id];
+      resource_name = resource_names_.find(id)->second;
       if (id == IDR_THEME_FRAME_INCOGNITO_INACTIVE) {
         base_id = HasCustomImage(IDR_THEME_FRAME_INCOGNITO) ?
             IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
@@ -695,7 +704,7 @@ void BrowserThemeProvider::GenerateFrameImages() {
   }
 }
 
-void BrowserThemeProvider::GenerateTabImages() {
+void BrowserThemeProvider::GenerateTabImages() const {
   GenerateTabBackgroundBitmap(IDR_THEME_TAB_BACKGROUND);
   GenerateTabBackgroundBitmap(IDR_THEME_TAB_BACKGROUND_INCOGNITO);
 }
@@ -740,11 +749,12 @@ void BrowserThemeProvider::LoadThemePrefs() {
   // If we're not loading the frame from the cached image dir, we are using an
   // old preferences file, or the processed images were not saved correctly.
   // Force image reprocessing and caching.
-  if (images_.count(IDR_THEME_FRAME) > 0) {
+  ImageMap::const_iterator images_iter = images_.find(IDR_THEME_FRAME);
+  if (images_iter != images_.end()) {
 #if defined(OS_WIN)
-    FilePath cache_path = FilePath(UTF8ToWide(images_[IDR_THEME_FRAME]));
+    FilePath cache_path = FilePath(UTF8ToWide(images_iter->second));
 #else
-    FilePath cache_path = FilePath(images_[IDR_THEME_FRAME]);
+    FilePath cache_path = FilePath(images_iter->second);
 #endif
     process_images_ = !file_util::ContainsPath(image_dir_, cache_path);
   }
@@ -772,10 +782,10 @@ void BrowserThemeProvider::NotifyThemeChanged() {
                   NotificationService::NoDetails());
 }
 
-SkBitmap* BrowserThemeProvider::LoadThemeBitmap(int id) {
+SkBitmap* BrowserThemeProvider::LoadThemeBitmap(int id) const {
   DCHECK(CalledOnValidThread());
 
-  if (!themeable_images[id])
+  if (!themeable_images.count(id))
     return NULL;
 
   // Attempt to find the image in our theme bundle.
@@ -803,10 +813,10 @@ SkBitmap* BrowserThemeProvider::LoadThemeBitmap(int id) {
   }
 }
 
-void BrowserThemeProvider::SaveThemeBitmap(
-    std::string resource_name, int id) {
+void BrowserThemeProvider::SaveThemeBitmap(std::string resource_name,
+                                           int id) const {
   DCHECK(CalledOnValidThread());
-  if (!themed_image_cache_[id]) {
+  if (!themed_image_cache_.count(id)) {
     NOTREACHED();
     return;
   }
@@ -836,14 +846,14 @@ void BrowserThemeProvider::FreePlatformCaches() {
 }
 #endif
 
-SkBitmap* BrowserThemeProvider::GenerateTabBackgroundBitmapImpl(int id) {
+SkBitmap* BrowserThemeProvider::GenerateTabBackgroundBitmapImpl(int id) const {
   int base_id = (id == IDR_THEME_TAB_BACKGROUND) ?
       IDR_THEME_FRAME : IDR_THEME_FRAME_INCOGNITO;
   // According to Miranda, it is safe to read from the themed_image_cache_ here
   // because we only lock to write on the UI thread, and we only lock to read
   // on the cache writing thread.
-  ImageCache::iterator themed_iter = themed_image_cache_.find(base_id);
-  if (themed_iter != themed_image_cache_.end())
+  ImageCache::const_iterator themed_iter = themed_image_cache_.find(base_id);
+  if (themed_iter == themed_image_cache_.end())
     return NULL;
 
   SkBitmap bg_tint = TintBitmap(*(themed_iter->second), TINT_BACKGROUND_TAB);
@@ -864,7 +874,7 @@ SkBitmap* BrowserThemeProvider::GenerateTabBackgroundBitmapImpl(int id) {
   return bg_tab;
 }
 
-const std::string BrowserThemeProvider::GetTintKey(int id) {
+const std::string BrowserThemeProvider::GetTintKey(int id) const {
   switch (id) {
     case TINT_FRAME:
       return kTintFrame;
@@ -884,7 +894,7 @@ const std::string BrowserThemeProvider::GetTintKey(int id) {
   }
 }
 
-color_utils::HSL BrowserThemeProvider::GetDefaultTint(int id) {
+color_utils::HSL BrowserThemeProvider::GetDefaultTint(int id) const {
   switch (id) {
     case TINT_FRAME:
       return kDefaultTintFrame;
@@ -904,7 +914,7 @@ color_utils::HSL BrowserThemeProvider::GetDefaultTint(int id) {
   }
 }
 
-const std::string BrowserThemeProvider::GetColorKey(int id) {
+const std::string BrowserThemeProvider::GetColorKey(int id) const {
   switch (id) {
     case COLOR_FRAME:
       return kColorFrame;
@@ -950,7 +960,7 @@ const std::string BrowserThemeProvider::GetColorKey(int id) {
   }
 }
 
-SkColor BrowserThemeProvider::GetDefaultColor(int id) {
+SkColor BrowserThemeProvider::GetDefaultColor(int id) const {
   switch (id) {
     case COLOR_FRAME:
       return kDefaultColorFrame;
@@ -992,7 +1002,8 @@ SkColor BrowserThemeProvider::GetDefaultColor(int id) {
   }
 }
 
-SkBitmap BrowserThemeProvider::TintBitmap(const SkBitmap& bitmap, int hsl_id) {
+SkBitmap BrowserThemeProvider::TintBitmap(const SkBitmap& bitmap,
+                                          int hsl_id) const {
   return SkBitmapOperations::CreateHSLShiftedBitmap(bitmap, GetTint(hsl_id));
 }
 
@@ -1113,7 +1124,7 @@ void BrowserThemeProvider::SetDisplayPropertyData(
   }
 }
 
-SkBitmap* BrowserThemeProvider::GenerateTabBackgroundBitmap(int id) {
+SkBitmap* BrowserThemeProvider::GenerateTabBackgroundBitmap(int id) const {
   if (id == IDR_THEME_TAB_BACKGROUND ||
       id == IDR_THEME_TAB_BACKGROUND_INCOGNITO) {
     // The requested image is a background tab. Get a frame to create the
@@ -1140,7 +1151,7 @@ SkBitmap* BrowserThemeProvider::GenerateTabBackgroundBitmap(int id) {
   return NULL;
 }
 
-void BrowserThemeProvider::SaveImageData(DictionaryValue* images_value) {
+void BrowserThemeProvider::SaveImageData(DictionaryValue* images_value) const {
   // Save our images data.
   DictionaryValue* pref_images =
       profile_->GetPrefs()->GetMutableDictionary(prefs::kCurrentThemeImages);
@@ -1155,12 +1166,12 @@ void BrowserThemeProvider::SaveImageData(DictionaryValue* images_value) {
     if (images_value->GetString(*iter, &val)) {
       int id = ThemeResourcesUtil::GetId(WideToUTF8(*iter));
       if (id != -1)
-        pref_images->SetString(*iter, images_[id]);
+        pref_images->SetString(*iter, images_.find(id)->second);
     }
   }
 }
 
-void BrowserThemeProvider::SaveColorData() {
+void BrowserThemeProvider::SaveColorData() const {
   // Save our color data.
   DictionaryValue* pref_colors =
       profile_->GetPrefs()->GetMutableDictionary(prefs::kCurrentThemeColors);
@@ -1169,7 +1180,7 @@ void BrowserThemeProvider::SaveColorData() {
   if (colors_.empty())
     return;
 
-  for (ColorMap::iterator iter(colors_.begin()); iter != colors_.end();
+  for (ColorMap::const_iterator iter(colors_.begin()); iter != colors_.end();
        ++iter) {
     SkColor rgba = iter->second;
     ListValue* rgb_list = new ListValue();
@@ -1182,7 +1193,7 @@ void BrowserThemeProvider::SaveColorData() {
   }
 }
 
-void BrowserThemeProvider::SaveTintData() {
+void BrowserThemeProvider::SaveTintData() const {
   // Save our tint data.
   DictionaryValue* pref_tints =
       profile_->GetPrefs()->GetMutableDictionary(prefs::kCurrentThemeTints);
@@ -1191,7 +1202,8 @@ void BrowserThemeProvider::SaveTintData() {
   if (tints_.empty())
     return;
 
-  for (TintMap::iterator iter(tints_.begin()); iter != tints_.end(); ++iter) {
+  for (TintMap::const_iterator iter(tints_.begin()); iter != tints_.end();
+       ++iter) {
     color_utils::HSL hsl = iter->second;
     ListValue* hsl_list = new ListValue();
     hsl_list->Set(0, Value::CreateRealValue(hsl.h));
@@ -1201,7 +1213,7 @@ void BrowserThemeProvider::SaveTintData() {
   }
 }
 
-void BrowserThemeProvider::SaveDisplayPropertyData() {
+void BrowserThemeProvider::SaveDisplayPropertyData() const {
   // Save our display property data.
   DictionaryValue* pref_display_properties =
       profile_->GetPrefs()->
@@ -1211,7 +1223,7 @@ void BrowserThemeProvider::SaveDisplayPropertyData() {
   if (display_properties_.empty())
     return;
 
-  for (DisplayPropertyMap::iterator iter(display_properties_.begin());
+  for (DisplayPropertyMap::const_iterator iter(display_properties_.begin());
        iter != display_properties_.end(); ++iter) {
     if (base::strcasecmp(iter->first.c_str(),
                          kDisplayPropertyNTPAlignment) == 0) {
@@ -1230,14 +1242,14 @@ void BrowserThemeProvider::SaveDisplayPropertyData() {
   }
 }
 
-void BrowserThemeProvider::SaveCachedImageData() {
+void BrowserThemeProvider::SaveCachedImageData() const {
   DictionaryValue* pref_images =
       profile_->GetPrefs()->GetMutableDictionary(prefs::kCurrentThemeImages);
 
-  for (ImagesDiskCache::iterator it(images_disk_cache_.begin());
+  for (ImagesDiskCache::const_iterator it(images_disk_cache_.begin());
        it != images_disk_cache_.end(); ++it) {
     std::wstring disk_path = it->first.ToWStringHack();
-    std::string pref_name = resource_names_[it->second];
+    std::string pref_name = resource_names_.find(it->second)->second;
     pref_images->SetString(UTF8ToWide(pref_name), WideToUTF8(disk_path));
   }
   profile_->GetPrefs()->SavePersistentPrefs();
@@ -1260,13 +1272,13 @@ void BrowserThemeProvider::ClearCaches() {
   images_disk_cache_.clear();
 }
 
-void BrowserThemeProvider::WriteImagesToDisk() {
+void BrowserThemeProvider::WriteImagesToDisk() const {
   g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
       new WriteImagesToDiskTask(images_disk_cache_, themed_image_cache_));
   SaveCachedImageData();
 }
 
-bool BrowserThemeProvider::ShouldTintFrames() {
+bool BrowserThemeProvider::ShouldTintFrames() const {
   return (HasCustomImage(IDR_THEME_FRAME) ||
       tints_.count(GetTintKey(TINT_BACKGROUND_TAB)) ||
       tints_.count(GetTintKey(TINT_FRAME)) ||

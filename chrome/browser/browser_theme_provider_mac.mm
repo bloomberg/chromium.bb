@@ -24,7 +24,7 @@ void HSLToHSB(const color_utils::HSL& hsl, CGFloat* h, CGFloat* s, CGFloat* b) {
 
 }
 
-NSImage* BrowserThemeProvider::GetNSImageNamed(int id) {
+NSImage* BrowserThemeProvider::GetNSImageNamed(int id) const {
   DCHECK(CalledOnValidThread());
 
   if (!HasCustomImage(id))
@@ -67,7 +67,7 @@ NSImage* BrowserThemeProvider::GetNSImageNamed(int id) {
   return empty_image;
 }
 
-NSColor* BrowserThemeProvider::GetNSColor(int id) {
+NSColor* BrowserThemeProvider::GetNSColor(int id) const {
   DCHECK(CalledOnValidThread());
 
   // Check to see if we already have the color in the cache.
@@ -91,7 +91,7 @@ NSColor* BrowserThemeProvider::GetNSColor(int id) {
   return nil;
 }
 
-NSColor* BrowserThemeProvider::GetNSColorTint(int id) {
+NSColor* BrowserThemeProvider::GetNSColorTint(int id) const {
   DCHECK(CalledOnValidThread());
 
   // Check to see if we already have the color in the cache.
@@ -99,7 +99,7 @@ NSColor* BrowserThemeProvider::GetNSColorTint(int id) {
   if (nscolor_iter != nscolor_cache_.end())
     return nscolor_iter->second;
 
-  TintMap::iterator tint_iter = tints_.find(GetTintKey(id));
+  TintMap::const_iterator tint_iter = tints_.find(GetTintKey(id));
   if (tint_iter != tints_.end()) {
     color_utils::HSL tint = tint_iter->second;
     CGFloat hue, saturation, brightness;

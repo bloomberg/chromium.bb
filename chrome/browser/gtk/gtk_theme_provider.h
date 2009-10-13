@@ -55,15 +55,15 @@ class GtkThemeProvider : public BrowserThemeProvider,
   GtkWidget* BuildChromeButton();
 
   // Whether we should use the GTK system theme.
-  bool UseGtkTheme();
+  bool UseGtkTheme() const;
 
   // A wrapper around ThemeProvider::GetColor, transforming the result to a
   // GdkColor.
-  GdkColor GetGdkColor(int id);
+  GdkColor GetGdkColor(int id) const;
 
   // A weighted average between the text color and the background color of a
   // label. Used for borders between GTK stuff and the webcontent.
-  GdkColor GetBorderColor();
+  GdkColor GetBorderColor() const;
 
   // Expose the inner label. Only used for testing.
   GtkWidget* fake_label() { return fake_label_.get(); }
@@ -84,7 +84,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // (minimally acceptable version right now, which is just a fill of the bg
   // color; this should instead invoke gtk_draw_box(...) for complex theme
   // engines.)
-  virtual SkBitmap* LoadThemeBitmap(int id);
+  virtual SkBitmap* LoadThemeBitmap(int id) const;
 
  private:
   // Load theme data from preferences, possibly picking colors from GTK.
@@ -95,7 +95,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
 
   // If use_gtk_ is true, completely ignores this call. Otherwise passes it to
   // the superclass.
-  virtual void SaveThemeBitmap(const std::string resource_name, int id);
+  virtual void SaveThemeBitmap(const std::string resource_name, int id) const;
 
   // Additionally frees the CairoCachedSurfaces.
   virtual void FreePlatformCaches();

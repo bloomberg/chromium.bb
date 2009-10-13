@@ -22,15 +22,15 @@ class DefaultThemeProvider : public ThemeProvider {
 
   // Overridden from ThemeProvider.
   virtual void Init(Profile* profile) { }
-  virtual SkBitmap* GetBitmapNamed(int id);
-  virtual SkColor GetColor(int id) {
+  virtual SkBitmap* GetBitmapNamed(int id) const;
+  virtual SkColor GetColor(int id) const {
     // Return debugging-blue.
     return 0xff0000ff;
   }
-  virtual bool GetDisplayProperty(int id, int* result) { return false; }
-  virtual bool ShouldUseNativeFrame();
-  virtual bool HasCustomImage(int id) { return false; }
-  virtual bool GetRawData(int id, std::vector<unsigned char>* raw_data) {
+  virtual bool GetDisplayProperty(int id, int* result) const { return false; }
+  virtual bool ShouldUseNativeFrame() const;
+  virtual bool HasCustomImage(int id) const { return false; }
+  virtual bool GetRawData(int id, std::vector<unsigned char>* raw_data) const {
     return false;
   }
 

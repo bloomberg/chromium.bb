@@ -28,17 +28,17 @@ class MockThemeProvider : public ThemeProvider {
  public:
   // Cross platform methods
   MOCK_METHOD1(Init, void(Profile*));
-  MOCK_METHOD1(GetBitmapNamed, SkBitmap*(int));
-  MOCK_METHOD1(GetColor, SkColor(int));
-  MOCK_METHOD2(GetDisplayProperty, bool(int, int*));
-  MOCK_METHOD0(ShouldUseNativeFrame, bool());
-  MOCK_METHOD1(HasCustomImage, bool(int));
-  MOCK_METHOD2(GetRawData, bool(int, std::vector<unsigned char>*));
+  MOCK_CONST_METHOD1(GetBitmapNamed, SkBitmap*(int));
+  MOCK_CONST_METHOD1(GetColor, SkColor(int));
+  MOCK_CONST_METHOD2(GetDisplayProperty, bool(int, int*));
+  MOCK_CONST_METHOD0(ShouldUseNativeFrame, bool());
+  MOCK_CONST_METHOD1(HasCustomImage, bool(int));
+  MOCK_CONST_METHOD2(GetRawData, bool(int, std::vector<unsigned char>*));
 
   // OSX stuff
-  MOCK_METHOD1(GetNSImageNamed, NSImage*(int));
-  MOCK_METHOD1(GetNSColor, NSColor*(int));
-  MOCK_METHOD1(GetNSColorTint, NSColor*(int));
+  MOCK_CONST_METHOD1(GetNSImageNamed, NSImage*(int));
+  MOCK_CONST_METHOD1(GetNSColor, NSColor*(int));
+  MOCK_CONST_METHOD1(GetNSColorTint, NSColor*(int));
 };
 
 // Allows us to inject our fake controller below.
