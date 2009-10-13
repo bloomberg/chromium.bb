@@ -11,12 +11,6 @@
 static const char kTestCompleteCookie[] = "status";
 static const char kTestCompleteSuccess[] = "OK";
 
-#if defined(OS_WIN)
-#define MAYBE_LimitTotal FLAKY_LimitTotal
-#else
-#define MAYBE_LimitTotal LimitTotal
-#endif
-
 class WorkerTest : public UILayoutTest {
  protected:
   virtual ~WorkerTest() { }
@@ -31,6 +25,28 @@ class WorkerTest : public UILayoutTest {
     std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
         kTestCompleteCookie, kTestIntervalMs, kTestWaitTimeoutMs);
     ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
+  }
+
+  bool WaitForProcessCountToBe(int tabs, int workers) {
+    // The 1 is for the browser process.
+    int number_of_processes = 1 + workers +
+        (UITest::in_process_renderer() ? 0 : tabs);
+#if defined(OS_LINUX)
+    // On Linux, we also have a zygote process and a sandbox host process.
+    number_of_processes += 2;
+#endif
+
+    int cur_process_count;
+    for (int i = 0; i < 10; ++i) {
+      cur_process_count = GetBrowserProcessCount();
+      if (cur_process_count == number_of_processes)
+        return true;
+
+      PlatformThread::Sleep(sleep_timeout_ms() / 10);
+    }
+
+    EXPECT_EQ(number_of_processes, cur_process_count);
+    return false;
   }
 };
 
@@ -213,7 +229,6 @@ TEST_F(WorkerTest, LimitPerPage) {
 }
 #endif
 
-// This test fails after WebKit merge 49414:49432. (BUG=24652)
 TEST_F(WorkerTest, LimitTotal) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   int total_workers = WorkerService::kMaxWorkersWhenSeparate;
@@ -229,21 +244,11 @@ TEST_F(WorkerTest, LimitTotal) {
   for (int i = 1; i < tab_count; ++i)
     window->AppendTab(url);
 
-  // The 1 is for the browser process.
-  int number_of_processes = 1 +
-      (UITest::in_process_renderer() ? 0 : tab_count);
-#if defined(OS_LINUX)
-  // On Linux, we also have a zygote process and a sandbox host process.
-  number_of_processes += 2;
-#endif
-
   // Check that we didn't create more than the max number of workers.
-  EXPECT_EQ(total_workers + number_of_processes,
-            UITest::GetBrowserProcessCount());
+  ASSERT_TRUE(WaitForProcessCountToBe(tab_count, total_workers));
 
   // Now close a page and check that the queued workers were started.
   tab->NavigateToURL(GetTestUrl(L"google", L"google.html"));
 
-  EXPECT_EQ(total_workers + number_of_processes,
-            UITest::GetBrowserProcessCount());
+  ASSERT_TRUE(WaitForProcessCountToBe(tab_count, total_workers));
 }
