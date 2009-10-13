@@ -48,7 +48,6 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
 
  protected:
   // Overridden from views::WidgetWin:
-  virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
   virtual bool GetAccelerator(int cmd_id, views::Accelerator* accelerator);
   virtual void OnEndSession(BOOL ending, UINT logoff);
   virtual void OnEnterSizeMove();

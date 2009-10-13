@@ -328,6 +328,10 @@ void WidgetWin::ViewHierarchyChanged(bool is_add, View *parent,
     drop_target_->ResetTargetViewIfEquals(child);
 }
 
+bool WidgetWin::GetAccelerator(int cmd_id, Accelerator* accelerator) {
+  return false;
+}
+
 void WidgetWin::SetUseLayeredBuffer(bool use_layered_buffer) {
   if (use_layered_buffer_ == use_layered_buffer)
     return;
@@ -422,15 +426,6 @@ View* WidgetWin::GetFocusTraversableParentView() {
 void WidgetWin::SetFocusTraversableParentView(View* parent_view) {
   root_view_->SetFocusTraversableParentView(parent_view);
 }
-
-bool WidgetWin::AcceleratorPressed(const Accelerator& accelerator) {
-  return false;
-}
-
-bool WidgetWin::GetAccelerator(int cmd_id, Accelerator* accelerator) {
-  return false;
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Message handlers

@@ -69,8 +69,7 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 class WidgetWin : public app::WindowImpl,
                   public Widget,
                   public MessageLoopForUI::Observer,
-                  public FocusTraversable,
-                  public AcceleratorTarget {
+                  public FocusTraversable {
  public:
   WidgetWin();
   virtual ~WidgetWin();
@@ -205,6 +204,7 @@ class WidgetWin : public app::WindowImpl,
   virtual FocusManager* GetFocusManager();
   virtual void ViewHierarchyChanged(bool is_add, View *parent,
                                     View *child);
+  virtual bool GetAccelerator(int cmd_id, Accelerator* accelerator);
 
   // Overridden from MessageLoop::Observer:
   void WillProcessMessage(const MSG& msg);
@@ -222,11 +222,6 @@ class WidgetWin : public app::WindowImpl,
 
   void SetFocusTraversableParent(FocusTraversable* parent);
   void SetFocusTraversableParentView(View* parent_view);
-
-  // Overridden from AcceleratorTarget:
-  virtual bool AcceleratorPressed(const Accelerator& accelerator);
-
-  virtual bool GetAccelerator(int cmd_id, Accelerator* accelerator);
 
   BOOL IsWindow() const {
     return ::IsWindow(GetNativeView());

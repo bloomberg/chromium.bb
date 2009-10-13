@@ -79,11 +79,13 @@ class InfoBubbleDelegate {
 // TODO: this code is ifdef-tastic. It might be cleaner to refactor the
 // WidgetFoo subclass into a separate class that calls into InfoBubble.
 // That way InfoBubble has no (or very few) ifdefs.
+class InfoBubble
 #if defined(OS_WIN)
-class InfoBubble : public views::WidgetWin {
+    : public views::WidgetWin,
 #elif defined(OS_LINUX)
-class InfoBubble : public views::WidgetGtk {
+    : public views::WidgetGtk,
 #endif
+      public views::AcceleratorTarget {
  public:
   // Shows the InfoBubble.  |parent| is set as the parent window, |contents| are
   // the contents shown in the bubble, and |position_relative_to| is a rect in
@@ -126,7 +128,7 @@ class InfoBubble : public views::WidgetGtk {
   // the close is the result of pressing escape.
   void Close(bool closed_by_escape);
 
-  // Overridden from WidgetWin/WidgetGtk:
+  // Overridden from AcceleratorTarget:
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
 
   // The delegate, if any.

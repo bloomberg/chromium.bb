@@ -277,11 +277,9 @@ void InfoBubble::Init(views::Window* parent,
 #endif
   SetBounds(window_bounds);
 
-#if defined(OS_WIN)
   // Register the Escape accelerator for closing.
   GetFocusManager()->RegisterAccelerator(
       views::Accelerator(base::VKEY_ESCAPE, false, false, false), this);
-#endif
 
   // Done creating the bubble.
   NotificationService::current()->Notify(NotificationType::INFO_BUBBLE_CREATED,

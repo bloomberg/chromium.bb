@@ -121,11 +121,6 @@ bool BrowserFrameWin::AlwaysUseNativeFrame() const {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrame, views::WidgetWin overrides:
 
-bool BrowserFrameWin::AcceleratorPressed(
-    const views::Accelerator& accelerator) {
-  return browser_view_->AcceleratorPressed(accelerator);
-}
-
 bool BrowserFrameWin::GetAccelerator(int cmd_id,
                                      views::Accelerator* accelerator) {
   return browser_view_->GetAccelerator(cmd_id, accelerator);
