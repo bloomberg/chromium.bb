@@ -634,8 +634,8 @@ void EnableRendererCrashDumping() {
 void InitCrashReporter() {
   // Determine the process type and take appropriate action.
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  const std::wstring process_type =
-      parsed_command_line.GetSwitchValue(switches::kProcessType);
+  const std::string process_type =
+      parsed_command_line.GetSwitchValueASCII(switches::kProcessType);
   const bool unattended = (getenv("CHROME_HEADLESS") != NULL);
   if (process_type.empty()) {
     if (!(unattended || GoogleUpdateSettings::GetCollectStatsConsent()))
