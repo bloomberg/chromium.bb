@@ -163,15 +163,23 @@ if test "x$INTEL" != "xno"; then
     ], [],
 	      drm_cv_atomic_primitives="Intel"
 	      )
+
+	    if test "x$drm_cv_atomic_primitives" = "xnone"; then
+		    AC_CHECK_HEADER([atomic_ops.h], drm_cv_atomic_primitives="libatomic-ops")
+	    fi
+
     ])
     if test "x$drm_cv_atomic_primitives" = xIntel; then
 	    AC_DEFINE(HAVE_INTEL_ATOMIC_PRIMITIVES, 1,
 		      [Enable if your compiler supports the Intel __sync_* atomic primitives])
     fi
+    if test "x$drm_cv_atomic_primitives" = "xlibatomic-ops"; then
+	    AC_DEFINE(HAVE_LIB_ATOMIC_OPS, 1, [Enable if you have libatomic-ops-dev installed])
+    fi
 
     if test "x$drm_cv_atomic_primitives" = "xnone"; then
 	    if test "x$INTEL" != "xauto"; then
-		    AC_MSG_ERROR([libdrm_intel depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or disable support for Intel GPUs by passing --disable-intel to ./configure])
+		    AC_MSG_ERROR([libdrm_intel depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package, or, failing both of those, disable support for Intel GPUs by passing --disable-intel to ./configure])
 	   else
 		    INTEL=no
 	   fi

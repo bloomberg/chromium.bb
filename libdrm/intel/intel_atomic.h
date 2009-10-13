@@ -54,6 +54,23 @@ typedef struct {
 
 #endif
 
+#if HAVE_LIB_ATOMIC_OPS
+#include <atomic_ops.h>
+
+#define HAS_ATOMIC_OPS 1
+
+typedef struct {
+	AO_t atomic;
+} atomic_t;
+
+# define atomic_read(x) AO_load_full(&(x)->atomic)
+# define atomic_set(x, val) AO_store_full(&(x)->atomic, (val))
+# define atomic_inc(x) ((void) AO_fetch_and_add1_full(&(x)->atomic))
+# define atomic_dec_and_test(x) (AO_fetch_and_sub1_full(&(x)->atomic) == 1)
+# define atomic_cmpxchg(x, oldv, newv) AO_compare_and_swap_full(&(x)->atomic, oldv, newv)
+
+#endif
+
 #if ! HAS_ATOMIC_OPS
 #error libdrm-intel requires atomic operations, please define them for your CPU/compiler.
 #endif
