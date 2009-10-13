@@ -42,6 +42,7 @@ class BrowserFrameGtk : public BrowserFrame,
  protected:
   // Overridden from views::WidgetGtk:
   virtual views::RootView* CreateRootView();
+  virtual bool GetAccelerator(int cmd_id, views::Accelerator* accelerator);
 
  private:
   // The BrowserView is our ClientView. This is a pointer to it.

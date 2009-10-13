@@ -4,7 +4,9 @@
 
 #include "views/accelerator.h"
 
+#if defined(OS_WIN)
 #include <windows.h>
+#endif
 
 #include "app/l10n_util.h"
 #include "base/logging.h"
@@ -16,52 +18,55 @@ namespace views {
 std::wstring Accelerator::GetShortcutText() const {
   int string_id = 0;
   switch(key_code_) {
-  case VK_TAB:
-    string_id = IDS_APP_TAB_KEY;
-    break;
-  case VK_RETURN:
-    string_id = IDS_APP_ENTER_KEY;
-    break;
-  case VK_ESCAPE:
-    string_id = IDS_APP_ESC_KEY;
-    break;
-  case VK_PRIOR:
-    string_id = IDS_APP_PAGEUP_KEY;
-    break;
-  case VK_NEXT:
-    string_id = IDS_APP_PAGEDOWN_KEY;
-    break;
-  case VK_END:
-    string_id = IDS_APP_END_KEY;
-    break;
-  case VK_HOME:
-    string_id = IDS_APP_HOME_KEY;
-    break;
-  case VK_INSERT:
-    string_id = IDS_APP_INSERT_KEY;
-    break;
-  case VK_DELETE:
-    string_id = IDS_APP_DELETE_KEY;
-    break;
-  case VK_LEFT:
-    string_id = IDS_APP_LEFT_ARROW_KEY;
-    break;
-  case VK_RIGHT:
-    string_id = IDS_APP_RIGHT_ARROW_KEY;
-    break;
-  case VK_BACK:
-    string_id = IDS_APP_BACKSPACE_KEY;
-    break;
-  case VK_F1:
-    string_id = IDS_APP_F1_KEY;
-    break;
-  case VK_F11:
-    string_id = IDS_APP_F11_KEY;
-    break;
+    case base::VKEY_TAB:
+      string_id = IDS_APP_TAB_KEY;
+      break;
+    case base::VKEY_RETURN:
+      string_id = IDS_APP_ENTER_KEY;
+      break;
+    case base::VKEY_ESCAPE:
+      string_id = IDS_APP_ESC_KEY;
+      break;
+    case base::VKEY_PRIOR:
+      string_id = IDS_APP_PAGEUP_KEY;
+      break;
+    case base::VKEY_NEXT:
+      string_id = IDS_APP_PAGEDOWN_KEY;
+      break;
+    case base::VKEY_END:
+      string_id = IDS_APP_END_KEY;
+      break;
+    case base::VKEY_HOME:
+      string_id = IDS_APP_HOME_KEY;
+      break;
+    case base::VKEY_INSERT:
+      string_id = IDS_APP_INSERT_KEY;
+      break;
+    case base::VKEY_DELETE:
+      string_id = IDS_APP_DELETE_KEY;
+      break;
+    case base::VKEY_LEFT:
+      string_id = IDS_APP_LEFT_ARROW_KEY;
+      break;
+    case base::VKEY_RIGHT:
+      string_id = IDS_APP_RIGHT_ARROW_KEY;
+      break;
+    case base::VKEY_BACK:
+      string_id = IDS_APP_BACKSPACE_KEY;
+      break;
+    case base::VKEY_F1:
+      string_id = IDS_APP_F1_KEY;
+      break;
+    case base::VKEY_F11:
+      string_id = IDS_APP_F11_KEY;
+      break;
+    default:
+      break;
   }
 
   std::wstring shortcut;
   if (!string_id) {
+#if defined(OS_WIN)
     // Our fallback is to try translate the key code to a regular character
     // unless it is one of digits (VK_0 to VK_9). Some keyboard
     // layouts have characters other than digits assigned in
@@ -74,6 +79,9 @@ std::wstring Accelerator::GetShortcutText() const {
     else
       key = LOWORD(::MapVirtualKeyW(key_code_, MAPVK_VK_TO_CHAR));
     shortcut += key;
+#elif defined(OS_LINUX)
+    NOTIMPLEMENTED();
+#endif
   } else {
     shortcut = l10n_util::GetString(string_id);
   }

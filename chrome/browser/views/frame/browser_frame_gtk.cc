@@ -91,3 +91,8 @@ void BrowserFrameGtk::IsActiveChanged() {
   browser_view_->ActivationChanged(IsActive());
   views::WidgetGtk::IsActiveChanged();
 }
+
+bool BrowserFrameGtk::GetAccelerator(int cmd_id,
+                                     views::Accelerator* accelerator) {
+  return browser_view_->GetAccelerator(cmd_id, accelerator);
+}

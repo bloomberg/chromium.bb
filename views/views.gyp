@@ -298,7 +298,6 @@
             '../build/linux/system.gyp:x11',
           ],
           'sources!': [
-            'accelerator.cc',
             'accessibility/accessible_wrapper.cc',
             'accessibility/view_accessibility.cc',
             'accessibility/view_accessibility_wrapper.cc',

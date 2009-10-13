@@ -37,6 +37,16 @@ gfx::Rect Screen::GetMonitorWorkAreaNearestWindow(gfx::NativeWindow window) {
 }
 
 // static
+gfx::Rect Screen::GetMonitorAreaNearestWindow(gfx::NativeWindow window) {
+  GdkScreen* screen = gtk_window_get_screen(window);
+  gint monitor_num = gdk_screen_get_monitor_at_window(screen,
+      (GTK_WIDGET(window))->window);
+  GdkRectangle bounds;
+  gdk_screen_get_monitor_geometry(screen, monitor_num, &bounds);
+  return gfx::Rect(bounds);
+}
+
+// static
 gfx::Rect Screen::GetMonitorAreaNearestPoint(const gfx::Point& point) {
   GdkScreen* screen = gdk_screen_get_default();
   gint monitor = gdk_screen_get_monitor_at_point(screen, point.x(), point.y());
