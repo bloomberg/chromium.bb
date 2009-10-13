@@ -45,7 +45,7 @@ generator_default_variables = {
 
 
 def ensure_directory_exists(path):
-  dir = os.path.dirname(makefile_path)
+  dir = os.path.dirname(path)
   if dir and not os.path.exists(dir):
     os.makedirs(dir)
 
