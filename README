@@ -43,7 +43,10 @@ After running configure run "make" and then "make install". You must
 have root privileges for the installation step.
 
 This will produce the liblouis library and the programs lou_allround,
-lou_ checktable, lou_debug and lou_translate. 
+lou_checkhyphens, lou_ checktable, lou_debug and lou_translate. 
+
+If you wish to have man pages for the programs you might want to
+install help2man before running configure.
 
 RELEASE NOTES 
 

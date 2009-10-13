@@ -1,3 +1,12 @@
+2009-10-13  Christian Egli  <christian.egli@sbszh.ch>
+
+	* man/Makefile.am: When generating the man pages at distribution
+	time you need to make sure that all the libraries and all the
+	tools are built. This makes the Makefile complex for no good
+	reason (since John doesn't have help2man anyway). So the man pages
+	are not distributed now. If a user wants man pages they have to
+	install help2man.
+
 2009-10-09  Christian Egli  <christian.egli@sbszh.ch>
 
 	* Makefile.am:
