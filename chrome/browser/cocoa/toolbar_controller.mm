@@ -289,7 +289,6 @@ class PrefObserverBridge : public NotificationObserver {
     tag = IDC_STOP;
   }
   NSImage* stopStartImage = nsimage_cache::ImageNamed(imageName);
-  [stopStartImage setTemplate:YES];
   [goButton_ setImage:stopStartImage];
   [goButton_ setTag:tag];
 }

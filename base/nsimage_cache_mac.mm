@@ -42,8 +42,14 @@ NSImage* ImageNamed(NSString* name) {
     if (path) {
       @try {
         result = [[[NSImage alloc] initWithContentsOfFile:path] autorelease];
-        if (result)
+        if (result) {
+          // Auto-template images with names ending in "Template".
+          NSString* extensionlessName = [name stringByDeletingPathExtension];
+          if ([extensionlessName hasSuffix:@"Template"])
+            [result setTemplate:YES];
+
           [image_cache setObject:result forKey:name];
+        }
       }
       @catch (id err) {
         DLOG(ERROR) << "Failed to load the image for name '"

@@ -56,4 +56,14 @@ TEST_F(NSImageCacheTest, LookupFoundAndClear) {
       << "how'd we get the same image after a cache clear?";
 }
 
+TEST_F(NSImageCacheTest, AutoTemplating) {
+  NSImage *templateImage = nsimage_cache::ImageNamed(@"back_Template.pdf");
+  EXPECT_TRUE([templateImage isTemplate] == YES)
+      << "Image ending in 'Template' should be marked as being a template";
+  NSImage *nonTemplateImage = nsimage_cache::ImageNamed(@"aliasCursor.png");
+  EXPECT_FALSE([nonTemplateImage isTemplate] == YES)
+      << "Image not ending in 'Template' should not be marked as being a "
+         "template";
+}
+
 }  // namespace
