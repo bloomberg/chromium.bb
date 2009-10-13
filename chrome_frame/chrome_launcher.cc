@@ -20,7 +20,7 @@ const wchar_t kLauncherExeBaseName[] = L"chrome_launcher.exe";
 
 // These are the switches we will allow (along with their values) in the
 // safe-for-Low-Integrity version of the Chrome command line.
-const wchar_t* kAllowedSwitches[] = {
+const char* kAllowedSwitches[] = {
   switches::kAutomationClientChannelID,
   switches::kDisableMetrics,
   switches::kNoFirstRun,
@@ -61,7 +61,7 @@ CommandLine* CreateLaunchCommandLine() {
 void SanitizeCommandLine(const CommandLine& original, CommandLine* sanitized) {
   int num_sanitized_switches = 0;
   for (int i = 0; i < arraysize(kAllowedSwitches); ++i) {
-    const wchar_t* current_switch = kAllowedSwitches[i];
+    const char* current_switch = kAllowedSwitches[i];
     if (original.HasSwitch(current_switch)) {
       ++num_sanitized_switches;
       std::wstring switch_value = original.GetSwitchValue(current_switch);
