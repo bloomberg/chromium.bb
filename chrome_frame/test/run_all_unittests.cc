@@ -7,7 +7,7 @@
 #include "base/at_exit.h"
 #include "base/platform_thread.h"
 #include "base/process_util.h"
-#include "base/test_suite.h"
+#include "base/test/test_suite.h"
 #include "base/command_line.h"
 #include "chrome/common/chrome_paths.h"
 
@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
     // TODO(robertshield): Make these tests restore the original registration
     // once done.
     ScopedChromeFrameRegistrar registrar;
-    
+
     return test_suite.Run();
   }
 }
