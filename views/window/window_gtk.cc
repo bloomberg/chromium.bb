@@ -332,6 +332,14 @@ gboolean WindowGtk::OnWindowStateEvent(GtkWidget* widget,
   return FALSE;
 }
 
+gboolean WindowGtk::OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
+  GdkCursor* cursor = gdk_cursor_new(GDK_LEFT_PTR);
+  gdk_window_set_cursor(widget->window, cursor);
+  gdk_cursor_destroy(cursor);
+
+  return WidgetGtk::OnLeaveNotify(widget, event);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WindowGtk, protected:
 

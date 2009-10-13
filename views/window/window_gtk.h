@@ -66,6 +66,7 @@ class WindowGtk : public WidgetGtk, public Window {
   virtual void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
   virtual gboolean OnWindowStateEvent(GtkWidget* widget,
                                       GdkEventWindowState* event);
+  virtual gboolean OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event);
 
  protected:
   // For  the constructor.
