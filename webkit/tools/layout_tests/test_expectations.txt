@@ -3188,9 +3188,15 @@ BUG_HCLAM MAC SLOW : LayoutTests/svg/carto.net/scrollbar.svg = CRASH
 // WebKit roll 49405:49413
 BUG_HCLAM : LayoutTests/http/tests/xmlhttprequest/logout.html = FAIL
 
-// WebKit toll 49414:49427
+// WebKit roll 49414:49427
 BUG_HCLAM : LayoutTests/editing/style/5228141.html = FAIL
 BUG_HCLAM : LayoutTests/editing/style/style-boundary-001.html = FAIL
 BUG_HCLAM : LayoutTests/fast/js/string-trim.html = FAIL
 BUG_HCLAM WIN MAC : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-image-not-loaded-svg.svg = CRASH
 BUG_HCLAM WIN : LayoutTests/fast/loader/text-document-wrapping.html = CRASH
+
+// WebKit roll 49473:49502
+BUG30338 : LayoutTests/fast/websockets/websocket-event-target.html = FAIL
+BUG_YAAR WIN LINUX : LayoutTests/svg/custom/gradient-deep-referencing.svg = FAIL
+BUG_YAAR WIN LINUX : LayoutTests/svg/custom/gradient-userSpaceOnUse-with-percentage.svg = FAIL
+BUG_YAAR : LayoutTests/fast/dom/beforeload/frame-before-load.html = FAIL
