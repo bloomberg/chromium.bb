@@ -152,6 +152,7 @@ class ToolbarView : public views::View,
   virtual void ShowContextMenu(int x, int y, bool is_mouse_gesture);
   virtual void DidGainFocus();
   virtual void WillLoseFocus();
+  virtual void RequestFocus();
   virtual bool OnKeyPressed(const views::KeyEvent& e);
   virtual bool OnKeyReleased(const views::KeyEvent& e);
   virtual bool GetAccessibleName(std::wstring* name);

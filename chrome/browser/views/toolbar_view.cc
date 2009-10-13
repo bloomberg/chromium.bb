@@ -648,6 +648,20 @@ void ToolbarView::WillLoseFocus() {
     GetWidget()->GetTooltipManager()->HideKeyboardTooltip();
 }
 
+void ToolbarView::RequestFocus() {
+  // When the toolbar needs to request focus, the default implementation of
+  // View::RequestFocus requires the View to be focusable. Since ToolbarView is
+  // not technically focused, we need to temporarily set and remove focus so
+  // that it can focus back to its MSAA focused state.
+  if (acc_focused_view_) {
+    SetFocusable(true);
+    View::RequestFocus();
+    SetFocusable(false);
+  } else {
+    View::RequestFocus();
+  }
+}
+
 bool ToolbarView::OnKeyPressed(const views::KeyEvent& e) {
   // Paranoia check, button should be initialized upon toolbar gaining focus.
   if (!acc_focused_view_)
