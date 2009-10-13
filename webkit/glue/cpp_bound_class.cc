@@ -23,6 +23,45 @@
 using WebKit::WebBindings;
 using WebKit::WebFrame;
 
+namespace {
+
+class CppVariantPropertyCallback : public CppBoundClass::PropertyCallback {
+ public:
+  CppVariantPropertyCallback(CppVariant* value) : value_(value) { }
+
+  virtual bool GetValue(CppVariant* value) {
+    value->Set(*value_);
+    return true;
+  }
+  virtual bool SetValue(const CppVariant& value) {
+    value_->Set(value);
+    return true;
+  }
+
+ private:
+  CppVariant* value_;
+};
+
+class GetterPropertyCallback : public CppBoundClass::PropertyCallback {
+public:
+  GetterPropertyCallback(CppBoundClass::GetterCallback* callback)
+      : callback_(callback) { }
+
+  virtual bool GetValue(CppVariant* value) {
+    callback_->Run(value);
+    return true;
+  }
+
+  virtual bool SetValue(const CppVariant& value) {
+    return false;
+  }
+
+private:
+  scoped_ptr<CppBoundClass::GetterCallback> callback_;
+};
+
+}
+
 // Our special NPObject type.  We extend an NPObject with a pointer to a
 // CppBoundClass, which is just a C++ interface that we forward all NPObject
 // callbacks to.
@@ -138,6 +177,11 @@ CppBoundClass::~CppBoundClass() {
   for (MethodList::iterator i = methods_.begin(); i != methods_.end(); ++i)
     delete i->second;
 
+  for (PropertyList::iterator i = properties_.begin(); i != properties_.end();
+      ++i) {
+    delete i->second;
+  }
+
   // Unregister ourselves if we were bound to a frame.
   if (bound_to_frame_)
     WebBindings::unregisterObject(NPVARIANT_TO_OBJECT(self_variant_));
@@ -181,45 +225,76 @@ bool CppBoundClass::Invoke(NPIdentifier ident,
 }
 
 bool CppBoundClass::GetProperty(NPIdentifier ident, NPVariant* result) const {
-  PropertyList::const_iterator prop = properties_.find(ident);
-  if (prop == properties_.end()) {
+  PropertyList::const_iterator callback = properties_.find(ident);
+  if (callback == properties_.end()) {
     VOID_TO_NPVARIANT(*result);
     return false;
   }
 
-  const CppVariant* cpp_value = (*prop).second;
-  cpp_value->CopyToNPVariant(result);
+  CppVariant cpp_value;
+  if (!callback->second->GetValue(&cpp_value))
+    return false;
+  cpp_value.CopyToNPVariant(result);
   return true;
 }
 
 bool CppBoundClass::SetProperty(NPIdentifier ident,
-                                   const NPVariant* value) {
-  PropertyList::iterator prop = properties_.find(ident);
-  if (prop == properties_.end())
+                                const NPVariant* value) {
+  PropertyList::iterator callback = properties_.find(ident);
+  if (callback == properties_.end())
     return false;
 
-  (*prop).second->Set(*value);
-  return true;
+  CppVariant cpp_value;
+  cpp_value.Set(*value);
+  return (*callback).second->SetValue(cpp_value);
 }
 
-void CppBoundClass::BindCallback(std::string name, Callback* callback) {
-  // NPUTF8 is a typedef for char, so this cast is safe.
-  NPIdentifier ident = WebBindings::getStringIdentifier((const NPUTF8*)name.c_str());
+void CppBoundClass::BindCallback(const std::string& name, Callback* callback) {
+  NPIdentifier ident = WebBindings::getStringIdentifier(name.c_str());
   MethodList::iterator old_callback = methods_.find(ident);
-  if (old_callback != methods_.end())
+  if (old_callback != methods_.end()) {
     delete old_callback->second;
+    if (callback == NULL) {
+      methods_.erase(old_callback);
+      return;
+    }
+  }
+
   methods_[ident] = callback;
 }
 
-void CppBoundClass::BindProperty(std::string name, CppVariant* prop) {
-  // NPUTF8 is a typedef for char, so this cast is safe.
-  NPIdentifier ident = WebBindings::getStringIdentifier((const NPUTF8*)name.c_str());
-  properties_[ident] = prop;
+void CppBoundClass::BindGetterCallback(const std::string& name,
+                                       GetterCallback* callback) {
+  PropertyCallback* property_callback = callback == NULL ?
+      NULL : new GetterPropertyCallback(callback);
+
+  BindProperty(name, property_callback);
 }
 
-bool CppBoundClass::IsMethodRegistered(std::string name) const {
-  // NPUTF8 is a typedef for char, so this cast is safe.
-  NPIdentifier ident = WebBindings::getStringIdentifier((const NPUTF8*)name.c_str());
+void CppBoundClass::BindProperty(const std::string& name, CppVariant* prop) {
+  PropertyCallback* property_callback = prop == NULL ?
+      NULL : new CppVariantPropertyCallback(prop);
+
+  BindProperty(name, property_callback);
+}
+
+void CppBoundClass::BindProperty(const std::string& name,
+                                 PropertyCallback* callback) {
+  NPIdentifier ident = WebBindings::getStringIdentifier(name.c_str());
+  PropertyList::iterator old_callback = properties_.find(ident);
+  if (old_callback != properties_.end()) {
+    delete old_callback->second;
+    if (callback == NULL) {
+      properties_.erase(old_callback);
+      return;
+    }
+  }
+
+  properties_[ident] = callback;
+}
+
+bool CppBoundClass::IsMethodRegistered(const std::string& name) const {
+  NPIdentifier ident = WebBindings::getStringIdentifier(name.c_str());
   MethodList::const_iterator callback = methods_.find(ident);
   return (callback != methods_.end());
 }

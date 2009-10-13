@@ -63,6 +63,9 @@ class CppBindingExample : public CppBoundClass {
   // numbers (integers or doubles).  Otherwise returns null.
   void plus(const CppArgumentList& args, CppVariant* result);
 
+  // Always returns the same value -- an example of a read-only property.
+  void same(CppVariant* result);
+
   // Invoked when a nonexistent method is called on this example object, this
   // prints an error message.
   void fallbackMethod(const CppArgumentList& args, CppVariant* result);

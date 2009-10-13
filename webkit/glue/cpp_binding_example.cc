@@ -2,10 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file contains the definition for CppBindingExample, a usage example
-// that is not actually used anywhere.  See cpp_binding_example.h.
+// This file contains the definition for CppBindingExample, which is used in
+// cpp_bound_class_unittest.
 
 #include "cpp_binding_example.h"
+
+namespace {
+
+class PropertyCallbackExample : public CppBoundClass::PropertyCallback {
+ public:
+  virtual bool GetValue(CppVariant* value) {
+    value->Set(value_);
+    return true;
+  }
+
+  virtual bool SetValue(const CppVariant& value) {
+    value_.Set(value);
+    return true;
+  }
+
+ private:
+  CppVariant value_;
+};
+
+}
 
 CppBindingExample::CppBindingExample() {
   // Map properties.  It's recommended, but not required, that the JavaScript
@@ -13,6 +33,11 @@ CppBindingExample::CppBindingExample() {
   // variables exposed through those names.
   BindProperty("my_value", &my_value);
   BindProperty("my_other_value", &my_other_value);
+
+  // Bind property with a callback.
+  BindProperty("my_value_with_callback", new PropertyCallbackExample());
+  // Bind property with a getter callback.
+  BindProperty("same", &CppBindingExample::same);
 
   // Map methods.  See comment above about names.
   BindMethod("echoValue", &CppBindingExample::echoValue);
@@ -86,6 +111,10 @@ void CppBindingExample::plus(const CppArgumentList& args,
     sum += arg2.value.intValue;
 
   result->Set(sum);
+}
+
+void CppBindingExample::same(CppVariant* result) {
+  result->Set(42);
 }
 
 void CppBindingExample::fallbackMethod(const CppArgumentList& args,

@@ -36,6 +36,18 @@ typedef std::vector<CppVariant> CppArgumentList;
 // directly to C++ method calls and CppVariant* variable access.
 class CppBoundClass {
  public:
+  class PropertyCallback {
+   public:
+    virtual ~PropertyCallback() { }
+
+    // Sets |value| to the value of the property. Returns false in case of
+    // failure. |value| is always non-NULL.
+    virtual bool GetValue(CppVariant* value) = 0;
+
+    // sets the property value to |value|. Returns false in case of failure.
+    virtual bool SetValue(const CppVariant& value) = 0;
+  };
+
   // The constructor should call BindMethod, BindProperty, and
   // SetFallbackMethod as needed to set up the methods, properties, and
   // fallback method.
@@ -58,20 +70,21 @@ class CppBoundClass {
 
   // The type of callbacks.
   typedef Callback2<const CppArgumentList&, CppVariant*>::Type Callback;
+  typedef Callback1<CppVariant*>::Type GetterCallback;
 
   // Used by a test.  Returns true if a method with name |name| exists,
   // regardless of whether a fallback is registered.
-  bool IsMethodRegistered(std::string name) const;
+  bool IsMethodRegistered(const std::string& name) const;
 
  protected:
   // Bind the Javascript method called |name| to the C++ callback |callback|.
-  void BindCallback(std::string name, Callback* callback);
+  void BindCallback(const std::string& name, Callback* callback);
 
   // A wrapper for BindCallback, to simplify the common case of binding a
   // method on the current object.  Though not verified here, |method|
   // must be a method of this CppBoundClass subclass.
   template<typename T>
-  void BindMethod(std::string name,
+  void BindMethod(const std::string& name,
       void (T::*method)(const CppArgumentList&, CppVariant*)) {
     Callback* callback =
         NewCallback<T, const CppArgumentList&, CppVariant*>(
@@ -79,8 +92,26 @@ class CppBoundClass {
     BindCallback(name, callback);
   }
 
+  // Bind Javascript property |name| to the C++ getter callback |callback|.
+  // This can be used to create read-only properties.
+  void BindGetterCallback(const std::string& name, GetterCallback* callback);
+
+  // A wrapper for BindGetterCallback, to simplify the common case of binding a
+  // property on the current object.  Though not verified here, |method|
+  // must be a method of this CppBoundClass subclass.
+  template<typename T>
+  void BindProperty(const std::string& name, void (T::*method)(CppVariant*)) {
+    GetterCallback* callback =
+        NewCallback<T, CppVariant*>(static_cast<T*>(this), method);
+    BindGetterCallback(name, callback);
+  }
+
   // Bind the Javascript property called |name| to a CppVariant |prop|.
-  void BindProperty(std::string name, CppVariant* prop);
+  void BindProperty(const std::string& name, CppVariant* prop);
+
+  // Bind Javascript property called |name| to a PropertyCallback |callback|.
+  // CppBoundClass assumes control over the life time of the |callback|.
+  void BindProperty(const std::string& name, PropertyCallback* callback);
 
   // Set the fallback callback, which is called when when a callback is
   // invoked that isn't bound.
@@ -116,7 +147,7 @@ class CppBoundClass {
   // Some fields are protected because some tests depend on accessing them,
   // but otherwise they should be considered private.
 
-  typedef std::map<NPIdentifier, CppVariant*> PropertyList;
+  typedef std::map<NPIdentifier, PropertyCallback*> PropertyList;
   typedef std::map<NPIdentifier, Callback*> MethodList;
   // These maps associate names with property and method pointers to be
   // exposed to JavaScript.

@@ -209,6 +209,25 @@ TEST_F(CppBoundClassTest, SetAndGetProperties) {
   }
 }
 
+TEST_F(CppBoundClassTest, SetAndGetPropertiesWithCallbacks) {
+  // TODO(dglazkov): fix NPObject issues around failing property setters and
+  // getters and add tests for situations when GetProperty or SetProperty fail.
+  std::string js = "var result = 'SUCCESS';\n"
+    "example.my_value_with_callback = 10;\n"
+    "if (example.my_value_with_callback != 10)\n"
+    "  result = 'FAIL: unable to set property.';\n"
+    "example.my_value_with_callback = 11;\n"
+    "if (example.my_value_with_callback != 11)\n"
+    "  result = 'FAIL: unable to set property again';\n"
+    "if (example.same != 42)\n"
+    "  result = 'FAIL: same property should always be 42';\n"
+    "example.same = 24;\n"
+    "if (example.same != 42)\n"
+    "  result = 'FAIL: same property should always be 42';\n"
+    "document.writeln(result);\n";
+  CheckJavaScriptSuccess(js);
+}
+
 TEST_F(CppBoundClassTest, InvokeMethods) {
   // The expression on the left is expected to return the value on the right.
   static const std::string tests[] = {
