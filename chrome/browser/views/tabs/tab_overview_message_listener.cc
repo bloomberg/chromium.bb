@@ -95,7 +95,7 @@ void TabOverviewMessageListener::ProcessMessage(
 #if defined(TOOLKIT_VIEWS)
         BrowserView* browser_window = GetBrowserViewForGdkWindow(window);
 #else
-        BrowerWindowGtk* browser_window =
+        BrowserWindowGtk* browser_window =
             BrowserWindowGtk::GetBrowserWindowForNativeWindow(
                 BrowserWindowGtk::GetBrowserWindowForXID(
                     x11_util::GetX11WindowFromGdkWindow(window)));
@@ -138,7 +138,7 @@ void TabOverviewMessageListener::ProcessMessage(
       // TODO(oshima): Figure out how to get BrowserView from XID
       // in message.param(0).
 #else
-      BrowerWindowGtk* browser_window =
+      BrowserWindowGtk* browser_window =
           BrowserWindowGtk::GetBrowserWindowForNativeWindow(
               BrowserWindowGtk::GetBrowserWindowForXID(message.param(0)));
       if (!browser_window)
