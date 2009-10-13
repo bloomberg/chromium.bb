@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_HELPER_H_
-#define CHROME_TEST_HELPER_H_
+#ifndef CHROME_TEST_UI_NPAPI_TEST_HELPER_H_
+#define CHROME_TEST_UI_NPAPI_TEST_HELPER_H_
 
 #include "chrome/test/ui/ui_test.h"
 
@@ -14,21 +14,21 @@ class NPAPITester : public UITest {
   virtual void SetUp();
   virtual void TearDown();
 
-private:
-  std::wstring plugin_dll_;
+ private:
+  FilePath plugin_dll_;
 };
 
 // Helper class for NPAPI plugin UI tests, which need the browser window
 // to be visible.
 class NPAPIVisiblePluginTester : public NPAPITester {
-  protected:
-   virtual void SetUp();
+ protected:
+  virtual void SetUp();
 };
 
 // Helper class for NPAPI plugin UI tests which use incognito mode.
 class NPAPIIncognitoTester : public NPAPITester {
-  protected:
-   virtual void SetUp();
+ protected:
+  virtual void SetUp();
 };
 
-#endif  // CHROME_TEST_HELPER_H_
+#endif  // CHROME_TEST_UI_NPAPI_TEST_HELPER_H_

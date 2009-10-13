@@ -189,7 +189,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode) {
   if (!file_util::CreateTemporaryFile(&fontconfig_path)) {
     LOG(FATAL) << "failed to create temp font config file";
   }
-  if (-1 == file_util::WriteFile(fontconfig_path.ToWStringHack(),
+  if (-1 == file_util::WriteFile(fontconfig_path,
                                  font_config_xml.data(),
                                  font_config_xml.length())) {
     LOG(FATAL) << "failed to write temp font config file";
@@ -278,7 +278,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode) {
   if (!file_util::CreateTemporaryFile(g_ahem_path)) {
     LOG(FATAL) << "failed to create temp ahem font";
   }
-  if (-1 == file_util::WriteFile(g_ahem_path->ToWStringHack(), ahem_font.data(),
+  if (-1 == file_util::WriteFile(g_ahem_path, ahem_font.data(),
                                  ahem_font.length())) {
     LOG(FATAL) << "failed to write temp ahem font";
   }

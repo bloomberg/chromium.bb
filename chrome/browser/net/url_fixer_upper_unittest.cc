@@ -180,7 +180,7 @@ static bool MakeTempFile(const FilePath& dir,
                          const FilePath& file_name,
                          FilePath* full_path) {
   *full_path = dir.Append(file_name);
-  return file_util::WriteFile(full_path->ToWStringHack(), NULL, 0) == 0;
+  return file_util::WriteFile(*full_path, "", 0) == 0;
 }
 
 // Returns true if the given URL is a file: URL that matches the given file

@@ -10,6 +10,7 @@
 
 #include "chrome/test/ui/npapi_test_helper.h"
 
+#include "base/file_util.h"
 #include "chrome/common/chrome_switches.h"
 
 NPAPITester::NPAPITester()
@@ -19,20 +20,19 @@ NPAPITester::NPAPITester()
 void NPAPITester::SetUp() {
   // We need to copy our test-plugin into the plugins directory so that
   // the browser can load it.
-  std::wstring plugins_directory = browser_directory_.ToWStringHack() +
-      L"\\plugins";
-  std::wstring plugin_src = browser_directory_.ToWStringHack() +
-      L"\\npapi_test_plugin.dll";
-  plugin_dll_ = plugins_directory + L"\\npapi_test_plugin.dll";
+  FilePath plugins_directory = browser_directory_.AppendASCII("plugins");
 
-  CreateDirectory(plugins_directory.c_str(), NULL);
-  CopyFile(plugin_src.c_str(), plugin_dll_.c_str(), FALSE);
+  FilePath plugin_src = browser_directory_.AppendASCII("npapi_test_plugin.dll");
+  plugin_dll_ = plugins_directory.AppendASCII("npapi_test_plugin.dll");
+
+  file_util::CreateDirectory(plugins_directory);
+  file_util::CopyFile(plugin_src, plugin_dll_);
 
   UITest::SetUp();
 }
 
 void NPAPITester::TearDown() {
-  DeleteFile(plugin_dll_.c_str());
+  file_util::Delete(plugin_dll_, false);
   UITest::TearDown();
 }
 

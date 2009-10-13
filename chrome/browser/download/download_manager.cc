@@ -642,7 +642,7 @@ void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info) {
     // Create an empty file at the suggested path so that we don't allocate the
     // same "non-existant" path to multiple downloads.
     // See: http://code.google.com/p/chromium/issues/detail?id=3662
-    file_util::WriteFile(info->suggested_path.ToWStringHack(), "", 0);
+    file_util::WriteFile(info->suggested_path, "", 0);
   }
 
   // Now we return to the UI thread.
