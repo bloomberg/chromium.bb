@@ -93,7 +93,8 @@ small   effect-import-test
 
 # These two tests rely on Selenium getting or setting a page's title and that
 # does not currently work with Chrome.
-medium  TestStressDrawShapes   except(*googlechrome)
+# Don't run TestStressDrawShapes on ie because selenium/ie is too slow.
+medium  TestStressDrawShapes   except(*googlechrome,*iexplore)
 medium  TestStressMultiWindow  except(*googlechrome)
 
 large   TestStressCullingZSort pdiff_threshold(450) screenshots(8)
