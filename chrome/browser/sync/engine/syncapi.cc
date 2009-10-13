@@ -690,8 +690,8 @@ class SyncManager::SyncInternal {
         command_channel_(0),
         auth_problem_(AUTH_PROBLEM_NONE),
         sync_manager_(sync_manager),
-        notification_pending_(false),
         address_watch_thread_("SyncEngine_AddressWatcher"),
+        notification_pending_(false),
         initialized_(false) {
   }
 

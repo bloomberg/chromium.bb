@@ -35,7 +35,6 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
-#include "chrome/browser/sync/util/character_set_converters.h"
 #include "chrome/browser/sync/util/closure.h"
 #include "chrome/browser/sync/util/compat_file.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
@@ -1057,53 +1056,6 @@ TEST(SyncableDirectory, StressTransactions) {
 
   dirman.Close(dirname);
   PathRemove(dirman.GetSyncDataDatabasePath());
-}
-
-static PathString UTF8ToPathStringQuick(const char* str) {
-  PathString ret;
-  CHECK(browser_sync::UTF8ToPathString(str, strlen(str), &ret));
-  return ret;
-}
-
-// Returns number of chars used. Max possible is 4.
-// This algorithm was coded from the table at
-// http://en.wikipedia.org/w/index.php?title=UTF-8&oldid=153391259
-// There are no endian issues.
-static int UTF32ToUTF8(uint32 incode, unsigned char* out) {
-  if (incode <= 0x7f) {
-    out[0] = incode;
-    return 1;
-  }
-  if (incode <= 0x7ff) {
-    out[0] = 0xC0;
-    out[0] |= (incode >> 6);
-    out[1] = 0x80;
-    out[1] |= (incode & 0x3F);
-    return 2;
-  }
-  if (incode <= 0xFFFF) {
-    if ((incode > 0xD7FF) && (incode < 0xE000))
-      return 0;
-    out[0] = 0xE0;
-    out[0] |= (incode >> 12);
-    out[1] = 0x80;
-    out[1] |= (incode >> 6) & 0x3F;
-    out[2] = 0x80;
-    out[2] |= incode & 0x3F;
-    return 3;
-  }
-  if (incode <= 0x10FFFF) {
-    out[0] = 0xF0;
-    out[0] |= incode >> 18;
-    out[1] = 0x80;
-    out[1] |= (incode >> 12) & 0x3F;
-    out[2] = 0x80;
-    out[2] |= (incode >> 6) & 0x3F;
-    out[3] = 0x80;
-    out[3] |= incode & 0x3F;
-    return 4;
-  }
-  return 0;
 }
 
 TEST(Syncable, ComparePathNames) {

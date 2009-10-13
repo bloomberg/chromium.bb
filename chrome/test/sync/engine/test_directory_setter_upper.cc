@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/util/character_set_converters.h"
 #include "chrome/browser/sync/util/compat_file.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -84,9 +85,16 @@ void ManuallyOpenedTestDirectorySetterUpper::TearDown() {
     TestDirectorySetterUpper::TearDown();
   }
 }
+    
+static PathString UTF8ToPathStringQuick(const std::string &str) {	
+  PathString ret;	
+  CHECK(browser_sync::UTF8ToPathString(str.data(), str.size(), &ret));	
+  return ret;	
+}
 
 TriggeredOpenTestDirectorySetterUpper::TriggeredOpenTestDirectorySetterUpper(
-    const std::string& name) : TestDirectorySetterUpper(UTF8ToWide(name)) {
+    const std::string& name)
+    : TestDirectorySetterUpper(UTF8ToPathStringQuick(name)) {
 }
 
 void TriggeredOpenTestDirectorySetterUpper::SetUp() {
@@ -97,7 +105,7 @@ void TriggeredOpenTestDirectorySetterUpper::TearDown() {
   DirectoryManager::DirNames names;
   manager()->GetOpenDirectories(&names);
   if (!names.empty()) {
-    ASSERT_EQ(1, names.size());
+    ASSERT_EQ(1U, names.size());
     ASSERT_EQ(name(), names[0]);
     TestDirectorySetterUpper::TearDown();
   }

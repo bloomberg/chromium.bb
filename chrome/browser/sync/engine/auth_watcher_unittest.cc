@@ -17,7 +17,8 @@
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-static const wchar_t* kUserSettingsDB = L"Settings.sqlite3";
+static FilePath::CharType kUserSettingsDB[] =
+  FILE_PATH_LITERAL("Settings.sqlite3");
 static const char* kTestUserAgent = "useragent";
 static const char* kTestServiceId = "serviceid";
 static const char* kTestGaiaURL = "http://gaia_url";
@@ -76,9 +77,9 @@ namespace browser_sync {
 
 class AuthWatcherTest : public testing::Test {
  public:
-  AuthWatcherTest() : consumer_ready(false, false),
-                      event_produced(false, false),
-                      metadb_(kUserDisplayEmail) {}
+  AuthWatcherTest() : metadb_(kUserDisplayEmail),
+                      consumer_ready(false, false),
+                      event_produced(false, false) {}
   virtual void SetUp() {
     metadb_.SetUp();
     connection_.reset(new MockConnectionManager(metadb_.manager(),
