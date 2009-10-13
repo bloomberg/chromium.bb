@@ -29,8 +29,17 @@
 #include "chrome/common/pref_service.h"
 #include "grit/generated_resources.h"
 
-// Name of image in the bundle for the yellow of the star icon.
-static NSString* const kStarredImageName = @"starred.pdf";
+// Names of images in the bundle for buttons.
+static NSString* const kBackButtonImageName = @"back_Template.pdf";
+static NSString* const kForwardButtonImageName = @"forward_Template.pdf";
+static NSString* const kReloadButtonImageName = @"reload_Template.pdf";
+static NSString* const kHomeButtonImageName = @"home_Template.pdf";
+static NSString* const kStarButtonImageName = @"star_Template.pdf";
+static NSString* const kStarButtonFillingImageName = @"starred.pdf";
+static NSString* const kGoButtonGoImageName = @"go_Template.pdf";
+static NSString* const kGoButtonStopImageName = @"stop_Template.pdf";
+static NSString* const kPageButtonImageName = @"menu_page_Template.pdf";
+static NSString* const kWrenchButtonImageName = @"menu_chrome_Template.pdf";
 
 // Height of the toolbar in pixels when the bookmark bar is closed.
 static const float kBaseToolbarHeight = 36.0;
@@ -126,6 +135,19 @@ class PrefObserverBridge : public NotificationObserver {
 // Now we can hook up bridges that rely on UI objects such as the location
 // bar and button state.
 - (void)awakeFromNib {
+  // A bug in AppKit (<rdar://7298597>, <http://openradar.me/7298597>) causes
+  // images loaded directly from nibs in a framework to not get their "template"
+  // flags set properly. Thus, despite the images being set on the buttons in
+  // the xib, we must set them in code.
+  [backButton_ setImage:nsimage_cache::ImageNamed(kBackButtonImageName)];
+  [forwardButton_ setImage:nsimage_cache::ImageNamed(kForwardButtonImageName)];
+  [reloadButton_ setImage:nsimage_cache::ImageNamed(kReloadButtonImageName)];
+  [homeButton_ setImage:nsimage_cache::ImageNamed(kHomeButtonImageName)];
+  [starButton_ setImage:nsimage_cache::ImageNamed(kStarButtonImageName)];
+  [goButton_ setImage:nsimage_cache::ImageNamed(kGoButtonGoImageName)];
+  [pageButton_ setImage:nsimage_cache::ImageNamed(kPageButtonImageName)];
+  [wrenchButton_ setImage:nsimage_cache::ImageNamed(kWrenchButtonImageName)];
+
   [self initCommandStatus:commands_];
   bubblePositioner_.reset(new BubblePositionerMac(self));
   locationBarView_.reset(new LocationBarViewMac(locationBar_,
@@ -265,7 +287,7 @@ class PrefObserverBridge : public NotificationObserver {
   NSImage* starImage = nil;
   NSString* toolTip;
   if (isStarred) {
-    starImage = nsimage_cache::ImageNamed(kStarredImageName);
+    starImage = nsimage_cache::ImageNamed(kStarButtonFillingImageName);
     // Cache the string since we'll need it a lot
     static NSString* starredToolTip =
         [l10n_util::GetNSStringWithFixup(IDS_TOOLTIP_STARRED) retain];
@@ -282,10 +304,10 @@ class PrefObserverBridge : public NotificationObserver {
 }
 
 - (void)setIsLoading:(BOOL)isLoading {
-  NSString* imageName = @"go_Template.pdf";
+  NSString* imageName = kGoButtonGoImageName;
   NSInteger tag = IDC_GO;
   if (isLoading) {
-    imageName = @"stop_Template.pdf";
+    imageName = kGoButtonStopImageName;
     tag = IDC_STOP;
   }
   NSImage* stopStartImage = nsimage_cache::ImageNamed(imageName);
