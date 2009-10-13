@@ -14,8 +14,19 @@
 
 #include <string>
 
+#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "printing/print_settings.h"
+
+#if defined(OS_MACOSX)
+#include "base/scoped_cftyperef.h"
+#ifdef __OBJC__
+@class NSPrintInfo;
+#else
+class NSPrintInfo;
+#endif  // __OBJC__
+#endif  // OS_MACOSX
 
 namespace printing {
 
@@ -34,11 +45,10 @@ class PrintingContext {
   PrintingContext();
   ~PrintingContext();
 
-#if defined(OS_WIN)
   // Asks the user what printer and format should be used to print. Updates the
   // context with the select device settings.
-  Result AskUserForSettings(HWND window, int max_pages, bool has_selection);
-#endif
+  Result AskUserForSettings(gfx::NativeWindow window, int max_pages,
+                            bool has_selection);
 
   // Selects the user's default printer and format. Updates the context with the
   // default device settings.
@@ -75,11 +85,14 @@ class PrintingContext {
   // Dismiss the Print... dialog box if shown.
   void DismissDialog();
 
-#if defined(OS_WIN)
-  HDC context() {
-    return hdc_;
-  }
+  gfx::NativeDrawingContext context() {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+    return context_;
+#else
+    NOTIMPLEMENTED();
+    return NULL;
 #endif
+  }
 
   const PrintSettings& settings() const {
     return settings_;
@@ -105,8 +118,8 @@ class PrintingContext {
                           int number_ranges,
                           bool selection_only);
 
-  // Retrieves the printer's default low-level settings. hdc_ is allocated with
-  // this call.
+  // Retrieves the printer's default low-level settings. On Windows, context_ is
+  // allocated with this call.
   bool GetPrinterSettings(HANDLE printer,
                           const std::wstring& device_name);
 
@@ -118,8 +131,19 @@ class PrintingContext {
   Result ParseDialogResultEx(const PRINTDLGEX& dialog_options);
   Result ParseDialogResult(const PRINTDLG& dialog_options);
 
-  // The selected printer context.
-  HDC hdc_;
+#elif defined(OS_MACOSX)
+  // Read the settings from the given NSPrintInfo (and cache it for later use).
+  void ParsePrintInfo(NSPrintInfo* print_info);
+#endif
+
+  // On Windows, the selected printer context.
+  // On Mac, the current page's context; only valid between NewPage and PageDone
+  // call pairs.
+  gfx::NativeDrawingContext context_;
+
+#if defined(OS_MACOSX)
+  // The native print info object.
+  NSPrintInfo* print_info_;
 #endif
 
   // Complete print context settings.

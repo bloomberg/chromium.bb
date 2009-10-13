@@ -138,7 +138,7 @@ class PrintingContext::CallbackHandler
 };
 
 PrintingContext::PrintingContext()
-    : hdc_(NULL),
+    : context_(NULL),
 #ifndef NDEBUG
       page_number_(-1),
 #endif
@@ -241,9 +241,9 @@ PrintingContext::Result PrintingContext::InitWithSettings(
 }
 
 void PrintingContext::ResetSettings() {
-  if (hdc_ != NULL) {
-    DeleteDC(hdc_);
-    hdc_ = NULL;
+  if (context_ != NULL) {
+    DeleteDC(context_);
+    context_ = NULL;
   }
   settings_.Clear();
   in_print_job_ = false;
@@ -256,7 +256,7 @@ void PrintingContext::ResetSettings() {
 PrintingContext::Result PrintingContext::NewDocument(
     const std::wstring& document_name) {
   DCHECK(!in_print_job_);
-  if (!hdc_)
+  if (!context_)
     return OnError();
 
   // Set the flag used by the AbortPrintJob dialog procedure.
@@ -265,7 +265,7 @@ PrintingContext::Result PrintingContext::NewDocument(
   in_print_job_ = true;
 
   // Register the application's AbortProc function with GDI.
-  if (SP_ERROR == SetAbortProc(hdc_, &AbortProc))
+  if (SP_ERROR == SetAbortProc(context_, &AbortProc))
     return OnError();
 
   DOCINFO di = { sizeof(DOCINFO) };
@@ -296,7 +296,7 @@ PrintingContext::Result PrintingContext::NewDocument(
   // Begin a print job by calling the StartDoc function.
   // NOTE: StartDoc() starts a message loop. That causes a lot of problems with
   // IPC. Make sure recursive task processing is disabled.
-  if (StartDoc(hdc_, &di) <= 0)
+  if (StartDoc(context_, &di) <= 0)
     return OnError();
 
 #ifndef NDEBUG
@@ -311,7 +311,7 @@ PrintingContext::Result PrintingContext::NewPage() {
   DCHECK(in_print_job_);
 
   // Inform the driver that the application is about to begin sending data.
-  if (StartPage(hdc_) <= 0)
+  if (StartPage(context_) <= 0)
     return OnError();
 
 #ifndef NDEBUG
@@ -326,7 +326,7 @@ PrintingContext::Result PrintingContext::PageDone() {
     return CANCEL;
   DCHECK(in_print_job_);
 
-  if (EndPage(hdc_) <= 0)
+  if (EndPage(context_) <= 0)
     return OnError();
   return OK;
 }
@@ -337,7 +337,7 @@ PrintingContext::Result PrintingContext::DocumentDone() {
   DCHECK(in_print_job_);
 
   // Inform the driver that document has ended.
-  if (EndDoc(hdc_) <= 0)
+  if (EndDoc(context_) <= 0)
     return OnError();
 
   ResetSettings();
@@ -347,8 +347,8 @@ PrintingContext::Result PrintingContext::DocumentDone() {
 void PrintingContext::Cancel() {
   abort_printing_ = true;
   in_print_job_ = false;
-  if (hdc_)
-    CancelDC(hdc_);
+  if (context_)
+    CancelDC(context_);
   DismissDialog();
 }
 
@@ -360,7 +360,7 @@ void PrintingContext::DismissDialog() {
 }
 
 PrintingContext::Result PrintingContext::OnError() {
-  // This will close hdc_ and clear settings_.
+  // This will close context_ and clear settings_.
   ResetSettings();
   return abort_printing_ ? CANCEL : FAILED;
 }
@@ -380,25 +380,25 @@ bool PrintingContext::InitializeSettings(const DEVMODE& dev_mode,
                                          const PRINTPAGERANGE* ranges,
                                          int number_ranges,
                                          bool selection_only) {
-  skia::PlatformDevice::InitializeDC(hdc_);
-  DCHECK(GetDeviceCaps(hdc_, CLIPCAPS));
-  DCHECK(GetDeviceCaps(hdc_, RASTERCAPS) & RC_STRETCHDIB);
-  DCHECK(GetDeviceCaps(hdc_, RASTERCAPS) & RC_BITMAP64);
+  skia::PlatformDevice::InitializeDC(context_);
+  DCHECK(GetDeviceCaps(context_, CLIPCAPS));
+  DCHECK(GetDeviceCaps(context_, RASTERCAPS) & RC_STRETCHDIB);
+  DCHECK(GetDeviceCaps(context_, RASTERCAPS) & RC_BITMAP64);
   // Some printers don't advertise these.
-  // DCHECK(GetDeviceCaps(hdc_, RASTERCAPS) & RC_SCALING);
-  // DCHECK(GetDeviceCaps(hdc_, SHADEBLENDCAPS) & SB_CONST_ALPHA);
-  // DCHECK(GetDeviceCaps(hdc_, SHADEBLENDCAPS) & SB_PIXEL_ALPHA);
+  // DCHECK(GetDeviceCaps(context_, RASTERCAPS) & RC_SCALING);
+  // DCHECK(GetDeviceCaps(context_, SHADEBLENDCAPS) & SB_CONST_ALPHA);
+  // DCHECK(GetDeviceCaps(context_, SHADEBLENDCAPS) & SB_PIXEL_ALPHA);
 
   // StretchDIBits() support is needed for printing.
-  if (!(GetDeviceCaps(hdc_, RASTERCAPS) & RC_STRETCHDIB) ||
-      !(GetDeviceCaps(hdc_, RASTERCAPS) & RC_BITMAP64)) {
+  if (!(GetDeviceCaps(context_, RASTERCAPS) & RC_STRETCHDIB) ||
+      !(GetDeviceCaps(context_, RASTERCAPS) & RC_BITMAP64)) {
     NOTREACHED();
     ResetSettings();
     return false;
   }
 
   DCHECK(!in_print_job_);
-  DCHECK(hdc_);
+  DCHECK(context_);
   PageRanges ranges_vector;
   if (!selection_only) {
     // Convert the PRINTPAGERANGE array to a PrintSettings::PageRanges vector.
@@ -411,7 +411,7 @@ bool PrintingContext::InitializeSettings(const DEVMODE& dev_mode,
       ranges_vector.push_back(range);
     }
   }
-  settings_.Init(hdc_,
+  settings_.Init(context_,
                  dev_mode,
                  ranges_vector,
                  new_device_name,
@@ -474,9 +474,9 @@ bool PrintingContext::GetPrinterSettings(HANDLE printer,
 
 bool PrintingContext::AllocateContext(const std::wstring& printer_name,
                                       const DEVMODE* dev_mode) {
-  hdc_ = CreateDC(L"WINSPOOL", printer_name.c_str(), NULL, dev_mode);
-  DCHECK(hdc_);
-  return hdc_ != NULL;
+  context_ = CreateDC(L"WINSPOOL", printer_name.c_str(), NULL, dev_mode);
+  DCHECK(context_);
+  return context_ != NULL;
 }
 
 PrintingContext::Result PrintingContext::ParseDialogResultEx(
@@ -509,7 +509,7 @@ PrintingContext::Result PrintingContext::ParseDialogResultEx(
 
     bool success = false;
     if (dev_mode && !device_name.empty()) {
-      hdc_ = dialog_options.hDC;
+      context_ = dialog_options.hDC;
       PRINTPAGERANGE* page_ranges = NULL;
       DWORD num_page_ranges = 0;
       bool print_selection_only = false;
@@ -529,7 +529,7 @@ PrintingContext::Result PrintingContext::ParseDialogResultEx(
 
     if (!success && dialog_options.hDC) {
       DeleteDC(dialog_options.hDC);
-      hdc_ = NULL;
+      context_ = NULL;
     }
 
     if (dev_mode) {
@@ -548,9 +548,9 @@ PrintingContext::Result PrintingContext::ParseDialogResultEx(
 
   switch (dialog_options.dwResultAction) {
     case PD_RESULT_PRINT:
-      return hdc_ ? OK : FAILED;
+      return context_ ? OK : FAILED;
     case PD_RESULT_APPLY:
-      return hdc_ ? CANCEL : FAILED;
+      return context_ ? CANCEL : FAILED;
     case PD_RESULT_CANCEL:
       return CANCEL;
     default:
@@ -587,13 +587,13 @@ PrintingContext::Result PrintingContext::ParseDialogResult(
 
   bool success = false;
   if (dev_mode && !device_name.empty()) {
-    hdc_ = dialog_options.hDC;
+    context_ = dialog_options.hDC;
     success = InitializeSettings(*dev_mode, device_name, NULL, 0, false);
   }
 
   if (!success && dialog_options.hDC) {
     DeleteDC(dialog_options.hDC);
-    hdc_ = NULL;
+    context_ = NULL;
   }
 
   if (dev_mode) {
@@ -605,7 +605,7 @@ PrintingContext::Result PrintingContext::ParseDialogResult(
   if (dialog_options.hDevNames != NULL)
     GlobalFree(dialog_options.hDevNames);
 
-  return hdc_ ? OK : FAILED;
+  return context_ ? OK : FAILED;
 }
 
 }  // namespace printing

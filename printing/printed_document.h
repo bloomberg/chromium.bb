@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "app/gfx/native_widget_types.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -51,12 +52,14 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
 
   // Draws the page in the context.
   // Note: locks for a short amount of time in debug only.
-  void RenderPrintedPage(const PrintedPage& page, HDC context) const;
+  void RenderPrintedPage(const PrintedPage& page,
+                         gfx::NativeDrawingContext context) const;
 
   // Draws the page in the context. If the page is not available right now, it
   // requests to have this page be rendered and returns false.
   // Note: locks for a short amount of time.
-  bool RenderPrintedPageNumber(int page_number, HDC context);
+  bool RenderPrintedPageNumber(int page_number,
+                               gfx::NativeDrawingContext context);
 
   // Returns true if all the necessary pages for the settings are already
   // rendered.
@@ -166,7 +169,7 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
 
   // Prints the headers and footers for one page in the specified context
   // according to the current settings.
-  void PrintHeaderFooter(HDC context,
+  void PrintHeaderFooter(gfx::NativeDrawingContext context,
                          const PrintedPage& page,
                          PageOverlays::HorizontalPosition x,
                          PageOverlays::VerticalPosition y,

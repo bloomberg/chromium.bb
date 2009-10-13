@@ -10,6 +10,10 @@
 #include "printing/page_range.h"
 #include "printing/page_setup.h"
 
+#if defined(OS_MACOSX)
+#import <ApplicationServices/ApplicationServices.h>
+#endif
+
 typedef struct HDC__* HDC;
 typedef struct _devicemodeW DEVMODE;
 
@@ -31,6 +35,10 @@ class PrintSettings {
             const PageRanges& new_ranges,
             const std::wstring& new_device_name,
             bool selection_only);
+#elif defined(OS_MACOSX)
+  // Reads the settings from the given PMPrinter and PMPageFormat.
+  void Init(PMPrinter printer, PMPageFormat page_format,
+            const PageRanges& new_ranges, bool print_selection_only);
 #endif
 
   // Set printer printable area in in pixels.

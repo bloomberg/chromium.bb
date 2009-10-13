@@ -6,6 +6,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/logging.h"
+#include "base/sys_string_conversions.h"
 #include "printing/units.h"
 
 namespace printing {
@@ -65,6 +66,51 @@ void PrintSettings::Init(HDC hdc,
                                   GetDeviceCaps(hdc, PHYSICALOFFSETY),
                                   GetDeviceCaps(hdc, HORZRES),
                                   GetDeviceCaps(hdc, VERTRES));
+
+  SetPrinterPrintableArea(physical_size_pixels, printable_area_pixels);
+}
+#elif defined(OS_MACOSX)
+void PrintSettings::Init(PMPrinter printer, PMPageFormat page_format,
+                         const PageRanges& new_ranges,
+                         bool print_selection_only) {
+  printer_name_ = base::SysCFStringRefToWide(PMPrinterGetName(printer));
+  device_name_ = base::SysCFStringRefToWide(PMPrinterGetID(printer));
+  ranges = new_ranges;
+  PMOrientation orientation = kPMPortrait;
+  PMGetOrientation(page_format, &orientation);
+  landscape_ = orientation == kPMLandscape;
+  selection_only = print_selection_only;
+
+  UInt32 resolution_count = 0;
+  PMResolution best_resolution = { 72.0, 72.0 };
+  OSStatus status = PMPrinterGetPrinterResolutionCount(printer,
+                                                       &resolution_count);
+  if (status == noErr) {
+    // Resolution indexes are 1-based.
+    for (uint32 i = 1; i <= resolution_count; ++i) {
+      PMResolution resolution;
+      PMPrinterGetIndexedPrinterResolution(printer, i, &resolution);
+      if (best_resolution.hRes > resolution.hRes)
+        best_resolution = resolution;
+    }
+  }
+  dpi_ = best_resolution.hRes;
+  // See comment in the Windows code above.
+  DCHECK_EQ(dpi_, best_resolution.vRes);
+
+  // Get printable area and paper rects (in points)
+  PMRect page_rect, paper_rect;
+  PMGetAdjustedPageRect(page_format, &page_rect);
+  PMGetAdjustedPaperRect(page_format, &paper_rect);
+  const double pixels_per_point = dpi_ / 72.0;
+  gfx::Size physical_size_pixels(
+      (paper_rect.right - paper_rect.left) * pixels_per_point,
+      (paper_rect.bottom - paper_rect.top) * pixels_per_point);
+  gfx::Rect printable_area_pixels(
+      (page_rect.left - paper_rect.left) * pixels_per_point,
+      (page_rect.top - paper_rect.top) * pixels_per_point,
+      (page_rect.right - page_rect.left) * pixels_per_point,
+      (page_rect.bottom - page_rect.top) * pixels_per_point);
 
   SetPrinterPrintableArea(physical_size_pixels, printable_area_pixels);
 }
