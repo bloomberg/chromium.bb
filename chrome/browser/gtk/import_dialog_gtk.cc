@@ -25,8 +25,8 @@ void ImportDialogGtk::ImportComplete() {
   delete this;
 }
 
-ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile) :
-    parent_(parent), profile_(profile), importer_host_(new ImporterHost()) {
+ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile)
+    : parent_(parent), profile_(profile), importer_host_(new ImporterHost()) {
   // Build the dialog.
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_IMPORT_SETTINGS_TITLE).c_str(),

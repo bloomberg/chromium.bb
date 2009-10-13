@@ -28,7 +28,7 @@ TEST(StackTrace, OutputToStream) {
       "Unable to resolve symbols.  Skipping rest of test.";
 
 #if 0
-//TODO(ajwong): Disabling checking of symbol resolution since it depends
+// TODO(ajwong): Disabling checking of symbol resolution since it depends
 //  on whether or not symbols are present, and there are too many
 //  configurations to reliably ensure that symbols are findable.
 #if defined(OS_MACOSX)

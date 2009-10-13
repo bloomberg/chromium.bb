@@ -20,7 +20,7 @@ const int kPrefValueURLs = 4;
 
 // Converts a SessionStartupPref::Type to an integer written to prefs.
 int TypeToPrefValue(SessionStartupPref::Type type) {
-  switch(type) {
+  switch (type) {
     case SessionStartupPref::LAST:   return kPrefValueLast;
     case SessionStartupPref::URLS:   return kPrefValueURLs;
     default:                         return kPrefValueDefault;
@@ -53,7 +53,7 @@ void SessionStartupPref::SetStartupPref(
   SetStartupPref(profile->GetPrefs(), pref);
 }
 
-//static
+// static
 void SessionStartupPref::SetStartupPref(PrefService* prefs,
                                         const SessionStartupPref& pref) {
   DCHECK(prefs);

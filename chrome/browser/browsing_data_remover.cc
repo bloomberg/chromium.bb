@@ -26,8 +26,8 @@
 // BrowsingDataRemover implement RefCounted.
 template <>
 struct RunnableMethodTraits<BrowsingDataRemover> {
-  void RetainCallee(BrowsingDataRemover*) {}
-  void ReleaseCallee(BrowsingDataRemover*) {}
+  void RetainCallee(BrowsingDataRemover* remover) {}
+  void ReleaseCallee(BrowsingDataRemover* remover) {}
 };
 
 bool BrowsingDataRemover::removing_ = false;

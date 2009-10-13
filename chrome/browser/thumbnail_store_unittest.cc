@@ -87,7 +87,7 @@ void ThumbnailStoreTest::SetUp() {
   SkAutoLockPixels lock2(*weewar_);
   jpeg_weewar_ = new RefCountedBytes;
   gfx::JPEGCodec::Encode(
-      reinterpret_cast<unsigned char*>(weewar_->getAddr32(0,0)),
+      reinterpret_cast<unsigned char*>(weewar_->getAddr32(0, 0)),
       gfx::JPEGCodec::FORMAT_BGRA, weewar_->width(),
       weewar_->height(),
       static_cast<int>(weewar_->rowBytes()), 90,

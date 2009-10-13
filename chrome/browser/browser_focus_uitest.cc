@@ -214,7 +214,6 @@ class TestInterstitialPage : public InterstitialPage {
   bool waiting_for_dom_response_;
   bool waiting_for_focus_change_;
   std::string dom_response_;
-
 };
 
 }  // namespace

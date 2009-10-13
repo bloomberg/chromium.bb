@@ -217,7 +217,7 @@ void PluginService::Observe(NotificationType type,
       // See: http://code.google.com/p/chromium/issues/detail?id=12306
       Extension* extension = Details<Extension>(details).ptr();
       bool plugins_changed = false;
-      for (size_t i = 0; i < extension->plugins().size(); ++i ) {
+      for (size_t i = 0; i < extension->plugins().size(); ++i) {
         const Extension::PluginInfo& plugin = extension->plugins()[i];
         NPAPI::PluginList::Singleton()->ResetPluginsLoaded();
         NPAPI::PluginList::Singleton()->AddExtraPluginPath(plugin.path);
@@ -233,7 +233,7 @@ void PluginService::Observe(NotificationType type,
     case NotificationType::EXTENSION_UNLOADED: {
       Extension* extension = Details<Extension>(details).ptr();
       bool plugins_changed = false;
-      for (size_t i = 0; i < extension->plugins().size(); ++i ) {
+      for (size_t i = 0; i < extension->plugins().size(); ++i) {
         const Extension::PluginInfo& plugin = extension->plugins()[i];
         NPAPI::PluginList::Singleton()->ResetPluginsLoaded();
         NPAPI::PluginList::Singleton()->RemoveExtraPluginPath(plugin.path);

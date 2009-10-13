@@ -118,7 +118,7 @@ class DirectoryWatcherTest : public testing::Test {
 
 class TestDelegate : public DirectoryWatcher::Delegate {
  public:
-  TestDelegate(DirectoryWatcherTest* test)
+  explicit TestDelegate(DirectoryWatcherTest* test)
       : test_(test),
         got_notification_(false),
         original_thread_id_(PlatformThread::CurrentId()) {
@@ -309,7 +309,13 @@ TEST_F(DirectoryWatcherTest, MultipleWatchersSingleFile) {
 TEST_F(DirectoryWatcherTest, MultipleWatchersDifferentFiles) {
   const int kNumberOfWatchers = 5;
   DirectoryWatcher watchers[kNumberOfWatchers];
-  TestDelegate delegates[kNumberOfWatchers] = {this, this, this, this, this};
+  TestDelegate delegates[kNumberOfWatchers] = {
+    TestDelegate(this),
+    TestDelegate(this),
+    TestDelegate(this),
+    TestDelegate(this),
+    TestDelegate(this)
+  };
   FilePath subdirs[kNumberOfWatchers];
   for (int i = 0; i < kNumberOfWatchers; i++) {
     subdirs[i] = CreateTestDirDirectoryASCII("Dir" + IntToString(i), false);

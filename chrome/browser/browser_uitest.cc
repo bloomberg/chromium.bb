@@ -65,7 +65,6 @@ class BrowserTest : public UITest {
     }
 #endif  // OS_POSIX
   }
-
 };
 
 class VisibleBrowserTest : public UITest {

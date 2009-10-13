@@ -23,7 +23,7 @@ PluginInstaller::~PluginInstaller() {
 }
 
 void PluginInstaller::OnMissingPluginStatus(int status) {
-  switch(status) {
+  switch (status) {
     case default_plugin::MISSING_PLUGIN_AVAILABLE: {
       tab_contents_->AddInfoBar(this);
       break;

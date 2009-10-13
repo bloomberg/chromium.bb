@@ -13,7 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ProfileManagerTest : public testing::Test {
-protected:
+ protected:
   virtual void SetUp() {
     // Name a subdirectory of the temp directory.
     ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_dir_));
@@ -96,7 +96,7 @@ TEST_F(ProfileManagerTest, DISABLED_CreateAndUseTwoProfiles) {
 
   FilePath dest_path1 = test_dir_;
   dest_path1 = dest_path1.Append(FILE_PATH_LITERAL("New Profile 1"));
-  
+
   FilePath dest_path2 = test_dir_;
   dest_path2 = dest_path2.Append(FILE_PATH_LITERAL("New Profile 2"));
 

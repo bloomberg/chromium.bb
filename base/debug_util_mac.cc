@@ -21,7 +21,7 @@ void DebugUtil::DisableOSCrashDumps() {
   // Apple Crash Reporter handles.  See ux_exception() in xnu's
   // bsd/uxkern/ux_exception.c and machine_exception() in xnu's
   // bsd/dev/*/unix_signal.c.
-  const int signals_to_intercept[] ={
+  const int signals_to_intercept[] = {
     SIGILL,   // EXC_BAD_INSTRUCTION
     SIGTRAP,  // EXC_BREAKPOINT
     SIGFPE,   // EXC_ARITHMETIC

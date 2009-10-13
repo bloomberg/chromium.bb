@@ -689,7 +689,7 @@ const VersionConfig kDialogVersion[] = {
 class TryChromeDialog : public views::ButtonListener,
                         public views::LinkController {
  public:
-  TryChromeDialog(size_t version)
+  explicit TryChromeDialog(size_t version)
       : version_(version),
         popup_(NULL),
         try_chrome_(NULL),

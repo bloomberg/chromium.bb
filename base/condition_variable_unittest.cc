@@ -229,7 +229,7 @@ TEST_F(ConditionVariableTest, DISABLED_MultiThreadConsumerTest) {
   {
     // Wait until all 10 work tasks have at least been assigned.
     AutoLock auto_lock(*queue.lock());
-    while(queue.task_count())
+    while (queue.task_count())
       queue.no_more_tasks()->Wait();
     // The last of the tasks *might* still be running, but... all but one should
     // be done by now, since tasks are being done serially.
@@ -287,7 +287,7 @@ TEST_F(ConditionVariableTest, DISABLED_MultiThreadConsumerTest) {
   {
     // Wait until all work tasks have at least been assigned.
     AutoLock auto_lock(*queue.lock());
-    while(queue.task_count())
+    while (queue.task_count())
       queue.no_more_tasks()->Wait();
     // Since they can all run almost in parallel, there is no guarantee that all
     // tasks are finished, but we should have gotten here faster than it would

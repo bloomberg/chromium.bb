@@ -805,8 +805,7 @@ bool BookmarkManagerGtk::RecursiveFind(GtkTreeModel* model, GtkTreeIter* iter,
     if (iter->stamp == 0)
       gtk_tree_model_get_iter_first(GTK_TREE_MODEL(left_store_), iter);
     gtk_tree_model_get_value(model, iter, bookmark_utils::ITEM_ID, &value);
-  }
-  else {
+  } else {
     if (iter->stamp == 0)
       gtk_tree_model_get_iter_first(GTK_TREE_MODEL(right_store_), iter);
     gtk_tree_model_get_value(model, iter, RIGHT_PANE_ID, &value);

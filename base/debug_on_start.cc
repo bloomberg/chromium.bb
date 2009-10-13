@@ -16,8 +16,7 @@
 // The code is not that bright and will find things like ---argument or
 // /-/argument.
 // Note: command_line is non-destructively modified.
-bool DebugOnStart::FindArgument(wchar_t* command_line, const char* argument_c)
-{
+bool DebugOnStart::FindArgument(wchar_t* command_line, const char* argument_c) {
   wchar_t argument[50];
   for (int i = 0; argument_c[i]; ++i)
     argument[i] = argument_c[i];

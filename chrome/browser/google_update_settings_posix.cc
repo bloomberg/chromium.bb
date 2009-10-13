@@ -60,8 +60,7 @@ bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
     }
     const char* c_str = linux_guid.c_str();
     return file_util::WriteFile(consent_file, c_str, kGuidLen) == kGuidLen;
-  }
-  else {
+  } else {
     linux_guid .clear();
     linux_guid.resize(kGuidLen, '0');
     return file_util::Delete(consent_file, false);

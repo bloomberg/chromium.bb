@@ -14,7 +14,7 @@ void NotifyBrowserOfPluginShowWindow(uint32 window_id, CGRect bounds);
 void NotifyBrowserOfPluginHideWindow(uint32 window_id, CGRect bounds);
 void NotifyBrowserOfPluginDisposeWindow(uint32 window_id, CGRect bounds);
 
-}
+}  // namespace webkit_glue
 
 // The process that was frontmost when a plugin created a new window; generally
 // we expect this to be the browser UI process.

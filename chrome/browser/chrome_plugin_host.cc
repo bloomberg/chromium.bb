@@ -101,7 +101,7 @@ class PluginRequestInterceptor
     // poked on a different thread, but never from more than one thread at a
     // time.  We need a way to have the URLRequestJobManager get reset between
     // unit tests.
-    //DCHECK(CalledOnValidThread());
+    // DCHECK(CalledOnValidThread());
 
     if (!IsHandledProtocol(request->url().scheme()))
       return NULL;
@@ -368,8 +368,8 @@ class ModelessHtmlDialogDelegate : public HtmlDialogUIDelegate {
 // when its last InvokeLater is run anyway.
 template <>
 struct RunnableMethodTraits<ModelessHtmlDialogDelegate> {
-  void RetainCallee(ModelessHtmlDialogDelegate*) {}
-  void ReleaseCallee(ModelessHtmlDialogDelegate*) {}
+  void RetainCallee(ModelessHtmlDialogDelegate* delegate) {}
+  void ReleaseCallee(ModelessHtmlDialogDelegate* delegate) {}
 };
 
 namespace {
@@ -755,7 +755,7 @@ CPError STDCALL CPB_OpenFileDialog(CPID id,
   return CPERR_FAILURE;
 }
 
-}
+}  // namespace
 
 CPBrowserFuncs* GetCPBrowserFuncsForBrowser() {
   static CPBrowserFuncs browser_funcs;

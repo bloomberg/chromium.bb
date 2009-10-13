@@ -93,7 +93,7 @@ class TestUtilityProcessHost : public UtilityProcessHost {
 
 class ProcessClosedObserver : public NotificationObserver {
  public:
-  ProcessClosedObserver(MessageLoop* message_loop)
+  explicit ProcessClosedObserver(MessageLoop* message_loop)
       : message_loop_(message_loop) {
     registrar_.Add(this, NotificationType::CHILD_PROCESS_HOST_DISCONNECTED,
                    NotificationService::AllSources());

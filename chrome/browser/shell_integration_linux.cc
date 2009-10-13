@@ -116,7 +116,8 @@ bool GetDesktopShortcutTemplate(std::string* output) {
 
 class CreateDesktopShortcutTask : public Task {
  public:
-  CreateDesktopShortcutTask(const ShellIntegration::ShortcutInfo& shortcut_info)
+  explicit CreateDesktopShortcutTask(
+      const ShellIntegration::ShortcutInfo& shortcut_info)
       : shortcut_info_(shortcut_info) {
   }
 

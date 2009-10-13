@@ -159,7 +159,7 @@ void InfoBar::OnCloseButton(GtkWidget* button, InfoBar* info_bar) {
 
 class AlertInfoBar : public InfoBar {
  public:
-  AlertInfoBar(AlertInfoBarDelegate* delegate)
+  explicit AlertInfoBar(AlertInfoBarDelegate* delegate)
       : InfoBar(delegate) {
     std::wstring text = delegate->GetMessageText();
     GtkWidget* label = gtk_label_new(WideToUTF8(text).c_str());
@@ -174,7 +174,7 @@ class AlertInfoBar : public InfoBar {
 
 class LinkInfoBar : public InfoBar {
  public:
-  LinkInfoBar(LinkInfoBarDelegate* delegate)
+  explicit LinkInfoBar(LinkInfoBarDelegate* delegate)
       : InfoBar(delegate) {
     size_t link_offset;
     std::wstring display_text =
@@ -239,7 +239,7 @@ class LinkInfoBar : public InfoBar {
 
 class ConfirmInfoBar : public AlertInfoBar {
  public:
-  ConfirmInfoBar(ConfirmInfoBarDelegate* delegate)
+  explicit ConfirmInfoBar(ConfirmInfoBarDelegate* delegate)
       : AlertInfoBar(delegate) {
     AddConfirmButton(ConfirmInfoBarDelegate::BUTTON_CANCEL);
     AddConfirmButton(ConfirmInfoBarDelegate::BUTTON_OK);

@@ -12,7 +12,7 @@
 #include "chrome/browser/browser_window.h"
 
 // Used to pad the default new window size.  On Windows, this is also used for
-// positioning new windows (each window is offset from the previous one). 
+// positioning new windows (each window is offset from the previous one).
 // Since we don't position windows, it's only used for the default new window
 // size.
 const int WindowSizer::kWindowTilePixels = 10;

@@ -437,8 +437,8 @@ void BrowserProcessImpl::CreateGoogleURLTracker() {
 // which don't do any management.
 template <>
 struct RunnableMethodTraits<BrowserProcessImpl> {
-  void RetainCallee(BrowserProcessImpl*) {}
-  void ReleaseCallee(BrowserProcessImpl*) {}
+  void RetainCallee(BrowserProcessImpl* process) {}
+  void ReleaseCallee(BrowserProcessImpl* process) {}
 };
 
 void BrowserProcessImpl::CheckForInspectorFiles() {

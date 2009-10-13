@@ -280,7 +280,7 @@ bool CheckLockHostnameAndCleanup(const std::string& path) {
   int pid;
   ParseLockPath(path, &hostname, &pid);
 
-  if (!hostname.empty() && hostname != net::GetHostName()){
+  if (!hostname.empty() && hostname != net::GetHostName()) {
     DisplayProfileInUseError(path, hostname, pid);
     return false;
   }

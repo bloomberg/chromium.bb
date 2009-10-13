@@ -18,8 +18,8 @@
 
 class BackFwdMenuModelTest : public RenderViewHostTestHarness {
  public:
-   void ValidateModel(BackForwardMenuModel* model, int history_items,
-                      int chapter_stops) {
+  void ValidateModel(BackForwardMenuModel* model, int history_items,
+                     int chapter_stops) {
     int h = std::min(BackForwardMenuModel::kMaxHistoryItems, history_items);
     int c = std::min(BackForwardMenuModel::kMaxChapterStops, chapter_stops);
     EXPECT_EQ(h, model->GetHistoryItemCount());

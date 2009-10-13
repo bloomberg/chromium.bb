@@ -13,7 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ChildProcessSecurityPolicyTest : public testing::Test {
-protected:
+ protected:
   // testing::Test
   virtual void SetUp() {
     // In the real world, "chrome:" is a handled scheme.

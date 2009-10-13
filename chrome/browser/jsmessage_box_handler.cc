@@ -58,7 +58,7 @@ std::wstring GetWindowTitle(TabContents* tab_contents, const GURL& frame_url,
       base_address);
 }
 
-}
+}  // namespace
 
 void RunJavascriptMessageBox(TabContents* tab_contents,
                              const GURL& frame_url,

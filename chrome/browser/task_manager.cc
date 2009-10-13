@@ -48,7 +48,7 @@ std::wstring FormatStatsSize(const WebKit::WebCache::ResourceTypeStat& stat) {
       FormatBytes(stat.liveSize, DATA_UNITS_KILOBYTE, false));
 }
 
-}
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManagerModel class

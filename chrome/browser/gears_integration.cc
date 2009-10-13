@@ -227,8 +227,8 @@ class CreateShortcutCommand : public CPCommandInterface {
 // when its last InvokeLater is run anyway.
 template <>
 struct RunnableMethodTraits<CreateShortcutCommand> {
-  void RetainCallee(CreateShortcutCommand*) {}
-  void ReleaseCallee(CreateShortcutCommand*) {}
+  void RetainCallee(CreateShortcutCommand* command) {}
+  void ReleaseCallee(CreateShortcutCommand* command) {}
 };
 
 void GearsCreateShortcut(
@@ -298,8 +298,8 @@ class QueryShortcutsCommand : public CPCommandInterface {
 // when its last InvokeLater is run anyway.
 template <>
 struct RunnableMethodTraits<QueryShortcutsCommand> {
-  void RetainCallee(QueryShortcutsCommand*) {}
-  void ReleaseCallee(QueryShortcutsCommand*) {}
+  void RetainCallee(QueryShortcutsCommand* command) {}
+  void ReleaseCallee(QueryShortcutsCommand* command) {}
 };
 
 void GearsQueryShortcuts(GearsQueryShortcutsCallback* callback) {
