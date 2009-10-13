@@ -29,6 +29,15 @@ class PrefService;
 @class ToolbarController;
 @protocol ViewResizer;
 
+namespace bookmarks {
+
+// Magic numbers from Cole
+const CGFloat kDefaultBookmarkWidth = 150.0;
+const CGFloat kBookmarkVerticalPadding = 2.0;
+const CGFloat kBookmarkHorizontalPadding = 1.0;
+
+}  // namespace
+
 // The interface for an object which can open URLs for a bookmark.
 @protocol BookmarkURLOpener
 - (void)openBookmarkURL:(const GURL&)url

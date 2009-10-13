@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_nsobject.h"
+#import "chrome/browser/cocoa/bookmark_bar_constants.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_bar_view.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
@@ -646,6 +647,26 @@ TEST_F(BookmarkBarControllerTest, HidesHelpMessageWithBookmark) {
 
   [bar_ loaded:model];
   EXPECT_TRUE([[[bar_ buttonView] noItemTextfield] isHidden]);
+}
+
+TEST_F(BookmarkBarControllerTest, BookmarkButtonSizing) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  model->AddURL(parent, parent->GetChildCount(),
+                L"title", GURL("http://one.com"));
+
+  [bar_ loaded:model];
+
+  // Make sure the internal bookmark button also is the correct height.
+  NSArray* buttons = [bar_ buttons];
+  EXPECT_GT([buttons count], 0u);
+  for (NSButton* button in buttons) {
+    EXPECT_FLOAT_EQ(
+        bookmarks::kBookmarkBarHeight - 2 *
+                    bookmarks::kBookmarkVerticalPadding,
+        [button frame].size.height);
+  }
 }
 
 // Cannot test these methods since they simply call a single static

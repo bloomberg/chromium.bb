@@ -55,15 +55,6 @@
 - (int)preferredHeight;
 @end
 
-namespace {
-
-// Magic numbers from Cole
-const CGFloat kDefaultBookmarkWidth = 150.0;
-const CGFloat kBookmarkVerticalPadding = 2.0;
-const CGFloat kBookmarkHorizontalPadding = 1.0;
-
-}  // namespace
-
 @implementation BookmarkBarController
 
 - (id)initWithBrowser:(Browser*)browser
@@ -552,7 +543,7 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 // For a bookmark named "SFGateFooWoo", it is just fine.
 - (CGFloat)widthForBookmarkButtonCell:(NSCell*)cell {
   CGFloat desired = [cell cellSize].width + 2;
-  return std::min(desired, kDefaultBookmarkWidth);
+  return std::min(desired, bookmarks::kDefaultBookmarkWidth);
 }
 
 // Returns a frame appropriate for the given bookmark cell, suitable
@@ -561,13 +552,17 @@ const CGFloat kBookmarkHorizontalPadding = 1.0;
 // for the next button.
 - (NSRect)frameForBookmarkButtonFromCell:(NSCell*)cell
                                  xOffset:(int*)xOffset {
-  NSRect bounds = [[self view] bounds];
-  // TODO: be smarter about this; the animator delays the right height
-  if (bounds.size.height == 0)
-    bounds.size.height = bookmarks::kBookmarkBarHeight;
+  NSRect bounds = [buttonView_ bounds];
+  // TODO(erg,jrg): There used to be an if statement here, comparing the height
+  // to 0. This essentially broke sizing because we're dealing with floats and
+  // the height wasn't precisely zero. The previous author wrote that they were
+  // doing this because of an animator, but we are not doing animations for beta
+  // so we do not care.
+  bounds.size.height = bookmarks::kBookmarkBarHeight;
+
   NSRect frame = NSInsetRect(bounds,
-                             kBookmarkHorizontalPadding,
-                             kBookmarkVerticalPadding);
+                             bookmarks::kBookmarkHorizontalPadding,
+                             bookmarks::kBookmarkVerticalPadding);
   frame.size.width = [self widthForBookmarkButtonCell:cell];
 
   // Add an X offset based on what we've already done
