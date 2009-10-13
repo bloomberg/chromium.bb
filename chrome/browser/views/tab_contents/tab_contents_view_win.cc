@@ -138,8 +138,10 @@ void TabContentsViewWin::StartDragging(const WebDropData& drop_data,
     file_name = file_name.BaseName().RemoveExtension();
     if (file_name.value().empty()) {
       // Retrieve the name from the URL.
-      file_name = FilePath::FromWStringHack(
-          net::GetSuggestedFilename(drop_data.url, "", "", L""));
+      std::wstring fn = net::GetSuggestedFilename(drop_data.url, "", "", L"");
+      if ((fn.size() + drop_data.file_extension.size() + 1) > MAX_PATH)
+        fn = fn.substr(0, MAX_PATH - drop_data.file_extension.size() - 2);
+      file_name = FilePath::FromWStringHack(fn);
     }
     file_name = file_name.ReplaceExtension(drop_data.file_extension);
     data.SetFileContents(file_name.value(), drop_data.file_contents);
