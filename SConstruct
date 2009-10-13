@@ -413,6 +413,11 @@ def CommandTestAgainstGoldenOutput(env, name, command, size='small',
              ' '.join(command),
              ]
 
+  # If we are testing build output captured from elsewhere,
+  # ignore build dependencies.
+  if ARGUMENTS.get('built_elsewhere'):
+    env.Ignore(name, deps)
+
   return env.Command(name, deps, ' '.join(command))
 
 pre_base_env.AddMethod(CommandTestAgainstGoldenOutput)
