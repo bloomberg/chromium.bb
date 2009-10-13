@@ -2514,6 +2514,10 @@ each locale. -->
       <message name="IDS_TASK_MANAGER_PROFILE_IMPORT_PREFIX" desc="The prefix for a profile import process row">
         Profile Import:
       </message>
+      <message name="IDS_TASK_MANAGER_NACL_PREFIX" desc="The prefix for a Task Manager Native Client module row">
+        Native Client module: <ph name="NEXE_NAME">$1<ex>Unknown Native Client module</ex></ph>
+      </message>
+
 
       <!-- Extension Crashed Info Bar-->
       <message name="IDS_EXTENSION_CRASHED_INFOBAR_RESTART_BUTTON" desc="Title of the reload button in the extension crashed infobar. After the button is clicked, the extension will be reloaded.">
