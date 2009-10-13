@@ -32,7 +32,7 @@ static CFStringRef kSSL3EnabledKey = CFSTR("org.chromium.ssl.ssl3");
 static CFStringRef kTLS1EnabledKey = CFSTR("org.chromium.ssl.tls1");
 
 bool RevocationStyleIsEnabled(CFStringRef key) {
-  CFPropertyListRef plist_ref = CFPreferencesCopyValue(kOCSPStyleKey,
+  CFPropertyListRef plist_ref = CFPreferencesCopyValue(key,
       kRevocationPreferencesIdentifier, kCFPreferencesCurrentUser,
       kCFPreferencesAnyHost);
   if (plist_ref) {
