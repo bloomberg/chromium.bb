@@ -56,9 +56,9 @@
 }
 
 {
- bug_23433
- ThreadSanitizer:Race
- fun:*logging*SetMinLogLevel*
+  bug_23433
+  ThreadSanitizer:Race
+  fun:*logging*SetMinLogLevel*
 }
 
 {
@@ -134,6 +134,18 @@
   fun:*IPCSyncChannelTest*
 }
 
+# TODO(timurrrr): bug item
+{
+  Data race on bool in chrome/browser/net/url_fetcher_unittest (1)
+  ThreadSanitizer:Race
+  fun:*URLFetcherCancelTest*TestContextReleased*
+}
+{
+  Data race on bool in chrome/browser/net/url_fetcher_unittest (2)
+  ThreadSanitizer:Race
+  fun:*CancelTestURLRequestContext*CancelTestURLRequestContext*
+}
+
 ############################
 # Benign races in ICU
 {
@@ -160,18 +172,22 @@
 
 ############################
 # Benign races in libc
+
+# A benign race inside the implementation of internal libc mutex
 {
   Benign races in __lll_*lock_*_private
   ThreadSanitizer:Race
   fun:__lll_*lock_*_private
 }
 
+# Benign race below thread-safe time-conversion functions
 {
    fun:__tz*
    ThreadSanitizer:Race
    fun:__tz*
 }
 
+# Benign race below thread-safe time-conversion functions
 {
    fun:tzset*
    ThreadSanitizer:Race
