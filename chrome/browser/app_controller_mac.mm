@@ -422,6 +422,15 @@
   return service && !service->entries().empty();
 }
 
+// Returns true if there is no browser window, or if the active window is
+// blocked by a modal dialog.
+- (BOOL)keyWindowIsMissingOrBlocked {
+  Browser* browser = BrowserList::GetLastActive();
+  return browser == NULL ||
+         ![[browser->window()->GetNativeHandle() attachedSheet]
+           isKindOfClass:[NSWindow class]];
+}
+
 // Called to validate menu items when there are no key windows. All the
 // items we care about have been set with the |commandDispatch:| action and
 // a target of FirstResponder in IB. If it's not one of those, let it
@@ -436,7 +445,18 @@
     if (menuState_->SupportsCommand(tag)) {
       switch (tag) {
         case IDC_RESTORE_TAB:
-          enable = [self canRestoreTab];
+          enable = [self keyWindowIsMissingOrBlocked] && [self canRestoreTab];
+          break;
+        // The File Menu commands are not automatically disabled by Cocoa when
+        // a dialog sheet obscures the browser window, so we disable them here.
+        // We don't need to include IDC_CLOSE_WINDOW, because app_controller
+        // is only activated when there are no key windows (see function
+        // comment).
+        case IDC_OPEN_FILE:
+        case IDC_NEW_WINDOW:
+        case IDC_NEW_TAB:
+        case IDC_NEW_INCOGNITO_WINDOW:
+          enable = [self keyWindowIsMissingOrBlocked];
           break;
         default:
           enable = menuState_->IsCommandEnabled(tag) ? YES : NO;
