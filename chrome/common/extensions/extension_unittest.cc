@@ -277,13 +277,13 @@ TEST(ExtensionTest, LoadPageActionHelper) {
 
   // First try with an empty dictionary. We should get nothing back.
   ASSERT_TRUE(extension.LoadExtensionActionHelper(
-      &input, 0, &error_msg, ExtensionAction::PAGE_ACTION) == NULL);
+      &input, &error_msg, ExtensionAction::PAGE_ACTION) == NULL);
   ASSERT_STRNE("", error_msg.c_str());
   error_msg = "";
 
   // Now try the same, but as a browser action. Ensure same results.
   ASSERT_TRUE(extension.LoadExtensionActionHelper(
-      &input, 0, &error_msg, ExtensionAction::BROWSER_ACTION) == NULL);
+      &input, &error_msg, ExtensionAction::BROWSER_ACTION) == NULL);
   ASSERT_STRNE("", error_msg.c_str());
   error_msg = "";
 
@@ -303,11 +303,11 @@ TEST(ExtensionTest, LoadPageActionHelper) {
 
   // Parse as page action and read back the values from the object.
   action.reset(extension.LoadExtensionActionHelper(
-      &input, 0, &error_msg, ExtensionAction::PAGE_ACTION));
+      &input, &error_msg, ExtensionAction::PAGE_ACTION));
   ASSERT_TRUE(NULL != action.get());
   ASSERT_STREQ("", error_msg.c_str());
   ASSERT_STREQ(id.c_str(), action->id().c_str());
-  ASSERT_STREQ(name.c_str(), action->name().c_str());
+  ASSERT_STREQ(name.c_str(), action->title().c_str());
   ASSERT_EQ(2u, action->icon_paths().size());
   ASSERT_STREQ(img1.c_str(), action->icon_paths()[0].c_str());
   ASSERT_STREQ(img2.c_str(), action->icon_paths()[1].c_str());
@@ -315,12 +315,12 @@ TEST(ExtensionTest, LoadPageActionHelper) {
 
   // Now try the same, but as a browser action.
   action.reset(extension.LoadExtensionActionHelper(
-      &input, 0, &error_msg, ExtensionAction::BROWSER_ACTION));
+      &input, &error_msg, ExtensionAction::BROWSER_ACTION));
   ASSERT_TRUE(NULL != action.get());
   ASSERT_STREQ("", error_msg.c_str());
   // Browser actions don't have an id, page actions do.
   ASSERT_STREQ("", action->id().c_str());
-  ASSERT_STREQ(name.c_str(), action->name().c_str());
+  ASSERT_STREQ(name.c_str(), action->title().c_str());
   ASSERT_EQ(2u, action->icon_paths().size());
   ASSERT_STREQ(img1.c_str(), action->icon_paths()[0].c_str());
   ASSERT_STREQ(img2.c_str(), action->icon_paths()[1].c_str());
@@ -329,7 +329,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   // Explicitly set the same type and parse again.
   input.SetString(keys::kType, values::kPageActionTypeTab);
   action.reset(extension.LoadExtensionActionHelper(
-      &input, 0, &error_msg, ExtensionAction::BROWSER_ACTION));
+      &input, &error_msg, ExtensionAction::BROWSER_ACTION));
   ASSERT_TRUE(NULL != action.get());
   ASSERT_STREQ("", error_msg.c_str());
   ASSERT_EQ(ExtensionAction::BROWSER_ACTION, action->type());
@@ -337,7 +337,7 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   // Explicitly set the PAGE_ACTION type and parse again.
   input.SetString(keys::kType, values::kPageActionTypePermanent);
   action.reset(extension.LoadExtensionActionHelper(
-      &input, 0, &error_msg, ExtensionAction::PAGE_ACTION));
+      &input, &error_msg, ExtensionAction::PAGE_ACTION));
   ASSERT_TRUE(NULL != action.get());
   ASSERT_STREQ("", error_msg.c_str());
   ASSERT_EQ(ExtensionAction::PAGE_ACTION, action->type());
@@ -350,17 +350,16 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
   copy->Remove(keys::kPageActionId, NULL);
   action.reset(extension.LoadExtensionActionHelper(
-      copy.get(), 0, &error_msg, ExtensionAction::PAGE_ACTION));
-  ASSERT_TRUE(NULL == action.get());
-  ASSERT_TRUE(MatchPattern(error_msg.c_str(),
-                           errors::kInvalidPageActionId));
+      copy.get(), &error_msg, ExtensionAction::PAGE_ACTION));
+  ASSERT_TRUE(NULL != action.get());
+  ASSERT_STREQ("", error_msg.c_str());
   error_msg = "";
 
   // Same test (id key), but with browser action.
   copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
   copy->Remove(keys::kPageActionId, NULL);
   action.reset(extension.LoadExtensionActionHelper(
-      copy.get(), 0, &error_msg, ExtensionAction::BROWSER_ACTION));
+      copy.get(), &error_msg, ExtensionAction::BROWSER_ACTION));
   // Having no id is valid for browser actions.
   ASSERT_TRUE(NULL != action.get());
   ASSERT_STREQ("", error_msg.c_str());
@@ -370,39 +369,57 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
   copy->Remove(keys::kName, NULL);
   action.reset(extension.LoadExtensionActionHelper(
-      copy.get(), 0, &error_msg, ExtensionAction::PAGE_ACTION));
+      copy.get(), &error_msg, ExtensionAction::PAGE_ACTION));
   ASSERT_TRUE(NULL == action.get());
   ASSERT_TRUE(MatchPattern(error_msg.c_str(),
-                           errors::kInvalidName));
+                           errors::kInvalidPageActionDefaultTitle));
   error_msg = "";
 
   // Same test (name key), but with browser action.
   copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
   copy->Remove(keys::kName, NULL);
   action.reset(extension.LoadExtensionActionHelper(
-      copy.get(), 0, &error_msg, ExtensionAction::BROWSER_ACTION));
+      copy.get(), &error_msg, ExtensionAction::BROWSER_ACTION));
   ASSERT_TRUE(NULL == action.get());
   ASSERT_TRUE(MatchPattern(error_msg.c_str(),
-                           errors::kInvalidName));
+                           errors::kInvalidPageActionDefaultTitle));
   error_msg = "";
 
   // Then remove the icon paths key.
   copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
   copy->Remove(keys::kPageActionIcons, NULL);
   action.reset(extension.LoadExtensionActionHelper(
-      copy.get(), 0, &error_msg, ExtensionAction::PAGE_ACTION));
-  ASSERT_TRUE(NULL == action.get());
-  ASSERT_TRUE(MatchPattern(error_msg.c_str(),
-                           errors::kInvalidPageActionIconPaths));
+      copy.get(), &error_msg, ExtensionAction::PAGE_ACTION));
+  ASSERT_TRUE(NULL != action.get());
   error_msg = "";
 
-  // Same test (name key), but with browser action (icons are not required for
-  // browser actions).
+  // Same test (name key), but with browser action.
   copy.reset(static_cast<DictionaryValue*>(input.DeepCopy()));
   copy->Remove(keys::kPageActionIcons, NULL);
   action.reset(extension.LoadExtensionActionHelper(
-      copy.get(), 0, &error_msg, ExtensionAction::BROWSER_ACTION));
+      copy.get(), &error_msg, ExtensionAction::BROWSER_ACTION));
   ASSERT_TRUE(NULL != action.get());
+
+  // Now test that we can parse the new format for page actions.
+  
+  // Now setup some values to use in the page action.
+  const std::string kTitle("MyExtensionActionTitle");
+  const std::string kIcon("image1.png");
+
+  // Add the dictionary for the contextual action.
+  input.Clear();
+  input.SetString(keys::kPageActionDefaultTitle, kTitle);
+  input.SetString(keys::kPageActionDefaultIcon, kIcon);
+
+  // Parse as page action and read back the values from the object.
+  action.reset(extension.LoadExtensionActionHelper(
+      &input, &error_msg, ExtensionAction::PAGE_ACTION));
+  ASSERT_TRUE(action.get());
+  ASSERT_STREQ("", error_msg.c_str());
+  ASSERT_EQ(kTitle, action->title());
+  ASSERT_EQ(1u, action->icon_paths().size());
+  ASSERT_EQ(kIcon, action->icon_paths()[0]);
+  ASSERT_EQ(ExtensionAction::PAGE_ACTION, action->type());
 }
 
 TEST(ExtensionTest, IdIsValid) {

@@ -38,8 +38,8 @@ class ExtensionAction {
     extension_id_ = extension_id;
   }
 
-  std::string name() const { return name_; }
-  void set_name(const std::string& name) { name_ = name; }
+  std::string title() const { return title_; }
+  void set_title(const std::string& title) { title_ = title; }
 
   const std::vector<std::string>& icon_paths() const { return icon_paths_; }
   void AddIconPath(const std::string& icon_path) {
@@ -68,8 +68,8 @@ class ExtensionAction {
   // the extension manifest).
   std::string extension_id_;
 
-  // The name of the ExtensionAction.
-  std::string name_;
+  // The title text of the ExtensionAction.
+  std::string title_;
 
   // The paths to the icons that this PageIcon can show.
   std::vector<std::string> icon_paths_;
@@ -116,7 +116,7 @@ class ExtensionActionState {
   void set_icon(SkBitmap* icon) { icon_.reset(icon); }
 
  private:
-  // The title to use.
+  // The title text to use for tooltips and labels.
   std::string title_;
 
   // The icon to use.

@@ -370,7 +370,7 @@ void ExtensionBrowserEventRouter::PageActionExecuted(
   std::string json_args;
   JSONWriter::Write(&args, false, &json_args);
 
-  std::string event_name = extension_id + std::string("/") + page_action_id;
+  std::string event_name = std::string("pageAction/") + extension_id;
   DispatchEvent(profile, event_name.c_str(), json_args);
 }
 

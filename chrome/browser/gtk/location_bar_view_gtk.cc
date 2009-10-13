@@ -725,7 +725,7 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
     // Set the tooltip.
     if (state->title().empty())
       gtk_widget_set_tooltip_text(event_box_.get(),
-                                  page_action_->name().c_str());
+                                  page_action_->title().c_str());
     else
       gtk_widget_set_tooltip_text(event_box_.get(), state->title().c_str());
     // Set the image.

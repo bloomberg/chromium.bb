@@ -1184,7 +1184,7 @@ LocationBarView::PageActionImageView::PageActionImageView(
       profile_(profile),
       page_action_(page_action),
       current_tab_id_(-1),
-      tooltip_(page_action_->name()) {
+      tooltip_(page_action_->title()) {
   Extension* extension = profile->GetExtensionsService()->GetExtensionById(
       page_action->extension_id());
   DCHECK(extension);
@@ -1249,7 +1249,7 @@ void LocationBarView::PageActionImageView::UpdateVisibility(
   if (visible) {
     // Set the tooltip.
     if (state->title().empty())
-      tooltip_ = page_action_->name();
+      tooltip_ = page_action_->title();
     else
       tooltip_ = state->title();
     // Set the image.

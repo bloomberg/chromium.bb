@@ -226,10 +226,8 @@ bool ValidateExtension(Extension* extension, std::string* error) {
   }
 
   // Validate icon location for page actions.
-  const ExtensionActionMap& page_actions = extension->page_actions();
-  for (ExtensionActionMap::const_iterator i(page_actions.begin());
-       i != page_actions.end(); ++i) {
-    ExtensionAction* page_action = i->second;
+  const ExtensionAction* page_action = extension->page_action();
+  if (page_action) {
     const std::vector<std::string>& icon_paths = page_action->icon_paths();
     for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
          iter != icon_paths.end(); ++iter) {

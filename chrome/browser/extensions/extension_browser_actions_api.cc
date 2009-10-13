@@ -28,8 +28,8 @@ const char kIconIndexOutOfBounds[] =
 }
 
 bool BrowserActionSetNameFunction::RunImpl() {
-  std::string name;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetAsString(&name));
+  std::string title;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetAsString(&title));
 
   Extension* extension = dispatcher()->GetExtension();
   if (!extension->browser_action()) {
@@ -37,7 +37,7 @@ bool BrowserActionSetNameFunction::RunImpl() {
     return false;
   }
 
-  extension->browser_action_state()->set_title(name);
+  extension->browser_action_state()->set_title(title);
 
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,

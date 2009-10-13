@@ -185,7 +185,7 @@ class Extension {
   const std::string& public_key() const { return public_key_; }
   const std::string& description() const { return description_; }
   const UserScriptList& content_scripts() const { return content_scripts_; }
-  const ExtensionActionMap& page_actions() const { return page_actions_; }
+  ExtensionAction* page_action() const { return page_action_.get(); }
   ExtensionAction* browser_action() const { return browser_action_.get(); }
   ExtensionActionState* browser_action_state() {
     return browser_action_state_.get();
@@ -219,10 +219,6 @@ class Extension {
 
   const GURL& update_url() const { return update_url_; }
   const std::map<int, std::string>& icons() { return icons_; }
-
-  // Retrieves a page action or browser action by |id|.
-  const ExtensionAction* GetExtensionAction(
-    std::string id, ExtensionAction::ExtensionActionType action_type) const;
 
   // Returns the origin of this extension. This function takes a |registry_path|
   // so that the registry location can be overwritten during testing.
@@ -283,7 +279,6 @@ class Extension {
   // dictionary in the page_action or browser_action section of the manifest.
   ExtensionAction* LoadExtensionActionHelper(
       const DictionaryValue* contextual_action,
-      int definition_index,
       std::string* error,
       ExtensionAction::ExtensionActionType action_type);
 
@@ -320,8 +315,8 @@ class Extension {
   // Paths to the content scripts the extension contains.
   UserScriptList content_scripts_;
 
-  // A list of page actions.
-  ExtensionActionMap page_actions_;
+  // The extension's page action, if any.
+  scoped_ptr<ExtensionAction> page_action_;
 
   // The extension's browser action, if any.
   scoped_ptr<ExtensionAction> browser_action_;

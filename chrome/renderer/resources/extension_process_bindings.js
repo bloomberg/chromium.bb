@@ -192,12 +192,14 @@ var chrome = chrome || {};
   // Page action events send (pageActionId, {tabId, tabUrl}).
   function setupPageActionEvents(extensionId) {
     var pageActions = GetCurrentPageActions(extensionId);
-    var eventName = "";
+    var eventName = "pageAction/" + extensionId;
+    // TODO(EXTENSIONS_DEPRECATED): only one page action
     for (var i = 0; i < pageActions.length; ++i) {
-      eventName = extensionId + "/" + pageActions[i];
       // Setup events for each extension_id/page_action_id string we find.
       chrome.pageActions[pageActions[i]] = new chrome.Event(eventName);
     }
+    chrome.pageAction = chrome.pageAction || {};
+    chrome.pageAction.onClicked = new chrome.Event(eventName);
   }
 
   // Browser action events send {windowpId}.

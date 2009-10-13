@@ -18,8 +18,11 @@ const wchar_t* kJs = L"js";
 const wchar_t* kMatches = L"matches";
 const wchar_t* kName = L"name";
 const wchar_t* kPageActionId = L"id";
+const wchar_t* kPageAction = L"page_action";
 const wchar_t* kPageActions = L"page_actions";
 const wchar_t* kPageActionIcons = L"icons";
+const wchar_t* kPageActionDefaultIcon = L"default_icon";
+const wchar_t* kPageActionDefaultTitle = L"default_title";
 const wchar_t* kPageActionPopup = L"popup";
 const wchar_t* kPageActionPopupHeight = L"height";
 const wchar_t* kPageActionPopupPath = L"path";
@@ -93,15 +96,17 @@ const char* kInvalidMatches =
 const char* kInvalidName =
     "Required value 'name' is missing or invalid.";
 const char* kInvalidPageAction =
-    "Invalid value for 'page_actions[*]'.";
+    "Invalid value for 'page_action'.";
 const char* kInvalidPageActionIconPath =
-    "Invalid value for 'page_actions[*].icons[*]'.";
+    "Invalid value for 'page_action.default_icon'.";
 const char* kInvalidPageActionsList =
     "Invalid value for 'page_actions'.";
-const char* kInvalidPageActionIconPaths =
-    "Required value 'page_actions[*].icons' is missing or invalid.";
+const char* kInvalidPageActionsListSize =
+    "Invalid value for 'page_actions'. There can be only one.";
 const char* kInvalidPageActionId =
     "Required value 'id' is missing or invalid.";
+const char* kInvalidPageActionDefaultTitle =
+    "Required value 'default_title' is missing or invalid.";
 const char* kInvalidPageActionPopup =
     "Invalid type for page action popup.";
 const char* kInvalidPageActionPopupHeight =

@@ -104,7 +104,6 @@ const size_t Extension::kNumPermissions =
     arraysize(Extension::kPermissionNames);
 
 Extension::~Extension() {
-  STLDeleteValues(&page_actions_);
 }
 
 const std::string Extension::VersionString() const {
@@ -144,20 +143,6 @@ GURL Extension::GetResourceURL(const GURL& extension_url,
   DCHECK(StartsWithASCII(ret_val.spec(), extension_url.spec(), false));
 
   return ret_val;
-}
-
-const ExtensionAction* Extension::GetExtensionAction(
-    std::string id, ExtensionAction::ExtensionActionType action_type) const {
-  if (action_type == ExtensionAction::BROWSER_ACTION) {
-    DCHECK(id.empty());  // Multiple browser actions are not allowed.
-    return browser_action_.get();
-  } else {
-    ExtensionActionMap::const_iterator it = page_actions_.find(id);
-    if (it == page_actions_.end())
-      return NULL;
-
-    return it->second;
-  }
 }
 
 Extension::Location Extension::ExternalExtensionInstallType(
@@ -310,73 +295,66 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
 // Helper method that loads a PageAction or BrowserAction object from a
 // dictionary in the page_actions list or browser_action key of the manifest.
 ExtensionAction* Extension::LoadExtensionActionHelper(
-    const DictionaryValue* page_action, int definition_index,
-    std::string* error, ExtensionAction::ExtensionActionType action_type) {
+    const DictionaryValue* page_action, std::string* error,
+    ExtensionAction::ExtensionActionType action_type) {
   scoped_ptr<ExtensionAction> result(new ExtensionAction());
   result->set_extension_id(id());
   result->set_type(action_type);
 
+  // TODO(EXTENSIONS_DEPRECATED): icons list is obsolete.
   ListValue* icons = NULL;
-  // Read the page action |icons|.
-  if (!page_action->HasKey(keys::kPageActionIcons) ||
-      !page_action->GetList(keys::kPageActionIcons, &icons) ||
-      icons->GetSize() == 0) {
-    // Icons are only required for page actions.
-    if (action_type == ExtensionAction::PAGE_ACTION) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidPageActionIconPaths, IntToString(definition_index));
-      return NULL;
-    }
-  }
-
-  int icon_count = 0;
-  if (icons) {
+  if (page_action->HasKey(keys::kPageActionIcons) &&
+      page_action->GetList(keys::kPageActionIcons, &icons)) {
     for (ListValue::const_iterator iter = icons->begin();
          iter != icons->end(); ++iter) {
       std::string path;
       if (!(*iter)->GetAsString(&path) || path.empty()) {
-        *error = ExtensionErrorUtils::FormatErrorMessage(
-            errors::kInvalidPageActionIconPath,
-            IntToString(definition_index), IntToString(icon_count));
+        *error = errors::kInvalidPageActionIconPath;
         return NULL;
       }
 
       result->AddIconPath(path);
-      ++icon_count;
     }
   }
 
-  if (action_type == ExtensionAction::BROWSER_ACTION) {
-    result->set_id("");  // Not needed (only 1 browser action per extension).
-  } else {
-    // Read the page action |id|.
-    std::string id;
-    if (!page_action->GetString(keys::kPageActionId, &id)) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidPageActionId, IntToString(definition_index));
+  // TODO(EXTENSIONS_DEPRECATED): Read the page action |id| (optional).
+  std::string id;
+  if (action_type == ExtensionAction::PAGE_ACTION)
+    page_action->GetString(keys::kPageActionId, &id);
+  result->set_id(id);
+
+  std::string default_icon;
+  // Read the page action |default_icon| (optional).
+  if (page_action->HasKey(keys::kPageActionDefaultIcon)) {
+    if (!page_action->GetString(keys::kPageActionDefaultIcon, &default_icon) ||
+        default_icon.empty()) {
+      *error = errors::kInvalidPageActionIconPath;
       return NULL;
     }
-    result->set_id(id);
+    // TODO(EXTENSIONS_DEPRECATED): one icon.
+    result->AddIconPath(default_icon);
   }
 
-  // Read the page action |name|.
-  std::string name;
-  if (!page_action->GetString(keys::kName, &name)) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidName,
-        IntToString(definition_index));
+  // Read the page action |default_title|.
+  std::string title;
+  if (!page_action->GetString(keys::kName, &title) &&
+      !page_action->GetString(keys::kPageActionDefaultTitle, &title)) {
+    *error = errors::kInvalidPageActionDefaultTitle;
     return NULL;
   }
-  result->set_name(name);
+  result->set_title(title);
 
   // Read the action's |popup| (optional).
   DictionaryValue* popup = NULL;
+  std::string url_str;
   if (page_action->HasKey(keys::kPageActionPopup) &&
-     !page_action->GetDictionary(keys::kPageActionPopup, &popup)) {
+     !page_action->GetDictionary(keys::kPageActionPopup, &popup) &&
+     !page_action->GetString(keys::kPageActionPopup, &url_str)) {
     *error = errors::kInvalidPageActionPopup;
     return NULL;
   }
   if (popup) {
-    std::string url_str;
+    // TODO(EXTENSIONS_DEPRECATED): popup is a string only
     if (!popup->GetString(keys::kPageActionPopupPath, &url_str)) {
       *error = ExtensionErrorUtils::FormatErrorMessage(
           errors::kInvalidPageActionPopupPath, "<missing>");
@@ -397,6 +375,17 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
       return NULL;
     }
     result->set_popup_height(height);
+  } else if (!url_str.empty()) {
+    GURL url = GetResourceURL(url_str);
+    if (!url.is_valid()) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidPageActionPopupPath, url_str);
+      return NULL;
+    }
+    result->set_popup_url(url);
+    // TODO(erikkay): Need dynamic sizing of popups.
+    // http://code.google.com/p/chromium/issues/detail?id=24471
+    result->set_popup_height(100);
   }
 
   return result.release();
@@ -929,7 +918,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     }
   }
 
-  // Initialize page actions (optional).
+  // Initialize page action (optional).
   if (source.HasKey(keys::kPageActions)) {
     ListValue* list_value;
     if (!source.GetList(keys::kPageActions, &list_value)) {
@@ -937,39 +926,52 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
       return false;
     }
 
-    for (size_t i = 0; i < list_value->GetSize(); ++i) {
-      DictionaryValue* page_action_value;
-      if (!list_value->GetDictionary(i, &page_action_value)) {
-        *error = ExtensionErrorUtils::FormatErrorMessage(
-            errors::kInvalidPageAction, IntToString(i));
-        return false;
-      }
-
-      ExtensionAction* contextual_action =
-          LoadExtensionActionHelper(page_action_value, i, error,
-                                    ExtensionAction::PAGE_ACTION);
-      if (!contextual_action)
-        return false;  // Failed to parse page action definition.
-      page_actions_[contextual_action->id()] = contextual_action;
+    if (list_value->GetSize() != 1u) {
+      *error = errors::kInvalidPageActionsListSize;
+      return false;
     }
+
+    DictionaryValue* page_action_value;
+    if (!list_value->GetDictionary(0, &page_action_value)) {
+      *error = errors::kInvalidPageAction;
+      return false;
+    }
+
+    page_action_.reset(
+        LoadExtensionActionHelper(page_action_value, error,
+                                  ExtensionAction::PAGE_ACTION));
+    if (!page_action_.get())
+      return false;  // Failed to parse page action definition.
+  } else if (source.HasKey(keys::kPageAction)) {
+    DictionaryValue* page_action_value;
+    if (!source.GetDictionary(keys::kPageAction, &page_action_value)) {
+      *error = errors::kInvalidPageAction;
+      return false;
+    }
+
+    page_action_.reset(
+        LoadExtensionActionHelper(page_action_value, error,
+                                  ExtensionAction::PAGE_ACTION));
+    if (!page_action_.get())
+      return false;  // Failed to parse page action definition.
   }
 
+  // Initialize browser action (optional).
   if (source.HasKey(keys::kBrowserAction)) {
     DictionaryValue* browser_action_value;
     if (!source.GetDictionary(keys::kBrowserAction, &browser_action_value)) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidBrowserAction, "");
+      *error = errors::kInvalidBrowserAction;
       return false;
     }
 
     browser_action_.reset(
-        LoadExtensionActionHelper(browser_action_value, 0, error,
+        LoadExtensionActionHelper(browser_action_value, error,
                                   ExtensionAction::BROWSER_ACTION));
     if (!browser_action_.get())
       return false;  // Failed to parse browser action definition.
 
     browser_action_state_.reset(
-        new ExtensionActionState(browser_action_->name(), 0));
+        new ExtensionActionState(browser_action_->title(), 0));
   }
 
   // Initialize the permissions (optional).
@@ -1075,9 +1077,17 @@ std::set<FilePath> Extension::GetBrowserImages() {
   }
 
   // page action icons
-  for (ExtensionActionMap::const_iterator it = page_actions().begin();
-       it != page_actions().end(); ++it) {
-    const std::vector<std::string>& icon_paths = it->second->icon_paths();
+  if (page_action_.get()) {
+    const std::vector<std::string>& icon_paths = page_action_->icon_paths();
+    for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
+         iter != icon_paths.end(); ++iter) {
+      image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(*iter)));
+    }
+  }
+
+  // browser action icons
+  if (browser_action_.get()) {
+    const std::vector<std::string>& icon_paths = browser_action_->icon_paths();
     for (std::vector<std::string>::const_iterator iter = icon_paths.begin();
          iter != icon_paths.end(); ++iter) {
       image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(*iter)));

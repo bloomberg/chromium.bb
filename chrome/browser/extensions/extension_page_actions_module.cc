@@ -71,9 +71,7 @@ bool PageActionFunction::SetPageActionEnabled(bool enable) {
     return false;
   }
 
-  const ExtensionAction* page_action =
-      extension->GetExtensionAction(page_action_id,
-                                    ExtensionAction::PAGE_ACTION);
+  const ExtensionAction* page_action = extension->page_action();
   if (!page_action) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kNoPageActionError,
                                                      page_action_id);

@@ -374,11 +374,9 @@ std::vector<ExtensionAction*> ExtensionsService::GetExtensionActions(
   for (ExtensionList::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     if (action_type == ExtensionAction::PAGE_ACTION) {
-      const ExtensionActionMap* page_actions = &(*iter)->page_actions();
-      for (ExtensionActionMap::const_iterator i(page_actions->begin());
-           i != page_actions->end(); ++i) {
-        if (include_popups || !i->second->is_popup())
-          result.push_back(i->second);
+      ExtensionAction* page_action = (*iter)->page_action();
+      if (page_action && (include_popups || !page_action->is_popup())) {
+        result.push_back(page_action);
       }
     } else {
       ExtensionAction* browser_action = (*iter)->browser_action();
