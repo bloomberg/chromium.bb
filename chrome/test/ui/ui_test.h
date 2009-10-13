@@ -19,9 +19,6 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
 #include <string>
 
 #include "base/command_line.h"
@@ -287,7 +284,6 @@ class UITest : public testing::Test {
                                     bool need_equal,
                                     bool delete_generated_file);
 
- public:
   // Get/Set a flag to run the renderer in process when running the
   // tests.
   static bool in_process_renderer() { return in_process_renderer_; }
@@ -526,6 +522,11 @@ class UITest : public testing::Test {
                            bool use_existing_browser,
                            bool wait,
                            base::ProcessHandle* process);
+
+  // We want to have a current history database when we start the browser so
+  // things like the NTP will have thumbnails.  This method updates the dates
+  // in the history to be more recent.
+  void UpdateHistoryDates();
 
   base::Time test_start_time_;          // Time the test was started
                                         // (so we can check for new crash dumps)
