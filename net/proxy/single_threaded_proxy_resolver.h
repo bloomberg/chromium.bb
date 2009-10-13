@@ -23,7 +23,6 @@ namespace net {
 // are serviced in FIFO order.
 class SingleThreadedProxyResolver : public ProxyResolver {
  public:
-
   // |resolver| is a synchronous ProxyResolver implementation. It doesn't
   // have to be thread-safe, since it is run on exactly one thread. The
   // constructor takes ownership of |resolver|.
@@ -39,6 +38,7 @@ class SingleThreadedProxyResolver : public ProxyResolver {
                              LoadLog* load_log);
   virtual void CancelRequest(RequestHandle request);
   virtual void CancelSetPacScript();
+  virtual void PurgeMemory();
 
  protected:
   // The wrapped (synchronous) ProxyResolver.

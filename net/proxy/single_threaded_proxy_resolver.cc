@@ -11,6 +11,18 @@
 
 namespace net {
 
+namespace {
+
+class PurgeMemoryTask : public base::RefCountedThreadSafe<PurgeMemoryTask> {
+ public:
+  explicit PurgeMemoryTask(ProxyResolver* resolver) : resolver_(resolver) {}
+  void PurgeMemory() { resolver_->PurgeMemory(); }
+ private:
+  ProxyResolver* resolver_;
+};
+
+}
+
 // SingleThreadedProxyResolver::SetPacScriptTask ------------------------------
 
 // Runs on the worker thread to call ProxyResolver::SetPacScript.
@@ -253,6 +265,14 @@ void SingleThreadedProxyResolver::CancelSetPacScript() {
   DCHECK(outstanding_set_pac_script_task_);
   outstanding_set_pac_script_task_->Cancel();
   outstanding_set_pac_script_task_ = NULL;
+}
+
+void SingleThreadedProxyResolver::PurgeMemory() {
+  if (thread_.get()) {
+    scoped_refptr<PurgeMemoryTask> helper(new PurgeMemoryTask(resolver_.get()));
+    thread_->message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(helper.get(), &PurgeMemoryTask::PurgeMemory));
+  }
 }
 
 int SingleThreadedProxyResolver::SetPacScript(

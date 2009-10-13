@@ -23,6 +23,7 @@ class MockProxyResolver : public ProxyResolver {
       : ProxyResolver(true /*expects_pac_bytes*/),
         wrong_loop_(MessageLoop::current()),
         request_count_(0),
+        purge_count_(0),
         resolve_latency_ms_(0) {}
 
   // ProxyResolver implementation:
@@ -60,6 +61,13 @@ class MockProxyResolver : public ProxyResolver {
     return OK;
   }
 
+  virtual void PurgeMemory() {
+    CheckIsOnWorkerThread();
+    ++purge_count_;
+  }
+
+  int purge_count() const { return purge_count_; }
+
   const std::string& last_pac_bytes() const { return last_pac_bytes_; }
 
   void SetResolveLatency(int latency_ms) {
@@ -77,6 +85,7 @@ class MockProxyResolver : public ProxyResolver {
 
   MessageLoop* wrong_loop_;
   int request_count_;
+  int purge_count_;
   std::string last_pac_bytes_;
   int resolve_latency_ms_;
 };
@@ -195,6 +204,18 @@ TEST(SingleThreadedProxyResolverTest, Basic) {
   rv = callback3.WaitForResult();
   EXPECT_EQ(3, rv);
   EXPECT_EQ("PROXY request3:80", results3.ToPacString());
+
+  // Ensure that PurgeMemory() reaches the wrapped resolver and happens on the
+  // right thread.
+  EXPECT_EQ(0, mock->purge_count());
+  resolver->PurgeMemory();
+  // There is no way to get a callback directly when PurgeMemory() completes, so
+  // we queue up a dummy request after the PurgeMemory() call and wait until it
+  // finishes to ensure PurgeMemory() has had a chance to run.
+  TestCompletionCallback dummy_callback;
+  rv = resolver->SetPacScriptByData("dummy", &dummy_callback);
+  EXPECT_EQ(OK, dummy_callback.WaitForResult());
+  EXPECT_EQ(1, mock->purge_count());
 }
 
 // Cancel a request which is in progress, and then cancel a request which
