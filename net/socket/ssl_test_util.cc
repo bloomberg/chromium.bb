@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -136,7 +136,8 @@ const int TestServerLauncher::kBadHTTPSPort = 9666;
 // The issuer name of the cert that should be trusted for the test to work.
 const wchar_t TestServerLauncher::kCertIssuerName[] = L"Test CA";
 
-TestServerLauncher::TestServerLauncher() : process_handle_(NULL),
+TestServerLauncher::TestServerLauncher() : process_handle_(
+                                               base::kNullProcessHandle),
                                            forking_(false),
                                            connection_attempts_(10),
                                            connection_timeout_(1000)
@@ -149,7 +150,7 @@ TestServerLauncher::TestServerLauncher() : process_handle_(NULL),
 
 TestServerLauncher::TestServerLauncher(int connection_attempts,
                                        int connection_timeout)
-                        : process_handle_(NULL),
+                        : process_handle_(base::kNullProcessHandle),
                           forking_(false),
                           connection_attempts_(connection_attempts),
                           connection_timeout_(connection_timeout)
@@ -331,7 +332,7 @@ bool TestServerLauncher::WaitToFinish(int timeout_ms) {
   bool ret = base::WaitForSingleProcess(process_handle_, timeout_ms);
   if (ret) {
     base::CloseProcessHandle(process_handle_);
-    process_handle_ = NULL;
+    process_handle_ = base::kNullProcessHandle;
     LOG(INFO) << "Finished.";
   } else {
     LOG(INFO) << "Timed out.";
@@ -346,7 +347,7 @@ bool TestServerLauncher::Stop() {
   bool ret = base::KillProcess(process_handle_, 1, true);
   if (ret) {
     base::CloseProcessHandle(process_handle_);
-    process_handle_ = NULL;
+    process_handle_ = base::kNullProcessHandle;
     LOG(INFO) << "Stopped.";
   } else {
     LOG(INFO) << "Kill failed?";

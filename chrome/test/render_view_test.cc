@@ -96,7 +96,7 @@ void RenderViewTest::SetUp() {
   render_thread_.set_routing_id(kRouteId);
 
   // This needs to pass the mock render thread to the view.
-  view_ = RenderView::Create(&render_thread_, NULL, kOpenerId,
+  view_ = RenderView::Create(&render_thread_, 0, kOpenerId,
                              RendererPreferences(), WebPreferences(),
                              new SharedRenderViewCounter(0), kRouteId);
 

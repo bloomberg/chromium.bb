@@ -1,9 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_MULTIPROCESS_TEST_H__
-#define BASE_MULTIPROCESS_TEST_H__
+#ifndef BASE_MULTIPROCESS_TEST_H_
+#define BASE_MULTIPROCESS_TEST_H_
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -106,7 +106,7 @@ class MultiProcessTest : public PlatformTest {
       const base::file_handle_mapping_vector& fds_to_map,
       bool debug_on_start) {
     CommandLine cl(*CommandLine::ForCurrentProcess());
-    base::ProcessHandle handle = static_cast<base::ProcessHandle>(NULL);
+    base::ProcessHandle handle = base::kNullProcessHandle;
     cl.AppendSwitchWithValue(kRunClientProcess, procname);
 
     if (debug_on_start)
@@ -118,4 +118,4 @@ class MultiProcessTest : public PlatformTest {
 #endif
 };
 
-#endif  // BASE_MULTIPROCESS_TEST_H__
+#endif  // BASE_MULTIPROCESS_TEST_H_

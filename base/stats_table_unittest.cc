@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -208,7 +208,7 @@ TEST_F(StatsTableTest, MultipleProcesses) {
   // Spawn the processes.
   for (int16 index = 0; index < kMaxProcs; index++) {
     procs[index] = this->SpawnChild(L"StatsTableMultipleProcessMain");
-    EXPECT_NE(static_cast<ProcessHandle>(NULL), procs[index]);
+    EXPECT_NE(base::kNullProcessHandle, procs[index]);
   }
 
   // Wait for the processes to finish.

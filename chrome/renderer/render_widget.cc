@@ -46,7 +46,7 @@ RenderWidget::RenderWidget(RenderThreadBase* render_thread, bool activatable)
       webwidget_(NULL),
       opener_id_(MSG_ROUTING_NONE),
       render_thread_(render_thread),
-      host_window_(NULL),
+      host_window_(0),
       current_paint_buf_(NULL),
       current_scroll_buf_(NULL),
       next_paint_flags_(0),

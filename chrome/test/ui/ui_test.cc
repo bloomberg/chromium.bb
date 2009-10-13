@@ -420,7 +420,7 @@ void UITest::QuitBrowser() {
 
   // Don't forget to close the handle
   base::CloseProcessHandle(process_);
-  process_ = NULL;
+  process_ = base::kNullProcessHandle;
 }
 
 void UITest::AssertAppNotRunning(const std::wstring& error_message) {

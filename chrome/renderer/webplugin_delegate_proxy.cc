@@ -60,7 +60,7 @@ class ResourceClientProxy : public webkit_glue::WebPluginResourceClient {
  public:
   ResourceClientProxy(PluginChannelHost* channel, int instance_id)
     : channel_(channel), instance_id_(instance_id), resource_id_(0),
-      notify_needed_(false), notify_data_(NULL),
+      notify_needed_(false), notify_data_(0),
       multibyte_response_expected_(false) {
   }
 
@@ -161,7 +161,7 @@ WebPluginDelegateProxy::WebPluginDelegateProxy(
     : render_view_(render_view),
       plugin_(NULL),
       windowless_(false),
-      window_(NULL),
+      window_(gfx::kNullPluginWindow),
       mime_type_(mime_type),
       instance_id_(MSG_ROUTING_NONE),
       npobject_(NULL),
@@ -656,8 +656,8 @@ bool WebPluginDelegateProxy::BackgroundChanged(
 #else
   const unsigned char* page_bytes = cairo_image_surface_get_data(page_surface);
   int page_stride = cairo_image_surface_get_stride(page_surface);
-  int page_start_x = page_x_double;
-  int page_start_y = page_y_double;
+  int page_start_x = static_cast<int>(page_x_double);
+  int page_start_y = static_cast<int>(page_y_double);
 
   skia::PlatformDevice& device =
       background_store_canvas_->getTopPlatformDevice();
@@ -786,7 +786,7 @@ void WebPluginDelegateProxy::OnSetWindow(gfx::PluginWindowHandle window) {
 void WebPluginDelegateProxy::WillDestroyWindow() {
   DCHECK(window_);
   plugin_->WillDestroyWindow(window_);
-  window_ = NULL;
+  window_ = gfx::kNullPluginWindow;
 }
 
 #if defined(OS_WIN)
@@ -936,7 +936,7 @@ void WebPluginDelegateProxy::OnGetDragData(const NPVariant_Param& object,
   for (size_t i = 0; i < arraysize(results); ++i) {
     values->push_back(NPVariant_Param());
     CreateNPVariantParam(
-        results[i], NULL, &values->back(), false, NULL, page_url_);
+        results[i], NULL, &values->back(), false, 0, page_url_);
   }
 
   *success = true;

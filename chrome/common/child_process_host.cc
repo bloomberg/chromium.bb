@@ -205,7 +205,7 @@ void ChildProcessHost::OnChildDied() {
 
   // On POSIX, once we've called DidProcessCrash, handle() is no longer
   // valid.  Ensure the destructor doesn't try to use it.
-  set_handle(NULL);
+  set_handle(base::kNullProcessHandle);
 
   delete this;
 }

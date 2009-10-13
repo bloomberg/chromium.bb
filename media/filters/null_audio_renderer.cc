@@ -18,7 +18,7 @@ NullAudioRenderer::NullAudioRenderer()
     : AudioRendererBase(),
       bytes_per_millisecond_(0),
       buffer_size_(0),
-      thread_(NULL),
+      thread_(kNullThreadHandle),
       shutdown_(false) {
 }
 
@@ -89,7 +89,7 @@ void NullAudioRenderer::OnStop() {
   shutdown_ = true;
   if (thread_) {
     PlatformThread::Join(thread_);
-    thread_ = NULL;
+    thread_ = kNullThreadHandle;
   }
 }
 

@@ -204,7 +204,7 @@ void Clipboard::WriteBookmark(const char* title_data, size_t title_len,
   // Write as a URI.
   char* data = new char[url_len + 1];
   memcpy(data, url_data, url_len);
-  data[url_len] = NULL;
+  data[url_len] = '\0';
   InsertMapping(kMimeURI, data, url_len + 1);
 }
 

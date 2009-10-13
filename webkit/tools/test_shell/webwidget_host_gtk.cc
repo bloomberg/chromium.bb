@@ -319,7 +319,7 @@ WebWidgetHost::~WebWidgetHost() {
   // attempt to invoke something on a deleted object.
   g_object_set_data(G_OBJECT(view_), kWebWidgetHostKey, NULL);
   g_signal_handlers_disconnect_matched(view_,
-      G_SIGNAL_MATCH_DATA, 0, NULL, NULL, NULL, this);
+      G_SIGNAL_MATCH_DATA, 0, 0, NULL, NULL, this);
   webwidget_->close();
 }
 

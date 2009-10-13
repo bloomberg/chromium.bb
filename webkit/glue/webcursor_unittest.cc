@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,7 @@ TEST(WebCursorTest, CursorSerialization) {
   ok_custom_pickle.WriteInt(4);
   ok_custom_pickle.WriteUInt32(0);
   // Custom Windows message.
-  ok_custom_pickle.WriteIntPtr(NULL);
+  ok_custom_pickle.WriteIntPtr(0);
   void* iter = NULL;
   EXPECT_TRUE(custom_cursor.Deserialize(&ok_custom_pickle, &iter));
 
@@ -39,7 +39,7 @@ TEST(WebCursorTest, CursorSerialization) {
   short_custom_pickle.WriteInt(3);
   short_custom_pickle.WriteUInt32(0);
   // Custom Windows message.
-  ok_custom_pickle.WriteIntPtr(NULL);
+  ok_custom_pickle.WriteIntPtr(0);
   iter = NULL;
   EXPECT_FALSE(custom_cursor.Deserialize(&short_custom_pickle, &iter));
 
@@ -58,7 +58,7 @@ TEST(WebCursorTest, CursorSerialization) {
   for (int i = 0; i < kTooBigSize; ++i)
     large_custom_pickle.WriteUInt32(0);
   // Custom Windows message.
-  ok_custom_pickle.WriteIntPtr(NULL);
+  ok_custom_pickle.WriteIntPtr(0);
   iter = NULL;
   EXPECT_FALSE(custom_cursor.Deserialize(&large_custom_pickle, &iter));
 
@@ -75,7 +75,7 @@ TEST(WebCursorTest, CursorSerialization) {
   neg_custom_pickle.WriteInt(4);
   neg_custom_pickle.WriteUInt32(0);
   // Custom Windows message.
-  neg_custom_pickle.WriteIntPtr(NULL);
+  neg_custom_pickle.WriteIntPtr(0);
   iter = NULL;
   EXPECT_FALSE(custom_cursor.Deserialize(&neg_custom_pickle, &iter));
 }

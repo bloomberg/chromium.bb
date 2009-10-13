@@ -129,13 +129,16 @@ NativeViewId IdFromNativeView(NativeView view);
 // window id.
 #if defined(OS_WIN)
   typedef HWND PluginWindowHandle;
+  const PluginWindowHandle kNullPluginWindow = NULL;
 #elif defined(USE_X11)
   typedef unsigned long PluginWindowHandle;
+  const PluginWindowHandle kNullPluginWindow = 0;
 #else
   // On OS X we don't have windowed plugins.
   // We use a NULL/0 PluginWindowHandle in shared code to indicate there
   // is no window present, so mirror that behavior here.
   typedef bool PluginWindowHandle;
+  const PluginWindowHandle kNullPluginWindow = false;
 #endif
 
 }  // namespace gfx

@@ -1316,7 +1316,7 @@ WebView* RenderView::createView(WebFrame* creator) {
     return NULL;
 
   RenderView* view = RenderView::Create(render_thread_,
-                                        NULL,
+                                        0,
                                         routing_id_,
                                         renderer_preferences_,
                                         webkit_preferences_,
