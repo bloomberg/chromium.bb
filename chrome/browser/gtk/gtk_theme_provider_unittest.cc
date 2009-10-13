@@ -111,12 +111,10 @@ class ImageVerifierGtkThemeProvider : public GtkThemeProvider {
   ImageVerifierGtkThemeProvider() : theme_toolbar_(NULL) { }
 
   virtual SkBitmap* LoadThemeBitmap(int id) {
-    if (id == IDR_THEME_TOOLBAR) {
-      theme_toolbar_ = GtkThemeProvider::LoadThemeBitmap(id);
-      return theme_toolbar_;
-    } else {
+    if (id != IDR_THEME_TOOLBAR)
       return GtkThemeProvider::LoadThemeBitmap(id);
-    }
+    theme_toolbar_ = GtkThemeProvider::LoadThemeBitmap(id);
+    return theme_toolbar_;
   }
 
   SkBitmap* theme_toolbar_;

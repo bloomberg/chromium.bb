@@ -127,12 +127,9 @@ void GtkThemeProvider::SetNativeTheme() {
 void GtkThemeProvider::Observe(NotificationType type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
-  if (type == NotificationType::PREF_CHANGED) {
-    std::wstring key = *Details<std::wstring>(details).ptr();
-    if (key == prefs::kUsesSystemTheme) {
-      use_gtk_ = profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
-    }
-  }
+  if ((type == NotificationType::PREF_CHANGED) &&
+      (*Details<std::wstring>(details).ptr() == prefs::kUsesSystemTheme))
+    use_gtk_ = profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
 }
 
 GtkWidget* GtkThemeProvider::BuildChromeButton() {
@@ -268,10 +265,10 @@ SkBitmap* GtkThemeProvider::LoadThemeBitmap(int id) {
       bitmap->allocPixels();
       bitmap->eraseRGB(color->red >> 8, color->green >> 8, color->blue >> 8);
       return bitmap;
-    } else if ((id == IDR_THEME_TAB_BACKGROUND ||
-                id == IDR_THEME_TAB_BACKGROUND_INCOGNITO)) {
-      return GenerateTabBackgroundBitmapImpl(id);
     }
+    if ((id == IDR_THEME_TAB_BACKGROUND) ||
+        (id == IDR_THEME_TAB_BACKGROUND_INCOGNITO))
+      return GenerateTabBackgroundBitmapImpl(id);
   }
 
   return BrowserThemeProvider::LoadThemeBitmap(id);

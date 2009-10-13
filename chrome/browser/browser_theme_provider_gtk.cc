@@ -23,9 +23,9 @@ GdkPixbuf* BrowserThemeProvider::GetPixbufImpl(int id, bool rtl_enabled) {
   int key = rtl_enabled ? -id : id;
 
   // Check to see if we already have the pixbuf in the cache.
-  GdkPixbufMap::const_iterator found = gdk_pixbufs_.find(key);
-  if (found != gdk_pixbufs_.end())
-    return found->second;
+  GdkPixbufMap::const_iterator pixbufs_iter = gdk_pixbufs_.find(key);
+  if (pixbufs_iter != gdk_pixbufs_.end())
+    return pixbufs_iter->second;
 
   SkBitmap* bitmap = GetBitmapNamed(id);
   GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(bitmap);

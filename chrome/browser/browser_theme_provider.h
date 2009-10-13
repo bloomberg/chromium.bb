@@ -301,8 +301,8 @@ class BrowserThemeProvider : public NonThreadSafe,
   // Allow any ResourceBundle image to be overridden. |images| should
   // contain keys defined in ThemeResourceMap, and values as paths to
   // the images on-disk.
-  void SetImageData(DictionaryValue* images,
-                    FilePath images_path);
+  void SetImageData(DictionaryValue* images, FilePath images_path);
+
   // Set our theme colors. The keys of |colors| are any of the kColor*
   // constants, and the values are a three-item list containing 8-bit
   // RGB values.

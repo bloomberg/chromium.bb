@@ -65,8 +65,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // label. Used for borders between GTK stuff and the webcontent.
   GdkColor GetBorderColor();
 
-  // Expose the inner widgets. Only used for testing.
-  GtkWidget* fake_window() { return fake_window_; }
+  // Expose the inner label. Only used for testing.
   GtkWidget* fake_label() { return fake_label_.get(); }
 
   // Returns a CairoCachedSurface for a particular Display. CairoCachedSurfaces

@@ -31,9 +31,9 @@ NSImage* BrowserThemeProvider::GetNSImageNamed(int id) {
     return nil;
 
   // Check to see if we already have the image in the cache.
-  NSImageMap::const_iterator found = nsimage_cache_.find(id);
-  if (found != nsimage_cache_.end())
-    return found->second;
+  NSImageMap::const_iterator nsimage_iter = nsimage_cache_.find(id);
+  if (nsimage_iter != nsimage_cache_.end())
+    return nsimage_iter->second;
 
   // Why don't we load the file directly into the image instead of the whole
   // SkBitmap > native conversion?
@@ -71,9 +71,9 @@ NSColor* BrowserThemeProvider::GetNSColor(int id) {
   DCHECK(CalledOnValidThread());
 
   // Check to see if we already have the color in the cache.
-  NSColorMap::const_iterator found = nscolor_cache_.find(id);
-  if (found != nscolor_cache_.end())
-    return found->second;
+  NSColorMap::const_iterator nscolor_iter = nscolor_cache_.find(id);
+  if (nscolor_iter != nscolor_cache_.end())
+    return nscolor_iter->second;
 
   SkColor sk_color = GetColor(id);
   NSColor* color = [NSColor
@@ -95,9 +95,9 @@ NSColor* BrowserThemeProvider::GetNSColorTint(int id) {
   DCHECK(CalledOnValidThread());
 
   // Check to see if we already have the color in the cache.
-  NSColorMap::const_iterator found = nscolor_cache_.find(id);
-  if (found != nscolor_cache_.end())
-    return found->second;
+  NSColorMap::const_iterator nscolor_iter = nscolor_cache_.find(id);
+  if (nscolor_iter != nscolor_cache_.end())
+    return nscolor_iter->second;
 
   TintMap::iterator tint_iter = tints_.find(GetTintKey(id));
   if (tint_iter != tints_.end()) {

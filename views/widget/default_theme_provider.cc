@@ -12,21 +12,10 @@
 
 namespace views {
 
-void DefaultThemeProvider::Init(Profile* profile) {
-}
-
 SkBitmap* DefaultThemeProvider::GetBitmapNamed(int id) {
   return ResourceBundle::GetSharedInstance().GetBitmapNamed(id);
 }
 
-SkColor DefaultThemeProvider::GetColor(int id)  {
-  // Return debugging-blue.
-  return 0xff0000ff;
-}
-
-bool DefaultThemeProvider::GetDisplayProperty(int id, int* result) {
-  return false;
-}
 bool DefaultThemeProvider::ShouldUseNativeFrame() {
 #if defined(OS_WIN)
   return win_util::ShouldUseVistaFrame();
@@ -35,7 +24,4 @@ bool DefaultThemeProvider::ShouldUseNativeFrame() {
 #endif
 }
 
-bool DefaultThemeProvider::HasCustomImage(int id) {
-  return false;
-}
 }  // namespace views
