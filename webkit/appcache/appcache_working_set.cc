@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_group.h"
+#include "webkit/appcache/appcache_response.h"
 
 namespace appcache {
 
@@ -33,6 +34,16 @@ void AppCacheWorkingSet::AddGroup(AppCacheGroup* group) {
 
 void AppCacheWorkingSet::RemoveGroup(AppCacheGroup* group) {
   groups_.erase(group->manifest_url());
+}
+
+void AppCacheWorkingSet::AddResponseInfo(AppCacheResponseInfo* info) {
+  int64 response_id = info->response_id();
+  DCHECK(response_infos_.find(response_id) == response_infos_.end());
+  response_infos_.insert(ResponseInfoMap::value_type(response_id, info));
+}
+
+void AppCacheWorkingSet::RemoveResponseInfo(AppCacheResponseInfo* info) {
+  response_infos_.erase(info->response_id());
 }
 
 }  // namespace

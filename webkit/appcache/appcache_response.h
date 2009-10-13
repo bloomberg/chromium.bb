@@ -9,6 +9,7 @@
 #include "base/ref_counted.h"
 #include "net/base/completion_callback.h"
 #include "net/http/http_response_info.h"
+#include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/appcache/appcache_service.h"
 #include "webkit/appcache/appcache_storage.h"
 
@@ -19,14 +20,13 @@ namespace disk_cache {
 class Backend;
 };
 
-
 namespace appcache {
 
 // Response info for a particular response id. Instances are tracked in
 // the working set.
 class AppCacheResponseInfo
     : public base::RefCounted<AppCacheResponseInfo> {
-
+ public:
   // AppCacheResponseInfo takes ownership of the http_info.
   AppCacheResponseInfo(AppCacheService* service, int64 response_id,
                        net::HttpResponseInfo* http_info)
