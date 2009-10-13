@@ -233,7 +233,7 @@ void ResourceMessageFilter::OnChannelConnected(int32 peer_pid) {
 
   WorkerService::GetInstance()->Initialize(
       resource_dispatcher_host_, ui_loop());
-  appcache_dispatcher_host_->Initialize(this, id());
+  appcache_dispatcher_host_->Initialize(this, id(), handle());
   dom_storage_dispatcher_host_->Init(handle());
 }
 

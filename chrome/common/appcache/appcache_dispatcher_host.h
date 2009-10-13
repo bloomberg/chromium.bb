@@ -6,6 +6,8 @@
 #define CHROME_COMMON_APPCACHE_APPCACHE_DISPATCHER_HOST_H_
 
 #include <vector>
+
+#include "base/process.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/appcache/appcache_frontend_proxy.h"
@@ -22,7 +24,8 @@ class AppCacheDispatcherHost {
  public:
   explicit AppCacheDispatcherHost(ChromeAppCacheService* appcache_service);
 
-  void Initialize(IPC::Message::Sender* sender, int process_id);
+  void Initialize(IPC::Message::Sender* sender, int process_id,
+                  base::ProcessHandle process_handle);
   bool OnMessageReceived(const IPC::Message& msg, bool* msg_is_ok);
 
   int process_id() const { return backend_impl_.process_id(); }
@@ -49,12 +52,16 @@ class AppCacheDispatcherHost {
   void StartUpdateCallback(bool result, void* param);
   void SwapCacheCallback(bool result, void* param);
 
+  void ReceivedBadMessage(uint16 msg_type);
+
   AppCacheFrontendProxy frontend_proxy_;
   appcache::AppCacheBackendImpl backend_impl_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_ptr<appcache::GetStatusCallback> get_status_callback_;
   scoped_ptr<appcache::StartUpdateCallback> start_update_callback_;
   scoped_ptr<appcache::SwapCacheCallback> swap_cache_callback_;
+  base::ProcessHandle process_handle_;
+  scoped_ptr<IPC::Message> pending_reply_msg_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheDispatcherHost);
 };
