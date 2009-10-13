@@ -90,7 +90,7 @@ bool WorkerProcessHost::Init() {
   if (!CreateChannel())
     return false;
 
-  std::wstring exe_path = GetChildPath();
+  FilePath exe_path = GetChildPath();
   if (exe_path.empty())
     return false;
 

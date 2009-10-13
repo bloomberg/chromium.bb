@@ -82,24 +82,22 @@ ChildProcessHost::~ChildProcessHost() {
 }
 
 // static
-std::wstring ChildProcessHost::GetChildPath() {
-  std::wstring child_path = CommandLine::ForCurrentProcess()->GetSwitchValue(
+FilePath ChildProcessHost::GetChildPath() {
+  FilePath child_path = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
       switches::kBrowserSubprocessPath);
   if (!child_path.empty())
     return child_path;
 
+  FilePath path;
+  PathService::Get(base::FILE_EXE, &path);
+
 #if !defined(OS_MACOSX)
   // On most platforms, the child executable is the same as the current
   // executable.
-  PathService::Get(base::FILE_EXE, &child_path);
-  return child_path;
+  return path;
 #else
   // On the Mac, the child executable lives at a predefined location within
   // the current app bundle.
-
-  FilePath path;
-  if (!PathService::Get(base::FILE_EXE, &path))
-    return child_path;
 
   // Figure out the current executable name.  In a browser, this will be
   // "Chromium" or "Google Chrome".  The child name will be the browser
@@ -115,7 +113,7 @@ std::wstring ChildProcessHost::GetChildPath() {
     if (strcmp(test_suffix, child_suffix.c_str()) == 0) {
       // FILE_EXE already ends with the child suffix and therefore already
       // refers to the child process path.  Just return it.
-      return path.ToWStringHack();
+      return path;
     }
   }
 
@@ -138,7 +136,7 @@ std::wstring ChildProcessHost::GetChildPath() {
   path = path.Append(FILE_PATH_LITERAL("MacOS"));
   path = path.Append(child_exe_name);
 
-  return path.ToWStringHack();
+  return path;
 #endif  // OS_MACOSX
 }
 

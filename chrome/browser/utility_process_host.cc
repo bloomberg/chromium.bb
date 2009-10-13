@@ -59,7 +59,7 @@ bool UtilityProcessHost::StartUpdateManifestParse(const std::string& xml) {
   return true;
 }
 
-std::wstring UtilityProcessHost::GetUtilityProcessCmd() {
+FilePath UtilityProcessHost::GetUtilityProcessCmd() {
   return GetChildPath();
 }
 
@@ -78,7 +78,7 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
   if (!CreateChannel())
     return false;
 
-  std::wstring exe_path = GetUtilityProcessCmd();
+  FilePath exe_path = GetUtilityProcessCmd();
   if (exe_path.empty()) {
     NOTREACHED() << "Unable to get utility process binary name.";
     return false;

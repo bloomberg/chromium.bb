@@ -94,7 +94,7 @@ class UtilityProcessHost : public ChildProcessHost {
 
  protected:
   // Allow these methods to be overridden for tests.
-  virtual std::wstring GetUtilityProcessCmd();
+  virtual FilePath GetUtilityProcessCmd();
   virtual bool UseSandbox() {
     return true;
   }

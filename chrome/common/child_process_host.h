@@ -34,7 +34,7 @@ class ChildProcessHost : public ResourceDispatcherHost::Receiver,
   // the default child process pathname will be returned.  On most platforms,
   // this will be the same as the currently-executing process.  On failure,
   // returns an empty wstring.
-  static std::wstring GetChildPath();
+  static FilePath GetChildPath();
 
   // Prepares command_line for crash reporting as appropriate.  On Linux and
   // Mac, a command-line flag to enable crash reporting in the child process

@@ -357,10 +357,9 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
 
   // Build command line for plugin, we have to quote the plugin's path to deal
   // with spaces.
-  std::wstring exe_path = GetChildPath();
-  if (exe_path.empty()) {
+  FilePath exe_path = GetChildPath();
+  if (exe_path.empty())
     return false;
-  }
 
   CommandLine cmd_line(exe_path);
   // Put the process type and plugin path first so they're easier to see

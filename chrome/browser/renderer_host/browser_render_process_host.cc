@@ -268,7 +268,7 @@ bool BrowserRenderProcessHost::Init() {
 
   // Find the renderer before creating the channel so if this fails early we
   // return without creating the channel.
-  std::wstring renderer_path = ChildProcessHost::GetChildPath();
+  FilePath renderer_path = ChildProcessHost::GetChildPath();
   if (renderer_path.empty())
     return false;
 

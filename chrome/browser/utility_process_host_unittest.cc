@@ -76,12 +76,12 @@ class TestUtilityProcessHost : public UtilityProcessHost {
   }
 
  protected:
-  virtual std::wstring GetUtilityProcessCmd() {
+  virtual FilePath GetUtilityProcessCmd() {
     FilePath exe_path;
     PathService::Get(base::DIR_EXE, &exe_path);
     exe_path = exe_path.AppendASCII(WideToASCII(
         chrome::kHelperProcessExecutablePath));
-    return exe_path.ToWStringHack();
+    return exe_path;
   }
 
   virtual bool UseSandbox() {
