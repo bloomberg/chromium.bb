@@ -83,8 +83,33 @@ NPObjectPointer<NPObject> GPUPluginObject::OpenCommandBuffer() {
   if (command_buffer_.Get())
     return command_buffer_;
 
+  NPObjectPointer<NPObject> window = NPObjectPointer<NPObject>::FromReturned(
+      NPBrowser::get()->GetWindowNPObject(npp_));
+  if (!window.Get())
+    return NPObjectPointer<NPObject>();
+
+  NPObjectPointer<NPObject> chromium;
+  if (!NPGetProperty(npp_, window, "chromium", &chromium)) {
+    return NPObjectPointer<NPObject>();
+  }
+
+  NPObjectPointer<NPObject> system;
+  if (!NPGetProperty(npp_, chromium, "system", &system)) {
+    return NPObjectPointer<NPObject>();
+  }
+
+  NPObjectPointer<NPObject> ring_buffer;
+  if (!NPInvoke(npp_, system, "createSharedMemory", kCommandBufferSize,
+                &ring_buffer)) {
+    return NPObjectPointer<NPObject>();
+  }
+
+  if (!ring_buffer.Get()) {
+    return NPObjectPointer<NPObject>();
+  }
+
   command_buffer_ = NPCreateObject<CommandBuffer>(npp_);
-  if (command_buffer_->Initialize(kCommandBufferSize)) {
+  if (command_buffer_->Initialize(ring_buffer)) {
     processor_ = new GPUProcessor(npp_, command_buffer_);
     if (processor_->Initialize(static_cast<HWND>(window_.window))) {
       command_buffer_->SetPutOffsetChangeCallback(

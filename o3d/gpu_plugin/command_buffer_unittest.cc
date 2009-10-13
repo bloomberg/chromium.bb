@@ -4,8 +4,8 @@
 
 #include "base/thread.h"
 #include "o3d/gpu_plugin/command_buffer.h"
-#include "o3d/gpu_plugin/np_utils/dynamic_np_object.h"
 #include "o3d/gpu_plugin/np_utils/np_browser_mock.h"
+#include "o3d/gpu_plugin/np_utils/dynamic_np_object.h"
 #include "o3d/gpu_plugin/np_utils/np_object_mock.h"
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
 #include "o3d/gpu_plugin/system_services/shared_memory_mock.h"
@@ -21,41 +21,19 @@ using testing::StrictMock;
 namespace o3d {
 namespace gpu_plugin {
 
-class MockSystemNPObject : public DefaultNPObject<NPObject> {
- public:
-  explicit MockSystemNPObject(NPP npp) {
-  }
-
-  MOCK_METHOD1(CreateSharedMemory, NPObjectPointer<NPObject>(int32 size));
-
-  NP_UTILS_BEGIN_DISPATCHER_CHAIN(MockSystemNPObject, DefaultNPObject<NPObject>)
-    NP_UTILS_DISPATCHER(CreateSharedMemory,
-                        NPObjectPointer<NPObject>(int32 size))
-  NP_UTILS_END_DISPATCHER_CHAIN
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSystemNPObject);
-};
-
 class CommandBufferTest : public testing::Test {
  protected:
   virtual void SetUp() {
     command_buffer_ = NPCreateObject<CommandBuffer>(NULL);
+    ring_buffer_ = NPCreateObject<MockSharedMemory>(NULL);
 
-    window_object_ = NPCreateObject<DynamicNPObject>(NULL);
-
-    chromium_object_ = NPCreateObject<DynamicNPObject>(NULL);
-    NPSetProperty(NULL, window_object_, "chromium", chromium_object_);
-
-    system_object_ = NPCreateObject<StrictMock<MockSystemNPObject> >(NULL);
-    NPSetProperty(NULL, chromium_object_, "system", system_object_);
+    ON_CALL(*ring_buffer_.Get(), GetSize())
+      .WillByDefault(Return(1024));
   }
 
   MockNPBrowser mock_browser_;
   NPObjectPointer<CommandBuffer> command_buffer_;
-  NPObjectPointer<DynamicNPObject> window_object_;
-  NPObjectPointer<DynamicNPObject> chromium_object_;
-  NPObjectPointer<MockSystemNPObject> system_object_;
+  NPObjectPointer<MockSharedMemory> ring_buffer_;
 };
 
 TEST_F(CommandBufferTest, NullRingBufferByDefault) {
@@ -64,37 +42,30 @@ TEST_F(CommandBufferTest, NullRingBufferByDefault) {
 }
 
 TEST_F(CommandBufferTest, InitializesCommandBuffer) {
-  EXPECT_CALL(mock_browser_, GetWindowNPObject(NULL))
-    .WillOnce(Return(window_object_.ToReturned()));
-
-  NPObjectPointer<MockSharedMemory> expected_shared_memory =
-      NPCreateObject<StrictMock<MockSharedMemory> >(NULL);
-
-  EXPECT_CALL(*system_object_.Get(), CreateSharedMemory(1024))
-    .WillOnce(Return(expected_shared_memory));
-
-  EXPECT_TRUE(command_buffer_->Initialize(256));
-  EXPECT_EQ(expected_shared_memory, command_buffer_->GetRingBuffer());
-
-  // Cannot reinitialize.
-  EXPECT_FALSE(command_buffer_->Initialize(256));
-  EXPECT_EQ(expected_shared_memory, command_buffer_->GetRingBuffer());
+  EXPECT_TRUE(command_buffer_->Initialize(ring_buffer_));
+  EXPECT_TRUE(ring_buffer_ == command_buffer_->GetRingBuffer());
+  EXPECT_EQ(256, command_buffer_->GetSize());
 }
 
-TEST_F(CommandBufferTest, InitializeFailsIfSizeIsTooBig) {
-  EXPECT_FALSE(command_buffer_->Initialize(0x40000000));
+TEST_F(CommandBufferTest, InitializeFailsSecondTime) {
+  EXPECT_TRUE(command_buffer_->Initialize(ring_buffer_));
+  EXPECT_FALSE(command_buffer_->Initialize(ring_buffer_));
 }
 
-TEST_F(CommandBufferTest, InitializeFailsIfCannotCreateSharedMemory) {
-  EXPECT_CALL(mock_browser_, GetWindowNPObject(NULL))
-    .WillOnce(Return(window_object_.ToReturned()));
+TEST_F(CommandBufferTest, InitializeFailsIfSizeIsNegative) {
+  ON_CALL(*ring_buffer_.Get(), GetSize())
+    .WillByDefault(Return(-1024));
 
-  EXPECT_CALL(*system_object_.Get(), CreateSharedMemory(1024))
-    .WillOnce(Return(NPObjectPointer<NPObject>()));
+  EXPECT_FALSE(command_buffer_->Initialize(ring_buffer_));
+}
 
-  EXPECT_FALSE(command_buffer_->Initialize(256));
-  EXPECT_EQ(NPObjectPointer<NPObject>(),
-            command_buffer_->GetRingBuffer());
+TEST_F(CommandBufferTest, InitializeFailsIfRingBufferIsNull) {
+  EXPECT_FALSE(command_buffer_->Initialize(NPObjectPointer<NPObject>()));
+}
+
+TEST_F(CommandBufferTest, InitializeFailsIfRingBufferDoesNotImplementGetSize) {
+  EXPECT_FALSE(command_buffer_->Initialize(
+      NPCreateObject<DynamicNPObject>(NULL)));
 }
 
 TEST_F(CommandBufferTest, GetAndPutOffsetsDefaultToZero) {
@@ -108,16 +79,7 @@ class MockCallback : public CallbackRunner<Tuple0> {
 };
 
 TEST_F(CommandBufferTest, CanSyncGetAndPutOffset) {
-  EXPECT_CALL(mock_browser_, GetWindowNPObject(NULL))
-    .WillOnce(Return(window_object_.ToReturned()));
-
-  NPObjectPointer<MockSharedMemory> expected_shared_memory =
-      NPCreateObject<StrictMock<MockSharedMemory> >(NULL);
-
-  EXPECT_CALL(*system_object_.Get(), CreateSharedMemory(1024))
-    .WillOnce(Return(expected_shared_memory));
-
-  EXPECT_TRUE(command_buffer_->Initialize(256));
+  EXPECT_TRUE(command_buffer_->Initialize(ring_buffer_));
 
   StrictMock<MockCallback>* put_offset_change_callback =
       new StrictMock<MockCallback>;
@@ -157,72 +119,72 @@ TEST_F(CommandBufferTest, RegisteringNullObjectReturnsZero) {
 }
 
 TEST_F(CommandBufferTest, RegistersDistinctNonZeroHandlesForObject) {
-  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
-  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
-  EXPECT_EQ(2, command_buffer_->RegisterObject(window_object_));
-  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(2));
+  EXPECT_EQ(1, command_buffer_->RegisterObject(ring_buffer_));
+  EXPECT_EQ(ring_buffer_, command_buffer_->GetRegisteredObject(1));
+  EXPECT_EQ(2, command_buffer_->RegisterObject(ring_buffer_));
+  EXPECT_EQ(ring_buffer_, command_buffer_->GetRegisteredObject(2));
 }
 
 TEST_F(CommandBufferTest, RegisterObjectReusesUnregisteredHandles) {
-  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
-  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
-  EXPECT_EQ(2, command_buffer_->RegisterObject(window_object_));
-  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(2));
-  command_buffer_->UnregisterObject(window_object_, 1);
-  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
-  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
-  EXPECT_EQ(3, command_buffer_->RegisterObject(window_object_));
-  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(3));
+  EXPECT_EQ(1, command_buffer_->RegisterObject(ring_buffer_));
+  EXPECT_EQ(ring_buffer_, command_buffer_->GetRegisteredObject(1));
+  EXPECT_EQ(2, command_buffer_->RegisterObject(ring_buffer_));
+  EXPECT_EQ(ring_buffer_, command_buffer_->GetRegisteredObject(2));
+  command_buffer_->UnregisterObject(ring_buffer_, 1);
+  EXPECT_EQ(1, command_buffer_->RegisterObject(ring_buffer_));
+  EXPECT_EQ(ring_buffer_, command_buffer_->GetRegisteredObject(1));
+  EXPECT_EQ(3, command_buffer_->RegisterObject(ring_buffer_));
+  EXPECT_EQ(ring_buffer_, command_buffer_->GetRegisteredObject(3));
 }
 
 TEST_F(CommandBufferTest, CannotUnregisterHandleZero) {
-  command_buffer_->UnregisterObject(window_object_, 0);
+  command_buffer_->UnregisterObject(ring_buffer_, 0);
   EXPECT_TRUE(NULL == command_buffer_->GetRegisteredObject(0).Get());
-  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
-  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
+  EXPECT_EQ(1, command_buffer_->RegisterObject(ring_buffer_));
+  EXPECT_EQ(ring_buffer_, command_buffer_->GetRegisteredObject(1));
 }
 
 TEST_F(CommandBufferTest, CannotUnregisterNegativeHandles) {
-  command_buffer_->UnregisterObject(window_object_, -1);
-  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
-  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
+  command_buffer_->UnregisterObject(ring_buffer_, -1);
+  EXPECT_EQ(1, command_buffer_->RegisterObject(ring_buffer_));
+  EXPECT_EQ(ring_buffer_, command_buffer_->GetRegisteredObject(1));
 }
 
 TEST_F(CommandBufferTest, CannotUnregisterUnregisteredHandles) {
-  command_buffer_->UnregisterObject(window_object_, 1);
-  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
-  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
+  command_buffer_->UnregisterObject(ring_buffer_, 1);
+  EXPECT_EQ(1, command_buffer_->RegisterObject(ring_buffer_));
+  EXPECT_EQ(ring_buffer_, command_buffer_->GetRegisteredObject(1));
 }
 
 TEST_F(CommandBufferTest,
     CannotUnregisterHandleWithoutDemonstratingAccessToObject) {
-  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
-  command_buffer_->UnregisterObject(chromium_object_, 1);
-  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
-  EXPECT_EQ(2, command_buffer_->RegisterObject(window_object_));
+  EXPECT_EQ(1, command_buffer_->RegisterObject(ring_buffer_));
+  command_buffer_->UnregisterObject(command_buffer_, 1);
+  EXPECT_EQ(ring_buffer_, command_buffer_->GetRegisteredObject(1));
+  EXPECT_EQ(2, command_buffer_->RegisterObject(ring_buffer_));
 }
 
 // Testing this case specifically because there is an optimization that takes
 // a different code path in this case.
 TEST_F(CommandBufferTest, UnregistersLastRegisteredHandle) {
-  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
-  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
-  command_buffer_->UnregisterObject(window_object_, 1);
-  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
-  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
+  EXPECT_EQ(1, command_buffer_->RegisterObject(ring_buffer_));
+  EXPECT_EQ(ring_buffer_, command_buffer_->GetRegisteredObject(1));
+  command_buffer_->UnregisterObject(ring_buffer_, 1);
+  EXPECT_EQ(1, command_buffer_->RegisterObject(ring_buffer_));
+  EXPECT_EQ(ring_buffer_, command_buffer_->GetRegisteredObject(1));
 }
 
 // Testing this case specifically because there is an optimization that takes
 // a different code path in this case.
 TEST_F(CommandBufferTest, UnregistersTwoLastRegisteredHandles) {
-  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
-  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
-  EXPECT_EQ(2, command_buffer_->RegisterObject(window_object_));
-  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(2));
-  command_buffer_->UnregisterObject(window_object_, 2);
-  command_buffer_->UnregisterObject(window_object_, 1);
-  EXPECT_EQ(1, command_buffer_->RegisterObject(window_object_));
-  EXPECT_EQ(window_object_, command_buffer_->GetRegisteredObject(1));
+  EXPECT_EQ(1, command_buffer_->RegisterObject(ring_buffer_));
+  EXPECT_EQ(ring_buffer_, command_buffer_->GetRegisteredObject(1));
+  EXPECT_EQ(2, command_buffer_->RegisterObject(ring_buffer_));
+  EXPECT_EQ(ring_buffer_, command_buffer_->GetRegisteredObject(2));
+  command_buffer_->UnregisterObject(ring_buffer_, 2);
+  command_buffer_->UnregisterObject(ring_buffer_, 1);
+  EXPECT_EQ(1, command_buffer_->RegisterObject(ring_buffer_));
+  EXPECT_EQ(ring_buffer_, command_buffer_->GetRegisteredObject(1));
 }
 
 TEST_F(CommandBufferTest, DefaultTokenIsZero) {

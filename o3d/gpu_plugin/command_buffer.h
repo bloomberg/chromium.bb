@@ -23,8 +23,8 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
   explicit CommandBuffer(NPP npp);
   virtual ~CommandBuffer();
 
-  // Create a shared memory buffer of the given size.
-  virtual bool Initialize(int32 size);
+  // Initialize the command buffer with the given buffer.
+  virtual bool Initialize(NPObjectPointer<NPObject> ring_buffer);
 
   // Gets the shared memory ring buffer object for the command buffer.
   virtual NPObjectPointer<NPObject> GetRingBuffer();
@@ -106,7 +106,7 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
   }
 
   NP_UTILS_BEGIN_DISPATCHER_CHAIN(CommandBuffer, DefaultNPObject<NPObject>)
-    NP_UTILS_DISPATCHER(Initialize, bool(int32 size))
+    NP_UTILS_DISPATCHER(Initialize, bool(NPObjectPointer<NPObject> ring_buffer))
     NP_UTILS_DISPATCHER(GetRingBuffer, NPObjectPointer<NPObject>())
     NP_UTILS_DISPATCHER(GetSize, int32())
     NP_UTILS_DISPATCHER(SyncOffsets, int32(int32 get_offset))

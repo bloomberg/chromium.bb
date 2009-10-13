@@ -22,41 +22,24 @@ CommandBuffer::CommandBuffer(NPP npp)
 CommandBuffer::~CommandBuffer() {
 }
 
-bool CommandBuffer::Initialize(int32 size) {
-  // Check the size will not overflow when it is converted from count of int32s
-  // to count of bytes.
-  int32 num_bytes =  static_cast<int32>(size * sizeof(int32));
-  if (num_bytes / sizeof(int32) != size)
-    return false;
-
+bool CommandBuffer::Initialize(NPObjectPointer<NPObject> ring_buffer) {
+  // Fail if already initialized.
   if (ring_buffer_.Get())
     return false;
 
-  NPObjectPointer<NPObject> window = NPObjectPointer<NPObject>::FromReturned(
-      NPBrowser::get()->GetWindowNPObject(npp_));
-  if (!window.Get())
+  if (!ring_buffer.Get())
     return false;
 
-  NPObjectPointer<NPObject> chromium;
-  if (!NPGetProperty(npp_, window, "chromium", &chromium)) {
+  int32 size_in_bytes;
+  if (!NPInvoke(npp_, ring_buffer, "getSize", &size_in_bytes))
     return false;
-  }
 
-  NPObjectPointer<NPObject> system;
-  if (!NPGetProperty(npp_, chromium, "system", &system)) {
+  if (size_in_bytes < 0)
     return false;
-  }
 
-  if (!NPInvoke(npp_, system, "createSharedMemory", num_bytes,
-                &ring_buffer_)) {
-    return false;
-  }
+  size_ = size_in_bytes / sizeof(int32);
+  ring_buffer_ = ring_buffer;
 
-  if (!ring_buffer_.Get()) {
-    return false;
-  }
-
-  size_ = size;
   return true;
 }
 

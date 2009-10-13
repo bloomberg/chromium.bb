@@ -22,7 +22,7 @@ class MockCommandBuffer : public CommandBuffer {
       .WillByDefault(testing::Return(NPObjectPointer<NPObject>()));
   }
 
-  MOCK_METHOD1(Initialize, bool(int32 size));
+  MOCK_METHOD1(Initialize, bool(NPObjectPointer<NPObject> ring_buffer));
   MOCK_METHOD0(GetRingBuffer, NPObjectPointer<NPObject>());
   MOCK_METHOD0(GetSize, int32());
   MOCK_METHOD1(SyncOffsets, int32(int32 put_offset));
