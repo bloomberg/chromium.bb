@@ -64,7 +64,7 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
 
 #if !defined(USE_MMX)
 // Windows, Mac and Linux x86 use MMX; x64 and other CPUs do not.
-#if defined(ARCH_CPU_X86)
+#if defined(ARCH_CPU_X86) || (defined(ARCH_CPU_X86_64) && defined(OS_LINUX))
 #define USE_MMX 1
 #else
 #define USE_MMX 0
