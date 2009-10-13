@@ -20,3 +20,4 @@ SSLClientSocketTest.*
 DiskCacheTest.*
 DiskCacheEntryTest.*Async*
 DiskCacheEntryTest.DoomSparseEntry
+FlipNetworkTransactionTest.Connect
