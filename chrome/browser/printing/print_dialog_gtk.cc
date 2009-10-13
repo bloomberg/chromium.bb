@@ -113,6 +113,7 @@ void PrintDialogGtk::OnResponse(gint response_id) {
       // Success; return early.
       return;
     }
+    case GTK_RESPONSE_DELETE_EVENT:  // Fall through.
     case GTK_RESPONSE_CANCEL: {
       break;
     }
