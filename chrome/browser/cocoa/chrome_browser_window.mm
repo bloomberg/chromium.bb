@@ -27,14 +27,31 @@
 typedef int (*KeyToCommandMapper)(bool, bool, bool, int);
 
 @implementation ChromeBrowserWindow
-- (id)initWithContentRect:(NSRect)contentRect
-                styleMask:(NSUInteger)aStyle
-                  backing:(NSBackingStoreType)bufferingType
-                    defer:(BOOL)flag {
-  if ((self = [super initWithContentRect:contentRect
-                               styleMask:aStyle
-                                 backing:bufferingType
-                                   defer:flag])) {
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [[NSDistributedNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
+- (void)setWindowController:(NSWindowController*)controller {
+  if (controller == [self windowController]) {
+    return;
+  }
+  // Clean up our old stuff.
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [[NSDistributedNotificationCenter defaultCenter] removeObserver:self];
+  [closeButton_ removeFromSuperview];
+  closeButton_ = nil;
+  [miniaturizeButton_ removeFromSuperview];
+  miniaturizeButton_ = nil;
+  [zoomButton_ removeFromSuperview];
+  zoomButton_ = nil;
+
+  [super setWindowController:controller];
+
+  BrowserWindowController* browserController
+      = static_cast<BrowserWindowController*>(controller);
+  if ([browserController isKindOfClass:[BrowserWindowController class]]) {
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
     [defaultCenter addObserver:self
                       selector:@selector(themeDidChangeNotification:)
@@ -49,7 +66,6 @@ typedef int (*KeyToCommandMapper)(bool, bool, bool, int);
                    selector:@selector(systemThemeDidChangeNotification:)
                        name:@"AppleAquaColorVariantChanged"
                      object:nil];
-    [self setOpaque:NO];
     // Set up our buttons how we like them.
     NSView* frameView = [self frameView];
     NSRect frameViewBounds = [frameView bounds];
@@ -66,14 +82,18 @@ typedef int (*KeyToCommandMapper)(bool, bool, bool, int);
     [oldButton setHidden:YES];
 
     // Create and position our new buttons.
+    NSUInteger aStyle = [self styleMask];
     closeButton_ = [NSWindow standardWindowButton:NSWindowCloseButton
                                      forStyleMask:aStyle];
     NSRect closeButtonFrame = [closeButton_ frame];
+    CGFloat yOffset = [browserController isNormalWindow] ?
+        kChromeWindowButtonsWithTabStripOffsetFromTop :
+        kChromeWindowButtonsWithoutTabStripOffsetFromTop;
     closeButtonFrame.origin =
         NSMakePoint(kChromeWindowButtonsOffsetFromLeft,
                     (NSHeight(frameViewBounds) -
-                     NSHeight(closeButtonFrame) -
-                     kChromeWindowButtonsOffsetFromTop));
+                     NSHeight(closeButtonFrame) - yOffset));
+
     [closeButton_ setFrame:closeButtonFrame];
     [closeButton_ setTarget:self];
     [closeButton_ setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
@@ -106,15 +126,12 @@ typedef int (*KeyToCommandMapper)(bool, bool, bool, int);
                                       NSViewMinYMargin)];
 
     [frameView addSubview:zoomButton_];
-    [self updateTrackingAreas];
   }
-  return self;
-}
 
-- (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [[NSDistributedNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
+  // Update our tracking areas. We want to update them even if we haven't
+  // added buttons above as we need to remove the old tracking area. If the
+  // buttons aren't to be shown, updateTrackingAreas won't add new ones.
+  [self updateTrackingAreas];
 }
 
 - (NSView*)frameView {
@@ -168,15 +185,18 @@ typedef int (*KeyToCommandMapper)(bool, bool, bool, int);
   if (widgetTrackingArea_) {
     [frameView removeTrackingArea:widgetTrackingArea_];
   }
-  NSRect trackingRect = [closeButton_ frame];
-  trackingRect.size.width = NSMaxX([zoomButton_ frame]) - NSMinX(trackingRect);
-  widgetTrackingArea_.reset(
-      [[NSTrackingArea alloc] initWithRect:trackingRect
-                                   options:(NSTrackingMouseEnteredAndExited |
-                                            NSTrackingActiveAlways)
-                                     owner:self
-                                  userInfo:nil]);
-  [frameView addTrackingArea:widgetTrackingArea_];
+  if (closeButton_) {
+    NSRect trackingRect = [closeButton_ frame];
+    trackingRect.size.width = NSMaxX([zoomButton_ frame]) -
+        NSMinX(trackingRect);
+    widgetTrackingArea_.reset(
+        [[NSTrackingArea alloc] initWithRect:trackingRect
+                                     options:(NSTrackingMouseEnteredAndExited |
+                                              NSTrackingActiveAlways)
+                                       owner:self
+                                    userInfo:nil]);
+    [frameView addTrackingArea:widgetTrackingArea_];
+  }
 }
 
 - (void)windowMainStatusChanged {

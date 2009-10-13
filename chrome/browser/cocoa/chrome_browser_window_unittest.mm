@@ -153,7 +153,8 @@ TEST_F(ChromeBrowserWindowTest, WindowWidgetLocation) {
   NSRect windowBounds = [window_ frame];
   windowBounds.origin = NSZeroPoint;
   EXPECT_EQ(NSMaxY(closeBoxFrame),
-            NSMaxY(windowBounds) - kChromeWindowButtonsOffsetFromTop);
+            NSMaxY(windowBounds) -
+            kChromeWindowButtonsWithTabStripOffsetFromTop);
   EXPECT_EQ(NSMinX(closeBoxFrame), kChromeWindowButtonsOffsetFromLeft);
 
   NSCell* miniaturizeCell = [window_ accessibilityAttributeValue:
@@ -162,7 +163,8 @@ TEST_F(ChromeBrowserWindowTest, WindowWidgetLocation) {
   EXPECT_TRUE(miniaturizeControl);
   NSRect miniaturizeFrame = [miniaturizeControl frame];
   EXPECT_EQ(NSMaxY(miniaturizeFrame),
-            NSMaxY(windowBounds) - kChromeWindowButtonsOffsetFromTop);
+            NSMaxY(windowBounds) -
+            kChromeWindowButtonsWithTabStripOffsetFromTop);
   EXPECT_EQ(NSMinX(miniaturizeFrame),
             NSMaxX(closeBoxFrame) + kChromeWindowButtonsInterButtonSpacing);
 }

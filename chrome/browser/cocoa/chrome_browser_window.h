@@ -10,8 +10,12 @@
 #include "base/scoped_nsobject.h"
 
 // Offset from the top of the window frame to the top of the window controls
-// (zoom, close, miniaturize).
-const NSInteger kChromeWindowButtonsOffsetFromTop = 7;
+// (zoom, close, miniaturize) for a window with a tabstrip.
+const NSInteger kChromeWindowButtonsWithTabStripOffsetFromTop = 6;
+
+// Offset from the top of the window frame to the top of the window controls
+// (zoom, close, miniaturize) for a window without a tabstrip.
+const NSInteger kChromeWindowButtonsWithoutTabStripOffsetFromTop = 4;
 
 // Offset from the left of the window frame to the top of the window controls
 // (zoom, close, miniaturize).

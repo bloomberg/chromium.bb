@@ -96,14 +96,10 @@ static const NSInteger kBrowserFrameViewPatternPhaseOffset = 2;
 - (void)drawRect:(NSRect)rect {
   // If this isn't the window class we expect, then pass it on to the
   // original implementation.
+  [self drawRectOriginal:rect];
   if (![[self window] isKindOfClass:[ChromeBrowserWindow class]]) {
-    [self drawRectOriginal:rect];
     return;
   }
-
-  // Clear out everything
-  [[NSColor clearColor] set];
-  NSRectFill(rect);
 
   // Set up our clip
   NSWindow* window = [self window];
@@ -119,7 +115,7 @@ static const NSInteger kBrowserFrameViewPatternPhaseOffset = 2;
   GTMTheme* theme = [self gtm_theme];
   GTMThemeState state = [window isMainWindow] ? GTMThemeStateActiveWindow
                                               : GTMThemeStateInactiveWindow;
-    NSColor* color = [theme backgroundPatternColorForStyle:GTMThemeStyleWindow
+  NSColor* color = [theme backgroundPatternColorForStyle:GTMThemeStyleWindow
                                                    state:state];
   if (color) {
     // If we have a theme pattern, draw it here.
@@ -128,8 +124,6 @@ static const NSInteger kBrowserFrameViewPatternPhaseOffset = 2;
     [[NSGraphicsContext currentContext] setPatternPhase:phase];
     [color set];
     NSRectFill(rect);
-  } else {
-    [self drawRectOriginal:rect];
   }
 
   // Check to see if we have an overlay image.
@@ -157,7 +151,7 @@ static const NSInteger kBrowserFrameViewPatternPhaseOffset = 2;
     ChromeBrowserWindow* window =
         static_cast<ChromeBrowserWindow*>([self window]);
     mouseInGroup = [window mouseInGroup:widget];
-  } else {
+  } else if ([super respondsToSelector:@selector(_mouseInGroup:)]) {
     mouseInGroup = [super _mouseInGroup:widget];
   }
   return mouseInGroup;
