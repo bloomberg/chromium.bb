@@ -75,7 +75,6 @@ BUG24182 SLOW DEBUG : LayoutTests/fast/js/toString-and-valueOf-override.html = P
 BUG24182 SLOW WIN : LayoutTests/fast/dom/Window/webkitConvertPoint.html = PASS
 
 BUG24182 WIN DEBUG SLOW : LayoutTests/http/tests/loading/redirect-methods.html = PASS
-BUG24182 WIN SLOW : LayoutTests/http/tests/cache/subresource-expiration.html = PASS
 BUG24182 WIN LINUX DEBUG SLOW : LayoutTests/tables/mozilla/bugs/bug5797.html = PASS
 BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/svg/custom/linking-a-03-b-viewBox-transform.svg = PASS
 BUG24182 WIN RELEASE SLOW : LayoutTests/dom/html/level2/html/HTMLAppletElement01.html = PASS
@@ -121,7 +120,7 @@ BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/fast/dom/Window/window-lookup-preced
 BUG24182 SLOW WIN : LayoutTests/fast/loader/local-CSS-from-local.html = PASS
 
 
-BUG18702 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS TIMEOUT
+BUG18702 MAC : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS TIMEOUT
 
 // -----------------------------------------------------------------
 // SKIPPED TESTS
@@ -2597,7 +2596,7 @@ BUG9798 MAC DEBUG : LayoutTests/http/tests/xmlhttprequest/access-control-basic-a
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-header.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = TIMEOUT PASS
 BUG9798 MAC DEBUG : LayoutTests/http/tests/xmlhttprequest/access-control-basic-non-simple-allow.html = TIMEOUT PASS
-BUG9798 MAC : LayoutTests/http/tests/xmlhttprequest/basic-auth.html = TIMEOUT PASS
+BUG9798 MAC WIN : LayoutTests/http/tests/xmlhttprequest/basic-auth.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/encode-request-url-2.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/null-auth.php = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/post-content-type.html = TIMEOUT PASS
@@ -2841,7 +2840,7 @@ BUG16690 SKIP MAC : LayoutTests/fast/text/international/khmer-selection.html = F
 
 // WebKit merge 42738:45840
 // New tests, need baseline.
-BUG16240 MAC : LayoutTests/http/tests/cache/subresource-expiration.html = PASS TIMEOUT
+BUG16240 MAC WIN : LayoutTests/http/tests/cache/subresource-expiration.html = PASS TIMEOUT
 
 // HTML5 DataGrid bindings are not enabled yet because the feature's not fully implemented.
 BUG17585 : LayoutTests/fast/dom/HTMLDataGridElement/DataGridColumns-basic.html = FAIL
