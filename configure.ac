@@ -171,7 +171,7 @@ if test "x$INTEL" != "xno"; then
 
     if test "x$drm_cv_atomic_primitives" = "xnone"; then
 	    if test "x$INTEL" != "xauto"; then
-		    AC_MSG_ERROR([libdrm_intel depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or disable support for Intel GPUs by passing --disable-intel to ./configue])
+		    AC_MSG_ERROR([libdrm_intel depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or disable support for Intel GPUs by passing --disable-intel to ./configure])
 	   else
 		    INTEL=no
 	   fi
