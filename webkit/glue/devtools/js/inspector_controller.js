@@ -446,10 +446,26 @@ devtools.InspectorController.prototype.stopProfiling = function() {
 
 
 /**
+ * TODO(mnaganov): Remove after injected script change landing in WebKit.
  * @return {Array.<Object>} Profile snapshots array.
  */
 devtools.InspectorController.prototype.profiles = function() {
   return [];
+};
+
+
+/**
+ * Async function for retrieving headers of existing profiles.
+ */
+devtools.InspectorController.prototype.getProfileHeaders = function(callId) {
+  WebInspector.didGetProfileHeaders(callId, []);
+};
+
+
+/**
+ * Async function for lazy loading an existing profile.
+ */
+devtools.InspectorController.prototype.getProfile = function(callId, uid) {
 };
 
 
