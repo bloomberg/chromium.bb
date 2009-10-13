@@ -98,6 +98,11 @@ bool GetDesktopShortcutTemplate(std::string* output) {
     }
   }
 
+  // Add some fallback paths for systems which don't have XDG_DATA_DIRS or have
+  // it incomplete.
+  search_paths.push_back(FilePath("/usr/share/applications"));
+  search_paths.push_back(FilePath("/usr/local/share/applications"));
+
   std::string template_filename(GetDesktopName());
   for (std::vector<FilePath>::const_iterator i = search_paths.begin();
        i != search_paths.end(); ++i) {
