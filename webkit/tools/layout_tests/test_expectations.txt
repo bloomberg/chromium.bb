@@ -3195,7 +3195,6 @@ BUG_HCLAM WIN MAC : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-image-n
 BUG_HCLAM WIN : LayoutTests/fast/loader/text-document-wrapping.html = CRASH
 
 // WebKit roll 49473:49502
-BUG30338 : LayoutTests/fast/websockets/websocket-event-target.html = FAIL
-BUG_YAAR WIN LINUX : LayoutTests/svg/custom/gradient-deep-referencing.svg = FAIL
-BUG_YAAR WIN LINUX : LayoutTests/svg/custom/gradient-userSpaceOnUse-with-percentage.svg = FAIL
-BUG_YAAR : LayoutTests/fast/dom/beforeload/frame-before-load.html = FAIL
+BUG24756 : LayoutTests/fast/websockets/websocket-event-target.html = FAIL
+BUG24757 : LayoutTests/fast/dom/beforeload/frame-before-load.html = FAIL
+
