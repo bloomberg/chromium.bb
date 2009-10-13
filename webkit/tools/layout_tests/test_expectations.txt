@@ -1992,7 +1992,8 @@ BUG23496 MAC : LayoutTests/fast/forms/checkbox-radio-onchange.html = IMAGE
 BUG23496 MAC : LayoutTests/fast/forms/file-input-disabled.html = IMAGE
 BUG23496 MAC : LayoutTests/fast/forms/form-element-geometry.html = IMAGE
 BUG23496 MAC : LayoutTests/fast/forms/formmove.html = IMAGE
-BUG23496 MAC : LayoutTests/fast/forms/formmove2.html = IMAGE
+// Recently became crashy. See http://crbug.com/24721
+BUG23496 MAC : LayoutTests/fast/forms/formmove2.html = IMAGE CRASH
 BUG23496 MAC : LayoutTests/fast/forms/indeterminate.html = IMAGE
 BUG23496 MAC : LayoutTests/fast/forms/input-appearance-height.html = IMAGE
 BUG23496 MAC : LayoutTests/fast/forms/input-value.html = IMAGE
