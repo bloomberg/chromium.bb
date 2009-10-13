@@ -13,6 +13,7 @@
 #include "base/gfx/rect.h"
 #include "base/gfx/size.h"
 #include "build/build_config.h"
+#include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/gtk/tab_contents_drag_source.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/web_drag_dest_gtk.h"
-#include "chrome/browser/views/blocked_popup_container_view_views.h"
 #include "chrome/browser/views/sad_tab_view.h"
 #include "chrome/browser/views/tab_contents/render_view_context_menu_win.h"
 #include "views/focus/view_storage.h"
@@ -341,11 +341,7 @@ gboolean TabContentsViewGtk::OnButtonPress(GtkWidget* widget,
 
 void TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
                                         GtkAllocation* allocation) {
-  gfx::Size new_size(allocation->width, allocation->height);
-  if (new_size == size_)
-    return;
-
-  WasSized(new_size);
+  WasSized(gfx::Size(allocation->width, allocation->height));
 }
 
 void TabContentsViewGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
@@ -370,7 +366,6 @@ void TabContentsViewGtk::WasShown() {
 }
 
 void TabContentsViewGtk::WasSized(const gfx::Size& size) {
-  size_ = size;
   if (tab_contents()->interstitial_page())
     tab_contents()->interstitial_page()->SetSize(size);
   if (tab_contents()->render_widget_host_view())
@@ -378,4 +373,30 @@ void TabContentsViewGtk::WasSized(const gfx::Size& size) {
 
   // TODO(brettw) this function can probably be moved to this class.
   tab_contents()->RepositionSupressedPopupsToFit();
+}
+
+// TODO(port): port BlockedPopupContainerViewWin...
+
+class BlockedPopupContainerViewGtk : public BlockedPopupContainerView {
+ public:
+  BlockedPopupContainerViewGtk() {}
+  virtual ~BlockedPopupContainerViewGtk() {}
+
+  // Overridden from BlockedPopupContainerView:
+  virtual void SetPosition() {}
+  virtual void ShowView() {}
+  virtual void UpdateLabel() {}
+  virtual void HideView() {}
+  virtual void Destroy() {
+    delete this;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BlockedPopupContainerViewGtk);
+};
+
+// static
+BlockedPopupContainerView* BlockedPopupContainerView::Create(
+    BlockedPopupContainer* container) {
+  return new BlockedPopupContainerViewGtk;
 }
